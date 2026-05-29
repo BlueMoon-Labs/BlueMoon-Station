@@ -77,7 +77,7 @@
 	RegisterSignal(parent, COMSIG_ITEM_DROPPED, PROC_REF(on_drop))
 	RegisterSignal(parent, COMSIG_ITEM_ATTACK_SELF, PROC_REF(on_attack_self))
 	RegisterSignal(parent, COMSIG_ITEM_ATTACK, PROC_REF(on_attack))
-	RegisterSignal(parent, COMSIG_ATOM_UPDATE_ICON, PROC_REF(on_update_icon))
+	RegisterSignal(parent, COMSIG_ATOM_UPDATE_ICON, PROC_REF(on_update_icon), override = TRUE)
 	RegisterSignal(parent, COMSIG_MOVABLE_MOVED, PROC_REF(on_moved))
 	RegisterSignal(parent, COMSIG_ITEM_SHARPEN_ACT, PROC_REF(on_sharpen))
 	RegisterSignal(parent, COMSIG_ITEM_CHECK_WIELDED, PROC_REF(get_wielded))
@@ -221,12 +221,12 @@
 
 	user.update_inv_hands() // Bluemoon Edit-Fix || Вынес, чтобы обновляло всегда.
 
-	// if the item requires two handed drop the item on unwield
-	/* // Bluemoon Removed - Start // Нахуя оно надо? Автор, ты еблан? Это буквально руин на ровном месте, который иначе никак не используется.
-	Короче крашли нихуя не пояснил зачем это нужно, а на самом деле нужно чтобы положить предмет который требует две руки в слот пояса или т.п.
-	// if(require_twohands)
-	// 	user.dropItemToGround(parent, force=TRUE)
-	*/ // Bluemoon Removed - End
+	// BLUEMOON FIX - require_twohands предмет нельзя удерживать одной рукой:
+	// при анвилде сбрасываем его на пол. Проверка is_holding нужна, чтобы не ломать
+	// перенос предмета в другой слот (тогда unwield вызывается из on_equip/on_drop,
+	// а предмет уже удалён из held_items другим кодом).
+	if(require_twohands && user.is_holding(parent))
+		user.dropItemToGround(parent, force=TRUE)
 
 	// Show message if requested
 	if(show_message)

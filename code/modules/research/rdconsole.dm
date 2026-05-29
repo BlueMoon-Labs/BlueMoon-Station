@@ -44,26 +44,29 @@ Nothing else in the console has ID requirements.
 	if (istype(ID, /datum/material))
 		var/datum/material/material = ID
 		return material.name
-	else if(GLOB.chemical_reagents_list[ID])
-		var/datum/reagent/reagent = GLOB.chemical_reagents_list[ID]
+	var/reagent_from_list = GLOB.chemical_reagents_list[ID]
+	if(reagent_from_list)
+		var/datum/reagent/reagent = reagent_from_list
 		return reagent.name
 	return ID
 
 /proc/CallMaterialName_RuNominative(ID)
 	if (istype(ID, /datum/material))
 		var/datum/material/material = ID
-		return material_to_ru_nominative(material.name)
-	else if(GLOB.chemical_reagents_list[ID])
-		var/datum/reagent/reagent = GLOB.chemical_reagents_list[ID]
+		return vocabulary_to_ru(GLOB.mat_ru_nominative, material.name)
+	var/chemical_from_list = GLOB.chemical_reagents_list[ID]
+	if(chemical_from_list)
+		var/datum/reagent/reagent = chemical_from_list
 		return reagent.name
 	return ID
 
 /proc/CallMaterialName_RuGenitive(ID)
 	if (istype(ID, /datum/material))
 		var/datum/material/material = ID
-		return material_to_ru_genitive(material.name)
-	else if(GLOB.chemical_reagents_list[ID])
-		var/datum/reagent/reagent = GLOB.chemical_reagents_list[ID]
+		return vocabulary_to_ru(GLOB.mat_ru_genitive, material.name)
+	var/chemical_from_list = GLOB.chemical_reagents_list[ID]
+	if(chemical_from_list)
+		var/datum/reagent/reagent = chemical_from_list
 		return reagent.name
 	return ID
 
@@ -160,6 +163,8 @@ Nothing else in the console has ID requirements.
 		if(stored_research == SSresearch.science_tech)
 			SSblackbox.record_feedback("associative", "science_techweb_unlock", 1, list("id" = "[id]", "name" = TN.display_name, "price" = "[json_encode(price)]", "time" = SQLtime()))
 		if(stored_research.research_node_id(id))
+			SSresearch.on_node_researched(id)	// Отправка id на упаковку
+			SEND_GLOBAL_SIGNAL(COMSIG_GLOB_RESEARCH_NODE_UNLOCKED, id)	// Запрос синхронизации печатной машинерии с облаком
 			say("Successfully researched [TN.display_name].")
 			var/logname = "Unknown"
 			if(isAI(user))

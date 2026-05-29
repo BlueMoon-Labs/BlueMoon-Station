@@ -261,6 +261,8 @@ export const TeleLogs = (props, context) => {
   const {
     message_logs = [],
     recon_logs = [],
+    pda_msgs_trimmed = 0,
+    rc_msgs_trimmed = 0,
   } = data;
   const prioritycolorMap = {
     'Normal': 'warning',
@@ -268,6 +270,7 @@ export const TeleLogs = (props, context) => {
     'Extreme': 'bad',
   };
   const log_to_use = (msgs_log ? recon_logs : message_logs) || [];
+  const trimmed_count = msgs_log ? rc_msgs_trimmed : pda_msgs_trimmed;
   return (
     <Section title="Logs">
       <Button
@@ -283,6 +286,11 @@ export const TeleLogs = (props, context) => {
         })}>
         Delete All Logs
       </Button.Confirm>
+      {!!trimmed_count && (
+        <NoticeBox info>
+          {trimmed_count} старых записей было удалено для экономии памяти.
+        </NoticeBox>
+      )}
       <Section
         title="Messages"
         level={2}>

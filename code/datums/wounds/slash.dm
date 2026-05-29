@@ -143,8 +143,7 @@
 		return TRUE
 
 /datum/wound/slash/treat(obj/item/I, mob/user)
-	if(!victim.can_inject())
-		to_chat(user, span_danger("Одежда на теле [victim] не позволяет применить [I]!</span>"))
+	if(!check_armor_for_treatment(I, user))
 		return
 	if(istype(I, /obj/item/gun/energy/laser))
 		las_cauterize(I, user)

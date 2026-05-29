@@ -178,6 +178,9 @@
 
 	var/brute_damage = patient.getBruteLoss()
 	var/burn_damage = patient.getFireLoss()
+	var/datum/language_holder/lang_holder = new
+	lang_holder.copy_languages(patient.get_language_holder())
+	lang_holder.remove_all_languages(source = LANGUAGE_SPECIES)
 
 	patient.client?.prefs?.copy_to(patient)
 	patient.dna.update_dna_identity()
@@ -213,11 +216,18 @@
 		patient.client.prefs.save_character()
 		log_admin("All quirks for [key_name(patient)] were reset due to quirk selection blacklist (via Self-Actualization Device).")
 
+	// BLUEMOON EDIT: copy_to leaves old /datum/quirk instances on the mob; /datum/quirk/New aborts if has_quirk(type), so on_spawn never reruns and organ quirks (e.g. glow eyes) desync from the body.
+	for(var/datum/quirk/Q as anything in patient.roundstart_quirks.Copy())
+		patient.remove_quirk(Q.type)
+
 	SSquirks.AssignQuirks(patient, patient.client, TRUE, TRUE, null, FALSE, patient)
 	SSlanguage.AssignLanguage(patient, patient.client)
 	if(iscuratorjob(patient))
 		patient.grant_all_languages(source = LANGUAGE_CURATOR)
 		patient.remove_blocked_language(GLOB.all_languages, source=LANGUAGE_ALL)
+	else
+		patient.copy_languages(lang_holder)
+	qdel(lang_holder)
 
 	open_machine()
 	playsound(src, 'sound/machines/microwave/microwave-end.ogg', 100, FALSE)

@@ -46,6 +46,7 @@
 	item = /obj/item/disk/surgery/brainwashing
 	restricted_roles = list("Medical Doctor", "Roboticist")
 	cost = 5
+	blocked_round_types = list(ROUNDTYPE_DYNAMIC_LIGHT)
 
 /datum/uplink_item/role_restricted/clown_bomb
 	name = "Clown Bomb"
@@ -269,7 +270,6 @@
 	desc = "A bottle containing Gravitokinetic Bipotential SADS culture. Also known as GBS, extremely deadly virus."
 	item = /obj/item/reagent_containers/glass/bottle/gbs
 	cost = 12
-	restricted_roles = list("Virologist")
 	surplus = 0
 	hijack_only = TRUE
 

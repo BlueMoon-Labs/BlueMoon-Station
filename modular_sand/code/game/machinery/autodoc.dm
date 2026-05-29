@@ -164,6 +164,8 @@
 
 /obj/machinery/autodoc/attackby(obj/item/I, mob/user, params)
 	if(istype(I, organ_type))
+		if(processing)
+			return
 		if(!user.temporarilyRemoveItemFromInventory(I))
 			return
 		if(stored_organ)

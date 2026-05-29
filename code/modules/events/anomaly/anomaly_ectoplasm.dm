@@ -22,16 +22,12 @@
 	var/orbit_override
 
 /datum/round_event/anomaly/anomaly_ectoplasm/apply_anomaly_properties(obj/effect/anomaly/ectoplasm/created_anomaly)
-	if(!effect_override || !orbit_override)
+	if(isnull(effect_override) || isnull(orbit_override))
 		return
 
 	created_anomaly.override_ghosts = TRUE
-	if(effect_override)
-		created_anomaly.effect_power = effect_override
-
-	if(orbit_override)
-		created_anomaly.ghosts_orbiting = orbit_override
-
+	created_anomaly.effect_power = effect_override
+	created_anomaly.ghosts_orbiting = orbit_override
 	created_anomaly.intensity_update()
 
 /datum/round_event/anomaly/anomaly_ectoplasm/announce(fake)
@@ -46,17 +42,19 @@
 	var/ghost_override
 
 /datum/event_admin_setup/anomaly_ectoplasm/prompt_admins()
-	if(tgui_alert(usr, "Override the anomaly effect and power?", "You'll be ruining the authenticity.", list("Yes", "No")) == "Yes")
-		var/list/power_values = list(ANOMALY_INTENSITY_MINOR, ANOMALY_INTENSITY_MODERATE, ANOMALY_INTENSITY_MAJOR)
-		chosen_effect = tgui_input_list(usr, "Provide effect override", "Criiiiinge.", power_values)
-		if(!chosen_effect)
-			return ADMIN_CANCEL_EVENT
+	if(tgui_alert(usr, "Override the anomaly effect and power?", "You'll be ruining the authenticity.", list("Yes", "No")) != "Yes")
+		return
 
-		ghost_override = tgui_input_number(usr, "How many ghosts do you want simulate orbiting your anomaly? (determines the effect radius).", "Seriously, CRINGE.", 0, 20, 1)
-		if(!ghost_override)
-			return ADMIN_CANCEL_EVENT
+	var/list/power_values = list(ANOMALY_INTENSITY_MINOR, ANOMALY_INTENSITY_MODERATE, ANOMALY_INTENSITY_MAJOR)
+	var/chosen = tgui_input_list(usr, "Provide effect override", "Criiiiinge.", power_values)
+	if(!chosen)
+		return ADMIN_CANCEL_EVENT
 
-	switch(chosen_effect) //Converts the text choice into a number for the anomaly to use
+	ghost_override = tgui_input_number(usr, "How many ghosts do you want simulate orbiting your anomaly? (determines the effect radius).", "Seriously, CRINGE.", 0, 20, 1)
+	if(isnull(ghost_override))
+		return ADMIN_CANCEL_EVENT
+
+	switch(chosen)
 		if(ANOMALY_INTENSITY_MINOR)
 			chosen_effect = 10
 		if(ANOMALY_INTENSITY_MODERATE)

@@ -73,3 +73,5 @@
 #define TRAIT_STRONG_INVISIBILITY "external_invisibility"
 /// Для учёта минорных сурсов невидимости - квирки, мутации и т.д.
 #define TRAIT_WEAK_INVISIBILITY "internal_invisibility"
+/// Запрет попиксельного смещения
+#define TRAIT_NO_PIXEL_SHIFT "no_pixel_shift"

@@ -52,6 +52,7 @@
 		user.handle_post_sex(LOW_LUST, null, target, ORGAN_SLOT_BREASTS)
 		playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/oral1.ogg',
 							'modular_sand/sound/interactions/oral2.ogg'), 70, 1, -1)
+	return ..()
 
 /datum/interaction/lewd/titgrope
 	description = "Грудь. Сжать в ладони."
@@ -69,6 +70,14 @@
 	)
 
 /datum/interaction/lewd/titgrope/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target)
+	var/is_hidden = ..()
+	var/distance = 7
+	var/volume = 50
+	if(is_hidden)
+		distance = 1
+		volume = sound_quiet_volume
+	var/picked_hidden = pick(hidden_additional)
+
 	var/obj/item/reagent_containers/liquid_container
 
 	var/obj/item/cached_item = user.get_active_held_item()
@@ -86,74 +95,74 @@
 		if(milkers && milktype)
 			if(milkers.climaxable(target, TRUE))
 				liquid_container.reagents.add_reagent(milktype, rand(1,3 * milkers.get_lactation_amount_modifier()))
-				user.visible_message(span_lewd("<b>\The [user]</b> выдавливает содержимое груди <b>[target]</b> в [liquid_container]."), ignored_mobs = user.get_unconsenting())
+				user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> выдавливает содержимое груди <b>[target]</b> в [liquid_container]."), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 				target.handle_post_sex(LOW_LUST, null, user, ORGAN_SLOT_BREASTS)
-				playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/squelch1.ogg', 50, 1, -1)
+				playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/squelch1.ogg', volume, 1, -1)
 			else
-				user.visible_message(span_lewd("<b>[user]</b> пытается выдоить содержимое груди <b>[target]</b> в [liquid_container], но ничего не выходит...."), ignored_mobs = user.get_unconsenting())
+				user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>[user]</b> пытается выдоить содержимое груди <b>[target]</b> в [liquid_container], но ничего не выходит...."), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 				target.handle_post_sex(LOW_LUST, null, user, ORGAN_SLOT_BREASTS)
-				playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/champ_fingering.ogg', 50, 1, -1)
+				playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/champ_fingering.ogg', volume, 1, -1)
 
 	else
 		target.handle_post_sex(NORMAL_LUST, CUM_TARGET_HAND, user, CUM_TARGET_BREASTS)
 		if(user.a_intent == INTENT_HARM)
 			user.visible_message(
-					pick(span_lewd("\The <b>[user]</b> грубо лапает грудь <b>[target]</b>."),
-						span_lewd("\The <b>[user]</b> хватается за грудь <b>[target]</b>."),
-						span_lewd("\The <b>[user]</b> сильно сжимает грудь <b>[target]</b>."),
-						span_lewd("\The <b>[user]</b> шлёпает грудь <b>[target]</b>."),
-						span_lewd("\The <b>[user]</b> грубо лапает сиськи <b>[target]</b>."),
-						span_lewd("\The <b>[user]</b> сильно сжимает сиськи <b>[target]</b>."),
-						span_lewd("\The <b>[user]</b> шлёпает сиськи <b>[target]</b>."),
-						span_lewd("\The <b>[user]</b> хватается за сиськи <b>[target]</b>."),
-						span_lewd("\The <b>[user]</b> дёргает сиськи <b>[target]</b>."),
-						span_lewd("\The <b>[user]</b> дёргает соски <b>[target]</b>."),
-						span_lewd("\The <b>[user]</b> грубо давит на соски <b>[target]</b>."),
-						span_lewd("\The <b>[user]</b> дёргает грудь <b>[target]</b>.")))
+					pick(span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[user]</b> грубо лапает грудь <b>[target]</b>."),
+						span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[user]</b> хватается за грудь <b>[target]</b>."),
+						span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[user]</b> сильно сжимает грудь <b>[target]</b>."),
+						span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[user]</b> шлёпает грудь <b>[target]</b>."),
+						span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[user]</b> грубо лапает сиськи <b>[target]</b>."),
+						span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[user]</b> сильно сжимает сиськи <b>[target]</b>."),
+						span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[user]</b> шлёпает сиськи <b>[target]</b>."),
+						span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[user]</b> хватается за сиськи <b>[target]</b>."),
+						span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[user]</b> дёргает сиськи <b>[target]</b>."),
+						span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[user]</b> дёргает соски <b>[target]</b>."),
+						span_lewd("[is_hidden ? (picked_hidden) : null]\The <b>[user]</b> грубо давит на соски <b>[target]</b>."),
+						span_lewd("[is_hidden ? (picked_hidden) : null]\The <b>[user]</b> дёргает грудь <b>[target]</b>.")), vision_distance = distance)
 		else
 			user.visible_message(
-					pick(span_lewd("\The <b>[user]</b> аккуратно лапает грудь <b>[target]</b>."),
-						span_lewd("\The <b>[user]</b> обхватывает грудь <b>[target]</b>."),
-						span_lewd("\The <b>[user]</b> аккуратно сжимает грудь <b>[target]</b>."),
-						span_lewd("\The <b>[user]</b> обводит грудь <b>[target]</b> своими пальцами."),
-						span_lewd("\The <b>[user]</b> бережно обжимает соски <b>[target]</b>."),
-						span_lewd("\The <b>[user]</b> деликатно сжимает сосок <b>[target]</b>."),
-						span_lewd("\The <b>[user]</b> нежно ощупывает грудь <b>[target]</b>.")))
+					pick(span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[user]</b> аккуратно лапает грудь <b>[target]</b>."),
+						span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[user]</b> обхватывает грудь <b>[target]</b>."),
+						span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[user]</b> аккуратно сжимает грудь <b>[target]</b>."),
+						span_lewd("[is_hidden ? (picked_hidden) : null]\The <b>[user]</b> обводит грудь <b>[target]</b> своими пальцами."),
+						span_lewd("[is_hidden ? (picked_hidden) : null]\The <b>[user]</b> бережно обжимает соски <b>[target]</b>."),
+						span_lewd("[is_hidden ? (picked_hidden) : null]\The <b>[user]</b> деликатно сжимает сосок <b>[target]</b>."),
+						span_lewd("[is_hidden ? (picked_hidden) : null]\The <b>[user]</b> нежно ощупывает грудь <b>[target]</b>.")), vision_distance = distance)
 		if(prob(target.get_lust() / target.get_climax_threshold() * 50)) // 50%
 			if(target.a_intent == INTENT_HELP)
 				user.visible_message(
-					pick(span_lewd("\The <b>[target]</b> дрожит от возбуждения."),
-						span_lewd("\The <b>[target]</b> тихо постанывает."),
-						span_lewd("\The <b>[target]</b> выдыхает довольный стон."),
-						span_lewd("\The <b>[target]</b> тихонько вздрагивает."),
-						span_lewd("\The <b>[target]</b> задыхается от возбуждения."),
-						span_lewd("\The <b>[target]</b> возбуждённо урчит."),
-						span_lewd("\The <b>[target]</b> возбуждённо мурлычет.")))
+					pick(span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[target]</b> дрожит от возбуждения."),
+						span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[target]</b> тихо постанывает."),
+						span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[target]</b> выдыхает довольный стон."),
+						span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[target]</b> тихонько вздрагивает."),
+						span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[target]</b> задыхается от возбуждения."),
+						span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[target]</b> возбуждённо урчит."),
+						span_lewd("[is_hidden ? (picked_hidden) : null]\The <b>[target]</b> возбуждённо мурлычет.")), vision_distance = distance)
 				target.handle_post_sex(LOW_LUST, null, user, ORGAN_SLOT_BREASTS)
 			if(target.a_intent == INTENT_DISARM)
 				if (target.restrained())
 					user.visible_message(
-						pick(span_lewd("\The <b>[target]</b> игриво извивается в попытке снять физические ограничения."),
-							span_lewd("\The <b>[target]</b> хихикает, вырываясь из рук <b>[user]</b>."),
-							span_lewd("\The <b>[target]</b> скользит в сторону от приближающегося <b>[user]</b>."),
-							span_lewd("\The <b>[target]</b> с отсутствующим сопротивлением толкает обнажённую грудь вперёд в руки <b>[user]</b>.")))
+						pick(span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[target]</b> игриво извивается в попытке снять физические ограничения."),
+							span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[target]</b> хихикает, вырываясь из рук <b>[user]</b>."),
+							span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[target]</b> скользит в сторону от приближающегося <b>[user]</b>."),
+							span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[target]</b> с отсутствующим сопротивлением толкает обнажённую грудь вперёд в руки <b>[user]</b>.")), vision_distance = distance)
 				else
 					user.visible_message(
-						pick(span_lewd("\The <b>[target]</b> игриво извивается в попытке снять физические ограничения."),
-							span_lewd("\The <b>[target]</b> хихикает, вырываясь из рук <b>[user]</b>."),
-							span_lewd("\The <b>[target]</b> скользит в сторону от приближающегося <b>[user]</b>."),
-							span_lewd("\The <b>[target]</b> с отсутствующим сопротивлением толкает обнажённую грудь вперёд в руки <b>[user]</b>.")))
+						pick(span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[target]</b> игриво извивается в попытке снять физические ограничения."),
+							span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[target]</b> хихикает, вырываясь из рук <b>[user]</b>."),
+							span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[target]</b> скользит в сторону от приближающегося <b>[user]</b>."),
+							span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[target]</b> с отсутствующим сопротивлением толкает обнажённую грудь вперёд в руки <b>[user]</b>.")), vision_distance = distance)
 				target.handle_post_sex(LOW_LUST, null, user, ORGAN_SLOT_BREASTS)
 		if(target.a_intent == INTENT_GRAB)
 			user.visible_message(
-					pick(span_lewd("\The <b>[target]</b> крепко сжимает запястье <b>[user]</b>."),
-					span_lewd("\The <b>[target]</b> впивается ногтями в руку <b>[user]</b>."),
-					span_lewd("\The <b>[target]</b> хватает <b>[user]</b> за запястье пальцами.")))
+					pick(span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[target]</b> крепко сжимает запястье <b>[user]</b>."),
+					span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[target]</b> впивается ногтями в руку <b>[user]</b>."),
+					span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[target]</b> хватает <b>[user]</b> за запястье пальцами.")), vision_distance = distance)
 		if(target.a_intent == INTENT_HARM)
 			user.adjustBruteLoss(5)
 			user.visible_message(
-					pick(span_lewd("\The <b>[target]</b> грубо отталкивает <b>[user]</b>."),
-					span_lewd("\The <b>[target]</b> сердито впивается в руку <b>[user]</b>."),
-					span_lewd("\The <b>[target]</b> яростно борется с <b>[user]</b>."),
-					span_lewd("\The <b>[target]</b> впивается в предплечье <b>[user]</b> роговыми пластинками."),
-					span_lewd("\The <b>[target]</b> шлёпает <b>[user]</b> по руке.")))
+					pick(span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[target]</b> грубо отталкивает <b>[user]</b>."),
+					span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[target]</b> сердито впивается в руку <b>[user]</b>."),
+					span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[target]</b> яростно борется с <b>[user]</b>."),
+					span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[target]</b> впивается в предплечье <b>[user]</b> роговыми пластинками."),
+					span_lewd("[is_hidden ? (picked_hidden) : null] \The <b>[target]</b> шлёпает <b>[user]</b> по руке.")), vision_distance = distance)

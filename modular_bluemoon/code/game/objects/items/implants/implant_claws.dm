@@ -14,7 +14,6 @@
 	flags_1 = CONDUCT_1
 	force = 13
 	throwforce = 10
-	w_class = WEIGHT_CLASS_HUGE
 	throw_speed = 3
 	throw_range = 6
 

@@ -35,7 +35,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/directory_tag = "Unset" //Sorting tag to use in character directory
 	var/directory_erptag = "Unset"	//ditto, but for non-vore scenes
 	var/directory_gendertag = "Unset"	//Gender tag for character directory
-	var/directory_ad = ""		//Advertisement stuff to show in character directory.
+	var/directory_ad = ""		// Char directory ERP tag
+	var/directory_noncon = null	// Char directory Non-con tag
 
 	//Cooldowns for saving/loading. These are four are all separate due to loading code calling these one after another
 	COOLDOWN_DECLARE(saveprefcooldown)
@@ -67,6 +68,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	///Runechat preference. If true, certain messages will be displayed on the map, not ust on the chat area. Boolean.
 	var/chat_on_map = TRUE
+	///Runechat preference for looc
+	var/chat_on_map_looc = TRUE
 	///Limit preference on the size of the message. Requires chat_on_map to have effect.
 	var/max_chat_length = CHAT_MESSAGE_MAX_LENGTH
 	///Whether non-mob messages will be displayed, such as machine vendor announcements. Requires chat_on_map to have effect. Boolean.
@@ -82,6 +85,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/tgui_fancy = TRUE
 	var/tgui_lock = TRUE
 	var/tgui_input_mode = TRUE			// All the Input Boxes (Text,Number,List,Alert)
+	var/tgui_input_verbs = TRUE 		// Все частоиспользуемые вербы: SAY, ME, OOC и т.д.
 	var/tgui_large_buttons = TRUE
 	var/tgui_swapped_buttons = FALSE
 	var/tgui_panel_theme = "default"
@@ -112,6 +116,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/pda_color = "#808000"
 	var/pda_skin = PDA_SKIN_ALT
 	var/pda_ringtone = "beep"
+	var/pda_theme = PDA_THEME_NTOS
 	var/list/alt_titles_preferences = list()
 
 	// Modern UI translations
@@ -128,6 +133,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/chem_dispenser_use_reagent_color = TRUE	// BLUEMOON ADD - show reagent color vs pH color on buttons
 	var/chem_dispenser_show_icons = TRUE		// BLUEMOON ADD - show/hide reagent icons on buttons
 	var/chem_dispenser_alphabetical_sort = TRUE	// BLUEMOON ADD - alphabetical vs declaration order in classic view
+	var/ie_classic_circuit_ui = FALSE			// BLUEMOON ADD - integrated electronics: HTML browser UI vs TGUI
 
 	// BLUEMOON ADD START || Colormate presets
 	// Листы состоят из ключа, типа предмета и листа с именами престов и настройками цвета
@@ -342,6 +348,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/fullscreen = TRUE
 
 	var/ambientocclusion = TRUE
+	var/lighting_blur = LIGHTING_BLUR_DEFAULT
 	///Should we automatically fit the viewport?
 	var/auto_fit_viewport = FALSE
 	///Should we be in the widescreen mode set by the config?
@@ -1277,6 +1284,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "<b>[pda_style_label]:</b> <a href='?_src_=prefs;task=input;preference=pda_style'>[pda_style]</a><br>"
 					dat += "<b>[pda_reskin_label]:</b> <a href='?_src_=prefs;task=input;preference=pda_skin'>[pda_skin]</a><br>"
 					dat += "<b>[pda_ringtone_label]:</b> <a href='?_src_=prefs;task=input;preference=pda_ringtone'>[pda_ringtone]</a><br>"
+					var/pda_theme_display_name = "Unknown"
+					for(var/theme_name in GLOB.pda_name_to_theme)
+						if(GLOB.pda_name_to_theme[theme_name] == pda_theme)
+							pda_theme_display_name = theme_name
+							break
+					dat += "<b>PDA Theme:</b> <a href='?_src_=prefs;task=input;preference=pda_theme'>[pda_theme_display_name]</a><br>"
 
 					dat += "<h2>[silicon_preferences_label]</h2>"
 					if(!CONFIG_GET(flag/allow_silicon_choosing_laws))
@@ -1462,35 +1475,29 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "<h2>[headshots_label]</h2>"
 
 					dat += "<a href='?_src_=prefs;preference=headshot'><b>[set_headshot_1_label]</b></a><br>"
-					if(features["headshot_link"])
-						dat += "<img src='[features["headshot_link"]]' style='border: 1px solid black' width='140px' height='140px'>"
+					dat += headshot_preview_html(features["headshot_link"])
 					dat += "<br><br>"
 
 					dat += "<a href='?_src_=prefs;preference=headshot1'><b>[set_headshot_2_label]</b></a><br>"
-					if(features["headshot_link1"])
-						dat += "<img src='[features["headshot_link1"]]' style='border: 1px solid black' width='140px' height='140px'>"
+					dat += headshot_preview_html(features["headshot_link1"])
 					dat += "<br><br>"
 
 					dat += "<a href='?_src_=prefs;preference=headshot2'><b>[set_headshot_3_label]</b></a><br>"
-					if(features["headshot_link2"])
-						dat += "<img src='[features["headshot_link2"]]' style='border: 1px solid black' width='140px' height='140px'>"
+					dat += headshot_preview_html(features["headshot_link2"])
 					//dat += "<br><br>"
 
 					dat += "<h2>[naked_headshots_label]</h2>"
 
 					dat += "<a href='?_src_=prefs;preference=headshot_naked'><b>[set_naked_headshot_1_label]</b></a><br>"
-					if(features["headshot_naked_link"])
-						dat += "<img src='[features["headshot_naked_link"]]' style='border: 1px solid black' width='140px' height='140px'>"
+					dat += headshot_preview_html(features["headshot_naked_link"])
 					dat += "<br><br>"
 
 					dat += "<a href='?_src_=prefs;preference=headshot_naked1'><b>[set_naked_headshot_2_label]</b></a><br>"
-					if(features["headshot_naked_link1"])
-						dat += "<img src='[features["headshot_naked_link1"]]' style='border: 1px solid black' width='140px' height='140px'>"
+					dat += headshot_preview_html(features["headshot_naked_link1"])
 					dat += "<br><br>"
 
 					dat += "<a href='?_src_=prefs;preference=headshot_naked2'><b>[set_naked_headshot_3_label]</b></a><br>"
-					if(features["headshot_naked_link2"])
-						dat += "<img src='[features["headshot_naked_link2"]]' style='border: 1px solid black' width='140px' height='140px'>"
+					dat += headshot_preview_html(features["headshot_naked_link2"])
 					dat += "<br><br>"
 					// BLUEMOON ADD END
 					dat += "</td></tr></table>"
@@ -2330,6 +2337,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					if(!length(GLOB.loadout_items))
 						dat += "<center>ERROR: No loadout categories - something is horribly wrong!"
 					else
+						sanitize_loadout_navigation(src)
 						if(!GLOB.loadout_categories[gear_category])
 							gear_category = GLOB.loadout_categories[1]
 						var/firstcat = TRUE
@@ -2366,11 +2374,11 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 									dat += " |"
 								if(gear_subcategory == subcategory)
 									if(is_modern_theme)
-										dat += " <a href='?_src_=prefs;preference=gear;select_subcategory=[url_encode(subcategory)]' class='linkOn'>[subcategory]</a> "
+										dat += " <a href='?_src_=prefs;preference=gear;select_category=[url_encode(gear_category)];select_subcategory=[url_encode(subcategory)]' class='linkOn'>[subcategory]</a> "
 									else
 										dat += " <span class='linkOn'>[subcategory]</span> "
 								else
-									dat += " <a href='?_src_=prefs;preference=gear;select_subcategory=[url_encode(subcategory)]'>[subcategory]</a> "
+									dat += " <a href='?_src_=prefs;preference=gear;select_category=[url_encode(gear_category)];select_subcategory=[url_encode(subcategory)]'>[subcategory]</a> "
 							dat += "</b></center></td></tr>"
 
 							var/even = FALSE
@@ -2528,6 +2536,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					var/screentip_images_tooltip = src.use_modern_translations ? get_modern_text("screentip_images_tooltip", src) : "This is an accessibility preference, if disabled, fallbacks to only text which colorblind people can understand better"
 					var/allowed_label = src.use_modern_translations ? get_modern_text("allowed", src) : "Allowed"
 					var/disallowed_label = src.use_modern_translations ? get_modern_text("disallowed", src) : "Disallowed"
+					var/tgui_input_label = src.tgui_input_mode ? get_modern_text("tgui_input_mode", src) : "Input Framework"
+					var/tgui_input_verbs_label = src.tgui_input_verbs ? get_modern_text("tgui_input_verbs", src) : "Input Verbs (SAY, ME, OOC, etc.) Framework"
 					var/tgui_monitors_label = src.use_modern_translations ? get_modern_text("tgui_monitors", src) : "tgui Monitors"
 					var/tgui_monitor_primary = src.use_modern_translations ? get_modern_text("tgui_monitor_primary", src) : "Primary"
 					var/tgui_monitor_all = src.use_modern_translations ? get_modern_text("tgui_monitor_all", src) : "All"
@@ -2535,6 +2545,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					var/tgui_style_fancy = src.use_modern_translations ? get_modern_text("tgui_style_fancy", src) : "Fancy"
 					var/tgui_style_no_frills = src.use_modern_translations ? get_modern_text("tgui_style_no_frills", src) : "No Frills"
 					var/runechat_bubbles_label = src.use_modern_translations ? get_modern_text("runechat_bubbles", src) : "Show Runechat Chat Bubbles"
+					var/runechat_looc_bubbles_label = src.use_modern_translations ? get_modern_text("runechat_looc_bubbles", src) : "Show Runechat LOOC Chat Bubbles"
 					var/runechat_char_limit_label = src.use_modern_translations ? get_modern_text("runechat_char_limit", src) : "Runechat message char limit"
 					var/runechat_non_mobs_label = src.use_modern_translations ? get_modern_text("runechat_non_mobs", src) : "See Runechat for non-mobs"
 					var/runechat_emotes_label = src.use_modern_translations ? get_modern_text("runechat_emotes", src) : "See Runechat for emotes"
@@ -2575,9 +2586,14 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "<font style='border-bottom:2px dotted white; cursor:help;'\
 						title=\"[screentip_images_tooltip]\">\
 						<b>[screentip_images_label]:</b></font> <a href='?_src_=prefs;preference=screentip_images'>[screentip_images ? allowed_label : disallowed_label]</a><br>"
+					dat += "<b>[tgui_input_label]:</b> <a href='?_src_=prefs;preference=tgui_input_mode'>[(tgui_input_mode) ? "TGUI" : "BYOND"]</a><br>"
+					if(tgui_input_mode)
+						dat += "<b>[tgui_input_verbs_label]:</b> <a href='?_src_=prefs;preference=tgui_input_verbs'>[(tgui_input_verbs) ? "TGUI" : "BYOND"]</a><br>"
 					dat += "<b>[tgui_monitors_label]:</b> <a href='?_src_=prefs;preference=tgui_lock'>[(tgui_lock) ? tgui_monitor_primary : tgui_monitor_all]</a><br>"
 					dat += "<b>[tgui_style_label]:</b> <a href='?_src_=prefs;preference=tgui_fancy'>[(tgui_fancy) ? tgui_style_fancy : tgui_style_no_frills]</a><br>"
 					dat += "<b>[runechat_bubbles_label]:</b> <a href='?_src_=prefs;preference=chat_on_map'>[chat_on_map ? enabled_label : disabled_label]</a><br>"
+					if(chat_on_map)
+						dat += "<b>[runechat_looc_bubbles_label]:</b> <a href='?_src_=prefs;preference=chat_on_map_looc'>[chat_on_map_looc ? enabled_label : disabled_label]</a><br>"
 					dat += "<b>[runechat_char_limit_label]:</b> <a href='?_src_=prefs;preference=max_chat_length;task=input'>[max_chat_length]</a><br>"
 					dat += "<b>[runechat_non_mobs_label]:</b> <a href='?_src_=prefs;preference=see_chat_non_mob'>[see_chat_non_mob ? enabled_label : disabled_label]</a><br>"
 					//SANDSTORM CHANGES BEGIN
@@ -2854,6 +2870,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							dat += high_label
 					dat += "</a><br>"
 					dat += "<b>[ambient_occlusion_label]:</b> <a href='?_src_=prefs;preference=ambientocclusion'>[ambientocclusion ? enabled_label : disabled_label]</a><br>"
+					dat += "<b>Размытие освещения:</b> <a href='?_src_=prefs;preference=lighting_blur'>[lighting_blur]</a>[lighting_blur >= 3 ? " <span style='color:#ff6600'>(может снизить FPS)</span>" : ""]<br>"
 					dat += "<b>[fit_viewport_label]:</b> <a href='?_src_=prefs;preference=auto_fit_viewport'>[auto_fit_viewport ? auto_label : manual_label]</a><br>"
 					dat += "<b>[hud_button_flashes_label]:</b> <a href='?_src_=prefs;preference=hud_toggle_flash'>[hud_toggle_flash ? enabled_label : disabled_label]</a><br>"
 					dat += "<b>[hud_flash_color_label]:</b> <span style='border: 1px solid #161616; background-color: [hud_toggle_color];'><font color='[color_hex2num(hud_toggle_color) < 200 ? "FFFFFF" : "000000"]'>[hud_toggle_color]</font></span> <a href='?_src_=prefs;preference=hud_toggle_color;task=input'>[change_label]</a><br>"
@@ -3105,6 +3122,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 /datum/preferences/proc/SetChoices(mob/user, limit = 17, list/splitJobs = list("Research Director", "Head of Personnel"), widthPerColumn = 295, height = 620) // BLUEMOON CHANGES - splitjob
 	if(!SSjob)
+		return
+	if(!ismob(user) || !user.client?.prefs)
 		return
 
 	//limit - The amount of jobs allowed per column. Defaults to 17 to make it look nice.
@@ -5257,6 +5276,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					var/pickedPDARingtone = reject_bad_name(input(user, "Выбирайте рингтон своего КПК.", "Character Preference", pda_ringtone) as null|text, TRUE)
 					if(pickedPDARingtone)
 						pda_ringtone = pickedPDARingtone
+				if("pda_theme")
+					var/pickedPDATheme = tgui_input_list(user, "Выбирайте тему своего КПК.", "Character Preference", GLOB.pda_name_to_theme, pda_theme)
+					if(pickedPDATheme)
+						pda_theme = GLOB.pda_name_to_theme[pickedPDATheme]
 				if("silicon_lawset")
 					var/picked_lawset = tgui_input_list(user, "Выбирайте предпочитаемый список законов", "Silicon preference", list("None") + CONFIG_GET(keyed_list/choosable_laws), silicon_lawset)
 					if(picked_lawset)
@@ -5447,7 +5470,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					if(index && marking_type && features[marking_type])
 						// because linters are just absolutely awful:
 						var/list/L = features[marking_type]
-						L.Cut(index, index + 1)
+						if(index <= length(L))
+							L.Cut(index, index + 1)
 
 				if("marking_add")
 					// add a marking
@@ -5494,6 +5518,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 								var/list/L = features[marking_type]
 								for(var/i = length(L), i >= 1, i--)
 									var/list/entry = L[i]
+									if(!islist(entry))
+										continue
 									if(entry[1] == limb_value)
 										L.Cut(i, i + 1)
 
@@ -5756,7 +5782,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							hornyantagspref = "No"
 						if("No")
 							hornyantagspref = "Yes"
-//				if("stomppref") // What the fuck is this?
+				if("directory_erptag")
+					var/new_erp_pos = tgui_input_list(user, "Выберите ERP позицию персонажа для библиотеки", "ERP Позиция", GLOB.char_directory_erptags)
+					if(new_erp_pos)
+						directory_erptag = new_erp_pos
 //					stomppref = !stomppref
 				//Skyrat edit - *someone* offered me actual money for this shit
 				if("extremepref") //i hate myself for doing this
@@ -5867,6 +5896,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("chat_on_map")
 					chat_on_map = !chat_on_map
+				if("chat_on_map_looc")
+					chat_on_map_looc = !chat_on_map_looc
 				if("see_chat_non_mob")
 					see_chat_non_mob = !see_chat_non_mob
 				//Sandstorm changes begin
@@ -5881,6 +5912,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					tgui_fancy = !tgui_fancy
 				if("tgui_input_mode")
 					tgui_input_mode = !tgui_input_mode
+				if("tgui_input_verbs")
+					tgui_input_verbs = !tgui_input_verbs
 				if("tgui_large_buttons")
 					tgui_large_buttons = !tgui_large_buttons
 				if("tgui_swapped_buttons")
@@ -6083,13 +6116,37 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("ambientocclusion")
 					ambientocclusion = !ambientocclusion
-					if(parent && parent.screen && parent.screen.len)
-						var/atom/movable/screen/plane_master/game_world/G = parent.mob.hud_used.plane_masters["[GAME_PLANE]"]
-						var/atom/movable/screen/plane_master/above_wall/A = parent.mob.hud_used.plane_masters["[ABOVE_WALL_PLANE]"]
-						var/atom/movable/screen/plane_master/wall/W = parent.mob.hud_used.plane_masters["[WALL_PLANE]"]
-						G.backdrop(parent.mob)
-						A.backdrop(parent.mob)
-						W.backdrop(parent.mob)
+					if(parent?.mob?.hud_used && parent.screen?.len)
+						var/datum/hud/H = parent.mob.hud_used
+						var/atom/movable/screen/plane_master/G = H.plane_masters["[GAME_PLANE]"]
+						var/atom/movable/screen/plane_master/A = H.plane_masters["[ABOVE_WALL_PLANE]"]
+						var/atom/movable/screen/plane_master/W = H.plane_masters["[WALL_PLANE]"]
+						var/atom/movable/screen/plane_master/F = H.plane_masters["[FLOOR_PLANE]"]
+						var/atom/movable/screen/plane_master/L = H.plane_masters["[LIGHTING_PLANE]"]
+						var/atom/movable/screen/plane_master/C = H.plane_masters["[CHAT_PLANE]"]
+						G?.backdrop(parent.mob)
+						A?.backdrop(parent.mob)
+						W?.backdrop(parent.mob)
+						F?.backdrop(parent.mob)
+						L?.backdrop(parent.mob)
+						C?.backdrop(parent.mob)
+
+				if("lighting_blur")
+					lighting_blur = (lighting_blur + 1) % (LIGHTING_BLUR_MAX + 1)
+					if(parent?.mob?.hud_used && parent.screen?.len)
+						var/datum/hud/H = parent.mob.hud_used
+						var/atom/movable/screen/plane_master/L = H.plane_masters["[LIGHTING_PLANE]"]
+						var/atom/movable/screen/plane_master/G = H.plane_masters["[GAME_PLANE]"]
+						var/atom/movable/screen/plane_master/A = H.plane_masters["[ABOVE_WALL_PLANE]"]
+						var/atom/movable/screen/plane_master/W = H.plane_masters["[WALL_PLANE]"]
+						var/atom/movable/screen/plane_master/F = H.plane_masters["[FLOOR_PLANE]"]
+						var/atom/movable/screen/plane_master/E = H.plane_masters["[EMISSIVE_PLANE]"]
+						L?.backdrop(parent.mob)
+						G?.backdrop(parent.mob)
+						A?.backdrop(parent.mob)
+						W?.backdrop(parent.mob)
+						F?.backdrop(parent.mob)
+						E?.backdrop(parent.mob)
 
 				if("auto_fit_viewport")
 					auto_fit_viewport = !auto_fit_viewport
@@ -6320,6 +6377,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				gear_subcategory = LOADOUT_SUBCATEGORY_NONE
 		if(href_list["select_subcategory"])
 			gear_subcategory = url_decode(href_list["select_subcategory"])
+		sanitize_loadout_navigation(src)
+		if(href_list["select_category"] || href_list["select_subcategory"])
+			save_preferences(silent = TRUE)
 		if(href_list["toggle_gear_path"])
 			var/name = url_decode(href_list["toggle_gear_path"])
 			// BLUEMOON FIX - Add null check to prevent runtime when category/subcategory doesn't exist
@@ -6348,6 +6408,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					to_chat(user, "<span class='danger'>To use this item, you need to meet the defined requirements!</span>")
 					return
 				if(gear_points >= initial(G.cost))
+					if(G.path == /obj/item/lipstick/loadout)
+						lipstick_color_window(user, G)
+						return
 					var/list/new_loadout_data = list(LOADOUT_ITEM = "[G.type]")
 					if(length(G.loadout_initial_colors))
 						new_loadout_data[LOADOUT_COLOR] = G.loadout_initial_colors
@@ -6357,6 +6420,40 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						loadout_data["SAVE_[loadout_slot]"] += list(new_loadout_data) //double packed because it does the union of the CONTENTS of the lists
 					else
 						loadout_data["SAVE_[loadout_slot]"] = list(new_loadout_data) //double packed because you somehow had no save slot in your loadout?
+		if(href_list["lipstick_color_chosen"])
+			var/color = url_decode(href_list["lipstick_color_chosen"])
+			var/gear_name = url_decode(href_list["lipstick_gear_name"])
+			var/cat = url_decode(href_list["lipstick_gear_category"])
+			var/subcat = url_decode(href_list["lipstick_gear_subcategory"])
+			if(!GLOB.loadout_items[cat] || !GLOB.loadout_items[cat][subcat])
+				return
+			var/datum/gear/G2 = GLOB.loadout_items[cat][subcat][gear_name]
+			if(!G2 || G2.path != /obj/item/lipstick/loadout)
+				return
+			var/existing = has_loadout_gear(loadout_slot, "[G2.type]")
+			if(existing)
+				existing[LOADOUT_COLOR] = list(sanitize_hexcolor(color, 6, TRUE, "#FF0000"))
+				ShowChoices(user)
+				return
+			if(!is_loadout_slot_available(G2.category))
+				to_chat(user, "<span class='danger'>You cannot take this loadout, as you've already chosen too many of the same category!</span>")
+				return
+			if(G2.donoritem && !G2.donator_ckey_check(user.ckey))
+				to_chat(user, "<span class='danger'>This is an item intended for donator use only. You are not authorized to use this item.</span>")
+				return
+			if(istype(G2, /datum/gear/unlockable) && !can_use_unlockable(G2))
+				to_chat(user, "<span class='danger'>To use this item, you need to meet the defined requirements!</span>")
+				return
+			if(gear_points < initial(G2.cost))
+				return
+			var/list/new_loadout_data = list(LOADOUT_ITEM = "[G2.type]", LOADOUT_COLOR = list(sanitize_hexcolor(color, 6, TRUE, "#FF0000")))
+			if(loadout_data["SAVE_[loadout_slot]"])
+				loadout_data["SAVE_[loadout_slot]"] += list(new_loadout_data)
+			else
+				loadout_data["SAVE_[loadout_slot]"] = list(new_loadout_data)
+			ShowChoices(user)
+			return
+
 		if(href_list["clear_invalid_gear"])
 			var/thing_to_remove = url_decode(href_list["clear_invalid_gear"])
 			if(!thing_to_remove)
@@ -6601,11 +6698,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	else
 		pref_species.species_traits -= DIGITIGRADE
 
-	if(DIGITIGRADE in pref_species.species_traits)
-		character.Digitigrade_Leg_Swap(FALSE)
-	else
-		character.Digitigrade_Leg_Swap(TRUE)
-
 	character.dna.features["lust_tolerance"] = lust_tolerance
 	character.dna.features["sexual_potency"] = sexual_potency
 
@@ -6634,32 +6726,13 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	character.vocal_pitch = bark_pitch
 	character.vocal_pitch_range = bark_variance
 
-	//limb stuff, only done when initially spawning in
 	if(initial_spawn)
-		//delete any existing prosthetic limbs to make sure no remnant prosthetics are left over - But DO NOT delete those that are species-related
-		for(var/obj/item/bodypart/part in character.bodyparts)
-			if(part.is_robotic_limb(FALSE))
-				qdel(part)
-		character.regenerate_limbs() //regenerate limbs so now you only have normal limbs
-		for(var/modified_limb in modified_limbs)
-			var/modification = modified_limbs[modified_limb][1]
-			var/obj/item/bodypart/old_part = character.get_bodypart(modified_limb)
-			if(modification == LOADOUT_LIMB_PROSTHETIC)
-				var/obj/item/bodypart/new_limb
-				switch(modified_limb)
-					if(BODY_ZONE_L_ARM)
-						new_limb = new/obj/item/bodypart/l_arm/robot/surplus(character)
-					if(BODY_ZONE_R_ARM)
-						new_limb = new/obj/item/bodypart/r_arm/robot/surplus(character)
-					if(BODY_ZONE_L_LEG)
-						new_limb = new/obj/item/bodypart/l_leg/robot/surplus(character)
-					if(BODY_ZONE_R_LEG)
-						new_limb = new/obj/item/bodypart/r_leg/robot/surplus(character)
-				var/prosthetic_type = modified_limbs[modified_limb][2]
-				if(prosthetic_type != "prosthetic") //lets just leave the old sprites as they are
-					new_limb.icon = file("icons/mob/augmentation/cosmetic_prosthetic/[prosthetic_type].dmi")
-				new_limb.replace_limb(character)
-			qdel(old_part)
+		apply_prefs_modified_limbs(character)
+
+	if(DIGITIGRADE in pref_species.species_traits)
+		character.Digitigrade_Leg_Swap(FALSE)
+	else
+		character.Digitigrade_Leg_Swap(TRUE)
 
 	SEND_SIGNAL(character, COMSIG_HUMAN_PREFS_COPIED_TO, src, icon_updates, roundstart_checks)
 
@@ -6667,6 +6740,37 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	if(icon_updates)
 		character.update_body()
 		character.update_hair()
+
+/// Применяет к character сохранённые в префах модификации конечностей (протезы/ампутации).
+/// Сбрасывает все робо-конечности до плотских, регенерирует отсутствующие и затем
+/// накатывает modified_limbs из префов. Вызывается из copy_to() при initial_spawn,
+/// а также из load_client_appearance() для гост-ролей, антагов и аналогичных спавнов
+/// с загрузкой выбранного персонажа.
+/datum/preferences/proc/apply_prefs_modified_limbs(mob/living/carbon/human/character)
+	//delete any existing prosthetic limbs to make sure no remnant prosthetics are left over - But DO NOT delete those that are species-related
+	for(var/obj/item/bodypart/part in character.bodyparts)
+		if(part.is_robotic_limb(FALSE))
+			qdel(part)
+	character.regenerate_limbs() //regenerate limbs so now you only have normal limbs
+	for(var/modified_limb in modified_limbs)
+		var/modification = modified_limbs[modified_limb][1]
+		var/obj/item/bodypart/old_part = character.get_bodypart(modified_limb)
+		if(modification == LOADOUT_LIMB_PROSTHETIC)
+			var/obj/item/bodypart/new_limb
+			switch(modified_limb)
+				if(BODY_ZONE_L_ARM)
+					new_limb = new/obj/item/bodypart/l_arm/robot/surplus(character)
+				if(BODY_ZONE_R_ARM)
+					new_limb = new/obj/item/bodypart/r_arm/robot/surplus(character)
+				if(BODY_ZONE_L_LEG)
+					new_limb = new/obj/item/bodypart/l_leg/robot/surplus(character)
+				if(BODY_ZONE_R_LEG)
+					new_limb = new/obj/item/bodypart/r_leg/robot/surplus(character)
+			var/prosthetic_type = modified_limbs[modified_limb][2]
+			if(prosthetic_type != "prosthetic") //lets just leave the old sprites as they are
+				new_limb.icon = file("icons/mob/augmentation/cosmetic_prosthetic/[prosthetic_type].dmi")
+			new_limb.replace_limb(character)
+		qdel(old_part)
 
 /datum/preferences/proc/post_copy_to(mob/living/carbon/human/character)
 	//if no legs, and not a paraplegic or a slime, give them a free wheelchair
@@ -6786,3 +6890,55 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		return FALSE
 
 	return prefs_holder?.prefs.chat_toggles
+
+/datum/preferences/proc/lipstick_color_window(mob/user, datum/gear/G)
+	var/list/colors = list(
+		"#FF0000" = "Red",
+		"#800080" = "Purple",
+		"#00FF00" = "Jade",
+		"#000000" = "Black",
+		"#FFFF00" = "Yellow",
+		"#0000FF" = "Blue",
+		"#008080" = "Teal",
+		"#FF00FF" = "Fuchsia",
+		"#000080" = "Navy",
+		"#00FFFF" = "Cyan",
+		"#FFFFFF" = "White",
+	)
+
+	var/dat = {"
+		<html>
+		<head>
+		<style>
+			body { background: #1a1a1a; color: #ffffff; font-family: sans-serif; text-align: center; }
+			h3 { margin: 10px 0; }
+			.color-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; padding: 10px; }
+			.color-swatch { width: 48px; height: 48px; border: 2px solid #444; border-radius: 6px; cursor: pointer; }
+			.color-swatch:hover { border-color: #fff; transform: scale(1.1); }
+			.color-label { font-size: 10px; margin-top: 2px; }
+			.color-item { display: flex; flex-direction: column; align-items: center; }
+		</style>
+		</head>
+		<body>
+		<h3>Choose Lipstick Color</h3>
+		<div class='color-grid'>
+	"}
+
+	for(var/hex in colors)
+		var/name = colors[hex]
+		dat += {"
+			<div class='color-item'>
+				<a href='?_src_=prefs;preference=gear;lipstick_color_chosen=[url_encode(hex)];lipstick_gear_name=[url_encode(G.name)];lipstick_gear_category=[url_encode(gear_category)];lipstick_gear_subcategory=[url_encode(gear_subcategory)]'>
+					<div class='color-swatch' style='background-color: [hex];'></div>
+				</a>
+				<div class='color-label'>[name]</div>
+			</div>
+		"}
+
+	dat += {"
+		</div>
+		</body>
+		</html>
+	"}
+
+	user << browse(dat, "window=lipstick_color;size=420x280;can_close=1;can_resize=0")

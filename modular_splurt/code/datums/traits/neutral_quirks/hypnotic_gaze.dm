@@ -74,6 +74,10 @@
 		to_chat(owner, span_warning("You shouldn't have this ability!"))
 		return FALSE
 
+	if(iszombie_infectious(owner))
+		to_chat(owner, span_warning("You zombie and can't do this!"))
+		return
+
 	// Define action owner
 	var/mob/living/carbon/human/action_owner = owner
 

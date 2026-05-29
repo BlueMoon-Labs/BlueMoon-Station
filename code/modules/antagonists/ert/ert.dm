@@ -46,14 +46,21 @@
 /datum/antagonist/ert/deathsquad/apply_innate_effects(mob/living/mob_override)
 	ADD_TRAIT(owner, TRAIT_DISK_VERIFIER, DEATHSQUAD_TRAIT)
 
+	var/mob/living/commando = mob_override || owner.current
 	var/code
 	for (var/obj/machinery/nuclearbomb/selfdestruct/bombue in GLOB.nuke_list)
 		if (length(bombue.r_code) <= 5 && bombue.r_code != initial(bombue.r_code))
 			code = bombue.r_code
 			break
+	if (!code)
+		var/obj/machinery/nuclearbomb/selfdestruct/first_sd = locate(/obj/machinery/nuclearbomb/selfdestruct) in GLOB.nuke_list
+		if (first_sd)
+			code = random_nukecode()
+			for (var/obj/machinery/nuclearbomb/selfdestruct/SD in GLOB.nuke_list)
+				SD.r_code = code
 	if (code)
-		antag_memory += "<B>Коды от Ядерной Боеголовки</B>: [code]<br>"
-		to_chat(owner.current, "Коды от Ядерной Боеголовки: <B>[code]</B>")
+		antag_memory += "<B>Код станционного самоуничтожения</B>: [code]<br>"
+		to_chat(commando, span_notice("Код станционного самоуничтожения: <b>[code]</b>"))
 
 /datum/antagonist/ert/deathsquad/remove_innate_effects(mob/living/mob_override)
 	REMOVE_TRAIT(owner, TRAIT_DISK_VERIFIER, DEATHSQUAD_TRAIT)
@@ -62,6 +69,9 @@
 
 /datum/antagonist/ert/security/green
 	outfit = /datum/outfit/ert/security/green
+
+/datum/antagonist/ert/security/mopp
+	outfit = /datum/outfit/ert/security/mopp
 
 /datum/antagonist/ert/security/amber
 	outfit = /datum/outfit/ert/security/alert
@@ -77,6 +87,9 @@
 /datum/antagonist/ert/engineer/green
 	outfit = /datum/outfit/ert/engineer/green
 
+/datum/antagonist/ert/engineer/mopp
+	outfit = /datum/outfit/ert/engineer/mopp
+
 /datum/antagonist/ert/engineer/amber
 	outfit = /datum/outfit/ert/engineer/alert
 
@@ -91,6 +104,9 @@
 /datum/antagonist/ert/medic/green
 	outfit = /datum/outfit/ert/medic/green
 
+/datum/antagonist/ert/medic/mopp
+	outfit = /datum/outfit/ert/medic/mopp
+
 /datum/antagonist/ert/medic/amber
 	outfit = /datum/outfit/ert/medic/alert
 
@@ -102,11 +118,14 @@
 	outfit = /datum/outfit/ert/commander
 	leader = TRUE // BLUEMOON CHANGE enabling greet "if" condition for ERT leaders
 
-/datum/antagonist/ert/commander/amber
-	outfit = /datum/outfit/ert/commander/alert
-
 /datum/antagonist/ert/commander/green
 	outfit = /datum/outfit/ert/commander/green
+
+/datum/antagonist/ert/commander/mopp
+	outfit = /datum/outfit/ert/commander/mopp
+
+/datum/antagonist/ert/commander/amber
+	outfit = /datum/outfit/ert/commander/alert
 
 /datum/antagonist/ert/commander/red
 	outfit = /datum/outfit/ert/commander/alert/red
@@ -114,10 +133,22 @@
 /datum/antagonist/ert/janitor
 	outfit = /datum/outfit/ert/janitor
 
+/datum/antagonist/ert/deathsquad/leader
+	name = "Deathsquad Officer"
+	outfit = /datum/outfit/death_commando/officer
+	role = "Офицер"
+	leader = TRUE // BLUEMOON CHANGE enabling greet "if" condition for ERT leaders
+
 /datum/antagonist/ert/deathsquad
 	name = "Deathsquad Trooper"
 	outfit = /datum/outfit/death_commando
 	role = "Солдат"
+
+/datum/antagonist/ert/asset_protection/leader
+	name = "Asset Protection Team Officer"
+	outfit = /datum/outfit/death_commando/officer
+	role = "Офицер"
+	leader = TRUE // BLUEMOON CHANGE enabling greet "if" condition for ERT leaders
 
 /datum/antagonist/ert/asset_protection
 	name = "Asset Protection Team Trooper"
@@ -149,18 +180,6 @@
 /datum/antagonist/ert/commander/inquisitor/on_gain()
 	. = ..()
 	owner.isholy = TRUE
-
-/datum/antagonist/ert/deathsquad/leader
-	name = "Deathsquad Officer"
-	outfit = /datum/outfit/death_commando/officer
-	role = "Офицер"
-	leader = TRUE // BLUEMOON CHANGE enabling greet "if" condition for ERT leaders
-
-/datum/antagonist/ert/asset_protection/leader
-	name = "Asset Protection Team Officer"
-	outfit = /datum/outfit/death_commando/officer
-	role = "Офицер"
-	leader = TRUE // BLUEMOON CHANGE enabling greet "if" condition for ERT leaders
 
 /datum/antagonist/ert/syndiesquad/leader
 	name = "Syndiesquad Specialist"

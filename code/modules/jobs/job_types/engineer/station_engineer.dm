@@ -14,9 +14,8 @@
 	outfit = /datum/outfit/job/engineer
 	plasma_outfit = /datum/outfit/plasmaman/engineering
 	alt_titles = list(
-		"Apprentice Enginseer", //Стажер выше, для удобства
+		"Apprentice Engineer", //Стажер выше, для удобства
 		"Azik Interstellar Engineer", //Триглав выше, для удобства
-		"Syndicate Constructing Master", //Синди выше, для удобства
 		"Astromechanic",
 		"Damage Control Technician",
 		"Electrician",
@@ -26,18 +25,21 @@
 		"Engineering Specialist",
 		"Hazardous Material Operator",
 		"Maintenance Technician",
+		"Constructing Master",
 		"Nuclear Plant Operator",
 		"Response Engineer",
 		"Station Architect",
 		"Structural Engineer",
 		"Structural Engineer",
-		"Techpriest Enginseer"
+		"Mechanic",
+		"GEC Engineer",
+		"Junior Engineer",
 		)
 
 	access = list(ACCESS_ENGINE, ACCESS_ENGINE_EQUIP, ACCESS_TECH_STORAGE, ACCESS_MAINT_TUNNELS,
-									ACCESS_EXTERNAL_AIRLOCKS, ACCESS_CONSTRUCTION, ACCESS_ATMOSPHERICS, ACCESS_TCOMSAT, ACCESS_MINERAL_STOREROOM)
+									ACCESS_EXTERNAL_AIRLOCKS, ACCESS_CONSTRUCTION, ACCESS_ATMOSPHERICS, ACCESS_TCOMSAT, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_ENGINEERING)
 	minimal_access = list(ACCESS_ENGINE, ACCESS_ENGINE_EQUIP, ACCESS_TECH_STORAGE, ACCESS_MAINT_TUNNELS,
-									ACCESS_EXTERNAL_AIRLOCKS, ACCESS_CONSTRUCTION, ACCESS_TCOMSAT, ACCESS_MINERAL_STOREROOM)
+									ACCESS_EXTERNAL_AIRLOCKS, ACCESS_CONSTRUCTION, ACCESS_ATMOSPHERICS, ACCESS_TCOMSAT, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_ENGINEERING)
 	paycheck = PAYCHECK_MEDIUM
 	paycheck_department = ACCOUNT_ENG
 	bounty_types = CIV_JOB_ENG
@@ -72,7 +74,7 @@
 	jobtype = /datum/job/engineer
 
 	belt = /obj/item/storage/belt/utility/full/engi
-	l_pocket = /obj/item/pda/engineering
+	l_pocket = /obj/item/modular_computer/pda/engineering
 	ears = /obj/item/radio/headset/headset_eng
 	uniform = /obj/item/clothing/under/rank/engineering/engineer
 	shoes = /obj/item/clothing/shoes/workboots
@@ -84,14 +86,14 @@
 	duffelbag = /obj/item/storage/backpack/duffelbag/engineering
 	box = /obj/item/storage/box/survival/engineer
 	pda_slot = ITEM_SLOT_LPOCKET
-	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced=1)
+	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced/engineering=1)
 
 /datum/outfit/job/engineer/syndicate
 	name = "Syndicate Station Engineer"
 	jobtype = /datum/job/engineer
 
 	belt = /obj/item/storage/belt/utility/full/engi
-	//l_pocket = /obj/item/pda/syndicate/no_deto
+	//l_pocket = /obj/item/modular_computer/pda/syndicate/no_deto
 	ears = /obj/item/radio/headset/headset_eng
 	uniform = /obj/item/clothing/under/rank/engineering/engineer/util
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
@@ -104,7 +106,7 @@
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_LPOCKET
-	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced=1, /obj/item/syndicate_uplink=1)
+	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced/engineering=1, /obj/item/syndicate_uplink=1)
 
 /datum/outfit/job/engineer/gloved
 	name = "Station Engineer (Gloves)"

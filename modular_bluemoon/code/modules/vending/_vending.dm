@@ -18,6 +18,7 @@
 GLOBAL_LIST_EMPTY(vending_machines_to_restock)
 
 #define MAX_VENDING_INPUT_AMOUNT 30
+#define CUSTOM_VENDOR_MAX_ITEMS 350
 /**
  * # vending record datum
  *
@@ -623,9 +624,12 @@ GLOBAL_LIST_EMPTY(vending_products)
 					to_chat(user, span_warning("Нечего пополнять!"))
 			return
 	if(compartmentLoadAccessCheck(user) && !SEND_SIGNAL(user, COMSIG_COMBAT_MODE_CHECK, COMBAT_MODE_ACTIVE))
-		if(canLoadItem(I))
+		if(!is_operational())
+			return
+		if(!panel_open && canLoadItem(I))
 			loadingAttempt(I,user)
 
+		// На всякий случай тут нет проверки на panel_open
 		if(istype(I, /obj/item/storage/bag)) //trays USUALLY
 			var/obj/item/storage/T = I
 			var/loaded = 0
@@ -642,7 +646,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 			if(denied_items)
 				to_chat(user, span_warning("[src] отклонил некоторые вещи!"))
 			if(loaded)
-				to_chat(user, span_notice("ВЫ ВСТАВИЛИ [loaded] шт. посуды внутрь [src]."))
+				to_chat(user, span_notice("ВЫ ВСТАВИЛИ [loaded] шт. предметов внутрь [src]."))
 	else
 		. = ..()
 		if(tiltable && !tilted && I.force)
@@ -818,7 +822,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 	to_chat(user, span_notice("Вы вставили [I] внутрь приёмного слота [src]."))
 
 	for(var/datum/data/vending_product/product_datum in product_records + coin_records + hidden_records)
-		if(ispath(I.type, product_datum.product_path))
+		if(I.type == product_datum.product_path)
 			product_datum.amount++
 			LAZYADD(product_datum.returned_products, I)
 			return
@@ -1320,10 +1324,14 @@ GLOBAL_LIST_EMPTY(vending_products)
 	/// where the money is sent
 	var/datum/bank_account/linked_account
 	/// max number of items that the custom vendor can hold
-	var/max_loaded_items = 20
+	var/max_loaded_items = CUSTOM_VENDOR_MAX_ITEMS
 	/// Base64 cache of custom icons.
 	var/list/base64_cache = list()
 	//panel_type = "panel20"
+
+/obj/machinery/vending/custom/examine(mob/user)
+	. = ..()
+	. += span_notice("Владелец может изменить имя, рекламу и слоган используя ручку.")
 
 /obj/machinery/vending/custom/compartmentLoadAccessCheck(mob/user)
 	. = FALSE
@@ -1336,7 +1344,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 
 /obj/machinery/vending/custom/canLoadItem(obj/item/I, mob/user)
 	. = FALSE
-	if(I.flags_1 & HOLOGRAM_1)
+	if(I.flags_1 & HOLOGRAM_1 || I.item_flags & ABSTRACT)
 		say("Этот автомат не может принимать ненастоящие предметы.")
 		return
 	if(loaded_items >= max_loaded_items)
@@ -1394,24 +1402,79 @@ GLOBAL_LIST_EMPTY(vending_products)
 
 /obj/machinery/vending/custom/attackby(obj/item/I, mob/user, params)
 	if(!linked_account && isliving(user))
-		var/mob/living/L = user
-		var/obj/item/card/id/C = L.get_idcard(TRUE)
-		if(C?.registered_account)
+		var/obj/item/card/id/C = user.get_idcard(TRUE)
+		if(istype(C) && C.registered_account)
 			linked_account = C.registered_account
 			say("\The [src] был подключён к [C].")
 
+	if(!linked_account)
+		say("Автомат не имеет владельца, пожалуйста привяжите аккаунт.")
+
+	if(isidcard(I))
+		var/obj/item/card/id/C = I
+		if(C.registered_account) // Не нужно продавать карты с аккаунтами
+			return
+
 	if(compartmentLoadAccessCheck(user))
 		if(istype(I, /obj/item/pen))
-			name = tgui_input_text(user, "Set name", "Name", name, 20)
-			desc = tgui_input_text(user, "Set description", "Description", desc, 60)
-			slogan_list += tgui_input_text(user, "Set slogan", "Slogan", "Epic", 60)
-			last_slogan = world.time + rand(0, slogan_delay)
+			var/static/list/options = list("Имя", "Описание", "Слоганы")
+			var/choice = tgui_input_list(user, "Что требуется изменить?", "Изменение маркетинга", options)
+			var/some_input
+			if(QDELETED(user) || !Adjacent(user))
+				return
+			switch(choice)
+				if("Имя")
+					some_input = tgui_input_text(user, "Укажите имя", "Имя", name, 20)
+					if(!some_input)
+						return
+					name = capitalize(some_input)
+				if("Описание")
+					some_input = tgui_input_text(user, "Укажите описание", "Описание", desc, 60, TRUE, TRUE)
+					if(!some_input)
+						return
+					desc = capitalize(some_input)
+				if("Слоганы")
+					var/static/list/slogan_options = list("Добавить", "Удалить", "Очистить все")
+					while(choice && choice != "Очистить все" && !QDELETED(user) && Adjacent(user))
+						some_input = null
+						choice = tgui_input_list(user, "Что требуется изменить?", "Изменение слоганов", slogan_options)
+						if(QDELETED(user) || !Adjacent(user))
+							return
+						switch(choice)
+							if("Добавить")
+								some_input = tgui_input_text(user, "Укажите слоган", "Новый слоган", max_length = 60)
+								if(!some_input)
+									continue
+								slogan_list += capitalize(some_input)
+							if("Удалить")
+								if(!LAZYLEN(slogan_list))
+									to_chat(user, span_warning("Нет слоганов для удаления"))
+									continue
+								choice = tgui_input_list(user, "Какой слоган удалить?", "Удаление слогана", slogan_list)
+								if(!choice)
+									continue
+								slogan_list -= choice
+							if("Очистить все")
+								if(!LAZYLEN(slogan_list))
+									to_chat(user, span_warning("Нет слоганов для удаления"))
+									continue
+								slogan_list.Cut()
 			return
 
 	return ..()
 
 /obj/machinery/vending/custom/crowbar_act(mob/living/user, obj/item/I)
-	return FALSE
+	if(linked_account) // Можно разобрать, но только если это владелец или нет аккаунта
+		var/obj/item/card/id/C = user.get_idcard(FALSE)
+		if(!istype(C) || C.registered_account != linked_account)
+			return
+	return ..()
+
+/obj/machinery/vending/custom/deconstruct(disassembled)
+	var/turf/T = get_turf(src)
+	. = ..()
+	if(T && !disassembled)
+		explosion(T, devastation_range = -1, light_impact_range = 3)
 
 /obj/machinery/vending/custom/Destroy()
 	unbuckle_all_mobs(TRUE)
@@ -1419,7 +1482,6 @@ GLOBAL_LIST_EMPTY(vending_products)
 	if(T)
 		for(var/obj/item/I in contents)
 			I.forceMove(T)
-		explosion(src, devastation_range = -1, light_impact_range = 3)
 	return ..()
 
 /**
@@ -1514,7 +1576,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 	icon_deny = "greed-deny"
 	//panel_type = "panel4"
 	max_integrity = 700
-	max_loaded_items = 40
+	max_loaded_items = CUSTOM_VENDOR_MAX_ITEMS*2
 	light_mask = "greed-light-mask"
 	custom_materials = list(/datum/material/gold = MINERAL_MATERIAL_AMOUNT * 5)
 
@@ -1530,3 +1592,6 @@ GLOBAL_LIST_EMPTY(vending_products)
 	slogan_list = list("[GLOB.deity] says: It's your divine right to buy!")
 	add_filter("vending_outline", 9, list("type" = "outline", "color" = COLOR_VERY_SOFT_YELLOW))
 	add_filter("vending_rays", 10, list("type" = "rays", "size" = 35, "color" = COLOR_VIVID_YELLOW))
+
+#undef MAX_VENDING_INPUT_AMOUNT
+#undef CUSTOM_VENDOR_MAX_ITEMS

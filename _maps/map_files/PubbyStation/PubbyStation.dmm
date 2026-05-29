@@ -3577,7 +3577,7 @@
 /turf/open/floor/carpet,
 /area/command/heads_quarters/hos)
 "ajZ" = (
-/obj/machinery/computer/card/minor/hos{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /turf/open/floor/carpet,
@@ -9906,11 +9906,12 @@
 /turf/open/floor/plasteel/grimy,
 /area/command/heads_quarters/captain)
 "aAs" = (
-/obj/structure/table/wood,
-/obj/item/kitchen/fork,
-/obj/item/card/id/captains_spare,
-/turf/open/floor/plasteel/grimy,
-/area/command/heads_quarters/captain)
+/obj/effect/turf_decal/tile/red{
+	dir = 4
+	},
+/obj/machinery/computer/brig_assistant_console,
+/turf/open/floor/plasteel,
+/area/hallway/primary/fore)
 "aAt" = (
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel/dark,
@@ -22879,7 +22880,7 @@
 /obj/effect/turf_decal/tile/brown{
 	dir = 8
 	},
-/obj/machinery/computer/card/minor/qm{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 4
 	},
 /turf/open/floor/plasteel,
@@ -31700,7 +31701,7 @@
 /turf/open/floor/plasteel/white,
 /area/command/heads_quarters/cmo)
 "bAc" = (
-/obj/machinery/computer/card/minor/cmo,
+/obj/machinery/modular_computer/console/preset/id,
 /obj/machinery/airalarm{
 	pixel_y = 22
 	},
@@ -33485,7 +33486,7 @@
 /turf/open/floor/plasteel/dark,
 /area/command/heads_quarters/rd)
 "bDF" = (
-/obj/machinery/computer/card/minor/rd{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /obj/effect/turf_decal/tile/purple,
@@ -34031,9 +34032,6 @@
 	pixel_y = 3
 	},
 /obj/item/cartridge/medical,
-/obj/item/cartridge/chemistry{
-	pixel_y = 2
-	},
 /obj/structure/table,
 /obj/machinery/light,
 /obj/item/wrench/medical,
@@ -41200,7 +41198,7 @@
 /turf/open/floor/plasteel,
 /area/command/heads_quarters/ce)
 "bUM" = (
-/obj/machinery/computer/card/minor/ce,
+/obj/machinery/modular_computer/console/preset/id,
 /obj/effect/turf_decal/tile/yellow{
 	dir = 1
 	},
@@ -57681,12 +57679,9 @@
 	spawnwithmagazine = 0;
 	pin = /obj/item/firing_pin/implant/mindshield
 	},
-/obj/item/gun/energy/laser/carbine{
-	pin = /obj/item/firing_pin/implant/mindshield
-	},
-/obj/item/gun/energy/laser/carbine{
-	pin = /obj/item/firing_pin/implant/mindshield
-	},
+/obj/item/gun/energy/modular_laser_rifle/carbine,
+/obj/item/gun/energy/modular_laser_rifle/carbine,
+/obj/item/gun/energy/modular_laser_rifle/carbine,
 /obj/item/storage/firstaid,
 /obj/item/storage/firstaid/brute,
 /obj/item/storage/firstaid/toxin,
@@ -60085,6 +60080,18 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/science/xenobiology)
+"qda" = (
+/obj/structure/disposalpipe/segment,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/structure/safe/spare_id{
+	pixel_x = 32;
+	pixel_y = 0
+	},
+/turf/open/floor/plasteel/dark,
+/area/command/bridge)
 "qdi" = (
 /obj/structure/disposalpipe/segment{
 	dir = 4
@@ -90301,7 +90308,7 @@ atG
 cxX
 jfY
 cym
-axL
+aAs
 axG
 aAl
 aBh
@@ -92873,7 +92880,7 @@ auH
 auH
 axQ
 ayV
-aAs
+ayT
 aBj
 gkR
 aDB
@@ -98274,7 +98281,7 @@ aAE
 aBy
 aCO
 aDP
-aEK
+qda
 aEK
 aEK
 aHg

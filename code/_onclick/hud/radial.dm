@@ -111,6 +111,8 @@ GLOBAL_LIST_EMPTY(radial_menus)
 	var/atom/movable/AM = anchor
 	if(!istype(AM) || !AM.screen_loc)
 		return
+	if(!user?.client)
+		return
 	if(AM in user.client.screen)
 		if(hudfix_method)
 			anchor = user

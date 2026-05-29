@@ -9,7 +9,7 @@
 	description = "Ask an admin for help."
 
 /datum/keybinding/client/admin_help/down(client/user)
-	user.get_adminhelp()
+	user.adminhelp()
 	return TRUE
 
 /datum/keybinding/client/screenshot

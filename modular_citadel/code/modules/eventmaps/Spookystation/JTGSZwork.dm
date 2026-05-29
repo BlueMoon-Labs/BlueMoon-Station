@@ -106,6 +106,7 @@
 	desc = "Looks like its been dugged out and prepped for construction"
 	icon = 'modular_citadel/code/modules/eventmaps/Spookystation/iconfile32.dmi'
 	icon_state = "dugdirt"
+	base_icon_state = "dugdirt"
 	footstep = FOOTSTEP_GRASS
 	barefootstep = FOOTSTEP_GRASS
 	clawfootstep = FOOTSTEP_GRASS
@@ -131,6 +132,7 @@
 	desc = "Looks like its been dugged out and prepped for construction"
 	icon = 'modular_citadel/code/modules/eventmaps/Spookystation/iconfile32.dmi'
 	icon_state = "dugsand"
+	base_icon_state = "dugsand"
 	footstep = FOOTSTEP_GRASS
 	barefootstep = FOOTSTEP_GRASS
 	clawfootstep = FOOTSTEP_GRASS
@@ -800,6 +802,11 @@ GLOBAL_LIST_EMPTY(rain_sounds)
 
 /turf/open/floor/plasteel/damturf/scorched2
 	icon_state = "floorscorched2"
+
+/turf/open/floor/plating/damturf/welder_act(mob/living/user, obj/item/I)
+	. = ..()
+	if(!QDELETED(src) && !(broken || burnt))
+		ChangeTurf(/turf/open/floor/plating, flags = CHANGETURF_INHERIT_AIR)
 
 /turf/open/floor/plating/damturf/scorched
 	icon_state = "panelscorched"

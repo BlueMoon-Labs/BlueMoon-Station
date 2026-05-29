@@ -9779,12 +9779,9 @@
 	spawnwithmagazine = 0;
 	pin = /obj/item/firing_pin/implant/mindshield
 	},
-/obj/item/gun/energy/laser/carbine{
-	pin = /obj/item/firing_pin/implant/mindshield
-	},
-/obj/item/gun/energy/laser/carbine{
-	pin = /obj/item/firing_pin/implant/mindshield
-	},
+/obj/item/gun/energy/modular_laser_rifle/carbine,
+/obj/item/gun/energy/modular_laser_rifle/carbine,
+/obj/item/gun/energy/modular_laser_rifle/carbine,
 /obj/item/storage/firstaid,
 /obj/item/storage/firstaid/brute,
 /obj/item/storage/firstaid/toxin,
@@ -21800,7 +21797,6 @@
 /obj/machinery/status_display/ai{
 	pixel_y = 32
 	},
-/obj/item/card/id/captains_spare,
 /turf/open/floor/wood,
 /area/command/heads_quarters/captain/private)
 "aNk" = (
@@ -33147,7 +33143,7 @@
 /obj/effect/turf_decal/tile{
 	dir = 1
 	},
-/obj/machinery/computer/card/minor/cmo{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 1
 	},
 /obj/machinery/requests_console{
@@ -35997,6 +35993,7 @@
 	pixel_y = 32
 	},
 /obj/machinery/camera/autoname,
+/obj/machinery/computer/brig_assistant_console,
 /turf/open/floor/plasteel,
 /area/hallway/primary/fore)
 "btU" = (
@@ -56659,7 +56656,7 @@
 /turf/open/floor/plasteel,
 /area/security/brig)
 "cAp" = (
-/obj/machinery/computer/card/minor/hos{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /obj/effect/turf_decal/tile/red,
@@ -59360,6 +59357,10 @@
 	},
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 1
+	},
+/obj/structure/safe/spare_id{
+	pixel_x = 0;
+	pixel_y = 32
 	},
 /turf/open/floor/plasteel,
 /area/hallway/secondary/command)
@@ -74199,7 +74200,7 @@
 /area/engineering/storage_shared)
 "jZG" = (
 /obj/machinery/airalarm/directional/west,
-/obj/machinery/computer/card/minor/ce{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 4
 	},
 /obj/effect/turf_decal/tile{

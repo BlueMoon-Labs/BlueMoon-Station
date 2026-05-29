@@ -5,6 +5,7 @@
 	S["directory_erptag"]		>> directory_erptag
 	S["directory_gendertag"]		>> directory_gendertag
 	S["directory_ad"]			>> directory_ad
+	S["directory_noncon"]		>> directory_noncon
 
 	// Get stomping preferences.
 //	S["stomp_pref"] >> stomppref
@@ -22,6 +23,7 @@
 	directory_erptag		= sanitize_inlist(directory_erptag, GLOB.char_directory_erptags, initial(directory_erptag))
 	directory_gendertag		= sanitize_inlist(directory_gendertag, GLOB.char_directory_gendertags, initial(directory_gendertag))
 	directory_ad			= strip_html_simple(directory_ad, MAX_FLAVOR_LEN)
+	directory_noncon		= directory_noncon ? sanitize_inlist(directory_noncon, GLOB.lewd_prefs_choices, null) : null
 //	stomppref				= sanitize_integer(stomppref, 0, 1, initial(stomppref))
 	fuzzy 					= sanitize_integer(fuzzy, 0, 1, initial(fuzzy))
 	custom_blood_color 		= sanitize_integer(custom_blood_color, 0, 1, initial(custom_blood_color))
@@ -34,6 +36,7 @@
 	WRITE_FILE(S["directory_erptag"], directory_erptag)
 	WRITE_FILE(S["directory_gendertag"], directory_gendertag)
 	WRITE_FILE(S["directory_ad"], directory_ad)
+	WRITE_FILE(S["directory_noncon"], directory_noncon)
 
 	// Stomping preferences.
 //	WRITE_FILE(S["stomp_pref"], stomppref)

@@ -58,6 +58,16 @@
 	density = TRUE
 	max_integrity = 20
 	var/allow_walk = 1 //can we pass through it on walk intent
+	/// Unarmed strike cooldown (global to the barrier, not per-user).
+	var/next_unarmed_hit = 0
+
+/obj/structure/holosign/barrier/attack_holosign(mob/living/user)
+	if(world.time < next_unarmed_hit)
+		to_chat(user, span_notice("Голографический барьер ещё мерцает — подождите мгновение."))
+		user.changeNext_move(CLICK_CD_RAPID)
+		return
+	next_unarmed_hit = world.time + CLICK_CD_MELEE
+	return ..()
 
 /obj/structure/holosign/barrier/CanAllowThrough(atom/movable/mover, turf/target)
 	. = ..()

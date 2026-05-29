@@ -11,6 +11,9 @@
 		else
 			return ckey(id)
 
+/// Макс. глубина для `ConvertpHToCol` + `get_reagent_category` (общий счётчик).
+#define CHEM_DISP_PH_CAT_GUARD_MAX 48
+
 /obj/machinery/chem_dispenser
 	name = "Chem Dispenser"
 	desc = "Создаёт и выдаёт препараты."
@@ -114,6 +117,9 @@
 	var/dispenser_type = DISPENSER_TYPE_CHEM
 	/// Cooldown for recipe-dispense actions.
 	COOLDOWN_DECLARE(dispense_cooldown)
+	/// Общий счётчик входа для `ConvertpHToCol` / `get_reagent_category` (отдельный `static` в каждом проке не блокирует взаимные вызовы → переполнение стека / illegal op в `send_message` на 516).
+	var/static/chem_disp_ph_cat_guard = 0
+	var/static/list/chem_disp_category_cache = list()
 
 	/// Shared cache: reagent hash -> computed dispenser recipe data.
 	var/static/list/shared_dispenser_recipe_caches
@@ -801,8 +807,9 @@
 	for(var/re in dispensable_reagents)
 		var/datum/reagent/temp = GLOB.chemical_reagents_list[re]
 		if(temp)
+			var/ph_safe = sanitize_ph_json(temp.pH)
 			var/category = get_reagent_category(re)
-			chemicals.Add(list(list("title" = temp.name, "id" = ckey(temp.name), "pH" = temp.pH, "pHCol" = ConvertpHToCol(temp.pH), "reagentColor" = temp.color, "category" = category)))
+			chemicals.Add(list(list("title" = temp.name, "id" = ckey(temp.name), "pH" = ph_safe, "pHCol" = ConvertpHToCol(ph_safe), "reagentColor" = temp.color, "category" = category)))
 	data["chemicals"] = chemicals
 
 	var/datum/reagent/best_acid = null
@@ -816,9 +823,9 @@
 		if(!best_base || temp.pH > best_base.pH)
 			best_base = temp
 	data["phAcidName"] = best_acid?.name
-	data["phAcidPH"] = best_acid?.pH
+	data["phAcidPH"] = best_acid ? sanitize_ph_json(best_acid.pH) : null
 	data["phBaseName"] = best_base?.name
-	data["phBasePH"] = best_base?.pH
+	data["phBasePH"] = best_base ? sanitize_ph_json(best_base.pH) : null
 
 	return data
 
@@ -839,7 +846,8 @@
 	var/beakerCurrentVolume = 0
 	if(beaker && beaker.reagents && beaker.reagents.reagent_list.len)
 		for(var/datum/reagent/R in beaker.reagents.reagent_list)
-			beakerContents.Add(list(list("name" = R.name, "id" = R.type, "volume" = round(R.volume, 0.01), "pH" = R.pH, "pHCol" = ConvertpHToCol(R.pH), "reagentColor" = R.color))) // Nested list prevents BYOND from merging the first entry.
+			var/ph_safe = sanitize_ph_json(R.pH)
+			beakerContents.Add(list(list("name" = R.name, "id" = R.type, "volume" = round(R.volume, 0.01), "pH" = ph_safe, "pHCol" = ConvertpHToCol(ph_safe), "reagentColor" = R.color))) // Nested list prevents BYOND from merging the first entry.
 			beakerCurrentVolume += R.volume
 	data["beakerContents"] = beakerContents
 
@@ -849,7 +857,8 @@
 		data["beakerTransferAmounts"] = beaker.possible_transfer_amounts
 		// pH precision scales with capacitor rating.
 		var/ph_precision = max(10**-(capacitor_rating+1), 0.0001)
-		var/rounded_ph = round(beaker.reagents.pH, ph_precision)
+		var/safe_beaker_ph = sanitize_ph_json(beaker.reagents.pH)
+		var/rounded_ph = round(safe_beaker_ph, ph_precision)
 		data["beakerCurrentpH"] = rounded_ph
 		data["beakerCurrentpHCol"] = ConvertpHToCol(rounded_ph)
 
@@ -868,8 +877,9 @@
 				var/chemname = temp.name
 				if(prob(5))
 					chemname = "[pick_list_replacements("hallucination.json", "chemicals")]"
+				var/ph_safe = sanitize_ph_json(temp.pH)
 				var/category = get_reagent_category(re)
-				chemicals.Add(list(list("title" = chemname, "id" = ckey(temp.name), "pH" = temp.pH, "pHCol" = ConvertpHToCol(temp.pH), "reagentColor" = temp.color, "category" = category)))
+				chemicals.Add(list(list("title" = chemname, "id" = ckey(temp.name), "pH" = ph_safe, "pHCol" = ConvertpHToCol(ph_safe), "reagentColor" = temp.color, "category" = category)))
 		data["chemicals"] = chemicals
 
 	var/mob/living/L = user
@@ -891,7 +901,8 @@
 	var/storedContents[0]
 	if(reagents.total_volume)
 		for(var/datum/reagent/N in reagents.reagent_list)
-			storedContents.Add(list(list("name" = N.name, "id" = N.type, "volume" = N.volume, "pH" = N.pH, "pHCol" = ConvertpHToCol(N.pH), "reagentColor" = N.color)))
+			var/ph_safe = sanitize_ph_json(N.pH)
+			storedContents.Add(list(list("name" = N.name, "id" = N.type, "volume" = N.volume, "pH" = ph_safe, "pHCol" = ConvertpHToCol(ph_safe), "reagentColor" = N.color)))
 	data["storedContents"] = storedContents
 
 	return data
@@ -1815,15 +1826,20 @@
 		replace_beaker(user)
 		return TRUE
 
+/obj/machinery/chem_dispenser/proc/sanitize_ph_json(ph)
+	if(!isnum(ph) || (ph != ph))
+		return 7
+	if(ph >= 1e100 || ph <= -1e100)
+		return 7
+	return clamp(ph, -20, 20)
+
 /obj/machinery/chem_dispenser/proc/ConvertpHToCol(pH)
-	// Recursion guard: prevents stack overflow when TGUI serializes large payloads (BYOND bug workaround)
-	var/static/recursion_depth = 0
-	if(recursion_depth > 0)
+	if(chem_disp_ph_cat_guard >= CHEM_DISP_PH_CAT_GUARD_MAX)
 		return "average"
-	recursion_depth++
+	chem_disp_ph_cat_guard++
 	. = "average"
 	if(!isnum(pH) || (pH != pH)) // null or NaN
-		recursion_depth--
+		chem_disp_ph_cat_guard--
 		return
 	switch(pH)
 		if(-INFINITY to 1)
@@ -1850,20 +1866,17 @@
 			. = "purple"
 		else
 			. = "average"
-	recursion_depth--
+	chem_disp_ph_cat_guard--
 
 /obj/machinery/chem_dispenser/proc/get_reagent_category(reagent_type)
-	// Recursion guard: prevents stack overflow when TGUI serializes large payloads (BYOND bug workaround)
-	var/static/recursion_depth = 0
-	var/static/list/category_cache = list()
-	if(recursion_depth > 0)
+	if(reagent_type && chem_disp_category_cache[reagent_type])
+		return chem_disp_category_cache[reagent_type]
+	if(chem_disp_ph_cat_guard >= CHEM_DISP_PH_CAT_GUARD_MAX)
 		return "other"
-	if(reagent_type && category_cache[reagent_type])
-		return category_cache[reagent_type]
-	recursion_depth++
+	chem_disp_ph_cat_guard++
 	var/result = "other"
 	if(!reagent_type)
-		recursion_depth--
+		chem_disp_ph_cat_guard--
 		return result
 	if(ispath(reagent_type, /datum/reagent/medicine))
 		result = "medicine"
@@ -1893,8 +1906,8 @@
 	else if(ispath(reagent_type, /datum/reagent))
 		result = "elements"
 	if(reagent_type)
-		category_cache[reagent_type] = result
-	recursion_depth--
+		chem_disp_category_cache[reagent_type] = result
+	chem_disp_ph_cat_guard--
 	return result
 
 

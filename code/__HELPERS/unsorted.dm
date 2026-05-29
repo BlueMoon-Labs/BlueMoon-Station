@@ -353,8 +353,7 @@ Turf and target are separate in case you want to teleport some distance from a t
 /proc/get_mob_by_ckey(key)
 	if(!key)
 		return
-	var/list/mobs = sortmobs()
-	for(var/mob/M in mobs)
+	for(var/mob/M as anything in GLOB.mob_list)
 		if(M.ckey == key)
 			return M
 
@@ -872,7 +871,7 @@ B --><-- A
 		return
 
 	if(!x_dimension || !y_dimension)
-		return
+		return I
 
 	if((x_dimension == world.icon_size) && (y_dimension == world.icon_size))
 		return I
@@ -1379,19 +1378,16 @@ GLOBAL_DATUM_INIT(dview_mob, /mob/dview, new)
 
 	return "{[time_high]-[time_mid]-[GUID_VERSION][time_low]-[GUID_VARIANT][time_clock]-[node_id]}"
 
-// \ref behaviour got changed in 512 so this is necesary to replicate old behaviour.
-// If it ever becomes necesary to get a more performant REF(), this lies here in wait
-// #define REF(thing) (thing && istype(thing, /datum) && (thing:datum_flags & DF_USE_TAG) && thing:tag ? "[thing:tag]" : "\ref[thing]")
-/proc/REF(input)
-	if(istype(input, /datum))
-		var/datum/thing = input
-		if(thing.datum_flags & DF_USE_TAG)
-			if(!thing.tag)
-				stack_trace("A ref was requested of an object with DF_USE_TAG set but no tag: [thing]")
-				thing.datum_flags &= ~DF_USE_TAG
-			else
-				return "\[[url_encode(thing.tag)]\]"
-	return "\ref[input]"
+// \ref behaviour got changed in 512 so the DF_USE_TAG branch replicates the old stable-ref behaviour.
+// REF itself is now an inline macro defined in code/__DEFINES/_helpers.dm (must be available before
+// TYPEID, which is itself a macro that expands to REF). The macro delegates the rare DF_USE_TAG path
+// here so the inline expression stays tight and the missing-tag fallback is preserved verbatim.
+/proc/__REF_tagged(datum/thing)
+	if(!thing.tag)
+		stack_trace("A ref was requested of an object with DF_USE_TAG set but no tag: [thing]")
+		thing.datum_flags &= ~DF_USE_TAG
+		return "\ref[thing]"
+	return "\[[url_encode(thing.tag)]\]"
 
 // Makes a call in the context of a different usr
 // Use sparingly
@@ -1483,12 +1479,7 @@ GLOBAL_DATUM_INIT(dview_mob, /mob/dview, new)
 	return pick(typesof(/obj/item/reagent_containers/food/snacks) - blocked)
 
 /proc/get_random_drink()
-	var/list/blocked = list(/obj/item/reagent_containers/food/drinks/soda_cans,
-		/obj/item/reagent_containers/food/drinks/bottle,
-		/obj/item/reagent_containers/food/drinks/flask/russian,
-		/obj/item/reagent_containers/food/drinks/flask/steel
-		)
-	return pick(subtypesof(/obj/item/reagent_containers/food/drinks) - blocked)
+	return /obj/item/reagent_containers/food/drinks/drinkingglass/filled/random_ethanol
 
 /proc/get_random_drug()
     var/list/drugs = subtypesof(/obj/item/reagent_containers/syringe/contraband)
@@ -1605,7 +1596,11 @@ GLOBAL_DATUM_INIT(dview_mob, /mob/dview, new)
 
 /proc/generate_items_inside(list/items_list, where_to)
 	for(var/each_item in items_list)
-		for(var/i in 1 to items_list[each_item])
+		var/count = items_list[each_item]
+		if(isnum(count))
+			for(var/i in 1 to count)
+				new each_item(where_to)
+		else
 			new each_item(where_to)
 
 //Checks to see if either the victim has a garlic necklace or garlic in their blood

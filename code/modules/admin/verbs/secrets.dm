@@ -222,17 +222,11 @@
 			var/val = alert(holder, "What do you want to set night shift to? This will override the automatic system until set to automatic again.", "Night Shift", "On", "Off", "Automatic")
 			switch(val)
 				if("Automatic")
-					if(CONFIG_GET(flag/enable_night_shifts))
-						SSnightshift.can_fire = TRUE
-						SSnightshift.fire()
-					else
-						SSnightshift.update_nightshift(FALSE, TRUE)
+					admin_apply_global_nightshift_mode(holder.mob, "Auto")
 				if("On")
-					SSnightshift.can_fire = FALSE
-					SSnightshift.update_nightshift(TRUE, TRUE)
+					admin_apply_global_nightshift_mode(holder.mob, "On")
 				if("Off")
-					SSnightshift.can_fire = FALSE
-					SSnightshift.update_nightshift(FALSE, TRUE)
+					admin_apply_global_nightshift_mode(holder.mob, "Off")
 		if("moveferry")
 			SSblackbox.record_feedback("nested tally", "admin_secrets_fun_used", 1, list("Send CentCom Ferry"))
 			if(!SSshuttle.toggleShuttle("ferry","ferry_home","ferry_away"))
@@ -368,16 +362,6 @@
 						SSevents.toggleWizardmode()
 						SSevents.resetFrequency()
 						SSblackbox.record_feedback("nested tally", "admin_secrets_fun_used", 1, list("Summon Events", "Disable"))
-		if("space_cleaner_spill")
-			if(!is_funmin)
-				return
-			var/event_type = text2path("/datum/round_event_control/space_cleaner_spill")
-			var/datum/round_event_control/EC = locate(event_type) in SSevents.control
-			if(EC)
-				EC.runEvent(announce_chance_override = 100, admin_forced = TRUE)
-				message_admins("[key_name_admin(holder)] запустил ивент: Аварийная очистка космической станции.")
-				log_admin("[key_name(holder)] запустил ивент: Аварийная очистка космической станции.")
-			SSblackbox.record_feedback("nested tally", "admin_secrets_fun_used", 1, list("Аварийная очистка станции"))
 		if("eagles")
 			if(!is_funmin)
 				return
@@ -440,13 +424,13 @@
 					continue
 				GLOB.dna_for_copying.transfer_identity(H, TRUE)
 				H.real_name = H.dna.real_name
-				var/obj/item/pda/worn = H.wear_id
+				var/obj/item/modular_computer/pda/worn = H.wear_id
 				var/obj/item/card/id/W = H.wear_id?.GetID()
 				if(W)
 					W.registered_name = H.real_name
 					W.update_label()
 					if(worn)
-						if(istype(worn, /obj/item/pda))
+						if(istype(worn, /obj/item/modular_computer/pda))
 							worn.owner = W.registered_name
 							worn.update_label()
 				H.updateappearance(mutcolor_update=1)

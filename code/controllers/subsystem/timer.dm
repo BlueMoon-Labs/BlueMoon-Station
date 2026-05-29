@@ -423,7 +423,10 @@ SUBSYSTEM_DEF(timer)
 			if (!length(timers))
 				cb_object.active_timers = null
 
-	callBack = null
+	if(callBack)
+		callBack.object = null
+		callBack.arguments = null
+		callBack = null
 
 	if (flags & TIMER_STOPPABLE)
 		SStimer.timer_id_dict -= id
@@ -477,6 +480,7 @@ SUBSYSTEM_DEF(timer)
 
 	// Attempt to find bucket that contains this timed event
 	var/bucketpos = BUCKET_POS(src)
+	var/removed_from_bucket = FALSE
 
 	// Store a local reference to the bucket list. This is faster than referencing the datum itself.
 	var/list/bucket_list = SStimer.bucket_list
@@ -488,7 +492,24 @@ SUBSYSTEM_DEF(timer)
 
 	if(buckethead == src)
 		bucket_list[bucketpos] = next
-	SStimer.bucket_count--
+		removed_from_bucket = TRUE
+	else if(prev || next)
+		var/actual_bucketpos = bucket_list.Find(src)
+		if(actual_bucketpos)
+			bucket_list[actual_bucketpos] = next
+		removed_from_bucket = TRUE
+	else
+		// Timers near bucket boundaries can be qdel'd before firing after the bucket
+		// cursor has advanced far enough that BUCKET_POS no longer points at the slot
+		// that owns this single-node timer. Find and clear that stale bucket head so
+		// SStimer does not later crash on a qdeleted timer with no callback.
+		var/actual_bucketpos = bucket_list.Find(src)
+		if(actual_bucketpos)
+			bucket_list[actual_bucketpos] = null
+			removed_from_bucket = TRUE
+
+	if(removed_from_bucket)
+		SStimer.bucket_count--
 
 	// Remove the timed event from the bucket, ensuring to maintain
 	// the integrity of the bucket's list if relevant

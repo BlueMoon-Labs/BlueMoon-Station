@@ -23,7 +23,10 @@ GLOBAL_LIST_EMPTY(rubber_toolbox_icons)
 	var/latches = "single_latch"
 	var/has_latches = TRUE
 	var/can_rubberify = TRUE
+	var/toolbox_skin_color = "blue"  // для передачи как аргумента в создании флурботов
+	var/floorbot_base = TRUE
 	rad_flags = RAD_PROTECT_CONTENTS | RAD_NO_CONTAMINATE //very protecc too
+
 /obj/item/storage/toolbox/greyscale
 	icon_state = "toolbox_default"
 	item_state = "toolbox_default"
@@ -56,6 +59,7 @@ GLOBAL_LIST_EMPTY(rubber_toolbox_icons)
 	name = "emergency toolbox"
 	icon_state = "red"
 	item_state = "toolbox_red"
+	toolbox_skin_color = "red"
 
 /obj/item/storage/toolbox/emergency/PopulateContents()
 	new /obj/item/crowbar/red(src)
@@ -145,6 +149,7 @@ GLOBAL_LIST_EMPTY(rubber_toolbox_icons)
 	name = "electrical toolbox"
 	icon_state = "yellow"
 	item_state = "toolbox_yellow"
+	toolbox_skin_color = "yellow"
 
 /obj/item/storage/toolbox/electrical/PopulateContents()
 	var/pickedcolor = pick("red","yellow","green","blue","pink","orange","cyan","white")
@@ -166,22 +171,24 @@ GLOBAL_LIST_EMPTY(rubber_toolbox_icons)
 	desc = "A toolbox painted black with a red stripe. It looks more heavier than normal toolboxes."
 	force = 15
 	throwforce = 18
+	floorbot_base = FALSE
 
 /obj/item/storage/toolbox/syndicate/ComponentInitialize()
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
 	STR.silent = TRUE
 
-/* BLUEMOON COMMENTING OUT using own tools in modular_bluemoon\code\game\objects\items\storage\toolbox.dm
 /obj/item/storage/toolbox/syndicate/PopulateContents()
 	new /obj/item/screwdriver/nuke(src)
 	new /obj/item/wrench/combat(src)
 	new /obj/item/weldingtool/largetank(src)
 	new /obj/item/crowbar/red(src)
-	new /obj/item/wirecutters(src, "red")
+	new /obj/item/wirecutters/red(src)
 	new /obj/item/multitool(src)
-	new /obj/item/clothing/gloves/tackler/combat/insulated(src)
-*/
+	if(prob(10))
+		new /obj/item/clothing/gloves/tackler/combat/insulated(src)
+	else
+		new /obj/item/clothing/gloves/combat(src)
 
 /obj/item/storage/toolbox/drone
 	name = "mechanical toolbox"
@@ -263,6 +270,7 @@ GLOBAL_LIST_EMPTY(rubber_toolbox_icons)
 	icon_state = "green"
 	item_state = "toolbox_green"
 	w_class = WEIGHT_CLASS_GIGANTIC //Holds more than a regular toolbox!
+	floorbot_base = FALSE
 
 /obj/item/storage/toolbox/artistic/ComponentInitialize()
 	. = ..()
@@ -290,6 +298,7 @@ GLOBAL_LIST_EMPTY(rubber_toolbox_icons)
 	var/ammotype = /obj/item/ammo_box/a762 // make sure this is a typepath thanks
 	drop_sound = 'sound/items/handling/ammobox_drop.ogg'
 	pickup_sound = 'sound/items/handling/ammobox_pickup.ogg'
+	floorbot_base = FALSE
 
 /obj/item/storage/toolbox/ammo/PopulateContents()
 	for (var/i = 0, i < 7, i++)
@@ -311,6 +320,7 @@ GLOBAL_LIST_EMPTY(rubber_toolbox_icons)
 	throwforce = 16
 	w_class = WEIGHT_CLASS_NORMAL
 	has_latches = FALSE
+	floorbot_base = FALSE
 
 /obj/item/storage/toolbox/infiltrator/ComponentInitialize()
 	. = ..()
@@ -389,6 +399,7 @@ GLOBAL_LIST_EMPTY(rubber_toolbox_icons)
 		generate_rubber_toolbox_icon()
 	icon = GLOB.rubber_toolbox_icons[icon_state]
 	AddComponent(/datum/component/bouncy)
+	floorbot_base = FALSE
 
 /obj/item/storage/toolbox/proc/generate_rubber_toolbox_icon()
 	var/icon/new_icon = icon(icon, icon_state)
@@ -407,6 +418,7 @@ GLOBAL_LIST_EMPTY(rubber_toolbox_icons)
 	throwforce = 15
 	attack_verb = list("robusted", "bounced")
 	can_rubberify = FALSE //we are already the future.
+	floorbot_base = FALSE
 
 /obj/item/storage/toolbox/rubber/Initialize(mapload)
 	icon_state = pick("blue", "red", "yellow", "green")

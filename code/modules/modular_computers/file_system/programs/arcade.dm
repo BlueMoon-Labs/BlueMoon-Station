@@ -2,7 +2,7 @@
 	filename = "dsarcade"
 	filedesc = "Donksoft Micro Arcade"
 	program_icon_state = "arcade"
-	extended_desc = "This port of the classic game 'Outbomb Cuban Pete', redesigned to run on tablets, with thrilling graphics and chilling storytelling."
+	extended_desc = "Порт классической игры «Outbomb Cuban Pete», адаптированный для планшетов. Захватывающая графика и леденящий душу сюжет."
 	requires_ntnet = FALSE
 	size = 6
 	tgui_id = "NtosArcade"

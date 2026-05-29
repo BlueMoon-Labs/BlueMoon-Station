@@ -19,7 +19,7 @@
 /datum/blackmarket_item/weapon/saber
 	name = "Old Nanotrasen Saber SMG"
 	desc = "Old Prototype SMG. Has fallen out of use with old models ending up here. A rare find"
-	item = /obj/item/gun/ballistic/automatic/proto/unrestricted
+	item = /obj/item/gun/ballistic/automatic/proto
 	price_min = 100000
 	price_max = 150000
 	stock_min = 1

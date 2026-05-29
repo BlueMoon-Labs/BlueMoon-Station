@@ -32,7 +32,7 @@
 /obj/item/ammo_casing/energy/laser/scatter/pulse
 	projectile_type = /obj/item/projectile/beam/pulse
 	e_cost = 180
-	select_name = "ANNIHILATE"
+	select_name = "DESTROY"
 	fire_sound = 'sound/weapons/1pulse.ogg'
 
 /obj/item/ammo_casing/energy/laser/scatter/disabler
@@ -55,12 +55,6 @@
 	projectile_type = /obj/item/projectile/beam/pulse
 	e_cost = 180
 	select_name = "DESTROY"
-	fire_sound = 'sound/weapons/pulse.ogg'
-
-/obj/item/ammo_casing/energy/laser/pulse/danger  //bluemoon add
-	projectile_type = /obj/item/projectile/beam/pulse/danger
-	e_cost = 180
-	select_name = "ANNIHILATE"
 	fire_sound = 'sound/weapons/pulse.ogg'
 
 /obj/item/ammo_casing/energy/laser/bluetag

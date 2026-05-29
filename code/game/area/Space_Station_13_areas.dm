@@ -54,6 +54,7 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 	requires_power = TRUE
 	always_unpowered = TRUE
 	dynamic_lighting = DYNAMIC_LIGHTING_DISABLED
+	ambient_light = AMBIENT_LIGHT_NONE
 	power_light = FALSE
 	power_equip = FALSE
 	power_environ = FALSE
@@ -136,6 +137,8 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 
 /area/ai_monitored
 	sound_environment = SOUND_AREA_STANDARD_STATION
+	light_temperature = LIGHT_TEMP_COOL
+	contact_shadow_multiplier = CONTACT_SHADOW_REDUCED
 
 /area/ai_monitored/aisat/exterior
 	name = "AI Satellite Exterior"
@@ -233,6 +236,9 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 	minimap_color = "#454545"
 	forced_ambience = TRUE
 	min_ambience_cooldown = 12 SECONDS
+	light_contrast = LIGHT_CONTRAST_DEEP
+	contact_shadow_multiplier = CONTACT_SHADOW_HEAVY
+	ambient_light = AMBIENT_LIGHT_DIM
 	max_ambience_cooldown = 20 SECONDS
 	shipambience = 'sound/ambience/maintambience.ogg'
 
@@ -431,6 +437,7 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 /area/maintenance/disposal/incinerator
 	name = "Incinerator"
 	icon_state = "incinerator"
+	light_temperature = LIGHT_TEMP_FURNACE
 
 /area/maintenance/bar
 	name = "Maintenance Bar"
@@ -460,6 +467,7 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 	sound_environment = SOUND_AREA_STANDARD_STATION
 	minimap_color = "#aaaaaa"
 	ambientsounds = GENERIC
+	light_temperature = LIGHT_TEMP_SUBTLE_COOL
 
 /area/hallway/primary
 	name = "Primary Hallway"
@@ -506,6 +514,7 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 
 /area/hallway/secondary/command
 	name = "Command Hallway"
+	light_temperature = LIGHT_TEMP_COOL
 	icon_state = "bridge_hallway"
 
 /area/hallway/secondary/construction
@@ -542,11 +551,13 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 /area/command/bridge
 	name = "Bridge"
 	icon_state = "bridge"
+	light_temperature = LIGHT_TEMP_COOL
 
 /area/command/meeting_room
 	name = "Heads of Staff Meeting Room"
 	icon_state = "meeting"
 	sound_environment = SOUND_AREA_MEDIUM_SOFTFLOOR
+	light_temperature = LIGHT_TEMP_SUBTLE_WARM
 
 /area/command/meeting_room/council
 	name = "Council Chamber"
@@ -565,6 +576,7 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 	icon_state = "captain"
 	clockwork_warp_allowed = FALSE
 	sound_environment = SOUND_AREA_WOODFLOOR
+	light_temperature = LIGHT_TEMP_WARM
 
 /area/command/heads_quarters/captain/private
 	name = "Captain's Quarters"
@@ -574,6 +586,7 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 /area/command/heads_quarters/ce
 	name = "Chief Engineer's Office"
 	icon_state = "ce_office"
+	light_temperature = LIGHT_TEMP_INDUSTRIAL
 
 /area/command/heads_quarters/ce/private
 	name = "Chief Engineer's Private Quarters"
@@ -582,6 +595,7 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 /area/command/heads_quarters/cmo
 	name = "Chief Medical Officer's Office"
 	icon_state = "cmo_office"
+	light_temperature = LIGHT_TEMP_CLINICAL
 
 /area/command/heads_quarters/cmo/private
 	name = "Chief Medical Officer's Office"
@@ -598,6 +612,8 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 /area/command/heads_quarters/hos
 	name = "Head of Security's Office"
 	icon_state = "hos_office"
+	light_temperature = LIGHT_TEMP_COOL
+	light_contrast = LIGHT_CONTRAST_ENHANCED
 
 /area/command/heads_quarters/hos/private
 	name = "Head of Security's Private Quarters"
@@ -607,6 +623,7 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 	name = "Research Director's Office"
 	icon_state = "rd_office"
 	shipambience = 'sound/ambience/zone/sci.ogg'
+	light_temperature = LIGHT_TEMP_COOL
 
 /area/command/heads_quarters/rd/private
 	name = "Research Director's Private Quarters"
@@ -628,6 +645,8 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 	icon_state = "teleporter"
 	// ambience_index = AMBIENCE_ENGI
 	ambientsounds = ENGINEERING
+	light_temperature = LIGHT_TEMP_COOL
+	contact_shadow_multiplier = CONTACT_SHADOW_REDUCED
 
 /area/command/gateway
 	name = "Gateway"
@@ -640,6 +659,7 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 	name = "Crew Quarters"
 	sound_environment = SOUND_AREA_STANDARD_STATION
 	area_flags = BLOBS_ALLOWED | UNIQUE_AREA | CULT_PERMITTED
+	light_temperature = LIGHT_TEMP_SUBTLE_WARM
 
 /area/commons/dorms
 	name = "Dormitories"
@@ -689,6 +709,7 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 	name = "Lounge"
 	icon_state = "lounge"
 	sound_environment = SOUND_AREA_SMALL_SOFTFLOOR
+	light_temperature = LIGHT_TEMP_WARM
 
 /area/commons/arcade
 	name = "Arcade"
@@ -714,6 +735,7 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 /area/commons/fitness/pool
 	name = "Pool Area"
 	icon_state = "pool"
+	light_temperature = LIGHT_TEMP_SUBTLE_COOL
 
 /area/commons/fitness/recreation
 	name = "Recreation Area"
@@ -807,6 +829,8 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 /area/service/observatory
 	name = "Observatory"
 	icon_state = "Sleep"
+	light_temperature = LIGHT_TEMP_SUBTLE_COOL
+	light_contrast = LIGHT_CONTRAST_ENHANCED
 
 /area/hallway/secondary/civilian
 	name = "Civilian Wing"
@@ -877,6 +901,7 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 /area/service/kitchen
 	name = "Kitchen"
 	icon_state = "kitchen"
+	light_temperature = LIGHT_TEMP_WARM
 
 /area/service/kitchen/coldroom
 	name = "Kitchen Cold Room"
@@ -892,6 +917,7 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 	// airlock_wires = /datum/wires/airlock/service
 	nightshift_public_area = NIGHTSHIFT_AREA_RECREATION
 	sound_environment = SOUND_AREA_WOODFLOOR
+	light_temperature = LIGHT_TEMP_WARM
 
 /area/service/bar/Initialize(mapload)
 	. = ..()
@@ -917,6 +943,8 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 	name = "Theater"
 	icon_state = "theatre"
 	sound_environment = SOUND_AREA_WOODFLOOR
+	light_temperature = LIGHT_TEMP_DRAMATIC
+	light_contrast = LIGHT_CONTRAST_ENHANCED
 
 /area/service/theater/abandoned
 	name = "Abandoned Theater"
@@ -942,6 +970,8 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 	// mood_trait = TRAIT_INTROVERT
 	area_flags = BLOBS_ALLOWED | UNIQUE_AREA | CULT_PERMITTED
 	sound_environment = SOUND_AREA_LARGE_SOFTFLOOR
+	light_temperature = LIGHT_TEMP_DRAMATIC
+	light_contrast = LIGHT_CONTRAST_ENHANCED
 
 /area/service/library/lounge
 	name = "Library Lounge"
@@ -974,6 +1004,8 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 	// mood_bonus = 5
 	// mood_message = "<span class='nicegreen'>Being in the chapel brings me peace.</span>\n"
 	// mood_trait = TRAIT_SPIRITUAL
+	light_temperature = LIGHT_TEMP_DRAMATIC
+	light_contrast = LIGHT_CONTRAST_ENHANCED
 	// ambience_index = AMBIENCE_HOLY
 	clockwork_warp_allowed = FALSE
 	clockwork_warp_fail = "The consecration here prevents you from warping in."
@@ -1028,6 +1060,7 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 	icon_state = "hydro"
 	// airlock_wires = /datum/wires/airlock/service
 	sound_environment = SOUND_AREA_STANDARD_STATION
+	light_temperature = LIGHT_TEMP_SUBTLE_WARM
 
 /area/service/hydroponics/lobby
 	name = "Hydroponics Lobby"
@@ -1057,6 +1090,7 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 	// ambience_index = AMBIENCE_ENGI
 	// airlock_wires = /datum/wires/airlock/engineering
 	sound_environment = SOUND_AREA_LARGE_ENCLOSED
+	light_temperature = LIGHT_TEMP_INDUSTRIAL
 
 /area/engineering/engine_smes
 	name = "Engineering SMES"
@@ -1069,6 +1103,7 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 /area/engineering/atmos
 	name = "Atmospherics"
 	icon_state = "atmos"
+	light_temperature = LIGHT_TEMP_FURNACE
 
 /area/engineering/atmos/upper
 	name = "Upper Atmospherics"
@@ -1087,6 +1122,8 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 	icon_state = "engine_sm"
 	area_flags = BLOBS_ALLOWED | UNIQUE_AREA | CULT_PERMITTED
 	sound_environment = SOUND_AREA_SMALL_ENCLOSED
+	light_temperature = LIGHT_TEMP_FURNACE
+	light_contrast = LIGHT_CONTRAST_ENHANCED
 
 /area/engineering/break_room
 	name = "Engineering Foyer"
@@ -1099,6 +1136,8 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 	clockwork_warp_allowed = FALSE
 	clockwork_warp_fail = "The gravitons generated here could throw off your warp's destination and possibly throw you into deep space."
 	sound_environment = SOUND_AREA_SMALL_ENCLOSED
+	light_temperature = LIGHT_TEMP_COOL
+	contact_shadow_multiplier = CONTACT_SHADOW_REDUCED
 
 /area/engineering/secure_construction
 	name = "Secure Construction Area"
@@ -1272,6 +1311,8 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 	min_ambience_cooldown = 90 SECONDS
 	max_ambience_cooldown = 180 SECONDS
 	ambientsounds = MEDICAL
+	light_temperature = LIGHT_TEMP_CLINICAL
+	contact_shadow_multiplier = CONTACT_SHADOW_REDUCED
 
 /area/medical/clinic
 	name = "Clinic"
@@ -1361,6 +1402,7 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 /area/medical/virology
 	name = "Virology"
 	icon_state = "virology"
+	contact_shadow_multiplier = CONTACT_SHADOW_FLAT
 
 /area/medical/morgue
 	name = "Morgue"
@@ -1368,10 +1410,15 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 	// ambience_index = AMBIENCE_SPOOKY
 	ambientsounds = SPOOKY
 	sound_environment = SOUND_AREA_SMALL_ENCLOSED
+	light_temperature = LIGHT_TEMP_COOL
+	light_contrast = LIGHT_CONTRAST_DEEP
+	contact_shadow_multiplier = CONTACT_SHADOW_HEAVY
+	ambient_light = AMBIENT_LIGHT_DIM
 
 /area/medical/chemistry
 	name = "Chemistry"
 	icon_state = "chem"
+	contact_shadow_multiplier = CONTACT_SHADOW_FLAT
 
 /area/medical/pharmacy
 	name = "Pharmacy"
@@ -1380,6 +1427,9 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 /area/medical/surgery
 	name = "Surgery"
 	icon_state = "surgery"
+	light_temperature = LIGHT_TEMP_CLINICAL
+	contact_shadow_multiplier = CONTACT_SHADOW_FLAT
+	ambient_light = AMBIENT_LIGHT_SUBTLE
 
 /area/medical/surgery/room_b
 	name = "Surgery B"
@@ -1388,6 +1438,8 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 /area/medical/cryo
 	name = "Cryogenics"
 	icon_state = "cryo"
+	light_temperature = LIGHT_TEMP_COOL
+	contact_shadow_multiplier = CONTACT_SHADOW_FLAT
 
 /area/medical/exam_room
 	name = "Exam Room"
@@ -1411,6 +1463,8 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 	// mood_bonus = 3
 	// mood_message = "<span class='nicegreen'>I feel at ease here.</span>\n"
 	// ambientsounds = list('sound/ambience/aurora_caelus_short.ogg')
+	light_temperature = LIGHT_TEMP_SUBTLE_WARM
+	contact_shadow_multiplier = CONTACT_SHADOW_FLAT
 
 //Security
 
@@ -1421,6 +1475,7 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 	ambientsounds = HIGHSEC
 	// airlock_wires = /datum/wires/airlock/security
 	sound_environment = SOUND_AREA_STANDARD_STATION
+	light_contrast = LIGHT_CONTRAST_ENHANCED
 
 /area/security/office
 	name = "Security Office"
@@ -1429,6 +1484,7 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 /area/security/brig
 	name = "Brig"
 	icon_state = "brig"
+	light_temperature = LIGHT_TEMP_COOL
 
 /area/security/brig_cells
 	name = "Brig Cells"
@@ -1448,10 +1504,14 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 	name = "Courtroom"
 	icon_state = "courtroom"
 	sound_environment = SOUND_AREA_LARGE_ENCLOSED
+	light_temperature = LIGHT_TEMP_SUBTLE_COOL
+	light_contrast = LIGHT_CONTRAST_ENHANCED
 
 /area/security/prison
 	name = "Prison Wing"
 	icon_state = "sec_prison"
+	light_temperature = LIGHT_TEMP_COOL
+	light_contrast = LIGHT_CONTRAST_ENHANCED
 
 /area/security/prison/cells
 	name = "Prison Wing Cells"
@@ -1509,6 +1569,8 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 	ambientsounds = list('sound/ambience/ambidet1.ogg','sound/ambience/ambidet2.ogg')
 	min_ambience_cooldown = 90 SECONDS
 	max_ambience_cooldown = 180 SECONDS
+	light_temperature = LIGHT_TEMP_WARM
+	light_contrast = LIGHT_CONTRAST_DEEP
 
 /area/security/detectives_office/evidence_room
 	name = "Evidence Room"
@@ -1528,6 +1590,9 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 
 /area/security/execution
 	icon_state = "execution_room"
+	light_temperature = LIGHT_TEMP_COOL
+	light_contrast = LIGHT_CONTRAST_DEEP
+	contact_shadow_multiplier = CONTACT_SHADOW_ENHANCED
 
 /area/security/execution/transfer
 	name = "Transfer Centre"
@@ -1581,6 +1646,8 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 	ambientsounds = HIGHSEC
 	clockwork_warp_allowed = FALSE // n omegalul
 	// airlock_wires = /datum/wires/airlock/security
+	light_contrast = LIGHT_CONTRAST_DEEP
+	contact_shadow_multiplier = CONTACT_SHADOW_ENHANCED
 
 /area/ai_monitored/security/armory/upper
 	name = "Upper Armory"
@@ -1592,6 +1659,7 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 	icon_state = "quart"
 	// airlock_wires = /datum/wires/airlock/service
 	sound_environment = SOUND_AREA_STANDARD_STATION
+	light_temperature = LIGHT_TEMP_SUBTLE_WARM
 
 /area/cargo/sorting
 	name = "Delivery Office"
@@ -1602,6 +1670,7 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 	name = "Warehouse"
 	icon_state = "cargo_warehouse"
 	sound_environment = SOUND_AREA_LARGE_ENCLOSED
+	light_contrast = LIGHT_CONTRAST_ENHANCED
 
 /area/cargo/warehouse/upper
 	name = "Upper Warehouse"
@@ -1626,6 +1695,7 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 /area/cargo/miningdock
 	name = "Mining Dock"
 	icon_state = "mining"
+	light_temperature = LIGHT_TEMP_INDUSTRIAL
 
 /area/cargo/miningdock/abandoned
 	name = "Abandoned Mining Dock"
@@ -1647,6 +1717,7 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 	shipambience = 'sound/ambience/zone/sci.ogg'
 	// airlock_wires = /datum/wires/airlock/science
 	sound_environment = SOUND_AREA_STANDARD_STATION
+	light_temperature = LIGHT_TEMP_COOL
 
 /area/science/observatory
 	name = "Research Observatory"
@@ -1659,6 +1730,7 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 /area/science/xenobiology
 	name = "Xenobiology Lab"
 	icon_state = "xenobio"
+	light_contrast = LIGHT_CONTRAST_ENHANCED
 
 /area/science/cytology
 	name = "Cytology Lab"
@@ -1693,6 +1765,8 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 /area/science/server
 	name = "Research Division Server Room"
 	icon_state = "server"
+	light_contrast = LIGHT_CONTRAST_ENHANCED
+	contact_shadow_multiplier = CONTACT_SHADOW_ENHANCED
 
 /area/science/server/compcore
 	name = "Computer Core"
@@ -1705,6 +1779,7 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 /area/science/robotics
 	name = "Robotics"
 	icon_state = "robotics"
+	light_temperature = LIGHT_TEMP_COOL
 
 /area/science/robotics/mechbay
 	name = "Mech Bay"
@@ -1742,6 +1817,7 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 /area/science/nanite
 	name = "Nanite Lab"
 	icon_state = "nanite"
+	light_temperature = LIGHT_TEMP_CLINICAL
 
 // Telecommunications Satellite
 
@@ -1752,6 +1828,8 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 											'sound/ambience/ambitech2.ogg', 'sound/ambience/ambitech3.ogg', 'sound/ambience/ambimystery.ogg')
 	// airlock_wires = /datum/wires/airlock/engineering
 	// network_root_id = STATION_NETWORK_ROOT // They should of unpluged the router before they left
+	light_temperature = LIGHT_TEMP_COOL
+	contact_shadow_multiplier = CONTACT_SHADOW_ENHANCED
 
 /area/tcommsat/chamber
 	name = "Abandoned Satellite"
@@ -1765,6 +1843,7 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 /area/tcommsat/server
 	name = "Telecomms Server Room"
 	icon_state = "tcomsatcham"
+	light_contrast = LIGHT_CONTRAST_ENHANCED
 
 /area/tcommsat/lounge
 	name = "Telecommunications Satellite Lounge"

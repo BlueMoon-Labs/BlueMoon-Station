@@ -96,23 +96,41 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 	var/list/failure_sources = list()
 	var/total_failures = 0
 
+/datum/gc_failure_viewer/gc_failure_cache/proc/get_ordered_sources()
+	var/list/ordered_sources = list()
+	var/list/source_keys = failure_sources.Copy()
+	for (var/type_key in source_keys)
+		var/datum/gc_failure_viewer/gc_failure_source/source = failure_sources[type_key]
+		if (!source || !length(source.failures))
+			failure_sources -= type_key
+			continue
+		var/datum/qdel_item/qi = SSgarbage.GetItem(source.type_path)
+		var/tiebreak = min(qi ? qi.warnfail_count : source.total_failures, 999)
+		ordered_sources[type_key] = source.get_latest_failure_time() + (tiebreak / 1000)
+	sortTim(ordered_sources, cmp = GLOBAL_PROC_REF(cmp_numeric_dsc), associative = TRUE)
+	return ordered_sources
+
 /datum/gc_failure_viewer/gc_failure_cache/show_to(user, datum/gc_failure_viewer/back_to, linear)
 	var/html = build_header()
-	html += "<b>[total_failures]</b> GC failures<br><br>"
+	html += "<b>[total_failures]</b> GC failures"
+	if (length(failures) != total_failures)
+		html += " (retained: [length(failures)])"
+	html += "<br><br>"
 	if (!linear)
 		html += "organized | [make_link("linear", null, 1)]<hr>"
-		for (var/type_key in failure_sources)
+		for (var/type_key in get_ordered_sources())
 			var/datum/gc_failure_viewer/gc_failure_source/source = failure_sources[type_key]
 			html += "[source.make_link(null, src)]<br>"
 
 	else
 		html += "[make_link("organized", null)] | linear<hr>"
-		for (var/datum/gc_failure_viewer/gc_failure_entry/entry in failures)
+		for (var/i = length(failures), i >= 1, i--)
+			var/datum/gc_failure_viewer/gc_failure_entry/entry = failures[i]
 			html += "[entry.make_link(null, src, 1)]<br>"
 
 	browse_to(user, html)
 
-/datum/gc_failure_viewer/gc_failure_cache/proc/log_gc_failure(datum/D, type_path, ref_id, queued_time, qdel_hint = null)
+/datum/gc_failure_viewer/gc_failure_cache/proc/log_gc_failure(datum/D, type_path, ref_id, origin_time, qdel_hint = null)
 	total_failures++
 	var/type_key = "[type_path]"
 	var/datum/gc_failure_viewer/gc_failure_source/source = failure_sources[type_key]
@@ -120,10 +138,15 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 		source = new(type_path)
 		failure_sources[type_key] = source
 
-	var/datum/gc_failure_viewer/gc_failure_entry/entry = new(D, type_path, ref_id, queued_time, qdel_hint)
+	source.total_failures++
+	var/datum/gc_failure_viewer/gc_failure_entry/entry = new(D, type_path, ref_id, origin_time, qdel_hint)
 	entry.failure_source = source
 	failures += entry
+	if(length(failures) > GC_FAILURE_ENTRY_LIMIT)
+		failures.Cut(1, 2)
 	source.failures += entry
+	if(length(source.failures) > GC_FAILURE_SOURCE_ENTRY_LIMIT)
+		source.failures.Cut(1, 2)
 	// In TESTING mode, auto-launch world scan while D is still guaranteed alive
 	#ifdef TESTING
 	INVOKE_ASYNC(entry, TYPE_PROC_REF(/datum/gc_failure_viewer/gc_failure_entry, trigger_world_scan), null, D)
@@ -132,14 +155,24 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 /datum/gc_failure_viewer/gc_failure_source
 	var/list/failures = list()
 	var/type_path
+	var/total_failures = 0
 
 /datum/gc_failure_viewer/gc_failure_source/New(path)
 	type_path = path
 	name = "<b>[path]</b>"
 
+/datum/gc_failure_viewer/gc_failure_source/proc/get_latest_failure_time()
+	if (!length(failures))
+		return 0
+	var/datum/gc_failure_viewer/gc_failure_entry/latest = failures[length(failures)]
+	return latest.failure_time
+
 /datum/gc_failure_viewer/gc_failure_source/make_link(linktext, datum/gc_failure_viewer/back_to, linear)
 	if (!linktext)
-		linktext = "<b>[type_path]</b> ([length(failures)] failure[length(failures) != 1 ? "s" : ""])"
+		linktext = "<b>[type_path]</b> ([total_failures] total"
+		if (length(failures) != total_failures)
+			linktext += ", [length(failures)] retained"
+		linktext += ")"
 	return ..(linktext, back_to, linear)
 
 /datum/gc_failure_viewer/gc_failure_source/show_to(user, datum/gc_failure_viewer/back_to, linear)
@@ -147,13 +180,16 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 		back_to = GLOB.gc_failure_cache
 
 	var/html = build_header(back_to)
-	html += "<b>[type_path]</b> - [length(failures)] failure[length(failures) != 1 ? "s" : ""]<hr>"
+	html += "<b>[type_path]</b> - [total_failures] total failure[total_failures != 1 ? "s" : ""]"
+	if (length(failures) != total_failures)
+		html += " ([length(failures)] retained)"
+	html += "<hr>"
 
 	// Aggregate qdel_item stats for this type
-	var/datum/qdel_item/qi = SSgarbage.items[text2path("[type_path]")]
+	var/datum/qdel_item/qi = SSgarbage.GetItem(type_path)
 	if (qi)
 		html += "<div class='gc_stats'>"
-		html += "<b>Статистика типа:</b> qdels: [qi.qdels], фейлы: [qi.failures], hard dels: [qi.hard_deletes]<br>"
+		html += "<b>Статистика типа:</b> qdels: [qi.qdels], soft fails: [qi.failures], warnfails: [qi.warnfail_count], hard dels: [qi.hard_deletes]<br>"
 		html += "Destroy() время: [qi.destroy_time]ms"
 		if (qi.hard_deletes)
 			html += ", hard del время: [qi.hard_delete_time]ms (макс: [qi.hard_delete_max]ms)"
@@ -167,7 +203,8 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 			html += " <b style='color:#FF4444'>SUSPENDED</b>"
 		html += "</div>"
 
-	for (var/datum/gc_failure_viewer/gc_failure_entry/entry in failures)
+	for (var/i = length(failures), i >= 1, i--)
+		var/datum/gc_failure_viewer/gc_failure_entry/entry = failures[i]
 		html += "[entry.make_link(null, src)]<br>"
 
 	browse_to(user, html)
@@ -180,7 +217,7 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 	var/ref_id
 	var/obj_name
 	var/failure_time
-	var/queued_time
+	var/origin_time
 	var/extra_info
 	var/datum_ref
 	// --- Extended diagnostic data (always collected) ---
@@ -223,11 +260,11 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 	var/list/timer_details
 #endif
 
-/datum/gc_failure_viewer/gc_failure_entry/New(datum/D, path, refid, queuetime, hint)
+/datum/gc_failure_viewer/gc_failure_entry/New(datum/D, path, refid, qdel_origin_time, hint)
 	type_path = path
 	ref_id = refid
 	failure_time = world.time
-	queued_time = queuetime
+	origin_time = qdel_origin_time
 	qdel_hint = hint
 	if (D)
 		if (isatom(D))
@@ -364,9 +401,9 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 			loc_chain_info = loc_parts.Join(" -> ")
 
 	// Aggregate qdel statistics for this type
-	var/datum/qdel_item/qi = SSgarbage.items[D.type]
+	var/datum/qdel_item/qi = SSgarbage.GetItem(D.type)
 	if (qi)
-		var/list/stats = list("qdels: [qi.qdels]", "фейлы: [qi.failures]", "hard dels: [qi.hard_deletes]", "destroy_time: [qi.destroy_time]ms")
+		var/list/stats = list("qdels: [qi.qdels]", "soft fails: [qi.failures]", "warnfails: [qi.warnfail_count]", "hard dels: [qi.hard_deletes]", "destroy_time: [qi.destroy_time]ms")
 		if (qi.hard_deletes)
 			stats += "hard_del_time: [qi.hard_delete_time]ms (макс: [qi.hard_delete_max]ms)"
 		if (qi.slept_destroy)
@@ -516,16 +553,16 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 				check_neighbor_for_backref(D, neighbor, "self.[varname]")
 
 	// 4. Scan SSgarbage queues — maybe queued multiple times?
-	for (var/queue_idx in 1 to length(SSgarbage.queues))
-		var/list/queue = SSgarbage.queues[queue_idx]
+	for (var/queue_idx in 1 to GC_QUEUE_COUNT)
+		var/list/refs = SSgarbage.queue_refs[queue_idx]
+		var/head = SSgarbage.queue_heads[queue_idx]
 		var/found_count = 0
-		for (var/list/entry in queue)
-			if (length(entry) >= 2)
-				var/datum/queued = locate(entry[2])
-				if (queued == D)
-					found_count++
+		for (var/j in head to length(refs))
+			var/datum/queued = SSgarbage.GetQueuedDatum(queue_idx, j)
+			if (queued == D)
+				found_count++
 		if (found_count > 1)
-			found_references += "SSgarbage.queues\[[queue_idx]\]: найден [found_count] раз (дублирование в очереди!)"
+			found_references += "SSgarbage.queue_refs\[[queue_idx]\]: найден [found_count] раз (дублирование в очереди!)"
 
 /// Check if a neighbor datum holds a back-reference to the target.
 /// context_path describes how we reached this neighbor from the failed datum.
@@ -594,8 +631,8 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 	// for(var/atom/thing) iterates every atom that exists — correct for a full scan.
 	var/scan_count = 0
 	for (var/atom/thing)
-		if (isnull(D))
-			break // D was hard-deleted during scan, stop
+		if (QDELETED(D))
+			break // Target is gone or pending deletion; stop the expensive scan.
 		if (thing == D)
 			continue
 		scan_count++
@@ -651,6 +688,12 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 			return "QDEL_HINT_HARDDEL (жёсткое удаление)"
 		if (QDEL_HINT_HARDDEL_NOW)
 			return "QDEL_HINT_HARDDEL_NOW (немедленное удаление)"
+		if (QDEL_HINT_SOFTFAIL_ALERT)
+			return "QDEL_HINT_SOFTFAIL_ALERT (оповестить, если softcheck не прошёл)"
+		if (QDEL_HINT_SLOWDESTROY)
+			return "QDEL_HINT_SLOWDESTROY (ожидается медленный softcheck)"
+		if (QDEL_HINT_QUEUE_THEN_HARDDEL)
+			return "QDEL_HINT_QUEUE_THEN_HARDDEL (softcheck → harddel, минуя warnfail)"
 		#ifdef REFERENCE_TRACKING
 		if (QDEL_HINT_FINDREFERENCE)
 			return "QDEL_HINT_FINDREFERENCE (поиск ссылок)"
@@ -676,8 +719,8 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 	if (extra_info)
 		html += "<span class='gc_failure_line'><b>Расположение:</b> [html_encode(extra_info)]</span><br>"
 	html += "<span class='gc_failure_line'><b>Время фейла:</b> [DisplayTimeText(failure_time)] от начала раунда</span><br>"
-	if (queued_time)
-		html += "<span class='gc_failure_line'><b>В очереди GC:</b> ~[DisplayTimeText(failure_time - queued_time)]</span><br>"
+	if (!isnull(origin_time))
+		html += "<span class='gc_failure_line'><b>В очереди GC:</b> ~[DisplayTimeText(failure_time - origin_time)]</span><br>"
 	html += "<span class='gc_failure_line'><b>QDEL Hint:</b> [qdel_hint_to_text()]</span><br>"
 	html += "</div>"
 

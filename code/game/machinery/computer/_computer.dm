@@ -3,6 +3,7 @@
 	icon = 'icons/obj/computer.dmi'
 	icon_state = "computer"
 	density = TRUE
+	shadow_weight = 0.3
 	use_power = IDLE_POWER_USE
 	idle_power_usage = 300
 	active_power_usage = 300
@@ -96,7 +97,7 @@
 	return FALSE
 
 /obj/machinery/computer/process(delta_time)
-	. = is_operational()
+	. = is_operational
 
 	check_typing()
 	if(typing)
@@ -174,7 +175,7 @@
 		return
 	. = ..()
 	if(. && !(machine_stat & BROKEN))
-		machine_stat |= BROKEN
+		set_machine_stat(machine_stat | BROKEN)
 		typing = FALSE
 		playsound(loc, 'sound/effects/glassbr3.ogg', 100, TRUE)
 		set_light(0)

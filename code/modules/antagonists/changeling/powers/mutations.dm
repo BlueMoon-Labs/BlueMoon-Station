@@ -78,8 +78,8 @@
 	helptext = "Yell at Miauw and/or Perakp"
 	chemical_cost = 1000
 
-	var/helmet_type = /obj/item
-	var/suit_type = /obj/item
+	var/helmet_type = null
+	var/suit_type = null
 	var/suit_name_simple = "    "
 	var/helmet_name_simple = "     "
 	var/recharge_slowdown = 0
@@ -97,10 +97,15 @@
 	if(!ishuman(user) || !changeling)
 		return TRUE
 	var/mob/living/carbon/human/H = user
-	if(istype(H.wear_suit, suit_type) || istype(H.head, helmet_type))
-		H.visible_message("<span class='warning'>[H] casts off [H.ru_ego()] [suit_name_simple]!</span>", "<span class='warning'>We cast off our [suit_name_simple].</span>", "<span class='italics'>You hear organic matter ripping and tearing!</span>")
-		H.temporarilyRemoveItemFromInventory(H.head, TRUE) //The qdel on dropped() takes care of it
-		H.temporarilyRemoveItemFromInventory(H.wear_suit, TRUE)
+	if((ispath(suit_type) && istype(H.wear_suit, suit_type)) || (ispath(helmet_type) && istype(H.head, helmet_type)))
+		var/name_to_show = suit_name_simple
+		if(ispath(helmet_type) && istype(H.head, helmet_type) && (!ispath(suit_type) || !istype(H.wear_suit, suit_type)))
+			name_to_show = helmet_name_simple
+		H.visible_message("<span class='warning'>[H] casts off [H.ru_ego()] [name_to_show]!</span>", "<span class='warning'>We cast off our [name_to_show].</span>", "<span class='italics'>You hear organic matter ripping and tearing!</span>")
+		if(ispath(helmet_type) && istype(H.head, helmet_type))
+			H.temporarilyRemoveItemFromInventory(H.head, TRUE) //The qdel on dropped() takes care of it
+		if(ispath(suit_type) && istype(H.wear_suit, suit_type))
+			H.temporarilyRemoveItemFromInventory(H.wear_suit, TRUE)
 		H.update_inv_wear_suit()
 		H.update_inv_head()
 		H.update_hair()
@@ -120,18 +125,22 @@
 	..()
 
 /datum/action/changeling/suit/sting_action(mob/living/carbon/human/user)
-	if(!user.canUnEquip(user.wear_suit))
+	if(ispath(suit_type) && !user.canUnEquip(user.wear_suit))
 		to_chat(user, "\the [user.wear_suit] is stuck to your body, you cannot grow a [suit_name_simple] over it!")
 		return
-	if(!user.canUnEquip(user.head))
+	if(ispath(helmet_type) && !user.canUnEquip(user.head))
 		to_chat(user, "\the [user.head] is stuck on your head, you cannot grow a [helmet_name_simple] over it!")
 		return
 
-	user.dropItemToGround(user.head)
-	user.dropItemToGround(user.wear_suit)
+	if(ispath(helmet_type))
+		user.dropItemToGround(user.head)
+	if(ispath(suit_type))
+		user.dropItemToGround(user.wear_suit)
 
-	user.equip_to_slot_if_possible(new suit_type(user), ITEM_SLOT_OCLOTHING, 1, 1, 1)
-	user.equip_to_slot_if_possible(new helmet_type(user), ITEM_SLOT_HEAD, 1, 1, 1)
+	if(ispath(suit_type))
+		user.equip_to_slot_if_possible(new suit_type(user), ITEM_SLOT_OCLOTHING, 1, 1, 1)
+	if(ispath(helmet_type))
+		user.equip_to_slot_if_possible(new helmet_type(user), ITEM_SLOT_HEAD, 1, 1, 1)
 
 	var/datum/antagonist/changeling/changeling = user.mind.has_antag_datum(/datum/antagonist/changeling)
 	changeling.chem_recharge_slowdown += recharge_slowdown

@@ -90,7 +90,7 @@
 	if(the_enemy in enemies)
 		return
 	enemies += the_enemy
-	RegisterSignal(the_enemy, COMSIG_PARENT_QDELETING, PROC_REF(on_enemy_qdeleting))
+	RegisterSignal(the_enemy, COMSIG_PARENT_QDELETING, PROC_REF(on_enemy_qdeleting), override = TRUE)
 
 /mob/living/simple_animal/hostile/proc/remove_enemy(atom/movable/the_enemy)
 	enemies -= the_enemy
@@ -230,6 +230,8 @@
 /mob/living/simple_animal/hostile/CanAttack(atom/the_target)//Can we actually attack a possible target?
 	if(isturf(the_target) || !the_target) // bail out on invalids
 		return FALSE
+	if(!src.loc || QDELETED(src)) // we're being destroyed or already removed from world
+		return FALSE
 
 	if(ismob(the_target)) //Target is in godmode, ignore it.
 		var/mob/M = the_target
@@ -243,13 +245,13 @@
 	if(search_objects < 2)
 		if(isliving(the_target))
 			var/mob/living/L = the_target
-			var/faction_check = !foes[L] && faction_check_mob(L)
+			var/faction_check = (!foes || !foes[L]) && faction_check_mob(L)
 			if(robust_searching)
 				if(faction_check && !attack_same)
 					return FALSE
 				if(L.stat > stat_attack || (L.stat == UNCONSCIOUS && stat_attack == UNCONSCIOUS && HAS_TRAIT(L, TRAIT_DEATHCOMA)))
 					return FALSE
-				if(friends[L] > 0 && foes[L] < 1)
+				if(friends && foes && friends[L] > 0 && foes[L] < 1)
 					return FALSE
 			else
 				if((faction_check && !attack_same) || L.stat)
@@ -545,6 +547,8 @@
 /mob/living/simple_animal/hostile/proc/EscapeConfinement()
 	if(buckled)
 		buckled.attack_animal(src)
+	if(!targets_from)
+		return
 	if(!isturf(targets_from.loc) && targets_from.loc != null)//Did someone put us in something?
 		var/atom/A = targets_from.loc
 		A.attack_animal(src)//Bang on it till we get out
@@ -620,6 +624,9 @@
 
 	if (!length(SSmobs.clients_by_zlevel[T.z])) // It's fine to use .len here but doesn't compile on 511
 		toggle_ai(AI_Z_OFF)
+		return
+
+	if(!has_nearby_player())
 		return
 
 	var/cheap_search = isturf(T) && !is_station_level(T.z)

@@ -107,6 +107,7 @@
 
 	quirk_holder.grant_language(/datum/language/corpspeak, source = LANGUAGE_MIND)
 	give_item(/obj/item/clothing/accessory/badge_nt, quirk_holder)
+	give_item(/obj/item/card_sticker/nanotrasen/loadout, quirk_holder, list("backpack" = ITEM_SLOT_BACKPACK))
 
 /datum/quirk/syndi_employee
 	name = "Сотрудник Синдиката"
@@ -121,6 +122,7 @@
 
 	quirk_holder.grant_language(/datum/language/codespeak, source = LANGUAGE_MIND)
 	give_item(/obj/item/clothing/accessory/badge_syndi, quirk_holder)
+	give_item(/obj/item/card_sticker/syndicate/loadout, quirk_holder, list("backpack" = ITEM_SLOT_BACKPACK))
 
 /datum/quirk/lewdjob
 	name = "Секс это работа"

@@ -90,7 +90,7 @@
 	name = "Detomatix PDA Cartridge"
 	desc = "При установке в КПК этот картридж даёт четыре попытки подорвать КПК тех членов экипажа, \
 			у кого включена функция сообщений. Взрывная волна вырубит получателя ненадолго, а оглушит на подольше."
-	item = /obj/item/cartridge/virus/syndicate
+	item = /obj/item/cartridge/virus/detomatix
 	cost = 5
 	restricted = TRUE
 	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS) //bluemoon change никаких подрывов через ВР
@@ -156,6 +156,7 @@
 	item = /obj/item/grenade/syndieminibomb
 	cost = 6
 	purchasable_from = ~UPLINK_CLOWN_OPS
+	blocked_round_types = list(ROUNDTYPE_DYNAMIC_LIGHT)
 
 /datum/uplink_item/explosives/syndicate_minibombs
 	name = "Syndicate Minibomb Clusterbang"

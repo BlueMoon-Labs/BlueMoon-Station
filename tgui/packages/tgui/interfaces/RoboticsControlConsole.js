@@ -1,5 +1,6 @@
+// File modding Pe4henika (Bluemoon) 13.03.26
 import { useBackend, useSharedState } from '../backend';
-import { Box, Button, LabeledList, NoticeBox, Section, Tabs } from '../components';
+import { Box, Button, LabeledList, NoticeBox, Section, Tabs, ProgressBar } from '../components';
 import { Window } from '../layouts';
 
 export const RoboticsControlConsole = (props, context) => {
@@ -9,6 +10,7 @@ export const RoboticsControlConsole = (props, context) => {
     can_hack,
     cyborgs = [],
     drones = [],
+    cybernetics = [],
   } = data;
   return (
     <Window
@@ -17,18 +19,25 @@ export const RoboticsControlConsole = (props, context) => {
       <Window.Content overflow="auto">
         <Tabs>
           <Tabs.Tab
-            icon="list"
+            icon="robot"
             lineHeight="23px"
             selected={tab === 1}
             onClick={() => setTab(1)}>
             Cyborgs ({cyborgs.length})
           </Tabs.Tab>
           <Tabs.Tab
-            icon="list"
+            icon="microchip"
             lineHeight="23px"
             selected={tab === 2}
             onClick={() => setTab(2)}>
             Drones ({drones.length})
+          </Tabs.Tab>
+          <Tabs.Tab
+            icon="user-astronaut"
+            lineHeight="23px"
+            selected={tab === 3}
+            onClick={() => setTab(3)}>
+            Cybernetics ({cybernetics.length})
           </Tabs.Tab>
         </Tabs>
         {tab === 1 && (
@@ -37,6 +46,9 @@ export const RoboticsControlConsole = (props, context) => {
         {tab === 2 && (
           <Drones drones={drones} />
         )}
+        {tab === 3 && (
+          <Cybernetics cybernetics={cybernetics} />
+        )}
       </Window.Content>
     </Window>
   );
@@ -44,7 +56,7 @@ export const RoboticsControlConsole = (props, context) => {
 
 const Cyborgs = (props, context) => {
   const { cyborgs, can_hack } = props;
-  const { act, data } = useBackend(context);
+  const { act } = useBackend(context);
   if (!cyborgs.length) {
     return (
       <NoticeBox>
@@ -158,6 +170,74 @@ const Drones = (props, context) => {
                 ? "Not Responding"
                 : 'Nominal'}
             </Box>
+          </LabeledList.Item>
+        </LabeledList>
+      </Section>
+    );
+  });
+};
+
+const Cybernetics = (props, context) => {
+  const { cybernetics } = props;
+  const { act, data } = useBackend(context);
+  const { is_ai } = data; // Получаем статус ИИ из бэкенда
+
+  if (!cybernetics.length) {
+    return (
+      <NoticeBox>
+        No neural-linked bio-assets detected
+      </NoticeBox>
+    );
+  }
+
+  return cybernetics.map(cyber => {
+    return (
+      <Section
+        key={cyber.ref}
+        title={cyber.name}
+        buttons={(
+          <>
+            {!!is_ai && (
+              <>
+                <Button
+                  icon="smile"
+                  content="Похвалить"
+                  color="green"
+                  onClick={() => act('praise_cyber', { ref: cyber.ref })} />
+                <Button
+                  icon="frown"
+                  content="Отругать"
+                  color="orange"
+                  onClick={() => act('scold_cyber', { ref: cyber.ref })} />
+              </>
+            )}
+            <Button.Confirm
+              icon="bolt"
+              content={cyber.shock_cooldown > 0 ? `${cyber.shock_cooldown}s` : "Shock"}
+              color="average"
+              disabled={cyber.shock_cooldown > 0}
+              onClick={() => act('shock_cyber', {
+                ref: cyber.ref,
+              })} />
+          </>
+        )}>
+        <LabeledList>
+          <LabeledList.Item label="Status">
+            <Box color={cyber.status >= 2 ? 'bad' : 'good'}>
+              {cyber.status >= 2 ? "Unconscious" : "Active"}
+            </Box>
+          </LabeledList.Item>
+          <LabeledList.Item label="Health">
+            <ProgressBar
+              value={cyber.health}
+              minValue={0}
+              maxValue={cyber.max_health}
+              color={cyber.health <= 30 ? 'bad' : 'good'}>
+              {cyber.health} / {cyber.max_health}
+            </ProgressBar>
+          </LabeledList.Item>
+          <LabeledList.Item label="Designation">
+            {cyber.role}
           </LabeledList.Item>
         </LabeledList>
       </Section>

@@ -17,7 +17,7 @@
 		SEND_SIGNAL(src, COMSIG_PELLET_CLOUD_INIT, target, user, fired_from, randomspread, spread, zone_override, params, distro)
 
 	user.DelayNextAction(considered_action = TRUE, immediate = FALSE)
-	user.newtonian_move(get_dir(target, user))
+	user.newtonian_move(get_dir(target, user), drift_force = newtonian_force)
 	update_icon()
 	return TRUE
 
@@ -62,7 +62,10 @@
 	if(BB.firer)
 		firing_dir = BB.firer.dir
 	if(!BB.suppressed && firing_effect_type)
-		new firing_effect_type(get_turf(src), firing_dir)
+		new firing_effect_type(curloc, firing_dir)
+
+	// Always originate from the shooter's turf; BB stays inside casing until here (can mis-resolve through loc during pulls/movement).
+	BB.forceMove(curloc)
 
 	var/direct_target
 	if(targloc == curloc)

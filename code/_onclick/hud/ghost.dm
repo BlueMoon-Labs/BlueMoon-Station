@@ -69,6 +69,12 @@
 	using.screen_loc = ui_ghost_spawners
 	static_inventory += using
 
+	// Z
+	using = new /atom/movable/screen/floor_changer/ghost(null, src)
+	using.screen_loc = ui_ghost_floor_changer
+	static_inventory += using
+	// Z
+
 	using = new /atom/movable/screen/language_menu(null, src)
 	using.icon = ui_style
 	static_inventory += using

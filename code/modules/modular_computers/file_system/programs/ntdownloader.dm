@@ -2,7 +2,7 @@
 	filename = "ntsoftwarehub"
 	filedesc = "NT Software Hub"
 	program_icon_state = "generic"
-	extended_desc = "This program allows downloads of software from official NT repositories"
+	extended_desc = "Позволяет загружать программное обеспечение из официальных репозиториев NT."
 	unsendable = TRUE
 	undeletable = TRUE
 	size = 4
@@ -57,8 +57,23 @@
 
 	var/obj/item/computer_hardware/hard_drive/hard_drive = computer.all_components[MC_HDD]
 
-	if(!computer || !hard_drive || !hard_drive.can_store_file(PRG))
-		return FALSE
+	if(hard_drive)
+		if(!hard_drive.can_store_file(PRG))
+			return FALSE
+	else
+		if(!computer)
+			return FALSE
+		var/name = PRG.filename + "." + PRG.filetype
+		for(var/datum/computer_file/file in computer.stored_files)
+			if((file.filename + "." + file.filetype) == name)
+				return FALSE
+		if(computer.stored_files.len >= 999)
+			return FALSE
+		var/used = 0
+		for(var/datum/computer_file/F in computer.stored_files)
+			used += F.size
+		if((used + PRG.size) > computer.max_capacity)
+			return FALSE
 
 	ui_header = "downloader_running.gif"
 
@@ -87,9 +102,13 @@
 		return
 	generate_network_log("Completed download of file [hacked_download ? "**ENCRYPTED**" : "[downloaded_file.filename].[downloaded_file.filetype]"].")
 	var/obj/item/computer_hardware/hard_drive/hard_drive = computer.all_components[MC_HDD]
-	if(!computer || !hard_drive || !hard_drive.store_file(downloaded_file))
-		// The download failed
-		downloaderror = "I/O ERROR - Unable to save file. Check whether you have enough free space on your hard drive and whether your hard drive is properly connected. If the issue persists contact your system administrator for assistance."
+	if(hard_drive)
+		if(!hard_drive.store_file(downloaded_file))
+			downloaderror = "I/O ERROR - Unable to save file. Check whether you have enough free space on your hard drive and whether your hard drive is properly connected. If the issue persists contact your system administrator for assistance."
+	else if(computer)
+		computer.store_file(downloaded_file)
+	else
+		downloaderror = "I/O ERROR - Unable to save file. Storage device unavailable."
 	downloaded_file = null
 	download_completion = FALSE
 	ui_header = "downloader_finished.gif"
@@ -109,6 +128,8 @@
 			download_netspeed = NTNETSPEED_HIGHSIGNAL
 		if(3)
 			download_netspeed = NTNETSPEED_ETHERNET
+		else
+			download_netspeed = NTNETSPEED_HIGHSIGNAL
 	download_completion += download_netspeed
 
 /datum/computer_file/program/ntnetdownload/ui_act(action, params)
@@ -134,8 +155,14 @@
 
 	if(!istype(my_computer))
 		return
+	var/list/access = list()
 	var/obj/item/computer_hardware/card_slot/card_slot = computer.all_components[MC_CARD]
-	var/list/access = card_slot?.GetAccess()
+	if(card_slot)
+		access = card_slot.GetAccess()
+	if(!length(access) && istype(computer, /obj/item/modular_computer/pda))
+		var/obj/item/modular_computer/pda/pda = computer
+		if(pda.stored_id)
+			access = pda.stored_id.GetAccess()
 
 	var/list/data = get_header_data()
 
@@ -151,8 +178,14 @@
 		data["downloadcompletion"] = round(download_completion, 0.1)
 
 	var/obj/item/computer_hardware/hard_drive/hard_drive = my_computer.all_components[MC_HDD]
-	data["disk_size"] = hard_drive.max_capacity
-	data["disk_used"] = hard_drive.used_capacity
+	if(hard_drive)
+		data["disk_size"] = hard_drive.max_capacity
+		data["disk_used"] = hard_drive.used_capacity
+	else
+		data["disk_size"] = my_computer.max_capacity
+		data["disk_used"] = 0
+		for(var/datum/computer_file/F in my_computer.stored_files)
+			data["disk_used"] += F.size
 	data["emagged"] = emagged
 
 	var/list/repo = antag_repo | main_repo
@@ -160,19 +193,58 @@
 
 	for(var/I in repo)
 		var/datum/computer_file/program/P = I
+		if(P.available_on_syndinet && !emagged)
+			continue
 		if(!(P.category in program_categories))
 			program_categories.Add(P.category)
+		var/installed = FALSE
+		if(hard_drive)
+			installed = !!hard_drive.find_file_by_name(P.filename)
+		else
+			installed = !!my_computer.find_file_by_name(P.filename)
+		var/restriction = ""
+		if(P.available_on_syndinet)
+			restriction = "Требуется доступ к SyndiNet (устройство взломано)"
+		else if(P.transfer_access)
+			if(islist(P.transfer_access))
+				var/list/access_names = list()
+				for(var/req_access in P.transfer_access)
+					var/desc = get_access_desc(req_access)
+					if(desc)
+						access_names += desc
+				if(length(access_names))
+					var/comma_sep = ", "
+					restriction = "Требуется доступ для скачивания: [jointext(access_names, comma_sep)]"
+			else
+				var/desc = get_access_desc(P.transfer_access)
+				if(desc)
+					restriction = "Требуется доступ для скачивания: [desc]"
+		else if(P.required_access)
+			if(islist(P.required_access))
+				var/list/access_names = list()
+				for(var/req_access in P.required_access)
+					var/desc = get_access_desc(req_access)
+					if(desc)
+						access_names += desc
+				if(length(access_names))
+					var/comma_sep = ", "
+					restriction = "Требуется доступ для запуска: [jointext(access_names, comma_sep)]"
+			else
+				var/desc = get_access_desc(P.required_access)
+				if(desc)
+					restriction = "Требуется доступ для запуска: [desc]"
 		data["programs"] += list(list(
 			"icon" = P.program_icon,
 			"filename" = P.filename,
 			"filedesc" = P.filedesc,
 			"fileinfo" = P.extended_desc,
 			"category" = P.category,
-			"installed" = !!hard_drive.find_file_by_name(P.filename),
+			"installed" = installed,
 			"compatible" = check_compatibility(P),
 			"size" = P.size,
 			"access" = emagged && P.available_on_syndinet ? TRUE : P.can_run(user,transfer = 1, access = access),
 			"verifiedsource" = P.available_on_ntnet,
+			"restriction" = restriction,
 		))
 
 	data["categories"] = show_categories & program_categories
@@ -200,7 +272,7 @@
 	filename = "syndownloader"
 	filedesc = "Software Download Tool"
 	program_icon_state = "generic"
-	extended_desc = "This program allows downloads of software from shared Syndicate repositories"
+	extended_desc = "Позволяет загружать программное обеспечение из общих репозиториев Синдиката."
 	requires_ntnet = FALSE
 	ui_header = "downloader_finished.gif"
 	tgui_id = "NtosNetDownloader"

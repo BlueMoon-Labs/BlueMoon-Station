@@ -179,7 +179,7 @@
 /// Remove the wound from whatever it's afflicting, and cleans up whateverstatus effects it had or modifiers it had on interaction times. ignore_limb is used for detachments where we only want to forget the victim
 /datum/wound/proc/remove_wound(ignore_limb, replaced = FALSE)
 	//TODO: have better way to tell if we're getting removed without replacement (full heal) scar stuff
-	if(limb && !already_scarred && !replaced)
+	if(limb && !already_scarred && !replaced && !QDELETED(limb))
 		already_scarred = TRUE
 		var/datum/scar/new_scar = new
 		new_scar.generate(limb, src)
@@ -279,6 +279,38 @@
 /// Someone is using something that might be used for treating the wound on this limb
 /datum/wound/proc/treat(obj/item/I, mob/user)
 	return
+
+/**
+ * Проверяет, блокирует ли броня лечение данным предметом.
+ * Продвинутые предметы (bypass_armor = TRUE) проходят сквозь обычную броню, но не сквозь скафандры.
+ * Синтетические раны (synthetic_mode = TRUE) не блокируются бронёй — ремонт инструментами не зависит от брони.
+ */
+/datum/wound/proc/check_armor_for_treatment(obj/item/I, mob/user)
+	if(!ishuman(victim))
+		return TRUE
+
+	var/bypass_armor = FALSE
+	if(istype(src, /datum/wound/burn))
+		var/datum/wound/burn/burn_wound = src
+		if(burn_wound.synthetic_mode)
+			bypass_armor = TRUE
+	if(istype(I, /obj/item/stack/medical))
+		var/obj/item/stack/medical/med = I
+		bypass_armor = med.bypass_armor
+
+	var/obj/item/clothing/covering = get_bodypart_protecting_clothing_by_coverage(victim, limb)
+	if(!covering || !(covering.clothing_flags & THICKMATERIAL))
+		return TRUE // Нет толстой брони
+
+	if(bypass_armor)
+		// Скафандры блокируют лечение
+		if(istype(covering, /obj/item/clothing/suit/space))
+			to_chat(user, span_warning("Скафандр на [limb.ru_name_v] [victim] мешает лечению!"))
+			return FALSE
+		return TRUE // Обычная броня — продвинутый предмет проходит
+	else
+		to_chat(user, span_warning("Броня на [limb.ru_name_v] [victim] мешает лечению!"))
+		return FALSE
 
 /// If var/processing is TRUE, this is run on each life tick
 /datum/wound/proc/handle_process()

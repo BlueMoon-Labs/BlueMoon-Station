@@ -281,6 +281,13 @@ effective or pretty fucking useless.
 		GLOB.active_jammers -= src
 	update_icon()
 
+/// Checks if a given atom is in range of a radio jammer, returns TRUE if it is.
+/proc/is_within_radio_jammer_range(atom/source)
+	for(var/obj/item/jammer/jammer as anything in GLOB.active_jammers)
+		if(get_dist(source, jammer) <= jammer.range)
+			return TRUE
+	return FALSE
+
 /*portable turret*/
 /obj/item/storage/toolbox/emergency/turret
 	desc = "You feel a strange urge to hit this with a wrench."
@@ -297,7 +304,7 @@ effective or pretty fucking useless.
     if(I.tool_behaviour == TOOL_WRENCH && user.a_intent == INTENT_HARM)
         user.visible_message("<span class='danger'>[user] бьёт [src] усилием [I]!</span>", \
             "<span class='danger'>Вы бьёте [src] усилием [I]!</span>", null, COMBAT_MESSAGE_RANGE)
-        playsound(src, "sound/items/drill_use.ogg", 80, TRUE, -1)
+        playsound(src, pick('sound/items/drill1.ogg', 'sound/items/drill2.ogg', 'sound/items/drill3.ogg', 'sound/items/drill4.ogg', 'sound/items/drill5.ogg'), 80, TRUE, -1)
         var/obj/machinery/porta_turret/syndicate/pod/toolbox/turret = new(get_turf(loc))
         turret.faction = list("[REF(user)]")
         qdel(src)

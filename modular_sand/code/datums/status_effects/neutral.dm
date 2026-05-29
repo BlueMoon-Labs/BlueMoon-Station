@@ -109,7 +109,8 @@
 		if(drip.reagents.total_volume >= 10)
 			S = new(location)
 			drip.reagents.trans_to(S, drip.reagents.total_volume)
-			drip.transfer_blood_dna(S.blood_DNA)
+			if(drip.blood_DNA && drip.blood_DNA.len)
+				S.transfer_blood_dna(drip.blood_DNA)
 			S.update_icon()
 			qdel(drip)
 		return

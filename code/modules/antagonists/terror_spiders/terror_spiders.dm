@@ -17,8 +17,10 @@
 	threat = 2
 
 /datum/antagonist/terror_spiders/threat()
-	var/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/spider = owner.current
-	. = 2^spider.spider_tier
+	var/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/spider = owner?.current
+	if(!istype(spider))
+		return ..()
+	. = 2** spider.spider_tier
 
 /datum/antagonist/terror_spiders/create_team(datum/team/terror_spiders/new_team)
 	if(!new_team)

@@ -60,7 +60,11 @@
 								// 2 for preloading absolutely everything;
 
 #ifdef LOWMEMORYMODE
+#ifdef ABSOLUTE_MINIMUM_MODE
+#define FORCE_MAP "_maps/runtimestation_minimal.json"
+#else
 #define FORCE_MAP "_maps/runtimestation.json"
+#endif
 #endif
 
 //Additional code for the above flags.
@@ -99,3 +103,7 @@
 // You will need to compile your own copy of prof.dll in order to use it.
 // Find the source code and build instructions here: https://github.com/mafemergency/byond-tracy/
 // #define TRACY_PROFILING
+
+// Enables GC per-fire CSV profiler. Writes to data/logs/gc_profiler.csv and gc_profiler_types.csv.
+// Use to diagnose GC performance bottlenecks. No runtime overhead when commented out.
+// #define GC_PROFILER

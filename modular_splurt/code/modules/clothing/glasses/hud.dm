@@ -41,6 +41,7 @@
 		H.add_hud_to(user)
 
 	user.update_inv_glasses()
+	return SEND_SIGNAL(src, COMSIG_ATOM_UPDATE_ICON_STATE)
 
 /obj/item/clothing/glasses/hud/blueshield/aviators
 	name = "blueshield HUD Aviators"

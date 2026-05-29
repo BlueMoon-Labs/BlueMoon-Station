@@ -275,10 +275,7 @@
 		dat += "<a href='?src=[REF(src)];[HrefToken()];gamemode_panel=1'>(Game Mode Panel)</a><BR>"
 	dat += {"
 		<BR>
-		<A href='?src=[REF(src)];[HrefToken()];create_object=1'>Create Object</A><br>
-		<A href='?src=[REF(src)];[HrefToken()];quick_create_object=1'>Quick Create Object</A><br>
-		<A href='?src=[REF(src)];[HrefToken()];create_turf=1'>Create Turf</A><br>
-		<A href='?src=[REF(src)];[HrefToken()];create_mob=1'>Create Mob</A><br>
+		<A href='?src=[REF(src)];[HrefToken()];spawn_panel=1'>Spawn Panel</A><br>
 		"}
 
 	if(marked_datum && istype(marked_datum, /atom))
@@ -520,6 +517,77 @@
 	world.update_status()
 	SSblackbox.record_feedback("nested tally", "admin_toggle", 1, list("Toggle Respawn", "[!new_nores ? "Enabled" : "Disabled"]")) //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
+/proc/admin_apply_global_nightshift_mode(mob/admin_user, mode)
+	if(!admin_user?.client?.holder)
+		return FALSE
+	if(!SSnightshift.apply_admin_mode(mode))
+		return FALSE
+	var/status = SSnightshift.get_admin_status_text()
+	log_admin("[key_name(admin_user)] set night shift to [mode]. [status]")
+	message_admins("[key_name_admin(admin_user)] set night shift to [mode]. [status]")
+	SSblackbox.record_feedback("nested tally", "admin_toggle", 1, list("Toggle Night Shift", "[mode]"))
+	return TRUE
+
+/proc/admin_apply_solar_time_override(mob/admin_user, solar_time, clear_override = FALSE)
+	if(!admin_user?.client?.holder)
+		return FALSE
+	if(clear_override && !SSnightshift.admin_solar_time_override)
+		to_chat(admin_user, span_notice("Solar time override is not active."))
+		return FALSE
+	SSnightshift.apply_admin_solar_time_change(solar_time, clear_override)
+	var/status = SSnightshift.get_admin_status_text()
+	if(clear_override)
+		log_admin("[key_name(admin_user)] cleared the solar time override. [status]")
+		message_admins("[key_name_admin(admin_user)] cleared the solar time override. [status]")
+	else
+		var/set_time = seconds_to_clock(round(SSnightshift.normalize_admin_solar_time(solar_time) / 10))
+		log_admin("[key_name(admin_user)] set solar time to [set_time]. [status]")
+		message_admins("[key_name_admin(admin_user)] set solar time to [set_time]. [status]")
+	SSblackbox.record_feedback("tally", "admin_verb", 1, "Set Solar Time")
+	return TRUE
+
+/datum/admins/proc/togglenightshift()
+	set category = "Server"
+	set desc = "Toggle night shift lighting"
+	set name = "Toggle Night Shift"
+	var/val = tgui_alert(usr, "Установить ночной режим освещения.\n[SSnightshift.get_admin_status_text()]", "Ночной Режим", list("Вкл", "Выкл", "Авто"))
+	if(!val)
+		return
+	admin_apply_global_nightshift_mode(usr, val)
+
+/datum/admins/proc/setsolartime()
+	set category = "Server"
+	set desc = "Set solar time for nightshift verification"
+	set name = "Set Solar Time"
+
+	var/status = SSnightshift.get_admin_status_text()
+	var/override_state = SSnightshift.admin_solar_time_override ? "Active" : "Inactive"
+	var/prompt = "[status]\nOverride: [override_state]"
+	var/choice = tgui_alert(usr, prompt, "Solar Time", list("Dawn", "Day", "Dusk", "Night", "Exact Time", "Clear Override", "Cancel"))
+	if(!choice || choice == "Cancel")
+		return
+	switch(choice)
+		if("Dawn")
+			admin_apply_solar_time_override(usr, 7 HOURS)
+		if("Day")
+			admin_apply_solar_time_override(usr, 12 HOURS)
+		if("Dusk")
+			admin_apply_solar_time_override(usr, 19 HOURS + 30 MINUTES)
+		if("Night")
+			admin_apply_solar_time_override(usr, 23 HOURS + 30 MINUTES)
+		if("Exact Time")
+			var/default_time = seconds_to_clock(round(SSnightshift.normalize_admin_solar_time(SOLAR_TIME(FALSE, world.time)) / 10))
+			var/raw_time = input(usr, "[prompt]\nВведите время в формате HH:MM или HH:MM:SS.", "Set Solar Time", default_time) as text|null
+			if(isnull(raw_time))
+				return
+			var/parsed_time = SSnightshift.parse_admin_solar_time_input(raw_time)
+			if(isnull(parsed_time))
+				to_chat(usr, span_warning("Invalid solar time. Use HH:MM or HH:MM:SS."))
+				return
+			admin_apply_solar_time_override(usr, parsed_time)
+		if("Clear Override")
+			admin_apply_solar_time_override(usr, null, TRUE)
+
 /datum/admins/proc/delay()
 	set category = "Server"
 	set desc="Delay the game start"
@@ -542,7 +610,7 @@
 		SSblackbox.record_feedback("tally", "admin_verb", 1, "Delay Game Start") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
 /datum/admins/proc/unprison(mob/M in GLOB.mob_list)
-	set category = "Admin"
+	set category = "Admin.Player Interaction"
 	set name = "Unprison"
 	if (is_centcom_level(M.z))
 		SSjob.SendToLateJoin(M)
@@ -579,6 +647,7 @@
 		for(var/i in 1 to amount)
 			var/atom/A = new chosen(T)
 			A.flags_1 |= ADMIN_SPAWNED_1
+			bm_set_admin_spawner_if_metadollar(A, usr)
 
 	log_admin("[key_name(usr)] spawned [amount] x [chosen] at [AREACOORD(usr)]")
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Spawn Atom") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
@@ -603,6 +672,7 @@
 		var/obj/structure/closet/supplypod/centcompod/pod = new(pick(get_area_turfs(pod_storage_area))) //Lets just have it in the pod bay for a moment instead of runtiming
 		var/atom/A = new chosen(pod)
 		A.flags_1 |= ADMIN_SPAWNED_1
+		bm_set_admin_spawner_if_metadollar(A, usr)
 		new /obj/effect/pod_landingzone(T, pod)
 
 	log_admin("[key_name(usr)] pod-spawned [chosen] at [AREACOORD(usr)]")
@@ -627,7 +697,7 @@
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Spawn Cargo") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
 /datum/admins/proc/show_traitor_panel(mob/target_mob in GLOB.mob_list)
-	set category = "Admin"
+	set category = "Admin.Game"
 	set desc = "Edit mobs's memory and role"
 	set name = "Show Traitor Panel"
 	var/datum/mind/target_mind = target_mob.mind
@@ -642,7 +712,7 @@
 
 
 /datum/admins/proc/toggletintedweldhelmets()
-	set category = "Debug"
+	set category = "Debug.8) Misc"
 	set desc="Reduces view range when wearing welding helmets"
 	set name="Toggle tinted welding helmes"
 	GLOB.tinted_weldhelh = !( GLOB.tinted_weldhelh )

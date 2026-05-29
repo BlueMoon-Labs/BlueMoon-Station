@@ -67,6 +67,8 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 	run_loc_floor_bottom_left = locate(reservation.bottom_left_coords[1], reservation.bottom_left_coords[2], reservation.bottom_left_coords[3])
 	run_loc_floor_top_right = locate(reservation.top_right_coords[1], reservation.top_right_coords[2], reservation.top_right_coords[3])
 
+	create_lighting_for_zlevel(run_loc_floor_bottom_left.z)
+
 	TEST_ASSERT(isfloorturf(run_loc_floor_bottom_left), "run_loc_floor_bottom_left was not a floor ([run_loc_floor_bottom_left])")
 	TEST_ASSERT(isfloorturf(run_loc_floor_top_right), "run_loc_floor_top_right was not a floor ([run_loc_floor_top_right])")
 
@@ -107,6 +109,21 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 		instance = new type()
 	allocated += instance
 	return instance
+
+/// Reads repository source files for structural audit tests.
+/// Integration CI runs DreamDaemon from `ci_test/`, while source stays in the parent checkout.
+/datum/unit_test/proc/read_source_file(source_path)
+	var/source = file2text(source_path)
+	if(length(source))
+		return source
+
+#ifdef CIBUILDING
+	source = file2text("../[source_path]")
+	if(length(source))
+		return source
+#endif
+
+	return source
 
 /*
 /datum/unit_test/proc/test_screenshot(name, icon/icon)
@@ -182,7 +199,7 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 		test.log_for_test(text, "error", file, line)
 
 		// Normal log message
-		log_entry += "\tREASON #[reasonID]: [text] at [file]:[line]"
+		log_entry += "\tREASON #[reasonID]: [text] at [file]:[line],title=[map_name]"
 
 	var/message = log_entry.Join("\n")
 	log_test(message)

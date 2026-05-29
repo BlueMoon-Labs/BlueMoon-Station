@@ -14,3 +14,6 @@
 	name = "Sergal metal chain"
 	icon_state = "metal_chain"
 
+/obj/item/clothing/neck/bm/aristocratic_uniform_cape
+	name = "Aristocratic uniform cape"
+	icon_state = "aristocratic_uniform_cape"

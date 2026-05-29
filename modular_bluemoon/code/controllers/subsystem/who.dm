@@ -24,8 +24,10 @@ SUBSYSTEM_DEF(who)
 	initialized = TRUE
 
 /datum/controller/subsystem/who/fire()
-	who.update_data()
-	staff_who.update_data()
+	if(length(SStgui.get_all_open_uis(who)))
+		who.update_data()
+	if(length(SStgui.get_all_open_uis(staff_who)))
+		staff_who.update_data()
 
 
 // WHO DATA
@@ -46,7 +48,7 @@ SUBSYSTEM_DEF(who)
 	admin_sorted_additional["player_additional"] = list("flags" = R_ADMIN, "data" = player_additional)
 
 	var/list/player_stealthed_additional = list()
-	admin_sorted_additional["player_stealthed_additional"] = list("flags" = R_STEALTH, "data" = player_stealthed_additional)
+	admin_sorted_additional["player_stealthed_additional"] = list("flags" = R_ADMIN, "data" = player_stealthed_additional)
 
 	var/list/counted_additional = list(
 		"lobby" = 0,
@@ -62,10 +64,10 @@ SUBSYSTEM_DEF(who)
 			"text" = "[fake_key ? fake_key : client.key] ([round(client.avgping, 1)]ms)",
 			"ckey_color" = "white"
 		)
-		base_data["total_players"] += list(list(client.key = list(client_payload.Copy())))
+		base_data["total_players"] += list(list(fake_key ? fake_key : client.key = list(client_payload.Copy())))
 		if(fake_key)
 			client_payload["text"] += " (HIDDEN '[client.key]')"
-			player_stealthed_additional["total_players"] += list(list(client.key = list(client_payload)))
+			player_stealthed_additional["total_players"] += list(list(fake_key = list(client_payload)))
 		else
 			player_additional["total_players"] += list(list(client.key = list(client_payload)))
 
@@ -180,7 +182,7 @@ SUBSYSTEM_DEF(who)
 	admin_sorted_additional["admin_additional"] = list("flags" = R_ADMIN, "data" = admin_additional)
 
 	var/list/admin_stealthed_additional = list()
-	admin_sorted_additional["admin_stealthed_additional"] = list("flags" = R_STEALTH, "data" = admin_stealthed_additional)
+	admin_sorted_additional["admin_stealthed_additional"] = list("flags" = R_ADMIN, "data" = admin_stealthed_additional)
 
 	var/list/listings = list(
 		"Management" = list(R_PERMISSIONS, list(), "purple"),

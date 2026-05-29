@@ -73,11 +73,19 @@
 	if(istype(board, /obj/item/circuitboard/machine))
 		var/obj/item/circuitboard/machine/machine_board = board
 		var/good_board = TRUE
-		var/static/list/allowed_types = typesof(/obj/item/stack/cable_coil, /obj/item/reagent_containers/glass/beaker, /obj/item/stack/sheet/glass, /obj/item/stack/sheet/metal)
+		var/const/max_stock_parts_rating = 1
+		var/static/list/allowed_types = typesof(
+			/obj/item/stack/cable_coil,
+			/obj/item/reagent_containers/glass/beaker, 
+			/obj/item/assembly/igniter,
+			/obj/item/stack/sheet/glass,
+			/obj/item/stack/sheet/metal
+		)
+
 		for(var/req in machine_board.req_components) // ispath
 			if(ispath(req, /obj/item/stock_parts))
 				var/obj/item/stock_parts/req_stock = req // ispath
-				if(req_stock:rating > 1)
+				if(req_stock:rating > max_stock_parts_rating)
 					good_board = FALSE
 			else if(req in allowed_types)
 				continue

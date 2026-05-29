@@ -115,7 +115,7 @@
 /obj/machinery/camera/xray{
 	c_tag = "Xenobio East";
 	dir = 4;
-	network = list("fsci")
+	network = list("ds1xenobio")
 	},
 /turf/open/floor/circuit/telecomms,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
@@ -126,7 +126,7 @@
 /obj/machinery/camera/xray{
 	c_tag = "Xenobio West";
 	dir = 8;
-	network = list("fsci")
+	network = list("ds1xenobio")
 	},
 /turf/open/floor/engine,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
@@ -644,7 +644,8 @@
 /obj/effect/turf_decal/siding/dark,
 /obj/machinery/computer/camera_advanced/xenobio{
 	dir = 1;
-	name = "xenobiology management console"
+	name = "xenobiology management console";
+	networks = 4
 	},
 /obj/structure/window/reinforced/survival_pod,
 /turf/open/floor/plasteel/dark/side,
@@ -7740,21 +7741,21 @@
 "gsD" = (
 /obj/structure/stone_tile/slab,
 /obj/structure/table/reinforced/brass,
-/obj/item/organ/regenerative_core/legion{
-	pixel_x = 9;
-	pixel_y = -10
-	},
-/obj/item/organ/regenerative_core/legion{
-	pixel_x = 9;
-	pixel_y = 4
-	},
 /obj/item/hivelordstabilizer{
 	pixel_x = -8;
 	pixel_y = 10
 	},
 /obj/item/hivelordstabilizer{
-	pixel_x = -7;
-	pixel_y = -9
+	pixel_x = -8;
+	pixel_y = -8
+	},
+/obj/item/hivelordstabilizer{
+	pixel_x = 8;
+	pixel_y = 10
+	},
+/obj/item/hivelordstabilizer{
+	pixel_x = 8;
+	pixel_y = -8
 	},
 /turf/open/indestructible/boss,
 /area/ruin/lavaland/unpowered/ash_walkers)
@@ -7777,7 +7778,7 @@
 /obj/machinery/camera/xray{
 	c_tag = "Xenobio West";
 	dir = 4;
-	network = list("fsci")
+	network = list("ds1xenobio")
 	},
 /turf/open/floor/engine,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
@@ -8081,6 +8082,7 @@
 "gGB" = (
 /obj/structure/stone_tile/slab,
 /obj/structure/closet/crate/wooden/shadow,
+/obj/item/clothing/under/costume/loincloth,
 /turf/open/indestructible/boss,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "gGE" = (
@@ -8858,7 +8860,7 @@
 /obj/machinery/camera/xray{
 	c_tag = "Xenobio West";
 	dir = 5;
-	network = list("fsci")
+	network = list("ds1xenobio")
 	},
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 1
@@ -11942,7 +11944,6 @@
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "jRv" = (
 /obj/structure/table/wood/shadow,
-/obj/item/clothing/under/costume/loincloth,
 /obj/structure/stone_tile/slab,
 /obj/item/flashlight/lantern{
 	pixel_x = -10;
@@ -13744,7 +13745,7 @@
 /obj/effect/turf_decal/siding/dark,
 /obj/machinery/computer/security{
 	dir = 1;
-	network = list("ds2")
+	network = list("ds2","ds1xenobio")
 	},
 /obj/structure/window/reinforced/survival_pod,
 /turf/open/floor/mineral/plastitanium/red,
@@ -14462,7 +14463,8 @@
 	},
 /obj/structure/rack/shelf,
 /obj/item/mmi/posibrain/syndie{
-	pixel_x = 0
+	pixel_x = 0;
+	antagonist_datum = /datum/antagonist/ghost_role/lavaland_syndicate
 	},
 /obj/item/borg/upgrade/transform/syndicatejack,
 /turf/open/floor/plasteel/dark,
@@ -14991,7 +14993,8 @@
 /obj/structure/window/reinforced/survival_pod,
 /obj/machinery/computer/camera_advanced/xenobio{
 	dir = 1;
-	name = "xenobiology management console"
+	name = "xenobiology management console";
+	networks = list("ds1xenobio")
 	},
 /turf/open/floor/plasteel/dark/side,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
@@ -17651,7 +17654,7 @@
 	dir = 4;
 	max_integrity = 180
 	},
-/obj/structure/closet/crate/necropolis/tendril,
+/obj/item/fakeartefact,
 /turf/open/indestructible/boss,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "nWS" = (
@@ -18368,6 +18371,12 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/mine/laborcamp/security)
+"ozZ" = (
+/obj/docking_port/stationary/random{
+	dir = 8
+	},
+/turf/open/lava/smooth/lava_land_surface,
+/area/lavaland/surface/outdoors)
 "oAU" = (
 /obj/structure/table/reinforced/brass,
 /obj/item/clockwork/component/geis_capacitor/fallen_armor,
@@ -20414,7 +20423,7 @@
 /obj/machinery/camera/xray{
 	c_tag = "Xenobio West";
 	dir = 10;
-	network = list("fsci")
+	network = list("ds1xenobio")
 	},
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 1
@@ -21614,7 +21623,7 @@
 /obj/structure/window/reinforced/clockwork{
 	max_integrity = 180
 	},
-/obj/structure/closet/crate/necropolis/tendril,
+/obj/item/bikehorn/rubberducky/captain,
 /turf/open/indestructible/boss,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "rdr" = (
@@ -28306,7 +28315,7 @@
 	dir = 1;
 	max_integrity = 180
 	},
-/obj/structure/closet/crate/necropolis/tendril,
+/obj/item/fakeartefact,
 /turf/open/indestructible/boss,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "wJm" = (
@@ -99637,7 +99646,7 @@ vAU
 vAU
 vAU
 vAU
-vAU
+ozZ
 vAU
 vAU
 vAU

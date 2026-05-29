@@ -29,6 +29,8 @@ SUBSYSTEM_DEF(jukeboxes)
 	wait = 5
 	priority = FIRE_PRIORITY_SOUND_LOOPS
 	var/list/songs = list()
+	var/list/song_names = list()
+	var/list/songs_by_name = list()
 	var/list/activejukeboxes = list()
 	var/list/freejukeboxchannels = list()
 
@@ -152,6 +154,10 @@ SUBSYSTEM_DEF(jukeboxes)
 		if(!track_datum)
 			continue
 		songs |= track_datum
+
+	for(var/datum/track/T in songs)
+		song_names += T.song_name
+		songs_by_name[T.song_name] = T
 
 	return ..()
 

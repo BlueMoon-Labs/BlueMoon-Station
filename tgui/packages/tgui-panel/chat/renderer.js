@@ -9,6 +9,7 @@ import { EventEmitter } from 'common/events';
 import { classes } from 'common/react';
 import { createLogger } from 'tgui/logging';
 
+import highlightSoundUrl from '../assets/chat_notify.ogg';
 import { COMBINE_MAX_MESSAGES, COMBINE_MAX_TIME_WINDOW, IMAGE_RETRY_DELAY, IMAGE_RETRY_LIMIT, IMAGE_RETRY_MESSAGE_AGE, MAX_PERSISTED_MESSAGES, MAX_VISIBLE_MESSAGES, MESSAGE_PRUNE_INTERVAL, MESSAGE_TYPE_INTERNAL, MESSAGE_TYPE_UNKNOWN, MESSAGE_TYPES } from './constants';
 import { canPageAcceptType, createMessage, isSameMessage } from './model';
 import { highlightNode, linkifyNode } from './replaceInTextNode';
@@ -63,6 +64,19 @@ const createHighlightNode = (text, color) => {
   node.setAttribute('style', 'background-color:' + color);
   node.textContent = text;
   return node;
+};
+
+const createHighlightProbeNode = (message) => {
+  const node = document.createElement('span');
+  if (message.text) {
+    node.appendChild(document.createTextNode(message.text));
+    return node;
+  }
+  if (message.html) {
+    node.innerHTML = message.html;
+    return node;
+  }
+  return null;
 };
 
 const formatTimestamp = (createdAt, format) => {
@@ -205,6 +219,11 @@ export class ChatRenderer {
     this.smoothScroll = false;
     this._pendingAppearance = null;
     this._currentBgAnim = null;
+    // Highlight state
+    this.highlightRegex = null;
+    this.highlightColor = null;
+    this.highlightSoundEnabled = false;
+    this.highlightSoundNode = null;
     // Timestamps & time dividers
     this.enableTimestamps = false;
     this.timestampFormat = 'hm';
@@ -288,6 +307,43 @@ export class ChatRenderer {
     const flags = 'g' + (matchCase ? '' : 'i');
     this.highlightRegex = new RegExp(pattern, flags);
     this.highlightColor = color;
+  }
+
+  setHighlightSound(enabled) {
+    this.highlightSoundEnabled = !!enabled;
+  }
+
+  messageWouldHighlight(message) {
+    if (!this.highlightRegex || message.avoidHighlighting) {
+      return false;
+    }
+    const node = createHighlightProbeNode(message);
+    if (!node) {
+      return false;
+    }
+    return highlightNode(
+      node,
+      this.highlightRegex,
+      text => document.createTextNode(text),
+    ) > 0;
+  }
+
+  playHighlightSound() {
+    if (!this.highlightSoundEnabled || typeof Audio !== 'function') {
+      return;
+    }
+    if (!this.highlightSoundNode) {
+      this.highlightSoundNode = new Audio(highlightSoundUrl);
+      this.highlightSoundNode.preload = 'auto';
+    }
+    try {
+      this.highlightSoundNode.currentTime = 0;
+    }
+    catch {
+      // Ignore seek errors from browsers that block early media access.
+    }
+    const playResult = this.highlightSoundNode.play?.();
+    playResult?.catch?.(() => {});
   }
 
   setTimestamps(enable, format) {
@@ -388,6 +444,9 @@ export class ChatRenderer {
       prepend,
       notifyListeners = true,
     } = options;
+    const canPlayHighlightSound = this.highlightSoundEnabled
+      && !prepend
+      && notifyListeners;
     const shouldAutoScroll = this.scrollTracking || (
       this.scrollNode && isScrollTracked(this.scrollNode)
     );
@@ -405,12 +464,16 @@ export class ChatRenderer {
     // Insert messages
     const fragment = document.createDocumentFragment();
     const countByType = {};
+    let shouldPlayBatchHighlightSound = false;
     let node;
     for (let payload of batch) {
       const message = createMessage(payload);
       // Combine messages
       const combinable = this.getCombinableMessage(message);
       if (combinable) {
+        if (canPlayHighlightSound && this.messageWouldHighlight(message)) {
+          shouldPlayBatchHighlightSound = true;
+        }
         combinable.times = (combinable.times || 1) + 1;
         updateMessageBadge(combinable);
         continue;
@@ -465,6 +528,9 @@ export class ChatRenderer {
             ));
           if (highlighted) {
             node.className += ' ChatMessage--highlighted';
+            if (canPlayHighlightSound) {
+              shouldPlayBatchHighlightSound = true;
+            }
           }
         }
         // Linkify text
@@ -503,6 +569,9 @@ export class ChatRenderer {
         fragment.appendChild(node);
         this.visibleMessages.push(message);
       }
+    }
+    if (shouldPlayBatchHighlightSound) {
+      this.playHighlightSound();
     }
     if (node) {
       const firstChild = this.rootNode.childNodes[0];

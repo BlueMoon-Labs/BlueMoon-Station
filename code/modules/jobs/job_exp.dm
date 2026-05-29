@@ -136,8 +136,6 @@ GLOBAL_PROTECT(exp_to_update)
 		return "0h"
 
 /datum/controller/subsystem/blackbox/proc/update_exp(mins, ann = FALSE)
-	if(!SSdbcore.Connect())
-		return -1
 	for(var/client/L in GLOB.clients)
 		if(L.is_afk())
 			continue
@@ -202,11 +200,14 @@ GLOBAL_PROTECT(exp_to_update)
 
 
 /client/proc/update_exp_list(minutes, announce_changes = FALSE)
+	if(!isnum(minutes))
+		return -1
+	// Метадоллары: не зависят от БД и use_exp_tracking (раньше при их отключении начисление пропадало полностью).
+	SSmetadollars?.on_living_tick(src, minutes)
+
 	if(!CONFIG_GET(flag/use_exp_tracking))
 		return -1
 	if(!SSdbcore.Connect())
-		return -1
-	if (!isnum(minutes))
 		return -1
 	var/list/play_records = list()
 

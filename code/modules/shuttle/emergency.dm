@@ -293,6 +293,8 @@
 	port_direction = WEST
 	var/sound_played = 0 //If the launch sound has been sent to all players on the shuttle itself
 	var/hijack_status = NOT_BEGUN
+	/// Очередь путей /datum/shuttle_event из GLOB.admin_forceable_hyperspace_events — по порядку при уходе в транзит.
+	var/list/queued_admin_hyperspace_events = list()
 
 /obj/docking_port/mobile/emergency/canDock(obj/docking_port/stationary/S)
 	return SHUTTLE_CAN_DOCK //If the emergency shuttle can't move, the whole game breaks, so it will force itself to land even if it has to crush a few departments in the process
@@ -370,6 +372,82 @@
 	query_round_shuttle_name.Execute()
 	qdel(query_round_shuttle_name)
 
+/// Paths admins may inject via Shuttle Manipulator while the evacuation shuttle is in transit (whitelist; keep aligned with random rolls + admin-only types).
+GLOBAL_LIST_INIT(admin_forceable_hyperspace_events, list(
+	/datum/shuttle_event/hyperspace_nothing,
+	/datum/shuttle_event/turbulence,
+	/datum/shuttle_event/simple_spawner/carp/friendly,
+	/datum/shuttle_event/simple_spawner/carp/friendly/personal_space_invader,
+	/datum/shuttle_event/simple_spawner/carp,
+	/datum/shuttle_event/simple_spawner/carp/magic,
+	/datum/shuttle_event/simple_spawner/maintenance,
+	/datum/shuttle_event/simple_spawner/italian,
+	/datum/shuttle_event/simple_spawner/pizza_bombardment,
+	/datum/shuttle_event/simple_spawner/meteor/dust,
+	/datum/shuttle_event/simple_spawner/meteor/safe,
+	/datum/shuttle_event/simple_spawner/meteor/dust/meaty,
+	/datum/shuttle_event/simple_spawner/projectile/fireball,
+	/datum/shuttle_event/simple_spawner/human_shuttle/greytide,
+	/datum/shuttle_event/simple_spawner/donk_swarm,
+	/datum/shuttle_event/simple_spawner/soft_drink_spray,
+	/datum/shuttle_event/simple_spawner/corgi_parade,
+	/datum/shuttle_event/simple_spawner/player_controlled/human/hitchhiker,
+	/datum/shuttle_event/simple_spawner/player_controlled/human/hitchhiker/inteq,
+	/datum/shuttle_event/simple_spawner/player_controlled/carp,
+	/datum/shuttle_event/simple_spawner/player_controlled/alien_queen,
+	/datum/shuttle_event/simple_spawner/black_hole,
+	/datum/shuttle_event/simple_spawner/black_hole/adminbus,
+))
+
+/// Roll and schedule tg-style hyperspace events for the transit leg (processed in SSshuttle while docked to /transit).
+/obj/docking_port/mobile/emergency/proc/prepare_hyperspace_events()
+	for(var/datum/shuttle_event/old_event as anything in event_list)
+		qdel(old_event)
+	event_list.Cut()
+
+	var/evac_duration = SSshuttle.emergencyEscapeTime * engine_coeff
+	var/used_admin_queue = FALSE
+	if(length(queued_admin_hyperspace_events))
+		for(var/event_type in queued_admin_hyperspace_events)
+			if(!ispath(event_type, /datum/shuttle_event) || !(event_type in GLOB.admin_forceable_hyperspace_events))
+				continue
+			var/datum/shuttle_event/queued_ev = add_shuttle_event(event_type)
+			queued_ev?.start_up_event(evac_duration)
+		used_admin_queue = TRUE
+		queued_admin_hyperspace_events.Cut()
+	/// Веса pickweight (частота). Не равны event_probability на типе: там — шкала угрозы 1 (макс) … 9+ (безопасно).
+	var/list/weighted = list(
+		/datum/shuttle_event/hyperspace_nothing = 10,
+		/datum/shuttle_event/turbulence = 5,
+		/datum/shuttle_event/simple_spawner/carp/friendly = 3,
+		/datum/shuttle_event/simple_spawner/carp/friendly/personal_space_invader = 2,
+		/datum/shuttle_event/simple_spawner/carp = 4,
+		/datum/shuttle_event/simple_spawner/carp/magic = 2,
+		/datum/shuttle_event/simple_spawner/maintenance = 3,
+		/datum/shuttle_event/simple_spawner/italian = 2,
+		/datum/shuttle_event/simple_spawner/pizza_bombardment = 2,
+		/datum/shuttle_event/simple_spawner/donk_swarm = 2,
+		/datum/shuttle_event/simple_spawner/soft_drink_spray = 2,
+		/datum/shuttle_event/simple_spawner/corgi_parade = 2,
+		/datum/shuttle_event/simple_spawner/meteor/dust = 2,
+		/datum/shuttle_event/simple_spawner/meteor/safe = 3,
+		/datum/shuttle_event/simple_spawner/meteor/dust/meaty = 1,
+		/datum/shuttle_event/simple_spawner/projectile/fireball = 1,
+		/datum/shuttle_event/simple_spawner/human_shuttle/greytide = 2,
+		/datum/shuttle_event/simple_spawner/player_controlled/human/hitchhiker = 2,
+		/datum/shuttle_event/simple_spawner/player_controlled/carp = 2,
+		/datum/shuttle_event/simple_spawner/player_controlled/alien_queen = 1,
+	)
+	/// При предзаказе один слот уже занят — меньше случайных, итого обычно 2–3 ивента.
+	var/num_events = used_admin_queue ? rand(1, 2) : rand(2, 3)
+	for(var/i in 1 to num_events)
+		if(!length(weighted))
+			break
+		var/chosen = pickweight(weighted)
+		weighted -= chosen
+		var/datum/shuttle_event/new_event = add_shuttle_event(chosen)
+		new_event?.start_up_event(evac_duration)
+
 /obj/docking_port/mobile/emergency/check()
 	if(!timer)
 		return
@@ -401,6 +479,7 @@
 				send2adminchat("Server", "The Emergency Shuttle has docked with the station.")
 				priority_announce("Эвакуационный Шаттл пристыковался к станции. Вам отведено [timeLeft(600)] минуты для посадки.", null, "shuttledock", "Priority")
 				ShuttleDBStuff()
+				try_station_dock_ert_mopp()
 
 
 		if(SHUTTLE_DOCKED)
@@ -450,6 +529,7 @@
 				mode = SHUTTLE_ESCAPE
 				launch_status = ENDGAME_LAUNCHED
 				setTimer(SSshuttle.emergencyEscapeTime * engine_coeff)
+				prepare_hyperspace_events()
 				priority_announce("Шаттл Эвакуации покинул станцию. До прибытия Шаттла Эвакуации на Аванпост Центрального Командования осталось [timeLeft(600)] минут.", null, null, "ВНИМАНИЕ: ОТБЫТИЕ ШАТТЛА")
 				INVOKE_ASYNC(SSticker, TYPE_PROC_REF(/datum/controller/subsystem/ticker, poll_hearts))
 
@@ -524,20 +604,15 @@
 	var/obj/machinery/computer/shuttle/C = getControlConsole()
 	if(!istype(C, /obj/machinery/computer/shuttle/pod))
 		return ..()
-	if(GLOB.security_level >= SEC_LEVEL_RED || (C && (C.obj_flags & EMAGGED)))
-		if(launch_status == UNLAUNCHED)
-			launch_status = EARLY_LAUNCHED
-			return ..()
-	else
-		to_chat(usr, "<span class='warning'>Escape pods will only launch during \"Code Red\" security alert.</span>")
-		return TRUE
+	if(launch_status == UNLAUNCHED)
+		launch_status = EARLY_LAUNCHED
+	return ..()
 
 /obj/docking_port/mobile/pod/cancel()
 	return
 
 /obj/machinery/computer/shuttle/pod
 	name = "pod control computer"
-	admin_controlled = TRUE
 	possible_destinations = "pod_asteroid"
 	icon = 'icons/obj/terminals.dmi'
 	icon_state = "dorm_available"
@@ -545,9 +620,9 @@
 	density = FALSE
 	clockwork = TRUE //it'd look weird
 
-/obj/machinery/computer/shuttle/pod/Initialize(mapload)
+/obj/machinery/computer/shuttle/pod/ui_data(mob/user)
 	. = ..()
-	RegisterSignal(SSsecurity_level, COMSIG_SECURITY_LEVEL_CHANGED, PROC_REF(check_lock))
+	.["pod_depart_locked"] = !(obj_flags & EMAGGED) && (GLOB.security_level < SEC_LEVEL_RED)
 
 /obj/machinery/computer/shuttle/pod/ComponentInitialize()
 	. = ..()
@@ -557,7 +632,7 @@
 	. = SEND_SIGNAL(src, COMSIG_ATOM_EMAG_ACT)
 	if(obj_flags & EMAGGED)
 		return
-	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
+	log_admin("[key_name(user)] emagged [src] at [AREACOORD(src)]")
 	obj_flags |= EMAGGED
 	to_chat(user, "<span class='warning'>You fry the pod's alert level checking system.</span>")
 	return TRUE
@@ -565,26 +640,13 @@
 /obj/machinery/computer/shuttle/pod/connect_to_shuttle(obj/docking_port/mobile/port, obj/docking_port/stationary/dock, idnum, override=FALSE)
 	. = ..()
 	if(possible_destinations == initial(possible_destinations) || override)
-		possible_destinations = "pod_lavaland[idnum]"
-
-/**
- * Signal handler for checking if we should lock or unlock escape pods accordingly to a newly set security level
- *
- * Arguments:
- * * source The datum source of the signal
- * * new_level The new security level that is in effect
- */
-/obj/machinery/computer/shuttle/pod/proc/check_lock(datum/source, new_level)
-	SIGNAL_HANDLER
-
-	if(obj_flags & EMAGGED)
-		return
-	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
-	admin_controlled = !(new_level < SEC_LEVEL_RED)
+		possible_destinations = "pod_lavaland[idnum];pod"
 
 /obj/docking_port/stationary/random
 	name = "escape pod"
 	shuttle_id = "pod"
+	hidden = TRUE
+	override_can_dock_checks = TRUE
 	dwidth = 1
 	width = 3
 	height = 4
@@ -599,6 +661,14 @@
 		return
 
 	var/list/turfs = get_area_turfs(target_area)
+	// Multi-z Lavaland: both jungle and wasteland use MINING; only the surface has LAVA_RUINS. Without this, pods pick the lower z.
+	var/list/lava_surface_z = SSmapping.levels_by_all_trait(list(ZTRAIT_MINING, ZTRAIT_LAVA_RUINS))
+	if(LAZYLEN(lava_surface_z))
+		var/list/filtered = list()
+		for(var/turf/T as anything in turfs)
+			if(T.z in lava_surface_z)
+				filtered += T
+		turfs = filtered
 	var/original_len = turfs.len
 	while(turfs.len)
 		var/turf/picked_turf = pick(turfs)

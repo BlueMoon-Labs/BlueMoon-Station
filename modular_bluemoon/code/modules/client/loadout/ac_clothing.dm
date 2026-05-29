@@ -69,3 +69,12 @@
 	name = "AC Casual Skirt"
 	desc= "Casual skirt for special operations for Mercenaries in Adamas Cattus."
 	icon_state = "ac_uni_skirt"
+
+/obj/item/clothing/suit/toggle/captains_parade/hos_formal/ac/invisible
+	name = "Invisible AC Armored Coat"
+	desc = "Кто-то очень сильно хотел светить своими телесами, даже через броню. Специально для такого случая - модифицированный хамелеон-плащ для всех 50-ти оттенков эгсбиционистов в рядах командования и силовых структур."
+	icon = 'modular_splurt/icons/obj/clothing/suits.dmi'
+	mob_overlay_icon = 'modular_splurt/icons/mob/clothing/suit.dmi'
+	icon_state = "jacket_transparent"
+	item_state = "jacket_transparent"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON

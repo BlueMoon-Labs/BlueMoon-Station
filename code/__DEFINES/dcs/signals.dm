@@ -363,6 +363,10 @@
 #define COMSIG_ATOM_SET_LIGHT_FLAGS "atom_set_light_flags"
 ///Called right after the atom changes the value of light_flags to a different one, from base of [/atom/proc/set_light_flags]: (old_flags)
 #define COMSIG_ATOM_UPDATE_LIGHT_FLAGS "atom_update_light_flags"
+///Called right before the atom changes the value of light_height to a different one, from base [atom/proc/set_light_height]: (new_height)
+#define COMSIG_ATOM_SET_LIGHT_HEIGHT "atom_set_light_height"
+///Called right after the atom changes the value of light_height to a different one, from base of [/atom/proc/set_light_height]: (old_height)
+#define COMSIG_ATOM_UPDATE_LIGHT_HEIGHT "atom_update_light_height"
 
 // /client signals
 #define COMSIG_MOB_CLIENT_LOGOUT "mob_client_logout"				//sent when a mob/logout() starts: (client)
@@ -570,9 +574,8 @@
 	//This uses all return values of COMSIG_IMPLANT_OTHER
 #define COMSIG_IMPLANT_REMOVING "implant_removing"				//from base of /obj/item/implant/proc/removed() (list/args)
 
-// /obj/item/pda signals
+// /obj/item/modular_computer/pda signals
 #define COMSIG_PDA_CHANGE_RINGTONE "pda_change_ringtone"		//called on pda when the user changes the ringtone: (mob/living/user, new_ringtone)
-	#define COMPONENT_STOP_RINGTONE_CHANGE 1
 
 // /obj/item/radio signals
 #define COMSIG_RADIO_NEW_FREQUENCY "radio_new_frequency"		//called from base of /obj/item/radio/proc/set_frequency(): (list/args)
@@ -852,3 +855,7 @@
 // interaction signals
 #define COMSIG_INTERACTION_ADJACENT "interaction_adjacent"
 #define COMSIG_INTERACTION_KISS		"interaction_kiss"
+
+// Research signals
+#define COMSIG_GLOB_RESEARCH_NODE_UNLOCKED "global_research_node_unlocked"	// Изучение любого научного узла, сигнализирующее о необходимости синхронизации
+#define COMSIG_GLOB_RESEARCH_BATCH_COMPLETE	"global_research_batch_complete"	// Успешная упаковка и отправка пакета научных нод рецепиентам

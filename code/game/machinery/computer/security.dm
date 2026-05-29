@@ -266,6 +266,7 @@
 			G.fields["p_stat"] = "Active"
 			G.fields["m_stat"] = "Stable"
 			GLOB.data_core.general += G
+			GLOB.data_core.register_record(G, "general")
 			active1 = G
 
 			var/datum/data/record/R = new /datum/data/record()
@@ -280,6 +281,7 @@
 				"<u>[GLOB.current_date_string] | [STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)] ЗАПИСЬ НАЧАТА. СУБЪЕКТ - [active1.fields["name"]] | N/A | [active1.fields["id"]] -- ИНИЦИАТОР: [login_state.name] ([login_state.rank]);</u><br>"
 			)
 			GLOB.data_core.security += R
+			GLOB.data_core.register_record(R, "security")
 			active2 = R
 
 			var/datum/data/record/M = new /datum/data/record()
@@ -297,6 +299,7 @@
 			M.fields["cdi_d"] = "No diseases have been diagnosed at the moment."
 			M.fields["notes"] = "No notes."
 			GLOB.data_core.medical += M
+			GLOB.data_core.register_record(M, "medical")
 
 			screen = SEC_DATA_RECORD
 			set_temp("Запись создана.", "success")
@@ -315,6 +318,7 @@
 				"<u>[GLOB.current_date_string] | [STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)] ЗАПИСЬ НАЧАТА. СУБЪЕКТ - [active1.fields["name"]] | N/A | [active1.fields["id"]] -- ИНИЦИАТОР: [login_state.name] ([login_state.rank]);</u><br>"
 			)
 			GLOB.data_core.security += R
+			GLOB.data_core.register_record(R, "security")
 			active2 = R
 			set_temp("Запись безопасности создана.", "success")
 		if("delete_general")
@@ -379,9 +383,12 @@
 					if(!length(new_value) || !can_use_console(usr))
 						return
 					GLOB.data_core.append_sec_logs(active1.fields["id"], "%%GEN_AUTH%% сменил поле \"имя\" с [active1.fields["name"]] на [new_value]", login_state.name, login_state.rank)
+					var/old_name = active1.fields["name"]
 					active1.fields["name"] = new_value
+					GLOB.data_core.reindex_record(active1, old_name, null)
 					if(active2)
 						active2.fields["name"] = new_value
+						GLOB.data_core.reindex_record(active2, old_name, null)
 				if("id")
 					if(!active1)
 						return
@@ -389,9 +396,12 @@
 					if(!length(new_value) || !can_use_console(usr))
 						return
 					GLOB.data_core.append_sec_logs(active1.fields["id"], "%%GEN_AUTH%% сменил поле \"ID\" с [active1.fields["id"]] на [new_value]", login_state.name, login_state.rank)
+					var/old_id = active1.fields["id"]
 					active1.fields["id"] = new_value
+					GLOB.data_core.reindex_record(active1, null, old_id)
 					if(active2)
 						active2.fields["id"] = new_value
+						GLOB.data_core.reindex_record(active2, null, old_id)
 				if("gender")
 					if(!active1)
 						return

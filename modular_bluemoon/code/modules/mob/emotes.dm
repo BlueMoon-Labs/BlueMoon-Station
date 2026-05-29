@@ -831,3 +831,40 @@
 	sound = 'sound/fox/Voice/memee.ogg'
 	emote_cooldown = 1 SECONDS
 	emote_type = EMOTE_AUDIBLE
+
+/datum/emote/sound/human/kweh
+	key = "kweh"
+	key_third_person = "kweh"
+	message = "издает КВЕХ."
+	message_mime = "безмолвно КВЕХает."
+	sound = 'modular_bluemoon/sound/emotes/kweh1.ogg'
+	emote_cooldown = 1 SECONDS
+
+/datum/emote/sound/human/kweh/run_emote(mob/user, params)
+	sound = pick(
+	'modular_bluemoon/sound/emotes/kweh1.ogg',
+	'modular_bluemoon/sound/emotes/kweh2.ogg',
+	'modular_bluemoon/sound/emotes/kweh3.ogg')
+	. = ..()
+
+/datum/emote/sound/human/skweh
+	key = "skweh"
+	key_third_person = "skweh"
+	message = "издает СКВЕХ."
+	message_mime = "безмолвно и очень грустно СКВЕХает."
+	sound = 'modular_bluemoon/sound/emotes/skweh1.ogg'
+	emote_cooldown = 1 SECONDS
+
+/datum/emote/sound/human/skweh/run_emote(mob/user, params)
+	sound = pick(
+	'modular_bluemoon/sound/emotes/skweh1.ogg',
+	'modular_bluemoon/sound/emotes/skweh2.ogg')
+	. = ..()
+
+/datum/emote/sound/human/mar
+	key = "mar"
+	key_third_person = "mar"
+	message = "издает МАР."
+	message_mime = "безмолвно открывает рот."
+	sound = 'modular_bluemoon/sound/emotes/mar.ogg'
+	emote_cooldown = 1 SECONDS

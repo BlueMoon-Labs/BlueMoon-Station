@@ -947,6 +947,8 @@ use_mob_overlay_icon: if FALSE, it will always use the default_icon_file even if
 		standing = wear_alpha_masked_version(t_state, file2use, layer2use, femaleuniform, alpha_mask)
 	if(!standing)
 		standing = mutable_appearance(file2use, t_state, -layer2use)
+	if(!standing)
+		return
 
 	//Get the overlays for this item when it's being worn
 	//eg: ammo counters, primed grenade flashes, etc.
@@ -955,6 +957,8 @@ use_mob_overlay_icon: if FALSE, it will always use the default_icon_file even if
 		standing.overlays.Add(worn_overlays)
 
 	standing = center_image(standing, isinhands ? inhand_x_dimension : worn_x_dimension, isinhands ? inhand_y_dimension : worn_y_dimension)
+	if(!standing)
+		return
 
 	//Handle held offsets
 	var/mob/M = loc

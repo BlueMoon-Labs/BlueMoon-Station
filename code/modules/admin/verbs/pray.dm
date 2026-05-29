@@ -1,4 +1,4 @@
-/mob/verb/pray(msg as text)
+/mob/verb/pray()
 	set category = "Say"
 	set name = "Pray"
 
@@ -6,15 +6,20 @@
 		to_chat(usr, "<span class='danger'>Speech is currently admin-disabled.</span>", confidential = TRUE)
 		return
 
-	msg = copytext_char(sanitize(msg), 1, MAX_MESSAGE_LEN)
-	if(!msg)
+	var/message = ""
+	if(client?.prefs.tgui_input_verbs)
+		message = tgui_input_text(usr, "", "Pray", null, MAX_MESSAGE_LEN, TRUE, TRUE)
+	else
+		message = stripped_multiline_input_or_reflect(usr, "", "Pray")
+
+	if(!length(message))
 		return
-	log_prayer("[src.key]/([src.name]): [msg]")
+	log_prayer("[src.key]/([src.name]): [message]")
 	if(usr.client)
 		if(usr.client.prefs.muted & MUTE_PRAY)
 			to_chat(usr, "<span class='danger'>You cannot pray (muted).</span>", confidential = TRUE)
 			return
-		if(src.client.handle_spam_prevention(msg,MUTE_PRAY))
+		if(src.client.handle_spam_prevention(message, MUTE_PRAY))
 			return
 
 	var/mutable_appearance/cross = mutable_appearance('icons/obj/storage.dmi', "bible")
@@ -39,12 +44,12 @@
 			font_color = "blue"
 			prayer_type = "SPIRITUAL PRAYER"
 
-	var/msg_tmp = msg
-	msg = "<span class='adminnotice'>[icon2html(cross, GLOB.admins)]<b><font color=[font_color]>[prayer_type][deity ? " (to [deity])" : ""]: </font>[ADMIN_FULLMONTY(src)] [ADMIN_SC(src)]:</b> <span class='linkify'>[msg]</span></span>"
+	var/msg_tmp = message
+	message = "<span class='adminnotice'>[icon2html(cross, GLOB.admins)]<b><font color=[font_color]>[prayer_type][deity ? " (to [deity])" : ""]: </font>[ADMIN_FULLMONTY(src)] [ADMIN_SC(src)]:</b> <span class='linkify'>[message]</span></span>"
 
 	for(var/client/C in GLOB.admins)
 		if(C.prefs.chat_toggles & CHAT_PRAYER)
-			to_chat(C, msg, confidential = TRUE)
+			to_chat(C, message, confidential = TRUE)
 			if(C.prefs.toggles & SOUND_PRAYERS)
 				if(usr.job == "Chaplain")
 					SEND_SOUND(C, sound('sound/effects/pray.ogg'))

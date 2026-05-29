@@ -8,7 +8,7 @@
 
 /obj/item/projectile/bullet/c45_cleaning
 	name = ".45 bullet"
-	damage = 40 //BANG BANG BANG
+	damage = 45
 
 /obj/item/projectile/bullet/c45_cleaning/on_hit(atom/target, blocked = FALSE)
 	. = ..()

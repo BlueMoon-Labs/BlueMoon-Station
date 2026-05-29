@@ -11,7 +11,7 @@
 
 /obj/machinery/jukebox/ComponentInitialize()
 	. = ..()
-	AddComponent(jukebox_type, TRUE)
+	AddComponent(jukebox_type, TRUE, _on_music_toggle = CALLBACK(src, PROC_REF(on_music_toggle)))
 
 /obj/machinery/jukebox/wrench_act(mob/living/user, obj/item/I)
 	. = ..()
@@ -19,6 +19,11 @@
 		return
 	default_unfasten_wrench(user, I, 1 SECONDS)
 	return TRUE
+
+/obj/machinery/jukebox/proc/on_music_toggle(active)
+	icon_state = current_skin ? unique_reskin[current_skin]["icon_state"] || initial(icon_state) : initial(icon_state)
+	if(active)
+		icon_state += "-active"
 
 /obj/machinery/jukebox/disco
 	name = "radiant dance machine mark IV"
@@ -49,15 +54,33 @@
 	verb_say = "states"
 	density = FALSE
 	unique_reskin = list(
+		"Default" = list(),
 		"Black" = list(
-			"icon_state" = "raiqbawks_black",
-			"item_state" = "raiqbawks_black"
+			RESKIN_ICON_STATE = "raiqbawks_black",
+			RESKIN_ITEM_STATE = "raiqbawks_black"
 		)
 	)
 
 /obj/item/jukebox/ComponentInitialize()
-	AddComponent(/datum/component/jukebox, FALSE, 100)
-	. = ..()
+	AddComponent(/datum/component/jukebox, FALSE, 100, _on_music_toggle = CALLBACK(src, PROC_REF(on_music_toggle)))
+	return ..()
+
+/obj/item/jukebox/proc/on_music_toggle(active)
+	icon_state = current_skin ? unique_reskin[current_skin]["icon_state"] || initial(icon_state) : initial(icon_state)
+	if(active)
+		icon_state += "-active"
+	if(item_state)
+		item_state = current_skin ? unique_reskin[current_skin]["item_state"] || initial(item_state) : initial(item_state)
+		if(active)
+			item_state += "-active"
+		// Обновляем иконку в руке || прямо как в update_icon_updates_onmob
+		if(!ismob(loc))
+			return
+		var/mob/M = loc
+		if(M.is_holding(src))
+			M.update_inv_hands()
+		else
+			M.regenerate_icons()
 
 /obj/item/jukebox/emagged
 	name = "Handled Jukebox"
@@ -79,7 +102,24 @@
 
 /obj/item/sign/moniq/ComponentInitialize()
 	. = ..()
-	AddComponent(/datum/component/jukebox, FALSE, 100)
+	AddComponent(/datum/component/jukebox, FALSE, 100, _on_music_toggle = CALLBACK(src, PROC_REF(on_music_toggle)))
+
+/obj/item/sign/moniq/proc/on_music_toggle(active)
+	icon_state = current_skin ? unique_reskin[current_skin]["icon_state"] || initial(icon_state) : initial(icon_state)
+	if(active)
+		icon_state += "-active"
+	if(item_state)
+		item_state = current_skin ? unique_reskin[current_skin]["item_state"] || initial(item_state) : initial(item_state)
+		if(active)
+			item_state += "-active"
+		// Обновляем иконку в руке || прямо как в update_icon_updates_onmob
+		if(!ismob(loc))
+			return
+		var/mob/M = loc
+		if(M.is_holding(src))
+			M.update_inv_hands()
+		else
+			M.regenerate_icons()
 
 /obj/structure/sign/moniq
 	name = "Muz-tv"
@@ -92,7 +132,12 @@
 
 /obj/structure/sign/moniq/ComponentInitialize()
 	. = ..()
-	AddComponent(/datum/component/jukebox, FALSE, 70)
+	AddComponent(/datum/component/jukebox, FALSE, 70, _on_music_toggle = CALLBACK(src, PROC_REF(on_music_toggle)))
+
+/obj/structure/sign/moniq/proc/on_music_toggle(active)
+	icon_state = current_skin ? unique_reskin[current_skin]["icon_state"] || initial(icon_state) : initial(icon_state)
+	if(active)
+		icon_state += "-active"
 
 /obj/structure/sign/moniq/MouseDrop(over_object, src_location, over_location)
 	. = ..()

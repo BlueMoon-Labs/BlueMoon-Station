@@ -31,8 +31,15 @@
 	maxHealth = 200
 	health = 200
 	del_on_death = TRUE
+	playable_by_ghost = TRUE
+	ghost_possess_title = "Гондола"
+	ghost_possess_question = "Стать гондолой?"
 
 	//Gondolas don't make footstep sounds
+
+/mob/living/simple_animal/pet/gondola/Login()
+	. = ..()
+	to_chat(src, span_notice("Вы гондола — молчаливый ходок. Принимайте мир таким, какой он есть."))
 
 /mob/living/simple_animal/pet/gondola/Initialize(mapload)
 	. = ..()

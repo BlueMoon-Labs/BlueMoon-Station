@@ -189,10 +189,6 @@ SUBSYSTEM_DEF(ticker)
 			else
 				send2chat(new /datum/tgs_message_content("Новый раунд начинается на [SSmapping.config.map_name], голосование за режим полным ходом!"), CONFIG_GET(string/chat_announce_new_game))
 			current_state = GAME_STATE_PREGAME
-			//SPLURT EDIT - Bring back old panel
-			//Everyone who wants to be an observer is now spawned
-			create_observers()
-			//SPLURT EDIT
 			SEND_SIGNAL(src, COMSIG_TICKER_ENTER_PREGAME)
 
 			fire()
@@ -216,12 +212,12 @@ SUBSYSTEM_DEF(ticker)
 			//lobby stats for statpanels
 			if(isnull(timeLeft))
 				timeLeft = max(0,start_at - world.time)
-			totalPlayers = 0
-			totalPlayersReady = 0
-			for(var/mob/dead/new_player/player in GLOB.player_list)
-				++totalPlayers
-				if(player.ready == PLAYER_READY_TO_PLAY)
-					++totalPlayersReady
+			totalPlayers = length(GLOB.new_player_list)
+			var/readied = 0
+			for(var/mob/dead/new_player/np as anything in GLOB.new_player_list)
+				if(np.ready)
+					readied++
+			totalPlayersReady = readied
 
 			if(start_immediately)
 				timeLeft = 0
@@ -249,9 +245,10 @@ SUBSYSTEM_DEF(ticker)
 				if(SSvote.mode && (SSvote.mode == "roundtype" || SSvote.mode == "dynamic" || SSvote.mode == "mode tiers"))
 					SSvote.result()
 					SSpersistence.SaveSavedVotes()
-					for(var/client/C in SSvote.voting)
-						C << browse(null, "window=vote;can_close=0")
-					SSvote.reset()
+					if(!SSvote.mode)
+						for(var/client/C in SSvote.voting)
+							C << browse(null, "window=vote;can_close=0")
+						SSvote.reset()
 				SEND_SIGNAL(src, COMSIG_TICKER_ENTER_SETTING_UP)
 				current_state = GAME_STATE_SETTING_UP
 				Master.SetRunLevel(RUNLEVEL_SETUP)
@@ -804,6 +801,9 @@ SUBSYSTEM_DEF(ticker)
 		'sound/roundend/gandon.ogg',
 		'sound/roundend/approachingbaystation.ogg'\
 		)
+
+	if(SSmetadollars?.metadollar_burn_round_notice)
+		to_chat(world, span_boldannounce("[SSmetadollars.metadollar_burn_round_notice]"))
 
 	SEND_SOUND(world, sound(round_end_sound))
 	text2file(login_music, "data/last_round_lobby_music.txt")

@@ -3,6 +3,16 @@
 	desc = "Filled with the cheapest gear credits can buy."
 	icon_state = "syndicate"
 
+/obj/structure/closet/slaver/Initialize(mapload)
+	. = ..()
+	RegisterSignal(SSticker, COMSIG_TICKER_ROUND_STARTING, PROC_REF(PopulateAfterRoundStart))
+
+/obj/structure/closet/slaver/proc/PopulateAfterRoundStart()
+	SIGNAL_HANDLER
+	UnregisterSignal(SSticker, COMSIG_TICKER_ROUND_STARTING)
+	if(GLOB.master_mode == ROUNDTYPE_EXTENDED)
+		new /obj/item/clothing/accessory/permit/special/deviant/lust/slavers(src)
+
 /obj/structure/closet/slaver/PopulateContents()
 	..()
 

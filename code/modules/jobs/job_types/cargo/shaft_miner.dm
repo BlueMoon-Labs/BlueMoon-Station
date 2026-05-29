@@ -31,8 +31,8 @@
 	plasma_outfit = /datum/outfit/plasmaman/mining
 
 	access = list(ACCESS_MAINT_TUNNELS, ACCESS_MAILSORTING, ACCESS_CARGO, ACCESS_CARGO_BOT, ACCESS_MINING,
-				ACCESS_MINING_STATION, ACCESS_MINERAL_STOREROOM)
-	minimal_access = list(ACCESS_MINING, ACCESS_MINING_STATION, ACCESS_MAILSORTING, ACCESS_MINERAL_STOREROOM)
+				ACCESS_MINING_STATION, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_CARGO)
+	minimal_access = list(ACCESS_MINING, ACCESS_MINING_STATION, ACCESS_MAILSORTING, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_CARGO)
 	paycheck = PAYCHECK_EASY ///Not necessarily easy itself, but it can be trivial to make lot of cash on this job.
 	paycheck_department = ACCOUNT_CAR
 	bounty_types = CIV_JOB_MINE
@@ -51,7 +51,7 @@
 	name = "Shaft Miner (Lavaland)"
 	jobtype = /datum/job/mining
 
-	belt = /obj/item/pda/shaftminer
+	belt = /obj/item/modular_computer/pda/shaftminer
 	ears = /obj/item/radio/headset/headset_cargo/mining
 	shoes = /obj/item/clothing/shoes/workboots/mining
 	gloves = /obj/item/clothing/gloves/color/black
@@ -84,7 +84,7 @@
 	name = "Syndicate Shaft Miner"
 	jobtype = /datum/job/mining
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	ears = /obj/item/radio/headset/headset_cargo/mining
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default

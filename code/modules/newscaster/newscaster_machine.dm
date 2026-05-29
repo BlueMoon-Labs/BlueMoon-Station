@@ -84,11 +84,11 @@ GLOBAL_LIST_EMPTY(allCasters)
 	if(machine_stat & BROKEN)
 		return
 	if(powered())
-		machine_stat &= ~NOPOWER
+		set_machine_stat(machine_stat & ~NOPOWER)
 		update_icon()
 	else
 		spawn(rand(0, 15))
-			machine_stat |= NOPOWER
+			set_machine_stat(machine_stat | NOPOWER)
 			update_icon()
 
 /obj/machinery/newscaster/take_damage(damage_amount, damage_type = BRUTE, damage_flag = 0, sound_effect = 1, attack_dir)
@@ -578,7 +578,7 @@ GLOBAL_LIST_EMPTY(allCasters)
 					return
 				to_chat(user, "<span class='notice'>You repair [src].</span>")
 				obj_integrity = max_integrity
-				machine_stat &= ~BROKEN
+				set_machine_stat(machine_stat & ~BROKEN)
 				update_icon()
 		else
 			to_chat(user, "<span class='notice'>[src] does not need repairs.</span>")
@@ -605,7 +605,7 @@ GLOBAL_LIST_EMPTY(allCasters)
 
 /obj/machinery/newscaster/obj_break()
 	if(!(machine_stat & BROKEN) && !(flags_1 & NODECONSTRUCT_1))
-		machine_stat |= BROKEN
+		set_machine_stat(machine_stat | BROKEN)
 		playsound(loc, 'sound/effects/glassbr3.ogg', 100, 1)
 		update_icon()
 
@@ -644,8 +644,8 @@ GLOBAL_LIST_EMPTY(allCasters)
 	if(ishuman(user))
 		var/mob/living/carbon/human/human_user = user
 		if(human_user.wear_id)
-			if(istype(human_user.wear_id, /obj/item/pda))
-				var/obj/item/pda/P = human_user.wear_id
+			if(istype(human_user.wear_id, /obj/item/modular_computer/pda))
+				var/obj/item/modular_computer/pda/P = human_user.wear_id
 				if(P.id)
 					scanned_user = "[P.id.registered_name] ([P.id.get_assignment_name()])"
 				else

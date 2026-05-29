@@ -59,7 +59,11 @@
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/tools_righthand.dmi'
 	item_state = "scalpel_t2"
 	force = 13
-	toolspeed = 0.8
+	toolspeed = 0.6
+
+/obj/item/scalpel/upgraded_t2/cyborg
+	name = "cyborg vibration scalpel"
+	toolspeed = 0.9
 
 /obj/item/circular_saw/upgraded_t2
 	name = "oscillating saw"
@@ -74,9 +78,18 @@
 	w_class = WEIGHT_CLASS_SMALL
 	wound_bonus = 1
 	bare_wound_bonus = 2
-	toolspeed = 0.7
+	toolspeed = 0.6
 	sharpness = SHARP_NONE
 	butchery_tool = FALSE
+
+/obj/item/circular_saw/upgraded_t2/cyborg
+	name = "cyborg oscillating saw"
+	desc = "Не такая уж безопасная пила c шарниром для изменения угла и плоскости. С ней можно без труда распиливать твёрдые вещи, кости пациента или гипсовые формы."
+	hitsound = 'sound/weapons/circsawhit.ogg'
+	force = 15
+	wound_bonus = 8
+	bare_wound_bonus = 10
+	toolspeed = 0.9
 
 /obj/item/retractor/upgraded_t2
 	name = "titanium retractor"
@@ -86,7 +99,11 @@
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/tools_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/tools_righthand.dmi'
 	item_state = "retractor_t2"
-	toolspeed = 0.8
+	toolspeed = 0.6
+
+/obj/item/retractor/upgraded_t2/cyborg
+	name = "cyborg titanium retractor"
+	toolspeed = 0.9
 
 /obj/item/hemostat/upgraded_t2
 	name = "silvered hemostat"
@@ -96,7 +113,11 @@
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/tools_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/tools_righthand.dmi'
 	item_state = "hemostat_t2"
-	toolspeed = 0.8
+	toolspeed = 0.65
+
+/obj/item/hemostat/upgraded_t2/cyborg
+	name = "cyborg silvered hemostat"
+	toolspeed = 0.9
 
 /obj/item/cautery/upgraded_t2
 	name = "high heat cautery"
@@ -106,7 +127,11 @@
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/tools_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/tools_righthand.dmi'
 	item_state = "cautery_t2"
-	toolspeed = 0.8
+	toolspeed = 0.6
 	force = 12
 	damtype = BURN
 	heat = 7000
+
+/obj/item/cautery/upgraded_t2/cyborg
+	name = "cyborg high heat cautery"
+	toolspeed = 0.9

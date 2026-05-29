@@ -29,7 +29,7 @@
 /obj/machinery/atmospherics/components/unary/relief_valve/update_icon_nopipes()
 	cut_overlays()
 
-	if(!nodes[1] || !opened || !is_operational())
+	if(!nodes[1] || !opened || !is_operational)
 		icon_state = "relief_valve-e"
 		return
 
@@ -38,7 +38,7 @@
 /obj/machinery/atmospherics/components/unary/relief_valve/process_atmos()
 	..()
 
-	if(!is_operational())
+	if(!is_operational)
 		return
 
 	var/datum/gas_mixture/air_contents = airs[1]
@@ -50,9 +50,6 @@
 		opened = TRUE
 		update_icon_nopipes()
 	if(opened)
-		// Closed turfs return cached shared mixtures - must not modify them
-		if(!isopenturf(loc))
-			return
 		var/datum/gas_mixture/environment = loc.return_air()
 		var/pressure_delta = abs(our_pressure - environment.return_pressure())
 		if(pressure_delta > 0.1)

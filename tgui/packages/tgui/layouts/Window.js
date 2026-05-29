@@ -214,7 +214,7 @@ const TitleBar = (props, context) => {
       )}
       <div
         className="TitleBar__dragZone"
-        onMousedown={e => fancy && onDragStart(e)} />
+        onMousedown={onDragStart} />
       <div className="TitleBar__title">
         {typeof title === 'string'
           && title === title.toLowerCase()

@@ -449,6 +449,8 @@ GLOBAL_LIST_INIT(spells, typesof(/obj/effect/proc_holder/spell)) //needed for th
 	return TRUE
 
 /obj/effect/proc_holder/spell/proc/can_cast(mob/user = usr, skipcharge = FALSE, silent = FALSE)
+	if(!user || QDELETED(user))
+		return FALSE
 	var/magic_flags = SEND_SIGNAL(user, COMSIG_MOB_SPELL_CAN_CAST, src)
 	if(magic_flags & SPELL_SKIP_ALL_REQS)
 		return TRUE

@@ -602,10 +602,6 @@
 /datum/game_mode/proc/admin_panel()
 	return
 
-/// Mode specific info for ghost game_info
-/datum/game_mode/proc/ghost_info()
-	return
-
 /datum/game_mode/proc/get_chaos()
 	var/chaos_levels = CONFIG_GET(keyed_list/chaos_level)
 	if(config_tag in chaos_levels)

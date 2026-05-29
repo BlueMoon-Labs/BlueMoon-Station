@@ -793,7 +793,7 @@
 	frame = /obj/structure/table_frame/abductor
 
 /obj/structure/table/optable/abductor
-	name = "Инопланетный операционный стол"
+	name = "Alien Operating Table"
 	desc = "Используется для инопланетных медицинских процедур. Поверхность покрыта мелкими иглами, вводящими обезболивающее и стабилизатор кровообращения. Как и на обычном столе, сбоку можно закрепить маску и баллон с анестезией."
 	frame = /obj/structure/table_frame/abductor
 	buildstack = /obj/item/stack/sheet/mineral/silver

@@ -7,13 +7,13 @@
 
 /datum/action/cooldown/bloodsucker/targeted/mesmerize
 	name = "Mesmerize"
-	desc = "Dominate the mind of a mortal who can see your eyes."
+	desc = "Властвуйте над разумом смертного, который может видеть ваши глаза."
 	button_icon_state = "power_mez"
 	bloodcost = 50
 	cooldown_time = 450
 	target_range = 2
 	power_activates_immediately = TRUE
-	message_Trigger = "Whom will you subvert to your will?"
+	message_Trigger = "Кого ты собираешься подчинить своей воле?"
 	must_be_capacitated = TRUE
 	bloodsucker_can_buy = TRUE
 	var/success
@@ -24,13 +24,13 @@
 		return
 	if(!owner.getorganslot(ORGAN_SLOT_EYES))
 		if (display_error)
-			to_chat(owner, "<span class='warning'>You have no eyes with which to mesmerize.</span>")
+			to_chat(owner, "<span class='warning'>У вас нет глаз, которыми можно было бы загипнотизировать.</span>")
 		return FALSE
 	// Check: Eyes covered?
 	var/mob/living/L = owner
 	if(istype(L) && L.is_eyes_covered() || !isturf(owner.loc))
 		if(display_error)
-			to_chat(owner, "<span class='warning'>Your eyes are concealed from sight.</span>")
+			to_chat(owner, "<span class='warning'>Ваши глаза скрыты от посторонних взглядов.</span>")
 		return FALSE
 	return TRUE
 
@@ -46,22 +46,22 @@
 	// Bloodsucker
 	if(target.mind && target.mind.has_antag_datum(ANTAG_DATUM_BLOODSUCKER))
 		if (display_error)
-			to_chat(owner, "<span class='warning'>Bloodsuckers are immune to [src].</span>")
+			to_chat(owner, "<span class='warning'>Кровососы имеют иммунитет к [src].</span>")
 		return FALSE
 	// Dead/Unconscious
 	if(target.stat > CONSCIOUS)
 		if (display_error)
-			to_chat(owner, "<span class='warning'>Your victim is not [(target.stat == DEAD || HAS_TRAIT(target, TRAIT_FAKEDEATH))?"alive":"conscious"].</span>")
+			to_chat(owner, "<span class='warning'>Ваша жертва [(target.stat == DEAD || HAS_TRAIT(target, TRAIT_FAKEDEATH))?"мертва":"без сознания"].</span>")
 		return FALSE
 	// Check: Target has eyes?
 	if(!target.getorganslot(ORGAN_SLOT_EYES))
 		if (display_error)
-			to_chat(owner, "<span class='warning'>They have no eyes!</span>")
+			to_chat(owner, "<span class='warning'>[target.ru_who(TRUE)] не имеет глаз!</span>")
 		return FALSE
 	// Check: Target blind?
 	if(target.eye_blind > 0)
 		if (display_error)
-			to_chat(owner, "<span class='warning'>Your victim's eyes are glazed over. They cannot perceive you.</span>")
+			to_chat(owner, "<span class='warning'>Глаза жертвы остекленели. [target.ru_who(TRUE)] не может вас воспринимать.</span>")
 		return FALSE
 	// Check: Target See Me? (behind wall)
 	if(!(owner in target.fov_view()))
@@ -70,7 +70,7 @@
 		//	if (display_error)
 		//		to_chat(owner, "<span class='warning'>You're too far from your victim.</span>")
 		if(display_error)
-			to_chat(owner, "<span class='warning'>You're too far outside your victim's view.</span>")
+			to_chat(owner, "<span class='warning'>Вы слишком далеко от взгляда жертвы.</span>")
 		return FALSE
 
 	if(target.has_status_effect(STATUS_EFFECT_MESMERIZE)) // ignores facing once the windup has started
@@ -79,12 +79,12 @@
 	// Check: Facing target?
 	if(!is_A_facing_B(owner,target))	// in unsorted.dm
 		if (display_error)
-			to_chat(owner, "<span class='warning'>You must be facing your victim.</span>")
+			to_chat(owner, "<span class='warning'>Вы должны смотреть в сторону своей жертвы.</span>")
 		return FALSE
 	// Check: Target facing me?
 	if (CHECK_MOBILITY(target, MOBILITY_STAND) && !is_A_facing_B(target,owner))
 		if(display_error)
-			to_chat(owner, "<span class='warning'>Your victim must be facing you to see into your eyes.</span>")
+			to_chat(owner, "<span class='warning'>Ваша жертва должна смотреть в вашу сторону, чтобы видеть ваши глаза.</span>")
 		return FALSE
 	return TRUE
 
@@ -100,7 +100,7 @@
 		DeactivatePower()
 		DeactivateRangedAbility()
 		StartCooldown()
-		to_chat(L, "<span class='warning'>[target] has escaped your gaze!</span>")
+		to_chat(L, "<span class='warning'>[target] ускользнул[target.ru_who()=="он" ? "" : "а"] от вашего взгляда!</span>")
 		UnregisterSignal(target, COMSIG_MOVABLE_MOVED)
 
 /datum/action/cooldown/bloodsucker/targeted/mesmerize/FireTargetedPower(atom/A)
@@ -127,13 +127,12 @@
 	target.apply_status_effect(STATUS_EFFECT_MESMERIZE, power_time)
 	target.face_atom(L)
 	target.Stun(power_time)
-	to_chat(L, "<span class='notice'>[target] is fixed in place by your hypnotic gaze.</span>")
+	to_chat(L, "<span class='notice'>[target] застыл[target.ru_who() == "он"? "" : "а"] на месте от вашего гипнотического взгляда.</span>")
 	target.DelayNextAction(power_time)
 	spawn(power_time)
 	if(istype(target) && success)
 		if(istype(L) && target.stat == CONSCIOUS && (target in L.fov_view(10))) // They Woke Up! (Notice if within view)
-			to_chat(L, "<span class='warning'>[target] has snapped out of their trance.</span>")
-
+			to_chat(L, "<span class='warning'>[target] выш[target.ru_who() == "он"? "ел" : "ла"] из транса.</span>")
 
 /datum/action/cooldown/bloodsucker/targeted/mesmerize/ContinueActive(mob/living/user, mob/living/target)
 	return ..() && CheckCanUse() && CheckCanTarget(target)

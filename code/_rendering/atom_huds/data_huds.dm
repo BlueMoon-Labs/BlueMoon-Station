@@ -32,9 +32,8 @@
 		return FALSE
 	return TRUE
 
-/datum/atom_hud/data/human/medical/basic/add_to_single_hud(mob/M, mob/living/carbon/H)
-	if(check_sensors(H))
-		..()
+/datum/atom_hud/data/human/medical/basic/should_show_to(mob/M, atom/A)
+	return check_sensors(A)
 
 /datum/atom_hud/data/human/medical/basic/proc/update_suit_sensors(mob/living/carbon/H)
 	check_sensors(H) ? add_to_hud(H) : remove_from_hud(H)
@@ -178,6 +177,9 @@
 		med_hud_set_radstatus()
 		return
 	holder.icon_state = "hud[RoundHealth(src)]"
+	if(!icon)
+		med_hud_set_radstatus()
+		return
 	var/icon/I = icon(icon, icon_state, dir)
 	holder.pixel_y = I.Height() - world.icon_size
 	med_hud_set_radstatus()
@@ -193,6 +195,8 @@
 	var/image/holder = hud_list[STATUS_HUD]
 	if(!holder)
 		return
+	if(!icon)
+		return
 	var/icon/I = icon(icon, icon_state, dir)
 	holder.pixel_y = I.Height() - world.icon_size
 	if(stat == DEAD || (HAS_TRAIT(src, TRAIT_FAKEDEATH)))
@@ -205,6 +209,8 @@
 		return
 	var/image/holder = hud_list[STATUS_HUD]
 	if(!holder)
+		return
+	if(!icon)
 		return
 	var/icon/I = icon(icon, icon_state, dir)
 	var/virus_threat = check_virus()
@@ -248,6 +254,8 @@
 	var/image/radholder = hud_list[RAD_HUD]
 	if(!radholder)
 		return
+	if(!icon)
+		return
 	var/icon/I = icon(icon, icon_state, dir)
 	radholder.pixel_y = I.Height() - world.icon_size
 	var/mob/living/M = src
@@ -269,7 +277,13 @@
 //HOOKS
 
 /mob/living/carbon/human/proc/sec_hud_set_ID()
+	if(!hud_list || !(ID_HUD in hud_list))
+		return
 	var/image/holder = hud_list[ID_HUD]
+	if(!holder)
+		return
+	if(!icon)
+		return
 	var/icon/I = icon(icon, icon_state, dir)
 	holder.pixel_y = I.Height() - world.icon_size
 	holder.icon_state = "hudno_id"
@@ -280,6 +294,8 @@
 	sec_hud_set_security_status()
 
 /mob/living/proc/sec_hud_set_implants()
+	if(!icon)
+		return
 	var/image/holder
 	for(var/i in list(IMPTRACK_HUD, IMPLOYAL_HUD, IMPCHEM_HUD))
 		holder = hud_list[i]
@@ -308,11 +324,13 @@
 
 /mob/living/carbon/human/proc/sec_hud_set_security_status()
 	var/image/holder = hud_list[WANTED_HUD]
+	if(!icon)
+		return
 	var/icon/I = icon(icon, icon_state, dir)
 	holder.pixel_y = I.Height() - world.icon_size
 	var/perpname = get_face_name(get_id_name(""))
 	if(perpname && GLOB.data_core)
-		var/datum/data/record/R = find_record("name", perpname, GLOB.data_core.security)
+		var/datum/data/record/R = GLOB.data_core.security_by_name[perpname]
 		if(R)
 			switch(R.fields["criminal"])
 				if(SEC_RECORD_STATUS_EXECUTE)
@@ -350,6 +368,8 @@
 
 /mob/living/proc/hud_set_nanite_indicator()
 	var/image/holder = hud_list[NANITE_HUD]
+	if(!icon)
+		return
 	var/icon/I = icon(icon, icon_state, dir)
 	holder.pixel_y = I.Height() - world.icon_size
 	holder.icon_state = null
@@ -377,6 +397,8 @@
 //Sillycone hooks
 /mob/living/silicon/proc/diag_hud_set_health()
 	var/image/holder = hud_list[DIAG_HUD]
+	if(!icon)
+		return
 	var/icon/I = icon(icon, icon_state, dir)
 	holder.pixel_y = I.Height() - world.icon_size
 	if(stat == DEAD)
@@ -386,6 +408,8 @@
 
 /mob/living/silicon/proc/diag_hud_set_status()
 	var/image/holder = hud_list[DIAG_STAT_HUD]
+	if(!icon)
+		return
 	var/icon/I = icon(icon, icon_state, dir)
 	holder.pixel_y = I.Height() - world.icon_size
 	switch(stat)
@@ -399,6 +423,8 @@
 //Borgie battery tracking!
 /mob/living/silicon/robot/proc/diag_hud_set_borgcell()
 	var/image/holder = hud_list[DIAG_BATT_HUD]
+	if(!icon)
+		return
 	var/icon/I = icon(icon, icon_state, dir)
 	holder.pixel_y = I.Height() - world.icon_size
 	if(cell)
@@ -410,6 +436,8 @@
 //borg-AI shell tracking
 /mob/living/silicon/robot/proc/diag_hud_set_aishell() //Shows tracking beacons on the mech
 	var/image/holder = hud_list[DIAG_TRACK_HUD]
+	if(!icon)
+		return
 	var/icon/I = icon(icon, icon_state, dir)
 	holder.pixel_y = I.Height() - world.icon_size
 	if(!shell) //Not an AI shell
@@ -422,6 +450,8 @@
 //AI side tracking of AI shell control
 /mob/living/silicon/ai/proc/diag_hud_set_deployed() //Shows tracking beacons on the mech
 	var/image/holder = hud_list[DIAG_TRACK_HUD]
+	if(!icon)
+		return
 	var/icon/I = icon(icon, icon_state, dir)
 	holder.pixel_y = I.Height() - world.icon_size
 	if(!deployed_shell)
@@ -434,6 +464,8 @@
 ~~~~~~~~~~~~~~~~~~~~~*/
 /obj/vehicle/sealed/mecha/proc/diag_hud_set_mechhealth()
 	var/image/holder = hud_list[DIAG_MECH_HUD]
+	if(!icon)
+		return
 	var/icon/I = icon(icon, icon_state, dir)
 	holder.pixel_y = I.Height() - world.icon_size
 	holder.icon_state = "huddiag[RoundDiagBar(obj_integrity/max_integrity)]"
@@ -441,6 +473,8 @@
 
 /obj/vehicle/sealed/mecha/proc/diag_hud_set_mechcell()
 	var/image/holder = hud_list[DIAG_BATT_HUD]
+	if(!icon)
+		return
 	var/icon/I = icon(icon, icon_state, dir)
 	holder.pixel_y = I.Height() - world.icon_size
 	if(cell)
@@ -452,6 +486,8 @@
 
 /obj/vehicle/sealed/mecha/proc/diag_hud_set_mechstat()
 	var/image/holder = hud_list[DIAG_STAT_HUD]
+	if(!icon)
+		return
 	var/icon/I = icon(icon, icon_state, dir)
 	holder.pixel_y = I.Height() - world.icon_size
 	holder.icon_state = null
@@ -460,6 +496,8 @@
 
 /obj/vehicle/sealed/mecha/proc/diag_hud_set_mechtracking() //Shows tracking beacons on the mech
 	var/image/holder = hud_list[DIAG_TRACK_HUD]
+	if(!icon)
+		return
 	var/icon/I = icon(icon, icon_state, dir)
 	holder.pixel_y = I.Height() - world.icon_size
 	var/new_icon_state //This var exists so that the holder's icon state is set only once in the event of multiple mech beacons.
@@ -480,12 +518,16 @@
 	var/image/holder = hud_list[DIAG_HUD]
 	if(!holder)
 		return
+	if(!icon)
+		return
 	var/icon/I = icon(icon, icon_state, dir)
 	holder.pixel_y = I.Height() - world.icon_size
 	holder.icon_state = "huddiag[RoundDiagBar(health/maxHealth)]"
 
 /mob/living/simple_animal/bot/proc/diag_hud_set_botstat() //On (With wireless on or off), Off, EMP'ed
 	var/image/holder = hud_list[DIAG_STAT_HUD]
+	if(!icon)
+		return
 	var/icon/I = icon(icon, icon_state, dir)
 	holder.pixel_y = I.Height() - world.icon_size
 	if(on)
@@ -497,6 +539,8 @@
 
 /mob/living/simple_animal/bot/proc/diag_hud_set_botmode() //Shows a bot's current operation
 	var/image/holder = hud_list[DIAG_BOT_HUD]
+	if(!icon)
+		return
 	var/icon/I = icon(icon, icon_state, dir)
 	holder.pixel_y = I.Height() - world.icon_size
 	if(client) //If the bot is player controlled, it will not be following mode logic!
@@ -522,8 +566,9 @@
 ~~~~~~~~~~~~~*/
 /obj/item/electronic_assembly/proc/diag_hud_set_circuithealth(hide = FALSE)
 	var/image/holder = hud_list[DIAG_CIRCUIT_HUD]
-	var/icon/I = icon(icon, icon_state, dir)
-	holder.pixel_y = I.Height() - world.icon_size
+	if(!icon)
+		return
+	sync_diagnostic_hud_offsets()
 	if((!isturf(loc))||hide) //if not on the ground dont show overlay
 		holder.icon_state = null
 	else
@@ -531,8 +576,9 @@
 
 /obj/item/electronic_assembly/proc/diag_hud_set_circuitcell(hide = FALSE)
 	var/image/holder = hud_list[DIAG_BATT_HUD]
-	var/icon/I = icon(icon, icon_state, dir)
-	holder.pixel_y = I.Height() - world.icon_size
+	if(!icon)
+		return
+	sync_diagnostic_hud_offsets()
 	if((!isturf(loc))||hide) //if not on the ground dont show overlay
 		holder.icon_state = null
 	else if(battery)
@@ -543,8 +589,9 @@
 
 /obj/item/electronic_assembly/proc/diag_hud_set_circuitstat(hide = FALSE) //On, On and dangerous, or Off
 	var/image/holder = hud_list[DIAG_STAT_HUD]
-	var/icon/I = icon(icon, icon_state, dir)
-	holder.pixel_y = I.Height() - world.icon_size
+	if(!icon)
+		return
+	sync_diagnostic_hud_offsets()
 	if((!isturf(loc))||hide) //if not on the ground don't show overlay
 		holder.icon_state = null
 	else if(!battery)
@@ -558,8 +605,9 @@
 
 /obj/item/electronic_assembly/proc/diag_hud_set_circuittracking(hide = FALSE)
 	var/image/holder = hud_list[DIAG_TRACK_HUD]
-	var/icon/I = icon(icon, icon_state, dir)
-	holder.pixel_y = I.Height() - world.icon_size
+	if(!icon)
+		return
+	sync_diagnostic_hud_offsets()
 	if((!isturf(loc))||hide) //if not on the ground dont show overlay
 		holder.icon_state = null
 	else if(long_range_circuits)
@@ -589,9 +637,9 @@
 	var/datum/data/record/R
 	switch(comment_kind)
 		if("security")
-			R = find_record("name", perpname, GLOB.data_core.security)
+			R = GLOB.data_core.security_by_name[perpname]
 		if("medical")
-			R = find_record("name", perpname, GLOB.data_core.medical)
+			R = GLOB.data_core.medical_by_name[perpname]
 	if(!R)
 		return
 

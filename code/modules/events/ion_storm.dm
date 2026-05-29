@@ -3,8 +3,8 @@
 /datum/round_event_control/ion_storm
 	name = "Ion Storm"
 	typepath = /datum/round_event/ion_storm
-	weight = 65
-	min_players = 2
+	weight = 25
+	min_players = 15
 	category = EVENT_CATEGORY_AI
 	description = "Gives the AI a new, randomized law."
 
@@ -105,7 +105,7 @@
 			H.apply_damage(20, BURN)
 			H.adjustToxLoss(20, toxins_type = TOX_SYSCORRUPT)
 			H.Jitter(20)
-			H.Confused(20)
+			H.AdjustConfused(40 SECONDS)
 			H.Stun(5)
 			H.Dizzy(15)
 

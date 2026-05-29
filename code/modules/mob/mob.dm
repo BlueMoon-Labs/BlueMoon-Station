@@ -41,13 +41,19 @@
 	if(length(progressbars))
 		stack_trace("[src] destroyed with elements in its progressbars list.")
 		progressbars = null
-	for (var/alert in alerts)
+	for (var/alert in alerts.Copy())
 		clear_alert(alert, TRUE)
 	if(observers?.len)
 		for(var/mob/dead/observe as anything in observers)
 			observe.reset_perspective(null)
 	dispose_rendering()
 	qdel(hud_used)
+	if(hud_list)
+		for(var/hud_key in hud_list)
+			var/image/hud_image = hud_list[hud_key]
+			if(istype(hud_image))
+				hud_image.loc = null
+		hud_list = null
 	QDEL_LIST(client_colours)
 	clear_typing_indicator()
 	ghostize()
@@ -74,7 +80,7 @@
 				hud_list[hud] = I
 
 /mob/proc/Cell()
-	set category = "Admin"
+	set category = "Admin.Player Interaction"
 	set hidden = 1
 
 	if(!loc)
@@ -954,8 +960,8 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 					break
 				search_id = 0
 
-		else if( search_pda && istype(A, /obj/item/pda) )
-			var/obj/item/pda/PDA = A
+		else if( search_pda && istype(A, /obj/item/modular_computer/pda) )
+			var/obj/item/modular_computer/pda/PDA = A
 			if(PDA.owner == oldname)
 				PDA.owner = newname
 				PDA.update_label()
@@ -977,7 +983,7 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 /mob/proc/sync_lighting_plane_alpha()
 	if(hud_used)
 		var/atom/movable/screen/plane_master/lighting/L = hud_used.plane_masters["[LIGHTING_PLANE]"]
-		if (L)
+		if(L)
 			L.alpha = lighting_alpha
 
 /mob/proc/update_mouse_pointer()

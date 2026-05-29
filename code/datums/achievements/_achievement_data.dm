@@ -76,7 +76,14 @@
 		data[achievement_type] = TRUE
 		A.on_unlock(user) //Only on default achievement, as scores keep going up.
 	else if(istype(A, /datum/award/score))
-		data[achievement_type] += value
+		if(istype(A, /datum/award/score/highscore))
+			if(value > data[achievement_type])
+				data[achievement_type] = value
+				var/datum/award/score/S = A
+				if(S.track_high_scores)
+					S.high_scores[owner_ckey] = value
+		else
+			data[achievement_type] += value
 
 ///Getter for the status/score of an achievement
 /datum/achievement_data/proc/get_achievement_status(achievement_type)

@@ -1,10 +1,11 @@
 /datum/round_event_control/anomaly/tear/honk
-	name = "Honked Dimmensional Tear"
+	name = "Honked Dimensional Tear"
 	typepath = /datum/round_event/anomaly/tear/honk
 	weight = 5
 	max_occurrences = 1
 	min_players = 30
 	category = EVENT_CATEGORY_ANOMALIES
+	admin_setup = list(/datum/event_admin_setup/set_location/anomaly)
 
 /datum/round_event/anomaly/tear/honk
 	var/obj/effect/tear/honk/HE //i could just inherit but its being finicky.
@@ -15,9 +16,18 @@
 	priority_announce("На борту станции зафиксирована Хонканомалия. Предполагаемая локация: [impact_area.name].", "ВНИМАНИЕ: ХОНК-АНОМАЛИЯ.", 'sound/items/AirHorn.ogg')
 
 /datum/round_event/anomaly/tear/honk/start()
-	var/turf/T = pick(get_area_turfs(impact_area))
-	if(T)
-		HE = new /obj/effect/tear/honk(T.loc)
+	var/turf/tear_turf
+	if(spawn_location)
+		impact_area = get_area(spawn_location)
+		tear_turf = spawn_location
+	else
+		impact_area = placer.findValidArea()
+		tear_turf = placer.findValidTurf(impact_area)
+
+	if(!tear_turf)
+		return
+
+	HE = new /obj/effect/tear/honk(tear_turf)
 
 /datum/round_event/anomaly/tear/honk/end()
 	if(HE)

@@ -279,7 +279,7 @@
 		if(cybernetic_implants)
 			for (var/cybernetic_implant_type in cybernetic_implants)
 				var/obj/item/organ/C = new cybernetic_implant_type()
-				C.Insert(H)
+				C.Insert(H, TRUE, FALSE)
 
 		// Активируем пермиты
 		if(istype(H.w_uniform, /obj/item/clothing/under))

@@ -30,6 +30,14 @@
 	action_icon = 'icons/mob/actions/actions_minor_antag.dmi'
 	action_background_icon_state = "bg_demon"
 
+/obj/effect/proc_holder/spell/targeted/conjure_item/summon_contract_holder
+	name = "Summon Contract Holder"
+	desc = "Summon or banish a hellish vessel for storing your infernal contracts. Keeps evidence tidy."
+	item_type = /obj/item/storage/box/contract_infernal
+	action_icon = 'icons/mob/actions/actions_cult.dmi'
+	action_icon_state = "artificer"
+	action_background_icon_state = "bg_demon"
+
 /obj/effect/proc_holder/spell/targeted/summon_contract
 	name = "Summon infernal contract"
 	desc = "Skip making a contract by hand, just do it by magic."
@@ -71,6 +79,54 @@
 				C.put_in_hands(contract)
 		else
 			to_chat(user, "<span class='notice'>[C] seems to not be sentient.  You cannot summon a contract for [C.ru_na()].</span>")
+
+
+/obj/effect/proc_holder/spell/targeted/recall_contract
+	name = "Recall Contract"
+	desc = "Return an unsigned contract to the void, or summon one you've already created into your hand. Prevents paper clutter from refusals."
+	invocation_type = "whisper"
+	invocation = "Return to me..."
+	include_user = 1
+	range = -1
+	clothes_req = NONE
+
+	school = "conjuration"
+	charge_max = 50
+	cooldown_min = 5
+	action_icon = 'icons/mob/actions/actions_genetic.dmi'
+	action_icon_state = "default"
+	action_background_icon_state = "bg_demon"
+
+/obj/effect/proc_holder/spell/targeted/recall_contract/cast(list/targets, mob/user = usr)
+	if(!user.mind)
+		return
+	var/obj/item/held = user.get_active_held_item()
+	// If holding unsigned contract - return it to void
+	if(istype(held, /obj/item/paper/contract/infernal))
+		var/obj/item/paper/contract/infernal/contract = held
+		if(!contract.signed && contract.owner == user.mind)
+			user.dropItemToGround(contract)
+			qdel(contract)
+			to_chat(user, "<span class='notice'>The unsigned contract dissolves into hellfire.</span>")
+			return
+	// Else - find nearest unsigned contract and summon to hand
+	var/obj/item/paper/contract/infernal/best_contract
+	var/best_dist = INFINITY
+	for(var/obj/item/paper/contract/infernal/C in range(30, user))
+		if(C.signed || C.owner != user.mind)
+			continue
+		var/dist = get_dist(user, C)
+		if(dist < best_dist)
+			best_dist = dist
+			best_contract = C
+	if(best_contract)
+		if(user.put_in_hands(best_contract))
+			to_chat(user, "<span class='notice'>The contract materializes in your grasp.</span>")
+		else
+			best_contract.forceMove(get_turf(user))
+			to_chat(user, "<span class='notice'>The contract appears at your feet.</span>")
+	else
+		to_chat(user, "<span class='notice'>You have no unsigned contracts to recall.</span>")
 
 
 /obj/effect/proc_holder/spell/aimed/fireball/hellish

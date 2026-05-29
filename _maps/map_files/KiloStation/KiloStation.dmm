@@ -5700,6 +5700,10 @@
 	},
 /obj/effect/turf_decal/caution/stand_clear,
 /obj/machinery/door/firedoor,
+/obj/structure/safe/spare_id{
+	pixel_x = 0;
+	pixel_y = 32
+	},
 /turf/open/floor/plasteel/dark,
 /area/command/bridge)
 "akc" = (
@@ -7025,7 +7029,7 @@
 /turf/open/floor/carpet,
 /area/command/heads_quarters/hos)
 "amD" = (
-/obj/machinery/computer/card/minor/hos{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 1
 	},
 /obj/structure/cable{
@@ -11766,9 +11770,11 @@
 	},
 /area/maintenance/starboard)
 "auw" = (
-/obj/structure/sign/warning/securearea,
-/turf/closed/wall/r_wall,
-/area/command/bridge)
+/obj/machinery/computer/brig_assistant_console{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/hallway/primary/aft)
 "aux" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -12044,7 +12050,6 @@
 /obj/structure/window/reinforced{
 	dir = 1
 	},
-/obj/item/card/id/captains_spare,
 /turf/open/floor/carpet,
 /area/command/heads_quarters/captain)
 "ave" = (
@@ -13065,7 +13070,7 @@
 /turf/closed/wall/r_wall,
 /area/engineering/break_room)
 "awO" = (
-/obj/machinery/computer/card/minor/ce,
+/obj/machinery/modular_computer/console/preset/id,
 /obj/effect/turf_decal/bot/yellow,
 /obj/machinery/computer/security/telescreen/ce{
 	pixel_y = 28
@@ -23615,7 +23620,7 @@
 /turf/open/floor/plasteel/showroomfloor,
 /area/medical/storage)
 "aOR" = (
-/obj/machinery/computer/card/minor/cmo{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /obj/effect/turf_decal/bot/yellow,
@@ -23734,10 +23739,6 @@
 	},
 /obj/item/cartridge/medical{
 	pixel_x = 4
-	},
-/obj/item/cartridge/chemistry{
-	pixel_x = -6;
-	pixel_y = 8
 	},
 /obj/item/clothing/neck/stethoscope{
 	pixel_y = 5
@@ -33084,7 +33085,7 @@
 /turf/open/floor/plasteel/dark,
 /area/command/heads_quarters/rd)
 "bdw" = (
-/obj/machinery/computer/card/minor/rd{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /obj/effect/turf_decal/bot/yellow,
@@ -52138,12 +52139,9 @@
 	spawnwithmagazine = 0;
 	pin = /obj/item/firing_pin/implant/mindshield
 	},
-/obj/item/gun/energy/laser/carbine{
-	pin = /obj/item/firing_pin/implant/mindshield
-	},
-/obj/item/gun/energy/laser/carbine{
-	pin = /obj/item/firing_pin/implant/mindshield
-	},
+/obj/item/gun/energy/modular_laser_rifle/carbine,
+/obj/item/gun/energy/modular_laser_rifle/carbine,
+/obj/item/gun/energy/modular_laser_rifle/carbine,
 /obj/item/storage/firstaid,
 /obj/item/storage/firstaid/brute,
 /obj/item/storage/firstaid/toxin,
@@ -110194,7 +110192,7 @@ agX
 agX
 agX
 bBr
-bYZ
+auw
 cab
 aaf
 aaf
@@ -118390,7 +118388,7 @@ aox
 cCi
 bjU
 blU
-auw
+atT
 akb
 bqw
 asx

@@ -8467,6 +8467,7 @@
 /obj/effect/turf_decal/tile/red{
 	dir = 1
 	},
+/obj/machinery/computer/brig_assistant_console,
 /turf/open/floor/plasteel,
 /area/hallway/primary/fore)
 "aDA" = (
@@ -31054,7 +31055,7 @@
 /obj/structure/closet/crate/freezer/blood,
 /obj/machinery/door/window/northleft{
 	name = "Surgery Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /turf/open/floor/plasteel/white,
@@ -31067,7 +31068,7 @@
 /obj/item/reagent_containers/glass/beaker/synthflesh,
 /obj/machinery/door/window/northright{
 	name = "Surgery Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /obj/machinery/camera{
@@ -48409,7 +48410,7 @@
 	name = "Station Intercom (General)";
 	pixel_y = -29
 	},
-/obj/machinery/computer/card/minor/cmo{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /obj/effect/turf_decal/tile/blue{
@@ -49211,7 +49212,7 @@
 /turf/open/floor/wood,
 /area/service/bar)
 "ely" = (
-/obj/machinery/computer/card/minor/rd{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 4
 	},
 /turf/open/floor/plasteel/cafeteria{
@@ -57803,7 +57804,7 @@
 /turf/open/floor/plasteel/white,
 /area/command/gateway)
 "imk" = (
-/obj/machinery/computer/card/minor/hos{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /obj/structure/disposalpipe/segment{
@@ -65828,12 +65829,9 @@
 	spawnwithmagazine = 0;
 	pin = /obj/item/firing_pin/implant/mindshield
 	},
-/obj/item/gun/energy/laser/carbine{
-	pin = /obj/item/firing_pin/implant/mindshield
-	},
-/obj/item/gun/energy/laser/carbine{
-	pin = /obj/item/firing_pin/implant/mindshield
-	},
+/obj/item/gun/energy/modular_laser_rifle/carbine,
+/obj/item/gun/energy/modular_laser_rifle/carbine,
+/obj/item/gun/energy/modular_laser_rifle/carbine,
 /obj/item/storage/firstaid,
 /obj/item/storage/firstaid/brute,
 /obj/item/storage/firstaid/toxin,
@@ -65942,6 +65940,20 @@
 	},
 /turf/open/floor/grass,
 /area/service/park)
+"lZx" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/structure/safe/spare_id{
+	pixel_x = 0;
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel/dark,
+/area/command/bridge)
 "mah" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/machinery/door/firedoor,
@@ -66233,7 +66245,7 @@
 	departmentType = 2;
 	pixel_x = 32
 	},
-/obj/machinery/computer/card/minor/qm{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /turf/open/floor/plasteel,
@@ -67284,7 +67296,7 @@
 	name = "Chief Engineer RC";
 	pixel_y = 32
 	},
-/obj/machinery/computer/card/minor/ce,
+/obj/machinery/modular_computer/console/preset/id,
 /obj/effect/turf_decal/tile/neutral{
 	dir = 1
 	},
@@ -70736,7 +70748,6 @@
 /area/security/prison)
 "ojs" = (
 /obj/structure/table/wood,
-/obj/item/card/id/captains_spare,
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
@@ -73662,9 +73673,6 @@
 	pixel_y = 3
 	},
 /obj/item/cartridge/medical,
-/obj/item/cartridge/chemistry{
-	pixel_y = 2
-	},
 /obj/structure/table/glass,
 /obj/effect/turf_decal/tile/blue{
 	dir = 4
@@ -121882,7 +121890,7 @@ iwY
 pJi
 sKT
 uGy
-fHz
+lZx
 tmg
 tmg
 tmg

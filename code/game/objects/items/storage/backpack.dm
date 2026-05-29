@@ -39,7 +39,7 @@
 
 /obj/item/storage/backpack/holding
 	name = "bag of holding"
-	desc = "A backpack that opens into a localized pocket of Blue Space."
+	desc = "Рюкзак с доступом в карманное блюспейс-пространство."
 	icon_state = "holdingpack"
 	item_state = "holdingpack"
 	resistance_flags = FIRE_PROOF
@@ -50,13 +50,13 @@
 
 /obj/item/storage/backpack/holding/satchel
 	name = "satchel of holding"
-	desc = "A satchel that opens into a localized pocket of Blue Space."
+	desc = "Поясной ранец с доступом в карманное блюспейс-пространство."
 	icon_state = "holdingsat"
 	item_state = "holdingsat"
 
 /obj/item/storage/backpack/holding/duffel
 	name = "duffel bag of holding"
-	desc = "A duffel bag that opens into a localized pocket of Blue Space."
+	desc = "Сумка с доступом в карманное блюспейс-пространство."
 	icon_state = "holdingduffel"
 	item_state = "holdingduffel"
 
@@ -68,7 +68,7 @@
 	STR.max_volume = STORAGE_VOLUME_BAG_OF_HOLDING
 
 /obj/item/storage/backpack/holding/suicide_act(mob/living/user)
-	user.visible_message("<span class='suicide'>[user] is jumping into [src]! It looks like [user.p_theyre()] trying to commit suicide.</span>")
+	user.visible_message(span_suicide("[user] влезает внутрь [src]! Похоже, что [user.ru_who()] пытается исчезнуть навсегда!"))
 	user.dropItemToGround(src, TRUE)
 	user.Stun(100, ignore_canstun = TRUE)
 	sleep(20)
@@ -452,6 +452,8 @@
 	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
 	slot_flags = NONE
+	custom_price = PRICE_EXPENSIVE
+	custom_premium_price = PRICE_EXPENSIVE*2
 
 /obj/item/storage/backpack/duffelbag/med/surgery/ComponentInitialize()
 	. = ..()
@@ -946,7 +948,7 @@
 	STR.silent = TRUE
 
 /obj/item/storage/backpack/duffelbag/clown/syndie/PopulateContents()
-	new /obj/item/pda/clown(src)
+	new /obj/item/modular_computer/pda/clown(src)
 	new /obj/item/clothing/under/rank/civilian/clown(src)
 	new /obj/item/clothing/shoes/clown_shoes(src)
 	new /obj/item/clothing/mask/gas/clown_hat(src)

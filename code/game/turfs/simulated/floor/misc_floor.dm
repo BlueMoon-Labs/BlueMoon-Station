@@ -272,6 +272,7 @@
 	name = "rusted plating"
 	desc = "Corrupted steel."
 	icon_state = "plating_rust"
+	base_icon_state = "plating_rust"
 	footstep = FOOTSTEP_RUST
 	barefootstep = FOOTSTEP_RUST
 	clawfootstep = FOOTSTEP_RUST

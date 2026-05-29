@@ -172,9 +172,9 @@ GLOBAL_LIST_INIT(food_reagents, build_reagents_to_food()) //reagentid = related 
 	name = "old recipe"
 	var/recipe_id = /datum/reagent/consumable/secretsauce
 
-/obj/item/paper/secretrecipe/examine(mob/user) //Extra secret
+/obj/item/paper/secretrecipe/ui_status(mob/user, datum/ui_state/state)
 	if(isobserver(user))
-		return list()
+		return UI_CLOSE
 	. = ..()
 
 /obj/item/paper/secretrecipe/Initialize(mapload)
@@ -187,7 +187,8 @@ GLOBAL_LIST_INIT(food_reagents, build_reagents_to_food()) //reagentid = related 
 /obj/item/paper/secretrecipe/proc/UpdateInfo()
 	var/datum/chemical_reaction/recipe = get_chemical_reaction(recipe_id)
 	if(!recipe)
-		default_raw_text = "This recipe is illegible."
+		add_raw_text("This recipe is illegible.")
+		update_appearance()
 		return
 	var/list/dat = list("<ul>")
 	for(var/rid in recipe.required_reagents)
@@ -210,5 +211,5 @@ GLOBAL_LIST_INIT(food_reagents, build_reagents_to_food()) //reagentid = related 
 		else
 			dat += " above [recipe.required_temp] degrees"
 	dat += "."
-	default_raw_text = dat.Join("")
-	update_icon()
+	add_raw_text(dat.Join(""))
+	update_appearance()

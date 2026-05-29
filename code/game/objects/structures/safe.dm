@@ -195,7 +195,7 @@ FLOOR SAFES
 			if(!open)
 				return
 			var/index = text2num(params["index"])
-			if(!index)
+			if(!index || index < 1 || index > length(contents))
 				return
 			var/obj/item/I = contents[index]
 			if(!I || !in_range(src, user))

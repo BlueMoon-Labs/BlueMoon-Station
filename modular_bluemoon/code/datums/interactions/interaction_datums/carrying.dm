@@ -46,7 +46,7 @@
 	description = "Нести на руках лицом к лицу."
 	simple_message = "USER поднимает TARGET к себе на руки."
 
-/datum/interaction/carry/face_to_face/do_action(mob/living/carbon/human/user, mob/living/target, apply_cooldown)
+/datum/interaction/carry/face_to_face/do_action(mob/living/carbon/human/user, mob/living/target, apply_cooldown, is_hidden)
 	. = ..()
 	if(!. || !istype(user))
 		return
@@ -64,7 +64,7 @@
 		to_chat(user, span_warning("Одной свободной руки недостаточно для такого действия."))
 		return FALSE
 
-/datum/interaction/carry/princess/do_action(mob/living/carbon/human/user, mob/living/target, apply_cooldown)
+/datum/interaction/carry/princess/do_action(mob/living/carbon/human/user, mob/living/target, apply_cooldown, is_hidden)
 	. = ..()
 	if(!. || !istype(user))
 		return

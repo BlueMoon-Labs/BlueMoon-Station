@@ -17,17 +17,18 @@
 		"Chemi-Slut",
 		"Chemical Specialist",
 		"Chemical Technician",
+		"Chemical Plumber",
 		"Hexocrocin Therapist",
 		"Organomegaly Healer",
 		"Pharmacist",
-		"Pharmacologist"
+		"Pharmacologist",
 		)
 
 	outfit = /datum/outfit/job/chemist
 	plasma_outfit = /datum/outfit/plasmaman/chemist
 
-	access = list(ACCESS_MEDICAL, ACCESS_MORGUE, ACCESS_SURGERY, ACCESS_CHEMISTRY, ACCESS_VIROLOGY, ACCESS_GENETICS, ACCESS_CLONING, ACCESS_MINERAL_STOREROOM)
-	minimal_access = list(ACCESS_MEDICAL, ACCESS_MORGUE, ACCESS_CHEMISTRY, ACCESS_MINERAL_STOREROOM)
+	access = list(ACCESS_MEDICAL, ACCESS_MORGUE, ACCESS_SURGERY, ACCESS_CHEMISTRY, ACCESS_VIROLOGY, ACCESS_GENETICS, ACCESS_CLONING, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_MEDICAL)
+	minimal_access = list(ACCESS_MEDICAL, ACCESS_MORGUE, ACCESS_CHEMISTRY, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_MEDICAL)
 	paycheck = PAYCHECK_MEDIUM
 	paycheck_department = ACCOUNT_MED
 	bounty_types = CIV_JOB_CHEM
@@ -58,7 +59,7 @@
 	jobtype = /datum/job/chemist
 
 	glasses = /obj/item/clothing/glasses/science
-	belt = /obj/item/pda/chemist
+	belt = /obj/item/modular_computer/pda/chemist
 	ears = /obj/item/radio/headset/headset_med
 	uniform = /obj/item/clothing/under/rank/medical/chemist
 	shoes = /obj/item/clothing/shoes/sneakers/white
@@ -75,7 +76,7 @@
 	name = "Syndicate Chemist"
 	jobtype = /datum/job/chemist
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	glasses = /obj/item/clothing/glasses/science
 	gloves = /obj/item/clothing/gloves/color/latex/nitrile/hsc

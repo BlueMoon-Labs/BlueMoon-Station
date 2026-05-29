@@ -390,12 +390,9 @@
 	spawnwithmagazine = 0;
 	pin = /obj/item/firing_pin/implant/mindshield
 	},
-/obj/item/gun/energy/laser/carbine{
-	pin = /obj/item/firing_pin/implant/mindshield
-	},
-/obj/item/gun/energy/laser/carbine{
-	pin = /obj/item/firing_pin/implant/mindshield
-	},
+/obj/item/gun/energy/modular_laser_rifle/carbine,
+/obj/item/gun/energy/modular_laser_rifle/carbine,
+/obj/item/gun/energy/modular_laser_rifle/carbine,
 /obj/item/storage/firstaid,
 /obj/item/storage/firstaid/brute,
 /obj/item/storage/firstaid/toxin,
@@ -4561,7 +4558,7 @@
 	},
 /area/medical/psychology/petpark)
 "bDr" = (
-/obj/machinery/computer/card/minor/ce,
+/obj/machinery/modular_computer/console/preset/id,
 /obj/effect/turf_decal/tile/yellow{
 	dir = 1
 	},
@@ -8355,7 +8352,7 @@
 /obj/machinery/door/window/northright{
 	dir = 4;
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /obj/structure/window/reinforced{
@@ -13198,6 +13195,10 @@
 /obj/machinery/light{
 	dir = 8
 	},
+/obj/structure/safe/spare_id{
+	pixel_x = -32;
+	pixel_y = 0
+	},
 /turf/open/floor/plasteel/dark,
 /area/command/bridge)
 "ezF" = (
@@ -14107,6 +14108,7 @@
 /obj/machinery/airalarm{
 	pixel_y = 23
 	},
+/obj/machinery/computer/brig_assistant_console,
 /turf/open/floor/plasteel,
 /area/hallway/primary/port)
 "eOF" = (
@@ -16784,7 +16786,6 @@
 /area/command/heads_quarters/captain/private)
 "fKy" = (
 /obj/structure/table/wood,
-/obj/item/card/id/captains_spare,
 /obj/item/razor{
 	pixel_x = -4;
 	pixel_y = 2
@@ -31947,7 +31948,7 @@
 /obj/effect/turf_decal/tile/neutral{
 	dir = 1
 	},
-/obj/machinery/computer/card/minor/rd{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /turf/open/floor/plasteel/dark,
@@ -35519,7 +35520,7 @@
 /turf/open/floor/carpet,
 /area/command/heads_quarters/hos)
 "mlJ" = (
-/obj/machinery/computer/card/minor/hos{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /obj/machinery/keycard_auth{
@@ -40656,9 +40657,6 @@
 	pixel_y = 3
 	},
 /obj/item/cartridge/medical,
-/obj/item/cartridge/chemistry{
-	pixel_y = 2
-	},
 /obj/effect/turf_decal/tile/blue{
 	dir = 4
 	},
@@ -50065,7 +50063,7 @@
 	network = list("ss13","medbay");
 	pixel_y = -22
 	},
-/obj/machinery/computer/card/minor/cmo{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /turf/open/floor/plasteel/cafeteria{
@@ -55053,7 +55051,7 @@
 /turf/closed/wall/r_wall,
 /area/service/janitor)
 "tcA" = (
-/obj/machinery/computer/card/minor/qm,
+/obj/machinery/modular_computer/console/preset/id,
 /obj/effect/turf_decal/tile/brown{
 	dir = 1
 	},
@@ -61161,7 +61159,7 @@
 	},
 /obj/machinery/door/window/northright{
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /obj/machinery/camera{

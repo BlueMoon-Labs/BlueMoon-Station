@@ -122,7 +122,7 @@
 /obj/structure/filingcabinet/security/proc/populate()
 	if(virgin)
 		for(var/datum/data/record/G in GLOB.data_core.general)
-			var/datum/data/record/S = find_record("name", G.fields["name"], GLOB.data_core.security)
+			var/datum/data/record/S = GLOB.data_core.security_by_name[G.fields["name"]]
 			if(!S)
 				continue
 			var/obj/item/paper/P = new /obj/item/paper(src)
@@ -156,7 +156,7 @@
 /obj/structure/filingcabinet/medical/proc/populate()
 	if(virgin)
 		for(var/datum/data/record/G in GLOB.data_core.general)
-			var/datum/data/record/M = find_record("name", G.fields["name"], GLOB.data_core.medical)
+			var/datum/data/record/M = GLOB.data_core.medical_by_name[G.fields["name"]]
 			if(!M)
 				continue
 			var/obj/item/paper/P = new /obj/item/paper(src)

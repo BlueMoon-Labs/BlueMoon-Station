@@ -5,7 +5,7 @@
 
 /datum/gear/glasses/security/sunglasses/securitygoggles
 	name = "Security HUD Goggles"
-	path = /obj/item/clothing/glasses/hud/securitygoggles
+	path = /obj/item/clothing/glasses/hud/security/securitygoggles
 	restricted_roles = list("Peacekeeper", "Security Officer", "Warden", "Head of Security", "NanoTrasen Representative", "Captain", "Blueshield")
 
 /datum/gear/glasses/security/sunglasses/aviators/prescription

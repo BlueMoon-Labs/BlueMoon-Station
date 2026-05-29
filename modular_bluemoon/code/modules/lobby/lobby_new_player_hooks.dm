@@ -1,7 +1,8 @@
-/mob/dead/new_player/create_mob_hud()
-	return
+/datum/hud/new_player
 
-/datum/hud/new_player/populate_buttons(mob/dead/new_player/owner)
+/datum/hud/new_player/proc/populate_buttons(mob/dead/new_player/owner)
+
+/mob/dead/new_player/create_mob_hud()
 	return
 
 /mob/dead/new_player/proc/new_player_panel()
@@ -16,10 +17,8 @@
 	bm_lobby_ready = FALSE
 	bm_lobby_music_path = ""
 	bm_lobby_track_name = ""
+	SStitle_bm?.update_player_counts_all()
 	return ..()
-
-/mob/dead/new_player/reset_menu_hud()
-	set hidden = 1
 
 /client/proc/bm_push_lobby_music()
 	var/mob/dead/new_player/player = mob

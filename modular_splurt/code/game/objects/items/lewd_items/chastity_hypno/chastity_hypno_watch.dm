@@ -33,6 +33,8 @@
 		return
 
 	if(!CHECK_BITFIELD(H.client?.prefs.cit_toggles, HYPNO))
+		to_chat(user, span_warning("[H] cannot be hypnotized — they have \"Lewd Hypno\" disabled in preferences."))
+		to_chat(H, span_notice("You resist the watch — enable \"Lewd Hypno\" in game prefs to use this."))
 		return
 
 	var/response = alert(H, "Do you wish to fall into a hypnotic sleep? (This will allow [user] to issue hypnotic suggestions)", "Hypnosis", "Yes", "No")
@@ -40,9 +42,14 @@
 	if(response == "Yes")
 		H.visible_message("<span class='warning'>[H] falls into a deep slumber!</span>", "<span class ='danger'>Your eyelids gently shut as you fall into a deep slumber. All you can hear is [user]'s voice as you commit to following all of their suggestions</span>")
 
-		H.SetSleeping(1200)
+		// ignore_canstun: иначе TRAIT_SLEEPIMMUNE / блоки сна не дают статусу сна — ui_status сбрасывает subject и TGUI не открывается.
+		H.SetSleeping(120 SECONDS, TRUE, TRUE)
 		H.drowsyness = max(H.drowsyness, 40)
+		if(!H.IsSleeping())
+			to_chat(user, span_warning("[H] doesn't enter a hypnotic trance — they may be immune to sleep."))
+			return
 		subject = H
+		ui_interact(user)
 		return
 
 	H.visible_message("<span class='warning'>[H]'s attention breaks, despite your attempts to hypnotize them! They clearly don't want this</span>", "<span class ='warning'>Your concentration breaks as you realise you have no interest in following [user]'s words!</span>")

@@ -399,6 +399,8 @@
 		return TRUE
 	if(istype(O, /obj/item/slime_scanner))
 		return TRUE
+	if(istype(O, /obj/item/slime_cookie))
+		return TRUE
 	return FALSE
 
 /obj/machinery/smartfridge/extract/preloaded

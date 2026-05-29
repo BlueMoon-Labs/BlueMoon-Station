@@ -29,6 +29,9 @@
 	/// Amount of blood to heal over a second
 	var/blood_heal = 0
 
+	/// Radiation to heal over a second
+	var/rad_heal = 0
+
 	/// Map of organ (such as ORGAN_SLOT_BRAIN) to damage heal over a second
 	var/list/organ_healing = null
 
@@ -59,6 +62,7 @@
 	suffocation_heal = 0,
 	stamina_heal = 0,
 	blood_heal = 0,
+	rad_heal = 0,
 	organ_healing = null,
 	simple_heal = 0,
 	limit_to_trait = null,
@@ -78,6 +82,7 @@
 	src.suffocation_heal = suffocation_heal
 	src.stamina_heal = stamina_heal
 	src.blood_heal = blood_heal
+	src.rad_heal = rad_heal
 	src.organ_healing = organ_healing
 	src.simple_heal = simple_heal
 	src.limit_to_trait = limit_to_trait
@@ -91,7 +96,7 @@
 	for(var/mob/living/alert_holder as anything in current_alerts)
 		alert_holder.clear_alert(alert_category)
 		if(!stackable)
-			REMOVE_TRAIT(alert_holder, TRAIT_MOB_IN_AURA_HEALING, src)
+			REMOVE_TRAIT(alert_holder, TRAIT_MOB_IN_AURA_HEALING, REF(src))
 	current_alerts.Cut()
 
 	return ..()
@@ -108,14 +113,14 @@
 		for(var/mob/living/candidate in view(range, parent))
 			if (!isnull(limit_to_trait) && !HAS_TRAIT(candidate, limit_to_trait))
 				continue
-			if(!stackable && HAS_TRAIT_NOT_FROM(candidate, TRAIT_MOB_IN_AURA_HEALING, src))
+			if(!stackable && HAS_TRAIT_NOT_FROM(candidate, TRAIT_MOB_IN_AURA_HEALING, REF(src)))
 				continue
 			to_heal[candidate] = TRUE
 	else
 		for(var/mob/living/candidate in range(range, parent))
 			if (!isnull(limit_to_trait) && !HAS_TRAIT(candidate, limit_to_trait))
 				continue
-			if(!stackable && HAS_TRAIT_NOT_FROM(candidate, TRAIT_MOB_IN_AURA_HEALING, src))
+			if(!stackable && HAS_TRAIT_NOT_FROM(candidate, TRAIT_MOB_IN_AURA_HEALING, REF(src)))
 				continue
 			to_heal[candidate] = TRUE
 
@@ -125,7 +130,7 @@
 			alert.desc = "You are being healed by [parent]."
 			current_alerts[candidate] = TRUE
 			if(!stackable)
-				ADD_TRAIT(candidate, TRAIT_MOB_IN_AURA_HEALING, src)
+				ADD_TRAIT(candidate, TRAIT_MOB_IN_AURA_HEALING, REF(src))
 
 		if (should_show_effect && candidate.health < candidate.maxHealth)
 			new /obj/effect/temp_visual/heal(get_turf(candidate), healing_color)
@@ -150,13 +155,15 @@
 		if (candidate.blood_volume < BLOOD_VOLUME_NORMAL)
 			candidate.blood_volume += blood_heal * seconds_per_tick
 
+		candidate.radiation = max(candidate.radiation - rad_heal*seconds_per_tick, 0)
+
 		candidate.updatehealth()
 
 	for (var/mob/living/remove_alert_from as anything in current_alerts - to_heal)
 		remove_alert_from.clear_alert(alert_category)
 		current_alerts -= remove_alert_from
 		if(!stackable)
-			REMOVE_TRAIT(remove_alert_from, TRAIT_MOB_IN_AURA_HEALING, src)
+			REMOVE_TRAIT(remove_alert_from, TRAIT_MOB_IN_AURA_HEALING, REF(src))
 
 /atom/movable/screen/alert/aura_healing
 	name = "Aura Healing"

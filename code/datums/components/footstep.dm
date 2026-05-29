@@ -100,12 +100,15 @@
 
 		if(!turf_footstep)
 			return
+		var/list/footstep_entry = footstep_sounds[turf_footstep]
+		if(!footstep_entry)
+			return
 		playsound(
 			T,
-			pick(footstep_sounds[turf_footstep][1]),
-			footstep_sounds[turf_footstep][2] * volume,
+			pick(footstep_entry[1]),
+			footstep_entry[2] * volume,
 			TRUE,
-			footstep_sounds[turf_footstep][3] + e_range,
+			footstep_entry[3] + e_range,
 			falloff_distance = 1
 		)
 	play_fov_effect(LM, 3, "footstep", dir = LM.dir, ignore_self = FALSE)
@@ -147,14 +150,16 @@
 			|| (H.shoes && (H.shoes.body_parts_covered & FEET))
 
 		if(feetCover)
-			playsound(
-				T,
-				pick(GLOB.footstep[T.footstep][1]),
-				GLOB.footstep[T.footstep][2] * volume,
-				TRUE,
-				GLOB.footstep[T.footstep][3] + e_range,
-				falloff_distance = 1
-			)
+			var/list/shoe_entry = GLOB.footstep[T.footstep]
+			if(shoe_entry)
+				playsound(
+					T,
+					pick(shoe_entry[1]),
+					shoe_entry[2] * volume,
+					TRUE,
+					shoe_entry[3] + e_range,
+					falloff_distance = 1
+				)
 			play_fov_effect(H, 3, "footstep", dir = H.dir, ignore_self = FALSE)
 			return
 
@@ -164,14 +169,16 @@
 	if(!special && H.dna.species.special_step_sounds)
 		playsound(T, pick(H.dna.species.special_step_sounds), 50, TRUE, falloff_distance = 1)
 	else
-		playsound(
-			T,
-			pick(L[turf_footstep][1]),
-			L[turf_footstep][2] * volume,
-			TRUE,
-			L[turf_footstep][3] + e_range,
-			falloff_distance = 1
-		)
+		var/list/footstep_entry = L[turf_footstep]
+		if(footstep_entry)
+			playsound(
+				T,
+				pick(footstep_entry[1]),
+				footstep_entry[2] * volume,
+				TRUE,
+				footstep_entry[3] + e_range,
+				falloff_distance = 1
+			)
 
 	play_fov_effect(H, 3, "footstep", dir = H.dir, ignore_self = FALSE)
 

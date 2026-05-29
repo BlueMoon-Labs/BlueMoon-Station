@@ -53,28 +53,30 @@
 		if(!available_surgeries.len)
 			return
 		// BLUEMOON ADD START
+		. = TRUE // cancel = don't try to attack
 		var/P
 		if(user?.client?.prefs?.surgical_disable_radial)
 			P = tgui_input_list(user, "Выберите операцию", "Хирургия", available_surgeries)
 		else
-			// Sorted operations to healing and improving
-			var/static/list/options = list(
-			"Лечение" = list("icon" = 'modular_citadel/icons/mob/citadel_refs/borg HUDs.dmi', "state" = "medihound"),
-			"Остальное" = list("icon" = 'modular_citadel/icons/mob/citadel_refs/borg HUDs.dmi', "state" = "science")
-			)
-
 			var/list/choices = list()
-			for(var/text in options)
-				var/info = options[text]
-				var/mutable_appearance/app = new /mutable_appearance()
-				app.icon = info["icon"]
-				app.icon_state = info["state"]
-				app.name = text
-				choices[text] = app
+			if(LAZYLEN(available_surgeries) > 8)
+				// Sorted operations to healing and improving
+				var/static/list/options = list(
+				"Лечение" = list("icon" = 'modular_citadel/icons/mob/citadel_refs/borg HUDs.dmi', "state" = "medihound"),
+				"Остальное" = list("icon" = 'modular_citadel/icons/mob/citadel_refs/borg HUDs.dmi', "state" = "science")
+				)
 
-			P = show_radial_menu(user, get_turf(M), choices, require_near = TRUE, radius = 20)
-			if(!P)
-				return TRUE // cancel = don't try to attack
+				for(var/text in options)
+					var/info = options[text]
+					var/mutable_appearance/app = new /mutable_appearance()
+					app.icon = info["icon"]
+					app.icon_state = info["state"]
+					app.name = text
+					choices[text] = app
+
+				P = show_radial_menu(user, get_turf(M), choices, require_near = TRUE, radius = 20)
+				if(!P)
+					return
 
 			// get mutable_appearance for available_surgeries
 			choices = list()
@@ -82,7 +84,7 @@
 			var/list/prios = list() // priorities
 			for(var/S_name in available_surgeries)
 				var/datum/surgery/S = available_surgeries[S_name]
-				if((P == "Лечение") != S.is_healing) // for understanding: if(P == "Лечение" && !S.is_healing || P != "Лечение" && S.is_healing)
+				if(!isnull(P) && (P == "Лечение") != S.is_healing) // for understanding: if(P == "Лечение" && !S.is_healing || P != "Лечение" && S.is_healing)
 					continue
 				var/mutable_appearance/app = new /mutable_appearance()
 				app.icon = S.icon
@@ -110,7 +112,7 @@
 			P = show_radial_menu(user, M, choices, require_near = TRUE, radius = radial_radius, tooltips = TRUE)
 
 		if(!P)
-			return TRUE // cancel = don't try to attack
+			return
 		// BLUEMOON ADD END
 
 		if(user && user.Adjacent(M) && (I in user))

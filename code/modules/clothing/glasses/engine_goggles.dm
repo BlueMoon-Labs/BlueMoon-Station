@@ -126,6 +126,7 @@
 
 /obj/item/clothing/glasses/meson/engine/update_icon_state()
 	icon_state = "trayson-[mode]"
+	return SEND_SIGNAL(src, COMSIG_ATOM_UPDATE_ICON_STATE)
 
 /obj/item/clothing/glasses/meson/engine/tray //atmos techs have lived far too long without tray goggles while those damned engineers get their dual-purpose gogles all to themselves
 	name = "optical t-ray scanner"

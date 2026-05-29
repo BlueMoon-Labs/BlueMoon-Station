@@ -39,11 +39,11 @@
 	icon_state = "mouthring"
 	item_state = "mouthring"
 	flags_cover = null // рот открыт
-
+/*
 /obj/item/clothing/mask/gas/sechailer/mopp
 	mutantrace_variation = STYLE_MUZZLE
 	anthro_mob_worn_overlay = 'modular_bluemoon/icons/mob/clothing/mask_muzzled.dmi'
-
+*/
 /obj/item/clothing/mask/transparent_mask
 	name = "transparent mask"
 	desc = "A transparent mask, made for concubines and belly dancers!"

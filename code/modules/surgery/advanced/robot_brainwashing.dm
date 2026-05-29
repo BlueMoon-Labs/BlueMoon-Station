@@ -31,7 +31,7 @@
 	var/objective
 
 /datum/surgery_step/reprogram/preop(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
-	objective = stripped_input(user, "Choose the objective to imprint on your victim's posibrain.", "Reprogramming", null, MAX_MESSAGE_LEN)
+	objective = tgui_input_text(user, "Выберите цель, которая отпечатается в сознании вашей жертвы.", "Reprogramming", "", MAX_MESSAGE_LEN, TRUE, TRUE)
 	if(!objective)
 		return -1
 	display_results(user, target, "<span class='notice'>You begin to reprogram [target]...</span>",

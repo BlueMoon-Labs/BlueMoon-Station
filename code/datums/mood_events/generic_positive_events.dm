@@ -288,3 +288,7 @@
 	description = span_love("Лекарства делают своё дело. Боль от неё крайне приятная.\n")
 	mood_change = 2
 	timeout = 1 MINUTES
+
+/datum/mood_event/birthday
+	description = "<span class='nicegreen'>Сегодня мой день рождения!</span>\n"
+	mood_change = 2

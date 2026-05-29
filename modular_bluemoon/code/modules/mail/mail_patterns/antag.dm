@@ -169,5 +169,6 @@
 
 	initial_contents = list(
 		/obj/item/choice_beacon/vehicle/clown_car,
+		/obj/item/clothing/accessory/permit/special/clown_car,
 		/obj/item/megaphone/clown,
 	)

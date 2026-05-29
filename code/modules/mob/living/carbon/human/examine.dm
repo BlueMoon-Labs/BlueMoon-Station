@@ -1,4 +1,4 @@
-/mob/living/carbon/human/examine(mob/user)
+/mob/living/carbon/human/examine(mob/user, silent = FALSE)
 //this is very slightly better than it was because you can use it more places. still can't do \his[src] though.
 	var/t_on 	= ru_who(TRUE)
 	var/t_ego 	= ru_ego()
@@ -34,7 +34,7 @@
 		. += "Вы не можете разобрать, к какому виду относится находящееся перед вами существо."
 	else
 		. += "[ru_ego(TRUE)] раса - <EM>[spec_trait_examine_font()][dna?.custom_species ? dna.custom_species : dna?.species?.name]</EM></font>!"
-	if(user?.stat == CONSCIOUS && ishuman(user))
+	if(user?.stat == CONSCIOUS && ishuman(user) && !silent)
 		user.visible_message(span_small("<b>[user]</b> смотрит на <b>[!obscure_name ? name : "Неизвестного"]</b>.") , span_small("Смотрю на <b>[!obscure_name ? name : "Неизвестного"]</b>.") , null, COMBAT_MESSAGE_RANGE)
 	var/list/obscured = check_obscured_slots()
 
@@ -180,7 +180,7 @@
 	if(LAZYLEN(internal_organs) && (user.client?.prefs.cit_toggles & GENITAL_EXAMINE))
 		for(var/obj/item/organ/genital/dicc in internal_organs)
 			if(istype(dicc) && dicc.is_exposed())
-				. += "[dicc.desc]"
+				. += dicc.get_examine_string(user)
 				if((src == user || HAS_TRAIT(user, TRAIT_GFLUID_DETECT)) && ((dicc?.genital_flags & GENITAL_FUID_PRODUCTION) || ((dicc?.linked_organ?.genital_flags & GENITAL_FUID_PRODUCTION) && !dicc?.linked_organ?.is_exposed())))
 					var/datum/reagent/cummies = find_reagent_object_from_type(dicc?.get_fluid_id())
 					. += "Вы чувствуете, как от [t_ego] тела пахнет <b>'<span style='color:[cummies.color]';>[cummies.name]</span>'</b>..."
@@ -578,11 +578,11 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 		if(istype(H.glasses, /obj/item/clothing/glasses/hud) || CIH)
 			var/perpname = get_face_name(get_id_name(""))
 			if(perpname)
-				var/datum/data/record/R = find_record("name", perpname, GLOB.data_core.general)
+				var/datum/data/record/R = GLOB.data_core.general_by_name[perpname]
 				if(R)
 					var/rank_tooltip = ""
 					if(R.fields["real_rank"] && R.fields["rank"] != R.fields["real_rank"])
-						rank_tooltip = " <span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>[html_encode(R.fields["real_rank"])]</span></span>"
+						rank_tooltip = " [span_tooltip_fast(html_encode(R.fields["real_rank"]))]"
 					. += "<span class='deptradio'>Профессия:</span> [R.fields["rank"]][rank_tooltip]\n<a href='?src=[REF(src)];hud=1;photo_front=1'>\[Front photo\]</a><a href='?src=[REF(src)];hud=1;photo_side=1'>\[Side photo\]</a>"
 				if(istype(H.glasses, /obj/item/clothing/glasses/hud/health) || istype(CIH, /obj/item/organ/cyberimp/eyes/hud/medical))
 					var/cyberimp_detect
@@ -597,7 +597,7 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 						. += "<a href='?src=[REF(src)];hud=m;p_stat=1'>\[[health_r]\]</a>"
 						health_r = R.fields["m_stat"]
 						. += "<a href='?src=[REF(src)];hud=m;m_stat=1'>\[[health_r]\]</a>"
-					R = find_record("name", perpname, GLOB.data_core.medical)
+					R = GLOB.data_core.medical_by_name[perpname]
 					if(R)
 						. += "<a href='?src=[REF(src)];hud=m;evaluation=1'>\[Medical evaluation\]</a>"
 					traitstring = get_trait_string(FALSE, TRUE)
@@ -611,7 +611,7 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 					//|| !user.canmove || user.restrained()) Fluff: Sechuds have eye-tracking technology and sets 'arrest' to people that the wearer looks and blinks at.
 						var/criminal = "None"
 
-						R = find_record("name", perpname, GLOB.data_core.security)
+						R = GLOB.data_core.security_by_name[perpname]
 						if(R)
 							criminal = R.fields["criminal"]
 

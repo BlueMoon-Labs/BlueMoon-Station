@@ -10,7 +10,6 @@
 	selection_color = "#dddddd"
 	alt_titles = list(
 		"Tiger Cooperative Disciple", //Триглав выше, для удобства
-		"Syndicate Techpriest", //Синди выше, для удобства
 		"Bichop",
 		"Bishop",
 		"Cleric",
@@ -47,14 +46,15 @@
 		"Spiritual Mentor",
 		"Techpriest",
 		"Thaumaturge",
-		"Theologist"
+		"Theologist",
+		"Voodoo Sorcerer",
 		)
 
 	outfit = /datum/outfit/job/chaplain
 	plasma_outfit = /datum/outfit/plasmaman/chaplain
 
-	access = list(ACCESS_MORGUE, ACCESS_CHAPEL_OFFICE, ACCESS_CREMATORIUM, ACCESS_THEATRE)
-	minimal_access = list(ACCESS_MORGUE, ACCESS_CHAPEL_OFFICE, ACCESS_CREMATORIUM, ACCESS_THEATRE)
+	access = list(ACCESS_MORGUE, ACCESS_CHAPEL_OFFICE, ACCESS_CREMATORIUM, ACCESS_THEATRE, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_SERVICE)
+	minimal_access = list(ACCESS_MORGUE, ACCESS_CHAPEL_OFFICE, ACCESS_CREMATORIUM, ACCESS_THEATRE, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_SERVICE)
 	paycheck = PAYCHECK_EASY
 	paycheck_department = ACCOUNT_CIV
 
@@ -176,7 +176,7 @@
 	name = "Chaplain"
 	jobtype = /datum/job/chaplain
 
-	belt = /obj/item/pda/chaplain
+	belt = /obj/item/modular_computer/pda/chaplain
 	ears = /obj/item/radio/headset/headset_srv
 	uniform = /obj/item/clothing/under/rank/civilian/chaplain
 	backpack_contents = list(/obj/item/storage/briefcase/crafted/chap_stuff = 1,
@@ -190,7 +190,7 @@
 	name = "Syndicate Chaplain"
 	jobtype = /datum/job/chaplain
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	ears = /obj/item/radio/headset/headset_srv
 	uniform = /obj/item/clothing/under/rank/civilian/util

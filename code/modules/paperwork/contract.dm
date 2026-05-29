@@ -29,7 +29,6 @@
 /obj/item/paper/contract/employment/Initialize(mapload, new_employee_name)
 	if(!new_employee_name)
 		return INITIALIZE_HINT_QDEL
-	AddElement(/datum/element/update_icon_blocker)
 	. = ..()
 	target = new_employee_name
 	name =  "Подписка о Корпоративной Лояльности Сотрудника [target]"
@@ -76,7 +75,7 @@
 	resistance_flags = LAVA_PROOF | FIRE_PROOF | ACID_PROOF
 	var/datum/mind/owner
 	var/datum/antagonist/devil/devil_datum
-	icon_state = "paper_onfire"
+	icon_state = "scroll"
 
 /obj/item/paper/contract/infernal/power
 	name = "бумага- контракт на инфернальную силу"
@@ -336,8 +335,8 @@
 		id.assignment = "Captain"
 		id.update_label()
 		if(worn)
-			if(istype(worn, /obj/item/pda))
-				var/obj/item/pda/PDA = worn
+			if(istype(worn, /obj/item/modular_computer/pda))
+				var/obj/item/modular_computer/pda/PDA = worn
 				PDA.id = id
 				id.forceMove(worn)
 			else if(istype(worn, /obj/item/storage/wallet))
@@ -370,3 +369,20 @@
 		return -1
 	user.mind.AddSpell(new /obj/effect/proc_holder/spell/targeted/summon_friend(null))
 	return ..()
+
+// Summonable contract storage for devils - keeps contracts organized and out of the backpack
+/obj/item/storage/box/contract_infernal
+	name = "infernal contract holder"
+	desc = "A hellish vessel that can only hold infernal contracts. Summoned from the void by devils to keep their paperwork tidy."
+	icon = 'icons/obj/storage.dmi'
+	icon_state = "cultpack"
+	illustration = null
+	foldable = null
+	resistance_flags = LAVA_PROOF | FIRE_PROOF | ACID_PROOF
+
+/obj/item/storage/box/contract_infernal/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.can_hold = typecacheof(list(/obj/item/paper/contract/infernal))
+	STR.max_combined_w_class = 42
+	STR.max_items = 14

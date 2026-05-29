@@ -27,7 +27,11 @@ SUBSYSTEM_DEF(ai_controllers)
 		if(!COOLDOWN_FINISHED(ai_controller, failed_planning_cooldown))
 			continue
 
+		// BLUEMOON OPTIMIZATION: skip planning for AI controllers whose pawn has no player nearby
 		if(!LAZYLEN(ai_controller.current_behaviors))
+			var/mob/living/pawn_mob = ai_controller.pawn
+			if(istype(pawn_mob) && !pawn_mob.client && !pawn_mob.has_nearby_player())
+				continue
 			ai_controller.SelectBehaviors(wait * 0.1)
 			if(!LAZYLEN(ai_controller.current_behaviors)) //Still no plan
 				COOLDOWN_START(ai_controller, failed_planning_cooldown, AI_FAILED_PLANNING_COOLDOWN)

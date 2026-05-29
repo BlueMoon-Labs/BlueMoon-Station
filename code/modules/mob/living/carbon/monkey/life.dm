@@ -9,6 +9,11 @@
 	if(client)
 		return
 	if(stat == CONSCIOUS)
+		// BLUEMOON OPTIMIZATION: skip monkey AI if no player nearby
+		if(!has_nearby_player())
+			resisting = FALSE
+			walk_to(src, 0)
+			return
 		if(on_fire || buckled || restrained() || (!CHECK_MOBILITY(src, MOBILITY_STAND) && CHECK_MOBILITY(src, MOBILITY_MOVE))) //CIT CHANGE - makes it so monkeys attempt to resist if they're resting)
 			if(!resisting && prob(MONKEY_RESIST_PROB))
 				resisting = TRUE

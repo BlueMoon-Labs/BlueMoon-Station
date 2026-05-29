@@ -136,6 +136,7 @@
 /obj/item/ammo_box/magazine/m10mm_large
 	name = "enlarged pistol magazine (10mm)"
 	desc = "An extra ammo gun magazine."
+	icon = 'icons/obj/ammo.dmi'
 	icon_state = "c20r45-16"
 	ammo_type = /obj/item/ammo_casing/c10mm
 	caliber = "10mm"
@@ -340,11 +341,10 @@
 		O.take_damage(18)
 		O.take_damage(8)
 
-/// Игрушечная кувалда на основе banhammer — накладывает squish при ударе
 /obj/item/inteq_sledgehammer/toy
 	name = "toy sledgehammer"
 	desc = "A cheap plastic replica of an InteQ sledgehammer. BONK!"
-	force = 1
+	force = 0
 	throwforce = 0
 	w_class = WEIGHT_CLASS_TINY
 	throw_speed = 3
@@ -356,23 +356,18 @@
 	wound_bonus = 0
 	bare_wound_bonus = 0
 	armour_penetration = 0
-	attack_speed = CLICK_CD_MELEE
+	attack_speed = CLICK_CD_MELEE * 0.5
 	slot_flags = ITEM_SLOT_BELT
 
 /obj/item/inteq_sledgehammer/toy/ComponentInitialize()
-	AddComponent(/datum/component/two_handed, force_unwielded=1, force_wielded=1, icon_wielded="sledgehammer1")
+	AddComponent(/datum/component/two_handed, force_unwielded=0, force_wielded=0, icon_wielded="sledgehammer1")
 
 /obj/item/inteq_sledgehammer/toy/attack(mob/M, mob/user)
 	if(iscarbon(M))
 		var/mob/living/carbon/C = M
 		C.AddElement(/datum/element/squish, 3 SECONDS)
-	if(user.zone_selected == BODY_ZONE_HEAD)
-		M.visible_message("<span class='danger'>[user] бахнул [M] по голове [src]!</span>", "<span class='userdanger'>[user] бахнул тебя по голове [src]!</span>", "<span class='hear'>Слышен звук баха.</span>")
-	else
-		M.visible_message("<span class='danger'>[user] нашлёпал [M] [src]!</span>", "<span class='userdanger'>[user] нашлёпал тебя [src]!</span>", "<span class='hear'>Слышен звук хлюпа.</span>")
 	playsound(loc, 'modular_splurt/sound/misc/bonk.ogg', 1000, 1)
-	if(user.a_intent != INTENT_HELP)
-		return ..()
+	..()
 
 /obj/item/inteq_sledgehammer/toy/afterattack(atom/A, mob/user, proximity)
 	return

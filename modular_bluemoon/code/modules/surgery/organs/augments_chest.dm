@@ -1,7 +1,7 @@
 /obj/item/organ/internal/cyberimp/chest/scanner //Ported from skyrat
 	name = "internal health analyzer"
 	desc = "An advanced health analyzer implant, designed to directly interface with a host's body and relay scan information to the brain on command."
-	slot = ORGAN_SLOT_THRUSTERS //BLUEEMOON EDIT: Now you have to choose. You can't be superior cyborg-ish lifeform. Seethe well. Doesn't cause an error anymore!
+	slot = ORGAN_SLOT_ANALYZER
 	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
 	icon_state = "internal_HA"
 	actions_types = list(/datum/action/item_action/organ_action/use)

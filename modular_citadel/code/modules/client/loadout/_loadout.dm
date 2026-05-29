@@ -7,6 +7,31 @@
 GLOBAL_LIST_EMPTY(loadout_items)
 GLOBAL_LIST_EMPTY(loadout_whitelist_ids)
 
+/// Fixes gear_category/gear_subcategory after navigation (same display name e.g. "Jobs" under Uniform/Suit/Head; empty item tables).
+/proc/sanitize_loadout_navigation(datum/preferences/prefs)
+	if(!prefs || !length(GLOB.loadout_items))
+		return
+	if(!GLOB.loadout_categories[prefs.gear_category])
+		prefs.gear_category = GLOB.loadout_categories[1]
+	var/list/subcats = GLOB.loadout_categories[prefs.gear_category]
+	if(!length(subcats))
+		prefs.gear_subcategory = LOADOUT_SUBCATEGORY_NONE
+		return
+	if(!(prefs.gear_subcategory in subcats))
+		prefs.gear_subcategory = subcats[1]
+	var/list/cat_items = GLOB.loadout_items[prefs.gear_category]
+	if(!cat_items)
+		prefs.gear_subcategory = subcats[1]
+		return
+	var/list/sub_items = cat_items[prefs.gear_subcategory]
+	if(sub_items && length(sub_items))
+		return
+	for(var/sc in subcats)
+		var/list/try_items = cat_items[sc]
+		if(try_items && length(try_items))
+			prefs.gear_subcategory = sc
+			return
+
 /proc/load_loadout_config(loadout_config)
 	if(!loadout_config)
 		loadout_config = "config/loadout_config.txt"
@@ -53,7 +78,7 @@ GLOBAL_LIST_EMPTY(loadout_whitelist_ids)
 	var/atom/path //item-to-spawn path // BLUEMOON EDIT - превращено в атом чтобы адекватнее работать с иконками
 	var/cost = 1 //normally, each loadout costs a single point.
 	var/geargroupID //defines the ID that the gear inherits from the config
-	var/loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
+	var/loadout_flags = LOADOUT_CAN_NAME_DESC
 	var/list/loadout_initial_colors = list()
 	var/handle_post_equip = FALSE
 
@@ -109,6 +134,8 @@ GLOBAL_LIST_EMPTY(loadout_whitelist_ids)
 
 //ckey only check
 /datum/gear/proc/donator_ckey_check(key)
-	if(ckeywhitelist && ckeywhitelist.Find(key))
-		return TRUE
-	return IS_CKEY_DONATOR_GROUP(key, donator_group_id)
+	. = TRUE
+	if(donator_group_id)
+		. = IS_CKEY_DONATOR_GROUP(key, donator_group_id)
+	if(LAZYLEN(ckeywhitelist))
+		. = . && !!ckeywhitelist.Find(key)

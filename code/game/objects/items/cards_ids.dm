@@ -122,7 +122,7 @@
 		if(registered_account.account_job)
 			var/datum/bank_account/D = SSeconomy.get_dep_account(registered_account.account_job.paycheck_department)
 			if(D)
-				. += "На балансе [budget_to_ru_genitive(D.account_holder)] находится [D.account_balance] кр."
+				. += "На балансе [vocabulary_to_ru(GLOB.budget_ru_genitive, D.account_holder)] находится [D.account_balance] кр."
 		. += "<span class='info'>Alt-Click по ID, чтобы достать деньги из аккаунта в форме голочипов.</span>"
 		. += "<span class='info'>Вы может добавить кредиты на аккаунт, прижимая голочипы, наличные или монеты к ID.</span>"
 		if(registered_account.account_holder == user.real_name)
@@ -252,6 +252,13 @@
 		card_sticker.wrap(src, user)
 		return
 	//BLUEMOON ADD END
+	//BLUEMOON ADD метадоллары → лобби-счёт (не станционный банк)
+	if(istype(W, /obj/item/stack/metadollar))
+		var/obj/item/stack/metadollar/M = W
+		if(M.deposit_to_lobby_prefs(user, src))
+			playsound(src, 'sound/machines/terminal_success.ogg', 15, 1)
+		return
+	//BLUEMOON ADD END
 
 	if(!bank_support)
 		return ..()
@@ -336,7 +343,7 @@
 	. = FALSE
 	var/datum/bank_account/old_account = registered_account
 
-	var/new_bank_id = input(user, "Введите номер вашего банковского счета.", "Восстановление аккаунта", 111111) as num | null
+	var/new_bank_id = tgui_input_number(user, "Введите номер вашего банковского счета.", "Восстановление аккаунта", 111111, 999999, 111111, round_value = TRUE)
 
 	if (isnull(new_bank_id))
 		return
@@ -405,7 +412,7 @@
 		registered_account.bank_card_talk("<span class='warning'>ОШИБКА: НЕВОЗМОЖНО ВОЙТИ ВВИДУ ЗАПЛАНИРОВАННОГО ТЕХОБСЛУЖИВАНИЯ. РАБОТЫ ЗАПЛАНИРОВАНЫ К ЗАВЕРШЕНИЮ В ТЕЧЕНИЕ [(registered_account.withdrawDelay - world.time)/10] СЕКУНД.</span>", TRUE)
 		return
 
-	var/amount_to_remove =  input(user, "Как много кредитов вы хотите снять? Текущий баланс: [registered_account.account_balance]", "Снятие средств", 5) as num|null
+	var/amount_to_remove =  tgui_input_number(user, "Как много кредитов вы хотите снять? Текущий баланс: [registered_account.account_balance]", "Снятие средств", 1, min_value = 1, round_value = TRUE)
 
 	if(!amount_to_remove || amount_to_remove < 0)
 		return
@@ -439,7 +446,7 @@
 		if(registered_account.account_job)
 			var/datum/bank_account/D = SSeconomy.get_dep_account(registered_account.account_job.paycheck_department)
 			if(D)
-				. += "На балансе [budget_to_ru_genitive(D.account_holder)] находится [D.account_balance] кр."
+				. += "На балансе [vocabulary_to_ru(GLOB.budget_ru_genitive, D.account_holder)] находится [D.account_balance] кр."
 		. += "<span class='info'>Alt-Click по ID-карте, чтобы снять деньги с аккаунта в форме голочипов.</span>"
 		. += "<span class='info'>Вы можете внести кредиты на аккаунт, приложив голочипы, наличные или монеты к ID-карте.</span>"
 		if(registered_account.civilian_bounty)
@@ -486,7 +493,7 @@
 	if(uses_overlays)
 		var/job_tooltip = ""
 		if(assignment && get_assignment_name() != assignment)
-			job_tooltip = " <span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>[html_encode(assignment)]</span></span>"
+			job_tooltip = " [span_tooltip_fast(html_encode(assignment))]"
 		return "[icon2html(get_cached_flat_icon(), user)] [thats? "That's ":""][get_examine_name(user)][job_tooltip]" //displays all overlays in chat
 	return ..()
 
@@ -764,6 +771,40 @@
 	access = get_all_accesses()+get_ert_access("sec")-ACCESS_CHANGE_IDS
 	. = ..()
 
+/obj/item/card/id/ert/hsc
+	name = "\improper HSC Security ID"
+	desc = "Health Safety Control ID card."
+	icon = 'modular_bluemoon/phenyamomota/icon/obj/card.dmi'
+	icon_state = "hsc"
+	registered_name = "Health Safety Control Security"
+	assignment = "Health Safety Control Security"
+	special_assignment = "centcom"
+	var/overlay_state = "idsec"
+
+/obj/item/card/id/ert/hsc/Initialize(mapload)
+	. = ..()
+	update_icon()
+
+/obj/item/card/id/ert/hsc/update_overlays()
+	. = ..()
+	. += mutable_appearance(icon, overlay_state)
+
+/obj/item/card/id/ert/hsc/medic
+	name = "\improper HSC Medical ID"
+	desc = "Health Safety Control ID card."
+	icon_state = "hsc"
+	registered_name = "Health Safety Control Medic"
+	assignment = "Health Safety Control Medic"
+	overlay_state = "idmed"
+
+/obj/item/card/id/ert/hsc/assistant
+	name = "\improper HSC Assistant ID"
+	desc = "Health Safety Control ID card."
+	icon_state = "hsc"
+	registered_name = "Health Safety Control Assistant"
+	assignment = "Health Safety Control Assistant"
+	overlay_state = "idas"
+
 /obj/item/card/id/prisoner
 	name = "prisoner ID card"
 	desc = "Теперь вы - номер, вы - не свободный человек."
@@ -942,7 +983,7 @@
 		if(!B.bank_cards.Find(src))
 			B.bank_cards += src
 		name = "departmental card ([department_name])"
-		desc = "К этой карте привязан [lowertext(budget_to_ru_nominative(department_name))]."
+		desc = "К этой карте привязан [lowertext(vocabulary_to_ru(GLOB.budget_ru_nominative, department_name))]."
 		icon_state = "[lowertext(department_ID)]_budget"
 	SSeconomy.dep_cards += src
 

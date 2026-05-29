@@ -22,6 +22,15 @@
 		to_chat(usr, "<span class='danger'>Cannot convert into a new_player mob type.</span>")
 		return
 
+	// Сохраняем снарягу, органы, импланты, квирки — как при genetics/changeling (не сырой new+qdel).
+	if(ishuman(src) && new_type == /mob/living/carbon/monkey)
+		var/mob/living/carbon/human/H = src
+		H.monkeyize(TR_KEEPITEMS | TR_KEEPIMPLANTS | TR_KEEPORGANS | TR_KEEPDAMAGE | TR_KEEPVIRUS | TR_KEEPSE | TR_DEFAULTMSG)
+		return null
+	if(ismonkey(src) && new_type == /mob/living/carbon/human)
+		var/mob/living/carbon/monkey/Mo = src
+		return Mo.humanize(TR_KEEPITEMS | TR_KEEPIMPLANTS | TR_KEEPORGANS | TR_KEEPDAMAGE | TR_KEEPVIRUS | TR_KEEPSE | TR_DEFAULTMSG)
+
 	var/mob/M
 	if(isturf(location))
 		M = new new_type( location )

@@ -9,12 +9,19 @@
 /mob/dead/new_player/Login()
 	. = ..()
 	bm_show_lobby()
+	SStitle_bm?.update_player_counts_all()
 
 /mob/dead/new_player/Destroy()
+	// Must run BEFORE parent Destroy: we override base new_player/Destroy, so we must remove ourselves.
+	// on_player_ready_change must run before ..() - otherwise we invoke SStitle_bm during/after
+	// destruction when we're invalid, causing "illegal operation" crash in GC (REF/Queue chain).
+	GLOB.new_player_list -= src
 	var/was_ready = ready
-	. = ..()
 	if(was_ready && SStitle_bm)
 		SStitle_bm.on_player_ready_change(-1)
+	else
+		SStitle_bm?.update_player_counts_all()
+	return ..()
 
 /mob/dead/new_player/proc/bm_show_lobby()
 	if(!client)
@@ -49,6 +56,11 @@
 	bm_lobby_ready = FALSE
 	src << browse(_bm_build_html(), "window=bm_lobby_browser")
 
+/mob/dead/new_player/proc/bm_push_menu_update(ingame = FALSE)
+	if(!client || !bm_lobby_ready)
+		return
+	client << output("[ingame ? 1 : 0]", "bm_lobby_browser:bm_rebuild_menu")
+
 /// Возвращает текущий rsc фона для этого игрока. Вызывается только после STARTUP (SStitle_bm гарантированно initialized).
 /mob/dead/new_player/proc/_bm_get_current_image()
 	var/show_nsfw = client?.prefs?.bm_lobby_show_nsfw || FALSE
@@ -77,11 +89,6 @@
 	var/filename = "bm_bg_[bm_bg_slot].gif"
 	src << browse(img_to_send, "file=[filename];display=0")
 	client << output(filename, "bm_lobby_browser:bm_set_background")
-
-/mob/dead/new_player/proc/bm_push_player_count()
-	if(!client || !bm_lobby_ready)
-		return
-	SStitle_bm?.push_player_count_to(src)
 
 /mob/dead/new_player/proc/_bm_build_loading_stub()
 	// Фон — bm_stub_bg.gif, отправленный через browse() до этого вызова.
@@ -149,7 +156,7 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
       <span class="bm-s-value" id="bm-s-nsfw">ВЫКЛ</span>
     </a>
     <a class="bm-settings-row" href='?src=[R];bm_lobby_action=toggle_admin_bg' style="cursor:pointer">
-      <span class="bm-s-label">ЛОББИ ОТ АДМИНОВ</span>
+      <span class="bm-s-label">МЕДИА ОТ АДМИНОВ</span>
       <span class="bm-s-value" id="bm-s-adminbg">ВКЛ</span>
     </a>
   </div>
@@ -163,9 +170,12 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 	parts += {"<div id=\"bm-footer\">
   <div id=\"bm-char-name\">[char_name ? char_name : "\u2014 \u2014 \u2014"]</div>
   <div id=\"bm-count-row\">
-    <span class=\"bm-count-lbl\">ОНЛАЙН&nbsp;<span class=\"bm-count-val\" id=\"bm-count-online\">&#8212;</span></span>
+    <span class=\"bm-count-lbl\">В ЛОББИ&nbsp;<span class=\"bm-count-val\" id=\"bm-count-online\">&#8212;</span></span>
     <span id=\"bm-count-ready-wrap\" class=\"bm-count-lbl\">ГОТОВЫ&nbsp;<span class=\"bm-count-val\" id=\"bm-count-ready\">&#8212;</span></span>
   </div>
+</div>"}
+	parts += {"<div id=\"bm-countdown-row\" style=\"display:none\">
+  <span class=\"bm-countdown-label\">ДО СТАРТА</span>&nbsp;<span id=\"bm-countdown-val\">—</span>
 </div>"}
 	parts += {"<div id=\"bm-audio-bar\">
   <div id=\"bm-audio-row\">
@@ -186,6 +196,8 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 	var/show_admin_bg = !client?.prefs || client.prefs.bm_lobby_show_admin_bg
 	var/notice_js = SStitle_bm?.cached_notice_js || ""
 	var/admin_js = "bm_set_admin([check_rights_for(client, R_SERVER) ? 1 : 0]);"
+	var/registered_js = "bm_set_registered([(!is_guest_key(src.key) && client?.prefs) ? 1 : 0]);"
+	var/antag_js = "_bm_antag_state=[!(client?.prefs?.toggles & NO_ANTAG) ? 1 : 0];"
 
 	var/js_url = SStitle_bm?.cached_js_url
 	if(!js_url)
@@ -204,6 +216,8 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
     bm_update_nsfw_indicator([show_nsfw ? 1 : 0]);
     bm_update_admin_bg_indicator([show_admin_bg ? 1 : 0]);
     [admin_js]
+    [registered_js]
+    [antag_js]
     [notice_js]
     if(!window.__bm_page_ready_sent){window.__bm_page_ready_sent=true;location.href='?src='+_src+';bm_lobby_action=page_ready';}
   }
@@ -223,14 +237,19 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 		parts += {"<a id='bm-btn-ready' class='bm-btn' href='?src=[R];bm_lobby_action=toggle_ready'>"}
 		parts += ready ? {"<span class='bm-checked'>☑</span> ГОТОВНОСТЬ"} : {"<span class='bm-unchecked'>☒</span> ГОТОВНОСТЬ"}
 		parts += "</a>"
-		if(check_rights_for(client, R_SERVER))
-			parts += {"<a class='bm-btn bm-btn-admin' href='?src=[R];bm_lobby_action=start_game'>⚡ СТАРТ ИГРЫ</a>"}
 	else
 		parts += {"<a class='bm-btn' href='?src=[R];bm_lobby_action=late_join'>ВОЙТИ В ИГРУ</a>"}
 		parts += {"<a class='bm-btn' href='?src=[R];bm_lobby_action=view_manifest'>СПИСОК ЭКИПАЖА</a>"}
 		parts += {"<a class='bm-btn' href='?src=[R];bm_lobby_action=character_directory'>БИБЛИОТЕКА ПЕРСОНАЖЕЙ</a>"}
 
 	parts += {"<a class='bm-btn' href='?src=[R];bm_lobby_action=observe'>БЫТЬ НАБЛЮДАТЕЛЕМ</a>"}
+	parts += {"<div class='bm-metashop-slot'>"}
+	parts += {"<div class='bm-metashop-nullspace' aria-hidden='true'></div>"}
+	var/metashop_rainbow = (BM_METASHOP_RAINBOW_P >= 100) ? TRUE : prob(BM_METASHOP_RAINBOW_P)
+	var/metashop_ms = metashop_rainbow ? " bm-ms-rainbow" : ""
+	parts += {"<a class='bm-btn bm-metashop[metashop_ms]' href='?src=[R];bm_lobby_action=metashop'>МАГАЗИН</a>"}
+	parts += {"<div class='bm-metashop-nullspace' aria-hidden='true'></div>"}
+	parts += {"</div>"}
 
 	parts += "<div class='bm-divider'></div>"
 
@@ -242,21 +261,14 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 	parts += is_antag_opted ? {"<span class='bm-checked'>☑</span> РОЛЬ АНТАГОНИСТА"} : {"<span class='bm-unchecked'>☒</span> РОЛЬ АНТАГОНИСТА"}
 	parts += "</a>"
 
-	if(length(GLOB.lobby_station_traits))
-		parts += {"<a class='bm-btn' href='?src=[R];bm_lobby_action=job_traits'>ОСОБЕННОСТИ РАБОТЫ</a>"}
+	if(!is_guest_key(src.key) && client?.prefs)
+		parts += {"<a class='bm-btn' href='?src=[R];bm_lobby_action=changelog'>ПОСЛЕДНИЕ ОБНОВЛЕНИЯ</a>"}
+		parts += {"<a class='bm-btn' href='?src=[R];bm_lobby_action=polls_menu'>ОПРОСЫ СЕРВЕРА</a>"}
 
-	if(!is_guest_key(src.key))
-		var/poll_html = _bm_build_polls_button()
-		if(poll_html)
-			parts += poll_html
+	if((!SSticker || SSticker.current_state <= GAME_STATE_PREGAME) && check_rights_for(client, R_SERVER))
+		parts += {"<div class='bm-start-game-wrap'><a class='bm-btn bm-btn-admin' href='?src=[R];bm_lobby_action=start_game'>&#9889; СТАРТ ИГРЫ</a></div>"}
 
 	return parts.Join("")
-
-/mob/dead/new_player/proc/_bm_build_polls_button()
-	if(!client?.prefs)
-		return null
-	var/R = REF(src)
-	return {"<a class='bm-btn' href='?src=[R];bm_lobby_action=polls_menu'>ОПРОСЫ СЕРВЕРА</a>"}
 
 // ===========================
 // ОБРАБОТКА HREF-ЗАПРОСОВ
@@ -311,8 +323,12 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 			var/datum/preferences/prefs = client.prefs
 			if(prefs)
 				prefs.toggles ^= NO_ANTAG
-				prefs.save_preferences()
 				var/antag_on = !(prefs.toggles & NO_ANTAG)
+				if(antag_on)
+					prefs.toggles |= MIDROUND_ANTAG
+				else
+					prefs.toggles &= ~MIDROUND_ANTAG
+				prefs.save_preferences()
 				client << output(antag_on, "bm_lobby_browser:bm_toggle_antag")
 			return
 
@@ -330,6 +346,15 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 				client.prefs.save_preferences()
 				client << output(client.prefs.bm_lobby_show_admin_bg, "bm_lobby_browser:bm_update_admin_bg_indicator")
 				bm_push_background()
+			return
+
+		if("metashop")
+			_bm_play_click_sound()
+			if(!client?.prefs)
+				client << output("Нужна сохранённая учётная запись (не гость).", "bm_lobby_browser:bm_show_notice")
+				return
+			var/datum/metadollar_shop/shop = new /datum/metadollar_shop(client)
+			shop.ui_interact(src)
 			return
 
 		if("observe")
@@ -369,20 +394,21 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 			client.prefs.ShowChoices(src)
 			return
 
-		if("job_traits")
-			_bm_play_click_sound()
-			show_job_traits()
-			return
-
 		if("polls_menu")
+			if(is_guest_key(src.key))
+				return
 			_bm_play_click_sound()
 			if(SSvote?.mode)
-				var/datum/browser/popup = new(src, "vote", "Voting Panel", nwidth=600, nheight=700)
-				popup.set_window_options("can_close=0")
-				popup.set_content(SSvote.interface(client))
-				popup.open(0)
+				SSvote.ui_interact(src)
 			else
 				client << output("Активных голосований нет.", "bm_lobby_browser:bm_show_notice")
+			return
+
+		if("changelog")
+			_bm_play_click_sound()
+			if(!GLOB.changelog_tgui)
+				GLOB.changelog_tgui = new /datum/changelog()
+			GLOB.changelog_tgui.ui_interact(src)
 			return
 
 		if("start_game")
@@ -391,9 +417,25 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 			if(!SSticker || SSticker.current_state != GAME_STATE_PREGAME)
 				return
 			_bm_play_click_sound()
+			if(tgui_alert(src, "Вы действительно хотите начать игру?", "Старт раунда", list("Да", "Нет")) != "Да")
+				return
+			if(QDELETED(src) || !client)
+				return
+			if(!SSticker || SSticker.current_state != GAME_STATE_PREGAME)
+				return
 			SSticker.start_immediately = TRUE
 			log_admin("[key_name(src)] запустил раунд через HTML-лобби.")
 			message_admins("[key_name_admin(src)] запустил раунд через HTML-лобби.")
+			return
+
+		if("video_reject")
+			if(!check_rights_for(client, R_FUN))
+				return
+			if(!SStitle_bm?.current_video_payload)
+				return
+			log_admin("[key_name(src)] убрал видео с лобби (подтверждение не прошло).")
+			message_admins("[key_name_admin(src)] убрал видео с лобби (видео работало некорректно).")
+			SStitle_bm.change_image(null)
 			return
 
 	return ..()
@@ -405,24 +447,3 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 	assets = list(
 		"bm_lobby.js" = 'modular_bluemoon/assets/js/bm_lobby.js'
 	)
-
-/mob/dead/new_player/proc/show_job_traits()
-	if(!client)
-		return
-	if(!length(GLOB.lobby_station_traits))
-		to_chat(src, span_warning("Сейчас нет доступных особенностей работы!"))
-		return
-	var/list/available = list()
-	for(var/datum/station_trait/trait as anything in GLOB.lobby_station_traits)
-		if(!trait.can_display_lobby_button(client))
-			continue
-		available += trait
-	if(!LAZYLEN(available))
-		to_chat(src, span_warning("Сейчас нет доступных особенностей работы!"))
-		return
-	var/datum/station_trait/clicked_trait = tgui_input_list(src, "Выберите особенность работы для регистрации:", "Особенности работы", available)
-	if(!clicked_trait)
-		return
-	if(QDELETED(src) || !client)
-		return
-	clicked_trait.on_lobby_button_click(src)

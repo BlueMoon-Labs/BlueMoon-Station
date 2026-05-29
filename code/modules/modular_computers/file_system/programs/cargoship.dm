@@ -7,6 +7,7 @@
 	size = 6
 	tgui_id = "NtosShipping"
 	program_icon = "tags"
+	available_on_ntnet = FALSE
 	///Account used for creating barcodes.
 	var/datum/bank_account/payments_acc
 	///The person who tagged this will receive the sale value multiplied by this number.

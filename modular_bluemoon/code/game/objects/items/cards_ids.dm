@@ -6,6 +6,7 @@
 	uses = 1
 
 /obj/item/card/id/syndicate/one_access_copy/loadout
+	access = list()
 	var/registred = FALSE
 
 // Используется именно такая функция, т.к. при выдаче через лодаут карта помещается в рюкзак
@@ -54,6 +55,7 @@
 				card_sticker.unwrap(id_card, my_owner, silent = TRUE, force = TRUE)
 
 			assignment = id_card.assignment
+			special_assignment = id_card.special_assignment
 			custom_job = id_card.custom_job
 
 			access |= id_card.access

@@ -235,6 +235,11 @@
 		if(myseed)
 			myseed.adjust_potency(-chems.get_reagent_amount(type) * 0.5)
 
+/datum/reagent/consumable/milk/reaction_mob(mob/living/M, method, reac_volume, affected_bodypart)
+	if(method == INGEST)
+		quality = (iscatperson(M)) ? DRINK_GOOD : initial(quality)
+	. = ..()
+
 /datum/reagent/consumable/milk/on_mob_add(mob/living/L, amount)
 	. = ..()
 	if(iscatperson(L)) //cats go purr
@@ -336,7 +341,7 @@
 /datum/reagent/consumable/tea
 	name = "Tea"
 	description = "Tasty black tea, it has antioxidants, it's good for you!"
-	color = "#101000" // rgb: 16, 16, 0
+	color = "#672503" // rgb: 103, 37, 3
 	nutriment_factor = 0
 	taste_description = "tart black tea"
 	glass_icon_state = "teaglass"
@@ -354,10 +359,18 @@
 	..()
 	. = 1
 
+/datum/reagent/consumable/tea/red/purple
+	name = "Purple Tea"
+	description = "Tasty purple tea, helps the body digest food. Drink in moderation!"
+	color = "#8b2094" // rgb: 139, 32, 148
+	taste_description = "sweet purple tea"
+	glass_icon_state = "tea_purple"
+	glass_name = "glass of purple tea"
+
 /datum/reagent/consumable/tea/red
 	name = "Red Tea"
 	description = "Tasty red tea, helps the body digest food. Drink in moderation!"
-	color = "#101000" // rgb: 16, 16, 0
+	color = "#d31145" // rgb: 211, 17, 69
 	nutriment_factor = 0
 	taste_description = "sweet red tea"
 	glass_icon_state = "tea_red"
@@ -377,7 +390,7 @@
 /datum/reagent/consumable/tea/green
 	name = "Green Tea"
 	description = "Tasty green tea, known to heal livers, it's good for you!"
-	color = "#101000" // rgb: 16, 16, 0
+	color = "#b8d133" // rgb: 184, 209, 51
 	nutriment_factor = 0
 	taste_description = "tart green tea"
 	glass_icon_state = "tea_green"
@@ -396,7 +409,7 @@
 /datum/reagent/consumable/tea/forest
 	name = "Forest Tea"
 	description = "Tea mixed with honey, has both antitoxins and sweetness in one!"
-	color = "#101000" // rgb: 16, 16, 0
+	color = "#f4a103" // rgb: 244, 161, 3
 	nutriment_factor = 0
 	quality = DRINK_GOOD // BLUEMOON ADD
 	taste_description = "sweet tea"
@@ -418,7 +431,7 @@
 /datum/reagent/consumable/tea/mush
 	name = "Mush Tea"
 	description = "Tea mixed with mushroom hallucinogen, used for fun rides or self reflection."
-	color = "#101000" // rgb: 16, 16, 0
+	color = "#0f6d6f" // rgb: 16, 109, 111
 	nutriment_factor = 0
 	quality = DRINK_NICE
 	taste_description = "fungal infections"
@@ -1108,6 +1121,11 @@
 	glass_icon_state = "teaglass"
 	glass_name = "glass of catnip tea"
 	glass_desc = "A purrfect drink for a cat."
+
+/datum/reagent/consumable/catnip_tea/reaction_mob(mob/living/M, method, reac_volume, affected_bodypart)
+	if(method == INGEST)
+		quality = (iscatperson(M)) ? DRINK_FANTASTIC : initial(quality)
+	. = ..()
 
 /datum/reagent/consumable/catnip_tea/on_mob_life(mob/living/carbon/M)
 	M.adjustStaminaLoss(min(50 - M.getStaminaLoss(), 3))

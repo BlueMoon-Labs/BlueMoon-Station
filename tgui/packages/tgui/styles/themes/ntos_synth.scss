@@ -1,0 +1,40 @@
+/**
+ * NtOS Synth
+ * Synthwave neon aesthetic — deep purple with hot pink accents.
+ * Feature: vibrant neon glow feel, purple/pink color scheme.
+ */
+
+@use 'sass:color';
+@use 'sass:meta';
+
+$synth: #7b2fbe;
+
+@use '../colors.scss' with (
+  $fg-map-keys: (),
+  $bg-map-keys: (),
+);
+@use '../base.scss' with (
+  $color-bg: #1a0a2e,
+  $color-bg-grad-spread: 5%,
+);
+
+.theme-ntos_synth {
+  // Components
+  @include meta.load-css('../components/Button.scss', $with: (
+    'color-default': $synth,
+    'color-transparent-text': rgba(230, 200, 255, 0.8),
+    'color-selected': #e04090,
+  ));
+  @include meta.load-css('../components/ProgressBar.scss', $with: (
+    'color-default-fill': $synth,
+    'background-color': rgba(255, 255, 255, 0.06),
+  ));
+  @include meta.load-css('../components/Section.scss');
+
+  // Layouts
+  @include meta.load-css('../layouts/Layout.scss');
+  @include meta.load-css('../layouts/Window.scss');
+  @include meta.load-css('../layouts/TitleBar.scss', $with: (
+    'background-color': color.scale($synth, $lightness: -20%),
+  ));
+}

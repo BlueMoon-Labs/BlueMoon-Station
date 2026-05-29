@@ -1,10 +1,11 @@
 /datum/round_event_control/anomaly/tear
-	name = "Dimmensional Tear"
+	name = "Dimensional Tear"
 	typepath = /datum/round_event/anomaly/tear
 	weight = 15
 	max_occurrences = 1
 	min_players = 30
 	category = EVENT_CATEGORY_ANOMALIES
+	admin_setup = list(/datum/event_admin_setup/set_location/anomaly)
 
 /datum/round_event/anomaly/tear
 	start_when = 3
@@ -18,12 +19,18 @@
 	priority_announce("На борту станции зафиксирован пространственно-временной разрыв. Предполагаемая локация: [impact_area.name].", "ВНИМАНИЕ: ОБНАРУЖЕНА АНОМАЛИЯ")
 
 /datum/round_event/anomaly/tear/start()
-	var/turf/T = pick(get_area_turfs(impact_area))
-	if(T)
-		TE = new /obj/effect/tear(T.loc)
+	var/turf/tear_turf
+	if(spawn_location)
+		impact_area = get_area(spawn_location)
+		tear_turf = spawn_location
+	else
+		impact_area = placer.findValidArea()
+		tear_turf = placer.findValidTurf(impact_area)
 
-/datum/round_event/anomaly/tear/setup()
-	impact_area = placer.findValidTurf()
+	if(!tear_turf)
+		return
+
+	TE = new /obj/effect/tear(tear_turf)
 
 /datum/round_event/anomaly/tear/end()
 	if(TE)
@@ -46,6 +53,9 @@
 	var/obj/effect/overlay/animation = new(loc)
 	animation.icon_state = "newtear"
 	animation.icon = 'icons/effects/tear.dmi'
+	animation.pixel_x = pixel_x
+	animation.pixel_y = pixel_y
+	animation.layer = layer + 0.01
 	spawn(15)
 		if(animation)
 			qdel(animation)

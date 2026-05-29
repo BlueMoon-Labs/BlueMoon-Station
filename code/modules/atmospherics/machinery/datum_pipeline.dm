@@ -18,9 +18,13 @@
 	SSair.currentrun -= src
 	if(air?.return_volume())  //	BLUEMOON EDIT: TODO:runtime
 		temporarily_store_air()
-	for(var/obj/machinery/atmospherics/pipe/P as anything in members)
+	// Implicitly-typed `for(... in list)` skips null entries; `as anything` does
+	// not. A member pipe/component hard-deleted elsewhere leaves a stale null in
+	// these lists, so the filtering form is load-bearing here (same reason as the
+	// build_pipeline note below). Do not "optimize" it back to `as anything`.
+	for(var/obj/machinery/atmospherics/pipe/P in members)
 		P.parent = null
-	for(var/obj/machinery/atmospherics/components/C as anything in other_atmosmch)
+	for(var/obj/machinery/atmospherics/components/C in other_atmosmch)
 		if(!C.parents)
 			continue
 		for(var/i in 1 to length(C.parents))
@@ -39,16 +43,11 @@
 	reconcile_air()
 	update = air?.react(src)
 
-/proc/_deferred_qdel_gas_mixtures(list/L)
-	for(var/datum/gas_mixture/G in L)
-		qdel(G)
-
 /datum/pipeline/proc/build_pipeline(obj/machinery/atmospherics/base)
 	if(QDELETED(base))
 		stack_trace("build_pipeline() called with QDELETED base [base?.type] at [base ? COORD(base) : "null"]")
 		return
 	var/volume = 0
-	var/list/datum/gas_mixture/to_delete = list()
 	if(istype(base, /obj/machinery/atmospherics/pipe))
 		var/obj/machinery/atmospherics/pipe/E = base
 		volume = E.volume
@@ -60,44 +59,60 @@
 		addMachineryMember(base)
 	if(!air)
 		air = new
+
+	// O(1) membership probe replacing the O(M) members.Find call that made the
+	// BFS quadratic on large pipenets. Seed it with whatever is already in
+	// `members` (the base pipe, when it is one) so it is found as a neighbor.
+	var/list/seen_members = list()
+	for(var/obj/machinery/atmospherics/pipe/already in members)
+		seen_members[already] = TRUE
+
+	// Index-cursor BFS instead of `for(... in list); list -= current`. The old
+	// pattern was O(P) per removal × P removals = quadratic; this is O(1) per
+	// step and visits the same set of nodes (BFS reachability doesn't depend
+	// on snapshot semantics for a connected graph).
 	var/list/possible_expansions = list(base)
-	while(possible_expansions.len > 0)
-		// Don't use for-in here - modifying list during iteration causes illegal operation crashes
-		var/obj/machinery/atmospherics/borderline = possible_expansions[1]
-		possible_expansions -= borderline
+	var/cursor = 1
+	while(cursor <= length(possible_expansions))
+		var/obj/machinery/atmospherics/borderline = possible_expansions[cursor++]
 
 		var/list/result = borderline.pipeline_expansion(src)
+		if(!length(result))
+			continue
 
-		if(result.len > 0)
-			for(var/obj/machinery/atmospherics/P in result)
-				if(istype(P, /obj/machinery/atmospherics/pipe))
-					var/obj/machinery/atmospherics/pipe/item = P
-					if(!members.Find(item))
+		// Implicit-typed `for X in list` filters nulls AND non-atmos entries —
+		// /obj/machinery/atmospherics/components/pipeline_expansion returns
+		// `list(nodes[…])` and that slot is null on disconnected components.
+		// Skipping the filter (e.g. via `as anything`) reaches setPipenet on
+		// null and crashes during SSair pipenet setup.
+		for(var/obj/machinery/atmospherics/P in result)
+			if(istype(P, /obj/machinery/atmospherics/pipe))
+				var/obj/machinery/atmospherics/pipe/item = P
+				if(seen_members[item])
+					continue
+				seen_members[item] = TRUE
 
-						if(item.parent)
-							var/static/pipenetwarnings = 10
-							if(pipenetwarnings > 0)
-								log_mapping("build_pipeline(): [item.type] added to a pipenet while still having one. (pipes leading to the same spot stacking in one turf) Nearby: ([item.x], [item.y], [item.z]).")
-								pipenetwarnings -= 1
-								if(pipenetwarnings == 0)
-									log_mapping("build_pipeline(): further messages about pipenets will be suppressed")
-						members += item
-						possible_expansions += item
+				if(item.parent)
+					var/static/pipenetwarnings = 10
+					if(pipenetwarnings > 0)
+						log_mapping("build_pipeline(): [item.type] added to a pipenet while still having one. (pipes leading to the same spot stacking in one turf) Nearby: ([item.x], [item.y], [item.z]).")
+						pipenetwarnings -= 1
+						if(pipenetwarnings == 0)
+							log_mapping("build_pipeline(): further messages about pipenets will be suppressed")
+				members += item
+				possible_expansions += item
 
-						volume += item.volume
-						item.parent = src
+				volume += item.volume
+				item.parent = src
 
-						if(item.air_temporary)
-							air.merge(item.air_temporary)
-							to_delete += item.air_temporary
-							item.air_temporary = null
-				else
-					P.setPipenet(src, borderline)
-					addMachineryMember(P)
+				if(item.air_temporary)
+					air.merge(item.air_temporary)
+					QDEL_NULL(item.air_temporary)
+			else
+				P.setPipenet(src, borderline)
+				addMachineryMember(P)
 
 	air.set_volume(volume)
-	if(length(to_delete))
-		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(_deferred_qdel_gas_mixtures), to_delete), 0)
 
 /**
  *  For a machine to properly "connect" to a pipeline and share gases,
@@ -141,10 +156,10 @@
 		return
 	air.set_volume(air.return_volume() + E.air.return_volume())
 	members.Add(E.members)
-	for(var/obj/machinery/atmospherics/pipe/S as anything in E.members)
+	for(var/obj/machinery/atmospherics/pipe/S in E.members)
 		S.parent = src
 	air.merge(E.air)
-	for(var/obj/machinery/atmospherics/components/C as anything in E.other_atmosmch)
+	for(var/obj/machinery/atmospherics/components/C in E.other_atmosmch)
 		C.replacePipenet(E, src)
 	other_atmosmch |= E.other_atmosmch
 	if(null in E.other_airs)
@@ -167,31 +182,25 @@
 /obj/machinery/atmospherics/components/addMember(obj/machinery/atmospherics/A)
 	var/datum/pipeline/P = returnPipenet(A)
 	if(!P)
-		CRASH("null.addMember() called by [type] on [COORD(src)]")
+		return
 	P.addMember(A, src)
 
 
 /datum/pipeline/proc/temporarily_store_air()
 	//Update individual gas_mixtures by volume ratio
-	var/air_vol = air.return_volume()
-	if(air_vol <= 0)
-		return
 
-	for(var/obj/machinery/atmospherics/pipe/member as anything in members)
+	for(var/obj/machinery/atmospherics/pipe/member in members)
 		member.air_temporary = new
 		member.air_temporary.set_volume(member.volume)
 		member.air_temporary.copy_from(air)
 
-		member.air_temporary.multiply(member.volume/air_vol)
+		member.air_temporary.multiply(member.volume/air.return_volume())
 
 		member.air_temporary.set_temperature(air.return_temperature())
 
 /datum/pipeline/proc/temperature_interact(turf/target, share_volume, thermal_conductivity)
-	var/air_vol = air.return_volume()
-	if(air_vol <= 0)
-		return
 	var/total_heat_capacity = air.heat_capacity()
-	var/partial_heat_capacity = total_heat_capacity*(share_volume/air_vol)
+	var/partial_heat_capacity = total_heat_capacity*(share_volume/air.return_volume())
 	var/target_temperature
 	var/target_heat_capacity
 

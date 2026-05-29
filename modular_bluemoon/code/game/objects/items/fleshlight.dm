@@ -329,6 +329,8 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 	else if(user.client && user.client.prefs.muted & MUTE_IC)
 		to_chat(user, "Вы не можете отправлять IC сообщения (заглушены).")
 		return FALSE
+	if(!ishuman(user))
+		return FALSE
 	var/mob/living/carbon/human/H_user = user
 
 	var/list/select = list()
@@ -397,7 +399,12 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 		return FALSE
 
 	else if(!params)
-		var/subtle_emote = stripped_multiline_input_or_reflect(user, "Введите эмоут для отображения.", "[choosen_flesh]" , null, MAX_MESSAGE_LEN)
+		var/subtle_emote = ""
+		if(user.client?.prefs.tgui_input_verbs)
+			subtle_emote = tgui_input_text(user, "Введите эмоут для отображения.", "[choosen_flesh]", null, MAX_MESSAGE_LEN, TRUE, TRUE)
+		else
+			subtle_emote = stripped_multiline_input_or_reflect(user, "Введите эмоут для отображения.", "[choosen_flesh]")
+
 		if(subtle_emote && !check_invalid(user, subtle_emote))
 			message = subtle_emote
 		else

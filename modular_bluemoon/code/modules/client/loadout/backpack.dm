@@ -152,3 +152,9 @@
 	name = "Clipboard"
 	subcategory = LOADOUT_SUBCATEGORY_BACKPACK_GENERAL
 	path = /obj/item/clipboard
+
+/datum/gear/backpack/shockcollar
+	name = "Shock Collar Kit"
+	path = /obj/item/storage/box/shockcollar
+	subcategory = LOADOUT_SUBCATEGORY_BACKPACK_TOYS
+	cost = 2

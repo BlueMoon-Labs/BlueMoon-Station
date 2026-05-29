@@ -4,7 +4,7 @@
 
 /datum/action/cooldown/bloodsucker/fortitude
 	name = "Fortitude"
-	desc = "Withstand egregious physical wounds and walk away from attacks that would stun, pierce, and dismember lesser beings. You cannot run while active."
+	desc = "Позволяет выдерживать тяжелейшие физические повреждения и оставаться на ногах после атак, которые оглушили бы, пронзили или разорвали на части более слабых существ. Пока активно, вы не можете бежать."
 	button_icon_state = "power_fortitude"
 	bloodcost = 60
 	cooldown_time = 200
@@ -29,7 +29,7 @@
 		fortitude_resist = max(0.3, 0.7 - level_current * 0.1)
 		H.physiology.brute_mod *= fortitude_resist
 		H.physiology.burn_mod *= fortitude_resist
-		to_chat(user, "<span class='notice'>Your flesh, skin, and muscles become as steel. You have [(1 - fortitude_resist) * 100]% resist to brute and burn damage.</span>") // BLUEMOON ADD
+		to_chat(user, "<span class='notice'>Ваша плоть, кожа и мускулы становятся как сталь. У вас есть [(1 - fortitude_resist) * 100]% защиты к ушибам и ожогам.</span>") // BLUEMOON ADD
 	was_running = (user.m_intent == MOVE_INTENT_RUN)
 	if(was_running)
 		user.toggle_move_intent()
@@ -39,10 +39,10 @@
 			var/datum/component/riding/VRD = V.GetComponent(/datum/component/riding)
 			if(VRD)
 				VRD.force_dismount(user)
-				to_chat(user, "<span class='notice'>You trip off the [V], your muscles too heavy for it to support you.</span>")
+				to_chat(user, "<span class='notice'>Вы слетаете с [V], ваши мышцы слишком тяжёлые, чтобы он мог вас выдержать.</span>")
 			else
 				V.unbuckle_mob(user, force = TRUE)
-				to_chat(user, "<span class='notice'>You fall off the [V], your weight making you too heavy to be supported by it.</span>")
+				to_chat(user, "<span class='notice'>Вы падаете с [V], ваш вес слишком велик, чтобы он мог вас выдержать.</span>")
 		// Pay Blood Toll (if awake)
 		if(user.stat == CONSCIOUS)
 			B.AddBloodVolume(-0.5)

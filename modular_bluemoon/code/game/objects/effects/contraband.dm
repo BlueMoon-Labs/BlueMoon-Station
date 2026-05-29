@@ -219,6 +219,9 @@
 	return ..()
 
 /obj/structure/sign/poster/contraband/inteq/process()
+	if(!demotivator)
+		STOP_PROCESSING(SSobj, src)
+		return
 	if(world.time < demotivator.next_scare)
 		return
 	var/scared_someone = FALSE
@@ -242,9 +245,11 @@
 /obj/structure/sign/poster/contraband/inteq/attackby(obj/item/tool, mob/user, params)
 	if (tool.tool_behaviour == TOOL_WIRECUTTER)
 		QDEL_NULL(demotivator)
+		STOP_PROCESSING(SSobj, src)
 	return ..()
 
 /obj/structure/sign/poster/contraband/inteq/Destroy()
+	STOP_PROCESSING(SSobj, src)
 	QDEL_NULL(demotivator)
 	return ..()
 

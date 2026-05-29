@@ -238,3 +238,23 @@
 	name = "Regal RD Cloak"
 	desc = "A fancy shawl for nobility, made from high quality materials."
 	icon_state = "royalrdcloak"
+
+/obj/item/clothing/neck/cloak/ranger_poncho
+	name = "Polychromatic Ranger Poncho"
+	desc = "Aim for the Heart, Ramon."
+	icon_state = "ranger_poncho"
+	item_state = "ranger_poncho"
+
+/obj/item/clothing/neck/cloak/ranger_poncho/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, list("#877251"), 1)
+
+/obj/item/clothing/neck/cloak/ranger_cape
+	name = "Polychromatic Ranger Cape"
+	desc = "Aim for the Heart, Ramon."
+	icon_state = "ranger_cape"
+	item_state = "ranger_cape"
+
+/obj/item/clothing/neck/cloak/ranger_cape/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, list("#543C2F"), 1)

@@ -52,11 +52,11 @@
 	return ..()
 
 /obj/machinery/atmospherics/components/binary/volume_pump/update_icon_nopipes()
-	icon_state = on && is_operational() ? "volpump_on" : "volpump_off"
+	icon_state = on && is_operational ? "volpump_on" : "volpump_off"
 
 /obj/machinery/atmospherics/components/binary/volume_pump/process_atmos()
 //	..()
-	if(!on || !is_operational())
+	if(!on || !is_operational)
 		return
 
 	var/datum/gas_mixture/air1 = airs[1]
@@ -70,10 +70,7 @@
 	if((input_starting_pressure < 0.01) || (output_starting_pressure > 9000))
 		return
 
-	var/air1_vol = air1.return_volume()
-	if(air1_vol <= 0)
-		return
-	var/transfer_ratio = transfer_rate/air1_vol
+	var/transfer_ratio = transfer_rate/air1.return_volume()
 
 	air1.transfer_ratio_to(air2,transfer_ratio)
 
@@ -177,7 +174,7 @@
 /obj/machinery/atmospherics/components/binary/volume_pump/can_unwrench(mob/user)
 	. = ..()
 	var/area/A = get_area(src)
-	if(. && on && is_operational())
+	if(. && on && is_operational)
 		to_chat(user, "<span class='warning'>You cannot unwrench [src], turn it off first!</span>")
 		return FALSE
 	else

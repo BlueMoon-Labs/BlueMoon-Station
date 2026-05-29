@@ -64,6 +64,13 @@
 
 // TODO: OVERHAUL ALL OF THIS AGAIN. While this works this is flatout horrid with the "use list but also don't use lists" crap. I hate my life.
 /client/proc/do_full_macro_assert(datum/preferences/prefs_override = prefs)
+	// Ensure macrosets exist before trying to erase them (prevents "Element hotkeys not found" on first connect)
+	if(prefs_override?.hotkeys)
+		winclone(src, "default", SKIN_MACROSET_HOTKEYS)
+	else
+		winclone(src, "default", SKIN_MACROSET_CLASSIC_INPUT)
+		winclone(src, "default", SKIN_MACROSET_CLASSIC_HOTKEYS)
+
 	// First, wipe
 	erase_all_macros(prefs_override)
 
@@ -193,7 +200,7 @@
 
 /// Manually clears any held keys, in case due to lag or other undefined behavior a key gets stuck.
 /client/proc/reset_held_keys()
-	for(var/key in keys_held)
+	for(var/key in keys_held.Copy())
 		keyUp(key)
 
 	// //In case one got stuck and the previous loop didn't clean it, somehow.

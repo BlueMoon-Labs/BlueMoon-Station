@@ -78,7 +78,7 @@
 /obj/effect/proc_holder/spell/targeted/touch/alive_bones
 	name = "Alive bones"
 	desc = "This spell charges your hand with necromancy energy, which rips the skeleton out of the victim's body and revives it. \
-			The victim is left without limbs and bones."
+			The victim is left without limbs and bones. Spell stops the decomposition of corpses."
 	hand_path = /obj/item/melee/touch_attack/alive_bones
 
 	school = "necromancy"

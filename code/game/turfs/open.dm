@@ -2,8 +2,6 @@
 	plane = FLOOR_PLANE
 	var/slowdown = 0 //negative for faster, positive for slower
 
-	var/postdig_icon_change = FALSE
-	var/postdig_icon
 	var/wet
 
 	var/footstep = null
@@ -276,7 +274,7 @@
 		if(!(lube&SLIP_WHEN_CRAWLING) && (C.lying || !(C.status_flags & CANKNOCKDOWN))) // can't slip unbuckled mob if they're lying or can't fall.
 			return FALSE
 		if(lube & NO_SLIP_WHEN_WALKING)
-			if(C.m_intent == MOVE_INTENT_WALK)
+			if(C.m_intent == MOVE_INTENT_WALK || HAS_TRAIT(C, TRAIT_SPEEDY_STEP))
 				return FALSE
 			if(ishuman(C) && !(lube & SLIP_WHEN_JOGGING) && CONFIG_GET(flag/sprint_enabled))
 				var/mob/living/carbon/human/H = C

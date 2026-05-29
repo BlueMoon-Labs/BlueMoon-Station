@@ -115,3 +115,6 @@
 
 /datum/award/score/parse_value(raw_value)
 	return isnum(raw_value) ? raw_value : 0
+
+// Хайскоры тетриса
+/datum/award/score/highscore

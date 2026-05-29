@@ -1,6 +1,8 @@
 /mob/living/carbon
 	blood_volume = BLOOD_VOLUME_NORMAL
 	deathsound = list ('sound/voice/deathgasp1.ogg', 'sound/voice/deathgasp2.ogg')
+	/// Reused breath sample to avoid per-breath gas_mixture churn.
+	var/datum/gas_mixture/breath_buffer
 
 /mob/living/carbon/Initialize(mapload)
 	. = ..()
@@ -10,6 +12,7 @@
 	blood_volume = (BLOOD_VOLUME_NORMAL * blood_ratio)
 	add_movespeed_modifier(/datum/movespeed_modifier/carbon_crawling)
 	register_context()
+	breath_buffer = new
 
 /mob/living/carbon/Destroy()
 	//This must be done first, so the mob ghosts correctly before DNA etc is nulled
@@ -17,11 +20,36 @@
 
 	QDEL_LIST(internal_organs)
 	QDEL_LIST(stomach_contents)
+	QDEL_LAZYLIST(all_wounds)
+	QDEL_LAZYLIST(all_scars)
 	QDEL_LIST(bodyparts)
 	hand_bodyparts = null		//Just references out bodyparts, don't need to delete twice.
-	remove_from_all_data_huds()
+	QDEL_NULL(breath_buffer)
 	QDEL_NULL(dna)
+	last_mind = null
 	GLOB.carbon_list -= src
+
+/mob/living/carbon/proc/get_breath_buffer()
+	if(!breath_buffer)
+		breath_buffer = new
+	return breath_buffer
+
+/// Used by glass shards and similar pickup edge hazards — suit/uniform glove coverage counts, not only the glove slot (e.g. space suits hide hands via HIDEGLOVES).
+/mob/living/carbon/proc/hands_unprotected_for_shard_pickup_damage()
+	if(HAS_TRAIT(src, TRAIT_PIERCEIMMUNE))
+		return FALSE
+	var/obj/item/bodypart/hand_part = get_active_hand()
+	if(hand_part?.is_robotic_limb())
+		return FALSE
+	if(gloves)
+		return FALSE
+	if(ishuman(src))
+		var/mob/living/carbon/human/H = src
+		if(H.wear_suit && (H.wear_suit.body_parts_covered & HANDS))
+			return FALSE
+		if(H.w_uniform && (H.w_uniform.body_parts_covered & HANDS))
+			return FALSE
+	return TRUE
 
 /mob/living/carbon/relaymove(mob/user, direction)
 	if(user in src.stomach_contents)
@@ -496,7 +524,7 @@
 				SEND_SIGNAL(src, COMSIG_ADD_MOOD_EVENT, "vomit", /datum/mood_event/vomit)
 
 	if(stun)
-		Stun(80)
+		Stun(20)
 
 	playsound(get_turf(src), 'sound/effects/splat.ogg', 50, TRUE)
 	var/turf/T = get_turf(src)

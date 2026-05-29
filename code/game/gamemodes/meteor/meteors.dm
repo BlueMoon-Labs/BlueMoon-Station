@@ -102,6 +102,7 @@ GLOBAL_LIST_INIT(meteorsC, list(/obj/effect/meteor/dust)) //for space dust event
 	var/timerid = null
 	var/list/meteordrop = list(/obj/item/stack/ore/iron)
 	var/dropamt = 2
+	var/ignores_path_wear = FALSE
 
 /obj/effect/meteor/Move()
 	if(z != z_original || loc == dest)
@@ -114,7 +115,7 @@ GLOBAL_LIST_INIT(meteorsC, list(/obj/effect/meteor/dust)) //for space dust event
 	if(.)//.. if did move, ram the turf we get in
 		ram_turf(T)
 
-	if(prob(10) && !isspaceturf(T) && !istype(T, /turf/closed/mineral) && !istype(T, /turf/open/floor/plating/asteroid))//randomly takes a 'hit' from ramming, and ignore spare ruin aseroids
+	if(!ignores_path_wear && prob(10) && !isspaceturf(T) && !istype(T, /turf/closed/mineral) && !istype(T, /turf/open/floor/plating/asteroid))//randomly takes a 'hit' from ramming, and ignore spare ruin aseroids
 		get_hit()
 
 /obj/effect/meteor/Destroy()
@@ -138,7 +139,7 @@ GLOBAL_LIST_INIT(meteorsC, list(/obj/effect/meteor/dust)) //for space dust event
 	if(A)
 		ram_turf(get_turf(A))
 		playsound(src.loc, meteorsound, 40, TRUE)
-		if(!istype(A, /turf/closed/mineral) && !istype(A, /turf/open/floor/plating/asteroid)) // ignore localstation ruins
+		if(!ignores_path_wear && !istype(A, /turf/closed/mineral) && !istype(A, /turf/open/floor/plating/asteroid)) // ignore localstation ruins
 			get_hit()
 
 /obj/effect/meteor/proc/ram_turf(turf/T)
@@ -332,7 +333,7 @@ GLOBAL_LIST_INIT(meteorsC, list(/obj/effect/meteor/dust)) //for space dust event
 	icon_state = "flaming"
 	desc = "Your life briefly passes before your eyes the moment you lay them on this monstrosity."
 	hits = 30
-	hitpwr = 1
+	hitpwr = EXPLODE_DEVASTATE
 	heavy = TRUE
 	meteorsound = 'sound/effects/bamf.ogg'
 	meteordrop = list(/obj/item/stack/ore/plasma)

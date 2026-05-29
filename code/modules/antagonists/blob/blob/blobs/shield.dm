@@ -9,7 +9,7 @@
 	explosion_block = 3
 	point_return = 4
 	atmosblock = TRUE
-	armor = list(MELEE = 25, BULLET = 25, LASER = 15, ENERGY = 10, BOMB = 20, BIO = 0, RAD = 0, FIRE = 90, ACID = 90)
+	armor = list(MELEE = 25, BULLET = 50, LASER = 25, ENERGY = 10, BOMB = 20, BIO = 0, RAD = 0, FIRE = 90, ACID = 90)
 	var/weakened
 
 /obj/structure/blob/shield/scannerreport()
@@ -51,6 +51,12 @@
 	max_integrity = 100
 	brute_resist = 1
 	explosion_block = 2
+	armor = list(MELEE = 25, BULLET = 25, LASER = 50, ENERGY = 10, BOMB = 20, BIO = 0, RAD = 0, FIRE = 90, ACID = 90)
 
 /obj/structure/blob/shield/reflective/check_projectile_ricochet(obj/item/projectile/P)
 	return PROJECTILE_RICOCHET_FORCE
+
+/obj/structure/blob/shield/reflective/handle_ricochet(obj/item/projectile/P)
+	. = ..()
+	if(.)
+		P.hit_prone_targets = TRUE

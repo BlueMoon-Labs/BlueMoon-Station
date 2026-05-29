@@ -77,7 +77,7 @@ GLOBAL_LIST_EMPTY(uid_log)
   */
 /client/proc/uid_log()
 	set name = "View UID Log"
-	set category = "Debug"
+	set category = "Debug.2) Info"
 	set desc = "Shows the log of created UIDs this round"
 
 	if(!check_rights(R_DEBUG))

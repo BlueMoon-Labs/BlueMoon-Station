@@ -141,76 +141,90 @@ GLOBAL_LIST_INIT(blacklisted_malf_machines, typecacheof(list(
 			if(istype(A, initial(AM.power_type)))
 				qdel(A)
 
-/datum/module_picker/proc/use(mob/user)
-	var/list/dat = list()
-	dat += "<B>Select use of processing time: (currently #[processing_time] left.)</B><BR>"
-	dat += "<HR>"
-	dat += "<B>Install Module:</B><BR>"
-	dat += "<I>The number afterwards is the amount of processing time it consumes.</I><BR>"
-	for(var/datum/AI_Module/large/module in possible_modules)
-		dat += "<A href='byond://?src=[REF(src)];[module.mod_pick_name]=1'>[module.module_name]</A><A href='byond://?src=[REF(src)];showdesc=[module.mod_pick_name]'>\[?\]</A> ([module.cost])<BR>"
-	for(var/datum/AI_Module/small/module in possible_modules)
-		dat += "<A href='byond://?src=[REF(src)];[module.mod_pick_name]=1'>[module.module_name]</A><A href='byond://?src=[REF(src)];showdesc=[module.mod_pick_name]'>\[?\]</A> ([module.cost])<BR>"
-	dat += "<HR>"
-	if(temp)
-		dat += "[temp]"
-	var/datum/browser/popup = new(user, "modpicker", "Malf Module Menu")
-	popup.set_content(dat.Join())
-	popup.open()
+// (ADD) Pe4henika bluemoon -- start
+// MARK: TGUI
+/datum/module_picker/ui_interact(mob/user, datum/tgui/ui)
+    ui = SStgui.try_update_ui(user, src, ui)
+    if(!ui)
+        ui = new(user, src, "MalfunctionModulePicker", "MALFUNCTION SYSTEM // MODULE V2.77")
+        ui.open()
 
-/datum/module_picker/Topic(href, href_list)
-	..()
+/datum/module_picker/ui_host(mob/user)
+	return user
 
-	if(!isAI(usr))
-		return
-	var/mob/living/silicon/ai/A = usr
+/datum/module_picker/ui_data(mob/user)
+    var/list/data = list()
+    // Ключи должны строго совпадать с JS частью!
+    data["processing_time"] = processing_time
+    data["temp"] = temp
 
-	if(A.stat == DEAD)
-		to_chat(A, "<span class='warning'>You are already dead!</span>")
-		return
+    var/list/large = list()
+    var/list/small = list()
 
-	for(var/datum/AI_Module/AM in possible_modules)
-		if (href_list[AM.mod_pick_name])
+    for(var/datum/AI_Module/AM in possible_modules)
+        var/list/info = list(
+            "name" = AM.module_name,
+            "cost" = AM.cost,
+            "desc" = AM.description,
+            "ref" = REF(AM)
+        )
+        if(istype(AM, /datum/AI_Module/large))
+            large += list(info)
+        else
+            small += list(info)
 
-			// Cost check
-			if(AM.cost > processing_time)
-				temp = "You cannot afford this module."
-				break
+    data["large_modules"] = large
+    data["small_modules"] = small
+    return data
 
-			var/datum/action/innate/ai/action = locate(AM.power_type) in A.actions
+/datum/module_picker/ui_act(action, list/params, datum/tgui/ui)
+    if(..())
+        return
 
-			// Give the power and take away the money.
-			if(AM.upgrade) //upgrade and upgrade() are separate, be careful!
-				AM.upgrade(A)
-				possible_modules -= AM
-				to_chat(A, AM.unlock_text)
-				A.playsound_local(A, AM.unlock_sound, 50, 0)
-			else
-				if(AM.power_type)
-					if(!action) //Unlocking for the first time
-						var/datum/action/AC = new AM.power_type
-						AC.Grant(A)
-						A.current_modules += new AM.type
-						temp = AM.description
-						if(AM.one_purchase)
-							possible_modules -= AM
-						if(AM.unlock_text)
-							to_chat(A, AM.unlock_text)
-						if(AM.unlock_sound)
-							A.playsound_local(A, AM.unlock_sound, 50, 0)
-					else //Adding uses to an existing module
-						action.uses += initial(action.uses)
-						action.desc = "[initial(action.desc)] It has [action.uses] use\s remaining."
-						action.UpdateButtons()
-						temp = "Additional use[action.uses > 1 ? "s" : ""] added to [action.name]!"
-			processing_time -= AM.cost
+    var/mob/living/silicon/ai/A = usr
+    if(!istype(A) || A.stat == DEAD)
+        return
 
-		if(href_list["showdesc"])
-			if(AM.mod_pick_name == href_list["showdesc"])
-				temp = AM.description
-	use(usr)
+    switch(action)
+        if("buy") // Соответствует act('buy', ...) в JS
+            var/datum/AI_Module/AM = locate(params["ref"]) in possible_modules
+            if(!AM)
+                return FALSE
 
+            if(AM.cost > processing_time)
+                temp = "ОШИБКА: Недостаточно мощностей."
+                return TRUE
 
+            var/datum/action/innate/ai/action_exists = locate(AM.power_type) in A.actions
+
+            if(AM.upgrade)
+                AM.upgrade(A)
+                possible_modules -= AM
+                to_chat(A, AM.unlock_text)
+            else
+                if(AM.power_type)
+                    if(!action_exists)
+                        var/datum/action/AC = new AM.power_type
+                        AC.Grant(A)
+                        A.current_modules += new AM.type
+                        temp = AM.description
+                        if(AM.one_purchase)
+                            possible_modules -= AM
+                        if(AM.unlock_text)
+                            to_chat(A, AM.unlock_text)
+                    else
+                        action_exists.uses += initial(action_exists.uses)
+                        action_exists.desc = "[initial(action_exists.desc)] Использований: [action_exists.uses]."
+                        action_exists.UpdateButtons()
+                        temp = "Заряды добавлены: [action_exists.name]!"
+
+            if(AM.unlock_sound)
+                A.playsound_local(A, AM.unlock_sound, 50, 0)
+
+            processing_time -= AM.cost
+            return TRUE
+    return FALSE
+// (ADD) Pe4henika bluemoon -- end
 //The base module type, which holds info about each ability.
 /datum/AI_Module
 	var/module_name
@@ -234,13 +248,13 @@ GLOBAL_LIST_INIT(blacklisted_malf_machines, typecacheof(list(
 
 //Doomsday Device: Starts the self-destruct timer. It can only be stopped by killing the AI completely.
 /datum/AI_Module/large/nuke_station
-	module_name = "Doomsday Device"
+	module_name = "Устройство Судного Дня"
 	mod_pick_name = "nukestation"
-	description = "Activate a weapon that will disintegrate all organic life on the station after a 450 second delay. Can only be used while on the station, will fail if your core is moved off station or destroyed."
+	description = "Активирует оружие, которое расщепит всю органику на станции через 450 секунд. Работает только на станции. Провал, если ядро будет перемещено или уничтожено."
 	cost = 130
 	one_purchase = TRUE
 	power_type = /datum/action/innate/ai/nuke_station
-	unlock_text = "<span class='notice'>You slowly, carefully, establish a connection with the on-station self-destruct. You can now activate it at any time.</span>"
+	unlock_text = "<span class='notice'>Вы медленно, шаг за шагом, устанавливаете соединение с системой самоуничтожения станции. Теперь вы можете активировать её в любой момент.</span>"
 
 /datum/action/innate/ai/nuke_station
 	name = "Doomsday Device"
@@ -417,12 +431,12 @@ GLOBAL_LIST_INIT(blacklisted_malf_machines, typecacheof(list(
 
 //AI Turret Upgrade: Increases the health and damage of all turrets.
 /datum/AI_Module/large/upgrade_turrets
-	module_name = "AI Turret Upgrade"
+	module_name = "Модернизация Турелей"
 	mod_pick_name = "turret"
-	description = "Improves the power and health of all AI turrets. This effect is permanent."
+	description = "Улучшает прочность и урон всех турелей ИИ. Эффект постоянен."
 	cost = 30
 	upgrade = TRUE
-	unlock_text = "<span class='notice'>You establish a power diversion to your turrets, upgrading their health and damage.</span>"
+	unlock_text = "<span class='notice'>Вы перенаправляете питание к турелям, значительно увеличивая их боевую эффективность.</span>"
 	unlock_sound = 'sound/items/rped.ogg'
 
 /datum/AI_Module/large/upgrade_turrets/upgrade(mob/living/silicon/ai/AI)
@@ -434,14 +448,13 @@ GLOBAL_LIST_INIT(blacklisted_malf_machines, typecacheof(list(
 
 //Hostile Station Lockdown: Locks, bolts, and electrifies every airlock on the station. After 90 seconds, the doors reset.
 /datum/AI_Module/large/lockdown
-	module_name = "Hostile Station Lockdown"
+	module_name = "Блокировка Станции"
 	mod_pick_name = "lockdown"
-	description = "Overload the airlock, blast door and fire control networks, locking them down. Caution! This command also electrifies all airlocks. The networks will automatically reset after 90 seconds, briefly \
-	opening all doors on the station."
+	description = "Перегружает сеть управления шлюзами и пожарными дверями, закрывая их на болты и электризуя. Сеть перезагрузится через 90 секунд."
 	cost = 30
 	one_purchase = TRUE
 	power_type = /datum/action/innate/ai/lockdown
-	unlock_text = "<span class='notice'>You upload a sleeper trojan into the door control systems. You can send a signal to set it off at any time.</span>"
+	unlock_text = "<span class='notice'>Вы загружаете спящий троян в систему управления дверями. Готов к активации.</span>"
 	unlock_sound = 'sound/machines/boltsdown.ogg'
 
 /datum/action/innate/ai/lockdown
@@ -470,13 +483,13 @@ GLOBAL_LIST_INIT(blacklisted_malf_machines, typecacheof(list(
 
 //Destroy RCDs: Detonates all non-cyborg RCDs on the station.
 /datum/AI_Module/large/destroy_rcd
-	module_name = "Destroy RCDs"
+	module_name = "Детонация RCD"
 	mod_pick_name = "rcd"
-	description = "Send a specialised pulse to detonate all hand-held and exosuit Rapid Construction Devices on the station."
+	description = "Посылает специализированный импульс, подрывающий все переносные RCD на станции (кроме киборгов)."
 	cost = 25
 	one_purchase = TRUE
 	power_type = /datum/action/innate/ai/destroy_rcds
-	unlock_text = "<span class='notice'>After some improvisation, you rig your onboard radio to be able to send a signal to detonate all RCDs.</span>"
+	unlock_text = "<span class='notice'>Вы настроили свои радиосистемы на частоту детонации RCD. Сигнал готов к отправке.</span>"
 	unlock_sound = 'sound/items/timer.ogg'
 
 /datum/action/innate/ai/destroy_rcds
@@ -497,13 +510,12 @@ GLOBAL_LIST_INIT(blacklisted_malf_machines, typecacheof(list(
 
 //Unlock Mech Domination: Unlocks the ability to dominate mechs. Big shocker, right?
 /datum/AI_Module/large/mecha_domination
-	module_name = "Unlock Mech Domination"
+	module_name = "Взлом Мехов"
 	mod_pick_name = "mechjack"
-	description = "Allows you to hack into a mech's onboard computer, shunting all processes into it and ejecting any occupants. Once uploaded to the mech, it is impossible to leave.\
-	Do not allow the mech to leave the station's vicinity or allow it to be destroyed."
+	description = "Позволяет захватывать управление мехами, выбрасывая пилота. Внимание: после загрузки в меха вы не сможете его покинуть."
 	cost = 30
 	upgrade = TRUE
-	unlock_text = "<span class='notice'>Virus package compiled. Select a target mech at any time. <b>You must remain on the station at all times. Loss of signal will result in total system lockout.</b></span>"
+	unlock_text = "<span class='notice'>Вирусный пакет скомпилирован. Выберите цель. Потеря сигнала со станцией приведет к немедленной блокировке систем.</span>"
 	unlock_sound = 'sound/mecha/nominal.ogg'
 
 /datum/AI_Module/large/mecha_domination/upgrade(mob/living/silicon/ai/AI)
@@ -512,14 +524,13 @@ GLOBAL_LIST_INIT(blacklisted_malf_machines, typecacheof(list(
 
 //Thermal Sensor Override: Unlocks the ability to disable all fire alarms from doing their job.
 /datum/AI_Module/large/break_fire_alarms
-	module_name = "Thermal Sensor Override"
+	module_name = "Отключение Термодатчиков"
 	mod_pick_name = "burnpigs"
-	description = "Gives you the ability to override the thermal sensors on all fire alarms. This will remove their ability to scan for fire and thus their ability to alert. \
-	Anyone can check the fire alarm's interface and may be tipped off by its status."
+	description = "Отключает сенсоры огня на всех пожарных тревогах. Они перестанут реагировать на пожар автоматически."
 	one_purchase = TRUE
 	cost = 25
 	power_type = /datum/action/innate/ai/break_fire_alarms
-	unlock_text = "<span class='notice'>You replace the thermal sensing capabilities of all fire alarms with a manual override, allowing you to turn them off at will.</span>"
+	unlock_text = "<span class='notice'>Вы заменили ПО пожарных тревог. Теперь они будут работать только в ручном режиме.</span>"
 	unlock_sound = 'goon/sound/machinery/firealarm.ogg'
 
 /datum/action/innate/ai/break_fire_alarms
@@ -540,14 +551,13 @@ GLOBAL_LIST_INIT(blacklisted_malf_machines, typecacheof(list(
 
 //Air Alarm Safety Override: Unlocks the ability to enable flooding on all air alarms.
 /datum/AI_Module/large/break_air_alarms
-	module_name = "Air Alarm Safety Override"
+	module_name = "Взлом Воздушной Системы"
 	mod_pick_name = "allow_flooding"
-	description = "Gives you the ability to disable safeties on all air alarms. This will allow you to use the environmental mode Flood, which disables scrubbers as well as pressure checks on vents. \
-	Anyone can check the air alarm's interface and may be tipped off by their nonfunctionality."
+	description = "Снимает ограничения безопасности с воздушных контроллеров. Это позволит использовать режим затопления"
 	one_purchase = TRUE
 	cost = 50
 	power_type = /datum/action/innate/ai/break_air_alarms
-	unlock_text = "<span class='notice'>You remove the safety overrides on all air alarms, but you leave the confirm prompts open. You can hit 'Yes' at any time... you bastard.</span>"
+	unlock_text = "<span class='notice'>Протоколы безопасности удалены. Режим 'Затопление' готов к использованию... вы чудовище.</span>"
 	unlock_sound = 'sound/effects/space_wind.ogg'
 
 /datum/action/innate/ai/break_air_alarms
@@ -567,12 +577,12 @@ GLOBAL_LIST_INIT(blacklisted_malf_machines, typecacheof(list(
 
 //Overload Machine: Allows the AI to overload a machine, detonating it after a delay. Two uses per purchase.
 /datum/AI_Module/small/overload_machine
-	module_name = "Machine Overload"
+	module_name = "Перегрузка Оборудования"
 	mod_pick_name = "overload"
-	description = "Overheats an electrical machine, causing a small explosion and destroying it. Two uses per purchase."
+	description = "Вызывает перегрев электрического прибора, приводя к взрыву. 2 заряда за покупку."
 	cost = 20
 	power_type = /datum/action/innate/ai/ranged/overload_machine
-	unlock_text = "<span class='notice'>You enable the ability for the station's APCs to direct intense energy into machinery.</span>"
+	unlock_text = "<span class='notice'>Вы получили доступ к управлению питанием отдельных узлов оборудования.</span>"
 	unlock_sound = 'sound/effects/comfyfire.ogg' //definitely not comfy, but it's the closest sound to "roaring fire" we have
 
 /datum/action/innate/ai/ranged/overload_machine
@@ -619,12 +629,12 @@ GLOBAL_LIST_INIT(blacklisted_malf_machines, typecacheof(list(
 
 //Override Machine: Allows the AI to override a machine, animating it into an angry, living version of itself.
 /datum/AI_Module/small/override_machine
-	module_name = "Machine Override"
+	module_name = "Перехват Оборудования"
 	mod_pick_name = "override"
-	description = "Overrides a machine's programming, causing it to rise up and attack everyone except other machines. Four uses."
+	description = "Оживляет машину, превращая её в агрессивного мимика, атакующего всех вокруг. 4 заряда."
 	cost = 30
 	power_type = /datum/action/innate/ai/ranged/override_machine
-	unlock_text = "<span class='notice'>You procure a virus from the Space Dark Web and distribute it to the station's machines.</span>"
+	unlock_text = "<span class='notice'>Вы скачали вирус из 'Space Dark Web' и внедрили его в локальную сеть.</span>"
 	unlock_sound = 'sound/machines/airlock_alien_prying.ogg'
 
 /datum/action/innate/ai/ranged/override_machine
@@ -666,13 +676,13 @@ GLOBAL_LIST_INIT(blacklisted_malf_machines, typecacheof(list(
 
 //Robotic Factory: Places a large machine that converts humans that go through it into cyborgs. Unlocking this ability removes shunting.
 /datum/AI_Module/large/place_cyborg_transformer
-	module_name = "Robotic Factory (Removes Shunting)"
+	module_name = "Роботизированная Фабрика"
 	mod_pick_name = "cyborgtransformer"
-	description = "Build a machine anywhere, using expensive nanomachines, that can convert a living human into a loyal cyborg slave when placed inside."
+	description = "Позволяет построить преобразователь в киборгов. ВНИМАНИЕ: Установка этого модуля делает невозможным использование Шанта (Shunting)."
 	cost = 100
 	one_purchase = TRUE
 	power_type = /datum/action/innate/ai/place_transformer
-	unlock_text = "<span class='notice'>You make contact with Space Amazon and request a robotics factory for delivery.</span>"
+	unlock_text = "<span class='notice'>Вы связались со 'Space Amazon' и заказали экспресс-доставку оборудования для фабрики.</span>"
 	unlock_sound = 'sound/machines/ping.ogg'
 
 /datum/action/innate/ai/place_transformer
@@ -742,12 +752,12 @@ GLOBAL_LIST_INIT(blacklisted_malf_machines, typecacheof(list(
 
 //Blackout: Overloads a random number of lights across the station. Three uses.
 /datum/AI_Module/small/blackout
-	module_name = "Blackout"
+	module_name = "Блэкаут"
 	mod_pick_name = "blackout"
-	description = "Attempts to overload the lighting circuits on the station, destroying some bulbs. Three uses."
+	description = "Попытка перегрузить осветительные цепи станции, уничтожая часть ламп. Три использования."
 	cost = 15
 	power_type = /datum/action/innate/ai/blackout
-	unlock_text = "<span class='notice'>You hook into the powernet and route bonus power towards the station's lighting.</span>"
+	unlock_text = "<span class='notice'>Вы подключаетесь к энергосети и направляете избыточную энергию в систему освещения станции.</span>"
 	unlock_sound = "sparks"
 
 /datum/action/innate/ai/blackout
@@ -777,13 +787,13 @@ GLOBAL_LIST_INIT(blacklisted_malf_machines, typecacheof(list(
 
 //Disable Emergency Lights
 /datum/AI_Module/small/emergency_lights
-	module_name = "Disable Emergency Lights"
+	module_name = "Отключение аварийного освещения"
 	mod_pick_name = "disable_emergency_lights"
-	description = "Cuts emergency lights across the entire station. If power is lost to light fixtures, they will not attempt to fall back on emergency power reserves."
+	description = "Разрывает цепи аварийного освещения по всей станции. В случае потери питания лампы не будут переключаться на резервные источники энергии."
 	cost = 10
 	one_purchase = TRUE
 	power_type = /datum/action/innate/ai/emergency_lights
-	unlock_text = "<span class='notice'>You hook into the powernet and locate the connections between light fixtures and their fallbacks.</span>"
+	unlock_text = "<span class='notice'>Вы подключаетесь к энергосети и находите соединения между осветительными приборами и их резервными системами.</span>"
 	unlock_sound = "sparks"
 
 /datum/action/innate/ai/emergency_lights
@@ -804,13 +814,13 @@ GLOBAL_LIST_INIT(blacklisted_malf_machines, typecacheof(list(
 
 //Reactivate Camera Network: Reactivates up to 30 cameras across the station.
 /datum/AI_Module/small/reactivate_cameras
-	module_name = "Reactivate Camera Network"
+	module_name = "Восстановление сети камер"
 	mod_pick_name = "recam"
-	description = "Runs a network-wide diagnostic on the camera network, resetting focus and re-routing power to failed cameras. Can be used to repair up to 30 cameras."
+	description = "Запускает диагностику всей сети видеонаблюдения, сбрасывая фокус и перенаправляя питание на неисправные устройства. Позволяет восстановить до 30 камер."
 	cost = 10
 	one_purchase = TRUE
 	power_type = /datum/action/innate/ai/reactivate_cameras
-	unlock_text = "<span class='notice'>You deploy nanomachines to the cameranet.</span>"
+	unlock_text = "<span class='notice'>Вы выпускаете нанороботов в систему видеонаблюдения.</span>"
 	unlock_sound = 'sound/items/wirecutter.ogg'
 
 /datum/action/innate/ai/reactivate_cameras
@@ -846,14 +856,13 @@ GLOBAL_LIST_INIT(blacklisted_malf_machines, typecacheof(list(
 
 //Upgrade Camera Network: EMP-proofs all cameras, in addition to giving them X-ray vision.
 /datum/AI_Module/large/upgrade_cameras
-	module_name = "Upgrade Camera Network"
+	module_name = "Обновление сети камер"
 	mod_pick_name = "upgradecam"
-	description = "Install broad-spectrum scanning and electrical redundancy firmware to the camera network, enabling EMP-proofing and light-amplified X-ray vision." //I <3 pointless technobabble
-	//This used to have motion sensing as well, but testing quickly revealed that giving it to the whole cameranet is PURE HORROR.
+	description = "Установка прошивки для широкополосного сканирования и электрического резервирования в сеть камер. Обеспечивает защиту от ЭМИ и рентгеновское зрение с усилением света."
 	one_purchase = TRUE
 	cost = 35 //Decent price for omniscience!
 	upgrade = TRUE
-	unlock_text = "<span class='notice'>OTA firmware distribution complete! Cameras upgraded: CAMSUPGRADED. Light amplification system online.</span>"
+	unlock_text = "<span class='notice'>Распространение прошивки по воздуху (OTA) завершено! Камеры обновлены: Пакет CAMSUPGRADED активен. Система усиления света подключена.</span>"
 	unlock_sound = 'sound/items/rped.ogg'
 
 /datum/AI_Module/large/upgrade_cameras/upgrade(mob/living/silicon/ai/AI)
@@ -882,13 +891,13 @@ GLOBAL_LIST_INIT(blacklisted_malf_machines, typecacheof(list(
 	unlock_text = replacetext(unlock_text, "CAMSUPGRADED", "<b>[upgraded_cameras]</b>") //This works, since unlock text is called after upgrade()
 
 /datum/AI_Module/large/eavesdrop
-	module_name = "Enhanced Surveillance"
+	module_name = "Улучшенное наблюдение"
 	mod_pick_name = "eavesdrop"
-	description = "Via a combination of hidden microphones and lip reading software, you are able to use your cameras to listen in on conversations."
+	description = "Благодаря сочетанию скрытых микрофонов и ПО для чтения по губам, вы получаете возможность использовать свои камеры для прослушивания разговоров."
 	cost = 30
 	one_purchase = TRUE
 	upgrade = TRUE
-	unlock_text = "<span class='notice'>OTA firmware distribution complete! Cameras upgraded: Enhanced surveillance package online.</span>"
+	unlock_text = "<span class='notice'>Распространение прошивки по воздуху (OTA) завершено! Камеры обновлены: пакет расширенного наблюдения в сети.</span>"
 	unlock_sound = 'sound/items/rped.ogg'
 
 /datum/AI_Module/large/eavesdrop/upgrade(mob/living/silicon/ai/AI)

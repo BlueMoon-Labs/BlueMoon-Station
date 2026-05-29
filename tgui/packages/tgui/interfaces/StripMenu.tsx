@@ -449,6 +449,7 @@ type StripMenuItem =
           icon: string;
           name: string;
           alternate?: string;
+          interactable: boolean;
         }
       | {
           obscured: ObscuringLevel;
@@ -510,6 +511,7 @@ export const StripMenu = (props, context) => {
 
                   let content;
                   let tooltip;
+                  let interactable;
 
                   if (item === null) {
                     tooltip = slot.displayName;
@@ -532,6 +534,10 @@ export const StripMenu = (props, context) => {
                     );
 
                     tooltip = item.name;
+                    if(item.interactable) {
+                      interactable = item.interactable;
+                      tooltip = `${tooltip} (CAN USE ITEMS ON IT)`;
+                    }
                   } else if ("obscured" in item) {
                     content = (
                       <Icon
@@ -580,7 +586,9 @@ export const StripMenu = (props, context) => {
                           style={{
                             background: item?.interacting
                               ? "hsl(39, 73%, 30%)"
-                              : undefined,
+                              : interactable
+                                ? "green"
+                                : undefined,
                             position: "relative",
                             width: "100%",
                             height: "100%",

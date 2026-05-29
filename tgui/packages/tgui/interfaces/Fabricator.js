@@ -324,7 +324,7 @@ export const FabricatorContent = (props, context) => {
 
         <Flex.Item>
           <Section
-            title={hacked ? 'Дизайны (Взлом!)' : 'Дизайны'}
+            title={hacked ? 'Designs (Safety protocols: DISABLED)' : 'Designs'}
             buttons={(
               <>
                 Search:

@@ -1,0 +1,41 @@
+/**
+ * NtOS Cat
+ * Warm and cozy — soft browns, pinks, and cream tones.
+ * Feature: warm earthy palette, rounded corners, friendly vibe.
+ */
+
+@use 'sass:color';
+@use 'sass:meta';
+
+$cat: #c07550;
+
+@use '../colors.scss' with (
+  $fg-map-keys: (),
+  $bg-map-keys: (),
+);
+@use '../base.scss' with (
+  $color-bg: #2a1a14,
+  $color-bg-grad-spread: 4%,
+  $border-radius: 6px,
+);
+
+.theme-ntos_cat {
+  // Components
+  @include meta.load-css('../components/Button.scss', $with: (
+    'color-default': $cat,
+    'color-transparent-text': rgba(255, 220, 200, 0.8),
+    'color-selected': #e08860,
+  ));
+  @include meta.load-css('../components/ProgressBar.scss', $with: (
+    'color-default-fill': $cat,
+    'background-color': rgba(255, 255, 255, 0.06),
+  ));
+  @include meta.load-css('../components/Section.scss');
+
+  // Layouts
+  @include meta.load-css('../layouts/Layout.scss');
+  @include meta.load-css('../layouts/Window.scss');
+  @include meta.load-css('../layouts/TitleBar.scss', $with: (
+    'background-color': color.scale($cat, $lightness: -25%),
+  ));
+}

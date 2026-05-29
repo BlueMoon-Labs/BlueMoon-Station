@@ -136,9 +136,9 @@
 /obj/machinery/droneDispenser/power_change()
 	..()
 	if(powered())
-		machine_stat &= ~NOPOWER
+		set_machine_stat(machine_stat & ~NOPOWER)
 	else
-		machine_stat |= NOPOWER
+		set_machine_stat(machine_stat | NOPOWER)
 	update_icon()
 
 /obj/machinery/droneDispenser/process()
@@ -235,7 +235,7 @@
 			"<span class='notice'>[user] fixes [src]!</span>",
 			"<span class='notice'>You restore [src] to operation.</span>")
 
-		machine_stat &= ~BROKEN
+		set_machine_stat(machine_stat & ~BROKEN)
 		obj_integrity = max_integrity
 		update_icon()
 	else
@@ -248,7 +248,7 @@
 				audible_message("<span class='warning'>[src] [break_message]</span>")
 			if(break_sound)
 				playsound(src, break_sound, 50, 1)
-			machine_stat |= BROKEN
+			set_machine_stat(machine_stat | BROKEN)
 			update_icon()
 
 /obj/machinery/droneDispenser/deconstruct(disassembled = TRUE)

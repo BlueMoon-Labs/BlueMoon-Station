@@ -764,7 +764,7 @@
 		smoke.start()
 		sleep(2)
 		for(var/i in 1 to 4)
-			playsound(R, pick('sound/items/drill_use.ogg', 'sound/items/jaws_cut.ogg', 'sound/items/jaws_pry.ogg', 'sound/items/welder.ogg', 'sound/items/ratchet.ogg'), 80, 1, -1)
+			playsound(R, pick('sound/items/drill3.ogg', 'sound/items/jaws_cut.ogg', 'sound/items/jaws_pry.ogg', 'sound/items/welder.ogg', 'sound/items/ratchet.ogg'), 80, 1, -1)
 			sleep(12)
 		if(!prev_locked_down)
 			R.SetLockdown(0)
@@ -928,3 +928,26 @@
 	action.UpdateButtons()
 
 	return TRUE
+
+/obj/item/borg/upgrade/jukebox
+	name = "cyborg jukebox module"
+	desc = "Плата расширения, позволяющая киборгу транслировать музыку из внутренней библиотеки."
+	icon_state = "cyborg_upgrade3"
+	require_module = TRUE
+
+/obj/item/borg/upgrade/jukebox/action(mob/living/silicon/robot/R)
+	. = ..()
+	if(.)
+		var/obj/item/device/robot_jukebox/JB = new(R.module)
+		R.module.basic_modules += JB
+		R.module.add_module(JB, FALSE, TRUE)
+		START_PROCESSING(SSobj, JB)
+
+/obj/item/borg/upgrade/jukebox/deactivate(mob/living/silicon/robot/R)
+	. = ..()
+	if(.)
+		var/obj/item/device/robot_jukebox/JB = locate() in R.module
+		if(JB)
+			STOP_PROCESSING(SSobj, JB)
+			R.module.remove_module(JB, TRUE)
+			qdel(JB)

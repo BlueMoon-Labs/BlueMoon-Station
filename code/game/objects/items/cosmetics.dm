@@ -8,8 +8,30 @@
 	var/colour = "red"
 	var/real_colour
 	var/open = FALSE
+	/// Base icon_state for closed tube. Open state is derived as "[closed_icon_state]_uncap"
+	var/closed_icon_state = "lipstick"
 	/// A trait that's applied while someone has this lipstick applied, and is removed when the lipstick is removed
 	var/lipstick_trait
+	/// How many times this lipstick can be applied before running out. -1 = infinite
+	var/uses = -1
+
+/obj/item/lipstick/Initialize(mapload)
+	. = ..()
+	icon_state = closed_icon_state
+
+/obj/item/lipstick/add_atom_colour(coloration, colour_priority)
+	. = ..()
+	if(istext(coloration))
+		var/parsed = sanitize_hexcolor(coloration, 6, TRUE)
+		if(parsed)
+			colour = parsed
+
+/obj/item/lipstick/examine(mob/user)
+	. = ..()
+	if(uses > 0)
+		. += span_notice("Осталось использований: [uses].")
+	else if(uses == 0)
+		. += span_warning("Помада закончилась.")
 
 /obj/item/lipstick/purple
 	name = "purple lipstick"
@@ -28,15 +50,78 @@
 /obj/item/lipstick/black/death
 	name = "\improper Kiss of Death"
 	desc = "An incredibly potent tube of lipstick made from the venom of the dreaded Yellow Spotted Space Lizard, as deadly as it is chic. Try not to smear it!"
+	closed_icon_state = "lipstick_death"
 	lipstick_trait = TRAIT_KISS_OF_DEATH
+
+/obj/item/lipstick/crocin
+	name = "Kiss of Lust"
+	desc = "Помада в тюбике с кроцином. Делает ваши поцелуи еще более страстными."
+	colour = "#FF69B4"
+	closed_icon_state = "lipstick_crocin"
+	lipstick_trait = TRAIT_KISS_CROCIN
+
+/obj/item/lipstick/space_drugs
+	name = "Kiss of Drugs"
+	desc = "Тюбик губной помады, пропитанный космическими наркотиками. Поцелуи, которые уносят тебя к звёздам."
+	colour = "#00BFFF"
+	closed_icon_state = "lipstick_space_drugs"
+	lipstick_trait = TRAIT_KISS_SPACE_DRUGS
+	uses = 5
+
+/obj/item/lipstick/honk
+	name = "Kiss LOL"
+	desc = "Тюбик губной помады клоунского качества. Honk!"
+	colour = "#FFFF00"
+	closed_icon_state = "lipstick_honk"
+	lipstick_trait = TRAIT_KISS_HONK
+
+/obj/item/lipstick/bloodsucker
+	name = "Kiss of Blood"
+	desc = "Тюбик губной помады, похожий на вампирский, содержит частички крови."
+	colour = "#800000"
+	closed_icon_state = "lipstick_bloodsucker"
+	lipstick_trait = TRAIT_KISS_BLOODSUCKER
+	uses = 8
+
+/obj/item/lipstick/mime
+	name = "Kiss of Mute"
+	desc = "Тихий тюбик помады. Он говорит о многом без слов."
+	colour = "#808080"
+	closed_icon_state = "lipstick_mime"
+	lipstick_trait = TRAIT_KISS_MIME
+
+/obj/item/lipstick/dragqueen
+	name = "Kiss of Drag Queen"
+	desc = "Восхитительный тюбик помады, пропитанный... чем-то особенным. Каждый поцелуй — это сюрприз!"
+	colour = "#4B0082"
+	closed_icon_state = "lipstick_dragqueen"
+	lipstick_trait = TRAIT_KISS_DRAGQUEEN
+	uses = 5
+
+/obj/item/lipstick/heartboom
+	name = "Kiss of Heartboom"
+	desc = "Тюбик помады, переливающийся фиолетовыми искрами. Заставляет сердце биться чаще... или замереть."
+	colour = "#9400D3"
+	closed_icon_state = "lipstick_heartboom"
+	lipstick_trait = TRAIT_KISS_HEARTBOOM
+
+/obj/item/lipstick/loadout
+	name = "lipstick"
+	closed_icon_state = "random_lipstick"
+
+/obj/item/lipstick/loadout/Initialize(mapload)
+	. = ..()
+	closed_icon_state = "lipstick"
+	icon_state = closed_icon_state
 
 /obj/item/lipstick/random
 	name = "lipstick"
-	icon_state = "random_lipstick"
+	closed_icon_state = "random_lipstick"
 
 /obj/item/lipstick/random/New()
 	..()
-	icon_state = "lipstick"
+	closed_icon_state = "lipstick"
+	icon_state = closed_icon_state
 	colour = pick("red","purple","lime","black","green","blue","white")
 	name = "[colour] lipstick"
 
@@ -47,10 +132,10 @@
 	if(open)
 		var/mutable_appearance/colored_overlay = mutable_appearance(icon, "lipstick_uncap_color")
 		colored_overlay.color = colour
-		icon_state = "lipstick_uncap"
+		icon_state = "[closed_icon_state]_uncap"
 		add_overlay(colored_overlay)
 	else
-		icon_state = "lipstick"
+		icon_state = closed_icon_state
 
 /obj/item/lipstick/attack(mob/M, mob/user)
 	if(!open || !ismob(M))
@@ -68,19 +153,34 @@
 		to_chat(user, span_warning("You need to wipe off the old lipstick first!"))
 		return
 
+	if(uses == 0)
+		to_chat(user, span_warning("Помада закончилась."))
+		return
+
+	if(lipstick_trait == TRAIT_KISS_MIME && (!user.mind || user.mind.assigned_role != "Mime"))
+		to_chat(user, span_warning("Вы не знаете как использовать эту помаду. Кажется, она предназначена для мимов."))
+		return
+
 	if(target == user)
 		user.visible_message(span_notice("[user] does [user.p_their()] lips with \the [src]."), \
 			span_notice("You take a moment to apply \the [src]. Perfect!"))
-		target.update_lips("lipstick", real_colour ? real_colour : colour, lipstick_trait)
+		target.update_lips("lipstick", real_colour ? real_colour : colour, lipstick_trait, initial(uses))
+		if(uses > 0)
+			uses--
 		return
 
 	user.visible_message(span_warning("[user] begins to do [target]'s lips with \the [src]."), \
 		span_notice("You begin to apply \the [src] on [target]'s lips..."))
 	if(!do_after(user, 2 SECONDS, target = target))
 		return
+	if(uses == 0)
+		to_chat(user, span_warning("Помада закончилась."))
+		return
 	user.visible_message(span_notice("[user] does [target]'s lips with \the [src]."), \
 		span_notice("You apply \the [src] on [target]'s lips."))
-	target.update_lips("lipstick", colour, lipstick_trait)
+	target.update_lips("lipstick", real_colour ? real_colour : colour, lipstick_trait, initial(uses))
+	if(uses > 0)
+		uses--
 
 //you can wipe off lipstick with paper!
 /obj/item/paper/attack(mob/M, mob/user)

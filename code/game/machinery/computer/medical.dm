@@ -285,6 +285,7 @@
 					R.fields["cdi_d"] = "No diseases have been diagnosed at the moment."
 					R.fields["notes"] = "No notes."
 					GLOB.data_core.medical += R
+					GLOB.data_core.register_record(R, "medical")
 					active2 = R
 					screen = MED_DATA_RECORD
 					set_temp("Медицинская запись создана.", "success")

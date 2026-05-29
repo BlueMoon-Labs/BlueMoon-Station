@@ -94,6 +94,7 @@ GLOBAL_DATUM_INIT(centcom_deathrattle_group, /datum/deathrattle_group, new)
 	name = "death alert implant"
 	desc = "Hope no one else dies, prepare for when they do"
 	var/obj/item/radio/radio = null
+	activated = FALSE
 
 /obj/item/implant/death_alert/implant(mob/living/target, mob/user, silent = FALSE, force = FALSE)
 	. = ..()

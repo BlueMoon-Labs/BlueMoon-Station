@@ -130,22 +130,22 @@ export const FilterControls = (props, context) => {
     );
   };
 
-  const handleSortChange = (column) => {
-    if (sortColumn === column) {
-      setSortOrder(sortOrder === 'ASC' ? 'DESC' : 'ASC');
-    } else {
-      setSortColumn(column);
-      setSortOrder('ASC');
-    }
-  };
-
   const clearAdminFilter = () => {
     setAdminFilter('');
   };
 
+  const sortColumnOptions = [
+    ...(grouping !== 'none' ? ['period_group'] : []),
+    'admin_name',
+    'admin_rank',
+    ...available_columns.map(col => col.key),
+  ];
+
   // Get display name for sort column
   const getSortColumnName = () => {
     if (sortColumn === 'admin_name') return 'Admin Name';
+    if (sortColumn === 'admin_rank') return 'Rank';
+    if (sortColumn === 'period_group') return 'Period';
     const column = available_columns.find(col => col.key === sortColumn);
     return column ? column.name : sortColumn;
   };
@@ -207,7 +207,12 @@ export const FilterControls = (props, context) => {
             selected={grouping}
             options={grouping_options.map(opt => opt.key)}
             displayText={grouping_options.find(opt => opt.key === grouping)?.name}
-            onSelected={(value) => setGrouping(value)}
+            onSelected={(value) => {
+              setGrouping(value);
+              if (value === 'none' && sortColumn === 'period_group') {
+                setSortColumn('admin_name');
+              }
+            }}
             disabled={loading}
           />
         </LabeledList.Item>
@@ -219,9 +224,15 @@ export const FilterControls = (props, context) => {
           <Dropdown
             width="200px"
             selected={sortColumn}
-            options={['admin_name', ...available_columns.map(col => col.key)]}
+            options={sortColumnOptions}
             displayText={getSortColumnName()}
-            onSelected={(value) => handleSortChange(value)}
+            onSelected={(value) => {
+              if (value === sortColumn) {
+                return;
+              }
+              setSortColumn(value);
+              setSortOrder('ASC');
+            }}
             disabled={loading}
           />
         </LabeledList.Item>

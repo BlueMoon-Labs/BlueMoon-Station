@@ -53,28 +53,30 @@ Credit where due:
 	return D && (!require_full_power || !D.neutered) && (!holy_water_check || !D.ignore_holy_water)
 
 /proc/is_eligible_servant(mob/M)
+	. = FALSE
 	if(!istype(M))
-		return FALSE
+		return
+	if(jobban_isbanned(M, ROLE_SERVANT_OF_RATVAR))
+		return
 	if(M.mind)
 		if(M.mind.assigned_role in list("Captain", "Chaplain"))
-			return FALSE
+			return
 		if(M.mind.enslaved_to && !is_servant_of_ratvar(M.mind.enslaved_to))
-			return FALSE
+			return
 		if(M.mind.unconvertable)
-			return FALSE
-		if (IS_HERETIC(M))
-			return FALSE
+			return
+		if(IS_HERETIC(M))
+			return
 	else
-		return FALSE
+		return
 	if(iscultist(M) || isconstruct(M) || ispAI(M))
-		return FALSE
+		return
 	if(isliving(M))
 		var/mob/living/L = M
 		if(HAS_TRAIT(L, TRAIT_MINDSHIELD))
-			return FALSE
+			return
 	if(ishuman(M) || isbrain(M) || isguardian(M) || issilicon(M) || isclockmob(M) || istype(M, /mob/living/simple_animal/drone/cogscarab) || istype(M, /mob/camera/eminence))
 		return TRUE
-	return FALSE
 
 /proc/add_servant_of_ratvar(mob/L, silent = FALSE, create_team = TRUE, override_type)
 	if(!L || !L.mind)
@@ -273,7 +275,7 @@ Credit where due:
 	belt = /obj/item/storage/belt/utility/servant
 	backpack_contents = list(/obj/item/storage/box/survival/engineer=1,\
 	/obj/item/clockwork/replica_fabricator = 1, /obj/item/stack/tile/brass/fifty = 1, /obj/item/reagent_containers/food/drinks/bottle/holyoil = 1)
-	id = /obj/item/pda
+	id = /obj/item/modular_computer/pda
 	var/plasmaman //We use this to determine if we should activate internals in post_equip()
 
 /datum/outfit/servant_of_ratvar/pre_equip(mob/living/carbon/human/H, visualsOnly = FALSE)
@@ -286,7 +288,7 @@ Credit where due:
 
 /datum/outfit/servant_of_ratvar/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE)
 	var/obj/item/card/id/W = new(H)
-	var/obj/item/pda/PDA = H.wear_id
+	var/obj/item/modular_computer/pda/PDA = H.wear_id
 	W.assignment = "Assistant"
 	W.access += ACCESS_MAINT_TUNNELS
 	W.registered_name = H.real_name
@@ -296,5 +298,5 @@ Credit where due:
 	PDA.owner = H.real_name
 	PDA.ownjob = "Assistant"
 	PDA.update_label()
-	PDA.id_check(H, W)
+	PDA.InsertID(W)
 	H.sec_hud_set_ID()

@@ -29,6 +29,39 @@
 	show_in_roundend = FALSE
 	make_team = FALSE
 
+/// Rune "Spirit Realm": add_antag must succeed despite jobban on the ghost, then /datum/antagonist/on_gain calls replace_banned_player() like for other antags.
+/datum/antagonist/cult/manifest_summon
+	ignore_eligibility_checks = TRUE
+	give_equipment = FALSE
+	var/obj/effect/rune/manifest/linked_rune
+	var/mob/living/summon_invoker
+
+/datum/antagonist/cult/manifest_summon/on_gain()
+	. = ..()
+	if(owner.current && is_banned(owner.current))
+		manifest_replacement_failed()
+
+/datum/antagonist/cult/manifest_summon/proc/manifest_replacement_failed()
+	var/mob/living/si = summon_invoker
+	var/obj/effect/rune/manifest/RM = linked_rune
+	if(istype(si) && !QDELETED(si))
+		to_chat(si, "<span class='cultitalic'>The gathered spirits could not be bound, and no other soul answered the call.</span>")
+	if(istype(RM) && !QDELETED(RM))
+		RM.fail_invoke()
+		log_game("Manifest rune: replace_banned_player had no replacement for cult-jobbanned manifest at [get_area(RM)]")
+	if(!owner)
+		return
+	if(SSticker.mode)
+		var/datum/antagonist/cult/cult_datum = owner.has_antag_datum(/datum/antagonist/cult, TRUE)
+		if(cult_datum)
+			SSticker.mode.remove_cultist(owner, silent = TRUE)
+	var/mob/living/L = owner.current
+	if(istype(L))
+		if(L.key)
+			L.ghostize(0)
+		if(!QDELETED(L))
+			L.dust()
+
 /datum/antagonist/cult/get_team()
 	return cult_team
 
@@ -82,6 +115,7 @@
 
 	if(cult_team?.blood_target && cult_team.blood_target_image && current.client)
 		current.client.images += cult_team.blood_target_image
+		cult_team.blood_target_image_recipients |= current.client // BLUEMOON FIX: track recipient
 
 
 /datum/antagonist/cult/proc/equip_cultist(metal=TRUE)
@@ -166,6 +200,7 @@
 		owner.current.log_message("has renounced the cult of Nar'Sie!", LOG_ATTACK, color="#960000")
 	if(cult_team?.blood_target && cult_team.blood_target_image && owner.current.client)
 		owner.current.client.images -= cult_team.blood_target_image
+		cult_team.blood_target_image_recipients -= owner.current.client // BLUEMOON FIX: drop from recipients
 	owner.special_role = null // BLUEMOON ADD
 	. = ..()
 
@@ -258,6 +293,10 @@
 
 	var/atom/blood_target
 	var/image/blood_target_image
+	/// BLUEMOON FIX: list of clients that currently hold blood_target_image in their
+	/// client.images. Without this, reset_blood_target only sweeps team.members and
+	/// leaves the image stuck on disconnected / deconverted cultists' old clients.
+	var/list/client/blood_target_image_recipients = list()
 	var/blood_target_reset_timer
 
 	var/cult_vote_called = FALSE

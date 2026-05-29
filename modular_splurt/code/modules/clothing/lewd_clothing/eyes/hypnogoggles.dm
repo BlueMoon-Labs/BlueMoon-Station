@@ -28,9 +28,9 @@
 
 /obj/item/clothing/glasses/hypno/dropped(mob/user)//Removing hypnosis on unequip
 	. = ..()
-	if(victim.glasses == src)
+	if(victim?.glasses == src)
 		victim.cure_trauma_type(/datum/brain_trauma/induced_hypnosis, TRAUMA_RESILIENCE_BASIC)
-		victim = null
+	victim = null
 
 /obj/item/clothing/glasses/hypno/Destroy()
 	if(victim)

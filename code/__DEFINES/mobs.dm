@@ -228,6 +228,12 @@
 #define AI_OFF		3
 #define AI_Z_OFF	4
 
+/// Distance within which a player must be for NPC AI to remain active
+#define NEARBY_PLAYER_DISTANCE 15
+
+/// Distance within which a player must be for full Life() processing of clientless mobs
+#define NEARBY_LIVING_DISTANCE 20
+
 // determines if a mob can smash through it
 #define ENVIRONMENT_SMASH_NONE		  0
 #define ENVIRONMENT_SMASH_STRUCTURES (1<<0)	// crates, lockers, ect

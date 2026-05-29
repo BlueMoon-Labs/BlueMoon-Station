@@ -16,6 +16,11 @@ GLOBAL_LIST_EMPTY(traitor_classes)
 
 /datum/traitor_class/New()
 	..()
+
+	if(GLOB.round_type == ROUNDTYPE_DYNAMIC_LIGHT)
+		if(istype(src, /datum/traitor_class/human/martyr) || istype(src, /datum/traitor_class/human/hijack))
+			return
+
 	if(src.type in GLOB.traitor_classes)
 		qdel(src)
 	else

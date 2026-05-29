@@ -10,7 +10,7 @@
 	var/pressure_decrease = 0.25
 	var/pressure_decrease_delimb = 0.5
 	var/mine_range = 3 //mines this many additional tiles of rock
-	var/simplemob_damage_bonus = 1
+	var/simplemob_damage_bonus = 0.5
 	tracer_type = /obj/effect/projectile/tracer/plasma_cutter
 	muzzle_type = /obj/effect/projectile/muzzle/plasma_cutter
 	impact_type = /obj/effect/projectile/impact/plasma_cutter
@@ -43,15 +43,15 @@
 	damage = 19
 	range = 5
 	mine_range = 5
-	dismemberment = 40
+	dismemberment = 30
 	simplemob_damage_bonus = 0.75
 
 /obj/item/projectile/plasma/adv/mech
 	damage = 25
 	range = 9
 	mine_range = 3
-	dismemberment = 60
-	simplemob_damage_bonus = 1.25
+	dismemberment = 50
+	simplemob_damage_bonus = 1
 
 /obj/item/projectile/plasma/turret
 	//Between normal and advanced for damage, made a beam so not the turret does not destroy glass

@@ -13503,6 +13503,9 @@
 /obj/machinery/light{
 	dir = 8
 	},
+/obj/machinery/computer/brig_assistant_console{
+	dir = 4
+	},
 /turf/open/floor/plasteel,
 /area/hallway/primary/port/fore)
 "aKb" = (
@@ -19340,7 +19343,7 @@
 /turf/open/floor/wood,
 /area/security/checkpoint/customs)
 "baD" = (
-/obj/machinery/computer/card{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /turf/open/floor/wood,
@@ -23218,7 +23221,7 @@
 /turf/open/floor/plasteel,
 /area/security/office)
 "bmb" = (
-/obj/machinery/computer/card/minor/rd{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 4
 	},
 /obj/structure/cable{
@@ -26223,7 +26226,7 @@
 	alpha = 170;
 	color = "#CD2929"
 	},
-/obj/machinery/computer/card{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /obj/machinery/camera{
@@ -32009,7 +32012,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science/xenobiology)
@@ -33491,7 +33493,7 @@
 /turf/open/floor/carpet/purple,
 /area/science/research)
 "bTt" = (
-/obj/machinery/computer/card/minor/qm{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 1
 	},
 /obj/machinery/requests_console{
@@ -41742,7 +41744,7 @@
 /turf/open/floor/carpet/orange,
 /area/command/heads_quarters/ce)
 "ctp" = (
-/obj/machinery/computer/card/minor/ce{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 4
 	},
 /turf/open/floor/carpet/orange,
@@ -50166,7 +50168,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science/xenobiology)
@@ -53899,7 +53900,7 @@
 /turf/open/floor/engine,
 /area/science/explab)
 "ejQ" = (
-/obj/machinery/computer/card{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 1
 	},
 /obj/structure/railing{
@@ -57184,7 +57185,7 @@
 /turf/open/floor/plasteel,
 /area/commons/locker)
 "fzR" = (
-/obj/machinery/computer/card/minor/hos{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 1
 	},
 /obj/machinery/requests_console{
@@ -57357,7 +57358,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science/xenobiology)
@@ -81601,7 +81601,6 @@
 /area/cargo/qm)
 "oqI" = (
 /obj/structure/table/wood,
-/obj/item/card/id/captains_spare,
 /obj/item/hand_tele,
 /obj/item/disk/nuclear,
 /turf/open/floor/plasteel/dark,
@@ -85713,7 +85712,7 @@
 /turf/open/floor/wood/wood_diagonal,
 /area/security/prison/rec)
 "pIS" = (
-/obj/machinery/computer/card/minor/cmo{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 1
 	},
 /obj/machinery/keycard_auth{
@@ -87612,7 +87611,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/science/xenobiology)
@@ -95031,7 +95029,7 @@
 /turf/open/floor/plasteel,
 /area/command/gateway)
 "tiF" = (
-/obj/machinery/computer/card{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 4
 	},
 /obj/structure/cable{
@@ -104023,6 +104021,20 @@
 	},
 /turf/open/floor/wood,
 /area/service/library)
+"wyE" = (
+/obj/effect/turf_decal/tile/blue{
+	alpha = 150
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 8;
+	alpha = 150
+	},
+/obj/structure/safe/spare_id{
+	pixel_x = 0;
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel,
+/area/command/bridge)
 "wzk" = (
 /obj/machinery/atmospherics/pipe/simple/orange/hidden{
 	dir = 8
@@ -127046,7 +127058,7 @@ aMX
 aIE
 mzq
 cQX
-fOR
+wyE
 aQW
 wpA
 wpA

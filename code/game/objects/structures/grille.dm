@@ -4,6 +4,7 @@
 	icon = 'icons/obj/structures.dmi'
 	icon_state = "grille"
 	density = TRUE
+	shadow_weight = 0.05
 	anchored = TRUE
 	pass_flags_self = PASSGRILLE
 	flags_1 = CONDUCT_1

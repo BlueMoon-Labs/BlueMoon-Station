@@ -1,6 +1,6 @@
 // BLUEMOON ADDED
-import { useBackend } from "../backend";
-import { Collapsible, Flex, LabeledList, Section, Tooltip } from "../components";
+import { useBackend, useLocalState } from "../backend";
+import { Box, Button, Collapsible, Flex, LabeledList, Section, Tooltip } from "../components";
 import { Window } from "../layouts";
 
 const getTagColor = (erptag) => {
@@ -18,7 +18,7 @@ const getTagColor = (erptag) => {
 // Когда-нибудь это можно будет переделать в что-то крутое
 
 interface CyborgProfileContext {
-
+  headshot_links?: (string | null)[];
   silicon_flavor_text: string;
   oocnotes: string;
   tempflavor: string;
@@ -32,7 +32,7 @@ interface CyborgProfileContext {
 }
 
 export const CyborgProfile = (props, context) => {
-  const { act, data } = useBackend<CyborgProfileContext>(context);
+  const { data } = useBackend<CyborgProfileContext>(context);
 
   const tags = [
     { name: "ERP", title: "Эротический отыгрыш", value: data.erp_tag },
@@ -45,9 +45,12 @@ export const CyborgProfile = (props, context) => {
   ];
 
   return (
-    <Window resizable width={600} height={600}>
+    <Window resizable width={860} height={600}>
       <Window.Content scrollable>
         <Flex>
+          <Flex.Item width="276px" shrink={0} style={{ overflow: 'hidden' }}>
+            <CyborgProfileImageElement />
+          </Flex.Item>
           <Flex.Item pl="10px" grow>
             <Collapsible title="Описание Юнита" open>
               <Section style={{ "white-space": "pre-line" }}>
@@ -59,21 +62,65 @@ export const CyborgProfile = (props, context) => {
                 {data.oocnotes || "Отсутствуют"}
               </Section>
             </Collapsible>
-              <Section title="Преференсы киборга" width="100%">
-                <LabeledList>
-                  {tags.map(tag => (
-                    <LabeledList.Item
-                      key={tag.name}
-                      color={getTagColor(tag.value)}
-                      label={tag.title}>
-                      <Tooltip content={tag.name}>{tag.value}</Tooltip>
-                    </LabeledList.Item>
-                  ))}
-                </LabeledList>
-              </Section>
+            <Section title="Преференсы киборга" width="100%">
+              <LabeledList>
+                {tags.map(tag => (
+                  <LabeledList.Item
+                    key={tag.name}
+                    color={getTagColor(tag.value)}
+                    label={tag.title}>
+                    <Tooltip content={tag.name}>{tag.value}</Tooltip>
+                  </LabeledList.Item>
+                ))}
+              </LabeledList>
+            </Section>
           </Flex.Item>
         </Flex>
       </Window.Content>
     </Window>
+  );
+};
+
+const CyborgProfileImageElement = (props, context) => {
+  const { data } = useBackend<CyborgProfileContext>(context);
+
+  const headshotLinks = (data.headshot_links || []).filter(link => link?.length);
+  const [selectedHeadshot, setSelectedHeadshot] = useLocalState(context, 'selectedHeadshot', 0);
+  const safeSelectedHeadshot = headshotLinks.length > 0
+    ? selectedHeadshot % headshotLinks.length
+    : 0;
+
+  if (!headshotLinks.length) {
+    return null;
+  }
+
+  return (
+    <Section title="Изображение" pb="12" textAlign="center">
+      <Box mb={1}>
+        <img
+          src={headshotLinks[safeSelectedHeadshot]}
+          style={{
+            width: '256px',
+            height: '256px',
+            'max-width': '256px',
+            'max-height': '256px',
+            'object-fit': 'contain',
+          }}
+        />
+      </Box>
+      {headshotLinks.length > 1 && (
+        <Box>
+          <Button
+            icon="arrow-left"
+            onClick={() => setSelectedHeadshot((safeSelectedHeadshot + headshotLinks.length - 1) % headshotLinks.length)}
+          />
+          <Box inline mx={1} bold>{safeSelectedHeadshot + 1} / {headshotLinks.length}</Box>
+          <Button
+            icon="arrow-right"
+            onClick={() => setSelectedHeadshot((safeSelectedHeadshot + 1) % headshotLinks.length)}
+          />
+        </Box>
+      )}
+    </Section>
   );
 };

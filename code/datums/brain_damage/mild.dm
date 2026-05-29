@@ -84,6 +84,8 @@
 	lose_text = "<span class='notice'>The pressure inside your head starts fading.</span>"
 
 /datum/brain_trauma/mild/concussion/on_life()
+	if(!owner || QDELETED(owner))
+		return
 	if(prob(5))
 		switch(rand(1,11))
 			if(1)
@@ -137,6 +139,8 @@
 	lose_text = "<span class='notice'>You feel in control of your muscles again.</span>"
 
 /datum/brain_trauma/mild/muscle_weakness/on_life()
+	if(QDELETED(owner) || !owner)
+		return
 	var/fall_chance = 1
 	if(owner.m_intent == MOVE_INTENT_RUN)
 		fall_chance += 2
@@ -179,6 +183,8 @@
 	lose_text = "<span class='notice'>Your throat stops itching.</span>"
 
 /datum/brain_trauma/mild/nervous_cough/on_life()
+	if(QDELETED(owner) || !owner)
+		return
 	if(prob(12) && !HAS_TRAIT(owner, TRAIT_SOOTHED_THROAT))
 		if(prob(5))
 			to_chat(owner, "<span notice='warning'>[pick("You have a coughing fit!", "You can't stop coughing!")]</span>")

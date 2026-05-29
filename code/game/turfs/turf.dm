@@ -121,8 +121,8 @@ GLOBAL_LIST_EMPTY(station_turfs)
 
 /turf/Destroy(force)
 	. = QDEL_HINT_IWILLGC
-	var/transferring = changing_turf
-	if(!changing_turf)
+	var/is_changeturf = changing_turf
+	if(!is_changeturf)
 		stack_trace("Incorrect turf deletion")
 	changing_turf = FALSE
 	var/turf/T = SSmapping.get_turf_above(src)
@@ -131,23 +131,36 @@ GLOBAL_LIST_EMPTY(station_turfs)
 	T = SSmapping.get_turf_below(src)
 	if(T)
 		T.multiz_turf_del(src, UP)
-	if(force || !transferring)
+	if(force || !is_changeturf)
 		if(lighting_object)
 			qdel(lighting_object, force = TRUE)
 	if(force)
 		..()
 		//this will completely wipe turf state
-		var/turf/B = new world.turf(src)
+		// Use /turf/open/space, not world.turf (/turf/open/space/basic): /basic
+		// has an empty New() without ..() that deliberately skips Initialize for
+		// map loader performance, which leaves the replacement turf with null
+		// air and unregistered from auxmos. The preceding /turf/open/Destroy
+		// already deregistered us from auxmos via update_air_ref(-1), so without
+		// a proper Initialize on the replacement, adjacent turfs end up with
+		// stale adjacency and auxmos can panic on the orphaned slot (surfacing
+		// as an empty "uncaught runtime error:" via /world/Error with null E).
+		var/turf/B = new /turf/open/space(src)
 		for(var/A in B.contents)
 			qdel(A)
 		return
-	visibilityChanged()
+	// Skip during ChangeTurf for non-opaque turfs — the new turf's Initialize() handles it.
+	// Opaque turfs (walls) must still notify cameranet: updateVisibility() early-returns
+	// for non-opaque atoms, so the new turf's Initialize won't trigger the camera update.
+	if(!is_changeturf || opacity)
+		visibilityChanged()
 	QDEL_LIST(blueprint_data)
 	flags_1 &= ~INITIALIZED_1
 	requires_activation = FALSE
 	..()
 
-	vis_contents.Cut()
+	if(!is_changeturf)
+		vis_contents.Cut()
 
 /turf/on_attack_hand(mob/user)
 	user.Move_Pulled(src)
@@ -354,9 +367,14 @@ GLOBAL_LIST_EMPTY(station_turfs)
 		AM.ex_act(explosion_level)
 
 	// If an opaque movable atom moves around we need to potentially update visibility.
-	if (AM.opacity)
-		has_opaque_atom = TRUE // Make sure to do this before reconsider_lights(), incase we're on instant updates. Guaranteed to be on in this case.
-		reconsider_lights()
+	// During bulk operations (shuttle moves), skip — batch recalc handles it after.
+	if(!GLOB.lighting_defer_active)
+		if(AM.opacity)
+			has_opaque_atom = TRUE // Make sure to do this before reconsider_lights(), incase we're on instant updates. Guaranteed to be on in this case.
+			reconsider_lights()
+		// Non-opaque atoms with shadow_weight still cast partial contact shadows (incremental — no contents scan)
+		else if(AM.shadow_weight > 0)
+			adjust_shadow_weight(AM.shadow_weight)
 
 
 /turf/open/Entered(atom/movable/AM)

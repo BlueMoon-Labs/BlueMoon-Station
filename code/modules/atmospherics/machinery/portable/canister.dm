@@ -345,15 +345,14 @@
 /obj/machinery/portable_atmospherics/canister/obj_break(damage_flag)
 	if((machine_stat & BROKEN) || (flags_1 & NODECONSTRUCT_1))
 		return
-	machine_stat |= BROKEN
+	set_machine_stat(machine_stat | BROKEN)
 	canister_break()
 
 /obj/machinery/portable_atmospherics/canister/proc/canister_break()
 	disconnect()
 	var/turf/T = get_turf(src)
-	if(T && isopenturf(T))
-		T.assume_air(air_contents)
-		air_update_turf()
+	T.assume_air(air_contents)
+	air_update_turf()
 
 	obj_break()
 	density = FALSE
@@ -362,7 +361,7 @@
 	update_icon_state()
 
 	if(holding)
-		holding.forceMove(T || drop_location())
+		holding.forceMove(T)
 		holding = null
 
 /obj/machinery/portable_atmospherics/canister/replace_tank(mob/living/user, close_valve)

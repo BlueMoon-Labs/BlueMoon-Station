@@ -13,6 +13,7 @@
 	var/list/visibleCameraChunks = list()
 	var/mob/living/silicon/ai/ai = null
 	var/relay_speech = FALSE
+	var/relay_emote = FALSE
 	var/use_static = USE_STATIC_OPAQUE
 	var/static_visibility_range = 16
 	var/ai_detector_visible = TRUE
@@ -246,6 +247,21 @@
 	if(relay_speech && speaker && ai && !radio_freq && speaker != ai && near_camera(speaker))
 		ai.relay_speech(message, speaker, message_language, raw_message, radio_freq, spans, message_mode)
 
+// MARK: SeeEmote
+// (C) Pe4henika | Возможность видеть эмоуты через камеры для ИИ
+/mob/camera/aiEye/proc/SeeEmote(mob/living/speaker, emote_message)
+    if(!relay_emote || !speaker || !ai || speaker == ai)
+        return
+    var/turf/speaker_turf = get_turf(speaker)
+    if(!speaker_turf)
+        return
+    for(var/obj/machinery/camera/cam in active_cameras)
+        if(!cam.can_use())
+            continue
+        if(speaker_turf in cam.can_see())
+            ai.relay_emote(speaker, emote_message)
+            return
+// --
 /obj/effect/overlay/ai_detect_hud
 	name = ""
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT

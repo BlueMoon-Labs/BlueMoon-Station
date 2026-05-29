@@ -108,4 +108,18 @@ describe('settingsReducer', () => {
     expect(nextState.chatBgAnimation).toBe('none');
     expect(nextState.chatBgAnimOpacity).toBe(0.5);
   });
+
+  test('v5 settings load correctly with v6 defaults', () => {
+    const payload = {
+      version: 5,
+      chatStyle: 'bubbles',
+      highlightText: 'hello',
+    };
+
+    const nextState = settingsReducer(undefined, loadSettings(payload));
+
+    expect(nextState.chatStyle).toBe('bubbles');
+    expect(nextState.highlightText).toBe('hello');
+    expect(nextState.highlightSoundEnabled).toBe(false);
+  });
 });

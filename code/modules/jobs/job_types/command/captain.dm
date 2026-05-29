@@ -15,8 +15,9 @@
 	exp_type = EXP_TYPE_COMMAND
 	exp_type_department = EXP_TYPE_COMMAND
 	considered_combat_role = TRUE
+	custom_spawn_text = "не забывайте о том, что ваша запасная карта должна находиться на территории мостика. И <b>прошу</b>, не переименовывайте станцию во что-нибудь похабное..."
 	alt_titles = list(
-		"Syndicate Admiral", //Синди выше, для удобства
+		"Admiral",
 		"Cap-Slut",
 		"Catpain",
 		"Chief Command",
@@ -40,7 +41,8 @@
 		"Station Master",
 		"Station Mistress",
 		"Station Overseer",
-		"Stationmaster"
+		"Stationmaster",
+		"Gubernator"
 		)
 
 	outfit = /datum/outfit/job/captain
@@ -79,14 +81,14 @@
 	var/displayed_rank = H.client?.prefs?.alt_titles_preferences[title]
 	if(!displayed_rank)	//Default to Captain
 		displayed_rank = "Капитан"
-	SSticker.OnRoundstart(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(minor_announce), "[displayed_rank] [H.nameless ? "" : "[H.real_name] "] прибывает на [station_name()]!"))
+	SSticker.OnRoundstart(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(announce_captain_arrival), displayed_rank, H.nameless ? null : H.real_name))
 
 /datum/outfit/job/captain
 	name = "Captain"
 	jobtype = /datum/job/captain
 
 	id = /obj/item/card/id/gold
-	belt = /obj/item/pda/captain
+	belt = /obj/item/modular_computer/pda/heads/captain
 	glasses = /obj/item/clothing/glasses/hud/security/sunglasses
 	ears = /obj/item/radio/headset/heads/captain/alt
 	gloves = /obj/item/clothing/gloves/color/captain
@@ -95,7 +97,7 @@
 	shoes = /obj/item/clothing/shoes/laceup
 	head = /obj/item/clothing/head/caphat
 
-	backpack_contents = list( /obj/item/station_charter=1, /obj/item/modular_computer/tablet/preset/advanced=1, /obj/item/stamp/command=1)
+	backpack_contents = list( /obj/item/station_charter=1, /obj/item/modular_computer/tablet/preset/advanced/command=1, /obj/item/stamp/command=1)
 	box = /obj/item/storage/box/survival/command
 
 	backpack = /obj/item/storage/backpack/captain
@@ -111,7 +113,7 @@
 	name = "Syndicate Captain"
 	jobtype = /datum/job/captain
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	glasses = /obj/item/clothing/glasses/hud/security/sunglasses
 	ears = /obj/item/radio/headset/heads/captain/alt

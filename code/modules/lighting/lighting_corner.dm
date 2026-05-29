@@ -20,6 +20,12 @@
 
 	var/needs_update = FALSE
 
+	/// Accumulated shadow weight from adjacent turfs (0.0-4.0) — used for contact shadow dimming.
+	/// Opaque turfs contribute 1.0, non-opaque turfs contribute their shadow_weight_sum.
+	var/opaque_neighbors = 0
+	/// Pre-computed sqrt(min(opaque_neighbors, 3)) — avoids sqrt() in the hot lighting_object/update() path
+	var/shadow_sqrt_cache = 0
+
 	var/cache_r  = LIGHTING_SOFT_THRESHOLD
 	var/cache_g  = LIGHTING_SOFT_THRESHOLD
 	var/cache_b  = LIGHTING_SOFT_THRESHOLD
@@ -60,6 +66,17 @@
 		SET_DIAGONAL(T, turn(((T.x > x) ? EAST : WEST) | ((T.y > y) ? NORTH : SOUTH), 180))
 
 	update_active()
+	// Initialize contact shadow state from adjacent turfs (float weights for semi-transparent shadows)
+	if(northeast)
+		opaque_neighbors += northeast.has_opaque_atom ? 1 : northeast.shadow_weight_sum
+	if(northwest)
+		opaque_neighbors += northwest.has_opaque_atom ? 1 : northwest.shadow_weight_sum
+	if(southeast)
+		opaque_neighbors += southeast.has_opaque_atom ? 1 : southeast.shadow_weight_sum
+	if(southwest)
+		opaque_neighbors += southwest.has_opaque_atom ? 1 : southwest.shadow_weight_sum
+	if(opaque_neighbors > 0.005)
+		shadow_sqrt_cache = sqrt(min(opaque_neighbors, CONTACT_SHADOW_MAX_NEIGHBORS))
 
 #undef SET_DIAGONAL
 
@@ -70,7 +87,6 @@
 
 // God that was a mess, now to do the rest of the corner code! Hooray!
 /datum/lighting_corner/proc/update_lumcount(var/delta_r, var/delta_g, var/delta_b)
-
 	if ((abs(delta_r)+abs(delta_g)+abs(delta_b)) == 0)
 		return
 
@@ -81,6 +97,31 @@
 	if (!needs_update)
 		needs_update = TRUE
 		GLOB.lighting_update_corners += src
+
+/// Recalculates opaque_neighbors weight sum. Called event-driven from turf/recalc_atom_opacity().
+/// Uses float weights: opaque turfs contribute 1.0, non-opaque turfs contribute their shadow_weight_sum.
+/datum/lighting_corner/proc/recalc_opaque_neighbors()
+	var/weight = 0
+	if(northeast)
+		weight += northeast.has_opaque_atom ? 1 : northeast.shadow_weight_sum
+	if(northwest)
+		weight += northwest.has_opaque_atom ? 1 : northwest.shadow_weight_sum
+	if(southeast)
+		weight += southeast.has_opaque_atom ? 1 : southeast.shadow_weight_sum
+	if(southwest)
+		weight += southwest.has_opaque_atom ? 1 : southwest.shadow_weight_sum
+	if(abs(weight - opaque_neighbors) > 0.005)
+		opaque_neighbors = weight
+		shadow_sqrt_cache = weight > 0.005 ? sqrt(min(weight, CONTACT_SHADOW_MAX_NEIGHBORS)) : 0
+		// Shadow changes don't affect corner lum values, but lighting objects need re-rendering
+		// for the contact shadow visual. Force-queue adjacent objects directly (bypasses
+		// update_objects() cache-skip since cache_r/g/b/mx won't change).
+		#define _SHADOW_QUEUE(turf) if(turf?.lighting_object && !turf.lighting_object.needs_update) { turf.lighting_object.needs_update = TRUE; GLOB.lighting_update_objects += turf.lighting_object }
+		_SHADOW_QUEUE(northeast)
+		_SHADOW_QUEUE(northwest)
+		_SHADOW_QUEUE(southeast)
+		_SHADOW_QUEUE(southwest)
+		#undef _SHADOW_QUEUE
 
 /datum/lighting_corner/proc/update_objects()
 	// Cache these values a head of time so 4 individual lighting objects don't all calculate them individually.
@@ -96,15 +137,24 @@
 	else if (mx < LIGHTING_SOFT_THRESHOLD)
 		. = 0 // 0 means soft lighting.
 
-	cache_r  = round(lum_r * ., LIGHTING_ROUND_VALUE) || LIGHTING_SOFT_THRESHOLD
-	cache_g  = round(lum_g * ., LIGHTING_ROUND_VALUE) || LIGHTING_SOFT_THRESHOLD
-	cache_b  = round(lum_b * ., LIGHTING_ROUND_VALUE) || LIGHTING_SOFT_THRESHOLD
+	var/new_r = round(lum_r * ., LIGHTING_ROUND_VALUE) || LIGHTING_SOFT_THRESHOLD
+	var/new_g = round(lum_g * ., LIGHTING_ROUND_VALUE) || LIGHTING_SOFT_THRESHOLD
+	var/new_b = round(lum_b * ., LIGHTING_ROUND_VALUE) || LIGHTING_SOFT_THRESHOLD
 	#else
-	cache_r  = round(lum_r * ., LIGHTING_ROUND_VALUE)
-	cache_g  = round(lum_g * ., LIGHTING_ROUND_VALUE)
-	cache_b  = round(lum_b * ., LIGHTING_ROUND_VALUE)
+	var/new_r = round(lum_r * ., LIGHTING_ROUND_VALUE)
+	var/new_g = round(lum_g * ., LIGHTING_ROUND_VALUE)
+	var/new_b = round(lum_b * ., LIGHTING_ROUND_VALUE)
 	#endif
-	cache_mx = round(mx, LIGHTING_ROUND_VALUE)
+	var/new_mx = round(mx, LIGHTING_ROUND_VALUE)
+
+	// Early return: if rounded cache values are identical, skip queuing adjacent objects
+	if(new_r == cache_r && new_g == cache_g && new_b == cache_b && new_mx == cache_mx)
+		return
+
+	cache_r = new_r
+	cache_g = new_g
+	cache_b = new_b
+	cache_mx = new_mx
 
 	#define QUEUE(turf) if(turf?.lighting_object && !turf.lighting_object.needs_update) { turf.lighting_object.needs_update = TRUE; GLOB.lighting_update_objects += turf.lighting_object }
 	QUEUE(northeast)

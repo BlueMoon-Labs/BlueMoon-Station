@@ -110,6 +110,7 @@ export const SettingsGeneral = (props, context) => {
     lineHeight,
     highlightText,
     highlightColor,
+    highlightSoundEnabled,
     matchWord,
     matchCase,
     enableTimestamps,
@@ -214,9 +215,16 @@ export const SettingsGeneral = (props, context) => {
         <TextArea
           height="3em"
           value={highlightText}
-          onChange={(e, value) => dispatch(updateSettings({
+          onInput={(e, value) => dispatch(updateSettings({
             highlightText: value,
           }))} />
+        <Button.Checkbox
+          checked={highlightSoundEnabled}
+          onClick={() => dispatch(updateSettings({
+            highlightSoundEnabled: !highlightSoundEnabled,
+          }))}>
+          Звук при подсветке
+        </Button.Checkbox>
         <Button.Checkbox
           checked={matchWord}
           tooltipPosition="bottom-start"
@@ -587,4 +595,3 @@ export const SettingsAppearance = (props, context) => {
     </Section>
   );
 };
-

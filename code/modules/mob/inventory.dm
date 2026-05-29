@@ -337,6 +337,7 @@
 	if(I)
 		if(client)
 			client.screen -= I
+		I.screen_loc = null
 		I.layer = initial(I.layer)
 		I.plane = initial(I.plane)
 		I.appearance_flags &= ~NO_CLIENT_COLOR

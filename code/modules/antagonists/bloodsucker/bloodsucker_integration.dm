@@ -60,19 +60,19 @@
 	var/returnIcon = ""
 	// Am I Viewer's Vassal?
 	if(vassaldatum.master.owner == viewer.mind)
-		returnString += "This [dna.species.name] bears YOUR mark!"
+		returnString += "[dna.species.name] несет на себе ВАШУ метку!"
 		returnIcon = "[icon2html('icons/misc/mark_icons.dmi', world, "vassal")]"
 	// Am I someone ELSE'S Vassal?
 	else if(viewer.mind.has_antag_datum(ANTAG_DATUM_BLOODSUCKER))
-		returnString +=	"This [dna.species.name] bears the mark of <span class='boldwarning'>[vassaldatum.master.ReturnFullName(vassaldatum.master.owner.current,1)]</span>"
+		returnString +=	"[dna.species.name] несёт на себе метку <span class='boldwarning'>[vassaldatum.master.ReturnFullName(vassaldatum.master.owner.current,1)]</span>"
 		returnIcon = "[icon2html('icons/misc/mark_icons.dmi', world, "vassal_grey")]"
 	// Are you serving the same master as I am?
 	else if(viewer.mind.has_antag_datum(ANTAG_DATUM_VASSAL) in vassaldatum.master.vassals)
-		returnString += "[ru_who(TRUE)] bears the mark of your Master"
+		returnString += "[ru_who(TRUE)] несёт на себе метку вашего Господина"
 		returnIcon = "[icon2html('icons/misc/mark_icons.dmi', world, "vassal")]"
 	// You serve a different Master than I do.
 	else
-		returnString += "[ru_who(TRUE)] bears the mark of another Bloodsucker"
+		returnString += "[ru_who(TRUE)] несёт на себе метку другого вампира"
 		returnIcon = "[icon2html('icons/misc/mark_icons.dmi', world, "vassal_grey")]"
 
 	returnString += "</span>\]" // \n"  Don't need spacers. Using . += "" in examine.dm does this on its own.

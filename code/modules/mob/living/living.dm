@@ -16,6 +16,21 @@
 	..()
 	prepare_data_huds()
 
+/// Removes or restores med/sec/diag atom HUDs (floating icons) for admin invisimin stealth.
+/mob/living/proc/update_invisimin_data_huds(invisible)
+	if(invisible)
+		remove_from_all_data_huds()
+	else
+		if(ishuman(src))
+			var/mob/living/carbon/human/H = src
+			H.prepare_data_huds()
+		else
+			var/datum/atom_hud/data/human/medical/advanced/medhud = GLOB.huds[DATA_HUD_MEDICAL_ADVANCED]
+			medhud.add_to_hud(src)
+			for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.all_huds)
+				diag_hud.add_to_hud(src)
+			prepare_data_huds()
+
 /mob/living/proc/prepare_data_huds()
 	med_hud_set_health()
 	med_hud_set_status()
@@ -584,6 +599,11 @@
 // Living mobs use can_inject() to make sure that the mob is not syringe-proof in general.
 /mob/living/proc/can_inject(mob/user, error_msg, target_zone, penetrate_thick = FALSE, bypass_immunity = FALSE)
 	return TRUE
+
+// Syringe-specific gate. Non-human mobs don't have human clothing layers, so this is a
+// thin wrapper around can_inject() that only converts pierce_level to penetrate_thick.
+/mob/living/proc/can_inject_syringe(mob/user, error_msg, target_zone, pierce_level = SYRINGE_PIERCE_NONE)
+	return can_inject(user, error_msg, target_zone, pierce_level >= SYRINGE_PIERCE_ALL)
 
 /mob/living/is_injectable(allowmobs = TRUE)
 	return (allowmobs && reagents && can_inject())

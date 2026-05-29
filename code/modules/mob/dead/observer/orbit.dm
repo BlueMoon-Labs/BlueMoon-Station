@@ -99,13 +99,12 @@
 
 				for (var/_A in mind.antag_datums)
 					var/datum/antagonist/A = _A
-					var/mob/dead/observer/O = user
 					if(istype(A, /datum/antagonist/ghost_role))
 						was_special = TRUE
 						serialized["role"] = A.name
 						ghost_roles += list(serialized)
 						break // Я не верю, что гострольки могут быть антагами. Не хочу верить...
-					else if (A?.show_to_ghosts || !O?.can_reenter_corpse)
+					else if (user.client?.holder || A?.show_to_ghosts || GLOB.master_mode == ROUNDTYPE_EXTENDED)
 						was_special = TRUE
 						serialized["antag"] = A.name
 						antagonists += list(serialized)
@@ -127,6 +126,16 @@
 						assignment = "pai"
 					else if(isAI(M))
 						assignment = "ai"
+
+				else if(isbrain(M))
+					var/mob/living/brain/brain_mob = M
+					var/obj/item/brain_item = brain_mob.container
+					if(istype(brain_item, /obj/item/mmi/posibrain))
+						assignment = "posibrain"
+					else if(istype(brain_item, /obj/item/mmi))
+						assignment = "mmibrain"
+					else
+						assignment = "brain"
 
 				else if(isalien(M))
 					assignment = "alien"

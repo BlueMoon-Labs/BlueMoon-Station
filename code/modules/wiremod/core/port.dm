@@ -53,11 +53,14 @@
 /**
  * Updates the value of the input and calls input_received on the connected component
  */
-/datum/port/input/proc/set_input(value)
+/datum/port/input/proc/set_input(value, datum/port/output/triggered_output)
 	if(QDELETED(src)) //Pain
 		return
 	set_value(value)
 	if(trigger)
+		var/obj/item/integrated_circuit/board = connected_component?.parent
+		if(istype(board))
+			board.register_circuit_ui_visual_pulse(connected_component, src, triggered_output)
 		TRIGGER_CIRCUIT_COMPONENT(connected_component, src)
 
 /datum/port/output/proc/set_output(value)
@@ -112,6 +115,8 @@
  * Sends a signal whenever the output value is changed
  */
 /datum/port/output
+	/// Input ports receiving this output; order matches fan-out wire order in TGUI.
+	var/list/datum/port/input/wire_input_targets = list()
 
 /**
  * Disconnects a port from all other ports.
@@ -129,6 +134,7 @@
 
 /datum/port/input/proc/disconnect(datum/port/output/output)
 	connected_ports -= output
+	output.wire_input_targets -= src
 	UnregisterSignal(output, COMSIG_PORT_SET_VALUE)
 	UnregisterSignal(output, COMSIG_PORT_SET_TYPE)
 	UnregisterSignal(output, COMSIG_PORT_DISCONNECT)
@@ -167,12 +173,13 @@
  */
 /datum/port/input/proc/connect(datum/port/output/output)
 	connected_ports |= output
+	output.wire_input_targets |= src
 	RegisterSignal(output, COMSIG_PORT_SET_VALUE, PROC_REF(receive_value))
 	RegisterSignal(output, COMSIG_PORT_SET_TYPE, PROC_REF(check_type))
 	RegisterSignal(output, COMSIG_PORT_DISCONNECT, PROC_REF(disconnect))
 	// For signals, we don't update the input to prevent sending a signal when connecting ports.
 	if(!(datatype_handler.datatype_flags & DATATYPE_FLAG_AVOID_VALUE_UPDATE))
-		set_input(output.value)
+		set_input(output.value, output)
 
 /**
  * Determines if a datatype is compatible with another port of a different type.
@@ -199,7 +206,10 @@
  */
 /datum/port/input/proc/receive_value(datum/port/output/output, value)
 	SIGNAL_HANDLER
-	SScircuit_component.add_callback(CALLBACK(src, PROC_REF(set_input), value))
+	SScircuit_component.add_callback(CALLBACK(src, PROC_REF(apply_input_from_output), output, value))
+
+/datum/port/input/proc/apply_input_from_output(datum/port/output/output, value)
+	set_input(value, output)
 
 /// Signal handler proc to null the input if an atom is deleted. An update is not sent because this was not set by anything.
 /datum/port/proc/null_value(datum/source)

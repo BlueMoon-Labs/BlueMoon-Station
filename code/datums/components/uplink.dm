@@ -43,8 +43,9 @@ GLOBAL_LIST_EMPTY(uplinks)
 		RegisterSignal(parent, COMSIG_IMPLANT_IMPLANTING, PROC_REF(implanting))
 		RegisterSignal(parent, COMSIG_IMPLANT_OTHER, PROC_REF(old_implant))
 		RegisterSignal(parent, COMSIG_IMPLANT_EXISTING_UPLINK, PROC_REF(new_implant))
-	else if(istype(parent, /obj/item/pda))
+	else if(istype(parent, /obj/item/modular_computer/pda))
 		RegisterSignal(parent, COMSIG_PDA_CHANGE_RINGTONE, PROC_REF(new_ringtone))
+		RegisterSignal(parent, COMSIG_TABLET_CHANGE_ID, PROC_REF(new_ringtone))
 		// RegisterSignal(parent, COMSIG_PDA_CHECK_DETONATE, PROC_REF(check_detonate))
 	else if(istype(parent, /obj/item/radio))
 		RegisterSignal(parent, COMSIG_RADIO_NEW_FREQUENCY, PROC_REF(new_frequency))
@@ -97,6 +98,41 @@ GLOBAL_LIST_EMPTY(uplinks)
 	for (var/category in discount_categories) // Makes sure discounted items aren't renewed or replaced
 		if (uplink_items[category] != null && updated_items[category] != null)
 			updated_items[category] = uplink_items[category]
+
+/// Matches purchase rules for /datum/uplink_item/var/hijack_only (nuke op, hijack, or martyr objective).
+/datum/component/uplink/proc/can_access_hijack_uplink_items(mob/user)
+	if(!user?.mind)
+		return FALSE
+	if(user.mind.has_antag_datum(/datum/antagonist/nukeop))
+		return TRUE
+	if(user.mind.has_objective(/datum/objective/hijack))
+		return TRUE
+	if(user.mind.has_objective(/datum/objective/martyr))
+		return TRUE
+	return FALSE
+
+/// Те же условия, что и для строки в каталоге (hijack_only, blocked_round_types, роль, вид). Нужен для Random Item и защиты покупки.
+/datum/component/uplink/proc/is_uplink_item_visible_to_user(mob/user, datum/uplink_item/I)
+	if(!I || I.limited_stock == 0)
+		return FALSE
+	if(I.hijack_only && !can_access_hijack_uplink_items(user))
+		return FALSE
+	if(LAZYLEN(I.blocked_round_types) && (GLOB.round_type in I.blocked_round_types))
+		return FALSE
+	if(length(I.restricted_roles))
+		if(!debug && user?.mind && !(user.mind.assigned_role in I.restricted_roles))
+			return FALSE
+	if(I.restricted_species)
+		if(ishuman(user))
+			var/is_inaccessible = TRUE
+			var/mob/living/carbon/human/H = user
+			for(var/F in I.restricted_species)
+				if(F == H.dna.species.id || debug)
+					is_inaccessible = FALSE
+					break
+			if(is_inaccessible)
+				return FALSE
+	return TRUE
 
 /datum/component/uplink/proc/LoadTC(mob/user, obj/item/stack/telecrystal/TC, silent = FALSE)
 	if(!silent)
@@ -174,39 +210,30 @@ GLOBAL_LIST_EMPTY(uplinks)
 	data["telecrystals"] = telecrystals
 	data["lockable"] = lockable
 	data["compactMode"] = compact_mode
+	data["categories"] = build_uplink_shop_categories(user)
 	return data
 
-/datum/component/uplink/ui_static_data(mob/user)
-	var/list/data = list()
-	data["categories"] = list()
+/// Список категорий для TGUI: без позиций, недоступных из‑за hijack_only, blocked_round_types, роли и вида.
+/datum/component/uplink/proc/build_uplink_shop_categories(mob/user)
+	var/list/out = list()
 	for(var/category in uplink_items)
 		var/list/cat = list(
 			"name" = category,
 			"items" = (category == selected_cat ? list() : null))
 		for(var/item in uplink_items[category])
 			var/datum/uplink_item/I = uplink_items[category][item]
-			if(I.limited_stock == 0)
+			if(!is_uplink_item_visible_to_user(user, I))
 				continue
-			if(length(I.restricted_roles))
-				if(!debug && !(user.mind.assigned_role in I.restricted_roles))
-					continue
-			if(I.restricted_species)
-				if(ishuman(user))
-					var/is_inaccessible = TRUE
-					var/mob/living/carbon/human/H = user
-					for(var/F in I.restricted_species)
-						if(F == H.dna.species.id || debug)
-							is_inaccessible = FALSE
-							break
-					if(is_inaccessible)
-						continue
 			cat["items"] += list(list(
 				"name" = I.name,
 				"cost" = I.cost,
 				"desc" = I.desc,
 			))
-		data["categories"] += list(cat)
-	return data
+		out += list(cat)
+	return out
+
+/datum/component/uplink/ui_static_data(mob/user)
+	return list()
 
 /datum/component/uplink/ui_act(action, params)
 	. = ..()
@@ -242,10 +269,8 @@ GLOBAL_LIST_EMPTY(uplinks)
 		return
 	if (!user || user.incapacitated())
 		return
-	if(U.hijack_only)
-		if(!(user.mind?.has_antag_datum(/datum/antagonist/nukeop)) && !(user.mind?.has_objective(/datum/objective/hijack)) && !(user.mind?.has_objective(/datum/objective/martyr)))
-			to_chat(user, "<span class='warning'>InteQ выдает этот чрезвычайно опасный предмет только агентам, получившим особо сложное задание.</span>")
-			return
+	if(!is_uplink_item_visible_to_user(user, U))
+		return
 
 	if(telecrystals < U.cost || U.limited_stock == 0)
 		return
@@ -297,7 +322,6 @@ GLOBAL_LIST_EMPTY(uplinks)
 /datum/component/uplink/proc/new_ringtone(datum/source, mob/living/user, new_ring_text)
 	SIGNAL_HANDLER
 
-	var/obj/item/pda/master = parent
 	if(trim(lowertext(new_ring_text)) != trim(lowertext(unlock_code)))
 		if(trim(lowertext(new_ring_text)) == trim(lowertext(failsafe_code)))
 			failsafe(user)
@@ -306,8 +330,6 @@ GLOBAL_LIST_EMPTY(uplinks)
 	locked = FALSE
 	interact(null, user)
 	to_chat(user, span_hear("The PDA softly beeps."))
-	user << browse(null, "window=pda")
-	master.mode = 0
 	return COMPONENT_STOP_RINGTONE_CHANGE
 
 /datum/component/uplink/proc/check_detonate()
@@ -353,7 +375,7 @@ GLOBAL_LIST_EMPTY(uplinks)
 /datum/component/uplink/proc/setup_unlock_code()
 	unlock_code = generate_code()
 	var/obj/item/P = parent
-	if(istype(parent,/obj/item/pda))
+	if(istype(parent,/obj/item/modular_computer/pda))
 		unlock_note = "<B>Uplink Passcode:</B> [unlock_code] ([P.name])."
 	else if(istype(parent,/obj/item/radio))
 		unlock_note = "<B>Radio Frequency:</B> [format_frequency(unlock_code)] ([P.name])."
@@ -361,7 +383,7 @@ GLOBAL_LIST_EMPTY(uplinks)
 		unlock_note = "<B>Uplink Degrees:</B> [english_list(unlock_code)] ([P.name])."
 
 /datum/component/uplink/proc/generate_code()
-	if(istype(parent,/obj/item/pda))
+	if(istype(parent,/obj/item/modular_computer/pda))
 		return "[rand(100,999)] [pick(GLOB.phonetic_alphabet)]"
 	else if(istype(parent,/obj/item/radio))
 		return return_unused_frequency()

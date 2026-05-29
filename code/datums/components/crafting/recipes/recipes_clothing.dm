@@ -206,11 +206,29 @@
 
 
 /datum/crafting_recipe/durathread_reinforcement_kit
-	name = "Durathread Reinforcement Kit"
-	result = /obj/item/armorkit
+	name = "Durathread Jumpsuit Reinforcement Kit"
+	result = /obj/item/armorkit/durathread
 	reqs = list(/obj/item/stack/sheet/durathread = 4)
 	tools = list(TOOL_WIRECUTTER)
 	time = 40
+	category = CAT_CLOTHING
+
+/datum/crafting_recipe/durathread_headgear_kit
+	name = "Durathread Headgear Kit"
+	result = /obj/item/armorkit/durathread/helmet
+	reqs = list(/obj/item/stack/sheet/durathread = 5,
+				/obj/item/stack/sheet/leather = 2)
+	tools = list(TOOL_WIRECUTTER)
+	time = 50
+	category = CAT_CLOTHING
+
+/datum/crafting_recipe/durathread_armor_kit
+	name = "Durathread Armor Kit"
+	result = /obj/item/armorkit/durathread/vest
+	reqs = list(/obj/item/stack/sheet/durathread = 8,
+				/obj/item/stack/sheet/leather = 5)
+	tools = list(TOOL_WIRECUTTER)
+	time = 80
 	category = CAT_CLOTHING
 
 /datum/crafting_recipe/durathread_duffelbag

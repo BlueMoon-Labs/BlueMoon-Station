@@ -21,7 +21,7 @@
 /datum/gear/neck/collar
 	name = "Collar"
 	path = /obj/item/clothing/neck/petcollar
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#00BBBB")
 
 /datum/gear/neck/leathercollar
@@ -92,29 +92,35 @@
 /datum/gear/neck/polycloak
 	name = "Polychromatic Cloak"
 	path = /obj/item/clothing/neck/cloak/polychromic
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#FFFFFF", "#FFFFFF", "#808080")
 
 /datum/gear/neck/altpolycloak
 	name = "Alternate Cloak"
 	path = /obj/item/clothing/neck/cloak/alt/polychromic
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#FFFFFF", "#676767", "#4C4C4C")
 
 /datum/gear/neck/cancloak
 	name = "Canvas Cloak"
 	path = /obj/item/clothing/neck/cloak/cancloak/polychromic
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#585858", "#373737", "#BEBEBE")
 
 /datum/gear/neck/maid
 	name = "Polychromatic Maid Collar"
 	path = /obj/item/clothing/neck/maid
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#333333", "#FFFFFF")
 
-/datum/gear/backpack/shockcollar
-	name = "Shock Collar Kit"
-	path = /obj/item/storage/box/shockcollar
-	subcategory = LOADOUT_SUBCATEGORY_BACKPACK_TOYS
-	cost = 2
+/datum/gear/neck/ranger_poncho
+	name = "Polychromatic Ranger Poncho"
+	path = /obj/item/clothing/neck/cloak/ranger_poncho
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
+	loadout_initial_colors = list("#877251")
+
+/datum/gear/neck/ranger_cape
+	name = "Polychromatic Ranger Cape"
+	path = /obj/item/clothing/neck/cloak/ranger_cape
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
+	loadout_initial_colors = list("#543C2F")

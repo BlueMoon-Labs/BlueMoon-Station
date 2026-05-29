@@ -42,11 +42,12 @@
 		ForceAllKeysUp()		//groan, more hacky kevcode
 		return
 
-	if(length(keys_held) > MAX_HELD_KEYS)
-		keys_held.Cut(1,2)
-	keys_held[_key] = TRUE
+	if(length(keys_held) >= MAX_HELD_KEYS && !keys_held[_key])
+		keyUp(keys_held[1])
+	var/was_held = keys_held[_key]
+	keys_held[_key] = world.time
 	var/movement = movement_keys[_key]
-	if(!(next_move_dir_sub & movement) && !keys_held["Ctrl"])
+	if(movement && !was_held && !(next_move_dir_sub & movement) && !keys_held["Ctrl"])
 		next_move_dir_add |= movement
 
 	// Client-level keybindings are ones anyone should be able to do at any time
@@ -78,7 +79,7 @@
 
 /// Keyup's all keys held down, including modifier keys.
 /client/proc/ForceAllKeysUp()
-	for(var/key in keys_held)
+	for(var/key in keys_held.Copy())
 		keyUp("[key]")
 
 /client/verb/keyUp(_key as text)
@@ -86,10 +87,14 @@
 	set instant = TRUE
 	set hidden = TRUE
 
+	// TGUI/WebView can duplicate orphaned KeyUp events when focus changes; only real releases should touch the movement buffer.
+	var/was_held = keys_held[_key]
+	if(!was_held)
+		return
 	keys_held -= _key
 	last_activity = world.time
 	var/movement = movement_keys[_key]
-	if(!(next_move_dir_add & movement))
+	if(movement && was_held && !(next_move_dir_add & movement))
 		next_move_dir_sub |= movement
 
 	if(prefs.modless_key_bindings[_key])

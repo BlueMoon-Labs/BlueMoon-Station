@@ -21,6 +21,9 @@
 	departments = DEPARTMENT_BITFLAG_SERVICE
 	threat = 0.5
 
+	access = list(ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_SERVICE)
+	minimal_access = list(ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_SERVICE)
+
 	custom_spawn_text = "вы — сотрудник сервисного отдела. У вас нет своего отдела или прямого начальника помимо Главы Персонала. \
 	Коммуницируйте с остальным обслуживающим персоналом для достижения наилучшего эффекта. В конце концов, развлекайте туристов и тех, \
 	кто обещает хорошие чаевые за ваш труд!"
@@ -33,6 +36,7 @@
 		"Belly Massager",
 		"Cosmetologist",
 		"Cosplayer",
+		"Guide",
 		"Dancer",
 		"Entertainment Organizer",
 		"Escort",
@@ -49,9 +53,11 @@
 		"Perfomer",
 		"Performer",
 		"Personal Physician",
+		"Sex Educator",
+		"Scene Performer",
 		"Stripper",
 		"Stylist",
-		"Waiter"
+		"Waiter",
 		)
 
 	family_heirlooms = list(
@@ -60,17 +66,16 @@
 		/obj/item/reagent_containers/rag/towel
 	)
 
-/obj/item/pda/entertainer
+/obj/item/modular_computer/pda/entertainer
 	name = "entertainer PDA"
 	icon_state = "pda-bartender"
-	//default_cartridge = /obj/item/cartridge/bartender
 	inserted_item = /obj/item/pen/fountain
 
 /datum/outfit/job/entertainer
 	name = "Entertainer"
 	jobtype = /datum/job/entertainer
 
-	belt = /obj/item/pda/entertainer
+	belt = /obj/item/modular_computer/pda/entertainer
 	ears = /obj/item/radio/headset/headset_srv
 	uniform = /obj/item/clothing/under/misc/assistantformal
 
@@ -78,7 +83,7 @@
 	name = "Syndicate Entertainer"
 	jobtype = /datum/job/entertainer
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	ears = /obj/item/radio/headset/headset_srv
 	uniform = /obj/item/clothing/under/rank/civilian/util

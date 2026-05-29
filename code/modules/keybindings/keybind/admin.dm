@@ -12,7 +12,7 @@
 	description = "Talk with other admins."
 
 /datum/keybinding/admin/admin_say/down(client/user)
-	user.get_admin_say()
+	user.cmd_admin_say()
 	return TRUE
 
 /datum/keybinding/admin/admin_ghost
@@ -72,7 +72,7 @@
 	description = "Allows you to send a message to dead chat"
 
 /datum/keybinding/admin/deadsay/down(client/user)
-	user.get_dead_say()
+	user.dsay()
 	return TRUE
 
 /datum/keybinding/admin/deadmin

@@ -15,7 +15,7 @@
 	announce_when = 10
 
 /datum/round_event/ghost_role/space_dragon/announce(fake)
-	priority_announce("Похоже, приближается форма жизни с признаками магии к [station_name()], пожалуйста, приготовьтесь.", "ВНИМАНИЕ: НЕОПОЗНАННЫЕ ФОРМЫ ЖИЗНИ", has_important_message = TRUE)
+	priority_announce("[station_name()], к вам приближается угроза класса ЛЕВИАФАН. Пожалуйста, будьте готовы.", "ВНИМАНИЕ: НЕОПОЗНАННЫЕ ФОРМЫ ЖИЗНИ", has_important_message = TRUE)
 
 /datum/round_event/ghost_role/space_dragon/spawn_role()
 	var/list/spawn_locs = list()

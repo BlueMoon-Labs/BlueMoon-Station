@@ -51,7 +51,7 @@
 /datum/gear/uniform/maidcostume/polychromic
 	name = "Polychromic maid costume"
 	path = /obj/item/clothing/under/rank/civilian/janitor/maid/polychromic
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#333333", "#FFFFFF")
 
 /datum/gear/uniform/mailmanuniform
@@ -174,14 +174,14 @@
 	name = "Polychromic Pants"
 	path = /obj/item/clothing/under/pants/polypants
 	cost = 2
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#75634F", "#3D3D3D", "#575757")
 
 /datum/gear/uniform/pants/workout
 	name = "Polychromatic Workout Shorts"
 	path = /obj/item/clothing/under/shorts/polychromic/polyworkout
 	cost = 2
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#323232", "#FFFFFF")
 
 /datum/gear/uniform/pants/track
@@ -259,46 +259,68 @@
 	name = "Blue Turtleneck"
 	path = /obj/item/clothing/under/suit/turtle/blue
 
+/datum/gear/uniform/jeans_with_tshirt
+	name = "Jeans and T‑shirt"
+	path = /obj/item/clothing/under/tshirt_w_br
+
+/datum/gear/uniform/jeans_with_tshirt_blu
+	name = "Jeans and gray T‑shirt"
+	path = /obj/item/clothing/under/tshirt_gray_blu
+
+/datum/gear/uniform/sec_spo
+	name = "SPO uniform"
+	subcategory = LOADOUT_SUBCATEGORY_UNIFORM_JOBS
+	path = /obj/item/clothing/under/rank/security/officer/sec_spo
+	restricted_desc = "Captain, Nanotrasen Representative and Security"
+	restricted_roles = list("Captain", "Nanotrasen Representative", "Warden", "Detective", "Security Officer", "Head of Security")
+
+/datum/gear/uniform/officer_jumpsuit
+	name = "Officer’s uniform"
+	subcategory = LOADOUT_SUBCATEGORY_UNIFORM_JOBS
+	path = /obj/item/clothing/under/rank/security/officer/officer_jumpsuit
+	restricted_desc = "Captain, Head of Security and Nanotrasen Representative"
+	restricted_roles = list("Captain", "Head of Security", "Nanotrasen Representative")
+
 /datum/gear/uniform/polyjump
 	name = "Polychromic Jumpsuit"
 	path = /obj/item/clothing/under/misc/polyjumpsuit
 	cost = 2
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#FFFFFF", "#808080", "#353535")
 
 /datum/gear/uniform/skirt/poly
 	name = "Polychromic Jumpskirt"
 	path = /obj/item/clothing/under/dress/skirt/polychromic
 	cost = 2
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#FFFFFF", "#F08080", "#808080")
 
 /datum/gear/uniform/suit/poly
 	name = "Polychromic Button-up Shirt"
 	path = /obj/item/clothing/under/misc/poly_shirt
 	cost = 2
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#FFFFFF", "#353535", "#353535")
 
 /datum/gear/uniform/skirt/poly/pleated
 	name = "Polychromic Pleated Sweaterskirt"
 	path = /obj/item/clothing/under/dress/skirt/polychromic/pleated
 	cost = 2
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#8CC6FF", "#808080", "#FF3535")
 
 /datum/gear/uniform/polykilt
 	name = "Polychromic Kilt"
 	path = /obj/item/clothing/under/costume/kilt/polychromic
 	cost = 2
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#FFFFFF", "#F08080")
 
 /datum/gear/uniform/shorts/poly
 	name = "Polychromic Shorts"
 	path = /obj/item/clothing/under/misc/polyshorts
 	cost = 2
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#353535", "#808080", "#808080")
 
 /datum/gear/uniform/shorts/poly/athletic
@@ -731,19 +753,19 @@
 /datum/gear/uniform/kimono/poly
 	name = "Poly kimono"
 	path = /obj/item/clothing/under/costume/kimono/poly
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#FFFFFF", "#C5302D")
 
 /datum/gear/uniform/poly_cargo
 	name = "Poly Cargo"
 	path = /obj/item/clothing/under/poly_cargo
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#FFFFFF", "#f1f1f1", "#f1f1f1", "#f1f1f1", "#f1f1f1", "#f1f1f1", "#f1f1f1", "#f1f1f1", "#f1f1f1")
 
 /datum/gear/uniform/poly_unia
 	name = "Poly Pants"
 	path = /obj/item/clothing/under/poly_unia
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#FFFFFF", "#f1f1f1", "#f1f1f1", "#f1f1f1")
 
 /datum/gear/uniform/ctlong
@@ -765,3 +787,7 @@
 /datum/gear/uniform/maid_revealing
 	name = "Revealing Tactical Maid Outfit"
 	path = /obj/item/clothing/under/syndicate/maid_revealing
+
+/datum/gear/uniform/occult
+	name = "Occult collector's outfit"
+	path = /obj/item/clothing/under/occult

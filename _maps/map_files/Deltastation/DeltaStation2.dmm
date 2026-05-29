@@ -33730,7 +33730,7 @@
 	},
 /obj/machinery/door/window/westleft{
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /obj/effect/turf_decal/tile/neutral{
@@ -61561,6 +61561,17 @@
 	},
 /turf/open/floor/plasteel/cafeteria,
 /area/security/prison/upper)
+"eGW" = (
+/obj/effect/turf_decal/tile/blue,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/structure/safe/spare_id{
+	pixel_x = 0;
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel/dark,
+/area/command/bridge)
 "eHc" = (
 /obj/machinery/door/airlock/maintenance{
 	name = "Permabrig Maintenance"
@@ -64240,7 +64251,7 @@
 /turf/open/floor/plasteel,
 /area/command/teleporter)
 "fxx" = (
-/obj/machinery/computer/card/minor/hos{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 1
 	},
 /obj/structure/cable/white{
@@ -65407,6 +65418,9 @@
 	},
 /obj/structure/sign/poster/contraband/vulp7{
 	pixel_x = 32
+	},
+/obj/machinery/computer/brig_assistant_console{
+	dir = 8
 	},
 /turf/open/floor/plasteel,
 /area/hallway/primary/starboard)
@@ -81662,7 +81676,7 @@
 /turf/open/floor/plating,
 /area/cargo/warehouse)
 "khn" = (
-/obj/machinery/computer/card/minor/rd{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /obj/machinery/status_display/ai{
@@ -88654,12 +88668,9 @@
 	spawnwithmagazine = 0;
 	pin = /obj/item/firing_pin/implant/mindshield
 	},
-/obj/item/gun/energy/laser/carbine{
-	pin = /obj/item/firing_pin/implant/mindshield
-	},
-/obj/item/gun/energy/laser/carbine{
-	pin = /obj/item/firing_pin/implant/mindshield
-	},
+/obj/item/gun/energy/modular_laser_rifle/carbine,
+/obj/item/gun/energy/modular_laser_rifle/carbine,
+/obj/item/gun/energy/modular_laser_rifle/carbine,
 /obj/item/storage/firstaid,
 /obj/item/storage/firstaid/brute,
 /obj/item/storage/firstaid/toxin,
@@ -94850,9 +94861,6 @@
 /obj/item/cartridge/medical{
 	pixel_x = 3
 	},
-/obj/item/cartridge/chemistry{
-	pixel_y = 6
-	},
 /obj/effect/turf_decal/tile/blue{
 	dir = 4
 	},
@@ -95051,7 +95059,7 @@
 /obj/structure/table/glass,
 /obj/machinery/door/window/eastleft{
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "5";
 	dir = 2
 	},
@@ -108806,7 +108814,7 @@
 /turf/open/floor/plasteel/white,
 /area/medical/surgery)
 "rMZ" = (
-/obj/machinery/computer/card/minor/ce{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 4
 	},
 /obj/machinery/status_display/evac{
@@ -120515,7 +120523,7 @@
 /obj/effect/turf_decal/tile/brown{
 	dir = 8
 	},
-/obj/machinery/computer/card/minor/qm{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /turf/open/floor/plasteel,
@@ -129668,7 +129676,6 @@
 /obj/machinery/status_display/evac{
 	pixel_x = -32
 	},
-/obj/item/card/id/captains_spare,
 /turf/open/floor/plasteel/grimy,
 /area/command/heads_quarters/captain/private)
 "xKk" = (
@@ -130016,7 +130023,7 @@
 /turf/open/floor/plasteel,
 /area/commons/storage/primary)
 "xPd" = (
-/obj/machinery/computer/card/minor/cmo{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /obj/machinery/status_display/ai{
@@ -172105,7 +172112,7 @@ oLz
 lDb
 xHY
 oEz
-imr
+eGW
 hDk
 hDk
 isj

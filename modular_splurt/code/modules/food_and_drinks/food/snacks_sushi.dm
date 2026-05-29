@@ -22,7 +22,7 @@
 		/datum/reagent/consumable/nutriment/vitamin = 4,
 	)
 	tastes = list("boiled rice" = 4, "fish" = 2, "spicyness" = 2)
-	foodtype = VEGETABLES
+	foodtype = VEGETABLES | MEAT | SEAFOOD
 	w_class = WEIGHT_CLASS_SMALL
 
 /obj/item/reagent_containers/food/snacks/meat_poke
@@ -48,7 +48,7 @@
 		/datum/reagent/consumable/nutriment = 5,
 		/datum/reagent/consumable/nutriment/vitamin = 4,
 	)
-	foodtype = MEAT | VEGETABLES
+	foodtype = MEAT | VEGETABLES | SEAFOOD
 	tastes = list("rice and fish" = 4, "lettuce" = 2, "soy sauce" = 2)
 	trash = /obj/item/reagent_containers/glass/bowl
 	w_class = WEIGHT_CLASS_SMALL
@@ -64,7 +64,7 @@
 		/datum/reagent/consumable/sugar = 1
 	)
 	tastes = list("rice" = 1, "fish" = 1, "cuteness" = 1)
-	foodtype = MEAT | VEGETABLES
+	foodtype = MEAT | VEGETABLES | SEAFOOD
 	w_class = WEIGHT_CLASS_SMALL
 
 /obj/item/reagent_containers/food/snacks/sushi_feline/nekobara

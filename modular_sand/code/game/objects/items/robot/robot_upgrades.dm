@@ -173,7 +173,7 @@
 		smoke.start()
 		sleep(2)
 		for(var/i in 1 to 4)
-			playsound(R, pick('sound/items/drill_use.ogg', 'sound/items/jaws_cut.ogg', 'sound/items/jaws_pry.ogg', 'sound/items/welder.ogg', 'sound/items/ratchet.ogg'), 80, 1, -1)
+			playsound(R, pick('sound/items/drill3.ogg', 'sound/items/jaws_cut.ogg', 'sound/items/jaws_pry.ogg', 'sound/items/welder.ogg', 'sound/items/ratchet.ogg'), 80, 1, -1)
 			sleep(12)
 		if(!prev_locked_down)
 			R.SetLockdown(0)
@@ -221,7 +221,7 @@
 		smoke.start()
 		sleep(2)
 		for(var/i in 1 to 4)
-			playsound(R, pick('sound/items/drill_use.ogg', 'sound/items/jaws_cut.ogg', 'sound/items/jaws_pry.ogg', 'sound/items/welder.ogg', 'sound/items/ratchet.ogg'), 80, 1, -1)
+			playsound(R, pick('sound/items/drill3.ogg', 'sound/items/jaws_cut.ogg', 'sound/items/jaws_pry.ogg', 'sound/items/welder.ogg', 'sound/items/ratchet.ogg'), 80, 1, -1)
 			sleep(12)
 		if(!prev_locked_down)
 			R.SetLockdown(0)
@@ -242,16 +242,52 @@
 /*		R.remove_movespeed_modifier(/datum/movespeed_modifier/reagent/freon) / BLUEMOON REMOVAL - увеличиваем степень замедления роботов, уменьшенных или увеличенных в размере */
 		R.remove_movespeed_modifier(/datum/movespeed_modifier/changed_robot_size/shrink) // BLUEMOON ADD
 
+/////////////////////////////////////////////////////////////////////////////////////////////////
 
 /obj/item/borg/upgrade/transform/syndicatejack
     name = "borg module picker (Syndicate)"
-    desc = "Allows you to to turn a cyborg into a experimental syndicate cyborg."
+    desc = "Позволяет вашему киборгу трансформироваться в экспериментальную модель Синдиката."
     icon_state = "cyborg_upgrade3"
     new_module = /obj/item/robot_module/syndicatejack
 
 /obj/item/borg/upgrade/transform/syndicatejack/action(mob/living/silicon/robot/R, user = usr)
-    if(R.emagged)
-        return ..()
+	if(R.emagged)
+		R.camera_remove(TRUE)
+		return ..()
+
+/obj/item/borg/upgrade/transform/syndicatejack/syndie_assault
+    name = "borg module picker (Syndicate Assault)"
+    desc = "Позволяет вашему киборгу трансформироваться в штурмовую модель Синдиката."
+    new_module = /obj/item/robot_module/syndicate
+
+/obj/item/borg/upgrade/transform/syndicatejack/syndie_medical
+    name = "borg module picker (Syndicate Medical)"
+    desc = "Позволяет вашему киборгу трансформироваться в медицинскую модель Синдиката."
+    new_module = /obj/item/robot_module/syndicate_medical
+
+/obj/item/borg/upgrade/transform/syndicatejack/syndie_saboteur
+    name = "borg module picker (Syndicate Saboteur)"
+    desc = "Позволяет вашему киборгу трансформироваться в диверсионную модель Синдиката."
+    new_module = /obj/item/robot_module/saboteur
+
+/////////////////////////////
+
+/obj/item/borg/upgrade/transform/syndicatejack/inteq_assault
+    name = "borg module picker (InteQ Assault)"
+    desc = "Позволяет вашему киборгу трансформироваться в штурмовую модель InteQ."
+    new_module = /obj/item/robot_module/syndicate/inteq
+
+/obj/item/borg/upgrade/transform/syndicatejack/inteq_medical
+    name = "borg module picker (InteQ Medical)"
+    desc = "Позволяет вашему киборгу трансформироваться в медицинскую модель InteQ."
+    new_module = /obj/item/robot_module/syndicate_medical/inteq
+
+/obj/item/borg/upgrade/transform/syndicatejack/inteq_saboteur
+    name = "borg module picker (InteQ Saboteur)"
+    desc = "Позволяет вашему киборгу трансформироваться в диверсионную модель InteQ."
+    new_module = /obj/item/robot_module/saboteur/inteq
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
 
 /obj/item/borg/upgrade/shuttlemaking
 	name = "engineering cyborg rapid shuttle designator"

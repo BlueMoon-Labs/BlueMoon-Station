@@ -53,6 +53,9 @@
 /obj/item/clothing/mask/proc/adjustmask(mob/living/user, just_flavor = FALSE)
 	if(user && user.incapacitated())
 		return FALSE
+	if(src.reinforced)
+		to_chat(user, "<span class='warning'>Набор бронепластин сделал [src] слишком плотным, чтобы изменить его стиль ношения.</span>")
+		return FALSE
 	mask_adjusted = !mask_adjusted
 	if(!mask_adjusted)
 		if(!just_flavor)

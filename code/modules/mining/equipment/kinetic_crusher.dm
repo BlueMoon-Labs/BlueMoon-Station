@@ -65,7 +65,8 @@
 	. += "<span class='notice'>Does <b>[force + detonation_damage + backstab_bonus]</b> damage if the target is backstabbed, instead of <b>[force + detonation_damage]</b>.</span>"
 	for(var/t in trophies)
 		var/obj/item/crusher_trophy/T = t
-		. += "<span class='notice'>It has \a [T] attached, which causes [T.effect_desc()].</span>"
+		if(T && !QDELETED(T))
+			. += "<span class='notice'>It has \a [T] attached, which causes [T.effect_desc()].</span>"
 
 /obj/item/kinetic_crusher/attackby(obj/item/I, mob/living/user)
 	if(I.tool_behaviour == TOOL_CROWBAR)
@@ -74,7 +75,8 @@
 			I.play_tool_sound(src)
 			for(var/t in trophies)
 				var/obj/item/crusher_trophy/T = t
-				T.remove_from(src, user)
+				if(T && !QDELETED(T))
+					T.remove_from(src, user)
 		else
 			to_chat(user, "<span class='warning'>There are no trophies on [src].</span>")
 	else if(istype(I, /obj/item/crusher_trophy))
@@ -93,7 +95,8 @@
 	for(var/t in trophies)
 		if(!QDELETED(target))
 			var/obj/item/crusher_trophy/T = t
-			T.on_melee_hit(target, user)
+			if(T && !QDELETED(T))
+				T.on_melee_hit(target, user)
 	if(C && !QDELING(C) && !QDELETED(target)) // C can be 0 here, and QDELETED will runtime if that's the case.
 		C.total_damage += target_health - target.health //we did some damage, but let's not assume how much we did
 
@@ -111,7 +114,8 @@
 		var/obj/item/projectile/destabilizer/D = new /obj/item/projectile/destabilizer(proj_turf)
 		for(var/t in trophies)
 			var/obj/item/crusher_trophy/T = t
-			T.on_projectile_fire(D, user)
+			if(T && !QDELETED(T))
+				T.on_projectile_fire(D, user)
 		D.preparePixelProjectile(target, user, clickparams)
 		D.firer = user
 		D.hammer_synced = src
@@ -130,7 +134,8 @@
 		var/target_health = L.health
 		for(var/t in trophies)
 			var/obj/item/crusher_trophy/T = t
-			T.on_mark_detonation(target, user)
+			if(T && !QDELETED(T))
+				T.on_mark_detonation(target, user)
 		if(!QDELETED(L))
 			if(C && !QDELING(C)) // C can be 0 here, and QDELETED will runtime if that's the case.
 				C.total_damage += target_health - L.health //we did some damage, but let's not assume how much we did
@@ -208,7 +213,8 @@
 	var/obj/item/projectile/destabilizer/D = new /obj/item/projectile/destabilizer(proj_turf)
 	for(var/t in trophies)
 		var/obj/item/crusher_trophy/T = t
-		T.on_projectile_fire(D, owner)
+		if(T && !QDELETED(T))
+			T.on_projectile_fire(D, owner)
 	D.preparePixelProjectile(attacker, owner)
 	D.firer = owner
 	D.hammer_synced = src
@@ -353,7 +359,8 @@
 		if(hammer_synced)
 			for(var/t in hammer_synced.trophies)
 				var/obj/item/crusher_trophy/T = t
-				T.on_mark_application(target, CM, had_effect)
+				if(T && !QDELETED(T))
+					T.on_mark_application(target, CM, had_effect)
 	var/target_turf = get_turf(target)
 	if(ismineralturf(target_turf))
 		var/turf/closed/mineral/M = target_turf
@@ -380,6 +387,8 @@
 /obj/item/crusher_trophy/proc/add_to(obj/item/kinetic_crusher/H, mob/living/user)
 	for(var/t in H.trophies)
 		var/obj/item/crusher_trophy/T = t
+		if(!T || QDELETED(T))
+			continue
 		if(istype(T, denied_type) || istype(src, T.denied_type))
 			to_chat(user, "<span class='warning'>You can't seem to attach [src] to [H]. Maybe remove a few trophies?</span>")
 			return FALSE

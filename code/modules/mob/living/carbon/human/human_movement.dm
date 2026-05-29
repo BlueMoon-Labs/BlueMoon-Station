@@ -85,6 +85,7 @@
 						FP.entered_dirs |= dir
 						FP.bloodiness = S.bloody_shoes[S.blood_state]
 						if(S.last_bloodtype)
+							LAZYINITLIST(FP.blood_DNA)
 							FP.blood_DNA[S.last_blood_DNA] = S.last_bloodtype
 							if(!FP.blood_DNA["color"])
 								FP.blood_DNA["color"] = S.last_blood_color
@@ -100,10 +101,10 @@
 	if(movement_type & GROUND && dirtyness_maker)
 		dirt_buildup()
 
-/mob/living/carbon/human/Process_Spacemove(movement_dir = 0) //Temporary laziness thing. Will change to handles by species reee.
+/mob/living/carbon/human/Process_Spacemove(movement_dir = 0, continuous_move = FALSE) //Temporary laziness thing. Will change to handles by species reee.
 	if(dna?.species?.space_move(src))
 		return TRUE
-	return ..()
+	return ..(movement_dir, continuous_move)
 
 /mob/living/carbon/human/proc/dirt_buildup(strength = 1)
 	if(!shoes || !(shoes.body_parts_covered & FEET))

@@ -10,7 +10,7 @@
 	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
 	custom_materials = list(/datum/material/iron = 30000)
 	throwforce = 2
-	w_class = WEIGHT_CLASS_TINY
+	w_class = WEIGHT_CLASS_NORMAL
 	throw_speed = 3
 	throw_range = 7
 	var/list/stored_ammo = list()
@@ -38,6 +38,10 @@
 		for(var/i = 1, i <= max_ammo, i++)
 			stored_ammo += new ammo_type(src)
 	update_icon()
+
+/obj/item/ammo_box/examine(mob/user)
+	. = ..()
+	. += span_notice("There [stored_ammo.len == 1 ? "is" : "are"] [stored_ammo.len] shell\s left!")
 
 /obj/item/ammo_box/proc/get_round(keep = 0)
 	if (!stored_ammo.len)
@@ -114,7 +118,6 @@
 
 /obj/item/ammo_box/update_icon()
 	. = ..()
-	desc = "[initial(desc)] There [stored_ammo.len == 1 ? "is" : "are"] [stored_ammo.len] shell\s left!"
 	if(length(bullet_cost))
 		var/temp_materials = custom_materials.Copy()
 		for (var/material in bullet_cost)
@@ -131,6 +134,9 @@
 			icon_state = "[initial(icon_state)]-[stored_ammo.len ? "[max_ammo]" : "0"]"
 
 //Behavior for magazines
+/obj/item/ammo_box/magazine
+	w_class = WEIGHT_CLASS_SMALL
+
 /obj/item/ammo_box/magazine/proc/ammo_count()
 	return stored_ammo.len
 

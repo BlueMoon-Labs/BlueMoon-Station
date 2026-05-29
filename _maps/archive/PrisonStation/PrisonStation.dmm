@@ -251,7 +251,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/lavaland/surface/outdoors)
@@ -3406,9 +3405,6 @@
 	pixel_y = 3
 	},
 /obj/item/cartridge/medical,
-/obj/item/cartridge/chemistry{
-	pixel_y = 2
-	},
 /obj/structure/table/glass,
 /obj/effect/turf_decal/tile/blue{
 	dir = 4
@@ -13289,7 +13285,6 @@
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/awaymission)
@@ -16338,7 +16333,7 @@
 /obj/item/pen,
 /obj/machinery/door/window/northright{
 	name = "Reception Desk";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /turf/open/floor/plating/rust,
@@ -22130,7 +22125,7 @@
 /obj/effect/turf_decal/tile/brown{
 	dir = 4
 	},
-/obj/machinery/computer/card/minor/qm,
+/obj/machinery/modular_computer/console/preset/id,
 /turf/open/floor/plasteel,
 /area/cargo/qm)
 "hWD" = (
@@ -24269,7 +24264,6 @@
 /obj/effect/turf_decal/delivery,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/awaymission)
@@ -24448,7 +24442,6 @@
 /obj/structure/table,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/awaymission)
@@ -30574,7 +30567,6 @@
 /obj/effect/turf_decal/delivery,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/lavaland/surface/outdoors)
@@ -32865,7 +32857,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/lavaland/surface/outdoors)
@@ -39499,10 +39490,6 @@
 	pixel_x = -2;
 	pixel_y = 3
 	},
-/obj/item/cartridge/chemistry{
-	pixel_x = -6;
-	pixel_y = 3
-	},
 /obj/item/storage/secure/briefcase,
 /obj/item/paper_bin{
 	pixel_x = 6;
@@ -40350,7 +40337,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/awaymission)
@@ -44677,7 +44663,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/awaymission)
@@ -48146,7 +48131,7 @@
 	},
 /obj/machinery/door/window/northleft{
 	name = "Reception Desk";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /turf/open/floor/plating/rust,
@@ -50570,7 +50555,7 @@
 	pixel_x = 26;
 	pixel_y = -4
 	},
-/obj/machinery/computer/card/minor/cmo{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /turf/open/floor/carpet/royalblue,
@@ -52928,7 +52913,7 @@
 /obj/structure/table,
 /obj/machinery/door/window/northright{
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /turf/open/floor/plating/rust,
@@ -55806,7 +55791,6 @@
 /obj/machinery/power/apc/auto_name/north,
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/awaymission)
@@ -60085,7 +60069,7 @@
 /obj/machinery/door/window/northleft{
 	dir = 8;
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /obj/machinery/light{
@@ -60542,7 +60526,7 @@
 /obj/machinery/door/window/northright{
 	dir = 8;
 	name = "First-Aid Supplies";
-	red_alert_access = 1;
+
 	req_access_txt = "5"
 	},
 /obj/item/storage/firstaid/fire,
@@ -61082,7 +61066,7 @@
 /turf/open/floor/engine/air,
 /area/engineering/atmos)
 "vWe" = (
-/obj/machinery/computer/card/minor/ce{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 4
 	},
 /obj/machinery/camera{
@@ -63452,7 +63436,6 @@
 	},
 /turf/open/floor/plasteel{
 	dir = 8;
-	icon_plating = "floor";
 	icon_state = "floor_whole_alt"
 	},
 /area/awaymission)
@@ -64760,7 +64743,7 @@
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/ruin/lavaland/powered)
 "xnC" = (
-/obj/machinery/computer/card/minor/hos{
+/obj/machinery/modular_computer/console/preset/id{
 	dir = 8
 	},
 /turf/open/floor/carpet/red,

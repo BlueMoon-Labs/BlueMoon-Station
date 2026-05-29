@@ -43,7 +43,7 @@
 	var/objective
 
 /datum/surgery_step/brainwash/preop(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
-	objective = stripped_input(user, "Choose the objective to imprint on your victim's brain.", "Brainwashing", null, MAX_MESSAGE_LEN)
+	objective = tgui_input_text(user, "Выберите цель, которая отпечатается в сознании вашей жертвы.", "Brainwashing", "", MAX_MESSAGE_LEN, TRUE, TRUE)
 	if(!objective)
 		return -1
 	display_results(user, target, "<span class='notice'>You begin to brainwash [target]...</span>",

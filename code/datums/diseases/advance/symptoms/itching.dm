@@ -53,4 +53,5 @@ BONUS
 		var/can_scratch = scratch && !M.incapacitated() && get_location_accessible(M, picked_bodypart)
 		M.visible_message("[can_scratch ? "<span class='warning'>[M] scratches [M.ru_ego()] [bodypart.name].</span>" : ""]", "<span class='warning'>Your [bodypart.name] itches. [can_scratch ? " You scratch it." : ""]</span>")
 		if(can_scratch)
-			bodypart.receive_damage(0.5)
+			// Поверхностные царапины — без ролла травм/переломов (иначе разумный вирус с частым проком кладёт неизлечимые раны).
+			bodypart.receive_damage(brute = 0.5, wound_bonus = CANT_WOUND)

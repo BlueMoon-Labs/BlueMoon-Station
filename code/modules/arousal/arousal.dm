@@ -105,17 +105,20 @@
 			if(istype(sender, /obj/item/organ/genital/penis))
 				if(S && !istype(S, /obj/effect/decal/cleanable/semen/femcum))
 					if(R.trans_to(S, R.total_volume))
+						LAZYINITLIST(S.blood_DNA)
 						S.blood_DNA |= get_blood_dna_list()
 						S.update_icon()
 						return
 				else
 					var/obj/effect/decal/cleanable/semendrip/drip = (locate(/obj/effect/decal/cleanable/semendrip) in location) || new(location)
 					if(R.trans_to(drip, R.total_volume))
+						LAZYINITLIST(drip.blood_DNA)
 						drip.blood_DNA |= get_blood_dna_list()
 						drip.update_icon()
 						if(drip.reagents.total_volume >= 10)
 							S = new(location)
 							drip.reagents.trans_to(S, drip.reagents.total_volume)
+							LAZYINITLIST(S.blood_DNA)
 							S.blood_DNA |= drip.blood_DNA
 							S.update_icon()
 							qdel(drip)
@@ -123,12 +126,14 @@
 			if(istype(sender, /obj/item/organ/genital/vagina))
 				if(F)
 					if(R.trans_to(F, R.total_volume))
+						LAZYINITLIST(F.blood_DNA)
 						F.blood_DNA |= get_blood_dna_list()
 						F.update_icon()
 						return
 				else
 					F = new(location)
 					if(R.trans_to(F, R.total_volume))
+						LAZYINITLIST(F.blood_DNA)
 						F.blood_DNA |= get_blood_dna_list()
 						F.update_icon()
 						return

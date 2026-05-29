@@ -25,13 +25,16 @@
 			"Handy" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "handy"),
 			"Robo-Brain" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "robobrain"),
 			"Cyclone" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "cyclone"),
-			"SmollRaptor" = image(icon = 'modular_zubbers/icons/mob/smolraptor.dmi', icon_state = "smolraptor-b"), // BubberStation Port; Made by aKhro/@aKromatopzia (GitHub)
+			"SmollRaptor" = image(icon = 'icons/mob/smolraptor.dmi', icon_state = "smolraptor-b"), // BubberStation Port; Made by aKhro/@aKromatopzia (GitHub)
 			"Dullahan" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "dullahanclown")
 			)
 		stand_icons = sort_list(stand_icons)
-	var/stand_borg_icon = show_radial_menu(R, R , stand_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
+	var/list/selectable_stand_icons = get_selectable_borg_icons(stand_icons, R.client)
+	var/stand_borg_icon = show_radial_menu(R, R , selectable_stand_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
 	if(!stand_borg_icon)
 		return
+	if(apply_donator_borg_icon(stand_borg_icon, R.client))
+		return ..()
 	switch(stand_borg_icon)
 		if("Standard")
 			cyborg_base_icon = "robot"
@@ -98,7 +101,7 @@
 			hat_offset = 3
 		if("SmollRaptor") // BubberStation Port; Made by aKhro/@aKromatopzia (GitHub)
 			cyborg_base_icon = "smolraptor"
-			cyborg_icon_override = 'modular_zubbers/icons/mob/smolraptor.dmi'
+			cyborg_icon_override = 'icons/mob/smolraptor.dmi'
 			dogborg = TRUE
 		if("Dullahan")
 			cyborg_base_icon = "dullahanclown"
@@ -217,7 +220,7 @@
 		"K4T" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "k4tcargo"), // SPLURT Addon
 		"K4T (alt)" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "k4tcargo_alt1"), // SPLURT Addon
 		"Raptor V-4" = image(icon = 'modular_splurt/icons/mob/robots_64x45.dmi', icon_state = "caraptor-b"), // ChompS Port (base); Additional spriting by @ertyuk421
-		"SmollRaptor" = image(icon = 'modular_zubbers/icons/mob/smolraptor.dmi', icon_state = "smolraptor_crg-b"), // BubberStation Port; Made by aKhro/@aKromatopzia (GitHub)
+		"SmollRaptor" = image(icon = 'icons/mob/smolraptor.dmi', icon_state = "smolraptor_crg-b"), // BubberStation Port; Made by aKhro/@aKromatopzia (GitHub)
 		"Dullahan" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "dullahancargo"),
 		"Dullahan (Taur)" = image(icon = 'modular_bluemoon/icons/mob/robot/dullahan_taur.dmi', icon_state = "dullahantaurcargo")
 		)
@@ -310,7 +313,7 @@
 			dogborg = TRUE
 		if("SmollRaptor") // BubberStation Port; Made by aKhro/@aKromatopzia (GitHub)
 			cyborg_base_icon = "smolraptor_crg"
-			cyborg_icon_override = 'modular_zubbers/icons/mob/smolraptor.dmi'
+			cyborg_icon_override = 'icons/mob/smolraptor.dmi'
 			dogborg = TRUE
 		if("Dullahan")
 			cyborg_base_icon = "dullahancargo"

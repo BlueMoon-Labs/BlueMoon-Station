@@ -1,5 +1,6 @@
 /obj/effect/decal/cleanable/Destroy()
 	blood_DNA = null
+	GLOB.cleanable_decals -= src
 	return ..()
 
 /obj/effect/decal/cleanable
@@ -20,6 +21,7 @@
 
 /obj/effect/decal/cleanable/Initialize(mapload, list/datum/disease/diseases)
 	. = ..()
+	GLOB.cleanable_decals += src
 	LAZYINITLIST(blood_DNA) //Kinda needed
 	if (random_icon_states && (icon_state == initial(icon_state)) && length(random_icon_states) > 0)
 		icon_state = pick(random_icon_states)

@@ -12,7 +12,6 @@
 	exp_requirements = 60
 	alt_titles = list(
 		"Genetist Intern", //Стажер выше, для удобства
-		"Syndicate Genetist",
 		"Bioengineer",
 		"Gene Tailor",
 		"Gene Therapist",
@@ -26,8 +25,8 @@
 	departments = DEPARTMENT_BITFLAG_MEDICAL
 	plasma_outfit = /datum/outfit/plasmaman/genetics
 
-	access = list(ACCESS_MEDICAL, ACCESS_MORGUE, ACCESS_CHEMISTRY, ACCESS_GENETICS, ACCESS_CLONING, ACCESS_RESEARCH, ACCESS_XENOBIOLOGY, ACCESS_ROBOTICS, ACCESS_MINERAL_STOREROOM, ACCESS_TECH_STORAGE)
-	minimal_access = list(ACCESS_MEDICAL, ACCESS_MORGUE, ACCESS_GENETICS, ACCESS_CLONING, ACCESS_RESEARCH, ACCESS_MINERAL_STOREROOM)
+	access = list(ACCESS_MEDICAL, ACCESS_MORGUE, ACCESS_CHEMISTRY, ACCESS_GENETICS, ACCESS_CLONING, ACCESS_RESEARCH, ACCESS_XENOBIOLOGY, ACCESS_ROBOTICS, ACCESS_MINERAL_STOREROOM, ACCESS_TECH_STORAGE, ACCESS_PRODUCTION_MEDICAL, ACCESS_PRODUCTION_SCIENCE)
+	minimal_access = list(ACCESS_MEDICAL, ACCESS_MORGUE, ACCESS_GENETICS, ACCESS_CLONING, ACCESS_RESEARCH, ACCESS_MINERAL_STOREROOM, ACCESS_PRODUCTION_MEDICAL, ACCESS_PRODUCTION_SCIENCE)
 	paycheck = PAYCHECK_MEDIUM
 	paycheck_department = ACCOUNT_MED
 	bounty_types = CIV_JOB_SCI
@@ -49,7 +48,7 @@
 	name = "Geneticist"
 	jobtype = /datum/job/geneticist
 
-	belt = /obj/item/pda/geneticist
+	belt = /obj/item/modular_computer/pda/geneticist
 	ears = /obj/item/radio/headset/headset_medsci
 	uniform = /obj/item/clothing/under/rank/medical/geneticist
 	shoes = /obj/item/clothing/shoes/sneakers/white
@@ -65,7 +64,7 @@
 	name = "Syndicate Geneticist"
 	jobtype = /datum/job/geneticist
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	ears = /obj/item/radio/headset/headset_medsci
 	gloves = /obj/item/clothing/gloves/color/latex/nitrile/hsc

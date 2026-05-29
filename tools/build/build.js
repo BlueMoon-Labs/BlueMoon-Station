@@ -51,8 +51,24 @@ export const DmMapsIncludeTarget = new Juke.Target({
   },
 });
 
+export const StatbrowserTarget = new Juke.Target({
+  inputs: [
+    'html/statbrowser/build.js',
+    'html/statbrowser/template.html',
+    'html/statbrowser/src/**/*.js',
+    'html/statbrowser/styles/**/*.css',
+  ],
+  outputs: [
+    'html/statbrowser.html',
+  ],
+  executes: async () => {
+    await Juke.exec('node', ['html/statbrowser/build.js']);
+  },
+});
+
 export const DmTarget = new Juke.Target({
   dependsOn: ({ get }) => [
+    StatbrowserTarget,
     get(DefineParameter).includes('ALL_MAPS') && DmMapsIncludeTarget,
   ],
   inputs: [

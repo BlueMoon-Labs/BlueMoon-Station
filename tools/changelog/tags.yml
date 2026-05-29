@@ -26,6 +26,10 @@ tags:
     config: config
     admin: admin
     server: server
+    qol: qol
+    sound: sound
+    image: image
+    map: map
 
 defaults:
     admin: messed with admin stuff
@@ -36,7 +40,7 @@ defaults:
     imageadd: added some icons and images
     imagedel: deleted some icons and images
     refactor: refactored some code
-    rscadd: Added new things
+    rscadd: Added new mechanics or gameplay changes
     rscadd2: Added more things
     rscdel: Removed old things
     server: something server ops should know
@@ -44,3 +48,7 @@ defaults:
     sounddel: removed an old sound thingy
     spellcheck: fixed a few typos
     tweak: tweaked a few things
+    qol: made something easier to use
+    sound: added/modified/removed audio or sound effects
+    image: added/modified/removed some icons or images
+    map: added/modified/removed map content

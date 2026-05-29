@@ -21,13 +21,19 @@
 // BLUEMOON ADD END
 
 /obj/item/ttsdevice/attack_self(mob/user)
-	user.balloon_alert_to_viewers("печатает...", "начинает печатать...")
+	user.balloon_alert_to_viewers("Печатает...", "Начинает печатать...")
 	playsound(src, 'sound/items/tts/started_type.ogg', 50, TRUE)
-	var/str = input(user, "", "Say Text") as text|null //tgui_input_text(user, "What would you like the device to say?", "Say Text", "", MAX_MESSAGE_LEN, encode = FALSE)
+
+	var/str = ""
+	if(user.client?.prefs.tgui_input_verbs)
+		str = tgui_input_text(user, "What would you like the device to say?", "Say Text", "", MAX_MESSAGE_LEN, encode = TRUE)
+	else
+		str = stripped_input(user, "What would you like the device to say?", "Say Text")
+
 	if(QDELETED(src) || !user.canUseTopic(src))
 		return
 	if(!str)
-		user.balloon_alert_to_viewers("прекращает печатать", "прекратил печатать")
+		user.balloon_alert_to_viewers("Прекращает печатать", "Прекратил печатать")
 		playsound(src, 'sound/items/tts/stopped_type.ogg', 50, TRUE)
 		return
 	// BLUEMOON ADD START

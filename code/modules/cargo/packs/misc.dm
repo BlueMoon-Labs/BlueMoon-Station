@@ -364,9 +364,9 @@
 	desc = "Содержит один священный клеймор для особо убеждённых паладинов, три обычных меча для статистов, четыре комплекта рыцарских доспехов для тех, кто хочет тяжело топать по коридорам, и бочку святой воды на случай, если кто-то снова решил дружить с демонами."
 	cost = 24999
 	contains = list(/obj/item/nullrod/claymore,
-					/obj/item/claymore,
-					/obj/item/claymore,
-					/obj/item/claymore,
+					/obj/item/claymore/weak/ceremonial,
+					/obj/item/claymore/weak/ceremonial,
+					/obj/item/claymore/weak/ceremonial,
 					/obj/item/clothing/suit/armor/riot/knight,
 					/obj/item/clothing/suit/armor/riot/knight/blue,
 					/obj/item/clothing/suit/armor/riot/knight/red,

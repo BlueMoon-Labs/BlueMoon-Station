@@ -79,6 +79,12 @@
 		umsg += " as best as you can while they have clothing on"
 		tmsg += " as best as they can while [target] has clothing on"
 	target.heal_bodypart_damage(urhealedamt_brute,urhealedamt_burn)
+	if(brutehealing && burnhealing)
+		user.balloon_alert(user, "<span style='color:#ff4444'>[round(target.getBruteLoss_nonProsthetic())]</span> | <span style='color:#ff9900'>[round(target.getFireLoss_nonProsthetic())]</span>")
+	else if(brutehealing)
+		user.balloon_alert(user, "<span style='color:#ff4444'>[round(target.getBruteLoss_nonProsthetic())]</span>")
+	else if(burnhealing)
+		user.balloon_alert(user, "<span style='color:#ff9900'>[round(target.getFireLoss_nonProsthetic())]</span>")
 	display_results(user, target, "<span class='notice'>[umsg].</span>",
 		"[tmsg].",
 		"[tmsg].")

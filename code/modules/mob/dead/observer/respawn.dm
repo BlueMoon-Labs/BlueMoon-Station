@@ -7,7 +7,7 @@
 /client/proc/admin_cmd_respawn_return_to_lobby()
 	set name = "Respawn Player (Unrestricted)"
 	set desc = "Gives a player an unrestricted respawn, resetting all respawn restrictions for them."
-	set category = "Admin"
+	set category = "Admin.Player Interaction"
 
 	var/list/mob/valid = list()
 	for(var/mob/dead/observer/I in GLOB.dead_mob_list)
@@ -66,7 +66,7 @@
 /client/proc/admin_cmd_remove_ghost_respawn_timer()
 	set name = "Remove Respawn Timer for Player"
 	set desc = "Removes a player's respawn timer without removing their respawning restrictions."
-	set category = "Admin"
+	set category = "Admin.Player Interaction"
 
 	var/list/mob/dead/observer/valid = list()
 	for(var/mob/dead/observer/I in GLOB.dead_mob_list)
@@ -128,9 +128,9 @@
 		to_chat(src, "<span class='warning'>Respawns are disabled in configuration.</span>")
 		return
 
-	if(client.prefs.dnr_triggered)
-		to_chat(src, "<span class='danger'>You cannot respawn as you have enabled DNR.</span>")
-		return
+	//if(client.prefs.dnr_triggered) // Ну не хочет чел вставать, зачем ему респавн то резать -_-
+		//to_chat(src, "<span class='danger'>You cannot respawn as you have enabled DNR.</span>")
+		//return
 
 	// BLUEMOON ADD я не знаю почему бан респавна не банил респавн
 	if(jobban_isbanned(src, ROLE_RESPAWN))

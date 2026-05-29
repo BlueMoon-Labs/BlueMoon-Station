@@ -216,7 +216,7 @@ window "outputwindow"
 	elem "input"
 		type = INPUT
 		pos = 2,460
-		size = 595x20
+		size = 560x20
 		anchor1 = 0,100
 		anchor2 = 100,100
 		background-color = #d3b5b5
@@ -226,13 +226,24 @@ window "outputwindow"
 	elem "saybutton"
 		type = BUTTON
 		pos = 600,460
-		size = 37x20
+		size = 40x20
 		anchor1 = 100,100
-		anchor2 = none
+		anchor2 = -1,-1
 		saved-params = "is-checked"
 		text = "Chat"
-		command = ".winset \"saybutton.is-checked=true ? input.command=\"!say \\\"\" : input.command=\""
 		is-flat = true
+		command = ".winset \"saybutton.is-checked=true?input.command=\"!Speak \\\"\" saybutton.is-checked=true?mebutton.is-checked=false\""
+		button-type = pushbox
+	elem "mebutton"
+		type = BUTTON
+		pos = 560,460
+		size = 40x20
+		anchor1 = 100,100
+		anchor2 = -1,-1
+		saved-params = "is-checked"
+		text = "Emote"
+		is-flat = true
+		command = ".winset \"mebutton.is-checked=true?input.command=\"!Emote \\\"\" mebutton.is-checked=true?saybutton.is-checked=false\""
 		button-type = pushbox
 	elem "legacy_output_selector"
 		type = CHILD

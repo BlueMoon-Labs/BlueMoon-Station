@@ -369,6 +369,87 @@
 	id = "ammo_ks23_rsh"
 	build_path = /obj/item/ammo_box/rubbershot23
 
+/obj/item/disk/design_disk/adv/ammo/makarov
+	name = "Makarov Ammo Design Disk"
+	desc = "Вставь в автолат, чтобы печатать магазины 10мм для пистолета Макарова."
+
+/obj/item/disk/design_disk/adv/ammo/makarov/Initialize(mapload)
+	. = ..()
+	var/datum/design/ammo_makarov_mag/M = new
+	var/datum/design/ammo_makarov_mag/ap/A = new
+	var/datum/design/ammo_makarov_mag/hp/H = new
+	var/datum/design/ammo_makarov_mag/fire/F = new
+	blueprints[1] = M
+	blueprints[2] = A
+	blueprints[3] = H
+	blueprints[4] = F
+
+/datum/design/ammo_makarov_mag
+	name = "pistol magazine (10mm)"
+	desc = "A gun magazine."
+	id = "ammo_makarov_mag"
+	build_type = AUTOLATHE
+	materials = list(/datum/material/iron = 6000)
+	build_path = /obj/item/ammo_box/magazine/m10mm
+	category = list("Imported")
+
+/datum/design/ammo_makarov_mag/ap
+	name = "pistol magazine (10mm AP)"
+	desc = "A gun magazine. Loaded with rounds which penetrate armour, but are less effective against normal targets."
+	id = "ammo_makarov_mag_ap"
+	materials = list(/datum/material/iron = 7500, /datum/material/titanium = 6500)
+	build_path = /obj/item/ammo_box/magazine/m10mm/ap
+
+/datum/design/ammo_makarov_mag/hp
+	name = "pistol magazine (10mm HP)"
+	desc = "A gun magazine. Loaded with hollow-point rounds, extremely effective against unarmored targets, but nearly useless against protective clothing."
+	id = "ammo_makarov_mag_hp"
+	materials = list(/datum/material/iron = 7500, /datum/material/glass = 5000)
+	build_path = /obj/item/ammo_box/magazine/m10mm/hp
+
+/datum/design/ammo_makarov_mag/fire
+	name = "pistol magazine (10mm incendiary)"
+	desc = "A gun magazine. Loaded with rounds which ignite the target."
+	id = "ammo_makarov_mag_fire"
+	materials = list(/datum/material/plasma = 5000, /datum/material/iron = 7500)
+	build_path = /obj/item/ammo_box/magazine/m10mm/fire
+
+/obj/item/disk/design_disk/adv/ammo/stechkin
+	name = "Stechkin Ammo Design Disk"
+	desc = "Вставь в автолат, чтобы печатать магазины 9мм для пистолета Стечкина."
+
+/obj/item/disk/design_disk/adv/ammo/stechkin/Initialize(mapload)
+	. = ..()
+	var/datum/design/ammo_stechkin_mag/S = new
+	var/datum/design/ammo_stechkin_mag/ap/A = new
+	var/datum/design/ammo_stechkin_mag/inc/I = new
+	blueprints[1] = S
+	blueprints[2] = A
+	blueprints[3] = I
+
+/datum/design/ammo_stechkin_mag
+	name = "pistol magazine (9mm)"
+	desc = "A gun magazine."
+	id = "ammo_stechkin_mag"
+	build_type = AUTOLATHE
+	materials = list(/datum/material/iron = 7500)
+	build_path = /obj/item/ammo_box/magazine/pistolm9mm
+	category = list("Imported")
+
+/datum/design/ammo_stechkin_mag/ap
+	name = "pistol magazine (9mm AP)"
+	desc = "A gun magazine. Loaded with rounds which penetrate armour."
+	id = "ammo_stechkin_mag_ap"
+	materials = list(/datum/material/iron = 7500, /datum/material/titanium = 6500)
+	build_path = /obj/item/ammo_box/magazine/pistolm9mm/ap
+
+/datum/design/ammo_stechkin_mag/inc
+	name = "pistol magazine (9mm incendiary)"
+	desc = "A gun magazine. Loaded with rounds which ignite the target."
+	id = "ammo_stechkin_mag_inc"
+	materials = list(/datum/material/plasma = 5000, /datum/material/iron = 7500)
+	build_path = /obj/item/ammo_box/magazine/pistolm9mm/inc
+
 ///Дорожный знак
 /obj/item/spear/stop
 	name = "Stop sign"

@@ -13,5 +13,4 @@
 /datum/gear/accessory/genericpin
 	name = "Holographic pin"
 	path = /obj/item/clothing/accessory/pride/other
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 	cost = 0

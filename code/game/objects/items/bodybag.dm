@@ -1,7 +1,7 @@
 
 /obj/item/bodybag
 	name = "body bag"
-	desc = "A folded bag designed for the storage and transportation of cadavers."
+	desc = "Сложенный мешок для хранения и транспортировки кадавров."
 	icon = 'icons/obj/bodybag.dmi'
 	icon_state = "bodybag_folded"
 	var/unfoldedbag_path = /obj/structure/closet/body_bag
@@ -27,7 +27,7 @@
 
 /obj/item/bodybag/suicide_act(mob/user)
 	if(isopenturf(user.loc))
-		user.visible_message("<span class='suicide'>[user] is crawling into [src]! It looks like [user.p_theyre()] trying to commit suicide!</span>")
+		user.visible_message(span_suicide("[user] залезает внутрь [src]! Похоже, что [user.ru_who()] пытается превратиться в кадавра!"))
 		var/obj/structure/closet/body_bag/R = new unfoldedbag_path(user.loc)
 		R.add_fingerprint(user)
 		qdel(src)
@@ -40,7 +40,7 @@
 
 /obj/item/bodybag/bluespace
 	name = "bluespace body bag"
-	desc = "A folded bluespace body bag designed for the storage and transportation of cadavers."
+	desc = "Сложенный блюспейс-мешок для хранения и транспортировки кадавров."
 	icon_state = "bluebodybag_folded"
 	unfoldedbag_path = /obj/structure/closet/body_bag/bluespace
 	w_class = WEIGHT_CLASS_SMALL
@@ -50,14 +50,14 @@
 /obj/item/bodybag/bluespace/examine(mob/user)
 	. = ..()
 	if(contents.len)
-		var/s = contents.len == 1 ? "" : "s"
-		. += "<span class='notice'>You can make out the shape[s] of [contents.len] object[s] through the fabric.</span>"
+		var/x = contents.len == 1 ? "у" : "ы"
+		. += span_notice("Вы можете разглядеть форм[x] [contents.len] шт. предметов в покрое [src].")
 
 /obj/item/bodybag/bluespace/Destroy()
 	for(var/atom/movable/A in contents)
 		A.forceMove(get_turf(src))
 		if(isliving(A))
-			to_chat(A, "<span class='notice'>You suddenly feel the space around you torn apart! You're free!</span>")
+			to_chat(A, span_notice("Внезапно вы ощущаете, как пространство вокруг вас рвётся! Вы свободны!"))
 	return ..()
 
 /obj/item/bodybag/bluespace/deploy_bodybag(mob/user, atom/location)
@@ -65,28 +65,28 @@
 	for(var/atom/movable/A in contents)
 		A.forceMove(R)
 		if(isliving(A))
-			to_chat(A, "<span class='notice'>You suddenly feel air around you! You're free!</span>")
+			to_chat(A, span_notice("Внезапно вы ощущаете, как пространство вокруг вас рвётся! Вы свободны!"))
 	R.open(user)
 	R.add_fingerprint(user)
 	qdel(src)
 
 /obj/item/bodybag/bluespace/container_resist(mob/living/user)
 	if(user.incapacitated())
-		to_chat(user, "<span class='warning'>You can't get out while you're restrained like this!</span>")
+		to_chat(user, span_warning("Вы не выберетесь, пока обездвижены подобным образом!"))
 		return
-	to_chat(user, "<span class='notice'>You claw at the fabric of [src], trying to tear it open...</span>")
-	to_chat(loc, "<span class='warning'>Someone starts trying to break free of [src]!</span>")
+	to_chat(user, span_notice("Вы продираетесь сквозь покрой [src], пытаясь разорвать его..."))
+	to_chat(loc, span_warning("Кто-то пытается выбраться из [src]!"))
 	if(!do_after(user, 200, target = src))
-		to_chat(loc, "<span class='warning'>The pressure subsides. It seems that they've stopped resisting...</span>")
+		to_chat(loc, span_warning("Напор спадает. Похоже, сопротивление от кого бы то ни было прекратилось..."))
 		return
-	loc.visible_message("<span class='warning'>[user] suddenly appears in front of <b>[loc]</b>!</span>", "<span class='userdanger'>[user] breaks free of [src]!</span>")
+	loc.visible_message(span_warning("[user] внезапно появляется посреди <b>[loc]</b>!"), span_userdanger("[user] вырывается из [src]!"))
 	qdel(src)
 
 // Containment bodybag
 
 /obj/item/bodybag/containment
 	name = "radiation containment body bag"
-	desc = "A folded heavy body bag designed for the storage and transportation of heavily irradiated cadavers."
+	desc = "Сложенный тяжёлый мешок для хранения и транспортировки кадавров с высоким облучением."
 	icon_state = "radbodybag_folded"
 	unfoldedbag_path = /obj/structure/closet/body_bag/containment
 	w_class = WEIGHT_CLASS_NORMAL
@@ -94,7 +94,7 @@
 
 /obj/item/bodybag/containment/nanotrasen
 	name = "elite containment protection bag"
-	desc = "A folded, heavily reinforced, and insulated bag, capable of fully isolating its contents from external factors."
+	desc = "Сложенный тяжёлый, укреплённый и изолированный мешок, способный полностью оградить содержимое от внешних факторов."
 	icon_state = "ntenvirobag_folded"
 	unfoldedbag_path = /obj/structure/closet/body_bag/containment/nanotrasen
 

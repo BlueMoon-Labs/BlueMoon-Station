@@ -530,3 +530,12 @@
 	name = "Shigu clan kimono"
 	icon_state = "gray_uniform"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/under/bm/aristocratic_uniform
+	name = "Aristocratic Uniform"
+	icon_state = "aristocratic_uniform"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	always_reskinnable = TRUE
+	can_adjust = FALSE
+	unique_reskin = list("Parade" = list(RESKIN_ICON_STATE = "aristocratic_uniform_parade"),
+						"Base" = list(RESKIN_ICON_STATE = "aristocratic_uniform"))

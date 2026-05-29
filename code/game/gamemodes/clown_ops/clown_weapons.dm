@@ -219,11 +219,25 @@
 
 /obj/item/clothing/mask/fakemoustache/sticky
 	var/unstick_time = 2 MINUTES
+	var/unstick_timerid
 
 /obj/item/clothing/mask/fakemoustache/sticky/Initialize(mapload)
 	. = ..()
 	ADD_TRAIT(src, TRAIT_NODROP, STICKY_MOUSTACHE_TRAIT)
-	addtimer(TRAIT_CALLBACK_REMOVE(src, TRAIT_NODROP, STICKY_MOUSTACHE_TRAIT), unstick_time)
+	unstick_timerid = addtimer(TRAIT_CALLBACK_REMOVE(src, TRAIT_NODROP, STICKY_MOUSTACHE_TRAIT), unstick_time, TIMER_STOPPABLE)
+
+/obj/item/clothing/mask/fakemoustache/sticky/Destroy()
+	if(unstick_timerid)
+		deltimer(unstick_timerid)
+		unstick_timerid = null
+	if(HAS_TRAIT_FROM(src, TRAIT_NODROP, STICKY_MOUSTACHE_TRAIT))
+		REMOVE_TRAIT(src, TRAIT_NODROP, STICKY_MOUSTACHE_TRAIT)
+	if(iscarbon(loc))
+		var/mob/living/carbon/C = loc
+		if(C.wear_mask == src)
+			REMOVE_TRAIT(C, TRAIT_NO_INTERNALS, STICKY_MOUSTACHE_TRAIT)
+	..()
+	return QDEL_HINT_HARDDEL_NOW
 
 /obj/item/clothing/mask/fakemoustache/sticky/equipped(mob/user, slot)
 	. = ..()

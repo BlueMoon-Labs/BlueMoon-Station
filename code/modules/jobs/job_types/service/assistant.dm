@@ -21,7 +21,6 @@ Assistant
 	always_can_respawn_as = TRUE
 	threat = 0.2
 	alt_titles = list(
-		"Syndicate Specialist", //Синди выше, для удобства
 		"Acolyte",
 		"All-purpose Dildo",
 		"All-purpose Fleshlight",
@@ -46,6 +45,7 @@ Assistant
 		"Off-Duty Civilian",
 		"Off-Duty Crew",
 		"Off-Duty Staff",
+		"Off-Duty Specialist",
 		"Pet",
 		"Service Bottom",
 		"Service Pred",
@@ -59,7 +59,8 @@ Assistant
 		"Tourist",
 		"Trader",
 		"Visitor",
-		"Volunteer"
+		"Volunteer",
+		"USSP Tourist",
 		)
 
 	family_heirlooms = list(

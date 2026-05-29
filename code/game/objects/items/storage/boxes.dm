@@ -217,17 +217,22 @@
 /obj/item/storage/box/survival/centcom/ComponentInitialize()
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
-	STR.max_items = 9
-	STR.max_combined_w_class = 9
+	STR.max_items = 10
+	/// Базовый /datum/component/storage ограничивает по `max_w_class` (только SMALL) и сумме w_class (7×SMALL).
+	/// При спавне `new(..., src)` проверки обходятся; при ручной укладке ломается — нужны лимиты под набор ERT/CentCom.
+	STR.max_w_class = WEIGHT_CLASS_NORMAL
+	STR.max_combined_w_class = WEIGHT_CLASS_NORMAL * 10
+	STR.storage_flags = STORAGE_FLAGS_LEGACY_DEFAULT
 
 /obj/item/storage/box/survival/centcom/PopulateContents()
 	..() // we want the regular stuff too
 	new /obj/item/crowbar/power(src)
 	new /obj/item/melee/classic_baton/telescopic/centcom(src)
-	new /obj/item/radio/off(src)
+	new /obj/item/inducer/syndicate(src)
 	new /obj/item/extinguisher/mini(src)
 	new /obj/item/flashlight/flare(src)
 	new /obj/item/hypospray/mkii/CMO/combat/synthflesh(src)
+	new /obj/item/pinpointer/nuke(src)
 
 /obj/item/storage/box/survival/centcom_max/PopulateContents()
 	..() // we want the regular stuff too
@@ -270,7 +275,7 @@
 	new /obj/item/pinpointer/crew/centcom(src)
 	new /obj/item/stamp/chameleon(src)
 	new /obj/item/detective_scanner(src)
-	new /obj/item/pda/heads(src)
+	new /obj/item/modular_computer/pda/heads(src)
 	new /obj/item/megaphone/command(src)
 
 //blueshield suit box
@@ -303,7 +308,7 @@
 /obj/item/storage/box/ammo
 	name = "box of ammo"
 	desc = "Contains some extra ammo"
-	var/ammo = /obj/item/ammo_box/magazine/smgm9mm/ap
+	var/ammo = /obj/item/ammo_box/magazine/smgm9mm
 
 /obj/item/storage/box/ammo/smgap
 	name = "box of SMG ammo"
@@ -317,6 +322,10 @@
 	name = "box of WT ammo"
 	ammo = /obj/item/ammo_box/magazine/wt550m9
 
+/obj/item/storage/box/ammo/m10mm
+	name = "box of M10mm ammo"
+	ammo = /obj/item/ammo_box/magazine/m10mm
+
 /obj/item/storage/box/ammo/holy
 	name = "box of holy water"
 	ammo = /obj/item/reagent_containers/food/drinks/bottle/holywater
@@ -327,7 +336,7 @@
 
 /obj/item/storage/box/ammo/PopulateContents()
 	..()
-	for(var/i in 1 to 5)
+	for(var/i in 1 to 7)
 		new ammo(src)
 
 /obj/item/storage/box/seclooking
@@ -665,10 +674,10 @@
 	illustration = "pda"
 
 /obj/item/storage/box/PDAs/PopulateContents()
-	new /obj/item/pda(src)
-	new /obj/item/pda(src)
-	new /obj/item/pda(src)
-	new /obj/item/pda(src)
+	new /obj/item/modular_computer/pda(src)
+	new /obj/item/modular_computer/pda(src)
+	new /obj/item/modular_computer/pda(src)
+	new /obj/item/modular_computer/pda(src)
 	new /obj/item/cartridge/head(src)
 
 	var/newcart = pick(	/obj/item/cartridge/engineering,
@@ -1597,6 +1606,30 @@
 	new /obj/item/reagent_containers/food/snacks/cracker(src)
 	new /obj/item/tank/internals/emergency_oxygen/engi(src)
 
+/obj/item/storage/box/mre/random_safe
+	name = "\improper Nanotrasen MRE Ration Kit"
+	desc = "Упаковка с едой в блюспейс-кармане. При выдаче подбирается случайное меню из линейки NT (1–4)."
+	icon_state = "mre"
+	illustration = null
+	can_expire = FALSE
+
+/// Не заменяем себя через qdel — иначе лодаут/спавн через `new path` без loc даёт QDELETED и предмет пропадает.
+/obj/item/storage/box/mre/random_safe/PopulateContents()
+	var/static/list/ration_types = list(
+		/obj/item/storage/box/mre/menu1/safe,
+		/obj/item/storage/box/mre/menu2/safe,
+		/obj/item/storage/box/mre/menu3,
+		/obj/item/storage/box/mre/menu4/safe,
+	)
+	var/picked = pick(ration_types)
+	var/obj/item/storage/box/mre/phantom = new picked(null)
+	name = phantom.name
+	desc = phantom.desc
+	icon_state = phantom.icon_state
+	for(var/obj/item/I in phantom.contents)
+		I.forceMove(src)
+	qdel(phantom)
+
 //Where do I put this?
 /obj/item/secbat
 	name = "Secbat box"
@@ -1673,7 +1706,7 @@
 /obj/item/storage/box/debugtools/PopulateContents()
 	var/static/list/items_inside = list(
 		/obj/item/flashlight/emp/debug=1,\
-		/obj/item/pda=1,\
+		/obj/item/modular_computer/pda=1,\
 		/obj/item/modular_computer/tablet/preset/advanced=1,\
 		/obj/item/geiger_counter=1,\
 		/obj/item/construction/rcd/combat/admin=1,\

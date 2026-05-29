@@ -4,6 +4,30 @@
 /obj/item/borg
 	icon = 'icons/mob/robot_items.dmi'
 
+/obj/item/device/robot_jukebox
+	name = "Integrated JukeBox"
+	desc = "Мощная аудиосистема, интегрированная в ваш корпус."
+	icon = 'icons/obj/device.dmi'
+	icon_state = "ethdisco_base"
+	var/energy_usage = 5 // Потребление в тик (cell.use)
+
+/obj/item/device/robot_jukebox/Initialize(mapload)
+	. = ..()
+	AddComponent(/datum/component/jukebox, FALSE, 0, 70)
+
+/obj/item/device/robot_jukebox/process(delta_time)
+	var/mob/living/silicon/robot/R = loc
+	var/datum/component/jukebox/J = GetComponent(/datum/component/jukebox)
+
+	if(J && J.active)
+		if(!istype(R) || !R.cell || R.cell.charge < energy_usage)
+			J.stop = 0
+			return
+
+		R.cell.use(energy_usage * delta_time)
+
+/obj/item/device/robot_jukebox/attack_self(mob/user)
+	SEND_SIGNAL(src, COMSIG_ITEM_ATTACK_SELF, user)
 
 /obj/item/borg/stun
 	name = "Electrically-Charged Arm"

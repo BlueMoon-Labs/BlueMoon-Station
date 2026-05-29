@@ -6,6 +6,30 @@
 	SHOULD_NOT_SLEEP(TRUE)
 	if(mob_transforming)
 		return
+
+	// BLUEMOON OPTIMIZATION: throttle clientless mobs far from players
+	if(!client)
+		var/turf/our_turf = get_turf(src)
+		if(our_turf)
+			var/list/clients_on_z = SSmobs.clients_by_zlevel
+			if(islist(clients_on_z) && our_turf.z <= length(clients_on_z))
+				if(!length(clients_on_z[our_turf.z]))
+					// No players on this Z-level: skip everything except fire
+					if(on_fire)
+						handle_fire()
+					return
+				// Players on Z-level but none nearby: stagger processing
+				if(!has_nearby_player())
+					if(stat == DEAD)
+						// Dead far from players: process once per 30 sec
+						if(times_fired % 15 == 0)
+							BiologicalLife(seconds * 15, times_fired)
+						return
+					// Alive far from players: process once per 8 sec
+					if(times_fired % 4 != 0)
+						return
+	// END BLUEMOON OPTIMIZATION
+
 	. = SEND_SIGNAL(src, COMSIG_LIVING_LIFE, seconds, times_fired)
 	// Dead clientless mobs: only need BiologicalLife for rot/disease/organ decay, skip expensive PhysicalLife and status effects
 	if(stat == DEAD && !client)

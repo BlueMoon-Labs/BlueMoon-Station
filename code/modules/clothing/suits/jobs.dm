@@ -147,7 +147,7 @@
 	icon_state = "hazard"
 	item_state = "hazard"
 	blood_overlay_type = "armor"
-	allowed = list(/obj/item/flashlight, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman, /obj/item/t_scanner, /obj/item/radio, /obj/item/device/cooler, /obj/item/construction/rcd, /obj/item/pipe_dispenser) // BLUEMOON ADD - добавлен охладитель, RCD и RPD
+	allowed = list(/obj/item/flashlight, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman, /obj/item/t_scanner, /obj/item/radio, /obj/item/device/cooler, /obj/item/construction/rcd, /obj/item/pipe_dispenser, /obj/item/spear) // BLUEMOON ADD - добавлен охладитель, RCD и RPD
 	resistance_flags = NONE
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 

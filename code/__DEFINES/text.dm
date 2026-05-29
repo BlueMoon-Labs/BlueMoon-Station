@@ -331,3 +331,43 @@ GLOBAL_LIST_INIT(budget_ru_genitive, list(
 	"cargo budget" = "отдела карго",
 	"defense budget" = "отдела службы безопасности",
 ))
+
+/// Лист-словарь для модулей киборгов
+GLOBAL_LIST_INIT(borgmodule_ru_adjective, list(
+	"default" = "стандартный",
+	"standard" = "универсальный",
+    "medical" = "медицинский",
+    "engineering" = "инженерный",
+	"engineer" = "инженерный",
+    "security" = "охранный",
+	"peacekeeper" = "миротворческий",
+	"clown" = "клоунский",
+	"service" = "сервисный",
+	"miner" = "шахтёрский",
+	"cargo" = "погрузочный",
+	"syndicate" = "нелегальный",
+	"syndicate assault" = "штурмовой",
+	"syndicate medical" = "медицинский",
+	"syndicate saboteur" = "саботажный",
+	"inteq assault" = "штурмовой",
+	"inteq medical" = "медицинский",
+	"inteq saboteur" = "саботажный",
+	"inteq engineering" = "инженерный",
+	"spider assault" = "штурмовой",
+	"spider medical" = "медицинский",
+	"spider saboteur" = "саботажный",
+	"slaver medical combat" = "медицинский боевой",
+	"roleplay" = "ролевой",
+))
+
+/// Лист-словарь для цветов
+GLOBAL_LIST_INIT(colors_ru, list(
+	"red" = "красный",
+	"yellow" = "жёлтый",
+	"green" = "зелёный",
+	"blue" = "синий",
+	"pink" = "розовый",
+	"orange" = "оранжевый",
+	"cyan" = "циановый",
+	"white" = "белый",
+))

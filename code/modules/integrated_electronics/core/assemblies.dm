@@ -35,6 +35,22 @@
 	var/static/next_assembly_id = 0
 	var/sealed = FALSE
 
+	/// TGUI IntegratedCircuit canvas pan
+	var/ie_tgui_screen_x = 0
+	var/ie_tgui_screen_y = 0
+	var/datum/weakref/ie_gui_examined_circuit
+	var/ie_gui_examined_x = 0
+	var/ie_gui_examined_y = 0
+	/// TGUI: подсветка связи при передаче данных по проводу
+	var/ie_tgui_pulse_until = 0
+	var/ie_tgui_pulse_output_ref = null
+	var/ie_tgui_pulse_input_ref = null
+	var/datum/weakref/ie_tgui_pulse_chip_weak
+	/// Last coarse diagnostic HUD state from compute_diagnostic_hud_process_key; skips redundant health/cell updates in process().
+	var/last_diag_process_key = ""
+	/// Cached "[icon]-[icon_state]-[dir]" so sync_diagnostic_hud_offsets avoids allocating /icon every diag call.
+	var/diag_hud_offset_key = ""
+
 	hud_possible = list(DIAG_STAT_HUD, DIAG_BATT_HUD, DIAG_TRACK_HUD, DIAG_CIRCUIT_HUD) //diagnostic hud overlays
 	max_integrity = 50
 	pass_flags = 0
@@ -112,6 +128,7 @@
 	diag_hud_set_circuitcell()
 	diag_hud_set_circuitstat()
 	diag_hud_set_circuittracking()
+	last_diag_process_key = compute_diagnostic_hud_process_key()
 
 	access_card = new /obj/item/card/id(src)
 
@@ -119,6 +136,12 @@
 	STOP_PROCESSING(SScircuit, src)
 	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.all_huds)
 		diag_hud.remove_from_hud(src)
+	// Kill light datum/lighting work before qdel'ing many contents; clear wiring from chips first pass.
+	set_light(0)
+	for(var/obj/item/integrated_circuit/ic as anything in assembly_components.Copy())
+		qdel(ic)
+	assembly_components.Cut()
+	QDEL_NULL(battery)
 	QDEL_NULL(access_card)
 	return ..()
 
@@ -126,9 +149,40 @@
 	handle_idle_power()
 	check_pulling()
 
-	//updates diagnostic hud
-	diag_hud_set_circuithealth()
-	diag_hud_set_circuitcell()
+	// Diagnostic HUD: only when turf visibility or coarse health/battery buckets change (see compute_diagnostic_hud_process_key).
+	var/next_diag_key = compute_diagnostic_hud_process_key()
+	if(next_diag_key != last_diag_process_key)
+		last_diag_process_key = next_diag_key
+		diag_hud_set_circuithealth()
+		diag_hud_set_circuitcell()
+
+/// Coarse key for whether health/cell diagnostic overlays need a refresh this SS tick.
+/obj/item/electronic_assembly/proc/compute_diagnostic_hud_process_key()
+	if(!isturf(loc))
+		return "off"
+	var/mh = max(max_integrity, 1)
+	var/h = RoundDiagBar(obj_integrity / mh)
+	if(!battery)
+		return "[h]-nobatt"
+	var/mc = max(battery.maxcharge, 1)
+	return "[h]-[RoundDiagBar(battery.charge / mc)]"
+
+/// Sets pixel_y on diagnostic HUD holders when assembly icon appearance changes; avoids per-call /icon allocations in diag_hud_set_circuit* procs.
+/obj/item/electronic_assembly/proc/sync_diagnostic_hud_offsets()
+	if(!hud_list)
+		return
+	var/key = "[icon]-[icon_state]-[dir]"
+	if(key == diag_hud_offset_key)
+		return
+	diag_hud_offset_key = key
+	if(!icon)
+		return
+	var/icon/I = icon(icon, icon_state, dir)
+	var/offset = I.Height() - world.icon_size
+	for(var/hud_id in list(DIAG_CIRCUIT_HUD, DIAG_BATT_HUD, DIAG_STAT_HUD, DIAG_TRACK_HUD))
+		var/image/holder = hud_list[hud_id]
+		if(istype(holder))
+			holder.pixel_y = offset
 
 /obj/item/electronic_assembly/proc/handle_idle_power()
 
@@ -143,173 +197,10 @@
 				I.power_fail()
 
 /obj/item/electronic_assembly/interact(mob/user, circuit)
-	ui_interact(user, circuit)
-
-/obj/item/electronic_assembly/ui_interact(mob/user, obj/item/integrated_circuit/circuit_pins)
-	. = ..()
-	if(!check_interactivity(user))
+	if(user?.client?.prefs?.ie_classic_circuit_ui)
+		ie_legacy_ui_interact(user, circuit)
 		return
-
-	var/total_part_size = return_total_size()
-	var/total_complexity = return_total_complexity()
-	var/datum/browser/popup = new(user, "scannernew", name, 800, 630) // Set up the popup browser window
-	popup.add_stylesheet("scannernew", 'html/browser/assembly_ui.css')
-
-	var/HTML = "<html><head>[UTF8HEADER]<title>[name]</title></head>\
-		<body><table><thead><tr> \
-		<a href='?src=[REF(src)]'>Refresh</a>  |  <a href='?src=[REF(src)];rename=1'>Rename</a><br> \
-		[total_part_size]/[max_components] ([round((total_part_size / max_components) * 100, 0.1)]%) space taken up in the assembly.<br> \
-		[total_complexity]/[max_complexity] ([round((total_complexity / max_complexity) * 100, 0.1)]%) maximum complexity.<br>"
-	if(battery)
-		HTML += "[round(battery.charge, 0.1)]/[battery.maxcharge] ([round(battery.percent(), 0.1)]%) cell charge. <a href='?src=[REF(src)];remove_cell=1'>Remove</a>"
-	else
-		HTML += "<span class='danger'>No power cell detected!</span>"
-	HTML += "</tr></thead>"
-
-
-	//Getting the newest viewed circuit to compare with new circuit list
-	if(!circuit_pins || !istype(circuit_pins,/obj/item/integrated_circuit) || !(circuit_pins in assembly_components))
-		if(assembly_components.len > 0)
-			circuit_pins = assembly_components[1]
-
-
-	HTML += "<tr><td width=200px><div class=scrollleft>Components:<br><nobr>"
-
-	var/builtin_components = ""
-	var/removables = ""
-	var/remove_num = 1
-
-	for(var/obj/item/integrated_circuit/circuit in assembly_components)
-		if(!circuit.removable)
-			if(circuit == circuit_pins)
-				builtin_components += "[circuit.displayed_name]<br>"
-			else
-				builtin_components += "<a href='?src=[REF(src)]'>[circuit.displayed_name]</a><br>"
-
-		// Non-inbuilt circuits come after inbuilt circuits
-		else
-			removables += "<a href='?src=[REF(src)];component=[REF(circuit)];change_pos=1' style='text-decoration:none;'>[remove_num].</a> | "
-			if(circuit == circuit_pins)
-				removables += "[circuit.displayed_name]<br>"
-			else
-				removables += "<a href='?src=[REF(src)];component=[REF(circuit)]'>[circuit.displayed_name]</a><br>"
-			remove_num++
-
-	// Put removable circuits (if any) in separate categories from non-removable
-	if(builtin_components)
-		HTML += "<hr> Built in:<br> [builtin_components] <hr> Removable: <br>"
-
-	HTML += removables
-
-	HTML += "</nobr></div></td><td valign='top'><div class=scrollright>"
-
-
-	//Getting the newest circuit's pin
-	if(!circuit_pins || !istype(circuit_pins,/obj/item/integrated_circuit))
-		if(assembly_components.len > 0)
-			circuit_pins = assembly_components[1]
-
-	if(circuit_pins)
-		HTML += "<div valign='middle'>[circuit_pins.displayed_name]<br>"
-
-		HTML += "<a href='?src=[REF(src)];component=[REF(circuit_pins)]'>Refresh</a> | \
-		<a href='?src=[REF(src)];component=[REF(circuit_pins)];rename_component=1'>Rename</a> | \
-		<a href='?src=[REF(src)];component=[REF(circuit_pins)];scan=1'>Copy Ref</a> | \
-		<a href='?src=[REF(src)];component=[REF(circuit_pins)];interact=1'>Interact</a>"
-		if(circuit_pins.removable)
-			HTML += " | <a href='?src=[REF(src)];component=[REF(circuit_pins)];remove=1'>Remove</a>"
-		HTML += "</div><br>"
-
-		var/table_edge_width = "30%"
-		var/table_middle_width = "40%"
-
-		HTML += "<table border='1' style='undefined;table-layout: fixed; position: absolute; left: 210; right: 2;'><colgroup>\
-			<col style='width: [table_edge_width]'>\
-			<col style='width: [table_middle_width]'>\
-			<col style='width: [table_edge_width]'>\
-			</colgroup>"
-
-		var/column_width = 3
-		var/row_height = max(circuit_pins.inputs.len, circuit_pins.outputs.len, 1)
-
-		for(var/i = 1 to row_height)
-			HTML += "<tr>"
-			for(var/j = 1 to column_width)
-				var/datum/integrated_io/io = null
-				var/words = ""
-				var/height = 1
-				switch(j)
-					if(1)
-						io = circuit_pins.get_pin_ref(IC_INPUT, i)
-						if(io)
-							words += "<b><a href='?src=[REF(circuit_pins)];act=wire;pin=[REF(io)]'>[io.display_pin_type()] [io.name]</a> \
-							<a href='?src=[REF(circuit_pins)];act=data;pin=[REF(io)]'>[io.display_data(io.data)]</a></b><br>"
-							if(io.linked.len)
-								words += "<ul>"
-								for(var/k in io.linked)
-									var/datum/integrated_io/linked = k
-									words += "<li><a href='?src=[REF(circuit_pins)];act=unwire;pin=[REF(io)];link=[REF(linked)]'>[linked]</a> \
-									@ <a href='?src=[REF(linked.holder)]'>[linked.holder.displayed_name]</a></li>"
-								words += "</ul>"
-
-							if(circuit_pins.outputs.len > circuit_pins.inputs.len)
-								height = 1
-					if(2)
-						if(i == 1)
-							words += "[circuit_pins.displayed_name]<br>[circuit_pins.name != circuit_pins.displayed_name ? "([circuit_pins.name])":""]<hr>[circuit_pins.desc]"
-							height = row_height
-						else
-							continue
-					if(3)
-						io = circuit_pins.get_pin_ref(IC_OUTPUT, i)
-						if(io)
-							words += "<b><a href='?src=[REF(circuit_pins)];act=wire;pin=[REF(io)]'>[io.display_pin_type()] [io.name]</a> \
-							<a href='?src=[REF(circuit_pins)];act=data;pin=[REF(io)]'>[io.display_data(io.data)]</a></b><br>"
-							if(io.linked.len)
-								words += "<ul>"
-								for(var/k in io.linked)
-									var/datum/integrated_io/linked = k
-									words += "<li><a href='?src=[REF(circuit_pins)];act=unwire;pin=[REF(io)];link=[REF(linked)]'>[linked]</a> \
-									@ <a href='?src=[REF(linked.holder)]'>[linked.holder.displayed_name]</a></li>"
-								words += "</ul>"
-
-							if(circuit_pins.inputs.len > circuit_pins.outputs.len)
-								height = 1
-				HTML += "<td align='center' rowspan='[height]'>[words]</td>"
-			HTML += "</tr>"
-
-		for(var/activator in circuit_pins.activators)
-			var/datum/integrated_io/io = activator
-			var/words = ""
-
-			words += "<b><a href='?src=[REF(circuit_pins)];act=wire;pin=[REF(io)]'>[io]</a> \
-				<a href='?src=[REF(circuit_pins)];act=data;pin=[REF(io)]'>[io.data?"\<PULSE OUT\>":"\<PULSE IN\>"]</a></b><br>"
-			if(io.linked.len)
-				words += "<ul>"
-				for(var/k in io.linked)
-					var/datum/integrated_io/linked = k
-					words += "<li><a href='?src=[REF(circuit_pins)];act=unwire;pin=[REF(io)];link=[REF(linked)]'>[linked]</a> \
-					@ <a href='?src=[REF(linked.holder)]'>[linked.holder.displayed_name]</a></li>"
-				words += "</ul>"
-
-			HTML += "<tr><td colspan='3' align='center'>[words]</td></tr>"
-
-		HTML += "<tr>\
-			<br><font color='FFFFFF' class=lowtext>Complexity: [circuit_pins.complexity]\
-			<br>Cooldown per use: [circuit_pins.cooldown_per_use/10] sec"
-		if(circuit_pins.ext_cooldown)
-			HTML += "<br>External manipulation cooldown: [circuit_pins.ext_cooldown/10] sec"
-		if(circuit_pins.power_draw_idle)
-			HTML += "<br>Power Draw: [circuit_pins.power_draw_idle] W (Idle)"
-		if(circuit_pins.power_draw_per_use)
-			HTML += "<br>Power Draw: [circuit_pins.power_draw_per_use] W (Active)" // Borgcode says that powercells' checked_use() takes joules as input.
-		HTML += "<br>[circuit_pins.extended_desc]</font></tr></table></div>"
-
-
-	HTML += "</div></td></tr></table></body></html>"
-
-	popup.set_content(HTML)
-	popup.open()
+	ui_interact(user, circuit)
 
 /obj/item/electronic_assembly/Topic(href, href_list)
 	if(..())
@@ -329,6 +220,13 @@
 	if(!check_interactivity(usr))
 		return
 
+	if(href_list["ie_ui_mode"] == "tgui")
+		if(usr.client?.prefs)
+			usr.client.prefs.ie_classic_circuit_ui = FALSE
+		SStgui.close_uis(src)
+		ui_interact(usr, null)
+		return
+
 	if(href_list["rename"])
 		rename(usr)
 
@@ -341,6 +239,7 @@
 			to_chat(usr, "<span class='notice'>You pull \the [battery] out of \the [src]'s power supplier.</span>")
 			battery = null
 			diag_hud_set_circuitstat() //update diagnostic hud
+			SStgui.update_uis(src)
 
 	var/obj/item/integrated_circuit/component
 
@@ -414,6 +313,7 @@
 	diag_hud_set_circuitcell(TRUE)
 	diag_hud_set_circuitstat(TRUE)
 	diag_hud_set_circuittracking(TRUE)
+	last_diag_process_key = compute_diagnostic_hud_process_key()
 
 /obj/item/electronic_assembly/dropped(mob/user)
 	. = ..()
@@ -422,6 +322,7 @@
 	diag_hud_set_circuitcell()
 	diag_hud_set_circuitstat()
 	diag_hud_set_circuittracking()
+	last_diag_process_key = compute_diagnostic_hud_process_key()
 
 /obj/item/electronic_assembly/proc/rename()
 	var/mob/M = usr
@@ -446,6 +347,7 @@
 		icon_state = initial(icon_state) + "-open"
 	else
 		icon_state = initial(icon_state)
+	diag_hud_offset_key = ""
 	cut_overlays()
 	if(detail_color == COLOR_ASSEMBLY_BLACK) //Black colored overlay looks almost but not exactly like the base sprite, so just cut the overlay and avoid it looking kinda off.
 		return
@@ -474,9 +376,14 @@
 	if(IC.w_class > w_class)
 		to_chat(user, "<span class='warning'>\The [IC] is way too big to fit into \the [src].</span>")
 		return FALSE
-	if(istype(IC, /obj/item/integrated_circuit/manipulation/interacter) && locate(/obj/item/integrated_circuit/manipulation/interacter) in src.assembly_components)
-		to_chat(user, "<span class='warning'>Вы не можете вставить две этих детали в один корпус.</span>")
-		return FALSE
+	if(IC.limit_per_assembly > 0)	// limit_per_assembly is not null and > 0
+		var/already = 0
+		for(var/obj/item/integrated_circuit/C in assembly_components)	// checking all circuits already present
+			if(C.type == IC.type)
+				already++
+				if(already >= IC.limit_per_assembly)
+					to_chat(user, "<span class='warning'>Вы не можете вставить больше [IC.limit_per_assembly] таких плат в один корпус.</span>")
+					return FALSE
 	var/total_part_size = return_total_size()
 	var/total_complexity = return_total_complexity()
 
@@ -517,6 +424,7 @@
 	//diagnostic hud update
 	diag_hud_set_circuitstat()
 	diag_hud_set_circuittracking()
+	SStgui.update_uis(src)
 
 
 /obj/item/electronic_assembly/proc/try_remove_component(obj/item/integrated_circuit/IC, mob/user, silent)
@@ -557,6 +465,7 @@
 	//diagnostic hud update
 	diag_hud_set_circuitstat()
 	diag_hud_set_circuittracking()
+	SStgui.update_uis(src)
 
 
 /obj/item/electronic_assembly/afterattack(atom/target, mob/user, proximity)
@@ -659,6 +568,8 @@
 		diag_hud_set_circuitstat() //update diagnostic hud
 		playsound(get_turf(src), 'sound/items/Deconstruct.ogg', 50, 1)
 		to_chat(user, "<span class='notice'>You slot the [I] inside \the [src]'s power supplier.</span>")
+		to_chat(user, "<span class='info'>Питание не считается «компонентом» схемы: в окне редактора в счётчике — только напечатанные на интегральном принтере микросхемы.</span>")
+		SStgui.update_uis(src)
 		return TRUE
 
 	else if(istype(I, /obj/item/integrated_electronics/detailer))
@@ -671,22 +582,24 @@
 			return ..()
 		var/list/input_selection = list()
 		//Check all the components asking for an input
-		for(var/obj/item/integrated_circuit/input in assembly_components)
-			if((input.demands_object_input && opened) || (input.demands_object_input && input.can_input_object_when_closed))
+		for(var/obj/item/integrated_circuit/C in assembly_components)
+			if((C.demands_object_input && opened) || (C.demands_object_input && C.can_input_object_when_closed))
+				if(!C.can_accept_item(I))
+					continue
 				var/i = 0
 				//Check if there is another component with the same name and append a number for identification
 				for(var/s in input_selection)
 					var/obj/item/integrated_circuit/s_circuit = input_selection[s] //The for-loop iterates the keys of the associative list.
-					if(s_circuit.name == input.name && s_circuit.displayed_name == input.displayed_name && s_circuit != input)
+					if(s_circuit.name == C.name && s_circuit.displayed_name == C.displayed_name && s_circuit != C)
 						i++
-				var/disp_name= "[input.displayed_name] \[[input]\]"
+				var/disp_name= "[C.displayed_name] \[[C]\]"
 				if(i)
 					disp_name += " ([i+1])"
 				//Associative lists prevent me from needing another list and using a Find proc
-				input_selection[disp_name] = input
+				input_selection[disp_name] = C
 
 		var/obj/item/integrated_circuit/choice
-		if(input_selection)
+		if(length(input_selection))
 			if(input_selection.len == 1)
 				choice = input_selection[input_selection[1]]
 			else
@@ -699,6 +612,11 @@
 				choice.additem(I, user)
 		for(var/obj/item/integrated_circuit/input/S in assembly_components)
 			S.attackby_react(I,user,user.a_intent)
+		//	Easiest way to check if item "I" was consumed, or otherwise taken by one of the circuits.
+		//	If a circuit with demand_object_input == TRUE, or something like a scanner takes the items, prevents user from hitting assembly with it.
+		//	I could code something less hacky, but i'm pretty tired of IC logic at this point, and i want it to be as failproof as possible.
+		if(!user.is_holding(I))
+			return TRUE
 		return ..()
 
 
@@ -728,7 +646,7 @@
 	var/obj/item/integrated_circuit/input/choice
 
 
-	if(input_selection)
+	if(length(input_selection))
 		if(input_selection.len ==1)
 			choice = input_selection[input_selection[1]]
 		else

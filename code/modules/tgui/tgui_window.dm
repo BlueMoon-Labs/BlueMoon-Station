@@ -3,6 +3,9 @@
  * SPDX-License-Identifier: MIT
  */
 
+/// Порт локального dev-сервера tgui (см. tgui/scripts/vite-dev.cjs). Должен совпадать с серверным.
+#define TGUI_DEV_SERVER_PORT 3000
+
 /datum/tgui_window
 	var/id
 	var/client/client
@@ -88,10 +91,14 @@
 	// Inject inline assets
 	var/inline_assets_str = ""
 	var/first_js_url = null
+	// dev hot-reload: ip берётся из конфига, иначе из env (его выставляет DEV launch-конфиг VS Code)
+	var/dev_server_ip = CONFIG_GET(string/tgui_dev_server_ip)
+	if(!length(dev_server_ip))
+		dev_server_ip = world.GetConfig("env", "TGUI_DEV_SERVER_IP")
 	for(var/datum/asset/asset in assets)
 		var/mappings = asset.get_url_mappings()
 		for(var/name in mappings)
-			var/url = mappings[name]
+			var/url = tgui_resolve_asset_url(name, mappings[name], dev_server_ip)
 			// Not encoding since asset strings are considered safe
 			if(copytext(name, -4) == ".css")
 				inline_assets_str += "Byond.loadCss('[url]', true);\n"
@@ -263,7 +270,7 @@
 		// logout, but nope! It appears to be perfectly valid to call winset by every means we can measure in Logout,
 		// and yet it causes a bad client runtime. To avoid that happening, we just have to know if we're in Logout or
 		// not.
-		if(!logout && client)
+		if(!logout && client && !isnewplayer(client.mob)) // BLUEMOON EDIT - для new_player в лобби не сбрасываем фокус, иначе bm_lobby_browser перестаёт работать
 			winset(client, null, "mapwindow.map.focus=true")
 		return
 	if(CONFIG_GET(flag/emergency_tgui_logging))
@@ -276,7 +283,7 @@
 	// to read the error message.
 	if(!fatally_errored)
 		client << browse(null, "window=[id]")
-		if(!logout && istype(client)) // BLUEMOON EDIT - sanity check
+		if(!logout && istype(client) && !isnewplayer(client.mob)) // BLUEMOON EDIT - sanity check + не сбрасываем фокус для new_player в лобби
 			winset(client, null, "mapwindow.map.focus=true")
 
 /**
@@ -473,3 +480,14 @@
 
 /datum/tgui_window/proc/remove_oversized_payload(payload_id)
 	oversized_payloads -= payload_id
+
+/// Возвращает URL для загрузки tgui-ассета. Если задан dev_server_ip,
+/// бандлы (js/css главного tgui и панели) перенаправляются на dev-сервер
+/// для hot-reload; остальные ассеты возвращаются без изменений.
+/proc/tgui_resolve_asset_url(name, url, dev_server_ip)
+	if(!length(dev_server_ip))
+		return url
+	if(name == "tgui.bundle.js" || name == "tgui.bundle.css" \
+		|| name == "tgui-panel.bundle.js" || name == "tgui-panel.bundle.css")
+		return "http://[dev_server_ip]:[TGUI_DEV_SERVER_PORT]/[name]"
+	return url

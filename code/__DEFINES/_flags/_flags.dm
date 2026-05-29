@@ -24,6 +24,9 @@ GLOBAL_LIST_INIT(bitflags, list(
 ))
 
 // for /datum/var/datum_flags
+// NOTE: DF_USE_TAG must stay as `1<<0` because the REF() macro in __DEFINES/_helpers.dm hardcodes
+// the literal `1` (that file loads before this one and can't reference DF_USE_TAG by name).
+// If you ever change DF_USE_TAG, update the literal in REF() too.
 #define DF_USE_TAG		(1<<0)
 #define DF_VAR_EDITED	(1<<1)
 #define DF_ISPROCESSING (1<<2)

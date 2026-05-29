@@ -1,4 +1,4 @@
-#define CHALLENGE_SHUTTLE_DELAY (25 MINUTES) // 25 minutes delay after war declaration
+#define CHALLENGE_SHUTTLE_DELAY (15 MINUTES)
 
 /obj/machinery/computer/shuttle/syndicate
 	name = "InteQ shuttle terminal"

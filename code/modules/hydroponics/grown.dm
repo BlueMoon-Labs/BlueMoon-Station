@@ -18,7 +18,7 @@
 	var/distill_reagent //If NULL and this object can be distilled, it uses a generic fruit_wine reagent and adjusts its variables.
 	var/wine_flavor //If NULL, this is automatically set to the fruit's flavor. Determines the flavor of the wine if distill_reagent is NULL.
 	var/wine_power = 10 //Determines the boozepwr of the wine if distill_reagent is NULL.
-	var/vision_flags = 0
+	var/vision_flags = NONE
 
 /obj/item/reagent_containers/food/snacks/grown/make_dryable()
 	AddElement(/datum/element/dryable, type)
@@ -102,6 +102,8 @@
 				squash(hit_atom)
 
 /obj/item/reagent_containers/food/snacks/grown/proc/squash(atom/target)
+	if(QDELETED(src)) //teleport/slip traits can delete us mid-throw before throw_impact calls squash
+		return
 	var/turf/T = get_turf(target)
 	if(ispath(splat_type, /obj/effect/decal/cleanable/plant_smudge))
 		if(filling_color)
@@ -119,9 +121,10 @@
 		for(var/datum/plant_gene/trait/trait in seed.genes)
 			trait.on_squash(src, target)
 
-	reagents.reaction(T)
-	for(var/A in T)
-		reagents.reaction(A)
+	if(reagents) //on_squash traits (smoke/teleport) may clear or delete our reagents
+		reagents.reaction(T)
+		for(var/A in T)
+			reagents.reaction(A)
 
 	qdel(src)
 

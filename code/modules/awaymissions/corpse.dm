@@ -174,6 +174,12 @@
 					SSjob.equip_loadout(null, H)
 					SSjob.post_equip_loadout(null, H)
 				H.load_client_quirks(H.client) // Грузим квирки после лодаута, если он есть, из-за квирка семейная реликвия
+		// BLUEMOON ADD START - загрузка татуировок для гост-ролей без загрузки внешности
+		else if(ishuman(M) && can_load_appearance)
+			var/mob/living/carbon/human/H = M
+			if(H.client?.prefs)
+				H.client.prefs.apply_tattoos_to_human(H)
+		// BLUEMOON ADD END
 		MM.name = M.real_name
 		if(make_bank_account)
 			handlebank(M, starting_money)
@@ -308,7 +314,7 @@
 		H.equipOutfit(outfit)
 		if(disable_pda)
 			// We don't want corpse PDAs to show up in the messenger list.
-			var/obj/item/pda/PDA = locate(/obj/item/pda) in H
+			var/obj/item/modular_computer/pda/PDA = locate(/obj/item/modular_computer/pda) in H
 			if(PDA)
 				PDA.toff = TRUE
 		if(disable_sensors)
@@ -455,7 +461,7 @@
 /obj/effect/mob_spawn/human/doctor/alive/equip(mob/living/carbon/human/H)
 	..()
 	// Remove radio and PDA so they wouldn't annoy station crew.
-	var/list/del_types = list(/obj/item/pda, /obj/item/radio/headset)
+	var/list/del_types = list(/obj/item/modular_computer/pda, /obj/item/radio/headset)
 	for(var/del_type in del_types)
 		var/obj/item/I = locate(del_type) in H
 		qdel(I)

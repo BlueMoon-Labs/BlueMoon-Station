@@ -23,7 +23,7 @@
 //trash = /obj/item/trash/tuna_used //I dont know if I like this idea - A Masked Cat
 	list_reagents = list(/datum/reagent/consumable/sodiumchloride = 5, /datum/reagent/mercury = 2)
 	tastes = list("tuna" = 15, "mercury" = 1, "salt" = 3)
-	foodtype = MEAT
+	foodtype = MEAT | SEAFOOD
 
 //////////////////////////Sushi/////////////////////////////////
 /obj/item/reagent_containers/food/snacks/sushie_basic
@@ -35,7 +35,7 @@
 	bitesize = 1
 	filling_color = "#F2EEEA" //rgb(242, 238, 234)
 	tastes = list("fish" = 1, "rice" = 1, "salt" = 1)
-	foodtype = MEAT | VEGETABLES
+	foodtype = MEAT | VEGETABLES | SEAFOOD
 
 /obj/item/reagent_containers/food/snacks/sushie_adv
 	name = "Funa Nigiri"
@@ -46,7 +46,7 @@
 	bitesize = 1
 	filling_color = "#F2EEEA" //rgb(242, 238, 234)
 	tastes = list("fish" = 1, "rice" = 1, "salt" = 1)
-	foodtype = MEAT | VEGETABLES
+	foodtype = MEAT | VEGETABLES | SEAFOOD
 
 /obj/item/reagent_containers/food/snacks/sushie_pro
 	name = "Funa Nigiri"
@@ -57,7 +57,7 @@
 	bitesize = 1
 	filling_color = "#F2EEEA" //rgb(242, 238, 234)
 	tastes = list("fish" = 1, "rice" = 1, "salt" = 1)
-	foodtype = MEAT | VEGETABLES
+	foodtype = MEAT | VEGETABLES | SEAFOOD
 
 /obj/item/reagent_containers/food/snacks/tobiko
 	name = "Tobiko"
@@ -84,4 +84,4 @@
 	list_reagents = list(/datum/reagent/consumable/nutriment = 6, /datum/reagent/consumable/capsaicin = 5)
 	filling_color = "#FA8072"
 	tastes = list("fish" = 1, "hot peppers" = 1)
-	foodtype = MEAT | TOXIC
+	foodtype = MEAT | TOXIC | SEAFOOD

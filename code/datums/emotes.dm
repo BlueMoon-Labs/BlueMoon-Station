@@ -50,56 +50,60 @@
 /// * `message_override` - if set to some string, will replace the emote message with the provided string. If `params` is used,
 /// this string can contain `%t`, which will be replaced with `message`.
 /datum/emote/proc/run_emote(mob/user, params, type_override, intentional = FALSE, message_override = null)
-	. = TRUE
-	if(!can_run_emote(user, TRUE, intentional))
-		return FALSE
+    . = TRUE
+    if(!can_run_emote(user, TRUE, intentional))
+        return FALSE
 
-	var/msg = ""
-	if(message_override)
-		msg = message_override
-	else
-		msg = select_message_type(user)
+    var/msg = ""
+    if(message_override)
+        msg = message_override
+    else
+        msg = select_message_type(user)
 
-	if(params && message_param)
-		msg = select_param(user, params)
+    if(params && message_param)
+        msg = select_param(user, params)
 
-	msg = replace_pronoun(user, msg)
+    msg = replace_pronoun(user, msg)
 
-	if(isliving(user))
-		var/mob/living/L = user
-		for(var/obj/item/implant/I in L.implants)
-			I.trigger(key, L)
+    if(isliving(user))
+        var/mob/living/L = user
+        for(var/obj/item/implant/I in L.implants)
+            I.trigger(key, L)
 
-	if(!msg)
-		return
+    if(!msg)
+        return
 
-	user.log_message(message_override ? "[select_message_type(user)] | [msg]" : msg, LOG_EMOTE)
-	//msg = "<b>[user]</b> " + msg //SKYRAT CHANGE
-	var/dchatmsg = "<span class='emote'><b>[user]</b> [msg]</span>" //SKYRAT CHANGE
+    user.log_message(message_override ? "[select_message_type(user)] | [msg]" : msg, LOG_EMOTE)
+    var/dchatmsg = "<span class='emote'><b>[user]</b> [msg]</span>"
+    var/blind_msg = "<span class='emote'><b>Кто-то</b> [msg]</span>"
 
-	var/blind_msg = "<span class='emote'><b>Кто-то</b> [msg]</span>"
-	if(emote_type != EMOTE_VISIBLE)
-		play_fov_effect(user, 3, "talk", ignore_self = FALSE)
-	if(user.client)
-		for(var/mob/M in GLOB.dead_mob_list)
-			if(!M.client || isnewplayer(M))
-				continue
-			var/T = get_turf(user)
-			if(M.stat == DEAD && M.client && (M.client.prefs.chat_toggles & CHAT_GHOSTSIGHT) && !(M in viewers(T, null)))
-				M.show_message(dchatmsg)
+    if(emote_type != EMOTE_VISIBLE)
+        play_fov_effect(user, 3, "talk", ignore_self = FALSE)
+    if(user.client)
+        for(var/mob/M in GLOB.dead_mob_list)
+            if(!M.client || isnewplayer(M))
+                continue
+            var/T = get_turf(user)
+            if(M.stat == DEAD && M.client && (M.client.prefs.chat_toggles & CHAT_GHOSTSIGHT) && !(M in viewers(T, null)))
+                M.show_message(dchatmsg)
 
-	if(emote_type == EMOTE_AUDIBLE)
-		user.audible_message(dchatmsg, runechat_popup = chat_popup, rune_msg = msg)
-	else if(emote_type == EMOTE_VISIBLE)
-		user.visible_message(dchatmsg, runechat_popup = chat_popup, rune_msg = msg)
-	else if(emote_type == EMOTE_BOTH)
-		user.visible_message(dchatmsg, blind_message = blind_msg, runechat_popup = chat_popup, rune_msg = msg)
-	else if(emote_type == EMOTE_OMNI)
-		user.visible_message(dchatmsg, omni = TRUE, runechat_popup = chat_popup, rune_msg = msg)
-	//Skyrat change
-	if(image_popup)
-		flick_emote_popup_on_mob(user, image_popup, 40)
-	//End of skyrat changes
+    if(emote_type == EMOTE_AUDIBLE)
+        user.audible_message(dchatmsg, runechat_popup = chat_popup, rune_msg = msg)
+    else if(emote_type == EMOTE_VISIBLE)
+        user.visible_message(dchatmsg, runechat_popup = chat_popup, rune_msg = msg)
+    else if(emote_type == EMOTE_BOTH)
+        user.visible_message(dchatmsg, blind_message = blind_msg, runechat_popup = chat_popup, rune_msg = msg)
+    else if(emote_type == EMOTE_OMNI)
+        user.visible_message(dchatmsg, omni = TRUE, runechat_popup = chat_popup, rune_msg = msg)
+
+    if(image_popup)
+        flick_emote_popup_on_mob(user, image_popup, 40)
+
+    if(isliving(user))
+        var/turf/T = get_turf(user)
+        if(T)
+            for(var/mob/camera/aiEye/eye in GLOB.aiEyes)
+                eye.SeeEmote(user, msg)
 
 /datum/emote/proc/get_sound(mob/living/user)
 	return sound //by default just return this var.

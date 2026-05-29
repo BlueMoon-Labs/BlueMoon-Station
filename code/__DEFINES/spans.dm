@@ -26,6 +26,7 @@
 #define span_blueteamradio(str) ("<span class='blueteamradio'>" + str + "</span>")
 #define span_bold(str) ("<span class='bold'>" + str + "</span>")
 #define span_boldannounce(str) ("<span class='boldannounce'>" + str + "</span>")
+#define span_bolddanger(str) ("<span class='bolddanger'>" + str + "</span>")
 #define span_boldnotice(str) ("<span class='boldnotice'>" + str + "</span>")
 #define span_boldwarning(str) ("<span class='boldwarning'>" + str + "</span>")
 #define span_centcomradio(str) ("<span class='centcomradio'>" + str + "</span>")
@@ -63,6 +64,7 @@
 #define span_info(str) ("<span class='info'>" + str + "</span>")
 #define span_interface(str) ("<span class='interface'>" + str + "</span>")
 #define span_linkify(str) ("<span class='linkify'>" + str + "</span>")
+#define span_italics(str) ("<span class='italics'>" + str + "</span>")
 #define span_looc(str) ("<span class='looc'>" + str + "</span>")
 #define span_medal(str) ("<span class='medal'>" + str + "</span>")
 #define span_medradio(str) ("<span class='medradio'>" + str + "</span>")
@@ -128,3 +130,8 @@
 
 //For balloons (they dont use CSS)
 #define span_balloon_warning(str) ("<span style='color:#c51e1e'>" + str + "</span>")
+
+// Tooltips
+#define span_tooltip(str, tipstr, tipstyle, additional_classes, style) ("<span class='chat-tooltip[tipstyle == "" ? "" : " chat-tooltip--[tipstyle]"][additional_classes == "" ? "" : " [additional_classes]"]'[style == "" ? "" : " style='[style]'"]>[tipstr]<span class='chat-tooltip__content'>[str]</span></span>")
+#define span_tooltip_warning(str, tipstr) span_tooltip(str, tipstr, "warning", "", "")
+#define span_tooltip_fast(str) span_tooltip_warning(str, "\[?\]")

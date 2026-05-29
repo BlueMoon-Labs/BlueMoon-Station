@@ -108,7 +108,7 @@
 		occupier = AI
 		AI.control_disabled = 1
 		AI.radio_enabled = 0
-		to_chat(AI, "You have been uploaded to a stationary terminal. Sadly, there is no remote access from here.")
+		to_chat(AI, build_ai_upload_notice())
 		to_chat(user, "<span class='boldnotice'>Transfer successful</span>: [AI.name] ([rand(1000,9999)].exe) installed and executed successfully. Local copy has been removed.")
 		card.AI = null
 		update_icon()

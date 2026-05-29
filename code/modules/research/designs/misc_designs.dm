@@ -401,7 +401,7 @@
 	desc = "An advanced trash bag with bluespace properties; capable of holding a plethora of garbage."
 	id = "blutrash"
 	build_type = PROTOLATHE
-	materials = list(/datum/material/gold = 1500, /datum/material/uranium = 250, /datum/material/plasma = 1500)
+	materials = list(/datum/material/gold = 1500, /datum/material/uranium = 250, /datum/material/bluespace = 1200)
 	build_path = /obj/item/storage/bag/trash/bluespace
 	category = list("Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_SERVICE
@@ -434,16 +434,6 @@
 	materials = list(/datum/material/iron = 1000)
 	reagents_list = list(/datum/reagent/acetone = 60)
 	build_path = /obj/item/paint/paint_remover
-	category = list("Equipment")
-	departmental_flags = DEPARTMENTAL_FLAG_SERVICE
-
-/datum/design/spraybottle
-	name = "Spray Bottle"
-	desc = "A spray bottle, with an unscrewable top."
-	id = "spraybottle"
-	build_type = PROTOLATHE
-	materials = list(/datum/material/iron = 3000, /datum/material/glass = 200)
-	build_path = /obj/item/reagent_containers/spray
 	category = list("Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_SERVICE
 

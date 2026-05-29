@@ -14,9 +14,12 @@
 	item_state = "pizzabox"
 	lefthand_file = 'icons/mob/inhands/misc/food_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/misc/food_righthand.dmi'
+	custom_materials = list(/datum/material/cardboard = MINERAL_MATERIAL_AMOUNT)
 
 	var/open = FALSE
 	var/can_open_on_fall = TRUE //if FALSE, this pizza box will never open if it falls from a stack
+	/// Used so that you can not destroy the infinite pizza box
+	var/foldable = TRUE
 	var/boxtag = ""
 	var/list/boxes = list()
 
@@ -101,12 +104,12 @@
 		return
 	open = !open
 	if(open && !bomb_defused)
-		audible_message("<span class='warning'>[icon2html(src, hearers(src))] *beep*</span>")
+		audible_message(span_warning("[icon2html(src, hearers(src))] *beep*"))
 		bomb_active = TRUE
 		START_PROCESSING(SSobj, src)
-	else if(!open && !pizza && !bomb)
-		var/obj/item/stack/sheet/cardboard/cardboard = new /obj/item/stack/sheet/cardboard(user.drop_location())
+	else if(!open && !pizza && !bomb && foldable)
 		to_chat(user, span_notice("Складываю коробку из-под пиццы в картон."))
+		var/obj/item/stack/sheet/cardboard/cardboard = new (user.drop_location())
 		user.put_in_active_hand(cardboard)
 		qdel(src)
 		return
@@ -307,17 +310,20 @@
 /obj/item/pizzabox/infinite
 	resistance_flags = FIRE_PROOF | LAVA_PROOF | ACID_PROOF //hard to destroy
 	can_open_on_fall = FALSE
+	foldable = FALSE
+	///List of pizzas this box can spawn. Weighted by chance to be someone's favorite.
 	var/list/pizza_types = list(
-		/obj/item/reagent_containers/food/snacks/pizza/meat = 1,
-		/obj/item/reagent_containers/food/snacks/pizza/mushroom = 1,
-		/obj/item/reagent_containers/food/snacks/pizza/margherita = 1,
-		/obj/item/reagent_containers/food/snacks/pizza/sassysage = 0.8,
-		/obj/item/reagent_containers/food/snacks/pizza/vegetable = 0.8,
-		/obj/item/reagent_containers/food/snacks/pizza/pineapple = 0.5,
-		/obj/item/reagent_containers/food/snacks/pizza/donkpocket = 0.3,
-		/obj/item/reagent_containers/food/snacks/pizza/dank = 0.1) //pizzas here are weighted by chance to be someone's favorite
+		/obj/item/reagent_containers/food/snacks/pizza/meat = 10,
+		/obj/item/reagent_containers/food/snacks/pizza/mushroom = 10,
+		/obj/item/reagent_containers/food/snacks/pizza/margherita = 10,
+		/obj/item/reagent_containers/food/snacks/pizza/sassysage = 8,
+		/obj/item/reagent_containers/food/snacks/pizza/vegetable = 8,
+		/obj/item/reagent_containers/food/snacks/pizza/pineapple = 5,
+		/obj/item/reagent_containers/food/snacks/pizza/donkpocket = 3,
+		/obj/item/reagent_containers/food/snacks/pizza/dank = 1,
+	)
+	///List of ckeys and their favourite pizzas. e.g. pizza_preferences[ckey] = /obj/item/food/pizza/meat
 	var/static/list/pizza_preferences
-	COOLDOWN_DECLARE(next_pizza_attunement)
 
 /obj/item/pizzabox/infinite/Initialize(mapload)
 	. = ..()
@@ -327,33 +333,37 @@
 /obj/item/pizzabox/infinite/examine(mob/user)
 	. = ..()
 	if(isobserver(user))
-		. += "<span class='deadsay'>This pizza box is anomalous, and will produce infinite pizza.</span>"
+		. += span_deadsay("This pizza box is anomalous, and will produce infinite pizza.")
 
 /obj/item/pizzabox/infinite/attack_self(mob/living/user)
-	if(COOLDOWN_FINISHED(src, next_pizza_attunement))
-		QDEL_NULL(pizza)
-		if(ishuman(user))
-			attune_pizza(user)
+	if(ishuman(user))
+		attune_pizza(user)
 	. = ..()
 
-/obj/item/pizzabox/infinite/on_attack_hand(mob/user, act_intent, unarmed_attack_flags)
-	var/had_pizza = (pizza ? TRUE : FALSE)
-	. = ..()
-	if(had_pizza && !pizza)
-		COOLDOWN_START(src, next_pizza_attunement, (3 SECONDS))
-
-/obj/item/pizzabox/infinite/proc/attune_pizza(mob/living/carbon/human/noms) //tonight on "proc names I never thought I'd type"
-	if(!pizza_preferences[noms.ckey])
-		pizza_preferences[noms.ckey] = pickweight(pizza_types)
-		if(noms.has_quirk(/datum/quirk/pineapple_liker))
-			pizza_preferences[noms.ckey] = /obj/item/reagent_containers/food/snacks/pizza/pineapple
-		else if(noms.has_quirk(/datum/quirk/pineapple_hater))
+/obj/item/pizzabox/infinite/proc/attune_pizza(mob/living/carbon/human/nommer) //tonight on "proc names I never thought I'd type"
+	if(!nommer.ckey)
+		return
+	//list our ckey and assign it a favourite pizza
+	if(!pizza_preferences[nommer.ckey])
+		if(nommer.has_quirk(/datum/quirk/pineapple_liker))
+			pizza_preferences[nommer.ckey] = /obj/item/reagent_containers/food/snacks/pizza/pineapple
+		else if(nommer.has_quirk(/datum/quirk/pineapple_hater))
 			var/list/pineapple_pizza_liker = pizza_types.Copy()
 			pineapple_pizza_liker -= /obj/item/reagent_containers/food/snacks/pizza/pineapple
-			pizza_preferences[noms.ckey] = pickweight(pineapple_pizza_liker)
-		if(noms.mind && noms.mind.assigned_role == "Botanist")
-			pizza_preferences[noms.ckey] = /obj/item/reagent_containers/food/snacks/pizza/dank
+			pizza_preferences[nommer.ckey] = pickweight(pineapple_pizza_liker)
+		else if(nommer.mind && nommer.mind.assigned_role == "Botanist")
+			pizza_preferences[nommer.ckey] = /obj/item/reagent_containers/food/snacks/pizza/dank
+		else
+			pizza_preferences[nommer.ckey] = pickweight(pizza_types)
+	if(pizza)
+		//if the pizza isn't our favourite, delete it
+		if(pizza.type != pizza_preferences[nommer.ckey])
+			QDEL_NULL(pizza)
+		else
+			pizza.foodtype = nommer.dna.species.liked_food //make sure it's our favourite
+			return
 
-	var/obj/item/pizza_type = pizza_preferences[noms.ckey]
+	var/obj/item/pizza_type = pizza_preferences[nommer.ckey]
 	pizza = new pizza_type (src)
-	pizza.foodtype = noms.dna.species.liked_food //it's our favorite!
+	pizza.foodtype = nommer.dna.species.liked_food //it's our favorite!
+	to_chat(nommer, span_notice("Another pizza immediately appears in the box, what the hell?"))

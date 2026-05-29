@@ -18,7 +18,9 @@
 	var/static/datum/gas_mixture/immutable/space/space_gas
 	plane = PLANE_SPACE
 	layer = SPACE_LAYER
-	light_power = 0.25
+	light_power = STARLIGHT_POWER_NIGHT
+	light_color = COLOR_STARLIGHT
+	light_height = LIGHTING_HEIGHT_SPACE
 	dynamic_lighting = DYNAMIC_LIGHTING_DISABLED
 	bullet_bounce_sound = null
 
@@ -109,11 +111,14 @@
 	if(CONFIG_GET(flag/starlight))
 		for(var/t in RANGE_TURFS(1,src)) //RANGE_TURFS is in code\__HELPERS\game.dm
 			if(isspaceturf(t))
-				//let's NOT update this that much pls
 				continue
-			set_light(2)
+			var/use_color = GLOB.current_starlight_color || light_color
+			var/use_power = GLOB.current_starlight_power || light_power
+			set_light(l_range = 3, l_power = use_power, l_color = use_color)
+			GLOB.starlight |= src
 			return
-		set_light(0)
+		GLOB.starlight -= src
+		set_light(l_range = 0)
 
 /turf/open/space/attack_paw(mob/user)
 	return attack_hand(user)

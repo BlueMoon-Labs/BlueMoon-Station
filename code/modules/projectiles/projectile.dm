@@ -517,7 +517,7 @@
 //Returns true if the target atom is on our current turf and above the right layer
 //If direct target is true it's the originally clicked target.
 /obj/item/projectile/proc/can_hit_target(atom/target, direct_target = FALSE, ignore_loc = FALSE,cross_failed = FALSE)
-	if(QDELETED(target) || impacted[target]) // BLUEMOON EDIT: Invalid Space Turfs
+	if(QDELETED(target) || LAZYACCESS(impacted, target)) // BLUEMOON EDIT: Invalid Space Turfs - use LAZYACCESS to handle lazylist (impacted can be null)
 		return FALSE
 	if(!ignore_loc && (loc != target.loc))
 		return FALSE
@@ -604,7 +604,7 @@
  * Used to not even attempt to Bump() or fail to Cross() anything we already hit.
  */
 /obj/item/projectile/CanPassThrough(atom/blocker, turf/target, blocker_opinion)
-	return impacted[blocker]? TRUE : ..()
+	return LAZYACCESS(impacted, blocker) ? TRUE : ..()
 
 /**
  * Projectile moved:
@@ -685,7 +685,7 @@
 	var/turf/ending = return_predicted_turf_after_moves(moves, forced_angle)
 	return getline(current, ending)
 
-/obj/item/projectile/Process_Spacemove(movement_dir = 0)
+/obj/item/projectile/Process_Spacemove(movement_dir = 0, continuous_move = FALSE)
 	return TRUE	//Bullets don't drift in space
 
 /obj/item/projectile/process(wait)
@@ -751,6 +751,7 @@
 	pixel_move(round(PROJECTILE_FIRING_INSTANT_TRAVEL_AMOUNT / pixel_increment_amount), FALSE, allow_animation = FALSE)	//move it now!
 
 /obj/item/projectile/proc/setAngle(new_angle, hitscan_store_segment = TRUE)	//wrapper for overrides.
+	new_angle = sanitize_angle(new_angle, Angle)
 	Angle = new_angle
 	pixel_move_interrupted = TRUE
 	if(!nondirectional_sprite)
@@ -965,7 +966,10 @@
 
 		var/ox = round(screenview[1] / 2) - user.client.pixel_x //"origin" x
 		var/oy = round(screenview[2] / 2) - user.client.pixel_y //"origin" y
-		angle = arctan(y - oy, x - ox)
+		if(x == ox && y == oy)
+			angle = 0
+		else
+			angle = sanitize_angle(arctan(y - oy, x - ox))
 	return list(angle, p_x, p_y)
 
 /obj/item/projectile/Destroy()
@@ -1001,7 +1005,7 @@
 		. += thing
 		p.move_atom_to_src(thing)
 		var/matrix/M = new
-		M.Turn(original_angle)
+		M.Turn(sanitize_angle(original_angle))
 		thing.transform = M
 		thing.color = color
 		thing.set_light(muzzle_flash_range, muzzle_flash_intensity, muzzle_flash_color_override? muzzle_flash_color_override : color)
@@ -1012,7 +1016,7 @@
 		. += thing
 		p.move_atom_to_src(thing)
 		var/matrix/M = new
-		M.Turn(Angle)
+		M.Turn(sanitize_angle(Angle))
 		thing.transform = M
 		thing.color = color
 		thing.set_light(impact_light_range, impact_light_intensity, impact_light_color_override? impact_light_color_override : color)

@@ -97,3 +97,6 @@ ERROR_SILENCE_TIME 6000
 
 How long to wait between messaging admins about an unique runtime
 ERROR_MSG_DELAY 50
+
+## DEV ONLY. Когда задан, tgui грузит JS/CSS бандлы живьём с локального dev-сервера (http://<ip>:3000) для hot-reload. В проде держать закомментированным.
+#TGUI_DEV_SERVER_IP 127.0.0.1

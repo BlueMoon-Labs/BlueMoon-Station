@@ -22,6 +22,16 @@
 	beauty_modifier = 0.05
 	armor_modifiers = list(MELEE = 0.2, BULLET = 0.2, LASER = 0, ENERGY = 1, BOMB = 0, BIO = 0.2, RAD = 0.2, FIRE = 1, ACID = 0.2) // yeah ok
 
+/datum/material/glass/on_applied_turf(turf/T, amount, material_flags)
+	. = ..()
+	if(istype(T, /turf/closed/wall/material))
+		T.pass_flags_self |= PASSGLASS
+
+/datum/material/glass/on_removed_turf(turf/T, amount, material_flags)
+	if(istype(T, /turf/closed/wall/material))
+		T.pass_flags_self &= ~PASSGLASS
+	return ..()
+
 /*
 Color matrices are like regular colors but unlike with normal colors, you can go over 255 on a channel.
 Unless you know what you're doing, only use the first three numbers. They're in RGB order.

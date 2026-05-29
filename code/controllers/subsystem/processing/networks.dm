@@ -6,6 +6,7 @@ PROCESSING_SUBSYSTEM_DEF(networks)
 	flags = SS_KEEP_TIMING
 	init_order = INIT_ORDER_NETWORKS
 	var/datum/ntnet/station/station_network
+	var/ntnet_debug_global_signal = FALSE
 	var/assignment_hardware_id = HID_RESTRICTED_END
 	var/list/networks_by_id = list()				//id = network
 	var/list/interfaces_by_id = list()				//hardware id = component interface

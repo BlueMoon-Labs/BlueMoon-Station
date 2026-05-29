@@ -79,6 +79,9 @@
 #define SPAM_TRIGGER_WARNING	5	//Number of identical messages required before the spam-prevention will warn you to stfu
 #define SPAM_TRIGGER_AUTOMUTE	10	//Number of identical messages required before the spam-prevention will automute you
 
+/// Maximum amount of atoms an admin can spawn at once via the Spawn Panel
+#define ADMIN_SPAWN_CAP 100
+
 #define STICKYBAN_DB_CACHE_TIME 10 SECONDS
 #define STICKYBAN_ROGUE_CHECK_TIME 5
 

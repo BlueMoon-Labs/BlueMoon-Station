@@ -14,13 +14,14 @@
 	var/disabled = FALSE
 	var/obj/machinery/computer/rdconsole/linked_console
 	var/obj/item/loaded_item = null //the item loaded inside the machine (currently only used by experimentor and destructive analyzer)
+	var/wires_type = /datum/wires/rnd
 
 /obj/machinery/rnd/proc/reset_busy()
 	busy = FALSE
 
 /obj/machinery/rnd/Initialize(mapload)
 	. = ..()
-	set_wires(new /datum/wires/rnd(src))
+	set_wires(new wires_type(src))
 
 /obj/machinery/rnd/Destroy()
 	if(linked_console)

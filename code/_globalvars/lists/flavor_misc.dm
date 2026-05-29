@@ -93,6 +93,21 @@ GLOBAL_LIST_INIT(mutant_transform_list, list("wingsopen" = "wings",
 	"waggingspines" = "spines",
 	"mam_waggingtail" = "mam_tail"))
 
+GLOBAL_LIST_INIT(head_mutant_parts_for_severed_head, list(
+	"snout",
+	"mam_snouts",
+	"frills",
+	"horns",
+	"ears",
+	"mam_ears",
+	"caps",
+	"ipc_screen",
+	"ipc_antenna",
+	"xenohead",
+	"arachnid_mandibles",
+	"insect_fluff",
+))
+
 GLOBAL_LIST_INIT(ghost_forms_with_directions_list, list(
 	"ghost",
 	"ghostian",
@@ -196,19 +211,31 @@ GLOBAL_LIST_INIT(ai_core_display_screens, list(
 	"Hippy"
 	))
 
-/proc/resolve_ai_icon(input, radial_preview = FALSE)
-	if(!input || !(input in GLOB.ai_core_display_screens))
-		return "ai"
-	if(radial_preview)
-		return "ai-[lowertext(input)]"
+/proc/resolve_ai_icon(input, radial_preview = FALSE, client/C, dead = FALSE)
+    if(!input)
+        return "ai"
 
-	if(input == "Random")
-		input = pick(GLOB.ai_core_display_screens - "Random")
-	if(input == "Portrait")
-		var/datum/portrait_picker/tgui = new(usr)//create the datum
-		tgui.ui_interact(usr)//datum has a tgui component, here we open the window
-		return "ai-portrait" //just take this until they decide
-	return "ai-[lowertext(input)]"
+    if(C)
+        for(var/datum/ai_donator_screen/donor_screen in GLOB.ai_donator_screens)
+            if(donor_screen.name == input && (C.ckey in donor_screen.ckey_whitelist))
+                if(dead && donor_screen.icon_state_dead)
+                    return donor_screen.icon_state_dead
+                return donor_screen.icon_state
+
+    if(!(input in GLOB.ai_core_display_screens))
+        return "ai"
+
+    if(radial_preview)
+        return "ai-[lowertext(input)]"
+
+    if(input == "Random")
+        input = pick(GLOB.ai_core_display_screens - "Random")
+    if(input == "Portrait")
+        var/datum/portrait_picker/tgui = new(usr)
+        tgui.ui_interact(usr)
+        return "ai-portrait"
+
+    return "ai-[lowertext(input)]"
 
 GLOBAL_LIST_INIT(security_depts_prefs, list(SEC_DEPT_RANDOM, SEC_DEPT_NONE, SEC_DEPT_ENGINEERING, SEC_DEPT_MEDICAL, SEC_DEPT_SCIENCE, SEC_DEPT_SUPPLY))
 
@@ -217,15 +244,19 @@ GLOBAL_LIST_INIT(security_depts_prefs, list(SEC_DEPT_RANDOM, SEC_DEPT_NONE, SEC_
 #define DSATCHEL "Department Satchel"
 #define DDUFFELBAG "Department Duffel Bag"
 GLOBAL_LIST_INIT(backbaglist, list(DBACKPACK, DSATCHEL, DDUFFELBAG, //everything after this point is a non-department backpack
-	"Grey Backpack" = /obj/item/storage/backpack,
-	"Grey Satchel" = /obj/item/storage/backpack/satchel,
-	"Grey Duffel Bag" = /obj/item/storage/backpack/duffelbag,
-	"Leather Satchel" = /obj/item/storage/backpack/satchel/leather,
-	"Black Pocketbook" = /obj/item/storage/backpack/pocketbook, //A new fancy bag - Gardelin0 adoon
-	"Brown Pocketbook" = /obj/item/storage/backpack/pocketbook/brown,
-	"Auburn Pocketbook" = /obj/item/storage/backpack/pocketbook/reddish,
-	"Snail Shell" = /obj/item/storage/backpack/snail,
-	"Sloog Shell" = /obj/item/storage/backpack/sloogshell))
+		"Grey Backpack" = 		/obj/item/storage/backpack,
+		"Grey Satchel" = 		/obj/item/storage/backpack/satchel,
+		"Grey Duffel Bag" = 	/obj/item/storage/backpack/duffelbag,
+		"Leather Satchel" = 	/obj/item/storage/backpack/satchel/leather,
+		"Black Pocketbook" = 	/obj/item/storage/backpack/pocketbook, //A new fancy bag - Gardelin0 adoon
+		"Brown Pocketbook" = 	/obj/item/storage/backpack/pocketbook/brown,
+		"Auburn Pocketbook" = 	/obj/item/storage/backpack/pocketbook/reddish,
+		"Snail Shell" = 		/obj/item/storage/backpack/snail,
+		"Sloog Shell" = 		/obj/item/storage/backpack/sloogshell,
+		"Hipbag" = 				/obj/item/storage/backpack/hipbag,
+		"Tan Hipbag" = 			/obj/item/storage/backpack/hipbag/tan,
+		"Green Hipbag" = 		/obj/item/storage/backpack/hipbag/green,
+	))
 
 //Suit/Skirt
 #define PREF_SUIT "Jumpsuit"
@@ -353,7 +384,7 @@ GLOBAL_LIST_INIT(colored_mutant_parts, list("insect_wings" = "wings_color", "dec
 GLOBAL_LIST_INIT(greyscale_limb_types, list("human","moth","lizard","pod","plant","jelly","slime","golem","slimelumi","stargazer","mush","ethereal","snail","c_golem","b_golem","mammal","xeno","ipc","insect","synthliz","avian","sergal","aquatic", "vox", "shadekin", "nucleation", "teshari"))
 
 //body ids that have prosthetic sprites
-GLOBAL_LIST_INIT(prosthetic_limb_types, list("xion","bishop","cybersolutions","grayson","hephaestus","nanotrasen","talon","veymed")) //I don't know if i can module this to splurt
+GLOBAL_LIST_INIT(prosthetic_limb_types, list("xion","bishop","cybersolutions","grayson","hephaestus","nanotrasen","talon","veymed","morpheus")) //I don't know if i can module this to splurt
 
 //body ids that have non-gendered bodyparts
 GLOBAL_LIST_INIT(nongendered_limb_types, list("fly", "zombie" ,"synth", "shadow", "cultgolem", "agent", "plasmaman", "clockgolem", "clothgolem"))

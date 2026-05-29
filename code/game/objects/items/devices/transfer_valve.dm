@@ -55,11 +55,15 @@
 			if(!user.transferItemToLoc(item, src))
 				return
 			tank_one = item
+			item.add_fingerprint(user)
+			add_fingerprint(user)
 			to_chat(user, "<span class='notice'>You attach the tank to the transfer valve.</span>")
 		else if(!tank_two)
 			if(!user.transferItemToLoc(item, src))
 				return
 			tank_two = item
+			item.add_fingerprint(user)
+			add_fingerprint(user)
 			to_chat(user, "<span class='notice'>You attach the tank to the transfer valve.</span>")
 
 		update_icon()

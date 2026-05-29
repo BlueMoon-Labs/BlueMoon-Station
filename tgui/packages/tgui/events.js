@@ -59,12 +59,14 @@ const stealFocus = node => {
   releaseStolenFocus();
   focusStolenBy = node;
   focusStolenBy.addEventListener('blur', releaseStolenFocus);
+  globalEvents.emit('input-focus');
 };
 
 const releaseStolenFocus = () => {
   if (focusStolenBy) {
     focusStolenBy.removeEventListener('blur', releaseStolenFocus);
     focusStolenBy = null;
+    globalEvents.emit('input-blur');
   }
 };
 

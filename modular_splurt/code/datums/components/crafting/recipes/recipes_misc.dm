@@ -97,7 +97,7 @@
 
 /datum/crafting_recipe/securitygoggles
 	name = "Security HUD Goggles"
-	result = /obj/item/clothing/glasses/hud/securitygoggles
+	result = /obj/item/clothing/glasses/hud/security/securitygoggles
 	time = 20
 	tools = list(TOOL_SCREWDRIVER, TOOL_WIRECUTTER)
 	parts = list(/obj/item/clothing/glasses/hud/security/sunglasses = 1,

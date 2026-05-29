@@ -67,7 +67,7 @@
 /datum/gear/uniform/dress/polyevening
 	name = "Fancy evening dress dress"
 	path = /obj/item/clothing/under/dress/polychromic/evening
-	loadout_flags = LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION | LOADOUT_CAN_COLOR_POLYCHROMIC
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#391D2B", "#F96C72")
 
 /datum/gear/uniform/dress/party
@@ -242,3 +242,7 @@
 /datum/gear/uniform/sergal_gray_uniform
 	name = "Shigu clan kimono"
 	path = /obj/item/clothing/under/bm/sergal_gray_uniform
+
+/datum/gear/uniform/aristocratic_uniform
+	name = "Aristocratic uniform"
+	path = /obj/item/clothing/under/bm/aristocratic_uniform

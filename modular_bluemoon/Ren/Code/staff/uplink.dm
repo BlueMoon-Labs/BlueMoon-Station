@@ -87,6 +87,7 @@
 	item = /obj/item/reagent_containers/syringe/sand
 	cost = 15
 	purchasable_from = (UPLINK_TRAITORS | UPLINK_NUKE_OPS)
+	required_round_types = list(ROUNDTYPE_DYNAMIC_HARD)
 
 /datum/uplink_item/dangerous/garand
 	name = "Old, but gold rifle"
@@ -219,7 +220,7 @@
 			new /obj/item/suspiciousphone(src)
 			new /obj/item/camera_bug(src)
 			new /obj/item/sbeacondrop/powersink(src)
-			new /obj/item/cartridge/virus/syndicate(src)
+			new /obj/item/cartridge/virus/detomatix(src)
 			new /obj/item/storage/toolbox/syndicate(src) //To actually get to those places
 			new /obj/item/pizzabox/bomb
 

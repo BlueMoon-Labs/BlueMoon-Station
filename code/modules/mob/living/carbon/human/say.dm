@@ -57,14 +57,19 @@
 /mob/living/carbon/human/proc/GetSpecialVoice()
 	return special_voice
 
+// (ADD) Pe4henika Bluemoon -- start
 /mob/living/carbon/human/binarycheck()
+	var/obj/item/organ/cyberimp/brain/ai_link/I = getorganslot("brain_ai_link")
+	if(istype(I) && I.linked_ai)
+		return TRUE
+
 	if(ears)
 		var/obj/item/radio/headset/dongle = ears
-		if(!istype(dongle))
-			return FALSE
-		if(dongle.translate_binary)
+		if(istype(dongle) && dongle.translate_binary)
 			return TRUE
 
+	return ..()
+// (ADD) Pe4henika Bluemoon -- end
 /mob/living/carbon/human/radio(message, message_mode, list/spans, language)
 	. = ..()
 	if(.)

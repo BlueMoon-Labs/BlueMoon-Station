@@ -36,7 +36,6 @@
 	canSmoothWith = list (/turf/closed)
 	baseturfs = /turf/open/floor/plating/layeniaredder
 	initial_gas_mix = LAVALAND_DEFAULT_ATMOS
-	environment_type = "waste"
 	turf_type = /turf/open/floor/plating/layeniaredder
 	defer_change = TRUE
 
@@ -45,6 +44,7 @@
 	desc = "crimson rocks surround you."
 	icon = 'modular_splurt/icons/turf/layenia.dmi'
 	icon_state = "layenia"
+	base_icon_state = "layenia"
 	heat_capacity = INFINITY
 	slowdown = 0
 	footstep = FOOTSTEP_SAND

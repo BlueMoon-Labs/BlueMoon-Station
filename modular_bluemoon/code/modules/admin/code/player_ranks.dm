@@ -2,7 +2,7 @@
 #define BLUEMOON_PLAYER_RANKS list("Mentor")
 
 /client/proc/manage_player_ranks()
-	set category = "Admin"
+	set category = "Admin.Player Interaction"
 	set name = "Manage Player Ranks"
 	set desc = "Manage who has the special player ranks while the server is running."
 

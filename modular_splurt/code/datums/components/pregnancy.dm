@@ -116,7 +116,7 @@
 	RegisterSignal(carrier, COMSIG_MOB_DEATH, PROC_REF(fetus_mortus))
 	RegisterSignal(carrier, COMSIG_LIVING_BIOLOGICAL_LIFE, PROC_REF(handle_life))
 	RegisterSignal(carrier, COMSIG_HEALTH_SCAN, PROC_REF(on_scan))
-	RegisterSignal(carrier, COMSIG_MOB_DEATH, PROC_REF(handle_damage))
+	RegisterSignal(carrier, COMSIG_MOB_APPLY_DAMAGE, PROC_REF(handle_damage))
 	if(oviposition)
 		RegisterSignal(carrier, COMSIG_MOB_CLIMAX, PROC_REF(on_climax))
 
@@ -181,13 +181,16 @@
 /datum/component/pregnancy/proc/handle_life(seconds)
 	SIGNAL_HANDLER
 
+	if(!carrier || QDELETED(carrier))
+		return
+
 	if(!HAS_TRAIT(carrier, TRAIT_COMMON_PREGNANCY)) //For normal pregnancy - Gardelin0
 		if(oviposition)
 			handle_ovi_preg()
 		else
 			handle_incubation()
 
-	if((stage >= 2) && !revealed && carrier)
+	if((stage >= 2) && !revealed)
 		revealed = TRUE
 		carrier.apply_status_effect(/datum/status_effect/pregnancy)
 		carrier.apply_status_effect(/datum/status_effect/lactation)
