@@ -211,13 +211,13 @@
 	var/shoes = user.get_shoes(TRUE)
 
 	if(partner.is_fucking(user, CUM_TARGET_FEET))
-		message = "[pick("трёт клитор <b>[partner]</b> своими [shoes ? shoes : pick("ножками", "ступнями")].",
-			"трёт своими [shoes ? shoes : pick("ножками", "ногами", "ступнями")] непристойности <b>[partner]</b>.",
-			"растирает своими [shoes ? shoes : pick("ножками", "ногами", "ступнями")] вагину <b>[partner]</b>.",
+		message = "[pick("трёт клитор <b>[partner]</b> своей [shoes ? shoes : pick("ножкой", "ступней")].",
+			"трёт своей [shoes ? shoes : pick("ножкой", "ступней")] непристойности <b>[partner]</b>.",
+			"растирает своей [shoes ? shoes : pick("ножкой", "ступней")] вагину <b>[partner]</b>.",
 			"трёт свою ногу об вагину <b>[partner]</b>.")]"
 	else
-		message = "[pick("[shoes ? "занимает своими [shoes] позицию на" :"занимает своими ножками позицию на"] вагине <b>[partner]</b>.",
-			"начинает играться с киской <b>[partner]</b> своими '[shoes ? shoes : "ногами"]'.")]"
+		message = "[pick("[shoes ? "занимает своей [shoes] позицию на" :"занимает своей ножкой позицию на"] вагине <b>[partner]</b>.",
+			"начинает играться с киской <b>[partner]</b> своей '[shoes ? shoes : "ножкой"]'.")]"
 		partner.set_is_fucking(user, CUM_TARGET_FEET, partner.getorganslot(ORGAN_SLOT_VAGINA))
 
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/foot_dry1.ogg',
