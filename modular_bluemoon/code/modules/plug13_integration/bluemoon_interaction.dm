@@ -33,7 +33,8 @@
 	/// This one is for the target/victim.
 	var/p13target_duration = PLUG13_DURATION_DEFAULT
 
-
+//see modular_sand\code\datums\interactions\_interaction.dm
+/*
 /datum/interaction/post_interaction(mob/living/user, mob/living/target)
 	. = ..()
 	if (p13user_emote && p13user_strength && p13user_duration)
@@ -53,6 +54,7 @@
 	if(interaction_flags & INTERACTION_FLAG_ADJACENT && user != target)
 		SEND_SIGNAL(user, COMSIG_INTERACTION_ADJACENT, target)
 		SEND_SIGNAL(target, COMSIG_INTERACTION_ADJACENT, user)
+*/
 
 /datum/interaction/proc/get_lust_modifier(mob/living/user)
 	return (20 * (user.get_lust() / user.get_lust_tolerance())) - 10

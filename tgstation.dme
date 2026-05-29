@@ -4361,7 +4361,6 @@
 #include "modular_bluemoon\code\datums\diseases\changeling_virus.dm"
 #include "modular_bluemoon\code\datums\elements\bigtalk.dm"
 #include "modular_bluemoon\code\datums\elements\holder_micro.dm"
-#include "modular_bluemoon\code\datums\interactions\_interaction.dm"
 #include "modular_bluemoon\code\datums\interactions\interaction_datums\carrying.dm"
 #include "modular_bluemoon\code\datums\interactions\interaction_datums\lewd\belly_riding.dm"
 #include "modular_bluemoon\code\datums\interactions\interaction_datums\lewd\cheekkiss.dm"
