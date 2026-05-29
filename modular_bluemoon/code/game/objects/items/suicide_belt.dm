@@ -27,14 +27,14 @@
 	icon_state = "boom_vest"
 	item_state = "boom_vest"
 	w_class = WEIGHT_CLASS_NORMAL
-	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_BACKPACK
+	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_BACK
 	var/countdown_time = 5 SECONDS
 	var/arming = FALSE
 	actions_types = list(/datum/action/item_action/suicide_belt_trigger)
 
 /obj/item/suicide_belt/equipped(mob/user, slot)
 	. = ..()
-	if(slot == ITEM_SLOT_BELT || slot == ITEM_SLOT_BACKPACK)
+	if(slot == ITEM_SLOT_BELT || slot == ITEM_SLOT_BACK)
 		ADD_TRAIT(src, TRAIT_NODROP, SUICIDE_BELT_TRAIT)
 
 /obj/item/suicide_belt/ui_action_click(mob/user)
@@ -49,7 +49,7 @@
 	if(!ishuman(user) || user.stat != CONSCIOUS)
 		return FALSE
 	var/mob/living/carbon/human/H = user
-	return (H.belt == src) || (H.back && src.loc == H.back)
+	return (H.belt == src) || (H.back == src.loc)
 
 /obj/item/suicide_belt/attack_self(mob/user)
 	if(arming || !user || QDELING(src))
