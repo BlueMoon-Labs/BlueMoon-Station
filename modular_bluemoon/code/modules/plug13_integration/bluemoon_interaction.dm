@@ -47,7 +47,7 @@
 	if (p13target_emote && p13target_strength && p13target_duration)
 		target.client?.plug13?.send_emote(
 			p13target_emote,
-			min(p13target_strength + get_lust_modifier(target), 10, 100),
+			clamp(p13target_strength + get_lust_modifier(target), 10, 100),
 			p13target_duration
 		)
 

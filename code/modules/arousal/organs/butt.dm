@@ -30,7 +30,7 @@
 	..()
 
 /obj/item/organ/genital/butt/update_size()//wah
-	var/rounded_size = min(0, round(size))
+	var/rounded_size = max(0, round(size))
 	if(size == 0)
 		if(owner)
 			to_chat(owner, "<span class='warning'>Вы чувствуете, как ваши ягодицы уменьшаются до обычного размера.</span>")

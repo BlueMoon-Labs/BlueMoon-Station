@@ -319,7 +319,7 @@
 				required_from_target |= INTERACTION_REQUIRE_KNOT
 			if(findtext(shape_desc, "двойн"))
 				required_from_target |= INTERACTION_REQUIRE_DOUBLE_PENIS
-		var/target_has_belly = self.has_belly()
+		var/target_has_belly = target.has_belly()
 		if(target_has_belly)
 			required_from_target |= INTERACTION_REQUIRE_BELLY
 		// BLUEMOON ADD

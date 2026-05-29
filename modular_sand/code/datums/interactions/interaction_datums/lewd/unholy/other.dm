@@ -6,7 +6,7 @@
 	required_from_user_unexposed = NONE
 	max_distance = 1
 	interaction_sound = null
-	write_log_target = "на его промежность напердел"
+	write_log_target = "на его лицо напердел"
 	write_log_user = "перданул на лицо"
 
 /datum/interaction/lewd/unholy/do_facefart/display_interaction(mob/living/user, mob/living/target)

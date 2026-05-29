@@ -265,7 +265,7 @@
 			to_chat(user, span_warning("They're still exhausted from the last time. They need to wait [DisplayTimeText(COOLDOWN_TIMELEFT(target, refractory_period), 1)] until you can do that!"))
 		return FALSE
 
-	if((required_from_target & INTERACTION_REQUIRE_TOPLESS) && !target.is_bottomless())
+	if((required_from_target & INTERACTION_REQUIRE_TOPLESS) && !target.is_topless())
 		if(!silent)
 			to_chat(user, span_warning("Their clothes are in the way."))
 		return FALSE

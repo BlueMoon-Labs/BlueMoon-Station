@@ -39,7 +39,7 @@
 	..()
 
 /obj/item/organ/genital/belly/update_size()//wah
-	var/rounded_size = min(0, round(size))
+	var/rounded_size = max(0, round(size))
 	if(size == 0)
 		if(owner)
 			to_chat(owner, "<span class='warning'>Ваш животик становиться полностью плоским.</span>")

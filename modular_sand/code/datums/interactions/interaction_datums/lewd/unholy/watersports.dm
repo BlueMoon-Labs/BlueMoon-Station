@@ -64,14 +64,14 @@
 	if(!is_fucking)
 		user.set_is_fucking(partner, target_organ, user.getorganslot(user_organ))
 
-	user.visible_message(format_message(message, user, partner), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+	user.visible_message(format_message(message, user, partner), ignored_mobs = user.get_unconsenting(unholy = TRUE), vision_distance = distance)
 	audio_effects(user, partner, is_fucking, is_hidden)
 	user_lust_grant(user, partner, is_fucking)
 	partner_lust_grant(user, partner, is_fucking)
 
 	var/partner_message = pick_partner_message(user, partner, is_fucking)
 	if(partner_message)
-		partner.visible_message(format_message(partner_message, user, partner), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+		partner.visible_message(format_message(partner_message, user, partner), ignored_mobs = partner.get_unconsenting(unholy = TRUE), vision_distance = distance)
 
 	post_reaction(user, partner, is_fucking)
 
@@ -135,7 +135,7 @@
 	var/shape_desc = get_penis_shape_desc(user)
 	return pick(
 		MAIN_MESSAGES,
-		"USER направляет свой [shape_desc] на USER и медленно водит им, обдавая струёй горячей мочи",
+		"USER направляет свой [shape_desc] на TARGET и медленно водит им, обдавая струёй горячей мочи",
 		"USER со стоном наслаждения, выпускает из своего [shape_desc]а поток горячей мочи, обливая TARGET",
 		"USER направляет свой [shape_desc] на TARGET, заставляя обтекать под напором мочи",
 		"USER расслабляется и из [user.ru_ego()] [shape_desc]а, прямо на TARGET вырывается поток мочи")
@@ -213,7 +213,7 @@
 	var/shape_desc = get_penis_shape_desc(user)
 	return pick(
 		MAIN_MESSAGES,
-		"USER направляет свой [shape_desc] прямо на лицо USER и медленно водит им, обдавая струёй горячей мочи",
+		"USER направляет свой [shape_desc] прямо на лицо TARGET и медленно водит им, обдавая струёй горячей мочи",
 		"USER со стоном наслаждения, выпускает из своего [shape_desc]а поток горячей мочи, целясь в рот TARGET",
 		"USER направляет свой [shape_desc] на лицо TARGET, пытаясь струей мочи попасть в рот",
 		"USER расслабляется и из [user.ru_ego()] [shape_desc]а, прямо на губы TARGET вырывается поток мочи")
