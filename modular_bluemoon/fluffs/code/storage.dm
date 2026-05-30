@@ -265,3 +265,5 @@
 	new /obj/item/modkit/pulsar_kit(src)
 	new /obj/item/clothing/under/donator/bm/concord(src)
 	new /obj/item/modkit/quasar_kit(src)
+	new /obj/item/modkit/comet_kit(src)
+	new /obj/item/modkit/neutron_kit(src)

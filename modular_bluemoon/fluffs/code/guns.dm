@@ -1544,13 +1544,19 @@
 	item_state = "comet"
 
 /obj/item/gun/energy/xray/neutron/update_icon_state()
-	var/ammo = magazine ? magazine.ammo_count() : 0
-	if(ammo <= 0)
-		icon_state = "supernova-e"
+	if(!cell || cell.charge <= 0)
+		icon_state = "neutron-e"
+	else
+		icon_state = "neutron"
 
 /obj/item/gun/energy/xray/neutron/update_overlays()
-	. = ..()
-	var/ammo = magazine ? magazine.ammo_count() : 0
-	. += "comet-base"
-	if(ammo<9)
-		. += "comet-[ammo]"
+	. = ..()                         // обязательно — must_call_parent
+	. += "neutron-base"
+	if(!cell || cell.charge <= 0)
+		. += "neutron-0"
+		return
+	var/charge_percent = cell.charge / cell.maxcharge
+	if(charge_percent > 0.6)
+		. += "neutron-2"
+	else
+		. += "neutron-1"
