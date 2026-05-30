@@ -1,13 +1,23 @@
 /obj/item/clothing/head/helmet/monkey_sentience
 	name = "monkey mind magnification helmet"
 	desc = "A fragile, circuitry-embedded helmet for boosting the intelligence of a monkey. Several warning labels are plastered on the side..."
-	icon = 'icons/obj/clothing/hats.dmi'
-	icon_state = "welding"
-	item_state = "welding"
+	icon = 'modular_bluemoon/icons/obj/clothing/head/monkeymind.dmi'
+	icon_state = "monkeymind"
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/head/monkeymind.dmi'
 	strip_delay = 10 SECONDS
 	var/mob/living/carbon/monkey/magnification
 	var/polling = FALSE
+	var/light_colors = 1
 	var/rage_chance = -7
+
+/obj/item/clothing/head/helmet/monkey_sentience/Initialize(mapload)
+	. = ..()
+	light_colors = rand(1, 3)
+	update_icon()
+
+/obj/item/clothing/head/helmet/monkey_sentience/update_icon()
+	. = ..()
+	icon_state = "[initial(icon_state)][light_colors][magnification ? "up" : ""]"
 
 /obj/item/clothing/head/helmet/monkey_sentience/examine(mob/user)
 	. = ..()
@@ -52,8 +62,10 @@
 	magnification.grant_all_languages(UNDERSTOOD_LANGUAGE, grant_omnitongue = FALSE, source = LANGUAGE_ATOM)
 	playsound(src, 'sound/machines/microwave/microwave-end.ogg', 100, FALSE)
 	to_chat(magnification, span_notice("You're a mind magnified monkey! Protect your helmet with your life — if you lose it, your sentience goes with it!"))
-	icon_state = "[initial(icon_state)]up"
-	update_appearance()
+	update_icon()
+	if(ismob(loc))
+		var/mob/M = loc
+		M.update_inv_head()
 
 /obj/item/clothing/head/helmet/monkey_sentience/proc/handle_magnification_failure(mob/living/carbon/monkey/user)
 	switch(rage_chance)
