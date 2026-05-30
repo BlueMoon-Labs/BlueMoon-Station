@@ -13,7 +13,7 @@
 
 /datum/interaction/lewd/fuck/display_interaction(mob/living/user, mob/living/partner, is_hidden)
 	. = ..()
-	var/is_hidden = .
+	is_hidden = .
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 	var/const/volume = 70
