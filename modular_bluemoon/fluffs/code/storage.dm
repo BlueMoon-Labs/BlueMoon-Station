@@ -264,3 +264,4 @@
 	new /obj/item/modkit/supernova_kit(src)
 	new /obj/item/modkit/pulsar_kit(src)
 	new /obj/item/clothing/under/donator/bm/concord(src)
+	new /obj/item/modkit/quasar_kit(src)
