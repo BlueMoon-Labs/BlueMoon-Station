@@ -1142,14 +1142,13 @@
 	icon_state = "supernova-0-notcharged"
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
-	item_state = "supernova-notcharged"
+	item_state = "supernova"
 
 /obj/item/gun/ballistic/shotgun/automatic/combat/supernova/update_icon_state()
 	var/ammo = magazine ? magazine.ammo_count() : 0
 	var/chamber = (chambered && chambered.BB) ? "charged" : "notcharged"
 	var/folded = stock ? "" : "-folded"
 	icon_state = "supernova-[ammo]-[chamber][folded]"
-	item_state = "supernova-[chamber]"
 
 /obj/item/modkit/pulsar_kit
 	name = "Kasari ritual knife Kit"
@@ -1464,7 +1463,7 @@
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	icon_state = "quasar"
-	item_state = "Nebular-9"
+	item_state = "quasar"
 	can_flashlight = FALSE
 
 /obj/item/gun/energy/e_gun/nuclear/quasar/update_overlays()
