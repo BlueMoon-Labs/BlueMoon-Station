@@ -1515,16 +1515,20 @@
 	item_state = "comet"
 
 /obj/item/gun/ballistic/automatic/wt550/comet/update_icon_state()
-	var/ammo = magazine ? magazine.ammo_count() : 0
-	if(ammo <= 0)
+	if(!magazine || magazine.ammo_count() <= 0)
 		icon_state = "comet-e"
+	else
+		icon_state = "comet"
 
 /obj/item/gun/ballistic/automatic/wt550/comet/update_overlays()
 	. = ..()
-	var/ammo = magazine ? magazine.ammo_count() : 0
 	. += "comet-base"
-	if(ammo<9)
-		. += "comet-[ammo]"
+	if(!magazine || !magazine.max_ammo)
+		. += "comet-0"
+		return
+	var/fill_level = round(magazine.stored_ammo.len / magazine.max_ammo * 8)
+	if(fill_level < 8)  // при полном (8/8) — только base, без доп. оверлея
+		. += "comet-[fill_level]"
 
 /obj/item/modkit/neutron_kit
 	name = "Neutron Kit"
@@ -1560,3 +1564,37 @@
 		. += "neutron-2"
 	else
 		. += "neutron-1"
+
+/obj/item/modkit/spectral_kit
+	name = "Spectral Kit"
+	desc = "A modkit for making a temperature gun into a Spectral."
+	product = /obj/item/gun/energy/temperature/spectral
+	fromitem = list(/obj/item/gun/energy/temperature,/obj/item/gun/energy/temperature/security) // на всякий и второй тип добавлю
+
+/obj/item/gun/energy/temperature/spectral
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "\improper Spectral"
+	desc = "Незаурядный образец касарийского военпрома, предназначенный же правда по большей части на экспорт в силы правопорядка. Сам по себе почти безвреден, что бы им убить надо постараться."
+	unique_reskin = list()
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	icon_state = "spectral"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	item_state = "spectral"
+
+/obj/item/gun/energy/temperature/spectral/update_overlays()
+	. = ..()                         // обязательно — must_call_parent
+	if(istype(ammo_type[current_firemode_index], /obj/item/ammo_casing/energy/temp/hot))
+		. += "spectral-heat-base"
+		. += "spectral-heat-mode"
+	else
+		. += "spectral-freeze-base"
+		. += "spectral-freeze-mode"
+	if(!cell || cell.charge <= 0)
+		. += "spectral-0"
+		return
+	var/charge_percent = cell.charge / cell.maxcharge
+	if(charge_percent > 0.6)
+		. += "spectral-2"
+	else
+		. += "spectral-1"
