@@ -1558,9 +1558,9 @@
 		. += "neutron-0"
 		return
 	var/charge_percent = cell.charge / cell.maxcharge
-	if(charge_percent > 0.6)
+	if(charge_percent < 0.6 && charge_percent>= 0.3)
 		. += "neutron-2"
-	else
+	else if(charge_percent<0.3)
 		. += "neutron-1"
 
 /obj/item/modkit/spectral_kit
@@ -1594,7 +1594,7 @@
 	var/charge_percent = cell.charge / cell.maxcharge
 	if(charge_percent <= 0.6 && charge_percent>0.3)
 		. += "spectral-2"
-	else
+	else if(charge_percent<=0.3)
 		. += "spectral-1"
 
 /obj/item/modkit/pulsar_kit
