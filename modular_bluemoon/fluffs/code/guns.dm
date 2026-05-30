@@ -1081,15 +1081,21 @@
 	return null
 
 /obj/item/gun/energy/e_gun/advtaser/nebular_t/update_icon_state()
+	if(!cell || !cell.maxcharge)
+		icon_state = "nebular-t-e"
+		return
+
 	var/charge_percent = cell.charge / cell.maxcharge
 	if(charge_percent <= 0.1)
 		icon_state = "nebular-t-e"
+	else
+		icon_state = initial(icon_state)
 
 /obj/item/gun/energy/e_gun/advtaser/nebular_t/update_overlays()
 	. = ..()
 	. += "nebular-t-base"
 
-	if(!magazine || !magazine.max_ammo)
+	if(!cell || !cell.maxcharge)
 		. += "nebular-t-0"
 		return
 
@@ -1444,8 +1450,8 @@
 /obj/item/gun/ballistic/automatic/pistol/enforcer/cz_75/update_icon_state() // -expended вырезан, спрайтов не завезли
 	icon_state = "[current_skin ? unique_reskin[current_skin]["icon_state"] : initial(icon_state)][chambered ? "" : "-e"][suppressed ? "-suppressed" : "" ][magazine && istype(magazine, /obj/item/ammo_box/magazine/e45/e45_drum) ? "-drum" : ""]"
 
-/obj/item/modkit/nebular_t_kit
-	name = "Nebular-T Kit"
+/obj/item/modkit/quasar_kit
+	name = "Quasar Kit"
 	desc = "A modkit for making a advanced energy gun into a Quasar."
 	product = /obj/item/gun/energy/e_gun/nuclear/quasar
 	fromitem = list(/obj/item/gun/energy/e_gun/nuclear)
@@ -1460,3 +1466,19 @@
 	icon_state = "quasar"
 	item_state = "Nebular-9"
 	can_flashlight = FALSE
+
+/obj/item/gun/energy/e_gun/nuclear/quasar/update_overlays()
+	// НЕ вызываем ..() — нам не нужны родительские/fail-оверлеи
+	. = list()
+	if(!cell || cell.charge <= 0 || !cell.maxcharge)
+		. += "quasar-0"
+		return
+	var/max_sections = 8
+	var/ratio = CEILING((cell.charge / cell.maxcharge) * max_sections, 1)
+	if(ratio >= max_sections) // 8/8 — полный заряд
+		if(istype(ammo_type[current_firemode_index], /obj/item/ammo_casing/energy/laser))
+			. += "quasar-lethal-mode-base"
+		else
+			. += "quasar-non-lethal-mode-base"
+	else
+		. += "quasar-[ratio]"
