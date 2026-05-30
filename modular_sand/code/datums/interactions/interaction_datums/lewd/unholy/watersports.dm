@@ -232,10 +232,10 @@
 	"USER мочится на лицо TARGET и с ухмылкой наблюдает как моча капает с [partner.ru_ego()] подбородка"
 
 #define PARTNER_MESSAGES \
-	"TARGET слегка кашляет пока USER продолжает мочиться ему в рот", \
-    "TARGET вздрагивает ощущая как тёплая жидкость заполняет его рот", \
+	"TARGET слегка кашляет пока USER продолжает мочиться [partner.ru_emu()] в рот", \
+    "TARGET вздрагивает ощущая как тёплая жидкость заполняет [partner.ru_ego()] рот", \
     "TARGET судорожно сглатывает пытаясь проглотить льющуюся мочу", \
-    "TARGET дрожит пока тёплая моча растекается по его лицу", \
+    "TARGET дрожит пока тёплая моча растекается по [partner.ru_ego()] лицу", \
 	"TARGET облизывает губы, ощущая терпкий вкус мочи"
 
 #define PARTNER_MESSAGES_CHANSE 20
@@ -310,7 +310,7 @@
 
 
 #define IN_MOUTH_MAIN_MESSAGES \
-	"USER опустошает свой мочевой пузырь, орашая горло TARGET тёплой мочёй", \
+	"USER опустошает свой мочевой пузырь, орошая горло TARGET тёплой мочёй", \
 	"USER издаёт стоны наслаждения, чувствуя как жёлтая жидкость проливается в рот и горло TARGET", \
 	"USER крепко удерживает TARGET, заливая [partner.ru_emu()] в рот горячую мочу", \
 	"USER заставляет TARGET проглатывать поток своей мочи", \
@@ -318,7 +318,7 @@
 
 #define IN_MOUTH_PARTNER_MESSAGES \
 	"TARGET молча принимает поток мочи USER, лишь тяжело сглатывая", \
-    "TARGET вздрагивает ощущая как тёплая жидкость орашает [partner.ru_emu()] горло", \
+    "TARGET вздрагивает ощущая как тёплая жидкость орошает [partner.ru_emu()] горло", \
     "TARGET судорожно сглатывает неостанавливающийся поток мочи", \
 	"TARGET дрожит и тяжело дышит между глотками мочи", \
 	"TARGET задыхается на мгновение, начиная глотать горячую жидкость", \
@@ -353,7 +353,7 @@
 	return prob(IN_MOUTH_PARTNER_MESSAGES_CHANSE) && pick(
 		IN_MOUTH_PARTNER_MESSAGES,
 		"TARGET подрагивает, когда горячая струя мочи из киски USER проносится по горлу",
-		"TARGET ощущает горячую киску USER на своих губах, пока струя мочи из нее орашает рот",
+		"TARGET ощущает горячую киску USER на своих губах, пока струя мочи из неё орошает рот",
 		"TARGET плотно прижат[partner.ru_aya()] к USER, упирается в н[user.ru_ego()] носом, ощущая, как киска заливает рот потоком мочи")
 
 /datum/interaction/lewd/unholy/piss/vagina/in_mouth/audio_effects(mob/living/user, mob/living/partner, is_fucking, is_hidden)
@@ -458,7 +458,7 @@
 			"USER двигает своим [shape_desc]ом внутри горла TARGET, не переставая мочиться")
 	else
 		return pick(
-			"USER проталкивает свой [shape_desc] глубоко в горло TARGET, начиная мочится",
+			"USER проталкивает свой [shape_desc] глубоко в горло TARGET, начиная мочиться",
 			"USER заставляет открыть рот TARGET и просовывает внутрь свой [shape_desc], выпуская поток мочи",
 			"USER обхватывает голову TARGET и надавив на [partner.ru_ego()] губы своим [shape_desc] вталкивает его внутрь, изливаясь горячей мочей",
 			"USER вцепившись в голову TARGET, резко впихивает свой [shape_desc] внутрь, со стоном выпуская поток мочи")
@@ -469,7 +469,7 @@
 		IN_MOUTH_PARTNER_MESSAGES,
 		"TARGET подрагивает, пока [shape_desc] USER заполняет [partner.ru_ego()] горло, а горячая струя мочи проносится внутри",
 		"TARGET тяжело дышит с [shape_desc]ом USER внутри своего горла, судорожно сглатывая мочу",
-		"TARGET ощущает горячий [shape_desc] USER в своем горле, пока струя мочи из него орашает рот",
+		"TARGET ощущает горячий [shape_desc] USER в своём горле, пока струя мочи из него орошает рот",
 		"TARGET плотно прижат[partner.ru_aya()] к USER, упирается в н[user.ru_ego()] носом, ощущая, как [partner.ru_emu()] в глотку горячей мочей изливается [shape_desc]")
 
 /datum/interaction/lewd/unholy/piss/penis/inside/mouth/audio_effects(mob/living/user, mob/living/partner, is_fucking, is_hidden)
@@ -499,7 +499,7 @@
 		SELF_IN_MOUTH_MAIN_MESSAGES,
 		"USER обводит языком свой [shape_desc] и мочится прямо в рот",
 		"USER водит языком вокруг головки своего [shape_desc]а, слизывая капли жёлтой жидкости",
-		"USER медленно заглатывает свой [shape_desc], орашая собственное горло горячей мочой",
+		"USER медленно заглатывает свой [shape_desc], орошая собственное горло горячей мочой",
 		"USER поглубже заглатывает свой [shape_desc], выпивая свою мочу",
 		"USER отсасывает свой [shape_desc], вытягивая капли тёплой жидкости себе в рот")
 
@@ -571,14 +571,14 @@
 			"[capitalize(shape_desc)] USER долбится в киску TARGET, пока горячая струя мочи устремляется внутрь",
 			"USER без остановки проталкивает свой [shape_desc] и выпускает мочу внутрь вагины TARGET",
 			"Из [shape_desc]а USER вырывается поток мочи прямо в киску TARGET",
-			"USER с силой загоняет свой [shape_desc] в вагину TARGET, продолжая мочится внутрь",
+			"USER с силой загоняет свой [shape_desc] в вагину TARGET, продолжая мочиться внутрь",
 			"USER крепко прижимает TARGET к своему паху, горячей мочей помечая [partner.ru_ego()] киску изнутри",
 			"USER крепко удерживает киску TARGET насаженной на свой [shape_desc], выпуская поток мочи внутрь")
 
 	else
 		return pick(
 			"USER проникает своим [shape_desc]ом внутрь киски TARGET и со стоном выпускает струю мочи",
-			"USER плотно прижимается к TARGET и погружает свой [shape_desc] внутрь [partner.ru_ego()] киски, начиная мочится",
+			"USER плотно прижимается к TARGET и погружает свой [shape_desc] внутрь [partner.ru_ego()] киски, начиная мочиться",
 			"USER проталкивает свой [shape_desc] глубоко в киску TARGET, выпуская внутрь поток мочи")
 
 /datum/interaction/lewd/unholy/piss/penis/inside/vagina/pick_partner_message(mob/living/user, mob/living/partner, is_fucking)
@@ -586,7 +586,7 @@
 	return prob(INSIDE_PARTNER_MESSAGES_CHANSE) && pick(
 		INSIDE_PARTNER_MESSAGES,
 		"TARGET подрагивает, пока [shape_desc] USER заполняет [partner.ru_ego()] киску, а горячая струя мочи проносится внутри",
-		"TARGET тяжело дышит с [shape_desc] USER внутри, ощущая теплую жидкость текущую внутри",
+		"TARGET тяжело дышит с [shape_desc] USER внутри, ощущая тёплую жидкость текущую внутри",
 		"TARGET ощущает горячий [shape_desc] USER в своей киске, пока струя мочи вырывается из него",
 		"TARGET тихо стонет и прижимается ближе, пока USER мочится внутрь своим [shape_desc]")
 
@@ -615,14 +615,14 @@
 			"[shape_desc] USER долбится в анус TARGET, пока горячая струя мочи устремляется внутрь",
 			"USER без остановки проталкивает свой [shape_desc] в узкое колечко TARGET и выпускает мочу внутрь",
 			"Из [shape_desc]а USER вырывается поток мочи прямо в попку TARGET",
-			"USER с силой загоняет свой [shape_desc] в попку TARGET, продолжая мочится внутрь",
+			"USER с силой загоняет свой [shape_desc] в попку TARGET, продолжая мочиться внутрь",
 			"USER крепко прижимает TARGET к своему паху, изливаясь горячей мочей внутрь [partner.ru_ego()] заднего прохода",
 			"USER крепко удерживает задницу TARGET насаженной на свой [shape_desc], выпуская поток мочи внутрь")
 
 	else
 		return pick(
 			"USER проникает своим [shape_desc]ом внутрь ануса TARGET и со стоном выпускает струю мочи",
-			"USER плотно прижимается к TARGET и погружает свой [shape_desc] внутрь [partner.ru_ego()] попки, начиная мочится",
+			"USER плотно прижимается к TARGET и погружает свой [shape_desc] внутрь [partner.ru_ego()] попки, начиная мочиться",
 			"USER проталкивает свой [shape_desc] глубоко в задницу TARGET, выпуская поток мочи")
 
 /datum/interaction/lewd/unholy/piss/penis/inside/anus/pick_partner_message(mob/living/user, mob/living/partner, is_fucking)
@@ -630,7 +630,7 @@
 	return prob(INSIDE_PARTNER_MESSAGES_CHANSE) && pick(
 		INSIDE_PARTNER_MESSAGES,
 		"TARGET подрагивает, пока [shape_desc] USER заполняет [partner.ru_ego()] попку, а горячая струя мочи проносится внутри",
-		"TARGET тяжело дышит с [shape_desc] USER внутри задницы, ощущая теплую жидкость текущую внутри",
+		"TARGET тяжело дышит с [shape_desc] USER внутри задницы, ощущая тёплую жидкость текущую внутри",
 		"TARGET ощущает горячий [shape_desc] USER в своём заднем проходе, пока струя мочи вырывается из него",
 		"TARGET тихо стонет и прижимается ближе, пока USER мочится внутрь попки своим [shape_desc]")
 
