@@ -222,7 +222,7 @@
 		SetScanMessage("Невозможно удалить: данные повреждены.","danger")
 		return FALSE
 	var/obj/item/card/id/C = usr.get_idcard(hand_first = TRUE)
-	if(istype(C) || istype(C, /obj/item/pda) || istype(C, /obj/item/modular_computer/tablet))
+	if(istype(C) || istype(C, /obj/item/modular_computer/pda) || istype(C, /obj/item/modular_computer/tablet))
 		if(check_access(C))
 			SetScanMessage("[GRAB.fields["name"]] => запись удалена.","warning")
 			records.Remove(GRAB)

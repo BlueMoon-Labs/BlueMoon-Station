@@ -370,16 +370,9 @@
 		target_zone = user.zone_selected
 	if(HAS_TRAIT(src, TRAIT_PIERCEIMMUNE) && !bypass_immunity)
 		. = 0
-
-	var/pierce_level = SYRINGE_PIERCE_NONE
-	if(isnum(penetrate_thick))
-		pierce_level = penetrate_thick
-	else if(penetrate_thick)
-		pierce_level = SYRINGE_PIERCE_ALL
-
 	// If targeting the head, see if the head item is thin enough.
 	// If targeting anything else, see if the wear suit is thin enough.
-	if(pierce_level < SYRINGE_PIERCE_ALL)
+	if(!penetrate_thick)
 		if(above_neck(target_zone))
 			if(head && istype(head, /obj/item/clothing))
 				var/obj/item/clothing/CH = head
@@ -390,12 +383,22 @@
 			var/obj/item/clothing/CS = get_bodypart_protecting_clothing_by_coverage(src, BP)
 			if(CS && (CS.clothing_flags & THICKMATERIAL))
 				. = 0
-
-	if(pierce_level < SYRINGE_PIERCE_THICK && . && is_zone_covered_by_clothing(target_zone))
-		. = 0
-
 	if(!. && error_msg && user)
 		to_chat(user, "<span class='alert'>Участок тела на [above_neck(target_zone) ? "вашей голове" : "вашем теле"] скрыт или на нём слишком толстый слой одежды!</span>")
+
+// Syringe-specific gate: same as can_inject() plus an extra "is the zone uncovered" check
+// for low-piercing syringes (SYRINGE_PIERCE_NONE). Sutures, patches, hyposprays, antag
+// bites etc. must keep calling can_inject() so they keep working through normal clothing.
+/mob/living/carbon/human/can_inject_syringe(mob/user, error_msg, target_zone, pierce_level = SYRINGE_PIERCE_NONE)
+	if(user && !target_zone)
+		target_zone = user.zone_selected
+	if(!can_inject(user, error_msg, target_zone, pierce_level >= SYRINGE_PIERCE_ALL))
+		return FALSE
+	if(pierce_level < SYRINGE_PIERCE_THICK && is_zone_covered_by_clothing(target_zone))
+		if(error_msg && user)
+			to_chat(user, "<span class='alert'>Участок тела на [above_neck(target_zone) ? "вашей голове" : "вашем теле"] прикрыт одеждой, игла не пройдёт.</span>")
+		return FALSE
+	return TRUE
 
 /mob/living/carbon/human/check_obscured_slots()
 	. = ..()

@@ -4929,7 +4929,7 @@
 /obj/structure/filingcabinet/filingcabinet,
 /obj/item/stack/medical/bruise_pack,
 /obj/item/stack/medical/bruise_pack,
-/obj/item/pda/medical,
+/obj/item/modular_computer/pda/medical,
 /obj/item/organ/cyberimp/eyes/hud/medical,
 /obj/machinery/light{
 	dir = 4;

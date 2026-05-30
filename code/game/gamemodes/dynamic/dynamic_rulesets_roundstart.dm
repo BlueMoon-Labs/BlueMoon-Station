@@ -896,6 +896,57 @@ BLUEMOON REMOVAL END*/
 		else if(HAS_TRAIT(P, TRAIT_ROBOTIC_ORGANISM)) // никаких роботов-вампиров из далекого космоса
 			candidates -= P
 
+//////////////////////////////////////////////
+//                                          //
+//           BLOB INFECTION (ROUNDSTART)    //
+//                                          //
+//////////////////////////////////////////////
+
+/// Late-stage blob carriers at shift start — same antagonist datum as midround infection (timed pop into overmind).
+/datum/dynamic_ruleset/roundstart/blob_infection
+	name = "Blob Infection"
+	antag_datum = /datum/antagonist/blob
+	antag_flag = "blob roundstart"
+	antag_flag_override = ROLE_BLOB
+	minimum_required_age = 0
+	protected_roles = list("Prisoner", "Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain") //BLUEMOON CHANGES
+	restricted_roles = list("Cyborg", "AI", "Positronic Brain")
+	required_candidates = 1
+	minimum_players = 30
+	weight = 4
+	cost = 18
+	scaling_cost = 0
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
+	requirements = list(101,101,101,101,50,40,30,20,10,10)
+	flags = HIGH_IMPACT_RULESET
+
+/datum/dynamic_ruleset/roundstart/blob_infection/ready(population, forced = FALSE)
+	if(forced)
+		return ..()
+	if(!length(candidates))
+		return FALSE
+	return ..()
+
+/datum/dynamic_ruleset/roundstart/blob_infection/pre_execute(population)
+	. = ..()
+	if(!.)
+		return FALSE
+	if(!length(candidates))
+		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
+		return FALSE
+	var/count = rand(1, 2)
+	count = min(count, candidates.len)
+	for(var/i = 1 to count)
+		if(!length(candidates))
+			break
+		var/mob/M = pick_n_take(candidates)
+		assigned += M.mind
+		M.mind.special_role = ROLE_BLOB
+		M.mind.restricted_roles = restricted_roles
+		message_admins("[ADMIN_LOOKUPFLW(M)] был выбран раундстартовым правилом [name].")
+		log_game("DYNAMIC: [key_name(M)] был выбран раундстартовым правилом [name].")
+	return TRUE
+
 // ////////////////////////////////////////////
 //                                          //
 //          SLAVERS OF SYNDICATE            //
@@ -1001,35 +1052,84 @@ BLUEMOON REMOVAL END*/
 
 //////////////////////////////////////////////
 //                                          //
-//           ABDUCTORS                      //
+//           ABDUCTORS (ROUNDSTART)          //
 //                                          //
 //////////////////////////////////////////////
-// #define ABDUCTOR_MAX_TEAMS 4
+/// Совпадает с лимитом команд в code/modules/antagonists/abductor/abductor.dm (этот файл может собираться раньше).
+#define ABDUCTOR_MAX_TEAMS_DYNAMIC_RS 4
 
-// /datum/dynamic_ruleset/roundstart/abductors
-// 	name = "Abductors"
-// 	antag_flag = "Abductor"
-// 	antag_flag_override = ROLE_ABDUCTOR
-// 	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_TEAMBASED) // BLUEMOON ADD
-// 	required_candidates = 2
-// 	weight = 3
-// 	cost = 2
-// 	scaling_cost = 9
-// 	requirements = list(0,101,101,60,40,20,20,20,10,10)
-// 	var/datum/team/abductor_team/new_team
+/// Пара абдукторов на старте смены (учёный + агент), как у midround from_ghosts, но из готовых кандидатов.
+/datum/dynamic_ruleset/roundstart/abductors
+	name = "Abductors"
+	antag_flag = "Abductor"
+	antag_flag_override = ROLE_ABDUCTOR
+	minimum_required_age = 0
+	protected_roles = list("Expeditor", "Prisoner", "NanoTrasen Representative", "Internal Affairs Agent", "Security Officer", "Blueshield", "Peacekeeper", "Brig Physician", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director") //BLUEMOON CHANGES
+	restricted_roles = list("AI", "Cyborg", "Positronic Brain")
+	required_candidates = 2
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
+	minimum_players = 30
+	weight = 4
+	cost = 15
+	scaling_cost = 0
+	flags = LONE_RULESET
+	requirements = list(101,101,101,101,40,30,20,15,10,10)
 
-// /datum/dynamic_ruleset/roundstart/abductors/execute(mob/new_character, index)
-// 	if (index == 1) // Our first guy is the scientist.  We also initialize the team here as well since this should only happen once per pair of abductors.
-// 		new_team = new
-// 		if(new_team.team_number > ABDUCTOR_MAX_TEAMS)
-// 			return MAP_ERROR
-// 		var/datum/antagonist/abductor/scientist/new_role = new
-// 		new_character.mind.add_antag_datum(new_role, new_team)
-// 	else // Our second guy is the agent, team is already created, don't need to make another one.
-// 		var/datum/antagonist/abductor/agent/new_role = new
-// 		new_character.mind.add_antag_datum(new_role, new_team)
+/datum/dynamic_ruleset/roundstart/abductors/ready(population, forced = FALSE)
+	if(forced)
+		return ..()
+	if(length(candidates) < required_candidates)
+		return FALSE
+	return ..()
 
-// #undef ABDUCTOR_MAX_TEAMS
+/datum/dynamic_ruleset/roundstart/abductors/pre_execute(population)
+	. = ..()
+	if(!.)
+		return FALSE
+	if(length(candidates) < required_candidates)
+		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
+		return FALSE
+	var/list/human_pool = list()
+	for(var/mob/M in candidates)
+		if(ishuman(M))
+			human_pool += M
+	if(length(human_pool) < required_candidates)
+		return FALSE
+	var/mob/scientist_mob = pick_n_take(human_pool)
+	var/mob/agent_mob = pick_n_take(human_pool)
+	candidates -= scientist_mob
+	candidates -= agent_mob
+	if(!scientist_mob?.mind || !agent_mob?.mind)
+		return FALSE
+	assigned += scientist_mob.mind
+	assigned += agent_mob.mind
+	scientist_mob.mind.special_role = ROLE_ABDUCTOR
+	agent_mob.mind.special_role = ROLE_ABDUCTOR
+	scientist_mob.mind.restricted_roles = restricted_roles
+	agent_mob.mind.restricted_roles = restricted_roles
+	message_admins("[ADMIN_LOOKUPFLW(scientist_mob)] и [ADMIN_LOOKUPFLW(agent_mob)] выбраны раундстартовым правилом [name] (учёный и агент).")
+	log_game("DYNAMIC: [key_name(scientist_mob)] и [key_name(agent_mob)] выбраны раундстартовым правилом [name].")
+	return TRUE
+
+/// assigned[1] — учёный, assigned[2] — агент; одна команда на пару.
+/datum/dynamic_ruleset/roundstart/abductors/execute()
+	if(length(assigned) < 2)
+		return FALSE
+	var/datum/mind/sci_mind = assigned[1]
+	var/datum/mind/agent_mind = assigned[2]
+	if(!sci_mind?.current || !agent_mind?.current)
+		return FALSE
+	if(!ishuman(sci_mind.current) || !ishuman(agent_mind.current))
+		return FALSE
+	if(/datum/team/abductor_team::team_count > ABDUCTOR_MAX_TEAMS_DYNAMIC_RS)
+		stack_trace("Roundstart abductors could not spawn: abductor team limit exceeded.")
+		return FALSE
+	var/datum/team/abductor_team/new_team = new
+	sci_mind.add_antag_datum(/datum/antagonist/abductor/scientist, new_team)
+	agent_mind.add_antag_datum(/datum/antagonist/abductor/agent, new_team)
+	return TRUE
+
+#undef ABDUCTOR_MAX_TEAMS_DYNAMIC_RS
 
 /// Вероятность того, что переход ИИ в состояние мальформации будет сопровождаться объявлением об ионной буре и некоторыми ионными законами.
 

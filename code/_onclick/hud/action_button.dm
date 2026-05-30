@@ -181,6 +181,8 @@
 //see human and alien hud for specific implementations.
 
 /mob/proc/update_action_buttons_icon(status_only = FALSE)
+	if(QDELETED(src))
+		return
 	for(var/X in actions)
 		var/datum/action/A = X
 		A.UpdateButtons(status_only)
@@ -194,6 +196,8 @@
  * * update_flags - reload_screen - bool, if TRUE, this proc will add the button to the screen of the passed mob as well
  */
 /mob/proc/update_action_buttons(reload_screen = FALSE)
+	if(QDELETED(src))
+		return
 	if(!hud_used || !client)
 		return
 

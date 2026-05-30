@@ -181,7 +181,7 @@
 /datum/component/pregnancy/proc/handle_life(seconds)
 	SIGNAL_HANDLER
 
-	if(!carrier)
+	if(!carrier || QDELETED(carrier))
 		return
 
 	if(!HAS_TRAIT(carrier, TRAIT_COMMON_PREGNANCY)) //For normal pregnancy - Gardelin0

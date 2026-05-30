@@ -159,8 +159,8 @@
 	addtimer(VARSET_CALLBACK(src, cooldown, FALSE), 50)
 
 /obj/item/assembly/control/electrochromatic
-	name = "electrochromatic window controller"
-	desc = "Toggles linked electrochromatic windows."
+	name = "electrochromatic glazing controller"
+	desc = "Toggles linked electrochromatic windows, windoors, and glass-paneled airlocks."
 	can_change_id = TRUE
 	/// Stores our status to prevent windows from desyncing.
 	var/on = FALSE

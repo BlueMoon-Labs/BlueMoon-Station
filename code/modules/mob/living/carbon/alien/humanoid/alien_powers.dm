@@ -40,6 +40,8 @@ Doesn't work on other aliens/AI.*/
 		return "[plasma_cost]"
 
 /obj/effect/proc_holder/alien/proc/cost_check(check_turf = FALSE, mob/living/carbon/user, silent = FALSE)
+	if(!user || QDELETED(user))
+		return FALSE
 	if(user.stat)
 		if(!silent)
 			to_chat(user, "<span class='noticealien'>You must be conscious to do this.</span>")

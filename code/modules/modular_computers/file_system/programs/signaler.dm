@@ -3,11 +3,11 @@
 	filedesc = "SignalCommander"
 	category = PROGRAM_CATEGORY_MISC
 	program_icon_state = "signal"
-	extended_desc = "A small built-in frequency app that sends out signaller signals with the appropriate hardware."
+	extended_desc = "Небольшое встроенное приложение для отправки сигналов сигнализатора при наличии соответствующего оборудования."
 	size = 2
 	tgui_id = "NtosSignaler"
 	program_icon = "satellite-dish"
-	usage_flags = PROGRAM_TABLET | PROGRAM_LAPTOP
+	usage_flags = PROGRAM_TABLET | PROGRAM_LAPTOP | PROGRAM_PDA
 	///What is the saved signal frequency?
 	var/signal_frequency = FREQ_SIGNALER
 	/// What is the saved signal code?

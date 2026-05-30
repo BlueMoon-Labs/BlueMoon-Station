@@ -11,15 +11,20 @@
 	var/sound/sound_to_play = sound(get_sfx(soundin))
 	var/max_distance = SOUND_RANGE + extrarange
 	var/falloff_distance = 3 // Full volume within 3 tiles (lewd sounds are close-range)
-	channel = channel || SSsounds.random_available_channel()
+	if(!isnum(channel) || channel <= 0)
+		channel = SSsounds.random_available_channel()
+	if(!channel)
+		return
 	var/list/hearing_mobs
 	for(var/mob/H in get_hearers_in_view(max_distance, turf_source))
-		if(!H.client || !(H.client.prefs.toggles & LEWD_VERB_SOUNDS))
+		if(QDELETED(H) || !H.client || !(H.client.prefs.toggles & LEWD_VERB_SOUNDS))
 			continue
 		LAZYADD(hearing_mobs, H)
 	if(ignored_mobs?.len)
 		LAZYREMOVE(hearing_mobs, ignored_mobs)
-	for(var/mob/H in hearing_mobs)
+	for(var/mob/H as anything in hearing_mobs)
+		if(QDELETED(H) || !H.client)
+			continue
 		H.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, sound_to_play, max_distance, falloff_distance)
 
 /mob/living

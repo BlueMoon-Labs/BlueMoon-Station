@@ -3,9 +3,9 @@
 	filedesc = "DoS Traffic Generator"
 	category = PROGRAM_CATEGORY_MISC
 	program_icon_state = "hostile"
-	extended_desc = "This advanced script can perform denial of service attacks against NTNet quantum relays. The system administrator will probably notice this. Multiple devices can run this program together against same relay for increased effect"
+	extended_desc = "This advanced script can perform denial of service attacks against NTNet quantum relays. The system administrator will probably notice this. Multiple devices can run this program together against same relay for increased effect. Requires SyndiNet access (emagged device)."
 	size = 20
-	requires_ntnet = TRUE
+	requires_ntnet = FALSE
 	available_on_ntnet = FALSE
 	available_on_syndinet = TRUE
 	tgui_id = "NtosNetDos"
@@ -25,7 +25,7 @@
 			dos_speed = NTNETSPEED_HIGHSIGNAL * 10
 		if(3)
 			dos_speed = NTNETSPEED_ETHERNET * 10
-	if(target && executed)
+	if(target && executed && !QDELETED(target))
 		target.dos_overload += dos_speed
 		if(!target.is_operational())
 			target.dos_sources.Remove(src)
@@ -33,7 +33,7 @@
 			error = "Connection to destination relay lost."
 
 /datum/computer_file/program/ntnet_dos/kill_program(forced = FALSE)
-	if(target)
+	if(target && !QDELETED(target))
 		target.dos_sources.Remove(src)
 	target = null
 	executed = FALSE
@@ -52,20 +52,21 @@
 					break
 			return TRUE
 		if("PRG_reset")
-			if(target)
+			if(target && !QDELETED(target))
 				target.dos_sources.Remove(src)
-				target = null
+			target = null
 			executed = FALSE
 			error = ""
 			return TRUE
 		if("PRG_execute")
-			if(target)
+			if(target && !QDELETED(target))
 				executed = TRUE
 				target.dos_sources.Add(src)
 				if(SSnetworks.station_network.intrusion_detection_enabled)
 					var/obj/item/computer_hardware/network_card/network_card = computer.all_components[MC_NET]
-					SSnetworks.station_network.add_log("IDS WARNING - Excess traffic flood targeting relay [target.uid] detected from device: [network_card.get_network_tag()]")
-					SSnetworks.station_network.intrusion_detection_alarm = TRUE
+					if(network_card)
+						SSnetworks.station_network.add_log("IDS WARNING - Excess traffic flood targeting relay [target.uid] detected from device: [network_card.get_network_tag()]")
+						SSnetworks.station_network.intrusion_detection_alarm = TRUE
 			return TRUE
 
 /datum/computer_file/program/ntnet_dos/ui_data(mob/user)
@@ -75,7 +76,7 @@
 	var/list/data = get_header_data()
 
 	data["error"] = error
-	if(target && executed)
+	if(target && executed && !QDELETED(target))
 		data["target"] = TRUE
 		data["speed"] = dos_speed
 

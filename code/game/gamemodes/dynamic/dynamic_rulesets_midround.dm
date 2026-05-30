@@ -751,30 +751,25 @@
 	repeatable = TRUE
 	var/list/vents = list()
 
+/datum/dynamic_ruleset/midround/from_ghosts/xenomorph/ready(forced = FALSE)
+	return ..() && length(find_vent_spawns()) > 0
+
 /datum/dynamic_ruleset/midround/from_ghosts/xenomorph/execute()
-	// 50% chance of being incremented by one
 	required_candidates += prob(50)
-	// 50% chance of being incremented by one
 	required_candidates += prob(50)
-	// 50% chance of being incremented by one
 	required_candidates += prob(50)
-	for(var/obj/machinery/atmospherics/components/unary/vent_pump/temp_vent in GLOB.machines)
-		if(QDELETED(temp_vent))
-			continue
-		if(is_station_level(temp_vent.loc.z) && !temp_vent.welded)
-			var/datum/pipeline/temp_vent_parent = temp_vent.parents[1]
-			if(!temp_vent_parent)
-				continue // No parent vent
-			// Stops Aliens getting stuck in small networks.
-			// See: Security, Virology
-			if(temp_vent_parent.other_atmosmch.len > 20)
-				vents += temp_vent
-	if(!vents.len)
+	vents = find_vent_spawns()
+	if(!length(vents))
 		return FALSE
 	. = ..()
+	if(.)
+		addtimer(CALLBACK(src, PROC_REF(announce_xenos)), rand(375, 600) SECONDS)
+
+/datum/dynamic_ruleset/midround/from_ghosts/xenomorph/proc/announce_xenos()
+	priority_announce("Неизвестные признаки жизни обнаружены на борту [station_name()]. Заблокируйте любой внешний доступ, включая воздуховоды и вентиляцию.", "ВНИМАНИЕ: НЕОПОЗНАННЫЕ ФОРМЫ ЖИЗНИ", ANNOUNCER_ALIENS)
 
 /datum/dynamic_ruleset/midround/from_ghosts/xenomorph/generate_ruleset_body(mob/applicant)
-	var/obj/vent = pick_n_take(vents)
+	var/obj/vent = length(vents) >= 2 ? pick_n_take(vents) : vents[1]
 	var/mob/living/carbon/alien/larva/new_xeno = new(vent.loc)
 	new_xeno.key = applicant.key
 	message_admins("[ADMIN_LOOKUPFLW(new_xeno)] has been made into an alien by the midround ruleset.")

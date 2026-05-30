@@ -1228,6 +1228,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	//Load prefs
 	S["job_preferences"] >> job_preferences
+	S["pda_theme"] >> pda_theme
 
 	//Custom emote panel
 	S["custom_emote_panel"] >> custom_emote_panel
@@ -1762,6 +1763,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["left_eye_color"]						, left_eye_color)
 	WRITE_FILE(S["right_eye_color"]						, right_eye_color)
 	WRITE_FILE(S["use_custom_skin_tone"]				, use_custom_skin_tone)
+	WRITE_FILE(S["pda_ringtone"]						, pda_ringtone)
+	WRITE_FILE(S["pda_theme"]							, pda_theme)
 	WRITE_FILE(S["skin_tone"]							, skin_tone)
 	WRITE_FILE(S["hair_style_name"]						, hair_style)
 	WRITE_FILE(S["facial_style_name"]					, facial_hair_style)

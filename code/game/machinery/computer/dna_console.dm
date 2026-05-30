@@ -314,6 +314,9 @@
 			else
 				data["stdDevAcc"] = "<38 %"
 
+	if(is_viable_occupant && !can_modify_occupant())
+		is_viable_occupant = FALSE
+
 	data["isViableSubject"] = is_viable_occupant
 	if(is_viable_occupant)
 		data["subjectName"] = scanner_occupant.name
@@ -428,6 +431,8 @@
 			scanner_occupant.dna.generate_dna_blocks()
 			scrambleready = world.time + SCRAMBLE_TIMEOUT
 			to_chat(usr,"<span class='notice'>ДНК-цепи перемешаны.</span>")
+			if(!can_modify_occupant())
+				return
 			scanner_occupant.radiation += RADIATION_STRENGTH_MULTIPLIER*50/(connected_scanner.damage_coeff ** 2)
 			return
 
@@ -538,7 +543,6 @@
 			//  we've increased the occupant rads
 			sequence = copytext_char(sequence, 1, genepos) + newgene + copytext_char(sequence, genepos + 1)
 			scanner_occupant.dna.mutation_index[path] = sequence
-			scanner_occupant.radiation += RADIATION_STRENGTH_MULTIPLIER/connected_scanner.damage_coeff
 			scanner_occupant.domutcheck()
 
 			// GUARD CHECK - Modifying genetics can lead to edge cases where the
@@ -549,6 +553,7 @@
 			//  it is less than ideal.
 			if(!can_modify_occupant())
 				return
+			scanner_occupant.radiation += RADIATION_STRENGTH_MULTIPLIER/connected_scanner.damage_coeff
 
 			// Check if we cracked a mutation
 			check_discovery(alias)
@@ -1591,9 +1596,8 @@
   * * buffer_slot - Index of the enzyme buffer to apply
   */
 /obj/machinery/computer/scan_consolenew/proc/apply_genetic_makeup(type, buffer_slot)
-	// Note - This proc is only called from code that has already performed the
-	//  necessary occupant guard checks. If you call this code yourself, please
-	//  apply can_modify_occupant() or equivalent checks first.
+	if(!can_modify_occupant())
+		return FALSE
 
 	// Pre-calc the rad increase since we'll be using it in all the possible
 	//  operations
@@ -1671,6 +1675,8 @@
 		return FALSE
 
 	scanner_occupant = connected_scanner.occupant
+	if(QDELETED(scanner_occupant))
+		return FALSE
 
 		// Check validity of occupent for DNA Modification
 		// DNA Modification:

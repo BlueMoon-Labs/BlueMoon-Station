@@ -46,6 +46,14 @@
 	.["resolved_count"] = length(GLOB.ahelp_tickets.resolved_tickets)
 	.["selected_state"] = selected_state
 
+	var/unhandled_messages = 0
+	for(var/list/commandMessage in GLOB.centcom_communications_messages)
+		if(commandMessage["handled"] == FALSE)
+			unhandled_messages++
+	.["time"] = world.time
+	.["communications"] = GLOB.centcom_communications_messages.Copy()
+	.["communications_unhandled"] = unhandled_messages
+
 /datum/admin_ticket_panel/proc/serialize_ticket(datum/admin_help/AH)
 	. = list()
 	.["ref"] = REF(AH)
@@ -172,32 +180,66 @@
 		if("player_panel")
 			if(!selected_ticket || !selected_ticket.initiator)
 				return TRUE
-			usr.client.holder.show_player_panel(selected_ticket.initiator.mob)
+			var/mob/initiator_mob = selected_ticket.initiator.mob
+			if(!initiator_mob)
+				return TRUE
+			usr.client?.holder?.show_player_panel(initiator_mob)
 			. = TRUE
 
 		if("follow")
-			if(!selected_ticket || !selected_ticket.initiator || !selected_ticket.initiator.mob)
+			if(!selected_ticket || !selected_ticket.initiator)
 				return TRUE
-			if(!usr.client)
+			var/mob/initiator_mob = selected_ticket.initiator.mob
+			if(!initiator_mob)
 				return TRUE
-			if(!isobserver(usr) && !usr.client.admin_ghost())
+			var/client/C = usr.client
+			if(!C)
 				return TRUE
-			var/mob/dead/observer/observer = usr.client.mob
+			if(!isobserver(usr) && !C.admin_ghost())
+				return TRUE
+			var/mob/dead/observer/observer = C.mob
 			if(!istype(observer))
 				return TRUE
-			observer.ManualFollow(selected_ticket.initiator.mob)
+			observer.ManualFollow(initiator_mob)
 			. = TRUE
 
 		if("logs")
-			if(!selected_ticket || !selected_ticket.initiator || !selected_ticket.initiator.mob)
+			if(!selected_ticket || !selected_ticket.initiator)
 				return TRUE
-			show_individual_logging_panel(selected_ticket.initiator.mob)
+			var/mob/initiator_mob = selected_ticket.initiator.mob
+			if(!initiator_mob)
+				return TRUE
+			show_individual_logging_panel(initiator_mob)
 			. = TRUE
 
 		if("ban_panel")
 			if(!selected_ticket)
 				return TRUE
 			usr.client.holder.DB_ban_panel(selected_ticket.initiator_ckey)
+			. = TRUE
+
+		if("mark_communication")
+			var/message_id = params["message_id"]
+			for(var/list/commandMessage in GLOB.centcom_communications_messages)
+				if(commandMessage["id"] == message_id)
+					commandMessage["handled"] = TRUE
+					break
+			. = TRUE
+
+		if("orbit_comm_sender")
+			var/sender_ckey = params["sender_ckey"]
+			var/atom/movable/sender = get_mob_by_key(sender_ckey)
+			if(!sender)
+				return TRUE
+			var/client/C = usr.client
+			if(!C)
+				return TRUE
+			if(!isobserver(usr) && !C.admin_ghost())
+				return TRUE
+			var/mob/dead/observer/O = C.mob
+			if(!istype(O))
+				return TRUE
+			O.ManualFollow(sender)
 			. = TRUE
 
 	SStgui.update_uis(src)

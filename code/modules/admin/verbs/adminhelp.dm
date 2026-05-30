@@ -512,7 +512,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	panel.ui_interact(usr)
 
 /datum/admin_help/proc/Retitle()
-	var/new_title = input(usr, "Введите новое имя тикета", "Переименование тикета", name) as text|null
+	var/new_title = tgui_input_text(usr, "Введите новое имя тикета", "Переименование тикета", name)
 	if(new_title)
 		name = new_title
 		//not saying the original name cause it could be a long ass message
@@ -618,7 +618,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Adminhelp") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 	if(current_ticket)
-		if(alert(usr, "У вас уже есть открытый тикет. Относится ли новый к той же проблеме?",,"Да","Нет") != "Нет")
+		if(tgui_alert(usr, "У вас уже есть открытый тикет. Относится ли новый к той же проблеме?", "Adminhelp", list("Да", "Нет")) != "Нет")
 			if(current_ticket)
 				current_ticket.MessageNoRecipient(message)
 				current_ticket.TimeoutVerb()

@@ -9881,7 +9881,7 @@
 /turf/open/indestructible/necropolis{
 	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
-/area/centcom)
+/area/centcom/arena)
 "bnz" = (
 /obj/machinery/button/door{
 	id = "thunderdomegen1";
@@ -10263,11 +10263,11 @@
 /turf/open/indestructible/necropolis{
 	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
-/area/centcom)
+/area/centcom/arena)
 "bGV" = (
 /obj/effect/spawner/lootdrop/melee,
 /turf/open/indestructible/necropolis,
-/area/centcom)
+/area/centcom/arena)
 "bHo" = (
 /obj/machinery/status_display/evac{
 	pixel_x = -32
@@ -10506,7 +10506,7 @@
 /turf/open/indestructible/necropolis{
 	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
-/area/centcom)
+/area/centcom/arena)
 "bWB" = (
 /obj/structure/flora/rock/pile,
 /turf/open/floor/grass,
@@ -11225,7 +11225,7 @@
 	id = "testchamber"
 	},
 /turf/open/indestructible/binary,
-/area/centcom)
+/area/centcom/arena)
 "cHH" = (
 /obj/structure/closet/crate,
 /obj/item/implant/radio,
@@ -12474,7 +12474,7 @@
 /turf/open/indestructible/necropolis{
 	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
-/area/centcom)
+/area/centcom/arena)
 "dZe" = (
 /obj/structure/table,
 /obj/effect/turf_decal/tile/yellow/anticorner/contrasted,
@@ -13635,7 +13635,7 @@
 	name = "EORG: East Point"
 	},
 /turf/open/indestructible/binary,
-/area/centcom)
+/area/centcom/arena)
 "fkZ" = (
 /obj/effect/turf_decal/vg_decals/numbers/three,
 /turf/open/floor/plasteel/dark/side{
@@ -14098,7 +14098,7 @@
 /area/centcom/holding)
 "fHu" = (
 /turf/open/indestructible/binary,
-/area/centcom)
+/area/centcom/arena)
 "fHH" = (
 /obj/structure/closet/crate{
 	icon_state = "radiation";
@@ -14630,7 +14630,7 @@
 	name = "EORG: East Point"
 	},
 /turf/open/indestructible/binary,
-/area/centcom)
+/area/centcom/arena)
 "gjp" = (
 /obj/effect/turf_decal/tile/dark_blue{
 	dir = 4
@@ -14662,7 +14662,7 @@
 	name = "EORG: West Point"
 	},
 /turf/open/indestructible/binary,
-/area/centcom)
+/area/centcom/arena)
 "gmd" = (
 /obj/effect/turf_decal/box,
 /obj/effect/turf_decal/caution/stand_clear,
@@ -15403,7 +15403,7 @@
 /turf/open/indestructible/necropolis{
 	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
-/area/centcom)
+/area/centcom/arena)
 "gXP" = (
 /obj/machinery/light{
 	light_color = "#c9d3e8"
@@ -16093,7 +16093,7 @@
 /obj/structure/fans/tiny,
 /obj/machinery/door/airlock/centcom,
 /turf/open/indestructible/necropolis,
-/area/centcom)
+/area/centcom/arena)
 "hIy" = (
 /obj/machinery/power/port_gen/pacman,
 /obj/machinery/light/small{
@@ -16331,7 +16331,7 @@
 "ibl" = (
 /obj/effect/spawner/structure/window/reinforced,
 /turf/open/indestructible/necropolis,
-/area/centcom)
+/area/centcom/arena)
 "ibo" = (
 /obj/structure/pool/Rboard,
 /turf/open/indestructible/cobble/side{
@@ -16435,7 +16435,7 @@
 	id = "testchamber2"
 	},
 /turf/open/indestructible/binary,
-/area/centcom)
+/area/centcom/arena)
 "ifW" = (
 /obj/effect/turf_decal/tile/dark_blue/half,
 /obj/machinery/button/door{
@@ -16885,7 +16885,7 @@
 /turf/open/indestructible/necropolis{
 	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
-/area/centcom)
+/area/centcom/arena)
 "iAH" = (
 /obj/machinery/door/window/brigdoor/westleft{
 	color = "#4D4D4D"
@@ -17530,7 +17530,7 @@
 	name = "EORG: East Point"
 	},
 /turf/open/indestructible/binary,
-/area/centcom)
+/area/centcom/arena)
 "jlB" = (
 /obj/machinery/chem_dispenser/drinks/beer/fullupgrade{
 	dir = 1;
@@ -18136,7 +18136,7 @@
 /turf/open/indestructible/necropolis{
 	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
-/area/centcom)
+/area/centcom/arena)
 "jPn" = (
 /obj/machinery/light/warm/directional/south,
 /turf/open/floor/plasteel/showroomfloor,
@@ -18749,7 +18749,7 @@
 /turf/open/indestructible/necropolis{
 	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
-/area/centcom)
+/area/centcom/arena)
 "kxU" = (
 /obj/structure/table/wood,
 /obj/effect/turf_decal/siding/wood,
@@ -19341,7 +19341,7 @@
 /turf/open/indestructible/necropolis{
 	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
-/area/centcom)
+/area/centcom/arena)
 "lbR" = (
 /obj/machinery/light/directional/east,
 /obj/structure/chair/pew/right{
@@ -19420,6 +19420,14 @@
 /obj/structure/closet/crate/engineering,
 /turf/open/floor/plasteel/dark,
 /area/syndicate_mothership/control)
+"leO" = (
+/obj/vehicle/sealed/mecha/combat/durand/zeus{
+	internals_req_access = list()
+	},
+/turf/open/indestructible/necropolis{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
+/area/centcom/arena)
 "lfH" = (
 /obj/item/kirbyplants/hedge{
 	anchored = 1
@@ -19532,7 +19540,7 @@
 /area/centcom/holding)
 "ljP" = (
 /turf/closed/wall,
-/area/centcom)
+/area/centcom/arena)
 "llb" = (
 /obj/machinery/light/directional/west,
 /turf/open/floor/mineral/abductor,
@@ -19872,7 +19880,7 @@
 /turf/open/indestructible/necropolis{
 	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
-/area/centcom)
+/area/centcom/arena)
 "lCd" = (
 /obj/structure/lattice,
 /obj/structure/lattice,
@@ -20455,7 +20463,7 @@
 /turf/open/indestructible/necropolis{
 	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
-/area/centcom)
+/area/centcom/arena)
 "mgs" = (
 /obj/effect/spawner/structure/window/reinforced/tinted/electrochromatic{
 	electrochromatic_id = "cofe3"
@@ -20841,7 +20849,7 @@
 /turf/open/indestructible/necropolis{
 	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
-/area/centcom)
+/area/centcom/arena)
 "mHR" = (
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 1
@@ -20955,8 +20963,14 @@
 /turf/open/floor/grass,
 /area/centcom/control)
 "mQt" = (
-/turf/open/space/basic,
-/area/centcom)
+/obj/vehicle/sealed/mecha/combat/marauder/mauler/loaded{
+	internals_req_access = list();
+	operation_req_access = list()
+	},
+/turf/open/indestructible/necropolis{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
+	},
+/area/centcom/arena)
 "mQu" = (
 /obj/structure/chair/comfy/black{
 	dir = 4;
@@ -20993,7 +21007,7 @@
 /area/centcom/holding)
 "mRB" = (
 /turf/open/indestructible/necropolis,
-/area/centcom)
+/area/centcom/arena)
 "mSn" = (
 /obj/machinery/door/airlock/material{
 	name = "Centcom Dorm 3";
@@ -21492,7 +21506,7 @@
 /turf/open/indestructible/necropolis{
 	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
-/area/centcom)
+/area/centcom/arena)
 "nuf" = (
 /turf/closed/indestructible/riveted,
 /area/centcom/ferry)
@@ -22974,7 +22988,7 @@
 "oYO" = (
 /obj/machinery/light/floor,
 /turf/open/indestructible/necropolis,
-/area/centcom)
+/area/centcom/arena)
 "oZn" = (
 /obj/machinery/vending/medical,
 /obj/effect/turf_decal/siding/dark_red/end{
@@ -23757,7 +23771,7 @@
 	name = "EORG: East Point"
 	},
 /turf/open/indestructible/binary,
-/area/centcom)
+/area/centcom/arena)
 "pLM" = (
 /turf/open/floor/sepia,
 /area/centcom/holding)
@@ -24089,7 +24103,7 @@
 /turf/open/indestructible/necropolis{
 	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
-/area/centcom)
+/area/centcom/arena)
 "qhn" = (
 /obj/structure/flora/ausbushes,
 /turf/open/floor/grass/grass3,
@@ -24155,7 +24169,7 @@
 /turf/open/indestructible/necropolis{
 	initial_gas_mix = "OPENTURF_DEFAULT_ATMOS"
 	},
-/area/centcom)
+/area/centcom/arena)
 "qkA" = (
 /obj/machinery/vending/cola/blue{
 	shut_up = 1
@@ -24647,7 +24661,7 @@
 /turf/open/indestructible/necropolis{
 	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
-/area/centcom)
+/area/centcom/arena)
 "qGq" = (
 /obj/structure/mopbucket,
 /obj/item/mop,
@@ -25697,7 +25711,7 @@
 /turf/open/indestructible/necropolis{
 	initial_gas_mix = "OPENTURF_DEFAULT_ATMOS"
 	},
-/area/centcom)
+/area/centcom/arena)
 "rFA" = (
 /obj/effect/spawner/structure/window/plastitanium,
 /turf/open/floor/plating,
@@ -25989,7 +26003,7 @@
 /turf/open/indestructible/necropolis{
 	initial_gas_mix = "OPENTURF_DEFAULT_ATMOS"
 	},
-/area/centcom)
+/area/centcom/arena)
 "rTV" = (
 /obj/structure/table/wood,
 /obj/effect/turf_decal/siding/wood,
@@ -26163,6 +26177,10 @@
 /obj/machinery/shower/directional/west,
 /turf/open/indestructible/hoteltile,
 /area/centcom/holding)
+"saT" = (
+/obj/structure/barricade/wooden,
+/turf/open/indestructible/necropolis,
+/area/centcom/arena)
 "saZ" = (
 /obj/machinery/light{
 	dir = 4;
@@ -27410,7 +27428,7 @@
 	name = "EORG: West Point"
 	},
 /turf/open/indestructible/binary,
-/area/centcom)
+/area/centcom/arena)
 "toi" = (
 /obj/structure/table/wood,
 /obj/item/stack/packageWrap,
@@ -27532,7 +27550,7 @@
 	name = "EORG: West Point"
 	},
 /turf/open/indestructible/binary,
-/area/centcom)
+/area/centcom/arena)
 "twc" = (
 /obj/structure/table/wood,
 /obj/item/paper_bin{
@@ -28373,7 +28391,7 @@
 /area/tdome/arena_source)
 "unK" = (
 /turf/closed/indestructible/riveted,
-/area/centcom)
+/area/centcom/arena)
 "uoq" = (
 /obj/structure/reagent_dispensers/fueltank,
 /obj/effect/turf_decal/tile/brown/fourcorners,
@@ -29371,7 +29389,7 @@
 /turf/open/indestructible/necropolis{
 	initial_gas_mix = "OPENTURF_DEFAULT_ATMOS"
 	},
-/area/centcom)
+/area/centcom/arena)
 "vkL" = (
 /obj/structure/chair/comfy/black{
 	dir = 8
@@ -29825,7 +29843,7 @@
 /turf/open/indestructible/necropolis{
 	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
-/area/centcom)
+/area/centcom/arena)
 "vHG" = (
 /obj/machinery/vending/wardrobe/det_wardrobe,
 /turf/open/floor/plasteel/dark,
@@ -29846,7 +29864,7 @@
 /turf/open/indestructible/necropolis{
 	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
-/area/centcom)
+/area/centcom/arena)
 "vJj" = (
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -31211,7 +31229,7 @@
 	name = "EORG: East Point"
 	},
 /turf/open/indestructible/binary,
-/area/centcom)
+/area/centcom/arena)
 "xmf" = (
 /obj/structure/artilleryplaceholder{
 	icon_state = "11"
@@ -83520,23 +83538,23 @@ dXW
 vIX
 unK
 unK
-mQt
+aaa
 unK
 dXW
 dXW
 dXW
 dXW
 dXW
-dXW
-dXW
-dXW
+qhf
+qhf
+qhf
 dXW
 dXW
 vIX
 dXW
 dXW
 unK
-mQt
+aaa
 unK
 unK
 qkn
@@ -83776,25 +83794,25 @@ dXW
 dXW
 dXW
 unK
-mQt
-mQt
+aaa
+aaa
 unK
 dXW
 dXW
 dXW
 vIX
 bVi
-ibl
-ljP
-ibl
+qhf
+leO
+qhf
 rTv
 dXW
 vIX
 dXW
 dXW
 unK
-mQt
-mQt
+aaa
+aaa
 unK
 dXW
 vIX
@@ -84033,25 +84051,25 @@ dXW
 dXW
 bVi
 unK
-mQt
-mQt
+aaa
+aaa
 unK
 dXW
 dXW
 dXW
 dXW
 dXW
-dXW
-dXW
-dXW
+qhf
+qhf
+qhf
 dXW
 dXW
 dXW
 dXW
 dXW
 unK
-mQt
-mQt
+aaa
+aaa
 unK
 bVi
 dXW
@@ -84290,8 +84308,8 @@ dXW
 dXW
 dXW
 unK
-mQt
-mQt
+aaa
+aaa
 unK
 dXW
 dXW
@@ -84307,8 +84325,8 @@ dXW
 dXW
 dXW
 unK
-mQt
-mQt
+aaa
+aaa
 unK
 dXW
 dXW
@@ -84547,8 +84565,8 @@ dXW
 vIX
 dXW
 unK
-mQt
-mQt
+aaa
+aaa
 unK
 mRB
 ibl
@@ -84564,8 +84582,8 @@ ljP
 ibl
 qkn
 unK
-mQt
-mQt
+aaa
+aaa
 unK
 dXW
 dXW
@@ -84804,7 +84822,7 @@ dXW
 dXW
 dXW
 unK
-mQt
+aaa
 unK
 unK
 dXW
@@ -84822,7 +84840,7 @@ vIX
 dXW
 unK
 unK
-mQt
+aaa
 unK
 dXW
 dXW
@@ -91486,7 +91504,7 @@ dXW
 dXW
 dXW
 unK
-mQt
+aaa
 unK
 unK
 dXW
@@ -91504,7 +91522,7 @@ dXW
 dXW
 unK
 unK
-mQt
+aaa
 unK
 dXW
 dXW
@@ -91743,8 +91761,8 @@ dXW
 vIX
 dXW
 unK
-mQt
-mQt
+aaa
+aaa
 unK
 mRB
 ibl
@@ -91760,8 +91778,8 @@ ljP
 ibl
 mRB
 unK
-mQt
-mQt
+aaa
+aaa
 unK
 dXW
 dXW
@@ -92000,8 +92018,8 @@ dXW
 dXW
 dXW
 unK
-mQt
-mQt
+aaa
+aaa
 unK
 dXW
 dXW
@@ -92017,8 +92035,8 @@ dXW
 dXW
 dXW
 unK
-mQt
-mQt
+aaa
+aaa
 unK
 dXW
 dXW
@@ -92257,25 +92275,25 @@ dXW
 dXW
 bVi
 unK
-mQt
-mQt
+aaa
+aaa
 unK
 dXW
 dXW
 dXW
 vIX
 dXW
-dXW
-dXW
-dXW
+qhf
+qhf
+qhf
 dXW
 dXW
 vIX
 dXW
 dXW
 unK
-mQt
-mQt
+aaa
+aaa
 unK
 bVi
 dXW
@@ -92514,25 +92532,25 @@ dXW
 dXW
 dXW
 unK
-mQt
-mQt
+aaa
+aaa
 unK
 mRB
 dXW
 dXW
 dXW
 bVi
-ibl
-ljP
-ibl
+saT
+mQt
+saT
 bVi
 dXW
 dXW
 dXW
 dXW
 unK
-mQt
-mQt
+aaa
+aaa
 unK
 dXW
 dXW
@@ -92772,23 +92790,23 @@ dXW
 dXW
 unK
 unK
-mQt
+aaa
 unK
 dXW
 vIX
 dXW
 dXW
 dXW
-dXW
-dXW
-dXW
+qhf
+qhf
+qhf
 dXW
 dXW
 dXW
 dXW
 dXW
 unK
-mQt
+aaa
 unK
 unK
 vIX

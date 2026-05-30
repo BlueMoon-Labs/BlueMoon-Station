@@ -226,6 +226,88 @@
 			"label": "tgui: build"
 		},
 		{
+			"type": "shell",
+			"command": "tgui/bin/tgui",
+			"windows": {
+				"command": ".\\tgui\\bin\\tgui.bat"
+			},
+			"args": [
+				"--dev"
+			],
+			"isBackground": true,
+			"problemMatcher": {
+				"owner": "tgui-dev",
+				"pattern": {
+					"regexp": "^\\[NEVER_MATCH\\] (.+):(\\d+):(\\d+): (.+)$",
+					"file": 1,
+					"line": 2,
+					"column": 3,
+					"message": 4
+				},
+				"background": {
+					"activeOnStart": true,
+					"beginsPattern": "vite v|building client environment|build started",
+					"endsPattern": "dev-server: http\\+ws on"
+				}
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "dedicated",
+				"group": "tgui"
+			},
+			"detail": "Запускает vite-watch и dev-сервер (http+ws на :3000) для hot-reload. Требует Node 20/22 и TGUI_DEV_SERVER_IP в конфиге.",
+			"label": "tgui: dev (hot-reload)"
+		},
+		{
+			"type": "shell",
+			"command": "tgui/bin/tgui",
+			"windows": {
+				"command": ".\\tgui\\bin\\tgui.bat"
+			},
+			"args": [
+				"--lint"
+			],
+			"problemMatcher": [
+				"$tsc",
+				"$eslint-stylish"
+			],
+			"group": "build",
+			"detail": "ESLint + проверка типов TypeScript для tgui.",
+			"label": "tgui: lint"
+		},
+		{
+			"type": "shell",
+			"command": "tgui/bin/tgui",
+			"windows": {
+				"command": ".\\tgui\\bin\\tgui.bat"
+			},
+			"args": [
+				"--test"
+			],
+			"problemMatcher": [],
+			"group": "test",
+			"detail": "Jest-тесты tgui.",
+			"label": "tgui: test"
+		},
+		{
+			"dependsOrder": "sequence",
+			"dependsOn": [
+				"Build All (LOWMEMORYMODE)",
+				"tgui: dev (hot-reload)"
+			],
+			"detail": "Сборка (LOWMEMORYMODE) + автозапуск dev hot-reload. preLaunchTask для DEV-конфига.",
+			"label": "tgui: dev prelaunch (LOWMEMORYMODE)"
+		},
+		{
+			"dependsOrder": "sequence",
+			"dependsOn": [
+				"Build All (TESTING)",
+				"tgui: dev (hot-reload)"
+			],
+			"detail": "Сборка (TESTING) + автозапуск dev hot-reload. preLaunchTask для DEV-конфига.",
+			"label": "tgui: dev prelaunch (TESTING)"
+		},
+		{
 			"command": "${command:dreammaker.reparse}",
 			"group": "build",
 			"label": "dm: reparse"

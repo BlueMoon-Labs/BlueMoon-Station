@@ -691,3 +691,21 @@
 			if(GLOB.typecache_powerfailure_safe_areas[A.type])
 				continue
 			C.energy_fail(rand(duration_min,duration_max))
+
+/// Finds vent pumps on large atmos networks suitable for vent-spawn antagonists.
+/proc/find_vent_spawns()
+	var/list/vents = list()
+	var/list/vent_pumps = SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/atmospherics/components/unary/vent_pump)
+	for(var/obj/machinery/atmospherics/components/unary/vent_pump/temp_vent as anything in vent_pumps)
+		if(QDELETED(temp_vent))
+			continue
+		if(!SSmapping.level_trait(temp_vent.loc.z, ZTRAIT_STATION) || temp_vent.welded)
+			continue
+		var/datum/pipeline/temp_vent_parent = temp_vent.parents[1]
+		if(!temp_vent_parent)
+			continue
+		// Stops antagonists getting stuck in small networks (Security, Virology, etc.)
+		if(temp_vent_parent.other_atmosmch.len <= 20)
+			continue
+		vents += temp_vent
+	return vents

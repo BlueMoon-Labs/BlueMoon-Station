@@ -72,7 +72,7 @@
 	suit_store = /obj/item/flashlight/pen/paramedic
 	id = /obj/item/card/id
 	r_pocket = /obj/item/pinpointer/crew
-	l_pocket = /obj/item/pda/medical
+	l_pocket = /obj/item/modular_computer/pda/medical
 	backpack_contents = list(/obj/item/roller=1, /obj/item/storage/hypospraykit/regular=1)
 	pda_slot = ITEM_SLOT_LPOCKET
 
@@ -86,7 +86,7 @@
 	name = "Syndicate Paramedic"
 	jobtype = /datum/job/paramedic
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	ears = /obj/item/radio/headset/headset_med
 	gloves = /obj/item/clothing/gloves/color/latex/nitrile/hsc

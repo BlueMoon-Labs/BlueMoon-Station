@@ -1,0 +1,39 @@
+/**
+ * NtOS Dark Mode
+ * Deep charcoal background with muted blue-grey accents.
+ * Feature: darkest background of all themes, easy on the eyes.
+ */
+
+@use 'sass:color';
+@use 'sass:meta';
+
+$darkmode: #4a5568;
+
+@use '../colors.scss' with (
+  $fg-map-keys: (),
+  $bg-map-keys: (),
+);
+@use '../base.scss' with (
+  $color-bg: #1a1d23,
+  $color-bg-grad-spread: 3%,
+);
+
+.theme-ntos_darkmode {
+  // Components
+  @include meta.load-css('../components/Button.scss', $with: (
+    'color-default': $darkmode,
+    'color-transparent-text': rgba(200, 210, 225, 0.8),
+  ));
+  @include meta.load-css('../components/ProgressBar.scss', $with: (
+    'color-default-fill': $darkmode,
+    'background-color': rgba(255, 255, 255, 0.08),
+  ));
+  @include meta.load-css('../components/Section.scss');
+
+  // Layouts
+  @include meta.load-css('../layouts/Layout.scss');
+  @include meta.load-css('../layouts/Window.scss');
+  @include meta.load-css('../layouts/TitleBar.scss', $with: (
+    'background-color': color.scale($darkmode, $lightness: -30%),
+  ));
+}

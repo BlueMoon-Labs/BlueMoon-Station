@@ -269,11 +269,11 @@ GLOBAL_LIST_INIT(pda_styles, list(MONO, VT, ORBITRON, SHARE))
 #define PDA_SKIN_MINIMAL "Minimal"
 
 GLOBAL_LIST_INIT(pda_reskins, list(
-	PDA_SKIN_CLASSIC = list("icon" = 'icons/obj/pda.dmi'),
-	PDA_SKIN_ALT = list("icon" = 'icons/obj/pda_alt.dmi'),
-	PDA_SKIN_RUGGED = list("icon" = 'icons/obj/pda_rugged.dmi'),
-	PDA_SKIN_MODERN = list("icon" = 'icons/obj/pda_modern.dmi'),
-	PDA_SKIN_MINIMAL = list("icon" = 'icons/obj/pda_minimal.dmi')
+	PDA_SKIN_CLASSIC = list("icon" = 'icons/obj/pda.dmi', "icon_state_menu" = null),
+	PDA_SKIN_ALT = list("icon" = 'icons/obj/pda_alt.dmi', "icon_state_menu" = "screen_default"),
+	PDA_SKIN_RUGGED = list("icon" = 'icons/obj/pda_rugged.dmi', "icon_state_menu" = null),
+	PDA_SKIN_MODERN = list("icon" = 'icons/obj/pda_modern.dmi', "icon_state_menu" = null),
+	PDA_SKIN_MINIMAL = list("icon" = 'icons/obj/pda_minimal.dmi', "icon_state_menu" = null)
 	))
 
 //Payed ERT calls

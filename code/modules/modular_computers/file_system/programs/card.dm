@@ -12,13 +12,13 @@
 	filedesc = "Plexagon Access Management"
 	category = PROGRAM_CATEGORY_CREW
 	program_icon_state = "id"
-	extended_desc = "Program for programming employee ID cards to access parts of the station."
+	extended_desc = "Утилита для программирования ID-карт сотрудников, предоставляющая доступ к различным частям станции."
 	transfer_access = ACCESS_HEADS
 	requires_ntnet = 0
 	size = 8
 	tgui_id = "NtosCard"
 	program_icon = "id-card"
-	usage_flags = PROGRAM_CONSOLE
+	usage_flags = PROGRAM_ALL
 
 	var/is_centcom = FALSE
 	var/minor = FALSE

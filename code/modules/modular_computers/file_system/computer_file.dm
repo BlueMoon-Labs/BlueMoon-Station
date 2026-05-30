@@ -3,6 +3,7 @@
 	var/filetype = "XXX" // File full names are [filename].[filetype] so like NewFile.XXX in this case
 	var/size = 1 // File size in GQ. Integers only!
 	var/obj/item/computer_hardware/hard_drive/holder // Holder that contains this file.
+	var/obj/item/computer_disk/disk_host // Disk that contains this file (for removable disks)
 	var/unsendable = FALSE // Whether the file may be sent to someone via NTNet transfer or other means.
 	var/undeletable = FALSE // Whether the file may be deleted. Setting to TRUE prevents deletion/renaming/etc.
 	var/uid // UID of this file
@@ -21,6 +22,7 @@
 	if(holder.holder && holder.holder.active_program == src)
 		holder.holder.kill_program(forced = TRUE)
 	holder = null
+	disk_host = null
 	return ..()
 
 // Returns independent copy of this file.

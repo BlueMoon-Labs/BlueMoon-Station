@@ -49,6 +49,12 @@ export class Input extends Component {
         }
       }
     };
+    this.handleCompositionEnd = e => {
+      const { onInput } = this.props;
+      if (onInput) {
+        onInput(e, e.target.value);
+      }
+    };
     this.handleKeyDown = e => {
       const { onInput, onChange, onEnter } = this.props;
       if (e.key === KEY_ENTER) {
@@ -177,6 +183,7 @@ export class Input extends Component {
           className="Input__input"
           placeholder={placeholder}
           onInput={this.handleInput}
+          onCompositionEnd={this.handleCompositionEnd}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}
           onKeyDown={this.handleKeyDown}

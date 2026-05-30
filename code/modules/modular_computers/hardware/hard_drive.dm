@@ -159,11 +159,13 @@
 	w_class = WEIGHT_CLASS_TINY
 	custom_price = PAYCHECK_MEDIUM * 2
 
-// For borg integrated tablets. No downloader.
+// For borg integrated tablets. Ранее тут был коментарий (No downloader.), но посмотрим как сейчас поведут себя борги, если дать им немного свободы, в случае если будут творить хуйню - удалить вторую строчку.
 /obj/item/computer_hardware/hard_drive/small/integrated/install_default_programs()
 	store_file(new /datum/computer_file/program/computerconfig(src)) // Computer configuration utility, allows hardware control and displays more info than status bar
+	store_file(new /datum/computer_file/program/ntnetdownload(src)) // NTNet Software Hub
 	store_file(new /datum/computer_file/program/filemanager(src)) // File manager, allows text editor functions and basic file manipulation.
 	store_file(new /datum/computer_file/program/robotact(src))
+	store_file(new /datum/computer_file/program/messenger(src)) // Messenger
 
 
 // Syndicate variant - very slight better

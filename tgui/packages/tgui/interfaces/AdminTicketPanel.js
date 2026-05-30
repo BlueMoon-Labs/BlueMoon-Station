@@ -40,6 +40,8 @@ export const AdminTicketPanel = (props, context) => {
     closed_count = 0,
     resolved_count = 0,
     selected_state = 1,
+    communications = [],
+    communications_unhandled = 0,
   } = data;
 
   const [tab, setTab] = useLocalState(context, 'tab', selected_state);
@@ -47,6 +49,8 @@ export const AdminTicketPanel = (props, context) => {
   const selectedTicket = tickets.find((t) => t.ref === selected_ticket_ref);
 
   const filteredTickets = tickets.filter((t) => t.state === tab);
+
+  const isCommTab = tab === 4;
 
   return (
     <Window
@@ -95,39 +99,132 @@ export const AdminTicketPanel = (props, context) => {
                     >
                       Реш.
                     </Tabs.Tab>
+                    <Tabs.Tab
+                      selected={tab === 4}
+                      color="orange"
+                      icon="broadcast-tower"
+                      rightSlot={
+                        communications_unhandled > 0
+                          ? '(' + communications_unhandled + ')'
+                          : null
+                      }
+                      onClick={() => setTab(4)}
+                    >
+                      Связь
+                    </Tabs.Tab>
                   </Tabs>
                 </Section>
               </Stack.Item>
               <Stack.Item grow>
-                <Section
-                  title="Тикеты"
-                  fill
-                  scrollable
-                  buttons={
-                    <Flex align="center">
-                      <Button
-                        icon="sync"
-                        tooltip="Обновить"
-                        onClick={() => act('refresh')}
+                {isCommTab ? (
+                  <Section
+                    title="Сообщения"
+                    fill
+                    scrollable
+                    buttons={
+                      <Flex align="center">
+                        <Button
+                          icon="sync"
+                          tooltip="Обновить"
+                          onClick={() => act('refresh')}
+                        />
+                      </Flex>
+                    }
+                  >
+                    {communications.length === 0 && (
+                      <NoticeBox info>Нет сообщений.</NoticeBox>
+                    )}
+                    {[...communications].reverse().map((msg, i) => (
+                      <Box
+                        key={i}
+                        mb={1}
+                        p={1}
+                        style={{
+                          backgroundColor:
+                            i % 2 === 0
+                              ? 'rgba(255,255,255,0.03)'
+                              : 'transparent',
+                          borderRadius: '3px',
+                        }}
+                      >
+                        <Flex align="center" justify="space-between" mb={0.5}>
+                          <Flex.Item>
+                            <Box bold fontSize="12px">
+                              {msg.sender_name}
+                              {msg.sender_job
+                                ? ' (' + msg.sender_job + ')'
+                                : ''}
+                            </Box>
+                            <Box fontSize="10px" color="gray">
+                              {Math.floor(
+                                (msg.time_sent ? (data.time || 0) - msg.time_sent : 0) / 600,
+                              )}
+                              m назад
+                            </Box>
+                          </Flex.Item>
+                          <Flex.Item>
+                            {msg.sender_ckey && (
+                              <Button
+                                icon="ghost"
+                                tooltip="Orbit sender"
+                                onClick={() =>
+                                  act('orbit_comm_sender', {
+                                    sender_ckey: msg.sender_ckey,
+                                  })
+                                }
+                              />
+                            )}
+                            {msg.id && (
+                              <Button
+                                icon="check"
+                                color="green"
+                                disabled={msg.handled}
+                                onClick={() =>
+                                  act('mark_communication', {
+                                    message_id: msg.id,
+                                  })
+                                }
+                              >
+                                {msg.handled ? '' : 'Resolve'}
+                              </Button>
+                            )}
+                          </Flex.Item>
+                        </Flex>
+                        <Box fontSize="12px">{msg.message}</Box>
+                      </Box>
+                    ))}
+                  </Section>
+                ) : (
+                  <Section
+                    title="Тикеты"
+                    fill
+                    scrollable
+                    buttons={
+                      <Flex align="center">
+                        <Button
+                          icon="sync"
+                          tooltip="Обновить"
+                          onClick={() => act('refresh')}
+                        />
+                      </Flex>
+                    }
+                  >
+                    {filteredTickets.length === 0 && (
+                      <NoticeBox info>Нет тикетов в этой категории.</NoticeBox>
+                    )}
+                    {filteredTickets.map((ticket) => (
+                      <TicketListItem
+                        key={ticket.ref}
+                        ticket={ticket}
+                        selected={ticket.ref === selected_ticket_ref}
+                        onSelect={() => {
+                          setTab(ticket.state);
+                          act('select_ticket', { ref: ticket.ref });
+                        }}
                       />
-                    </Flex>
-                  }
-                >
-                  {filteredTickets.length === 0 && (
-                    <NoticeBox info>Нет тикетов в этой категории.</NoticeBox>
-                  )}
-                  {filteredTickets.map((ticket) => (
-                    <TicketListItem
-                      key={ticket.ref}
-                      ticket={ticket}
-                      selected={ticket.ref === selected_ticket_ref}
-                      onSelect={() => {
-                        setTab(ticket.state);
-                        act('select_ticket', { ref: ticket.ref });
-                      }}
-                    />
-                  ))}
-                </Section>
+                    ))}
+                  </Section>
+                )}
               </Stack.Item>
             </Stack>
           </Flex.Item>
@@ -137,7 +234,19 @@ export const AdminTicketPanel = (props, context) => {
           </Flex.Item>
 
           <Flex.Item grow={1} basis={0}>
-            {!selectedTicket && (
+            {isCommTab ? (
+              <Flex
+                height="100%"
+                align="center"
+                justify="center"
+                direction="column"
+              >
+                <Icon name="broadcast-tower" size={4} color="gray" mb={2} />
+                <Box color="gray" fontSize="16px">
+                  Сообщения ЦК / Связь
+                </Box>
+              </Flex>
+            ) : !selectedTicket ? (
               <Flex
                 height="100%"
                 align="center"
@@ -149,8 +258,7 @@ export const AdminTicketPanel = (props, context) => {
                   Выберите тикет из списка слева
                 </Box>
               </Flex>
-            )}
-            {selectedTicket && (
+            ) : (
               <TicketDetailPanel ticket={selectedTicket} act={act} />
             )}
           </Flex.Item>

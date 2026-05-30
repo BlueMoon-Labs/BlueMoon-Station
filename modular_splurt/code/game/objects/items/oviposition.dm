@@ -33,7 +33,8 @@ GLOBAL_LIST_INIT(egg_skins, list( \
 	"void",       	\
 	"polychrome", 	\
 	"ratvar",     	\
-	"hybrid"	    \
+	"hybrid",	    \
+	"purpledragon"	\
 ))
 //Oviposition egg, logic is at the pregnancy component
 /obj/item/oviposition_egg

@@ -803,3 +803,37 @@
 	fitted = NO_FEMALE_UNIFORM
 	body_parts_covered = CHEST|ARMS|GROIN
 
+/obj/item/clothing/under/donator/bm/h_pmc_jeans
+	name = "PMC jeans"
+	desc = "Некогда обычные джинсы адаптированные под нужды оперативника неизвестных наемнических структур."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	icon_state = "h_pmc_jeans"
+	item_state = "h_pmc_jeans"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	fitted = NO_FEMALE_UNIFORM
+	can_adjust = FALSE
+
+/obj/item/clothing/underwear/shirt/h_thin_tshirt
+	name = "Thin T-shirt"
+	desc = "Обычная темная майка."
+	icon_state = "h_thin_tshirt"
+	item_state = "h_thin_tshirt"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/underwear.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear.dmi'
+
+/obj/item/clothing/underwear/briefs/h_thin_slim_tshirt
+	name = "Slim T-shirt"
+	desc = "Когда-то это было обычной майкой... Кто такое носить вообще будет?"
+	icon_state = "h_slim_tshirt"
+	item_state = "h_slim_tshirt"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/underwear.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear.dmi'
+
+/obj/item/clothing/underwear/briefs/h_thin_eslim_tshirt
+	name = "EXTRA Slim T-shirt"
+	desc = "Ты совсем ебанутый?"
+	icon_state = "h_eslim_tshirt"
+	item_state = "h_eslim_tshirt"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/underwear.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear.dmi'

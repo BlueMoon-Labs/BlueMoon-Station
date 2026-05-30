@@ -246,16 +246,13 @@
 	chameleon_item.update_icon()
 	on_change?.Invoke(picked_item)
 
-/datum/action/item_action/chameleon/change/pda/update_item(obj/item/pda/picked_item)
-	if(!istype(target, /obj/item/pda))
+/datum/action/item_action/chameleon/change/pda/update_item(obj/item/modular_computer/pda/picked_item)
+	if(!istype(target, /obj/item/modular_computer/pda))
 		return ..()
-	var/obj/item/pda/P = target
+	var/obj/item/modular_computer/pda/P = target
 	P.name = initial(picked_item.name)
 	P.desc = initial(picked_item.desc)
 	P.icon_state = initial(picked_item.icon_state)
-	P.item_state = initial(picked_item.item_state)
-	P.overlays_offsets = initial(picked_item.overlays_offsets)
-	P.set_new_overlays()
 	P.update_icon()
 
 /datum/action/item_action/chameleon/change/Trigger()
@@ -620,27 +617,9 @@ CHAMELEON_CLOTHING_DEFINE(/obj/item/radio/headset/chameleon)
 	. = ..()
 	chameleon_action.emp_randomise(INFINITY)
 
-CHAMELEON_CLOTHING_DEFINE(/obj/item/pda/chameleon)
-	name = "PDA"
-	var/datum/action/item_action/chameleon/change/pda/chameleon_action
+CHAMELEON_CLOTHING_DEFINE(/obj/item/modular_computer/pda/chameleon)
 
-/obj/item/pda/chameleon/Initialize(mapload)
-	. = ..()
-	chameleon_action = new(src)
-	chameleon_action.chameleon_type = /obj/item/pda
-	chameleon_action.chameleon_name = "PDA"
-	chameleon_action.chameleon_blacklist = typecacheof(list(/obj/item/pda/heads, /obj/item/pda/ai, /obj/item/pda/ai/pai), only_root_path = TRUE)
-	chameleon_action.initialize_disguises()
-
-/obj/item/pda/chameleon/emp_act(severity)
-	. = ..()
-	if(. & EMP_PROTECT_SELF)
-		return
-	chameleon_action.emp_randomise()
-
-/obj/item/pda/chameleon/broken/Initialize(mapload)
-	. = ..()
-	chameleon_action.emp_randomise(INFINITY)
+// Chameleon PDA is now defined in role_tablet_presets.dm
 
 CHAMELEON_CLOTHING_DEFINE(/obj/item/stamp/chameleon)
 	var/datum/action/item_action/chameleon/change/chameleon_action
