@@ -1139,7 +1139,7 @@
 	desc = "Помповый дробовик специального назначения, используемый на общих основаниях силами правопорядка некоторых технически-развитых миров и самими обитателями Небулы. Благодаря номенклатуре боеприпасов, способен исполнять почти любую задачу - от подавления беспорядков до использования в некоторых около-военных операциях и охранения объектов. Распространён слабо, ввиду того что его исполнение не выдерживает никакой критики в плане сохранения боевых характеристик вне близких к стерильным условий, так как используется в основном в космическом пространстве. Данная версия - ещё и кастрат, с уменьшенным магазином и урезанной скорострельностью, для предотвращения \"перегибов\" на местах"
 	unique_reskin = list()
 	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
-	icon_state = "supernova-0-notcharged"
+	icon_state = "supernova"
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	item_state = "supernova"
@@ -1153,7 +1153,7 @@
 		icon_state = "supernova[folded]"
 
 /obj/item/gun/ballistic/shotgun/automatic/combat/supernova/update_overlays()
-	. = list()
+	. = ..()
 	// Патрон в патроннике
 	if(chambered && chambered.BB)
 		. += "supernova-loaded"
@@ -1496,3 +1496,33 @@
 			. += "quasar-non-lethal-mode-base"
 	else
 		. += "quasar-[ratio]"
+
+/obj/item/modkit/comet_kit
+	name = "Comet Kit"
+	desc = "A modkit for making a WT-550 PDW into a Comet."
+	product = /obj/item/gun/ballistic/automatic/wt550/comet
+	fromitem = list(/obj/item/gun/ballistic/automatic/wt550)
+
+/obj/item/gun/ballistic/automatic/wt550/comet
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "\improper Comet"
+	desc = " Следствие желания поиграть в тактикульность во всей своей красе - один из тех образцов оружия, что способны одним своим видом внушить веру в собственную исключительность. Данный образец очевидно же, заметно изменён - на фоне превосходного исполнения невооружённым взглядом видна работа гаражного мастера, что сменил боеприпас, которым питается оружие - все ради совместимости с патронами ПАКТа."
+	unique_reskin = list()
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	icon_state = "comet"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	item_state = "comet"
+
+/obj/item/gun/ballistic/automatic/wt550/comet/update_icon_state()
+	var/ammo = magazine ? magazine.ammo_count() : 0
+	if(ammo <= 0)
+		icon_state = "supernova-e"
+
+/obj/item/gun/ballistic/automatic/wt550/comet/update_overlays()
+	. = ..()
+	var/ammo = magazine ? magazine.ammo_count() : 0
+	. += "comet-base"
+	if(ammo<9)
+		. += "comet-[ammo]"
+
