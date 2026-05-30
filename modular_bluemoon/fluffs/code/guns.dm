@@ -1165,7 +1165,7 @@
 	if(ammo<6)
 		. += "supernova-[ammo]"
 
-/obj/item/modkit/pulsar_kit
+/obj/item/modkit/pulsar_knife_kit
 	name = "Kasari ritual knife Kit"
 	desc = "A modkit for making a combat knife into a kasari ritual knife."
 	product = /obj/item/kitchen/knife/combat/pulsar
@@ -1487,14 +1487,12 @@
 	if(!cell || cell.charge <= 0 || !cell.maxcharge)
 		. += "quasar-0"
 		return
-	var/max_sections = 8
-	var/ratio = CEILING((cell.charge / cell.maxcharge) * max_sections, 1)
-	if(ratio >= max_sections) // 8/8 — полный заряд
-		if(ispath(ammo_type[current_firemode_index], /obj/item/ammo_casing/energy/laser))
-			. += "quasar-lethal-mode-base"
-		else
-			. += "quasar-non-lethal-mode-base"
+	var/ratio = CEILING((cell.charge / cell.maxcharge) * 8, 1)
+	if(istype(ammo_type[current_firemode_index], /obj/item/ammo_casing/energy/laser))
+		. += "quasar-lethal-mode-base"
 	else
+		. += "quasar-non-lethal-mode-base"
+	if(ratio < 8)
 		. += "quasar-[ratio]"
 
 /obj/item/modkit/comet_kit
@@ -1584,7 +1582,7 @@
 
 /obj/item/gun/energy/temperature/spectral/update_overlays()
 	. = ..()                         // обязательно — must_call_parent
-	if(ispath(ammo_type[current_firemode_index], /obj/item/ammo_casing/energy/temp/hot))
+	if(istype(ammo_type[current_firemode_index], /obj/item/ammo_casing/energy/temp/hot))
 		. += "spectral-heat-base"
 		. += "spectral-heat-mode"
 	else
@@ -1594,10 +1592,16 @@
 		. += "spectral-0"
 		return
 	var/charge_percent = cell.charge / cell.maxcharge
-	if(charge_percent > 0.6)
+	if(charge_percent <= 0.6 && charge_percent>0.3)
 		. += "spectral-2"
 	else
 		. += "spectral-1"
+
+/obj/item/modkit/pulsar_kit
+	name = "Pulsar Kit"
+	desc = "A modkit for making a Riot Shotgun into a Pulsar."
+	product = /obj/item/gun/ballistic/shotgun/riot/pulsar
+	fromitem = list(/obj/item/gun/ballistic/shotgun/riot)
 
 /obj/item/gun/ballistic/shotgun/riot/pulsar
 	DONATE_ITEM_TOOLTIP_PARENT
