@@ -121,13 +121,16 @@
 		reset_health_warnings()
 		// Проверяем ID нового носителя
 		var/phrase_to_say = check_user_id_silent(user)
+
 		if(world.time >= last_speech + DREADMK3_SPEECH_COOLDOWN)
 			interaction_locked = TRUE
 			// Сначала pickup, затем ID фраза с небольшой задержкой
-		if(phrase_to_say)
-			last_scanned_id = user.get_idcard(TRUE)
-			addtimer(CALLBACK(src, PROC_REF(speak_up), phrase_to_say, TRUE, FALSE), 15)
 			speak_up("pickup")
+
+			if(phrase_to_say)
+				last_scanned_id = user.get_idcard(TRUE)
+				addtimer(CALLBACK(src, PROC_REF(speak_up), phrase_to_say, TRUE, FALSE), 15)
+
 			addtimer(CALLBACK(src, PROC_REF(unlock_interaction)), 10)
 
 /obj/item/gun/energy/e_gun/hos/dreadmk3/talking/dropped(mob/user)
