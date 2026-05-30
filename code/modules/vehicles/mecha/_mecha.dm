@@ -27,7 +27,7 @@
 	armor = list(MELEE = 20, BULLET = 10, LASER = 0, ENERGY = 0, BOMB = 10, BIO = 0, RAD = 0, FIRE = 100, ACID = 100)
 	movedelay = 1 SECONDS
 	/// Cooldown between in-place rotations. Kept short and separate from movedelay so turning stays responsive and isn't blocked by inability to move.
-	var/turn_delay = 2
+	var/turn_delay = 0.2 SECONDS
 	anchored = TRUE
 	emulate_door_bumps = TRUE
 	COOLDOWN_DECLARE(mecha_bump_smash)
@@ -657,7 +657,7 @@
 		return TRUE
 	if(continuous_move)
 		// Drift tick: engaged stabilizers cancel residual drift (like a jetpack's) as long as we have powered, functional thrusters.
-		if(stabilizers && active_thrusters && has_charge(step_energy_drain))
+		if(stabilizers && active_thrusters && !equipment_disabled && has_charge(step_energy_drain))
 			return TRUE
 		return FALSE
 
