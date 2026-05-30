@@ -1490,7 +1490,7 @@
 	var/max_sections = 8
 	var/ratio = CEILING((cell.charge / cell.maxcharge) * max_sections, 1)
 	if(ratio >= max_sections) // 8/8 — полный заряд
-		if(istype(ammo_type[current_firemode_index], /obj/item/ammo_casing/energy/laser))
+		if(ispath(ammo_type[current_firemode_index], /obj/item/ammo_casing/energy/laser))
 			. += "quasar-lethal-mode-base"
 		else
 			. += "quasar-non-lethal-mode-base"
@@ -1556,7 +1556,7 @@
 /obj/item/gun/energy/xray/neutron/update_overlays()
 	. = ..()                         // обязательно — must_call_parent
 	. += "neutron-base"
-	if(!cell || cell.charge <= 0)
+	if(!cell || cell.charge <= 0 || !cell.maxcharge)
 		. += "neutron-0"
 		return
 	var/charge_percent = cell.charge / cell.maxcharge
@@ -1584,13 +1584,13 @@
 
 /obj/item/gun/energy/temperature/spectral/update_overlays()
 	. = ..()                         // обязательно — must_call_parent
-	if(istype(ammo_type[current_firemode_index], /obj/item/ammo_casing/energy/temp/hot))
+	if(ispath(ammo_type[current_firemode_index], /obj/item/ammo_casing/energy/temp/hot))
 		. += "spectral-heat-base"
 		. += "spectral-heat-mode"
 	else
 		. += "spectral-freeze-base"
 		. += "spectral-freeze-mode"
-	if(!cell || cell.charge <= 0)
+	if(!cell || cell.charge <= 0 || !cell.maxcharge)
 		. += "spectral-0"
 		return
 	var/charge_percent = cell.charge / cell.maxcharge
@@ -1610,13 +1610,13 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	item_state = "pulsar-shot"
 
-/obj/item/gun/ballistic/automatic/wt550/comet/update_icon_state()
+/obj/item/gun/ballistic/shotgun/riot/pulsar/update_icon_state()
 	if(sawn_off)
 		icon_state = "pulsar-sawn"
 	else
 		icon_state = "pulsar"
 
-/obj/item/gun/ballistic/automatic/wt550/comet/update_overlays()
+/obj/item/gun/ballistic/shotgun/riot/pulsar/update_overlays()
 	. = ..()
 	. += "pulsar-base"
 	if(chambered && chambered.BB)
@@ -1624,7 +1624,7 @@
 	else
 		. += "pulsar-not-loaded"
 	if(!magazine || !magazine.max_ammo)
-		. += "pulsars-0"
+		. += "pulsar-0"
 		return
 	var/fill_level = round(magazine.stored_ammo.len / magazine.max_ammo * 6)
 	if(fill_level < 6)
