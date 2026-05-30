@@ -113,7 +113,7 @@
 		return
 
 	if(rand(1,7) == 7)
-		playlewdinteractionsound(loc, "modular_splurt/sound/lewd/deathclaw_grunt[rand(1, 5)].ogg", 30, 1, -1)
+		playlewdinteractionsound(get_turf(src), "modular_splurt/sound/lewd/deathclaw_grunt[rand(1, 5)].ogg", 30, 1, -1)
 
 	var/datum/interaction/I
 	switch(chosen_hole)
@@ -203,7 +203,7 @@
 		M.reagents.add_reagent(/datum/reagent/consumable/semen, 30)
 	new /obj/effect/decal/cleanable/semen(loc)
 
-	playlewdinteractionsound(loc, "modular_splurt/sound/lewd/deathclaw[rand(1, 2)].ogg", 30, 1, -1)
+	playlewdinteractionsound(get_turf(src), "modular_splurt/sound/lewd/deathclaw[rand(1, 2)].ogg", 30, 1, -1)
 	visible_message("<font color=purple><b>\The [src]</b> [message]</font>")
 	shake_camera(M, 6, 1)
 	set_is_fucking(null ,null)
@@ -215,7 +215,7 @@
 
 
 /mob/living/simple_animal/hostile/werewolf/funwolf/proc/slap(mob/living/M)
-	playlewdinteractionsound(loc, "modular_sand/sound/interactions/slap.ogg", 30, 1, -1)
+	playlewdinteractionsound(get_turf(src), "modular_sand/sound/interactions/slap.ogg", 30, 1, -1)
 	visible_message(span_danger("\The [src]</b> slaps \the [M] right on the ass!"), \
 			span_userdanger("\The [src]</b> slaps \the [M] right on the ass!"), null, COMBAT_MESSAGE_RANGE)
 
@@ -223,7 +223,7 @@
 	var/obj/item/W = M.get_item_by_slot(slot)
 	if(W)
 		M.dropItemToGround(W)
-		playlewdinteractionsound(loc, "sound/items/poster_ripped.ogg", 30, 1, -1)
+		playlewdinteractionsound(get_turf(src), "sound/items/poster_ripped.ogg", 30, 1, -1)
 		visible_message(span_danger("\The [src]</b> tears off \the [M]'s clothes!"), \
 				span_userdanger("\The [src]</b> tears off \the [M]'s clothes!"), null, COMBAT_MESSAGE_RANGE)
 		return TRUE
@@ -341,7 +341,7 @@
 		return
 
 	if(rand(1,7) == 7)
-		playlewdinteractionsound(loc, "modular_splurt/sound/lewd/deathclaw_grunt[rand(1, 5)].ogg", 30, 1, -1)
+		playlewdinteractionsound(get_turf(src), "modular_splurt/sound/lewd/deathclaw_grunt[rand(1, 5)].ogg", 30, 1, -1)
 
 	var/datum/interaction/I
 	switch(chosen_hole)
@@ -431,7 +431,7 @@
 		M.reagents.add_reagent(/datum/reagent/consumable/semen, 30)
 	new /obj/effect/decal/cleanable/semen(loc)
 
-	playlewdinteractionsound(loc, "modular_splurt/sound/lewd/deathclaw[rand(1, 2)].ogg", 30, 1, -1)
+	playlewdinteractionsound(get_turf(src), "modular_splurt/sound/lewd/deathclaw[rand(1, 2)].ogg", 30, 1, -1)
 	visible_message("<font color=purple><b>\The [src]</b> [message]</font>")
 	shake_camera(M, 6, 1)
 	set_is_fucking(null ,null)
@@ -443,7 +443,7 @@
 
 
 /mob/living/simple_animal/hostile/ice_wolf/funwolf/proc/slap(mob/living/M)
-	playlewdinteractionsound(loc, "modular_sand/sound/interactions/slap.ogg", 30, 1, -1)
+	playlewdinteractionsound(get_turf(src), "modular_sand/sound/interactions/slap.ogg", 30, 1, -1)
 	visible_message(span_danger("\The [src]</b> slaps \the [M] right on the ass!"), \
 			span_userdanger("\The [src]</b> slaps \the [M] right on the ass!"), null, COMBAT_MESSAGE_RANGE)
 
@@ -451,7 +451,7 @@
 	var/obj/item/W = M.get_item_by_slot(slot)
 	if(W)
 		M.dropItemToGround(W)
-		playlewdinteractionsound(loc, "sound/items/poster_ripped.ogg", 30, 1, -1)
+		playlewdinteractionsound(get_turf(src), "sound/items/poster_ripped.ogg", 30, 1, -1)
 		visible_message(span_danger("\The [src]</b> tears off \the [M]'s clothes!"), \
 				span_userdanger("\The [src]</b> tears off \the [M]'s clothes!"), null, COMBAT_MESSAGE_RANGE)
 		return TRUE
@@ -570,7 +570,7 @@
 		return
 
 	if(rand(1,7) == 7)
-		playlewdinteractionsound(loc, "modular_splurt/sound/lewd/deathclaw_grunt[rand(1, 5)].ogg", 30, 1, -1)
+		playlewdinteractionsound(get_turf(src), "modular_splurt/sound/lewd/deathclaw_grunt[rand(1, 5)].ogg", 30, 1, -1)
 
 	var/datum/interaction/I
 	switch(chosen_hole)
@@ -660,7 +660,7 @@
 		M.reagents.add_reagent(/datum/reagent/consumable/semen, 30)
 	new /obj/effect/decal/cleanable/semen(loc)
 
-	playlewdinteractionsound(loc, "modular_splurt/sound/lewd/deathclaw[rand(1, 2)].ogg", 30, 1, -1)
+	playlewdinteractionsound(get_turf(src), "modular_splurt/sound/lewd/deathclaw[rand(1, 2)].ogg", 30, 1, -1)
 	visible_message("<font color=purple><b>\The [src]</b> [message]</font>")
 	shake_camera(M, 6, 1)
 	set_is_fucking(null ,null)
@@ -672,7 +672,7 @@
 
 
 /mob/living/simple_animal/hostile/hellhound/funwolf/proc/slap(mob/living/M)
-	playlewdinteractionsound(loc, "modular_sand/sound/interactions/slap.ogg", 30, 1, -1)
+	playlewdinteractionsound(get_turf(src), "modular_sand/sound/interactions/slap.ogg", 30, 1, -1)
 	visible_message(span_danger("\The [src]</b> slaps \the [M] right on the ass!"), \
 			span_userdanger("\The [src]</b> slaps \the [M] right on the ass!"), null, COMBAT_MESSAGE_RANGE)
 
@@ -680,7 +680,7 @@
 	var/obj/item/W = M.get_item_by_slot(slot)
 	if(W)
 		M.dropItemToGround(W)
-		playlewdinteractionsound(loc, "sound/items/poster_ripped.ogg", 30, 1, -1)
+		playlewdinteractionsound(get_turf(src), "sound/items/poster_ripped.ogg", 30, 1, -1)
 		visible_message(span_danger("\The [src]</b> tears off \the [M]'s clothes!"), \
 				span_userdanger("\The [src]</b> tears off \the [M]'s clothes!"), null, COMBAT_MESSAGE_RANGE)
 		return TRUE
@@ -799,7 +799,7 @@
 		return
 
 	if(rand(1,7) == 7)
-		playlewdinteractionsound(loc, "modular_splurt/sound/lewd/deathclaw_grunt[rand(1, 5)].ogg", 30, 1, -1)
+		playlewdinteractionsound(get_turf(src), "modular_splurt/sound/lewd/deathclaw_grunt[rand(1, 5)].ogg", 30, 1, -1)
 
 	var/datum/interaction/I
 	switch(chosen_hole)
@@ -889,7 +889,7 @@
 		M.reagents.add_reagent(/datum/reagent/consumable/semen, 30)
 	new /obj/effect/decal/cleanable/semen(loc)
 
-	playlewdinteractionsound(loc, "modular_splurt/sound/lewd/deathclaw[rand(1, 2)].ogg", 30, 1, -1)
+	playlewdinteractionsound(get_turf(src), "modular_splurt/sound/lewd/deathclaw[rand(1, 2)].ogg", 30, 1, -1)
 	visible_message("<font color=purple><b>\The [src]</b> [message]</font>")
 	shake_camera(M, 6, 1)
 	set_is_fucking(null ,null)
@@ -901,7 +901,7 @@
 
 
 /mob/living/simple_animal/hostile/the_mosley/funwolf/proc/slap(mob/living/M)
-	playlewdinteractionsound(loc, "modular_sand/sound/interactions/slap.ogg", 30, 1, -1)
+	playlewdinteractionsound(get_turf(src), "modular_sand/sound/interactions/slap.ogg", 30, 1, -1)
 	visible_message(span_danger("\The [src]</b> slaps \the [M] right on the ass!"), \
 			span_userdanger("\The [src]</b> slaps \the [M] right on the ass!"), null, COMBAT_MESSAGE_RANGE)
 
@@ -909,7 +909,7 @@
 	var/obj/item/W = M.get_item_by_slot(slot)
 	if(W)
 		M.dropItemToGround(W)
-		playlewdinteractionsound(loc, "sound/items/poster_ripped.ogg", 30, 1, -1)
+		playlewdinteractionsound(get_turf(src), "sound/items/poster_ripped.ogg", 30, 1, -1)
 		visible_message(span_danger("\The [src]</b> tears off \the [M]'s clothes!"), \
 				span_userdanger("\The [src]</b> tears off \the [M]'s clothes!"), null, COMBAT_MESSAGE_RANGE)
 		return TRUE

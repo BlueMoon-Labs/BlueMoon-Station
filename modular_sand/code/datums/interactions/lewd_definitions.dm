@@ -328,7 +328,7 @@
 	if(isalien(src))
 		sound = 'sound/voice/hiss6.ogg'
 
-	playlewdinteractionsound(loc, sound, 80, 0, 0)
+	playlewdinteractionsound(get_turf(src), sound, 80, 0, 0)
 	lastmoan = sound
 
 /mob/living/proc/cum(mob/living/partner, target_orifice, cum_inside = FALSE, anonymous = FALSE)
@@ -848,13 +848,13 @@
 			if(CUM_TARGET_MOUTH)	//Why wasn't it here?! - Gardelin0
 				target_gen = c_partner.getorganslot(ORGAN_SLOT_STOMACH)
 	if(gender == MALE || (gender == PLURAL && ismasculine(src)))
-		playlewdinteractionsound(loc, pick('modular_sand/sound/interactions/final_m1.ogg',
+		playlewdinteractionsound(get_turf(src), pick('modular_sand/sound/interactions/final_m1.ogg',
 							'modular_sand/sound/interactions/final_m2.ogg',
 							'modular_sand/sound/interactions/final_m3.ogg',
 							'modular_sand/sound/interactions/final_m4.ogg',
 							'modular_sand/sound/interactions/final_m5.ogg'), 90, 1, 0)
 	else if(gender != MALE || (gender == PLURAL && isfeminine(src)))
-		playlewdinteractionsound(loc, pick('modular_sand/sound/interactions/final_f1.ogg',
+		playlewdinteractionsound(get_turf(src), pick('modular_sand/sound/interactions/final_f1.ogg',
 							'modular_sand/sound/interactions/final_f2.ogg',
 							'modular_sand/sound/interactions/final_f3.ogg'), 70, 1, 0)
 	// BLUEMOON ADD хвостики!
