@@ -167,6 +167,7 @@
 #include "preload_size_budgets.dm"
 #include "image_leak_audit.dm"
 #include "screen_gc.dm"
+#include "space_drift.dm"
 #include "statpanel_listedturf.dm"
 #include "ssmobs_optimization.dm"
 #include "tattoo_system.dm"

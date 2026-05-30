@@ -58,6 +58,8 @@ GLOBAL_VAR_INIT(glide_size_multiplier, 1.0)
 #define DEFAULT_INERTIA_SPEED 4
 #define INERTIA_SPEED_COEF 0.4
 #define INERTIA_FORCE_CAP 15
+/// Recoil/click sources (weapon fire) may top drift up to this ceiling, but never beyond it and never as a brake. Stops "click to accelerate".
+#define INERTIA_FORCE_RECOIL_CAP 3
 #define INERTIA_FORCE_SPACEMOVE_GRAB 0.4
 #define INERTIA_FORCE_SPACEMOVE_REDUCTION 0.2
 

@@ -91,7 +91,9 @@
 	var/force_y = cos(drifting_loop.angle) * drift_force + cos(inertia_angle) * applied_force / parent.inertia_force_weight
 
 	var/uncapped_force = sqrt(force_x * force_x + force_y * force_y)
-	var/effective_cap = !isnull(controlled_cap) ? controlled_cap : INERTIA_FORCE_CAP
+	// controlled_cap (recoil/click sources) is a top-up ceiling: it can add drift up to the cap but must never clamp away
+	// drift the parent already built from movement, otherwise firing would become a free brake / reverse exploit.
+	var/effective_cap = isnull(controlled_cap) ? INERTIA_FORCE_CAP : max(drift_force, controlled_cap)
 	drift_force = clamp(uncapped_force, 0, effective_cap)
 	if(drift_force < 0.1)
 		qdel(src)
