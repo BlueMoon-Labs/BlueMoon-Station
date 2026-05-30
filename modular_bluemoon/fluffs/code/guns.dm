@@ -1482,7 +1482,7 @@
 	can_flashlight = FALSE
 
 /obj/item/gun/energy/e_gun/nuclear/quasar/update_overlays()
-	// НЕ вызываем ..() — нам не нужны родительские/fail-оверлеи
+	..()
 	. = list()
 	if(!cell || cell.charge <= 0 || !cell.maxcharge)
 		. += "quasar-0"
