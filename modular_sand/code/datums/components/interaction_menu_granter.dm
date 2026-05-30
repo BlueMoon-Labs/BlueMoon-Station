@@ -293,7 +293,12 @@
 	.["theyAllowUnholy"] = null
 	.["theyHaveBondage"] = null
 	//SPLURT EDIT END
-	if(target != self)
+	if(target == self)
+		.["required_from_target"] = .["required_from_user"]
+		.["required_from_target_exposed"] = .["required_from_user_exposed"]
+		.["required_from_target_unexposed"] = .["required_from_user_unexposed"]
+		.["target_num_feet"] = .["user_num_feet"]
+	else
 		.["theirAttributes"] = target.list_interaction_attributes(self)
 
 		// Always TRUE if has key, 2 if cliented, FALSE if nobody owns it

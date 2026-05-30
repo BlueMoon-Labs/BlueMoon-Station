@@ -89,7 +89,8 @@
 	user.visible_message(format_message(message, user, partner), ignored_mobs = user.get_unconsenting(unholy = TRUE), vision_distance = distance)
 	audio_effects(user, partner, is_fucking, is_hidden)
 	user_lust_grant(user, partner, is_fucking)
-	partner_lust_grant(user, partner, is_fucking)
+	if(user != partner)
+		partner_lust_grant(user, partner, is_fucking)
 
 	var/partner_message = pick_partner_message(user, partner, is_fucking)
 	if(partner_message)
@@ -173,6 +174,52 @@
 #undef PARTNER_MESSAGES
 #undef PARTNER_MESSAGES_CHANSE
 
+
+//////////////////////// 	OVER BODY SELF	///////////////////////////
+
+
+#define SELF_MAIN_MESSAGES \
+	"USER расслабляется и выпускает струю мочи, обливая себя", \
+	"USER облегчённо вздыхает и мочится на себя", \
+	"USER мочится, не пытаясь это скрыть", \
+	"USER издаёт вздох облегчения, мочась на себя", \
+	"USER щедро обливает себя собственной мочой"
+
+/datum/interaction/lewd/unholy/piss/vagina/over_body/self
+	description = "Вагина. Обоссать себя."
+	interaction_flags = INTERACTION_FLAG_ADJACENT | INTERACTION_FLAG_OOC_CONSENT | INTERACTION_FLAG_UNHOLY_CONTENT | INTERACTION_FLAG_USER_IS_TARGET
+	write_log_user = "piss over self"
+	write_log_target = null
+
+/datum/interaction/lewd/unholy/piss/vagina/over_body/self/pick_message(mob/living/user, mob/living/partner, is_fucking)
+	return pick(
+		SELF_MAIN_MESSAGES,
+		"USER выставляет свою киску и демонстративно мочится на себя",
+		"USER со стоном наслаждения, выпускает из своей киски поток горячей мочи, обливая себя",
+		"USER направляет струю из киски на собственное тело и обтекает под напором горячей жидкости")
+
+/datum/interaction/lewd/unholy/piss/vagina/over_body/self/pick_partner_message(mob/living/user, mob/living/partner, is_fucking)
+	return
+
+/datum/interaction/lewd/unholy/piss/penis/over_body/self
+	description = "Член. Обоссать себя."
+	interaction_flags = INTERACTION_FLAG_ADJACENT | INTERACTION_FLAG_OOC_CONSENT | INTERACTION_FLAG_UNHOLY_CONTENT | INTERACTION_FLAG_USER_IS_TARGET
+	write_log_user = "piss over self"
+	write_log_target = null
+
+/datum/interaction/lewd/unholy/piss/penis/over_body/self/pick_message(mob/living/user, mob/living/partner, is_fucking)
+	var/shape_desc = get_penis_shape_desc(user)
+	return pick(
+		SELF_MAIN_MESSAGES,
+		"USER направляет на себя, [shape_desc] и медленно водит им, обдавая струёй горячей мочи",
+		"USER со стоном наслаждения, выпускает из своего [shape_desc]а поток горячей мочи, обливая своё тело",
+		"USER направляет себе на грудь [shape_desc] и выпускает поток горячей мочи",
+		"USER расслабляется и из [shape_desc]а, на [user.ru_ego()] тело, вырывается поток мочи, обдавая горячей струёй")
+
+/datum/interaction/lewd/unholy/piss/penis/over_body/self/pick_partner_message(mob/living/user, mob/living/partner, is_fucking)
+	return
+
+#undef SELF_MAIN_MESSAGES
 
 //////////////////////// 	ON MOUTH	///////////////////////////
 
@@ -320,6 +367,45 @@
 	return is_fucking ? NORMAL_LUST : HIGH_LUST
 
 
+//////////////////////// 	IN MOUTH SELF	///////////////////////////
+
+
+#define SELF_IN_MOUTH_MAIN_MESSAGES \
+	"USER продолжает мочиться в собственную глотку", \
+	"USER издаёт стоны наслаждения, чувствуя как жёлтая жидкость проливается [partner.ru_emu()] в рот"
+
+
+/datum/interaction/lewd/unholy/piss/vagina/in_mouth/self
+	description = "Вагина. Отлизать свою киску и помочиться."
+	interaction_flags = INTERACTION_FLAG_ADJACENT | INTERACTION_FLAG_OOC_CONSENT | INTERACTION_FLAG_UNHOLY_CONTENT | INTERACTION_FLAG_USER_IS_TARGET
+	write_log_user = "suck and pissed in self throat"
+	write_log_target = null
+
+/datum/interaction/lewd/unholy/piss/vagina/in_mouth/self/pick_message(mob/living/user, mob/living/partner, is_fucking)
+	return pick(
+		SELF_IN_MOUTH_MAIN_MESSAGES,
+		"USER облизывается и зарывается своим лицом в свою же киску и выпуская поток мочи внутрь собственного рта",
+		"USER толкается языком к своей киске и проводит по клитору кончиком языка, мочась на него",
+		"USER пробует свою киску и мочу на вкус",
+		"USER целует свои нежные лепестки и выпускает поток горячей мочи себе в рот")
+
+/datum/interaction/lewd/unholy/piss/vagina/in_mouth/self/pick_partner_message(mob/living/user, mob/living/partner, is_fucking)
+	return
+
+/datum/interaction/lewd/unholy/piss/vagina/in_mouth/audio_effects(mob/living/user, mob/living/partner, is_fucking, is_hidden)
+	play_interaction_sound(partner, 'modular_sand/sound/interactions/swallow.ogg', is_hidden)
+	play_interaction_sound(partner, pick('modular_sand/sound/interactions/bj1.ogg',
+									'modular_sand/sound/interactions/bj2.ogg',
+									'modular_sand/sound/interactions/bj3.ogg',
+									'modular_sand/sound/interactions/bj4.ogg',
+									'modular_sand/sound/interactions/bj5.ogg',
+									'modular_sand/sound/interactions/bj6.ogg',
+									'modular_sand/sound/interactions/bj7.ogg',
+									'modular_sand/sound/interactions/bj8.ogg',
+									'modular_sand/sound/interactions/bj9.ogg',
+									'modular_sand/sound/interactions/bj10.ogg',
+									'modular_sand/sound/interactions/bj11.ogg'), is_hidden)
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////								PENIS INSIDE SOMETHING								   /////////
@@ -396,6 +482,53 @@
 #undef IN_MOUTH_MAIN_MESSAGES
 #undef IN_MOUTH_PARTNER_MESSAGES
 #undef IN_MOUTH_PARTNER_MESSAGES_CHANSE
+
+
+//////////////////////// 	IN MOUTH SELF	///////////////////////////
+
+
+/datum/interaction/lewd/unholy/piss/penis/inside/mouth/self
+	description = "Член. Отсосать себе и помочиться."
+	interaction_flags = INTERACTION_FLAG_ADJACENT | INTERACTION_FLAG_OOC_CONSENT | INTERACTION_FLAG_UNHOLY_CONTENT | INTERACTION_FLAG_USER_IS_TARGET
+	write_log_user = "suck and pissed in self throat"
+	write_log_target = null
+
+/datum/interaction/lewd/unholy/piss/penis/inside/mouth/self/pick_message(mob/living/user, mob/living/partner, is_fucking)
+	var/shape_desc = get_penis_shape_desc(user)
+	return pick(
+		SELF_IN_MOUTH_MAIN_MESSAGES,
+		"USER обводит языком свой [shape_desc] и мочится прямо в рот",
+		"USER водит языком вокруг головки своего [shape_desc]а, слизывая капли жёлтой жидкости",
+		"USER медленно заглатывает свой [shape_desc], орашая собственное горло горячей мочой",
+		"USER поглубже заглатывает свой [shape_desc], выпивая свою мочу",
+		"USER отсасывает свой [shape_desc], вытягивая капли тёплой жидкости себе в рот")
+
+/datum/interaction/lewd/unholy/piss/penis/inside/mouth/self/user_lust_grant(mob/living/user, mob/living/partner, is_fucking)
+	if(user.has_strapon())
+		var/obj/item/clothing/underwear/briefs/strapon/user_strapon = user.get_strapon()
+		user_strapon.attached_dildo.target_reaction(partner, user, 0, target_organ, target_cum_in, user.a_intent == INTENT_HARM)
+	else
+		..()
+		try_apply_knot(user, partner, target_organ)
+
+/datum/interaction/lewd/unholy/piss/penis/inside/mouth/self/pick_partner_message(mob/living/user, mob/living/partner, is_fucking)
+	return
+
+/datum/interaction/lewd/unholy/piss/penis/inside/mouth/self/audio_effects(mob/living/user, mob/living/partner, is_fucking, is_hidden)
+	play_interaction_sound(partner, 'modular_sand/sound/interactions/swallow.ogg', is_hidden)
+	play_interaction_sound(partner, pick('modular_sand/sound/interactions/bj1.ogg',
+									'modular_sand/sound/interactions/bj2.ogg',
+									'modular_sand/sound/interactions/bj3.ogg',
+									'modular_sand/sound/interactions/bj4.ogg',
+									'modular_sand/sound/interactions/bj5.ogg',
+									'modular_sand/sound/interactions/bj6.ogg',
+									'modular_sand/sound/interactions/bj7.ogg',
+									'modular_sand/sound/interactions/bj8.ogg',
+									'modular_sand/sound/interactions/bj9.ogg',
+									'modular_sand/sound/interactions/bj10.ogg',
+									'modular_sand/sound/interactions/bj11.ogg'), is_hidden)
+
+#undef SELF_IN_MOUTH_MAIN_MESSAGES
 
 
 //////////////////////// 	IN VAGINA	///////////////////////////
