@@ -12,10 +12,10 @@
 /datum/interaction/lewd/handjob/display_interaction(mob/living/user, mob/living/partner)
 	var/is_hidden = ..()
 	var/distance = 7
-	var/volume = 50
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 70
 	if(is_hidden)
 		distance = 1
-		volume = sound_quiet_volume
 	var/picked_hidden = pick(hidden_additional)
 	var/message
 	//var/genital_name = partner.get_penetrating_genital_name() - стал не нужен.
@@ -49,7 +49,7 @@
 
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/bang1.ogg',
 						'modular_sand/sound/interactions/bang2.ogg',
-						'modular_sand/sound/interactions/bang3.ogg'), volume, 1, -1)
+						'modular_sand/sound/interactions/bang3.ogg'), volume, 1, extrarange)
 	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]."), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	if(partner.can_penetrating_genital_cum())
 		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_HAND, liquid_container ? liquid_container : user, ORGAN_SLOT_PENIS) //SPLURT edit

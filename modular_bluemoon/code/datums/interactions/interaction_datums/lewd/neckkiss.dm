@@ -22,10 +22,10 @@
 /datum/interaction/lewd/neckkiss/display_interaction(mob/living/user, mob/living/target)
 	var/is_hidden = ..()
 	var/distance = 7
-	var/volume = 50
+	var/const/volume = 50
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 	if(is_hidden)
 		distance = 1
-		volume = sound_quiet_volume
 	var/picked_hidden = pick(hidden_additional)
 	var/static/list/possible_messages = list(
 		"<b>USER</b> подтягивая к себе за плечи, прижимается к <b>TARGET</b> и целует в шею.",
@@ -44,4 +44,4 @@
 		'modular_splurt/sound/interactions/kiss/kiss2.ogg',
 		'modular_splurt/sound/interactions/kiss/kiss3.ogg',
 		'modular_splurt/sound/interactions/kiss/kiss4.ogg',
-		'modular_splurt/sound/interactions/kiss/kiss5.ogg'), volume, 1, -1, ignored_mobs = user.get_unconsenting())
+		'modular_splurt/sound/interactions/kiss/kiss5.ogg'), volume, 1, extrarange, ignored_mobs = user.get_unconsenting())

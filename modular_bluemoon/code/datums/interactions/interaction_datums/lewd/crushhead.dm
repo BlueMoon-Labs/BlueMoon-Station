@@ -25,10 +25,10 @@
 		return
 	var/is_hidden = ..()
 	var/distance = 7
-	var/volume = 50
+	var/const/volume = 50
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 	if(is_hidden)
 		distance = 1
-		volume = sound_quiet_volume
 	var/picked_hidden = pick(hidden_additional)
 	var/message = "[is_hidden ? (picked_hidden) : null]" + "[pick("нежно прижимается к <b>[partner]</b>, обхватывая голову ляжками.",
 					"отпускает голову <b>[partner]</b>, чтобы с новой силой сдавить её своими бедрами.",
@@ -74,7 +74,7 @@
 	partner.apply_damage(damage_amount, BRUTE, BODY_ZONE_HEAD, partner.run_armor_check(BODY_ZONE_HEAD, MELEE))
 
 	user.visible_message(message = message, ignored_mobs = user.get_unconsenting(), vision_distance = distance)
-	playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/squelch1.ogg', volume, 1, -1)
+	playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/squelch1.ogg', volume, 1, extrarange)
 	if(HAS_TRAIT(partner, TRAIT_MASO))
 		partner.handle_post_sex(lust_amount, null, user)
 

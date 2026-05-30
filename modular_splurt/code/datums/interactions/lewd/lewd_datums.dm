@@ -414,14 +414,13 @@
 
 /datum/interaction/lewd/kiss/display_interaction(mob/living/user, mob/living/partner)
 	var/is_hidden = ..()
-	var/volume = 50
-	if(is_hidden)
-		volume = sound_quiet_volume
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 90
 	if(!HAS_TRAIT(user, TRAIT_KISS_MIME))
 		if(HAS_TRAIT(user, TRAIT_KISS_HONK))
-			playlewdinteractionsound(user.loc, 'modular_sand/sound/interactions/kiss5.ogg', volume, 1, -1)
+			playlewdinteractionsound(user.loc, 'modular_sand/sound/interactions/kiss5.ogg', volume, 1, extrarange)
 		else
-			playlewdinteractionsound(user.loc, pick(GLOB.lewd_kiss_sounds), volume, 1, -1)
+			playlewdinteractionsound(user.loc, pick(GLOB.lewd_kiss_sounds), volume, 1, extrarange)
 
 	if(user.a_intent == INTENT_HARM)
 		if(HAS_TRAIT(user, TRAIT_KISS_OF_DEATH))

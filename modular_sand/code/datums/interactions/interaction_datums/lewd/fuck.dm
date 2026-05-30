@@ -12,12 +12,12 @@
 	)
 
 /datum/interaction/lewd/fuck/display_interaction(mob/living/user, mob/living/partner)
-	var/distance = 7
-	var/volume = 50
 	var/is_hidden = ..()
+	var/distance = 7
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 70
 	if(is_hidden)
 		distance = 1
-		volume = sound_quiet_volume
 	var/picked_hidden = pick(hidden_additional)
 	var/message
 	//var/u_His = user.ru_ego()
@@ -43,7 +43,7 @@
 
 	playlewdinteractionsound(get_turf(user), pick(
 		'modular_sand/sound/interactions/champ1.ogg',
-		'modular_sand/sound/interactions/champ2.ogg'), volume, 1, -1)
+		'modular_sand/sound/interactions/champ2.ogg'), volume, 1, extrarange)
 
 	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	if(user.can_penetrating_genital_cum())
@@ -96,10 +96,10 @@
 	var/shape_desc = get_penis_shape_desc(user) //  Описания каким органом ты трахаешь // BlueMoon Add
 	//BLUEMOON ADD END
 	var/distance = 7
-	var/volume = 50
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 70
 	if(is_hidden)
 		distance = 1
-		volume = sound_quiet_volume
 	var/picked_hidden = pick(hidden_additional)
 	if(user.is_fucking(partner, CUM_TARGET_ANUS))
 	//BLUEMOON EDIT START
@@ -118,7 +118,7 @@
 
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/bang1.ogg',
 						'modular_sand/sound/interactions/bang2.ogg',
-						'modular_sand/sound/interactions/bang3.ogg'), volume, 1, -1)
+						'modular_sand/sound/interactions/bang3.ogg'), volume, 1, extrarange)
 	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	if(user.can_penetrating_genital_cum())
 		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, partner, ORGAN_SLOT_PENIS) //SPLURT edit
@@ -169,10 +169,10 @@
 	var/shape_desc = get_penis_shape_desc(user) //  Описания каким органом ты трахаешь // BlueMoon Add
 	//BLUEMOON ADD END
 	var/distance = 7
-	var/volume = 50
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 70
 	if(is_hidden)
 		distance = 1
-		volume = sound_quiet_volume
 	var/picked_hidden = pick(hidden_additional)
 	if(user.is_fucking(partner, CUM_TARGET_BREASTS))
 	//BLUEMOON EDIT START
@@ -188,7 +188,7 @@
 
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/bang1.ogg',
 						'modular_sand/sound/interactions/bang2.ogg',
-						'modular_sand/sound/interactions/bang3.ogg'), volume, 1, -1)
+						'modular_sand/sound/interactions/bang3.ogg'), volume, 1, extrarange)
 	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 
 	if(user.can_penetrating_genital_cum())
@@ -216,10 +216,10 @@
 	var/has_penis = user.has_penis() // BLUEMOON ADD
 	var/shape_desc = get_penis_shape_desc(user) //  Описания каким органом ты трахаешь // BlueMoon Add
 	var/distance = 7
-	var/volume = 50
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 70
 	if(is_hidden)
 		distance = 1
-		volume = sound_quiet_volume
 	if(user.is_fucking(partner, CUM_TARGET_FEET))
 	//BLUEMOON EDIT START
 		message = pick("трётся своим [has_penis ? "членом" : "дилдо"] о ботинок <b>[partner]</b>.",
@@ -235,7 +235,7 @@
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/foot_dry1.ogg',
 						'modular_sand/sound/interactions/foot_dry3.ogg',
 						'modular_sand/sound/interactions/foot_wet1.ogg',
-						'modular_sand/sound/interactions/foot_wet2.ogg'), volume, 1, -1)
+						'modular_sand/sound/interactions/foot_wet2.ogg'), volume, 1, extrarange)
 	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	if(user.can_penetrating_genital_cum())
 		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_FEET, partner, CUM_TARGET_PENIS) //SPLURT edit
@@ -254,10 +254,10 @@
 
 	var/shoes = partner.get_shoes()
 	var/distance = 7
-	var/volume = 50
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 70
 	if(is_hidden)
 		distance = 1
-		volume = sound_quiet_volume
 	var/picked_hidden = pick(hidden_additional)
 	if(user.is_fucking(partner, CUM_TARGET_FEET))
 	//BLUEMOON EDIT START
@@ -274,7 +274,7 @@
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/foot_dry1.ogg',
 						'modular_sand/sound/interactions/foot_dry3.ogg',
 						'modular_sand/sound/interactions/foot_wet1.ogg',
-						'modular_sand/sound/interactions/foot_wet2.ogg'), volume, 1, -1)
+						'modular_sand/sound/interactions/foot_wet2.ogg'), volume, 1, extrarange)
 	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	if(user.can_penetrating_genital_cum())
 		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_FEET, partner, CUM_TARGET_PENIS) //SPLURT edit
@@ -292,10 +292,10 @@
 	var/is_hidden = ..()
 	var/message
 	var/distance = 7
-	var/volume = 50
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 70
 	if(is_hidden)
 		distance = 1
-		volume = sound_quiet_volume
 	var/picked_hidden = pick(hidden_additional)
 	if(user.is_fucking(partner, CUM_TARGET_FEET))
 	//BLUEMOON EDIT START
@@ -312,7 +312,7 @@
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/foot_dry1.ogg',
 						'modular_sand/sound/interactions/foot_dry3.ogg',
 						'modular_sand/sound/interactions/foot_wet1.ogg',
-						'modular_sand/sound/interactions/foot_wet2.ogg'), volume, 1, -1)
+						'modular_sand/sound/interactions/foot_wet2.ogg'), volume, 1, extrarange)
 	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(),vision_distance = distance)
 	user.handle_post_sex(NORMAL_LUST, CUM_TARGET_FEET, partner, ORGAN_SLOT_VAGINA) //SPLURT edit
 
@@ -331,10 +331,10 @@
 	var/message
 	var/shape_desc = get_penis_shape_desc(user)
 	var/distance = 7
-	var/volume = 50
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 70
 	if(is_hidden)
 		distance = 1
-		volume = sound_quiet_volume
 	var/picked_hidden = pick(hidden_additional)
 	if(user.is_fucking(partner, CUM_TARGET_VAGINA) && user.is_fucking(partner, CUM_TARGET_ANUS))
 		message = pick(
@@ -353,7 +353,7 @@
 
 	playlewdinteractionsound(get_turf(user), pick(
 		'modular_sand/sound/interactions/champ1.ogg',
-		'modular_sand/sound/interactions/bang3.ogg'), volume, 1, -1)
+		'modular_sand/sound/interactions/bang3.ogg'), volume, 1, extrarange)
 
 	user.visible_message(
 		span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"),
@@ -390,10 +390,10 @@
 	var/message
 	var/shape_desc = get_penis_shape_desc(user)
 	var/distance = 7
-	var/volume = 50
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 70
 	if(is_hidden)
 		distance = 1
-		volume = sound_quiet_volume
 	var/picked_hidden = pick(hidden_additional)
 	if(user.is_fucking(partner, CUM_TARGET_VAGINA))
 		message = pick(
@@ -410,7 +410,7 @@
 
 	playlewdinteractionsound(get_turf(user), pick(
 		'modular_sand/sound/interactions/champ1.ogg',
-		'modular_sand/sound/interactions/champ2.ogg'), volume, 1, -1)
+		'modular_sand/sound/interactions/champ2.ogg'), volume, 1, extrarange)
 
 	user.visible_message(
 		span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"),
@@ -441,10 +441,10 @@
 	var/message
 	var/shape_desc = get_penis_shape_desc(user)
 	var/distance = 7
-	var/volume = 50
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 70
 	if(is_hidden)
 		distance = 1
-		volume = sound_quiet_volume
 	var/picked_hidden = pick(hidden_additional)
 	if(user.is_fucking(partner, CUM_TARGET_ANUS))
 		message = pick(
@@ -461,7 +461,7 @@
 
 	playlewdinteractionsound(get_turf(user), pick(
 		'modular_sand/sound/interactions/bang1.ogg',
-		'modular_sand/sound/interactions/bang2.ogg'), volume, 1, -1)
+		'modular_sand/sound/interactions/bang2.ogg'), volume, 1, extrarange)
 
 	user.visible_message(
 		span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"),
@@ -493,10 +493,10 @@
 	var/message
 	var/shape_desc = get_penis_shape_desc(user)
 	var/distance = 7
-	var/volume = 50
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 70
 	if(is_hidden)
 		distance = 1
-		volume = sound_quiet_volume
 	var/picked_hidden = pick(hidden_additional)
 	if(user.is_fucking(partner, CUM_TARGET_VAGINA))
 		message = pick(
@@ -513,7 +513,7 @@
 
 	playlewdinteractionsound(get_turf(user), pick(
 		'modular_sand/sound/interactions/champ1.ogg',
-		'modular_sand/sound/interactions/champ2.ogg'), volume, 1, -1)
+		'modular_sand/sound/interactions/champ2.ogg'), volume, 1, extrarange)
 
 	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 
@@ -538,10 +538,10 @@
 	var/message
 	var/shape_desc = get_penis_shape_desc(user)
 	var/distance = 7
-	var/volume = 50
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 70
 	if(is_hidden)
 		distance = 1
-		volume = sound_quiet_volume
 	var/picked_hidden = pick(hidden_additional)
 	if(user.is_fucking(partner, CUM_TARGET_ANUS))
 		message = pick(
@@ -558,7 +558,7 @@
 
 	playlewdinteractionsound(get_turf(user), pick(
 		'modular_sand/sound/interactions/champ1.ogg',
-		'modular_sand/sound/interactions/bang3.ogg'), volume, 1, -1)
+		'modular_sand/sound/interactions/bang3.ogg'), volume, 1, extrarange)
 
 	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>\\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 

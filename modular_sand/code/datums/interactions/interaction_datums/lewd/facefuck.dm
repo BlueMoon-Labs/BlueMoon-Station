@@ -16,10 +16,10 @@
 /datum/interaction/lewd/facefuck/display_interaction(mob/living/user, mob/living/partner)
 	var/is_hidden = ..()
 	var/distance = 7
-	var/volume = 50
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 50
 	if(is_hidden)
 		distance = 1
-		volume = sound_quiet_volume
 	var/picked_hidden = pick(hidden_additional)
 	var/message
 	var/obj/item/organ/genital/genital = null
@@ -114,7 +114,7 @@
 		try_apply_knot(user, partner, CUM_TARGET_MOUTH) // Проверка на узлирование.
 
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/oral1.ogg',
-						'modular_sand/sound/interactions/oral2.ogg'), volume, 1, -1)
+						'modular_sand/sound/interactions/oral2.ogg'), volume, 1, extrarange)
 	user.visible_message(span_lewd("<b>[is_hidden ? (picked_hidden) : null] \The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	if(retaliation_message)
 		user.visible_message("<font color=red><b>[is_hidden ? (picked_hidden) : null] \The <b>[partner]</b></b> [retaliation_message]</span>", ignored_mobs = user.get_unconsenting())
@@ -154,10 +154,10 @@
 /datum/interaction/lewd/throatfuck/display_interaction(mob/living/user, mob/living/partner)
 	var/is_hidden = ..()
 	var/distance = 7
-	var/volume = 50
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 70
 	if(is_hidden)
 		distance = 1
-		volume = sound_quiet_volume
 	var/picked_hidden = pick(hidden_additional)
 	var/message
 	var/obj/item/organ/genital/genital = null
@@ -200,7 +200,7 @@
 
 	partner.snap_choker(partner, ITEM_SLOT_NECK)	//Snap my choker!~ - Gardelin0
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/oral1.ogg',
-						'modular_sand/sound/interactions/oral2.ogg'), volume, 1, -1)
+						'modular_sand/sound/interactions/oral2.ogg'), volume, 1, extrarange)
 	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	if(retaliation_message)
 		user.visible_message(message = "<font color=red><b>[is_hidden ? (picked_hidden) : null] \The <b>[partner]</b></b> [retaliation_message]</span>", ignored_mobs = user.get_unconsenting(), vision_distance = distance)

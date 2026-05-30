@@ -361,11 +361,11 @@
 		oxy_damage = 0
 	var/is_hidden = ..()
 	var/distance = 7
-	var/volume = 50
+	var/const/volume = 50
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 	var/picked_hidden = pick(hidden_additional)
 	if(is_hidden)
 		distance = 1
-		volume = sound_quiet_volume
 	if(user.a_intent == INTENT_HARM)
 		message = list(
 			"грубо обхватывает своим хвостом шею <b>\the [partner]</b>, стараясь перекрыть доступ к воздуху.",
@@ -399,5 +399,5 @@
 		lust_amount = NORMAL_LUST
 	partner.set_is_fucking(user, CUM_TARGET_TAIL)
 	user.visible_message(span_danger("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [(islist(message) ? pick(message) : message)]."), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
-	playlewdinteractionsound(get_turf(user), 'sound/weapons/thudswoosh.ogg', volume, 1, -1)
+	playlewdinteractionsound(get_turf(user), 'sound/weapons/thudswoosh.ogg', volume, 1, extrarange)
 	partner.handle_post_sex(lust_amount, CUM_TARGET_HAND, user)

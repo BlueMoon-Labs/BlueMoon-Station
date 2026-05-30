@@ -143,3 +143,5 @@ GLOBAL_LIST_INIT(interaction_speeds, list(
 	"icon" = "person-pregnant", \
 	"color" = "white" \
 )
+
+#define DEFAULT_INTERACTION_SOUND_EXTRARANGE(_is_hidden) (_is_hidden ? (-SOUND_RANGE+2) : -1)

@@ -11,10 +11,10 @@
 /datum/interaction/lewd/grindface/display_interaction(mob/living/user, mob/living/partner)
 	var/is_hidden = ..()
 	var/distance = 7
-	var/volume = 50
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 70
 	if(is_hidden)
 		distance = 1
-		volume = sound_quiet_volume
 	var/picked_hidden = pick(hidden_additional)
 	var/message
 
@@ -55,7 +55,7 @@
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/foot_dry1.ogg',
 						'modular_sand/sound/interactions/foot_dry2.ogg',
 						'modular_sand/sound/interactions/foot_dry3.ogg',
-						'modular_sand/sound/interactions/foot_dry4.ogg'), volume, 1, -1)
+						'modular_sand/sound/interactions/foot_dry4.ogg'), volume, 1, extrarange)
 	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	partner.handle_post_sex(LOW_LUST, null, user)
 
@@ -72,10 +72,10 @@
 /datum/interaction/lewd/grindmouth/display_interaction(mob/living/user, mob/living/partner)
 	var/is_hidden = ..()
 	var/distance = 7
-	var/volume = 50
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 70
 	if(is_hidden)
 		distance = 1
-		volume = sound_quiet_volume
 	var/picked_hidden = pick(hidden_additional)
 	var/message
 
@@ -119,7 +119,7 @@
 
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/foot_wet1.ogg',
 						'modular_sand/sound/interactions/foot_wet2.ogg',
-						'modular_sand/sound/interactions/foot_wet3.ogg'), volume, 1, -1)
+						'modular_sand/sound/interactions/foot_wet3.ogg'), volume, 1, extrarange)
 	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	partner.handle_post_sex(LOW_LUST, null, user)
 
@@ -140,10 +140,10 @@
 	var/genital_name = partner.get_penetrating_genital_name()
 	var/is_hidden = ..()
 	var/distance = 7
-	var/volume = 50
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 70
 	if(is_hidden)
 		distance = 1
-		volume = sound_quiet_volume
 	var/picked_hidden = pick(hidden_additional)
 	if(partner.is_fucking(src, CUM_TARGET_FEET))
 		message = "[pick("дрочит [genital_name] <b>[partner]</b> своими [shoes ? shoes : pick("ножками", "ступнями")].",
@@ -157,7 +157,7 @@
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/foot_dry1.ogg',
 						'modular_sand/sound/interactions/foot_dry3.ogg',
 						'modular_sand/sound/interactions/foot_wet1.ogg',
-						'modular_sand/sound/interactions/foot_wet2.ogg'), volume, 1, -1)
+						'modular_sand/sound/interactions/foot_wet2.ogg'), volume, 1, extrarange)
 	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	if(partner.can_penetrating_genital_cum())
 		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_FEET, user, ORGAN_SLOT_PENIS) //SPLURT edit
@@ -174,10 +174,10 @@
 	var/genital_name = partner.get_penetrating_genital_name()
 	var/is_hidden = ..()
 	var/distance = 7
-	var/volume = 50
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 70
 	if(is_hidden)
 		distance = 1
-		volume = sound_quiet_volume
 	var/picked_hidden = pick(hidden_additional)
 
 	if(partner.is_fucking(user, CUM_TARGET_FEET))
@@ -193,7 +193,7 @@
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/foot_dry1.ogg',
 						'modular_sand/sound/interactions/foot_dry3.ogg',
 						'modular_sand/sound/interactions/foot_wet1.ogg',
-						'modular_sand/sound/interactions/foot_wet2.ogg'), volume, 1, -1)
+						'modular_sand/sound/interactions/foot_wet2.ogg'), volume, 1, extrarange)
 	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	if(partner.can_penetrating_genital_cum())
 		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_FEET, user, ORGAN_SLOT_PENIS) //SPLURT edit

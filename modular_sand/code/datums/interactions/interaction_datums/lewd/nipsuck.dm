@@ -15,10 +15,10 @@
 	var/amount_high = 2
 	var/is_hidden = ..()
 	var/distance = 7
-	var/volume = 50
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 70
 	if(is_hidden)
 		distance = 1
-		volume = sound_quiet_volume
 	var/picked_hidden = pick(hidden_additional)
 	switch(user.a_intent)
 		if(INTENT_HELP, INTENT_DISARM)
@@ -121,5 +121,5 @@
 	target.dir = get_dir(target, user)
 	user.dir = get_dir(user, target)
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/oral1.ogg',
-						'modular_sand/sound/interactions/oral2.ogg'), volume, 1, -1)
+						'modular_sand/sound/interactions/oral2.ogg'), volume, 1, extrarange)
 	return

@@ -72,10 +72,10 @@
 /datum/interaction/lewd/titgrope/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target)
 	var/is_hidden = ..()
 	var/distance = 7
-	var/volume = 50
+	var/const/volume = 50
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 	if(is_hidden)
 		distance = 1
-		volume = sound_quiet_volume
 	var/picked_hidden = pick(hidden_additional)
 
 	var/obj/item/reagent_containers/liquid_container
@@ -97,11 +97,11 @@
 				liquid_container.reagents.add_reagent(milktype, rand(1,3 * milkers.get_lactation_amount_modifier()))
 				user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> выдавливает содержимое груди <b>[target]</b> в [liquid_container]."), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 				target.handle_post_sex(LOW_LUST, null, user, ORGAN_SLOT_BREASTS)
-				playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/squelch1.ogg', volume, 1, -1)
+				playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/squelch1.ogg', volume, 1, extrarange)
 			else
 				user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>[user]</b> пытается выдоить содержимое груди <b>[target]</b> в [liquid_container], но ничего не выходит...."), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 				target.handle_post_sex(LOW_LUST, null, user, ORGAN_SLOT_BREASTS)
-				playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/champ_fingering.ogg', volume, 1, -1)
+				playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/champ_fingering.ogg', volume, 1, extrarange)
 
 	else
 		target.handle_post_sex(NORMAL_LUST, CUM_TARGET_HAND, user, CUM_TARGET_BREASTS)

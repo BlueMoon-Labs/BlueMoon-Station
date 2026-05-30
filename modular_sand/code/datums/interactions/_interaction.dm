@@ -210,7 +210,7 @@
 		return
 	if(!isnum(volume))
 		volume = interaction_sound_volume
-	var/extrarange = is_hidden ? (-SOUND_RANGE+2) : -1
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 	if(interaction_flags & INTERACTION_FLAG_OOC_CONSENT)
 		var/list/ignored_mobs
 		if(interaction_flags & INTERACTION_FLAG_UNHOLY_CONTENT)

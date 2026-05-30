@@ -11,7 +11,6 @@
 		"Осторожно,",
 		"Неприметно,",
 	)
-	var/sound_quiet_volume = 10
 	var/emote_range = 1
 	/// Interaction strength for Plug13: `PLUG13_STRENGTH_` type or number `1-100`.
 	/// This one is for the doer/fucker/attacker.
