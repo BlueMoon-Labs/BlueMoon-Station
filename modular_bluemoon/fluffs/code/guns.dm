@@ -1146,9 +1146,24 @@
 
 /obj/item/gun/ballistic/shotgun/automatic/combat/supernova/update_icon_state()
 	var/ammo = magazine ? magazine.ammo_count() : 0
-	var/chamber = (chambered && chambered.BB) ? "charged" : "notcharged"
 	var/folded = stock ? "" : "-folded"
-	icon_state = "supernova-[ammo]-[chamber][folded]"
+	if(ammo <= 0)
+		icon_state = "supernova-e[folded]"
+	else
+		icon_state = "supernova[folded]"
+
+/obj/item/gun/ballistic/shotgun/automatic/combat/supernova/update_overlays()
+	. = list()
+	// Патрон в патроннике
+	if(chambered && chambered.BB)
+		. += "supernova-loaded"
+	else
+		. += "supernova-not-loaded"
+	// Индикатор боезапаса: подложка + уровень (0..5)
+	var/ammo = magazine ? magazine.ammo_count() : 0
+	. += "supernova-base"
+	if(ammo<6)
+		. += "supernova-[ammo]"
 
 /obj/item/modkit/pulsar_kit
 	name = "Kasari ritual knife Kit"
