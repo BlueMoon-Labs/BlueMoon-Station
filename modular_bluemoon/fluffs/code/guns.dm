@@ -1538,10 +1538,10 @@
 	desc = "Ученый внутри вас не может нарадоваться, это оружие - настоящее изнасилование идеи о мирном применении рентгеновского излучения. Концентрированные пучки испускаемые этой бандурой способны выжигать даже металл, единственное что омрачает - ограничение конструкции, не дающее возможности использовать этого кастрата что бы аннигилировать надоедливого клоуна за один выстрел до состояния бесформенной массы."
 	unique_reskin = list()
 	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
-	icon_state = "comet"
+	icon_state = "neutron"
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
-	item_state = "comet"
+	item_state = "neutron"
 
 /obj/item/gun/energy/xray/neutron/update_icon_state()
 	if(!cell || cell.charge <= 0)
