@@ -676,7 +676,8 @@ GLOBAL_LIST_EMPTY(species_datums)
 	var/obj/item/organ/genital/penis/P = H?.getorganslot(ORGAN_SLOT_PENIS)
 	if(!P)
 		if(H.has_strapon())
-			return "дилдо"
+			//return "дилдо" т.к. дилдо не склоняется, заменяем на склоняемое слово
+			return "страпон"
 		else
 			return "член"
 

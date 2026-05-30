@@ -28,24 +28,34 @@
 		'modular_bluemoon/sound/interactions/watering3.ogg',
 		)
 	interaction_sound_volume = 50
+	// Что использует user для интеракции
 	var/user_organ
+	// Что использует partner для интеракции
 	var/target_organ
-	var/target_cum_in
+	// Куда должен кончить user
 	var/user_cum_in
+	// Куда должен кончить partner
+	var/target_cum_in
+
 
 /datum/interaction/lewd/unholy/piss/proc/format_message(message, mob/living/user, mob/living/partner)
 	if(!istext(message))
 		return ""
 
 	. = message
-	if(user && findtext(., "USER"))
+	if(user)
 		. = replacetext(., "USER", "<b>\The [user]</b>")
-	if(partner && findtext(., "TARGET"))
+	if(partner)
 		. = replacetext(., "TARGET", "<b>\The [partner]</b>")
 	. += "."
 	. = span_lewd(.)
 
+// Выбор сообщения текста интеракции
 /datum/interaction/lewd/unholy/piss/proc/pick_message(mob/living/user, mob/living/partner, is_fucking = TRUE)
+	return
+
+// Выбор сообщения реакции партнера
+/datum/interaction/lewd/unholy/piss/proc/pick_partner_message(mob/living/user, mob/living/partner, is_fucking = TRUE)
 	return
 
 /datum/interaction/lewd/unholy/piss/proc/get_user_lust_level(mob/living/user, mob/living/partner, is_fucking = TRUE)
@@ -60,12 +70,11 @@
 /datum/interaction/lewd/unholy/piss/proc/partner_lust_grant(mob/living/user, mob/living/partner, is_fucking = TRUE)
 	return partner.handle_post_sex(get_partner_lust_level(user, partner, is_fucking), target_cum_in, user, target_organ)
 
+// Для доп. звуков интеракций
 /datum/interaction/lewd/unholy/piss/proc/audio_effects(mob/living/user, mob/living/partner, is_fucking = TRUE, is_hidden = TRUE)
 	return
 
-/datum/interaction/lewd/unholy/piss/proc/pick_partner_message(mob/living/user, mob/living/partner, is_fucking = TRUE)
-	return
-
+// Для дополнительных эффектов интеракций
 /datum/interaction/lewd/unholy/piss/proc/post_reaction(mob/living/user, mob/living/partner, is_fucking = TRUE)
 	return
 
@@ -84,7 +93,7 @@
 
 	var/partner_message = pick_partner_message(user, partner, is_fucking)
 	if(partner_message)
-		partner.visible_message(format_message(partner_message, user, partner), ignored_mobs = partner.get_unconsenting(unholy = TRUE), vision_distance = distance)
+		partner.visible_message(format_message(partner_message, user, partner), vision_distance = distance)
 
 	post_reaction(user, partner, is_fucking)
 
@@ -208,7 +217,7 @@
 		"TARGET почти касается носом, щели USER пока та обливает [partner.ru_ego()] губы струёй мочи")
 
 /datum/interaction/lewd/unholy/piss/vagina/on_mouth/audio_effects(mob/living/user, mob/living/partner, is_fucking, is_hidden)
-	play_interaction_sound(get_turf(partner), 'modular_sand/sound/interactions/swallow.ogg', is_hidden, ignored_mobs = partner.get_unconsenting(unholy = TRUE))
+	play_interaction_sound(partner, 'modular_sand/sound/interactions/swallow.ogg', is_hidden)
 
 /datum/interaction/lewd/unholy/piss/vagina/on_mouth/get_partner_lust_level(mob/living/user, mob/living/partner, is_fucking)
 	return HAS_TRAIT(partner, TRAIT_KISS_SLUT) ? LOW_LUST : 0
@@ -240,7 +249,7 @@
 		"TARGET почти касается носом, головки члена USER пока та обливает [partner.ru_ego()] губы струёй мочи")
 
 /datum/interaction/lewd/unholy/piss/penis/on_mouth/audio_effects(mob/living/user, mob/living/partner, is_fucking, is_hidden)
-	play_interaction_sound(get_turf(partner), 'modular_sand/sound/interactions/swallow.ogg', is_hidden, ignored_mobs = partner.get_unconsenting(unholy = TRUE))
+	play_interaction_sound(partner, 'modular_sand/sound/interactions/swallow.ogg', is_hidden)
 
 /datum/interaction/lewd/unholy/piss/penis/on_mouth/get_partner_lust_level(mob/living/user, mob/living/partner, is_fucking)
 	return HAS_TRAIT(partner, TRAIT_KISS_SLUT) ? LOW_LUST : 0
@@ -301,10 +310,8 @@
 		"TARGET плотно прижат[partner.ru_aya()] к USER, упирается в н[user.ru_ego()] носом, ощущая, как киска заливает рот потоком мочи")
 
 /datum/interaction/lewd/unholy/piss/vagina/in_mouth/audio_effects(mob/living/user, mob/living/partner, is_fucking, is_hidden)
-	var/ignored_mobs = partner.get_unconsenting(unholy = TRUE)
-	var/turf/turf = get_turf(partner)
-	play_interaction_sound(turf, 'modular_sand/sound/interactions/swallow.ogg', is_hidden, ignored_mobs = ignored_mobs)
-	play_interaction_sound(turf, pick('modular_sand/sound/interactions/oral1.ogg', 'modular_sand/sound/interactions/oral2.ogg'), is_hidden, ignored_mobs = ignored_mobs)
+	play_interaction_sound(partner, 'modular_sand/sound/interactions/swallow.ogg', is_hidden)
+	play_interaction_sound(partner, pick('modular_sand/sound/interactions/oral1.ogg', 'modular_sand/sound/interactions/oral2.ogg'), is_hidden)
 
 /datum/interaction/lewd/unholy/piss/vagina/in_mouth/get_partner_lust_level(mob/living/user, mob/living/partner, is_fucking)
 	return HAS_TRAIT(partner, TRAIT_KISS_SLUT) ? NORMAL_LUST : 0
@@ -380,10 +387,8 @@
 		"TARGET плотно прижат[partner.ru_aya()] к USER, упирается в н[user.ru_ego()] носом, ощущая, как [partner.ru_emu()] в глотку горячей мочей изливается [shape_desc]")
 
 /datum/interaction/lewd/unholy/piss/penis/inside/mouth/audio_effects(mob/living/user, mob/living/partner, is_fucking, is_hidden)
-	var/ignored_mobs = partner.get_unconsenting(unholy = TRUE)
-	var/turf/turf = get_turf(partner)
-	play_interaction_sound(turf, 'modular_sand/sound/interactions/swallow.ogg', is_hidden, ignored_mobs = ignored_mobs)
-	play_interaction_sound(turf, pick('modular_sand/sound/interactions/oral1.ogg', 'modular_sand/sound/interactions/oral2.ogg'), is_hidden, ignored_mobs = ignored_mobs)
+	play_interaction_sound(partner, 'modular_sand/sound/interactions/swallow.ogg', is_hidden)
+	play_interaction_sound(partner, pick('modular_sand/sound/interactions/oral1.ogg', 'modular_sand/sound/interactions/oral2.ogg'), is_hidden)
 
 /datum/interaction/lewd/unholy/piss/penis/inside/mouth/get_partner_lust_level(mob/living/user, mob/living/partner, is_fucking)
 	return HAS_TRAIT(partner, TRAIT_KISS_SLUT) ? NORMAL_LUST : LOW_LUST
@@ -453,7 +458,7 @@
 		"TARGET тихо стонет и прижимается ближе, пока USER мочится внутрь своим [shape_desc]")
 
 /datum/interaction/lewd/unholy/piss/penis/inside/vagina/audio_effects(mob/living/user, mob/living/partner, is_fucking, is_hidden)
-	play_interaction_sound(get_turf(partner), pick('modular_sand/sound/interactions/champ1.ogg', 'modular_sand/sound/interactions/champ2.ogg'), is_hidden, ignored_mobs = partner.get_unconsenting(unholy = TRUE))
+	play_interaction_sound(partner, pick('modular_sand/sound/interactions/champ1.ogg', 'modular_sand/sound/interactions/champ2.ogg'), is_hidden)
 
 
 //////////////////////// 	IN ANUS		///////////////////////////
@@ -497,9 +502,9 @@
 		"TARGET тихо стонет и прижимается ближе, пока USER мочится внутрь попки своим [shape_desc]")
 
 /datum/interaction/lewd/unholy/piss/penis/inside/anus/audio_effects(mob/living/user, mob/living/partner, is_fucking, is_hidden)
-	play_interaction_sound(get_turf(partner), pick('modular_sand/sound/interactions/bang1.ogg',
+	play_interaction_sound(partner, pick('modular_sand/sound/interactions/bang1.ogg',
 						'modular_sand/sound/interactions/bang2.ogg',
-						'modular_sand/sound/interactions/bang3.ogg'), is_hidden, ignored_mobs = partner.get_unconsenting(unholy = TRUE))
+						'modular_sand/sound/interactions/bang3.ogg'), is_hidden)
 
 #undef INSIDE_MAIN_MESSAGES
 #undef INSIDE_PARTNER_MESSAGES

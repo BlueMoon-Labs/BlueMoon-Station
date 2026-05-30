@@ -10,9 +10,9 @@
 		return ""
 
 	. = message
-	if(user && findtext(., "USER"))
+	if(user)
 		. = replacetext(., "USER", "<b>\The [user]</b>")
-	if(partner && findtext(., "TARGET"))
+	if(partner)
 		. = replacetext(., "TARGET", "<b>\The [partner]</b>")
 	. += "."
 	. = span_lewd(.)

@@ -182,13 +182,8 @@
 			soundfile_to_play = pickweight(interaction_sound)
 		else
 			soundfile_to_play = interaction_sound
-		var/mob/living/turf_source = message_by_user ? user : target
-		var/turf/sound_turf = get_turf(turf_source)
-		if(!sound_turf)
-			return
 
-		var/ignored_mobs = (interaction_flags & INTERACTION_FLAG_UNHOLY_CONTENT ? turf_source.get_unconsenting(unholy = TRUE) : null)
-		play_interaction_sound(sound_turf, soundfile_to_play, is_hidden, ignored_mobs = ignored_mobs)
+		play_interaction_sound(message_by_user ? user : target, soundfile_to_play, is_hidden)
 
 	// PLUG 13 INTEGRATION from modular_bluemoon\code\modules\plug13_integration\bluemoon_interaction.dm
 	if (p13user_emote && p13user_strength && p13user_duration)
@@ -209,11 +204,17 @@
 		SEND_SIGNAL(user, COMSIG_INTERACTION_ADJACENT, target)
 		SEND_SIGNAL(target, COMSIG_INTERACTION_ADJACENT, user)
 
-/datum/interaction/proc/play_interaction_sound(turf/sound_turf, soundin, is_hidden = TRUE, volume, list/ignored_mobs)
+/datum/interaction/proc/play_interaction_sound(mob/living/sound_source, soundin, is_hidden = TRUE, volume)
+	var/turf/sound_turf = get_turf(sound_source)
+	if(!sound_turf)
+		return
 	if(!isnum(volume))
 		volume = interaction_sound_volume
 	var/extrarange = is_hidden ? (-SOUND_RANGE+2) : -1
 	if(interaction_flags & INTERACTION_FLAG_OOC_CONSENT)
+		var/list/ignored_mobs
+		if(interaction_flags & INTERACTION_FLAG_UNHOLY_CONTENT)
+			ignored_mobs = sound_source.get_unconsenting(unholy = TRUE)
 		playlewdinteractionsound(sound_turf, soundin, volume, 1, extrarange, ignored_mobs = ignored_mobs)
 	else
 		playsound(sound_turf, soundin, volume, 1, extrarange)
