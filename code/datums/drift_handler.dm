@@ -179,6 +179,12 @@
 	if(ignore_next_glide)
 		ignore_next_glide = FALSE
 		return
+	// Defer the drift at most once per loop cycle. A held thrust/move key fires a glide update on every step
+	// (vehicle_move's set_glide_size, plus Move()'s glide_size_override from step()); re-pausing on each one keeps
+	// shoving the loop's next fire past the key-repeat interval, so the drift never advances and the mech "freezes"
+	// in place until the key is released. before_move clears `delayed` on every real fire, so this self-resets.
+	if(delayed)
+		return
 	var/glide_delay = round(world.icon_size / max(glide_size, 1), 1) * world.tick_lag
 	drifting_loop.pause_for(glide_delay)
 	delayed = TRUE

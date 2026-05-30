@@ -5,6 +5,8 @@
 //  - drift_glide_clamp:     fast drift can't make the sprite visually "teleport"
 //  - mecha_stabilizer:      mechs can hold position with a jetpack-style stabilizer
 //  - mecha_turn_decoupled:  mechs can turn in zero-g and turning doesn't eat the move cooldown (#6)
+//  - mecha_drift_stepsound: a drifting mech doesn't play its walking sound on every drift tick
+//  - drift_glide_no_starve: holding a thrust key while drifting doesn't freeze the mech in place
 
 /// A multi-ton exosuit must resist nudges and have a capped top drift speed, unlike a human (defaults 1/1).
 /datum/unit_test/mecha_inertia_mass/Run()
@@ -96,3 +98,43 @@
 	ripley.setDir(NORTH)
 	ripley.vehicle_move(EAST)
 	TEST_ASSERT_EQUAL(ripley.dir, NORTH, "strafe mode without Alt must not rotate the mech")
+
+/// A drifting mech played its walking sound on every drift tick. play_stepsound must skip inertia (drift)
+/// moves and consume step_silent (set for thrust / push-off) - neither of which is an actual footstep.
+/datum/unit_test/mecha_drift_stepsound/Run()
+	var/obj/vehicle/sealed/mecha/working/ripley/ripley = allocate(/obj/vehicle/sealed/mecha/working/ripley)
+
+	// Thrust / push-off marks step_silent; play_stepsound must eat it (and stay silent) rather than walk-sound.
+	ripley.step_silent = TRUE
+	ripley.play_stepsound()
+	TEST_ASSERT(!ripley.step_silent, "play_stepsound must consume step_silent (thrust/push-off is not a footstep)")
+
+	// A drift-loop move sets inertia_moving; play_stepsound must be a no-op and must not clear the flag.
+	ripley.inertia_moving = TRUE
+	ripley.play_stepsound()
+	TEST_ASSERT(ripley.inertia_moving, "play_stepsound must not run its body during a drift (inertia) move")
+
+/// Holding a thrust/move key while drifting froze the mech: every voluntary step fires a glide update and the
+/// drift handler re-paused its move loop each time, shoving the next fire past the key-repeat interval forever.
+/// The handler must defer the loop at most once per cycle so the drift keeps advancing.
+/datum/unit_test/drift_glide_no_starve/Run()
+	var/turf/center = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	var/obj/item/pen/thing = allocate(/obj/item/pen, center)
+	thing.AddElement(/datum/element/forced_gravity, 0) // weightless, so the drift actually starts
+	thing.newtonian_move(NORTH, drift_force = 5, force_loop = FALSE)
+	var/datum/drift_handler/handler = thing.drift_handler
+	TEST_ASSERT_NOTNULL(handler, "newtonian_move should have started a drift")
+	TEST_ASSERT_NOTNULL(handler.drifting_loop, "the drift should have a move loop")
+
+	// First glide change of the cycle defers the loop once (the intended visual sync) and marks it delayed.
+	// Clear both gating flags so the call is deterministic regardless of the loop's init-time running state.
+	handler.delayed = FALSE
+	handler.ignore_next_glide = FALSE
+	handler.handle_glidesize_update(thing, 8)
+	TEST_ASSERT(handler.delayed, "an external glide change while drifting should defer the drift loop once")
+
+	// Already delayed: further glide changes (a held key) must be ignored, so the loop's timer isn't pushed out.
+	var/locked_timer = handler.drifting_loop.timer
+	handler.handle_glidesize_update(thing, 4)
+	handler.handle_glidesize_update(thing, 2)
+	TEST_ASSERT_EQUAL(handler.drifting_loop.timer, locked_timer, "repeated glide changes must not keep re-deferring the drift loop (anti-starvation)")

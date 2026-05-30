@@ -635,8 +635,15 @@
 ///Plays the mech step sound effect. Split from movement procs so that other mechs (HONK) can override this one specific part.
 /obj/vehicle/sealed/mecha/proc/play_stepsound()
 	SIGNAL_HANDLER
+	// step_silent is set for thrust / push-off; inertia_moving is set while the drift loop is carrying us.
+	// Neither is a footstep, so don't play the walk sound (it was firing on every space-drift tick).
+	if(step_silent)
+		step_silent = FALSE
+		return
+	if(inertia_moving)
+		return
 	if(stepsound)
-		playsound(src,stepsound,40,1)
+		playsound(src, stepsound, 40, TRUE)
 
 /obj/vehicle/sealed/mecha/proc/disconnect_air()
 	SIGNAL_HANDLER
@@ -682,6 +689,10 @@
 		return FALSE
 	if(!direction)
 		return FALSE
+
+	// Cleared each call: Process_Spacemove sets this when we thrust / push off, and play_stepsound consumes it.
+	// Resetting here keeps a thrust that didn't end in a step from silencing the next genuine footstep.
+	step_silent = FALSE
 
 	if(internal_damage & MECHA_INT_CONTROL_LOST)
 		direction = pick(GLOB.alldirs)
