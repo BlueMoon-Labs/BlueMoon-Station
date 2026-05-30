@@ -1,6 +1,6 @@
 //Sandstorm edits
 
-/datum/interaction/lewd/display_interaction(mob/living/user, mob/living/target, var/is_hidden)
+/datum/interaction/lewd/display_interaction(mob/living/user, mob/living/target, is_hidden)
 	. = ..()
 	//переменные ниже используются в последующих проках после вызова родителя
 

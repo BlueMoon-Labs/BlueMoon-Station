@@ -272,7 +272,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 
 // Interaction Procs
 
-/mob/living/proc/do_oral_self(mob/living/user, var/fucktarget = "penis", var/is_hidden)
+/mob/living/proc/do_oral_self(mob/living/user, var/fucktarget = "penis", is_hidden)
 	var/message
 	var/obj/item/organ/genital/peepee = null
 	var/lust_increase = NORMAL_LUST
@@ -403,7 +403,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	//BLUEMOON EDIT END
 	lust_increase = NORMAL_LUST //RESET IT REE
 
-/mob/living/proc/do_breastfuck_self(mob/living/user, var/is_hidden)
+/mob/living/proc/do_breastfuck_self(mob/living/user, is_hidden)
 	var/message
 	//var/t_His = ru_ego() //BLUEMOON EDIT commented
 	//var/genital_name = get_penetrating_genital_name()
@@ -437,7 +437,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 		handle_post_sex(LOW_LUST, null, user, CUM_TARGET_BREASTS)
 	// BLUEMOON EDIT END
 
-/mob/living/proc/nuzzle_belly(mob/living/target, var/is_hidden)
+/mob/living/proc/nuzzle_belly(mob/living/target, is_hidden)
 	var/message
 	var/distance = 7
 	var/picked_hidden = pick(HIDDEN_ADDITIONAL)
@@ -455,7 +455,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	message = "<span class='lewd'>[is_hidden ? (picked_hidden) : null] <b>\The [src]</b> [pick(nuzzles)]. </span>"
 	visible_message(message, ignored_mobs = get_unconsenting(), vision_distance = distance)
 
-/mob/living/proc/do_bellyfuck(mob/living/partner, var/is_hidden)
+/mob/living/proc/do_bellyfuck(mob/living/partner, is_hidden)
 	var/message
 	var/genital_name = get_penetrating_genital_name()
 	var/has_penis = has_penis() // BLUEMOON ADD
@@ -484,7 +484,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 		handle_post_sex(NORMAL_LUST, CUM_TARGET_BELLY, partner, ORGAN_SLOT_PENIS)
 	//partner.handle_post_sex(NORMAL_LUST, null, src) //don't think we need it for this one
 
-/mob/living/proc/do_breastsmother(mob/living/target, var/is_hidden)
+/mob/living/proc/do_breastsmother(mob/living/target, is_hidden)
 	var/message
 	//var/u_His = ru_ego()
 	var/distance = 7
@@ -505,7 +505,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 						'modular_sand/sound/interactions/bang2.ogg',
 						'modular_sand/sound/interactions/bang3.ogg'), volume, 1, extrarange)
 
-/mob/living/proc/lick_sweat(mob/living/target, var/is_hidden)
+/mob/living/proc/lick_sweat(mob/living/target, is_hidden)
 	var/message
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
@@ -523,7 +523,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	visible_message(message, ignored_mobs = get_unconsenting(), vision_distance = distance)
 	playlewdinteractionsound(loc, 'modular_sand/sound/interactions/champ_fingering.ogg', volume, 1, extrarange)
 
-/mob/living/proc/smother_armpit(mob/living/target, var/is_hidden)
+/mob/living/proc/smother_armpit(mob/living/target, is_hidden)
 	var/message
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
@@ -546,7 +546,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 		'modular_sand/sound/interactions/squelch2.ogg',
 		'modular_sand/sound/interactions/squelch3.ogg'), volume, 1, extrarange)
 
-/mob/living/proc/lick_armpit(mob/living/target, var/is_hidden)
+/mob/living/proc/lick_armpit(mob/living/target, is_hidden)
 	var/message
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
@@ -569,7 +569,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 		'modular_sand/sound/interactions/squelch2.ogg',
 		'modular_sand/sound/interactions/squelch3.ogg'), volume, 1, extrarange)
 
-/mob/living/proc/fuck_armpit(mob/living/target, var/is_hidden)
+/mob/living/proc/fuck_armpit(mob/living/target, is_hidden)
 	var/message
 	//var/u_His = ru_ego()
 	//var/genital_name = get_penetrating_genital_name()
@@ -610,7 +610,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	if(can_penetrating_genital_cum())
 		handle_post_sex(NORMAL_LUST, CUM_TARGET_ARMPIT, target, ORGAN_SLOT_PENIS)
 
-/mob/living/proc/do_pitjob(mob/living/target, var/is_hidden)
+/mob/living/proc/do_pitjob(mob/living/target, is_hidden)
 	var/message
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
@@ -652,7 +652,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	if(target.can_penetrating_genital_cum())
 		target.handle_post_sex(NORMAL_LUST, CUM_TARGET_ARMPIT, src, ORGAN_SLOT_PENIS)
 
-/mob/living/proc/do_boobjob(mob/living/target, var/is_hidden)
+/mob/living/proc/do_boobjob(mob/living/target, is_hidden)
 	var/message
 	//var/u_His = ru_ego()
 	//var/genital_name = target.get_penetrating_genital_name()
@@ -690,7 +690,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	if(HAS_TRAIT(src, TRAIT_NYMPHO))
 		handle_post_sex(LOW_LUST, null, target, CUM_TARGET_BREASTS)
 
-/mob/living/proc/lick_nuts(mob/living/target, var/is_hidden)
+/mob/living/proc/lick_nuts(mob/living/target, is_hidden)
 	var/message
 	//var/u_His = ru_ego()
 	//var/t_His = target.ru_ego()
@@ -724,7 +724,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	if(HAS_TRAIT(src, TRAIT_NYMPHO))
 		handle_post_sex(LOW_LUST, partner = target)
 
-/mob/living/proc/do_cockfuck(mob/living/target, var/is_hidden)
+/mob/living/proc/do_cockfuck(mob/living/target, is_hidden)
 	var/message
 	//var/u_His = ru_ego()
 	//var/t_His = target.ru_ego()
@@ -779,7 +779,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 		user_strapon.attached_dildo.target_reaction(target, src, 1, CUM_TARGET_PENIS, CUM_TARGET_PENIS, src.a_intent == INTENT_HARM)
 	//BLUEMOON EDIT END
 
-/mob/living/proc/do_nipfuck(mob/living/target, var/is_hidden)
+/mob/living/proc/do_nipfuck(mob/living/target, is_hidden)
 	var/message
 	var/list/lines
 	var/genital_name = get_penetrating_genital_name()
@@ -831,7 +831,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 		target.handle_post_sex(NORMAL_LUST, null, src, ORGAN_SLOT_BREASTS)
 	//BLUEMON EDIT END
 
-/mob/living/proc/do_thighfuck(mob/living/target, spillage = TRUE, var/is_hidden)
+/mob/living/proc/do_thighfuck(mob/living/target, spillage = TRUE, is_hidden)
 	var/message
 	var/list/lines
 	var/has_penis = has_penis() // BLUEMOON ADD
@@ -866,7 +866,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 		handle_post_sex(NORMAL_LUST, CUM_TARGET_THIGHS, target, ORGAN_SLOT_PENIS)
 	target.handle_post_sex(LOW_LUST, CUM_TARGET_PENIS, src)
 
-/mob/living/proc/do_thighjob(mob/living/target, var/is_hidden)
+/mob/living/proc/do_thighjob(mob/living/target, is_hidden)
 	var/message
 	var/list/lines
 	var/has_penis = target.has_penis() // BLUEMOON ADD
@@ -904,7 +904,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////// 									U N H O L Y										   /////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-/mob/living/proc/do_facefart(mob/living/carbon/target, var/is_hidden)
+/mob/living/proc/do_facefart(mob/living/carbon/target, is_hidden)
 	var/message
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
@@ -945,7 +945,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 		set_is_fucking(target, GRINDING_FACE_WITH_ANUS, null)
 	handle_post_sex(LOW_LUST, null, src)
 
-/mob/living/proc/do_crotchfart(mob/living/carbon/target, var/is_hidden)
+/mob/living/proc/do_crotchfart(mob/living/carbon/target, is_hidden)
 	var/message
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
@@ -972,7 +972,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 		target.handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, src)
 	handle_post_sex(NORMAL_LUST, null, target)
 
-/mob/living/proc/do_fartfuck(mob/living/target, var/is_hidden)
+/mob/living/proc/do_fartfuck(mob/living/target, is_hidden)
 	var/message
 	var/list/hell
 	// BLUEMOON ADD START
@@ -1034,7 +1034,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 		handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, target, ORGAN_SLOT_PENIS)
 	target.handle_post_sex(NORMAL_LUST, null, src)
 
-/mob/living/proc/suck_fart(mob/living/target, var/is_hidden)
+/mob/living/proc/suck_fart(mob/living/target, is_hidden)
 	var/message
 	var/list/hell
 	//var/t_His = target.ru_ego()
@@ -1070,7 +1070,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 						volume, 1, extrarange, ignored_mobs = get_unconsenting(unholy = TRUE))
 	target.handle_post_sex(NORMAL_LUST, null, src)
 
-/mob/living/proc/do_faceshit(mob/living/carbon/target, var/is_hidden)
+/mob/living/proc/do_faceshit(mob/living/carbon/target, is_hidden)
 	var/message
 	//var/u_His = ru_ego()
 	//var/t_His = target.ru_ego()
@@ -1103,7 +1103,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 		set_is_fucking(target, GRINDING_FACE_WITH_ANUS, null)
 	handle_post_sex(LOW_LUST, null, src)
 
-/mob/living/proc/do_crotchshit(mob/living/carbon/target, var/is_hidden)
+/mob/living/proc/do_crotchshit(mob/living/carbon/target, is_hidden)
 	var/message
 
 	var/list/hell = list(
@@ -1131,7 +1131,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 		target.handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, src, G)
 	handle_post_sex(NORMAL_LUST, null, target)
 
-/mob/living/proc/do_shitfuck(mob/living/carbon/target, var/is_hidden)
+/mob/living/proc/do_shitfuck(mob/living/carbon/target, is_hidden)
 	var/message
 	// BLUEMOON ADD START
 	var/has_penis = has_penis()
@@ -1184,7 +1184,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 		handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, target, ORGAN_SLOT_PENIS)
 	target.handle_post_sex(NORMAL_LUST, null, src)
 
-/mob/living/proc/suck_shit(mob/living/target, var/is_hidden)
+/mob/living/proc/suck_shit(mob/living/target, is_hidden)
 	var/message
 	var/list/hell
 	//var/t_His = target.ru_ego()
