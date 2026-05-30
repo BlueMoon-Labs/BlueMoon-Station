@@ -124,8 +124,9 @@
 		if(world.time >= last_speech + DREADMK3_SPEECH_COOLDOWN)
 			interaction_locked = TRUE
 			// Сначала pickup, затем ID фраза с небольшой задержкой
-			if(phrase_to_say)
-				addtimer(CALLBACK(src, PROC_REF(speak_up), phrase_to_say, TRUE, FALSE), 15)
+		if(phrase_to_say)
+			last_scanned_id = user.get_idcard(TRUE)
+			addtimer(CALLBACK(src, PROC_REF(speak_up), phrase_to_say, TRUE, FALSE), 15)
 			speak_up("pickup")
 			addtimer(CALLBACK(src, PROC_REF(unlock_interaction)), 10)
 
@@ -440,7 +441,6 @@
 	// Не повторяем фразу для той же карты
 	if(id_card == last_scanned_id)
 		return null
-	last_scanned_id = id_card
 
 	var/job = id_card.assignment
 
