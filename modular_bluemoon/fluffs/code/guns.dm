@@ -1598,3 +1598,34 @@
 		. += "spectral-2"
 	else
 		. += "spectral-1"
+
+/obj/item/gun/ballistic/shotgun/riot/pulsar
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "\improper Pulsar"
+	desc = "Разработка сумрачного касарийского гения, тактический дробовик общего пользования, предназначенный для более опытных стрелков не только из-за специфического хвата, но и из-за тяжести в перезарядке, и из-за большого требования к физической силе."
+	unique_reskin = list()
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	icon_state = "pulsar"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	item_state = "pulsar-shot"
+
+/obj/item/gun/ballistic/automatic/wt550/comet/update_icon_state()
+	if(sawn_off)
+		icon_state = "pulsar-sawn"
+	else
+		icon_state = "pulsar"
+
+/obj/item/gun/ballistic/automatic/wt550/comet/update_overlays()
+	. = ..()
+	. += "pulsar-base"
+	if(chambered && chambered.BB)
+		. += "pulsar-loaded"
+	else
+		. += "pulsar-not-loaded"
+	if(!magazine || !magazine.max_ammo)
+		. += "pulsars-0"
+		return
+	var/fill_level = round(magazine.stored_ammo.len / magazine.max_ammo * 6)
+	if(fill_level < 6)
+		. += "pulsar-[fill_level]"
