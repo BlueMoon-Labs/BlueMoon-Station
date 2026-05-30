@@ -40,7 +40,7 @@
 		playsound(src, 'sound/machines/buzz-sigh.ogg', 30, TRUE)
 		return
 	var/mob/living/carbon/monkey/monkey_target = user
-	magnification = monkey_target
+	set_magnification_target(monkey_target)
 	visible_message(span_warning("[src] powers up!"))
 	playsound(src, 'sound/machines/ping.ogg', 30, TRUE)
 	polling = TRUE
@@ -49,13 +49,15 @@
 	if(!magnification)
 		return
 	if(!LAZYLEN(candidates))
-		magnification = null
+		clear_magnification_target()
 		visible_message(span_notice("[src] falls silent and drops on the floor. Maybe you should try again later?"))
 		handle_magnification_failure(monkey_target)
 		return
 	if((rage_chance > 0) && prob(rage_chance))
 		malfunction(monkey_target)
-		monkey_target.dropItemToGround(src)
+		if(!QDELETED(monkey_target))
+			monkey_target.dropItemToGround(src)
+		clear_magnification_target()
 		return
 	var/mob/dead/observer/chosen = pick(candidates)
 	magnification.transfer_ckey(chosen, FALSE)
@@ -91,18 +93,38 @@
 	disconnect()
 	return ..()
 
+/obj/item/clothing/head/helmet/monkey_sentience/proc/set_magnification_target(mob/living/carbon/monkey/target)
+	clear_magnification_target()
+	magnification = target
+	RegisterSignal(magnification, COMSIG_PARENT_QDELETING, PROC_REF(on_magnification_deleting))
+
+/obj/item/clothing/head/helmet/monkey_sentience/proc/clear_magnification_target()
+	if(magnification && !QDELETED(magnification))
+		UnregisterSignal(magnification, COMSIG_PARENT_QDELETING)
+	magnification = null
+
+/obj/item/clothing/head/helmet/monkey_sentience/proc/on_magnification_deleting(datum/source)
+	SIGNAL_HANDLER
+	if(source != magnification)
+		return
+	magnification = null
+
 /obj/item/clothing/head/helmet/monkey_sentience/proc/disconnect()
 	if(!magnification)
 		return
-	if(!polling && magnification.client)
-		to_chat(magnification, span_userdanger("You feel your flicker of sentience ripped away from you, as everything becomes dim..."))
-		magnification.ghostize(FALSE)
-		if(prob(10))
-			malfunction(magnification)
+	if(QDELETED(magnification))
+		magnification = null
+		return
+	var/mob/living/carbon/monkey/target = magnification
+	clear_magnification_target()
+	if(!polling && !QDELETED(target) && target.client)
+		to_chat(target, span_userdanger("You feel your flicker of sentience ripped away from you, as everything becomes dim..."))
+		target.ghostize(FALSE)
+		if(prob(10) && !QDELETED(target))
+			malfunction(target)
 	playsound(src, 'sound/machines/buzz-sigh.ogg', 30, TRUE)
 	playsound(src, SFX_SPARKS, 100, TRUE)
 	visible_message(span_warning("[src] fizzles and breaks apart!"))
-	magnification = null
 	new /obj/effect/decal/cleanable/ash(drop_location())
 
 /obj/item/clothing/head/helmet/monkey_sentience/proc/malfunction(mob/living/carbon/target)
