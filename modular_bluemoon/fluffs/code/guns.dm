@@ -1506,7 +1506,7 @@
 /obj/item/gun/ballistic/automatic/wt550/comet
 	DONATE_ITEM_TOOLTIP_PARENT
 	name = "\improper Comet"
-	desc = " Следствие желания поиграть в тактикульность во всей своей красе - один из тех образцов оружия, что способны одним своим видом внушить веру в собственную исключительность. Данный образец очевидно же, заметно изменён - на фоне превосходного исполнения невооружённым взглядом видна работа гаражного мастера, что сменил боеприпас, которым питается оружие - все ради совместимости с патронами ПАКТа."
+	desc = "Следствие желания поиграть в тактикульность во всей своей красе - один из тех образцов оружия, что способны одним своим видом внушить веру в собственную исключительность. Данный образец очевидно же, заметно изменён - на фоне превосходного исполнения невооружённым взглядом видна работа гаражного мастера, что сменил боеприпас, которым питается оружие - все ради совместимости с патронами ПАКТа."
 	unique_reskin = list()
 	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
 	icon_state = "comet"
@@ -1517,7 +1517,7 @@
 /obj/item/gun/ballistic/automatic/wt550/comet/update_icon_state()
 	var/ammo = magazine ? magazine.ammo_count() : 0
 	if(ammo <= 0)
-		icon_state = "supernova-e"
+		icon_state = "comet-e"
 
 /obj/item/gun/ballistic/automatic/wt550/comet/update_overlays()
 	. = ..()
@@ -1526,3 +1526,31 @@
 	if(ammo<9)
 		. += "comet-[ammo]"
 
+/obj/item/modkit/neutron_kit
+	name = "Neutron Kit"
+	desc = "A modkit for making a X-ray laser gun into a Neutron."
+	product = /obj/item/gun/energy/xray/neutron
+	fromitem = list(/obj/item/gun/energy/xray)
+
+/obj/item/gun/energy/xray/neutron
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "\improper Neutron"
+	desc = "Ученый внутри вас не может нарадоваться, это оружие - настоящее изнасилование идеи о мирном применении рентгеновского излучения. Концентрированные пучки испускаемые этой бандурой способны выжигать даже металл, единственное что омрачает - ограничение конструкции, не дающее возможности использовать этого кастрата что бы аннигилировать надоедливого клоуна за один выстрел до состояния бесформенной массы."
+	unique_reskin = list()
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	icon_state = "comet"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	item_state = "comet"
+
+/obj/item/gun/energy/xray/neutron/update_icon_state()
+	var/ammo = magazine ? magazine.ammo_count() : 0
+	if(ammo <= 0)
+		icon_state = "supernova-e"
+
+/obj/item/gun/energy/xray/neutron/update_overlays()
+	. = ..()
+	var/ammo = magazine ? magazine.ammo_count() : 0
+	. += "comet-base"
+	if(ammo<9)
+		. += "comet-[ammo]"
