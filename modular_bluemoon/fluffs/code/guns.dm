@@ -1073,7 +1073,7 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
-	icon_state = "nebular_t"
+	icon_state = "nebular-t"
 	item_state = "Nebular-9"
 	can_flashlight = FALSE
 
@@ -1082,12 +1082,25 @@
 
 /obj/item/gun/energy/e_gun/advtaser/nebular_t/update_icon_state()
 	var/charge_percent = cell.charge / cell.maxcharge
-	if(charge_percent > 0.5)
-		icon_state = "[initial(icon_state)]-full"
-	else if(charge_percent > 0.1)
-		icon_state = "[initial(icon_state)]-half"
-	else if(charge_percent <= 0.1)
-		icon_state = "[initial(icon_state)]-low"
+	if(charge_percent <= 0.1)
+		icon_state = "nebular-t-e"
+
+/obj/item/gun/energy/e_gun/advtaser/nebular_t/update_overlays()
+	. = ..()
+	. += "nebular-t-base"
+
+	if(!magazine || !magazine.max_ammo)
+		. += "nebular-t-0"
+		return
+
+	var/charge_percent = cell.charge / cell.maxcharge
+	if(charge_percent>=0.3 && charge_percent<=0.6)
+		. += "nebular-t-2"
+	else if(charge_percent>=0.1 && charge_percent<=0.3)
+		. += "nebular-t-1"
+	else if(charge_percent<=0.1)
+		. += "nebular-t-0"
+
 
 /obj/item/modkit/nul_kit
 	name = "Nul Kit"
@@ -1133,13 +1146,13 @@
 	item_state = "supernova-[chamber]"
 
 /obj/item/modkit/pulsar_kit
-	name = "Pulsar Kit"
-	desc = "A modkit for making a combat knife into a Pulsar."
+	name = "Kasari ritual knife Kit"
+	desc = "A modkit for making a combat knife into a kasari ritual knife."
 	product = /obj/item/kitchen/knife/combat/pulsar
 	fromitem = list(/obj/item/kitchen/knife/combat)
 
 /obj/item/kitchen/knife/combat/pulsar
-	name = "Pulsar"
+	name = "Kasari ritual knife"
 	desc = "Общее название для ритуальных клинков расы Касари, использующихся в некоторых \"особых\" случаях, в первую очередь в поединках и казнях. По понятным причинам выполнен всего в паре-сотне образцов, уникальных для каждого из кораблей-колоний. Удивительно, что его вовсе занесло на станцию"
 	item_state = "pulsar"
 	icon_state = "pulsar"
@@ -1431,3 +1444,19 @@
 /obj/item/gun/ballistic/automatic/pistol/enforcer/cz_75/update_icon_state() // -expended вырезан, спрайтов не завезли
 	icon_state = "[current_skin ? unique_reskin[current_skin]["icon_state"] : initial(icon_state)][chambered ? "" : "-e"][suppressed ? "-suppressed" : "" ][magazine && istype(magazine, /obj/item/ammo_box/magazine/e45/e45_drum) ? "-drum" : ""]"
 
+/obj/item/modkit/nebular_t_kit
+	name = "Nebular-T Kit"
+	desc = "A modkit for making a advanced energy gun into a Quasar."
+	product = /obj/item/gun/energy/e_gun/nuclear/quasar
+	fromitem = list(/obj/item/gun/energy/e_gun/nuclear)
+
+/obj/item/gun/energy/e_gun/nuclear/quasar
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "\improper Quasar"
+	desc = "Продвинутая лазерная установка с микрореакторной батареей внутри. Удивительно надёжна в роли лазерной указки, и куда менее применима в бою из за низкого урона. Тем не менее, пользуется спросом ввиду простоты применения и буквально бесплатной эксплуатации, не требующей каких либо вложений."
+	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	icon_state = "quasar"
+	item_state = "Nebular-9"
+	can_flashlight = FALSE
