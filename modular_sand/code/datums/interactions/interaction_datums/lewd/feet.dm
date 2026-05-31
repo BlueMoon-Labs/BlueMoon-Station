@@ -143,12 +143,12 @@
 		distance = 1
 	var/picked_hidden = pick(hidden_additional)
 	if(partner.is_fucking(src, CUM_TARGET_FEET))
-		message = "[pick("дрочит [genital_name] <b>[partner]</b> своими [shoes ? shoes : pick("ножками", "ступнями")].",
-			"ласкает своими [shoes ? shoes : pick("ножками", "ногами", "ступнями")] промежность <b>[partner]</b>.",
-			"работает [shoes ? shoes : pick("ножками", "ступнями")], двигая оные вверх-вниз по члену <b>[partner]</b>.")]"
+		message = "[pick("дрочит [genital_name] <b>[partner]</b> своей [shoes ? shoes : pick("ножкой", "ступней")].",
+			"ласкает своей [shoes ? shoes : pick("ножкой", "ступней")] промежность <b>[partner]</b>.",
+			"работает [shoes ? shoes : pick("ножкой", "ступней")], двигая ей вверх-вниз по члену <b>[partner]</b>.")]"
 	else
-		message = "[pick("[shoes ? "занимает своими '[shoes]' позицию на" :"занимает своими ножками позицию на"] \the <b>[partner]</b>'s [genital_name].",
-			"начинает играться с пенисом <b>[partner]</b> своими [shoes ? shoes :"ногами"].")]"
+		message = "[pick("[shoes ? "занимает своей '[shoes]' позицию на" :"занимает своей ножкой позицию на"] \the <b>[partner]</b>'s [genital_name].",
+			"начинает играться с пенисом <b>[partner]</b> своей [shoes ? shoes :"ногой"].")]"
 		partner.set_is_fucking(user, CUM_TARGET_FEET, partner.getorganslot(ORGAN_SLOT_PENIS))
 
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/foot_dry1.ogg',
