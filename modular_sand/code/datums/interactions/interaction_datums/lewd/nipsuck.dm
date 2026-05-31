@@ -94,7 +94,7 @@
 							pick(span_lewd("[is_hidden ? (picked_hidden) : null]<b>[target]</b> игриво извивается."),
 								span_lewd("[is_hidden ? (picked_hidden) : null]<b>[target]</b> игриво вырывается из захвата <b>[user]</b>."),
 								span_lewd("[is_hidden ? (picked_hidden) : null]<b>[target]</b> игриво отводит грудь от <b>[user]</b>."),
-								span_lewd("<b>[target]</b> с отсутствующим сопротивлением толкается ближе к <b>[user]</b>.")), vision_distance = distance)
+								span_lewd("[is_hidden ? (picked_hidden) : null]<b>[target]</b> с отсутствующим сопротивлением толкается ближе к <b>[user]</b>.")), vision_distance = distance)
 					else
 						user.visible_message(
 							pick(span_lewd("[is_hidden ? (picked_hidden) : null]<b>[target]</b> игриво извивается."),

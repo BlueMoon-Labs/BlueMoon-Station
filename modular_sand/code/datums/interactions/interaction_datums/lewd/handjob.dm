@@ -30,19 +30,14 @@
 		if(istype(cached_item, /obj/item/reagent_containers))
 			liquid_container = cached_item
 
-	if(partner.is_fucking(user, CUM_TARGET_HAND, partner.getorganslot(ORGAN_SLOT_PENIS)))
-		message = "[pick("дрочит пенис <b>[partner]</b>",
-			"играется с членом <b>[partner]</b>",
-			"использует свои пальчики, вздрачивая пенис <b>[partner]</b>",
-			"вздрачивает член <b>[partner]</b>",
-			"стимулирует [shape_desc] <b>[partner]</b>")]"
-	else
-		message = "[pick("дрочит пенис <b>[partner]</b>",
-			"играется с членом <b>[partner]</b>",
-			"использует свои пальчики, вздрачивая пенис <b>[partner]</b>",
-			"вздрачивает член <b>[partner]</b>",
-			"стимулирует [shape_desc] <b>[partner]</b>")]"
+	if(!partner.is_fucking(user, CUM_TARGET_HAND, partner.getorganslot(ORGAN_SLOT_PENIS)))
 		partner.set_is_fucking(user, CUM_TARGET_HAND, partner.getorganslot(ORGAN_SLOT_PENIS))
+	message = "[pick("дрочит пенис <b>[partner]</b>",
+			"играется с членом <b>[partner]</b>",
+			"использует свои пальчики, вздрачивая пенис <b>[partner]</b>",
+			"вздрачивает член <b>[partner]</b>",
+			"стимулирует [shape_desc] <b>[partner]</b>")]"
+
 	if(liquid_container)
 		message += " над [liquid_container]"
 

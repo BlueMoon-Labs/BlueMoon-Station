@@ -109,7 +109,7 @@
 	if(user.is_fucking(partner, CUM_TARGET_PENIS))
 		message = "[pick(
 			"потирают член <b>[partner]</b>.",
-			"обвиваюь член <b>[partner]</b>.",
+			"обвивают член <b>[partner]</b>.",
 			"наяривают пенис <b>[partner]</b>!",
 			"смазывают пенис <b>[partner]</b> выделениями и наяривают его!")]"
 	else

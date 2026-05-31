@@ -93,7 +93,7 @@
 
 	var/partner_message = pick_partner_message(user, partner, is_fucking)
 	if(partner_message)
-		partner.visible_message(format_message(partner_message, user, partner), vision_distance = distance)
+		partner.visible_message(format_message(partner_message, user, partner), ignored_mobs = user.get_unconsenting(unholy = TRUE), vision_distance = distance)
 
 	post_reaction(user, partner, is_fucking, is_hidden)
 

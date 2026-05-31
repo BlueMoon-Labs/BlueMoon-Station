@@ -823,7 +823,7 @@
 	if(!isclownjob(target) || isclownjob(user))
 		return
 
-	if(prob(50) && isclownjob(target))
+	if(prob(50))
 		target.visible_message("<span class='lewd'>\[pick(GLOB.breast_nouns)] <b>[target]</b> [pick(GLOB.breast_nouns)] забавно хонкают!</span>")
 
 	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, -1)

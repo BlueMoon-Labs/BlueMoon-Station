@@ -64,7 +64,7 @@
 	var/picked_hidden = pick(hidden_additional)
 	var/static/list/possible_messages = list(
 		"<b>USER</b> чешет спинку <b>TARGET</b>.",
-		"<b>USER</b> расчесываает спинку <b>TARGET</b>.",
+		"<b>USER</b> расчёсывает спинку <b>TARGET</b>.",
 		"<b>USER</b> водит ноготочками по спинке вызывая мурашки у <b>TARGET</b>.",
 		"<b>USER</b> бережно водит руками по спинке <b>TARGET</b>.",
 		"<b>USER</b> нежно разглаживает спинку <b>TARGET</b>.",
@@ -101,7 +101,7 @@
 	var/picked_hidden = pick(hidden_additional)
 	var/static/list/possible_messages = list(
 		"<b>USER</b> чешет шею <b>TARGET</b>.",
-		"<b>USER</b> расчесываает шейку у <b>TARGET</b>.",
+		"<b>USER</b> расчёсывает шейку у <b>TARGET</b>.",
 		"<b>USER</b> водит ноготочками по шее вызывая мурашки у <b>TARGET</b>.",
 		"<b>USER</b> бережно гладит шею <b>TARGET</b> добавляя слегка ноготочки.",
 		"<b>USER</b> нежно разглаживает шею <b>TARGET</b>.",
@@ -138,7 +138,7 @@
 	var/picked_hidden = pick(hidden_additional)
 	var/static/list/possible_messages = list(
 		"<b>USER</b> чешет за ушком <b>TARGET</b>.",
-		"<b>USER</b> расчесываает за ушком у <b>TARGET</b>.",
+		"<b>USER</b> расчёсывает за ушком у <b>TARGET</b>.",
 		"<b>USER</b> водит ноготочками по краю уха вызывая мурашки у <b>TARGET</b>.",
 		"<b>USER</b> бережно гладит ухо <b>TARGET</b> добавляя слегка ноготочки.",
 		"<b>USER</b> нежно разглаживает ушко <b>TARGET</b>.",

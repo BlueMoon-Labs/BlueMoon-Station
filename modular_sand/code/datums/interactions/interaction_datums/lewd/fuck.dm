@@ -545,7 +545,7 @@
 		'modular_sand/sound/interactions/champ1.ogg',
 		'modular_sand/sound/interactions/bang3.ogg'), volume, 1, extrarange)
 
-	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 
 	if(user.can_penetrating_genital_cum())
 		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, partner, ORGAN_SLOT_PENIS)
