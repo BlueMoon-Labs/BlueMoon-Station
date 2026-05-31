@@ -150,7 +150,7 @@
 	return TRUE
 
 /// Display the message
-/datum/interaction/proc/display_interaction(mob/living/user, mob/living/target, is_hidden)
+/datum/interaction/proc/display_interaction(mob/living/user, mob/living/target, is_hidden = FALSE)
 	if(QDELETED(user) || QDELETED(target))
 		return
 	var/vision_distance = 7

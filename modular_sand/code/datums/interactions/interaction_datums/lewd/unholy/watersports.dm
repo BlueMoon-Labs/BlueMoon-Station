@@ -71,11 +71,11 @@
 	return partner.handle_post_sex(get_partner_lust_level(user, partner, is_fucking), target_cum_in, user, target_organ)
 
 // Для доп. звуков интеракций
-/datum/interaction/lewd/unholy/piss/proc/audio_effects(mob/living/user, mob/living/partner, is_fucking = TRUE, is_hidden = TRUE)
+/datum/interaction/lewd/unholy/piss/proc/audio_effects(mob/living/user, mob/living/partner, is_fucking = TRUE, is_hidden = FALSE)
 	return
 
 // Для дополнительных эффектов интеракций
-/datum/interaction/lewd/unholy/piss/proc/post_reaction(mob/living/user, mob/living/partner, is_fucking = TRUE, is_hidden = TRUE)
+/datum/interaction/lewd/unholy/piss/proc/post_reaction(mob/living/user, mob/living/partner, is_fucking = TRUE, is_hidden = FALSE)
 	return
 
 /datum/interaction/lewd/unholy/piss/display_interaction(mob/living/user, mob/living/partner, is_hidden)

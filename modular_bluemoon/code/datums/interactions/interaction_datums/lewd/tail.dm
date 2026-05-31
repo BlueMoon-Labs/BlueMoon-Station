@@ -357,8 +357,8 @@
 	if(partner.getOxyLoss() > 40) //задушить и руками можно, это чисто ЕРП эмоут
 		oxy_damage = 0
 	var/distance = 7
-	var/const/volume = 50
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 50
 	var/picked_hidden = pick(hidden_additional)
 	if(is_hidden)
 		distance = 1

@@ -845,7 +845,7 @@
 	p13target_strength = PLUG13_STRENGTH_LOW
 
 /datum/interaction/lewd/fuck_thighs/display_interaction(mob/living/user, mob/living/target, is_hidden)
-	user.do_thighfuck(target, spillage = TRUE, is_hidden = is_hidden)
+	user.do_thighfuck(target, TRUE, is_hidden)
 
 	if(!isclownjob(user))
 		return
