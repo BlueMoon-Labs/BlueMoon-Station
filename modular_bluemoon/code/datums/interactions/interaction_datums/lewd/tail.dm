@@ -21,6 +21,8 @@
 	write_log_target = "tailweaved by"
 	interaction_sound = 'sound/weapons/thudswoosh.ogg'
 
+	hearts_effect = TRUE
+
 /datum/interaction/tailweave/display_interaction(mob/living/user, mob/living/target, is_hidden)
 	. = ..()
 	var/chance = is_hidden ? 2 : 10
