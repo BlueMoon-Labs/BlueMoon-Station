@@ -2347,6 +2347,13 @@
 	cyborg_base_icon = "synd_sec"
 	moduleselect_icon = "malf"
 	hat_offset = 3
+	use_private_skin_optional_menu = TRUE
+
+/obj/item/robot_module/syndicate/be_transformed_to(obj/item/robot_module/old_module)
+	var/mob/living/silicon/robot/R = loc
+	if(!show_optional_donator_borg_icon_menu(R))
+		return FALSE
+	return ..()
 
 /obj/item/robot_module/syndicate/rebuild_modules()
 	..()
@@ -2389,6 +2396,13 @@
 	cyborg_base_icon = "synd_medical"
 	moduleselect_icon = "malf"
 	hat_offset = 3
+	use_private_skin_optional_menu = TRUE
+
+/obj/item/robot_module/syndicate_medical/be_transformed_to(obj/item/robot_module/old_module)
+	var/mob/living/silicon/robot/R = loc
+	if(!show_optional_donator_borg_icon_menu(R))
+		return FALSE
+	return ..()
 
 /obj/item/robot_module/saboteur
 	name = "Syndicate Saboteur"
@@ -2430,6 +2444,13 @@
 	hat_offset = -4
 	canDispose = TRUE
 	cyborg_traits = list(TRAIT_KNOW_ENGI_WIRES)
+	use_private_skin_optional_menu = TRUE
+
+/obj/item/robot_module/saboteur/be_transformed_to(obj/item/robot_module/old_module)
+	var/mob/living/silicon/robot/R = loc
+	if(!show_optional_donator_borg_icon_menu(R))
+		return FALSE
+	return ..()
 
 /obj/item/robot_module/syndicate/inteq
 	name = "InteQ Assault"
