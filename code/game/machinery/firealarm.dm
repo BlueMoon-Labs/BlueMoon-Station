@@ -143,7 +143,7 @@
 
 /obj/machinery/firealarm/examine(mob/user)
 	. = ..()
-	. += "<span class='notice'>Текущий уровень угрозы: <b><u>[capitalize(get_security_level())]</u></b>.</span>"
+	. += "<span class='notice'>Текущий уровень угрозы: <b><u>[SECURITY_LEVEL_COLORED_UPPERTEXT(GLOB.security_level)]</u></b>.</span>"
 
 /obj/machinery/firealarm/emp_act(severity)
 	. = ..()
