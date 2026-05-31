@@ -75,6 +75,22 @@
 	else
 		. += "<span class='warning'>AI Core: <b>Offline</b></span>"
 
+/// Returns the human currently carrying the gun — hands, belt, suit, back, bag or any nested container
+/obj/item/gun/energy/e_gun/hos/dreadmk3/talking/proc/get_current_carrier()
+	var/atom/current = src.loc
+	var/depth = 0
+	// Поднимаемся по цепочке контейнеров максимум 6 уровней
+	// чтобы не уйти в бесконечный цикл при багах с loc
+	while(current && depth < 6)
+		if(ishuman(current))
+			return current
+		// Дошли до тайла или зоны — носителя нет
+		if(isturf(current) || isarea(current))
+			return null
+		current = current.loc
+		depth++
+	return null
+
 /// Makes the gun speak. Respects cooldown and personality toggle unless overridden.
 /obj/item/gun/energy/e_gun/hos/dreadmk3/talking/proc/speak_up(json_string, ignores_cooldown = FALSE, ignores_personality_toggle = FALSE)
 	if(!personality_mode && !ignores_personality_toggle)
@@ -147,17 +163,20 @@
 	if(isliving(user) && !QDELETED(user))
 		var/mob/living/L = user
 		if(L.stat == SOFT_CRIT || L.stat == UNCONSCIOUS || L.stat == DEAD)
-			// Запоминаем носителя только если это human — для мониторинга здоровья
 			last_holder = ishuman(L) ? L : null
 			speak_up("dropped_crit", TRUE)
 			return
 
 	// Проверяем — не попал ли в зарядник
-	// enter_recharger() вызывается отдельно и сам скажет нужную фразу
 	if(istype(loc, /obj/machinery/recharger) || istype(loc?.loc, /obj/machinery/recharger))
 		return
 
-	// Намеренно положил — обычная фраза
+	// Проверяем — не убрали ли в контейнер который несёт человек
+	// (сумка, кобура, рюкзак надетые на моба)
+	if(get_current_carrier())
+		return
+
+	// Намеренно положил на пол — обычная фраза
 	if(world.time >= last_speech + DREADMK3_SPEECH_COOLDOWN)
 		interaction_locked = TRUE
 		speak_up("putdown")
@@ -182,15 +201,12 @@
 
 /obj/item/gun/energy/e_gun/hos/dreadmk3/talking/process()
 	if(cell && cell.maxcharge > 0)
-		// Порог предупреждения — 35% вместо 25% (четверти)
-		// Даёт запас на несколько выстрелов любым режимом
 		var/cell_charge_warn = cell.maxcharge * 0.35
 
 		if(cell.charge <= cell_charge_warn && !low_charge_warned)
 			speak_up("lowcharge", TRUE)
 			low_charge_warned = TRUE
 
-		// Сброс флага при восстановлении — чуть выше порога чтобы не спамить
 		if(cell.charge > (cell.maxcharge * 0.45) && low_charge_warned)
 			low_charge_warned = FALSE
 
@@ -202,14 +218,12 @@
 	// --- Проверка здоровья носителя ---
 	if(personality_mode)
 		var/mob/living/carbon/human/target_holder = null
+		var/mob/living/carbon/human/carrier = get_current_carrier()
 
-		if(currently_held)
-			// Оружие в руках — отслеживаем текущего носителя
-			var/mob/living/carbon/human/held_by = loc
-			if(ishuman(held_by))
-				target_holder = held_by
-				last_holder = held_by
-
+		if(carrier)
+			// Оружие при носителе (руки, кобура, броня, спина)
+			target_holder = carrier
+			last_holder = carrier
 		else if(last_holder && !QDELETED(last_holder))
 			// Оружие выронено — проверяем состояние последнего носителя
 			switch(last_holder.stat)
@@ -232,8 +246,8 @@
 			COOLDOWN_START(src, health_check_cooldown, 20 SECONDS)
 
 	// --- Рандомные idle фразы ---
-	// Только пока оружие держат в руках
-	if(personality_mode && currently_held)
+	// Пока оружие при носителе — в руках или в слоте
+	if(personality_mode && get_current_carrier())
 		if(COOLDOWN_FINISHED(src, idle_comment_cooldown))
 			if(prob(15))
 				speak_up("idle")
@@ -275,10 +289,10 @@
 			call_for_help(holder)
 			COOLDOWN_START(src, call_for_help_cooldown, 2 MINUTES)
 
-	// Порог критического — ниже 50%, только если держат в руках
+	// Порог критического — ниже 50%, только если носитель в сознании и при оружии
 	else if(health_pct <= 50 && !health_warned_critical)
 		health_warned_critical = TRUE
-		if(currently_held) // Носитель ещё на ногах — слышит нас
+		if(get_current_carrier()) // Носитель при оружии — слышит нас
 			speak_up("health_critical", TRUE)
 
 	// Сброс флагов при восстановлении здоровья
