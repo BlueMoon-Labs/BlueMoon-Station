@@ -222,8 +222,11 @@
 
 		if(carrier)
 			// Оружие при носителе (руки, кобура, броня, спина)
+			if(last_holder != carrier)
+				reset_health_warnings()
+				last_holder = carrier
 			target_holder = carrier
-			last_holder = carrier
+
 		else if(last_holder && !QDELETED(last_holder))
 			// Оружие выронено — проверяем состояние последнего носителя
 			switch(last_holder.stat)
