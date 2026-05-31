@@ -390,8 +390,6 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 									'modular_sand/sound/interactions/bj11.ogg'), volume, 1, extrarange)
 	visible_message(message = "<span class='lewd'>[is_hidden ? (picked_hidden) : null] <b>\The [src]</b> [message]</span>", ignored_mobs = get_unconsenting(), vision_distance = distance)
 	//BLUEMOON EDIT START
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB) && !is_hidden)
-		new /obj/effect/temp_visual/heart(user.loc)
 	if(fucktarget == "vagina")
 		user.handle_post_sex(lust_increase, CUM_TARGET_MOUTH, src, fucktarget)
 	else
@@ -429,8 +427,6 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 						'modular_sand/sound/interactions/bang3.ogg'), volume, 1, extrarange)
 	visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [src]</b> [message]"), ignored_mobs = get_unconsenting(), vision_distance = distance)
 	// BLUEMOON EDIT START
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB) && !is_hidden)
-		new /obj/effect/temp_visual/heart(user.loc)
 	if(has_penis)
 		handle_post_sex(NORMAL_LUST, CUM_TARGET_BREASTS, user, ORGAN_SLOT_PENIS)
 	else if(HAS_TRAIT(src, TRAIT_NYMPHO))

@@ -52,6 +52,8 @@
 	/// Additional details to be shown in the interaction menu, accepts more than one entry
 	var/list/additional_details
 
+	var/hearts_effect = FALSE
+
 /// Checks if user can do an interaction, action_check is for whether you're actually doing it or not (useful for the menu and not removing the buttons)
 /datum/interaction/proc/evaluate_user(mob/living/user, silent = TRUE, apply_cooldown = TRUE)
 	if(SSinteractions.is_blacklisted(user))
@@ -204,7 +206,13 @@
 		SEND_SIGNAL(user, COMSIG_INTERACTION_ADJACENT, target)
 		SEND_SIGNAL(target, COMSIG_INTERACTION_ADJACENT, user)
 
-/datum/interaction/proc/play_interaction_sound(mob/living/sound_source, soundin, is_hidden = TRUE, volume)
+	if(hearts_effect)
+		if(!HAS_TRAIT(user, TRAIT_LEWD_JOB) && !is_hidden)
+			new /obj/effect/temp_visual/heart(user.loc)
+		if(user != target && !HAS_TRAIT(target, TRAIT_LEWD_JOB) && !is_hidden)
+			new /obj/effect/temp_visual/heart(target.loc)
+
+/datum/interaction/proc/play_interaction_sound(mob/living/sound_source, soundin, is_hidden, volume)
 	var/turf/sound_turf = get_turf(sound_source)
 	if(!sound_turf)
 		return
@@ -219,7 +227,7 @@
 	else
 		playsound(sound_turf, soundin, volume, 1, extrarange)
 
-/datum/interaction/cheer/post_interaction(mob/living/user, mob/living/target, apply_cooldown = TRUE)
+/datum/interaction/cheer/post_interaction(mob/living/user, mob/living/target, apply_cooldown, is_hidden)
     if(user.ckey == "pingvas")
         if(apply_cooldown)
             COOLDOWN_START(user, last_interaction_time, 3 SECONDS)
@@ -227,7 +235,7 @@
         return
     . = ..()
 
-/datum/interaction/lewd/titgrope_self/post_interaction(mob/living/user, mob/living/target, apply_cooldown = TRUE)
+/datum/interaction/lewd/titgrope_self/post_interaction(mob/living/user, mob/living/target, apply_cooldown, is_hidden)
     if(user.ckey == "dimakr" || user.ckey == "pingvas")
         if(apply_cooldown)
             COOLDOWN_START(user, last_interaction_time, 3 SECONDS)
@@ -235,7 +243,7 @@
         return
     . = ..()
 
-/datum/interaction/handwave/post_interaction(mob/living/user, mob/living/target, apply_cooldown = TRUE)
+/datum/interaction/handwave/post_interaction(mob/living/user, mob/living/target, apply_cooldown, is_hidden)
 	var/obj/item/clothing/mask/screammask/mask = locate() in user.get_equipped_items()
 	if(mask)
 		if(apply_cooldown)

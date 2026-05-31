@@ -13,6 +13,8 @@
 	var/user_refractory_cost
 	var/target_refractory_cost
 
+	hearts_effect = TRUE
+
 /datum/interaction/lewd/evaluate_user(mob/living/user, silent = TRUE, apply_cooldown = TRUE)
 	. = ..()
 	if(!.)
@@ -492,7 +494,7 @@
 			return TRUE
 	return FALSE
 
-/datum/interaction/lewd/post_interaction(mob/living/user, mob/living/target)
+/datum/interaction/lewd/post_interaction(mob/living/user, mob/living/target, apply_cooldown, is_hidden)
 	if(user_refractory_cost)
 		COOLDOWN_START(user, refractory_period, user_refractory_cost*10)
 	if(target_refractory_cost)

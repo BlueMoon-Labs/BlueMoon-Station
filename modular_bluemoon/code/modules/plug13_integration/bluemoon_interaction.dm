@@ -34,7 +34,7 @@
 
 //see modular_sand\code\datums\interactions\_interaction.dm
 /*
-/datum/interaction/post_interaction(mob/living/user, mob/living/target)
+/datum/interaction/post_interaction(mob/living/user, mob/living/target, apply_cooldown, is_hidden)
 	. = ..()
 	if (p13user_emote && p13user_strength && p13user_duration)
 		user.client?.plug13?.send_emote(

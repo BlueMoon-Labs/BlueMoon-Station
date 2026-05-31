@@ -59,7 +59,7 @@
 	interaction_sound = null
 	max_distance = 1
 
-/datum/interaction/lewd/tentacle/female_double/post_interaction(mob/living/user, mob/living/target)
+/datum/interaction/lewd/tentacle/female_double/post_interaction(mob/living/user, mob/living/target, apply_cooldown, is_hidden)
 	. = ..()
 	target.client?.plug13.send_emote(PLUG13_EMOTE_VAGINA, min(p13target_strength + get_lust_modifier(target), 100), p13target_duration)
 	target.client?.plug13.send_emote(PLUG13_EMOTE_ANUS,   min(p13target_strength + get_lust_modifier(target), 100), p13target_duration)
@@ -136,7 +136,7 @@
 	interaction_sound = null
 	max_distance = 1
 
-/datum/interaction/lewd/tentacle/male_double/post_interaction(mob/living/user, mob/living/target)
+/datum/interaction/lewd/tentacle/male_double/post_interaction(mob/living/user, mob/living/target, apply_cooldown, is_hidden)
 	. = ..()
 	target.client?.plug13.send_emote(PLUG13_EMOTE_PENIS, min(p13target_strength + get_lust_modifier(target), 100), p13target_duration)
 	target.client?.plug13.send_emote(PLUG13_EMOTE_ANUS,  min(p13target_strength + get_lust_modifier(target), 100), p13target_duration)

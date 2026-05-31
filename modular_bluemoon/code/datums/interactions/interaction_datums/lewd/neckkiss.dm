@@ -12,7 +12,7 @@
 	p13user_strength = PLUG13_STRENGTH_LOW
 	p13target_strength = PLUG13_STRENGTH_LOW
 
-/datum/interaction/lewd/neckkiss/post_interaction(mob/living/user, mob/living/target)
+/datum/interaction/lewd/neckkiss/post_interaction(mob/living/user, mob/living/target, apply_cooldown, is_hidden)
 	. = ..()
 	if(user.get_lust() < 100)
 		user.add_lust(20)

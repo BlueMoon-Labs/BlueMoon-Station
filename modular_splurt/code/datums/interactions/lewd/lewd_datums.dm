@@ -4,10 +4,7 @@
 	. = ..()
 	//переменные ниже используются в последующих проках после вызова родителя
 
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB) && !is_hidden)
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB) && !is_hidden)
-		new /obj/effect/temp_visual/heart(target.loc)
+
 
 	if(is_hidden)
 		return TRUE
@@ -396,7 +393,7 @@
 
 	playlewdinteractionsound(target, 'sound/items/bikehorn.ogg', 40, 1, -1)
 
-/datum/interaction/lewd/kiss/post_interaction(mob/living/user, mob/living/partner)
+/datum/interaction/lewd/kiss/post_interaction(mob/living/user, mob/living/partner, apply_cooldown, is_hidden)
 	. = ..()
 
 	SEND_SIGNAL(user, COMSIG_INTERACTION_KISS, partner)

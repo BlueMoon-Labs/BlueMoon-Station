@@ -13,6 +13,8 @@
 	p13target_strength = PLUG13_STRENGTH_LOW_PLUS
 	p13target_duration = PLUG13_DURATION_SHORT
 
+	hearts_effect = TRUE
+
 /datum/interaction/cuddle/display_interaction(mob/living/user, mob/living/target)
 	var/static/list/possible_messages = list(
 		"<b>USER</b> обнимает <b>TARGET</b>.",
@@ -30,10 +32,6 @@
 	var/use_message = replacetext(pick(possible_messages), "USER", "\the [user]")
 	use_message = replacetext(use_message, "TARGET", "\the [target]")
 	user.visible_message("<span class='[simple_style]'>[capitalize(use_message)]</span>")
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
 
 // BlueMoon Add
 /datum/interaction/scratch
@@ -50,7 +48,7 @@
 	p13target_strength = PLUG13_STRENGTH_LOW_PLUS
 	p13target_duration = PLUG13_DURATION_SHORT
 
-/datum/interaction/scratch/post_interaction(mob/living/user, mob/living/target)
+/datum/interaction/scratch/post_interaction(mob/living/user, mob/living/target, apply_cooldown, is_hidden)
 	. = ..()
 	if(target.get_lust() < 100)
 		target.add_lust(3)
@@ -83,7 +81,7 @@
 	p13target_strength = PLUG13_STRENGTH_LOW_PLUS
 	p13target_duration = PLUG13_DURATION_SHORT
 
-/datum/interaction/neckscratch/post_interaction(mob/living/user, mob/living/target)
+/datum/interaction/neckscratch/post_interaction(mob/living/user, mob/living/target, apply_cooldown, is_hidden)
 	. = ..()
 	if(target.get_lust() < 100)
 		target.add_lust(3)
@@ -116,7 +114,7 @@
 	p13target_strength = PLUG13_STRENGTH_LOW_PLUS
 	p13target_duration = PLUG13_DURATION_SHORT
 
-/datum/interaction/earscratch/post_interaction(mob/living/user, mob/living/target)
+/datum/interaction/earscratch/post_interaction(mob/living/user, mob/living/target, apply_cooldown, is_hidden)
 	. = ..()
 	if(target.get_lust() < 100)
 		target.add_lust(3)

@@ -37,7 +37,7 @@
 	p13target_duration = PLUG13_DURATION_SHORT
 
 //BLUEMOON ADD START
-/datum/interaction/headpat/post_interaction(mob/living/user, mob/living/target)
+/datum/interaction/headpat/post_interaction(mob/living/user, mob/living/target, apply_cooldown, is_hidden)
 	. = ..()
 
 	if(HAS_TRAIT(target, TRAIT_DISTANT))

@@ -12,7 +12,9 @@
 	p13user_strength = PLUG13_STRENGTH_LOW
 	p13target_strength = PLUG13_STRENGTH_LOW
 
-/datum/interaction/cheekkiss/post_interaction(mob/living/user, mob/living/target)
+	hearts_effect = TRUE
+
+/datum/interaction/cheekkiss/post_interaction(mob/living/user, mob/living/target, apply_cooldown, is_hidden)
 	. = ..()
 	if(user.get_lust() < 100)
 		user.add_lust(3)
@@ -38,7 +40,3 @@
 		'modular_splurt/sound/interactions/kiss/kiss3.ogg',
 		'modular_splurt/sound/interactions/kiss/kiss4.ogg',
 		'modular_splurt/sound/interactions/kiss/kiss5.ogg'), 50, 1, -1, ignored_mobs = user.get_unconsenting())
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
