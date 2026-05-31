@@ -8,6 +8,10 @@
 /proc/playlewdinteractionsound(turf/turf_source, soundin, vol as num, vary, extrarange as num, frequency, falloff_exponent = SOUND_FALLOFF_EXPONENT, channel = 0, pressure_affected = TRUE, sound/S, envwet = -10000, envdry = 0, manual_x, manual_y, list/ignored_mobs)
 	if(!turf_source || !soundin)
 		return
+	// Защита от эффекта "колодца" у звуков. Если вам нужен такой эффект, используйте pressure_affected = FALSE
+	if(!istype(turf_source))
+		turf_source = get_turf(turf_source)
+
 	var/sound/sound_to_play = sound(get_sfx(soundin))
 	var/max_distance = SOUND_RANGE + extrarange
 	var/falloff_distance = 3 // Full volume within 3 tiles (lewd sounds are close-range)

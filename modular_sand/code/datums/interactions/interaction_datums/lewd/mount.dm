@@ -9,11 +9,10 @@
 		INTERACTION_MAY_CAUSE_PREGNANCY
 	)
 
-/datum/interaction/lewd/mount/display_interaction(mob/living/user, mob/living/partner)
+/datum/interaction/lewd/mount/display_interaction(mob/living/user, mob/living/partner, is_hidden)
 	var/message
 	//var/u_His = user.ru_ego()
 	var/genital_name = partner.get_penetrating_genital_name()
-	var/is_hidden = ..()
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 	var/const/volume = 70
@@ -49,11 +48,10 @@
 	p13user_emote = PLUG13_EMOTE_ANUS
 	p13target_emote = PLUG13_EMOTE_PENIS
 
-/datum/interaction/lewd/mountass/display_interaction(mob/living/user, mob/living/partner)
+/datum/interaction/lewd/mountass/display_interaction(mob/living/user, mob/living/partner, is_hidden)
 	var/message
 	//.var/u_His = user.ru_ego()
 	var/genital_name = partner.get_penetrating_genital_name()
-	var/is_hidden = ..()
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 	var/const/volume = 70
@@ -70,7 +68,7 @@
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/bang1.ogg',
 						'modular_sand/sound/interactions/bang2.ogg',
 						'modular_sand/sound/interactions/bang3.ogg'), volume, 1, extrarange)
-	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	if(partner.can_penetrating_genital_cum())
 		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, user, ORGAN_SLOT_PENIS) //SPLURT edit
 	// BLUEMOON EDIT START
@@ -90,9 +88,8 @@
 	p13target_emote = PLUG13_EMOTE_FACE
 	p13target_strength = PLUG13_STRENGTH_LOW
 
-/datum/interaction/lewd/mountface/display_interaction(mob/living/user, mob/living/partner)
+/datum/interaction/lewd/mountface/display_interaction(mob/living/user, mob/living/partner, is_hidden)
 	var/message
-	var/is_hidden = ..()
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 	var/const/volume = 70
@@ -113,7 +110,7 @@
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/squelch1.ogg',
 						'modular_sand/sound/interactions/squelch2.ogg',
 						'modular_sand/sound/interactions/squelch3.ogg'), volume, 1, extrarange)
-	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	user.handle_post_sex(LOW_LUST, null, partner)
 
 /datum/interaction/lewd/thighs
@@ -134,7 +131,7 @@
 	fucktarget = "vagina"
 	p13target_emote = PLUG13_EMOTE_VAGINA
 
-/datum/interaction/lewd/thighs/display_interaction(mob/living/user, mob/living/partner)
+/datum/interaction/lewd/thighs/display_interaction(mob/living/user, mob/living/partner, is_hidden)
 	var/message
 	var/obj/item/organ/genital/genital = null
 	//var/lust_increase = 1 // BLUEMOON EDIT commented
@@ -143,7 +140,6 @@
 	//var/t_His = partner.ru_ego()
 	//var/t_Him = partner.ru_na()
 	//var/t_Hes = partner.ru_who()
-	var/is_hidden = ..()
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 	var/const/volume = 70
@@ -206,7 +202,7 @@
 					'modular_sand/sound/interactions/foot_wet1.ogg',
 					'modular_sand/sound/interactions/foot_dry3.ogg')
 	playlewdinteractionsound(get_turf(user), file, volume, 1, extrarange)
-	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	// BLUEMOON EDIT START
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/oral1.ogg',
 						'modular_sand/sound/interactions/oral2.ogg'), volume, 1, extrarange)

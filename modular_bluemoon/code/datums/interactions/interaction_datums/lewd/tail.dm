@@ -21,13 +21,13 @@
 	write_log_target = "tailweaved by"
 	interaction_sound = 'sound/weapons/thudswoosh.ogg'
 
-/datum/interaction/tailweave/display_interaction(mob/living/user, mob/living/target)
-	..()
-	if(HAS_TRAIT(target, TRAIT_SHY) && prob(10))
+/datum/interaction/tailweave/display_interaction(mob/living/user, mob/living/target, is_hidden)
+	. = ..()
+	var/chance = is_hidden ? 2 : 10
+	if(HAS_TRAIT(target, TRAIT_SHY) && prob(chance))
 		target.emote("blush")
-	if(HAS_TRAIT(user, TRAIT_SHY) && prob(10))
+	if(HAS_TRAIT(user, TRAIT_SHY) && prob(chance))
 		user.emote("blush")
-
 
 /datum/interaction/selfhugtail
 	description = "Обнять свой хвост."
@@ -348,13 +348,12 @@
 	write_log_target = "had tailchoked by"
 	p13target_emote = PLUG13_EMOTE_MASOCHISM
 
-/datum/interaction/lewd/tail_choke/display_interaction(mob/living/user, mob/living/partner)
+/datum/interaction/lewd/tail_choke/display_interaction(mob/living/user, mob/living/partner, is_hidden)
 	var/message
 	var/oxy_damage = user.a_intent == INTENT_HARM ? rand(3, 6) : 3
 	var/lust_amount = LOW_LUST //если наша цель довести до пика, то не стоит это закрывать за попытками увести в крит от удушья
 	if(partner.getOxyLoss() > 40) //задушить и руками можно, это чисто ЕРП эмоут
 		oxy_damage = 0
-	var/is_hidden = ..()
 	var/distance = 7
 	var/const/volume = 50
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
@@ -393,6 +392,6 @@
 	if(HAS_TRAIT(partner, TRAIT_CHOKE_SLUT))
 		lust_amount = NORMAL_LUST
 	partner.set_is_fucking(user, CUM_TARGET_TAIL)
-	user.visible_message(span_danger("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [(islist(message) ? pick(message) : message)]."), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+	user.visible_message(span_danger("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [(islist(message) ? pick(message) : message)]."), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	playlewdinteractionsound(get_turf(user), 'sound/weapons/thudswoosh.ogg', volume, 1, extrarange)
 	partner.handle_post_sex(lust_amount, CUM_TARGET_HAND, user)

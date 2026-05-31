@@ -21,8 +21,12 @@
 	if(target.get_lust() < 100)
 		target.add_lust(3)
 
-/datum/interaction/cheekkiss/display_interaction(mob/living/user, mob/living/target)
-
+/datum/interaction/cheekkiss/display_interaction(mob/living/user, mob/living/target, is_hidden)
+	var/distance = 7
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 70
+	if(is_hidden)
+		distance = 1
 	var/static/list/possible_messages = list(
 		"<b>USER</b> вытянув губы бантиком, целует <b>TARGET</b> в щеку.",
 		"<b>USER</b> делает легкое, почти невесомое прикосновение губ к щеке <b>TARGET</b>.",
@@ -32,11 +36,11 @@
 	)
 	var/use_message = replacetext(pick(possible_messages), "USER", "\the [user]")
 	use_message = replacetext(use_message, "TARGET", "\the [target]")
-	user.visible_message("<span class='[simple_style]'>[capitalize(use_message)]</span>")
+	user.visible_message("<span class='[simple_style]'>[is_hidden ? pick(hidden_additional) : null] [capitalize(use_message)]</span>", vision_distance = distance)
 
-	playlewdinteractionsound(target, pick(
+	playlewdinteractionsound(get_turf(target), pick(
 		'modular_splurt/sound/interactions/kiss/kiss1.ogg',
 		'modular_splurt/sound/interactions/kiss/kiss2.ogg',
 		'modular_splurt/sound/interactions/kiss/kiss3.ogg',
 		'modular_splurt/sound/interactions/kiss/kiss4.ogg',
-		'modular_splurt/sound/interactions/kiss/kiss5.ogg'), 50, 1, -1, ignored_mobs = user.get_unconsenting())
+		'modular_splurt/sound/interactions/kiss/kiss5.ogg'), volume, 1, extrarange, ignored_mobs = user.get_unconsenting())

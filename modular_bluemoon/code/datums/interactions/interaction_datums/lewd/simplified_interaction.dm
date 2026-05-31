@@ -18,8 +18,7 @@
 /datum/interaction/lewd/simplified_interaction/proc/lust_granted(mob/living/partner) // разрешение на получение удовольствия
 	return TRUE
 
-/datum/interaction/lewd/simplified_interaction/display_interaction(mob/living/user, mob/living/partner)
-	var/is_hidden = ..()
+/datum/interaction/lewd/simplified_interaction/display_interaction(mob/living/user, mob/living/partner, is_hidden)
 	var/const/volume = 70
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 	var/obj/item/reagent_containers/liquid_container
@@ -64,4 +63,4 @@
 		playlewdinteractionsound(get_turf(user), pick(lewd_sounds), volume, 1, extrarange)
 	else
 		playlewdinteractionsound(get_turf(partner), pick(lewd_sounds), volume, 1, extrarange)
-	..() // отправка сообщения в родительском проке
+	return ..() // отправка сообщения в родительском проке

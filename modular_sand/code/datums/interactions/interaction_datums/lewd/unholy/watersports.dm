@@ -75,11 +75,10 @@
 	return
 
 // Для дополнительных эффектов интеракций
-/datum/interaction/lewd/unholy/piss/proc/post_reaction(mob/living/user, mob/living/partner, is_fucking = TRUE)
+/datum/interaction/lewd/unholy/piss/proc/post_reaction(mob/living/user, mob/living/partner, is_fucking = TRUE, is_hidden = TRUE)
 	return
 
-/datum/interaction/lewd/unholy/piss/display_interaction(mob/living/user, mob/living/partner)
-	var/is_hidden = ..()
+/datum/interaction/lewd/unholy/piss/display_interaction(mob/living/user, mob/living/partner, is_hidden)
 	var/distance = is_hidden ? 1 : 7
 	var/is_fucking = user.is_fucking(partner, target_organ)
 	var/message = "[is_hidden ? (pick(hidden_additional)) : null]" + pick_message(user, partner, is_fucking)
@@ -96,7 +95,7 @@
 	if(partner_message)
 		partner.visible_message(format_message(partner_message, user, partner), vision_distance = distance)
 
-	post_reaction(user, partner, is_fucking)
+	post_reaction(user, partner, is_fucking, is_hidden)
 
 /datum/interaction/lewd/unholy/piss/vagina
 	required_from_user_exposed = INTERACTION_REQUIRE_VAGINA
@@ -354,7 +353,7 @@
 		IN_MOUTH_PARTNER_MESSAGES,
 		"TARGET подрагивает, когда горячая струя мочи из киски USER проносится по горлу",
 		"TARGET ощущает горячую киску USER на своих губах, пока струя мочи из неё орошает рот",
-		"TARGET плотно прижат[partner.ru_aya()] к USER, упирается в н[user.ru_ego()] носом, ощущая, как киска заливает рот потоком мочи")
+		"TARGET плотно прижат[partner.ru_aya()] к USER, упирается в [user.ru_nego()] носом, ощущая, как киска заливает рот потоком мочи")
 
 /datum/interaction/lewd/unholy/piss/vagina/in_mouth/audio_effects(mob/living/user, mob/living/partner, is_fucking, is_hidden)
 	play_interaction_sound(partner, 'modular_sand/sound/interactions/swallow.ogg', is_hidden)
@@ -470,7 +469,7 @@
 		"TARGET подрагивает, пока [shape_desc] USER заполняет [partner.ru_ego()] горло, а горячая струя мочи проносится внутри",
 		"TARGET тяжело дышит с [shape_desc]ом USER внутри своего горла, судорожно сглатывая мочу",
 		"TARGET ощущает горячий [shape_desc] USER в своём горле, пока струя мочи из него орошает рот",
-		"TARGET плотно прижат[partner.ru_aya()] к USER, упирается в н[user.ru_ego()] носом, ощущая, как [partner.ru_emu()] в глотку горячей мочей изливается [shape_desc]")
+		"TARGET плотно прижат[partner.ru_aya()] к USER, упирается в [user.ru_nego()] носом, ощущая, как [partner.ru_emu()] в глотку горячей мочей изливается [shape_desc]")
 
 /datum/interaction/lewd/unholy/piss/penis/inside/mouth/audio_effects(mob/living/user, mob/living/partner, is_fucking, is_hidden)
 	play_interaction_sound(partner, 'modular_sand/sound/interactions/swallow.ogg', is_hidden)
@@ -546,7 +545,7 @@
 	"TARGET молча принимает поток мочи USER, ощущая теплоту внутри", \
 	"TARGET судорожно выдыхает, ощущая как USER продолжает мочиться внутрь", \
 	"TARGET слегка изгибается, принимая горячий поток мочи от USER", \
-	"TARGET слабо дрожит, пока внутри н[partner.ru_ego()] растекается моча USER", \
+	"TARGET слабо дрожит, пока внутри [partner.ru_nego()] растекается моча USER", \
 	"TARGET тихо постанывает, пока USER продолжает мочиться внутрь", \
 	"TARGET слегка изгибается от ощущения горячей мочи внутри"
 

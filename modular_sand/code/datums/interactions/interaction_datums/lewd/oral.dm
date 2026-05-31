@@ -19,12 +19,11 @@
 	p13user_emote = PLUG13_EMOTE_MOUTH
 	p13target_emote = PLUG13_EMOTE_PENIS
 
-/datum/interaction/lewd/oral/display_interaction(mob/living/user, mob/living/partner)
+/datum/interaction/lewd/oral/display_interaction(mob/living/user, mob/living/partner, is_hidden)
 	var/message
 	var/obj/item/organ/genital/genital = null
 	var/lust_increase = NORMAL_LUST
 	var/has_penis = partner.has_penis() // BLUEMOON ADD
-	var/is_hidden = ..()
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 	var/const/volume = 50
@@ -141,7 +140,7 @@
 									'modular_sand/sound/interactions/bj9.ogg',
 									'modular_sand/sound/interactions/bj10.ogg',
 									'modular_sand/sound/interactions/bj11.ogg'), volume, 1, extrarange)
-	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 //BLUEMOON EDIT START
 //SPLURT EDIT START
 	if(fucktarget == "penis" && partner.can_penetrating_genital_cum())

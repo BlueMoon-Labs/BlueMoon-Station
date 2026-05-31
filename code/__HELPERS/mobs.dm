@@ -695,9 +695,10 @@ GLOBAL_LIST_EMPTY(species_datums)
 		if("taperedbarbed") return "утонченный шипованный член"
 		if("thick", "nondescript") return "обрезанный член"
 		// Если кто-то это будет трогать, придумайте что-то с окончаниями (автор не соизволил)
-		if("hemi") return "двойные члены"
-		if("hemiknot") return "двойные узловатые члены"
-		if("bhemiknot") return "двойные с узлами колючие члены"
+		// P.S. Ладно, я сам дописал, частично
+		if("hemi") return "двойной член"
+		if("hemiknot") return "двойной узловатый член"
+		if("bhemiknot") return "двойной с узлами колючий член"
 
 		else return "необычной формы член"
 

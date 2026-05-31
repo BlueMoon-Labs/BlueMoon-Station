@@ -15,7 +15,11 @@
 
 	hearts_effect = TRUE
 
-/datum/interaction/cuddle/display_interaction(mob/living/user, mob/living/target)
+/datum/interaction/cuddle/display_interaction(mob/living/user, mob/living/target, is_hidden)
+	var/distance = 7
+	if(is_hidden)
+		distance = 1
+	var/picked_hidden = pick(hidden_additional)
 	var/static/list/possible_messages = list(
 		"<b>USER</b> обнимает <b>TARGET</b>.",
 		"<b>USER</b> страстно обнимает <b>TARGET</b>.",
@@ -31,7 +35,7 @@
 	)
 	var/use_message = replacetext(pick(possible_messages), "USER", "\the [user]")
 	use_message = replacetext(use_message, "TARGET", "\the [target]")
-	user.visible_message("<span class='[simple_style]'>[capitalize(use_message)]</span>")
+	user.visible_message("<span class='[simple_style]'>[is_hidden ? (picked_hidden) : null][capitalize(use_message)]</span>", vision_distance = distance)
 
 // BlueMoon Add
 /datum/interaction/scratch
@@ -53,7 +57,11 @@
 	if(target.get_lust() < 100)
 		target.add_lust(3)
 
-/datum/interaction/scratch/display_interaction(mob/living/user, mob/living/target)
+/datum/interaction/scratch/display_interaction(mob/living/user, mob/living/target, is_hidden)
+	var/distance = 7
+	if(is_hidden)
+		distance = 1
+	var/picked_hidden = pick(hidden_additional)
 	var/static/list/possible_messages = list(
 		"<b>USER</b> чешет спинку <b>TARGET</b>.",
 		"<b>USER</b> расчесываает спинку <b>TARGET</b>.",
@@ -63,7 +71,7 @@
 	)
 	var/use_message = replacetext(pick(possible_messages), "USER", "\the [user]")
 	use_message = replacetext(use_message, "TARGET", "\the [target]")
-	user.visible_message("<span class='[simple_style]'>[capitalize(use_message)]</span>")
+	user.visible_message("<span class='[simple_style]'>[is_hidden ? (picked_hidden) : null][capitalize(use_message)]</span>", vision_distance = distance)
 
 
 /datum/interaction/neckscratch
@@ -86,7 +94,11 @@
 	if(target.get_lust() < 100)
 		target.add_lust(3)
 
-/datum/interaction/neckscratch/display_interaction(mob/living/user, mob/living/target)
+/datum/interaction/neckscratch/display_interaction(mob/living/user, mob/living/target, is_hidden)
+	var/distance = 7
+	if(is_hidden)
+		distance = 1
+	var/picked_hidden = pick(hidden_additional)
 	var/static/list/possible_messages = list(
 		"<b>USER</b> чешет шею <b>TARGET</b>.",
 		"<b>USER</b> расчесываает шейку у <b>TARGET</b>.",
@@ -96,7 +108,7 @@
 	)
 	var/use_message = replacetext(pick(possible_messages), "USER", "\the [user]")
 	use_message = replacetext(use_message, "TARGET", "\the [target]")
-	user.visible_message("<span class='[simple_style]'>[capitalize(use_message)]</span>")
+	user.visible_message("<span class='[simple_style]'>[is_hidden ? (picked_hidden) : null][capitalize(use_message)]</span>", vision_distance = distance)
 
 
 /datum/interaction/earscratch
@@ -119,7 +131,11 @@
 	if(target.get_lust() < 100)
 		target.add_lust(3)
 
-/datum/interaction/earscratch/display_interaction(mob/living/user, mob/living/target)
+/datum/interaction/earscratch/display_interaction(mob/living/user, mob/living/target, is_hidden)
+	var/distance = 7
+	if(is_hidden)
+		distance = 1
+	var/picked_hidden = pick(hidden_additional)
 	var/static/list/possible_messages = list(
 		"<b>USER</b> чешет за ушком <b>TARGET</b>.",
 		"<b>USER</b> расчесываает за ушком у <b>TARGET</b>.",
@@ -129,5 +145,5 @@
 	)
 	var/use_message = replacetext(pick(possible_messages), "USER", "\the [user]")
 	use_message = replacetext(use_message, "TARGET", "\the [target]")
-	user.visible_message("<span class='[simple_style]'>[capitalize(use_message)]</span>")
+	user.visible_message("<span class='[simple_style]'>[is_hidden ? (picked_hidden) : null][capitalize(use_message)]</span>", vision_distance = distance)
 

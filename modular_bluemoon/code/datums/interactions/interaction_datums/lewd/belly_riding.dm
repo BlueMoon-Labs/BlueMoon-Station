@@ -25,8 +25,7 @@
 	if(!. || !target_organ)
 		return FALSE
 
-/datum/interaction/lewd/belly_riding/display_interaction(mob/living/user, mob/living/partner)
-	var/is_hidden = ..()
+/datum/interaction/lewd/belly_riding/display_interaction(mob/living/user, mob/living/partner, is_hidden)
 	var/distance = 7
 	if(is_hidden)
 		distance = 1

@@ -67,18 +67,21 @@
 		SEND_SIGNAL(target, COMSIG_ADD_MOOD_EVENT, "headpat", /datum/mood_event/headpat)
 
 
-/datum/interaction/headpat/display_interaction(mob/living/user, mob/living/target)
+/datum/interaction/headpat/display_interaction(mob/living/user, mob/living/target, is_hidden)
 	. = ..()
-
+	var/distance = 7
+	var/picked_hidden = pick(hidden_additional)
+	if(is_hidden)
+		distance = 1
 	if(HAS_TRAIT(target, TRAIT_DISTANT))
 		user.visible_message(
-			span_warning("<b>[user]</b> тянется, чтобы погладить <b>[target]</b> по голове, но тот раздражённо отстраняется."),
-			span_warning("Ты пытаешься погладить <b>[target]</b> по голове, но он отстраняется и выглядит недовольным."),
-			target_message = span_warning("<b>[user]</b> тянется к твоей голове, но ты раздражённо отстраняешься.")
-		)
+			span_warning("[is_hidden ? (picked_hidden) : null]<b>[user]</b> тянется, чтобы погладить <b>[target]</b> по голове, но тот раздражённо отстраняется."),
+			span_warning("[is_hidden ? (picked_hidden) : null]Ты пытаешься погладить <b>[target]</b> по голове, но он отстраняется и выглядит недовольным."),
+			target_message = span_warning("[is_hidden ? (picked_hidden) : null]<b>[user]</b> тянется к твоей голове, но ты раздражённо отстраняешься.")
+		, vision_distance = distance)
 		return
 
-	if(HAS_TRAIT(target, TRAIT_HEADPAT_SLUT))
+	if(!is_hidden && HAS_TRAIT(target, TRAIT_HEADPAT_SLUT))
 		new /obj/effect/temp_visual/heart(target.loc)
 
 //BLUEMOON ADD END

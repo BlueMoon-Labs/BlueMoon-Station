@@ -9,8 +9,7 @@
 	write_log_target = "его лицо было обосрано"
 	write_log_user = "насрал на лицо"
 
-/datum/interaction/lewd/unholy/do_faceshit/display_interaction(mob/living/user, mob/living/target)
-	var/is_hidden = ..()
+/datum/interaction/lewd/unholy/do_faceshit/display_interaction(mob/living/user, mob/living/target, is_hidden)
 	user.do_faceshit(target, is_hidden)
 
 /datum/interaction/lewd/unholy/do_crotchshit/
@@ -24,8 +23,7 @@
 	write_log_target = "его промежность была обосрана"
 	write_log_user = "насрал на промежность"
 
-/datum/interaction/lewd/unholy/do_crotchshit/display_interaction(mob/living/user, mob/living/target)
-	var/is_hidden = ..()
+/datum/interaction/lewd/unholy/do_crotchshit/display_interaction(mob/living/user, mob/living/target, is_hidden)
 	user.do_crotchshit(target, is_hidden)
 
 /datum/interaction/lewd/unholy/do_shitfuck
@@ -39,8 +37,7 @@
 	write_log_target = "трахнут в задницу с говнецом"
 	write_log_user = "трахнул в задницу с говнецом"
 
-/datum/interaction/lewd/unholy/do_shitfuck/display_interaction(mob/living/user, mob/living/target)
-	var/is_hidden = ..()
+/datum/interaction/lewd/unholy/do_shitfuck/display_interaction(mob/living/user, mob/living/target, is_hidden)
 	user.do_shitfuck(target, is_hidden)
 
 	if(!(isclownjob(target) || isclownjob(user)))
@@ -49,7 +46,7 @@
 	if(prob(50) && isclownjob(target))
 		target.visible_message("<span class='lewd'>\ Жопа <b>[target]</b>забавно хонкает!</span>")
 
-	playlewdinteractionsound(target, 'sound/items/bikehorn.ogg', 40, 1, -1)
+	playlewdinteractionsound(get_turf(target), 'sound/items/bikehorn.ogg', 40, 1, -1)
 
 /datum/interaction/lewd/unholy/suck_shit
 	description = "Высосать говно из задницы."
@@ -62,6 +59,5 @@
 	write_log_target = "его говно высосал из задницы"
 	write_log_user = "высосал говно из задницы"
 
-/datum/interaction/lewd/unholy/suck_shit/display_interaction(mob/living/user, mob/living/target)
-	var/is_hidden = ..()
+/datum/interaction/lewd/unholy/suck_shit/display_interaction(mob/living/user, mob/living/target, is_hidden)
 	user.suck_shit(target, is_hidden)

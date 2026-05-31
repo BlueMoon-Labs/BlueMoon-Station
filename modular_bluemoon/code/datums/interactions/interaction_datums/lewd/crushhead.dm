@@ -18,12 +18,15 @@
 
 	p13target_emote = PLUG13_EMOTE_MASOCHISM
 
-/datum/interaction/lewd/crushhead/display_interaction(mob/living/user, mob/living/partner)
-	var/obj/item/bodypart/head/head = partner.get_bodypart(BODY_ZONE_HEAD)
-	if(!head)
-		to_chat(user,span_warning("У цели отсутствует голова!"))
+/datum/interaction/lewd/crushhead/special_check(mob/living/user, mob/living/target)
+	. = ..()
+	if(!.)
 		return
-	var/is_hidden = ..()
+	if(!target.get_bodypart(BODY_ZONE_HEAD))
+		to_chat(user,span_warning("У цели отсутствует голова!"))
+		return FALSE
+
+/datum/interaction/lewd/crushhead/display_interaction(mob/living/user, mob/living/partner, is_hidden)
 	var/distance = 7
 	var/const/volume = 50
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
@@ -59,6 +62,7 @@
 			if(H.InFullCritical())
 				H.visible_message(span_userdanger("Голова <b>[H]</b> лопается, разбрызгивая мозги по полу!"),span_userdanger("ААААА ГОЛОВ-"))
 				playsound(get_turf(H), 'modular_bluemoon/sound/effects/squishy.ogg', 140, TRUE, -1)
+				var/obj/item/bodypart/head/head = partner.get_bodypart(BODY_ZONE_HEAD)
 				head.drop_limb()
 				head.drop_organs()
 				qdel(head)

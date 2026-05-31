@@ -8,8 +8,7 @@
 	p13target_emote = PLUG13_EMOTE_FACE
 	p13target_strength = PLUG13_STRENGTH_LOW
 
-/datum/interaction/lewd/grindface/display_interaction(mob/living/user, mob/living/partner)
-	var/is_hidden = ..()
+/datum/interaction/lewd/grindface/display_interaction(mob/living/user, mob/living/partner, is_hidden)
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 	var/const/volume = 70
@@ -56,7 +55,7 @@
 						'modular_sand/sound/interactions/foot_dry2.ogg',
 						'modular_sand/sound/interactions/foot_dry3.ogg',
 						'modular_sand/sound/interactions/foot_dry4.ogg'), volume, 1, extrarange)
-	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	partner.handle_post_sex(LOW_LUST, null, user)
 
 /datum/interaction/lewd/grindmouth
@@ -69,8 +68,7 @@
 	p13target_emote = PLUG13_EMOTE_FACE
 	p13target_strength = PLUG13_STRENGTH_LOW
 
-/datum/interaction/lewd/grindmouth/display_interaction(mob/living/user, mob/living/partner)
-	var/is_hidden = ..()
+/datum/interaction/lewd/grindmouth/display_interaction(mob/living/user, mob/living/partner, is_hidden)
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 	var/const/volume = 70
@@ -120,7 +118,7 @@
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/foot_wet1.ogg',
 						'modular_sand/sound/interactions/foot_wet2.ogg',
 						'modular_sand/sound/interactions/foot_wet3.ogg'), volume, 1, extrarange)
-	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	partner.handle_post_sex(LOW_LUST, null, user)
 
 /datum/interaction/lewd/footjob
@@ -133,12 +131,11 @@
 	p13target_emote = PLUG13_EMOTE_PENIS
 	p13target_strength = PLUG13_STRENGTH_NORMAL
 
-/datum/interaction/lewd/footjob/display_interaction(mob/living/user, mob/living/partner)
+/datum/interaction/lewd/footjob/display_interaction(mob/living/user, mob/living/partner, is_hidden)
 	var/message
 	//var/u_His = user.ru_ego()
 	var/shoes = user.get_shoes(TRUE)
 	var/genital_name = partner.get_penetrating_genital_name()
-	var/is_hidden = ..()
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 	var/const/volume = 70
@@ -158,7 +155,7 @@
 						'modular_sand/sound/interactions/foot_dry3.ogg',
 						'modular_sand/sound/interactions/foot_wet1.ogg',
 						'modular_sand/sound/interactions/foot_wet2.ogg'), volume, 1, extrarange)
-	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	if(partner.can_penetrating_genital_cum())
 		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_FEET, user, ORGAN_SLOT_PENIS) //SPLURT edit
 
@@ -167,12 +164,11 @@
 	require_user_num_feet = 2
 	p13target_strength = PLUG13_STRENGTH_NORMAL_PLUS
 
-/datum/interaction/lewd/footjob/double/display_interaction(mob/living/user, mob/living/partner)
+/datum/interaction/lewd/footjob/double/display_interaction(mob/living/user, mob/living/partner, is_hidden)
 	var/message
 	//var/u_His = user.ru_ego()
 	var/shoes = user.get_shoes()
 	var/genital_name = partner.get_penetrating_genital_name()
-	var/is_hidden = ..()
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 	var/const/volume = 70
@@ -194,7 +190,7 @@
 						'modular_sand/sound/interactions/foot_dry3.ogg',
 						'modular_sand/sound/interactions/foot_wet1.ogg',
 						'modular_sand/sound/interactions/foot_wet2.ogg'), volume, 1, extrarange)
-	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	if(partner.can_penetrating_genital_cum())
 		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_FEET, user, ORGAN_SLOT_PENIS) //SPLURT edit
 
@@ -203,9 +199,8 @@
 	required_from_target_exposed = INTERACTION_REQUIRE_VAGINA
 	p13target_emote = PLUG13_EMOTE_VAGINA
 
-/datum/interaction/lewd/footjob/vagina/display_interaction(mob/living/user, mob/living/partner)
+/datum/interaction/lewd/footjob/vagina/display_interaction(mob/living/user, mob/living/partner, is_hidden)
 	var/message
-	var/is_hidden = ..()
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 	var/const/volume = 70

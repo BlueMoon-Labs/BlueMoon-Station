@@ -19,10 +19,9 @@
 	if(target.get_lust() < 100)
 		target.add_lust(20)
 
-/datum/interaction/lewd/neckkiss/display_interaction(mob/living/user, mob/living/target)
-	var/is_hidden = ..()
+/datum/interaction/lewd/neckkiss/display_interaction(mob/living/user, mob/living/target, is_hidden)
 	var/distance = 7
-	var/const/volume = 50
+	var/const/volume = 50 // Громкость меньше, т.к. pressure_affected = FALSE добавляет громкости
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 	if(is_hidden)
 		distance = 1
@@ -37,11 +36,11 @@
 	)
 	var/use_message = replacetext(pick(possible_messages), "USER", "\the [user]")
 	use_message = replacetext(use_message, "TARGET", "\the [target]")
-	user.visible_message("<span class='[simple_style]'>[is_hidden ? (picked_hidden) : null] [capitalize(use_message)]</span>", vision_distance = distance)
+	user.visible_message("<span class='[simple_style]'>[is_hidden ? (picked_hidden) : null][capitalize(use_message)]</span>", vision_distance = distance)
 
-	playlewdinteractionsound(target, pick(
+	playlewdinteractionsound(get_turf(target), pick(
 		'modular_splurt/sound/interactions/kiss/kiss1.ogg',
 		'modular_splurt/sound/interactions/kiss/kiss2.ogg',
 		'modular_splurt/sound/interactions/kiss/kiss3.ogg',
 		'modular_splurt/sound/interactions/kiss/kiss4.ogg',
-		'modular_splurt/sound/interactions/kiss/kiss5.ogg'), volume, 1, extrarange, ignored_mobs = user.get_unconsenting())
+		'modular_splurt/sound/interactions/kiss/kiss5.ogg'), volume, 1, extrarange, ignored_mobs = user.get_unconsenting(), pressure_affected = FALSE)
