@@ -1,6 +1,16 @@
 /////////////////////////////////////////
 //////////Cybernetic Implants////////////
 /////////////////////////////////////////
+/datum/design/ai_link_implant
+    name = "Neural AI Link Implant"
+    id = "ai_link_implant"
+    build_type = MECHFAB | PROTOLATHE
+    build_path = /obj/item/organ/cyberimp/brain/ai_link
+    materials = list(/datum/material/iron = 3000, /datum/material/glass = 1000, /datum/material/silver = 2000, /datum/material/gold = 1500, /datum/material/diamond = 1500)
+    construction_time = 200
+    category = list("Implants", "Biotech")
+    departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_MEDICAL
+
 /datum/design/cyberimp_breather
 	name = "Breathing Tube Implant"
 	desc = "This simple implant adds an internals connector to your back, allowing you to use internals without a mask and protecting you from being choked."
@@ -256,7 +266,7 @@
 	build_type = PROTOLATHE
 	construction_time = 40
 	materials = list(/datum/material/iron = 10000, /datum/material/glass = 10000, /datum/material/silver = 6000, /datum/material/gold = 6000, /datum/material/diamond = 6000)
-	build_path = /obj/item/organ/cyberimp/chest/healer
+	build_path = /obj/item/organ/cyberimp/chest/healer/bruteburn
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 
@@ -267,7 +277,7 @@
 	build_type = PROTOLATHE | MECHFAB
 	construction_time = 40
 	materials = list(/datum/material/iron = 10000, /datum/material/glass = 10000, /datum/material/silver = 6000, /datum/material/gold = 6000, /datum/material/diamond = 6000)
-	build_path = /obj/item/organ/cyberimp/chest/healertoxoxy
+	build_path = /obj/item/organ/cyberimp/chest/healer/toxoxy
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE
 
@@ -278,7 +288,7 @@
 	build_type = PROTOLATHE
 	construction_time = 40
 	materials = list(/datum/material/iron = 10000, /datum/material/glass = 10000, /datum/material/silver = 6000, /datum/material/gold = 6000, /datum/material/diamond = 6000, /datum/material/bluespace = 6000)
-	build_path = /obj/item/organ/cyberimp/chest/revitilzer
+	build_path = /obj/item/organ/cyberimp/chest/healer/revitilzer
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 

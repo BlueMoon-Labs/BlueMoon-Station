@@ -310,7 +310,7 @@
 		/obj/item/organ/brain = 1,
 		/obj/item/bodypart/head = 1)
 	possible_rewards = list(/obj/item/organ/cyberimp/mouth/breathing_tube = 1,
-		/obj/item/organ/eyes/robotic/thermals = 1,
+		/obj/item/organ/eyes/robotic/toggled/thermals = 1,
 		/obj/item/organ/cyberimp/arm/toolset = 1,
 		/obj/item/organ/cyberimp/arm/surgery = 1,
 		/obj/item/organ/cyberimp/arm/janitor = 1,

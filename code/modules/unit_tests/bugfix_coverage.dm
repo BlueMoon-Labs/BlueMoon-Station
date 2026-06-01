@@ -91,7 +91,7 @@
 // without runtiming at L.forceMove() — the reported runtime scenario.
 /datum/unit_test/glow_eyes_update_visuals_null_safety/Run()
 	var/mob/living/carbon/human/test_mob = allocate(/mob/living/carbon/human)
-	var/obj/item/organ/eyes/robotic/glow/eyes = allocate(/obj/item/organ/eyes/robotic/glow)
+	var/obj/item/organ/eyes/robotic/toggled/glow/eyes = allocate(/obj/item/organ/eyes/robotic/toggled/glow)
 	eyes.Insert(test_mob, TRUE)
 	eyes.activate(silent = TRUE)
 

@@ -153,10 +153,10 @@
 		ion_trail = new
 	ion_trail.set_up(M)
 
-/obj/item/organ/cyberimp/chest/thrusters/Remove(special = FALSE)
+/obj/item/organ/cyberimp/chest/thrusters/deactivate(removing)
+	. = ..()
 	if(on)
 		toggle(TRUE)
-	return ..()
 
 /obj/item/organ/cyberimp/chest/thrusters/ui_action_click()
 	toggle()
@@ -321,16 +321,15 @@
 		if(C.chemname && implant_level >= C.level)
 			available_c += list(list("name" = C.chemname, "key" = C.key, "desc" = C.chemdesc, "amount" = C.quantity))
 
-/obj/item/organ/cyberimp/chest/chem_implant/on_life()
+/obj/item/organ/cyberimp/chest/chem_implant/on_life(seconds, times_fired)
 	. = ..()
+	if(!.)
+		return
 	charge_tick++
 	if(charge_tick >= charge_delay)
 		charge_tick = 0
 		if (charge < charge_capacity)
 			charge++
-
-/obj/item/organ/cyberimp/chest/chem_implant/Remove()
-	. = ..()
 
 /obj/item/organ/cyberimp/chest/chem_implant/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
@@ -353,9 +352,8 @@
 
 /obj/item/organ/cyberimp/chest/chem_implant/ui_status(mob/user, datum/ui_state/state)
 	. = UI_CLOSE
-	if(user.stat != DEAD)
+	if(user.stat != DEAD && activate_allowed(user = user, silent = TRUE))
 		. = max(., UI_INTERACTIVE)
-
 
 /obj/item/organ/cyberimp/chest/chem_implant/ui_act(action, list/params)
 	if(..() && owner.stat != DEAD)

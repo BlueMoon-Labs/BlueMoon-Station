@@ -88,9 +88,9 @@
 	to_chat(user, "<span class='notice'>You modify [src] to be installed on the [zone == BODY_ZONE_R_ARM ? "right" : "left"] arm.</span>")
 	update_icon()
 
-/obj/item/organ/cyberimp/arm/Remove(special = FALSE)
+/obj/item/organ/cyberimp/arm/deactivate(removing)
+	. = ..()
 	Retract()
-	..()
 
 /obj/item/organ/cyberimp/arm/emp_act(severity)
 	. = ..()

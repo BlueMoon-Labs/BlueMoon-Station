@@ -1,4 +1,4 @@
-#define STUN_SET_AMOUNT 40
+#define ANTI_STUN_SET_AMOUNT 40
 
 /obj/item/organ/cyberimp
 	name = "cybernetic implant"
@@ -7,7 +7,8 @@
 	organ_flags = ORGAN_SYNTHETIC
 	var/implant_color = "#FFFFFF"
 	var/implant_overlay
-	var/syndicate_implant = FALSE //Makes the implant invisible to health analyzers and medical HUDs.
+	///Makes the implant invisible to health analyzers and medical HUDs.
+	var/syndicate_implant = FALSE
 
 /obj/item/organ/cyberimp/New(var/mob/M = null)
 	if(iscarbon(M))
@@ -18,7 +19,82 @@
 		add_overlay(overlay)
 	return ..()
 
+// В отличие от органов, имланты будут работать, только пока их можно активировать
+/obj/item/organ/cyberimp/on_life(seconds, times_fired)
+	return activate_allowed(silent = TRUE) && ..()
 
+/*
+/obj/item/organ/cyberimp/Insert(mob/living/carbon/organ_mob, special, drop_if_replaced)
+	. = ..()
+	if(!.)
+		return
+	for(var/datum/action/action in actions)
+		RegisterSignal(action, COMSIG_ACTION_TRIGGER, PROC_REF(action_trigger))
+		RegisterSignal(action, COMSIG_ACTION_ISAVAILABLE, PROC_REF(action_available))
+		action.UpdateButtons(TRUE)
+	if(!isnull(active_security_level))
+		RegisterSignal(SSsecurity_level, COMSIG_SECURITY_LEVEL_CHANGED, PROC_REF(on_sec_level_change))
+		if(!activate_allowed(silent = TRUE))
+			deactivate()
+
+/obj/item/organ/cyberimp/Remove(special)
+	. = ..()
+	for(var/datum/action/action in actions)
+		UnregisterSignal(action, list(COMSIG_ACTION_TRIGGER, COMSIG_ACTION_ISAVAILABLE))
+	UnregisterSignal(SSsecurity_level, COMSIG_SECURITY_LEVEL_CHANGED)
+
+/obj/item/organ/cyberimp/examine(mob/user)
+	. = ..()
+	if(!isnull(active_security_level) || !isnull(initial(active_security_level)))
+		. += span_notice("Минимальный уровень тревоги для активации: <b>[isnull(active_security_level) ? SECURITY_LEVEL_COLOR_TEXT(SEC_LEVEL_GREEN,"G&R@EE%N") : SECURITY_LEVEL_COLORED_UPPERTEXT(active_security_level)]</b>")
+
+/obj/item/organ/cyberimp/proc/action_trigger(datum/action/source, obj/item/organ/cyberimp/target, mob/user)
+	if(!activate_allowed(source, user))
+		return COMPONENT_ACTION_BLOCK_TRIGGER
+
+/obj/item/organ/cyberimp/proc/action_available(datum/action/source, obj/item/organ/cyberimp/target, mob/user, silent = TRUE)
+	if(!activate_allowed(source, user, silent))
+		return COMPONENT_ACTION_NOT_AVAILABLE
+
+// action и user, могут быть null
+/obj/item/organ/cyberimp/proc/activate_allowed(datum/action/action, mob/user, silent = FALSE)
+	. = FALSE
+	if(!isnull(active_security_level) && GLOB.security_level < active_security_level)
+		if(!silent)
+			to_chat(user, span_warning("<b>ОШИБКА:</b> Уровень тревоги для активации: <b>[SECURITY_LEVEL_COLORED_UPPERTEXT(active_security_level)]</b>"))
+		return
+
+	return TRUE
+
+/obj/item/organ/cyberimp/on_life(seconds, times_fired)
+	return activate_allowed(silent = TRUE) && ..()
+
+/obj/item/organ/cyberimp/proc/on_sec_level_change(datum/source, new_level)
+	SIGNAL_HANDLER
+	for(var/datum/action/action in actions)
+		action.UpdateButtons(TRUE)
+	if(!activate_allowed(silent = TRUE))
+		INVOKE_ASYNC(src, PROC_REF(deactivate))
+	else if(auto_sec_level_toggle)
+		INVOKE_ASYNC(src, PROC_REF(code_activate))
+
+/obj/item/organ/cyberimp/proc/code_activate()
+	return
+
+/obj/item/organ/cyberimp/proc/deactivate(removing = FALSE)
+	return
+
+/obj/item/organ/cyberimp/emag_act()
+	. = ..()
+	if(active_security_level)
+		active_security_level = null
+		log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)] and clear sec level restrictions")
+		playsound(get_turf(src), 'sound/effects/light_flicker.ogg', 100, 1)
+
+/obj/item/organ/cyberimp/Remove(special)
+	deactivate(TRUE)
+	return ..()
+*/
 
 //[[[[BRAIN]]]]
 
@@ -86,12 +162,10 @@
 		REMOVE_TRAIT(I, TRAIT_NODROP, ANTI_DROP_IMPLANT_TRAIT)
 	stored_items = list()
 
-
-/obj/item/organ/cyberimp/brain/anti_drop/Remove(special = FALSE)
+/obj/item/organ/cyberimp/brain/anti_drop/deactivate(removing)
+	. = ..()
 	if(active)
 		ui_action_click()
-	return ..()
-
 
 /obj/item/organ/cyberimp/brain/anti_stun
 	name = "CNS Rebooter implant"
@@ -104,7 +178,7 @@
 	if(!. || crit_fail)
 		return
 	owner.adjustStaminaLoss(-3.5, FALSE) //Citadel edit, makes it more useful in Stamina based combat
-	owner.HealAllImmobilityUpTo(STUN_SET_AMOUNT)
+	owner.HealAllImmobilityUpTo(ANTI_STUN_SET_AMOUNT)
 
 /obj/item/organ/cyberimp/brain/anti_stun/emp_act(severity)
 	. = ..()
@@ -131,22 +205,24 @@
 	if(!HAS_TRAIT(owner, TRAIT_ROBOTIC_ORGANISM))
 		return //Why did you even get yourself implanted this if you aren't a robot?
 	owner.adjustToxLoss(severity / 10, toxins_type = TOX_SYSCORRUPT)
-	to_chat(owner, "<span class='warning'>Your ECC implant suddenly behaves very erratically, scrambling your system.</span>")
+	to_chat(owner, span_warning("<b>ECC-имплантат</b> внезапно начинает вести себя очень нестабильно, нарушая работу вашей системы."))
 
 /obj/item/organ/cyberimp/brain/robot_radshielding/Insert(mob/living/carbon/M, special = 0, drop_if_replaced = TRUE)
 	. = ..()
 	if(!.)
 		return
-	ADD_TRAIT(owner, TRAIT_ROBOT_RADSHIELDING, ROBOT_RADSHIELDING_IMPLANT_TRAIT) //Organics can get this, but it does literally nothing for them except cause more pain if EMPd, so uh, good on you?
+	code_activate()
 
-/obj/item/organ/cyberimp/brain/robot_radshielding/Remove(special = FALSE)
+/obj/item/organ/cyberimp/brain/robot_radshielding/code_activate()
 	. = ..()
-	if(!.)
-		return
-	var/mob/living/carbon/C = .
-	REMOVE_TRAIT(C, TRAIT_ROBOT_RADSHIELDING, ROBOT_RADSHIELDING_IMPLANT_TRAIT)
+	ADD_TRAIT(owner, TRAIT_ROBOT_RADSHIELDING, ROBOT_RADSHIELDING_IMPLANT_TRAIT) //Organics can get this, but it does literally nothing for them except cause more pain if EMPd, so uh, good on you?
+	to_chat(owner, span_nicegreen("<b>ECC-имплантат</b> активируется, обеспечивая защиту от радиации."))
 
-
+/obj/item/organ/cyberimp/brain/robot_radshielding/deactivate(removing)
+	. = ..()
+	REMOVE_TRAIT(owner, TRAIT_ROBOT_RADSHIELDING, ROBOT_RADSHIELDING_IMPLANT_TRAIT)
+	if(!removing)
+		to_chat(owner, span_warning("<b>ECC-имплантат</b> отключаяется, вы больше не защищены от радиации."))
 
 //[[[[MOUTH]]]]
 /obj/item/organ/cyberimp/mouth
@@ -166,3 +242,5 @@
 	if(prob(0.6*severity))
 		to_chat(owner, "<span class='warning'>Your breathing tube suddenly closes!</span>")
 		owner.losebreath += 8
+
+#undef ANTI_STUN_SET_AMOUNT
