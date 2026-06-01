@@ -188,7 +188,7 @@
 /obj/item/organ/eyes/robotic/toggled/proc/toggle(silent = FALSE)
 	active = !active
 	if(!silent && to_activate_text)
-		to_chat(owner, span_notice("You [active ? "de" : null]activate your [to_activate_text]."))
+		to_chat(owner, span_notice("You [!active ? "de" : null]activate your [to_activate_text]."))
 	owner.update_sight()
 
 /obj/item/organ/eyes/robotic/toggled/ui_action_click()
