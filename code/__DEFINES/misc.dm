@@ -51,7 +51,7 @@ Will print: "/mob/living/carbon/human/death" (you can optionally embed it in a s
 #define SHIRT_LAYER				30
 #define UNIFORM_LAYER			29
 #define SHOES_LAYER				28
-#define DRESS_LAYER				27
+#define DRESS_LAYER				27		//Any uniform that should be drawn on top of shoes, including jumpskirts
 #define ID_LAYER				26
 #define GENITALS_EXPOSED_LAYER	25
 #define HANDS_PART_LAYER		24
