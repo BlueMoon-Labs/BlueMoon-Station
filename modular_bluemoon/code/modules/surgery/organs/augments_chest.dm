@@ -85,7 +85,7 @@
 	if(!owner || (. & EMP_PROTECT_SELF))
 		return
 	to_chat(owner, span_warning("Вы чувствуете жжение от [src] в вашей груди!"))
-	heal(TRUE, severity*0.002)
+	heal(TRUE, severity*0.2)
 
 /obj/item/organ/cyberimp/chest/healer/bruteburn
 	name = "Healer-BB implant"
