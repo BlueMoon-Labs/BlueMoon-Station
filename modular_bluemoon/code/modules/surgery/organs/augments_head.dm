@@ -30,7 +30,7 @@
 	for(var/trait in traits_list)
 		REMOVE_TRAIT(owner.mind, trait, TRAIT_GENERIC)
 	if(!removing)
-		to_chat(owner, "Вы чувствуете, [src] отключается, а знания пропадают.")
+		to_chat(owner, "Вы чувствуете, как [src] отключается, а знания пропадают.")
 
 /obj/item/organ/cyberimp/brainchip/emp_act(severity)
 	. = ..()
