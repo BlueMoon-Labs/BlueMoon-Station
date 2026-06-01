@@ -220,8 +220,9 @@
 	w_class = WEIGHT_CLASS_NORMAL
 	burst_size = 1	//Shh.
 	fire_delay = 15
-	var/body_color = "#3333aa"
 	automatic_burst_overlay = FALSE
+	var/body_state = "AM4-Body"
+	var/body_color = "#3333aa"
 
 /obj/item/gun/ballistic/automatic/AM4B/ComponentInitialize()
 	. = ..()
@@ -229,7 +230,9 @@
 
 /obj/item/gun/ballistic/automatic/AM4B/update_overlays()
 	. = ..()
-	var/mutable_appearance/body_overlay = mutable_appearance('modular_citadel/icons/obj/guns/cit_guns.dmi', "AM4-Body")
+	if(!body_state)
+		return
+	var/mutable_appearance/body_overlay = mutable_appearance('modular_citadel/icons/obj/guns/cit_guns.dmi', body_state)
 	if(body_color)
 		body_overlay.color = body_color
 	. += body_overlay

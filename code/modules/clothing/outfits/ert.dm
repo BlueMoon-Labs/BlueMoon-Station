@@ -72,13 +72,13 @@
 	glasses = /obj/item/clothing/glasses/hud/health/night/syndicate
 	back = /obj/item/storage/backpack/ert_commander
 	belt = /obj/item/storage/belt/military/ert_min
-	suit_store = /obj/item/gun/ballistic/automatic/proto/suppressed
+	suit_store = /obj/item/gun/ballistic/automatic/wt550/standart
 
 	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,
 		/obj/item/storage/box/ert_commander=1,
 		/obj/item/storage/firstaid/brute=1,
 		/obj/item/storage/firstaid/fire=1,
-		/obj/item/storage/box/ammo=1,\
+		/obj/item/storage/box/ammo/wt=1,\
 		/obj/item/gun/energy/e_gun/nuclear/ert=1,\
 		)
 
@@ -196,14 +196,14 @@
 	glasses = /obj/item/clothing/glasses/hud/health/night/syndicate
 	belt = /obj/item/storage/belt/military/ert_min
 	back = /obj/item/storage/backpack/ert_commander/ert_security
-	suit_store = /obj/item/gun/ballistic/automatic/proto/suppressed
+	suit_store = /obj/item/gun/ballistic/automatic/wt550/standart
 
 	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,\
 
 		/obj/item/storage/box/handcuffs=1,\
 		/obj/item/storage/firstaid/brute=1,\
 		/obj/item/storage/firstaid/fire=1,\
-		/obj/item/storage/box/ammo = 1,
+		/obj/item/storage/box/ammo/wt=1,\
 		/obj/item/gun/energy/e_gun/dragnet=1,
 		)
 
@@ -323,12 +323,12 @@
 	glasses = /obj/item/clothing/glasses/hud/health/night/syndicate
 	back = /obj/item/storage/backpack/ert_commander/ert_medical
 	belt = /obj/item/defibrillator/compact/loaded_ert
-	suit_store = /obj/item/gun/ballistic/automatic/proto/suppressed
+	suit_store = /obj/item/gun/ballistic/automatic/wt550/standart
 
 	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,\
 		/obj/item/storage/firstaid/tactical/ert_first = 1,\
 		/obj/item/storage/firstaid/tactical/ert_second = 1,\
-		/obj/item/storage/box/ammo=1,\
+		/obj/item/storage/box/ammo/wt=1,\
 		/obj/item/reagent_containers/hypospray/combat=1,\
 		/obj/item/gun/medbeam=1,\
 		/obj/item/paper/beamgun_istruction=1,\
@@ -454,10 +454,10 @@
 	glasses =  /obj/item/clothing/glasses/meson/night/ert
 	back = /obj/item/storage/backpack/ert_commander/ert_engineering
 	belt = /obj/item/storage/belt/utility/chief/full
-	suit_store = /obj/item/gun/ballistic/automatic/proto/suppressed
+	suit_store = /obj/item/gun/ballistic/automatic/wt550/standart
 
 	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,\
-		/obj/item/storage/box/ammo=1,
+		/obj/item/storage/box/ammo/wt=1,
 		/obj/item/storage/firstaid/brute=1,
 		/obj/item/storage/firstaid/fire=1,
 		/obj/item/rcd_ammo/large=2,

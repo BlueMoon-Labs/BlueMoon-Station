@@ -2,7 +2,7 @@
 	name = "dart"
 	icon_state = "cbbolt"
 	damage = 6
-	var/piercing = FALSE
+	var/piercing = SYRINGE_PIERCE_NONE
 
 /obj/item/projectile/bullet/dart/Initialize(mapload)
 	. = ..()
@@ -12,7 +12,7 @@
 	if(iscarbon(target))
 		var/mob/living/carbon/M = target
 		if(blocked != 100) // not completely blocked
-			if(M.can_inject(null, FALSE, def_zone, piercing)) // Pass the hit zone to see if it can inject by whether it hit the head or the body.
+			if(M.can_inject_syringe(null, FALSE, def_zone, piercing)) // Pass the hit zone to see if it can inject by whether it hit the head or the body.
 				..()
 				if(skip == TRUE)
 					return BULLET_ACT_HIT
@@ -30,7 +30,7 @@
 	return BULLET_ACT_HIT
 
 /obj/item/projectile/bullet/dart/piercing
-	piercing = TRUE
+	piercing = SYRINGE_PIERCE_ALL
 
 /obj/item/projectile/bullet/dart/metalfoam/Initialize(mapload)
 	. = ..()
@@ -51,13 +51,14 @@
 	name = "Smartdart"
 	icon_state = "dartproj"
 	damage = 0
+	piercing = SYRINGE_PIERCE_ALL
 	var/emptrig = FALSE
 
 /obj/item/projectile/bullet/dart/syringe/dart/on_hit(atom/target, blocked = FALSE)
 	if(iscarbon(target))
 		var/mob/living/carbon/M = target
 		if(blocked != 100)
-			if(M.can_inject(null, FALSE, def_zone, piercing)) // Pass the hit zone to see if it can inject by whether it hit the head or the body.
+			if(M.can_inject_syringe(null, FALSE, def_zone, piercing)) // Pass the hit zone to see if it can inject by whether it hit the head or the body.
 				..(target, blocked, TRUE)
 				for(var/datum/reagent/medicine/R in reagents.reagent_list) //OD prevention time!
 					if(R.type in GLOB.blacklisted_medchems)
@@ -83,7 +84,7 @@
 			else
 				blocked = 100
 				target.visible_message("<span class='danger'>\The [src] was deflected!</span>", \
-									   "<span class='userdanger'>You see a [src] bounce off you, booping sadly!</span>")
+										"<span class='userdanger'>You see a [src] bounce off you, booping sadly!</span>")
 
 	target.visible_message("<span class='danger'>\The [src] fails to land on target!</span>")
 	return BULLET_ACT_BLOCK

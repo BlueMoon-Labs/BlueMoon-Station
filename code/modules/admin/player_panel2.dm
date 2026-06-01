@@ -226,6 +226,7 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 		.["data_account_join_date"] = targetClient.account_join_date
 		.["data_related_cid"] = targetClient.related_accounts_cid
 		.["data_related_ip"] = targetClient.related_accounts_ip
+		.["data_cid"] = targetClient.computer_id
 
 		.["initial_scale"] = targetClient.prefs.features["body_size"]
 

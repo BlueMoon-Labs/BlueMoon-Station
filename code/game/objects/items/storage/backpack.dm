@@ -452,6 +452,8 @@
 	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
 	slot_flags = NONE
+	custom_price = PRICE_EXPENSIVE
+	custom_premium_price = PRICE_EXPENSIVE*2
 
 /obj/item/storage/backpack/duffelbag/med/surgery/ComponentInitialize()
 	. = ..()
@@ -946,7 +948,7 @@
 	STR.silent = TRUE
 
 /obj/item/storage/backpack/duffelbag/clown/syndie/PopulateContents()
-	new /obj/item/pda/clown(src)
+	new /obj/item/modular_computer/pda/clown(src)
 	new /obj/item/clothing/under/rank/civilian/clown(src)
 	new /obj/item/clothing/shoes/clown_shoes(src)
 	new /obj/item/clothing/mask/gas/clown_hat(src)

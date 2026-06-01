@@ -66,7 +66,7 @@
 	name = "Quartermaster"
 	jobtype = /datum/job/qm
 
-	belt = /obj/item/pda/quartermaster
+	belt = /obj/item/modular_computer/pda/heads/quartermaster
 	ears = /obj/item/radio/headset/heads/qm
 	uniform = /obj/item/clothing/under/rank/cargo/qm
 	shoes = /obj/item/clothing/shoes/sneakers/brown
@@ -83,7 +83,7 @@
 	name = "Syndicate Quartermaster"
 	jobtype = /datum/job/qm
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	ears = /obj/item/radio/headset/heads/qm
 	uniform = /obj/item/clothing/under/rank/captain/util

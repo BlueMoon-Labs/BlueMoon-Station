@@ -80,70 +80,128 @@ const loadChatFromStorage = async store => {
   store.dispatch(loadChat(state));
 };
 
+const anyChanged = (prev, next, keys) => {
+  if (!prev) {
+    return true;
+  }
+  for (const key of keys) {
+    if (prev[key] !== next[key]) {
+      return true;
+    }
+  }
+  return false;
+};
+
 /**
- * Applies all appearance and feature settings from the Redux state
- * to the chat renderer, respecting classic mode.
+ * Returns an applySettings function that maintains its own diff state.
+ *
+ * Each renderer call is guarded by a per-feature diff against the previous
+ * applied settings so unrelated settings (e.g. typing in highlight text)
+ * do not redundantly invalidate styles or rebuild regexes. Setting CSS
+ * custom properties on the chat root invalidates styles for every message
+ * subtree, so re-applying them on every keystroke causes major input lag
+ * once the chat has many messages.
  */
-const applySettings = (settings) => {
-  // Core appearance
-  chatRenderer.setHighlight(
-    settings.highlightText,
-    settings.highlightColor,
-    settings.matchWord,
-    settings.matchCase);
-  chatRenderer.setHighlightSound(settings.highlightSoundEnabled);
+const createApplySettings = () => {
+  let lastAppliedSettings = null;
+  let lastAppliedCustomProps = null;
 
-  chatRenderer.setChatClasses(
-    settings.chatStyle,
-    settings.chatAnimation,
-    settings.hoverEffect,
-    settings.smoothScroll);
-  chatRenderer.setBgAnimation(
-    settings.chatBgAnimation,
-    settings.chatBgAnimOpacity);
-  chatRenderer.setCustomColors(
-    settings.chatBgColor,
-    settings.chatTextColor,
-    settings.chatAccentColor);
+  return (settings) => {
+    const prev = lastAppliedSettings;
 
-  // Animation speed
-  const speedDef = CHAT_ANIM_SPEEDS.find(
-    s => s.id === settings.chatAnimSpeed);
-  const animSpeed = speedDef?.value || '200ms';
+    if (anyChanged(prev, settings,
+      ['highlightText', 'highlightColor', 'matchWord', 'matchCase'])) {
+      chatRenderer.setHighlight(
+        settings.highlightText,
+        settings.highlightColor,
+        settings.matchWord,
+        settings.matchCase);
+    }
+    if (anyChanged(prev, settings, ['highlightSoundEnabled'])) {
+      chatRenderer.setHighlightSound(settings.highlightSoundEnabled);
+    }
 
-  // Text glow
-  let glowValue = null;
-  const glowColor = settings.textGlowColor
-    || settings.chatAccentColor || '#ffdd44';
-  if (settings.textGlow === 'subtle') {
-    glowValue = '0 0 4px ' + glowColor;
-  }
-  else if (settings.textGlow === 'strong') {
-    glowValue = '0 0 10px ' + glowColor
-      + ', 0 0 20px ' + glowColor;
-  }
+    if (anyChanged(prev, settings,
+      ['chatStyle', 'chatAnimation', 'hoverEffect', 'smoothScroll'])) {
+      chatRenderer.setChatClasses(
+        settings.chatStyle,
+        settings.chatAnimation,
+        settings.hoverEffect,
+        settings.smoothScroll);
+    }
+    if (anyChanged(prev, settings, ['chatBgAnimation', 'chatBgAnimOpacity'])) {
+      chatRenderer.setBgAnimation(
+        settings.chatBgAnimation,
+        settings.chatBgAnimOpacity);
+    }
+    if (anyChanged(prev, settings,
+      ['chatBgColor', 'chatTextColor', 'chatAccentColor'])) {
+      chatRenderer.setCustomColors(
+        settings.chatBgColor,
+        settings.chatTextColor,
+        settings.chatAccentColor);
+    }
 
-  chatRenderer.setCustomProperties({
-    '--chat-anim-speed': animSpeed,
-    '--chat-glow': glowValue,
-    '--chat-msg-spacing': settings.messageSpacing + 'px',
-    '--chat-font-weight': String(settings.fontWeight),
-    '--chat-letter-spacing': settings.letterSpacing + 'px',
-    '--chat-border-radius': settings.borderRadius + 'px',
-  });
+    // Animation speed
+    const speedDef = CHAT_ANIM_SPEEDS.find(
+      s => s.id === settings.chatAnimSpeed);
+    const animSpeed = speedDef?.value || '200ms';
 
-  // Timestamps & time dividers
-  chatRenderer.setTimestamps(
-    settings.enableTimestamps,
-    settings.timestampFormat);
-  chatRenderer.setTimeDividers(
-    settings.enableTimeDividers,
-    settings.timeDividerInterval);
+    // Text glow
+    let glowValue = null;
+    const glowColor = settings.textGlowColor
+      || settings.chatAccentColor || '#ffdd44';
+    if (settings.textGlow === 'subtle') {
+      glowValue = '0 0 4px ' + glowColor;
+    }
+    else if (settings.textGlow === 'strong') {
+      glowValue = '0 0 10px ' + glowColor
+        + ', 0 0 20px ' + glowColor;
+    }
+
+    const nextCustomProps = {
+      '--chat-anim-speed': animSpeed,
+      '--chat-glow': glowValue,
+      '--chat-msg-spacing': settings.messageSpacing + 'px',
+      '--chat-font-weight': String(settings.fontWeight),
+      '--chat-letter-spacing': settings.letterSpacing + 'px',
+      '--chat-border-radius': settings.borderRadius + 'px',
+    };
+    // Only push CSS custom properties that actually changed value.
+    let changedProps = null;
+    for (const [key, value] of Object.entries(nextCustomProps)) {
+      if (!lastAppliedCustomProps || lastAppliedCustomProps[key] !== value) {
+        if (!changedProps) {
+          changedProps = {};
+        }
+        changedProps[key] = value;
+      }
+    }
+    if (changedProps) {
+      chatRenderer.setCustomProperties(changedProps);
+      lastAppliedCustomProps = nextCustomProps;
+    }
+
+    if (anyChanged(prev, settings, ['enableTimestamps', 'timestampFormat'])) {
+      chatRenderer.setTimestamps(
+        settings.enableTimestamps,
+        settings.timestampFormat);
+    }
+    if (anyChanged(prev, settings,
+      ['enableTimeDividers', 'timeDividerInterval'])) {
+      chatRenderer.setTimeDividers(
+        settings.enableTimeDividers,
+        settings.timeDividerInterval);
+    }
+
+    lastAppliedSettings = settings;
+  };
 };
 
 export const chatMiddleware = store => {
   let initialized = false;
   let loaded = false;
+  const applySettings = createApplySettings();
   chatRenderer.events.on('batchProcessed', countByType => {
     // Use this flag to workaround unread messages caused by
     // loading them from storage. Side effect of that, is that

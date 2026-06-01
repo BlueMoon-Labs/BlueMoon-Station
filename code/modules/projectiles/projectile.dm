@@ -751,6 +751,7 @@
 	pixel_move(round(PROJECTILE_FIRING_INSTANT_TRAVEL_AMOUNT / pixel_increment_amount), FALSE, allow_animation = FALSE)	//move it now!
 
 /obj/item/projectile/proc/setAngle(new_angle, hitscan_store_segment = TRUE)	//wrapper for overrides.
+	new_angle = sanitize_angle(new_angle, Angle)
 	Angle = new_angle
 	pixel_move_interrupted = TRUE
 	if(!nondirectional_sprite)
@@ -965,7 +966,10 @@
 
 		var/ox = round(screenview[1] / 2) - user.client.pixel_x //"origin" x
 		var/oy = round(screenview[2] / 2) - user.client.pixel_y //"origin" y
-		angle = arctan(y - oy, x - ox)
+		if(x == ox && y == oy)
+			angle = 0
+		else
+			angle = sanitize_angle(arctan(y - oy, x - ox))
 	return list(angle, p_x, p_y)
 
 /obj/item/projectile/Destroy()
@@ -1001,7 +1005,7 @@
 		. += thing
 		p.move_atom_to_src(thing)
 		var/matrix/M = new
-		M.Turn(original_angle)
+		M.Turn(sanitize_angle(original_angle))
 		thing.transform = M
 		thing.color = color
 		thing.set_light(muzzle_flash_range, muzzle_flash_intensity, muzzle_flash_color_override? muzzle_flash_color_override : color)
@@ -1012,7 +1016,7 @@
 		. += thing
 		p.move_atom_to_src(thing)
 		var/matrix/M = new
-		M.Turn(Angle)
+		M.Turn(sanitize_angle(Angle))
 		thing.transform = M
 		thing.color = color
 		thing.set_light(impact_light_range, impact_light_intensity, impact_light_color_override? impact_light_color_override : color)

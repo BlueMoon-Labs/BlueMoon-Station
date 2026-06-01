@@ -4,6 +4,11 @@
 #define POPUP_ANIM_TIME 5
 #define POPDOWN_ANIM_TIME 5 //Be sure to change the icon animation at the same time or it'll look bad
 
+/// How often process() re-scans the surroundings (view(), mechs, blobs) for new targets.
+/// Between scans it reuses the cached list — so it keeps shooting, but notices a fresh
+/// intruder up to this much later. SSmachines fires every 2 s, so this is "every other fire".
+#define TURRET_TARGET_SCAN_INTERVAL (4 SECONDS)
+
 #define TURRET_FLAG_SHOOT_ALL_REACT		(1<<0)	// The turret gets pissed off and shoots at people nearby (unless they have sec access!)
 #define TURRET_FLAG_AUTH_WEAPONS		(1<<1)	// Checks if it can shoot people that have a weapon they aren't authorized to have
 #define TURRET_FLAG_SHOOT_CRIMINALS		(1<<2)	// Checks if it can shoot people that are wanted
@@ -108,6 +113,9 @@ DEFINE_BITFIELD(turret_flags, list(
 	var/mob/remote_controller
 	/// MISSING:
 	var/shot_stagger = 0
+	/// Cached result of the last scan_for_targets() call, reused on the fires in between scans.
+	var/list/cached_targets
+	COOLDOWN_DECLARE(target_scan_cooldown)
 
 /obj/machinery/porta_turret/Initialize(mapload)
 	. = ..()
@@ -441,6 +449,27 @@ DEFINE_BITFIELD(turret_flags, list(
 	if(!on || (machine_stat & (NOPOWER|BROKEN)) || manual_control)
 		return PROCESS_KILL
 
+	var/list/targets
+	if(COOLDOWN_FINISHED(src, target_scan_cooldown))
+		targets = scan_for_targets()
+		cached_targets = targets.Copy() // tryToShootAt() mutates `targets`; keep an untouched cache
+		COOLDOWN_START(src, target_scan_cooldown, TURRET_TARGET_SCAN_INTERVAL)
+	else
+		// reuse the last scan; build a fresh, mutable list and drop anything deleted since then
+		targets = list()
+		for(var/atom/movable/candidate as anything in cached_targets)
+			if(!QDELETED(candidate))
+				targets += candidate
+
+	if(targets.len)
+		tryToShootAt(targets)
+	else if(!always_up)
+		popDown() // no valid targets, close the cover
+
+/// Scans the turret's surroundings (view(), mechs, blobs) for things it should shoot at and
+/// returns them as a list. Throttled by process() behind target_scan_cooldown — between scans
+/// process() reuses the cached result instead of calling this.
+/obj/machinery/porta_turret/proc/scan_for_targets()
 	var/list/targets = list()
 	for(var/mob/A in view(scan_range, base))
 		if(A.invisibility > SEE_INVISIBLE_LIVING)
@@ -504,10 +533,7 @@ DEFINE_BITFIELD(turret_flags, list(
 		for(var/obj/structure/blob/B in view(scan_range, base))
 			targets += B
 
-	if(targets.len)
-		tryToShootAt(targets)
-	else if(!always_up)
-		popDown() // no valid targets, close the cover
+	return targets
 
 /obj/machinery/porta_turret/proc/randomize_shot_stagger()
 	shot_stagger = rand(0, min(2 SECONDS, round(shot_delay/3, world.tick_lag)))

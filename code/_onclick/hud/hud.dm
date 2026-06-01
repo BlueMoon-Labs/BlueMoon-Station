@@ -65,6 +65,13 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 	///UI for screentips that appear when you mouse over things
 	var/atom/movable/screen/screentip/screentip_text
 
+	/// Last atom we built a screentip for. Used by /atom/MouseEntered to skip the
+	/// rebuild (8 build_context calls + signal sends + maptext write) when the
+	/// hover is on the same atom with the same held item — perf log shows ~142k
+	/// MouseEntered/session, the dedup makes the repeat-hover case a no-op.
+	var/atom/last_screentip_atom
+	var/obj/item/last_screentip_held
+
 	/// Whether or not screentips are enabled.
 	/// This is updated by the preference for cheaper reads than would be
 	/// had with a proc call, especially on one of the hottest procs in the
@@ -193,6 +200,8 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 	mymob = null
 
 	QDEL_NULL(screentip_text)
+	last_screentip_atom = null
+	last_screentip_held = null
 
 	return ..()
 
@@ -471,6 +480,8 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 	listed_actions.check_against_view()
 	palette_actions.check_against_view()
 	for(var/atom/movable/screen/movable/action_button/floating_button as anything in floating_actions)
+		if(isnull(floating_button))
+			continue
 		var/list/current_offsets = screen_loc_to_offset(floating_button.screen_loc)
 		// We set the view arg here, so the output will be properly hemm'd in by our new view
 		floating_button.screen_loc = offset_to_screen_loc(current_offsets[1], current_offsets[2], view = our_view)

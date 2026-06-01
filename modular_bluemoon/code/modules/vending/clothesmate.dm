@@ -169,6 +169,8 @@ GLOBAL_LIST_INIT(clothesmate_socks, list())
 				/obj/item/clothing/neck/tie/blue = 3,
 				/obj/item/clothing/neck/tie/horrible = 5,
 				/obj/item/clothing/neck/tie/red = 3,
+				/obj/item/clothing/neck/cloak/ranger_poncho = 3,
+				/obj/item/clothing/neck/cloak/ranger_cape = 3,
 				/obj/item/clothing/wrists/armwarmer/transparent = 3,
 				/obj/item/clothing/wrists/armwarmer/transparent_long = 3,
 				/obj/item/storage/backpack/henchmen = 7,
@@ -324,6 +326,7 @@ GLOBAL_LIST_INIT(clothesmate_socks, list())
 				/obj/item/clothing/under/sweater/green = 3,
 				/obj/item/clothing/under/sweater/purple = 3,
 				/obj/item/clothing/under/sweater/red = 3,
+				/obj/item/clothing/under/occult = 5,
 			),
 		),
 
@@ -393,6 +396,7 @@ GLOBAL_LIST_INIT(clothesmate_socks, list())
 				/obj/item/clothing/suit/toggle/tunnelfox = 3,
 				/obj/item/clothing/suit/yakuza = 7,
 				/obj/item/clothing/suit/yuri = 5,
+				/obj/item/clothing/suit/hooded/occult = 5,
 			),
 		),
 

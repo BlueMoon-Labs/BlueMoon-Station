@@ -161,10 +161,11 @@
 	var/list/desc = list("This is a photo of an area of [size_x*2 + 1] meters by [size_y*2 + 1] meters.")
 	var/ai_user = isAI(user)
 	var/list/seen
-	var/list/viewlist = user?.client? getviewsize(user.client.view) : getviewsize(world.view)
+	var/list/viewlist = user?.client ? getviewsize(user.client.view) : getviewsize(world.view)
 	var/viewr = max(viewlist[1], viewlist[2]) + max(size_x, size_y)
-	var/viewc = user?.client? user.client.eye : target
-	seen = get_hear(viewr, viewc)
+	// Must match can_target(): living mobs use their mob for get_hear(), not client.eye (eye can be a remote camera).
+	var/atom/view_center = istype(user, /mob) ? user : (user?.client?.eye || target)
+	seen = get_hear(viewr, view_center)
 	var/list/turfs = list()
 	var/list/mobs = list()
 	var/blueprints = FALSE
@@ -176,6 +177,8 @@
 				mobs += M
 			if(locate(/obj/item/areaeditor/blueprints) in T)
 				blueprints = TRUE
+	if(!length(turfs))
+		turfs += target_turf
 	for(var/i in mobs)
 		var/mob/M = i
 		desc += M.get_photo_description(src)

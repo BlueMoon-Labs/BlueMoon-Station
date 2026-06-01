@@ -54,6 +54,7 @@
 	var/datum/action/innate/crafting/button
 	var/display_craftable_only = FALSE
 	var/display_compact = TRUE
+	var/search_query = ""
 
 /*	This is what procs do:
 	get_environment - gets a list of things accessable for crafting by user
@@ -330,6 +331,7 @@
 /datum/component/personal_crafting/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
+		search_query = ""	// this clears the query if a new UI window is made
 		cur_category = categories[1]
 		if(islist(categories[cur_category]))
 			var/list/subcats = categories[cur_category]
@@ -349,18 +351,41 @@
 
 	var/list/surroundings = get_surroundings(user)
 	var/list/craftability = list()
-	for(var/rec in GLOB.crafting_recipes)
-		var/datum/crafting_recipe/R = rec
 
-		if(!R.always_availible && !(R.type in user?.mind?.learned_recipes)) //User doesn't actually know how to make this.
-			continue
+	if(search_query && search_query != "")	// If we're currently using a search tab, use this check
+		for(var/rec in GLOB.crafting_recipes)
+			var/datum/crafting_recipe/R = rec
 
-		if((R.category != cur_category) || (R.subcategory != cur_subcategory))
-			continue
+			if(!R.always_availible && !(R.type in user?.mind?.learned_recipes))
+				continue
 
-		craftability["[REF(R)]"] = check_contents(user, R, surroundings)
+			var/matched = findtext(R.name, search_query)	// Does it match by name? If so, this R is valid for check
+
+			if(!matched && length(R.reqs))
+				for(var/req_type in R.reqs)	// It doesn't match by name, but recipe got reqs, so we cycle through those
+					var/atom/path = req_type
+					if(findtext(initial(path.name), search_query))
+						matched = TRUE	// ingridient matched, this R is valid for check
+						break
+
+			if(!matched)
+				continue	// No matches by name or ingridients
+
+			craftability["[REF(R)]"] = check_contents(user, R, surroundings)
+	else	// Not searching right now, check for category
+		for(var/rec in GLOB.crafting_recipes)
+			var/datum/crafting_recipe/R = rec
+
+			if(!R.always_availible && !(R.type in user?.mind?.learned_recipes)) //User doesn't actually know how to make this.
+				continue
+
+			if((R.category != cur_category) || (R.subcategory != cur_subcategory))
+				continue
+
+			craftability["[REF(R)]"] = check_contents(user, R, surroundings)
 
 	data["craftability"] = craftability
+
 	return data
 
 /datum/component/personal_crafting/ui_static_data(mob/user)
@@ -428,6 +453,9 @@
 		if("set_category")
 			cur_category = params["category"]
 			cur_subcategory = params["subcategory"] || ""
+			. = TRUE
+		if("search")
+			search_query = params["query"]
 			. = TRUE
 
 /datum/component/personal_crafting/proc/build_recipe_data(datum/crafting_recipe/R)

@@ -92,9 +92,14 @@
 	grav_field = new(src, 7, TRUE, rand(0, 3))
 
 /obj/effect/anomaly/grav/high/detonate()
-	for(var/obj/machinery/gravity_generator/main/the_generator in GLOB.machines)
-		if(is_station_level(the_generator.z))
-			the_generator.blackout()
+	var/turf/anomaly_turf = get_turf(src)
+	if(!anomaly_turf || !is_station_level(anomaly_turf.z))
+		return
+	var/list/generators = GLOB.gravity_generators["[anomaly_turf.z]"]
+	if(!generators)
+		return
+	for(var/obj/machinery/gravity_generator/main/the_generator as anything in generators)
+		the_generator.blackout()
 
 /obj/effect/anomaly/grav/high/Destroy()
 	QDEL_NULL(grav_field)

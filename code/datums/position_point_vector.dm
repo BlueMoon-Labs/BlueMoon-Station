@@ -171,7 +171,7 @@
 /datum/point/vector/proc/set_angle(new_angle)		//calculations use "byond angle" where north is 0 instead of 90, and south is 180 instead of 270.
 	if(isnull(angle))
 		return
-	angle = new_angle
+	angle = sanitize_angle(new_angle, angle)
 	update_offsets()
 
 /datum/point/vector/proc/update_offsets()

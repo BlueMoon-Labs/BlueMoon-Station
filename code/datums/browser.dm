@@ -149,8 +149,9 @@
 		return
 	var/client/browser_client = resolve_client()
 	if(!browser_client)
-		var/fallback_title = title ? "[title]" : "<untitled>"
-		WARNING("Browser [fallback_title] ([window_id]) failed to open without a valid client.")
+		if(user)
+			var/fallback_title = title ? "[title]" : "<untitled>"
+			WARNING("Browser [fallback_title] ([window_id]) failed to open without a valid client.")
 		return
 	var/window_size = ""
 	if(width && height)
@@ -194,7 +195,7 @@
 		var/client/browser_client = resolve_client()
 		if(browser_client)
 			browser_client << browse(null, "window=[window_id]")
-		else
+		else if(user)
 			var/fallback_title = title ? "[title]" : "<untitled>"
 			WARNING("Browser [fallback_title] ([window_id]) failed to close without a valid client.")
 	else

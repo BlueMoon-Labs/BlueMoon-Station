@@ -1,7 +1,7 @@
 /// Random maintenance junk drifting past the shuttle
 /datum/shuttle_event/simple_spawner/maintenance
 	name = "Вещи из технических тоннелей"
-	event_probability = 4
+	event_probability = 40
 	activation_fraction = 0.1
 	spawning_list = list()
 	dynamic_loot_spawns = TRUE
@@ -23,7 +23,7 @@
 
 /datum/shuttle_event/simple_spawner/italian
 	name = "Итальянский шторм"
-	event_probability = 5
+	event_probability = 50
 	activation_fraction = 0.12
 	spawns_per_spawn = 2
 	spawning_flags = SHUTTLE_EVENT_MISS_SHUTTLE | SHUTTLE_EVENT_HIT_SHUTTLE

@@ -110,6 +110,10 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 		nuke_chat()
 	if(href_list["reload_statbrowser"])
 		statbrowser_ready = FALSE
+		statpanel_protocol_acked = FALSE
+		statpanel_last_sent.Cut()
+		statpanel_last_mc_iter = -1
+		reset_listed_turf_icon_cache()
 		src << browse(file('html/statbrowser.html'), "window=statbrowser")
 		addtimer(CALLBACK(src, PROC_REF(check_panel_loaded)), 30 SECONDS)
 	// Log all hrefs
@@ -182,6 +186,10 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	var/atom/target = locate(href_list["statpanel_item_target"])
 	if(!target)
 		return
+	var/turf/listed = mob?.listed_turf
+	var/refresh_listed_turf = listed && get_turf(target) == listed
+	if(refresh_listed_turf)
+		mark_listed_turf_dirty(force_icon_refresh = TRUE)
 	var/button = "left=1"
 	switch(href_list["statpanel_item_click"])
 		if("middle")
@@ -191,6 +199,116 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 		else
 			button = "left=1"
 	Click(target, target.loc, null, "[button];[href_list["statpanel_item_shiftclick"]?"shift=1;":null][href_list["statpanel_item_ctrlclick"]?"ctrl=1;":null]&alt=[href_list["statpanel_item_altclick"]?"alt=1;":null]", FALSE, "statpanel")
+	if(refresh_listed_turf)
+		mark_listed_turf_dirty(force_icon_refresh = TRUE)
+
+/client/proc/mark_listed_turf_dirty(force_icon_refresh = FALSE)
+	if(mob?.listed_turf)
+		listed_turf_dirty = TRUE
+		listed_turf_dirty_at = world.time
+		if(force_icon_refresh)
+			listed_turf_icon_refresh_pending = TRUE
+
+/client/proc/mark_listed_turf_dirty_from_signal(datum/source)
+	SIGNAL_HANDLER
+	mark_listed_turf_dirty()
+
+/// Handler for COMSIG_TURF_CHANGE — fires on the OLD turf datum just before it is qdel'd
+/// and replaced by a new turf at the same coords. Without this, listed_turf_watched would
+/// dangle to a dead datum (UnregisterSignal would no-op or runtime). We capture the coords
+/// and rebind on the next tick, when the replacement turf exists.
+/client/proc/listed_turf_changed_signal(datum/source)
+	SIGNAL_HANDLER
+	if(!source)
+		return
+	var/turf/old_turf = source
+	var/x = old_turf.x
+	var/y = old_turf.y
+	var/z = old_turf.z
+	// Source is being qdel'd; null the watched ref so we don't UnregisterSignal a dead datum later.
+	listed_turf_watched = null
+	if(mob?.listed_turf == old_turf)
+		mob.listed_turf = null
+	cached_turf_ref = null
+	cached_turf_encoded = null
+	addtimer(CALLBACK(src, PROC_REF(rebind_listed_turf_at_coords), x, y, z), 0, TIMER_UNIQUE | TIMER_OVERRIDE)
+
+/client/proc/rebind_listed_turf_at_coords(x, y, z)
+	if(!mob)
+		return
+	var/turf/replacement = locate(x, y, z)
+	if(!replacement || QDELETED(replacement))
+		clear_listed_turf()
+		return
+	if(!mob.TurfAdjacent(replacement))
+		clear_listed_turf()
+		return
+	set_listed_turf(replacement)
+	if(statbrowser_ready)
+		mark_listed_turf_dirty(force_icon_refresh = TRUE)
+
+/client/proc/update_listed_turf_watch(turf/T)
+	if(listed_turf_watched == T)
+		return
+	if(listed_turf_watched)
+		UnregisterSignal(listed_turf_watched, list(COMSIG_ATOM_ENTERED, COMSIG_ATOM_EXITED, COMSIG_ATOM_CONTENTS_DEL, COMSIG_TURF_CHANGE))
+	listed_turf_watched = T
+	if(T)
+		RegisterSignal(T, list(COMSIG_ATOM_ENTERED, COMSIG_ATOM_EXITED, COMSIG_ATOM_CONTENTS_DEL), PROC_REF(mark_listed_turf_dirty_from_signal))
+		RegisterSignal(T, COMSIG_TURF_CHANGE, PROC_REF(listed_turf_changed_signal))
+
+/client/proc/reset_listed_turf_icon_cache()
+	statpanel_sent_icons.Cut()
+	listed_turf_last_icon_refresh = 0
+	listed_turf_icon_refresh_pending = FALSE
+	SSstatpanels.icon_queue -= src
+
+/client/proc/set_listed_turf(turf/T)
+	if(!mob)
+		return
+	var/turf/old_listed = mob.listed_turf
+	if(old_listed == T)
+		update_listed_turf_watch(T)
+		mark_listed_turf_dirty()
+		return
+	if(old_listed)
+		panel_tabs -= old_listed.name
+	mob.listed_turf = T
+	update_listed_turf_watch(T)
+	reset_listed_turf_icon_cache()
+	cached_turf_ref = null
+	cached_turf_encoded = null
+	listed_turf_last_refresh = 0
+	listed_turf_eye_ref = null
+	listed_turf_dirty = !!T
+	listed_turf_icon_refresh_pending = FALSE
+
+/client/proc/open_listed_turf(turf/T)
+	if(!mob || !T)
+		return
+	set_listed_turf(T)
+	if(!statbrowser_ready)
+		return
+	src << output("[url_encode(json_encode(T.name))];", "statbrowser:create_listedturf")
+	SSstatpanels.refresh_listed_turf(src, force_send = TRUE)
+
+/client/proc/clear_listed_turf(send_output = TRUE)
+	var/turf/old_listed = mob?.listed_turf
+	if(old_listed)
+		panel_tabs -= old_listed.name
+	if(mob)
+		mob.listed_turf = null
+	update_listed_turf_watch(null)
+	reset_listed_turf_icon_cache()
+	cached_turf_ref = null
+	cached_turf_encoded = null
+	listed_turf_last_refresh = 0
+	listed_turf_eye_ref = null
+	listed_turf_dirty = FALSE
+	listed_turf_dirty_at = 0
+	listed_turf_icon_refresh_pending = FALSE
+	if(send_output && statbrowser_ready)
+		src << output("", "statbrowser:remove_listedturf")
 
 /client/proc/is_content_unlocked()
 	if(!prefs.unlock_content && !IS_CKEY_DONATOR_GROUP(key, DONATOR_GROUP_TIER_1))
@@ -308,9 +426,9 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	prefs.last_id = computer_id			//these are gonna be used for banning
 	fps = sanitize_clientfps(prefs.clientfps)
 
-	// BLUEMOON EDIT — Enable Ctrl+F find in legacy browser windows (BYOND 516+)
+	// BLUEMOON EDIT — Enable Ctrl+F find and persistent byondStorage in browser windows (BYOND 516+)
 	if(byond_version >= 516)
-		winset(src, null, "browser-options=+find")
+		winset(src, null, "browser-options=+find,+byondstorage")
 
 	//Admin Authorisation
 	var/connecting_admin = FALSE //because de-admined admins connecting should be treated like admins.
@@ -416,6 +534,7 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 
 	// Initialize tgui panel
 	statbrowser_ready = FALSE
+	reset_listed_turf_icon_cache()
 	src << browse(file('html/statbrowser.html'), "window=statbrowser")
 	addtimer(CALLBACK(src, PROC_REF(check_panel_loaded)), 30 SECONDS)
 	tgui_panel.initialize()
@@ -845,9 +964,17 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	GLOB.clients -= src
 	GLOB.directory -= ckey
 	log_access("Logout: [key_name(src)]")
+	// Tear down listed-turf signals and any queued icon work so we don't leak refs through the signal subsystem.
+	if(listed_turf_watched || mob?.listed_turf)
+		clear_listed_turf(send_output = FALSE)
+	if(SSstatpanels)
+		SSstatpanels.icon_queue -= src
+		SSstatpanels.icon_run -= src
+		SSstatpanels.ping_run -= src
+		SSstatpanels.currentrun -= src
 	if(GLOB.ahelp_tickets)
 		GLOB.ahelp_tickets.ClientLogout(src)
-	SSserver_maint.UpdateHubStatus()
+
 	if(credits)
 		QDEL_LIST(credits)
 	if(holder)
@@ -1018,7 +1145,7 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	query_log_connection.Execute()
 	qdel(query_log_connection)
 
-	SSserver_maint.UpdateHubStatus()
+
 
 	if(new_player)
 		player_age = -1
@@ -1038,6 +1165,9 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 			CRASH("Age check regex failed for [src.ckey]")
 
 /client/proc/validate_key_in_db()
+	// Slow path does world.Export("http://byond.com/members/...") — must not block /client/New().
+	// Return value is unused at the only callsite (client_procs.dm), so fire-and-forget is safe.
+	set waitfor = FALSE
 	var/sql_key
 	var/datum/db_query/query_check_byond_key = SSdbcore.NewQuery(
 		"SELECT byond_key FROM [format_table_name("player")] WHERE ckey = :ckey",
@@ -1298,17 +1428,40 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 		//load info on what assets the client has
 		src << browse('code/modules/asset_cache/validate_assets.html', "window=asset_cache_browser")
 
-		//Precache the client with all other assets slowly, so as to not block other browse() calls
-		if (CONFIG_GET(flag/asset_simple_preload))
-			addtimer(CALLBACK(SSassets.transport, TYPE_PROC_REF(/datum/asset_transport, send_assets_slow), src, SSassets.transport.preload), 5 SECONDS)
+		// BLUEMOON EDIT: defer the heavyweight preload (asset cache + VOX, multi-MB) until the
+		// statbrowser is up. The BYOND browse() queue is single-threaded per client; if we
+		// enqueue megabytes ahead of statbrowser.html, clients sit on "Downloading resources"
+		// while critical UI never arrives and players perceive a disconnect.
+		INVOKE_ASYNC(src, PROC_REF(preload_resources_when_ui_ready))
 
-		#if (PRELOAD_RSC == 0)
-		for (var/type in GLOB.vox_types)
-			for(var/word in GLOB.vox_types[type])
-				var/file = GLOB.vox_types[type][word]
-				Export("##action=load_rsc", file)
-				stoplag()
-		#endif
+/// BLUEMOON EDIT: heavyweight preload (asset cache + VOX) that fires AFTER the statbrowser
+/// is loaded so the UI reaches the player first. Has a hard timeout so clients whose
+/// statbrowser never reports ready still get their resources eventually.
+/client/proc/preload_resources_when_ui_ready()
+	set waitfor = FALSE
+	var/deadline = world.time + 60 SECONDS
+	while(world.time < deadline && !statbrowser_ready)
+		if(QDELETED(src))
+			return
+		sleep(1 SECONDS)
+	if(QDELETED(src))
+		return
+
+	//Precache the client with all other assets slowly, so as to not block other browse() calls
+	if (CONFIG_GET(flag/asset_simple_preload))
+		addtimer(CALLBACK(SSassets.transport, TYPE_PROC_REF(/datum/asset_transport, send_assets_slow), src, SSassets.transport.preload), 5 SECONDS)
+
+	#if (PRELOAD_RSC == 0)
+	for (var/type in GLOB.vox_types)
+		if(QDELETED(src))
+			return
+		for(var/word in GLOB.vox_types[type])
+			if(QDELETED(src))
+				return
+			var/file = GLOB.vox_types[type][word]
+			Export("##action=load_rsc", file)
+			stoplag()
+	#endif
 
 
 //Hook, override it to run code when dir changes
@@ -1492,6 +1645,8 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	// Fallback for clients where Panel-Ready bridge callback is delayed/missing.
 	statbrowser_ready = TRUE
 	init_verbs()
+	if(mob?.listed_turf)
+		open_listed_turf(mob.listed_turf)
 
 //increment progress for an unlockable loadout item
 /client/proc/increment_progress(key, amount)

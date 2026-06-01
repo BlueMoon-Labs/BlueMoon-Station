@@ -1,6 +1,6 @@
 /mob/living/gib(no_brain, no_organs, no_bodyparts, datum/explosion/was_explosion)
 	var/prev_lying = lying
-	if(stat != DEAD)
+	if((stat != DEAD) || istype(src, /mob/living/silicon/robot))	// Robot's death() proc is called even if he's dead on gib()
 		death(1)
 
 	if(!prev_lying)
@@ -56,6 +56,7 @@
 
 /mob/living/death(gibbed)
 	SEND_SIGNAL(src, COMSIG_LIVING_PREDEATH, gibbed)
+	SEND_SIGNAL(src, COMSIG_LIVING_DEATH, gibbed)
 
 	set_stat(DEAD)
 	unset_machine()

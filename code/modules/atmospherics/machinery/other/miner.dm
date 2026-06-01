@@ -77,8 +77,9 @@
 	update_icon()
 
 /obj/machinery/atmospherics/miner/proc/set_broken(setting)
-	if(broken != setting)
-		broken = setting
+	if(broken == setting)
+		return // check_operation() calls this every process_atmos() tick — don't rebuild the icon for nothing
+	broken = setting
 	update_icon()
 
 /obj/machinery/atmospherics/miner/proc/update_power()

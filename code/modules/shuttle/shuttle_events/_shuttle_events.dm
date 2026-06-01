@@ -1,7 +1,7 @@
 /// An event that runs while the emergency shuttle is on the reserved transit Z-level (hyperspace).
 /datum/shuttle_event
 	var/name = "shuttle event"
-	var/event_probability = 5
+	var/event_probability = 50
 	var/active = FALSE
 	/// Fraction of total flight duration before this activates (0 = start of flight)
 	var/activation_fraction = 0
@@ -153,3 +153,15 @@
 	// Defer cling: synchronous AddComponent in the same tick as SSshuttle.fire was stalling MC (DEFCON).
 	if(ismovable(spawnee) && !spawnee.anchored && istype(get_turf(spawnee), /turf/open/space/transit))
 		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(deferred_init_shuttle_cling_for_event), WEAKREF(spawnee)), 1)
+
+/// Walkable turfs inside a mobile shuttle's registered areas (for station-dock ghost spawns).
+/proc/get_mobile_shuttle_interior_turfs(obj/docking_port/mobile/port)
+	var/list/turfs = list()
+	if(!port?.shuttle_areas)
+		return turfs
+	for(var/area/shuttle/shuttle_area as anything in port.shuttle_areas)
+		for(var/turf/open/T as anything in shuttle_area)
+			if(T.density)
+				continue
+			turfs += T
+	return turfs

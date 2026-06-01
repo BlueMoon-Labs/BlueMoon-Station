@@ -600,6 +600,11 @@
 /mob/living/proc/can_inject(mob/user, error_msg, target_zone, penetrate_thick = FALSE, bypass_immunity = FALSE)
 	return TRUE
 
+// Syringe-specific gate. Non-human mobs don't have human clothing layers, so this is a
+// thin wrapper around can_inject() that only converts pierce_level to penetrate_thick.
+/mob/living/proc/can_inject_syringe(mob/user, error_msg, target_zone, pierce_level = SYRINGE_PIERCE_NONE)
+	return can_inject(user, error_msg, target_zone, pierce_level >= SYRINGE_PIERCE_ALL)
+
 /mob/living/is_injectable(allowmobs = TRUE)
 	return (allowmobs && reagents && can_inject())
 

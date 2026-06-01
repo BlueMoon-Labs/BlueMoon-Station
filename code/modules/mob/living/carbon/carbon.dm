@@ -34,6 +34,23 @@
 		breath_buffer = new
 	return breath_buffer
 
+/// Used by glass shards and similar pickup edge hazards — suit/uniform glove coverage counts, not only the glove slot (e.g. space suits hide hands via HIDEGLOVES).
+/mob/living/carbon/proc/hands_unprotected_for_shard_pickup_damage()
+	if(HAS_TRAIT(src, TRAIT_PIERCEIMMUNE))
+		return FALSE
+	var/obj/item/bodypart/hand_part = get_active_hand()
+	if(hand_part?.is_robotic_limb())
+		return FALSE
+	if(gloves)
+		return FALSE
+	if(ishuman(src))
+		var/mob/living/carbon/human/H = src
+		if(H.wear_suit && (H.wear_suit.body_parts_covered & HANDS))
+			return FALSE
+		if(H.w_uniform && (H.w_uniform.body_parts_covered & HANDS))
+			return FALSE
+	return TRUE
+
 /mob/living/carbon/relaymove(mob/user, direction)
 	if(user in src.stomach_contents)
 		if(prob(40))

@@ -321,7 +321,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 			if(length(resistance_list))
 				resistance_text += "Устойчиво к [english_list(resistance_list)]."
 		if(resistance_text)
-			. += "[is_plural ? "Эти вещи устойчивы" : "Этот предмет устойчив"] к повреждениям. <span class='chat-tooltip chat-tooltip--warning'>\[?\]<span class='chat-tooltip__content'>[resistance_text]</span></span>"
+			. += "[is_plural ? "Эти вещи устойчивы" : "Этот предмет устойчив"] к повреждениям. [span_tooltip_fast(resistance_text)]"
 
 	if(item_flags & (ITEM_CAN_BLOCK | ITEM_CAN_PARRY))
 		var/datum/block_parry_data/data = return_block_parry_datum(block_parry_data)

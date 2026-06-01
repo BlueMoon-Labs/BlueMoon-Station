@@ -1,5 +1,5 @@
 import { useBackend } from '../backend';
-import { Button, ColorBox, Section, Table } from '../components';
+import { Button, Section, Stack } from '../components';
 import { NtosWindow } from '../layouts';
 
 export const NtosMain = (props, context) => {
@@ -9,107 +9,185 @@ export const NtosMain = (props, context) => {
     programs = [],
     has_light,
     light_on,
-    comp_light_color,
     removable_media = [],
     cardholder,
     login = [],
+    has_cartridge,
+    cartridge_name,
+    battery_percent,
+    available_themes = [],
+    security_level,
+    security_level_color,
   } = data;
+
   return (
     <NtosWindow
-      title={device_theme === 'syndicate'
-        && 'Syndix Main Menu'
-        || 'NtOS Main Menu'}
+      title={device_theme === 'syndicate' ? 'Syndix OS' : 'NtOS'}
       theme={device_theme}
-      width={400}
-      height={500}>
-      <NtosWindow.Content overflow="auto">
-        {!!has_light && (
-          <Section>
-            <Button
-              width="144px"
-              icon="lightbulb"
-              selected={light_on}
-              onClick={() => act('PC_toggle_light')}>
-              Flashlight: {light_on ? 'ON' : 'OFF'}
-            </Button>
-            <Button
-              ml={1}
-              onClick={() => act('PC_light_color')}>
-              Color:
-              <ColorBox ml={1} color={comp_light_color} />
-            </Button>
-          </Section>
-        )}
-        {!!cardholder && (
-          <Section
-            title="User Login"
-            buttons={(
-              <Button
-                icon="eject"
-                content="Eject ID"
-                disabled={!login.IDName}
-                onClick={() => act('PC_Eject_Disk', { name: "ID" })}
-              />
-            )}>
-            <Table>
-              <Table.Row>
-                ID Name: {login.IDName}
-              </Table.Row>
-              <Table.Row>
-                Assignment: {login.IDJob}
-              </Table.Row>
-            </Table>
-          </Section>
-        )}
-        {!!removable_media.length && (
-          <Section title="Media Eject">
-            <Table>
-              {removable_media.map(device => (
-                <Table.Row key={device}>
-                  <Table.Cell>
+      width={420}
+      height={560}>
+      <NtosWindow.Content>
+        <Stack vertical fill>
+          {/* ID Details */}
+          {!!cardholder && login.IDName && (
+            <Stack.Item>
+              <Section
+                title="Данные"
+                style={{ margin: '8px 10px 0 10px' }}>
+                <div style={{ fontSize: '12px', lineHeight: '1.6' }}>
+                  <div>
+                    <span style={{ color: 'rgba(255,255,255,0.5)' }}>
+                      Владелец:{' '}
+                    </span>
+                    <b>{login.IDName}</b>
+                  </div>
+                  <div>
+                    <span style={{ color: 'rgba(255,255,255,0.5)' }}>
+                      Должность:{' '}
+                    </span>
+                    <b>{login.IDJob || 'Нет'}</b>
+                  </div>
+                </div>
+              </Section>
+            </Stack.Item>
+          )}
+
+          {/* Cartridge */}
+          {!!has_cartridge && (
+            <Stack.Item>
+              <div style={{
+                margin: '4px 10px 0 10px',
+                padding: '8px 12px',
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: '6px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}>
+                <span style={{ fontSize: '13px' }}>
+                  <span style={{ color: 'rgba(255,255,255,0.5)' }}>
+                    Картридж{' '}
+                  </span>
+                  <b>{cartridge_name}</b>
+                </span>
+                <Button
+                  icon="eject"
+                  color="transparent"
+                  onClick={() => act('PDA_ejectDisk')}>
+                  Извлечь
+                </Button>
+              </div>
+            </Stack.Item>
+          )}
+
+          {/* Removable media */}
+          {!!removable_media.length && (
+            <Stack.Item>
+              <div style={{ margin: '4px 10px 0 10px' }}>
+                {removable_media.map(device => (
+                  <Button
+                    key={device}
+                    fluid
+                    color="transparent"
+                    icon="eject"
+                    content={device}
+                    onClick={() =>
+                      act('PC_Eject_Disk', { name: device })}
+                  />
+                ))}
+              </div>
+            </Stack.Item>
+          )}
+
+          {/* Applications */}
+          <Stack.Item grow>
+            <Section
+              title="Приложения"
+              fill
+              style={{ margin: '8px 10px' }}>
+              <Stack vertical>
+                {programs.map(program => (
+                  <Stack.Item key={program.name}>
                     <Button
                       fluid
-                      color="transparent"
-                      icon="eject"
-                      content={device}
-                      onClick={() => act('PC_Eject_Disk', { name: device })}
-                    />
-                  </Table.Cell>
-                </Table.Row>
-              ))}
-            </Table>
-          </Section>
-        )}
-        <Section title="Programs">
-          <Table>
-            {programs.map(program => (
-              <Table.Row key={program.name}>
-                <Table.Cell>
+                      color={program.alert ? 'yellow' : 'transparent'}
+                      icon={program.icon}
+                      onClick={() =>
+                        act('PC_runprogram', { name: program.name })}>
+                      {program.desc}
+                      {program.name === 'nt_messenger' && security_level && (
+                        <span
+                          title={security_level.toUpperCase()}
+                          style={{
+                            display: 'inline-block',
+                            width: '8px',
+                            height: '8px',
+                            borderRadius: '50%',
+                            backgroundColor: security_level_color,
+                            marginLeft: '6px',
+                            verticalAlign: 'middle',
+                          }} />
+                      )}
+                      {!!program.running && (
+                        <span style={{
+                          marginLeft: '8px',
+                          fontSize: '10px',
+                          color: 'rgba(255,255,255,0.4)',
+                        }}>
+                          (запущено)
+                        </span>
+                      )}
+                    </Button>
+                  </Stack.Item>
+                ))}
+              </Stack>
+            </Section>
+          </Stack.Item>
+
+          {/* Bottom bar */}
+          <Stack.Item>
+            <div style={{
+              borderTop: '1px solid rgba(255,255,255,0.08)',
+              padding: '6px 10px',
+              display: 'flex',
+              gap: '6px',
+              alignItems: 'center',
+            }}>
+              {!!has_light && (
+                <>
                   <Button
-                    fluid
-                    color={program.alert ? 'yellow' : 'transparent'}
-                    icon={program.icon}
-                    content={program.desc}
-                    onClick={() => act('PC_runprogram', {
-                      name: program.name,
-                    })} />
-                </Table.Cell>
-                <Table.Cell collapsing width="18px">
-                  {!!program.running && (
-                    <Button
-                      color="transparent"
-                      icon="times"
-                      tooltip="Close program"
-                      tooltipPosition="left"
-                      onClick={() => act('PC_killprogram', {
-                        name: program.name,
-                      })} />
-                  )}
-                </Table.Cell>
-              </Table.Row>
-            ))}
-          </Table>
-        </Section>
+                    icon="lightbulb"
+                    selected={light_on}
+                    color="transparent"
+                    onClick={() => act('PC_toggle_light')}>
+                    {light_on ? 'ВКЛ' : 'ВЫКЛ'}
+                  </Button>
+                  <Button
+                    icon="palette"
+                    color="transparent"
+                    onClick={() => act('PC_light_color')}>
+                    Цвет
+                  </Button>
+                </>
+              )}
+              <Button
+                icon="palette"
+                color="transparent"
+                style={{ marginLeft: 'auto' }}
+                onClick={() => {
+                  const idx = available_themes.findIndex(
+                    t => t.id === device_theme);
+                  const next = available_themes[
+                    (idx + 1) % available_themes.length];
+                  act('set_theme', { theme: next.id });
+                }}>
+                Тема: {available_themes.find(
+                  t => t.id === device_theme)?.name || device_theme}
+              </Button>
+            </div>
+          </Stack.Item>
+        </Stack>
       </NtosWindow.Content>
     </NtosWindow>
   );

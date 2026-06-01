@@ -126,6 +126,8 @@ distance_multiplier - Can be used to multiply the distance at which the sound is
 
 /mob/proc/playsound_local(turf/turf_source, soundin, vol as num, vary, frequency, falloff_exponent = SOUND_FALLOFF_EXPONENT, channel = 0, pressure_affected = TRUE, sound/S, max_distance,
 	falloff_distance = SOUND_DEFAULT_FALLOFF_DISTANCE, distance_multiplier = SOUND_DEFAULT_DISTANCE_MULTIPLIER, envwet = -10000, envdry = 0, virtual_hearer)
+	if(QDELETED(src))
+		return
 	if(audiovisual_redirect)
 		virtual_hearer = get_turf(src)
 		audiovisual_redirect.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, max_distance, falloff_distance, distance_multiplier, max(0, envwet), -10000, virtual_hearer)
@@ -140,7 +142,11 @@ distance_multiplier - Can be used to multiply the distance at which the sound is
 		return
 
 	S.wait = 0 //No queue
-	S.channel = channel || SSsounds.random_available_channel()
+	if(!isnum(channel) || channel <= 0)
+		channel = SSsounds.random_available_channel()
+	if(!channel)
+		return
+	S.channel = channel
 	S.volume = vol
 	// CITADEL EDIT - Force citadel reverb
 	S.environment = 7
@@ -238,9 +244,13 @@ distance_multiplier - Can be used to multiply the distance at which the sound is
 			M.playsound_local(M, null, volume, vary, frequency, null, channel, pressure_affected, S)
 
 /mob/proc/stop_sound_channel(chan)
+	if(QDELETED(src) || !isnum(chan) || chan <= 0)
+		return
 	SEND_SOUND(src, sound(null, repeat = 0, wait = 0, channel = chan))
 
 /mob/proc/set_sound_channel_volume(channel, volume)
+	if(QDELETED(src) || !isnum(channel) || channel <= 0)
+		return
 	var/sound/S = sound(null, FALSE, FALSE, channel, volume)
 	S.status = SOUND_UPDATE
 	SEND_SOUND(src, S)

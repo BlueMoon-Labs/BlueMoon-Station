@@ -66,6 +66,8 @@
 /// If the owner's deleted, we will simply remove from them, but if the target's deleted, we will self-delete
 /datum/action/proc/clear_ref(datum/ref)
 	SIGNAL_HANDLER
+	if(QDELETED(src))
+		return
 	if(ref == owner)
 		Remove(owner)
 	if(ref == target)
@@ -135,7 +137,7 @@
  * * silent - If false this is being called to check if we have any messages to show to the owner
  */
 /datum/action/proc/IsAvailable(silent = FALSE)
-	if(!owner)
+	if(!owner || QDELETED(owner))
 		return FALSE
 	var/mob/living/L = owner
 	if(istype(L) && !CHECK_ALL_MOBILITY(L, required_mobility_flags))
@@ -290,6 +292,8 @@
 /// A general use signal proc that reacts to an event and updates JUST our button's status
 /datum/action/proc/update_status_on_signal(datum/source, new_stat, old_stat)
 	SIGNAL_HANDLER
+	if(QDELETED(src))
+		return
 	UpdateButton(status_only = TRUE)
 
 //Presets for item actions
@@ -343,8 +347,8 @@
 	name = "Toggle Light"
 
 /datum/action/item_action/toggle_light/pda/Trigger(trigger_flags)
-	if(istype(target, /obj/item/pda))
-		var/obj/item/pda/P = target
+	if(istype(target, /obj/item/modular_computer/pda))
+		var/obj/item/modular_computer/pda/P = target
 		return P.toggle_light(owner)
 
 /datum/action/item_action/toggle_hood

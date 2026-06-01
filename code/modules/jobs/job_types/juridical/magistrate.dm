@@ -54,9 +54,8 @@
 		/obj/item/book/manual/wiki/security_space_law
 	)
 
-/obj/item/pda/heads/ntr
+/obj/item/modular_computer/pda/heads/ntr
 	name = "NanoTrasen Representative PDA"
-	default_cartridge = /obj/item/cartridge/hos
 	icon_state = "pda-ntr"
 
 /obj/item/clothing/suit/armor/ntr
@@ -102,7 +101,7 @@
 	name = "NanoTrasen Representative"
 	jobtype = /datum/job/ntr
 
-	belt = /obj/item/pda/heads/ntr
+	belt = /obj/item/modular_computer/pda/heads/ntr
 	id = /obj/item/card/id/silver
 	ears = /obj/item/radio/headset/headset_cent/ntr
 	gloves = /obj/item/clothing/gloves/color/black
@@ -132,7 +131,7 @@
 	name = "Syndicate Representative"
 	jobtype = /datum/job/ntr
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	ears = /obj/item/radio/headset/headset_cent/ntr
 	gloves = /obj/item/clothing/gloves/combat

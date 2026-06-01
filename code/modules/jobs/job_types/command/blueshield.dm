@@ -53,13 +53,13 @@
 	name = "Blueshield"
 	jobtype = /datum/job/blueshield
 
-	belt = /obj/item/pda/security
+	belt = /obj/item/modular_computer/pda/security
 	ears = /obj/item/radio/headset/headset_blueshield
 	uniform = /obj/item/clothing/under/rank/blueshield
 	head = /obj/item/clothing/head/helmet/sec/blueshield
 	gloves = /obj/item/clothing/gloves/tackler/combat/insulated
 	glasses = /obj/item/clothing/glasses/hud/blueshield
-	suit = /obj/item/clothing/suit/armor/vest/bluesheid
+	suit = /obj/item/clothing/suit/armor/vest/blueshield
 	shoes = /obj/item/clothing/shoes/jackboots
 	suit_store = /obj/item/kitchen/knife/combat
 	r_pocket = /obj/item/sensor_device_command
@@ -79,13 +79,13 @@
 	name = "Syndicate Blueshield"
 	jobtype = /datum/job/blueshield
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 	ears = /obj/item/radio/headset/headset_blueshield
 	uniform = /obj/item/clothing/under/rank/blueshield
 	head = /obj/item/clothing/head/helmet/sec/blueshield
 	gloves = /obj/item/clothing/gloves/tackler/combat/insulated
 	glasses = /obj/item/clothing/glasses/hud/blueshield
-	suit = /obj/item/clothing/suit/armor/vest/bluesheid
+	suit = /obj/item/clothing/suit/armor/vest/blueshield
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
 	suit_store = /obj/item/kitchen/knife/combat
 	l_pocket = /obj/item/sensor_device_command

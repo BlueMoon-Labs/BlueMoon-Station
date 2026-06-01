@@ -9,7 +9,7 @@
 	SHOULD_CALL_PARENT(TRUE)
 	PROTECTED_PROC(TRUE)
 
-	if(tool.tool_behaviour && !SEND_SIGNAL(usr, COMSIG_COMBAT_MODE_CHECK, COMBAT_MODE_ACTIVE))
+	if(tool.tool_behaviour && !SEND_SIGNAL(user, COMSIG_COMBAT_MODE_CHECK, COMBAT_MODE_ACTIVE))
 		var/tool_return = tool_act(user, tool, tool.tool_behaviour)
 		if(tool_return)
 			return tool_return

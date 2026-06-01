@@ -53,7 +53,7 @@
 	name = "Brig Physician"
 	jobtype = /datum/job/brigdoc
 
-	belt = /obj/item/pda/security
+	belt = /obj/item/modular_computer/pda/security/brigdoc
 	ears = /obj/item/radio/headset/headset_brigdoc/alt
 	uniform = /obj/item/clothing/under/syndicate/brigdoc
 	gloves = /obj/item/clothing/gloves/color/latex
@@ -83,7 +83,7 @@
 	name = "Syndicate Brig Physician"
 	jobtype = /datum/job/brigdoc
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	uniform = /obj/item/clothing/under/rank/security/officer/util
 	gloves = /obj/item/clothing/gloves/color/latex/nitrile/hsc

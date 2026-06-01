@@ -73,7 +73,7 @@
 	gloves = /obj/item/clothing/gloves/color/black
 	glasses = /obj/item/clothing/glasses/hud/skills
 	shoes = /obj/item/clothing/shoes/laceup
-	l_pocket =  /obj/item/pda/heads
+	l_pocket =  /obj/item/modular_computer/pda/heads
 
 	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced/command = 1, /obj/item/stamp/command=1, /obj/item/gun/energy/civilian=1)
 	box = /obj/item/storage/box/survival/command
@@ -83,7 +83,7 @@
 	name = "Syndicate Bridge Officer"
 	jobtype = /datum/job/bridgeofficer
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	gloves = /obj/item/clothing/gloves/combat
 	ears = /obj/item/radio/headset/headset_bo/bowman

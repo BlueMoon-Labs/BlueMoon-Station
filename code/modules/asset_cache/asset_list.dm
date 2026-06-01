@@ -84,19 +84,108 @@ GLOBAL_LIST_EMPTY(asset_datums)
 	var/list/sizes = list()    // "32x32" -> list(10, icon/normal, icon/stripped)
 	var/list/sprites = list()  // "foo_bar" -> list("32x32", 5)
 
+/// Bump when generate_css output format, ensure_stripped pipeline, or sprites dict layout
+/// changes in a way that makes the previous round's cache files invalid. This makes rounds
+/// after the bump regenerate even if input_signature happens to match.
+#define SPRITESHEET_CACHE_VERSION 2
+
 /datum/asset/spritesheet/register()
 	if (!name)
 		CRASH("spritesheet [type] cannot register without a name")
-	ensure_stripped()
+
+	// Cross-round smart cache:
+	// Insert() calls (ran by the subclass before this proc) have already populated
+	// `sprites`/`sizes`. We then derive a signature from layout + per-size pixel content
+	// + transport config (see the block below) and compare it to the metadata written
+	// by the previous round. On a hit we skip ensure_stripped + generate_css + the
+	// file-write churn and just register the PNG/CSS files left behind on disk.
+	var/cache_meta_path = "data/spritesheets/cache.[name].json"
+	var/css_path = "data/spritesheets/spritesheet_[name].css"
+
+	// Signature has three parts:
+	//   layout    — sprite name → (size_id, idx) mapping; catches added/removed/reordered sprites.
+	//   content   — md5asfile() of each per-size source icon's pixel data; catches edits to the
+	//               underlying DMI even when sprite names/positions are unchanged. Must be
+	//               md5asfile() and NOT md5() — this repo doesn't define RUSTG_OVERRIDE_BUILTINS,
+	//               so md5() on a file ref hashes the path string rather than the file contents.
+	//   transport — invalidates the cached CSS when the asset transport class or its URL-shaping
+	//               config changes (browse_rsc ↔ webroot, CDN URL change, dont_mutate_filenames
+	//               toggle). generate_css() embeds get_asset_url() output directly, so a stale
+	//               CSS from the previous transport would point at the wrong URLs.
+	var/list/sorted_sprite_keys = sort_list(sprites)
+	var/list/layout_payload = list()
+	for(var/sprite_id in sorted_sprite_keys)
+		layout_payload["[sprite_id]"] = sprites[sprite_id]
+
+	var/list/sorted_size_keys = sort_list(sizes)
+	var/list/content_payload = list()
+	for(var/size_id in sorted_size_keys)
+		var/icon/sheet = sizes[size_id][SPRSZ_ICON]
+		content_payload["[size_id]"] = md5asfile(fcopy_rsc(sheet))
+
+	var/transport_salt = "[SSassets.transport.type]:[CONFIG_GET(string/asset_cdn_url)]:[CONFIG_GET(string/asset_cdn_webroot)]:[SSassets.transport.dont_mutate_filenames]"
+
+	var/input_signature = md5(json_encode(list(
+		"v" = SPRITESHEET_CACHE_VERSION,
+		"layout" = layout_payload,
+		"content" = content_payload,
+		"transport" = transport_salt,
+	)))
+
+	var/cache_valid = FALSE
+	var/list/cached_png_hashes
+	if(fexists(cache_meta_path) && fexists(css_path))
+		var/list/cached_meta = safe_json_decode(file2text(cache_meta_path))
+		if(islist(cached_meta) && cached_meta["signature"] == input_signature)
+			cached_png_hashes = cached_meta["png_hashes"]
+			if(islist(cached_png_hashes))
+				cache_valid = TRUE
+				for(var/size_id in sizes)
+					if(!fexists("data/spritesheets/[name]_[size_id].png") || !cached_png_hashes["[size_id]"])
+						cache_valid = FALSE
+						break
+			else
+				cache_valid = FALSE
+
+	if(cache_valid)
+		for(var/size_id in sizes)
+			var/png_path = "data/spritesheets/[name]_[size_id].png"
+			SSassets.transport.register_asset("[name]_[size_id].png", file(png_path), cached_png_hashes["[size_id]"], null)
+		SSassets.transport.register_asset("spritesheet_[name].css", file(css_path))
+		return
+
+	// Cache miss: full regeneration. ensure_stripped(keep_file=TRUE) leaves the PNG on
+	// disk so the next round can cache-hit; we register from the file directly instead
+	// of from the loaded /icon datum so asset_cache_item hashes match across rounds.
+	var/list/current_png_files = list()
 	for(var/size_id in sizes)
-		var/size = sizes[size_id]
-		SSassets.transport.register_asset("[name]_[size_id].png", size[SPRSZ_STRIPPED])
-	var/res_name = "spritesheet_[name].css"
-	var/fname = "data/spritesheets/[res_name]"
-	fdel(fname)
-	text2file(generate_css(), fname)
-	SSassets.transport.register_asset(res_name, fcopy_rsc(fname))
-	fdel(fname)
+		current_png_files["[name]_[size_id].png"] = TRUE
+
+	for(var/existing_png in flist("data/spritesheets/"))
+		if(findtextEx(existing_png, "[name]_") != 1 || copytext(existing_png, -4) != ".png")
+			continue
+		if(existing_png in current_png_files)
+			continue
+		fdel("data/spritesheets/[existing_png]")
+
+	ensure_stripped(keep_file = TRUE)
+	var/list/png_hashes = list()
+	for(var/size_id in sizes)
+		var/png_path = "data/spritesheets/[name]_[size_id].png"
+		var/datum/asset_cache_item/ACI = SSassets.transport.register_asset("[name]_[size_id].png", file(png_path))
+		png_hashes["[size_id]"] = ACI.hash
+
+	fdel(css_path)
+	text2file(generate_css(), css_path)
+	SSassets.transport.register_asset("spritesheet_[name].css", file(css_path))
+
+	fdel(cache_meta_path)
+	text2file(json_encode(list(
+		"signature" = input_signature,
+		"png_hashes" = png_hashes,
+	)), cache_meta_path)
+
+#undef SPRITESHEET_CACHE_VERSION
 
 /datum/asset/spritesheet/send(client/C)
 	if (!name)
@@ -137,7 +226,9 @@ GLOBAL_LIST_EMPTY(asset_datums)
 /datum/asset/json/get_url_mappings()
 	return list("[name].json" = SSassets.transport.get_asset_url("[name].json"))
 
-/datum/asset/spritesheet/proc/ensure_stripped(sizes_to_strip = sizes)
+/// keep_file: if TRUE, the stripped PNG on disk is left in place (used by the smart
+/// cross-round cache so the next start can re-register it without rebuilding).
+/datum/asset/spritesheet/proc/ensure_stripped(sizes_to_strip = sizes, keep_file = FALSE)
 	for(var/size_id in sizes_to_strip)
 		var/size = sizes[size_id]
 		if (size[SPRSZ_STRIPPED])
@@ -150,7 +241,8 @@ GLOBAL_LIST_EMPTY(asset_datums)
 		if(length(error))
 			stack_trace("Failed to strip [name]_[size_id].png: [error]")
 		size[SPRSZ_STRIPPED] = icon(fname)
-		fdel(fname)
+		if(!keep_file)
+			fdel(fname)
 
 /datum/asset/spritesheet/proc/generate_css()
 	var/list/out = list()

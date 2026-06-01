@@ -75,6 +75,26 @@
 	body_parts_covered = CHEST | GROIN
 	icon_state = "swimming"
 
+/obj/item/clothing/underwear/shirt/bra/bikini/swimsuit
+	name = "polychromic swimsuit"
+	icon_state = "swimsuit"
+	icon = 'modular_bluemoon/icons/obj/clothing/underwear.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/underwear.dmi'
+	desc = "A perfectly tailored swimsuit that fits the body and does not constrain you in any movements."
+
+/obj/item/clothing/underwear/shirt/bra/bikini/swimsuit/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, list("#FFFFFF", "#FFFFFF"), 2, names = list("Main", "Collar"))
+
+/obj/item/clothing/underwear/shirt/bra/bikini/swimsuit/alt
+	name = "polychromic slim swimsuit"
+	icon_state = "swimsuit_alt"
+
+/obj/item/clothing/underwear/shirt/bra/bikini/swimsuit/horny
+	name = "polychromic slim~ swimsuit"
+	icon_state = "swimsuit_horny_alt"
+	desc = "A perfectly tailored swimsuit that fits the body and does not constrain you in any movements... With additional bottom mounting... I don't think you can put it on properly without plugging it in."
+
 /obj/item/clothing/underwear/shirt/bra/bikini/black
 	name = "black bikini"
 	icon_state = "swimming_black"

@@ -17,7 +17,7 @@ GLOBAL_LIST_EMPTY(nightshift_light_queue) // Lamps queued for batched indoor nig
 /// Admin verb: change the global starlight color at runtime, or reset to solar cycle.
 /client/proc/cmd_admin_set_starlight()
 	set name = "Set Starlight Color"
-	set category = "Admin"
+	set category = "Admin.Game"
 	if(!check_rights(R_ADMIN))
 		return
 	var/list/options = list("Выбрать цвет", "Сбросить (авто цикл)")
@@ -56,7 +56,7 @@ GLOBAL_LIST_EMPTY(nightshift_light_queue) // Lamps queued for batched indoor nig
 /// Admin verb: toggle between linear and inverse-square light falloff at runtime.
 /client/proc/cmd_admin_toggle_falloff()
 	set name = "Toggle Light Falloff"
-	set category = "Admin"
+	set category = "Admin.Game"
 	if(!check_rights(R_ADMIN))
 		return
 	var/new_mode = GLOB.lighting_falloff_mode == LIGHTING_FALLOFF_LINEAR ? LIGHTING_FALLOFF_INVERSE_SQUARE : LIGHTING_FALLOFF_LINEAR

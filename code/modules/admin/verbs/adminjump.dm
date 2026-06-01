@@ -174,3 +174,83 @@
 		message_admins(msg)
 	admin_ticket_log(src, msg)
 	return ..()
+
+/client/proc/admin_jump_to()
+	set name = "Admin Jump To"
+	set desc = "Open the unified jump to interface"
+	set category = "Admin.Game"
+	if(!src.holder)
+		to_chat(src, "Only administrators may use this command.", confidential = TRUE)
+		return
+	var/datum/admin_jump_to/jump = new(src)
+	jump.ui_interact(src.mob)
+
+/datum/admin_jump_to
+	var/client/owner
+
+/datum/admin_jump_to/New(client/C)
+	if(!istype(C))
+		qdel(src)
+	owner = C
+
+/datum/admin_jump_to/ui_state(mob/user)
+	return GLOB.admin_state
+
+/datum/admin_jump_to/ui_interact(mob/user, datum/tgui/ui)
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "AdminJumpTo")
+		ui.open()
+
+/datum/admin_jump_to/ui_act(action, list/params, datum/tgui/ui)
+	if(..())
+		return
+	if(!owner || !owner.holder)
+		return
+	switch(action)
+		if("jump_mob")
+			var/mob/M = tgui_input_list(owner, "Select a mob to jump to", "Jump to Mob", sortmobs())
+			if(M)
+				owner.jumptomob(M)
+		if("jump_key")
+			var/list/keys = list()
+			for(var/mob/mob in GLOB.player_list)
+				if(mob.client)
+					keys += mob.client
+			var/client/selection = tgui_input_list(owner, "Select a key to jump to", "Jump to Key", sortKey(keys))
+			if(selection && selection.mob)
+				var/mob/M = selection.mob
+				log_admin("[key_name(owner)] jumped to [key_name(M)]")
+				message_admins("[key_name_admin(owner)] jumped to [ADMIN_LOOKUPFLW(M)]")
+				owner.mob.forceMove(M.loc)
+				SSblackbox.record_feedback("tally", "admin_verb", 1, "Jump To Key")
+		if("jump_area")
+			var/area/A = tgui_input_list(owner, "Select an area to jump to", "Jump to Area", GLOB.sortedAreas)
+			if(A)
+				owner.jumptoarea(A)
+		if("jump_turf")
+			var/x = tgui_input_number(owner, "Enter X coordinate", "Jump to Turf", 1)
+			if(!isnum(x))
+				return
+			var/y = tgui_input_number(owner, "Enter Y coordinate", "Jump to Turf", 1)
+			if(!isnum(y))
+				return
+			var/z = tgui_input_number(owner, "Enter Z coordinate", "Jump to Turf", 1)
+			if(!isnum(z))
+				return
+			var/turf/T = locate(x, y, z)
+			if(T)
+				owner.jumptoturf(T)
+			else
+				to_chat(owner, "Invalid turf coordinates.", confidential = TRUE)
+		if("jump_coord")
+			var/x = tgui_input_number(owner, "Enter X coordinate", "Jump to Coordinate", 1)
+			if(!isnum(x))
+				return
+			var/y = tgui_input_number(owner, "Enter Y coordinate", "Jump to Coordinate", 1)
+			if(!isnum(y))
+				return
+			var/z = tgui_input_number(owner, "Enter Z coordinate", "Jump to Coordinate", 1)
+			if(!isnum(z))
+				return
+			owner.jumptocoord(x, y, z)

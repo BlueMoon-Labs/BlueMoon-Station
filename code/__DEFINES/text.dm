@@ -359,3 +359,15 @@ GLOBAL_LIST_INIT(borgmodule_ru_adjective, list(
 	"slaver medical combat" = "медицинский боевой",
 	"roleplay" = "ролевой",
 ))
+
+/// Лист-словарь для цветов
+GLOBAL_LIST_INIT(colors_ru, list(
+	"red" = "красный",
+	"yellow" = "жёлтый",
+	"green" = "зелёный",
+	"blue" = "синий",
+	"pink" = "розовый",
+	"orange" = "оранжевый",
+	"cyan" = "циановый",
+	"white" = "белый",
+))

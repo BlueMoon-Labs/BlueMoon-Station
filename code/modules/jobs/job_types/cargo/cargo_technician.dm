@@ -68,7 +68,7 @@
 	name = "Cargo Technician"
 	jobtype = /datum/job/cargo_tech
 
-	belt = /obj/item/pda/cargo
+	belt = /obj/item/modular_computer/pda/cargo
 	ears = /obj/item/radio/headset/headset_cargo
 	uniform = /obj/item/clothing/under/rank/cargo/tech
 	l_hand = /obj/item/export_scanner
@@ -77,7 +77,7 @@
 	name = "Syndicate Cargo Technician"
 	jobtype = /datum/job/cargo_tech
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	ears = /obj/item/radio/headset/headset_cargo
 	uniform = /obj/item/clothing/under/rank/cargo/util

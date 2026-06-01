@@ -727,6 +727,13 @@
 			should_draw_gender = FALSE
 		else
 			should_draw_gender = S.sexes
+		if(S.id == SPECIES_IPC && is_robotic_limb(FALSE) && (body_zone == BODY_ZONE_HEAD || body_zone == BODY_ZONE_CHEST))
+			should_draw_gender = TRUE
+			var/list/current_states = icon_states(icon)
+			if(body_zone == BODY_ZONE_HEAD && !(("robotic_head" in current_states) || (("head_f" in current_states) && ("head_m" in current_states))))
+				icon = 'icons/mob/augmentation/augments.dmi'
+			else if(body_zone == BODY_ZONE_CHEST && !(("robotic_chest" in current_states) || (("chest_f" in current_states) && ("chest_m" in current_states))))
+				icon = 'icons/mob/augmentation/augments.dmi'
 
 		var/mut_colors = (MUTCOLORS in S.species_traits)
 		if(mut_colors)
@@ -823,6 +830,28 @@
 		I.pixel_x = px_x
 		I.pixel_y = px_y
 	add_overlay(standing)
+
+/obj/item/bodypart/proc/resolve_robotic_icon_state(icon_file, state_name)
+	if(!icon_file || !state_name)
+		return state_name
+
+	var/list/available_states = icon_states(icon_file)
+	if(state_name in available_states)
+		return state_name
+
+	var/robotic_state
+	switch(state_name)
+		if("head_f", "head_m")
+			robotic_state = "robotic_head"
+		if("chest_f", "chest_m")
+			robotic_state = "robotic_chest"
+		else
+			robotic_state = "robotic_[state_name]"
+
+	if(robotic_state in available_states)
+		return robotic_state
+
+	return state_name
 
 //Gives you a proper icon appearance for the dismembered limb
 /obj/item/bodypart/proc/get_limb_icon(dropped)
@@ -945,14 +974,33 @@
 	else
 		limb.icon = icon
 		if(should_draw_gender)
-			limb.icon_state = "[body_zone]_[icon_gender]"
+			limb.icon_state = resolve_robotic_icon_state(limb.icon, "[body_zone]_[icon_gender]")
 		else
-			limb.icon_state = "[body_zone]"
-
+			limb.icon_state = resolve_robotic_icon_state(limb.icon, "[body_zone]")
+		// BLUEMOON ADD START
+		// prosthetic limbs with digitigrade support
+		// it should be datums, but it's kinda useless because there's only 1 sprite with digi support (morpheus)
+		if(use_digitigrade)
+			var/cache_key = "digi_[body_zone]_front" // cursed af, these prosthetic limbs should be datums
+			var/list/static/prosthetic_digi_limbs_cache = list()
+			var/cache_id = "[limb.icon]-[cache_key]"
+			if(!(cache_id in prosthetic_digi_limbs_cache))
+				prosthetic_digi_limbs_cache[cache_id] = (cache_key in icon_states(limb.icon))
+			if(prosthetic_digi_limbs_cache[cache_id])
+				limb.icon_state = "digi_[body_zone]"
+				if(istype(src, /obj/item/bodypart/l_leg) || istype(src, /obj/item/bodypart/r_leg))
+					second_limb = image(layer = -BODYPARTS_LAYER-0.1, dir = image_dir)
+					second_limb.icon = limb.icon
+					var/original_state = limb.icon_state
+					limb.icon_state = "[original_state]_front"
+					second_limb.icon_state = "[original_state]_behind"
+					second_limb.color = limb.color
+					. += second_limb
+		// BLUEMOON ADD END
 		if(aux_icons)
 			for(var/I in aux_icons)
 				var/aux_layer = aux_icons[I]
-				var/image/aux_img = image(limb.icon, "[I]", -aux_layer, image_dir)
+				var/image/aux_img = image(limb.icon, resolve_robotic_icon_state(limb.icon, "[I]"), -aux_layer, image_dir)
 				if(species_id == "husk")
 					var/image/husk_aux_mark = image('modular_citadel/icons/mob/markings_notmammals.dmi', "husk_[I]", -aux_layer, image_dir)
 					husk_aux_mark.appearance_flags = RESET_COLOR

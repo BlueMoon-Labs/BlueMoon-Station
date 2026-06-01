@@ -1,0 +1,85 @@
+.NtosChatMessage {
+  display: inline-flex;
+  flex-direction: column;
+  max-width: 25rem;
+  margin: 0;
+  padding: 0.25em 0.5em;
+  border-radius: 0.25em;
+  background-color: rgba(35, 45, 65, 0.75);
+
+  &_outgoing {
+    @extend .NtosChatMessage;
+    background-color: rgba(25, 55, 35, 0.75);
+    text-align: right;
+    align-self: flex-end;
+  }
+
+  &__photo {
+    max-width: 100%;
+
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+  }
+
+  &__timestamp {
+    height: 0.9rem;
+    margin-top: 0.25em;
+    margin-left: 0.5em;
+  }
+
+  &__content {
+    display: flex;
+    justify-content: space-between;
+    min-width: 9rem;
+    overflow-wrap: break-word;
+    text-align: left;
+    word-break: break-all;
+  }
+
+  &__everyone {
+    margin-top: 0.5em;
+    font-size: 0.8rem;
+    color: lightgrey;
+  }
+}
+
+.NtosChatLog {
+  padding: 0.75em;
+  min-height: 99.5%;
+  margin: 0;
+}
+
+.emoji-inline {
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+  image-rendering: pixelated;
+}
+
+.UnreadDivider {
+  position: relative;
+  display: flex;
+  font-size: 1rem;
+  text-align: center;
+
+  & > span {
+    color: red;
+  }
+
+  & > div {
+    display: inline-flex;
+    flex: 1;
+    border-bottom: 1px solid red;
+    height: 50%;
+
+    &:last-child {
+      margin-left: 1%;
+    }
+
+    &:first-child {
+      margin-right: 1%;
+    }
+  }
+}

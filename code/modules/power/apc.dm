@@ -109,7 +109,7 @@
 
 /obj/machinery/power/apc
 	name = "area power controller"
-	desc = "Терминалу управления электросистемами соответствующей ему зоны."
+	desc = "Терминал управления электросистемами соответствующей ему зоны."
 	plane = ABOVE_WALL_PLANE
 
 	icon_state = "apc0"
@@ -608,7 +608,7 @@
 			switch (has_electronics)
 				if (APC_ELECTRONICS_INSTALLED)
 					has_electronics = APC_ELECTRONICS_SECURED
-					machine_stat &= ~MAINT
+					set_machine_stat(machine_stat & ~MAINT)
 					W.play_tool_sound(src)
 					to_chat(user, "<span class='notice'>You screw the circuit electronics into place.</span>")
 				if (APC_ELECTRONICS_SECURED)
@@ -780,7 +780,7 @@
 		if(do_after(user, 50, target = src))
 			to_chat(user, "<span class='notice'>You replace the damaged APC frame with a new one.</span>")
 			qdel(W)
-			machine_stat &= ~BROKEN
+			set_machine_stat(machine_stat & ~BROKEN)
 			obj_integrity = max_integrity
 			if (opened==APC_COVER_REMOVED)
 				opened = APC_COVER_OPENED

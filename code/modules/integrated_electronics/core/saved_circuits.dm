@@ -288,6 +288,7 @@
 		return "Invalid components list."	// No components or damaged components list
 
 	var/list/assembly_components = list()
+	var/list/component_counts = list()
 	for(var/C in blocks["components"])
 		var/list/component_params = C
 
@@ -302,6 +303,13 @@
 
 		// Add temporary component to assembly_components list, to be used later when verifying the wires
 		assembly_components.Add(component)
+
+		// This part makes sure that limit_per_assemnly is respected for each circuit that utilizes this variable (not null, > 0)
+		var/count = component_counts[component_path] || 0	// Circuit counter
+		count++
+		if(component.limit_per_assembly > 0 && count > component.limit_per_assembly)	//
+			return "Too many '[component.name]' components for a single assembly. Maximum - [component.limit_per_assembly]"
+		component_counts[component_path] = count
 
 		// Check component save data for errors
 		error = component.verify_save(component_params)

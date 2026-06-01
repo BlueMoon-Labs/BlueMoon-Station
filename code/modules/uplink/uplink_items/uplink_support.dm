@@ -93,3 +93,14 @@
 			Выглядит как мех SolFed, перекрашенный в коричневый. Sol поставляет их InteQ тайно и почти задаром."
 	item = /obj/vehicle/sealed/mecha/combat/marauder/mauler/loaded/ares
 	cost = 140
+
+/datum/uplink_item/support/syndicate_pai
+	name = "Syndicate Personal AI"
+	desc = "Синдикатский Персональный ИИ - модифицированный pAI с предустановленными модулями для скрытных операций. \
+			Включает: закрытый канал связи (все каналы + синдикат), встроенный камерный жучок, \
+			продвинутый Security HUD, продвинутые Security Records, термальное зрение и \
+			инъектор химикатов."
+	item = /obj/item/paicard/syndicate
+	cost = 15
+	restricted = TRUE
+	purchasable_from = UPLINK_TRAITORS | UPLINK_NUKE_OPS

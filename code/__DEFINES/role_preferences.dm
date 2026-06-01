@@ -32,6 +32,8 @@
 #define ROLE_BRAINWASHED			"brainwashed victim"
 #define ROLE_OVERTHROW				"syndicate mutineer"
 #define ROLE_SENTIENCE          	"sentience potion spawn"
+#define ROLE_SYNDICATE_MONKEY		"syndicate monkey agent"
+#define ROLE_MONKEY_HELMET			"monkey mind magnification helmet"
 #define ROLE_ANOMALY_GHOST 			"Ectoplasmic Anomaly Ghost"
 #define ROLE_MIND_TRANSFER          "mind transfer potion"
 #define ROLE_POSIBRAIN              "posibrain"
@@ -81,6 +83,7 @@ GLOBAL_LIST_INIT(special_roles, list(
 	ROLE_OVERTHROW = /datum/game_mode/overthrow,
 	ROLE_INTERNAL_AFFAIRS = /datum/game_mode/traitor/internal_affairs,
 	ROLE_SENTIENCE,
+	ROLE_SYNDICATE_MONKEY,
 	ROLE_HERETIC = /datum/game_mode/heretics,
 	ROLE_BLOODSUCKER = /datum/game_mode/bloodsucker,
 	ROLE_FAMILIES = /datum/game_mode/gang,

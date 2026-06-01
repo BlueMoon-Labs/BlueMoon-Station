@@ -2,7 +2,7 @@
 /client/proc/vv_do_list(list/target, href_list)
 	var/target_index = text2num(GET_VV_VAR_TARGET)
 	if(check_rights(R_VAREDIT))
-		if(target_index)
+		if(target_index >= 1 && target_index <= length(target))
 			if(href_list[VV_HK_LIST_EDIT])
 				mod_list(target, null, "list", "contents", target_index, autodetect_class = TRUE)
 			if(href_list[VV_HK_LIST_CHANGE])

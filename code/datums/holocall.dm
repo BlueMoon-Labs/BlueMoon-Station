@@ -139,6 +139,10 @@
 		return
 
 	if(connected_holopad)
+		//Already answered by this pad: a double-answer from a stale TGUI snapshot
+		//(rapid re-click, or process() auto-answer racing a queued connectcall). No-op.
+		if(connected_holopad == H)
+			return
 		CRASH("Multi-connection holocall")
 
 	for(var/I in dialed_holopads)

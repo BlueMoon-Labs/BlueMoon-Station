@@ -1,0 +1,36 @@
+
+$joystick-bg: #2a2f2b;
+$joystick-stroke: #00e5ff;
+$knob-color: #00e5ff;
+$knob-glow: 0px 0px 14px rgba(0, 229, 255, 0.9);
+
+.VirtualJoystick {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  background: $joystick-bg;
+  padding: 0;
+}
+
+.joystick-container {
+  position: relative;
+  width: calc(100% - 20px);
+  aspect-ratio: 1;
+  min-width: 150px;
+  min-height: 150px;
+  border: 2px solid $joystick-stroke;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 0 18px rgba(0, 229, 255, 0.4);
+}
+
+.knob {
+  position: absolute;
+  width: 20%;
+  height: 20%;
+  background: $knob-color;
+  border-radius: 50%;
+  box-shadow: $knob-glow;
+}

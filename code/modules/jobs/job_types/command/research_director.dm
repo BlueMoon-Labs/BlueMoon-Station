@@ -72,7 +72,7 @@
 	jobtype = /datum/job/rd
 
 	id = /obj/item/card/id/silver
-	belt = /obj/item/pda/heads/rd
+	belt = /obj/item/modular_computer/pda/heads/rd
 	ears = /obj/item/radio/headset/heads/rd
 	uniform = /obj/item/clothing/under/rank/rnd/research_director
 	shoes = /obj/item/clothing/shoes/sneakers/brown
@@ -92,7 +92,7 @@
 	name = "Syndicate Research Director"
 	jobtype = /datum/job/rd
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	ears = /obj/item/radio/headset/heads/rd
 	uniform = /obj/item/clothing/under/rank/captain/util

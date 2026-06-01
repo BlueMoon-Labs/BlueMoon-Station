@@ -357,9 +357,8 @@
 	color = "green";
 	name = "crown of greed";
 	desc = "it's just a crown of glowing greenish color. But you're too greedy to just leave her here.";
-	light_color = "green";
-	light_range = 1;
-	lighting_alpha = "200"
+	light_color = "#00ff00";
+	light_range = 1
 	},
 /turf/open/floor/engine/cult{
 	initial_gas_mix = "n2=23;o2=14;TEMP=2.7"

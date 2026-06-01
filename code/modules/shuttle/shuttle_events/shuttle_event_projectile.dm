@@ -12,7 +12,7 @@
 
 /datum/shuttle_event/simple_spawner/projectile/fireball
 	name = "Залп огненных шаров"
-	event_probability = 2
+	event_probability = 20
 	activation_fraction = 0.5
 	spawning_list = list(/obj/item/projectile/magic/aoe/fireball = 1)
 	angle_spread = 10

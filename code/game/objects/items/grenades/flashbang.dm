@@ -34,8 +34,10 @@
 	if(!distance || loc == M || loc == M.loc)	//Stop allahu akbarring rooms with this.
 		M.DefaultCombatKnockdown(200)
 		M.soundbang_act(1, 200, 10, 15)
+		M.AdjustConfused(40 SECONDS, 15, 80 SECONDS)
 	else
 		M.soundbang_act(1, max(200/max(1,distance), 60), rand(0, 5))
+		M.AdjustConfused(max(20 SECONDS / max(1, distance), 6 SECONDS), 5, 40 SECONDS)
 
 /obj/item/grenade/flashbang/proc/flash(mob/living/M, turf/source)
 	if(M.stat == DEAD)	//They're dead!
@@ -43,6 +45,7 @@
 	var/distance = get_dist(get_turf(M), source)
 	if(M.flash_act(affect_silicon = 1))
 		M.DefaultCombatKnockdown(max(200/max(1,distance), 60))
+		M.AdjustConfused(max(30 SECONDS / max(1, distance), 10 SECONDS), 10, 60 SECONDS)
 
 /obj/item/grenade/stingbang
 	name = "stingbang"
@@ -52,13 +55,13 @@
 	righthand_file = 'icons/mob/inhands/equipment/security_righthand.dmi'
 	var/flashbang_range = 1 //how many tiles away the mob will be stunned.
 	shrapnel_type = /obj/item/projectile/bullet/pellet/stingball
-	shrapnel_radius = 5
+	shrapnel_radius = 12
 	custom_premium_price = 700 // mostly gotten through cargo, but throw in one for the sec vendor ;)
 
 /obj/item/grenade/stingbang/mega
 	name = "mega stingbang"
 	shrapnel_type = /obj/item/projectile/bullet/pellet/stingball/mega
-	shrapnel_radius = 12
+	shrapnel_radius = 24
 
 /obj/item/grenade/stingbang/breaker
 	name = "breakbang"
@@ -98,12 +101,14 @@
 	if(M.flash_act(affect_silicon = 1))
 		M.Paralyze(max(10/max(1,distance), 5))
 		M.Knockdown(max(100/max(1,distance), 60))
+		M.AdjustConfused(max(20 SECONDS / max(1, distance), 8 SECONDS), 8, 40 SECONDS)
 
 //Bang
 	if(!distance || loc == M || loc == M.loc)
 		M.Paralyze(20)
 		M.Knockdown(200)
 		M.soundbang_act(1, 200, 10, 15)
+		M.AdjustConfused(30 SECONDS, 10, 50 SECONDS)
 		if(M.apply_damages(10, 10))
 			to_chat(M, "<span class='userdanger'>The blast from \the [src] bruises and burns you!</span>")
 

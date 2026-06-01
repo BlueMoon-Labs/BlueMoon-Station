@@ -729,6 +729,7 @@
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
 	can_be_asked_input = TRUE
 	demands_object_input = TRUE
+	expected_object_type = /obj/item/reagent_containers/glass/beaker
 	can_input_object_when_closed = TRUE
 
 	var/obj/item/reagent_containers/glass/beaker/current_beaker

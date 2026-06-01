@@ -1,6 +1,6 @@
 #define MINING_MESSAGE_COOLDOWN 20
 
-/**********************Mineral deposits**************************/
+/**********************Mineral deposits*************************/
 
 /turf/closed/mineral //wall piece
 	name = "rock"
@@ -78,12 +78,16 @@
 		to_chat(user, "<span class='notice'>You start picking...</span>")
 
 		if(I.use_tool(src, user, 40, volume=50))
-			var/range = I.digrange //Store the current digrange so people don't cheese digspeed swapping for faster mining
+			// Snap center to firer's turf (not another movable / ambiguity while pulling dense objects).
+			var/turf/user_turf = get_turf(user)
+			if(!isturf(user_turf))
+				return
+			var/dig_radius = I.digrange // Store digrange so people don't cheese digs by swapping mid-action
 			var/list/dug_tiles = list()
 			if(ismineralturf(src))
 				if(I.digrange > 0)
-					for(var/turf/closed/mineral/M in range(user,range))
-						if(get_dir(user,M) & user.dir)
+					for(var/turf/closed/mineral/M in range(dig_radius, user_turf))
+						if(get_dir(user, M) & user.dir)
 							M.gets_drilled(user)
 							dug_tiles += M
 				to_chat(user, "<span class='notice'>You finish cutting into the rock.</span>")

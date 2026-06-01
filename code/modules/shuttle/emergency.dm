@@ -388,7 +388,6 @@ GLOBAL_LIST_INIT(admin_forceable_hyperspace_events, list(
 	/datum/shuttle_event/simple_spawner/meteor/dust/meaty,
 	/datum/shuttle_event/simple_spawner/projectile/fireball,
 	/datum/shuttle_event/simple_spawner/human_shuttle/greytide,
-	/datum/shuttle_event/simple_spawner/human_shuttle/ert_mopp,
 	/datum/shuttle_event/simple_spawner/donk_swarm,
 	/datum/shuttle_event/simple_spawner/soft_drink_spray,
 	/datum/shuttle_event/simple_spawner/corgi_parade,
@@ -435,7 +434,6 @@ GLOBAL_LIST_INIT(admin_forceable_hyperspace_events, list(
 		/datum/shuttle_event/simple_spawner/meteor/dust/meaty = 1,
 		/datum/shuttle_event/simple_spawner/projectile/fireball = 1,
 		/datum/shuttle_event/simple_spawner/human_shuttle/greytide = 2,
-		/datum/shuttle_event/simple_spawner/human_shuttle/ert_mopp = 1,
 		/datum/shuttle_event/simple_spawner/player_controlled/human/hitchhiker = 2,
 		/datum/shuttle_event/simple_spawner/player_controlled/carp = 2,
 		/datum/shuttle_event/simple_spawner/player_controlled/alien_queen = 1,
@@ -481,6 +479,7 @@ GLOBAL_LIST_INIT(admin_forceable_hyperspace_events, list(
 				send2adminchat("Server", "The Emergency Shuttle has docked with the station.")
 				priority_announce("Эвакуационный Шаттл пристыковался к станции. Вам отведено [timeLeft(600)] минуты для посадки.", null, "shuttledock", "Priority")
 				ShuttleDBStuff()
+				try_station_dock_ert_mopp()
 
 
 		if(SHUTTLE_DOCKED)

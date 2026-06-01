@@ -858,8 +858,9 @@ GLOBAL_LIST_INIT(binary, list("0","1"))
 /proc/scramble_message_replace_chars(original, replaceprob = 25, list/replacementchars = list("$", "@", "!", "#", "%", "^", "&", "*"), replace_letters_only = FALSE, replace_whitespace = FALSE)
 	var/list/out = list()
 	var/static/list/whitespace = list(" ", "\n", "\t")
-	for(var/i in 1 to length(original))
-		var/char = original[i]
+	var/char = ""
+	for(var/i = 1, i <= length(original), i += length(char))
+		char = original[i]
 		if(!replace_whitespace && (char in whitespace))
 			out += char
 			continue
@@ -872,8 +873,8 @@ GLOBAL_LIST_INIT(binary, list("0","1"))
 /proc/readable_corrupted_text(text)
 	var/list/corruption_options = list("..", "£%", "~~\"", "!!", "*", "^", "$!", "-", "}", "?")
 	var/corrupted_text = ""
-	for(var/letter_index = 1; letter_index <= length(text); letter_index++)	// Have every letter have a chance of creating corruption on either side
-		var/letter = text[letter_index]	// Small chance of letters being removed in place of corruption - still overall readable
+	for(var/letter_index = 1; letter_index <= length_char(text); letter_index++)	// Have every letter have a chance of creating corruption on either side
+		var/letter = copytext_char(text, letter_index, letter_index + 1)	// Small chance of letters being removed in place of corruption - still overall readable
 		if(prob(15))
 			corrupted_text += pick(corruption_options)
 		if(prob(95))
@@ -1080,3 +1081,23 @@ GLOBAL_LIST_INIT(binary, list("0","1"))
 	while(length(t) < u)
 		t = "0[t]"
 	return t
+
+/proc/rainbow_span(text)
+	var/static/list/rainbow_colors = list("#FF0000", "#FF7F00", "#FFFF00", "#00FF00", "#0000FF", "#4B0082", "#9400D3")
+	var/result = ""
+	var/color_index = 1
+	for(var/i = 1, i <= length_char(text), i++)
+		var/char = copytext_char(text, i, i + 1)
+		result += "<font color='[rainbow_colors[color_index]]'>[char]</font>"
+		color_index = (color_index % length(rainbow_colors)) + 1
+	return result
+
+/proc/pink_shimmer_span(text)
+	var/static/list/pink_shades = list("#FF69B4", "#FF85C0", "#FFB6C1", "#FFC0CB", "#FFA0C0", "#FF8DA1", "#FF69B4")
+	var/result = ""
+	var/color_index = 1
+	for(var/i = 1, i <= length_char(text), i++)
+		var/char = copytext_char(text, i, i + 1)
+		result += "<font color='[pink_shades[color_index]]'>[char]</font>"
+		color_index = (color_index % length(pink_shades)) + 1
+	return result

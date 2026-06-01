@@ -52,6 +52,7 @@ class TetrisGame extends Component {
       paused: false,
       started: false,
       showLeaderboard: false,
+      showResetConfirm: false,
     };
     this.board = [];
     this.colors = [];
@@ -376,7 +377,7 @@ class TetrisGame extends Component {
   }
 
   render() {
-    const { score, level, lines, gameOver, paused, started, showLeaderboard } = this.state;
+    const { score, level, lines, gameOver, paused, started, showLeaderboard, showResetConfirm } = this.state;
     const { leaderboard = [], personal_best = 0, is_admin = false } = this.props;
     const isAdmin = !!is_admin;
 
@@ -434,6 +435,46 @@ class TetrisGame extends Component {
                   {'Ваш рекорд: ' + personal_best}
                 </Box>
               )}
+              {isAdmin && (
+                <Box mt={1}>
+                  <Button
+                    fluid
+                    icon="sync"
+                    color="bad"
+                    onClick={() => this.setState({ showResetConfirm: true })}>
+                    {'Принудительный недельный сброс'}
+                  </Button>
+                </Box>
+              )}
+            </Section>
+          </Modal>
+        )}
+        {/* Reset confirmation modal */}
+        {showResetConfirm && (
+          <Modal width="280px">
+            <Section
+              title="⚠ Сброс рейтинга"
+              buttons={
+                <Button
+                  icon="times"
+                  color="transparent"
+                  onClick={() => this.setState({ showResetConfirm: false })}
+                />
+              }
+            >
+              <Box mb={1}>
+                {'Вы уверены? Будут выданы награды за текущую неделю, и рейтинг будет очищен.'}
+              </Box>
+              <Button
+                fluid
+                icon="check"
+                color="bad"
+                onClick={() => {
+                  this.setState({ showResetConfirm: false });
+                  this.props.act('forceReset');
+                }}>
+                {'Да, сбросить рейтинг'}
+              </Button>
             </Section>
           </Modal>
         )}

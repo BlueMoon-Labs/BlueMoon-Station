@@ -41,6 +41,14 @@
 	var/speed = 0
 	var/power_gen = 4000	// amount of power output at max speed
 
+	/// The (current_mode, line1, line2) the per-tick shuttle/supply timer helpers last pushed
+	/// to set_messages(). They run every SSmachines fire and almost always push the same text
+	/// (e.g. "" / "" while no shuttle timer is running, > 95 % of the round); this lets them
+	/// early-out instead of doing a redundant set_messages() → update_appearance() icon rebuild.
+	var/last_status_push_mode
+	var/last_status_push_line1
+	var/last_status_push_line2
+
 /obj/machinery/status_display/proc/get_power_output()
 	if(speed && !machine_stat && anchored)
 		return power_gen * speed / MAX_SPEED
@@ -109,6 +117,24 @@
 		message2 = line2
 
 	update_appearance()
+
+/**
+ * Push (line1, line2) to set_messages() only when it differs from what we last pushed.
+ *
+ * The shuttle / supply / evac displays call this from process() every SSmachines fire, and the
+ * text is almost always identical to the previous tick's (e.g. "" / "" while no shuttle timer is
+ * running). Skipping the redundant set_messages() avoids a full update_appearance() icon/overlay
+ * rebuild every fire. set_messages() itself (and all the mode-transition rebuilds that go through
+ * it from receive_signal(), set_picture(), power_change()) is untouched, so this only suppresses
+ * the no-op per-tick rebuilds.
+ */
+/obj/machinery/status_display/proc/set_timer_messages(line1, line2)
+	if(current_mode == last_status_push_mode && line1 == last_status_push_line1 && line2 == last_status_push_line2)
+		return
+	last_status_push_mode = current_mode
+	last_status_push_line1 = line1
+	last_status_push_line2 = line2
+	set_messages(line1, line2)
 
 /**
  * Remove both message objs and null the fields.
@@ -227,7 +253,7 @@
 /obj/machinery/status_display/proc/display_shuttle_status(obj/docking_port/mobile/shuttle)
 	if(!shuttle)
 		// the shuttle is missing - no processing
-		set_messages("shutl?","")
+		set_timer_messages("shutl?","")
 		return PROCESS_KILL
 	else if(shuttle.timer)
 		var/line1 = "-[shuttle.getModeStr()]-"
@@ -235,10 +261,10 @@
 
 		if(length_char(line2) > CHARS_PER_LINE)
 			line2 = "error"
-		set_messages(line1, line2)
+		set_timer_messages(line1, line2)
 	else
 		// don't kill processing, the timer might turn back on
-		set_messages("", "")
+		set_timer_messages("", "")
 
 /obj/machinery/status_display/proc/examine_shuttle(mob/user, obj/docking_port/mobile/shuttle)
 	if (shuttle)
@@ -415,7 +441,7 @@
 		line2 = SSshuttle.supply.getTimerStr()
 		if(length_char(line2) > CHARS_PER_LINE)
 			line2 = "Error"
-	set_messages(line1, line2)
+	set_timer_messages(line1, line2)
 
 /obj/machinery/status_display/supply/examine(mob/user)
 	. = ..()
@@ -781,10 +807,10 @@
 /obj/machinery/treadmill_monitor/emp_act(severity)
 	..()
 	if(!(machine_stat & BROKEN))
-		machine_stat |= BROKEN
+		set_machine_stat(machine_stat | BROKEN)
 		update_icon()
 		spawn(100)
-			machine_stat &= ~BROKEN
+			set_machine_stat(machine_stat & ~BROKEN)
 			update_icon()
 
 #undef CHARS_PER_LINE
