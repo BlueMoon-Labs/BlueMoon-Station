@@ -176,17 +176,17 @@
 /obj/item/organ/examine(mob/user)
 	. = ..()
 
-	. += "<hr><span class='notice'>Можно вставить в [ru_parse_zone(zone)].</span>"
+	. += span_notice("Можно вставить в [ru_parse_zone(zone)].")
 
 	if(organ_flags & ORGAN_FAILING)
 		if(status == ORGAN_ROBOTIC)
-			. += span_warning("\n[capitalize(src.name)] повреждён.")
+			. += span_warning("[capitalize(src.name)] повреждён.")
 			return
-		. += span_warning("\n[capitalize(src.name)] слишком долго разлагался и приобрел болезненный цвет. Без ремонта наверное не заработает.")
+		. += span_warning("[capitalize(src.name)] слишком долго разлагался и приобрел болезненный цвет. Без ремонта наверное не заработает.")
 		return
 
 	if(damage > high_threshold)
-		. += "<hr><span class='warning'>[capitalize(src.name)] начинает обесцвечиваться.</span>"
+		. += span_warning("[capitalize(src.name)] начинает обесцвечиваться.")
 
 /obj/item/organ/proc/OnEatFrom(eater, feeder)
 	useable = FALSE //You can't use it anymore after eating it you spaztic
@@ -410,7 +410,7 @@
 /obj/item/organ/examine(mob/user)
 	. = ..()
 	if(!isnull(active_security_level) || !isnull(initial(active_security_level)))
-		. += span_notice("Минимальный уровень тревоги для активации: <b>[isnull(active_security_level) ? SECURITY_LEVEL_COLOR_TEXT(SEC_LEVEL_GREEN,"G&R@EE%N") : SECURITY_LEVEL_COLORED_UPPERTEXT(active_security_level)]</b>")
+		. += span_warning("Минимальный уровень тревоги для активации: <b>[isnull(active_security_level) ? SECURITY_LEVEL_COLOR_TEXT(SEC_LEVEL_GREEN,"G&R@EE%N") : SECURITY_LEVEL_COLORED_UPPERTEXT(active_security_level)]</b>")
 
 /obj/item/organ/proc/action_trigger(datum/action/source, obj/item/organ/target, mob/user)
 	if(!activate_allowed(source, user))
