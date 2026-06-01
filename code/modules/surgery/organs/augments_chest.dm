@@ -134,6 +134,11 @@
 #undef MAX_HEAL_COOLDOWN
 #undef DEF_CONVALESCENCE_TIME
 
+/obj/item/organ/cyberimp/chest/reviver/sec_level
+	name = "Corporate Reviver implant"
+	implant_color = "#751010"
+	active_security_level = REVIVER_SEC_LEVEL
+
 /obj/item/organ/cyberimp/chest/thrusters
 	name = "implantable thrusters set"
 	desc = "An implantable set of thruster ports. They use the gas from environment or subject's internals for propulsion in zero-gravity areas. \
@@ -237,16 +242,21 @@
 	actions_types = list(/datum/action/item_action/chem_implant) ///datum/action/item_action/organ_action/use
 	var/available_c = list()
 
-/obj/item/organ/cyberimp/chest/chem_implant/plus
-	name = "Chemical sequencer implant plus"
-	desc = "This implant can inject limited list of advanced reagents into your blood."
-	icon_state = "chem_implant_plus"
-	implant_level = 1
-
 /obj/item/organ/cyberimp/chest/chem_implant/emp_act(severity)
 	if(prob(60/severity) && owner)
 		to_chat(owner, "<span class='warning'>Your chemical implant lost it's chargre!</span>")
 		charge = 0
+
+/obj/item/organ/cyberimp/chest/chem_implant/plus
+	name = "Chemical Sequencer implant PLUS"
+	desc = "This implant can inject limited list of advanced reagents into your blood."
+	icon_state = "chem_implant_plus"
+	implant_level = 1
+
+/obj/item/organ/cyberimp/chest/chem_implant/sec_level
+	name = "Corporate Chemical Sequencer implant"
+	icon_state = "chem_implant_corpo"
+	active_security_level = CHEM_SEQ_SEC_LEVEL
 
 /datum/chem_implant
 	var/chemname

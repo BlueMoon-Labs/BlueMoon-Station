@@ -239,6 +239,10 @@
 		flash_protect = initial(flash_protect)
 	return ..()
 
+/obj/item/organ/eyes/robotic/toggled/thermals/sec_level
+	name = "Corporate Thermal eyes"
+	active_security_level = THERMAL_EYES_SEC_LEVEL
+
 /obj/item/organ/eyes/robotic/toggled/w_shield
 	name = "shielded robotic eyes"
 	desc = "These reactive micro-shields will protect you from welders and flashes without obscuring your vision."
