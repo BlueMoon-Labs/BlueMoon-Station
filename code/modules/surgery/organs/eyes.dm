@@ -400,6 +400,7 @@
 	toggle(silent = TRUE)
 
 /obj/item/organ/eyes/robotic/toggled/glow/proc/update_visuals(datum/source, olddir, newdir)
+	SIGNAL_HANDLER
 	if(QDELETED(owner))
 		return
 	if((LAZYLEN(eye_lighting) < light_beam_distance) || QDELETED(on_mob))

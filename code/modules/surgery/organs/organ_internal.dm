@@ -402,6 +402,7 @@
 			deactivate()
 
 /obj/item/organ/Remove(special)
+	deactivate(TRUE)
 	. = ..()
 	for(var/datum/action/action in actions)
 		UnregisterSignal(action, list(COMSIG_ACTION_TRIGGER, COMSIG_ACTION_ISAVAILABLE))
@@ -413,10 +414,12 @@
 		. += span_warning("Минимальный уровень тревоги для активации: <b>[isnull(active_security_level) ? SECURITY_LEVEL_COLOR_TEXT(SEC_LEVEL_GREEN,"G&R@EE%N") : SECURITY_LEVEL_COLORED_UPPERTEXT(active_security_level)]</b>")
 
 /obj/item/organ/proc/action_trigger(datum/action/source, obj/item/organ/target, mob/user)
+	SIGNAL_HANDLER
 	if(!activate_allowed(source, user))
 		return COMPONENT_ACTION_BLOCK_TRIGGER
 
 /obj/item/organ/proc/action_available(datum/action/source, obj/item/organ/target, mob/user, silent = TRUE)
+	SIGNAL_HANDLER
 	if(!activate_allowed(source, user, silent))
 		return COMPONENT_ACTION_NOT_AVAILABLE
 
@@ -452,7 +455,3 @@
 		UnregisterSignal(SSsecurity_level, COMSIG_SECURITY_LEVEL_CHANGED)
 		log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)] and clear sec level restrictions")
 		playsound(get_turf(src), 'sound/effects/light_flicker.ogg', 100, 1)
-
-/obj/item/organ/Remove(special)
-	deactivate(TRUE)
-	return ..()
