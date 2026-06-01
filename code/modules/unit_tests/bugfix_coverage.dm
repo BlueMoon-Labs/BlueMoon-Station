@@ -93,7 +93,8 @@
 	var/mob/living/carbon/human/test_mob = allocate(/mob/living/carbon/human)
 	var/obj/item/organ/eyes/robotic/toggled/glow/eyes = allocate(/obj/item/organ/eyes/robotic/toggled/glow)
 	eyes.Insert(test_mob, TRUE)
-	eyes.activate(silent = TRUE)
+	if(!eyes.active)
+		eyes.toggle(silent = TRUE)
 
 	TEST_ASSERT_NOTNULL(eyes.eye_lighting, "eye_lighting should exist after activation")
 	TEST_ASSERT(LAZYLEN(eyes.eye_lighting) >= 2, "eye_lighting should have multiple entries after regenerate_light_effects")
@@ -108,4 +109,5 @@
 	// Valid entries should still be accessible
 	TEST_ASSERT_NOTNULL(LAZYACCESS(eyes.eye_lighting, 1), "First entry should still be valid after update_visuals")
 
-	eyes.deactivate(silent = TRUE)
+	if(eyes.active)
+		eyes.toggle(silent = TRUE)
