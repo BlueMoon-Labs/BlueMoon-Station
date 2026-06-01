@@ -65,9 +65,9 @@ GLOBAL_LIST_INIT(sec_level_colors, list(
 #define SECURITY_LEVEL_COLOR(sec_level) (GLOB.sec_level_colors[sec_level] || "#ffffff")
 
 #define SECURITY_LEVEL_COLOR_TEXT(sec_level, text_to_color) "<font color=[SECURITY_LEVEL_COLOR(sec_level)]>[text_to_color]</font>"
-#define SECURITY_LEVEL_COLORED(sec_level) SECURITY_LEVEL_COLOR_TEXT(sec_level, SECURITY_LEVEL_NAME_RU(sec_level) || "НЕИЗВЕСТНО")
+#define SECURITY_LEVEL_COLORED(sec_level) SECURITY_LEVEL_COLOR_TEXT(sec_level, SECURITY_LEVEL_NAME_RU(sec_level) || "неизвестно")
 #define SECURITY_LEVEL_COLORED_UPPERTEXT(sec_level) SECURITY_LEVEL_COLOR_TEXT(sec_level, uppertext(SECURITY_LEVEL_NAME_RU(sec_level)) || "НЕИЗВЕСТНО")
-#define SECURITY_LEVEL_COLORED_CAPITALIZE(sec_level) SECURITY_LEVEL_COLOR_TEXT(sec_level, capitalize(SECURITY_LEVEL_NAME_RU(sec_level)) || "НЕИЗВЕСТНО")
+#define SECURITY_LEVEL_COLORED_CAPITALIZE(sec_level) SECURITY_LEVEL_COLOR_TEXT(sec_level, capitalize(SECURITY_LEVEL_NAME_RU(sec_level)) || "Неизвестно")
 
 /// Engineering Override Access manual toggle
 //#define COMSIG_GLOB_FORCE_AIRLOCK_OVERRIDE "force_airlock_override"

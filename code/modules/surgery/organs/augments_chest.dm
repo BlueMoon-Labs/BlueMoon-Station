@@ -247,7 +247,7 @@
 	if(!owner || . & EMP_PROTECT_SELF)
 		return
 	if(prob(60/severity) && owner)
-		to_chat(owner, "<span class='warning'>Your chemical implant lost it's charge!</span>")
+		to_chat(owner, span_warning("Your chemical implant lost its charge!"))
 		charge = 0
 
 /obj/item/organ/cyberimp/chest/chem_implant/plus
