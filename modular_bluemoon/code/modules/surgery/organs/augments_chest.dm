@@ -51,7 +51,7 @@
 
 /obj/item/organ/cyberimp/chest/healer
 	name = "Broken Healer implant"
-	desc = "Is broken and useless."
+	desc = "Implant is broken and useless."
 	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
 	icon_state = "healerbrute"
 	slot = ORGAN_SLOT_HEART_AID

@@ -198,7 +198,7 @@ GLOBAL_LIST_INIT(slaver_gear, subtypesof(/datum/slaver_gear))
 	category = "Implants"
 	cost = 10000
 
-/datum/slaver_gear/implant_thrusters
+/datum/slaver_gear/implant_revitilzer
 	name = "Revitalizing Cortex"
 	description = "This attachable to the torso cortex optimizes the body's processes in order to preserve the body. Provides overall basic mending."
 	build_path = /obj/item/organ/cyberimp/chest/healer/revitilzer

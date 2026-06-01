@@ -449,6 +449,7 @@
 	. = ..()
 	if(active_security_level)
 		active_security_level = null
+		UnregisterSignal(SSsecurity_level, COMSIG_SECURITY_LEVEL_CHANGED)
 		log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)] and clear sec level restrictions")
 		playsound(get_turf(src), 'sound/effects/light_flicker.ogg', 100, 1)
 

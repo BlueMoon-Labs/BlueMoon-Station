@@ -275,7 +275,7 @@
 		if(1)
 			. += "<span class='notice'>Отсутствует проводка.</span>"
 		if(2)
-			. += "<span class='notice'>Alt-click, чтобы [locked ? "заблокировать" : "заблокировать"] интерфейс.</span>"
+			. += "<span class='notice'>Alt-click, чтобы [locked ? "раз" : "за"]блокировать интерфейс.</span>"
 	. += "<span class='notice'>Текущий уровень угрозы: <b><u>[SECURITY_LEVEL_COLORED_UPPERTEXT(GLOB.security_level)]</u></b>.</span>"
 
 /obj/machinery/airalarm/ui_status(mob/user)

@@ -17,7 +17,7 @@
 
 /obj/item/organ/cyberimp/brainchip/code_activate()
 	. = ..()
-	if(!LAZYLEN(traits_list))
+	if(!LAZYLEN(traits_list) || !owner.mind)
 		return
 	for(var/trait in traits_list)
 		ADD_TRAIT(owner.mind, trait, TRAIT_GENERIC)
@@ -25,7 +25,7 @@
 
 /obj/item/organ/cyberimp/brainchip/deactivate(removing)
 	. = ..()
-	if(!LAZYLEN(traits_list))
+	if(!LAZYLEN(traits_list) || !owner.mind)
 		return
 	for(var/trait in traits_list)
 		REMOVE_TRAIT(owner.mind, trait, TRAIT_GENERIC)
