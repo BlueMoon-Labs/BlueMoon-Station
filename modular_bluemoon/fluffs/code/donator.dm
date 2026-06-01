@@ -1757,31 +1757,25 @@
 	name = "M.U. 88 New hope coat"
 	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/suit/donator/bm/mu88
-	ckeywhitelist = list("milidead", "hateredsoul")
+	ckeywhitelist = list("hateredsoul", "milidead")
 
 /datum/gear/donator/bm/mu88_swimsuit
 	name = "M.U. 88 New hope swimsuit"
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/under/donator/bm/mu88_swimsuit
-	ckeywhitelist = list("milidead", "hateredsoul")
+	ckeywhitelist = list("hateredsoul", "milidead")
 
 /datum/gear/donator/bm/mu88_boots
 	name = "M.U. 88 New hope boots"
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/shoes/jackboots/tall/mu88_boots
-	ckeywhitelist = list("milidead", "hateredsoul")
+	ckeywhitelist = list("hateredsoul", "milidead")
 
 /datum/gear/donator/bm/mu88_horns
 	name = "M.U. 88 New hope horns"
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/head/donator/bm/mu88_horns
-	ckeywhitelist = list("milidead", "hateredsoul")
-
-/datum/gear/donator/bm/mu88_tie
-	name = "M.U. 88 New hope tie"
-	slot = ITEM_SLOT_ICLOTHING
-	path = /obj/item/clothing/neck/tie/mu88_tie
-	ckeywhitelist = list("milidead", "hateredsoul")
+	ckeywhitelist = list("hateredsoul", "milidead")
 
 /datum/gear/donator/bm/cesar_tunic
 	name = "Fancy tunic"

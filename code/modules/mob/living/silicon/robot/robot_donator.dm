@@ -208,9 +208,42 @@
 // /obj/item/robot_module/saboteur/spider - Spider Saboteur
 
 
-/datum/borg_donator_skin/syndicate/mekafl
+/datum/borg_donator_skin/syndicate/inteq/mekafl
 	name = "ANI-Meka"
-	module_type = /obj/item/robot_module/syndicatejack
+	module_type = /obj/item/robot_module/syndicate/inteq
+	preview_icon = 'modular_splurt/icons/mob/robots_32x64.dmi'
+	preview_icon_state = "mekafl"
+	ckey_whitelist = list("foxrtotlimda")
+	cyborg_base_icon = "mekafl"
+	cyborg_icon_override = 'modular_splurt/icons/mob/robots_32x64.dmi'
+	hat_offset = TALL_HAT_OFFSET
+	hasrest = TRUE
+
+/datum/borg_donator_skin/syndicate_medical/inteq/mekafl
+	name = "ANI-Meka"
+	module_type = /obj/item/robot_module/syndicate_medical/inteq
+	preview_icon = 'modular_splurt/icons/mob/robots_32x64.dmi'
+	preview_icon_state = "mekafl"
+	ckey_whitelist = list("foxrtotlimda")
+	cyborg_base_icon = "mekafl"
+	cyborg_icon_override = 'modular_splurt/icons/mob/robots_32x64.dmi'
+	hat_offset = TALL_HAT_OFFSET
+	hasrest = TRUE
+
+/datum/borg_donator_skin/saboteur/inteq/mekafl
+	name = "ANI-Meka"
+	module_type = /obj/item/robot_module/saboteur/inteq
+	preview_icon = 'modular_splurt/icons/mob/robots_32x64.dmi'
+	preview_icon_state = "mekafl"
+	ckey_whitelist = list("foxrtotlimda")
+	cyborg_base_icon = "mekafl"
+	cyborg_icon_override = 'modular_splurt/icons/mob/robots_32x64.dmi'
+	hat_offset = TALL_HAT_OFFSET
+	hasrest = TRUE
+
+/datum/borg_donator_skin/inteq_builder/mekafl
+	name = "ANI-Meka"
+	module_type = /obj/item/robot_module/inteq_builder
 	preview_icon = 'modular_splurt/icons/mob/robots_32x64.dmi'
 	preview_icon_state = "mekafl"
 	ckey_whitelist = list("foxrtotlimda")
@@ -221,5 +254,8 @@
 
 GLOBAL_LIST_INIT_TYPED(borg_donator_skins, /datum/borg_donator_skin, list(
 	// new /datum/borg_donator_skin/example/pe4henika
-	new /datum/borg_donator_skin/syndicate/mekafl
+	new /datum/borg_donator_skin/syndicate/inteq/mekafl
+	new /datum/borg_donator_skin/syndicate_medical/inteq/mekafl
+	new /datum/borg_donator_skin/saboteur/inteq/mekafl
+	new /datum/borg_donator_skin/inteq_builder/mekafl
 ))
