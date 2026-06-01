@@ -34,7 +34,7 @@ Nothing else in the console has ID requirements.
 	req_access = list(ACCESS_TOX)	//lA AND SETTING MANIPULATION REQUIRES SCIENTIST ACCESS.
 
 	var/locked = FALSE
-	var/id_cache = list()
+	var/list/id_cache = list()
 	var/id_cache_seq = 1
 	var/compact = TRUE
 
@@ -362,6 +362,7 @@ Nothing else in the console has ID requirements.
 		var/size = spritesheet.icon_size_id(design.id)
 		design_cache[compressed_id] = list(
 			design.name,
+			design.hacked_only,
 			"[size == size32x32 ? "" : "[size] "][design.id]"
 		)
 
