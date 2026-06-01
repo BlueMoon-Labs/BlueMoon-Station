@@ -26,8 +26,8 @@
 	max_integrity = 300
 	armor = list(MELEE = 20, BULLET = 10, LASER = 0, ENERGY = 0, BOMB = 10, BIO = 0, RAD = 0, FIRE = 100, ACID = 100)
 	movedelay = 1 SECONDS
-	/// Cooldown between in-place rotations. Kept short and separate from movedelay so turning stays responsive and isn't blocked by inability to move.
-	var/turn_delay = 0.2 SECONDS
+	/// Cooldown between in-place rotations. Kept shorter than movedelay so turning stays responsive and isn't blocked by inability to move, but slow enough not to spin on the spot.
+	var/turn_delay = 0.4 SECONDS
 	anchored = TRUE
 	emulate_door_bumps = TRUE
 	COOLDOWN_DECLARE(mecha_bump_smash)
@@ -701,23 +701,29 @@
 	if(!allow_diagonal_movement && ISDIAGONALDIR(direction))
 		return TRUE
 
+	// In strafe mode, a driver holding Alt turns directional input into a PURE in-place rotation: the mech turns
+	// toward the input and must never step - not even once it already faces that way (otherwise it walks off after turning).
+	var/strafe_rotate = FALSE
+	if(strafe && !forcerotate)
+		for(var/mob/driver in return_drivers())
+			if(driver.client?.keys_held["Alt"])
+				strafe_rotate = TRUE
+				break
+
 	// Rotation is decoupled from movement: turning must NOT be blocked by the inability to move (zero-g, no power)
 	// nor share/consume the move cooldown, otherwise the mech "can't turn" in space and Alt-strafe turns get eaten.
-	if(dir != direction || forcerotate)
-		var/should_turn = forcerotate || !strafe
-		if(!should_turn) // strafe mode: a driver holding Alt converts the strafe into an in-place rotation
-			for(var/mob/driver in return_drivers())
-				if(driver.client?.keys_held["Alt"])
-					should_turn = TRUE
-					break
-		if(should_turn)
-			if(!COOLDOWN_FINISHED(src, cooldown_vehicle_turn))
-				return FALSE
-			COOLDOWN_START(src, cooldown_vehicle_turn, turn_delay)
-			setDir(direction)
-			if(turnsound)
-				playsound(src, turnsound, 40, TRUE)
-			return TRUE
+	if((dir != direction || forcerotate) && (forcerotate || !strafe || strafe_rotate))
+		if(!COOLDOWN_FINISHED(src, cooldown_vehicle_turn))
+			return FALSE
+		COOLDOWN_START(src, cooldown_vehicle_turn, turn_delay)
+		setDir(direction)
+		if(turnsound)
+			playsound(src, turnsound, 40, TRUE)
+		return TRUE
+
+	// Alt-strafe is rotation-only: if we already face the requested direction, hold position instead of stepping forward.
+	if(strafe_rotate)
+		return TRUE
 
 	// In strafe mode, a direction != facing without Alt means strafe-move: travel that way while keeping our facing.
 	var/strafing = strafe && (dir != direction)
