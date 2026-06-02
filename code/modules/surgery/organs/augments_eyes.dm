@@ -3,7 +3,7 @@
 	desc = "These cybernetic eyes will display a HUD over everything you see. Maybe."
 	icon_state = "eye_implant"
 	implant_overlay = "eye_implant_overlay"
-	slot = ORGAN_SLOT_EYES
+	actions_types = list(/datum/action/item_action/organ_action/toggle)
 	zone = BODY_ZONE_PRECISE_EYES
 	w_class = WEIGHT_CLASS_TINY
 	slot = ORGAN_SLOT_HUD
@@ -12,6 +12,11 @@
 
 /obj/item/organ/cyberimp/eyes/hud/Insert(mob/living/carbon/organ_mob, special, drop_if_replaced)
 	. = ..()
+	if(!.)
+		return
+	toggle()
+
+/obj/item/organ/cyberimp/eyes/hud/ui_action_click(mob/user, actiontype)
 	toggle()
 
 /obj/item/organ/cyberimp/eyes/hud/proc/toggle()
