@@ -68,6 +68,8 @@
 	var/allow_diagonal_movement = TRUE
 	///Whether or not the mech destroys walls by running into it.
 	var/bumpsmash = FALSE
+	/// Mobs currently entering via mob_enter (ignore in Entered for swapper teleports).
+	var/list/entering_mobs
 
 	///////////ATMOS
 	///Whether we are currrently drawing from the internal tank
@@ -504,10 +506,8 @@
 			// such as brainmob inside brainitem inside MMI inside mecha
 			while(!isnull(checking))
 				if(isturf(checking))
-					// hit a turf before hitting the mecha, seems like they have been moved out
-					occupant.clear_alert("charge")
-					occupant.clear_alert("mech damage")
-					occupant = null
+					// Displaced (teleport, swapper, etc.) — strip mech control without shoving them back outside.
+					remove_occupant(occupant)
 					break
 				else if (checking == src)
 					break  // all good
@@ -516,6 +516,13 @@
 	if(mecha_flags & LIGHTS_ON)
 		var/lights_energy_drain = 2
 		use_power(lights_energy_drain)
+
+	for(var/mob/living/stowaway in src)
+		if(is_occupant(stowaway))
+			continue
+		if(mecha_flags & SILICON_PILOT && (isAI(stowaway) || isbrain(stowaway)))
+			continue
+		stowaway.forceMove(get_turf(src))
 
 	for(var/b in occupants)
 		var/mob/living/occupant = b
@@ -1036,8 +1043,10 @@
 		return
 	if(ishuman(H) && !Adjacent(H))
 		return
+	LAZYADD(entering_mobs, H)
 	H.forceMove(src)
 	add_occupant(H)
+	LAZYREMOVE(entering_mobs, H)
 	add_fingerprint(H)
 	log_message("[H] moved in as pilot.", LOG_MECHA)
 	setDir(dir_in)
@@ -1166,10 +1175,30 @@
 	return ..()
 
 
+/obj/vehicle/sealed/mecha/mob_enter(mob/M, silent = FALSE)
+	LAZYADD(entering_mobs, M)
+	. = ..()
+	LAZYREMOVE(entering_mobs, M)
+
+/obj/vehicle/sealed/mecha/proc/on_occupant_displaced(mob/living/occupant, channel, turf/origin, turf/destination)
+	SIGNAL_HANDLER
+	if(!occupant || !is_occupant(occupant))
+		return
+	var/atom/checking = occupant.loc
+	while(!isnull(checking))
+		if(isturf(checking))
+			remove_occupant(occupant)
+			occupant.update_mouse_pointer()
+			return
+		if(checking == src)
+			return
+		checking = checking.loc
+
 /obj/vehicle/sealed/mecha/add_occupant(mob/M, control_flags)
 	RegisterSignal(M, COMSIG_MOB_DEATH, PROC_REF(mob_exit))
 	RegisterSignal(M, COMSIG_MOB_CLICKON, PROC_REF(on_mouseclick))
 	RegisterSignal(M, COMSIG_MOB_SAY, PROC_REF(display_speech_bubble))
+	RegisterSignal(M, COMSIG_MOVABLE_TELEPORTED, PROC_REF(on_occupant_displaced))
 	return ..()
 
 /obj/vehicle/sealed/mecha/after_add_occupant(mob/M)
@@ -1181,6 +1210,7 @@
 	UnregisterSignal(M, COMSIG_MOB_DEATH)
 	UnregisterSignal(M, COMSIG_MOB_CLICKON)
 	UnregisterSignal(M, COMSIG_MOB_SAY)
+	UnregisterSignal(M, COMSIG_MOVABLE_TELEPORTED)
 	M.clear_alert("charge")
 	M.clear_alert("mech damage")
 	if(M.client)
