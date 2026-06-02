@@ -106,9 +106,9 @@
 		else
 			switch(fucktarget)
 				if("vagina")
-					genital = partner.getorganslot(ORGAN_SLOT_VAGINA)
+					genital = user.getorganslot(ORGAN_SLOT_VAGINA)
 				if("penis")
-					genital = partner.getorganslot(ORGAN_SLOT_PENIS)
+					genital = user.getorganslot(ORGAN_SLOT_PENIS)
 		user.set_is_fucking(partner, CUM_TARGET_MOUTH, genital)
 		try_apply_knot(user, partner, CUM_TARGET_MOUTH) // Проверка на узлирование.
 
