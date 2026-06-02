@@ -65,6 +65,9 @@
 	teleport_cooldown -= (E * 100)
 
 /obj/machinery/quantumpad/attackby(obj/item/I, mob/user, params)
+	if(istype(I, /obj/item/riding_offhand))
+		_try_interact(user)
+		return TRUE
 	if(default_deconstruction_screwdriver(user, "pad-idle-o", "qpad-idle", I))
 		return
 
@@ -178,16 +181,37 @@
 			if(QDELETED(ROI) || (ROI in ignored_atoms))
 				continue //sleeps in CHECK_TICK
 
+			var/mob/living/L = (isliving(ROI) && ROI) || null
+
 			// if is anchored, don't let through
 			if(ROI.anchored)
-				if(isliving(ROI))
-					var/mob/living/L = ROI
-					//only TP living mobs buckled to non anchored items
-					if(L.buckled && L.buckled.anchored)
-						continue
+				//only TP living mobs buckled to non anchored items
+				if(L?.buckled && L.buckled.anchored)
+					continue
 				//Don't TP camera mobs
 				else if(!isobserver(ROI))
 					continue
+
+			if(L)
+				if(L?.buckled && isliving(L.buckled))
+					continue
+				if(LAZYLEN(L.buckled_mobs))
+					var/datum/component/riding/human/riding_datum_human = L.GetComponent(/datum/component/riding/human)
+					var/list/buckl_mobs = list()
+					for(var/mob/living/I in L.buckled_mobs)
+						buckl_mobs += I
+						ignored_atoms += I
+						TELEPORT_SOMETHING(I)
+					L.unbuckle_all_mobs(TRUE)
+					TELEPORT_SOMETHING(L)
+					for(var/mob/living/buckled_mob in buckl_mobs)
+						if(riding_datum_human && ishuman(L))
+							var/mob/living/carbon/human/H = L
+							H.buckle_mob(buckled_mob, TRUE, TRUE, buckle_type = riding_datum_human.buckle_type, auto_by_type = TRUE)
+						else
+							L.buckle_mob(buckled_mob, TRUE, TRUE)
+					continue
+
 			TELEPORT_SOMETHING(ROI)
 			CHECK_TICK
 
