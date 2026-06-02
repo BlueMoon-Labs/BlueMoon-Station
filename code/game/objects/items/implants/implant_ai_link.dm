@@ -12,6 +12,7 @@
 	var/datum/action/item_action/organ_action/state_laws/laws_action
 	var/datum/action/item_action/organ_action/ai_link_talk/talk_action
 	var/last_shock_time = 0
+	var/active = FALSE
 
 
 /obj/item/organ/cyberimp/brain/ai_link/proc/diag_hud_set_aishell()
@@ -74,7 +75,7 @@
 	code_activate()
 
 /obj/item/organ/cyberimp/brain/ai_link/code_activate()
-	if(QDELETED(linked_ai))
+	if(active || QDELETED(linked_ai))
 		var/list/active_ais = list()
 		for(var/mob/living/silicon/ai/AI in GLOB.silicon_mobs)
 			if(AI.stat != DEAD)
@@ -106,31 +107,32 @@
 
 /obj/item/organ/cyberimp/brain/ai_link/deactivate()
 	. = ..()
-	if(owner)
-		var/mob/living/carbon/old_owner = owner
-		to_chat(old_owner, "<span class='userdanger'>НЕЙРОННАЯ СВЯЗЬ РАЗОРВАНА.</span>")
-		old_owner << 'modular_bluemoon/sound/effects/whir1.ogg'
+	if(!active || QDELETED(owner))
+		return
+	var/mob/living/carbon/old_owner = owner
+	to_chat(old_owner, "<span class='userdanger'>НЕЙРОННАЯ СВЯЗЬ РАЗОРВАНА.</span>")
+	old_owner << 'modular_bluemoon/sound/effects/whir1.ogg'
 
-		// Очистка всех HUD слоев
-		var/list/huds_to_clear = list(DIAG_TRACK_HUD, IMPTRACK_HUD)
-		for(var/hud_type in huds_to_clear)
-			var/image/holder = old_owner.hud_list[hud_type]
-			if(holder)
-				holder.icon_state = null
+	// Очистка всех HUD слоев
+	var/list/huds_to_clear = list(DIAG_TRACK_HUD, IMPTRACK_HUD)
+	for(var/hud_type in huds_to_clear)
+		var/image/holder = old_owner.hud_list[hud_type]
+		if(holder)
+			holder.icon_state = null
 
-		if(linked_ai)
-			to_chat(linked_ai, "<span class='boldannounce'>ВНИМАНИЕ:</span> <span class='userdanger'>Связь с био-активом [old_owner.name] разорвана.</span>")
-			linked_ai << 'modular_bluemoon/sound/effects/whir1.ogg'
-			linked_ai.linked_humans -= old_owner
-		UnregisterSignal(old_owner, "stat_panel")
-		UnregisterSignal(old_owner, COMSIG_PARENT_EXAMINE)
-		old_owner.remove_language(/datum/language/machine, TRUE)
-		if(laws_action)
-			laws_action.Remove(old_owner)
-			qdel(laws_action)
-		if(talk_action)
-			talk_action.Remove(old_owner)
-			qdel(talk_action)
+	if(linked_ai)
+		to_chat(linked_ai, "<span class='boldannounce'>ВНИМАНИЕ:</span> <span class='userdanger'>Связь с био-активом [old_owner.name] разорвана.</span>")
+		linked_ai << 'modular_bluemoon/sound/effects/whir1.ogg'
+		linked_ai.linked_humans -= old_owner
+	UnregisterSignal(old_owner, "stat_panel")
+	UnregisterSignal(old_owner, COMSIG_PARENT_EXAMINE)
+	old_owner.remove_language(/datum/language/machine, TRUE)
+	if(laws_action)
+		laws_action.Remove(old_owner)
+		qdel(laws_action)
+	if(talk_action)
+		talk_action.Remove(old_owner)
+		qdel(talk_action)
 
 /obj/item/organ/cyberimp/brain/ai_link/on_life()
 	. = ..()

@@ -270,6 +270,7 @@
 	flash_protect = 2
 	tint = INFINITY
 	var/obj/item/flashlight/eyelight/eye
+	var/active = FALSE
 
 /obj/item/organ/eyes/robotic/flashlight/emp_act(severity)
 	return
@@ -284,17 +285,23 @@
 
 /obj/item/organ/eyes/robotic/flashlight/code_activate()
 	. = ..()
+	if(active)
+		return
 	eye.on = TRUE
 	eye.forceMove(owner)
 	eye.update_brightness(owner)
 	owner.become_blind("flashlight_eyes")
+	active = !active
 
 /obj/item/organ/eyes/robotic/flashlight/deactivate(removing)
 	. = ..()
+	if(!active)
+		return
 	eye.on = FALSE
 	eye.update_brightness(owner)
 	eye.forceMove(src)
 	owner.cure_blind("flashlight_eyes")
+	active = !active
 
 #define MAX_SATURATION 192
 #define MAX_LIGHTNESS 256

@@ -134,6 +134,7 @@
 	desc = "This implant can counteract the effects of harmful radiation in robots, effectively increasing their radiation tolerance significantly."
 	implant_color = "#0066ff"
 	slot = ORGAN_SLOT_BRAIN_ROBOT_RADSHIELDING
+	var/active = FALSE
 
 /obj/item/organ/cyberimp/brain/robot_radshielding/emp_act(severity)
 	. = ..()
@@ -152,14 +153,20 @@
 
 /obj/item/organ/cyberimp/brain/robot_radshielding/code_activate()
 	. = ..()
+	if(active)
+		return
 	ADD_TRAIT(owner, TRAIT_ROBOT_RADSHIELDING, ROBOT_RADSHIELDING_IMPLANT_TRAIT) //Organics can get this, but it does literally nothing for them except cause more pain if EMPd, so uh, good on you?
 	to_chat(owner, span_nicegreen("<b>ECC-имплантат</b> активируется, обеспечивая защиту от радиации."))
+	active = !active
 
 /obj/item/organ/cyberimp/brain/robot_radshielding/deactivate(removing)
 	. = ..()
+	if(!active)
+		return
 	REMOVE_TRAIT(owner, TRAIT_ROBOT_RADSHIELDING, ROBOT_RADSHIELDING_IMPLANT_TRAIT)
 	if(!removing)
 		to_chat(owner, span_warning("<b>ECC-имплантат</b> отключаяется, вы больше не защищены от радиации."))
+	active = !active
 
 //[[[[MOUTH]]]]
 /obj/item/organ/cyberimp/mouth

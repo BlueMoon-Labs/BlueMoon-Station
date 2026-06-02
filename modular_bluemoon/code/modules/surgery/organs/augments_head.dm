@@ -8,6 +8,7 @@
 	zone = BODY_ZONE_HEAD
 	w_class = WEIGHT_CLASS_TINY
 	var/list/traits_list = list()
+	var/active = FALSE
 
 /obj/item/organ/cyberimp/brainchip/Insert(mob/living/carbon/organ_mob, special, drop_if_replaced)
 	. = ..()
@@ -17,20 +18,22 @@
 
 /obj/item/organ/cyberimp/brainchip/code_activate()
 	. = ..()
-	if(!LAZYLEN(traits_list) || !owner.mind)
+	if(active || !LAZYLEN(traits_list) || !owner.mind)
 		return
 	for(var/trait in traits_list)
 		ADD_TRAIT(owner.mind, trait, TRAIT_GENERIC)
 	to_chat(owner, "Вы чувствуете, как [src] активируется и загружает в ваш мозг новые знания.")
+	active = !active
 
 /obj/item/organ/cyberimp/brainchip/deactivate(removing)
 	. = ..()
-	if(!LAZYLEN(traits_list) || !owner.mind)
+	if(!active || !LAZYLEN(traits_list) || !owner.mind)
 		return
 	for(var/trait in traits_list)
 		REMOVE_TRAIT(owner.mind, trait, TRAIT_GENERIC)
 	if(!removing)
 		to_chat(owner, "Вы чувствуете, как [src] отключается, а знания пропадают.")
+	active = !active
 
 /obj/item/organ/cyberimp/brainchip/emp_act(severity)
 	. = ..()
