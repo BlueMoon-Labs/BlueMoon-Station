@@ -509,9 +509,6 @@
 	log_override = FALSE
 
 /obj/item/projectile/kinetic/etenmm/prehit_pierce(atom/target)
-	if(kinetic_gun)
-		for(var/obj/item/borg/upgrade/modkit/M in kinetic_gun.modkits)
-			M.projectile_prehit(src, target, kinetic_gun)
 	return ..()
 
 /obj/item/projectile/kinetic/etenmm/on_range()
