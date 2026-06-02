@@ -439,8 +439,8 @@
 /datum/interaction/lewd/unholy/piss/penis/inside/mouth
 	description = "Член. Протолкнуть в горло и мочиться."
 	required_from_target_exposed = INTERACTION_REQUIRE_MOUTH
-	target_organ = CUM_TARGET_MOUTH
-	user_cum_in = CUM_TARGET_MOUTH
+	target_organ = CUM_TARGET_THROAT
+	user_cum_in = CUM_TARGET_THROAT
 	p13target_emote = PLUG13_EMOTE_MOUTH
 	write_log_user = "pissed in throat"
 	write_log_target = "got their throat filled with piss by"

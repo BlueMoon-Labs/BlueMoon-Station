@@ -125,7 +125,7 @@
 			var/obj/item/clothing/underwear/briefs/strapon/user_strapon = user.get_strapon()
 			user_strapon.attached_dildo.target_reaction(partner, user, 1, CUM_TARGET_MOUTH, null, user.a_intent == INTENT_HARM)
 		else
-			partner.handle_post_sex(LOW_LUST, null, user, CUM_TARGET_MOUTH)
+			partner.handle_post_sex((HAS_TRAIT(partner, TRAIT_KISS_SLUT) ? NORMAL_LUST : LOW_LUST), null, user, CUM_TARGET_MOUTH)
 	// BLUEMOON ADD END
 
 /datum/interaction/lewd/throatfuck
@@ -209,7 +209,7 @@
 		var/obj/item/clothing/underwear/briefs/strapon/user_strapon = user.get_strapon()
 		user_strapon.attached_dildo.target_reaction(partner, user, 1, CUM_TARGET_THROAT)
 	else
-		partner.handle_post_sex(LOW_LUST, null, user, CUM_TARGET_THROAT)
+		partner.handle_post_sex((HAS_TRAIT(partner, TRAIT_KISS_SLUT) ? NORMAL_LUST : LOW_LUST), null, user, CUM_TARGET_THROAT)
 	// BLUEMOON ADD END
 
 /datum/interaction/lewd/double_oral
@@ -231,7 +231,7 @@
 	var/message
 	var/shape_desc = get_penis_shape_desc(user)
 
-	if(user.is_fucking(partner, CUM_TARGET_MOUTH))
+	if(user.is_fucking(partner, CUM_TARGET_THROAT))
 		message = pick(
 			"заполняет рот <b>[partner]</b> обоими членами, заставляя [partner.ru_ego()] задыхаться от напора.",
 			"вводит оба члена глубоко в глотку <b>[partner]</b>, не давая [partner.ru_emu()] возможности отдышаться.",
@@ -243,7 +243,7 @@
 			"направляет [shape_desc] к губам <b>[partner]</b>, заставляя [partner.ru_ego()] послушно открыть рот.",
 			"медленно вставляет оба члена в рот <b>[partner]</b>, чувствуя, как [partner.ru_ego()] губы растягиваются.",
 			"плотно берёт <b>[partner]</b> за голову и начинает мягко насаживать на свой [shape_desc].")
-		user.set_is_fucking(partner, CUM_TARGET_MOUTH, user.getorganslot(ORGAN_SLOT_PENIS))
+		user.set_is_fucking(partner, CUM_TARGET_THROAT, user.getorganslot(ORGAN_SLOT_PENIS))
 
 	playlewdinteractionsound(get_turf(user), pick(
 		'modular_sand/sound/interactions/oral1.ogg',
@@ -257,11 +257,11 @@
 
 	// Эффекты возбуждения и оргазма
 	if(user.can_penetrating_genital_cum())
-		user.handle_post_sex(NORMAL_LUST * 2, CUM_TARGET_MOUTH, partner, ORGAN_SLOT_PENIS)
+		user.handle_post_sex(NORMAL_LUST * 2, CUM_TARGET_THROAT, partner, ORGAN_SLOT_PENIS)
 
-	partner.handle_post_sex(NORMAL_LUST * 2, CUM_TARGET_PENIS, user, "mouth")
+	partner.handle_post_sex((HAS_TRAIT(partner, TRAIT_KISS_SLUT) ? NORMAL_LUST : LOW_LUST) * 2, null, user, CUM_TARGET_THROAT)
 
-	try_apply_knot(user, partner, CUM_TARGET_MOUTH)
+	try_apply_knot(user, partner, CUM_TARGET_THROAT)
 
 	if(prob(10))
 		partner.visible_message(span_love("[is_hidden ? (picked_hidden) : null]<b>[partner]</b> захлёбывается стонами, когда оба члена глубоко в её рту!"), vision_distance = distance)
@@ -285,7 +285,7 @@
 	var/message
 	var/shape_desc = get_penis_shape_desc(user)
 
-	if(user.is_fucking(partner, CUM_TARGET_MOUTH))
+	if(user.is_fucking(partner, CUM_TARGET_THROAT))
 		message = pick(
 			"вжимается глубже, двигаясь ритмично в рот <b>[partner]</b>.",
 			"направляет [shape_desc] глубже, ощущая, как губы <b>[partner]</b> плотно охватывают основание.",
@@ -296,7 +296,7 @@
 			"вводит свой [shape_desc] в рот <b>[partner]</b> и начинает двигаться медленно.",
 			"прижимается к губам <b>[partner]</b>, мягко продвигая [shape_desc] внутрь.",
 			"чувствует тепло рта <b>[partner]</b> и медленно начинает двигаться.")
-		user.set_is_fucking(partner, CUM_TARGET_MOUTH, user.getorganslot(ORGAN_SLOT_PENIS))
+		user.set_is_fucking(partner, CUM_TARGET_THROAT, user.getorganslot(ORGAN_SLOT_PENIS))
 
 	playlewdinteractionsound(get_turf(user), pick(
 		'modular_sand/sound/interactions/champ1.ogg',
@@ -305,8 +305,9 @@
 	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 
 	if(user.can_penetrating_genital_cum())
-		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_MOUTH, partner, ORGAN_SLOT_PENIS)
-		partner.handle_post_sex(NORMAL_LUST, CUM_TARGET_PENIS, user, "mouth")
+		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_THROAT, partner, ORGAN_SLOT_PENIS)
+
+	partner.handle_post_sex((HAS_TRAIT(partner, TRAIT_KISS_SLUT) ? NORMAL_LUST : LOW_LUST), null, user, CUM_TARGET_THROAT)
 
 	// гарантированное узлирование, но с проверкой префов
-		try_apply_knot(user, partner, CUM_TARGET_MOUTH, force_knot = TRUE)
+	try_apply_knot(user, partner, CUM_TARGET_THROAT, force_knot = TRUE)
