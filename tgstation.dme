@@ -1430,6 +1430,7 @@
 #include "code\game\objects\items\teleprod.dm"
 #include "code\game\objects\items\telescopic_iv.dm"
 #include "code\game\objects\items\theft_tools.dm"
+#include "code\game\objects\items\toy_balloons.dm"
 #include "code\game\objects\items\toy_mechs.dm"
 #include "code\game\objects\items\toys.dm"
 #include "code\game\objects\items\trash.dm"

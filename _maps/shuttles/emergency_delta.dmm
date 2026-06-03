@@ -125,6 +125,9 @@
 /turf/open/floor/plasteel,
 /area/shuttle/escape)
 "aj" = (
+/obj/effect/fun_balloon/sentience/emergency_shuttle{
+	group_name = "medical staff on the Emergency Delta Shuttle"
+	},
 /obj/item/defibrillator/loaded,
 /obj/structure/table/reinforced,
 /obj/effect/turf_decal/tile/blue{

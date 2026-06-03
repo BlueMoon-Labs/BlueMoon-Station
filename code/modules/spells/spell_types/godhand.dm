@@ -4,7 +4,7 @@
 	var/catchphrase = "High Five!"
 	var/on_use_sound = null
 	var/obj/effect/proc_holder/spell/targeted/touch/attached_spell
-	icon = 'icons/obj/items_and_weapons.dmi'
+	icon = 'icons/obj/toys/balloons.dmi'
 	icon_state = "syndballoon"
 	item_state = null
 	item_flags = NEEDS_PERMIT | ABSTRACT | DROPDEL

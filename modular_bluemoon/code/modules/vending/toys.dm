@@ -15,6 +15,12 @@
 		/obj/item/ammo_box/foambox = 20,
 		/obj/item/toy/foamblade = 10,
 		/obj/item/toy/syndicateballoon = 10,
+		/obj/item/toy/balloon = 10,
+		/obj/item/toy/balloon/long = 10,
+		/obj/item/toy/waterballoon = 10,
+		/obj/item/toy/balloon/corgi = 5,
+		/obj/item/toy/balloon/heart = 5,
+		/obj/item/toy/balloon/arrest = 5,
 		/obj/item/clothing/suit/syndicatefake = 5,
 		/obj/item/clothing/head/syndicatefake = 5,
 	)
@@ -24,6 +30,12 @@
 		/obj/item/gun/ballistic/automatic/l6_saw/toy/unrestricted = 10,
 		/obj/item/toy/katana = 10,
 		/obj/item/dualsaber/toy = 5,
+		/obj/item/toy/balloon_animal/guy = 3,
+		/obj/item/toy/balloon_animal/clown = 3,
+		/obj/item/toy/balloon_animal/cat = 3,
+		/obj/item/toy/balloon_animal/dog = 3,
+		/obj/item/toy/balloon_animal/slime = 3,
+		/obj/item/toy/balloon_animal/xeno = 3,
 	)
 	premium = list(
 		/obj/item/dualsaber/toy = 4,
