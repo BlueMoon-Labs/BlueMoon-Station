@@ -1245,8 +1245,23 @@
 /turf/open/floor/plating,
 /area/space)
 "eh" = (
-/obj/structure/table/reinforced,
-/obj/item/gun/energy/laser/sniper,
+/obj/structure/window/reinforced/spawner/north,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 1
+	},
+/obj/structure/closet/crate/large,
+/obj/item/stack/ore/diamond{
+	amount = 3
+	},
+/obj/item/stack/ore/diamond{
+	amount = 3
+	},
+/obj/item/stack/ore/diamond{
+	amount = 3
+	},
+/obj/item/stack/ore/diamond{
+	amount = 3
+	},
 /turf/open/floor/plasteel/dark,
 /area/space)
 "ei" = (
@@ -2803,10 +2818,6 @@
 	pixel_x = 2;
 	pixel_y = -4
 	},
-/obj/item/clothing/suit/space/hardsuit/iron_tombstone{
-	pixel_x = 8;
-	pixel_y = -6
-	},
 /turf/open/floor/plasteel/dark,
 /area/space)
 "jp" = (
@@ -3444,6 +3455,11 @@
 /obj/structure/window/reinforced/spawner/north,
 /obj/effect/turf_decal/trimline/yellow/filled/line{
 	dir = 1
+	},
+/obj/structure/closet/crate/large,
+/obj/item/clothing/suit/space/hardsuit/iron_tombstone{
+	pixel_x = 8;
+	pixel_y = -6
 	},
 /turf/open/floor/plasteel/dark,
 /area/space)
@@ -5149,6 +5165,13 @@
 /obj/effect/turf_decal/bot/yellow,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel,
+/area/space)
+"ql" = (
+/obj/machinery/porta_turret/inteq/energy/heavy{
+	name = "InteQ Ship Turret";
+	dir = 10
+	},
+/turf/closed/wall/mineral/plastitanium,
 /area/space)
 "qm" = (
 /obj/structure/table/wood,
@@ -7843,6 +7866,14 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/space)
+"yR" = (
+/obj/structure/lattice,
+/obj/machinery/porta_turret/inteq/energy/heavy{
+	name = "InteQ Ship Turret";
+	dir = 10
+	},
+/turf/open/space/basic,
+/area/space)
 "yS" = (
 /obj/item/storage/backpack/duffelbag/syndie/inteq/shotgun,
 /obj/structure/rack/shelf,
@@ -7960,6 +7991,7 @@
 /area/space)
 "zp" = (
 /obj/effect/turf_decal/trimline/yellow/filled/corner,
+/obj/structure/closet/crate/large,
 /turf/open/floor/plasteel/dark,
 /area/space)
 "zr" = (
@@ -8631,6 +8663,8 @@
 	},
 /obj/effect/turf_decal/tile/brown,
 /obj/structure/closet/crate/large,
+/obj/item/storage/firstaid/brute,
+/obj/item/storage/firstaid/brute,
 /obj/item/storage/firstaid/brute,
 /turf/open/floor/plasteel/dark,
 /area/space)
@@ -12221,6 +12255,18 @@
 /obj/effect/turf_decal/tile/brown/full,
 /turf/open/floor/plasteel/dark,
 /area/space)
+"MD" = (
+/obj/structure/closet/crate/large,
+/obj/item/weldingtool/experimental/inteq,
+/obj/item/crowbar/power/inteq,
+/obj/item/screwdriver/power/inteq,
+/obj/item/multitool/tricorder,
+/obj/item/storage/belt/utility,
+/obj/item/storage/belt/utility,
+/obj/item/storage/belt/utility,
+/obj/item/storage/belt/utility,
+/turf/open/floor/plasteel/dark,
+/area/space)
 "ME" = (
 /obj/structure/shuttle/engine/large{
 	dir = 8
@@ -15703,6 +15749,7 @@
 /obj/item/storage/backpack/duffelbag/syndie/inteq/shotgun,
 /obj/structure/rack/shelf,
 /obj/item/clothing/mask/gas/syndicate/cool_version,
+/obj/item/gun/energy/laser/sniper,
 /turf/open/floor/plasteel/dark,
 /area/space)
 "Yi" = (
@@ -15836,23 +15883,10 @@
 /turf/open/floor/plasteel/dark,
 /area/space)
 "YG" = (
-/obj/structure/closet/crate/secure/gear{
-	req_one_access_txt = "152"
-	},
-/obj/item/stack/ore/diamond{
-	amount = 3
-	},
-/obj/item/storage/belt/utility,
-/obj/item/storage/belt/utility,
-/obj/item/storage/belt/utility,
-/obj/item/storage/belt/utility,
-/obj/item/multitool/tricorder,
 /obj/effect/turf_decal/trimline/yellow/filled/line{
 	dir = 8
 	},
-/obj/item/crowbar/power/inteq,
-/obj/item/screwdriver/power/inteq,
-/obj/item/weldingtool/experimental/inteq,
+/obj/structure/table/reinforced,
 /turf/open/floor/plasteel/dark,
 /area/space)
 "YH" = (
@@ -30207,7 +30241,7 @@ go
 DN
 tz
 vB
-YM
+Cj
 YM
 YM
 YM
@@ -34384,7 +34418,7 @@ AM
 AM
 AM
 AM
-OO
+ql
 OO
 KS
 KS
@@ -34400,7 +34434,7 @@ yn
 LZ
 AD
 JR
-pR
+pz
 vB
 vB
 vB
@@ -36100,7 +36134,7 @@ wF
 AM
 YM
 YM
-YM
+Cj
 DN
 DN
 DN
@@ -36941,7 +36975,7 @@ Al
 TJ
 cY
 Al
-Al
+MD
 Al
 cY
 eM
@@ -37574,7 +37608,7 @@ IU
 oy
 js
 Al
-lf
+eh
 Dp
 Al
 Al
@@ -38432,7 +38466,7 @@ pR
 AM
 YM
 YM
-YM
+Cj
 DN
 DN
 DN
@@ -39486,7 +39520,7 @@ wG
 Bt
 CD
 pR
-YM
+eI
 wF
 wF
 vB
@@ -39687,7 +39721,7 @@ AM
 AM
 AM
 AM
-YM
+eI
 Et
 Et
 Et
@@ -42268,7 +42302,7 @@ AM
 vB
 vB
 vB
-YM
+Cj
 YM
 YM
 YM
@@ -43767,7 +43801,7 @@ AM
 AM
 Qq
 wF
-wF
+yR
 AM
 AM
 AM
@@ -55032,7 +55066,7 @@ vB
 OO
 qQ
 Ra
-eh
+Pg
 Ra
 Pg
 Ra
@@ -55671,7 +55705,7 @@ Al
 AR
 AR
 AR
-Al
+Tr
 Yh
 OO
 vB
