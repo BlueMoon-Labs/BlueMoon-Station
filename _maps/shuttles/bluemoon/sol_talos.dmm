@@ -82,6 +82,7 @@
 	id = "talos_thrusters_port"
 	},
 /obj/effect/spawner/structure/window/shuttle,
+/obj/structure/shuttle/engine/heater,
 /turf/open/floor/plating,
 /area/shuttle/solfed/destroyer)
 "aM" = (
@@ -167,11 +168,9 @@
 	},
 /obj/effect/turf_decal/siding/thinplating/dark,
 /obj/machinery/light/directional/west,
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "bK" = (
-/obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/mopbucket,
 /obj/item/reagent_containers/glass/bucket,
 /turf/open/floor/plasteel/dark/textured/large,
@@ -195,13 +194,11 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "bX" = (
-/obj/structure/rack,
 /obj/machinery/light/directional/south,
 /obj/structure/cable{
 	icon_state = "0-4"
 	},
-/obj/item/pickaxe/mini,
-/obj/item/pickaxe/mini,
+/obj/machinery/vending/medical,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "ce" = (
@@ -219,15 +216,8 @@
 	pixel_y = 5
 	},
 /obj/structure/table/reinforced,
-/obj/effect/decal/cleanable/dirt,
 /obj/effect/turf_decal/big_sign/solgov/bb,
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/carpet/royalblue,
-/area/shuttle/solfed/destroyer)
-"ck" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/fans/tiny,
-/turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
 "cn" = (
 /obj/machinery/light/directional/south,
@@ -254,7 +244,7 @@
 	dir = 4
 	},
 /obj/machinery/light/directional/south,
-/turf/open/floor/plating,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/destroyer)
 "cA" = (
 /obj/structure/cable/yellow{
@@ -268,10 +258,9 @@
 	dir = 1
 	},
 /obj/machinery/door/firedoor/border_only,
-/turf/open/space/basic,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/destroyer)
 "cC" = (
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/light_switch{
 	dir = 1;
 	pixel_y = -19
@@ -286,7 +275,6 @@
 /obj/structure/mirror{
 	pixel_y = -32
 	},
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/light_switch{
 	dir = 8;
 	pixel_x = 20
@@ -374,7 +362,6 @@
 /obj/structure/cable{
 	icon_state = "0-2"
 	},
-/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
 "dE" = (
@@ -382,7 +369,6 @@
 	dir = 4;
 	name = "Helm"
 	},
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/carpet/royalblue,
 /area/shuttle/solfed/destroyer)
 "dZ" = (
@@ -396,7 +382,7 @@
 	icon_state = "4-8"
 	},
 /obj/structure/railing,
-/turf/open/floor/plating,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/destroyer)
 "em" = (
 /obj/structure/cable/yellow{
@@ -411,7 +397,6 @@
 /obj/machinery/cryopod{
 	dir = 4
 	},
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/destroyer)
 "ey" = (
@@ -519,7 +504,6 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "fC" = (
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/camera/autoname{
 	dir = 5
 	},
@@ -537,7 +521,6 @@
 	icon_state = "1-8"
 	},
 /obj/effect/turf_decal/big_sign/solgov/ab,
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/carpet/royalblue,
 /area/shuttle/solfed/destroyer)
 "fK" = (
@@ -545,16 +528,6 @@
 	icon_state = "20"
 	},
 /turf/open/floor/plasteel/dark/textured/large,
-/area/shuttle/solfed/destroyer)
-"fN" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/spawner/lootdrop/maintenance,
-/turf/open/floor/plasteel/dark/textured/large,
-/area/shuttle/solfed/destroyer)
-"fU" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/spawner/lootdrop/maintenance,
-/turf/open/floor/plating/airless,
 /area/shuttle/solfed/destroyer)
 "fX" = (
 /obj/structure/chair/stool{
@@ -570,7 +543,6 @@
 /obj/structure/cable{
 	icon_state = "0-2"
 	},
-/obj/effect/decal/cleanable/dirt,
 /obj/structure/extinguisher_cabinet/directional/north,
 /obj/structure/extinguisher_cabinet/directional/east,
 /turf/open/floor/plasteel/grimy,
@@ -613,10 +585,8 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "gm" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/spawner/lootdrop/maintenance,
-/turf/open/floor/plasteel/dark/textured/large,
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
+/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "go" = (
 /obj/structure/artilleryplaceholder{
@@ -657,15 +627,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
-"gP" = (
-/obj/structure/cable{
-	icon_state = "1-4"
-	},
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/turf/open/floor/plating,
-/area/shuttle/solfed/destroyer)
 "gT" = (
 /obj/structure/railing,
 /obj/structure/cable{
@@ -692,28 +653,17 @@
 	icon_state = "0-8"
 	},
 /obj/machinery/light/directional/east,
-/obj/effect/decal/cleanable/dirt,
 /obj/item/kirbyplants/random,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "gZ" = (
-/obj/structure/closet/crate{
-	name = "sandbags crate"
-	},
-/obj/item/storage/box/emptysandbags{
-	pixel_x = -5;
-	pixel_y = 5
-	},
-/obj/item/storage/box/emptysandbags,
-/obj/item/storage/box/emptysandbags{
-	pixel_x = 5;
-	pixel_y = -5
-	},
+/obj/structure/window/reinforced/spawner/west,
+/obj/structure/window/reinforced/spawner/north,
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "hc" = (
 /obj/structure/closet/crate/bin,
-/obj/effect/decal/cleanable/dirt,
 /obj/item/cigbutt,
 /obj/item/cigbutt,
 /obj/item/trash/raisins,
@@ -743,7 +693,6 @@
 /turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
 "hz" = (
-/obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/table/wood,
 /obj/item/reagent_containers/food/drinks/bottle/cognac{
 	pixel_x = 7;
@@ -754,7 +703,7 @@
 	pixel_x = -4;
 	pixel_y = 6
 	},
-/turf/open/floor/plating,
+/turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
 "hG" = (
 /obj/structure/railing{
@@ -776,16 +725,12 @@
 	},
 /turf/open/floor/plasteel/elevatorshaft,
 /area/shuttle/solfed/destroyer)
-"hM" = (
-/obj/effect/decal/cleanable/oil/streak,
-/turf/open/floor/plasteel/dark,
-/area/shuttle/solfed/destroyer)
 "hO" = (
 /obj/structure/cable/yellow{
 	icon_state = "2-4"
 	},
 /obj/structure/railing,
-/turf/open/floor/plating,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/destroyer)
 "hQ" = (
 /obj/structure/table/reinforced,
@@ -802,13 +747,6 @@
 "ia" = (
 /obj/machinery/atmospherics/components/unary/outlet_injector/on,
 /turf/open/floor/engine/hull/reinforced,
-/area/shuttle/solfed/destroyer)
-"ik" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/cobweb/cobweb2,
-/obj/item/cigbutt,
-/obj/effect/spawner/lootdrop/maintenance,
-/turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
 "iu" = (
 /obj/machinery/door/airlock/hatch{
@@ -879,6 +817,7 @@
 	id = "talos_thrusters_port"
 	},
 /obj/effect/spawner/structure/window/shuttle,
+/obj/structure/shuttle/engine/heater,
 /turf/open/floor/plating,
 /area/shuttle/solfed/destroyer)
 "iN" = (
@@ -912,14 +851,7 @@
 	icon_state = "4-8"
 	},
 /obj/effect/turf_decal/big_sign/solgov/cb,
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/carpet/royalblue,
-/area/shuttle/solfed/destroyer)
-"jd" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/cobweb/cobweb2,
-/turf/open/floor/plating/airless,
 /area/shuttle/solfed/destroyer)
 "jf" = (
 /obj/machinery/light/directional/north,
@@ -932,7 +864,6 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "jt" = (
-/obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/door/airlock/maintenance_hatch{
 	dir = 4
 	},
@@ -950,7 +881,6 @@
 	icon_state = "1-4"
 	},
 /obj/effect/turf_decal/big_sign/solgov/ca,
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/carpet/royalblue,
 /area/shuttle/solfed/destroyer)
 "jH" = (
@@ -966,10 +896,6 @@
 	req_access_txt = "61"
 	},
 /turf/open/space/basic,
-/area/shuttle/solfed/destroyer)
-"jJ" = (
-/obj/machinery/light/directional/east,
-/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "jP" = (
 /obj/effect/turf_decal/siding/white{
@@ -996,7 +922,7 @@
 /obj/machinery/atmospherics/pipe/simple/purple/visible{
 	dir = 6
 	},
-/turf/open/floor/plating,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/destroyer)
 "jU" = (
 /obj/structure/cable{
@@ -1075,13 +1001,6 @@
 	},
 /turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
-"kJ" = (
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark/textured/large,
-/area/shuttle/solfed/destroyer)
 "kM" = (
 /obj/structure/cable{
 	icon_state = "4-8"
@@ -1128,7 +1047,7 @@
 /turf/open/floor/circuit/telecomms/mainframe,
 /area/shuttle/solfed/destroyer)
 "lt" = (
-/obj/effect/decal/cleanable/dirt,
+/obj/machinery/suit_storage_unit/sol_combat,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "lA" = (
@@ -1142,16 +1061,13 @@
 	dir = 6
 	},
 /obj/machinery/atmospherics/pipe/simple/purple/visible,
-/turf/open/floor/plating,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/destroyer)
 "lB" = (
-/obj/structure/closet/crate/medical,
-/obj/item/storage/backpack/satchel/med,
-/obj/item/clothing/shoes/combat,
-/obj/item/clothing/glasses/hud/health,
 /obj/structure/railing,
-/obj/item/storage/box/bodybags,
-/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/general/visible{
+	dir = 5
+	},
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "lF" = (
@@ -1190,7 +1106,6 @@
 /area/shuttle/solfed/destroyer)
 "lQ" = (
 /obj/machinery/light/directional/north,
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/computer/camera_advanced/shuttle_docker/solfed/destroyer,
 /turf/open/floor/carpet/royalblue,
 /area/shuttle/solfed/destroyer)
@@ -1207,7 +1122,6 @@
 /obj/effect/turf_decal/siding/thinplating{
 	dir = 6
 	},
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "ml" = (
@@ -1222,7 +1136,6 @@
 	name = "master at arms' locker";
 	req_access_txt = "3"
 	},
-/obj/effect/decal/cleanable/dirt,
 /obj/item/clothing/head/warden/drill{
 	desc = "A special armored campaign hat with the IRMG insignia emblazoned on it. Uses reinforced fabric to offer sufficient protection.";
 	name = "master at arms' campaign hat"
@@ -1287,7 +1200,6 @@
 	icon_door = "orange";
 	name = "inteq wardrobe"
 	},
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/carpet/black,
 /area/shuttle/solfed/destroyer)
 "mU" = (
@@ -1318,8 +1230,13 @@
 /turf/open/floor/plasteel/showroomfloor,
 /area/shuttle/solfed/destroyer)
 "nh" = (
-/obj/structure/bed/roller,
-/turf/open/floor/plasteel/dark,
+/obj/machinery/portable_atmospherics/canister/oxygen,
+/obj/machinery/atmospherics/components/unary/portables_connector/visible{
+	dir = 8;
+	name = "Connector Port (Air Supply)"
+	},
+/obj/effect/turf_decal/box,
+/turf/open/floor/plasteel,
 /area/shuttle/solfed/destroyer)
 "nl" = (
 /turf/open/floor/plasteel/grimy,
@@ -1332,7 +1249,6 @@
 /obj/structure/sign/poster/official/bless_this_spess{
 	pixel_y = 32
 	},
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/carpet/royalblue,
 /area/shuttle/solfed/destroyer)
 "nz" = (
@@ -1352,8 +1268,6 @@
 /obj/structure/cable{
 	icon_state = "2-8"
 	},
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating/airless,
 /area/shuttle/solfed/destroyer)
 "nF" = (
@@ -1395,7 +1309,6 @@
 	name = "comemmorative nuclear fission explosive"
 	},
 /obj/machinery/light/directional/east,
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel/grimy,
 /area/shuttle/solfed/destroyer)
 "nY" = (
@@ -1405,7 +1318,6 @@
 /obj/structure/cable{
 	icon_state = "2-8"
 	},
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "nZ" = (
@@ -1420,11 +1332,8 @@
 	pixel_y = 32
 	},
 /obj/structure/table,
-/obj/item/storage/firstaid/tactical,
-/obj/item/storage/firstaid/tactical,
-/obj/item/storage/firstaid/tactical,
-/obj/item/storage/firstaid/tactical,
-/obj/item/storage/firstaid/tactical,
+/obj/item/gun/medbeam,
+/obj/item/gun/medbeam,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "om" = (
@@ -1456,7 +1365,6 @@
 	dir = 1
 	},
 /obj/effect/turf_decal/siding/thinplating/dark,
-/obj/effect/decal/cleanable/dirt,
 /obj/structure/reagent_dispensers/peppertank{
 	pixel_y = -28
 	},
@@ -1464,9 +1372,7 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "os" = (
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/light/directional/south,
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/modular_computer/console/preset/command{
 	dir = 1
 	},
@@ -1475,7 +1381,6 @@
 "ot" = (
 /obj/structure/rack,
 /obj/item/pickaxe/mini,
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/layer_manifold{
 	dir = 4
 	},
@@ -1494,14 +1399,6 @@
 /obj/item/trash/popcorn,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
-"oG" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/cobweb/cobweb2,
-/obj/structure/closet/cardboard,
-/obj/effect/spawner/lootdrop/maintenance/three,
-/turf/open/floor/plasteel/dark/textured/large,
-/area/shuttle/solfed/destroyer)
 "oS" = (
 /obj/structure/cable{
 	icon_state = "1-4"
@@ -1516,7 +1413,6 @@
 	pixel_y = 22
 	},
 /obj/effect/turf_decal/big_sign/solgov/aa,
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/carpet/royalblue,
 /area/shuttle/solfed/destroyer)
 "oU" = (
@@ -1534,24 +1430,13 @@
 /obj/effect/turf_decal/siding/thinplating{
 	dir = 5
 	},
-/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/dark,
-/area/shuttle/solfed/destroyer)
-"oY" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/plating/airless,
-/area/shuttle/solfed/destroyer)
-"pb" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/plating,
 /area/shuttle/solfed/destroyer)
 "pf" = (
 /obj/structure/cable{
 	icon_state = "0-4"
 	},
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/firealarm/directional/south,
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/computer/cargo/express{
 	dir = 4
 	},
@@ -1590,6 +1475,29 @@
 	locked = 0;
 	name = "fridge"
 	},
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "pD" = (
@@ -1599,7 +1507,6 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "pG" = (
-/obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/cobweb,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
@@ -1618,7 +1525,6 @@
 	name = "vanguard's rubber stamp"
 	},
 /obj/machinery/airalarm/directional/north,
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/carpet/royalblue,
 /area/shuttle/solfed/destroyer)
 "pX" = (
@@ -1647,7 +1553,7 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
-/turf/open/floor/plating,
+/turf/closed/wall/mineral/titanium/interior,
 /area/shuttle/solfed/destroyer)
 "qm" = (
 /obj/structure/cable{
@@ -1665,12 +1571,6 @@
 /obj/structure/curtain,
 /obj/effect/decal/cleanable/vomit/old,
 /turf/open/floor/plasteel/showroomfloor,
-/area/shuttle/solfed/destroyer)
-"qp" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/cobweb,
-/obj/effect/spawner/lootdrop/grille_or_trash,
-/turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
 "qr" = (
 /obj/structure/cable{
@@ -1710,33 +1610,12 @@
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/destroyer)
 "qM" = (
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/carpet/royalblue,
 /area/shuttle/solfed/destroyer)
 "qP" = (
-/obj/structure/closet/crate{
-	name = "target crate"
-	},
-/obj/item/target/syndicate{
-	pixel_x = -5;
-	pixel_y = 10
-	},
-/obj/item/target/syndicate{
-	pixel_y = 5
-	},
-/obj/item/target/alien{
-	pixel_x = 5
-	},
-/obj/item/target/clown{
-	pixel_x = -5;
-	pixel_y = 10
-	},
-/obj/item/target{
-	pixel_y = 5
-	},
-/obj/item/target{
-	pixel_x = 5
-	},
+/obj/structure/table/optable,
+/obj/effect/turf_decal/bot/yellow,
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "qT" = (
@@ -1786,7 +1665,7 @@
 /obj/structure/chair/comfy/black{
 	dir = 1
 	},
-/turf/open/floor/plating,
+/turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
 "rV" = (
 /obj/machinery/button/door{
@@ -1833,8 +1712,7 @@
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating/airless,
+/turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
 "sn" = (
 /obj/structure/chair/stool{
@@ -1876,12 +1754,6 @@
 	},
 /turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
-"sD" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/spawner/lootdrop/grille_or_trash,
-/obj/structure/fans/tiny,
-/turf/open/floor/plasteel/dark/textured/large,
-/area/shuttle/solfed/destroyer)
 "sF" = (
 /obj/machinery/vending/snack/random,
 /obj/machinery/camera/autoname,
@@ -1907,8 +1779,13 @@
 /obj/effect/turf_decal/siding/thinplating/dark{
 	dir = 1
 	},
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/dirt,
+/obj/item/gun/ballistic/automatic/laser/lasgun,
+/obj/item/gun/ballistic/automatic/laser/lasgun{
+	pixel_y = 8
+	},
+/obj/item/gun/ballistic/automatic/laser/lasgun{
+	pixel_y = -8
+	},
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "sQ" = (
@@ -2035,10 +1912,6 @@
 "tT" = (
 /turf/open/floor/plating/airless,
 /area/shuttle/solfed/destroyer)
-"ub" = (
-/obj/effect/spawner/lootdrop/maintenance,
-/turf/open/floor/plasteel/dark/textured/large,
-/area/shuttle/solfed/destroyer)
 "uc" = (
 /turf/open/floor/carpet,
 /area/shuttle/solfed/destroyer)
@@ -2063,8 +1936,15 @@
 "ug" = (
 /obj/structure/rack,
 /obj/effect/turf_decal/siding/thinplating/dark,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/dirt,
+/obj/item/ammo_box/magazine/recharge/lasgun,
+/obj/item/ammo_box/magazine/recharge/lasgun,
+/obj/item/ammo_box/magazine/recharge/lasgun,
+/obj/item/ammo_box/magazine/recharge/lasgun,
+/obj/item/ammo_box/magazine/recharge/lasgun,
+/obj/item/ammo_box/magazine/recharge/lasgun,
+/obj/item/ammo_box/magazine/recharge/lasgun,
+/obj/item/ammo_box/magazine/recharge/lasgun,
+/obj/item/ammo_box/magazine/recharge/lasgun,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "ul" = (
@@ -2072,12 +1952,6 @@
 	dir = 10
 	},
 /turf/open/floor/mineral/plastitanium,
-/area/shuttle/solfed/destroyer)
-"uo" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/cobweb/cobweb2,
-/turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
 "up" = (
 /obj/structure/cable{
@@ -2097,18 +1971,13 @@
 /turf/open/floor/plasteel/grimy,
 /area/shuttle/solfed/destroyer)
 "uv" = (
-/obj/structure/closet/crate/freezer/blood,
 /obj/machinery/light/directional/north,
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/airalarm/directional/west,
+/obj/machinery/atmospherics/components/unary/thermomachine/freezer,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "uI" = (
 /turf/closed/wall/mineral/titanium/interior,
-/area/shuttle/solfed/destroyer)
-"uO" = (
-/obj/machinery/iv_drip,
-/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "vn" = (
 /obj/structure/noticeboard{
@@ -2133,7 +2002,7 @@
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
-/turf/open/floor/plating,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/destroyer)
 "vF" = (
 /obj/item/toy/plush/slimeplushie,
@@ -2194,7 +2063,6 @@
 /area/shuttle/solfed/destroyer)
 "vT" = (
 /obj/item/kirbyplants/random,
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "vX" = (
@@ -2231,7 +2099,7 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "wp" = (
-/obj/structure/weightmachine/stacklifter,
+/obj/machinery/sleeper/syndie/fullupgrade,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "wu" = (
@@ -2265,7 +2133,6 @@
 /obj/item/tank/internals/oxygen,
 /obj/item/tank/internals/oxygen,
 /obj/item/tank/internals/oxygen,
-/obj/effect/decal/cleanable/dirt,
 /obj/structure/sign/poster/official/safety_internals{
 	pixel_x = -32
 	},
@@ -2291,7 +2158,6 @@
 /obj/effect/turf_decal/siding/thinplating{
 	dir = 5
 	},
-/obj/effect/decal/cleanable/dirt,
 /obj/structure/closet/emcloset/wall{
 	pixel_y = 32
 	},
@@ -2336,7 +2202,7 @@
 	dir = 1;
 	pixel_y = -19
 	},
-/turf/open/floor/plating,
+/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "xo" = (
 /obj/structure/railing{
@@ -2372,14 +2238,6 @@
 /obj/effect/turf_decal/siding/thinplating/corner,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
-"xG" = (
-/obj/structure/cable{
-	icon_state = "2-8"
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/plasteel/dark/textured/large,
-/area/shuttle/solfed/destroyer)
 "xK" = (
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
@@ -2397,7 +2255,6 @@
 /obj/structure/cable{
 	icon_state = "2-4"
 	},
-/obj/effect/decal/cleanable/dirt,
 /obj/structure/filingcabinet/chestdrawer,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
@@ -2407,7 +2264,6 @@
 /obj/structure/sign/poster/contraband/masked_men{
 	pixel_y = -32
 	},
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/carpet/black,
 /area/shuttle/solfed/destroyer)
 "yc" = (
@@ -2424,12 +2280,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/destroyer)
 "yl" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/engine/hull/reinforced,
-/area/shuttle/solfed/destroyer)
-"yn" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/item/cigbutt,
+/obj/machinery/atmospherics/pipe/manifold/general/visible,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "yo" = (
@@ -2469,7 +2320,7 @@
 	icon_state = "2-4"
 	},
 /obj/structure/railing,
-/turf/open/floor/plating,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/destroyer)
 "yP" = (
 /obj/structure/artilleryplaceholder{
@@ -2494,9 +2345,6 @@
 /turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
 "zf" = (
-/obj/item/clothing/head/soft/inteq,
-/obj/item/clothing/head/soft/inteq,
-/obj/item/clothing/head/soft/inteq,
 /obj/structure/closet{
 	icon_door = "orange";
 	name = "inteq wardrobe"
@@ -2504,11 +2352,13 @@
 /obj/structure/cable{
 	icon_state = "0-2"
 	},
+/obj/item/clothing/suit/space/hardsuit/ert/alert/sol,
+/obj/item/clothing/suit/space/hardsuit/ert/alert/sol,
+/obj/item/clothing/suit/space/hardsuit/ert/alert/sol,
 /turf/open/floor/carpet/black,
 /area/shuttle/solfed/destroyer)
 "zh" = (
 /obj/effect/turf_decal/big_sign/solgov/bb,
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/carpet/royalblue,
 /area/shuttle/solfed/destroyer)
 "zo" = (
@@ -2525,13 +2375,13 @@
 	pixel_x = 21;
 	pixel_y = 8
 	},
-/obj/structure/weightmachine/weightlifter,
 /obj/machinery/light/directional/north,
-/obj/effect/decal/cleanable/dirt,
+/obj/machinery/sleeper/syndie/fullupgrade,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "zw" = (
 /obj/machinery/door/airlock/external,
+/obj/structure/fans/tiny,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "zz" = (
@@ -2545,9 +2395,7 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "zB" = (
-/obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/closet/crate/trashcart,
-/obj/effect/spawner/lootdrop/maintenance,
 /turf/open/floor/plating/airless,
 /area/shuttle/solfed/destroyer)
 "zG" = (
@@ -2578,14 +2426,8 @@
 	dir = 6
 	},
 /obj/structure/extinguisher_cabinet/directional/east,
+/obj/machinery/suit_storage_unit/sol_combat,
 /turf/open/floor/plasteel/dark,
-/area/shuttle/solfed/destroyer)
-"zT" = (
-/obj/structure/chair/stool/bar{
-	dir = 8
-	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/grimy,
 /area/shuttle/solfed/destroyer)
 "zV" = (
 /obj/structure/cable{
@@ -2595,12 +2437,6 @@
 	icon_state = "1-8"
 	},
 /turf/open/floor/plasteel/grimy,
-/area/shuttle/solfed/destroyer)
-"Aa" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/spawner/lootdrop/grille_or_trash,
-/turf/open/floor/plating/airless,
 /area/shuttle/solfed/destroyer)
 "Ag" = (
 /obj/structure/chair/stool{
@@ -2618,7 +2454,7 @@
 /obj/machinery/atmospherics/pipe/simple/dark/hidden/layer1{
 	dir = 6
 	},
-/turf/open/floor/plating,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/destroyer)
 "An" = (
 /obj/machinery/shower{
@@ -2647,7 +2483,6 @@
 	pixel_y = 5
 	},
 /obj/item/storage/fancy/cigarettes/cigars,
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/carpet/royalblue,
 /area/shuttle/solfed/destroyer)
 "AB" = (
@@ -2669,7 +2504,6 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "AK" = (
-/obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/oil/slippery,
 /obj/machinery/door/poddoor{
 	dir = 4;
@@ -2679,8 +2513,6 @@
 /turf/open/floor/engine/hull/reinforced,
 /area/shuttle/solfed/destroyer)
 "AL" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/cobweb,
 /obj/structure/closet/crate/large,
 /obj/item/mop,
@@ -2720,23 +2552,13 @@
 /turf/open/space/basic,
 /area/shuttle/solfed/destroyer)
 "Bz" = (
-/obj/effect/decal/cleanable/dirt,
 /obj/structure/sign/poster/official/safety_internals{
 	pixel_y = 32
 	},
+/obj/machinery/suit_storage_unit/sol_combat,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
-"BN" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/spawner/lootdrop/grille_or_trash,
-/turf/open/floor/plasteel/dark/textured/large,
-/area/shuttle/solfed/destroyer)
 "BS" = (
-/obj/machinery/mineral/ore_redemption{
-	dir = 4;
-	input_dir = 4;
-	output_dir = 0
-	},
 /obj/machinery/light_switch{
 	dir = 4;
 	pixel_x = -19
@@ -2756,7 +2578,6 @@
 "Cp" = (
 /obj/machinery/vending/cola/random,
 /obj/machinery/light/directional/east,
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel/grimy,
 /area/shuttle/solfed/destroyer)
 "Cu" = (
@@ -2773,19 +2594,12 @@
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/destroyer)
 "CJ" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt/dust,
 /obj/item/book/manual/wiki/detective,
 /obj/item/book/manual/wiki/security_space_law,
 /obj/structure/bookcase,
 /obj/item/book/random,
 /obj/item/book/random,
 /obj/item/book/random,
-/turf/open/floor/plating,
-/area/shuttle/solfed/destroyer)
-"CN" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/portable_atmospherics/canister/toxins,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
 "CP" = (
@@ -2803,8 +2617,7 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "CS" = (
-/obj/structure/bed/roller,
-/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/components/unary/cryo_cell,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "CX" = (
@@ -2842,7 +2655,6 @@
 	dir = 4
 	},
 /obj/machinery/light/directional/west,
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/destroyer)
 "Dr" = (
@@ -2855,27 +2667,14 @@
 "Ds" = (
 /obj/machinery/vending/cigarette,
 /obj/machinery/light/directional/east,
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "DC" = (
-/obj/structure/closet/crate{
-	name = "training equipment crate"
+/obj/machinery/computer/operating{
+	dir = 1
 	},
-/obj/item/gun/energy/laser/practice{
-	pixel_x = -5;
-	pixel_y = 10
-	},
-/obj/item/gun/energy/laser/practice{
-	pixel_y = 5
-	},
-/obj/item/gun/energy/laser/practice{
-	pixel_x = 5
-	},
-/obj/item/clothing/ears/earmuffs,
-/obj/item/clothing/ears/earmuffs,
-/obj/item/clothing/ears/earmuffs,
-/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
+/obj/structure/window/reinforced/spawner/west,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "DQ" = (
@@ -2908,24 +2707,11 @@
 /obj/item/trash/can,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
-"Fi" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/marker_beacon{
-	picked_color = "Lime"
-	},
-/turf/open/floor/plating/airless,
-/area/shuttle/solfed/destroyer)
 "Fk" = (
 /obj/structure/marker_beacon{
 	picked_color = "Burgundy"
 	},
 /turf/open/floor/plating/airless,
-/area/shuttle/solfed/destroyer)
-"Fl" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/fans/tiny,
-/turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
 "Fm" = (
 /obj/structure/cable{
@@ -2983,17 +2769,8 @@
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/destroyer)
 "FO" = (
-/obj/item/tank/internals/plasmaman/full,
-/obj/item/tank/internals/plasmaman/full,
-/obj/item/tank/internals/oxygen,
-/obj/item/tank/internals/oxygen,
-/obj/item/tank/internals/oxygen,
-/obj/item/tank/internals/oxygen,
-/obj/item/tank/internals/oxygen,
-/obj/item/tank/internals/oxygen,
-/obj/machinery/light/small/directional/east,
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/directional/east,
+/obj/machinery/suit_storage_unit/sol_combat,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "FV" = (
@@ -3015,8 +2792,6 @@
 /area/shuttle/solfed/destroyer)
 "Gq" = (
 /obj/machinery/light/small/directional/north,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/cobweb/cobweb2,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
 "Gr" = (
@@ -3027,7 +2802,6 @@
 /area/shuttle/solfed/destroyer)
 "Gt" = (
 /obj/effect/turf_decal/siding/thinplating/dark,
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/airalarm/directional/south,
 /obj/structure/closet/secure_closet{
 	anchored = 1;
@@ -3037,7 +2811,6 @@
 	req_access_txt = "1"
 	},
 /obj/item/clothing/suit/armor/vest/alt,
-/obj/item/clothing/head/helmet/inteq,
 /obj/item/clothing/gloves/combat,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
@@ -3078,7 +2851,6 @@
 	icon_state = "1-8"
 	},
 /obj/effect/decal/cleanable/blood/old,
-/obj/effect/spawner/lootdrop/grille_or_trash,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
 "GR" = (
@@ -3096,7 +2868,7 @@
 /obj/structure/cable{
 	icon_state = "1-6"
 	},
-/turf/open/floor/plating,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/destroyer)
 "Hc" = (
 /obj/structure/artilleryplaceholder{
@@ -3105,8 +2877,6 @@
 /turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
 "Hj" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/robot_debris,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
@@ -3130,7 +2900,6 @@
 	icon_state = "1-2"
 	},
 /obj/effect/turf_decal/big_sign/solgov/ba,
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/carpet/royalblue,
 /area/shuttle/solfed/destroyer)
 "HB" = (
@@ -3165,7 +2934,7 @@
 	icon_state = "4-8"
 	},
 /obj/machinery/atmospherics/pipe/simple/dark/hidden/layer1,
-/turf/open/floor/plating,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/destroyer)
 "Ir" = (
 /obj/machinery/computer/security{
@@ -3199,7 +2968,6 @@
 /obj/effect/turf_decal/siding/thinplating/dark/corner{
 	dir = 8
 	},
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "ID" = (
@@ -3216,7 +2984,6 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "IF" = (
-/obj/effect/decal/cleanable/dirt,
 /obj/structure/closet/firecloset,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
@@ -3251,10 +3018,6 @@
 	dir = 10
 	},
 /turf/open/floor/engine/vacuum,
-/area/shuttle/solfed/destroyer)
-"Jk" = (
-/obj/effect/spawner/lootdrop/maintenance,
-/turf/open/floor/plating/airless,
 /area/shuttle/solfed/destroyer)
 "Jo" = (
 /obj/structure/cable{
@@ -3331,10 +3094,21 @@
 /turf/closed/wall/mineral/titanium/interior,
 /area/shuttle/solfed/destroyer)
 "JZ" = (
+/obj/structure/closet/crate{
+	name = "sandbags crate"
+	},
+/obj/item/storage/box/emptysandbags{
+	pixel_x = -5;
+	pixel_y = 5
+	},
+/obj/item/storage/box/emptysandbags,
+/obj/item/storage/box/emptysandbags{
+	pixel_x = 5;
+	pixel_y = -5
+	},
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "Kd" = (
@@ -3369,8 +3143,6 @@
 /area/shuttle/solfed/destroyer)
 "KB" = (
 /obj/machinery/light/small/directional/north,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/cobweb/cobweb2,
 /obj/structure/cable{
 	icon_state = "0-2"
 	},
@@ -3385,19 +3157,6 @@
 	dir = 4
 	},
 /obj/effect/turf_decal/siding/thinplating/dark{
-	dir = 4
-	},
-/turf/open/floor/plasteel/dark,
-/area/shuttle/solfed/destroyer)
-"KQ" = (
-/obj/machinery/door/airlock/hatch{
-	dir = 4
-	},
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/layer_manifold{
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
@@ -3487,7 +3246,7 @@
 /obj/machinery/atmospherics/pipe/simple/dark/hidden/layer1{
 	dir = 4
 	},
-/turf/open/floor/plating,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/destroyer)
 "LM" = (
 /obj/effect/turf_decal/siding/thinplating{
@@ -3550,7 +3309,6 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
-/obj/effect/decal/cleanable/dirt,
 /obj/structure/sign/poster/contraband/donut_corp{
 	pixel_x = -32
 	},
@@ -3585,8 +3343,6 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "MR" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/closet/crate/secure/loot,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
@@ -3617,33 +3373,18 @@
 	},
 /turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
-"Ng" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/cobweb,
-/turf/open/floor/plating,
-/area/shuttle/solfed/destroyer)
 "Ni" = (
-/obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/portable_atmospherics/canister/toxins,
-/turf/open/floor/plating/airless,
+/turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
 "Nj" = (
-/obj/machinery/button/door{
-	dir = 8;
-	id = "talos_cargo";
-	name = "Cargo Door Control";
-	pixel_x = 21;
-	pixel_y = -2
+/obj/structure/table/reinforced,
+/obj/item/storage/backpack/duffelbag/sec/surgery,
+/obj/item/healthanalyzer/advanced{
+	pixel_y = 9
 	},
-/obj/machinery/light/directional/south,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
-/area/shuttle/solfed/destroyer)
-"NC" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/turf_decal/siding/thinplating/dark{
-	dir = 4
-	},
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
+/obj/machinery/light,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "NF" = (
@@ -3661,22 +3402,6 @@
 /obj/item/trash/can,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
-"NW" = (
-/obj/structure/cable{
-	icon_state = "0-8"
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/door/poddoor{
-	dir = 4;
-	id = "talos_cargo"
-	},
-/obj/effect/spawner/structure/window/shuttle,
-/turf/open/floor/engine/hull/reinforced,
-/area/shuttle/solfed/destroyer)
-"Oc" = (
-/obj/structure/reagent_dispensers/fueltank,
-/turf/open/floor/plasteel/dark,
-/area/shuttle/solfed/destroyer)
 "Ok" = (
 /obj/machinery/mech_bay_recharge_port{
 	dir = 1
@@ -3692,7 +3417,8 @@
 /obj/structure/cable{
 	icon_state = "1-4"
 	},
-/obj/effect/decal/cleanable/dirt,
+/obj/structure/window/reinforced/spawner/north,
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "OK" = (
@@ -3700,7 +3426,6 @@
 	dir = 8
 	},
 /obj/machinery/light/directional/east,
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/destroyer)
 "OM" = (
@@ -3723,18 +3448,7 @@
 	pixel_x = -6;
 	pixel_y = 23
 	},
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/carpet/royalblue,
-/area/shuttle/solfed/destroyer)
-"OP" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/spawner/lootdrop/grille_or_trash,
-/turf/open/floor/plasteel/dark/textured/large,
-/area/shuttle/solfed/destroyer)
-"Pf" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating/airless,
 /area/shuttle/solfed/destroyer)
 "Pk" = (
 /obj/machinery/door/poddoor/shutters{
@@ -3769,9 +3483,6 @@
 /area/shuttle/solfed/destroyer)
 "Pt" = (
 /obj/machinery/light/small/directional/west,
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/spawner/lootdrop/maintenance/three,
 /obj/structure/closet/crate,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
@@ -3802,7 +3513,7 @@
 	icon_state = "4-8"
 	},
 /obj/machinery/firealarm/directional/west,
-/turf/open/floor/plating,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/destroyer)
 "PN" = (
 /obj/structure/cable{
@@ -3876,7 +3587,6 @@
 /obj/structure/marker_beacon{
 	picked_color = "Lime"
 	},
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating/airless,
 /area/shuttle/solfed/destroyer)
 "Qy" = (
@@ -3916,14 +3626,6 @@
 	},
 /turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
-"QW" = (
-/obj/structure/cable{
-	icon_state = "2-4"
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/plasteel/dark/textured/large,
-/area/shuttle/solfed/destroyer)
 "QZ" = (
 /obj/machinery/door/poddoor{
 	id = "talos_tank_burn"
@@ -3946,13 +3648,6 @@
 /obj/effect/turf_decal/siding/thinplating,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
-"Rp" = (
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/plasteel/dark/textured/large,
-/area/shuttle/solfed/destroyer)
 "Ry" = (
 /obj/structure/cable{
 	icon_state = "0-4"
@@ -3972,7 +3667,7 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
-/turf/open/floor/plating,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/destroyer)
 "RF" = (
 /obj/effect/turf_decal/siding/thinplating/dark{
@@ -4007,7 +3702,6 @@
 /area/shuttle/solfed/destroyer)
 "RW" = (
 /obj/effect/turf_decal/big_sign/solgov/ac,
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/carpet/royalblue,
 /area/shuttle/solfed/destroyer)
 "RY" = (
@@ -4059,6 +3753,7 @@
 	id = "talos_thrusters_port"
 	},
 /obj/effect/spawner/structure/window/shuttle,
+/obj/structure/shuttle/engine/heater,
 /turf/open/floor/plating,
 /area/shuttle/solfed/destroyer)
 "Su" = (
@@ -4081,7 +3776,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/turf/open/floor/plating,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/destroyer)
 "SI" = (
 /obj/structure/cable{
@@ -4135,7 +3830,6 @@
 	dir = 1
 	},
 /obj/effect/turf_decal/big_sign/solgov/cc,
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/carpet/royalblue,
 /area/shuttle/solfed/destroyer)
 "TC" = (
@@ -4147,7 +3841,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/turf/open/floor/plating,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/destroyer)
 "TE" = (
 /obj/structure/artilleryplaceholder{
@@ -4165,16 +3859,23 @@
 /obj/structure/window/reinforced{
 	dir = 4
 	},
-/obj/structure/rack,
 /obj/effect/turf_decal/siding/thinplating/dark{
 	dir = 1
 	},
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/camera/autoname,
-/obj/item/storage/box/flashbangs{
-	pixel_x = 2;
-	pixel_y = 1
-	},
+/obj/structure/closet/crate/secure/weapon,
+/obj/item/ammo_box/magazine/m16/ap,
+/obj/item/ammo_box/magazine/m16/ap,
+/obj/item/ammo_box/magazine/m16/ap,
+/obj/item/ammo_box/magazine/m16,
+/obj/item/ammo_box/magazine/m16,
+/obj/item/ammo_box/magazine/m16,
+/obj/item/ammo_box/magazine/m16,
+/obj/item/ammo_box/magazine/m16,
+/obj/item/ammo_box/magazine/m16,
+/obj/item/ammo_box/magazine/m16/hp,
+/obj/item/ammo_box/magazine/m16/hp,
+/obj/item/ammo_box/magazine/m16/hp,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "TN" = (
@@ -4182,7 +3883,6 @@
 /turf/open/floor/plating,
 /area/shuttle/solfed/destroyer)
 "TO" = (
-/obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/vomit/old,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
@@ -4200,11 +3900,6 @@
 	},
 /turf/open/floor/plasteel/grimy,
 /area/shuttle/solfed/destroyer)
-"Ub" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/closet/crate/secure/loot,
-/turf/open/floor/plasteel/dark/textured/large,
-/area/shuttle/solfed/destroyer)
 "Uc" = (
 /obj/structure/cable{
 	icon_state = "1-4"
@@ -4215,7 +3910,6 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "Ug" = (
-/obj/effect/decal/cleanable/dirt,
 /obj/structure/sink/kitchen{
 	dir = 4;
 	pixel_x = -12
@@ -4260,21 +3954,6 @@
 	},
 /turf/open/floor/plasteel/grimy,
 /area/shuttle/solfed/destroyer)
-"Uq" = (
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/turf_decal/siding/thinplating/dark{
-	dir = 1
-	},
-/turf/open/floor/plasteel/dark,
-/area/shuttle/solfed/destroyer)
-"Uy" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/spawner/lootdrop/grille_or_trash,
-/turf/open/floor/plating/airless,
-/area/shuttle/solfed/destroyer)
 "UG" = (
 /obj/machinery/button/door{
 	dir = 4;
@@ -4311,7 +3990,6 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "UQ" = (
-/obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/reagent_dispensers/watertank,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
@@ -4330,7 +4008,6 @@
 /obj/effect/turf_decal/siding/thinplating/dark{
 	dir = 1
 	},
-/obj/effect/decal/cleanable/oil/streak,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "Vj" = (
@@ -4358,8 +4035,7 @@
 /area/shuttle/solfed/destroyer)
 "Vp" = (
 /obj/machinery/light/small/directional/south,
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/plating/airless,
+/turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
 "Vr" = (
 /obj/item/trash/boritos,
@@ -4396,7 +4072,6 @@
 /area/shuttle/solfed/destroyer)
 "VO" = (
 /obj/machinery/light/directional/south,
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "VS" = (
@@ -4406,23 +4081,12 @@
 /obj/machinery/firealarm/directional/north,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
-"VX" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/marker_beacon{
-	picked_color = "Yellow"
-	},
-/turf/open/floor/engine/hull/reinforced,
-/area/shuttle/solfed/destroyer)
 "Wb" = (
 /obj/structure/cable{
 	icon_state = "2-8"
 	},
 /obj/machinery/photocopier,
 /turf/open/floor/plasteel/dark,
-/area/shuttle/solfed/destroyer)
-"Wd" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
 "Wf" = (
 /obj/structure/cable,
@@ -4442,17 +4106,16 @@
 	},
 /obj/structure/rack,
 /obj/effect/turf_decal/siding/thinplating/dark,
-/obj/effect/decal/cleanable/dirt,
+/obj/item/gun/ballistic/automatic/m16a4/tactical,
+/obj/item/gun/ballistic/automatic/m16a4/tactical,
+/obj/item/gun/ballistic/automatic/m16a4/tactical,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "Wr" = (
 /obj/machinery/light/small/directional/north,
-/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/carpet,
 /area/shuttle/solfed/destroyer)
 "Wz" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/computer/shuttle/solfed/destroyer{
 	dir = 8
 	},
@@ -4465,7 +4128,6 @@
 /area/shuttle/solfed/destroyer)
 "WG" = (
 /obj/machinery/light/directional/east,
-/obj/effect/decal/cleanable/dirt,
 /obj/structure/closet/crate/bin,
 /obj/item/trash/can,
 /obj/item/cigbutt,
@@ -4494,7 +4156,6 @@
 /area/shuttle/solfed/destroyer)
 "WR" = (
 /obj/effect/turf_decal/big_sign/solgov/bc,
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/carpet/royalblue,
 /area/shuttle/solfed/destroyer)
 "Xg" = (
@@ -4532,7 +4193,6 @@
 	name = "equipment locker";
 	req_access_txt = "1"
 	},
-/obj/item/clothing/glasses/hud/security/sunglasses/inteq,
 /obj/item/storage/box/handcuffs,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
@@ -4556,7 +4216,6 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "Yz" = (
-/obj/item/clothing/glasses/hud/security/sunglasses/inteq,
 /obj/item/clothing/gloves/tackler/combat/insulated,
 /obj/item/clothing/shoes/combat,
 /obj/item/storage/belt/military/assault,
@@ -4570,18 +4229,14 @@
 	req_access_txt = "20"
 	},
 /obj/machinery/light/directional/west,
-/obj/effect/decal/cleanable/dirt,
 /obj/item/tank/jetpack/oxygen,
+/obj/item/clothing/suit/space/hardsuit/ert/alert/sol/adv,
 /turf/open/floor/carpet/royalblue,
 /area/shuttle/solfed/destroyer)
 "YC" = (
 /obj/structure/table,
 /obj/item/flashlight/lamp/green,
 /turf/open/floor/carpet/black,
-/area/shuttle/solfed/destroyer)
-"YI" = (
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
 "YU" = (
 /obj/structure/artilleryplaceholder{
@@ -4593,16 +4248,6 @@
 /obj/structure/artilleryplaceholder{
 	icon_state = "22"
 	},
-/turf/open/floor/plasteel/dark/textured/large,
-/area/shuttle/solfed/destroyer)
-"YZ" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/spawner/lootdrop/grille_or_trash,
-/turf/open/floor/plasteel/dark/textured/large,
-/area/shuttle/solfed/destroyer)
-"Zb" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
 "Zc" = (
@@ -4636,26 +4281,11 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/destroyer)
 "Zk" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/bed,
 /obj/item/bedsheet/hos{
 	name = "vanguard's spare bedsheet"
 	},
-/turf/open/floor/plating,
-/area/shuttle/solfed/destroyer)
-"Zn" = (
-/obj/item/tank/internals/plasmaman/full,
-/obj/item/tank/internals/plasmaman/full,
-/obj/item/tank/internals/oxygen,
-/obj/item/tank/internals/oxygen,
-/obj/item/tank/internals/oxygen,
-/obj/item/tank/internals/oxygen,
-/obj/item/tank/internals/oxygen,
-/obj/item/tank/internals/oxygen,
-/obj/machinery/light/small/directional/east,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
 "Zo" = (
 /obj/machinery/light/small/directional/north,
@@ -4708,13 +4338,6 @@
 	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
-/area/shuttle/solfed/destroyer)
-"ZV" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/closet/cardboard,
-/obj/effect/spawner/lootdrop/maintenance/three,
-/turf/open/floor/plasteel/dark/textured/large,
 /area/shuttle/solfed/destroyer)
 "ZY" = (
 /obj/structure/artilleryplaceholder/decorative{
@@ -5062,7 +4685,7 @@ jY
 gk
 iE
 Xn
-gP
+su
 qh
 MX
 gG
@@ -5095,7 +4718,7 @@ uI
 au
 fo
 Hl
-jJ
+FO
 uI
 uI
 uI
@@ -5339,7 +4962,7 @@ ur
 Ag
 dZ
 wB
-zT
+wB
 Vz
 iN
 yo
@@ -5436,7 +5059,7 @@ Ui
 Fp
 zw
 zo
-NC
+zo
 uI
 sw
 Fk
@@ -5584,7 +5207,7 @@ Hp
 jw
 Lc
 CS
-Ah
+yl
 wy
 Ah
 Ah
@@ -5623,8 +5246,8 @@ fF
 zh
 jc
 Lc
-uO
-Ah
+CS
+yl
 nY
 iW
 MW
@@ -5666,8 +5289,8 @@ uI
 oi
 nh
 iy
-lt
-Oc
+Ah
+Ah
 HD
 uI
 VS
@@ -5704,9 +5327,9 @@ qM
 cf
 Lc
 wp
-lt
+Ah
 wy
-hM
+Ah
 gZ
 DC
 bN
@@ -5747,7 +5370,7 @@ Ul
 Ah
 wy
 Ah
-Ah
+gm
 qP
 bN
 LM
@@ -5827,7 +5450,7 @@ uI
 IR
 AK
 sQ
-NW
+IR
 uI
 uI
 sq
@@ -5855,7 +5478,7 @@ sw
 sw
 mU
 sJ
-yn
+vP
 Ks
 Jz
 uI
@@ -5865,10 +5488,10 @@ eu
 uI
 fC
 XJ
-yl
-yl
 XJ
-yl
+XJ
+XJ
+XJ
 uI
 DY
 Rg
@@ -5903,7 +5526,7 @@ FV
 jP
 cC
 uI
-yl
+XJ
 XJ
 XJ
 XJ
@@ -5944,10 +5567,10 @@ jP
 ul
 uI
 XJ
-yl
 XJ
 XJ
-yl
+XJ
+XJ
 XJ
 uI
 iN
@@ -5975,7 +5598,7 @@ sw
 sw
 uI
 Ds
-lt
+Ah
 Ga
 ta
 uI
@@ -5987,7 +5610,7 @@ sw
 PX
 XJ
 XJ
-VX
+PX
 sw
 uI
 oW
@@ -6071,7 +5694,7 @@ sw
 sw
 uI
 Bz
-Uq
+lM
 uI
 uI
 uI
@@ -6095,12 +5718,12 @@ sw
 sw
 sw
 uI
-Zn
-Uq
+FO
+lM
 uI
 AL
-Aa
-oY
+tT
+tT
 zB
 uI
 sw
@@ -6115,7 +5738,7 @@ lM
 uI
 Pt
 lI
-Ng
+pG
 CJ
 uI
 sw
@@ -6151,7 +5774,7 @@ sw
 sw
 uI
 uI
-KQ
+RY
 uI
 TO
 lI
@@ -6175,7 +5798,7 @@ sw
 sw
 sw
 uI
-fU
+tT
 nD
 nH
 oS
@@ -6190,13 +5813,13 @@ sw
 sw
 sw
 uI
-Zb
+lI
 Nf
 oD
 oS
 lI
 Wr
-pb
+lI
 uI
 sw
 sw
@@ -6213,15 +5836,15 @@ sw
 sw
 sw
 sw
-Pf
+tT
 uI
-jd
-Uy
+tT
+tT
 uI
-kJ
+sl
 lI
-YZ
-ZV
+lI
+lI
 uI
 sw
 sw
@@ -6230,15 +5853,15 @@ sw
 sw
 sw
 uI
-ik
-Wd
-YI
-Rp
+fr
+lI
+lI
+sl
 lI
 Zk
 hz
 uI
-Pf
+tT
 sw
 sw
 sw
@@ -6253,7 +5876,7 @@ sw
 sw
 sw
 sw
-Pf
+tT
 JT
 uI
 uI
@@ -6278,7 +5901,7 @@ yp
 lI
 uI
 JT
-Pf
+tT
 sw
 sw
 sw
@@ -6310,12 +5933,12 @@ sw
 sw
 sw
 uI
-Ub
+MR
 lI
 tf
 KT
 lI
-gm
+lI
 uI
 sw
 Qx
@@ -6336,7 +5959,7 @@ sw
 sw
 sw
 uI
-YZ
+lI
 lI
 nF
 NF
@@ -6376,8 +5999,8 @@ sw
 sw
 sw
 uI
-uo
-Wd
+lI
+lI
 QV
 TE
 Ho
@@ -6391,11 +6014,11 @@ sw
 sw
 uI
 pG
-BN
+lI
 QV
 TE
 Ho
-Wd
+lI
 uI
 sw
 sw
@@ -6456,7 +6079,7 @@ sw
 sw
 sw
 uI
-BN
+lI
 zL
 Vs
 Hc
@@ -6470,7 +6093,7 @@ sw
 sw
 sw
 uI
-YZ
+lI
 hw
 Vs
 Hc
@@ -6510,12 +6133,12 @@ sw
 sw
 sw
 uI
-Wd
-ub
+lI
+lI
 yP
 TH
 If
-Jk
+lI
 uI
 sw
 sw
@@ -6534,14 +6157,14 @@ sw
 sw
 sw
 sw
-Pf
+tT
 uI
-qp
-xG
+pG
+Nf
 ks
 fK
 fj
-Zb
+lI
 uI
 sw
 sw
@@ -6550,14 +6173,14 @@ sw
 sw
 sw
 uI
-oG
-Wd
+lI
+lI
 ks
 fK
 fj
-Uy
+lI
 uI
-Pf
+tT
 sw
 sw
 sw
@@ -6574,7 +6197,7 @@ sw
 sw
 sw
 sw
-Pf
+tT
 JT
 uI
 uI
@@ -6597,7 +6220,7 @@ dk
 ZY
 uI
 JT
-Pf
+tT
 sw
 sw
 sw
@@ -6614,14 +6237,14 @@ sw
 sw
 sw
 sw
-Pf
+tT
 sw
 uI
-YZ
+lI
 go
 YX
 pq
-YZ
+lI
 uI
 sw
 sw
@@ -6630,14 +6253,14 @@ sw
 sw
 sw
 uI
-BN
-QW
+lI
+zL
 go
 YX
 pq
 uI
 sw
-Pf
+tT
 sw
 sw
 sw
@@ -6654,14 +6277,14 @@ sw
 sw
 sw
 sw
-Pf
+tT
 sw
 uI
-Wd
+lI
 sC
 Pp
 RV
-CN
+Ni
 uI
 sw
 sw
@@ -6671,13 +6294,13 @@ sw
 sw
 uI
 uI
-Rp
+sl
 sC
 Pp
 RV
 uI
 sw
-Pf
+tT
 sw
 sw
 sw
@@ -6694,14 +6317,14 @@ sw
 sw
 sw
 sw
-Fi
+Qx
 sw
 uI
 KB
 iO
 LF
 kh
-OP
+lI
 uI
 sw
 sw
@@ -6717,7 +6340,7 @@ LF
 kh
 uI
 sw
-Fi
+Qx
 sw
 sw
 sw
@@ -6738,7 +6361,7 @@ sw
 sw
 JT
 uI
-fN
+lI
 lI
 uI
 uI
@@ -6752,8 +6375,8 @@ sw
 JT
 uI
 Gq
-Wd
-YZ
+lI
+lI
 uI
 JT
 sw
@@ -6778,8 +6401,8 @@ sw
 sw
 sw
 uI
-Fl
-sD
+Wg
+Wg
 uI
 uI
 sw
@@ -6792,8 +6415,8 @@ sw
 sw
 uI
 uI
-Fl
-Fl
+Wg
+Wg
 uI
 sw
 sw
@@ -6819,7 +6442,7 @@ sw
 sw
 JT
 Wg
-ck
+Wg
 JT
 sw
 sw
@@ -6832,7 +6455,7 @@ sw
 sw
 sw
 JT
-Fl
+Wg
 Wg
 JT
 sw

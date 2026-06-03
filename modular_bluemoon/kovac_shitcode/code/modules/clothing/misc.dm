@@ -136,6 +136,7 @@
 		"Nun 6" = list("icon_state" = "nun6"),
 		"Nun 7" = list("icon_state" = "nun7")
 	)
+	alternate_worn_layer = DRESS_LAYER
 
 ////////////////
 

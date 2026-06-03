@@ -369,8 +369,8 @@
 			return TRUE
 
 		if("PDA_setAdminPhoto")
-			if(!usr.client?.holder)
-				to_chat(usr, span_warning("Only administrators can use this feature."))
+			if(!usr.client?.holder && !is_donator_group(usr.ckey, DONATOR_GROUP_TIER_2))
+				to_chat(usr, span_warning("Only administrators and sponsors can use this feature."))
 				return FALSE
 			var/url = params["url"]
 			if(url && istext(url))
@@ -446,7 +446,7 @@
 		data["selected_photo_path"] = null
 
 	data["admin_photo_url"] = admin_photo_url
-	data["is_admin"] = !!user.client?.holder
+	data["can_set_url_photo"] = !!user.client?.holder || is_donator_group(user.ckey, DONATOR_GROUP_TIER_1)
 
 	var/obj/item/disk = computer.inserted_disk
 	if(istype(disk, /obj/item/cartridge/virus))

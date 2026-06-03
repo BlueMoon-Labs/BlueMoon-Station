@@ -12,7 +12,7 @@
 	var/visor_flags = 0			//flags that are added/removed when an item is adjusted up/down
 	var/visor_flags_inv = 0		//same as visor_flags, but for flags_inv
 	var/visor_flags_cover = 0	//same as above, but for flags_cover
-//what to toggle when toggled with weldingvisortoggle()
+	//what to toggle when toggled with weldingvisortoggle()
 	var/visor_vars_to_toggle = VISOR_FLASHPROTECT | VISOR_TINT | VISOR_VISIONFLAGS | VISOR_DARKNESSVIEW | VISOR_INVISVIEW
 	lefthand_file = 'icons/mob/inhands/clothing_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/clothing_righthand.dmi'
@@ -67,6 +67,9 @@
 	var/reinforced = FALSE
 	// These variables store info about armor piece this item has been reinforced to. Required for proper repair() handling.
 	var/obj/item/clothing/reinforcement_path
+	// This flag makes sure that if a genital is not covered by this piece of clothing, it is still drawn underneath it
+	// Generally should stay TRUE, unless you want your underwear that doesn't cover any body parts to be underneath exposed genitals
+	var/keep_genitals_below = TRUE
 
 /obj/item/clothing/Initialize(mapload)
 	. = ..()

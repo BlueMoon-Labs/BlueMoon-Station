@@ -2,7 +2,7 @@
 
 /mob/living/silicon/pai/syndicate
 	name = "Syndicate pAI"
-	desc = "A Syndicate pAI mobile hard-light holographics emitter. It seems to be deactivated."
+	desc = "Мобильный голографический излучатель твёрдого света pAI Синдиката. Кажется, он деактивирован."
 	software = list("thermal vision", "chemical injector")
 	var/chemical_injector_active = FALSE
 	var/chemical_storage = 0

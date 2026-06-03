@@ -555,7 +555,7 @@
 /mob/living/silicon/ai/proc/botcall()
 	set category = "AI Commands"
 	set name = "Access Robot Control"
-	set desc = "Wirelessly control various automatic robots."
+	set desc = "Беспроводное управление различными автоматическими роботами."
 
 	if(!robot_control)
 		robot_control = new(src)
@@ -793,7 +793,7 @@
 //I am the icon meister. Bow fefore me.	//>fefore
 /mob/living/silicon/ai/proc/ai_hologram_change()
 	set name = "Change Hologram"
-	set desc = "Change the default hologram available to AI to something else."
+	set desc = "Изменить стандартную голограмму, доступную ИИ, на другую."
 	set category = "AI Commands"
 
 	if(incapacitated())
@@ -920,7 +920,7 @@
 
 /mob/living/silicon/ai/proc/control_integrated_radio()
 	set name = "Transceiver Settings"
-	set desc = "Allows you to change settings of your radio."
+	set desc = "Позволяет изменить настройки вашего радио."
 	set category = "AI Commands"
 
 	if(incapacitated())
@@ -936,7 +936,7 @@
 
 /mob/living/silicon/ai/proc/set_automatic_say_channel()
 	set name = "Set Auto Announce Mode"
-	set desc = "Modify the default radio setting for your automatic announcements."
+	set desc = "Изменить настройки радио по умолчанию для ваших автоматических объявлений."
 	set category = "AI Commands"
 
 	if(incapacitated())
@@ -1185,7 +1185,7 @@
 
 /datum/action/innate/deploy_shell
 	name = "Deploy to AI Shell"
-	desc = "Wirelessly control a specialized cyborg shell."
+	desc = "Беспроводное управление специализированной оболочкой киборга."
 	icon_icon = 'icons/mob/actions/actions_AI.dmi'
 	button_icon_state = "ai_shell"
 
@@ -1197,7 +1197,7 @@
 
 /datum/action/innate/deploy_last_shell
 	name = "Reconnect to shell"
-	desc = "Reconnect to the most recently used AI shell."
+	desc = "Переподключиться к последней использованной оболочке ИИ."
 	icon_icon = 'icons/mob/actions/actions_AI.dmi'
 	button_icon_state = "ai_last_shell"
 	var/mob/living/silicon/robot/last_used_shell
@@ -1237,7 +1237,7 @@
 
 /mob/living/silicon/ai/verb/ai_cryo()
 	set name = "AI Cryogenic Stasis"
-	set desc = "Puts the current AI personality into cryogenic stasis, freeing the space for another."
+	set desc = "Помещает текущую личность ИИ в криогенный стазис, освобождая место для другой."
 	set category = "AI Commands"
 
 	if(incapacitated())

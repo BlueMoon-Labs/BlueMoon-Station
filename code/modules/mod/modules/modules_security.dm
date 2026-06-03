@@ -3,9 +3,9 @@
 ///Cloaking - Lowers the user's visibility, can be interrupted by being touched or attacked.
 /obj/item/mod/module/stealth
 	name = "MOD prototype cloaking module"
-	desc = "A complete retrofitting of the suit, this is a form of visual concealment tech employing esoteric technology \
-		to bend light around the user, as well as mimetic materials to make the surface of the suit match the \
-		surroundings based off sensor data. For some reason, this tech is rarely seen."
+	desc = "Полная модернизация костюма, форма технологии визуального маскировки, использующей эзотерическую технологию \
+		для изгиба света вокруг пользователя, а также миметические материалы для соответствия поверхности костюма \
+		окружению на основе данных сенсоров. По какой-то причине эта технология встречается редко."
 	icon_state = "cloak"
 	module_type = MODULE_TOGGLE
 	complexity = 4
@@ -67,7 +67,7 @@
 ///Magnetic Harness - Automatically puts guns in your suit storage when you drop them.
 /obj/item/mod/module/magnetic_harness
 	name = "MOD magnetic harness module"
-	desc = "Based off old TerraGov harness kits, this magnetic harness automatically attaches dropped guns back to the wearer."
+	desc = "Основано на старых комплектах подвесок TerraGov, эта магнитная система автоматически возвращает упавшее оружие к носителю."
 	icon_state = "mag_harness"
 	complexity = 2
 	use_power_cost = DEFAULT_CHARGE_DRAIN
@@ -123,10 +123,10 @@
 ///Holster - Instantly holsters any not huge gun.
 /obj/item/mod/module/holster
 	name = "MOD holster module"
-	desc = "Based off typical storage compartments, this system allows the suit to holster a \
-		standard firearm across its surface and allow for extremely quick retrieval. \
-		While some users prefer the chest, others the forearm for quick deployment, \
-		some law enforcement prefer the holster to extend from the thigh."
+	desc = "Основано на типичных отделениях хранения, эта система позволяет костюму размещать \
+		стандартное огнестрельное оружие на поверхности и обеспечивает крайне быстрое извлечение. \
+		Хотя некоторые пользователи предпочитают грудь, другие — предплечье для быстрого развёртывания, \
+		некоторые представители правопорядка предпочитают, чтобы кобура выдвигалась из бедра."
 	icon_state = "holster"
 	module_type = MODULE_USABLE
 	complexity = 2
@@ -175,7 +175,7 @@
 ///Megaphone - Lets you speak loud.
 /obj/item/mod/module/megaphone
 	name = "MOD megaphone module"
-	desc = "A microchip megaphone linked to a MODsuit, for very important purposes, like: loudness."
+	desc = "Микрочиповый мегафон, связанный с костюмом MOD, для очень важных целей, таких как: громкость."
 	icon_state = "megaphone"
 	module_type = MODULE_TOGGLE
 	complexity = 1

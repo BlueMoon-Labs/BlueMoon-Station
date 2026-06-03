@@ -310,3 +310,21 @@
 	. = ..()
 	AddComponent(/datum/component/butchering, 30, 95, 5) //fast and effective, but as a sword, it might damage the results.
 	AddElement(/datum/element/sword_point)
+
+//////////////////////////////////////////////////
+
+/obj/item/modkit/scream_knife_kit
+	name = "Knife of scream Kit"
+	desc = "A modkit for making a combat knife into a scream Knife."
+	product = /obj/item/kitchen/knife/combat/scream_knife
+	fromitem = list(/obj/item/kitchen/knife/combat)
+
+/obj/item/kitchen/knife/combat/scream_knife
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Knife of scream"
+	desc = "A cool hunting knife bought at a random 24-hour store. For some unknown reason, it is much more comfortable to hold it in a reverse grip.."
+	item_state = "scream"
+	icon_state = "scream"
+	icon = 'modular_bluemoon/fluffs/icons/obj/melee.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/melee_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/melee_righthand.dmi'

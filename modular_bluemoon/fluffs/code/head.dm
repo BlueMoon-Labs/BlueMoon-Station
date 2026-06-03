@@ -528,3 +528,14 @@
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
 	flags_inv = HIDEFACIALHAIR|HIDEFACE|HIDEEYES|HIDEEARS|HIDEHAIR
+
+///////////////////////////////////////////////
+
+/obj/item/clothing/head/donator/bm/renory_helmet
+	name = "Motorcycle Helmet"
+	desc = "Ярко-жёлтый мотоциклетный шлем с кошачьими ушками."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	icon_state = "renory_helmet"
+	item_state = "ygloves"
+	flags_inv = HIDEFACIALHAIR|HIDEFACE|HIDEEYES|HIDEEARS|HIDEHAIR

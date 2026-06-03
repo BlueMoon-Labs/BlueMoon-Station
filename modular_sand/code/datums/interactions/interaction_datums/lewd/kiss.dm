@@ -84,7 +84,8 @@
 				list("moan", "Мне так... хорошо..."),
 				list("realagony", "БОЖЕ! ВНУТРИ ВСЁ ПЫЛАЕТ! ОСТАНОВИТЕ ЭТО!"),
 				list("laugh", "Что-то щекочет тебя"),
-				list("laugh", "Ты не можешь перестать смеяться")
+				list("laugh", "Ты не можешь перестать смеяться"),
+				list("pain", "Твое сердце словно пронзили иголки, а по телу распространяется холод")
 			)
 			var/list/chosen = pick(heartboom_emotes)
 			to_chat(partner, span_love("[chosen[2]]"))

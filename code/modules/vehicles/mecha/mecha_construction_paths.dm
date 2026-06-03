@@ -55,6 +55,63 @@
 	if(!steps[index]["icon_state"] && base_icon)
 		parent_atom.icon_state = "[base_icon][index - 1]"
 
+/datum/component/construction/mecha/examine(datum/source, mob/user, list/examine_list)
+	..()
+	if(index <= steps.len)
+		var/list/current_step = steps[index]
+		var/hint = get_step_hint(current_step["key"])
+		if(hint)
+			examine_list += "<span class='notice'>[hint]</span>"
+
+/datum/component/construction/mecha/proc/get_step_hint(key)
+	if(!key)
+		return
+	if(ispath(key, /obj/item))
+		var/obj/item/I = key
+		var/item_name = initial(I.name)
+		if(istype(key, /obj/item/stack))
+			return "Стоит добавить [item_name]."
+		else if(istype(key, /obj/item/circuitboard))
+			return "Стоит установить [item_name]."
+		else if(istype(key, /obj/item/stock_parts))
+			return "Стоит установить [item_name]."
+		else if(istype(key, /obj/item/mecha_parts/part))
+			return "Стоит установить [item_name]."
+		else if(istype(key, /obj/item/clothing))
+			return "Стоит установить [item_name]."
+		else if(istype(key, /obj/item/assembly/signaler/anomaly))
+			return "Стоит установить [item_name]."
+		else if(istype(key, /obj/item/stack/ore/bluespace_crystal))
+			return "Стоит добавить [item_name]."
+		else if(istype(key, /obj/item/bikehorn))
+			return "Стоит подать сигнал [item_name]."
+		else
+			return "Стоит добавить [item_name]."
+	else if(istext(key))
+		switch(key)
+			if(TOOL_WRENCH)
+				return "Следующий шаг: закрепить гаечным ключом."
+			if(TOOL_SCREWDRIVER)
+				return "Следующий шаг: закрепить отвёрткой."
+			if(TOOL_WIRECUTTER)
+				return "Следующий шаг: обработать кусачками."
+			if(TOOL_WELDER)
+				return "Следующий шаг: приварить сварочным аппаратом."
+			if(TOOL_CROWBAR)
+				return "Следующий шаг: отсоединить ломом."
+			if(TOOL_MULTITOOL)
+				return "Следующий шаг: использовать мультитул."
+	return null
+
+/datum/component/construction/unordered/mecha_chassis/examine(datum/source, mob/user, list/examine_list)
+	if(steps.len)
+		examine_list += "<span class='notice'>Для завершения шасси необходимо установить оставшиеся детали:</span>"
+		for(var/typepath in steps)
+			var/obj/item/part = typepath
+			examine_list += "<span class='notice'>- [initial(part.name)]</span>"
+	else
+		examine_list += "<span class='notice'>Шасси полностью собрано. Следующий шаг — сборка экзокостюма.</span>"
+
 /datum/component/construction/unordered/mecha_chassis/custom_action(obj/item/I, mob/living/user, typepath)
 	. = user.transferItemToLoc(I, parent)
 	if(.)

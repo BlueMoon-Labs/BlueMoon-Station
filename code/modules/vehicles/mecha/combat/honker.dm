@@ -1,5 +1,5 @@
 /obj/vehicle/sealed/mecha/combat/honker
-	desc = "Produced by \"Tyranny of Honk, INC\", this exosuit is designed as heavy clown-support. Used to spread the fun and joy of life. HONK!"
+	desc = "Произведён \"Tyranny of Honk, INC\", этот экзокостюм разработан как тяжёлая поддержка клоунов. Используется для распространения веселья и радости жизни. ХОНК!"
 	name = "\improper H.O.N.K"
 	icon_state = "honker"
 	movedelay = 3

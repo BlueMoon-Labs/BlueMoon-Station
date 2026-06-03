@@ -105,6 +105,51 @@
 
 	return sort_list(selectable_icons)
 
+/obj/item/robot_module
+	var/use_private_skin_optional_menu = FALSE
+	var/private_skin_optional_menu_used = FALSE
+
+/obj/item/robot_module/proc/get_available_donator_borg_icons(client/C)
+	var/list/donor_icons = list()
+
+	if(C)
+		for(var/datum/borg_donator_skin/donor_skin in GLOB.borg_donator_skins)
+			if(donor_skin.is_available_for(src, C))
+				donor_icons[donor_skin.name] = donor_skin.build_preview()
+
+	return sort_list(donor_icons)
+
+/obj/item/robot_module/proc/show_optional_donator_borg_icon_menu(mob/living/silicon/robot/R, cancel_uses_default = FALSE)
+	if(private_skin_optional_menu_used)
+		return TRUE
+	if(!istype(R) || !R.client)
+		return TRUE
+
+	var/list/donor_icons = get_available_donator_borg_icons(R.client)
+	if(!length(donor_icons))
+		return TRUE
+
+	var/icon/default_icon = 'icons/mob/robots.dmi'
+	if(!isnull(cyborg_icon_override))
+		default_icon = cyborg_icon_override
+
+	var/list/selectable_icons = list("Default" = image(icon = default_icon, icon_state = cyborg_base_icon))
+	for(var/donor_icon_name in donor_icons)
+		selectable_icons[donor_icon_name] = donor_icons[donor_icon_name]
+
+	var/choice = show_radial_menu(R, R, sort_list(selectable_icons), custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
+	if(!choice)
+		if(cancel_uses_default)
+			private_skin_optional_menu_used = TRUE
+			return TRUE
+		return FALSE
+
+	private_skin_optional_menu_used = TRUE
+	if(choice == "Default")
+		return TRUE
+
+	return apply_donator_borg_icon(choice, R.client)
+
 /obj/item/robot_module/proc/apply_donator_borg_icon(selection_name, client/C)
 	if(!selection_name || !C)
 		return FALSE
@@ -120,9 +165,15 @@
 
 	return FALSE
 
-// РАБОЧИЙ ПРИМЕР
-// /datum/borg_donator_skin/standard/pe4henika_debug
-// 	name = "Debug MissM"
+// РАБОЧИЙ ШАБЛОН
+// 1. Скопируйте этот пример.
+// 2. Укажите уникальный путь datum, name, module_type и ckey_whitelist/donator_group.
+// 3. Укажите preview_icon/preview_icon_state для radial-меню.
+// 4. Укажите cyborg_base_icon/cyborg_icon_override для фактического спрайта борга.
+// 5. Раскомментируйте datum и добавьте его в GLOB.borg_donator_skins ниже.
+//
+// /datum/borg_donator_skin/example/pe4henika
+// 	name = "Pe4henika Debug Skin"
 // 	module_type = /obj/item/robot_module/standard
 // 	preview_icon = 'modular_splurt/icons/mob/robots.dmi'
 // 	preview_icon_state = "missm_sd"
@@ -130,10 +181,69 @@
 // 	cyborg_base_icon = "missm_sd"
 // 	cyborg_icon_override = 'modular_splurt/icons/mob/robots.dmi'
 // 	hat_offset = 3
+//
+// ВОЗМОЖНЫЕ module_type
+// /obj/item/robot_module - базовый Default; обычно не используйте, потому что совпадёт со всеми модулями.
+// /obj/item/robot_module/standard - Standard
+// /obj/item/robot_module/medical - Medical
+// /obj/item/robot_module/engineering - Engineering
+// /obj/item/robot_module/security - Security
+// /obj/item/robot_module/peacekeeper - Peacekeeper
+// /obj/item/robot_module/clown - Clown
+// /obj/item/robot_module/butler - Service
+// /obj/item/robot_module/miner - Miner
+// /obj/item/robot_module/cargo - Cargo
+// /obj/item/robot_module/roleplay - Roleplay
+// /obj/item/robot_module/syndicatejack - Syndicate
+// /obj/item/robot_module/syndicate - Syndicate Assault
+// /obj/item/robot_module/syndicate_medical - Syndicate Medical
+// /obj/item/robot_module/syndicate_medical/slaver - Slaver Medical Combat
+// /obj/item/robot_module/saboteur - Syndicate Saboteur
+// /obj/item/robot_module/syndicate/inteq - InteQ Assault
+// /obj/item/robot_module/syndicate_medical/inteq - InteQ Medical
+// /obj/item/robot_module/saboteur/inteq - InteQ Saboteur
+// /obj/item/robot_module/inteq_builder - InteQ Engineering
+// /obj/item/robot_module/syndicate/spider - Spider Assault
+// /obj/item/robot_module/syndicate_medical/spider - Spider Medical
+// /obj/item/robot_module/saboteur/spider - Spider Saboteur
 
-/datum/borg_donator_skin/syndicate/mekafl
+
+/datum/borg_donator_skin/syndicate/inteq/mekafl
 	name = "ANI-Meka"
-	module_type = /obj/item/robot_module/syndicate
+	module_type = /obj/item/robot_module/syndicate/inteq
+	preview_icon = 'modular_splurt/icons/mob/robots_32x64.dmi'
+	preview_icon_state = "mekafl"
+	ckey_whitelist = list("foxrtotlimda")
+	cyborg_base_icon = "mekafl"
+	cyborg_icon_override = 'modular_splurt/icons/mob/robots_32x64.dmi'
+	hat_offset = TALL_HAT_OFFSET
+	hasrest = TRUE
+
+/datum/borg_donator_skin/syndicate_medical/inteq/mekafl
+	name = "ANI-Meka"
+	module_type = /obj/item/robot_module/syndicate_medical/inteq
+	preview_icon = 'modular_splurt/icons/mob/robots_32x64.dmi'
+	preview_icon_state = "mekafl"
+	ckey_whitelist = list("foxrtotlimda")
+	cyborg_base_icon = "mekafl"
+	cyborg_icon_override = 'modular_splurt/icons/mob/robots_32x64.dmi'
+	hat_offset = TALL_HAT_OFFSET
+	hasrest = TRUE
+
+/datum/borg_donator_skin/saboteur/inteq/mekafl
+	name = "ANI-Meka"
+	module_type = /obj/item/robot_module/saboteur/inteq
+	preview_icon = 'modular_splurt/icons/mob/robots_32x64.dmi'
+	preview_icon_state = "mekafl"
+	ckey_whitelist = list("foxrtotlimda")
+	cyborg_base_icon = "mekafl"
+	cyborg_icon_override = 'modular_splurt/icons/mob/robots_32x64.dmi'
+	hat_offset = TALL_HAT_OFFSET
+	hasrest = TRUE
+
+/datum/borg_donator_skin/inteq_builder/mekafl
+	name = "ANI-Meka"
+	module_type = /obj/item/robot_module/inteq_builder
 	preview_icon = 'modular_splurt/icons/mob/robots_32x64.dmi'
 	preview_icon_state = "mekafl"
 	ckey_whitelist = list("foxrtotlimda")
@@ -143,6 +253,9 @@
 	hasrest = TRUE
 
 GLOBAL_LIST_INIT_TYPED(borg_donator_skins, /datum/borg_donator_skin, list(
-	// new /datum/borg_donator_skin/standard/pe4henika_debug
-	new /datum/borg_donator_skin/syndicate/mekafl
+	// new /datum/borg_donator_skin/example/pe4henika
+	new /datum/borg_donator_skin/syndicate/inteq/mekafl,
+	new /datum/borg_donator_skin/syndicate_medical/inteq/mekafl,
+	new /datum/borg_donator_skin/saboteur/inteq/mekafl,
+	new /datum/borg_donator_skin/inteq_builder/mekafl
 ))

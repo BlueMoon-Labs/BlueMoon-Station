@@ -12,7 +12,7 @@
 ///Balloon Blower - Blows a balloon.
 /obj/item/mod/module/balloon
 	name = "MOD balloon blower module"
-	desc = "A strange module invented years ago by some ingenious mimes. It blows balloons."
+	desc = "Странный модуль, изобретённый много лет назад гениальными мимами. Он надувает шарики."
 	icon_state = "bloon"
 	module_type = MODULE_USABLE
 	complexity = 1
@@ -35,8 +35,8 @@
 ///Paper Dispenser - Dispenses (sometimes burning) paper sheets.
 /obj/item/mod/module/paper_dispenser
 	name = "MOD paper dispenser module"
-	desc = "A simple module designed by the bureaucrats of Torch Bay. \
-		It dispenses 'warm, clean, and crisp sheets of paper' onto a nearby table. Usually."
+	desc = "Простой модуль, разработанный бюрократами Torch Bay. \
+		Выдаёт 'тёплые, чистые и хрустящие листы бумаги' на ближайший стол. Обычно."
 	icon_state = "paper_maker"
 	module_type = MODULE_USABLE
 	complexity = 1
@@ -54,7 +54,7 @@
 		return FALSE
 
 	var/obj/item/paper/crisp_paper = new(get_turf(src))
-	crisp_paper.desc = "It's crisp and warm to the touch. Must be fresh."
+	crisp_paper.desc = "Хрустящий и тёплый на ощупь. Должно быть, свежий."
 
 	var/obj/structure/table/nearby_table = locate() in range(1, mod.wearer)
 	playsound(get_turf(src), 'sound/machines/click.ogg', 50, TRUE)
@@ -79,8 +79,8 @@
 ///Stamper - Extends a stamp that can switch between accept/deny modes.
 /obj/item/mod/module/stamp
 	name = "MOD stamper module"
-	desc = "A module installed into the wrist of the suit, this functions as a high-power stamp, \
-		able to switch between accept and deny modes."
+	desc = "Модуль, установленный в запястье костюма, функционирует как высокомощный штамп, \
+		способный переключаться между режимами одобрения и отказа."
 	icon_state = "stamp"
 	module_type = MODULE_ACTIVE
 	complexity = 1
@@ -91,7 +91,7 @@
 
 /obj/item/stamp/mod
 	name = "MOD electronic stamp"
-	desc = "A high-power stamp, able to switch between accept and deny mode when used."
+	desc = "Высокомощный штамп, способный переключаться между режимами одобрения и отказа при использовании."
 
 /obj/item/stamp/mod/attack_self(mob/user, modifiers)
 	. = ..()

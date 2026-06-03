@@ -24,6 +24,7 @@
 	anthro_mob_worn_overlay = 'modular_splurt/icons/mob/clothing/under/suits_digi.dmi'
 	fitted = FEMALE_UNIFORM_TOP //So it won't create holes in skirt texture. - Gardelin0
 	mutantrace_variation = STYLE_DIGITIGRADE
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/suit/pencil/black_really
 	name = "executive pencilskirt"
@@ -86,6 +87,7 @@
 	body_parts_covered = CHEST|GROIN|ARMS
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	fitted = FEMALE_UNIFORM_TOP
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/suit/inferno
 	name = "inferno suit"
@@ -112,6 +114,7 @@
 	)
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/suit/inferno/beeze
 	name = "designer inferno suit"
@@ -134,6 +137,7 @@
 	icon_state = "helltakerskirt"
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/suit/error
 	name = "error suit"

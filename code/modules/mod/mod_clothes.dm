@@ -1,6 +1,6 @@
 /obj/item/clothing/head/mod
 	name = "MOD helmet"
-	desc = "A helmet for a MODsuit."
+	desc = "Шлем для MOD-костюма."
 	/*	icon = 'icons/obj/clothing/modsuit/mod_clothing.dmi' // BLUEMOON COMMENTING OUT saving old code lines
 	mob_overlay_icon = 'icons/mob/clothing/modsuit/mod_clothing.dmi'
 	anthro_mob_worn_overlay = 'icons/mob/clothing/modsuit/mod_clothing_anthro.dmi' */
@@ -48,7 +48,7 @@
 
 /obj/item/clothing/suit/mod
 	name = "MOD chestplate"
-	desc = "A chestplate for a MODsuit."
+	desc = "Нагрудник для MOD-костюма."
 	/*	icon = 'icons/obj/clothing/modsuit/mod_clothing.dmi' // BLUEMOON COMMENTING OUT saving old code lines
 	mob_overlay_icon = 'icons/mob/clothing/modsuit/mod_clothing.dmi'
 	anthro_mob_worn_overlay = 'icons/mob/clothing/modsuit/mod_clothing_anthro.dmi' */
@@ -95,7 +95,7 @@
 
 /obj/item/clothing/gloves/mod
 	name = "MOD gauntlets"
-	desc = "A pair of gauntlets for a MODsuit."
+	desc = "Пара рукавиц для MOD-костюма."
 	/*	icon = 'icons/obj/clothing/modsuit/mod_clothing.dmi' // BLUEMOON COMMENTING OUT saving old code lines
 	mob_overlay_icon = 'icons/mob/clothing/modsuit/mod_clothing.dmi'
 	anthro_mob_worn_overlay = 'icons/mob/clothing/modsuit/mod_clothing_anthro.dmi' */
@@ -137,7 +137,7 @@
 
 /obj/item/clothing/shoes/mod
 	name = "MOD boots"
-	desc = "A pair of boots for a MODsuit."
+	desc = "Пара ботинок для MOD-костюма."
 	/*	icon = 'icons/obj/clothing/modsuit/mod_clothing.dmi' // BLUEMOON COMMENTING OUT saving old code lines
 	mob_overlay_icon = 'icons/mob/clothing/modsuit/mod_clothing.dmi'
 	anthro_mob_worn_overlay = 'icons/mob/clothing/modsuit/mod_clothing_anthro.dmi' */

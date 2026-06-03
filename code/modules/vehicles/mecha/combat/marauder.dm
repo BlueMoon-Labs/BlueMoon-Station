@@ -1,5 +1,5 @@
 /obj/vehicle/sealed/mecha/combat/marauder
-	desc = "Heavy-duty, combat exosuit, developed after the Durand model. Rarely found among civilian populations."
+	desc = "Тяжёлый боевой экзокостюм, разработанный на основе модели Durand. Редко встречается среди гражданских."
 	name = "\improper Marauder"
 	icon_state = "marauder"
 	movedelay = 5
@@ -36,7 +36,7 @@
 	max_ammo()
 
 /obj/vehicle/sealed/mecha/combat/marauder/seraph
-	desc = "Heavy-duty, command-type exosuit. This is a custom model, utilized only by high-ranking military personnel."
+	desc = "Тяжёлый командный экзокостюм. Это уникальная модель, используемая только высокопоставленными военными."
 	name = "\improper Seraph"
 	icon_state = "seraph"
 	operation_req_access = list(ACCESS_CENT_SPECOPS)
@@ -69,7 +69,7 @@
 	initialize_passenger_action_type(/datum/action/vehicle/sealed/mecha/mech_zoom)
 
 /obj/vehicle/sealed/mecha/combat/marauder/mauler
-	desc = "Heavy-duty, combat exosuit, developed off of the existing Marauder model."
+	desc = "Тяжёлый боевой экзокостюм, разработанный на основе существующей модели Marauder."
 	name = "\improper Mauler"
 	icon_state = "mauler"
 	operation_req_access = list(ACCESS_SYNDICATE)

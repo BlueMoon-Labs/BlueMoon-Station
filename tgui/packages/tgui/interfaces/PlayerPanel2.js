@@ -186,7 +186,7 @@ const PhysicalActions = (props, context) => {
   const { glob_limbs, godmode, mob_type, initial_scale, active_martial_art,
     martial_arts_list, active_quirks, quirks_list, has_loadout,
     current_organs, organ_slots, current_implants, implants_list,
-    mob_weight, weight_options } = data;
+    mob_weight, weight_options, can_toggle_dextrous, is_dextrous } = data;
   const [mobScale, setMobScale] = useLocalState(context, 'mobScale', initial_scale);
   const limbs = Object.keys(glob_limbs);
   const limb_flags = limbs.map((_, i) => (1<<i));
@@ -264,6 +264,23 @@ const PhysicalActions = (props, context) => {
           />
         </Flex>
       </Section>
+
+      {!!can_toggle_dextrous && (
+        <Section title="Simple Mob">
+          <Flex>
+            <Button.Confirm
+              width="100%"
+              icon="hand-paper"
+              content={is_dextrous ? "Remove Hands" : "Give Hands"}
+              color={is_dextrous ? 'red' : 'green'}
+              tooltip={is_dextrous
+                ? "Remove dexterity (drops held items)"
+                : "Give dexterity so the simple mob can hold items"}
+              onClick={() => act("toggle_dextrous")}
+            />
+          </Flex>
+        </Section>
+      )}
 
       <Section
         title={"Martial Art (" + (active_martial_art || "None") + ")"}
