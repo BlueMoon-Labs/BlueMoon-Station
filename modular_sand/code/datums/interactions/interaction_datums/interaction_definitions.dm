@@ -35,6 +35,7 @@
 	p13target_emote = PLUG13_EMOTE_BASIC
 	p13target_strength = PLUG13_STRENGTH_LOW_PLUS
 	p13target_duration = PLUG13_DURATION_SHORT
+	hearts_effect = FALSE
 
 //BLUEMOON ADD START
 /datum/interaction/headpat/post_interaction(mob/living/user, mob/living/target, apply_cooldown, is_hidden)
@@ -63,6 +64,7 @@
 	if(HAS_TRAIT(target, TRAIT_HEADPAT_SLUT))
 		SEND_SIGNAL(target, COMSIG_ADD_MOOD_EVENT, "lewd_headpat", /datum/mood_event/lewd_headpat)
 		target.handle_post_sex(5, null, target)
+		new /obj/effect/temp_visual/heart(target.loc)
 	else
 		SEND_SIGNAL(target, COMSIG_ADD_MOOD_EVENT, "headpat", /datum/mood_event/headpat)
 
