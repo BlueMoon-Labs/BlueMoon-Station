@@ -565,6 +565,7 @@
 	interaction_flags = INTERACTION_FLAG_ADJACENT | INTERACTION_FLAG_OOC_CONSENT | INTERACTION_FLAG_USER_IS_TARGET
 	write_log_user = "deflated their belly"
 	write_log_target = null
+	hearts_effect = FALSE
 
 /datum/interaction/lewd/deflate_belly/display_interaction(mob/living/carbon/user, mob/living/carbon/target, is_hidden)
 	var/obj/item/organ/genital/belly/gut = user.getorganslot(ORGAN_SLOT_BELLY)
@@ -579,6 +580,7 @@
 	interaction_flags = INTERACTION_FLAG_ADJACENT | INTERACTION_FLAG_OOC_CONSENT | INTERACTION_FLAG_USER_IS_TARGET
 	write_log_user = "inflated their belly"
 	write_log_target = null
+	hearts_effect = FALSE
 
 /datum/interaction/lewd/inflate_belly/display_interaction(mob/living/carbon/user, mob/living/carbon/target, is_hidden)
 	var/obj/item/organ/genital/belly/gut = user.getorganslot(ORGAN_SLOT_BELLY)
@@ -593,6 +595,7 @@
 	interaction_flags = INTERACTION_FLAG_ADJACENT | INTERACTION_FLAG_OOC_CONSENT | INTERACTION_FLAG_USER_IS_TARGET
 	write_log_user = "deflated their breasts"
 	write_log_target = null
+	hearts_effect = FALSE
 
 /datum/interaction/lewd/deflate_breasts/display_interaction(mob/living/carbon/user, mob/living/carbon/target, is_hidden)
 	var/obj/item/organ/genital/breasts/breasts = user.getorganslot(ORGAN_SLOT_BREASTS)
@@ -607,6 +610,7 @@
 	interaction_flags = INTERACTION_FLAG_ADJACENT | INTERACTION_FLAG_OOC_CONSENT | INTERACTION_FLAG_USER_IS_TARGET
 	write_log_user = "inflated their breasts"
 	write_log_target = null
+	hearts_effect = FALSE
 
 /datum/interaction/lewd/inflate_breasts/display_interaction(mob/living/carbon/user, mob/living/carbon/target, is_hidden)
 	var/obj/item/organ/genital/breasts/breasts = user.getorganslot(ORGAN_SLOT_BREASTS)
@@ -890,6 +894,7 @@
 	interaction_sound = null
 	max_distance = 0
 	write_log_user = "Exploded out of their clothes"
+	hearts_effect = FALSE
 
 /datum/interaction/lewd/clothesplosion/special_check(mob/living/user, mob/living/target)
 	. = ..()

@@ -39,6 +39,7 @@
 	write_log_user = "selftailhug"
 	interaction_sound = 'sound/weapons/thudswoosh.ogg'
 	max_distance = 0
+	hearts_effect = TRUE
 
 /datum/interaction/lewd/slap/tail
 	description = "Хвост. Шлёпнуть по заднице хвостом."
