@@ -218,11 +218,11 @@
 			return FALSE
 	if(istargetobelisk)
 		if(!target.anchored)
-			to_chat(invoker, "<span class='warning'>That [target.name] больше не закреплён!</span>")
+			to_chat(invoker, "<span class='warning'>[target.name] больше не закреплён!</span>")
 			return procure_gateway(invoker, time_duration, gateway_uses, two_way)
 		var/obj/structure/destructible/clockwork/powered/clockwork_obelisk/CO = target
 		if(CO.active)
-			to_chat(invoker, "<span class='warning'>That [target.name] уже поддерживает пространственный разлом и не может принять другой!</span>")
+			to_chat(invoker, "<span class='warning'>[target.name] уже поддерживает пространственный разлом и не может принять другой!</span>")
 			return procure_gateway(invoker, time_duration, gateway_uses, two_way)
 		var/efficiency = CO.get_efficiency_mod()
 		gateway_uses = round(gateway_uses * (2 * efficiency), 1)
@@ -266,7 +266,7 @@
 	busy = TRUE
 	linked_gateway.busy = TRUE
 	user.visible_message("<span class='warning'>Разлом начинает дрожать, когда [user] направляет [user.ru_ego()] на него!</span>", "<span class='brass'> Вы начинаете отключать стабилизированный разлом с помощью своей плиты.</span>")
-	linked_gateway.visible_message("<span class='warning'[linked_gateway] начинает дрожать, но через него ничего не проходит.</span>")
+	linked_gateway.visible_message("<span class='warning'>[linked_gateway] начинает дрожать, но через него ничего не проходит.</span>")
 	var/datum/beam/B = user.Beam(src, icon_state = "nzcrentrs_power", maxdistance = 50, time = 80) 	//Not too fancy, but this'll do.. for now.
 	if(do_after(user, 80, target = src)) //Eight seconds to initiate the closing, then another two before is closes.
 		to_chat(user, "<span class='brass'>Вы успешно настроили отключение разлома через две секунды.</span>")

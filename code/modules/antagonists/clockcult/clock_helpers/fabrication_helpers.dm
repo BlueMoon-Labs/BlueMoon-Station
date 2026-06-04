@@ -254,7 +254,7 @@
 	var/list/repair_values = list()
 	if(!fabricator.fabricator_repair_checks(repair_values, src, user))
 		return
-	user.visible_message("<span class='notice'>[user] начинает покрывать [src == user ? "[user.ru_na()]" : "[src]"] светящейся оранжевой энергией с помощью [fabricator.name]..</span>", \
+	user.visible_message("<span class='notice'>[user] начинает покрывать [src == user ? "[user.ru_na()]" : "[src]"] светящейся оранжевой энергией с помощью [fabricator.name]...</span>", \
 	"<span class='alloy'>Вы начинаете чинить [src == user ? "себя" : "[src]"]...</span>")
 	fabricator.repairing = src
 	while(fabricator && user && src)
