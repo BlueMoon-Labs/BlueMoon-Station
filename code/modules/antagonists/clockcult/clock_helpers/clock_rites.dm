@@ -193,7 +193,7 @@
 	if(!.)
 		return FALSE
 	var/obj/item/organ/cyberimp/arm/clockwork/claw/CL = new /obj/item/organ/cyberimp/arm/clockwork/claw(T)
-	CL.visible_message("<span class='warning'>[CL] появляется из ниоткуда!")
+	CL.visible_message("<span class='warning'>[CL] появляется из ниоткуда!</span>")
 	new /obj/effect/temp_visual/ratvar/sigil/transmission(T,2)
 
 //summons a soul vessel, which is the clockwork cult version of a soul shard. It acts like a posibrain and, as long as the target has a brain, a soul shard.
