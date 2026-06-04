@@ -197,62 +197,6 @@
 
 	return announcement
 
-/proc/get_security_level_notice_theme(level)
-	if(!isnum(level))
-		level = SECLEVEL2NUM(level)
-
-	switch(level)
-		if(SEC_LEVEL_GREEN)
-			return "code-green"
-		if(SEC_LEVEL_BLUE)
-			return "code-blue"
-		if(SEC_LEVEL_ORANGE)
-			return "code-orange"
-		if(SEC_LEVEL_VIOLET)
-			return "code-violet"
-		if(SEC_LEVEL_AMBER)
-			return "code-amber"
-		if(SEC_LEVEL_RED)
-			return "code-red"
-		if(SEC_LEVEL_LAMBDA)
-			return "code-lambda"
-		if(SEC_LEVEL_GAMMA)
-			return "code-gamma"
-		if(SEC_LEVEL_EPSILON)
-			return "code-epsilon"
-		if(SEC_LEVEL_DELTA)
-			return "code-delta"
-		else
-			return "code-amber"
-
-/proc/get_security_level_notice_name(level)
-	if(!isnum(level))
-		level = SECLEVEL2NUM(level)
-
-	switch(level)
-		if(SEC_LEVEL_GREEN)
-			return "ЗЕЛЁНЫЙ"
-		if(SEC_LEVEL_BLUE)
-			return "СИНИЙ"
-		if(SEC_LEVEL_ORANGE)
-			return "ОРАНЖЕВЫЙ"
-		if(SEC_LEVEL_VIOLET)
-			return "ФИОЛЕТОВЫЙ"
-		if(SEC_LEVEL_AMBER)
-			return "ЯНТАРЬ"
-		if(SEC_LEVEL_RED)
-			return "КРАСНЫЙ"
-		if(SEC_LEVEL_LAMBDA)
-			return "ЛЯМБДА"
-		if(SEC_LEVEL_GAMMA)
-			return "ГАММА"
-		if(SEC_LEVEL_EPSILON)
-			return "ЭПСИЛОН"
-		if(SEC_LEVEL_DELTA)
-			return "ДЕЛЬТА"
-		else
-			return "НЕИЗВЕСТНО"
-
 /proc/announce_security_level_change(level, message, raised = TRUE)
 	var/state_text = raised ? "УРОВЕНЬ ТРЕВОГИ ПОВЫШЕН" : "УРОВЕНЬ ТРЕВОГИ ИЗМЕНЁН"
 	var/focus = ">> [get_security_level_notice_name(level)] <<"

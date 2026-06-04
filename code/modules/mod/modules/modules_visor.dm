@@ -3,7 +3,7 @@
 ///Base Visor - Adds a specific HUD and traits to you.
 /obj/item/mod/module/visor
 	name = "MOD visor module"
-	desc = "A heads-up display installed into the visor of the suit. They say these also let you see behind you."
+	desc = "Дисплей, установленный в забрало костюма. Говорят, они также позволяют видеть то, что позади вас."
 	module_type = MODULE_TOGGLE
 	complexity = 2
 	active_power_cost = DEFAULT_CHARGE_DRAIN * 0.3
@@ -40,53 +40,53 @@
 //Medical Visor - Gives you a medical HUD.
 /obj/item/mod/module/visor/medhud
 	name = "MOD medical visor module"
-	desc = "A heads-up display installed into the visor of the suit. This cross-references suit sensor data with a modern \
-		biological scanning suite, allowing the user to visualize the current health of organic lifeforms, as well as \
-		access data such as patient files in a convenient readout. They say these also let you see behind you."
+	desc = "Дисплей, установленный в забрало костюма. Сопоставляет данные сенсоров костюма с современным \
+		биологическим сканером, позволяя пользователю визуализировать текущее состояние здоровья органических форм жизни, а также \
+		получать доступ к данным, таким как файлы пациентов, в удобном формате. Говорят, они также позволяют видеть то, что позади вас."
 	icon_state = "medhud_visor"
 	hud_type = DATA_HUD_MEDICAL_ADVANCED
 
 //Diagnostic Visor - Gives you a diagnostic HUD.
 /obj/item/mod/module/visor/diaghud
 	name = "MOD diagnostic visor module"
-	desc = "A heads-up display installed into the visor of the suit. This uses a series of advanced sensors to access data \
-		from advanced machinery, exosuits, and other devices, allowing the user to visualize current power levels \
-		and integrity of such. They say these also let you see behind you."
+	desc = "Дисплей, установленный в забрало костюма. Использует ряд продвинутых датчиков для доступа к данным \
+		сложной техники, экзокостюмов и других устройств, позволяя пользователю визуализировать текущий уровень заряда \
+		и целостность таковых. Говорят, они также позволяют видеть то, что позади вас."
 	icon_state = "diaghud_visor"
 	hud_type = DATA_HUD_DIAGNOSTIC_ADVANCED
 
 //Security Visor - Gives you a security HUD.
 /obj/item/mod/module/visor/sechud
 	name = "MOD security visor module"
-	desc = "A heads-up display installed into the visor of the suit. This module is a heavily-retrofitted targeting system, \
-		plugged into various criminal databases to be able to view arrest records, command simple security-oriented robots, \
-		and generally know who to shoot. They say these also let you see behind you."
+	desc = "Дисплей, установленный в забрало костюма. Этот модуль — серьёзно модифицированная система наведения, \
+		подключённая к различным криминальным базам данных для просмотра записей об арестах, управления простыми роботами безопасности \
+		и общего понимания, в кого стрелять. Говорят, они также позволяют видеть то, что позади вас."
 	icon_state = "sechud_visor"
 	hud_type = DATA_HUD_SECURITY_ADVANCED
 
 //Meson Visor - Gives you meson vision.
 /obj/item/mod/module/visor/meson
 	name = "MOD meson visor module"
-	desc = "A heads-up display installed into the visor of the suit. This module is based off well-loved meson scanner \
-		technology, used by construction workers and miners across the galaxy to see basic structural and terrain layouts \
-		through walls, regardless of lighting conditions. They say these also let you see behind you."
+	desc = "Дисплей, установленный в забрало костюма. Этот модуль основан на любимой всеми технологии мезонных сканеров, \
+		используемой строителями и шахтёрами по всей галактике для просмотра базовых структурных и ландшафтных планов \
+		сквозь стены, независимо от условий освещения. Говорят, они также позволяют видеть то, что позади вас."
 	icon_state = "meson_visor"
 	visor_traits = list(TRAIT_MESON_VISION)
 
 //Thermal Visor - Gives you thermal vision.
 /obj/item/mod/module/visor/thermal
 	name = "MOD thermal visor module"
-	desc = "A heads-up display installed into the visor of the suit. This uses a small IR scanner to detect and identify \
-		the thermal radiation output of objects near the user. While it can detect the heat output of even something as \
-		small as a rodent, it still produces irritating red overlay. They say these also let you see behind you."
+	desc = "Дисплей, установленный в забрало костюма. Использует небольшой ИК-сканер для обнаружения и определения \
+		теплового излучения объектов рядом с пользователем. Хотя он может обнаружить тепловое излучение даже чего-то такого малого, \
+		как грызун, он всё ещё создаёт раздражающую красную подсветку. Говорят, они также позволяют видеть то, что позади вас."
 	icon_state = "thermal_visor"
 	visor_traits = list(TRAIT_THERMAL_VISION)
 
 //Night Visor - Gives you night vision.
 /obj/item/mod/module/visor/night
 	name = "MOD night visor module"
-	desc = "A heads-up display installed into the visor of the suit. Typical for both civilian and military applications, \
-		this allows the user to perceive their surroundings while in complete darkness, enhancing the view by tenfold; \
-		yet brightening everything into a spooky green glow. They say these also let you see behind you."
+	desc = "Дисплей, установленный в забрало костюма. Типичен как для гражданских, так и для военных применений, \
+		позволяя пользователю воспринимать окружение в полной темноте, усиливая изображение в десять раз; \
+		при этом всё становится жутким зелёным свечением. Говорят, они также позволяют видеть то, что позади вас."
 	icon_state = "night_visor"
 	visor_traits = list(TRAIT_TRUE_NIGHT_VISION)

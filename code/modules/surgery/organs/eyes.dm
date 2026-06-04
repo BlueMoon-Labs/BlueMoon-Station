@@ -179,8 +179,27 @@
 	if(severity >= 70)
 		owner.adjustOrganLoss(ORGAN_SLOT_EYES, 20)
 
+/obj/item/organ/eyes/robotic/toggled
+	actions_types = list(/datum/action/item_action/organ_action/use)
+	var/active = TRUE
+	//"You [active ? "de" : null]activate your [to_activate_text]."
+	var/to_activate_text = ""
 
-/obj/item/organ/eyes/robotic/xray
+/obj/item/organ/eyes/robotic/toggled/proc/toggle(silent = FALSE)
+	active = !active
+	if(!silent && to_activate_text)
+		to_chat(owner, span_notice("You [!active ? "de" : null]activate your [to_activate_text]."))
+	owner.update_sight()
+
+/obj/item/organ/eyes/robotic/toggled/ui_action_click()
+	toggle()
+
+/obj/item/organ/eyes/robotic/toggled/deactivate(removing)
+	. = ..()
+	if(active)
+		toggle(silent = removing)
+
+/obj/item/organ/eyes/robotic/toggled/xray
 	name = "\improper X-ray eyes"
 	desc = "These cybernetic eyes will give you X-ray vision. Blinking is futile."
 	left_eye_color = "000"
@@ -188,8 +207,16 @@
 	icon_state = "xray_eyes" //BLUEMOON ADD респрайты киберглаз
 	see_in_dark = 8
 	sight_flags = SEE_MOBS | SEE_OBJS | SEE_TURFS
+	to_activate_text = "X-ray vision"
 
-/obj/item/organ/eyes/robotic/thermals
+/obj/item/organ/eyes/robotic/toggled/xray/toggle(silent)
+	if(active)
+		sight_flags &= ~(initial(sight_flags))
+	else
+		sight_flags |= (initial(sight_flags))
+	return ..()
+
+/obj/item/organ/eyes/robotic/toggled/thermals
 	name = "thermal eyes"
 	desc = "These cybernetic eye implants will give you thermal vision. Vertical slit pupil included."
 	left_eye_color = "FC0"
@@ -199,6 +226,39 @@
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
 	flash_protect = -1
 	see_in_dark = 8
+	to_activate_text = "thermal vision"
+
+/obj/item/organ/eyes/robotic/toggled/thermals/toggle(silent)
+	if(active)
+		sight_flags &= ~(initial(sight_flags))
+		lighting_alpha = parent_type:lighting_alpha
+		flash_protect = parent_type:flash_protect
+	else
+		sight_flags |= (initial(sight_flags))
+		lighting_alpha = initial(lighting_alpha)
+		flash_protect = initial(flash_protect)
+	return ..()
+
+/obj/item/organ/eyes/robotic/toggled/thermals/sec_level
+	name = "Corporate Thermal eyes"
+	active_security_level = THERMAL_EYES_SEC_LEVEL
+
+/obj/item/organ/eyes/robotic/toggled/w_shield
+	name = "shielded robotic eyes"
+	desc = "These reactive micro-shields will protect you from welders and flashes without obscuring your vision."
+	icon_state = "shielded_eyes" //BLUEMOON ADD респрайты киберглаз
+	to_activate_text = "welding shields"
+	flash_protect = 2
+
+/obj/item/organ/eyes/robotic/toggled/w_shield/toggle(silent)
+	if(active)
+		flash_protect = parent_type:flash_protect
+	else
+		flash_protect = initial(flash_protect)
+	return ..()
+
+/obj/item/organ/eyes/robotic/toggled/w_shield/emp_act(severity)
+	return
 
 /obj/item/organ/eyes/robotic/flashlight
 	name = "flashlight eyes"
@@ -210,48 +270,52 @@
 	flash_protect = 2
 	tint = INFINITY
 	var/obj/item/flashlight/eyelight/eye
+	var/active = FALSE
 
 /obj/item/organ/eyes/robotic/flashlight/emp_act(severity)
 	return
 
 /obj/item/organ/eyes/robotic/flashlight/Insert(mob/living/carbon/M, special = FALSE, drop_if_replaced = FALSE)
-	..()
+	. = ..()
+	if(!.)
+		return
 	if(!eye)
-		eye = new /obj/item/flashlight/eyelight()
+		eye = new
+	code_activate()
+
+/obj/item/organ/eyes/robotic/flashlight/code_activate()
+	. = ..()
+	if(active)
+		return
 	eye.on = TRUE
-	eye.forceMove(M)
-	eye.update_brightness(M)
-	M.become_blind("flashlight_eyes")
+	eye.forceMove(owner)
+	eye.update_brightness(owner)
+	owner.become_blind("flashlight_eyes")
+	active = !active
 
-/obj/item/organ/eyes/robotic/flashlight/Remove(special = FALSE)
-	if(!QDELETED(owner))
-		eye.on = FALSE
-		eye.update_brightness(owner)
-		eye.forceMove(src)
-		owner.cure_blind("flashlight_eyes")
-	return ..()
+/obj/item/organ/eyes/robotic/flashlight/deactivate(removing)
+	. = ..()
+	if(!active)
+		return
+	eye.on = FALSE
+	eye.update_brightness(owner)
+	eye.forceMove(src)
+	owner.cure_blind("flashlight_eyes")
+	active = !active
 
-// Welding shield implant
-/obj/item/organ/eyes/robotic/shield
-	name = "shielded robotic eyes"
-	desc = "These reactive micro-shields will protect you from welders and flashes without obscuring your vision."
-	icon_state = "shielded_eyes" //BLUEMOON ADD респрайты киберглаз
-	flash_protect = 2
-
-/obj/item/organ/eyes/robotic/shield/emp_act(severity)
-	return
-
+#define MAX_SATURATION 192
+#define MAX_LIGHTNESS 256
 #define RGB2EYECOLORSTRING(definitionvar) ("[copytext_char(definitionvar, 2, 3)][copytext_char(definitionvar, 4, 5)][copytext_char(definitionvar, 6, 7)]")
 
-/obj/item/organ/eyes/robotic/glow
+/obj/item/organ/eyes/robotic/toggled/glow
 	name = "High Luminosity Eyes"
 	desc = "Special glowing eyes, used by snowflakes who want to be special."
 	left_eye_color = "000"
 	right_eye_color = "000"
 	actions_types = list(/datum/action/item_action/organ_action/use, /datum/action/item_action/organ_action/toggle)
 	icon_state = "light_eyes" //BLUEMOON ADD респрайты киберглаз
+	active = FALSE
 	var/current_color_string = "#ffffff"
-	var/active = FALSE
 	var/max_light_beam_distance = 5
 	var/light_beam_distance = 5
 	var/light_object_range = 1
@@ -260,37 +324,45 @@
 	var/obj/effect/abstract/eye_lighting/on_mob
 	var/image/mob_overlay
 
-/obj/item/organ/eyes/robotic/glow/Initialize(mapload)
+/obj/item/organ/eyes/robotic/toggled/glow/Initialize(mapload)
 	. = ..()
 	mob_overlay = image('icons/mob/human_face.dmi', "eyes_glow_gs")
 
-/obj/item/organ/eyes/robotic/glow/Destroy()
+/obj/item/organ/eyes/robotic/toggled/glow/Destroy()
 	terminate_effects()
 	. = ..()
 
-/obj/item/organ/eyes/robotic/glow/Remove(special = FALSE)
+/obj/item/organ/eyes/robotic/toggled/glow/Remove(special = FALSE)
 	terminate_effects()
 	. = ..()
 
-/obj/item/organ/eyes/robotic/glow/proc/terminate_effects()
+/obj/item/organ/eyes/robotic/toggled/glow/proc/terminate_effects()
 	if(owner && active)
-		deactivate(TRUE)
-	active = FALSE
+		toggle(silent = TRUE)
 	clear_visuals(TRUE)
 
-/obj/item/organ/eyes/robotic/glow/ui_action_click(owner, action)
+/obj/item/organ/eyes/robotic/toggled/glow/ui_action_click(owner, action)
 	if(istype(action, /datum/action/item_action/organ_action/toggle))
-		toggle_active()
+		toggle()
 	else if(istype(action, /datum/action/item_action/organ_action/use))
 		prompt_for_controls(owner)
 
-/obj/item/organ/eyes/robotic/glow/proc/toggle_active()
+/obj/item/organ/eyes/robotic/toggled/glow/toggle(silent)
 	if(active)
-		deactivate()
+		clear_visuals()
+		if(!silent)
+			to_chat(owner, span_warning("Your [src] shuts off!"))
+		UnregisterSignal(owner, COMSIG_ATOM_DIR_CHANGE)
+		remove_mob_overlay()
 	else
-		activate()
+		start_visuals()
+		if(!silent)
+			to_chat(owner, span_warning("Your [src] clicks and makes a whining noise, before shooting out a beam of light!"))
+		RegisterSignal(owner, COMSIG_ATOM_DIR_CHANGE, PROC_REF(update_visuals))
+		cycle_mob_overlay()
+	return ..()
 
-/obj/item/organ/eyes/robotic/glow/proc/prompt_for_controls(mob/user)
+/obj/item/organ/eyes/robotic/toggled/glow/proc/prompt_for_controls(mob/user)
 	var/C = input(owner, "Select Color", "Select color", "#ffffff") as color|null
 	if(!C || QDELETED(src) || QDELETED(user) || QDELETED(owner) || owner != user)
 		return
@@ -301,10 +373,7 @@
 	set_distance(clamp(range, 0, max_light_beam_distance))
 	assume_rgb(C)
 
-#define MAX_SATURATION 192
-#define MAX_LIGHTNESS 256
-
-/obj/item/organ/eyes/robotic/glow/proc/assume_rgb(newcolor)
+/obj/item/organ/eyes/robotic/toggled/glow/proc/assume_rgb(newcolor)
 	var/current_color = RGB2EYECOLORSTRING(newcolor)
 	left_eye_color = current_color
 	right_eye_color = current_color
@@ -318,45 +387,27 @@
 	if(!QDELETED(owner) && ishuman(owner))		//Other carbon mobs don't have eye color.
 		owner.dna.species.handle_body(owner)
 
-#undef MAX_SATURATION
-#undef MAX_LIGHTNESS
-
-/obj/item/organ/eyes/robotic/glow/proc/cycle_mob_overlay()
+/obj/item/organ/eyes/robotic/toggled/glow/proc/cycle_mob_overlay()
 	remove_mob_overlay()
 	mob_overlay.color = current_color_string
 	add_mob_overlay()
 
-/obj/item/organ/eyes/robotic/glow/proc/add_mob_overlay()
+/obj/item/organ/eyes/robotic/toggled/glow/proc/add_mob_overlay()
 	if(!QDELETED(owner))
 		owner.add_overlay(mob_overlay)
 
-/obj/item/organ/eyes/robotic/glow/proc/remove_mob_overlay()
+/obj/item/organ/eyes/robotic/toggled/glow/proc/remove_mob_overlay()
 	if(!QDELETED(owner))
 		owner.cut_overlay(mob_overlay)
 
-/obj/item/organ/eyes/robotic/glow/emp_act()
+/obj/item/organ/eyes/robotic/toggled/glow/emp_act()
 	. = ..()
 	if(!active || . & EMP_PROTECT_SELF)
 		return
-	deactivate(silent = TRUE)
+	toggle(silent = TRUE)
 
-/obj/item/organ/eyes/robotic/glow/proc/activate(silent = FALSE)
-	start_visuals()
-	if(!silent)
-		to_chat(owner, "<span class='warning'>Your [src] clicks and makes a whining noise, before shooting out a beam of light!</span>")
-	active = TRUE
-	RegisterSignal(owner, COMSIG_ATOM_DIR_CHANGE, PROC_REF(update_visuals))
-	cycle_mob_overlay()
-
-/obj/item/organ/eyes/robotic/glow/proc/deactivate(silent = FALSE)
-	clear_visuals()
-	if(!silent)
-		to_chat(owner, "<span class='warning'>Your [src] shuts off!</span>")
-	active = FALSE
-	UnregisterSignal(owner, COMSIG_ATOM_DIR_CHANGE)
-	remove_mob_overlay()
-
-/obj/item/organ/eyes/robotic/glow/proc/update_visuals(datum/source, olddir, newdir)
+/obj/item/organ/eyes/robotic/toggled/glow/proc/update_visuals(datum/source, olddir, newdir)
+	SIGNAL_HANDLER
 	if(QDELETED(owner))
 		return
 	if((LAZYLEN(eye_lighting) < light_beam_distance) || QDELETED(on_mob))
@@ -386,7 +437,7 @@
 		else
 			L.forceMove(scanning)
 
-/obj/item/organ/eyes/robotic/glow/proc/clear_visuals(delete_everything = FALSE)
+/obj/item/organ/eyes/robotic/toggled/glow/proc/clear_visuals(delete_everything = FALSE)
 	if(delete_everything)
 		QDEL_LIST(eye_lighting)
 		QDEL_NULL(on_mob)
@@ -399,7 +450,7 @@
 		if(!QDELETED(on_mob))
 			on_mob.forceMove(src)
 
-/obj/item/organ/eyes/robotic/glow/proc/start_visuals()
+/obj/item/organ/eyes/robotic/toggled/glow/proc/start_visuals()
 	if(!islist(eye_lighting))
 		regenerate_light_effects()
 	if((LAZYLEN(eye_lighting) < light_beam_distance) || !on_mob)
@@ -407,27 +458,31 @@
 	sync_light_effects()
 	update_visuals()
 
-/obj/item/organ/eyes/robotic/glow/proc/set_distance(dist)
+/obj/item/organ/eyes/robotic/toggled/glow/proc/set_distance(dist)
 	light_beam_distance = dist
 	regenerate_light_effects()
 
-/obj/item/organ/eyes/robotic/glow/proc/regenerate_light_effects()
+/obj/item/organ/eyes/robotic/toggled/glow/proc/regenerate_light_effects()
 	clear_visuals(TRUE)
 	on_mob = new(src)
 	for(var/i in 1 to light_beam_distance)
 		LAZYADD(eye_lighting,new /obj/effect/abstract/eye_lighting(src))
 	sync_light_effects()
 
-/obj/item/organ/eyes/robotic/glow/proc/sync_light_effects()
+/obj/item/organ/eyes/robotic/toggled/glow/proc/sync_light_effects()
 	for(var/I in eye_lighting)
 		var/obj/effect/abstract/eye_lighting/L = I
 		L.set_light(light_object_range, light_object_power, current_color_string)
 	if(on_mob)
 		on_mob.set_light(1, 1, current_color_string)
 
+#undef MAX_SATURATION
+#undef MAX_LIGHTNESS
+#undef RGB2EYECOLORSTRING
+
 /obj/effect/abstract/eye_lighting
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	var/obj/item/organ/eyes/robotic/glow/parent
+	var/obj/item/organ/eyes/robotic/toggled/glow/parent
 
 /obj/effect/abstract/eye_lighting/Initialize(mapload)
 	. = ..()

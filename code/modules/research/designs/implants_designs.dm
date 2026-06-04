@@ -1,6 +1,16 @@
 /////////////////////////////////////////
 //////////Cybernetic Implants////////////
 /////////////////////////////////////////
+/datum/design/ai_link_implant
+    name = "Neural AI Link Implant"
+    id = "ai_link_implant"
+    build_type = MECHFAB | PROTOLATHE
+    build_path = /obj/item/organ/cyberimp/brain/ai_link
+    materials = list(/datum/material/iron = 3000, /datum/material/glass = 1000, /datum/material/silver = 2000, /datum/material/gold = 1500, /datum/material/diamond = 1500)
+    construction_time = 200
+    category = list("Implants", "Biotech")
+    departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_MEDICAL
+
 /datum/design/cyberimp_breather
 	name = "Breathing Tube Implant"
 	desc = "This simple implant adds an internals connector to your back, allowing you to use internals without a mask and protecting you from being choked."
@@ -68,28 +78,40 @@
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_ENGINEERING
 
 /datum/design/cyberimp_shield
-	name = "Riot shieldimplant"
+	name = "Corporate Riot Shield implant"
 	desc = "An implanted riot shield, designed to be installed on subject's arm."
 	id = "ci-shield"
 	build_type = PROTOLATHE
 	materials = list (/datum/material/iron = 8500, /datum/material/glass = 8500, /datum/material/silver = 1800, /datum/material/titanium = 600)
 	construction_time = 200
-	build_path = /obj/item/organ/cyberimp/arm/shield
+	build_path = /obj/item/organ/cyberimp/arm/shield/sec_level
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
-	min_security_level = SEC_LEVEL_BLUE
+	min_security_level = RIOT_SHIELD_SEC_LEVEL
+
+/datum/design/cyberimp_shield/hack
+	name = "Riot Shield implant"
+	id = "ci-shield-hack"
+	build_path = /obj/item/organ/cyberimp/arm/shield
+	hacked_only = TRUE
 
 /datum/design/cyberimp_chem
-	name = "Chemical Sequencer Implant"
+	name = "Corporate Chemical Sequencer Implant"
 	desc = "This implant can inject limited list of basic reagents into your blood."
 	id = "ci-chemseq"
 	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 600, /datum/material/glass = 600, /datum/material/silver = 500, /datum/material/gold = 1000)
 	construction_time = 120
-	build_path = /obj/item/organ/cyberimp/chest/chem_implant
+	build_path = /obj/item/organ/cyberimp/chest/chem_implant/sec_level
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
-	min_security_level = SEC_LEVEL_AMBER
+	min_security_level = CHEM_SEQ_SEC_LEVEL
+
+/datum/design/cyberimp_chem/hack
+	name = "Chemical Sequencer Implant"
+	id = "ci-chemseq-hack"
+	build_path = /obj/item/organ/cyberimp/chest/chem_implant
+	hacked_only = TRUE
 
 /datum/design/cyberimp_janitor
 	name = "Janitor Arm Implant"
@@ -147,28 +169,40 @@
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 
 /datum/design/cyberimp_antidrop
-	name = "Anti-Drop Implant"
+	name = "Corporate Anti-Drop Implant"
 	desc = "This cybernetic brain implant will allow you to force your hand muscles to contract, preventing item dropping. Twitch ear to toggle."
 	id = "ci-antidrop"
 	build_type = PROTOLATHE | MECHFAB
 	construction_time = 60
 	materials = list(/datum/material/iron = 600, /datum/material/glass = 600, /datum/material/silver = 400, /datum/material/gold = 400)
-	build_path = /obj/item/organ/cyberimp/brain/anti_drop
+	build_path = /obj/item/organ/cyberimp/brain/anti_drop/sec_level
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
-	min_security_level = SEC_LEVEL_AMBER
+	min_security_level = ANTI_DROP_SEC_LEVEL
+
+/datum/design/cyberimp_antidrop/hack
+	name = "Anti-Drop Implant"
+	id = "ci-antidrop-hack"
+	build_path = /obj/item/organ/cyberimp/brain/anti_drop
+	hacked_only = TRUE
 
 /datum/design/cyberimp_antistun
-	name = "CNS Rebooter Implant"
+	name = "Corporate CNS Rebooter Implant"
 	desc = "This implant will automatically give you back control over your central nervous system, reducing downtime when stunned."
 	id = "ci-antistun"
 	build_type = PROTOLATHE | MECHFAB
 	construction_time = 60
 	materials = list(/datum/material/iron = 600, /datum/material/glass = 600, /datum/material/silver = 500, /datum/material/gold = 1000)
-	build_path = /obj/item/organ/cyberimp/brain/anti_stun
+	build_path = /obj/item/organ/cyberimp/brain/anti_stun/sec_level
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
-	min_security_level = SEC_LEVEL_AMBER
+	min_security_level = CNS_REBOOTER_SEC_LEVEL
+
+/datum/design/cyberimp_antistun/hack
+	name = "CNS Rebooter Implant"
+	id = "ci-antistun-hack"
+	build_path = /obj/item/organ/cyberimp/brain/anti_stun
+	hacked_only = TRUE
 
 /datum/design/cyberimp_robot_radshielding
 	name = "ECC System Guard Implant"
@@ -204,16 +238,22 @@
 	departmental_flags = DEPARTMENTAL_FLAG_ALL
 
 /datum/design/cyberimp_reviver
-	name = "Reviver Implant"
+	name = "Corporate Reviver Implant"
 	desc = "This implant will attempt to revive you if you lose consciousness. For the faint of heart!"
 	id = "ci-reviver"
 	build_type = PROTOLATHE | MECHFAB
 	construction_time = 60
 	materials = list(/datum/material/iron = 800, /datum/material/glass = 800, /datum/material/gold = 300, /datum/material/uranium = 500)
-	build_path = /obj/item/organ/cyberimp/chest/reviver
+	build_path = /obj/item/organ/cyberimp/chest/reviver/sec_level
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
-	min_security_level = SEC_LEVEL_AMBER
+	min_security_level = REVIVER_SEC_LEVEL
+
+/datum/design/cyberimp_reviver/hack
+	name = "Reviver Implant"
+	id = "ci-reviver-hack"
+	build_path = /obj/item/organ/cyberimp/chest/reviver
+	hacked_only = TRUE
 
 /datum/design/cyberimp_thrusters
 	name = "Thrusters Set Implant"
@@ -227,16 +267,22 @@
 	departmental_flags = DEPARTMENTAL_FLAG_ALL
 
 /datum/design/cyberimp_mantis
-	name = "Mantis Blade Implant"
+	name = "Corporate Mantis Blade Implant"
 	desc = "A long, sharp, mantis-like blade installed within the forearm, acting as a deadly self defense weapon."
 	id = "ci-mantis"
 	build_type = PROTOLATHE
 	materials = list (/datum/material/iron = 3500, /datum/material/glass = 1500, /datum/material/silver = 1500)
 	construction_time = 200
-	build_path = /obj/item/organ/cyberimp/arm/mantis_blade
+	build_path = /obj/item/organ/cyberimp/arm/mantis_blade/sec_level
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
-	min_security_level = SEC_LEVEL_AMBER
+	min_security_level = MANTIS_IMPLANT_SEC_LEVEL
+
+/datum/design/cyberimp_mantis/hack
+	name = "Mantis Blade Implant"
+	id = "ci-mantis-hack"
+	build_path = /obj/item/organ/cyberimp/arm/mantis_blade
+	hacked_only = TRUE
 
 /datum/design/cyberimp_scanner
 	name = "Internal Medical Analyzer"
@@ -256,7 +302,7 @@
 	build_type = PROTOLATHE
 	construction_time = 40
 	materials = list(/datum/material/iron = 10000, /datum/material/glass = 10000, /datum/material/silver = 6000, /datum/material/gold = 6000, /datum/material/diamond = 6000)
-	build_path = /obj/item/organ/cyberimp/chest/healer
+	build_path = /obj/item/organ/cyberimp/chest/healer/bruteburn
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 
@@ -267,7 +313,7 @@
 	build_type = PROTOLATHE | MECHFAB
 	construction_time = 40
 	materials = list(/datum/material/iron = 10000, /datum/material/glass = 10000, /datum/material/silver = 6000, /datum/material/gold = 6000, /datum/material/diamond = 6000)
-	build_path = /obj/item/organ/cyberimp/chest/healertoxoxy
+	build_path = /obj/item/organ/cyberimp/chest/healer/toxoxy
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE
 
@@ -278,7 +324,7 @@
 	build_type = PROTOLATHE
 	construction_time = 40
 	materials = list(/datum/material/iron = 10000, /datum/material/glass = 10000, /datum/material/silver = 6000, /datum/material/gold = 6000, /datum/material/diamond = 6000, /datum/material/bluespace = 6000)
-	build_path = /obj/item/organ/cyberimp/chest/revitilzer
+	build_path = /obj/item/organ/cyberimp/chest/healer/revitilzer
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 

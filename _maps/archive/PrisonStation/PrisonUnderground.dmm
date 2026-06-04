@@ -11019,7 +11019,7 @@
 /area/awaymission)
 "rCg" = (
 /obj/structure/table/wood/fancy/royalblack,
-/obj/item/organ/eyes/robotic/thermals,
+/obj/item/organ/eyes/robotic/toggled/thermals/sec_level,
 /turf/open/floor/plasteel/cult,
 /area/awaymission)
 "rDF" = (

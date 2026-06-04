@@ -134,6 +134,11 @@
 #undef MAX_HEAL_COOLDOWN
 #undef DEF_CONVALESCENCE_TIME
 
+/obj/item/organ/cyberimp/chest/reviver/sec_level
+	name = "Corporate Reviver implant"
+	implant_color = "#751010"
+	active_security_level = REVIVER_SEC_LEVEL
+
 /obj/item/organ/cyberimp/chest/thrusters
 	name = "implantable thrusters set"
 	desc = "An implantable set of thruster ports. They use the gas from environment or subject's internals for propulsion in zero-gravity areas. \
@@ -153,10 +158,10 @@
 		ion_trail = new
 	ion_trail.set_up(M)
 
-/obj/item/organ/cyberimp/chest/thrusters/Remove(special = FALSE)
+/obj/item/organ/cyberimp/chest/thrusters/deactivate(removing)
+	. = ..()
 	if(on)
 		toggle(TRUE)
-	return ..()
 
 /obj/item/organ/cyberimp/chest/thrusters/ui_action_click()
 	toggle()
@@ -237,16 +242,24 @@
 	actions_types = list(/datum/action/item_action/chem_implant) ///datum/action/item_action/organ_action/use
 	var/available_c = list()
 
+/obj/item/organ/cyberimp/chest/chem_implant/emp_act(severity)
+	. = ..()
+	if(!owner || . & EMP_PROTECT_SELF)
+		return
+	if(prob(60/severity) && owner)
+		to_chat(owner, span_warning("Your chemical implant lost its charge!"))
+		charge = 0
+
 /obj/item/organ/cyberimp/chest/chem_implant/plus
-	name = "Chemical sequencer implant plus"
+	name = "Chemical Sequencer implant PLUS"
 	desc = "This implant can inject limited list of advanced reagents into your blood."
 	icon_state = "chem_implant_plus"
 	implant_level = 1
 
-/obj/item/organ/cyberimp/chest/chem_implant/emp_act(severity)
-	if(prob(60/severity) && owner)
-		to_chat(owner, "<span class='warning'>Your chemical implant lost it's chargre!</span>")
-		charge = 0
+/obj/item/organ/cyberimp/chest/chem_implant/sec_level
+	name = "Corporate Chemical Sequencer implant"
+	icon_state = "chem_implant_corpo"
+	active_security_level = CHEM_SEQ_SEC_LEVEL
 
 /datum/chem_implant
 	var/chemname
@@ -321,16 +334,15 @@
 		if(C.chemname && implant_level >= C.level)
 			available_c += list(list("name" = C.chemname, "key" = C.key, "desc" = C.chemdesc, "amount" = C.quantity))
 
-/obj/item/organ/cyberimp/chest/chem_implant/on_life()
+/obj/item/organ/cyberimp/chest/chem_implant/on_life(seconds, times_fired)
 	. = ..()
+	if(!.)
+		return
 	charge_tick++
 	if(charge_tick >= charge_delay)
 		charge_tick = 0
 		if (charge < charge_capacity)
 			charge++
-
-/obj/item/organ/cyberimp/chest/chem_implant/Remove()
-	. = ..()
 
 /obj/item/organ/cyberimp/chest/chem_implant/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
@@ -353,9 +365,8 @@
 
 /obj/item/organ/cyberimp/chest/chem_implant/ui_status(mob/user, datum/ui_state/state)
 	. = UI_CLOSE
-	if(user.stat != DEAD)
+	if(user.stat != DEAD && activate_allowed(user = user, silent = TRUE))
 		. = max(., UI_INTERACTIVE)
-
 
 /obj/item/organ/cyberimp/chest/chem_implant/ui_act(action, list/params)
 	if(..() && owner.stat != DEAD)

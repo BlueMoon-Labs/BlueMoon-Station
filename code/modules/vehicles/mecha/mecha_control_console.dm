@@ -1,6 +1,6 @@
 /obj/machinery/computer/mecha
 	name = "exosuit control console"
-	desc = "Used to remotely locate or lockdown exosuits."
+	desc = "Используется для удалённого определения местоположения или блокировки экзокостюмов."
 	icon_screen = "mecha"
 	icon_keyboard = "tech_key"
 	req_access = list(ACCESS_ROBOTICS)
@@ -73,7 +73,7 @@
 
 /obj/item/mecha_parts/mecha_tracking
 	name = "exosuit tracking beacon"
-	desc = "Device used to transmit exosuit data."
+	desc = "Устройство для передачи данных экзокостюма."
 	icon = 'icons/obj/device.dmi'
 	icon_state = "motion2"
 	w_class = WEIGHT_CLASS_SMALL
@@ -153,7 +153,7 @@
 
 /obj/item/mecha_parts/mecha_tracking/ai_control
 	name = "exosuit AI control beacon"
-	desc = "A device used to transmit exosuit data. Also allows active AI units to take control of said exosuit."
+	desc = "Устройство для передачи данных экзокостюма. Также позволяет активным ИИ взять управление этим экзокостюмом."
 	ai_beacon = TRUE
 
 /obj/item/storage/box/mechabeacons

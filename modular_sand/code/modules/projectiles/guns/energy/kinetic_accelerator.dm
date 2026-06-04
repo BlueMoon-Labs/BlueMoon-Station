@@ -469,7 +469,7 @@
 	. = ..()
 	KA.block_chance -= modifier
 
-//10mm modkit (currently broken, only the 10mm pka works)
+// 10mm modkit — ballistic shot; modkit effects only on impact (not every tile in flight).
 /obj/item/gun/energy/kinetic_accelerator/tenmm
 	desc = "A self recharging, ranged mining tool that does increased damage in low pressure. This one feels a bit heavier than usual."
 	ammo_type = list(/obj/item/ammo_casing/energy/kinetic/etenmm)
@@ -496,32 +496,33 @@
 	select_name = "kinetic 10mm"
 	fire_sound = 'sound/weapons/gunshot.ogg'
 
+/// Ballistic PKA round: same numbers as /obj/item/projectile/bullet/c10mm, no kinetic pierce/mining-on-path.
 /obj/item/projectile/kinetic/etenmm
-	name = "kinetic 10mm"
+	name = "10mm bullet"
+	icon_state = "bullet"
 	damage = 30
 	damage_type = BRUTE
+	flag = BULLET
+	armour_penetration = 20
 	range = 50
-	color = "#FFFFFF"
-	icon = 'icons/obj/projectiles.dmi'
-	icon_state = "bullet"
+	hitsound_wall = "ricochet"
+	log_override = FALSE
 
 /obj/item/projectile/kinetic/etenmm/prehit_pierce(atom/target)
-	if(kinetic_gun)
-		var/list/mods = kinetic_gun.modkits
-		for(var/obj/item/borg/upgrade/modkit/M in mods)
-			M.projectile_prehit(src, target, kinetic_gun)
-	return TRUE
+	return ..()
+
+/obj/item/projectile/kinetic/etenmm/on_range()
+	qdel(src)
 
 /obj/item/projectile/kinetic/etenmm/strike_thing(atom/target)
-	var/turf/target_turf = get_turf(target)
-	if(!target_turf)
-		target_turf = get_turf(src)
-	if(kinetic_gun) //hopefully whoever shot this was not very, very unfortunate.
-		var/list/mods = kinetic_gun.modkits
-		for(var/obj/item/borg/upgrade/modkit/M in mods)
-			M.projectile_strike_predamage(src, target_turf, target, kinetic_gun)
-		for(var/obj/item/borg/upgrade/modkit/M in mods)
-			M.projectile_strike(src, target_turf, target, kinetic_gun)
+	if(!kinetic_gun)
+		return
+	var/turf/target_turf = get_turf(target) || get_turf(src)
+	for(var/obj/item/borg/upgrade/modkit/M in kinetic_gun.modkits)
+		M.projectile_strike_predamage(src, target_turf, target, kinetic_gun)
+	for(var/obj/item/borg/upgrade/modkit/M in kinetic_gun.modkits)
+		M.projectile_strike(src, target_turf, target, kinetic_gun)
+	// No mineral drilling or kinetic_blast — ballistic 10mm only.
 
 //sif
 /obj/item/borg/upgrade/modkit/critical

@@ -513,6 +513,8 @@
 	if(new_alert)
 		new_alert = FALSE
 		update_appearance()
+	if(user.client)
+		update_pda_prefs(user.client)
 	. = ..()
 	if(HAS_TRAIT(src, TRAIT_PDA_MESSAGE_MENU_RIGGED))
 		explode(user, from_message_menu = TRUE)

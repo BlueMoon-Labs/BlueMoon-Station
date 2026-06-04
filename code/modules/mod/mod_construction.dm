@@ -1,5 +1,5 @@
 /obj/item/mod/construction
-	desc = "A part used in MOD construction."
+	desc = "Деталь, используемая при сборке MOD."
 	icon = 'modular_bluemoon/icons/obj/clothing/modsuit/mod_construction.dmi' // Чтобы не срать в мейн, будет заменено на файл нашего модуля
 	item_state = "rack_parts"
 	mod_flags = MOD_CONSTRUCTION // BLUEMOON ADD
@@ -35,16 +35,16 @@
 /obj/item/mod/construction/core
 	name = "MOD core"
 	icon_state = "mod-core-standard"
-	desc = "Growing in the most lush, fertile areas of the planet Sprout, there is a crystal known as the Heartbloom. \
-		These rare, organic piezoelectric crystals are of incredible cultural significance to the artist castes of the Ethereals, \
-		owing to their appearance; which is exactly similar to that of an Ethereal's heart. \n\
-		Which one you have in your suit is unclear, but either way, \
-		it's been repurposed to be an internal power source for a Modular Outerwear Device."
+	desc = "Растущий в самых пышных и плодородных районах планеты Sprout, кристалл, известный как Heartbloom. \
+		Эти редкие органические пьезоэлектрические кристаллы имеют невероятное культурное значение для художественных каст Эфирных, \
+		благодаря своему виду, который точно такой же, как сердце Эфирного. \n\
+		Какой именно у вас в костюме — неясно, но в любом случае, \
+		он был переоборудован во внутренний источник питания для Модульного Внешнего Устройства."
 
 /obj/item/mod/construction/broken_core
 	name = "broken MOD core"
 	icon_state = "mod-core"
-	desc = "An internal power source for a Modular Outerwear Device. You don't seem to be able to source any power from this one, though."
+	desc = "Внутренний источник питания для Модульного Внешнего Устройства. Похоже, от него не удаётся получить никакой энергии."
 
 /obj/item/mod/construction/broken_core/examine(mob/user)
 	. = ..()
@@ -62,7 +62,7 @@
 
 /obj/item/mod/construction/armor
 	name = "MOD external plating"
-	desc = "External plating used to finish a MOD control unit."
+	desc = "Внешняя броня, используемая для завершения сборки управляющего блока MOD."
 	icon_state = "standard-plating"
 	var/datum/mod_theme/theme = /datum/mod_theme
 	mod_flags = MOD_PLATING // BLUEMOON ADD
@@ -120,7 +120,7 @@
 /obj/item/mod/construction/shell
 	name = "MOD shell"
 	icon_state = "mod-construction_start"
-	desc = "A MOD shell."
+	desc = "Оболочка MOD."
 	var/obj/item/core
 	var/obj/item/helmet
 	var/obj/item/chestplate

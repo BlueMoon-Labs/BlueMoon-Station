@@ -557,7 +557,7 @@
 	var/obj/item/organ/cyberimp/arm/implant = getorganslot((active_hand_index % 2 == 0) ? ORGAN_SLOT_RIGHT_ARM_AUG : ORGAN_SLOT_LEFT_ARM_AUG)
 	// Смена инструментов импланта
 	if(I && implant && length(implant.items_list) > 1 && implant.items_list.Find(I))
-		if(!implant.is_operational(FALSE))
+		if(!implant.activate_allowed(silent = FALSE))
 			return
 		var/list/implants_list = implant.items_list
 		var/to_index = delta_y < 0 ? implants_list.Find(next_list_item(I, implants_list)) : implants_list.Find(previous_list_item(I, implants_list))

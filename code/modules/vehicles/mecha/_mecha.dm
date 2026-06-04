@@ -19,7 +19,7 @@
   */
 /obj/vehicle/sealed/mecha
 	name = "mecha"
-	desc = "Exosuit"
+	desc = "Экзокостюм"
 	icon = 'icons/mecha/mecha.dmi'
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	flags_1 = HEAR_1
@@ -68,6 +68,8 @@
 	var/allow_diagonal_movement = TRUE
 	///Whether or not the mech destroys walls by running into it.
 	var/bumpsmash = FALSE
+	/// Mobs currently entering via mob_enter (ignore in Entered for swapper teleports).
+	var/list/entering_mobs
 
 	///////////ATMOS
 	///Whether we are currrently drawing from the internal tank
@@ -380,34 +382,35 @@
 	var/integrity = obj_integrity*100/max_integrity
 	switch(integrity)
 		if(85 to 100)
-			. += "It's fully intact."
+			. += "Он полностью цел."
 		if(65 to 85)
-			. += "It's slightly damaged."
+			. += "Он слегка повреждён."
 		if(45 to 65)
-			. += "It's badly damaged."
+			. += "Он сильно повреждён."
 		if(25 to 45)
-			. += "It's heavily damaged."
+			. += "Он находится в критическом состоянии."
 		else
-			. += "It's falling apart."
+			. += "Он разваливается на части."
 	var/hide_weapon = locate(/obj/item/mecha_parts/concealed_weapon_bay) in contents
 	var/hidden_weapon = hide_weapon ? (locate(/obj/item/mecha_parts/mecha_equipment/weapon) in equipment) : null
 	var/list/visible_equipment = equipment - hidden_weapon
 	if(visible_equipment.len)
-		. += "It's equipped with:"
+		. += "Установлено оборудование:"
 		for(var/obj/item/mecha_parts/mecha_equipment/ME in visible_equipment)
 			. += "[icon2html(ME, user)] \A [ME]."
 	if(!enclosed)
 		if(mecha_flags & SILICON_PILOT)
-			. += "[src] appears to be piloting itself..."
+			. += "[src], кажется, пилотирует себя сам..."
 		else
 			for(var/occupante in occupants)
-				. += "You can see [occupante] inside."
+				. += "Вы можете видеть [occupante] внутри."
 			if(ishuman(user))
 				var/mob/living/carbon/human/H = user
 				for(var/O in H.held_items)
 					if(istype(O, /obj/item/gun))
-						. += "<span class='warning'>It looks like you can hit the pilot directly if you target the center or above.</span>"
+						. += "<span class='warning'>Похоже, вы можете попасть в пилота, если прицелитесь в центр или выше.</span>"
 						break //in case user is holding two guns
+	. += "<span class='notice'>Для обслуживания используйте отвёртку, чтобы открыть техническую панель. Ломом можно извлечь батарею или экипировку при открытой панели.</span>"
 
 //processing internal damage, temperature, air regulation, alert updates, lights power use.
 /obj/vehicle/sealed/mecha/process()
@@ -504,10 +507,8 @@
 			// such as brainmob inside brainitem inside MMI inside mecha
 			while(!isnull(checking))
 				if(isturf(checking))
-					// hit a turf before hitting the mecha, seems like they have been moved out
-					occupant.clear_alert("charge")
-					occupant.clear_alert("mech damage")
-					occupant = null
+					// Displaced (teleport, swapper, etc.) — strip mech control without shoving them back outside.
+					remove_occupant(occupant)
 					break
 				else if (checking == src)
 					break  // all good
@@ -516,6 +517,13 @@
 	if(mecha_flags & LIGHTS_ON)
 		var/lights_energy_drain = 2
 		use_power(lights_energy_drain)
+
+	for(var/mob/living/stowaway in src)
+		if(is_occupant(stowaway))
+			continue
+		if(mecha_flags & SILICON_PILOT && (isAI(stowaway) || isbrain(stowaway)))
+			continue
+		stowaway.forceMove(get_turf(src))
 
 	for(var/b in occupants)
 		var/mob/living/occupant = b
@@ -1036,8 +1044,10 @@
 		return
 	if(ishuman(H) && !Adjacent(H))
 		return
+	LAZYADD(entering_mobs, H)
 	H.forceMove(src)
 	add_occupant(H)
+	LAZYREMOVE(entering_mobs, H)
 	add_fingerprint(H)
 	log_message("[H] moved in as pilot.", LOG_MECHA)
 	setDir(dir_in)
@@ -1166,10 +1176,30 @@
 	return ..()
 
 
+/obj/vehicle/sealed/mecha/mob_enter(mob/M, silent = FALSE)
+	LAZYADD(entering_mobs, M)
+	. = ..()
+	LAZYREMOVE(entering_mobs, M)
+
+/obj/vehicle/sealed/mecha/proc/on_occupant_displaced(mob/living/occupant, channel, turf/origin, turf/destination)
+	SIGNAL_HANDLER
+	if(!occupant || !is_occupant(occupant))
+		return
+	var/atom/checking = occupant.loc
+	while(!isnull(checking))
+		if(isturf(checking))
+			remove_occupant(occupant)
+			occupant.update_mouse_pointer()
+			return
+		if(checking == src)
+			return
+		checking = checking.loc
+
 /obj/vehicle/sealed/mecha/add_occupant(mob/M, control_flags)
 	RegisterSignal(M, COMSIG_MOB_DEATH, PROC_REF(mob_exit))
 	RegisterSignal(M, COMSIG_MOB_CLICKON, PROC_REF(on_mouseclick))
 	RegisterSignal(M, COMSIG_MOB_SAY, PROC_REF(display_speech_bubble))
+	RegisterSignal(M, COMSIG_MOVABLE_TELEPORTED, PROC_REF(on_occupant_displaced))
 	return ..()
 
 /obj/vehicle/sealed/mecha/after_add_occupant(mob/M)
@@ -1181,6 +1211,7 @@
 	UnregisterSignal(M, COMSIG_MOB_DEATH)
 	UnregisterSignal(M, COMSIG_MOB_CLICKON)
 	UnregisterSignal(M, COMSIG_MOB_SAY)
+	UnregisterSignal(M, COMSIG_MOVABLE_TELEPORTED)
 	M.clear_alert("charge")
 	M.clear_alert("mech damage")
 	if(M.client)

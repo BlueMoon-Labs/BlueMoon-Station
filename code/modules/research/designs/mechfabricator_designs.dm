@@ -46,7 +46,7 @@
 
 /datum/design/ipc_stomach
 	name = "IPC power cell"
-	desc = "A modular power cell assembly built for IPC chassis."
+	desc = "Модульная сборка батареи, построенная для корпуса IPC."
 	id = "ipc_stomach"
 	build_type = MECHFAB
 	construction_time = 40
@@ -57,7 +57,7 @@
 
 /datum/design/ipc_heart
 	name = "IPC hydraulic pump"
-	desc = "A shielded hydraulic pump that maintains pressure across an IPC chassis."
+	desc = "Экранированный гидравлический насос, поддерживающий давление по всему корпусу IPC."
 	id = "ipc_heart"
 	build_type = MECHFAB
 	construction_time = 40
@@ -68,7 +68,7 @@
 
 /datum/design/ipc_lungs
 	name = "IPC cooling system"
-	desc = "A thermal regulation assembly used to keep an IPC chassis within safe limits."
+	desc = "Сборка терморегуляции, используемая для поддержания корпуса IPC в безопасных пределах."
 	id = "ipc_lungs"
 	build_type = MECHFAB
 	construction_time = 40
@@ -79,7 +79,7 @@
 
 /datum/design/ipc_liver
 	name = "IPC reagent processor"
-	desc = "A filtration and reagent processing assembly for IPC chassis."
+	desc = "Сборка фильтрации и обработки реагентов для корпуса IPC."
 	id = "ipc_liver"
 	build_type = MECHFAB
 	construction_time = 40
@@ -90,7 +90,7 @@
 
 /datum/design/ipc_eyes
 	name = "IPC optical sensor array"
-	desc = "A paired optical package for an IPC chassis."
+	desc = "Парный оптический пакет для корпуса IPC."
 	id = "ipc_eyes"
 	build_type = MECHFAB
 	construction_time = 40
@@ -101,7 +101,7 @@
 
 /datum/design/ipc_ears
 	name = "IPC audio sensor array"
-	desc = "A calibrated audio receiver set for an IPC chassis."
+	desc = "Откалиброванный набор аудиоприёмников для корпуса IPC."
 	id = "ipc_ears"
 	build_type = MECHFAB
 	construction_time = 30
@@ -112,7 +112,7 @@
 
 /datum/design/ipc_tongue
 	name = "IPC voice synthesizer"
-	desc = "A robotic vocalizer and encoded-audio emitter for IPC bodies."
+	desc = "Роботизированный вокализатор и излучатель закодированного аудио для тел IPC."
 	id = "ipc_tongue"
 	build_type = MECHFAB
 	construction_time = 30
@@ -992,7 +992,7 @@
 
 /datum/design/synthetic_flash
 	name = "Flash"
-	desc = "When a problem arises, SCIENCE is the solution."
+	desc = "Когда возникает проблема, НАУКА — это решение."
 	id = "sflash"
 	build_type = MECHFAB
 	materials = list(/datum/material/iron = 750, /datum/material/glass = 750)

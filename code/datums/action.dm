@@ -125,7 +125,7 @@
 /datum/action/proc/Trigger()
 	if(!IsAvailable())
 		return FALSE
-	if(SEND_SIGNAL(src, COMSIG_ACTION_TRIGGER, target) & COMPONENT_ACTION_BLOCK_TRIGGER)
+	if(SEND_SIGNAL(src, COMSIG_ACTION_TRIGGER, target, owner) & COMPONENT_ACTION_BLOCK_TRIGGER)
 		return FALSE
 	return TRUE
 
@@ -161,6 +161,8 @@
 	if(check_flags & AB_CHECK_ALIVE)
 		if(owner.stat == DEAD)
 			return FALSE
+	if(SEND_SIGNAL(src, COMSIG_ACTION_ISAVAILABLE, target, owner, silent) & COMPONENT_ACTION_NOT_AVAILABLE)
+		return FALSE
 	return TRUE
 
 /datum/action/proc/UpdateButtons(status_only, force)

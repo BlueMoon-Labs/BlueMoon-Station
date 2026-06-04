@@ -43,6 +43,9 @@
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/escape)
 "al" = (
+/obj/effect/fun_balloon/sentience/emergency_shuttle{
+	group_name = "bridge crew on the Emergency Meta Shuttle"
+	},
 /obj/structure/table,
 /obj/item/phone{
 	pixel_x = -3;

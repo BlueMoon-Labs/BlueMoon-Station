@@ -837,3 +837,13 @@
 	item_state = "h_eslim_tshirt"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/underwear.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear.dmi'
+
+/obj/item/clothing/under/donator/bm/renory_jumpsuit
+	name = "Leather Jumpsuit"
+	desc = "Облегающий угольно-черный комбинезон."
+	icon_state = "renory_jumpsuit"
+	item_state = "syndicate-black"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/underwear.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	can_adjust = FALSE

@@ -963,9 +963,8 @@
 		. += "Nebular-9-ammo-0"
 		return
 
-	var/fill_level = round(magazine.stored_ammo.len / magazine.max_ammo * 7)
-	if(fill_level!=7)
-		. += "Nebular-9-ammo-[fill_level]"
+	var/fill_level = round(min(magazine.stored_ammo.len + 1, magazine.max_ammo) / magazine.max_ammo * 7)
+	. += "Nebular-9-ammo-[fill_level]"
 
 /obj/item/modkit/p226_syndicate
 	name = "P226 'Syndicate' Kit"

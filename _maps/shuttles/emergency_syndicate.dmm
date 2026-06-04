@@ -30,6 +30,9 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/escape)
 "ag" = (
+/obj/effect/fun_balloon/sentience/emergency_shuttle{
+	group_name = "syndicate operatives on the Emergency Syndicate Shuttle"
+	},
 /obj/structure/chair/comfy/shuttle{
 	dir = 1;
 	name = "tactical chair"

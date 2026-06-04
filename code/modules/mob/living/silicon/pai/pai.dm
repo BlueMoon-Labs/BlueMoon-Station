@@ -5,7 +5,7 @@
 	density = FALSE
 	pass_flags = PASSTABLE | PASSMOB
 	mob_size = MOB_SIZE_TINY
-	desc = "A generic pAI mobile hard-light holographics emitter. It seems to be deactivated."
+	desc = "Универсальный мобильный голографический излучатель твёрдого света pAI. Кажется, он деактивирован."
 	health = 500
 	maxHealth = 500
 	layer = BELOW_MOB_LAYER
