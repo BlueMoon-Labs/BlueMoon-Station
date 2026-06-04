@@ -146,7 +146,7 @@
 
 	// Check for male hormonal organ
 	if(quirk_holder.has_balls())
-		heat_phrases += "сильный стояк"
+		heat_phrases += "сильный запах"
 
 	// Check for female hormonal organ
 	if(quirk_holder.getorganslot(ORGAN_SLOT_WOMB))
