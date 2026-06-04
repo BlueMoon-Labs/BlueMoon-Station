@@ -646,7 +646,7 @@
 	return
 
 /obj/item/chair/plastic
-	name = "wooden chair"
+	name = "plastic chair"
 	desc = "Новомодный пластиковый стул, с ним в руках вы чувствуете себя решительно."
 	icon_state = "folded_chair"
 	item_state = "plastic_chair"
