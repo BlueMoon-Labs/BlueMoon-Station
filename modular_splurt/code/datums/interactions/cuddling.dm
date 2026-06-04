@@ -52,6 +52,8 @@
 	p13target_strength = PLUG13_STRENGTH_LOW_PLUS
 	p13target_duration = PLUG13_DURATION_SHORT
 
+	hearts_effect = TRUE
+
 /datum/interaction/scratch/post_interaction(mob/living/user, mob/living/target, apply_cooldown, is_hidden)
 	. = ..()
 	if(target.get_lust() < 100)
@@ -89,6 +91,8 @@
 	p13target_strength = PLUG13_STRENGTH_LOW_PLUS
 	p13target_duration = PLUG13_DURATION_SHORT
 
+	hearts_effect = TRUE
+
 /datum/interaction/neckscratch/post_interaction(mob/living/user, mob/living/target, apply_cooldown, is_hidden)
 	. = ..()
 	if(target.get_lust() < 100)
@@ -125,6 +129,8 @@
 	p13target_emote = PLUG13_EMOTE_BASIC
 	p13target_strength = PLUG13_STRENGTH_LOW_PLUS
 	p13target_duration = PLUG13_DURATION_SHORT
+
+	hearts_effect = TRUE
 
 /datum/interaction/earscratch/post_interaction(mob/living/user, mob/living/target, apply_cooldown, is_hidden)
 	. = ..()
