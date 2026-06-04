@@ -30,11 +30,10 @@
 	..()
 
 /obj/item/organ/genital/butt/update_size()//wah
-	var/rounded_size = round(size)
-	if(size < 0)//I don't actually know what round() does to negative numbers, so to be safe!!fixed
+	var/rounded_size = max(0, round(size))
+	if(rounded_size == 0)
 		if(owner)
 			to_chat(owner, "<span class='warning'>Вы чувствуете, как ваши ягодицы уменьшаются до обычного размера.</span>")
-		QDEL_IN(src, 1)
 		return
 
 	if(owner) //Because byond doesn't count from 0, I have to do this.

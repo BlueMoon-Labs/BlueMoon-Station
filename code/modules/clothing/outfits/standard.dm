@@ -238,7 +238,7 @@
 		/obj/item/organ/cyberimp/chest/nutrimentextreme,
 		/obj/item/organ/cyberimp/chest/chem_implant/plus,
 		/obj/item/organ/cyberimp/arm/combat,
-		/obj/item/organ/eyes/robotic/thermals,
+		/obj/item/organ/eyes/robotic/toggled/thermals,
 		/obj/item/organ/cyberimp/mouth/breathing_tube,
 		/obj/item/organ/cyberimp/chest/thrusters,
 	)
@@ -295,7 +295,7 @@
 		/obj/item/organ/cyberimp/chest/nutrimentextreme,
 		/obj/item/organ/cyberimp/chest/chem_implant/plus,
 		/obj/item/organ/cyberimp/arm/combat,
-		/obj/item/organ/eyes/robotic/thermals,
+		/obj/item/organ/eyes/robotic/toggled/thermals,
 		/obj/item/organ/cyberimp/mouth/breathing_tube,
 		/obj/item/organ/cyberimp/chest/thrusters,
 	)
@@ -458,7 +458,7 @@
 		/obj/item/organ/cyberimp/chest/nutrimentextreme,
 		/obj/item/organ/cyberimp/chest/chem_implant/plus,
 		/obj/item/organ/cyberimp/arm/shield,
-		/obj/item/organ/eyes/robotic/thermals,
+		/obj/item/organ/eyes/robotic/toggled/thermals,
 		/obj/item/organ/cyberimp/chest/thrusters,
 		/obj/item/organ/cyberimp/arm/shield,
 		/obj/item/organ/cyberimp/arm/combat{zone=BODY_ZONE_L_ARM},

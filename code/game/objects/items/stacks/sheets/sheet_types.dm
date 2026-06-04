@@ -885,6 +885,7 @@ GLOBAL_LIST_INIT(bone_recipes, list(
  */
 
 GLOBAL_LIST_INIT(plastic_recipes, list(
+	new/datum/stack_recipe("plastic chair", /obj/item/chair/plastic, 5, one_per_turf = TRUE, on_floor = TRUE), \
 	new /datum/stack_recipe("see-through plastic flaps", /obj/structure/plasticflaps, 5, one_per_turf = TRUE, on_floor = TRUE, time = 40), \
 	new /datum/stack_recipe("opaque plastic flaps", /obj/structure/plasticflaps/opaque, 5, one_per_turf = TRUE, on_floor = TRUE, time = 40), \
 	new /datum/stack_recipe("water bottle", /obj/item/reagent_containers/glass/beaker/waterbottle/empty), \

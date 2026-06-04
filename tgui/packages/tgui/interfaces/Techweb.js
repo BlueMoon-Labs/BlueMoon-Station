@@ -40,9 +40,10 @@ const selectRemappedStaticData = data => {
   // Do the same as the above for the design cache
   const design_cache = {};
   for (let id of Object.keys(data.static_data.design_cache)) {
-    const [name, classes] = data.static_data.design_cache[id];
+    const [name, hacked_only, classes] = data.static_data.design_cache[id];
     design_cache[remapId(id)] = {
-      name: name,
+      name,
+      hacked_only,
       class: classes.startsWith("design") ? classes : `design32x32 ${classes}`,
     };
   }
@@ -266,7 +267,12 @@ const TechwebRouter = (props, context) => {
 
 const TechwebOverview = (props, context) => {
   const { act, data } = useRemappedBackend(context);
-  const { nodes = [], node_cache = {}, design_cache = {} } = data;
+  const {
+    nodes = [],
+    node_cache = {},
+    design_cache = {},
+    sec_protocols,
+  } = data;
   const [
     tabIndex,
     setTabIndex,
@@ -291,8 +297,15 @@ const TechwebOverview = (props, context) => {
       }
       return (n.name || '').toLowerCase().includes(searchValue)
         || (n.description || '').toLowerCase().includes(searchValue)
-        || (n.design_ids || []).some(e =>
-          (design_cache[e]?.name || '').toLowerCase().includes(searchValue));
+        || (n.design_ids || []).some(e => {
+          const design = design_cache[e];
+
+          if (!design || (design.hacked_only && sec_protocols)) {
+            return false;
+          }
+
+          return (design.name || '').toLowerCase().includes(searchValue);
+        });
     });
   } else {
     displayedNodes = sortBy(x => node_cache[x.id]?.name || '')(
@@ -498,7 +511,7 @@ const Techwebanalyzer = (props, context) => {
           </Flex.Item>
         </Flex>
       </Flex.Item>
-      {!!linkedanalyzer &&(
+      {!!linkedanalyzer && (
         <>
           <Flex.Item>
             {analyzeritem ? <TechwebItemmaterials /> : ""}
@@ -738,6 +751,7 @@ const TechNode = (props, context) => {
     nodes,
     compact,
     researchable,
+    sec_protocols,
   } = data;
   const { node, nodetails, nocontrols, destructive } = props;
   const { id, can_unlock, tier, costs } = node;
@@ -806,7 +820,7 @@ const TechNode = (props, context) => {
                   }}
                   value={reqPts === 0
                     ? 1
-                    : Math.min(1, (points[key]||0) / reqPts)}>
+                    : Math.min(1, (points[key] || 0) / reqPts)}>
                   {abbreviateName(key)} ({nodeProg}/{reqPts})
                 </ProgressBar>
               </Flex.Item>
@@ -819,14 +833,19 @@ const TechNode = (props, context) => {
       </Box>
       {!!compact && (
         <Box className="Techweb__NodeUnlockedDesigns" mt={1}>
-          {design_ids.map((k) => (
-            <Button
-              key={id}
-              className={`${design_cache[k].class} Techweb__DesignIcon`}
-              tooltip={design_cache[k].name}
-              tooltipPosition="bottom"
-            />
-          ))}
+          {design_ids
+            .filter(k => {
+              const design = design_cache[k];
+              return design && (!design.hacked_only || !sec_protocols);
+            })
+            .map(k => (
+              <Button
+                key={k}
+                className={`${design_cache[k].class} Techweb__DesignIcon`}
+                tooltip={design_cache[k].name}
+                tooltipPosition="bottom"
+              />
+            ))}
         </Box>
       )}
     </Section>

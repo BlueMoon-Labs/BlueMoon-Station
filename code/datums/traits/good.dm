@@ -195,7 +195,7 @@
 		return
 
 	var/obj/item/organ/eyes/old_eyes = H.getorganslot(ORGAN_SLOT_EYES)
-	var/obj/item/organ/eyes/robotic/glow/new_eyes = new
+	var/obj/item/organ/eyes/robotic/toggled/glow/new_eyes = new
 	// Glow eyes default to "000"; Insert() would overwrite prefs — preserve character colors.
 	new_eyes.left_eye_color = H.left_eye_color
 	new_eyes.right_eye_color = H.right_eye_color
@@ -214,7 +214,7 @@
 		return
 
 	// Check for quirk eyes
-	if(!istype(old_eyes, /obj/item/organ/eyes/robotic/glow))
+	if(!istype(old_eyes, /obj/item/organ/eyes/robotic/toggled/glow))
 		return
 
 	// Define new eyes

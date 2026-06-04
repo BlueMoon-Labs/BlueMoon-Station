@@ -425,7 +425,7 @@
 /mob/living/silicon/robot/verb/unlock_own_cover()
 	set category = "Robot Commands"
 	set name = "Unlock Cover"
-	set desc = "Unlocks your own cover if it is locked. You can not lock it again. A human will have to lock it for you."
+	set desc = "Разблокирует вашу крышку, если она заблокирована. Вы не сможете заблокировать её снова. Человек должен будет заблокировать её за вас."
 	if(stat == DEAD)
 		return //won't work if dead
 	if(locked)
@@ -554,7 +554,7 @@
 
 /mob/living/silicon/robot/verb/set_automatic_say_channel() //Borg version of setting the radio for autosay messages.
 	set name = "Set Auto Announce Mode"
-	set desc = "Modify the default radio setting for stating your laws."
+	set desc = "Изменить настройки радио по умолчанию для оглашения ваших законов."
 	set category = "Robot Commands"
 
 	if(usr.stat == DEAD)
@@ -1150,7 +1150,7 @@
 
 /datum/action/innate/undeployment
 	name = "Disconnect from shell"
-	desc = "Stop controlling your shell and resume normal core operations."
+	desc = "Прекратить управление оболочкой и возобновить нормальные операции ядра."
 	icon_icon = 'icons/mob/actions/actions_AI.dmi'
 	button_icon_state = "ai_core"
 	required_mobility_flags = NONE
@@ -1165,7 +1165,7 @@
 
 /datum/action/innate/custom_holoform
 	name = "Select Custom Holoform"
-	desc = "Select one of your existing avatars to use as a holoform."
+	desc = "Выбрать один из существующих аватаров для использования в качестве голоформы."
 	icon_icon = 'icons/mob/actions/actions_silicon.dmi'
 	button_icon_state = "custom_holoform"
 	required_mobility_flags = NONE
@@ -1321,7 +1321,7 @@
 /mob/living/silicon/robot/proc/rest_style()
 	set name = "Switch Rest Style"
 	set category = "Robot Commands"
-	set desc = "Select your resting pose."
+	set desc = "Выбрать позу отдыха."
 
 	var/list/poses = list("Resting", "Sitting", "Belly up")
 	if(module.drakerest)

@@ -4,7 +4,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/hydraulic_clamp
 	name = "hydraulic clamp"
-	desc = "Equipment for engineering exosuits. Lifts objects and loads them into cargo."
+	desc = "Оборудование для инженерных экзокостюмов. Поднимает объекты и загружает их в грузовой отсек."
 	icon_state = "mecha_clamp"
 	equip_cooldown = 15
 	energy_drain = 10
@@ -101,13 +101,13 @@
 //This is pretty much just for the death-ripley
 /obj/item/mecha_parts/mecha_equipment/hydraulic_clamp/kill
 	name = "\improper KILL CLAMP"
-	desc = "They won't know what clamped them!"
+	desc = "Они даже не поймут, что их схватило!"
 	energy_drain = 0
 	dam_force = 0
 	var/real_clamp = FALSE
 
 /obj/item/mecha_parts/mecha_equipment/hydraulic_clamp/kill/real
-	desc = "They won't know what clamped them! This time for real!"
+	desc = "Они даже не поймут, что их схватило! На этот раз по-настоящему!"
 	energy_drain = 10
 	dam_force = 20
 	real_clamp = TRUE
@@ -186,7 +186,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/extinguisher
 	name = "exosuit extinguisher"
-	desc = "Equipment for engineering exosuits. A rapid-firing high capacity fire extinguisher."
+	desc = "Оборудование для инженерных экзокостюмов. Быстродействующий огнетушитель большой ёмкости."
 	icon_state = "mecha_exting"
 	equip_cooldown = 5
 	energy_drain = 0
@@ -254,7 +254,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/rcd
 	name = "mounted RCD"
-	desc = "An exosuit-mounted Rapid Construction Device."
+	desc = "Устройство для быстрого строительства, установленное на экзокостюм."
 	icon_state = "mecha_rcd"
 	equip_cooldown = 10
 	energy_drain = 250
@@ -350,7 +350,7 @@
 //Dunno where else to put this so shrug
 /obj/item/mecha_parts/mecha_equipment/ripleyupgrade
 	name = "Ripley MK-II Conversion Kit"
-	desc = "A pressurized canopy attachment kit for an Autonomous Power Loader Unit \"Ripley\" MK-I mecha, to convert it to the slower, but space-worthy MK-II design. This kit cannot be removed, once applied."
+	desc = "Комплект для переоборудования автономного погрузчика APLU MK-I в более медлительную, но пригодную для космоса модель MK-II. Этот комплект нельзя удалить после установки."
 	icon_state = "tesla"
 	mech_flags = EXOSUIT_MODULE_RIPLEY
 

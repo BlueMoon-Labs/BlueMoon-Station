@@ -13,14 +13,13 @@
 
 	p13target_emote = PLUG13_EMOTE_MASOCHISM
 
-/datum/interaction/lewd/bite/display_interaction(mob/living/user, mob/living/partner)
+/datum/interaction/lewd/bite/display_interaction(mob/living/user, mob/living/partner, is_hidden)
 	var/message
-	var/is_hidden = ..()
 	var/distance = 7
-	var/volume = 50
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 50
 	if(is_hidden)
 		distance = 1
-		volume = sound_quiet_volume
 	var/picked_hidden = pick(hidden_additional)
 	if(user.a_intent == INTENT_HARM)
 		user.is_fucking(partner, CUM_TARGET_HAND)
@@ -50,15 +49,15 @@
 					C.add_splatter_floor(get_turf(BLOOD_COLOR_HUMAN), TRUE)
 					new/obj/effect/decal/cleanable/blood
 
-	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
-	playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/squelch1.ogg', volume, 1, -1)
+	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+	playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/squelch1.ogg', volume, 1, extrarange)
 	var/lust_amount = NORMAL_LUST //если наша цель довести до пика, то не стоит это закрывать за кучей укусов
 	if(HAS_TRAIT(partner, TRAIT_MASO))
 		lust_amount *= 2
 	partner.handle_post_sex(lust_amount, CUM_TARGET_HAND, user)
 
 	if(prob(50 + partner.get_lust()))
-		partner.visible_message("<span class='lewd'>[is_hidden ? (picked_hidden) : null] <b>\The [partner]</b> [pick("дрожит от боли.",
+		partner.visible_message("<span class='lewd'>[is_hidden ? (picked_hidden) : null]<b>\The [partner]</b> [pick("дрожит от боли.",
 				"тихо вскрикивает.",
 				"выдыхает болезненный стон.",
 				"звучно вздыхает от боли.",

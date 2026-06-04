@@ -215,6 +215,16 @@
 	buildstackamount = 3
 	item_chair = /obj/item/chair/wood
 
+/obj/structure/chair/plastic
+	icon_state = "plastic_chair"
+	name = "plastic chair"
+	desc = "Новомодный пластиковый стул, сидя на нем вы чувствуете себя решительно."
+	resistance_flags = FLAMMABLE
+	max_integrity = 70
+	buildstacktype = /obj/item/stack/sheet/plastic
+	buildstackamount = 3
+	item_chair = /obj/item/chair/plastic
+
 /obj/structure/chair/wood/narsie_act()
 	return
 
@@ -634,6 +644,18 @@
 
 /obj/item/chair/wood/narsie_act()
 	return
+
+/obj/item/chair/plastic
+	name = "plastic chair"
+	desc = "Новомодный пластиковый стул, с ним в руках вы чувствуете себя решительно."
+	icon_state = "folded_chair"
+	item_state = "plastic_chair"
+	resistance_flags = FLAMMABLE
+	max_integrity = 70
+	hitsound = 'sound/weapons/judgementhit.ogg'
+	origin_type = /obj/structure/chair/plastic
+	custom_materials = null
+	break_chance = 5
 
 /obj/item/chair/wood/wings
 	icon_state = "wooden_chair_wings_toppled"

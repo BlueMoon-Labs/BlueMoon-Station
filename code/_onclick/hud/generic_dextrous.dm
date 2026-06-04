@@ -8,6 +8,11 @@
 	using.screen_loc = ui_drone_drop
 	static_inventory += using
 
+	throw_icon = new /atom/movable/screen/throw_catch(null, src)
+	throw_icon.icon = ui_style
+	throw_icon.screen_loc = ui_drop_throw
+	static_inventory += throw_icon
+
 	pull_icon = new /atom/movable/screen/pull(null, src)
 	pull_icon.icon = ui_style
 	pull_icon.update_icon()

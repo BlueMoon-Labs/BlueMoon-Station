@@ -36,6 +36,7 @@
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/prisoner/syndicate
 	name = "syndicate prisoner jumpsuit"
@@ -48,6 +49,7 @@
 	desc = "A crimson red jumpskirt worn by syndicate captives. Its sensors have been shorted out."
 	color = "#992300"
 	has_sensor = FALSE
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/misc/mailman
 	name = "mailman's jumpsuit"
@@ -248,6 +250,7 @@
 	body_parts_covered = CHEST|GROIN|ARMS
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	fitted = FEMALE_UNIFORM_TOP
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/misc/squatter
 	name = "Slav Squatter Tracksuit"
@@ -384,6 +387,7 @@
 	item_state = "littleblackdress_s"
 	fitted = FEMALE_UNIFORM_TOP
 	can_adjust = FALSE
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/misc/pinktutu
 	name = "pink tutu"
@@ -392,6 +396,7 @@
 	item_state = "pinktutu_s"
 	fitted = FEMALE_UNIFORM_TOP
 	can_adjust = FALSE
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/misc/bathrobe
 	name = "bathrobe"
@@ -400,6 +405,7 @@
 	item_state = "bathrobe"
 	fitted = FEMALE_UNIFORM_TOP
 	can_adjust = FALSE
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/misc/mechsuitred
 	name = "red mech suit"

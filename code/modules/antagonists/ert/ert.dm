@@ -216,7 +216,7 @@
 		missiondesc += "<li>Следуйте приказам, отданным лидером вашего отряда.</li>"
 	missiondesc += "\n<li>Избегайте жертв среди гражданских, когда это возможно.</li>"
 	missiondesc += "\n<li>Префиксы наушника <b>:y</b> и <b>:н</b> <font color='red'>отвечают за связь</font> через CentCom радиоканал <font color='red'>вашего отряда</font> и <font color='red'>вашего начальства</font>.</li>"
-	missiondesc += "<p>На объекте объявлен код <b>[get_security_level()]</b></p>"
+	missiondesc += "<p>На объекте объявлен код <b>[SECURITY_LEVEL_COLORED_UPPERTEXT(GLOB.security_level)]</b></p>"
 	missiondesc += "<p><B>Ваша миссия</B>: [ert_team.mission.explanation_text]</p>"
 	to_chat(owner, examine_block(missiondesc))
 // BLUEMOON EDIT END

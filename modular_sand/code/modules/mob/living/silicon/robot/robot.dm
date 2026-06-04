@@ -22,7 +22,7 @@
 /// Allows "cyborg" players to change gender at will
 /mob/living/silicon/robot/verb/toggle_gender()
 	set name = "Set Gender"
-	set desc = "Allows you to set your gender."
+	set desc = "Позволяет установить ваш пол."
 
 	if(stat != CONSCIOUS)
 		to_chat(usr, span_warning("You cannot toggle your gender while unconcious!"))

@@ -10,6 +10,9 @@
 /turf/open/floor/plating,
 /area/shuttle/escape)
 "ad" = (
+/obj/effect/fun_balloon/sentience/emergency_shuttle{
+	group_name = "engineers on the Emergency Kilo Shuttle"
+	},
 /obj/structure/table/reinforced,
 /obj/item/storage/toolbox/mechanical,
 /obj/item/radio,

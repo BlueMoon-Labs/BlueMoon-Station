@@ -68,7 +68,7 @@
 /obj/item/mecha_parts/mecha_equipment/weapon/energy/laser
 	equip_cooldown = 8
 	name = "\improper CH-PS \"Immolator\" laser"
-	desc = "A weapon for combat exosuits. Shoots basic lasers."
+	desc = "Оружие для боевых экзокостюмов. Стреляет обычными лазерами."
 	icon_state = "mecha_laser"
 	energy_drain = 30
 	projectile = /obj/item/projectile/beam/laser
@@ -78,7 +78,7 @@
 /obj/item/mecha_parts/mecha_equipment/weapon/energy/disabler
 	equip_cooldown = 8
 	name = "\improper CH-DS \"Peacemaker\" disabler"
-	desc = "A weapon for combat exosuits. Shoots basic disablers."
+	desc = "Оружие для боевых экзокостюмов. Стреляет обычными дизейблерами."
 	icon_state = "mecha_disabler"
 	energy_drain = 30
 	projectile = /obj/item/projectile/beam/disabler
@@ -87,7 +87,7 @@
 /obj/item/mecha_parts/mecha_equipment/weapon/energy/laser/heavy
 	equip_cooldown = 15
 	name = "\improper CH-LC \"Solaris\" laser cannon"
-	desc = "A weapon for combat exosuits. Shoots heavy lasers."
+	desc = "Оружие для боевых экзокостюмов. Стреляет тяжёлыми лазерами."
 	icon_state = "mecha_laser"
 	energy_drain = 60
 	projectile = /obj/item/projectile/beam/laser/heavylaser
@@ -96,7 +96,7 @@
 /obj/item/mecha_parts/mecha_equipment/weapon/energy/ion
 	equip_cooldown = 20
 	name = "\improper MKIV ion heavy cannon"
-	desc = "A weapon for combat exosuits. Shoots technology-disabling ion beams. Don't catch yourself in the blast!"
+	desc = "Оружие для боевых экзокостюмов. Стреляет ионными лучами, отключающими технику. Не попадите под собственный выстрел!"
 	icon_state = "mecha_ion"
 	energy_drain = 120
 	projectile = /obj/item/projectile/ion
@@ -105,7 +105,7 @@
 /obj/item/mecha_parts/mecha_equipment/weapon/energy/tesla
 	equip_cooldown = 35
 	name = "\improper MKI Tesla Cannon"
-	desc = "A weapon for combat exosuits. Fires bolts of electricity similar to the experimental tesla engine."
+	desc = "Оружие для боевых экзокостюмов. Выпускает заряды электричества, подобные экспериментальному тесла-двигателю."
 	icon_state = "mecha_ion"
 	energy_drain = 500
 	projectile = /obj/item/projectile/energy/tesla/cannon
@@ -115,7 +115,7 @@
 /obj/item/mecha_parts/mecha_equipment/weapon/energy/pulse
 	equip_cooldown = 30
 	name = "eZ-13 MK2 heavy pulse rifle"
-	desc = "A weapon for combat exosuits. Shoots powerful destructive blasts capable of demolishing obstacles."
+	desc = "Оружие для боевых экзокостюмов. Стреляет мощными разрушительными залпами, способными сносить препятствия."
 	icon_state = "mecha_pulse"
 	energy_drain = 120
 	projectile = /obj/item/projectile/beam/pulse/heavy
@@ -125,7 +125,7 @@
 /obj/item/mecha_parts/mecha_equipment/weapon/energy/plasma
 	equip_cooldown = 10
 	name = "217-D Heavy Plasma Cutter"
-	desc = "A device that shoots resonant plasma bursts at extreme velocity. The blasts are capable of crushing rock and demolishing solid obstacles."
+	desc = "Устройство, стреляющее резонансными плазменными импульсами на экстремальной скорости. Импульсы способны дробить камень и разрушать твёрдые препятствия."
 	icon_state = "mecha_plasmacutter"
 	lefthand_file = 'icons/mob/inhands/weapons/guns_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/guns_righthand.dmi'
@@ -143,7 +143,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/weapon/energy/taser
 	name = "\improper PBT \"Pacifier\" mounted taser"
-	desc = "A weapon for combat exosuits. Shoots non-lethal stunning electrodes."
+	desc = "Оружие для боевых экзокостюмов. Стреляет нелетальными оглушающими электродами."
 	icon_state = "mecha_taser"
 	energy_drain = 20
 	equip_cooldown = 8
@@ -153,7 +153,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/weapon/honker
 	name = "\improper HoNkER BlAsT 5000"
-	desc = "Equipment for clown exosuits. Spreads fun and joy to everyone around. Honk!"
+	desc = "Оборудование для клоунских экзокостюмов. Распространяет веселье и радость вокруг. Хонк!"
 	icon_state = "mecha_honker"
 	energy_drain = 200
 	equip_cooldown = 150
@@ -270,7 +270,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/carbine
 	name = "\improper FNX-99 \"Hades\" Carbine"
-	desc = "A weapon for combat exosuits. Shoots incendiary bullets."
+	desc = "Оружие для боевых экзокостюмов. Стреляет зажигательными пулями."
 	icon_state = "mecha_carbine"
 	equip_cooldown = 10
 	projectile = /obj/item/projectile/bullet/incendiary/fnx99
@@ -282,7 +282,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/silenced
 	name = "\improper S.H.H. \"Quietus\" Carbine"
-	desc = "A weapon for combat exosuits. A mime invention, field tests have shown that targets cannot even scream before going down."
+	desc = "Оружие для боевых экзокостюмов. Изобретение мима; полевые испытания показали, что цели не могут даже крикнуть, прежде чем упасть."
 	fire_sound = 'sound/weapons/Gunshot_silenced.ogg'
 	icon_state = "mecha_mime"
 	equip_cooldown = 30
@@ -293,7 +293,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/scattershot
 	name = "\improper LBX AC 10 \"Scattershot\""
-	desc = "A weapon for combat exosuits. Shoots a spread of pellets."
+	desc = "Оружие для боевых экзокостюмов. Стреляет россыпью дроби."
 	icon_state = "mecha_scatter"
 	equip_cooldown = 20
 	projectile = /obj/item/projectile/bullet/scattershot
@@ -307,7 +307,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/seedscatter
 	name = "\improper Melon Seed \"Scattershot\""
-	desc = "A weapon for combat exosuits. Shoots a spread of pellets, shaped as seed."
+	desc = "Оружие для боевых экзокостюмов. Стреляет россыпью дроби в форме семечек."
 	fire_sound = 'sound/weapons/gunshotshotgunshot.ogg'
 	icon_state = "mecha_scatter"
 	equip_cooldown = 20
@@ -322,7 +322,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/lmg
 	name = "\improper Ultra AC 2"
-	desc = "A weapon for combat exosuits. Shoots a rapid, three shot burst."
+	desc = "Оружие для боевых экзокостюмов. Стреляет быстрыми трёхвыстрельными очередями."
 	icon_state = "mecha_uac2"
 	equip_cooldown = 10
 	projectile = /obj/item/projectile/bullet/lmg
@@ -338,7 +338,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/missile_rack
 	name = "\improper SRM-8 missile rack"
-	desc = "A weapon for combat exosuits. Launches anti-armor explosive missiles."
+	desc = "Оружие для боевых экзокостюмов. Запускает противоброневые ракеты."
 	icon_state = "mecha_missilerack"
 	projectile = /obj/item/projectile/bullet/a84mm
 	fire_sound = 'sound/weapons/rocketlaunch.ogg'
@@ -356,7 +356,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/missile_rack/breaching
 	name = "\improper BRM-6 missile rack"
-	desc = "A weapon for combat exosuits. Launches high-explosive breaching missiles with a safety fuze designed to explode only when striking a sturdy target."
+	desc = "Оружие для боевых экзокостюмов. Запускает фугасные пробивные ракеты с предохранителем, взрывающимся только при ударе о прочную цель."
 	icon_state = "mecha_missilerack_six"
 	projectile = /obj/item/projectile/bullet/a84mm/br
 	fire_sound = 'sound/weapons/rocketlaunch.ogg'
@@ -394,7 +394,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/flashbang
 	name = "\improper SGL-6 grenade launcher"
-	desc = "A weapon for combat exosuits. Launches primed flashbangs."
+	desc = "Оружие для боевых экзокостюмов. Запускает готовые светошумовые гранаты."
 	icon_state = "mecha_grenadelnchr"
 	projectile = /obj/item/grenade/flashbang
 	fire_sound = 'sound/weapons/grenadelaunch.ogg'
@@ -414,7 +414,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/flashbang/clusterbang //Because I am a heartless bastard -Sieve //Heartless? for making the poor man's honkblast? - Kaze
 	name = "\improper SOB-3 grenade launcher"
-	desc = "A weapon for combat exosuits. Launches primed clusterbangs. You monster."
+	desc = "Оружие для боевых экзокостюмов. Запускает готовые кластерные гранаты. Ты монстр."
 	projectiles = 3
 	projectiles_cache = 0
 	projectiles_cache_max = 0
@@ -425,7 +425,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/banana_mortar
 	name = "banana mortar"
-	desc = "Equipment for clown exosuits. Launches banana peels."
+	desc = "Оборудование для клоунских экзокостюмов. Запускает банановые шкурки."
 	icon_state = "mecha_bananamrtr"
 	projectile = /obj/item/grown/bananapeel
 	fire_sound = 'sound/items/bikehorn.ogg'
@@ -443,7 +443,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/mousetrap_mortar
 	name = "mousetrap mortar"
-	desc = "Equipment for clown exosuits. Launches armed mousetraps."
+	desc = "Оборудование для клоунских экзокостюмов. Запускает готовые мышеловки."
 	icon_state = "mecha_mousetrapmrtr"
 	projectile = /obj/item/assembly/mousetrap/armed
 	fire_sound = 'sound/items/bikehorn.ogg'
@@ -466,7 +466,7 @@
 //Classic extending punching glove, but weaponised!
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/punching_glove
 	name = "\improper Oingo Boingo Punch-face"
-	desc = "Equipment for clown exosuits. Delivers fun right to your face!"
+	desc = "Оборудование для клоунских экзокостюмов. Доставляет веселье прямо в лицо!"
 	icon_state = "mecha_punching_glove"
 	energy_drain = 250
 	equip_cooldown = 20
@@ -527,7 +527,7 @@
 
 /obj/item/punching_glove
 	name = "punching glove"
-	desc = "INCOMING HONKS"
+	desc = "ВХОДЯЩИЕ ХОНКИ"
 	throwforce = 35
 	icon_state = "punching_glove"
 

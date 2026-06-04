@@ -140,7 +140,7 @@
 	data["message"] = message
 	data["outgoing"] = outgoing
 	if(photo_name)
-		if(findtext(photo_name, "http://", 1) || findtext(photo_name, "https://", 1) || findtext(photo_name, "data:image", 1))
+		if(findtext(photo_name, "http://", 1) || findtext(photo_name, "https://", 1) || findtext(photo_name, "data:", 1))
 			data["photo_path"] = photo_name
 		else
 			data["photo_path"] = SSassets.transport.get_asset_url(photo_name)

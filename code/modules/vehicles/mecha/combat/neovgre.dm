@@ -1,6 +1,6 @@
 /obj/vehicle/sealed/mecha/combat/neovgre
 	name = "Neovgre, the Anima Bulwark"
-	desc = "Nezbere's most powerful creation, a mighty war machine of unmatched power said to have ended wars in a single night. Armed with a heavy laser and a tesla sphere generator. Requires a pilot and a gunner."
+	desc = "Самое мощное творение Nezbere, могучая боевая машина несравненной мощи, о которой говорят, что она заканчивала войны за одну ночь. Вооружена тяжёлым лазером и генератором тесла-сфер. Требует пилота и стрелка."
 	icon = 'icons/mecha/neovgre.dmi'
 	icon_state = "neovgre"
 	max_integrity = 500 //This is THE ratvarian superweaon, its deployment is an investment
@@ -88,13 +88,13 @@
 
 /obj/structure/mecha_wreckage/durand/neovgre
 	name = "\improper Neovgre wreckage?"
-	desc = "On closer inspection this looks like the wreck of a durand with some spraypainted cardboard duct taped to it!"
+	desc = "При ближайшем рассмотрении это выглядит как обломки Durand с примотанным картоном, разрисованным баллончиком!"
 
 /obj/item/mecha_parts/mecha_equipment/weapon/energy/laser/heavy/neovgre
 	equip_cooldown = 8 //Rapid fire heavy laser cannon, simple yet elegant
 	energy_drain = 30
 	name = "Arbiter Laser Cannon"
-	desc = "Please re-attach this to neovgre and stop asking questions about why it looks like a normal Nanotrasen issue Solaris laser cannon - Nezbere"
+	desc = "Пожалуйста, прикрепите это обратно к Neovgre и перестаньте спрашивать, почему оно выглядит как обычный лазерный пулемёт Solaris выпуска Nanotrasen — Nezbere"
 	fire_sound = 'sound/weapons/neovgre_laser.ogg'
 
 /obj/item/mecha_parts/mecha_equipment/weapon/energy/laser/heavy/neovgre/can_attach(obj/vehicle/sealed/mecha/combat/neovgre/M)

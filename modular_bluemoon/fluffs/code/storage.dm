@@ -264,3 +264,13 @@
 	new /obj/item/modkit/supernova_kit(src)
 	new /obj/item/modkit/pulsar_kit(src)
 	new /obj/item/clothing/under/donator/bm/concord(src)
+
+//////////////////////////////////////////////////
+
+/obj/item/storage/backpack/satchel/sport_abibas_bag
+	name = "Sport 'ABIBAS' satchel"
+	desc = "Спортивная сумка, выглядит удобно."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/storage.dmi'
+	icon_state = "abibas_back"
+	item_state = "abibas_back"

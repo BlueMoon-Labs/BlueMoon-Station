@@ -166,7 +166,7 @@
 	if (lastmoan == sound)
 		sound = pick(LAZYCOPY(moans) - lastmoan)
 
-	playlewdinteractionsound(loc, sound, 80, 1, -1)
+	playlewdinteractionsound(get_turf(src), sound, 80, 1, -1)
 	lastmoan = sound
 
 /mob/living/simple_animal/hostile/deathclaw/funclaw/PickTarget(list/Targets)
@@ -388,7 +388,7 @@
 
 	new /obj/effect/decal/cleanable/semen(loc)
 
-	playlewdinteractionsound(loc, "modular_splurt/sound/lewd/deathclaw[rand(1, 2)].ogg", 80, 1, -1) // BLUEMOON EDIT
+	playlewdinteractionsound(get_turf(src), "modular_splurt/sound/lewd/deathclaw[rand(1, 2)].ogg", 80, 1, -1) // BLUEMOON EDIT
 	visible_message(span_userlove("<b>\The [src]</b> [message]")) // BLUEMOON EDIT
 	shake_camera(M, 6, 1)
 	set_is_fucking(null ,null)
@@ -400,7 +400,7 @@
 
 
 /mob/living/simple_animal/hostile/deathclaw/funclaw/proc/slap(mob/living/M)
-	playlewdinteractionsound(loc, "modular_sand/sound/interactions/slap.ogg", 30, 1, -1)
+	playlewdinteractionsound(get_turf(src), "modular_sand/sound/interactions/slap.ogg", 30, 1, -1)
 	visible_message(span_danger("\The [src]</b> шлёпает [M] по заднице!"), \
 			span_userdanger("\The [src]</b> шлёпает [M] по заднице!"), null, COMBAT_MESSAGE_RANGE)
 
@@ -408,7 +408,7 @@
 	var/obj/item/W = M.get_item_by_slot(slot)
 	if(W)
 		M.dropItemToGround(W)
-		playlewdinteractionsound(loc, "sound/items/poster_ripped.ogg", 30, 1, -1)
+		playlewdinteractionsound(get_turf(src), "sound/items/poster_ripped.ogg", 30, 1, -1)
 		visible_message(span_danger("\The [src]</b> разрывает одежду [M]!"), \
 				span_userdanger("\The [src]</b> разрывает одежду [M]!"), null, COMBAT_MESSAGE_RANGE)
 		return TRUE

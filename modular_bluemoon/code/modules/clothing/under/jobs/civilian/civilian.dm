@@ -6,6 +6,7 @@
 	icon_state = "boobsuit"
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/civilian/lawyer/boobblouse
 	name = "custom-tailored blouse"

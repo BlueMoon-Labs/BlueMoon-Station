@@ -38,6 +38,9 @@
 /turf/open/floor/mineral/plastitanium/red/brig,
 /area/shuttle/escape)
 "ag" = (
+/obj/effect/fun_balloon/sentience/emergency_shuttle{
+	group_name = "security on the Emergency Omega Shuttle"
+	},
 /obj/structure/table/reinforced,
 /obj/machinery/recharger,
 /obj/machinery/status_display/evac{

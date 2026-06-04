@@ -7,10 +7,10 @@
 ///Health Analyzer - Gives the user a ranged health analyzer and their health status in the panel.
 /obj/item/mod/module/health_analyzer
 	name = "MOD health analyzer module"
-	desc = "A module installed into the glove of the suit. This is a high-tech biological scanning suite, \
-		allowing the user indepth information on the vitals and injuries of others even at a distance, \
-		all with the flick of the wrist. Data is displayed in a convenient package on HUD in the helmet, \
-		but it's up to you to do something with it."
+	desc = "Модуль, установленный в перчатку костюма. Это высокотехнологичный биологический сканер, \
+		позволяющий пользователю получать подробную информацию о жизненно важных показателях и травмах других даже на расстоянии, \
+		всего лишь взмахом руки. Данные отображаются в удобном формате на дисплее шлема, \
+		но что с ними делать — зависит от вас."
 	icon_state = "health"
 	module_type = MODULE_ACTIVE
 	complexity = 2
@@ -64,8 +64,8 @@
 ///Quick Carry - Lets the user carry bodies quicker.
 /obj/item/mod/module/quick_carry
 	name = "MOD quick carry module"
-	desc = "A suite of advanced servos, redirecting power from the suit's arms to help carry the wounded; \
-		or simply for fun. However, Nanotrasen has locked the module's ability to assist in hand-to-hand combat."
+	desc = "Набор продвинутых сервоприводов, перенаправляющих энергию из рук костюма для помощи в переноске раненых; \
+		или просто для развлечения. Однако Nanotrasen заблокировал способность модуля помогать в рукопашном бою."
 	icon_state = "carry"
 	complexity = 1
 	idle_power_cost = DEFAULT_CHARGE_DRAIN * 0.3
@@ -92,12 +92,12 @@
 ///Defibrillator - Gives the suit an extendable pair of shock paddles.
 /obj/item/mod/module/defibrillator
 	name = "MOD defibrillator module"
-	desc = "A module built into the gauntlets of the suit; commonly known as the 'Healing Hands' by medical professionals. \
-		The user places their palms above the patient. Onboard computers in the suit calculate the necessary voltage, \
-		and a modded targeting computer determines the best position for the user to push. \
-		Twenty five pounds of force are applied to the patient's skin. Shocks travel from the suit's gloves \
-		and counter-shock the heart, and the wearer returns to Medical a hero. Don't you even think about using it as a weapon; \
-		regulations on manufacture and software locks expressly forbid it."
+	desc = "Модуль, встроенный в рукавицы костюма; широко известный среди медицинских работников как 'Целительные Руки'. \
+		Пользователь размещает ладони над пациентом. Бортовые компьютеры костюма рассчитывают необходимое напряжение, \
+		а модифицированный наведённый компьютер определяет лучшую позицию для нажатия. \
+		К коже пациента прикладывается сила в двадцать пять фунтов. Импульсы проходят из перчаток костюма \
+		через стандартные грудные электроды в сердце, и носитель возвращается в Медблок героем. \
+		Даже не думайте использовать это как оружие; нормы производства и программные блокировки прямо запрещают это."
 	icon_state = "defibrillator"
 	module_type = MODULE_ACTIVE
 	complexity = 2
@@ -132,15 +132,15 @@
 
 /obj/item/mod/module/defibrillator/combat
 	name = "MOD combat defibrillator module"
-	desc = "A module built into the gauntlets of the suit; commonly known as the 'Healing Hands' by medical professionals. \
-		The user places their palms above the patient. Onboard computers in the suit calculate the necessary voltage, \
-		and a modded targeting computer determines the best position for the user to push. \
-		Twenty five pounds of force are applied to the patient's skin. Shocks travel from the suit's gloves \
-		and counter-shock the heart, and the wearer returns to Medical a hero. \
-		Interdyne Pharmaceutics marketed the domestic version of the Healing Hands as foolproof and unusable as a weapon. \
-		But when it came time to provide their operatives with usable medical equipment, they didn't hesitate to remove \
-		those in-built safeties. Operatives in the field can benefit from what they dub as 'Stun Gloves', able to apply shocks \
-		straight to a victims heart to disable them, or maybe even outright stop their heart with enough power."
+	desc = "Модуль, встроенный в рукавицы костюма; широко известный среди медицинских работников как 'Целительные Руки'. \
+		Пользователь размещает ладони над пациентом. Бортовые компьютеры костюма рассчитывают необходимое напряжение, \
+		а модифицированный наведённый компьютер определяет лучшую позицию для нажатия. \
+		К коже пациента прикладывается сила в двадцать пять фунтов. Импульсы проходят из перчаток костюма \
+		и контр-шокируют сердце, и носитель возвращается в Медблок героем. \
+		Interdyne Pharmaceutics продвигала бытовую версию Целительных Рук как надёжную и непригодную в качестве оружия. \
+		Но когда пришло время снабдить своих оперативников пригодным медицинским оборудованием, они не стали колебаться, убрав \
+		встроенные системы безопасности. Оперативники в поле могут воспользоваться тем, что они называют 'Оглушающие Перчатки', способные подавать импульсы \
+		прямо в сердце жертвы для обездвиживания, или даже полностью остановить сердце при достаточной мощности."
 	complexity = 1
 	module_type = MODULE_ACTIVE
 	overlay_state_inactive = "module_defibrillator_combat"
@@ -160,8 +160,8 @@
 ///Surgical Processor - Lets you do advanced surgeries portably.
 /obj/item/mod/module/surgical_processor
 	name = "MOD surgical processor module"
-	desc = "A module using an onboard surgical computer which can be connected to other computers to download and \
-		perform advanced surgeries on the go."
+	desc = "Модуль с бортовым хирургическим компьютером, который можно подключить к другим компьютерам для загрузки и \
+		выполнения продвинутых операций на ходу."
 	icon_state = "surgical_processor"
 	module_type = MODULE_ACTIVE
 	complexity = 2
@@ -175,8 +175,8 @@
 	name = "MOD surgical processor"
 
 /obj/item/mod/module/surgical_processor/preloaded
-	desc = "A module using an onboard surgical computer which can be connected to other computers to download and \
-		perform advanced surgeries on the go. This one came pre-loaded with some advanced surgeries."
+	desc = "Модуль с бортовым хирургическим компьютером, который можно подключить к другим компьютерам для загрузки и \
+		выполнения продвинутых операций на ходу. Этот экземпляр предзагружен некоторыми продвинутыми операциями."
 	device = /obj/item/surgical_processor/mod/preloaded
 
 /obj/item/surgical_processor/mod/preloaded

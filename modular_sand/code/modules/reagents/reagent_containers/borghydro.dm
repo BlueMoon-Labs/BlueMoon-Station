@@ -3,7 +3,7 @@ Borg Shaker
 */
 /obj/item/reagent_containers/borghypo/borgshaker/beershaker
 	name = "cyborg shaker"
-	desc = "An advanced drink synthesizer and mixer."
+	desc = "Продвинутый синтезатор и миксер напитков."
 	icon = 'modular_sand/icons/obj/drinks.dmi'
 	icon_state = "beershaker"
 	possible_transfer_amounts = list(5,10,20)
@@ -37,7 +37,7 @@ Borg Shaker
 
 /obj/item/reagent_containers/borghypo/borgshaker/juiceshaker
 	name = "cyborg shaker"
-	desc = "An advanced drink synthesizer and mixer."
+	desc = "Продвинутый синтезатор и миксер напитков."
 	icon = 'modular_sand/icons/obj/drinks.dmi'
 	icon_state = "juiceshaker"
 	possible_transfer_amounts = list(5,10,20)
@@ -63,7 +63,7 @@ Borg Shaker
 
 /obj/item/reagent_containers/borghypo/borgshaker/sodashaker
 	name = "cyborg shaker"
-	desc = "An advanced drink synthesizer and mixer."
+	desc = "Продвинутый синтезатор и миксер напитков."
 	icon = 'modular_sand/icons/obj/drinks.dmi'
 	icon_state = "sodashaker"
 	possible_transfer_amounts = list(5,10,20)
@@ -87,7 +87,7 @@ Borg Shaker
 
 /obj/item/reagent_containers/borghypo/borgshaker/miscshaker
 	name = "cyborg shaker"
-	desc = "An advanced drink synthesizer and mixer."
+	desc = "Продвинутый синтезатор и миксер напитков."
 	icon = 'modular_sand/icons/obj/drinks.dmi'
 	icon_state = "miscshaker"
 	possible_transfer_amounts = list(5,10,20)
@@ -115,7 +115,7 @@ Borg Shaker
 
 /obj/item/reagent_containers/borghypo/borgshaker/hacked
 	name = "cyborg shaker"
-	desc = "Will mix drinks that knock them dead."
+	desc = "Смешивает напитки, которые убивают наповал."
 	icon = 'icons/obj/drinks.dmi'
 	icon_state = "threemileislandglass"
 	possible_transfer_amounts = list(5,10,20)

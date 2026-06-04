@@ -22,6 +22,8 @@
 #define POLL_IGNORE_FUGITIVE "fugitive"
 #define POLL_IGNORE_SLAVER "slaver"
 #define POLL_IGNORE_EGG "egg"
+#define POLL_IGNORE_MONKEY_HELMET "monkey_helmet"
+#define POLL_IGNORE_SYNDICATE_MONKEY "syndicate_monkey"
 
 GLOBAL_LIST_INIT(poll_ignore_desc, list(
 	POLL_IGNORE_SENTIENCE_POTION = "Sentience potion",
@@ -45,7 +47,9 @@ GLOBAL_LIST_INIT(poll_ignore_desc, list(
 	POLL_IGNORE_CONTRACTOR_SUPPORT = "Contractor Support Unit",
 	POLL_IGNORE_FUGITIVE = "Fugitive Hunter",
 	POLL_IGNORE_SLAVER = "Slaver",
-	POLL_IGNORE_EGG = "Pregnancy Eggs"
+	POLL_IGNORE_EGG = "Pregnancy Eggs",
+	POLL_IGNORE_MONKEY_HELMET = "Monkey mind magnification helmet",
+	POLL_IGNORE_SYNDICATE_MONKEY = "Syndicate monkey agent"
 ))
 GLOBAL_LIST_INIT(poll_ignore, init_poll_ignore())
 

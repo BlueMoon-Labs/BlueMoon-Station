@@ -31,6 +31,9 @@
 /turf/open/floor/plating,
 /area/shuttle/escape)
 "ag" = (
+/obj/effect/fun_balloon/sentience/emergency_shuttle{
+	group_name = "engineers fleeing the supermatter on the Hyperfractal Gigashuttle"
+	},
 /obj/structure/closet/radiation{
 	anchored = 1
 	},

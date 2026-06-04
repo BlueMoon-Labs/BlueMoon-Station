@@ -18,6 +18,11 @@
 	add_item(new /obj/item/melee/implantarmblade/energy)
 	return TRUE
 
+/obj/item/organ/cyberimp/arm/mantis_blade/sec_level
+	name = "Corporate arm blade implant"
+	icon_state = "mantis_blade_corpo"
+	active_security_level = MANTIS_IMPLANT_SEC_LEVEL
+
 /obj/item/melee/implantarmblade
 	name = "implanted arm blade"
 	desc = "A long, sharp, mantis-like blade implanted into someones arm. Cleaves through flesh like its particularly strong butter."

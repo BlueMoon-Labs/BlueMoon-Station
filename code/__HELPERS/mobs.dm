@@ -676,7 +676,8 @@ GLOBAL_LIST_EMPTY(species_datums)
 	var/obj/item/organ/genital/penis/P = H?.getorganslot(ORGAN_SLOT_PENIS)
 	if(!P)
 		if(H.has_strapon())
-			return "дилдо"
+			//return "дилдо" т.к. дилдо не склоняется, заменяем на склоняемое слово
+			return "страпон"
 		else
 			return "член"
 
@@ -694,9 +695,10 @@ GLOBAL_LIST_EMPTY(species_datums)
 		if("taperedbarbed") return "утонченный шипованный член"
 		if("thick", "nondescript") return "обрезанный член"
 		// Если кто-то это будет трогать, придумайте что-то с окончаниями (автор не соизволил)
-		if("hemi") return "двойные члены"
-		if("hemiknot") return "двойные узловатые члены"
-		if("bhemiknot") return "двойные с узлами колючие члены"
+		// P.S. Ладно, я сам дописал, частично
+		if("hemi") return "двойной член"
+		if("hemiknot") return "двойной узловатый член"
+		if("bhemiknot") return "двойной с узлами колючий член"
 
 		else return "необычной формы член"
 

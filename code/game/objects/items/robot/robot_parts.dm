@@ -5,7 +5,7 @@
 
 /obj/item/robot_suit
 	name = "cyborg endoskeleton"
-	desc = "A complex metal backbone with standard limb sockets and pseudomuscle anchors."
+	desc = "Сложный металлический позвоночник со стандартными гнёздами для конечностей и якорями псевдомускулов."
 	icon = 'icons/mob/augmentation/augments.dmi'
 	icon_state = "robo_suit"
 	w_class = WEIGHT_CLASS_HUGE

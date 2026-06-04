@@ -391,7 +391,7 @@ const ChatScreen = (props, context) => {
     blocked,
   } = props;
 
-  const { emoji_list, emoji_base64, has_scanned_photo, selected_photo_path, admin_photo_url, is_admin } = data;
+  const { emoji_list, emoji_base64, has_scanned_photo, selected_photo_path, admin_photo_url, can_set_url_photo } = data;
   const rawList = Array.isArray(emoji_list) ? emoji_list : Object.values(emoji_list || {});
   const uniqueEmojis = [...new Set(rawList)].slice(0, 100);
   const base64Map = emoji_base64 || {};
@@ -500,7 +500,7 @@ const ChatScreen = (props, context) => {
             />
           </Stack.Item>
         )}
-        {!!is_admin && (
+        {!!can_set_url_photo && (
           <Stack.Item>
             <Button
               tooltip="Установить URL фото"
@@ -718,10 +718,12 @@ const ChatScreen = (props, context) => {
 const MediaAttachment = ({ src, maxHeight = '200px', maxWidth = '100%', onClick }) => {
   if (!src) return null;
 
-  const isVideo = /\.(webm|mp4)(\?.*)?$/i.test(src);
+  const isVideo = /\.(webm|mp4)(\?.*)?$/i.test(src) || src.startsWith('data:video/');
 
   if (isVideo) {
-    const videoType = /\.mp4(\?.*)?$/i.test(src) ? 'video/mp4' : 'video/webm';
+    const videoType = src.startsWith('data:')
+      ? (src.match(/^data:([^;,]+)/)?.[1] || 'video/webm')
+      : (/\.mp4(\?.*)?$/i.test(src) ? 'video/mp4' : 'video/webm');
     return (
       <Box>
         <video
