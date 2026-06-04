@@ -237,7 +237,7 @@
 		stable_S2.visible_message("<span class='warning'>Воздух перед [target] дрожит и внезапно разрывается!</span>")
 	else
 		invoker.visible_message("<span class='warning'>Воздух перед [invoker] дрожит и внезапно разрывается!</span>", \
-		"<span class='brass'>Словом ты разрываешь [two_way ? "двусторонний" : "односторонний"] разлом к [input_target_key]. Он просуществует [DisplayTimeText(time_duration)] и имеет [gateway_uses] использовани[uses % 10 == 1 && uses % 100 != 11 ? "е" : (uses % 10 >= 2 && uses % 10 <= 4 && !(uses % 100 >= 12 && uses % 100 <= 14) ? "я" : "й")].</span>")
+		"<span class='brass'>Словом ты разрываешь [two_way ? "двусторонний" : "односторонний"] разлом к [input_target_key]. Он просуществует [DisplayTimeText(time_duration)] и имеет [gateway_uses] использовани[gateway_uses % 10 == 1 && gateway_uses % 100 != 11 ? "е" : (gateway_uses % 10 >= 2 && gateway_uses % 10 <= 4 && !(gateway_uses % 100 >= 12 && gateway_uses % 100 <= 14) ? "я" : "й")].</span>")
 		var/obj/effect/clockwork/spatial_gateway/S1 = new(issrcobelisk ? get_turf(src) : get_step(get_turf(invoker), invoker.dir))
 		var/obj/effect/clockwork/spatial_gateway/S2 = new(istargetobelisk ? get_turf(target) : get_step(get_turf(target), target.dir))
 

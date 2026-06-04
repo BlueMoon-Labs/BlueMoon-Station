@@ -125,7 +125,7 @@
 	if(requires_human)
 		. += "Цель <span class='inathneq_small'><b>[must_be_servant ? "не может быть" : "может быть"] </b><span class='brass'> не слугой.\n"
 		. += "Целью <span class='inathneq_small'><b>[target_can_be_invoker ? "может быть" : "не может быть"]</b><span class='brass'> вызывающий ритуал.\n"
-	. += "Он требует <span class='inathneq_small'><b>[cast_time/10]</b><span class='brass'> секунд[second % 10 == 1 && second % 100 != 11 ? "а" : (second % 10 >= 2 && second % 10 <= 4 && (second % 100 < 10 || second % 100 >= 20) ? "ы" : "")].\n"
+	. += "Он требует <span class='inathneq_small'><b>[cast_time/10]</b><span class='brass'> секунд[(cast_time/10) % 10 == 1 && (cast_time/10) % 100 != 11 ? "а" : ((cast_time/10) % 10 >= 2 && (cast_time/10) % 10 <= 4 && ((cast_time/10) % 100 < 10 || (cast_time/10) % 100 >= 20) ? "ы" : "")].\n"
 	. += "Он был использован <span class='inathneq_small'><b>[times_used]</b><span class='brass'> раз, из <span class='inathneq_small'><b>[limit != INFINITE ? "[limit]" : "бесконечности"]</b><span class='brass'> доступных использований.</span>"
 
 //Adds a organ or cybernetic implant to a servant without the need for surgery. Cannot be used with brains for.. reasons.
