@@ -12,7 +12,7 @@ NC="\033[0m" # No Color
 
 st=0
 
-if git grep -lP "\r$"; then
+if git grep -lIP "\r$"; then
     echo "ERROR: CRLF line endings detected. Please stop using the webeditor, and fix it using a desktop Git client."
 	st=1
 fi;

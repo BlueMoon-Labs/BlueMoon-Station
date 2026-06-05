@@ -155,7 +155,9 @@ jobs:
     if: ( !contains(github.event.head_commit.message, '[ci skip]') )
     name: Integration Tests
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    # Slow maps legitimately reach ~30 min (icemoon passed at 29m39s); 45 leaves
+    # headroom for valid runs while still bounding a genuinely hung round.
+    timeout-minutes: 45
     needs: [find_all_maps, build_test_server]
     strategy:
       fail-fast: false
