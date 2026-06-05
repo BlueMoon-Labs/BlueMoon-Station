@@ -22,6 +22,9 @@
 	// A string made entirely of control characters cleans to empty.
 	TEST_ASSERT_EQUAL(strip_control_chars("[ascii2text(14)][ascii2text(20)]"), "", "an all-control string should clean to empty")
 
+	// DEL (0x7F) is also handled by the ascii == 127 branch and must be stripped.
+	TEST_ASSERT_EQUAL(strip_control_chars(ascii2text(127)), "", "DEL (0x7F) should be stripped")
+
 	// Recovery: a panel whose key carries a control character is rebuilt with a
 	// clean, matchable key, and the stored message is cleaned too.
 	var/broken_name = "wave[ascii2text(15)]"

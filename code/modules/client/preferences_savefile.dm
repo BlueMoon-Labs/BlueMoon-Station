@@ -1406,11 +1406,15 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 									entry -= setting
 
 							// Already html_encoded at write time by stripped_input(); re-encoding
-							// here double-encodes (& -> &amp; -> &amp;amp;) on every load. Only bound length.
+							// here double-encodes (& -> &amp; -> &amp;amp;) on every load. Only bound
+							// length, and only for text - a malformed savefile could hold a non-text
+							// value here, which trim() would choke on.
 							if(LOADOUT_CUSTOM_NAME)
-								entry[setting] = trim(entry[setting], MAX_NAME_LEN)
+								if(istext(entry[setting]))
+									entry[setting] = trim(entry[setting], MAX_NAME_LEN)
 							if(LOADOUT_CUSTOM_DESCRIPTION)
-								entry[setting] = trim(entry[setting], 500)
+								if(istext(entry[setting]))
+									entry[setting] = trim(entry[setting], 500)
 
 				loadout_data[save_key] = sanitize_entries.Copy()
 			else
