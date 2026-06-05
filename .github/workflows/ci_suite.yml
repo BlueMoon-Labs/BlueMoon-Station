@@ -32,20 +32,17 @@ jobs:
     name: Run Linters
     runs-on: ubuntu-24.04
     timeout-minutes: 20
-    permissions:
-      contents: read
-      checks: write # DreamAnnotate posts lint annotations via the checks API
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Restore SpacemanDMM cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/SpacemanDMM
           key: ${{ runner.os }}-spacemandmm-${{ secrets.CACHE_PURGE_KEY }}-${{ hashFiles('dependencies.sh') }}
           restore-keys: |
             ${{ runner.os }}-spacemandmm-${{ secrets.CACHE_PURGE_KEY }}-
       - name: Restore Yarn cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: tgui/.yarn/cache
           key: ${{ runner.os }}-yarn-${{ secrets.CACHE_PURGE_KEY }}-${{ hashFiles('tgui/yarn.lock') }}
@@ -58,6 +55,11 @@ jobs:
           bash tools/ci/install_node.sh
           bash tools/ci/install_spaceman_dmm.sh dreamchecker
           tools/bootstrap/python -c ''
+      # Register DreamChecker/DreamMaker problem matchers before linting; v3 is a
+      # composite action (no Node runtime), immune to the Node deprecation, and
+      # annotates the live output of the steps below.
+      - name: Setup lint annotations
+        uses: yogstation13/DreamAnnotate@67354dcd99fe4f980d9887f04e0109472de0fccb # v3
       - name: Run Linters
         run: |
           bash tools/ci/check_filedirs.sh tgstation.dme
@@ -68,12 +70,7 @@ jobs:
           tools/build/build --ci lint
           tools/bootstrap/python -m dmi.test
           tools/bootstrap/python -m mapmerge2.dmm_test
-          ~/dreamchecker > ${GITHUB_WORKSPACE}/output-annotations.txt 2>&1
-      - name: Annotate Lints
-        uses: yogstation13/DreamAnnotate@8ef04ef7fbb4ac63ee2daca222af91599e0af5e1 # v2
-        if: always()
-        with:
-          outputFile: output-annotations.txt
+          ~/dreamchecker
 
   compile_all_maps:
     if: ( !contains(github.event.head_commit.message, '[ci skip]') )
@@ -81,9 +78,9 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Restore BYOND cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/BYOND
           key: ${{ runner.os }}-byond-${{ secrets.CACHE_PURGE_KEY }}-${{ hashFiles('dependencies.sh') }}
@@ -101,16 +98,16 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Restore BYOND cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/BYOND
           key: ${{ runner.os }}-byond-${{ secrets.CACHE_PURGE_KEY }}-${{ hashFiles('dependencies.sh') }}
           restore-keys: |
             ${{ runner.os }}-byond-${{ secrets.CACHE_PURGE_KEY }}-
       - name: Restore Yarn cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: tgui/.yarn/cache
           key: ${{ runner.os }}-yarn-${{ secrets.CACHE_PURGE_KEY }}-${{ hashFiles('tgui/yarn.lock') }}
@@ -125,7 +122,7 @@ jobs:
           source $HOME/BYOND/byond/bin/byondsetup
           tools/build/build --ci -DCIBUILDING
       - name: Upload server build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: test-server
           path: |
@@ -142,7 +139,7 @@ jobs:
     outputs:
       maps: ${{ steps.map_finder.outputs.maps }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Find Maps
         id: map_finder
         run: |
@@ -179,21 +176,21 @@ jobs:
       group: ci-${{ github.ref }}-${{ matrix.map }}
       cancel-in-progress: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Restore BYOND cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/BYOND
           key: ${{ runner.os }}-byond-${{ secrets.CACHE_PURGE_KEY }}-${{ hashFiles('dependencies.sh') }}
           restore-keys: |
             ${{ runner.os }}-byond-${{ secrets.CACHE_PURGE_KEY }}-
       - name: Restore BYOND native libs cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.byond/bin
           key: ${{ runner.os }}-byond-libs-${{ hashFiles('dependencies.sh') }}
       - name: Download server build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: test-server
           path: .
@@ -217,7 +214,7 @@ jobs:
           bash tools/ci/run_server.sh ${{ matrix.map }}
       - name: Upload test logs on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: test-logs-${{ matrix.map }}
           path: ci_test/data/logs/

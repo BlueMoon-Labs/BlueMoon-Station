@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Check if comment is from the specified user
         id: filter_comment
-        uses: actions/github-script@v6
+        uses: actions/github-script@v8
         with:
           script: |
             const comment = context.payload.comment;
@@ -49,7 +49,7 @@ jobs:
 
       - name: Add or remove label based on comment content
         if: steps.filter_comment.outputs.result == 'deployed' || steps.filter_comment.outputs.result == 'removed'
-        uses: actions/github-script@v6
+        uses: actions/github-script@v8
         with:
           script: |
             const body = context.payload.comment.body;
