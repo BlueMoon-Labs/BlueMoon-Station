@@ -9,6 +9,7 @@
 	var/result_path
 	var/inverse = 0 // For inverse dir frames like light fixtures.
 	var/pixel_shift //The amount of pixels
+	var/allow_mouse_position = TRUE
 
 /obj/item/wallframe/proc/try_build(turf/on_wall, mob/user)
 	if(get_dist(on_wall,user)>1)
@@ -53,7 +54,7 @@
 					O.pixel_x = -pixel_shift
 		var/list/click_params = params2list(params)
 		//Center the icon where the user clicked.
-		if(click_params && click_params["icon-x"] && click_params["icon-y"])
+		if(allow_mouse_position && click_params && click_params["icon-x"] && click_params["icon-y"])
 			if(O.pixel_x != 0)
 				O.pixel_x = O.pixel_x > 0 ? 32 : -32
 			if(O.pixel_y != 0)

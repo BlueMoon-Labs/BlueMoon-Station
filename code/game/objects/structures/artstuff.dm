@@ -403,6 +403,7 @@
 	flags_1 = NONE
 	icon_state = "frame-empty"
 	result_path = /obj/structure/sign/painting
+	allow_mouse_position = FALSE
 
 /obj/structure/sign/painting
 	name = "Painting"
@@ -733,6 +734,8 @@
 
 /obj/structure/sign/painting/large/AltClick(mob/user)
 	. = ..()
+	if(!Adjacent(user) || !do_after(user, 0.4 SECONDS, src))
+		return
 	invert_rotate = !invert_rotate
 	deoffset_painting()
 	set_painting_offsets()
