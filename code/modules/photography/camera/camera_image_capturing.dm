@@ -30,6 +30,12 @@
 				atoms += new /obj/effect/appearance_clone(newT, T.loc)
 			for(var/i in T.contents)
 				var/atom/A = i
+				// Lighting objects live in turf.contents (new /atom/movable/lighting_object(turf)
+				// assigns loc=turf) and carry the per-turf darkness color matrix. Cloning one
+				// renders it as a solid black tile on LIGHTING_LAYER, painting the floor black in
+				// any shaded area. Skip it - the photo is intentionally unlit.
+				if(istype(A, /atom/movable/lighting_object))
+					continue
 				if(!A.invisibility || (see_ghosts && isobserver(A)))
 					atoms += new /obj/effect/appearance_clone(newT, A)
 		skip_normal = TRUE
@@ -41,6 +47,8 @@
 			var/turf/T = i
 			atoms += T
 			for(var/atom/movable/A in T)
+				if(istype(A, /atom/movable/lighting_object))
+					continue // see clone path above - lighting objects paint the floor black
 				if(A.invisibility)
 					if(!(see_ghosts && isobserver(A)))
 						continue
