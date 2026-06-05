@@ -7,27 +7,51 @@ on:
     branches:
     - master
     - upstream-merge
+    # Skip the heavy compile/test matrix for docs/changelog-only PRs.
+    # NOTE: if any of these jobs are required status checks in branch protection,
+    # pair this with an aggregate "all green" gate job so docs-only PRs are not
+    # left waiting on checks that never run.
+    paths-ignore:
+    - 'html/changelogs/**'
+    - '.github/ISSUE_TEMPLATE/**'
+    - '**/*.md'
+  workflow_dispatch:
+
+# Least-privilege default token; individual jobs opt up as needed.
+permissions:
+  contents: read
+
+# Cancel superseded runs on the same ref so rapid pushes do not pile up full CI runs.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   run_linters:
     if: ( !contains(github.event.head_commit.message, '[ci skip]') )
     name: Run Linters
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      checks: write # DreamAnnotate posts lint annotations via the checks API
     steps:
       - uses: actions/checkout@v4
       - name: Restore SpacemanDMM cache
         uses: actions/cache@v4
         with:
           path: ~/SpacemanDMM
-          key: ${{ runner.os }}-spacemandmm-${{ secrets.CACHE_PURGE_KEY }}
+          key: ${{ runner.os }}-spacemandmm-${{ secrets.CACHE_PURGE_KEY }}-${{ hashFiles('dependencies.sh') }}
+          restore-keys: |
+            ${{ runner.os }}-spacemandmm-${{ secrets.CACHE_PURGE_KEY }}-
       - name: Restore Yarn cache
         uses: actions/cache@v4
         with:
           path: tgui/.yarn/cache
           key: ${{ runner.os }}-yarn-${{ secrets.CACHE_PURGE_KEY }}-${{ hashFiles('tgui/yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-build-${{ secrets.CACHE_PURGE_KEY }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
+            ${{ runner.os }}-yarn-${{ secrets.CACHE_PURGE_KEY }}-
+            ${{ runner.os }}-yarn-
       - name: Install Tools
         run: |
           pip3 install setuptools --upgrade
@@ -46,7 +70,7 @@ jobs:
           tools/bootstrap/python -m mapmerge2.dmm_test
           ~/dreamchecker > ${GITHUB_WORKSPACE}/output-annotations.txt 2>&1
       - name: Annotate Lints
-        uses: yogstation13/DreamAnnotate@v2
+        uses: yogstation13/DreamAnnotate@8ef04ef7fbb4ac63ee2daca222af91599e0af5e1 # v2
         if: always()
         with:
           outputFile: output-annotations.txt
@@ -55,45 +79,95 @@ jobs:
     if: ( !contains(github.event.head_commit.message, '[ci skip]') )
     name: Compile Maps
     runs-on: ubuntu-24.04
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - name: Restore BYOND cache
         uses: actions/cache@v4
         with:
           path: ~/BYOND
-          key: ${{ runner.os }}-byond-${{ secrets.CACHE_PURGE_KEY }}
+          key: ${{ runner.os }}-byond-${{ secrets.CACHE_PURGE_KEY }}-${{ hashFiles('dependencies.sh') }}
+          restore-keys: |
+            ${{ runner.os }}-byond-${{ secrets.CACHE_PURGE_KEY }}-
       - name: Compile All Maps
         run: |
           bash tools/ci/install_byond.sh
           source $HOME/BYOND/byond/bin/byondsetup
           tools/build/build --ci dm -DCIBUILDING -DCITESTING -DALL_MAPS
+
+  build_test_server:
+    if: ( !contains(github.event.head_commit.message, '[ci skip]') )
+    name: Build Integration Server
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore BYOND cache
+        uses: actions/cache@v4
+        with:
+          path: ~/BYOND
+          key: ${{ runner.os }}-byond-${{ secrets.CACHE_PURGE_KEY }}-${{ hashFiles('dependencies.sh') }}
+          restore-keys: |
+            ${{ runner.os }}-byond-${{ secrets.CACHE_PURGE_KEY }}-
+      - name: Restore Yarn cache
+        uses: actions/cache@v4
+        with:
+          path: tgui/.yarn/cache
+          key: ${{ runner.os }}-yarn-${{ secrets.CACHE_PURGE_KEY }}-${{ hashFiles('tgui/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-${{ secrets.CACHE_PURGE_KEY }}-
+            ${{ runner.os }}-yarn-
+      # Compile the test server (DM + TGUI) exactly once; every integration leg
+      # below reuses this build instead of recompiling per map.
+      - name: Compile
+        run: |
+          bash tools/ci/install_byond.sh
+          source $HOME/BYOND/byond/bin/byondsetup
+          tools/build/build --ci -DCIBUILDING
+      - name: Upload server build
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-server
+          path: |
+            tgstation.dmb
+            tgstation.rsc
+          retention-days: 1
+          if-no-files-found: error
+
   find_all_maps:
     if: ( !contains(github.event.head_commit.message, '[ci skip]') )
     name: Find Maps to Test
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
     outputs:
       maps: ${{ steps.map_finder.outputs.maps }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Find Maps
         id: map_finder
         run: |
           echo "$(ls -mw0 _maps/*.json)" > maps_output.txt
           sed -i -e s+_maps/+\"+g -e s+.json+\"+g maps_output.txt
           echo "Maps: $(cat maps_output.txt)"
-          echo "::set-output name=maps::{\"paths\":[$(cat maps_output.txt)]}"
+          echo "maps={\"paths\":[$(cat maps_output.txt)]}" >> "$GITHUB_OUTPUT"
+
   run_all_tests:
     if: ( !contains(github.event.head_commit.message, '[ci skip]') )
     name: Integration Tests
     runs-on: ubuntu-24.04
-    needs: [find_all_maps]
+    timeout-minutes: 30
+    needs: [find_all_maps, build_test_server]
     strategy:
       fail-fast: false
       matrix:
         map: ${{ fromJSON(needs.find_all_maps.outputs.maps).paths }}
     services:
       mysql:
-        image: mysql:latest
+        # NOTE: this service appears unused - the schema load and the game both
+        # target 127.0.0.1:3306, which is the runner's pre-installed MySQL started
+        # by `systemctl start mysql` below. Pinned for reproducibility; a candidate
+        # for removal.
+        image: mysql:8.4
         env:
           MYSQL_ROOT_PASSWORD: root
         ports:
@@ -108,16 +182,19 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/BYOND
-          key: ${{ runner.os }}-byond-${{ secrets.CACHE_PURGE_KEY }}
-      - name: Restore Yarn cache
+          key: ${{ runner.os }}-byond-${{ secrets.CACHE_PURGE_KEY }}-${{ hashFiles('dependencies.sh') }}
+          restore-keys: |
+            ${{ runner.os }}-byond-${{ secrets.CACHE_PURGE_KEY }}-
+      - name: Restore BYOND native libs cache
         uses: actions/cache@v4
         with:
-          path: tgui/.yarn/cache
-          key: ${{ runner.os }}-yarn-${{ secrets.CACHE_PURGE_KEY }}-${{ hashFiles('tgui/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ secrets.CACHE_PURGE_KEY }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
+          path: ~/.byond/bin
+          key: ${{ runner.os }}-byond-libs-${{ hashFiles('dependencies.sh') }}
+      - name: Download server build
+        uses: actions/download-artifact@v4
+        with:
+          name: test-server
+          path: .
       - name: Setup database
         run: |
           sudo systemctl start mysql
@@ -130,11 +207,17 @@ jobs:
           bash tools/ci/install_rust_g.sh
       - name: Install auxmos
         run: |
-          sudo apt update || true
           bash tools/ci/install_auxmos.sh
-      - name: Compile and run tests
+      - name: Run tests
         run: |
           bash tools/ci/install_byond.sh
           source $HOME/BYOND/byond/bin/byondsetup
-          tools/build/build --ci -DCIBUILDING
           bash tools/ci/run_server.sh ${{ matrix.map }}
+      - name: Upload test logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs-${{ matrix.map }}
+          path: ci_test/data/logs/
+          retention-days: 7
+          if-no-files-found: ignore

@@ -12,9 +12,9 @@ NC="\033[0m" # No Color
 
 st=0
 
-if git grep -P "\r\n"; then
+if git grep -lP "\r$"; then
     echo "ERROR: CRLF line endings detected. Please stop using the webeditor, and fix it using a desktop Git client."
-	st = 1
+	st=1
 fi;
 if grep -El '^\".+\" = \(.+\)' _maps/**/*.dmm;	then
     echo "ERROR: Non-TGM formatted map detected. Please convert it using Map Merger!"

@@ -1,7 +1,7 @@
 name: Generate documentation
 on:
   schedule:
-  - cron: "44 */6 * * *"
+  - cron: "44 4 * * *"
   workflow_dispatch:
 permissions:
   contents: read
@@ -18,7 +18,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/SpacemanDMM
-          key: ${{ runner.os }}-spacemandmm-${{ secrets.CACHE_PURGE_KEY }}
+          key: ${{ runner.os }}-spacemandmm-${{ secrets.CACHE_PURGE_KEY }}-${{ hashFiles('dependencies.sh') }}
+          restore-keys: |
+            ${{ runner.os }}-spacemandmm-${{ secrets.CACHE_PURGE_KEY }}-
       - name: Install SpacemanDMM
         run: bash tools/ci/install_spaceman_dmm.sh dmdoc
       - name: Generate documentation

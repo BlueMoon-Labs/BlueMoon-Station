@@ -1,4 +1,9 @@
 name: PR Labeling
+# SECURITY: this workflow runs on pull_request_target, which executes in the base
+# repo context with a write-scoped token and secrets. NEVER add a checkout of the
+# PR head (actions/checkout with a PR ref) or an inline `run:` that executes
+# PR-controlled code here - that is the classic pull_request_target privilege
+# escalation. The only step must remain a trusted action that reads base-ref config.
 on:
   - pull_request_target
 jobs:

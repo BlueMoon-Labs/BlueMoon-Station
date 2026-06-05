@@ -7,6 +7,6 @@ jobs:
   link_rounds:
     runs-on: ubuntu-22.04
     steps:
-    - uses: SPLURT-Station/round_linker@master #notice: fork the round linkies from tg!!
+    - uses: SPLURT-Station/round_linker@97569d582b737b0101308e991c54b72c00fd02c4 # master @ 2026-06-05; notice: SPLURT fork of the tg round linker
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}

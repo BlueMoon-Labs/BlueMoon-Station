@@ -20,7 +20,7 @@ jobs:
         git reset --hard master
 
     - name: Apply DMAPI update
-      uses: tgstation/tgs-dmapi-updater@v2
+      uses: tgstation/tgs-dmapi-updater@dcd21d4ab5d4a2031a8f9fd951b44d46a030b052 # v2
       with:
         header-path: 'code/__DEFINES/tgs.dm'
         library-path: 'code/modules/tgs'
@@ -35,7 +35,7 @@ jobs:
         git push -f -u origin tgs-dmapi-update
 
     - name: Create Pull Request
-      uses: repo-sync/pull-request@v2
+      uses: repo-sync/pull-request@7e79a9f5dc3ad0ce53138f01df2fad14a04831c5 # v2
       if: ${{ success() }}
       with:
         source_branch: "tgs-dmapi-update"
