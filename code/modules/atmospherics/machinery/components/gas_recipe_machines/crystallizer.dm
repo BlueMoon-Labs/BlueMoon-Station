@@ -77,14 +77,20 @@
 	. += pipe_appearance1
 	. += pipe_appearance2
 
-/obj/machinery/atmospherics/components/binary/crystallizer/update_icon_state()
-	. = ..()
+/obj/machinery/atmospherics/components/binary/crystallizer/proc/set_crystallizer_icon_state()
 	if(panel_open)
 		icon_state = "[base_icon_state]-open"
 	else if(on && is_operational)
 		icon_state = "[base_icon_state]-on"
 	else
 		icon_state = "[base_icon_state]-off"
+
+/obj/machinery/atmospherics/components/binary/crystallizer/update_icon_nopipes()
+	set_crystallizer_icon_state()
+
+/obj/machinery/atmospherics/components/binary/crystallizer/update_icon_state()
+	. = ..()
+	set_crystallizer_icon_state()
 
 /obj/machinery/atmospherics/components/binary/crystallizer/CtrlClick(mob/user)
 	if(!can_interact(user))
