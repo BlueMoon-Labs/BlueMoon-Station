@@ -583,6 +583,7 @@
 	new_canvas.name = "painting - [title]"
 	current_canvas = new_canvas
 	current_canvas.update_icon()
+	name = new_canvas.painting_name
 	update_icon()
 	return TRUE
 
@@ -707,6 +708,18 @@
 
 	var/invert_rotate = FALSE
 
+/obj/structure/sign/painting/large/library
+	name = "\improper Large Painting Exhibit mounting"
+	desc = "For the bulkier art pieces, hand-picked by the curator."
+	desc_with_canvas = "A curated, large piece of art (or \"art\"). Hopefully the price of the canvas was worth it."
+	persistence_id = "library_large"
+
+/obj/structure/sign/painting/large/library_private
+	name = "\improper Private Painting Exhibit mounting"
+	desc = "For the privier and less tasteful compositions that oughtn't to be shown in a parlor nor to the masses."
+	desc_with_canvas = "A painting that oughn't to be shown to the less open-minded commoners."
+	persistence_id = "library_large_private"
+
 /obj/structure/sign/painting/large/Initialize(mapload)
 	. = ..()
 	// Necessary so that the painting is framed correctly by the frame overlay when flipped.
@@ -723,18 +736,6 @@
 	invert_rotate = !invert_rotate
 	deoffset_painting()
 	set_painting_offsets()
-
-/obj/structure/sign/painting/large/library
-	name = "\improper Large Painting Exhibit mounting"
-	desc = "For the bulkier art pieces, hand-picked by the curator."
-	desc_with_canvas = "A curated, large piece of art (or \"art\"). Hopefully the price of the canvas was worth it."
-	persistence_id = "library_large"
-
-/obj/structure/sign/painting/large/library_private
-	name = "\improper Private Painting Exhibit mounting"
-	desc = "For the privier and less tasteful compositions that oughtn't to be shown in a parlor nor to the masses."
-	desc_with_canvas = "A painting that oughn't to be shown to the less open-minded commoners."
-	persistence_id = "library_large_private"
 
 /obj/structure/sign/painting/large/frame_canvas(mob/user, obj/item/canvas/new_canvas)
 	. = ..()
