@@ -29,7 +29,8 @@ GLOBAL_LIST_INIT(electrolyzer_reactions, electrolyzer_reactions_list())
 	for(var/gas_id in requirements)
 		if(gas_id == "MIN_TEMP" || gas_id == "MAX_TEMP")
 			continue
-		if(air_mixture.get_moles(gas_id) < requirements[gas_id])
+		var/moles = air_mixture.get_moles(gas_id)
+		if(!moles || moles < requirements[gas_id])
 			return FALSE
 	return TRUE
 
@@ -42,9 +43,13 @@ GLOBAL_LIST_INIT(electrolyzer_reactions, electrolyzer_reactions_list())
 	factor = list()
 
 /datum/electrolyzer_reaction/h2o_conversion/react(datum/gas_mixture/air_mixture, working_power, list/electrolyzer_args = list())
-	var/old_heat = air_mixture.heat_capacity()
 	var/h2o_moles = air_mixture.get_moles(GAS_H2O)
+	if(!h2o_moles || h2o_moles < MINIMUM_MOLE_COUNT)
+		return
+	var/old_heat = air_mixture.heat_capacity()
 	var/proportion = min(h2o_moles * INVERSE(2), (2.5 * (working_power ** 2)))
+	if(proportion < MINIMUM_MOLE_COUNT)
+		return
 	air_mixture.adjust_moles(GAS_H2O, -proportion * 2)
 	air_mixture.adjust_moles(GAS_O2, proportion)
 	air_mixture.adjust_moles(GAS_HYDROGEN, proportion * 2)

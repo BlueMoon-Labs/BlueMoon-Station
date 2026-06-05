@@ -24,6 +24,9 @@
 
 /obj/machinery/electrolyzer/Initialize(mapload)
 	. = ..()
+	if(mapload && !cell)
+		cell = new /obj/item/stock_parts/cell/high(src)
+	update_power_source()
 	SSair.start_processing_machine(src)
 	update_appearance(UPDATE_ICON)
 	register_context()
@@ -78,26 +81,28 @@
 		return PROCESS_KILL
 	if((!cell || cell.charge <= 0) && !anchored)
 		on = FALSE
-		update_appearance(UPDATE_ICON)
+		update_appearance(UPDATE_ICON_STATE)
 		return PROCESS_KILL
 
 	var/turf/our_turf = loc
 	if(!isturf(our_turf))
 		if(mode != ELECTROLYZER_MODE_STANDBY)
 			mode = ELECTROLYZER_MODE_STANDBY
-			update_appearance(UPDATE_ICON)
+			update_appearance(UPDATE_ICON_STATE)
 		return
 
 	var/new_mode = on ? ELECTROLYZER_MODE_WORKING : ELECTROLYZER_MODE_STANDBY
 	if(mode != new_mode)
 		mode = new_mode
-		update_appearance(UPDATE_ICON)
+		update_appearance(UPDATE_ICON_STATE)
+
 	if(mode == ELECTROLYZER_MODE_STANDBY)
 		return
 
 	var/datum/gas_mixture/env = our_turf.return_air()
 	if(!env)
 		return
+
 	call_reactions(env)
 	our_turf.air_update_turf(FALSE, FALSE)
 
@@ -108,12 +113,7 @@
 		cell.use(power_to_use)
 
 /obj/machinery/electrolyzer/proc/call_reactions(datum/gas_mixture/env)
-	var/list/electrolyzer_args = list()
-	for(var/reaction_id in GLOB.electrolyzer_reactions)
-		var/datum/electrolyzer_reaction/R = GLOB.electrolyzer_reactions[reaction_id]
-		if(!R.reaction_check(env, electrolyzer_args))
-			continue
-		R.react(env, working_power, electrolyzer_args)
+	return env.electrolyze(working_power)
 
 /obj/machinery/electrolyzer/RefreshParts()
 	. = ..()
@@ -135,8 +135,12 @@
 
 /obj/machinery/electrolyzer/wrench_act(mob/living/user, obj/item/tool)
 	. = ..()
-	default_unfasten_wrench(user, tool)
+	if(default_unfasten_wrench(user, tool))
+		update_power_source()
 	return TRUE
+
+/obj/machinery/electrolyzer/proc/update_power_source()
+	use_power = anchored ? IDLE_POWER_USE : NO_POWER_USE
 
 /obj/machinery/electrolyzer/crowbar_act(mob/living/user, obj/item/tool)
 	return default_deconstruction_crowbar(tool)
@@ -170,8 +174,8 @@
 		balloon_alert(user, "insert cell or anchor!")
 		return
 	on = !on
-	mode = ELECTROLYZER_MODE_STANDBY
-	update_appearance(UPDATE_ICON)
+	mode = on ? ELECTROLYZER_MODE_WORKING : ELECTROLYZER_MODE_STANDBY
+	update_appearance(UPDATE_ICON_STATE)
 	balloon_alert(user, "turned [on ? "on" : "off"]")
 	if(on)
 		SSair.start_processing_machine(src)

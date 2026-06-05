@@ -351,3 +351,12 @@ get_true_breath_pressure(pp) --> gas_pp = pp/breath_pp*total_moles()
 
 		return TRUE
 	return FALSE
+
+/// Runs electrolyzer reactions on this gas mixture (see /datum/electrolyzer_reaction).
+/datum/gas_mixture/proc/electrolyze(working_power = 0, list/electrolyzer_args = list())
+	for(var/reaction_id in GLOB.electrolyzer_reactions)
+		var/datum/electrolyzer_reaction/reaction = GLOB.electrolyzer_reactions[reaction_id]
+		if(!reaction.reaction_check(src, electrolyzer_args))
+			continue
+		reaction.react(src, working_power, electrolyzer_args)
+		. = TRUE

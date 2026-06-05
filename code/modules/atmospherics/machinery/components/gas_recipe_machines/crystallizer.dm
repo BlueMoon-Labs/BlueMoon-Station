@@ -17,7 +17,8 @@
 	pipe_flags = PIPING_ONE_PER_TURF | PIPING_DEFAULT_LAYER_ONLY
 
 	var/datum/gas_mixture/internal
-	var/gas_input = 0
+	/// Moles pulled from the input port per atmos tick (fraction of pipe contents when 1).
+	var/gas_input = 1
 	var/progress_bar = 0
 	var/quality_loss = 0
 	var/datum/gas_recipe/selected_recipe = null
@@ -104,15 +105,19 @@
 	return FALSE
 
 /obj/machinery/atmospherics/components/binary/crystallizer/proc/inject_gases()
+	if(gas_input <= 0)
+		return
 	var/datum/gas_mixture/contents = airs[2]
 	for(var/gas_id in selected_recipe.requirements)
 		var/moles_in = contents.get_moles(gas_id)
-		if(moles_in <= 0)
+		if(!moles_in || moles_in <= 0)
 			continue
 		var/moles_internal = internal.get_moles(gas_id)
 		if(moles_internal >= selected_recipe.requirements[gas_id] * 2)
 			continue
 		var/amount = moles_in * gas_input
+		if(amount <= 0)
+			continue
 		var/datum/gas_mixture/removed = contents.remove_specific(gas_id, amount)
 		if(removed)
 			internal.merge(removed)
