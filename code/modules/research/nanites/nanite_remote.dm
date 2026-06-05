@@ -222,7 +222,10 @@
 		if("set_message")
 			if(locked)
 				return
-			var/new_message = html_encode(params["value"])
+			// Kept html_encoded: mind_control/on_trigger feeds comm_message straight into
+			// brainwash() (an unescaped objective shown to the victim). Add control-char
+			// stripping so a C0 byte can't break the nanite remote's own TGUI payload.
+			var/new_message = html_encode(strip_control_chars(params["value"]))
 			if(!new_message)
 				return
 			comm_message = new_message

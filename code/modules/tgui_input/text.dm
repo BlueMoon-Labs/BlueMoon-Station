@@ -35,10 +35,12 @@
 			else
 				return stripped_input(user, message, title, default, max_length)
 		else
+			// Even raw (encode=FALSE) input must drop control characters: they break
+			// the DM<->TGUI round-trip and any savefile key built from this text.
 			if(multiline)
-				return input(user, message, title, default) as message|null
+				return strip_control_chars(input(user, message, title, default) as message|null)
 			else
-				return input(user, message, title, default) as text|null
+				return strip_control_chars(input(user, message, title, default) as text|null)
 	var/datum/tgui_input_text/text_input = new(user, message, title, default, max_length, multiline, encode, timeout, prevent_enter)
 	text_input.ui_interact(user)
 	text_input.wait()
@@ -156,6 +158,9 @@
 /datum/tgui_input_text/proc/set_entry(entry)
 	if(isnull(entry))
 		return
+	// Strip control characters in both branches: they survive html_encode but break
+	// the DM<->TGUI round-trip and any savefile key built from this text.
+	entry = strip_control_chars(entry)
 	var/converted_entry = encode ? html_encode_readable(entry) : entry
 	src.entry = trim(converted_entry, max_length)
 

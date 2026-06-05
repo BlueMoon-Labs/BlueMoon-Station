@@ -104,6 +104,11 @@
 /obj/item/integrated_circuit/proc/load(list/component_params)
 	// Load name
 	if(component_params["name"])
+		// NOTE: html_encode is intentionally kept. displayed_name is injected into
+		// unescaped legacy-HTML sinks (assembly_legacy_ui.dm) and to_chat, and the
+		// circuit-import path does NOT validate component names - dropping this encode
+		// would allow a crafted clone-code JSON to inject raw HTML. The cosmetic
+		// double-encode on repeated clone cycles is the lesser evil.
 		displayed_name = html_encode(component_params["name"])
 
 	// Load input values
@@ -168,7 +173,9 @@
 // Loads assembly parameters from a list
 // Doesn't verify any of the parameters it loads, this is the job of verify_save()
 /obj/item/electronic_assembly/proc/load(list/assembly_params)
-	// Load modified name, if any.
+	// NOTE: html_encode intentionally kept here too. name/desc are injected into
+	// unescaped legacy-HTML sinks; even though verify_save() rejects </> in them,
+	// keeping the encode is the consistent, injection-safe choice for this subsystem.
 	if(assembly_params["name"])
 		name = html_encode(assembly_params["name"])
 

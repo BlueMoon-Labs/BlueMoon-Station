@@ -426,7 +426,10 @@
 /obj/belly/proc/set_messages(var/raw_text, var/type, var/delim = "\n\n")
 	ASSERT(type == "smo" || type == "smi" || type == "dmo" || type == "dmp" || type == "em")
 
-	var/list/raw_list = splittext(html_encode(raw_text),delim)
+	// html_decode first so re-submitting already-encoded text (get_messages feeds the
+	// stored value back as the input default) normalizes instead of double-encoding
+	// (& -> &amp; -> &amp;amp;). strip_control_chars keeps the \n\n delimiters.
+	var/list/raw_list = splittext(strip_control_chars(html_encode(html_decode(raw_text))),delim)
 	if(raw_list.len > 10)
 		raw_list.Cut(11)
 		testing("[owner] tried to set [lowertext(name)] with 11+ messages")

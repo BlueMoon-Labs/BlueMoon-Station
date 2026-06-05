@@ -75,7 +75,9 @@
 	.["favorite_paintings_md5"] >> favorite_paintings_md5
 	favorite_paintings_md5 = SANITIZE_LIST(favorite_paintings_md5)
 	.["playlists"] >> playlists
-	playlists = SANITIZE_LIST(playlists)
+	// Strip control chars from playlist-name keys so a broken name can't make a
+	// playlist permanently unselectable/undeletable through the jukebox UI.
+	playlists = sanitize_assoc_keys(playlists)
 	.["metadollars"] >> metadollars
 	metadollars = isnum(metadollars) ? max(0, round(metadollars)) : 0
 	.["metadollar_minute_pool"] >> metadollar_minute_pool
