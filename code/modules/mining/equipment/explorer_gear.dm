@@ -11,7 +11,7 @@
 	min_cold_protection_temperature = FIRE_SUIT_MIN_TEMP_PROTECT
 	hoodtype = /obj/item/clothing/head/hooded/explorer
 	armor = list(MELEE = 30, BULLET = 20, LASER = 20, ENERGY = 20, BOMB = 50, BIO = 100, RAD = 50, FIRE = 50, ACID = 50, WOUND = 15)
-	flags_inv = HIDEJUMPSUIT|HIDETAUR|ALLOWS_BACK_TANK
+	flags_inv = HIDEJUMPSUIT|HIDETAUR
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/resonator, /obj/item/mining_scanner, /obj/item/t_scanner/adv_mining_scanner, /obj/item/gun/energy/kinetic_accelerator, /obj/item/pickaxe, /obj/item/device/cooler/lavaland) // BLUEMOON ADD - добавлен лавалендовский ПОУ
 	resistance_flags = FIRE_PROOF
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_SNEK_TAURIC|STYLE_PAW_TAURIC

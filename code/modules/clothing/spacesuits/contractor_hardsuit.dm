@@ -18,7 +18,7 @@
 	slowdown = 0
 	w_class = WEIGHT_CLASS_NORMAL
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_SNEK_TAURIC //bluemoon add
-	flags_inv = HIDEGLOVES | HIDEJUMPSUIT | HIDESHOES | HIDETAUR | ALLOWS_BACK_TANK
+	flags_inv = HIDEGLOVES | HIDEJUMPSUIT | HIDESHOES | HIDETAUR
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/contractor
 	jetpack = /obj/item/tank/jetpack/suit
 	allowed = list(/obj/item/gun, /obj/item/ammo_box,/obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/melee/transforming/energy, /obj/item/restraints/handcuffs, /obj/item/tank/internals)

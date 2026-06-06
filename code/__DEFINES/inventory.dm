@@ -88,8 +88,6 @@
 //sandstorm edit
 #define HIDEUNDERWEAR	(1<<14) //hides underwear, socks and shirt
 #define HIDEWRISTS		(1<<15) //hides wrists
-#define HIDEBACK (1<<16) //suit obscures back slot (no backpack/tank on back)
-#define ALLOWS_BACK_TANK (1<<17) //suit explicitly allows back slot despite being full-body
 //
 
 //bitflags for clothing coverage - also used for limbs

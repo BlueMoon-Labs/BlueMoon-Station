@@ -20,7 +20,7 @@
 	icon_state = "captunic"
 	item_state = "bio_suit"
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS
-	flags_inv = HIDEJUMPSUIT|ALLOWS_BACK_TANK
+	flags_inv = HIDEJUMPSUIT
 	allowed = list(/obj/item/disk, /obj/item/stamp, /obj/item/reagent_containers/food/drinks/flask, /obj/item/melee, /obj/item/storage/lockbox/medal, /obj/item/assembly/flash/handheld, /obj/item/storage/box/matches, /obj/item/lighter, /obj/item/clothing/mask/cigarette, /obj/item/storage/fancy/cigarettes, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman)
 
 //Chaplain
@@ -38,7 +38,7 @@
 	//icon_state = "nun"
 	//item_state = "nun"
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS|HANDS
-	flags_inv = HIDEJUMPSUIT|ALLOWS_BACK_TANK
+	flags_inv = HIDEJUMPSUIT
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/suit/chaplain/studentuni
@@ -70,7 +70,7 @@
 	icon_state = "holidaypriest"
 	item_state = "w_suit"
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS
-	flags_inv = HIDEJUMPSUIT|ALLOWS_BACK_TANK
+	flags_inv = HIDEJUMPSUIT
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 

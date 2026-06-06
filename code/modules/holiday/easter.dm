@@ -104,7 +104,7 @@
 	item_state = "bunnysuit"
 	slowdown = -1
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS
-	flags_inv = HIDEGLOVES|HIDESHOES|HIDEJUMPSUIT|ALLOWS_BACK_TANK
+	flags_inv = HIDEGLOVES|HIDESHOES|HIDEJUMPSUIT
 
 //Egg prizes and egg spawns!
 /obj/item/reagent_containers/food/snacks/egg

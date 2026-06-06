@@ -205,7 +205,7 @@
 	desc = "Рваная, пыльная роба. Странные глаза смотрят на вас изнутри.."
 	icon_state = "eldritch_armor"
 	item_state = "eldritch_armor"
-	flags_inv = HIDESHOES|HIDEJUMPSUIT|ALLOWS_BACK_TANK
+	flags_inv = HIDESHOES|HIDEJUMPSUIT
 	body_parts_covered = CHEST|GROIN|LEGS|FEET|ARMS
 	allowed = list(/obj/item/melee/sickly_blade, /obj/item/forbidden_book, /obj/item/living_heart)
 	hoodtype = /obj/item/clothing/head/hooded/cult_hoodie/eldritch

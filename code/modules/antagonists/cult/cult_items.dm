@@ -332,7 +332,7 @@
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS
 	allowed = list(/obj/item/tome, /obj/item/melee/cultblade)
 	armor = list(MELEE = 40, BULLET = 30, LASER = 40,ENERGY = 20, BOMB = 65, BIO = 10, RAD = 0, FIRE = 10, ACID = 10)
-	flags_inv = HIDEJUMPSUIT|ALLOWS_BACK_TANK
+	flags_inv = HIDEJUMPSUIT
 	cold_protection = CHEST|GROIN|LEGS|ARMS
 	min_cold_protection_temperature = ARMOR_MIN_TEMP_PROTECT
 	heat_protection = CHEST|GROIN|LEGS|ARMS
@@ -387,7 +387,7 @@
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS
 	allowed = list(/obj/item/tome, /obj/item/melee/cultblade)
 	armor = list(MELEE = 50, BULLET = 30, LASER = 50,ENERGY = 20, BOMB = 25, BIO = 10, RAD = 0, FIRE = 10, ACID = 10)
-	flags_inv = HIDEGLOVES|HIDESHOES|HIDEJUMPSUIT|ALLOWS_BACK_TANK
+	flags_inv = HIDEGLOVES|HIDESHOES|HIDEJUMPSUIT
 	alternate_screams = BLOOD_SCREAMS
 
 /obj/item/clothing/head/helmet/space/hardsuit/cult
@@ -506,7 +506,7 @@
 	desc = "Blood-soaked robes infused with dark magic; allows the user to move at inhuman speeds, but at the cost of increased damage."
 	icon_state = "cultrobes"
 	item_state = "cultrobes"
-	flags_inv = HIDEJUMPSUIT|ALLOWS_BACK_TANK
+	flags_inv = HIDEJUMPSUIT
 	allowed = list(/obj/item/tome, /obj/item/melee/cultblade)
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS
 	armor = list(MELEE = -50, BULLET = -50, LASER = -50,ENERGY = -50, BOMB = -50, BIO = -50, RAD = -50, FIRE = 0, ACID = 0)

@@ -413,9 +413,6 @@
 		if(wear_suit.flags_inv & HIDESHOES)
 			LAZYOR(., ITEM_SLOT_FEET)
 			LAZYOR(., ITEM_SLOT_SOCKS)
-		// Full-body suits HIDEJUMPSUIT normally obscure back; ALLOWS_BACK_TANK or no HIDEBACK allows tank on back 
-		if((wear_suit.flags_inv & HIDEBACK) || ((wear_suit.flags_inv & HIDEJUMPSUIT) && !(wear_suit.flags_inv & ALLOWS_BACK_TANK)))
-			LAZYOR(., ITEM_SLOT_BACK)
 	if(w_uniform)
 		if(underwear_hidden())
 			LAZYOR(., ITEM_SLOT_UNDERWEAR)
