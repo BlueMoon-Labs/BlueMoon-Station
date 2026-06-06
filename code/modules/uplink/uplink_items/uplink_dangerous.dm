@@ -217,7 +217,7 @@
 	name = "Flamethrower"
 	desc = "Огнемёт, заправленный высокогорючими биотоксинами, крадеными со станций Nanotrasen. \
 			Поджарьте мерзавцев в их же жадности. Используйте осторожно."
-	item = /obj/item/flamethrower/full/tank
+	item = /obj/item/gun/energy/m2a100
 	cost = 4
 	surplus = 40
 	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)

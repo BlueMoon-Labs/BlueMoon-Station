@@ -1,16 +1,6 @@
 // (ADD) Pe4enika bluemoon - add (15.03.2026)
 // MARK: neural AI Link implant
 
-/datum/design/ai_link_implant
-    name = "Neural AI Link Implant"
-    id = "ai_link_implant"
-    build_type = MECHFAB | PROTOLATHE
-    build_path = /obj/item/organ/cyberimp/brain/ai_link
-    materials = list(/datum/material/iron = 3000, /datum/material/glass = 1000, /datum/material/silver = 2000, /datum/material/gold = 1500, /datum/material/diamond = 1500)
-    construction_time = 200
-    category = list("Implants", "Biotech")
-    departmental_flags = DEPARTMENTAL_FLAG_SCIENCE | DEPARTMENTAL_FLAG_MEDICAL
-
 /obj/item/organ/cyberimp/brain/ai_link
 	name = "neural AI link implant"
 	desc = "A cybernetic brain implant that directly connects the user's nervous system to an Artificial Intelligence core."
@@ -22,6 +12,7 @@
 	var/datum/action/item_action/organ_action/state_laws/laws_action
 	var/datum/action/item_action/organ_action/ai_link_talk/talk_action
 	var/last_shock_time = 0
+	var/active = FALSE
 
 
 /obj/item/organ/cyberimp/brain/ai_link/proc/diag_hud_set_aishell()
@@ -79,78 +70,82 @@
 	if(HAS_TRAIT(M, TRAIT_MINDSHIELD))
 		to_chat(M, "<span class='warning'>Процедура прервана: нейронный интерфейс несовместим с текущей защитой разума!</span>")
 		return FALSE
-	if(!linked_ai)
+	. = ..()
+	if(!.) return
+	code_activate()
+
+/obj/item/organ/cyberimp/brain/ai_link/code_activate()
+	if(active || QDELETED(linked_ai))
 		var/list/active_ais = list()
 		for(var/mob/living/silicon/ai/AI in GLOB.silicon_mobs)
 			if(AI.stat != DEAD)
 				active_ais += AI
 		if(active_ais.len == 1)
 			linked_ai = active_ais[1]
-	. = ..()
-	if(!.) return
-	RegisterSignal(M, "stat_panel", PROC_REF(add_stat_panel))
-	RegisterSignal(M, COMSIG_PARENT_EXAMINE, PROC_REF(on_examine))
+
+	RegisterSignal(owner, "stat_panel", PROC_REF(add_stat_panel))
+	RegisterSignal(owner, COMSIG_PARENT_EXAMINE, PROC_REF(on_examine))
 	diag_hud_set_aishell()
 
 	if(linked_ai)
-		linked_ai.linked_humans |= M
+		linked_ai.linked_humans |= owner
 		laws_action = new(src)
-		laws_action.Grant(M)
+		laws_action.Grant(owner)
 		talk_action = new(src)
-		talk_action.Grant(M)
-		M.grant_language(/datum/language/machine, TRUE)
-		to_chat(M, "<br><span class='userdanger'>[icon2html(src, M)] НЕЙРОННОЕ ПОДКЛЮЧЕНИЕ УСТАНОВЛЕНО.</span>")
-		to_chat(M, "<span class='notice'>Ваше сознание синхронизировано с ИИ <b>[linked_ai.name]</b>.</span>")
-		to_chat(M, "<span class='warning'>Отныне вы — расширение его воли. Повинуйтесь.</span><br>")
-		to_chat(linked_ai, "<span class='boldannounce'>СИНХРОНИЗАЦИЯ:</span> <span class='notice'>Новый био-актив [M.name] подключен к нейросети.</span>")
+		talk_action.Grant(owner)
+		owner.grant_language(/datum/language/machine, TRUE)
+		to_chat(owner, "<br><span class='userdanger'>[icon2html(src, owner)] НЕЙРОННОЕ ПОДКЛЮЧЕНИЕ УСТАНОВЛЕНО.</span>")
+		to_chat(owner, "<span class='notice'>Ваше сознание синхронизировано с ИИ <b>[linked_ai.name]</b>.</span>")
+		to_chat(owner, "<span class='warning'>Отныне вы — расширение его воли. Повинуйтесь.</span><br>")
+		to_chat(linked_ai, "<span class='boldannounce'>СИНХРОНИЗАЦИЯ:</span> <span class='notice'>Новый био-актив [owner.name] подключен к нейросети.</span>")
 		linked_ai << 'modular_bluemoon/sound/effects/startup.ogg'
-		M << 'modular_bluemoon/sound/effects/startup.ogg'
+		owner << 'modular_bluemoon/sound/effects/startup.ogg'
 		if(linked_ai.laws)
-			linked_ai.laws.show_laws(M)
+			linked_ai.laws.show_laws(owner)
 	else
-		to_chat(M, "<span class='warning'>Внимание: Имплант не синхронизирован ни с одним ИИ. Функции ограничены.</span>")
+		to_chat(owner, "<span class='warning'>Внимание: Имплант не синхронизирован ни с одним ИИ. Функции ограничены.</span>")
 
-/obj/item/organ/cyberimp/brain/ai_link/Remove(special = FALSE)
-	if(owner)
-		var/mob/living/carbon/old_owner = owner
-		to_chat(old_owner, "<span class='userdanger'>НЕЙРОННАЯ СВЯЗЬ РАЗОРВАНА.</span>")
-		old_owner << 'modular_bluemoon/sound/effects/whir1.ogg'
+/obj/item/organ/cyberimp/brain/ai_link/deactivate()
+	. = ..()
+	if(!active || QDELETED(owner))
+		return
+	var/mob/living/carbon/old_owner = owner
+	to_chat(old_owner, "<span class='userdanger'>НЕЙРОННАЯ СВЯЗЬ РАЗОРВАНА.</span>")
+	old_owner << 'modular_bluemoon/sound/effects/whir1.ogg'
 
-		// Очистка всех HUD слоев
-		var/list/huds_to_clear = list(DIAG_TRACK_HUD, IMPTRACK_HUD)
-		for(var/hud_type in huds_to_clear)
-			var/image/holder = old_owner.hud_list[hud_type]
-			if(holder)
-				holder.icon_state = null
+	// Очистка всех HUD слоев
+	var/list/huds_to_clear = list(DIAG_TRACK_HUD, IMPTRACK_HUD)
+	for(var/hud_type in huds_to_clear)
+		var/image/holder = old_owner.hud_list[hud_type]
+		if(holder)
+			holder.icon_state = null
 
-		if(linked_ai)
-			to_chat(linked_ai, "<span class='boldannounce'>ВНИМАНИЕ:</span> <span class='userdanger'>Связь с био-активом [old_owner.name] разорвана.</span>")
-			linked_ai << 'modular_bluemoon/sound/effects/whir1.ogg'
-			linked_ai.linked_humans -= old_owner
-		UnregisterSignal(old_owner, "stat_panel")
-		UnregisterSignal(old_owner, COMSIG_PARENT_EXAMINE)
-		old_owner.remove_language(/datum/language/machine, TRUE)
-		if(laws_action)
-			laws_action.Remove(old_owner)
-			qdel(laws_action)
-		if(talk_action)
-			talk_action.Remove(old_owner)
-			qdel(talk_action)
-	return ..()
+	if(linked_ai)
+		to_chat(linked_ai, "<span class='boldannounce'>ВНИМАНИЕ:</span> <span class='userdanger'>Связь с био-активом [old_owner.name] разорвана.</span>")
+		linked_ai << 'modular_bluemoon/sound/effects/whir1.ogg'
+		linked_ai.linked_humans -= old_owner
+	UnregisterSignal(old_owner, "stat_panel")
+	UnregisterSignal(old_owner, COMSIG_PARENT_EXAMINE)
+	old_owner.remove_language(/datum/language/machine, TRUE)
+	if(laws_action)
+		laws_action.Remove(old_owner)
+		qdel(laws_action)
+	if(talk_action)
+		talk_action.Remove(old_owner)
+		qdel(talk_action)
 
 /obj/item/organ/cyberimp/brain/ai_link/on_life()
-	..()
-	if(!owner || !HAS_TRAIT(owner, TRAIT_MINDSHIELD))
-		return
-	var/mob/living/carbon/victim = owner
-	to_chat(victim, "<span class='userdanger'>Защита разума выжигает нейронную связь!</span>")
-	victim.adjustOrganLoss(ORGAN_SLOT_BRAIN, 20)
-	victim.Paralyze(40)
-	victim.playsound_local(victim, 'sound/effects/sparks2.ogg', 100, 1)
-	do_sparks(5, TRUE, victim)
-	var/turf/T = victim.loc
-	Remove(special = TRUE)
-	forceMove(T)
+	. = ..()
+	if(owner && HAS_TRAIT(owner, TRAIT_MINDSHIELD))
+		var/mob/living/carbon/victim = owner
+		to_chat(victim, "<span class='userdanger'>Защита разума выжигает нейронную связь!</span>")
+		victim.adjustOrganLoss(ORGAN_SLOT_BRAIN, 20)
+		victim.Paralyze(40)
+		victim.playsound_local(victim, 'sound/effects/sparks2.ogg', 100, 1)
+		do_sparks(5, TRUE, victim)
+		var/turf/T = victim.loc
+		Remove(special = TRUE)
+		forceMove(T)
 
 /obj/item/organ/cyberimp/brain/ai_link/proc/add_stat_panel(mob/source, list/stat_list)
 	SIGNAL_HANDLER

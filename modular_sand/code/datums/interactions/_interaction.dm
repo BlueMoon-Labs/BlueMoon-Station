@@ -52,6 +52,8 @@
 	/// Additional details to be shown in the interaction menu, accepts more than one entry
 	var/list/additional_details
 
+	var/hearts_effect = FALSE
+
 /// Checks if user can do an interaction, action_check is for whether you're actually doing it or not (useful for the menu and not removing the buttons)
 /datum/interaction/proc/evaluate_user(mob/living/user, silent = TRUE, apply_cooldown = TRUE)
 	if(SSinteractions.is_blacklisted(user))
@@ -148,7 +150,7 @@
 	return TRUE
 
 /// Display the message
-/datum/interaction/proc/display_interaction(mob/living/user, mob/living/target, var/is_hidden)
+/datum/interaction/proc/display_interaction(mob/living/user, mob/living/target, is_hidden = FALSE)
 	if(QDELETED(user) || QDELETED(target))
 		return
 	var/vision_distance = 7
@@ -161,9 +163,9 @@
 		var/use_message = replacetext(simple_message, "USER", big_user_target_text ? "<b>\the [user]</b>" : "\the [user]") // BLUEMOON ADD большой текст
 		use_message = replacetext(use_message, "TARGET", big_user_target_text ? "<b>\the [target]</b>" : "\the [target]") // BLUEMOON ADD большой текст
 		if(message_by_user)
-			user.visible_message("<span class='[simple_style]'>[hidden_message] [capitalize(use_message)]</span>" , null, null, vision_distance)
+			user.visible_message("<span class='[simple_style]'>[hidden_message][capitalize(use_message)]</span>" , null, null, vision_distance)
 		else
-			target.visible_message("<span class='[simple_style]'>[hidden_message] [capitalize(use_message)]</span>" , null, null, vision_distance)
+			target.visible_message("<span class='[simple_style]'>[hidden_message][capitalize(use_message)]</span>" , null, null, vision_distance)
 
 /// After the interaction, the base only plays the sound and only if it has one
 /datum/interaction/proc/post_interaction(mob/living/user, mob/living/target, apply_cooldown = TRUE, is_hidden = FALSE)
@@ -178,25 +180,54 @@
 		// more times. This does NOT mean you are forced to
 		// use the system. If you do not make the list
 		// associative, all options will have the same chances!
-		interaction_sound_volume = 50
-
-		if(is_hidden)
-			interaction_sound_volume = 10
-
 		if(islist(interaction_sound))
 			soundfile_to_play = pickweight(interaction_sound)
 		else
 			soundfile_to_play = interaction_sound
-		var/turf/sound_turf = get_turf(message_by_user ? user : target)
-		if(!sound_turf)
-			return
-		if(interaction_flags & INTERACTION_FLAG_OOC_CONSENT)
-			playlewdinteractionsound(sound_turf, soundfile_to_play, interaction_sound_volume, 1, -1)
-		else
-			playsound(sound_turf, soundfile_to_play, interaction_sound_volume, 1, -1)
-	return
 
-/datum/interaction/cheer/post_interaction(mob/living/user, mob/living/target, apply_cooldown = TRUE)
+		play_interaction_sound(message_by_user ? user : target, soundfile_to_play, is_hidden)
+
+	// PLUG 13 INTEGRATION from modular_bluemoon\code\modules\plug13_integration\bluemoon_interaction.dm
+	if (p13user_emote && p13user_strength && p13user_duration)
+		user.client?.plug13?.send_emote(
+			p13user_emote,
+			clamp(p13user_strength + get_lust_modifier(user), 10, 100),
+			p13user_duration
+		)
+
+	if (p13target_emote && p13target_strength && p13target_duration)
+		target.client?.plug13?.send_emote(
+			p13target_emote,
+			clamp(p13target_strength + get_lust_modifier(target), 10, 100),
+			p13target_duration
+		)
+
+	if(interaction_flags & INTERACTION_FLAG_ADJACENT && user != target)
+		SEND_SIGNAL(user, COMSIG_INTERACTION_ADJACENT, target)
+		SEND_SIGNAL(target, COMSIG_INTERACTION_ADJACENT, user)
+
+	if(hearts_effect)
+		if(!HAS_TRAIT(user, TRAIT_LEWD_JOB) && !is_hidden)
+			new /obj/effect/temp_visual/heart(user.loc)
+		if(user != target && !HAS_TRAIT(target, TRAIT_LEWD_JOB) && !is_hidden)
+			new /obj/effect/temp_visual/heart(target.loc)
+
+/datum/interaction/proc/play_interaction_sound(mob/living/sound_source, soundin, is_hidden, volume)
+	var/turf/sound_turf = get_turf(sound_source)
+	if(!sound_turf)
+		return
+	if(!isnum(volume))
+		volume = interaction_sound_volume
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	if(interaction_flags & INTERACTION_FLAG_OOC_CONSENT)
+		var/list/ignored_mobs
+		if(interaction_flags & INTERACTION_FLAG_UNHOLY_CONTENT)
+			ignored_mobs = sound_source.get_unconsenting(unholy = TRUE)
+		playlewdinteractionsound(sound_turf, soundin, volume, 1, extrarange, ignored_mobs = ignored_mobs)
+	else
+		playsound(sound_turf, soundin, volume, 1, extrarange)
+
+/datum/interaction/cheer/post_interaction(mob/living/user, mob/living/target, apply_cooldown, is_hidden)
     if(user.ckey == "pingvas")
         if(apply_cooldown)
             COOLDOWN_START(user, last_interaction_time, 3 SECONDS)
@@ -204,7 +235,7 @@
         return
     . = ..()
 
-/datum/interaction/lewd/titgrope_self/post_interaction(mob/living/user, mob/living/target, apply_cooldown = TRUE)
+/datum/interaction/lewd/titgrope_self/post_interaction(mob/living/user, mob/living/target, apply_cooldown, is_hidden)
     if(user.ckey == "dimakr" || user.ckey == "pingvas")
         if(apply_cooldown)
             COOLDOWN_START(user, last_interaction_time, 3 SECONDS)
@@ -212,7 +243,7 @@
         return
     . = ..()
 
-/datum/interaction/handwave/post_interaction(mob/living/user, mob/living/target, apply_cooldown = TRUE)
+/datum/interaction/handwave/post_interaction(mob/living/user, mob/living/target, apply_cooldown, is_hidden)
 	var/obj/item/clothing/mask/screammask/mask = locate() in user.get_equipped_items()
 	if(mask)
 		if(apply_cooldown)

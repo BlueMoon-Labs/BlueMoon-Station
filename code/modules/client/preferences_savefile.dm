@@ -701,9 +701,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	key_bindings = sanitize_islist(key_bindings, list())
 	modless_key_bindings = sanitize_islist(modless_key_bindings, list())
 	favorite_outfits = SANITIZE_LIST(favorite_outfits)
-	color_presets_tint = SANITIZE_LIST(color_presets_tint) // BLUEMOON ADD
-	color_presets_hsv = SANITIZE_LIST(color_presets_hsv) // BLUEMOON ADD
-	color_presets_matrix = SANITIZE_LIST(color_presets_matrix) // BLUEMOON ADD
+	color_presets_tint = sanitize_color_preset_keys(color_presets_tint) // BLUEMOON ADD
+	color_presets_hsv = sanitize_color_preset_keys(color_presets_hsv) // BLUEMOON ADD
+	color_presets_matrix = sanitize_color_preset_keys(color_presets_matrix) // BLUEMOON ADD
 	screentip_color = sanitize_hexcolor(screentip_color, 6, 1, initial(screentip_color))
 	screentip_pref = sanitize_inlist(screentip_pref, GLOB.screentip_pref_options, SCREENTIP_PREFERENCE_ENABLED)
 
@@ -1405,10 +1405,16 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 								else
 									entry -= setting
 
+							// Already html_encoded at write time by stripped_input(); re-encoding
+							// here double-encodes (& -> &amp; -> &amp;amp;) on every load. Only bound
+							// length, and only for text - a malformed savefile could hold a non-text
+							// value here, which trim() would choke on.
 							if(LOADOUT_CUSTOM_NAME)
-								entry[setting] = trim(html_encode(entry[setting]), MAX_NAME_LEN)
+								if(istext(entry[setting]))
+									entry[setting] = trim(entry[setting], MAX_NAME_LEN)
 							if(LOADOUT_CUSTOM_DESCRIPTION)
-								entry[setting] = trim(html_encode(entry[setting]), 500)
+								if(istext(entry[setting]))
+									entry[setting] = trim(entry[setting], 500)
 
 				loadout_data[save_key] = sanitize_entries.Copy()
 			else
@@ -1616,7 +1622,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		if(job_preferences["[j]"] != JP_LOW && job_preferences["[j]"] != JP_MEDIUM && job_preferences["[j]"] != JP_HIGH)
 			job_preferences -= j
 
-	custom_emote_panel = SANITIZE_LIST(custom_emote_panel)
+	// Strips control characters from saved emote names so legacy entries that could
+	// not round-trip through TGUI become matchable again (and thus renamable/removable).
+	custom_emote_panel = sanitize_custom_emote_panel(custom_emote_panel)
 
 	all_quirks = SANITIZE_LIST(all_quirks)
 

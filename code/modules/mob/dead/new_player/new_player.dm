@@ -565,30 +565,7 @@
 			to_chat(src, "<span class='redtext'>На этот раунд, у вас отключена возможность стать антагонистом посреди раунда (её можно включить в Character Setup > Preferences).</span>")
 	// BLUEMOON ADD END
 
-	var/level = "green"
-	switch(GLOB.security_level)
-		if(SEC_LEVEL_GREEN)
-			level = "green"
-		if(SEC_LEVEL_BLUE)
-			level = "blue"
-		if(SEC_LEVEL_ORANGE)
-			level = "orange"
-		if(SEC_LEVEL_VIOLET)
-			level = "violet"
-		if(SEC_LEVEL_AMBER)
-			level = "amber"
-		if(SEC_LEVEL_RED)
-			level = "red"
-		if(SEC_LEVEL_LAMBDA)
-			level = "lambda"
-		if(SEC_LEVEL_GAMMA)
-			level = "gamma"
-		if(SEC_LEVEL_EPSILON)
-			level = "epsilon"
-		if(SEC_LEVEL_DELTA)
-			level = "delta"
-
-	var/dat = "<div class='notice'>Round Duration: [DisplayTimeText(world.time - SSticker.round_start_time)]<br>Alert Level: [capitalize(level)]</div>"
+	var/dat = "<div class='notice'>Round Duration: [DisplayTimeText(world.time - SSticker.round_start_time)]<br>Alert Level: [capitalize(SECURITY_LEVEL_NAME(GLOB.security_level) || SECURITY_LEVEL_NAME(SEC_LEVEL_GREEN))]</div>"
 	if(SSshuttle.emergency)
 		switch(SSshuttle.emergency.mode)
 			if(SHUTTLE_ESCAPE)

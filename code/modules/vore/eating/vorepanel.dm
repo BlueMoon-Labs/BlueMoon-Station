@@ -222,7 +222,7 @@
 			if(host.vore_organs.len >= BELLIES_MAX)
 				return FALSE
 
-			var/new_name = html_encode(input(usr,"New belly's name:","New Belly") as text|null)
+			var/new_name = strip_control_chars(html_encode(input(usr,"New belly's name:","New Belly") as text|null))
 
 			var/failure_msg
 			if(length(new_name) > BELLIES_NAME_MAX || length(new_name) < BELLIES_NAME_MIN)
@@ -496,7 +496,7 @@
 	var/attr = params["attribute"]
 	switch(attr)
 		if("b_name")
-			var/new_name = html_encode(input(usr,"Belly's new name:","New Name") as text|null)
+			var/new_name = strip_control_chars(html_encode(input(usr,"Belly's new name:","New Name") as text|null))
 
 			var/failure_msg
 			if(length(new_name) > BELLIES_NAME_MAX || length(new_name) < BELLIES_NAME_MIN)

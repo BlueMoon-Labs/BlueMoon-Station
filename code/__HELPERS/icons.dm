@@ -1146,7 +1146,8 @@ GLOBAL_LIST_EMPTY(humanoid_icon_cache)
 		var/icon/out_icon = icon('icons/effects/effects.dmi', "nothing")
 		for(var/D in showDirs)
 			var/icon/partial = getFlatIcon(body, defdir = D, no_anim = no_anim)
-			out_icon.Insert(partial,dir=D)
+			if(istype(partial, /icon))
+				out_icon.Insert(partial, dir = D)
 
 		GLOB.humanoid_icon_cache[icon_id] = out_icon
 		if(length(GLOB.humanoid_icon_cache) > HUMANOID_ICON_CACHE_MAX)

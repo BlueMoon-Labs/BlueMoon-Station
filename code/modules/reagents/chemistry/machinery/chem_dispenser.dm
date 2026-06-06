@@ -11,8 +11,47 @@
 		else
 			return ckey(id)
 
-/// Макс. глубина для `ConvertpHToCol` + `get_reagent_category` (общий счётчик).
-#define CHEM_DISP_PH_CAT_GUARD_MAX 48
+/// JSON-safe finite number for TGUI payloads (NaN/INF crash json_encode on BYOND 516).
+/proc/sanitize_num_for_json(num, default = 0)
+	if(!isnum(num) || (num != num))
+		return default
+	if(num >= 1e100 || num <= -1e100)
+		return default
+	return num
+
+/// pH value safe for TGUI JSON.
+/proc/sanitize_ph_json(ph)
+	if(!isnum(ph) || (ph != ph))
+		return 7
+	if(ph >= 1e100 || ph <= -1e100)
+		return 7
+	return clamp(ph, -20, 20)
+
+/// pH color label for chem dispenser UI. Avoids `switch` ranges with INFINITY (BYOND 516 Linux crash).
+/proc/chem_disp_ph_to_col(pH)
+	if(!isnum(pH) || (pH != pH))
+		return "average"
+	if(pH < 1)
+		return "red"
+	if(pH < 2)
+		return "orange"
+	if(pH < 3)
+		return "average"
+	if(pH < 4)
+		return "yellow"
+	if(pH < 5)
+		return "olive"
+	if(pH < 6)
+		return "good"
+	if(pH < 8)
+		return "green"
+	if(pH < 9.5)
+		return "teal"
+	if(pH < 11)
+		return "blue"
+	if(pH < 12.5)
+		return "violet"
+	return "purple"
 
 /obj/machinery/chem_dispenser
 	name = "Chem Dispenser"
@@ -117,8 +156,6 @@
 	var/dispenser_type = DISPENSER_TYPE_CHEM
 	/// Cooldown for recipe-dispense actions.
 	COOLDOWN_DECLARE(dispense_cooldown)
-	/// Общий счётчик входа для `ConvertpHToCol` / `get_reagent_category` (отдельный `static` в каждом проке не блокирует взаимные вызовы → переполнение стека / illegal op в `send_message` на 516).
-	var/static/chem_disp_ph_cat_guard = 0
 	var/static/list/chem_disp_category_cache = list()
 
 	/// Shared cache: reagent hash -> computed dispenser recipe data.
@@ -357,20 +394,20 @@
 				alt_recipes += list(list(
 					"required" = alt_required,
 					"catalysts" = alt_catalysts,
-					"temp" = alt_R.required_temp,
+					"temp" = sanitize_num_for_json(alt_R.required_temp),
 					"is_cold" = alt_R.is_cold_recipe,
-					"result_amount" = alt_R.results[result_type] || 1,
+					"result_amount" = sanitize_num_for_json(alt_R.results[result_type] || 1, 1),
 					"sub_recipes" = alt_sub_recipes,
 					"is_fermichem" = alt_R.FermiChem,
-					"optimal_temp_min" = alt_R.OptimalTempMin,
-					"optimal_temp_max" = alt_R.OptimalTempMax,
-					"explode_temp" = alt_R.ExplodeTemp,
-					"optimal_ph_min" = alt_R.OptimalpHMin,
-					"optimal_ph_max" = alt_R.OptimalpHMax,
-					"react_ph_lim" = alt_R.ReactpHLim,
-					"purity_min" = alt_R.PurityMin,
-					"thermic_constant" = alt_R.ThermicConstant,
-					"h_ion_release" = alt_R.HIonRelease,
+					"optimal_temp_min" = sanitize_num_for_json(alt_R.OptimalTempMin),
+					"optimal_temp_max" = sanitize_num_for_json(alt_R.OptimalTempMax),
+					"explode_temp" = sanitize_num_for_json(alt_R.ExplodeTemp),
+					"optimal_ph_min" = sanitize_ph_json(alt_R.OptimalpHMin),
+					"optimal_ph_max" = sanitize_ph_json(alt_R.OptimalpHMax),
+					"react_ph_lim" = sanitize_num_for_json(alt_R.ReactpHLim),
+					"purity_min" = sanitize_num_for_json(alt_R.PurityMin),
+					"thermic_constant" = sanitize_num_for_json(alt_R.ThermicConstant, 1),
+					"h_ion_release" = sanitize_num_for_json(alt_R.HIonRelease, 0.1),
 					"fermi_explode" = alt_R.FermiExplode
 				))
 				alt_recipe_datums["[recipe_name]|[alt_index]"] = alt_R
@@ -380,21 +417,21 @@
 			"required" = required,
 			"catalysts" = catalysts,
 			"category" = recipe_category,
-			"temp" = R.required_temp,
+			"temp" = sanitize_num_for_json(R.required_temp),
 			"is_cold" = R.is_cold_recipe,
 			"desc" = recipe_desc,
-			"result_amount" = result_amount,
+			"result_amount" = sanitize_num_for_json(result_amount, 1),
 			"sub_recipes" = sub_recipes,
 			"is_fermichem" = R.FermiChem,
-			"optimal_temp_min" = R.OptimalTempMin,
-			"optimal_temp_max" = R.OptimalTempMax,
-			"explode_temp" = R.ExplodeTemp,
-			"optimal_ph_min" = R.OptimalpHMin,
-			"optimal_ph_max" = R.OptimalpHMax,
-			"react_ph_lim" = R.ReactpHLim,
-			"purity_min" = R.PurityMin,
-			"thermic_constant" = R.ThermicConstant,
-			"h_ion_release" = R.HIonRelease,
+			"optimal_temp_min" = sanitize_num_for_json(R.OptimalTempMin),
+			"optimal_temp_max" = sanitize_num_for_json(R.OptimalTempMax),
+			"explode_temp" = sanitize_num_for_json(R.ExplodeTemp),
+			"optimal_ph_min" = sanitize_ph_json(R.OptimalpHMin),
+			"optimal_ph_max" = sanitize_ph_json(R.OptimalpHMax),
+			"react_ph_lim" = sanitize_num_for_json(R.ReactpHLim),
+			"purity_min" = sanitize_num_for_json(R.PurityMin),
+			"thermic_constant" = sanitize_num_for_json(R.ThermicConstant, 1),
+			"h_ion_release" = sanitize_num_for_json(R.HIonRelease, 0.1),
 			"fermi_explode" = R.FermiExplode,
 			"is_extract_recipe" = is_extract_recipe,
 			"extract_container_name" = extract_container_name,
@@ -809,7 +846,7 @@
 		if(temp)
 			var/ph_safe = sanitize_ph_json(temp.pH)
 			var/category = get_reagent_category(re)
-			chemicals.Add(list(list("title" = temp.name, "id" = ckey(temp.name), "pH" = ph_safe, "pHCol" = ConvertpHToCol(ph_safe), "reagentColor" = temp.color, "category" = category)))
+			chemicals.Add(list(list("title" = temp.name, "id" = ckey(temp.name), "pH" = ph_safe, "pHCol" = chem_disp_ph_to_col(ph_safe), "reagentColor" = temp.color, "category" = category)))
 	data["chemicals"] = chemicals
 
 	var/datum/reagent/best_acid = null
@@ -847,7 +884,7 @@
 	if(beaker && beaker.reagents && beaker.reagents.reagent_list.len)
 		for(var/datum/reagent/R in beaker.reagents.reagent_list)
 			var/ph_safe = sanitize_ph_json(R.pH)
-			beakerContents.Add(list(list("name" = R.name, "id" = R.type, "volume" = round(R.volume, 0.01), "pH" = ph_safe, "pHCol" = ConvertpHToCol(ph_safe), "reagentColor" = R.color))) // Nested list prevents BYOND from merging the first entry.
+			beakerContents.Add(list(list("name" = R.name, "id" = R.type, "volume" = round(R.volume, 0.01), "pH" = ph_safe, "pHCol" = chem_disp_ph_to_col(ph_safe), "reagentColor" = R.color))) // Nested list prevents BYOND from merging the first entry.
 			beakerCurrentVolume += R.volume
 	data["beakerContents"] = beakerContents
 
@@ -860,7 +897,7 @@
 		var/safe_beaker_ph = sanitize_ph_json(beaker.reagents.pH)
 		var/rounded_ph = round(safe_beaker_ph, ph_precision)
 		data["beakerCurrentpH"] = rounded_ph
-		data["beakerCurrentpHCol"] = ConvertpHToCol(rounded_ph)
+		data["beakerCurrentpHCol"] = chem_disp_ph_to_col(rounded_ph)
 
 	else
 		data["beakerCurrentVolume"] = null
@@ -879,7 +916,7 @@
 					chemname = "[pick_list_replacements("hallucination.json", "chemicals")]"
 				var/ph_safe = sanitize_ph_json(temp.pH)
 				var/category = get_reagent_category(re)
-				chemicals.Add(list(list("title" = chemname, "id" = ckey(temp.name), "pH" = ph_safe, "pHCol" = ConvertpHToCol(ph_safe), "reagentColor" = temp.color, "category" = category)))
+				chemicals.Add(list(list("title" = chemname, "id" = ckey(temp.name), "pH" = ph_safe, "pHCol" = chem_disp_ph_to_col(ph_safe), "reagentColor" = temp.color, "category" = category)))
 		data["chemicals"] = chemicals
 
 	var/mob/living/L = user
@@ -902,7 +939,7 @@
 	if(reagents.total_volume)
 		for(var/datum/reagent/N in reagents.reagent_list)
 			var/ph_safe = sanitize_ph_json(N.pH)
-			storedContents.Add(list(list("name" = N.name, "id" = N.type, "volume" = N.volume, "pH" = ph_safe, "pHCol" = ConvertpHToCol(ph_safe), "reagentColor" = N.color)))
+			storedContents.Add(list(list("name" = N.name, "id" = N.type, "volume" = N.volume, "pH" = ph_safe, "pHCol" = chem_disp_ph_to_col(ph_safe), "reagentColor" = N.color)))
 	data["storedContents"] = storedContents
 
 	return data
@@ -1826,57 +1863,11 @@
 		replace_beaker(user)
 		return TRUE
 
-/obj/machinery/chem_dispenser/proc/sanitize_ph_json(ph)
-	if(!isnum(ph) || (ph != ph))
-		return 7
-	if(ph >= 1e100 || ph <= -1e100)
-		return 7
-	return clamp(ph, -20, 20)
-
-/obj/machinery/chem_dispenser/proc/ConvertpHToCol(pH)
-	if(chem_disp_ph_cat_guard >= CHEM_DISP_PH_CAT_GUARD_MAX)
-		return "average"
-	chem_disp_ph_cat_guard++
-	. = "average"
-	if(!isnum(pH) || (pH != pH)) // null or NaN
-		chem_disp_ph_cat_guard--
-		return
-	switch(pH)
-		if(-INFINITY to 1)
-			. = "red"
-		if(1 to 2)
-			. = "orange"
-		if(2 to 3)
-			. = "average"
-		if(3 to 4)
-			. = "yellow"
-		if(4 to 5)
-			. = "olive"
-		if(5 to 6)
-			. = "good"
-		if(6 to 8)
-			. = "green"
-		if(8 to 9.5)
-			. = "teal"
-		if(9.5 to 11)
-			. = "blue"
-		if(11 to 12.5)
-			. = "violet"
-		if(12.5 to INFINITY)
-			. = "purple"
-		else
-			. = "average"
-	chem_disp_ph_cat_guard--
-
 /obj/machinery/chem_dispenser/proc/get_reagent_category(reagent_type)
 	if(reagent_type && chem_disp_category_cache[reagent_type])
 		return chem_disp_category_cache[reagent_type]
-	if(chem_disp_ph_cat_guard >= CHEM_DISP_PH_CAT_GUARD_MAX)
-		return "other"
-	chem_disp_ph_cat_guard++
 	var/result = "other"
 	if(!reagent_type)
-		chem_disp_ph_cat_guard--
 		return result
 	if(ispath(reagent_type, /datum/reagent/medicine))
 		result = "medicine"
@@ -1907,7 +1898,6 @@
 		result = "elements"
 	if(reagent_type)
 		chem_disp_category_cache[reagent_type] = result
-	chem_disp_ph_cat_guard--
 	return result
 
 

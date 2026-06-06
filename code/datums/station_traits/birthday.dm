@@ -85,8 +85,8 @@
 	if(!spawned_mob.equip_to_slot_if_possible(hat, ITEM_SLOT_HEAD, disable_warning = TRUE))
 		hat.forceMove(get_turf(spawned_mob))
 
-	// Игрушечки
-	var/toy_type = pick(/obj/item/toy/balloon, /obj/item/sparkler)
+	// Воздушные шарики (см. BIRTHDAY_STATION_BALLOON_TYPES — не водяные)
+	var/toy_type = HAS_TRAIT(spawned_mob, TRAIT_BIRTHDAY_BOY) ? /obj/item/toy/balloon/heart : pick(BIRTHDAY_STATION_BALLOON_TYPES)
 	var/obj/item/toy = new toy_type(spawned_mob)
 	if(!spawned_mob.equip_to_slot_if_possible(toy, ITEM_SLOT_HANDS, disable_warning = TRUE))
 		toy.forceMove(get_turf(spawned_mob))

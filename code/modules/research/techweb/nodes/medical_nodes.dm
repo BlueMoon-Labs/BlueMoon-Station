@@ -107,7 +107,7 @@
 	description = "Upgraded and more powerful cybernetic implants."
 	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL, RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("neural_programming", "cyber_implants","integrated_HUDs")
-	design_ids = list("ci-toolset", "ci-surgery", "ci-reviver", "ci-nutrimentplus", "ci-robot-radshielding")
+	design_ids = list("ci-toolset", "ci-surgery", "ci-reviver", "ci-reviver-hack", "ci-nutrimentplus", "ci-robot-radshielding")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
 
 /datum/techweb_node/combat_cyber_implants
@@ -116,7 +116,7 @@
 	description = "Military grade combat implants to improve performance."
 	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL, RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("adv_cyber_implants","weaponry","NVGtech","high_efficiency")
-	design_ids = list("ci-thermals", "ci-antidrop", "ci-antistun", "ci-thrusters", "ci-shield", "ci-chemseq")
+	design_ids = list("ci-thermals", "ci-thermals-hack", "ci-antidrop", "ci-antidrop-hack", "ci-antistun", "ci-antistun-hack", "ci-thrusters", "ci-shield", "ci-shield-hack", "ci-chemseq", "ci-chemseq-hack")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
 
 /////////////////////////Advanced Surgery/////////////////////////

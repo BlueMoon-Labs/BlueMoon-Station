@@ -896,3 +896,10 @@
 	sound = pick('sound/voice/blubbr1.ogg', 'sound/voice/blubbr2.ogg', 'sound/voice/blubbr3.ogg')
 	. = ..()
 
+/datum/emote/sound/human/yummers
+	name = "Краснеть"
+	key = "yummers"
+	key_third_person = "yummers"
+	message = "видит вкусняшку."
+	sound = 'sound/voice/yummers.ogg'
+	stat_allowed = SOFT_CRIT

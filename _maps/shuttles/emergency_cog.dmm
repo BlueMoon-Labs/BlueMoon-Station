@@ -21,6 +21,9 @@
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/escape)
 "e" = (
+/obj/effect/fun_balloon/sentience/emergency_shuttle{
+	group_name = "Cog evac passengers on the Emergency Cog Shuttle"
+	},
 /obj/machinery/light{
 	dir = 1
 	},

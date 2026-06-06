@@ -133,7 +133,7 @@
 		/obj/item/organ/cyberimp/chest/chem_implant/plus,
 		/obj/item/organ/cyberimp/arm/shield,
 		/obj/item/organ/cyberimp/arm/esword{zone=BODY_ZONE_L_ARM},
-		/obj/item/organ/eyes/robotic/thermals,
+		/obj/item/organ/eyes/robotic/toggled/thermals,
 		/obj/item/organ/cyberimp/chest/thrusters,
 		/obj/item/organ/heart/bioaegis/t3,
 		/obj/item/organ/liver/bioaegis/t3,
@@ -160,7 +160,7 @@
 		/obj/item/organ/cyberimp/chest/chem_implant/plus,
 		/obj/item/organ/cyberimp/arm/gun/laser,
 		/obj/item/organ/cyberimp/arm/combat{zone=BODY_ZONE_L_ARM},
-		/obj/item/organ/eyes/robotic/thermals,
+		/obj/item/organ/eyes/robotic/toggled/thermals,
 		/obj/item/organ/cyberimp/chest/thrusters,
 		/obj/item/organ/heart/bioaegis/t3/antag,
 		/obj/item/organ/liver/bioaegis/t3/antag,
@@ -250,7 +250,7 @@
 		/obj/item/organ/cyberimp/chest/chem_implant/plus,
 		/obj/item/organ/cyberimp/arm/shield,
 		/obj/item/organ/cyberimp/arm/esword{zone=BODY_ZONE_L_ARM},
-		/obj/item/organ/eyes/robotic/thermals,
+		/obj/item/organ/eyes/robotic/toggled/thermals,
 		/obj/item/organ/cyberimp/chest/thrusters,
 		/obj/item/organ/heart/bioaegis/t3,
 		/obj/item/organ/liver/bioaegis/t3,
@@ -278,7 +278,7 @@
 		/obj/item/organ/cyberimp/chest/chem_implant/plus,
 		/obj/item/organ/cyberimp/arm/gun/laser,
 		/obj/item/organ/cyberimp/arm/combat{zone=BODY_ZONE_L_ARM},
-		/obj/item/organ/eyes/robotic/thermals,
+		/obj/item/organ/eyes/robotic/toggled/thermals,
 		/obj/item/organ/cyberimp/chest/thrusters,
 		/obj/item/organ/heart/bioaegis/t3/antag,
 		/obj/item/organ/liver/bioaegis/t3/antag,
@@ -411,7 +411,7 @@
 		/obj/item/organ/cyberimp/chest/chem_implant/plus,
 		/obj/item/organ/cyberimp/arm/surgery/advanced,
 		/obj/item/organ/cyberimp/arm/combat{zone=BODY_ZONE_L_ARM},
-		/obj/item/organ/eyes/robotic/thermals,
+		/obj/item/organ/eyes/robotic/toggled/thermals,
 		/obj/item/organ/cyberimp/chest/thrusters,
 		/obj/item/organ/heart/bioaegis/t3/antag,
 		/obj/item/organ/liver/bioaegis/t3/antag,
@@ -439,7 +439,7 @@
 
 	cybernetic_implants = list(
 		/obj/item/organ/cyberimp/eyes/hud/security,
-		/obj/item/organ/eyes/robotic/shield,
+		/obj/item/organ/eyes/robotic/toggled/w_shield,
 		/obj/item/organ/cyberimp/chest/nutrimentextreme,
 		/obj/item/organ/cyberimp/chest/chem_implant,
 		/obj/item/organ/cyberimp/arm/toolset,
@@ -469,7 +469,7 @@
 
 	cybernetic_implants = list(
 		/obj/item/organ/cyberimp/eyes/hud/security,
-		/obj/item/organ/eyes/robotic/shield,
+		/obj/item/organ/eyes/robotic/toggled/w_shield,
 		/obj/item/organ/cyberimp/chest/nutrimentextreme,
 		/obj/item/organ/cyberimp/chest/chem_implant,
 		/obj/item/organ/cyberimp/arm/toolset/advanced,
@@ -506,7 +506,7 @@
 
 	cybernetic_implants = list(
 		/obj/item/organ/cyberimp/eyes/hud/security,
-		/obj/item/organ/eyes/robotic/shield,
+		/obj/item/organ/eyes/robotic/toggled/w_shield,
 		/obj/item/organ/cyberimp/chest/nutrimentextreme,
 		/obj/item/organ/cyberimp/chest/chem_implant,
 		/obj/item/organ/cyberimp/arm/toolset/advanced,
@@ -539,7 +539,7 @@
 		/obj/item/organ/cyberimp/chest/chem_implant/plus,
 		/obj/item/organ/cyberimp/arm/toolset/advanced,
 		/obj/item/organ/cyberimp/arm/combat{zone=BODY_ZONE_L_ARM},
-		/obj/item/organ/eyes/robotic/thermals,
+		/obj/item/organ/eyes/robotic/toggled/thermals,
 		/obj/item/organ/cyberimp/chest/thrusters,
 		/obj/item/organ/heart/bioaegis/t3/antag,
 		/obj/item/organ/liver/bioaegis/t3/antag,
@@ -647,7 +647,7 @@
 		/obj/item/organ/cyberimp/chest/chem_implant/plus,
 		/obj/item/organ/cyberimp/arm/shield,
 		/obj/item/organ/cyberimp/arm/esword{zone=BODY_ZONE_L_ARM},
-		/obj/item/organ/eyes/robotic/thermals,
+		/obj/item/organ/eyes/robotic/toggled/thermals,
 		/obj/item/organ/cyberimp/chest/thrusters,
 	)
 
@@ -679,7 +679,7 @@
 		/obj/item/organ/cyberimp/chest/chem_implant/plus,
 		/obj/item/organ/cyberimp/arm/shield,
 		/obj/item/organ/cyberimp/arm/esword{zone=BODY_ZONE_L_ARM},
-		/obj/item/organ/eyes/robotic/thermals,
+		/obj/item/organ/eyes/robotic/toggled/thermals,
 		/obj/item/organ/cyberimp/chest/thrusters,
 	)
 
@@ -745,7 +745,7 @@
 		/obj/item/organ/cyberimp/eyes/hud/security,
 		/obj/item/organ/cyberimp/chest/nutrimentextreme,
 		/obj/item/organ/cyberimp/chest/chem_implant/plus,
-		/obj/item/organ/eyes/robotic/thermals,
+		/obj/item/organ/eyes/robotic/toggled/thermals,
 		/obj/item/organ/cyberimp/mouth/breathing_tube,
 	)
 

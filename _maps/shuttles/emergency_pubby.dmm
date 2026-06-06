@@ -10,6 +10,9 @@
 /turf/open/floor/plating,
 /area/shuttle/escape)
 "ad" = (
+/obj/effect/fun_balloon/sentience/emergency_shuttle{
+	group_name = "Pubby evac crew on the Emergency Pubby Shuttle"
+	},
 /obj/structure/table,
 /obj/machinery/recharger,
 /turf/open/floor/mineral/titanium,

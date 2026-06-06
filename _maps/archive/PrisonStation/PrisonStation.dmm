@@ -40021,7 +40021,7 @@
 "okh" = (
 /obj/structure/table,
 /obj/effect/decal/cleanable/dirt,
-/obj/item/organ/cyberimp/chest/reviver,
+/obj/item/organ/cyberimp/chest/reviver/sec_level,
 /obj/item/stack/sheet/mineral/gold{
 	amount = 3
 	},

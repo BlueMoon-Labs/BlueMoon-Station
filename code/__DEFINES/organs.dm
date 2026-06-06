@@ -1,0 +1,9 @@
+
+// Отвечает за код в который печатаются и активируются некоторые органы, импланты
+#define ANTI_DROP_SEC_LEVEL 		SEC_LEVEL_AMBER
+#define REVIVER_SEC_LEVEL 			SEC_LEVEL_AMBER
+#define CNS_REBOOTER_SEC_LEVEL 		SEC_LEVEL_AMBER
+#define RIOT_SHIELD_SEC_LEVEL 		SEC_LEVEL_BLUE
+#define CHEM_SEQ_SEC_LEVEL 			SEC_LEVEL_AMBER
+#define MANTIS_IMPLANT_SEC_LEVEL 	SEC_LEVEL_AMBER
+#define THERMAL_EYES_SEC_LEVEL		SEC_LEVEL_RED
