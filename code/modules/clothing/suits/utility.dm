@@ -94,7 +94,7 @@
 	permeability_coefficient = 0.01
 	clothing_flags = THICKMATERIAL
 	body_parts_covered = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
-	flags_inv = HIDEJUMPSUIT|HIDETAUR
+	flags_inv = HIDEJUMPSUIT|HIDETAUR|ALLOWS_BACK_TANK
 	slowdown = 2
 	armor = list(MELEE = 20, BULLET = 0, LASER = 20,ENERGY = 10, BOMB = 100, BIO = 0, RAD = 0, FIRE = 80, ACID = 50)
 	heat_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
@@ -160,7 +160,7 @@
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 60, RAD = 100, FIRE = 30, ACID = 30)
 	strip_delay = 60
 	equip_delay_other = 60
-	flags_inv = HIDEJUMPSUIT|HIDETAUR
+	flags_inv = HIDEJUMPSUIT|HIDETAUR|ALLOWS_BACK_TANK
 	resistance_flags = NONE
 	rad_flags = RAD_PROTECT_CONTENTS | RAD_NO_CONTAMINATE
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
