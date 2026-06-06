@@ -205,7 +205,7 @@
 	armor = list(MELEE = 50, BULLET =40, LASER = 50, ENERGY = 60, BOMB = 50, BIO = 10, RAD = 0, FIRE = 50, ACID = 50)
 	light_range = FALSE
 	light_color = FALSE
-	max_integrity = FALSE
+	max_integrity = 9999999
 
 /obj/structure/urbanismmachines
 
@@ -244,7 +244,7 @@
 	armor = list(MELEE = 80, BULLET =80, LASER = 70, ENERGY = 60, BOMB = 80, BIO = 10, RAD = 0, FIRE = 50, ACID = 50)
 	light_range = FALSE
 	light_color = FALSE
-	max_integrity = FALSE
+	max_integrity = 9999999
 	layer = SPACEVINE_LAYER
 
 

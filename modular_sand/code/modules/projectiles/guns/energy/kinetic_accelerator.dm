@@ -509,7 +509,14 @@
 	log_override = FALSE
 
 /obj/item/projectile/kinetic/etenmm/prehit_pierce(atom/target)
-	return ..()
+	. = call(/obj/item/projectile/proc/prehit_pierce)(src, target)
+	if(. == PROJECTILE_PIERCE_PHASE)
+		return
+	if(kinetic_gun)
+		var/list/mods = kinetic_gun.modkits
+		for(var/obj/item/borg/upgrade/modkit/modkit in mods)
+			modkit.projectile_prehit(src, target, kinetic_gun)
+	// Ballistic round — skip /obj/item/projectile/kinetic pressure scaling.
 
 /obj/item/projectile/kinetic/etenmm/on_range()
 	qdel(src)

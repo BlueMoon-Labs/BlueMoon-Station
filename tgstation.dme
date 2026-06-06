@@ -4862,6 +4862,7 @@
 #include "modular_bluemoon\code\modules\projectiles\guns\ballistic\shotgun.dm"
 #include "modular_bluemoon\code\modules\projectiles\guns\energy\energy_gun.dm"
 #include "modular_bluemoon\code\modules\projectiles\guns\energy\ero_taser.dm"
+#include "modular_bluemoon\code\modules\projectiles\projectile\bullets\flamethrower.dm"
 #include "modular_bluemoon\code\modules\projectiles\projectile\bullets\rifle.dm"
 #include "modular_bluemoon\code\modules\projectiles\projectile\bullets\sniper.dm"
 #include "modular_bluemoon\code\modules\reagents\reagent_containers.dm"

@@ -59,7 +59,11 @@
 			qdel(src)
 
 /obj/item/paperplane/Destroy()
-	internalPaper = null
+	if(internalPaper)
+		var/obj/item/paper/detached = internalPaper
+		internalPaper = null
+		if(!QDELETED(detached) && detached.loc == src)
+			detached.moveToNullspace()
 	return ..()
 
 /obj/item/paperplane/suicide_act(mob/living/user)

@@ -31,7 +31,7 @@
 	desc = "Forms an automatic short-range turret which will automatically attack nearby unrestrained non-Servants that can see it."
 	invocations = list("Guardians of Engine...", "...judge those who would harm us.")
 	channel_time = 100
-	power_cost = 250
+	power_cost = 2500
 	object_path = /obj/structure/destructible/clockwork/ocular_warden
 	creator_message = "<span class='brass'>You form an ocular warden, which will automatically attack nearby unrestrained non-Servants that can see it.</span>"
 	observer_message = "<span class='warning'>A brass eye takes shape and slowly rises into the air, its red iris glaring!</span>"
@@ -144,7 +144,7 @@
 	desc = "Создаёт предмет, который необходимо разбить для призыва Портального Шторма."
 	invocations = list("Я прошу, пришли подкрепление...", "...мы в тебе нуждаемся.")
 	channel_time = 20
-	power_cost = 55000 //Shouldn't be too spammable but not too hard to get either
+	power_cost = 50000
 	whispered = TRUE
 	creator_message = "Вы сформировали Сферу с Проклятием для Станции."
 	object_path = /obj/item/station_clock_curse

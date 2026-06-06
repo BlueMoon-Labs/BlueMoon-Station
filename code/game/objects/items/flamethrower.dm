@@ -192,6 +192,8 @@
 	operating = TRUE
 	var/turf/previousturf = get_turf(src)
 	for(var/turf/T in turflist)
+		if(!isopenturf(T))
+			continue
 		if(T == previousturf)
 			continue	//so we don't burn the tile we be standin on
 		var/list/turfs_sharing_with_prev = previousturf.GetAtmosAdjacentTurfs(alldir=1)
@@ -209,15 +211,16 @@
 
 
 /obj/item/flamethrower/proc/default_ignite(turf/target, release_amount = 0.05)
-	//TODO: DEFERRED Consider checking to make sure tank pressure is high enough before doing this...
-	//Transfer 5% of current tank air contents to turf
+	if(!ptank || !isopenturf(target))
+		return
+	//Transfer a portion of current tank air contents to turf
 	var/datum/gas_mixture/air_transfer = ptank.air_contents.remove_ratio(release_amount)
 	air_transfer.set_moles(GAS_PLASMA, air_transfer.get_moles(GAS_PLASMA) * 5)
-	target.assume_air(air_transfer)
+	var/turf/open/open_target = target
+	open_target.assume_air(air_transfer)
 	qdel(air_transfer)
-	//Burn it based on transfered gas
-	target.hotspot_expose((ptank.air_contents.return_temperature()*2) + 380,500)
-	//location.hotspot_expose(1000,500,1)
+	var/fire_power = clamp(round(release_amount * 50), 8, 50)
+	open_target.IgniteTurf(fire_power)
 
 /obj/item/flamethrower/Initialize(mapload)
 	. = ..()
@@ -251,7 +254,7 @@
 	return ..()
 
 /obj/item/assembly/igniter/proc/flamethrower_process(turf/open/location)
-	location.hotspot_expose(700,2)
+	location.IgniteTurf(6)
 
 /obj/item/assembly/igniter/cold/flamethrower_process(turf/open/location)
 	return

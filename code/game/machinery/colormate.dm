@@ -2,6 +2,17 @@
 #define COLORMATE_HSV 2
 #define COLORMATE_MATRIX 3
 
+/// color_presets_* are nested: list(item_type = list(preset_name = value)). The
+/// inner keys are user-entered preset names, so clean control characters out of
+/// them on load - otherwise a control-character name makes a preset permanently
+/// unselectable and undeletable through the UI. Mirrors sanitize_custom_emote_panel.
+/proc/sanitize_color_preset_keys(list/presets)
+	if(!islist(presets))
+		return list()
+	for(var/item_type in presets)
+		presets[item_type] = sanitize_assoc_keys(presets[item_type])
+	return presets
+
 /obj/machinery/gear_painter
 	name = "\improper Color Mate"
 	desc = "A machine to give your apparel a fresh new color!"
@@ -227,7 +238,7 @@
 				return
 
 			var/datum/preferences/prefs = user.client.prefs
-			var/preset_name = params["name"]
+			var/preset_name = strip_control_chars(params["name"])
 
 			// Сопоставляем режим (имя поля в prefs, лист пресетов для inserted.type)
 			var/presets_field

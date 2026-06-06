@@ -724,3 +724,7 @@
 /datum/gear/donator/portallight_box
 	name = "Portal Fleshlight and Underwear"
 	path = /obj/item/storage/box/portallight
+
+/datum/gear/donator/presscameradrone
+	name = "Press Camera Drone"
+	path = /obj/item/tvcamera

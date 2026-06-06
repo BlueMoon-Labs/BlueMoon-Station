@@ -174,18 +174,8 @@
 	return
 
 //Огнемёт крутой
-/obj/item/projectile/bullet/incendiary/m2a100
-	name = "Fire"
-	damage = 7
-	fire_stacks = 10
-	damage_type = BURN
-	icon_state = ""
-	hitsound_wall = ""
-	projectile_piercing = PASSMOB
-	range = 15
-
 /obj/item/ammo_casing/energy/laser/m2a100
-	projectile_type = /obj/item/projectile/bullet/incendiary/m2a100
+	projectile_type = /obj/item/projectile/bullet/flamethrower
 	pellets = 6
 	variance = 35
 	e_cost = 50

@@ -538,4 +538,4 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
 	icon_state = "renory_helmet"
 	item_state = "ygloves"
-	flags_inv = HIDEFACIALHAIR|HIDEEYES|HIDEEARS|HIDEHAIR
+	flags_inv = HIDEFACIALHAIR|HIDEEARS|HIDEHAIR

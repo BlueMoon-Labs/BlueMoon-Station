@@ -21,7 +21,7 @@
 		painting = canvas
 		canvas.forceMove(get_turf(src))
 		canvas.layer = layer+0.1
-		user.visible_message("<span class='notice'>[user] puts \the [canvas] on \the [src].</span>","<span class='notice'>You place \the [canvas] on \the [src].</span>")
+		user.visible_message(span_notice("[user] puts \the [canvas] on \the [src]."),span_notice("You place \the [canvas] on \the [src]."))
 	else
 		return ..()
 
@@ -403,6 +403,7 @@
 	flags_1 = NONE
 	icon_state = "frame-empty"
 	result_path = /obj/structure/sign/painting
+	allow_mouse_position = FALSE
 
 /obj/structure/sign/painting
 	name = "Painting"
@@ -432,123 +433,10 @@
 	var/pixel_y_old
 	var/pixel_x_old
 
-/obj/item/wallframe/painting/large
-	name = "large painting frame"
-	desc = "The perfect showcase for your favorite deathtrap memories. Make sure you have enough space to mount this one to the wall."
-	custom_materials = list(/datum/material/wood = 2000*2)
-	result_path = /obj/structure/sign/painting/large
-	pixel_shift = 0
-	custom_price = PRICE_NORMAL * 1.25
-
-/obj/item/wallframe/painting/large/Initialize(mapload)
-	. = ..()
-	icon = 'icons/obj/art/artstuff_64x64.dmi' //The vending spritesheet needs the icons to be 32x32. We'll set the actual icon on Initialize.
-
-/obj/item/wallframe/painting/large/try_build(turf/on_wall, mob/user)
-	. = ..()
-	if(!.)
-		return
-	var/our_dir = get_dir(user, on_wall)
-	var/check_dir = our_dir & (EAST|WEST) ? NORTH : EAST
-	var/turf/closed/wall/second_wall = get_step(on_wall, check_dir)
-	if(!istype(second_wall) || !user.CanReach(second_wall))
-		to_chat(user, span_warning("You need a reachable wall to the [check_dir == EAST ? "right" : "left"] of this one to mount this frame!"))
-		return FALSE
-
-/obj/item/wallframe/painting/large/after_attach(obj/object)
-	. = ..()
-	var/obj/structure/sign/painting/large/our_frame = object
-	our_frame.finalize_size()
-
-/obj/structure/sign/painting/large
-	icon = 'icons/obj/art/artstuff_64x64.dmi'
-	custom_materials = list(/datum/material/wood = 2000*2)
-	accepted_canvas_types = list(
-		/obj/item/canvas/thirtysix_twentyfour,
-		/obj/item/canvas/fortyfive_twentyseven,
-	)
-	wallframe_type = /obj/item/wallframe/painting/large
-
-/obj/structure/sign/painting/large/Initialize(mapload)
-	. = ..()
-	// Necessary so that the painting is framed correctly by the frame overlay when flipped.
-	ADD_KEEP_TOGETHER(src, INNATE_TRAIT)
-	if(mapload)
-		finalize_size()
-
-/obj/structure/sign/painting/large/library
-	name = "\improper Large Painting Exhibit mounting"
-	desc = "For the bulkier art pieces, hand-picked by the curator."
-	desc_with_canvas = "A curated, large piece of art (or \"art\"). Hopefully the price of the canvas was worth it."
-	persistence_id = "library_large"
-
-/obj/structure/sign/painting/large/library_private
-	name = "\improper Private Painting Exhibit mounting"
-	desc = "For the privier and less tasteful compositions that oughtn't to be shown in a parlor nor to the masses."
-	desc_with_canvas = "A painting that oughn't to be shown to the less open-minded commoners."
-	persistence_id = "library_large_private"
-
-/obj/structure/sign/painting/large/frame_canvas(mob/user, obj/item/canvas/new_canvas)
-	. = ..()
-	if(.)
-		set_painting_offsets()
-
-/obj/structure/sign/painting/large/load_persistent()
-	deoffset_painting()
-	. = ..()
-	if(.)
-		set_painting_offsets()
-
-/obj/structure/sign/painting/large/proc/set_painting_offsets()
-	icon_state = null
-	transform_old = transform
-	pixel_x_old = pixel_x
-	pixel_y_old = pixel_y
-	switch(dir)
-		if(EAST)
-			transform = transform.Turn(90)
-		if(WEST)
-			transform = transform.Turn(90)
-			pixel_y += 32
-		if(NORTH)
-			transform = transform.Turn(180)
-
-/obj/structure/sign/painting/large/proc/deoffset_painting()
-	icon_state = "frame-empty"
-	transform = transform_old
-	pixel_x = pixel_x_old
-	pixel_y = pixel_y_old
-
-/**
- * This frame is visually put between two wall turfs and it has an icon that's bigger than 32px, and because
- * of the way it's designed, the pixel_shift variable from the wallframe item won't do.
- * Also we want higher bounds so it actually covers an extra wall turf, so that it can count toward check_wall_item calls for
- * that wall turf.
- */
-/obj/structure/sign/painting/large/proc/finalize_size()
-	switch(dir)
-		if(SOUTH)
-			bound_width = 64
-		if(NORTH)
-			transform = transform.Turn(180)
-			pixel_y = -32
-			bound_width = 64
-		if(WEST)
-			// Totally intended so that the frame sprite doesn't spill behind the wall and get partly covered by the darkness plane.
-			// Ditto for the ones below.
-			bound_height = 64
-		if(EAST)
-			transform = transform.Turn(180)
-			pixel_x = -32
-			bound_height = 64
-	transform_old = transform
-	pixel_x_old = pixel_x
-	pixel_y_old = pixel_y
-
 /obj/structure/sign/painting/Initialize(mapload, dir, building)
 	. = ..()
 	SSpersistence.painting_frames += src
-	AddElement(/datum/element/art, 20)
+	AddElement(/datum/element/art, GOOD_ART)
 	if(dir)
 		setDir(dir)
 	if(building)
@@ -571,24 +459,24 @@
 /obj/structure/sign/painting/examine(mob/user)
 	. = ..()
 	if(persistence_id)
-		. += "<span class='notice'>Any painting placed here will be archived at the end of the shift.</span>"
+		. += span_notice("Any painting placed here will be archived at the end of the shift.")
 	else
 		. += span_notice("Use screwdriver to remove frame from the wall.")
 	if(current_canvas)
 		current_canvas.ui_interact(user)
-		. += "<span class='notice'>Use wirecutters to remove the painting.</span>"
+		. += span_notice("Use wirecutters to remove the painting.")
 
 /obj/structure/sign/painting/screwdriver_act(mob/living/user, obj/item/I)
 	. = ..()
 	if(persistence_id)
 		return
-	user.visible_message("<span class='notice'>[user] starts removing [src]...</span>", \
-							"<span class='notice'>You start unscrewing [src].</span>")
+	user.visible_message(span_notice("[user] starts removing [src]..."), \
+							span_notice("You start unscrewing [src]."))
 	I.play_tool_sound(src)
 	if(I.use_tool(src, user, 3 SECONDS))
 		playsound(src, 'sound/items/deconstruct.ogg', 50, 1)
-		user.visible_message("<span class='notice'>[user] unscrews [src].</span>", \
-							"<span class='notice'>You unscrew [src].</span>")
+		user.visible_message(span_notice("[user] unscrews [src]."), \
+							span_notice("You unscrew [src]."))
 		new wallframe_type(get_turf(user))
 		remove_canvas()
 		qdel(src)
@@ -598,7 +486,7 @@
 	. = ..()
 	if(remove_canvas())
 		I.play_tool_sound(src)
-		to_chat(user, "<span class='notice'>You remove the painting from the frame.</span>")
+		to_chat(user, span_notice("You remove the painting from the frame."))
 		return TRUE
 
 /obj/structure/sign/painting/proc/remove_canvas()
@@ -608,6 +496,7 @@
 	if(istype(src, /obj/structure/sign/painting/large))
 		var /obj/structure/sign/painting/large/P = src
 		P.deoffset_painting()
+	name = initial(name)
 	current_canvas.forceMove(drop_location())
 	current_canvas = null
 	update_icon()
@@ -621,7 +510,8 @@
 		current_canvas = new_canvas
 		if(!current_canvas.finalized)
 			current_canvas.finalize(user)
-		to_chat(user,"<span class='notice'>You frame [current_canvas].</span>")
+		name = current_canvas.painting_name
+		to_chat(user,span_notice("You frame [current_canvas]."))
 		update_icon()
 		return TRUE
 	return FALSE
@@ -672,7 +562,7 @@
 	if(!title)
 		title = "Untitled Artwork" //Should prevent NULL named art from loading as NULL, if you're still getting the admin log chances are persistence is broken
 	if(!title)
-		message_admins("<span class='notice'>Painting with NO TITLE loaded on a [persistence_id] frame in [get_area(src)]. Please delete it, it is saved in the database with no name and will create bad assets.</span>")
+		message_admins(span_notice("Painting with NO TITLE loaded on a [persistence_id] frame in [get_area(src)]. Please delete it, it is saved in the database with no name and will create bad assets."))
 	if(!fexists(png))
 		stack_trace("Persistent painting [chosen["md5"]].png was not found in [persistence_id] directory.")
 		return
@@ -694,6 +584,7 @@
 	new_canvas.name = "painting - [title]"
 	current_canvas = new_canvas
 	current_canvas.update_icon()
+	name = new_canvas.painting_name
 	update_icon()
 	return TRUE
 
@@ -757,7 +648,7 @@
 			return
 		var/mob/user = usr
 		if(!persistence_id || !current_canvas)
-			to_chat(user,"<span class='warning'>This is not a persistent painting.</span>")
+			to_chat(user,span_warning("This is not a persistent painting."))
 			return
 		var/md5 = md5(lowertext(current_canvas.get_data_string()))
 		var/author = current_canvas.author_ckey
@@ -773,9 +664,144 @@
 				QDEL_NULL(P.current_canvas)
 				P.update_icon()
 		log_admin("[key_name(user)] has deleted a persistent painting made by [author].")
-		message_admins("<span class='notice'>[key_name_admin(user)] has deleted persistent painting made by [author].</span>")
+		message_admins(span_notice("[key_name_admin(user)] has deleted persistent painting made by [author]."))
 
+/////////////// WALLFRAME LARGE ///////////////
 
+/obj/item/wallframe/painting/large
+	name = "large painting frame"
+	desc = "The perfect showcase for your favorite deathtrap memories. Make sure you have enough space to mount this one to the wall."
+	custom_materials = list(/datum/material/wood = 2000*2)
+	result_path = /obj/structure/sign/painting/large
+	pixel_shift = 0
+	custom_price = PRICE_NORMAL * 1.25
+
+/obj/item/wallframe/painting/large/Initialize(mapload)
+	. = ..()
+	icon = 'icons/obj/art/artstuff_64x64.dmi' //The vending spritesheet needs the icons to be 32x32. We'll set the actual icon on Initialize.
+
+/obj/item/wallframe/painting/large/try_build(turf/on_wall, mob/user)
+	. = ..()
+	if(!.)
+		return
+	var/our_dir = get_dir(user, on_wall)
+	var/check_dir = our_dir & (EAST|WEST) ? NORTH : EAST
+	var/turf/closed/wall/second_wall = get_step(on_wall, check_dir)
+	if(!istype(second_wall) || !user.CanReach(second_wall))
+		to_chat(user, span_warning("You need a reachable wall to the [check_dir == EAST ? "right" : "left"] of this one to mount this frame!"))
+		return FALSE
+
+/obj/item/wallframe/painting/large/after_attach(obj/object)
+	. = ..()
+	var/obj/structure/sign/painting/large/our_frame = object
+	our_frame.finalize_size()
+
+/////////////// SIGN LARGE ///////////////
+
+/obj/structure/sign/painting/large
+	icon = 'icons/obj/art/artstuff_64x64.dmi'
+	custom_materials = list(/datum/material/wood = 2000*2)
+	accepted_canvas_types = list(
+		/obj/item/canvas/thirtysix_twentyfour,
+		/obj/item/canvas/fortyfive_twentyseven,
+	)
+	wallframe_type = /obj/item/wallframe/painting/large
+
+	var/invert_rotate = FALSE
+
+/obj/structure/sign/painting/large/library
+	name = "\improper Large Painting Exhibit mounting"
+	desc = "For the bulkier art pieces, hand-picked by the curator."
+	desc_with_canvas = "A curated, large piece of art (or \"art\"). Hopefully the price of the canvas was worth it."
+	persistence_id = "library_large"
+
+/obj/structure/sign/painting/large/library_private
+	name = "\improper Private Painting Exhibit mounting"
+	desc = "For the privier and less tasteful compositions that oughtn't to be shown in a parlor nor to the masses."
+	desc_with_canvas = "A painting that oughn't to be shown to the less open-minded commoners."
+	persistence_id = "library_large_private"
+
+/obj/structure/sign/painting/large/Initialize(mapload)
+	. = ..()
+	// Necessary so that the painting is framed correctly by the frame overlay when flipped.
+	ADD_KEEP_TOGETHER(src, INNATE_TRAIT)
+	if(mapload)
+		finalize_size()
+
+/obj/structure/sign/painting/large/examine(mob/user)
+	. = ..()
+	. += span_notice("Alt-click to rotate painting.")
+
+/obj/structure/sign/painting/large/AltClick(mob/user)
+	. = ..()
+	if(!Adjacent(user) || !do_after(user, 0.4 SECONDS, src))
+		return
+	invert_rotate = !invert_rotate
+	deoffset_painting()
+	set_painting_offsets()
+
+/obj/structure/sign/painting/large/frame_canvas(mob/user, obj/item/canvas/new_canvas)
+	. = ..()
+	if(.)
+		set_painting_offsets()
+
+/obj/structure/sign/painting/large/load_persistent()
+	deoffset_painting()
+	. = ..()
+	if(.)
+		set_painting_offsets()
+
+/obj/structure/sign/painting/large/proc/set_painting_offsets()
+	icon_state = null
+	transform_old = transform
+	pixel_x_old = pixel_x
+	pixel_y_old = pixel_y
+	switch(dir)
+		if(EAST)
+			transform = transform.Turn(invert_rotate ? 270 : 90)
+			pixel_y += invert_rotate ? 32 : 1
+		if(WEST)
+			transform = transform.Turn(invert_rotate ? 270 : 90)
+			pixel_y += invert_rotate ? 1 : 32
+			pixel_x += invert_rotate ? 3 : 0
+		if(NORTH)
+			if(invert_rotate)
+				pixel_x += 31
+				pixel_y += 3
+			else
+				transform = transform.Turn(180)
+
+/obj/structure/sign/painting/large/proc/deoffset_painting()
+	icon_state = "frame-empty"
+	transform = transform_old
+	pixel_x = pixel_x_old
+	pixel_y = pixel_y_old
+
+/**
+ * This frame is visually put between two wall turfs and it has an icon that's bigger than 32px, and because
+ * of the way it's designed, the pixel_shift variable from the wallframe item won't do.
+ * Also we want higher bounds so it actually covers an extra wall turf, so that it can count toward check_wall_item calls for
+ * that wall turf.
+ */
+/obj/structure/sign/painting/large/proc/finalize_size()
+	switch(dir)
+		if(SOUTH)
+			bound_width = 64
+		if(NORTH)
+			transform = transform.Turn(180)
+			pixel_y = -32
+			bound_width = 64
+		if(WEST)
+			// Totally intended so that the frame sprite doesn't spill behind the wall and get partly covered by the darkness plane.
+			// Ditto for the ones below.
+			bound_height = 64
+		if(EAST)
+			transform = transform.Turn(180)
+			pixel_x = -32
+			bound_height = 64
+	transform_old = transform
+	pixel_x_old = pixel_x
+	pixel_y_old = pixel_y
 
 // Library public assets
 /obj/structure/sign/painting/large/library/directional/north
