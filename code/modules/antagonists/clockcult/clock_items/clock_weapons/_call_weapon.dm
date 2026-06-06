@@ -32,7 +32,7 @@
 			weapon_reset(RATVARIAN_WEAPON_COOLDOWN * 0.5)
 			return
 		else
-			weapon.visible_message("<span class='warning'>[weapon] [оружие] внезапно мерцает и исчезает!</span>")
+			weapon.visible_message("<span class='warning'>[weapon] внезапно мерцает и исчезает!</span>")
 			owner.visible_message("<span class='danger'>[weapon.name] внезапно появляется в руках [owner]!</span>", "<span class='brass'>Вы возвращаете [weapon] себе.</span>")
 	else
 		weapon = new weapon_type (get_turf(usr), src)
