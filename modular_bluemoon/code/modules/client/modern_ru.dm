@@ -39,7 +39,7 @@ var/list/ru_strings = list(
 	// Character preview options
 	"preview_title" = "Предпросмотр",
 	"preview_job" = "Работа",
-	"preview_loadout" = "Снаряжение",
+	"preview_loadout" = "Лодаут",
 	"preview_naked" = "Нагота",
 	"preview_naked_aroused" = "Возбужденный",
 
@@ -49,7 +49,7 @@ var/list/ru_strings = list(
 	"char_tab_appearance" = "Внешность",
 	"char_tab_markings" = "Отметины",
 	"char_tab_speech" = "Речь",
-	"char_tab_loadout" = "Снаряжение",
+	"char_tab_loadout" = "Лодаут",
 	"char_tab_quirks" = "Особенности",
 
 	// Quirks tab labels
@@ -146,10 +146,10 @@ var/list/ru_strings = list(
 	"pregnancy_preferences" = "Предпочтения беременности",
 
 	// Loadout tab labels
-	"loadout" = "Снаряжение",
-	"loadout_points" = "Очки снаряжения",
+	"loadout" = "Лодаут",
+	"loadout_points" = "Очки лодаута",
 	"points_remaining" = "очков осталось",
-	"clear_loadout" = "Очистить снаряжение",
+	"clear_loadout" = "Очистить лодаут",
 
 	// Markings tab labels
 	"character_tattoos" = "Татуировки персонажа",
@@ -249,9 +249,10 @@ var/list/ru_strings = list(
 	"cycle_background" = "Фон",
 
 	// Loadout
-	"loadout_points" = "очков снаряжения",
+	"loadout_points" = "очков лодаута",
 	"loadout_points_remaining" = "осталось",
-	"clear_loadout" = "Очистить снаряжение",
+	"clear_loadout" = "Очистить лодаут",
+	"copy_loadout" = "Скопировать лодаут",
 	"loadout_enabled_label" = "Заменять одежду лодаутом",
 
 	// Quirks
@@ -569,11 +570,11 @@ var/list/ru_strings = list(
 	"set_speech_style" = "Установить стиль речи",
 
 	// Loadout tab (already partially covered)
-	"gear_points" = "Очки снаряжения",
+	"gear_points" = "Очки лодаут",
 	"choose_items" = "Выбрать предметы",
-	"loadout_slot" = "Слот снаряжения",
+	"loadout_slot" = "Слот лодаута",
 	"loadout_slot_hint" = "Можно выбрать только один предмет на категорию, кроме предметов, которые появляются в рюкзаке или руках.",
-	"loadout_no_categories" = "ОШИБКА: Нет категорий снаряжения — что-то пошло совсем не так!",
+	"loadout_no_categories" = "ОШИБКА: Нет категорий лодаута — что-то пошло совсем не так!",
 	"loadout_no_subcategories" = "Подкатегории не найдены. Что-то пошло совсем не так!",
 	"no_items_in_category" = "В этой категории нет доступных предметов.",
 	"cost" = "Стоимость",
@@ -1103,6 +1104,7 @@ var/list/en_strings = list(
 	"loadout_points" = "loadout point",
 	"loadout_points_remaining" = "remaining",
 	"clear_loadout" = "Clear Loadout",
+	"copy_loadout" = "Copy Loadout",
 	"loadout_enabled_label" = "Replace clothing with loadout",
 
 	// Quirks

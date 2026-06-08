@@ -1124,6 +1124,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				var/loadout_points_label = src.use_modern_translations ? get_modern_text("loadout_points", src) : "loadout point"
 				var/loadout_points_remaining_label = src.use_modern_translations ? get_modern_text("loadout_points_remaining", src) : "remaining"
 				var/clear_loadout_label = src.use_modern_translations ? get_modern_text("clear_loadout", src) : "Clear Loadout"
+				var/copy_loadout_label = src.use_modern_translations ? get_modern_text("copy_loadout", src) : "Copy Loadout"
 				var/loadout_points_word = loadout_points_label
 				if(!src.use_modern_translations && gear_points != 1)
 					loadout_points_word = "[loadout_points_label]s"
@@ -1150,7 +1151,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				var/loadout_toggle_text = loadout_enabled ? (src.use_modern_translations ? get_modern_text("enabled", src) : "ON") : (src.use_modern_translations ? get_modern_text("disabled", src) : "OFF")
 				dat += "<center>[loadout_enabled_label]: <a href='?_src_=prefs;preference=gear;toggle_loadout_enabled=1'><font color='[loadout_toggle_color]'><b>[loadout_toggle_text]</b></font></a></center><br>"
 				// BLUEMOON ADD END
-				dat += "<center><a href='?_src_=prefs;preference=gear;clear_loadout=1'>[clear_loadout_label]</a></center>"
+				dat += "<center style=\"line-height:20px\">"
+				dat += "<a href='?_src_=prefs;preference=gear;clear_loadout=1'>[clear_loadout_label]</a>"
+				dat += "<a href='?_src_=prefs;preference=gear;copy_loadout=1'>[copy_loadout_label]</a>"
+				dat += "</center>"
 				dat += "</td>"
 			else
 				// Modern uses colspan=2 for the Preview cell above, so there is no right column here.
@@ -6358,8 +6362,23 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			if(chosen > MAXIMUM_LOADOUT_SAVES || chosen < 1)
 				return
 			loadout_slot = chosen
+		if(href_list["copy_loadout"])
+			var/list/lod_slots = list()
+			for(var/i = 1, i <= MAXIMUM_LOADOUT_SAVES, i++)
+				if(i == loadout_slot)
+					continue
+				lod_slots += i
+			var/where_copy = tgui_input_list(user, "Выбери в какой слот скопировать текущий лодаут.", "Копирование лодаута", lod_slots)
+			if(!where_copy)
+				return
+			var/list/loadout_to_copy = loadout_data["SAVE_[loadout_slot]"]
+			loadout_data["SAVE_[where_copy]"] = LAZYCOPY(loadout_to_copy)
+			save_preferences()
 		if(href_list["clear_loadout"])
 			loadout_data["SAVE_[loadout_slot]"] = list()
+			var/confirm = tgui_alert(user, "Вы уверены, что хотите очистить лодаут?", "Очистка лодаута!", list("Нет", "Да"))
+			if(confirm != "Да")
+				return
 			save_preferences()
 		// BLUEMOON ADD - переключатель лодаута
 		if(href_list["toggle_loadout_enabled"])
