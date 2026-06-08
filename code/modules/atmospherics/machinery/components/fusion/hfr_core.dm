@@ -29,7 +29,7 @@
 	var/datum/gas_mixture/moderator_internal
 	var/list/moderator_scrubbing = list(GAS_HELIUM)
 	var/moderator_filtering_rate = 20
-	var/fusion_filtering_rate = 20 /// Rate for outputting all internal_fusion gases via waste removal
+	var/fusion_filtering_rate = 20 /// Legacy; no longer used for waste removal
 	var/datum/hfr_fuel/selected_fuel
 
 	var/energy = 0
@@ -141,12 +141,11 @@
 	if(to_release && to_release.total_moles() > 0)
 		local_turf.assume_air(to_release)
 
-/obj/machinery/atmospherics/components/unary/hypertorus/core/crowbar_act(mob/living/user, obj/item/tool)
-	var/internal_pressure = 0
+/obj/machinery/atmospherics/components/unary/hypertorus/core/crowbar_deconstruction_act(mob/living/user, obj/item/tool, internal_pressure = 0)
 	if(internal_fusion)
 		internal_pressure = max(internal_pressure, internal_fusion.return_pressure())
 	if(moderator_internal)
 		internal_pressure = max(internal_pressure, moderator_internal.return_pressure())
 	if(internal_pressure > 0)
 		say("WARNING - Core can contain hazardous gases, deconstruct with caution!")
-	return default_deconstruction_crowbar(tool)
+	return ..(user, tool, internal_pressure)

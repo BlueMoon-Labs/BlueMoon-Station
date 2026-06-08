@@ -167,11 +167,17 @@
 	conduction = - delta_temperature * (magnetic_constrictor * HFR_CONDUCTION_MAGNETIC_FACTOR)
 	radiation = max(-(PLANCK_LIGHT_CONSTANT / HFR_PLANCK_RADIATION_DIVISOR) * radiation_modifier * delta_temperature, 0)
 	power_output = efficiency * (internal_power - conduction - radiation)
+	if(!isfinite(power_output))
+		power_output = 0
 	// Лимиты тепла: от уровня и heating_conductor. heat_output от нестабильности и power_output, ограничен min/max.
 	heat_limiter_modifier = HFR_HEAT_LIMITER_BASE * (10 ** power_level) * (heating_conductor * HFR_MAGNETIC_VOLUME_FRAC)
+	if(!isfinite(heat_limiter_modifier))
+		heat_limiter_modifier = 0
 	heat_output_min = - heat_limiter_modifier * HFR_COOLING_PER_TICK_FACTOR * negative_temperature_multiplier
 	heat_output_max = heat_limiter_modifier * positive_temperature_multiplier
 	heat_output = clamp(internal_instability * power_output * heat_modifier / HFR_HEAT_OUTPUT_DIVISOR, heat_output_min, heat_output_max)
+	if(!isfinite(heat_output))
+		heat_output = 0
 
 	if (!check_fuel())
 		return
@@ -309,6 +315,8 @@
 					critical_threshold_proximity = max(critical_threshold_proximity - (moderator_list[GAS_HEALIUM] / 100) * HFR_HEALIUM_HEAL_RATE_FACTOR * melting_point * seconds_per_tick, 0)
 					moderator_internal.adjust_moles(GAS_HEALIUM, -min(moderator_internal.get_moles(GAS_HEALIUM), scaled_production * 20))
 			internal_fusion.adjust_moles(GAS_ANTINOBLIUM, dirty_production_rate * 0.01 / 0.095 * seconds_per_tick)
+
+	src.heat_output = isfinite(heat_output) ? heat_output : 0
 
 	// Температура fusion: если не перегрев, добавляем heat_output за тик и clamp; иначе охлаждаем на heat_limiter_modifier за тик.
 	if(internal_fusion.return_temperature() <= FUSION_MAXIMUM_TEMPERATURE)
@@ -454,30 +462,23 @@
 			continue
 		step_towards(alive_mob, loc)
 
-/// Сливает в output отфильтрованные газы модератора и выбранные газы из internal_fusion. Вызывается при waste_remove и уровне < 6.
+/// Сливает в output отфильтрованные газы модератора и побочные продукты fusion (primary_products). Топливо не выводится.
 /obj/machinery/atmospherics/components/unary/hypertorus/core/proc/remove_waste(seconds_per_tick)
 	if(!waste_remove)
 		return
-	// Forcibly disabled at fusion power level 6
-	if(power_level >= 6)
-		return
-	var/moderator_filtering_amount = moderator_scrubbing.len
-	if(moderator_filtering_amount > 0)
+	var/filtering_amount = moderator_scrubbing.len
+	if(filtering_amount > 0)
 		for(var/gas_id in moderator_internal.get_gases() & moderator_scrubbing)
-			var/datum/gas_mixture/removed = moderator_internal.remove_specific(gas_id, (moderator_filtering_rate / moderator_filtering_amount) * seconds_per_tick, hfr_removed_waste)
+			var/datum/gas_mixture/removed = moderator_internal.remove_specific(gas_id, (moderator_filtering_rate / filtering_amount) * seconds_per_tick, hfr_removed_waste)
 			if(removed)
 				linked_output.airs[1].merge(removed)
 				hfr_removed_waste.clear()
 
-	// Output all internal_fusion gases through waste removal
-	var/list/fusion_gases = internal_fusion.get_gases()
-	var/fusion_gas_count = length(fusion_gases)
-	if(fusion_gas_count > 0)
-		var/rate_per_gas = (fusion_filtering_rate / fusion_gas_count) * seconds_per_tick
-		for(var/gas_id in fusion_gases)
+	if(selected_fuel)
+		for(var/gas_id in selected_fuel.primary_products)
 			if(internal_fusion.get_moles(gas_id) <= 0)
 				continue
-			var/datum/gas_mixture/removed = internal_fusion.remove_specific(gas_id, rate_per_gas, hfr_removed_waste)
+			var/datum/gas_mixture/removed = internal_fusion.remove_specific(gas_id, internal_fusion.get_moles(gas_id) * (1 - (1 - 0.25) ** seconds_per_tick), hfr_removed_waste)
 			if(removed)
 				linked_output.airs[1].merge(removed)
 				hfr_removed_waste.clear()

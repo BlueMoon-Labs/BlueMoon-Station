@@ -160,8 +160,8 @@
 	if(!istype(target, /obj/machinery/atmospherics/pipe/simple/multiz) && !((initialize_directions & get_dir(src, target)) && (target.initialize_directions & get_dir(target, src))))
 		return FALSE
 
-	//both target & src can't be connected either way
-	if(!isConnectable(target, given_layer) && target.isConnectable(src, given_layer))
+	// Both sides must agree on the connection (layer, flags, etc.)
+	if(!isConnectable(target, given_layer) || !target.isConnectable(src, given_layer))
 		return FALSE
 
 	return TRUE
@@ -170,6 +170,8 @@
 /obj/machinery/atmospherics/proc/isConnectable(obj/machinery/atmospherics/target, given_layer)
 	if(isnull(given_layer))
 		given_layer = piping_layer
+	if(target.loc == loc)
+		return FALSE
 	if((target.piping_layer == given_layer) || (target.pipe_flags & PIPING_ALL_LAYER))
 		return TRUE
 	return FALSE

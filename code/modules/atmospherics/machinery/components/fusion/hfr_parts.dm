@@ -55,7 +55,7 @@
 		update_appearance(UPDATE_ICON)
 
 /obj/machinery/atmospherics/components/unary/hypertorus/crowbar_act(mob/living/user, obj/item/tool)
-	return default_deconstruction_crowbar(tool)
+	return crowbar_deconstruction_act(user, tool)
 
 /obj/machinery/atmospherics/components/unary/hypertorus/update_icon_state()
 	if(panel_open)
@@ -422,7 +422,7 @@
 	-You cannot dismantle the machine if the power level is over 0<BR>\
 	-You cannot power of the machine if the power level is over 0<BR>\
 	-You cannot dispose of waste gases if power level is over 5<BR>\
-	-When waste remove is on, all gases from Internal Fusion are output through the waste port<BR>\
+	-When waste remove is on, fusion byproducts and selected moderator gases are output through the waste port<BR>\
 	-Hypernoblium will decrease the power of the mix by a lot<BR>\
 	-Antinoblium will INCREASE the power of the mix by a lot more<BR>\
 	-High heat capacity gases are harder to heat/cool<BR>\
@@ -533,7 +533,10 @@
 			qdel(box)
 			continue
 
-	new/obj/machinery/atmospherics/components/unary/hypertorus/core(loc, TRUE)
+	var/obj/machinery/atmospherics/components/unary/hypertorus/core/centre = new(loc, TRUE)
+	for(var/obj/machinery/atmospherics/components/unary/hypertorus/part in orange(1, centre))
+		part.reconnect_nodes()
+	centre.reconnect_nodes()
 	qdel(src)
 
 /obj/structure/closet/crate/engineering/hfr

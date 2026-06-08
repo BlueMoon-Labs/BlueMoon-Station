@@ -90,6 +90,19 @@
 		RegisterSignal(corner, COMSIG_PARENT_QDELETING, PROC_REF(unregister_signals))
 	soundloop = new(src, TRUE)
 	soundloop.volume = 5
+	connect_atmos_ports()
+
+/// Reconnects I/O ports and the core cooling loop to adjacent pipenets after assembly or re-activation.
+/obj/machinery/atmospherics/components/unary/hypertorus/core/proc/connect_atmos_ports()
+	if(!SSair.initialized)
+		return
+	reconnect_nodes()
+	if(linked_input)
+		linked_input.reconnect_nodes()
+	if(linked_moderator)
+		linked_moderator.reconnect_nodes()
+	if(linked_output)
+		linked_output.reconnect_nodes()
 
 /obj/machinery/atmospherics/components/unary/hypertorus/core/proc/unregister_signals(only_signals = FALSE)
 	SIGNAL_HANDLER
