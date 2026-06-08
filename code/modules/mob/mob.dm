@@ -281,7 +281,7 @@
 
 	if(istype(W))
 		if(equip_to_slot_if_possible(W, slot, FALSE, FALSE, FALSE, FALSE, TRUE))
-			if(usr.client.prefs.outline_enabled)
+			if(usr?.client?.prefs?.outline_enabled)
 				W.apply_outline()
 			return TRUE
 
