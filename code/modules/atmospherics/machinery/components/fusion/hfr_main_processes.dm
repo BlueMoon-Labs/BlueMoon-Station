@@ -166,18 +166,12 @@
 	delta_temperature = archived_heat - core_temperature
 	conduction = - delta_temperature * (magnetic_constrictor * HFR_CONDUCTION_MAGNETIC_FACTOR)
 	radiation = max(-(PLANCK_LIGHT_CONSTANT / HFR_PLANCK_RADIATION_DIVISOR) * radiation_modifier * delta_temperature, 0)
-	power_output = efficiency * (internal_power - conduction - radiation)
-	if(!isfinite(power_output))
-		power_output = 0
+	power_output = HFR_SANITIZE_HEAT(efficiency * (internal_power - conduction - radiation))
 	// Лимиты тепла: от уровня и heating_conductor. heat_output от нестабильности и power_output, ограничен min/max.
-	heat_limiter_modifier = HFR_HEAT_LIMITER_BASE * (10 ** power_level) * (heating_conductor * HFR_MAGNETIC_VOLUME_FRAC)
-	if(!isfinite(heat_limiter_modifier))
-		heat_limiter_modifier = 0
-	heat_output_min = - heat_limiter_modifier * HFR_COOLING_PER_TICK_FACTOR * negative_temperature_multiplier
-	heat_output_max = heat_limiter_modifier * positive_temperature_multiplier
-	heat_output = clamp(internal_instability * power_output * heat_modifier / HFR_HEAT_OUTPUT_DIVISOR, heat_output_min, heat_output_max)
-	if(!isfinite(heat_output))
-		heat_output = 0
+	heat_limiter_modifier = HFR_SANITIZE_HEAT(HFR_HEAT_LIMITER_BASE * (10 ** power_level) * (heating_conductor * HFR_MAGNETIC_VOLUME_FRAC))
+	heat_output_min = HFR_SANITIZE_HEAT(- heat_limiter_modifier * HFR_COOLING_PER_TICK_FACTOR * negative_temperature_multiplier)
+	heat_output_max = HFR_SANITIZE_HEAT(heat_limiter_modifier * positive_temperature_multiplier)
+	heat_output = HFR_SANITIZE_HEAT(clamp(internal_instability * power_output * heat_modifier / HFR_HEAT_OUTPUT_DIVISOR, heat_output_min, heat_output_max))
 
 	if (!check_fuel())
 		return
@@ -316,7 +310,7 @@
 					moderator_internal.adjust_moles(GAS_HEALIUM, -min(moderator_internal.get_moles(GAS_HEALIUM), scaled_production * 20))
 			internal_fusion.adjust_moles(GAS_ANTINOBLIUM, dirty_production_rate * 0.01 / 0.095 * seconds_per_tick)
 
-	src.heat_output = isfinite(heat_output) ? heat_output : 0
+	src.heat_output = HFR_SANITIZE_HEAT(heat_output)
 
 	// Температура fusion: если не перегрев, добавляем heat_output за тик и clamp; иначе охлаждаем на heat_limiter_modifier за тик.
 	if(internal_fusion.return_temperature() <= FUSION_MAXIMUM_TEMPERATURE)

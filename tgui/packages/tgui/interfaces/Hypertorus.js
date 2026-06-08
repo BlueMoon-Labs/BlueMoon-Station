@@ -8,6 +8,18 @@ import { getGasColor, getGasLabel } from '../constants';
 import { formatSiBaseTenUnit, formatSiUnit } from '../format';
 import { Window } from '../layouts';
 
+/** Heat output is in K; negative = endothermic cooling. formatSiBaseTenUnit breaks on 0 and negatives. */
+const formatHeatOutputKelvin = (kelvin) => {
+  if (!Number.isFinite(kelvin)) {
+    return '0 K';
+  }
+  if (kelvin === 0) {
+    return '0 K';
+  }
+  const sign = kelvin > 0 ? '+' : '-';
+  return sign + formatSiBaseTenUnit(Math.abs(kelvin), 1, 'K');
+};
+
 export const Hypertorus = (props, context) => {
   const { act, data } = useBackend(context);
   const filterTypes = data.filter_types || [];
@@ -44,7 +56,13 @@ export const Hypertorus = (props, context) => {
     heat_output_max,
   } = data;
   const safeHeatOutput = Number.isFinite(heat_output) ? heat_output : 0;
-  const heatActivity = safeHeatOutput / (safeHeatOutput < 0 ? heat_output_min : heat_output_max);
+  const heatOutputKelvin = safeHeatOutput * 1000;
+  const heatLimitMin = Number.isFinite(heat_output_min) ? heat_output_min : -1;
+  const heatLimitMax = Number.isFinite(heat_output_max) && heat_output_max !== 0
+    ? heat_output_max
+    : 1;
+  const heatDenom = safeHeatOutput < 0 ? heatLimitMin : heatLimitMax;
+  const heatActivity = heatDenom !== 0 ? safeHeatOutput / heatDenom : 0;
   const safeHeatActivity = Number.isFinite(heatActivity) ? heatActivity : 0;
   const fusion_gases = flow([
     filter(gas => gas.amount >= 0.01),
@@ -226,7 +244,7 @@ export const Hypertorus = (props, context) => {
                 value={safeHeatActivity}
                 minValue={-1}
                 maxValue={1.3}>
-                {(safeHeatOutput >= 0 ? '+' : '') + formatSiBaseTenUnit(safeHeatOutput * 1000, 1, 'K')}
+                {formatHeatOutputKelvin(heatOutputKelvin)}
               </ProgressBar>
             </LabeledList.Item>
           </LabeledList>

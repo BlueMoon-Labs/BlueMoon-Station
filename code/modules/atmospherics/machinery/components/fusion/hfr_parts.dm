@@ -270,10 +270,10 @@
 	data["moderator_gases"] = moderator_gasdata
 
 	data["energy_level"] = connected_core.energy
-	data["heat_limiter_modifier"] = connected_core.heat_limiter_modifier
-	data["heat_output_min"] = connected_core.heat_output_min
-	data["heat_output_max"] = connected_core.heat_output_max
-	data["heat_output"] = connected_core.heat_output
+	data["heat_limiter_modifier"] = HFR_SANITIZE_HEAT(connected_core.heat_limiter_modifier)
+	data["heat_output_min"] = HFR_SANITIZE_HEAT(connected_core.heat_output_min)
+	data["heat_output_max"] = HFR_SANITIZE_HEAT(connected_core.heat_output_max)
+	data["heat_output"] = HFR_SANITIZE_HEAT(connected_core.heat_output)
 	data["instability"] = connected_core.instability
 
 	data["heating_conductor"] = connected_core.heating_conductor

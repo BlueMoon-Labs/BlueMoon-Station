@@ -41,6 +41,8 @@
 #define HFR_HEAT_LIMITER_BASE 5
 /// Heat output formula divisor (internal_instability * power_output * heat_modifier / this)
 #define HFR_HEAT_OUTPUT_DIVISOR 200
+/// Sanitize heat values for UI/sim (NaN/Inf rejected; negative values are valid for endothermic output)
+#define HFR_SANITIZE_HEAT(heat) (isnum(heat) && (heat == heat) && (heat) >= -1e30 && (heat) <= 1e30 ? (heat) : 0)
 /// Fuel consumption: fuel_injection_rate * this * power_level, then clamp
 #define HFR_FUEL_CONSUMPTION_RATE_FACTOR (0.01 * 5)
 #define HFR_FUEL_CONSUMPTION_CLAMP_MIN 0.05
