@@ -6375,10 +6375,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			loadout_data["SAVE_[where_copy]"] = LAZYCOPY(loadout_to_copy)
 			save_preferences()
 		if(href_list["clear_loadout"])
-			loadout_data["SAVE_[loadout_slot]"] = list()
-			var/confirm = tgui_alert(user, "Вы уверены, что хотите очистить лодаут?", "Очистка лодаута!", list("Нет", "Да"))
+			var/confirm = tgui_alert(user, "Вы уверены, что хотите сбросить [loadout_slot] лодаут слот?", "Очистка лодаута!", list("Нет", "Да"))
 			if(confirm != "Да")
 				return
+			loadout_data["SAVE_[loadout_slot]"] = list()
 			save_preferences()
 		// BLUEMOON ADD - переключатель лодаута
 		if(href_list["toggle_loadout_enabled"])
