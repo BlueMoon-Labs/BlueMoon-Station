@@ -1344,14 +1344,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					var/set_headshot_label = src.use_modern_translations ? get_modern_text("set_headshot", src) : "Set Headshot"
 					var/naked_headshots_label = src.use_modern_translations ? get_modern_text("naked_headshots", src) : "Naked (NSFW) Headshots"
 					var/set_naked_headshot_label = src.use_modern_translations ? get_modern_text("set_naked_headshot", src) : "Set Headshot"
-					/*
-					var/set_headshot_1_label = src.use_modern_translations ? get_modern_text("set_headshot_1", src) : "Set Headshot 1 Image"
-					var/set_headshot_2_label = src.use_modern_translations ? get_modern_text("set_headshot_2", src) : "Set Headshot 2 Image"
-					var/set_headshot_3_label = src.use_modern_translations ? get_modern_text("set_headshot_3", src) : "Set Headshot 3 Image"
-					var/set_naked_headshot_1_label = src.use_modern_translations ? get_modern_text("set_naked_headshot_1", src) : "Set Headshot 1 Image"
-					var/set_naked_headshot_2_label = src.use_modern_translations ? get_modern_text("set_naked_headshot_2", src) : "Set Headshot 2 Image"
-					var/set_naked_headshot_3_label = src.use_modern_translations ? get_modern_text("set_naked_headshot_3", src) : "Set Headshot 3 Image"
-					*/
 					dat += "<table width='100%'><tr><td width='30%' valign='top'>"
 
 					dat += "<h2>[flavor_text_label]</h2>"
