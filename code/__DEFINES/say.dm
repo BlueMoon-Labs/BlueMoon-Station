@@ -66,6 +66,7 @@
 #define SPAN_CLOWN "clown"
 #define SPAN_SINGING "singing" // Skyrat edit
 #define SPAN_TAPE_RECORDER "tape_recorder"
+#define SPAN_SMALL_VOICE "small"
 
 //bitflag #defines for return value of the radio() proc.
 #define ITALICS 1

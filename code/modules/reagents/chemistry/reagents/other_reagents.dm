@@ -1724,12 +1724,109 @@
 	L.remove_movespeed_modifier(/datum/movespeed_modifier/reagent/nitryl)
 	..()
 
+/datum/reagent/nitrium_low_metabolization
+	name = "Nitrium"
+	description = "A highly reactive gas that makes you feel faster."
+	reagent_state = LIQUID
+	metabolization_rate = 0.5 * REAGENTS_METABOLISM
+	color = "#90560B"
+	taste_description = "burning"
+	pH = 2
+	value = REAGENT_VALUE_VERY_RARE
+
+/datum/reagent/nitrium_low_metabolization/on_mob_metabolize(mob/living/L)
+	..()
+	L.add_movespeed_modifier(/datum/movespeed_modifier/reagent/nitrium)
+
+/datum/reagent/nitrium_low_metabolization/on_mob_end_metabolize(mob/living/L)
+	L.remove_movespeed_modifier(/datum/movespeed_modifier/reagent/nitrium)
+	..()
+
+/datum/reagent/nitrium_high_metabolization
+	name = "Nitrosyl plasmide"
+	description = "A highly reactive byproduct that stops you from sleeping, while dealing increasing toxin damage over time."
+	reagent_state = LIQUID
+	metabolization_rate = 0.5 * REAGENTS_METABOLISM
+	color = "#E1A116"
+	taste_description = "sourness"
+	pH = 1.8
+	value = REAGENT_VALUE_VERY_RARE
+
+/datum/reagent/nitrium_high_metabolization/on_mob_metabolize(mob/living/L)
+	..()
+	ADD_TRAIT(L, TRAIT_SLEEPIMMUNE, type)
+
+/datum/reagent/nitrium_high_metabolization/on_mob_end_metabolize(mob/living/L)
+	REMOVE_TRAIT(L, TRAIT_SLEEPIMMUNE, type)
+	..()
+
+/datum/reagent/nitrium_high_metabolization/on_mob_life(mob/living/carbon/M)
+	M.adjustStaminaLoss(-4 * REM * 0.5, 0)
+	M.adjustToxLoss(0.1 * (current_cycle - 1) * REM * 0.5, 0)
+	. = TRUE
+
+/datum/reagent/hypernoblium
+	name = "Hyper-Noblium"
+	description = "A suppressive gas that stops gas reactions on those who inhale it."
+	reagent_state = LIQUID
+	metabolization_rate = 0.5 * REAGENTS_METABOLISM
+	color = "#90560B"
+	taste_description = "searingly cold"
+	value = REAGENT_VALUE_VERY_RARE
+
+/datum/reagent/hypernoblium/on_mob_metabolize(mob/living/L)
+	..()
+	L.add_movespeed_modifier(/datum/movespeed_modifier/reagent/hypernoblium)
+
+/datum/reagent/hypernoblium/on_mob_end_metabolize(mob/living/L)
+	L.remove_movespeed_modifier(/datum/movespeed_modifier/reagent/hypernoblium)
+	..()
+
+/datum/reagent/hypernoblium/on_mob_life(mob/living/carbon/M)
+	if(isplasmaman(M))
+		M.apply_status_effect(/datum/status_effect/hypernob_protection)
+	. = TRUE
+
+/datum/reagent/pluoxium
+	name = "Pluoxium"
+	description = "A gas that is eight times more efficient than O2 at lung diffusion with organ healing properties on sleeping patients."
+	reagent_state = LIQUID
+	metabolization_rate = 0.5 * REAGENTS_METABOLISM
+	color = "#808080"
+	taste_description = "irradiated air"
+	value = REAGENT_VALUE_VERY_RARE
+
+/datum/reagent/pluoxium/on_mob_life(mob/living/carbon/M)
+	if(!HAS_TRAIT(M, TRAIT_KNOCKEDOUT))
+		return
+	for(var/obj/item/organ/O in M.internal_organs)
+		if(IS_ROBOTIC_ORGAN(O) || !O.damage)
+			continue
+		O.applyOrganDamage(-0.5 * REM * 0.5)
+	. = TRUE
+
+/datum/reagent/zauker
+	name = "Zauker"
+	description = "An unstable gas that is toxic to all living beings."
+	reagent_state = LIQUID
+	metabolization_rate = 0.5 * REAGENTS_METABOLISM
+	color = "#90560B"
+	taste_description = "bitter"
+	value = REAGENT_VALUE_VERY_RARE
+
+/datum/reagent/zauker/on_mob_life(mob/living/carbon/M)
+	M.adjustBruteLoss(6 * REM * 0.5, 0)
+	M.adjustOxyLoss(1 * REM * 0.5, 0)
+	M.adjustFireLoss(2 * REM * 0.5, 0)
+	M.adjustToxLoss(2 * REM * 0.5, 0)
+	. = TRUE
+
 /datum/reagent/freon
 	name = "Freon"
 	description = "A coolant gas. Breathing it causes burn damage and heavy slowdown."
 	reagent_state = GAS
 	gas = GAS_FREON
-	metabolization_rate = REAGENTS_METABOLISM
+	metabolization_rate = 0.5 * REAGENTS_METABOLISM
 	color = "#66ccff"
 	taste_description = "cold burn"
 	value = REAGENT_VALUE_UNCOMMON
@@ -1747,7 +1844,7 @@
 	description = "A fire suppressant gas. Heavy slowdown when inhaled, but makes you heat proof."
 	reagent_state = GAS
 	gas = GAS_HALON
-	metabolization_rate = REAGENTS_METABOLISM
+	metabolization_rate = 0.5 * REAGENTS_METABOLISM
 	color = "#44cc44"
 	taste_description = "chemical stagnation"
 	value = REAGENT_VALUE_UNCOMMON
