@@ -210,7 +210,7 @@ GLOBAL_LIST_EMPTY(mobs_with_editable_flavor_text) //et tu, hacky code
 
 			var/list/headshots
 			var/is_naked_headshot = chosen == "Хедшоты без одежды" && !issilicon(src)
-			var/max_headshots = is_naked_headshot ? MAX_NAKED_HEADSHOTS : MAX_HEADSHOTS
+			var/max_headshots = is_naked_headshot ? MAX_HEADSHOTS_NAKED : MAX_HEADSHOTS
 			if(issilicon(src))
 				headshots = mind?.headshot_links
 			else

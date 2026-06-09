@@ -1217,7 +1217,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	features["headshot_links"] = headshots_temp
 
 	headshots_temp = list()
-	for(var/i = 1, i <= MAX_NAKED_HEADSHOTS, i++)
+	for(var/i = 1, i <= MAX_HEADSHOTS_NAKED, i++)
 		var/postfix = i == 1 ? null : i-1
 		headshots_temp += null
 		S["headshot_naked[postfix]"] >> headshots_temp[i]
@@ -1600,12 +1600,12 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	features["headshot_naked_links"] = sanitize_islist(features["headshot_naked_links"], list())
 	headshots_temp = features["headshot_naked_links"]
-	if(headshots_temp.len != MAX_NAKED_HEADSHOTS)
-		if(headshots_temp.len < MAX_NAKED_HEADSHOTS)
-			for(var/i = headshots_temp.len, i+1 <= MAX_NAKED_HEADSHOTS, i++)
+	if(headshots_temp.len != MAX_HEADSHOTS_NAKED)
+		if(headshots_temp.len < MAX_HEADSHOTS_NAKED)
+			for(var/i = headshots_temp.len, i+1 <= MAX_HEADSHOTS_NAKED, i++)
 				headshots_temp[i+1] = null
 		else
-			headshots_temp.Cut(MAX_NAKED_HEADSHOTS+1)
+			headshots_temp.Cut(MAX_HEADSHOTS_NAKED+1)
 	for(var/i = 1, i <= headshots_temp.len, i++)
 		headshots_temp[i] = sanitize_text(headshots_temp[i])
 

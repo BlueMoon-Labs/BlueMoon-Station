@@ -26,11 +26,13 @@
 			var/i = href_list["select_slot"] || 1
 			if(istext(i))
 				i = text2num(i)
+			i = clamp(i, 1, MAX_HEADSHOTS)
 			set_headshot_link(user, i, features["headshot_links"])
 		if("headshot_naked")
 			var/i = href_list["select_slot"] || 1
 			if(istext(i))
 				i = text2num(i)
+			i = clamp(i, 1, MAX_HEADSHOTS_NAKED)
 			set_headshot_link(user, i, features["headshot_naked_links"])
 		if ("open_tattoo_manager")
 			user.client?.open_tattoo_manager()
