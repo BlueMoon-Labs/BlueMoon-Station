@@ -370,6 +370,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/list/menuoptions
 
 	var/action_buttons_screen_locs = list()
+	var/action_buttons_hide_on_spawn = FALSE
 
 	//bad stuff
 	var/vore_flags = 0
@@ -2658,6 +2659,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					var/ooc_settings_label = src.use_modern_translations ? get_modern_text("ooc_settings", src) : "OOC Settings"
 					var/window_flashing_label = src.use_modern_translations ? get_modern_text("window_flashing", src) : "Window Flashing"
 					var/window_noise_label = src.use_modern_translations ? get_modern_text("window_noise", src) : "Window Noise"
+					var/action_buttons_hide_on_spawn_label =  src.use_modern_translations ? get_modern_text("action_buttons_hide_on_spawn", src) : "Hide Action Buttons On Spawn"
 					var/play_admin_midis_label = src.use_modern_translations ? get_modern_text("play_admin_midis", src) : "Play Admin MIDIs"
 					var/play_lobby_music_label = src.use_modern_translations ? get_modern_text("play_lobby_music", src) : "Play Lobby Music"
 					var/see_pull_requests_label = src.use_modern_translations ? get_modern_text("see_pull_requests", src) : "See Pull Requests"
@@ -2687,6 +2689,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "<h2>[ooc_settings_label]</h2>"
 					dat += "<b>[window_flashing_label]:</b> <a href='?_src_=prefs;preference=winflash'>[(windowflashing) ? enabled_label : disabled_label]</a><br>"
 					dat += "<b>[window_noise_label]:</b> <a href='?_src_=prefs;preference=winnoise'>[(windownoise) ? enabled_label : disabled_label]</a><br>"
+					dat += "<br>"
+					dat += "<b>[action_buttons_hide_on_spawn_label]:</b> <a href='?_src_=prefs;preference=action_buttons_hide_on_spawn'>[(action_buttons_hide_on_spawn) ? enabled_label : disabled_label]</a><br>"
 					dat += "<br>"
 					dat += "<b>[play_admin_midis_label]:</b> <a href='?_src_=prefs;preference=hear_midis'>[(toggles & SOUND_MIDI) ? enabled_label : disabled_label]</a><br>"
 					dat += "<b>[play_lobby_music_label]:</b> <a href='?_src_=prefs;preference=lobby_music'>[(toggles & SOUND_LOBBY) ? enabled_label : disabled_label]</a><br>"
@@ -5944,6 +5948,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					windowflashing = !windowflashing
 				if("winnoise")
 					windownoise = !windownoise
+				if("action_buttons_hide_on_spawn")
+					action_buttons_hide_on_spawn = !action_buttons_hide_on_spawn
 				if("hear_adminhelps")
 					toggles ^= SOUND_ADMINHELP
 				if("announce_login")
