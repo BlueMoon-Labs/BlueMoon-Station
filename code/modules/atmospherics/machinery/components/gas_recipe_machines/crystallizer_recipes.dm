@@ -124,14 +124,14 @@ GLOBAL_LIST_INIT(gas_recipe_meta, gas_recipes_list())
 	requirements = list(GAS_NITROUS = 150, GAS_BZ = 30)
 	products = list(/obj/item/grenade/gas_crystal/nitrous_oxide_crystal = 1)
 
-/datum/gas_recipe/crystallizer/crystal_cell
-	id = "crystal_cell"
-	name = "Crystal Cell"
+/datum/gas_recipe/crystallizer/crystal_ultra_cell
+	id = "crystal_ultra_cell"
+	name = "Crystal ultra cell"
 	min_temp = 50
 	max_temp = 90
 	energy_release = -800000
 	requirements = list(GAS_PLASMA = 800, GAS_HELIUM = 100, GAS_BZ = 50)
-	products = list(/obj/item/stock_parts/cell/crystal_cell = 1)
+	products = list(/obj/item/stock_parts/cell/crystal_ultra_cell = 1)
 
 /datum/gas_recipe/crystallizer/zaukerite
 	id = "zaukerite"
