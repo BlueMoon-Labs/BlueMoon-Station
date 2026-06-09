@@ -2900,6 +2900,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 								p_map += " (No longer exists)"
 						if(CONFIG_GET(flag/allow_map_voting))
 							dat += "<b>[preferred_map_label]:</b> <a href='?_src_=prefs;preference=preferred_map;task=input'>[p_map]</a><br>"
+					dat += "</table></tr>"
 				if(CONTENT_PREFS_TAB)
 					dat += "<table><tr><td width='340px' height='300px' valign='top'>"
 					dat += "<h2>Fetish content prefs</h2>"
