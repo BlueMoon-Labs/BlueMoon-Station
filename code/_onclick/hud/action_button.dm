@@ -161,7 +161,7 @@
 	var/position_info
 	if(user_prefs)
 		position_info = user_prefs.action_buttons_screen_locs["[name]_[id]"]
-		if(!position_info && user_prefs.action_buttons_hide_on_spawn && isliving(user) && (world.time - user.creation_time) <= 1 SECONDS)
+		if(!position_info && user_prefs.action_buttons_hide_on_spawn && ishuman(user) && (world.time - user.creation_time) <= 1 SECONDS)
 			position_info = SCRN_OBJ_IN_PALETTE
 
 	if(!position_info)
