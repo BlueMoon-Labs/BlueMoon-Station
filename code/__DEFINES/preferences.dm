@@ -115,3 +115,6 @@
 #define PREFERENCE_CHARACTER "character"
 /// This preference is account specific.
 #define PREFERENCE_PLAYER "player"
+
+#define MAX_HEADSHOTS 6
+#define MAX_NAKED_HEADSHOTS 6
