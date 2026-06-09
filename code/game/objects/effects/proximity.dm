@@ -123,3 +123,18 @@
 	set waitfor = FALSE
 	. = ..()
 	monitor?.hasprox_receiver?.HasProximity(AM)
+
+/// After holodeck/thunderdome area copies, recreate checker turfs for hosts that received new proximity_monitor datums.
+/proc/rebuild_duplicated_proximity_monitors(list/atoms)
+	for(var/atom/movable/AM as anything in atoms)
+		var/datum/proximity_monitor/PM = AM.proximity_monitor
+		if(!PM)
+			continue
+		var/range = PM.current_range
+		if(istype(AM, /obj/item/assembly/prox_sensor))
+			var/obj/item/assembly/prox_sensor/PS = AM
+			range = PS.scanning ? PS.sensitivity : 0
+		else if(istype(AM, /obj/machinery/flasher/portable))
+			var/obj/machinery/flasher/portable/F = AM
+			range = F.anchored ? F.range : 0
+		PM.SetRange(range, TRUE)
