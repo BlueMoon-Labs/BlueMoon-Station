@@ -265,8 +265,8 @@ GLOBAL_LIST_EMPTY(mobs_with_editable_flavor_text) //et tu, hacky code
 				to_chat(src, span_warning("The link must be a direct http(s):// image/video URL ending with .png, .jpg, .jpeg, .gif, .webm, or .mp4!"))
 				return
 			var/static/list/repl_chars = list(
-				"\n" = "#",
-				"\t" = "#",
+				"\n" = "",
+				"\t" = "",
 				"'" = "",
 				"\"" = "",
 				" " = ""

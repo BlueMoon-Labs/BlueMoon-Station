@@ -1595,6 +1595,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 				headshots_temp[i+1] = null
 		else
 			headshots_temp.Cut(MAX_HEADSHOTS+1)
+	for(var/i = 1, i <= headshots_temp.len, i++)
+		headshots_temp[i] = sanitize_text(headshots_temp[i])
 
 	features["headshot_naked_links"] = sanitize_islist(features["headshot_naked_links"], list())
 	headshots_temp = features["headshot_naked_links"]
@@ -1604,7 +1606,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 				headshots_temp[i+1] = null
 		else
 			headshots_temp.Cut(MAX_NAKED_HEADSHOTS+1)
-
+	for(var/i = 1, i <= headshots_temp.len, i++)
+		headshots_temp[i] = sanitize_text(headshots_temp[i])
 
 	//load every advanced coloring mode thing in one go
 	//THIS MUST BE DONE AFTER ALL FEATURE SAVES OR IT WILL NOT WORK

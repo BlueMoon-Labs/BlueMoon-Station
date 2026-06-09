@@ -23,16 +23,12 @@
 /datum/preferences/process_link(mob/user, list/href_list)
 	switch(href_list["preference"])
 		if("headshot")
-			var/i = href_list["select_slot"]
-			if(!i)
-				return
+			var/i = href_list["select_slot"] || 1
 			if(istext(i))
 				i = text2num(i)
 			set_headshot_link(user, i, features["headshot_links"])
 		if("headshot_naked")
-			var/i = href_list["select_slot"]
-			if(!i)
-				return
+			var/i = href_list["select_slot"] || 1
 			if(istext(i))
 				i = text2num(i)
 			set_headshot_link(user, i, features["headshot_naked_links"])
