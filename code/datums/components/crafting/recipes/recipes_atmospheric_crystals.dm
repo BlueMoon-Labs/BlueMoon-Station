@@ -11,6 +11,27 @@
 	category = CAT_ATMOSPHERIC
 	subcategory = CAT_ATMOSPHERICS
 
+/datum/crafting_recipe/zaukerite_shard_break
+	name = "Zaukerite shard (raw)"
+	result = /obj/item/shard/zaukerite
+	reqs = list(
+		/obj/item/stack/sheet/mineral/zaukerite = 1,
+	)
+	time = 15
+	category = CAT_ATMOSPHERIC
+	subcategory = CAT_ATMOSPHERICS
+
+/datum/crafting_recipe/zaukerite_shard_weapon
+	name = "Zaukerite shard"
+	result = /obj/item/zaukerite_shard
+	reqs = list(
+		/obj/item/shard/zaukerite = 1,
+		/obj/item/stack/sheet/cloth = 1,
+	)
+	time = 25
+	category = CAT_ATMOSPHERIC
+	subcategory = CAT_ATMOSPHERICS
+
 /datum/crafting_recipe/hot_ice_pack
 	name = "Hot ice cooling pack"
 	result = /obj/item/hot_ice_pack

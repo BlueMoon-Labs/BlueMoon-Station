@@ -1809,16 +1809,16 @@
 	name = "Zauker"
 	description = "An unstable gas that is toxic to all living beings."
 	reagent_state = LIQUID
-	metabolization_rate = 0.5 * REAGENTS_METABOLISM
+	metabolization_rate = 2.5 * REAGENTS_METABOLISM
 	color = "#90560B"
 	taste_description = "bitter"
 	value = REAGENT_VALUE_VERY_RARE
 
 /datum/reagent/zauker/on_mob_life(mob/living/carbon/M)
-	M.adjustBruteLoss(6 * REM * 0.5, 0)
-	M.adjustOxyLoss(1 * REM * 0.5, 0)
-	M.adjustFireLoss(2 * REM * 0.5, 0)
-	M.adjustToxLoss(2 * REM * 0.5, 0)
+	M.adjustBruteLoss(20 * REM * 0.5, 0)
+	M.adjustOxyLoss(6 * REM * 0.5, 0)
+	M.adjustFireLoss(8 * REM * 0.5, 0)
+	M.adjustToxLoss(10 * REM * 0.5, 0)
 	. = TRUE
 
 /datum/reagent/freon

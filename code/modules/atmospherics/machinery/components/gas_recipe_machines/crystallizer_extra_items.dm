@@ -244,6 +244,83 @@
 	to_chat(user, "<span class='notice'>You crush the pack; a sharp smell of ammonia fills the air.</span>")
 	qdel(src)
 
+// === Zaukerite shard (raw + cloth-wrapped weapon) ===
+/obj/item/shard/zaukerite
+	name = "zaukerite shard"
+	desc = "A jagged shard of crystallized zaukerite. Extremely sharp and unstable."
+	icon = 'icons/obj/crystallizer_sheets.dmi'
+	icon_state = "zaukerite"
+	item_state = "shard-glass"
+	force = 7
+	throwforce = 12
+	sharpness = SHARP_EDGED
+	attack_verb = list("stabbed", "slashed", "sliced", "cut")
+	embedding = list("embed_chance" = 65)
+	craft_time = 14 SECONDS
+	custom_materials = null
+
+/obj/item/shard/zaukerite/Initialize(mapload)
+	. = ..()
+	icon_state = "zaukerite"
+	pixel_x = 0
+	pixel_y = 0
+
+/obj/item/shard/zaukerite/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
+	..()
+	if(M == user || !isliving(M))
+		return
+	if(iscarbon(M))
+		zaukerite_shard_inject(M, 2)
+	if(iscarbon(user) && prob(25))
+		zaukerite_shard_inject(user, 2)
+		user.visible_message(
+			span_warning("The [src] splinters apart, releasing toxic zauker dust onto [user]!"),
+			span_userdanger("The [src] splinters apart, and you breathe in toxic zauker dust!"),
+		)
+	qdel(src)
+
+/obj/item/shard/zaukerite/attackby(obj/item/item, mob/user, params)
+	if(istype(item, /obj/item/stack/sheet/cloth))
+		var/obj/item/stack/sheet/cloth/cloth = item
+		to_chat(user, span_notice("You begin to wrap the [cloth] around the [src]..."))
+		if(do_after(user, craft_time, target = src))
+			var/obj/item/zaukerite_shard/wrapped = new
+			cloth.use(1)
+			to_chat(user, span_notice("You wrap the [cloth] around the [src], forming a makeshift weapon."))
+			remove_item_from_storage(src, user)
+			qdel(src)
+			user.put_in_hands(wrapped)
+		return
+	return ..()
+
+/obj/item/zaukerite_shard
+	name = "zaukerite shard"
+	desc = "A zaukerite crystal shard wrapped in cloth. Each strike leaks toxic zauker into the victim's bloodstream."
+	icon = 'icons/obj/crystallizer_exploration.dmi'
+	icon_state = "zaukerite_shard"
+	item_state = "shard-glass"
+	lefthand_file = 'icons/mob/inhands/weapons/melee_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/weapons/melee_righthand.dmi'
+	force = 7
+	throwforce = 12
+	w_class = WEIGHT_CLASS_TINY
+	sharpness = SHARP_EDGED
+	attack_verb = list("stabbed", "slashed", "sliced", "cut")
+	hitsound = 'sound/weapons/bladeslice.ogg'
+	embedding = list("embed_chance" = 65)
+	var/zauker_per_hit = 5
+
+/obj/item/zaukerite_shard/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
+	..()
+	if(!iscarbon(M) || M == user || user.a_intent != INTENT_HARM)
+		return
+	zaukerite_shard_inject(M, zauker_per_hit)
+
+/proc/zaukerite_shard_inject(mob/living/carbon/target, amount)
+	if(!target?.reagents || HAS_TRAIT(target, TRAIT_ROBOTIC_ORGANISM))
+		return
+	target.reagents.add_reagent(/datum/reagent/zauker, amount)
+
 // === Zaukerite bolts (craftable from crystallizer sheets) ===
 /obj/item/zaukerite_bolt
 	name = "zaukerite bolt"
