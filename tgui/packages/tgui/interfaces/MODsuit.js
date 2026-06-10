@@ -1,4 +1,6 @@
-import { useBackend, useLocalState } from '../backend';
+import { useState } from 'react';
+
+import { useBackend } from '../backend';
 import { AnimatedNumber, Box, Button, Collapsible, ColorBox, Dimmer, Dropdown, Flex, Icon, LabeledList, NumberInput, ProgressBar, Section, Stack, Table } from '../components';
 import { Window } from '../layouts';
 
@@ -597,9 +599,7 @@ const InfoSection = (props) => {
 const ModuleSection = (props) => {
   const { act, data } = useBackend();
   const { complexity_max, modules } = data;
-  const [configureState, setConfigureState] = useLocalState('module_configuration',
-    null
-  );
+  const [configureState, setConfigureState] = useState(null);
   return (
     <Section title="Modules" fill>
       <Flex direction="column">

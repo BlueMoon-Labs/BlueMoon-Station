@@ -1,4 +1,6 @@
-import { useBackend, useLocalState } from '../backend';
+import { useState } from 'react';
+
+import { useBackend } from '../backend';
 import { Box, Button, LabeledList, NoticeBox, Section, Table } from '../components';
 import { formatTime } from '../format';
 import { Window } from '../layouts';
@@ -62,7 +64,7 @@ const AdventureList = (props) => {
   const [
     openAdventure,
     setOpenAdventure,
-  ] = useLocalState('openAdventure', null);
+  ] = useState(null);
 
   return (
     <>

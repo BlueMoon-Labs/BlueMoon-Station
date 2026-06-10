@@ -1,4 +1,6 @@
-import { useBackend, useLocalState } from '../backend';
+import { useState } from 'react';
+
+import { useBackend } from '../backend';
 import { Box, Flex, Icon, Table, Tabs } from '../components';
 import { Window } from '../layouts';
 
@@ -8,7 +10,7 @@ export const Achievements = (props) => {
   const [
     selectedCategory,
     setSelectedCategory,
-  ] = useLocalState('category', categories[0]);
+  ] = useState(categories[0]);
   const achievements = data.achievements
     .filter(x => x.category === selectedCategory);
   return (
@@ -95,7 +97,7 @@ const HighScoreTable = (props) => {
   const [
     highScoreIndex,
     setHighScoreIndex,
-  ] = useLocalState('highscore', 0);
+  ] = useState(0);
   const highscore = highscores[highScoreIndex];
   if (!highscore) {
     return null;

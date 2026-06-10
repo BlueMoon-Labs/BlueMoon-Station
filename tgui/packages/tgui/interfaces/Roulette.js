@@ -1,6 +1,7 @@
 import { classes } from 'common/react';
+import { useState } from 'react';
 
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import { Box, Button, Grid, NumberInput, Table } from '../components';
 import { Window } from '../layouts';
 
@@ -161,7 +162,7 @@ export const RouletteBetTable = (props) => {
   const [
     customBet,
     setCustomBet,
-  ] = useLocalState('customBet', 500);
+  ] = useState(500);
 
   let {
     BetType,

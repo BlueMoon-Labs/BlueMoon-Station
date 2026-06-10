@@ -504,11 +504,15 @@ type StateWithSetter<T> = [T, (nextState: T) => void];
 /**
  * Allocates state on Redux store without sharing it with other clients.
  *
- * Use it when you want to have a stateful variable in your component
- * that persists between renders, but will be forgotten after you close
- * the UI.
+ * Legacy compatibility hook. Not a real React hook: it reads the global
+ * store, so it is legal anywhere (including class components), but its
+ * setter dispatches to the store and re-renders the ENTIRE app tree.
  *
- * It is a lot more performant than `setSharedState`.
+ * Prefer React `useState` in function components for new code. Keep
+ * `useLocalState` only when you need what the store gives you:
+ * - the same key read/written from several components (shared state),
+ * - state that survives component unmount/remount while the UI is open,
+ * - state access outside of function components.
  *
  * @param key Key which uniquely identifies this state in Redux store.
  * @param initialState Initializes your global variable with this value.

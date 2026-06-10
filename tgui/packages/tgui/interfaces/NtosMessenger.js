@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { createSearch } from '../../common/string';
 import { useBackend, useLocalState } from '../backend';
 import {
@@ -112,8 +114,8 @@ const ContactsScreen = (props) => {
     current_ringtone,
   } = data;
 
-  const [searchUser, setSearchUser] = useLocalState('searchUser', '');
-  const [showRingtone, setShowRingtone] = useLocalState('showRingtone', false);
+  const [searchUser, setSearchUser] = useState('');
+  const [showRingtone, setShowRingtone] = useState(false);
 
   const sortByUnreads = (array) =>
     [...array].sort((a, b) => b.unread_messages - a.unread_messages);
@@ -397,11 +399,11 @@ const ChatScreen = (props) => {
   const base64Map = emoji_base64 || {};
 
   const [message, setMessage] = useLocalState('chatMessage', '');
-  const [canSend, setCanSend] = useLocalState('canSend', true);
-  const [showEmoji, setShowEmoji] = useLocalState('showEmoji', false);
-  const [showAdminUrl, setShowAdminUrl] = useLocalState('showAdminUrl', false);
-  const [adminUrlInput, setAdminUrlInput] = useLocalState('adminUrlInput', '');
-  const [previewUrl, setPreviewUrl] = useLocalState('previewUrl', null);
+  const [canSend, setCanSend] = useState(true);
+  const [showEmoji, setShowEmoji] = useState(false);
+  const [showAdminUrl, setShowAdminUrl] = useState(false);
+  const [adminUrlInput, setAdminUrlInput] = useState('');
+  const [previewUrl, setPreviewUrl] = useState(null);
 
   const handleSendMessage = () => {
     if (message === '' && !has_scanned_photo && !admin_photo_url) {

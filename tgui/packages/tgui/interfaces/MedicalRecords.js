@@ -1,7 +1,7 @@
 import { createSearch } from 'common/string';
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 
-import { useBackend, useLocalState } from "../backend";
+import { useBackend } from "../backend";
 import { Box, Button, Collapsible, Flex, Icon, Input, LabeledList, Section, Table, Tabs } from "../components";
 import { ComplexModal, modalOpen, modalRegisterBodyOverride } from "../interfaces/common/ComplexModal";
 import { Window } from "../layouts";
@@ -115,7 +115,7 @@ const MedicalRecordsList = (_properties) => {
   const {
     records,
   } = data;
-  const [searchText, setSearchText] = useLocalState('medSearchText', '');
+  const [searchText, setSearchText] = useState('');
 
   const filteredRecords = (records || [])
     .filter(

@@ -1,4 +1,6 @@
-import { useBackend, useLocalState } from '../backend';
+import { useState } from 'react';
+
+import { useBackend } from '../backend';
 import { Box, Button, Collapsible, Icon, Input, LabeledList, NoticeBox, Section, Stack } from '../components';
 import { Window } from '../layouts';
 
@@ -96,7 +98,7 @@ const VoteOptions = (props) => {
 const CustomVoteSetup = (props) => {
   const { act, data } = useBackend();
   const { custom_setup, vote_type_options = [], all_display_settings = [] } = data;
-  const [newOpt, setNewOpt] = useLocalState('cs_opt', '');
+  const [newOpt, setNewOpt] = useState('');
 
   const cs = custom_setup || {};
   const optCount = cs.options ? cs.options.length : 0;

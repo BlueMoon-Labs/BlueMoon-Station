@@ -1,8 +1,9 @@
 import { filter, sortBy } from 'common/collections';
 import { flow } from 'common/fp';
 import { scale, toFixed } from 'common/math';
+import { useState } from 'react';
 
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import { Box, Button, Icon, LabeledList, NoticeBox, ProgressBar, Section, Stack, Tabs } from '../components';
 import { NtosWindow } from '../layouts';
 
@@ -28,7 +29,7 @@ export const NtosNetDownloader = (props) => {
   const [
     selectedCategory,
     setSelectedCategory,
-  ] = useLocalState('category', all_categories[0]);
+  ] = useState(all_categories[0]);
   const items = flow([
     // This filters the list to only contain programs with category
     selectedCategory !== all_categories[0]

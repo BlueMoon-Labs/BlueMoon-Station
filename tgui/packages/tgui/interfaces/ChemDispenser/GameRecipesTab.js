@@ -1,4 +1,5 @@
 import { createSearch } from 'common/string';
+import { useState } from 'react';
 
 import { useLocalState } from '../../backend';
 import {
@@ -196,11 +197,11 @@ export const GameRecipesTab = (props) => {
   const defaultExpandedCats = isDrinkDispenser
     ? { alcoholic_drinks: true, soft_drinks: true }
     : { medicine: true };
-  const [expandedCats, setExpandedCats] = useLocalState('recipe_cats_v2', defaultExpandedCats);
+  const [expandedCats, setExpandedCats] = useState(defaultExpandedCats);
   const [recipeFavorites, setRecipeFavorites] = useLocalState('recipe_favorites', []);
   const recipeFavoritesSet = new Set(recipeFavorites);
-  const [showOnlyMakeable, setShowOnlyMakeable] = useLocalState('recipe_filter_makeable', false);
-  const [expandedPages, setExpandedPages] = useLocalState('recipe_pages', {});
+  const [showOnlyMakeable, setShowOnlyMakeable] = useState(false);
+  const [expandedPages, setExpandedPages] = useState({});
 
   const beakerByName = buildBeakerLookup(beakerContents);
 

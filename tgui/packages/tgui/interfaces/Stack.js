@@ -1,7 +1,8 @@
 import { sortBy } from 'common/collections';
 import { createSearch } from 'common/string';
+import { useState } from 'react';
 
-import { useBackend, useLocalState } from "../backend";
+import { useBackend } from "../backend";
 import { Box, Button, Collapsible, Input, NoticeBox, Section, Table } from "../components";
 import { Window } from "../layouts";
 
@@ -16,7 +17,7 @@ export const Stack = (props) => {
   const [
     searchText,
     setSearchText,
-  ] = useLocalState('searchText', '');
+  ] = useState('');
 
   const testSearch = createSearch(searchText, item => {
     return item;

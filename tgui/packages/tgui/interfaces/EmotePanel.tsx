@@ -1,6 +1,7 @@
+import { useState } from 'react';
+
 import { BooleanLike } from '../../common/react';
 import { capitalize } from '../../common/string';
-import { useLocalState } from '../backend';
 import { useBackend } from '../backend';
 import { Box, Button, Flex, Icon, Section } from '../components';
 import { Window } from '../layouts';
@@ -24,15 +25,15 @@ export const EmotePanelContent = (props) => {
   const { act, data } = useBackend<EmotePanelData>();
   const { emotes } = data;
 
-  const [filterVisible, toggleVisualFilter] = useLocalState('filterVisible', false);
-  const [filterAudible, toggleAudibleFilter] = useLocalState('filterAudible', false);
-  const [filterSound, toggleSoundFilter] = useLocalState('filterSound', false);
-  const [filterHands, toggleHandsFilter] = useLocalState('filterHands', false);
-  const [filterUseParams, toggleUseParamsFilter] = useLocalState('filterUseParams', false);
-  const [useParams, toggleUseParams] = useLocalState('useParams', false);
-  const [searchText, setSearchText] = useLocalState('searchText', '');
-  const [showNames, toggleShowNames] = useLocalState('showNames', true);
-  const [showIcons, toggleShowIcons] = useLocalState('showIcons', false);
+  const [filterVisible, toggleVisualFilter] = useState(false);
+  const [filterAudible, toggleAudibleFilter] = useState(false);
+  const [filterSound, toggleSoundFilter] = useState(false);
+  const [filterHands, toggleHandsFilter] = useState(false);
+  const [filterUseParams, toggleUseParamsFilter] = useState(false);
+  const [useParams, toggleUseParams] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const [showNames, toggleShowNames] = useState(true);
+  const [showIcons, toggleShowIcons] = useState(false);
 
   return (
     <Section>

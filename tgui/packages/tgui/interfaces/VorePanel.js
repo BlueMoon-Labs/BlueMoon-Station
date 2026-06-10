@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 
-import { useBackend, useLocalState } from "../backend";
+import { useBackend } from "../backend";
 import { Box, Button, Collapsible, Flex, Icon, LabeledList, NoticeBox, Section, Tabs } from "../components";
 import { Window } from "../layouts";
 
@@ -156,7 +156,7 @@ const VoreSelectedBelly = (props) => {
     contents,
   } = belly;
 
-  const [tabIndex, setTabIndex] = useLocalState('tabIndex', 0);
+  const [tabIndex, setTabIndex] = useState(0);
 
   return (
     <>

@@ -2,8 +2,9 @@ import { filter, sortBy } from 'common/collections';
 import { flow } from 'common/fp';
 import { classes } from 'common/react';
 import { createSearch } from 'common/string';
+import { useState } from 'react';
 
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import { Button, ByondUi, Flex, Input, Section } from '../components';
 import { Window } from '../layouts';
 
@@ -95,7 +96,7 @@ export const CameraConsoleContent = (props) => {
   const [
     searchText,
     setSearchText,
-  ] = useLocalState('searchText', '');
+  ] = useState('');
   const { activeCamera } = data;
   const cameras = selectCameras(data.cameras, searchText);
   return (

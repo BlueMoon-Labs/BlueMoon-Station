@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { useBackend, useLocalState } from '../../backend';
 import { Button, Icon, Input, Section, Slider, Stack, Tabs } from '../../components';
 import {
@@ -21,7 +23,7 @@ export const MainContent = (props) => {
     searchText,
     setSearchText,
   ] = useLocalState('searchText', '');
-  const [tabIndex, setTabIndex] = useLocalState('tabIndex', 0);
+  const [tabIndex, setTabIndex] = useState(0);
 
   const [inFavorites, setInFavorites] = useLocalState('inFavorites', false);
 

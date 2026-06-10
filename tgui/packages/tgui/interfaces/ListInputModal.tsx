@@ -1,5 +1,7 @@
+import { useState } from 'react';
+
 import { isAlphaKey, KEY_DOWN, KEY_ENTER, KEY_ESCAPE, KEY_UP } from '../../common/keycodes';
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import { Button, Input, Section, Stack } from '../components';
 import { Window } from '../layouts';
 import { InputButtons } from './common/InputButtons';
@@ -24,13 +26,13 @@ export const ListInputModal = (_) => {
     timeout,
     title,
   } = data;
-  const [selected, setSelected] = useLocalState<number>('selected',
+  const [selected, setSelected] = useState<number>(
     items.indexOf(init_value)
   );
-  const [searchBarVisible, setSearchBarVisible] = useLocalState<boolean>('searchBarVisible',
+  const [searchBarVisible, setSearchBarVisible] = useState<boolean>(
     items.length > 9
   );
-  const [searchQuery, setSearchQuery] = useLocalState<string>('searchQuery',
+  const [searchQuery, setSearchQuery] = useState<string>(
     ''
   );
   // User presses up or down on keyboard

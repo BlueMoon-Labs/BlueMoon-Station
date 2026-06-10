@@ -8,9 +8,9 @@
 
 import { map } from 'common/collections';
 import { createSearch } from 'common/string';
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 
-import { useBackend, useLocalState, useSharedState } from '../backend';
+import { useBackend, useSharedState } from '../backend';
 import { Box, Button, Divider, Input, NoticeBox, Section, Table, Tabs } from '../components';
 import { Window } from '../layouts';
 
@@ -42,7 +42,7 @@ export const ClockworkSlab = (props) => {
   const [
     searchText,
     setSearchText,
-  ] = useLocalState('searchText', '');
+  ] = useState('');
 
   const testSearch = createSearch(searchText, script => {
     return script.name + script.descname;

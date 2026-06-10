@@ -1,4 +1,6 @@
-import { useBackend, useLocalState } from '../backend';
+import { useState } from 'react';
+
+import { useBackend } from '../backend';
 import { Button, Dropdown, Input, Section, Stack, TextArea } from '../components';
 import { Window } from '../layouts';
 
@@ -92,7 +94,7 @@ const AnnouncementSound = (props) => {
 const ReportText = (props) => {
   const { act, data } = useBackend<Data>();
   const { announce_contents, command_report_content } = data;
-  const [commandReport, setCommandReport] = useLocalState<string>('textArea',
+  const [commandReport, setCommandReport] = useState<string>(
     command_report_content
   );
 

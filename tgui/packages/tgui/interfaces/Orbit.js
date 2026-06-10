@@ -1,9 +1,10 @@
 import { classes } from 'common/react';
 import { createSearch } from 'common/string';
 import { multiline } from 'common/string';
+import { useState } from 'react';
 
 import { resolveAsset } from '../assets';
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import { Box, Button, Collapsible, Divider, Flex, Icon, Input, Section } from '../components';
 import { Window } from '../layouts';
 
@@ -108,7 +109,7 @@ export const Orbit = (props) => {
     ghost_roles,
   } = data;
 
-  const [searchText, setSearchText] = useLocalState("searchText", "");
+  const [searchText, setSearchText] = useState("");
 
   const collatedAntagonists = {};
   for (const antagonist of antagonists) {

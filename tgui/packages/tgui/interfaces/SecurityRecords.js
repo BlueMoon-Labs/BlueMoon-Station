@@ -1,5 +1,5 @@
 import { createSearch } from 'common/string';
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 
 import { useBackend, useLocalState } from '../backend';
 import {
@@ -147,7 +147,7 @@ const NavigationTabs = (_properties) => {
 const PageRecordList = (_properties) => {
   const { act, data } = useBackend();
   const { records, isPrinting } = data;
-  const [searchText, setSearchText] = useLocalState('searchText', '');
+  const [searchText, setSearchText] = useState('');
   const [sortId, _setSortId] = useLocalState('sortId', 'name');
   const [sortOrder, _setSortOrder] = useLocalState('sortOrder', true);
 
@@ -287,7 +287,7 @@ const PageMaintenance = (_properties) => {
 const PageAllLogs = (_properties) => {
   const { data } = useBackend();
   const { allLogs } = data;
-  const [searchLogs, setSearchLogs] = useLocalState('searchLogs', '');
+  const [searchLogs, setSearchLogs] = useState('');
 
   const logs = allLogs || [];
   const filteredLogs = logs.filter(
@@ -613,12 +613,8 @@ const ViewSecurity = (_properties) => {
 const CriminalStatusSelector = (_properties) => {
   const { act, data } = useBackend();
   const { security } = data;
-  const [showStatusPicker, setShowStatusPicker] = useLocalState('showStatusPicker',
-    false
-  );
-  const [statusReason, setStatusReason] = useLocalState('statusReason',
-    ''
-  );
+  const [showStatusPicker, setShowStatusPicker] = useState(false);
+  const [statusReason, setStatusReason] = useState('');
 
   const currentStatus = security.criminal || 'Ничего';
   const currentStyle = statusStyles[currentStatus];

@@ -1,6 +1,7 @@
 import { toTitleCase } from 'common/string';
+import { useState } from 'react';
 
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import { BlockQuote, Box, Button, NumberInput, Section, Table } from '../components';
 import { Window } from '../layouts';
 
@@ -108,7 +109,7 @@ const MaterialRow = (props) => {
   const [
     amount,
     setAmount,
-  ] = useLocalState("amount" + material.name, 1);
+  ] = useState(1);
 
   const amountAvailable = Math.floor(material.amount);
   return (

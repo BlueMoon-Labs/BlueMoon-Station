@@ -1,7 +1,9 @@
 // Bluemoon Edit:  Vending Update
+import { useState } from 'react';
+
 import { BooleanLike, classes } from '../../common/react';
 import { capitalizeAll, createSearch } from '../../common/string';
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import { Box, Button, Icon, Input, LabeledList, NoticeBox, Section, Stack, Table } from '../components';
 import { Window } from '../layouts';
 
@@ -73,7 +75,7 @@ export const Vending = (props) => {
     stock,
   } = data;
 
-  const [selectedCategory, setSelectedCategory] = useLocalState<string | null>('selectedCategory',
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(
     Object.keys(categories)[0] || null
   );
 
@@ -181,7 +183,7 @@ const ProductDisplay = (
   const { custom, inventory, selectedCategory } = props;
   const { stock, onstation, user } = data;
 
-  const [stockSearch, setStockSearch] = useLocalState<string>('stockSearch', '');
+  const [stockSearch, setStockSearch] = useState<string>('');
   const stockSearchFn = createSearch(stockSearch, (item: ProductRecord | CustomInput) => item.name);
 
   let filteredInventory = inventory;

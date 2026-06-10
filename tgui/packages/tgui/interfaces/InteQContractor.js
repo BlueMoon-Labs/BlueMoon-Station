@@ -1,6 +1,6 @@
-import { Component, Fragment } from 'react';
+import { Component, Fragment, useState } from 'react';
 
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import { Box, Button, Flex, Grid, Icon, LabeledList, Modal, NoticeBox, Section, Table, Tabs } from '../components';
 import { NtosWindow } from '../layouts';
 
@@ -273,7 +273,7 @@ export const StatusPane = (props) => {
 };
 
 export const SyndPane = (props) => {
-  const [tab, setTab] = useLocalState('tab', 1);
+  const [tab, setTab] = useState(1);
   return (
     <>
       <StatusPane state={props.state} />

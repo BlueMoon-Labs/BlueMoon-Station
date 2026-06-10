@@ -1,6 +1,7 @@
 import { createSearch, decodeHtmlEntities } from 'common/string';
+import { useState } from 'react';
 
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import { Box, Button, Flex, Input, NoticeBox, Section, Table, Tabs } from '../components';
 import { formatMoney } from '../format';
 import { Window } from '../layouts';
@@ -38,11 +39,11 @@ export const GenericUplinkInteQ = (props) => {
   const [
     searchText,
     setSearchText,
-  ] = useLocalState('searchText', '');
+  ] = useState('');
   const [
     selectedCategory,
     setSelectedCategory,
-  ] = useLocalState('category', categories[0]?.name);
+  ] = useState(categories[0]?.name);
   const testSearch = createSearch(searchText, item => {
     return item.name + item.desc;
   });
@@ -131,7 +132,7 @@ const ItemList = (props) => {
   const [
     hoveredItem,
     setHoveredItem,
-  ] = useLocalState('hoveredItem', {});
+  ] = useState({});
   const hoveredCost = hoveredItem && hoveredItem.cost || 0;
   // Append extra hover data to items
   const items = props.items.map(item => {

@@ -1,7 +1,6 @@
 import { sortBy } from 'common/collections';
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 
-import { useLocalState } from '../../backend';
 import { Button, Flex, Grid, Section, Tabs } from '../../components';
 
 const diffMap = {
@@ -32,7 +31,7 @@ export const AccessList = (props) => {
   const [
     selectedAccessName,
     setSelectedAccessName,
-  ] = useLocalState('accessName', accesses[0]?.name);
+  ] = useState(accesses[0]?.name);
   const selectedAccess = accesses
     .find(access => access.name === selectedAccessName);
   const selectedAccessEntries = sortBy(

@@ -1,4 +1,4 @@
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 
 import { useBackend, useLocalState } from '../backend';
 import { Box, Button, Flex, Input, NoticeBox, Section, Tabs } from '../components';
@@ -20,7 +20,7 @@ export const NtosCard = (props) => {
 
 export const NtosCardContent = (props) => {
   const { act, data } = useBackend();
-  const [tab, setTab] = useLocalState('tab', 1);
+  const [tab, setTab] = useState(1);
   const {
     authenticated,
     regions = [],
@@ -40,6 +40,12 @@ export const NtosCardContent = (props) => {
     selectedDepartment,
     setSelectedDepartment,
   ] = useLocalState('department', Object.keys(jobs)[0]);
+
+  // Для id_custom_job
+  const serverCustom = id_custom_job || '';
+  const [customDraft, setCustomDraft] = useState(serverCustom);
+  const [isEditingCustom, setIsEditingCustom] = useState(false);
+
   if (!have_id_slot) {
     return (
       <NoticeBox>
@@ -48,11 +54,6 @@ export const NtosCardContent = (props) => {
     );
   }
   const departmentJobs = jobs[selectedDepartment] || [];
-
-  // Для id_custom_job
-  const serverCustom = id_custom_job || '';
-  const [customDraft, setCustomDraft] = useLocalState('customDraft', serverCustom);
-  const [isEditingCustom, setIsEditingCustom] = useLocalState('isEditingCustom', false);
 
   // что показываем в кнопке/инпуте
   const customValue = isEditingCustom ? customDraft : serverCustom;

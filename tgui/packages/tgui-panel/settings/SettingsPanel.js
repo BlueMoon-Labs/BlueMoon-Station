@@ -6,7 +6,7 @@
 
 import { toFixed } from 'common/math';
 import { useDispatch, useSelector } from 'common/redux';
-import { useLocalState } from 'tgui/backend';
+import { useState } from 'react';
 import { Box, Button, Divider, Dropdown, Flex, Input, LabeledList, NumberInput, Section, Stack, Tabs, TextArea } from 'tgui/components';
 
 import { ChatPageSettings } from '../chat';
@@ -119,7 +119,7 @@ export const SettingsGeneral = (props) => {
     timeDividerInterval,
   } = useSelector(selectSettings);
   const dispatch = useDispatch();
-  const [freeFont, setFreeFont] = useLocalState("freeFont", false);
+  const [freeFont, setFreeFont] = useState(false);
   const selectedTsFormat = TIMESTAMP_FORMATS.find(
     f => f.id === timestampFormat);
   const selectedDivInterval = TIME_DIVIDER_INTERVALS.find(

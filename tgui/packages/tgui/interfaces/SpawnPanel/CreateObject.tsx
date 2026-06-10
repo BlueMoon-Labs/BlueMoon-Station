@@ -1,6 +1,7 @@
 import { classes } from 'common/react';
+import { useState } from 'react';
 
-import { useBackend, useLocalState } from '../../backend';
+import { useBackend } from '../../backend';
 import { Box, Button, Icon, Input, Stack } from '../../components';
 import { LOCATIONS_NEEDING_CLICK, MAX_ATOM_DISPLAY, PRECISE_MODE_OFF, PRECISE_MODE_TARGET, TAB_TYPE_COLORS, TAB_TYPE_LETTERS, TAB_TYPES } from './constants';
 import { AtomData, SpawnPanelData } from './types';
@@ -14,9 +15,9 @@ export const CreateObject = (props: CreateObjectProps) => {
   const { selected_object, where_target_type = '', precise_mode = PRECISE_MODE_OFF } = data;
   const { atoms } = props;
 
-  const [activeTab, setActiveTab] = useLocalState<string>('sp_tab', 'Objects');
-  const [searchText, setSearchText] = useLocalState<string>('sp_search', '');
-  const [searchByType, setSearchByType] = useLocalState<boolean>('sp_bytype', false);
+  const [activeTab, setActiveTab] = useState<string>('Objects');
+  const [searchText, setSearchText] = useState<string>('');
+  const [searchByType, setSearchByType] = useState<boolean>(false);
 
   const hasSearch = searchText.length > 0;
   const lower = searchText.toLowerCase();

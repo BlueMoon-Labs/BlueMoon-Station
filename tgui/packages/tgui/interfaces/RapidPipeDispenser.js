@@ -1,6 +1,7 @@
 import { classes } from 'common/react';
+import { useState } from 'react';
 
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import { Box, Button, ColorBox, Flex, LabeledList, Section, Tabs } from '../components';
 import { Window } from '../layouts';
 
@@ -68,7 +69,7 @@ export const RapidPipeDispenser = (props) => {
   const [
     categoryName,
     setCategoryName,
-  ] = useLocalState('categoryName');
+  ] = useState();
   const shownCategory = categories
     .find(category => category.cat_name === categoryName)
     || categories[0];

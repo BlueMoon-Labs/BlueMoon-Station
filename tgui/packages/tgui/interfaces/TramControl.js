@@ -1,4 +1,6 @@
-import { useBackend, useLocalState } from '../backend';
+import { useState } from 'react';
+
+import { useBackend } from '../backend';
 import { Box, Button, Dimmer, Icon, Section, Stack } from '../components';
 import { Window } from '../layouts';
 
@@ -60,7 +62,7 @@ export const TramControl = (props) => {
   const [
     transitIndex,
     setTransitIndex,
-  ] = useLocalState('transit-index', 1);
+  ] = useState(1);
   const MovingTramDimmer = () => {
     return (
       <Dimmer>

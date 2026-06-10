@@ -1,4 +1,4 @@
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 
 import { useBackend, useLocalState } from '../backend';
 import {
@@ -1636,7 +1636,7 @@ const HostsTab = (props) => {
 
 export const SentientDisease = (props) => {
   const { act, data } = useBackend();
-  const [tab, setTab] = useLocalState('tab', 'overview');
+  const [tab, setTab] = useState('overview');
 
   const abilities = (data.abilities || [])
     .map(localizeAbility)

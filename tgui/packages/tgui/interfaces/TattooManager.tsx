@@ -1,4 +1,6 @@
-import { useBackend, useLocalState } from '../backend';
+import { useState } from 'react';
+
+import { useBackend } from '../backend';
 import {
   Box,
   Button,
@@ -121,17 +123,15 @@ export const TattooManager = (props) => {
     available_zones,
   } = data;
 
-  const [showAddModal, setShowAddModal] = useLocalState('showAddModal',
-    false,
-  );
+  const [showAddModal, setShowAddModal] = useState(false);
 
-  const [editingTattoo, setEditingTattoo] = useLocalState<{
+  const [editingTattoo, setEditingTattoo] = useState<{
     zone: string;
     index: string;
     text: string;
     color: string;
     style: 'text' | 'description';
-  } | null>('editingTattoo', null);
+  } | null>(null);
 
   return (
     <Window title="Управление татуировками" width={550} height={650}>
@@ -301,19 +301,15 @@ const TattooFormModal = (props: TattooFormModalProps) => {
     onClose,
   } = props;
 
-  const [formZone, setFormZone] = useLocalState('formZone',
+  const [formZone, setFormZone] = useState(
     initialData?.zone || availableZones[0]?.id || '',
   );
 
-  const [formText, setFormText] = useLocalState('formText',
-    initialData?.text || '',
-  );
+  const [formText, setFormText] = useState(initialData?.text || '');
 
-  const [formColor, setFormColor] = useLocalState('formColor',
-    initialData?.color || '#4A4A4A',
-  );
+  const [formColor, setFormColor] = useState(initialData?.color || '#4A4A4A');
 
-  const [formStyle, setFormStyle] = useLocalState<'text' | 'description'>('formStyle',
+  const [formStyle, setFormStyle] = useState<'text' | 'description'>(
     initialData?.style || 'text',
   );
 
@@ -498,9 +494,7 @@ const TattooZoneSection = (props: TattooZoneSectionProps) => {
   const { act } = useBackend<TattooManagerData>();
   const { zone, onEditTattoo } = props;
 
-  const [confirmingIndex, setConfirmingIndex] = useLocalState<string | null>(`confirming_${zone.zone}`,
-    null,
-  );
+  const [confirmingIndex, setConfirmingIndex] = useState<string | null>(null);
 
   return (
     <Collapsible

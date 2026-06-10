@@ -1,4 +1,6 @@
-import { useBackend, useLocalState } from '../backend';
+import { useState } from 'react';
+
+import { useBackend } from '../backend';
 import { Box, Button, Flex, Icon, Input, NoticeBox, ProgressBar, Section, Stack } from '../components';
 import { Window } from '../layouts';
 
@@ -154,9 +156,7 @@ const ChargeBar = (props) => {
 // Menu Screen
 const MenuScreen = (props) => {
   const { act } = useBackend<ProblemComputerData>();
-  const [selectedGame, setSelectedGame] = useLocalState<string | null>('selectedGame',
-    null
-  );
+  const [selectedGame, setSelectedGame] = useState<string | null>(null);
 
   return (
     <Section title="Выберите мини-игру" fill>
@@ -266,7 +266,7 @@ const GameScreen = (props) => {
 // Math Game
 const MathGame = (props) => {
   const { data, act } = useBackend<ProblemComputerData>();
-  const [answer, setAnswer] = useLocalState('mathAnswer', '');
+  const [answer, setAnswer] = useState('');
   const gameData = data.gameData;
 
   if (!gameData) return <NoticeBox>Загрузка...</NoticeBox>;
@@ -339,10 +339,9 @@ const WireGame = (props) => {
   const { data, act } = useBackend<ProblemComputerData>();
   const gameData = data.gameData;
 
-  const [connections, setConnections] = useLocalState<Record<number, boolean>>(
-    'wireConnections', {});
-  const [selectedSide, setSelectedSide] = useLocalState<string | null>('wireSide', null);
-  const [selectedId, setSelectedId] = useLocalState<number | null>('wireId', null);
+  const [connections, setConnections] = useState<Record<number, boolean>>({});
+  const [selectedSide, setSelectedSide] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   if (!gameData || !gameData.pairs || !Array.isArray(gameData.pairs)) {
     return <NoticeBox>Загрузка...</NoticeBox>;
@@ -538,7 +537,7 @@ const WireGame = (props) => {
 const SignalGame = (props) => {
   const { data, act } = useBackend<ProblemComputerData>();
   const gameData = data.gameData;
-  const [answer, setAnswer] = useLocalState('signalAnswer', '');
+  const [answer, setAnswer] = useState('');
 
   if (!gameData || !gameData.sequence) {
     return <NoticeBox>Загрузка...</NoticeBox>;

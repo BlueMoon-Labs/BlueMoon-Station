@@ -1,4 +1,6 @@
-import { useBackend, useLocalState } from '../backend';
+import { useState } from 'react';
+
+import { useBackend } from '../backend';
 import {
   Box,
   Button,
@@ -100,15 +102,15 @@ export const FilterControls = (props) => {
     loading,
   } = props;
 
-  const [startDate, setStartDate] = useLocalState('startDate', default_start_date);
-  const [endDate, setEndDate] = useLocalState('endDate', default_end_date);
-  const [adminFilter, setAdminFilter] = useLocalState('adminFilter', '');
-  const [grouping, setGrouping] = useLocalState('grouping', 'none');
-  const [selectedColumns, setSelectedColumns] = useLocalState('selectedColumns',
+  const [startDate, setStartDate] = useState(default_start_date);
+  const [endDate, setEndDate] = useState(default_end_date);
+  const [adminFilter, setAdminFilter] = useState('');
+  const [grouping, setGrouping] = useState('none');
+  const [selectedColumns, setSelectedColumns] = useState(
     available_columns.map(col => col.key)
   );
-  const [sortColumn, setSortColumn] = useLocalState('sortColumn', 'admin_name');
-  const [sortOrder, setSortOrder] = useLocalState('sortOrder', 'ASC');
+  const [sortColumn, setSortColumn] = useState('admin_name');
+  const [sortOrder, setSortOrder] = useState('ASC');
 
   const handleFetchStats = () => {
     act('fetch_stats', {

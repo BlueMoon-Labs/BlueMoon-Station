@@ -1,5 +1,5 @@
 
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 
 import { useBackend, useLocalState } from '../backend';
 import { Button, Flex, Icon, Input, LabeledList, Section, Table } from '../components';
@@ -65,8 +65,8 @@ const AccountsRecordList = (_props) => {
   const accounts = Array.isArray(data?.accounts) ? data.accounts : [];
 
   const [searchText, setSearchText] = useLocalState('searchText', '');
-  const [sortId, setSortId] = useLocalState('sortId', 'owner_name');
-  const [sortOrder, setSortOrder] = useLocalState('sortOrder', true);
+  const [sortId, setSortId] = useState('owner_name');
+  const [sortOrder, setSortOrder] = useState(true);
 
   const passSort = { sortId, setSortId, sortOrder, setSortOrder };
 
@@ -312,8 +312,8 @@ const DetailedAccountInfo = (_props) => {
 
 const CreateAccount = (_props) => {
   const { act } = useBackend();
-  const [accName, setAccName] = useLocalState('accName', '');
-  const [accDeposit, setAccDeposit] = useLocalState('accDeposit', '');
+  const [accName, setAccName] = useState('');
+  const [accDeposit, setAccDeposit] = useState('');
 
   return (
     <Section

@@ -1,6 +1,7 @@
 import { map } from 'common/collections';
+import { useState } from 'react';
 
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import { Box, Button, Collapsible, Grid, Input, LabeledList, NoticeBox, Section, Stack, Table } from '../components';
 import { Window } from '../layouts';
 
@@ -290,8 +291,8 @@ export const PandemicCustomVirus = (props) => {
     custom_cooldown,
     all_symptoms = [],
   } = data;
-  const [searchText, setSearchText] = useLocalState('searchText', '');
-  const [selectedSymptoms, setSelectedSymptoms] = useLocalState('selectedSymptoms', []);
+  const [searchText, setSearchText] = useState('');
+  const [selectedSymptoms, setSelectedSymptoms] = useState([]);
 
   if (tier < 4) return null;
 

@@ -1,4 +1,6 @@
-import { useBackend, useLocalState } from '../backend';
+import { useState } from 'react';
+
+import { useBackend } from '../backend';
 import { Button } from '../components';
 import { NtosWindow } from '../layouts';
 
@@ -28,7 +30,7 @@ export const NtosMinesweeper = (props) => {
     grid = [],
   } = data;
 
-  const [flagMode, setFlagMode] = useLocalState('flagMode', false);
+  const [flagMode, setFlagMode] = useState(false);
   const hasGame = grid.length > 0;
 
   const minutes = Math.floor(elapsed / 60);

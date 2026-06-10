@@ -1,4 +1,6 @@
-import { useBackend, useLocalState } from '../backend';
+import { useState } from 'react';
+
+import { useBackend } from '../backend';
 import { Box, Button, ProgressBar, Stack } from '../components';
 import { Window } from '../layouts';
 
@@ -17,7 +19,7 @@ const PASSIVE_INFO = {
 
 export const ArcadeBattle = (props) => {
   const { act, data } = useBackend();
-  const [showIntro, setShowIntro] = useLocalState('showIntro', true);
+  const [showIntro, setShowIntro] = useState(true);
 
   const {
     enemy_name = 'Space Villain',

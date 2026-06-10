@@ -1,8 +1,7 @@
+import { useState } from 'react';
 import { useBackend } from 'tgui/backend';
 import { Button, Input, Section, Stack, Tabs } from 'tgui/components';
 import { Window } from 'tgui/layouts';
-
-import { useLocalState } from '../backend';
 
 type Data = {
   availability: number;
@@ -43,15 +42,9 @@ const GeneralPanel = (props) => {
     categories.push(data.phone_category);
   }
 
-  const [currentSearch, setSearch] = useLocalState('current_search',
-    ''
-  );
-  const [selectedPhone, setSelectedPhone] = useLocalState('selected_phone',
-    null
-  );
-  const [currentCategory, setCategory] = useLocalState('current_category',
-    categories[0]
-  );
+  const [currentSearch, setSearch] = useState('');
+  const [selectedPhone, setSelectedPhone] = useState<string | null>(null);
+  const [currentCategory, setCategory] = useState(categories[0]);
 
   let dnd_tooltip = 'Do Not Disturb is DISABLED';
   let dnd_locked = 'No';

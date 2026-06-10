@@ -1,4 +1,6 @@
-import { useBackend, useLocalState } from '../backend';
+import { useState } from 'react';
+
+import { useBackend } from '../backend';
 import {
   Box,
   Button,
@@ -296,9 +298,7 @@ const ReservedRooms = ({ data }) => { // WIP content
 */
 export const CheckoutMenu = (props) => {
   const { act, data } = useBackend<RoomsData>();
-  const [selectedTab, setSelectedTab] = useLocalState('selectedTab',
-      0
-    );
+  const [selectedTab, setSelectedTab] = useState(0);
   const tabContent = [
     <RoomsTab
       key="misc"
@@ -365,9 +365,7 @@ const RoomsTab = (props) => {
   const { category, selected_template } = props;
   const { act, data } = useBackend<RoomsData>();
   const { hotel_map_list = [] } = data;
-  const [selectedRoom, setSelectedRoom] = useLocalState('selectedRoom',
-      null
-    );
+  const [selectedRoom, setSelectedRoom] = useState(null);
 
   const targetCategory = category.toLowerCase();
   const filteredRooms = hotel_map_list.filter(

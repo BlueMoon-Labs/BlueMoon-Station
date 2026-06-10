@@ -1,5 +1,7 @@
+import { useState } from 'react';
+
 import { KEY_ENTER, KEY_ESCAPE } from '../../common/keycodes';
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import { Box, Section, Stack, TextArea } from '../components';
 import { Window } from '../layouts';
 import { InputButtons } from './common/InputButtons';
@@ -26,9 +28,7 @@ export const TextInputModal = (_) => {
     timeout,
     title,
   } = data;
-  const [input, setInput] = useLocalState<string>('input',
-    placeholder || ''
-  );
+  const [input, setInput] = useState<string>(placeholder || '');
   const onType = (value: string) => {
     if (value === input) {
       return;

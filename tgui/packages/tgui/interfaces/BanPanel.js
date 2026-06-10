@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { useBackend, useLocalState } from '../backend';
 import {
   Box,
@@ -54,7 +56,7 @@ export const BanPanel = (props) => {
     total_count = 0,
   } = data;
 
-  const [tab, setTab] = useLocalState('tab', 0);
+  const [tab, setTab] = useState(0);
 
   if (!db_connected) {
     return (
@@ -144,14 +146,10 @@ export const BanPanel = (props) => {
 
 const SearchBar = (props) => {
   const { playerckey, adminckey, ip, cid, onSearch } = props;
-  const [localPlayer, setLocalPlayer] = useLocalState('search_player', playerckey || ''
-  );
-  const [localAdmin, setLocalAdmin] = useLocalState('search_admin', adminckey || ''
-  );
-  const [localIp, setLocalIp] = useLocalState('search_ip', ip || ''
-  );
-  const [localCid, setLocalCid] = useLocalState('search_cid', cid || ''
-  );
+  const [localPlayer, setLocalPlayer] = useState(playerckey || '');
+  const [localAdmin, setLocalAdmin] = useState(adminckey || '');
+  const [localIp, setLocalIp] = useState(ip || '');
+  const [localCid, setLocalCid] = useState(cid || '');
 
   return (
     <Section py={0.5}>
@@ -229,7 +227,7 @@ const CustomBanForm = (props) => {
   const [banJob, setBanJob] = useLocalState('banJob', '');
   const [banReason, setBanReason] = useLocalState('banReason', '');
   const [checkedRoles, setCheckedRoles] = useLocalState('checkedRoles', {});
-  const [expandedCats, setExpandedCats] = useLocalState('expandedCats', {});
+  const [expandedCats, setExpandedCats] = useState({});
 
   const flatRoles = [];
   job_categories.forEach((cat) => {

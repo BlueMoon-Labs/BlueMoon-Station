@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { useBackend, useLocalState } from '../backend';
 import {
   Box,
@@ -44,7 +46,7 @@ export const AdminTicketPanel = (props) => {
     communications_unhandled = 0,
   } = data;
 
-  const [tab, setTab] = useLocalState('tab', selected_state);
+  const [tab, setTab] = useState(selected_state);
 
   const selectedTicket = tickets.find((t) => t.ref === selected_ticket_ref);
 

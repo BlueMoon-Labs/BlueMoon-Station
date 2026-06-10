@@ -1,5 +1,6 @@
 import { classes } from 'common/react';
 import { createSearch } from 'common/string';
+import { useState } from 'react';
 
 import { useBackend, useLocalState } from '../backend';
 import { Box, Button, Dimmer, Flex, Icon, Input, NoticeBox, NumberInput, Section, Table, Tabs } from '../components';
@@ -46,11 +47,11 @@ export const BiogeneratorContent = (props) => {
   const [
     searchText,
     setSearchText,
-  ] = useLocalState('searchText', '');
+  ] = useState('');
   const [
     selectedCategory,
     setSelectedCategory,
-  ] = useLocalState('category', categories[0]?.name);
+  ] = useState(categories[0]?.name);
   const testSearch = createSearch(searchText, item => {
     return item.name;
   });
@@ -133,7 +134,7 @@ const ItemList = (props) => {
   const [
     hoveredItem,
     setHoveredItem,
-  ] = useLocalState('hoveredItem', {});
+  ] = useState({});
   const hoveredCost = hoveredItem.cost || 0;
   // Append extra hover data to items
   const items = props.items.map(item => {

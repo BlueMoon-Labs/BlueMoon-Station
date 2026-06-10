@@ -1,6 +1,7 @@
 import { capitalize } from "common/string";
+import { useState } from 'react';
 
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import { Box, Button, Collapsible, Dimmer, Flex, Icon, Input, LabeledList, ProgressBar, Section, Table } from '../components';
 import { Window } from '../layouts';
 
@@ -18,7 +19,7 @@ export const Autolathe = (props) => {
   const [
     current_category,
     setCategory,
-  ] = useLocalState('current_category', "None");
+  ] = useState("None");
   const filteredmaterials = materials.filter(material =>
     material.mineral_amount > 0);
   return (

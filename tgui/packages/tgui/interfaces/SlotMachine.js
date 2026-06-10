@@ -1,4 +1,6 @@
-import { useBackend, useLocalState } from '../backend';
+import { useState } from 'react';
+
+import { useBackend } from '../backend';
 import { AnimatedNumber, Box, Button, Divider, Section, Stack } from '../components';
 import { Window } from '../layouts';
 
@@ -122,7 +124,7 @@ const ConfettiOverlay = () => (
 
 export const SlotMachine = (props) => {
   const { act, data } = useBackend();
-  const [showIntro, setShowIntro] = useLocalState('showIntro', true);
+  const [showIntro, setShowIntro] = useState(true);
   const {
     money,
     plays,

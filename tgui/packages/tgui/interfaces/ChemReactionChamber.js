@@ -1,7 +1,8 @@
 import { map } from 'common/collections';
 import { classes } from 'common/react';
+import { useState } from 'react';
 
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import { Box, Button, Input, LabeledList, NumberInput, Section } from '../components';
 import { Window } from '../layouts';
 
@@ -10,11 +11,11 @@ export const ChemReactionChamber = (props) => {
   const [
     reagentName,
     setReagentName,
-  ] = useLocalState('reagentName', '');
+  ] = useState('');
   const [
     reagentQuantity,
     setReagentQuantity,
-  ] = useLocalState('reagentQuantity', 1);
+  ] = useState(1);
   const emptying = data.emptying;
   const reagents = data.reagents || [];
   return (

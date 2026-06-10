@@ -5,7 +5,7 @@
  */
 
 import { useSelector } from 'common/redux';
-import { useLocalState } from 'tgui/backend';
+import { useState } from 'react';
 import { Button, Section, Stack } from 'tgui/components';
 import { KitchenSink, useDebug } from 'tgui/debug';
 import { IS_DEVELOPMENT } from 'tgui/env';
@@ -26,7 +26,7 @@ export const Panel = (props) => {
   const settings = useSettings();
   const game = useGame();
   const chat = useSelector(selectChat);
-  const [searchOpen, setSearchOpen] = useLocalState('chatSearchOpen', false);
+  const [searchOpen, setSearchOpen] = useState(false);
   if (IS_DEVELOPMENT) {
     const debug = useDebug();
     if (debug.kitchenSink) {

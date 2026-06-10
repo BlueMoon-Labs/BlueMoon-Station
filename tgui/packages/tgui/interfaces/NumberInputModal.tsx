@@ -1,5 +1,7 @@
+import { useState } from 'react';
+
 import { KEY_ENTER, KEY_ESCAPE } from '../../common/keycodes';
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import { Box, Button, RestrictedInput, Section, Stack } from '../components';
 import { Window } from '../layouts';
 import { InputButtons } from './common/InputButtons';
@@ -20,7 +22,7 @@ export const NumberInputModal = (_) => {
   const { init_value, large_buttons, timeout } = data;
   const message = data.message ?? '';
   const title = data.title ?? '';
-  const [input, setInput] = useLocalState('input', init_value);
+  const [input, setInput] = useState(init_value);
   const onChange = (value: number) => {
     if (value === input) {
       return;

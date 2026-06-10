@@ -1,4 +1,4 @@
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 
 import { useBackend, useLocalState } from '../backend';
 import { Box, Button, Collapsible, Icon, Input, LabeledList, Section, Table, Tooltip } from '../components';
@@ -64,7 +64,7 @@ export const CharacterDirectory = (props) => {
 
   const [overlay, setOverlay] = useLocalState('overlay', null);
 
-  const [overwritePrefs, setOverwritePrefs] = useLocalState('overwritePrefs', true);
+  const [overwritePrefs, setOverwritePrefs] = useState(true);
 
   return (
     <Window width={940} height={560} resizeable>
@@ -176,7 +176,7 @@ const ViewCharacter = (props) => {
   const genderDisplay = overlay.gender_tag || 'Unset';
 
   const headshots = (overlay.headshot_links || []).filter(link => link && link.length);
-  const [selectedHeadshot, setSelectedHeadshot] = useLocalState('viewHeadshot', 0);
+  const [selectedHeadshot, setSelectedHeadshot] = useState(0);
   const safeIdx = headshots.length > 0 ? selectedHeadshot % headshots.length : 0;
   const currentLink = headshots[safeIdx];
   const isVideo = typeof currentLink === 'string' && /\.(webm|mp4)$/i.test(currentLink);

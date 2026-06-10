@@ -1,5 +1,6 @@
+import { useState } from 'react';
+
 import { useBackend } from '../backend';
-import { useLocalState } from '../backend';
 import { Button, Input, Section, Stack, Tabs } from '../components';
 import { Window } from '../layouts';
 
@@ -13,12 +14,12 @@ export const AIAnnouncement = (props) => {
   const [
     current_page,
     set_page,
-  ] = useLocalState('current_page', 0);
+  ] = useState(0);
 
   const [
     announcement_input,
     set_announcement_input,
-  ] = useLocalState('announcement_input', last_announcement);
+  ] = useState(last_announcement);
 
   // I love `Object`s!!
   const words_filtered = Object.keys(vox_types[Object.keys(vox_types)[current_page]]);

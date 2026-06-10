@@ -1,5 +1,6 @@
 import { filter, map, sortBy } from 'common/collections';
 import { flow } from 'common/fp';
+import { useState } from 'react';
 
 import { useBackend, useLocalState } from '../backend';
 import { Box, Button, Divider, Dropdown, Flex, Input, Modal, ProgressBar, Section, Tabs } from '../components';
@@ -167,7 +168,7 @@ export const TechwebContent = (props) => {
   const [
     lastPoints,
     setLastPoints,
-  ] = useLocalState('lastPoints', {});
+  ] = useState({});
 
   return (
     <Flex direction="column" className="Techweb__Viewport" height="100%">
@@ -276,11 +277,11 @@ const TechwebOverview = (props) => {
   const [
     tabIndex,
     setTabIndex,
-  ] = useLocalState('overviewTabIndex', 1);
+  ] = useState(1);
   const [
     searchText,
     setSearchText,
-  ] = useLocalState('searchText');
+  ] = useState();
   const searchValue = searchText?.trim().toLowerCase() || '';
 
   // Only search when 3 or more characters have been input
@@ -583,11 +584,11 @@ const TechwebDesignDisk = (props) => {
   const [
     selectedDesign,
     setSelectedDesign,
-  ] = useLocalState("designDiskSelect", null);
+  ] = useState(null);
   const [
     showModal,
     setShowModal,
-  ] = useLocalState('showDesignModal', -1);
+  ] = useState(-1);
 
   const designIdByIdx = Object.keys(researched_designs);
   const designOptions = flow([

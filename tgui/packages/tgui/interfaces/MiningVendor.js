@@ -1,14 +1,13 @@
 import { classes } from 'common/react';
+import { useState } from 'react';
 
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import { Box, Button, Flex, Section, Table } from '../components';
 import { Window } from '../layouts';
 
 export const MiningVendor = (props) => {
   const { act, data } = useBackend();
-  const [selectedCategory, setCategory] = useLocalState('selectedTab',
-    'Mining Gear'
-  );
+  const [selectedCategory, setCategory] = useState('Mining Gear');
 
   const allProducts = data?.product_records || [];
   const dataCategories = data?.categories || [];

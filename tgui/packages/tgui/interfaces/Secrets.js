@@ -1,6 +1,7 @@
 import { toFixed } from 'common/math';
+import { useState } from 'react';
 
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import { Button, Flex, LabeledControls, NoticeBox, RoundGauge, Section, Stack } from '../components';
 import { Window } from '../layouts';
 
@@ -553,7 +554,7 @@ export const Secrets = (props) => {
   const [
     tabIndex,
     setTabIndex,
-  ] = useLocalState('tab-index', 2);
+  ] = useState(2);
   const TabComponent = TAB2NAME[tabIndex-1].component();
   return (
     <Window

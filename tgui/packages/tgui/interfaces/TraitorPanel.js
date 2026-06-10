@@ -1,6 +1,6 @@
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import { Box, Button, Collapsible, Flex, Input, NoticeBox, NumberInput, Section, Tabs } from '../components';
 import { Window } from '../layouts';
 
@@ -12,7 +12,7 @@ const TABS = {
 
 export const TraitorPanel = (props) => {
   const { act, data } = useBackend();
-  const [currentTab, setCurrentTab] = useLocalState('tab', TABS.ACTIVE);
+  const [currentTab, setCurrentTab] = useState(TABS.ACTIVE);
 
   const {
     mind_name, mind_key, mind_active, assigned_role,
@@ -230,7 +230,7 @@ const ActiveAntags = (props) => {
 const AddAntagPanel = (props) => {
   const { act, data } = useBackend();
   const { available_categories } = data;
-  const [antagSearch, setAntagSearch] = useLocalState('antagSearch', '');
+  const [antagSearch, setAntagSearch] = useState('');
 
   const filteredCategories = (available_categories || [])
     .map(cat => {

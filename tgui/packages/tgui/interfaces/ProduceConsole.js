@@ -1,6 +1,7 @@
 import { multiline } from 'common/string';
+import { useState } from 'react';
 
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import { Box, Button, Dimmer, Divider, Icon, NumberInput, Section, Stack } from '../components';
 import { Window } from '../layouts';
 
@@ -23,7 +24,7 @@ const ShoppingTab = (props) => {
   const [
     shopIndex,
     setShopIndex,
-  ] = useLocalState('shop-index', 1);
+  ] = useState(1);
   const mapped_food = order_datums.filter(food => (
     food && food.cat === shopIndex
   ));
@@ -225,7 +226,7 @@ export const ProduceConsole = (props) => {
   const [
     tabIndex,
     setTabIndex,
-  ] = useLocalState('tab-index', 1);
+  ] = useState(1);
   const TabComponent = TAB2NAME[tabIndex-1].component();
   return (
     <Window

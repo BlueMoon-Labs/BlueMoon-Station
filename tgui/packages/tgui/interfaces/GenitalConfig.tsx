@@ -2,6 +2,7 @@
 import { filter } from 'common/collections';
 import { flow } from 'common/fp';
 import { createSearch } from 'common/string';
+import { useState } from 'react';
 
 import { useBackend, useLocalState } from '../backend';
 import { Button, Input, NumberInput, PixelArtImage, ProgressBar, Section, Stack, Table, Tabs } from '../components';
@@ -263,7 +264,7 @@ const Equipments = (props) => {
   const [tabIndex] = useLocalState('tabIndex', 0);
   const { act, data } = useBackend<GenitalInfo>();
   const genital = data.genitals[tabIndex];
-  const [searchText, setSearchText] = useLocalState('searchText', '');
+  const [searchText, setSearchText] = useState('');
   const items = prepareSearch(genital.equipments, searchText) || [];
   return (
     <Stack vertical>

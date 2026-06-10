@@ -1,4 +1,6 @@
-import { useBackend, useLocalState } from '../backend';
+import { useState } from 'react';
+
+import { useBackend } from '../backend';
 import { Button, Dropdown, Flex, Icon, NoticeBox, NumberInput, PixelArtImage, Section, Slider, Stack, Table, Tabs } from '../components';
 import { Window } from '../layouts';
 
@@ -18,7 +20,7 @@ export const Colormate = (props) => {
       : activemode === 2 ? presets_hsv
         : presets_matrix;
 
-  const [selectedPreset, setSelectedPreset] = useLocalState('selectedPreset', '');
+  const [selectedPreset, setSelectedPreset] = useState('');
 
   const currentPresetIdx = selectedPreset
     ? currentPresetList.indexOf(selectedPreset)

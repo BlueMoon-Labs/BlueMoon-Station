@@ -1,5 +1,7 @@
 // BLUEMOON ADDED
-import { useBackend, useLocalState } from "../backend";
+import { useState } from "react";
+
+import { useBackend } from "../backend";
 import { Box, Button, Collapsible, Flex, LabeledList, Section, Tooltip } from "../components";
 import { Window } from "../layouts";
 
@@ -85,7 +87,7 @@ const CyborgProfileImageElement = (props) => {
   const { data } = useBackend<CyborgProfileContext>();
 
   const headshotLinks = (data.headshot_links || []).filter(link => link?.length);
-  const [selectedHeadshot, setSelectedHeadshot] = useLocalState('selectedHeadshot', 0);
+  const [selectedHeadshot, setSelectedHeadshot] = useState(0);
   const safeSelectedHeadshot = headshotLinks.length > 0
     ? selectedHeadshot % headshotLinks.length
     : 0;

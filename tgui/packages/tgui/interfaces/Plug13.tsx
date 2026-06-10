@@ -1,5 +1,7 @@
 
-import { useBackend, useLocalState } from '../backend';
+import { useState } from 'react';
+
+import { useBackend } from '../backend';
 import { Box, Button, Input, NoticeBox, Section, Stack } from '../components';
 import { Window } from '../layouts';
 
@@ -17,7 +19,7 @@ const codeRegex = /^([A-Za-z0-9]{10}|([A-Za-z0-9]{5}-[A-Za-z0-9]{5}))$/;
 export const Plug13 = (props) => {
   const { act, data } = useBackend<Plug13State>();
 
-  const [code, setCode] = useLocalState('code', '');
+  const [code, setCode] = useState('');
 
   const validateCode = (code: string) => {
     if (code.length < 10) return false;

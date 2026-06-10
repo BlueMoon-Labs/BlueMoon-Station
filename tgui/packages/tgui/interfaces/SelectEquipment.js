@@ -1,6 +1,7 @@
 import { filter, map, sortBy, uniq } from 'common/collections';
 import { flow } from 'common/fp';
 import { createSearch } from 'common/string';
+import { useState } from 'react';
 
 import { useBackend, useLocalState } from '../backend';
 import { Box, Button, Dropdown, Icon, Input, PixelArtImage, Section, Stack, Tabs } from '../components';
@@ -42,7 +43,7 @@ export const SelectEquipment = (props) => {
   ]);
   const [tab] = useOutfitTabs(categories);
 
-  const [searchText, setSearchText] = useLocalState('searchText', '');
+  const [searchText, setSearchText] = useState('');
   const searchFilter = createSearch(searchText, entry => (
     entry.name + entry.path
   ));
@@ -170,10 +171,10 @@ const CurrentlySelectedDisplay = (props) => {
   const { act, data } = useBackend();
   const { current_outfit, is_observer = true } = data;
   const { entry } = props;
-  const [delPockets, setPocketDel] = useLocalState('delPockets', false);
-  const [deployMethod, setDeployMethod] = useLocalState('deployMethod', "Instant");
-  const [giveReturn, setGiveReturn] = useLocalState('giveReturn', false);
-  const [randomChar, setRandomChar] = useLocalState('randomChar', false);
+  const [delPockets, setPocketDel] = useState(false);
+  const [deployMethod, setDeployMethod] = useState("Instant");
+  const [giveReturn, setGiveReturn] = useState(false);
+  const [randomChar, setRandomChar] = useState(false);
   return (
     <Stack align="center">
       {entry?.path && (

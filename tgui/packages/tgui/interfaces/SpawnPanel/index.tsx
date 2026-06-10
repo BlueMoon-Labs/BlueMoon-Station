@@ -1,5 +1,6 @@
+import { useState } from 'react';
+
 import { resolveAsset } from '../../assets';
-import { useLocalState } from '../../backend';
 import { Box } from '../../components';
 import { Window } from '../../layouts';
 import { CreateObject } from './CreateObject';
@@ -10,11 +11,10 @@ let cachedAtoms: Record<string, AtomData> | null = null;
 let fetchInProgress = false;
 
 export const SpawnPanel = (props: any) => {
-  const [atoms, setAtoms] = useLocalState<Record<string, AtomData> | null>(
-    'sp_atoms', cachedAtoms
+  const [atoms, setAtoms] = useState<Record<string, AtomData> | null>(
+    cachedAtoms
   );
-  const [error, setError] = useLocalState<string | null>('sp_error', null
-  );
+  const [error, setError] = useState<string | null>(null);
 
   if (!atoms && !error) {
     if (cachedAtoms) {

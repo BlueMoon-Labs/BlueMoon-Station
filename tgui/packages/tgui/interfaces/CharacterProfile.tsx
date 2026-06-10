@@ -1,4 +1,6 @@
-import { useBackend, useLocalState } from "../backend";
+import { useState } from "react";
+
+import { useBackend } from "../backend";
 import { Box, Button, ByondUi, Collapsible, Flex, LabeledList, Section, Tooltip } from "../components";
 import { Window } from "../layouts";
 
@@ -141,7 +143,7 @@ const CharacterProfileImageElement = (props) => {
   const [
     selectedHeadshot,
     selectHeadshot,
-  ] = useLocalState('selectedHeadshot', 0);
+  ] = useState(0);
 
   const safeSelectedHeadshot = headshot_links.length > 0
     ? selectedHeadshot % headshot_links.length

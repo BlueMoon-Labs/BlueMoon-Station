@@ -1,12 +1,14 @@
+import { useState } from 'react';
+
 import { resolveAsset } from '../assets';
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import { Button, Flex, NoticeBox, PixelArtImage, Section, Tabs } from '../components';
 import { Window } from '../layouts';
 
 export const PortraitPicker = (props) => {
   const { act, data } = useBackend();
-  const [tabIndex, setTabIndex] = useLocalState('tabIndex', 0);
-  const [listIndex, setListIndex] = useLocalState('listIndex', 0);
+  const [tabIndex, setTabIndex] = useState(0);
+  const [listIndex, setListIndex] = useState(0);
   const {
     library,
     library_secure,

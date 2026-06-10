@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { useBackend, useLocalState } from '../backend';
 import { Button, Icon, LabeledList, NumberInput, Section, Stack, Table } from '../components';
 import { Window } from '../layouts';
@@ -353,8 +355,8 @@ const RecipeLibrary = (props) => {
     linkedBeaker,
   } = data;
 
-  const [reagentFilter, setReagentFilter] = useLocalState('reagentFilter', true);
-  const [bookmarkMode, setBookmarkMode] = useLocalState('bookmarkMode', false);
+  const [reagentFilter, setReagentFilter] = useState(true);
+  const [bookmarkMode, setBookmarkMode] = useState(false);
 
   const matchReagents = reaction => {
     if (!reagentFilter || currentReagents === null) {

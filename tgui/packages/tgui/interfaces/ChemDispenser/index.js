@@ -1,7 +1,8 @@
 import { toFixed } from 'common/math';
 import { createSearch, toTitleCase } from 'common/string';
+import { useState } from 'react';
 
-import { useBackend, useLocalState } from '../../backend';
+import { useBackend } from '../../backend';
 import {
   Box,
   Button,
@@ -275,24 +276,24 @@ const resolveOptimisticAmount = (optAmount, data) => {
 export const ChemDispenser = (props) => {
   const { act, data } = useBackend();
 
-  const [chemSearchQuery, setChemSearchQuery] = useLocalState('chem_search_chemicals', '');
-  const [recipeSearchQuery, setRecipeSearchQuery] = useLocalState('chem_search_recipes', '');
-  const [savedSearchQuery, setSavedSearchQuery] = useLocalState('chem_search_saved', '');
+  const [chemSearchQuery, setChemSearchQuery] = useState('');
+  const [recipeSearchQuery, setRecipeSearchQuery] = useState('');
+  const [savedSearchQuery, setSavedSearchQuery] = useState('');
 
-  const [activeTab, setActiveTab] = useLocalState('chem_tab', 'chemicals');
-  const [favorites, setFavorites] = useLocalState('chem_favorites', []);
-  const [recentChemicals, setRecentChemicals] = useLocalState('chem_recent', []);
+  const [activeTab, setActiveTab] = useState('chemicals');
+  const [favorites, setFavorites] = useState([]);
+  const [recentChemicals, setRecentChemicals] = useState([]);
 
-  const [optPrefs, setOptPrefs] = useLocalState('chem_opt_prefs', null);
+  const [optPrefs, setOptPrefs] = useState(null);
   const resolvedPrefs = resolveOptimisticPrefs(optPrefs, data);
   const { classicView, useReagentColor, showIcons, alphabeticalSort } = resolvedPrefs;
 
-  const [optAmount, setOptAmount] = useLocalState('chem_opt_amount', null);
+  const [optAmount, setOptAmount] = useState(null);
   const displayAmount = resolveOptimisticAmount(optAmount, data);
 
-  const [pendingActions, setPendingActions] = useLocalState('chem_pending', {});
-  const [optDeletedRecipes, setOptDeletedRecipes] = useLocalState('chem_deleted_recipes', null);
-  const [optRecording, setOptRecording] = useLocalState('chem_opt_recording', null);
+  const [pendingActions, setPendingActions] = useState({});
+  const [optDeletedRecipes, setOptDeletedRecipes] = useState(null);
+  const [optRecording, setOptRecording] = useState(null);
 
   const serverRecording = !!data.recordingRecipe;
   const recording = optRecording
@@ -302,14 +303,14 @@ export const ChemDispenser = (props) => {
     : serverRecording;
 
   const favoritesSet = new Set(favorites);
-  const [expandedCategories, setExpandedCategories] = useLocalState('chem_expanded', {
+  const [expandedCategories, setExpandedCategories] = useState({
     alcoholic_drinks: true, soft_drinks: true,
     elements: true, compounds: true, consumables: true,
     toxins: true, medicine: true, drugs: true, other: true,
     slime_extracts: true,
   });
 
-  const [optimistic, setOptimistic] = useLocalState('chem_optimistic', null);
+  const [optimistic, setOptimistic] = useState(null);
 
   // Derived validity check; avoids render-time state updates.
   const isOptimisticActive = checkOptimisticActive(optimistic, data);

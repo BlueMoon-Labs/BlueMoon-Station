@@ -1,4 +1,6 @@
-import { useBackend, useLocalState } from "../backend";
+import { useState } from 'react';
+
+import { useBackend } from "../backend";
 import {
   Box,
   Button,
@@ -25,7 +27,7 @@ export const Who = (props) => {
     player_stealthed_additional?.total_players,
   );
 
-  const [searchQuery, setSearchQuery] = useLocalState("searchQuery", "");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const searchPlayers = () =>
     total_players.filter((playerObj) => isMatch(playerObj, searchQuery));

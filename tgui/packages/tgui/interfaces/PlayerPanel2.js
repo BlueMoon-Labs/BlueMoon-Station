@@ -1,4 +1,4 @@
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 
 import { useBackend, useLocalState } from '../backend';
 import { Box, Button, Collapsible, Dropdown, Flex, Input, LabeledList, NoticeBox, NumberInput, Section, Slider, Tabs } from '../components';
@@ -66,7 +66,7 @@ const PAGES = [
 
 export const PlayerPanel2 = (props) => {
   const { act, data } = useBackend();
-  const [pageIndex, setPageIndex] = useLocalState('pageIndex', 0);
+  const [pageIndex, setPageIndex] = useState(0);
   const PageComponent = PAGES[pageIndex].component();
 
   const { mob_name, mob_type, client_ckey, client_rank, playtimes_enabled,
@@ -190,11 +190,11 @@ const PhysicalActions = (props) => {
   const [mobScale, setMobScale] = useLocalState('mobScale', initial_scale);
   const limbs = Object.keys(glob_limbs);
   const limb_flags = limbs.map((_, i) => (1<<i));
-  const [delimbOption, setDelimbOption] = useLocalState("delimb_flags", 0);
-  const [maSearch, setMaSearch] = useLocalState('maSearch', '');
-  const [quirkSearch, setQuirkSearch] = useLocalState('quirkSearch', '');
-  const [organSearch, setOrganSearch] = useLocalState('organSearch', '');
-  const [implantSearch, setImplantSearch] = useLocalState('implantSearch', '');
+  const [delimbOption, setDelimbOption] = useState(0);
+  const [maSearch, setMaSearch] = useState('');
+  const [quirkSearch, setQuirkSearch] = useState('');
+  const [organSearch, setOrganSearch] = useState('');
+  const [implantSearch, setImplantSearch] = useState('');
 
   const filteredArts = (martial_arts_list || []).filter(art =>
     art.name.toLowerCase().includes(maSearch.toLowerCase())
@@ -552,8 +552,8 @@ const QuirkCategory = (props) => {
 
 const OrganSlotRow = (props) => {
   const { slot, current, available, mob_type, act } = props;
-  const [expanded, setExpanded] = useLocalState('organ_' + slot, false);
-  const [organFilter, setOrganFilter] = useLocalState('organ_filter_' + slot, '');
+  const [expanded, setExpanded] = useState(false);
+  const [organFilter, setOrganFilter] = useState('');
 
   const filtered = available.filter(o =>
     o.name.toLowerCase().includes(organFilter.toLowerCase())
@@ -639,7 +639,7 @@ const OrganSlotRow = (props) => {
 const ImplantSection = (props) => {
   const { current_implants, implants_list, implantSearch, setImplantSearch,
     mob_type, act } = props;
-  const [showAdd, setShowAdd] = useLocalState('implant_showAdd', false);
+  const [showAdd, setShowAdd] = useState(false);
 
   const filteredImplants = (implants_list || []).filter(imp =>
     imp.name.toLowerCase().includes(implantSearch.toLowerCase())
@@ -1192,10 +1192,10 @@ const FunActions = (props) => {
     'Ratvar': '#BE8700',
   };
 
-  const [lockExplode, setLockExplode] = useLocalState("explode_lock_toggle", true);
-  const [empMode, setEmpMode] = useLocalState("empMode", false);
-  const [extinguishMode, setExtinguishMode] = useLocalState("extinguishMode", false);
-  const [expPower, setExpPower] = useLocalState("exp_power", 8);
+  const [lockExplode, setLockExplode] = useState(true);
+  const [empMode, setEmpMode] = useState(false);
+  const [extinguishMode, setExtinguishMode] = useState(false);
+  const [expPower, setExpPower] = useState(8);
   const [narrateSize, setNarrateSize] = useLocalState("narrateSize", 1);
   const [narrateMessage, setNarrateMessage] = useLocalState("narrateMessage", "");
   const [narrateColour, setNarrateColour] = useLocalState("narrateColour", Object.keys(colours)[0]);
@@ -1397,7 +1397,7 @@ const FunActions = (props) => {
 const SmiteActions = (props) => {
   const { act, data } = useBackend();
   const { smites_list } = data;
-  const [smiteSearch, setSmiteSearch] = useLocalState('smiteSearch', '');
+  const [smiteSearch, setSmiteSearch] = useState('');
 
   const filteredSmites = (smites_list || []).filter(name =>
     name.toLowerCase().includes(smiteSearch.toLowerCase())
