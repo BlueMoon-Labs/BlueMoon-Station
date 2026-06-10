@@ -181,9 +181,9 @@ const ViewCharacter = (props) => {
   const currentLink = headshots[safeIdx];
   const isVideo = typeof currentLink === 'string' && /\.(webm|mp4)$/i.test(currentLink);
   const mediaStyle = {
-    'max-width': '256px',
-    'max-height': '256px',
-    'object-fit': 'contain',
+    maxWidth: '256px',
+    maxHeight: '256px',
+    objectFit: 'contain',
   };
 
   return (
@@ -251,17 +251,17 @@ const ViewCharacter = (props) => {
         </LabeledList>
       </Section>
       <Section level={2} title="Объявление">
-        <Box style={{ 'word-break': 'break-all' }} preserveWhitespace>
+        <Box style={{ wordBreak: 'break-all' }} preserveWhitespace>
           {overlay.character_ad || 'Не задано.'}
         </Box>
       </Section>
       <Section level={2} title="OOC Заметки">
-        <Box style={{ 'word-break': 'break-all' }} preserveWhitespace>
+        <Box style={{ wordBreak: 'break-all' }} preserveWhitespace>
           {overlay.ooc_notes || 'Не задано.'}
         </Box>
       </Section>
       <Section level={2} title="Описание">
-        <Box style={{ 'word-break': 'break-all' }} preserveWhitespace>
+        <Box style={{ wordBreak: 'break-all' }} preserveWhitespace>
           {overlay.flavor_text || 'Не задано.'}
         </Box>
       </Section>
@@ -275,7 +275,7 @@ const ViewCharacter = (props) => {
             onClick={() => act('editNote', { target_ckey: overlay.ckey })}
           />
         }>
-        <Box style={{ 'word-break': 'break-all' }} preserveWhitespace>
+        <Box style={{ wordBreak: 'break-all' }} preserveWhitespace>
           {(directory_notes && directory_notes[overlay.ckey]) || 'Нет заметки.'}
         </Box>
       </Section>
@@ -336,7 +336,7 @@ const CharacterDirectoryList = (props) => {
             <Table.Row
               key={i}
               style={{
-                'background-color': erpTagRowColor[character.erptag] || 'transparent',
+                backgroundColor: erpTagRowColor[character.erptag] || 'transparent',
               }}>
               <Table.Cell p={1}>
                 {canOrbit ? (

@@ -379,9 +379,9 @@ const VoreContentsPanel = (props) => {
                 width="64px"
                 color={thing.absorbed ? "purple" : stats[thing.stat]}
                 style={{
-                  'vertical-align': 'middle',
-                  'margin-right': '5px',
-                  'border-radius': '20px',
+                  verticalAlign: 'middle',
+                  marginRight: '5px',
+                  borderRadius: '20px',
                 }}
                 onClick={() => act(thing.outside ? "pick_from_outside" : "pick_from_inside", {
                   "pick": thing.ref,
@@ -393,7 +393,7 @@ const VoreContentsPanel = (props) => {
                   height="64px"
                   style={{
                     imageRendering: 'pixelated',
-                    'margin-left': '-5px',
+                    marginLeft: '-5px',
                   }} />
               </Button>
               {thing.name}

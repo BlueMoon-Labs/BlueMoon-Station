@@ -32,7 +32,7 @@ const CornerText = (props: {
       style={{
         position: "relative",
         left: align === "left" ? "2px" : "-2px",
-        "text-align": align,
+        textAlign: align,
         "text-shadow": "1px 1px 1px #555",
       }}
     >
@@ -528,7 +528,7 @@ export const StripMenu = (props) => {
                         width="100%"
                         style={{
                           imageRendering: "pixelated",
-                          "vertical-align": "middle",
+                          verticalAlign: "middle",
                         }}
                       />
                     );
@@ -550,7 +550,7 @@ export const StripMenu = (props) => {
                         ml={0}
                         mt={1.3}
                         style={{
-                          "text-align": "center",
+                          textAlign: "center",
                           height: "100%",
                           width: "100%",
                         }}
@@ -624,7 +624,7 @@ export const StripMenu = (props) => {
                               position: "absolute",
                               bottom: 0,
                               right: 0,
-                              "z-index": 2,
+                              zIndex: 2,
                             }}
                           >
                             <Icon name={alternateAction.icon} />

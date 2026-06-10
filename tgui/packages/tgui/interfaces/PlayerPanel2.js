@@ -1209,10 +1209,10 @@ const FunActions = (props) => {
 
   const narrateStyles = {
     'color': colours[narrateColour],
-    'font-size': narrateSize + 'rem',
-    'font-weight': (narrateBold ? 'bold' : ''),
-    'font-family': narrateFont,
-    'font-style': (narrateItalic ? 'italic' : ''),
+    fontSize: narrateSize + 'rem',
+    fontWeight: (narrateBold ? 'bold' : ''),
+    fontFamily: narrateFont,
+    fontStyle: (narrateItalic ? 'italic' : ''),
   };
 
   return (

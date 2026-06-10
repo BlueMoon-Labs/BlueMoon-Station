@@ -37,7 +37,7 @@ const ColorInput = (props) => {
             'height': '22px',
             'padding': '0',
             'border': '1px solid rgba(255,255,255,0.2)',
-            'border-radius': '2px',
+            borderRadius: '2px',
             'background': 'transparent',
             'cursor': 'pointer',
           }}

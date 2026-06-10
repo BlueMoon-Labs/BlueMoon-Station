@@ -44,7 +44,7 @@ export const Panel = (props) => {
               <Stack.Item
                 grow
                 overflowX="auto"
-                style={{ 'min-width': 0 }}>
+                style={{ minWidth: 0 }}>
                 <ChatTabs />
               </Stack.Item>
               <Stack.Item shrink={0}>

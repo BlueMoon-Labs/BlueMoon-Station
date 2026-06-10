@@ -43,7 +43,7 @@ export const CreateObject = (props: CreateObjectProps) => {
     <Box
       style={{
         'display': 'flex',
-        'flex-direction': 'column',
+        flexDirection: 'column',
         'height': '100%',
         'overflow': 'hidden',
       }}
@@ -52,9 +52,9 @@ export const CreateObject = (props: CreateObjectProps) => {
       <Box
         style={{
           'background': 'rgba(0,0,0,0.2)',
-          'border-bottom': '1px solid rgba(255,255,255,0.07)',
+          borderBottom: '1px solid rgba(255,255,255,0.07)',
           'padding': '4px 8px',
-          'flex-shrink': '0',
+          flexShrink: '0',
         }}
       >
         <Stack align="center" spacing={1}>
@@ -72,23 +72,23 @@ export const CreateObject = (props: CreateObjectProps) => {
                         alignItems: 'center',
                         'gap': '4px',
                         'padding': '3px 8px',
-                        'border-radius': '4px',
+                        borderRadius: '4px',
                         'cursor': 'pointer',
-                        'font-size': '12px',
-                        'font-weight': active ? 'bold' : 'normal',
+                        fontSize: '12px',
+                        fontWeight: active ? 'bold' : 'normal',
                         'background': active ? TAB_TYPE_COLORS[tab] : 'rgba(255,255,255,0.05)',
                         'color': active ? '#fff' : 'rgba(255,255,255,0.5)',
                         'border': active ? `1px solid ${TAB_TYPE_COLORS[tab]}` : '1px solid rgba(255,255,255,0.1)',
                         'transition': 'all 0.1s',
-                        'user-select': 'none',
+                        userSelect: 'none',
                       }}
                       onClick={() => { setActiveTab(tab); setSearchText(''); }}
                     >
                       <Box
                         as="span"
                         style={{
-                          'font-size': '10px',
-                          'font-weight': 'bold',
+                          fontSize: '10px',
+                          fontWeight: 'bold',
                           'opacity': active ? '1' : '0.7',
                         }}
                       >
@@ -111,7 +111,7 @@ export const CreateObject = (props: CreateObjectProps) => {
               selected={searchByType}
               tooltip={searchByType ? 'Searching by typepath' : 'Searching by name'}
               onClick={() => setSearchByType(!searchByType)}
-              style={{ 'font-size': '11px' }}
+              style={{ fontSize: '11px' }}
             >
               {searchByType ? 'Path' : 'Name'}
             </Button>
@@ -130,18 +130,18 @@ export const CreateObject = (props: CreateObjectProps) => {
       </Box>
 
       {/* ─── List body ─── */}
-      <Box style={{ 'flex': '1', 'overflow-y': 'auto', 'overflow-x': 'hidden' }}>
+      <Box style={{ 'flex': '1', overflowY: 'auto', overflowX: 'hidden' }}>
         {!hasSearch && (
           <Box
             style={{
               textAlign: 'center',
               'padding': '24px 12px',
               'color': 'rgba(255,255,255,0.3)',
-              'font-size': '12px',
-              'user-select': 'none',
+              fontSize: '12px',
+              userSelect: 'none',
             }}
           >
-            <Icon name="search" mb={1} style={{ 'font-size': '18px', 'display': 'block' }} />
+            <Icon name="search" mb={1} style={{ fontSize: '18px', 'display': 'block' }} />
             {tabTotal.toLocaleString()} {activeTab.toLowerCase()} — begin typing to search
           </Box>
         )}
@@ -152,10 +152,10 @@ export const CreateObject = (props: CreateObjectProps) => {
               textAlign: 'center',
               'padding': '24px 12px',
               'color': 'rgba(255,100,100,0.6)',
-              'font-size': '12px',
+              fontSize: '12px',
             }}
           >
-            <Icon name="times-circle" mb={1} style={{ 'font-size': '18px', 'display': 'block' }} />
+            <Icon name="times-circle" mb={1} style={{ fontSize: '18px', 'display': 'block' }} />
             No results for &quot;{searchText}&quot;
           </Box>
         )}
@@ -166,10 +166,10 @@ export const CreateObject = (props: CreateObjectProps) => {
               <Box
                 style={{
                   'padding': '3px 10px',
-                  'font-size': '10px',
+                  fontSize: '10px',
                   'color': 'rgba(255,180,0,0.7)',
                   'background': 'rgba(255,180,0,0.05)',
-                  'border-bottom': '1px solid rgba(255,180,0,0.15)',
+                  borderBottom: '1px solid rgba(255,180,0,0.15)',
                 }}
               >
                 <Icon name="exclamation-triangle" mr={1} />
@@ -224,10 +224,10 @@ const AtomRow = (props: AtomRowProps) => {
         'background': selected
           ? 'rgba(0,200,100,0.12)'
           : 'transparent',
-        'border-left': selected
+        borderLeft: selected
           ? '3px solid #00c864'
           : `3px solid transparent`,
-        'border-bottom': '1px solid rgba(255,255,255,0.04)',
+        borderBottom: '1px solid rgba(255,255,255,0.04)',
         'transition': 'background 0.08s',
         'gap': '8px',
       }}
@@ -239,14 +239,14 @@ const AtomRow = (props: AtomRowProps) => {
         style={{
           'width': '24px',
           'height': '24px',
-          'flex-shrink': '0',
+          flexShrink: '0',
           'position': 'relative',
           'overflow': 'hidden',
-          'border-radius': '3px',
+          borderRadius: '3px',
           'background': atom.iconid ? 'transparent' : color,
           'display': 'flex',
           alignItems: 'center',
-          'justify-content': 'center',
+          justifyContent: 'center',
         }}
       >
         {atom.iconid ? (
@@ -265,10 +265,10 @@ const AtomRow = (props: AtomRowProps) => {
         ) : (
           <Box
             style={{
-              'font-size': '11px',
-              'font-weight': 'bold',
+              fontSize: '11px',
+              fontWeight: 'bold',
               'color': '#fff',
-              'line-height': '1',
+              lineHeight: '1',
             }}
           >
             {letter}
@@ -277,28 +277,28 @@ const AtomRow = (props: AtomRowProps) => {
       </Box>
 
       {/* Name + path */}
-      <Box style={{ 'flex': '1', 'overflow': 'hidden', 'min-width': '0' }}>
+      <Box style={{ 'flex': '1', 'overflow': 'hidden', minWidth: '0' }}>
         <Box
           style={{
-            'font-size': '12px',
-            'font-weight': selected ? 'bold' : 'normal',
+            fontSize: '12px',
+            fontWeight: selected ? 'bold' : 'normal',
             'color': selected ? '#00e87a' : 'rgba(255,255,255,0.9)',
-            'white-space': 'nowrap',
+            whiteSpace: 'nowrap',
             'overflow': 'hidden',
-            'text-overflow': 'ellipsis',
-            'line-height': '1.35',
+            textOverflow: 'ellipsis',
+            lineHeight: '1.35',
           }}
         >
           {atom.name}
         </Box>
         <Box
           style={{
-            'font-size': '10px',
+            fontSize: '10px',
             'color': 'rgba(255,255,255,0.3)',
-            'white-space': 'nowrap',
+            whiteSpace: 'nowrap',
             'overflow': 'hidden',
-            'text-overflow': 'ellipsis',
-            'line-height': '1.2',
+            textOverflow: 'ellipsis',
+            lineHeight: '1.2',
           }}
         >
           {typepath}
@@ -309,10 +309,10 @@ const AtomRow = (props: AtomRowProps) => {
       {selected && (
         <Box
           style={{
-            'flex-shrink': '0',
-            'font-size': '10px',
+            flexShrink: '0',
+            fontSize: '10px',
             'color': 'rgba(0,200,100,0.5)',
-            'white-space': 'nowrap',
+            whiteSpace: 'nowrap',
           }}
         >
           dbl=spawn

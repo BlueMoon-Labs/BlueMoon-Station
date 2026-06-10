@@ -40,9 +40,9 @@ export const SpawnPanel = (props: any) => {
 
   return (
     <Window title="Сотворить хуйню" width={540} height={620} theme="admin">
-      <Window.Content style={{ 'padding': '0', 'display': 'flex', 'flex-direction': 'column' }}>
+      <Window.Content style={{ 'padding': '0', 'display': 'flex', flexDirection: 'column' }}>
         {error && (
-          <Box color="bad" p={1} style={{ 'flex-shrink': '0' }}>
+          <Box color="bad" p={1} style={{ flexShrink: '0' }}>
             Failed to load atom list: {error}
           </Box>
         )}
@@ -51,18 +51,18 @@ export const SpawnPanel = (props: any) => {
             style={{
               'flex': '1',
               'display': 'flex',
-              'align-items': 'center',
-              'justify-content': 'center',
+              alignItems: 'center',
+              justifyContent: 'center',
               'color': 'rgba(255,255,255,0.3)',
-              'font-size': '13px',
+              fontSize: '13px',
             }}
           >
             Loading atom data...
           </Box>
         )}
         {atoms && (
-          <Box style={{ 'display': 'flex', 'flex-direction': 'column', 'height': '100%' }}>
-            <Box style={{ 'flex-shrink': '0' }}>
+          <Box style={{ 'display': 'flex', flexDirection: 'column', 'height': '100%' }}>
+            <Box style={{ flexShrink: '0' }}>
               <CreateObjectSettings />
             </Box>
             <Box style={{ 'flex': '1', 'overflow': 'hidden' }}>

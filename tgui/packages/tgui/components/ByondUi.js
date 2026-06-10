@@ -137,7 +137,7 @@ export class ByondUi extends Component {
         ref={this.containerRef}
         {...boxProps}>
         {/* Filler */}
-        <div style={{ 'min-height': '22px' }} />
+        <div style={{ minHeight: '22px' }} />
       </div>
     );
   }

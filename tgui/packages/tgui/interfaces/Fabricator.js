@@ -419,7 +419,7 @@ const ItemList = (props) => {
 
     return (
       <Table.Row key={item.id}>
-        <Table.Cell collapsing style={{ 'vertical-align': 'middle' }}>
+        <Table.Cell collapsing style={{ verticalAlign: 'middle' }}>
           <Flex align="center">
             <Flex.Item>
               <Button
@@ -429,8 +429,8 @@ const ItemList = (props) => {
                   padding: 0,
                   height: ROW_BTN_HEIGHT,
                   display: 'flex',
-                  'align-items': 'center',
-                  'justify-content': 'center',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
                 <Icon name="circle-question" />
@@ -445,8 +445,8 @@ const ItemList = (props) => {
                     padding: 0,
                     height: ROW_BTN_HEIGHT,
                     display: 'flex',
-                    'align-items': 'center',
-                    'justify-content': 'center',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                   }}
                 >
                   <Icon name="triangle-exclamation" color={!secLevelAllow && "orange"} />
@@ -456,7 +456,7 @@ const ItemList = (props) => {
           </Flex>
         </Table.Cell>
 
-        <Table.Cell style={{ 'vertical-align': 'middle' }}>
+        <Table.Cell style={{ verticalAlign: 'middle' }}>
           <Button
             fluid
             color="transparent"
@@ -466,7 +466,7 @@ const ItemList = (props) => {
               padding: 0,
               height: ROW_BTN_HEIGHT,
               display: 'flex',
-              'align-items': 'center',
+              alignItems: 'center',
             }}
             onClick={() => act('build', { id: item.id, amount: 1 })}
           >
@@ -481,7 +481,7 @@ const ItemList = (props) => {
           </Button>
         </Table.Cell>
 
-        <Table.Cell collapsing style={{ 'vertical-align': 'middle' }}>
+        <Table.Cell collapsing style={{ verticalAlign: 'middle' }}>
           <Flex align="center">
             {button_amounts.map((amt) => {
               const colorN = calcTextColor(materialsObj, chemsHaveById, item, amt);
@@ -494,7 +494,7 @@ const ItemList = (props) => {
                     style={{
                       height: ROW_BTN_HEIGHT,
                       display: 'flex',
-                      'align-items': 'center',
+                      alignItems: 'center',
                     }}
                     onClick={() => act('build', { id: item.id, amount: amt })}
                     content={
@@ -513,7 +513,7 @@ const ItemList = (props) => {
                 style={{
                   height: ROW_BTN_HEIGHT,
                   display: 'flex',
-                  'align-items': 'center',
+                  alignItems: 'center',
                 }}
                 content={
                   <Box color={maxBuild <= 0 && 'bad'}>

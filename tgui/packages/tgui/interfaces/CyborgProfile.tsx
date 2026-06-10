@@ -53,12 +53,12 @@ export const CyborgProfile = (props) => {
           </Flex.Item>
           <Flex.Item pl="10px" grow>
             <Collapsible title="Описание Юнита" open>
-              <Section style={{ "white-space": "pre-line" }}>
+              <Section style={{ whiteSpace: "pre-line" }}>
                 {data.silicon_flavor_text || "———"}
               </Section>
             </Collapsible>
             <Collapsible title="Внеигровые заметки" open>
-              <Section style={{ "white-space": "pre-line" }}>
+              <Section style={{ whiteSpace: "pre-line" }}>
                 {data.oocnotes || "Отсутствуют"}
               </Section>
             </Collapsible>

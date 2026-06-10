@@ -538,7 +538,7 @@ export class IntegratedCircuit extends Component<unknown, IntegratedCircuitState
           className="IntegratedCircuit__content"
           data-ic-rainbow={this.state.lgbtqRainbowMode ? '' : undefined}
           style={{
-            'background-image': 'none',
+            backgroundImage: 'none',
           }}>
           <Box className="IntegratedCircuit__frame">
             <CircuitToolbar

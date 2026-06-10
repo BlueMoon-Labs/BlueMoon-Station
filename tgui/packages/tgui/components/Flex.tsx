@@ -32,14 +32,16 @@ export const computeFlexProps = (props: FlexProps) => {
       inline && 'Flex--inline',
       className,
     ]),
+    ...rest,
+    // camelCase keys are required: React appends 'px' to numeric values
+    // of unknown (kebab-case) properties, producing invalid CSS.
     style: {
       ...rest.style,
-      'flex-direction': direction,
-      'flex-wrap': wrap === true ? 'wrap' : wrap,
-      'align-items': align,
-      'justify-content': justify,
+      flexDirection: direction,
+      flexWrap: wrap === true ? 'wrap' : wrap,
+      alignItems: align,
+      justifyContent: justify,
     },
-    ...rest,
   };
 };
 
@@ -71,15 +73,15 @@ export const computeFlexItemProps = (props: FlexItemProps) => {
       'Flex__item',
       className,
     ]),
+    ...rest,
     style: {
       ...style,
-      'flex-grow': grow !== undefined && Number(grow),
-      'flex-shrink': shrink !== undefined && Number(shrink),
-      'flex-basis': unit(basis),
-      'order': order,
-      'align-self': align,
+      flexGrow: grow !== undefined ? Number(grow) : undefined,
+      flexShrink: shrink !== undefined ? Number(shrink) : undefined,
+      flexBasis: unit(basis),
+      order: order,
+      alignSelf: align,
     },
-    ...rest,
   };
 };
 

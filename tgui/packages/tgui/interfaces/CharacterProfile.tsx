@@ -71,14 +71,14 @@ export const CharacterProfile = (props) => {
           </Flex.Item>
           <Flex.Item pl="10px" grow>
             <Collapsible title="Описание Персонажа" open>
-              <Section style={{ "white-space": "pre-line" }}>
+              <Section style={{ whiteSpace: "pre-line" }}>
                 {data.flavortext || "———"}
               </Section>
             </Collapsible>
 
             {data.flavortext_naked ? (
                <Collapsible title="Описание Голого Тела Персонажа" open>
-                <Section style={{ "white-space": "pre-line" }}>
+                <Section style={{ whiteSpace: "pre-line" }}>
                   {data.flavortext_naked || "———"}
                 </Section>
                </Collapsible>
@@ -86,7 +86,7 @@ export const CharacterProfile = (props) => {
 
             {data.security_records ? (
               <Collapsible title="База Данных Службы Безопасности" open>
-                <Section style={{ "white-space": "pre-line" }}>
+                <Section style={{ whiteSpace: "pre-line" }}>
                   {data.security_records || "———"}
                 </Section>
               </Collapsible>
@@ -94,19 +94,19 @@ export const CharacterProfile = (props) => {
 
             {data.medical_records ? (
               <Collapsible title="База Данных Медицинского Отдела" open>
-                <Section style={{ "white-space": "pre-line" }}>
+                <Section style={{ whiteSpace: "pre-line" }}>
                   {data.medical_records || "———"}
                 </Section>
               </Collapsible>
             ) : (<Box />)}
 
             <Collapsible title={`Раса - ${data.species_name}`} open>
-              <Section style={{ "white-space": "pre-line" }}>
+              <Section style={{ whiteSpace: "pre-line" }}>
                 {data.custom_species_lore || "———"}
               </Section>
             </Collapsible>
             <Collapsible title="Внеигровые заметки" open>
-              <Section style={{ "white-space": "pre-line" }}>
+              <Section style={{ whiteSpace: "pre-line" }}>
                 {data.oocnotes || "———"}
               </Section>
             </Collapsible>
@@ -159,10 +159,10 @@ const CharacterProfileImageElement = (props) => {
   const mediaStyle = {
     width: '256px',
     height: '256px',
-    'max-width': '256px',
-    'max-height': '256px',
-    'object-fit': 'contain',
-  };
+    maxWidth: '256px',
+    maxHeight: '256px',
+    objectFit: 'contain',
+  } as const;
 
   if (headshot_links.length) { return (
     <Section title="Арт персонажа" pb="12" textAlign="center">

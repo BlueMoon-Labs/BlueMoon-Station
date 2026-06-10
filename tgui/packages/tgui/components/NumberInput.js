@@ -242,8 +242,8 @@ export class NumberInput extends Component {
           style={{
             display: !editing ? 'none' : undefined,
             height: height,
-            'line-height': lineHeight,
-            'font-size': fontSize,
+            lineHeight: lineHeight,
+            fontSize: fontSize,
           }}
           onBlur={e => {
             if (!editing) {

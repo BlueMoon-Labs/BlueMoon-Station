@@ -26,7 +26,7 @@ export const CircuitInfo = (props) => {
         <Stack.Item maxWidth="240px">
           <Box
             className="CircuitInfo__desc"
-            style={{ 'white-space': 'pre-wrap' }}>
+            style={{ whiteSpace: 'pre-wrap' }}>
             {descText}
           </Box>
         </Stack.Item>

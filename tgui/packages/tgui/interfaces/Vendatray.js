@@ -89,7 +89,7 @@ const VendingImage = (props) => {
         width="96px"
         style={{
           imageRendering: 'pixelated',
-          'vertical-align': 'middle',
+          verticalAlign: 'middle',
         }} />
     </Section>
   );

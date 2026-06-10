@@ -86,7 +86,7 @@ export const MiningVendor = (props) => {
                           <span
                             className={classes(['vending32x32', product.path])}
                             style={{
-                              'vertical-align': 'middle',
+                              verticalAlign: 'middle',
                             }} />
                         </Box>
                         {' '}<b>{product.name}</b>
@@ -95,8 +95,8 @@ export const MiningVendor = (props) => {
                         <Button
                           fluid
                           style={{
-                            'min-width': '100px',
-                            'text-align': 'center',
+                            minWidth: '100px',
+                            textAlign: 'center',
                           }}
                           disabled={!data.user
                             || product.price > data.user.points}

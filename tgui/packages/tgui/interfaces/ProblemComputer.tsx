@@ -137,7 +137,7 @@ const ChargeBar = (props) => {
               py={0.5}
               backgroundColor={rewardType === 'Science' ? '#8e44ad' : '#d35400'}
               color="white"
-              style={{ 'border-radius': '4px' }}>
+              style={{ borderRadius: '4px' }}>
               <Icon
                 name={rewardType === 'Science' ? 'flask' : 'boxes'}
                 mr={1}
@@ -173,11 +173,11 @@ const MenuScreen = (props) => {
                     'border': selectedGame === game.id
                       ? '2px solid ' + game.color
                       : '2px solid rgba(255,255,255,0.1)',
-                    'border-radius': '8px',
+                    borderRadius: '8px',
                     'padding': '10px',
-                    'text-align': 'center',
-                    'min-height': '90px',
-                    'background-color': selectedGame === game.id
+                    textAlign: 'center',
+                    minHeight: '90px',
+                    backgroundColor: selectedGame === game.id
                       ? game.color + '33'
                       : 'rgba(255,255,255,0.05)',
                   }}>
@@ -211,8 +211,8 @@ const MenuScreen = (props) => {
                       content={diff.name}
                       style={{
                         'padding': '8px 16px',
-                        'font-size': '13px',
-                        'border-radius': '6px',
+                        fontSize: '13px',
+                        borderRadius: '6px',
                       }}
                       onClick={() =>
                         act('select_game', {
@@ -290,7 +290,7 @@ const MathGame = (props) => {
             m={1}
             backgroundColor="rgba(0,0,0,0.3)"
             style={{
-              'border-radius': '8px',
+              borderRadius: '8px',
               'border': '1px solid rgba(52,152,219,0.5)',
             }}>
             {gameData.question}
@@ -308,9 +308,9 @@ const MathGame = (props) => {
                   setAnswer('');
                 }}
                 style={{
-                  'font-size': '18px',
+                  fontSize: '18px',
                   'width': '200px',
-                  'text-align': 'center',
+                  textAlign: 'center',
                 }}
               />
             </Stack.Item>
@@ -423,14 +423,14 @@ const WireGame = (props) => {
         style={{
           'width': '110px',
           'height': nodeH + 'px',
-          'border-radius': side === 'L' ? '6px 0 0 6px' : '0 6px 6px 0',
+          borderRadius: side === 'L' ? '6px 0 0 6px' : '0 6px 6px 0',
           'background': connected ? clr + '55' : active ? clr + 'CC' : clr + '44',
           'border': active ? '2px solid #fff' : '2px solid ' + clr,
           'cursor': connected ? 'default' : 'pointer',
-          'text-align': align,
-          'line-height': nodeH + 'px',
+          textAlign: align,
+          lineHeight: nodeH + 'px',
           'padding': '0 10px',
-          'box-shadow': active ? '0 0 8px ' + clr : 'none',
+          boxShadow: active ? '0 0 8px ' + clr : 'none',
         }}>
         {connected && <Icon name="check" color="white" />}
         <Box
@@ -439,10 +439,10 @@ const WireGame = (props) => {
           style={{
             'width': '14px',
             'height': '14px',
-            'border-radius': '50%',
+            borderRadius: '50%',
             'background': clr,
             'display': 'inline-block',
-            'vertical-align': 'middle',
+            verticalAlign: 'middle',
           }}
         />
       </Box>
@@ -576,12 +576,12 @@ const SignalGame = (props) => {
                       textAlign="center"
                       bold
                       style={{
-                        'min-width': '50px',
+                        minWidth: '50px',
                         'height': '50px',
-                        'line-height': '50px',
-                        'border-radius': '8px',
-                        'font-size': '20px',
-                        'background-color': 'rgba(155,89,182,0.3)',
+                        lineHeight: '50px',
+                        borderRadius: '8px',
+                        fontSize: '20px',
+                        backgroundColor: 'rgba(155,89,182,0.3)',
                         'border': '2px solid rgba(155,89,182,0.6)',
                         'padding': '0 8px',
                       }}>
@@ -608,12 +608,12 @@ const SignalGame = (props) => {
                     textAlign="center"
                     bold
                     style={{
-                      'min-width': '50px',
+                      minWidth: '50px',
                       'height': '50px',
-                      'line-height': '50px',
-                      'border-radius': '8px',
-                      'font-size': '24px',
-                      'background-color': 'rgba(231,76,60,0.3)',
+                      lineHeight: '50px',
+                      borderRadius: '8px',
+                      fontSize: '24px',
+                      backgroundColor: 'rgba(231,76,60,0.3)',
                       'border': '2px dashed rgba(231,76,60,0.6)',
                       'padding': '0 8px',
                     }}>
@@ -634,8 +634,8 @@ const SignalGame = (props) => {
               italic
               style={{
                 'padding': '6px 12px',
-                'background-color': 'rgba(255,255,255,0.05)',
-                'border-radius': '4px',
+                backgroundColor: 'rgba(255,255,255,0.05)',
+                borderRadius: '4px',
               }}>
               <Icon name="lightbulb" mr={1} />
               Подсказка: {hint}
@@ -656,9 +656,9 @@ const SignalGame = (props) => {
                   setAnswer('');
                 }}
                 style={{
-                  'font-size': '18px',
+                  fontSize: '18px',
                   'width': '200px',
-                  'text-align': 'center',
+                  textAlign: 'center',
                 }}
               />
             </Stack.Item>
@@ -667,7 +667,7 @@ const SignalGame = (props) => {
                 icon="check"
                 color="good"
                 content="Ответить"
-                style={{ 'font-size': '14px', 'padding': '6px 16px' }}
+                style={{ fontSize: '14px', 'padding': '6px 16px' }}
                 onClick={() => {
                   act('submit_answer', { answer: answer });
                   setAnswer('');
@@ -712,14 +712,14 @@ const ResultScreen = (props) => {
             fontSize={1.1}
             p={1}
             style={{
-              'background-color': isCorrect
+              backgroundColor: isCorrect
                 ? 'rgba(46,204,113,0.15)'
                 : 'rgba(231,76,60,0.15)',
-              'border-radius': '8px',
+              borderRadius: '8px',
               'border': isCorrect
                 ? '1px solid rgba(46,204,113,0.4)'
                 : '1px solid rgba(231,76,60,0.4)',
-              'max-width': '400px',
+              maxWidth: '400px',
             }}>
             {lastMessage}
           </Box>
@@ -734,14 +734,14 @@ const ResultScreen = (props) => {
             icon="redo"
             color="good"
             content="Играть ещё"
-            style={{ 'font-size': '14px', 'padding': '8px 20px' }}
+            style={{ fontSize: '14px', 'padding': '8px 20px' }}
             onClick={() => act('play_again')}
           />
           <Button
             icon="home"
             content="В меню"
             ml={1}
-            style={{ 'font-size': '14px', 'padding': '8px 20px' }}
+            style={{ fontSize: '14px', 'padding': '8px 20px' }}
             onClick={() => act('back_to_menu')}
           />
         </Stack.Item>

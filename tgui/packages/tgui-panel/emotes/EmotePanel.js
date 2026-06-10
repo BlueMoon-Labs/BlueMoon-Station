@@ -45,7 +45,7 @@ export const EmotePanel = (props) => {
 
   return (
     <Section>
-      <Flex align="center" style={{ 'flex-wrap': 'wrap' }}>
+      <Flex align="center" style={{ flexWrap: 'wrap' }}>
         {emoteList
           .sort((a, b) => { return a.name.localeCompare(b.name, 'en'); })
           .map(emote => {

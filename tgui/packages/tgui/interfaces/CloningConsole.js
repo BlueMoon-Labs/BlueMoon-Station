@@ -134,7 +134,7 @@ export const CloningConsole = (props) => {
                         />
                       }>
                       <div style={{
-                        'word-break': 'break-all',
+                        wordBreak: 'break-all',
                       }}>
                         Scan ID {record["id"]}<br />
                         <Button
@@ -208,7 +208,7 @@ export const CloningConsole = (props) => {
                   <Collapsible title={diskData["name"] ? diskData["name"] : "Пустой диск"}>
                     {diskData["id"] ? (
                       <Box style={{
-                        'word-break': 'break-all',
+                        wordBreak: 'break-all',
                       }}>
                         ID: {diskData["id"]}<br />
                         UI: {diskData["UI"]}<br />
