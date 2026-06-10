@@ -271,7 +271,7 @@
 
 /obj/item/shard/zaukerite/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	..()
-	if(M == user || !isliving(M) || iscarbon(M))
+	if(!isliving(M) || !iscarbon(M))
 		return
 	zaukerite_shard_consume_strike(src, M, user)
 
@@ -279,7 +279,7 @@
 	var/mob/living/target = isliving(hit_atom) ? hit_atom : null
 	var/mob/living/thrower = throwingdatum?.thrower
 	var/result = ..()
-	if(QDELETED(src) || !target || target == thrower || result == BLOCK_SUCCESS)
+	if(QDELETED(src) || !target || result == BLOCK_SUCCESS)
 		return result
 	zaukerite_shard_consume_strike(src, target, thrower, thrown = TRUE)
 	return result
@@ -321,7 +321,7 @@
 
 /obj/item/zaukerite_shard/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	..()
-	if(M == user || !isliving(M) || iscarbon(M))
+	if(!isliving(M) || !iscarbon(M))
 		return
 	zaukerite_shard_consume_strike(src, M, user)
 
@@ -329,7 +329,7 @@
 	var/mob/living/target = isliving(hit_atom) ? hit_atom : null
 	var/mob/living/thrower = throwingdatum?.thrower
 	var/result = ..()
-	if(QDELETED(src) || !target || target == thrower || result == BLOCK_SUCCESS)
+	if(QDELETED(src) || !target || result == BLOCK_SUCCESS)
 		return result
 	zaukerite_shard_consume_strike(src, target, thrower, thrown = TRUE)
 	return result
@@ -339,13 +339,13 @@
 	zaukerite_shard_consume_strike(src, victim, user)
 
 /proc/zaukerite_shard_consume_strike(obj/item/weapon, mob/living/victim, mob/living/attacker, thrown = FALSE)
-	if(QDELETED(weapon) || !isliving(victim) || victim == attacker)
+	if(QDELETED(weapon) || !isliving(victim))
 		return
 	var/amount = ZAUKERITE_SHARD_ZAUKER_AMOUNT
 	var/wrapped = istype(weapon, /obj/item/zaukerite_shard)
 	if(iscarbon(victim))
 		zaukerite_shard_inject(victim, amount)
-	if(!thrown && !wrapped && iscarbon(attacker) && prob(25))
+	if(!thrown && !wrapped && iscarbon(attacker) && victim != attacker && prob(25))
 		zaukerite_shard_inject(attacker, amount)
 		attacker.visible_message(
 			span_warning("The [weapon] splinters apart, releasing toxic zauker dust onto [attacker]!"),
@@ -357,6 +357,234 @@
 	if(!target?.reagents || HAS_TRAIT(target, TRAIT_ROBOTIC_ORGANISM))
 		return
 	target.reagents.add_reagent(/datum/reagent/zauker, amount)
+
+// === N2O shard (raw + cloth-wrapped weapon) ===
+#define N2O_SHARD_N2O_AMOUNT 10
+
+/obj/item/shard/n2o
+	name = "N2O shard"
+	desc = "A jagged shard of crystallized nitrous oxide. Extremely sharp and unstable."
+	icon = 'icons/obj/crystallizer_grenades.dmi'
+	icon_state = "n2o_crystal"
+	item_state = "shard-glass"
+	force = 7
+	throwforce = 12
+	armour_penetration = 25
+	sharpness = SHARP_EDGED
+	attack_verb = list("stabbed", "slashed", "sliced", "cut")
+	embedding = null
+	craft_time = 14 SECONDS
+	custom_materials = null
+
+/obj/item/shard/n2o/Initialize(mapload)
+	. = ..()
+	icon_state = "n2o_crystal"
+	pixel_x = 0
+	pixel_y = 0
+	RegisterSignal(src, COMSIG_ITEM_ATTACK_ZONE, PROC_REF(on_n2o_melee_strike))
+
+/obj/item/shard/n2o/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
+	..()
+	if(!isliving(M) || !iscarbon(M))
+		return
+	n2o_shard_consume_strike(src, M, user)
+
+/obj/item/shard/n2o/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
+	var/mob/living/target = isliving(hit_atom) ? hit_atom : null
+	var/mob/living/thrower = throwingdatum?.thrower
+	var/result = ..()
+	if(QDELETED(src) || !target || result == BLOCK_SUCCESS)
+		return result
+	n2o_shard_consume_strike(src, target, thrower, thrown = TRUE)
+	return result
+
+/obj/item/shard/n2o/attackby(obj/item/item, mob/user, params)
+	if(istype(item, /obj/item/stack/sheet/cloth))
+		var/obj/item/stack/sheet/cloth/cloth = item
+		to_chat(user, span_notice("You begin to wrap the [cloth] around the [src]..."))
+		if(do_after(user, craft_time, target = src))
+			var/obj/item/n2o_shard/wrapped = new
+			cloth.use(1)
+			to_chat(user, span_notice("You wrap the [cloth] around the [src], forming a makeshift weapon."))
+			remove_item_from_storage(src, user)
+			qdel(src)
+			user.put_in_hands(wrapped)
+		return
+	return ..()
+
+/obj/item/n2o_shard
+	name = "N2O shard"
+	desc = "A nitrous oxide crystal shard wrapped in cloth. One strike floods the victim with N2O before the shard crumbles."
+	icon = 'icons/obj/crystallizer_exploration.dmi'
+	icon_state = "N2O_shard"
+	item_state = "shard-glass"
+	lefthand_file = 'icons/mob/inhands/weapons/melee_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/weapons/melee_righthand.dmi'
+	force = 7
+	throwforce = 12
+	armour_penetration = 25
+	w_class = WEIGHT_CLASS_TINY
+	sharpness = SHARP_EDGED
+	attack_verb = list("stabbed", "slashed", "sliced", "cut")
+	hitsound = 'sound/weapons/bladeslice.ogg'
+	embedding = null
+
+/obj/item/n2o_shard/Initialize(mapload)
+	. = ..()
+	RegisterSignal(src, COMSIG_ITEM_ATTACK_ZONE, PROC_REF(on_n2o_melee_strike))
+
+/obj/item/n2o_shard/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
+	..()
+	if(!isliving(M) || !iscarbon(M))
+		return
+	n2o_shard_consume_strike(src, M, user)
+
+/obj/item/n2o_shard/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
+	var/mob/living/target = isliving(hit_atom) ? hit_atom : null
+	var/mob/living/thrower = throwingdatum?.thrower
+	var/result = ..()
+	if(QDELETED(src) || !target || result == BLOCK_SUCCESS)
+		return result
+	n2o_shard_consume_strike(src, target, thrower, thrown = TRUE)
+	return result
+
+/obj/item/proc/on_n2o_melee_strike(datum/source, mob/living/victim, mob/user, obj/item/bodypart/affecting)
+	SIGNAL_HANDLER
+	n2o_shard_consume_strike(src, victim, user)
+
+/proc/n2o_shard_consume_strike(obj/item/weapon, mob/living/victim, mob/living/attacker, thrown = FALSE)
+	if(QDELETED(weapon) || !isliving(victim))
+		return
+	var/amount = N2O_SHARD_N2O_AMOUNT
+	var/wrapped = istype(weapon, /obj/item/n2o_shard)
+	if(iscarbon(victim))
+		n2o_shard_inject(victim, amount)
+	if(!thrown && !wrapped && iscarbon(attacker) && victim != attacker && prob(25))
+		n2o_shard_inject(attacker, amount)
+		attacker.visible_message(
+			span_warning("The [weapon] splinters apart, releasing a puff of nitrous oxide onto [attacker]!"),
+			span_userdanger("The [weapon] splinters apart, and you breathe in nitrous oxide!"),
+		)
+	qdel(weapon)
+
+/proc/n2o_shard_inject(mob/living/carbon/target, amount)
+	if(!target?.reagents || HAS_TRAIT(target, TRAIT_ROBOTIC_ORGANISM))
+		return
+	target.reagents.add_reagent(/datum/reagent/nitrous_oxide, amount)
+
+// === Healium shard (raw + cloth-wrapped weapon) ===
+#define HEALIUM_SHARD_HEALIUM_AMOUNT 10
+
+/obj/item/shard/healium
+	name = "Healium shard"
+	desc = "A jagged shard of crystallized healium. Extremely sharp and unstable."
+	icon = 'icons/obj/crystallizer_grenades.dmi'
+	icon_state = "healium_crystal"
+	item_state = "shard-glass"
+	force = 7
+	throwforce = 12
+	armour_penetration = 25
+	sharpness = SHARP_EDGED
+	attack_verb = list("stabbed", "slashed", "sliced", "cut")
+	embedding = null
+	craft_time = 14 SECONDS
+	custom_materials = null
+
+/obj/item/shard/healium/Initialize(mapload)
+	. = ..()
+	icon_state = "healium_crystal"
+	pixel_x = 0
+	pixel_y = 0
+	RegisterSignal(src, COMSIG_ITEM_ATTACK_ZONE, PROC_REF(on_healium_melee_strike))
+
+/obj/item/shard/healium/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
+	..()
+	if(!isliving(M) || !iscarbon(M))
+		return
+	healium_shard_consume_strike(src, M, user)
+
+/obj/item/shard/healium/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
+	var/mob/living/target = isliving(hit_atom) ? hit_atom : null
+	var/mob/living/thrower = throwingdatum?.thrower
+	var/result = ..()
+	if(QDELETED(src) || !target || result == BLOCK_SUCCESS)
+		return result
+	healium_shard_consume_strike(src, target, thrower, thrown = TRUE)
+	return result
+
+/obj/item/shard/healium/attackby(obj/item/item, mob/user, params)
+	if(istype(item, /obj/item/stack/sheet/cloth))
+		var/obj/item/stack/sheet/cloth/cloth = item
+		to_chat(user, span_notice("You begin to wrap the [cloth] around the [src]..."))
+		if(do_after(user, craft_time, target = src))
+			var/obj/item/healium_shard/wrapped = new
+			cloth.use(1)
+			to_chat(user, span_notice("You wrap the [cloth] around the [src], forming a makeshift weapon."))
+			remove_item_from_storage(src, user)
+			qdel(src)
+			user.put_in_hands(wrapped)
+		return
+	return ..()
+
+/obj/item/healium_shard
+	name = "Healium shard"
+	desc = "A healium crystal shard wrapped in cloth. One strike floods the victim with healium before the shard crumbles."
+	icon = 'icons/obj/crystallizer_exploration.dmi'
+	icon_state = "Healium_shard"
+	item_state = "shard-glass"
+	lefthand_file = 'icons/mob/inhands/weapons/melee_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/weapons/melee_righthand.dmi'
+	force = 7
+	throwforce = 12
+	armour_penetration = 25
+	w_class = WEIGHT_CLASS_TINY
+	sharpness = SHARP_EDGED
+	attack_verb = list("stabbed", "slashed", "sliced", "cut")
+	hitsound = 'sound/weapons/bladeslice.ogg'
+	embedding = null
+
+/obj/item/healium_shard/Initialize(mapload)
+	. = ..()
+	RegisterSignal(src, COMSIG_ITEM_ATTACK_ZONE, PROC_REF(on_healium_melee_strike))
+
+/obj/item/healium_shard/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
+	..()
+	if(!isliving(M) || !iscarbon(M))
+		return
+	healium_shard_consume_strike(src, M, user)
+
+/obj/item/healium_shard/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
+	var/mob/living/target = isliving(hit_atom) ? hit_atom : null
+	var/mob/living/thrower = throwingdatum?.thrower
+	var/result = ..()
+	if(QDELETED(src) || !target || result == BLOCK_SUCCESS)
+		return result
+	healium_shard_consume_strike(src, target, thrower, thrown = TRUE)
+	return result
+
+/obj/item/proc/on_healium_melee_strike(datum/source, mob/living/victim, mob/user, obj/item/bodypart/affecting)
+	SIGNAL_HANDLER
+	healium_shard_consume_strike(src, victim, user)
+
+/proc/healium_shard_consume_strike(obj/item/weapon, mob/living/victim, mob/living/attacker, thrown = FALSE)
+	if(QDELETED(weapon) || !isliving(victim))
+		return
+	var/amount = HEALIUM_SHARD_HEALIUM_AMOUNT
+	var/wrapped = istype(weapon, /obj/item/healium_shard)
+	if(iscarbon(victim))
+		healium_shard_inject(victim, amount)
+	if(!thrown && !wrapped && iscarbon(attacker) && victim != attacker && prob(25))
+		healium_shard_inject(attacker, amount)
+		attacker.visible_message(
+			span_warning("The [weapon] splinters apart, releasing a puff of healium onto [attacker]!"),
+			span_userdanger("The [weapon] splinters apart, and you breathe in healium!"),
+		)
+	qdel(weapon)
+
+/proc/healium_shard_inject(mob/living/carbon/target, amount)
+	if(!target?.reagents || HAS_TRAIT(target, TRAIT_ROBOTIC_ORGANISM))
+		return
+	target.reagents.add_reagent(/datum/reagent/healium, amount)
 
 // === Zaukerite bolts (craftable from crystallizer sheets) ===
 /obj/item/zaukerite_bolt

@@ -1805,6 +1805,24 @@
 		O.applyOrganDamage(-0.5 * REM * 0.5)
 	. = TRUE
 
+/datum/reagent/healium
+	name = "Healium"
+	description = "A miraculous gas that rapidly heals wounds."
+	reagent_state = LIQUID
+	metabolization_rate = 2.5 * REAGENTS_METABOLISM
+	gas = GAS_HEALIUM
+	color = "#ff4444"
+	taste_description = "cold relief"
+	value = REAGENT_VALUE_VERY_RARE
+
+/datum/reagent/healium/on_mob_life(mob/living/carbon/M)
+	var/heal_amount = clamp(round(3 + volume * 1.2), 3, 18)
+	M.adjustBruteLoss(-heal_amount)
+	M.adjustFireLoss(-heal_amount)
+	M.adjustOxyLoss(-max(round(heal_amount * 0.5), 1))
+	M.adjustToxLoss(-max(round(heal_amount * 0.3), 1))
+	. = ..()
+
 /datum/reagent/zauker
 	name = "Zauker"
 	description = "An unstable gas that is toxic to all living beings."

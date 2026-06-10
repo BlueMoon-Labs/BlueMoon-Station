@@ -32,6 +32,48 @@
 	category = CAT_ATMOSPHERIC
 	subcategory = CAT_ATMOSPHERICS
 
+/datum/crafting_recipe/n2o_shard_break
+	name = "N2O shard (raw)"
+	result = /obj/item/shard/n2o
+	reqs = list(
+		/obj/item/grenade/gas_crystal/nitrous_oxide_crystal = 1,
+	)
+	time = 15
+	category = CAT_ATMOSPHERIC
+	subcategory = CAT_ATMOSPHERICS
+
+/datum/crafting_recipe/n2o_shard_weapon
+	name = "N2O shard"
+	result = /obj/item/n2o_shard
+	reqs = list(
+		/obj/item/shard/n2o = 1,
+		/obj/item/stack/sheet/cloth = 1,
+	)
+	time = 25
+	category = CAT_ATMOSPHERIC
+	subcategory = CAT_ATMOSPHERICS
+
+/datum/crafting_recipe/healium_shard_break
+	name = "Healium shard (raw)"
+	result = /obj/item/shard/healium
+	reqs = list(
+		/obj/item/grenade/gas_crystal/healium_crystal = 1,
+	)
+	time = 15
+	category = CAT_ATMOSPHERIC
+	subcategory = CAT_ATMOSPHERICS
+
+/datum/crafting_recipe/healium_shard_weapon
+	name = "Healium shard"
+	result = /obj/item/healium_shard
+	reqs = list(
+		/obj/item/shard/healium = 1,
+		/obj/item/stack/sheet/cloth = 1,
+	)
+	time = 25
+	category = CAT_ATMOSPHERIC
+	subcategory = CAT_ATMOSPHERICS
+
 /datum/crafting_recipe/hot_ice_pack
 	name = "Hot ice cooling pack"
 	result = /obj/item/hot_ice_pack
