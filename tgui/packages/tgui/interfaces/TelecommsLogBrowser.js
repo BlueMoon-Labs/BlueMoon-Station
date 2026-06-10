@@ -29,7 +29,7 @@ export const TelecommsLogBrowser = (props) => {
       width={575}
       height={400}>
       <Window.Content overflow="auto">
-        <Fragment>
+        <>
           {!!notice && (
             <NoticeBox>
               {notice}
@@ -49,7 +49,7 @@ export const TelecommsLogBrowser = (props) => {
               <LabeledList.Item
                 label="Memory"
                 buttons={(
-                  <Fragment>
+                  <>
                     <Button
                       icon="minus-circle"
                       disabled={!servers.length || !!selected}
@@ -62,7 +62,7 @@ export const TelecommsLogBrowser = (props) => {
                       onClick={() => act('probe')}>
                       Probe Network
                     </Button>
-                  </Fragment>
+                  </>
                 )}>
                 {servers ? (
                   `${servers.length} currently probed and buffered`
@@ -193,7 +193,7 @@ export const TelecommsLogBrowser = (props) => {
               )}
             </Section>
           )}
-        </Fragment>
+        </>
       </Window.Content>
     </Window>
   );

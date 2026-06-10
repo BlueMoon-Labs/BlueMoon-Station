@@ -11,9 +11,9 @@
 
 import { clamp } from 'common/math';
 import { classes } from 'common/react';
-import { Component } from 'react';
 import katex from 'katex';
 import { marked } from 'marked';
+import { Component } from 'react';
 
 import { useBackend } from '../backend';
 import { Box, Flex, Tabs, TextArea } from '../components';

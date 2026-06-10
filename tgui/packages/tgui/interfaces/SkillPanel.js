@@ -35,12 +35,12 @@ export const SkillPanel = (props) => {
                 </span>
                 <br />
                 {!!skill.level_based && (
-                  <Fragment>
+                  <>
                     <Level
                       skill_lvl_num={skill.lvl_base_num}
                       skill_lvl={skill.lvl_base} />
                     <br />
-                  </Fragment>
+                  </>
                 )}
                 Total Experience: [{skill.value_base} XP]
                 <br />
@@ -61,7 +61,7 @@ export const SkillPanel = (props) => {
                   color="good" />
                 <br />
                 {!!data.admin && (
-                  <Fragment>
+                  <>
                     <Button
                       content="Adjust Exp"
                       onClick={() => act('adj_exp', {
@@ -79,7 +79,7 @@ export const SkillPanel = (props) => {
                       })} />
                     <br />
                     <br />
-                  </Fragment>
+                  </>
                 )}
               </LabeledList.Item>
             ))}

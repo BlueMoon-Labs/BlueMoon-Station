@@ -14,6 +14,9 @@ const IE_DIR_OPTIONS = [
   [10, 'SW (10)'],
 ];
 
+// Debounce timers for the color picker, keyed by the input element.
+const colorCommitTimers = new WeakMap();
+
 export const FUNDAMENTAL_DATA_TYPES = {
   'string': (props) => {
     const { name, value, setValue, color } = props;
@@ -92,7 +95,18 @@ export const FUNDAMENTAL_DATA_TYPES = {
               type="color"
               value={hex}
               title={name}
-              onChange={(e) => setValue(e.target.value.toUpperCase())}
+              onChange={(e) => {
+                // React's onChange fires continuously while dragging
+                // inside the color dialog; debounce so we do not flood
+                // the server with act() messages.
+                const input = e.target;
+                const next = input.value.toUpperCase();
+                clearTimeout(colorCommitTimers.get(input));
+                colorCommitTimers.set(
+                  input,
+                  setTimeout(() => setValue(next), 250),
+                );
+              }}
               style={{
                 width: '28px',
                 height: '22px',

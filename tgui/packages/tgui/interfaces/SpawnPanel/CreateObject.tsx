@@ -1,8 +1,8 @@
 import { classes } from 'common/react';
-import { useBackend, useLocalState } from '../../backend';
-import { Box, Button, Icon, Input, NoticeBox, Section, Stack, Tabs } from '../../components';
 
-import { MAX_ATOM_DISPLAY, LOCATIONS_NEEDING_CLICK, PRECISE_MODE_OFF, PRECISE_MODE_TARGET, TAB_TYPE_COLORS, TAB_TYPE_LETTERS, TAB_TYPES } from './constants';
+import { useBackend, useLocalState } from '../../backend';
+import { Box, Button, Icon, Input, Stack } from '../../components';
+import { LOCATIONS_NEEDING_CLICK, MAX_ATOM_DISPLAY, PRECISE_MODE_OFF, PRECISE_MODE_TARGET, TAB_TYPE_COLORS, TAB_TYPE_LETTERS, TAB_TYPES } from './constants';
 import { AtomData, SpawnPanelData } from './types';
 
 type CreateObjectProps = {
@@ -69,7 +69,7 @@ export const CreateObject = (props: CreateObjectProps) => {
                       as="span"
                       style={{
                         'display': 'inline-flex',
-                        'align-items': 'center',
+                        alignItems: 'center',
                         'gap': '4px',
                         'padding': '3px 8px',
                         'border-radius': '4px',
@@ -134,7 +134,7 @@ export const CreateObject = (props: CreateObjectProps) => {
         {!hasSearch && (
           <Box
             style={{
-              'text-align': 'center',
+              textAlign: 'center',
               'padding': '24px 12px',
               'color': 'rgba(255,255,255,0.3)',
               'font-size': '12px',
@@ -149,7 +149,7 @@ export const CreateObject = (props: CreateObjectProps) => {
         {hasSearch && filteredAtoms.length === 0 && (
           <Box
             style={{
-              'text-align': 'center',
+              textAlign: 'center',
               'padding': '24px 12px',
               'color': 'rgba(255,100,100,0.6)',
               'font-size': '12px',
@@ -218,7 +218,7 @@ const AtomRow = (props: AtomRowProps) => {
     <Box
       style={{
         'display': 'flex',
-        'align-items': 'center',
+        alignItems: 'center',
         'padding': '4px 8px',
         'cursor': 'pointer',
         'background': selected
@@ -245,7 +245,7 @@ const AtomRow = (props: AtomRowProps) => {
           'border-radius': '3px',
           'background': atom.iconid ? 'transparent' : color,
           'display': 'flex',
-          'align-items': 'center',
+          alignItems: 'center',
           'justify-content': 'center',
         }}
       >
@@ -255,8 +255,8 @@ const AtomRow = (props: AtomRowProps) => {
             style={{
               'display': 'block',
               'transform': 'scale(0.75)',
-              'transform-origin': 'top left',
-              'image-rendering': 'pixelated',
+              transformOrigin: 'top left',
+              imageRendering: 'pixelated',
               'position': 'absolute',
               'top': '0',
               'left': '0',

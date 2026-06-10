@@ -10,17 +10,16 @@ import {
   Stack,
 } from '../../components';
 import { Window } from '../../layouts';
-import { CircuitInfo } from './CircuitInfo';
-import { CircuitToolbar } from './CircuitToolbar';
-import { Connections } from './Connections';
-import { ABSOLUTE_Y_OFFSET, MOUSE_BUTTON_LEFT } from './constants';
 import {
   byondListToArray,
   connectedToRefList,
   normalizeCircuitComponent,
 } from './byondPayload';
+import { CircuitInfo } from './CircuitInfo';
+import { CircuitToolbar } from './CircuitToolbar';
+import { Connections } from './Connections';
+import { ABSOLUTE_Y_OFFSET, MOUSE_BUTTON_LEFT } from './constants';
 import { ObjectComponent } from './ObjectComponent';
-import { VariableMenu } from './VariableMenu';
 import type {
   CircuitComponentView,
   CircuitPortPayload,
@@ -30,14 +29,15 @@ import type {
   SelectedPortState,
   WireConnection,
 } from './types';
+import { VariableMenu } from './VariableMenu';
 
 export class IntegratedCircuit extends Component<unknown, IntegratedCircuitState> {
   connectionsSvgRef = createRef<SVGSVGElement>();
   /** Смещали ли поле мышью с прошлого сохранённого screen_x/y (не слать move_screen на каждый mouseup). */
   planePanDirty = false;
 
-  constructor() {
-    super();
+  constructor(props: unknown) {
+    super(props);
     this.state = {
       locations: {},
       selectedPort: null,

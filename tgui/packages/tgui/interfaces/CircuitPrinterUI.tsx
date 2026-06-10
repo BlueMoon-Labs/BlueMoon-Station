@@ -435,7 +435,7 @@ export const CloneNotice = (props) => {
       >
         <Stack vertical align="center">
           <Stack.Item>
-            <h3 style={{ margin: '0 0 0.5rem 0', display: 'flex', "align-items": 'center', gap: '8px' }}>
+            <h3 style={{ margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
               В процессе печати
               <Icon name="sync" spin size={1.5} />
             </h3>

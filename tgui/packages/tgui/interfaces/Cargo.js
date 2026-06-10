@@ -156,7 +156,7 @@ export const CargoCatalog = (props) => {
     <Section
       title="Catalog"
       buttons={(
-        <Fragment>
+        <>
           {!express && <CargoCartButtons />}
           <Input
             placeholder="Search..."
@@ -169,7 +169,7 @@ export const CargoCatalog = (props) => {
             content="Buy Privately"
             checked={self_paid}
             onClick={() => act('toggleprivate')} />
-        </Fragment>
+        </>
       )}>
       <Flex>
         <Flex.Item ml={-1} mr={1}>
@@ -323,7 +323,7 @@ const CargoCartButtons = (props) => {
     return null;
   }
   return (
-    <Fragment>
+    <>
       <Box inline mx={1}>
         {cart.length === 0 && 'Cart is empty'}
         {cart.length === 1 && '1 item'}
@@ -336,7 +336,7 @@ const CargoCartButtons = (props) => {
         color="transparent"
         content="Clear"
         onClick={() => act('clear')} />
-    </Fragment>
+    </>
   );
 };
 

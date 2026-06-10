@@ -1,8 +1,9 @@
+import './VirtualJoystick.scss';
+
 import { Component } from 'react';
 import { useBackend } from 'tgui/backend';
 import { Box } from 'tgui/components';
 import { Window } from 'tgui/layouts';
-import './VirtualJoystick.scss';
 
 const TRAIL_MAX_AGE = 250;
 const TRAIL_SAMPLE_MS = 50;

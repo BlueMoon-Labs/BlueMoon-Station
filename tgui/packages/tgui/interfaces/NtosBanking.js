@@ -1,5 +1,5 @@
 import { useBackend } from '../backend';
-import { Section, Button, Input, NoticeBox, Stack } from '../components';
+import { Button, Input, NoticeBox, Section, Stack } from '../components';
 import { NtosWindow } from '../layouts';
 
 export const NtosBanking = (props) => {

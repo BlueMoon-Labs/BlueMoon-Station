@@ -133,17 +133,20 @@ class TetrisGame extends Component {
     this.currentCells = shape.cells.map(([r, c]) => [r, c]);
     this.pos = { r: 0, c: Math.floor((COLS - 3) / 2) };
     if (!this.isValid(this.currentCells, this.pos)) {
-      this.setState({ gameOver: true });
       this.lockPiece();
-      this.draw();
-      this.drawPreview();
-      const { act, highScore } = this.props;
-      if (this.state.score > highScore) {
-        this.sfx('high_score');
-      } else {
-        this.sfx('game_over');
-      }
-      act('submitScore', { score: this.state.score });
+      // setState асинхронный: рисуем и отправляем счёт в callback,
+      // когда gameOver и очки из clearLines уже применены
+      this.setState({ gameOver: true }, () => {
+        this.draw();
+        this.drawPreview();
+        const { act, highScore } = this.props;
+        if (this.state.score > highScore) {
+          this.sfx('high_score');
+        } else {
+          this.sfx('game_over');
+        }
+        act('submitScore', { score: this.state.score });
+      });
     }
   }
 
@@ -222,14 +225,17 @@ class TetrisGame extends Component {
     }
     if (cleared > 0) {
       const points = [0, 100, 300, 500, 800];
+      const prevLevel = this.state.level;
+      // Updater должен быть чистым: React может вызвать его повторно
       this.setState((prevState) => {
         const score = prevState.score + 20 + (points[cleared] || 800) * prevState.level;
         const lines = prevState.lines + cleared;
         const level = Math.min(12, Math.max(prevState.level, Math.floor(lines / 10) + 1));
-        if (level > prevState.level) {
+        return { score, lines, level };
+      }, () => {
+        if (this.state.level > prevLevel) {
           this.sfx('level_up');
         }
-        return { score, lines, level };
       });
       if (cleared >= 4) {
         this.sfx('tetris');

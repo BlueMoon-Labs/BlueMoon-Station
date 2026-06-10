@@ -208,12 +208,12 @@ const DetailedAccountInfo = (_props) => {
   const transactions = Array.isArray(data.transactions) ? data.transactions : [];
   const isDepartment = !!data.is_department;
   return (
-    <Fragment>
+    <>
       <Section
         title={`#${account_number} / ${owner_name}`}
         mt={1}
         buttons={
-          <Fragment>
+          <>
             <Button
               icon="print"
               content="Print Account Details"
@@ -225,7 +225,7 @@ const DetailedAccountInfo = (_props) => {
               content="Back"
               onClick={() => act('back')}
             />
-          </Fragment>
+          </>
         }>
         <LabeledList>
           <LabeledList.Item label="Account Number">
@@ -301,7 +301,7 @@ const DetailedAccountInfo = (_props) => {
           )}
         </Table>
       </Section>
-    </Fragment>
+    </>
   );
 };
 

@@ -276,7 +276,7 @@ const ContactsScreen = (props) => {
           <SendToAllSection />
         </Stack.Item>
       )}
-      </Stack>
+    </Stack>
       {showRingtone && (
         <Box style={{
           position: 'fixed',

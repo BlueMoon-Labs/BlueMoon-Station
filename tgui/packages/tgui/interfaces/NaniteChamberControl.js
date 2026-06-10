@@ -52,7 +52,7 @@ export const NaniteChamberControlContent = (props) => {
           onClick={() => act('toggle_lock')} />
       )}>
       {!has_nanites ? (
-        <Fragment>
+        <>
           <Box
             bold
             color="bad"
@@ -71,9 +71,9 @@ export const NaniteChamberControlContent = (props) => {
             fontSize="30px"
             lineHeight="50px"
             onClick={() => act('nanite_injection')} />
-        </Fragment>
+        </>
       ) : (
-        <Fragment>
+        <>
           <Section
             title="Status"
             level={2}
@@ -274,7 +274,7 @@ export const NaniteChamberControlContent = (props) => {
               );
             })}
           </Section>
-        </Fragment>
+        </>
       )}
     </Section>
   );

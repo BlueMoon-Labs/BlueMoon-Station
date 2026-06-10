@@ -75,7 +75,7 @@ export const ClockworkSlab = (props) => {
           <Section
             title="Power"
             buttons={(
-              <Fragment>
+              <>
                 Search
                 <Input
                   autoFocus
@@ -89,7 +89,7 @@ export const ClockworkSlab = (props) => {
                   onClick={() => act('toggle')}>
                   Recollection
                 </Button>
-              </Fragment>
+              </>
             )}>
             <b>{power}</b> power is available for scripture
             and other consumers.

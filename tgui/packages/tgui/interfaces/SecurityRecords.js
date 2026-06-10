@@ -169,7 +169,7 @@ const PageRecordList = (_properties) => {
     });
 
   return (
-    <Fragment>
+    <>
       <Flex mb="0.5rem">
         <Flex.Item>
           <Button
@@ -226,7 +226,7 @@ const PageRecordList = (_properties) => {
           </Table.Row>
         ))}
       </Table>
-    </Fragment>
+    </>
   );
 };
 
@@ -297,7 +297,7 @@ const PageAllLogs = (_properties) => {
   );
 
   return (
-    <Fragment>
+    <>
       <Flex mb="0.5rem">
         <Flex.Item grow="1">
           <Input
@@ -335,7 +335,7 @@ const PageAllLogs = (_properties) => {
           </Box>
         )}
       </Section>
-    </Fragment>
+    </>
   );
 };
 
@@ -346,7 +346,7 @@ const PageRecordView = (_properties) => {
   const { general, security, isPrinting, canDeleteLogs } = data;
 
   return (
-    <Fragment>
+    <>
       <Button
         icon="arrow-left"
         content="Назад к списку"
@@ -355,7 +355,7 @@ const PageRecordView = (_properties) => {
       />
       <ViewGeneral />
       <ViewSecurity />
-    </Fragment>
+    </>
   );
 };
 
@@ -377,7 +377,7 @@ const ViewGeneral = (_properties) => {
     <Section
       title="Общие данные"
       buttons={
-        <Fragment>
+        <>
           <Button
             disabled={isPrinting}
             icon={isPrinting ? 'spinner' : 'print'}
@@ -405,7 +405,7 @@ const ViewGeneral = (_properties) => {
             content="Удалить всё"
             onClick={() => act('delete_general')}
           />
-        </Fragment>
+        </>
       }>
       <Flex>
         <Flex.Item grow="1">
@@ -561,7 +561,7 @@ const ViewSecurity = (_properties) => {
   }
 
   return (
-    <Fragment>
+    <>
       <Section
         title="Данные безопасности"
         buttons={
@@ -606,7 +606,7 @@ const ViewSecurity = (_properties) => {
       </Section>
       <ActionLogs />
       <CommentsSection />
-    </Fragment>
+    </>
   );
 };
 
@@ -771,7 +771,7 @@ const ActionLogs = (_properties) => {
     <Section
       title={'Логи действий (' + logs.length + ')'}
       buttons={
-        <Fragment>
+        <>
           <Button
             disabled={isPrinting}
             icon={isPrinting ? 'spinner' : 'print'}
@@ -787,7 +787,7 @@ const ActionLogs = (_properties) => {
               onClick={() => act('delete_logs')}
             />
           )}
-        </Fragment>
+        </>
       }>
       {logs.length === 0 ? (
         <Box color="label" italic>
@@ -847,7 +847,7 @@ const CommentsSection = (_properties) => {
                 [Удалено]
               </Box>
             ) : (
-              <Fragment>
+              <>
                 <Box
                   fontSize="0.85rem"
                   dangerouslySetInnerHTML={{ __html: comment.text }}
@@ -858,7 +858,7 @@ const CommentsSection = (_properties) => {
                   mt="0.25rem"
                   onClick={() => act('delete_comment', { id: comment.id })}
                 />
-              </Fragment>
+              </>
             )}
           </Box>
         ))

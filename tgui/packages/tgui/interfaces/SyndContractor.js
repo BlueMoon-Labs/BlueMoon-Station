@@ -27,10 +27,10 @@ export class FakeTerminal extends Component {
       this.setState(prevState => {
         return ({
           currentIndex: prevState.currentIndex + 1,
+          currentDisplay: prevState.currentDisplay.concat(
+            props.allMessages[prevState.currentIndex]),
         });
       });
-      const { currentDisplay } = state;
-      currentDisplay.push(props.allMessages[state.currentIndex]);
     } else {
       clearTimeout(this.timer);
       setTimeout(props.onFinished, props.finishedTimeout);
@@ -51,8 +51,8 @@ export class FakeTerminal extends Component {
   render() {
     return (
       <Box m={1}>
-        {this.state.currentDisplay.map(value => (
-          <Fragment key={value}>
+        {this.state.currentDisplay.map((value, i) => (
+          <Fragment key={i}>
             {value}
             <br />
           </Fragment>

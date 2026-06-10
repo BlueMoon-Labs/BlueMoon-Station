@@ -145,7 +145,7 @@ const ScannerGateControl = (props) => {
 const ScannerGateOff = (props) => {
   const { act } = useBackend();
   return (
-    <Fragment>
+    <>
       <Box mb={2}>
         Select a scanning mode below.
       </Box>
@@ -172,7 +172,7 @@ const ScannerGateOff = (props) => {
           content="Nanites"
           onClick={() => act('set_mode', { new_mode: 'Nanites' })} />
       </Box>
-    </Fragment>
+    </>
   );
 };
 
@@ -180,13 +180,13 @@ const ScannerGateWanted = (props) => {
   const { data } = useBackend();
   const { reverse } = data;
   return (
-    <Fragment>
+    <>
       <Box mb={2}>
         Trigger if the person scanned {reverse ? 'does not have' : 'has'}
         {' '}any warrants for their arrest.
       </Box>
       <ScannerGateMode />
-    </Fragment>
+    </>
   );
 };
 
@@ -194,13 +194,13 @@ const ScannerGateGuns = (props) => {
   const { data } = useBackend();
   const { reverse } = data;
   return (
-    <Fragment>
+    <>
       <Box mb={2}>
         Trigger if the person scanned {reverse ? 'does not have' : 'has'}
         {' '}any guns.
       </Box>
       <ScannerGateMode />
-    </Fragment>
+    </>
   );
 };
 
@@ -208,13 +208,13 @@ const ScannerGateMindshield = (props) => {
   const { data } = useBackend();
   const { reverse } = data;
   return (
-    <Fragment>
+    <>
       <Box mb={2}>
         Trigger if the person scanned {reverse ? 'does not have' : 'has'}
         {' '}a mindshield.
       </Box>
       <ScannerGateMode />
-    </Fragment>
+    </>
   );
 };
 
@@ -222,7 +222,7 @@ const ScannerGateDisease = (props) => {
   const { act, data } = useBackend();
   const { reverse, disease_threshold } = data;
   return (
-    <Fragment>
+    <>
       <Box mb={2}>
         Trigger if the person scanned {reverse ? 'does not have' : 'has'}
         {' '}a disease equal or worse than {disease_threshold}.
@@ -239,7 +239,7 @@ const ScannerGateDisease = (props) => {
         ))}
       </Box>
       <ScannerGateMode />
-    </Fragment>
+    </>
   );
 };
 
@@ -250,7 +250,7 @@ const ScannerGateSpecies = (props) => {
     return species.value === target_species;
   });
   return (
-    <Fragment>
+    <>
       <Box mb={2}>
         Trigger if the person scanned is {reverse ? 'not' : ''}
         {' '}of the {species.name} species.
@@ -270,7 +270,7 @@ const ScannerGateSpecies = (props) => {
         ))}
       </Box>
       <ScannerGateMode />
-    </Fragment>
+    </>
   );
 };
 
@@ -281,7 +281,7 @@ const ScannerGateNutrition = (props) => {
     return nutrition.value === target_nutrition;
   });
   return (
-    <Fragment>
+    <>
       <Box mb={2}>
         Trigger if the person scanned {reverse ? 'does not have' : 'has'}
         {' '}the {nutrition.name} nutrition level.
@@ -298,7 +298,7 @@ const ScannerGateNutrition = (props) => {
         ))}
       </Box>
       <ScannerGateMode />
-    </Fragment>
+    </>
   );
 };
 
@@ -306,7 +306,7 @@ const ScannerGateNanites = (props) => {
   const { act, data } = useBackend();
   const { reverse, nanite_cloud } = data;
   return (
-    <Fragment>
+    <>
       <Box mb={2}>
         Trigger if the person scanned {reverse ? 'does not have' : 'has'}
         {' '}nanite cloud {nanite_cloud}.
@@ -327,7 +327,7 @@ const ScannerGateNanites = (props) => {
         </LabeledList>
       </Box>
       <ScannerGateMode />
-    </Fragment>
+    </>
   );
 };
 

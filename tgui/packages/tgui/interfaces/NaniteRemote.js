@@ -47,7 +47,7 @@ export const NaniteRemoteContent = (props) => {
   }
 
   return (
-    <Fragment>
+    <>
       <Section
         title="Nanite Control"
         buttons={(
@@ -175,6 +175,6 @@ export const NaniteRemoteContent = (props) => {
           </NoticeBox>
         )}
       </Section>
-    </Fragment>
+    </>
   );
 };

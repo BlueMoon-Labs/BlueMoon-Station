@@ -437,7 +437,7 @@ const ConstructorTab = (props) => {
                         {busy
                           ? `Сборка идет: осталось ${assembly_remaining_seconds} сек.`
                           : `Время сборки: ${estimated_time_seconds} сек.`}
-                      </Box>
+                    </Box>
                     </Stack.Item>
                     <Stack.Item>
                       {missing_optional_parts.length ? (
@@ -811,7 +811,8 @@ export const IPCConstructor = (props) => {
             0% { left: -30%; }
             100% { left: 110%; }
           }
-        `}</style>
+        `}
+        </style>
       </Window.Content>
     </Window>
   );

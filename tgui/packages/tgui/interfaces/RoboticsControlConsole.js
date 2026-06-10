@@ -1,6 +1,6 @@
 // File modding Pe4henika (Bluemoon) 13.03.26
 import { useBackend, useSharedState } from '../backend';
-import { Box, Button, LabeledList, NoticeBox, Section, Tabs, ProgressBar } from '../components';
+import { Box, Button, LabeledList, NoticeBox, ProgressBar, Section, Tabs } from '../components';
 import { Window } from '../layouts';
 
 export const RoboticsControlConsole = (props) => {

@@ -102,9 +102,9 @@ const CyborgProfileImageElement = (props) => {
           style={{
             width: '256px',
             height: '256px',
-            'max-width': '256px',
-            'max-height': '256px',
-            'object-fit': 'contain',
+            maxWidth: '256px',
+            maxHeight: '256px',
+            objectFit: 'contain',
           }}
         />
       </Box>

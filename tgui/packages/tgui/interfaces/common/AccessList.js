@@ -65,7 +65,7 @@ export const AccessList = (props) => {
     <Section
       title="Access"
       buttons={(
-        <Fragment>
+        <>
           <Button
             icon="check-double"
             content="Grant All"
@@ -76,7 +76,7 @@ export const AccessList = (props) => {
             content="Deny All"
             color="bad"
             onClick={() => denyAll()} />
-        </Fragment>
+        </>
       )}>
       <Flex>
         <Flex.Item mr={2}>

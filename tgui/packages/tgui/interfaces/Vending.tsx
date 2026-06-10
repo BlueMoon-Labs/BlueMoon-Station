@@ -294,15 +294,15 @@ const ProductImage = (props) => {
     <img
       src={`data:image/png;base64,${product.img}`}
       style={{
-        'vertical-align': 'middle',
-        'image-rendering': 'pixelated',
+        verticalAlign: 'middle',
+        imageRendering: 'pixelated',
       }}
     />
   ) : (
     <span
       className={classes(['vending32x32', product.path])}
       style={{
-        'vertical-align': 'middle',
+        verticalAlign: 'middle',
       }}
     />
   );

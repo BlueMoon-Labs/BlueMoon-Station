@@ -40,11 +40,11 @@ const ChemMasterContent = (props) => {
     return <AnalysisResults />;
   }
   return (
-    <Fragment>
+    <>
       <Section
         title="Ёмкость"
         buttons={!!data.isBeakerLoaded && (
-          <Fragment>
+          <>
             <Box inline color="label" mr={2}>
               <AnimatedNumber
                 value={beakerCurrentVolume}
@@ -55,7 +55,7 @@ const ChemMasterContent = (props) => {
               icon="eject"
               content="Извлечь"
               onClick={() => act('eject')} />
-          </Fragment>
+          </>
         )}>
         {!isBeakerLoaded && (
           <Box color="label" mt="3px" mb="5px">
@@ -79,7 +79,7 @@ const ChemMasterContent = (props) => {
       <Section
         title="Буфер"
         buttons={(
-          <Fragment>
+          <>
             <Box inline color="label" mr={1}>
               Режим:
             </Box>
@@ -88,7 +88,7 @@ const ChemMasterContent = (props) => {
               icon={data.mode ? 'exchange-alt' : 'times'}
               content={data.mode ? 'Переместить' : 'Утилизировать'}
               onClick={() => act('toggleMode')} />
-          </Fragment>
+          </>
         )}>
         {bufferContents.length === 0 && (
           <Box color="label" mt="3px" mb="5px">
@@ -112,7 +112,7 @@ const ChemMasterContent = (props) => {
         <Section
           title="Таблетница"
           buttons={(
-            <Fragment>
+            <>
               <Box inline color="label" mr={2}>
                 {pillBottleCurrentAmount} / {pillBottleMaxAmount} pills
               </Box>
@@ -120,10 +120,10 @@ const ChemMasterContent = (props) => {
                 icon="eject"
                 content="Извлечь"
                 onClick={() => act('ejectPillBottle')} />
-            </Fragment>
+            </>
           )} />
       )}
-    </Fragment>
+    </>
   );
 };
 
@@ -424,7 +424,7 @@ const AnalysisResults = (props) => {
           {analyzeVars.purityF}
         </LabeledList.Item>
         {!! data.fermianalyze && ( // why did you do that before? it's bad.
-          <Fragment>
+          <>
             <LabeledList.Item label="Inverse Ratio">
               {analyzeVars.inverseRatioF}
             </LabeledList.Item>
@@ -443,7 +443,7 @@ const AnalysisResults = (props) => {
             <LabeledList.Item label="Края значений pH">
               {analyzeVars.pHpeak}
             </LabeledList.Item>
-          </Fragment>
+          </>
         )}
       </LabeledList>
     </Section>

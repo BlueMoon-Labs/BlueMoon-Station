@@ -30,7 +30,7 @@ export const NaniteProgramHub = (props) => {
         <Section
           title="Program Disk"
           buttons={(
-            <Fragment>
+            <>
               <Button
                 icon="eject"
                 content="Eject"
@@ -39,7 +39,7 @@ export const NaniteProgramHub = (props) => {
                 icon="minus-circle"
                 content="Delete Program"
                 onClick={() => act('clear')} />
-            </Fragment>
+            </>
           )}>
           {has_disk ? (
             has_program ? (
@@ -65,7 +65,7 @@ export const NaniteProgramHub = (props) => {
         <Section
           title="Programs"
           buttons={(
-            <Fragment>
+            <>
               <Button
                 icon={detail_view ? 'info' : 'list'}
                 content={detail_view ? 'Detailed' : 'Compact'}
@@ -74,7 +74,7 @@ export const NaniteProgramHub = (props) => {
                 icon="sync"
                 content="Sync Research"
                 onClick={() => act('refresh')} />
-            </Fragment>
+            </>
           )}>
           {programs !== null ? (
             <Flex>

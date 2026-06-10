@@ -1,5 +1,5 @@
 import { useBackend } from '../backend';
-import { Section, Table, NoticeBox } from '../components';
+import { NoticeBox, Section, Table } from '../components';
 import { NtosWindow } from '../layouts';
 
 export const NtosCustodialLocator = (props) => {

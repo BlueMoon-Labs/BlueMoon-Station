@@ -4,7 +4,7 @@
  * @license MIT
  */
 
-import { BooleanLike, classes, pureComponentHooks } from 'common/react';
+import { BooleanLike, classes } from 'common/react';
 
 import { Box, BoxProps, unit } from './Box';
 

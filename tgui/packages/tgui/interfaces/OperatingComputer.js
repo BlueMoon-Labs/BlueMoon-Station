@@ -73,7 +73,7 @@ const PatientStateView = (props) => {
     );
   }
   return (
-    <Fragment>
+    <>
       <Section title="Состояние пациента">
         {patient && (
           <LabeledList>
@@ -135,7 +135,7 @@ const PatientStateView = (props) => {
               {procedure.next_step_chance}
             </LabeledList.Item>
             {procedure.alternative_step && (
-              <Fragment>
+              <>
                 <Divider />
                 <LabeledList.Item label="Альт. процедура">
                   {procedure.alternative_step}
@@ -153,7 +153,7 @@ const PatientStateView = (props) => {
                 <LabeledList.Item label="Шанс успеха">
                   {procedure.alternative_step_chance}
                 </LabeledList.Item>
-              </Fragment>
+              </>
             )}
           </LabeledList>
         </Section>
@@ -164,7 +164,7 @@ const PatientStateView = (props) => {
       </Section>
       ) : ""
       }
-    </Fragment>
+    </>
   );
 };
 
@@ -176,7 +176,7 @@ const SurgeryProceduresView = (props) => {
   } = data;
 
   return (
-    <Fragment>
+    <>
       <Section title="Продвинутые хирургические операции">
         <Button
           icon="download"
@@ -202,6 +202,6 @@ const SurgeryProceduresView = (props) => {
           </Section>
         ))}
       </Section>
-    </Fragment>
+    </>
   );
 };

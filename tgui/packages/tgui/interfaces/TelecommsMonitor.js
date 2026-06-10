@@ -33,7 +33,7 @@ export const TelecommsMonitor = (props) => {
       width={575}
       height={400}>
       <Window.Content overflow="auto">
-        <Fragment>
+        <>
           {!!notice && (
             <NoticeBox>
               {notice}
@@ -53,7 +53,7 @@ export const TelecommsMonitor = (props) => {
               <LabeledList.Item
                 label="Memory"
                 buttons={(
-                  <Fragment>
+                  <>
                     <Button
                       icon="minus-circle"
                       disabled={!servers.length || !!selected}
@@ -66,7 +66,7 @@ export const TelecommsMonitor = (props) => {
                       onClick={() => act('probe')}>
                       Probe Network
                     </Button>
-                  </Fragment>
+                  </>
                 )}>
                 {!selected ? (
                   servers ? (
@@ -253,7 +253,7 @@ export const TelecommsMonitor = (props) => {
             </Section>
 
           )}
-        </Fragment>
+        </>
       </Window.Content>
     </Window>
   );

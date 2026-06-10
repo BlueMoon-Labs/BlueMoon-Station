@@ -127,7 +127,7 @@ const SlavePanel = (props) => {
         key={slave.id}
         title={slave.name}
         buttons={(
-          <Fragment>
+          <>
             <Button
               icon="handshake"
               content="Recruit"
@@ -166,7 +166,7 @@ const SlavePanel = (props) => {
               onClick={() => act('release', {
                 id: slave.id,
               })} />
-          </Fragment>
+          </>
         )}>
         <LabeledList>
           <LabeledList.Item
@@ -194,7 +194,7 @@ const SlavePanel = (props) => {
           </LabeledList.Item>
           <LabeledList.Item label="Price">
             {(!slave.station_rank) && (
-              <Fragment>
+              <>
                 <Button
                   icon="pencil-alt"
                   content={slave.price ? formatMoney(slave.price, null, true) + "cr" : "Set price"}
@@ -208,7 +208,7 @@ const SlavePanel = (props) => {
                     (Can be changed in {slave.price_change_cooldown} seconds)
                   </Box>
                 )}
-              </Fragment>
+              </>
             )}
             {(slave.station_rank) && (
               formatMoney(slave.price, null, true) + "cr (" + slave.station_rank + ")"
@@ -257,7 +257,7 @@ const RansomPanel = (props) => {
   );
 
   return (
-    <Fragment>
+    <>
       <NoticeBox danger>
         Цены устанавливаются автоматически по прайс-листу
       </NoticeBox>
@@ -291,6 +291,6 @@ const RansomPanel = (props) => {
           );
         })}
       </Flex>
-    </Fragment>
+    </>
   );
 };

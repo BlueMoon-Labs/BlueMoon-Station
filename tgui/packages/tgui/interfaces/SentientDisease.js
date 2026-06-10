@@ -1313,8 +1313,8 @@ const VirusMorphologyPanel = (props) => {
                 </path>
               );
             })}
-            </g>
           </g>
+            </g>
           </g>
 
           <text
@@ -1794,7 +1794,7 @@ export const SentientDisease = (props) => {
               <FooterStat
                 label="ДНК"
                 content={(
-                  <Fragment>
+                  <>
                     <ProgressBar
                       value={data.total_points ? clamp((data.points || 0) / data.total_points, 0, 1) : 0}
                       color="average"
@@ -1802,7 +1802,7 @@ export const SentientDisease = (props) => {
                     <Box mt={0.35} bold color="#fff7f9">
                       {data.points || 0} / {data.total_points || 0}
                     </Box>
-                  </Fragment>
+                  </>
                 )}
               />
               <FooterStat label="Заразность" value={statRatio(stats.transmission || 0)} color="bad" />
@@ -1811,7 +1811,7 @@ export const SentientDisease = (props) => {
               <FooterStat
                 label="Мутация"
                 content={(
-                  <Fragment>
+                  <>
                     <ProgressBar
                       value={data.can_adapt ? 1 : 0}
                       color={data.can_adapt ? 'good' : 'bad'}
@@ -1819,7 +1819,7 @@ export const SentientDisease = (props) => {
                     <Box mt={0.35} bold color="#fff7f9">
                       {data.can_adapt ? 'Готово' : formatTime(data.adaptation_ready_in)}
                     </Box>
-                  </Fragment>
+                  </>
                 )}
               />
             </div>

@@ -44,7 +44,7 @@ export const TelecommsPDALog = (props) => {
             </b>
             <i>
               {(silicon && !hack_status.emagging) ? (
-                <Fragment>
+                <>
                   Brute-forcing for server key. <br />
                   It will take 20 seconds for every character that
                   the password has.
@@ -52,9 +52,9 @@ export const TelecommsPDALog = (props) => {
                   In the meantime, this console can reveal your
                   true intentions if you let someone access it.
                   Make sure no humans enter the room during that time.
-                </Fragment>
+                </>
               ) : (
-                <Fragment>
+                <>
                   QnJ1dGUtZm9yY2luZyBmb3Igc2VydmVyIGtleS48YnI+IEl0IHdpbG<br />
                   wgdGFrZSAyMCBzZWNvbmRzIGZvciBldmVyeSBjaGFyYWN0ZXIgdGhh<br />
                   dCB0aGUgcGFzc3dvcmQgaGFzLiBJbiB0aGUgbWVhbnRpbWUsIHRoaX<br />
@@ -62,7 +62,7 @@ export const TelecommsPDALog = (props) => {
                   IGlmIHlvdSBsZXQgc29tZW9uZSBhY2Nlc3MgaXQuIE1ha2Ugc3VyZS<br />
                   BubyBodW1hbnMgZW50ZXIgdGhlIHJvb20gZHVyaW5nIHRoYXQgdGltZS4=
                   <br /><br />
-                </Fragment>
+                </>
               )}
             </i>
           </NoticeBox>
@@ -74,7 +74,7 @@ export const TelecommsPDALog = (props) => {
   return (
     <Window theme="ntos" resizable>
       <Window.Content overflow="auto">
-        <Fragment>
+        <>
           {!!notice && (
             <NoticeBox>
               {notice}
@@ -94,7 +94,7 @@ export const TelecommsPDALog = (props) => {
               <LabeledList.Item
                 label="Memory"
                 buttons={(
-                  <Fragment>
+                  <>
                     <Button
                       icon="minus-circle"
                       disabled={!servers.length}
@@ -107,7 +107,7 @@ export const TelecommsPDALog = (props) => {
                       onClick={() => act('probe')}>
                       Probe Network
                     </Button>
-                  </Fragment>
+                  </>
                 )}>
                 {servers ? (
                   `${servers.length} currently probed and buffered`
@@ -119,7 +119,7 @@ export const TelecommsPDALog = (props) => {
                 label="Authentication"
                 color={authenticated ? 'good' : 'bad'}
                 buttons={(
-                  <Fragment>
+                  <>
                     <Button
                       disabled={!authenticated || !selected}
                       onClick={() => act('change_auth')}>
@@ -133,14 +133,14 @@ export const TelecommsPDALog = (props) => {
                         Brute Force
                       </Button>
                     )}
-                  </Fragment>
+                  </>
                 )}>
                 {authenticated ? "KEY OK" : "KEY FAIL"}
               </LabeledList.Item>
               <LabeledList.Item
                 label="PDA Server"
                 buttons={(
-                  <Fragment>
+                  <>
                     <Button
                       icon={authenticated ? 'unlock' : 'lock'}
                       color={authenticated ? 'good' : 'bad'}
@@ -154,7 +154,7 @@ export const TelecommsPDALog = (props) => {
                       onClick={() => act('mainmenu')}>
                       Disconnect
                     </Button>
-                  </Fragment>
+                  </>
                 )}>
                 {selected ? (
                   `${selected.name} (${selected.id})`
@@ -234,7 +234,7 @@ export const TelecommsPDALog = (props) => {
               )}
             </Section>
           ) : (
-            <Fragment>
+            <>
               {(tab === "pdalog-message" && authenticated) && (
                 <TeleLogs />
               )}
@@ -244,9 +244,9 @@ export const TelecommsPDALog = (props) => {
               {(tab === "pdalog-custommsg" && authenticated) && (
                 <CustomMsg />
               )}
-            </Fragment>
+            </>
           )}
-        </Fragment>
+        </>
       </Window.Content>
     </Window>
   );
@@ -330,7 +330,7 @@ export const TeleLogs = (props) => {
                 {message.message}
               </LabeledList.Item>
               {!!msgs_log && (
-                <Fragment>
+                <>
                   <LabeledList.Item
                     label="Stamp"
                     color={message.stamp !== "Unstamped" ? (
@@ -364,7 +364,7 @@ export const TeleLogs = (props) => {
                       message.priority
                     )}
                   </LabeledList.Item>
-                </Fragment>
+                </>
               )}
             </LabeledList>
           </Section>

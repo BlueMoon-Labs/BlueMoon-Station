@@ -125,7 +125,7 @@ const MedicalRecordsList = (_properties) => {
     );
 
   return (
-    <Fragment>
+    <>
       <Flex mb="0.5rem">
         <Flex.Item grow="1">
           <Input
@@ -155,7 +155,7 @@ const MedicalRecordsList = (_properties) => {
           </Table.Row>
         ))}
       </Table>
-    </Fragment>
+    </>
   );
 };
 
@@ -194,7 +194,7 @@ const MedicalRecordsView = (_properties) => {
     printing,
   } = data;
   return (
-    <Fragment>
+    <>
       <Flex mb="0.5rem">
         <Flex.Item>
           <Button
@@ -229,7 +229,7 @@ const MedicalRecordsView = (_properties) => {
       <Section title="Медицинские данные" level={2}>
         <MedicalRecordsViewMedical />
       </Section>
-    </Fragment>
+    </>
   );
 };
 
@@ -246,7 +246,7 @@ const MedicalRecordsViewGeneral = (_properties) => {
     );
   }
   return (
-    <Fragment>
+    <>
       <Box width="50%" float="left">
         <LabeledList>
           {general.fields.map((field, i) => (
@@ -286,7 +286,7 @@ const MedicalRecordsViewGeneral = (_properties) => {
           ))
         )}
       </Box>
-    </Fragment>
+    </>
   );
 };
 
@@ -309,7 +309,7 @@ const MedicalRecordsViewMedical = (_properties) => {
     );
   }
   return (
-    <Fragment>
+    <>
       <LabeledList>
         {medical.fields.map((field, i) => (
           <LabeledList.Item
@@ -357,7 +357,7 @@ const MedicalRecordsViewMedical = (_properties) => {
           onClick={() => modalOpen('add_c')}
         />
       </Section>
-    </Fragment>
+    </>
   );
 };
 
@@ -413,7 +413,7 @@ const MedicalRecordsMedbots = (_properties) => {
           </LabeledList.Item>
           <LabeledList.Item label="Статус">
             {medbot.on ? (
-              <Fragment>
+              <>
                 <Box color="good">
                   Онлайн
                 </Box>
@@ -423,7 +423,7 @@ const MedicalRecordsMedbots = (_properties) => {
                     + medbot.total_volume + "/" + medbot.maximum_volume)
                     : "Использует внутренний синтезатор."}
                 </Box>
-              </Fragment>
+              </>
             ) : (
               <Box color="average">
                 Оффлайн

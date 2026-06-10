@@ -22,7 +22,7 @@ export const ChemDebugSynthesizer = (props) => {
         <Section
           title="Recipient"
           buttons={isBeakerLoaded ? (
-            <Fragment>
+            <>
               <Button
                 icon="eject"
                 content="Eject"
@@ -41,7 +41,7 @@ export const ChemDebugSynthesizer = (props) => {
                 icon="plus"
                 content="Input"
                 onClick={() => act('input')} />
-            </Fragment>
+            </>
           ) : (
             <Button
               icon="plus"
@@ -49,7 +49,7 @@ export const ChemDebugSynthesizer = (props) => {
               onClick={() => act('makecup')} />
           )}>
           {isBeakerLoaded ? (
-            <Fragment>
+            <>
               <Box>
                 <AnimatedNumber value={beakerCurrentVolume} />
                 {' / ' + beakerMaxVolume + ' u'}
@@ -69,7 +69,7 @@ export const ChemDebugSynthesizer = (props) => {
                   Recipient Empty
                 </Box>
               )}
-            </Fragment>
+            </>
           ) : (
             <Box color="average">
               No Recipient

@@ -70,7 +70,7 @@ export const CharacterDirectory = (props) => {
     <Window width={940} height={560} resizeable>
       <Window.Content scrollable>
         {(overlay && <ViewCharacter />) || (
-          <Fragment>
+          <>
             <Section title="Настройки">
               <LabeledList>
                 <LabeledList.Item label="Видимость">
@@ -140,7 +140,7 @@ export const CharacterDirectory = (props) => {
               </Section>
             </Collapsible>
             <CharacterDirectoryList />
-          </Fragment>
+          </>
         )}
       </Window.Content>
     </Window>
@@ -301,7 +301,7 @@ const CharacterDirectoryList = (props) => {
 
   return (
     <Section title="Каталог" buttons={
-      <Fragment>
+      <>
         <Input
           width="180px"
           placeholder="Поиск по имени..."
@@ -309,7 +309,7 @@ const CharacterDirectoryList = (props) => {
           onInput={(e, value) => setSearchText(value)}
         />
         <Button icon="sync" content="Обновить" ml={1} onClick={() => act('refresh')} />
-      </Fragment>
+      </>
     }>
       <Table>
         <Table.Row bold>

@@ -1,5 +1,5 @@
 import { useBackend } from '../backend';
-import { Button, Section, Flex } from '../components';
+import { Button, Flex, Section } from '../components';
 import { Window } from '../layouts';
 
 export const AdminJumpTo = (props) => {

@@ -160,24 +160,26 @@ export class InfinitePlane extends Component {
       initialTop = 0,
     } = this.props;
     if (this.state.mouseDown) {
-      let newX, newY;
-      this.setState((state) => {
-        newX = event.clientX - state.lastLeft;
-        newY = event.clientY - state.lastTop;
-        return {
-          left: newX,
-          top: newY,
-        };
+      // setState updaters run asynchronously in React: compute offsets
+      // in the functional updater and report them from the callback,
+      // after the state has been committed.
+      this.setState(prevState => ({
+        left: event.clientX - prevState.lastLeft,
+        top: event.clientY - prevState.lastTop,
+      }), () => {
+        if (onBackgroundMoved) {
+          onBackgroundMoved(
+            this.state.left + initialLeft,
+            this.state.top + initialTop,
+          );
+        }
       });
-      if (onBackgroundMoved) {
-        onBackgroundMoved(newX+initialLeft, newY+initialTop);
-      }
     }
   }
 
   componentDidUpdate(prevProps) {
-    /// Когда сервер присылает новый якорь панорамы или запрошен сброс к origin,
-    /// обнуляем локальный drag-offset. Иначе left/top суммируются с initial* — поле «прыгает».
+    // / Когда сервер присылает новый якорь панорамы или запрошен сброс к origin,
+    // / обнуляем локальный drag-offset. Иначе left/top суммируются с initial* — поле «прыгает».
     if (this.state.mouseDown) {
       return;
     }

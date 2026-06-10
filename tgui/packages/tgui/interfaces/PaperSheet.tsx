@@ -4,8 +4,8 @@
 
 import { clamp } from 'common/math';
 import { classes } from 'common/react';
-import { Component, createRef, RefObject } from 'react';
 import { marked } from 'marked';
+import { Component, createRef, RefObject } from 'react';
 
 import { useBackend, useLocalState } from '../backend';
 import { Box, Button, Flex, Section, TextArea } from '../components';
@@ -273,7 +273,7 @@ export const Stamp = (props) => {
     'top': y + yOffset + 'px',
     'transform': 'rotate(' + rotation + 'deg)',
     'opacity': opacity || 1.0,
-    'z-index': activeStamp ? Z_INDEX_STAMP_PREVIEW : Z_INDEX_STAMP,
+    'zIndex': activeStamp ? Z_INDEX_STAMP_PREVIEW : Z_INDEX_STAMP,
   };
 
   return (
@@ -413,13 +413,17 @@ export class PrimaryView extends Component {
                   onInput={(e, text) => {
                     setTextAreaText(text);
 
-                    if (this.scrollableRef.current) {
-                      let thisDistFromBottom
-                        = this.scrollableRef.current.scrollHeight
-                        - this.scrollableRef.current.scrollTop;
-                      this.scrollableRef.current.scrollTop
-                        += thisDistFromBottom - this.lastDistanceFromBottom;
-                    }
+                    // setTextAreaText re-renders asynchronously in React;
+                    // measure the preview only after the new text committed.
+                    requestAnimationFrame(() => {
+                      if (this.scrollableRef.current) {
+                        let thisDistFromBottom
+                          = this.scrollableRef.current.scrollHeight
+                          - this.scrollableRef.current.scrollTop;
+                        this.scrollableRef.current.scrollTop
+                          += thisDistFromBottom - this.lastDistanceFromBottom;
+                      }
+                    });
                   }}
                 />
               </Section>

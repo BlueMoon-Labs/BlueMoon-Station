@@ -1,5 +1,5 @@
 import { useBackend } from '../backend';
-import { Section, Button, NoticeBox } from '../components';
+import { Button, NoticeBox, Section } from '../components';
 import { NtosWindow } from '../layouts';
 
 export const NtosRemoteDoor = (props) => {

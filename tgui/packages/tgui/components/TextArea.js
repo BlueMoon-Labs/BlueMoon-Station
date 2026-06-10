@@ -33,16 +33,6 @@ export class TextArea extends Component {
         onInput(e, e.target.value);
       }
     };
-    this.handleOnChange = e => {
-      const { editing } = this.state;
-      const { onChange } = this.props;
-      if (editing) {
-        this.setEditing(false);
-      }
-      if (onChange) {
-        onChange(e, e.target.value);
-      }
-    };
     this.handleKeyPress = e => {
       const { editing } = this.state;
       const { onKeyPress } = this.props;
@@ -208,7 +198,6 @@ export class TextArea extends Component {
             singleline && 'TextArea--singleline',
           ])}
           placeholder={placeholder}
-          onChange={this.handleOnChange}
           onKeyDown={this.handleKeyDown}
           onKeyPress={this.handleKeyPress}
           onInput={this.handleOnInput}

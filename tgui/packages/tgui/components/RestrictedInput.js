@@ -34,21 +34,23 @@ export class RestrictedInput extends Component {
     this.state = {
       editing: false,
     };
+    // Commit (clamp + onChange) happens on blur or Enter, never per
+    // keystroke: React fires onChange on every input, so clamping there
+    // would fight the user while typing (the upstream #80490 bug class).
     this.handleBlur = (e) => {
+      const { maxValue, minValue, onChange } = this.props;
       const { editing } = this.state;
       if (editing) {
         this.setEditing(false);
       }
-    };
-    this.handleChange = (e) => {
-      const { maxValue, minValue, onChange } = this.props;
       e.target.value = getClampedNumber(e.target.value, minValue, maxValue);
-      if (onChange) {
+      if (e.target.value !== this.focusedValue && onChange) {
         onChange(e, +e.target.value);
       }
     };
     this.handleFocus = (e) => {
       const { editing } = this.state;
+      this.focusedValue = e.target.value;
       if (!editing) {
         this.setEditing(true);
       }
@@ -68,6 +70,10 @@ export class RestrictedInput extends Component {
       if (e.key === KEY_ENTER) {
         const safeNum = getClampedNumber(e.target.value, minValue, maxValue);
         this.setEditing(false);
+        e.target.value = safeNum;
+        // Remember the committed value so the follow-up blur handler
+        // does not fire a duplicate onChange.
+        this.focusedValue = safeNum;
         if (onChange) {
           onChange(e, +safeNum);
         }
@@ -168,7 +174,6 @@ export class RestrictedInput extends Component {
         <div className="Input__baseline">.</div>
         <input
           className="Input__input"
-          onChange={this.handleChange}
           onInput={this.handleInput}
           onFocus={this.handleFocus}
           onBlur={this.handleBlur}

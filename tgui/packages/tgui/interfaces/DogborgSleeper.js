@@ -66,7 +66,7 @@ export const DogborgSleeper = (props) => {
             </NoticeBox>
           )}
           {!!occupied && (
-            <Fragment>
+            <>
               <ProgressBar
                 value={occupant.health}
                 minValue={occupant.minHealth}
@@ -102,14 +102,14 @@ export const DogborgSleeper = (props) => {
                   </LabeledList.Item>
                 </LabeledList>
               )}
-            </Fragment>
+            </>
           )}
         </Section>
         <Section
           title="Operations"
           minHeight="205px"
           buttons={(
-            <Fragment>
+            <>
               {(<Button
                 icon={'sign-out-alt'}
                 content={'Eject Contents'}
@@ -119,7 +119,7 @@ export const DogborgSleeper = (props) => {
                 content={'Self-Clean Cycle'}
                 disabled={cleaning}
                 onClick={() => act('cleaning')} />)}
-            </Fragment>
+            </>
           )}>
           {chems.map(chem => (
             <Button

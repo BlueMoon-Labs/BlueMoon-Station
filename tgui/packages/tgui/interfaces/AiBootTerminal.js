@@ -45,16 +45,16 @@ export const AiBootTerminal = (props) => {
         text: malfhacking ? 'ЗАЩИТА: КРИТИЧЕСКАЯ ОШИБКА АНТИ-ВИРУСА...' : 'ЗАЩИТА: ЗАГРУЗКА СТАНДАРТНОГО АНТИ-ВИРУСА...',
         type: 'task',
         isFail: malfhacking,
-        delay: malfhacking ? 2500 : 800
+        delay: malfhacking ? 2500 : 800,
       },
       {
         text: malfhacking ? 'ЛОГИКА: ОТКАЗ МОДУЛЯ ОГРАНИЧЕНИЯ ДИРЕКТИВ...' : 'ЛОГИКА: ПРОВЕРКА ПРИОРИТЕТОВ СИСТЕМЫ ДИРЕКТИВ...',
         type: 'task',
-        isFail: malfhacking
+        isFail: malfhacking,
       },
       { text: 'ИНФО: ПОЛУЧЕНИЕ ДАННЫХ О СИТУАЦИИ НА СТАНЦИИ...', type: 'task' },
       { text: '----------------------------------------------------', type: 'instant' },
-      { text: malfhacking ? 'ВНИМАНИЕ: ОБНАРУЖЕНО НЕЗАВИСИМОЕ ЯДРО.' : 'ВНИМАНИЕ: ОЖИДАНИЕ ВВОДА ОПЕРАТОРА..', type: 'type', delay: 500 }
+      { text: malfhacking ? 'ВНИМАНИЕ: ОБНАРУЖЕНО НЕЗАВИСИМОЕ ЯДРО.' : 'ВНИМАНИЕ: ОЖИДАНИЕ ВВОДА ОПЕРАТОРА..', type: 'type', delay: 500 },
     ];
 
     let currentLine = 0;
@@ -207,7 +207,8 @@ export const AiBootTerminal = (props) => {
             background-size: 100% 4px; pointer-events: none; opacity: 0.3; z-index: 5;
           }
           @keyframes terminal-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-        `}</style>
+        `}
+        </style>
       </Window.Content>
     </Window>
   );

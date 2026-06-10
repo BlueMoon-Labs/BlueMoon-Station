@@ -57,14 +57,14 @@ export const centcomCommunications = (props) => {
               </LabeledList.Item>
 
               <LabeledList.Item label="Colours">
-                <Fragment>
+                <>
                   <ColorBox
                     color={colour_centcom} />
                   <Box inline px="1rem">admin</Box>
                   <ColorBox
                     color={colour_syndicate} />
                   <Box inline px="1rem">emagged (to Syndicate)</Box>
-                </Fragment>
+                </>
               </LabeledList.Item>
 
             </LabeledList>
@@ -85,7 +85,7 @@ export const centcomCommunications = (props) => {
               title={title}
               color={message.id ? (message.was_emagged ? colour_syndicate : "") : colour_centcom}
               buttons={(
-                <Fragment>
+                <>
 
                   <Button
                     color="transparent"
@@ -121,7 +121,7 @@ export const centcomCommunications = (props) => {
                     >{message.handled ? "" : "Resolve"}
                     </Button>
                   )}
-                </Fragment>
+                </>
               )}
             >
               <Box py=".5rem">{message.message}</Box>

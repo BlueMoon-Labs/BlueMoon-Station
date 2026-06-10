@@ -458,7 +458,7 @@ const TattooFormModal = (props: TattooFormModalProps) => {
                 <span>{formText}</span>
               )
             ) : (
-              <span style={{ color: 'gray', 'font-style': 'italic' }}>
+              <span style={{ color: 'gray', fontStyle: 'italic' }}>
                 Введите текст для предпросмотра
               </span>
             )}

@@ -1,5 +1,5 @@
 import { useBackend } from '../backend';
-import { Section, Table, NoticeBox, ProgressBar } from '../components';
+import { NoticeBox, ProgressBar, Section, Table } from '../components';
 import { NtosWindow } from '../layouts';
 
 export const NtosHydroponics = (props) => {

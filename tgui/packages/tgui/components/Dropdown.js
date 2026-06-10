@@ -79,6 +79,8 @@ export class Dropdown extends Component {
       nochevron,
       width,
       onClick,
+      onSelected,
+      options,
       selected,
       disabled,
       displayText,

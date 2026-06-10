@@ -159,7 +159,7 @@ const VoreSelectedBelly = (props) => {
   const [tabIndex, setTabIndex] = useLocalState('tabIndex', 0);
 
   return (
-    <Fragment>
+    <>
       <Tabs>
         <Tabs.Tab selected={tabIndex === 0} onClick={() => setTabIndex(0)}>
           Controls
@@ -177,7 +177,7 @@ const VoreSelectedBelly = (props) => {
       {tabIndex === 0 && (
         <LabeledList>
           <LabeledList.Item label="Name" buttons={
-            <Fragment>
+            <>
               <Button
                 icon="arrow-left"
                 tooltipPosition="left"
@@ -188,7 +188,7 @@ const VoreSelectedBelly = (props) => {
                 tooltipPosition="left"
                 tooltip="Move this belly tab right."
                 onClick={() => act("move_belly", { dir: 1 })} />
-            </Fragment>
+            </>
           }>
             <Button
               onClick={() => act("set_attribute", { attribute: "b_name" })}
@@ -345,7 +345,7 @@ const VoreSelectedBelly = (props) => {
           ) : "These options only display while interactions are turned on."}
         </Section>
       ) || "Error"}
-    </Fragment>
+    </>
   );
 };
 
@@ -361,7 +361,7 @@ const VoreContentsPanel = (props) => {
   } = props;
 
   return (
-    <Fragment>
+    <>
       {outside && (
         <Button
           textAlign="center"
@@ -419,7 +419,7 @@ const VoreContentsPanel = (props) => {
           ))}
         </LabeledList>
       )}
-    </Fragment>
+    </>
   );
 };
 

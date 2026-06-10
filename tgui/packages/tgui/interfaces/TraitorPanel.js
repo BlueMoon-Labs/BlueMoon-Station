@@ -142,7 +142,7 @@ const ActiveAntags = (props) => {
             </Flex>
           )}
           buttons={(
-            <Fragment>
+            <>
               {antag.commands && antag.commands.map((cmd) => (
                 <Button
                   key={cmd}
@@ -164,7 +164,7 @@ const ActiveAntags = (props) => {
                 color="red"
                 onClick={() => act("remove_antag", { antag_ref: antag.ref })}
               />
-            </Fragment>
+            </>
           )}
         >
           {/* Objectives */}

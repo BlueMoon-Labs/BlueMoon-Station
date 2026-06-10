@@ -39,7 +39,7 @@ export const SuitStorageUnit = (props) => {
             title="Storage"
             minHeight="260px"
             buttons={(
-              <Fragment>
+              <>
                 {!open && (
                   <Button
                     icon={locked ? 'unlock' : 'lock'}
@@ -52,7 +52,7 @@ export const SuitStorageUnit = (props) => {
                     content={open ? 'Close' : 'Open'}
                     onClick={() => act('door')} />
                 )}
-              </Fragment>
+              </>
             )}>
             {locked && (
               <Box

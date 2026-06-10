@@ -51,7 +51,7 @@ export const BrigTimer = (props) => {
               {data.time_left}
             </LabeledList.Item>
             <LabeledList.Item label="Actions">
-              <Fragment>
+              <>
                 <Button
                   icon="lightbulb-o"
                   content="Flash"
@@ -72,7 +72,7 @@ export const BrigTimer = (props) => {
                   content="Release Prisoner"
                   disabled={!data.timing || !data.isAllowed}
                   onClick={() => act('stop')} />
-              </Fragment>
+              </>
             </LabeledList.Item>
           </LabeledList>
         </Section>

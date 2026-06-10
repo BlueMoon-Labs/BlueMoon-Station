@@ -62,7 +62,7 @@ export const ChemHeater = (props) => {
         <Section
           title="Ёмкость"
           buttons={!!isBeakerLoaded && (
-            <Fragment>
+            <>
               <Box inline color="label" mr={2}>
                 {beakerCurrentVolume} / {beakerMaxVolume} u
               </Box>
@@ -70,7 +70,7 @@ export const ChemHeater = (props) => {
                 icon="eject"
                 content="Извлечь"
                 onClick={() => act('eject')} />
-            </Fragment>
+            </>
           )}>
           <BeakerContents
             beakerLoaded={isBeakerLoaded}

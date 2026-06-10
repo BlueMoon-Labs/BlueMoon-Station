@@ -1,5 +1,5 @@
 import { useBackend } from '../backend';
-import { Section, Button, Input } from '../components';
+import { Button, Input, Section } from '../components';
 import { NtosWindow } from '../layouts';
 
 export const NtosStatusDisplay = (props) => {

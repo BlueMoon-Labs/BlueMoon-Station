@@ -14,7 +14,7 @@ export const SpaceHeater = (props) => {
         <Section
           title="Power"
           buttons={(
-            <Fragment>
+            <>
               <Button
                 icon="eject"
                 content="Eject Cell"
@@ -26,7 +26,7 @@ export const SpaceHeater = (props) => {
                 selected={data.on}
                 disabled={!data.hasPowercell}
                 onClick={() => act('power')} />
-            </Fragment>
+            </>
           )}>
           <LabeledList>
             <LabeledList.Item
@@ -77,7 +77,7 @@ export const SpaceHeater = (props) => {
             </LabeledList.Item>
             <LabeledList.Item label="Mode">
               {!data.open && 'Auto' || (
-                <Fragment>
+                <>
                   <Button
                     icon="thermometer-half"
                     content="Auto"
@@ -99,7 +99,7 @@ export const SpaceHeater = (props) => {
                     onClick={() => act('mode', {
                       mode: 'cool',
                     })} />
-                </Fragment>
+                </>
               )}
             </LabeledList.Item>
             <LabeledList.Divider />

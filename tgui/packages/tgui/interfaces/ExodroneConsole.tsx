@@ -713,7 +713,7 @@ const EventScreen = (props) => {
                 height="125px"
                 width="250px"
                 style={{
-                  'image-rendering': 'pixelated',
+                  imageRendering: 'pixelated',
                 }} />
             </Stack.Item>
             <Stack.Item >
@@ -778,7 +778,7 @@ export const AdventureScreen = (props: AdventureScreenProps) => {
             height="100px"
             width="200px"
             style={{
-              'image-rendering': 'pixelated',
+              imageRendering: 'pixelated',
             }} />
           <Stack vertical>
             <Stack.Divider />

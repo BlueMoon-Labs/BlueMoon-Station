@@ -487,7 +487,7 @@ const CustomBanForm = (props) => {
               );
             })}
           </Flex>
-        </Box>
+      </Box>
 
       <Box bold mb={0.3} color="label" fontSize="11px">Reason</Box>
       <TextArea

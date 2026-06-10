@@ -95,7 +95,7 @@ export const NaniteDelays = (props) => {
             })} />
         </LabeledList.Item>
         {!!data.can_trigger && (
-          <Fragment>
+          <>
             <LabeledList.Item label="Trigger Repeat Timer">
               <NumberInput
                 value={data.timer_trigger}
@@ -118,7 +118,7 @@ export const NaniteDelays = (props) => {
                   delay: value,
                 })} />
             </LabeledList.Item>
-          </Fragment>
+          </>
         )}
       </LabeledList>
     </Section>
@@ -295,14 +295,14 @@ export const NaniteProgrammerContent = (props) => {
                 {use_rate}
               </LabeledList.Item>
               {!!can_trigger && (
-                <Fragment>
+                <>
                   <LabeledList.Item label="Trigger Cost">
                     {trigger_cost}
                   </LabeledList.Item>
                   <LabeledList.Item label="Trigger Cooldown">
                     {trigger_cooldown}
                   </LabeledList.Item>
-                </Fragment>
+                </>
               )}
             </LabeledList>
           </Grid.Column>

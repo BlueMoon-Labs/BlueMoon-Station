@@ -6,7 +6,6 @@
 
 import { KEY_ENTER, KEY_ESCAPE } from 'common/keycodes';
 import { clamp } from 'common/math';
-import { pureComponentHooks } from 'common/react';
 import { Component, createRef } from 'react';
 
 import { AnimatedNumber } from './AnimatedNumber';

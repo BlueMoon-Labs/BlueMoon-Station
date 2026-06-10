@@ -37,7 +37,8 @@ export class Collapsible extends Component {
               fluid
               color={color}
               icon={open ? 'chevron-down' : 'chevron-right'}
-              onClick={() => this.setState({ open: !open })}
+              onClick={() => this.setState(
+                prevState => ({ open: !prevState.open }))}
               {...rest}>
               {title}
             </Button>

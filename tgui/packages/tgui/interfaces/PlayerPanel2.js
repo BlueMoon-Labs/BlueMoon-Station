@@ -762,7 +762,7 @@ const FeatureBans = (props) => {
       <Section
         title={roles[jobbanTab].category_name}
         buttons={(
-          <Fragment>
+          <>
             <Button
               content="Unban All"
               color="good"
@@ -784,7 +784,7 @@ const FeatureBans = (props) => {
                 is_category: true,
                 want_to_ban: true,
               })} />
-          </Fragment>
+          </>
         )}
       >
         <Flex wrap="wrap" justify="space-between">
@@ -1055,7 +1055,7 @@ const PunishmentActions = (props) => {
       </Section>
 
       <Section title="Mute" buttons={
-        <Fragment>
+        <>
           <Button
             icon="lock-open"
             color="green"
@@ -1070,7 +1070,7 @@ const PunishmentActions = (props) => {
             disabled={!has_live_client || !client_ckey}
             onClick={() => act("mute_all")}
           />
-        </Fragment>
+        </>
       }>
         <Flex>
           {glob_mute_bits.map((bit, i) => {
@@ -1222,7 +1222,7 @@ const FunActions = (props) => {
       </NoticeBox>
 
       <Section title="Explosion" buttons={(
-        <Fragment>
+        <>
           <Button.Checkbox
             checked={extinguishMode}
             color="transparent"
@@ -1241,7 +1241,7 @@ const FunActions = (props) => {
             onClick={() => setLockExplode(!lockExplode)}
             color={lockExplode? "green" : "bad"}
           />
-        </Fragment>
+        </>
       )}>
         <Flex
           align="right"

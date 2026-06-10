@@ -4,7 +4,6 @@
  * @license MIT
  */
 
-import { pureComponentHooks } from 'common/react';
 
 import { Table } from './Table';
 

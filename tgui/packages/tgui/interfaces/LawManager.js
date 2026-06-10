@@ -136,7 +136,8 @@ export const LawManager = (props) => {
         .scrollable { overflow-y: auto; flex-grow: 1; padding-right: 10px; }
         .scrollable::-webkit-scrollbar { width: 4px; }
         .scrollable::-webkit-scrollbar-thumb { background: #00ffcc22; }
-      `}</style>
+      `}
+      </style>
     </Window>
   );
 };

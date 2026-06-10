@@ -223,10 +223,13 @@ export const computeBoxProps = (props: BoxProps) => {
       computedProps[propName] = propValue;
     }
   }
-  computedProps.style = {
+  const style = {
     ...computedStyles,
     ...props.style,
   };
+  if (Object.keys(style).length > 0) {
+    computedProps.style = style;
+  }
   return computedProps;
 };
 
@@ -248,7 +251,9 @@ const BoxInner = (props: BoxProps) => {
   } = props;
   // Render props
   if (typeof children === 'function') {
-    return children(computeBoxProps(props));
+    return (children as (props: Record<string, any>) => ReactNode)(
+      computeBoxProps(props),
+    );
   }
   const computedClassName = typeof className === 'string'
     ? className + ' ' + computeBoxClassName(rest)

@@ -1,8 +1,7 @@
 import { resolveAsset } from '../../assets';
 import { useLocalState } from '../../backend';
-import { Box, Stack } from '../../components';
+import { Box } from '../../components';
 import { Window } from '../../layouts';
-
 import { CreateObject } from './CreateObject';
 import { CreateObjectSettings } from './CreateObjectSettings';
 import { AtomData } from './types';

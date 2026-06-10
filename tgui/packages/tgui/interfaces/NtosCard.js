@@ -57,7 +57,7 @@ export const NtosCardContent = (props) => {
   // что показываем в кнопке/инпуте
   const customValue = isEditingCustom ? customDraft : serverCustom;
   return (
-    <Fragment>
+    <>
       <Section
         title={has_id && authenticated
           ? (
@@ -70,7 +70,7 @@ export const NtosCardContent = (props) => {
           )
           : (id_owner || 'No Card Inserted')}
         buttons={(
-          <Fragment>
+          <>
             <Button
               icon="print"
               content="Print"
@@ -88,7 +88,7 @@ export const NtosCardContent = (props) => {
               color={has_main_id && "good"}
               tooltipPosition="bottom-start"
               onClick={() => act('PRG_eject', { name: "MainID" })} />
-          </Fragment>
+          </>
         )}>
         <Button
           fluid
@@ -208,6 +208,6 @@ export const NtosCardContent = (props) => {
           )}
         </Box>
       )}
-    </Fragment>
+    </>
   );
 };

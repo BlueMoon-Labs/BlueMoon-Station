@@ -4,7 +4,7 @@
  * @license MIT
  */
 
-import { BooleanLike, classes, pureComponentHooks } from 'common/react';
+import { BooleanLike, classes } from 'common/react';
 import { ReactNode } from 'react';
 
 import { Box, unit } from './Box';
@@ -95,8 +95,8 @@ const LabeledListDivider = (props: LabeledListDividerProps) => {
       <td
         colSpan={3}
         style={{
-          'padding-top': padding,
-          'padding-bottom': padding,
+          paddingTop: padding,
+          paddingBottom: padding,
         }}>
         <Divider />
       </td>

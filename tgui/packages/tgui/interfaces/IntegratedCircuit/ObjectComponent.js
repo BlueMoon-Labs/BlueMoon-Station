@@ -9,9 +9,9 @@ import {
   Input,
   Stack,
 } from '../../components';
-import { ABSOLUTE_Y_OFFSET } from './constants';
-import { formatIeCooldownDs, formatIeSizeDisplay } from './circuitNodeFormat';
 import { byondListToArray } from './byondPayload';
+import { formatIeCooldownDs, formatIeSizeDisplay } from './circuitNodeFormat';
+import { ABSOLUTE_Y_OFFSET } from './constants';
 import { Port } from './Port';
 
 
@@ -96,6 +96,13 @@ export class ObjectComponent extends Component {
         lastMousePos: { x: xPos, y: yPos },
       });
     }
+  }
+
+  componentWillUnmount() {
+    // Cleanup if the node unmounts mid-drag
+    // (replaces the dead Inferno onComponentWillUnmount JSX prop).
+    window.removeEventListener('mousemove', this.handleDrag);
+    window.removeEventListener('mouseup', this.handleStopDrag);
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -217,8 +224,7 @@ export class ObjectComponent extends Component {
           recent_pulse && powered && 'ObjectComponent--recentPulse',
         ])}
         onMouseDown={this.handleStartDrag}
-        onMouseUp={this.handleStopDrag}
-        onComponentWillUnmount={this.handleDrag}>
+        onMouseUp={this.handleStopDrag}>
         <Box
           backgroundColor={color}
           py={1}

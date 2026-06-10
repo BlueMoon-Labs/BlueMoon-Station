@@ -40,12 +40,12 @@ export const TextInputModal = (_) => {
     = 140
     + (message.length > 30 ? Math.ceil(message.length * 0.45) : 0)
     + (multiline ? 195 : 0)
-    + (message.length && large_buttons ? 5 : 0)
+    + (message.length && large_buttons ? 5 : 0);
 
   // Window width based multiline.
   const windowWidth
     = 300
-    + (multiline ? 100 : 0)
+    + (multiline ? 100 : 0);
 
   return (
     <Window title={title} width={windowWidth} height={windowHeight}>
@@ -59,7 +59,7 @@ export const TextInputModal = (_) => {
             act('cancel');
           }
         }}
-        onClick={() => (document.querySelector('.TextArea__textarea' ) as HTMLElement)?.focus()}>
+        onClick={() => (document.querySelector('.TextArea__textarea') as HTMLElement)?.focus()}>
         <Section fill>
           <Stack fill vertical>
             <Stack.Item>
@@ -91,11 +91,11 @@ const InputArea = (props) => {
 
   return (
     <TextArea
-      scrollbar = {multiline}
-      singleline = {!multiline}
+      scrollbar={multiline}
+      singleline={!multiline}
       autoFocus
       autoSelect
-      height = {multiline ? '100%' : '3em'}
+      height={multiline ? '100%' : '3em'}
       maxLength={max_length > 0 && max_length <= 2147483647 ? max_length : undefined}
       onEscape={() => act('cancel')}
       onEnter={(event) => {
@@ -104,7 +104,7 @@ const InputArea = (props) => {
       onKeyDown={(event) => {
         if(event.key === KEY_ENTER && (!event.shiftKey || !multiline)) {
           event.preventDefault();
-      }}}
+      } }}
       onInput={(_, value) => onType(value)}
       placeholder="Type something..."
       value={input}

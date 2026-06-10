@@ -127,7 +127,7 @@ const MaterialEjectDock = (props: {
 );
 
   return (
-    <div style={{ width: '100%', 'text-align': 'center' }}>
+    <div style={{ width: '100%', textAlign: 'center' }}>
       <MaterialDockTooltip content={dockContent} position="bottom">
         <Button
           color="transparent"
