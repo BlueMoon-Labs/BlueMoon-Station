@@ -11,6 +11,20 @@ import { RestrictedInput } from './RestrictedInput';
 const getInput = container => container.querySelector('input');
 
 describe('RestrictedInput', () => {
+  // React warns (console.error) when component-only props leak onto DOM
+  // elements, and dedupes each warning per prop name globally - so the
+  // spy must cover every test, not just a dedicated one, to catch the
+  // first occurrence.
+  let errorSpy;
+  beforeEach(() => {
+    errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
+  afterEach(() => {
+    const calls = errorSpy.mock.calls;
+    errorSpy.mockRestore();
+    expect(calls).toEqual([]);
+  });
+
   test('mounts with the clamped initial value', () => {
     const { container } = render(
       <RestrictedInput value={50} minValue={0} maxValue={10} />,
@@ -81,6 +95,19 @@ describe('RestrictedInput', () => {
     expect(onChange).toHaveBeenCalledTimes(1);
     expect(onChange).toHaveBeenCalledWith(expect.anything(), 100);
     expect(onEnter).toHaveBeenCalledTimes(1);
+  });
+
+  test('component-only props do not leak to the DOM', () => {
+    // onEscape is not exercised by the other tests, so render it here;
+    // the afterEach spy assertion catches any leak warning.
+    render(
+      <RestrictedInput
+        value={5}
+        minValue={0}
+        maxValue={10}
+        onEscape={() => {}}
+      />,
+    );
   });
 
   test('blur without modification does not fire onChange', () => {
