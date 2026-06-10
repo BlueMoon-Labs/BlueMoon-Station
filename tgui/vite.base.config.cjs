@@ -19,6 +19,10 @@ const aliases = [
 
 // Legacy interface files use JSX inside plain .js files, which esbuild
 // does not parse by default. Transform them with the jsx loader.
+// Uses esbuild directly: requiring 'vite' from CJS breaks on Node 20
+// (ESM facade fails to resolve rollup under PnP).
+const esbuild = require('esbuild');
+
 const createJsxInJsPlugin = () => ({
   name: 'tgui-jsx-in-js',
   enforce: 'pre',
@@ -27,12 +31,17 @@ const createJsxInJsPlugin = () => ({
     if (!/\/packages\/.*\.js$/.test(normalizedId)) {
       return null;
     }
-    const { transformWithEsbuild } = require('vite');
-    return transformWithEsbuild(code, id, {
+    const result = await esbuild.transform(code, {
       loader: 'jsx',
       jsx: 'automatic',
       jsxImportSource: 'react',
+      sourcefile: id,
+      sourcemap: true,
     });
+    return {
+      code: result.code,
+      map: result.map || null,
+    };
   },
 });
 
