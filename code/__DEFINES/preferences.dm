@@ -118,4 +118,4 @@
 
 // Кол-во хедшотов, не ставить меньше 1
 #define MAX_HEADSHOTS 6
-#define MAX_HEADSHOTS_NAKED 6
+#define MAX_HEADSHOTS_NAKED MAX_HEADSHOTS
