@@ -4,11 +4,9 @@ import { useBackend, useLocalState } from '../backend';
 import { Box, Button, Flex, Section, Table } from '../components';
 import { Window } from '../layouts';
 
-export const MiningVendor = (props, context) => {
-  const { act, data } = useBackend(context);
-  const [selectedCategory, setCategory] = useLocalState(
-    context,
-    'selectedTab',
+export const MiningVendor = (props) => {
+  const { act, data } = useBackend();
+  const [selectedCategory, setCategory] = useLocalState('selectedTab',
     'Mining Gear'
   );
 

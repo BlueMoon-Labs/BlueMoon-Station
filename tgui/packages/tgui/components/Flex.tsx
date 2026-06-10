@@ -47,8 +47,6 @@ export const Flex = props => (
   <Box {...computeFlexProps(props)} />
 );
 
-Flex.defaultHooks = pureComponentHooks;
-
 export interface FlexItemProps extends BoxProps {
   grow?: number;
   order?: number;
@@ -88,7 +86,5 @@ export const computeFlexItemProps = (props: FlexItemProps) => {
 const FlexItem = props => (
   <Box {...computeFlexItemProps(props)} />
 );
-
-FlexItem.defaultHooks = pureComponentHooks;
 
 Flex.Item = FlexItem;

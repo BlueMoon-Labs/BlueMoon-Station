@@ -3,14 +3,14 @@
  * @copyright 2020 LetterN (https://github.com/LetterN)
  * @license MIT
  */
-import { Fragment } from 'inferno';
+import { Fragment } from 'react';
 
 import { useBackend, useSharedState } from '../backend';
 import { Button, Input, LabeledList, NoticeBox, Section, Tabs } from '../components';
 import { Window } from '../layouts';
 
-export const TelecommsLogBrowser = (props, context) => {
-  const { act, data } = useBackend(context);
+export const TelecommsLogBrowser = (props) => {
+  const { act, data } = useBackend();
   const {
     notice,
     network = "NULL",
@@ -21,7 +21,7 @@ export const TelecommsLogBrowser = (props, context) => {
   const [
     tab,
     setTab,
-  ] = useSharedState(context, 'tab', 'servers');
+  ] = useSharedState('tab', 'servers');
   const operational = (selected && selected.status);
   return (
     <Window

@@ -37,8 +37,8 @@ export const CommandReport = () => {
 };
 
 /** Allows the user to set the "sender" of the message via dropdown */
-const CentComName = (props, context) => {
-  const { act, data } = useBackend<Data>(context);
+const CentComName = (props) => {
+  const { act, data } = useBackend<Data>();
   const { command_name, command_name_presets = [], custom_name } = data;
 
   return (
@@ -69,8 +69,8 @@ const CentComName = (props, context) => {
 };
 
 /** Features a section with dropdown for sounds. */
-const AnnouncementSound = (props, context) => {
-  const { act, data } = useBackend<Data>(context);
+const AnnouncementSound = (props) => {
+  const { act, data } = useBackend<Data>();
   const { announcer_sounds = [], played_sound } = data;
 
   return (
@@ -89,12 +89,10 @@ const AnnouncementSound = (props, context) => {
 };
 
 /** Creates the report textarea with a submit button. */
-const ReportText = (props, context) => {
-  const { act, data } = useBackend<Data>(context);
+const ReportText = (props) => {
+  const { act, data } = useBackend<Data>();
   const { announce_contents, command_report_content } = data;
-  const [commandReport, setCommandReport] = useLocalState<string>(
-    context,
-    'textArea',
+  const [commandReport, setCommandReport] = useLocalState<string>('textArea',
     command_report_content
   );
 

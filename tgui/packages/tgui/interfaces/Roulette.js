@@ -16,7 +16,7 @@ const getNumberColor = number => {
   return inRedOddRange ? 'black' : 'red';
 };
 
-export const RouletteNumberCell = (props, context) => {
+export const RouletteNumberCell = (props) => {
   const {
     buttonClass = null,
     cellClass = null,
@@ -26,7 +26,7 @@ export const RouletteNumberCell = (props, context) => {
     text,
     value,
   } = props;
-  const { act } = useBackend(context);
+  const { act } = useBackend();
 
   return (
     <Table.Cell
@@ -155,13 +155,13 @@ export const RouletteBoard = () => {
   );
 };
 
-export const RouletteBetTable = (props, context) => {
-  const { act, data } = useBackend(context);
+export const RouletteBetTable = (props) => {
+  const { act, data } = useBackend();
 
   const [
     customBet,
     setCustomBet,
-  ] = useLocalState(context, 'customBet', 500);
+  ] = useLocalState('customBet', 500);
 
   let {
     BetType,
@@ -302,7 +302,7 @@ export const RouletteBetTable = (props, context) => {
   );
 };
 
-export const Roulette = (props, context) => {
+export const Roulette = (props) => {
   return (
     <Window
       width={570}

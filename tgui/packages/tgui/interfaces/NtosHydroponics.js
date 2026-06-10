@@ -2,8 +2,8 @@ import { useBackend } from '../backend';
 import { Section, Table, NoticeBox, ProgressBar } from '../components';
 import { NtosWindow } from '../layouts';
 
-export const NtosHydroponics = (props, context) => {
-  const { act, data } = useBackend(context);
+export const NtosHydroponics = (props) => {
+  const { act, data } = useBackend();
   const { trays = [] } = data;
 
   return (

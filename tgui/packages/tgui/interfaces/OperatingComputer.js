@@ -1,4 +1,4 @@
-import { Fragment } from 'inferno';
+import { Fragment } from 'react';
 
 import { useBackend, useSharedState } from '../backend';
 import { AnimatedNumber, Button, Divider, LabeledList, NoticeBox, ProgressBar, Section, Tabs } from '../components';
@@ -27,8 +27,8 @@ const damageTypes = [
   },
 ];
 
-export const OperatingComputer = (props, context) => {
-  const [tab, setTab] = useSharedState(context, 'tab', 1);
+export const OperatingComputer = (props) => {
+  const [tab, setTab] = useSharedState('tab', 1);
   return (
     <Window
       width={350}
@@ -58,8 +58,8 @@ export const OperatingComputer = (props, context) => {
   );
 };
 
-const PatientStateView = (props, context) => {
-  const { act, data } = useBackend(context);
+const PatientStateView = (props) => {
+  const { act, data } = useBackend();
   const {
     table,
     procedures = [],
@@ -168,8 +168,8 @@ const PatientStateView = (props, context) => {
   );
 };
 
-const SurgeryProceduresView = (props, context) => {
-  const { act, data } = useBackend(context);
+const SurgeryProceduresView = (props) => {
+  const { act, data } = useBackend();
   const {
     surgeries_base = [],
     surgeries = [],

@@ -1,4 +1,4 @@
-import { Fragment } from 'inferno';
+import { Fragment } from 'react';
 
 import { useBackend, useLocalState } from '../backend';
 import { Box, Button, Collapsible, Icon, Input, LabeledList, Section, Table, Tooltip } from '../components';
@@ -48,8 +48,8 @@ const genderTagTextColor = {
   'Unset': 'label',
 };
 
-export const CharacterDirectory = (props, context) => {
-  const { act, data } = useBackend(context);
+export const CharacterDirectory = (props) => {
+  const { act, data } = useBackend();
 
   const {
     personalVisibility,
@@ -62,9 +62,9 @@ export const CharacterDirectory = (props, context) => {
     prefsOnly,
   } = data;
 
-  const [overlay, setOverlay] = useLocalState(context, 'overlay', null);
+  const [overlay, setOverlay] = useLocalState('overlay', null);
 
-  const [overwritePrefs, setOverwritePrefs] = useLocalState(context, 'overwritePrefs', true);
+  const [overwritePrefs, setOverwritePrefs] = useLocalState('overwritePrefs', true);
 
   return (
     <Window width={940} height={560} resizeable>
@@ -160,10 +160,10 @@ const PrefTagButton = (props) => {
   );
 };
 
-const ViewCharacter = (props, context) => {
-  const { act, data } = useBackend(context);
+const ViewCharacter = (props) => {
+  const { act, data } = useBackend();
   const { directory_notes } = data;
-  const [overlay, setOverlay] = useLocalState(context, 'overlay', null);
+  const [overlay, setOverlay] = useLocalState('overlay', null);
 
   const prefTags = [
     { name: 'Изнасилование', value: overlay.noncon_tag },
@@ -176,7 +176,7 @@ const ViewCharacter = (props, context) => {
   const genderDisplay = overlay.gender_tag || 'Unset';
 
   const headshots = (overlay.headshot_links || []).filter(link => link && link.length);
-  const [selectedHeadshot, setSelectedHeadshot] = useLocalState(context, 'viewHeadshot', 0);
+  const [selectedHeadshot, setSelectedHeadshot] = useLocalState('viewHeadshot', 0);
   const safeIdx = headshots.length > 0 ? selectedHeadshot % headshots.length : 0;
   const currentLink = headshots[safeIdx];
   const isVideo = typeof currentLink === 'string' && /\.(webm|mp4)$/i.test(currentLink);
@@ -283,15 +283,15 @@ const ViewCharacter = (props, context) => {
   );
 };
 
-const CharacterDirectoryList = (props, context) => {
-  const { act, data } = useBackend(context);
+const CharacterDirectoryList = (props) => {
+  const { act, data } = useBackend();
 
   const { directory, canOrbit, directory_notes } = data;
 
-  const [sortId, _setSortId] = useLocalState(context, 'sortId', 'name');
-  const [sortOrder, _setSortOrder] = useLocalState(context, 'sortOrder', 'name');
-  const [overlay, setOverlay] = useLocalState(context, 'overlay', null);
-  const [searchText, setSearchText] = useLocalState(context, 'searchText', '');
+  const [sortId, _setSortId] = useLocalState('sortId', 'name');
+  const [sortOrder, _setSortOrder] = useLocalState('sortOrder', 'name');
+  const [overlay, setOverlay] = useLocalState('overlay', null);
+  const [searchText, setSearchText] = useLocalState('searchText', '');
 
   const filteredDirectory = (directory || []).filter(
     (character) =>
@@ -409,14 +409,14 @@ const CharacterDirectoryList = (props, context) => {
   );
 };
 
-const SortButton = (props, context) => {
-  const { act, data } = useBackend(context);
+const SortButton = (props) => {
+  const { act, data } = useBackend();
 
   const { id, children } = props;
 
   // Hey, same keys mean same data~
-  const [sortId, setSortId] = useLocalState(context, 'sortId', 'name');
-  const [sortOrder, setSortOrder] = useLocalState(context, 'sortOrder', 'name');
+  const [sortId, setSortId] = useLocalState('sortId', 'name');
+  const [sortOrder, setSortOrder] = useLocalState('sortOrder', 'name');
 
   return (
     <Table.Cell collapsing>

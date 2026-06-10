@@ -120,9 +120,9 @@ const ConfettiOverlay = () => (
   </div>
 );
 
-export const SlotMachine = (props, context) => {
-  const { act, data } = useBackend(context);
-  const [showIntro, setShowIntro] = useLocalState(context, 'showIntro', true);
+export const SlotMachine = (props) => {
+  const { act, data } = useBackend();
+  const [showIntro, setShowIntro] = useLocalState('showIntro', true);
   const {
     money,
     plays,

@@ -1,6 +1,6 @@
 import { Button, Stack } from '../../components';
 
-export const BasicInput = (props, context) => {
+export const BasicInput = (props) => {
   const { children, setValue } = props;
   return (
     <Stack onMouseDown={(e) => e.stopPropagation()}>

@@ -1,5 +1,5 @@
 
-import { Fragment } from 'inferno';
+import { Fragment } from 'react';
 
 import { useBackend, useLocalState } from '../backend';
 import { Button, Flex, Icon, Input, LabeledList, Section, Table } from '../components';
@@ -9,9 +9,9 @@ import { LoginScreen } from './common/LoginScreen';
 
 const safe = (v, d = '') => (v === null || v === undefined ? d : v);
 
-export const AccountsUplinkTerminal = (_props, context) => {
+export const AccountsUplinkTerminal = (_props) => {
   try {
-    const { data } = useBackend(context);
+    const { data } = useBackend();
     const loginState = safe(data?.loginState, { logged_in: 0 });
     const currentPage = safe(data?.currentPage, 1);
 
@@ -60,13 +60,13 @@ export const AccountsUplinkTerminal = (_props, context) => {
 // LIST
 // ─────────────────────────────────────────────────────────────
 
-const AccountsRecordList = (_props, context) => {
-  const { act, data } = useBackend(context);
+const AccountsRecordList = (_props) => {
+  const { act, data } = useBackend();
   const accounts = Array.isArray(data?.accounts) ? data.accounts : [];
 
-  const [searchText, setSearchText] = useLocalState(context, 'searchText', '');
-  const [sortId, setSortId] = useLocalState(context, 'sortId', 'owner_name');
-  const [sortOrder, setSortOrder] = useLocalState(context, 'sortOrder', true);
+  const [searchText, setSearchText] = useLocalState('searchText', '');
+  const [sortId, setSortId] = useLocalState('sortId', 'owner_name');
+  const [sortOrder, setSortOrder] = useLocalState('sortOrder', true);
 
   const passSort = { sortId, setSortId, sortOrder, setSortOrder };
 
@@ -162,11 +162,11 @@ const SortButton = (props, _context) => {
   );
 };
 
-const AccountsActions = (_props, context) => {
-  const { act, data } = useBackend(context);
+const AccountsActions = (_props) => {
+  const { act, data } = useBackend();
   const is_printing = !!data?.is_printing;
 
-  const [, setSearchText] = useLocalState(context, 'searchText', '');
+  const [, setSearchText] = useLocalState('searchText', '');
 
   return (
     <Flex>
@@ -195,8 +195,8 @@ const AccountsActions = (_props, context) => {
 // DETAILS
 // ─────────────────────────────────────────────────────────────
 
-const DetailedAccountInfo = (_props, context) => {
-  const { act, data } = useBackend(context);
+const DetailedAccountInfo = (_props) => {
+  const { act, data } = useBackend();
   const {
     is_printing = false,
     account_number = '',
@@ -310,10 +310,10 @@ const DetailedAccountInfo = (_props, context) => {
 // CREATE
 // ─────────────────────────────────────────────────────────────
 
-const CreateAccount = (_props, context) => {
-  const { act } = useBackend(context);
-  const [accName, setAccName] = useLocalState(context, 'accName', '');
-  const [accDeposit, setAccDeposit] = useLocalState(context, 'accDeposit', '');
+const CreateAccount = (_props) => {
+  const { act } = useBackend();
+  const [accName, setAccName] = useLocalState('accName', '');
+  const [accDeposit, setAccDeposit] = useLocalState('accDeposit', '');
 
   return (
     <Section

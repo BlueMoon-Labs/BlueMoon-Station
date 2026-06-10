@@ -11,7 +11,7 @@
 
 import { clamp } from 'common/math';
 import { classes } from 'common/react';
-import { Component } from 'inferno';
+import { Component } from 'react';
 import katex from 'katex';
 import { marked } from 'marked';
 
@@ -213,7 +213,7 @@ const pauseEvent = e => {
   return false;
 };
 
-const Stamp = (props, context) => {
+const Stamp = (props) => {
   const {
     image,
     opacity,
@@ -244,7 +244,7 @@ const setInputReadonly = (text, readonly) => {
 
 // got to make this a full component if we
 // want to control updates
-const PaperSheetView = (props, context) => {
+const PaperSheetView = (props) => {
   const {
     value = "",
     stamps = [],
@@ -297,7 +297,7 @@ class PaperSheetStamper extends Component {
     };
     this.handleMouseClick = e => {
       if (e.pageY <= 30) { return; }
-      const { act, data } = useBackend(this.context);
+      const { act, data } = useBackend();
       const stamp_obj = {
         x: this.state.x, y: this.state.y, r: this.state.rotate,
         stamp_class: this.props.stamp_class,
@@ -449,7 +449,7 @@ class PaperSheetEdit extends Component {
   }
 
   createPreviewFromData(value, do_fields = false) {
-    const { data } = useBackend(this.context);
+    const { data } = useBackend();
     return createPreview(value,
       this.state.old_text,
       do_fields,
@@ -486,7 +486,7 @@ class PaperSheetEdit extends Component {
   }
   // the final update send to byond, final upkeep
   finalUpdate(new_text) {
-    const { act } = useBackend(this.context);
+    const { act } = useBackend();
     const final_processing = this.createPreviewFromData(new_text, true);
     act('save', final_processing);
     this.setState(() => { return {
@@ -597,8 +597,8 @@ class PaperSheetEdit extends Component {
   }
 }
 
-export const PaperSheet = (props, context) => {
-  const { data } = useBackend(context);
+export const PaperSheet = (props) => {
+  const { data } = useBackend();
   const {
     edit_mode,
     text,

@@ -55,8 +55,8 @@ const TOOLS = [
   },
 ];
 
-export const RapidPipeDispenser = (props, context) => {
-  const { act, data } = useBackend(context);
+export const RapidPipeDispenser = (props) => {
+  const { act, data } = useBackend();
   const {
     category: rootCategoryIndex,
     categories = [],
@@ -68,7 +68,7 @@ export const RapidPipeDispenser = (props, context) => {
   const [
     categoryName,
     setCategoryName,
-  ] = useLocalState(context, 'categoryName');
+  ] = useLocalState('categoryName');
   const shownCategory = categories
     .find(category => category.cat_name === categoryName)
     || categories[0];

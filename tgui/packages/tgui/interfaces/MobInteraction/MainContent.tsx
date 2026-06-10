@@ -15,15 +15,15 @@ type MainTypes = {
   is_auto_target_self: boolean;
 }
 
-export const MainContent = (props, context) => {
-  const { act, data } = useBackend<MainTypes>(context);
+export const MainContent = (props) => {
+  const { act, data } = useBackend<MainTypes>();
   const [
     searchText,
     setSearchText,
-  ] = useLocalState(context, 'searchText', '');
-  const [tabIndex, setTabIndex] = useLocalState(context, 'tabIndex', 0);
+  ] = useLocalState('searchText', '');
+  const [tabIndex, setTabIndex] = useLocalState('tabIndex', 0);
 
-  const [inFavorites, setInFavorites] = useLocalState(context, 'inFavorites', false);
+  const [inFavorites, setInFavorites] = useLocalState('inFavorites', false);
 
   const interaction_speeds = (data.interaction_speeds || []) as number[];
   const { auto_interaction_pace, auto_interaction_target, currently_active_interaction, is_auto_target_self } = data;

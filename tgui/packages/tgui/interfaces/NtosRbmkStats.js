@@ -3,8 +3,8 @@ import { useBackend } from '../backend';
 import { Button, Chart, ProgressBar, Section } from '../components';
 import { NtosWindow } from '../layouts';
 
-export const NtosRbmkStats = (props, context) => {
-  const { act, data } = useBackend(context);
+export const NtosRbmkStats = (props) => {
+  const { act, data } = useBackend();
   const powerData = data.powerData.map((value, i) => [i, value]);
   const psiData = data.psiData.map((value, i) => [i, value]);
   const tempInputData = data.tempInputData.map((value, i) => [i, value]);

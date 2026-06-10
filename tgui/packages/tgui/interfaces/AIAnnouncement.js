@@ -3,8 +3,8 @@ import { useLocalState } from '../backend';
 import { Button, Input, Section, Stack, Tabs } from '../components';
 import { Window } from '../layouts';
 
-export const AIAnnouncement = (props, context) => {
-  const { act, data } = useBackend(context);
+export const AIAnnouncement = (props) => {
+  const { act, data } = useBackend();
   const {
     last_announcement,
     vox_types = {},
@@ -13,12 +13,12 @@ export const AIAnnouncement = (props, context) => {
   const [
     current_page,
     set_page,
-  ] = useLocalState(context, 'current_page', 0);
+  ] = useLocalState('current_page', 0);
 
   const [
     announcement_input,
     set_announcement_input,
-  ] = useLocalState(context, 'announcement_input', last_announcement);
+  ] = useLocalState('announcement_input', last_announcement);
 
   // I love `Object`s!!
   const words_filtered = Object.keys(vox_types[Object.keys(vox_types)[current_page]]);

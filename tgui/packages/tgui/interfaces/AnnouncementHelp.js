@@ -7,19 +7,19 @@ import { useLocalState } from '../backend';
 import { Button, Collapsible, Icon, Input, Section, Stack, Tabs } from '../components';
 import { Window } from '../layouts';
 
-export const AnnouncementHelp = (props, context) => {
-  const { act, data } = useBackend(context);
+export const AnnouncementHelp = (props) => {
+  const { act, data } = useBackend();
   const { vox_types = {} } = data;
 
   const [
     current_page,
     set_page,
-  ] = useLocalState(context, 'current_page', 0);
+  ] = useLocalState('current_page', 0);
 
   const [
     search_text,
     set_search_text,
-  ] = useLocalState(context, 'search_text', '');
+  ] = useLocalState('search_text', '');
 
   // I love `Object`s!!
   const words_filtered = prepare_search(Object.keys(vox_types[Object.keys(vox_types)[current_page]]), search_text);

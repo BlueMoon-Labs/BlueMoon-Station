@@ -26,13 +26,13 @@ export const PowerMonitor = () => {
   );
 };
 
-export const PowerMonitorContent = (props, context) => {
-  const { data } = useBackend(context);
+export const PowerMonitorContent = (props) => {
+  const { data } = useBackend();
   const { history } = data;
   const [
     sortByField,
     setSortByField,
-  ] = useLocalState(context, 'sortByField', null);
+  ] = useLocalState('sortByField', null);
   const supply = history.supply[history.supply.length - 1] || 0;
   const demand = history.demand[history.demand.length - 1] || 0;
   const supplyData = history.supply.map((value, i) => [i, value]);
@@ -212,8 +212,6 @@ export const AreaCharge = props => {
   );
 };
 
-AreaCharge.defaultHooks = pureComponentHooks;
-
 const AreaStatusColorBox = props => {
   const { status } = props;
   const power = Boolean(status & 2);
@@ -228,4 +226,3 @@ const AreaStatusColorBox = props => {
   );
 };
 
-AreaStatusColorBox.defaultHooks = pureComponentHooks;

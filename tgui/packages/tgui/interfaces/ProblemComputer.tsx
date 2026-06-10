@@ -86,8 +86,8 @@ function shuffleArray<T>(arr: T[]): T[] {
 // ============================================
 // Main Component
 // ============================================
-export const ProblemComputer = (props, context) => {
-  const { data } = useBackend<ProblemComputerData>(context);
+export const ProblemComputer = (props) => {
+  const { data } = useBackend<ProblemComputerData>();
   const { screen } = data;
 
   return (
@@ -111,8 +111,8 @@ export const ProblemComputer = (props, context) => {
 // ============================================
 // Charge Bar
 // ============================================
-const ChargeBar = (props, context) => {
-  const { data } = useBackend<ProblemComputerData>(context);
+const ChargeBar = (props) => {
+  const { data } = useBackend<ProblemComputerData>();
   const { charges, maxCharges, rewardType } = data;
 
   return (
@@ -152,11 +152,9 @@ const ChargeBar = (props, context) => {
 };
 
 // Menu Screen
-const MenuScreen = (props, context) => {
-  const { act } = useBackend<ProblemComputerData>(context);
-  const [selectedGame, setSelectedGame] = useLocalState<string | null>(
-    context,
-    'selectedGame',
+const MenuScreen = (props) => {
+  const { act } = useBackend<ProblemComputerData>();
+  const [selectedGame, setSelectedGame] = useLocalState<string | null>('selectedGame',
     null
   );
 
@@ -235,8 +233,8 @@ const MenuScreen = (props, context) => {
 };
 
 // Game Screen
-const GameScreen = (props, context) => {
-  const { data, act } = useBackend<ProblemComputerData>(context);
+const GameScreen = (props) => {
+  const { data, act } = useBackend<ProblemComputerData>();
   const { currentGame } = data;
   const diffLabel = data.difficulty === 'Easy'
     ? 'Лёгкая' : data.difficulty === 'Medium'
@@ -266,9 +264,9 @@ const GameScreen = (props, context) => {
 };
 
 // Math Game
-const MathGame = (props, context) => {
-  const { data, act } = useBackend<ProblemComputerData>(context);
-  const [answer, setAnswer] = useLocalState(context, 'mathAnswer', '');
+const MathGame = (props) => {
+  const { data, act } = useBackend<ProblemComputerData>();
+  const [answer, setAnswer] = useLocalState('mathAnswer', '');
   const gameData = data.gameData;
 
   if (!gameData) return <NoticeBox>Загрузка...</NoticeBox>;
@@ -337,16 +335,14 @@ const MathGame = (props, context) => {
 let _wireCache: { key: string; left: number[]; right: number[] } | null = null;
 
 // Wire Connect
-const WireGame = (props, context) => {
-  const { data, act } = useBackend<ProblemComputerData>(context);
+const WireGame = (props) => {
+  const { data, act } = useBackend<ProblemComputerData>();
   const gameData = data.gameData;
 
   const [connections, setConnections] = useLocalState<Record<number, boolean>>(
-    context, 'wireConnections', {});
-  const [selectedSide, setSelectedSide] = useLocalState<string | null>(
-    context, 'wireSide', null);
-  const [selectedId, setSelectedId] = useLocalState<number | null>(
-    context, 'wireId', null);
+    'wireConnections', {});
+  const [selectedSide, setSelectedSide] = useLocalState<string | null>('wireSide', null);
+  const [selectedId, setSelectedId] = useLocalState<number | null>('wireId', null);
 
   if (!gameData || !gameData.pairs || !Array.isArray(gameData.pairs)) {
     return <NoticeBox>Загрузка...</NoticeBox>;
@@ -539,10 +535,10 @@ const WireGame = (props, context) => {
 };
 
 // Signal Decode Game
-const SignalGame = (props, context) => {
-  const { data, act } = useBackend<ProblemComputerData>(context);
+const SignalGame = (props) => {
+  const { data, act } = useBackend<ProblemComputerData>();
   const gameData = data.gameData;
-  const [answer, setAnswer] = useLocalState(context, 'signalAnswer', '');
+  const [answer, setAnswer] = useLocalState('signalAnswer', '');
 
   if (!gameData || !gameData.sequence) {
     return <NoticeBox>Загрузка...</NoticeBox>;
@@ -686,8 +682,8 @@ const SignalGame = (props, context) => {
 };
 
 // Result Screen
-const ResultScreen = (props, context) => {
-  const { data, act } = useBackend<ProblemComputerData>(context);
+const ResultScreen = (props) => {
+  const { data, act } = useBackend<ProblemComputerData>();
   const { lastResult, lastPoints, lastMessage } = data;
   const isCorrect = lastResult === 'correct';
 

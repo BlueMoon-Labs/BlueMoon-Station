@@ -14,8 +14,8 @@ type ListInputData = {
   title: string;
 };
 
-export const ListInputModal = (_, context) => {
-  const { act, data } = useBackend<ListInputData>(context);
+export const ListInputModal = (_) => {
+  const { act, data } = useBackend<ListInputData>();
   const {
     items = [],
     message = "",
@@ -24,19 +24,13 @@ export const ListInputModal = (_, context) => {
     timeout,
     title,
   } = data;
-  const [selected, setSelected] = useLocalState<number>(
-    context,
-    'selected',
+  const [selected, setSelected] = useLocalState<number>('selected',
     items.indexOf(init_value)
   );
-  const [searchBarVisible, setSearchBarVisible] = useLocalState<boolean>(
-    context,
-    'searchBarVisible',
+  const [searchBarVisible, setSearchBarVisible] = useLocalState<boolean>('searchBarVisible',
     items.length > 9
   );
-  const [searchQuery, setSearchQuery] = useLocalState<string>(
-    context,
-    'searchQuery',
+  const [searchQuery, setSearchQuery] = useLocalState<string>('searchQuery',
     ''
   );
   // User presses up or down on keyboard
@@ -181,8 +175,8 @@ export const ListInputModal = (_, context) => {
  * Displays the list of selectable items.
  * If a search query is provided, filters the items.
  */
-const ListDisplay = (props, context) => {
-  const { act } = useBackend<ListInputData>(context);
+const ListDisplay = (props) => {
+  const { act } = useBackend<ListInputData>();
   const { filteredItems, onClick, onFocusSearch, searchBarVisible, selected }
     = props;
 
@@ -196,7 +190,7 @@ const ListDisplay = (props, context) => {
             id={index}
             key={index}
             onClick={() => onClick(index)}
-            onDblClick={(event) => {
+            onDoubleClick={(event) => {
               event.preventDefault();
               act('submit', { entry: filteredItems[selected] });
             }}
@@ -223,8 +217,8 @@ const ListDisplay = (props, context) => {
  * Renders a search bar input.
  * Closing the bar defaults input to an empty string.
  */
-const SearchBar = (props, context) => {
-  const { act } = useBackend<ListInputData>(context);
+const SearchBar = (props) => {
+  const { act } = useBackend<ListInputData>();
   const { filteredItems, onSearch, searchQuery, selected } = props;
 
   return (

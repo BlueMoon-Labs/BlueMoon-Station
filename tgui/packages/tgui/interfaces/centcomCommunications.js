@@ -1,11 +1,11 @@
-import { Fragment } from 'inferno';
+import { Fragment } from 'react';
 
 import { useBackend } from '../backend';
 import { Box, Button, ColorBox, LabeledList, Section } from '../components';
 import { Window } from '../layouts';
 
-export const centcomCommunications = (props, context) => {
-  const { act, data } = useBackend(context);
+export const centcomCommunications = (props) => {
+  const { act, data } = useBackend();
 
   const {
     messages = [],

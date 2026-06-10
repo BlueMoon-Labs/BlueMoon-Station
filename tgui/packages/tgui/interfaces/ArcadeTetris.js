@@ -1,5 +1,5 @@
 import { KEY_DOWN, KEY_LEFT, KEY_RIGHT, KEY_SPACE, KEY_UP } from 'common/keycodes';
-import { Component, createRef } from 'inferno';
+import { Component, createRef } from 'react';
 
 import { useBackend } from '../backend';
 import { Box, Button, Modal, Section, Stack, Table } from '../components';
@@ -596,8 +596,8 @@ class TetrisGame extends Component {
 }
 
 // ---- Main export ----
-export const ArcadeTetris = (props, context) => {
-  const { act, data } = useBackend(context);
+export const ArcadeTetris = (props) => {
+  const { act, data } = useBackend();
   const { personal_best = 0, leaderboard = [], is_admin = false } = data;
 
   return (

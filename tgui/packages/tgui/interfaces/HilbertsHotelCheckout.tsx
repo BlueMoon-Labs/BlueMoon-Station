@@ -294,11 +294,9 @@ const ReservedRooms = ({ data }) => { // WIP content
   );
 };
 */
-export const CheckoutMenu = (props, context) => {
-  const { act, data } = useBackend<RoomsData>(context);
-  const [selectedTab, setSelectedTab] = useLocalState(
-      context,
-      'selectedTab',
+export const CheckoutMenu = (props) => {
+  const { act, data } = useBackend<RoomsData>();
+  const [selectedTab, setSelectedTab] = useLocalState('selectedTab',
       0
     );
   const tabContent = [
@@ -363,13 +361,11 @@ export const CheckoutMenu = (props, context) => {
 
 };
 
-const RoomsTab = (props, context) => {
+const RoomsTab = (props) => {
   const { category, selected_template } = props;
-  const { act, data } = useBackend<RoomsData>(context);
+  const { act, data } = useBackend<RoomsData>();
   const { hotel_map_list = [] } = data;
-  const [selectedRoom, setSelectedRoom] = useLocalState(
-      context,
-      'selectedRoom',
+  const [selectedRoom, setSelectedRoom] = useLocalState('selectedRoom',
       null
     );
 
@@ -459,8 +455,8 @@ const RoomsTab = (props, context) => {
   );
 };
 
-export const HilbertsHotelCheckout = (props, context) => {
-  const { act, data } = useBackend(context);
+export const HilbertsHotelCheckout = (props) => {
+  const { act, data } = useBackend();
 
   return (
     <Window width={565} height={330} title="Dr. Hilbert's Hotel Room Reception">

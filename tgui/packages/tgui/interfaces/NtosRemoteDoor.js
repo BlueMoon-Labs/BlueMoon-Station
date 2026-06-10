@@ -2,8 +2,8 @@ import { useBackend } from '../backend';
 import { Section, Button, NoticeBox } from '../components';
 import { NtosWindow } from '../layouts';
 
-export const NtosRemoteDoor = (props, context) => {
-  const { act, data } = useBackend(context);
+export const NtosRemoteDoor = (props) => {
+  const { act, data } = useBackend();
   const { doors = [] } = data;
 
   return (

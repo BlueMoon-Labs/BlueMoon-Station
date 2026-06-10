@@ -2,8 +2,8 @@ import { useBackend } from '../backend';
 import { Window } from '../layouts';
 import { Section, Box, Button, Stack, Icon, Grid } from '../components';
 
-export const MalfunctionModulePicker = (props, context) => {
-  const { act, data } = useBackend(context);
+export const MalfunctionModulePicker = (props) => {
+  const { act, data } = useBackend();
   const {
     processing_time = 0,
     large_modules = [],

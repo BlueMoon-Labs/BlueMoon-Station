@@ -52,8 +52,6 @@ export const Icon = props => {
   );
 };
 
-Icon.defaultHooks = pureComponentHooks;
-
 export const IconStack = props => {
   const {
     className,

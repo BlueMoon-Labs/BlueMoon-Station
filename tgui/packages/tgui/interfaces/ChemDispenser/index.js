@@ -57,8 +57,10 @@ const getRecipesCount = (gameRecipes, isDrinkDispenser) => {
   return isDrinkDispenser ? _recipesCountCache.drinkCount : _recipesCountCache.count;
 };
 
-const _amountDebounceTimers = new Map();
-const _recipeActionLocks = new Map();
+// Each tgui window runs in its own JS realm, so plain module-level
+// slots replace the old per-context Map keying.
+let _amountDebounceTimer = null;
+let _recipeActionLockUntil = 0;
 const RECIPE_ACTION_COOLDOWN_MS = 250;
 
 let _classicSortCache = { key: null, result: null };
@@ -270,27 +272,27 @@ const resolveOptimisticAmount = (optAmount, data) => {
   return data.amount;
 };
 
-export const ChemDispenser = (props, context) => {
-  const { act, data } = useBackend(context);
+export const ChemDispenser = (props) => {
+  const { act, data } = useBackend();
 
-  const [chemSearchQuery, setChemSearchQuery] = useLocalState(context, 'chem_search_chemicals', '');
-  const [recipeSearchQuery, setRecipeSearchQuery] = useLocalState(context, 'chem_search_recipes', '');
-  const [savedSearchQuery, setSavedSearchQuery] = useLocalState(context, 'chem_search_saved', '');
+  const [chemSearchQuery, setChemSearchQuery] = useLocalState('chem_search_chemicals', '');
+  const [recipeSearchQuery, setRecipeSearchQuery] = useLocalState('chem_search_recipes', '');
+  const [savedSearchQuery, setSavedSearchQuery] = useLocalState('chem_search_saved', '');
 
-  const [activeTab, setActiveTab] = useLocalState(context, 'chem_tab', 'chemicals');
-  const [favorites, setFavorites] = useLocalState(context, 'chem_favorites', []);
-  const [recentChemicals, setRecentChemicals] = useLocalState(context, 'chem_recent', []);
+  const [activeTab, setActiveTab] = useLocalState('chem_tab', 'chemicals');
+  const [favorites, setFavorites] = useLocalState('chem_favorites', []);
+  const [recentChemicals, setRecentChemicals] = useLocalState('chem_recent', []);
 
-  const [optPrefs, setOptPrefs] = useLocalState(context, 'chem_opt_prefs', null);
+  const [optPrefs, setOptPrefs] = useLocalState('chem_opt_prefs', null);
   const resolvedPrefs = resolveOptimisticPrefs(optPrefs, data);
   const { classicView, useReagentColor, showIcons, alphabeticalSort } = resolvedPrefs;
 
-  const [optAmount, setOptAmount] = useLocalState(context, 'chem_opt_amount', null);
+  const [optAmount, setOptAmount] = useLocalState('chem_opt_amount', null);
   const displayAmount = resolveOptimisticAmount(optAmount, data);
 
-  const [pendingActions, setPendingActions] = useLocalState(context, 'chem_pending', {});
-  const [optDeletedRecipes, setOptDeletedRecipes] = useLocalState(context, 'chem_deleted_recipes', null);
-  const [optRecording, setOptRecording] = useLocalState(context, 'chem_opt_recording', null);
+  const [pendingActions, setPendingActions] = useLocalState('chem_pending', {});
+  const [optDeletedRecipes, setOptDeletedRecipes] = useLocalState('chem_deleted_recipes', null);
+  const [optRecording, setOptRecording] = useLocalState('chem_opt_recording', null);
 
   const serverRecording = !!data.recordingRecipe;
   const recording = optRecording
@@ -300,14 +302,14 @@ export const ChemDispenser = (props, context) => {
     : serverRecording;
 
   const favoritesSet = new Set(favorites);
-  const [expandedCategories, setExpandedCategories] = useLocalState(context, 'chem_expanded', {
+  const [expandedCategories, setExpandedCategories] = useLocalState('chem_expanded', {
     alcoholic_drinks: true, soft_drinks: true,
     elements: true, compounds: true, consumables: true,
     toxins: true, medicine: true, drugs: true, other: true,
     slime_extracts: true,
   });
 
-  const [optimistic, setOptimistic] = useLocalState(context, 'chem_optimistic', null);
+  const [optimistic, setOptimistic] = useLocalState('chem_optimistic', null);
 
   // Derived validity check; avoids render-time state updates.
   const isOptimisticActive = checkOptimisticActive(optimistic, data);
@@ -413,13 +415,13 @@ export const ChemDispenser = (props, context) => {
   const handleAmountChange = (target) => {
     const predicted = predictSetAmount(target, data.stepAmount || 5);
     setOptAmount({ value: predicted, serverAmount: data.amount, timestamp: Date.now() });
-    const prevTimer = _amountDebounceTimers.get(context);
+    const prevTimer = _amountDebounceTimer;
     if (prevTimer) clearTimeout(prevTimer);
     const timer = setTimeout(() => {
-      _amountDebounceTimers.delete(context);
+      _amountDebounceTimer = null;
       act('amount', { target });
     }, 150);
-    _amountDebounceTimers.set(context, timer);
+    _amountDebounceTimer = timer;
   };
 
   const markPending = (actionKey, options = {}) => {
@@ -460,14 +462,14 @@ export const ChemDispenser = (props, context) => {
 
   const beginRecipeAction = (actionKey) => {
     const now = Date.now();
-    const lockUntil = _recipeActionLocks.get(context) || 0;
+    const lockUntil = _recipeActionLockUntil || 0;
     if (now < lockUntil) {
       return false;
     }
     if (isActionPending('__recipe_global') || (actionKey && isActionPending(actionKey))) {
       return false;
     }
-    _recipeActionLocks.set(context, now + RECIPE_ACTION_COOLDOWN_MS);
+    _recipeActionLockUntil = now + RECIPE_ACTION_COOLDOWN_MS;
     markPending('__recipe_global', {
       ttl: RECIPE_ACTION_COOLDOWN_MS,
       checkVolume: false,
@@ -1046,7 +1048,7 @@ export const ChemDispenser = (props, context) => {
   );
 };
 
-const AmountControls = (props, context) => {
+const AmountControls = (props) => {
   const { amount, stepAmount, isBeakerLoaded, beakerMaxVolume, beakerCurrentVolume, beakerTransferAmounts, onAmountChange } = props;
 
   // DM lists may arrive as objects; normalize to a numeric array.

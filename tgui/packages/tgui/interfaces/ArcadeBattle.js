@@ -15,9 +15,9 @@ const PASSIVE_INFO = {
   chonker: { emoji: '🐄', label: 'Толстяк' },
 };
 
-export const ArcadeBattle = (props, context) => {
-  const { act, data } = useBackend(context);
-  const [showIntro, setShowIntro] = useLocalState(context, 'showIntro', true);
+export const ArcadeBattle = (props) => {
+  const { act, data } = useBackend();
+  const [showIntro, setShowIntro] = useLocalState('showIntro', true);
 
   const {
     enemy_name = 'Space Villain',

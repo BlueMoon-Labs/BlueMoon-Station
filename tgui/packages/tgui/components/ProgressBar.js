@@ -48,4 +48,3 @@ export const ProgressBar = props => {
   );
 };
 
-ProgressBar.defaultHooks = pureComponentHooks;

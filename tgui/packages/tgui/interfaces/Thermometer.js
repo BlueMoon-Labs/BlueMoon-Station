@@ -1,4 +1,4 @@
-import { Component } from 'inferno';
+import { Component } from 'react';
 
 import { useBackend } from '../backend';
 import { Box, Stack } from '../components';
@@ -18,7 +18,7 @@ export class Thermometer extends Component {
   }
 
   render() {
-    const { act, data } = useBackend(this.context);
+    const { act, data } = useBackend();
     return (
       <Window
         width={70}

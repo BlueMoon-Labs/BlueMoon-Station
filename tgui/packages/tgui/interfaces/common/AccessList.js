@@ -1,5 +1,5 @@
 import { sortBy } from 'common/collections';
-import { Fragment } from 'inferno';
+import { Fragment } from 'react';
 
 import { useLocalState } from '../../backend';
 import { Button, Flex, Grid, Section, Tabs } from '../../components';
@@ -19,7 +19,7 @@ const diffMap = {
   },
 };
 
-export const AccessList = (props, context) => {
+export const AccessList = (props) => {
   const {
     accesses = [],
     selectedList = [],
@@ -32,7 +32,7 @@ export const AccessList = (props, context) => {
   const [
     selectedAccessName,
     setSelectedAccessName,
-  ] = useLocalState(context, 'accessName', accesses[0]?.name);
+  ] = useLocalState('accessName', accesses[0]?.name);
   const selectedAccess = accesses
     .find(access => access.name === selectedAccessName);
   const selectedAccessEntries = sortBy(

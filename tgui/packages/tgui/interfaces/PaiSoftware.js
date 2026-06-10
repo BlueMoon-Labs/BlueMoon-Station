@@ -2,8 +2,8 @@ import { useBackend } from '../backend';
 import { Box, Button, Icon, LabeledList, NoticeBox, ProgressBar, Section, Stack, Table } from '../components';
 import { Window } from '../layouts';
 
-export const PaiSoftware = (props, context) => {
-  const { act, data } = useBackend(context);
+export const PaiSoftware = (props) => {
+  const { act, data } = useBackend();
   const {
     screen,
     stat,
@@ -130,8 +130,8 @@ export const PaiSoftware = (props, context) => {
   );
 };
 
-const PaiContent = (props, context) => {
-  const { data } = useBackend(context);
+const PaiContent = (props) => {
+  const { data } = useBackend();
   const { screen } = data;
 
   switch (screen) {
@@ -180,8 +180,8 @@ const PaiContent = (props, context) => {
   }
 };
 
-const MainScreen = (props, context) => {
-  const { data } = useBackend(context);
+const MainScreen = (props) => {
+  const { data } = useBackend();
   const { master, master_dna, ram, software, secHUD, medHUD, encryptmod, translator_on } = data;
   return (
     <>
@@ -206,8 +206,8 @@ const MainScreen = (props, context) => {
   );
 };
 
-const DirectivesScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const DirectivesScreen = (props) => {
+  const { act, data } = useBackend();
   const { master, master_dna, laws_zeroth, laws_supplied } = data;
   return (
     <Box>
@@ -228,8 +228,8 @@ const DirectivesScreen = (props, context) => {
   );
 };
 
-const ManifestScreen = (props, context) => {
-  const { data } = useBackend(context);
+const ManifestScreen = (props) => {
+  const { data } = useBackend();
   const { crew_manifest } = data;
   if (!crew_manifest?.length) {
     return <NoticeBox>Данные экипажа недоступны.</NoticeBox>;
@@ -250,8 +250,8 @@ const ManifestScreen = (props, context) => {
   );
 };
 
-const MedicalRecordScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const MedicalRecordScreen = (props) => {
+  const { act, data } = useBackend();
   const { subscreen, medical_records, medical_active1, medical_active2 } = data;
   if (subscreen === 1 && medical_active1) {
     return (
@@ -307,8 +307,8 @@ const MedicalRecordScreen = (props, context) => {
   );
 };
 
-const SecurityRecordScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const SecurityRecordScreen = (props) => {
+  const { act, data } = useBackend();
   const { subscreen, security_records, security_active1, security_active2 } = data;
   if (subscreen === 1 && security_active1) {
     return (
@@ -360,8 +360,8 @@ const SecurityRecordScreen = (props, context) => {
   );
 };
 
-const BuyScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const BuyScreen = (props) => {
+  const { act, data } = useBackend();
   const { ram, software, available_software } = data;
   const ramUsed = 100 - ram;
   return (
@@ -421,8 +421,8 @@ const BuyScreen = (props, context) => {
   );
 };
 
-const AtmoScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const AtmoScreen = (props) => {
+  const { act, data } = useBackend();
   const { atmo_pressure, atmo_temp, atmo_gases } = data;
   if (atmo_pressure === null) {
     return <NoticeBox>Невозможно получить показания.</NoticeBox>;
@@ -448,8 +448,8 @@ const AtmoScreen = (props, context) => {
   );
 };
 
-const SecHudScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const SecHudScreen = (props) => {
+  const { act, data } = useBackend();
   const { secHUD } = data;
   return (
     <Box>
@@ -463,8 +463,8 @@ const SecHudScreen = (props, context) => {
   );
 };
 
-const MedHudScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const MedHudScreen = (props) => {
+  const { act, data } = useBackend();
   const { medHUD, subscreen } = data;
   if (subscreen === 1) {
     const { bioscan } = data;
@@ -526,8 +526,8 @@ const MedHudScreen = (props, context) => {
   );
 };
 
-const DoorjackScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const DoorjackScreen = (props) => {
+  const { act, data } = useBackend();
   const { cable_extended, cable_connected, hackprogress, hacking } = data;
   return (
     <Section title="Статус взлома шлюза">
@@ -562,8 +562,8 @@ const DoorjackScreen = (props, context) => {
   );
 };
 
-const SignallerScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const SignallerScreen = (props) => {
+  const { act, data } = useBackend();
   const { signaler_frequency, signaler_code } = data;
   const formatFreq = (f) => {
     const s = String(f);
@@ -592,8 +592,8 @@ const SignallerScreen = (props, context) => {
   );
 };
 
-const LoudnessScreen = (props, context) => {
-  const { act } = useBackend(context);
+const LoudnessScreen = (props) => {
+  const { act } = useBackend();
   return (
     <Box>
       <Button onClick={() => act('loudness_open')}>Открыть синтезатор</Button>
@@ -601,8 +601,8 @@ const LoudnessScreen = (props, context) => {
   );
 };
 
-const EncryptScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const EncryptScreen = (props) => {
+  const { act, data } = useBackend();
   const { encryptmod } = data;
   return (
     <Box>
@@ -616,8 +616,8 @@ const EncryptScreen = (props, context) => {
   );
 };
 
-const TranslatorScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const TranslatorScreen = (props) => {
+  const { act, data } = useBackend();
   const { translator_on } = data;
   return (
     <Box>
@@ -631,8 +631,8 @@ const TranslatorScreen = (props, context) => {
   );
 };
 
-const CameraJackScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const CameraJackScreen = (props) => {
+  const { act, data } = useBackend();
   const { cable_extended, cable_connected, hackprogress, hacking } = data;
   return (
     <Section title="Статус взлома камеры">
@@ -667,8 +667,8 @@ const CameraJackScreen = (props, context) => {
   );
 };
 
-const HeartbeatScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const HeartbeatScreen = (props) => {
+  const { act, data } = useBackend();
   const { heartbeat_sensor } = data;
   return (
     <Box>
@@ -685,8 +685,8 @@ const HeartbeatScreen = (props, context) => {
   );
 };
 
-const ProjectionScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const ProjectionScreen = (props) => {
+  const { act, data } = useBackend();
   const { holoform, emitterhealth, emittermaxhealth } = data;
   const healthPercent = (emitterhealth / emittermaxhealth) * 100;
   return (
@@ -708,8 +708,8 @@ const ProjectionScreen = (props, context) => {
   );
 };
 
-const EncoderScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const EncoderScreen = (props) => {
+  const { act, data } = useBackend();
   const { encoder_active, encoder_name, encoder_job } = data;
   return (
     <Box>
@@ -729,8 +729,8 @@ const EncoderScreen = (props, context) => {
   );
 };
 
-const ThermalVisionScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const ThermalVisionScreen = (props) => {
+  const { act, data } = useBackend();
   const { thermal_vision } = data;
   return (
     <Box>
@@ -744,8 +744,8 @@ const ThermalVisionScreen = (props, context) => {
   );
 };
 
-const ChemicalInjectorScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const ChemicalInjectorScreen = (props) => {
+  const { act, data } = useBackend();
   const { chemical_injector, chemical_storage, chemical_max } = data;
   return (
     <Box>

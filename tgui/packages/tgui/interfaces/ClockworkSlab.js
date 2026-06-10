@@ -8,7 +8,7 @@
 
 import { map } from 'common/collections';
 import { createSearch } from 'common/string';
-import { Fragment } from 'inferno';
+import { Fragment } from 'react';
 
 import { useBackend, useLocalState, useSharedState } from '../backend';
 import { Box, Button, Divider, Input, NoticeBox, Section, Table, Tabs } from '../components';
@@ -22,8 +22,8 @@ for (let index = 0; index < Math.min(Math.random()*100); index++) {
   REC_RATVAR += "HONOR RATVAR ";
 }
 
-export const ClockworkSlab = (props, context) => {
-  const { act, data } = useBackend(context);
+export const ClockworkSlab = (props) => {
+  const { act, data } = useBackend();
   const {
     recollection = true,
     scripture = {},
@@ -33,7 +33,7 @@ export const ClockworkSlab = (props, context) => {
   const [
     tab,
     setTab,
-  ] = useSharedState(context, 'tab', 'Application');
+  ] = useSharedState('tab', 'Application');
 
   const tierInfo = tier_infos
   && tier_infos[tab]
@@ -42,7 +42,7 @@ export const ClockworkSlab = (props, context) => {
   const [
     searchText,
     setSearchText,
-  ] = useLocalState(context, 'searchText', '');
+  ] = useLocalState('searchText', '');
 
   const testSearch = createSearch(searchText, script => {
     return script.name + script.descname;
@@ -152,8 +152,8 @@ export const ClockworkSlab = (props, context) => {
   );
 };
 
-export const CSScripture = (props, context) => {
-  const { act, data } = useBackend(context);
+export const CSScripture = (props) => {
+  const { act, data } = useBackend();
   const {
     power_unformatted = 0,
   } = data;
@@ -220,8 +220,8 @@ export const CSScripture = (props, context) => {
   );
 };
 
-export const CSTutorial = (props, context) => {
-  const { act, data } = useBackend(context);
+export const CSTutorial = (props) => {
+  const { act, data } = useBackend();
   const {
     recollection_categories = [],
     rec_section = null,

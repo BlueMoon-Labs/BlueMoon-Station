@@ -1,4 +1,4 @@
-import { Component, createRef } from 'inferno';
+import { Component, createRef } from 'react';
 
 import { useBackend } from '../backend';
 import { Box, Button, Modal, Section, Stack, Table } from '../components';
@@ -591,8 +591,8 @@ class TetrisGame extends Component {
 }
 
 // ---- Main export ----
-export const NtosTetris = (props, context) => {
-  const { act, data } = useBackend(context);
+export const NtosTetris = (props) => {
+  const { act, data } = useBackend();
   const { high_score = 0, personal_best = 0, leaderboard = [], is_admin = false } = data;
 
   return (

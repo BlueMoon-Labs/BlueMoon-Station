@@ -32,4 +32,3 @@ export const ColorBox = props => {
   );
 };
 
-ColorBox.defaultHooks = pureComponentHooks;

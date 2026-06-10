@@ -32,4 +32,3 @@ export const NoticeBox = props => {
   );
 };
 
-NoticeBox.defaultHooks = pureComponentHooks;

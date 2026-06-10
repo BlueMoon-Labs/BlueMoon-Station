@@ -1,4 +1,4 @@
-import { Component } from 'inferno';
+import { Component } from 'react';
 import { useBackend } from 'tgui/backend';
 import { Box } from 'tgui/components';
 import { Window } from 'tgui/layouts';
@@ -147,7 +147,7 @@ export class VirtualJoystick extends Component {
 
     if (now - this._lastActTime >= ACT_INTERVAL_MS) {
       this._lastActTime = now;
-      const { act } = useBackend(this.context);
+      const { act } = useBackend();
       act('update_position', { x: +normX.toFixed(2), y: +normY.toFixed(2) });
     }
 
@@ -174,7 +174,7 @@ export class VirtualJoystick extends Component {
       this._pendingKnobX = 0;
       this._pendingKnobY = 0;
       this._lastTrailPos = { x: 0, y: 0 };
-      const { act } = useBackend(this.context);
+      const { act } = useBackend();
       act('update_position', { x: 0, y: 0 });
       window.removeEventListener('mousemove', this._mouseMoveHandler);
       window.removeEventListener('mouseup', this._mouseUpHandler);

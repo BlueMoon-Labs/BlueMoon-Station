@@ -31,8 +31,8 @@ interface CyborgProfileContext {
   very_extreme_tag: string;
 }
 
-export const CyborgProfile = (props, context) => {
-  const { data } = useBackend<CyborgProfileContext>(context);
+export const CyborgProfile = (props) => {
+  const { data } = useBackend<CyborgProfileContext>();
 
   const tags = [
     { name: "ERP", title: "Эротический отыгрыш", value: data.erp_tag },
@@ -81,11 +81,11 @@ export const CyborgProfile = (props, context) => {
   );
 };
 
-const CyborgProfileImageElement = (props, context) => {
-  const { data } = useBackend<CyborgProfileContext>(context);
+const CyborgProfileImageElement = (props) => {
+  const { data } = useBackend<CyborgProfileContext>();
 
   const headshotLinks = (data.headshot_links || []).filter(link => link?.length);
-  const [selectedHeadshot, setSelectedHeadshot] = useLocalState(context, 'selectedHeadshot', 0);
+  const [selectedHeadshot, setSelectedHeadshot] = useLocalState('selectedHeadshot', 0);
   const safeSelectedHeadshot = headshotLinks.length > 0
     ? selectedHeadshot % headshotLinks.length
     : 0;

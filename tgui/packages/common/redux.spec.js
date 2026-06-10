@@ -231,7 +231,7 @@ describe('useDispatch', () => {
     const reducer = (state = 0) => state;
     const store = createStore(reducer);
     const context = { store };
-    expect(useDispatch(context)).toBe(store.dispatch);
+    expect(useDispatch()).toBe(store.dispatch);
   });
 
   test('dispatch через useDispatch обновляет state', () => {
@@ -252,7 +252,7 @@ describe('useSelector', () => {
     const reducer = (state = { count: 42, name: 'test' }) => state;
     const store = createStore(reducer);
     const context = { store };
-    const result = useSelector(context, state => state);
+    const result = useSelector(state => state);
     expect(result).toEqual({ count: 42, name: 'test' });
   });
 
@@ -260,8 +260,8 @@ describe('useSelector', () => {
     const reducer = (state = { count: 42, name: 'test' }) => state;
     const store = createStore(reducer);
     const context = { store };
-    expect(useSelector(context, state => state.count)).toBe(42);
-    expect(useSelector(context, state => state.name)).toBe('test');
+    expect(useSelector(state => state.count)).toBe(42);
+    expect(useSelector(state => state.name)).toBe('test');
   });
 
   test('selector видит актуальный state после dispatch', () => {
@@ -271,8 +271,8 @@ describe('useSelector', () => {
     };
     const store = createStore(reducer);
     const context = { store };
-    expect(useSelector(context, s => s)).toBe(0);
+    expect(useSelector(s => s)).toBe(0);
     store.dispatch({ type: 'INC' });
-    expect(useSelector(context, s => s)).toBe(1);
+    expect(useSelector(s => s)).toBe(1);
   });
 });

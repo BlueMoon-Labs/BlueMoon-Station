@@ -4,8 +4,8 @@ import { useBackend } from '../backend';
 import { Box, Button, Dimmer, Icon, Section, Slider, Table } from '../components';
 import { Window } from '../layouts';
 
-export const MassSpec = (props, context) => {
-  const { act, data } = useBackend(context);
+export const MassSpec = (props) => {
+  const { act, data } = useBackend();
   const {
     processing,
     lowerRange,
@@ -181,8 +181,8 @@ const BeakerMassProfile = props => {
   );
 };
 
-const MassSpectroscopy = (props, context) => {
-  const { act, data } = useBackend(context);
+const MassSpectroscopy = (props) => {
+  const { act, data } = useBackend();
   const {
     lowerRange,
     centerValue,

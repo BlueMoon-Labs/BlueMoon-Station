@@ -66,9 +66,9 @@ const ColorInput = (props) => {
   );
 };
 
-export const SettingsPanel = (props, context) => {
-  const activeTab = useSelector(context, selectActiveTab);
-  const dispatch = useDispatch(context);
+export const SettingsPanel = (props) => {
+  const activeTab = useSelector(selectActiveTab);
+  const dispatch = useDispatch();
   return (
     <Stack fill>
       <Stack.Item>
@@ -102,7 +102,7 @@ export const SettingsPanel = (props, context) => {
   );
 };
 
-export const SettingsGeneral = (props, context) => {
+export const SettingsGeneral = (props) => {
   const {
     theme,
     fontFamily,
@@ -117,9 +117,9 @@ export const SettingsGeneral = (props, context) => {
     timestampFormat,
     enableTimeDividers,
     timeDividerInterval,
-  } = useSelector(context, selectSettings);
-  const dispatch = useDispatch(context);
-  const [freeFont, setFreeFont] = useLocalState(context, "freeFont", false);
+  } = useSelector(selectSettings);
+  const dispatch = useDispatch();
+  const [freeFont, setFreeFont] = useLocalState("freeFont", false);
   const selectedTsFormat = TIMESTAMP_FORMATS.find(
     f => f.id === timestampFormat);
   const selectedDivInterval = TIME_DIVIDER_INTERVALS.find(
@@ -326,7 +326,7 @@ export const SettingsGeneral = (props, context) => {
   );
 };
 
-export const SettingsAppearance = (props, context) => {
+export const SettingsAppearance = (props) => {
   const {
     chatStyle,
     chatAnimation,
@@ -344,8 +344,8 @@ export const SettingsAppearance = (props, context) => {
     fontWeight,
     letterSpacing,
     borderRadius,
-  } = useSelector(context, selectSettings);
-  const dispatch = useDispatch(context);
+  } = useSelector(selectSettings);
+  const dispatch = useDispatch();
   const selectedStyle = CHAT_STYLES.find(s => s.id === chatStyle);
   const selectedAnim = CHAT_ANIMATIONS.find(a => a.id === chatAnimation);
   const selectedSpeed = CHAT_ANIM_SPEEDS.find(s => s.id === chatAnimSpeed);

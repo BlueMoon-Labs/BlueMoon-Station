@@ -1,4 +1,4 @@
-import { Fragment } from 'inferno';
+import { Fragment } from 'react';
 
 import { useBackend, useLocalState } from '../backend';
 import {
@@ -1634,18 +1634,16 @@ const HostsTab = (props) => {
   );
 };
 
-export const SentientDisease = (props, context) => {
-  const { act, data } = useBackend(context);
-  const [tab, setTab] = useLocalState(context, 'tab', 'overview');
+export const SentientDisease = (props) => {
+  const { act, data } = useBackend();
+  const [tab, setTab] = useLocalState('tab', 'overview');
 
   const abilities = (data.abilities || [])
     .map(localizeAbility)
     .sort(sortAbilities);
   const purchasedAbilities = abilities.filter(ability => ability.purchased);
   const selectedFallback = purchasedAbilities[0] || abilities[0] || null;
-  const [selectedAbilityId, setSelectedAbility] = useLocalState(
-    context,
-    'selected_ability',
+  const [selectedAbilityId, setSelectedAbility] = useLocalState('selected_ability',
     selectedFallback?.id || null,
   );
 

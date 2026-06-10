@@ -28,8 +28,8 @@ function idxToDir(idx: number): number {
   return DIR_SLIDER_ORDER[idx] ?? DIR_SLIDER_ORDER[0];
 }
 
-export const CreateObjectSettings = (props: any, context: any) => {
-  const { act, data } = useBackend<SpawnPanelData>(context);
+export const CreateObjectSettings = (props: any) => {
+  const { act, data } = useBackend<SpawnPanelData>();
   const {
     selected_object,
     selected_icon,

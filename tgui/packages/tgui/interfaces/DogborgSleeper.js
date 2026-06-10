@@ -1,4 +1,4 @@
-import { Fragment } from 'inferno';
+import { Fragment } from 'react';
 
 import { useBackend } from '../backend';
 import { Box, Button, LabeledList, NoticeBox, ProgressBar, Section } from '../components';
@@ -23,8 +23,8 @@ const damageTypes = [
   },
 ];
 
-export const DogborgSleeper = (props, context) => {
-  const { act, data } = useBackend(context);
+export const DogborgSleeper = (props) => {
+  const { act, data } = useBackend();
   const {
     occupant = {},
     occupied,

@@ -7,7 +7,7 @@
 
 import { KEY_ESCAPE, KEY_TAB } from 'common/keycodes';
 import { classes } from 'common/react';
-import { Component, createRef } from 'inferno';
+import { Component, createRef } from 'react';
 
 import { Box } from './Box';
 import { toInputValue } from './Input';

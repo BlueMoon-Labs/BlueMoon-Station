@@ -20,8 +20,6 @@ export const Grid = props => {
   );
 };
 
-Grid.defaultHooks = pureComponentHooks;
-
 /** @deprecated */
 export const GridColumn = props => {
   const { size = 1, style, ...rest } = props;
@@ -34,7 +32,5 @@ export const GridColumn = props => {
       {...rest} />
   );
 };
-
-Grid.defaultHooks = pureComponentHooks;
 
 Grid.Column = GridColumn;

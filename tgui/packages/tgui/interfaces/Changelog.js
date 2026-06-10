@@ -1,6 +1,6 @@
 import { classes } from 'common/react';
 import dateformat from 'dateformat';
-import { Component, Fragment } from 'inferno';
+import { Component, Fragment } from 'react';
 import yaml from 'js-yaml';
 
 import { resolveAsset } from '../assets';
@@ -68,7 +68,7 @@ export class Changelog extends Component {
   }
 
   getData = (date, attemptNumber = 1) => {
-    const { act } = useBackend(this.context);
+    const { act } = useBackend();
     const self = this;
     const maxAttempts = 6;
 
@@ -99,7 +99,7 @@ export class Changelog extends Component {
   };
 
   componentDidMount() {
-    const { data: { dates = [] } } = useBackend(this.context);
+    const { data: { dates = [] } } = useBackend();
 
     if (dates) {
       dates.forEach(
@@ -112,7 +112,7 @@ export class Changelog extends Component {
 
   render() {
     const { data, selectedDate, selectedIndex } = this.state;
-    const { data: { dates } } = useBackend(this.context);
+    const { data: { dates } } = useBackend();
     const { dateChoices } = this;
 
     const dateDropdown = dateChoices.length > 0 && (

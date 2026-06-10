@@ -12,7 +12,7 @@ import {
   Table } from '../components';
 import { Window } from '../layouts';
 
-export const AdminTicketStats = (props, context) => {
+export const AdminTicketStats = (props) => {
   return (
     <Window
       title="Admin Ticket Statistics"
@@ -28,8 +28,8 @@ export const AdminTicketStats = (props, context) => {
   );
 };
 
-export const TicketStatsPanel = (props, context) => {
-  const { act, data } = useBackend(context);
+export const TicketStatsPanel = (props) => {
+  const { act, data } = useBackend();
 
   const {
     loading,
@@ -89,7 +89,7 @@ export const TicketStatsPanel = (props, context) => {
   );
 };
 
-export const FilterControls = (props, context) => {
+export const FilterControls = (props) => {
   const {
     act,
     default_start_date,
@@ -100,15 +100,15 @@ export const FilterControls = (props, context) => {
     loading,
   } = props;
 
-  const [startDate, setStartDate] = useLocalState(context, 'startDate', default_start_date);
-  const [endDate, setEndDate] = useLocalState(context, 'endDate', default_end_date);
-  const [adminFilter, setAdminFilter] = useLocalState(context, 'adminFilter', '');
-  const [grouping, setGrouping] = useLocalState(context, 'grouping', 'none');
-  const [selectedColumns, setSelectedColumns] = useLocalState(context, 'selectedColumns',
+  const [startDate, setStartDate] = useLocalState('startDate', default_start_date);
+  const [endDate, setEndDate] = useLocalState('endDate', default_end_date);
+  const [adminFilter, setAdminFilter] = useLocalState('adminFilter', '');
+  const [grouping, setGrouping] = useLocalState('grouping', 'none');
+  const [selectedColumns, setSelectedColumns] = useLocalState('selectedColumns',
     available_columns.map(col => col.key)
   );
-  const [sortColumn, setSortColumn] = useLocalState(context, 'sortColumn', 'admin_name');
-  const [sortOrder, setSortOrder] = useLocalState(context, 'sortOrder', 'ASC');
+  const [sortColumn, setSortColumn] = useLocalState('sortColumn', 'admin_name');
+  const [sortOrder, setSortOrder] = useLocalState('sortOrder', 'ASC');
 
   const handleFetchStats = () => {
     act('fetch_stats', {
@@ -280,7 +280,7 @@ export const FilterControls = (props, context) => {
   );
 };
 
-export const StatsResults = (props, context) => {
+export const StatsResults = (props) => {
   const { stats_data, available_columns } = props;
 
   // Get all possible column keys from the first row

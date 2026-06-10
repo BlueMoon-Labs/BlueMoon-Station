@@ -1,4 +1,4 @@
-import { Fragment } from 'inferno';
+import { Fragment } from 'react';
 
 import { useBackend } from '../backend';
 import { Box, Button, LabeledList, ProgressBar, Section } from '../components';
@@ -14,8 +14,8 @@ const skillyellow = {
   fontWeight: 'bold',
 };
 
-export const SkillPanel = (props, context) => {
-  const { act, data } = useBackend(context);
+export const SkillPanel = (props) => {
+  const { act, data } = useBackend();
   const skills = data.skills || [];
   return (
     <Window

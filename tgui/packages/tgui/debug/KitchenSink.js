@@ -24,10 +24,10 @@ const getStories = () => Object.keys(storyModules)
   .sort()
   .map(path => storyModules[path]);
 
-export const KitchenSink = (props, context) => {
+export const KitchenSink = (props) => {
   const { panel } = props;
-  const [theme] = useLocalState(context, 'kitchenSinkTheme');
-  const [pageIndex, setPageIndex] = useLocalState(context, 'pageIndex', 0);
+  const [theme] = useLocalState('kitchenSinkTheme');
+  const [pageIndex, setPageIndex] = useLocalState('pageIndex', 0);
   const stories = getStories();
   const story = stories[pageIndex];
   const Layout = panel ? Pane : Window;

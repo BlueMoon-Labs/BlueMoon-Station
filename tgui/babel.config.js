@@ -19,15 +19,15 @@ const createBabelConfig = options => {
           edge: '109',
         },
       }],
+      [require.resolve('@babel/preset-react'), {
+        runtime: 'automatic',
+      }],
       ...presets,
     ],
     plugins: [
       [require.resolve('@babel/plugin-transform-class-properties'), {
         loose: true,
       }],
-      require.resolve('babel-plugin-inferno'),
-      require.resolve('babel-plugin-transform-remove-console'),
-      require.resolve('common/string.babel-plugin.cjs'),
       ...plugins,
     ],
     compact: true,

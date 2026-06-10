@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import { Fragment } from 'inferno';
+import { Fragment } from 'react';
 
 import { useBackend, useLocalState } from "../backend";
 import { Box, Button, Collapsible, Flex, Icon, LabeledList, NoticeBox, Section, Tabs } from "../components";
@@ -33,8 +33,8 @@ const digestModeToPreyMode = {
  *  - The Belly Selection Panel, where you can select what belly people will go into and customize the active one.
  *  - User Preferences, where you can adjust all of your vore preferences on the fly.
  */
-export const VorePanel = (props, context) => {
-  const { act, data } = useBackend(context);
+export const VorePanel = (props) => {
+  const { act, data } = useBackend();
   return (
     <Window width={700} height={660} theme="abstract" resizable>
       <Window.Content overflow="auto">
@@ -61,8 +61,8 @@ export const VorePanel = (props, context) => {
   );
 };
 
-const VoreInsidePanel = (props, context) => {
-  const { act, data } = useBackend(context);
+const VoreInsidePanel = (props) => {
+  const { act, data } = useBackend();
 
   const {
     absorbed,
@@ -101,8 +101,8 @@ const VoreInsidePanel = (props, context) => {
   );
 };
 
-const VoreBellySelectionAndCustomization = (props, context) => {
-  const { act, data } = useBackend(context);
+const VoreBellySelectionAndCustomization = (props) => {
+  const { act, data } = useBackend();
 
   const {
     our_bellies,
@@ -136,8 +136,8 @@ const VoreBellySelectionAndCustomization = (props, context) => {
 /**
  * Subtemplate of VoreBellySelectionAndCustomization
  */
-const VoreSelectedBelly = (props, context) => {
-  const { act } = useBackend(context);
+const VoreSelectedBelly = (props) => {
+  const { act } = useBackend();
 
   const { belly } = props;
   const {
@@ -156,7 +156,7 @@ const VoreSelectedBelly = (props, context) => {
     contents,
   } = belly;
 
-  const [tabIndex, setTabIndex] = useLocalState(context, 'tabIndex', 0);
+  const [tabIndex, setTabIndex] = useLocalState('tabIndex', 0);
 
   return (
     <Fragment>
@@ -349,8 +349,8 @@ const VoreSelectedBelly = (props, context) => {
   );
 };
 
-const VoreContentsPanel = (props, context) => {
-  const { act, data } = useBackend(context);
+const VoreContentsPanel = (props) => {
+  const { act, data } = useBackend();
   const {
     show_pictures,
   } = data;
@@ -423,8 +423,8 @@ const VoreContentsPanel = (props, context) => {
   );
 };
 
-const VoreUserPreferences = (props, context) => {
-  const { act, data } = useBackend(context);
+const VoreUserPreferences = (props) => {
+  const { act, data } = useBackend();
 
   const {
     digestable,

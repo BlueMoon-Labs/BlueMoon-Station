@@ -5,7 +5,6 @@
  */
 
 const path = require('path');
-const babel = require('@babel/core');
 
 const workspaceRoot = __dirname;
 const resolvePackage = (name) => path.resolve(workspaceRoot, 'packages', name);
@@ -18,37 +17,22 @@ const aliases = [
   { find: /^tgui-dev-server\//, replacement: `${resolvePackage('tgui-dev-server')}/` },
 ];
 
-const createBabelTransformPlugin = (mode) => ({
-  name: 'tgui-babel-inferno',
+// Legacy interface files use JSX inside plain .js files, which esbuild
+// does not parse by default. Transform them with the jsx loader.
+const createJsxInJsPlugin = () => ({
+  name: 'tgui-jsx-in-js',
   enforce: 'pre',
   async transform(code, id) {
     const normalizedId = id.replace(/\\/g, '/');
-    if (!/\/packages\/.*\.(js|ts|tsx)$/.test(normalizedId)) {
+    if (!/\/packages\/.*\.js$/.test(normalizedId)) {
       return null;
     }
-    const result = await babel.transformAsync(code, {
-      filename: id,
-      babelrc: false,
-      configFile: false,
-      sourceMaps: true,
-      compact: false,
-      presets: [
-        [require.resolve('@babel/preset-typescript'), {
-          allowDeclareFields: true,
-          allExtensions: true,
-          isTSX: true,
-        }],
-      ],
-      plugins: [
-        require.resolve('babel-plugin-inferno'),
-        mode === 'production' && require.resolve('babel-plugin-transform-remove-console'),
-        require.resolve('common/string.babel-plugin.cjs'),
-      ].filter(Boolean),
+    const { transformWithEsbuild } = require('vite');
+    return transformWithEsbuild(code, id, {
+      loader: 'jsx',
+      jsx: 'automatic',
+      jsxImportSource: 'react',
     });
-    return {
-      code: result.code,
-      map: result.map || null,
-    };
   },
 });
 
@@ -57,7 +41,7 @@ const createViteConfig = ({ entry, bundleName, globalName }) => {
     root: workspaceRoot,
     publicDir: false,
     base: '',
-    plugins: [createBabelTransformPlugin(mode)],
+    plugins: [createJsxInJsPlugin()],
     css: {
       preprocessorOptions: {
         scss: {
@@ -80,6 +64,9 @@ const createViteConfig = ({ entry, bundleName, globalName }) => {
     },
     esbuild: {
       target: 'es2020',
+      jsx: 'automatic',
+      jsxImportSource: 'react',
+      drop: mode === 'production' ? ['console'] : [],
     },
     build: {
       target: 'es2020',

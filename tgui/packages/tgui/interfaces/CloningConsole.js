@@ -2,8 +2,8 @@ import { useBackend } from '../backend';
 import { Box, Button, Collapsible, NoticeBox, ProgressBar, Section, Stack } from '../components';
 import { Window } from '../layouts';
 
-export const CloningConsole = (props, context) => {
-  const { act, data } = useBackend(context);
+export const CloningConsole = (props) => {
+  const { act, data } = useBackend();
   const {
     useRecords,
     hasAutoprocess,

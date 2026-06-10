@@ -7,8 +7,8 @@ import { useBackend, useLocalState } from '../backend';
 import { Box, Button, LabeledList, Section, Stack } from '../components';
 import { Window } from '../layouts';
 
-export const FishCatalog = (props, context) => {
-  const { act, data } = useBackend(context);
+export const FishCatalog = (props) => {
+  const { act, data } = useBackend();
   const {
     fish_info,
     sponsored_by,
@@ -19,7 +19,7 @@ export const FishCatalog = (props, context) => {
   const [
     currentFish,
     setCurrentFish,
-  ] = useLocalState(context, 'currentFish', null);
+  ] = useLocalState('currentFish', null);
   return (
     <Window
       width={500}

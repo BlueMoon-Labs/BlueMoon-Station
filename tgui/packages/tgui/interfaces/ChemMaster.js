@@ -1,11 +1,11 @@
-import { Fragment } from 'inferno';
+import { Fragment } from 'react';
 
 import { useBackend, useSharedState } from '../backend';
 import { AnimatedNumber, Box, Button, ColorBox, LabeledList, NumberInput, Section, Table } from '../components';
 import { Window } from '../layouts';
 
-export const ChemMaster = (props, context) => {
-  const { data } = useBackend(context);
+export const ChemMaster = (props) => {
+  const { data } = useBackend();
   const { screen } = data;
   return (
     <Window
@@ -23,8 +23,8 @@ export const ChemMaster = (props, context) => {
   );
 };
 
-const ChemMasterContent = (props, context) => {
-  const { act, data } = useBackend(context);
+const ChemMasterContent = (props) => {
+  const { act, data } = useBackend();
   const {
     screen,
     beakerContents = [],
@@ -129,8 +129,8 @@ const ChemMasterContent = (props, context) => {
 
 const ChemicalBuffer = Table;
 
-const ChemicalBufferEntry = (props, context) => {
-  const { act } = useBackend(context);
+const ChemicalBufferEntry = (props) => {
+  const { act } = useBackend();
   const { chemical, transferTo } = props;
   return (
     <Table.Row key={chemical.id}>
@@ -188,8 +188,8 @@ const ChemicalBufferEntry = (props, context) => {
   );
 };
 
-const PackagingControlsItem = (props, context) => {
-  const { data } = useBackend(context);
+const PackagingControlsItem = (props) => {
+  const { data } = useBackend();
   const {
     label,
     amountUnit,
@@ -220,32 +220,32 @@ const PackagingControlsItem = (props, context) => {
   );
 };
 
-const PackagingControls = (props, context) => {
-  const { act, data } = useBackend(context);
+const PackagingControls = (props) => {
+  const { act, data } = useBackend();
   const [
     pillAmount,
     setPillAmount,
-  ] = useSharedState(context, 'pillAmount', 1);
+  ] = useSharedState('pillAmount', 1);
   const [
     patchAmount,
     setPatchAmount,
-  ] = useSharedState(context, 'patchAmount', 1);
+  ] = useSharedState('patchAmount', 1);
   const [
     bottleAmount,
     setBottleAmount,
-  ] = useSharedState(context, 'bottleAmount', 1);
+  ] = useSharedState('bottleAmount', 1);
   const [
     packAmount,
     setPackAmount,
-  ] = useSharedState(context, 'packAmount', 1);
+  ] = useSharedState('packAmount', 1);
   const [
     vialAmount,
     setvialAmount,
-  ] = useSharedState(context, 'setvialAmount', 1);
+  ] = useSharedState('setvialAmount', 1);
   const [
     dartAmount,
     setdartAmount,
-  ] = useSharedState(context, 'setdartAmount', 1);
+  ] = useSharedState('setdartAmount', 1);
   const {
     condi,
     chosenPillStyle,
@@ -378,8 +378,8 @@ const PackagingControls = (props, context) => {
   );
 };
 
-const AnalysisResults = (props, context) => {
-  const { act, data } = useBackend(context);
+const AnalysisResults = (props) => {
+  const { act, data } = useBackend();
   const { fermianalyze } = props;
   const { analyzeVars } = data;
   return (

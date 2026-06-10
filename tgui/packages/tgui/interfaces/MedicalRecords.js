@@ -1,5 +1,5 @@
 import { createSearch } from 'common/string';
-import { Fragment } from 'inferno';
+import { Fragment } from 'react';
 
 import { useBackend, useLocalState } from "../backend";
 import { Box, Button, Collapsible, Flex, Icon, Input, LabeledList, Section, Table, Tabs } from "../components";
@@ -17,14 +17,14 @@ const severities = {
   "BIOHAZARD THREAT!": "bad",
 };
 
-const doEdit = (context, field) => {
-  modalOpen(context, 'edit', {
+const doEdit = (field) => {
+  modalOpen('edit', {
     field: field.edit,
     value: field.value,
   });
 };
 
-const virusModalBodyOverride = (modal, context) => {
+const virusModalBodyOverride = (modal) => {
   const virus = modal.args;
   return (
     <Section
@@ -56,8 +56,8 @@ const virusModalBodyOverride = (modal, context) => {
   );
 };
 
-export const MedicalRecords = (_properties, context) => {
-  const { data } = useBackend(context);
+export const MedicalRecords = (_properties) => {
+  const { data } = useBackend();
   const {
     loginState,
     screen,
@@ -110,12 +110,12 @@ export const MedicalRecords = (_properties, context) => {
   );
 };
 
-const MedicalRecordsList = (_properties, context) => {
-  const { act, data } = useBackend(context);
+const MedicalRecordsList = (_properties) => {
+  const { act, data } = useBackend();
   const {
     records,
   } = data;
-  const [searchText, setSearchText] = useLocalState(context, 'medSearchText', '');
+  const [searchText, setSearchText] = useLocalState('medSearchText', '');
 
   const filteredRecords = (records || [])
     .filter(
@@ -159,8 +159,8 @@ const MedicalRecordsList = (_properties, context) => {
   );
 };
 
-const MedicalRecordsMaintenance = (_properties, context) => {
-  const { act } = useBackend(context);
+const MedicalRecordsMaintenance = (_properties) => {
+  const { act } = useBackend();
   return (
     <Box>
       <Button
@@ -187,8 +187,8 @@ const MedicalRecordsMaintenance = (_properties, context) => {
   );
 };
 
-const MedicalRecordsView = (_properties, context) => {
-  const { act, data } = useBackend(context);
+const MedicalRecordsView = (_properties) => {
+  const { act, data } = useBackend();
   const {
     medical,
     printing,
@@ -233,8 +233,8 @@ const MedicalRecordsView = (_properties, context) => {
   );
 };
 
-const MedicalRecordsViewGeneral = (_properties, context) => {
-  const { data } = useBackend(context);
+const MedicalRecordsViewGeneral = (_properties) => {
+  const { data } = useBackend();
   const {
     general,
   } = data;
@@ -258,7 +258,7 @@ const MedicalRecordsViewGeneral = (_properties, context) => {
                 <Button
                   icon="pen"
                   ml="0.5rem"
-                  onClick={() => doEdit(context, field)}
+                  onClick={() => doEdit(field)}
                 />
               )}
             </LabeledList.Item>
@@ -290,8 +290,8 @@ const MedicalRecordsViewGeneral = (_properties, context) => {
   );
 };
 
-const MedicalRecordsViewMedical = (_properties, context) => {
-  const { act, data } = useBackend(context);
+const MedicalRecordsViewMedical = (_properties) => {
+  const { act, data } = useBackend();
   const {
     medical,
   } = data;
@@ -321,7 +321,7 @@ const MedicalRecordsViewMedical = (_properties, context) => {
             <Button
               icon="pen"
               ml="0.5rem"
-              onClick={() => doEdit(context, field)}
+              onClick={() => doEdit(field)}
             />
             {!!field.line_break && <Box mb="0.5rem" />}
           </LabeledList.Item>
@@ -354,15 +354,15 @@ const MedicalRecordsViewMedical = (_properties, context) => {
           color="good"
           mt="0.5rem"
           mb="0"
-          onClick={() => modalOpen(context, 'add_c')}
+          onClick={() => modalOpen('add_c')}
         />
       </Section>
     </Fragment>
   );
 };
 
-const MedicalRecordsViruses = (_properties, context) => {
-  const { act, data } = useBackend(context);
+const MedicalRecordsViruses = (_properties) => {
+  const { act, data } = useBackend();
   const {
     virus,
   } = data;
@@ -389,8 +389,8 @@ const MedicalRecordsViruses = (_properties, context) => {
   );
 };
 
-const MedicalRecordsMedbots = (_properties, context) => {
-  const { data } = useBackend(context);
+const MedicalRecordsMedbots = (_properties) => {
+  const { data } = useBackend();
   const {
     medbots,
   } = data;
@@ -436,8 +436,8 @@ const MedicalRecordsMedbots = (_properties, context) => {
   ));
 };
 
-const MedicalRecordsNavigation = (_properties, context) => {
-  const { act, data } = useBackend(context);
+const MedicalRecordsNavigation = (_properties) => {
+  const { act, data } = useBackend();
   const {
     screen,
     general,

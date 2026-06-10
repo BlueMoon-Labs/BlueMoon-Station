@@ -3,7 +3,7 @@
  * @copyright 2020 LetterN (https://github.com/LetterN)
  * @license MIT
  */
-import { Fragment } from 'inferno';
+import { Fragment } from 'react';
 
 import { useBackend, useSharedState } from '../backend';
 import { Box, Button, Input, LabeledList, NoticeBox, ProgressBar, Section, Tabs } from '../components';
@@ -11,8 +11,8 @@ import { RADIO_CHANNELS } from '../constants';
 import { Window } from '../layouts';
 
 
-export const TelecommsMonitor = (props, context) => {
-  const { act, data } = useBackend(context);
+export const TelecommsMonitor = (props) => {
+  const { act, data } = useBackend();
   const {
     notice,
     network = "NULL",
@@ -23,7 +23,7 @@ export const TelecommsMonitor = (props, context) => {
   const [
     tab,
     setTab,
-  ] = useSharedState(context, 'tab', 'network-entity');
+  ] = useSharedState('tab', 'network-entity');
   const operational = (selected && selected.status);
 
   return (

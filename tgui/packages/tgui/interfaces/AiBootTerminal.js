@@ -1,8 +1,8 @@
 import { useBackend } from '../backend';
 import { Window } from '../layouts';
 
-export const AiBootTerminal = (props, context) => {
-  const { act, data } = useBackend(context);
+export const AiBootTerminal = (props) => {
+  const { act, data } = useBackend();
   const { name, malfhacking } = data;
 
   const onMount = (el) => {

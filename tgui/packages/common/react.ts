@@ -4,6 +4,8 @@
  * @license MIT
  */
 
+import { isValidElement } from 'react';
+
 /**
  * Helper for conditionally adding/removing classes in React
  */
@@ -30,6 +32,30 @@ export const normalizeChildren = <T>(children: T | T[]) => {
     return [children];
   }
   return [];
+};
+
+/**
+ * Returns true if a ref can be attached directly to the given child
+ * element. DOM elements and function components are fine (React 19
+ * passes ref through as a regular prop); class components would give
+ * us a component instance instead of a DOM node.
+ */
+export const canDirectlyRef = (child: unknown): boolean => {
+  if (!isValidElement(child)) {
+    return false;
+  }
+  const type = child.type as any;
+  if (typeof type === 'string') {
+    return true;
+  }
+  if (typeof type === 'function') {
+    return !type.prototype?.isReactComponent;
+  }
+  // memo() and similar wrappers
+  if (typeof type === 'object' && type !== null) {
+    return true;
+  }
+  return false;
 };
 
 /**

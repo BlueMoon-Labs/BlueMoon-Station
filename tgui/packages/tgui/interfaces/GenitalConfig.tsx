@@ -37,10 +37,10 @@ type Equipment = {
   key: string,
 }
 
-export const GenitalConfig = (props, context) => {
-  const { act, data } = useBackend<GenitalInfo>(context);
+export const GenitalConfig = (props) => {
+  const { act, data } = useBackend<GenitalInfo>();
   const genitals = data.genitals || [];
-  const [tabIndex, setTabIndex] = useLocalState(context, 'tabIndex', 0);
+  const [tabIndex, setTabIndex] = useLocalState('tabIndex', 0);
   return (
     <Window
       width={850}
@@ -126,9 +126,9 @@ export const GenitalConfig = (props, context) => {
   );
 };
 
-const SelfConfig = (props, context) => {
-  const [tabIndex] = useLocalState(context, 'tabIndex', 0);
-  const { act, data } = useBackend<GenitalInfo>(context);
+const SelfConfig = (props) => {
+  const [tabIndex] = useLocalState('tabIndex', 0);
+  const { act, data } = useBackend<GenitalInfo>();
   const genital = data.genitals[tabIndex];
   return (
     <Stack.Item>
@@ -154,9 +154,9 @@ const SelfConfig = (props, context) => {
   );
 };
 
-const SizeButtons = (props, context) => {
-  const [tabIndex] = useLocalState(context, 'tabIndex', 0);
-  const { act, data } = useBackend<GenitalInfo>(context);
+const SizeButtons = (props) => {
+  const [tabIndex] = useLocalState('tabIndex', 0);
+  const { act, data } = useBackend<GenitalInfo>();
   const genital = data.genitals[tabIndex];
   return (
     <Section>
@@ -200,9 +200,9 @@ const ModeToIcon = {
   "Allows toys and egg stuffing": "egg",
 };
 
-const ToggleSettings = (props, context) => {
-  const [tabIndex] = useLocalState(context, 'tabIndex', 0);
-  const { act, data } = useBackend<GenitalInfo>(context);
+const ToggleSettings = (props) => {
+  const [tabIndex] = useLocalState('tabIndex', 0);
+  const { act, data } = useBackend<GenitalInfo>();
   const genital = data.genitals[tabIndex];
   return (
     <Stack grow>
@@ -259,11 +259,11 @@ const ToggleSettings = (props, context) => {
   );
 };
 
-const Equipments = (props, context) => {
-  const [tabIndex] = useLocalState(context, 'tabIndex', 0);
-  const { act, data } = useBackend<GenitalInfo>(context);
+const Equipments = (props) => {
+  const [tabIndex] = useLocalState('tabIndex', 0);
+  const { act, data } = useBackend<GenitalInfo>();
   const genital = data.genitals[tabIndex];
-  const [searchText, setSearchText] = useLocalState(context, 'searchText', '');
+  const [searchText, setSearchText] = useLocalState('searchText', '');
   const items = prepareSearch(genital.equipments, searchText) || [];
   return (
     <Stack vertical>

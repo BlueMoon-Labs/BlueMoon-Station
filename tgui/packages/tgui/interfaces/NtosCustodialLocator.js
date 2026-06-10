@@ -2,8 +2,8 @@ import { useBackend } from '../backend';
 import { Section, Table, NoticeBox } from '../components';
 import { NtosWindow } from '../layouts';
 
-export const NtosCustodialLocator = (props, context) => {
-  const { act, data } = useBackend(context);
+export const NtosCustodialLocator = (props) => {
+  const { act, data } = useBackend();
   const { items = [] } = data;
 
   return (

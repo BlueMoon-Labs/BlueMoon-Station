@@ -10,12 +10,11 @@ import { AtomData } from './types';
 let cachedAtoms: Record<string, AtomData> | null = null;
 let fetchInProgress = false;
 
-export const SpawnPanel = (props: any, context: any) => {
+export const SpawnPanel = (props: any) => {
   const [atoms, setAtoms] = useLocalState<Record<string, AtomData> | null>(
-    context, 'sp_atoms', cachedAtoms
+    'sp_atoms', cachedAtoms
   );
-  const [error, setError] = useLocalState<string | null>(
-    context, 'sp_error', null
+  const [error, setError] = useLocalState<string | null>('sp_error', null
   );
 
   if (!atoms && !error) {

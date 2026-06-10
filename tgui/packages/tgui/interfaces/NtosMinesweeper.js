@@ -14,8 +14,8 @@ const NUM_COLORS = {
   8: '#757575',
 };
 
-export const NtosMinesweeper = (props, context) => {
-  const { act, data } = useBackend(context);
+export const NtosMinesweeper = (props) => {
+  const { act, data } = useBackend();
   const {
     game_active = false,
     game_won = false,
@@ -28,7 +28,7 @@ export const NtosMinesweeper = (props, context) => {
     grid = [],
   } = data;
 
-  const [flagMode, setFlagMode] = useLocalState(context, 'flagMode', false);
+  const [flagMode, setFlagMode] = useLocalState('flagMode', false);
   const hasGame = grid.length > 0;
 
   const minutes = Math.floor(elapsed / 60);

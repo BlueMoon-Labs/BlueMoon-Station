@@ -1,12 +1,12 @@
 import { map } from 'common/collections';
-import { Fragment } from 'inferno';
+import { Fragment } from 'react';
 
 import { useBackend, useSharedState } from '../backend';
 import { Button, Flex, LabeledList, NoticeBox, Section, Tabs } from '../components';
 import { Window } from '../layouts';
 
-export const NaniteProgramHub = (props, context) => {
-  const { act, data } = useBackend(context);
+export const NaniteProgramHub = (props) => {
+  const { act, data } = useBackend();
   const {
     detail_view,
     disk,
@@ -17,7 +17,7 @@ export const NaniteProgramHub = (props, context) => {
   const [
     selectedCategory,
     setSelectedCategory,
-  ] = useSharedState(context, 'category');
+  ] = useSharedState('category');
   const programsInCategory = programs
     && programs[selectedCategory]
     || [];

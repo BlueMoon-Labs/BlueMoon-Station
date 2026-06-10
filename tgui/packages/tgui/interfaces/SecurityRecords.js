@@ -1,5 +1,5 @@
 import { createSearch } from 'common/string';
-import { Fragment } from 'inferno';
+import { Fragment } from 'react';
 
 import { useBackend, useLocalState } from '../backend';
 import {
@@ -43,8 +43,8 @@ const statusStyles = {
   'Сняты Обвинения': 'discharged',
 };
 
-export const SecurityRecords = (properties, context) => {
-  const { data } = useBackend(context);
+export const SecurityRecords = (properties) => {
+  const { data } = useBackend();
   const { loginState, currentPage } = data;
 
   if (!loginState.logged_in) {
@@ -92,8 +92,8 @@ export const SecurityRecords = (properties, context) => {
   );
 };
 
-const TempNotice = (_properties, context) => {
-  const { act, data } = useBackend(context);
+const TempNotice = (_properties) => {
+  const { act, data } = useBackend();
   const { temp } = data;
   if (!temp) {
     return null;
@@ -113,8 +113,8 @@ const TempNotice = (_properties, context) => {
   );
 };
 
-const NavigationTabs = (_properties, context) => {
-  const { act, data } = useBackend(context);
+const NavigationTabs = (_properties) => {
+  const { act, data } = useBackend();
   const { currentPage, general } = data;
   return (
     <Tabs>
@@ -144,12 +144,12 @@ const NavigationTabs = (_properties, context) => {
 
 // ============= LIST PAGE =============
 
-const PageRecordList = (_properties, context) => {
-  const { act, data } = useBackend(context);
+const PageRecordList = (_properties) => {
+  const { act, data } = useBackend();
   const { records, isPrinting } = data;
-  const [searchText, setSearchText] = useLocalState(context, 'searchText', '');
-  const [sortId, _setSortId] = useLocalState(context, 'sortId', 'name');
-  const [sortOrder, _setSortOrder] = useLocalState(context, 'sortOrder', true);
+  const [searchText, setSearchText] = useLocalState('searchText', '');
+  const [sortId, _setSortId] = useLocalState('sortId', 'name');
+  const [sortOrder, _setSortOrder] = useLocalState('sortOrder', true);
 
   const filteredRecords = (records || [])
     .filter(
@@ -230,9 +230,9 @@ const PageRecordList = (_properties, context) => {
   );
 };
 
-const SortButton = (properties, context) => {
-  const [sortId, setSortId] = useLocalState(context, 'sortId', 'name');
-  const [sortOrder, setSortOrder] = useLocalState(context, 'sortOrder', true);
+const SortButton = (properties) => {
+  const [sortId, setSortId] = useLocalState('sortId', 'name');
+  const [sortOrder, setSortOrder] = useLocalState('sortOrder', true);
   const { id, children } = properties;
   return (
     <Table.Cell>
@@ -261,8 +261,8 @@ const SortButton = (properties, context) => {
 
 // ============= MAINTENANCE PAGE =============
 
-const PageMaintenance = (_properties, context) => {
-  const { act, data } = useBackend(context);
+const PageMaintenance = (_properties) => {
+  const { act, data } = useBackend();
   const { canDeleteAll } = data;
   return (
     <Box>
@@ -284,10 +284,10 @@ const PageMaintenance = (_properties, context) => {
 
 // ============= ALL LOGS PAGE =============
 
-const PageAllLogs = (_properties, context) => {
-  const { data } = useBackend(context);
+const PageAllLogs = (_properties) => {
+  const { data } = useBackend();
   const { allLogs } = data;
-  const [searchLogs, setSearchLogs] = useLocalState(context, 'searchLogs', '');
+  const [searchLogs, setSearchLogs] = useLocalState('searchLogs', '');
 
   const logs = allLogs || [];
   const filteredLogs = logs.filter(
@@ -341,8 +341,8 @@ const PageAllLogs = (_properties, context) => {
 
 // ============= RECORD VIEW PAGE =============
 
-const PageRecordView = (_properties, context) => {
-  const { act, data } = useBackend(context);
+const PageRecordView = (_properties) => {
+  const { act, data } = useBackend();
   const { general, security, isPrinting, canDeleteLogs } = data;
 
   return (
@@ -361,8 +361,8 @@ const PageRecordView = (_properties, context) => {
 
 // ----- General Section -----
 
-const ViewGeneral = (_properties, context) => {
-  const { act, data } = useBackend(context);
+const ViewGeneral = (_properties) => {
+  const { act, data } = useBackend();
   const { general, isPrinting, canEditRank } = data;
 
   if (!general || general.empty) {
@@ -497,8 +497,8 @@ const ViewGeneral = (_properties, context) => {
   );
 };
 
-const PhotoBox = (properties, context) => {
-  const { act } = useBackend(context);
+const PhotoBox = (properties) => {
+  const { act } = useBackend();
   const { photoData, label, side } = properties;
   return (
     <Box display="inline-block" textAlign="center" mr="0.5rem" mb="0.5rem">
@@ -542,8 +542,8 @@ const PhotoBox = (properties, context) => {
 
 // ----- Security Section -----
 
-const ViewSecurity = (_properties, context) => {
-  const { act, data } = useBackend(context);
+const ViewSecurity = (_properties) => {
+  const { act, data } = useBackend();
   const { security, isPrinting, canDeleteLogs, hasCentcomAuth } = data;
 
   if (!security || security.empty) {
@@ -610,17 +610,13 @@ const ViewSecurity = (_properties, context) => {
   );
 };
 
-const CriminalStatusSelector = (_properties, context) => {
-  const { act, data } = useBackend(context);
+const CriminalStatusSelector = (_properties) => {
+  const { act, data } = useBackend();
   const { security } = data;
-  const [showStatusPicker, setShowStatusPicker] = useLocalState(
-    context,
-    'showStatusPicker',
+  const [showStatusPicker, setShowStatusPicker] = useLocalState('showStatusPicker',
     false
   );
-  const [statusReason, setStatusReason] = useLocalState(
-    context,
-    'statusReason',
+  const [statusReason, setStatusReason] = useLocalState('statusReason',
     ''
   );
 
@@ -692,8 +688,8 @@ const CriminalStatusSelector = (_properties, context) => {
   );
 };
 
-const CrimeTable = (properties, context) => {
-  const { act } = useBackend(context);
+const CrimeTable = (properties) => {
+  const { act } = useBackend();
   const { title, crimes, addAction, deleteAction, hasCentcomAuth } = properties;
 
   return (
@@ -766,8 +762,8 @@ const CrimeTable = (properties, context) => {
   );
 };
 
-const ActionLogs = (_properties, context) => {
-  const { act, data } = useBackend(context);
+const ActionLogs = (_properties) => {
+  const { act, data } = useBackend();
   const { security, isPrinting, canDeleteLogs } = data;
   const logs = security.logs || [];
 
@@ -819,8 +815,8 @@ const ActionLogs = (_properties, context) => {
   );
 };
 
-const CommentsSection = (_properties, context) => {
-  const { act, data } = useBackend(context);
+const CommentsSection = (_properties) => {
+  const { act, data } = useBackend();
   const { security } = data;
   const comments = security.comments || [];
 

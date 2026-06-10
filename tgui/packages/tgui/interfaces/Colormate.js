@@ -2,8 +2,8 @@ import { useBackend, useLocalState } from '../backend';
 import { Button, Dropdown, Flex, Icon, NoticeBox, NumberInput, PixelArtImage, Section, Slider, Stack, Table, Tabs } from '../components';
 import { Window } from '../layouts';
 
-export const Colormate = (props, context) => {
-  const { act, data } = useBackend(context);
+export const Colormate = (props) => {
+  const { act, data } = useBackend();
   const { activemode, temp_message } = data;
   const item = data.item || [];
 
@@ -18,7 +18,7 @@ export const Colormate = (props, context) => {
       : activemode === 2 ? presets_hsv
         : presets_matrix;
 
-  const [selectedPreset, setSelectedPreset] = useLocalState(context, 'selectedPreset', '');
+  const [selectedPreset, setSelectedPreset] = useLocalState('selectedPreset', '');
 
   const currentPresetIdx = selectedPreset
     ? currentPresetList.indexOf(selectedPreset)
@@ -197,8 +197,8 @@ export const Colormate = (props, context) => {
   );
 };
 
-export const ColormateTint = (props, context) => {
-  const { act, data } = useBackend(context);
+export const ColormateTint = (props) => {
+  const { act, data } = useBackend();
   return (
     <Button
       fluid
@@ -209,8 +209,8 @@ export const ColormateTint = (props, context) => {
   );
 };
 
-export const ColormateMatrix = (props, context) => {
-  const { act, data } = useBackend(context);
+export const ColormateMatrix = (props) => {
+  const { act, data } = useBackend();
   const matrixcolors = data.matrixcolors || [];
   return (
     <Table>
@@ -374,8 +374,8 @@ export const ColormateMatrix = (props, context) => {
   );
 };
 
-export const ColormateHSV = (props, context) => {
-  const { act, data } = useBackend(context);
+export const ColormateHSV = (props) => {
+  const { act, data } = useBackend();
   const { buildhue, buildsat, buildval } = data;
   return (
     <Table>

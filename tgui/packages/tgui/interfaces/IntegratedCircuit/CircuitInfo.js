@@ -1,7 +1,7 @@
 import { Box, Button, Stack } from '../../components';
 import { byondListToArray } from './byondPayload';
 
-export const CircuitInfo = (props, context) => {
+export const CircuitInfo = (props) => {
   const {
     name,
     desc,

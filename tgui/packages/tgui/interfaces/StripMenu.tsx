@@ -1,6 +1,6 @@
 import { range } from "common/collections";
 import { BooleanLike } from "common/react";
-import { InfernoNode } from "inferno";
+import { ReactNode } from 'react';
 
 import { resolveAsset } from "../assets";
 import { useBackend } from "../backend";
@@ -24,7 +24,7 @@ const getGridSpotKey = (spot: [number, number]): GridSpotKey => {
 const CornerText = (props: {
   readonly align: "left" | "right";
   readonly children: string;
-}): InfernoNode => {
+}): ReactNode => {
   const { align, children } = props;
 
   return (
@@ -92,7 +92,7 @@ const SLOTS: Record<
     displayName: string;
     gridSpot: GridSpotKey;
     image?: string;
-    additionalComponent?: InfernoNode;
+    additionalComponent?: ReactNode;
   }
 > = {
 
@@ -260,7 +260,7 @@ const SLOTS_LONG: Record<
     displayName: string;
     gridSpot: GridSpotKey;
     image?: string;
-    additionalComponent?: InfernoNode;
+    additionalComponent?: ReactNode;
   }
 > = {
 
@@ -463,8 +463,8 @@ type StripMenuData = {
   long_strip_menu: boolean;
 };
 
-export const StripMenu = (props, context) => {
-  const { act, data } = useBackend<StripMenuData>(context);
+export const StripMenu = (props) => {
+  const { act, data } = useBackend<StripMenuData>();
 
   const gridSpots = new Map<GridSpotKey, string>();
   if (data.long_strip_menu) {

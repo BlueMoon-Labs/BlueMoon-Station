@@ -15,7 +15,7 @@ const IE_DIR_OPTIONS = [
 ];
 
 export const FUNDAMENTAL_DATA_TYPES = {
-  'string': (props, context) => {
+  'string': (props) => {
     const { name, value, setValue, color } = props;
     return (
       <BasicInput name={name} setValue={setValue} value={value} defaultValue="">
@@ -28,7 +28,7 @@ export const FUNDAMENTAL_DATA_TYPES = {
       </BasicInput>
     );
   },
-  'number': (props, context) => {
+  'number': (props) => {
     const { name, value, setValue, color } = props;
     const hasNumber = typeof value === 'number' && Number.isFinite(value);
     return (
@@ -48,10 +48,10 @@ export const FUNDAMENTAL_DATA_TYPES = {
       </BasicInput>
     );
   },
-  'index': (props, context) => {
-    return FUNDAMENTAL_DATA_TYPES.number(props, context);
+  'index': (props) => {
+    return FUNDAMENTAL_DATA_TYPES.number(props);
   },
-  'boolean': (props, context) => {
+  'boolean': (props) => {
     const { name, value, setValue } = props;
     const on = value === true || value === 1 || value === '1' || value === 'true';
     return (
@@ -64,7 +64,7 @@ export const FUNDAMENTAL_DATA_TYPES = {
       />
     );
   },
-  'char': (props, context) => {
+  'char': (props) => {
     const { name, value, setValue } = props;
     const s = value === null || value === undefined ? '' : String(value);
     return (
@@ -79,7 +79,7 @@ export const FUNDAMENTAL_DATA_TYPES = {
       </BasicInput>
     );
   },
-  'color': (props, context) => {
+  'color': (props) => {
     const { name, value, setValue } = props;
     const hex = typeof value === 'string' && /^#[0-9A-Fa-f]{6}$/.test(value)
       ? value
@@ -115,7 +115,7 @@ export const FUNDAMENTAL_DATA_TYPES = {
       </BasicInput>
     );
   },
-  'dir': (props, context) => {
+  'dir': (props) => {
     const { value, setValue, name } = props;
     const labels = IE_DIR_OPTIONS.map(([, label]) => label);
     const match = IE_DIR_OPTIONS.find(([v]) => v === value);
@@ -136,7 +136,7 @@ export const FUNDAMENTAL_DATA_TYPES = {
       />
     );
   },
-  'list': (props, context) => {
+  'list': (props) => {
     const { act, componentId, portId, name, isOutput, ieCircuit } = props;
     if (!act || componentId === null || componentId === undefined
       || portId === null || portId === undefined) {
@@ -177,7 +177,7 @@ export const FUNDAMENTAL_DATA_TYPES = {
       </Stack>
     );
   },
-  'entity': (props, context) => {
+  'entity': (props) => {
     const { name, setValue, value } = props;
     const hasRef = value !== null && value !== undefined && value !== '';
     const label = hasRef
@@ -194,7 +194,7 @@ export const FUNDAMENTAL_DATA_TYPES = {
       />
     );
   },
-  'signal': (props, context) => {
+  'signal': (props) => {
     const { name, setValue } = props;
     const fire = (e) => {
       e?.stopPropagation?.();
@@ -225,7 +225,7 @@ export const FUNDAMENTAL_DATA_TYPES = {
       </Stack>
     );
   },
-  'option': (props, context) => {
+  'option': (props) => {
     const { value, setValue, extraData } = props;
     return (
       <Dropdown
@@ -240,7 +240,7 @@ export const FUNDAMENTAL_DATA_TYPES = {
       />
     );
   },
-  'any': (props, context) => {
+  'any': (props) => {
     const { name, value, setValue, color, act, componentId, portId, isOutput, ieCircuit } = props;
     const complex = value !== null && value !== undefined
       && typeof value === 'object';

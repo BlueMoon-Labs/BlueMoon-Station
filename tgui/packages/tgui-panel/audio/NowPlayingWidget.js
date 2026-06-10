@@ -11,10 +11,10 @@ import { Button, Collapsible, Flex, Knob } from 'tgui/components';
 import { useSettings } from '../settings';
 import { selectAudio } from './selectors';
 
-export const NowPlayingWidget = (props, context) => {
-  const audio = useSelector(context, selectAudio),
-    dispatch = useDispatch(context),
-    settings = useSettings(context),
+export const NowPlayingWidget = (props) => {
+  const audio = useSelector(selectAudio),
+    dispatch = useDispatch(),
+    settings = useSettings(),
     title = audio.meta?.title,
     URL = audio.meta?.link,
     Artist = audio.meta?.artist || 'Unknown Artist',

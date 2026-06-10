@@ -1,11 +1,11 @@
-import { Fragment } from 'inferno';
+import { Fragment } from 'react';
 
 import { useBackend } from '../backend';
 import { Box, Button, LabeledList, NumberInput, ProgressBar, Section } from '../components';
 import { Window } from '../layouts';
 
-export const SpaceHeater = (props, context) => {
-  const { act, data } = useBackend(context);
+export const SpaceHeater = (props) => {
+  const { act, data } = useBackend();
   return (
     <Window
       width={400}

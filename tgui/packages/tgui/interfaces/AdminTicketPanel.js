@@ -31,8 +31,8 @@ const STATE_ICONS = {
   3: 'check-circle',
 };
 
-export const AdminTicketPanel = (props, context) => {
-  const { act, data } = useBackend(context);
+export const AdminTicketPanel = (props) => {
+  const { act, data } = useBackend();
   const {
     tickets = [],
     selected_ticket_ref,
@@ -44,7 +44,7 @@ export const AdminTicketPanel = (props, context) => {
     communications_unhandled = 0,
   } = data;
 
-  const [tab, setTab] = useLocalState(context, 'tab', selected_state);
+  const [tab, setTab] = useLocalState('tab', selected_state);
 
   const selectedTicket = tickets.find((t) => t.ref === selected_ticket_ref);
 
@@ -331,11 +331,9 @@ const TicketListItem = (props) => {
   );
 };
 
-const TicketDetailPanel = (props, context) => {
+const TicketDetailPanel = (props) => {
   const { ticket, act } = props;
-  const [replyMessage, setReplyMessage] = useLocalState(
-    context,
-    'replyMessage',
+  const [replyMessage, setReplyMessage] = useLocalState('replyMessage',
     ''
   );
   const isActive = ticket.state === 1;

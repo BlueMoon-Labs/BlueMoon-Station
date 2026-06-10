@@ -205,8 +205,8 @@ const costTooltipNode = (item, amt, materialsObj, chemsHaveById, chemsNameById) 
   );
 };
 
-export const Fabricator = (props, context) => {
-  const { data } = useBackend(context);
+export const Fabricator = (props) => {
+  const { data } = useBackend();
   const { busy } = data;
 
   return (
@@ -224,8 +224,8 @@ export const Fabricator = (props, context) => {
   );
 };
 
-export const FabricatorContent = (props, context) => {
-  const { act, data } = useBackend(context);
+export const FabricatorContent = (props) => {
+  const { act, data } = useBackend();
   const {
     categories = [],
     materials = [],
@@ -247,10 +247,8 @@ export const FabricatorContent = (props, context) => {
     return 0;
   });
 
-  const [searchText, setSearchText] = useLocalState(context, 'searchText', '');
-  const [selectedCategory, setSelectedCategory] = useLocalState(
-    context,
-    'category',
+  const [searchText, setSearchText] = useLocalState('searchText', '');
+  const [selectedCategory, setSelectedCategory] = useLocalState('category',
     categories[0]?.name,
   );
 
@@ -400,8 +398,8 @@ export const FabricatorContent = (props, context) => {
   );
 };
 
-const ItemList = (props, context) => {
-  const { act } = useBackend(context);
+const ItemList = (props) => {
+  const { act } = useBackend();
   const {
     items,
     materialsObj,

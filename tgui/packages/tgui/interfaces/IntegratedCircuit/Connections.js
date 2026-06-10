@@ -1,4 +1,4 @@
-import { Component } from 'inferno';
+import { Component } from 'react';
 
 import { classes } from '../../../common/react';
 import { CSS_COLORS } from '../../constants';

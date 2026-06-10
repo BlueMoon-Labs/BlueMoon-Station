@@ -4,12 +4,12 @@ import { Button, Flex, Section } from 'tgui/components';
 import { useEmotes } from './hooks';
 
 
-export const EmotePanel = (props, context) => {
+export const EmotePanel = (props) => {
   const TGUI_PANEL_EMOTE_TYPE_DEFAULT = 1;
   const TGUI_PANEL_EMOTE_TYPE_CUSTOM = 2;
   const TGUI_PANEL_EMOTE_TYPE_ME = 3;
 
-  const emotes = useEmotes(context);
+  const emotes = useEmotes();
 
   const emoteList = [];
   for (const name in emotes.list) {

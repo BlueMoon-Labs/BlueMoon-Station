@@ -3,15 +3,15 @@
  * @copyright 2020 LetterN (https://github.com/LetterN)
  * @license MIT
  */
-import { Fragment } from 'inferno';
+import { Fragment } from 'react';
 
 import { useBackend, useSharedState } from '../backend';
 import { Button, Input, LabeledList, NoticeBox, Section, Tabs } from '../components';
 import { Window } from '../layouts';
 
 // This is the entrypoint, don't mind the others
-export const TelecommsPDALog = (props, context) => {
-  const { act, data } = useBackend(context);
+export const TelecommsPDALog = (props) => {
+  const { act, data } = useBackend();
   const {
     network,
     notice = "",
@@ -25,7 +25,7 @@ export const TelecommsPDALog = (props, context) => {
   const [
     tab,
     setTab,
-  ] = useSharedState(context, 'tab', 'pdalog-servers');
+  ] = useSharedState('tab', 'pdalog-servers');
   const valid = (selected && selected.status && authenticated);
   if (hack_status) {
     return ( // should have used en -> jp unicode -> other encoding method->utf8
@@ -253,11 +253,11 @@ export const TelecommsPDALog = (props, context) => {
 };
 
 // They're the same, so merged it into this. Idea stolen from cargonia
-export const TeleLogs = (props, context) => {
+export const TeleLogs = (props) => {
   const {
     msgs_log = false, // <TeleLogs msgs_log/>
   } = props;
-  const { act, data } = useBackend(context);
+  const { act, data } = useBackend();
   const {
     message_logs = [],
     recon_logs = [],
@@ -374,8 +374,8 @@ export const TeleLogs = (props, context) => {
   );
 };
 
-export const CustomMsg = (props, context) => {
-  const { act, data } = useBackend(context);
+export const CustomMsg = (props) => {
+  const { act, data } = useBackend();
   const fake_message = data.fake_message !== {} ? data.fake_message : {
     'sender': 'System Administrator',
     'job': 'Admin',

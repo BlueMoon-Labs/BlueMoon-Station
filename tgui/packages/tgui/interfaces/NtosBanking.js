@@ -2,8 +2,8 @@ import { useBackend } from '../backend';
 import { Section, Button, Input, NoticeBox, Stack } from '../components';
 import { NtosWindow } from '../layouts';
 
-export const NtosBanking = (props, context) => {
-  const { act, data } = useBackend(context);
+export const NtosBanking = (props) => {
+  const { act, data } = useBackend();
   const { has_account, balance, currency } = data;
 
   return (

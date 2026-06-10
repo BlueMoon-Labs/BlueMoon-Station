@@ -5,7 +5,7 @@
  */
 
 import { KEY_ENTER, KEY_ESCAPE } from 'common/keycodes';
-import { Component, createRef } from 'inferno';
+import { Component, createRef } from 'react';
 
 import { globalEvents, KeyEvent } from '../events';
 import { Icon } from './Icon';

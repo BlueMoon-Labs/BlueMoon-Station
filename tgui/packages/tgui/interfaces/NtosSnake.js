@@ -2,8 +2,8 @@ import { useBackend } from '../backend';
 import { Button } from '../components';
 import { NtosWindow } from '../layouts';
 
-export const NtosSnake = (props, context) => {
-  const { act, data } = useBackend(context);
+export const NtosSnake = (props) => {
+  const { act, data } = useBackend();
   const {
     game_active = false,
     paused = false,

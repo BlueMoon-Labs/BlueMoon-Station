@@ -9,14 +9,14 @@ type CreateObjectProps = {
   atoms: Record<string, AtomData>;
 };
 
-export const CreateObject = (props: CreateObjectProps, context: any) => {
-  const { act, data } = useBackend<SpawnPanelData>(context);
+export const CreateObject = (props: CreateObjectProps) => {
+  const { act, data } = useBackend<SpawnPanelData>();
   const { selected_object, where_target_type = '', precise_mode = PRECISE_MODE_OFF } = data;
   const { atoms } = props;
 
-  const [activeTab, setActiveTab] = useLocalState<string>(context, 'sp_tab', 'Objects');
-  const [searchText, setSearchText] = useLocalState<string>(context, 'sp_search', '');
-  const [searchByType, setSearchByType] = useLocalState<boolean>(context, 'sp_bytype', false);
+  const [activeTab, setActiveTab] = useLocalState<string>('sp_tab', 'Objects');
+  const [searchText, setSearchText] = useLocalState<string>('sp_search', '');
+  const [searchByType, setSearchByType] = useLocalState<boolean>('sp_bytype', false);
 
   const hasSearch = searchText.length > 0;
   const lower = searchText.toLowerCase();
@@ -232,7 +232,7 @@ const AtomRow = (props: AtomRowProps) => {
         'gap': '8px',
       }}
       onClick={onSelect}
-      onDblClick={onSpawn}
+      onDoubleClick={onSpawn}
     >
       {/* Sprite or letter badge */}
       <Box

@@ -46,8 +46,8 @@ interface CharacterProfileContext {
   very_extreme_tag: string;
 }
 
-export const CharacterProfile = (props, context) => {
-  const { data } = useBackend<CharacterProfileContext>(context);
+export const CharacterProfile = (props) => {
+  const { data } = useBackend<CharacterProfileContext>();
 
   const tags = [
     { name: "ERP Verbs", title: "ЕРП механики", value: data.erp_verbs }, // BLUEMOON - mechanical_erp_verbs_examine
@@ -129,8 +129,8 @@ export const CharacterProfile = (props, context) => {
   );
 };
 
-const CharacterProfileImageElement = (props, context) => {
-  const { data } = useBackend<CharacterProfileContext>(context);
+const CharacterProfileImageElement = (props) => {
+  const { data } = useBackend<CharacterProfileContext>();
 
   const headshot_links =
     [
@@ -141,7 +141,7 @@ const CharacterProfileImageElement = (props, context) => {
   const [
     selectedHeadshot,
     selectHeadshot,
-  ] = useLocalState(context, 'selectedHeadshot', 0);
+  ] = useLocalState('selectedHeadshot', 0);
 
   const safeSelectedHeadshot = headshot_links.length > 0
     ? selectedHeadshot % headshot_links.length
@@ -195,8 +195,8 @@ const CharacterProfileImageElement = (props, context) => {
   return (<Box />);
 };
 
-const CharacterModelImageElement = (props, context) => {
-  const { act, data, config } = useBackend<CharacterProfileContext>(context);
+const CharacterModelImageElement = (props) => {
+  const { act, data, config } = useBackend<CharacterProfileContext>();
 
   if(config.status < 2)
     { return null; }

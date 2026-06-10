@@ -20,19 +20,19 @@ type EmotePanelData = {
   emotes: Emote[];
 };
 
-export const EmotePanelContent = (props, context) => {
-  const { act, data } = useBackend<EmotePanelData>(context);
+export const EmotePanelContent = (props) => {
+  const { act, data } = useBackend<EmotePanelData>();
   const { emotes } = data;
 
-  const [filterVisible, toggleVisualFilter] = useLocalState(context, 'filterVisible', false);
-  const [filterAudible, toggleAudibleFilter] = useLocalState(context, 'filterAudible', false);
-  const [filterSound, toggleSoundFilter] = useLocalState(context, 'filterSound', false);
-  const [filterHands, toggleHandsFilter] = useLocalState(context, 'filterHands', false);
-  const [filterUseParams, toggleUseParamsFilter] = useLocalState(context, 'filterUseParams', false);
-  const [useParams, toggleUseParams] = useLocalState(context, 'useParams', false);
-  const [searchText, setSearchText] = useLocalState(context, 'searchText', '');
-  const [showNames, toggleShowNames] = useLocalState(context, 'showNames', true);
-  const [showIcons, toggleShowIcons] = useLocalState(context, 'showIcons', false);
+  const [filterVisible, toggleVisualFilter] = useLocalState('filterVisible', false);
+  const [filterAudible, toggleAudibleFilter] = useLocalState('filterAudible', false);
+  const [filterSound, toggleSoundFilter] = useLocalState('filterSound', false);
+  const [filterHands, toggleHandsFilter] = useLocalState('filterHands', false);
+  const [filterUseParams, toggleUseParamsFilter] = useLocalState('filterUseParams', false);
+  const [useParams, toggleUseParams] = useLocalState('useParams', false);
+  const [searchText, setSearchText] = useLocalState('searchText', '');
+  const [showNames, toggleShowNames] = useLocalState('showNames', true);
+  const [showIcons, toggleShowIcons] = useLocalState('showIcons', false);
 
   return (
     <Section>

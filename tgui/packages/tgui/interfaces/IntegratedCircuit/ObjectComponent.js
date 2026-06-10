@@ -1,4 +1,4 @@
-import { Component } from 'inferno';
+import { Component } from 'react';
 
 import { classes, shallowDiffers } from '../../../common/react';
 import { useBackend } from '../../backend';
@@ -34,7 +34,7 @@ export class ObjectComponent extends Component {
   }
 
   commitNodeTitleEdit() {
-    const { act } = useBackend(this.context);
+    const { act } = useBackend();
     const { name, index } = this.props;
     const { nodeTitleDraft } = this.state;
     const trimmed = (nodeTitleDraft ?? '').trim();
@@ -61,7 +61,7 @@ export class ObjectComponent extends Component {
   }
 
   handleStopDrag(e) {
-    const { act } = useBackend(this.context);
+    const { act } = useBackend();
     const { dragPos } = this.state;
     const { index } = this.props;
     if (dragPos) {
@@ -138,7 +138,7 @@ export class ObjectComponent extends Component {
     } = this.props;
     const input_ports = byondListToArray(rawInputPorts);
     const output_ports = byondListToArray(rawOutputPorts);
-    const { act, data } = useBackend(this.context);
+    const { act, data } = useBackend();
     const isIe = !!data.ie_circuit;
     const showIeNodeStats = isIe && typeof ie_complexity === 'number';
     const showWiremodPower = !isIe && typeof power_usage_per_input === 'number';
@@ -276,7 +276,7 @@ export class ObjectComponent extends Component {
                   className="ObjectComponent__titleText"
                   title="Двойной клик или карандаш — переименовать; второй клик по карандашу — подтвердить"
                   onMouseDown={(e) => e.stopPropagation()}
-                  onDblClick={(e) => {
+                  onDoubleClick={(e) => {
                     e.stopPropagation();
                     if (!showIeNodeStats) {
                       return;

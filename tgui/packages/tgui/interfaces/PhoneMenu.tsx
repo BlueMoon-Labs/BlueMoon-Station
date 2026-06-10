@@ -16,8 +16,8 @@ type Data = {
   }[];
 };
 
-export const PhoneMenu = (props, context) => {
-  const { act, data } = useBackend(context);
+export const PhoneMenu = (props) => {
+  const { act, data } = useBackend();
   return (
     <Window width={500} height={400}>
       <Window.Content>
@@ -27,8 +27,8 @@ export const PhoneMenu = (props, context) => {
   );
 };
 
-const GeneralPanel = (props, context) => {
-  const { act, data } = useBackend<Data>(context);
+const GeneralPanel = (props) => {
+  const { act, data } = useBackend<Data>();
   const { availability, last_caller } = data;
   const available_transmitters = Object.keys(data.available_transmitters);
   const transmitters = data.transmitters.filter((val1) =>
@@ -43,19 +43,13 @@ const GeneralPanel = (props, context) => {
     categories.push(data.phone_category);
   }
 
-  const [currentSearch, setSearch] = useLocalState(
-    context,
-    'current_search',
+  const [currentSearch, setSearch] = useLocalState('current_search',
     ''
   );
-  const [selectedPhone, setSelectedPhone] = useLocalState(
-    context,
-    'selected_phone',
+  const [selectedPhone, setSelectedPhone] = useLocalState('selected_phone',
     null
   );
-  const [currentCategory, setCategory] = useLocalState(
-    context,
-    'current_category',
+  const [currentCategory, setCategory] = useLocalState('current_category',
     categories[0]
   );
 

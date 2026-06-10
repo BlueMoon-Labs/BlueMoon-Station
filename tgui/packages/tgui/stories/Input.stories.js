@@ -12,15 +12,15 @@ export const meta = {
   render: () => <Story />,
 };
 
-const Story = (props, context) => {
+const Story = (props) => {
   const [
     number,
     setNumber,
-  ] = useLocalState(context, 'number', 0);
+  ] = useLocalState('number', 0);
   const [
     text,
     setText,
-  ] = useLocalState(context, 'text', "Sample text");
+  ] = useLocalState('text', "Sample text");
   return (
     <Section>
       <LabeledList>

@@ -1,4 +1,4 @@
-import { Component, createRef } from 'inferno';
+import { Component, createRef } from 'react';
 
 import { computeBoxProps } from "./Box";
 import { Button } from "./Button";
