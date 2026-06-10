@@ -1664,16 +1664,28 @@
 
 /datum/reagent/nitrous_oxide/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)
 	if(method == VAPOR)
-		M.drowsyness += max(round(reac_volume, 1), 2)
+		M.drowsyness += max(round(reac_volume * 2), 4)
+
+/datum/reagent/nitrous_oxide/on_mob_metabolize(mob/living/L)
+	..()
+	if(!iscarbon(L))
+		return
+	var/mob/living/carbon/C = L
+	C.drowsyness += 12
+	C.Unconscious(25)
 
 /datum/reagent/nitrous_oxide/on_mob_life(mob/living/carbon/M)
-	M.drowsyness += 2
+	M.drowsyness += 6
+	if(volume >= 5)
+		M.Unconscious(20)
+	if(volume >= 8)
+		M.AdjustSleeping(40)
 	if(ishuman(M))
 		var/mob/living/carbon/human/H = M
 		H.blood_volume = max(H.blood_volume - 2.5, 0)
-	if(prob(20))
-		M.losebreath += 2
-		M.confused = min(M.confused + 2, 5)
+	if(prob(35))
+		M.losebreath += 3
+		M.confused = min(M.confused + 3, 10)
 	..()
 
 /datum/reagent/stimulum

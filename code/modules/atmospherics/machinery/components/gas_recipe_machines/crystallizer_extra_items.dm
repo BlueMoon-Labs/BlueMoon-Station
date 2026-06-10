@@ -244,6 +244,55 @@
 	to_chat(user, "<span class='notice'>You crush the pack; a sharp smell of ammonia fills the air.</span>")
 	qdel(src)
 
+// === Crystal shard reagent injection (all living organisms) ===
+/// Carbons without DNA/liver (xenos, etc.) never run handle_liver metabolism — apply effects immediately instead.
+/proc/crystal_shard_can_metabolize_reagents(mob/living/target)
+	if(!iscarbon(target) || !target.reagents)
+		return FALSE
+	var/mob/living/carbon/C = target
+	if(!C.dna && !C.getorganslot(ORGAN_SLOT_LIVER))
+		return FALSE
+	if(C.dna && (NOLIVER in C.dna.species.species_traits))
+		return FALSE
+	return TRUE
+
+/proc/crystal_shard_apply_instant(mob/living/target, reagent_type, amount)
+	var/ticks = clamp(round(amount / 2.5), 2, 8)
+	switch(reagent_type)
+		if(/datum/reagent/zauker)
+			for(var/i in 1 to ticks)
+				target.adjustBruteLoss(15 * REM * 0.5)
+				target.adjustOxyLoss(4.5 * REM * 0.5)
+				target.adjustFireLoss(6 * REM * 0.5)
+				target.adjustToxLoss(7.5 * REM * 0.5)
+		if(/datum/reagent/nitrous_oxide)
+			if(iscarbon(target))
+				var/mob/living/carbon/C = target
+				C.drowsyness += amount * 5
+				C.Unconscious(45)
+				C.AdjustSleeping(max(60, amount * 8))
+				if(prob(70))
+					C.losebreath += 3 * ticks
+			else
+				target.Stun(ticks * 2 SECONDS)
+				target.Unconscious(45)
+				target.AdjustSleeping(60)
+			target.confused = min(target.confused + ticks * 2, 12)
+		if(/datum/reagent/healium)
+			var/heal_amount = clamp(round(3 + amount * 1.2), 3, 18) * ticks
+			target.adjustBruteLoss(-heal_amount)
+			target.adjustFireLoss(-heal_amount)
+			target.adjustOxyLoss(-max(round(heal_amount * 0.5), 1))
+			target.adjustToxLoss(-max(round(heal_amount * 0.3), 1))
+
+/proc/crystal_shard_inject(mob/living/target, reagent_type, amount)
+	if(!isliving(target) || HAS_TRAIT(target, TRAIT_ROBOTIC_ORGANISM))
+		return
+	if(crystal_shard_can_metabolize_reagents(target))
+		target.reagents.add_reagent(reagent_type, amount)
+	else
+		crystal_shard_apply_instant(target, reagent_type, amount)
+
 // === Zaukerite shard (raw + cloth-wrapped weapon) ===
 #define ZAUKERITE_SHARD_ZAUKER_AMOUNT 10
 
@@ -271,7 +320,7 @@
 
 /obj/item/shard/zaukerite/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	..()
-	if(!isliving(M) || !iscarbon(M))
+	if(!isliving(M))
 		return
 	zaukerite_shard_consume_strike(src, M, user)
 
@@ -321,7 +370,7 @@
 
 /obj/item/zaukerite_shard/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	..()
-	if(!isliving(M) || !iscarbon(M))
+	if(!isliving(M))
 		return
 	zaukerite_shard_consume_strike(src, M, user)
 
@@ -343,9 +392,9 @@
 		return
 	var/amount = ZAUKERITE_SHARD_ZAUKER_AMOUNT
 	var/wrapped = istype(weapon, /obj/item/zaukerite_shard)
-	if(iscarbon(victim))
+	if(isliving(victim))
 		zaukerite_shard_inject(victim, amount)
-	if(!thrown && !wrapped && iscarbon(attacker) && victim != attacker && prob(25))
+	if(!thrown && !wrapped && isliving(attacker) && victim != attacker && prob(25))
 		zaukerite_shard_inject(attacker, amount)
 		attacker.visible_message(
 			span_warning("The [weapon] splinters apart, releasing toxic zauker dust onto [attacker]!"),
@@ -353,10 +402,8 @@
 		)
 	qdel(weapon)
 
-/proc/zaukerite_shard_inject(mob/living/carbon/target, amount)
-	if(!target?.reagents || HAS_TRAIT(target, TRAIT_ROBOTIC_ORGANISM))
-		return
-	target.reagents.add_reagent(/datum/reagent/zauker, amount)
+/proc/zaukerite_shard_inject(mob/living/target, amount)
+	crystal_shard_inject(target, /datum/reagent/zauker, amount)
 
 // === N2O shard (raw + cloth-wrapped weapon) ===
 #define N2O_SHARD_N2O_AMOUNT 10
@@ -385,7 +432,7 @@
 
 /obj/item/shard/n2o/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	..()
-	if(!isliving(M) || !iscarbon(M))
+	if(!isliving(M))
 		return
 	n2o_shard_consume_strike(src, M, user)
 
@@ -435,7 +482,7 @@
 
 /obj/item/n2o_shard/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	..()
-	if(!isliving(M) || !iscarbon(M))
+	if(!isliving(M))
 		return
 	n2o_shard_consume_strike(src, M, user)
 
@@ -457,9 +504,9 @@
 		return
 	var/amount = N2O_SHARD_N2O_AMOUNT
 	var/wrapped = istype(weapon, /obj/item/n2o_shard)
-	if(iscarbon(victim))
+	if(isliving(victim))
 		n2o_shard_inject(victim, amount)
-	if(!thrown && !wrapped && iscarbon(attacker) && victim != attacker && prob(25))
+	if(!thrown && !wrapped && isliving(attacker) && victim != attacker && prob(25))
 		n2o_shard_inject(attacker, amount)
 		attacker.visible_message(
 			span_warning("The [weapon] splinters apart, releasing a puff of nitrous oxide onto [attacker]!"),
@@ -467,10 +514,8 @@
 		)
 	qdel(weapon)
 
-/proc/n2o_shard_inject(mob/living/carbon/target, amount)
-	if(!target?.reagents || HAS_TRAIT(target, TRAIT_ROBOTIC_ORGANISM))
-		return
-	target.reagents.add_reagent(/datum/reagent/nitrous_oxide, amount)
+/proc/n2o_shard_inject(mob/living/target, amount)
+	crystal_shard_inject(target, /datum/reagent/nitrous_oxide, amount)
 
 // === Healium shard (raw + cloth-wrapped weapon) ===
 #define HEALIUM_SHARD_HEALIUM_AMOUNT 10
@@ -499,7 +544,7 @@
 
 /obj/item/shard/healium/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	..()
-	if(!isliving(M) || !iscarbon(M))
+	if(!isliving(M))
 		return
 	healium_shard_consume_strike(src, M, user)
 
@@ -549,7 +594,7 @@
 
 /obj/item/healium_shard/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	..()
-	if(!isliving(M) || !iscarbon(M))
+	if(!isliving(M))
 		return
 	healium_shard_consume_strike(src, M, user)
 
@@ -571,9 +616,9 @@
 		return
 	var/amount = HEALIUM_SHARD_HEALIUM_AMOUNT
 	var/wrapped = istype(weapon, /obj/item/healium_shard)
-	if(iscarbon(victim))
+	if(isliving(victim))
 		healium_shard_inject(victim, amount)
-	if(!thrown && !wrapped && iscarbon(attacker) && victim != attacker && prob(25))
+	if(!thrown && !wrapped && isliving(attacker) && victim != attacker && prob(25))
 		healium_shard_inject(attacker, amount)
 		attacker.visible_message(
 			span_warning("The [weapon] splinters apart, releasing a puff of healium onto [attacker]!"),
@@ -581,10 +626,8 @@
 		)
 	qdel(weapon)
 
-/proc/healium_shard_inject(mob/living/carbon/target, amount)
-	if(!target?.reagents || HAS_TRAIT(target, TRAIT_ROBOTIC_ORGANISM))
-		return
-	target.reagents.add_reagent(/datum/reagent/healium, amount)
+/proc/healium_shard_inject(mob/living/target, amount)
+	crystal_shard_inject(target, /datum/reagent/healium, amount)
 
 // === Zaukerite bolts (craftable from crystallizer sheets) ===
 /obj/item/zaukerite_bolt
