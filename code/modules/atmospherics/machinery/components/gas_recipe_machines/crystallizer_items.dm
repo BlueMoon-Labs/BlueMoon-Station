@@ -6,7 +6,8 @@
 	var/uses = 1
 
 /obj/item/hypernoblium_crystal/microwave_act(obj/machinery/microwave/microwave_source, mob/microwaver, randomize_pixel_offset)
-	return crystallizer_microwave_detonate(microwave_source, microwaver)
+	. = ..()
+	return . | crystallizer_microwave_detonate(microwave_source, microwaver)
 
 /obj/item/hypernoblium_crystal/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
 	. = ..()
@@ -44,7 +45,8 @@
 	var/cloud_size = 1
 
 /obj/item/nitrium_crystal/microwave_act(obj/machinery/microwave/microwave_source, mob/microwaver, randomize_pixel_offset)
-	return crystallizer_microwave_detonate(microwave_source, microwaver)
+	. = ..()
+	return . | crystallizer_microwave_detonate(microwave_source, microwaver)
 
 /obj/item/nitrium_crystal/attack_self(mob/user)
 	. = ..()

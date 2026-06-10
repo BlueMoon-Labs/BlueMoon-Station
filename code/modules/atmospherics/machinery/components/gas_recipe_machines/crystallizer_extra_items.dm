@@ -11,7 +11,8 @@
 	resistance_flags = FIRE_PROOF
 
 /obj/item/grenade/gas_crystal/microwave_act(obj/machinery/microwave/microwave_source, mob/microwaver, randomize_pixel_offset)
-	return crystallizer_microwave_detonate(microwave_source, microwaver)
+	. = ..()
+	return . | crystallizer_microwave_detonate(microwave_source, microwaver)
 
 /obj/item/grenade/gas_crystal/prime(mob/living/lanced_by)
 	..()
@@ -121,7 +122,8 @@
 	merge_type = /obj/item/stack/ammonia_crystals
 
 /obj/item/stack/ammonia_crystals/microwave_act(obj/machinery/microwave/microwave_source, mob/microwaver, randomize_pixel_offset)
-	return crystallizer_microwave_detonate(microwave_source, microwaver)
+	. = ..()
+	return . | crystallizer_microwave_detonate(microwave_source, microwaver)
 
 /obj/item/stack/sheet/mineral/metal_hydrogen
 	name = "metallic hydrogen"
@@ -131,7 +133,8 @@
 	merge_type = /obj/item/stack/sheet/mineral/metal_hydrogen
 
 /obj/item/stack/sheet/mineral/metal_hydrogen/microwave_act(obj/machinery/microwave/microwave_source, mob/microwaver, randomize_pixel_offset)
-	return crystallizer_microwave_detonate(microwave_source, microwaver)
+	. = ..()
+	return . | crystallizer_microwave_detonate(microwave_source, microwaver)
 
 /obj/item/stack/sheet/mineral/zaukerite
 	name = "zaukerite"
@@ -141,7 +144,8 @@
 	merge_type = /obj/item/stack/sheet/mineral/zaukerite
 
 /obj/item/stack/sheet/mineral/zaukerite/microwave_act(obj/machinery/microwave/microwave_source, mob/microwaver, randomize_pixel_offset)
-	return crystallizer_microwave_detonate(microwave_source, microwaver)
+	. = ..()
+	return . | crystallizer_microwave_detonate(microwave_source, microwaver)
 
 // === Metallic hydrogen crafts ===
 /obj/item/metallic_hydrogen_rod
@@ -180,7 +184,8 @@
 	grind_results = list(/datum/reagent/hot_ice_slush = 25)
 
 /obj/item/stack/sheet/hot_ice/microwave_act(obj/machinery/microwave/microwave_source, mob/microwaver, randomize_pixel_offset)
-	return crystallizer_microwave_detonate(microwave_source, microwaver)
+	. = ..()
+	return . | crystallizer_microwave_detonate(microwave_source, microwaver)
 
 /obj/item/stack/sheet/hot_ice/proc/melt_release()
 	var/turf/open/T = get_turf(src)
