@@ -1815,11 +1815,11 @@
 	value = REAGENT_VALUE_VERY_RARE
 
 /datum/reagent/zauker/on_mob_life(mob/living/carbon/M)
-	M.adjustBruteLoss(20 * REM * 0.5, 0)
-	M.adjustOxyLoss(6 * REM * 0.5, 0)
-	M.adjustFireLoss(8 * REM * 0.5, 0)
-	M.adjustToxLoss(10 * REM * 0.5, 0)
-	. = TRUE
+	M.adjustBruteLoss(15 * REM * 0.5, 0)
+	M.adjustOxyLoss(4.5 * REM * 0.5, 0)
+	M.adjustFireLoss(6 * REM * 0.5, 0)
+	M.adjustToxLoss(7.5 * REM * 0.5, 0)
+	. = ..()
 
 /datum/reagent/freon
 	name = "Freon"

@@ -245,6 +245,8 @@
 	qdel(src)
 
 // === Zaukerite shard (raw + cloth-wrapped weapon) ===
+#define ZAUKERITE_SHARD_ZAUKER_AMOUNT 10
+
 /obj/item/shard/zaukerite
 	name = "zaukerite shard"
 	desc = "A jagged shard of crystallized zaukerite. Extremely sharp and unstable."
@@ -312,7 +314,6 @@
 	attack_verb = list("stabbed", "slashed", "sliced", "cut")
 	hitsound = 'sound/weapons/bladeslice.ogg'
 	embedding = null
-	var/zauker_per_hit = 5
 
 /obj/item/zaukerite_shard/Initialize(mapload)
 	. = ..()
@@ -340,12 +341,8 @@
 /proc/zaukerite_shard_consume_strike(obj/item/weapon, mob/living/victim, mob/living/attacker, thrown = FALSE)
 	if(QDELETED(weapon) || !isliving(victim) || victim == attacker)
 		return
-	var/amount = 2
-	var/wrapped = FALSE
-	if(istype(weapon, /obj/item/zaukerite_shard))
-		var/obj/item/zaukerite_shard/wrapped_weapon = weapon
-		amount = wrapped_weapon.zauker_per_hit
-		wrapped = TRUE
+	var/amount = ZAUKERITE_SHARD_ZAUKER_AMOUNT
+	var/wrapped = istype(weapon, /obj/item/zaukerite_shard)
 	if(iscarbon(victim))
 		zaukerite_shard_inject(victim, amount)
 	if(!thrown && !wrapped && iscarbon(attacker) && prob(25))
