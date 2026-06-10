@@ -10,6 +10,9 @@
 	item_state = "flashbang"
 	resistance_flags = FIRE_PROOF
 
+/obj/item/grenade/gas_crystal/microwave_act(obj/machinery/microwave/microwave_source, mob/microwaver, randomize_pixel_offset)
+	return crystallizer_microwave_detonate(microwave_source, microwaver)
+
 /obj/item/grenade/gas_crystal/prime(mob/living/lanced_by)
 	..()
 	update_mob()
@@ -32,6 +35,10 @@
 		T.air.adjust_moles(GAS_N2, MOLES_N2STANDARD * 0.5 / dist)
 		T.air.set_temperature(T20C)
 	qdel(src)
+
+/obj/item/grenade/gas_crystal/healium_crystal/crystallizer_microwave_special(turf/center)
+	for(var/turf/open/T in range(fix_range, center))
+		T.air?.set_temperature(T20C)
 
 /obj/item/grenade/gas_crystal/proto_nitrate_crystal
 	name = "Proto Nitrate crystal"
@@ -76,15 +83,13 @@
 
 /obj/item/grenade/gas_crystal/crystal_foam/prime(mob/living/lanced_by)
 	..()
-	var/datum/reagents/first_batch = new(75)
-	var/datum/reagents/second_batch = new(50)
-	first_batch.add_reagent(/datum/reagent/aluminium, 75)
-	second_batch.add_reagent(/datum/reagent/smart_foaming_agent, 25)
-	second_batch.add_reagent(/datum/reagent/toxin/acid/fluacid, 25)
-	chem_splash(get_turf(src), breach_range, list(first_batch, second_batch))
+	crystallizer_foam_splash(get_turf(src))
 	playsound(src, 'sound/effects/spray2.ogg', 100, TRUE)
 	update_mob()
 	qdel(src)
+
+/obj/item/grenade/gas_crystal/crystal_foam/crystallizer_microwave_special(turf/center)
+	crystallizer_foam_splash(center)
 
 // === Fuel pellets ===
 /obj/item/fuel_pellet
@@ -115,6 +120,9 @@
 	grind_results = list(/datum/reagent/ammonia = 10)
 	merge_type = /obj/item/stack/ammonia_crystals
 
+/obj/item/stack/ammonia_crystals/microwave_act(obj/machinery/microwave/microwave_source, mob/microwaver, randomize_pixel_offset)
+	return crystallizer_microwave_detonate(microwave_source, microwaver)
+
 /obj/item/stack/sheet/mineral/metal_hydrogen
 	name = "metallic hydrogen"
 	singular_name = "metallic hydrogen sheet"
@@ -122,12 +130,18 @@
 	icon_state = "sheet-metalhydrogen"
 	merge_type = /obj/item/stack/sheet/mineral/metal_hydrogen
 
+/obj/item/stack/sheet/mineral/metal_hydrogen/microwave_act(obj/machinery/microwave/microwave_source, mob/microwaver, randomize_pixel_offset)
+	return crystallizer_microwave_detonate(microwave_source, microwaver)
+
 /obj/item/stack/sheet/mineral/zaukerite
 	name = "zaukerite"
 	singular_name = "zaukerite crystal"
 	icon = 'icons/obj/crystallizer_sheets.dmi' 
 	icon_state = "zaukerite"
 	merge_type = /obj/item/stack/sheet/mineral/zaukerite
+
+/obj/item/stack/sheet/mineral/zaukerite/microwave_act(obj/machinery/microwave/microwave_source, mob/microwaver, randomize_pixel_offset)
+	return crystallizer_microwave_detonate(microwave_source, microwaver)
 
 // === Metallic hydrogen crafts ===
 /obj/item/metallic_hydrogen_rod
@@ -164,6 +178,9 @@
 	icon_state = "hot-ice"
 	merge_type = /obj/item/stack/sheet/hot_ice
 	grind_results = list(/datum/reagent/hot_ice_slush = 25)
+
+/obj/item/stack/sheet/hot_ice/microwave_act(obj/machinery/microwave/microwave_source, mob/microwaver, randomize_pixel_offset)
+	return crystallizer_microwave_detonate(microwave_source, microwaver)
 
 /obj/item/stack/sheet/hot_ice/proc/melt_release()
 	var/turf/open/T = get_turf(src)
@@ -237,3 +254,78 @@
 	sharpness = SHARP_POINTY
 	attack_verb = list("stabbed", "pierced", "stuck")
 	hitsound = 'sound/weapons/bladeslice.ogg'
+
+// === Crystallizer crystal microwave reactions ===
+#define CRYSTALLIZER_MICROWAVE_HEAVY 2
+#define CRYSTALLIZER_MICROWAVE_LIGHT 5
+#define CRYSTALLIZER_MICROWAVE_FLAME 4
+#define CRYSTALLIZER_MICROWAVE_GAS_RANGE 5
+
+/proc/find_crystallizer_recipe_for_item(obj/item/item)
+	for(var/recipe_id in GLOB.gas_recipe_meta)
+		var/datum/gas_recipe/recipe = GLOB.gas_recipe_meta[recipe_id]
+		if(recipe.machine_type != "Crystallizer" || !recipe.products)
+			continue
+		for(var/product_path in recipe.products)
+			if(istype(item, product_path))
+				return list(recipe = recipe, product_count = recipe.products[product_path])
+	return null
+
+/proc/crystallizer_crystal_microwave_release(turf/center, list/gas_amounts, release_range = CRYSTALLIZER_MICROWAVE_GAS_RANGE)
+	if(!center || !length(gas_amounts))
+		return
+	playsound(center, 'sound/effects/spray2.ogg', 100, TRUE)
+	for(var/turf/open/T in range(release_range, center))
+		if(!T.air)
+			continue
+		var/dist = max(get_dist(T, center), 1)
+		for(var/gas_id in gas_amounts)
+			T.air.adjust_moles(gas_id, gas_amounts[gas_id] / dist)
+
+/proc/crystallizer_foam_splash(turf/center)
+	if(!center)
+		return
+	var/datum/reagents/first_batch = new(75)
+	var/datum/reagents/second_batch = new(50)
+	first_batch.add_reagent(/datum/reagent/aluminium, 75)
+	second_batch.add_reagent(/datum/reagent/smart_foaming_agent, 25)
+	second_batch.add_reagent(/datum/reagent/toxin/acid/fluacid, 25)
+	chem_splash(center, 7, list(first_batch, second_batch))
+
+/obj/item/proc/get_crystallizer_microwave_gases()
+	var/list/recipe_data = find_crystallizer_recipe_for_item(src)
+	if(!recipe_data)
+		return list()
+	var/datum/gas_recipe/recipe = recipe_data["recipe"]
+	var/product_count = recipe_data["product_count"]
+	var/mult = 1
+	if(isstack(src))
+		var/obj/item/stack/stack_item = src
+		mult = stack_item.amount / product_count
+	var/list/result = list()
+	for(var/gas_id in recipe.requirements)
+		result[gas_id] = recipe.requirements[gas_id] * mult
+	return result
+
+/obj/item/proc/crystallizer_microwave_special(turf/center)
+	return
+
+/obj/item/proc/crystallizer_microwave_detonate(obj/machinery/microwave/microwave_source, mob/microwaver)
+	var/turf/T = get_turf(microwave_source || src)
+	if(!T)
+		return NONE
+	if(microwave_source)
+		microwave_source.visible_message(
+			span_danger("[microwave_source] violently explodes as [src] destabilizes!"),
+			span_danger("You hear a loud boom!"),
+			span_danger("You hear a loud boom!"))
+		microwave_source.ingredients -= src
+		microwave_source.broken = 2 // REALLY_BROKEN
+	else
+		visible_message(span_danger("[src] violently explodes!"))
+	var/list/gases = get_crystallizer_microwave_gases()
+	explosion(T, devastation_range = 0, heavy_impact_range = CRYSTALLIZER_MICROWAVE_HEAVY, light_impact_range = CRYSTALLIZER_MICROWAVE_LIGHT, flame_range = CRYSTALLIZER_MICROWAVE_FLAME, adminlog = TRUE)
+	crystallizer_crystal_microwave_release(T, gases)
+	crystallizer_microwave_special(T)
+	qdel(src)
+	return COMPONENT_MICROWAVE_SUCCESS

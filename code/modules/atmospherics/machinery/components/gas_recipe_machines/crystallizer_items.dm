@@ -5,6 +5,9 @@
 	icon_state = "hypernoblium_crystal"
 	var/uses = 1
 
+/obj/item/hypernoblium_crystal/microwave_act(obj/machinery/microwave/microwave_source, mob/microwaver, randomize_pixel_offset)
+	return crystallizer_microwave_detonate(microwave_source, microwaver)
+
 /obj/item/hypernoblium_crystal/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
 	. = ..()
 	if(!proximity_flag || !uses)
@@ -39,6 +42,9 @@
 	icon = 'icons/obj/pipes_n_cables/atmos.dmi'
 	icon_state = "nitrium_crystal"
 	var/cloud_size = 1
+
+/obj/item/nitrium_crystal/microwave_act(obj/machinery/microwave/microwave_source, mob/microwaver, randomize_pixel_offset)
+	return crystallizer_microwave_detonate(microwave_source, microwaver)
 
 /obj/item/nitrium_crystal/attack_self(mob/user)
 	. = ..()
