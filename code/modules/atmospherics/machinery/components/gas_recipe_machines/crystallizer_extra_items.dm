@@ -253,9 +253,10 @@
 	item_state = "shard-glass"
 	force = 7
 	throwforce = 12
+	armour_penetration = 25
 	sharpness = SHARP_EDGED
 	attack_verb = list("stabbed", "slashed", "sliced", "cut")
-	embedding = list("embed_chance" = 65)
+	embedding = null
 	craft_time = 14 SECONDS
 	custom_materials = null
 
@@ -264,20 +265,22 @@
 	icon_state = "zaukerite"
 	pixel_x = 0
 	pixel_y = 0
+	RegisterSignal(src, COMSIG_ITEM_ATTACK_ZONE, PROC_REF(on_zaukerite_melee_strike))
 
 /obj/item/shard/zaukerite/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	..()
-	if(M == user || !isliving(M))
+	if(M == user || !isliving(M) || iscarbon(M))
 		return
-	if(iscarbon(M))
-		zaukerite_shard_inject(M, 2)
-	if(iscarbon(user) && prob(25))
-		zaukerite_shard_inject(user, 2)
-		user.visible_message(
-			span_warning("The [src] splinters apart, releasing toxic zauker dust onto [user]!"),
-			span_userdanger("The [src] splinters apart, and you breathe in toxic zauker dust!"),
-		)
-	qdel(src)
+	zaukerite_shard_consume_strike(src, M, user)
+
+/obj/item/shard/zaukerite/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
+	var/mob/living/target = isliving(hit_atom) ? hit_atom : null
+	var/mob/living/thrower = throwingdatum?.thrower
+	var/result = ..()
+	if(QDELETED(src) || !target || target == thrower || result == BLOCK_SUCCESS)
+		return result
+	zaukerite_shard_consume_strike(src, target, thrower, thrown = TRUE)
+	return result
 
 /obj/item/shard/zaukerite/attackby(obj/item/item, mob/user, params)
 	if(istype(item, /obj/item/stack/sheet/cloth))
@@ -295,7 +298,7 @@
 
 /obj/item/zaukerite_shard
 	name = "zaukerite shard"
-	desc = "A zaukerite crystal shard wrapped in cloth. Each strike leaks toxic zauker into the victim's bloodstream."
+	desc = "A zaukerite crystal shard wrapped in cloth. One strike leaks toxic zauker into the victim before the shard crumbles."
 	icon = 'icons/obj/crystallizer_exploration.dmi'
 	icon_state = "zaukerite_shard"
 	item_state = "shard-glass"
@@ -303,18 +306,55 @@
 	righthand_file = 'icons/mob/inhands/weapons/melee_righthand.dmi'
 	force = 7
 	throwforce = 12
+	armour_penetration = 25
 	w_class = WEIGHT_CLASS_TINY
 	sharpness = SHARP_EDGED
 	attack_verb = list("stabbed", "slashed", "sliced", "cut")
 	hitsound = 'sound/weapons/bladeslice.ogg'
-	embedding = list("embed_chance" = 65)
+	embedding = null
 	var/zauker_per_hit = 5
+
+/obj/item/zaukerite_shard/Initialize(mapload)
+	. = ..()
+	RegisterSignal(src, COMSIG_ITEM_ATTACK_ZONE, PROC_REF(on_zaukerite_melee_strike))
 
 /obj/item/zaukerite_shard/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	..()
-	if(!iscarbon(M) || M == user || user.a_intent != INTENT_HARM)
+	if(M == user || !isliving(M) || iscarbon(M))
 		return
-	zaukerite_shard_inject(M, zauker_per_hit)
+	zaukerite_shard_consume_strike(src, M, user)
+
+/obj/item/zaukerite_shard/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
+	var/mob/living/target = isliving(hit_atom) ? hit_atom : null
+	var/mob/living/thrower = throwingdatum?.thrower
+	var/result = ..()
+	if(QDELETED(src) || !target || target == thrower || result == BLOCK_SUCCESS)
+		return result
+	zaukerite_shard_consume_strike(src, target, thrower, thrown = TRUE)
+	return result
+
+/obj/item/proc/on_zaukerite_melee_strike(datum/source, mob/living/victim, mob/user, obj/item/bodypart/affecting)
+	SIGNAL_HANDLER
+	zaukerite_shard_consume_strike(src, victim, user)
+
+/proc/zaukerite_shard_consume_strike(obj/item/weapon, mob/living/victim, mob/living/attacker, thrown = FALSE)
+	if(QDELETED(weapon) || !isliving(victim) || victim == attacker)
+		return
+	var/amount = 2
+	var/wrapped = FALSE
+	if(istype(weapon, /obj/item/zaukerite_shard))
+		var/obj/item/zaukerite_shard/wrapped_weapon = weapon
+		amount = wrapped_weapon.zauker_per_hit
+		wrapped = TRUE
+	if(iscarbon(victim))
+		zaukerite_shard_inject(victim, amount)
+	if(!thrown && !wrapped && iscarbon(attacker) && prob(25))
+		zaukerite_shard_inject(attacker, amount)
+		attacker.visible_message(
+			span_warning("The [weapon] splinters apart, releasing toxic zauker dust onto [attacker]!"),
+			span_userdanger("The [weapon] splinters apart, and you breathe in toxic zauker dust!"),
+		)
+	qdel(weapon)
 
 /proc/zaukerite_shard_inject(mob/living/carbon/target, amount)
 	if(!target?.reagents || HAS_TRAIT(target, TRAIT_ROBOTIC_ORGANISM))
