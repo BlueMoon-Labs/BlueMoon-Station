@@ -32,6 +32,7 @@
 	category = CAT_ATMOSPHERIC
 	subcategory = CAT_ATMOSPHERICS
 
+/*
 /datum/crafting_recipe/n2o_shard_break
 	name = "N2O shard (raw)"
 	result = /obj/item/shard/n2o
@@ -52,6 +53,7 @@
 	time = 25
 	category = CAT_ATMOSPHERIC
 	subcategory = CAT_ATMOSPHERICS
+*/
 
 /datum/crafting_recipe/healium_shard_break
 	name = "Healium shard (raw)"
