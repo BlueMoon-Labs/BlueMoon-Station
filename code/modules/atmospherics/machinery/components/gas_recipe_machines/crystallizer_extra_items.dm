@@ -299,8 +299,8 @@
 /obj/item/shard/zaukerite
 	name = "zaukerite shard"
 	desc = "A jagged shard of crystallized zaukerite. Extremely sharp and unstable."
-	icon = 'icons/obj/crystallizer_sheets.dmi'
-	icon_state = "zaukerite"
+	icon = 'icons/obj/crystallizer_exploration.dmi'
+	icon_state = "zaukerite_sharp"
 	item_state = "shard-glass"
 	force = 7
 	throwforce = 12
@@ -313,7 +313,7 @@
 
 /obj/item/shard/zaukerite/Initialize(mapload)
 	. = ..()
-	icon_state = "zaukerite"
+	icon_state = "zaukerite_sharp"
 	pixel_x = 0
 	pixel_y = 0
 	RegisterSignal(src, COMSIG_ITEM_ATTACK_ZONE, PROC_REF(on_zaukerite_melee_strike))
@@ -411,8 +411,8 @@
 /obj/item/shard/n2o
 	name = "N2O shard"
 	desc = "A jagged shard of crystallized nitrous oxide. Extremely sharp and unstable."
-	icon = 'icons/obj/crystallizer_grenades.dmi'
-	icon_state = "n2o_crystal"
+	icon = 'icons/obj/crystallizer_exploration.dmi'
+	icon_state = "N2O_sharp"
 	item_state = "shard-glass"
 	force = 7
 	throwforce = 12
@@ -425,7 +425,7 @@
 
 /obj/item/shard/n2o/Initialize(mapload)
 	. = ..()
-	icon_state = "n2o_crystal"
+	icon_state = "N2O_sharp"
 	pixel_x = 0
 	pixel_y = 0
 	RegisterSignal(src, COMSIG_ITEM_ATTACK_ZONE, PROC_REF(on_n2o_melee_strike))
@@ -523,8 +523,8 @@
 /obj/item/shard/healium
 	name = "Healium shard"
 	desc = "A jagged shard of crystallized healium. Extremely sharp and unstable."
-	icon = 'icons/obj/crystallizer_grenades.dmi'
-	icon_state = "healium_crystal"
+	icon = 'icons/obj/crystallizer_exploration.dmi'
+	icon_state = "Healium_sharp"
 	item_state = "shard-glass"
 	force = 7
 	throwforce = 12
@@ -537,7 +537,7 @@
 
 /obj/item/shard/healium/Initialize(mapload)
 	. = ..()
-	icon_state = "healium_crystal"
+	icon_state = "Healium_sharp"
 	pixel_x = 0
 	pixel_y = 0
 	RegisterSignal(src, COMSIG_ITEM_ATTACK_ZONE, PROC_REF(on_healium_melee_strike))
