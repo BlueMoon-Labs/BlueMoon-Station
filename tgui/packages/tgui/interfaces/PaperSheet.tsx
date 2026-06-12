@@ -138,7 +138,22 @@ class PaperSheetStamper extends Component<PaperSheetStamperProps> {
     return false;
   };
 
+  // The mousemove/click listeners live on the document and survive any
+  // held item changes: without this gate every click on the UI (with a pen,
+  // with nothing) would fire an add_stamp act at the server.
+  isStamping = (): boolean => {
+    const { data } = useBackend<PaperContext>();
+    const { held_item_details } = data;
+    return (
+      held_item_details?.interaction_mode === InteractionType.stamping
+      && !!held_item_details?.stamp_class
+    );
+  };
+
   handleMouseMove = (e: MouseEvent): void => {
+    if (!this.isStamping()) {
+      return;
+    }
     const pos = this.findStampPosition(e);
     if (!pos) {
       return;
@@ -154,6 +169,9 @@ class PaperSheetStamper extends Component<PaperSheetStamperProps> {
   };
 
   handleMouseClick = (e: MouseEvent): void => {
+    if (!this.isStamping()) {
+      return;
+    }
     const scrollable = this.scrollableRef.current;
     if (!scrollable) {
       return;

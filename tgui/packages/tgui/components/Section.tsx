@@ -52,8 +52,14 @@ export class Section extends Component<SectionProps> {
       fitted,
       scrollable,
       children,
+      // Not DOM props: consume them here so they don't leak to the div.
+      scrollableRef,
+      onScroll,
       ...rest
-    } = this.props;
+    } = this.props as SectionProps & {
+      scrollableRef?: RefObject<HTMLDivElement>;
+      onScroll?: (ev: Event) => void;
+    };
     const hasTitle = canRender(title) || canRender(buttons);
     return (
       <div
@@ -77,7 +83,12 @@ export class Section extends Component<SectionProps> {
           </div>
         )}
         <div className="Section__rest">
-          <div ref={this.scrollableRef} className="Section__content">
+          <div
+            ref={this.scrollableRef}
+            // Scroll events do not bubble: the handler must sit on the
+            // element that actually scrolls, which is Section__content.
+            onScroll={onScroll as any}
+            className="Section__content">
             {children}
           </div>
         </div>

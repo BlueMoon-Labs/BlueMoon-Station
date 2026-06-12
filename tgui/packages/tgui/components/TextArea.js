@@ -174,6 +174,7 @@ export class TextArea extends Component {
       placeholder,
       scrollbar,
       singleline,
+      noborder,
       ...boxProps
     } = this.props;
     // Box props
@@ -187,6 +188,7 @@ export class TextArea extends Component {
         className={classes([
           'TextArea',
           fluid && 'TextArea--fluid',
+          noborder && 'TextArea--noborder',
           className,
         ])}
         {...rest}>
