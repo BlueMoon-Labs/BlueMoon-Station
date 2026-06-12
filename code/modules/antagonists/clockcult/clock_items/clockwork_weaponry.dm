@@ -1,8 +1,8 @@
 //This is the base type for clockwork melee weapons.
 /obj/item/clockwork/weapon
 	name = "clockwork weapon"
-	desc = "Weaponized brass. Whould've thunk it?"
-	clockwork_desc = "This shouldn't exist. Report it to a coder."
+	desc = "Латунь в качестве оружия. Кто бы мог подумать?"
+	clockwork_desc = "Этого не должно быть. Сообщите об этом кодеру."
 	icon = 'icons/obj/clockwork_objects.dmi'
 	lefthand_file = 'icons/mob/inhands/antag/clockwork_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/antag/clockwork_righthand.dmi'

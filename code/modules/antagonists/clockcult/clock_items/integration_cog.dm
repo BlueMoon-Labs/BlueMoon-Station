@@ -3,10 +3,10 @@
 //Can be used on an open APC to replace its guts with clockwork variants, and begin passively siphoning power from it
 /obj/item/clockwork/integration_cog
 	name = "integration cog"
-	desc = "A small cogwheel that fits in the palm of your hand."
-	clockwork_desc = "A small cogwheel that can be inserted into an open APC to siphon power from it passively.<br>\
-	<span class='brass'>It can be used on a locked APC to open its cover!</span><br>\
-	<span class='brass'>Siphons <b>5 W</b> of power per second while in an APC.</span>"
+	desc = "Небольшое зубчатое колесо, которое помещается на ладони."
+	clockwork_desc = "Небольшое зубчатое колесо, которое можно вставить в открытый ЛКП, чтобы пассивно отбирать у него энергию.<br>\
+	<span class='brass'>Его можно использовать на заблокированном ЛКП, чтобы открыть его крышку!</span><br>\
+	<span class='brass'>Пока находится в ЛКП, потребляет <b>5 Вт</b> энергии в секунду.</span>"
 	icon_state = "wall_gear"
 	w_class = WEIGHT_CLASS_TINY
 	item_flags = NOBLUDGEON
