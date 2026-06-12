@@ -95,8 +95,8 @@ GLOBAL_DATUM_INIT(spare_id_safe, /obj/structure/safe/spare_id, null)
 
 /obj/structure/safe/floor/syndi/armory/Initialize(mapload)
 	. = ..()
-	if(. == INITIALIZE_HINT_QDEL)
-		return
+	if(. == INITIALIZE_HINT_QDEL || . == INITIALIZE_HINT_QDEL_FORCE)
+		return .
 	return INITIALIZE_HINT_LATELOAD
 
 /obj/structure/safe/floor/syndi/armory/LateInitialize()
