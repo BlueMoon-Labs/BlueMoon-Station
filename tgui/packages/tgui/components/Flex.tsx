@@ -35,12 +35,14 @@ export const computeFlexProps = (props: FlexProps) => {
     ...rest,
     // camelCase keys are required: React appends 'px' to numeric values
     // of unknown (kebab-case) properties, producing invalid CSS.
+    // Absent props must not land in the object even as undefined,
+    // otherwise they clobber the same keys in consumer style.
     style: {
       ...rest.style,
-      flexDirection: direction,
-      flexWrap: wrap === true ? 'wrap' : wrap,
-      alignItems: align,
-      justifyContent: justify,
+      ...(direction !== undefined && { flexDirection: direction }),
+      ...(wrap !== undefined && { flexWrap: wrap === true ? 'wrap' : wrap }),
+      ...(align !== undefined && { alignItems: align }),
+      ...(justify !== undefined && { justifyContent: justify }),
     },
   };
 };
@@ -76,11 +78,11 @@ export const computeFlexItemProps = (props: FlexItemProps) => {
     ...rest,
     style: {
       ...style,
-      flexGrow: grow !== undefined ? Number(grow) : undefined,
-      flexShrink: shrink !== undefined ? Number(shrink) : undefined,
-      flexBasis: unit(basis),
-      order: order,
-      alignSelf: align,
+      ...(grow !== undefined && { flexGrow: Number(grow) }),
+      ...(shrink !== undefined && { flexShrink: Number(shrink) }),
+      ...(basis !== undefined && { flexBasis: unit(basis) }),
+      ...(order !== undefined && { order }),
+      ...(align !== undefined && { alignSelf: align }),
     },
   };
 };

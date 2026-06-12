@@ -37,6 +37,28 @@ describe('Flex', () => {
     expect(flex.style.flexDirection).toBe('column');
     expect(flex.style.padding).toBe('4px');
   });
+
+  test('consumer flexWrap in style survives absent wrap prop', () => {
+    // Regression: emote panel passes wrap via style, not the wrap prop.
+    // Computed flexWrap: undefined must not clobber it.
+    const { container } = render(
+      <Flex align="center" style={{ flexWrap: 'wrap' }}>x</Flex>,
+    );
+    const flex = container.querySelector('.Flex');
+    expect(flex.style.flexWrap).toBe('wrap');
+    expect(flex.style.alignItems).toBe('center');
+  });
+
+  test('consumer alignSelf in item style survives absent align prop', () => {
+    const { container } = render(
+      <Flex>
+        <Flex.Item style={{ alignSelf: 'flex-end', order: 2 }}>x</Flex.Item>
+      </Flex>,
+    );
+    const item = container.querySelector('.Flex__item');
+    expect(item.style.alignSelf).toBe('flex-end');
+    expect(item.style.order).toBe('2');
+  });
 });
 
 describe('Stack', () => {
