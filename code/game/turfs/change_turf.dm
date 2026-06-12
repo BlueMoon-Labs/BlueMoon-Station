@@ -89,6 +89,7 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	var/old_lc_bottomleft = lc_bottomleft
 	var/old_has_opaque = has_opaque_atom
 	var/old_shadow_weight = shadow_weight_sum
+	var/old_dynamic_lumcount = dynamic_lumcount
 
 	var/old_exl = explosion_level
 	var/old_exi = explosion_id
@@ -133,6 +134,7 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 		lc_topleft = old_lc_topleft
 		lc_bottomright = old_lc_bottomright
 		lc_bottomleft = old_lc_bottomleft
+		dynamic_lumcount = old_dynamic_lumcount
 
 		// Restore cached opacity state — contents are unchanged, only turf type changed
 		has_opaque_atom = old_has_opaque

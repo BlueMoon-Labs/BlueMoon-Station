@@ -25,7 +25,7 @@
 	var/charge_time = 15
 	var/detonation_damage = 50
 	var/backstab_bonus = 30
-	var/light_on = FALSE
+	light_on = FALSE
 	var/brightness_on = 7
 	var/wielded = FALSE // track wielded status on item
 

@@ -229,7 +229,7 @@
 	icon_state = "glaive-dagger"
 	desc = "An enhanced hunting grade survival dagger, with a bright light and a handguard that makes it better for efficient butchery."
 	actions_types = list(/datum/action/item_action/toggle_light)
-	var/light_on = FALSE
+	light_on = FALSE
 	var/brightness_on = 7
 
 /obj/item/kitchen/knife/combat/survival/knuckledagger/Initialize(mapload)

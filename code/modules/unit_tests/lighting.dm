@@ -577,3 +577,28 @@
 	TEST_ASSERT(test_object in replacement_turf.vis_contents, "Replacement turf did not keep the lighting object in vis_contents")
 	TEST_ASSERT(!(test_object in replacement_turf.contents), "Lighting object leaked into turf contents after ChangeTurf")
 	qdel(test_object, force = TRUE)
+
+/// Оверлейный свет: компонент вешается по light_system, тумблер двигает маску в underlays
+/// держателя и динамическую люминосити. Ассерты source-local: на reserved z тестовой зоны
+/// view() пуст, поэтому кросс-тайловый dynamic_lumcount здесь не проверяем.
+/datum/unit_test/overlay_lighting/Run()
+	var/mob/living/carbon/human/holder = allocate(/mob/living/carbon/human)
+	var/obj/item/flashlight/test_light = allocate(/obj/item/flashlight)
+	var/datum/component/overlay_lighting/comp = test_light.GetComponent(/datum/component/overlay_lighting)
+	TEST_ASSERT_NOTNULL(comp, "Flashlight must carry the overlay_lighting component")
+	TEST_ASSERT_NULL(test_light.light, "Overlay-light flashlight must not own a complex light_source")
+	TEST_ASSERT(!test_light.light_on, "Flashlight must spawn with light_on = FALSE")
+
+	TEST_ASSERT(holder.put_in_active_hand(test_light), "Test mob could not pick up the flashlight")
+	var/underlays_before = holder.underlays.len
+
+	test_light.attack_self(holder) // on
+	TEST_ASSERT(test_light.light_on, "attack_self must toggle light_on to TRUE")
+	TEST_ASSERT(holder.underlays.len > underlays_before, "Holder must receive the light mask underlay")
+	TEST_ASSERT(holder.affecting_dynamic_lumi > 0, "Holder must gain dynamic luminosity while the light is on")
+	TEST_ASSERT_EQUAL(comp.current_holder, holder, "Component must track the mob as current holder")
+
+	test_light.attack_self(holder) // off
+	TEST_ASSERT(!test_light.light_on, "Second attack_self must toggle light_on back to FALSE")
+	TEST_ASSERT_EQUAL(holder.underlays.len, underlays_before, "Light mask must leave holder underlays when off")
+	TEST_ASSERT_EQUAL(holder.affecting_dynamic_lumi, 0, "Dynamic luminosity must reset when the light is off")

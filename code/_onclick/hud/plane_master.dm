@@ -296,6 +296,16 @@
 	animate(get_filter("singularity_3"), size = 750, time = 10, easing = LINEAR_EASING, loop = -1, flags = ANIMATION_PARALLEL)
 	animate(size = 600, time = 10, easing = LINEAR_EASING, loop = -1)
 
+///Оверлейный свет (/datum/component/overlay_lighting): BLEND_ADD-маски источников собираются здесь.
+///Плоскость тонирует игру цветом света (BLEND_MULTIPLY), а её рендер-таргет прорезает тьму
+///lighting plane через фильтр "object_lighting" (см. Initialize lighting plane master выше).
+/atom/movable/screen/plane_master/o_light_visual
+	name = "overlight light visual plane master"
+	plane = O_LIGHTING_VISUAL_PLANE
+	render_target = O_LIGHTING_VISUAL_RENDER_TARGET
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	blend_mode = BLEND_MULTIPLY
+
 /**
  * Handles emissive overlays and emissive blockers.
  */

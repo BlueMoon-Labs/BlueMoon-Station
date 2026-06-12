@@ -80,6 +80,12 @@
 	///Internal holder for emissive blocker object, do not use directly use blocks_emissive
 	var/atom/movable/emissive_blocker/em_block
 
+	/// Лэйзи-список оверлейных источников света, освещающих нас: компонент -> ранг люминосити.
+	/// См. update_dynamic_luminosity() в movable_luminosity.dm.
+	var/list/affected_dynamic_lights
+	/// Самый яркий оверлейный свет на нас - наша текущая добавка к luminosity.
+	var/affecting_dynamic_lumi = 0
+
 	/// Should we use tooltips, if the thing does not have the code implemented `get_tooltip_data()`, it will default to examine(src)
 	var/tooltips = FALSE
 	/// How loudly we yell
@@ -110,6 +116,13 @@
 			render_target = ref(src)
 			em_block = new(src, render_target)
 			vis_contents += em_block
+	switch(light_system)
+		if(OVERLAY_LIGHT)
+			AddComponent(/datum/component/overlay_lighting)
+		if(OVERLAY_LIGHT_DIRECTIONAL)
+			AddComponent(/datum/component/overlay_lighting, is_directional = TRUE)
+		if(OVERLAY_LIGHT_BEAM)
+			AddComponent(/datum/component/overlay_lighting, is_directional = TRUE, is_beam = TRUE)
 
 
 /atom/movable/Destroy(force)

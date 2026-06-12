@@ -11,13 +11,34 @@
 	/// Opaque atoms (opacity=TRUE) always contribute weight 1.0 implicitly.
 	var/shadow_weight = 0
 
+	/// Какая система света обслуживает атом: COMPLEX_LIGHT (корнер-движок) или OVERLAY_*
+	/// (компонент overlay_lighting, вешается в /atom/movable/Initialize). Менять только в определении типа.
+	var/light_system = COMPLEX_LIGHT
+	/// Тумблер света. COMPLEX-путь учитывает его в update_light(), OVERLAY-путь реагирует через set_light_on().
+	var/light_on = TRUE
+	/// Битфлаги света (LIGHT_ATTACHED и далее).
+	var/light_flags = NONE
+
 	var/tmp/datum/light_source/light // Our light source. Don't fuck with this directly unless you have a good reason!
 	var/tmp/list/light_sources       // Any light sources that are "inside" of us, for example, if src here was a mob that's carrying a flashlight, that flashlight's light source would be part of this list.
 
 // The proc you should always use to set the light of this atom.
 // Nonesensical value for l_color default, so we can detect if it gets set to null.
 #define NONSENSICAL_VALUE -99999
-/atom/proc/set_light(var/l_range, var/l_power, var/l_color = NONSENSICAL_VALUE, var/l_height, var/l_cone_angle, var/l_cone_dir)
+/atom/proc/set_light(var/l_range, var/l_power, var/l_color = NONSENSICAL_VALUE, var/l_height, var/l_cone_angle, var/l_cone_dir, var/l_on)
+	if(light_system != COMPLEX_LIGHT)
+		// Легаси-вызов на атоме с оверлейным светом: шумим в CI, но не роняем раунд -
+		// маршрутизируем базовые параметры в гранулярные сеттеры (конусы/высота оверлею неприменимы).
+		stack_trace("set_light() on overlay-light atom [type]; use set_light_range/power/color/on")
+		if(!isnull(l_range))
+			set_light_range(l_range)
+		if(!isnull(l_power))
+			set_light_power(l_power)
+		if(l_color != NONSENSICAL_VALUE)
+			set_light_color(l_color)
+		if(!isnull(l_on))
+			set_light_on(l_on)
+		return
 	if(l_range > 0 && l_range < MINIMUM_USEFUL_LIGHT_RANGE)
 		l_range = MINIMUM_USEFUL_LIGHT_RANGE	//Brings the range up to 1.4, which is just barely brighter than the soft lighting that surrounds players.
 	if (l_power != null)
@@ -38,7 +59,10 @@
 	if (!isnull(l_cone_dir))
 		light_cone_dir = l_cone_dir
 
-	SEND_SIGNAL(src, COMSIG_ATOM_SET_LIGHT, l_range, l_power, l_color)
+	if (!isnull(l_on))
+		light_on = l_on
+
+	SEND_SIGNAL(src, COMSIG_ATOM_SET_LIGHT, l_range, l_power, l_color, l_on)
 
 	update_light()
 
@@ -50,8 +74,10 @@
 	set waitfor = FALSE
 	if (QDELETED(src))
 		return
+	if (light_system != COMPLEX_LIGHT) // Оверлейный свет обслуживает компонент, корнер-источник не создаём
+		return
 
-	if (!light_power || !light_range) // We won't emit light anyways, destroy the light source.
+	if (!light_power || !light_range || !light_on) // We won't emit light anyways, destroy the light source.
 		QDEL_NULL(light)
 	else
 		if (!ismovable(loc)) // We choose what atom should be the top atom of the light here.
@@ -118,17 +144,26 @@
 /atom/vv_edit_var(var_name, var_value)
 	switch (var_name)
 		if (NAMEOF(src, light_range))
-			set_light(l_range=var_value)
+			if(light_system == COMPLEX_LIGHT)
+				set_light(l_range=var_value)
+			else
+				set_light_range(var_value)
 			datum_flags |= DF_VAR_EDITED
 			return TRUE
 
 		if (NAMEOF(src, light_power))
-			set_light(l_power=var_value)
+			if(light_system == COMPLEX_LIGHT)
+				set_light(l_power=var_value)
+			else
+				set_light_power(var_value)
 			datum_flags |= DF_VAR_EDITED
 			return TRUE
 
 		if (NAMEOF(src, light_color))
-			set_light(l_color=var_value)
+			if(light_system == COMPLEX_LIGHT)
+				set_light(l_color=var_value)
+			else
+				set_light_color(var_value)
 			datum_flags |= DF_VAR_EDITED
 			return TRUE
 
@@ -144,6 +179,19 @@
 
 		if (NAMEOF(src, light_cone_dir))
 			set_light(l_cone_dir=var_value)
+			datum_flags |= DF_VAR_EDITED
+			return TRUE
+
+		if (NAMEOF(src, light_on))
+			if(light_system == COMPLEX_LIGHT)
+				set_light(l_on=var_value)
+			else
+				set_light_on(var_value)
+			datum_flags |= DF_VAR_EDITED
+			return TRUE
+
+		if (NAMEOF(src, light_flags))
+			set_light_flags(var_value)
 			datum_flags |= DF_VAR_EDITED
 			return TRUE
 
@@ -217,16 +265,17 @@
 	light_height = new_height
 	SEND_SIGNAL(src, COMSIG_ATOM_UPDATE_LIGHT_HEIGHT, .)
 
-/*
 /// Setter for whether or not this atom's light is on.
 /atom/proc/set_light_on(new_value)
-	if(new_value ==  )
+	if(new_value == light_on)
 		return
 	if(SEND_SIGNAL(src, COMSIG_ATOM_SET_LIGHT_ON, new_value) & COMPONENT_BLOCK_LIGHT_UPDATE)
 		return
 	. = light_on
 	light_on = new_value
 	SEND_SIGNAL(src, COMSIG_ATOM_UPDATE_LIGHT_ON, .)
+	if(light_system == COMPLEX_LIGHT)
+		update_light()
 
 /// Setter for the light flags of this atom.
 /atom/proc/set_light_flags(new_value)
@@ -237,4 +286,3 @@
 	. = light_flags
 	light_flags = new_value
 	SEND_SIGNAL(src, COMSIG_ATOM_UPDATE_LIGHT_FLAGS, .)
-*/

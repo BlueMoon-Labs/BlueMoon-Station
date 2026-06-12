@@ -986,6 +986,11 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 		var/atom/movable/screen/plane_master/lighting/L = hud_used.plane_masters["[LIGHTING_PLANE]"]
 		if(L)
 			L.alpha = lighting_alpha
+		// Плоскость оверлейного света обязана гаснуть синхронно с тьмой: при прозрачной
+		// lighting plane (мезоны/НВ) цветной множитель света без тьмы под ним - визуальный мусор
+		var/atom/movable/screen/plane_master/o_light_visual/O = hud_used.plane_masters["[O_LIGHTING_VISUAL_PLANE]"]
+		if(O)
+			O.alpha = lighting_alpha
 
 /mob/proc/update_mouse_pointer()
 	if (!client)
