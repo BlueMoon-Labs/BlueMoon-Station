@@ -42,6 +42,34 @@
 	TEST_ASSERT(test_object in replacement_turf.vis_contents, "Replacement turf did not keep the transferred lighting object in vis_contents")
 	qdel(test_object, force = TRUE)
 
+// Путь маплоадера (мид-раунд шаблоны: комнаты отеля Гильберта, авейки): ChangeTurf выполняется
+// при отложенном Initialize (map_loader_begin), привязывая lighting_object к vis_contents,
+// а затем initTemplateBounds() инициализирует турф, и vis_contents.Cut() в /turf/Initialize
+// не должен терять рендер света - иначе турф навсегда чёрный от backdrop'а lighting plane.
+/datum/unit_test/lighting_object_survives_deferred_maploader_init/Run()
+	TEST_ASSERT(SSlighting.initialized, "SSlighting was not initialized")
+
+	var/turf/test_turf = run_loc_floor_bottom_left
+	TEST_ASSERT_NULL(test_turf.lighting_object, "Test turf unexpectedly already had a lighting object")
+
+	var/atom/movable/lighting_object/test_object = allocate_lighting_object(test_turf)
+	TEST_ASSERT_EQUAL(test_turf.lighting_object, test_object, "Lighting object was not attached to the original turf")
+
+	SSatoms.map_loader_begin()
+	// CHANGETURF_DEFER_CHANGE - как в reader.dm: AfterChange не зовётся на неинициализированном турфе
+	var/turf/replacement_turf = test_turf.ChangeTurf(/turf/open/floor/plasteel/white, null, CHANGETURF_DEFER_CHANGE)
+	SSatoms.map_loader_stop()
+
+	TEST_ASSERT(!(replacement_turf.flags_1 & INITIALIZED_1), "Turf was initialized inline despite map loader mode; test premise broken")
+	TEST_ASSERT_EQUAL(replacement_turf.lighting_object, test_object, "Lighting object was not transferred to the replacement turf")
+	TEST_ASSERT(test_object in replacement_turf.vis_contents, "Lighting object was not in vis_contents right after deferred-init ChangeTurf")
+
+	SSatoms.InitializeAtoms(list(replacement_turf))
+
+	TEST_ASSERT_EQUAL(replacement_turf.lighting_object, test_object, "Deferred turf Initialize lost the lighting_object reference")
+	TEST_ASSERT(test_object in replacement_turf.vis_contents, "Deferred turf Initialize (maploader path) dropped the lighting object from vis_contents")
+	qdel(test_object, force = TRUE)
+
 /datum/unit_test/forced_turf_destroy_cleans_lighting_object/Run()
 	TEST_ASSERT(SSlighting.initialized, "SSlighting was not initialized")
 
