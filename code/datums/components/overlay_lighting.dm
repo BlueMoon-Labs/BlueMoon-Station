@@ -488,7 +488,8 @@
 /datum/component/overlay_lighting/proc/cast_directional_light()
 	var/final_distance = cast_range
 	//Lower the distance by 1 if we're not looking at a cardinal direction, and we're not a short cast
-	if(final_distance > SHORT_CAST && !((NORTH | SOUTH | EAST | WEST) & current_direction)) // у форка нет ALL_CARDINALS
+	// У tg тут !(ALL_CARDINALS & dir) - мёртвая ветка (маска ненулевая для любого dir), чиним по смыслу
+	if(final_distance > SHORT_CAST && ISDIAGONALDIR(current_direction))
 		final_distance -= 1
 	var/turf/scanning = get_turf(current_holder)
 	for(var/i in 1 to final_distance)

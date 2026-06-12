@@ -146,11 +146,12 @@
 	return allocate_lighting_object(T)
 
 /// Helper: create a lighting_object the canonical way (nullspace loc, turf as the second
-/// argument) with the same end-of-test cleanup allocate() provides. allocate() itself can't
-/// be used - it substitutes a null first argument with run_loc_floor_bottom_left.
+/// argument) with end-of-test cleanup. allocate() itself can't be used - it substitutes
+/// a null first argument with run_loc_floor_bottom_left, and its plain qdel teardown is
+/// ignored by lighting_object/Destroy(), so these go into the force-qdel cleanup list.
 /datum/unit_test/proc/allocate_lighting_object(turf/T)
 	var/atom/movable/lighting_object/lo = new(null, T)
-	allocated += lo
+	allocated_force_qdel += lo
 	return lo
 
 /datum/unit_test/proc/wait_for_repair_reload(datum/mapGenerator/repair/reload_station_map/reload_generator = null, max_ticks = REPAIR_RELOAD_WAIT_TICKS)

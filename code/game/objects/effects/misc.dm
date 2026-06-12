@@ -80,8 +80,8 @@
 /obj/effect/dummy/lighting_obj/Initialize(mapload, _color, _range, _power, _duration)
 	. = ..()
 	set_light_color(_color ? _color : light_color)
-	set_light_range(_range ? _range : light_range)
-	set_light_power(_power ? _power : light_power)
+	set_light_range(isnull(_range) ? light_range : _range)
+	set_light_power(isnull(_power) ? light_power : _power)
 	if(_duration)
 		QDEL_IN(src, _duration)
 
