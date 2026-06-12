@@ -69,43 +69,48 @@
 	. = ..()
 	auto_authenticate()
 
-/datum/computer_file/program/card_mod/process_tick(delta_time)
-	. = ..()
-	if(program_state != PROGRAM_STATE_ACTIVE)
-		return
-	auto_authenticate()
-
 /datum/computer_file/program/card_mod/kill_program(forced)
 	. = ..()
 	authenticated = FALSE
 
-/datum/computer_file/program/card_mod/proc/auto_authenticate()
-	// Авто-аутентификация или деавторизация. Адекватно перевести бы это на сигналы...
+/datum/computer_file/program/card_mod/event_idinsert(is_background, obj/item/card/id/id_card, device_type)
+	. = ..()
+	if(device_type != MC_CARD)
+		return
+	auto_authenticate(is_background)
+
+/datum/computer_file/program/card_mod/event_idremoved(is_background, obj/item/card/id/id_card, device_type)
+	. = ..()
+	if(device_type != MC_CARD)
+		return
+	auto_authenticate(is_background)
+
+/datum/computer_file/program/card_mod/proc/auto_authenticate(silent = FALSE)
+	// Авто-аутентификация или деавторизация.
 	if(!computer)
 		return
 	var/obj/item/computer_hardware/card_slot/card_slot = computer.all_components[MC_CARD]
 	if(!card_slot)
 		return
 	var/obj/item/card/id/user_id_card = card_slot.stored_card
+	var/old_minor = minor
 	var/old_authenticated = authenticated
 	var/old_region_access_len = region_access.len
 	var/old_head_subordinates_len = head_subordinates.len
 	authenticate(user_id_card)
-	if(authenticated != old_authenticated || region_access.len != old_region_access_len || head_subordinates.len != old_head_subordinates_len)
-		update_static_data_for_all_viewers()
-		if(authenticated)
-			playsound(computer, 'sound/machines/terminal_on.ogg', 50, FALSE)
-		else
-			playsound(computer, 'sound/machines/terminal_off.ogg', 50, FALSE)
+	if(minor != old_minor || region_access.len != old_region_access_len || head_subordinates.len != old_head_subordinates_len)
+		update_static_data_for_all_viewers(ignore_cooldown = TRUE)
+	if(authenticated != old_authenticated && !silent)
+		playsound(computer, authenticated ? 'sound/machines/terminal_on.ogg' : 'sound/machines/terminal_off.ogg', 50, FALSE)
 
 /datum/computer_file/program/card_mod/proc/authenticate(obj/item/card/id/id_card)
+	region_access = list()
+	head_subordinates = list()
 	if(!id_card)
 		authenticated = FALSE
 		minor = FALSE
 		return
 
-	region_access = list()
-	head_subordinates = list()
 	if(ACCESS_CHANGE_IDS in id_card.access)
 		minor = FALSE
 		authenticated = TRUE
