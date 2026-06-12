@@ -9,7 +9,7 @@
 	extended_desc = "Nanotrasen Pay — управляйте своим метадолларовым счётом, снимайте и пополняйте M$."
 	requires_ntnet = FALSE
 	transfer_access = null
-	usage_flags = PROGRAM_PDA
+	usage_flags = PROGRAM_ON_TABLETS
 	size = 6
 	tgui_id = "NtosBanking"
 	program_icon = "money-bill-wave"

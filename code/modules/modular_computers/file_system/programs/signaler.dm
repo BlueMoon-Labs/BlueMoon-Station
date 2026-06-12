@@ -7,7 +7,7 @@
 	size = 2
 	tgui_id = "NtosSignaler"
 	program_icon = "satellite-dish"
-	usage_flags = PROGRAM_TABLET | PROGRAM_LAPTOP | PROGRAM_PDA
+	usage_flags = PROGRAM_LAPTOP | PROGRAM_ON_TABLETS
 	///What is the saved signal frequency?
 	var/signal_frequency = FREQ_SIGNALER
 	/// What is the saved signal code?

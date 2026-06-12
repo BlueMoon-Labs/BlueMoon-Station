@@ -14,11 +14,11 @@
 	program_icon_state = "id"
 	extended_desc = "Утилита для программирования ID-карт сотрудников, предоставляющая доступ к различным частям станции."
 	transfer_access = ACCESS_HEADS
-	requires_ntnet = 0
+	requires_ntnet = FALSE
 	size = 8
 	tgui_id = "NtosCard"
 	program_icon = "id-card"
-	usage_flags = PROGRAM_ALL
+	usage_flags = PROGRAM_CONSOLE
 
 	var/is_centcom = FALSE
 	var/minor = FALSE
