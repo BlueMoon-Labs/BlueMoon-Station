@@ -93,6 +93,12 @@ GLOBAL_DATUM_INIT(spare_id_safe, /obj/structure/safe/spare_id, null)
 	open_security_levels = list(SEC_LEVEL_RED, SEC_LEVEL_LAMBDA, SEC_LEVEL_GAMMA)
 	tgui_theme = "syndicate"
 
+/obj/structure/safe/floor/syndi/armory/Initialize(mapload)
+	. = ..()
+	if(. == INITIALIZE_HINT_QDEL)
+		return
+	return INITIALIZE_HINT_LATELOAD
+
 /obj/structure/safe/floor/syndi/armory/LateInitialize()
 	. = ..()
 	if(!is_station_level(z))
@@ -102,6 +108,7 @@ GLOBAL_DATUM_INIT(spare_id_safe, /obj/structure/safe/spare_id, null)
 		code_opening()
 
 /obj/structure/safe/floor/syndi/armory/code_opening(datum/source, level)
+	SIGNAL_HANDLER
 	. = ..()
 	if(!security_level_opens_safe(level) || open)
 		return
