@@ -19,7 +19,7 @@
 			if(skip_z["[T.z]"])
 				continue
 
-			new /atom/movable/lighting_object(T)
+			new /atom/movable/lighting_object(null, T)
 			CHECK_TICK
 		CHECK_TICK
 
@@ -94,7 +94,7 @@
 			continue
 		if(T.lighting_object)
 			continue
-		new /atom/movable/lighting_object(T)
+		new /atom/movable/lighting_object(null, T)
 		// Activate corners created during init with active=FALSE (no objects existed then)
 		if(T.lighting_corners_initialised)
 			if(T.lc_topright) T.lc_topright.active = TRUE

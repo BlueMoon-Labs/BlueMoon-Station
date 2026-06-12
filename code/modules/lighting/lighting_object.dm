@@ -35,8 +35,15 @@
 	var/blended_contact_shadow = 1
 	var/blended_ambient = AMBIENT_LIGHT_DEFAULT
 
-/atom/movable/lighting_object/New(turf/source)
-	// Call parent without passing source as loc — we render via vis_contents, not loc
+/atom/movable/lighting_object/New(atom/passed_loc, turf/source)
+	// Renders from nullspace strictly via vis_contents: the object must never sit in
+	// turf.contents, or every contents walk (camera capture, shuttle moves, teleports)
+	// sees a service atom. Canonical creation is new(null, turf).
+	if(!isnull(passed_loc))
+		if(isturf(passed_loc) && isnull(source))
+			source = passed_loc // legacy new(turf) caller - recover, but loudly
+			stack_trace("lighting_object created with the turf as loc; pass the turf as the second argument")
+		loc = null
 	..()
 	if(!isturf(source))
 		qdel(src, force=TRUE)

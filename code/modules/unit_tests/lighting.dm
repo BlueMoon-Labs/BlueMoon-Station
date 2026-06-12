@@ -8,7 +8,7 @@
 	var/turf/test_turf = run_loc_floor_bottom_left
 	TEST_ASSERT_NULL(test_turf.lighting_object, "Test turf unexpectedly already had a lighting object")
 
-	var/atom/movable/lighting_object/test_object = allocate(/atom/movable/lighting_object, test_turf)
+	var/atom/movable/lighting_object/test_object = allocate_lighting_object(test_turf)
 	TEST_ASSERT_EQUAL(test_turf.lighting_object, test_object, "Lighting object was not attached to the test turf")
 
 	test_turf.recalc_area_blend_region()
@@ -30,7 +30,7 @@
 	var/x = test_turf.x
 	var/y = test_turf.y
 	var/z = test_turf.z
-	var/atom/movable/lighting_object/test_object = allocate(/atom/movable/lighting_object, test_turf)
+	var/atom/movable/lighting_object/test_object = allocate_lighting_object(test_turf)
 	TEST_ASSERT_EQUAL(test_turf.lighting_object, test_object, "Lighting object was not attached to the original turf")
 
 	var/turf/replacement_turf = test_turf.ChangeTurf(/turf/open/floor/plasteel/white)
@@ -48,7 +48,7 @@
 	var/turf/test_turf = run_loc_floor_bottom_left
 	TEST_ASSERT_NULL(test_turf.lighting_object, "Test turf unexpectedly already had a lighting object")
 
-	var/atom/movable/lighting_object/test_object = allocate(/atom/movable/lighting_object, test_turf)
+	var/atom/movable/lighting_object/test_object = allocate_lighting_object(test_turf)
 	TEST_ASSERT_EQUAL(test_turf.lighting_object, test_object, "Lighting object was not attached to the test turf")
 
 	var/x = test_turf.x
@@ -143,7 +143,14 @@
 /datum/unit_test/proc/ensure_lighting_object(turf/T)
 	if(T.lighting_object)
 		return T.lighting_object
-	var/atom/movable/lighting_object/lo = allocate(/atom/movable/lighting_object, T)
+	return allocate_lighting_object(T)
+
+/// Helper: create a lighting_object the canonical way (nullspace loc, turf as the second
+/// argument) with the same end-of-test cleanup allocate() provides. allocate() itself can't
+/// be used - it substitutes a null first argument with run_loc_floor_bottom_left.
+/datum/unit_test/proc/allocate_lighting_object(turf/T)
+	var/atom/movable/lighting_object/lo = new(null, T)
+	allocated += lo
 	return lo
 
 /datum/unit_test/proc/wait_for_repair_reload(datum/mapGenerator/repair/reload_station_map/reload_generator = null, max_ticks = REPAIR_RELOAD_WAIT_TICKS)
@@ -547,3 +554,26 @@
 	// Apply the fix
 	test_turf.recalc_atom_opacity()
 	TEST_ASSERT(test_turf.shadow_weight_sum >= 0.49, "shadow_weight_sum should be updated after recalc (got [test_turf.shadow_weight_sum])")
+
+/// lighting_object живёт в nullspace: рендер только через vis_contents, contents турфа чист.
+/// Любой обход turf.contents (камера, шаттлы, телепорты) не должен видеть служебный объект.
+/datum/unit_test/lighting_object_nullspace/Run()
+	TEST_ASSERT(SSlighting.initialized, "SSlighting was not initialized")
+
+	var/turf/test_turf = run_loc_floor_bottom_left
+	// Предыдущие тесты могли оставить lighting_object (авто-уборка allocate() делает
+	// нефорсированный qdel, который lighting_object игнорирует) - чистим форсированно
+	test_turf.lighting_clear_overlay()
+	TEST_ASSERT_NULL(test_turf.lighting_object, "Test turf still had a lighting object after lighting_clear_overlay")
+
+	var/atom/movable/lighting_object/test_object = allocate_lighting_object(test_turf)
+	TEST_ASSERT_EQUAL(test_turf.lighting_object, test_object, "Lighting object was not attached to the test turf")
+	TEST_ASSERT_NULL(test_object.loc, "Lighting object must live in nullspace, had loc [test_object.loc]")
+	TEST_ASSERT(test_object in test_turf.vis_contents, "Lighting object must render via turf vis_contents")
+	TEST_ASSERT(!(test_object in test_turf.contents), "Lighting object must not pollute turf contents")
+
+	var/turf/replacement_turf = test_turf.ChangeTurf(/turf/open/floor/plasteel/white)
+	TEST_ASSERT_NULL(test_object.loc, "Lighting object gained a loc after ChangeTurf")
+	TEST_ASSERT(test_object in replacement_turf.vis_contents, "Replacement turf did not keep the lighting object in vis_contents")
+	TEST_ASSERT(!(test_object in replacement_turf.contents), "Lighting object leaked into turf contents after ChangeTurf")
+	qdel(test_object, force = TRUE)

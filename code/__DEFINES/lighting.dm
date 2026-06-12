@@ -20,6 +20,19 @@ GLOBAL_VAR_INIT(lighting_falloff_mode, LIGHTING_FALLOFF_MODE) // Runtime falloff
 #define LIGHTING_FALLOFF_CULL_THRESHOLD 0.005 // Skip storing corners with falloff below this (invisible, saves memory on large-range lights)
 #define LIGHTING_ROUND_VALUE    (1 / 32) //Value used to round lumcounts, values smaller than 1/129 don't matter (if they do, thanks sinking points), greater values will make lighting less precise, but in turn increase performance, VERY SLIGHTLY.
 
+// Системы света атома (var/light_system). COMPLEX_LIGHT = корнер-система (статика, тени, конусы).
+// OVERLAY_* = компонент /datum/component/overlay_lighting: текстурная маска в underlays держателя,
+// нулевая стоимость движения - для носимых/бросаемых источников. Менять только до Initialize.
+#define COMPLEX_LIGHT 1
+#define OVERLAY_LIGHT 2
+#define OVERLAY_LIGHT_DIRECTIONAL 3
+#define OVERLAY_LIGHT_BEAM 4
+#define IS_OVERLAY_LIGHT_SYSTEM(system) (system == OVERLAY_LIGHT || system == OVERLAY_LIGHT_DIRECTIONAL || system == OVERLAY_LIGHT_BEAM)
+#define IS_OVERLAY_CONE_LIGHT_SYSTEM(system) (system == OVERLAY_LIGHT_DIRECTIONAL || system == OVERLAY_LIGHT_BEAM)
+
+// Битфлаги var/light_flags
+#define LIGHT_ATTACHED (1<<0) // свет следует за loc родителя (фонарь, вставленный в каску/борга)
+
 #define LIGHTING_ANIMATE_TIME 3       // Default animate() duration in deciseconds (0.3s) for smooth lighting transitions
 #define LIGHTING_ANIMATE_TIME_FAST 1  // Instant events (EMP, explosion, power cut) — 0.1s
 #define LIGHTING_ANIMATE_TIME_SMOOTH 5 // Gradual events (sunrise, slow power-up) — 0.5s
