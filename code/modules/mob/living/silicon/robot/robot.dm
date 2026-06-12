@@ -16,6 +16,7 @@
 	spark_system.attach(src)
 
 	set_wires(new /datum/wires/robot(src))
+	ADD_TRAIT(src, TRAIT_CAN_STRIP, INNATE_TRAIT) // manipulators are good enough to strip and search
 	AddElement(/datum/element/empprotection, EMP_PROTECT_WIRES)
 	// AddElement(/datum/element/ridable, /datum/component/riding/creature/cyborg)
 	RegisterSignal(src, COMSIG_PROCESS_BORGCHARGER_OCCUPANT, PROC_REF(charge))

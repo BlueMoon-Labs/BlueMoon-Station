@@ -132,6 +132,7 @@
 // #include "species_whitelists.dm"
 // #include "stomach.dm"
 // #include "strippable.dm"
+#include "strippable_hands_gate.dm"
 #include "subsystem_init.dm"
 #include "surgeries.dm"
 #include "teleporters.dm"
