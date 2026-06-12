@@ -233,9 +233,11 @@
 	if(do_message)
 		owner.visible_message("<span class='warning'>Strange armor appears on [owner]!</span>", "<span class='heavy_brass'>A bright shimmer runs down your body, equipping you with Ratvarian armor.</span>")
 		playsound(owner, 'sound/magic/clockwork/fellowship_armory.ogg', 15 * do_message, TRUE) //get sound loudness based on how much we equipped
-	cooldown = CLOCKWORK_ARMOR_COOLDOWN + world.time
-	owner.update_action_buttons_icon()
-	addtimer(CALLBACK(owner, TYPE_PROC_REF(/mob, update_action_buttons_icon)), CLOCKWORK_ARMOR_COOLDOWN)
+		cooldown = CLOCKWORK_ARMOR_COOLDOWN + world.time //no cooldown if nothing was equipped, so a failed attempt (e.g. undroppable equipment) can be retried
+		owner.update_action_buttons_icon()
+		addtimer(CALLBACK(owner, TYPE_PROC_REF(/mob, update_action_buttons_icon)), CLOCKWORK_ARMOR_COOLDOWN)
+	else
+		to_chat(owner, "<span class='warning'>Ваше снаряжение невозможно заменить бронёй Ратвара! Снимите его и попробуйте снова.</span>")
 	return TRUE
 
 /datum/action/innate/clockwork_armaments/proc/remove_item_if_better(obj/item/I, mob/user)
