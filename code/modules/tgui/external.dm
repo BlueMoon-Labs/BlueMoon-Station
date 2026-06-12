@@ -25,7 +25,7 @@
  * since it calls on process rather than instantly which handles spamming.
  */
 /datum/proc/ui_update()
-	for(var/datum/tgui/ui as() in SStgui.get_all_open_uis(src))
+	for(var/datum/tgui/ui as anything in SStgui.get_all_open_uis(src))
 		ui.needs_update = TRUE
 
 /**

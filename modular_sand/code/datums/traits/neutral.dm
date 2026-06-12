@@ -35,19 +35,15 @@
 
 /datum/quirk/estrous_active
 	name = "Эстральный Цикл"
-	desc = "Ваш организм сгорает от желания совокупиться ради размножения. Удовлетворение вашей похоти сделает вас счастливей и ваша похоть кажется усилила шанс на оплодотворение, игнорирование этого желания может привести к тому что вы с каждыми условными 10 минут становитесь плодовитей на условные 5% (до 20% макс) пока вы не разрядитесь. Также увеличивает шансы чтобы заузлить партнера (Если есть член с узлом и у обоих префы Allow Knotting включен)"
+	desc = "Ваш организм сгорает от либидо. Удовлетворение вашей похоти сделает вас счастливей. Ваша похоть, кажется, усилила шанс на оплодотворение, игнорирование этого желания может привести к тому, что вы с каждыми условными 10 минут становитесь плодовитей на условные 5% (до 20% макс), пока вы не разрядитесь. Также увеличивает шансы чтобы заузлить партнера (Если есть член с узлом и у обоих префы Allow Knotting включен)."
 	value = 0
 	mob_trait = TRAIT_ESTROUS_ACTIVE
 	flavor_quirk = TRUE
-	gain_text = span_love("Ваше тело горит от желания заняться размножением.")
+	gain_text = span_love("Ваше тело горит от либидо.")
 	lose_text = span_notice("Вы чувствуете, что лучше контролируете свое тело и мысли.")
 
 	// Default heat message for examine text
 	var/heat_type = "нахождение в эстральном цикле"
-
-	// Type of interaction to be performed
-	// Intended for use with downstream quirks
-	var/positional_orientation = "принять участие в совокуплении ради размножения"
 
 /datum/quirk/estrous_active/add()
 	// Add examine hook
@@ -146,18 +142,18 @@
 
 	// Check for male hormonal organ
 	if(quirk_holder.has_balls())
-		heat_phrases += "сильный запах"
+		heat_phrases += "пахнет сильным мускусом"
 
 	// Check for female hormonal organ
 	if(quirk_holder.getorganslot(ORGAN_SLOT_WOMB))
-		heat_phrases += "сильную течку"
+		heat_phrases += "пахнет течкой и секретами"
 
 	// Check for synthetic
 	if(isrobotic(quirk_holder))
 		heat_phrases += "множество ошибок в гормональной программе"
 
 	// Build English list
-	heat_type = english_list(heat_phrases, nothing_text = "переизбыток гормонов")
+	heat_type = english_list(heat_phrases, nothing_text = "пахнет переизбытком феромонных гормонов")
 
 /datum/quirk/estrous_active/proc/_on_climax_reset(datum/source, datum/reagents/R, atom/target, obj/item/organ/genital/sender, obj/item/organ/genital/receiver, spill, anon)
 	SIGNAL_HANDLER
@@ -182,7 +178,7 @@
 		return
 
 	// Add quirk message
-	examine_list += span_love("<b>[quirk_holder.ru_who(TRUE)]</b> испытывает [heat_type], однозначно желая [positional_orientation].")
+	examine_list += span_love("<b>[quirk_holder.ru_who(TRUE)]</b> [heat_type].")
 
 // === НОВЫЕ ПРОЦЕДУРЫ ДЛЯ БЕРЕМЕННОСТИ ===
 
@@ -198,7 +194,7 @@
 	if(HAS_TRAIT(L, TRAIT_PREGNANT) && heat_type == "беременность")
 		return
 
-	to_chat(L, span_love("Вы ощущаете, как внутри вас зарождается новая жизнь... Ваш эстральный цикл стихает."))
+	to_chat(L, span_love("Вы ощущаете, как внутри вас зарождается новая жизнь... ваш эстральный цикл стихает."))
 	current_stage = 0
 	time_bonus = 0
 	heat_type = "беременность"

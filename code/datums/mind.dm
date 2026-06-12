@@ -1891,17 +1891,13 @@ GLOBAL_LIST(objective_choices)
 		mind.ooc_notes = client?.prefs.features["ooc_notes"]
 		mind.flavor_text = client?.prefs.features["flavor_text"]
 		mind.silicon_flavor_text = client?.prefs.features["silicon_flavor_text"]
-		mind.headshot_links = list(
-			client?.prefs.features["headshot_link"],
-			client?.prefs.features["headshot_link1"],
-			client?.prefs.features["headshot_link2"]
-		)
+
+		var/list/temp = client?.prefs.features["headshot_links"]
+		mind.headshot_links = LAZYCOPY(temp)
 		listclearnulls(mind.headshot_links)
-		mind.headshot_naked_links = list(
-			client?.prefs.features["headshot_naked_link"],
-			client?.prefs.features["headshot_naked_link1"],
-			client?.prefs.features["headshot_naked_link2"]
-		)
+
+		temp = client?.prefs.features["headshot_naked_links"]
+		mind.headshot_naked_links = LAZYCOPY(temp)
 		listclearnulls(mind.headshot_naked_links)
 
 //HUMAN

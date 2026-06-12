@@ -356,6 +356,8 @@
 
 /mob/living/carbon/human/CtrlClick(mob/user)
 	if(ishuman(user) && Adjacent(user) && !user.incapacitated())
+		if(buckled && (istype(buckled, /obj/structure/table/optable) || istype(buckled, /obj/machinery/stasis)))
+			buckled.user_unbuckle_mob(src, user)
 		if(!user.CheckActionCooldown())
 			return FALSE
 		var/mob/living/carbon/human/H = user

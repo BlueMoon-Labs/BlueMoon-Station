@@ -115,3 +115,7 @@
 #define PREFERENCE_CHARACTER "character"
 /// This preference is account specific.
 #define PREFERENCE_PLAYER "player"
+
+// Кол-во хедшотов, не ставить меньше 1
+#define MAX_HEADSHOTS 6
+#define MAX_HEADSHOTS_NAKED MAX_HEADSHOTS

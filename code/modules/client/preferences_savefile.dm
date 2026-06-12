@@ -524,6 +524,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["ui_zoom_preferences"]	>> ui_zoom_preferences
 	S["windowflash"] 			>> windowflashing
 	S["windownoise"] 			>> windownoise
+	S["action_buttons_hide_on_spawn"] 			>> action_buttons_hide_on_spawn
 	S["be_special"] 			>> be_special
 
 	//SKYRAT CHANGES BEGIN
@@ -668,6 +669,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		ui_zoom_preferences = sanitized_ui_zoom_preferences
 	windowflashing = sanitize_integer(windowflashing, 0, 1, initial(windowflashing))
 	windownoise = sanitize_integer(windownoise, 0, 1, initial(windownoise))
+	action_buttons_hide_on_spawn = sanitize_integer(action_buttons_hide_on_spawn, 0, 1, initial(action_buttons_hide_on_spawn))
 	default_slot = sanitize_integer(default_slot, 1, max_save_slots, initial(default_slot))
 	toggles = sanitize_integer(toggles, 0, 16777215, initial(toggles))
 	custom_colors = sanitize_integer(custom_colors, 0, 16777215, initial(custom_colors))
@@ -859,6 +861,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["ui_zoom_preferences"], ui_zoom_preferences)
 	WRITE_FILE(S["windowflash"], windowflashing)
 	WRITE_FILE(S["windownoise"], windownoise)
+	WRITE_FILE(S["action_buttons_hide_on_spawn"], action_buttons_hide_on_spawn)
 	WRITE_FILE(S["be_special"], be_special)
 	WRITE_FILE(S["default_slot"], default_slot)
 	WRITE_FILE(S["toggles"], toggles)
@@ -1175,12 +1178,6 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["feature_horns_color"] 				>> features["horns_color"]
 	S["feature_wings_color"] 				>> features["wings_color"]
 	S["feature_color_scheme"] 				>> features["color_scheme"]
-	S["headshot"] 							>> features["headshot_link"] //SPLURT edit
-	S["headshot1"] 							>> features["headshot_link1"] //BLUEMOON edit
-	S["headshot2"] 							>> features["headshot_link2"] //BLUEMOON edit
-	S["headshot_naked"] 						>> features["headshot_naked_link"] //BLUEMOON ADD
-	S["headshot_naked1"] 					>> features["headshot_naked_link1"] //BLUEMOON ADD
-	S["headshot_naked2"] 					>> features["headshot_naked_link2"] //BLUEMOON ADD
 	S["shriek_type"] 						>> shriek_type // BLUEMOON ADD - выбор вида крика для квирка
 	S["summon_nickname"] 					>> summon_nickname // BLUEMOON ADD - выбор прозвища для призываемого
 	S["feature_hardsuit_with_tail"] 		>> features["hardsuit_with_tail"]
@@ -1214,6 +1211,21 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["chosen_limb_id"] >> chosen_limb_id
 	S["hide_ckey"] >> hide_ckey //saved per-character
 
+	//Headshots
+	var/list/headshots_temp = list()
+	for(var/i = 1, i <= MAX_HEADSHOTS, i++)
+		var/postfix = i == 1 ? null : i-1
+		headshots_temp += null
+		S["headshot[postfix]"] >> headshots_temp[i]
+	features["headshot_links"] = headshots_temp
+
+	headshots_temp = list()
+	for(var/i = 1, i <= MAX_HEADSHOTS_NAKED, i++)
+		var/postfix = i == 1 ? null : i-1
+		headshots_temp += null
+		S["headshot_naked[postfix]"] >> headshots_temp[i]
+	features["headshot_naked_links"] = headshots_temp
+	headshots_temp = list()
 
 	//Custom names
 	for(var/custom_name_id in GLOB.preferences_custom_names)
@@ -1576,6 +1588,29 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	features["silicon_flavor_text"] = copytext_char(features["silicon_flavor_text"], 1, MAX_FLAVOR_LEN)
 	features["custom_species_lore"] = copytext_char(features["custom_species_lore"], 1, MAX_FLAVOR_LEN) //SPLURT edit
 	features["ooc_notes"] = copytext_char(features["ooc_notes"], 1, MAX_FLAVOR_LEN)
+
+	//Headshots
+	features["headshot_links"] = sanitize_islist(features["headshot_links"], list())
+	headshots_temp = features["headshot_links"]
+	if(headshots_temp.len != MAX_HEADSHOTS)
+		if(headshots_temp.len < MAX_HEADSHOTS)
+			for(var/i = headshots_temp.len, i+1 <= MAX_HEADSHOTS, i++)
+				headshots_temp[i+1] = null
+		else
+			headshots_temp.Cut(MAX_HEADSHOTS+1)
+	for(var/i = 1, i <= headshots_temp.len, i++)
+		headshots_temp[i] = sanitize_text(headshots_temp[i])
+
+	features["headshot_naked_links"] = sanitize_islist(features["headshot_naked_links"], list())
+	headshots_temp = features["headshot_naked_links"]
+	if(headshots_temp.len != MAX_HEADSHOTS_NAKED)
+		if(headshots_temp.len < MAX_HEADSHOTS_NAKED)
+			for(var/i = headshots_temp.len, i+1 <= MAX_HEADSHOTS_NAKED, i++)
+				headshots_temp[i+1] = null
+		else
+			headshots_temp.Cut(MAX_HEADSHOTS_NAKED+1)
+	for(var/i = 1, i <= headshots_temp.len, i++)
+		headshots_temp[i] = sanitize_text(headshots_temp[i])
 
 	//load every advanced coloring mode thing in one go
 	//THIS MUST BE DONE AFTER ALL FEATURE SAVES OR IT WILL NOT WORK
@@ -1984,16 +2019,17 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["egg_shell"], egg_shell)
 	WRITE_FILE(S["pregnancy_inflation"], pregnancy_inflation)
 	WRITE_FILE(S["pregnancy_breast_growth"], pregnancy_breast_growth)
-	WRITE_FILE(S["headshot"], features["headshot_link"])
-	WRITE_FILE(S["headshot1"], features["headshot_link1"])
-	WRITE_FILE(S["headshot2"], features["headshot_link2"])
-	//SPLURT EDIT END
-	// BLUEMOON ADD START
-	WRITE_FILE(S["headshot_naked"], features["headshot_naked_link"])
-	WRITE_FILE(S["headshot_naked1"], features["headshot_naked_link1"])
-	WRITE_FILE(S["headshot_naked2"], features["headshot_naked_link2"])
-	// BLUEMOON ADD END
 
+	//Headshots
+	var/list/headshots_temp = features["headshot_links"]
+	for(var/i = 1, i <= LAZYLEN(headshots_temp), i++)
+		var/postfix = i == 1 ? null : i-1
+		WRITE_FILE(S["headshot[postfix]"], headshots_temp[i])
+
+	headshots_temp = features["headshot_naked_links"]
+	for(var/i = 1, i <= LAZYLEN(headshots_temp), i++)
+		var/postfix = i == 1 ? null : i-1
+		WRITE_FILE(S["headshot_naked[postfix]"], headshots_temp[i])
 
 	//gear loadout
 	if(islist(loadout_data))

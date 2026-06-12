@@ -391,7 +391,9 @@
 /atom/movable/proc/set_glide_size(target = 8)
 #ifdef SMOOTH_MOVEMENT
 	SEND_SIGNAL(src, COMSIG_MOVABLE_UPDATE_GLIDE_SIZE, target)
-	glide_size = target
+	// Cap the upper bound: fast space drift feeds glide via the unclamped MOVEMENT_ADJUSTED_GLIDE_SIZE, and under MC lag the
+	// inflated visual_delay makes the sprite slide past one tile per render -> "teleport" look. Don't raise the floor: 0 means an instant move.
+	glide_size = min(target, MAX_GLIDE_SIZE)
 
 	for(var/mob/buckled_mob as anything in buckled_mobs)
 		buckled_mob.set_glide_size(target)

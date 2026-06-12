@@ -182,12 +182,12 @@
 
 /datum/uplink_item/bundles_tc/reroll
 	name = "Renegotiate Contract"
-	desc = "Сообщите работодателям, что хотите новые задания. Можно сделать только дважды."
+	desc = "Сообщите работодателям, что хотите новые задания. Первый рерол бесплатный, каждый следующий — 1 ТК."
 	item = /obj/effect/gibspawner/generic
 	cost = 0
 	cant_discount = TRUE
 	restricted = TRUE
-	limited_stock = 2
+	limited_stock = -1
 
 /datum/uplink_item/bundles_tc/reroll/purchase(mob/user, datum/component/uplink/U)
 	var/datum/antagonist/traitor/T = user?.mind?.has_antag_datum(/datum/antagonist/traitor)

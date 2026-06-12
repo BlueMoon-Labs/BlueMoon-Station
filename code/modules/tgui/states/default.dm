@@ -30,6 +30,11 @@ GLOBAL_DATUM_INIT(default_state, /datum/ui_state/default, new)
 	if(. <= UI_DISABLED)
 		return
 
+	if(istype(src_object, /datum/computer_file/program))
+		var/datum/computer_file/program/prog = src_object
+		if(prog.computer == aiPDA && !stat)
+			return UI_INTERACTIVE
+
 	// Robots can interact with anything they can see.
 	var/list/clientviewlist = getviewsize(client.view)
 	if(get_dist(src, src_object) <= min(clientviewlist[1],clientviewlist[2]))
@@ -40,6 +45,11 @@ GLOBAL_DATUM_INIT(default_state, /datum/ui_state/default, new)
 	. = shared_ui_interaction(src_object)
 	if(. < UI_INTERACTIVE)
 		return
+
+	if(istype(src_object, /datum/computer_file/program))
+		var/datum/computer_file/program/prog = src_object
+		if(prog.computer == aiPDA && !stat)
+			return UI_INTERACTIVE
 
 	// The AI can interact with anything it can see nearby, or with cameras while wireless control is enabled.
 	if(!control_disabled && can_see(src_object))

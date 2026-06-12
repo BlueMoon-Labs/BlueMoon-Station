@@ -22,40 +22,42 @@
 
 /datum/preferences/process_link(mob/user, list/href_list)
 	switch(href_list["preference"])
-		if ("headshot")
-			set_headshot_link(user, "headshot_link")
-		if ("headshot1")
-			set_headshot_link(user, "headshot_link1")
-		if ("headshot2")
-			set_headshot_link(user, "headshot_link2")
-		if ("headshot_naked")
-			set_headshot_link(user, "headshot_naked_link")
-		if ("headshot_naked1")
-			set_headshot_link(user, "headshot_naked_link1")
-		if ("headshot_naked2")
-			set_headshot_link(user, "headshot_naked_link2")
+		if("headshot")
+			var/i = href_list["select_slot"] || 1
+			if(istext(i))
+				i = text2num(i)
+			i = clamp(i, 1, MAX_HEADSHOTS)
+			set_headshot_link(user, i, features["headshot_links"])
+		if("headshot_naked")
+			var/i = href_list["select_slot"] || 1
+			if(istext(i))
+				i = text2num(i)
+			i = clamp(i, 1, MAX_HEADSHOTS_NAKED)
+			set_headshot_link(user, i, features["headshot_naked_links"])
 		if ("open_tattoo_manager")
 			user.client?.open_tattoo_manager()
 
 	return ..()
 
 
-/datum/preferences/proc/set_headshot_link(mob/user, link_id)
-	var/headshot_link = get_headshot_link(user, features[link_id])
+/datum/preferences/proc/set_headshot_link(mob/user, link_index, list/links_list)
+	if(!user || !link_index || !islist(links_list))
+		return
+	var/headshot_link = get_headshot_link(user, links_list[link_index])
 	switch(headshot_link)
 		if (ACTION_HEADSHOT_LINK_REMOVE)
-			features[link_id] = null
+			links_list[link_index] = null
 			return
 		if (ACTION_HEADSHOT_LINK_NOOP)
 			return
 		else
-			if(features[link_id] == headshot_link)
+			if(links_list[link_index] == headshot_link)
 				return
 
 			to_chat(user, span_notice("Если картинка не отображается в игре должным образом, убедитесь, что это прямая ссылка на изображение, которая правильно открывается в обычном браузере."))
 			to_chat(user, span_notice("Имейте в виду, что размер фотографии будет уменьшен до 256x256 пикселей, поэтому чем квадратнее фотография, тем лучше она будет выглядеть."))
 
-			features[link_id] = headshot_link
+			links_list[link_index] = headshot_link
 
 
 /datum/preferences/proc/get_headshot_link(mob/user, old_link)

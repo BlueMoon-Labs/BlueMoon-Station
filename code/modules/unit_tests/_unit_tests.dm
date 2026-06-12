@@ -160,18 +160,23 @@
 #include "camera_photo_probe.dm"
 #include "can_inject_clothing.dm"
 #include "disposal_holder.dm"
+#include "fov_hearers.dm"
 #include "ghost_role_limbs.dm"
 #include "hallucination_stationmessage.dm"
 #include "memory_leak_limits.dm"
 #include "human_mob_gc.dm"
+#include "parallax_position.dm"
 #include "perf_optimizations.dm"
 #include "psychosis_pools.dm"
 #include "preload_size_budgets.dm"
 #include "image_leak_audit.dm"
+#include "rtt_window.dm"
 #include "screen_gc.dm"
+#include "space_drift.dm"
 #include "statpanel_listedturf.dm"
 #include "ssmobs_optimization.dm"
 #include "tattoo_system.dm"
+#include "techweb_copy.dm"
 
 #undef TEST_ASSERT
 #undef TEST_ASSERT_EQUAL

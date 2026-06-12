@@ -1467,7 +1467,7 @@
 	name = "Delivery Bag"
 	slot = ITEM_SLOT_BACK
 	path = /obj/item/storage/backpack/satchel/dilivery_bag
-	ckeywhitelist = list("troubleneko17th", "dimofon", "hazzi", "cupteazee", "kolhozniik", "dimakr")
+	ckeywhitelist = list("troubleneko17th", "dimofon", "hazzi", "cupteazee", "kolhozniik", "dimakr", "hartty")
 
 /datum/gear/donator/bm/dar_beacon
 	name = "Dar Jr beacon"

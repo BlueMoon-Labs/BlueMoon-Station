@@ -640,6 +640,14 @@ const ChatScreen = (props) => {
               </>
             )}
             {filteredMessages}
+            <div ref={(node) => {
+              if (node) {
+                const parent = node.parentElement?.closest('.Section__content');
+                if (parent) {
+                  parent.scrollTop = parent.scrollHeight;
+                }
+              }
+            }} key={messages.length} />
           </Stack>
         </Section>
       </Stack.Item>

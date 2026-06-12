@@ -100,6 +100,8 @@
 /mob/living/silicon/robot/proc/create_modularInterface()
 	if(!modularInterface)
 		modularInterface = new /obj/item/modular_computer/tablet/integrated(src)
+		modularInterface.saved_identification = real_name
+		modularInterface.saved_job = designation || "Cyborg"
 	modularInterface.layer = ABOVE_HUD_PLANE
 	modularInterface.plane = ABOVE_HUD_PLANE
 
@@ -192,6 +194,9 @@
 		builtInCamera.c_tag = real_name	//update the camera name too
 	if(aiPDA && !shell)
 		aiPDA.imprint_id(real_name, aiPDA.saved_job)
+	if(modularInterface)
+		modularInterface.saved_identification = real_name
+		modularInterface.saved_job = designation || "Cyborg"
 
 /mob/living/silicon/robot/proc/get_standard_name()
 	return "[(designation ? "[designation] " : "")][mmi.braintype]-[ident]"

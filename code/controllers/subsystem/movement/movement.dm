@@ -52,7 +52,11 @@ SUBSYSTEM_DEF(movement)
 	while(processing.len)
 		var/datum/move_loop/loop = processing[processing.len]
 		processing.len--
-		loop.process() //This shouldn't get nulls, if it does, runtime
+		// A hard-delete (e.g. SSgarbage force-collecting a still-bucketed, already-qdel'd loop) nulls this slot.
+		// Skip dead/null entries instead of runtiming on null.process(); a deleted loop has nothing left to do.
+		if(QDELETED(loop))
+			continue
+		loop.process()
 		if(!QDELETED(loop)) //Re-Insert the loop
 			loop.timer = world.time + loop.delay
 			queue_loop(loop)

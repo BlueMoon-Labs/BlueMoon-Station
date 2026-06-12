@@ -92,8 +92,10 @@
 	if(has_field_of_vision && CONFIG_GET(flag/use_field_of_vision))
 		LoadComponent(/datum/component/field_of_vision, field_of_vision_type)
 
-	// load rendering
-	reload_rendering()
+	// Rendering is already (re)loaded twice by this point: show_hud() above runs
+	// reload_rendering() (hud.dm), and view_size.resetToDefault() runs change_view()
+	// which does the same clickcatcher + parallax Reset + fullscreen reload. A third
+	// full parallax rebuild per Login was pure waste.
 
 	AddElement(/datum/element/weather_listener, /datum/weather/ash_storm, ZTRAIT_ASHSTORM, GLOB.ash_storm_sounds)
 

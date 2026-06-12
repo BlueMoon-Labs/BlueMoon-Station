@@ -242,7 +242,7 @@
 			//SPLURT EDIT
 			dat += "<h2>Headshot Image</h2>"
 			dat += "<a href='?_src_=prefs;preference=headshot'><b>Set Headshot Image</b></a><br>"
-			dat += headshot_preview_html(features["headshot_link"], 160, 120)
+			dat += headshot_preview_html(features["headshot_links"][1], 160, 120)
 			dat += "<br><br>"
 			//SPLURT EDIT END
 			//SKYRAT EDIT
