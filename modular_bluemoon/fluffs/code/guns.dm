@@ -962,8 +962,8 @@
 	if(!magazine || !magazine.max_ammo)
 		. += "Nebular-9-ammo-0"
 		return
-
-	var/fill_level = round(min(magazine.stored_ammo.len + 1, magazine.max_ammo) / magazine.max_ammo * 7)
+	var/total = magazine.stored_ammo.len + (chambered && chambered.BB ? 1 : 0)
+	var/fill_level = round(total / magazine.max_ammo * 7)
 	. += "Nebular-9-ammo-[fill_level]"
 
 /obj/item/modkit/p226_syndicate
@@ -1099,9 +1099,9 @@
 		return
 
 	var/charge_percent = cell.charge / cell.maxcharge
-	if(charge_percent>=0.3 && charge_percent<=0.6)
+	if(charge_percent>0.3 && charge_percent<=0.6)
 		. += "nebular-t-2"
-	else if(charge_percent>=0.1 && charge_percent<=0.3)
+	else if(charge_percent>0.1 && charge_percent<=0.3)
 		. += "nebular-t-1"
 	else if(charge_percent<=0.1)
 		. += "nebular-t-0"
@@ -1141,6 +1141,7 @@
 	icon_state = "supernova"
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/back.dmi'
 	item_state = "supernova"
 
 /obj/item/gun/ballistic/shotgun/automatic/combat/supernova/update_icon_state()
@@ -1509,6 +1510,7 @@
 	icon_state = "comet"
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/back.dmi'
 	item_state = "comet"
 
 /obj/item/gun/ballistic/automatic/wt550/comet/update_icon_state()
@@ -1523,7 +1525,8 @@
 	if(!magazine || !magazine.max_ammo)
 		. += "comet-0"
 		return
-	var/fill_level = round(magazine.stored_ammo.len / magazine.max_ammo * 8)
+	var/total = magazine.stored_ammo.len + (chambered && chambered.BB ? 1 : 0)
+	var/fill_level = round(total / magazine.max_ammo * 8)
 	if(fill_level < 8)  // при полном (8/8) — только base, без доп. оверлея
 		. += "comet-[fill_level]"
 
@@ -1542,6 +1545,7 @@
 	icon_state = "neutron"
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/back.dmi'
 	item_state = "neutron"
 
 /obj/item/gun/energy/xray/neutron/update_icon_state()
@@ -1559,9 +1563,10 @@
 	var/charge_percent = cell.charge / cell.maxcharge
 	if(charge_percent < 0.6 && charge_percent>= 0.3)
 		. += "neutron-2"
-	else if(charge_percent<0.3)
+	else if(charge_percent<0.3 && charge_percent>0.1)
 		. += "neutron-1"
-
+	else
+		. += "neutron-0"
 /obj/item/modkit/spectral_kit
 	name = "Spectral Kit"
 	desc = "A modkit for making a temperature gun into a Spectral."
@@ -1591,11 +1596,12 @@
 		. += "spectral-0"
 		return
 	var/charge_percent = cell.charge / cell.maxcharge
-	if(charge_percent <= 0.6 && charge_percent>0.3)
+	if(charge_percent < 0.6 && charge_percent>= 0.3)
 		. += "spectral-2"
-	else if(charge_percent<=0.3)
+	else if(charge_percent<0.3 && charge_percent>0.1)
 		. += "spectral-1"
-
+	else
+		. += "spectral-0"
 /obj/item/modkit/pulsar_kit
 	name = "Pulsar Kit"
 	desc = "A modkit for making a Riot Shotgun into a Pulsar."
@@ -1611,6 +1617,7 @@
 	icon_state = "pulsar"
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/back.dmi'
 	item_state = "pulsar-shot"
 
 /obj/item/gun/ballistic/shotgun/riot/pulsar/update_icon_state()
