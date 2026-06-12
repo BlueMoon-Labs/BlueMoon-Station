@@ -12,6 +12,7 @@
 #define JUKE_BOX 3
 #define JUKE_FALLOFF 4
 #define JUKE_SOUND 5
+#define JUKE_PERSONAL 6
 
 // Track data
 /// Name of the track
@@ -48,7 +49,14 @@ SUBSYSTEM_DEF(jukeboxes)
 	song_beat = beat
 	song_associated_id = assocID
 
-/datum/controller/subsystem/jukeboxes/proc/addjukebox(obj/jukebox, datum/track/T, jukefalloff = 1) //BLUEMOON EDIT
+/datum/controller/subsystem/jukeboxes/proc/jukebox_sound_enabled(mob/M, personal = FALSE)
+	if(!M.client?.prefs)
+		return FALSE
+	if(personal)
+		return M.client.prefs.toggles & SOUND_PERSONAL_JUKEBOXES
+	return M.client.prefs.toggles & SOUND_JUKEBOXES
+
+/datum/controller/subsystem/jukeboxes/proc/addjukebox(obj/jukebox, datum/track/T, jukefalloff = 1, personal = FALSE) //BLUEMOON EDIT
 	if(!istype(T))
 		CRASH("[src] tried to play a song with a nonexistant track")
 	var/channeltoreserve = pick(freejukeboxchannels)
@@ -66,7 +74,7 @@ SUBSYSTEM_DEF(jukeboxes)
 	//BLUEMOON ADD END
 	var/sound/song_to_init = sound(T.song_path)
 	freejukeboxchannels -= channeltoreserve
-	var/list/youvegotafreejukebox = list(T, channeltoreserve, jukebox, jukefalloff, song_to_init)
+	var/list/youvegotafreejukebox = list(T, channeltoreserve, jukebox, jukefalloff, song_to_init, personal)
 
 	song_to_init.status = SOUND_MUTE
 	song_to_init.environment = 7
@@ -83,7 +91,7 @@ SUBSYSTEM_DEF(jukeboxes)
 			continue
 		if(!M.client.prefs)
 			continue
-		if(!(M.client.prefs.toggles & SOUND_JUKEBOXES))
+		if(!jukebox_sound_enabled(M, personal))
 			continue
 		//BLUEMOON ADD START
 		var/area/mob_area = get_area(M)
@@ -227,6 +235,7 @@ SUBSYSTEM_DEF(jukeboxes)
 
 		var/list/audible_zlevels = get_multiz_accessible_levels(jukebox_loc.z) //TODO - for multiz refresh, this should use the cached zlevel connections var in SSMapping. For now this is fine!
 
+		var/personal = jukeinfo[JUKE_PERSONAL]
 		var/sound/song_played = jukeinfo[JUKE_SOUND]
 		var/turf/currentturf = get_turf(jukebox)
 		var/area/currentarea = get_area(jukebox)
@@ -251,7 +260,7 @@ SUBSYSTEM_DEF(jukeboxes)
 				continue
 			if(!M.client.prefs)
 				continue
-			if(!(M.client.prefs.toggles & SOUND_JUKEBOXES))
+			if(!jukebox_sound_enabled(M, personal))
 				M.stop_sound_channel(jukeinfo[JUKE_CHANNEL])
 				continue
 
@@ -293,3 +302,4 @@ SUBSYSTEM_DEF(jukeboxes)
 #undef JUKE_BOX
 #undef JUKE_FALLOFF
 #undef JUKE_SOUND
+#undef JUKE_PERSONAL

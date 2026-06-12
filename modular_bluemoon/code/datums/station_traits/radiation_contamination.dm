@@ -95,7 +95,7 @@
 	return null
 
 /datum/station_trait/radiation_contamination/proc/spawn_contamination_payload(turf/spawn_turf, spawn_index)
-	switch(spawn_index % 4)
+	switch(spawn_index % 5)
 		if(0)
 			var/obj/structure/reagent_dispensers/urbanismbarrel/radium/brl = new(spawn_turf)
 			contamination_atoms += brl
@@ -111,6 +111,9 @@
 		if(3)
 			var/obj/item/stock_parts/cell/bluespacereactor/cell = new(spawn_turf)
 			contamination_atoms += cell
+		if(4)
+			var/obj/item/fuel_rod/plutonium/rod = new(spawn_turf)
+			contamination_atoms += rod
 
 /datum/station_trait/radiation_contamination/proc/on_job_roundstart_spawn(datum/source, datum/job/job, mob/living/spawned, client/player_client)
 	SIGNAL_HANDLER

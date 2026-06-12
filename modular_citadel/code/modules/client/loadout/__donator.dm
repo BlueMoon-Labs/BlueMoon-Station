@@ -125,8 +125,14 @@
 	path = /obj/item/clothing/mask/gas/syndicate
 
 /datum/gear/donator/jukebox
+	name = "Handled Jukebox"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/jukebox
+	cost = 4
+
+/datum/gear/donator/jukebox_mega
 	name = "Personal Music Box"
-	description = "Переносная музыкальная шкатулка. Загружайте свои .ogg с компьютера и играйте их рядом с собой."
+	description = "Переносная музыкальная шкатулка."
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/personal_music_box
 	cost = 4

@@ -4,60 +4,62 @@
 #define PERSONAL_MUSIC_BOX_UPLOAD_COOLDOWN 30 SECONDS
 #define PERSONAL_MUSIC_BOX_FILE_CHANGE_COOLDOWN 3 MINUTES
 #define PERSONAL_MUSIC_BOX_PLAY_COOLDOWN 10 SECONDS
-#define PERSONAL_MUSIC_BOX_LOOP_INTERVAL 20 MINUTES
+#define PERSONAL_MUSIC_BOX_DEFAULT_TRACK_LENGTH 20 MINUTES
 #define PERSONAL_MUSIC_BOX_DEFAULT_VOLUME 100
-#define PERSONAL_MUSIC_BOX_EXTRA_RANGE 10
 
-#define CHANNEL_PERSONAL_MUSIC_1 988
-#define CHANNEL_PERSONAL_MUSIC_2 987
-#define CHANNEL_PERSONAL_MUSIC_3 986
-#define CHANNEL_PERSONAL_MUSIC_4 985
-
-GLOBAL_LIST_EMPTY(personal_music_boxes)
 GLOBAL_VAR_INIT(personal_music_boxes_last_upload, 0)
 GLOBAL_VAR_INIT(personal_music_boxes_last_play, 0)
 
-/datum/looping_sound/personal_music_box
-	mid_sounds = list()
-	mid_length = PERSONAL_MUSIC_BOX_LOOP_INTERVAL
-	volume = PERSONAL_MUSIC_BOX_DEFAULT_VOLUME
-	extra_range = PERSONAL_MUSIC_BOX_EXTRA_RANGE
-	var/sound_channel = 0
-	var/stopped = TRUE
+/datum/component/jukebox/personal_music_box
+	dupe_type = /datum/component/jukebox/personal_music_box
+	var/datum/track/custom_track
 
-/datum/looping_sound/personal_music_box/start(atom/on_behalf_of)
-	stopped = FALSE
-	return ..()
-
-/datum/looping_sound/personal_music_box/get_sound(starttime, _mid_sounds)
-	var/sounds = _mid_sounds || mid_sounds
-	if(!islist(sounds))
-		return sounds
-	if(!length(sounds))
-		return null
-	return sounds[1]
-
-/datum/looping_sound/personal_music_box/play(soundfile, volume_override)
-	if(!parent || !sound_channel || stopped)
+/datum/component/jukebox/personal_music_box/Initialize(_volume, _on_music_toggle)
+	. = ..(FALSE, PRICE_FREE, _volume, _on_music_toggle)
+	if(. == COMPONENT_INCOMPATIBLE)
 		return
-	var/sound/S = sound(soundfile)
-	S.channel = sound_channel
-	S.repeat = 1
-	S.wait = 0
-	S.volume = volume_override || volume
-	playsound(parent, S, S.volume, FALSE, extra_range, channel = sound_channel, pressure_affected = FALSE)
+	repeat = TRUE
+	UnregisterSignal(parent, COMSIG_ITEM_ATTACK_SELF)
 
-/datum/looping_sound/personal_music_box/proc/halt()
-	stopped = TRUE
-	if(sound_channel)
-		for(var/mob/M in GLOB.player_list)
-			if(M.client)
-				M.stop_sound_channel(sound_channel)
-		sound_channel = 0
-	if(timerid)
-		deltimer(timerid)
-		timerid = null
-	loop_started = FALSE
+/datum/component/jukebox/personal_music_box/ui_status(mob/user)
+	return UI_CLOSE
+
+/datum/component/jukebox/personal_music_box/proc/set_custom_track(track_path, track_name)
+	QDEL_NULL(custom_track)
+	if(!track_path)
+		return
+	custom_track = new(track_name, file(track_path), PERSONAL_MUSIC_BOX_DEFAULT_TRACK_LENGTH, 50, "personal_[REF(parent)]")
+
+/datum/component/jukebox/personal_music_box/proc/stop_playback()
+	if(!active && !playing)
+		return
+	stop = 0
+
+/datum/component/jukebox/personal_music_box/activate_music()
+	var/obj/item/personal_music_box/box = parent
+	if(playing || !queuedplaylist.len)
+		return FALSE
+	if(!SSjukeboxes.freejukeboxchannels.len)
+		return FALSE
+	if(!check_area(TRUE))
+		return FALSE
+	playing = queuedplaylist[1]
+	var/jukeboxslottotake = SSjukeboxes.addjukebox(box, playing, volume / 35, personal = TRUE)
+	if(!jukeboxslottotake)
+		playing = null
+		return FALSE
+	active = TRUE
+	START_PROCESSING(SSobj, src)
+	stop = world.time + playing.song_length
+	if(repeat)
+		queuedplaylist += queuedplaylist[1]
+	queuedplaylist.Cut(1, 2)
+	on_music_toggle?.Invoke(TRUE)
+	return TRUE
+
+/datum/component/jukebox/personal_music_box/Destroy()
+	QDEL_NULL(custom_track)
+	return ..()
 
 /obj/item/personal_music_box
 	name = "personal music box"
@@ -66,26 +68,33 @@ GLOBAL_VAR_INIT(personal_music_boxes_last_play, 0)
 	icon_state = "mbox0"
 	w_class = WEIGHT_CLASS_BULKY
 	verb_say = "states"
-	var/datum/looping_sound/personal_music_box/soundloop
-	var/curfile
+	var/curfile_path
 	var/song_name
-	var/playing = FALSE
 	var/has_track = FALSE
 	var/last_file_change = 0
-	var/curvol = PERSONAL_MUSIC_BOX_DEFAULT_VOLUME
+
+/obj/item/personal_music_box/ComponentInitialize()
+	. = ..()
+	AddComponent(/datum/component/jukebox/personal_music_box, PERSONAL_MUSIC_BOX_DEFAULT_VOLUME, CALLBACK(src, PROC_REF(on_music_toggle)))
 
 /obj/item/personal_music_box/Initialize(mapload)
 	. = ..()
-	GLOB.personal_music_boxes += src
-	soundloop = new(src, FALSE)
 	update_icon()
 
 /obj/item/personal_music_box/Destroy()
-	GLOB.personal_music_boxes -= src
-	if(playing)
+	if(is_playing())
 		halt_playback()
-	QDEL_NULL(soundloop)
 	return ..()
+
+/obj/item/personal_music_box/proc/get_jukebox_component()
+	return GetComponent(/datum/component/jukebox/personal_music_box)
+
+/obj/item/personal_music_box/proc/is_playing()
+	var/datum/component/jukebox/personal_music_box/J = get_jukebox_component()
+	return J?.active
+
+/obj/item/personal_music_box/proc/on_music_toggle(active)
+	update_icon()
 
 /obj/item/personal_music_box/examine(mob/user)
 	. = ..()
@@ -94,7 +103,7 @@ GLOBAL_VAR_INIT(personal_music_boxes_last_play, 0)
 		. += span_notice("Загружен трек: [song_name].")
 
 /obj/item/personal_music_box/update_icon()
-	icon_state = playing ? "mboxon" : (has_track ? "mbox1" : "mbox0")
+	icon_state = is_playing() ? "mboxon" : (has_track ? "mbox1" : "mbox0")
 
 /obj/item/personal_music_box/attack_self(mob/user)
 	. = ..()
@@ -112,11 +121,12 @@ GLOBAL_VAR_INIT(personal_music_boxes_last_play, 0)
 		ui.open()
 
 /obj/item/personal_music_box/ui_data(mob/user)
+	var/datum/component/jukebox/personal_music_box/J = get_jukebox_component()
 	var/list/data = list()
-	data["playing"] = playing
-	data["has_track"] = has_track && curfile
+	data["playing"] = is_playing()
+	data["has_track"] = has_track && curfile_path
 	data["track_name"] = song_name
-	data["volume"] = curvol
+	data["volume"] = J?.volume || PERSONAL_MUSIC_BOX_DEFAULT_VOLUME
 	data["in_hand"] = (loc == user)
 	data["upload_ready"] = can_upload(user)
 	data["play_ready"] = can_start_playback()
@@ -143,15 +153,20 @@ GLOBAL_VAR_INIT(personal_music_boxes_last_play, 0)
 			INVOKE_ASYNC(src, PROC_REF(upload_file), living_user)
 			return TRUE
 		if("set_volume")
+			var/datum/component/jukebox/personal_music_box/J = get_jukebox_component()
+			if(!J)
+				return
 			var/new_volume = text2num(params["volume"])
 			if(!isnum(new_volume))
 				return
-			curvol = clamp(round(new_volume), 0, 100)
-			soundloop.volume = curvol
+			J.volume = clamp(round(new_volume), 0, 100)
+			var/juke_index = SSjukeboxes.findjukeboxindex(src)
+			if(juke_index)
+				SSjukeboxes.updatejukebox(juke_index, jukefalloff = J.volume / 35)
 			return TRUE
 
 /obj/item/personal_music_box/proc/can_upload(mob/user)
-	if(playing)
+	if(is_playing())
 		return FALSE
 	if(loc != user)
 		return FALSE
@@ -164,11 +179,11 @@ GLOBAL_VAR_INIT(personal_music_boxes_last_play, 0)
 	return TRUE
 
 /obj/item/personal_music_box/proc/can_start_playback()
-	if(playing || !curfile)
+	if(is_playing() || !curfile_path)
 		return FALSE
 	if(world.time < GLOB.personal_music_boxes_last_play + PERSONAL_MUSIC_BOX_PLAY_COOLDOWN)
 		return FALSE
-	if(!find_free_channel())
+	if(!SSjukeboxes.freejukeboxchannels.len)
 		return FALSE
 	return TRUE
 
@@ -191,7 +206,7 @@ GLOBAL_VAR_INIT(personal_music_boxes_last_play, 0)
 	var/infile = input(user, "Choose an .ogg file to load:", name) as null|file
 	if(!infile || QDELETED(src))
 		return
-	if(playing)
+	if(is_playing())
 		return
 	if(!can_upload(user))
 		return
@@ -221,20 +236,21 @@ GLOBAL_VAR_INIT(personal_music_boxes_last_play, 0)
 			fdel(logged_filename)
 		return
 
-	curfile = file(logged_filename)
-	if(!curfile || length(curfile) != file_size)
+	if(!fexists(logged_filename) || length(file(logged_filename)) != file_size)
 		if(fexists(logged_filename))
 			fdel(logged_filename)
-		curfile = null
+		curfile_path = null
 		to_chat(user, span_warning("Не удалось загрузить трек."))
 		return
 	var/file_header = copytext(file2text(logged_filename), 1, 5)
 	if(file_header != "OggS")
 		if(fexists(logged_filename))
 			fdel(logged_filename)
-		curfile = null
+		curfile_path = null
 		to_chat(user, span_warning("Файл не является валидным OGG (ожидался заголовок OggS)."))
 		return
+
+	curfile_path = logged_filename
 
 	last_file_change = world.time
 	GLOB.personal_music_boxes_last_upload = world.time
@@ -242,68 +258,45 @@ GLOBAL_VAR_INIT(personal_music_boxes_last_play, 0)
 
 	song_name = get_personal_music_box_track_name(filename)
 	has_track = TRUE
+	var/datum/component/jukebox/personal_music_box/J = get_jukebox_component()
+	J?.set_custom_track(curfile_path, song_name)
 	update_icon()
 	to_chat(user, span_notice("Трек «[song_name]» загружен."))
 
 /obj/item/personal_music_box/proc/toggle_playback(mob/living/user)
 	playsound(loc, 'sound/machines/ping.ogg', 50, FALSE)
-	if(!playing)
-		if(!curfile)
+	var/datum/component/jukebox/personal_music_box/J = get_jukebox_component()
+	if(!J)
+		return
+	if(!J.active)
+		if(!curfile_path || !J.custom_track)
 			to_chat(user, span_warning("Сначала загрузите трек."))
 			return
-		var/new_channel = find_free_channel()
-		if(!new_channel)
-			to_chat(user, span_warning("Слишком много музыкальных шкатулок играют одновременно."))
+		if(!SSjukeboxes.freejukeboxchannels.len)
+			to_chat(user, span_warning("Слишком много музыкальных автоматов играют одновременно."))
 			return
 		if(world.time < GLOB.personal_music_boxes_last_play + PERSONAL_MUSIC_BOX_PLAY_COOLDOWN)
 			to_chat(user, span_warning("Подождите немного перед воспроизведением."))
 			return
 		GLOB.personal_music_boxes_last_play = world.time
-		playing = TRUE
-		soundloop.sound_channel = new_channel
-		soundloop.volume = curvol
-		soundloop.mid_sounds = list(curfile)
-		soundloop.start()
+		J.queuedplaylist = list(J.custom_track)
+		if(!J.activate_music())
+			to_chat(user, span_warning("Не удалось начать воспроизведение."))
+			return
 		update_icon()
 		visible_message(span_notice("[user] включает [src]."), span_notice("Вы включаете [src]."), vision_distance = COMBAT_MESSAGE_RANGE)
-		user.log_message("played personal music box track: [curfile]", LOG_GAME)
+		user.log_message("played personal music box track: [curfile_path]", LOG_GAME)
 	else
 		halt_playback(user)
 
 /obj/item/personal_music_box/proc/halt_playback(mob/living/user)
-	if(!playing && soundloop.stopped)
+	var/datum/component/jukebox/personal_music_box/J = get_jukebox_component()
+	if(!J || (!J.active && !J.playing))
 		return
-	playing = FALSE
-	soundloop.halt()
+	J.stop_playback()
 	update_icon()
-	if(user && curfile)
-		user.log_message("stopped personal music box track: [curfile]", LOG_GAME)
-
-/obj/item/personal_music_box/proc/find_free_channel()
-	var/free_mask = 1|2|4|8
-	for(var/obj/item/personal_music_box/box in GLOB.personal_music_boxes)
-		if(!box.playing || box.soundloop.stopped)
-			continue
-		switch(box.soundloop.sound_channel)
-			if(CHANNEL_PERSONAL_MUSIC_1)
-				free_mask &= ~1
-			if(CHANNEL_PERSONAL_MUSIC_2)
-				free_mask &= ~2
-			if(CHANNEL_PERSONAL_MUSIC_3)
-				free_mask &= ~4
-			if(CHANNEL_PERSONAL_MUSIC_4)
-				free_mask &= ~8
-	if(!free_mask)
-		return 0
-	if(free_mask & 1)
-		return CHANNEL_PERSONAL_MUSIC_1
-	if(free_mask & 2)
-		return CHANNEL_PERSONAL_MUSIC_2
-	if(free_mask & 4)
-		return CHANNEL_PERSONAL_MUSIC_3
-	if(free_mask & 8)
-		return CHANNEL_PERSONAL_MUSIC_4
-	return 0
+	if(user && curfile_path)
+		user.log_message("stopped personal music box track: [curfile_path]", LOG_GAME)
 
 /proc/get_personal_music_box_track_name(filename)
 	var/track_label = filename
@@ -321,10 +314,5 @@ GLOBAL_VAR_INIT(personal_music_boxes_last_play, 0)
 #undef PERSONAL_MUSIC_BOX_UPLOAD_COOLDOWN
 #undef PERSONAL_MUSIC_BOX_FILE_CHANGE_COOLDOWN
 #undef PERSONAL_MUSIC_BOX_PLAY_COOLDOWN
-#undef PERSONAL_MUSIC_BOX_LOOP_INTERVAL
+#undef PERSONAL_MUSIC_BOX_DEFAULT_TRACK_LENGTH
 #undef PERSONAL_MUSIC_BOX_DEFAULT_VOLUME
-#undef PERSONAL_MUSIC_BOX_EXTRA_RANGE
-#undef CHANNEL_PERSONAL_MUSIC_1
-#undef CHANNEL_PERSONAL_MUSIC_2
-#undef CHANNEL_PERSONAL_MUSIC_3
-#undef CHANNEL_PERSONAL_MUSIC_4
