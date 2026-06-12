@@ -493,20 +493,3 @@
 		'sound/items/knife/knife_slice5.ogg',
 		'sound/items/knife/knife_slice6.ogg'
 	)
-
-/datum/sound_effect/hypertorus_calm
-	key = SFX_HYPERTORUS_CALM
-	file_paths = list(
-		'sound/machines/sm/accent/normal/1.ogg',
-		'sound/machines/sm/accent/normal/2.ogg',
-		'sound/machines/sm/accent/normal/3.ogg',
-	)
-
-/datum/sound_effect/hypertorus_melting
-	key = SFX_HYPERTORUS_MELTING
-	file_paths = list(
-		'sound/machines/sm/accent/delam/1.ogg',
-		'sound/machines/sm/accent/delam/2.ogg',
-		'sound/machines/warning-buzzer.ogg',
-		'sound/machines/engine_alert1.ogg',
-	)

@@ -143,6 +143,10 @@
 ///to prevent accent sounds from layering
 #define HYPERTORUS_ACCENT_SOUND_MIN_COOLDOWN (3 SECONDS)
 
+/// SFX keys for HFR ambient accents — datums below; assets under sound/machines/hypertorus/
+#define SFX_HYPERTORUS_CALM "hypertorus_calm"
+#define SFX_HYPERTORUS_MELTING "hypertorus_melting"
+
 #define HYPERTORUS_COUNTDOWN_TIME (30 SECONDS)
 
 //
@@ -237,3 +241,22 @@
 #ifndef AREA_USAGE_ENVIRON
 #define AREA_USAGE_ENVIRON ENVIRON
 #endif
+
+// Hypertorus accent sounds (Kovapa) — .ogg under sound/machines/hypertorus/
+
+/datum/sound_effect/hypertorus_calm
+	key = SFX_HYPERTORUS_CALM
+	file_paths = list(
+		'sound/machines/hypertorus/accent/calm/1.ogg',
+		'sound/machines/hypertorus/accent/calm/2.ogg',
+		'sound/machines/hypertorus/accent/calm/3.ogg',
+	)
+
+/datum/sound_effect/hypertorus_melting
+	key = SFX_HYPERTORUS_MELTING
+	file_paths = list(
+		'sound/machines/hypertorus/accent/melting/1.ogg',
+		'sound/machines/hypertorus/accent/melting/2.ogg',
+		'sound/machines/hypertorus/accent/melting/3.ogg',
+		'sound/machines/hypertorus/accent/melting/4.ogg',
+	)

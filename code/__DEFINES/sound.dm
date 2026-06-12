@@ -854,5 +854,3 @@ GLOBAL_LIST_EMPTY(sfx_datum_by_key)
 #define SFX_DRAWER_CLOSE "drawer_close"
 #define SFX_ROLLING_PIN_ROLLING "rolling_pin_rolling"
 #define SFX_KNIFE_SLICE "knife_slice"
-#define SFX_HYPERTORUS_CALM "hypertorus_calm"
-#define SFX_HYPERTORUS_MELTING "hypertorus_melting"
