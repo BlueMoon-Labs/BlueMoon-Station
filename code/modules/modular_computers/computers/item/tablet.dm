@@ -93,6 +93,9 @@
 		QDEL_NULL(inserted_item)
 	return ..()
 
+/obj/item/modular_computer/tablet/ui_state(mob/user)
+	return GLOB.human_adjacent_state_no_view
+
 /obj/item/modular_computer/tablet/ui_act(action, params)
 	. = ..()
 	if(.)
