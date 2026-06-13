@@ -470,7 +470,15 @@
 		chat.can_reply = FALSE
 		return
 	var/target_name = target.computer.saved_identification
-	var/input_message = tgui_input_text(user, "Enter [mime_mode ? "emojis":"a message"].", "NT Messaging[target_name ? " ([target_name])" : ""]", max_length = MAX_MESSAGE_LEN, encode = FALSE)
+	var/input_message
+	var/input_title = "NT Messaging[target_name ? " ([target_name])" : ""]"
+	var/input_desc = "Enter [mime_mode ? "emojis":"a message"]."
+	if(user.client?.prefs.tgui_input_verbs)
+		input_message = tgui_input_text(user, input_desc, input_title, max_length = MAX_MESSAGE_LEN, encode = FALSE)
+	else
+		input_message = stripped_input(user, input_desc, input_title)
+	if(!input_message)
+		return
 	send_message(user, input_message, list(chat))
 
 /// Helper that sends a message to everyone
