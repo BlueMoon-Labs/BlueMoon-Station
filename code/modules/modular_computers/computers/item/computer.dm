@@ -524,9 +524,10 @@
 		for(var/h in all_components)
 			components_to_remove += all_components[h]
 
+	if(components_to_remove.len > 1 && !tool.use_tool(physical, user, 1.5 SECONDS, volume = 50))
+		return
 	for(var/obj/item/computer_hardware/H in components_to_remove)
 		uninstall_component(H, user)
-	tool.play_tool_sound(physical)
 
 /obj/item/modular_computer/attackby(obj/item/W as obj, mob/user as mob)
 	// Check for ID first
