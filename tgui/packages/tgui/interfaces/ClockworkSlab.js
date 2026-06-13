@@ -331,7 +331,7 @@ export const CSTutorial = (props) => {
           <Fragment key={bind.name ? bind.name : "none"}>
             A <b>Quickbind</b> slot ({rec_binds.indexOf(bind)+1}),
             currently set to&nbsp;
-            <span style={`color:${bind ? bind.color : "#BE8700"}`}>
+            <span style={{ color: bind ? bind.color : "#BE8700" }}>
               {bind?.name ? bind.name : "None"}
             </span>
             .

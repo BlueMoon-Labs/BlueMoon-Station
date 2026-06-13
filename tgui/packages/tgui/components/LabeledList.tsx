@@ -18,7 +18,9 @@ export const LabeledList = (props: LabeledListProps) => {
   const { children } = props;
   return (
     <table className="LabeledList">
-      {children}
+      <tbody>
+        {children}
+      </tbody>
     </table>
   );
 };

@@ -215,7 +215,7 @@ export const TelecommsInteraction = (props) => {
                             'remove': thing,
                           })}>
                           {valid ? (
-                            <span style={`color: ${valid.color}`}>
+                            <span style={{ color: valid.color }}>
                               {`${thing} (${valid.name})`}
                             </span>
                           ) : (
