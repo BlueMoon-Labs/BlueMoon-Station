@@ -50,7 +50,7 @@
 	extended_desc = "Позволяет вести классическую переписку с другими модульными устройствами."
 	size = 0
 	undeletable = TRUE
-	usage_flags = PROGRAM_PDA
+	usage_flags = PROGRAM_ON_TABLETS
 	ui_header = "ntnrc_idle.gif"
 	tgui_id = "NtosMessenger"
 	program_icon = "comment-alt"

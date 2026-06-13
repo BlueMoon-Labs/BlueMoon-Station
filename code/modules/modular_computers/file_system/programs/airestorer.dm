@@ -6,7 +6,7 @@
 	extended_desc = "Набор для восстановления прошивки, способный реконструировать повреждённые ИИ-системы. Требуется прямое подключение ИИ через слот интелкарты."
 	size = 12
 	requires_ntnet = FALSE
-	usage_flags = PROGRAM_CONSOLE | PROGRAM_LAPTOP
+	usage_flags = PROGRAM_CONSOLE
 	transfer_access = ACCESS_HEADS
 	available_on_ntnet = TRUE
 	tgui_id = "NtosAiRestorer"

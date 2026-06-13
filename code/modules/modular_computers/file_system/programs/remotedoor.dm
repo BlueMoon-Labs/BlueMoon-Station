@@ -11,7 +11,7 @@
 	extended_desc = "This program allows remote control of nearby airlocks and doors."
 	requires_ntnet = FALSE
 	transfer_access = null
-	usage_flags = PROGRAM_PDA
+	usage_flags = PROGRAM_ON_TABLETS
 	size = 4
 	tgui_id = "NtosRemoteDoor"
 	program_icon = "door-open"

@@ -73,7 +73,9 @@
 #define PROGRAM_CONSOLE (1<<0)
 #define PROGRAM_LAPTOP (1<<1)
 #define PROGRAM_TABLET (1<<2)
-#define PROGRAM_PDA (1<<2) // Same bit as PROGRAM_TABLET — PDA is a type of handheld computer
+#define PROGRAM_PDA (1<<3)
+#define PROGRAM_ON_TABLETS PROGRAM_TABLET | PROGRAM_PDA
+#define PROGRAM_ON_COMPUTERS PROGRAM_CONSOLE | PROGRAM_LAPTOP
 //program_flags
 #define PROGRAM_REQUIRES_NTNET (1<<0)
 #define PROGRAM_ON_NTNET_STORE (1<<1)

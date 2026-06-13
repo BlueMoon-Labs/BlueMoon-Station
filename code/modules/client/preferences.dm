@@ -2682,6 +2682,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "<br>"
 					dat += "<b>[play_admin_midis_label]:</b> <a href='?_src_=prefs;preference=hear_midis'>[(toggles & SOUND_MIDI) ? enabled_label : disabled_label]</a><br>"
 					dat += "<b>[play_lobby_music_label]:</b> <a href='?_src_=prefs;preference=lobby_music'>[(toggles & SOUND_LOBBY) ? enabled_label : disabled_label]</a><br>"
+					dat += "<b>Личные музыкальные боксы:</b> <a href='?_src_=prefs;preference=hear_personal_jukeboxes'>[(toggles & SOUND_PERSONAL_JUKEBOXES) ? enabled_label : disabled_label]</a><br>"
 					dat += "<b>[see_pull_requests_label]:</b> <a href='?_src_=prefs;preference=pull_requests'>[(chat_toggles & CHAT_PULLR) ? enabled_label : disabled_label]</a><br>"
 					dat += "<br>"
 					if(user.client)
@@ -6016,6 +6017,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						user.client.playtitlemusic()
 					else
 						user.stop_sound_channel(CHANNEL_LOBBYMUSIC)
+
+				if("hear_personal_jukeboxes")
+					toggles ^= SOUND_PERSONAL_JUKEBOXES
 
 				if("ghost_ears")
 					chat_toggles ^= CHAT_GHOSTEARS

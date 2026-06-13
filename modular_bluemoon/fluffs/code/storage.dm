@@ -262,8 +262,13 @@
 	new /obj/item/modkit/katana_kit(src)
 	new /obj/item/modkit/nebular_t_kit(src)
 	new /obj/item/modkit/supernova_kit(src)
-	new /obj/item/modkit/pulsar_kit(src)
+	new /obj/item/modkit/pulsar_knife_kit(src)
 	new /obj/item/clothing/under/donator/bm/concord(src)
+	new /obj/item/modkit/quasar_kit(src)
+	new /obj/item/modkit/comet_kit(src)
+	new /obj/item/modkit/neutron_kit(src)
+	new /obj/item/modkit/spectral_kit(src)
+	new /obj/item/modkit/pulsar_kit(src)
 
 //////////////////////////////////////////////////
 

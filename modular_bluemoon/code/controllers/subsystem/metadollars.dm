@@ -3,9 +3,27 @@ SUBSYSTEM_DEF(metadollars)
 	flags = SS_NO_FIRE
 	var/list/round_earnings = list()
 	var/metadollar_burn_round_notice = null
+	var/list/metadollar_amount_cache = list()
+	var/list/metadollar_leaderboard = list()
+	var/metadollar_leaderboard_positions_tracked = 5
+
+/proc/bm_metadollar_json_path(target_ckey)
+	return "data/player_saves/[target_ckey[1]]/[target_ckey]/metadollars.json"
+
+/proc/bm_ckey_from_prefs_path(prefs_path)
+	if(!prefs_path)
+		return null
+	var/list/parts = splittext(prefs_path, "/")
+	if(parts.len < 2)
+		return null
+	return parts[parts.len - 1]
 
 /datum/controller/subsystem/metadollars/Initialize()
 	. = ..()
+	prep_metadollar_leaderboard()
+	var/recovered = recover_all_legacy_balances()
+	if(recovered)
+		log_world("Metadollars: restored legacy balances for [recovered] player(s) from preferences.sav backups.")
 	RegisterSignal(SSticker, COMSIG_TICKER_ROUND_STARTING, PROC_REF(round_begin_reset))
 	return SS_INIT_SUCCESS
 
@@ -13,6 +31,199 @@ SUBSYSTEM_DEF(metadollars)
 	SIGNAL_HANDLER
 	round_earnings = list()
 	metadollar_burn_round_notice = null
+
+/datum/controller/subsystem/metadollars/proc/metadollar_save(target_ckey)
+	if(!target_ckey || !(target_ckey in metadollar_amount_cache))
+		return
+	var/list/saving_data = list("metadollar_count" = metadollar_amount_cache[target_ckey])
+	var/target_file = file(bm_metadollar_json_path(target_ckey))
+	var/backup_file = file("[bm_metadollar_json_path(target_ckey)].backup")
+	if(fexists(backup_file))
+		fdel(backup_file)
+	WRITE_FILE(backup_file, json_encode(saving_data))
+	fcopy("[backup_file]", "[target_file]")
+	fdel(backup_file)
+
+/proc/bm_read_metadollars_from_savefile_path(prefs_path)
+	if(!prefs_path || !fexists(prefs_path))
+		return 0
+	var/savefile/S = new(prefs_path)
+	var/amount = 0
+	S["metadollars"] >> amount
+	return isnum(amount) ? max(0, round(amount)) : 0
+
+/proc/bm_read_legacy_metadollars_from_prefs_sav(target_ckey)
+	if(!target_ckey)
+		return 0
+	var/base = "data/player_saves/[target_ckey[1]]/[target_ckey]"
+	var/best = 0
+	for(var/suffix in list("/preferences.sav", "/preferences.sav.updatebac"))
+		best = max(best, bm_read_metadollars_from_savefile_path("[base][suffix]"))
+	return best
+
+/datum/controller/subsystem/metadollars/proc/reconcile_legacy_balance(target_ckey, legacy_hint = null)
+	if(!target_ckey)
+		return FALSE
+	var/legacy = legacy_hint
+	if(!isnum(legacy) || legacy < 0)
+		legacy = bm_read_legacy_metadollars_from_prefs_sav(target_ckey)
+	legacy = max(0, round(legacy))
+	if(legacy <= 0)
+		return FALSE
+	var/current = 0
+	if(target_ckey in metadollar_amount_cache)
+		current = metadollar_amount_cache[target_ckey]
+	else if(fexists(bm_metadollar_json_path(target_ckey)))
+		var/list/loaded = json_decode(file2text(file(bm_metadollar_json_path(target_ckey))))
+		if(islist(loaded) && isnum(loaded["metadollar_count"]))
+			current = max(0, round(loaded["metadollar_count"]))
+	if(legacy <= current)
+		return FALSE
+	metadollar_amount_cache[target_ckey] = legacy
+	metadollar_save(target_ckey)
+	log_game("Metadollars: restored [legacy] M$ for [target_ckey] (was [current] M$).")
+	return TRUE
+
+/datum/controller/subsystem/metadollars/proc/recover_all_legacy_balances()
+	if(!fexists("data/player_saves"))
+		return 0
+	var/recovered = 0
+	for(var/letterdir in flist("data/player_saves/"))
+		var/prefix = "data/player_saves/[letterdir]"
+		if(!fexists(prefix))
+			continue
+		for(var/sub in flist(prefix))
+			var/ck = ckey(sub)
+			if(!ck)
+				continue
+			if(reconcile_legacy_balance(ck))
+				recovered++
+	return recovered
+
+/datum/controller/subsystem/metadollars/proc/import_legacy_balance(target_ckey, amount)
+	reconcile_legacy_balance(target_ckey, amount)
+
+/datum/controller/subsystem/metadollars/proc/get_metadollars(target_ckey)
+	if(!target_ckey)
+		return 0
+	if(target_ckey in metadollar_amount_cache)
+		return metadollar_amount_cache[target_ckey]
+	var/json_path = bm_metadollar_json_path(target_ckey)
+	var/target_file = file(json_path)
+	var/amount = 0
+	if(fexists(target_file))
+		var/list/loaded = json_decode(file2text(target_file))
+		if(islist(loaded) && isnum(loaded["metadollar_count"]))
+			amount = max(0, round(loaded["metadollar_count"]))
+	else
+		amount = bm_read_legacy_metadollars_from_prefs_sav(target_ckey)
+		metadollar_amount_cache[target_ckey] = amount
+		metadollar_save(target_ckey)
+		return amount
+	reconcile_legacy_balance(target_ckey)
+	if(target_ckey in metadollar_amount_cache)
+		return metadollar_amount_cache[target_ckey]
+	metadollar_amount_cache[target_ckey] = amount
+	return amount
+
+/datum/controller/subsystem/metadollars/proc/set_metadollars(target_ckey, amount, client_key = null)
+	if(!target_ckey)
+		return
+	get_metadollars(target_ckey)
+	metadollar_amount_cache[target_ckey] = max(0, round(amount))
+	metadollar_save(target_ckey)
+	if(!client_key)
+		var/client/C = GLOB.directory[target_ckey]
+		client_key = C?.key
+	if(client_key)
+		adjust_leaderboard(client_key)
+
+/datum/controller/subsystem/metadollars/proc/metadollar_adjust(amt, target_ckey, client_key = null)
+	if(!target_ckey || !amt)
+		return
+	get_metadollars(target_ckey)
+	metadollar_amount_cache[target_ckey] = max(0, round(metadollar_amount_cache[target_ckey] + amt))
+	metadollar_save(target_ckey)
+	var/display_key = client_key
+	if(!display_key)
+		var/client/C = GLOB.directory[target_ckey]
+		display_key = C?.key
+	if(display_key)
+		adjust_leaderboard(display_key)
+
+/datum/controller/subsystem/metadollars/proc/prep_metadollar_leaderboard()
+	var/json_file = file("data/metadollar_leaderboard.json")
+	if(!fexists(json_file))
+		return
+	metadollar_leaderboard = json_decode(file2text(json_file))
+	sort_metadollar_leaderboard()
+
+/datum/controller/subsystem/metadollars/proc/save_metadollar_leaderboard()
+	var/leaderboard_file = file("data/metadollar_leaderboard.json")
+	if(fexists(leaderboard_file))
+		fdel(leaderboard_file)
+	WRITE_FILE(leaderboard_file, json_encode(metadollar_leaderboard))
+
+/datum/controller/subsystem/metadollars/proc/adjust_leaderboard(client_key)
+	if(!client_key)
+		return
+	var/target_ckey = ckey(client_key)
+	var/metadollar_total = metadollar_amount_cache[target_ckey]
+	if(!isnum(metadollar_total) || metadollar_total < 1)
+		return
+	if(metadollar_leaderboard_positions_tracked > metadollar_leaderboard.len)
+		metadollar_leaderboard[client_key] = metadollar_total
+	else
+		if(metadollar_leaderboard[metadollar_leaderboard[metadollar_leaderboard.len]] > metadollar_total)
+			return
+		metadollar_leaderboard.Cut(metadollar_leaderboard.len)
+		metadollar_leaderboard[client_key] = metadollar_total
+	sort_metadollar_leaderboard()
+	save_metadollar_leaderboard()
+
+/datum/controller/subsystem/metadollars/proc/sort_metadollar_leaderboard()
+	if(metadollar_leaderboard.len <= 1)
+		return
+	var/list/sorted_list = list()
+	for(var/cache_key in metadollar_leaderboard)
+		if(!sorted_list.len)
+			sorted_list[cache_key] = metadollar_leaderboard[cache_key]
+			continue
+		var/inserted = FALSE
+		for(var/sorted_key in sorted_list)
+			if(sorted_list[sorted_key] < metadollar_leaderboard[cache_key])
+				sorted_list.Insert(sorted_list.Find(sorted_key), cache_key)
+				sorted_list[cache_key] = metadollar_leaderboard[cache_key]
+				inserted = TRUE
+				break
+		if(!inserted)
+			sorted_list[cache_key] = metadollar_leaderboard[cache_key]
+	metadollar_leaderboard = sorted_list
+
+/datum/controller/subsystem/metadollars/proc/get_leaderboard_ui_data(max_entries = 5)
+	var/list/out = list()
+	var/position = 0
+	for(var/key in metadollar_leaderboard)
+		position++
+		out += list(list("name" = key, "amount" = metadollar_leaderboard[key]))
+		if(position >= max_entries)
+			break
+	return out
+
+/datum/controller/subsystem/metadollars/proc/wipe_all_metadollars()
+	metadollar_amount_cache = list()
+	metadollar_leaderboard = list()
+	save_metadollar_leaderboard()
+	if(!fexists("data/player_saves"))
+		return
+	for(var/letterdir in flist("data/player_saves/"))
+		var/prefix = "data/player_saves/[letterdir]"
+		if(!fexists(prefix))
+			continue
+		for(var/sub in flist(prefix))
+			var/json_path = "[prefix]/[sub]/metadollars.json"
+			if(fexists(json_path))
+				fdel(json_path)
 
 /proc/metadollar_living_multiplier(mob/living/L)
 	if(!L?.mind)
@@ -27,7 +238,6 @@ SUBSYSTEM_DEF(metadollars)
 		return
 	if(!isliving(C.mob) || C.mob.stat == DEAD)
 		return
-	// Только персонаж под управлением этого клиента (не NPC / не чужое тело без привязки).
 	if(C.mob.key != C.ckey)
 		return
 	var/mult = metadollar_living_multiplier(C.mob)
@@ -47,19 +257,19 @@ SUBSYSTEM_DEF(metadollars)
 /datum/controller/subsystem/metadollars/proc/add_amount(client/C, amount, category)
 	if(!istype(C, /client) || !C.ckey || !C.prefs || amount <= 0)
 		return
-	C.prefs.metadollars += amount
+	metadollar_adjust(amount, C.ckey, C.key)
 	var/ck = C.ckey
 	LAZYINITLIST(round_earnings[ck])
 	if(!round_earnings[ck][category])
 		round_earnings[ck][category] = 0
 	round_earnings[ck][category] += amount
 	round_earnings[ck]["total"] = (round_earnings[ck]["total"] || 0) + amount
-	C.prefs.save_preferences()
+	if(category == "living")
+		C.prefs.save_preferences()
 	if(category == "living" && isliving(C.mob))
 		to_chat(C.mob, span_purple("Вы получили [amount] М$ за работу."))
 		SEND_SOUND(C.mob, sound('sound/machines/terminal_success.ogg', volume = 35))
 
-/// Сколько целей смены выполнено (для бонуса ЦК и отчёта).
 /datum/controller/subsystem/metadollars/proc/count_completed_station_goals()
 	. = 0
 	if(!SSticker?.mode?.station_goals?.len)
@@ -68,19 +278,16 @@ SUBSYSTEM_DEF(metadollars)
 		if(G.check_completion())
 			.++
 
-/// М$ всем выжившим на ЦК за выполненные цели смены (0, если целей нет).
 /datum/controller/subsystem/metadollars/proc/cc_station_goals_metadollars(completed_goals)
 	if(completed_goals > 0)
 		return 2 * completed_goals
 	return 0
 
-/// Полная выплата за ЦК для моба: цели смены + надбавка за роль (как metadollar_living_multiplier: 2 — командование, 1 — остальные).
 /datum/controller/subsystem/metadollars/proc/cc_total_payout_for_mob(mob/M, completed_goals)
 	var/goals_part = cc_station_goals_metadollars(completed_goals)
 	var/role_part = isliving(M) ? metadollar_living_multiplier(M) : 1
 	return goals_part + role_part
 
-/// Потенциальная выплата за выполненные цели антагониста (2 М$ за цель), по данным разума.
 /datum/controller/subsystem/metadollars/proc/potential_antag_metadollars(datum/mind/M)
 	. = 0
 	if(!M)
@@ -119,7 +326,6 @@ SUBSYSTEM_DEF(metadollars)
 			if(O.check_completion())
 				add_amount(C, 2, "antag")
 
-/// Блок HTML: почему игрок недополучил бонус ЦК / антага (после apply_round_end_rewards).
 /datum/controller/subsystem/metadollars/proc/metadollar_roundend_missed_html(client/C, mob/M, list/E)
 	if(!C?.prefs || !M?.mind || isnewplayer(M))
 		return ""
@@ -173,6 +379,7 @@ SUBSYSTEM_DEF(metadollars)
 	if(!E)
 		E = list()
 	var/total = E["total"] || 0
+	var/balance = get_metadollars(C.ckey)
 	if(total > 0)
 		var/list/lines = list()
 		if(E["living"])
@@ -183,11 +390,11 @@ SUBSYSTEM_DEF(metadollars)
 			lines += "Цели антагониста: <b>[E["antag"]]</b> М$"
 		if(E["voucher"])
 			lines += "Получено обменом: <b>[E["voucher"]]</b> М$"
-		chunks += "<div class='panel stationborder'><span class='header'>Метадоллары за раунд</span><br>Всего начислено: <b>[total] М$</b>.<br><small>[lines.Join("<br>")]</small><br>Текущий баланс: <b>[C.prefs.metadollars] М$</b>.</div>"
+		chunks += "<div class='panel stationborder'><span class='header'>Метадоллары за раунд</span><br>Всего начислено: <b>[total] М$</b>.<br><small>[lines.Join("<br>")]</small><br>Текущий баланс: <b>[balance] М$</b>.</div>"
 	var/missed_block = metadollar_roundend_missed_html(C, C.mob, E)
 	if(missed_block)
-		if(total <= 0 && C.prefs)
-			missed_block += "<br><small>Текущий баланс: <b>[C.prefs.metadollars] М$</b>.</small>"
+		if(total <= 0)
+			missed_block += "<br><small>Текущий баланс: <b>[balance] М$</b>.</small>"
 		chunks += missed_block
 	if(!length(chunks))
 		return ""
@@ -195,40 +402,13 @@ SUBSYSTEM_DEF(metadollars)
 
 /proc/bm_metadollar_global_burn(mob/initiator)
 	if(SSmetadollars)
+		SSmetadollars.wipe_all_metadollars()
 		SSmetadollars.round_earnings = list()
-	if(!fexists("data/player_saves"))
-		return
 	var/notice = "В этом раунде активирован протокол «Пепелище»: обнулены все метадолларовые балансы."
 	if(initiator)
 		notice += " Инициатор: [initiator.real_name] ([initiator.ckey])."
 	if(SSmetadollars)
 		SSmetadollars.metadollar_burn_round_notice = notice
-	var/list/done = list()
-	for(var/letterdir in flist("data/player_saves/"))
-		var/prefix = "data/player_saves/[letterdir]"
-		if(!fexists(prefix))
-			continue
-		for(var/sub in flist(prefix))
-			var/sav = "[prefix]/[sub]/preferences.sav"
-			if(!fexists(sav))
-				continue
-			var/ck = ckey(sub)
-			if(!ck || done[ck])
-				continue
-			done[ck] = TRUE
-			var/client/online = GLOB.directory[ck]
-			if(online?.prefs)
-				online.prefs.metadollars = 0
-				online.prefs.save_preferences(TRUE, TRUE)
-				continue
-			var/datum/preferences/P = new
-			P.load_path(ck)
-			if(!P.load_preferences(TRUE))
-				qdel(P)
-				continue
-			P.metadollars = 0
-			P.save_preferences(TRUE, TRUE)
-			qdel(P)
 
 /proc/bm_deliver_metadollar_purchases(mob/living/carbon/human/H, client/C)
 	if(!H || !C?.prefs)

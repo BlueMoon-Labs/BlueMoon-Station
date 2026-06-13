@@ -130,6 +130,13 @@
 	path = /obj/item/jukebox
 	cost = 4
 
+/datum/gear/donator/jukebox_mega
+	name = "Personal Music Box"
+	description = "Переносная музыкальная шкатулка."
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/personal_music_box
+	cost = 4
+
 /datum/gear/donator/purple_zippo
 	name = "Purple Zippo"
 	slot = ITEM_SLOT_BACKPACK

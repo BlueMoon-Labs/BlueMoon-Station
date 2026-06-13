@@ -5,7 +5,7 @@
 //	You do not need to raise this if you are adding new values that have sane defaults.
 //	Only raise this value when changing the meaning/format/name/layout of an existing value
 //	where you would want the updater procs below to run
-#define SAVEFILE_VERSION_MAX	69
+#define SAVEFILE_VERSION_MAX	72
 
 /// Upper bound for character slot indices during savefile migration (loop over S.dir).
 /// Prevents corrupted or garbage directory names (e.g. huge slot numbers) from inflating max_save_slots
@@ -117,6 +117,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	if(current_version < 69)
 		chat_on_map_looc = TRUE
+
+	if(current_version < 70) // Bitflag toggles don't set their defaults when they're added, always defaulting to off instead.
+		toggles |= SOUND_PERSONAL_JUKEBOXES
 
 /datum/preferences/proc/update_character(current_version, savefile/S)
 	if(current_version < 19)

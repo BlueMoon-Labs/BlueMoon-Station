@@ -1,5 +1,5 @@
 import { sortBy } from 'common/collections';
-import { Fragment, useState } from 'react';
+import { useState } from 'react';
 
 import { Button, Flex, Grid, Section, Tabs } from '../../components';
 
@@ -27,6 +27,7 @@ export const AccessList = (props) => {
     denyAll,
     grantDep,
     denyDep,
+    resetButton,
   } = props;
   const [
     selectedAccessName,
@@ -65,6 +66,13 @@ export const AccessList = (props) => {
       title="Access"
       buttons={(
         <>
+          {!!resetButton && (
+            <Button.Confirm
+              icon="arrows-rotate"
+              content="Reset Access"
+              color="blue"
+              onClick={() => resetButton()} />
+          )}
           <Button
             icon="check-double"
             content="Grant All"
