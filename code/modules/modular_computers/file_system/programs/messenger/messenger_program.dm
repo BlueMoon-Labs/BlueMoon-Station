@@ -192,9 +192,6 @@
 
 	return TRUE
 
-/datum/computer_file/program/messenger/ui_state(mob/user)
-	return GLOB.default_state
-
 /datum/computer_file/program/messenger/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()
 	if(isobserver(usr))
@@ -767,8 +764,10 @@
 	var/list/mob/living/receivers = list()
 	if(computer.inserted_pai && computer.inserted_pai.pai)
 		receivers += computer.inserted_pai.pai
-	if(computer.loc && isliving(computer.loc))
+	if(isliving(computer.loc))
 		receivers += computer.loc
+	else if(isliving(computer.loc?.loc))
+		receivers += computer.loc.loc
 
 	var/datum/computer_file/program/messenger/sender_messenger = chat?.recipient?.resolve()
 
