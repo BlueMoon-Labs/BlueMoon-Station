@@ -65,9 +65,9 @@
 		)
 	)
 
-/datum/computer_file/program/card_mod/ui_interact(mob/user, datum/tgui/ui)
+/datum/computer_file/program/card_mod/run_program(mob/living/user)
 	. = ..()
-	auto_authenticate()
+	auto_authenticate(TRUE)
 
 /datum/computer_file/program/card_mod/kill_program(forced)
 	. = ..()
@@ -92,12 +92,12 @@
 	var/obj/item/computer_hardware/card_slot/card_slot = computer.all_components[MC_CARD]
 	if(!card_slot)
 		return
-	var/obj/item/card/id/user_id_card = card_slot.stored_card
+	var/obj/item/card/id/id_card = card_slot.stored_card
 	var/old_minor = minor
 	var/old_authenticated = authenticated
 	var/old_region_access_len = region_access.len
 	var/old_head_subordinates_len = head_subordinates.len
-	authenticate(user_id_card)
+	authenticate(id_card)
 	if(minor != old_minor || region_access.len != old_region_access_len || head_subordinates.len != old_head_subordinates_len)
 		update_static_data_for_all_viewers(ignore_cooldown = TRUE)
 	if(authenticated != old_authenticated && !silent)
@@ -241,21 +241,11 @@
 					if(!card_slot)
 						return
 					if(user_id_card)
-						. = card_slot.try_eject(user)
-						if(. && authenticated)
-							authenticated = FALSE
-							playsound(computer, 'sound/machines/terminal_off.ogg', 50, FALSE)
-						return
+						return card_slot.try_eject(user)
 					else
 						var/obj/item/card/id/id = user.get_active_held_item()
 						if(istype(id))
-							. = card_slot.try_insert(id)
-							if(authenticate(id))
-								playsound(computer, 'sound/machines/terminal_on.ogg', 50, FALSE)
-							else
-								playsound(computer, 'sound/machines/terminal_error.ogg', 50, FALSE)
-							update_static_data_for_all_viewers()
-							return
+							return card_slot.try_insert(id)
 			return FALSE
 		if("PRG_terminate")
 			if(!computer || !authenticated || !target_id_card)
