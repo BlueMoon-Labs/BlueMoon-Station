@@ -34,13 +34,14 @@ const sortByCreditCostERT = sortBy(ert => ert.creditCost);
 
 const AlertButton = (props, context) => {
   const { act, data } = useBackend(context);
-  const { alertLevelTick, canSetAlertLevel, redAlertKeycardLocked } = data;
+  const { alertLevelTick, canSetAlertLevel, redAlertKeycardLocked, highAlertKeycardLocked } = data;
   const { alertLevel, setShowAlertLevelConfirm } = props;
 
   const thisIsCurrent = data.alertLevel === alertLevel;
   const currentOrder = ALERT_LEVEL_ORDER[data.alertLevel] ?? 0;
   const targetOrder = ALERT_LEVEL_ORDER[alertLevel] ?? 0;
-  const lockedFromLowering = redAlertKeycardLocked && targetOrder < currentOrder;
+  const lockedFromLowering = (redAlertKeycardLocked && targetOrder < currentOrder)
+    || (highAlertKeycardLocked && targetOrder < ALERT_LEVEL_ORDER.red);
 
   return (
     <Button
@@ -386,6 +387,7 @@ const PageMain = (props, context) => {
     emergencyAccess,
     importantActionReady,
     redAlertKeycardLocked,
+    highAlertKeycardLocked,
     sectors,
     shuttleCalled,
     shuttleCalledPreviously,
@@ -457,6 +459,12 @@ const PageMain = (props, context) => {
 
       {!!canSetAlertLevel && (
         <Section title="Уровень тревоги">
+          {!!highAlertKeycardLocked && (
+            <NoticeBox mb={1}>
+              Активен высокий код тревоги. Понизить его можно только до
+              красного через устройства двойной авторизации ключ-карт.
+            </NoticeBox>
+          )}
           {!!redAlertKeycardLocked && (
             <NoticeBox mb={1}>
               Красный код заблокирован. Снять его можно только через

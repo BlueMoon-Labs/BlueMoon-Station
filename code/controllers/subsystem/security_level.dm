@@ -34,6 +34,8 @@ SUBSYSTEM_DEF(security_level)
 
 	var/current_level = isnum(GLOB.security_level) ? GLOB.security_level : SECLEVEL2NUM(GLOB.security_level)
 	if(!bypass_keycard_lock && new_level != current_level)
+		if(IS_HIGH_SECURITY_LEVEL(current_level) && new_level < SEC_LEVEL_RED)
+			return
 		if(GLOB.keycard_secured_level && new_level < GLOB.keycard_secured_level)
 			return
 		if(IS_HIGH_SECURITY_LEVEL(current_level) && IS_HIGH_SECURITY_LEVEL(new_level) && new_level != current_level)
