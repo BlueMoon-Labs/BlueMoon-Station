@@ -1,6 +1,7 @@
 GLOBAL_DATUM_INIT(keycard_events, /datum/events, new)
 
 #define KEYCARD_RED_ALERT "Red Alert"
+#define KEYCARD_CLEAR_RED_ALERT "Clear Red Alert"
 #define KEYCARD_EMERGENCY_MAINTENANCE_ACCESS "Emergency Maintenance Access"
 #define KEYCARD_BSA_UNLOCK "Bluespace Artillery Unlock"
 #define KEYCARD_BSMINER_PROTOCOLS "Bluespace Miner Protocols"
@@ -54,6 +55,7 @@ GLOBAL_DATUM_INIT(keycard_events, /datum/events, new)
 	data["waiting"] = waiting
 	data["auth_required"] = event_source ? event_source.event : 0
 	data["red_alert"] = (SECLEVEL2NUM(NUM2SECLEVEL(GLOB.security_level)) >= SEC_LEVEL_RED) ? 1 : 0
+	data["red_alert_keycard_locked"] = GLOB.red_alert_keycard_locked
 	data["emergency_maint"] = GLOB.emergency_access
 	data["bsa_unlock"] = GLOB.bsa_unlock
 	return data
@@ -76,8 +78,13 @@ GLOBAL_DATUM_INIT(keycard_events, /datum/events, new)
 		return
 	switch(action)
 		if("red_alert")
-			if(!event_source)
+			if(!event_source && !GLOB.red_alert_keycard_locked)
 				sendEvent(KEYCARD_RED_ALERT, ID)
+				playsound(get_turf(user), 'sound/machines/auth.ogg', 75, 1, 1)
+				. = TRUE
+		if("clear_red_alert")
+			if(!event_source && GLOB.red_alert_keycard_locked)
+				sendEvent(KEYCARD_CLEAR_RED_ALERT, ID)
 				playsound(get_turf(user), 'sound/machines/auth.ogg', 75, 1, 1)
 				. = TRUE
 		if("emergency_maint")
@@ -154,7 +161,10 @@ GLOBAL_DATUM_INIT(keycard_events, /datum/events, new)
 	deadchat_broadcast(" confirmed [event] at [span_name("[A2.name]")].", span_name("[confirmer]"), confirmer, message_type=DEADCHAT_ANNOUNCEMENT)
 	switch(event)
 		if(KEYCARD_RED_ALERT)
+			GLOB.red_alert_keycard_locked = TRUE
 			set_security_level(SEC_LEVEL_RED)
+		if(KEYCARD_CLEAR_RED_ALERT)
+			set_security_level(SEC_LEVEL_BLUE, null, TRUE)
 		if(KEYCARD_EMERGENCY_MAINTENANCE_ACCESS)
 			make_maint_all_access()
 		if(KEYCARD_BSA_UNLOCK)
@@ -193,6 +203,7 @@ GLOBAL_VAR_INIT(emergency_access, FALSE)
 
 #undef ACCESS_GRANTING_COOLDOWN
 #undef KEYCARD_RED_ALERT
+#undef KEYCARD_CLEAR_RED_ALERT
 #undef KEYCARD_EMERGENCY_MAINTENANCE_ACCESS
 #undef KEYCARD_BSA_UNLOCK
 #undef KEYCARD_BSMINER_PROTOCOLS

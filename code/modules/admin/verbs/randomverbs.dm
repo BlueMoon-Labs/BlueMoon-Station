@@ -953,7 +953,7 @@ Traitors and the like can also be revived with the previous role mostly intact.
 				secret_variant_override = TRUE
 			if("Случайно (90% обычные)")
 				secret_variant_override = null
-	set_security_level(level, secret_variant_override)
+	set_security_level(level, secret_variant_override, TRUE)
 
 	var/extra_log = ""
 	if(level in list("violet", "amber", "red", "delta"))

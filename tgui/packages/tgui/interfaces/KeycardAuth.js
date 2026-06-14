@@ -33,11 +33,20 @@ export const KeycardAuth = (props, context) => {
                 )}
                 {data.auth_required === 0 && (
                   <>
-                    <Button
-                      icon="exclamation-triangle"
-                      fluid
-                      onClick={() => act('red_alert')}
-                      content="Красный код" />
+                    {!data.red_alert_keycard_locked && (
+                      <Button
+                        icon="exclamation-triangle"
+                        fluid
+                        onClick={() => act('red_alert')}
+                        content="Красный код" />
+                    )}
+                    {!!data.red_alert_keycard_locked && (
+                      <Button
+                        icon="check"
+                        fluid
+                        onClick={() => act('clear_red_alert')}
+                        content="Снять красный код" />
+                    )}
                     <Button
                       icon="wrench"
                       fluid

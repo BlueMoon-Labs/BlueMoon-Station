@@ -187,7 +187,14 @@
 			if (GLOB.security_level == new_sec_level)
 				return
 
-			set_security_level(new_sec_level)
+			var/current_level = isnum(GLOB.security_level) ? GLOB.security_level : SECLEVEL2NUM(GLOB.security_level)
+			var/emagged_bypass = (obj_flags & EMAGGED)
+			if(GLOB.red_alert_keycard_locked && current_level >= SEC_LEVEL_RED && new_sec_level < SEC_LEVEL_RED && !emagged_bypass)
+				to_chat(usr, span_warning("Красный код может быть снят только через устройства двойной авторизации ключ-карт."))
+				playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, FALSE)
+				return
+
+			set_security_level(new_sec_level, null, emagged_bypass)
 
 			to_chat(usr, span_notice("Доступ разрешён. Обновляю уровень угрозы."))
 			playsound(src, 'sound/machines/terminal_prompt_confirm.ogg', 50, FALSE)
@@ -624,6 +631,7 @@
 					data["alertLevelTick"] = alert_level_tick
 					data["canMakeAnnouncement"] = TRUE
 					data["canSetAlertLevel"] = issilicon(user) ? "NO_SWIPE_NEEDED" : "SWIPE_NEEDED"
+					data["redAlertKeycardLocked"] = GLOB.red_alert_keycard_locked && GLOB.security_level >= SEC_LEVEL_RED && !(obj_flags & EMAGGED)
 				else if(syndicate)
 					data["canMakeAnnouncement"] = TRUE
 

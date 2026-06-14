@@ -11,6 +11,8 @@
 #define SEC_LEVEL_DELTA 10
 
 GLOBAL_VAR_INIT(security_level, SEC_LEVEL_GREEN)
+/// When TRUE, red alert was set via keycard auth and cannot be lowered except by keycard auth, emagged comms, or admin bypass.
+GLOBAL_VAR_INIT(red_alert_keycard_locked, FALSE)
 
 /*
 * All security levels, per ascending alert. Nothing too fancy, really.
@@ -72,8 +74,8 @@ GLOBAL_LIST_INIT(sec_level_colors, list(
 /// Engineering Override Access manual toggle
 //#define COMSIG_GLOB_FORCE_AIRLOCK_OVERRIDE "force_airlock_override"
 
-/proc/set_security_level(level, secret_variant_override = null)
-	SSsecurity_level.set_level(level, secret_variant_override)
+/proc/set_security_level(level, secret_variant_override = null, bypass_keycard_lock = FALSE)
+	SSsecurity_level.set_level(level, secret_variant_override, bypass_keycard_lock)
 
 /proc/get_security_level_notice_theme(level)
 	if(!isnum(level))
