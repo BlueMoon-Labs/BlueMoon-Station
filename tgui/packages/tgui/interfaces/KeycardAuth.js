@@ -1,32 +1,22 @@
-import { capitalize } from 'common/string';
 import { useBackend } from '../backend';
 import { Box, Button, Section } from '../components';
 import { Window } from '../layouts';
-
-const HIGH_ALERT_LABELS = {
-  lambda: 'Код Лямбда',
-  gamma: 'Код Гамма',
-  epsilon: 'Код Эпсилон',
-  delta: 'Код Дельта',
-};
 
 export const KeycardAuth = (props, context) => {
   const { act, data } = useBackend(context);
   const {
     waiting,
     auth_required,
-    security_level,
     can_set_red_alert,
     can_clear_red_alert,
     can_clear_high_alert,
-    high_alert_levels = [],
   } = data;
 
   return (
     <Window
       width={375}
-      height={340}>
-      <Window.Content scrollable>
+      height={165}>
+      <Window.Content>
         <Section>
           <Box>
             {waiting === 1 && (
@@ -72,15 +62,6 @@ export const KeycardAuth = (props, context) => {
                         onClick={() => act('clear_high_alert')}
                         content="Снизить код (до красного)" />
                     )}
-                    {high_alert_levels.map(level => (
-                      <Button
-                        key={level}
-                        icon="radiation"
-                        fluid
-                        disabled={security_level === level}
-                        onClick={() => act('set_high_alert', { level })}
-                        content={HIGH_ALERT_LABELS[level] || capitalize(level)} />
-                    ))}
                     <Button
                       icon="wrench"
                       fluid
