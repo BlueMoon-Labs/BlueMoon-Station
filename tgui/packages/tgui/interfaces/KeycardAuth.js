@@ -1,17 +1,35 @@
+import { capitalize } from 'common/string';
 import { useBackend } from '../backend';
 import { Box, Button, Section } from '../components';
 import { Window } from '../layouts';
 
+const HIGH_ALERT_LABELS = {
+  lambda: 'Код Лямбда',
+  gamma: 'Код Гамма',
+  epsilon: 'Код Эпсилон',
+  delta: 'Код Дельта',
+};
+
 export const KeycardAuth = (props, context) => {
   const { act, data } = useBackend(context);
+  const {
+    waiting,
+    auth_required,
+    security_level,
+    can_set_red_alert,
+    can_clear_red_alert,
+    can_clear_high_alert,
+    high_alert_levels = [],
+  } = data;
+
   return (
     <Window
       width={375}
-      height={165}>
-      <Window.Content>
+      height={340}>
+      <Window.Content scrollable>
         <Section>
           <Box>
-            {data.waiting === 1 && (
+            {waiting === 1 && (
               <span>
                 Ожидайте подтверждения запроса
                 на втором устройстве...
@@ -19,9 +37,9 @@ export const KeycardAuth = (props, context) => {
             )}
           </Box>
           <Box>
-            {data.waiting === 0 && (
+            {waiting === 0 && (
               <>
-                {!!data.auth_required && (
+                {!!auth_required && (
                   <Button
                     icon="check-square"
                     color="red"
@@ -31,22 +49,38 @@ export const KeycardAuth = (props, context) => {
                     onClick={() => act('auth_swipe')}
                     content="Авторизовать" />
                 )}
-                {data.auth_required === 0 && (
+                {auth_required === 0 && (
                   <>
-                    {!data.red_alert_keycard_locked && (
+                    {!!can_set_red_alert && (
                       <Button
                         icon="exclamation-triangle"
                         fluid
                         onClick={() => act('red_alert')}
                         content="Красный код" />
                     )}
-                    {!!data.red_alert_keycard_locked && (
+                    {!!can_clear_red_alert && (
                       <Button
                         icon="check"
                         fluid
                         onClick={() => act('clear_red_alert')}
                         content="Снять красный код" />
                     )}
+                    {!!can_clear_high_alert && (
+                      <Button
+                        icon="check"
+                        fluid
+                        onClick={() => act('clear_high_alert')}
+                        content="Снизить код (до красного)" />
+                    )}
+                    {high_alert_levels.map(level => (
+                      <Button
+                        key={level}
+                        icon="radiation"
+                        fluid
+                        disabled={security_level === level}
+                        onClick={() => act('set_high_alert', { level })}
+                        content={HIGH_ALERT_LABELS[level] || capitalize(level)} />
+                    ))}
                     <Button
                       icon="wrench"
                       fluid

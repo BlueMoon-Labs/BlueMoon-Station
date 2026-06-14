@@ -33,10 +33,14 @@ SUBSYSTEM_DEF(security_level)
 		new_level = SECLEVEL2NUM(new_level)
 
 	var/current_level = isnum(GLOB.security_level) ? GLOB.security_level : SECLEVEL2NUM(GLOB.security_level)
-	if(GLOB.red_alert_keycard_locked && current_level >= SEC_LEVEL_RED && new_level < SEC_LEVEL_RED)
-		if(!bypass_keycard_lock)
+	if(!bypass_keycard_lock && new_level != current_level)
+		if(GLOB.keycard_secured_level && new_level < GLOB.keycard_secured_level)
 			return
-		GLOB.red_alert_keycard_locked = FALSE
+		if(IS_HIGH_SECURITY_LEVEL(current_level) && IS_HIGH_SECURITY_LEVEL(new_level) && new_level != current_level)
+			return
+
+	if(bypass_keycard_lock && GLOB.keycard_secured_level && new_level < GLOB.keycard_secured_level)
+		GLOB.keycard_secured_level = 0
 
 	//Will not be announced if you try to set to the same level as it already is
 	if(new_level >= SEC_LEVEL_GREEN && new_level <= SEC_LEVEL_DELTA && new_level != GLOB.security_level)
@@ -53,7 +57,7 @@ SUBSYSTEM_DEF(security_level)
 					else
 						emergency_shuttle.modTimer(1.66)
 				GLOB.security_level = SEC_LEVEL_GREEN
-				GLOB.red_alert_keycard_locked = FALSE
+				GLOB.keycard_secured_level = 0
 				var/obj/machinery/computer/communications/C = locate() in GLOB.machines
 				if(C)
 					C.post_status("alert", "greenalert")

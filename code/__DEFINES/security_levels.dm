@@ -10,9 +10,12 @@
 #define SEC_LEVEL_EPSILON 9
 #define SEC_LEVEL_DELTA 10
 
+/// Security levels at or above lambda require keycard auth to set or change.
+#define IS_HIGH_SECURITY_LEVEL(L) ((L) >= SEC_LEVEL_LAMBDA)
+
 GLOBAL_VAR_INIT(security_level, SEC_LEVEL_GREEN)
-/// When TRUE, red alert was set via keycard auth and cannot be lowered except by keycard auth, emagged comms, or admin bypass.
-GLOBAL_VAR_INIT(red_alert_keycard_locked, FALSE)
+/// Lowest level that cannot be lowered/changed without keycard auth (or bypass). 0 = unlocked.
+GLOBAL_VAR_INIT(keycard_secured_level, 0)
 
 /*
 * All security levels, per ascending alert. Nothing too fancy, really.
