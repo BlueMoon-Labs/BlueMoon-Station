@@ -21,11 +21,20 @@
 	var/priority = 100 //lower numbers are checked/react later than higher numbers. if two reactions have the same priority they may happen in either order
 	var/name = "reaction"
 	var/id = "r"
+	/// Short description for the atmos handbook.
+	var/desc
+	/** Reaction factors for the atmos handbook — human-readable assoc list.
+	 * Keys: /datum/gas types or misc strings like "Temperature", "Energy". */
+	var/list/factor
 
 /datum/gas_reaction/New()
 	init_reqs()
+	init_factors()
 
 /datum/gas_reaction/proc/init_reqs()
+
+/datum/gas_reaction/proc/init_factors()
+	factor = list()
 
 /datum/gas_reaction/proc/react(datum/gas_mixture/air, atom/location)
 	return NO_REACTION

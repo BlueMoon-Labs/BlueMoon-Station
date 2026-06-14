@@ -63,6 +63,8 @@
 #define OXYGEN_BURN_RATIO_BASE				2
 
 // Halon
+/// Energy released per mole of BZ consumed during electrolytic halon formation.
+#define HALON_FORMATION_ENERGY				91232.1
 #define HALON_COMBUSTION_ENERGY				2500
 #define HALON_COMBUSTION_MIN_TEMPERATURE		(T0C + 70)
 #define HALON_COMBUSTION_TEMPERATURE_SCALE	(FIRE_MINIMUM_TEMPERATURE_TO_EXIST * 10)
