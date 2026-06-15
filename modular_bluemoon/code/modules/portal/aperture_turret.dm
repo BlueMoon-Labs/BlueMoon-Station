@@ -27,7 +27,7 @@
 
 /datum/component/aperture_turret_skin/proc/setup_turret(obj/machinery/porta_turret/turret)
 	turret.name = "Sentry Turret"
-	turret.desc = "Турель охраны Aperture Science. Она смотрит на вас с подозрительным энтузиазмом."
+	turret.desc = "An Aperture Science security turret. It watches you with suspicious enthusiasm."
 	turret.icon = APERTURE_TURRET_ICON
 	if(turret.cover)
 		qdel(turret.cover)
