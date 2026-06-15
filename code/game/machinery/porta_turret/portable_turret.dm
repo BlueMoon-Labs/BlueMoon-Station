@@ -136,6 +136,8 @@ DEFINE_BITFIELD(turret_flags, list(
 		underlays += base
 	if(!has_cover)
 		INVOKE_ASYNC(src, PROC_REF(popUp))
+	if(HAS_TRAIT(SSstation, STATION_TRAIT_APERTURE_SCIENCE))
+		INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(apply_aperture_turret_skin), src)
 
 /obj/machinery/porta_turret/proc/toggle_on(var/set_to)
 	var/current = on

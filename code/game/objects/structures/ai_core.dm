@@ -15,6 +15,8 @@
 
 /obj/structure/ai_core/Initialize(mapload)
 	. = ..()
+	if(HAS_TRAIT(SSstation, STATION_TRAIT_APERTURE_SCIENCE))
+		INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(apply_glados_ai_core_skin), src)
 	laws = new
 	laws.set_laws_config()
 
