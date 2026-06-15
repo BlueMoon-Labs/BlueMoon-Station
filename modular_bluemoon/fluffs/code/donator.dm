@@ -2417,3 +2417,27 @@
 	slot = ITEM_SLOT_HEAD
 	path = /obj/item/clothing/head/donator/bm/renory_helmet
 	ckeywhitelist = list("kumikoshouko")
+
+/datum/gear/donator/bm/krieg_mask
+	name = "Противогаз Крига"
+	slot = ITEM_SLOT_MASK
+	path = /obj/item/clothing/mask/gas/krieg
+	ckeywhitelist = list("vlonger", "pingavas", "dragon9090")
+
+/datum/gear/donator/bm/krieg_helmet
+	name = "Шлем Крига"
+	slot = ITEM_SLOT_HEAD
+	path = /obj/item/clothing/head/donator/bm/krieg_helmet
+	ckeywhitelist = list("vlonger",  "dragon9090")
+
+/datum/gear/donator/bm/krieg_shinel
+	name = "Шенель Крига"
+	slot = ITEM_SLOT_OCLOTHING
+	path = /obj/item/clothing/suit/donator/bm/krieg_shinel
+	ckeywhitelist = list("vlonger", "pingavas", "dragon9090")
+
+/datum/gear/donator/bm/krieg_backpack
+	name = "Рюкзак Крига"
+	slot = ITEM_SLOT_BACK
+	path = /obj/item/storage/backpack/krieg
+	ckeywhitelist = list("vlonger", "pingavas", "dragon9090")

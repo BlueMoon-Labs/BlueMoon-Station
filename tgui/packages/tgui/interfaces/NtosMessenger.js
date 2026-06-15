@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Component, createRef, useState } from 'react';
 
 import { createSearch } from '../../common/string';
 import { useBackend, useLocalState } from '../backend';
@@ -640,14 +640,7 @@ const ChatScreen = (props) => {
               </>
             )}
             {filteredMessages}
-            <div ref={(node) => {
-              if (node) {
-                const parent = node.parentElement?.closest('.Section__content');
-                if (parent) {
-                  parent.scrollTop = parent.scrollHeight;
-                }
-              }
-            }} key={messages.length} />
+            <AutoScrollToBottom triggerKey={messages.length} />
           </Stack>
         </Section>
       </Stack.Item>
@@ -785,6 +778,49 @@ const MediaAttachment = ({ src, maxHeight = '200px', maxWidth = '100%', onClick 
     />
   );
 };
+
+class AutoScrollToBottom extends Component {
+  constructor(props) {
+    super(props);
+    this.ref = createRef();
+    this.atBottom = true;
+    this.handleScroll = this.handleScroll.bind(this);
+  }
+
+  handleScroll(e) {
+    const el = e.currentTarget;
+    const threshold = 50;
+    this.atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - threshold;
+  }
+
+  componentDidMount() {
+    const content = this.ref.current?.parentElement?.closest('.Section__content');
+    if (content) {
+      content.addEventListener('scroll', this.handleScroll);
+      content.scrollTop = content.scrollHeight;
+    }
+  }
+
+  componentWillUnmount() {
+    const content = this.ref.current?.parentElement?.closest('.Section__content');
+    if (content) {
+      content.removeEventListener('scroll', this.handleScroll);
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.triggerKey !== prevProps.triggerKey && this.atBottom) {
+      const content = this.ref.current?.parentElement?.closest('.Section__content');
+      if (content) {
+        content.scrollTop = content.scrollHeight;
+      }
+    }
+  }
+
+  render() {
+    return <div ref={this.ref} />;
+  }
+}
 
 const ChatMessage = (props) => {
   const { message, everyone, outgoing, timestamp, photoPath, onPreview } = props;

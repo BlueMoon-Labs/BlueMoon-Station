@@ -638,7 +638,16 @@
 	playsound(src, sound_file, 50, TRUE)
 	for(var/mob/target as anything in balloon_alertees)
 		if(target)
-			target.balloon_alert(target, ringtone)
+			target.balloon_alert(target, "[ringtone]")
+	for(var/mob/target as anything in balloon_alertees)
+		if(target)
+			var/turf/turf_loc = get_turf(target)
+			if(turf_loc)
+				for(var/mob/nearby in hearers(4, turf_loc))
+					if(nearby.client)
+						to_chat(nearby, span_notice("[icon2html(src, nearby)] *[ringtone]*"))
+
+
 
 /// Plays a sound to indicate a message was sent.
 /obj/item/modular_computer/proc/send_sound()

@@ -47,6 +47,14 @@
 	for(var/i in 1 to 4)
 		new /obj/item/modkit/twilight_spike(src)
 
+/obj/item/storage/backpack/krieg
+	name = "Рюкзак Крига"
+	desc = "Подоходный рюкзак Корпуса Смерти \"КРИГ\". Выглядит потёртым, на нём зияет золотая эмблема."
+	icon_state = "krieg_backpack"
+	item_state = "krieg_backpack"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/accessories.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/accessories.dmi'
+
 /obj/item/storage/backpack/martian
 	name = "Martian Backpack"
 	desc = "Некий Марсианский Артефакт, использующийся в качестве рюкзака. Ткань ощущается довольно прочной. Это точно можно использовать в качестве оружия!"

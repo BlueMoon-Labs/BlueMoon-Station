@@ -95,6 +95,7 @@ Contains:
 	icon_state = "ertarmor_med"
 	slowdown = 0
 	flags_inv = HIDEGLOVES|HIDESHOES|HIDETAUR
+	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/tank/internals, /obj/item/kitchen/knife/combat, /obj/item/gun/medbeam, /obj/item/healthanalyzer, /obj/item/stack/medical, /obj/item/storage/firstaid)
 
 //Janitorial
 /obj/item/clothing/suit/space/swat/janitor
@@ -301,6 +302,7 @@ Contains:
 	item_state = "ert_medical"
 	tail_state = "ert-medical"
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/med
+	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/tank/internals, /obj/item/gun/medbeam, /obj/item/healthanalyzer, /obj/item/stack/medical, /obj/item/storage/firstaid)
 
 // BLUEMOOD ADD medhuds for medical ERT hardhelmet
 /obj/item/clothing/head/helmet/space/hardsuit/ert/med/equipped(mob/living/carbon/human/user, slot)
@@ -616,7 +618,7 @@ Contains:
 	item_state = "paramedic-eva"
 	tail_state = "paramed"
 	desc = "A deep blue space suit decorated with medical insignia to indicate that the wearer is trained emergency medical personnel."
-	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/roller)
+	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/roller, /obj/item/gun/medbeam, /obj/item/healthanalyzer, /obj/item/stack/medical, /obj/item/storage/firstaid)
 
 /obj/item/clothing/head/helmet/space/eva/paramedic
 	name = "paramedic EVA helmet"

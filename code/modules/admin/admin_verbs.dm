@@ -58,6 +58,7 @@ GLOBAL_PROTECT(admin_verbs_admin)
 	/client/proc/check_antagonists,		/*shows all antags*/
 	/datum/admins/proc/access_news_network,	/*allows access of newscasters*/
 	/client/proc/admin_jump_to,			/*jump to interface*/
+	/client/proc/jumptoturf,			/*right-click jump to turf*/
 	/client/proc/Getmob,				/*teleports a mob to our location*/
 	/client/proc/Getkey,				/*teleports a mob with a certain ckey to our location*/
 	/client/proc/fax_panel, /*send a paper to fax*/

@@ -5,8 +5,8 @@ Difficulty: Extremely Hard
 /mob/living/simple_animal/hostile/megafauna/demonic_frost_miner
 	name = "demonic-frost miner"
 	desc = "An extremely geared miner, driven crazy or possessed by the demonic forces here, either way a terrifying enemy."
-	health = 1500
-	maxHealth = 1500
+	health = 1900
+	maxHealth = 1900
 	icon_state = "demonic_miner"
 	icon_living = "demonic_miner"
 	icon = 'icons/mob/icemoon/icemoon_monsters.dmi'
@@ -19,10 +19,10 @@ Difficulty: Extremely Hard
 	weather_immunities = list(TRAIT_SNOWSTORM_IMMUNE)
 	speak_emote = list("roars")
 	armour_penetration = 100
-	melee_damage_lower = 10
-	melee_damage_upper = 10
+	melee_damage_lower = 14
+	melee_damage_upper = 14
 	aggro_vision_range = 18 // large vision range so combat doesn't abruptly end when someone runs a bit away
-	rapid_melee = 4
+	rapid_melee = 5
 	speed = 20
 	move_to_delay = 20
 	ranged = TRUE
@@ -115,7 +115,7 @@ Difficulty: Extremely Hard
 /obj/item/projectile/frost_orb
 	name = "frost orb"
 	icon_state = "ice_1"
-	damage = 20
+	damage = 28
 	armour_penetration = 100
 	pixels_per_second = TILES_TO_PIXELS(1)
 	homing_turn_speed = 30
@@ -129,7 +129,7 @@ Difficulty: Extremely Hard
 /obj/item/projectile/snowball
 	name = "machine-gun snowball"
 	icon_state = "nuclear_particle"
-	damage = 5
+	damage = 7
 	armour_penetration = 100
 	pixels_per_second = TILES_TO_PIXELS(2.5)
 	damage_type = BRUTE
@@ -137,7 +137,7 @@ Difficulty: Extremely Hard
 /obj/item/projectile/ice_blast
 	name = "ice blast"
 	icon_state = "ice_2"
-	damage = 15
+	damage = 22
 	armour_penetration = 100
 	pixels_per_second = TILES_TO_PIXELS(2.5)
 	damage_type = BRUTE

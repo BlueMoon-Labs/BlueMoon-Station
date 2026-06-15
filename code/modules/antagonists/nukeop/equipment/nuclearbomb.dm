@@ -457,7 +457,7 @@
 	safety = !safety
 	if(safety)
 		if(timing)
-			set_security_level(previous_level)
+			set_security_level(previous_level, null, TRUE)
 			revert_syndicate_nuke_pinpointers_disk()
 		timing = FALSE
 		detonation_timer = null
@@ -478,7 +478,7 @@
 		set_security_level("delta")
 	else
 		detonation_timer = null
-		set_security_level(previous_level)
+		set_security_level(previous_level, null, TRUE)
 		revert_syndicate_nuke_pinpointers_disk()
 		countdown.stop()
 	update_icon()
@@ -604,7 +604,7 @@
 	detonation_timer = null
 	exploding = FALSE
 	exploded = TRUE
-	set_security_level(previous_level)
+	set_security_level(previous_level, null, TRUE)
 	revert_syndicate_nuke_pinpointers_disk()
 	countdown.stop()
 	update_icon()

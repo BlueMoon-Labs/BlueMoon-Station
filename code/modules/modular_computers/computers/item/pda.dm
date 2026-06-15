@@ -604,7 +604,7 @@
 			to_chat(user, "<span class='warning'>[src] отвергает ID-карту!</span>")
 			playsound(src, 'sound/machines/terminal_error.ogg', 15, TRUE)
 			return
-		if(user.canUseTopic(src, BE_CLOSE))
+		if(user.canUseTopic(src, BE_CLOSE, no_tk = TRUE, check_resting = FALSE))
 			if(!stored_id)
 				if(!owner && !saved_identification)
 					owner = idcard.registered_name
