@@ -120,7 +120,8 @@
 			playsound(turret, pick(GLOB.aperture_turret_search_vo), 70, TRUE)
 			next_search_vo = world.time + rand(10 SECONDS, 25 SECONDS)
 
-	if(world.time > shooting_until)
+	if(shooting_until && world.time >= shooting_until)
+		shooting_until = 0
 		turret.update_icon()
 
 	last_had_targets = has_targets
