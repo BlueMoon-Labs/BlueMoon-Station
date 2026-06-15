@@ -36,4 +36,7 @@
 /datum/station_trait/aperture_science/proc/schedule_glados_theme(datum/job/job, mob/living/spawned)
 	if(job?.type != /datum/job/ai)
 		return
-	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(apply_glados_theme), spawned), 1)
+	var/mob/living/silicon/ai/AI = spawned
+	if(!istype(AI))
+		return
+	addtimer(CALLBACK(AI, TYPE_PROC_REF(/mob/living/silicon/ai, deferred_aperture_glados_theme)), 1, TIMER_UNIQUE)

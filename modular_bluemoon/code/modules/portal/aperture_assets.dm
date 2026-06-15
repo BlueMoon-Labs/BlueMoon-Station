@@ -96,9 +96,12 @@ GLOBAL_LIST_INIT(aperture_turret_ally_death_vo, list(
 		return
 	if(!HAS_TRAIT(SSstation, STATION_TRAIT_APERTURE_SCIENCE))
 		return
+	var/new_state = get_glados_core_icon_state(AI)
+	if(AI.icon == APERTURE_GLADOS_ICON && AI.icon_state == new_state)
+		return
 	AI.icon = APERTURE_GLADOS_ICON
-	AI.icon_state = get_glados_core_icon_state(AI)
-	AI.update_appearance()
+	AI.icon_state = new_state
+	AI.update_icon(UPDATE_ICON_STATE)
 
 /proc/is_aperture_turret_candidate(obj/machinery/porta_turret/turret)
 	if(!turret)
