@@ -70,6 +70,7 @@ Contains:
 	icon_state = "ertarmor_cmd"
 	item_state = "armor"
 	slowdown = 0
+	flags_inv = HIDEGLOVES|HIDESHOES|HIDETAUR
 
 //Security
 /obj/item/clothing/suit/space/swat/security
@@ -77,6 +78,7 @@ Contains:
 	desc = "A set of armor worn by security members of the Nanotrasen Emergency Response Team. Has red highlights."
 	icon_state = "ertarmor_sec"
 	slowdown = 0
+	flags_inv = HIDEGLOVES|HIDESHOES|HIDETAUR
 
 //Engineer
 /obj/item/clothing/suit/space/swat/engineer
@@ -84,6 +86,7 @@ Contains:
 	desc = "A set of armor worn by engineering members of the Nanotrasen Emergency Response Team. Has orange highlights."
 	icon_state = "ertarmor_eng"
 	slowdown = 0
+	flags_inv = HIDEGLOVES|HIDESHOES|HIDETAUR
 
 //Medical
 /obj/item/clothing/suit/space/swat/medical
@@ -91,6 +94,7 @@ Contains:
 	desc = "A set of armor worn by medical members of the Nanotrasen Emergency Response Team. Has red and white highlights."
 	icon_state = "ertarmor_med"
 	slowdown = 0
+	flags_inv = HIDEGLOVES|HIDESHOES|HIDETAUR
 
 //Janitorial
 /obj/item/clothing/suit/space/swat/janitor
@@ -98,6 +102,7 @@ Contains:
 	desc = "A set of armor worn by janitorial members of the Nanotrasen Emergency Response Team. Has red and white highlights."
 	icon_state = "ertarmor_jan"
 	slowdown = 0
+	flags_inv = HIDEGLOVES|HIDESHOES|HIDETAUR
 
 /obj/item/clothing/head/helmet/space/beret
 	name = "officer's beret"

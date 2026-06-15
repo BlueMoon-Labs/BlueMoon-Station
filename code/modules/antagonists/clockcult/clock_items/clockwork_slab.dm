@@ -271,13 +271,28 @@
 	.["power"] = DisplayPower(get_clockwork_power())
 	.["power_unformatted"] = get_clockwork_power()
 	.["HONOR_RATVAR"] = GLOB.ratvar_awakens
-	.["scripture"] = list()
+	.["scripture"] = list(
+		SCRIPTURE_CATEGORY_STRUCTURE = list(),
+		SCRIPTURE_CATEGORY_ATTACK = list(),
+		SCRIPTURE_CATEGORY_SUPPORT = list(),
+		SCRIPTURE_CATEGORY_EQUIPMENT = list(),
+		SCRIPTURE_CATEGORY_MOBS = list(),
+	)
+	.["rec_binds"] = list()
+	for(var/i in 1 to maximum_quickbound)
+		if(LAZYLEN(quickbound) < i || !quickbound[i])
+			.["rec_binds"] += list(list())
+		else
+			var/datum/clockwork_scripture/quickbind_slot = quickbound[i]
+			.["rec_binds"] += list(list(
+				"name" = initial(quickbind_slot.name),
+				"color" = get_component_color_bright(initial(quickbind_slot.primary_component))
+			))
 	for(var/s in GLOB.all_scripture) //don't block this, even when ratvar spawns for roundend griff.
 		var/datum/clockwork_scripture/S = GLOB.all_scripture[s]
-		if(S.tier == SCRIPTURE_PERIPHERAL) // This tier is skiped because this contains basetype stuff
+		if(S.tier == SCRIPTURE_PERIPHERAL || S.hidden_from_ui)
 			continue
 
-		// FUTURE IMPL: cache these perhaps?
 		var/list/data = list()
 		data["name"] = S.name
 		data["descname"] = S.descname
@@ -285,51 +300,48 @@
 		data["required"] = "([DisplayPower(S.power_cost)][S.special_power_text ? "+ [replacetext(S.special_power_text, "POWERCOST", "[DisplayPower(S.special_power_cost)]")]" : ""])"
 		data["required_unformatted"] = S.power_cost
 		data["type"] = "[S.type]"
-		data["quickbind"] = S.quickbind //this is if it cant quickbind (bool)
+		data["tier"] = S.tier
+		data["quickbind"] = S.quickbind
 		data["fontcolor"] = get_component_color_bright(S.primary_component)
-		data["important"] = S.important //italic!
+		data["important"] = S.important
 
 		var/found = quickbound.Find(S.type)
 		if(found)
-			data["bound"] = found //number (pos) on where is it on the list
+			data["bound"] = found
 		if(S.invokers_required > 1)
-			data["invokers"] = "Invokers: [S.invokers_required]"
+			data["invokers"] = "Чтецы: [S.invokers_required]"
 
-		.["rec_binds"] = list()
-		for(var/i in 1 to maximum_quickbound)
-			if(LAZYLEN(quickbound) < i || !quickbound[i])
-				.["rec_binds"] += list(list()) //a blank json.
-			else
-				var/datum/clockwork_scripture/quickbind_slot = quickbound[i]
-				.["rec_binds"] += list(list(
-					"name" = initial(quickbind_slot.name),
-					"color" = get_component_color_bright(initial(quickbind_slot.primary_component))
-				))
-
-		.["scripture"][S.tier] += list(data)
+		.["scripture"][S.category] += list(data)
 
 /obj/item/clockwork/slab/ui_static_data(mob/user)
 	. = list()
 	.["tier_infos"] = list() //HEY!! WHEN ADDING NEW TIER, ADD IT HERE
 	.["tier_infos"][SCRIPTURE_PERIPHERAL] = list(
-		"requirement" = "Breaking the code DM side. Report to coggerbus if this appears!!",
+		"requirement" = "Ошибка кода. Сообщите кодерам!",
 		"ready" = FALSE //just in case. Should NOT exist at all
 	)
 	.["tier_infos"][SCRIPTURE_DRIVER] = list(
-		"requirement" = "None, this is already unlocked",
+		"requirement" = "Уже открыто",
 		"ready" = TRUE //to bold it on JS side, and to say "These scriptures are permanently unlocked."
 	)
 	.["tier_infos"][SCRIPTURE_SCRIPT] = list(
-		"requirement" = "These scriptures will automatically unlock when the Ark is halfway ready or if [DisplayPower(SCRIPT_UNLOCK_THRESHOLD)] of power is reached.",
+		"requirement" = "Откроется при половине готовности Ковчега или при [DisplayPower(SCRIPT_UNLOCK_THRESHOLD)] энергии.",
 		"ready" = SSticker.scripture_states[SCRIPTURE_SCRIPT] //huh, on the gamemode ticker? okay...
 	)
 	.["tier_infos"][SCRIPTURE_APPLICATION] = list(
-		"requirement" = "Unlock these optional scriptures by converting another servant or if [DisplayPower(APPLICATION_UNLOCK_THRESHOLD)] of power is reached..",
+		"requirement" = "Конвертируйте слугу или накопите [DisplayPower(APPLICATION_UNLOCK_THRESHOLD)] энергии.",
 		"ready" = SSticker.scripture_states[SCRIPTURE_APPLICATION]
 	)
 	.["tier_infos"][SCRIPTURE_JUDGEMENT] = list(
-		"requirement" = "Unlock powerful equipment and structures by converting five servants or if [DisplayPower(JUDGEMENT_UNLOCK_THRESHOLD)] of power is reached..",
+		"requirement" = "Конвертируйте 5 слуг или накопите [DisplayPower(JUDGEMENT_UNLOCK_THRESHOLD)] энергии.",
 		"ready" = SSticker.scripture_states[SCRIPTURE_JUDGEMENT]
+	)
+	.["category_infos"] = list(
+		list("name" = SCRIPTURE_CATEGORY_STRUCTURE, "desc" = "Постройки, сигилы и структуры для базы."),
+		list("name" = SCRIPTURE_CATEGORY_ATTACK, "desc" = "Атакующие заклинания и способности для боя."),
+		list("name" = SCRIPTURE_CATEGORY_SUPPORT, "desc" = "Вспомогательные заклинания: лечение, защита и утилиты."),
+		list("name" = SCRIPTURE_CATEGORY_EQUIPMENT, "desc" = "Снаряжение и призываемое оружие."),
+		list("name" = SCRIPTURE_CATEGORY_MOBS, "desc" = "Призыв конструктов и других существ."),
 	)
 	// no need to learn shit, ratvar is free
 	.["recollection_categories"] = list()

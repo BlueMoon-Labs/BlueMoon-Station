@@ -82,11 +82,10 @@ Credit where due:
 	if(!L || !L.mind)
 		return
 	var/update_type = /datum/antagonist/clockcult
-	if(silent)
-		update_type = /datum/antagonist/clockcult/silent
 	if(override_type)		//prioritizes
 		update_type = override_type
 	var/datum/antagonist/clockcult/C = new update_type(L.mind)
+	C.silent = silent
 	C.make_team = create_team
 	C.show_in_roundend = create_team //tutorial scarabs begone
 

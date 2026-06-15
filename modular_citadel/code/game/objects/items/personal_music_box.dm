@@ -65,8 +65,9 @@ GLOBAL_VAR_INIT(personal_music_boxes_last_play, 0)
 	name = "personal music box"
 	desc = "A portable music box. You can load your own .ogg tracks from your computer and play them nearby."
 	icon = 'modular_citadel/icons/obj/personal_music_box.dmi'
+	righthand_file = 'modular_citadel/icons/obj/boombox_righthand.dmi'
+	lefthand_file = 'modular_citadel/icons/obj/boombox_lefthand.dmi'
 	icon_state = "mbox0"
-	w_class = WEIGHT_CLASS_BULKY
 	verb_say = "states"
 	var/curfile_path
 	var/song_name
@@ -104,6 +105,7 @@ GLOBAL_VAR_INIT(personal_music_boxes_last_play, 0)
 
 /obj/item/personal_music_box/update_icon()
 	icon_state = is_playing() ? "mboxon" : (has_track ? "mbox1" : "mbox0")
+	item_state = is_playing() ? "mboxon" : (has_track ? "mbox1" : "mbox0")
 
 /obj/item/personal_music_box/attack_self(mob/user)
 	. = ..()

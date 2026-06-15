@@ -3,11 +3,14 @@
 	desc = "Самое мощное творение Nezbere, могучая боевая машина несравненной мощи, о которой говорят, что она заканчивала войны за одну ночь. Вооружена тяжёлым лазером и генератором тесла-сфер. Требует пилота и стрелка."
 	icon = 'icons/mecha/neovgre.dmi'
 	icon_state = "neovgre"
-	max_integrity = 500 //This is THE ratvarian superweaon, its deployment is an investment
-	armor = list(MELEE = 60, BULLET = 70, LASER = 65, ENERGY = 65, BOMB = 60, BIO = 100, RAD = 100, FIRE = 100, ACID = 100) //Its similar to the clockwork armour albeit with a few buffs becuase RATVARIAN SUPERWEAPON!!
+	max_integrity = 1000
+	deflect_chance = 40
+	armor = list(MELEE = 70, BULLET = 80, LASER = 75, ENERGY = 75, BOMB = 70, BIO = 100, RAD = 100, FIRE = 100, ACID = 100)
+	max_temperature = 60000
+	resistance_flags = LAVA_PROOF | FIRE_PROOF | ACID_PROOF
 	force = 50 //SMASHY SMASHY!!
 	movedelay = 4
-	internal_damage_threshold = 50
+	internal_damage_threshold = 25
 	pixel_x = -16
 	layer = ABOVE_MOB_LAYER
 	var/breach_time = 100 //ten seconds till all goes to shit
@@ -76,11 +79,18 @@
 					cell.charge += delta
 					adjust_clockwork_power(-delta)
 		if(obj_integrity < max_integrity && istype(loc, /turf/open/floor/clockwork))
-			obj_integrity += min(max_integrity - obj_integrity, max_integrity / 200)
+			obj_integrity += min(max_integrity - obj_integrity, max_integrity / 100)
 
 /obj/vehicle/sealed/mecha/combat/neovgre/Initialize(mapload)
 	.=..()
 	GLOB.neovgre_exists ++
+	var/obj/item/mecha_parts/mecha_equipment/ME
+	ME = new /obj/item/mecha_parts/mecha_equipment/antiproj_armor_booster(src)
+	ME.attach(src)
+	ME = new /obj/item/mecha_parts/mecha_equipment/anticcw_armor_booster(src)
+	ME.attach(src)
+	ME = new /obj/item/mecha_parts/mecha_equipment/tesla_energy_relay(src)
+	ME.attach(src)
 	var/obj/item/mecha_parts/mecha_equipment/weapon/energy/laser/heavy/neovgre/N = new
 	N.attach(src)
 	var/obj/item/mecha_parts/mecha_equipment/weapon/energy/tesla/shocking = new

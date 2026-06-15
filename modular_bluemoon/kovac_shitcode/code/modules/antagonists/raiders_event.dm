@@ -10,7 +10,7 @@
 	description = "The crew will face a PMC assault."
 
 /datum/round_event_control/raiders/preRunEvent()
-	if (!SSmapping.empty_space)
+	if(!SSmapping.empty_space && !length(SSmapping.levels_by_trait(ZTRAIT_SPACE_RUINS)) && !SSmapping.station_start)
 		return EVENT_CANT_RUN
 
 	return ..()
@@ -66,11 +66,28 @@
 		priority_announce("Здесь не хватает кредитов, козлы. Молитесь.", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
 		spawn_raiders(threat_msg, ship_template, TRUE)
 
+/datum/round_event/raiders/proc/get_spawn_z()
+	if(SSmapping.empty_space)
+		return SSmapping.empty_space.z_value
+	var/list/space_zlevels = SSmapping.levels_by_trait(ZTRAIT_SPACE_RUINS)
+	if(length(space_zlevels))
+		return pick(space_zlevels)
+	return SSmapping.station_start
+
 /datum/round_event/raiders/proc/spawn_raiders(datum/comm_message/threat_msg, ship_template, skip_answer_check)
 	if(raiders_spawned)
 		return
 	if(!skip_answer_check && threat_msg?.answered == 1)
 		return
+	if(!ship_template)
+		message_admins("InteQ Raiders event failed: no ship template configured.")
+		return
+
+	var/z = get_spawn_z()
+	if(!z)
+		message_admins("InteQ Raiders event failed: no valid Z-level for ship spawn.")
+		return
+
 	raiders_spawned = TRUE
 	if(spawn_timer_id)
 		deltimer(spawn_timer_id)
@@ -79,7 +96,6 @@
 	var/datum/map_template/shuttle/ship = new ship_template
 	var/x = rand(TRANSITIONEDGE,world.maxx - TRANSITIONEDGE - ship.width)
 	var/y = rand(TRANSITIONEDGE,world.maxy - TRANSITIONEDGE - ship.height)
-	var/z = SSmapping.empty_space.z_value
 	var/turf/T = locate(x,y,z)
 	if(!T)
 		CRASH("Raiders event found no turf to load in")

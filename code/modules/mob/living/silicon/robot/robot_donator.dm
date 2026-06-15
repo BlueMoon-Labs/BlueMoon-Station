@@ -280,7 +280,7 @@
 	preview_icon = 'modular_splurt/icons/mob/robots_32x64.dmi'
 	preview_icon_state = "ratvarmeka"
 	ckey_whitelist = list("foxrtotlimda")
-	cyborg_base_icon = "ratvarmeka"
+	cyborg_base_icon = "ratvararmeka"
 	cyborg_icon_override = 'modular_splurt/icons/mob/robots_32x64.dmi'
 	hat_offset = TALL_HAT_OFFSET
 	hasrest = TRUE
@@ -289,7 +289,7 @@
 	name = "Ratvar Meka"
 	module_type = /obj/item/robot_module/syndicatejack
 	preview_icon = 'modular_splurt/icons/mob/robots_32x64.dmi'
-	preview_icon_state = "ratvarmeka"
+	preview_icon_state = "ratvararmeka"
 	ckey_whitelist = list("foxrtotlimda")
 	cyborg_base_icon = "ratvarmeka"
 	cyborg_icon_override = 'modular_splurt/icons/mob/robots_32x64.dmi'

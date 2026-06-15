@@ -659,17 +659,35 @@
 		to_chat(occupants, "[icon2html(src, occupants)]<span class='warning'>Air port connection has been severed!</span>")
 		log_message("Lost connection to gas port.", LOG_MECHA)
 
+/obj/vehicle/sealed/mecha/proc/has_functional_thrusters()
+	return active_thrusters && !equipment_disabled && has_charge(step_energy_drain)
+
+/obj/vehicle/sealed/mecha/proc/can_cancel_space_drift()
+	return stabilizers && has_functional_thrusters()
+
 /obj/vehicle/sealed/mecha/Process_Spacemove(movement_dir = 0, continuous_move = FALSE)
 	. = ..(movement_dir, continuous_move)
 	if(.)
 		return TRUE
-	if(continuous_move)
-		// Drift tick: engaged stabilizers cancel residual drift (like a jetpack's) as long as we have powered, functional thrusters.
-		if(stabilizers && active_thrusters && !equipment_disabled && has_charge(step_energy_drain))
-			return TRUE
+
+	// Jetpack-style thrusters: stabilizers = cell-by-cell movement with no drift; thrust handles voluntary moves.
+	if(has_functional_thrusters())
+		var/thruster_assist = continuous_move ? stabilizers : (movement_dir || stabilizers)
+		if(thruster_assist)
+			if(continuous_move)
+				return TRUE
+			if(active_thrusters.thrust(movement_dir))
+				step_silent = TRUE
+				return TRUE
+		if(continuous_move)
+			return FALSE
 		return FALSE
 
-	var/atom/movable/backup = get_spacemove_backup()
+	if(continuous_move)
+		return FALSE
+
+	// Mechs without a thruster package can still push off nearby objects.
+	var/atom/movable/backup = get_spacemove_backup(movement_dir, continuous_move)
 	if(backup)
 		if(istype(backup) && movement_dir && !backup.anchored)
 			if(backup.newtonian_move(REVERSE_DIR(movement_dir), instant = TRUE))
@@ -678,11 +696,13 @@
 					to_chat(occupants, "[icon2html(src, occupants)]<span class='info'>The [src] push off [backup] to propel yourself.</span>")
 		return TRUE
 
-	if(movedelay <= world.time && active_thrusters && movement_dir && active_thrusters.thrust(movement_dir))
-		step_silent = TRUE
-		return TRUE
-
 	return FALSE
+
+/obj/vehicle/sealed/mecha/Moved(atom/OldLoc, Dir, Forced = FALSE)
+	if(can_cancel_space_drift())
+		SEND_SIGNAL(src, COMSIG_MOVABLE_MOVED, OldLoc, Dir, Forced)
+		return TRUE
+	return ..()
 
 /obj/vehicle/sealed/mecha/relaymove(mob/living/user, direction)
 	. = TRUE

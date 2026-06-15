@@ -21,7 +21,7 @@
 	desc = "Эта сфера хранит в себе первородное зло и, наверное, это недопустимо ронять или даже ломать..."
 	icon = 'icons/effects/clockwork_effects.dmi'
 	icon_state ="ratvars_flame"
-	var/static/curselimit = 0
+	var/static/curse_uses = 0
 
 /obj/item/station_clock_curse/attack_self(mob/living/user)
 	if(!is_servant_of_ratvar(user, TRUE))
@@ -29,7 +29,7 @@
 		user.DefaultCombatKnockdown(100)
 		to_chat(user, "<span class='warning'>Мощная сила отталкивает вас от [src]!</span>")
 		return
-	if(curselimit >= 1)
+	if(curse_uses >= STATION_CLOCK_CURSE_MAX_USES)
 		to_chat(user, "<span class='notice'>Мы исчерпали свою способность проклинать Космическую Станцию.</span>")
 		return
 	if(locate(/obj/structure/destructible/clockwork/massive/ratvar) in GLOB.poi_list)
@@ -42,4 +42,5 @@
 	sleep(pick(100, 200, 400, 800, 1200))
 	var/datum/round_event_control/portal_storm_clock/portal_storm_clock = new/datum/round_event_control/portal_storm_clock
 	portal_storm_clock.runEvent()
-	curselimit++
+	curse_uses++
+	update_slab_info()

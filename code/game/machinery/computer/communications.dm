@@ -778,7 +778,7 @@
 	var/list/settings = list(
 		"mainsettings" = list(
 		"template" = list("desc" = "Template", "callback" = CALLBACK(src, PROC_REF(makeERTTemplateModified)), "type" = "datum", "path" = "/datum/ert", "subtypesonly" = TRUE, "value" = ertemplate.type),
-		"teamsize" = list("desc" = "Team Size", "type" = "number", "value" =  GLOB.payed_ert[id]["teamsize"]),
+		"teamsize" = list("desc" = "Team Size", "type" = "number", "value" = GLOB.payed_ert[id]["teamsize"]),
 		"mission" = list("desc" = "Mission", "type" = "string", "value" = GLOB.payed_ert[id]["mission"]),
 		"polldesc" = list("desc" = "Ghost poll description", "type" = "string", "value" = ertemplate.polldesc),
 		"ertphrase" = list("desc" = "ERT Sending Sound", "type" = "string", "value" = ertemplate.ertphrase),
@@ -809,7 +809,7 @@
 
 	if(candidates.len > 0)
 		//Pick the (un)lucky players
-		var/numagents = min(ertemplate.teamsize,candidates.len)
+		var/numagents = min(ertemplate.maxteamsize, candidates.len)
 
 		//Create team
 		var/datum/team/ert/ert_team = new ertemplate.team

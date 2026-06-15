@@ -90,20 +90,26 @@
 		. += "There are [orbiting_balls.len] mini-balls orbiting it."
 
 /obj/singularity/energy_ball/proc/move_the_basket_ball(var/move_amount)
-	//we face the last thing we zapped, so this lets us favor that direction a bit
-	var/move_bias = pick(GLOB.alldirs)
 	var/move_dir
-	for(var/rod in GLOB.grounding_rods) // grounding rods pull the tesla ball, picks the nearest one
-		if(!rodtarget || get_dist(src,rod)<get_dist(src,rodtarget))
-			rodtarget=rod
+	var/obj/machinery/power/apc/apc_target
+	for(var/obj/machinery/power/apc/APC in GLOB.apcs_list)
+		if(APC.z != z || QDELETED(APC))
+			continue
+		if(!apc_target || get_dist(src, APC) < get_dist(src, apc_target))
+			apc_target = APC
+	for(var/rod in GLOB.grounding_rods)
+		if(!rodtarget || get_dist(src, rod) < get_dist(src, rodtarget))
+			rodtarget = rod
 
 	for(var/i in 0 to move_amount)
-		if(rodtarget)
-			move_dir = pick(GLOB.alldirs + get_dir(src,rodtarget))
+		if(apc_target && !QDELETED(apc_target))
+			move_dir = get_dir(src, apc_target)
+		else if(rodtarget)
+			move_dir = get_dir(src, rodtarget)
+		else if(target)
+			move_dir = get_dir(src, target)
 		else
-			move_dir = pick(GLOB.alldirs + move_bias) //ensures large-ball teslas don't just sit around
-		if(target && prob(10))
-			move_dir = get_dir(src,target)
+			move_dir = pick(GLOB.alldirs)
 		var/turf/T = get_step(src, move_dir)
 		if(can_move(T))
 			forceMove(T)
