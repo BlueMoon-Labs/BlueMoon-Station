@@ -43,7 +43,7 @@ describe('ClockworkSlab recollection tutorial', () => {
     const { container } = render(<CSTutorial />);
     // Bound slot name and the blank-slot placeholder both render.
     expect(container.innerHTML).toContain('Spatial Gateway');
-    expect(container.innerHTML).toContain('None');
+    expect(container.innerHTML).toContain('Нет');
     // The slot color must be applied as a real CSS style, not a raw string.
     const colored = container.querySelector('span[style*="color"]');
     expect(colored).toBeTruthy();
