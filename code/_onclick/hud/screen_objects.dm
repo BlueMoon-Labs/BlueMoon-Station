@@ -438,6 +438,10 @@
 	if(iscarbon(usr))
 		var/mob/living/carbon/C = usr
 		C.toggle_throw_mode()
+	else if(istype(usr, /mob/living/simple_animal))
+		var/mob/living/simple_animal/S = usr
+		if(S.dextrous)
+			S.toggle_throw_mode()
 
 /atom/movable/screen/zone_sel
 	name = "damage zone"

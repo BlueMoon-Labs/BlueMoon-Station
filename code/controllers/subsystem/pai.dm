@@ -23,7 +23,11 @@ SUBSYSTEM_DEF(pai)
 		if(istype(card, /obj/item/paicard) && istype(candidate, /datum/paiCandidate))
 			if(check_ready(candidate) != candidate)
 				return FALSE
-			var/mob/living/silicon/pai/pai = new(card)
+			var/mob/living/silicon/pai/pai
+			if(istype(card, /obj/item/paicard/syndicate))
+				pai = new /mob/living/silicon/pai/syndicate(card)
+			else
+				pai = new(card)
 			if(!candidate.name)
 				pai.name = pick(GLOB.ninja_names)
 			else

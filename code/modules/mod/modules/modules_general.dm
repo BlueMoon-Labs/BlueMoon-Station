@@ -3,8 +3,8 @@
 ///Storage - Adds a storage component to the suit.
 /obj/item/mod/module/storage
 	name = "MOD storage containment module"
-	desc = "What amounts to a series of integrated storage compartments and specialized pockets installed across \
-		the surface of the suit, useful for storing various bits, and or bobs."
+	desc = "Набор встроенных отделений для хранения и специализированных карманов, установленных по всей \
+		поверхности костюма, полезных для хранения различных мелочей и штучек."
 	icon_state = "storage"
 	complexity = 3
 	incompatible_modules = list(/obj/item/mod/module/storage)
@@ -77,9 +77,9 @@
 ///Ion Jetpack - Lets the user fly freely through space using battery charge.
 /obj/item/mod/module/jetpack
 	name = "MOD ion jetpack module"
-	desc = "A series of electric thrusters installed across the suit, this is a module highly anticipated by trainee Engineers. \
-		Rather than using gasses for combustion thrust, these jets are capable of accelerating ions using \
-		charge from the suit's charge. Some say this isn't Nakamura Engineering's first foray into jet-enabled suits."
+	desc = "Ряд электрических двигателей, установленных по всему костюму, модуль, которого с нетерпением ожидали стажёры-инженеры. \
+		Вместо использования газов для тяги сгорания эти двигатели способны ускорять ионы, используя \
+		заряд от костюма. Некоторые говорят, что это не первое знакомство Nakamura Engineering с реактивными костюмами."
 	icon_state = "jetpack"
 	module_type = MODULE_TOGGLE
 	complexity = 3
@@ -147,8 +147,8 @@
 
 /obj/item/mod/module/jetpack/advanced
 	name = "MOD advanced ion jetpack module"
-	desc = "An improvement on the previous model of electric thrusters. This one achieves higher speeds through \
-		mounting of more jets and a red paint applied on it."
+	desc = "Улучшение предыдущей модели электрических двигателей. Эта достигает более высоких скоростей за счёт \
+		установки большего количества двигателей и нанесения красной краски."
 	icon_state = "jetpack_advanced"
 	overlay_state_inactive = "module_jetpackadv"
 	overlay_state_active = "module_jetpackadv_on"
@@ -157,9 +157,9 @@
 ///Eating Apparatus - Lets the user eat/drink with the suit on.
 /obj/item/mod/module/mouthhole
 	name = "MOD eating apparatus module"
-	desc = "A favorite by Miners, this modification to the helmet utilizes a nanotechnology barrier infront of the mouth \
-		to allow eating and drinking while retaining protection and atmosphere. However, it won't free you from masks, \
-		lets pepper spray pass through and it will do nothing to improve the taste of a goliath steak."
+	desc = "Любимец шахтёров, эта модификация шлема использует нанотехнологический барьер перед ртом \
+		для приёма пищи и питья при сохранении защиты и атмосферы. Однако он не освободит вас от масок, \
+		позволит перцовому баллончику пройти сквозь и ничего не сделает для улучшения вкуса стейка голиафа."
 	icon_state = "apparatus"
 	complexity = 1
 	incompatible_modules = list(/obj/item/mod/module/mouthhole)
@@ -185,9 +185,9 @@
 ///EMP Shield - Protects the suit from EMPs.
 /obj/item/mod/module/emp_shield
 	name = "MOD EMP shield module"
-	desc = "A field inhibitor installed into the suit, protecting it against feedback such as \
-		electromagnetic pulses that would otherwise damage the electronic systems of the suit or it's modules. \
-		However, it will take from the suit's power to do so."
+	desc = "Полевой ингибитор, установленный в костюм, защищающий его от обратной связи, такой как \
+		электромагнитные импульсы, которые в противном случае повредили бы электронные системы костюма или его модулей. \
+		Однако для этого он будет потреблять энергию костюма."
 	icon_state = "empshield"
 	complexity = 1
 	idle_power_cost = DEFAULT_CHARGE_DRAIN * 0.3
@@ -202,9 +202,9 @@
 
 /obj/item/mod/module/emp_shield/advanced
 	name = "MOD advanced EMP shield module"
-	desc = "An advanced field inhibitor installed into the suit, protecting it against feedback such as \
-		electromagnetic pulses that would otherwise damage the electronic systems of the suit or electronic devices on the wearer, \
-		including augmentations. However, it will take from the suit's power to do so."
+	desc = "Продвинутый полевой ингибитор, установленный в костюм, защищающий его от обратной связи, такой как \
+		электромагнитные импульсы, которые в противном случае повредили бы электронные системы костюма или электронные устройства на носителе, \
+		включая аугментации. Однако для этого он будет потреблять энергию костюма."
 	complexity = 2
 
 /obj/item/mod/module/emp_shield/advanced/on_suit_activation()
@@ -216,9 +216,9 @@
 ///Flashlight - Gives the suit a customizable flashlight.
 /obj/item/mod/module/flashlight
 	name = "MOD flashlight module"
-	desc = "A simple pair of configurable flashlights installed on the left and right sides of the helmet, \
-		useful for providing light in a variety of ranges and colors. \
-		Some survivalists prefer the color green for their illumination, for reasons unknown."
+	desc = "Простая пара настраиваемых фонарей, установленных с левой и правой сторон шлема, \
+		полезных для обеспечения света в различных диапазонах и цветах. \
+		Некоторые выживальщики по неизвестным причинам предпочитают зелёный цвет для освещения."
 	icon_state = "flashlight"
 	module_type = MODULE_TOGGLE
 	complexity = 1
@@ -288,10 +288,10 @@
 ///Dispenser - Dispenses an item after a time passes.
 /obj/item/mod/module/dispenser
 	name = "MOD burger dispenser module"
-	desc = "A rare piece of technology reverse-engineered from a prototype found in a Donk Corporation vessel. \
-		This can draw incredible amounts of power from the suit's charge to create edible organic matter in the \
-		palm of the wearer's glove; however, research seemed to have entirely stopped at burgers. \
-		Notably, all attempts to get it to dispense Earl Grey tea have failed."
+	desc = "Редкий образец технологии, реконструированный из прототипа, найденного на судне Donk Corporation. \
+		Может потреблять невероятное количество энергии от заряда костюма для создания съедобной органической материи в \
+		ладони перчатки носителя; однако исследования, кажется, полностью остановились на бургерах. \
+		Примечательно, что все попытки заставить его выдавать чай Эрл Грей потерпели неудачу."
 	icon_state = "dispenser"
 	module_type = MODULE_USABLE
 	complexity = 3
@@ -325,9 +325,9 @@
 ///DNA Lock - Prevents people without the set DNA from activating the suit.
 /obj/item/mod/module/dna_lock
 	name = "MOD DNA lock module"
-	desc = "A module which engages with the various locks and seals tied to the suit's systems, \
-		enabling it to only be worn by someone corresponding with the user's exact DNA profile; \
-		however, this incredibly sensitive module is shorted out by EMPs. Luckily, cloning has been outlawed."
+	desc = "Модуль, взаимодействующий с различными замками и пломбами, связанными с системами костюма, \
+		позволяя носить его только тому, чей профиль ДНК точно соответствует профилю пользователя; \
+		однако этот невероятно чувствительный модуль выходит из строя под воздействием ЭМИ. К счастью, клонирование было запрещено."
 	icon_state = "dnalock"
 	module_type = MODULE_USABLE
 	complexity = 2

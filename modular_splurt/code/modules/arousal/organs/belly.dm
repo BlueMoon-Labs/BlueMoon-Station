@@ -39,12 +39,10 @@
 	..()
 
 /obj/item/organ/genital/belly/update_size()//wah
-	var/rounded_size = round(size)
-	var/list/belly_names = list("stomach", "belly", "gut", "midsection", "rolls")
-	if(size < 0)//I don't actually know what round() does to negative numbers, so to be safe!!fixed
+	var/rounded_size = max(0, round(size))
+	if(size == 0)
 		if(owner)
-			to_chat(owner, "<span class='warning'>You feel your [pick(belly_names)] go completely flat.</span>")
-		QDEL_IN(src, 1)
+			to_chat(owner, "<span class='warning'>Ваш животик становиться полностью плоским.</span>")
 		return
 
 	if(owner) //Because byond doesn't count from 0, I have to do this.

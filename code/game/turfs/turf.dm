@@ -736,7 +736,7 @@ GLOBAL_LIST_EMPTY(station_turfs)
 
 /// Called when attempting to set fire to a turf
 /turf/proc/IgniteTurf(power, fire_color="red")
-	return
+	return FALSE
 
 /// Returns adjacent turfs in cardinal directions that are reachable via atmos
 /turf/proc/reachableAdjacentAtmosTurfs()

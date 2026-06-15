@@ -178,6 +178,20 @@ TOGGLE_CHECKBOX(/datum/verbs/menu/Settings/Sound, toggle_jukeboxes)()
 /datum/verbs/menu/Settings/Sound/toggle_jukeboxes/Get_checked(client/C)
 	return C.prefs.toggles & SOUND_JUKEBOXES
 
+TOGGLE_CHECKBOX(/datum/verbs/menu/Settings/Sound, toggle_personal_jukeboxes)()
+	set name = "Hear/Silence Personal Music Boxes"
+	set category = "Preferences.Sounds"
+	set desc = "Hear personal music boxes playing custom tracks"
+	usr.client.prefs.toggles ^= SOUND_PERSONAL_JUKEBOXES
+	usr.client.prefs.save_preferences()
+	if(usr.client.prefs.toggles & SOUND_PERSONAL_JUKEBOXES)
+		to_chat(usr, "You will now hear personal music boxes.")
+	else
+		to_chat(usr, "You will no longer hear personal music boxes.")
+	SSblackbox.record_feedback("nested tally", "preferences_verb", 1, list("Toggle Personal Music Boxes", "[usr.client.prefs.toggles & SOUND_PERSONAL_JUKEBOXES ? "Enabled" : "Disabled"]"))
+/datum/verbs/menu/Settings/Sound/toggle_personal_jukeboxes/Get_checked(client/C)
+	return C.prefs.toggles & SOUND_PERSONAL_JUKEBOXES
+
 TOGGLE_CHECKBOX(/datum/verbs/menu/Settings/Sound, Toggle_Soundscape)()
 	set name = "Hear/Silence Ambience"
 	set category = "Preferences.Sounds"

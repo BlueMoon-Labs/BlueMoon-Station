@@ -626,6 +626,44 @@
 			l_hand.screen_loc = ui_hand_position(get_held_index_of_item(l_hand))
 			client.screen |= l_hand
 
+// Симпл мобы интеракты
+/mob/living/simple_animal/proc/toggle_throw_mode()
+	if(stat)
+		return
+	if(throw_mode)
+		throw_mode_off()
+	else
+		throw_mode_on()
+
+/mob/living/simple_animal/proc/throw_mode_off()
+	throw_mode = FALSE
+	if(client && hud_used && hud_used.throw_icon)
+		hud_used.throw_icon.icon_state = "act_throw_off"
+
+/mob/living/simple_animal/proc/throw_mode_on()
+	throw_mode = TRUE
+	if(client && hud_used && hud_used.throw_icon)
+		hud_used.throw_icon.icon_state = "act_throw_on"
+
+/mob/living/simple_animal/throw_item(atom/target)
+	. = ..()
+	throw_mode_off()
+	update_mouse_pointer()
+	if(!target || !isturf(loc))
+		return FALSE
+	if(istype(target, /atom/movable/screen))
+		return FALSE
+	var/obj/item/held_item = get_active_held_item()
+	if(!held_item)
+		return FALSE
+	visible_message(span_danger("[src] throws [held_item]."))
+	log_message("has thrown [held_item]", LOG_ATTACK)
+	do_attack_animation(target, no_effect = 1)
+	playsound(loc, 'sound/weapons/punchmiss.ogg', 50, 1, -1)
+	newtonian_move(get_dir(target, src))
+	held_item.safe_throw_at(target, held_item.throw_range, held_item.throw_speed, src)
+	DelayNextAction(CLICK_CD_THROW)
+
 //ANIMAL RIDING
 
 /mob/living/simple_animal/user_buckle_mob(mob/living/M, mob/user, check_loc)

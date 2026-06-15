@@ -8,7 +8,7 @@
 	build_type = PROTOLATHE | MECHFAB
 	construction_time = 40
 	materials = list(/datum/material/iron = 600, /datum/material/glass = 400)
-	build_path = /obj/item/organ/eyes/robotic/shield
+	build_path = /obj/item/organ/eyes/robotic/toggled/w_shield
 	category = list("Cybernetics", "Organs")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_ENGINEERING
 
@@ -19,7 +19,7 @@
 	build_type = PROTOLATHE | MECHFAB
 	construction_time = 40
 	materials = list(/datum/material/iron = 600, /datum/material/glass = 1000)
-	build_path = /obj/item/organ/eyes/robotic/glow
+	build_path = /obj/item/organ/eyes/robotic/toggled/glow
 	category = list("Cybernetics", "Organs")
 	departmental_flags = DEPARTMENTAL_FLAG_ALL
 
@@ -30,28 +30,23 @@
 	id = "ci-hypnoeyes"
 	build_path = /obj/item/organ/eyes/robotic/hypno
 
-///datum/design/cyberimp_xray
-//	name = "X-ray Eyes"
-//	desc = "These cybernetic eyes will give you X-ray vision. Blinking is futile."
-//	id = "ci-xray"
-//	build_type = PROTOLATHE | MECHFAB
-//	construction_time = 60
-//	materials = list(/datum/material/iron = 600, /datum/material/glass = 600, /datum/material/silver = 600, /datum/material/gold = 600, /datum/material/plasma = 1000, /datum/material/uranium = 1000, /datum/material/diamond = 1000, /datum/material/bluespace = 1000)
-//	build_path = /obj/item/organ/eyes/robotic/xray
-//	category = list("Cybernetics", "Organs")
-//	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
-
 /datum/design/cyberimp_thermals
-	name = "Thermal Eyes"
+	name = "Corporate Thermal Eyes"
 	desc = "These cybernetic eyes will give you Thermal vision. Vertical slit pupil included."
 	id = "ci-thermals"
 	build_type = PROTOLATHE | MECHFAB
 	construction_time = 60
 	materials = list(/datum/material/iron = 600, /datum/material/glass = 600, /datum/material/silver = 600, /datum/material/gold = 600, /datum/material/plasma = 1000, /datum/material/diamond = 2000)
-	build_path = /obj/item/organ/eyes/robotic/thermals
+	build_path = /obj/item/organ/eyes/robotic/toggled/thermals/sec_level
 	category = list("Cybernetics", "Organs")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
-	min_security_level = SEC_LEVEL_RED
+	min_security_level = THERMAL_EYES_SEC_LEVEL
+
+/datum/design/cyberimp_thermals/hack
+	name = "Thermal Eyes"
+	id = "ci-thermals-hack"
+	build_path = /obj/item/organ/eyes/robotic/toggled/thermals
+	hacked_only = TRUE
 
 /////////////////////
 //Cybernetic organs//

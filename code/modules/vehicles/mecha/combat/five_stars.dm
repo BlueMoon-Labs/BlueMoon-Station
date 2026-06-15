@@ -1,5 +1,5 @@
 /obj/vehicle/sealed/mecha/combat/five_stars
-	desc = "A state of the art tank deployed by the Spinward Stellar Coalition National Guard."
+	desc = "Танк передового образца, развёрнутый Национальной гвардией Коалиции Spinward Stellar."
 	name = "\improper Tank"
 	icon = 'icons/mecha/mecha_96x96.dmi'
 	icon_state = "five_stars"

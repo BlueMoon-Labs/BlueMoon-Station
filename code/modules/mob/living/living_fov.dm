@@ -85,10 +85,19 @@
 
 /proc/play_fov_effect(atom/center, range, icon_state, dir = SOUTH, ignore_self = FALSE, angle = 0, time = 1.5 SECONDS, list/override_list)
 	var/turf/anchor_point = get_turf(center)
+	if(!anchor_point) // hearers() would default to usr on a null center
+		return
 	var/image/fov_image/I
 	var/list/clients_shown
 
-	for(var/mob/living/M in (override_list || get_hearers_in_view(range, center)))
+	// fov_traits is never populated on this fork, so in_fov() filters out everyone except blind
+	// players. The recursive-contents walk of get_hearers_in_view buys nothing here - native
+	// hearers() returns the same opacity-respecting, darkness-ignoring turf-standing mobs far
+	// cheaper, and this runs on every other footstep, emote and typing indicator on the server.
+	// Known and accepted difference: blind players nested INSIDE containers (lockers, pods)
+	// no longer get the indicator image - it is anchored to an outside turf their view of
+	// which is blocked by the container anyway.
+	for(var/mob/living/M in (override_list || hearers(range, anchor_point)))
 		if(!M.client)
 			continue
 		if(HAS_TRAIT(M, TRAIT_DEAF))

@@ -1,5 +1,5 @@
 /obj/vehicle/sealed/mecha/working/ripley
-	desc = "Autonomous Power Loader Unit MK-I. Designed primarily around heavy lifting, the Ripley can be outfitted with utility equipment to fill a number of roles."
+	desc = "Автономный погрузочный агрегат MK-I. Разработан в первую очередь для тяжёлых подъёмов, Ripley может быть оснащён различным оборудованием для выполнения множества задач."
 	name = "\improper APLU MK-I \"Ripley\""
 	icon_state = "ripley"
 	silicon_icon_state = "ripley-empty"
@@ -47,6 +47,7 @@
 	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/mech_toggle_lights, VEHICLE_CONTROL_SETTINGS)
 	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/mech_view_stats, VEHICLE_CONTROL_SETTINGS)
 	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/strafe, VEHICLE_CONTROL_DRIVE)
+	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/toggle_stabilizers, VEHICLE_CONTROL_DRIVE)
 	if(max_occupants > 1)
 		initialize_passenger_action_type(/datum/action/vehicle/sealed/mecha/swap_seat)
 
@@ -58,7 +59,7 @@
 	return ..()
 
 /obj/vehicle/sealed/mecha/working/ripley/mkii
-	desc = "Autonomous Power Loader Unit MK-II. This prototype Ripley is refitted with a pressurized cabin, trading its prior speed for atmospheric protection and armor."
+	desc = "Автономный погрузочный агрегат MK-II. Этот прототип Ripley оснащён герметичной кабиной, жертвуя прежней скоростью ради атмосферной защиты и брони."
 	name = "\improper APLU MK-II \"Ripley\""
 	icon_state = "ripleymkii"
 	fast_pressure_step_in = 2 //step_in while in low pressure conditions
@@ -73,7 +74,7 @@
 	silicon_icon_state = null
 
 /obj/vehicle/sealed/mecha/working/ripley/firefighter
-	desc = "Autonomous Power Loader Unit MK-II-F. This model is refitted with additional thermal protection."
+	desc = "Автономный погрузочный агрегат MK-II-F. Эта модель оснащена дополнительной термозащитой."
 	name = "\improper APLU \"Firefighter\""
 	icon_state = "firefighter"
 	movedelay = 4
@@ -87,7 +88,7 @@
 	enter_delay = 40
 
 /obj/vehicle/sealed/mecha/working/ripley/deathripley
-	desc = "OH SHIT IT'S THE DEATHSQUAD WE'RE ALL GONNA DIE"
+	desc = "ОХ ЧЁРТ, ЭТО ОТРЯД СМЕРТИ, НАМ ВСЕМ КАБЗДА"
 	name = "\improper DEATH-RIPLEY"
 	icon_state = "deathripley"
 	fast_pressure_step_in = 2 //step_in while in low pressure conditions
@@ -106,7 +107,7 @@
 	ME.attach(src)
 
 /obj/vehicle/sealed/mecha/working/ripley/deathripley/real
-	desc = "OH SHIT IT'S THE DEATHSQUAD WE'RE ALL GONNA DIE. FOR REAL"
+	desc = "ОХ ЧЁРТ, ЭТО ОТРЯД СМЕРТИ, НАМ ВСЕМ КАБЗДА. НА САМОМ ДЕЛЕ"
 
 /obj/vehicle/sealed/mecha/working/ripley/deathripley/real/Initialize(mapload)
 	. = ..()
@@ -118,7 +119,7 @@
 	ME.attach(src)
 
 /obj/vehicle/sealed/mecha/working/ripley/mining
-	desc = "An old, dusty mining Ripley."
+	desc = "Старый, пыльный шахтёрский Ripley."
 	name = "\improper APLU \"Miner\""
 	obj_integrity = 75 //Low starting health
 

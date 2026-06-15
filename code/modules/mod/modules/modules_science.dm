@@ -3,9 +3,9 @@
 ///Reagent Scanner - Lets the user scan reagents.
 /obj/item/mod/module/reagent_scanner
 	name = "MOD reagent scanner module"
-	desc = "A module based off research-oriented Nanotrasen HUDs, this is capable of scanning the contents of \
-		containers and projecting the information in an easy-to-read format on the wearer's display. \
-		It cannot detect flavors, so that's up to you."
+	desc = "Модуль, основанный на исследовательских дисплеях Nanotrasen, способный сканировать содержимое \
+		контейнеров и отображать информацию в удобном для чтения формате на экране носителя. \
+		Он не может определять вкусы, так что это зависит от вас."
 	icon_state = "scanner"
 	module_type = MODULE_TOGGLE
 	complexity = 1
@@ -62,7 +62,7 @@
 ///Anti-Gravity - Makes the user weightless.
 /obj/item/mod/module/anomaly_locked/antigrav
 	name = "MOD anti-gravity module"
-	desc = "A module that uses a gravitational core to make the user completely weightless."
+	desc = "Модуль, использующий гравитационное ядро для полного обнуления веса пользователя."
 	icon_state = "antigrav"
 	module_type = MODULE_TOGGLE
 	complexity = 3
@@ -100,7 +100,7 @@
 ///Teleporter - Lets the user teleport to a nearby location.
 /obj/item/mod/module/anomaly_locked/teleporter
 	name = "MOD teleporter module"
-	desc = "A module that uses a bluespace core to let the user transport their particles elsewhere."
+	desc = "Модуль, использующий блюспейс-ядро для перемещения частиц пользователя в другое место."
 	icon_state = "teleporter"
 	module_type = MODULE_ACTIVE
 	complexity = 3

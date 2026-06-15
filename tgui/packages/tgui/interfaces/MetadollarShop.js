@@ -10,9 +10,15 @@ export const MetadollarShop = (props, context) => {
     legit = [],
     smuggle = [],
     onlinePlayers = 0,
+    leaderboard = [],
   } = data;
   const theme = inteqMode ? 'inteq' : 'ntos';
   const catalog = inteqMode ? smuggle : legit;
+  const leaderboardTip = leaderboard.length
+    ? leaderboard.map((entry, index) => (
+      `${index + 1}. ${entry.name} — ${entry.amount} M$`
+    )).join('\n')
+    : 'Пока нет данных';
   return (
     <Window
       width={520}
@@ -29,6 +35,12 @@ export const MetadollarShop = (props, context) => {
                   <Box color="label">
                     {balance} M$
                   </Box>
+                </Stack.Item>
+                <Stack.Item>
+                  <Button
+                    icon="trophy"
+                    tooltip={leaderboardTip}
+                    content="ТОП-5" />
                 </Stack.Item>
                 <Stack.Item>
                   <Button

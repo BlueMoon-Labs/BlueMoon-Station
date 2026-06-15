@@ -1,5 +1,5 @@
 /obj/vehicle/sealed/mecha/combat/honker
-	desc = "Produced by \"Tyranny of Honk, INC\", this exosuit is designed as heavy clown-support. Used to spread the fun and joy of life. HONK!"
+	desc = "Произведён \"Tyranny of Honk, INC\", этот экзокостюм разработан как тяжёлая поддержка клоунов. Используется для распространения веселья и радости жизни. ХОНК!"
 	name = "\improper H.O.N.K"
 	icon_state = "honker"
 	movedelay = 3
@@ -130,6 +130,12 @@
 	return output
 
 /obj/vehicle/sealed/mecha/combat/honker/play_stepsound()
+	// Same as the base: thrust / push-off and drift-loop moves aren't footsteps, so don't squeak on them.
+	if(step_silent)
+		step_silent = FALSE
+		return
+	if(inertia_moving)
+		return
 	if(squeak)
 		playsound(src, "clownstep", 70, 1)
 	squeak = !squeak

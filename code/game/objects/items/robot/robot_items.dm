@@ -57,7 +57,7 @@
 /obj/item/borg/cyborghug
 	name = "hugging module"
 	icon_state = "hugmodule"
-	desc = "For when a someone really needs a hug."
+	desc = "Для случаев, когда кто-то действительно нуждается в объятиях."
 	var/mode = 0 //0 = Hugs 1 = "Hug" 2 = Shock 3 = CRUSH
 	var/ccooldown = 0
 	var/scooldown = 0
@@ -292,7 +292,7 @@
 
 /obj/item/harmalarm
 	name = "\improper Sonic Harm Prevention Tool"
-	desc = "Releases a harmless blast that confuses most organics. For when the harm is JUST TOO MUCH."
+	desc = "Выпускает безвредный заряд, дезориентирующий большинство органиков. Для случаев, когда вред ПРОСТО СЛИШКОМ ВЕЛИК."
 	icon = 'icons/obj/device.dmi'
 	icon_state = "megaphone"
 	var/cooldown = 0
@@ -364,7 +364,7 @@
 
 /obj/item/borg/lollipop
 	name = "treat fabricator"
-	desc = "Reward humans with various treats. Toggle in-module to switch between dispensing and high velocity ejection modes."
+	desc = "Награждайте людей различными угощениями. Переключите в модуле режим между раздачей и высокоскоростным извлечением."
 	icon_state = "lollipop"
 	var/candy = 30
 	var/candymax = 30
@@ -420,7 +420,7 @@
 			L = new /obj/item/reagent_containers/food/snacks/icecream(T)
 			var/obj/item/reagent_containers/food/snacks/icecream/I = L
 			I.add_ice_cream("vanilla")
-			I.desc = "Eat the ice cream."
+			I.desc = "Ешь мороженое."
 
 	var/into_hands = FALSE
 	if(ismob(A))
@@ -513,14 +513,14 @@
 
 /obj/item/ammo_casing/caseless/gumball
 	name = "Gumball"
-	desc = "Why are you seeing this?!"
+	desc = "Почему вы это видите?!"
 	projectile_type = /obj/item/projectile/bullet/reusable/gumball
 	click_cooldown_override = 2
 
 
 /obj/item/projectile/bullet/reusable/gumball
 	name = "gumball"
-	desc = "Oh noes! A fast-moving gumball!"
+	desc = "О нет! Быстро движущаяся жвачка!"
 	icon_state = "gumball"
 	ammo_type = /obj/item/reagent_containers/food/snacks/gumball/cyborg
 	nodamage = TRUE
@@ -534,13 +534,13 @@
 
 /obj/item/ammo_casing/caseless/lollipop	//NEEDS RANDOMIZED COLOR LOGIC.
 	name = "Lollipop"
-	desc = "Why are you seeing this?!"
+	desc = "Почему вы это видите?!"
 	projectile_type = /obj/item/projectile/bullet/reusable/lollipop
 	click_cooldown_override = 2
 
 /obj/item/projectile/bullet/reusable/lollipop
 	name = "lollipop"
-	desc = "Oh noes! A fast-moving lollipop!"
+	desc = "О нет! Быстро движущийся леденец!"
 	icon_state = "lollipop_1"
 	ammo_type = /obj/item/reagent_containers/food/snacks/lollipop/cyborg
 	var/color2 = rgb(0, 0, 0)
@@ -565,7 +565,7 @@
 //Peacekeeper Cyborg Projectile Dampenening Field
 /obj/item/borg/projectile_dampen
 	name = "\improper Hyperkinetic Dampening projector"
-	desc = "A device that projects a dampening field that weakens kinetic energy above a certain threshold. <span class='boldnotice'>Projects a field that drains power per second while active, that will weaken and slow damaging projectiles inside its field.</span> Still being a prototype, it tends to induce a charge on ungrounded metallic surfaces."
+	desc = "Устройство, проецирующее демпфирующее поле, ослабляющее кинетическую энергию выше определённого порога. <span class='boldnotice'>Создаёт поле, потребляющее энергию в секунду во время активности, которое ослабляет и замедляет повреждающие снаряды внутри себя.</span> Всё ещё являясь прототипом, оно имеет тенденцию наводить заряд на незаземлённые металлические поверхности."
 	icon = 'icons/obj/device.dmi'
 	icon_state = "shield"
 	var/maxenergy = 1500
@@ -773,7 +773,7 @@
 
 /obj/item/gripper
 	name = "engineering gripper"
-	desc = "A simple grasping tool for interacting with various engineering related items, such as circuits, gas tanks, conveyer belts and more."
+	desc = "Простой захватный инструмент для взаимодействия с различными инженерными предметами, такими как платы, газовые баллоны, конвейерные ленты и многое другое."
 	icon = 'icons/obj/device.dmi'
 	icon_state = "gripper"
 
@@ -943,7 +943,7 @@
 
 /obj/item/gripper/mining
 	name = "mining gripper" // Original name = "shelter capsule deployer"
-	desc = "A simple grasping tool for carrying and deploying shelter capsules. You can also carry and use regenerative cores and survival medipens on your fellow miners."
+	desc = "Простой захватный инструмент для переноски и развёртывания укрытий. Вы также можете нести и использовать регенеративные ядра и аварийные медипены на своих товарищах-шахтёрах."
 	icon_state = "gripper_mining"
 	can_hold = list(
 		/obj/item/survivalcapsule,
@@ -955,7 +955,7 @@
 
 /obj/item/gripper/medical
 	name = "medical gripper"
-	desc = "A simple grasping tool for interacting with medical equipment, such as beakers, blood bags, chem bags and more."
+	desc = "Простой захватный инструмент для взаимодействия с медицинским оборудованием, таким как мензурки, пакеты крови, хим-пакеты и многое другое."
 	icon_state = "gripper_medical"
 	can_hold = list(
 		/obj/item/storage/bag/bio,
@@ -968,7 +968,7 @@
 
 /obj/item/gun/energy/plasmacutter/cyborg
 	name = "cyborg plasma cutter"
-	desc = "A basic variation of the plasma cutter, compressed into a cyborg chassis. Less effective than normal plasma cutters."
+	desc = "Базовый вариант плазменного резака, встроенный в шасси киборга. Менее эффективен, чем обычные плазменные резаки."
 	force = 15
 	ammo_type = list(/obj/item/ammo_casing/energy/plasma/weak)
 	can_charge = FALSE
@@ -977,12 +977,12 @@
 	charge_delay = 5
 
 /obj/item/gun/energy/plasmacutter/cyborg/emagged
-	desc = "A basic variation of the plasma cutter, compressed into a cyborg chassis. Safety protocols of this one seems to be broken."
+	desc = "Базовый вариант плазменного резака, встроенный в шасси киборга. Протоколы безопасности этого экземпляра, кажется, нарушены."
 	ammo_type = list(/obj/item/ammo_casing/energy/plasma/mech)
 
 /obj/item/cyborg_clamp
 	name = "cyborg loading clamp"
-	desc = "Equipment for supply cyborgs. Lifts objects and loads them into cargo. Will not carry living beings."
+	desc = "Оборудование для грузовых киборгов. Поднимает объекты и загружает их в грузовой отсек. Не перевозит живых существ."
 	icon = 'icons/mecha/mecha_equipment.dmi'
 	icon_state = "mecha_clamp"
 	tool_behaviour = TOOL_RETRACTOR
@@ -1047,7 +1047,7 @@
 
 /obj/item/card/id/miningborg
 	name = "mining point card"
-	desc = "A robotic ID strip used for claiming and transferring mining points. Must be held in an active slot to transfer points."
+	desc = "Роботизированная ID-лента для сбора и передачи шахтёрских очков. Должна находиться в активном слоте для передачи очков."
 	access = list(ACCESS_MINING, ACCESS_MINING_STATION, ACCESS_MAILSORTING, ACCESS_MINERAL_STOREROOM)
 	icon_state = "data_1"
 
@@ -1058,11 +1058,11 @@
 ///Mere cosmetic dogborg items, remnants of what were once the most annoying cyborg modules.
 /obj/item/dogborg_tongue
 	name = "synthetic tongue"
-	desc = "Useful for slurping mess off the floor before affectionally licking the crew members in the face."
+	desc = "Полезен для слизывания грязи с пола перед нежными лизанием членов экипажа в лицо."
 	icon = 'icons/mob/robot_items.dmi'
 	icon_state = "synthtongue"
 	hitsound = 'sound/effects/attackblob.ogg'
-	desc = "For giving affectionate kisses."
+	desc = "Для нежных поцелуев."
 	item_flags = NOBLUDGEON
 
 /obj/item/dogborg_tongue/afterattack(atom/target, mob/user, proximity)
@@ -1088,7 +1088,7 @@
 
 /obj/item/dogborg_nose
 	name = "boop module"
-	desc = "The BOOP module"
+	desc = "Модуль БУП"
 	icon = 'icons/mob/robot_items.dmi'
 	icon_state = "nose"
 	flags_1 = CONDUCT_1|NOBLUDGEON

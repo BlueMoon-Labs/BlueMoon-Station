@@ -97,7 +97,12 @@
 		"Dullahan" = image(icon = 'modular_splurt/icons/mob/robots_32x64.dmi', icon_state = "dullahansyndi"),
 		"Dullahan (Taur)" = image(icon = 'modular_bluemoon/icons/mob/robot/dullahan_taur.dmi', icon_state = "dullahantaurninja")
 		))
-	var/syndiejack_icon = show_radial_menu(R, R , syndicatejack_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
+	var/list/selectable_syndicatejack_icons = get_selectable_borg_icons(syndicatejack_icons, R.client)
+	var/syndiejack_icon = show_radial_menu(R, R , selectable_syndicatejack_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
+	if(!syndiejack_icon)
+		return FALSE
+	if(apply_donator_borg_icon(syndiejack_icon, R.client))
+		return ..()
 	switch(syndiejack_icon)
 		if("Saboteur")
 			cyborg_base_icon = "synd_engi"

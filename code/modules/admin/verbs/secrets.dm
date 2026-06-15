@@ -199,8 +199,8 @@
 				for(var/mob/living/mob in thunderdome)
 					qdel(mob) //Clear mobs
 			for(var/obj/obj in thunderdome)
-				if(!istype(obj, /obj/machinery/camera) && !istype(obj, /obj/effect/abstract/proximity_checker))
-					qdel(obj) //Clear objects
+				if(!istype(obj, /obj/machinery/camera))
+					qdel(obj) //Clear objects; proximity checkers are recreated when the template is copied
 
 			var/area/template = GLOB.areas_by_type[/area/tdome/arena_source]
 			template.copy_contents_to(thunderdome)

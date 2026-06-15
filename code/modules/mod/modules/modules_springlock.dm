@@ -11,10 +11,10 @@
 ///Springlock Mechanism - allows your modsuit to activate faster, but reagents are very dangerous.
 /obj/item/mod/module/springlock
 	name = "MOD springlock module"
-	desc = "A module that spans the entire size of the MOD unit, sitting under the outer shell. \
-		This mechanical exoskeleton pushes out of the way when the user enters and it helps in booting \
-		up, but was taken out of modern suits because of the springlock's tendency to \"snap\" back \
-		into place when exposed to humidity. You know what it's like to have an entire exoskeleton enter you?"
+	desc = "Модуль, охватывающий весь корпус MOD, расположенный под внешней оболочкой. \
+		Этот механический экзоскелет отодвигается, когда пользователь входит, и помогает в загрузке, \
+		но был убран из современных костюмов из-за склонности спринглока 'щёлкать' обратно \
+		на место при контакте с влагой. Знаете, каково это — когда целый экзоскелет входит в вас?"
 	icon_state = "springlock"
 	complexity = 3 // it is inside every part of your suit, so
 	var/springlock_integrity = SPRINGLOCK_INTEGRITY_FRAGILE // Прочность пружинных механизмов
@@ -358,10 +358,10 @@
 
 /obj/item/mod/module/springlock/advanced
 	name = "MOD electronic exoskeleton module"
-	desc = "This is an improved version of the infamous spring mechanism module, \
-			which is more stable and allows for much faster placement of the MODsuits. \
-			It has brand new power-generating mechanism to supply itself and provide wearer with possibility to \
-			move faster.\
+	desc = "Улучшенная версия печально известного модуля спринг-механизма, \
+			которая более стабильна и позволяет гораздо быстрее надевать костюмы MOD. \
+			Имеет совершенно новый механизм генерации энергии для питания себя и предоставления носителю возможности \
+			двигаться быстрее.\
 			However, it can still be dangerous if used carelessly, and fast movement, moisture, and strong impacts \
 			can throw the module off balance, leading to a tragic outcome for the wearer.\n\nUse a screwdriver to repair damaged springs."
 	icon_state = "springlock_improved"

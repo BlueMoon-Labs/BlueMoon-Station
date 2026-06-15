@@ -13,6 +13,7 @@
 		/obj/item/storage/box/matches = 10,
 		/obj/item/lighter/greyscale = 4,
 		/obj/item/storage/fancy/rollingpapers = 5,
+		/obj/item/hookah = 3,
 	)
 	contraband = list(
 		/obj/item/lighter = 3,

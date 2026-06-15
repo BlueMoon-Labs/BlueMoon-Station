@@ -33,6 +33,14 @@ GLOBAL_LIST_EMPTY(all_clockwork_rites) //a list containing all clockwork rites. 
 #define SCRIPTURE_APPLICATION "Application"
 #define SCRIPTURE_JUDGEMENT "Judgement"
 
+#define SCRIPTURE_CATEGORY_STRUCTURE "Постройки"
+#define SCRIPTURE_CATEGORY_ATTACK "Атакующие заклинания"
+#define SCRIPTURE_CATEGORY_SUPPORT "Вспомогательные заклинания"
+#define SCRIPTURE_CATEGORY_EQUIPMENT "Снаряжение"
+#define SCRIPTURE_CATEGORY_MOBS "Мобы"
+
+#define STATION_CLOCK_CURSE_MAX_USES 3
+
 //Various costs related to power.
 #define MAX_CLOCKWORK_POWER 80000 //The max power in W that the cult can stockpile
 #define SCRIPT_UNLOCK_THRESHOLD 35000 //Scripts will unlock if the total power reaches this amount
@@ -71,6 +79,9 @@ GLOBAL_LIST_EMPTY(all_clockwork_rites) //a list containing all clockwork rites. 
 
 //Objective text define
 #define CLOCKCULT_OBJECTIVE "Construct the Ark of the Clockwork Justicar and free Ratvar."
+
+#define CLOCK_RISEN 0.10 //percent before rise
+#define CLOCK_ASCENDENT 0.25 //percent before ascend
 
 //Eminence defines
 #define SUPERHEATED_CLOCKWORK_WALL_LIMIT 20 //How many walls can be superheated at once

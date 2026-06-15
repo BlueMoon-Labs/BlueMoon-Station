@@ -3,6 +3,9 @@
 /turf/template_noop,
 /area/template_noop)
 "ab" = (
+/obj/effect/fun_balloon/sentience/emergency_shuttle{
+	group_name = "VIP guests on the Luxury Emergency Shuttle"
+	},
 /obj/structure/table/wood/fancy,
 /obj/item/toy/cards/deck,
 /turf/open/floor/carpet/red,

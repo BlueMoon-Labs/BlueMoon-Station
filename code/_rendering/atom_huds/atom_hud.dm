@@ -173,6 +173,8 @@ GLOBAL_LIST_INIT(huds, alist(
 	if(!length(local_hud_icons))
 		return
 	for(var/atom/A as anything in hudatoms)
+		if(!A)
+			continue
 		if(!should_show_to(M, A))
 			continue
 		var/list/atom_hud_list = A.hud_list

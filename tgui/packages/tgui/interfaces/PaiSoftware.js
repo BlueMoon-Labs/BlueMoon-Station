@@ -9,7 +9,6 @@ export const PaiSoftware = (props, context) => {
     stat,
     temp,
     software,
-    messenger_unread,
   } = data;
 
   if (stat === 4) {
@@ -39,6 +38,9 @@ export const PaiSoftware = (props, context) => {
     ...(software.includes('encryption keys') ? [{ id: 'encryptionkeys', label: 'Шифрование', icon: 'key' }] : []),
     ...(software.includes('universal translator') ? [{ id: 'translator', label: 'Переводчик', icon: 'language' }] : []),
     ...(software.includes('projection array') ? [{ id: 'projection', label: 'Голограмма', icon: 'cube' }] : []),
+    ...(software.includes('encoder') ? [{ id: 'encoder', label: 'Энкодер', icon: 'user-secret' }] : []),
+    ...(software.includes('thermal vision') ? [{ id: 'thermalvision', label: 'Термальное зрение', icon: 'fire' }] : []),
+    ...(software.includes('chemical injector') ? [{ id: 'chemicalinjector', label: 'Инъектор', icon: 'syringe' }] : []),
     { id: 'buy', label: 'Загрузка ПО', icon: 'download' },
   ];
 
@@ -80,20 +82,6 @@ export const PaiSoftware = (props, context) => {
                     icon="comment-alt"
                     onClick={() => act('messenger')}>
                     Мессенджер
-                  </Button>
-                </Stack.Item>
-                <Stack.Item>
-                  <Button
-                    fluid
-                    icon="reply"
-                    color={messenger_unread > 0 ? 'good' : null}
-                    onClick={() => act('quick_reply')}>
-                    Быстрый ответ
-                    {messenger_unread > 0 && (
-                      <Box inline ml={1}>
-                        ({messenger_unread})
-                      </Box>
-                    )}
                   </Button>
                 </Stack.Item>
                 <Stack.Item mt={1}>
@@ -166,6 +154,12 @@ const PaiContent = (props, context) => {
       return <EncryptScreen />;
     case 'translator':
       return <TranslatorScreen />;
+    case 'encoder':
+      return <EncoderScreen />;
+    case 'thermalvision':
+      return <ThermalVisionScreen />;
+    case 'chemicalinjector':
+      return <ChemicalInjectorScreen />;
     default:
       return <Box>Интерфейс ПО готов.</Box>;
   }
@@ -384,7 +378,16 @@ const BuyScreen = (props, context) => {
                 <Table.Cell>{cost} ОЗУ</Table.Cell>
                 <Table.Cell>
                   {installed ? (
-                    <Box color="good"><Icon name="check" /> Установлено</Box>
+                    <Box>
+                      <Box color="good" inline mr={1}><Icon name="check" /> Установлено</Box>
+                      <Button
+                        icon="trash"
+                        color="red"
+                        onClick={() => act('uninstall', { uninstall: key })}
+                      >
+                        Удалить
+                      </Button>
+                    </Box>
                   ) : (
                     <Button
                       disabled={!canAfford}
@@ -686,6 +689,67 @@ const ProjectionScreen = (props, context) => {
       <Button mt={1} onClick={() => act('toggle_projection')}>
         {holoform ? 'Свернуть голохассис' : 'Развернуть голохассис'}
       </Button>
+    </Box>
+  );
+};
+
+const EncoderScreen = (props, context) => {
+  const { act, data } = useBackend(context);
+  const { encoder_active, encoder_name, encoder_job } = data;
+  return (
+    <Box>
+      <Box mb={1}>
+        Энкодер {encoder_active ? <Box inline color="good">активен</Box> : <Box inline color="bad">неактивен</Box>}.
+      </Box>
+      {encoder_active && (
+        <LabeledList>
+          <LabeledList.Item label="Имя">{encoder_name || '—'}</LabeledList.Item>
+          <LabeledList.Item label="Должность">{encoder_job || '—'}</LabeledList.Item>
+        </LabeledList>
+      )}
+      <Button mt={1} onClick={() => act('toggle_encoder')}>
+        {encoder_active ? 'Деактивировать' : 'Активировать'}
+      </Button>
+    </Box>
+  );
+};
+
+const ThermalVisionScreen = (props, context) => {
+  const { act, data } = useBackend(context);
+  const { thermal_vision } = data;
+  return (
+    <Box>
+      <Box mb={1}>
+        Термальное зрение {thermal_vision ? <Box inline color="good">включено</Box> : <Box inline color="bad">выключено</Box>}.
+      </Box>
+      <Button onClick={() => act('toggle_thermal_vision')}>
+        {thermal_vision ? 'Отключить' : 'Включить'}
+      </Button>
+    </Box>
+  );
+};
+
+const ChemicalInjectorScreen = (props, context) => {
+  const { act, data } = useBackend(context);
+  const { chemical_injector, chemical_storage, chemical_max } = data;
+  return (
+    <Box>
+      <Box mb={1}>
+        Химический инъектор {chemical_injector ? <Box inline color="good">активен</Box> : <Box inline color="bad">неактивен</Box>}.
+      </Box>
+      <LabeledList>
+        <LabeledList.Item label="Запас">
+          {chemical_storage ?? 0} / {chemical_max ?? 30} юнитов
+        </LabeledList.Item>
+      </LabeledList>
+      <Button mt={1} onClick={() => act('toggle_chemical_injector')}>
+        {chemical_injector ? 'Отключить' : 'Активировать'}
+      </Button>
+      {chemical_injector && (
+        <Button mt={1} ml={1} onClick={() => act('inject_chemicals')}>
+          Впрыснуть реагенты
+        </Button>
+      )}
     </Box>
   );
 };

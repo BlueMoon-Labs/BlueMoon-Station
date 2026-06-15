@@ -21,8 +21,8 @@ SHITCODE AHEAD. BE ADVISED. Also comment extravaganza
 
 /mob/living/simple_animal/hostile/megafauna/legion
 	name = "Legion"
-	health = 700
-	maxHealth = 700
+	health = 900
+	maxHealth = 900
 	spacewalk = TRUE
 	icon_state = "mega_legion"
 	icon_living = "mega_legion"
@@ -34,8 +34,8 @@ SHITCODE AHEAD. BE ADVISED. Also comment extravaganza
 	attack_sound = 'sound/magic/demon_attack1.ogg'
 	speak_emote = list("echoes")
 	armour_penetration = 50
-	melee_damage_lower = 25
-	melee_damage_upper = 25
+	melee_damage_lower = 32
+	melee_damage_upper = 32
 	speed = 1
 	move_to_delay = 2
 	ranged = 1
@@ -141,7 +141,7 @@ SHITCODE AHEAD. BE ADVISED. Also comment extravaganza
 	. = ..()
 	if(istype(hit_atom))
 		playsound(src, attack_sound, 100, TRUE)
-		hit_atom.apply_damage(22 * size / 2) //It gets pretty hard to dodge the skulls when there are a lot of them. Scales down with size
+		hit_atom.apply_damage(28 * size / 2) //It gets pretty hard to dodge the skulls when there are a lot of them. Scales down with size
 		hit_atom.safe_throw_at(get_step(src, get_dir(src, hit_atom)), 2) //Some knockback. Prevent the legion from melee directly after the throw.
 
 //TURRETS
@@ -387,7 +387,7 @@ SHITCODE AHEAD. BE ADVISED. Also comment extravaganza
 /obj/item/projectile/beam/legion
 	name = "blood pulse"
 	hitsound = 'sound/magic/magic_missile.ogg'
-	damage = 19
+	damage = 25
 	range = 6
 	eyeblur = 0
 	light_color = LIGHT_COLOR_RED

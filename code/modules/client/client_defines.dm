@@ -103,14 +103,13 @@
 	var/lastping_rtt_raw = 0
 	var/avgping_rtt_raw
 	var/lastping_tick = 0
-	var/avgping_tick
 	var/lastping_server = 0
 	var/avgping_server
-	var/lastping_rtt_max = 0
-	var/lastping_jitter = 0
 	var/avgping_jitter
 	var/ping_updated = FALSE
 	var/list/ping_rtt_window = list()
+	/// Incrementally maintained sorted mirror of ping_rtt_window, see rtt_window_push()
+	var/list/ping_rtt_sorted = list()
 	var/connection_time //world.time they connected
 	var/connection_realtime //world.realtime they connected
 	var/connection_timeofday //world.timeofday they connected

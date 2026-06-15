@@ -124,7 +124,8 @@
 		if(charge_tick < recharge_rate)
 			return FALSE
 		charge_tick = 0
-		chambered.newshot()
+		if(chambered)
+			chambered.newshot()
 		return TRUE
 	else
 		..()

@@ -1800,6 +1800,10 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 			to_chat(user, "<span class='notice'>You do not breathe, so you cannot perform CPR.</span>")
 
 /datum/species/proc/grab(mob/living/carbon/human/user, mob/living/carbon/human/target, datum/martial_art/attacker_style)
+	// BLUEMOON ADD START отстегавание с опер стола.
+	if(target.buckled && (istype(target.buckled, /obj/structure/table/optable) || istype(target.buckled, /obj/machinery/stasis)))
+		target.buckled.user_unbuckle_mob(target, user)
+	// BLUEMOON ADD END
 	if(target.check_martial_melee_block())
 		target.visible_message("<span class='warning'>[target] blocks [user]'s grab attempt!</span>", target = user, \
 			target_message = "<span class='warning'>[target] blocks your grab attempt!</span>")

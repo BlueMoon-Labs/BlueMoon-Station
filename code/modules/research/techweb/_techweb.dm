@@ -172,9 +172,13 @@
 					receiver.update_node_status(unhide_node, autoupdate_consoles=FALSE)
 	for(var/i in researched_nodes)
 		CHECK_TICK
+		if(receiver.researched_nodes[i])	// already synced - re-researching would redo all node status work and re-pay the science bounty
+			continue
 		receiver.research_node_id(i, TRUE, FALSE)
 	for(var/i in researched_designs)
 		CHECK_TICK
+		if(receiver.researched_designs[i])
+			continue
 		receiver.add_design_by_id(i)
 	receiver.recalculate_nodes()
 

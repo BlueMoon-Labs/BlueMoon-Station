@@ -37,6 +37,7 @@
 	comp_light_color = "#FFCC66"
 	looping_sound = FALSE
 	long_ranged = TRUE
+	allow_chunky = TRUE
 
 	///The item currently inserted into the PDA, starts with a pen.
 	var/obj/item/inserted_item = /obj/item/pen
@@ -513,6 +514,8 @@
 	if(new_alert)
 		new_alert = FALSE
 		update_appearance()
+	if(user.client && !equipped)
+		update_pda_prefs(user.client)
 	. = ..()
 	if(HAS_TRAIT(src, TRAIT_PDA_MESSAGE_MENU_RIGGED))
 		explode(user, from_message_menu = TRUE)
@@ -601,7 +604,7 @@
 			to_chat(user, "<span class='warning'>[src] отвергает ID-карту!</span>")
 			playsound(src, 'sound/machines/terminal_error.ogg', 15, TRUE)
 			return
-		if(user.canUseTopic(src, BE_CLOSE))
+		if(user.canUseTopic(src, BE_CLOSE, no_tk = TRUE, check_resting = FALSE))
 			if(!stored_id)
 				if(!owner && !saved_identification)
 					owner = idcard.registered_name
@@ -925,6 +928,7 @@
 /obj/item/modular_computer/pda/silicon/cyborg
 	starting_programs = list(
 		/datum/computer_file/program/filemanager,
+		/datum/computer_file/program/ntnetdownload,
 		/datum/computer_file/program/robotact,
 		/datum/computer_file/program/crew_manifest,
 		/datum/computer_file/program/messenger,
@@ -947,7 +951,7 @@
 
 /obj/item/modular_computer/pda/silicon/turn_on(mob/user, open_ui = FALSE)
 	if(silicon_owner?.stat != DEAD)
-		return ..()
+		return ..(user, open_ui)
 	return FALSE
 
 // pAI PDA
@@ -1005,6 +1009,28 @@
 		var/mob/living/silicon/robot/robo = silicon_owner
 		.["light_on"] = robo.lamp_enabled
 		.["comp_light_color"] = robo.lamp_color
+
+/obj/item/modular_computer/pda/silicon/cyborg/proc/get_department_access()
+	if(!iscyborg(silicon_owner))
+		return list()
+	var/mob/living/silicon/robot/robo = silicon_owner
+	if(!robo.module)
+		return list()
+	var/static/list/module_access_map = list(
+		/obj/item/robot_module/engineering = list(ACCESS_ENGINE),
+		/obj/item/robot_module/medical = list(ACCESS_MEDICAL),
+		/obj/item/robot_module/security = list(ACCESS_SECURITY),
+		/obj/item/robot_module/butler = list(ACCESS_JANITOR), // Service/Janitor
+		/obj/item/robot_module/miner = list(ACCESS_MINING),
+		/obj/item/robot_module/cargo = list(ACCESS_CARGO),
+		/obj/item/robot_module/syndicate = list(ACCESS_SYNDICATE),
+		/obj/item/robot_module/syndicate_medical = list(ACCESS_SYNDICATE),
+		/obj/item/robot_module/saboteur = list(ACCESS_SYNDICATE),
+	)
+	for(var/module_type in module_access_map)
+		if(istype(robo.module, module_type))
+			return module_access_map[module_type]
+	return list()
 
 /obj/item/modular_computer/pda/silicon/toggle_flashlight(mob/user)
 	if(!silicon_owner || QDELETED(silicon_owner))

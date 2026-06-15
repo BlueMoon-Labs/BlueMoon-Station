@@ -88,9 +88,9 @@
 	to_chat(user, "<span class='notice'>You modify [src] to be installed on the [zone == BODY_ZONE_R_ARM ? "right" : "left"] arm.</span>")
 	update_icon()
 
-/obj/item/organ/cyberimp/arm/Remove(special = FALSE)
+/obj/item/organ/cyberimp/arm/deactivate(removing)
+	. = ..()
 	Retract()
-	..()
 
 /obj/item/organ/cyberimp/arm/emp_act(severity)
 	. = ..()
@@ -150,9 +150,6 @@
 	playsound(get_turf(owner), 'sound/mecha/mechmove03.ogg', 30, 1)
 
 /obj/item/organ/cyberimp/arm/ui_action_click(mob/user, actiontype)
-	if(!is_operational(FALSE))
-		return
-
 	if(!holder || (holder in src))
 		holder = null
 		if(contents.len == 1)
@@ -168,12 +165,14 @@
 	else
 		Retract()
 
-/obj/item/organ/cyberimp/arm/proc/is_operational(silent = TRUE)
+/obj/item/organ/cyberimp/arm/activate_allowed(datum/action/action, mob/user, silent)
+	. = ..()
+	if(!.)
+		return
 	if(crit_fail || (organ_flags & ORGAN_FAILING) || (!holder && !contents.len))
 		if(!silent)
-			to_chat(owner, span_warning("The implant doesn't respond. It seems to be broken..."))
+			to_chat(owner, span_warning("The [src] doesn't respond. It seems to be broken..."))
 		return FALSE
-	return TRUE
 
 /obj/item/organ/cyberimp/arm/medibeam
 	name = "integrated medical beamgun"
@@ -349,6 +348,10 @@
 	var/obj/item/assembly/flash/armimplant/F = new
 	add_item(F)
 	F.I = src
+
+/obj/item/organ/cyberimp/arm/shield/sec_level
+	name = "Corporate arm-mounted riot shield"
+	active_security_level = RIOT_SHIELD_SEC_LEVEL
 
 /////////////////
 

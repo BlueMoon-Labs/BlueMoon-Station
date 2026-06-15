@@ -7,6 +7,10 @@
 /obj/machinery/power/smes/magical,
 /turf/open/floor/plating,
 /area/shuttle/solfed/corvette)
+"aS" = (
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/corvette)
 "aT" = (
 /obj/machinery/door/window/westleft,
 /turf/open/floor/plasteel/dark,
@@ -23,8 +27,7 @@
 /area/shuttle/solfed/corvette)
 "ck" = (
 /obj/structure/rack,
-/obj/item/gun/ballistic/shotgun/automatic/combat,
-/obj/item/gun/ballistic/shotgun/automatic/combat,
+/obj/item/gun/ballistic/automatic/m16a4/tactical,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "cX" = (
@@ -73,16 +76,8 @@
 	pixel_x = 28;
 	req_access_txt = "5"
 	},
-/obj/item/clothing/head/helmet/sec,
-/obj/item/clothing/head/helmet/sec,
-/obj/item/clothing/head/helmet/sec,
-/obj/item/flashlight/seclite,
-/obj/item/flashlight/seclite,
-/obj/item/flashlight/seclite,
-/obj/item/flashlight/seclite,
-/obj/item/clothing/suit/armor/vest/alt,
-/obj/item/clothing/suit/armor/vest/alt,
-/obj/item/clothing/suit/armor/vest/alt,
+/obj/item/gun/medbeam,
+/obj/item/gun/medbeam,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "fa" = (
@@ -109,23 +104,18 @@
 /obj/item/storage/box/lethalshot,
 /obj/item/storage/box/beanbag,
 /obj/item/storage/box/beanbag,
-/obj/item/storage/box/beanbag,
-/obj/item/storage/box/beanbag,
-/obj/item/storage/box/beanbag,
 /obj/effect/turf_decal/box/red,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "fT" = (
 /obj/structure/closet/secure_closet/security,
-/obj/item/ammo_box/magazine/m12g/slug,
-/obj/item/ammo_box/magazine/m12g/slug,
-/obj/item/ammo_box/magazine/m12g/slug,
-/obj/item/ammo_box/magazine/m12g/slug,
-/obj/item/ammo_box/magazine/mm712x82,
-/obj/item/ammo_box/magazine/mm712x82,
-/obj/item/ammo_box/magazine/mm712x82,
-/obj/item/ammo_box/magazine/mm712x82,
 /obj/effect/turf_decal/box/red,
+/obj/item/ammo_box/magazine/m556,
+/obj/item/ammo_box/magazine/m556,
+/obj/item/ammo_box/magazine/m556,
+/obj/item/ammo_box/magazine/m556,
+/obj/item/ammo_box/magazine/m556,
+/obj/item/ammo_box/magazine/m556,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "gO" = (
@@ -136,16 +126,25 @@
 	},
 /turf/open/space/basic,
 /area/shuttle/solfed/corvette)
+"hh" = (
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/solfed/corvette)
 "hq" = (
 /obj/item/target/clown,
 /obj/effect/turf_decal/box/red,
-/turf/open/space/basic,
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
+/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "hv" = (
 /obj/machinery/light/directional/south,
 /obj/item/target/syndicate,
 /obj/effect/turf_decal/box/red,
-/turf/open/space/basic,
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
+/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "hH" = (
 /obj/machinery/light/directional/west,
@@ -154,6 +153,7 @@
 /area/shuttle/solfed/corvette)
 "hT" = (
 /obj/structure/cable,
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "ie" = (
@@ -164,6 +164,7 @@
 /obj/machinery/door/airlock/public/glass{
 	name = "Store Entrance"
 	},
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "ir" = (
@@ -204,6 +205,7 @@
 /obj/structure/sign/poster/contraband/c20r{
 	pixel_y = 32
 	},
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "kC" = (
@@ -215,12 +217,40 @@
 	pixel_x = -28;
 	req_access_txt = "5"
 	},
+/obj/item/storage/firstaid/tactical,
+/obj/item/storage/firstaid/tactical{
+	pixel_x = 3;
+	pixel_y = 1
+	},
+/obj/item/storage/firstaid/tactical{
+	pixel_y = 10
+	},
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "kH" = (
 /obj/machinery/power/terminal,
 /obj/structure/cable/yellow,
 /turf/open/floor/plating,
+/area/shuttle/solfed/corvette)
+"kO" = (
+/obj/structure/rack{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 1;
+	icon_state = "delivery_red"
+	},
+/obj/structure/sign/flag/terragov{
+	pixel_x = 32
+	},
+/obj/item/gun/ballistic/automatic/laser/lasgun{
+	pixel_y = 8
+	},
+/obj/item/gun/ballistic/automatic/laser/lasgun,
+/obj/item/gun/ballistic/automatic/laser/lasgun{
+	pixel_y = -8
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/corvette)
 "kR" = (
 /obj/machinery/computer/crew,
@@ -234,11 +264,27 @@
 /obj/machinery/door/firedoor/border_only{
 	dir = 1
 	},
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "lj" = (
 /obj/structure/closet/crate/secure/weapon,
 /obj/effect/turf_decal/box/red,
+/obj/item/ammo_box/magazine/m16,
+/obj/item/ammo_box/magazine/m16,
+/obj/item/ammo_box/magazine/m16,
+/obj/item/ammo_box/magazine/m16,
+/obj/item/ammo_box/magazine/m16,
+/obj/item/ammo_box/magazine/m16,
+/obj/item/ammo_box/magazine/m16/hp,
+/obj/item/ammo_box/magazine/m16/hp,
+/obj/item/ammo_box/magazine/m16/hp,
+/obj/item/ammo_box/magazine/m16/hp,
+/obj/item/ammo_box/magazine/m16/hp,
+/obj/item/ammo_box/magazine/m16/hp,
+/obj/item/ammo_box/magazine/m16/ap,
+/obj/item/ammo_box/magazine/m16/ap,
+/obj/item/ammo_box/magazine/m16/ap,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "lF" = (
@@ -257,6 +303,7 @@
 /obj/structure/cable{
 	icon_state = "1-4"
 	},
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "lY" = (
@@ -273,7 +320,7 @@
 	dir = 4;
 	name = "Crew Quarters"
 	},
-/turf/open/space/basic,
+/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "mw" = (
 /obj/machinery/door/airlock/maintenance_hatch{
@@ -293,6 +340,7 @@
 /area/shuttle/solfed/corvette)
 "mG" = (
 /obj/machinery/airalarm/directional/north,
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "mO" = (
@@ -332,6 +380,7 @@
 /obj/structure/cable{
 	icon_state = "2-8"
 	},
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "nu" = (
@@ -344,6 +393,7 @@
 /obj/structure/cable{
 	icon_state = "1-4"
 	},
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "oQ" = (
@@ -365,17 +415,18 @@
 	dir = 1
 	},
 /obj/machinery/door/firedoor/border_only,
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "oS" = (
 /obj/structure/rack,
+/obj/item/gun/ballistic/automatic/m16a4,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "oX" = (
 /obj/structure/window/reinforced,
 /obj/machinery/door/firedoor/border_only,
-/obj/item/tank/internals/oxygen,
-/obj/item/clothing/mask/breath,
+/obj/machinery/suit_storage_unit/sol_combat,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "pK" = (
@@ -415,16 +466,7 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "se" = (
-/obj/item/clothing/suit/armor/vest/alt,
-/obj/item/clothing/suit/armor/vest/alt,
-/obj/item/clothing/suit/armor/vest/alt,
-/obj/item/flashlight/seclite,
-/obj/item/flashlight/seclite,
-/obj/item/flashlight/seclite,
 /obj/machinery/airalarm/directional/north,
-/obj/item/clothing/head/helmet/sec,
-/obj/item/clothing/head/helmet/sec,
-/obj/item/clothing/head/helmet/sec,
 /obj/structure/closet/secure_closet/wall{
 	dir = 8;
 	icon_state = "sec_wall";
@@ -432,6 +474,7 @@
 	pixel_x = 28;
 	req_access_txt = "5"
 	},
+/obj/item/gun/energy/lasercannon,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "sz" = (
@@ -439,27 +482,26 @@
 /obj/machinery/door/firedoor/border_only{
 	dir = 1
 	},
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "tE" = (
 /obj/item/kirbyplants/random,
 /obj/machinery/airalarm/directional/west,
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "tO" = (
 /obj/machinery/airalarm/directional/south,
-/obj/structure/closet/secure_closet/security,
-/obj/item/clothing/head/soft/inteq,
-/obj/item/clothing/head/soft/inteq,
-/obj/item/clothing/glasses/hud/security/sunglasses/inteq,
-/obj/item/clothing/glasses/hud/security/sunglasses/inteq,
 /obj/structure/extinguisher_cabinet/directional/west,
+/obj/machinery/vending/medical,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "tT" = (
 /obj/structure/chair{
 	dir = 8
 	},
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "uk" = (
@@ -483,6 +525,7 @@
 /obj/structure/window/reinforced,
 /obj/item/paper_bin,
 /obj/machinery/door/firedoor/border_only,
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "uw" = (
@@ -506,6 +549,7 @@
 	},
 /obj/structure/extinguisher_cabinet/directional/north,
 /obj/machinery/firealarm/directional/east,
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "ve" = (
@@ -518,6 +562,7 @@
 	dir = 1
 	},
 /obj/machinery/door/firedoor/border_only,
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "vn" = (
@@ -528,6 +573,7 @@
 /obj/machinery/door/firedoor/border_only{
 	dir = 1
 	},
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "vr" = (
@@ -546,10 +592,13 @@
 	dir = 8
 	},
 /obj/structure/rack,
-/obj/item/gun/ballistic/shotgun/riot,
-/obj/item/gun/ballistic/shotgun/riot,
-/obj/item/gun/ballistic/shotgun/riot,
-/obj/item/gun/ballistic/shotgun/riot,
+/obj/item/gun/ballistic/shotgun/riot/syndicate,
+/obj/item/gun/ballistic/shotgun/riot/syndicate{
+	pixel_y = -7
+	},
+/obj/item/gun/ballistic/shotgun/riot/syndicate{
+	pixel_y = 7
+	},
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "vT" = (
@@ -575,10 +624,7 @@
 /area/shuttle/solfed/corvette)
 "wQ" = (
 /obj/structure/rack,
-/obj/item/gun/energy/laser,
-/obj/item/gun/energy/laser,
-/obj/item/gun/energy/laser,
-/obj/item/gun/energy/laser,
+/obj/item/gun/energy/ionrifle/carbine,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "yi" = (
@@ -590,6 +636,7 @@
 "zg" = (
 /obj/machinery/light/directional/north,
 /obj/machinery/firealarm/directional/east,
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "zt" = (
@@ -608,6 +655,14 @@
 	req_access_txt = "5"
 	},
 /obj/machinery/light/directional/north,
+/obj/item/ammo_box/magazine/recharge/lasgun,
+/obj/item/ammo_box/magazine/recharge/lasgun,
+/obj/item/ammo_box/magazine/recharge/lasgun,
+/obj/item/ammo_box/magazine/recharge/lasgun,
+/obj/item/ammo_box/magazine/recharge/lasgun,
+/obj/item/ammo_box/magazine/recharge/lasgun,
+/obj/item/ammo_box/magazine/recharge/lasgun,
+/obj/item/ammo_box/magazine/recharge/lasgun,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "zS" = (
@@ -643,14 +698,12 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "DH" = (
-/obj/structure/rack,
-/obj/item/gun/energy/laser/scatter,
-/obj/item/gun/energy/laser/scatter,
+/obj/machinery/light/directional/south,
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "DU" = (
 /obj/structure/closet/crate/secure/weapon,
-/obj/item/gun/energy/ionrifle/carbine,
 /obj/item/melee/baton/loaded,
 /obj/item/melee/baton/loaded,
 /obj/item/melee/baton/loaded,
@@ -663,23 +716,27 @@
 /area/shuttle/solfed/corvette)
 "EA" = (
 /obj/machinery/photocopier,
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "Fx" = (
-/obj/structure/sign/poster/contraband/c20r,
+/obj/structure/sign/flag/terragov,
 /turf/closed/wall/mineral/titanium/interior,
 /area/shuttle/solfed/corvette)
 "FA" = (
 /obj/machinery/firealarm/directional/east,
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "FE" = (
 /obj/machinery/firealarm/directional/east,
 /obj/structure/rack,
-/obj/item/gun/energy/e_gun,
-/obj/item/gun/energy/e_gun,
-/obj/item/gun/energy/e_gun,
-/obj/item/gun/energy/e_gun,
+/obj/item/gun/ballistic/automatic/x9{
+	pixel_y = -7
+	},
+/obj/item/gun/ballistic/automatic/x9{
+	pixel_y = 7
+	},
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "Gm" = (
@@ -726,6 +783,7 @@
 /obj/structure/cable{
 	icon_state = "0-8"
 	},
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "Hk" = (
@@ -736,7 +794,8 @@
 /obj/machinery/light/directional/north,
 /obj/item/target,
 /obj/effect/turf_decal/box/red,
-/turf/open/space/basic,
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
+/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "Hq" = (
 /obj/structure/window/reinforced{
@@ -768,6 +827,7 @@
 /obj/structure/chair{
 	dir = 4
 	},
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "Jn" = (
@@ -824,12 +884,14 @@
 /obj/structure/cable{
 	icon_state = "1-8"
 	},
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "Ln" = (
 /obj/item/target/alien,
 /obj/effect/turf_decal/box/red,
-/turf/open/space/basic,
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
+/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "Lt" = (
 /obj/structure/cable{
@@ -841,10 +903,6 @@
 /obj/structure/closet/secure_closet/security,
 /obj/item/gun/ballistic/automatic/pistol/deagle,
 /obj/item/gun/ballistic/automatic/pistol/deagle,
-/obj/item/ammo_box/magazine/ak47,
-/obj/item/ammo_box/magazine/ak47,
-/obj/item/ammo_box/magazine/ak47,
-/obj/item/ammo_box/magazine/ak47,
 /obj/item/ammo_box/magazine/m50,
 /obj/item/ammo_box/magazine/m50,
 /obj/item/ammo_box/magazine/m50,
@@ -875,7 +933,6 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "Nq" = (
-/obj/item/clothing/glasses/hud/security/sunglasses/inteq,
 /obj/structure/closet/secure_closet/wall{
 	dir = 1;
 	icon_state = "solgov_wall";
@@ -899,24 +956,11 @@
 /turf/open/floor/plating,
 /area/shuttle/solfed/corvette)
 "ND" = (
-/obj/item/ammo_box/magazine/toy/pistol,
-/obj/item/ammo_box/magazine/toy/pistol,
-/obj/item/ammo_box/magazine/toy/pistol,
 /obj/structure/closet/wall/red{
 	dir = 8;
 	pixel_x = 28;
 	name = "foam gun cabinet"
 	},
-/obj/item/gun/ballistic/automatic/toy/pistol/unrestricted,
-/obj/item/ammo_box/magazine/toy/m762,
-/obj/item/ammo_box/magazine/toy/m762,
-/obj/item/ammo_box/magazine/toy/m762,
-/obj/item/ammo_box/magazine/toy/smg,
-/obj/item/ammo_box/magazine/toy/smg,
-/obj/item/ammo_box/magazine/toy/smg,
-/obj/item/ammo_box/foambox,
-/obj/item/ammo_box/foambox,
-/obj/item/gun/ballistic/shotgun/toy/unrestricted,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "Ob" = (
@@ -956,6 +1000,7 @@
 	icon_state = "1-2"
 	},
 /obj/machinery/airalarm/directional/west,
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "Ps" = (
@@ -982,6 +1027,7 @@
 "Qp" = (
 /obj/machinery/vending/snack/random,
 /obj/machinery/light/directional/west,
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "QU" = (
@@ -1022,12 +1068,14 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "RW" = (
 /obj/structure/cable{
 	icon_state = "1-4"
 	},
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "Sc" = (
@@ -1063,12 +1111,14 @@
 /area/shuttle/solfed/corvette)
 "Tq" = (
 /obj/structure/chair/office/light,
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "Tt" = (
 /obj/machinery/light/directional/north,
 /obj/structure/filingcabinet/medical,
 /obj/machinery/airalarm/directional/west,
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "Tx" = (
@@ -1081,11 +1131,15 @@
 /turf/open/floor/plating,
 /area/shuttle/solfed/corvette)
 "TI" = (
-/obj/machinery/vending/wardrobe/sec_wardrobe,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "UC" = (
 /obj/machinery/light/directional/east,
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "UG" = (
@@ -1099,9 +1153,6 @@
 	pixel_y = -28;
 	req_access_txt = "20"
 	},
-/obj/effect/landmark/start/captain,
-/obj/item/gun/energy/laser/captain,
-/obj/item/card/id/captains_spare,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "UR" = (
@@ -1129,6 +1180,7 @@
 /obj/machinery/door/airlock/public/glass{
 	name = "Store Entrance"
 	},
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "Vs" = (
@@ -1171,6 +1223,7 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "Xb" = (
@@ -1239,6 +1292,7 @@
 	dir = 1
 	},
 /obj/structure/extinguisher_cabinet/directional/west,
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 "YN" = (
@@ -1255,6 +1309,7 @@
 "ZO" = (
 /obj/machinery/vending/cola/random,
 /obj/machinery/light/directional/east,
+/obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/corvette)
 
@@ -1357,8 +1412,8 @@ UG
 nu
 nu
 mG
-Tj
-Tj
+aS
+aS
 hq
 nu
 nu
@@ -1382,13 +1437,13 @@ UG
 UG
 UG
 nu
-nu
+Fx
 nu
 nu
 nu
 kd
-Tj
-eJ
+aS
+hh
 hT
 nu
 nu
@@ -1416,10 +1471,10 @@ Hr
 nu
 SP
 oX
-Tj
-Tj
-uo
-eG
+aS
+aS
+TI
+DH
 nu
 fT
 LM
@@ -1450,7 +1505,7 @@ Hk
 Hk
 PG
 aT
-nu
+kO
 Tj
 uo
 DU
@@ -1488,10 +1543,10 @@ Tj
 eG
 nu
 Tt
-Tj
+aS
 ve
 tE
-uo
+TI
 Ja
 Ja
 Qp
@@ -1520,11 +1575,11 @@ nu
 EA
 Tq
 oQ
-Tj
-uo
-Tj
-Tj
-Tj
+aS
+TI
+aS
+aS
+aS
 gO
 UG
 "}
@@ -1548,13 +1603,13 @@ Wm
 Wm
 YK
 RW
-Tj
+aS
 uq
-Tj
-uo
-Tj
-Tj
-Tj
+aS
+TI
+aS
+aS
+aS
 gO
 UG
 "}
@@ -1564,27 +1619,27 @@ kR
 Dy
 uo
 Yn
-Tj
-Tj
+aS
+aS
 FA
 UC
-uo
-Tj
+TI
+aS
 sz
-Tj
-uo
-Tj
-Tj
-Tj
+aS
+TI
+aS
+aS
+aS
 lb
 nm
 Wm
 Vq
 oH
 lH
-Tj
-Tj
-Tj
+aS
+aS
+aS
 gO
 UG
 "}
@@ -1608,10 +1663,10 @@ lF
 uE
 nu
 zg
-Tj
+aS
 ie
 GU
-uo
+TI
 tT
 uW
 ZO
@@ -1633,7 +1688,7 @@ tO
 nu
 wQ
 uo
-DH
+oS
 oS
 ck
 nu
@@ -1642,7 +1697,7 @@ Po
 nu
 nu
 Xj
-nu
+Fx
 nu
 nu
 LW
@@ -1660,7 +1715,7 @@ Tj
 Tj
 Sc
 MW
-nu
+Fx
 FE
 KR
 nu
@@ -1682,11 +1737,11 @@ UG
 UG
 UG
 nu
+Fx
 nu
 nu
 nu
-nu
-TI
+Tj
 Tj
 Sc
 fa

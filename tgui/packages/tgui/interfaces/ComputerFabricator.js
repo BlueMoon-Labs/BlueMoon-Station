@@ -242,6 +242,16 @@ const CfStep2 = (props, context) => {
                 print: '1',
               })} />
           </Table.Cell>
+          {data.devtype !== 2 && (
+            <Table.Cell>
+              <Button
+                content="Advanced"
+                selected={data.hw_nanoprint === 2}
+                onClick={() => act('hw_nanoprint', {
+                  print: '2',
+                })} />
+            </Table.Cell>
+          )}
         </Table.Row>
         <Table.Row>
           <Table.Cell bold position="relative">

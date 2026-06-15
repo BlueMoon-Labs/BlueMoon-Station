@@ -163,6 +163,12 @@
 		var/obj/item/modular_computer/pda/pda = computer
 		if(pda.stored_id)
 			access = pda.stored_id.GetAccess()
+	if(!length(access) && istype(computer, /obj/item/modular_computer/pda/silicon/cyborg))
+		var/obj/item/modular_computer/pda/silicon/cyborg/borg_pda = computer
+		access = borg_pda.get_department_access()
+	if(!length(access) && istype(computer, /obj/item/modular_computer/tablet/integrated))
+		var/obj/item/modular_computer/tablet/integrated/borg_tablet = computer
+		access = borg_tablet.get_department_access()
 
 	var/list/data = get_header_data()
 

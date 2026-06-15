@@ -5,7 +5,7 @@
 	density = FALSE
 	pass_flags = PASSTABLE | PASSMOB
 	mob_size = MOB_SIZE_TINY
-	desc = "A generic pAI mobile hard-light holographics emitter. It seems to be deactivated."
+	desc = "Универсальный мобильный голографический излучатель твёрдого света pAI. Кажется, он деактивирован."
 	health = 500
 	maxHealth = 500
 	layer = BELOW_MOB_LAYER
@@ -55,6 +55,12 @@
 
 	var/heartbeat_sensor = FALSE		// Whether the heartbeat sensor is active
 	var/heartbeat_alert_cooldown = 0	// Cooldown for heartbeat alerts
+
+	var/encoder_active = FALSE			// Whether the voice encoder is active
+	var/encoder_name = null				// Fake voice name for encoder
+	var/encoder_job = null				// Fake job for encoder
+
+	var/thermal_vision_active = FALSE	// Whether thermal vision is active
 
 	var/obj/item/integrated_signaler/signaler // AI's signaller
 
@@ -263,6 +269,16 @@
 		return FALSE
 	return TRUE
 
+/mob/living/silicon/pai/GetVoice()
+	if(encoder_active && encoder_name)
+		return encoder_name
+	return ..()
+
+/mob/living/silicon/pai/GetJob()
+	if(encoder_active && encoder_job)
+		return encoder_job
+	return "Personal AI"
+
 /mob/proc/makePAI(delold)
 	var/obj/item/paicard/card = new /obj/item/paicard(get_turf(src))
 	var/mob/living/silicon/pai/pai = new /mob/living/silicon/pai(card)
@@ -396,6 +412,11 @@
 	new_pai.name = pai_name
 	new_pai.real_name = new_pai.name
 	new_pai.key = user.key
+
+	if(new_pai.pda)
+		new_pai.pda.saved_identification = pai_name
+		new_pai.pda.owner = pai_name
+		new_pai.pda.name = "[pai_name] (pAI Messenger)"
 
 	setPersonality(new_pai)
 
@@ -545,6 +566,9 @@
 	//Misc
 	.["Cyborg - Misc (dog - blade)"] = -16
 
+/mob/living/silicon/pai/ui_state(mob/user)
+	return GLOB.conscious_state
+
 /mob/living/silicon/pai/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
@@ -580,17 +604,12 @@
 	data["emitterhealth"] = emitterhealth
 	data["emittermaxhealth"] = emittermaxhealth
 	data["holoform"] = holoform
-	// Unread messages from PDA messenger
-	data["messenger_unread"] = 0
-	if(pda)
-		var/datum/computer_file/program/messenger/messenger = locate() in pda.get_all_files()
-		if(messenger)
-			for(var/chat_ref in messenger.saved_chats)
-				var/datum/pda_chat/chat = messenger.saved_chats[chat_ref]
-				data["messenger_unread"] += chat.unread_messages
-
 	var/datum/language_holder/H = get_language_holder()
 	data["translator_on"] = H?.omnitongue ? TRUE : FALSE
+	data["encoder_active"] = encoder_active
+	data["encoder_name"] = encoder_name
+	data["encoder_job"] = encoder_job
+	data["thermal_vision"] = thermal_vision_active
 
 	// Crew manifest
 	data["crew_manifest"] = list()
@@ -751,6 +770,60 @@
 			else
 				temp = "Модуль \"[target]\" не найден."
 			return TRUE
+		if("uninstall")
+			var/target = params["uninstall"]
+			if(software.Find(target))
+				var/cost = available_software[target]
+				software.Remove(target)
+				switch(target)
+					if("security HUD")
+						if(secHUD)
+							secHUD = FALSE
+							var/datum/atom_hud/sec = GLOB.huds[sec_hud]
+							sec.remove_hud_from(src)
+					if("medical HUD")
+						if(medHUD)
+							medHUD = FALSE
+							var/datum/atom_hud/med = GLOB.huds[med_hud]
+							med.remove_hud_from(src)
+					if("heartbeat sensor")
+						heartbeat_sensor = FALSE
+					if("universal translator")
+						remove_all_languages(source = LANGUAGE_SOFTWARE)
+					if("encryption keys")
+						encryptmod = FALSE
+					if("door jack")
+						if(hacking)
+							hacking = FALSE
+							hackprogress = 0
+							hackdoor = null
+						if(cable)
+							QDEL_NULL(cable)
+					if("camera jack")
+						if(hacking)
+							hacking = FALSE
+							hackprogress = 0
+							hackcamera = null
+						if(cable)
+							QDEL_NULL(cable)
+					if("encoder")
+						encoder_active = FALSE
+						encoder_name = null
+						encoder_job = null
+					if("thermal vision")
+						if(thermal_vision_active)
+							thermal_vision_active = FALSE
+							sight &= ~SEE_MOBS
+							lighting_alpha = initial(lighting_alpha)
+							update_sight()
+					if("chemical injector")
+					if("loudness booster")
+						QDEL_NULL(internal_instrument)
+				ram += cost
+				temp = "Модуль \"[target]\" удалён."
+			else
+				temp = "Модуль \"[target]\" не установлен."
+			return TRUE
 		if("radio")
 			radio.attack_self(src)
 			return TRUE
@@ -862,6 +935,29 @@
 		if("toggle_translator")
 			grant_all_languages(source = LANGUAGE_SOFTWARE)
 			return TRUE
+		if("toggle_encoder")
+			if(!encoder_active)
+				var/new_name = tgui_input_text(src, "Введите поддельное имя", "Encoder", max_length = 50)
+				var/new_job = tgui_input_text(src, "Введите поддельную должность", "Encoder", max_length = 50)
+				if(new_name)
+					encoder_name = new_name
+					encoder_job = new_job
+					encoder_active = TRUE
+					to_chat(src, "<span class='notice'>Энкодер активирован. Голос: [encoder_name], Должность: [encoder_job ? encoder_job : "N/A"]</span>")
+			else
+				encoder_active = FALSE
+				to_chat(src, "<span class='notice'>Энкодер деактивирован.</span>")
+			return TRUE
+		if("toggle_thermal_vision")
+			thermal_vision_active = !thermal_vision_active
+			if(thermal_vision_active)
+				sight |= SEE_MOBS
+				lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
+			else
+				sight &= ~SEE_MOBS
+				lighting_alpha = initial(lighting_alpha)
+			update_sight()
+			return TRUE
 		if("doorjack_start")
 			if(cable && cable.machine)
 				hackdoor = cable.machine
@@ -903,27 +999,6 @@
 					messenger.run_program(src)
 					pda.active_program = messenger
 					messenger.ui_interact(src)
-				else
-					to_chat(src, "<span class='warning'>Мессенджер не найден!</span>")
-			else
-				to_chat(src, "<span class='warning'>PDA не установлен!</span>")
-			return TRUE
-		if("quick_reply")
-			if(pda)
-				var/datum/computer_file/program/messenger/messenger = locate() in pda.get_all_files()
-				if(messenger)
-					var/datum/pda_chat/target_chat = null
-					for(var/chat_ref in messenger.saved_chats)
-						var/datum/pda_chat/chat = messenger.saved_chats[chat_ref]
-						if(chat.unread_messages > 0)
-							target_chat = chat
-							break
-					if(target_chat)
-						messenger.quick_reply_prompt(src, target_chat)
-					else
-						messenger.run_program(src)
-						pda.active_program = messenger
-						messenger.ui_interact(src)
 				else
 					to_chat(src, "<span class='warning'>Мессенджер не найден!</span>")
 			else

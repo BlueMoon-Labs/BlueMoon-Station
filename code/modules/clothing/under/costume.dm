@@ -7,6 +7,7 @@
 	strip_delay = 100
 	resistance_flags = NONE
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/costume/jabroni
 	name = "Jabroni Outfit"
@@ -36,6 +37,7 @@
 	fitted = FEMALE_UNIFORM_TOP
 	can_adjust = FALSE
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/costume/schoolgirl/red
 	name = "red schoolgirl uniform"
@@ -96,6 +98,7 @@
 	icon_state = "polykilt"
 	body_parts_covered = CHEST|GROIN|ARMS|LEGS
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/costume/kilt/polychromic/ComponentInitialize()
 	. = ..()
@@ -126,6 +129,7 @@
 	fitted = FEMALE_UNIFORM_TOP
 	can_adjust = FALSE
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/costume/maid/Initialize(mapload)
 	. = ..()
@@ -136,7 +140,7 @@
 	desc = "Just looking at this makes you want to sing."
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	body_parts_covered = CHEST|GROIN|ARMS
-	alternate_worn_layer = ABOVE_SHOES_LAYER
+	alternate_worn_layer = DRESS_LAYER
 	can_adjust = FALSE
 
 /obj/item/clothing/under/costume/singer/yellow
@@ -151,7 +155,7 @@
 	name = "blue performer's outfit"
 	icon_state = "bsing"
 	item_state = "bsing"
-	alternate_worn_layer = ABOVE_SHOES_LAYER
+	alternate_worn_layer = DRESS_LAYER
 	fitted = FEMALE_UNIFORM_TOP
 
 /obj/item/clothing/under/costume/geisha
@@ -286,6 +290,7 @@
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 
 /obj/item/clothing/under/costume/qipao/white
@@ -340,6 +345,7 @@
 	fitted = FEMALE_UNIFORM_TOP
 	can_adjust = FALSE
 	mutantrace_variation = STYLE_DIGITIGRADE
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/costume/kimono/black
 	name = "Black Kimono"

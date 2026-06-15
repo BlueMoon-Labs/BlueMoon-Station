@@ -247,7 +247,7 @@
 			. += "\t<tt>[html_encode(message1_overlay.message)]</tt>"
 		if (message2_overlay.message)
 			. += "\t<tt>[html_encode(message2_overlay.message)]</tt>"
-	. += "<span class='notice'>Текущий уровень угрозы: <b><u>[capitalize(get_security_level())]</u></b>.</span>"
+	. += "<span class='notice'>Текущий уровень угрозы: <b><u>[SECURITY_LEVEL_COLORED_UPPERTEXT(GLOB.security_level)]</u></b>.</span>"
 
 // Helper procs for child display types.
 /obj/machinery/status_display/proc/display_shuttle_status(obj/docking_port/mobile/shuttle)

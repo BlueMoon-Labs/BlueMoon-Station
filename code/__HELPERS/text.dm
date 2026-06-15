@@ -113,6 +113,47 @@
 	if(non_whitespace)
 		return text		//only accepts the text if it has some non-spaces
 
+/// Removes the ASCII C0 control characters and DEL (0x7F) from `text`, EXCEPT tab,
+/// line feed and carriage return (0x09/0x0A/0x0D). The kept whitespace has proper
+/// JSON escapes and round-trips fine; the rest of the C0 range can only be escaped
+/// as \uXXXX, which the DM<->TGUI json/topic bridge does not reliably preserve, so
+/// any value TGUI echoes back as a lookup key (such as a custom emote panel name)
+/// is silently corrupted by them. Multi-byte Unicode (e.g. Cyrillic) is preserved.
+/// Returns the cleaned text.
+/proc/strip_control_chars(text)
+	if(!length(text))
+		return text
+	var/lenbytes = length(text)
+	var/char = ""
+	var/list/cleaned = list()
+	for(var/i = 1, i <= lenbytes, i += length(char))
+		char = text[i]
+		var/ascii = text2ascii(char)
+		if((ascii < 32 && ascii != 9 && ascii != 10 && ascii != 13) || ascii == 127)
+			continue
+		cleaned += char
+	return jointext(cleaned, "")
+
+/// Rebuilds a flat associative list with control characters stripped from every
+/// text key, so saved data keyed by user text cannot be made permanently
+/// unmatchable/undeletable by a control character that breaks the DM<->TGUI or
+/// savefile round-trip. Entries whose key cleans to empty, or collides with an
+/// already-cleaned key, are dropped (first one wins). Non-text keys (e.g. typepaths)
+/// pass through untouched. Returns a list.
+/proc/sanitize_assoc_keys(list/input)
+	if(!islist(input))
+		return list()
+	var/list/cleaned = list()
+	for(var/key in input)
+		if(!istext(key))
+			cleaned[key] = input[key]
+			continue
+		var/clean_key = strip_control_chars(key)
+		if(!length(clean_key) || (clean_key in cleaned))
+			continue
+		cleaned[clean_key] = input[key]
+	return cleaned
+
 /// html_encode that keeps " and ' as raw readable characters (safe in HTML
 /// text contexts). Dangerous chars (<, >, &) remain encoded. Use for free-form
 /// user-entered text displayed in chat, names, flavor descriptions, etc.
@@ -124,6 +165,9 @@
 /proc/finalize_stripped_input(name, max_length, no_trim)
 	if(isnull(name))
 		return null
+	// Control characters survive html_encode but cannot round-trip through the
+	// DM<->TGUI/json bridge or savefile keys - strip them at the source.
+	name = strip_control_chars(name)
 	name = html_encode_readable(name)
 	//trim is "outside" because html_encode can expand single symbols into multiple symbols (such as turning < into &lt;)
 	return no_trim ? copytext(name, 1, max_length) : trim(name, max_length)

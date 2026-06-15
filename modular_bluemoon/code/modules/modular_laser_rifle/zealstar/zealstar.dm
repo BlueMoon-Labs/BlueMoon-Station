@@ -36,11 +36,21 @@
 /obj/item/gun/energy/modular_laser_rifle/zealstar/Initialize(mapload)
 	. = ..()
 
+/obj/item/gun/energy/modular_laser_rifle/zealstar/proc/zealstar_unauthorized_wielder(mob/living/user)
+	if(HAS_TRAIT(user, TRAIT_MINDSHIELD))
+		return FALSE
+	var/datum/mind/M = user.mind
+	if(!M || (!M.special_role && !LAZYLEN(M.antag_datums)))
+		return FALSE
+	if(M.is_ghost_role() || M.has_antag_datum(/datum/antagonist/ert, TRUE))
+		return FALSE
+	return TRUE
+
 /obj/item/gun/energy/modular_laser_rifle/zealstar/equipped(mob/user, slot, initial)
 	. = ..()
 	if(slot != ITEM_SLOT_HANDS || !isliving(user))
 		return
-	if(HAS_TRAIT(user, TRAIT_MINDSHIELD))
+	if(!zealstar_unauthorized_wielder(user))
 		return
 	to_chat(user, span_userdanger("<b>«Хранитель»:</b> Несанкционированный носитель. Имплант защиты разума не обнаружен. <b>ИНИЦИАЦИЯ КОЛЛАПСА ЯДРА.</b>"))
 	playsound(src, 'sound/machines/nuke/confirm_beep.ogg', 65, TRUE)
@@ -140,22 +150,12 @@
 /// PHOENIX - ОГНЕМЁТ (50 выстрелов из 10k ячейки) ///
 
 /obj/item/ammo_casing/energy/laser/flamethrower
-	projectile_type = /obj/item/projectile/bullet/incendiary/flamethrower
+	projectile_type = /obj/item/projectile/bullet/flamethrower
 	pellets = 8
 	variance = 35
 	e_cost = 200
 	select_name = "Fire"
 	fire_sound = 'modular_bluemoon/code/modules/modular_laser_rifle/sounds/flamethrower.ogg'
-
-/obj/item/projectile/bullet/incendiary/flamethrower
-	name = "Fire"
-	damage = 7
-	fire_stacks = 10
-	damage_type = BURN
-	icon_state = ""
-	hitsound_wall = ""
-	projectile_piercing = PASSMOB
-	range = 15
 
 /datum/laser_weapon_mode/phoenix
 	standard_firing_mode = FALSE

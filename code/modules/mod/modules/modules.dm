@@ -1,11 +1,11 @@
 //Magic Nullifier
 /obj/item/mod/module/anti_magic
 	name = "MOD magic nullifier module"
-	desc = "A series of obsidian rods installed into critical points around the suit, \
-		vibrated at a certain low frequency to enable them to resonate. \
-		This creates a low-range, yet strong, magic nullification field around the user, \
-		aided by a full replacement of the suit's normal coolant with holy water. \
-		Spells will spall right off this field, though it'll do nothing to help others believe you about all this."
+	desc = "Ряд обсидиановых стержней, установленных в критических точках костюма, \
+		вибрирующих на определённой низкой частоте для создания резонанса. \
+		Это создаёт малорадиусное, но сильное поле нейтрализации магии вокруг пользователя, \
+		при поддержке полной замены обычного охлаждающего агента костюма святой водой. \
+		Заклинания будут отскакивать от этого поля, хотя это никак не поможет другим поверить вам во всё это."
 	icon_state = "magic_nullifier"
 	removable = FALSE
 	incompatible_modules = list(/obj/item/mod/module/anti_magic)
@@ -17,14 +17,14 @@
 /obj/item/mod/module/anti_magic/on_suit_deactivation()
 	REMOVE_TRAIT(mod.wearer, TRAIT_ANTIMAGIC, MOD_TRAIT)
 	REMOVE_TRAIT(mod.wearer, TRAIT_HOLY, MOD_TRAIT)
-	
+
 /obj/item/mod/module/kinesis //TODO POST-MERGE MAKE NOT SUCK ASS, MAKE BALLER AS FUCK
 	name = "MOD kinesis module"
-	desc = "A modular plug-in to the forearm, this module was presumed lost for many years, \
-		despite the suits it used to be mounted on still seeing some circulation. \
-		This piece of technology allows the user to generate precise anti-gravity fields, \
-		letting them move objects as small as a titanium rod to as large as industrial machinery. \
-		Oddly enough, it doesn't seem to work on living creatures."
+	desc = "Модульное дополнение к предплечью, этот модуль считался утерянным многие годы, \
+		nесмотря на то, что костюмы, на которые он раньше устанавливался, всё ещё встречаются. \
+		Эта технология позволяет пользователю генерировать точные антигравитационные поля, \
+		позволяя ему перемещать объекты — от титанового стержня до промышленного оборудования. \
+		Странно, но он, кажется, не работает на живых существах."
 	icon_state = "kinesis"
 //	module_type = MODULE_ACTIVE
 	module_type = MODULE_TOGGLE
@@ -57,10 +57,10 @@
 
 /obj/item/mod/module/insignia
 	name = "MOD insignia module"
-	desc = "Despite the existence of IFF systems, radio communique, and modern methods of deductive reasoning involving \
-		the wearer's own eyes, colorful paint jobs remain a popular way for different factions in the galaxy to display who \
-		they are. This system utilizes a series of tiny moving paint sprayers to both apply and remove different \
-		color patterns to and from the suit."
+	desc = "Несмотря на существование систем IFF, радиосвязи и современных методов дедуктивного рассуждения с помощью \
+		собственных глаз носителя, цветные окраски остаются популярным способом для различных фракций галактики показать, кто \
+		они. Эта система использует ряд крошечных движущихся краскораспылителей для нанесения и удаления различных \
+		цветовых узоров на костюм."
 	icon_state = "insignia"
 	removable = FALSE
 	incompatible_modules = list(/obj/item/mod/module/insignia)
@@ -95,11 +95,11 @@
 
 /obj/item/mod/module/noslip
 	name = "MOD anti slip module"
-	desc = "These are a modified variant of standard magnetic boots, utilizing piezoelectric crystals on the soles. \
-		The two plates on the bottom of the boots automatically extend and magnetize as the user steps; \
-		a pull that's too weak to offer them the ability to affix to a hull, but just strong enough to \
-		protect against the fact that you didn't read the wet floor sign. Honk Co. has come out numerous times \
-		in protest of these modules being legal."
+	desc = "Это модифицированный вариант стандартных магнитных ботинок, использующий пьезоэлектрические кристаллы на подошвах. \
+		Две пластины на дне ботинок автоматически выдвигаются и намагничиваются при шаге пользователя; \
+		притяжение слишком слабое, чтобы позволить им прикрепиться к корпусу, но достаточно сильное, \
+		чтобы защитить от того факта, что вы не прочитали знак мокрого пола. Honk Co. неоднократно выступала \
+		против легализации этих модулей."
 	icon_state = "noslip"
 	complexity = 1
 	idle_power_cost = DEFAULT_CHARGE_DRAIN * 0.1

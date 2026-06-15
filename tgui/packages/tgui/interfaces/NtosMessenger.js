@@ -1,3 +1,4 @@
+import { Component, createRef } from 'inferno';
 import { createSearch } from '../../common/string';
 import { useBackend, useLocalState } from '../backend';
 import {
@@ -391,7 +392,7 @@ const ChatScreen = (props, context) => {
     blocked,
   } = props;
 
-  const { emoji_list, emoji_base64, has_scanned_photo, selected_photo_path, admin_photo_url, is_admin } = data;
+  const { emoji_list, emoji_base64, has_scanned_photo, selected_photo_path, admin_photo_url, can_set_url_photo } = data;
   const rawList = Array.isArray(emoji_list) ? emoji_list : Object.values(emoji_list || {});
   const uniqueEmojis = [...new Set(rawList)].slice(0, 100);
   const base64Map = emoji_base64 || {};
@@ -500,7 +501,7 @@ const ChatScreen = (props, context) => {
             />
           </Stack.Item>
         )}
-        {!!is_admin && (
+        {!!can_set_url_photo && (
           <Stack.Item>
             <Button
               tooltip="Установить URL фото"
@@ -638,6 +639,7 @@ const ChatScreen = (props, context) => {
               </>
             )}
             {filteredMessages}
+            <AutoScrollToBottom triggerKey={messages.length} />
           </Stack>
         </Section>
       </Stack.Item>
@@ -718,10 +720,12 @@ const ChatScreen = (props, context) => {
 const MediaAttachment = ({ src, maxHeight = '200px', maxWidth = '100%', onClick }) => {
   if (!src) return null;
 
-  const isVideo = /\.(webm|mp4)(\?.*)?$/i.test(src);
+  const isVideo = /\.(webm|mp4)(\?.*)?$/i.test(src) || src.startsWith('data:video/');
 
   if (isVideo) {
-    const videoType = /\.mp4(\?.*)?$/i.test(src) ? 'video/mp4' : 'video/webm';
+    const videoType = src.startsWith('data:')
+      ? (src.match(/^data:([^;,]+)/)?.[1] || 'video/webm')
+      : (/\.mp4(\?.*)?$/i.test(src) ? 'video/mp4' : 'video/webm');
     return (
       <Box>
         <video
@@ -773,6 +777,49 @@ const MediaAttachment = ({ src, maxHeight = '200px', maxWidth = '100%', onClick 
     />
   );
 };
+
+class AutoScrollToBottom extends Component {
+  constructor(props) {
+    super(props);
+    this.ref = createRef();
+    this.atBottom = true;
+    this.handleScroll = this.handleScroll.bind(this);
+  }
+
+  handleScroll(e) {
+    const el = e.currentTarget;
+    const threshold = 50;
+    this.atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - threshold;
+  }
+
+  componentDidMount() {
+    const content = this.ref.current?.parentElement?.closest('.Section__content');
+    if (content) {
+      content.addEventListener('scroll', this.handleScroll);
+      content.scrollTop = content.scrollHeight;
+    }
+  }
+
+  componentWillUnmount() {
+    const content = this.ref.current?.parentElement?.closest('.Section__content');
+    if (content) {
+      content.removeEventListener('scroll', this.handleScroll);
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.triggerKey !== prevProps.triggerKey && this.atBottom) {
+      const content = this.ref.current?.parentElement?.closest('.Section__content');
+      if (content) {
+        content.scrollTop = content.scrollHeight;
+      }
+    }
+  }
+
+  render() {
+    return <div ref={this.ref} />;
+  }
+}
 
 const ChatMessage = (props) => {
   const { message, everyone, outgoing, timestamp, photoPath, onPreview } = props;

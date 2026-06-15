@@ -934,17 +934,12 @@ BLUEMOON REMOVAL END*/
 	if(!length(candidates))
 		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
 		return FALSE
-	var/count = rand(1, 2)
-	count = min(count, candidates.len)
-	for(var/i = 1 to count)
-		if(!length(candidates))
-			break
-		var/mob/M = pick_n_take(candidates)
-		assigned += M.mind
-		M.mind.special_role = ROLE_BLOB
-		M.mind.restricted_roles = restricted_roles
-		message_admins("[ADMIN_LOOKUPFLW(M)] был выбран раундстартовым правилом [name].")
-		log_game("DYNAMIC: [key_name(M)] был выбран раундстартовым правилом [name].")
+	var/mob/M = pick_n_take(candidates)
+	assigned += M.mind
+	M.mind.special_role = ROLE_BLOB
+	M.mind.restricted_roles = restricted_roles
+	message_admins("[ADMIN_LOOKUPFLW(M)] был выбран раундстартовым правилом [name].")
+	log_game("DYNAMIC: [key_name(M)] был выбран раундстартовым правилом [name].")
 	return TRUE
 
 // ////////////////////////////////////////////

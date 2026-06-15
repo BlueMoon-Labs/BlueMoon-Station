@@ -23,6 +23,7 @@
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/civilian/util
 	name = "utility uniform"
@@ -106,6 +107,7 @@
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/civilian/chef
 	name = "cook's suit"
@@ -121,6 +123,7 @@
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/civilian/head_of_personnel
 	desc = "It's a jumpsuit worn by someone who works in the position of \"Head of Personnel\"."
@@ -144,6 +147,7 @@
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/civilian/head_of_personnel/suit
 	name = "head of personnel's suit"
@@ -161,6 +165,7 @@
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/civilian/hydroponics
 	desc = "It's a jumpsuit designed to protect against minor plant-related hazards."
@@ -178,6 +183,7 @@
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/civilian/janitor
 	desc = "It's the official uniform of the station's janitor. It has minor protection from biohazards."
@@ -193,6 +199,7 @@
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/civilian/janitor/maid
 	name = "maid uniform"
@@ -206,11 +213,13 @@
 	unique_reskin = list(
 		"Purple" = list("icon_state" = "janimaid_p")
 	)
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/civilian/janitor/maid/polychromic
 	icon_state = "polymaid"
 	item_state = "polymaid"
 	var/list/poly_colors = list("#FFFFFF", "#000000")
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/civilian/janitor/maid/polychromic/ComponentInitialize()
 	. = ..()
@@ -240,6 +249,7 @@
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/civilian/lawyer/really_black
 	name = "executive suit"
@@ -256,6 +266,7 @@
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/civilian/lawyer/black/skirt
 	name = "lawyer black suitskirt"
@@ -263,6 +274,7 @@
 	item_state = "lawyer_black"
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/civilian/lawyer/female
 	name = "female black suit"
@@ -280,6 +292,7 @@
 	item_state = "bl_suit"
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/civilian/lawyer/red/skirt
 	name = "lawyer red suitskirt"
@@ -287,6 +300,7 @@
 	item_state = "lawyer_red"
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/civilian/lawyer/blue
 	name = "lawyer blue suit"
@@ -299,6 +313,7 @@
 	item_state = "lawyer_blue"
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/civilian/lawyer/bluesuit
 	name = "blue suit"
@@ -317,6 +332,7 @@
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/civilian/lawyer/purpsuit
 	name = "purple suit"
@@ -334,3 +350,4 @@
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER

@@ -298,7 +298,7 @@
 			var/datum/preferences/prefs = L?.client?.prefs
 			if(!prefs)
 				return
-			var/current_playlist_name = params["playlist"]
+			var/current_playlist_name = strip_control_chars(params["playlist"])
 			var/track = params["track"]
 			switch(action)
 				if("new_playlist")

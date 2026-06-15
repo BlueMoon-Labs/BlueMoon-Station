@@ -116,7 +116,7 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 		if(O.late_joiner)
 			try_target_late_joiners = TRUE
 	for(var/datum/mind/possible_target in get_crewmember_minds())
-		if(!(possible_target in owners) && ishuman(possible_target.current) && (possible_target.current.stat != DEAD) && is_unique_objective(possible_target))
+		if(!(possible_target in owners) && ishuman(possible_target.current) && (possible_target.current.stat != DEAD) && is_unique_objective(possible_target) && !possible_target.is_ghost_role())
 			if(!(possible_target in blacklist))
 				// BLUEMOON ADD START - если персонаж сверхтяжёлый и установлена настройка, что сверхтяжёлые персонажи не могут быть по заданию, персонажа не добавляет в пулл
 				if(!(!include_superheavy_character && possible_target.current.mob_weight > MOB_WEIGHT_HEAVY))
@@ -140,7 +140,7 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 /datum/objective/proc/find_target_by_role(role, role_type=0, invert=0)//Option sets either to check assigned role or special role. Default to assigned., invert inverts the check, eg: "Don't choose a Ling"
 	var/list/datum/mind/owners = get_owners()
 	for(var/datum/mind/possible_target in get_crewmember_minds())
-		if(!(possible_target in owners) && ishuman(possible_target.current))
+		if(!(possible_target in owners) && ishuman(possible_target.current) && !possible_target.is_ghost_role())
 			var/is_role = 0
 			if(role_type)
 				if(possible_target.special_role == role)

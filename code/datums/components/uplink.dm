@@ -27,6 +27,8 @@ GLOBAL_LIST_EMPTY(uplinks)
 	var/failsafe_code
 	var/compact_mode = FALSE
 	var/debug = FALSE
+	/// Traitor contract rerolls used this round; first is free, then 1 TC each.
+	var/traitor_contract_rerolls = 0
 	///Instructions on how to access the uplink based on location
 	var/unlock_text
 	var/list/previous_attempts
@@ -79,6 +81,7 @@ GLOBAL_LIST_EMPTY(uplinks)
 	telecrystals += U.telecrystals
 	if(purchase_log && U.purchase_log)
 		purchase_log.MergeWithAndDel(U.purchase_log)
+	traitor_contract_rerolls = max(traitor_contract_rerolls, U.traitor_contract_rerolls)
 
 /datum/component/uplink/Destroy()
 	GLOB.uplinks -= src
@@ -226,7 +229,7 @@ GLOBAL_LIST_EMPTY(uplinks)
 				continue
 			cat["items"] += list(list(
 				"name" = I.name,
-				"cost" = I.cost,
+				"cost" = get_purchase_cost(I),
 				"desc" = I.desc,
 			))
 		out += list(cat)
@@ -239,6 +242,14 @@ GLOBAL_LIST_EMPTY(uplinks)
 	. = ..()
 	if(.)
 		return
+	switch(action)
+		if("lock")
+			active = FALSE
+			locked = TRUE
+			telecrystals += hidden_crystals
+			hidden_crystals = 0
+			SStgui.close_uis(src)
+			return TRUE
 	if(!active)
 		return
 	switch(action)
@@ -251,18 +262,17 @@ GLOBAL_LIST_EMPTY(uplinks)
 				var/datum/uplink_item/I = buyable_items[item_name]
 				MakePurchase(usr, I)
 				return TRUE
-		if("lock")
-			active = FALSE
-			locked = TRUE
-			telecrystals += hidden_crystals
-			hidden_crystals = 0
-			SStgui.close_uis(src)
 		if("select")
 			selected_cat = params["category"]
 			return TRUE
 		if("compact_toggle")
 			compact_mode = !compact_mode
 			return TRUE
+
+/datum/component/uplink/proc/get_purchase_cost(datum/uplink_item/U)
+	if(istype(U, /datum/uplink_item/bundles_tc/reroll))
+		return traitor_contract_rerolls ? 1 : 0
+	return U.cost
 
 /datum/component/uplink/proc/MakePurchase(mob/user, datum/uplink_item/U)
 	if(!istype(U))
@@ -272,16 +282,19 @@ GLOBAL_LIST_EMPTY(uplinks)
 	if(!is_uplink_item_visible_to_user(user, U))
 		return
 
-	if(telecrystals < U.cost || U.limited_stock == 0)
+	var/purchase_cost = get_purchase_cost(U)
+	if(telecrystals < purchase_cost || U.limited_stock == 0)
 		return
-	telecrystals -= U.cost
+	telecrystals -= purchase_cost
 
 	U.purchase(user, src)
 
-	if(U.limited_stock > 0)
+	if(istype(U, /datum/uplink_item/bundles_tc/reroll))
+		traitor_contract_rerolls++
+	else if(U.limited_stock > 0)
 		U.limited_stock -= 1
 
-	SSblackbox.record_feedback("nested tally", "traitor_uplink_items_bought", 1, list("[initial(U.name)]", "[U.cost]"))
+	SSblackbox.record_feedback("nested tally", "traitor_uplink_items_bought", 1, list("[initial(U.name)]", "[purchase_cost]"))
 	return TRUE
 
 // Implant signal responses

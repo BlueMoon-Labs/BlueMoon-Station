@@ -311,7 +311,7 @@
 			var/icon/IC = icon(icon, icon_state, dir)
 			holder.pixel_y = IC.Height() - world.icon_size
 			holder.icon_state = "hud_imp_chem"
-	if(HAS_TRAIT(src, TRAIT_MINDSHIELD))
+	if(HAS_TRAIT(src, TRAIT_MINDSHIELD) || HAS_TRAIT(src, TRAIT_FAKE_MINDSHIELD)) // фальшивая сигнатура неотличима от настоящей на худе
 		holder = hud_list[IMPLOYAL_HUD]
 		var/icon/IC = icon(icon, icon_state, dir)
 		holder.pixel_y = IC.Height() - world.icon_size

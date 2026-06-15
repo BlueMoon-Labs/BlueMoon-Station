@@ -49,7 +49,7 @@
 	if(!ishuman(user) || user.stat != CONSCIOUS)
 		return FALSE
 	var/mob/living/carbon/human/H = user
-	return (H.belt == src) || (H.back == src.loc)
+	return (H.belt == src) || (H.back == src)
 
 /obj/item/suicide_belt/attack_self(mob/user)
 	if(arming || !user || QDELING(src))

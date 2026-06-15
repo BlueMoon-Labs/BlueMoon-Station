@@ -142,6 +142,26 @@
 		var/datum/action/action = LAZYACCESSASSOC(occupant_actions, occupant, /datum/action/vehicle/sealed/mecha/strafe)
 		action?.UpdateButtons()
 
+/datum/action/vehicle/sealed/mecha/toggle_stabilizers
+	name = "Toggle thruster stabilizers. Cancels space drift so the mech can hold position. Needs powered thrusters."
+	button_icon_state = "mech_thrusters_off"
+
+/datum/action/vehicle/sealed/mecha/toggle_stabilizers/Trigger()
+	if(!owner || !chassis || !(owner in chassis.occupants))
+		return
+	chassis.toggle_stabilizers()
+
+/obj/vehicle/sealed/mecha/proc/toggle_stabilizers()
+	stabilizers = !stabilizers
+	to_chat(occupants, "[icon2html(src, occupants)]<span class='notice'>Toggled thruster stabilizers [stabilizers ? "on" : "off"].</span>")
+	log_message("Toggled thruster stabilizers [stabilizers ? "on" : "off"].", LOG_MECHA)
+
+	for(var/occupant in occupants)
+		var/datum/action/vehicle/sealed/mecha/toggle_stabilizers/action = LAZYACCESSASSOC(occupant_actions, occupant, /datum/action/vehicle/sealed/mecha/toggle_stabilizers)
+		if(action)
+			action.button_icon_state = "mech_thrusters_[stabilizers ? "on" : "off"]"
+			action.UpdateButtons()
+
 //////////////////////////////////////// Specific Ability Actions  ///////////////////////////////////////////////
 //Need to be granted by the mech type, Not default abilities.
 

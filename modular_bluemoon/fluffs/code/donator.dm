@@ -31,7 +31,7 @@
 
 /datum/gear/donator/bm/reaper_helmet
 	name = "Reaper Helmet"
-	slot = ITEM_SLOT_OCLOTHING
+	slot = ITEM_SLOT_HEAD
 	path = /obj/item/clothing/head/helmet/space/plasmaman/security/reaper
 	ckeywhitelist = list("reaperdb")
 
@@ -1467,7 +1467,7 @@
 	name = "Delivery Bag"
 	slot = ITEM_SLOT_BACK
 	path = /obj/item/storage/backpack/satchel/dilivery_bag
-	ckeywhitelist = list("troubleneko17th", "dimofon", "hazzi", "cupteazee", "kolhozniik", "dimakr")
+	ckeywhitelist = list("troubleneko17th", "dimofon", "hazzi", "cupteazee", "kolhozniik", "dimakr", "hartty")
 
 /datum/gear/donator/bm/dar_beacon
 	name = "Dar Jr beacon"
@@ -1757,31 +1757,31 @@
 	name = "M.U. 88 New hope coat"
 	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/suit/donator/bm/mu88
-	ckeywhitelist = list("milidead", "hateredsoul")
+	ckeywhitelist = list("hateredsoul", "milidead")
 
 /datum/gear/donator/bm/mu88_swimsuit
 	name = "M.U. 88 New hope swimsuit"
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/under/donator/bm/mu88_swimsuit
-	ckeywhitelist = list("milidead", "hateredsoul")
+	ckeywhitelist = list("hateredsoul", "milidead")
 
 /datum/gear/donator/bm/mu88_boots
 	name = "M.U. 88 New hope boots"
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/shoes/jackboots/tall/mu88_boots
-	ckeywhitelist = list("milidead", "hateredsoul")
+	ckeywhitelist = list("hateredsoul", "milidead")
 
 /datum/gear/donator/bm/mu88_horns
 	name = "M.U. 88 New hope horns"
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/head/donator/bm/mu88_horns
-	ckeywhitelist = list("milidead", "hateredsoul")
+	ckeywhitelist = list("hateredsoul", "milidead")
 
 /datum/gear/donator/bm/mu88_tie
 	name = "M.U. 88 New hope tie"
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/neck/tie/mu88_tie
-	ckeywhitelist = list("milidead", "hateredsoul")
+	ckeywhitelist = list("hateredsoul", "milidead")
 
 /datum/gear/donator/bm/cesar_tunic
 	name = "Fancy tunic"
@@ -2378,18 +2378,66 @@
 
 /datum/gear/donator/bm/h_thin_tshirt
 	name = "Thin T-shirt"
-	slot = ITEM_SLOT_SHIRT
+	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/underwear/shirt/h_thin_tshirt
 	ckeywhitelist = list("hateredsoul")
 
 /datum/gear/donator/bm/h_slim_tshirt
 	name = "Slim T-shirt"
-	slot = ITEM_SLOT_UNDERWEAR
+	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/underwear/briefs/h_thin_slim_tshirt
 	ckeywhitelist = list("hateredsoul")
 
 /datum/gear/donator/bm/h_eslim_tshirt
 	name = "EXTRA slim T-shirt"
-	slot = ITEM_SLOT_UNDERWEAR
+	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/underwear/briefs/h_thin_eslim_tshirt
 	ckeywhitelist = list("hateredsoul")
+
+/datum/gear/donator/bm/scream_knife_kit
+	name = "Scream Knife Kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/modkit/scream_knife_kit
+	ckeywhitelist = list("dimofon", "pingvas", "devildeadspace", "dimakr")
+
+/datum/gear/donator/bm/sport_abibas_bag
+	name = "Sport 'ABIBAS' satchel"
+	slot = ITEM_SLOT_BACK
+	path = /obj/item/storage/backpack/satchel/sport_abibas_bag
+	ckeywhitelist = list("ty4kahahebe", "pingvas")
+
+/datum/gear/donator/bm/renory_jumpsuit
+	name = "Leather Jumpsuit"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/donator/bm/renory_jumpsuit
+	ckeywhitelist = list("kumikoshouko")
+
+/datum/gear/donator/bm/renory_helmet
+	name = "Motorcycle Helmet"
+	slot = ITEM_SLOT_HEAD
+	path = /obj/item/clothing/head/donator/bm/renory_helmet
+	ckeywhitelist = list("kumikoshouko")
+
+/datum/gear/donator/bm/krieg_mask
+	name = "Противогаз Крига"
+	slot = ITEM_SLOT_MASK
+	path = /obj/item/clothing/mask/gas/krieg
+	ckeywhitelist = list("vlonger", "pingavas", "dragon9090")
+
+/datum/gear/donator/bm/krieg_helmet
+	name = "Шлем Крига"
+	slot = ITEM_SLOT_HEAD
+	path = /obj/item/clothing/head/donator/bm/krieg_helmet
+	ckeywhitelist = list("vlonger",  "dragon9090")
+
+/datum/gear/donator/bm/krieg_shinel
+	name = "Шенель Крига"
+	slot = ITEM_SLOT_OCLOTHING
+	path = /obj/item/clothing/suit/donator/bm/krieg_shinel
+	ckeywhitelist = list("vlonger", "pingavas", "dragon9090")
+
+/datum/gear/donator/bm/krieg_backpack
+	name = "Рюкзак Крига"
+	slot = ITEM_SLOT_BACK
+	path = /obj/item/storage/backpack/krieg
+	ckeywhitelist = list("vlonger", "pingavas", "dragon9090")

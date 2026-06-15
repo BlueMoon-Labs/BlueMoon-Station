@@ -3,9 +3,9 @@
 ///Internal GPS - Extends a GPS you can use.
 /obj/item/mod/module/gps
 	name = "MOD internal GPS module"
-	desc = "This module uses common Nanotrasen technology to calculate the user's position anywhere in space, \
-		down to the exact coordinates. This information is fed to a central database viewable from the device itself, \
-		though using it to help people is up to you."
+	desc = "Этот модуль использует обычную технологию Nanotrasen для вычисления положения пользователя в любом месте космоса \
+		с точностью до координат. Эта информация передаётся в центральную базу данных, доступную с самого устройства, \
+		хотя использовать её для помощи людям — решать вам."
 	icon_state = "gps"
 	module_type = MODULE_USABLE
 	complexity = 1
@@ -28,9 +28,9 @@
 ///Hydraulic Clamp - Lets you pick up and drop crates.
 /obj/item/mod/module/clamp
 	name = "MOD hydraulic clamp module"
-	desc = "A series of actuators installed into both arms of the suit, boasting a lifting capacity of almost a ton. \
-		However, this design has been locked by Nanotrasen to be primarily utilized for lifting various crates. It also can be used to pull especially heavy crewmates around. \
-		A lot of people would say that loading cargo is a dull job, but you could not disagree more. "
+	desc = "Ряд актуаторов, установленных в обе руки костюма, с грузоподъёмностью почти в тонну. \
+		Однако эта конструкция была заблокирована Nanotrasen для использования преимущественно для подъёма различных контейнеров. Также может использоваться для перемещения особенно тяжёлых членов экипажа. \
+		Многие скажут, что погрузка грузов — скучная работа, но вы не могли бы с этим сильнее не согласиться."
 	icon_state = "clamp"
 	module_type = MODULE_ACTIVE
 	complexity = 3
@@ -117,7 +117,7 @@
 ///Drill - Lets you dig through rock and basalt.
 /obj/item/mod/module/drill // TODO: Would be cooler with a built-in drill, but meh
 	name = "MOD pickaxe/drill storage module"
-	desc = "Provides a convenient storage compartment for pickaxes and drills."
+	desc = "Предоставляет удобное отделение для хранения кирок и дрелей."
 	icon_state = "drill"
 	complexity = 2
 	incompatible_modules = list(/obj/item/mod/module/drill)
@@ -165,7 +165,7 @@
 
 /obj/item/mod/module/orebag // TODO
 	name = "MOD mining satchel storage module"
-	desc = "Provides a convenient storage department for a mining satchel."
+	desc = "Предоставляет удобное отделение для хранения шахтёрской сумки."
 	icon_state = "ore"
 	module_type = MODULE_USABLE
 	complexity = 1

@@ -671,7 +671,7 @@
 	var/mob/living/carbon/C
 	if(source)
 		source.create_weakref()
-	else
+	else if(owner)
 		owner.create_weakref()
 	if(source)
 		C = source

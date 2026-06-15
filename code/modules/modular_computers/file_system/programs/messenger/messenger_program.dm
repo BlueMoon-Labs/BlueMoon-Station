@@ -50,7 +50,7 @@
 	extended_desc = "Позволяет вести классическую переписку с другими модульными устройствами."
 	size = 0
 	undeletable = TRUE
-	usage_flags = PROGRAM_PDA
+	usage_flags = PROGRAM_ON_TABLETS
 	ui_header = "ntnrc_idle.gif"
 	tgui_id = "NtosMessenger"
 	program_icon = "comment-alt"
@@ -116,6 +116,22 @@
 			COMSIG_MODULAR_PDA_IMPRINT_RESET,
 		))
 	remove_messenger(src)
+	for(var/other_ref in GLOB.pda_messengers)
+		var/datum/computer_file/program/messenger/other = GLOB.pda_messengers[other_ref]
+		if(other == src || QDELETED(other))
+			continue
+		var/list/to_remove = list()
+		for(var/chat_ref in other.saved_chats)
+			var/datum/pda_chat/chat = other.saved_chats[chat_ref]
+			var/datum/computer_file/program/messenger/recipient = chat.recipient?.resolve()
+			if(recipient == src)
+				to_remove += chat_ref
+		for(var/chat_ref in to_remove)
+			var/datum/pda_chat/chat = other.saved_chats[chat_ref]
+			other.saved_chats -= chat_ref
+			qdel(chat)
+		if(other.computer)
+			SStgui.update_uis(other.computer)
 	QDEL_LIST_ASSOC_VAL(saved_chats)
 	return ..()
 
@@ -157,6 +173,9 @@
 
 /// Set the ringtone if possible. Also handles encoding.
 /datum/computer_file/program/messenger/proc/set_ringtone(new_ringtone, mob/user)
+	// html_encode is required: a custom ringtone reaches an UNESCAPED maptext sink via
+	// computer.ring() -> balloon_alert(). To avoid double-encoding on re-edit, the
+	// PDA_ringSet dialog html_decode()s this value back when pre-filling its default.
 	new_ringtone = trim(html_encode(new_ringtone), MESSENGER_RINGTONE_MAX_LENGTH)
 	if(!new_ringtone)
 		return FALSE
@@ -174,16 +193,16 @@
 	return TRUE
 
 /datum/computer_file/program/messenger/ui_state(mob/user)
-	if(issilicon(user))
-		return GLOB.deep_inventory_state
 	return GLOB.default_state
 
 /datum/computer_file/program/messenger/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()
+	if(isobserver(usr))
+		return FALSE
 	switch(action)
 		if("PDA_ringSet")
 			var/mob/living/user = usr
-			var/new_ringtone = tgui_input_text(user, "Enter a new ringtone", "Ringtone", ringtone, max_length = MAX_MESSAGE_LEN, encode = FALSE)
+			var/new_ringtone = tgui_input_text(user, "Enter a new ringtone", "Ringtone", html_decode(ringtone), max_length = MAX_MESSAGE_LEN, encode = FALSE)
 			if(!new_ringtone)
 				return FALSE
 			return set_ringtone(new_ringtone, user)
@@ -351,8 +370,8 @@
 			return TRUE
 
 		if("PDA_setAdminPhoto")
-			if(!usr.client?.holder)
-				to_chat(usr, span_warning("Only administrators can use this feature."))
+			if(!usr.client?.holder && !is_donator_group(usr.ckey, DONATOR_GROUP_TIER_2))
+				to_chat(usr, span_warning("Only administrators and sponsors can use this feature."))
 				return FALSE
 			var/url = params["url"]
 			if(url && istext(url))
@@ -375,7 +394,7 @@
 	var/list/static_data = list()
 	static_data["can_spam"] = spam_mode
 	static_data["is_silicon"] = issilicon(user)
-	static_data["remote_silicon"] = (isAI(user) || iscyborg(user)) && !istype(computer, /obj/item/modular_computer/pda/silicon)
+	static_data["remote_silicon"] = (isAI(user) || iscyborg(user)) && !computer.get_ntnet_status()
 	static_data["alert_able"] = alert_able
 	return static_data
 
@@ -428,7 +447,7 @@
 		data["selected_photo_path"] = null
 
 	data["admin_photo_url"] = admin_photo_url
-	data["is_admin"] = !!user.client?.holder
+	data["can_set_url_photo"] = !!user.client?.holder || is_donator_group(user.ckey, DONATOR_GROUP_TIER_1)
 
 	var/obj/item/disk = computer.inserted_disk
 	if(istype(disk, /obj/item/cartridge/virus))
@@ -590,6 +609,8 @@
 
 			if(!istype(target_chat))
 				target_chat = create_chat(REF(target))
+			if(!target_chat)
+				continue
 
 		else
 			continue
@@ -603,6 +624,8 @@
 	// Log in our chat
 	var/datum/pda_message/message_datum = new(message, TRUE, STATION_TIME_TIMESTAMP(PDA_MESSAGE_TIMESTAMP_FORMAT, world.time), photo_asset, everyone)
 	for(var/datum/pda_chat/target_chat as anything in target_chats)
+		if(!target_chat)
+			continue
 		target_chat.add_message(message_datum, show_in_recents = !everyone)
 		target_chat.unread_messages = 0
 
@@ -623,7 +646,7 @@
 	var/mob/sender
 	if(ismob(source))
 		sender = source
-		if(!sender.canUseTopic(computer, BE_CLOSE, check_resting = TRUE))
+		if(!sender.canUseTopic(computer, BE_CLOSE, check_resting = FALSE))
 			return FALSE
 
 	if(!COOLDOWN_FINISHED(src, last_text))
@@ -800,12 +823,14 @@
 
 	if(QDELETED(src))
 		return
-	if(!usr.canUseTopic(computer, BE_CLOSE, no_tk = TRUE, check_resting = TRUE))
+	if(!usr.canUseTopic(computer, BE_CLOSE, no_tk = TRUE, check_resting = FALSE))
+		return
+	if(isobserver(usr))
 		return
 
 	// Ensure computer is on
 	if(!computer.enabled)
-		computer.turn_on(usr)
+		computer.turn_on(usr, FALSE)
 		if(!computer.enabled)
 			return
 

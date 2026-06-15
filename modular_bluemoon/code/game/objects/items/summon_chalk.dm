@@ -80,10 +80,11 @@
 	var/massage_time = world.time + 1 SECONDS //Поглощаем энтропию и теорио вероятности тыкнуть энтер в момент появления
 	var/summoned_approve = TRUE
 	var/summoner_info = "[M.gender]"
-	if(M.dna)
-		var/summoner_species = "[M.dna.species]"
-		if(M.dna.custom_species)
-			summoner_species = "[M.dna.custom_species]"
+	var/mob/living/carbon/summoner = M
+	if(istype(summoner) && summoner.dna)
+		var/summoner_species = "[summoner.dna.species]"
+		if(summoner.dna.custom_species)
+			summoner_species = "[summoner.dna.custom_species]"
 		summoner_info += " [summoner_species]"
 	if(tgui_alert(target, "You have been summoned by [summoner_info]! Do you want to answer?", "Do you want to answer?", list("Yes", "No")) != "Yes")
 		summoned_approve = FALSE

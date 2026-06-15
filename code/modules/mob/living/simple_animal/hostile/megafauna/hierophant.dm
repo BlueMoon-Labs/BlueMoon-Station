@@ -37,8 +37,8 @@ Difficulty: Normal
 /mob/living/simple_animal/hostile/megafauna/hierophant
 	name = "hierophant"
 	desc = "A massive metal club that hangs in the air as though waiting. It'll make you dance to its beat."
-	health = 2500
-	maxHealth = 2500
+	health = 3000
+	maxHealth = 3000
 	attack_verb_continuous = "clubs"
 	attack_verb_simple = "club"
 	attack_sound = 'sound/weapons/sonic_jackhammer.ogg'
@@ -50,8 +50,8 @@ Difficulty: Normal
 	faction = list("boss") //asteroid mobs? get that shit out of my beautiful square house
 	speak_emote = list("preaches")
 	armour_penetration = 75
-	melee_damage_lower = 25
-	melee_damage_upper = 50
+	melee_damage_lower = 30
+	melee_damage_upper = 65
 	blood_volume = 0
 	speed = 1
 	move_to_delay = 11
@@ -64,8 +64,8 @@ Difficulty: Normal
 	del_on_death = TRUE
 	death_sound = 'sound/magic/repulse.ogg'
 
-	var/burst_range = 3 //range on burst aoe
-	var/beam_range = 5 //range on cross blast beams
+	var/burst_range = 4 //range on burst aoe
+	var/beam_range = 6 //range on cross blast beams
 	var/chaser_speed = 2 //how fast chasers are currently
 	var/chaser_cooldown = 50 //base cooldown/cooldown var between spawning chasers
 	var/major_attack_cooldown = 40 //base cooldown for major attacks
@@ -397,10 +397,10 @@ Difficulty: Normal
 	new /obj/effect/temp_visual/hierophant/telegraph/teleport(source, src)
 	for(var/t in RANGE_TURFS(1, T))
 		var/obj/effect/temp_visual/hierophant/blast/B = new(t, src, FALSE)
-		B.damage = 30
+		B.damage = 40
 	for(var/t in RANGE_TURFS(1, source))
 		var/obj/effect/temp_visual/hierophant/blast/B = new(t, src, FALSE)
-		B.damage = 30
+		B.damage = 40
 	animate(src, alpha = 0, time = 2, easing = EASE_OUT) //fade out
 	sleep(1)
 	visible_message("<span class='hierophant_warning'>[src] fades out!</span>")
@@ -515,7 +515,7 @@ Difficulty: Normal
 	var/currently_seeking = FALSE
 	var/friendly_fire_check = FALSE //if blasts produced apply friendly fire
 	var/monster_damage_boost = TRUE
-	var/damage = 10
+	var/damage = 14
 
 /obj/effect/temp_visual/hierophant/chaser/Initialize(mapload, new_caster, new_target, new_speed, is_friendly_fire)
 	. = ..()
@@ -592,7 +592,7 @@ Difficulty: Normal
 	light_power = 2
 	desc = "Get out of the way!"
 	duration = 9
-	var/damage = 10 //how much damage do we do?
+	var/damage = 14 //how much damage do we do?
 	var/monster_damage_boost = TRUE //do we deal extra damage to monsters? Used by the boss
 	var/list/hit_things = list() //we hit these already, ignore them
 	var/friendly_fire_check = FALSE

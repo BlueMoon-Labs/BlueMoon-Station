@@ -4,10 +4,9 @@
 
 //Ark of the Clockwork Justiciar: Creates a Gateway to the Celestial Derelict, summoning ratvar.
 /datum/clockwork_scripture/create_object/ark_of_the_clockwork_justiciar
-	descname = "Structure, Win Condition"
+	descname = "Победа"
 	name = "Ark of the Clockwork Justiciar"
-	desc = "Tears apart a rift in spacetime to Reebe, the Celestial Derelict, using a massive amount of power.\n\
-	This gateway will, after some time, call forth Ratvar from his exile and massively empower all scriptures and tools."
+	desc = "Портал на Reebe. Через 5 мин призовёт Ратвара."
 	invocations = list("ARMORER! FRIGHT! AMPERAGE! VANGUARD! WE CALL UPON YOU!!", \
 	"THE TIME HAS COME FOR OUR MASTER TO BREAK THE CHAINS OF EXILE!!", \
 	"LEND US YOUR AID! ENGINE COMES!!")
@@ -17,9 +16,9 @@
 	multiple_invokers_used = TRUE
 	object_path = /obj/structure/destructible/clockwork/massive/celestial_gateway
 	creator_message = "<span class='heavy_brass'>The Ark swirls into existance before you with the help of the Generals. After all this time, he shall, finally, be free</span>"
-	usage_tip = "The gateway is completely vulnerable to attack during its five-minute duration. It will periodically give indication of its general position to everyone on the station \
-	as well as being loud enough to be heard throughout the entire sector. Defend it with your life!"
+	usage_tip = "Уязвим 5 мин. Защищайте любой ценой!"
 	tier = SCRIPTURE_APPLICATION
+	category = SCRIPTURE_CATEGORY_STRUCTURE
 	sort_priority = 1
 	requires_full_power = TRUE
 

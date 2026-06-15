@@ -166,6 +166,11 @@
 /obj/item/paicard/proc/alertUpdate()
 	visible_message("<span class ='info'>[src] flashes a message across its screen, \"Additional personalities available for download.\"", "<span class='notice'>[src] bleeps electronically.</span>")
 
+/obj/item/paicard/syndicate
+	name = "Syndicate personal AI device"
+	desc = "A Syndicate-modified personal AI device. It seems to be deactivated."
+	icon_state = "pai"
+
 /obj/item/paicard/emp_act(severity)
 	. = ..()
 	if (. & EMP_PROTECT_SELF)

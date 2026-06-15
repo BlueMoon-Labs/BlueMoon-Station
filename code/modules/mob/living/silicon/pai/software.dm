@@ -7,19 +7,22 @@
 /mob/living/silicon/pai/var/list/available_software = list(
 															"crew manifest" = 5,
 															//"digital messenger" = 5, // PAI uses the new TGUI messenger program on its PDA instead
-															"medical records" = 15,
-															"security records" = 15,
+															"medical records" = 10,
+															"security records" = 10,
 															"camera jack" = 10,
 															"door jack" = 30,
 															"atmosphere sensor" = 5,
 															"heartbeat sensor" = 10,
-															"security HUD" = 20,
-															"medical HUD" = 20,
-															"universal translator" = 35,
+															"security HUD" = 15,
+															"medical HUD" = 15,
+															"universal translator" = 25,
 															"projection array" = 15,
 															"remote signaller" = 5,
 															"loudness booster" = 25,
-															"encryption keys" = 20
+															"encryption keys" = 20,
+															"encoder" = 5,
+															"thermal vision" = 35,
+															"chemical injector" = 60
 															)
 
 /mob/living/silicon/pai/Topic(href, href_list)
@@ -42,8 +45,11 @@
 				if(available_software.Find(target) && !software.Find(target))
 					var/cost = available_software[target]
 					if(ram >= cost)
-						software.Add(target)
-						ram -= cost
+						if((target in list("thermal vision", "chemical injector")) && !istype(src, /mob/living/silicon/pai/syndicate))
+							temp = "Данный модуль доступен только Syndicate pAI."
+						else
+							software.Add(target)
+							ram -= cost
 					else
 						temp = "Insufficient RAM available."
 				else
