@@ -1,7 +1,9 @@
+#define CRYSTALLIZER_CRYSTALS_DMI 'icons/obj/crystallizer_crystals.dmi'
+
 /obj/item/hypernoblium_crystal
 	name = "Hypernoblium Crystal"
 	desc = "Crystallized oxygen and hypernoblium stored in a bottle to pressure-proof your clothes or stop reactions occurring in portable atmospheric devices."
-	icon = 'icons/obj/pipes_n_cables/atmos.dmi'
+	icon = CRYSTALLIZER_CRYSTALS_DMI
 	icon_state = "hypernoblium_crystal"
 	var/uses = 1
 
@@ -40,7 +42,7 @@
 /obj/item/nitrium_crystal
 	desc = "A weird brown crystal, it smokes when broken"
 	name = "nitrium crystal"
-	icon = 'icons/obj/pipes_n_cables/atmos.dmi'
+	icon = 'icons/obj/nitrium_crystal.dmi'
 	icon_state = "nitrium_crystal"
 	var/cloud_size = 1
 

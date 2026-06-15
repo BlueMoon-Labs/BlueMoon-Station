@@ -1,18 +1,22 @@
-/// Crystallizer recipes: gas crystal grenades, fuel pellets, stacks (from WhiteMoon)
-/// Sprites: copy from WhiteMoon icons/obj/weapons/grenade.dmi, exploration.dmi, stack_objects.dmi, mineral sheets
+/// Crystallizer recipes: fuel pellets, stacks, shards (from WhiteMoon)
 
-// === Gas crystal grenades (base + types) ===
+// === Gas crystal grenades ===
 /obj/item/grenade/gas_crystal
 	desc = "A crystal from the crystallizer."
 	name = "Gas Crystal"
-	icon = 'icons/obj/crystallizer_grenades.dmi' 
-	icon_state = "bluefrag"
+	icon = 'icons/obj/crystallizer_crystals.dmi'
+	icon_state = "healium_crystal"
 	item_state = "flashbang"
 	resistance_flags = FIRE_PROOF
 
 /obj/item/grenade/gas_crystal/microwave_act(obj/machinery/microwave/microwave_source, mob/microwaver, randomize_pixel_offset)
 	. = ..()
 	return . | crystallizer_microwave_detonate(microwave_source, microwaver)
+
+/obj/item/grenade/gas_crystal/preprime(mob/user, delayoverride, msg = TRUE, volume = 60)
+	var/armed_icon = icon_state
+	..()
+	icon_state = armed_icon
 
 /obj/item/grenade/gas_crystal/prime(mob/living/lanced_by)
 	..()
@@ -79,6 +83,7 @@
 /obj/item/grenade/gas_crystal/crystal_foam
 	name = "crystal foam"
 	desc = "A crystal with a foggy inside."
+	icon = 'icons/obj/crystallizer_grenades.dmi'
 	icon_state = "crystal_foam"
 	var/breach_range = 7
 
@@ -113,7 +118,7 @@
 /obj/item/stack/ammonia_crystals
 	name = "ammonia crystals"
 	singular_name = "ammonia crystal"
-	icon = 'icons/obj/crystallizer_sheets.dmi' 
+	icon = 'icons/obj/crystallizer_crystals.dmi'
 	icon_state = "ammonia_crystal"
 	w_class = WEIGHT_CLASS_TINY
 	resistance_flags = FLAMMABLE
@@ -139,7 +144,7 @@
 /obj/item/stack/sheet/mineral/zaukerite
 	name = "zaukerite"
 	singular_name = "zaukerite crystal"
-	icon = 'icons/obj/crystallizer_sheets.dmi' 
+	icon = 'icons/obj/crystallizer_crystals.dmi'
 	icon_state = "zaukerite"
 	merge_type = /obj/item/stack/sheet/mineral/zaukerite
 
@@ -226,7 +231,7 @@
 /obj/item/ammonia_pack
 	name = "ammonia pack"
 	desc = "Crystals of ammonia wrapped in cloth. Can be broken to release a small cloud of ammonia."
-	icon = 'icons/obj/crystallizer_sheets.dmi'
+	icon = 'icons/obj/crystallizer_crystals.dmi'
 	icon_state = "ammonia_crystal"
 	w_class = WEIGHT_CLASS_SMALL
 
