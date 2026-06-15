@@ -13,6 +13,9 @@
 	RegisterSignal(SSdcs, COMSIG_GLOB_JOB_AFTER_SPAWN, PROC_REF(on_job_roundstart_spawn))
 	RegisterSignal(SSdcs, COMSIG_GLOB_JOB_AFTER_LATEJOIN_SPAWN, PROC_REF(on_job_latejoin_spawn))
 
+/datum/station_trait/aperture_science/Destroy()
+	UnregisterSignal(SSdcs, list(COMSIG_GLOB_JOB_AFTER_SPAWN, COMSIG_GLOB_JOB_AFTER_LATEJOIN_SPAWN))
+	return ..()
 /datum/station_trait/aperture_science/on_round_start()
 	. = ..()
 	for(var/obj/machinery/porta_turret/turret in GLOB.machines)
