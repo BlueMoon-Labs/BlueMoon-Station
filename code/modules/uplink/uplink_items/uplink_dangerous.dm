@@ -292,7 +292,7 @@
 	и можете вбивать людей в столы с нечеловеческой силой. \
 	К сожалению, из-за размера перчаток вы не сможете пользоваться огнестрельным оружием."
 	item = /obj/item/clothing/gloves/fingerless/pugilist/mauler
-	cost = 8
+	cost = 4
 
 /datum/uplink_item/dangerous/powerfist
 	name = "Power Fist"
