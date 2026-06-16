@@ -5,7 +5,7 @@
 	program_icon_state = "assign"
 	extended_desc = "A standard, InteQ issued system for handling important contracts while on the field."
 	size = 10
-	requires_ntnet = 0
+	requires_ntnet = FALSE
 	available_on_ntnet = 0
 	unsendable = 1
 	undeletable = 1

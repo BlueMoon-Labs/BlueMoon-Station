@@ -49,7 +49,7 @@
 
 /// Signal handler when the parent has changed z-levels.
 /// Checks to make sure it's a valid destination, if it's not then it relacates the parent instead.
-/datum/component/stationloving/proc/on_parent_z_change(datum/source, turf/old_turf, turf/new_turf)
+/datum/component/stationloving/proc/on_parent_z_change(datum/source, old_z, new_z)
 	SIGNAL_HANDLER
 
 	if(destination_in_bounds(parent))
@@ -57,9 +57,9 @@
 
 	var/turf/current_turf = get_turf(parent)
 	var/turf/new_destination = relocate()
-	log_game("[parent] attempted to be moved out of bounds from [loc_name(old_turf)] to [loc_name(current_turf)]. Moving it to [loc_name(new_destination)].")
+	log_game("[parent] attempted to be moved out of bounds from z-level [old_z] to [loc_name(current_turf)]. Moving it to [loc_name(new_destination)].")
 	if(inform_admins)
-		message_admins("[parent] attempted to be moved out of bounds from [ADMIN_VERBOSEJMP(old_turf)] to [ADMIN_VERBOSEJMP(current_turf)]. Moving it to [ADMIN_VERBOSEJMP(new_destination)].")
+		message_admins("[parent] attempted to be moved out of bounds from z-level [old_z] to [ADMIN_VERBOSEJMP(current_turf)]. Moving it to [ADMIN_VERBOSEJMP(new_destination)].")
 
 	return COMPONENT_MOVABLE_BLOCK_PRE_MOVE
 

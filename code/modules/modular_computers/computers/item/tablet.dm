@@ -16,6 +16,7 @@
 	has_light = TRUE //LED flashlight!
 	comp_light_luminosity = 2.3 //Same as the PDA
 	looping_sound = FALSE
+	allow_chunky = TRUE
 	var/has_variants = TRUE
 	var/finish_color = null
 
@@ -175,9 +176,9 @@
 	borgo = null
 	return ..()
 
-/obj/item/modular_computer/tablet/integrated/turn_on(mob/user)
+/obj/item/modular_computer/tablet/integrated/turn_on(mob/user, open_ui = TRUE)
 	if(borgo?.stat != DEAD)
-		return ..()
+		return ..(user, open_ui)
 	return FALSE
 
 /**

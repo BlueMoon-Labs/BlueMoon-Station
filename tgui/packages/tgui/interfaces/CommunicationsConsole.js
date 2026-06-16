@@ -16,23 +16,41 @@ const STATE_MESSAGES = "messages";
 // Used for whether or not you need to swipe to confirm an alert level change
 const SWIPE_NEEDED = "SWIPE_NEEDED";
 
+const ALERT_LEVEL_ORDER = {
+  green: 0,
+  blue: 1,
+  orange: 2,
+  violet: 3,
+  amber: 4,
+  red: 5,
+  lambda: 6,
+  gamma: 7,
+  epsilon: 8,
+  delta: 9,
+};
+
 const sortByCreditCost = sortBy(shuttle => shuttle.creditCost);
 const sortByCreditCostERT = sortBy(ert => ert.creditCost);
 
 const AlertButton = (props, context) => {
   const { act, data } = useBackend(context);
-  const { alertLevelTick, canSetAlertLevel } = data;
+  const { alertLevelTick, canSetAlertLevel, redAlertKeycardLocked, highAlertKeycardLocked } = data;
   const { alertLevel, setShowAlertLevelConfirm } = props;
 
   const thisIsCurrent = data.alertLevel === alertLevel;
+  const currentOrder = ALERT_LEVEL_ORDER[data.alertLevel] ?? 0;
+  const targetOrder = ALERT_LEVEL_ORDER[alertLevel] ?? 0;
+  const lockedFromLowering = (redAlertKeycardLocked && targetOrder < currentOrder)
+    || (highAlertKeycardLocked && targetOrder < ALERT_LEVEL_ORDER.red);
 
   return (
     <Button
       icon="exclamation-triangle"
       color={thisIsCurrent && "good"}
       content={capitalize(alertLevel)}
+      disabled={lockedFromLowering}
       onClick={() => {
-        if (thisIsCurrent) {
+        if (thisIsCurrent || lockedFromLowering) {
           return;
         }
 
@@ -368,6 +386,8 @@ const PageMain = (props, context) => {
     emagged,
     emergencyAccess,
     importantActionReady,
+    redAlertKeycardLocked,
+    highAlertKeycardLocked,
     sectors,
     shuttleCalled,
     shuttleCalledPreviously,
@@ -439,6 +459,18 @@ const PageMain = (props, context) => {
 
       {!!canSetAlertLevel && (
         <Section title="Уровень тревоги">
+          {!!highAlertKeycardLocked && (
+            <NoticeBox mb={1}>
+              Активен высокий код тревоги. Понизить его можно только до
+              красного через устройства двойной авторизации ключ-карт.
+            </NoticeBox>
+          )}
+          {!!redAlertKeycardLocked && (
+            <NoticeBox mb={1}>
+              Красный код заблокирован. Снять его можно только через
+              устройства двойной авторизации ключ-карт.
+            </NoticeBox>
+          )}
           <Flex justify="space-between">
             <Flex.Item>
               <Box>

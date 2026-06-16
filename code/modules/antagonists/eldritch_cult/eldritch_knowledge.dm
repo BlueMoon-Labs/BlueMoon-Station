@@ -273,12 +273,9 @@
 				LH.sac_targetter.sac_targetted.Remove(H.real_name)
 			LH.sac_targetter = null
 			EC.total_sacrifices++
-			for(var/X in carbon_user.get_all_gear())
-				if(!istype(X,/obj/item/forbidden_book))
-					continue
-				var/obj/item/forbidden_book/FB = X
-				FB.charge++
-				FB.charge++
+			//deep contents search: get_all_gear() can't see inside MOD storage modules and the like, eating the sacrifice reward
+			for(var/obj/item/forbidden_book/FB in carbon_user.GetAllContents(/obj/item/forbidden_book))
+				FB.charge += 2
 				break
 
 		if(!LH.target)

@@ -29,13 +29,16 @@
 
 /obj/singularity/narsie/large/Initialize(mapload)
 	. = ..()
-	send_to_playing_players("<span class='narsie'>NAR'SIE HAS RISEN</span>")
+	GLOB.cult_narsie = src
+	GLOB.poi_list |= src
+	narsie_darken_cosmos()
+	send_to_playing_players("<span class='narsie'>NAR'SIE ВОЗНЕСЛАСЬ</span>")
 	sound_to_playing_players('sound/creatures/narsie_rises.ogg')
 
 	var/area/A = get_area(src)
 	if(A)
 		var/mutable_appearance/alert_overlay = mutable_appearance('icons/effects/cult_effects.dmi', "ghostalertsie")
-		notify_ghosts("Nar'Sie has risen in \the [A.name]. Reach out to the Geometer to be given a new shell for your soul.", source = src, alert_overlay = alert_overlay, action=NOTIFY_ATTACK)
+		notify_ghosts("Nar'Sie вознеслась в \the [A.name]. Обратитесь к Геометру, чтобы получить новую оболочку для своей души.", source = src, alert_overlay = alert_overlay, action=NOTIFY_ATTACK)
 	INVOKE_ASYNC(src, PROC_REF(narsie_spawn_animation))
 
 /obj/singularity/narsie/large/cult  // For the new cult ending, guaranteed to end the round within 3 minutes
@@ -97,8 +100,13 @@
 		sound_to_playing_players('sound/machines/alarm.ogg')
 		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(cult_ending_helper), CULT_VICTORY_NUKE), 10 SECONDS)
 
+/obj/singularity/narsie/large/Destroy()
+	GLOB.poi_list -= src
+	if(GLOB.cult_narsie == src)
+		GLOB.cult_narsie = null
+	return ..()
+
 /obj/singularity/narsie/large/cult/Destroy()
-	GLOB.cult_narsie = null
 	return ..()
 
 /proc/ending_helper()
@@ -116,6 +124,25 @@
 		if(CULT_VICTORY_NUKE)
 			Cinematic(CINEMATIC_CULT_NUKE,world,CALLBACK(GLOBAL_PROC,GLOBAL_PROC_REF(ending_helper)))
 
+
+/proc/find_god_narsie_on_z(atom/ref)
+	if(!ref)
+		return
+	if(GLOB.cult_narsie && !QDELETED(GLOB.cult_narsie) && GLOB.cult_narsie.z == ref.z)
+		return GLOB.cult_narsie
+	for(var/obj/singularity/narsie/large/N in GLOB.poi_list)
+		if(!QDELETED(N) && N.z == ref.z)
+			return N
+	return null
+
+/proc/find_god_ratvar_on_z(atom/ref)
+	if(!ref)
+		return
+	for(var/obj/structure/destructible/clockwork/massive/ratvar/R in GLOB.poi_list)
+		if(!QDELETED(R) && R.z == ref.z)
+			return R
+	return null
+
 //ATTACK GHOST IGNORING PARENT RETURN VALUE
 /obj/singularity/narsie/large/attack_ghost(mob/dead/observer/user as mob)
 	makeNewConstruct(/mob/living/simple_animal/hostile/construct/harvester, user, cultoverride = TRUE, loc_override = src.loc)
@@ -124,12 +151,20 @@
 	if(clashing)
 		return
 	eat()
-	if(!target || prob(5))
+	var/obj/structure/destructible/clockwork/massive/ratvar/R = find_god_ratvar_on_z(src)
+	if(R)
+		acquire(R)
+		if(get_dist(src, R) <= 10)
+			R.clash()
+			return
+		move(get_dir(src, R))
+		if(prob(25))
+			mezzer()
+		return
+	if(!target || !get_turf(target))
 		pickcultist()
-	if(istype(target, /obj/structure/destructible/clockwork/massive/ratvar))
-		move(get_dir(src, target)) //Oh, it's you again.
-	else
-		move()
+	if(target && get_turf(target))
+		move(get_dir(src, target))
 	if(prob(25))
 		mezzer()
 
@@ -163,31 +198,29 @@
 
 
 /obj/singularity/narsie/proc/pickcultist() //Narsie rewards her cultists with being devoured first, then picks a ghost to follow.
-	var/list/cultists = list()
-	var/list/noncultists = list()
-	for(var/obj/structure/destructible/clockwork/massive/ratvar/enemy in GLOB.poi_list) //Prioritize killing Ratvar
-		if(enemy.z != z)
-			continue
+	var/obj/structure/destructible/clockwork/massive/ratvar/enemy = find_god_ratvar_on_z(src)
+	if(enemy)
 		acquire(enemy)
 		return
 
-	for(var/mob/living/carbon/food in GLOB.alive_mob_list) //we don't care about constructs or cult-Ians or whatever. cult-monkeys are fair game i guess
+	var/list/cultists = list()
+	var/list/noncultists = list()
+	for(var/mob/living/carbon/food in GLOB.alive_mob_list)
 		var/turf/pos = get_turf(food)
-		if(!pos || (pos.z != z))
+		if(!pos || pos.z != z || !is_station_level(pos.z))
 			continue
-
 		if(iscultist(food))
 			cultists += food
 		else
 			noncultists += food
 
-		if(cultists.len) //cultists get higher priority
-			acquire(pick(cultists))
-			return
+	if(noncultists.len)
+		acquire(pick(noncultists))
+		return
 
-		if(noncultists.len)
-			acquire(pick(noncultists))
-			return
+	if(cultists.len)
+		acquire(pick(cultists))
+		return
 
 	//no living humans, follow a ghost instead.
 	for(var/mob/dead/observer/ghost in GLOB.player_list)
@@ -205,12 +238,12 @@
 /obj/singularity/narsie/proc/acquire(atom/food)
 	if(food == target)
 		return
-	to_chat(target, "<span class='cultsmall'>NAR'SIE HAS LOST INTEREST IN YOU.</span>")
+	to_chat(target, "<span class='cultsmall'>НАР'СИ ПОТЕРЯЛА К ВАМ ИНТЕРЕС.</span>")
 	target = food
 	if(ishuman(target))
-		to_chat(target, "<span class ='cult'>NAR'SIE HUNGERS FOR YOUR SOUL.</span>")
+		to_chat(target, "<span class ='cult'>НАР'СИ ЖАЖДЕТ ВАШЕЙ ДУШИ.</span>")
 	else
-		to_chat(target, "<span class ='cult'>NAR'SIE HAS CHOSEN YOU TO LEAD HER TO HER NEXT MEAL.</span>")
+		to_chat(target, "<span class ='cult'>НАР'СИ ИЗБРАЛА ВАС ПРОВОДНИКОМ К СЛЕДУЮЩЕЙ ЖЕРТВЕ.</span>")
 
 //Wizard narsie
 /obj/singularity/narsie/wizard

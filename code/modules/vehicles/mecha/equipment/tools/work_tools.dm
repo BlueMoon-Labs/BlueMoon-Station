@@ -401,6 +401,7 @@
 	N.dna_lock = M.dna_lock
 	N.mecha_flags = M.mecha_flags
 	N.strafe = M.strafe
+	N.stabilizers = M.stabilizers
 	N.obj_integrity = M.obj_integrity //This is not a repair tool
 	if (M.name != "\improper APLU MK-I \"Ripley\"")
 		N.name = M.name

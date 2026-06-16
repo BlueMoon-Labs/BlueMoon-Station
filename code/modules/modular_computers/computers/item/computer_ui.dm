@@ -1,7 +1,3 @@
-/obj/item/modular_computer/attack_self(mob/user)
-	. = ..()
-	ui_interact(user)
-
 // Operates TGUI
 /obj/item/modular_computer/ui_interact(mob/user, datum/tgui/ui)
 	if(!enabled)
@@ -20,7 +16,7 @@
 	// if(HAS_TRAIT(user, TRAIT_CHUNKYFINGERS))
 	// 	to_chat(user, span_warning("Your fingers are too big to use this right now!"))
 	// 	return
-	if(HAS_TRAIT(user, TRAIT_CHUNKYFINGERS))
+	if(HAS_TRAIT(user, TRAIT_CHUNKYFINGERS) && !allow_chunky)
 		to_chat(user, span_warning("Кнопки слишком маленькие для твоих пальцев!"))
 		return
 

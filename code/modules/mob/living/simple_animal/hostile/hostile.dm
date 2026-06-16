@@ -150,16 +150,30 @@
 		face_atom(target) //Looks better if they keep looking at you when dodging
 
 /mob/living/simple_animal/hostile/attacked_by(obj/item/I, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
-	if(stat == CONSCIOUS && !target && AIStatus != AI_OFF && !client && user)
-		FindTarget(list(user), 1)
+	if(stat == CONSCIOUS && user && AIStatus != AI_OFF && !client)
+		RetaliateAgainst(user)
 	return ..()
 
 /mob/living/simple_animal/hostile/bullet_act(obj/item/projectile/P)
-	if(stat == CONSCIOUS && !target && AIStatus != AI_OFF && !client)
-		if(P.firer && get_dist(src, P.firer) <= aggro_vision_range)
-			FindTarget(list(P.firer), 1)
+	if(stat == CONSCIOUS && AIStatus != AI_OFF && !client && P.firer)
+		if(get_dist(src, P.firer) <= aggro_vision_range)
+			RetaliateAgainst(P.firer)
 		Goto(P.starting, move_to_delay, 3)
 	return ..()
+
+/// Focus aggro on whoever just hurt us, even if we already had another target.
+/mob/living/simple_animal/hostile/proc/RetaliateAgainst(atom/movable/the_attacker)
+	if(!the_attacker || QDELETED(the_attacker))
+		return
+	if(isliving(the_attacker))
+		add_enemy(the_attacker)
+		foes[the_attacker] = 1
+	if(CanAttack(the_attacker))
+		GiveTarget(the_attacker)
+	else if(!target)
+		FindTarget(list(the_attacker), 1)
+	if(AIStatus != AI_ON && AIStatus != AI_OFF)
+		toggle_ai(AI_ON)
 
 //////////////HOSTILE MOB TARGETTING AND AGGRESSION////////////
 
@@ -214,6 +228,8 @@
 	return
 
 /mob/living/simple_animal/hostile/proc/PickTarget(list/Targets)//Step 3, pick amongst the possible, attackable targets
+	if(target != null && (target in Targets) && CanAttack(target))
+		return target
 	if(target != null)//If we already have a target, but are told to pick again, calculate the lowest distance between all possible, and pick from the lowest distance targets
 		for(var/pos_targ in Targets)
 			var/atom/A = pos_targ
@@ -319,6 +335,10 @@
 	if(!target || !CanAttack(target))
 		LoseTarget()
 		return FALSE
+	if(!(target in possible_targets))
+		var/turf/mob_turf = get_turf(src)
+		if(mob_turf && target.z == mob_turf.z && get_dist(targets_from, target) <= aggro_vision_range)
+			possible_targets += target
 	if(target in possible_targets)
 		var/turf/T = get_turf(src)
 		if(target.z != T.z)
@@ -380,8 +400,10 @@
 		if(AIStatus != AI_ON && AIStatus != AI_OFF)
 			toggle_ai(AI_ON)
 			FindTarget()
-		else if(target != null && prob(40))//No more pulling a mob forever and having a second player attack it, it can switch targets now if it finds a more suitable one
+		else if(!target || !CanAttack(target))
 			FindTarget()
+		else if(. > 0)
+			GainPatience()
 
 
 /mob/living/simple_animal/hostile/proc/AttackingTarget()

@@ -4,23 +4,24 @@
 
 //Stargazer: Creates a stargazer, a cheap power generator that utilizes starlight.
 /datum/clockwork_scripture/create_object/stargazer
-	descname = "Generates Power From Starlight"
+	descname = "Генератор от звёздного света"
 	name = "Stargazer"
-	desc = "Forms a weak structure that generates power every second while within three tiles of starlight."
+	desc = "Структура: питание в радиусе 3 тайлов от звёздного света."
 	invocations = list("Capture their inferior light for us.")
 	channel_time = 50
 	power_cost = 200
 	object_path = /obj/structure/destructible/clockwork/stargazer
 	creator_message = "<span class='brass'>You form a stargazer, which will generate power near starlight.</span>"
 	observer_message = "<span class='warning'>A large lantern-shaped machine forms!</span>"
-	usage_tip = "For obvious reasons, make sure to place this near a window or somewhere else that can see space!"
+	usage_tip = "Ставьте у окна или в космос."
 	tier = SCRIPTURE_DRIVER
+	category = SCRIPTURE_CATEGORY_STRUCTURE
 	one_per_tile = TRUE
 	whispered = TRUE
 	primary_component = HIEROPHANT_ANSIBLE
 	sort_priority = 1
 	quickbind = TRUE
-	quickbind_desc = "Creates a stargazer, which generates power when near starlight."
+	quickbind_desc = "Создаёт Stargazer."
 
 /datum/clockwork_scripture/create_object/stargazer/check_special_requirements()
 	var/area/A = get_area(invoker)
@@ -35,76 +36,80 @@
 
 //Integration Cog: Creates an integration cog that can be inserted into APCs to passively siphon power.
 /datum/clockwork_scripture/create_object/integration_cog
-	descname = "Power Generation"
+	descname = "Воровство энергии APC"
 	name = "Integration Cog"
-	desc = "Fabricates an integration cog, which can be used on an open APC to replace its innards and passively siphon its power."
+	desc = "Предмет: вставить в открытый APC, крадёт энергию."
 	invocations = list("Take that which sustains them.")
 	channel_time = 10
 	power_cost = 10
 	whispered = TRUE
 	object_path = /obj/item/clockwork/integration_cog
 	creator_message = "<span class='brass'>You form an integration cog, which can be inserted into an open APC to passively siphon power.</span>"
-	usage_tip = "Tampering isn't visible unless the APC is opened. You can use the cog on a locked APC to unlock it."
+	usage_tip = "Незаметно, пока APC закрыт. Открывает запертый APC."
 	tier = SCRIPTURE_DRIVER
+	category = SCRIPTURE_CATEGORY_STRUCTURE
 	space_allowed = TRUE
 	primary_component = HIEROPHANT_ANSIBLE
 	sort_priority = 2
 	important = TRUE
 	quickbind = TRUE
-	quickbind_desc = "Creates an integration cog, which can be used to siphon power from an open APC."
+	quickbind_desc = "Создаёт Integration Cog."
 
 
 //Sigil of Transgression: Creates a sigil of transgression, which briefly stuns and applies Belligerent to the first non-servant to cross it.
 /datum/clockwork_scripture/create_object/sigil_of_transgression
-	descname = "Trap, Stunning"
+	descname = "Сигил-ловушка"
 	name = "Sigil of Transgression"
-	desc = "Wards a tile with a sigil, which will briefly stun the next non-Servant to cross it and apply Belligerent to them."
+	desc = "Оглушает и накладывает Belligerent на первого врага на клетке."
 	invocations = list("Divinity, smite...", "...those who trespass here.")
 	channel_time = 50
 	power_cost = 50
 	whispered = TRUE
 	object_path = /obj/effect/clockwork/sigil/transgression
 	creator_message = "<span class='brass'>A sigil silently appears below you. The next non-Servant to cross it will be smitten.</span>"
-	usage_tip = "The sigil does not silence its victim, and is generally used to soften potential converts or would-be invaders."
+	usage_tip = "Не глушит. Готовит цель к конверсии."
 	tier = SCRIPTURE_DRIVER
+	category = SCRIPTURE_CATEGORY_STRUCTURE
 	one_per_tile = TRUE
 	primary_component = HIEROPHANT_ANSIBLE
 	sort_priority = 3
 	quickbind = TRUE
-	quickbind_desc = "Creates a Sigil of Transgression, which will briefly stun and slow the next non-Servant to cross it."
+	quickbind_desc = "Сигил Transgression."
 
 
 //Sigil of Submission: Creates a sigil of submission, which converts one heretic above it after a delay.
 /datum/clockwork_scripture/create_object/sigil_of_submission
-	descname = "Trap, Conversion"
+	descname = "Конверсия"
 	name = "Sigil of Submission"
-	desc = "Places a luminous sigil that will convert any non-Servants that remain on it for 8 seconds."
+	desc = "Конвертирует не-служителя за 8 сек на сигиле."
 	invocations = list("Divinity, enlighten...", "...those who trespass here.")
 	channel_time = 60
 	power_cost = 125
 	whispered = TRUE
 	object_path = /obj/effect/clockwork/sigil/submission
-	creator_message = "<span class='brass'>A luminous sigil appears below you. Any non-Servants to cross it will be converted and healed of some of their wounds after 8 seconds if they do not move.</span>"
-	usage_tip = "This is the primary conversion method, though it will not penetrate mindshield implants."
+	creator_message = "<span class='brass'>A luminous sigil appears below you. Any non-Servants to cross it will be converted and healed of most of their wounds after 8 seconds if they do not move.</span>"
+	usage_tip = "Не пробивает mindshield. Нужен слуга рядом."
 	tier = SCRIPTURE_DRIVER
+	category = SCRIPTURE_CATEGORY_STRUCTURE
 	one_per_tile = TRUE
 	primary_component = HIEROPHANT_ANSIBLE
 	sort_priority = 4
 	quickbind = TRUE
-	quickbind_desc = "Creates a Sigil of Submission, which will convert non-Servants that remain on it."
+	quickbind_desc = "Сигил Submission."
 	requires_full_power = TRUE
 
 //Kindle: Charges the slab with blazing energy. It can be released to stun and silence a target.
 /datum/clockwork_scripture/ranged_ability/kindle
-	descname = "Short-Range Single-Target Stun"
+	descname = "Оглушение вблизи"
 	name = "Kindle"
-	desc = "Charges your slab with divine energy, allowing you to overwhelm a target with Ratvar's light."
+	desc = "Заряжает плиту: оглушает и мутит цель вблизи."
 	invocations = list("Divinity, show them your light.")
 	whispered = TRUE
 	channel_time = 25 //2.5 seconds should be a okay compromise between being able to use it when needed, and not being able to just pause in combat for a second and hardstunning your enemy
 	power_cost = 125
-	usage_tip = "The light can be used from up to two tiles away. Damage taken will GREATLY REDUCE the stun's duration."
+	usage_tip = "2 тайла. Урон снижает длительность стана."
 	tier = SCRIPTURE_DRIVER
+	category = SCRIPTURE_CATEGORY_ATTACK
 	primary_component = BELLIGERENT_EYE
 	sort_priority = 5
 	slab_overlay = "volt"
@@ -115,19 +120,20 @@
 	timeout_time = 150
 	important = TRUE
 	quickbind = TRUE
-	quickbind_desc = "Stuns and mutes a target from a short range."
+	quickbind_desc = "Оглушение + мут."
 
 //Hateful Manacles: Applies restraints from melee over several seconds. The restraints function like handcuffs and break on removal.
 /datum/clockwork_scripture/ranged_ability/hateful_manacles
-	descname = "Handcuffs"
+	descname = "Наручники"
 	name = "Hateful Manacles"
-	desc = "Forms replicant manacles around a target's wrists that function like handcuffs."
+	desc = "Накладывает наручники как стяжки."
 	invocations = list("Shackle the heretic!", "Break them in body and spirit.")
 	channel_time = 15
 	power_cost = 25
 	whispered = TRUE
-	usage_tip = "The manacles are about as strong as zipties, and break when removed."
+	usage_tip = "Слабее стяжек, ломаются при снятии."
 	tier = SCRIPTURE_DRIVER
+	category = SCRIPTURE_CATEGORY_ATTACK
 	primary_component = BELLIGERENT_EYE
 	sort_priority = 6
 	ranged_type = /obj/effect/proc_holder/slab/hateful_manacles
@@ -138,25 +144,26 @@
 	timeout_time = 200
 	important = TRUE
 	quickbind = TRUE
-	quickbind_desc = "Applies handcuffs to a struck target."
+	quickbind_desc = "Наручники по клику."
 
 
 //Belligerent: Channeled for up to fifteen times over thirty seconds. Forces non-servants that can hear the chant to walk, doing minor damage. Nar-Sian cultists are burned.
 /datum/clockwork_scripture/channeled/belligerent
-	descname = "Channeled, Area Slowdown"
+	descname = "Замедление вокруг"
 	name = "Belligerent"
-	desc = "Forces all nearby non-servants to walk rather than run, doing minor damage. Chanted every two seconds for up to thirty seconds."
+	desc = "Заставляет врагов идти, урон каждые 2 сек."
 	chant_invocations = list("Punish their blindness!", "Take time, make slow!", "Kneel before The Justiciar!", "Halt their charges!", "Cease the tides!")
 	chant_amount = 15
 	chant_interval = 20
 	channel_time = 20
 	power_cost = 300
-	usage_tip = "Useful for crowd control in a populated area and disrupting mass movement."
+	usage_tip = "Контроль толпы. До 15 чантов."
 	tier = SCRIPTURE_DRIVER
+	category = SCRIPTURE_CATEGORY_ATTACK
 	primary_component = BELLIGERENT_EYE
 	sort_priority = 7
 	quickbind = TRUE
-	quickbind_desc = "Forces nearby non-Servants to walk, doing minor damage with each chant.<br><b>Maximum 15 chants.</b>"
+	quickbind_desc = "Замедление врагов. Макс. 15."
 
 /datum/clockwork_scripture/channeled/belligerent/chant_effects(chant_number)
 	for(var/mob/living/carbon/C in hearers(7, invoker))
@@ -167,19 +174,19 @@
 
 //Vanguard: Provides twenty seconds of greatly increased stamina regeneration and stun immunity. At the end of the twenty seconds, 25% of all stuns absorbed aswell as 50% of healed stamloss are applied to the invoker.
 /datum/clockwork_scripture/vanguard
-	descname = "Self Stun Immunity"
+	descname = "Иммунитет к стану"
 	name = "Vanguard"
-	desc = "Provides twenty seconds of greatly increased stamina regeneration and stun immunity. At the end of the twenty seconds, the invoker is knocked down for the equivalent of 25% of all stuns they absorbed aswell as incurring 50% of the stamina regenerated as stamina loss \
-	Excessive absorption will cause unconsciousness."
+	desc = "20 сек: реген стамины и иммунитет к стану. Потом откат."
 	invocations = list("Shield me...", "...from darkness!")
 	channel_time = 30
 	power_cost = 75
-	usage_tip = "You cannot reactivate Vanguard while still shielded by it."
+	usage_tip = "Нельзя повторить, пока активен."
 	tier = SCRIPTURE_DRIVER
+	category = SCRIPTURE_CATEGORY_SUPPORT
 	primary_component = VANGUARD_COGWHEEL
 	sort_priority = 8
 	quickbind = TRUE
-	quickbind_desc = "Allows you to temporarily have quickly regenerating stamina and absorb stuns. Part of the stuns absorbed and staminaloss healed will affect you when disabled."
+	quickbind_desc = "Стан-щит на 20 сек."
 
 /datum/clockwork_scripture/vanguard/check_special_requirements()
 	if(!GLOB.ratvar_awakens && islist(invoker.stun_absorption) && invoker.stun_absorption["vanguard"] && invoker.stun_absorption["vanguard"]["end_time"] > world.time)
@@ -200,18 +207,19 @@
 
 //Sentinel's Compromise: Allows the invoker to select a nearby servant and convert their brute, burn, and oxygen damage into half as much toxin damage.
 /datum/clockwork_scripture/ranged_ability/sentinels_compromise
-	descname = "Convert Brute/Burn/Oxygen to Half Toxin"
+	descname = "Лечение слуг"
 	name = "Sentinel's Compromise"
-	desc = "Charges your slab with healing power, allowing you to convert all of a target Servant's brute, burn, and oxygen damage to half as much toxin damage."
+	desc = "Brute/burn/oxy → половина токсина на слуге."
 	invocations = list("Mend the wounds of...", "...my inferior flesh.")
 	channel_time = 30
 	power_cost = 100
-	usage_tip = "The Compromise is very fast to invoke, and will remove holy water from the target Servant."
+	usage_tip = "Снимает святую воду."
 	tier = SCRIPTURE_DRIVER
+	category = SCRIPTURE_CATEGORY_SUPPORT
 	primary_component = VANGUARD_COGWHEEL
 	sort_priority = 9
 	quickbind = TRUE
-	quickbind_desc = "Allows you to convert a Servant's brute, burn, and oxygen damage to half toxin damage.<br><b>Click your slab to disable.</b>"
+	quickbind_desc = "Лечение слуги. Клик плиты — отмена."
 	slab_overlay = "compromise"
 	ranged_type = /obj/effect/proc_holder/slab/compromise
 	ranged_message = "<span class='inathneq_small'><i>You charge the clockwork slab with healing power.</i>\n\
@@ -231,6 +239,7 @@
 	power_cost = 10000
 	usage_tip = "This can't be used while on Reebe, for obvious reasons."
 	tier = SCRIPTURE_DRIVER
+	category = SCRIPTURE_CATEGORY_SUPPORT
 	primary_component = GEIS_CAPACITOR
 	sort_priority = 9
 	important = TRUE
@@ -270,62 +279,64 @@
 
 //Replicant: Creates a new clockwork slab.
 /datum/clockwork_scripture/create_object/replicant
-	descname = "New Clockwork Slab"
+	descname = "Запасная плита"
 	name = "Replicant"
-	desc = "Creates a new clockwork slab."
+	desc = "Создаёт clockwork slab."
 	invocations = list("Metal, become greater.")
 	channel_time = 10
 	power_cost = 25
 	whispered = TRUE
 	object_path = /obj/item/clockwork/slab
 	creator_message = "<span class='brass'>You copy a piece of replicant alloy and command it into a new slab.</span>"
-	usage_tip = "This is inefficient as a way to produce power, as the slab produced must be held by someone with no other slabs to produce any."
+	usage_tip = "Не для фарма энергии."
 	tier = SCRIPTURE_DRIVER
+	category = SCRIPTURE_CATEGORY_SUPPORT
 	space_allowed = TRUE
 	primary_component = GEIS_CAPACITOR
 	sort_priority = 11
 	important = TRUE
 	quickbind = TRUE
-	quickbind_desc = "Creates a new Clockwork Slab."
+	quickbind_desc = "Новая плита."
 
 
 //Wraith Spectacles: Creates a pair of wraith spectacles, which grant xray vision but damage vision slowly.
 /datum/clockwork_scripture/create_object/wraith_spectacles
-	descname = "Limited Xray Vision Glasses"
+	descname = "Очки-рентген"
 	name = "Wraith Spectacles"
-	desc = "Fabricates a pair of glasses which grant true sight but cause gradual vision loss."
+	desc = "Вид сквозь стены. Портит зрение."
 	invocations = list("Show the truth of this world to me.")
 	channel_time = 10
 	power_cost = 50
 	whispered = TRUE
 	object_path = /obj/item/clothing/glasses/wraith_spectacles
 	creator_message = "<span class='brass'>You form a pair of wraith spectacles, which grant true sight but cause gradual vision loss.</span>"
-	usage_tip = "\"True sight\" means that you are able to see through walls and in darkness."
+	usage_tip = "True sight = стены и темнота."
 	tier = SCRIPTURE_DRIVER
+	category = SCRIPTURE_CATEGORY_EQUIPMENT
 	space_allowed = TRUE
 	primary_component = GEIS_CAPACITOR
 	sort_priority = 12
 	quickbind = TRUE
-	quickbind_desc = "Creates a pair of Wraith Spectacles, which grant true sight but cause gradual vision loss."
+	quickbind_desc = "Wraith Spectacles."
 
 //Spatial Gateway: Allows the invoker to teleport themselves and any nearby allies to a conscious servant or clockwork obelisk.
 /datum/clockwork_scripture/spatial_gateway
-	descname = "Teleport Gate"
+	descname = "Портал к слуге"
 	name = "Spatial Gateway"
-	desc = "Tears open a miniaturized gateway in spacetime to any conscious servant that can transport objects or creatures to its destination. \
-	Each servant assisting in the invocation adds one additional use and four additional seconds to the gateway's uses and duration."
+	desc = "Односторонний портал к слуге или обелиску."
 	invocations = list("Spatial Gateway...", "...activate.")
 	channel_time = 30
 	power_cost = 400
 	whispered = TRUE
 	multiple_invokers_used = TRUE
 	multiple_invokers_optional = TRUE
-	usage_tip = "This gateway is strictly one-way and will only allow things through the invoker's portal."
+	usage_tip = "Больше слуг рядом — дольше и больше проходов."
 	tier = SCRIPTURE_DRIVER
+	category = SCRIPTURE_CATEGORY_SUPPORT
 	primary_component = GEIS_CAPACITOR
 	sort_priority = 10
 	quickbind = TRUE
-	quickbind_desc = "Allows you to create a one-way Spatial Gateway to a living Servant or Clockwork Obelisk."
+	quickbind_desc = "Портал к слуге/обелиску."
 
 /datum/clockwork_scripture/spatial_gateway/check_special_requirements()
 	if(!isturf(invoker.loc))

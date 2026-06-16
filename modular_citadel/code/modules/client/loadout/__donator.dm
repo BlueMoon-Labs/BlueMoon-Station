@@ -53,6 +53,14 @@
 	path = /obj/item/storage/box/syndie_kit/chameleon
 	cost = 8
 
+
+/datum/gear/donator/t2/jukebox_mega
+	name = "Personal Music Box"
+	description = "Переносная музыкальная шкатулка."
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/personal_music_box
+	cost = 4
+
 ////////////////////////////////////////////////////////////////////////
 
 /datum/gear/donator/muck_kit

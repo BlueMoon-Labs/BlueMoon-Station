@@ -281,7 +281,7 @@
 	addtimer(CALLBACK(src,PROC_REF(SetCloningMessage)), 15 SECONDS, TIMER_UNIQUE | TIMER_OVERRIDE)
 
 /obj/machinery/computer/cloning/proc/Toggle_lock(mob/user)
-	if(!scanner.is_operational())
+	if(!scanner?.is_operational())
 		return
 	if(!scanner.locked && !scanner.occupant) //I figured out that if you're fast enough, you can lock an open pod
 		return
@@ -290,7 +290,7 @@
 	. = TRUE
 
 /obj/machinery/computer/cloning/proc/Scan(mob/user)
-	if(!scanner.is_operational() || !scanner.occupant)
+	if(!scanner?.is_operational() || !scanner.occupant)
 		return
 	SetScanMessage("[scanned_name] => сканирование...","warning")
 	playsound(src, 'sound/machines/terminal_prompt.ogg', 50, 0)

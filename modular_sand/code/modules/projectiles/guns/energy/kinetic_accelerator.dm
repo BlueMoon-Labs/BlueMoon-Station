@@ -391,7 +391,10 @@
 	..()
 	if(isliving(target))
 		if(istype(target, /mob/living/simple_animal))
-			var/mob/living/simple_animal/hostile/asteroid/hivelordbrood/explosivelegion/L = new(get_step(target, target.dir))
+			var/turf/spawn_turf = get_turf(target) || target_turf
+			if(!spawn_turf)
+				return
+			var/mob/living/simple_animal/hostile/asteroid/hivelordbrood/explosivelegion/L = new(spawn_turf)
 			L.GiveTarget(target)
 
 //blood drunk miner

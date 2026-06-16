@@ -38,19 +38,19 @@ Difficulty: Insanely Hard
 	response_harm_continuous = "assaults"
 	response_harm_simple = "assault"
 	attack_sound = 'sound/weapons/punch1.ogg'
-	health = 500
+	health = 650
 	a_intent = INTENT_HARM
 	sentience_type = SENTIENCE_BOSS
 	stat_attack = DEAD
 	wander = FALSE
 	movement_type = GROUND
-	maxHealth = 500
+	maxHealth = 650
 	armour_penetration = 35
-	melee_damage_lower = 35
-	melee_damage_upper = 55
+	melee_damage_lower = 42
+	melee_damage_upper = 65
 	minbodytemp = 0
 	maxbodytemp = INFINITY
-	obj_damage = 400
+	obj_damage = 480
 	vision_range = 5
 	aggro_vision_range = 18
 	robust_searching = TRUE
@@ -87,11 +87,11 @@ Difficulty: Insanely Hard
 	icon_state = "king_goat2"
 	icon_living = "king_goat2"
 	butcher_results = list(/obj/item/reagent_containers/food/snacks/meat/slab = 4, /obj/item/clothing/head/goatpelt/king = 1)
-	health = 750
-	maxHealth = 750
+	health = 950
+	maxHealth = 950
 	armour_penetration = 50
-	melee_damage_lower = 40
-	melee_damage_upper = 60
+	melee_damage_lower = 48
+	melee_damage_upper = 72
 	environment_smash = ENVIRONMENT_SMASH_RWALLS
 	pixel_y = 5
 
@@ -228,7 +228,7 @@ Difficulty: Insanely Hard
 /mob/living/simple_animal/hostile/megafauna/king/phase2/proc/phase3_transition()
 	phase3 = TRUE
 	spellscast = 0
-	maxHealth = 750
+	maxHealth = 950
 	revive(TRUE)
 	stun_chance = 10
 	update_icon()

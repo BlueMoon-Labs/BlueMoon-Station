@@ -282,9 +282,9 @@
 
 /datum/holiday/lgbt/russianday
 	name = "Russian Day |"
-	begin_day = 16
-	end_day = 17
-	begin_month = JANUARY
+	begin_day = 11
+	end_day = 14
+	begin_month = JUNE
 
 	holiday_colors = list(
 		COLOR_WHITE,
@@ -679,7 +679,7 @@
 	name = PRIDE_MONTH
 	begin_day = 1
 	begin_month = JUNE
-	end_day = 30
+	end_day = 10
 
 /datum/holiday/pride/getStationPrefix()
 	return pick("Сектор Прайд |", "Сектор Гей |", "Сектор Би |", "Сектор Транс |", "Сектор Лесби |", "Сектор Эйс |", "Сектор Эро |", "Сектор Неопределившийся |", pick("Сектор Энби |", "Сектор Энбис |"), "Сектор Пан |", "Сектор Фута |", "Сектор Деми |", "Сектор Поли |", "Сектор Закрытости |", "Сектор Гендерфлюида |")

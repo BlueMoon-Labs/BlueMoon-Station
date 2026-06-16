@@ -39,7 +39,10 @@ const jobToColor = jobId => {
   return COLORS.department.other;
 };
 
-const healthToColor = (oxy, tox, burn, brute) => {
+const healthToColor = (oxy, tox, burn, brute, life_status) => {
+  if (!life_status) {
+    return HEALTH_COLOR_BY_LEVEL[HEALTH_COLOR_BY_LEVEL.length - 1];
+  }
   const healthSum = oxy + tox + burn + brute;
   const level = Math.min(Math.max(Math.ceil(healthSum / 25), 0), 5);
   return HEALTH_COLOR_BY_LEVEL[level];
@@ -135,7 +138,8 @@ const CrewTableEntry = (props, context) => {
             oxydam,
             toxdam,
             burndam,
-            brutedam)} />
+            brutedam,
+            life_status)} />
       </Table.Cell>
       <Table.Cell collapsing textAlign="center">
         {oxydam !== undefined ? (

@@ -258,6 +258,8 @@ GENETICS SCANNER
 		var/mob/living/carbon/human/H = M
 		if(advanced && H.has_dna() && !HAS_TRAIT(H, TRAIT_ROBOTIC_ORGANISM)) // BLUEMOON CHANGES - у синтетиков нет генетической стабильности
 			msg += "\n\t<span class='info'>Генетическая стабильность: [H.dna.stability]%.</span>" // BLUEMOON TODO - а чё это вообще
+	if(advanced && (locate(/obj/item/implant/fake_mindshield) in M.implants))
+		msg += "\n<span class='alert'>Внимание: сигнатура импланта защиты разума не проходит верификацию Nanotrasen. Вероятна подделка.</span>"
 
 	// Body part damage report
 	var/list/dmgreport = list()

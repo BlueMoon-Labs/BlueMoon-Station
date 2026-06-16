@@ -37,7 +37,7 @@
 	if(firstmove && !bump_hit)
 		return
 	// we're out of hits or we already hit it
-	if(!hits_left || hit[A])
+	if(!hits_left || (hit && hit[A]))
 		return
 	var/living = isliving(A)
 	// if it's not dense and we're a stream instead of a mist, and we're not out of range

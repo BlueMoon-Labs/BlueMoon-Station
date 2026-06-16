@@ -9,7 +9,6 @@
 	extended_desc = "Предоставляет доступ к стандартным сетям охранных камер станции."
 	requires_ntnet = TRUE
 	transfer_access = ACCESS_SECURITY
-	usage_flags = PROGRAM_CONSOLE | PROGRAM_LAPTOP | PROGRAM_PDA
 	size = 5
 	tgui_id = "NtosSecurEye"
 	program_icon = "eye"

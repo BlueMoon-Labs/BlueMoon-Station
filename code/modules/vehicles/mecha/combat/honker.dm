@@ -130,6 +130,12 @@
 	return output
 
 /obj/vehicle/sealed/mecha/combat/honker/play_stepsound()
+	// Same as the base: thrust / push-off and drift-loop moves aren't footsteps, so don't squeak on them.
+	if(step_silent)
+		step_silent = FALSE
+		return
+	if(inertia_moving)
+		return
 	if(squeak)
 		playsound(src, "clownstep", 70, 1)
 	squeak = !squeak

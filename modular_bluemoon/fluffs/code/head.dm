@@ -51,6 +51,15 @@
 	if(istype(action, /datum/action/item_action/cerberbark))
 		cerberbark()
 
+/obj/item/clothing/head/donator/bm/krieg_helmet
+	name = "Шлем Крига"
+	desc = "Поношенная экипировка гвардейца Корпуса Смерти \"КРИГ\"."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	icon_state = "krieg_helmet"
+	item_state = "krieg_helmet"
+	flags_inv = HIDEHAIR|HIDEEARS
+
 /obj/item/clothing/head/helmet/space/plasmaman/security/reaper
 	name = "Security Plasma Envirosuit Helmet"
 	desc = "Plasmaman Envirohelmet. Has red markings and reinforced with some composite materials."
@@ -342,7 +351,7 @@
 
 /obj/item/clothing/head/bee_cap/ComponentInitialize()
 	. = ..()
-	AddElement(/datum/element/polychromic, list("#2A2A2A", "#A52F29"), 2)
+	AddElement(/datum/element/polychromic, poly_colors, 2)
 
 /obj/item/clothing/head/bee_cap/AltClick(mob/user)
 	. = ..()
@@ -369,7 +378,7 @@
 
 /obj/item/clothing/head/empire_head/ComponentInitialize()
 	. = ..()
-	AddElement(/datum/element/polychromic, list("#2A2A2A", "#A52F29"), 2)
+	AddElement(/datum/element/polychromic, poly_colors, 2)
 
 /obj/item/clothing/head/empire_head/AltClick(mob/user)
 	. = ..()
@@ -395,11 +404,11 @@
 	var/adjusted = FALSE
 	var/list/poly_colors = list("#2A2A2A","#A52F29")
 
-/obj/item/clothing/head/empire_head/ComponentInitialize()
+/obj/item/clothing/head/helmet/sec/empire_head/ComponentInitialize()
 	. = ..()
-	AddElement(/datum/element/polychromic, list("#2A2A2A", "#A52F29"), 2)
+	AddElement(/datum/element/polychromic, poly_colors, 2)
 
-/obj/item/clothing/head/empire_head/AltClick(mob/user)
+/obj/item/clothing/head/helmet/sec/empire_head/AltClick(mob/user)
 	. = ..()
 	adjusted = !adjusted
 	flags_inv = adjusted ? (HIDEHAIR) : (HIDEHAIR|HIDEEARS)

@@ -4,8 +4,6 @@
 	category = PROGRAM_CATEGORY_CREW
 	program_icon_state = "id"
 	extended_desc = "Программа для просмотра и печати текущего списка экипажа станции."
-	//transfer_access = ACCESS_HEADS // BLUEMOON EDIT commented
-	requires_ntnet = TRUE
 	size = 4
 	tgui_id = "NtosCrewManifest"
 	program_icon = "clipboard-list"

@@ -12,7 +12,7 @@
 
 /obj/item/multitool
 	name = "multitool"
-	desc = "Used for pulsing wires to test which to cut. Not recommended by doctors."
+	desc = "Used for pulsing wires to test which to cut. Not recommended by doctors. You can activate it in-hand to locate the nearest APC."
 	icon = 'icons/obj/device.dmi'
 	icon_state = "multitool"
 	item_state = "multitool"
@@ -33,6 +33,8 @@
 	pickup_sound = 'sound/items/handling/multitool_pickup.ogg'
 	used_skills = list(/datum/skill/level/job/wiring) //BLUEMOON ADD
 	var/mode = 0
+	var/apc_scanner = TRUE
+	COOLDOWN_DECLARE(next_apc_scan)
 
 /obj/item/multitool/chaplain
 	name = "\improper hypertool"
@@ -70,7 +72,54 @@
 	else if(buffer)
 		buffer = null
 		to_chat(user, "<span class='notice'>You clear the multitool's buffer.</span>")
+	else if(apc_scanner)
+		scan_apc(user)
 	update_icon()
+
+/obj/item/multitool/proc/scan_apc(mob/user)
+	if(!COOLDOWN_FINISHED(src, next_apc_scan))
+		return
+
+	COOLDOWN_START(src, next_apc_scan, 2 SECONDS)
+
+	var/area/local_area = get_area(src)
+	var/obj/machinery/power/apc/power_controller = local_area.power_apc
+	if(!power_controller)
+		user.balloon_alert(user, "couldn't find apc!")
+		return
+
+	var/dist = get_dist(src, power_controller)
+	var/dir = get_dir(user, power_controller)
+	var/arrow_color
+
+	switch(dist)
+		if (0)
+			user.balloon_alert(user, "found apc!")
+			return
+		if(1 to 5)
+			arrow_color = COLOR_GREEN
+		if(6 to 10)
+			arrow_color = COLOR_YELLOW
+		if(11 to 15)
+			arrow_color = COLOR_ORANGE
+		else
+			arrow_color = COLOR_RED
+
+	user.balloon_alert(user, "apc: [dir2text_ru(dir)]")
+
+	var/datum/hud/user_hud = user.hud_used
+	if(!user_hud || !istype(user_hud, /datum/hud) || !islist(user_hud.infodisplay))
+		return
+
+	var/atom/movable/screen/multitool_arrow/arrow = new(null, user_hud)
+	arrow.color = arrow_color
+	arrow.screen_loc = around_player
+	arrow.transform = matrix(dir2angle(dir), MATRIX_ROTATE)
+
+	user_hud.infodisplay += arrow
+	user_hud.show_hud(user_hud.hud_version)
+
+	QDEL_IN(arrow, 1.5 SECONDS)
 
 /obj/item/multitool/update_icon_state()
 	icon_state = initial(icon_state)
@@ -132,6 +181,7 @@
 // Syndicate device disguised as a multitool; it will turn red when an AI camera is nearby.
 
 /obj/item/multitool/ai_detect
+	apc_scanner = FALSE
 	var/track_cooldown = 0
 	var/track_delay = 10 //How often it checks for proximity
 	var/detect_state = PROXIMITY_NONE
@@ -296,3 +346,15 @@
 
 /obj/item/multitool/advanced/brass/update_icon_state()
 	return
+
+/atom/movable/screen/multitool_arrow
+	icon = 'icons/effects/multitool_arrows.dmi'
+	icon_state = "multitool_arrow"
+	pixel_x = -32
+	pixel_y = -32
+
+/atom/movable/screen/multitool_arrow/Destroy()
+	if(hud)
+		hud.infodisplay -= src
+		INVOKE_ASYNC(hud, TYPE_PROC_REF(/datum/hud, show_hud), hud.hud_version)
+	return ..()

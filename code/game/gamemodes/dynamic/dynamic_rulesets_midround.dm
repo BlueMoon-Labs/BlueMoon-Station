@@ -1201,7 +1201,7 @@
 	repeatable = TRUE
 
 /datum/dynamic_ruleset/midround/pirates/acceptable(population=0, threat=0)
-	if (!SSmapping.empty_space)
+	if(!SSmapping.empty_space && !length(SSmapping.levels_by_trait(ZTRAIT_SPACE_RUINS)) && !SSmapping.station_start)
 		return FALSE
 	return ..()
 
@@ -1230,15 +1230,15 @@
 	repeatable = FALSE
 
 /datum/dynamic_ruleset/midround/raiders/acceptable(population=0, threat=0)
-	if (!SSmapping.empty_space)
+	if(!SSmapping.empty_space && !length(SSmapping.levels_by_trait(ZTRAIT_SPACE_RUINS)) && !SSmapping.station_start)
 		return FALSE
 	return ..()
 
 /datum/dynamic_ruleset/midround/raiders/execute()
 	var/datum/round_event_control/event = locate(/datum/round_event_control/raiders) in SSevents.control
-	if(event)
+	if(event && event.occurrences < event.max_occurrences)
 		SSevents.TriggerEvent(event)
-	return ..()
+	return TRUE
 
 // BLUEMOON ADD START
 

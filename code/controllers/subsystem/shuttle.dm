@@ -751,9 +751,13 @@ SUBSYSTEM_DEF(shuttle)
 		QDEL_NULL(preview_reservation)
 
 	if(!preview_shuttle)
-		load_template(loading_template)
+		if(!load_template(loading_template))
+			return
 		// preview_shuttle.linkup(loading_template, destination_port)
 		preview_template = loading_template
+
+	if(!preview_shuttle)
+		return
 
 	// get the existing shuttle information, if any
 	var/timer = 0
@@ -771,7 +775,8 @@ SUBSYSTEM_DEF(shuttle)
 		D = generate_transit_dock(preview_shuttle)
 
 	if(!D)
-		CRASH("No dock found for preview shuttle ([preview_template.name]), aborting.")
+		WARNING("No dock found for preview shuttle ([preview_template?.name]), aborting.")
+		return
 
 	var/result = preview_shuttle.canDock(D)
 	// truthy value means that it cannot dock for some reason
@@ -814,7 +819,8 @@ SUBSYSTEM_DEF(shuttle)
 	// load shuttle template, centred at shuttle import landmark,
 	preview_reservation = SSmapping.RequestBlockReservation(S.width, S.height, SSmapping.transit.z_value, /datum/turf_reservation/transit)
 	if(!preview_reservation)
-		CRASH("failed to reserve an area for shuttle template loading")
+		WARNING("failed to reserve an area for shuttle template loading")
+		return
 	var/turf/BL = TURF_FROM_COORDS_LIST(preview_reservation.bottom_left_coords)
 	S.load(BL, centered = FALSE, register = FALSE)
 
@@ -922,7 +928,7 @@ SUBSYSTEM_DEF(shuttle)
 			L["can_queue_hyperspace_event"] = TRUE
 			var/list/event_opts = list()
 			var/opt_idx = 0
-			for(var/datum/shuttle_event/event_type as anything in GLOB.admin_forceable_hyperspace_events)
+			for(var/datum/shuttle_event/event_type as anything in get_admin_forceable_hyperspace_events())
 				opt_idx++
 				UNTYPED_LIST_ADD(event_opts, list(
 					"name" = initial(event_type.name),
@@ -1052,7 +1058,7 @@ SUBSYSTEM_DEF(shuttle)
 			var/event_type = text2path(event_path_text)
 			if(!ispath(event_type, /datum/shuttle_event))
 				return
-			if(!(event_type in GLOB.admin_forceable_hyperspace_events))
+			if(!(event_type in get_admin_forceable_hyperspace_events()))
 				return
 			for(var/mob_idx in mobile)
 				var/obj/docking_port/mobile/M = mob_idx
@@ -1082,7 +1088,7 @@ SUBSYSTEM_DEF(shuttle)
 			var/event_type = text2path(event_path_text)
 			if(!ispath(event_type, /datum/shuttle_event))
 				return
-			if(!(event_type in GLOB.admin_forceable_hyperspace_events))
+			if(!(event_type in get_admin_forceable_hyperspace_events()))
 				return
 			for(var/mob_idx in mobile)
 				var/obj/docking_port/mobile/M = mob_idx

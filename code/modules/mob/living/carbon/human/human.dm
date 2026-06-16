@@ -693,7 +693,7 @@
 		if(!silent)
 			to_chat(src, "<span class='warning'>You can't do that right now!</span>")
 		return FALSE
-	if(!Adjacent(M) && (M.loc != src))
+	if(!Adjacent(M) && (M.loc != src) && !(M in src.GetAllContents()))
 		if((be_close == 0) || (!no_tk && (dna.check_mutation(TK) && tkMaxRangeCheck(src, M))))
 			return TRUE
 		if(!silent)
