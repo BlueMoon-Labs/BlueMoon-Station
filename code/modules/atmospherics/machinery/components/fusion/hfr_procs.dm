@@ -65,29 +65,39 @@
 	if(!linked_interface || !linked_input || !linked_moderator || !linked_output || corners.len != 4)
 		. = FALSE
 
+/obj/machinery/atmospherics/components/unary/hypertorus/core/proc/register_part_deletion_signal(atom/part)
+	if(!part)
+		return
+	UnregisterSignal(part, COMSIG_PARENT_QDELETING)
+	RegisterSignal(part, COMSIG_PARENT_QDELETING, PROC_REF(unregister_signals), override = TRUE)
+
 /obj/machinery/atmospherics/components/unary/hypertorus/core/proc/activate(mob/living/user)
 	if(active)
 		to_chat(user, span_notice("You already activated the machine."))
 		return
-	to_chat(user, span_notice("You link all parts together."))
+	if(!check_part_connectivity())
+		to_chat(user, span_notice("Check all parts and then try again."))
+		return
 	active = TRUE
+	unregister_signals(TRUE)
+	to_chat(user, span_notice("You link all parts together."))
 	update_appearance(UPDATE_ICON)
 	linked_interface.active = TRUE
 	linked_interface.update_appearance(UPDATE_ICON)
-	RegisterSignal(linked_interface, COMSIG_PARENT_QDELETING, PROC_REF(unregister_signals))
+	register_part_deletion_signal(linked_interface)
 	linked_input.active = TRUE
 	linked_input.update_appearance(UPDATE_ICON)
-	RegisterSignal(linked_input, COMSIG_PARENT_QDELETING, PROC_REF(unregister_signals))
+	register_part_deletion_signal(linked_input)
 	linked_output.active = TRUE
 	linked_output.update_appearance(UPDATE_ICON)
-	RegisterSignal(linked_output, COMSIG_PARENT_QDELETING, PROC_REF(unregister_signals))
+	register_part_deletion_signal(linked_output)
 	linked_moderator.active = TRUE
 	linked_moderator.update_appearance(UPDATE_ICON)
-	RegisterSignal(linked_moderator, COMSIG_PARENT_QDELETING, PROC_REF(unregister_signals))
+	register_part_deletion_signal(linked_moderator)
 	for(var/obj/machinery/hypertorus/corner/corner in corners)
 		corner.active = TRUE
 		corner.update_appearance(UPDATE_ICON)
-		RegisterSignal(corner, COMSIG_PARENT_QDELETING, PROC_REF(unregister_signals))
+		register_part_deletion_signal(corner)
 	soundloop = new(src, TRUE)
 	soundloop.volume = 5
 	connect_atmos_ports()
@@ -122,6 +132,7 @@
 /obj/machinery/atmospherics/components/unary/hypertorus/core/proc/deactivate()
 	if(!active)
 		return
+	unregister_signals(TRUE)
 	active = FALSE
 	update_appearance(UPDATE_ICON)
 	if(linked_interface)

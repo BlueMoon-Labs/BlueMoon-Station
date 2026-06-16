@@ -1775,7 +1775,7 @@
 /datum/reagent/nitrium_high_metabolization/on_mob_life(mob/living/carbon/M)
 	M.adjustStaminaLoss(-4 * REM * 0.5, 0)
 	M.adjustToxLoss(0.1 * (current_cycle - 1) * REM * 0.5, 0)
-	. = TRUE
+	. = ..()
 
 /datum/reagent/hypernoblium
 	name = "Hyper-Noblium"
@@ -1809,13 +1809,12 @@
 	value = REAGENT_VALUE_VERY_RARE
 
 /datum/reagent/pluoxium/on_mob_life(mob/living/carbon/M)
-	if(!HAS_TRAIT(M, TRAIT_KNOCKEDOUT))
-		return
-	for(var/obj/item/organ/O in M.internal_organs)
-		if(IS_ROBOTIC_ORGAN(O) || !O.damage)
-			continue
-		O.applyOrganDamage(-0.5 * REM * 0.5)
-	. = TRUE
+	if(HAS_TRAIT(M, TRAIT_KNOCKEDOUT))
+		for(var/obj/item/organ/O in M.internal_organs)
+			if(IS_ROBOTIC_ORGAN(O) || !O.damage)
+				continue
+			O.applyOrganDamage(-0.5 * REM * 0.5)
+	. = ..()
 
 /datum/reagent/healium
 	name = "Healium"
