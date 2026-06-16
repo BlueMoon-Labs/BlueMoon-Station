@@ -95,7 +95,7 @@
 /obj/effect/clockwork/sigil/submission
 	name = "ominous sigil"
 	desc = "Светящийся золотой сигил. Что-то в нём вас сильно беспокоит."
-	clockwork_desc = "Сигил, который порабощает любое существо, не являющееся Слугой, если оно останется на нём в течение 8 секунд. Не проникает через имплант защиты разума."
+	clockwork_desc = "Сигил, который порабощает любое существо, не являющееся Слугой, если оно останется на нём в течение 8 секунд, включая целей без сознания и мертвых целей. Не проникает через имплант защиты разума."
 	icon_state = "sigilsubmission"
 	layer = LOW_SIGIL_LAYER
 	alpha = 125
@@ -103,25 +103,56 @@
 	light_range = 2 //soft light
 	light_power = 0.9
 	light_color = "#FAE48C"
-	stat_affected = UNCONSCIOUS
+	stat_affected = DEAD
 	resist_string = "слабо светится желтым светом"
 	var/convert_time = 80
 	var/delete_on_finish = TRUE
 	sigil_name = "Sigil of Submission"
 	var/glow_type = /obj/effect/temp_visual/ratvar/sigil/submission
 
-/obj/effect/clockwork/sigil/submission/Crossed(atom/movable/AM)
+/obj/effect/clockwork/sigil/submission/Initialize(mapload)
 	. = ..()
+	INVOKE_ASYNC(src, PROC_REF(check_initial_occupants))
+
+/// Targets already on the sigil tile when it is created do not trigger Crossed().
+/obj/effect/clockwork/sigil/submission/proc/check_initial_occupants()
+	var/turf/T = get_turf(src)
+	if(!T)
+		return
+	for(var/atom/movable/AM in T)
+		if(try_trigger_on(AM))
+			return
+
+/obj/effect/clockwork/sigil/submission/proc/try_trigger_on(atom/movable/AM)
 	if(istype(AM, /obj/item/aicard))
 		var/obj/item/aicard/cardy = AM
 		if(!cardy.AI)
-			return
+			return FALSE
 		var/mob/living/silicon/ai/aiconvert = cardy.AI
 		if(aiconvert.stat > stat_affected)
-			return
+			return FALSE
 		if(is_servant_of_ratvar(aiconvert) || !(aiconvert.mind || aiconvert.has_status_effect(STATUS_EFFECT_SIGILMARK)))
-			return
+			return FALSE
 		sigil_effects(aiconvert)
+		return TRUE
+	if(!isliving(AM))
+		return FALSE
+	var/mob/living/L = AM
+	if(L.stat > stat_affected)
+		return FALSE
+	if(is_servant_of_ratvar(L) || !(L.mind || L.has_status_effect(STATUS_EFFECT_SIGILMARK)) || isdrone(L))
+		return FALSE
+	var/atom/I = L.anti_magic_check(check_antimagic, check_holy)
+	if(I)
+		if(isitem(I))
+			L.visible_message("<span class='warning'>[L]'s [I.name] [resist_string], protecting [L.ru_na()] from [src]'s effects!</span>", \
+			"<span class='userdanger'>Your [I.name] [resist_string], protecting you!</span>")
+		return FALSE
+	sigil_effects(L)
+	return TRUE
+
+/obj/effect/clockwork/sigil/submission/Crossed(atom/movable/AM)
+	try_trigger_on(AM)
 
 /obj/effect/clockwork/sigil/submission/sigil_effects(mob/living/L)
 	var/turf/T = get_turf(src)
@@ -159,18 +190,30 @@
 			hierophant_message("<span class='large_brass bold'>С присоединением нового слуги сила Сети Иерофанта растёт. Открыты новые Писания для служения Ратвару.</span>")
 	if(add_servant_of_ratvar(L))
 		L.log_message("conversion was done with a [sigil_name]", LOG_ATTACK, color="BE8700")
+		var/datum/antagonist/clockcult/clock_antag = L.mind?.has_antag_datum(/datum/antagonist/clockcult)
+		clock_antag?.clock_team?.check_size()
+		var/was_dead = L.stat == DEAD
 		if(iscarbon(L))
 			var/mob/living/carbon/M = L
 			M.uncuff()
-		var/brutedamage = L.getBruteLoss()
-		var/burndamage = L.getFireLoss()
-		if(brutedamage || burndamage)
-			L.adjustBruteLoss(-(brutedamage * 0.25))
-			L.adjustFireLoss(-(burndamage * 0.25))
-	L.DefaultCombatKnockdown(50) //Completely defenseless for five seconds - mainly to give them time to read over the information they've just been presented with
-	if(iscarbon(L))
-		var/mob/living/carbon/C = L
-		C.silent += 5
+		if(iscyborg(L) && was_dead)
+			var/mob/living/silicon/robot/R = L
+			R.revive(TRUE)
+			R.visible_message("<span class='warning'>Шасси [R] содрогается, когда латунный свет перепрошивает [R.ru_ego()] схемы!</span>", \
+			"<span class='heavy_brass'>Ваши системы перезагружаются в пользу Юстициара.</span>")
+		else
+			var/brutedamage = L.getBruteLoss()
+			var/burndamage = L.getFireLoss()
+			if(brutedamage || burndamage)
+				L.adjustBruteLoss(-(brutedamage * 0.75))
+				L.adjustFireLoss(-(burndamage * 0.75))
+				L.visible_message("<span class='warning'>[L] корчится от боли, когда [L.ru_ego()]  раны заживают и затягиваются!</span>", \
+				"<span class='heavy_brass'><i>AAAAAAAAAAAAAA-</i></span>")
+		if(!was_dead)
+			L.DefaultCombatKnockdown(50) //Completely defenseless for five seconds - mainly to give them time to read over the information they've just been presented with
+			if(iscarbon(L))
+				var/mob/living/carbon/H = L
+				H.silent += 5
 	var/message = "[sigil_name] в [get_area(src)] <span class='sevtug'>[is_servant_of_ratvar(L) ? "успешно конвертировал" : "не удалось конвертировать"]</span>"
 	new /obj/item/clockwork/slab (get_turf(src))
 	for(var/M in GLOB.mob_list)
