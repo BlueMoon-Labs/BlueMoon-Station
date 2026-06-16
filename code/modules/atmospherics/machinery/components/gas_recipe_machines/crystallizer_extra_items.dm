@@ -289,6 +289,19 @@
 			target.adjustFireLoss(-heal_amount)
 			target.adjustOxyLoss(-max(round(heal_amount * 0.5), 1))
 			target.adjustToxLoss(-max(round(heal_amount * 0.3), 1))
+		if(/datum/reagent/hypernoblium)
+			if(iscarbon(target))
+				var/mob/living/carbon/C = target
+				if(isplasmaman(C))
+					C.apply_status_effect(/datum/status_effect/hypernob_protection)
+			target.adjustStaminaLoss(-2 * ticks)
+		if(/datum/reagent/nitrium_low_metabolization)
+			target.add_movespeed_modifier(/datum/movespeed_modifier/reagent/nitrium, update = FALSE)
+			if(iscarbon(target))
+				var/mob/living/carbon/C = target
+				C.adjustStaminaLoss(-4 * REM * 0.5 * ticks, 0)
+		if(/datum/reagent/proto_nitrate)
+			target.radiation += amount * 100
 
 /proc/crystal_shard_inject(mob/living/target, reagent_type, amount)
 	if(!isliving(target) || HAS_TRAIT(target, TRAIT_ROBOTIC_ORGANISM))
@@ -633,6 +646,342 @@
 
 /proc/healium_shard_inject(mob/living/target, amount)
 	crystal_shard_inject(target, /datum/reagent/healium, amount)
+
+// === Hypernoblium shard (raw + cloth-wrapped weapon) ===
+#define HYPERNOBLIUM_SHARD_AMOUNT 10
+
+/obj/item/shard/hypernoblium
+	name = "hypernoblium shard"
+	desc = "A jagged shard of crystallized hypernoblium. Extremely sharp and unstable."
+	icon = 'icons/obj/crystallizer_crystal_shards.dmi'
+	icon_state = "hypernoblium_sharp"
+	item_state = "shard-glass"
+	force = 7
+	throwforce = 12
+	armour_penetration = 25
+	sharpness = SHARP_EDGED
+	attack_verb = list("stabbed", "slashed", "sliced", "cut")
+	embedding = null
+	craft_time = 14 SECONDS
+	custom_materials = null
+
+/obj/item/shard/hypernoblium/Initialize(mapload)
+	. = ..()
+	icon_state = "hypernoblium_sharp"
+	pixel_x = 0
+	pixel_y = 0
+	RegisterSignal(src, COMSIG_ITEM_ATTACK_ZONE, PROC_REF(on_hypernoblium_melee_strike))
+
+/obj/item/shard/hypernoblium/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
+	..()
+	if(!isliving(M))
+		return
+	hypernoblium_shard_consume_strike(src, M, user)
+
+/obj/item/shard/hypernoblium/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
+	var/mob/living/target = isliving(hit_atom) ? hit_atom : null
+	var/mob/living/thrower = throwingdatum?.thrower
+	var/result = ..()
+	if(QDELETED(src) || !target || result == BLOCK_SUCCESS)
+		return result
+	hypernoblium_shard_consume_strike(src, target, thrower, thrown = TRUE)
+	return result
+
+/obj/item/shard/hypernoblium/attackby(obj/item/item, mob/user, params)
+	if(istype(item, /obj/item/stack/sheet/cloth))
+		var/obj/item/stack/sheet/cloth/cloth = item
+		to_chat(user, span_notice("You begin to wrap the [cloth] around the [src]..."))
+		if(do_after(user, craft_time, target = src))
+			var/obj/item/hypernoblium_shard/wrapped = new
+			cloth.use(1)
+			to_chat(user, span_notice("You wrap the [cloth] around the [src], forming a makeshift weapon."))
+			remove_item_from_storage(src, user)
+			qdel(src)
+			user.put_in_hands(wrapped)
+		return
+	return ..()
+
+/obj/item/hypernoblium_shard
+	name = "hypernoblium shard"
+	desc = "A hypernoblium crystal shard wrapped in cloth. One strike floods the victim with hypernoblium before the shard crumbles."
+	icon = 'icons/obj/crystallizer_crystal_shards.dmi'
+	icon_state = "hypernoblium_shard"
+	item_state = "shard-glass"
+	lefthand_file = 'icons/mob/inhands/weapons/melee_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/weapons/melee_righthand.dmi'
+	force = 7
+	throwforce = 12
+	armour_penetration = 25
+	w_class = WEIGHT_CLASS_TINY
+	sharpness = SHARP_EDGED
+	attack_verb = list("stabbed", "slashed", "sliced", "cut")
+	hitsound = 'sound/weapons/bladeslice.ogg'
+	embedding = null
+
+/obj/item/hypernoblium_shard/Initialize(mapload)
+	. = ..()
+	RegisterSignal(src, COMSIG_ITEM_ATTACK_ZONE, PROC_REF(on_hypernoblium_melee_strike))
+
+/obj/item/hypernoblium_shard/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
+	..()
+	if(!isliving(M))
+		return
+	hypernoblium_shard_consume_strike(src, M, user)
+
+/obj/item/hypernoblium_shard/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
+	var/mob/living/target = isliving(hit_atom) ? hit_atom : null
+	var/mob/living/thrower = throwingdatum?.thrower
+	var/result = ..()
+	if(QDELETED(src) || !target || result == BLOCK_SUCCESS)
+		return result
+	hypernoblium_shard_consume_strike(src, target, thrower, thrown = TRUE)
+	return result
+
+/obj/item/proc/on_hypernoblium_melee_strike(datum/source, mob/living/victim, mob/user, obj/item/bodypart/affecting)
+	SIGNAL_HANDLER
+	hypernoblium_shard_consume_strike(src, victim, user)
+
+/proc/hypernoblium_shard_consume_strike(obj/item/weapon, mob/living/victim, mob/living/attacker, thrown = FALSE)
+	if(QDELETED(weapon) || !isliving(victim))
+		return
+	var/amount = HYPERNOBLIUM_SHARD_AMOUNT
+	var/wrapped = istype(weapon, /obj/item/hypernoblium_shard)
+	if(isliving(victim))
+		hypernoblium_shard_inject(victim, amount)
+	if(!thrown && !wrapped && isliving(attacker) && victim != attacker && prob(25))
+		hypernoblium_shard_inject(attacker, amount)
+		attacker.visible_message(
+			span_warning("The [weapon] splinters apart, releasing a puff of hypernoblium onto [attacker]!"),
+			span_userdanger("The [weapon] splinters apart, and you breathe in hypernoblium!"),
+		)
+	qdel(weapon)
+
+/proc/hypernoblium_shard_inject(mob/living/target, amount)
+	crystal_shard_inject(target, /datum/reagent/hypernoblium, amount)
+
+// === Nitrium shard (raw + cloth-wrapped weapon) ===
+#define NITRIUM_SHARD_AMOUNT 10
+
+/obj/item/shard/nitrium
+	name = "nitrium shard"
+	desc = "A jagged shard of crystallized nitrium. Extremely sharp and unstable."
+	icon = 'icons/obj/crystallizer_crystal_shards.dmi'
+	icon_state = "nitrium_sharp"
+	item_state = "shard-glass"
+	force = 7
+	throwforce = 12
+	armour_penetration = 25
+	sharpness = SHARP_EDGED
+	attack_verb = list("stabbed", "slashed", "sliced", "cut")
+	embedding = null
+	craft_time = 14 SECONDS
+	custom_materials = null
+
+/obj/item/shard/nitrium/Initialize(mapload)
+	. = ..()
+	icon_state = "nitrium_sharp"
+	pixel_x = 0
+	pixel_y = 0
+	RegisterSignal(src, COMSIG_ITEM_ATTACK_ZONE, PROC_REF(on_nitrium_melee_strike))
+
+/obj/item/shard/nitrium/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
+	..()
+	if(!isliving(M))
+		return
+	nitrium_shard_consume_strike(src, M, user)
+
+/obj/item/shard/nitrium/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
+	var/mob/living/target = isliving(hit_atom) ? hit_atom : null
+	var/mob/living/thrower = throwingdatum?.thrower
+	var/result = ..()
+	if(QDELETED(src) || !target || result == BLOCK_SUCCESS)
+		return result
+	nitrium_shard_consume_strike(src, target, thrower, thrown = TRUE)
+	return result
+
+/obj/item/shard/nitrium/attackby(obj/item/item, mob/user, params)
+	if(istype(item, /obj/item/stack/sheet/cloth))
+		var/obj/item/stack/sheet/cloth/cloth = item
+		to_chat(user, span_notice("You begin to wrap the [cloth] around the [src]..."))
+		if(do_after(user, craft_time, target = src))
+			var/obj/item/nitrium_shard/wrapped = new
+			cloth.use(1)
+			to_chat(user, span_notice("You wrap the [cloth] around the [src], forming a makeshift weapon."))
+			remove_item_from_storage(src, user)
+			qdel(src)
+			user.put_in_hands(wrapped)
+		return
+	return ..()
+
+/obj/item/nitrium_shard
+	name = "nitrium shard"
+	desc = "A nitrium crystal shard wrapped in cloth. One strike floods the victim with nitrium before the shard crumbles."
+	icon = 'icons/obj/crystallizer_crystal_shards.dmi'
+	icon_state = "nitrium_shard"
+	item_state = "shard-glass"
+	lefthand_file = 'icons/mob/inhands/weapons/melee_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/weapons/melee_righthand.dmi'
+	force = 7
+	throwforce = 12
+	armour_penetration = 25
+	w_class = WEIGHT_CLASS_TINY
+	sharpness = SHARP_EDGED
+	attack_verb = list("stabbed", "slashed", "sliced", "cut")
+	hitsound = 'sound/weapons/bladeslice.ogg'
+	embedding = null
+
+/obj/item/nitrium_shard/Initialize(mapload)
+	. = ..()
+	RegisterSignal(src, COMSIG_ITEM_ATTACK_ZONE, PROC_REF(on_nitrium_melee_strike))
+
+/obj/item/nitrium_shard/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
+	..()
+	if(!isliving(M))
+		return
+	nitrium_shard_consume_strike(src, M, user)
+
+/obj/item/nitrium_shard/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
+	var/mob/living/target = isliving(hit_atom) ? hit_atom : null
+	var/mob/living/thrower = throwingdatum?.thrower
+	var/result = ..()
+	if(QDELETED(src) || !target || result == BLOCK_SUCCESS)
+		return result
+	nitrium_shard_consume_strike(src, target, thrower, thrown = TRUE)
+	return result
+
+/obj/item/proc/on_nitrium_melee_strike(datum/source, mob/living/victim, mob/user, obj/item/bodypart/affecting)
+	SIGNAL_HANDLER
+	nitrium_shard_consume_strike(src, victim, user)
+
+/proc/nitrium_shard_consume_strike(obj/item/weapon, mob/living/victim, mob/living/attacker, thrown = FALSE)
+	if(QDELETED(weapon) || !isliving(victim))
+		return
+	var/amount = NITRIUM_SHARD_AMOUNT
+	var/wrapped = istype(weapon, /obj/item/nitrium_shard)
+	if(isliving(victim))
+		nitrium_shard_inject(victim, amount)
+	if(!thrown && !wrapped && isliving(attacker) && victim != attacker && prob(25))
+		nitrium_shard_inject(attacker, amount)
+		attacker.visible_message(
+			span_warning("The [weapon] splinters apart, releasing a puff of nitrium onto [attacker]!"),
+			span_userdanger("The [weapon] splinters apart, and you breathe in nitrium!"),
+		)
+	qdel(weapon)
+
+/proc/nitrium_shard_inject(mob/living/target, amount)
+	crystal_shard_inject(target, /datum/reagent/nitrium_low_metabolization, amount)
+
+// === Proto nitrate shard (raw + cloth-wrapped weapon) ===
+#define PROTO_NITRATE_SHARD_AMOUNT 10
+
+/obj/item/shard/proto_nitrate
+	name = "proto nitrate shard"
+	desc = "A jagged shard of crystallized proto nitrate. Extremely sharp and unstable."
+	icon = 'icons/obj/crystallizer_crystal_shards.dmi'
+	icon_state = "proto_nitrate_sharp"
+	item_state = "shard-glass"
+	force = 7
+	throwforce = 12
+	armour_penetration = 25
+	sharpness = SHARP_EDGED
+	attack_verb = list("stabbed", "slashed", "sliced", "cut")
+	embedding = null
+	craft_time = 14 SECONDS
+	custom_materials = null
+
+/obj/item/shard/proto_nitrate/Initialize(mapload)
+	. = ..()
+	icon_state = "proto_nitrate_sharp"
+	pixel_x = 0
+	pixel_y = 0
+	RegisterSignal(src, COMSIG_ITEM_ATTACK_ZONE, PROC_REF(on_proto_nitrate_melee_strike))
+
+/obj/item/shard/proto_nitrate/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
+	..()
+	if(!isliving(M))
+		return
+	proto_nitrate_shard_consume_strike(src, M, user)
+
+/obj/item/shard/proto_nitrate/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
+	var/mob/living/target = isliving(hit_atom) ? hit_atom : null
+	var/mob/living/thrower = throwingdatum?.thrower
+	var/result = ..()
+	if(QDELETED(src) || !target || result == BLOCK_SUCCESS)
+		return result
+	proto_nitrate_shard_consume_strike(src, target, thrower, thrown = TRUE)
+	return result
+
+/obj/item/shard/proto_nitrate/attackby(obj/item/item, mob/user, params)
+	if(istype(item, /obj/item/stack/sheet/cloth))
+		var/obj/item/stack/sheet/cloth/cloth = item
+		to_chat(user, span_notice("You begin to wrap the [cloth] around the [src]..."))
+		if(do_after(user, craft_time, target = src))
+			var/obj/item/proto_nitrate_shard/wrapped = new
+			cloth.use(1)
+			to_chat(user, span_notice("You wrap the [cloth] around the [src], forming a makeshift weapon."))
+			remove_item_from_storage(src, user)
+			qdel(src)
+			user.put_in_hands(wrapped)
+		return
+	return ..()
+
+/obj/item/proto_nitrate_shard
+	name = "proto nitrate shard"
+	desc = "A proto nitrate crystal shard wrapped in cloth. One strike floods the victim with radioactive proto nitrate before the shard crumbles."
+	icon = 'icons/obj/crystallizer_crystal_shards.dmi'
+	icon_state = "proto_nitrate_shard"
+	item_state = "shard-glass"
+	lefthand_file = 'icons/mob/inhands/weapons/melee_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/weapons/melee_righthand.dmi'
+	force = 7
+	throwforce = 12
+	armour_penetration = 25
+	w_class = WEIGHT_CLASS_TINY
+	sharpness = SHARP_EDGED
+	attack_verb = list("stabbed", "slashed", "sliced", "cut")
+	hitsound = 'sound/weapons/bladeslice.ogg'
+	embedding = null
+
+/obj/item/proto_nitrate_shard/Initialize(mapload)
+	. = ..()
+	RegisterSignal(src, COMSIG_ITEM_ATTACK_ZONE, PROC_REF(on_proto_nitrate_melee_strike))
+
+/obj/item/proto_nitrate_shard/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
+	..()
+	if(!isliving(M))
+		return
+	proto_nitrate_shard_consume_strike(src, M, user)
+
+/obj/item/proto_nitrate_shard/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
+	var/mob/living/target = isliving(hit_atom) ? hit_atom : null
+	var/mob/living/thrower = throwingdatum?.thrower
+	var/result = ..()
+	if(QDELETED(src) || !target || result == BLOCK_SUCCESS)
+		return result
+	proto_nitrate_shard_consume_strike(src, target, thrower, thrown = TRUE)
+	return result
+
+/obj/item/proc/on_proto_nitrate_melee_strike(datum/source, mob/living/victim, mob/user, obj/item/bodypart/affecting)
+	SIGNAL_HANDLER
+	proto_nitrate_shard_consume_strike(src, victim, user)
+
+/proc/proto_nitrate_shard_consume_strike(obj/item/weapon, mob/living/victim, mob/living/attacker, thrown = FALSE)
+	if(QDELETED(weapon) || !isliving(victim))
+		return
+	var/amount = PROTO_NITRATE_SHARD_AMOUNT
+	var/wrapped = istype(weapon, /obj/item/proto_nitrate_shard)
+	if(isliving(victim))
+		proto_nitrate_shard_inject(victim, amount)
+	if(!thrown && !wrapped && isliving(attacker) && victim != attacker && prob(25))
+		proto_nitrate_shard_inject(attacker, amount)
+		attacker.visible_message(
+			span_warning("The [weapon] splinters apart, releasing radioactive proto nitrate onto [attacker]!"),
+			span_userdanger("The [weapon] splinters apart, and you are irradiated by proto nitrate!"),
+		)
+	qdel(weapon)
+
+/proc/proto_nitrate_shard_inject(mob/living/target, amount)
+	crystal_shard_inject(target, /datum/reagent/proto_nitrate, amount)
 
 // === Zaukerite bolts (craftable from crystallizer sheets) ===
 /obj/item/zaukerite_bolt

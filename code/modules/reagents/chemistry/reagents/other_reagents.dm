@@ -1851,6 +1851,21 @@
 	M.adjustToxLoss(7.5 * REM * 0.5, 0)
 	. = ..()
 
+/datum/reagent/proto_nitrate
+	name = "Proto Nitrate"
+	description = "Crystallized proto nitrate. Extremely radioactive in living tissue; about 20 units is a lethal dose."
+	reagent_state = LIQUID
+	metabolization_rate = REAGENTS_METABOLISM
+	gas = GAS_PROTO_NITRATE
+	color = "#44dd66"
+	taste_description = "charged static"
+	pH = 1.5
+	value = REAGENT_VALUE_VERY_RARE
+
+/datum/reagent/proto_nitrate/on_mob_life(mob/living/carbon/M)
+	M.radiation += volume * 2.5
+	. = ..()
+
 /datum/reagent/freon
 	name = "Freon"
 	description = "A coolant gas. Breathing it causes burn damage and heavy slowdown."

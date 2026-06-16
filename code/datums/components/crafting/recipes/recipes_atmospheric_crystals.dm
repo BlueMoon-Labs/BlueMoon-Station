@@ -76,6 +76,69 @@
 	category = CAT_ATMOSPHERIC
 	subcategory = CAT_ATMOSPHERICS
 
+/datum/crafting_recipe/hypernoblium_shard_break
+	name = "Hypernoblium shard (raw)"
+	result = /obj/item/shard/hypernoblium
+	reqs = list(
+		/obj/item/hypernoblium_crystal = 1,
+	)
+	time = 15
+	category = CAT_ATMOSPHERIC
+	subcategory = CAT_ATMOSPHERICS
+
+/datum/crafting_recipe/hypernoblium_shard_weapon
+	name = "Hypernoblium shard"
+	result = /obj/item/hypernoblium_shard
+	reqs = list(
+		/obj/item/shard/hypernoblium = 1,
+		/obj/item/stack/sheet/cloth = 1,
+	)
+	time = 25
+	category = CAT_ATMOSPHERIC
+	subcategory = CAT_ATMOSPHERICS
+
+/datum/crafting_recipe/nitrium_shard_break
+	name = "Nitrium shard (raw)"
+	result = /obj/item/shard/nitrium
+	reqs = list(
+		/obj/item/nitrium_crystal = 1,
+	)
+	time = 15
+	category = CAT_ATMOSPHERIC
+	subcategory = CAT_ATMOSPHERICS
+
+/datum/crafting_recipe/nitrium_shard_weapon
+	name = "Nitrium shard"
+	result = /obj/item/nitrium_shard
+	reqs = list(
+		/obj/item/shard/nitrium = 1,
+		/obj/item/stack/sheet/cloth = 1,
+	)
+	time = 25
+	category = CAT_ATMOSPHERIC
+	subcategory = CAT_ATMOSPHERICS
+
+/datum/crafting_recipe/proto_nitrate_shard_break
+	name = "Proto nitrate shard (raw)"
+	result = /obj/item/shard/proto_nitrate
+	reqs = list(
+		/obj/item/grenade/gas_crystal/proto_nitrate_crystal = 1,
+	)
+	time = 15
+	category = CAT_ATMOSPHERIC
+	subcategory = CAT_ATMOSPHERICS
+
+/datum/crafting_recipe/proto_nitrate_shard_weapon
+	name = "Proto nitrate shard"
+	result = /obj/item/proto_nitrate_shard
+	reqs = list(
+		/obj/item/shard/proto_nitrate = 1,
+		/obj/item/stack/sheet/cloth = 1,
+	)
+	time = 25
+	category = CAT_ATMOSPHERIC
+	subcategory = CAT_ATMOSPHERICS
+
 /datum/crafting_recipe/hot_ice_pack
 	name = "Hot ice cooling pack"
 	result = /obj/item/hot_ice_pack
