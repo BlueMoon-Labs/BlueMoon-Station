@@ -1797,7 +1797,7 @@
 /datum/reagent/hypernoblium/on_mob_life(mob/living/carbon/M)
 	if(isplasmaman(M))
 		M.apply_status_effect(/datum/status_effect/hypernob_protection)
-	. = TRUE
+	. = ..()
 
 /datum/reagent/pluoxium
 	name = "Pluoxium"
