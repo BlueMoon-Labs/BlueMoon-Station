@@ -360,3 +360,20 @@ get_true_breath_pressure(pp) --> gas_pp = pp/breath_pp*total_moles()
 			continue
 		reaction.react(src, working_power, electrolyzer_args)
 		. = TRUE
+
+// BLUEMOON: Overrides bindings.dm FFI wrappers — negative mole counts crash auxmos (native illegal op).
+/datum/gas_mixture/proc/adjust_moles(id_val, num_val)
+	if(num_val < 0)
+		var/current = get_moles(id_val)
+		num_val = -min(-num_val, current)
+		if(!num_val)
+			return
+	return call_ext(AUXMOS, "byond:adjust_moles_hook_ffi")(src, id_val, num_val)
+
+/datum/gas_mixture/proc/adjust_moles_temp(id_val, num_val, temp_val)
+	if(num_val < 0)
+		var/current = get_moles(id_val)
+		num_val = -min(-num_val, current)
+		if(!num_val)
+			return
+	return call_ext(AUXMOS, "byond:adjust_moles_temp_hook_ffi")(src, id_val, num_val, temp_val)
