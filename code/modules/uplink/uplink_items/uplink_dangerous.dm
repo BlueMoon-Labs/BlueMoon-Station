@@ -301,7 +301,7 @@
 		Гаечным ключом можно регулировать расход газа для дополнительного урона и отбрасывания целей. \
 		Отвёрткой можно извлечь присоединённый баллон."
 	item = /obj/item/melee/powerfist
-	cost = 5
+	cost = 4
 
 /datum/uplink_item/dangerous/death_lipstick
 	name = "Kiss of Death"
