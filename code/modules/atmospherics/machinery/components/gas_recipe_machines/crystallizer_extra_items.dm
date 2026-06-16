@@ -311,6 +311,29 @@
 	else
 		crystal_shard_apply_instant(target, reagent_type, amount)
 
+#define CRYSTAL_SHARD_THROW_PROC_CHANCE 2
+
+/// Melee armor rating of the striking weapon — thicker gear muffles shard gas release.
+/proc/crystal_shard_get_melee_armor(obj/item/weapon)
+	if(!isobj(weapon) || !weapon.armor)
+		return 0
+	return weapon.armor.get_rating(MELEE)
+
+/// Chance (0–100) for a shard to release gas on melee hit. Matches rebar bolt pen vs weapon melee armor.
+/proc/crystal_shard_get_melee_proc_chance(armour_penetration, obj/item/weapon)
+	var/melee_armor = crystal_shard_get_melee_armor(weapon)
+	var/chance = 100 - melee_armor + armour_penetration
+	if(armour_penetration < melee_armor)
+		chance /= 3
+	return clamp(round(chance), 0, 100)
+
+/proc/crystal_shard_roll_strike_proc(obj/item/weapon, thrown, armour_penetration, mob/living/victim, mob/living/attacker)
+	if(isliving(victim) && victim == attacker)
+		return TRUE
+	if(thrown)
+		return prob(CRYSTAL_SHARD_THROW_PROC_CHANCE)
+	return prob(crystal_shard_get_melee_proc_chance(armour_penetration, weapon))
+
 // === Zaukerite shard (raw + cloth-wrapped weapon) ===
 #define ZAUKERITE_SHARD_ZAUKER_AMOUNT 10
 
@@ -322,7 +345,7 @@
 	item_state = "shard-glass"
 	force = 7
 	throwforce = 12
-	armour_penetration = 25
+	armour_penetration = 20
 	sharpness = SHARP_EDGED
 	attack_verb = list("stabbed", "slashed", "sliced", "cut")
 	embedding = null
@@ -338,7 +361,7 @@
 
 /obj/item/shard/zaukerite/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	..()
-	if(!isliving(M))
+	if(!isliving(M) || iscarbon(M))
 		return
 	zaukerite_shard_consume_strike(src, M, user)
 
@@ -375,7 +398,7 @@
 	righthand_file = 'icons/mob/inhands/weapons/melee_righthand.dmi'
 	force = 7
 	throwforce = 12
-	armour_penetration = 25
+	armour_penetration = 20
 	w_class = WEIGHT_CLASS_TINY
 	sharpness = SHARP_EDGED
 	attack_verb = list("stabbed", "slashed", "sliced", "cut")
@@ -388,7 +411,7 @@
 
 /obj/item/zaukerite_shard/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	..()
-	if(!isliving(M))
+	if(!isliving(M) || iscarbon(M))
 		return
 	zaukerite_shard_consume_strike(src, M, user)
 
@@ -407,6 +430,8 @@
 
 /proc/zaukerite_shard_consume_strike(obj/item/weapon, mob/living/victim, mob/living/attacker, thrown = FALSE)
 	if(QDELETED(weapon) || !isliving(victim))
+		return
+	if(!crystal_shard_roll_strike_proc(weapon, thrown, weapon.armour_penetration, victim, attacker))
 		return
 	var/amount = ZAUKERITE_SHARD_ZAUKER_AMOUNT
 	var/wrapped = istype(weapon, /obj/item/zaukerite_shard)
@@ -434,7 +459,7 @@
 	item_state = "shard-glass"
 	force = 7
 	throwforce = 12
-	armour_penetration = 25
+	armour_penetration = 15
 	sharpness = SHARP_EDGED
 	attack_verb = list("stabbed", "slashed", "sliced", "cut")
 	embedding = null
@@ -450,7 +475,7 @@
 
 /obj/item/shard/n2o/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	..()
-	if(!isliving(M))
+	if(!isliving(M) || iscarbon(M))
 		return
 	n2o_shard_consume_strike(src, M, user)
 
@@ -487,7 +512,7 @@
 	righthand_file = 'icons/mob/inhands/weapons/melee_righthand.dmi'
 	force = 7
 	throwforce = 12
-	armour_penetration = 25
+	armour_penetration = 15
 	w_class = WEIGHT_CLASS_TINY
 	sharpness = SHARP_EDGED
 	attack_verb = list("stabbed", "slashed", "sliced", "cut")
@@ -500,7 +525,7 @@
 
 /obj/item/n2o_shard/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	..()
-	if(!isliving(M))
+	if(!isliving(M) || iscarbon(M))
 		return
 	n2o_shard_consume_strike(src, M, user)
 
@@ -519,6 +544,8 @@
 
 /proc/n2o_shard_consume_strike(obj/item/weapon, mob/living/victim, mob/living/attacker, thrown = FALSE)
 	if(QDELETED(weapon) || !isliving(victim))
+		return
+	if(!crystal_shard_roll_strike_proc(weapon, thrown, weapon.armour_penetration, victim, attacker))
 		return
 	var/amount = N2O_SHARD_N2O_AMOUNT
 	var/wrapped = istype(weapon, /obj/item/n2o_shard)
@@ -546,7 +573,7 @@
 	item_state = "shard-glass"
 	force = 7
 	throwforce = 12
-	armour_penetration = 25
+	armour_penetration = 100
 	sharpness = SHARP_EDGED
 	attack_verb = list("stabbed", "slashed", "sliced", "cut")
 	embedding = null
@@ -562,7 +589,7 @@
 
 /obj/item/shard/healium/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	..()
-	if(!isliving(M))
+	if(!isliving(M) || iscarbon(M))
 		return
 	healium_shard_consume_strike(src, M, user)
 
@@ -599,7 +626,7 @@
 	righthand_file = 'icons/mob/inhands/weapons/melee_righthand.dmi'
 	force = 7
 	throwforce = 12
-	armour_penetration = 25
+	armour_penetration = 100
 	w_class = WEIGHT_CLASS_TINY
 	sharpness = SHARP_EDGED
 	attack_verb = list("stabbed", "slashed", "sliced", "cut")
@@ -612,7 +639,7 @@
 
 /obj/item/healium_shard/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	..()
-	if(!isliving(M))
+	if(!isliving(M) || iscarbon(M))
 		return
 	healium_shard_consume_strike(src, M, user)
 
@@ -631,6 +658,8 @@
 
 /proc/healium_shard_consume_strike(obj/item/weapon, mob/living/victim, mob/living/attacker, thrown = FALSE)
 	if(QDELETED(weapon) || !isliving(victim))
+		return
+	if(!crystal_shard_roll_strike_proc(weapon, thrown, weapon.armour_penetration, victim, attacker))
 		return
 	var/amount = HEALIUM_SHARD_HEALIUM_AMOUNT
 	var/wrapped = istype(weapon, /obj/item/healium_shard)
@@ -658,7 +687,7 @@
 	item_state = "shard-glass"
 	force = 7
 	throwforce = 12
-	armour_penetration = 25
+	armour_penetration = 100
 	sharpness = SHARP_EDGED
 	attack_verb = list("stabbed", "slashed", "sliced", "cut")
 	embedding = null
@@ -674,7 +703,7 @@
 
 /obj/item/shard/hypernoblium/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	..()
-	if(!isliving(M))
+	if(!isliving(M) || iscarbon(M))
 		return
 	hypernoblium_shard_consume_strike(src, M, user)
 
@@ -711,7 +740,7 @@
 	righthand_file = 'icons/mob/inhands/weapons/melee_righthand.dmi'
 	force = 7
 	throwforce = 12
-	armour_penetration = 25
+	armour_penetration = 100
 	w_class = WEIGHT_CLASS_TINY
 	sharpness = SHARP_EDGED
 	attack_verb = list("stabbed", "slashed", "sliced", "cut")
@@ -724,7 +753,7 @@
 
 /obj/item/hypernoblium_shard/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	..()
-	if(!isliving(M))
+	if(!isliving(M) || iscarbon(M))
 		return
 	hypernoblium_shard_consume_strike(src, M, user)
 
@@ -743,6 +772,8 @@
 
 /proc/hypernoblium_shard_consume_strike(obj/item/weapon, mob/living/victim, mob/living/attacker, thrown = FALSE)
 	if(QDELETED(weapon) || !isliving(victim))
+		return
+	if(!crystal_shard_roll_strike_proc(weapon, thrown, weapon.armour_penetration, victim, attacker))
 		return
 	var/amount = HYPERNOBLIUM_SHARD_AMOUNT
 	var/wrapped = istype(weapon, /obj/item/hypernoblium_shard)
@@ -770,7 +801,7 @@
 	item_state = "shard-glass"
 	force = 7
 	throwforce = 12
-	armour_penetration = 25
+	armour_penetration = 15
 	sharpness = SHARP_EDGED
 	attack_verb = list("stabbed", "slashed", "sliced", "cut")
 	embedding = null
@@ -786,7 +817,7 @@
 
 /obj/item/shard/nitrium/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	..()
-	if(!isliving(M))
+	if(!isliving(M) || iscarbon(M))
 		return
 	nitrium_shard_consume_strike(src, M, user)
 
@@ -823,7 +854,7 @@
 	righthand_file = 'icons/mob/inhands/weapons/melee_righthand.dmi'
 	force = 7
 	throwforce = 12
-	armour_penetration = 25
+	armour_penetration = 15
 	w_class = WEIGHT_CLASS_TINY
 	sharpness = SHARP_EDGED
 	attack_verb = list("stabbed", "slashed", "sliced", "cut")
@@ -836,7 +867,7 @@
 
 /obj/item/nitrium_shard/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	..()
-	if(!isliving(M))
+	if(!isliving(M) || iscarbon(M))
 		return
 	nitrium_shard_consume_strike(src, M, user)
 
@@ -855,6 +886,8 @@
 
 /proc/nitrium_shard_consume_strike(obj/item/weapon, mob/living/victim, mob/living/attacker, thrown = FALSE)
 	if(QDELETED(weapon) || !isliving(victim))
+		return
+	if(!crystal_shard_roll_strike_proc(weapon, thrown, weapon.armour_penetration, victim, attacker))
 		return
 	var/amount = NITRIUM_SHARD_AMOUNT
 	var/wrapped = istype(weapon, /obj/item/nitrium_shard)
@@ -882,7 +915,7 @@
 	item_state = "shard-glass"
 	force = 7
 	throwforce = 12
-	armour_penetration = 25
+	armour_penetration = 20
 	sharpness = SHARP_EDGED
 	attack_verb = list("stabbed", "slashed", "sliced", "cut")
 	embedding = null
@@ -898,7 +931,7 @@
 
 /obj/item/shard/proto_nitrate/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	..()
-	if(!isliving(M))
+	if(!isliving(M) || iscarbon(M))
 		return
 	proto_nitrate_shard_consume_strike(src, M, user)
 
@@ -935,7 +968,7 @@
 	righthand_file = 'icons/mob/inhands/weapons/melee_righthand.dmi'
 	force = 7
 	throwforce = 12
-	armour_penetration = 25
+	armour_penetration = 20
 	w_class = WEIGHT_CLASS_TINY
 	sharpness = SHARP_EDGED
 	attack_verb = list("stabbed", "slashed", "sliced", "cut")
@@ -948,7 +981,7 @@
 
 /obj/item/proto_nitrate_shard/attack(mob/living/M, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	..()
-	if(!isliving(M))
+	if(!isliving(M) || iscarbon(M))
 		return
 	proto_nitrate_shard_consume_strike(src, M, user)
 
@@ -968,6 +1001,8 @@
 /proc/proto_nitrate_shard_consume_strike(obj/item/weapon, mob/living/victim, mob/living/attacker, thrown = FALSE)
 	if(QDELETED(weapon) || !isliving(victim))
 		return
+	if(!crystal_shard_roll_strike_proc(weapon, thrown, weapon.armour_penetration, victim, attacker))
+		return
 	var/amount = PROTO_NITRATE_SHARD_AMOUNT
 	var/wrapped = istype(weapon, /obj/item/proto_nitrate_shard)
 	if(isliving(victim))
@@ -982,22 +1017,6 @@
 
 /proc/proto_nitrate_shard_inject(mob/living/target, amount)
 	crystal_shard_inject(target, /datum/reagent/proto_nitrate, amount)
-
-// === Zaukerite bolts (craftable from crystallizer sheets) ===
-/obj/item/zaukerite_bolt
-	name = "zaukerite bolt"
-	desc = "A rod tipped with crystallized Zauker. Deadly when thrown."
-	icon = 'icons/obj/crystallizer_exploration.dmi'
-	icon_state = "zaukerite_bolt"
-	item_state = "bolt"
-	force = 8
-	throwforce = 15
-	throw_speed = 4
-	embedding = list("embedded_pain_multiplier" = 2, "embed_chance" = 40, "embedded_fall_chance" = 10)
-	w_class = WEIGHT_CLASS_SMALL
-	sharpness = SHARP_POINTY
-	attack_verb = list("stabbed", "pierced", "stuck")
-	hitsound = 'sound/weapons/bladeslice.ogg'
 
 // === Crystallizer crystal microwave reactions ===
 #define CRYSTALLIZER_MICROWAVE_HEAVY 2

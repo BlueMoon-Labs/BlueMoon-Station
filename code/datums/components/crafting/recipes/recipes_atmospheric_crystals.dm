@@ -1,16 +1,5 @@
 // Крафты из продуктов кристаллайзера и атмос-оборудования (вкладка Atmospherics)
 
-/datum/crafting_recipe/zaukerite_bolt
-	name = "Zaukerite bolt"
-	result = /obj/item/zaukerite_bolt
-	reqs = list(
-		/obj/item/stack/sheet/mineral/zaukerite = 1,
-		/obj/item/stack/rods = 1,
-	)
-	time = 25
-	category = CAT_ATMOSPHERIC
-	subcategory = CAT_ATMOSPHERICS
-
 /datum/crafting_recipe/zaukerite_shard_break
 	name = "Zaukerite shard (raw)"
 	result = /obj/item/shard/zaukerite
