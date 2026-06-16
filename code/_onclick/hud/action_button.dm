@@ -157,7 +157,15 @@
 	var/mob/user = our_hud?.mymob
 	if(!user)
 		return
-	var/position_info = user.client?.prefs?.action_buttons_screen_locs["[name]_[id]"] || SCRN_OBJ_DEFAULT
+	var/datum/preferences/user_prefs = user.client?.prefs
+	var/position_info
+	if(user_prefs)
+		position_info = user_prefs.action_buttons_screen_locs["[name]_[id]"]
+		if(!position_info && user_prefs.action_buttons_hide_on_spawn && ishuman(user) && (world.time - user.creation_time) <= 1 SECONDS)
+			position_info = SCRN_OBJ_IN_PALETTE
+
+	if(!position_info)
+		position_info = SCRN_OBJ_DEFAULT
 	user.hud_used.position_action(src, position_info)
 
 /atom/movable/screen/movable/action_button/proc/dump_save()

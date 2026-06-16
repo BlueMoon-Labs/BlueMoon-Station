@@ -1,6 +1,8 @@
 GLOBAL_DATUM_INIT(keycard_events, /datum/events, new)
 
 #define KEYCARD_RED_ALERT "Red Alert"
+#define KEYCARD_CLEAR_RED_ALERT "Clear Red Alert"
+#define KEYCARD_CLEAR_HIGH_ALERT "Clear High Alert"
 #define KEYCARD_EMERGENCY_MAINTENANCE_ACCESS "Emergency Maintenance Access"
 #define KEYCARD_BSA_UNLOCK "Bluespace Artillery Unlock"
 #define KEYCARD_BSMINER_PROTOCOLS "Bluespace Miner Protocols"
@@ -28,6 +30,7 @@ GLOBAL_DATUM_INIT(keycard_events, /datum/events, new)
 	var/mob/triggerer = null
 	var/obj/item/card/id/first_id = null
 	var/waiting = 0
+	var/pending_security_level = 0
 
 	COOLDOWN_DECLARE(access_grant_cooldown)
 
@@ -53,7 +56,9 @@ GLOBAL_DATUM_INIT(keycard_events, /datum/events, new)
 	var/list/data = list()
 	data["waiting"] = waiting
 	data["auth_required"] = event_source ? event_source.event : 0
-	data["red_alert"] = (SECLEVEL2NUM(NUM2SECLEVEL(GLOB.security_level)) >= SEC_LEVEL_RED) ? 1 : 0
+	data["can_set_red_alert"] = (GLOB.security_level < SEC_LEVEL_RED && GLOB.keycard_secured_level < SEC_LEVEL_RED)
+	data["can_clear_red_alert"] = (GLOB.keycard_secured_level == SEC_LEVEL_RED && GLOB.security_level == SEC_LEVEL_RED)
+	data["can_clear_high_alert"] = (GLOB.security_level >= SEC_LEVEL_LAMBDA)
 	data["emergency_maint"] = GLOB.emergency_access
 	data["bsa_unlock"] = GLOB.bsa_unlock
 	return data
@@ -76,8 +81,18 @@ GLOBAL_DATUM_INIT(keycard_events, /datum/events, new)
 		return
 	switch(action)
 		if("red_alert")
-			if(!event_source)
-				sendEvent(KEYCARD_RED_ALERT, ID)
+			if(!event_source && GLOB.security_level < SEC_LEVEL_RED && GLOB.keycard_secured_level < SEC_LEVEL_RED)
+				sendSecurityLevelEvent(SEC_LEVEL_RED, KEYCARD_RED_ALERT, ID)
+				playsound(get_turf(user), 'sound/machines/auth.ogg', 75, 1, 1)
+				. = TRUE
+		if("clear_red_alert")
+			if(!event_source && GLOB.keycard_secured_level == SEC_LEVEL_RED && GLOB.security_level == SEC_LEVEL_RED)
+				sendSecurityLevelEvent(SEC_LEVEL_BLUE, KEYCARD_CLEAR_RED_ALERT, ID)
+				playsound(get_turf(user), 'sound/machines/auth.ogg', 75, 1, 1)
+				. = TRUE
+		if("clear_high_alert")
+			if(!event_source && GLOB.security_level >= SEC_LEVEL_LAMBDA)
+				sendSecurityLevelEvent(SEC_LEVEL_RED, KEYCARD_CLEAR_HIGH_ALERT, ID)
 				playsound(get_turf(user), 'sound/machines/auth.ogg', 75, 1, 1)
 				. = TRUE
 		if("emergency_maint")
@@ -120,6 +135,10 @@ GLOBAL_DATUM_INIT(keycard_events, /datum/events, new)
 				balloon_alert(usr, "key access sent")
 			return
 
+/obj/machinery/keycard_auth/proc/sendSecurityLevelEvent(level_num, event_type, trigger_id)
+	pending_security_level = level_num
+	sendEvent(event_type, trigger_id)
+
 /obj/machinery/keycard_auth/proc/sendEvent(event_type, trigger_id)
 	triggerer = usr
 	event = event_type
@@ -130,6 +149,7 @@ GLOBAL_DATUM_INIT(keycard_events, /datum/events, new)
 /obj/machinery/keycard_auth/proc/eventSent()
 	triggerer = null
 	event = ""
+	pending_security_level = 0
 	waiting = 0
 
 /obj/machinery/keycard_auth/proc/triggerEvent(source, trigger_id)
@@ -142,6 +162,7 @@ GLOBAL_DATUM_INIT(keycard_events, /datum/events, new)
 	icon_state = "auth_off"
 	event_source = null
 	first_id = null
+	pending_security_level = 0
 
 /obj/machinery/keycard_auth/proc/trigger_event(confirmer)
 	log_game("[key_name(triggerer)] triggered and [key_name(confirmer)] confirmed event [event]")
@@ -154,7 +175,14 @@ GLOBAL_DATUM_INIT(keycard_events, /datum/events, new)
 	deadchat_broadcast(" confirmed [event] at [span_name("[A2.name]")].", span_name("[confirmer]"), confirmer, message_type=DEADCHAT_ANNOUNCEMENT)
 	switch(event)
 		if(KEYCARD_RED_ALERT)
-			set_security_level(SEC_LEVEL_RED)
+			set_security_level(SEC_LEVEL_RED, null, TRUE)
+			GLOB.keycard_secured_level = SEC_LEVEL_RED
+		if(KEYCARD_CLEAR_RED_ALERT)
+			set_security_level(SEC_LEVEL_BLUE, null, TRUE)
+			GLOB.keycard_secured_level = 0
+		if(KEYCARD_CLEAR_HIGH_ALERT)
+			set_security_level(SEC_LEVEL_RED, null, TRUE)
+			GLOB.keycard_secured_level = SEC_LEVEL_RED
 		if(KEYCARD_EMERGENCY_MAINTENANCE_ACCESS)
 			make_maint_all_access()
 		if(KEYCARD_BSA_UNLOCK)
@@ -193,6 +221,8 @@ GLOBAL_VAR_INIT(emergency_access, FALSE)
 
 #undef ACCESS_GRANTING_COOLDOWN
 #undef KEYCARD_RED_ALERT
+#undef KEYCARD_CLEAR_RED_ALERT
+#undef KEYCARD_CLEAR_HIGH_ALERT
 #undef KEYCARD_EMERGENCY_MAINTENANCE_ACCESS
 #undef KEYCARD_BSA_UNLOCK
 #undef KEYCARD_BSMINER_PROTOCOLS

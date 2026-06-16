@@ -5,29 +5,30 @@
 
 //Sigil of Transmission: Creates a sigil of transmission that can drain and store power for clockwork structures.
 /datum/clockwork_scripture/create_object/sigil_of_transmission
-	descname = "Powers Nearby Structures"
+	descname = "Питание построек"
 	name = "Sigil of Transmission"
-	desc = "Places a sigil that can drain and will store energy to power clockwork structures."
+	desc = "Сигил: хранит и раздаёт энергию постройкам."
 	invocations = list("Divinity...", "...power our creations.")
 	channel_time = 70
 	power_cost = 200
 	whispered = TRUE
 	object_path = /obj/effect/clockwork/sigil/transmission
 	creator_message = "<span class='brass'>A sigil silently appears below you. It will automatically power clockwork structures near it and will drain power when activated.</span>"
-	usage_tip = "Cyborgs can charge from this sigil by remaining over it for 5 seconds."
+	usage_tip = "Борги заряжаются, стоя на сигиле 5 сек."
 	tier = SCRIPTURE_APPLICATION
+	category = SCRIPTURE_CATEGORY_STRUCTURE
 	one_per_tile = TRUE
 	primary_component = HIEROPHANT_ANSIBLE
 	sort_priority = 2
 	important = TRUE
 	quickbind = TRUE
-	quickbind_desc = "Creates a Sigil of Transmission, which can drain and will store power for clockwork structures."
+	quickbind_desc = "Сигил Transmission."
 
 //Prolonging Prism: Creates a prism that will delay the shuttle at a power cost
 /datum/clockwork_scripture/create_object/prolonging_prism
-	descname = "Powered Structure, Delay Emergency Shuttles"
+	descname = "Задержка шаттла"
 	name = "Prolonging Prism"
-	desc = "Creates a mechanized prism which will delay the arrival of an emergency shuttle by 2 minutes at a massive power cost."
+	desc = "Структура: +2 мин к прибытию шаттла, дорого."
 	invocations = list("May this prism...", "...grant us time to enact his will.")
 	channel_time = 80
 	power_cost = 300
@@ -36,14 +37,15 @@
 	observer_message = "<span class='warning'>An onyx prism forms in midair and sprouts tendrils to support itself!</span>"
 	invokers_required = 2
 	multiple_invokers_used = TRUE
-	usage_tip = "The power cost to delay a shuttle increases based on the number of times activated."
+	usage_tip = "Цена растёт с каждым использованием."
 	tier = SCRIPTURE_APPLICATION
+	category = SCRIPTURE_CATEGORY_STRUCTURE
 	one_per_tile = TRUE
 	primary_component = VANGUARD_COGWHEEL
 	sort_priority = 4
 	important = TRUE
 	quickbind = TRUE
-	quickbind_desc = "Creates a Prolonging Prism, which will delay the arrival of an emergency shuttle by 2 minutes at a massive power cost."
+	quickbind_desc = "Prolonging Prism."
 
 /datum/clockwork_scripture/create_object/prolonging_prism/check_special_requirements()
 	if(SSshuttle.emergency.mode == SHUTTLE_DOCKED || SSshuttle.emergency.mode == SHUTTLE_IGNITING || SSshuttle.emergency.mode == SHUTTLE_STRANDED || SSshuttle.emergency.mode == SHUTTLE_ESCAPE)
@@ -57,9 +59,9 @@
 
 //Mania Motor: Creates a malevolent transmitter that will broadcast the whispers of Sevtug into the minds of nearby nonservants, causing a variety of mental effects at a power cost.
 /datum/clockwork_scripture/create_object/mania_motor
-	descname = "Powered Structure, Area Denial"
+	descname = "Зона отрицания"
 	name = "Mania Motor"
-	desc = "Creates a mania motor which causes minor damage and a variety of negative mental effects in nearby non-Servant humans, potentially up to and including conversion."
+	desc = "Структура: урон и дебаффы врагам, может конвертить."
 	invocations = list("May this transmitter...", "...break the will of all who oppose us.")
 	channel_time = 80
 	power_cost = 750
@@ -68,21 +70,22 @@
 	observer_message = "<span class='warning'>A two-pronged machine rises from the ground!</span>"
 	invokers_required = 2
 	multiple_invokers_used = TRUE
-	usage_tip = "It will also cure hallucinations and brain damage in nearby Servants."
+	usage_tip = "Лечит галлюцинации у слуг."
 	tier = SCRIPTURE_APPLICATION
+	category = SCRIPTURE_CATEGORY_STRUCTURE
 	one_per_tile = TRUE
 	primary_component = HIEROPHANT_ANSIBLE
 	sort_priority = 5
 	quickbind = TRUE
-	quickbind_desc = "Creates a Mania Motor, which causes minor damage and negative mental effects in non-Servants."
+	quickbind_desc = "Mania Motor."
 	requires_full_power = TRUE
 
 
 //Clockwork Obelisk: Creates a powerful obelisk that can be used to broadcast messages or open a gateway to any servant or clockwork obelisk at a power cost.
 /datum/clockwork_scripture/create_object/clockwork_obelisk
-	descname = "Powered Structure, Teleportation Hub"
+	descname = "Хаб телепорта"
 	name = "Clockwork Obelisk"
-	desc = "Creates a clockwork obelisk that can broadcast messages over the Hierophant Network or open a Spatial Gateway to any living Servant or clockwork obelisk."
+	desc = "Обелиск: сеть, порталы, конвертит тайлы рядом."
 	invocations = list("May this obelisk...", "...take us to all places.")
 	channel_time = 80
 	power_cost = 300
@@ -91,26 +94,26 @@
 	observer_message = "<span class='warning'>A brass obelisk appears hanging in midair!</span>"
 	invokers_required = 2
 	multiple_invokers_used = TRUE
-	usage_tip = "Producing a gateway has a high power cost. Gateways to or between clockwork obelisks receive double duration and uses."
+	usage_tip = "Порталы дороги. Нужна энергосеть."
 	tier = SCRIPTURE_APPLICATION
+	category = SCRIPTURE_CATEGORY_STRUCTURE
 	one_per_tile = TRUE
 	primary_component = HIEROPHANT_ANSIBLE
 	sort_priority = 3
 	quickbind = TRUE
-	quickbind_desc = "Creates a Clockwork Obelisk, which can send messages or open Spatial Gateways with power."
+	quickbind_desc = "Clockwork Obelisk."
 
 //Memory Allocation: Finds a willing ghost and makes them into a clockwork guardian for the invoker.
 /datum/clockwork_scripture/memory_allocation
-	descname = "Personal Guardian housed in the brain."
+	descname = "Личный страж"
 	name = "Memory Allocation"
-	desc = "Allocates part of your consciousness to a Clockwork Guardian, a variant of Marauder that lives within you, able to be \
-	called forth by Speaking its True Name or if you become exceptionally low on health.<br>\
-	If it remains close to you, you will gradually regain health up to a low amount, but it will die if it goes too far from you."
+	desc = "Страж в голове: вызывается именем или при низком HP."
 	invocations = list("Fright's will...", "...call forth...")
 	channel_time = 100
 	power_cost = 8000
-	usage_tip = "Guardians are useful as personal bodyguards and frontline warriors."
+	usage_tip = "Телохранитель и боец."
 	tier = SCRIPTURE_APPLICATION
+	category = SCRIPTURE_CATEGORY_MOBS
 	primary_component = GEIS_CAPACITOR
 	sort_priority = 6
 
@@ -160,20 +163,21 @@
 
 //Clockwork Marauder: Creates a construct shell for a clockwork marauder, a well-rounded frontline fighter.
 /datum/clockwork_scripture/create_object/construct/clockwork_marauder
-	descname = "Well-Rounded Combat Construct"
+	descname = "Боевой конструкт"
 	name = "Clockwork Marauder"
-	desc = "Creates a shell for a clockwork marauder, a balanced frontline construct that can deflect projectiles with its shield."
+	desc = "Оболочка мародёра: щит отражает снаряды."
 	invocations = list("Arise, avatar of Arbiter!", "Defend the Ark with vengeful zeal!")
 	channel_time = 80
 	power_cost = 8000
 	creator_message = "<span class='brass'>Your slab disgorges several chunks of replicant alloy that form into a suit of thrumming armor.</span>"
-	usage_tip = "Reciting this scripture multiple times in a short period will cause it to take longer!"
+	usage_tip = "Спам увеличивает время чтения."
 	tier = SCRIPTURE_APPLICATION
+	category = SCRIPTURE_CATEGORY_MOBS
 	one_per_tile = TRUE
 	primary_component = BELLIGERENT_EYE
 	sort_priority = 7
 	quickbind = TRUE
-	quickbind_desc = "Creates a clockwork marauder, used for frontline combat."
+	quickbind_desc = "Clockwork Marauder."
 	object_path = /obj/item/clockwork/construct_chassis/clockwork_marauder
 	construct_type = /mob/living/simple_animal/hostile/clockwork/marauder
 	combat_construct = TRUE
@@ -205,35 +209,30 @@
 
 //Clockwork Marauder: Creates a construct shell for a clockwork marauder, a well-rounded frontline fighter.
 /datum/clockwork_scripture/create_object/construct/clockwork_marauder/clockwork_tank
-	descname = "Well-Rounded Armored Construct"
+	descname = "Танк-конструкт"
 	name = "Clockwork Tank"
-	desc = "Creates a shell for a clockwork tank, a balanced frontline construct that can fire his gun."
+	desc = "Оболочка танка: пушка на передовой."
 	channel_time = 80
 	power_cost = 25000
 	quickbind = TRUE
-	quickbind_desc = "Creates a clockwork tank, used for frontline combat."
+	quickbind_desc = "Clockwork Tank."
 	object_path = /obj/item/clockwork/construct_chassis/clocktank
 	construct_type = /mob/living/simple_animal/hostile/clockwork/clocktank
 
 //Summon Neovgre: Summon a very powerful combat mech that explodes when destroyed for massive damage.
 /datum/clockwork_scripture/create_object/summon_arbiter
-	descname = "Powerful Assault Mech"
+	descname = "Боевой мех"
 	name = "Summon Neovgre, the Anima Bulwark"
-	desc = "Calls forth the mighty Anima Bulwark, a two-person mech with superior defensive and offensive capabilities. It will \
-			steadily regenerate HP and triple its regeneration speed while standing \
-			on a clockwork tile. It will automatically draw power from nearby sigils of \
-			transmission should the need arise. Its Arbiter laser cannon can decimate foes \
-			from a range and is capable of smashing through any barrier presented to it. \
-			Be warned however, choosing to pilot or man Neovgre is a lifetime commitment, once you are \
-			in you cannot leave and when it is destroyed it will explode catastrophically, with everyone inside."
+	desc = "Двухместный мех: лазер, реген на ратварских тайлах."
 	invocations = list("By the strength of the alloy...!!", "...call forth the Arbiter!!")
 	channel_time = 200 // This is a strong fucking weapon, 20 seconds channel time is getting off light I tell ya.
 	power_cost = 40000 //40 KW. Why the hell did I think making this cost 5k more than the ARK was a good idea-KeRSe
-	usage_tip = "Neovgre is a powerful mech that will crush your enemies!"
+	usage_tip = "Нельзя выйти. Взрыв при уничтожении."
 	invokers_required = 5
 	multiple_invokers_used = TRUE
 	object_path = /obj/vehicle/sealed/mecha/combat/neovgre
 	tier = SCRIPTURE_APPLICATION
+	category = SCRIPTURE_CATEGORY_MOBS
 	primary_component = BELLIGERENT_EYE
 	sort_priority = 8
 	creator_message = "<span class='brass'>Neovgre, the Anima Bulwark towers over you... your enemies reckoning has come.</span>"
@@ -245,20 +244,21 @@
 	return ..()
 
 /datum/clockwork_scripture/create_object/construct/cogscarab
-	descname = "Building Construct"
+	descname = "Строительный дрон"
 	name = "Cogscarab"
-	desc = "Creates a shell for a cogscarab, a drone that helps build your base!"
+	desc = "Оболочка когскараба: строит базу."
 	invocations = list("Arise, drone!", "Create defenses for the true light!")
 	channel_time = 80
 	power_cost = 8000
 	creator_message = "<span class='brass'>Your slab disgorges several chunks of replicant alloy that form into a spiderlike shell.</span>"
-	usage_tip = "These machines will help you get a base built up while you go out to look for more followers."
+	usage_tip = "Стройка, пока вы ищете последователей."
 	tier = SCRIPTURE_APPLICATION
+	category = SCRIPTURE_CATEGORY_MOBS
 	one_per_tile = TRUE
 	primary_component = BELLIGERENT_EYE
 	sort_priority = 9
 	quickbind = TRUE
-	quickbind_desc = "Creates a cogscarab, good for the backline."
+	quickbind_desc = "Cogscarab."
 	object_path = /obj/item/clockwork/construct_chassis/cogscarab/
 	construct_type = /mob/living/simple_animal/drone/cogscarab
 	combat_construct = FALSE

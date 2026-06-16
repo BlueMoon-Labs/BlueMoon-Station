@@ -81,6 +81,9 @@
 	else
 		C = owner
 
+	if(!C)
+		return
+
 	real_name = C.real_name
 	if(HAS_TRAIT(C, TRAIT_HUSK))
 		real_name = "Unknown"

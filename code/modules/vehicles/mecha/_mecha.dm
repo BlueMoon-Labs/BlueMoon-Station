@@ -26,9 +26,12 @@
 	max_integrity = 300
 	armor = list(MELEE = 20, BULLET = 10, LASER = 0, ENERGY = 0, BOMB = 10, BIO = 0, RAD = 0, FIRE = 100, ACID = 100)
 	movedelay = 1 SECONDS
+	/// Cooldown between in-place rotations. Kept shorter than movedelay so turning stays responsive and isn't blocked by inability to move, but slow enough not to spin on the spot.
+	var/turn_delay = 0.4 SECONDS
 	anchored = TRUE
 	emulate_door_bumps = TRUE
 	COOLDOWN_DECLARE(mecha_bump_smash)
+	COOLDOWN_DECLARE(cooldown_vehicle_turn)
 	var/light_on = FALSE
 	///What direction will the mech face when entered/powered on? Defaults to South.
 	var/dir_in = SOUTH
@@ -158,6 +161,15 @@
 
 	///Wether we are strafing
 	var/strafe = FALSE
+
+	///Whether thruster stabilizers are engaged (cancels space drift to hold position, like a jetpack's). Needs functional, powered thrusters.
+	var/stabilizers = FALSE
+
+	// Space-drift mass model: a multi-ton exosuit should resist being nudged and should not reach human EVA drift speeds.
+	/// Higher = harder for impulses (steps, recoil, push-off) to build drift.
+	inertia_force_weight = 8
+	/// Multiplies the drift move delay, capping the mech's top drift speed well below a human's.
+	inertia_move_multiplier = 3
 
 	///Cooldown length between bumpsmashes
 	var/smashcooldown = 3
@@ -631,8 +643,15 @@
 ///Plays the mech step sound effect. Split from movement procs so that other mechs (HONK) can override this one specific part.
 /obj/vehicle/sealed/mecha/proc/play_stepsound()
 	SIGNAL_HANDLER
+	// step_silent is set for thrust / push-off; inertia_moving is set while the drift loop is carrying us.
+	// Neither is a footstep, so don't play the walk sound (it was firing on every space-drift tick).
+	if(step_silent)
+		step_silent = FALSE
+		return
+	if(inertia_moving)
+		return
 	if(stepsound)
-		playsound(src,stepsound,40,1)
+		playsound(src, stepsound, 40, TRUE)
 
 /obj/vehicle/sealed/mecha/proc/disconnect_air()
 	SIGNAL_HANDLER
@@ -640,14 +659,35 @@
 		to_chat(occupants, "[icon2html(src, occupants)]<span class='warning'>Air port connection has been severed!</span>")
 		log_message("Lost connection to gas port.", LOG_MECHA)
 
+/obj/vehicle/sealed/mecha/proc/has_functional_thrusters()
+	return active_thrusters && !equipment_disabled && has_charge(step_energy_drain)
+
+/obj/vehicle/sealed/mecha/proc/can_cancel_space_drift()
+	return stabilizers && has_functional_thrusters()
+
 /obj/vehicle/sealed/mecha/Process_Spacemove(movement_dir = 0, continuous_move = FALSE)
 	. = ..(movement_dir, continuous_move)
 	if(.)
 		return TRUE
+
+	// Jetpack-style thrusters: stabilizers = cell-by-cell movement with no drift; thrust handles voluntary moves.
+	if(has_functional_thrusters())
+		var/thruster_assist = continuous_move ? stabilizers : (movement_dir || stabilizers)
+		if(thruster_assist)
+			if(continuous_move)
+				return TRUE
+			if(active_thrusters.thrust(movement_dir))
+				step_silent = TRUE
+				return TRUE
+		if(continuous_move)
+			return FALSE
+		return FALSE
+
 	if(continuous_move)
 		return FALSE
 
-	var/atom/movable/backup = get_spacemove_backup()
+	// Mechs without a thruster package can still push off nearby objects.
+	var/atom/movable/backup = get_spacemove_backup(movement_dir, continuous_move)
 	if(backup)
 		if(istype(backup) && movement_dir && !backup.anchored)
 			if(backup.newtonian_move(REVERSE_DIR(movement_dir), instant = TRUE))
@@ -656,11 +696,13 @@
 					to_chat(occupants, "[icon2html(src, occupants)]<span class='info'>The [src] push off [backup] to propel yourself.</span>")
 		return TRUE
 
-	if(movedelay <= world.time && active_thrusters && movement_dir && active_thrusters.thrust(movement_dir))
-		step_silent = TRUE
-		return TRUE
-
 	return FALSE
+
+/obj/vehicle/sealed/mecha/Moved(atom/OldLoc, Dir, Forced = FALSE)
+	if(can_cancel_space_drift())
+		SEND_SIGNAL(src, COMSIG_MOVABLE_MOVED, OldLoc, Dir, Forced)
+		return TRUE
+	return ..()
 
 /obj/vehicle/sealed/mecha/relaymove(mob/living/user, direction)
 	. = TRUE
@@ -671,13 +713,52 @@
 
 
 /obj/vehicle/sealed/mecha/vehicle_move(direction, forcerotate = FALSE)
-	if(!COOLDOWN_FINISHED(src, cooldown_vehicle_move))
-		return FALSE
-	COOLDOWN_START(src, cooldown_vehicle_move, movedelay)
 	if(completely_disabled)
 		return FALSE
 	if(!direction)
 		return FALSE
+
+	// Cleared each call: Process_Spacemove sets this when we thrust / push off, and play_stepsound consumes it.
+	// Resetting here keeps a thrust that didn't end in a step from silencing the next genuine footstep.
+	step_silent = FALSE
+
+	if(internal_damage & MECHA_INT_CONTROL_LOST)
+		direction = pick(GLOB.alldirs)
+
+	//only mechs with diagonal movement may move/turn diagonally
+	if(!allow_diagonal_movement && ISDIAGONALDIR(direction))
+		return TRUE
+
+	// In strafe mode, a driver holding Alt turns directional input into a PURE in-place rotation: the mech turns
+	// toward the input and must never step - not even once it already faces that way (otherwise it walks off after turning).
+	var/strafe_rotate = FALSE
+	if(strafe && !forcerotate)
+		for(var/mob/driver in return_drivers())
+			if(driver.client?.keys_held["Alt"])
+				strafe_rotate = TRUE
+				break
+
+	// Rotation is decoupled from movement: turning must NOT be blocked by the inability to move (zero-g, no power)
+	// nor share/consume the move cooldown, otherwise the mech "can't turn" in space and Alt-strafe turns get eaten.
+	if((dir != direction || forcerotate) && (forcerotate || !strafe || strafe_rotate))
+		if(!COOLDOWN_FINISHED(src, cooldown_vehicle_turn))
+			return FALSE
+		COOLDOWN_START(src, cooldown_vehicle_turn, turn_delay)
+		setDir(direction)
+		if(turnsound)
+			playsound(src, turnsound, 40, TRUE)
+		return TRUE
+
+	// Alt-strafe is rotation-only: if we already face the requested direction, hold position instead of stepping forward.
+	if(strafe_rotate)
+		return TRUE
+
+	// In strafe mode, a direction != facing without Alt means strafe-move: travel that way while keeping our facing.
+	var/strafing = strafe && (dir != direction)
+
+	if(!COOLDOWN_FINISHED(src, cooldown_vehicle_move))
+		return FALSE
+	COOLDOWN_START(src, cooldown_vehicle_move, movedelay)
 	if(internal_tank?.connected_port)
 		if(TIMER_COOLDOWN_CHECK(src, COOLDOWN_MECHA_MESSAGE))
 			to_chat(occupants, "[icon2html(src, occupants)]<span class='warning'>Unable to move while connected to the air system port!</span>")
@@ -711,31 +792,6 @@
 
 	var/olddir = dir
 
-	if(internal_damage & MECHA_INT_CONTROL_LOST)
-		direction = pick(GLOB.alldirs)
-
-	//only mechs with diagonal movement may move diagonally
-	if(!allow_diagonal_movement && ISDIAGONALDIR(direction))
-		return TRUE
-
-	//if we're not facing the way we're going rotate us
-	var/no_strafe = FALSE
-	if(dir != direction || forcerotate)
-		if(strafe)
-			for(var/D in return_drivers())
-				var/mob/driver = D
-				if(driver.client?.keys_held["Alt"])
-					no_strafe = TRUE
-					setDir(direction)
-					if(turnsound)
-						playsound(src,turnsound,40,TRUE)
-					return TRUE
-		else
-			setDir(direction)
-			if(turnsound)
-				playsound(src,turnsound,40,TRUE)
-			return TRUE
-
 	set_glide_size(DELAY_TO_GLIDE_SIZE(movedelay))
 	use_power(step_energy_drain)
 
@@ -744,7 +800,7 @@
 		//Otherwise just walk normally
 		. = step(src,direction, dir)
 
-	if(strafe && !no_strafe)
+	if(strafing)
 		setDir(olddir)
 
 
@@ -1035,6 +1091,7 @@
 	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/mech_toggle_lights, VEHICLE_CONTROL_SETTINGS)
 	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/mech_view_stats, VEHICLE_CONTROL_SETTINGS)
 	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/strafe, VEHICLE_CONTROL_DRIVE)
+	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/toggle_stabilizers, VEHICLE_CONTROL_DRIVE)
 	if(max_occupants > 1)
 		initialize_passenger_action_type(/datum/action/vehicle/sealed/mecha/swap_seat)
 

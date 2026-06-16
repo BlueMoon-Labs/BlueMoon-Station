@@ -13,13 +13,12 @@
 	if(stored_card == gone)
 		stored_card = null
 		if(holder)
-			if(holder.active_program)
-				holder.active_program.event_idremoved(0)
-			for(var/p in holder.idle_threads)
-				var/datum/computer_file/program/computer_program = p
-				computer_program.event_idremoved(1)
-
 			holder.update_slot_icon()
+
+			if(holder.active_program)
+				holder.active_program.event_idremoved(FALSE, gone, device_type)
+			for(var/datum/computer_file/program/computer_program in holder.idle_threads)
+				computer_program.event_idremoved(TRUE, gone, device_type)
 
 			if(ishuman(holder.loc))
 				var/mob/living/carbon/human/human_wearer = holder.loc
@@ -73,6 +72,12 @@
 		I.forceMove(src)
 
 	stored_card = I
+
+	if(holder.active_program)
+		holder.active_program.event_idinsert(FALSE, stored_card, device_type)
+	for(var/datum/computer_file/program/computer_program in holder.idle_threads)
+		computer_program.event_idinsert(TRUE, stored_card, device_type)
+
 	to_chat(user, span_notice("You insert \the [I] into \the [expansion_hw ? "secondary":"primary"] [src]."))
 	playsound(src, 'sound/machines/terminal_insert_disc.ogg', 50, FALSE)
 

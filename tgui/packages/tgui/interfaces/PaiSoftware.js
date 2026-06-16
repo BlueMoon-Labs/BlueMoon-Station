@@ -9,7 +9,6 @@ export const PaiSoftware = (props, context) => {
     stat,
     temp,
     software,
-    messenger_unread,
   } = data;
 
   if (stat === 4) {
@@ -83,20 +82,6 @@ export const PaiSoftware = (props, context) => {
                     icon="comment-alt"
                     onClick={() => act('messenger')}>
                     Мессенджер
-                  </Button>
-                </Stack.Item>
-                <Stack.Item>
-                  <Button
-                    fluid
-                    icon="reply"
-                    color={messenger_unread > 0 ? 'good' : null}
-                    onClick={() => act('quick_reply')}>
-                    Быстрый ответ
-                    {messenger_unread > 0 && (
-                      <Box inline ml={1}>
-                        ({messenger_unread})
-                      </Box>
-                    )}
                   </Button>
                 </Stack.Item>
                 <Stack.Item mt={1}>

@@ -10,7 +10,12 @@
 #define SEC_LEVEL_EPSILON 9
 #define SEC_LEVEL_DELTA 10
 
+/// Security levels at or above lambda require keycard auth to set or change.
+#define IS_HIGH_SECURITY_LEVEL(L) ((L) >= SEC_LEVEL_LAMBDA)
+
 GLOBAL_VAR_INIT(security_level, SEC_LEVEL_GREEN)
+/// Lowest level that cannot be lowered/changed without keycard auth (or bypass). 0 = unlocked.
+GLOBAL_VAR_INIT(keycard_secured_level, 0)
 
 /*
 * All security levels, per ascending alert. Nothing too fancy, really.
@@ -72,8 +77,8 @@ GLOBAL_LIST_INIT(sec_level_colors, list(
 /// Engineering Override Access manual toggle
 //#define COMSIG_GLOB_FORCE_AIRLOCK_OVERRIDE "force_airlock_override"
 
-/proc/set_security_level(level, secret_variant_override = null)
-	SSsecurity_level.set_level(level, secret_variant_override)
+/proc/set_security_level(level, secret_variant_override = null, bypass_keycard_lock = FALSE)
+	SSsecurity_level.set_level(level, secret_variant_override, bypass_keycard_lock)
 
 /proc/get_security_level_notice_theme(level)
 	if(!isnum(level))

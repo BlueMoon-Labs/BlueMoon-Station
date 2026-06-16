@@ -963,8 +963,8 @@
 	if(!magazine || !magazine.max_ammo)
 		. += "Nebular-9-ammo-0"
 		return
-
-	var/fill_level = round(min(magazine.stored_ammo.len + 1, magazine.max_ammo) / magazine.max_ammo * 7)
+	var/total = magazine.stored_ammo.len + (chambered && chambered.BB ? 1 : 0)
+	var/fill_level = round(total / magazine.max_ammo * 7)
 	. += "Nebular-9-ammo-[fill_level]"
 
 /obj/item/modkit/p226_syndicate
@@ -991,7 +991,7 @@
 	name = "Stun-Katana Kit"
 	desc = "A modkit for making a stunsword into a Stun-Katana."
 	product = /obj/item/melee/baton/stunkatana
-	fromitem = list(/obj/item/melee/baton, /obj/item/melee/baton/loaded)
+	fromitem = list(/obj/item/melee/baton/stunsword)
 
 #define STUNKATANA_BASE_STATE "stunkatana"
 
@@ -1073,7 +1073,7 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
-	icon_state = "nebular_t"
+	icon_state = "nebular-t"
 	item_state = "Nebular-9"
 	can_flashlight = FALSE
 
@@ -1081,13 +1081,32 @@
 	return null
 
 /obj/item/gun/energy/e_gun/advtaser/nebular_t/update_icon_state()
+	if(!cell || !cell.maxcharge)
+		icon_state = "nebular-t-e"
+		return
+
 	var/charge_percent = cell.charge / cell.maxcharge
-	if(charge_percent > 0.5)
-		icon_state = "[initial(icon_state)]-full"
-	else if(charge_percent > 0.1)
-		icon_state = "[initial(icon_state)]-half"
-	else if(charge_percent <= 0.1)
-		icon_state = "[initial(icon_state)]-low"
+	if(charge_percent <= 0.1)
+		icon_state = "nebular-t-e"
+	else
+		icon_state = initial(icon_state)
+
+/obj/item/gun/energy/e_gun/advtaser/nebular_t/update_overlays()
+	. = ..()
+	. += "nebular-t-base"
+
+	if(!cell || !cell.maxcharge)
+		. += "nebular-t-0"
+		return
+
+	var/charge_percent = cell.charge / cell.maxcharge
+	if(charge_percent>0.3 && charge_percent<=0.6)
+		. += "nebular-t-2"
+	else if(charge_percent>0.1 && charge_percent<=0.3)
+		. += "nebular-t-1"
+	else if(charge_percent<=0.1)
+		. += "nebular-t-0"
+
 
 /obj/item/modkit/nul_kit
 	name = "Nul Kit"
@@ -1120,26 +1139,41 @@
 	desc = "Помповый дробовик специального назначения, используемый на общих основаниях силами правопорядка некоторых технически-развитых миров и самими обитателями Небулы. Благодаря номенклатуре боеприпасов, способен исполнять почти любую задачу - от подавления беспорядков до использования в некоторых около-военных операциях и охранения объектов. Распространён слабо, ввиду того что его исполнение не выдерживает никакой критики в плане сохранения боевых характеристик вне близких к стерильным условий, так как используется в основном в космическом пространстве. Данная версия - ещё и кастрат, с уменьшенным магазином и урезанной скорострельностью, для предотвращения \"перегибов\" на местах"
 	unique_reskin = list()
 	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
-	icon_state = "supernova-0-notcharged"
+	icon_state = "supernova"
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
-	item_state = "supernova-notcharged"
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/back.dmi'
+	item_state = "supernova"
 
 /obj/item/gun/ballistic/shotgun/automatic/combat/supernova/update_icon_state()
 	var/ammo = magazine ? magazine.ammo_count() : 0
-	var/chamber = (chambered && chambered.BB) ? "charged" : "notcharged"
 	var/folded = stock ? "" : "-folded"
-	icon_state = "supernova-[ammo]-[chamber][folded]"
-	item_state = "supernova-[chamber]"
+	if(ammo <= 0)
+		icon_state = "supernova-e[folded]"
+	else
+		icon_state = "supernova[folded]"
 
-/obj/item/modkit/pulsar_kit
-	name = "Pulsar Kit"
-	desc = "A modkit for making a combat knife into a Pulsar."
+/obj/item/gun/ballistic/shotgun/automatic/combat/supernova/update_overlays()
+	. = ..()
+	// Патрон в патроннике
+	if(chambered && chambered.BB)
+		. += "supernova-loaded"
+	else
+		. += "supernova-not-loaded"
+	// Индикатор боезапаса: подложка + уровень (0..5)
+	var/ammo = magazine ? magazine.ammo_count() : 0
+	. += "supernova-base"
+	if(ammo<6)
+		. += "supernova-[ammo]"
+
+/obj/item/modkit/pulsar_knife_kit
+	name = "Kasari ritual knife Kit"
+	desc = "A modkit for making a combat knife into a kasari ritual knife."
 	product = /obj/item/kitchen/knife/combat/pulsar
 	fromitem = list(/obj/item/kitchen/knife/combat)
 
 /obj/item/kitchen/knife/combat/pulsar
-	name = "Pulsar"
+	name = "Kasari ritual knife"
 	desc = "Общее название для ритуальных клинков расы Касари, использующихся в некоторых \"особых\" случаях, в первую очередь в поединках и казнях. По понятным причинам выполнен всего в паре-сотне образцов, уникальных для каждого из кораблей-колоний. Удивительно, что его вовсе занесло на станцию"
 	item_state = "pulsar"
 	icon_state = "pulsar"
@@ -1431,3 +1465,178 @@
 /obj/item/gun/ballistic/automatic/pistol/enforcer/cz_75/update_icon_state() // -expended вырезан, спрайтов не завезли
 	icon_state = "[current_skin ? unique_reskin[current_skin]["icon_state"] : initial(icon_state)][chambered ? "" : "-e"][suppressed ? "-suppressed" : "" ][magazine && istype(magazine, /obj/item/ammo_box/magazine/e45/e45_drum) ? "-drum" : ""]"
 
+/obj/item/modkit/quasar_kit
+	name = "Quasar Kit"
+	desc = "A modkit for making a advanced energy gun into a Quasar."
+	product = /obj/item/gun/energy/e_gun/nuclear/quasar
+	fromitem = list(/obj/item/gun/energy/e_gun/nuclear)
+
+/obj/item/gun/energy/e_gun/nuclear/quasar
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "\improper Quasar"
+	desc = "Продвинутая лазерная установка с микрореакторной батареей внутри. Удивительно надёжна в роли лазерной указки, и куда менее применима в бою из за низкого урона. Тем не менее, пользуется спросом ввиду простоты применения и буквально бесплатной эксплуатации, не требующей каких либо вложений."
+	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	icon_state = "quasar"
+	item_state = "quasar"
+	can_flashlight = FALSE
+
+/obj/item/gun/energy/e_gun/nuclear/quasar/update_overlays()
+	..()
+	. = list()
+	if(!cell || cell.charge <= 0 || !cell.maxcharge)
+		. += "quasar-0"
+		return
+	var/ratio = CEILING((cell.charge / cell.maxcharge) * 8, 1)
+	if(istype(ammo_type[current_firemode_index], /obj/item/ammo_casing/energy/laser))
+		. += "quasar-lethal-mode-base"
+	else
+		. += "quasar-non-lethal-mode-base"
+	if(ratio < 8)
+		. += "quasar-[ratio]"
+
+/obj/item/modkit/comet_kit
+	name = "Comet Kit"
+	desc = "A modkit for making a WT-550 PDW into a Comet."
+	product = /obj/item/gun/ballistic/automatic/wt550/comet
+	fromitem = list(/obj/item/gun/ballistic/automatic/wt550)
+
+/obj/item/gun/ballistic/automatic/wt550/comet
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "\improper Comet"
+	desc = "Следствие желания поиграть в тактикульность во всей своей красе - один из тех образцов оружия, что способны одним своим видом внушить веру в собственную исключительность. Данный образец очевидно же, заметно изменён - на фоне превосходного исполнения невооружённым взглядом видна работа гаражного мастера, что сменил боеприпас, которым питается оружие - все ради совместимости с патронами ПАКТа."
+	unique_reskin = list()
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	icon_state = "comet"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/back.dmi'
+	item_state = "comet"
+
+/obj/item/gun/ballistic/automatic/wt550/comet/update_icon_state()
+	if(!magazine || magazine.ammo_count() <= 0)
+		icon_state = "comet-e"
+	else
+		icon_state = "comet"
+
+/obj/item/gun/ballistic/automatic/wt550/comet/update_overlays()
+	. = ..()
+	. += "comet-base"
+	if(!magazine || !magazine.max_ammo)
+		. += "comet-0"
+		return
+	var/total = magazine.stored_ammo.len + (chambered && chambered.BB ? 1 : 0)
+	var/fill_level = round(total / magazine.max_ammo * 8)
+	if(fill_level < 8)  // при полном (8/8) — только base, без доп. оверлея
+		. += "comet-[fill_level]"
+
+/obj/item/modkit/neutron_kit
+	name = "Neutron Kit"
+	desc = "A modkit for making a X-ray laser gun into a Neutron."
+	product = /obj/item/gun/energy/xray/neutron
+	fromitem = list(/obj/item/gun/energy/xray)
+
+/obj/item/gun/energy/xray/neutron
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "\improper Neutron"
+	desc = "Ученый внутри вас не может нарадоваться, это оружие - настоящее изнасилование идеи о мирном применении рентгеновского излучения. Концентрированные пучки испускаемые этой бандурой способны выжигать даже металл, единственное что омрачает - ограничение конструкции, не дающее возможности использовать этого кастрата что бы аннигилировать надоедливого клоуна за один выстрел до состояния бесформенной массы."
+	unique_reskin = list()
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	icon_state = "neutron"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/back.dmi'
+	item_state = "neutron"
+
+/obj/item/gun/energy/xray/neutron/update_icon_state()
+	if(!cell || cell.charge <= 0)
+		icon_state = "neutron-e"
+	else
+		icon_state = "neutron"
+
+/obj/item/gun/energy/xray/neutron/update_overlays()
+	. = ..()                         // обязательно — must_call_parent
+	. += "neutron-base"
+	if(!cell || cell.charge <= 0 || !cell.maxcharge)
+		. += "neutron-0"
+		return
+	var/charge_percent = cell.charge / cell.maxcharge
+	if(charge_percent < 0.6 && charge_percent>= 0.3)
+		. += "neutron-2"
+	else if(charge_percent<0.3 && charge_percent>0.1)
+		. += "neutron-1"
+	else
+		. += "neutron-0"
+/obj/item/modkit/spectral_kit
+	name = "Spectral Kit"
+	desc = "A modkit for making a temperature gun into a Spectral."
+	product = /obj/item/gun/energy/temperature/spectral
+	fromitem = list(/obj/item/gun/energy/temperature,/obj/item/gun/energy/temperature/security) // на всякий и второй тип добавлю
+
+/obj/item/gun/energy/temperature/spectral
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "\improper Spectral"
+	desc = "Незаурядный образец касарийского военпрома, предназначенный же правда по большей части на экспорт в силы правопорядка. Сам по себе почти безвреден, что бы им убить надо постараться."
+	unique_reskin = list()
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	icon_state = "spectral"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	item_state = "spectral"
+
+/obj/item/gun/energy/temperature/spectral/update_overlays()
+	. = ..()                         // обязательно — must_call_parent
+	if(istype(ammo_type[current_firemode_index], /obj/item/ammo_casing/energy/temp/hot))
+		. += "spectral-heat-base"
+		. += "spectral-heat-mode"
+	else
+		. += "spectral-freeze-base"
+		. += "spectral-freeze-mode"
+	if(!cell || cell.charge <= 0 || !cell.maxcharge)
+		. += "spectral-0"
+		return
+	var/charge_percent = cell.charge / cell.maxcharge
+	if(charge_percent < 0.6 && charge_percent>= 0.3)
+		. += "spectral-2"
+	else if(charge_percent<0.3 && charge_percent>0.1)
+		. += "spectral-1"
+	else
+		. += "spectral-0"
+/obj/item/modkit/pulsar_kit
+	name = "Pulsar Kit"
+	desc = "A modkit for making a Riot Shotgun into a Pulsar."
+	product = /obj/item/gun/ballistic/shotgun/riot/pulsar
+	fromitem = list(/obj/item/gun/ballistic/shotgun/riot)
+
+/obj/item/gun/ballistic/shotgun/riot/pulsar
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "\improper Pulsar"
+	desc = "Разработка сумрачного касарийского гения, тактический дробовик общего пользования, предназначенный для более опытных стрелков не только из-за специфического хвата, но и из-за тяжести в перезарядке, и из-за большого требования к физической силе."
+	unique_reskin = list()
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
+	icon_state = "pulsar"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/back.dmi'
+	item_state = "pulsar-shot"
+
+/obj/item/gun/ballistic/shotgun/riot/pulsar/update_icon_state()
+	if(sawn_off)
+		icon_state = "pulsar-sawn"
+	else
+		icon_state = "pulsar"
+
+/obj/item/gun/ballistic/shotgun/riot/pulsar/update_overlays()
+	. = ..()
+	. += "pulsar-base"
+	if(chambered && chambered.BB)
+		. += "pulsar-loaded"
+	else
+		. += "pulsar-not-loaded"
+	if(!magazine || !magazine.max_ammo)
+		. += "pulsar-0"
+		return
+	var/fill_level = round(magazine.stored_ammo.len / magazine.max_ammo * 6)
+	if(fill_level < 6)
+		. += "pulsar-[fill_level]"

@@ -11,7 +11,7 @@
 	extended_desc = "This program allows setting messages and alerts on station status displays."
 	requires_ntnet = FALSE
 	transfer_access = null
-	usage_flags = PROGRAM_PDA
+	usage_flags = PROGRAM_ON_TABLETS
 	size = 4
 	available_on_ntnet = FALSE
 	tgui_id = "NtosStatusDisplay"

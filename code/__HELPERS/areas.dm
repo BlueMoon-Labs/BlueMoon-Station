@@ -247,6 +247,9 @@ GLOBAL_LIST_INIT(typecache_powerfailure_safe_areas, typecacheof(/area/engineerin
 		A = A.base_area
 	. = list(A.contents)
 	for(var/i in A.sub_areas)
-		. += A.sub_areas[i].contents
+		var/area/sub = A.sub_areas[i]
+		if(!sub)
+			continue
+		. += sub.contents
 
 #undef BP_MAX_ROOM_SIZE

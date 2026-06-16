@@ -604,15 +604,6 @@
 	data["emitterhealth"] = emitterhealth
 	data["emittermaxhealth"] = emittermaxhealth
 	data["holoform"] = holoform
-	// Unread messages from PDA messenger
-	data["messenger_unread"] = 0
-	if(pda)
-		var/datum/computer_file/program/messenger/messenger = locate() in pda.get_all_files()
-		if(messenger)
-			for(var/chat_ref in messenger.saved_chats)
-				var/datum/pda_chat/chat = messenger.saved_chats[chat_ref]
-				data["messenger_unread"] += chat.unread_messages
-
 	var/datum/language_holder/H = get_language_holder()
 	data["translator_on"] = H?.omnitongue ? TRUE : FALSE
 	data["encoder_active"] = encoder_active
@@ -1008,27 +999,6 @@
 					messenger.run_program(src)
 					pda.active_program = messenger
 					messenger.ui_interact(src)
-				else
-					to_chat(src, "<span class='warning'>Мессенджер не найден!</span>")
-			else
-				to_chat(src, "<span class='warning'>PDA не установлен!</span>")
-			return TRUE
-		if("quick_reply")
-			if(pda)
-				var/datum/computer_file/program/messenger/messenger = locate() in pda.get_all_files()
-				if(messenger)
-					var/datum/pda_chat/target_chat = null
-					for(var/chat_ref in messenger.saved_chats)
-						var/datum/pda_chat/chat = messenger.saved_chats[chat_ref]
-						if(chat.unread_messages > 0)
-							target_chat = chat
-							break
-					if(target_chat)
-						messenger.quick_reply_prompt(src, target_chat)
-					else
-						messenger.run_program(src)
-						pda.active_program = messenger
-						messenger.ui_interact(src)
 				else
 					to_chat(src, "<span class='warning'>Мессенджер не найден!</span>")
 			else

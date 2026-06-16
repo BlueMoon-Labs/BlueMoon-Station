@@ -9,18 +9,18 @@
 	var/minimum_players = 0
 
 /datum/metadollar_shop_item/proc/try_purchase(client/C)
-	if(!C?.prefs)
+	if(!C?.ckey)
 		return FALSE
+	var/balance = SSmetadollars.get_metadollars(C.ckey)
 	if(minimum_players && length(GLOB.player_list) < minimum_players)
 		to_chat(C.mob, span_warning("На сервере слишком мало игроков для этой покупки (нужно минимум [minimum_players])."))
 		return TRUE
-	if(C.prefs.metadollars < cost)
+	if(balance < cost)
 		to_chat(C.mob, span_warning("Недостаточно метадолларов."))
 		return TRUE
 	if(!queue_delivery(C))
 		return FALSE
-	C.prefs.metadollars -= cost
-	C.prefs.save_preferences()
+	SSmetadollars.metadollar_adjust(-cost, C.ckey, C.key)
 	to_chat(C.mob, span_notice("[delivery_message()]"))
 	return TRUE
 
@@ -112,9 +112,10 @@
 	minimum_players = 100
 
 /datum/metadollar_shop_item/item/metadollar_total_burn/try_purchase(client/C)
-	if(!C?.prefs)
+	if(!C?.ckey)
 		return FALSE
-	if(C.prefs.metadollars < cost)
+	var/balance = SSmetadollars.get_metadollars(C.ckey)
+	if(balance < cost)
 		to_chat(C.mob, span_warning("Недостаточно метадолларов (нужно [cost] М$)."))
 		return TRUE
 	bm_metadollar_global_burn(C.mob)

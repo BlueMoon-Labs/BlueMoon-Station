@@ -516,7 +516,7 @@
 			new openingoverlaytype(loc)
 		return TRUE
 	else
-		if(!stealthy)
+		if(L && !stealthy)
 			new /obj/effect/temp_visual/cult/sac(loc)
 			var/atom/throwtarget
 			throwtarget = get_edge_target_turf(src, get_dir(src, get_step_away(L, src)))

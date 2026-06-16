@@ -28,16 +28,16 @@ export const ClockworkSlab = (props, context) => {
     recollection = true,
     scripture = {},
     tier_infos = {},
+    category_infos = [],
     power = "0 W",
   } = data;
+  const defaultTab = category_infos[0]?.name || 'Постройки';
   const [
     tab,
     setTab,
-  ] = useSharedState(context, 'tab', 'Application');
+  ] = useSharedState(context, 'tab', defaultTab);
 
-  const tierInfo = tier_infos
-  && tier_infos[tab]
-  || {};
+  const categoryInfo = category_infos.find(cat => cat.name === tab) || {};
 
   const [
     searchText,
@@ -73,10 +73,10 @@ export const ClockworkSlab = (props, context) => {
           <CSTutorial />
         ) : (
           <Section
-            title="Power"
+            title="Энергия"
             buttons={(
               <Fragment>
-                Search
+                Поиск
                 <Input
                   autoFocus
                   value={searchText}
@@ -84,61 +84,64 @@ export const ClockworkSlab = (props, context) => {
                   mx={1} />
                 <Button
                   icon="book"
-                  tooltip={"Tutorial"}
+                  tooltip={"Обучение"}
                   tooltipPosition={"left"}
                   onClick={() => act('toggle')}>
-                  Recollection
+                  Память
                 </Button>
               </Fragment>
             )}>
-            <b>{power}</b> power is available for scripture
-            and other consumers.
+            <b>{power}</b> энергии доступно для писаний
+            и других потребителей.
             <Section level={2}>
               <Tabs>
-                {map((scriptures, name) => (
+                {(category_infos.length ? category_infos : map((scriptures, name) => ({ name }))(scripture)).map(cat => (
                   <Tabs.Tab
-                    key={name}
-                    selected={tab === name}
-                    onClick={() => setTab(name)}>
-                    {name} ({scriptures?.length || 0})
+                    key={cat.name}
+                    selected={tab === cat.name}
+                    onClick={() => setTab(cat.name)}>
+                    {cat.name} ({scripture[cat.name]?.length || 0})
                   </Tabs.Tab>
-                ))(scripture)}
+                ))}
               </Tabs>
-              <Box
-                as={'span'}
-                textColor={'#dab44d'}
-                bold={!!tierInfo.ready} // muh booleans
-                italic={!tierInfo.ready}>
-                {tierInfo.ready ? (
-                  "These scriptures are permanently unlocked."
-                ) : (
-                  tierInfo.requirement
-                )}
-              </Box>
+              {categoryInfo.desc && (
+                <Box as={'span'} textColor={'#dab44d'} italic>
+                  {categoryInfo.desc}
+                </Box>
+              )}
+              <br />
+              {map((info, tier) => (
+                <Box
+                  key={tier}
+                  as={'span'}
+                  textColor={info.ready ? '#BE8700' : '#888888'}
+                  bold={!!info.ready}
+                  italic={!info.ready}>
+                  <b>{tier}:</b> {info.ready
+                    ? "Эти писания уже открыты."
+                    : info.requirement}
+                  <br />
+                </Box>
+              ))(tier_infos)}
               <br />
               <Box as={'span'} textColor={'#DAAA18'}>
-                Scriptures in <b>yellow</b> are related to
-                construction and building.
+                <b>Жёлтые</b> — постройки и база.
               </Box>
               <br />
               <Box as={'span'} textColor={'#6E001A'}>
-                Scriptures in <b>red</b> are related to
-                attacking and offense.
+                <b>Красные</b> — атака и бой.
               </Box>
               <br />
               <Box as={'span'} textColor={'#1E8CE1'}>
-                Scriptures in <b>blue</b> are related to
-                healing and defense.
+                <b>Синие</b> — лечение и защита.
               </Box>
               <br />
               <Box as={'span'} textColor={'#AF0AAF'}>
-                Scriptures in <b>purple</b> are niche but
-                still important!
+                <b>Фиолетовые</b> — особые, но важные.
               </Box>
               <br />
               <Box as={'span'} textColor={'#DAAA18'} italic>
-                Scriptures with italicized names are
-                important to success.
+                <i>Курсив</i> — важно для победы.
               </Box>
               <Divider />
               <Table>
@@ -156,6 +159,7 @@ export const CSScripture = (props, context) => {
   const { act, data } = useBackend(context);
   const {
     power_unformatted = 0,
+    tier_infos = {},
   } = data;
   const {
     scriptInTab = [],
@@ -182,14 +186,18 @@ export const CSScripture = (props, context) => {
           textAlign="right">
           <Button
             disabled={
-              script.required_unformatted >= power_unformatted
+              script.required_unformatted > power_unformatted
+              || !(tier_infos[script.tier]?.ready)
             }
-            tooltip={script.tip}
+            tooltip={[
+              script.tip,
+              !(tier_infos[script.tier]?.ready) && tier_infos[script.tier]?.requirement,
+            ].filter(Boolean).join('\n\n')}
             tooltipPosition={'left'}
             onClick={() => act('recite', {
               'script': script.type,
             })} >
-            {`Recite ${script.required}`}
+            {`Прочесть ${script.required}`}
           </Button>
         </Table.Cell>
         <Table.Cell
@@ -202,9 +210,9 @@ export const CSScripture = (props, context) => {
               'script': script.type,
             })}>
             {script.bound ? (
-              `Unbind ${script.bound}`
+              `Отвязать ${script.bound}`
             ) : (
-              'Quickbind'
+              'Быстрая'
             )}
           </Button>
         </Table.Cell>
@@ -214,7 +222,7 @@ export const CSScripture = (props, context) => {
         as="span"
         textColor={'#BE8700'}
         fontSize={2.3}>
-        Nothing here!
+        Пусто!
       </Box>
     )
   );
@@ -230,13 +238,13 @@ export const CSTutorial = (props, context) => {
   } = data;
   return (
     <Section
-      title="Recollection"
+      title="Память"
       buttons={(
         <Button
           icon="cog"
           tooltipPosition={"left"}
           onClick={() => act('toggle')}>
-          Recital
+          Писания
         </Button>
       )}>
       <Box>
@@ -258,24 +266,17 @@ export const CSTutorial = (props, context) => {
               Chetr nyy hagehguf naq ubabe Ratvar.
             </Box>
             <NoticeBox warning>
-              NOTICE: This information is out of date.
-              Read the Ark &amp; You primer in your backpack
-              or read the wiki page for current info.
+              ВНИМАНИЕ: Информация устарела.
+              Читайте гайд в рюкзаке или вики.
             </NoticeBox>
-            These pages serve as the archives of Ratvar, the
-            Clockwork Justiciar. This section of your slab
-            has information on being as a Servant, advice
-            for what to do next, and pointers for serving the
-            master well. You should recommended that you check this
-            area for help if you get stuck or need guidance on
-            what to do next.
+            Архивы Ратвара, Часового Судии. Здесь — советы
+            для слуг, что делать дальше и как служить
+            мастеру. Загляните сюда, если застряли.
             <br /> <br />
             <NoticeBox info>
-              Disclaimer: Many objects, terms, and phrases, such as
-              Servant, Cache, and Slab, are capitalized like proper
-              nouns. This is a quirk of the Ratvarian language do
-              not let it confuse you! You are free to use the names
-              in pronoun form when speaking in normal languages.
+              Servant, Cache, Slab и прочие термины
+              пишутся с большой буквы — это особенность
+              языка Ратвара, не путайтесь.
             </NoticeBox>
           </>
         )}
@@ -302,14 +303,14 @@ export const CSTutorial = (props, context) => {
           {rec_section?.title ? (
             rec_section.title
           ) : (
-            '500 Slab Internal archives not found.'
+            'Архив плиты не найден.'
           )}
         </Box>
         <br /><br />
         {rec_section?.info ? (
           rec_section.info
         ) : (
-          "One of the cogscarabs must've misplaced this section."
+          "Когскараб, видимо, потерял этот раздел."
         )}
       </Box>
       <br />
@@ -319,20 +320,20 @@ export const CSTutorial = (props, context) => {
           as={'span'}
           textColor={'#BE8700'}
           fontSize={2.3}>
-          Quickbound Scripture
+          Быстрые писания
         </Box>
         <br />
         <Box as={'span'} italic>
-          You can have up to five scriptures bound to
-          action buttons for easy use.
+          До пяти писаний можно привязать
+          к кнопкам действий.
         </Box>
         <br /><br />
         {rec_binds?.map(bind => (
           <Fragment key={bind.name ? bind.name : "none"}>
-            A <b>Quickbind</b> slot ({rec_binds.indexOf(bind)+1}),
-            currently set to&nbsp;
+            Слот <b>быстрой привязки</b> ({rec_binds.indexOf(bind)+1}),
+            сейчас:&nbsp;
             <span style={`color:${bind ? bind.color : "#BE8700"}`}>
-              {bind?.name ? bind.name : "None"}
+              {bind?.name ? bind.name : "Нет"}
             </span>
             .
             <br />

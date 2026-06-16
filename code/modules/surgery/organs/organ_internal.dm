@@ -113,6 +113,11 @@
 /obj/item/organ/proc/can_decay()
 	if(organ_flags & (ORGAN_NO_SPOIL | ORGAN_SYNTHETIC | ORGAN_FAILING))
 		return FALSE
+	if(owner) //species/effects with stabilized organs (vox, skeletons etc.) keep them from rotting inside the body
+		if(slot == ORGAN_SLOT_HEART && HAS_TRAIT(owner, TRAIT_STABLEHEART))
+			return FALSE
+		if(slot == ORGAN_SLOT_LIVER && HAS_TRAIT(owner, TRAIT_STABLELIVER))
+			return FALSE
 	return TRUE
 
 //Checks to see if the organ is frozen from temperature

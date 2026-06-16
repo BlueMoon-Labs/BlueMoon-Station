@@ -22,11 +22,11 @@
 
 	var/obj/item/computer_hardware/card_slot/card_slot = computer.all_components[MC_CARD]
 	var/obj/item/computer_hardware/printer/printer = computer.all_components[MC_PRINT]
-	var/obj/item/card/id/id_card = card_slot ? card_slot.stored_card : null
-	data["has_id_slot"] = !!card_slot
+	var/obj/item/card/id/id_card = computer.GetID()
+	data["has_id_slot"] = !!(id_card || card_slot)
 	data["has_printer"] = !!printer
 	data["paperamt"] = printer ? "[printer.stored_paper] / [printer.max_paper]" : null
-	data["card_owner"] = card_slot?.stored_card ? id_card.registered_name : "No Card Inserted."
+	data["card_owner"] = id_card ? id_card.registered_name : "No Card Inserted."
 	data["current_user"] = payments_acc ? payments_acc.account_holder : null
 	data["barcode_split"] = cut_multiplier * 100
 	return data
@@ -38,17 +38,20 @@
 	if(!computer)
 		return
 
-	// Get components
 	var/obj/item/computer_hardware/card_slot/card_slot = computer.all_components[MC_CARD]
 	var/obj/item/computer_hardware/printer/printer = computer.all_components[MC_PRINT]
-	var/obj/item/card/id/id_card = card_slot ? card_slot.stored_card : null
-	if(!card_slot || !printer) //We need both to successfully use this app.
-		return
+	var/obj/item/card/id/id_card = computer.GetID()
 
 	switch(action)
 		if("ejectid")
-			if(id_card)
+			if(card_slot?.stored_card)
 				card_slot.try_eject(usr, TRUE)
+			else if(istype(computer, /obj/item/modular_computer/pda))
+				var/obj/item/modular_computer/pda/pda = computer
+				if(pda.stored_id)
+					var/obj/item/card/id/removed = pda.RemoveID()
+					if(removed)
+						usr.put_in_hands(removed)
 		if("selectid")
 			if(!id_card)
 				return

@@ -1,3 +1,4 @@
+import { Component, createRef } from 'inferno';
 import { createSearch } from '../../common/string';
 import { useBackend, useLocalState } from '../backend';
 import {
@@ -638,6 +639,7 @@ const ChatScreen = (props, context) => {
               </>
             )}
             {filteredMessages}
+            <AutoScrollToBottom triggerKey={messages.length} />
           </Stack>
         </Section>
       </Stack.Item>
@@ -775,6 +777,49 @@ const MediaAttachment = ({ src, maxHeight = '200px', maxWidth = '100%', onClick 
     />
   );
 };
+
+class AutoScrollToBottom extends Component {
+  constructor(props) {
+    super(props);
+    this.ref = createRef();
+    this.atBottom = true;
+    this.handleScroll = this.handleScroll.bind(this);
+  }
+
+  handleScroll(e) {
+    const el = e.currentTarget;
+    const threshold = 50;
+    this.atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - threshold;
+  }
+
+  componentDidMount() {
+    const content = this.ref.current?.parentElement?.closest('.Section__content');
+    if (content) {
+      content.addEventListener('scroll', this.handleScroll);
+      content.scrollTop = content.scrollHeight;
+    }
+  }
+
+  componentWillUnmount() {
+    const content = this.ref.current?.parentElement?.closest('.Section__content');
+    if (content) {
+      content.removeEventListener('scroll', this.handleScroll);
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.triggerKey !== prevProps.triggerKey && this.atBottom) {
+      const content = this.ref.current?.parentElement?.closest('.Section__content');
+      if (content) {
+        content.scrollTop = content.scrollHeight;
+      }
+    }
+  }
+
+  render() {
+    return <div ref={this.ref} />;
+  }
+}
 
 const ChatMessage = (props) => {
   const { message, everyone, outgoing, timestamp, photoPath, onPreview } = props;

@@ -14,7 +14,7 @@
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
 		ui = new(user, src, "AdminTicketPanel")
-		ui.set_autoupdate(FALSE)
+		ui.set_autoupdate(TRUE)
 		ui.open()
 
 /datum/admin_ticket_panel/ui_state(mob/user)
