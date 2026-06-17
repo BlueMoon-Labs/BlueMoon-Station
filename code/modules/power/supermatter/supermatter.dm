@@ -773,7 +773,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 /obj/machinery/power/supermatter_crystal/proc/register_emitter_beam_hit(obj/machinery/power/emitter/E)
 	if(!is_supermatter_beam_emitter(E))
 		return
-	emitter_beam_active[E] = world.time
+	LAZYSET(emitter_beam_active, E, world.time)
 
 /obj/machinery/power/supermatter_crystal/proc/unregister_emitter_beam_hit(obj/machinery/power/emitter/E)
 	LAZYREMOVE(emitter_beam_active, E)
