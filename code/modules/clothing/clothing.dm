@@ -112,7 +112,7 @@ MOVED TO: modular_splurt/code/module/clothing/clothing.dm
 */
 
 /obj/item/clothing/attackby(obj/item/W, mob/user, params)
-	if(W.sharpness >= SHARP_EDGED) //осколок стекла, ножик, когти
+	if(W.sharpness >= SHARP_EDGED && user.a_intent == INTENT_HARM) //осколок стекла, ножик, когти, только в харме
 		if(damaged_clothes == CLOTHING_SHREDDED)
 			return FALSE
 		if(do_after(user, 5 SECONDS, user))
