@@ -5197,6 +5197,7 @@
 #include "modular_sand\code\datums\interactions\lewd_objects.dm"
 #include "modular_sand\code\datums\interactions\interaction_datums\interaction_definitions.dm"
 #include "modular_sand\code\datums\interactions\interaction_datums\lewd\breasts.dm"
+#include "modular_sand\code\datums\interactions\interaction_datums\lewd\clothing_break.dm"
 #include "modular_sand\code\datums\interactions\interaction_datums\lewd\facefuck.dm"
 #include "modular_sand\code\datums\interactions\interaction_datums\lewd\feet.dm"
 #include "modular_sand\code\datums\interactions\interaction_datums\lewd\finger.dm"
