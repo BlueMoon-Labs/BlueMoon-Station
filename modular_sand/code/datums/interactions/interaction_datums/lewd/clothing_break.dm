@@ -6,7 +6,9 @@
 	required_from_target = INTERACTION_REQUIRE_HANDS
 
 /datum/interaction/lewd/tear_of_clothing/display_interaction(mob/living/user, mob/living/partner, is_hidden)
-	var/mob/living/carbon/human/partner_human = partner
+	var/mob/living/carbon/human/partner_human = astype(partner, /mob/living/carbon/human)
+	if(!partner_human)
+		return
 	var/distance = 7
 	if(is_hidden)
 		distance = 1
