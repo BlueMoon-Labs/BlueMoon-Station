@@ -47,11 +47,11 @@
 /datum/ert/ntr_ert // Агенты Внутренних Дел
 	roles = list(/datum/antagonist/ert/ntr_ert_agent)
 	leader_role = /datum/antagonist/ert/ntr_ert_leader
+	maxteamsize = 4
 	rename_team = "Internal Affairs Squad"
 	code = "Red"
 	mission = "слушайтесь Представителя Корпорации. Окажите поддержку Представителю Корпорации в установлении порядка и верховенства права на станции."
 	polldesc = "Internal Affairs Squad"
-	teamsize = 4
 	//ertphrase = "modular_bluemoon/sound/ert/sol_send.ogg"
 
 /datum/ert/maid_ert // рофлоЕРТ горничных
@@ -61,7 +61,6 @@
 	code = "Delta"
 	mission = "наведите порядок на станции, если вы понимаете, что офицер ССО имел ввиду."
 	polldesc = "Elite Maid Squad"
-	teamsize = 5
 	//ertphrase = "modular_bluemoon/sound/ert/sol_send.ogg"
 
 /datum/ert/zealteam_ert // Удар наковальней
@@ -76,8 +75,8 @@
 /datum/ert/rabbit
 	roles = list(/datum/antagonist/ert/security/rabbit)
 	leader_role = /datum/antagonist/ert/commander/rabbit
-	teamsize = 6
 	opendoors = FALSE
+	maxteamsize = 10
 	rename_team = "Rabbit Team"
 	mission = "устраните любые нарушения и/или отклонения от нормы на станции."
 	polldesc = "a Rabbit Team"

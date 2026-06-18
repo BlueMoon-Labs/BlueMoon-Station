@@ -555,7 +555,7 @@
 			var/mob/living/silicon/ai/aiPlayer = i
 			if(aiPlayer.mind)
 				count_ai++
-				parts += "▶ \[[count_ai]/[total_ai]\] <b><font color=\"#60b6ff\">[aiPlayer.name]</font></b> (игрок: <b>[aiPlayer.mind.key]</b>)"
+				parts += "▶ \[[count_ai]/[total_ai]\] <b><font color=\"#60b6ff\">[aiPlayer.name]</font></b>[aiPlayer.mind.hide_ckey ? "" : " (игрок: <b>[aiPlayer.mind.key]</b>)"]"
 				parts += "[FOURSPACES]├ Статус: [aiPlayer.stat != DEAD ? "<b>активен</b>" : span_redtext("деактивирован") ]"
 				parts += "[FOURSPACES]├ Суммарное кол-во изменений законов: <b>[aiPlayer.law_change_counter == 0 ? span_greentext("изменения отсутствуют")  : span_redtext("[aiPlayer.law_change_counter]") ]</b>"
 				parts += "[FOURSPACES]└ <font color=\"#60b6ff\">ЗАКОНЫ ИИ //</font>"
@@ -573,7 +573,7 @@
 					count_minion++
 					count_minion_spacer--
 					if(connected_minion.mind)
-						parts += "[FOURSPACES][FOURSPACES] — ([count_minion]/[total_ai_minion]) <b>[connected_minion.name]</b> (игрок: <b>[connected_minion.mind.key]</b>) [connected_minion.stat != DEAD ? "(<span class='greentext'>активен</span>)" : "(<span class='redtext'>деактивирован</span>)"] (законы синхронизируются)[count_minion_spacer ? ", " : "."]"
+						parts += "[FOURSPACES][FOURSPACES] — ([count_minion]/[total_ai_minion]) <b>[connected_minion.name]</b>[connected_minion.mind.hide_ckey ? "" : " (игрок: <b>[connected_minion.mind.key]</b>)"] [connected_minion.stat != DEAD ? "(<span class='greentext'>активен</span>)" : "(<span class='redtext'>деактивирован</span>)"] (законы синхронизируются)[count_minion_spacer ? ", " : "."]"
 			else
 				parts += "[FOURSPACES][FOURSPACES] — \[0/0\] <i>Миньоны отсутствуют</i>."
 
@@ -588,7 +588,7 @@
 		for(var/mob/living/silicon/robot/standalone_silicon in GLOB.silicon_mobs)
 			count_silicon++
 			if (!standalone_silicon.connected_ai && standalone_silicon.mind)
-				parts += "▶ ([count_silicon]/[total_silicon]) [minion_spacer ? "<br>" : ""]<b><font color=\"#60b6ff\">[standalone_silicon.name]</font></b> (игрок: <b>[standalone_silicon.mind.key]</b>)"
+				parts += "▶ ([count_silicon]/[total_silicon]) [minion_spacer ? "<br>" : ""]<b><font color=\"#60b6ff\">[standalone_silicon.name]</font></b>[standalone_silicon.mind.hide_ckey ? "" : " (игрок: <b>[standalone_silicon.mind.key]</b>)"]"
 				parts += "[FOURSPACES]├ Статус: [(standalone_silicon.stat != DEAD) ? "<span class='greentext'>выжил</span> как самостоятельный киборг без связи с ИИ!" : "<span class='redtext'>не смог выжить</span> в суровых условиях, будучи самостоятельным киборгом без связи с ИИ."]"
 				parts += "[FOURSPACES]├ Суммарное кол-во изменений законов: <b>[standalone_silicon.law_change_counter == 0 ? span_greentext("изменения отсутствуют")  : span_redtext("[standalone_silicon.law_change_counter]") ]</b>"
 				parts += "[FOURSPACES]└ <font color=\"#60b6ff\">ЗАКОНЫ КИБОРГА //</font>"

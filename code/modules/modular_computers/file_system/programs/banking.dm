@@ -9,7 +9,7 @@
 	extended_desc = "Nanotrasen Pay — управляйте своим метадолларовым счётом, снимайте и пополняйте M$."
 	requires_ntnet = FALSE
 	transfer_access = null
-	usage_flags = PROGRAM_PDA
+	usage_flags = PROGRAM_ON_TABLETS
 	size = 6
 	tgui_id = "NtosBanking"
 	program_icon = "money-bill-wave"
@@ -19,8 +19,8 @@
 
 	var/balance = 0
 	var/has_account = FALSE
-	if(user?.client?.prefs)
-		balance = user.client.prefs.metadollars
+	if(user?.client?.ckey)
+		balance = SSmetadollars.get_metadollars(user.client.ckey)
 		has_account = TRUE
 
 	data["has_account"] = has_account
@@ -39,7 +39,7 @@
 		return FALSE
 
 	var/client/C = user.client
-	if(!C?.prefs)
+	if(!C?.ckey)
 		to_chat(user, span_warning("Unable to access your metadollar account. No client connection."))
 		return FALSE
 
@@ -49,14 +49,14 @@
 			if(!amount || amount <= 0)
 				return FALSE
 			amount = round(amount)
-			if(C.prefs.metadollars < amount)
-				to_chat(user, span_warning("Insufficient metadollars. Balance: [C.prefs.metadollars] M$."))
+			var/balance = SSmetadollars.get_metadollars(C.ckey)
+			if(balance < amount)
+				to_chat(user, span_warning("Insufficient metadollars. Balance: [balance] M$."))
 				return FALSE
-			C.prefs.metadollars -= amount
-			C.prefs.save_preferences()
+			SSmetadollars.metadollar_adjust(-amount, C.ckey, C.key)
 			var/obj/item/stack/metadollar/MD = new(user.drop_location(), amount)
 			user.put_in_hands(MD)
-			log_admin("METADOLLAR: [user.real_name] ([C.ckey]) withdrew [amount] M$ via PDA. Balance: [C.prefs.metadollars] M$.")
+			log_admin("METADOLLAR: [user.real_name] ([C.ckey]) withdrew [amount] M$ via PDA. Balance: [SSmetadollars.get_metadollars(C.ckey)] M$.")
 			return TRUE
 
 		if("deposit")
@@ -72,8 +72,7 @@
 			if(amount <= 0)
 				to_chat(user, span_warning("[MD] has no metadollars."))
 				return FALSE
-			C.prefs.metadollars += amount
-			C.prefs.save_preferences()
-			log_admin("METADOLLAR: [user.real_name] ([C.ckey]) deposited [amount] M$ via PDA. Balance: [C.prefs.metadollars] M$.")
+			SSmetadollars.metadollar_adjust(amount, C.ckey, C.key)
+			log_admin("METADOLLAR: [user.real_name] ([C.ckey]) deposited [amount] M$ via PDA. Balance: [SSmetadollars.get_metadollars(C.ckey)] M$.")
 			qdel(MD)
 			return TRUE

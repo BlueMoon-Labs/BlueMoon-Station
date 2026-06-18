@@ -2,7 +2,7 @@
 /obj/structure/destructible/clockwork/massive/ratvar
 	name = "Ratvar, the Clockwork Justiciar"
 	desc = "..."
-	clockwork_desc = "<span class='large_brass bold italics'>Ratvar, free at last!</span>"
+	clockwork_desc = "<span class='large_brass bold italics'>Ратвар наконец свободен!</span>"
 	icon = 'icons/effects/512x512.dmi'
 	icon_state = "ratvar"
 	pixel_x = -235
@@ -19,21 +19,24 @@
 
 /obj/structure/destructible/clockwork/massive/ratvar/Initialize(mapload)
 	. = ..()
+	GLOB.poi_list |= src
+	ratvar_yellowen_cosmos()
 	GLOB.ratvar_awakens++
 	for(var/obj/O in GLOB.all_clockwork_objects)
 		O.ratvar_act()
 	for(var/mob/living/simple_animal/hostile/clockwork/M in GLOB.all_clockwork_mobs)
 		M.ratvar_act()
 	START_PROCESSING(SSobj, src)
-	send_to_playing_players("<span class='ratvar'>[text2ratvar("ONCE AGAIN MY LIGHT SHINES AMONG THESE PATHETIC STARS")]</span>")
+	send_to_playing_players("<span class='ratvar'>[text2ratvar("ВНОВЬ МОЙ СВЕТ ОЗАРЯЕТ ЭТИ ЖАЛКИЕ ЗВЁЗДЫ")]</span>")
 	sound_to_playing_players('sound/effects/ratvar_reveal.ogg')
 	var/mutable_appearance/alert_overlay = mutable_appearance('icons/effects/clockwork_effects.dmi', "ratvar_alert")
-	notify_ghosts("The Justiciar's light calls to you! Reach out to Ratvar in [get_area_name(src)] to be granted a shell to spread his glory!", null, source = src, alert_overlay = alert_overlay)
+	notify_ghosts("Свет Юстициара зовёт вас! Обратитесь к Ратвару в [get_area_name(src)], чтобы получить оболочку для распространения его славы!", null, source = src, alert_overlay = alert_overlay)
 	SSpersistence.station_was_destroyed = TRUE
 	INVOKE_ASYNC(src, PROC_REF(purge_the_heresy))
 
 
 /obj/structure/destructible/clockwork/massive/ratvar/Destroy()
+	GLOB.poi_list -= src
 	GLOB.ratvar_awakens--
 	for(var/obj/O in GLOB.all_clockwork_objects)
 		O.ratvar_act()
@@ -42,11 +45,11 @@
 
 //ATTACK GHOST IGNORING PARENT RETURN VALUE
 /obj/structure/destructible/clockwork/massive/ratvar/attack_ghost(mob/dead/observer/O)
-	var/alertresult = alert(O, "Embrace the Justiciar's light? You can no longer be cloned!",,"Yes", "No")
-	if(alertresult == "No" || QDELETED(O) || !istype(O) || !O.key)
+	var/alertresult = alert(O, "Принять свет Юстициара? После этого вас больше нельзя будет клонировать!",, "Да", "Нет")
+	if(alertresult == "Нет" || QDELETED(O) || !istype(O) || !O.key)
 		return FALSE
 	var/mob/living/simple_animal/drone/cogscarab/ratvar/R = new/mob/living/simple_animal/drone/cogscarab/ratvar(get_turf(src))
-	R.visible_message("<span class='heavy_brass'>[R] forms, and its eyes blink open, glowing bright red!</span>")
+	R.visible_message("<span class='heavy_brass'>[R] материализуется, и его глаза вспыхивают алым светом!</span>")
 	O.transfer_ckey(R, FALSE)
 
 /obj/structure/destructible/clockwork/massive/ratvar/Bump(atom/A)
@@ -59,7 +62,7 @@
 	return clashing
 
 /obj/structure/destructible/clockwork/massive/ratvar/process()
-	if(clashing) //I'm a bit occupied right now, thanks
+	if(clashing)
 		return
 	for(var/I in circlerangeturfs(src, convert_range))
 		var/turf/T = I
@@ -67,48 +70,63 @@
 	for(var/I in circleviewturfs(src, round(convert_range * 0.5)))
 		var/turf/T = I
 		T.ratvar_act(TRUE)
-	var/dir_to_step_in = pick(GLOB.cardinals)
-	var/list/meals = list()
-	for(var/mob/living/L in GLOB.alive_mob_list) //we want to know who's alive so we don't lose and retarget a single person
-		if(L.z == z && !is_servant_of_ratvar(L) && L.mind)
-			meals += L
-	if(GLOB.cult_narsie && GLOB.cult_narsie.z == z)
-		meals = list(GLOB.cult_narsie) //if you're in the way, handy for him, but ratvar only cares about Nar'Sie!
-		prey = GLOB.cult_narsie
-		if(get_dist(src, prey) <= 10)
+	var/dir_to_step_in
+	var/obj/singularity/narsie/narsie = find_god_narsie_on_z(src)
+	if(narsie)
+		prey = narsie
+		if(get_dist(src, narsie) <= 10)
 			clash()
 			return
+		step(src, get_dir(src, narsie))
+		return
+	var/list/meals = list()
+	for(var/mob/living/L in GLOB.alive_mob_list)
+		if(L.z != z || !is_station_level(L.z))
+			continue
+		if(is_servant_of_ratvar(L) || !L.mind || !L.client)
+			continue
+		meals += L
 	if(!prey)
-		if(!prey && LAZYLEN(meals))
-			var/mob/living/L = prey
+		if(LAZYLEN(meals))
 			prey = pick(meals)
-			to_chat(prey, "<span class='heavy_brass'><font size=5>\"You will do, heretic.\"</font></span>\n\
-			<span class='userdanger'>You feel something massive turn its crushing focus to you...</span>")
-			L.playsound_local(prey, 'sound/effects/ratvar_reveal.ogg', 100, FALSE, pressure_affected = FALSE)
+			var/mob/living/target = prey
+			to_chat(target, "<span class='heavy_brass'><font size=5>\"Ты сгодишься, еретик.\"</font></span>\n\
+			<span class='userdanger'>Вы чувствуете, как на вас обрушивается сокрушительное внимание чего-то колоссального...</span>")
+			target.playsound_local(get_turf(target), 'sound/effects/ratvar_reveal.ogg', 100, FALSE, pressure_affected = FALSE)
 	else
 		if((!istype(prey, /obj/singularity/narsie) && prob(10) && LAZYLEN(meals) > 1) || prey.z != z || !(prey in meals))
 			if(is_servant_of_ratvar(prey))
-				to_chat(prey, "<span class='heavy_brass'><font size=5>\"Serve me well.\"</font></span>\n\
-				<span class='big_brass'>You feel great joy as your god turns His eye to another heretic...</span>")
+				to_chat(prey, "<span class='heavy_brass'><font size=5>\"Служи мне достойно.\"</font></span>\n\
+				<span class='big_brass'>Вы испытываете великую радость, когда ваш бог направляет свой взор на другого еретика...</span>")
 			else
-				to_chat(prey, "<span class='heavy_brass'><font size=5>\"No matter. I will find you later, heretic.\"</font></span>\n\
-				<span class='userdanger'>You feel tremendous relief as the crushing focus relents...</span>")
+				to_chat(prey, "<span class='heavy_brass'><font size=5>\"Неважно. Я найду тебя позже, еретик.\"</font></span>\n\
+				<span class='userdanger'>Вы чувствуете огромное облегчение, когда сокрушительное внимание отступает...</span>")
 			prey = null
-		else
-			dir_to_step_in = get_dir(src, prey) //Unlike Nar'Sie, Ratvar ruthlessly chases down his target
-	step(src, dir_to_step_in)
+	if(prey && get_turf(prey))
+		dir_to_step_in = get_dir(src, prey)
+	else if(LAZYLEN(meals))
+		var/mob/living/nearest
+		var/best_dist = INFINITY
+		for(var/mob/living/L in meals)
+			var/dist = get_dist(src, L)
+			if(dist < best_dist)
+				best_dist = dist
+				nearest = L
+		dir_to_step_in = get_dir(src, nearest)
+	if(dir_to_step_in)
+		step(src, dir_to_step_in)
 
 /obj/structure/destructible/clockwork/massive/ratvar/proc/clash()
-	if(clashing || prey != GLOB.cult_narsie)
+	if(clashing || !istype(prey, /obj/singularity/narsie))
 		return
 	clashing = TRUE
-	GLOB.cult_narsie.clashing = TRUE
-	to_chat(world, "<span class='bold brass'><font size=5>\"[pick("YOU.", "BLOOD GOD!!", "FACE ME, COWARD!")]\"</font></span>")
-	to_chat(world, "<span class='bold cult'><font size=5>\"[pick("Ratvar?! How?!", "YOU. BANISHED ONCE. KILLED NOW.", "SCRAP HEAP!!")]\"</font></span>")
-	clash_of_the_titans(GLOB.cult_narsie) // >:(
+	var/obj/singularity/narsie/narsie = prey
+	narsie.clashing = TRUE
+	to_chat(world, "<span class='bold brass'><font size=5>\"[pick("ТЫ.", "БОГ КРОВИ!!", "ВЫЙДИ И СРАЗИСЬ, ТРУС!")]\"</font></span>")
+	to_chat(world, "<span class='bold cult'><font size=5>\"[pick("Ратвар?! Как?!", "ТЫ. ИЗГНАН ОДНАЖДЫ. УБИТ СЕЙЧАС.", "ГРУДА ХЛАМА!!")]\"</font></span>")
+	clash_of_the_titans(narsie)
 	return TRUE
 
-//Put me in Reebe, will you? Ratvar has found and is going to do a hecking murder on Nar'Sie
 /obj/structure/destructible/clockwork/massive/ratvar/proc/clash_of_the_titans(obj/singularity/narsie/narsie)
 	set waitfor = FALSE
 	var/winner = "Undeclared"
@@ -137,18 +155,18 @@
 		if(narsie_chance > ratvar_chance)
 			winner = "Nar'Sie"
 			break
-		base_victory_chance *= 2 //The clash has a higher chance of resolving each time both gods attack one another
+		base_victory_chance *= 2
 	switch(winner)
 		if("Ratvar")
-			send_to_playing_players("<span class='heavy_brass'><font size=5>\"[pick("DIE.", "ROT FOR CENTURIES, AS I HAVE!.","PERISH, HEATHEN.", "DIE, MONSTER, YOU DON'T BELONG IN THIS WORLD.")]\"</font></span>\n\
-			<span class='cult'><font size=5>\"<b>[pick("Nooooo...", "Not die. To y-", "Die. Ratv-", "Sas tyen re-")]\"</b></font></span>") //Nar'Sie get out
+			send_to_playing_players("<span class='heavy_brass'><font size=5>\"[pick("СДОХНИ.", "ГНИЙ ВЕКАМИ, КАК Я!.", "ПОГИБНИ, ЯЗЫЧНИК.", "СДОХНИ, МОНСТР, ТЫ НЕ МЕСТО В ЭТОМ МИРЕ.")]\"</font></span>\n\
+			<span class='cult'><font size=5>\"<b>[pick("Нееет...", "Не умру. К т-", "Умру. Ратв-", "Sas tyen re-")]\"</b></font></span>")
 			sound_to_playing_players('sound/magic/clockwork/anima_fragment_attack.ogg')
 			sound_to_playing_players('sound/magic/abomscream.ogg', 50)
 			clashing = FALSE
 			qdel(narsie)
 		if("Nar'Sie")
-			send_to_playing_players("<span class='cult'><font size=5>\"<b>[pick("Ha.", "Ra'sha fonn dest.", "You fool. To come here.")]</b>\"</font></span>\n\
-			<span class='heavy_brass'><font size=5>\"[pick("NO, YOUR SHADOWS SHALL NO-", "ZNL GUR FGERNZF BS GVZR PNEEL ZL RKVFG-", "MY LIGHT CANNO-")]\"</font></span>")
+			send_to_playing_players("<span class='cult'><font size=5>\"<b>[pick("Ха.", "Ra'sha fonn dest.", "Глупец. Сюда пришёл.")]</b>\"</font></span>\n\
+			<span class='heavy_brass'><font size=5>\"[pick("НЕТ, ТВОИ ТЕНИ НЕ СМОГ-", "ZNL GUR FGERNZF BS GVZR PNEEL ZL RKVFG-", "МОЙ СВЕТ НЕ МОЖ-")]\"</font></span>")
 			sound_to_playing_players('sound/magic/demon_attack1.ogg', 50)
 			sound_to_playing_players('sound/machines/clockcult/ratvar_scream.ogg', 80)
 			narsie.clashing = FALSE
@@ -157,20 +175,20 @@
 
 /obj/structure/destructible/clockwork/massive/ratvar/proc/purge_the_heresy()
 	sleep(50)
-	priority_announce("Massive energy surge detected. Closest matching threat: Incoming supernova. All crew are advised to evacuate NAN lightyears away from blast zone","Центральное Командование, Отдел Работы с Реальностью", 'sound/misc/airraid.ogg')
+	priority_announce("Зафиксирован мощный энергетический всплеск. Ближайшая угроза: надвигающаяся сверхновая. Всему экипажу рекомендуется немедленно покинуть зону поражения.","Центральное Командование, Отдел Работы с Реальностью", 'sound/misc/airraid.ogg')
 	sleep(300)
-	priority_announce("Gravitational anomalies detected on the station. [Gibberish("There is no additional dat", 100)]-BZZZZZT.","Центральное Командование, Отдел Работы с Реальностью", 'sound/magic/clockwork/ratvar_announce1.ogg')
+	priority_announce("На станции зафиксированы гравитационные аномалии. [Gibberish("Дополнительных дан", 100)]-БЗЗЗЗТ.","Центральное Командование, Отдел Работы с Реальностью", 'sound/magic/clockwork/ratvar_announce1.ogg')
 	sleep(80)
 	sound_to_playing_players('sound/magic/clockwork/ratvar_announce2.ogg', 70)
-	send_to_playing_players("<span class='heavy_brass'><font size=5>\"COME, ALL THOSE FAITHFUL! WITNESS THE RAYS OF JUSTICE CAST UPON THE HERETICS!\"</font></span>")
+	send_to_playing_players("<span class='heavy_brass'><font size=5>\"ПРИДИТЕ, ВСЕ ВЕРНЫЕ! СТАНЬТЕ СВИДЕТЕЛЯМИ ЛУЧЕЙ ПРАВОСУДИЯ, ОБРУШИВШИХСЯ НА ЕРЕТИКОВ!\"</font></span>")
 	sleep(50)
 	SSshuttle.registerHostileEnvironment(src)
 	SSshuttle.lockdown = TRUE
 	sleep(250)
 	if(QDELETED(src))
-		priority_announce("Energy signal no longer detected.","Центральное Командование, Отдел Работы с Реальностью")
+		priority_announce("Энергетический сигнал больше не обнаруживается.","Центральное Командование, Отдел Работы с Реальностью")
 		return
-	sound_to_playing_players('sound/magic/clockwork/ark_activation_sequence.ogg', 80) //if this isn't lessened in volume it peaks for some reason
+	sound_to_playing_players('sound/magic/clockwork/ark_activation_sequence.ogg', 80)
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(clockcult_ending_helper)), 300)
 
 /proc/clockcult_ending_helper()

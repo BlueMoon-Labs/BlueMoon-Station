@@ -36,11 +36,21 @@
 /obj/item/gun/energy/modular_laser_rifle/zealstar/Initialize(mapload)
 	. = ..()
 
+/obj/item/gun/energy/modular_laser_rifle/zealstar/proc/zealstar_unauthorized_wielder(mob/living/user)
+	if(HAS_TRAIT(user, TRAIT_MINDSHIELD))
+		return FALSE
+	var/datum/mind/M = user.mind
+	if(!M || (!M.special_role && !LAZYLEN(M.antag_datums)))
+		return FALSE
+	if(M.is_ghost_role() || M.has_antag_datum(/datum/antagonist/ert, TRUE))
+		return FALSE
+	return TRUE
+
 /obj/item/gun/energy/modular_laser_rifle/zealstar/equipped(mob/user, slot, initial)
 	. = ..()
 	if(slot != ITEM_SLOT_HANDS || !isliving(user))
 		return
-	if(HAS_TRAIT(user, TRAIT_MINDSHIELD))
+	if(!zealstar_unauthorized_wielder(user))
 		return
 	to_chat(user, span_userdanger("<b>«Хранитель»:</b> Несанкционированный носитель. Имплант защиты разума не обнаружен. <b>ИНИЦИАЦИЯ КОЛЛАПСА ЯДРА.</b>"))
 	playsound(src, 'sound/machines/nuke/confirm_beep.ogg', 65, TRUE)

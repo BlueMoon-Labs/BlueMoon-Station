@@ -82,6 +82,8 @@
 /obj/structure/disposalholder/proc/start_moving()
 	cleanup_movement_loop()
 	var/delay = world.tick_lag
+	if(hasmob) //mobs should visibly fly through the pipes instead of near-instantly arriving at the exit
+		delay = max(delay, 1)
 	var/datum/move_loop/disposal_holder/our_loop = SSmove_manager.move_disposals(src, delay = delay, timeout = delay * count)
 	if(our_loop)
 		movement_loop = our_loop

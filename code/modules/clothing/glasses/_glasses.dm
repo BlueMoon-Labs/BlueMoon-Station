@@ -14,6 +14,10 @@
 	var/invis_view = SEE_INVISIBLE_LIVING	//admin only for now
 	var/invis_override = 0 //Override to allow glasses to set higher than normal see_invis
 	var/lighting_alpha
+	/// Процент среза темноты
+	var/lighting_cutoff = null
+	/// То же самое, но для среза ргб
+	var/list/color_cutoffs = null
 	var/list/icon/current = list() //the current hud icons
 	var/vision_correction = 0 //does wearing these glasses correct some of our vision defects?
 	var/glass_colour_type //colors your vision when worn
@@ -72,6 +76,7 @@
 	darkness_view = 2
 	vision_flags = SEE_TURFS
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
+	color_cutoffs = list(5, 15, 5)
 	glass_colour_type = /datum/client_colour/glass_colour/lightgreen
 	glasses_type = "meson"
 
@@ -92,7 +97,12 @@
 	darkness_view = 8
 	flash_protect = -2
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
+	color_cutoffs = list(10, 35, 10)
 	glass_colour_type = /datum/client_colour/glass_colour/green
+	actions_types = list(/datum/action/item_action/toggle_nv)
+
+/obj/item/clothing/glasses/meson/night/update_icon_state()
+	. = ..()
 
 /obj/item/clothing/glasses/meson/night/ert
 	name = "night vision meson scanner"
@@ -103,6 +113,7 @@
 	flash_protect = 1
 	vision_correction = 1
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
+	color_cutoffs = list(10, 35, 10)
 	glass_colour_type = /datum/client_colour/glass_colour/green
 
 /obj/item/clothing/glasses/meson/gar
@@ -141,7 +152,12 @@
 	darkness_view = 8
 	flash_protect = -2
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
+	color_cutoffs = list(10, 25, 10)
 	glass_colour_type = /datum/client_colour/glass_colour/green
+	actions_types = list(/datum/action/item_action/toggle_nv)
+
+/obj/item/clothing/glasses/night/update_icon_state()
+	. = ..()
 
 /obj/item/clothing/glasses/night/prescription/Initialize(mapload)
 	. = ..()
@@ -422,6 +438,7 @@
 	item_state = "glasses"
 	vision_flags = SEE_MOBS
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
+	color_cutoffs = list(25, 8, 5)
 	flash_protect = 0
 	glass_colour_type = /datum/client_colour/glass_colour/red
 
@@ -508,6 +525,8 @@
 	darkness_view = 8
 	clothing_flags = SCAN_REAGENTS
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
+	lighting_cutoff = LIGHTING_CUTOFF_FULLBRIGHT
+	color_cutoffs = list(30, 30, 30)
 	resistance_flags = LAVA_PROOF | FIRE_PROOF
 
 /obj/item/clothing/glasses/godeye/Initialize(mapload)
@@ -567,6 +586,8 @@
 	darkness_view = 8
 	flash_protect = 2
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
+	lighting_cutoff = LIGHTING_CUTOFF_FULLBRIGHT
+	color_cutoffs = list(30, 30, 30)
 	glass_colour_type = FALSE
 	clothing_flags = SCAN_REAGENTS
 	vision_flags = SEE_TURFS

@@ -17,6 +17,7 @@
 	comp_light_luminosity = 2.3 //Same as the PDA
 	looping_sound = FALSE
 	allow_chunky = TRUE
+	var/default_ui_state = FALSE
 	var/has_variants = TRUE
 	var/finish_color = null
 
@@ -93,6 +94,11 @@
 		QDEL_NULL(inserted_item)
 	return ..()
 
+/obj/item/modular_computer/tablet/ui_state(mob/user)
+	if(default_ui_state)
+		return ..()
+	return GLOB.human_adjacent_state_no_view
+
 /obj/item/modular_computer/tablet/ui_act(action, params)
 	. = ..()
 	if(.)
@@ -162,6 +168,7 @@
 	///IC log that borgs can view in their personal management app
 	var/list/borglog = list()
 	can_have_pen = FALSE
+	default_ui_state = TRUE
 
 /obj/item/modular_computer/tablet/integrated/Initialize(mapload)
 	. = ..()

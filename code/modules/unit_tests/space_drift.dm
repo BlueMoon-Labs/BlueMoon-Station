@@ -3,7 +3,7 @@
 //  - mecha_inertia_mass:    mechs have mass (were drifting like a 70kg human)
 //  - drift_recoil_cap:      firing can't "click to accelerate" and can't brake movement drift
 //  - drift_glide_clamp:     fast drift can't make the sprite visually "teleport"
-//  - mecha_stabilizer:      mechs can hold position with a jetpack-style stabilizer
+//  - mecha_stabilizer_no_drift: stabilizers stop drift on voluntary steps (wall-braced too)
 //  - mecha_turn_decoupled:  mechs can turn in zero-g and turning doesn't eat the move cooldown (#6)
 //  - mecha_drift_stepsound: a drifting mech doesn't play its walking sound on every drift tick
 //  - drift_glide_no_starve: holding a thrust key while drifting doesn't freeze the mech in place
@@ -73,6 +73,27 @@
 
 	ripley.cell.charge = 0
 	TEST_ASSERT(!ripley.Process_Spacemove(NORTH, continuous_move = TRUE), "stabilizers must fail without power")
+
+/// With stabilizers on, a voluntary step must not start space drift.
+/datum/unit_test/mecha_stabilizer_no_drift/Run()
+	var/turf/center = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	var/obj/vehicle/sealed/mecha/working/ripley/ripley = allocate(/obj/vehicle/sealed/mecha/working/ripley, center)
+	ripley.AddElement(/datum/element/forced_gravity, 0)
+	ripley.step_energy_drain = 10
+	ripley.cell.charge = ripley.cell.maxcharge
+	var/obj/item/mecha_parts/mecha_equipment/thrusters/rcs = new /obj/item/mecha_parts/mecha_equipment/thrusters(ripley)
+	rcs.attach(ripley)
+	ripley.stabilizers = TRUE
+	TEST_ASSERT(ripley.vehicle_move(NORTH), "voluntary move with stabilizers must succeed")
+	TEST_ASSERT_NULL(ripley.drift_handler, "stabilizers must prevent drift after a voluntary step")
+
+	// Braced near a wall: old code used push-off backup and still built drift.
+	var/obj/structure/window/reinforced/brace = allocate(/obj/structure/window/reinforced, get_step(center, SOUTH))
+	brace.setAnchored(TRUE)
+	ripley.forceMove(center)
+	ripley.setDir(NORTH)
+	TEST_ASSERT(ripley.vehicle_move(NORTH), "stabilizers must allow movement when braced near a wall")
+	TEST_ASSERT_NULL(ripley.drift_handler, "stabilizers must prevent drift when braced near a wall")
 
 /// #6: a mech must be able to rotate even when it cannot move, and rotating must not consume the move cooldown.
 /datum/unit_test/mecha_turn_decoupled/Run()

@@ -293,6 +293,16 @@
 		else if(A.type == datum_type)
 			return A
 
+///Is this character an offstation ghost role (hotel, ghost cafe, CentCom intern, ERT etc.)? Such characters must not be picked as antag objective targets.
+/datum/mind/proc/is_ghost_role()
+	if(has_antag_datum(/datum/antagonist/ghost_role))
+		return TRUE
+	if(assigned_role in GLOB.exp_specialmap[EXP_TYPE_SPECIAL])
+		return TRUE
+	if(current && HAS_TRAIT(current, TRAIT_NO_MIDROUND_ANTAG))
+		return TRUE
+	return FALSE
+
 /*
 	Removes antag type's references from a mind.
 	objectives, uplinks, powers etc are all handled.

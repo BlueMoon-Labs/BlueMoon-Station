@@ -1,3 +1,4 @@
+import { Component, createRef } from 'inferno';
 import { useBackend, useLocalState } from '../backend';
 import {
   Box,
@@ -45,6 +46,11 @@ export const AdminTicketPanel = (props, context) => {
   } = data;
 
   const [tab, setTab] = useLocalState(context, 'tab', selected_state);
+  const [selectedCommId, setSelectedCommId] = useLocalState(context, 'selectedCommId', null);
+  const selectedComm =
+    selectedCommId !== null
+      ? communications.find((c) => c.id === selectedCommId) ?? null
+      : null;
 
   const selectedTicket = tickets.find((t) => t.ref === selected_ticket_ref);
 
@@ -134,65 +140,74 @@ export const AdminTicketPanel = (props, context) => {
                     {communications.length === 0 && (
                       <NoticeBox info>Нет сообщений.</NoticeBox>
                     )}
-                    {[...communications].reverse().map((msg, i) => (
-                      <Box
-                        key={i}
-                        mb={1}
-                        p={1}
-                        style={{
-                          backgroundColor:
-                            i % 2 === 0
-                              ? 'rgba(255,255,255,0.03)'
-                              : 'transparent',
-                          borderRadius: '3px',
-                        }}
-                      >
-                        <Flex align="center" justify="space-between" mb={0.5}>
-                          <Flex.Item>
-                            <Box bold fontSize="12px">
-                              {msg.sender_name}
-                              {msg.sender_job
-                                ? ' (' + msg.sender_job + ')'
-                                : ''}
-                            </Box>
-                            <Box fontSize="10px" color="gray">
-                              {Math.floor(
-                                (msg.time_sent ? (data.time || 0) - msg.time_sent : 0) / 600,
+                    {[...communications].reverse().map((msg, i) => {
+                      const isSelected = selectedComm?.id === msg.id;
+                      return (
+                        <Box
+                          key={msg.id ?? i}
+                          mb={1}
+                          p={1}
+                          onClick={() => setSelectedCommId(isSelected ? null : msg.id)}
+                          style={{
+                            cursor: 'pointer',
+                            backgroundColor: isSelected
+                              ? 'rgba(79, 139, 200, 0.3)'
+                              : i % 2 === 0
+                                ? 'rgba(255,255,255,0.03)'
+                                : 'transparent',
+                            borderRadius: '3px',
+                            borderLeft: isSelected
+                              ? '3px solid #4f8bc8'
+                              : '3px solid transparent',
+                          }}
+                        >
+                          <Flex align="center" justify="space-between" mb={0.5}>
+                            <Flex.Item>
+                              <Box bold fontSize="12px">
+                                {msg.sender_name}
+                                {msg.sender_job
+                                  ? ', ' + msg.sender_job
+                                  : ''}
+                              </Box>
+                              <Box fontSize="10px" color="gray">
+                                {Math.floor(
+                                  (msg.time_sent ? (data.time || 0) - msg.time_sent : 0) / 600,
+                                )}
+                                m назад
+                              </Box>
+                            </Flex.Item>
+                            <Flex.Item>
+                              {msg.sender_ckey && (
+                                <Button
+                                  icon="ghost"
+                                  tooltip="Orbit sender"
+                                  onClick={() =>
+                                    act('orbit_comm_sender', {
+                                      sender_ckey: msg.sender_ckey,
+                                    })
+                                  }
+                                />
                               )}
-                              m назад
-                            </Box>
-                          </Flex.Item>
-                          <Flex.Item>
-                            {msg.sender_ckey && (
-                              <Button
-                                icon="ghost"
-                                tooltip="Orbit sender"
-                                onClick={() =>
-                                  act('orbit_comm_sender', {
-                                    sender_ckey: msg.sender_ckey,
-                                  })
-                                }
-                              />
-                            )}
-                            {msg.id && (
-                              <Button
-                                icon="check"
-                                color="green"
-                                disabled={msg.handled}
-                                onClick={() =>
-                                  act('mark_communication', {
-                                    message_id: msg.id,
-                                  })
-                                }
-                              >
-                                {msg.handled ? '' : 'Resolve'}
-                              </Button>
-                            )}
-                          </Flex.Item>
-                        </Flex>
-                        <Box fontSize="12px">{msg.message}</Box>
-                      </Box>
-                    ))}
+                              {msg.id && (
+                                <Button
+                                  icon="check"
+                                  color="green"
+                                  disabled={msg.handled}
+                                  onClick={() =>
+                                    act('mark_communication', {
+                                      message_id: msg.id,
+                                    })
+                                  }
+                                >
+                                  {msg.handled ? '' : 'Resolve'}
+                                </Button>
+                              )}
+                            </Flex.Item>
+                          </Flex>
+                          <Box fontSize="12px">{msg.message}</Box>
+                        </Box>
+                      );
+                    })}
                   </Section>
                 ) : (
                   <Section
@@ -235,17 +250,21 @@ export const AdminTicketPanel = (props, context) => {
 
           <Flex.Item grow={1} basis={0}>
             {isCommTab ? (
-              <Flex
-                height="100%"
-                align="center"
-                justify="center"
-                direction="column"
-              >
-                <Icon name="broadcast-tower" size={4} color="gray" mb={2} />
-                <Box color="gray" fontSize="16px">
-                  Сообщения ЦК / Связь
-                </Box>
-              </Flex>
+              selectedComm ? (
+                <CommDetailPanel msg={selectedComm} />
+              ) : (
+                <Flex
+                  height="100%"
+                  align="center"
+                  justify="center"
+                  direction="column"
+                >
+                  <Icon name="broadcast-tower" size={4} color="gray" mb={2} />
+                  <Box color="gray" fontSize="16px">
+                    Выберите сообщение слева
+                  </Box>
+                </Flex>
+              )
             ) : !selectedTicket ? (
               <Flex
                 height="100%"
@@ -259,7 +278,7 @@ export const AdminTicketPanel = (props, context) => {
                 </Box>
               </Flex>
             ) : (
-              <TicketDetailPanel ticket={selectedTicket} act={act} />
+              <TicketDetailPanel ticket={selectedTicket} act={act} data={data} />
             )}
           </Flex.Item>
         </Flex>
@@ -332,7 +351,7 @@ const TicketListItem = (props) => {
 };
 
 const TicketDetailPanel = (props, context) => {
-  const { ticket, act } = props;
+  const { ticket, act, data } = props;
   const [replyMessage, setReplyMessage] = useLocalState(
     context,
     'replyMessage',
@@ -592,6 +611,12 @@ const TicketDetailPanel = (props, context) => {
           scrollable
           buttons={
             <Flex align="center">
+              <Icon
+                name="sync"
+                color={data.time ? 'green' : 'gray'}
+                mr={1}
+                opacity={data.time ? 1 : 0.3}
+              />
               <Button
                 icon="sync"
                 tooltip="Обновить"
@@ -618,6 +643,7 @@ const TicketDetailPanel = (props, context) => {
               dangerouslySetInnerHTML={{ __html: msg }}
             />
           ))}
+          <AutoScrollToBottom triggerKey={(ticket.interactions || []).length} />
         </Section>
       </Stack.Item>
       {isActive && (
@@ -652,6 +678,107 @@ const TicketDetailPanel = (props, context) => {
           </Section>
         </Stack.Item>
       )}
+    </Stack>
+  );
+};
+
+class AutoScrollToBottom extends Component {
+  constructor(props) {
+    super(props);
+    this.ref = createRef();
+    this.atBottom = true;
+    this.handleScroll = this.handleScroll.bind(this);
+  }
+
+  handleScroll(e) {
+    const el = e.currentTarget;
+    const threshold = 50;
+    this.atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - threshold;
+  }
+
+  componentDidMount() {
+    const content = this.ref.current?.parentElement?.closest('.Section__content');
+    if (content) {
+      content.addEventListener('scroll', this.handleScroll);
+      content.scrollTop = content.scrollHeight;
+    }
+  }
+
+  componentWillUnmount() {
+    const content = this.ref.current?.parentElement?.closest('.Section__content');
+    if (content) {
+      content.removeEventListener('scroll', this.handleScroll);
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.triggerKey !== prevProps.triggerKey && this.atBottom) {
+      const content = this.ref.current?.parentElement?.closest('.Section__content');
+      if (content) {
+        content.scrollTop = content.scrollHeight;
+      }
+    }
+  }
+
+  render() {
+    return <div ref={this.ref} />;
+  }
+}
+
+const CommDetailPanel = (props) => {
+  const { msg } = props;
+
+  const hasPaper = msg.paper_text || msg.message;
+
+  return (
+    <Stack vertical fill>
+      <Stack.Item>
+        <Section title="Сообщение" fill>
+          <Flex align="center" justify="space-between" mb={1}>
+            <Flex.Item>
+              <Box fontSize="16px" bold color="white">
+                {msg.sender_name}
+                {msg.sender_job ? ', ' + msg.sender_job : ''}
+              </Box>
+              {msg.paper_name && msg.paper_name !== msg.sender_name && (
+                <Box fontSize="12px" color="gray">
+                  {msg.paper_name}
+                </Box>
+              )}
+            </Flex.Item>
+          </Flex>
+          <Box
+            p={1}
+            style={{
+              backgroundColor: 'rgba(0,0,0,0.2)',
+              borderRadius: '4px',
+              maxHeight: 'calc(100% - 60px)',
+              overflowY: 'auto',
+            }}
+          >
+            {hasPaper ? (
+              msg.paper_html ? (
+                <Box
+                  dangerouslySetInnerHTML={{ __html: msg.paper_html }}
+                  style={{ whiteSpace: 'normal' }}
+                />
+              ) : (
+                <Box
+                  style={{
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-word',
+                    fontSize: '13px',
+                  }}
+                >
+                  {msg.paper_text || msg.message}
+                </Box>
+              )
+            ) : (
+              'Нет содержимого.'
+            )}
+          </Box>
+        </Section>
+      </Stack.Item>
     </Stack>
   );
 };

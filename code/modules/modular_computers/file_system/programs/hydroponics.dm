@@ -11,7 +11,7 @@
 	extended_desc = "This program monitors hydroponics trays and provides plant status information."
 	requires_ntnet = FALSE
 	transfer_access = null
-	usage_flags = PROGRAM_PDA
+	usage_flags = PROGRAM_ON_TABLETS
 	size = 4
 	available_on_ntnet = FALSE
 	tgui_id = "NtosHydroponics"

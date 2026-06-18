@@ -210,6 +210,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 "arachnid_spinneret" = "Plain",
 "arachnid_mandibles" = "Plain",
 "mam_body_markings" = list(),
+"emissive_eyes" = FALSE,
 "mam_ears" = "None",
 "mam_snouts" = "None",
 "mam_tail" = "None",
@@ -1608,6 +1609,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 								dat += "<h3 title='[heterochromia_hint]'>[heterochromia_label]</h3>"
 							// UI tweak end
 							dat += "</b><a style='display:block;width:100px' href='?_src_=prefs;preference=toggle_split_eyes;task=input'>[split_eye_colors ? enabled_label : disabled_label]</a>"
+							var/emissive_eyes_on = features["emissive_eyes"]
+							var/glowing_eyes_label = src.use_modern_translations ? get_modern_text("glowing_eyes", src) : "Glowing Eyes"
+							dat += "<h3>[glowing_eyes_label]</h3>"
+							dat += "<a style='display:block;width:100px' href='?_src_=prefs;preference=toggle_emissive_eyes;task=input'>[emissive_eyes_on ? enabled_label : disabled_label]</a>"
 							if(!split_eye_colors)
 								dat += "<h3>[eye_color_label]</h3>"
 								dat += "<span style='border: 1px solid #161616; background-color: #[left_eye_color];'><font color='[color_hex2num(left_eye_color) < 200 ? "FFFFFF" : "000000"]'>#[left_eye_color]</font></span> <a href='?_src_=prefs;preference=eyes;task=input'>[change_label]</a>"
@@ -2175,7 +2180,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							dat += "<td width=4%><font size=2> </font></td>"
 							dat += "<td width=10%><font size=2> </font></td>"
 							dat += "<td width=6%><font size=2> </font></td>"
-							dat += "<td width=25%><font size=2> </font></td>"
+							dat += "<td width=20%><font size=2> </font></td>"
 							dat += "<td width=40%><font size=2> </font></td>"
 							dat += "<td width=15%><font size=2> </font></td>"
 							dat += "</tr>"
@@ -2246,6 +2251,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 							else
 								dat += "<tr style='vertical-align:top;'>"
+								dat += "<td> </td>"
 								dat += "<td> </td>"
 								dat += "<td> </td>"
 								dat += "<td> </td>"
@@ -2682,6 +2688,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "<br>"
 					dat += "<b>[play_admin_midis_label]:</b> <a href='?_src_=prefs;preference=hear_midis'>[(toggles & SOUND_MIDI) ? enabled_label : disabled_label]</a><br>"
 					dat += "<b>[play_lobby_music_label]:</b> <a href='?_src_=prefs;preference=lobby_music'>[(toggles & SOUND_LOBBY) ? enabled_label : disabled_label]</a><br>"
+					dat += "<b>Личные музыкальные боксы:</b> <a href='?_src_=prefs;preference=hear_personal_jukeboxes'>[(toggles & SOUND_PERSONAL_JUKEBOXES) ? enabled_label : disabled_label]</a><br>"
 					dat += "<b>[see_pull_requests_label]:</b> <a href='?_src_=prefs;preference=pull_requests'>[(chat_toggles & CHAT_PULLR) ? enabled_label : disabled_label]</a><br>"
 					dat += "<br>"
 					if(user.client)
@@ -4427,6 +4434,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					split_eye_colors = !split_eye_colors
 					right_eye_color = left_eye_color
 
+				if("toggle_emissive_eyes")
+					features["emissive_eyes"] = !features["emissive_eyes"]
+
 				if("species")
 					var/result = tgui_input_list(user, "Select a species", "Species Selection", GLOB.roundstart_race_names)
 					if(result)
@@ -6016,6 +6026,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						user.client.playtitlemusic()
 					else
 						user.stop_sound_channel(CHANNEL_LOBBYMUSIC)
+
+				if("hear_personal_jukeboxes")
+					toggles ^= SOUND_PERSONAL_JUKEBOXES
 
 				if("ghost_ears")
 					chat_toggles ^= CHAT_GHOSTEARS

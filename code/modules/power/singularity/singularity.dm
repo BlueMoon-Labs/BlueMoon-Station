@@ -461,17 +461,53 @@
 		consumedSupermatter = 1
 		set_light(10)
 
+/obj/singularity/proc/get_food_seek_dir()
+	var/search_range = min(grav_pull + consume_range + current_size + 2, 15)
+	var/list/dir_weights = list()
+	for(var/direction in GLOB.alldirs)
+		dir_weights[direction] = 0
+	var/static/singularity_food_blacklist = typecacheof(list(/obj/singularity, /obj/machinery/field/containment, /obj/machinery/field/generator))
+	for(var/turf/T in range(search_range, src))
+		if(T.z != z)
+			continue
+		var/weight = 0
+		for(var/atom/A in T)
+			if(A == src)
+				continue
+			if(isobj(A))
+				var/obj/O = A
+				if(O.resistance_flags & INDESTRUCTIBLE)
+					continue
+			if(is_type_in_typecache(A, singularity_food_blacklist))
+				continue
+			weight++
+		if(!weight && istype(T, /turf/closed))
+			weight = 1
+		if(weight)
+			var/direction = get_dir(src, T)
+			dir_weights[direction] += weight
+	var/best_dir = 0
+	var/best_weight = 0
+	for(var/direction in GLOB.alldirs)
+		if(dir_weights[direction] > best_weight)
+			best_weight = dir_weights[direction]
+			best_dir = direction
+	return best_dir
+
 /obj/singularity/proc/move(force_move = 0)
 	if(!move_self)
 		return FALSE
 
-	var/movement_dir = pick(GLOB.alldirs - last_failed_movement)
+	var/movement_dir
 
 	if(force_move)
 		movement_dir = force_move
-
-	if(target && prob(60))
-		movement_dir = get_dir(src,target) //moves to a singulo beacon, if there is one
+	else if(target)
+		movement_dir = get_dir(src, target)
+	else
+		movement_dir = get_food_seek_dir()
+		if(!movement_dir)
+			movement_dir = pick(GLOB.alldirs - last_failed_movement)
 
 	step(src, movement_dir)
 

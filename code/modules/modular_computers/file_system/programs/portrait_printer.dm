@@ -14,8 +14,7 @@
 	category = PROGRAM_CATEGORY_CREW
 	program_icon_state = "dummy"
 	extended_desc = "Подключается к галерее сообщества Спинвард Сектора для просмотра и печати произведений искусства."
-	//transfer_access = ACCESS_LIBRARY // BLUEMOON EDIT commented
-	usage_flags = PROGRAM_ALL
+	usage_flags = PROGRAM_ON_COMPUTERS
 	requires_ntnet = TRUE
 	size = 9
 	tgui_id = "NtosPortraitPrinter"

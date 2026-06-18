@@ -93,12 +93,6 @@
 	SSshuttle.registerHostileEnvironment(src)
 
 /obj/structure/destructible/clockwork/massive/celestial_gateway/proc/let_slip_the_dogs()
-	for(var/V in SSticker.mode.servants_of_ratvar)
-		var/datum/mind/M = V
-		if(!M || !M.current)
-			continue
-		if(ishuman(M.current))
-			M.current.add_overlay(mutable_appearance('icons/effects/genetics.dmi', "servitude", -MUTATIONS_LAYER))
 	first_sound_played = TRUE
 	active = TRUE
 	visible_message("<span class='boldwarning'>[src] shudders and roars to life, its parts beginning to whirr and screech!</span>")
@@ -248,6 +242,7 @@
 
 /obj/structure/destructible/clockwork/massive/celestial_gateway/proc/fulfill_purpose()
 	set waitfor = FALSE
+	var/turf/spawn_turf = get_turf(src)
 	countdown.stop()
 	resistance_flags |= INDESTRUCTIBLE
 	purpose_fulfilled = TRUE
@@ -260,7 +255,7 @@
 	QDEL_IN(src, 3)
 	sleep(3)
 	GLOB.clockwork_gateway_activated = TRUE
-	var/turf/T = SSmapping.get_station_center()
+	var/turf/T = spawn_turf || SSmapping.get_station_center()
 	new /obj/structure/destructible/clockwork/massive/ratvar(T)
 	var/x0 = T.x
 	var/y0 = T.y

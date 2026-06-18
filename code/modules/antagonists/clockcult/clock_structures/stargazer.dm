@@ -28,6 +28,7 @@
 	. = ..()
 	if(is_servant_of_ratvar(user))
 		. += "<span class='nzcrentr_small'>Generates <b>[DisplayPower(STARGAZER_POWER)]</b> per second while viewing starlight within [STARGAZER_RANGE] tiles.</span>"
+		. += "<span class='nzcrentr_small'>It only functions wrenched inside a room with a view of space - it can not operate in open space or outdoors.</span>"
 	if(star_light_star_bright)
 		. += "[is_servant_of_ratvar(user) ? "<span class='nzcrentr_small'>It can see starlight!</span>" : "It's shining brilliantly!"]"
 

@@ -423,6 +423,7 @@
 	singular_name = "medical gauze"
 	icon_state = "gauze"
 	heal_brute = 5
+	heal_burn = 5
 	self_delay = 50
 	other_delay = 20
 	amount = 15
@@ -475,19 +476,14 @@
 	if(!limb)
 		to_chat(user, "<span class='notice'>Нечего перевязывать!</span>")
 		return
-	if(!LAZYLEN(limb.wounds))
-		to_chat(user, "<span class='notice'>[user==M ? "Ваша [limb.ru_name]" : "[limb.ru_name_capital] персонажа [M]"] не требует перевязки!</span>")
-		return
 
 	var/gauzeable_wound = FALSE
-	for(var/i in limb.wounds)
-		var/datum/wound/woundies = i
+	for(var/datum/wound/woundies as anything in limb.wounds)
 		if(woundies.wound_flags & ACCEPTS_GAUZE)
 			gauzeable_wound = TRUE
 			break
 	if(!gauzeable_wound)
-		to_chat(user, "<span class='notice'>[user==M ? "Ваша [limb.ru_name]" : "[limb.ru_name_capital] персонажа [M]"] не требует перевязки!</span>")
-		return
+		return ..()
 
 	if(limb.current_gauze && (limb.current_gauze.absorption_capacity * 0.8 > absorption_capacity)) // игнорируем если новая повязка меньше чем на 20% лучше текущей, чтобы кто-то не перевязывал её 5 раз подряд
 		to_chat(user, "<span class='warning'>Повязка, что наложена на [user==M ? "вашей [limb.ru_name_v]" : "[limb.ru_name_v] персонажа[M]"], пока ещё хорошем состоянии!</span>")
@@ -500,6 +496,8 @@
 
 	user.visible_message("<span class='green'>[user] наносит [src] на конечность персонажа [M]</span>", "<span class='green'>Вы пытаетесь перевязать раны на [user == M ? "своей конечности" : "конечности персонажа [M]"].</span>")
 	limb.apply_gauze(src)
+	if((heal_brute && limb.brute_dam > 0) || (heal_burn && limb.burn_dam > 0))
+		heal_carbon_new(M, user, healed_zone)
 
 /obj/item/stack/medical/gauze/attackby(obj/item/I, mob/user, params)
 	if(I.tool_behaviour == TOOL_WIRECUTTER || I.get_sharpness())

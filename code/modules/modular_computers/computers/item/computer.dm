@@ -501,30 +501,33 @@
 	return TRUE
 
 /obj/item/modular_computer/screwdriver_act(mob/user, obj/item/tool)
+	if(user.a_intent == INTENT_HARM)
+		return
+	. = TRUE
 	if(!all_components.len)
 		to_chat(user, span_warning("This device doesn't have any components installed."))
 		return
-	var/list/component_names = list()
-	for(var/h in all_components)
-		var/obj/item/computer_hardware/H = all_components[h]
-		component_names.Add(H.name)
+	var/list/components_to_remove = list()
+	if(user.a_intent == INTENT_HELP)
+		var/list/component_names = list()
+		for(var/h in all_components)
+			var/obj/item/computer_hardware/H = all_components[h]
+			component_names.Add(H.name)
+		var/choice = input(user, "Which component do you want to uninstall?", "Computer maintenance", null) as null|anything in sort_list(component_names)
+		if(!choice || !Adjacent(user))
+			return
+		var/obj/item/computer_hardware/H = find_hardware_by_name(choice)
+		if(!H)
+			return
+		components_to_remove += H
+	else
+		for(var/h in all_components)
+			components_to_remove += all_components[h]
 
-	var/choice = input(user, "Which component do you want to uninstall?", "Computer maintenance", null) as null|anything in sort_list(component_names)
-
-	if(!choice)
+	if(components_to_remove.len > 1 && !tool.use_tool(physical, user, 1.5 SECONDS, volume = 50))
 		return
-
-	if(!Adjacent(user))
-		return
-
-	var/obj/item/computer_hardware/H = find_hardware_by_name(choice)
-
-	if(!H)
-		return
-
-	uninstall_component(H, user)
-	return
-
+	for(var/obj/item/computer_hardware/H in components_to_remove)
+		uninstall_component(H, user)
 
 /obj/item/modular_computer/attackby(obj/item/W as obj, mob/user as mob)
 	// Check for ID first
@@ -635,7 +638,16 @@
 	playsound(src, sound_file, 50, TRUE)
 	for(var/mob/target as anything in balloon_alertees)
 		if(target)
-			target.balloon_alert(target, ringtone)
+			target.balloon_alert(target, "[ringtone]")
+	for(var/mob/target as anything in balloon_alertees)
+		if(target)
+			var/turf/turf_loc = get_turf(target)
+			if(turf_loc)
+				for(var/mob/nearby in hearers(4, turf_loc))
+					if(nearby.client)
+						to_chat(nearby, span_notice("[icon2html(src, nearby)] *[ringtone]*"))
+
+
 
 /// Plays a sound to indicate a message was sent.
 /obj/item/modular_computer/proc/send_sound()

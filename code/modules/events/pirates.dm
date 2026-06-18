@@ -5,7 +5,7 @@
 	max_occurrences = 1
 	min_players = 30
 	earliest_start = 45 MINUTES
-	dynamic_should_hijack = TRUE
+	dynamic_should_hijack = FALSE
 	category = EVENT_CATEGORY_INVASION
 	description = "The crew will either pay up, or face a pirate assault."
 
@@ -14,10 +14,14 @@
 // #define PIRATES_DUTCHMAN "Flying Dutchman"
 
 /datum/round_event_control/pirates/preRunEvent()
-	if (!SSmapping.empty_space)
+	if(!SSmapping.empty_space && !length(SSmapping.levels_by_trait(ZTRAIT_SPACE_RUINS)) && !SSmapping.station_start)
 		return EVENT_CANT_RUN
 
 	return ..()
+
+/datum/round_event/pirates
+	var/pirates_spawned = FALSE
+	var/spawn_timer_id
 
 /datum/round_event/pirates/start()
 	send_pirate_threat()
@@ -48,7 +52,7 @@
 
 	threat_msg.answer_callback = CALLBACK(src, PROC_REF(pirates_answered), threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
 	SScommunications.send_message(threat_msg,unique = TRUE)
-	addtimer(CALLBACK(src, PROC_REF(spawn_pirates), threat_msg, ship_template), response_max_time)
+	spawn_timer_id = addtimer(CALLBACK(src, PROC_REF(spawn_pirates), threat_msg, ship_template), response_max_time, TIMER_STOPPABLE)
 
 /datum/round_event/pirates/proc/pirates_answered(datum/comm_message/threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
 	if(world.time > initial_send_time + response_max_time)
@@ -68,14 +72,36 @@
 		priority_announce("Пытаешься нас обмануть? Ты пожалеешь об этом!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
 		spawn_pirates(threat_msg, ship_template, TRUE)
 
+/datum/round_event/pirates/proc/get_spawn_z()
+	if(SSmapping.empty_space)
+		return SSmapping.empty_space.z_value
+	var/list/space_zlevels = SSmapping.levels_by_trait(ZTRAIT_SPACE_RUINS)
+	if(length(space_zlevels))
+		return pick(space_zlevels)
+	return SSmapping.station_start
+
 /datum/round_event/pirates/proc/spawn_pirates(datum/comm_message/threat_msg, ship_template, skip_answer_check)
+	if(pirates_spawned)
+		return
 	if(!skip_answer_check && threat_msg?.answered == 1)
 		return
+	if(!ship_template)
+		message_admins("Space Pirates event failed: no ship template configured.")
+		return
+
+	var/z = get_spawn_z()
+	if(!z)
+		message_admins("Space Pirates event failed: no valid Z-level for ship spawn.")
+		return
+
+	pirates_spawned = TRUE
+	if(spawn_timer_id)
+		deltimer(spawn_timer_id)
+		spawn_timer_id = null
 
 	var/datum/map_template/shuttle/pirate/ship = new ship_template
 	var/x = rand(TRANSITIONEDGE, world.maxx - TRANSITIONEDGE - ship.width)
 	var/y = rand(TRANSITIONEDGE, world.maxy - TRANSITIONEDGE - ship.height)
-	var/z = SSmapping.empty_space.z_value
 	var/turf/T = locate(x,y,z)
 	if(!T)
 		CRASH("Pirate event found no turf to load in")

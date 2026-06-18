@@ -25,8 +25,8 @@ They deal 35 brute (armor is considered).
 	deathmessage = "gets discombobulated and fucking dies."
 	rapid_melee = 1
 	melee_queue_distance = 2
-	melee_damage_lower = 35
-	melee_damage_upper = 35
+	melee_damage_lower = 45
+	melee_damage_upper = 45
 	speed = 1
 	move_to_delay = 2.25
 	wander = FALSE
@@ -34,8 +34,8 @@ They deal 35 brute (armor is considered).
 	ranged = 1
 	ranged_cooldown_time = 30
 	minimum_distance = 1
-	health = 1500
-	maxHealth = 1500
+	health = 1900
+	maxHealth = 1900
 	movement_type = GROUND
 	weather_immunities = list(TRAIT_LAVA_IMMUNE,TRAIT_ASHSTORM_IMMUNE)
 	peaceful = TRUE
@@ -290,7 +290,7 @@ They deal 35 brute (armor is considered).
 			for(var/mob/living/M in U)
 				if(!faction_check(faction, M.faction) && !(M in hit_things))
 					playsound(src, 'sound/weapons/slash.ogg', 75, 0)
-					if(M.apply_damage(40, BRUTE, BODY_ZONE_CHEST, M.run_armor_check(BODY_ZONE_CHEST), null, null, CANT_WOUND))
+					if(M.apply_damage(52, BRUTE, BODY_ZONE_CHEST, M.run_armor_check(BODY_ZONE_CHEST), null, null, CANT_WOUND))
 						visible_message("<span class = 'userdanger'>[src] slashes [M] with his spinning zweihander!</span>")
 					else
 						visible_message("<span class = 'userdanger'>[src]'s spinning zweihander is stopped by [M]!</span>")
@@ -354,7 +354,7 @@ They deal 35 brute (armor is considered).
 
 /mob/living/simple_animal/hostile/megafauna/gladiator/proc/boneappletea(atom/target)
 	var/obj/item/kitchen/knife/combat/bone/boned = new /obj/item/kitchen/knife/combat/bone(get_turf(src))
-	boned.throwforce = 35
+	boned.throwforce = 45
 	playsound(src, 'sound/weapons/fwoosh.wav', 60, 0)
 	boned.throw_at(target, 7, 3, src)
 	QDEL_IN(boned, 30)

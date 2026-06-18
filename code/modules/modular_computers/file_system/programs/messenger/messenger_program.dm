@@ -50,7 +50,7 @@
 	extended_desc = "Позволяет вести классическую переписку с другими модульными устройствами."
 	size = 0
 	undeletable = TRUE
-	usage_flags = PROGRAM_PDA
+	usage_flags = PROGRAM_ON_TABLETS
 	ui_header = "ntnrc_idle.gif"
 	tgui_id = "NtosMessenger"
 	program_icon = "comment-alt"
@@ -191,9 +191,6 @@
 		user.client.prefs.save_preferences()
 
 	return TRUE
-
-/datum/computer_file/program/messenger/ui_state(mob/user)
-	return GLOB.default_state
 
 /datum/computer_file/program/messenger/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()
@@ -473,7 +470,15 @@
 		chat.can_reply = FALSE
 		return
 	var/target_name = target.computer.saved_identification
-	var/input_message = tgui_input_text(user, "Enter [mime_mode ? "emojis":"a message"].", "NT Messaging[target_name ? " ([target_name])" : ""]", max_length = MAX_MESSAGE_LEN, encode = FALSE)
+	var/input_message
+	var/input_title = "NT Messaging[target_name ? " ([target_name])" : ""]"
+	var/input_desc = "Enter [mime_mode ? "emojis":"a message"]."
+	if(user.client?.prefs.tgui_input_verbs)
+		input_message = tgui_input_text(user, input_desc, input_title, max_length = MAX_MESSAGE_LEN, encode = FALSE)
+	else
+		input_message = stripped_input(user, input_desc, input_title)
+	if(!input_message)
+		return
 	send_message(user, input_message, list(chat))
 
 /// Helper that sends a message to everyone
@@ -767,8 +772,10 @@
 	var/list/mob/living/receivers = list()
 	if(computer.inserted_pai && computer.inserted_pai.pai)
 		receivers += computer.inserted_pai.pai
-	if(computer.loc && isliving(computer.loc))
+	if(isliving(computer.loc))
 		receivers += computer.loc
+	else if(isliving(computer.loc?.loc))
+		receivers += computer.loc.loc
 
 	var/datum/computer_file/program/messenger/sender_messenger = chat?.recipient?.resolve()
 
