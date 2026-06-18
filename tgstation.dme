@@ -63,7 +63,7 @@
 #include "code\__DEFINES\antagonists.dm"
 #include "code\__DEFINES\arcades.dm"
 #include "code\__DEFINES\atmospherics.dm"
-#include "code\__DEFINES\bindings.dm"
+#include "code\__DEFINES\native_atmos_bindings.dm"
 #include "code\__DEFINES\bitfields.dm"
 #include "code\__DEFINES\blackmarket.dm"
 #include "code\__DEFINES\botany.dm"

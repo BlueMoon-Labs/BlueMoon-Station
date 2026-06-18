@@ -321,13 +321,15 @@
 
 // no requirements, always runs
 // bad idea? maybe
-// this is overridden by auxmos but, hey, good idea to have it readable
+// требования по температуре и топливу из gas_data
 
 /datum/gas_reaction/genericfire/react(datum/gas_mixture/air, datum/holder)
 	var/temperature = air.return_temperature()
 	var/turf/loc_turf = get_turf(holder)
 	// Mining/lavaland Z: N2 is not fuel here — removes only the generic N2+O2 (air) burn; methane etc. unchanged.
 	var/lavaland_block_n2 = loc_turf && is_mining_level(loc_turf.z)
+	// tg-like pacing baseline: plasma combustion in tg is bounded by ~1/PLASMA_BURN_RATE_DELTA per processing step.
+	var/const/MAX_GENERIC_FIRE_FRACTION_PER_TICK = (1 / PLASMA_BURN_RATE_DELTA)
 	var/list/oxidation_temps = GLOB.gas_data.oxidation_temperatures
 	var/list/oxidation_rates = GLOB.gas_data.oxidation_rates
 	var/oxidation_power = 0
@@ -340,17 +342,21 @@
 	var/energy_released = 0
 	for(var/G in air.get_gases())
 		var/oxidation_temp = oxidation_temps[G]
-		if(oxidation_temp && oxidation_temp > temperature)
-			var/temperature_scale = max(0, 1-(temperature / oxidation_temp))
-			var/amt = air.get_moles(G) * temperature_scale
+		if(oxidation_temp && temperature >= oxidation_temp)
+			var/temperature_scale = max(0, 1 - (oxidation_temp / max(temperature, TCMB)))
+			var/available_moles = air.get_moles(G)
+			var/amt = available_moles * temperature_scale
+			amt = min(amt, available_moles * MAX_GENERIC_FIRE_FRACTION_PER_TICK)
 			oxidizers[G] = amt
 			oxidation_power += amt * oxidation_rates[G]
 		else
 			var/fuel_temp = fuel_temps[G]
-			if(fuel_temp && fuel_temp > temperature)
+			if(fuel_temp && temperature >= fuel_temp)
 				if(lavaland_block_n2 && G == GAS_N2)
 					continue
-				var/amt = (air.get_moles(G) / fuel_rates[G]) * max(0, 1-(temperature / fuel_temp))
+				var/available_moles = air.get_moles(G)
+				var/amt = (available_moles / fuel_rates[G]) * max(0, 1 - (fuel_temp / max(temperature, TCMB)))
+				amt = min(amt, available_moles * MAX_GENERIC_FIRE_FRACTION_PER_TICK)
 				fuels[G] = amt // we have to calculate the actual amount we're using after we get all oxidation together
 				total_fuel += amt
 	if(oxidation_power <= 0 || total_fuel <= 0)
