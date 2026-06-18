@@ -11,6 +11,7 @@
 	tail_state = "none"
 	armor = list(MELEE = 35, BULLET = 30, LASER = 30, ENERGY = 40, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 10)
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	var/brc_mitigation_bonus = 0  // BLUEMOON ADD - BRC бонус брони
 
 /obj/item/clothing/suit/armor/Initialize(mapload)
 	. = ..()
@@ -43,6 +44,18 @@
 	blood_overlay_type = "armor"
 	clothing_flags = THICKMATERIAL
 	dog_fashion = /datum/dog_fashion/back
+	brc_mitigation_bonus = 10  // BLUEMOON ADD - стандартная броня СБ лучше держит свой калибр
+
+/obj/item/clothing/suit/armor/vest/equipped(mob/user, slot)
+	. = ..()
+	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
+		user.brc_mitigation += brc_mitigation_bonus
+
+/obj/item/clothing/suit/armor/vest/dropped(mob/user)
+	. = ..()
+	if(brc_mitigation_bonus > 0 && isliving(user))
+		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
+// BLUEMOON ADD END
 
 /obj/item/clothing/suit/armor/vest/alt
 	desc = "A Type I armored vest that provides decent protection against most types of damage."
