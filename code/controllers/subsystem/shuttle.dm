@@ -928,7 +928,7 @@ SUBSYSTEM_DEF(shuttle)
 			L["can_queue_hyperspace_event"] = TRUE
 			var/list/event_opts = list()
 			var/opt_idx = 0
-			for(var/datum/shuttle_event/event_type as anything in GLOB.admin_forceable_hyperspace_events)
+			for(var/datum/shuttle_event/event_type as anything in get_admin_forceable_hyperspace_events())
 				opt_idx++
 				UNTYPED_LIST_ADD(event_opts, list(
 					"name" = initial(event_type.name),
@@ -1058,7 +1058,7 @@ SUBSYSTEM_DEF(shuttle)
 			var/event_type = text2path(event_path_text)
 			if(!ispath(event_type, /datum/shuttle_event))
 				return
-			if(!(event_type in GLOB.admin_forceable_hyperspace_events))
+			if(!(event_type in get_admin_forceable_hyperspace_events()))
 				return
 			for(var/mob_idx in mobile)
 				var/obj/docking_port/mobile/M = mob_idx
@@ -1088,7 +1088,7 @@ SUBSYSTEM_DEF(shuttle)
 			var/event_type = text2path(event_path_text)
 			if(!ispath(event_type, /datum/shuttle_event))
 				return
-			if(!(event_type in GLOB.admin_forceable_hyperspace_events))
+			if(!(event_type in get_admin_forceable_hyperspace_events()))
 				return
 			for(var/mob_idx in mobile)
 				var/obj/docking_port/mobile/M = mob_idx

@@ -12,6 +12,8 @@
 	var/darkness_view = 2//Base human is 2
 	var/invis_view = SEE_INVISIBLE_LIVING	//admin only for now
 	var/lighting_alpha
+	var/lighting_cutoff = null
+	var/list/color_cutoffs = null
 
 /obj/item/clothing/head/Initialize(mapload)
 	. = ..()

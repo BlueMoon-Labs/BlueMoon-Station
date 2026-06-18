@@ -184,7 +184,12 @@
 			weights[event_type] = weight
 	return weights
 
-GLOBAL_LIST_INIT(admin_forceable_hyperspace_events, collect_admin_forceable_hyperspace_events())
+GLOBAL_LIST_INIT(admin_forceable_hyperspace_events, list())
+
+/proc/get_admin_forceable_hyperspace_events()
+	if(!length(GLOB.admin_forceable_hyperspace_events))
+		GLOB.admin_forceable_hyperspace_events = collect_admin_forceable_hyperspace_events()
+	return GLOB.admin_forceable_hyperspace_events
 
 /proc/collect_admin_forceable_hyperspace_events()
 	var/list/result = list()

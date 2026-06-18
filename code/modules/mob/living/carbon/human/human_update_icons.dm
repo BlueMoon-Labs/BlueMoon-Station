@@ -1045,6 +1045,9 @@ use_mob_overlay_icon: if FALSE, it will always use the default_icon_file even if
 	if(HAS_TRAIT(src, TRAIT_HUSK))
 		. += "-husk"
 
+	if(dna?.features)
+		. += "-emissive_eyes=[dna.features["emissive_eyes"]]"
+
 /mob/living/carbon/human/load_limb_from_cache()
 	..()
 	update_hair()

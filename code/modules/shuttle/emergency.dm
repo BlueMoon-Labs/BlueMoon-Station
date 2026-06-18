@@ -382,7 +382,7 @@
 	var/used_admin_queue = FALSE
 	if(length(queued_admin_hyperspace_events))
 		for(var/event_type in queued_admin_hyperspace_events)
-			if(!ispath(event_type, /datum/shuttle_event) || !(event_type in GLOB.admin_forceable_hyperspace_events))
+			if(!ispath(event_type, /datum/shuttle_event) || !(event_type in get_admin_forceable_hyperspace_events()))
 				continue
 			var/datum/shuttle_event/queued_ev = add_shuttle_event(event_type)
 			queued_ev?.start_up_event(evac_duration)

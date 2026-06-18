@@ -1201,7 +1201,7 @@
 	repeatable = TRUE
 
 /datum/dynamic_ruleset/midround/pirates/acceptable(population=0, threat=0)
-	if (!SSmapping.empty_space)
+	if(!SSmapping.empty_space && !length(SSmapping.levels_by_trait(ZTRAIT_SPACE_RUINS)) && !SSmapping.station_start)
 		return FALSE
 	return ..()
 
@@ -1230,7 +1230,7 @@
 	repeatable = FALSE
 
 /datum/dynamic_ruleset/midround/raiders/acceptable(population=0, threat=0)
-	if (!SSmapping.empty_space)
+	if(!SSmapping.empty_space && !length(SSmapping.levels_by_trait(ZTRAIT_SPACE_RUINS)) && !SSmapping.station_start)
 		return FALSE
 	return ..()
 

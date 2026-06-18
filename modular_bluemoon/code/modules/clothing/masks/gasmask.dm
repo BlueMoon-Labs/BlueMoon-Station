@@ -135,3 +135,21 @@
 	item_state = "horror_mask"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	flags_inv = HIDEHAIR|HIDEFACIALHAIR
+
+/obj/item/clothing/mask/gas/syndicate/pmc_skull_mask
+	name = "Skull mask"
+	desc = "No fear, no regrets, no mercy."
+	icon_state = "pmc_skull_mask"
+	item_state = "pmc_skull_mask"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	flags_inv = HIDEHAIR|HIDEFACIALHAIR
+	unique_reskin = list(
+		"Blood" = list(
+			RESKIN_ICON_STATE = "pmc_skull_mask_blood",
+			RESKIN_ITEM_STATE = "pmc_skull_mask_blood"
+		),
+		"Basic" = list(
+			RESKIN_ICON_STATE = "pmc_skull_mask",
+			RESKIN_ITEM_STATE = "pmc_skull_mask"
+		),
+	)

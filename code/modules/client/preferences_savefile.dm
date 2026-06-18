@@ -1030,6 +1030,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 "arachnid_spinneret" = "Plain",
 "arachnid_mandibles" = "Plain",
 "mam_body_markings" = "Plain",
+"emissive_eyes" = FALSE,
 "mam_ears" = "None",
 "mam_snouts" = "None",
 "mam_tail" = "None",

@@ -72,21 +72,10 @@
 	icon_state = "adaptiveeyes"
 	see_in_dark = 8
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
+	low_light_cutoff = list(5, 15, 5)
+	medium_light_cutoff = list(10, 30, 10)
+	high_light_cutoff = list(20, 50, 20)
 	actions_types = list(/datum/action/item_action/organ_action/use)
-
-/obj/item/organ/eyes/night_vision/aegis/ui_action_click()
-	sight_flags = initial(sight_flags)
-	switch(lighting_alpha)
-		if (LIGHTING_PLANE_ALPHA_VISIBLE)
-			lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
-		if (LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE)
-			lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
-		if (LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE)
-			lighting_alpha = LIGHTING_PLANE_ALPHA_INVISIBLE
-		else
-			lighting_alpha = LIGHTING_PLANE_ALPHA_VISIBLE
-			sight_flags &= ~SEE_BLACKNESS
-	owner.update_sight()
 
 /obj/item/organ/eyes/thermalaegis
 	name = "Thermographic eyes"
@@ -96,21 +85,27 @@
 	see_in_dark = 8
 	sight_flags = SEE_MOBS
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
+	color_cutoffs = list(25, 8, 5)
 	flash_protect = 2
 	actions_types = list(/datum/action/item_action/organ_action/use)
 	var/night_vision = TRUE
 
 /obj/item/organ/eyes/thermalaegis/ui_action_click()
 	sight_flags = initial(sight_flags)
+	color_cutoffs = initial(color_cutoffs)
 	switch(lighting_alpha)
 		if (LIGHTING_PLANE_ALPHA_VISIBLE)
 			lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
+			color_cutoffs = list(25, 8, 5)
 		if (LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE)
 			lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
+			color_cutoffs = list(40, 15, 10)
 		if (LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE)
 			lighting_alpha = LIGHTING_PLANE_ALPHA_INVISIBLE
+			color_cutoffs = list(60, 25, 15)
 		else
 			lighting_alpha = LIGHTING_PLANE_ALPHA_VISIBLE
+			color_cutoffs = null
 			sight_flags &= ~SEE_BLACKNESS
 	owner.update_sight()
 

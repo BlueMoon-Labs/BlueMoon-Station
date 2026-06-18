@@ -889,6 +889,20 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 					right_eye.pixel_y += offset_features[OFFSET_EYES][2]
 				standing += left_eye
 				standing += right_eye
+				// Свечение глаз
+				if(H.dna?.features["emissive_eyes"])
+					var/mutable_appearance/left_eye_emissive = emissive_appearance(left_eye.icon, left_eye.icon_state, EMISSIVE_BLOCKER_LAYER + 0.5)
+					var/mutable_appearance/right_eye_emissive = emissive_appearance(right_eye.icon, right_eye.icon_state, EMISSIVE_BLOCKER_LAYER + 0.5)
+					left_eye_emissive.pixel_x = left_eye.pixel_x
+					left_eye_emissive.pixel_y = left_eye.pixel_y
+					right_eye_emissive.pixel_x = right_eye.pixel_x
+					right_eye_emissive.pixel_y = right_eye.pixel_y
+					left_eye_emissive.category = "HEAD"
+					right_eye_emissive.category = "HEAD"
+					left_eye_emissive.appearance_flags = KEEP_TOGETHER|TILE_BOUND|PIXEL_SCALE // ЗАМЕТКА НА БУДУЩЕЕ ЕСЛИ КТО БУДЕТ ДЕЛАТЬ СВЕТЯЩИЕСЯ ЧАСТИ ТЕЛА
+					right_eye_emissive.appearance_flags = KEEP_TOGETHER|TILE_BOUND|PIXEL_SCALE // ЕБАННАЯ МАСКА ЭММЕСИВ-ПЛЕЙНА ДЫРЯВИТ ОСВЕЩЕНИЕ И ПРОСТРАНСТВО КАК БАРБОСИК ВАГИНУ БЕЛОЙ ЖЕНЩИНЫ. ПРОПИСЫВАЙТЕ ФЛАГИ KEEP_TOGETHER|TILE_BOUND|PIXEL_SCALE И СТО ЛЕТ БЕД ЗНАТЬ НЕ БУДЕТЕ.
+					standing += left_eye_emissive
+					standing += right_eye_emissive
 
 	/* skyrat edit
 	//Underwear, Undershirts & Socks
@@ -2475,7 +2489,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 			// BLUEMOON EDIT END
 			if(!forced && damage > 0 && HAS_TRAIT(H, TRAIT_TOUGHT) && damage <= TRAIT_TOUGHT_DAMAGE) // проверка на трейт стойкости
 				apply_damage(damage, damagetype = STAMINA)
-				return			
+				return
 			if(BP)
 				if(BP.receive_damage(damage_amount, 0, wound_bonus = wound_bonus, bare_wound_bonus = bare_wound_bonus, sharpness = sharpness))
 					H.update_damage_overlays()
