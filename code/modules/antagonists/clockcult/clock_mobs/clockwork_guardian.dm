@@ -379,7 +379,7 @@
 		else
 			to_chat(host, "<span class='sevtug'>[true_name] вырывается из вашего тела, чтобы защитить вас!</span>")
 	forceMove(host.loc)
-	visible_message("<span class='warning'>Кожа [host] краснеет, когда [name] вырывается из его тела!</span>", "<span class='sevtug_small'>Вы покидаете безопасное укрытие в теле [хозяина]!</span>")
+	visible_message("<span class='warning'>Кожа [host] краснеет, когда [name] вырывается из его тела!</span>", "<span class='sevtug_small'>Вы покидаете безопасное укрытие в теле [host]!</span>")
 	return TRUE
 
 /mob/living/simple_animal/hostile/clockwork/guardian/get_alt_name()
