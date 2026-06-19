@@ -166,6 +166,7 @@
 #include "hallucination_stationmessage.dm"
 #include "memory_leak_limits.dm"
 #include "human_mob_gc.dm"
+#include "latex_lockable.dm"
 #include "parallax_position.dm"
 #include "perf_optimizations.dm"
 #include "psychosis_pools.dm"

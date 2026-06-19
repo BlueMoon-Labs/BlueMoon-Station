@@ -4356,6 +4356,7 @@
 #include "modular_bluemoon\code\datums\brain_damage\imaginary_friend.dm"
 #include "modular_bluemoon\code\datums\components\demoraliser.dm"
 #include "modular_bluemoon\code\datums\components\follow_component.dm"
+#include "modular_bluemoon\code\datums\components\latex_lockable.dm"
 #include "modular_bluemoon\code\datums\components\mood_events.dm"
 #include "modular_bluemoon\code\datums\components\crafting\recipes\guncrafting.dm"
 #include "modular_bluemoon\code\datums\components\crafting\recipes\guncrafting_recipes.dm"

@@ -8,6 +8,10 @@
 	mob_overlay_icon = 'modular_splurt/icons/mobs/gloves.dmi'
 	mutantrace_variation = NONE
 
+/obj/item/clothing/gloves/latexsleeves/Initialize()
+	. = ..()
+	AddComponent(/datum/component/latex_lockable)
+
 /obj/item/clothing/gloves/latexsleeves/security
 	name = "security sleeves"
 	desc = "A pair of latex sleeves, with a band of red above the elbows denoting that the wearer is part of the security team."
