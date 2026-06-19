@@ -17,7 +17,7 @@
 	)
 
 /datum/gas_reaction/tritfire/init_factors()
-	desc = "Legacy tritium combustion. Disabled — handled by generic combustion."
+	desc = "Tritium combustion with oxygen. Runs before plasma combustion."
 	factor = list(
 		/datum/gas/tritium = "Consumed as fuel; rate depends on oxygen ratio",
 		/datum/gas/oxygen = "Oxidizer for tritium burn",
@@ -29,7 +29,7 @@
 	)
 
 /datum/gas_reaction/plasmafire/init_factors()
-	desc = "Legacy plasma combustion. Disabled — handled by generic combustion."
+	desc = "Plasma combustion with oxygen. High O2:plasma ratio produces tritium instead of CO2."
 	factor = list(
 		/datum/gas/plasma = "Primary fuel; burn rate scales with temperature",
 		/datum/gas/oxygen = "Oxidizer; high O2:plasma ratio produces tritium instead of CO2",
@@ -41,7 +41,7 @@
 	)
 
 /datum/gas_reaction/genericfire/init_factors()
-	desc = "Universal combustion of oxidizers and flammable gases based on enthalpy tables."
+	desc = "Universal combustion of oxidizers and flammable gases based on enthalpy tables. Plasma and tritium are handled separately."
 	factor = list(
 		"Temperature" = "Each gas burns only above its ignition or oxidation temperature",
 		"Energy" = "Heat released from per-gas enthalpy values; products defined per gas type",

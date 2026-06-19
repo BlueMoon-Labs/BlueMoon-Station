@@ -127,7 +127,6 @@
 //tritium combustion: combustion of oxygen and tritium (treated as hydrocarbons). creates hotspots. exothermic
 /datum/gas_reaction/tritfire
 	priority = -1 //fire should ALWAYS be last, but tritium fires happen before plasma fires
-	exclude = TRUE // generic fire now takes care of this
 	name = "Tritium Combustion"
 	id = "tritfire"
 
@@ -209,7 +208,6 @@
 /datum/gas_reaction/plasmafire
 	priority = -2
 	name = "Plasma Combustion"
-	exclude = TRUE // generic fire now takes care of this
 	id = "plasmafire"
 
 /datum/gas_reaction/plasmafire/init_reqs()
@@ -352,6 +350,8 @@
 		else
 			var/fuel_temp = fuel_temps[G]
 			if(fuel_temp && temperature >= fuel_temp)
+				if(G == GAS_PLASMA || G == GAS_TRITIUM) // handled by plasmafire / tritfire
+					continue
 				if(lavaland_block_n2 && G == GAS_N2)
 					continue
 				var/available_moles = air.get_moles(G)
