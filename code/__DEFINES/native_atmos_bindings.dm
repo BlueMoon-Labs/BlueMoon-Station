@@ -25,21 +25,30 @@
 	if(!length(gas_list))
 		return
 	var/datum/gas_mixture/total = new
-	var/participating = 0
+	var/list/datum/gas_mixture/participating = list()
+	var/total_volume = 0
 	for(var/datum/gas_mixture/G in gas_list)
 		if(G && !G.gc_share)
 			total.merge(G)
-			participating++
-	if(!participating)
+			participating += G
+			total_volume += max(G.return_volume(), 0)
+	if(!length(participating))
 		qdel(total)
 		return
-	var/datum/gas_mixture/avg = total.copy()
-	avg.multiply(1 / participating)
-	for(var/datum/gas_mixture/G in gas_list)
-		if(G && !G.gc_share)
-			G.copy_from(avg)
+	if(total_volume <= 0)
+		qdel(total)
+		return
+	var/target_temperature = total.return_temperature()
+	var/list/total_gases = total.gases
+	for(var/datum/gas_mixture/G in participating)
+		var/volume_ratio = G.return_volume() / total_volume
+		G.clear()
+		for(var/id in total_gases)
+			var/moles = (total_gases[id] || 0) * volume_ratio
+			if(moles > 0)
+				G.gases[id] = moles
+		G.set_temperature(target_temperature)
 	qdel(total)
-	qdel(avg)
 
 /datum/controller/subsystem/air/proc/process_turf_equalize_auxtools(remaining)
 	if(!equalize_enabled)
@@ -332,9 +341,10 @@
 /datum/gas_mixture/proc/copy_from(datum/gas_mixture/giver)
 	if(gc_share || !giver)
 		return FALSE
-	gases = giver.gases.Copy()
+	gases.Cut()
+	for(var/id in giver.gases)
+		gases[id] = giver.gases[id]
 	temperature = giver.temperature
-	volume = giver.volume
 	return TRUE
 
 /datum/gas_mixture/proc/archived_heat_capacity()
@@ -460,12 +470,19 @@
 /datum/gas_mixture/proc/scrub_into(datum/gas_mixture/into, ratio_v, list/gas_list)
 	if(gc_share || !into)
 		return FALSE
+	ratio_v = clamp(ratio_v, 0, 1)
+	if(ratio_v <= 0 || !length(gas_list))
+		return FALSE
 	var/datum/gas_mixture/removed = new type(volume)
-	for(var/gid in gas_list & gases)
-		var/m = (gases[gid] || 0) * ratio_v
+	removed.temperature = temperature
+	for(var/gid in gas_list)
+		var/current_moles = gases[gid] || 0
+		if(current_moles <= 0)
+			continue
+		var/m = current_moles * ratio_v
 		if(m > 0)
 			removed.gases[gid] = (removed.gases[gid] || 0) + m
-			gases[gid] = (gases[gid] || 0) - m
+			gases[gid] = current_moles - m
 	GAS_GARBAGE_COLLECT(gases)
 	into.merge(removed)
 	return TRUE
@@ -487,6 +504,7 @@
 	if(sum <= 0)
 		return
 	var/ratio = min(1, amount_val / sum)
+	into.temperature = temperature
 	for(var/id in with_flag)
 		var/amt = with_flag[id] * ratio
 		if(amt > 0)
