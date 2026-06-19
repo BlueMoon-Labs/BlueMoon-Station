@@ -116,7 +116,7 @@ MOVED TO: modular_splurt/code/module/clothing/clothing.dm
 		if(damaged_clothes == CLOTHING_SHREDDED)
 			return FALSE
 		if(do_after(user, 5 SECONDS, user))
-			obj_break() //рвёт со звуком
+			take_damage(200, BRUTE, sound_effect = FALSE)
 			return CLOTHING_DAMAGED
 		else
 			return FALSE
