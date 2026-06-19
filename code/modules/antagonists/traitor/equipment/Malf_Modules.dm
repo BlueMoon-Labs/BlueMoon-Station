@@ -144,86 +144,86 @@ GLOBAL_LIST_INIT(blacklisted_malf_machines, typecacheof(list(
 // (ADD) Pe4henika bluemoon -- start
 // MARK: TGUI
 /datum/module_picker/ui_interact(mob/user, datum/tgui/ui)
-    ui = SStgui.try_update_ui(user, src, ui)
-    if(!ui)
-        ui = new(user, src, "MalfunctionModulePicker", "MALFUNCTION SYSTEM // MODULE V2.77")
-        ui.open()
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "MalfunctionModulePicker", "MALFUNCTION SYSTEM // MODULE V2.77")
+		ui.open()
 
 /datum/module_picker/ui_host(mob/user)
 	return user
 
 /datum/module_picker/ui_data(mob/user)
-    var/list/data = list()
-    // Ключи должны строго совпадать с JS частью!
-    data["processing_time"] = processing_time
-    data["temp"] = temp
+	var/list/data = list()
+	// Ключи должны строго совпадать с JS частью!
+	data["processing_time"] = processing_time
+	data["temp"] = temp
 
-    var/list/large = list()
-    var/list/small = list()
+	var/list/large = list()
+	var/list/small = list()
 
-    for(var/datum/AI_Module/AM in possible_modules)
-        var/list/info = list(
-            "name" = AM.module_name,
-            "cost" = AM.cost,
-            "desc" = AM.description,
-            "ref" = REF(AM)
-        )
-        if(istype(AM, /datum/AI_Module/large))
-            large += list(info)
-        else
-            small += list(info)
+	for(var/datum/AI_Module/AM in possible_modules)
+		var/list/info = list(
+			"name" = AM.module_name,
+			"cost" = AM.cost,
+			"desc" = AM.description,
+			"ref" = REF(AM)
+		)
+		if(istype(AM, /datum/AI_Module/large))
+			large += list(info)
+		else
+			small += list(info)
 
-    data["large_modules"] = large
-    data["small_modules"] = small
-    return data
+	data["large_modules"] = large
+	data["small_modules"] = small
+	return data
 
 /datum/module_picker/ui_act(action, list/params, datum/tgui/ui)
-    if(..())
-        return
+	if(..())
+		return
 
-    var/mob/living/silicon/ai/A = usr
-    if(!istype(A) || A.stat == DEAD)
-        return
+	var/mob/living/silicon/ai/A = usr
+	if(!istype(A) || A.stat == DEAD)
+		return
 
-    switch(action)
-        if("buy") // Соответствует act('buy', ...) в JS
-            var/datum/AI_Module/AM = locate(params["ref"]) in possible_modules
-            if(!AM)
-                return FALSE
+	switch(action)
+		if("buy") // Соответствует act('buy', ...) в JS
+			var/datum/AI_Module/AM = locate(params["ref"]) in possible_modules
+			if(!AM)
+				return FALSE
 
-            if(AM.cost > processing_time)
-                temp = "ОШИБКА: Недостаточно мощностей."
-                return TRUE
+			if(AM.cost > processing_time)
+				temp = "ОШИБКА: Недостаточно мощностей."
+				return TRUE
 
-            var/datum/action/innate/ai/action_exists = locate(AM.power_type) in A.actions
+			var/datum/action/innate/ai/action_exists = locate(AM.power_type) in A.actions
 
-            if(AM.upgrade)
-                AM.upgrade(A)
-                possible_modules -= AM
-                to_chat(A, AM.unlock_text)
-            else
-                if(AM.power_type)
-                    if(!action_exists)
-                        var/datum/action/AC = new AM.power_type
-                        AC.Grant(A)
-                        A.current_modules += new AM.type
-                        temp = AM.description
-                        if(AM.one_purchase)
-                            possible_modules -= AM
-                        if(AM.unlock_text)
-                            to_chat(A, AM.unlock_text)
-                    else
-                        action_exists.uses += initial(action_exists.uses)
-                        action_exists.desc = "[initial(action_exists.desc)] Использований: [action_exists.uses]."
-                        action_exists.UpdateButtons()
-                        temp = "Заряды добавлены: [action_exists.name]!"
+			if(AM.upgrade)
+				AM.upgrade(A)
+				possible_modules -= AM
+				to_chat(A, AM.unlock_text)
+			else
+				if(AM.power_type)
+					if(!action_exists)
+						var/datum/action/AC = new AM.power_type
+						AC.Grant(A)
+						A.current_modules += new AM.type
+						temp = AM.description
+						if(AM.one_purchase)
+							possible_modules -= AM
+						if(AM.unlock_text)
+							to_chat(A, AM.unlock_text)
+					else
+						action_exists.uses += initial(action_exists.uses)
+						action_exists.desc = "[initial(action_exists.desc)] Использований: [action_exists.uses]."
+						action_exists.UpdateButtons()
+						temp = "Заряды добавлены: [action_exists.name]!"
 
-            if(AM.unlock_sound)
-                A.playsound_local(A, AM.unlock_sound, 50, 0)
+			if(AM.unlock_sound)
+				A.playsound_local(A, AM.unlock_sound, 50, 0)
 
-            processing_time -= AM.cost
-            return TRUE
-    return FALSE
+			processing_time -= AM.cost
+			return TRUE
+	return FALSE
 // (ADD) Pe4henika bluemoon -- end
 //The base module type, which holds info about each ability.
 /datum/AI_Module

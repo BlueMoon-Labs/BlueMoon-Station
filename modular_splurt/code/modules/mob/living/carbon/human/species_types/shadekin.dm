@@ -18,4 +18,5 @@
 	UnregisterSignal(C, COMSIG_MOB_SAY)
 
 /datum/species/mammal/shadekin/proc/handle_speech(datum/source, list/speech_args)
+	SIGNAL_HANDLER
 	speech_args[SPEECH_SPANS] |= SPAN_SHADEKINVOICE

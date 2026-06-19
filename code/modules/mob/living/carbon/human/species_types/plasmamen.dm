@@ -39,6 +39,7 @@
 	UnregisterSignal(C, COMSIG_MOB_SAY)
 
 /datum/species/plasmaman/proc/handle_speech(datum/source, list/speech_args)
+	SIGNAL_HANDLER
 	speech_args[SPEECH_SPANS] |= SPAN_PLASMAVOICE
 
 /datum/species/plasmaman/spec_life(mob/living/carbon/human/H)
