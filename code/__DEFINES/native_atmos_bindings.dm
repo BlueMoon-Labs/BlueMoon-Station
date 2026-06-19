@@ -380,7 +380,7 @@
 	__remove(into, total_moles() * ratio_arg)
 
 /datum/gas_mixture/proc/transfer_to(datum/gas_mixture/other, moles)
-	if(gc_share)
+	if(gc_share || !other || other.gc_share)
 		return FALSE
 	var/datum/gas_mixture/removed = new type(volume)
 	__remove(removed, moles)
@@ -432,7 +432,7 @@
 		total.gases[id] = combined * total.volume / total_vol
 
 /datum/gas_mixture/proc/transfer_ratio_to(datum/gas_mixture/other, ratio)
-	if(gc_share)
+	if(gc_share || !other || other.gc_share)
 		return FALSE
 	var/datum/gas_mixture/removed = new type(volume)
 	__remove_ratio(removed, ratio)
@@ -468,7 +468,7 @@
 	return TRUE
 
 /datum/gas_mixture/proc/scrub_into(datum/gas_mixture/into, ratio_v, list/gas_list)
-	if(gc_share || !into)
+	if(gc_share || !into || into.gc_share)
 		return FALSE
 	ratio_v = clamp(ratio_v, 0, 1)
 	if(ratio_v <= 0 || !length(gas_list))

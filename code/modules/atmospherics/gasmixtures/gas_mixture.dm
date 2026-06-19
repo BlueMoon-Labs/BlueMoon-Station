@@ -384,7 +384,15 @@ get_true_breath_pressure(pp) --> gas_pp = pp/breath_pp*total_moles()
 		var/transfer_moles = pressure_delta*output_air.return_volume()/(input_air.return_temperature() * R_IDEAL_GAS_EQUATION)
 
 		//Actually transfer the gas
-		input_air.transfer_to(output_air, transfer_moles)
+		if(output_air.gc_share)
+			var/datum/gas_mixture/removed = input_air.remove(transfer_moles)
+			if(!removed || removed.total_moles() <= 0)
+				if(removed)
+					qdel(removed)
+				return FALSE
+			qdel(removed)
+		else if(!input_air.transfer_to(output_air, transfer_moles))
+			return FALSE
 
 		return TRUE
 	return FALSE

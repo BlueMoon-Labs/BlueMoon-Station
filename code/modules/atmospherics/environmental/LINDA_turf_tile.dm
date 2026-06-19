@@ -58,7 +58,15 @@
 /turf/open/assume_air_moles(datum/gas_mixture/giver, moles)
 	if(!giver)
 		return FALSE
-	giver.transfer_to(air, moles)
+	if(air?.gc_share)
+		var/datum/gas_mixture/removed = giver.remove(moles)
+		if(!removed || removed.total_moles() <= 0)
+			if(removed)
+				qdel(removed)
+			return FALSE
+		qdel(removed)
+	else if(!giver.transfer_to(air, moles))
+		return FALSE
 	update_visuals()
 	if(SSair)
 		SSair.add_to_active(src)
@@ -67,7 +75,15 @@
 /turf/open/assume_air_ratio(datum/gas_mixture/giver, ratio)
 	if(!giver)
 		return FALSE
-	giver.transfer_ratio_to(air, ratio)
+	if(air?.gc_share)
+		var/datum/gas_mixture/removed = giver.remove_ratio(ratio)
+		if(!removed || removed.total_moles() <= 0)
+			if(removed)
+				qdel(removed)
+			return FALSE
+		qdel(removed)
+	else if(!giver.transfer_ratio_to(air, ratio))
+		return FALSE
 	update_visuals()
 	if(SSair)
 		SSair.add_to_active(src)
