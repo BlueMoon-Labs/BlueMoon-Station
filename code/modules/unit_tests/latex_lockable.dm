@@ -10,7 +10,7 @@
 	TEST_ASSERT(suit.GetComponent(/datum/component/latex_lockable), "latex jumpsuit is missing the latex_lockable component")
 
 	// Надеваем - незаперто, снимается.
-	TEST_ASSERT(wearer.equip_to_slot_or_del(suit, ITEM_SLOT_ICLOTHING, TRUE), "failed to equip latex jumpsuit")
+	TEST_ASSERT(wearer.equip_to_slot_or_del(suit, ITEM_SLOT_ICLOTHING), "failed to equip latex jumpsuit")
 	TEST_ASSERT(!HAS_TRAIT(suit, TRAIT_NODROP), "unlocked latex item must not have TRAIT_NODROP")
 	TEST_ASSERT(wearer.canUnEquip(suit), "unlocked latex item must be removable")
 
@@ -29,7 +29,7 @@
 	TEST_ASSERT(HAS_TRAIT(suit, TRAIT_NODROP), "re-locking should set NODROP")
 	wearer.dropItemToGround(suit, TRUE)
 	TEST_ASSERT(!HAS_TRAIT(suit, TRAIT_NODROP), "a dropped latex item must lose NODROP")
-	TEST_ASSERT(wearer.equip_to_slot_or_del(suit, ITEM_SLOT_ICLOTHING, TRUE), "failed to re-equip latex jumpsuit")
+	TEST_ASSERT(wearer.equip_to_slot_or_del(suit, ITEM_SLOT_ICLOTHING), "failed to re-equip latex jumpsuit")
 	TEST_ASSERT(HAS_TRAIT(suit, TRAIT_NODROP), "re-equipping a still-locked latex item must restore NODROP")
 
 	// Чистим состояние для проверки согласия.
@@ -40,6 +40,26 @@
 	// У allocate()'нутых мобов нет client -> нет согласия -> запирание отклоняется.
 	suit.attackby(key, other)
 	TEST_ASSERT(!HAS_TRAIT(suit, TRAIT_NODROP), "locking another's worn latex without consent must be refused")
+
+	// Достижимость надетого замка: другой игрок отпирает чужой запертый предмет
+	// латексным ключом через меню стрипа (use_item_on_strippable -> attackby).
+	// Это путь, который воспроизводит реальный баг "запертое снять/отпереть нельзя".
+	suit.attackby(key, wearer)
+	TEST_ASSERT(HAS_TRAIT(suit, TRAIT_NODROP), "re-locking before strip-menu test failed")
+	TEST_ASSERT(suit.interactable_in_strip_menu, "latex item must be interactable in the strip menu so the key is reachable while worn")
+	suit.use_item_on_strippable(other, wearer, key)
+	TEST_ASSERT(!HAS_TRAIT(suit, TRAIT_NODROP), "another player must be able to unlock a worn latex item with the key via the strip menu")
+
+	// Карман-ловушка: запертый предмет, убранный не в штатный слот, не должен
+	// получать NODROP (иначе его не достать обратно). Берём намордник - он мелкий
+	// и влезает в карман, в отличие от комбинезона.
+	var/obj/item/clothing/mask/muzzle/muzzle = allocate(/obj/item/clothing/mask/muzzle)
+	TEST_ASSERT(wearer.equip_to_slot_or_del(muzzle, ITEM_SLOT_MASK), "failed to equip muzzle")
+	muzzle.attackby(key, wearer)
+	TEST_ASSERT(HAS_TRAIT(muzzle, TRAIT_NODROP), "locking a worn muzzle must apply NODROP")
+	wearer.dropItemToGround(muzzle, TRUE)
+	TEST_ASSERT(wearer.equip_to_slot_or_del(muzzle, ITEM_SLOT_LPOCKET), "failed to put muzzle into a pocket")
+	TEST_ASSERT(!HAS_TRAIT(muzzle, TRAIT_NODROP), "a locked muzzle stashed in a pocket must not be NODROP")
 
 /// Каждый кинк-латексный предмет должен получить компонент латексного замка.
 /// Ловит опечатки и пропущенные AddComponent при добавлении новых вещей.
@@ -58,7 +78,12 @@
 		/obj/item/clothing/under/latex,
 		/obj/item/clothing/under/latex/half,
 		/obj/item/clothing/under/latex_bodysuit,
+		/obj/item/clothing/underwear/socks/latex,
+		/obj/item/clothing/underwear/socks/thigh/l_stockings,
 	)
 	for(var/item_type in latex_types)
 		var/obj/item/item = allocate(item_type)
 		TEST_ASSERT(item.GetComponent(/datum/component/latex_lockable), "[item_type] is missing the latex_lockable component")
+		// Без этого флага латексным ключом не дотянуться до надетого предмета через
+		// меню стрипа - запертое нечем разблокировать (см. /datum/unit_test/latex_lockable).
+		TEST_ASSERT(item.interactable_in_strip_menu, "[item_type] must be interactable in the strip menu")

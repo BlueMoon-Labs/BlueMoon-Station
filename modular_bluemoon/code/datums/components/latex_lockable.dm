@@ -38,6 +38,12 @@ GLOBAL_LIST_INIT(latex_lock_default_messages, list(
 	RegisterSignal(parent, COMSIG_ITEM_EQUIPPED, PROC_REF(on_equipped))
 	RegisterSignal(parent, COMSIG_ITEM_DROPPED, PROC_REF(on_dropped))
 	RegisterSignal(parent, list(COMSIG_ATOM_ATTACK_HAND, COMSIG_ATOM_ATTACK_PAW), PROC_REF(on_attack_hand))
+	// Чтобы латексным ключом можно было щёлкнуть по предмету, пока он надет на
+	// ДРУГОМ игроке - через меню стрипа (use_item_on_strippable -> attackby). Без
+	// этого надетый запертый предмет нечем разблокировать. Заодно даёт зелёную
+	// подсветку слота в меню стрипа.
+	var/obj/item/item = parent
+	item.interactable_in_strip_menu = TRUE
 	// На случай, если предмет создан уже надетым и запертым.
 	refresh_nodrop()
 
@@ -50,6 +56,8 @@ GLOBAL_LIST_INIT(latex_lock_default_messages, list(
 		COMSIG_ATOM_ATTACK_PAW,
 	))
 	REMOVE_TRAIT(parent, TRAIT_NODROP, LATEX_LOCK_TRAIT)
+	var/obj/item/item = parent
+	item.interactable_in_strip_menu = initial(item.interactable_in_strip_menu)
 
 /// Человек, на ком предмет НАДЕТ в слоте (не в руках), иначе null.
 /datum/component/latex_lockable/proc/get_wearer()
@@ -86,10 +94,13 @@ GLOBAL_LIST_INIT(latex_lock_default_messages, list(
 
 /datum/component/latex_lockable/proc/on_equipped(datum/source, mob/equipper, slot)
 	SIGNAL_HANDLER
-	if(slot == ITEM_SLOT_HANDS)
-		return
-	if(locked)
+	var/obj/item/item = parent
+	// NODROP вешаем только когда предмет надет в свой штатный слот. Иначе запертый
+	// предмет, убранный в карман/рюкзак/подсумок, оказался бы заперт там навсегда.
+	if(locked && (slot & item.slot_flags))
 		ADD_TRAIT(parent, TRAIT_NODROP, LATEX_LOCK_TRAIT)
+	else
+		REMOVE_TRAIT(parent, TRAIT_NODROP, LATEX_LOCK_TRAIT)
 
 /datum/component/latex_lockable/proc/on_dropped(datum/source, mob/user)
 	SIGNAL_HANDLER
