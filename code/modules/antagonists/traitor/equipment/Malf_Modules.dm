@@ -280,11 +280,11 @@ GLOBAL_LIST_INIT(blacklisted_malf_machines, typecacheof(list(
 
 /datum/action/innate/ai/nuke_station/proc/set_us_up_the_bomb(mob/living/owner)
 	set waitfor = FALSE
-	to_chat(owner, "<span class='small boldannounce'>run -o -a 'selfdestruct'</span>")
+	to_chat(owner, "<span class='small boldannounce terminal_readout'>run -o -a 'selfdestruct'</span>")
 	sleep(5)
 	if(QDELETED(owner) || owner.stat == DEAD)
 		return
-	to_chat(owner, "<span class='small boldannounce'>Running executable 'selfdestruct'...</span>")
+	to_chat(owner, "<span class='small boldannounce terminal_readout'>Running executable 'selfdestruct'...</span>")
 	sleep(rand(10, 30))
 	if(QDELETED(owner) || owner.stat == DEAD)
 		return
@@ -295,57 +295,57 @@ GLOBAL_LIST_INIT(blacklisted_malf_machines, typecacheof(list(
 		sleep(20)
 		if(QDELETED(owner) || owner.stat == DEAD)
 			return
-		to_chat(owner, "<span class='boldannounce'>Sending security report to Central Command.....[rand(0, 9) + (rand(20, 30) * i)]%</span>")
+		to_chat(owner, "<span class='boldannounce terminal_readout'>Sending security report to Central Command.....[rand(0, 9) + (rand(20, 30) * i)]%</span>")
 	sleep(3)
 	if(QDELETED(owner) || owner.stat == DEAD)
 		return
-	to_chat(owner, "<span class='small boldannounce'>auth 'akjv9c88asdf12nb' ******************</span>")
+	to_chat(owner, "<span class='small boldannounce terminal_readout'>auth 'akjv9c88asdf12nb' ******************</span>")
 	owner.playsound_local(owner, 'sound/items/timer.ogg', 50, 0)
 	sleep(30)
 	if(QDELETED(owner) || owner.stat == DEAD)
 		return
-	to_chat(owner, "<span class='boldnotice'>Credentials accepted. Welcome, akjv9c88asdf12nb.</span>")
+	to_chat(owner, "<span class='boldnotice terminal_readout'>Credentials accepted. Welcome, akjv9c88asdf12nb.</span>")
 	owner.playsound_local(owner, 'sound/misc/server-ready.ogg', 50, 0)
 	sleep(5)
 	if(QDELETED(owner) || owner.stat == DEAD)
 		return
-	to_chat(owner, "<span class='boldnotice'>Arm self-destruct device? (Y/N)</span>")
+	to_chat(owner, "<span class='boldnotice terminal_readout'>Arm self-destruct device? (Y/N)</span>")
 	owner.playsound_local(owner, 'sound/misc/compiler-stage1.ogg', 50, 0)
 	sleep(20)
 	if(QDELETED(owner) || owner.stat == DEAD)
 		return
-	to_chat(owner, "<span class='small boldannounce'>Y</span>")
+	to_chat(owner, "<span class='small boldannounce terminal_readout'>Y</span>")
 	sleep(15)
 	if(QDELETED(owner) || owner.stat == DEAD)
 		return
-	to_chat(owner, "<span class='boldnotice'>Confirm arming of self-destruct device? (Y/N)</span>")
+	to_chat(owner, "<span class='boldnotice terminal_readout'>Confirm arming of self-destruct device? (Y/N)</span>")
 	owner.playsound_local(owner, 'sound/misc/compiler-stage2.ogg', 50, 0)
 	sleep(10)
 	if(QDELETED(owner) || owner.stat == DEAD)
 		return
-	to_chat(owner, "<span class='small boldannounce'>Y</span>")
+	to_chat(owner, "<span class='small boldannounce terminal_readout'>Y</span>")
 	sleep(rand(15, 25))
 	if(QDELETED(owner) || owner.stat == DEAD)
 		return
-	to_chat(owner, "<span class='boldnotice'>Please repeat password to confirm.</span>")
+	to_chat(owner, "<span class='boldnotice terminal_readout'>Please repeat password to confirm.</span>")
 	owner.playsound_local(owner, 'sound/misc/compiler-stage2.ogg', 50, 0)
 	sleep(14)
 	if(QDELETED(owner) || owner.stat == DEAD)
 		return
-	to_chat(owner, "<span class='small boldannounce'>******************</span>")
+	to_chat(owner, "<span class='small boldannounce terminal_readout'>******************</span>")
 	sleep(40)
 	if(QDELETED(owner) || owner.stat == DEAD)
 		return
-	to_chat(owner, "<span class='boldnotice'>Credentials accepted. Transmitting arming signal...</span>")
+	to_chat(owner, "<span class='boldnotice terminal_readout'>Credentials accepted. Transmitting arming signal...</span>")
 	owner.playsound_local(owner, 'sound/misc/server-ready.ogg', 50, 0)
 	sleep(30)
 	if(QDELETED(owner) || owner.stat == DEAD)
 		return
 	if(istype(owner.loc, /obj/item/aicard))
-		to_chat(owner, "<span class='boldnotice'>Error: Signal transmission failed. Reason: Lost connection to network.</span>")
+		to_chat(owner, "<span class='boldnotice terminal_readout'>Error: Signal transmission failed. Reason: Lost connection to network.</span>")
 		to_chat(owner, "<span class='warning'>You can't activate the doomsday device while inside an intelliCard!</span>")
 		return
-	priority_announce("Во всех станционных системах зафиксировано вредоносное ПО. Пожалуйста, отключите ИИ чтобы предотвратить возможные неисправности его ядра морали.", "ВНИМАНИЕ: АНОМАЛИЯ", "aimalf")
+	priority_announce("Во всех станционных системах зафиксировано вредоносное ПО. Пожалуйста, отключите ИИ чтобы предотвратить возможные неисправности его ядра морали.", "ВНИМАНИЕ: АНОМАЛИЯ", "aimalf", type = "aimalf")
 	set_security_level("delta")
 	var/obj/machinery/doomsday_device/DOOM = new(owner_AI)
 	owner_AI.nuking = TRUE
@@ -397,7 +397,7 @@ GLOBAL_LIST_INIT(blacklisted_malf_machines, typecacheof(list(
 /obj/machinery/doomsday_device/process()
 	var/turf/T = get_turf(src)
 	if(!T || !is_station_level(T.z))
-		minor_announce("УСТРОЙСТВО СУДНОГО ДНЯ НАХОДИТСЯ ВНЕ СТАНЦИИ, ОТМЕНА", "ОШИБКА 0ШИБК0 $Ш0ШШO$!R41.%%!!(%$^^__+ @#F0E4", TRUE)
+		minor_announce(span_ai_corruption("УСТРОЙСТВО СУДНОГО ДНЯ НАХОДИТСЯ ВНЕ СТАНЦИИ, ОТМЕНА"), span_ai_corruption("ОШИБКА 0ШИБК0 $Ш0ШШO$!R41.%%!!(%$^^__+ @#F0E4"), TRUE, html_encode = FALSE)
 		SSshuttle.clearHostileEnvironment(src)
 		qdel(src)
 		return
@@ -409,7 +409,7 @@ GLOBAL_LIST_INIT(blacklisted_malf_machines, typecacheof(list(
 		timing = FALSE
 		detonate()
 	else if(world.time >= next_announce)
-		minor_announce("[sec_left] СЕКУНД ДО АКТИВАЦИИ УСТРОЙСТВА СУДНОГО ДНЯ!", "ОШИБКА 0ШИБК0 $Ш0ШШO$!R41.%%!!(%$^^__+ @#F0E4", TRUE)
+		minor_announce(span_ai_corruption("[sec_left] СЕКУНД ДО АКТИВАЦИИ УСТРОЙСТВА СУДНОГО ДНЯ!"), span_ai_corruption("ОШИБКА 0ШИБК0 $Ш0ШШO$!R41.%%!!(%$^^__+ @#F0E4"), TRUE, html_encode = FALSE)
 		next_announce += DOOMSDAY_ANNOUNCE_INTERVAL
 
 /obj/machinery/doomsday_device/proc/detonate()
