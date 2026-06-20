@@ -550,6 +550,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["uses_glasses_colour"]>> uses_glasses_colour
 	S["auto_capitalize_enabled"]>> auto_capitalize_enabled
 	S["surgical_disable_radial"]>> surgical_disable_radial // BLUEMOON ADD
+	S["neural_interface_visibility"]>> neural_interface_visibility // BLUEMOON ADD
 	S["chem_dispenser_classic_view"]>> chem_dispenser_classic_view // BLUEMOON ADD
 	S["chem_dispenser_use_reagent_color"]>> chem_dispenser_use_reagent_color // BLUEMOON ADD
 	S["chem_dispenser_show_icons"]>> chem_dispenser_show_icons // BLUEMOON ADD
@@ -882,6 +883,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["uses_glasses_colour"], uses_glasses_colour)
 	WRITE_FILE(S["auto_capitalize_enabled"], auto_capitalize_enabled)
 	WRITE_FILE(S["surgical_disable_radial"], surgical_disable_radial) // BLUEMOON ADD
+	WRITE_FILE(S["neural_interface_visibility"], neural_interface_visibility) // BLUEMOON ADD
 	WRITE_FILE(S["chem_dispenser_classic_view"], chem_dispenser_classic_view) // BLUEMOON ADD
 	WRITE_FILE(S["chem_dispenser_use_reagent_color"], chem_dispenser_use_reagent_color) // BLUEMOON ADD
 	WRITE_FILE(S["chem_dispenser_show_icons"], chem_dispenser_show_icons) // BLUEMOON ADD

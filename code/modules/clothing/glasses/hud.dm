@@ -8,6 +8,10 @@
 	/// Tracks whether this item actually granted a HUD (i.e. was worn in the eyes slot). Prevents spurious remove_hud_from when held in hands.
 	var/hud_granted = FALSE
 
+	var/datum/component/neural_interface/interface
+	var/list/monitors = list()
+	var/interface_source = "HUD GLASSES"
+
 /obj/item/clothing/glasses/hud/CheckParts(list/parts_list)
 	. = ..()
 	if(vision_correction)
@@ -22,6 +26,10 @@
 /obj/item/clothing/glasses/hud/equipped(mob/living/carbon/human/user, slot)
 	..()
 	if(hud_type && slot == ITEM_SLOT_EYES)
+		interface = user.LoadComponent(/datum/component/neural_interface)
+		interface.AddSource(interface_source)
+		if(monitors?.len)
+			interface.add_monitors_by_types(interface_source, monitors)
 		var/datum/atom_hud/H = GLOB.huds[hud_type]
 		H.add_hud_to(user)
 		hud_granted = TRUE
@@ -29,6 +37,8 @@
 /obj/item/clothing/glasses/hud/dropped(mob/living/carbon/human/user)
 	..()
 	if(hud_type && istype(user) && hud_granted)
+		interface?.RemoveSource(interface_source)
+		interface = null
 		hud_granted = FALSE
 		var/datum/atom_hud/H = GLOB.huds[hud_type]
 		H.remove_hud_from(user)
@@ -61,6 +71,11 @@
 	hud_type = DATA_HUD_MEDICAL_ADVANCED
 	glass_colour_type = /datum/client_colour/glass_colour/lightblue
 	glasses_type = "med"
+	monitors = list(
+		/datum/neural_monitor/health_scan,
+		/datum/neural_monitor/health,
+		/datum/neural_monitor/wound
+	)
 
 /obj/item/clothing/glasses/hud/health/prescription/Initialize(mapload)
 	. = ..()
@@ -111,6 +126,10 @@
 	hud_type = DATA_HUD_DIAGNOSTIC_BASIC
 	glass_colour_type = /datum/client_colour/glass_colour/lightorange
 	glasses_type = "robo"
+	monitors = list(
+		/datum/neural_monitor/cyborg_scan,
+		/datum/neural_monitor/nanite
+	)
 
 /obj/item/clothing/glasses/hud/diagnostic/sunglasses
 	name = "diagnostic HUDSunglasses"
@@ -315,6 +334,7 @@
 	name = "Toggle HUD"
 	desc = "A hud with multiple functions."
 	actions_types = list(/datum/action/item_action/switch_hud)
+
 
 /obj/item/clothing/glasses/hud/toggle/attack_self(mob/user)
 	if(!ishuman(user))

@@ -141,8 +141,9 @@
 	desc = "No fear, no regrets, no mercy."
 	icon_state = "pmc_skull_mask"
 	item_state = "pmc_skull_mask"
+	clothing_flags = ALLOWINTERNALS
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
-	flags_inv = HIDEHAIR|HIDEFACIALHAIR
+	flags_inv = HIDEHAIR|HIDEFACIALHAIR|HIDEFACE|HIDEEARS
 	unique_reskin = list(
 		"Blood" = list(
 			RESKIN_ICON_STATE = "pmc_skull_mask_blood",
