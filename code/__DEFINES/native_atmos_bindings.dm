@@ -385,6 +385,7 @@
 	var/datum/gas_mixture/removed = new type(volume)
 	__remove(removed, moles)
 	other.merge(removed)
+	qdel(removed)
 	return TRUE
 
 /datum/gas_mixture/proc/get_oxidation_power(temp)
@@ -437,6 +438,7 @@
 	var/datum/gas_mixture/removed = new type(volume)
 	__remove_ratio(removed, ratio)
 	other.merge(removed)
+	qdel(removed)
 	return TRUE
 
 /datum/gas_mixture/proc/adjust_heat(heat)
@@ -485,6 +487,7 @@
 			gases[gid] = current_moles - m
 	GAS_GARBAGE_COLLECT(gases)
 	into.merge(removed)
+	qdel(removed)
 	return TRUE
 
 /datum/gas_mixture/proc/get_by_flag(flag_val)
