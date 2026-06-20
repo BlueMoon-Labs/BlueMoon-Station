@@ -3,6 +3,7 @@
 
 #define MINIMUM_USEFUL_LIGHT_RANGE 1.4
 #define LIGHTING_MAX_RANGE 8 // Performance cap: range 9+ costs 4.2x more per source (quadratic view). Objects with higher range will be clamped here.
+#define LIGHTING_MAX_RANGE_STATIC 32 // Расширенный потолок для статики с флагом LIGHT_NO_RANGE_CAP. Её view() считается один раз при инициализации, поэтому квадратичная стоимость окупается; на движущихся источниках флаг НЕ ставить.
 
 #define LIGHTING_HEIGHT_SPACE  -0.5 // light UNDER the floor, primarily used for starlight
 #define LIGHTING_HEIGHT_FLOOR   0   // light ON the floor
@@ -32,6 +33,12 @@ GLOBAL_VAR_INIT(lighting_falloff_mode, LIGHTING_FALLOFF_MODE) // Runtime falloff
 
 // Битфлаги var/light_flags
 #define LIGHT_ATTACHED (1<<0) // свет следует за loc родителя (фонарь, вставленный в каску/борга)
+#define LIGHT_NO_RANGE_CAP (1<<1) // статике можно превышать LIGHTING_MAX_RANGE (до LIGHTING_MAX_RANGE_STATIC). Только корнер-система (COMPLEX_LIGHT). НЕ вешать на движущиеся источники - их view() гоняется каждый шаг.
+
+// Эффективный потолок дальности для атома: статика с LIGHT_NO_RANGE_CAP на корнер-системе
+// получает расширенный LIGHTING_MAX_RANGE_STATIC, всё остальное - базовый LIGHTING_MAX_RANGE.
+// overlay_lighting режет дальность независимо (icon-маски), поэтому флаг гейтится на COMPLEX_LIGHT.
+#define LIGHT_RANGE_CAP_FOR(atom_thing) (((atom_thing.light_flags & LIGHT_NO_RANGE_CAP) && atom_thing.light_system == COMPLEX_LIGHT) ? LIGHTING_MAX_RANGE_STATIC : LIGHTING_MAX_RANGE)
 
 #define LIGHTING_ANIMATE_TIME 3       // Default animate() duration in deciseconds (0.3s) for smooth lighting transitions
 #define LIGHTING_ANIMATE_TIME_FAST 1  // Instant events (EMP, explosion, power cut) — 0.1s

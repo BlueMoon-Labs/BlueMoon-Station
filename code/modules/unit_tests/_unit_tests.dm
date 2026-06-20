@@ -98,6 +98,7 @@
 #include "keybindings_stuck_keys.dm"
 // #include "language_transfer.dm"
 #include "lighting.dm"
+#include "light_range_cap.dm"
 #include "area_tracking.dm"
 #include "cleanable_decals_tracking.dm"
 #include "login_path_async_audit.dm"

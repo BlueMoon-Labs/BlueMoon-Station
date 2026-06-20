@@ -631,3 +631,38 @@
 	TEST_ASSERT(!test_light.light_on, "Second attack_self must toggle light_on back to FALSE")
 	TEST_ASSERT_EQUAL(holder.underlays.len, underlays_before, "Light mask must leave holder underlays when off")
 	TEST_ASSERT_EQUAL(holder.affecting_dynamic_lumi, 0, "Dynamic luminosity must reset when the light is off")
+
+/// Регрессия: лампы фонарного столба - оверлейные lighting_obj. Тумблер идёт через
+/// set_light_on(), а не легаси set_light() (который шумел stack_trace и из-за
+/// одностороннего range-тумблера не зажигал свет обратно). Ассерт light_on не зависит
+/// от позиции дамми (его форсмувают за пределы зоны), свечение проверяем на валидном полу.
+/datum/unit_test/lamppost_overlay_light/Run()
+	var/turf/spawn_turf = run_loc_floor_bottom_left
+	var/obj/machinery/power/floodlight/lamppost/one/lamp = allocate(/obj/machinery/power/floodlight/lamppost/one, spawn_turf)
+	TEST_ASSERT_EQUAL(length(lamp.lamp_lights), 1, "lamppost/one must spawn exactly one lamp light")
+	var/obj/effect/dummy/lighting_obj/light_source = lamp.lamp_lights[1]
+	TEST_ASSERT_NOTNULL(light_source, "lamppost must hold a reference to its lamp light")
+	var/datum/component/overlay_lighting/comp = light_source.GetComponent(/datum/component/overlay_lighting)
+	TEST_ASSERT_NOTNULL(comp, "lamp light must use the overlay lighting component")
+	TEST_ASSERT_NULL(light_source.light, "overlay lamp light must not own a complex light_source")
+	// Стартует выключенным: легаси set_light(0,0,...) оставлял бы light_on = TRUE.
+	TEST_ASSERT(!light_source.light_on, "lamp light must initialize in the off state")
+
+	// Питание не симулируем: дёргаем тумблер напрямую, как try_initial_lighting под нагрузкой.
+	lamp.lamps_active = lamp.number_of_lamps
+	lamp.adjust_lamppost_light()
+	TEST_ASSERT(light_source.light_on, "active lamp light must switch on via set_light_on")
+	// Ставим источник на заведомо валидный пол и проверяем, что свет реально проецируется.
+	light_source.forceMove(spawn_turf)
+	TEST_ASSERT_EQUAL(comp.current_holder, light_source, "dummy on a turf must be its own holder")
+	TEST_ASSERT(comp.currently_displaying, "active lamp light must project its mask on the holder")
+
+	lamp.turn_off()
+	TEST_ASSERT(!light_source.light_on, "turn_off must switch the lamp light back off")
+	TEST_ASSERT(!comp.currently_displaying, "off lamp light must drop its mask")
+
+	// Полный цикл off->on: старый range-тумблер сюда уже не зажигал свет обратно.
+	lamp.lamps_active = lamp.number_of_lamps
+	lamp.adjust_lamppost_light()
+	TEST_ASSERT(light_source.light_on, "lamp light must switch on again after a full off/on cycle")
+	TEST_ASSERT(comp.currently_displaying, "re-lit lamp light must project its mask again")

@@ -45,7 +45,7 @@
 		light_power = l_power
 
 	if (l_range != null)
-		light_range = min(l_range, LIGHTING_MAX_RANGE)
+		light_range = min(l_range, LIGHT_RANGE_CAP_FOR(src))
 
 	if (l_color != NONSENSICAL_VALUE)
 		light_color = l_color
@@ -236,7 +236,7 @@
 
 /// Setter for the light range of this atom.
 /atom/proc/set_light_range(new_range)
-	new_range = min(new_range, LIGHTING_MAX_RANGE)
+	new_range = min(new_range, LIGHT_RANGE_CAP_FOR(src))
 	if(new_range == light_range)
 		return
 	if(SEND_SIGNAL(src, COMSIG_ATOM_SET_LIGHT_RANGE, new_range) & COMPONENT_BLOCK_LIGHT_UPDATE)
