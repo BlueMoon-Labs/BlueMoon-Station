@@ -64,11 +64,25 @@
 			else
 				SSlighting.bg_queued_zlevels += level.z_value
 
+/// TRUE if any parked deferred light atom still belongs to z_level. An interrupted on-demand init
+/// can leave the level flagged lighting_initialized with its sources never flushed; this lets
+/// create_lighting_for_zlevel detect and recover that stuck state instead of staying black forever.
+/proc/zlevel_has_deferred_lighting(z_level)
+	for(var/atom/deferred_atom as anything in GLOB.lighting_deferred_atoms)
+		if(QDELETED(deferred_atom))
+			continue
+		var/turf/atom_turf = get_turf(deferred_atom)
+		if(atom_turf?.z == z_level)
+			return TRUE
+	return FALSE
+
 /// Creates lighting infrastructure for a single z-level on demand (synchronous fallback).
 /// Called when a player enters a z-level before background init reaches it.
 /proc/create_lighting_for_zlevel(z_level)
 	var/datum/space_level/level = SSmapping.get_level(z_level)
-	if(level.lighting_initialized)
+	// Self-heal: also re-run when a prior (possibly interrupted) init left deferred light atoms for
+	// this z unflushed — otherwise the level stays flagged "initialized" yet permanently black.
+	if(level.lighting_initialized && !zlevel_has_deferred_lighting(z_level))
 		return
 	level.lighting_initialized = TRUE
 	// Cancel background init if it was working on this z-level
@@ -128,7 +142,29 @@
 			remaining_starlight[S] = TRUE
 		CHECK_TICK
 	GLOB.lighting_deferred_starlight = remaining_starlight
-	// NO batch processing here — SSlighting fire() handles queued lights/corners/objects
-	// gradually through its adaptive cap (40-200 sources/tick), preventing server freeze.
-	// Phase 0 sources are already in GLOB.lighting_update_lights from their constructor.
-	// Starlight sources will be created by fire() Phase -1 from GLOB.lighting_starlight_queue.
+
+	// Drain the work this on-demand init just queued so the z a player is standing on lights up
+	// immediately. Handing the whole backlog to SSlighting.fire() instead leaves it under the
+	// dilation-adaptive source cap, which collapses to ~20-40 sources/fire under atmospherics load,
+	// so the arrival area stays black for tens of seconds (and far longer on heavy away-maps). This
+	// mirrors create_all_lighting_objects' init batch path; CHECK_TICK keeps a huge z from freezing
+	// the arrival tick. fire() Phase -1 still creates the queued starlight sources separately.
+	for(var/datum/light_source/queued_source as anything in GLOB.lighting_update_lights)
+		if(!QDELETED(queued_source))
+			queued_source.update_corners()
+			queued_source.needs_update = LIGHTING_NO_UPDATE
+		CHECK_TICK
+	GLOB.lighting_update_lights.Cut()
+
+	for(var/datum/lighting_corner/queued_corner as anything in GLOB.lighting_update_corners)
+		queued_corner.update_objects()
+		queued_corner.needs_update = FALSE
+		CHECK_TICK
+	GLOB.lighting_update_corners.Cut()
+
+	for(var/atom/movable/lighting_object/queued_object as anything in GLOB.lighting_update_objects)
+		if(!QDELETED(queued_object))
+			queued_object.update(use_animate = FALSE)
+			queued_object.needs_update = FALSE
+		CHECK_TICK
+	GLOB.lighting_update_objects.Cut()
