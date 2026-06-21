@@ -2447,8 +2447,8 @@
 	slot = ITEM_SLOT_MASK
 	path = /obj/item/clothing/mask/gas/syndicate/pmc_skull_mask
 	ckeywhitelist = list("hateredsoul")
-  
-/datum/gear/donator/bm/krieg_backpack
+
+/datum/gear/donator/bm/sc_winter_coat
 	name = "Security winter coat"
 	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/suit/hooded/wintercoat/security/no_armor
