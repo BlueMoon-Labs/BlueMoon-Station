@@ -976,7 +976,7 @@
 /obj/item/gun/ballistic/automatic/pistol/enforcer/p226_syndicate
 	DONATE_ITEM_TOOLTIP_PARENT
 	name = "\improper P226 'Syndicate'"
-	desc = "Наградной пистолет модели P226 красного цвета. На верхней части рукоятки присутствует выбитый символ Триглава Синдиката с черной 'S' на кроваво-красном фоне. Кожух ствола переливается кроваво-медным отблеском на свете. Бок рукоятки украшен золотистыми буквами 'ЗА ОТЛИЧНУЮ СЛУЖБУ'."
+	desc = "Наградной пистолет модели P226 красного цвета. На верхней части рукоятки присутствует выбитый симstunkaвол Триглава Синдиката с черной 'S' на кроваво-красном фоне. Кожух ствола переливается кроваво-медным отблеском на свете. Бок рукоятки украшен золотистыми буквами 'ЗА ОТЛИЧНУЮ СЛУЖБУ'."
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
 	icon_state = "p_226_syndicate"
 	item_state = "p_226_syndicate"
@@ -1006,19 +1006,19 @@
 	item_state = STUNKATANA_BASE_STATE
 	turn_on_sound = 'modular_bluemoon/fluffs/sound/weapon/stunblade.ogg'
 
-/obj/item/melee/baton/stunkatana/switch_status(new_status, silent)
+/obj/item/melee/baton/stunsword/stunkatana/switch_status(new_status, silent)
 	var/old_status = turned_on
 	. = ..()
 	if(turned_on != old_status)
 		switch_light()
 
-/obj/item/melee/baton/stunkatana/common_baton_melee(mob/M, mob/living/user, shoving = FALSE)
+/obj/item/melee/baton/stunsword/stunkatana/common_baton_melee(mob/M, mob/living/user, shoving = FALSE)
 	. = ..()
 	// После удара — обновляем иконку и свет по текущему заряду.
 	update_icon_state()
 	switch_light()
 
-/obj/item/melee/baton/stunkatana/update_icon_state()
+/obj/item/melee/baton/stunsword/stunkatana/update_icon_state()
 	if(!cell)
 		icon_state = "[STUNKATANA_BASE_STATE]-nocell"
 		item_state = STUNKATANA_BASE_STATE
@@ -1041,7 +1041,7 @@
 		icon_state = "[STUNKATANA_BASE_STATE]-off[charge_percent <= 0.5 ? "-half" : ""]"
 		item_state = STUNKATANA_BASE_STATE
 
-/obj/item/melee/baton/stunkatana/proc/switch_light()
+/obj/item/melee/baton/stunsword/stunkatana/proc/switch_light()
 	if(!cell)
 		set_light(0)
 		return
