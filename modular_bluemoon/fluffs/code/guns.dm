@@ -995,7 +995,7 @@
 
 #define STUNKATANA_BASE_STATE "stunkatana"
 
-/obj/item/melee/baton/stunkatana
+/obj/item/melee/baton/stunsword/stunkatana
 	DONATE_ITEM_TOOLTIP_PARENT
 	name = "\improper Stun-Katana"
 	desc = "Оружие специальных подразделений ЧВК \"Конкорд\", способное одним только ударом разрезать мехов словно раскалённый нож масло... Ах, было бы славно, если бы он и оставался таким. К сожалению, из-за политики ПАКТа, максимальная сила режущей энерго-кромки выставлена на 1-2 процента, а предоставляемые энергоячейки едва ли могут сравниться с боевыми образцами, что делает этот поистинне мощный клинок лишь средством нелетального задержания с ноткой хайтека и напыщенности."
@@ -1564,9 +1564,9 @@
 	var/charge_percent = cell.charge / cell.maxcharge
 	if(charge_percent < 0.6 && charge_percent>= 0.3)
 		. += "neutron-2"
-	else if(charge_percent<0.3 && charge_percent>0.1)
+	else if(charge_percent<0.3 && charge_percent>=0.1)
 		. += "neutron-1"
-	else
+	else if(charge_percent<0.1)
 		. += "neutron-0"
 /obj/item/modkit/spectral_kit
 	name = "Spectral Kit"
@@ -1599,9 +1599,9 @@
 	var/charge_percent = cell.charge / cell.maxcharge
 	if(charge_percent < 0.6 && charge_percent>= 0.3)
 		. += "spectral-2"
-	else if(charge_percent<0.3 && charge_percent>0.1)
+	else if(charge_percent<0.3 && charge_percent>=0.1)
 		. += "spectral-1"
-	else
+	else if(charge_percent<0.1)
 		. += "spectral-0"
 /obj/item/modkit/pulsar_kit
 	name = "Pulsar Kit"
