@@ -131,6 +131,9 @@ SUBSYSTEM_DEF(lighting)
 	var/list/bg_turfs
 	/// Progress index through bg_turfs
 	var/bg_turf_index = 0
+	/// Re-entrancy guard for scan_stuck_deferred_zlevels(): create_lighting_for_zlevel CHECK_TICKs can
+	/// yield and let the MC re-enter fire() before times_fired advances, which would re-run the scan.
+	var/scanning_stuck = FALSE
 
 /datum/controller/subsystem/lighting/stat_entry(msg)
 	var/total_cost = cost_sources + cost_corners + cost_objects
@@ -431,6 +434,12 @@ SUBSYSTEM_DEF(lighting)
 		if(bg_pending < LIGHTING_BG_INIT_PENDING_THRESHOLD)
 			process_bg_zlevel_init()
 
+	// Safety net: periodically rescue z-levels whose on-demand init was interrupted (flagged
+	// initialized but still holding orphaned deferred atoms) and that have an occupant waiting in the
+	// dark. Free in steady state: the deferred-atoms list is empty once all away-maps are visited.
+	if(!init_tick_checks && length(GLOB.lighting_deferred_atoms) && (times_fired % LIGHTING_STUCK_SCAN_INTERVAL == 0))
+		scan_stuck_deferred_zlevels()
+
 	// Track worst single-fire total cost (real measurement, not MC_AVERAGE sum)
 	if(!init_tick_checks)
 		var/fire_total = TICK_USAGE_TO_MS(fire_start_timer)
@@ -531,6 +540,39 @@ SUBSYSTEM_DEF(lighting)
 					continue
 				lighting_object.update(use_animate = FALSE)
 				lighting_object.needs_update = FALSE
+
+/// Safety net for the "lighting never loads" report: a z-level left flagged lighting_initialized with
+/// orphaned deferred atoms (interrupted on-demand init) is never re-entered by any movement trigger,
+/// because update_z only fires on a z CHANGE and a stationary player never re-fires it. This periodic
+/// scan finds z-levels that still have parked deferred atoms AND a present occupant (living client or
+/// ghost) and re-runs create_lighting_for_zlevel, letting its self-heal guard flush them. Unoccupied
+/// deferred z-levels are intentionally left alone (preserving the deferral optimization).
+/datum/controller/subsystem/lighting/proc/scan_stuck_deferred_zlevels()
+	if(scanning_stuck)
+		return
+	if(!length(GLOB.lighting_deferred_atoms) || !SSmapping?.initialized)
+		return
+	scanning_stuck = TRUE
+	// One pass over the parked atoms to collect the distinct z-levels that still have deferred lighting.
+	// |= dedups numeric z values as list ELEMENTS (a numeric assoc key would index out of bounds in DM).
+	var/list/parked_z = list()
+	for(var/atom/deferred_atom as anything in GLOB.lighting_deferred_atoms)
+		if(QDELETED(deferred_atom))
+			continue
+		var/turf/atom_turf = get_turf(deferred_atom)
+		if(atom_turf)
+			parked_z |= atom_turf.z
+	// Recover only z-levels with a present occupant (living client or ghost; dead players are the
+	// dominant stuck case since they reach away/reserved z first). A parked-but-empty reserved z stays
+	// deferred on purpose; force-initing it would defeat the deferral optimization.
+	for(var/z in parked_z)
+		if(z < 1 || z > SSmapping.z_list.len)
+			continue
+		var/has_occupant = (z <= length(SSmobs.clients_by_zlevel) && length(SSmobs.clients_by_zlevel[z])) || (z <= length(SSmobs.dead_players_by_zlevel) && length(SSmobs.dead_players_by_zlevel[z]))
+		if(!has_occupant)
+			continue
+		create_lighting_for_zlevel(z)
+	scanning_stuck = FALSE
 
 /datum/controller/subsystem/lighting/proc/process_bg_zlevel_init()
 	// Pick a z-level to work on

@@ -68,6 +68,7 @@ GLOBAL_VAR_INIT(lighting_falloff_mode, LIGHTING_FALLOFF_MODE) // Runtime falloff
 #define LIGHTING_BACKLOG_DRAIN_DIVISOR 3   // Drain rate: (queue - cap) / this
 #define LIGHTING_IDLE_WAIT_THRESHOLD 20    // Below this pending count, subsystem relaxes to wait=2
 #define LIGHTING_BG_INIT_PENDING_THRESHOLD 100 // Background z-level init only runs when normal queue < this
+#define LIGHTING_STUCK_SCAN_INTERVAL 50    // Fires between safety-net scans for stuck deferred z-levels (~5-10s)
 #define LIGHTING_DILATION_HIGH 40          // Time dilation threshold for minimum cap
 #define LIGHTING_DILATION_MEDIUM 20        // Time dilation threshold for reduced cap
 

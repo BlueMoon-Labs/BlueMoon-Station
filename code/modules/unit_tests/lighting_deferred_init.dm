@@ -124,3 +124,205 @@
 	TEST_ASSERT(precond_no_source, "precondition: stuck deferred emitter has no live source")
 	TEST_ASSERT(flushed, "self-heal: on-demand init must flush a deferred atom left on an already-initialized z")
 	TEST_ASSERT(has_source, "self-heal: orphaned deferred light source must be created on re-init")
+
+// ----------------------------------------------------------------------------------------------------
+// Fix 1 (S4, гхосты): /mob/dead/update_z не триггерил on-demand init - призрак на отложенном z сидел в
+// темноте. Фикс выносит синхронный гейт в should_ondemand_init_zlevel() и зовёт его из обоих update_z.
+// В юнит-тестах у мобов нет client, поэтому полный путь /mob/dead/update_z не прогнать (гейт на if(client));
+// тестируем сам предикат - именно его решает оба пути.
+// ----------------------------------------------------------------------------------------------------
+
+/// Fix 1: предикат ДОЛЖЕН разрешить on-demand init для неинициализированного, не-deferred-batch z при готовых SS.
+/datum/unit_test/light_ondemand_gate_fires_for_uninitialized_z/Run()
+	TEST_ASSERT(SSlighting.initialized, "SSlighting was not initialized")
+	var/turf/test_turf = run_loc_floor_bottom_left
+	var/datum/space_level/level = SSmapping.get_level(test_turf.z)
+	var/old_init = level.lighting_initialized
+	var/old_defer = GLOB.lighting_defer_active
+
+	level.lighting_initialized = FALSE
+	GLOB.lighting_defer_active = FALSE
+	var/fired = should_ondemand_init_zlevel(test_turf.z)
+
+	level.lighting_initialized = old_init
+	GLOB.lighting_defer_active = old_defer
+
+	TEST_ASSERT(fired, "should_ondemand_init_zlevel must return TRUE for an uninitialized, non-deferred z while SS are ready (the gate both update_z paths use to schedule on-demand init)")
+
+/// Fix 1: предикат НЕ должен срабатывать на уже инициализированном z (без избыточного повторного init).
+/datum/unit_test/light_ondemand_gate_skips_initialized_z/Run()
+	var/turf/test_turf = run_loc_floor_bottom_left
+	var/datum/space_level/level = SSmapping.get_level(test_turf.z)
+	var/old_init = level.lighting_initialized
+
+	level.lighting_initialized = TRUE
+	var/fired = should_ondemand_init_zlevel(test_turf.z)
+
+	level.lighting_initialized = old_init
+
+	TEST_ASSERT(!fired, "gate must NOT fire for an already lighting_initialized z (no redundant on-demand init)")
+
+/// Fix 1: предикат НЕ должен срабатывать пока идёт bulk-операция (shuttle docking владеет светом).
+/datum/unit_test/light_ondemand_gate_skips_during_defer_active/Run()
+	var/turf/test_turf = run_loc_floor_bottom_left
+	var/datum/space_level/level = SSmapping.get_level(test_turf.z)
+	var/old_init = level.lighting_initialized
+	var/old_defer = GLOB.lighting_defer_active
+	TEST_ASSERT(!old_defer, "precondition: lighting_defer_active must start FALSE so this test controls it")
+
+	level.lighting_initialized = FALSE
+	GLOB.lighting_defer_active = TRUE
+	var/fired = should_ondemand_init_zlevel(test_turf.z)
+
+	level.lighting_initialized = old_init
+	GLOB.lighting_defer_active = old_defer
+
+	TEST_ASSERT(!fired, "gate must NOT fire while GLOB.lighting_defer_active (bulk shuttle docking owns lighting)")
+
+// ----------------------------------------------------------------------------------------------------
+// Fix 2 (S3, "не грузит никогда"): self-heal недостижим для стоящего на месте игрока - его никто не
+// перезовёт. Периодический SSlighting.scan_stuck_deferred_zlevels() добивает z с осевшими отложенными
+// атомами, НА КОТОРОМ ЕСТЬ ОБИТАТЕЛЬ (живой клиент или призрак), и оставляет пустые отложенные z в покое.
+// ----------------------------------------------------------------------------------------------------
+
+/// Fix 2: скан восстанавливает застрявший z (флаг TRUE + осевшие атомы) при наличии обитателя.
+/datum/unit_test/light_safetynet_recovers_stuck_zlevel_with_occupant/Run()
+	TEST_ASSERT(SSlighting.initialized, "SSlighting was not initialized")
+	var/turf/test_turf = run_loc_floor_bottom_left
+	var/test_z = test_turf.z
+	var/datum/space_level/level = SSmapping.get_level(test_z)
+
+	var/old_init = level.lighting_initialized
+	var/list/saved_deferred = GLOB.lighting_deferred_atoms.Copy()
+	var/list/saved_lights = GLOB.lighting_update_lights.Copy()
+	var/list/saved_corners = GLOB.lighting_update_corners.Copy()
+	var/list/saved_objects = GLOB.lighting_update_objects.Copy()
+	TEST_ASSERT(test_z <= length(SSmobs.dead_players_by_zlevel), "test premise: dead_players_by_zlevel must have a slot for the reservation z")
+	var/list/saved_deadslot = SSmobs.dead_players_by_zlevel[test_z]
+
+	// Паркуем источник, затем имитируем прерванный init: флаг TRUE, источник так и не сфлашен.
+	var/obj/effect/light_emitter/emitter = park_deferred_emitter(test_turf, level)
+	var/precond_parked = (emitter in GLOB.lighting_deferred_atoms)
+	GLOB.lighting_deferred_atoms = list(emitter) // изолируем скан строго на тестовый z
+	level.lighting_initialized = TRUE
+	SSmobs.dead_players_by_zlevel[test_z] = list(src) // обитатель: скан смотрит только length>0
+	GLOB.lighting_update_lights.Cut()
+	GLOB.lighting_update_corners.Cut()
+	GLOB.lighting_update_objects.Cut()
+
+	SSlighting.scan_stuck_deferred_zlevels()
+
+	var/flushed = !(emitter in GLOB.lighting_deferred_atoms)
+	var/has_source = !isnull(emitter.light)
+
+	GLOB.lighting_update_lights = saved_lights
+	GLOB.lighting_update_corners = saved_corners
+	GLOB.lighting_update_objects = saved_objects
+	GLOB.lighting_deferred_atoms = saved_deferred
+	SSmobs.dead_players_by_zlevel[test_z] = saved_deadslot
+	level.lighting_initialized = old_init
+
+	TEST_ASSERT(precond_parked, "precondition: emitter parked as deferred on the uninitialized reserved z")
+	TEST_ASSERT(flushed, "safety-net scan must flush a deferred atom orphaned on an occupied z flagged initialized (the 'never loads' case)")
+	TEST_ASSERT(has_source, "safety-net scan must create the orphaned deferred light source")
+
+/// Fix 2: скан НЕ должен форс-инитить отложенный z без обитателя (сохраняем оптимизацию отложки).
+/datum/unit_test/light_safetynet_skips_zlevel_without_occupant/Run()
+	TEST_ASSERT(SSlighting.initialized, "SSlighting was not initialized")
+	var/turf/test_turf = run_loc_floor_bottom_left
+	var/test_z = test_turf.z
+	var/datum/space_level/level = SSmapping.get_level(test_z)
+
+	var/old_init = level.lighting_initialized
+	var/list/saved_deferred = GLOB.lighting_deferred_atoms.Copy()
+	var/list/saved_lights = GLOB.lighting_update_lights.Copy()
+	var/list/saved_corners = GLOB.lighting_update_corners.Copy()
+	var/list/saved_objects = GLOB.lighting_update_objects.Copy()
+	TEST_ASSERT(test_z <= length(SSmobs.clients_by_zlevel), "test premise: clients_by_zlevel slot must exist for reservation z")
+	TEST_ASSERT(test_z <= length(SSmobs.dead_players_by_zlevel), "test premise: dead_players_by_zlevel slot must exist for reservation z")
+	var/list/saved_clientslot = SSmobs.clients_by_zlevel[test_z]
+	var/list/saved_deadslot = SSmobs.dead_players_by_zlevel[test_z]
+
+	var/obj/effect/light_emitter/emitter = park_deferred_emitter(test_turf, level)
+	var/precond_parked = (emitter in GLOB.lighting_deferred_atoms)
+	GLOB.lighting_deferred_atoms = list(emitter) // изолируем скан строго на тестовый z
+	SSmobs.clients_by_zlevel[test_z] = list() // никаких обитателей на этом z
+	SSmobs.dead_players_by_zlevel[test_z] = list()
+	GLOB.lighting_update_lights.Cut()
+	GLOB.lighting_update_corners.Cut()
+	GLOB.lighting_update_objects.Cut()
+
+	SSlighting.scan_stuck_deferred_zlevels()
+
+	var/still_parked = (emitter in GLOB.lighting_deferred_atoms)
+	var/no_source = isnull(emitter.light)
+
+	GLOB.lighting_update_lights = saved_lights
+	GLOB.lighting_update_corners = saved_corners
+	GLOB.lighting_update_objects = saved_objects
+	GLOB.lighting_deferred_atoms = saved_deferred
+	SSmobs.clients_by_zlevel[test_z] = saved_clientslot
+	SSmobs.dead_players_by_zlevel[test_z] = saved_deadslot
+	level.lighting_initialized = old_init
+
+	TEST_ASSERT(precond_parked, "precondition: emitter parked as deferred")
+	TEST_ASSERT(still_parked, "safety-net scan must NOT force-init a deferred z with no occupant (preserve the deferral optimization)")
+	TEST_ASSERT(no_source, "no live source may be created for an unoccupied deferred z")
+
+// ----------------------------------------------------------------------------------------------------
+// Fix 3 (S1-регресс): синхронный дренаж завершался безусловным .Cut(), стирая источник, дозапханный в
+// очередь во время CHECK_TICK-засыпания (его needs_update != NO_UPDATE -> EFFECT_UPDATE-гард больше не
+// перезапишет -> stranded dark). Fix: prefix-cut как в fire(), дозапханное остаётся в очереди для fire().
+// Тестовый источник имитирует дозапихивание "брата" в очередь прямо во время дренажа (синхронно, без
+// зависимости от реального CHECK_TICK-yield).
+// ----------------------------------------------------------------------------------------------------
+
+/// Тестовый источник: при первом update_corners() синхронно дозапихивает sibling в очередь источников -
+/// имитация EFFECT_UPDATE во время CHECK_TICK-засыпания дренажа (sibling оказывается за границей снапшота).
+/datum/light_source/test_drain_trojan
+	var/datum/light_source/sibling
+	var/has_appended = FALSE
+
+/datum/light_source/test_drain_trojan/update_corners()
+	if(!has_appended && sibling)
+		has_appended = TRUE
+		GLOB.lighting_update_lights += sibling
+	return
+
+/datum/unit_test/light_drain_snapshot_keeps_appended_source/Run()
+	TEST_ASSERT(SSlighting.initialized, "SSlighting was not initialized")
+	var/turf/test_turf = run_loc_floor_bottom_left
+
+	var/list/saved_lights = GLOB.lighting_update_lights.Copy()
+	var/list/saved_corners = GLOB.lighting_update_corners.Copy()
+	var/list/saved_objects = GLOB.lighting_update_objects.Copy()
+
+	var/datum/light_source/test_drain_trojan/trojan = new(test_turf, test_turf)
+	var/datum/light_source/sibling = new(test_turf, test_turf)
+	sibling.needs_update = LIGHTING_CHECK_UPDATE // dirtied + уже в очереди: EFFECT_UPDATE-гард откажется перезапихивать
+	trojan.sibling = sibling
+	trojan.needs_update = LIGHTING_CHECK_UPDATE
+
+	// В снапшоте только trojan; он дозапихивает sibling за границу снапшота во время дренажа.
+	GLOB.lighting_update_lights = list(trojan)
+	GLOB.lighting_update_corners.Cut()
+	GLOB.lighting_update_objects.Cut()
+
+	drain_lighting_queues_snapshot()
+
+	var/trojan_removed = !(trojan in GLOB.lighting_update_lights)
+	// The fix guarantees the appended sibling is never STRANDED: either it stays queued for a later
+	// fire() (no CHECK_TICK yield in the drain), or a live fire() that ran during the yield already
+	// processed it (removed AND needs_update cleared). The bug (blanket .Cut()) leaves it absent yet
+	// still dirty, after which EFFECT_UPDATE's guard refuses to re-enqueue it -> permanently dark.
+	// Asserting "not stranded" stays deterministic regardless of whether the in-test drain yielded.
+	var/sibling_stranded = !(sibling in GLOB.lighting_update_lights) && (sibling.needs_update != LIGHTING_NO_UPDATE)
+
+	GLOB.lighting_update_lights = saved_lights
+	GLOB.lighting_update_corners = saved_corners
+	GLOB.lighting_update_objects = saved_objects
+	qdel(trojan, force = TRUE)
+	qdel(sibling, force = TRUE)
+
+	TEST_ASSERT(trojan_removed, "the processed source must be cut from the queue")
+	TEST_ASSERT(!sibling_stranded, "a source enqueued during the drain must never end stranded (absent from every queue yet still dirty); prefix-cut keeps it for fire() instead of blanket-discarding it")

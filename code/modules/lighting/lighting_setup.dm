@@ -1,3 +1,46 @@
+/// Drains the three lighting work queues (sources -> corners -> objects) synchronously, in order,
+/// using fire()'s prefix-cut idiom: snapshot the length at loop entry, process [1..i], then Cut only
+/// the processed prefix. A source dirtied via EFFECT_UPDATE during a CHECK_TICK yield lands past the
+/// snapshot and SURVIVES in the queue for SSlighting.fire(), instead of being blanket-discarded by an
+/// unconditional .Cut() (which would strand it dark: its needs_update stays non-NO_UPDATE, so the
+/// re-append guard then refuses to re-enqueue it). Each loop fully drains before the next snapshots,
+/// so the cascade lights->corners->objects is covered.
+/proc/drain_lighting_queues_snapshot()
+	var/i = 0
+	for(i in 1 to GLOB.lighting_update_lights.len)
+		if(i > GLOB.lighting_update_lights.len) // queue may shrink if a CHECK_TICK yield re-enters fire()
+			break
+		var/datum/light_source/queued_source = GLOB.lighting_update_lights[i]
+		if(!QDELETED(queued_source))
+			queued_source.update_corners()
+			queued_source.needs_update = LIGHTING_NO_UPDATE
+		CHECK_TICK
+	if(i)
+		GLOB.lighting_update_lights.Cut(1, min(i + 1, length(GLOB.lighting_update_lights) + 1))
+
+	i = 0
+	for(i in 1 to GLOB.lighting_update_corners.len)
+		if(i > GLOB.lighting_update_corners.len)
+			break
+		var/datum/lighting_corner/queued_corner = GLOB.lighting_update_corners[i]
+		queued_corner.update_objects()
+		queued_corner.needs_update = FALSE
+		CHECK_TICK
+	if(i)
+		GLOB.lighting_update_corners.Cut(1, min(i + 1, length(GLOB.lighting_update_corners) + 1))
+
+	i = 0
+	for(i in 1 to GLOB.lighting_update_objects.len)
+		if(i > GLOB.lighting_update_objects.len)
+			break
+		var/atom/movable/lighting_object/queued_object = GLOB.lighting_update_objects[i]
+		if(!QDELETED(queued_object))
+			queued_object.update(use_animate = FALSE)
+			queued_object.needs_update = FALSE
+		CHECK_TICK
+	if(i)
+		GLOB.lighting_update_objects.Cut(1, min(i + 1, length(GLOB.lighting_update_objects) + 1))
+
 /proc/create_all_lighting_objects()
 	SSlighting.init_in_progress = TRUE
 
@@ -30,30 +73,10 @@
 	GLOB.lighting_deferred_starlight.Cut()
 	SSlighting.init_in_progress = FALSE
 
-	// Batch process all queued light sources directly during init
-	// This is faster than going through the subsystem fire() loop:
-	// no adaptive cap, no queue overhead, no animate() — instant lighting
-	for(var/datum/light_source/L as anything in GLOB.lighting_update_lights)
-		if(!QDELETED(L))
-			L.update_corners()
-			L.needs_update = LIGHTING_NO_UPDATE
-		CHECK_TICK
-	GLOB.lighting_update_lights.Cut()
-
-	// Process corners
-	for(var/datum/lighting_corner/C as anything in GLOB.lighting_update_corners)
-		C.update_objects()
-		C.needs_update = FALSE
-		CHECK_TICK
-	GLOB.lighting_update_corners.Cut()
-
-	// Process lighting objects — no animation during init (map appears instantly lit)
-	for(var/atom/movable/lighting_object/O as anything in GLOB.lighting_update_objects)
-		if(!QDELETED(O))
-			O.update(use_animate = FALSE)
-			O.needs_update = FALSE
-		CHECK_TICK
-	GLOB.lighting_update_objects.Cut()
+	// Batch process all queued sources/corners/objects directly during init — instant lighting, no
+	// adaptive cap or animate(). Prefix-cut inside the helper keeps any cascade tail dirtied during a
+	// CHECK_TICK yield in the queue for SSlighting.fire() instead of blanket-discarding it.
+	drain_lighting_queues_snapshot()
 
 	// Mark initialized z-levels and queue deferred ones for background init
 	if(SSmapping?.initialized)
@@ -75,6 +98,16 @@
 		if(atom_turf?.z == z_level)
 			return TRUE
 	return FALSE
+
+/// Synchronous gate shared by /mob/living and /mob/dead update_z: should a client entering new_z
+/// schedule on-demand lighting init? TRUE only when lighting/mapping are ready, no bulk op owns
+/// lighting, and the level exists but is not yet initialized. Bounds-guards the z_list index instead
+/// of SSmapping.get_level() (which CRASHes on an unmanaged z).
+/proc/should_ondemand_init_zlevel(new_z)
+	if(!new_z || !SSlighting?.initialized || !SSmapping?.initialized || GLOB.lighting_defer_active)
+		return FALSE
+	var/datum/space_level/level = SSmapping.z_list.len >= new_z ? SSmapping.z_list[new_z] : null
+	return level && !level.lighting_initialized
 
 /// Creates lighting infrastructure for a single z-level on demand (synchronous fallback).
 /// Called when a player enters a z-level before background init reaches it.
@@ -144,27 +177,7 @@
 	GLOB.lighting_deferred_starlight = remaining_starlight
 
 	// Drain the work this on-demand init just queued so the z a player is standing on lights up
-	// immediately. Handing the whole backlog to SSlighting.fire() instead leaves it under the
-	// dilation-adaptive source cap, which collapses to ~20-40 sources/fire under atmospherics load,
-	// so the arrival area stays black for tens of seconds (and far longer on heavy away-maps). This
-	// mirrors create_all_lighting_objects' init batch path; CHECK_TICK keeps a huge z from freezing
-	// the arrival tick. fire() Phase -1 still creates the queued starlight sources separately.
-	for(var/datum/light_source/queued_source as anything in GLOB.lighting_update_lights)
-		if(!QDELETED(queued_source))
-			queued_source.update_corners()
-			queued_source.needs_update = LIGHTING_NO_UPDATE
-		CHECK_TICK
-	GLOB.lighting_update_lights.Cut()
-
-	for(var/datum/lighting_corner/queued_corner as anything in GLOB.lighting_update_corners)
-		queued_corner.update_objects()
-		queued_corner.needs_update = FALSE
-		CHECK_TICK
-	GLOB.lighting_update_corners.Cut()
-
-	for(var/atom/movable/lighting_object/queued_object as anything in GLOB.lighting_update_objects)
-		if(!QDELETED(queued_object))
-			queued_object.update(use_animate = FALSE)
-			queued_object.needs_update = FALSE
-		CHECK_TICK
-	GLOB.lighting_update_objects.Cut()
+	// immediately, instead of leaving the backlog under fire()'s dilation-adaptive source cap (which
+	// collapses to ~20-40 sources/fire under atmospherics load: tens of seconds of black, far longer
+	// on heavy away-maps). fire() Phase -1 still creates the queued starlight sources separately.
+	drain_lighting_queues_snapshot()
