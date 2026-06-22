@@ -634,6 +634,9 @@
 	var/mob/living/parent
 	var/selfdeleting = FALSE
 
+/obj/item/riding_offhand/attack_hand()
+	return
+
 /obj/item/riding_offhand/dropped(mob/user)
 	selfdeleting = TRUE
 	. = ..()

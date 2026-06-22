@@ -330,16 +330,21 @@
 	repairable_by = /obj/item/stack/sheet/metal
 	species_restricted = list("I.P.C.", "Synthetic Lizardperson", "Synthetic", "Military Synth", "Synthetic Anthropomorph")
 	unique_reskin = list(
-		"Roselia" = list("icon_state" = "InlaidDataDress_default", "skin" = "default"),
+		"Roselia" = list("icon_state" = "InlaidDataDress_default", "skin" = "default", "active_echo" = TRUE),
 		"Rose-1" = list("icon_state" = "InlaidDataDress_battle", "skin" = "battle", "active_echo" = FALSE),
 		"Rose-4" = list("icon_state" = "InlaidDataDress_lust", "skin" = "lust", "can_adjust" = FALSE, "body_parts_covered" = NONE, "active_echo" = FALSE),
 	)
+	max_integrity = 380
+	limb_integrity = 60
+	has_sensor = NO_SENSORS
 	var/equipped_slot = FALSE
 	var/obj/effect/distortion_effect/filter_on_user
 	var/obj/effect/dress_particle_holder/particle_effect_holder
 	var/obj/echo
 	var/active_echo = TRUE
 	var/skin = "default"
+	var/datum/component/ntnet_interface/net
+	var/datum/component/neural_interface/neural_interface
 
 /obj/item/clothing/under/donator/bm/inlaid_data_dress/New()
 	. = ..()
@@ -349,14 +354,15 @@
 
 	filter_on_user = new(src)
 	particle_effect_holder = new(src)
+	net = LoadComponent(/datum/component/ntnet_interface)
 
 	LAZYADD(vis_contents, filter_on_user)
 	LAZYADD(vis_contents, particle_effect_holder)
 
 	START_PROCESSING(SSfastprocess, src)
+	ADD_TRAIT(src, TRAIT_NODROP, CLOTHING_TRAIT)
 
 /obj/item/clothing/under/donator/bm/inlaid_data_dress/Destroy()
-	. = ..()
 
 	STOP_PROCESSING(SSfastprocess, src)
 
@@ -366,7 +372,25 @@
 	QDEL_NULL(echo)
 	QDEL_NULL(filter_on_user)
 	QDEL_NULL(particle_effect_holder)
+	QDEL_NULL(net)
+	neural_interface?.RemoveSource("ROSELIA_DRESS")
+	neural_interface = null
 
+	. = ..()
+
+/obj/item/clothing/under/donator/bm/inlaid_data_dress/on_mob_death(mob/living/L, gibbed)
+	. = ..()
+	if(gibbed)
+		qdel(src)
+		return TRUE
+
+	SEND_SIGNAL(L, COMSIG_NEURAL_INTERFACE_WRITE_DATA, "HOST_STATUS", "HOST DEAD", 10 SECONDS)
+
+	toggle_open_body(TRUE)
+	var/mob/living/carbon/human/H = L
+	if(istype(H))
+		H.update_inv_w_uniform()
+		H.update_body(TRUE)
 
 /obj/item/clothing/under/donator/bm/inlaid_data_dress/equipped(mob/user, slot)
 	. = ..()
@@ -380,6 +404,22 @@
 	LAZYADD(user.vis_contents, echo)
 
 	echo.render_source = user.render_target
+	var/list/monitors = list(
+			/datum/neural_monitor/nt_net = list(src),
+			/datum/neural_monitor/shock,
+			/datum/neural_monitor/observers
+		)
+
+	if(HAS_TRAIT(user, TRAIT_SELF_AWARE))
+		monitors += list(
+			/datum/neural_monitor/health,
+			/datum/neural_monitor/wound,
+			/datum/neural_monitor/nanite
+		)
+
+	var/interface_source = "ROSELIA_DRESS"
+	neural_interface = user.LoadComponent(/datum/component/neural_interface)
+	neural_interface.add_monitors_by_types(interface_source, monitors)
 
 /obj/item/clothing/under/donator/bm/inlaid_data_dress/dropped(mob/user)
 
@@ -391,18 +431,14 @@
 	LAZYREMOVE(user.vis_contents, particle_effect_holder)
 	LAZYREMOVE(user.vis_contents, echo)
 
-	echo.render_source = null
+	echo?.render_source = null
+
+	if(neural_interface)
+		SEND_SIGNAL(neural_interface, COMSIG_NEURAL_INTERFACE_REMOVE_SOURCE, "ROSELIA_DRESS")
 	. = ..()
 
 /obj/item/clothing/under/donator/bm/inlaid_data_dress/toggle_jumpsuit_adjust()
-	if(!body_parts_covered)
-		icon_state = "InlaidDataDress_[skin]"
-		item_state = "InlaidDataDress_[skin]"
-		body_parts_covered = CHEST|GROIN|LEGS|ARMS
-	else
-		icon_state = "InlaidDataDress_[skin]_open"
-		item_state = "InlaidDataDress_[skin]_open"
-		body_parts_covered = NONE
+	toggle_open_body(body_parts_covered)
 	return TRUE
 
 /obj/item/clothing/under/donator/bm/inlaid_data_dress/add_atom_colour(coloration, colour_priority)
@@ -422,8 +458,29 @@
 		particle_effect_holder.remove_atom_colour(coloration, colour_priority)
 
 /obj/item/clothing/under/donator/bm/inlaid_data_dress/process(delta_time)
-	if(active_echo && equipped_slot)
+	if(!equipped_slot)
+		return
+
+	distortion_transform()
+
+	if(active_echo)
 		echo_animation()
+
+/obj/item/clothing/under/donator/bm/inlaid_data_dress/proc/toggle_open_body(open)
+	if(!can_adjust)
+		return TRUE
+
+	if(neural_interface)
+		SEND_SIGNAL(neural_interface, COMSIG_NEURAL_INTERFACE_WRITE_DATA, "COVERAGE", open ? "OPEN" : "CLOSED", 10 SECONDS)
+	if(open)
+		icon_state = "InlaidDataDress_[skin]_open"
+		item_state = "InlaidDataDress_[skin]_open"
+		body_parts_covered = NONE
+	else
+		icon_state = "InlaidDataDress_[skin]"
+		item_state = "InlaidDataDress_[skin]"
+		body_parts_covered = CHEST|GROIN|LEGS|ARMS
+	return TRUE
 
 /obj/item/clothing/under/donator/bm/inlaid_data_dress/proc/echo_animation()
 	var/matrix/m = matrix()
@@ -431,6 +488,16 @@
 
 	animate(echo, transform = m, alpha = 48, time = 2, loop=0, flags=ANIMATION_END_NOW)
 	animate(transform = m.Invert(), alpha = 0, time = 2)
+
+/obj/item/clothing/under/donator/bm/inlaid_data_dress/proc/distortion_transform()
+	var/matrix/m = matrix()
+	m.Turn(rand(1, 360))
+	var/x = rand(1,200)/100
+	var/y = rand(1,200)/100
+	m.Scale(x, y)
+	m.Translate(rand(-10, 10), rand(-10,10))
+
+	filter_on_user.transform = m
 
 /obj/effect/distortion_effect
 	icon = 'modular_bluemoon/fluffs/icons/effects/32x32.dmi'

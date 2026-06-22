@@ -82,3 +82,9 @@
 /datum/sprite_accessory/snouts/mam_snouts/synth_catcrin/three
 	name = "Synthetic catcrin snout 3"
 	icon_state = "catcrin_synth3"
+
+/datum/sprite_accessory/snouts/mam_snouts/kathari
+	name = "Kathari"
+	icon = 'modular_bluemoon/icons/mob/mam_snouts.dmi'
+	icon_state = "kathari"
+	matrixed_sections = MATRIX_ALL

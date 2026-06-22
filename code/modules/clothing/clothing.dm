@@ -112,6 +112,15 @@ MOVED TO: modular_splurt/code/module/clothing/clothing.dm
 */
 
 /obj/item/clothing/attackby(obj/item/W, mob/user, params)
+	if(W.sharpness >= SHARP_EDGED && user.a_intent == INTENT_HARM) //осколок стекла, ножик, когти, только в харме
+		if(damaged_clothes == CLOTHING_SHREDDED)
+			return FALSE
+		if(do_after(user, 5 SECONDS, user))
+			take_damage(max_integrity, BRUTE, sound_effect = FALSE)
+			return CLOTHING_DAMAGED
+		else
+			return FALSE
+
 	if(damaged_clothes && istype(W, repairable_by))
 		if(current_equipped_slot && (current_equipped_slot in user.check_obscured_slots()))
 			to_chat(user, "<span class='warning'>You are unable to repair [src] while wearing other garments over it!</span>")
@@ -431,6 +440,7 @@ MOVED TO: modular_splurt/code/module/clothing/clothing.dm
 
 /obj/item/clothing/obj_break(damage_flag)
 	damaged_clothes = CLOTHING_DAMAGED
+	playsound(src, 'sound/misc/tear_apart.ogg', 30, 1) //это не круто, когда одежда рвётся без звука.
 	update_clothes_damaged_state()
 	if(ismob(loc)) //It's not important enough to warrant a message if nobody's wearing it
 		var/mob/M = loc

@@ -176,9 +176,11 @@
 	if(on)
 		darkness_view = 8
 		lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
+		color_cutoffs = list(10, 25, 10)
 	else
 		darkness_view = 2
 		lighting_alpha = null
+		color_cutoffs = null
 	H.update_sight()
 	update_action_buttons()
 

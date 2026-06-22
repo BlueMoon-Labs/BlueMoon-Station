@@ -623,6 +623,8 @@
 
 	sight = initial(sight)
 	lighting_alpha = initial(lighting_alpha)
+	lighting_cutoff = initial(lighting_cutoff)
+	var/list/color_cutoffs_accumulator
 	var/obj/item/organ/eyes/E = getorganslot(ORGAN_SLOT_EYES)
 	if(!E)
 		update_tint()
@@ -632,9 +634,15 @@
 		sight |= E.sight_flags
 		if(!isnull(E.lighting_alpha))
 			lighting_alpha = E.lighting_alpha
-		if(HAS_TRAIT(src, TRAIT_NIGHT_VISION))
-			lighting_alpha = min(LIGHTING_PLANE_ALPHA_NV_TRAIT, lighting_alpha)
-			see_in_dark = max(NIGHT_VISION_DARKSIGHT_RANGE, see_in_dark)
+		if(!isnull(E.lighting_cutoff))
+			lighting_cutoff = E.lighting_cutoff
+		if(!isnull(E.color_cutoffs))
+			color_cutoffs_accumulator = E.color_cutoffs.Copy()
+
+	if(HAS_TRAIT(src, TRAIT_NIGHT_VISION))
+		lighting_alpha = min(LIGHTING_PLANE_ALPHA_NV_TRAIT, lighting_alpha)
+		see_in_dark = max(NIGHT_VISION_DARKSIGHT_RANGE, see_in_dark)
+		lighting_cutoff = max(lighting_cutoff, LIGHTING_CUTOFF_REAL_LOW)
 
 	if(client.eye && client.eye != src)
 		var/atom/A = client.eye
@@ -651,6 +659,10 @@
 			see_invisible = min(G.invis_view, see_invisible)
 		if(!isnull(G.lighting_alpha))
 			lighting_alpha = min(lighting_alpha, G.lighting_alpha)
+		if(!isnull(G.lighting_cutoff))
+			lighting_cutoff = max(lighting_cutoff, G.lighting_cutoff)
+		if(length(G.color_cutoffs))
+			color_cutoffs_accumulator = color_cutoffs_accumulator ? blend_cutoff_colors(color_cutoffs_accumulator, G.color_cutoffs) : G.color_cutoffs.Copy()
 	if(head && istype(head, /obj/item/clothing/head))
 		var/obj/item/clothing/head/H = head
 		sight |= H.vision_flags
@@ -658,6 +670,10 @@
 
 		if(!isnull(H.lighting_alpha))
 			lighting_alpha = min(lighting_alpha, H.lighting_alpha)
+		if(!isnull(H.lighting_cutoff))
+			lighting_cutoff = max(lighting_cutoff, H.lighting_cutoff)
+		if(length(H.color_cutoffs))
+			color_cutoffs_accumulator = color_cutoffs_accumulator ? blend_cutoff_colors(color_cutoffs_accumulator, H.color_cutoffs) : H.color_cutoffs.Copy()
 	if(dna)
 		for(var/X in dna.mutations)
 			var/datum/mutation/M = X
@@ -668,18 +684,26 @@
 	if(HAS_TRAIT(src, TRAIT_TRUE_NIGHT_VISION))
 		lighting_alpha = min(lighting_alpha, LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE)
 		see_in_dark = max(see_in_dark, 8)
+		lighting_cutoff = max(lighting_cutoff, LIGHTING_CUTOFF_HIGH)
 
 	if(HAS_TRAIT(src, TRAIT_MESON_VISION))
 		sight |= SEE_TURFS
 		lighting_alpha = min(lighting_alpha, LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE)
+		lighting_cutoff = max(lighting_cutoff, LIGHTING_CUTOFF_MEDIUM)
 
 	if(HAS_TRAIT(src, TRAIT_THERMAL_VISION))
 		sight |= SEE_MOBS
 		lighting_alpha = min(lighting_alpha, LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE)
+		lighting_cutoff = max(lighting_cutoff, LIGHTING_CUTOFF_MEDIUM)
+
+	if(HAS_TRAIT(src, TRAIT_MINOR_NIGHT_VISION))
+		lighting_cutoff = max(lighting_cutoff, LIGHTING_CUTOFF_LOW)
 
 	if(HAS_TRAIT(src, TRAIT_XRAY_VISION))
 		sight |= SEE_TURFS|SEE_MOBS|SEE_OBJS
 		see_in_dark = max(see_in_dark, 8)
+
+	lighting_color_cutoffs = color_cutoffs_accumulator
 
 	if(see_override)
 		see_invisible = see_override

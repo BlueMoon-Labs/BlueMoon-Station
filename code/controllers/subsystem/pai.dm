@@ -8,6 +8,7 @@ SUBSYSTEM_DEF(pai)
 	var/spam_delay = 100
 	var/list/pai_card_list = list()
 	var/list/restricted_areas = list()
+	var/last_device_ref
 
 /datum/controller/subsystem/pai/Initialize(var/time_of_day)
 	restricted_areas += typesof(/area/command/heads_quarters, /area/ai_monitored) // heads quarters and AI monitored places (like the armory)
@@ -24,10 +25,13 @@ SUBSYSTEM_DEF(pai)
 			if(check_ready(candidate) != candidate)
 				return FALSE
 			var/mob/living/silicon/pai/pai
+			log_world("PAI_DEBUG: card=[card] card.type=[card?.type] is_syndicate=[istype(card, /obj/item/paicard/syndicate)] candidate=[candidate]")
 			if(istype(card, /obj/item/paicard/syndicate))
 				pai = new /mob/living/silicon/pai/syndicate(card)
+				log_world("PAI_DEBUG: created syndicate pai type=[pai?.type]")
 			else
 				pai = new(card)
+				log_world("PAI_DEBUG: created regular pai type=[pai?.type]")
 			if(!candidate.name)
 				pai.name = pick(GLOB.ninja_names)
 			else
@@ -164,49 +168,87 @@ SUBSYSTEM_DEF(pai)
 				continue
 			if(!(ROLE_PAI in G.client.prefs.be_special))
 				continue
-			if(!G.can_reenter_round()) // this should use notify_ghosts() instead one day.
+			if(!G.can_reenter_round())
 				return FALSE
-			to_chat(G, "<span class='ghostalert'>[user] is requesting a pAI personality! Use the pAI button to submit yourself as one.</span>")
+			window_flash(G.client)
+			if(istype(p, /obj/item/paicard/syndicate))
+				to_chat(G, "<span class='ghostalert'>[user] ищет личность для синдикатского pAI! (Роль помощника антагониста — вы помогаете носителю в его целях, даже если они противоречат закону.)</span>")
+				var/atom/movable/screen/alert/notify_action/A = G.throw_alert("[REF(p)]_pai", /atom/movable/screen/alert/notify_action)
+				if(A)
+					A.name = "Синдикатский pAI"
+					A.desc = "[user] ищет личность для синдикатского pAI! Нажмите, чтобы перейти к карте."
+					A.target = p
+			else
+				to_chat(G, "<span class='ghostalert'>[user] ищет личность для pAI! (Гостевая роль — вы не антагонист. Помогайте носителю и следуйте директивам.)</span>")
+				var/atom/movable/screen/alert/notify_action/A = G.throw_alert("[REF(p)]_pai", /atom/movable/screen/alert/notify_action)
+				if(A)
+					A.name = "pAI"
+					A.desc = "[user] ищет личность для pAI! Нажмите, чтобы перейти к карте."
+					A.target = p
 		addtimer(CALLBACK(src, PROC_REF(spam_again)), spam_delay)
+	last_device_ref = REF(p)
+	ui_interact(user)
+
+/datum/controller/subsystem/pai/ui_interact(mob/user, datum/tgui/ui)
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "PaiRecruit", "Поиск pAI")
+		ui.set_autoupdate(TRUE)
+		ui.open()
+
+/datum/controller/subsystem/pai/ui_data(mob/user)
+	var/list/data = list()
 	var/list/available = list()
-	for(var/datum/paiCandidate/c in SSpai.candidates)
-		available.Add(check_ready(c))
-	var/dat = ""
+	for(var/datum/paiCandidate/c in candidates)
+		var/ready = check_ready(c)
+		if(ready)
+			available += list(list(
+				"ref" = REF(c),
+				"name" = c.name,
+				"description" = c.description,
+				"role" = c.role,
+				"comments" = c.comments
+			))
+	data["candidates"] = available
+	data["searching"] = last_device_ref ? TRUE : FALSE
+	if(last_device_ref)
+		data["device"] = last_device_ref
+	return data
 
-	dat += {"
-			<style type="text/css">
+/datum/controller/subsystem/pai/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+	if(..())
+		return TRUE
+	switch(action)
+		if("download")
+			var/datum/paiCandidate/candidate = locate(params["candidate"]) in candidates
+			var/obj/item/paicard/card = locate(params["device"]) in pai_card_list
+			if(card?.pai)
+				return TRUE
+			if(!istype(card, /obj/item/paicard) || !istype(candidate, /datum/paiCandidate))
+				return TRUE
+			if(check_ready(candidate) != candidate)
+				return TRUE
+			var/mob/living/silicon/pai/pai
+			if(istype(card, /obj/item/paicard/syndicate))
+				pai = new /mob/living/silicon/pai/syndicate(card)
+			else
+				pai = new(card)
+			if(!candidate.name)
+				pai.name = pick(GLOB.ninja_names)
+			else
+				pai.name = candidate.name
+			pai.real_name = pai.name
+			pai.key = candidate.key
+			card.setPersonality(pai)
+			SSticker.mode.update_cult_icons_removed(card.pai.mind)
+			candidates -= candidate
+			last_device_ref = null
+			if(ui)
+				ui.close()
+			return TRUE
 
-			p.top {
-				background-color: #AAAAAA; color: black;
-			}
-
-			tr.d0 td {
-				background-color: #CC9999; color: black;
-			}
-			tr.d1 td {
-				background-color: #9999CC; color: black;
-			}
-			tr.d2 td {
-				background-color: #99CC99; color: black;
-			}
-			</style>
-			"}
-	dat += "<p class=\"top\">Requesting AI personalities from central database... If there are no entries, or if a suitable entry is not listed, check again later as more personalities may be added.</p>"
-
-	dat += "<table>"
-
-	for(var/datum/paiCandidate/c in available)
-		dat += "<tr class=\"d0\"><td>Name:</td><td>[c.name]</td></tr>"
-		dat += "<tr class=\"d1\"><td>Description:</td><td>[c.description]</td></tr>"
-		dat += "<tr class=\"d0\"><td>Preferred Role:</td><td>[c.role]</td></tr>"
-		dat += "<tr class=\"d1\"><td>OOC Comments:</td><td>[c.comments]</td></tr>"
-		dat += "<tr class=\"d2\"><td><a href='byond://?src=[REF(src)];download=1;candidate=[REF(c)];device=[REF(p)]'>\[Download [c.name]\]</a></td><td></td></tr>"
-
-	dat += "</table>"
-
-	var/datum/browser/popup = new(user, "findPai", "Find pAI")
-	popup.set_content(dat)
-	popup.open()
+/datum/controller/subsystem/pai/ui_state(mob/user)
+	return GLOB.always_state
 
 /datum/paiCandidate
 	var/name

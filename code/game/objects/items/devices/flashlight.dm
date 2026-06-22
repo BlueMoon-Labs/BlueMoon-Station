@@ -490,7 +490,7 @@
 	icon_state = "glowstick"
 	item_state = "glowstick"
 	cone_angle = 0
-	grind_results = list(/datum/reagent/phenol = 15, /datum/reagent/hydrogen = 10, /datum/reagent/oxygen = 5) //Meth-in-a-stick
+	grind_results = list(/datum/reagent/phenol = 15, /datum/reagent/hydrogen = 10, /datum/reagent/oxygen = 5, /datum/reagent/luminescent_fluid = 15) //Meth-in-a-stick
 	rad_flags = RAD_NO_CONTAMINATE
 	electronic = FALSE // BLUEMOON ADD
 	flags_1 = NONE // BLUEMOON ADD
@@ -554,26 +554,32 @@
 /obj/item/flashlight/glowstick/red
 	name = "red glowstick"
 	color = LIGHT_COLOR_RED
+	grind_results = list(/datum/reagent/luminescent_fluid/red = 30)
 
 /obj/item/flashlight/glowstick/blue
 	name = "blue glowstick"
 	color = LIGHT_COLOR_BLUE
+	grind_results = list(/datum/reagent/luminescent_fluid/blue = 30)
 
 /obj/item/flashlight/glowstick/cyan
 	name = "cyan glowstick"
 	color = LIGHT_COLOR_CYAN
+	grind_results = list(/datum/reagent/luminescent_fluid/cyan = 30)
 
 /obj/item/flashlight/glowstick/orange
 	name = "orange glowstick"
 	color = LIGHT_COLOR_ORANGE
+	grind_results = list(/datum/reagent/luminescent_fluid/orange = 30)
 
 /obj/item/flashlight/glowstick/yellow
 	name = "yellow glowstick"
 	color = LIGHT_COLOR_YELLOW
+	grind_results = list(/datum/reagent/luminescent_fluid/yellow = 30)
 
 /obj/item/flashlight/glowstick/pink
 	name = "pink glowstick"
 	color = LIGHT_COLOR_PINK
+	grind_results = list(/datum/reagent/luminescent_fluid/pink = 30)
 
 /obj/item/flashlight/spotlight //invisible lighting source
 	name = "disco light"
@@ -609,3 +615,7 @@
 	item_flags = DROPDEL
 	actions_types = list()
 	cone_angle = 0
+
+/obj/item/flashlight/eyelight/glow
+	brightness_on = 4
+	on = TRUE

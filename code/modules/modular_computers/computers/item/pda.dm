@@ -898,6 +898,9 @@
 		/datum/computer_file/program/secureye,
 	)
 
+/obj/item/modular_computer/pda/ui_state(mob/user)
+	return GLOB.human_adjacent_state_no_view
+
 /**
  * Silicon PDA — built-in to Silicons.
  */

@@ -276,6 +276,7 @@
 /atom/movable/screen/plane_master/lighting/Initialize(mapload, datum/hud/hud_owner)
 	. = ..()
 	add_filter("emissives", 2, alpha_mask_filter(render_source = EMISSIVE_RENDER_TARGET, flags = MASK_INVERSE))
+	apply_light_cutoff(0)
 	add_filter("object_lighting", 3, alpha_mask_filter(render_source = O_LIGHTING_VISUAL_RENDER_TARGET, flags = MASK_INVERSE))
 	add_filter("displacer", 4, displacement_map_filter(render_source = GRAVITY_PULSE_RENDER_TARGET, size = 10))
 
@@ -295,6 +296,24 @@
 
 	animate(get_filter("singularity_3"), size = 750, time = 10, easing = LINEAR_EASING, loop = -1, flags = ANIMATION_PARALLEL)
 	animate(size = 600, time = 10, easing = LINEAR_EASING, loop = -1)
+
+/atom/movable/screen/plane_master/lighting/proc/apply_light_cutoff(cutoff, list/color_cutoffs)
+	remove_filter("light_cutoff")
+	if(!cutoff && !color_cutoffs)
+		return
+	var/ratio = cutoff / 100
+	var/list/rgb_add = list(ratio, ratio, ratio)
+	if(length(color_cutoffs) == 3)
+		rgb_add[1] += color_cutoffs[1] / 100
+		rgb_add[2] += color_cutoffs[2] / 100
+		rgb_add[3] += color_cutoffs[3] / 100
+	add_filter("light_cutoff", 6, color_matrix_filter(list(
+		1,0,0,0,
+		0,1,0,0,
+		0,0,1,0,
+		0,0,0,1,
+		rgb_add[1], rgb_add[2], rgb_add[3], 0
+	)))
 
 /**
  * Handles emissive overlays and emissive blockers.
