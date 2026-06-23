@@ -216,8 +216,8 @@
 		hand_href = "<A href='?src=\[UID()\];add_inv=hand'>Nothing</A>"
 
 	var/dat = {"<meta charset="UTF-8"><div align='center'><b>Inventory of \[name\]</b></div><p>"}
-	dat += "<br><B>Head:</B> \[head_href\]"
-	dat += "<br><B>Hand:</B> \[hand_href\]"
+	dat += "<br><B>Head:</B> [head_href]"
+	dat += "<br><B>Hand:</B> [hand_href]"
 	var/datum/browser/popup = new(user, "mob\[UID()\]", "\[src\]", 440, 250)
 	popup.set_content(dat)
 	popup.open()
