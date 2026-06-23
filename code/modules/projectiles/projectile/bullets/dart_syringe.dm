@@ -51,6 +51,7 @@
 	name = "Smartdart"
 	icon_state = "dartproj"
 	damage = 0
+	piercing = SYRINGE_PIERCE_ALL
 	var/emptrig = FALSE
 
 /obj/item/projectile/bullet/dart/syringe/dart/on_hit(atom/target, blocked = FALSE)
@@ -83,7 +84,7 @@
 			else
 				blocked = 100
 				target.visible_message("<span class='danger'>\The [src] was deflected!</span>", \
-									   "<span class='userdanger'>You see a [src] bounce off you, booping sadly!</span>")
+										"<span class='userdanger'>You see a [src] bounce off you, booping sadly!</span>")
 
 	target.visible_message("<span class='danger'>\The [src] fails to land on target!</span>")
 	return BULLET_ACT_BLOCK

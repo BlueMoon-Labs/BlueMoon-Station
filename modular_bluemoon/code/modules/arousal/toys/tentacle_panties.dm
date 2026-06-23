@@ -102,6 +102,7 @@
 				tired = TRUE
 				to_chat(M, span_love(pick("Оно меня обкончало!")))
 				visible_message("<font color=purple>Вязкая жидкость вытекает из <b>[src]</b> и стекает по бедрам <b>[M]</b>!</font>")
-				M.reagents.add_reagent(/datum/reagent/consumable/semen, 10)
-				M.reagents.add_reagent(/datum/reagent/drug/aphrodisiacplus, 5) //Cum contains hexocrocin
+				if(M.reagents)
+					M.reagents.add_reagent(/datum/reagent/consumable/semen, 10)
+					M.reagents.add_reagent(/datum/reagent/drug/aphrodisiacplus, 5) //Cum contains hexocrocin
 				new /obj/effect/decal/cleanable/semen(loc)

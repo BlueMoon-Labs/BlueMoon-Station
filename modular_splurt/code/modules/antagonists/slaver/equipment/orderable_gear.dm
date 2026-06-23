@@ -155,6 +155,13 @@ GLOBAL_LIST_INIT(slaver_gear, subtypesof(/datum/slaver_gear))
 	category = "Implants"
 	cost = 4000
 
+/datum/slaver_gear/fake_mindshield
+	name = "Fake Mindshield Implant"
+	description = "Поддельный имплант защиты разума: проецирует на визоры безопасности иконку настоящего импланта, не давая никакой реальной защиты. Проекция переключается носителем, глушится ЭМИ и сгорает при вживлении настоящего импланта."
+	build_path = /obj/item/storage/box/syndie_kit/imp_fake_mindshield
+	category = "Implants"
+	cost = 2000
+
 /datum/slaver_gear/xray
 	name = "X-Ray Implant"
 	description = "An implant that lets you see through solid walls."
@@ -198,10 +205,10 @@ GLOBAL_LIST_INIT(slaver_gear, subtypesof(/datum/slaver_gear))
 	category = "Implants"
 	cost = 10000
 
-/datum/slaver_gear/implant_thrusters
+/datum/slaver_gear/implant_revitilzer
 	name = "Revitalizing Cortex"
 	description = "This attachable to the torso cortex optimizes the body's processes in order to preserve the body. Provides overall basic mending."
-	build_path = /obj/item/organ/cyberimp/chest/revitilzer
+	build_path = /obj/item/organ/cyberimp/chest/healer/revitilzer
 	category = "Implants"
 	cost = 25000
 

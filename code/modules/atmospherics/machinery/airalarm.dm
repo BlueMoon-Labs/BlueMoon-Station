@@ -275,8 +275,8 @@
 		if(1)
 			. += "<span class='notice'>Отсутствует проводка.</span>"
 		if(2)
-			. += "<span class='notice'>Alt-click, чтобы [locked ? "заблокировать" : "заблокировать"] интерфейс.</span>"
-	. += "<span class='notice'>Текущий уровень угрозы: <b><u>[capitalize(get_security_level())]</u></b>.</span>"
+			. += "<span class='notice'>Alt-click, чтобы [locked ? "раз" : "за"]блокировать интерфейс.</span>"
+	. += "<span class='notice'>Текущий уровень угрозы: <b><u>[SECURITY_LEVEL_COLORED_UPPERTEXT(GLOB.security_level)]</u></b>.</span>"
 
 /obj/machinery/airalarm/ui_status(mob/user)
 	if(hasSiliconAccessInArea(user))
@@ -852,7 +852,7 @@
 				to_chat(user, "<span class='notice'>The wires have been [panel_open ? "exposed" : "unexposed"].</span>")
 				update_icon()
 				return
-			else if(istype(W, /obj/item/card/id) || istype(W, /obj/item/pda))// trying to unlock the interface with an ID card
+			else if(istype(W, /obj/item/card/id) || istype(W, /obj/item/modular_computer/pda))// trying to unlock the interface with an ID card
 				togglelock(user)
 			else if(panel_open && is_wire_tool(W))
 				wires.interact(user)

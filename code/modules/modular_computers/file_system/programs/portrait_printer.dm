@@ -13,9 +13,8 @@
 	filedesc = "Marlowe Treeby's Art Galaxy"
 	category = PROGRAM_CATEGORY_CREW
 	program_icon_state = "dummy"
-	extended_desc = "This program connects to a Spinward Sector community art site for viewing and printing art."
-	//transfer_access = ACCESS_LIBRARY // BLUEMOON EDIT commented
-	usage_flags = PROGRAM_CONSOLE
+	extended_desc = "Подключается к галерее сообщества Спинвард Сектора для просмотра и печати произведений искусства."
+	usage_flags = PROGRAM_ON_COMPUTERS
 	requires_ntnet = TRUE
 	size = 9
 	tgui_id = "NtosPortraitPrinter"

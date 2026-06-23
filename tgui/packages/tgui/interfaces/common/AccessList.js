@@ -28,6 +28,7 @@ export const AccessList = (props, context) => {
     denyAll,
     grantDep,
     denyDep,
+    resetButton,
   } = props;
   const [
     selectedAccessName,
@@ -66,6 +67,13 @@ export const AccessList = (props, context) => {
       title="Access"
       buttons={(
         <Fragment>
+          {!!resetButton && (
+            <Button.Confirm
+              icon="arrows-rotate"
+              content="Reset Access"
+              color="blue"
+              onClick={() => resetButton()} />
+          )}
           <Button
             icon="check-double"
             content="Grant All"

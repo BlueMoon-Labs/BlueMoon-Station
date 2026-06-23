@@ -199,8 +199,8 @@
 				for(var/mob/living/mob in thunderdome)
 					qdel(mob) //Clear mobs
 			for(var/obj/obj in thunderdome)
-				if(!istype(obj, /obj/machinery/camera) && !istype(obj, /obj/effect/abstract/proximity_checker))
-					qdel(obj) //Clear objects
+				if(!istype(obj, /obj/machinery/camera))
+					qdel(obj) //Clear objects; proximity checkers are recreated when the template is copied
 
 			var/area/template = GLOB.areas_by_type[/area/tdome/arena_source]
 			template.copy_contents_to(thunderdome)
@@ -424,13 +424,13 @@
 					continue
 				GLOB.dna_for_copying.transfer_identity(H, TRUE)
 				H.real_name = H.dna.real_name
-				var/obj/item/pda/worn = H.wear_id
+				var/obj/item/modular_computer/pda/worn = H.wear_id
 				var/obj/item/card/id/W = H.wear_id?.GetID()
 				if(W)
 					W.registered_name = H.real_name
 					W.update_label()
 					if(worn)
-						if(istype(worn, /obj/item/pda))
+						if(istype(worn, /obj/item/modular_computer/pda))
 							worn.owner = W.registered_name
 							worn.update_label()
 				H.updateappearance(mutcolor_update=1)

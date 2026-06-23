@@ -13,7 +13,7 @@
 		INTERACTION_FILLS_CONTAINERS
 	)
 
-/datum/interaction/lewd/jack/display_interaction(mob/living/user)
+/datum/interaction/lewd/jack/display_interaction(mob/living/user, mob/living/target, is_hidden)
 	var/message
 	//var/t_His = user.ru_ego()
 	//var/genital_name = user.get_penetrating_genital_name()
@@ -28,12 +28,11 @@
 		cached_item = user.pulling
 		if(istype(cached_item, /obj/item/reagent_containers))
 			liquid_container = cached_item
-	var/is_hidden = ..()
 	var/distance = 7
-	var/volume = 50
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 70
 	if(is_hidden)
 		distance = 1
-		volume = sound_quiet_volume
 	var/picked_hidden = pick(hidden_additional)
 	if(user.is_fucking(user, CUM_TARGET_HAND, user.getorganslot(ORGAN_SLOT_PENIS)))
 		//BLUEMOON EDIT START
@@ -53,7 +52,7 @@
 
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/bang1.ogg',
 						'modular_sand/sound/interactions/bang2.ogg',
-						'modular_sand/sound/interactions/bang3.ogg'), volume, 1, -1)
-	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>[user]</b> [message]."), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+						'modular_sand/sound/interactions/bang3.ogg'), volume, 1, extrarange)
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>[user]</b> [message]."), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	if(user.can_penetrating_genital_cum())
 		user.handle_post_sex(NORMAL_LUST, CUM_TARGET_HAND, liquid_container ? liquid_container : user, ORGAN_SLOT_PENIS) //SPLURT edit

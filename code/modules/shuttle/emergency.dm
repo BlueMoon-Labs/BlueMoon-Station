@@ -372,33 +372,6 @@
 	query_round_shuttle_name.Execute()
 	qdel(query_round_shuttle_name)
 
-/// Paths admins may inject via Shuttle Manipulator while the evacuation shuttle is in transit (whitelist; keep aligned with random rolls + admin-only types).
-GLOBAL_LIST_INIT(admin_forceable_hyperspace_events, list(
-	/datum/shuttle_event/hyperspace_nothing,
-	/datum/shuttle_event/turbulence,
-	/datum/shuttle_event/simple_spawner/carp/friendly,
-	/datum/shuttle_event/simple_spawner/carp/friendly/personal_space_invader,
-	/datum/shuttle_event/simple_spawner/carp,
-	/datum/shuttle_event/simple_spawner/carp/magic,
-	/datum/shuttle_event/simple_spawner/maintenance,
-	/datum/shuttle_event/simple_spawner/italian,
-	/datum/shuttle_event/simple_spawner/pizza_bombardment,
-	/datum/shuttle_event/simple_spawner/meteor/dust,
-	/datum/shuttle_event/simple_spawner/meteor/safe,
-	/datum/shuttle_event/simple_spawner/meteor/dust/meaty,
-	/datum/shuttle_event/simple_spawner/projectile/fireball,
-	/datum/shuttle_event/simple_spawner/human_shuttle/greytide,
-	/datum/shuttle_event/simple_spawner/donk_swarm,
-	/datum/shuttle_event/simple_spawner/soft_drink_spray,
-	/datum/shuttle_event/simple_spawner/corgi_parade,
-	/datum/shuttle_event/simple_spawner/player_controlled/human/hitchhiker,
-	/datum/shuttle_event/simple_spawner/player_controlled/human/hitchhiker/inteq,
-	/datum/shuttle_event/simple_spawner/player_controlled/carp,
-	/datum/shuttle_event/simple_spawner/player_controlled/alien_queen,
-	/datum/shuttle_event/simple_spawner/black_hole,
-	/datum/shuttle_event/simple_spawner/black_hole/adminbus,
-))
-
 /// Roll and schedule tg-style hyperspace events for the transit leg (processed in SSshuttle while docked to /transit).
 /obj/docking_port/mobile/emergency/proc/prepare_hyperspace_events()
 	for(var/datum/shuttle_event/old_event as anything in event_list)
@@ -409,44 +382,18 @@ GLOBAL_LIST_INIT(admin_forceable_hyperspace_events, list(
 	var/used_admin_queue = FALSE
 	if(length(queued_admin_hyperspace_events))
 		for(var/event_type in queued_admin_hyperspace_events)
-			if(!ispath(event_type, /datum/shuttle_event) || !(event_type in GLOB.admin_forceable_hyperspace_events))
+			if(!ispath(event_type, /datum/shuttle_event) || !(event_type in get_admin_forceable_hyperspace_events()))
 				continue
 			var/datum/shuttle_event/queued_ev = add_shuttle_event(event_type)
 			queued_ev?.start_up_event(evac_duration)
 		used_admin_queue = TRUE
 		queued_admin_hyperspace_events.Cut()
-	/// Веса pickweight (частота). Не равны event_probability на типе: там — шкала угрозы 1 (макс) … 9+ (безопасно).
-	var/list/weighted = list(
-		/datum/shuttle_event/hyperspace_nothing = 10,
-		/datum/shuttle_event/turbulence = 5,
-		/datum/shuttle_event/simple_spawner/carp/friendly = 3,
-		/datum/shuttle_event/simple_spawner/carp/friendly/personal_space_invader = 2,
-		/datum/shuttle_event/simple_spawner/carp = 4,
-		/datum/shuttle_event/simple_spawner/carp/magic = 2,
-		/datum/shuttle_event/simple_spawner/maintenance = 3,
-		/datum/shuttle_event/simple_spawner/italian = 2,
-		/datum/shuttle_event/simple_spawner/pizza_bombardment = 2,
-		/datum/shuttle_event/simple_spawner/donk_swarm = 2,
-		/datum/shuttle_event/simple_spawner/soft_drink_spray = 2,
-		/datum/shuttle_event/simple_spawner/corgi_parade = 2,
-		/datum/shuttle_event/simple_spawner/meteor/dust = 2,
-		/datum/shuttle_event/simple_spawner/meteor/safe = 3,
-		/datum/shuttle_event/simple_spawner/meteor/dust/meaty = 1,
-		/datum/shuttle_event/simple_spawner/projectile/fireball = 1,
-		/datum/shuttle_event/simple_spawner/human_shuttle/greytide = 2,
-		/datum/shuttle_event/simple_spawner/player_controlled/human/hitchhiker = 2,
-		/datum/shuttle_event/simple_spawner/player_controlled/carp = 2,
-		/datum/shuttle_event/simple_spawner/player_controlled/alien_queen = 1,
-	)
-	/// При предзаказе один слот уже занят — меньше случайных, итого обычно 2–3 ивента.
-	var/num_events = used_admin_queue ? rand(1, 2) : rand(2, 3)
-	for(var/i in 1 to num_events)
-		if(!length(weighted))
-			break
-		var/chosen = pickweight(weighted)
-		weighted -= chosen
-		var/datum/shuttle_event/new_event = add_shuttle_event(chosen)
-		new_event?.start_up_event(evac_duration)
+	if(!used_admin_queue)
+		var/list/weighted = get_hyperspace_event_roll_weights()
+		if(length(weighted))
+			var/chosen = pickweight(weighted)
+			var/datum/shuttle_event/new_event = add_shuttle_event(chosen)
+			new_event?.start_up_event(evac_duration)
 
 /obj/docking_port/mobile/emergency/check()
 	if(!timer)

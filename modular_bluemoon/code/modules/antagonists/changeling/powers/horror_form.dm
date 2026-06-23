@@ -50,8 +50,8 @@
 	icon_living = "horror"
 	icon_dead = "horror_dead"
 	mob_biotypes = MOB_ORGANIC
-	maxHealth = 1500
-	health = 1000
+	maxHealth = 750
+	health = 500
 	melee_damage_lower = 35
 	melee_damage_upper = 45
 	attack_verb_continuous = "rends"

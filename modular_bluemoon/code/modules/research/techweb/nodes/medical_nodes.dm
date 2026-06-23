@@ -4,7 +4,7 @@
 	description = "Experimental schemes of syndicate augmentations reverse-engineered by NT RnD department."
 	informing_radio_channels = list(RADIO_CHANNEL_SECURITY, RADIO_CHANNEL_MEDICAL, RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("syndicate_basic")
-	design_ids = list("ci-mantis", "ci-scanner", "ci-pumpextreme", "ci-binolenses")
+	design_ids = list("ci-mantis", "ci-mantis-hack", "ci-scanner", "ci-pumpextreme", "ci-binolenses")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)
 
 /datum/techweb_node/syndicate_healing_augs

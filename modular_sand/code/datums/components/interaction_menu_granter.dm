@@ -165,11 +165,23 @@
 			required_from_user |= INTERACTION_REQUIRE_KNOT
 		if(findtext(shape_desc, "двойн"))
 			required_from_user |= INTERACTION_REQUIRE_DOUBLE_PENIS
+	var/user_has_belly = self.has_belly()
+	if(user_has_belly)
+		required_from_user |= INTERACTION_REQUIRE_BELLY
 	// BLUEMOON ADD
 	.["required_from_user"] = required_from_user
 
 	var/required_from_user_exposed = NONE
 	var/required_from_user_unexposed = NONE
+
+	switch(user_has_belly)
+		if(HAS_EXPOSED_GENITAL)
+			required_from_user_exposed |= INTERACTION_REQUIRE_BELLY
+		if(HAS_UNEXPOSED_GENITAL)
+			required_from_user_unexposed |= INTERACTION_REQUIRE_BELLY
+		if(TRUE)
+			required_from_user_exposed |= INTERACTION_REQUIRE_BELLY
+			required_from_user_unexposed |= INTERACTION_REQUIRE_BELLY
 
 	user_has_penis = user_has_penis || self.has_strapon()
 	switch(user_has_penis)
@@ -259,18 +271,6 @@
 			if(HAS_UNEXPOSED_GENITAL)
 				required_from_user_unexposed |= INTERACTION_REQUIRE_EYESOCKETS
 
-	//SPLURT EDIT
-	var/user_has_belly = self.has_belly()
-	switch(user_has_belly)
-		if(HAS_EXPOSED_GENITAL)
-			required_from_user_exposed |= INTERACTION_REQUIRE_BELLY
-		if(HAS_UNEXPOSED_GENITAL)
-			required_from_user_unexposed |= INTERACTION_REQUIRE_BELLY
-		if(TRUE)
-			required_from_user_exposed |= INTERACTION_REQUIRE_BELLY
-			required_from_user_unexposed |= INTERACTION_REQUIRE_BELLY
-	//SPLURT EDIT END
-
 	.["required_from_user_exposed"] = required_from_user_exposed
 	.["required_from_user_unexposed"] = required_from_user_unexposed
 	.["user_num_feet"] = self.get_num_feet()
@@ -293,7 +293,12 @@
 	.["theyAllowUnholy"] = null
 	.["theyHaveBondage"] = null
 	//SPLURT EDIT END
-	if(target != self)
+	if(target == self)
+		.["required_from_target"] = .["required_from_user"]
+		.["required_from_target_exposed"] = .["required_from_user_exposed"]
+		.["required_from_target_unexposed"] = .["required_from_user_unexposed"]
+		.["target_num_feet"] = .["user_num_feet"]
+	else
 		.["theirAttributes"] = target.list_interaction_attributes(self)
 
 		// Always TRUE if has key, 2 if cliented, FALSE if nobody owns it
@@ -319,11 +324,23 @@
 				required_from_target |= INTERACTION_REQUIRE_KNOT
 			if(findtext(shape_desc, "двойн"))
 				required_from_target |= INTERACTION_REQUIRE_DOUBLE_PENIS
+		var/target_has_belly = target.has_belly()
+		if(target_has_belly)
+			required_from_target |= INTERACTION_REQUIRE_BELLY
 		// BLUEMOON ADD
 		.["required_from_target"] = required_from_target
 
 		var/required_from_target_exposed = NONE
 		var/required_from_target_unexposed = NONE
+
+		switch(target_has_belly)
+			if(HAS_EXPOSED_GENITAL)
+				required_from_target_exposed |= INTERACTION_REQUIRE_BELLY
+			if(HAS_UNEXPOSED_GENITAL)
+				required_from_target_unexposed |= INTERACTION_REQUIRE_BELLY
+			if(TRUE)
+				required_from_target_exposed |= INTERACTION_REQUIRE_BELLY
+				required_from_target_unexposed |= INTERACTION_REQUIRE_BELLY
 
 		target_has_penis = target_has_penis || target.has_strapon()
 		switch(target_has_penis)

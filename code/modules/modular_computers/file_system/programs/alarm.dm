@@ -3,8 +3,8 @@
 	filedesc = "Canary"
 	ui_header = "alarm_green.gif"
 	program_icon_state = "alert-green"
-	extended_desc = "This program provides visual interface for a station's alarm system."
-	requires_ntnet = 1
+	extended_desc = "Предоставляет визуальный интерфейс для системы оповещений станции."
+	requires_ntnet = TRUE
 	size = 5
 	tgui_id = "NtosStationAlertConsole"
 	program_icon = "bell"

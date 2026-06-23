@@ -12,6 +12,15 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
 
+/obj/item/clothing/suit/donator/bm/krieg_shinel
+	name = "Шенель Крига"
+	desc = "Поношенная экипировка гвардейца Корпуса Смерти \"КРИГ\"."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	icon_state = "krieg_shinel"
+	item_state = "krieg_shinel"
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+
 /obj/item/clothing/suit/donator/bm/lightning_holocloak
 	name = "lightning holo-cloak"
 	desc = "When equipped, a strange hologram is activated, and the fabric of the cloak itself disappears, and lightning starts projecting all over the body."

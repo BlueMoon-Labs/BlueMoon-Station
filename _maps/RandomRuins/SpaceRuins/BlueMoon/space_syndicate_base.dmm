@@ -8498,9 +8498,9 @@
 	icon_screen = "syndishuttle";
 	light_color = "#FA8282";
 	name = "syndicate cargo shuttle terminal";
-	possible_destinations = "IP-DS-2";
+	possible_destinations = "ds1_syndicate;ds2_syndicate;caravansyndicate1_listeningpost";
 	req_access_txt = "150";
-	shuttleId = "syndie_cargo"
+	shuttleId = "sbc_corvette"
 	},
 /obj/effect/turf_decal/trimline/dark_red/line{
 	dir = 1

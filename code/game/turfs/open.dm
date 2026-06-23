@@ -335,10 +335,12 @@
 		air.adjust_moles(GAS_PLUOXIUM, pulse_strength/4000)
 
 /turf/open/IgniteTurf(power, fire_color="red")
-	if(air.get_moles(GAS_O2) < 1)
-		return
+	if(power <= 0 || isgroundlessturf(src))
+		return FALSE
 	if(turf_fire)
 		turf_fire.AddPower(power)
-		return
-	if(!isgroundlessturf(src))
-		new /obj/effect/abstract/turf_fire(src, power, fire_color)
+		return TRUE
+	if(!air || (!planetary_atmos && air.get_moles(GAS_O2) < 1))
+		return FALSE
+	new /obj/effect/abstract/turf_fire(src, power, fire_color)
+	return TRUE

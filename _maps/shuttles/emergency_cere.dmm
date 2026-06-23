@@ -13,6 +13,9 @@
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/escape)
 "ae" = (
+/obj/effect/fun_balloon/sentience/emergency_shuttle{
+	group_name = "science crew on the Emergency Cere Shuttle"
+	},
 /obj/structure/table,
 /obj/item/storage/toolbox/emergency,
 /obj/item/crowbar,

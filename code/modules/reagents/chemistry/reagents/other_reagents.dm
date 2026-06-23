@@ -2965,3 +2965,103 @@
 	name = "Black Crayon Powder"
 	rarity = "Exodia"
 	color = "#1C1C1C" // not quite black
+
+/datum/reagent/luminescent_fluid
+	name = "Green Luminiscent Fluid"
+	description = "A colored fluid that produces light as a result of a chemical reaction with oxygen."
+	taste_description = "buttery acid"
+	color = LIGHT_COLOR_GREEN
+	metabolization_rate = 0.3 * REAGENTS_METABOLISM
+	overdose_threshold = 50
+	metabolized_traits = list(TRAIT_MINOR_NIGHT_VISION)
+	self_consuming = TRUE
+	var/obj/item/flashlight/eyelight/glow/glowing
+	var/added_light = FALSE
+	var/stored_left_color
+	var/stored_right_color
+
+/datum/reagent/luminescent_fluid/on_mob_metabolize(mob/living/affected_mob)
+	. = ..()
+	if(volume > 20)
+		glowing = new(affected_mob)
+		glowing.light_color = color
+		glowing.update_brightness()
+		added_light = TRUE
+
+	if(!ishuman(affected_mob))
+		return
+
+	var/mob/living/carbon/human/affected_human = affected_mob
+	stored_left_color = affected_human.left_eye_color
+	stored_right_color = affected_human.right_eye_color
+	affected_human.left_eye_color = sanitize_hexcolor(color, 6)
+	affected_human.right_eye_color = sanitize_hexcolor(color, 6)
+	affected_human.update_body()
+
+/datum/reagent/luminescent_fluid/on_mob_end_metabolize(mob/living/affected_mob)
+	. = ..()
+	QDEL_NULL(glowing)
+	added_light = FALSE
+	if(!ishuman(affected_mob))
+		return
+
+	var/mob/living/carbon/human/affected_human = affected_mob
+	if(stored_left_color)
+		affected_human.left_eye_color = stored_left_color
+	if(stored_right_color)
+		affected_human.right_eye_color = stored_right_color
+	affected_human.update_body()
+
+/datum/reagent/luminescent_fluid/on_mob_life(mob/living/carbon/affected_mob)
+	. = ..()
+
+	if(isnull(glowing) && !added_light && volume > 20)
+		glowing = new(affected_mob)
+		glowing.light_color = color
+		glowing.update_brightness()
+		added_light = TRUE
+
+	if(prob(8))
+		affected_mob.adjustToxLoss(3.34, updating_health = FALSE)
+
+/datum/reagent/luminescent_fluid/overdose_start(mob/living/affected_mob)
+	. = ..()
+	if(!ishuman(affected_mob))
+		return
+	var/mob/living/carbon/human/affected_human = affected_mob
+	var/obj/item/organ/eyes/eyes = affected_human.getorganslot(ORGAN_SLOT_EYES)
+	if(eyes && !IS_ROBOTIC_ORGAN(eyes))
+		eyes.left_eye_color = color
+		eyes.right_eye_color = color
+		affected_human.update_body()
+
+/datum/reagent/luminescent_fluid/red
+	name = "Red Luminiscent Fluid"
+	color = COLOR_SOFT_RED
+	metabolized_traits = list(TRAIT_MINOR_NIGHT_VISION, TRAIT_UNNATURAL_RED_GLOWY_EYES)
+
+/datum/reagent/luminescent_fluid/red/overdose_start(mob/living/affected_mob)
+	. = ..()
+	if(!ishuman(affected_mob))
+		return
+	ADD_TRAIT(affected_mob, TRAIT_UNNATURAL_RED_GLOWY_EYES, OVERDOSE_TRAIT)
+
+/datum/reagent/luminescent_fluid/blue
+	name = "Blue Luminiscent Fluid"
+	color = LIGHT_COLOR_BLUE
+
+/datum/reagent/luminescent_fluid/cyan
+	name = "Cyan Luminiscent Fluid"
+	color = LIGHT_COLOR_CYAN
+
+/datum/reagent/luminescent_fluid/yellow
+	name = "Yellow Luminiscent Fluid"
+	color = LIGHT_COLOR_YELLOW
+
+/datum/reagent/luminescent_fluid/orange
+	name = "Orange Luminiscent Fluid"
+	color = LIGHT_COLOR_ORANGE
+
+/datum/reagent/luminescent_fluid/pink
+	name = "Pink Luminiscent Fluid"
+	color = LIGHT_COLOR_PINK

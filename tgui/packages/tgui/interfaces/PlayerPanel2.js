@@ -186,7 +186,7 @@ const PhysicalActions = (props, context) => {
   const { glob_limbs, godmode, mob_type, initial_scale, active_martial_art,
     martial_arts_list, active_quirks, quirks_list, has_loadout,
     current_organs, organ_slots, current_implants, implants_list,
-    mob_weight, weight_options } = data;
+    mob_weight, weight_options, can_toggle_dextrous, is_dextrous } = data;
   const [mobScale, setMobScale] = useLocalState(context, 'mobScale', initial_scale);
   const limbs = Object.keys(glob_limbs);
   const limb_flags = limbs.map((_, i) => (1<<i));
@@ -264,6 +264,23 @@ const PhysicalActions = (props, context) => {
           />
         </Flex>
       </Section>
+
+      {!!can_toggle_dextrous && (
+        <Section title="Simple Mob">
+          <Flex>
+            <Button.Confirm
+              width="100%"
+              icon="hand-paper"
+              content={is_dextrous ? "Remove Hands" : "Give Hands"}
+              color={is_dextrous ? 'red' : 'green'}
+              tooltip={is_dextrous
+                ? "Remove dexterity (drops held items)"
+                : "Give dexterity so the simple mob can hold items"}
+              onClick={() => act("toggle_dextrous")}
+            />
+          </Flex>
+        </Section>
+      )}
 
       <Section
         title={"Martial Art (" + (active_martial_art || "None") + ")"}
@@ -950,7 +967,7 @@ const GeneralActions = (props, context) => {
 const PunishmentActions = (props, context) => {
   const { act, data } = useBackend(context);
   const { client_ckey, mob_type, is_frozen, is_slept, glob_mute_bits,
-    client_muted, data_related_cid, data_related_ip, data_byond_version,
+    client_muted, data_related_cid, data_related_ip, data_cid, data_byond_version,
     data_player_join_date, data_account_join_date, active_role_ban_count,
     current_time, has_live_client } = data;
   return (
@@ -1110,6 +1127,7 @@ const PunishmentActions = (props, context) => {
             <LabeledList.Item label="Account made">{data_account_join_date}</LabeledList.Item>
             <LabeledList.Item label="First joined server">{data_player_join_date}</LabeledList.Item>
             <LabeledList.Item label="Byond version">{data_byond_version}</LabeledList.Item>
+            <LabeledList.Item label="CID">{data_cid || "N/A"}</LabeledList.Item>
             <LabeledList.Item label="Active bans">{active_role_ban_count}</LabeledList.Item>
           </LabeledList>
         </Collapsible>

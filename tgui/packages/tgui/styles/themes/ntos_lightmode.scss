@@ -1,0 +1,44 @@
+/**
+ * NtOS Light Mode
+ * Clean white/light grey interface with blue accents.
+ * Feature: bright paper-like background, high contrast dark text.
+ */
+
+@use 'sass:color';
+@use 'sass:meta';
+
+$lightmode: #4878a8;
+
+@use '../colors.scss' with (
+  $fg-map-keys: (),
+  $bg-map-keys: (),
+);
+@use '../base.scss' with (
+  $color-bg: #d8dce4,
+  $color-bg-grad-spread: 2%,
+);
+
+.theme-ntos_lightmode {
+  // Components
+  @include meta.load-css('../components/Button.scss', $with: (
+    'color-default': $lightmode,
+    'color-transparent-text': rgba(30, 40, 55, 0.85),
+    'color-selected': #5888b8,
+  ));
+  @include meta.load-css('../components/ProgressBar.scss', $with: (
+    'color-default-fill': $lightmode,
+    'background-color': rgba(0, 0, 0, 0.1),
+  ));
+  @include meta.load-css('../components/Section.scss');
+
+  // Layouts
+  @include meta.load-css('../layouts/Layout.scss');
+  @include meta.load-css('../layouts/Window.scss');
+  @include meta.load-css('../layouts/TitleBar.scss', $with: (
+    'background-color': color.scale($lightmode, $lightness: -15%),
+  ));
+
+  .Layout__content {
+    background-image: none;
+  }
+}

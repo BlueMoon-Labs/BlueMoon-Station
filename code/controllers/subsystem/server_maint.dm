@@ -9,6 +9,9 @@ SUBSYSTEM_DEF(server_maint)
 	runlevels = RUNLEVEL_LOBBY | RUNLEVELS_DEFAULT
 	var/list/currentrun
 	var/cleanup_ticker = 0
+	/// Whether this fire sends ping measurements - once per 3 fires (1.8s at wait = 6),
+	/// 0.6s cadence bought nothing but ~80k verb round-trips and stats math per round.
+	var/ping_send_this_fire = FALSE
 	/// Last measured null-cleanup cost in ms.
 	var/cleanup_last_ms = 0
 	/// Running average null-cleanup cost in ms.
@@ -38,6 +41,7 @@ SUBSYSTEM_DEF(server_maint)
 		if(run_null_cleanup(GLOB.clients, "clients"))
 			log_world("Found a null in clients list!")
 		src.currentrun = GLOB.clients.Copy()
+		ping_send_this_fire = (times_fired % 3 == 0)
 
 		switch (cleanup_ticker) // do only one of these at a time, once per 5 fires
 			if (0)
@@ -82,7 +86,7 @@ SUBSYSTEM_DEF(server_maint)
 				QDEL_IN(C, 1) //to ensure they get our message before getting disconnected
 				continue
 
-		if (!(world.time - C.connection_time < PING_BUFFER_TIME || C.inactivity >= 3000))
+		if (ping_send_this_fire && !(world.time - C.connection_time < PING_BUFFER_TIME || C.inactivity >= 3000))
 			winset(C, null, "command=.update_ping+[world.time+world.tick_lag*TICK_USAGE_REAL/100]+[REALTIMEOFDAY]")
 
 		MC_TICK_CHECK

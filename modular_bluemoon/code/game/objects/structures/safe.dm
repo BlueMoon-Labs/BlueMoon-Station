@@ -11,8 +11,16 @@
 
 	return data
 
+/// Returns TRUE when the given security level should auto-open this safe.
+/obj/structure/safe/proc/security_level_opens_safe(level)
+	if(isnull(level))
+		level = GLOB.security_level
+	if(!isnum(level))
+		level = SECLEVEL2NUM(level)
+	return length(open_security_levels) && (level in open_security_levels)
+
 /// Proc for opening safe via certain condition, using station code in our case.
-/obj/structure/safe/proc/code_opening()
+/obj/structure/safe/proc/code_opening(datum/source, level)
 	SIGNAL_HANDLER
 	return
 
@@ -87,16 +95,28 @@ GLOBAL_DATUM_INIT(spare_id_safe, /obj/structure/safe/spare_id, null)
 
 /obj/structure/safe/floor/syndi/armory/Initialize(mapload)
 	. = ..()
-	RegisterSignal(SSsecurity_level, COMSIG_SECURITY_LEVEL_CHANGED, PROC_REF(code_opening)) // Ловим сигнал смены кода на станции
+	if(. == INITIALIZE_HINT_QDEL || . == INITIALIZE_HINT_QDEL_FORCE)
+		return .
+	return INITIALIZE_HINT_LATELOAD
 
-/obj/structure/safe/floor/syndi/armory/code_opening()
-	if(GLOB.security_level in open_security_levels && !open) // Если кодов нет в списке - не откроет
-		playsound(src, 'modular_bluemoon/sound/effects/opening-gears.ogg', 200, ignore_walls = TRUE)
-		visible_message("<span class='warning'>You hear a loud sound of something heavy opening.</span>")
-		locked = FALSE
-		open = TRUE
-		current_tumbler_index = 7
-		update_icon()
+/obj/structure/safe/floor/syndi/armory/LateInitialize()
+	. = ..()
+	if(!is_station_level(z))
+		return
+	RegisterSignal(SSsecurity_level, COMSIG_SECURITY_LEVEL_CHANGED, PROC_REF(code_opening)) // Ловим сигнал смены кода на станции
+	if(security_level_opens_safe())
+		code_opening()
+
+/obj/structure/safe/floor/syndi/armory/code_opening(datum/source, level)
+	. = ..()
+	if(!security_level_opens_safe(level) || open)
+		return
+	playsound(src, 'modular_bluemoon/sound/effects/opening-gears.ogg', 200, ignore_walls = TRUE)
+	visible_message("<span class='warning'>You hear a loud sound of something heavy opening.</span>")
+	locked = FALSE
+	open = TRUE
+	current_tumbler_index = number_of_tumblers + 1
+	update_icon()
 
 /obj/structure/safe/floor/syndi/armory/Destroy()
 	UnregisterSignal(SSsecurity_level, COMSIG_SECURITY_LEVEL_CHANGED)

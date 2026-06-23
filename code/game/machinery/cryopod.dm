@@ -497,8 +497,8 @@ GLOBAL_LIST_EMPTY(ghost_records)
 				item_content.forceMove(pod)
 
 				// WEE WOO SNOWFLAKE TIME
-				if(istype(item_content, /obj/item/pda))
-					var/obj/item/pda/P = item_content
+				if(istype(item_content, /obj/item/modular_computer/pda))
+					var/obj/item/modular_computer/pda/P = item_content
 					if((P.owner == mind_identity) || (P.owner == occupant_identity))
 						destroying += P
 					else

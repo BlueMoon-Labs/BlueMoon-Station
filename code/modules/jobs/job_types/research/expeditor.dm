@@ -50,7 +50,7 @@
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
 	suit_store = /obj/item/gun/energy/e_gun/mini/expeditor
 	r_pocket = /obj/item/kitchen/knife/combat
-	l_pocket = /obj/item/pda
+	l_pocket = /obj/item/modular_computer/pda
 	accessory = list(/obj/item/clothing/accessory/permit/special/explorer)
 	backpack_contents = list(/obj/item/storage/firstaid/regular = 1)
 
@@ -58,7 +58,7 @@
 	name = "Syndicate Expeditor"
 	jobtype = /datum/job/expeditor
 
-	//l_pocket = /obj/item/pda/syndicate/no_deto
+	//l_pocket = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	ears = /obj/item/radio/headset/headset_sci
 	uniform = /obj/item/clothing/under/syndicate/combat/exp

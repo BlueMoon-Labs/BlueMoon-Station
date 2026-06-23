@@ -60,8 +60,13 @@
 		var/txt = stripped_input(user, "What would you like to write on the back?", "Photo Writing", "", 128)
 		if(txt && user.canUseTopic(src, BE_CLOSE))
 			scribble = txt
-	else
-		return ..()
+		return
+	if(istype(P, /obj/item/modular_computer/pda))
+		var/obj/item/modular_computer/pda/pda_device = P
+		pda_device.picture = picture
+		to_chat(user, "<span class='notice'>Вы просканировали [src] в [pda_device].</span>")
+		return
+	return ..()
 
 /obj/item/photo/examine(mob/user)
 	. = ..()
@@ -99,6 +104,6 @@
 	if(n_name && (loc == usr || loc.loc && loc.loc == usr) && CHECK_MOBILITY(L, MOBILITY_USE))
 		name = "photo[(n_name ? text("- '[n_name]'") : null)]"
 	add_fingerprint(usr)
-	
+
 /obj/item/photo/old
 	icon_state = "photo_old"

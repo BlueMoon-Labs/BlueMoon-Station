@@ -35,6 +35,7 @@ GLOBAL_LIST_INIT(strippable_alien_humanoid_items, create_strippable_list(list(
 	set_genital = new(null) //BLUEMOON ADD
 	AddAbility(regurg)
 	AddAbility(set_genital) //BLUEMOON ADD
+	ADD_TRAIT(src, TRAIT_CAN_STRIP, INNATE_TRAIT) // adult xenomorphs have claws dexterous enough to undress prey
 	. = ..()
 
 /mob/living/carbon/alien/humanoid/Destroy()

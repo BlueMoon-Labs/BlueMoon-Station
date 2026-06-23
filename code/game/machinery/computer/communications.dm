@@ -187,7 +187,19 @@
 			if (GLOB.security_level == new_sec_level)
 				return
 
-			set_security_level(new_sec_level)
+			var/current_level = isnum(GLOB.security_level) ? GLOB.security_level : SECLEVEL2NUM(GLOB.security_level)
+			var/emagged_bypass = (obj_flags & EMAGGED)
+			if(IS_HIGH_SECURITY_LEVEL(current_level) && new_sec_level < SEC_LEVEL_RED)
+				to_chat(usr, span_warning("С высокого кода тревоги можно перейти только на красный — через устройства двойной авторизации ключ-карт."))
+				playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, FALSE)
+				return
+			if(GLOB.keycard_secured_level >= SEC_LEVEL_RED && current_level >= SEC_LEVEL_RED && new_sec_level < SEC_LEVEL_RED && !emagged_bypass)
+				to_chat(usr, span_warning("Красный код может быть снят только через устройства двойной авторизации ключ-карт."))
+				playsound(src, 'sound/machines/terminal_prompt_deny.ogg', 50, FALSE)
+				return
+
+			var/bypass_red_lock = emagged_bypass && !IS_HIGH_SECURITY_LEVEL(current_level)
+			set_security_level(new_sec_level, null, bypass_red_lock)
 
 			to_chat(usr, span_notice("Доступ разрешён. Обновляю уровень угрозы."))
 			playsound(src, 'sound/machines/terminal_prompt_confirm.ogg', 50, FALSE)
@@ -271,7 +283,12 @@
 			SSshuttle.shuttle_purchased = SHUTTLEPURCHASE_PURCHASED
 			SSshuttle.unload_preview()
 			SSshuttle.existing_shuttle = SSshuttle.emergency
-			SSshuttle.action_load(shuttle, replace = TRUE)
+			var/obj/docking_port/mobile/purchased_shuttle = SSshuttle.action_load(shuttle, replace = TRUE)
+			if(!purchased_shuttle)
+				SSshuttle.shuttle_purchased = SHUTTLEPURCHASE_PURCHASABLE
+				SSshuttle.existing_shuttle = null
+				to_chat(usr, span_alert("Не удалось загрузить шаттл. Попробуйте позже."))
+				return
 			bank_account.adjust_money(-shuttle.credit_cost)
 			minor_announce("[usr.real_name] купил шаттл [shuttle.name] за [shuttle.credit_cost] кредитов.[shuttle.extra_desc ? " [shuttle.extra_desc]" : ""]" , "Shuttle Purchase")
 			message_admins("[ADMIN_LOOKUPFLW(usr)] purchased [shuttle.name].")
@@ -619,6 +636,8 @@
 					data["alertLevelTick"] = alert_level_tick
 					data["canMakeAnnouncement"] = TRUE
 					data["canSetAlertLevel"] = issilicon(user) ? "NO_SWIPE_NEEDED" : "SWIPE_NEEDED"
+					data["redAlertKeycardLocked"] = GLOB.keycard_secured_level >= SEC_LEVEL_RED && GLOB.security_level >= SEC_LEVEL_RED && !(obj_flags & EMAGGED)
+					data["highAlertKeycardLocked"] = GLOB.security_level >= SEC_LEVEL_LAMBDA
 				else if(syndicate)
 					data["canMakeAnnouncement"] = TRUE
 
@@ -773,7 +792,7 @@
 	var/list/settings = list(
 		"mainsettings" = list(
 		"template" = list("desc" = "Template", "callback" = CALLBACK(src, PROC_REF(makeERTTemplateModified)), "type" = "datum", "path" = "/datum/ert", "subtypesonly" = TRUE, "value" = ertemplate.type),
-		"teamsize" = list("desc" = "Team Size", "type" = "number", "value" =  GLOB.payed_ert[id]["teamsize"]),
+		"teamsize" = list("desc" = "Team Size", "type" = "number", "value" = GLOB.payed_ert[id]["teamsize"]),
 		"mission" = list("desc" = "Mission", "type" = "string", "value" = GLOB.payed_ert[id]["mission"]),
 		"polldesc" = list("desc" = "Ghost poll description", "type" = "string", "value" = ertemplate.polldesc),
 		"ertphrase" = list("desc" = "ERT Sending Sound", "type" = "string", "value" = ertemplate.ertphrase),
@@ -804,7 +823,7 @@
 
 	if(candidates.len > 0)
 		//Pick the (un)lucky players
-		var/numagents = min(ertemplate.teamsize,candidates.len)
+		var/numagents = min(ertemplate.maxteamsize, candidates.len)
 
 		//Create team
 		var/datum/team/ert/ert_team = new ertemplate.team

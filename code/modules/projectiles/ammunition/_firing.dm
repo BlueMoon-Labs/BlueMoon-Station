@@ -17,7 +17,7 @@
 		SEND_SIGNAL(src, COMSIG_PELLET_CLOUD_INIT, target, user, fired_from, randomspread, spread, zone_override, params, distro)
 
 	user.DelayNextAction(considered_action = TRUE, immediate = FALSE)
-	user.newtonian_move(get_dir(target, user), drift_force = newtonian_force)
+	user.newtonian_move(get_dir(target, user), drift_force = newtonian_force, controlled_cap = INERTIA_FORCE_RECOIL_CAP)
 	update_icon()
 	return TRUE
 

@@ -68,7 +68,7 @@
 	if(amount <= 0)
 		return FALSE
 	SSmetadollars.add_amount(C, amount, "voucher")
-	if(istype(source, /obj/item/pda))
+	if(istype(source, /obj/item/modular_computer/pda))
 		to_chat(user, span_notice("Казначейский билет был погружён в КПК и растворился на мельчайшие атомы, успешно зачислив метадоллары на ваш счёт."))
 	else if(istype(source, /obj/item/card/id))
 		to_chat(user, span_notice("Казначейский билет был погружён в ID-карту и растворился на мельчайшие атомы, успешно зачислив метадоллары на ваш счёт."))

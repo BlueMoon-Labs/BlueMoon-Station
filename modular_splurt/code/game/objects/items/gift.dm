@@ -5,7 +5,7 @@ GLOBAL_LIST_INIT(gift_item_blacklist_balanced, list(
     /obj/item/uplink/nuclear/debug,
     /obj/item/veilrender,
     /obj/item/pizzabox/bomb,
-    /obj/item/cartridge/virus/syndicate,
+    /obj/item/cartridge/virus/detomatix,
     /obj/item/nuke_core,
     /obj/item/bombcore,
     /obj/item/projectile,

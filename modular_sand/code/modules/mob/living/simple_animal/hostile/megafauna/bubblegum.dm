@@ -84,7 +84,7 @@ Removes slaughterlings (because they are bullshit), instead replacing them with 
 			to_chat(L, "<span class='userdanger'>[src] rends you!</span>")
 			playsound(T, attack_sound, 100, TRUE, -1)
 			var/limb_to_hit = L.get_bodypart(pick(BODY_ZONE_HEAD, BODY_ZONE_CHEST, BODY_ZONE_R_ARM, BODY_ZONE_L_ARM, BODY_ZONE_R_LEG, BODY_ZONE_L_LEG))
-			L.apply_damage(30, BRUTE, limb_to_hit, L.run_armor_check(limb_to_hit, "melee"), 0, 0, CANT_WOUND) // You really, really, really better not stand in blood!
+			L.apply_damage(40, BRUTE, limb_to_hit, L.run_armor_check(limb_to_hit, "melee"), 0, 0, CANT_WOUND) // You really, really, really better not stand in blood!
 	sleep(3)
 
 /mob/living/simple_animal/hostile/megafauna/bubblegum/blood_warp()

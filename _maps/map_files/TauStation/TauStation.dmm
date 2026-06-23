@@ -6390,6 +6390,7 @@
 /obj/docking_port/stationary{
 	dwidth = 1;
 	height = 4;
+	name = "escape pod loader";
 	roundstart_template = /datum/map_template/shuttle/escape_pod/default;
 	width = 3
 	},
@@ -40649,9 +40650,6 @@
 	pixel_y = 3
 	},
 /obj/item/cartridge/medical,
-/obj/item/cartridge/chemistry{
-	pixel_y = 2
-	},
 /obj/effect/turf_decal/tile/blue{
 	dir = 4
 	},

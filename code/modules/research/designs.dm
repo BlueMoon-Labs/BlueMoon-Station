@@ -42,6 +42,8 @@ other types of metals and chemistry for reagents).
 	var/research_icon					//Replaces the item icon in the research console
 	var/research_icon_state
 	var/icon_cache
+	/// Этот дизайн будет виден только на взломанном протолате (в том числе, скрыт из консоли исследований)
+	var/hacked_only = FALSE
 
 /datum/design/error_design
 	name = "ERROR"

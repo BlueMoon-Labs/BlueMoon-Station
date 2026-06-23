@@ -2,7 +2,8 @@
 /obj/structure/destructible/clockwork/powered/clockwork_obelisk
 	name = "clockwork obelisk"
 	desc = "A large brass obelisk hanging in midair."
-	clockwork_desc = "A powerful obelisk that can send a message to all servants or open a gateway to a target servant or clockwork obelisk."
+	clockwork_desc = "A powerful obelisk that can send a message to all servants, open a gateway to a target servant or clockwork obelisk, \
+	and slowly proselytize nearby tiles and structures into their clockwork equivalents."
 	icon_state = "obelisk_inactive"
 	active_icon = "obelisk"
 	inactive_icon = "obelisk_inactive"
@@ -15,6 +16,9 @@
 	/obj/item/clockwork/component/hierophant_ansible/obelisk = 1)
 	var/hierophant_cost = MIN_CLOCKCULT_POWER //how much it costs to broadcast with large text
 	var/gateway_cost = 2000 //how much it costs to open a gateway
+	var/conversion_delay = 50
+	var/last_conversion = 0
+	var/conversion_range = 5
 
 /obj/structure/destructible/clockwork/powered/clockwork_obelisk/Initialize(mapload)
 	. = ..()
@@ -24,6 +28,7 @@
 	. = ..()
 	if(is_servant_of_ratvar(user) || isobserver(user))
 		. += "<span class='nzcrentr_small'>It requires <b>[DisplayPower(hierophant_cost)]</b> to broadcast over the Hierophant Network, and <b>[DisplayPower(gateway_cost)]</b> to open a Spatial Gateway.</span>"
+		. += "<span class='brass'>While powered and secured, it slowly converts nearby tiles and structures into clockwork within <b>[conversion_range]</b> tiles.</span>"
 
 /obj/structure/destructible/clockwork/powered/clockwork_obelisk/can_be_unfasten_wrench(mob/user, silent)
 	if(active)
@@ -109,3 +114,35 @@
 		icon_state = inactive_icon
 		density = TRUE
 		active = FALSE
+	proselytize_nearby()
+
+/obj/structure/destructible/clockwork/powered/clockwork_obelisk/proc/proselytize_nearby()
+	if(!can_access_clockwork_power(src) || last_conversion > world.time)
+		return
+	var/list/valid_turfs = list()
+	var/list/clockwork_turfs = list()
+	var/static/list/blacklisted_obelisk_turfs = typecacheof(list(
+		/turf/open/floor/clockwork,
+		/turf/closed/wall/clockwork,
+		/turf/open/space,
+		/turf/open/lava,
+		/turf/open/chasm,
+	))
+	for(var/turf/T in circleviewturfs(src, conversion_range))
+		if(is_type_in_typecache(T, blacklisted_obelisk_turfs))
+			if(istype(T, /turf/open/floor/clockwork))
+				clockwork_turfs |= T
+			continue
+		valid_turfs |= T
+
+	last_conversion = world.time + conversion_delay
+
+	var/turf/convert_target = safepick(valid_turfs)
+	if(convert_target)
+		convert_target.ratvar_act(TRUE, TRUE)
+		return
+	var/turf/clockwork_floor = safepick(clockwork_turfs)
+	if(clockwork_floor)
+		new /obj/effect/temp_visual/ratvar/floor(clockwork_floor)
+	else
+		last_conversion = world.time + conversion_delay * 2

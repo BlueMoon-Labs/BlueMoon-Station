@@ -15,6 +15,9 @@
 	area_flags = UNIQUE_AREA | NOTELEPORT
 	flags_1 = NONE
 
+/area/centcom/arena
+	name = "CentCom Arena"
+
 /area/centcom/control
 	name = "CentCom Docks"
 

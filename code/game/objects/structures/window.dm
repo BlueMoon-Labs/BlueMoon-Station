@@ -1,13 +1,14 @@
-GLOBAL_LIST_EMPTY(electrochromatic_window_lookup)
-
 /proc/do_electrochromatic_toggle(new_status, id)
-	var/list/windows = GLOB.electrochromatic_window_lookup["[id]"]
-	if(!windows)
+	var/list/linked = GLOB.electrochromatic_window_lookup["[id]"]
+	if(!linked)
 		return
-	var/obj/structure/window/W		//define outside for performance because obviously this matters.
-	for(var/i in windows)
-		W = i
-		new_status? W.electrochromatic_dim() : W.electrochromatic_off()
+	for(var/obj/structure/window/window_trim in linked)
+		new_status ? window_trim.electrochromatic_dim() : window_trim.electrochromatic_off()
+	for(var/obj/machinery/door/window/interior_trim in linked)
+		new_status ? interior_trim.electrochromatic_dim() : interior_trim.electrochromatic_off()
+	for(var/obj/machinery/door/airlock/gl_airlock in linked)
+		if(gl_airlock.glass)
+			new_status ? gl_airlock.electrochromatic_dim() : gl_airlock.electrochromatic_off()
 
 /obj/structure/window
 	name = "window"
@@ -212,12 +213,9 @@ GLOBAL_LIST_EMPTY(electrochromatic_window_lookup)
 		balloon_alert_to_viewers("СТУК!!!")
 		take_damage(20, BRUTE, MELEE, 0)
 		var/mob/living/carbon/human/pro_user = user
-		if(user.active_hand_index == 1)
-			pro_user.apply_damage(10, BRUTE, BODY_ZONE_L_ARM, wound_bonus = 10)
-		else
-			pro_user.apply_damage(10, BRUTE, BODY_ZONE_R_ARM, wound_bonus = 10)
+		pro_user.apply_damage(11, BRUTE, user.active_hand_index == 1 ? BODY_ZONE_L_ARM : BODY_ZONE_R_ARM, wound_bonus = 10)
 		playsound(src, 'sound/effects/Glassknock.ogg', 100, 1)
-	else if(user.a_intent != INTENT_HARM)
+	else
 		user.visible_message("[user] стучится в [src].")
 		balloon_alert_to_viewers("Тук-тук!")
 		playsound(src, 'sound/effects/Glassknock.ogg', 50, 1)

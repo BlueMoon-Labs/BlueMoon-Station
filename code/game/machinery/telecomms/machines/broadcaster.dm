@@ -28,7 +28,7 @@ GLOBAL_VAR_INIT(message_delay, 0) // To make sure restarting the recentmessages 
 		return
 	if(signal.data["reject"])
 		return
-	if(!signal.data["message"])
+	if(!signal.data["message"] && !signal.data["photo"])
 		return
 
 	// Prevents massive radio spam

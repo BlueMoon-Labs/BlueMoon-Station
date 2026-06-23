@@ -15,8 +15,8 @@
 	friendly_verb_simple = "poke"
 	speak_emote = list("screeches")
 	mob_biotypes = MOB_ROBOTIC
-	melee_damage_lower = 30
-	melee_damage_upper = 30
+	melee_damage_lower = 40
+	melee_damage_upper = 40
 	speed = 1
 	move_to_delay = 10
 	ranged_cooldown_time = 80
@@ -44,7 +44,7 @@
 
 /obj/item/projectile/plasma/rogue
 	dismemberment = 0
-	damage = 25
+	damage = 35
 	pixels_per_second = TILES_TO_PIXELS(10)
 	range = 21
 	color = "#FF0000"

@@ -24,6 +24,15 @@
 /obj/structure/cable{
 	icon_state = "0-6"
 	},
+/obj/item/gun/ballistic/automatic/pistol/m1911,
+/obj/item/gun/ballistic/automatic/pistol/m1911,
+/obj/item/gun/ballistic/automatic/pistol/m1911,
+/obj/item/ammo_box/magazine/m45,
+/obj/item/ammo_box/magazine/m45,
+/obj/item/ammo_box/magazine/m45,
+/obj/item/ammo_box/magazine/m45,
+/obj/item/ammo_box/magazine/m45,
+/obj/item/ammo_box/magazine/m45,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "al" = (
@@ -105,17 +114,18 @@
 /obj/structure/cable{
 	icon_state = "1-4"
 	},
-/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "bh" = (
-/obj/structure/frame/machine,
 /obj/machinery/light/directional/east,
+/obj/machinery/rnd/production/circuit_imprinter/hacked,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "bt" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/plating,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "bu" = (
 /obj/structure/cable{
@@ -133,6 +143,7 @@
 /obj/machinery/door/poddoor{
 	id = "obmine11"
 	},
+/obj/structure/fans/tiny,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "bZ" = (
@@ -146,20 +157,14 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "ca" = (
-/obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/greenglow,
 /obj/vehicle/sealed/mecha/combat/durand/zeus,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "cd" = (
-/obj/machinery/door/poddoor/preopen{
-	id = "obhangarent1"
-	},
-/obj/machinery/door/firedoor/border_only{
-	dir = 1
-	},
-/obj/machinery/door/firedoor/border_only,
-/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/directional/south,
+/obj/machinery/suit_storage_unit/sol_combat,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "cg" = (
@@ -204,7 +209,7 @@
 	dir = 8;
 	layer = 3.1
 	},
-/turf/open/floor/plating,
+/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "cI" = (
 /obj/machinery/button/door{
@@ -231,23 +236,27 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "cK" = (
-/obj/structure/musician/piano/unanchored,
-/obj/machinery/firealarm/directional/west,
-/turf/open/floor/pod/dark,
+/obj/structure/rack{
+	dir = 8
+	},
+/obj/item/ammo_box/magazine/recharge/lasgun,
+/obj/item/ammo_box/magazine/recharge/lasgun,
+/obj/item/ammo_box/magazine/recharge/lasgun,
+/obj/item/ammo_box/magazine/recharge/lasgun,
+/obj/item/ammo_box/magazine/recharge/lasgun,
+/obj/item/ammo_box/magazine/recharge/lasgun,
+/obj/item/ammo_box/magazine/recharge/lasgun,
+/obj/item/ammo_box/magazine/recharge/lasgun,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "cT" = (
 /obj/structure/rack,
-/obj/item/chair,
-/obj/item/chair,
-/obj/item/chair,
-/obj/item/chair,
-/obj/item/chair,
-/obj/item/chair,
-/obj/item/chair,
-/obj/item/chair,
-/obj/item/chair,
-/obj/item/chair,
 /obj/machinery/airalarm/directional/west,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "cW" = (
@@ -280,7 +289,6 @@
 /obj/structure/cable{
 	icon_state = "2-8"
 	},
-/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "dh" = (
@@ -304,20 +312,16 @@
 /turf/open/floor/carpet/royalblue,
 /area/shuttle/solfed/frigate)
 "ds" = (
-/obj/structure/closet/crate/science{
-	name = "G.Station Science Kit"
+/obj/structure/rack{
+	dir = 8
 	},
-/obj/item/circuitboard/machine/rdserver,
-/obj/item/circuitboard/computer/rdconsole,
-/obj/item/clothing/head/papersack/smiley,
-/obj/item/clothing/head/papersack/smiley,
-/obj/item/clothing/head/papersack/smiley,
-/obj/item/clothing/head/papersack/smiley,
-/obj/item/clothing/head/papersack/smiley,
-/obj/item/clothing/head/papersack/smiley,
-/obj/item/circuitboard/machine/circuit_imprinter/department/science,
-/obj/item/circuitboard/machine/protolathe/department/science,
-/turf/open/floor/pod/dark,
+/obj/item/ammo_box/magazine/m556,
+/obj/item/ammo_box/magazine/m556,
+/obj/item/ammo_box/magazine/m556,
+/obj/item/ammo_box/magazine/m556,
+/obj/item/ammo_box/magazine/m556,
+/obj/item/ammo_box/magazine/m556/ap,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "dt" = (
 /obj/structure/sink{
@@ -330,7 +334,6 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "dx" = (
-/obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/cable{
 	icon_state = "1-8"
@@ -354,11 +357,18 @@
 	},
 /obj/item/clothing/shoes/combat,
 /obj/item/clothing/glasses/sunglasses,
-/obj/item/gun/ballistic/automatic/pistol/m1911,
 /obj/item/storage/backpack,
 /obj/item/storage/backpack/satchel,
 /obj/item/binoculars,
 /obj/item/door_remote/captain,
+/obj/item/clothing/suit/space/hardsuit/ert/alert/sol/adv,
+/obj/item/gun/ballistic/automatic/pistol/deagle,
+/obj/item/ammo_box/magazine/m50,
+/obj/item/ammo_box/magazine/m50,
+/obj/item/ammo_box/magazine/m50,
+/obj/item/ammo_box/magazine/m50,
+/obj/item/ammo_box/magazine/m50,
+/obj/item/ammo_box/magazine/m50,
 /turf/open/floor/carpet/royalblack,
 /area/shuttle/solfed/frigate)
 "dF" = (
@@ -371,13 +381,6 @@
 	pixel_y = 28
 	},
 /turf/open/floor/engine/hull/reinforced,
-/area/shuttle/solfed/frigate)
-"dN" = (
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
-/obj/effect/decal/cleanable/glass,
-/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "dV" = (
 /obj/effect/turf_decal/arrows{
@@ -452,7 +455,6 @@
 	},
 /obj/item/conveyor_switch_construct,
 /obj/item/conveyor_switch_construct,
-/obj/effect/decal/cleanable/generic,
 /turf/open/floor/plating,
 /area/shuttle/solfed/frigate)
 "eR" = (
@@ -468,6 +470,7 @@
 	dir = 4
 	},
 /obj/effect/spawner/structure/window/shuttle,
+/obj/structure/shuttle/engine/heater,
 /turf/open/floor/engine,
 /area/shuttle/solfed/frigate)
 "eS" = (
@@ -508,8 +511,7 @@
 	icon_state = "floor6"
 	},
 /obj/machinery/computer/atmos_alert,
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "fi" = (
 /obj/structure/rack,
@@ -534,16 +536,12 @@
 /obj/machinery/light/small/directional/north,
 /turf/open/floor/wood,
 /area/shuttle/solfed/frigate)
-"fl" = (
-/obj/machinery/grill/unwrenched,
-/turf/open/floor/pod,
-/area/shuttle/solfed/frigate)
 "fm" = (
 /obj/item/kirbyplants/random{
 	pixel_y = 5;
 	pixel_x = 2
 	},
-/turf/open/floor/mineral/plastitanium,
+/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "fr" = (
 /obj/structure/sign/painting/library{
@@ -561,7 +559,7 @@
 /area/shuttle/solfed/frigate)
 "fF" = (
 /obj/effect/turf_decal/big_sign/solgov/cb,
-/turf/open/floor/mineral/plastitanium,
+/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "fH" = (
 /obj/machinery/door/window/brigdoor/westleft{
@@ -624,6 +622,7 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
+/obj/machinery/ore_silo,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "gX" = (
@@ -631,7 +630,6 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "hf" = (
-/obj/effect/decal/cleanable/dirt/dust,
 /obj/item/storage/toolbox/mechanical{
 	pixel_x = 9;
 	pixel_y = -6
@@ -667,14 +665,12 @@
 /turf/open/floor/plating,
 /area/shuttle/solfed/frigate)
 "hv" = (
-/obj/structure/table,
-/obj/item/pen{
-	pixel_x = 11;
-	pixel_y = 9
+/obj/structure/cable{
+	icon_state = "1-2"
 	},
-/obj/item/paper/crumpled{
-	pixel_x = -4;
-	pixel_y = -3
+/obj/structure/railing{
+	dir = 4;
+	layer = 3.1
 	},
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
@@ -683,7 +679,7 @@
 /turf/open/floor/engine,
 /area/shuttle/solfed/frigate)
 "hJ" = (
-/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/suit_storage_unit/sol_combat,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "hP" = (
@@ -729,10 +725,17 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "il" = (
-/obj/machinery/camera/autoname{
-	dir = 9
+/obj/structure/rack{
+	dir = 8
 	},
-/turf/open/floor/plasteel/dark,
+/obj/item/ammo_box/magazine/recharge/lasgun,
+/obj/item/ammo_box/magazine/recharge/lasgun,
+/obj/item/ammo_box/magazine/recharge/lasgun,
+/obj/item/ammo_box/magazine/recharge/lasgun,
+/obj/item/ammo_box/magazine/recharge/lasgun,
+/obj/item/ammo_box/magazine/recharge/lasgun,
+/obj/item/ammo_box/magazine/recharge/lasgun,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "in" = (
 /obj/machinery/door/window/brigdoor/westleft{
@@ -768,11 +771,6 @@
 /obj/structure/reagent_dispensers/watertank,
 /turf/open/floor/plating,
 /area/shuttle/solfed/frigate)
-"iD" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/glass,
-/turf/open/floor/plasteel/dark,
-/area/shuttle/solfed/frigate)
 "iG" = (
 /obj/item/kirbyplants/random{
 	pixel_x = -4;
@@ -791,13 +789,6 @@
 /area/shuttle/solfed/frigate)
 "iQ" = (
 /obj/machinery/light/small/directional/south,
-/turf/open/floor/plasteel/dark,
-/area/shuttle/solfed/frigate)
-"iR" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "jf" = (
@@ -829,6 +820,7 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "jm" = (
+/obj/machinery/telecomms/server,
 /turf/open/floor/circuit/green,
 /area/shuttle/solfed/frigate)
 "jn" = (
@@ -838,14 +830,6 @@
 /obj/item/stack/sheet/glass/fifty,
 /obj/machinery/light/small/directional/east,
 /turf/open/floor/plating,
-/area/shuttle/solfed/frigate)
-"jr" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "jx" = (
 /obj/structure/closet/secure_closet/engineering_personal{
@@ -884,7 +868,7 @@
 /obj/machinery/camera/autoname{
 	dir = 10
 	},
-/turf/open/floor/plating,
+/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "jY" = (
 /obj/machinery/camera/autoname{
@@ -894,7 +878,7 @@
 	pixel_y = 23;
 	pixel_x = -9
 	},
-/turf/open/floor/plating,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "kd" = (
 /obj/structure/cable{
@@ -963,7 +947,7 @@
 /obj/structure/cable{
 	icon_state = "1-8"
 	},
-/turf/open/floor/plating,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "kr" = (
 /obj/structure/filingcabinet,
@@ -981,7 +965,7 @@
 /area/shuttle/solfed/frigate)
 "kv" = (
 /obj/effect/turf_decal/big_sign/solgov/bc,
-/turf/open/floor/mineral/plastitanium,
+/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "kw" = (
 /obj/structure/railing{
@@ -1024,7 +1008,6 @@
 	icon_state = "2-4"
 	},
 /obj/effect/turf_decal/box,
-/obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
@@ -1040,6 +1023,7 @@
 /obj/item/reagent_containers/glass/beaker{
 	pixel_x = 7
 	},
+/obj/structure/table/reinforced,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "kZ" = (
@@ -1049,16 +1033,6 @@
 	},
 /obj/machinery/light/directional/south,
 /turf/open/floor/wood,
-/area/shuttle/solfed/frigate)
-"la" = (
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
-/obj/item/paper/crumpled,
-/obj/machinery/camera/autoname{
-	dir = 1
-	},
-/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "ld" = (
 /obj/machinery/camera/autoname,
@@ -1135,6 +1109,7 @@
 /obj/machinery/door/poddoor/shutters/preopen{
 	id = "vela_labeva"
 	},
+/obj/structure/fans/tiny,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "lM" = (
@@ -1148,11 +1123,6 @@
 	dir = 8
 	},
 /turf/open/floor/wood,
-/area/shuttle/solfed/frigate)
-"lQ" = (
-/obj/machinery/mech_bay_recharge_port,
-/obj/machinery/light/directional/north,
-/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "ml" = (
 /obj/machinery/vending/games,
@@ -1244,7 +1214,6 @@
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
-/obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/power/floodlight,
 /turf/open/floor/plating,
 /area/shuttle/solfed/frigate)
@@ -1259,11 +1228,17 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "no" = (
-/obj/structure/janitorialcart,
-/obj/item/mop,
-/obj/item/reagent_containers/glass/bucket,
-/obj/structure/mopbucket,
-/turf/open/floor/pod,
+/obj/structure/rack{
+	dir = 8
+	},
+/obj/item/gun/ballistic/automatic/laser/lasgun{
+	pixel_y = -8
+	},
+/obj/item/gun/ballistic/automatic/laser/lasgun{
+	pixel_y = 8
+	},
+/obj/item/gun/ballistic/automatic/laser/lasgun,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "np" = (
 /obj/structure/window/reinforced{
@@ -1281,7 +1256,7 @@
 /obj/structure/cable{
 	icon_state = "2-8"
 	},
-/turf/open/floor/plating,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "nr" = (
 /obj/structure/table/reinforced,
@@ -1389,7 +1364,6 @@
 /obj/machinery/meter{
 	target_layer = 4
 	},
-/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "pe" = (
@@ -1442,7 +1416,6 @@
 /obj/structure/chair/sofa/left{
 	dir = 8
 	},
-/obj/effect/decal/cleanable/wrapping,
 /turf/open/floor/carpet,
 /area/shuttle/solfed/frigate)
 "pA" = (
@@ -1468,15 +1441,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
-"pC" = (
-/obj/structure/noticeboard/qm{
-	name = "Supply Officer's Notice Board";
-	desc = "Important notices from the Supply Officer";
-	pixel_y = 28
-	},
-/obj/structure/reagent_dispensers/fueltank,
-/turf/open/floor/pod,
-/area/shuttle/solfed/frigate)
 "pK" = (
 /obj/structure/cable{
 	icon_state = "1-2"
@@ -1487,7 +1451,8 @@
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
-/turf/open/floor/plasteel/grimy,
+/obj/structure/table/reinforced,
+/turf/open/floor/carpet/royalblack,
 /area/shuttle/solfed/frigate)
 "pW" = (
 /obj/machinery/camera/autoname{
@@ -1618,13 +1583,8 @@
 /area/shuttle/solfed/frigate)
 "qO" = (
 /obj/machinery/light/directional/south,
+/obj/machinery/suit_storage_unit/sol_combat,
 /turf/open/floor/plasteel/dark,
-/area/shuttle/solfed/frigate)
-"qR" = (
-/obj/machinery/computer/communications/syndicate{
-	dir = 8
-	},
-/turf/closed/wall/mineral/titanium,
 /area/shuttle/solfed/frigate)
 "qT" = (
 /obj/structure/sign/poster/official/bless_this_spess{
@@ -1667,6 +1627,7 @@
 /obj/item/storage/backpack/satchel,
 /obj/item/clipboard,
 /obj/item/reagent_containers/spray/pepper,
+/obj/item/clothing/suit/space/hardsuit/ert/alert/sol/adv,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "rb" = (
@@ -1731,11 +1692,16 @@
 	icon_state = "4-8"
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "ry" = (
-/obj/machinery/light/directional/south,
-/turf/open/floor/pod,
+/obj/structure/rack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "rA" = (
 /obj/structure/closet/secure_closet/engineering_welding{
@@ -1794,7 +1760,6 @@
 /area/shuttle/solfed/frigate)
 "sa" = (
 /obj/machinery/portable_atmospherics/pump,
-/obj/effect/decal/cleanable/generic,
 /obj/machinery/light/small/directional/west,
 /turf/open/floor/plating,
 /area/shuttle/solfed/frigate)
@@ -1812,16 +1777,6 @@
 	dir = 1
 	},
 /obj/machinery/door/firedoor/border_only,
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/plasteel/dark,
-/area/shuttle/solfed/frigate)
-"si" = (
-/obj/structure/cable{
-	icon_state = "2-8"
-	},
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "sn" = (
@@ -1843,13 +1798,6 @@
 	icon_state = "1-4"
 	},
 /turf/open/floor/plasteel/dark,
-/area/shuttle/solfed/frigate)
-"sD" = (
-/obj/structure/sign/poster/official/cohiba_robusto_ad{
-	pixel_y = -32
-	},
-/obj/structure/closet/secure_closet/freezer/meat,
-/turf/open/floor/pod,
 /area/shuttle/solfed/frigate)
 "sM" = (
 /obj/effect/turf_decal/siding/wood{
@@ -1888,6 +1836,7 @@
 /obj/machinery/door/poddoor{
 	id = "obmine11"
 	},
+/obj/structure/fans/tiny,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "tb" = (
@@ -1904,6 +1853,7 @@
 /obj/machinery/door/poddoor/shutters/preopen{
 	id = "vela_labeva"
 	},
+/obj/structure/fans/tiny,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "tk" = (
@@ -1913,19 +1863,13 @@
 /turf/open/floor/plasteel/white,
 /area/shuttle/solfed/frigate)
 "tm" = (
-/obj/structure/closet/crate/freezer{
-	name = "food supplies"
+/obj/structure/cable{
+	icon_state = "4-8"
 	},
-/obj/item/pizzabox/pineapple,
-/obj/item/pizzabox/pineapple,
-/obj/item/pizzabox/pineapple,
-/obj/item/storage/box/donkpockets,
-/obj/item/pestle,
-/obj/item/reagent_containers/food/condiment/saltshaker,
-/obj/item/reagent_containers/food/condiment/saltshaker,
-/obj/item/reagent_containers/food/condiment/peppermill,
-/obj/item/reagent_containers/food/condiment/peppermill,
-/turf/open/floor/pod,
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "tn" = (
 /obj/machinery/blackbox_recorder,
@@ -1940,7 +1884,9 @@
 /turf/open/floor/plating,
 /area/shuttle/solfed/frigate)
 "tx" = (
-/obj/structure/frame/machine,
+/obj/machinery/computer/rdconsole/core{
+	req_access = null
+	},
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "tA" = (
@@ -1957,7 +1903,7 @@
 	dir = 4;
 	layer = 3.1
 	},
-/turf/open/floor/plating,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "tJ" = (
 /obj/structure/window/reinforced,
@@ -2000,11 +1946,17 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "tW" = (
-/obj/machinery/airalarm/directional/west,
-/obj/machinery/microwave{
-	anchored = 0
+/obj/structure/rack{
+	dir = 8
 	},
-/turf/open/floor/pod/dark,
+/obj/item/gun/ballistic/automatic/m16a4/tactical,
+/obj/item/gun/ballistic/automatic/m16a4/tactical{
+	pixel_y = -10
+	},
+/obj/item/gun/ballistic/automatic/m16a4/tactical{
+	pixel_y = 8
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "tY" = (
 /obj/machinery/button/door{
@@ -2040,34 +1992,12 @@
 	},
 /turf/open/floor/carpet,
 /area/shuttle/solfed/frigate)
-"uo" = (
-/obj/structure/table,
-/obj/item/clipboard{
-	pixel_y = 8;
-	pixel_x = -3
-	},
-/obj/item/paper/crumpled{
-	pixel_x = 9;
-	pixel_y = 4
-	},
-/turf/open/floor/plasteel/dark,
-/area/shuttle/solfed/frigate)
 "up" = (
 /obj/structure/extinguisher_cabinet/directional/south,
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
 /turf/open/floor/wood,
-/area/shuttle/solfed/frigate)
-"uq" = (
-/obj/machinery/button/door{
-	dir = 8;
-	pixel_y = -5;
-	pixel_x = 25;
-	id = "obcargo";
-	name = "Cargo Shutters"
-	},
-/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "ur" = (
 /obj/structure/cable{
@@ -2094,12 +2024,10 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "uQ" = (
-/obj/structure/closet/secure_closet/freezer/fridge/open,
-/turf/open/floor/pod,
-/area/shuttle/solfed/frigate)
-"uR" = (
-/obj/effect/decal/cleanable/generic,
-/turf/open/floor/plasteel/dark,
+/obj/structure/rack{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "uT" = (
 /obj/item/clothing/shoes/workboots/mining,
@@ -2170,17 +2098,12 @@
 /obj/structure/table_frame/wood,
 /obj/structure/table_frame/wood,
 /obj/structure/table_frame/wood,
-/obj/structure/table_frame/wood,
-/obj/structure/table_frame/wood,
-/obj/structure/table_frame/wood,
-/obj/structure/table_frame/wood,
-/obj/structure/table_frame/wood,
-/obj/structure/table_frame/wood,
-/obj/structure/table_frame/wood,
-/obj/item/stack/sheet/mineral/wood{
-	amount = 30
-	},
 /obj/machinery/light/directional/north,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "wa" = (
@@ -2219,10 +2142,6 @@
 	},
 /turf/open/floor/plasteel/grimy,
 /area/shuttle/solfed/frigate)
-"wl" = (
-/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp,
-/turf/open/floor/plasteel/dark,
-/area/shuttle/solfed/frigate)
 "wn" = (
 /obj/structure/falsewall/plastitanium,
 /turf/open/floor/plating,
@@ -2254,15 +2173,10 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/solfed/frigate)
-"wB" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/generic,
-/turf/open/floor/plating,
-/area/shuttle/solfed/frigate)
 "wD" = (
 /obj/effect/turf_decal/big_sign/solgov/ca,
 /obj/structure/railing,
-/turf/open/floor/mineral/plastitanium,
+/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "wF" = (
 /obj/structure/window/plasma/reinforced{
@@ -2346,7 +2260,7 @@
 	layer = 3.1
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating,
+/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "xA" = (
 /obj/structure/railing{
@@ -2492,10 +2406,6 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "yv" = (
-/obj/machinery/atmospherics/components/unary/tank/air{
-	dir = 4;
-	piping_layer = 2
-	},
 /obj/machinery/firealarm/directional/west,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
@@ -2544,6 +2454,7 @@
 /obj/machinery/door/poddoor{
 	id = "obmine12"
 	},
+/obj/structure/fans/tiny,
 /turf/open/floor/engine,
 /area/shuttle/solfed/frigate)
 "zk" = (
@@ -2574,13 +2485,6 @@
 /obj/machinery/airalarm/directional/west,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
-"zs" = (
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/engine,
-/area/shuttle/solfed/frigate)
 "zy" = (
 /obj/structure/chair/comfy/shuttle{
 	dir = 4;
@@ -2590,7 +2494,7 @@
 /area/shuttle/solfed/frigate)
 "zB" = (
 /obj/effect/turf_decal/big_sign/solgov/ba,
-/turf/open/floor/mineral/plastitanium,
+/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "zF" = (
 /obj/structure/frame/computer{
@@ -2607,12 +2511,8 @@
 /turf/open/floor/carpet,
 /area/shuttle/solfed/frigate)
 "zR" = (
-/obj/structure/closet/firecloset/wall{
-	dir = 1;
-	pixel_y = -28
-	},
 /obj/effect/decal/cleanable/dirt,
-/obj/item/storage/firstaid/fire,
+/obj/machinery/suit_storage_unit/sol_combat,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "zX" = (
@@ -2668,27 +2568,6 @@
 /obj/machinery/mineral/ore_redemption,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
-"Au" = (
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/obj/effect/turf_decal/siding/thinplating/dark{
-	dir = 4
-	},
-/obj/effect/turf_decal/siding/thinplating/dark{
-	dir = 8
-	},
-/obj/structure/railing{
-	dir = 4;
-	layer = 3.1
-	},
-/obj/structure/railing{
-	dir = 8;
-	layer = 3.1
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/plating,
-/area/shuttle/solfed/frigate)
 "Av" = (
 /obj/machinery/light/small/directional/east,
 /turf/open/floor/plasteel/dark,
@@ -2714,7 +2593,16 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "AR" = (
-/turf/open/floor/pod/dark,
+/obj/structure/rack{
+	dir = 8
+	},
+/obj/item/gun/ballistic/automatic/x9{
+	pixel_y = -7
+	},
+/obj/item/gun/ballistic/automatic/x9{
+	pixel_y = 7
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "AS" = (
 /obj/structure/cable{
@@ -2727,11 +2615,10 @@
 	icon_state = "1-4"
 	},
 /obj/structure/cable,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "Bh" = (
 /obj/effect/decal/cleanable/oil/streak,
-/obj/effect/decal/cleanable/glass,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "Br" = (
@@ -2747,7 +2634,7 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
-/turf/open/floor/mineral/plastitanium,
+/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "BH" = (
 /obj/structure/chair/sofa,
@@ -2809,7 +2696,7 @@
 	dir = 1
 	},
 /obj/machinery/door/firedoor/border_only,
-/turf/open/floor/plating,
+/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "Ca" = (
 /obj/effect/turf_decal/siding/wood,
@@ -2849,15 +2736,9 @@
 /obj/machinery/airalarm/directional/east,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
-"CF" = (
-/obj/structure/cable{
-	icon_state = "2-8"
-	},
-/turf/open/floor/mineral/plastitanium,
-/area/shuttle/solfed/frigate)
 "CG" = (
-/obj/structure/frame/machine,
 /obj/machinery/firealarm/directional/north,
+/obj/machinery/rnd/production/protolathe,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "CI" = (
@@ -3026,7 +2907,6 @@
 /obj/structure/cable{
 	icon_state = "0-8"
 	},
-/obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/power/floodlight,
 /turf/open/floor/plating,
 /area/shuttle/solfed/frigate)
@@ -3043,10 +2923,9 @@
 /obj/machinery/camera/autoname{
 	dir = 10
 	},
-/turf/open/floor/plating,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "Ez" = (
-/obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/cable{
 	icon_state = "2-8"
@@ -3057,14 +2936,15 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "EC" = (
-/obj/structure/cable{
-	icon_state = "1-2"
+/obj/machinery/button/door{
+	dir = 8;
+	pixel_y = -5;
+	pixel_x = 25;
+	id = "obcargo";
+	name = "Cargo Shutters"
 	},
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/glass,
-/turf/open/floor/engine,
-/area/shuttle/solfed/frigate)
+/turf/template_noop,
+/area/template_noop)
 "EE" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/cable{
@@ -3077,7 +2957,6 @@
 /turf/open/floor/carpet/royalblue,
 /area/shuttle/solfed/frigate)
 "EJ" = (
-/obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/cable{
 	icon_state = "1-8"
 	},
@@ -3094,7 +2973,7 @@
 /area/shuttle/solfed/frigate)
 "EM" = (
 /obj/effect/turf_decal/big_sign/solgov/ab,
-/turf/open/floor/mineral/plastitanium,
+/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "ER" = (
 /obj/structure/cable{
@@ -3149,7 +3028,6 @@
 /area/shuttle/solfed/frigate)
 "FF" = (
 /obj/machinery/portable_atmospherics/scrubber/huge/movable,
-/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
 /area/shuttle/solfed/frigate)
 "FJ" = (
@@ -3159,6 +3037,7 @@
 /obj/item/reagent_containers/food/snacks/grown/citrus/lemon{
 	pixel_y = 8
 	},
+/obj/structure/table/reinforced,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "FK" = (
@@ -3185,6 +3064,7 @@
 /obj/item/binoculars,
 /obj/effect/turf_decal/box,
 /obj/item/clothing/glasses/meson/engine,
+/obj/item/clothing/suit/space/hardsuit/ert/alert/sol/adv,
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "Gb" = (
@@ -3257,7 +3137,7 @@
 	dir = 4;
 	layer = 3.1
 	},
-/turf/open/floor/plating,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "GB" = (
 /obj/item/kirbyplants/random,
@@ -3265,18 +3145,16 @@
 /turf/open/floor/wood,
 /area/shuttle/solfed/frigate)
 "GD" = (
-/obj/effect/turf_decal/arrows{
-	dir = 1
-	},
-/obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/engine,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "GF" = (
 /obj/effect/decal/cleanable/oil{
 	icon_state = "floor4"
 	},
-/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plating,
 /area/shuttle/solfed/frigate)
 "GH" = (
@@ -3287,14 +3165,6 @@
 /obj/effect/spawner/structure/window/shuttle,
 /turf/open/floor/plating,
 /area/shuttle/solfed/frigate)
-"GS" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
-/turf/open/floor/plasteel/dark,
-/area/shuttle/solfed/frigate)
 "Hb" = (
 /obj/machinery/airalarm/directional/south,
 /obj/structure/rack,
@@ -3303,11 +3173,6 @@
 /obj/item/mecha_parts/mecha_equipment/mining_scanner,
 /obj/item/mecha_parts/mecha_equipment/hydraulic_clamp,
 /turf/open/floor/plasteel/dark,
-/area/shuttle/solfed/frigate)
-"Hc" = (
-/obj/structure/closet/secure_closet/freezer/kitchen,
-/obj/machinery/light/directional/north,
-/turf/open/floor/pod,
 /area/shuttle/solfed/frigate)
 "Hf" = (
 /obj/structure/closet/emcloset/anchored,
@@ -3322,7 +3187,7 @@
 /area/shuttle/solfed/frigate)
 "Ht" = (
 /obj/effect/turf_decal/big_sign/solgov/ac,
-/turf/open/floor/mineral/plastitanium,
+/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "Hw" = (
 /obj/item/clipboard,
@@ -3397,18 +3262,9 @@
 	},
 /turf/open/floor/carpet/royalblue,
 /area/shuttle/solfed/frigate)
-"In" = (
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/plating,
-/area/shuttle/solfed/frigate)
 "Io" = (
-/obj/effect/decal/cleanable/glass,
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
+/obj/machinery/light/small/directional/east,
+/obj/structure/table/reinforced,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "Iu" = (
@@ -3426,7 +3282,6 @@
 /turf/open/floor/engine/hull/reinforced,
 /area/shuttle/solfed/frigate)
 "Iz" = (
-/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/engine,
 /area/shuttle/solfed/frigate)
 "IC" = (
@@ -3482,7 +3337,6 @@
 /obj/machinery/meter{
 	target_layer = 2
 	},
-/obj/effect/decal/cleanable/generic,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "IM" = (
@@ -3498,7 +3352,7 @@
 	icon_state = "4-8"
 	},
 /obj/machinery/light/small/directional/north,
-/turf/open/floor/plating,
+/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "Jk" = (
 /obj/structure/cable{
@@ -3549,11 +3403,6 @@
 	},
 /turf/open/floor/carpet/royalblue,
 /area/shuttle/solfed/frigate)
-"JI" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/vehicle/sealed/mecha/combat/durand/zeus,
-/turf/open/floor/plasteel/dark,
-/area/shuttle/solfed/frigate)
 "JM" = (
 /obj/structure/window/reinforced,
 /turf/open/floor/plasteel/dark,
@@ -3583,8 +3432,17 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "Kd" = (
-/obj/effect/decal/cleanable/wrapping,
-/turf/open/floor/plasteel/dark,
+/obj/structure/rack{
+	dir = 8
+	},
+/obj/item/gun/ballistic/automatic/m16a4/tactical,
+/obj/item/gun/ballistic/automatic/m16a4/tactical{
+	pixel_y = 8
+	},
+/obj/item/gun/ballistic/automatic/m16a4/tactical{
+	pixel_y = -10
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "Kk" = (
 /obj/structure/cable{
@@ -3609,6 +3467,7 @@
 /area/shuttle/solfed/frigate)
 "Ks" = (
 /obj/machinery/light/small/directional/east,
+/obj/machinery/telecomms/server,
 /turf/open/floor/circuit/green,
 /area/shuttle/solfed/frigate)
 "KC" = (
@@ -3623,7 +3482,6 @@
 	dir = 1;
 	layer = 3.1
 	},
-/obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
@@ -3631,19 +3489,26 @@
 /area/shuttle/solfed/frigate)
 "Lb" = (
 /obj/machinery/airalarm/directional/west,
-/turf/open/floor/plating,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "Le" = (
 /obj/machinery/door/poddoor{
 	id = "obmine12"
 	},
+/obj/structure/fans/tiny,
 /turf/open/floor/engine,
 /area/shuttle/solfed/frigate)
 "Ln" = (
-/obj/machinery/vending/sovietsoda{
-	anchored = 0
+/obj/structure/rack{
+	dir = 8
 	},
-/turf/open/floor/pod,
+/obj/item/gun/ballistic/automatic/x9{
+	pixel_y = 7
+	},
+/obj/item/gun/ballistic/automatic/x9{
+	pixel_y = -7
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "Lx" = (
 /obj/structure/urinal{
@@ -3669,21 +3534,18 @@
 /turf/open/floor/plating,
 /area/shuttle/solfed/frigate)
 "LK" = (
-/obj/structure/reagent_dispensers/watertank,
-/turf/open/floor/pod/dark,
+/obj/structure/rack{
+	dir = 8
+	},
+/obj/item/clothing/suit/space/hardsuit/ert/alert/sol,
+/obj/item/clothing/suit/space/hardsuit/ert/alert/sol,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "LL" = (
 /obj/structure/sign/poster/random{
 	pixel_y = 30
 	},
 /turf/open/floor/wood,
-/area/shuttle/solfed/frigate)
-"LS" = (
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
-/obj/effect/decal/cleanable/wrapping,
-/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "LT" = (
 /obj/structure/cable{
@@ -3695,7 +3557,7 @@
 /obj/structure/cable{
 	icon_state = "1-4"
 	},
-/turf/open/floor/plating,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "LU" = (
 /obj/item/kirbyplants/random,
@@ -3742,12 +3604,7 @@
 /obj/structure/cable{
 	icon_state = "0-2"
 	},
-/turf/open/floor/plating,
-/area/shuttle/solfed/frigate)
-"Mv" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/mineral/ore_redemption,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "Mw" = (
 /obj/structure/window/plasma/reinforced,
@@ -3877,7 +3734,7 @@
 /obj/structure/sign/departments/engineering{
 	pixel_y = -32
 	},
-/turf/open/floor/plating,
+/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "Nk" = (
 /obj/structure/window/reinforced{
@@ -3901,7 +3758,7 @@
 /obj/machinery/door/airlock/engineering{
 	req_access = list(10)
 	},
-/turf/open/floor/plating,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "Nm" = (
 /obj/structure/table,
@@ -3931,7 +3788,7 @@
 	dir = 1;
 	layer = 3.1
 	},
-/turf/open/floor/plating,
+/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "Nq" = (
 /obj/effect/decal/cleanable/oil{
@@ -3955,9 +3812,11 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "Nw" = (
-/obj/effect/decal/cleanable/wrapping,
-/obj/machinery/jukebox,
-/turf/open/floor/pod,
+/obj/machinery/atmospherics/components/unary/tank/air{
+	dir = 4;
+	piping_layer = 2
+	},
+/turf/open/floor/plating,
 /area/shuttle/solfed/frigate)
 "Nx" = (
 /obj/structure/cable{
@@ -3979,11 +3838,10 @@
 /area/shuttle/solfed/frigate)
 "Ny" = (
 /obj/effect/turf_decal/big_sign/solgov/aa,
-/turf/open/floor/mineral/plastitanium,
+/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "NC" = (
 /obj/structure/window/plasma/reinforced,
-/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "ND" = (
@@ -4042,11 +3900,6 @@
 	icon_state = "4-8"
 	},
 /turf/open/floor/plasteel/dark,
-/area/shuttle/solfed/frigate)
-"Oe" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/turf_decal/arrows,
-/turf/open/floor/engine,
 /area/shuttle/solfed/frigate)
 "Om" = (
 /obj/machinery/door/airlock/command{
@@ -4109,7 +3962,7 @@
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
-/turf/open/floor/plating,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "OP" = (
 /obj/machinery/porta_turret/syndicate/shuttle{
@@ -4132,7 +3985,6 @@
 /obj/effect/decal/cleanable/oil{
 	icon_state = "streak5"
 	},
-/obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
@@ -4211,8 +4063,7 @@
 	dir = 4;
 	piping_layer = 2
 	},
-/obj/effect/decal/cleanable/dirt/dust,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "PD" = (
 /obj/machinery/computer/camera_advanced/shuttle_docker/solfed/frigate{
@@ -4238,16 +4089,11 @@
 	dir = 8;
 	layer = 3.1
 	},
-/turf/open/floor/plating,
+/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "PL" = (
 /obj/effect/decal/cleanable/ash,
 /obj/structure/table,
-/obj/structure/extinguisher_cabinet/directional/east,
-/turf/open/floor/plasteel/dark,
-/area/shuttle/solfed/frigate)
-"PO" = (
-/obj/effect/decal/cleanable/dirt/dust,
 /obj/structure/extinguisher_cabinet/directional/east,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
@@ -4269,12 +4115,6 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/solfed/frigate)
-"Qa" = (
-/obj/structure/closet/crate,
-/obj/item/stack/sheet/mineral/coal/ten,
-/obj/item/stack/sheet/mineral/coal/ten,
-/turf/open/floor/pod/dark,
-/area/shuttle/solfed/frigate)
 "Qj" = (
 /obj/structure/sign/departments/security{
 	pixel_x = -28
@@ -4284,7 +4124,7 @@
 "Qm" = (
 /obj/structure/reagent_dispensers/fueltank,
 /obj/machinery/firealarm/directional/west,
-/turf/open/floor/plating,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "Qq" = (
 /obj/structure/bed,
@@ -4353,8 +4193,6 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/effect/decal/cleanable/glass,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "Rf" = (
@@ -4393,13 +4231,7 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "Rl" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
-/obj/structure/cable{
-	icon_state = "1-4"
-	},
+/obj/vehicle/sealed/mecha/combat/gygax/bluespace,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "Rm" = (
@@ -4407,14 +4239,10 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "Rq" = (
 /obj/machinery/vending/cola/space_up,
-/turf/open/floor/plasteel/dark,
-/area/shuttle/solfed/frigate)
-"Ru" = (
-/obj/effect/decal/cleanable/glass,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "RG" = (
@@ -4539,6 +4367,7 @@
 	pixel_y = 5;
 	pixel_x = 5
 	},
+/obj/item/gun/energy/pulse/pistol/m1911,
 /turf/open/floor/carpet/royalblue,
 /area/shuttle/solfed/frigate)
 "SY" = (
@@ -4573,14 +4402,30 @@
 /turf/open/floor/engine/hull/reinforced,
 /area/shuttle/solfed/frigate)
 "Th" = (
-/obj/structure/guncase,
-/obj/item/gun/ballistic/automatic/pistol/m1911/no_mag,
-/obj/item/gun/ballistic/automatic/pistol/m1911/no_mag,
-/obj/machinery/light/small/directional/south,
+/obj/structure/closet/crate/secure/weapon,
+/obj/item/melee/baton/loaded,
+/obj/item/melee/baton/loaded,
+/obj/item/melee/baton/loaded,
+/obj/item/melee/baton/loaded,
+/obj/item/melee/transforming/energy/sword/saber,
+/obj/item/kitchen/knife/combat,
+/obj/item/kitchen/knife/combat,
+/obj/effect/turf_decal/box/red,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "Ti" = (
 /obj/machinery/firealarm/directional/north,
+/obj/structure/table/reinforced,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
+/obj/item/reagent_containers/food/snacks/rationpack,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "Tn" = (
@@ -4607,19 +4452,13 @@
 /obj/structure/cable{
 	icon_state = "2-8"
 	},
-/turf/open/floor/plating,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "TG" = (
 /obj/machinery/holopad/secure,
 /obj/effect/turf_decal/box,
 /obj/machinery/light/small/directional/west,
 /turf/open/floor/plasteel/dark,
-/area/shuttle/solfed/frigate)
-"TH" = (
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/turf/open/floor/plating,
 /area/shuttle/solfed/frigate)
 "TQ" = (
 /turf/open/floor/mineral/plastitanium,
@@ -4641,23 +4480,13 @@
 	dir = 4;
 	layer = 3.1
 	},
-/turf/open/floor/plating,
-/area/shuttle/solfed/frigate)
-"TY" = (
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "Uf" = (
 /obj/machinery/camera/autoname{
 	dir = 10
 	},
-/obj/structure/closet/firecloset/wall{
-	dir = 1;
-	pixel_y = -28
-	},
+/obj/machinery/suit_storage_unit/sol_combat,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "Uw" = (
@@ -4700,14 +4529,11 @@
 	dir = 1;
 	layer = 3.1
 	},
-/turf/open/floor/plating,
+/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "UQ" = (
-/obj/structure/reagent_dispensers/beerkeg,
-/obj/structure/sign/departments/cargo{
-	pixel_y = 32
-	},
-/turf/open/floor/pod,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/solfed/frigate)
 "Va" = (
 /obj/effect/turf_decal/siding/wood{
@@ -4764,7 +4590,7 @@
 /area/shuttle/solfed/frigate)
 "VM" = (
 /obj/structure/chair,
-/turf/open/floor/plasteel/grimy,
+/turf/open/floor/carpet/royalblack,
 /area/shuttle/solfed/frigate)
 "VO" = (
 /obj/structure/chair/sofa/right,
@@ -4785,13 +4611,6 @@
 "VR" = (
 /obj/effect/spawner/structure/window/shuttle,
 /turf/open/floor/plating,
-/area/shuttle/solfed/frigate)
-"VZ" = (
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/obj/effect/decal/cleanable/wrapping,
-/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "Wb" = (
 /obj/structure/table/wood,
@@ -4904,6 +4723,7 @@
 	pixel_x = -7
 	},
 /obj/machinery/light/small/directional/north,
+/obj/structure/table/reinforced,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "WR" = (
@@ -4917,11 +4737,11 @@
 	icon_state = "1-2"
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plating,
+/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "WY" = (
 /obj/effect/turf_decal/big_sign/solgov/cc,
-/turf/open/floor/mineral/plastitanium,
+/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "Xe" = (
 /obj/structure/ore_box,
@@ -4984,11 +4804,9 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "XR" = (
-/obj/structure/railing{
-	dir = 8;
-	layer = 3.1
+/obj/machinery/mecha_part_fabricator/offstation{
+	req_one_access = null
 	},
-/obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "XT" = (
@@ -5002,19 +4820,6 @@
 	},
 /obj/effect/spawner/structure/window/shuttle,
 /turf/open/floor/plating,
-/area/shuttle/solfed/frigate)
-"XZ" = (
-/obj/structure/closet/crate,
-/obj/item/circuitboard/machine/deep_fryer,
-/obj/item/rollingpaper,
-/obj/item/rollingpaper,
-/obj/item/rollingpaper,
-/obj/item/rollingpaper,
-/obj/item/reagent_containers/food/snacks/grown/tobacco,
-/obj/item/reagent_containers/food/snacks/grown/tobacco,
-/obj/item/reagent_containers/food/snacks/grown/tobacco,
-/obj/item/reagent_containers/food/snacks/grown/tobacco,
-/turf/open/floor/pod,
 /area/shuttle/solfed/frigate)
 "Yk" = (
 /obj/structure/table/glass,
@@ -5064,7 +4869,7 @@
 /area/shuttle/solfed/frigate)
 "Yr" = (
 /obj/effect/turf_decal/big_sign/solgov/bb,
-/turf/open/floor/mineral/plastitanium,
+/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "YJ" = (
 /obj/structure/cable{
@@ -5101,7 +4906,7 @@
 	layer = 3.1
 	},
 /obj/machinery/light/small/directional/south,
-/turf/open/floor/plating,
+/turf/open/floor/plasteel/dark,
 /area/shuttle/solfed/frigate)
 "YY" = (
 /obj/machinery/door/poddoor{
@@ -5190,7 +4995,7 @@ We
 We
 OP
 jP
-OP
+Sm
 jP
 OP
 We
@@ -5270,7 +5075,7 @@ Sm
 eR
 eR
 Sm
-II
+We
 Sm
 kr
 kF
@@ -5278,7 +5083,7 @@ ym
 Nx
 wh
 Sm
-II
+We
 Sm
 eR
 eR
@@ -5327,7 +5132,7 @@ SY
 Sm
 yv
 OR
-II
+Nw
 gL
 We
 IZ
@@ -5348,8 +5153,8 @@ We
 We
 Sm
 CW
-II
-II
+TQ
+TQ
 wA
 sn
 NU
@@ -5369,7 +5174,7 @@ Ge
 NF
 IJ
 NC
-II
+Nw
 gL
 We
 We
@@ -5391,27 +5196,27 @@ We
 OP
 Sm
 Mu
-TH
+nA
 Nl
 nq
 Tx
 LT
-TH
+nA
 MC
 tI
 GA
 tI
 kq
-TH
+nA
 Xz
 Rm
-sr
-hJ
+tm
+TQ
 fh
-yH
-iD
+UQ
+TQ
 PC
-II
+Nw
 gL
 We
 We
@@ -5436,8 +5241,8 @@ Sm
 iz
 Sm
 NQ
-Ru
-qC
+ym
+bt
 Bh
 lv
 xN
@@ -5448,12 +5253,12 @@ rA
 VR
 ld
 DD
-EE
+GD
 aZ
 pd
-PO
+Cp
 Mw
-II
+Nw
 gL
 We
 We
@@ -5474,12 +5279,12 @@ We
 We
 We
 We
-OP
+Sm
 Sm
 Sm
 qe
 mC
-qC
+bt
 DM
 Sm
 an
@@ -5489,8 +5294,8 @@ rx
 lx
 Sm
 Nf
-dN
-uR
+Kk
+TQ
 AB
 bZ
 Sm
@@ -5564,17 +5369,17 @@ Sm
 eS
 YJ
 OS
-TY
+YJ
 ab
 Sm
 jx
 ym
-qC
+bt
 Sm
 eV
 cI
 qC
-bt
+II
 sa
 Sm
 OP
@@ -5604,14 +5409,14 @@ We
 We
 Sm
 VP
-TY
+YJ
 kS
-jr
+EE
 hP
 Sm
 yt
 ym
-qC
+bt
 Sm
 Mj
 eM
@@ -5648,16 +5453,16 @@ Sm
 ER
 lE
 df
-TY
+YJ
 Ec
 Sm
 BR
 HW
-qC
+bt
 Sm
 yk
 nh
-wB
+II
 Dy
 XT
 Sm
@@ -5821,7 +5626,7 @@ PZ
 kd
 Nr
 Sm
-qC
+Kk
 Sm
 ym
 JM
@@ -5847,7 +5652,7 @@ Ak
 Ak
 Sm
 vD
-Fy
+Rl
 cW
 Jw
 yH
@@ -5863,7 +5668,7 @@ Sm
 Sm
 Sm
 Sm
-In
+Kk
 Sm
 Nk
 fH
@@ -5903,8 +5708,8 @@ zX
 AS
 SM
 zl
-tI
-tI
+hv
+hv
 TR
 MF
 YJ
@@ -6015,7 +5820,7 @@ Na
 Na
 Sm
 tY
-Fy
+Rl
 cW
 Jw
 mN
@@ -6059,7 +5864,7 @@ Sm
 Sk
 Sk
 uw
-XR
+uw
 KN
 qO
 Sm
@@ -6102,7 +5907,7 @@ WR
 YJ
 YJ
 hf
-Rl
+sr
 hJ
 Sm
 xT
@@ -6143,9 +5948,9 @@ QO
 Kk
 ym
 ym
-hJ
-iR
-hJ
+ym
+Kk
+ym
 nP
 II
 II
@@ -6163,7 +5968,7 @@ Sm
 an
 ym
 ym
-cd
+Gt
 KC
 KC
 yo
@@ -6182,8 +5987,8 @@ We
 We
 Sm
 Rg
-iR
-hJ
+Kk
+ym
 ym
 ym
 Ez
@@ -6206,13 +6011,13 @@ YJ
 YJ
 YJ
 sc
-Au
+PG
 PG
 Fl
 rd
 oZ
-ym
-ym
+hJ
+hJ
 yj
 yG
 Sm
@@ -6225,10 +6030,10 @@ We
 Sm
 CX
 dx
-hJ
 ym
 ym
-GS
+ym
+NU
 yH
 nP
 jh
@@ -6270,8 +6075,8 @@ yH
 ym
 IF
 ym
-iR
-yH
+Kk
+zR
 Sm
 xT
 xT
@@ -6313,7 +6118,7 @@ oJ
 QR
 ee
 wr
-FR
+cd
 Sm
 We
 We
@@ -6351,7 +6156,7 @@ Ak
 Ak
 Sm
 JY
-JI
+Fy
 cW
 Gi
 mN
@@ -6393,7 +6198,7 @@ We
 Wj
 zi
 Yp
-EC
+CM
 CM
 EE
 ke
@@ -6434,10 +6239,10 @@ We
 We
 qU
 Le
-GD
+dV
 Iz
-Oe
-Mv
+hH
+Aq
 Gg
 ym
 gh
@@ -6448,7 +6253,7 @@ Jo
 Av
 wk
 Sm
-iu
+ry
 dW
 VM
 pU
@@ -6477,9 +6282,9 @@ We
 Wj
 zi
 pK
-zs
-zs
-Io
+pK
+pK
+YJ
 El
 yH
 cE
@@ -6503,8 +6308,8 @@ Sm
 We
 Sm
 Ti
-ym
-Av
+az
+Io
 HB
 al
 Ou
@@ -6670,11 +6475,11 @@ oU
 Sm
 We
 We
-OP
+Sm
 Sm
 Sm
 bh
-tx
+XR
 Sm
 Sm
 OP
@@ -6714,7 +6519,7 @@ OP
 We
 We
 We
-OP
+Sm
 Sm
 Sm
 OP
@@ -6790,10 +6595,10 @@ Sm
 is
 kZ
 Sm
-Hc
-AR
-Qa
-ry
+TQ
+TQ
+TQ
+TQ
 Sm
 We
 IZ
@@ -6832,10 +6637,10 @@ Sm
 fk
 CS
 Sm
-tm
-AR
+TQ
 LK
-Nw
+LK
+TQ
 Sm
 We
 We
@@ -6874,10 +6679,10 @@ Sm
 Va
 CS
 Sm
-UQ
+TQ
 AR
 ds
-sD
+TQ
 Sm
 We
 We
@@ -6916,9 +6721,9 @@ Sm
 eB
 VC
 tO
-YJ
-VZ
-YJ
+nA
+nA
+nA
 Bc
 Sm
 We
@@ -6958,10 +6763,10 @@ Sm
 Va
 CS
 Sm
-pC
-fl
-ym
-la
+TQ
+TQ
+TQ
+TQ
 Sm
 Tf
 We
@@ -7000,13 +6805,13 @@ Sm
 kg
 ky
 Sm
-XZ
+TQ
 Ln
-yg
-si
+ds
+TQ
 ea
 Iy
-We
+EC
 We
 We
 We
@@ -7033,7 +6838,7 @@ Sm
 dC
 Vi
 rR
-qR
+Sm
 YP
 oU
 dd
@@ -7042,10 +6847,10 @@ ho
 pX
 kZ
 Sm
-Jw
-Kd
-hv
-LS
+TQ
+LK
+LK
+TQ
 fY
 Iy
 We
@@ -7084,10 +6889,10 @@ hm
 lM
 QV
 Sm
-lQ
-ym
-uo
-Cz
+TQ
+TQ
+TQ
+TQ
 ea
 Iy
 We
@@ -7126,10 +6931,10 @@ Sm
 Sm
 wZ
 Sm
-wl
-Cp
+no
+Kd
 il
-uq
+uQ
 Sm
 dL
 We
@@ -7211,9 +7016,9 @@ EG
 Kk
 qY
 FS
-OP
 Sm
-OP
+Sm
+Sm
 We
 We
 We
@@ -7243,7 +7048,7 @@ We
 Sm
 XY
 Sm
-OP
+Sm
 SU
 tc
 xA
@@ -7287,13 +7092,13 @@ We
 OP
 Sm
 fm
-TQ
-TQ
+ym
+ym
 EM
 Yr
 fF
-CF
-nA
+Cz
+YJ
 BB
 Ab
 Sm
@@ -7327,7 +7132,7 @@ We
 We
 We
 Iy
-OP
+Sm
 Sm
 SW
 Cw

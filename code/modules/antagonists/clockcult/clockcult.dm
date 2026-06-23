@@ -22,11 +22,6 @@
 		return
 	.["HONOR_RATVAR"] = GLOB.ratvar_awakens
 
-/datum/antagonist/clockcult/silent
-	name = "Silent Clock Cultist"
-	silent = TRUE
-	show_in_antagpanel = FALSE //internal
-
 /datum/antagonist/clockcult/neutered
 	name = "Neutered Clock Cultist"
 	neutered = TRUE
@@ -89,8 +84,10 @@
 	else if(isbrain(current) || isclockmob(current))
 		to_chat(current, "<span class='nezbere'>You can communicate with other servants by using the Hierophant Network action button in the upper left.</span>")
 	..()
-	to_chat(current, "<b>This is Ratvar's will:</b> [CLOCKCULT_OBJECTIVE]")
-	antag_memory += "<b>Ratvar's will:</b> [CLOCKCULT_OBJECTIVE]<br>" //Memorize the objectives
+	to_chat(current, "<b>Воля Ратвара:</b> [CLOCKCULT_OBJECTIVE]")
+	antag_memory += "<b>Воля Ратвара:</b> [CLOCKCULT_OBJECTIVE]<br>" //Memorize the objectives
+	if(clock_team)
+		clock_team.check_size()
 
 /datum/antagonist/clockcult/proc/equip_cultist()
 	var/mob/living/carbon/H = owner.current
@@ -174,6 +171,8 @@
 	var/obj/structure/destructible/clockwork/massive/celestial_gateway/G = GLOB.ark_of_the_clockwork_justiciar
 	if(G && G.active && ishuman(current))
 		current.add_overlay(mutable_appearance('icons/effects/genetics.dmi', "servitude", -MUTATIONS_LAYER))
+	else if(clock_team?.clock_ascendent && ishuman(current))
+		current.add_overlay(mutable_appearance('icons/effects/genetics.dmi', "servitude", -MUTATIONS_LAYER))
 
 /datum/antagonist/clockcult/remove_innate_effects(mob/living/mob_override)
 	var/mob/living/current = owner.current
@@ -249,6 +248,55 @@
 	name = "Clockcult"
 	var/list/objective
 	var/datum/mind/eminence
+	var/clock_risen = FALSE
+	var/clock_ascendent = FALSE
+
+/datum/team/clockcult/proc/check_size()
+	if(clock_ascendent)
+		return
+	var/alive = 0
+	var/servantplayers = 0
+	for(var/I in GLOB.player_list)
+		var/mob/M = I
+		if(M.stat != DEAD)
+			if(is_servant_of_ratvar(M))
+				++servantplayers
+			else
+				++alive
+	if(!alive)
+		return
+	var/ratio = servantplayers / alive
+	if(ratio > CLOCK_RISEN && !clock_risen)
+		for(var/datum/mind/B in members)
+			if(B.current)
+				SEND_SOUND(B.current, 'sound/hallucinations/i_see_you2.ogg')
+				to_chat(B.current, "<span class='heavy_brass'>Покров реальности истончается по мере роста вашего культа — ваши глаза начинают светиться...</span>")
+				addtimer(CALLBACK(src, PROC_REF(rise), B.current), 200)
+		clock_risen = TRUE
+
+	if(ratio > CLOCK_ASCENDENT && !clock_ascendent)
+		for(var/datum/mind/B in members)
+			if(B.current)
+				SEND_SOUND(B.current, 'sound/hallucinations/im_here1.ogg')
+				to_chat(B.current, "<span class='large_brass'>Ваш культ достиг расцвета, и приближается час Юстициара — вы уже не можете скрывать свою истинную природу!</span>")
+				addtimer(CALLBACK(src, PROC_REF(ascend), B.current), 200)
+		priority_announce("На вашей станции зафиксирована аномальная активность, связанная с культом Ратвара. Данные свидетельствуют о том, что около десятой части экипажа станции уже служит Часовому Юстициару. Служба безопасности получает право свободно применять летальную силу против слуг Ратвара. Прочий персонал должен быть готов защищать себя и свои рабочие места от нападений культистов (в том числе используя летальную силу в качестве крайней меры самообороны), но не должен выслеживать культистов и охотиться на них. Погибшие члены экипажа должны быть оживлены и деконвертированы, как только ситуация будет взята под контроль.", "Центральное Командование, Отдел Работы с Реальностью", 'sound/magic/clockwork/ark_activation_sequence.ogg')
+		clock_ascendent = TRUE
+
+/datum/team/clockcult/proc/rise(servant)
+	if(ishuman(servant))
+		var/mob/living/carbon/human/H = servant
+		H.left_eye_color = "be8"
+		H.right_eye_color = "be8"
+		H.dna?.update_ui_block(DNA_LEFT_EYE_COLOR_BLOCK)
+		H.dna?.update_ui_block(DNA_RIGHT_EYE_COLOR_BLOCK)
+		H.update_body()
+
+/datum/team/clockcult/proc/ascend(servant)
+	var/mob/living/carbon/human/H = servant
+	if(!ishuman(H))
+		return
+	H.add_overlay(mutable_appearance('icons/effects/genetics.dmi', "servitude", -MUTATIONS_LAYER))
 
 /datum/team/clockcult/proc/check_clockwork_victory()
 	if(GLOB.clockwork_gateway_activated)

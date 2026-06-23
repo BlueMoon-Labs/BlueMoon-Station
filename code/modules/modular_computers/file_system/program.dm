@@ -25,7 +25,7 @@
 	var/requires_ntnet_feature = 0
 	/// NTNet status, updated every tick by computer running this program. Don't use this for checks if NTNet works, computers do that. Use this for calculations, etc.
 	var/ntnet_status = 1
-	/// Bitflags (PROGRAM_CONSOLE, PROGRAM_LAPTOP, PROGRAM_TABLET combination) or PROGRAM_ALL
+	/// Bitflags (PROGRAM_CONSOLE, PROGRAM_LAPTOP, PROGRAM_TABLET, PROGRAM_PDA combination) or PROGRAM_ALL
 	var/usage_flags = PROGRAM_ALL
 	/// Whether the program can be downloaded from NTNet. Set to FALSE to disable.
 	var/available_on_ntnet = TRUE
@@ -43,6 +43,8 @@
 	var/alert_silenced = FALSE
 	/// Whether to highlight our program in the main screen. Intended for alerts, but loosely available for any need to notify of changed conditions. Think Windows task bar highlighting. Available even if alerts are muted.
 	var/alert_pending = FALSE
+	/// How resistant this program is to the detomatix virus. Higher = harder to bomb.
+	var/detomatix_resistance = 0
 
 /datum/computer_file/program/New(obj/item/modular_computer/comp = null)
 	..()
@@ -53,6 +55,10 @@
 	computer = null
 	. = ..()
 
+/// Called when the program is installed on a computer (via store_file). Override for setup logic.
+/datum/computer_file/program/proc/on_install()
+	return
+
 /datum/computer_file/program/clone()
 	var/datum/computer_file/program/temp = ..()
 	temp.required_access = required_access
@@ -61,6 +67,7 @@
 	temp.requires_ntnet = requires_ntnet
 	temp.requires_ntnet_feature = requires_ntnet_feature
 	temp.usage_flags = usage_flags
+	temp.detomatix_resistance = detomatix_resistance
 	return temp
 
 // Relays icon update to the computer.
@@ -204,8 +211,12 @@
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui && tgui_id)
 		ui = new(user, src, tgui_id, filedesc)
+		ui.set_autoupdate(TRUE)
 		if(ui.open())
 			ui.send_asset(get_asset_datum(/datum/asset/simple/headers))
+
+/datum/computer_file/program/proc/push_update()
+	SStgui.update_uis(src)
 
 // CONVENTIONS, READ THIS WHEN CREATING NEW PROGRAM AND OVERRIDING THIS PROC:
 // Topic calls are automagically forwarded from NanoModule this program contains.
@@ -241,9 +252,11 @@
 
 				if(user && istype(user))
 					computer.ui_interact(user) // Re-open the UI on this computer. It should show the main screen now.
-
+				return TRUE
 
 /datum/computer_file/program/ui_host()
+	if(!computer)
+		return null
 	if(computer.physical)
 		return computer.physical
 	else

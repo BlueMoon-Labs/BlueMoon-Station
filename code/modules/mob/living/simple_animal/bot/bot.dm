@@ -327,7 +327,7 @@
 			to_chat(user, "<span class='notice'>Панель технического обслуживания [open ? "открыта" : "закрыта"].</span>")
 		else
 			to_chat(user, "<span class='warning'>Панель тех-обслуживания закрыта.</span>")
-	else if(istype(W, /obj/item/card/id) || istype(W, /obj/item/pda))
+	else if(istype(W, /obj/item/card/id) || istype(W, /obj/item/modular_computer/pda))
 		if(bot_core.allowed(user) && !open && !emagged)
 			locked = !locked
 			to_chat(user, "Управление робота теперь [locked ? "заблокировано." : "разблокировано."]")

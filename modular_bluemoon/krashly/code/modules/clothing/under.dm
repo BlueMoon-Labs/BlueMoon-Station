@@ -98,6 +98,7 @@
 	icon_state = "inteq_skirt"
 	item_state = "inteq_skirt"
 	mutantrace_variation = STYLE_DIGITIGRADE
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/inteq/eng
 	name = "brown engineering turtleneck"
@@ -118,6 +119,7 @@
 	item_state = "inteqeng_skirt"
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/inteq/maid
 	name = "brown combat maidsuit"
@@ -131,6 +133,7 @@
 	fitted = FEMALE_UNIFORM_TOP
 	can_adjust = FALSE
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/inteq/maid/Initialize(mapload)
 	. = ..()
@@ -163,3 +166,4 @@
 	icon_state = "inteqmed_skirt"
 	item_state = "inteqmed_skirt"
 	mutantrace_variation = STYLE_DIGITIGRADE
+	alternate_worn_layer = DRESS_LAYER

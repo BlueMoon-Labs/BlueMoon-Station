@@ -26,6 +26,8 @@ Judgement 80k power or nine converts
 	var/multiple_invokers_used = FALSE //If scripture requires more than one invoker
 	var/multiple_invokers_optional = FALSE //If scripture can have multiple invokers to bolster its effects
 	var/tier = SCRIPTURE_PERIPHERAL //The scripture's tier
+	var/category = SCRIPTURE_CATEGORY_SUPPORT //Functional category shown in the slab UI
+	var/hidden_from_ui = FALSE //If TRUE, this scripture is hidden from the slab interface
 	var/quickbind = FALSE //if this scripture can be quickbound to a clockwork slab
 	var/quickbind_desc = "This shouldn't be quickbindable. File a bug report!"
 	var/primary_component

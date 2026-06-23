@@ -48,7 +48,7 @@
 	name = "Geneticist"
 	jobtype = /datum/job/geneticist
 
-	belt = /obj/item/pda/geneticist
+	belt = /obj/item/modular_computer/pda/geneticist
 	ears = /obj/item/radio/headset/headset_medsci
 	uniform = /obj/item/clothing/under/rank/medical/geneticist
 	shoes = /obj/item/clothing/shoes/sneakers/white
@@ -64,7 +64,7 @@
 	name = "Syndicate Geneticist"
 	jobtype = /datum/job/geneticist
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	ears = /obj/item/radio/headset/headset_medsci
 	gloves = /obj/item/clothing/gloves/color/latex/nitrile/hsc

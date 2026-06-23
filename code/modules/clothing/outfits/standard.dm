@@ -173,7 +173,7 @@
 	l_pocket = /obj/item/melee/transforming/energy/sword/saber
 	l_hand = /obj/item/storage/secure/briefcase
 	id = /obj/item/card/id/syndicate
-	belt = /obj/item/pda/heads
+	belt = /obj/item/modular_computer/pda/heads
 	accessory = list(/obj/item/clothing/accessory/waistcoat)
 
 /datum/outfit/assassin/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
@@ -191,7 +191,7 @@
 	SEND_SIGNAL(sec_briefcase, COMSIG_TRY_STORAGE_INSERT, new /obj/item/ammo_box/a357, null, TRUE, TRUE)
 	SEND_SIGNAL(sec_briefcase, COMSIG_TRY_STORAGE_INSERT, new /obj/item/grenade/plastic/x4, null, TRUE, TRUE)
 
-	var/obj/item/pda/heads/pda = H.belt
+	var/obj/item/modular_computer/pda/heads/pda = H.belt
 	pda.owner = H.real_name
 	pda.ownjob = "Reaper"
 	pda.update_label()
@@ -238,7 +238,7 @@
 		/obj/item/organ/cyberimp/chest/nutrimentextreme,
 		/obj/item/organ/cyberimp/chest/chem_implant/plus,
 		/obj/item/organ/cyberimp/arm/combat,
-		/obj/item/organ/eyes/robotic/thermals,
+		/obj/item/organ/eyes/robotic/toggled/thermals,
 		/obj/item/organ/cyberimp/mouth/breathing_tube,
 		/obj/item/organ/cyberimp/chest/thrusters,
 	)
@@ -295,7 +295,7 @@
 		/obj/item/organ/cyberimp/chest/nutrimentextreme,
 		/obj/item/organ/cyberimp/chest/chem_implant/plus,
 		/obj/item/organ/cyberimp/arm/combat,
-		/obj/item/organ/eyes/robotic/thermals,
+		/obj/item/organ/eyes/robotic/toggled/thermals,
 		/obj/item/organ/cyberimp/mouth/breathing_tube,
 		/obj/item/organ/cyberimp/chest/thrusters,
 	)
@@ -458,7 +458,7 @@
 		/obj/item/organ/cyberimp/chest/nutrimentextreme,
 		/obj/item/organ/cyberimp/chest/chem_implant/plus,
 		/obj/item/organ/cyberimp/arm/shield,
-		/obj/item/organ/eyes/robotic/thermals,
+		/obj/item/organ/eyes/robotic/toggled/thermals,
 		/obj/item/organ/cyberimp/chest/thrusters,
 		/obj/item/organ/cyberimp/arm/shield,
 		/obj/item/organ/cyberimp/arm/combat{zone=BODY_ZONE_L_ARM},

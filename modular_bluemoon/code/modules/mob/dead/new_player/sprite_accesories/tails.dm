@@ -8,13 +8,20 @@
 /datum/sprite_accessory/tails_animated/mam_tails_animated/bm_tails_animated
 	icon = 'modular_bluemoon/icons/mob/bm_tails.dmi'
 
+/datum/sprite_accessory/tails/human/bm_tails
+	icon = 'modular_bluemoon/icons/mob/bm_tails.dmi'
+	color_src = MATRIXED
+	matrixed_sections = MATRIX_ALL
+
+/datum/sprite_accessory/tails_animated/human/bm_tails
+	icon = 'modular_bluemoon/icons/mob/bm_tails.dmi'
+	color_src = MATRIXED
+
 /datum/sprite_accessory/tails/mam_tails/bm_tails/large
 	icon = 'modular_bluemoon/icons/mob/tails64x32.dmi'
 	dimension_x = 64
 	dimension_y = 32
 	center = TRUE
-	color_src = MATRIXED
-	matrixed_sections = MATRIX_ALL
 
 /datum/sprite_accessory/tails/human/bm_tails/large
 	icon = 'modular_bluemoon/icons/mob/tails64x32.dmi'
@@ -175,3 +182,45 @@
 	name = "Shadekin Big and Fluffy"
 	icon_state = "bigandfluffy"
 	matrixed_sections = MATRIX_RED
+
+//Nightstalker (3 colors)
+/datum/sprite_accessory/tails/human/bm_tails/nightstalker_alt
+	name = "Nightstalker (3 colors)"
+	icon_state = "nightstalker_alt"
+	matrixed_sections = MATRIX_ALL
+
+/datum/sprite_accessory/tails_animated/human/bm_tails/nightstalker_alt
+	name = "Nightstalker (3 colors)"
+	icon_state = "nightstalker_alt"
+	matrixed_sections = MATRIX_ALL
+
+/datum/sprite_accessory/tails/mam_tails/bm_tails/nightstalker_alt
+	name = "Nightstalker (3 colors)"
+	icon_state = "nightstalker_alt"
+	matrixed_sections = MATRIX_ALL
+
+/datum/sprite_accessory/tails_animated/mam_tails_animated/bm_tails_animated/nightstalker_alt
+	name = "Nightstalker (3 colors)"
+	icon_state = "nightstalker_alt"
+	matrixed_sections = MATRIX_ALL
+
+//Kathari
+/datum/sprite_accessory/tails/human/bm_tails/kathari
+	name = "Kathari"
+	icon_state = "kathari"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails_animated/human/bm_tails/kathari
+	name = "Kathari"
+	icon_state = "kathari"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails/mam_tails/bm_tails/kathari
+	name = "Kathari"
+	icon_state = "kathari"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails_animated/mam_tails_animated/bm_tails_animated/kathari
+	name = "Kathari"
+	icon_state = "kathari"
+	matrixed_sections = MATRIX_RED_GREEN

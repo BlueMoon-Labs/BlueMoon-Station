@@ -28,8 +28,13 @@
 	darkness_view = 8
 	flash_protect = -2
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
+	color_cutoffs = list(30, 8, 5)
 	glass_colour_type = /datum/client_colour/glass_colour/red
 	alternate_worn_layer = ABOVE_HEAD_LAYER
+
+/obj/item/clothing/glasses/night/blackops/update_icon_state()
+	. = ..()
+	icon_state = length(color_cutoffs) ? initial(icon_state) : "night_off"
 
 /obj/item/clothing/suit/blackops
 	name = "Black operative special armor"

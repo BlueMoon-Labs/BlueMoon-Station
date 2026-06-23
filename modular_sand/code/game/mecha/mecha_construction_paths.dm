@@ -29,14 +29,14 @@
 		//1
 		list(
 			"key" = TOOL_WRENCH,
-			"desc" = "The parts are disconnected."
+			"desc" = "Детали не закреплены."
 		),
 
 		//2
 		list(
 			"key" = TOOL_WELDER,
 			"back_key" = TOOL_WRENCH,
-			"desc" = "The parts are wrenched."
+			"desc" = "Детали закреплены ключом."
 		),
 
 		//3
@@ -44,14 +44,14 @@
 			"key" = /obj/item/stack/sheet/bluespace_crystal,
 			"amount" = 5,
 			"back_key" = TOOL_WELDER,
-			"desc" = "The parts are welded onto the chassis."
+			"desc" = "Детали приварены к шасси."
 		),
 
 		//4
 		list(
 			"key" = TOOL_WRENCH,
 			"back_key" = TOOL_SCREWDRIVER,
-			"desc" = "The bluespace crystals are slotted."
+			"desc" = "Блюспейс-кристаллы установлены."
 		),
 
 		//5
@@ -59,14 +59,14 @@
 			"key" = /obj/item/stock_parts/capacitor/quadratic,
 			"action" = ITEM_MOVE_INSIDE,
 			"back_key" = TOOL_WRENCH,
-			"desc" = "The bluespace crystals are secured."
+			"desc" = "Блюспейс-кристаллы закреплены."
 		),
 
 		//6
 		list(
 			"key" = TOOL_WRENCH,
 			"back_key" = TOOL_SCREWDRIVER,
-			"desc" = "The capacitor is slotted."
+			"desc" = "Конденсатор установлен."
 		),
 
 		//7
@@ -74,21 +74,21 @@
 			"key" = /obj/item/stack/cable_coil,
 			"amount" = 10,
 			"back_key" = TOOL_SCREWDRIVER,
-			"desc" = "The capacitor is secured."
+			"desc" = "Конденсатор закреплён."
 		),
 
 		//8
 		list(
 			"key" = TOOL_SCREWDRIVER,
 			"back_key" = TOOL_WIRECUTTER,
-			"desc" = "The chassis is wired."
+			"desc" = "Шасси подключено проводами."
 		),
 
 		//9
 		list(
 			"key" = TOOL_WELDER,
 			"back_key" = TOOL_SCREWDRIVER,
-			"desc" = "The wiring is linked to the limbs."
+			"desc" = "Проводка подключена к конечностям."
 		),
 	)
 

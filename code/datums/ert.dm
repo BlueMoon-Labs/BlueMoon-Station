@@ -12,7 +12,7 @@
 	var/rename_team
 	var/code
 	var/mission = "защитите станцию любой ценой и докажите свою состоятельность!"
-	var/teamsize = 5
+	var/teamsize = 1
 	var/maxteamsize = 5
 	var/polldesc
 	var/ertphrase = 'modular_bluemoon/sound/ert/ert_yes.ogg'
@@ -89,7 +89,6 @@
 
 /datum/ert/centcom_official
 	code = "Official"
-	teamsize = 3
 	maxteamsize = 3
 	opendoors = FALSE
 	leader_role = /datum/antagonist/official
@@ -110,7 +109,6 @@
 
 /datum/ert/greybois
 	code = "Green"
-	teamsize = 5
 	opendoors = FALSE
 	enforce_human = FALSE
 	roles = list(/datum/antagonist/greybois)

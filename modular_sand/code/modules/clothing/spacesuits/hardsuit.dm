@@ -1,7 +1,7 @@
 //Power armor
 /obj/item/clothing/head/helmet/space/hardsuit/powerarmor
 	name = "Power Armor Helmet MK. I"
-	desc = "An advanced helmet attached to a powered exoskeleton suit. Protects well against most forms of harm, but struggles against exotic hazards."
+	desc = "Продвинутый шлем, прикреплённый к силовому экзоскелету. Хорошо защищает от большинства видов повреждений, но слаб против экзотических опасностей."
 	icon = 'modular_sand/icons/obj/clothing/hats.dmi'
 	mob_overlay_icon = 'modular_sand/icons/mob/clothing/head.dmi'
 	anthro_mob_worn_overlay = 'modular_sand/icons/mob/clothing/head_muzzled.dmi'
@@ -53,9 +53,13 @@
 		var/datum/atom_hud/DHUD = GLOB.huds[DATA_HUD_MEDICAL_ADVANCED]
 		DHUD.remove_hud_from(user)
 
+/obj/item/clothing/head/helmet/space/hardsuit/powerarmor/examine(mob/user)
+	. = ..()
+	. += "<span class='notice'>Шлем силовой брони. Управляется через костюм.</span>"
+
 /obj/item/clothing/suit/space/hardsuit/powerarmor
 	name = "Power Armor MK. I"
-	desc = "A self-powered exoskeleton suit comprised of flexible Plasteel sheets and advanced components, designed to offer excellent protection while still allowing mobility. Does not protect against Space, and struggles against more exotic hazards."
+	desc = "Само-питающийся экзоскелетный костюм из гибких пласталевых листов и продвинутых компонентов, разработанный для обеспечения отличной защиты при сохранении мобильности. Не защищает от космоса и слаб против экзотических опасностей."
 	icon = 'modular_sand/icons/obj/clothing/suits.dmi'
 	mob_overlay_icon = 'modular_sand/icons/mob/clothing/suit.dmi'
 	anthro_mob_worn_overlay = 'modular_sand/icons/mob/clothing/suit_digi.dmi'
@@ -76,6 +80,10 @@
 	. = ..()
 	AddComponent(/datum/component/spraycan_paintable)
 	update_icon()
+
+/obj/item/clothing/suit/space/hardsuit/powerarmor/examine(mob/user)
+	. = ..()
+	. += "<span class='notice'>Используйте отвёртку для открытия панели обслуживания. Ломом можно извлечь компоненты при открытой панели.</span>"
 
 /obj/item/clothing/suit/space/hardsuit/powerarmor/update_overlays()
 	. = ..()
@@ -204,7 +212,7 @@
 
 			if(mining_helmet)
 				mining_helmet.name = "Conscript helmet"
-				mining_helmet.desc = "It shines briefly, full of life."
+				mining_helmet.desc = "Он ненадолго светится, полный жизни."
 				mining_helmet.icon = 'modular_sand/icons/obj/clothing/hats.dmi'
 				mining_helmet.icon_state = "commando-helmet"
 				mining_helmet.upgrade_icon(amount = armor_level_h, maxamount = armor_max_h)
@@ -224,10 +232,10 @@
 			hardsuit_type = "-helmet"
 			if(amount)
 				name = "reinforced Conscript helmet"
-				desc = "It glows weakly, signs of uncertainty."
+				desc = "Он слабо светится, признаки неопределённости."
 				hardsuit_type = "2-helmet"
 				if(amount == maxamount)
-					desc = "It glows violently, martyr to chaos."
+					desc = "Он яростно светится, мученик хаоса."
 					hardsuit_type = "3-helmet"
 			icon_state = "commando[hardsuit_type]"
 			if(ishuman(loc))

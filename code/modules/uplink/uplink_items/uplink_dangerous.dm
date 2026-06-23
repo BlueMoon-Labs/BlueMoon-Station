@@ -217,7 +217,7 @@
 	name = "Flamethrower"
 	desc = "Огнемёт, заправленный высокогорючими биотоксинами, крадеными со станций Nanotrasen. \
 			Поджарьте мерзавцев в их же жадности. Используйте осторожно."
-	item = /obj/item/flamethrower/full/tank
+	item = /obj/item/gun/energy/m2a100
 	cost = 4
 	surplus = 40
 	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
@@ -292,7 +292,7 @@
 	и можете вбивать людей в столы с нечеловеческой силой. \
 	К сожалению, из-за размера перчаток вы не сможете пользоваться огнестрельным оружием."
 	item = /obj/item/clothing/gloves/fingerless/pugilist/mauler
-	cost = 8
+	cost = 4
 
 /datum/uplink_item/dangerous/powerfist
 	name = "Power Fist"
@@ -301,7 +301,7 @@
 		Гаечным ключом можно регулировать расход газа для дополнительного урона и отбрасывания целей. \
 		Отвёрткой можно извлечь присоединённый баллон."
 	item = /obj/item/melee/powerfist
-	cost = 5
+	cost = 4
 
 /datum/uplink_item/dangerous/death_lipstick
 	name = "Kiss of Death"

@@ -65,6 +65,9 @@
 		to_chat(owner, span_boldannounce("You will automatically pop and place your blob core in [DisplayTimeText(autoplace_time)]."))
 
 /datum/action/innate/blobpop/Activate()
+	if(!owner || QDELETED(owner) || !owner.mind)
+		Remove()
+		return
 	var/mob/old_body = owner
 	var/datum/antagonist/blob/blobtag = owner.mind.has_antag_datum(/datum/antagonist/blob)
 	if(!blobtag)
