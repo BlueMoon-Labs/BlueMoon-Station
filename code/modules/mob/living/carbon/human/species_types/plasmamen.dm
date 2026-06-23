@@ -30,6 +30,18 @@
 	balance_point_values = TRUE
 	blacklisted_quirks = list(/datum/quirk/paper_skin)
 
+/datum/species/plasmaman/on_species_gain(mob/living/carbon/C, datum/species/old_species)
+	. = ..()
+	RegisterSignal(C, COMSIG_MOB_SAY, PROC_REF(handle_speech))
+
+/datum/species/plasmaman/on_species_loss(mob/living/carbon/human/C)
+	. = ..()
+	UnregisterSignal(C, COMSIG_MOB_SAY)
+
+/datum/species/plasmaman/proc/handle_speech(datum/source, list/speech_args)
+	SIGNAL_HANDLER
+	speech_args[SPEECH_SPANS] |= SPAN_PLASMAVOICE
+
 /datum/species/plasmaman/spec_life(mob/living/carbon/human/H)
 	var/datum/gas_mixture/environment = H.loc.return_air()
 	var/atmos_sealed = FALSE

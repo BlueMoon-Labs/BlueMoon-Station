@@ -154,6 +154,11 @@
 	maxHealth = 80 //years of eatting trash has made your tongue strong
 	initial_accents = list(/datum/accent/fly)
 
+//fly tongue has initial_accents, so handle_speech fires - style insect chittering
+/obj/item/organ/tongue/fly/handle_speech(datum/source, list/speech_args)
+	speech_args[SPEECH_SPANS] |= SPAN_CHITVOICE
+	..()
+
 /obj/item/organ/tongue/abductor
 	name = "superlingual matrix"
 	desc = "A mysterious structure that allows for instant communication between users. Pretty impressive until you need to eat something."

@@ -861,3 +861,12 @@
 // Research signals
 #define COMSIG_GLOB_RESEARCH_NODE_UNLOCKED "global_research_node_unlocked"	// Изучение любого научного узла, сигнализирующее о необходимости синхронизации
 #define COMSIG_GLOB_RESEARCH_BATCH_COMPLETE	"global_research_batch_complete"	// Успешная упаковка и отправка пакета научных нод рецепиентам
+
+
+// Neural Interface Signals
+#define COMSIG_NEURAL_INTERFACE_ADD_SOURCE "neural_interface_add_source" // AddSource(id)
+#define COMSIG_NEURAL_INTERFACE_REMOVE_SOURCE "neural_interface_remove_source" // RemoveSource(id)
+
+#define COMSIG_NEURAL_INTERFACE_WRITE_LOG "neural_interface_write_log" // write_log(text, key="LOG", color="#4ad1fa86", size=12, speed=0)
+#define COMSIG_NEURAL_INTERFACE_WRITE_DATA "neural_interface_write_data" // write_data(key, value, decay_duration=3 SECONDS, priority=0)
+#define COMSIG_NEURAL_INTERFACE_WRITE_IMAGE_DATA "neural_interface_write_image_data" // write_image_data(key, image/overlay, atom/target, text, decay_duration=30 SECONDS, pixel_x_text = 0, pixel_y_text = 0, text_size=12)

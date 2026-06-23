@@ -3,7 +3,7 @@
 	if(iscarbon(user))
 		var/mob/living/carbon/C = user
 		if(src == C.wear_mask)
-			if(seamless)
+			if(HAS_TRAIT(src, TRAIT_NODROP))
 				to_chat(user, span_warning("Тебе нужна помощь, чтобы снять ЭТО!"))
 				return
 			else

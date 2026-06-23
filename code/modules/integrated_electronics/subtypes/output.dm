@@ -425,6 +425,203 @@
 		//update the diagnostic hud
 		assembly.diag_hud_set_circuitstat()
 
+/obj/item/integrated_circuit/output/neural_interface_log_write
+	name = "HUD interface write log"
+	desc = "A component responsible for outputting logs to the user's HUD interface (if available)"
+	extended_desc = "The component is responsible for outputting logs to the user's HUD interface (if present). The interface target can be a reference to an entity with the interface, or a reference to the interface itself. The log type is sent as a key, from the available colored options: SYSTEM, WARNING, ERROR, INFO, DATA, SYNC, HEALTH, MODULE, ALERT, STATUS, DEBUG"
+	complexity = 1
+	size = 0.1
+	icon_state = "video_camera"
+	inputs = list(
+		"target_interface" = IC_PINTYPE_REF,
+		"text" = IC_PINTYPE_STRING,
+		"key"  = IC_PINTYPE_STRING,
+		"color" = IC_PINTYPE_COLOR,
+		"size" = IC_PINTYPE_NUMBER
+	)
+	activators = list(
+		"pulse in" = IC_PINTYPE_PULSE_IN,
+		"on success" = IC_PINTYPE_PULSE_OUT,
+		"on failure" = IC_PINTYPE_PULSE_OUT
+	)
+	outputs = list()
+	spawn_flags = IC_SPAWN_RESEARCH
+	power_draw_per_use = 2
+
+/obj/item/integrated_circuit/output/neural_interface_log_write/do_work(ord)
+	var/atom/relay_interface = get_pin_data(IC_INPUT, 1)
+	var/text = get_pin_data(IC_INPUT, 2)
+	var/key = get_pin_data(IC_INPUT, 3)
+	var/color = get_pin_data(IC_INPUT, 4)
+	var/size = get_pin_data(IC_INPUT, 5)
+
+	if(!relay_interface || !text || !key)
+		activate_pin(3)
+		return
+
+	if(get_dist(get_turf(src),get_turf(relay_interface)) > 8)
+		activate_pin(3)
+		return
+
+	var/result = SEND_SIGNAL(relay_interface, COMSIG_NEURAL_INTERFACE_WRITE_LOG, text, key, color, size)
+	if(!result)
+		activate_pin(3)
+		return
+
+	activate_pin(2)
+
+/obj/item/integrated_circuit/output/neural_interface_data_write
+	name = "HUD interface write data"
+	desc = "A component responsible for displaying key and value information in the user's HUD interface (if present)."
+	extended_desc = "A component responsible for displaying key and value information in the user's HUD interface (if present). The interface target can be either a reference to an entity with an interface or a reference to the interface itself. Unlike logs, when entering information for the same key, the information will be updated rather than appended."
+	complexity = 1
+	size = 0.1
+	icon_state = "video_camera"
+	inputs = list(
+		"target_interface" = IC_PINTYPE_REF,
+		"key" = IC_PINTYPE_STRING,
+		"value"  = IC_PINTYPE_STRING,
+		"decay duration"  = IC_PINTYPE_NUMBER,
+	)
+	activators = list(
+		"pulse in" = IC_PINTYPE_PULSE_IN,
+		"on success" = IC_PINTYPE_PULSE_OUT,
+		"on failure" = IC_PINTYPE_PULSE_OUT
+	)
+	outputs = list()
+	spawn_flags = IC_SPAWN_RESEARCH
+	power_draw_per_use = 2
+
+/obj/item/integrated_circuit/output/neural_interface_data_write/do_work(ord)
+	var/atom/relay_interface = get_pin_data(IC_INPUT, 1)
+	var/key = get_pin_data(IC_INPUT, 2)
+	var/value = get_pin_data(IC_INPUT, 3)
+	var/decay_duration = get_pin_data(IC_INPUT, 4)
+
+	if(!relay_interface || !key || !value)
+		activate_pin(3)
+		return
+
+	if(get_dist(get_turf(src),get_turf(relay_interface)) > 8)
+		activate_pin(3)
+		return
+
+	if(!decay_duration)
+		decay_duration = 1 SECONDS
+
+	var/result = SEND_SIGNAL(relay_interface, COMSIG_NEURAL_INTERFACE_WRITE_DATA, key, value, decay_duration)
+
+	if(!result)
+		activate_pin(3)
+		return
+
+	activate_pin(2)
+
+/obj/item/integrated_circuit/output/neural_interface_image_data_write
+	name = "HUD interface write image data"
+	desc = "A component responsible for displaying visual information with a caption on a target in the user's HUD interface (if present)."
+	extended_desc = "A component responsible for displaying visual information with a caption on a target in the user's HUD interface (if present). The interface target can be a reference to an entity with the interface, or a reference to the interface itself. The target for displaying visual information is a reference to an existing object in the world. A key is required to display specific information; if overlays with the same key are placed on two targets, the first will be removed and the second will be overlaid. An offset is required for the displayed text. Available overlays for output: target, circle, aiming, cross, warning, noise, scan, eye, target_conf, none"
+	complexity = 1
+	size = 0.1
+	icon_state = "video_camera"
+	inputs = list(
+		"target_interface" = IC_PINTYPE_REF,
+		"target" = IC_PINTYPE_REF,
+		"key" = IC_PINTYPE_STRING,
+		"text"  = IC_PINTYPE_STRING,
+		"decay duration"  = IC_PINTYPE_NUMBER,
+		"shift_x" = IC_PINTYPE_NUMBER,
+		"shift_y" = IC_PINTYPE_NUMBER,
+		"icon" = IC_PINTYPE_STRING,
+		"color" = IC_PINTYPE_COLOR,
+		"text_size" = IC_PINTYPE_NUMBER,
+	)
+	activators = list(
+		"pulse in" = IC_PINTYPE_PULSE_IN,
+		"on success" = IC_PINTYPE_PULSE_OUT,
+		"on failure" = IC_PINTYPE_PULSE_OUT
+	)
+	outputs = list()
+	spawn_flags = IC_SPAWN_RESEARCH
+	power_draw_per_use = 5
+	var/list/icons = list(
+		"target",
+		"circle",
+		"aiming",
+		"cross",
+		"warning",
+		"noise",
+		"scan",
+		"eye",
+		"target_conf",
+		"none"
+	)
+	var/icon/overlay
+
+/obj/item/integrated_circuit/output/neural_interface_image_data_write/Initialize(mapload)
+	. = ..()
+	overlay = new(icon='icons/effects/neural_interface_overlays.dmi')
+	overlay.GrayScale()
+
+/obj/item/integrated_circuit/output/neural_interface_image_data_write/Destroy()
+	overlay = null
+	. = ..()
+
+/obj/item/integrated_circuit/output/neural_interface_image_data_write/do_work(ord)
+	var/atom/relay_interface = get_pin_data(IC_INPUT, 1)
+	var/atom/target = get_pin_data(IC_INPUT, 2)
+	var/key = get_pin_data(IC_INPUT, 3)
+	var/text = get_pin_data(IC_INPUT, 4)
+	var/decay_duration = get_pin_data(IC_INPUT, 5)
+	var/shift_x = get_pin_data(IC_INPUT, 6)
+	var/shift_y = get_pin_data(IC_INPUT, 7)
+	var/icon_state_overlay = get_pin_data(IC_INPUT, 8)
+	var/color_overlay = get_pin_data(IC_INPUT, 9)
+	var/text_size = get_pin_data(IC_INPUT, 10)
+
+	if(!shift_x)
+		shift_x = 0
+
+	if(!shift_y)
+		shift_y = 0
+
+	if(!text_size)
+		text_size = 12
+
+	if(!color_overlay)
+		color_overlay = "#00fff2"
+
+	if(!icon_state_overlay)
+		icon_state_overlay = "circle"
+
+	if(!icons.Find(icon_state_overlay))
+		activate_pin(3)
+		return
+
+	if(!relay_interface || !target || !key)
+		activate_pin(3)
+		return
+
+	if(get_dist(get_turf(src),get_turf(relay_interface)) > 8)
+		activate_pin(3)
+		return
+
+	if(get_dist(get_turf(src),get_turf(target)) > 8)
+		activate_pin(3)
+		return
+
+	if(!decay_duration)
+		decay_duration = 1 SECONDS
+
+	var/image/overlay_image = image(icon = overlay, icon_state=icon_state_overlay)
+	overlay_image.color = color_overlay
+	var/result = SEND_SIGNAL(relay_interface, COMSIG_NEURAL_INTERFACE_WRITE_IMAGE_DATA, key, overlay_image, target, text, decay_duration, shift_x, shift_y, text_size)
+
+	if(!result)
+		activate_pin(3)
+		return
+
+	activate_pin(2)
 
 //Hippie Ported Code--------------------------------------------------------------------------------------------------------
 

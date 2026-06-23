@@ -134,6 +134,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/chem_dispenser_show_icons = TRUE		// BLUEMOON ADD - show/hide reagent icons on buttons
 	var/chem_dispenser_alphabetical_sort = TRUE	// BLUEMOON ADD - alphabetical vs declaration order in classic view
 	var/ie_classic_circuit_ui = FALSE			// BLUEMOON ADD - integrated electronics: HTML browser UI vs TGUI
+	var/neural_interface_visibility = TRUE      // BLUEMOON ADD - neural interface visibility flag
 
 	// BLUEMOON ADD START || Colormate presets
 	// Листы состоят из ключа, типа предмета и листа с именами престов и настройками цвета

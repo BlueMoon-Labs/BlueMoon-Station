@@ -647,3 +647,73 @@
 /obj/item/clothing/glasses/veil/ComponentInitialize()
 	. = ..()
 	AddElement(/datum/element/polychromic, poly_colors, 1)
+
+/obj/item/clothing/glasses/ar_interface
+	name = "AR glasses"
+	desc = "Очки дополненной реальности, имеют в себе встроенный передатчик NTNet пакетов. К очкам можно привязать устройство, имеющее NTnet приемник, для передачи данных об осматриваемых объектах (используется низкоуровневый протокол передачи)"
+	icon = 'modular_bluemoon/icons/obj/clothing/glasses.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/eyes.dmi'
+	icon_state = "geist_gazers"
+	item_state = "geist_gazers"
+	glass_colour_type = /datum/client_colour/glass_colour/green
+	flags_cover = GLASSESCOVERSEYES
+	var/datum/component/ntnet_interface/net
+	var/datum/component/neural_interface/neural_interface
+	var/list/adresses = list()
+
+/obj/item/clothing/glasses/ar_interface/Initialize(mapload)
+	. = ..()
+	net = LoadComponent(/datum/component/ntnet_interface)
+
+/obj/item/clothing/glasses/ar_interface/equipped(mob/user, slot)
+	. = ..()
+	if(slot != ITEM_SLOT_EYES)
+		return
+	neural_interface = user.LoadComponent(/datum/component/neural_interface)
+	neural_interface.AddSource("AR glasses")
+	RegisterSignal(user, COMSIG_MOB_EXAMINATE, PROC_REF(on_examine_target))
+
+/obj/item/clothing/glasses/ar_interface/dropped(mob/user)
+	. = ..()
+	neural_interface?.RemoveSource("AR glasses")
+	UnregisterSignal(user, COMSIG_MOB_EXAMINATE)
+
+/obj/item/clothing/glasses/ar_interface/attackby(obj/item/I, mob/living/user)
+	. = ..()
+	var/datum/component/ntnet_interface/net_item
+	var/list/processing_list = list(I)
+	while(processing_list.len && !net_item)
+		var/atom/A = processing_list[1]
+		processing_list.Cut(1, 2)
+		//Byond does not allow things to be in multiple contents, or double parent-child hierarchies, so only += is needed
+		//This is also why we don't need to check against assembled as we go along
+		processing_list += A.contents
+		net_item = A.GetComponent(/datum/component/ntnet_interface)
+
+
+	if(net_item && !adresses.Find(net_item.hardware_id))
+		adresses += net_item.hardware_id
+		to_chat(user, "Вы привязали к очкам интерфейс NTnet: [net_item.hardware_id]")
+
+/obj/item/clothing/glasses/ar_interface/attack_self(mob/user)
+	. = ..()
+	adresses = list()
+	to_chat(user, "Вы отвязали от очков все интерфейсы NTnet")
+
+/obj/item/clothing/glasses/ar_interface/Destroy()
+	adresses = null
+	if(net)
+		QDEL_NULL(net)
+	if(neural_interface)
+		neural_interface.RemoveSource("AR glasses")
+		QDEL_NULL(neural_interface)
+	. = ..()
+
+/obj/item/clothing/glasses/ar_interface/proc/on_examine_target(datum/source, atom/target)
+	if(get_dist(get_turf(source), get_turf(target)) > 8)
+		return
+
+	var/datum/netdata/data = new
+	data.recipient_ids = adresses
+	data.data = list(source, target)
+	ntnet_send(data)

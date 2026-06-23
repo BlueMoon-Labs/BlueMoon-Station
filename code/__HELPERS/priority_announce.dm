@@ -27,6 +27,18 @@
 			data["theme"] = "silicon"
 			data["badge"] = "SILICON"
 			data["header"] = "Силиконовое Объявление"
+		if("ionstorm")
+			data["theme"] = "ionstorm"
+			data["badge"] = "ИОННЫЙ ШТОРМ"
+			data["header"] = "Ионная Аномалия"
+		if("aimalf")
+			data["theme"] = "aimalf"
+			data["badge"] = "СБОЙ ИИ"
+			data["header"] = "Тревога ИИ"
+		if("outbreak5", "outbreak7")
+			data["theme"] = "biohazard"
+			data["badge"] = "БИОУГРОЗА"
+			data["header"] = "Биологическая Тревога"
 		else
 			if(sender_override)
 				var/sender_lower = lowertext("[sender_override]")

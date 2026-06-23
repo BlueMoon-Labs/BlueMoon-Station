@@ -14,15 +14,17 @@
 	//Need more effects that aren't instadeath or permanent law corruption.
 
 /mob/living/silicon/pai/ex_act(severity, target, origin)
-	take_holo_damage(severity * 50)
 	switch(severity)
-		if(1)	//RIP
-			qdel(card)
-			qdel(src)
+		if(1)
+			take_holo_damage(emittermaxhealth * 2)
+			fold_in(force = 1)
+			DefaultCombatKnockdown(600)
 		if(2)
+			take_holo_damage(severity * 50)
 			fold_in(force = 1)
 			DefaultCombatKnockdown(400)
 		if(3)
+			take_holo_damage(severity * 50)
 			fold_in(force = 1)
 			DefaultCombatKnockdown(200)
 

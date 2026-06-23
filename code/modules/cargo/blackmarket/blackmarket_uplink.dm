@@ -69,7 +69,7 @@
 	if(viewing_category && market)
 		if(market.available_items[viewing_category])
 			for(var/datum/blackmarket_item/I in market.available_items[viewing_category])
-				if(user.mind.has_antag_datum(/datum/antagonist/rev/head))
+				if(user.mind?.has_antag_datum(/datum/antagonist/rev/head))
 					data["items"] += list(list(
 						"id" = I.type,
 						"name" = I.name,

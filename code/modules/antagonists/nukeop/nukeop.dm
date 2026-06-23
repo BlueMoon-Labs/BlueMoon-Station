@@ -65,7 +65,7 @@
 		msg = "вы [nuke_team.syndicate_name] Оперативник!"
 	else
 		msg = "Вы Оперативник [is_syndicate ? "Синдиката" : "Интекью"]!"
-	to_chat(owner, span_notice(msg))
+	to_chat(owner, span_syndicate(msg))
 	owner.announce_objectives()
 
 /datum/antagonist/nukeop/on_gain()
