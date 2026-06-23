@@ -48,7 +48,7 @@
 		to_chat(user, "<span class='danger'>Вы опоздали! Удачи в следующий раз.</span>")
 		return
 	user.forceMove(get_turf(src)) //If we attack through the alert, jump to the chassis so we know what we're getting into
-	if(alert(user, "Стать [construct_name]? Вы больше не сможете быть клонированы!", construct_name, "Да", "Неи") == "Нет")
+	if(alert(user, "Стать [construct_name]? Вы больше не сможете быть клонированы!", construct_name, "Да", "Нет") == "Нет")
 		return
 	if(QDELETED(src))
 		to_chat(user, "<span class='danger'>Вы опоздали! Удачи в следующий раз.</span>")

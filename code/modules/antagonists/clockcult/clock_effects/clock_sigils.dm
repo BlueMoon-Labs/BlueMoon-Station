@@ -508,7 +508,7 @@
 	var/datum/clockwork_rite/CR = possible_rites[input_key]
 	if(!CR)
 		return
-	var/choice = alert(user, "Что делать с этим ритуалом?", "Что сделать?", "Применить", "Показать информацию", "Cancel")
+	var/choice = alert(user, "Что делать с этим ритуалом?", "Что сделать?", "Применить", "Показать информацию", "Отмена")
 	switch(choice)
 		if("Применить")
 			CR.try_cast(src, user)
