@@ -158,7 +158,7 @@ const Program = (props, context) => {
                 content="Download"
                 disabled={downloading}
                 tooltipPosition="left"
-                tooltip={!!downloading && ('Awaiting download completion...')}
+                tooltip={program.restriction || (!!downloading && 'Awaiting download completion...')}
                 onClick={() => act('PRG_downloadfile', {
                   filename: program.filename,
                 })} />
@@ -170,6 +170,8 @@ const Program = (props, context) => {
                   program.installed ? 'good'
                     : !program.compatible ? 'bad' : 'grey'
                 }
+                tooltip={program.restriction || program.fileinfo}
+                tooltipPosition="left"
                 content={
                   program.installed ? 'Installed'
                     : !program.compatible ? 'Incompatible'

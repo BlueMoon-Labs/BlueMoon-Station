@@ -70,7 +70,7 @@
 	if(covered)
 		user.balloon_alert(user, "remove cover first!")
 		return FALSE
-	return pry_tile(I, user)
+	return intact ? FORCE_BOOLEAN(pry_tile(I, user)) : NONE
 
 //Reskins! More fitting with most of our tiles, and appear as a radial on the base type
 /turf/open/floor/catwalk_floor/iron

@@ -18,17 +18,20 @@
 
 	p13target_emote = PLUG13_EMOTE_MASOCHISM
 
-/datum/interaction/lewd/crushhead/display_interaction(mob/living/user, mob/living/partner)
-	var/obj/item/bodypart/head/head = partner.get_bodypart(BODY_ZONE_HEAD)
-	if(!head)
-		to_chat(user,span_warning("У цели отсутствует голова!"))
+/datum/interaction/lewd/crushhead/special_check(mob/living/user, mob/living/target)
+	. = ..()
+	if(!.)
 		return
-	var/is_hidden = ..()
+	if(!target.get_bodypart(BODY_ZONE_HEAD))
+		to_chat(user,span_warning("У цели отсутствует голова!"))
+		return FALSE
+
+/datum/interaction/lewd/crushhead/display_interaction(mob/living/user, mob/living/partner, is_hidden)
 	var/distance = 7
-	var/volume = 50
+	var/const/volume = 50
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 	if(is_hidden)
 		distance = 1
-		volume = sound_quiet_volume
 	var/picked_hidden = pick(hidden_additional)
 	var/message = "[is_hidden ? (picked_hidden) : null]" + "[pick("нежно прижимается к <b>[partner]</b>, обхватывая голову ляжками.",
 					"отпускает голову <b>[partner]</b>, чтобы с новой силой сдавить её своими бедрами.",
@@ -59,6 +62,7 @@
 			if(H.InFullCritical())
 				H.visible_message(span_userdanger("Голова <b>[H]</b> лопается, разбрызгивая мозги по полу!"),span_userdanger("ААААА ГОЛОВ-"))
 				playsound(get_turf(H), 'modular_bluemoon/sound/effects/squishy.ogg', 140, TRUE, -1)
+				var/obj/item/bodypart/head/head = partner.get_bodypart(BODY_ZONE_HEAD)
 				head.drop_limb()
 				head.drop_organs()
 				qdel(head)
@@ -74,7 +78,7 @@
 	partner.apply_damage(damage_amount, BRUTE, BODY_ZONE_HEAD, partner.run_armor_check(BODY_ZONE_HEAD, MELEE))
 
 	user.visible_message(message = message, ignored_mobs = user.get_unconsenting(), vision_distance = distance)
-	playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/squelch1.ogg', volume, 1, -1)
+	playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/squelch1.ogg', volume, 1, extrarange)
 	if(HAS_TRAIT(partner, TRAIT_MASO))
 		partner.handle_post_sex(lust_amount, null, user)
 

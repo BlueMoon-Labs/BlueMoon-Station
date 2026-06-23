@@ -61,6 +61,7 @@
 		"Maid red" = list("icon_state" = "secmaid_red", "item_state" = "secmaid_red"),
 		"Maid blue" = list("icon_state" = "secmaid_blue", "item_state" = "secmaid_blue"),
 	) ///bluemoon add
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/security/officer/skirt/no_armor // Donat stuff - Borisovych
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 0)
@@ -146,6 +147,7 @@
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	alt_covers_chest = FALSE
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/security/warden/formal
 	desc = "The insignia on this uniform tells you that this uniform belongs to the Warden."
@@ -184,6 +186,7 @@
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/security/detective/grey
 	name = "noir suit"
@@ -200,6 +203,7 @@
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/security/detective/grey/skirt/no_armor // Donat stuff - famas098
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 0)
@@ -226,6 +230,7 @@
 	alt_covers_chest = FALSE
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 
 /obj/item/clothing/under/rank/security/head_of_security/grey
@@ -250,6 +255,7 @@
 	can_adjust = FALSE
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/security/head_of_security/formal
 	desc = "The insignia on this uniform tells you that this uniform belongs to the Head of Security."
@@ -271,6 +277,7 @@
 	item_state = "r_suit"
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE
+	alternate_worn_layer = DRESS_LAYER
 
 /*
  *Spacepol

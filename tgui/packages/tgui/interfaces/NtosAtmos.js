@@ -25,10 +25,10 @@ export const NtosAtmos = (props, context) => {
       <NtosWindow.Content overflow="auto">
         <Section>
           <LabeledList>
-            <LabeledList.Item label="Temperature">
+            <LabeledList.Item label="Температура">
               {AirTemp}°C
             </LabeledList.Item>
-            <LabeledList.Item label="Pressure">
+            <LabeledList.Item label="Давление">
               {AirPressure} kPa
             </LabeledList.Item>
           </LabeledList>

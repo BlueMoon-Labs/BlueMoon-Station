@@ -152,9 +152,9 @@
 	shoes = /obj/item/clothing/shoes/laceup
 	head = /obj/item/clothing/head/hotel
 	/* BlueMoon Edit Start: Giving hotel staff their own version of bartender PDA - Flauros
-	r_pocket = /obj/item/pda
+	r_pocket = /obj/item/modular_computer/pda
 	*/
-	r_pocket = /obj/item/pda/hotelstaff
+	r_pocket = /obj/item/modular_computer/pda/hotelstaff
 	// BlueMoon Edit End
 	back = /obj/item/storage/backpack/satchel
 	ears = /obj/item/radio/headset/headset_srv/hotel
@@ -209,7 +209,7 @@
 	uniform = /obj/item/clothing/under/rank/civilian/util
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
 	head = /obj/item/clothing/head/beret/black
-	r_pocket = /obj/item/pda
+	r_pocket = /obj/item/modular_computer/pda
 	back = /obj/item/storage/backpack
 	make_bank_account = TRUE // BLUEMOON ADD
 	starting_money = 10000 // BLUEMOON ADD

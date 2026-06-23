@@ -574,9 +574,8 @@
 	//This uses all return values of COMSIG_IMPLANT_OTHER
 #define COMSIG_IMPLANT_REMOVING "implant_removing"				//from base of /obj/item/implant/proc/removed() (list/args)
 
-// /obj/item/pda signals
+// /obj/item/modular_computer/pda signals
 #define COMSIG_PDA_CHANGE_RINGTONE "pda_change_ringtone"		//called on pda when the user changes the ringtone: (mob/living/user, new_ringtone)
-	#define COMPONENT_STOP_RINGTONE_CHANGE 1
 
 // /obj/item/radio signals
 #define COMSIG_RADIO_NEW_FREQUENCY "radio_new_frequency"		//called from base of /obj/item/radio/proc/set_frequency(): (list/args)
@@ -722,6 +721,8 @@
 // /datum/action signals
 #define COMSIG_ACTION_TRIGGER "action_trigger"						//from base of datum/action/proc/Trigger(): (datum/action)
 	#define COMPONENT_ACTION_BLOCK_TRIGGER 1
+#define COMSIG_ACTION_ISAVAILABLE "action_available"
+	#define COMPONENT_ACTION_NOT_AVAILABLE 1						//from base of datum/action/proc/IsAvailable(silent = FALSE): (datum/action)
 
 //Xenobio hotkeys
 #define COMSIG_XENO_SLIME_CLICK_CTRL "xeno_slime_click_ctrl"				//from slime CtrlClickOn(): (/mob)
@@ -860,3 +861,12 @@
 // Research signals
 #define COMSIG_GLOB_RESEARCH_NODE_UNLOCKED "global_research_node_unlocked"	// Изучение любого научного узла, сигнализирующее о необходимости синхронизации
 #define COMSIG_GLOB_RESEARCH_BATCH_COMPLETE	"global_research_batch_complete"	// Успешная упаковка и отправка пакета научных нод рецепиентам
+
+
+// Neural Interface Signals
+#define COMSIG_NEURAL_INTERFACE_ADD_SOURCE "neural_interface_add_source" // AddSource(id)
+#define COMSIG_NEURAL_INTERFACE_REMOVE_SOURCE "neural_interface_remove_source" // RemoveSource(id)
+
+#define COMSIG_NEURAL_INTERFACE_WRITE_LOG "neural_interface_write_log" // write_log(text, key="LOG", color="#4ad1fa86", size=12, speed=0)
+#define COMSIG_NEURAL_INTERFACE_WRITE_DATA "neural_interface_write_data" // write_data(key, value, decay_duration=3 SECONDS, priority=0)
+#define COMSIG_NEURAL_INTERFACE_WRITE_IMAGE_DATA "neural_interface_write_image_data" // write_image_data(key, image/overlay, atom/target, text, decay_duration=30 SECONDS, pixel_x_text = 0, pixel_y_text = 0, text_size=12)

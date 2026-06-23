@@ -42,7 +42,7 @@
 	var/obj/controlled_equipment //A piece of equipment, to determine whether to relaymove or use the AI eye.
 	var/radio_enabled = TRUE //Determins if a carded AI can speak with its built in radio or not.
 	radiomod = ";" //AIs will, by default, state their laws on the internal radio.
-	var/obj/item/pda/ai/aiPDA
+	var/obj/item/modular_computer/pda/silicon/aiPDA
 	var/obj/item/multitool/aiMulti
 	var/datum/weakref/bot_ref
 	var/tracking = FALSE //this is 1 if the AI is currently tracking somebody, but the track has not yet been completed.
@@ -170,10 +170,8 @@
 
 	add_verb(src, /mob/living/silicon/ai/proc/show_laws_verb)
 
-	aiPDA = new/obj/item/pda/ai(src)
-	aiPDA.owner = name
-	aiPDA.ownjob = "AI"
-	aiPDA.name = name + " (" + aiPDA.ownjob + ")"
+	aiPDA = new/obj/item/modular_computer/pda/silicon(src)
+	aiPDA.imprint_id(name, "AI")
 
 	aiMulti = new(src)
 	radio = new /obj/item/radio/headset/silicon/ai(src)
@@ -557,7 +555,7 @@
 /mob/living/silicon/ai/proc/botcall()
 	set category = "AI Commands"
 	set name = "Access Robot Control"
-	set desc = "Wirelessly control various automatic robots."
+	set desc = "Беспроводное управление различными автоматическими роботами."
 
 	if(!robot_control)
 		robot_control = new(src)
@@ -795,7 +793,7 @@
 //I am the icon meister. Bow fefore me.	//>fefore
 /mob/living/silicon/ai/proc/ai_hologram_change()
 	set name = "Change Hologram"
-	set desc = "Change the default hologram available to AI to something else."
+	set desc = "Изменить стандартную голограмму, доступную ИИ, на другую."
 	set category = "AI Commands"
 
 	if(incapacitated())
@@ -922,7 +920,7 @@
 
 /mob/living/silicon/ai/proc/control_integrated_radio()
 	set name = "Transceiver Settings"
-	set desc = "Allows you to change settings of your radio."
+	set desc = "Позволяет изменить настройки вашего радио."
 	set category = "AI Commands"
 
 	if(incapacitated())
@@ -938,7 +936,7 @@
 
 /mob/living/silicon/ai/proc/set_automatic_say_channel()
 	set name = "Set Auto Announce Mode"
-	set desc = "Modify the default radio setting for your automatic announcements."
+	set desc = "Изменить настройки радио по умолчанию для ваших автоматических объявлений."
 	set category = "AI Commands"
 
 	if(incapacitated())
@@ -1044,8 +1042,7 @@
 
 /mob/living/silicon/ai/replace_identification_name(oldname,newname)
 	if(aiPDA)
-		aiPDA.owner = newname
-		aiPDA.name = newname + " (" + aiPDA.ownjob + ")"
+		aiPDA.imprint_id(newname, aiPDA.saved_job)
 
 
 /mob/living/silicon/ai/proc/add_malf_picker()
@@ -1188,7 +1185,7 @@
 
 /datum/action/innate/deploy_shell
 	name = "Deploy to AI Shell"
-	desc = "Wirelessly control a specialized cyborg shell."
+	desc = "Беспроводное управление специализированной оболочкой киборга."
 	icon_icon = 'icons/mob/actions/actions_AI.dmi'
 	button_icon_state = "ai_shell"
 
@@ -1200,7 +1197,7 @@
 
 /datum/action/innate/deploy_last_shell
 	name = "Reconnect to shell"
-	desc = "Reconnect to the most recently used AI shell."
+	desc = "Переподключиться к последней использованной оболочке ИИ."
 	icon_icon = 'icons/mob/actions/actions_AI.dmi'
 	button_icon_state = "ai_last_shell"
 	var/mob/living/silicon/robot/last_used_shell
@@ -1240,7 +1237,7 @@
 
 /mob/living/silicon/ai/verb/ai_cryo()
 	set name = "AI Cryogenic Stasis"
-	set desc = "Puts the current AI personality into cryogenic stasis, freeing the space for another."
+	set desc = "Помещает текущую личность ИИ в криогенный стазис, освобождая место для другой."
 	set category = "AI Commands"
 
 	if(incapacitated())

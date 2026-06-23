@@ -101,9 +101,19 @@
 			if(current_screen != "game" || !current_game)
 				return TRUE
 			var/correct = check_answer(params)
+			// Всегда обновляем last_result чтобы TGUI показывал верный/неверный
+			if(correct)
+				last_result = "correct"
+			else
+				last_result = "incorrect"
 			if(consume_charges())
 				handle_reward(usr, reward_type, correct, current_difficulty)
 			else
+				last_points = 0
+				if(correct)
+					last_message = "Ответ верный, но заряды закончились — награда не выдана."
+				else
+					last_message = "Ответ неверный, заряды закончились."
 				say("Ошибка: задачи закончились во время решения.")
 				playsound(src, 'sound/machines/buzz-sigh.ogg', 30, 1)
 			current_screen = "result"
@@ -144,6 +154,17 @@
 			generate_signal()
 
 // Математика
+/obj/item/computermath/proc/math_floor(x)
+	var/r = round(x)
+	if(r > x)
+		return r - 1
+	return r
+
+/obj/item/computermath/proc/fmt_num(var/n)
+	if(n < 0)
+		return "([n])"
+	return "[n]"
+
 /obj/item/computermath/proc/generate_math()
 	var/operator
 	switch(current_difficulty)
@@ -167,33 +188,33 @@
 		if("subtract")
 			var/subnum_1 = rand(-100, 100)
 			var/subnum_2 = rand(-100, 200)
-			question = "Чему равно [subnum_1] - [subnum_2]?"
+			question = "Чему равно [fmt_num(subnum_1)] - [fmt_num(subnum_2)]?"
 			solution = subnum_1 - subnum_2
 		if("multiply")
 			var/multnum_1 = rand(-50, 50)
 			var/multnum_2 = rand(-250, 500)
-			question = "Чему равно [multnum_1] * [multnum_2]?"
+			question = "Чему равно [fmt_num(multnum_1)] * [fmt_num(multnum_2)]?"
 			solution = multnum_1 * multnum_2
 		if("division")
 			var/divnum_2 = rand(3, 12)
 			var/divnum_1 = rand(-50, 50) * divnum_2
-			question = "Чему равно [divnum_1] / [divnum_2]? Ответ округлите вниз."
-			solution = round(divnum_1 / divnum_2)
+			question = "Чему равно [fmt_num(divnum_1)] / [fmt_num(divnum_2)]? Ответ округлите вниз."
+			solution = math_floor(divnum_1 / divnum_2)
 		if("exponent")
 			var/expnum_1 = rand(-50, 50)
 			var/expnum_2 = pick(list(2, 3, 1/2))
 			if(expnum_2 == 1/2)
-				question = "Чему равно sqrt(|[expnum_1]|)? Ответ округлите вниз."
-				solution = round(sqrt(abs(expnum_1)))
+				question = "Чему равно sqrt([abs(expnum_1)])? Ответ округлите вниз."
+				solution = math_floor(sqrt(abs(expnum_1)))
 			else
-				question = "Чему равно ([expnum_1])^[expnum_2]? Ответ округлите вниз."
-				solution = round(expnum_1 ** expnum_2)
+				question = "Чему равно [fmt_num(expnum_1)]^[expnum_2]? Ответ округлите вниз."
+				solution = math_floor(expnum_1 ** expnum_2)
 		if("easy algebra")
 			var/num_a = rand(1, 5)
 			var/num_b = rand(-5, 10)
 			var/num_c = rand(-10, 10)
-			question = "[num_a]x + [num_b] = [num_c]. Найдите x. Округлите вниз."
-			solution = round((num_c - num_b) / num_a)
+			question = "[num_a]x + [fmt_num(num_b)] = [fmt_num(num_c)]. Найдите x. Округлите вниз."
+			solution = math_floor((num_c - num_b) / num_a)
 		if("algebra")
 			if(prob(50))
 				var/alg_a = rand(-100, 100)
@@ -201,26 +222,26 @@
 				if(alg_b == 0)
 					alg_b = 12
 				var/alg_c = rand(1, 10)
-				question = "[alg_a]/([alg_b]x) = [alg_c]. Найдите x. Округлите вниз."
-				solution = round(alg_a / (alg_b * alg_c))
+				question = "[fmt_num(alg_a)]/([fmt_num(alg_b)]x) = [fmt_num(alg_c)]. Найдите x. Округлите вниз."
+				solution = math_floor(alg_a / (alg_b * alg_c))
 			else
 				var/alg2_a = rand(-50, 50)
 				var/alg2_b = rand(1, 5)
 				var/alg2_c = rand(1, 10)
-				question = "([alg2_a]-x)/[alg2_b] = x/[alg2_c]. Найдите x. Округлите вниз."
-				solution = round((alg2_a * alg2_c) / (alg2_b + alg2_c))
+				question = "([fmt_num(alg2_a)]-x)/[alg2_b] = x/[alg2_c]. Найдите x. Округлите вниз."
+				solution = math_floor((alg2_a * alg2_c) / (alg2_b + alg2_c))
 		if("2nd polynomial")
 			var/poly_a = rand(1, 2)
 			var/poly_b = rand(-5, 5)
 			var/poly_c = rand(-25, 25)
 			var/discriminant = poly_b**2 - 4 * poly_a * poly_c
 			if(discriminant >= 0)
-				solution = round((-poly_b + sqrt(discriminant)) / (2 * poly_a))
-				solution2 = round((-poly_b - sqrt(discriminant)) / (2 * poly_a))
+				solution = math_floor((-poly_b + sqrt(discriminant)) / (2 * poly_a))
+				solution2 = math_floor((-poly_b - sqrt(discriminant)) / (2 * poly_a))
 			else
 				solution = 0
 				solution2 = 0
-			question = "[poly_a]x^2 + [poly_b]x + [poly_c] = 0. Найдите x (любое вещественное решение). 0 если нет решений. Округлите вниз."
+			question = "[poly_a]x^2 + [fmt_num(poly_b)]x + [fmt_num(poly_c)] = 0. Найдите x (любое вещественное решение). 0 если нет решений. Округлите вниз."
 		if("line intersection")
 			var/line_a = rand(-5, 5)
 			var/line_b = rand(-5, 5)
@@ -229,8 +250,8 @@
 			var/x_int
 			var/y_int
 			if(line_a - line_c != 0)
-				x_int = round((line_d - line_b) / (line_a - line_c))
-				y_int = round(line_a * (line_d - line_b) / (line_a - line_c) + line_b)
+				x_int = math_floor((line_d - line_b) / (line_a - line_c))
+				y_int = math_floor(line_a * (line_d - line_b) / (line_a - line_c) + line_b)
 			else
 				x_int = 0
 				y_int = 0
@@ -241,7 +262,7 @@
 			else
 				solution = y_int
 				expected_var = "y"
-			question = "Прямые y=[line_a]x+[line_b] и y=[line_c]x+[line_d]. Найдите [expected_var]-координату пересечения. 0 если нет. Округлите вниз."
+			question = "Прямые y=[fmt_num(line_a)]x+[fmt_num(line_b)] и y=[fmt_num(line_c)]x+[fmt_num(line_d)]. Найдите [expected_var]-координату пересечения. 0 если нет. Округлите вниз."
 
 	game_data["question"] = question
 	game_solution = list("[solution]")
@@ -379,10 +400,14 @@
 	var/user_answer
 	switch(current_game)
 		if(MINIGAME_MATH)
-			user_answer = text2num(params["answer"])
+			if(!length(game_solution))
+				return FALSE
+			user_answer = params["answer"]
+			if(!isnum(user_answer))
+				user_answer = text2num(user_answer)
 			if(isnull(user_answer))
 				return FALSE
-			user_answer = round(user_answer)
+			user_answer = math_floor(user_answer)
 			for(var/sol in game_solution)
 				if(user_answer == text2num(sol))
 					return TRUE
@@ -407,10 +432,14 @@
 			return TRUE
 
 		if(MINIGAME_SIGNAL)
-			user_answer = text2num(params["answer"])
+			if(!length(game_solution))
+				return FALSE
+			user_answer = params["answer"]
+			if(!isnum(user_answer))
+				user_answer = text2num(user_answer)
 			if(isnull(user_answer))
 				return FALSE
-			return (round(user_answer) == text2num(game_solution[1]))
+			return (math_floor(user_answer) == text2num(game_solution[1]))
 
 	return FALSE
 

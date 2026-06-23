@@ -242,7 +242,7 @@
 			//SPLURT EDIT
 			dat += "<h2>Headshot Image</h2>"
 			dat += "<a href='?_src_=prefs;preference=headshot'><b>Set Headshot Image</b></a><br>"
-			dat += headshot_preview_html(features["headshot_link"], 160, 120)
+			dat += headshot_preview_html(features["headshot_links"][1], 160, 120)
 			dat += "<br><br>"
 			//SPLURT EDIT END
 			//SKYRAT EDIT
@@ -1091,7 +1091,7 @@
 				chosen_gear = list()
 
 			dat += "<table align='center' width='100%'>"
-			dat += "<tr><td colspan=4><center><b><font color='[gear_points == 0 ? "#E62100" : "#CCDDFF"]'>[gear_points]</font> loadout points remaining.</b> \[<a href='?_src_=prefs;preference=gear;clear_loadout=1'>Clear Loadout</a>\]</center></td></tr>"
+			dat += "<tr><td colspan=4><center><b><font color='[gear_points == 0 ? "#E62100" : "#CCDDFF"]'>[gear_points]</font> loadout points remaining.</b> \[<a href='?_src_=prefs;preference=gear;clear_loadout=1'>Clear Loadout</a>\] \[<a href='?_src_=prefs;preference=gear;copy_loadout=1'>Clear Loadout</a>\]</center></td></tr>"
 			// BLUEMOON ADD - переключатель спавна с лодаутом
 			var/loadout_toggle_color = loadout_enabled ? "#6ABF6A" : "#E62100"
 			var/loadout_toggle_text = loadout_enabled ? "ON" : "OFF"

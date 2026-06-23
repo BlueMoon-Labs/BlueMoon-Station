@@ -30,7 +30,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/medical/sleeper
 	name = "mounted sleeper"
-	desc = "Equipment for medical exosuits. A mounted sleeper that stabilizes patients and can inject reagents in the exosuit's reserves."
+	desc = "Оборудование для медицинских экзокостюмов. Установленная медицинская капсула, стабилизирующая пациентов и способная вводить реагенты из резервуара экзокостюма."
 	icon = 'icons/obj/machines/sleeper.dmi'
 	icon_state = "sleeper"
 	energy_drain = 20
@@ -251,7 +251,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/medical/syringe_gun
 	name = "exosuit syringe gun"
-	desc = "Equipment for medical exosuits. A chem synthesizer with syringe gun. Reagents inside are held in stasis, so no reactions will occur."
+	desc = "Оборудование для медицинских экзокостюмов. Химический синтезатор со шприцем-пистолетом. Реагенты внутри находятся в стазисе, так что никаких реакций не произойдёт."
 	icon = 'icons/obj/guns/projectile.dmi'
 	icon_state = "syringegun"
 	var/list/syringes
@@ -527,7 +527,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/medical/mechmedbeam
 	name = "exosuit medical beamgun"
-	desc = "Equipment for medical exosuits. Generates a focused beam of medical nanites."
+	desc = "Оборудование для медицинских экзокостюмов. Генерирует фокусированный луч медицинских нанитов."
 	icon_state = "mecha_medigun"
 	energy_drain = 10
 	range = MECHA_MELEE|MECHA_RANGED

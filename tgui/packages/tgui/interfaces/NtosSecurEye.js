@@ -23,7 +23,7 @@ export const NtosSecurEye = (props, context) => {
         </div>
         <div className="CameraConsole__right">
           <div className="CameraConsole__toolbar">
-            <b>Camera: </b>
+            <b>Камера: </b>
             {activeCamera
               && activeCamera.name
               || '—'}

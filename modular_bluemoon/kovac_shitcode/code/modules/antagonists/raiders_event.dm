@@ -5,15 +5,19 @@
 	max_occurrences = 1
 	min_players = 30
 	earliest_start = 45 MINUTES
-	dynamic_should_hijack = TRUE
+	dynamic_should_hijack = FALSE
 	category = EVENT_CATEGORY_INVASION
 	description = "The crew will face a PMC assault."
 
 /datum/round_event_control/raiders/preRunEvent()
-	if (!SSmapping.empty_space)
+	if(!SSmapping.empty_space && !length(SSmapping.levels_by_trait(ZTRAIT_SPACE_RUINS)) && !SSmapping.station_start)
 		return EVENT_CANT_RUN
 
 	return ..()
+
+/datum/round_event/raiders
+	var/raiders_spawned = FALSE
+	var/spawn_timer_id
 
 /datum/round_event/raiders/start()
 	send_raider_threat()
@@ -30,19 +34,19 @@
 	ship_name = pick(strings(PIRATE_NAMES_FILE, "rogue_names"))
 
 	priority_announce("Входящая подпространственная передача данных. Открыт защищенный канал связи на всех коммуникационных консолях.", "Сомнительное Заявление", SSstation.announcer.get_rand_report_sound(), has_important_message = TRUE)
+	ship_template = /datum/map_template/shuttle/inteq_collosus
+	threat_msg.title = "Сомнительное Заявление"
+	threat_msg.possible_answers = list("Мы заплатим.","Мы заплатим, но на самом деле нет.")
 	var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
 	if(D)
 		payoff = max(payoff_min, FLOOR(D.account_balance * 0.9, 1000))
-
-		ship_template = /datum/map_template/shuttle/inteq_collosus
-
-		threat_msg.title = "Сомнительное Заявление"
-		threat_msg.content = "Джамбо, уроды. Мы тут пролетали неподалеку, и заметили красно-синих голубков. Расклад прост. Гоните [payoff] кредитов, в противном случае мы не поленимся проложить курс нашего крейсера напрямую через вашу станцию."
-		threat_msg.possible_answers = list("Мы заплатим.","Мы заплатим, но на самом деле нет.")
+	else
+		payoff = payoff_min
+	threat_msg.content = "Джамбо, уроды. Мы тут пролетали неподалеку, и заметили красно-синих голубков. Расклад прост. Гоните [payoff] кредитов, в противном случае мы не поленимся проложить курс нашего крейсера напрямую через вашу станцию."
 
 	threat_msg.answer_callback = CALLBACK(src, PROC_REF(raiders_answered), threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
 	SScommunications.send_message(threat_msg,unique = TRUE)
-	addtimer(CALLBACK(src, PROC_REF(spawn_raiders), threat_msg, ship_template), response_max_time)
+	spawn_timer_id = addtimer(CALLBACK(src, PROC_REF(spawn_raiders), threat_msg, ship_template), response_max_time, TIMER_STOPPABLE)
 
 /datum/round_event/raiders/proc/raiders_answered(datum/comm_message/threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
 	if(world.time > initial_send_time + response_max_time)
@@ -62,14 +66,36 @@
 		priority_announce("Здесь не хватает кредитов, козлы. Молитесь.", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
 		spawn_raiders(threat_msg, ship_template, TRUE)
 
+/datum/round_event/raiders/proc/get_spawn_z()
+	if(SSmapping.empty_space)
+		return SSmapping.empty_space.z_value
+	var/list/space_zlevels = SSmapping.levels_by_trait(ZTRAIT_SPACE_RUINS)
+	if(length(space_zlevels))
+		return pick(space_zlevels)
+	return SSmapping.station_start
+
 /datum/round_event/raiders/proc/spawn_raiders(datum/comm_message/threat_msg, ship_template, skip_answer_check)
+	if(raiders_spawned)
+		return
 	if(!skip_answer_check && threat_msg?.answered == 1)
 		return
+	if(!ship_template)
+		message_admins("InteQ Raiders event failed: no ship template configured.")
+		return
+
+	var/z = get_spawn_z()
+	if(!z)
+		message_admins("InteQ Raiders event failed: no valid Z-level for ship spawn.")
+		return
+
+	raiders_spawned = TRUE
+	if(spawn_timer_id)
+		deltimer(spawn_timer_id)
+		spawn_timer_id = null
 
 	var/datum/map_template/shuttle/ship = new ship_template
 	var/x = rand(TRANSITIONEDGE,world.maxx - TRANSITIONEDGE - ship.width)
 	var/y = rand(TRANSITIONEDGE,world.maxy - TRANSITIONEDGE - ship.height)
-	var/z = SSmapping.empty_space.z_value
 	var/turf/T = locate(x,y,z)
 	if(!T)
 		CRASH("Raiders event found no turf to load in")

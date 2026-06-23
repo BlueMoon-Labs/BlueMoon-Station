@@ -57,7 +57,9 @@
 			var/mob/chosen = winners[1]
 			winners.Cut(1, 2)
 			if(chosen && isobserver(chosen))
-				new_mob.ckey = chosen.ckey
+				if(!assign_ghost_to_mob(chosen, new_mob))
+					qdel(new_mob)
+					continue
 				post_player_assigned(new_mob)
 				continue
 		if(spawn_anyway_if_no_player)
@@ -71,6 +73,18 @@
 
 /datum/shuttle_event/simple_spawner/player_controlled/proc/post_player_assigned(mob/living/mob)
 	return
+
+/// Transfers a ghost into a living mob and resets camera/orbit state.
+/datum/shuttle_event/simple_spawner/player_controlled/proc/assign_ghost_to_mob(mob/chosen, mob/living/new_mob)
+	if(!chosen || !isobserver(chosen) || !new_mob)
+		return FALSE
+	var/mob/dead/observer/ghost = chosen
+	if(ghost.orbiting)
+		ghost.orbiting.end_orbit(ghost)
+	ghost.reset_perspective(null)
+	ghost.transfer_ckey(new_mob, FALSE)
+	new_mob.reset_perspective(null)
+	return TRUE
 
 /// Alien queen — single ghost role.
 /datum/shuttle_event/simple_spawner/player_controlled/alien_queen
@@ -88,6 +102,7 @@
 
 /datum/shuttle_event/simple_spawner/player_controlled/human
 	name = "Человек (игрок)"
+	admin_forceable = FALSE
 
 /// Up to nine ghost-controlled carp — one poll, full wave.
 /datum/shuttle_event/simple_spawner/player_controlled/carp
@@ -187,10 +202,13 @@
 		var/mob/chosen = winners[i]
 		if(!chosen || !isobserver(chosen))
 			continue
-		var/mob/living/carbon/human/new_mob = new spawn_type(spawn_point)
-		post_spawn(new_mob)
-		new_mob.ckey = chosen.ckey
-		post_player_assigned(new_mob)
+		var/mob/living/carbon/human/H = new spawn_type(spawn_point)
+		post_spawn(H)
+		equip_mopp_outfit(H)
+		if(!assign_ghost_to_mob(chosen, H))
+			qdel(H)
+			continue
+		post_player_assigned(H)
 
 /datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/ert_mopp/get_spawn_turf()
 	if(!length(spawning_turfs_interior))
@@ -204,7 +222,6 @@
 	if(!ishuman(mob))
 		return
 	var/mob/living/carbon/human/H = mob
-	equip_mopp_outfit(H)
 	ADD_TRAIT(H, TRAIT_EXEMPT_HEALTH_EVENTS, GHOSTROLE_TRAIT)
 	ADD_TRAIT(H, TRAIT_NO_MIDROUND_ANTAG, GHOSTROLE_TRAIT)
 	to_chat(H, span_boldannounce("Вы — оперативник ОБР MOPP, прибывший на эвакуационный шаттл для помощи экипажу."))

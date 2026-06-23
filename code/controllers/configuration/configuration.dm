@@ -456,29 +456,35 @@ Example config:
 			runnable_modes[M] = probabilities[M.config_tag]
 	return runnable_modes
 
-// Экранирует спецсимволы regex в слове
-/proc/regex_escape(text)
-	if(!istext(text)) return text
-	text = replacetext(text, "\\", "\\\\")
-	var/list/meta = list(".", "^", "$", "*", "+", "?", "(", ")", "[", "]", "{", "}", "|")
-	for(var/m in meta)
-		text = replacetext(text, m, "\\" + m)
-	return text
+/// Latin/Cyrillic letters, digits, underscore — word characters for IC chat filter. No regex.
+/proc/is_filter_word_char(ch)
+	var/static/chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя"
+	if(!ch || length_char(ch) != 1)
+		return FALSE
+	return findtext_char(chars, ch) > 0
 
-// Есть ли целое слово
+// Есть ли целое слово — manual scan, no regex (regex/Replace_char can crash BYOND with illegal operation)
 /proc/has_whole_word(text, word, case_insensitive = TRUE)
 	if(!text || !word) return FALSE
 	if(length_char(word) > MAX_FILTER_WORD_LEN) return FALSE
-	// Limit input length to prevent ReDoS/crash (illegal operation) from crafted input
 	if(length_char(text) > MAX_SAY_EMPHASIS_LEN)
 		text = copytext_char(text, 1, MAX_SAY_EMPHASIS_LEN + 1)
-	var/static/WORDCLASS = "A-Za-z0-9_А-Яа-яЁё"
-	var/safe = regex_escape(word)
-	var/pattern = "(^|\[^" + WORDCLASS + "\])" + safe + "($|\[^" + WORDCLASS + "\])"
-	var/flags = case_insensitive ? "i" : null
-	var/regex/R = regex(pattern, flags)
-	if(!R.Find(text)) return FALSE
-	return findtext(lowertext(R.match), lowertext(word)) > 0
+	if(case_insensitive)
+		text = lowertext(text)
+		word = lowertext(word)
+	var/text_len = length_char(text)
+	var/i = 1
+	while(i <= text_len)
+		while(i <= text_len && !is_filter_word_char(copytext_char(text, i, i + 1)))
+			i++
+		if(i > text_len)
+			break
+		var/start = i
+		while(i <= text_len && is_filter_word_char(copytext_char(text, i, i + 1)))
+			i++
+		if(copytext_char(text, start, i) == word)
+			return TRUE
+	return FALSE
 
 // Найти любое слово из списка
 /proc/find_any_whole_word(text, list/words, case_insensitive = TRUE)

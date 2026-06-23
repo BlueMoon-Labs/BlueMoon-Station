@@ -22,8 +22,10 @@
 	var/make_appearances = islist(states)
 	var/states_len = make_appearances ? length(states) : states
 	var/names_len = length(names)
-	if(!states_len || !names_len || colors_by_atom[target] || !isatom(target))
+	if(!states_len || !names_len || !isatom(target))
 		return ELEMENT_INCOMPATIBLE
+	if(colors_by_atom[target])
+		return
 	var/atom/A = target
 
 	overlays_states = states

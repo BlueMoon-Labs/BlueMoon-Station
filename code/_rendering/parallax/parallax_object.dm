@@ -47,9 +47,13 @@
 			offset_y += 480
 	screen_loc = "[map_id && "[map_id]:"]CENTER-7:[round(offset_x,1)],CENTER-7:[round(offset_y,1)]"
 
+/// Scrolls the layer relative to an eye movement. Runs per layer on EVERY player move -
+/// this is the hottest parallax proc on the server, keep it lean.
+/// Returns TRUE if a glide animation was started, FALSE otherwise.
 /atom/movable/screen/parallax_layer/proc/RelativePosition(x, y, rel_x, rel_y, anim_time = 0)
 	if(absolute)
-		return ResetPosition(x, y)
+		ResetPosition(x, y)
+		return FALSE
 	var/old_visual_x = round(offset_x, 1)
 	var/old_visual_y = round(offset_y, 1)
 	offset_x -= rel_x * speed
@@ -67,12 +71,23 @@
 	if(offset_y < -240)
 		offset_y += 480
 		wrapped = TRUE
-	screen_loc = "[map_id && "[map_id]:"]CENTER-7:[round(offset_x,1)],CENTER-7:[round(offset_y,1)]"
-	if(anim_time > 0 && !wrapped)
-		var/dx = old_visual_x - round(offset_x, 1)
-		var/dy = old_visual_y - round(offset_y, 1)
-		transform = matrix(1, 0, dx, 0, 1, dy)
-		animate(src, transform = matrix(), time = anim_time, flags = ANIMATION_END_NOW)
+	var/new_visual_x = round(offset_x, 1)
+	var/new_visual_y = round(offset_y, 1)
+	if(new_visual_x == old_visual_x && new_visual_y == old_visual_y)
+		return FALSE // the screen_loc string would be byte-identical, nothing to update
+	screen_loc = "[map_id && "[map_id]:"]CENTER-7:[new_visual_x],CENTER-7:[new_visual_y]"
+	if(anim_time <= 0 || wrapped)
+		return FALSE
+	var/dx = old_visual_x - new_visual_x
+	var/dy = old_visual_y - new_visual_y
+	if(abs(dx) <= 1 && abs(dy) <= 1)
+		// A 1px glide is indistinguishable from the instant screen_loc snap while the
+		// viewport itself glides a full tile - skip the matrix alloc + animate(), which
+		// used to be ~75-80% of this proc's cost.
+		return FALSE
+	transform = matrix(1, 0, dx, 0, 1, dy)
+	animate(src, transform = matrix(), time = anim_time, flags = ANIMATION_END_NOW)
+	return TRUE
 
 /atom/movable/screen/parallax_layer/proc/SetView(client_view = world.view, force_update = FALSE)
 	if(view_current == client_view && !force_update)

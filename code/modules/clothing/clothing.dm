@@ -12,7 +12,7 @@
 	var/visor_flags = 0			//flags that are added/removed when an item is adjusted up/down
 	var/visor_flags_inv = 0		//same as visor_flags, but for flags_inv
 	var/visor_flags_cover = 0	//same as above, but for flags_cover
-//what to toggle when toggled with weldingvisortoggle()
+	//what to toggle when toggled with weldingvisortoggle()
 	var/visor_vars_to_toggle = VISOR_FLASHPROTECT | VISOR_TINT | VISOR_VISIONFLAGS | VISOR_DARKNESSVIEW | VISOR_INVISVIEW
 	lefthand_file = 'icons/mob/inhands/clothing_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/clothing_righthand.dmi'
@@ -67,6 +67,9 @@
 	var/reinforced = FALSE
 	// These variables store info about armor piece this item has been reinforced to. Required for proper repair() handling.
 	var/obj/item/clothing/reinforcement_path
+	// This flag makes sure that if a genital is not covered by this piece of clothing, it is still drawn underneath it
+	// Generally should stay TRUE, unless you want your underwear that doesn't cover any body parts to be underneath exposed genitals
+	var/keep_genitals_below = TRUE
 
 /obj/item/clothing/Initialize(mapload)
 	. = ..()
@@ -109,6 +112,15 @@ MOVED TO: modular_splurt/code/module/clothing/clothing.dm
 */
 
 /obj/item/clothing/attackby(obj/item/W, mob/user, params)
+	if(W.sharpness >= SHARP_EDGED && user.a_intent == INTENT_HARM) //осколок стекла, ножик, когти, только в харме
+		if(damaged_clothes == CLOTHING_SHREDDED)
+			return FALSE
+		if(do_after(user, 5 SECONDS, user))
+			take_damage(max_integrity, BRUTE, sound_effect = FALSE)
+			return CLOTHING_DAMAGED
+		else
+			return FALSE
+
 	if(damaged_clothes && istype(W, repairable_by))
 		if(current_equipped_slot && (current_equipped_slot in user.check_obscured_slots()))
 			to_chat(user, "<span class='warning'>You are unable to repair [src] while wearing other garments over it!</span>")
@@ -428,6 +440,7 @@ MOVED TO: modular_splurt/code/module/clothing/clothing.dm
 
 /obj/item/clothing/obj_break(damage_flag)
 	damaged_clothes = CLOTHING_DAMAGED
+	playsound(src, 'sound/misc/tear_apart.ogg', 30, 1) //это не круто, когда одежда рвётся без звука.
 	update_clothes_damaged_state()
 	if(ismob(loc)) //It's not important enough to warrant a message if nobody's wearing it
 		var/mob/M = loc

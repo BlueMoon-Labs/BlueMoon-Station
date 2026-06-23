@@ -373,6 +373,7 @@
 	spray_wait = DELUXE_WAIT_SPRAY
 	spray_self = DELUXE_SELF_SPRAY
 	inject_self = DELUXE_SELF_INJECT
+	penetrates = TRUE
 
 /obj/item/hypospray/mkii/CMO/combat
 	name = "combat hypospray mk.II"
@@ -384,7 +385,6 @@
 	spray_self = COMBAT_SELF_SPRAY
 	inject_self = COMBAT_SELF_INJECT
 	quickload = TRUE
-	penetrates = TRUE
 
 /obj/item/hypospray/mkii/CMO/combat/synthflesh
 	name = "Combat Hypospray with Neosynth"

@@ -13,6 +13,10 @@
 /turf/closed/wall/mineral/titanium/interior,
 /area/shuttle/escape)
 "ae" = (
+/obj/effect/fun_balloon/sentience/emergency_shuttle{
+	group_name = "honking clowns on the Emergency Clown Shuttle";
+	effect_range = 4
+	},
 /obj/structure/table,
 /obj/item/storage/firstaid/fire,
 /turf/open/floor/mineral/bananium,

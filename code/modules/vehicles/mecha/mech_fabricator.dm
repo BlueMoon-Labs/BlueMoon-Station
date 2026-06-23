@@ -2,7 +2,7 @@
 	icon = 'icons/obj/robotics.dmi'
 	icon_state = "fab-idle"
 	name = "exosuit fabricator"
-	desc = "Nothing is being built."
+	desc = "Ничего не производится."
 	density = TRUE
 	use_power = IDLE_POWER_USE
 	idle_power_usage = 20
@@ -393,7 +393,7 @@
 	being_built = D
 	build_finish = world.time + get_construction_time_w_coeff(initial(D.construction_time))
 	build_start = world.time
-	desc = "It's building \a [D.name]."
+	desc = "Производится [D.name]."
 
 	rmat.silo_log(src, "built", -1, "[D.name]", build_materials)
 
@@ -452,7 +452,7 @@
 	var/turf/exit = get_step(src,(dir))
 	if(exit.density)
 		say("Error! Part outlet is obstructed.")
-		desc = "It's trying to dispense \a [D.name], but the part outlet is obstructed."
+		desc = "Пытается выдать [D.name], но выход для деталей заблокирован."
 		stored_part = I
 		return FALSE
 

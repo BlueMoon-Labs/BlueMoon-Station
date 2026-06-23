@@ -11,14 +11,13 @@
 	slowdown = 0
 	strip_delay = 120
 	mutantrace_variation = STYLE_DIGITIGRADE
-	var/seamless = FALSE
 
 
 //it takes time to put them off, do not touch
 /obj/item/clothing/shoes/latexheels/attack_hand(mob/user)
 	var/mob/living/carbon/C = user
 	if(iscarbon(user) && (user.get_item_by_slot(ITEM_SLOT_FEET) == src))
-		if(seamless)
+		if(HAS_TRAIT(src, TRAIT_NODROP))
 			to_chat(C, span_purple(pick("You slide your heels against each other in a failed attempt at kicking them off.",
 										"The heels refuse to budge no matter how much you tug.",
 										"The heels are tight around your ankles and the laces refuse to loosen.")))
@@ -28,20 +27,9 @@
 				return
 	. = ..()
 
-/obj/item/clothing/shoes/latexheels/MouseDrop(atom/over_object)
-
-/obj/item/clothing/shoes/latexheels/attackby(obj/item/K, mob/user, params)
-	if(istype(K, /obj/item/key/latex))
-		if(seamless != FALSE)
-			to_chat(user, span_warning("The heels suddenly loosen!"))
-			seamless = FALSE
-		else
-			to_chat(user, span_warning("The heels suddenly tighten!"))
-			seamless = TRUE
-	return
-
 /obj/item/clothing/shoes/latexheels/Initialize()
 	. = ..()
+	AddComponent(/datum/component/latex_lockable)
 	AddComponent(/datum/component/squeak, list('modular_splurt/sound/lewd/highheel1.ogg' = 1,'modular_splurt/sound/lewd/highheel2.ogg' = 1), 70)
 
 /////////////////
@@ -57,6 +45,10 @@
 	mob_overlay_icon = 'modular_splurt/icons/mob/clothing/lewd_clothing/feet/lewd_shoes.dmi'
 	anthro_mob_worn_overlay = 'modular_splurt/icons/mob/clothing/lewd_clothing/feet/lewd_shoes_digi.dmi'
 	w_class = WEIGHT_CLASS_SMALL
+
+/obj/item/clothing/shoes/latex_socks/Initialize()
+	. = ..()
+	AddComponent(/datum/component/latex_lockable)
 
 //start processing
 /obj/item/clothing/shoes/latex_socks/equipped(mob/user, slot)

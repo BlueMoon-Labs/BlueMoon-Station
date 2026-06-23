@@ -146,16 +146,6 @@
 	static_inventory += using
 	robit.thruster_button = using
 
-//PDA message
-	using = new /atom/movable/screen/robot/pda_msg_send(null, src)
-	using.screen_loc = ui_borg_pda_send
-	static_inventory += using
-
-//PDA log
-	using = new /atom/movable/screen/robot/pda_msg_show(null, src)
-	using.screen_loc = ui_borg_pda_log
-	static_inventory += using
-
 //Intent
 	action_intent = new /atom/movable/screen/act_intent/robot(null, src)
 	action_intent.icon_state = mymob.a_intent
@@ -387,24 +377,4 @@
 		return
 	robot.modularInterface?.interact(robot)
 
-/atom/movable/screen/robot/pda_msg_send
-	name = "PDA - Send Message"
-	icon = 'icons/mob/screen_ai.dmi'
-	icon_state = "pda_send"
 
-/atom/movable/screen/robot/pda_msg_send/Click()
-	if(..())
-		return
-	var/mob/living/silicon/robot/R = usr
-	R.cmd_send_pdamesg(usr)
-
-/atom/movable/screen/robot/pda_msg_show
-	name = "PDA - Show Message Log"
-	icon = 'icons/mob/screen_ai.dmi'
-	icon_state = "pda_receive"
-
-/atom/movable/screen/robot/pda_msg_show/Click()
-	if(..())
-		return
-	var/mob/living/silicon/robot/R = usr
-	R.cmd_show_message_log(usr)

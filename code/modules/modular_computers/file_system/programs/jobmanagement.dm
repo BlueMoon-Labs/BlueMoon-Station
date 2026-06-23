@@ -17,7 +17,7 @@ GLOBAL_VAR_INIT(time_last_changed_position, 0)
 	filedesc = "Plexagon HR Core"
 	category = PROGRAM_CATEGORY_CREW
 	program_icon_state = "id"
-	extended_desc = "Program for viewing and changing job slot avalibility."
+	extended_desc = "Программа для просмотра и изменения доступных вакансий на станции."
 	transfer_access = ACCESS_HEADS
 	requires_ntnet = TRUE
 	size = 4

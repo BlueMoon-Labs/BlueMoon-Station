@@ -36,12 +36,7 @@
 	write_log_target = "TKtailpulled by"
 	interaction_sound = 'sound/weapons/thudswoosh.ogg'
 
-/datum/interaction/TKhug/display_interaction(mob/living/user, mob/living/target)
-	..()
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
+	hearts_effect = TRUE
 
 /datum/interaction/lewd/slap/TKslap
 	description = "Телекинез. Шлёпнуть по заднице."

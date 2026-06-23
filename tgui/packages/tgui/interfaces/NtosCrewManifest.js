@@ -16,11 +16,11 @@ export const NtosCrewManifest = (props, context) => {
       height={480}>
       <NtosWindow.Content overflow="auto">
         <Section
-          title="Crew Manifest"
+          title="Манифест экипажа"
           buttons={(
             <Button
               icon="print"
-              content="Print"
+              content="Печать"
               disabled={!have_printer}
               onClick={() => act('PRG_print')} />
           )}>

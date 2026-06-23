@@ -116,6 +116,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/pda_color = "#808000"
 	var/pda_skin = PDA_SKIN_ALT
 	var/pda_ringtone = "beep"
+	var/pda_theme = PDA_THEME_NTOS
 	var/list/alt_titles_preferences = list()
 
 	// Modern UI translations
@@ -133,6 +134,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/chem_dispenser_show_icons = TRUE		// BLUEMOON ADD - show/hide reagent icons on buttons
 	var/chem_dispenser_alphabetical_sort = TRUE	// BLUEMOON ADD - alphabetical vs declaration order in classic view
 	var/ie_classic_circuit_ui = FALSE			// BLUEMOON ADD - integrated electronics: HTML browser UI vs TGUI
+	var/neural_interface_visibility = TRUE      // BLUEMOON ADD - neural interface visibility flag
 
 	// BLUEMOON ADD START || Colormate presets
 	// Листы состоят из ключа, типа предмета и листа с именами престов и настройками цвета
@@ -209,6 +211,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 "arachnid_spinneret" = "Plain",
 "arachnid_mandibles" = "Plain",
 "mam_body_markings" = list(),
+"emissive_eyes" = FALSE,
 "mam_ears" = "None",
 "mam_snouts" = "None",
 "mam_tail" = "None",
@@ -369,6 +372,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/list/menuoptions
 
 	var/action_buttons_screen_locs = list()
+	var/action_buttons_hide_on_spawn = FALSE
 
 	//bad stuff
 	var/vore_flags = 0
@@ -1123,6 +1127,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				var/loadout_points_label = src.use_modern_translations ? get_modern_text("loadout_points", src) : "loadout point"
 				var/loadout_points_remaining_label = src.use_modern_translations ? get_modern_text("loadout_points_remaining", src) : "remaining"
 				var/clear_loadout_label = src.use_modern_translations ? get_modern_text("clear_loadout", src) : "Clear Loadout"
+				var/copy_loadout_label = src.use_modern_translations ? get_modern_text("copy_loadout", src) : "Copy Loadout"
 				var/loadout_points_word = loadout_points_label
 				if(!src.use_modern_translations && gear_points != 1)
 					loadout_points_word = "[loadout_points_label]s"
@@ -1149,7 +1154,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				var/loadout_toggle_text = loadout_enabled ? (src.use_modern_translations ? get_modern_text("enabled", src) : "ON") : (src.use_modern_translations ? get_modern_text("disabled", src) : "OFF")
 				dat += "<center>[loadout_enabled_label]: <a href='?_src_=prefs;preference=gear;toggle_loadout_enabled=1'><font color='[loadout_toggle_color]'><b>[loadout_toggle_text]</b></font></a></center><br>"
 				// BLUEMOON ADD END
-				dat += "<center><a href='?_src_=prefs;preference=gear;clear_loadout=1'>[clear_loadout_label]</a></center>"
+				dat += "<center style=\"line-height:20px\">"
+				dat += "<a href='?_src_=prefs;preference=gear;clear_loadout=1'>[clear_loadout_label]</a>"
+				dat += "<a href='?_src_=prefs;preference=gear;copy_loadout=1'>[copy_loadout_label]</a>"
+				dat += "</center>"
 				dat += "</td>"
 			else
 				// Modern uses colspan=2 for the Preview cell above, so there is no right column here.
@@ -1283,6 +1291,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "<b>[pda_style_label]:</b> <a href='?_src_=prefs;task=input;preference=pda_style'>[pda_style]</a><br>"
 					dat += "<b>[pda_reskin_label]:</b> <a href='?_src_=prefs;task=input;preference=pda_skin'>[pda_skin]</a><br>"
 					dat += "<b>[pda_ringtone_label]:</b> <a href='?_src_=prefs;task=input;preference=pda_ringtone'>[pda_ringtone]</a><br>"
+					var/pda_theme_display_name = "Unknown"
+					for(var/theme_name in GLOB.pda_name_to_theme)
+						if(GLOB.pda_name_to_theme[theme_name] == pda_theme)
+							pda_theme_display_name = theme_name
+							break
+					dat += "<b>PDA Theme:</b> <a href='?_src_=prefs;task=input;preference=pda_theme'>[pda_theme_display_name]</a><br>"
 
 					dat += "<h2>[silicon_preferences_label]</h2>"
 					if(!CONFIG_GET(flag/allow_silicon_choosing_laws))
@@ -1330,13 +1344,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					var/security_records_label = src.use_modern_translations ? get_modern_text("security_records", src) : "Security Records"
 					var/medical_records_label = src.use_modern_translations ? get_modern_text("medical_records", src) : "Medical Records"
 					var/headshots_label = src.use_modern_translations ? get_modern_text("headshots", src) : "Headshots"
-					var/set_headshot_1_label = src.use_modern_translations ? get_modern_text("set_headshot_1", src) : "Set Headshot 1 Image"
-					var/set_headshot_2_label = src.use_modern_translations ? get_modern_text("set_headshot_2", src) : "Set Headshot 2 Image"
-					var/set_headshot_3_label = src.use_modern_translations ? get_modern_text("set_headshot_3", src) : "Set Headshot 3 Image"
+					var/set_headshot_label = src.use_modern_translations ? get_modern_text("set_headshot", src) : "Set Headshot"
 					var/naked_headshots_label = src.use_modern_translations ? get_modern_text("naked_headshots", src) : "Naked (NSFW) Headshots"
-					var/set_naked_headshot_1_label = src.use_modern_translations ? get_modern_text("set_naked_headshot_1", src) : "Set Headshot 1 Image"
-					var/set_naked_headshot_2_label = src.use_modern_translations ? get_modern_text("set_naked_headshot_2", src) : "Set Headshot 2 Image"
-					var/set_naked_headshot_3_label = src.use_modern_translations ? get_modern_text("set_naked_headshot_3", src) : "Set Headshot 3 Image"
+					var/set_naked_headshot_label = src.use_modern_translations ? get_modern_text("set_naked_headshot", src) : "Set Headshot"
 					dat += "<table width='100%'><tr><td width='30%' valign='top'>"
 
 					dat += "<h2>[flavor_text_label]</h2>"
@@ -1403,17 +1413,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 								dat += "[features["ooc_notes"]]"
 						else
 							dat += "[TextPreview(features["ooc_notes"])]..."
-					//SPLURT EDIT
-					// BLUEMOON REMOVE
-					/*
-					dat += "<h2>Headshot Image</h2>"
-					dat += "<a href='?_src_=prefs;preference=headshot'><b>Set Headshot Image</b></a><br>"
-					if(features["headshot_link"])
-						dat += "<img src='[features["headshot_link"]]' width='160px' height='120px'>"
-					dat += "<br><br>"
-					*/
-					// BLUEMOON REMOVE END
-					//SPLURT EDIT END
 					dat += "</td>"
 
 					if(is_modern_theme)
@@ -1466,33 +1465,36 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 					// BLUEMOON ADD
 					dat += "<h2>[headshots_label]</h2>"
-
-					dat += "<a href='?_src_=prefs;preference=headshot'><b>[set_headshot_1_label]</b></a><br>"
-					dat += headshot_preview_html(features["headshot_link"])
-					dat += "<br><br>"
-
-					dat += "<a href='?_src_=prefs;preference=headshot1'><b>[set_headshot_2_label]</b></a><br>"
-					dat += headshot_preview_html(features["headshot_link1"])
-					dat += "<br><br>"
-
-					dat += "<a href='?_src_=prefs;preference=headshot2'><b>[set_headshot_3_label]</b></a><br>"
-					dat += headshot_preview_html(features["headshot_link2"])
-					//dat += "<br><br>"
+					var/list/headshots_temp = features["headshot_links"]
+					dat += "<table width='100%'>"
+					for(var/i = 1, i <= headshots_temp.len, i += 2)
+						dat += "<tr>"
+						for(var/j = i, j < i + 2 && j <= headshots_temp.len, j++)
+							dat += "<td align='center' valign='top' width='50%'>"
+							dat += "<a href='?_src_=prefs;preference=headshot;select_slot=[j]'>"
+							dat += "<b>[set_headshot_label] [j]</b>"
+							dat += "</a><br>"
+							dat += headshot_preview_html(headshots_temp[j])
+							dat += "</td>"
+						dat += "</tr>"
+					dat += "</table>"
 
 					dat += "<h2>[naked_headshots_label]</h2>"
-
-					dat += "<a href='?_src_=prefs;preference=headshot_naked'><b>[set_naked_headshot_1_label]</b></a><br>"
-					dat += headshot_preview_html(features["headshot_naked_link"])
-					dat += "<br><br>"
-
-					dat += "<a href='?_src_=prefs;preference=headshot_naked1'><b>[set_naked_headshot_2_label]</b></a><br>"
-					dat += headshot_preview_html(features["headshot_naked_link1"])
-					dat += "<br><br>"
-
-					dat += "<a href='?_src_=prefs;preference=headshot_naked2'><b>[set_naked_headshot_3_label]</b></a><br>"
-					dat += headshot_preview_html(features["headshot_naked_link2"])
-					dat += "<br><br>"
+					headshots_temp = features["headshot_naked_links"]
+					dat += "<table width='100%'>"
+					for(var/i = 1, i <= headshots_temp.len, i += 2)
+						dat += "<tr>"
+						for(var/j = i, j < i + 2 && j <= headshots_temp.len, j++)
+							dat += "<td align='center' valign='top' width='50%'>"
+							dat += "<a href='?_src_=prefs;preference=headshot_naked;select_slot=[j]'>"
+							dat += "<b>[set_naked_headshot_label] [j]</b>"
+							dat += "</a><br>"
+							dat += headshot_preview_html(headshots_temp[j])
+							dat += "</td>"
+						dat += "</tr>"
+					dat += "</table>"
 					// BLUEMOON ADD END
+
 					dat += "</td></tr></table>"
 				//Character Appearance
 				if(APPEARANCE_CHAR_TAB)
@@ -1608,6 +1610,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 								dat += "<h3 title='[heterochromia_hint]'>[heterochromia_label]</h3>"
 							// UI tweak end
 							dat += "</b><a style='display:block;width:100px' href='?_src_=prefs;preference=toggle_split_eyes;task=input'>[split_eye_colors ? enabled_label : disabled_label]</a>"
+							var/emissive_eyes_on = features["emissive_eyes"]
+							var/glowing_eyes_label = src.use_modern_translations ? get_modern_text("glowing_eyes", src) : "Glowing Eyes"
+							dat += "<h3>[glowing_eyes_label]</h3>"
+							dat += "<a style='display:block;width:100px' href='?_src_=prefs;preference=toggle_emissive_eyes;task=input'>[emissive_eyes_on ? enabled_label : disabled_label]</a>"
 							if(!split_eye_colors)
 								dat += "<h3>[eye_color_label]</h3>"
 								dat += "<span style='border: 1px solid #161616; background-color: #[left_eye_color];'><font color='[color_hex2num(left_eye_color) < 200 ? "FFFFFF" : "000000"]'>#[left_eye_color]</font></span> <a href='?_src_=prefs;preference=eyes;task=input'>[change_label]</a>"
@@ -2175,7 +2181,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							dat += "<td width=4%><font size=2> </font></td>"
 							dat += "<td width=10%><font size=2> </font></td>"
 							dat += "<td width=6%><font size=2> </font></td>"
-							dat += "<td width=25%><font size=2> </font></td>"
+							dat += "<td width=20%><font size=2> </font></td>"
 							dat += "<td width=40%><font size=2> </font></td>"
 							dat += "<td width=15%><font size=2> </font></td>"
 							dat += "</tr>"
@@ -2246,6 +2252,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 							else
 								dat += "<tr style='vertical-align:top;'>"
+								dat += "<td> </td>"
 								dat += "<td> </td>"
 								dat += "<td> </td>"
 								dat += "<td> </td>"
@@ -2647,6 +2654,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					var/ooc_settings_label = src.use_modern_translations ? get_modern_text("ooc_settings", src) : "OOC Settings"
 					var/window_flashing_label = src.use_modern_translations ? get_modern_text("window_flashing", src) : "Window Flashing"
 					var/window_noise_label = src.use_modern_translations ? get_modern_text("window_noise", src) : "Window Noise"
+					var/action_buttons_hide_on_spawn_label =  src.use_modern_translations ? get_modern_text("action_buttons_hide_on_spawn", src) : "Hide Action Buttons On Spawn"
 					var/play_admin_midis_label = src.use_modern_translations ? get_modern_text("play_admin_midis", src) : "Play Admin MIDIs"
 					var/play_lobby_music_label = src.use_modern_translations ? get_modern_text("play_lobby_music", src) : "Play Lobby Music"
 					var/see_pull_requests_label = src.use_modern_translations ? get_modern_text("see_pull_requests", src) : "See Pull Requests"
@@ -2677,8 +2685,11 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "<b>[window_flashing_label]:</b> <a href='?_src_=prefs;preference=winflash'>[(windowflashing) ? enabled_label : disabled_label]</a><br>"
 					dat += "<b>[window_noise_label]:</b> <a href='?_src_=prefs;preference=winnoise'>[(windownoise) ? enabled_label : disabled_label]</a><br>"
 					dat += "<br>"
+					dat += "<b>[action_buttons_hide_on_spawn_label]:</b> <a href='?_src_=prefs;preference=action_buttons_hide_on_spawn'>[(action_buttons_hide_on_spawn) ? enabled_label : disabled_label]</a><br>"
+					dat += "<br>"
 					dat += "<b>[play_admin_midis_label]:</b> <a href='?_src_=prefs;preference=hear_midis'>[(toggles & SOUND_MIDI) ? enabled_label : disabled_label]</a><br>"
 					dat += "<b>[play_lobby_music_label]:</b> <a href='?_src_=prefs;preference=lobby_music'>[(toggles & SOUND_LOBBY) ? enabled_label : disabled_label]</a><br>"
+					dat += "<b>Личные музыкальные боксы:</b> <a href='?_src_=prefs;preference=hear_personal_jukeboxes'>[(toggles & SOUND_PERSONAL_JUKEBOXES) ? enabled_label : disabled_label]</a><br>"
 					dat += "<b>[see_pull_requests_label]:</b> <a href='?_src_=prefs;preference=pull_requests'>[(chat_toggles & CHAT_PULLR) ? enabled_label : disabled_label]</a><br>"
 					dat += "<br>"
 					if(user.client)
@@ -2885,6 +2896,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 								p_map += " (No longer exists)"
 						if(CONFIG_GET(flag/allow_map_voting))
 							dat += "<b>[preferred_map_label]:</b> <a href='?_src_=prefs;preference=preferred_map;task=input'>[p_map]</a><br>"
+					dat += "</table></tr>"
 				if(CONTENT_PREFS_TAB)
 					dat += "<table><tr><td width='340px' height='300px' valign='top'>"
 					dat += "<h2>Fetish content prefs</h2>"
@@ -4423,6 +4435,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					split_eye_colors = !split_eye_colors
 					right_eye_color = left_eye_color
 
+				if("toggle_emissive_eyes")
+					features["emissive_eyes"] = !features["emissive_eyes"]
+
 				if("species")
 					var/result = tgui_input_list(user, "Select a species", "Species Selection", GLOB.roundstart_race_names)
 					if(result)
@@ -5269,6 +5284,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					var/pickedPDARingtone = reject_bad_name(input(user, "Выбирайте рингтон своего КПК.", "Character Preference", pda_ringtone) as null|text, TRUE)
 					if(pickedPDARingtone)
 						pda_ringtone = pickedPDARingtone
+				if("pda_theme")
+					var/pickedPDATheme = tgui_input_list(user, "Выбирайте тему своего КПК.", "Character Preference", GLOB.pda_name_to_theme, pda_theme)
+					if(pickedPDATheme)
+						pda_theme = GLOB.pda_name_to_theme[pickedPDATheme]
 				if("silicon_lawset")
 					var/picked_lawset = tgui_input_list(user, "Выбирайте предпочитаемый список законов", "Silicon preference", list("None") + CONFIG_GET(keyed_list/choosable_laws), silicon_lawset)
 					if(picked_lawset)
@@ -5929,6 +5948,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					windowflashing = !windowflashing
 				if("winnoise")
 					windownoise = !windownoise
+				if("action_buttons_hide_on_spawn")
+					action_buttons_hide_on_spawn = !action_buttons_hide_on_spawn
 				if("hear_adminhelps")
 					toggles ^= SOUND_ADMINHELP
 				if("announce_login")
@@ -6006,6 +6027,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						user.client.playtitlemusic()
 					else
 						user.stop_sound_channel(CHANNEL_LOBBYMUSIC)
+
+				if("hear_personal_jukeboxes")
+					toggles ^= SOUND_PERSONAL_JUKEBOXES
 
 				if("ghost_ears")
 					chat_toggles ^= CHAT_GHOSTEARS
@@ -6201,33 +6225,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				if("tab")
 					if(href_list["tab"])
 						current_tab = text2num(href_list["tab"])
-				//SPLURT edit
-				// BLUEMOON REMOVE - Ищи в `modular_bluemoon/code/modules/client/preferences.dm`
-				/*
-				if("headshot")
-					var/usr_input = input(user, "Input the image link: (For Discord links, try putting the file's type at the end of the link, after the '&'. for example '&.jpg/.png/.jpeg')", "Headshot Image", features["headshot_link"]) as text|null
-					if(isnull(usr_input))
-						return
-					if(!usr_input)
-						features["headshot_link"] = null
-						return
-
-					var/static/link_regex = regex("https://i.gyazo.com|https://static1.e621.net") //Do not touch the damn duplicates.
-					var/static/end_regex = regex(".jpg|.jpg|.png|.jpeg|.jpeg") //Regex is terrible, don't touch the duplicate extensions
-
-					if(!findtext(usr_input, link_regex))
-						to_chat(usr, span_warning("You need a valid link!"))
-						return
-					if(!findtext(usr_input, end_regex))
-						to_chat(usr, span_warning("You need either \".png\", \".jpg\", or \".jpeg\" in the link!"))
-						return
-
-					if(features["headshot_link"] != usr_input)
-						to_chat(usr, span_notice("If the photo doesn't show up properly in-game, ensure that it's a direct image link that opens properly in a browser."))
-						to_chat(usr, span_notice("Keep in mind that the photo will be downsized to 250x250 pixels, so the more square the photo, the better it will look."))
-					features["headshot_link"] = usr_input
-				*/
-				// BLUEMOON REMOVE END
 
 				if("character_preview")
 					preview_pref = href_list["tab"]
@@ -6347,7 +6344,22 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			if(chosen > MAXIMUM_LOADOUT_SAVES || chosen < 1)
 				return
 			loadout_slot = chosen
+		if(href_list["copy_loadout"])
+			var/list/lod_slots = list()
+			for(var/i = 1, i <= MAXIMUM_LOADOUT_SAVES, i++)
+				if(i == loadout_slot)
+					continue
+				lod_slots += i
+			var/where_copy = tgui_input_list(user, "Выбери в какой слот скопировать текущий лодаут.", "Копирование лодаута", lod_slots)
+			if(!where_copy)
+				return
+			var/list/loadout_to_copy = loadout_data["SAVE_[loadout_slot]"]
+			loadout_data["SAVE_[where_copy]"] = LAZYCOPY(loadout_to_copy)
+			save_preferences()
 		if(href_list["clear_loadout"])
+			var/confirm = tgui_alert(user, "Вы уверены, что хотите сбросить [loadout_slot] лодаут слот?", "Очистка лодаута!", list("Нет", "Да"))
+			if(confirm != "Да")
+				return
 			loadout_data["SAVE_[loadout_slot]"] = list()
 			save_preferences()
 		// BLUEMOON ADD - переключатель лодаута
@@ -6652,21 +6664,15 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	character.dna.custom_species_lore = features["custom_species_lore"]
 	character.dna.flavor_text = features["flavor_text"]
 	character.dna.naked_flavor_text = features["naked_flavor_text"]
-	character.dna.headshot_links.Cut()
-	if (features["headshot_link"])
-		character.dna.headshot_links.Add(features["headshot_link"])
-	if (features["headshot_link1"])
-		character.dna.headshot_links.Add(features["headshot_link1"])
-	if (features["headshot_link2"])
-		character.dna.headshot_links.Add(features["headshot_link2"])
-	// BLUEMOON ADD START
-	character.dna.headshot_naked_links.Cut()
-	if (features["headshot_naked_link"])
-		character.dna.headshot_naked_links.Add(features["headshot_naked_link"])
-	if (features["headshot_naked_link1"])
-		character.dna.headshot_naked_links.Add(features["headshot_naked_link1"])
-	if (features["headshot_naked_link2"])
-		character.dna.headshot_naked_links.Add(features["headshot_naked_link2"])
+
+	var/list/headshot_temp = features["headshot_links"]
+	character.dna.headshot_links = LAZYCOPY(headshot_temp)
+	listclearnulls(character.dna.headshot_links)
+
+	headshot_temp = features["headshot_naked_links"]
+	character.dna.headshot_naked_links = LAZYCOPY(headshot_temp)
+	listclearnulls(character.dna.headshot_naked_links)
+
 	// BLUEMOON ADD END
 	character.dna.ooc_notes = features["ooc_notes"]
 	if(custom_blood_color)

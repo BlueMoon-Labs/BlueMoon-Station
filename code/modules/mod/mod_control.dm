@@ -1,7 +1,7 @@
 /// MODsuits, trade-off between armor and utility
 /obj/item/mod
 	name = "Base MOD"
-	desc = "You should not see this, yell at a coder!"
+	desc = "Вы не должны это видеть, кричите на кодера!"
 	/*	icon = 'icons/obj/clothing/modsuit/mod_clothing.dmi' // BLUEMOON COMMENTING OUT saving old code lines
 	mob_overlay_icon = 'icons/mob/clothing/modsuit/mod_clothing.dmi' */
 // BLUEMOON ADDITION AHEAD custom sprite states
@@ -17,7 +17,7 @@
 
 /obj/item/mod/control
 	name = "MOD control unit"
-	desc = "The control unit of a Modular Outerwear Device, a powered, back-mounted suit that protects against various environments."
+	desc = "Управляющий блок Модульного Внешнего Устройства — питаемый костюм на спине, защищающий от различных условий окружающей среды."
 	icon_state = "control"
 	item_state = "control"
 	w_class = WEIGHT_CLASS_BULKY

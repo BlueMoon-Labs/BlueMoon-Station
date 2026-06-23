@@ -9,7 +9,7 @@
 
 /obj/item/mod/paint
 	name = "MOD paint kit"
-	desc = "This kit will repaint your MODsuit to something unique."
+	desc = "Этот набор перекрасит ваш MOD-костюм во что-то уникальное."
 	icon = 'icons/obj/clothing/modsuit/mod_construction.dmi'
 	icon_state = "paintkit"
 	var/obj/item/mod/control/editing_mod
@@ -179,7 +179,7 @@
 
 /obj/item/mod/skin_applier
 	name = "MOD skin applier"
-	desc = "This one-use skin applier will add a skin to MODsuits of a specific type."
+	desc = "Этот одноразовый аппликатор скинов добавит скин к MOD-костюмам определённого типа."
 	icon = 'icons/obj/clothing/modsuit/mod_construction.dmi'
 	icon_state = "skinapplier"
 	var/skin = "civilian"

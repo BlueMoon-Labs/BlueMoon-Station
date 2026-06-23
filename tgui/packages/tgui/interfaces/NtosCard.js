@@ -81,7 +81,7 @@ export const NtosCardContent = (props, context) => {
               disabled={!has_main_id}
               content={authenticated ? "Authorized" : "No Access"}
               color={authenticated ? "good" : "bad"}
-               />
+            />
             <Button
               icon="eject"
               tooltip={has_main_id ? "Eject ID" : "Insert ID"}
@@ -124,18 +124,15 @@ export const NtosCardContent = (props, context) => {
               })}
               denyDep={dep => act('PRG_denyregion', {
                 region: dep,
-              })} />
+              })}
+              resetButton={() => act('PRG_reset_access')}
+            />
           )}
           {tab === 2 && (
             <Section
               title={id_rank}
               buttons={
                 <>
-                  <Button.Confirm
-                    icon="arrows-rotate"
-                    content="Reset Access"
-                    color="blue"
-                    onClick={() => act('PRG_reset_access')} />
                   <Button.Confirm
                     icon="person-circle-minus"
                     content="Demote"

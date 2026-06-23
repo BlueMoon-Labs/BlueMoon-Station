@@ -3,7 +3,7 @@
 	filedesc = "AtmoZphere"
 	category = PROGRAM_CATEGORY_ENGI
 	program_icon_state = "air"
-	extended_desc = "A small built-in sensor reads out the atmospheric conditions around the device."
+	extended_desc = "Встроенный сенсор считывает атмосферные условия вокруг устройства."
 	size = 4
 	tgui_id = "NtosAtmos"
 	program_icon = "thermometer-half"

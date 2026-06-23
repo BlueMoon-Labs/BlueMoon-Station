@@ -17,8 +17,8 @@ Difficulty: Medium
 /mob/living/simple_animal/hostile/megafauna/blood_drunk_miner
 	name = "blood-drunk miner"
 	desc = "A miner destined to wander forever, engaged in an endless hunt."
-	health = 1750
-	maxHealth = 1750
+	health = 2100
+	maxHealth = 2100
 	icon_state = "miner"
 	icon_living = "miner"
 	icon = 'icons/mob/broadMobs.dmi'
@@ -107,8 +107,8 @@ Difficulty: Medium
 	transform_weapon()
 
 /obj/item/melee/transforming/cleaving_saw/miner //nerfed saw because it is very murdery
-	force = 6
-	force_on = 10
+	force = 8
+	force_on = 13
 
 /obj/item/melee/transforming/cleaving_saw/miner/attack(mob/living/target, mob/living/carbon/human/user)
 	target.add_stun_absorption("miner", 10, INFINITY)
@@ -116,7 +116,7 @@ Difficulty: Medium
 	target.stun_absorption -= "miner"
 
 /obj/item/projectile/kinetic/miner
-	damage = 40
+	damage = 50
 	pixels_per_second = TILES_TO_PIXELS(11.111)
 	icon_state = "ka_tracer"
 	range = MINER_DASH_RANGE

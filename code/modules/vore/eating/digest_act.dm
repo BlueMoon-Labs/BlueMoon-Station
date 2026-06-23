@@ -33,7 +33,7 @@
 	return FALSE
 /obj/item/perfect_tele_beacon/digest_act(...)
 	return FALSE //Sorta important to not digest your own beacons.
-/obj/item/pda/digest_act(...)
+/obj/item/modular_computer/pda/digest_act(...)
 	return FALSE
 /obj/item/gun/digest_act(...)
 	return FALSE

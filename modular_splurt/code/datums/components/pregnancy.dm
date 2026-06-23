@@ -181,10 +181,11 @@
 /datum/component/pregnancy/proc/handle_life(seconds)
 	SIGNAL_HANDLER
 
-	if(!carrier || QDELETED(carrier))
+	var/mob/living/active_carrier = carrier
+	if(!active_carrier || QDELETED(active_carrier))
 		return
 
-	if(!HAS_TRAIT(carrier, TRAIT_COMMON_PREGNANCY)) //For normal pregnancy - Gardelin0
+	if(!HAS_TRAIT(active_carrier, TRAIT_COMMON_PREGNANCY)) //For normal pregnancy - Gardelin0
 		if(oviposition)
 			handle_ovi_preg()
 		else
@@ -192,18 +193,18 @@
 
 	if((stage >= 2) && !revealed)
 		revealed = TRUE
-		carrier.apply_status_effect(/datum/status_effect/pregnancy)
-		carrier.apply_status_effect(/datum/status_effect/lactation)
+		active_carrier.apply_status_effect(/datum/status_effect/pregnancy)
+		active_carrier.apply_status_effect(/datum/status_effect/lactation)
 
-	if(!HAS_TRAIT(carrier, TRAIT_COMMON_PREGNANCY)) //For normal pregnancy - Gardelin0
-		if(stage > 3 && ishuman(carrier) && oviposition)
-			SEND_SIGNAL(carrier, COMSIG_ADD_MOOD_EVENT, "pregnancy", /datum/mood_event/pregnant_negative)
+	if(!HAS_TRAIT(active_carrier, TRAIT_COMMON_PREGNANCY)) //For normal pregnancy - Gardelin0
+		if(stage > 3 && ishuman(active_carrier) && oviposition)
+			SEND_SIGNAL(active_carrier, COMSIG_ADD_MOOD_EVENT, "pregnancy", /datum/mood_event/pregnant_negative)
 
 	if(COOLDOWN_FINISHED(src, stage_time))
 		stage += 1
 		stage = min(stage, max_stage)
-		if(ishuman(carrier) && stage >= 2)
-			inflate_organs(carrier)
+		if(ishuman(active_carrier) && stage >= 2)
+			inflate_organs(active_carrier)
 		COOLDOWN_START(src, stage_time, PREGNANCY_STAGE_DURATION)
 
 /datum/component/pregnancy/proc/inflate_organs(mob/living/carbon/human/gregnant)

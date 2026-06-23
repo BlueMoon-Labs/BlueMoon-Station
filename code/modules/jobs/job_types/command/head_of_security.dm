@@ -71,7 +71,7 @@
 	jobtype = /datum/job/hos
 
 	id = /obj/item/card/id/silver
-	belt = /obj/item/pda/heads/hos
+	belt = /obj/item/modular_computer/pda/heads/hos
 	ears = /obj/item/radio/headset/heads/hos/alt
 	uniform = /obj/item/clothing/under/rank/security/head_of_security
 	shoes = /obj/item/clothing/shoes/jackboots/sec
@@ -98,7 +98,7 @@
 	name = "Syndicate Head of Security"
 	jobtype = /datum/job/hos
 
-	//belt = /obj/item/pda/syndicate/no_deto
+	//belt = /obj/item/modular_computer/pda/syndicate/no_deto
 
 	ears = /obj/item/radio/headset/heads/hos/alt
 	uniform = /obj/item/clothing/under/rank/captain/util

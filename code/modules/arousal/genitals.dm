@@ -443,7 +443,30 @@
 
 			genital_overlay.icon_state = "[G.slot]_[S.icon_state]_[size][(dna.species.use_skintones && !dna.skin_tone_override) ? "_s" : ""]_[aroused_state]_[layertext]"
 
-			if(layers_num[layer] == GENITALS_FRONT_LAYER && G.genital_flags & GENITAL_THROUGH_CLOTHES)
+			// Check if the flag is on, or the genitals are exposed with no uniform on (except for gear harness)
+			var/should_promote = (G.genital_flags & GENITAL_THROUGH_CLOTHES) || (G.is_exposed() && !(w_uniform && !istype(w_uniform, /obj/item/clothing/under/misc/gear_harness)))
+			// Keep the genital rendered but hidden if player is wearing underwear that got a keep_genitals_below flag on a specific genital
+			if(G.is_exposed() && !(G.genital_flags & GENITAL_THROUGH_CLOTHES))
+				var/obj/item/clothing/under_check
+				if(G.zone == BODY_ZONE_PRECISE_GROIN)
+					if(w_shirt && (w_shirt.body_parts_covered | GROIN))	// Makes sure that exposed genitals aren't drawn on top of long shirts, such as sweaters
+						under_check = (istype(w_shirt, /obj/item/clothing) ? w_shirt : null)
+					else
+						under_check = (istype(w_underwear, /obj/item/clothing) ? w_underwear : null)
+				else if(G.zone == BODY_ZONE_CHEST)
+					under_check = (istype(w_shirt, /obj/item/clothing) ? w_shirt : null)
+
+				if(under_check && under_check.keep_genitals_below)
+					should_promote = FALSE
+
+			// If a genital is exposed, we give it GENITALS_EXPOSED_LAYER when these conditions are true:
+			// Always GENITAL_THROUGH_CLOTHES flag is on AND/OR worn uniform and related underwear(if any) got the keep_genitals_underneath as FALSE (TRUE by default)
+			// Otherwise we keep it on GENITALS_FRONT_LAYER (below clothes)
+			// This way, if needed, genitals can still be rendered underneath uniform that doesn't cover them
+			// Or underneath underwear that doesn't cover them and got the keep_genitals_below flag on
+			// This makes sure that genitals, when they are TRULY exposed, are not covered by shoes and shit
+			// While still keeping the option to render them underneath the clothing when needed
+			if(layers_num[layer] == GENITALS_FRONT_LAYER && should_promote)
 				genital_overlay.layer = -GENITALS_EXPOSED_LAYER
 				LAZYADD(fully_exposed, genital_overlay)
 			else

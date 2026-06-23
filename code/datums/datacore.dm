@@ -539,6 +539,8 @@
 	return
 
 /datum/datacore/proc/get_id_photo(mob/living/carbon/human/H, client/C, show_directions = list(SOUTH))
+	if(!istype(H) || QDELETED(H) || !H.mind)
+		return icon('icons/effects/effects.dmi', "nothing")
 	var/datum/job/J = SSjob.GetJob(H.mind.assigned_role)
 	var/datum/preferences/P
 	if(!C)

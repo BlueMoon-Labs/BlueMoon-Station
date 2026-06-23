@@ -53,7 +53,7 @@
 	jobtype = /datum/job/atmos
 
 	belt = /obj/item/storage/belt/utility/atmostech
-	l_pocket = /obj/item/pda/atmos
+	l_pocket = /obj/item/modular_computer/pda/atmos
 	ears = /obj/item/radio/headset/headset_eng
 	uniform = /obj/item/clothing/under/rank/engineering/atmospheric_technician
 	r_pocket = /obj/item/analyzer
@@ -70,7 +70,7 @@
 	jobtype = /datum/job/atmos
 
 	belt = /obj/item/storage/belt/utility/atmostech
-	//l_pocket = /obj/item/pda/syndicate/no_deto
+	//l_pocket = /obj/item/modular_computer/pda/syndicate/no_deto
 	ears = /obj/item/radio/headset/headset_eng
 	uniform = /obj/item/clothing/under/rank/engineering/engineer/util
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default

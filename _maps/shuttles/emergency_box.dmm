@@ -21,6 +21,9 @@
 /turf/closed/wall/mineral/titanium/interior,
 /area/shuttle/escape)
 "af" = (
+/obj/effect/fun_balloon/sentience/emergency_shuttle{
+	group_name = "security escorts on the Emergency Box Shuttle"
+	},
 /obj/structure/table,
 /obj/machinery/recharger,
 /turf/open/floor/mineral/titanium/blue,

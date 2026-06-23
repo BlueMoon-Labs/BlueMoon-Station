@@ -13,6 +13,10 @@
 /turf/closed/wall,
 /area/shuttle/escape)
 "ae" = (
+/obj/effect/fun_balloon/sentience/emergency_shuttle{
+	group_name = "gorillas on the Emergency Gorilla Shuttle";
+	effect_range = 4
+	},
 /turf/open/floor/holofloor/wood,
 /area/shuttle/escape)
 "af" = (

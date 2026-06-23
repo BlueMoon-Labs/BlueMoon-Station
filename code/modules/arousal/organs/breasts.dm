@@ -87,12 +87,11 @@
 	return "плоского" // Even flat was too large for you, I guess...? This should never happen.
 
 /obj/item/organ/genital/breasts/update_size()//wah
-	var/rounded_size = round(size)
+	var/rounded_size = max(0, round(size))
 	var/size_state = size_to_state()
-	if(rounded_size < 0)//I don't actually know what round() does to negative numbers, so to be safe!!fixed
+	if(rounded_size == 0)
 		if(owner)
 			to_chat(owner, "<span class='warning'>Вы чувствуете, что ваша грудь уменьшается по сравнению с телом, так как грудь становится плоской.</span>")
-		QDEL_IN(src, 1)
 		return
 
 	if((rounded_size < 18 || rounded_size ==  25 || rounded_size == 30) && owner )//Because byond doesn't count from 0, I have to do this.

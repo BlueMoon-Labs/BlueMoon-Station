@@ -4,14 +4,14 @@
 	///
 	/// Set it to `null` to disable.
 	var/p13user_emote = null
+	// Приписки перед основным сообщением, при скрытой интеракции. Пробел в конце обязателен
 	var/list/hidden_additional = list(
-		//"Тихо, не спеша, не дыша, не шиша,",
-		"Незаметно,",
-		"Аккуратно,",
-		"Осторожно,",
-		"Неприметно,",
+		//"Тихо, не спеша, не дыша, не шиша, ",
+		"Незаметно, ",
+		"Аккуратно, ",
+		"Осторожно, ",
+		"Неприметно, ",
 	)
-	var/sound_quiet_volume = 10
 	var/emote_range = 1
 	/// Interaction strength for Plug13: `PLUG13_STRENGTH_` type or number `1-100`.
 	/// This one is for the doer/fucker/attacker.
@@ -33,8 +33,9 @@
 	/// This one is for the target/victim.
 	var/p13target_duration = PLUG13_DURATION_DEFAULT
 
-
-/datum/interaction/post_interaction(mob/living/user, mob/living/target)
+//see modular_sand\code\datums\interactions\_interaction.dm
+/*
+/datum/interaction/post_interaction(mob/living/user, mob/living/target, apply_cooldown, is_hidden)
 	. = ..()
 	if (p13user_emote && p13user_strength && p13user_duration)
 		user.client?.plug13?.send_emote(
@@ -46,13 +47,14 @@
 	if (p13target_emote && p13target_strength && p13target_duration)
 		target.client?.plug13?.send_emote(
 			p13target_emote,
-			min(p13target_strength + get_lust_modifier(target), 10, 100),
+			clamp(p13target_strength + get_lust_modifier(target), 10, 100),
 			p13target_duration
 		)
 
 	if(interaction_flags & INTERACTION_FLAG_ADJACENT && user != target)
 		SEND_SIGNAL(user, COMSIG_INTERACTION_ADJACENT, target)
 		SEND_SIGNAL(target, COMSIG_INTERACTION_ADJACENT, user)
+*/
 
 /datum/interaction/proc/get_lust_modifier(mob/living/user)
 	return (20 * (user.get_lust() / user.get_lust_tolerance())) - 10

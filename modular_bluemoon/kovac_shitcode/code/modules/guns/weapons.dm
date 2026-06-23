@@ -356,7 +356,7 @@
 	wound_bonus = 0
 	bare_wound_bonus = 0
 	armour_penetration = 0
-	attack_speed = CLICK_CD_MELEE * 0.5
+	attack_speed = CLICK_CD_MELEE * 1.5
 	slot_flags = ITEM_SLOT_BELT
 
 /obj/item/inteq_sledgehammer/toy/ComponentInitialize()
@@ -373,6 +373,8 @@
 	return
 
 /obj/item/inteq_sledgehammer/toy/pre_attack(atom/A, mob/living/user, params, attackchain_flags, damage_multiplier)
+	if(!(attackchain_flags & ATTACK_IGNORE_CLICKDELAY) && !CheckAttackCooldown(user, A))
+		return STOP_ATTACK_PROC_CHAIN
 	return NONE
 
 /obj/item/inteq_sledgehammer/toy/suicide_act(mob/user)

@@ -158,7 +158,7 @@
 				/obj/item/clothing/accessory/padding = 5,
 				/obj/item/clothing/accessory/kevlar = 5,
 				/obj/item/clothing/accessory/plastics = 5,
-				/obj/item/cartridge/virus/syndicate = 2,
+				/obj/item/cartridge/virus/detomatix = 2,
 				/obj/item/multitool/ai_detect = 2,
 				/obj/item/pen/edagger = 3,
 				/obj/item/storage/box/inteq_kit/conversion_kit = 1,
@@ -217,7 +217,7 @@
 				/obj/item/kitchen/knife/shiv/carrot = 1,
 				/obj/item/kitchen/knife = 1,
 				/obj/item/storage/wallet/random = 1,
-				/obj/item/pda = 1
+				/obj/item/modular_computer/pda = 1
 				)
 
 /obj/effect/spawner/lootdrop/gambling

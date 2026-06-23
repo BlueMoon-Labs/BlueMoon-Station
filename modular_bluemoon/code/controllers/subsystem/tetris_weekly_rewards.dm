@@ -173,25 +173,16 @@ SUBSYSTEM_DEF(tetris_weekly_rewards)
 	var/amount = round(json_number(entry["amount"]) || 0)
 	if(!key || amount <= 0)
 		return TRUE
-	var/list/ctx = bm_tgs_get_prefs_for_ckey(key)
-	if(!ctx)
-		log_admin("Tetris weekly rewards: failed to load preferences for [key], reward [amount] M$ skipped until retry.")
+	if(!SSmetadollars)
+		log_admin("Tetris weekly rewards: SSmetadollars unavailable, reward [amount] M$ for [key] skipped until retry.")
 		return FALSE
-	var/datum/preferences/P = ctx["prefs"]
 	if(!granting_ckeys[key])
-		granting_ckeys[key] = list("old_balance" = P.metadollars, "amount" = amount, "reward_saved" = FALSE)
+		granting_ckeys[key] = list("old_balance" = SSmetadollars.get_metadollars(key), "amount" = amount, "reward_saved" = FALSE)
 		save_progress()
-	else
-		var/list/granting_data = granting_ckeys[key]
-		if(granting_data["reward_saved"])
-			bm_tgs_finish_prefs_edit(ctx, FALSE)
-			return TRUE
-	P.metadollars = max(0, round(P.metadollars + amount))
-	if(!bm_tgs_finish_prefs_edit(ctx, TRUE))
-		log_admin("Tetris weekly rewards: failed to save preferences for [key], reward [amount] M$ will retry.")
-		return FALSE
-	var/list/granting_data = granting_ckeys[key]
-	granting_data["reward_saved"] = TRUE
+	else if(granting_ckeys[key]["reward_saved"])
+		return TRUE
+	SSmetadollars.metadollar_adjust(amount, key)
+	granting_ckeys[key]["reward_saved"] = TRUE
 	var/client/C = GLOB.directory[key]
 	if(C?.mob)
 		to_chat(C.mob, span_purple("Вы получили [amount] М$ за недельный рейтинг тетриса."))

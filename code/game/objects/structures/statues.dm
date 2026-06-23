@@ -416,6 +416,7 @@ Moving interrupts
 	desc = "Ready for sculpting."
 	icon = 'icons/obj/statue.dmi'
 	icon_state = "block"
+	obj_flags = CAN_BE_HIT | UNIQUE_RENAME
 	material_flags = MATERIAL_COLOR | MATERIAL_AFFECT_STATISTICS | MATERIAL_ADD_PREFIX // MATERIAL_EFFECTS
 	density = TRUE
 	material_modifier = 0.5 //50% effectiveness of materials

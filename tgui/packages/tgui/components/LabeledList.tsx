@@ -27,7 +27,7 @@ LabeledList.defaultHooks = pureComponentHooks;
 
 type LabeledListItemProps = {
   readonly className?: string | BooleanLike;
-  readonly label?: string | BooleanLike;
+  readonly label?: InfernoNode;
   readonly labelColor?: string | BooleanLike;
   readonly color?: string | BooleanLike;
   readonly textAlign?: string | BooleanLike;
@@ -61,7 +61,7 @@ const LabeledListItem = (props: LabeledListItemProps) => {
           'LabeledList__cell',
           'LabeledList__label',
         ])}>
-        {label ? label + ':' : null}
+        {label ? <>{label}:</> : null}
       </Box>
       <Box
         as="td"

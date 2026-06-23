@@ -3,7 +3,7 @@
 
 /obj/item/borg/upgrade
 	name = "borg upgrade module."
-	desc = "Protected by FRM."
+	desc = "Защищено FRM."
 	icon = 'icons/obj/module.dmi'
 	icon_state = "cyborg_upgrade"
 	w_class = WEIGHT_CLASS_SMALL
@@ -38,7 +38,7 @@
 
 /obj/item/borg/upgrade/rename
 	name = "cyborg reclassification board"
-	desc = "Used to rename a cyborg."
+	desc = "Используется для переименования киборга."
 	icon_state = "cyborg_upgrade1"
 	var/heldname = ""
 	one_use = TRUE
@@ -57,7 +57,7 @@
 
 /obj/item/borg/upgrade/restart
 	name = "cyborg emergency reboot module"
-	desc = "Used to force a reboot of a disabled-but-repaired cyborg, bringing it back online."
+	desc = "Используется для принудительной перезагрузки отключённого, но отремонтированного киборга, возвращая его в онлайн."
 	icon_state = "cyborg_upgrade1"
 	one_use = TRUE
 
@@ -74,7 +74,7 @@
 
 /obj/item/borg/upgrade/vtec
 	name = "cyborg VTEC module"
-	desc = "Used to kick in a cyborg's VTEC systems, increasing their speed."
+	desc = "Используется для активации систем VTEC киборга, увеличивая его скорость."
 	icon_state = "cyborg_upgrade2"
 	require_module = 1
 	var/obj/effect/proc_holder/silicon/cyborg/vtecControl/VC
@@ -109,7 +109,7 @@
 
 /obj/item/borg/upgrade/disablercooler
 	name = "cyborg rapid energy blaster cooling module"
-	desc = "Used to cool a mounted energy-based firearm, increasing the potential current in it and thus its recharge rate."
+	desc = "Используется для охлаждения установленного энергетического оружия, увеличивая потенциальный ток и, следовательно, скорость перезарядки."
 	icon_state = "cyborg_upgrade3"
 	require_module = 1
 	module_flags = BORG_MODULE_SECURITY
@@ -142,7 +142,7 @@
 
 /obj/item/borg/upgrade/thrusters
 	name = "ion thruster upgrade"
-	desc = "An energy-operated thruster system for cyborgs."
+	desc = "Энергетическая система двигателей для киборгов."
 	icon_state = "cyborg_upgrade3"
 
 /obj/item/borg/upgrade/thrusters/action(mob/living/silicon/robot/R, user = usr)
@@ -161,7 +161,7 @@
 
 /obj/item/borg/upgrade/ddrill
 	name = "mining cyborg diamond drill"
-	desc = "A diamond drill replacement for the mining module's standard drill."
+	desc = "Алмазная дрель для замены стандартной дрели шахтёрского модуля."
 	icon_state = "cyborg_upgrade3"
 	require_module = 1
 	module_type = list(/obj/item/robot_module/miner)
@@ -226,7 +226,7 @@
 
 /obj/item/borg/upgrade/advcutter
 	name = "mining cyborg advanced plasma cutter"
-	desc = "An upgrade for the mining cyborgs plasma cutter, bringing it to advanced operation."
+	desc = "Улучшение для плазменного резака шахтёрского киборга, приводящее его к продвинутой эксплуатации."
 	icon_state = "cyborg_upgrade3"
 	require_module = 1
 	module_type = list(/obj/item/robot_module/miner)
@@ -237,7 +237,7 @@
 	if(.)
 		for(var/obj/item/gun/energy/plasmacutter/cyborg/C in R.module)
 			C.name = "advanced cyborg plasma cutter"
-			C.desc = "An improved version of the cyborg plasma cutter. Baring functionality identical to the standard hand held version."
+			C.desc = "Улучшенная версия плазменного резака киборга. Функциональность идентична стандартной ручной версии."
 			C.icon_state = "adv_plasmacutter"
 			for(var/obj/item/ammo_casing/energy/plasma/weak/L in C.ammo_type)
 				L.projectile_type = /obj/item/projectile/plasma/adv
@@ -254,7 +254,7 @@
 
 /obj/item/borg/upgrade/premiumka
 	name = "mining cyborg premium KA"
-	desc = "A premium kinetic accelerator replacement for the mining module's standard kinetic accelerator."
+	desc = "Премиум-кинетический ускоритель для замены стандартного кинетического ускорителя шахтёрского модуля."
 	icon_state = "cyborg_upgrade3"
 	require_module = TRUE
 	module_type = list(/obj/item/robot_module/miner)
@@ -301,7 +301,7 @@
 
 /obj/item/borg/upgrade/tboh
 	name = "janitor cyborg trash bag of holding"
-	desc = "A trash bag of holding replacement for the janiborg's standard trash bag."
+	desc = "Мусорный мешок размораживания для замены стандартного мусорного мешка уборочного киборга."
 	icon_state = "cyborg_upgrade3"
 	require_module = 1
 	module_type = list(/obj/item/robot_module/butler)
@@ -360,7 +360,7 @@
 
 /obj/item/borg/upgrade/amop
 	name = "janitor cyborg advanced mop"
-	desc = "An advanced mop replacement for the janiborg's standard mop."
+	desc = "Продвинутая швабра для замены стандартной швабры уборочного киборга."
 	icon_state = "cyborg_upgrade3"
 	require_module = 1
 	module_type = list(/obj/item/robot_module/butler)
@@ -419,7 +419,7 @@
 
 /obj/item/borg/upgrade/syndicate
 	name = "illegal equipment module"
-	desc = "Unlocks the hidden, deadlier functions of a cyborg."
+	desc = "Разблокирует скрытые, более смертоносные функции киборга."
 	icon_state = "cyborg_upgrade3"
 	require_module = 1
 
@@ -440,7 +440,7 @@
 
 /obj/item/borg/upgrade/lavaproof
 	name = "mining cyborg lavaproof tracks"
-	desc = "An upgrade kit to apply specialized coolant systems and insulation layers to mining cyborg tracks, enabling them to withstand exposure to molten rock."
+	desc = "Комплект модернизации для установки специализированных систем охлаждения и изоляционных слоёв на гусеницы шахтёрского киборга, позволяя им выдерживать воздействие расплавленной породы."
 	icon_state = "ash_plating"
 	resistance_flags = LAVA_PROOF | FIRE_PROOF
 	require_module = 1
@@ -459,7 +459,7 @@
 
 /obj/item/borg/upgrade/selfrepair
 	name = "self-repair module"
-	desc = "This module will repair the cyborg over time."
+	desc = "Этот модуль со временем будет ремонтировать киборга."
 	icon_state = "cyborg_upgrade5"
 	require_module = 1
 	var/repair_amount = -1
@@ -558,8 +558,8 @@
 
 /obj/item/borg/upgrade/hypospray
 	name = "medical cyborg hypospray advanced synthesiser"
-	desc = "An upgrade to the Medical module cyborg's hypospray, allowing it \
-		to produce more advanced and complex medical reagents."
+	desc = "Улучшение гипоспрея медицинского киборга, позволяющее \
+		производить более продвинутые и сложные медицинские реагенты."
 	icon_state = "cyborg_upgrade3"
 	require_module = 1
 	module_type = list(/obj/item/robot_module/medical,
@@ -586,22 +586,22 @@
 
 /obj/item/borg/upgrade/hypospray/expanded
 	name = "medical cyborg expanded hypospray"
-	desc = "An upgrade to the Medical module's hypospray, allowing it \
-		to treat a wider range of conditions and problems."
+	desc = "Улучшение гипоспрея медицинского модуля, позволяющее \
+		лечить более широкий спектр состояний и проблем."
 	additional_reagents = list(/datum/reagent/medicine/mannitol, /datum/reagent/medicine/oculine, /datum/reagent/medicine/inacusiate,
 		/datum/reagent/medicine/mutadone, /datum/reagent/medicine/haloperidol)
 
 /obj/item/borg/upgrade/hypospray/high_strength
 	name = "medical cyborg high-strength hypospray"
-	desc = "An upgrade to the Medical module's hypospray, containing \
-		stronger versions of existing chemicals."
+	desc = "Улучшение гипоспрея медицинского модуля, содержащее \
+		более сильные версии существующих химикатов."
 	additional_reagents = list(/datum/reagent/medicine/oxandrolone, /datum/reagent/medicine/sal_acid,
 								/datum/reagent/medicine/rezadone, /datum/reagent/medicine/pen_acid, /datum/reagent/medicine/prussian_blue)
 
 /obj/item/borg/upgrade/piercing_hypospray
 	name = "cyborg piercing hypospray"
-	desc = "An upgrade to a cyborg's hypospray, allowing it to \
-		pierce armor and thick material."
+	desc = "Улучшение гипоспрея киборга, позволяющее \
+		пробивать броню и толстый материал."
 	icon_state = "cyborg_upgrade3"
 	module_type = list(/obj/item/robot_module/medical,
 		/obj/item/robot_module/syndicate_medical)
@@ -633,9 +633,9 @@
 
 /obj/item/borg/upgrade/processor
 	name = "medical cyborg surgical processor"
-	desc = "An upgrade to the Medical module, installing a processor \
-		capable of scanning surgery disks and carrying \
-		out procedures"
+	desc = "Улучшение медицинского модуля, устанавливающее процессор, \
+		способный сканировать хирургические диски и выполнять \
+		операции."
 	icon_state = "cyborg_upgrade3"
 	require_module = 1
 	module_type = list(/obj/item/robot_module/medical,
@@ -657,8 +657,8 @@
 
 /obj/item/borg/upgrade/advhealth
 	name = "advanced cyborg health scanner"
-	desc = "An upgrade to the Medical modules, installing a built-in \
-		advanced health scanner, for better readings on patients."
+	desc = "Улучшение медицинских модулей, устанавливающее встроенный \
+		продвинутый сканер здоровья для лучших показаний пациентов."
 	icon_state = "cyborg_upgrade3"
 	require_module = 1
 	module_type = list(
@@ -719,7 +719,7 @@
 
 /obj/item/borg/upgrade/ai
 	name = "B.O.R.I.S. module"
-	desc = "Bluespace Optimized Remote Intelligence Synchronization. An uplink device which takes the place of an MMI in cyborg endoskeletons, creating a robotic shell controlled by an AI."
+	desc = "Блюспейс-оптимизированная синхронизация удалённого интеллекта. Устройство-приёмник, которое заменяет ММИ в эндоскелетах киборгов, создавая роботизированную оболочку, управляемую ИИ."
 	icon_state = "boris"
 
 /obj/item/borg/upgrade/ai/action(mob/living/silicon/robot/R, user = usr)
@@ -743,7 +743,7 @@
 
 /obj/item/borg/upgrade/expand
 	name = "borg expander"
-	desc = "A cyborg resizer, it makes a cyborg huge."
+	desc = "Изменитель размера киборга, делает киборга огромным."
 	icon_state = "cyborg_upgrade3"
 
 /* moved to modular_sand
@@ -784,7 +784,7 @@
 
 /obj/item/borg/upgrade/rped
 	name = "engineering cyborg BSRPED"
-	desc = "A rapid part exchange device for the engineering cyborg."
+	desc = "Устройство быстрой замены деталей для инженерного киборга."
 	icon = 'icons/obj/storage.dmi'
 	icon_state = "borg_BS_RPED"
 	require_module = TRUE
@@ -854,7 +854,7 @@
 
 /obj/item/borg/upgrade/pinpointer
 	name = "medical cyborg crew pinpointer"
-	desc = "A crew pinpointer module for the medical cyborg."
+	desc = "Модуль указателя членов экипажа для медицинского киборга."
 	icon = 'icons/obj/device.dmi'
 	icon_state = "pinpointer_crew"
 	require_module = TRUE
@@ -883,7 +883,7 @@
 
 /obj/item/borg/upgrade/transform
 	name = "borg module picker (Standard)"
-	desc = "Allows you to to turn a cyborg into a standard cyborg."
+	desc = "Позволяет превратить киборга в стандартного киборга."
 	icon_state = "cyborg_upgrade3"
 	var/obj/item/robot_module/new_module = /obj/item/robot_module/standard
 
@@ -894,14 +894,14 @@
 
 /obj/item/borg/upgrade/transform/clown
 	name = "borg module picker (Clown)"
-	desc = "Allows you to to turn a cyborg into a clown, honk."
+	desc = "Позволяет превратить киборга в клоуна, хонк."
 	icon_state = "cyborg_upgrade3"
 	new_module = /obj/item/robot_module/clown
 
 // Citadel's Vtech Controller
 /obj/effect/proc_holder/silicon/cyborg/vtecControl
 	name = "vTec Control"
-	desc = "Allows finer-grained control of the vTec speed boost."
+	desc = "Позволяет более тонко контролировать ускорение vTec."
 	action_icon = 'icons/mob/actions.dmi'
 	action_icon_state = "Chevron_State_0"
 
