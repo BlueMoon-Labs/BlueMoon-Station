@@ -40,12 +40,6 @@
 	var/is_pacifist = FALSE
 	var/is_reduce_damage = TRUE
 
-
-/mob/living/simple_animal/pet/slugcat/Initialize(mapload)
-	. = ..()
-	add_verb(src, /mob/living/proc/lay_down)
-	AddElement(/datum/element/ventcrawling, given_tier = VENTCRAWLER_ALWAYS)
-
 /mob/living/simple_animal/pet/slugcat/monk
 	name = "слизнекот-монах"
 	desc = "Удивительное существо, напоминающее кота и слизня в одном обличии. Но это не слизь, а иной вид существа. Гордость ксенобиологии. Крайне ловкое и умное, родом с планеты с опасной средой обитания. Не любит охоту и не умеет пользоваться копьями. На нём отлично смотрятся шляпы."
