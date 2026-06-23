@@ -21,6 +21,7 @@
 	gold_core_spawnable = FRIENDLY_SPAWN
 	footstep_type = FOOTSTEP_MOB_SLIME
 	faction = list("slime","neutral")
+	ventcrawler = VENTCRAWLER_ALWAYS
 	speed = -1
 
 	// Переменные инвентаря
@@ -84,7 +85,6 @@
 /mob/living/simple_animal/pet/slugcat/Initialize(mapload)
 	. = ..()
 	add_verb(src, /mob/living/proc/lay_down)
-	AddElement(/datum/element/ventcrawling, given_tier = VENTCRAWLER_ALWAYS)
 	regenerate_icons()
 
 /mob/living/simple_animal/pet/slugcat/attackby(obj/item/W, mob/user, params)
