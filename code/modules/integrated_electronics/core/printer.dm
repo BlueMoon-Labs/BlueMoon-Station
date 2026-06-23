@@ -215,7 +215,7 @@
 		categories += list(category_data)
 
 	data["categories"] = categories
-	data["clone_config_status"] = CONFIG_GET(flag/ic_printing)
+	data["clone_config_status"] = CONFIG_GET(flag/ic_printing) || debug
 
 	super_data_cashe = data
 

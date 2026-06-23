@@ -5,7 +5,7 @@
 	max_occurrences = 1
 	min_players = 30
 	earliest_start = 45 MINUTES
-	dynamic_should_hijack = TRUE
+	dynamic_should_hijack = FALSE
 	category = EVENT_CATEGORY_INVASION
 	description = "The crew will face a PMC assault."
 
@@ -34,15 +34,15 @@
 	ship_name = pick(strings(PIRATE_NAMES_FILE, "rogue_names"))
 
 	priority_announce("Входящая подпространственная передача данных. Открыт защищенный канал связи на всех коммуникационных консолях.", "Сомнительное Заявление", SSstation.announcer.get_rand_report_sound(), has_important_message = TRUE)
+	ship_template = /datum/map_template/shuttle/inteq_collosus
+	threat_msg.title = "Сомнительное Заявление"
+	threat_msg.possible_answers = list("Мы заплатим.","Мы заплатим, но на самом деле нет.")
 	var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
 	if(D)
 		payoff = max(payoff_min, FLOOR(D.account_balance * 0.9, 1000))
-
-		ship_template = /datum/map_template/shuttle/inteq_collosus
-
-		threat_msg.title = "Сомнительное Заявление"
-		threat_msg.content = "Джамбо, уроды. Мы тут пролетали неподалеку, и заметили красно-синих голубков. Расклад прост. Гоните [payoff] кредитов, в противном случае мы не поленимся проложить курс нашего крейсера напрямую через вашу станцию."
-		threat_msg.possible_answers = list("Мы заплатим.","Мы заплатим, но на самом деле нет.")
+	else
+		payoff = payoff_min
+	threat_msg.content = "Джамбо, уроды. Мы тут пролетали неподалеку, и заметили красно-синих голубков. Расклад прост. Гоните [payoff] кредитов, в противном случае мы не поленимся проложить курс нашего крейсера напрямую через вашу станцию."
 
 	threat_msg.answer_callback = CALLBACK(src, PROC_REF(raiders_answered), threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
 	SScommunications.send_message(threat_msg,unique = TRUE)

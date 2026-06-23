@@ -35,6 +35,8 @@
 	var/flash_protect = 0
 	var/see_invisible = SEE_INVISIBLE_LIVING
 	var/lighting_alpha
+	var/lighting_cutoff = null
+	var/list/color_cutoffs = null
 	var/eye_damaged	= FALSE	//indicates that our eyes are undergoing some level of negative effect
 
 /obj/item/organ/eyes/Insert(mob/living/carbon/M, special = FALSE, drop_if_replaced = FALSE)
@@ -119,26 +121,45 @@
 
 	eye_damaged = TRUE
 
+#define NIGHTVISION_LIGHT_OFF 0
+#define NIGHTVISION_LIGHT_LOW 1
+#define NIGHTVISION_LIGHT_MID 2
+#define NIGHTVISION_LIGHT_HIG 3
+
 /obj/item/organ/eyes/night_vision
 	name = "shadow eyes"
 	desc = "A spooky set of eyes that can see in the dark."
 	see_in_dark = 8
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
 	actions_types = list(/datum/action/item_action/organ_action/use)
-	var/night_vision = TRUE
+
+	// Color cutoff lists for the 4-level toggle
+	var/list/low_light_cutoff = list(5, 10, 15)
+	var/list/medium_light_cutoff = list(15, 25, 30)
+	var/list/high_light_cutoff = list(30, 45, 50)
+	var/light_level = NIGHTVISION_LIGHT_OFF
+
+/obj/item/organ/eyes/night_vision/Initialize(mapload)
+	. = ..()
+	if(low_light_cutoff)
+		color_cutoffs = low_light_cutoff.Copy()
+	light_level = NIGHTVISION_LIGHT_LOW
 
 /obj/item/organ/eyes/night_vision/ui_action_click()
 	sight_flags = initial(sight_flags)
-	switch(lighting_alpha)
-		if (LIGHTING_PLANE_ALPHA_VISIBLE)
-			lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
-		if (LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE)
-			lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
-		if (LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE)
-			lighting_alpha = LIGHTING_PLANE_ALPHA_INVISIBLE
+	switch(light_level)
+		if (NIGHTVISION_LIGHT_OFF)
+			color_cutoffs = low_light_cutoff?.Copy()
+			light_level = NIGHTVISION_LIGHT_LOW
+		if (NIGHTVISION_LIGHT_LOW)
+			color_cutoffs = medium_light_cutoff?.Copy()
+			light_level = NIGHTVISION_LIGHT_MID
+		if (NIGHTVISION_LIGHT_MID)
+			color_cutoffs = high_light_cutoff?.Copy()
+			light_level = NIGHTVISION_LIGHT_HIG
 		else
-			lighting_alpha = LIGHTING_PLANE_ALPHA_VISIBLE
-			sight_flags &= ~SEE_BLACKNESS
+			color_cutoffs = null
+			light_level = NIGHTVISION_LIGHT_OFF
 	owner.update_sight()
 
 /obj/item/organ/eyes/night_vision/alien
@@ -159,6 +180,9 @@
 /obj/item/organ/eyes/night_vision/mushroom
 	name = "fung-eye"
 	desc = "While on the outside they look inert and dead, the eyes of mushroom people are actually very advanced."
+	low_light_cutoff = list(0, 15, 20)
+	medium_light_cutoff = list(0, 20, 35)
+	high_light_cutoff = list(0, 40, 50)
 
 ///Robotic
 
@@ -224,6 +248,7 @@
 	icon_state = "thermal_eyes" //BLUEMOON ADD респрайты киберглаз
 	sight_flags = SEE_MOBS
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
+	color_cutoffs = list(25, 8, 5)
 	flash_protect = -1
 	see_in_dark = 8
 	to_activate_text = "thermal vision"
@@ -231,11 +256,13 @@
 /obj/item/organ/eyes/robotic/toggled/thermals/toggle(silent)
 	if(active)
 		sight_flags &= ~(initial(sight_flags))
-		lighting_alpha = parent_type:lighting_alpha
-		flash_protect = parent_type:flash_protect
+		lighting_alpha = initial(lighting_alpha)
+		color_cutoffs = initial(color_cutoffs)
+		flash_protect = initial(flash_protect)
 	else
 		sight_flags |= (initial(sight_flags))
 		lighting_alpha = initial(lighting_alpha)
+		color_cutoffs = initial(color_cutoffs)
 		flash_protect = initial(flash_protect)
 	return ..()
 
@@ -521,6 +548,8 @@
 	desc = "These eyes seem to have increased sensitivity to bright light, offset by basic night vision."
 	see_in_dark = 4
 	flash_protect = -1
+	low_light_cutoff = list(2, 8, 2)
+	medium_light_cutoff = list(5, 15, 5)
 
 #undef BLURRY_VISION_ONE
 #undef BLURRY_VISION_TWO

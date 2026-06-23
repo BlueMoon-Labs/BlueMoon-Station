@@ -519,6 +519,65 @@
 	var/obj/item/item_target = target
 	name = "Toggle [item_target.name]"
 
+/datum/action/item_action/toggle_nv
+	name = "Toggle Night Vision"
+	var/stored_cutoffs
+	var/stored_colour
+	var/stored_darkness_view
+	var/stored_lighting_alpha
+
+/datum/action/item_action/toggle_nv/New(obj/item/clothing/glasses/target)
+	. = ..()
+	target.AddElement(/datum/element/update_icon_updates_onmob)
+	if(length(target.color_cutoffs))
+		stored_cutoffs = target.color_cutoffs
+		target.color_cutoffs = list()
+	if(target.darkness_view)
+		stored_darkness_view = target.darkness_view
+		target.darkness_view = 0
+	if(!isnull(target.lighting_alpha))
+		stored_lighting_alpha = target.lighting_alpha
+		target.lighting_alpha = null
+	stored_colour = target.glass_colour_type
+	target.flash_protect = 0
+	target.update_icon()
+
+/datum/action/item_action/toggle_nv/Trigger(trigger_flags)
+	. = ..()
+	if(!.)
+		return FALSE
+	if(!istype(target, /obj/item/clothing/glasses))
+		return
+	var/obj/item/clothing/glasses/goggles = target
+	var/mob/living/carbon/holder = goggles.loc
+	if(!istype(holder) || holder.glasses != goggles)
+		holder = null
+	if(stored_cutoffs)
+		goggles.color_cutoffs = stored_cutoffs
+		goggles.darkness_view = stored_darkness_view
+		goggles.lighting_alpha = stored_lighting_alpha
+		goggles.flash_protect = initial(goggles.flash_protect)
+		stored_cutoffs = null
+		stored_darkness_view = null
+		stored_lighting_alpha = null
+		if(stored_colour && ishuman(holder))
+			goggles.change_glass_color(holder, stored_colour)
+		playsound(goggles, 'sound/items/night_vision_on.ogg', 30, TRUE, -3)
+	else
+		stored_cutoffs = goggles.color_cutoffs
+		stored_darkness_view = goggles.darkness_view
+		stored_lighting_alpha = goggles.lighting_alpha
+		stored_colour = goggles.glass_colour_type
+		goggles.color_cutoffs = list()
+		goggles.darkness_view = 0
+		goggles.lighting_alpha = null
+		goggles.flash_protect = 0
+		if(stored_colour && ishuman(holder))
+			goggles.change_glass_color(holder, null)
+		playsound(goggles, 'sound/machines/click.ogg', 30, TRUE, -3)
+	holder?.update_sight()
+	goggles.update_icon()
+
 /datum/action/item_action/halt
 	name = "HALT!"
 

@@ -1128,7 +1128,7 @@
   * Arguments:
   * * gauze- Just the gauze stack we're taking a sheet from to apply here
   */
-/obj/item/bodypart/proc/apply_gauze(obj/item/stack/gauze)
+/obj/item/bodypart/proc/apply_gauze(obj/item/stack/medical/gauze)
 	if(!istype(gauze) || !gauze.absorption_capacity)
 		return
 	QDEL_NULL(current_gauze)

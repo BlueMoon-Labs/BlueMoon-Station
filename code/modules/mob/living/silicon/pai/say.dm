@@ -5,7 +5,7 @@
 		..(message)
 
 /mob/living/silicon/pai/binarycheck()
-	return FALSE
+	return TRUE
 
 /mob/living/silicon/pai/radio(message, message_mode, list/spans, language)
 	if((message_mode == "robot") || (message_mode in GLOB.radiochannels))
