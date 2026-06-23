@@ -81,8 +81,10 @@
 	health = 300
 	maxHealth = 300
 
-/mob/living/simple_animal/pet/slugcat/New()
-	..()
+/mob/living/simple_animal/pet/slugcat/Initialize(mapload)
+	. = ..()
+	add_verb(src, /mob/living/proc/lay_down)
+	AddElement(/datum/element/ventcrawling, given_tier = VENTCRAWLER_ALWAYS)
 	regenerate_icons()
 
 /mob/living/simple_animal/pet/slugcat/attackby(obj/item/W, mob/user, params)
@@ -104,7 +106,7 @@
 	if(..())
 		return TRUE
 
-	if(!(iscarbon(usr) || usr.incapacitated() || !Adjacent(usr)))
+	if(!iscarbon(usr) || usr.incapacitated() || !Adjacent(usr))
 		usr << browse(null, "window=mob\[UID()\]")
 		usr.unset_machine()
 		return
@@ -213,16 +215,9 @@
 	else
 		hand_href = "<A href='?src=\[UID()\];add_inv=hand'>Nothing</A>"
 
-	var/collar_href
-	if(pcollar)
-		collar_href = "<A href='?src=\[UID()\];remove_inv=collar'>\[pcollar\]</A>"
-	else
-		collar_href = "<A href='?src=\[UID()\];add_inv=collar'>Nothing</A>"
-
 	var/dat = {"<meta charset="UTF-8"><div align='center'><b>Inventory of \[name\]</b></div><p>"}
-	dat += "<br><B>Head:</B> [head_href]"
-	dat += "<br><B>Hand:</B> [hand_href]"
-	dat += "<br><B>Collar:</B> [collar_href]"
+	dat += "<br><B>Head:</B> \[head_href\]"
+	dat += "<br><B>Hand:</B> \[hand_href\]"
 	var/datum/browser/popup = new(user, "mob\[UID()\]", "\[src\]", 440, 250)
 	popup.set_content(dat)
 	popup.open()
