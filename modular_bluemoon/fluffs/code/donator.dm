@@ -2453,3 +2453,10 @@
 	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/suit/hooded/wintercoat/security/no_armor
 	ckeywhitelist = list("iistrizhii")
+
+/datum/gear/donator/bm/oversize_shirt
+
+	name = "Oversized checkered shirt"
+	slot = ITEM_SLOT_NECK
+	path = /obj/item/clothing/neck/cloak/oversize
+	ckeywhitelist = list("moun4l")
