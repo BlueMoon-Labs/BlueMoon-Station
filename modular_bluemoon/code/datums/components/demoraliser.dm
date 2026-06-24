@@ -13,6 +13,12 @@
 #define FEAR_LEVEL_CHAPLAIN 5
 #define FEAR_LEVEL_OTHERS 6
 
+/// How often a propaganda host (poster/flag) re-scans view() for new victims.
+/// The expensive part is the view() sweep; throttling it well below the per-tick
+/// SSobj cadence is the whole point. The per-victim was_scared cooldown and
+/// next_scare keep the actual mood spam in check, so this only governs CPU.
+#define DEMORALISER_SCAN_INTERVAL (6 SECONDS)
+
 // Чтобы из-за 10 плакатов все вокруг не охуевали каждые 5 наносекунд. Не самое лучшее решение, ну и ладно
 /mob/living/carbon/human
 	/// Last fear effect apply. Primarily used in inteq propaganda
@@ -20,6 +26,16 @@
 
 /datum/proximity_monitor/advanced/demoraliser
 	var/next_scare = 0
+	/// world.time before which the host should skip its view() scan (CPU throttle).
+	var/next_scan = 0
+
+/// Returns TRUE at most once per DEMORALISER_SCAN_INTERVAL, so a host's process()
+/// only runs the costly view() sweep on a throttled cadence instead of every tick.
+/datum/proximity_monitor/advanced/demoraliser/proc/can_scan()
+	if(world.time < next_scan)
+		return FALSE
+	next_scan = world.time + DEMORALISER_SCAN_INTERVAL
+	return TRUE
 
 
 /datum/proximity_monitor/advanced/demoraliser/New(atom/_host, range, _ignore_if_not_on_turf = TRUE)
@@ -150,3 +166,4 @@
 #undef FEAR_LEVEL_MINDSHIELD
 #undef FEAR_LEVEL_CHAPLAIN
 #undef FEAR_LEVEL_OTHERS
+#undef DEMORALISER_SCAN_INTERVAL

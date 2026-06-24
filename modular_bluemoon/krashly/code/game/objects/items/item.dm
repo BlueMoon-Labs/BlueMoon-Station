@@ -96,6 +96,14 @@
 	return ..()
 
 /obj/structure/sign/flag/inteq/process()
+	if(!demotivator)
+		STOP_PROCESSING(SSobj, src)
+		return
+	if(!demotivator.can_scan()) // throttle the expensive view() sweep
+		return
+	do_scare_scan()
+
+/obj/structure/sign/flag/inteq/proc/do_scare_scan()
 	if(world.time < demotivator.next_scare)
 		return
 	var/scared_someone = FALSE
