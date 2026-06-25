@@ -227,14 +227,7 @@
 	do_scare_scan()
 
 /obj/structure/sign/poster/contraband/inteq/proc/do_scare_scan()
-	if(world.time < demotivator.next_scare)
-		return
-	var/scared_someone = FALSE
-	for(var/mob/living/viewer in view(5, src))
-		demotivator.pugach(viewer)
-		scared_someone = TRUE
-	if(scared_someone)
-		demotivator.next_scare = world.time + 120
+	demotivator.do_scare_scan()
 
 /obj/item/poster/random_inteq/poster_place_check(mob/user, turf/closed/wall)
 	// Хз, как ты пытаешься повесить постер, будучи не хуманом, но мало ли

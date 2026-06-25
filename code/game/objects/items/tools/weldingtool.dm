@@ -191,6 +191,11 @@
 		reagents.trans_to(O, reagents.total_volume)
 		to_chat(user, "<span class='notice'>You empty [src]'s fuel tank into [O].</span>")
 		update_icon()
+		// Draining can leave a self-fueling welder below max while it is off/idle and
+		// already PROCESS_KILL'd; re-register so refueling resumes. process()'s off
+		// branch keeps it processing until topped up, then PROCESS_KILLs it again.
+		if(self_fueling && get_fuel() < max_fuel)
+			START_PROCESSING(SSobj, src)
 	if(isOn())
 		use(1)
 		var/turf/location = get_turf(user)
