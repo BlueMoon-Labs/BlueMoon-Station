@@ -44,10 +44,8 @@
 						active = vented.total_moles() > 0
 						qdel(vented)
 		else
-			equalize_all_gases_in_list(list(internal,external))
+			equalize_all_gases_in_list(list(internal, external))
 			active = TRUE
-
-	active = internal.temperature_share(external, OPEN_HEAT_TRANSFER_COEFFICIENT) || active
 
 	if(active)
 		air_update_turf()
