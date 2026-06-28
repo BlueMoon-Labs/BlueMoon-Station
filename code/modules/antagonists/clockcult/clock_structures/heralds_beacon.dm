@@ -57,7 +57,7 @@
 			else
 				. += "<span class='bold neovgre_small'>Он был активирован!</span>"
 		else
-			. += "<span class='brass'>Осталось <b>[time_remaining]</b> секунд[second % 10 == 1 && second % 100 != 11 ? "а" : (second % 10 >= 2 && second % 10 <= 4 && (second % 100 < 10 || second % 100 >= 20) ? "ы" : "")] для голосования.</span>"
+			. += "<span class='brass'>Осталось <b>[time_remaining]</b> секунд[time_remaining % 10 == 1 && time_remaining % 100 != 11 ? "а" : (time_remaining % 10 >= 2 && time_remaining % 10 <= 4 && (time_remaining % 100 < 10 || time_remaining % 100 >= 20) ? "ы" : "")] для голосования.</span>"
 			. += "<span class='big brass'>Для активации маяка собрано <b>[voters.len]/[votes_needed]</b> голосов!</span>"
 
 /obj/structure/destructible/clockwork/heralds_beacon/on_attack_hand(mob/living/user, act_intent = user.a_intent, unarmed_attack_flags)
