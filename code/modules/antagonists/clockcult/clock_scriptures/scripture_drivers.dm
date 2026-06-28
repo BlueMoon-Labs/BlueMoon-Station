@@ -7,7 +7,7 @@
 	descname = "Генератор от звёздного света"
 	name = "Stargazer"
 	desc = "Создает слабую структуру, которая генерирует энергию каждую секунду, пока находится в пределах трех клеток от звездного света."
-	invocations = list("Capture their inferior light for us.")
+	invocations = list("Запечатлей для нас их низший свет.")
 	channel_time = 50
 	power_cost = 200
 	object_path = /obj/structure/destructible/clockwork/stargazer
@@ -61,7 +61,7 @@
 	descname = "Сигил-ловушка"
 	name = "Sigil of Transgression"
 	desc = "Создает на плитке сигил, который на короткое время оглушит следующего человека, не являющегося Слугой, пересекающего его, и наложит на него эффект Воинственности."
-	invocations = list("Божество, нанеси удар...", "...тех, кто незаконно проникает сюда.")
+	invocations = list("Божество, нанеси удар...", "...по тем, кто незаконно проникает сюда.")
 	channel_time = 50
 	power_cost = 50
 	whispered = TRUE

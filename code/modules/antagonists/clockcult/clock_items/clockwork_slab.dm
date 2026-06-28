@@ -231,7 +231,7 @@
 /obj/item/clockwork/slab/proc/get_recollection(what) //Now DMDOC compliant!*
 	. = list()
 	switch(what) //need someone to rewrite info for this.
-		if("Начало работы")
+		if("Default")
 			.["title"] = "По умолчанию"
 			.["info"] = "Привет, слуга! В настоящее время эти категории не работают!"
 		/*

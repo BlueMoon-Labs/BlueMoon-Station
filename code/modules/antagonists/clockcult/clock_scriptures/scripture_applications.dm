@@ -157,7 +157,7 @@
 		"<span class='warning'>Попытка не удалась! Возможно, стоит попробовать ещё раз в другой раз.</span>")
 		slab.busy = null
 		return FALSE
-	clockwork_say(invoker, text2ratvar("...sword and shield!"))
+	clockwork_say(invoker, text2ratvar("...меч и щит!"))
 	var/mob/dead/observer/theghost = pick(marauder_candidates)
 	var/mob/living/simple_animal/hostile/clockwork/guardian/M = new(invoker)
 	M.key = theghost.key
