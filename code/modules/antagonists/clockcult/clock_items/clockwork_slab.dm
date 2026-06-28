@@ -231,7 +231,7 @@
 /obj/item/clockwork/slab/proc/get_recollection(what) //Now DMDOC compliant!*
 	. = list()
 	switch(what) //need someone to rewrite info for this.
-		if("Default")
+		if("Начало работы")
 			.["title"] = "По умолчанию"
 			.["info"] = "Привет, слуга! В настоящее время эти категории не работают!"
 		/*
@@ -316,10 +316,10 @@
 /obj/item/clockwork/slab/ui_static_data(mob/user)
 	. = list()
 	.["tier_infos"] = list() //HEY!! WHEN ADDING NEW TIER, ADD IT HERE
-	.["tier_infos"][SCRIPTURE_PERIPHERAL] = list(
-		"requirement" = "Ошибка кода. Сообщите кодерам!",
-		"ready" = FALSE //just in case. Should NOT exist at all
-	)
+//	.["tier_infos"][SCRIPTURE_PERIPHERAL] = list(
+//		"requirement" = "Ошибка кода. Сообщите кодерам!",
+//		"ready" = FALSE //just in case. Should NOT exist at all        Почему-то это не закомментили, хоть прямо написано НЕ ДОЛЖНО СУЩЕСТВОВАТЬ
+//	)
 	.["tier_infos"][SCRIPTURE_DRIVER] = list(
 		"requirement" = "Не-а, это уже разблокировано",
 		"ready" = TRUE //to bold it on JS side, and to say "These scriptures are permanently unlocked."
