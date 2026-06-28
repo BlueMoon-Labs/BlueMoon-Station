@@ -145,20 +145,24 @@
 	//invoker.notransform = FALSE
 	slab.busy = "Происходит выбор стража"
 	if(!check_special_requirements())
+		slab.busy = null
 		return FALSE
 	to_chat(invoker, "<span class='warning'>Щупальце слегка дрожит, выбирая стража...</span>")
 	var/list/marauder_candidates = pollGhostCandidates("Хотите сыграть за часового стража [invoker.real_name]?", ROLE_SERVANT_OF_RATVAR, null, FALSE, 50, POLL_IGNORE_HOLOPARASITE)
 	if(!check_special_requirements())
+		slab.busy = null
 		return FALSE
 	if(!marauder_candidates.len)
 		invoker.visible_message("<span class='warning'>Щупальце оттягивается от головы [invoker], при этом запечатывая рану в месте проникновения!</span>", \
 		"<span class='warning'>Попытка не удалась! Возможно, стоит попробовать ещё раз в другой раз.</span>")
+		slab.busy = null
 		return FALSE
 	clockwork_say(invoker, text2ratvar("...sword and shield!"))
 	var/mob/dead/observer/theghost = pick(marauder_candidates)
 	var/mob/living/simple_animal/hostile/clockwork/guardian/M = new(invoker)
 	M.key = theghost.key
 	M.bind_to_host(invoker)
+	slab.busy = null
 	invoker.visible_message("<span class='warning'>Щупальце оттягивается от головы [invoker], при этом запечатывая рану в месте проникновения!</span>", \
 	"<span class='sevtug'>[M.true_name], механический страж, поселился в вашем сознании. Общайтесь с ним с помощью кнопки действия \"Linked Minds\".</span>")
 	return TRUE

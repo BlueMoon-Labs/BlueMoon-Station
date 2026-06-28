@@ -67,16 +67,16 @@
 		M.playsound_local(M, 'sound/machines/clockcult/eminence_selected.ogg', 50, FALSE)
 
 /obj/structure/destructible/clockwork/eminence_spire/proc/nomination(mob/living/nominee) //A user is nominating themselves or ghosts to become Eminence
-	var/nomination_choice = alert(nominee, "Кого бы вы хотели выдвинуть?", "Выдвижение на Епископа", "Выдвижение себя на Епископа", "Выдвижение призрака на Епископа", "Отмена")
+	var/nomination_choice = alert(nominee, "Кого бы вы хотели выдвинуть?", "Выдвижение на Епископа", "Выдвинуть себя на место Епископа", "Выдвинуть призрака на место Епископа", "Отмена")
 	if(!is_servant_of_ratvar(nominee) || !nominee.canUseTopic(src) || eminence_nominee)
 		return
 	switch(nomination_choice)
 		if("Отмена")
 			return
-		if("Выдвижение себя на Епископа")
+		if("Выдвинуть себя на место Епископа")
 			eminence_nominee = nominee
 			hierophant_message("<span class='brass'><b>[nominee] предлагает себя как Епископа!</b> Вы можете возразить, нажав на шпиль возвышения. В противном случае голосование будет завершено через 30 секунд.</span>")
-		if("Nominate Ghosts")
+		if("Выдвинуть призрака на место Епископа")
 			eminence_nominee = "призраков"
 			hierophant_message("<span class='brass'><b>[nominee] предлагает выбрать Епископа среди призраков!</b> Вы можете возразить, нажав на шпиль возвышения. В противном случае голосование будет завершено через 30 секунд.</span>")
 	for(var/mob/M in servants_and_ghosts())
