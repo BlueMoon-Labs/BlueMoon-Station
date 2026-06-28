@@ -120,10 +120,10 @@
 		. += "[material_string].\n"
 	else
 		. += "</span><span class='inathneq_small'><b>нет</b><span class='brass'> материалов.\n"
-	. += "Он [power_cost >= 0 ? "потребляет " : "генерирует "]<span class='inathneq_small'><b> [power_cost ? "[power_cost]" : "ноль"] </b><span class='brass'> энергии.\n"
+	. += "Он [power_cost >= 0 ? "потребляет " : "генерирует "]<span class='inathneq_small'><b>[power_cost ? "[power_cost]" : "ноль"] </b><span class='brass'>энергии.\n"
 	. += "<span class='inathneq_small'><b>[requires_human ? "Требуется человек" : "Не требуется человек"]</b><span class='brass'> в качестве цели.\n"
 	if(requires_human)
-		. += "Цель <span class='inathneq_small'><b>[must_be_servant ? "не может быть" : "может быть"] </b><span class='brass'> не слугой.\n"
+		. += "Цель <span class='inathneq_small'><b>[must_be_servant ? "не может быть" : "может быть"]</b><span class='brass'> не слугой.\n"
 		. += "Целью <span class='inathneq_small'><b>[target_can_be_invoker ? "может быть" : "не может быть"]</b><span class='brass'> вызывающий ритуал.\n"
 	. += "Он требует <span class='inathneq_small'><b>[cast_time/10]</b><span class='brass'> секунд[(cast_time/10) % 10 == 1 && (cast_time/10) % 100 != 11 ? "а" : ((cast_time/10) % 10 >= 2 && (cast_time/10) % 10 <= 4 && ((cast_time/10) % 100 < 10 || (cast_time/10) % 100 >= 20) ? "ы" : "")].\n"
 	. += "Он был использован <span class='inathneq_small'><b>[times_used]</b><span class='brass'> раз, из <span class='inathneq_small'><b>[limit != INFINITE ? "[limit]" : "бесконечности"]</b><span class='brass'> доступных использований.</span>"
