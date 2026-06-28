@@ -81,7 +81,11 @@
 		R.AddComponent(/datum/component/mining_cyborg_goliath_plating)
 
 /// Borg plasma cutter uses a weaker shot that costs 4x less energy from the cyborg cell.
+/obj/item/projectile/plasma/weak/cyborg
+	range = 8
+
 /obj/item/ammo_casing/energy/plasma/weak/cyborg
+	projectile_type = /obj/item/projectile/plasma/weak/cyborg
 	e_cost = 25
 
 /obj/item/gun/energy/plasmacutter/cyborg
