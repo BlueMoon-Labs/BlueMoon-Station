@@ -28,7 +28,7 @@
 		return FALSE
 
 	if(limit != INFINITE && times_used >= limit) //Is the limit on casts exceeded?
-		to_chat(invoker, "<span class='brass'>У этого ритуала закончились использования!</span>")
+		to_chat(invoker, "<span class='brass'>У этого ритуала закончились применения!</span>")
 		return FALSE
 
 	var/mob/living/carbon/human/H //This is only used if requires_human is TRUE

@@ -31,7 +31,7 @@
 /obj/item/clockwork/weapon/ratvarian_spear/examine(mob/user)
 	. = ..()
 	if(is_servant_of_ratvar(user) || isobserver(user))
-		. += "<span class='inathneq_small'>Атаки по живым не Cлугам будут создавать <b>[bonus_burn]</b> единиц жизненной силы.</span>"
+		. += "<span class='inathneq_small'>Атаки по живым не Слугам будут создавать <b>[bonus_burn]</b> единиц жизненной силы.</span>"
 		if(!iscyborg(user))
 			. += "<span class='brass'>Бросок копья нанесёт огромный урон, сломает копьё и собьёт цель с ног.</span>"
 
@@ -51,7 +51,7 @@
 	if(!QDELETED(target) && target.stat != DEAD && !target.anti_magic_check(chargecost = 0) && !is_servant_of_ratvar(target)) //we do bonus damage on attacks unless they're a servant, have a null rod, or are dead
 		var/bonus_damage = bonus_burn //normally a total of 20 damage, 30 with ratvar
 		if(issilicon(target))
-			target.visible_message("<span class='warning'>[target]  сильно содрогается от прикосновения [src]!</span>", "<span class='userdanger'>ОШИБКА: температура повышается!</span>")
+			target.visible_message("<span class='warning'>[target] сильно содрогается от прикосновения [src]!</span>", "<span class='userdanger'>ОШИБКА: температура повышается!</span>")
 			bonus_damage *= 5 //total 40 damage on borgs, 70 with ratvar
 		else if(iscultist(target) || isconstruct(target))
 			to_chat(target, "<span class='userdanger'>При появлении [src] твое тело пронзает мучительная боль!</span>")
@@ -89,7 +89,7 @@
 		if(!T)
 			T = get_turf(src)
 		if(T) //make sure we're not in null or something
-			T.visible_message("<span class='warning'>[src] [pick("раскалывается на две части и исчезает", "разламывается пополам и дематериализуетсяы")]!</span>")
+			T.visible_message("<span class='warning'>[src] [pick("раскалывается на две части и исчезает", "разламывается пополам и дематериализуется")]!</span>")
 			new /obj/effect/temp_visual/ratvar/spearbreak(T)
 		action?.weapon_reset(RATVARIAN_WEAPON_COOLDOWN)
 

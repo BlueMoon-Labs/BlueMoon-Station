@@ -109,7 +109,7 @@
 	if(slot == ITEM_SLOT_OCLOTHING && !is_servant_of_ratvar(user))
 		if(!iscultist(user))
 			to_chat(user, "<span class='heavy_brass'>\"Эй-эй, это для моих слуг, а не для тебя.\"</span>")
-			user.visible_message("<span class='warning'>Как только [user] надевает [src] на себя, кираса срывается с [user.ru_ego()] туловища!</span>", "<span class='warning'>Кираса срывается с головы, оставляя после себя лишь тошноту!</span>")
+			user.visible_message("<span class='warning'>Как только [user] надевает [src] на себя, кираса срывается с [user.ru_ego()] туловища!</span>", "<span class='warning'>Кираса срывается с туловища, оставляя после себя лишь тошноту!</span>")
 			if(iscarbon(user))
 				var/mob/living/carbon/C = user
 				C.vomit(20)

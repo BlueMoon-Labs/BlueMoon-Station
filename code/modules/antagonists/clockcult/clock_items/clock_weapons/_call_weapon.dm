@@ -26,7 +26,7 @@
 		return
 	if(weapon)
 		if(weapon.loc == owner)
-			owner.visible_message("<span class='danger'>[weapon.name] [owner] мерцает и исчезает!!</span>")
+			owner.visible_message("<span class='danger'>[weapon.name] в руках [owner] мерцает и исчезает!</span>")
 			to_chat(owner, "<span class='brass'>Вы отзываете [weapon].</span>")
 			QDEL_NULL(weapon)
 			weapon_reset(RATVARIAN_WEAPON_COOLDOWN * 0.5)

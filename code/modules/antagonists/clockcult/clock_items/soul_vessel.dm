@@ -89,7 +89,7 @@
 		to_chat(user, "<span class='warning'>[H] не имеет мозга, а значит, и разума, который можно было бы забрать!</span>")
 		return
 	if(!H.key) //nobody's home
-		to_chat(user, "<span class='warning'>[H] не имеет разума, который можео было бы забрать!</span>")
+		to_chat(user, "<span class='warning'>[H] не имеет разума, который можно было бы забрать!</span>")
 		return
 	playsound(H, 'sound/misc/splort.ogg', 60, 1, -1)
 	playsound(H, 'sound/magic/clockwork/anima_fragment_attack.ogg', 40, 1, -1)

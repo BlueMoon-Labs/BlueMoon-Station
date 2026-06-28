@@ -161,7 +161,7 @@
 	if(!target)
 		return FALSE
 	target = null
-	visible_message("<span class='warning'>[src] успокаивается и кажется почти разочарованным..</span>")
+	visible_message("<span class='warning'>[src] успокаивается и кажется почти разочарованным.</span>")
 	return TRUE
 
 /obj/structure/destructible/clockwork/ocular_warden/get_efficiency_mod()
