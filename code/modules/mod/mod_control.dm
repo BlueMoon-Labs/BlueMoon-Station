@@ -180,6 +180,7 @@
 	for(var/obj/item/mod/module/module as anything in modules)
 		module.mod = null
 		modules -= module
+		qdel(module)
 	QDEL_NULL(ai)
 	QDEL_NULL(wires)
 	QDEL_NULL(cell)

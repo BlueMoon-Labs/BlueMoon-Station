@@ -78,7 +78,7 @@
 	var/obj/item/piece = part
 	REMOVE_TRAIT(piece, TRAIT_NODROP, MOD_TRAIT)
 	if(wearer)
-		user.doUnEquip(piece, force, null, FALSE)
+		wearer.doUnEquip(piece, force, null, FALSE)
 	if(piece == helmet)
 		helmet.show_overslot()
 	if(piece == chestplate)
@@ -105,7 +105,7 @@
 		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 		return FALSE
 	for(var/obj/item/part as anything in mod_parts)
-		if(!force_deactivate && part.loc == src && part != helmet)  //BM added an exception for a helmet
+		if(!force_deactivate && part.loc != wearer && part != helmet)  //BM added an exception for a helmet
 			balloon_alert(user, "deploy all parts first!")
 			playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 			return FALSE
