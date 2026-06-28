@@ -130,7 +130,7 @@
 	return create_guardian()
 
 /datum/clockwork_scripture/memory_allocation/proc/create_guardian()
-	invoker.visible_message("<span class='warning'>Из [slab.name] [invoker] появляется пурпурное щупальце и вонзается в [invoker.ru_ego()] лоб!</span>", \
+	invoker.visible_message("<span class='warning'>Из [slab.name] в руках [invoker] появляется пурпурное щупальце и вонзается в [invoker.ru_ego()] лоб!</span>", \
 	"<span class='sevtug'>Из [slab] к твоему лбу выстреливает щупальце. Ты начинаешь ждать, пока оно мучительно перестраивает структуру твоих мыслей...</span>")
 	//invoker.notransform = TRUE //Vulnerable during the process
 	slab.busy = "Происходит изменение мыслей"

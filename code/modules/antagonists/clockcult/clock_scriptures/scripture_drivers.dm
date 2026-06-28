@@ -44,7 +44,7 @@
 	power_cost = 10
 	whispered = TRUE
 	object_path = /obj/item/clockwork/integration_cog
-	creator_message = "<span class='brass'>Вы создаете интеграционную шестерню, которую можно вставить в открытый ЛКП для пассивного поглощения его энергии..</span>"
+	creator_message = "<span class='brass'>Вы создаете интеграционную шестерню, которую можно вставить в открытый ЛКП для пассивного поглощения его энергии.</span>"
 	usage_tip = "Следы взлома видны только после вскрытия ЛКП. Чтобы открыть запертый ЛКП, воспользуйтесь этой шестерней."
 	tier = SCRIPTURE_DRIVER
 	category = SCRIPTURE_CATEGORY_STRUCTURE

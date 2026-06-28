@@ -48,7 +48,7 @@
 				var/atom/I = L.anti_magic_check(check_antimagic, check_holy)
 				if(I)
 					if(isitem(I))
-						L.visible_message("<span class='warning'>[I.name] [L] [resist_string], защищая [L.ru_na()] от эффектов [src]!</span>", \
+						L.visible_message("<span class='warning'>[I.name] в руках [L] [resist_string], защищая [L.ru_ego()] от эффектов [src]!</span>", \
 						"<span class='userdanger'>Ваш [I.name] [resist_string], защищая вас!</span>")
 					return
 				sigil_effects(L)
@@ -145,8 +145,8 @@
 	var/atom/I = L.anti_magic_check(check_antimagic, check_holy)
 	if(I)
 		if(isitem(I))
-			L.visible_message("<span class='warning'>[I.name] [L] [resist_string], защищая [L.ru_ego()] от эффектов [src]</span>", \
-			"<span class='userdanger'>Your [I.name] [resist_string], protecting you!</span>")
+			L.visible_message("<span class='warning'>[I.name] в руках [L] [resist_string], защищая [L.ru_ego()] от эффектов [src]</span>", \
+			"<span class='userdanger'>Ваш [I.name] [resist_string], защищая вас!</span>")
 		return FALSE
 	sigil_effects(L)
 	return TRUE

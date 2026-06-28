@@ -71,7 +71,7 @@
 	item_flags = DROPDEL
 
 /obj/item/restraints/handcuffs/clockwork/dropped(mob/user)
-	user.visible_message("<span class='danger'>[name] [user] разваливается на части!</span>", \
+	user.visible_message("<span class='danger'>[name] в руках [user] разваливается на части!</span>", \
 	"<span class='userdanger'>Ваши [name] разваливается на части при снятии!</span>")
 	. = ..()
 

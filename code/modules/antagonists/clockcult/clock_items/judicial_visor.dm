@@ -193,7 +193,7 @@
 		var/atom/I = L.anti_magic_check()
 		if(I)
 			if(isitem(I))
-				L.visible_message("<span class='warning'>Странная энергия вливается в [L] [I.name]!</span>", \
+				L.visible_message("<span class='warning'>Странная энергия вливается в [I.name] в руках [L]!</span>", \
 				"<span class='userdanger'>Твой [I.name] защищает тебя от [src]!</span>")
 			continue
 		L.DefaultCombatKnockdown(15) //knocks down briefly when exploding
