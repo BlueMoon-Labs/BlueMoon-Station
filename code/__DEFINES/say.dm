@@ -66,6 +66,21 @@
 #define SPAN_CLOWN "clown"
 #define SPAN_SINGING "singing" // Skyrat edit
 #define SPAN_TAPE_RECORDER "tape_recorder"
+//BlueMoon add - дополнительные стили речи для чата
+#define SPAN_WHISPER "whisper"
+#define SPAN_LAST_BREATH "last_breath"
+#define SPAN_SLURRING "slurring"
+#define SPAN_GLITCH "glitch"
+#define SPAN_SUPERMATTER "supermatter_delam"
+#define SPAN_BROADCAST_STATIC "broadcast_static"
+#define SPAN_TELEMETRY "telemetry"
+#define SPAN_SIGNLANG "signlang"
+#define SPAN_FELINSPEAK "felinspeak"
+#define SPAN_VOXSHRIEK "voxshriek"
+#define SPAN_ETHEREALVOICE "etherealvoice"
+#define SPAN_PLASMAVOICE "plasmavoice"
+#define SPAN_CHITVOICE "chitvoice"
+#define SPAN_SHADEKINVOICE "shadekinvoice"
 
 //bitflag #defines for return value of the radio() proc.
 #define ITALICS 1

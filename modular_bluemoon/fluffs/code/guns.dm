@@ -990,12 +990,12 @@
 /obj/item/modkit/katana_kit
 	name = "Stun-Katana Kit"
 	desc = "A modkit for making a stunsword into a Stun-Katana."
-	product = /obj/item/melee/baton/stunkatana
+	product = /obj/item/melee/baton/stunsword/stunkatana
 	fromitem = list(/obj/item/melee/baton/stunsword)
 
 #define STUNKATANA_BASE_STATE "stunkatana"
 
-/obj/item/melee/baton/stunkatana
+/obj/item/melee/baton/stunsword/stunkatana
 	DONATE_ITEM_TOOLTIP_PARENT
 	name = "\improper Stun-Katana"
 	desc = "Оружие специальных подразделений ЧВК \"Конкорд\", способное одним только ударом разрезать мехов словно раскалённый нож масло... Ах, было бы славно, если бы он и оставался таким. К сожалению, из-за политики ПАКТа, максимальная сила режущей энерго-кромки выставлена на 1-2 процента, а предоставляемые энергоячейки едва ли могут сравниться с боевыми образцами, что делает этот поистинне мощный клинок лишь средством нелетального задержания с ноткой хайтека и напыщенности."
@@ -1006,19 +1006,19 @@
 	item_state = STUNKATANA_BASE_STATE
 	turn_on_sound = 'modular_bluemoon/fluffs/sound/weapon/stunblade.ogg'
 
-/obj/item/melee/baton/stunkatana/switch_status(new_status, silent)
+/obj/item/melee/baton/stunsword/stunkatana/switch_status(new_status, silent)
 	var/old_status = turned_on
 	. = ..()
 	if(turned_on != old_status)
 		switch_light()
 
-/obj/item/melee/baton/stunkatana/common_baton_melee(mob/M, mob/living/user, shoving = FALSE)
+/obj/item/melee/baton/stunsword/stunkatana/common_baton_melee(mob/M, mob/living/user, shoving = FALSE)
 	. = ..()
 	// После удара — обновляем иконку и свет по текущему заряду.
 	update_icon_state()
 	switch_light()
 
-/obj/item/melee/baton/stunkatana/update_icon_state()
+/obj/item/melee/baton/stunsword/stunkatana/update_icon_state()
 	if(!cell)
 		icon_state = "[STUNKATANA_BASE_STATE]-nocell"
 		item_state = STUNKATANA_BASE_STATE
@@ -1041,7 +1041,7 @@
 		icon_state = "[STUNKATANA_BASE_STATE]-off[charge_percent <= 0.5 ? "-half" : ""]"
 		item_state = STUNKATANA_BASE_STATE
 
-/obj/item/melee/baton/stunkatana/proc/switch_light()
+/obj/item/melee/baton/stunsword/stunkatana/proc/switch_light()
 	if(!cell)
 		set_light(0)
 		return
@@ -1564,9 +1564,9 @@
 	var/charge_percent = cell.charge / cell.maxcharge
 	if(charge_percent < 0.6 && charge_percent>= 0.3)
 		. += "neutron-2"
-	else if(charge_percent<0.3 && charge_percent>0.1)
+	else if(charge_percent<0.3 && charge_percent>=0.1)
 		. += "neutron-1"
-	else
+	else if(charge_percent<0.1)
 		. += "neutron-0"
 /obj/item/modkit/spectral_kit
 	name = "Spectral Kit"
@@ -1599,9 +1599,9 @@
 	var/charge_percent = cell.charge / cell.maxcharge
 	if(charge_percent < 0.6 && charge_percent>= 0.3)
 		. += "spectral-2"
-	else if(charge_percent<0.3 && charge_percent>0.1)
+	else if(charge_percent<0.3 && charge_percent>=0.1)
 		. += "spectral-1"
-	else
+	else if(charge_percent<0.1)
 		. += "spectral-0"
 /obj/item/modkit/pulsar_kit
 	name = "Pulsar Kit"

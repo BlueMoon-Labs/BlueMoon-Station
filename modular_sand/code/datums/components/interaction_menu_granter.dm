@@ -525,6 +525,8 @@
 		.["extreme_pref"] = 			pref_to_num(prefs.extremepref)
 		.["extreme_harm"] = 			pref_to_num(prefs.extremeharm)
 		.["unholy_pref"] =				pref_to_num(prefs.unholypref)
+		.["tattoo_pref"] =				pref_to_num(prefs.tattoopref)
+		.["be_victim"] =				pref_to_num(prefs.be_victim)
 
 	//Getting preferences
 		.["verb_consent"] = 			!!CHECK_BITFIELD(prefs.toggles, VERB_CONSENT)
@@ -765,6 +767,16 @@
 						return FALSE
 					else
 						prefs.extremeharm = value
+				if("tattoo_pref")
+					if(prefs.tattoopref == value)
+						return FALSE
+					else
+						prefs.tattoopref = value
+				if("be_victim")
+					if(prefs.be_victim == value)
+						return FALSE
+					else
+						prefs.be_victim = value
 				else
 					return FALSE
 			prefs.save_character()

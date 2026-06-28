@@ -3184,11 +3184,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/storage)
-"qi" = (
-/obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/mineral/equipment_vendor,
-/turf/open/floor/plasteel/cult,
-/area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
 "qk" = (
 /obj/structure/window/reinforced{
 	dir = 1
@@ -4946,6 +4941,7 @@
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/mineral/equipment_vendor/golem,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
 "Bp" = (
@@ -8737,8 +8733,10 @@
 /obj/item/storage/box/firingpins,
 /obj/item/gun/ballistic/automatic/pistol/deagle/camo,
 /obj/item/gun/ballistic/automatic/pistol/deagle/camo,
-/obj/item/ammo_box/magazine/m357/dumdum,
-/obj/item/ammo_box/magazine/m357/dumdum,
+/obj/item/ammo_box/magazine/m50,
+/obj/item/ammo_box/magazine/m50,
+/obj/item/ammo_box/magazine/m50,
+/obj/item/ammo_box/magazine/m50,
 /turf/open/floor/plasteel/cult,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/comms)
 "WE" = (
@@ -13484,7 +13482,7 @@ zh
 BU
 jo
 TQ
-qi
+BU
 Bo
 Vy
 BU

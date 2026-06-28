@@ -55,7 +55,7 @@
 
 /datum/antagonist/rev/greet()
 	SEND_SOUND(owner.current, sound('sound/ambience/antag/revolution.ogg'))
-	to_chat(owner, "<span class='userdanger'>Вы - революционер! Помогайте всем, чем можете. Не атакуйте своих товарищей. Вы можете опознать их с помощью красных \"R\" на интерфейсе, а лидеров - с помощью синих \"R\". Лидерам предоставляется скидка 99% на товары с черного рынка. Ведите революцию к победе, помогая убивать глав станции!</span>")
+	to_chat(owner, "<span class='revolution_big'>Вы - революционер! Помогайте всем, чем можете. Не атакуйте своих товарищей. Вы можете опознать их с помощью красных \"R\" на интерфейсе, а лидеров - с помощью синих \"R\". Лидерам предоставляется скидка 99% на товары с черного рынка. Ведите революцию к победе, помогая убивать глав станции!</span>")
 	owner.announce_objectives()
 
 /datum/antagonist/rev/create_team(datum/team/revolution/new_team)
@@ -94,7 +94,7 @@
 	new_revhead.silent = TRUE
 	old_owner.add_antag_datum(new_revhead,old_team)
 	new_revhead.silent = FALSE
-	to_chat(old_owner, "<span class='userdanger'>Вы показали свою преданность идеям восстания! Теперь вы - один из лидеров революции!</span>")
+	to_chat(old_owner, "<span class='revolution_big'>Вы показали свою преданность идеям восстания! Теперь вы - один из лидеров революции!</span>")
 
 /datum/antagonist/rev/get_admin_commands()
 	. = ..()
@@ -113,7 +113,7 @@
 	new_owner.add_antag_datum(src)
 	message_admins("[key_name_admin(admin)] has head-rev'ed [new_owner.current].")
 	log_admin("[key_name(admin)] has head-rev'ed [new_owner.current].")
-	to_chat(new_owner.current, "<span class='userdanger'>Теперь вы лидер революции!</span>")
+	to_chat(new_owner.current, "<span class='revolution_big'>Теперь вы лидер революции!</span>")
 
 /datum/antagonist/rev/head/get_admin_commands()
 	. = ..()
@@ -211,7 +211,7 @@
 	new_rev.silent = TRUE
 	old_owner.add_antag_datum(new_rev,old_team)
 	new_rev.silent = FALSE
-	to_chat(old_owner, "<span class='userdanger'>Революционеры разочарованы вашими лидерскими качествами! Вы стали рядовым мятежником!</span>")
+	to_chat(old_owner, "<span class='revolution'>Революционеры разочарованы вашими лидерскими качествами! Вы стали рядовым мятежником!</span>")
 
 /// Checks if the revolution succeeded, and lets them know.
 /datum/antagonist/rev/proc/announce_victorious()
@@ -220,7 +220,7 @@
 	if (!.)
 		return
 
-	to_chat(owner, "<span class='deconversion_message bold'>[victory_message]</span>")
+	to_chat(owner, "<span class='revolution_big'>[victory_message]</span>")
 	var/policy = get_policy(ROLE_REV_SUCCESSFUL)
 	if (policy)
 		to_chat(owner, policy)

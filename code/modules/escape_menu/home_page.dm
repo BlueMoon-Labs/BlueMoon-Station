@@ -23,8 +23,18 @@
 		new /atom/movable/screen/escape_menu/home_button(
 			null,
 			src,
-			"Остановить Звуки",
+			"Настройки персонажа",
 			/* offset = */ 2,
+			CALLBACK(src, PROC_REF(home_open_character_prefs)),
+		)
+	)
+
+	page_holder.give_screen_object(
+		new /atom/movable/screen/escape_menu/home_button(
+			null,
+			src,
+			"Остановить Звуки",
+			/* offset = */ 3,
 			CALLBACK(src, PROC_REF(home_stop_sounds)),
 		)
 	)
@@ -34,7 +44,7 @@
 			null,
 			src,
 			"Покинуть Тело",
-			/* offset = */ 3,
+			/* offset = */ 4,
 			CALLBACK(src, PROC_REF(open_leave_body)),
 		)
 	)
@@ -44,7 +54,7 @@
 			null,
 			src,
 			"Включить/Выключить Полноэкранный Режим",
-			/* offset = */ 5,
+			/* offset = */ 6,
 			CALLBACK(src, PROC_REF(home_fullscreen)),
 		)
 	)
@@ -53,6 +63,11 @@
 	qdel(src)
 
 /datum/escape_menu/proc/home_open_settings()
+	client?.prefs.ui_interact(client?.mob)
+	qdel(src)
+
+/datum/escape_menu/proc/home_open_character_prefs()
+	client?.prefs.current_tab = 0
 	client?.prefs.ShowChoices(client?.mob)
 	qdel(src)
 
@@ -131,9 +146,9 @@
 
 // Needs to be separated so it doesn't scale
 /atom/movable/screen/escape_menu/home_button_text
-	maptext_width = 200
+	maptext_width = 280
 	maptext_height = 50
-	pixel_x = -80
+	pixel_x = -100
 
 	VAR_PRIVATE
 		button_text

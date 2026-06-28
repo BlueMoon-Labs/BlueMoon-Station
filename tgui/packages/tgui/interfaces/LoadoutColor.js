@@ -1,0 +1,400 @@
+import { useBackend, useLocalState } from '../backend';
+import { Button, Dropdown, Flex, NoticeBox, NumberInput, PixelArtImage, Section, Slider, Table, Tabs } from '../components';
+import { Window } from '../layouts';
+
+export const LoadoutColor = (props, context) => {
+  const { act, data } = useBackend(context);
+  const { activemode, gear_name, temp_message, sprite, preview } = data;
+
+  const presets_tint = data.presets_tint || [];
+  const presets_hsv = data.presets_hsv || [];
+  const presets_matrix = data.presets_matrix || [];
+
+  const currentPresetList =
+    activemode === 1 ? presets_tint
+      : activemode === 2 ? presets_hsv
+        : presets_matrix;
+
+  const [selectedPreset, setSelectedPreset] = useLocalState(context, 'selectedPreset', '');
+
+  const currentPresetIdx = selectedPreset
+    ? currentPresetList.indexOf(selectedPreset)
+    : -1;
+
+  const canPrevPreset = currentPresetList.length > 0 && currentPresetIdx > 0;
+  const canNextPreset = currentPresetList.length > 0 && currentPresetIdx < currentPresetList.length - 1;
+
+  const onSelectPreset = (name) => {
+    setSelectedPreset(name);
+    act('preset_select', { name });
+  };
+
+  const selectPresetByIndex = (idx) => {
+    const name = currentPresetList[idx];
+    if (!name) return;
+    onSelectPreset(name);
+  };
+
+  const onDeletePreset = () => {
+    if (!selectedPreset) return;
+    act('preset_delete', { name: selectedPreset });
+    setSelectedPreset('');
+  };
+
+  const onModeChanges = (mode) => {
+    act('switch_modes', { mode });
+    setSelectedPreset('');
+  };
+
+  return (
+    <Window width="640" height="500" resizable>
+      <Window.Content overflow="auto">
+        <Section>
+          {temp_message ? <NoticeBox>{temp_message}</NoticeBox> : null}
+          <Section>
+            <center><b>{gear_name}</b></center>
+            <center>
+              <Table>
+                <Table.Cell>
+                  <center>Original:</center>
+                  <PixelArtImage src={"data:image/png;base64, " + sprite} />
+                </Table.Cell>
+                <Table.Cell>
+                  <center>Preview:</center>
+                  <PixelArtImage src={"data:image/png;base64, " + preview} />
+                </Table.Cell>
+              </Table>
+            </center>
+          </Section>
+          <Tabs fluid>
+            <Tabs.Tab
+              key="1"
+              selected={activemode === 1}
+              onClick={() => onModeChanges(1)} >
+              Tint (Simple)
+            </Tabs.Tab>
+            <Tabs.Tab
+              key="2"
+              selected={activemode === 2}
+              onClick={() => onModeChanges(2)} >
+              HSV (Normal)
+            </Tabs.Tab>
+            <Tabs.Tab
+              key="3"
+              selected={activemode === 3}
+              onClick={() => onModeChanges(3)} >
+              Matrix (Advanced)
+            </Tabs.Tab>
+          </Tabs>
+          <Section
+            title="Presets"
+            buttons={
+              <Flex>
+                <Flex.Item>
+                  <Button
+                    icon="save"
+                    content="Save"
+                    color="good"
+                    onClick={() => act('preset_save', { name: selectedPreset })}
+                  />
+                </Flex.Item>
+                <Flex.Item ml={1}>
+                  <Button
+                    icon="trash"
+                    content="Delete"
+                    color="bad"
+                    disabled={!selectedPreset}
+                    onClick={onDeletePreset}
+                  />
+                </Flex.Item>
+              </Flex>
+            }
+          >
+            <Flex align="center">
+              <Flex.Item>
+                <Button
+                  icon="chevron-left"
+                  disabled={!canPrevPreset}
+                  onClick={() => selectPresetByIndex(currentPresetIdx - 1)}
+                />
+              </Flex.Item>
+              <Flex.Item ml={1} mr={1}>
+                <Button
+                  icon="chevron-right"
+                  disabled={!canNextPreset}
+                  onClick={() => selectPresetByIndex(currentPresetIdx + 1)}
+                />
+              </Flex.Item>
+              <Flex.Item grow>
+                <Dropdown
+                  width="100%"
+                  selected={selectedPreset}
+                  displayText={selectedPreset || 'Select preset...'}
+                  options={currentPresetList}
+                  onSelected={onSelectPreset}
+                  placeholder="Select preset..."
+                />
+              </Flex.Item>
+            </Flex>
+          </Section>
+          <Section>
+            <Table>
+              <Table.Cell width="25%">
+                <Button
+                  fluid
+                  content="Apply"
+                  icon="check"
+                  color="good"
+                  onClick={() => act('paint')} />
+                <Button
+                  fluid
+                  content="Clear"
+                  icon="eraser"
+                  onClick={() => act('clear')} />
+                <Button
+                  fluid
+                  content="Cancel"
+                  icon="times"
+                  onClick={() => act('cancel')} />
+              </Table.Cell>
+              <Table.Cell width="75%">
+                {activemode === 1 ? (
+                  <LoadoutColorTint />
+                ) : activemode === 2 ? (
+                  <LoadoutColorHSV />
+                ) : (
+                  <LoadoutColorMatrix />
+                )}
+              </Table.Cell>
+            </Table>
+          </Section>
+        </Section>
+      </Window.Content>
+    </Window>
+  );
+};
+
+const LoadoutColorTint = (props, context) => {
+  const { act } = useBackend(context);
+  return (
+    <Button
+      fluid
+      content="Select new color"
+      icon="paint-brush"
+      onClick={() => act('choose_color')}
+    />
+  );
+};
+
+const LoadoutColorMatrix = (props, context) => {
+  const { act, data } = useBackend(context);
+  const matrixcolors = data.matrixcolors || [];
+  return (
+    <Table>
+      <Table.Cell>
+        <Table.Row>
+          RR: <NumberInput
+            width="50px"
+            minValue={-10}
+            maxValue={10}
+            step={0.01}
+            value={matrixcolors.rr}
+            onChange={(e, value) => act('set_matrix_color', {
+              color: 1,
+              value,
+            })} />
+        </Table.Row>
+        <Table.Row>
+          GR: <NumberInput
+            width="50px"
+            minValue={-10}
+            maxValue={10}
+            step={0.01}
+            value={matrixcolors.gr}
+            onChange={(e, value) => act('set_matrix_color', {
+              color: 4,
+              value,
+            })} />
+        </Table.Row>
+        <Table.Row>
+          BR: <NumberInput
+            width="50px"
+            minValue={-10}
+            maxValue={10}
+            step={0.01}
+            value={matrixcolors.br}
+            onChange={(e, value) => act('set_matrix_color', {
+              color: 7,
+              value,
+            })} />
+        </Table.Row>
+      </Table.Cell>
+      <Table.Cell>
+        <Table.Row>
+          RG: <NumberInput
+            width="50px"
+            minValue={-10}
+            maxValue={10}
+            step={0.01}
+            value={matrixcolors.rg}
+            onChange={(e, value) => act('set_matrix_color', {
+              color: 2,
+              value,
+            })} />
+        </Table.Row>
+        <Table.Row>
+          GG: <NumberInput
+            width="50px"
+            minValue={-10}
+            maxValue={10}
+            step={0.01}
+            value={matrixcolors.gg}
+            onChange={(e, value) => act('set_matrix_color', {
+              color: 5,
+              value,
+            })} />
+        </Table.Row>
+        <Table.Row>
+          BG: <NumberInput
+            width="50px"
+            minValue={-10}
+            maxValue={10}
+            step={0.01}
+            value={matrixcolors.bg}
+            onChange={(e, value) => act('set_matrix_color', {
+              color: 8,
+              value,
+            })} />
+        </Table.Row>
+      </Table.Cell>
+      <Table.Cell>
+        <Table.Row>
+          RB: <NumberInput
+            width="50px"
+            minValue={-10}
+            maxValue={10}
+            step={0.01}
+            value={matrixcolors.rb}
+            onChange={(e, value) => act('set_matrix_color', {
+              color: 3,
+              value,
+            })} />
+        </Table.Row>
+        <Table.Row>
+          GB: <NumberInput
+            width="50px"
+            minValue={-10}
+            maxValue={10}
+            step={0.01}
+            value={matrixcolors.gb}
+            onChange={(e, value) => act('set_matrix_color', {
+              color: 6,
+              value,
+            })} />
+        </Table.Row>
+        <Table.Row>
+          BB: <NumberInput
+            width="50px"
+            minValue={-10}
+            maxValue={10}
+            step={0.01}
+            value={matrixcolors.bb}
+            onChange={(e, value) => act('set_matrix_color', {
+              color: 9,
+              value,
+            })} />
+        </Table.Row>
+      </Table.Cell>
+      <Table.Cell>
+        <Table.Row>
+          CR: <NumberInput
+            width="50px"
+            minValue={-10}
+            maxValue={10}
+            step={0.01}
+            value={matrixcolors.cr}
+            onChange={(e, value) => act('set_matrix_color', {
+              color: 10,
+              value,
+            })} />
+        </Table.Row>
+        <Table.Row>
+          CG: <NumberInput
+            width="50px"
+            minValue={-10}
+            maxValue={10}
+            step={0.01}
+            value={matrixcolors.cg}
+            onChange={(e, value) => act('set_matrix_color', {
+              color: 11,
+              value,
+            })} />
+        </Table.Row>
+        <Table.Row>
+          CB: <NumberInput
+            width="50px"
+            minValue={-10}
+            maxValue={10}
+            step={0.01}
+            value={matrixcolors.cb}
+            onChange={(e, value) => act('set_matrix_color', {
+              color: 12,
+              value,
+            })} />
+        </Table.Row>
+      </Table.Cell>
+      <Table.Cell width="40%">
+        RG means red will become this much green.
+        CR means this much red will be added.
+      </Table.Cell>
+    </Table>
+  );
+};
+
+const LoadoutColorHSV = (props, context) => {
+  const { act, data } = useBackend(context);
+  const { buildhue, buildsat, buildval } = data;
+  return (
+    <Table>
+      <Table.Row>
+        <center>Hue:</center>
+        <Table.Cell width="85%">
+          <Slider
+            minValue={0}
+            maxValue={360}
+            step={1}
+            value={buildhue}
+            onDrag={(e, value) => act('set_hue', {
+              buildhue: value,
+            })} />
+        </Table.Cell>
+      </Table.Row>
+      <Table.Row>
+        <center>Saturation:</center>
+        <Table.Cell>
+          <Slider
+            minValue={-10}
+            maxValue={10}
+            step={0.01}
+            value={buildsat}
+            onDrag={(e, value) => act('set_sat', {
+              buildsat: value,
+            })} />
+        </Table.Cell>
+      </Table.Row>
+      <Table.Row>
+        <center>Value:</center>
+        <Table.Cell>
+          <Slider
+            minValue={-10}
+            maxValue={10}
+            step={0.01}
+            value={buildval}
+            onDrag={(e, value) => act('set_val', {
+              buildval: value,
+            })} />
+        </Table.Cell>
+      </Table.Row>
+    </Table>
+  );
+};

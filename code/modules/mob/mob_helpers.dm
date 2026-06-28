@@ -288,6 +288,8 @@ It's fairly easy to fix if dealing with single letters but not so much with comp
 		msg = "[msg]"
 	for(var/i in GLOB.mob_list)
 		var/mob/M = i
+		if(!M)
+			continue
 		if(M.real_name == msg)
 			return M
 	return FALSE

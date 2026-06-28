@@ -2053,13 +2053,13 @@
 	name = "BEAR Patch"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/accessory/bear_patch
-	ckeywhitelist = list("hihitect", "hateredsoul", "hellsinggc", "silyamg", "dimofon", "xaeshkavd")
+	ckeywhitelist = list("hihitect", "hateredsoul", "hellsinggc", "silyamg", "dimofon", "xaeshkavd", "hartty")
 
 /datum/gear/donator/bm/usec_patch
 	name = "USEC Patch"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/accessory/usec_patch
-	ckeywhitelist = list("hihitect", "hateredsoul", "hellsinggc", "silyamg", "dimofon", "xaeshkavd")
+	ckeywhitelist = list("hihitect", "hateredsoul", "hellsinggc", "silyamg", "dimofon", "xaeshkavd", "hartty")
 
 /datum/gear/donator/bm/transparent_gloves
 	name = "Transparent Gloves"
@@ -2380,19 +2380,19 @@
 	name = "Thin T-shirt"
 	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/underwear/shirt/h_thin_tshirt
-	ckeywhitelist = list("hateredsoul")
+	ckeywhitelist = list("hateredsoul", "angelnedemon")
 
 /datum/gear/donator/bm/h_slim_tshirt
 	name = "Slim T-shirt"
 	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/underwear/briefs/h_thin_slim_tshirt
-	ckeywhitelist = list("hateredsoul")
+	ckeywhitelist = list("hateredsoul", "angelnedemon")
 
 /datum/gear/donator/bm/h_eslim_tshirt
 	name = "EXTRA slim T-shirt"
 	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/underwear/briefs/h_thin_eslim_tshirt
-	ckeywhitelist = list("hateredsoul")
+	ckeywhitelist = list("hateredsoul", "angelnedemon")
 
 /datum/gear/donator/bm/scream_knife_kit
 	name = "Scream Knife Kit"
@@ -2453,3 +2453,10 @@
 	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/suit/hooded/wintercoat/security/no_armor
 	ckeywhitelist = list("iistrizhii")
+
+/datum/gear/donator/bm/oversize_shirt
+
+	name = "Oversized checkered shirt"
+	slot = ITEM_SLOT_NECK
+	path = /obj/item/clothing/neck/cloak/oversize
+	ckeywhitelist = list("moun4l")

@@ -82,5 +82,6 @@
 	var/sound/music_played = sound(soundfile)
 	for(var/i in hearing_mobs)
 		var/mob/M = i
-		M.playsound_local(source, null, volume * using_instrument.volume_multiplier, S = music_played)
+		var/instr_vol = M.client?.prefs?.get_sound_volume("instruments") / 100
+		M.playsound_local(source, null, volume * using_instrument.volume_multiplier * instr_vol, S = music_played)
 		// Could do environment and echo later but not for now

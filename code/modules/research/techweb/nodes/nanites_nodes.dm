@@ -63,7 +63,7 @@
 	description = "Nanite programs that require seamless integration between nanites and biology."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("nanite_bio","nanite_smart","nanite_mesh")
-	design_ids = list("fakedeath_nanites","researchplus_nanites","aggressive_nanites","defib_nanites","hard_reboot_nanites","regenerative_plus_nanites","brainheal_plus_nanites","purging_plus_nanites","adrenaline_nanites")
+	design_ids = list("fakedeath_nanites","researchplus_nanites","aggressive_nanites","defib_nanites","hard_reboot_nanites","regenerative_plus_nanites","brainheal_plus_nanites","purging_plus_nanites","adrenaline_nanites","heal_wounds_nanites")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 4000)
 
 /datum/techweb_node/nanite_combat
