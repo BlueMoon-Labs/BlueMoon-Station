@@ -52,6 +52,9 @@ Regenerative extracts:
 	if(M.stat == DEAD)
 		to_chat(user, "<span class='warning'>[M] died before you could apply [src]!</span>")
 		return
+	if(HAS_TRAIT(M, TRAIT_ROBOTIC_ORGANISM))
+		to_chat(user, "<span class='warning'>[M] является синтетическим организмом и не подлежит органическому лечению!</span>") //мы не чиним железки слизью органикой
+		return
 	if(M != user)
 		user.visible_message("<span class='notice'>[user] crushes the [src] over [M], the milky goo quickly regenerating all of [M.ru_ego()] injuries!</span>",
 			"<span class='notice'>You squeeze the [src], and it bursts over [M], the milky goo regenerating [M.ru_ego()] injuries.</span>")

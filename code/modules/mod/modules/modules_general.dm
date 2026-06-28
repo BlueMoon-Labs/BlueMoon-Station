@@ -11,68 +11,24 @@
 	module_type = MODULE_USABLE
 	cooldown_time = 0.5 SECONDS
 	allowed_inactive = TRUE
-	/// Bag we have stored.
-	var/obj/item/storage/backpack/stored
 	mod_module_flags = MOD_MODULE_GENERAL // BLUEMOON ADD
+	var/component_type = /datum/component/storage/concrete
 
-/obj/item/mod/module/storage/attackby(obj/item/I, mob/user, params)
-	if(!istype(I, /obj/item/storage/backpack))
-		return ..()
-	var/obj/item/storage/backpack/B = I
-	if(stored)
-		balloon_alert(user, "backpack already installed!")
-		return
-	if(!user.transferItemToLoc(B, src))
-		return
-	stored = B
-	balloon_alert(user, "backpack installed")
-	playsound(src, 'sound/machines/click.ogg', 30, TRUE)
-
-/obj/item/mod/module/storage/screwdriver_act(mob/living/user, obj/item/tool)
+/obj/item/mod/module/storage/on_install()
 	. = ..()
-	if(!stored)
-		balloon_alert(user, "no backpack!")
-		return
-	balloon_alert(user, "removing backpack...")
-	if(!do_after(user, 3 SECONDS, target = src))
-		balloon_alert(user, "interrupted!")
-		return
-	balloon_alert(user, "backpack removed")
-	stored.forceMove(drop_location())
-	if(Adjacent(user) && !issilicon(user))
-		user.put_in_hands(stored)
-	stored = null
+	if(component_type)
+		mod.AddComponent(component_type)
 
-/obj/item/mod/module/storage/on_use()
+	var/datum/component/storage/STR = mod.GetComponent(/datum/component/storage)
+	STR.storage_flags = STORAGE_FLAGS_VOLUME_DEFAULT
+	STR.max_volume = STORAGE_VOLUME_BACKPACK
+	STR.max_w_class = MAX_WEIGHT_CLASS_BACKPACK
+
+/obj/item/mod/module/storage/on_uninstall()
 	. = ..()
-	if(!.)
-		return
-	if(!stored)
-		var/obj/item/storage/backpack/holding = mod.wearer.get_active_held_item()
-		if(!holding)
-			balloon_alert(mod.wearer, "no backpack installed!")
-			return
-		if(!istype(holding))
-			balloon_alert(mod.wearer, "it doesn't fit!")
-			return
-		if(mod.wearer.transferItemToLoc(holding, src, force = FALSE, silent = TRUE))
-			stored = holding
-			balloon_alert(mod.wearer, "backpack stored")
-			playsound(src, 'sound/weapons/revolverempty.ogg', 100, TRUE)
-	else if(mod.wearer.put_in_active_hand(stored, forced = FALSE, ignore_animation = TRUE))
-		balloon_alert(mod.wearer, "backpack retrieved")
-		playsound(src, 'sound/weapons/revolverempty.ogg', 100, TRUE)
-	else
-		balloon_alert(mod.wearer, "backpack storage full!")
-
-/obj/item/mod/module/storage/Exited(atom/movable/gone, direction)
-	. = ..()
-	if(gone == stored)
-		stored = null
-
-/obj/item/mod/module/storage/Destroy()
-	QDEL_NULL(stored)
-	return ..()
+	var/datum/component/storage/STR = mod.GetComponent(/datum/component/storage)
+	if(STR)
+		STR.RemoveComponent()
 
 ///Ion Jetpack - Lets the user fly freely through space using battery charge.
 /obj/item/mod/module/jetpack

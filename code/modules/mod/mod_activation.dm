@@ -22,17 +22,17 @@
 		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 		return
 	var/parts_to_check = mod_parts - part
-	if(part.loc == src)
+	if(part.loc != user)
 		deploy(user, part)
 		for(var/obj/item/piece as anything in parts_to_check)
-			if(piece.loc != src)
+			if(piece.loc == user)
 				continue
 			choose_deploy(user)
 			break
 	else
 		conceal(user, part)
 		for(var/obj/item/piece as anything in parts_to_check)
-			if(piece.loc == src)
+			if(piece.loc != user)
 				continue
 			choose_deploy(user)
 			break
@@ -78,7 +78,7 @@
 	var/obj/item/piece = part
 	REMOVE_TRAIT(piece, TRAIT_NODROP, MOD_TRAIT)
 	if(wearer)
-		wearer.transferItemToLoc(piece, src, force = TRUE)
+		user.doUnEquip(piece, force, null, FALSE)
 	if(piece == helmet)
 		helmet.show_overslot()
 	if(piece == chestplate)
