@@ -45,8 +45,9 @@
 
 /obj/item/projectile/bullet/shotgun_stunslug
 	name = "stunslug"
-	damage =  0 //5 - Зачем урон тазерному патрону
-	stamina = 45 //30 - Для 12 калибра 30 это реально мало если сравнивать с более удобными аналогами
+	damage =  5
+	stamina = 60 //30 - Для 12 калибра 30 это реально мало если сравнивать с более удобными аналогами
+	knockdown = 5
 	stutter = 5
 	jitter = 20
 	range = 7

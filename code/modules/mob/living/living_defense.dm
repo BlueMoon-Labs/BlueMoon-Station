@@ -198,6 +198,17 @@
 						P.wound_bonus += partial_wound_bonus
 				// BLUEMOON ADD END
 
+				// BLUEMOON ADD START - дополнительный НЕЗАВИСИМЫЙ шанс на перелом (WOUND_BLUNT) при частичном пробитии.
+				// Пуля прошла навылет (PIERCE), но по касательной задела кость - оба ранения могут сосуществовать.
+				// Используем painless_wound_roll т.к. урон по кости уже учтён через totaldamage ниже, нам нужен только сам ролл.
+				if(hit_bodypart && absorbed_damage >= 1.0)
+					var/bone_chip_chance = 8 + (zone_damage_fraction * 30) + (absorbed_damage * 0.4)
+					bone_chip_chance = clamp(bone_chip_chance, 0, 60)
+					if(prob(bone_chip_chance))
+						// псевдо-урон для ролла масштабируем от поглощённой части - чем сильнее зацепило кость, тем выше шанс на тяжёлый перелом
+						hit_bodypart.painless_wound_roll(WOUND_BLUNT, max(absorbed_damage, WOUND_MINIMUM_DAMAGE), 0, 0)
+				// BLUEMOON ADD END
+
 			if(totaldamage >= 1.0)
 				// BLUEMOON ADD START - частичное пробитие пулей оставляет пулевую дырку (WOUND_PIERCE), а не перелом,
 				// если патрон сам не задавал sharpness явно (не перетираем дробь/спецбоеприпасы с осознанным SHARP_EDGED и т.п.)

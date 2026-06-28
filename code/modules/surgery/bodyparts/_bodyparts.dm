@@ -1134,6 +1134,14 @@
 	QDEL_NULL(current_gauze)
 	current_gauze = new gauze.type(src, 1)
 	gauze.use(1)
+	// BLUEMOON ADD START - уведомляем, если на конечности есть активная прогрессирующая внутренняя травма
+	if(owner && (body_zone == BODY_ZONE_CHEST || body_zone == BODY_ZONE_HEAD))
+		for(var/i in wounds)
+			var/datum/wound/blunt/blunt_wound = i
+			if(istype(blunt_wound) && blunt_wound.internal_injury_intensity > 0 && !blunt_wound.gelled)
+				to_chat(owner, span_notice("Повязка немного сдерживает [body_zone == BODY_ZONE_HEAD ? "давление в голове" : "внутреннее кровотечение в груди"], но это не заменит настоящего лечения!"))
+				break
+	// BLUEMOON ADD END
 
 /**
   * seep_gauze() is for when a gauze wrapping absorbs blood or pus from wounds, lowering its absorption capacity.
