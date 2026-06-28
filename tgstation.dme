@@ -4811,6 +4811,7 @@
 #include "modular_bluemoon\code\modules\mob\living\carbon\human\species\species.dm"
 #include "modular_bluemoon\code\modules\mob\living\carbon\human\species\xeno.dm"
 #include "modular_bluemoon\code\modules\mob\living\silicon\robot.dm"
+#include "modular_bluemoon\code\modules\mob\living\silicon\robot\mining_borg_plating.dm"
 #include "modular_bluemoon\code\modules\mob\living\simple_animal\simple_animal.dm"
 #include "modular_bluemoon\code\modules\mob\living\simple_animal\wendigo.dm"
 #include "modular_bluemoon\code\modules\mob\living\simple_animal\friendly\gaslamp.dm"
