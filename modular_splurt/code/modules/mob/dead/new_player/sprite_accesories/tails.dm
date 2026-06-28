@@ -16,12 +16,14 @@
 	icon_state = "spade"
 	icon = 'modular_splurt/icons/mob/mam_tails.dmi'
 	matrixed_sections = MATRIX_RED
+	color_src = MATRIXED
 
 /datum/sprite_accessory/tails_animated/mam_tails_animated/spade
 	name = "Demon spade"
 	icon_state = "spade"
 	icon = 'modular_splurt/icons/mob/mam_tails.dmi'
 	matrixed_sections = MATRIX_RED
+	color_src = MATRIXED
 
 /datum/sprite_accessory/tails/mam_tails/tailmaw
 	name = "Tailmaw"
@@ -506,12 +508,14 @@
 	icon_state = "spade"
 	icon = 'modular_splurt/icons/mob/mam_tails.dmi'
 	matrixed_sections = MATRIX_RED
+	color_src = MATRIXED
 
 /datum/sprite_accessory/tails_animated/human/spade
 	name = "Demon spade"
 	icon_state = "spade"
 	icon = 'modular_splurt/icons/mob/mam_tails.dmi'
 	matrixed_sections = MATRIX_RED
+	color_src = MATRIXED
 
 /datum/sprite_accessory/tails/human/leopard
 	name = "Leopard Tail"

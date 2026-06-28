@@ -986,6 +986,7 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 		var/atom/movable/screen/plane_master/lighting/L = hud_used.plane_masters["[LIGHTING_PLANE]"]
 		if(L)
 			L.alpha = lighting_alpha
+			L.apply_light_cutoff(lighting_cutoff, lighting_color_cutoffs)
 
 /mob/proc/update_mouse_pointer()
 	if (!client)
@@ -1019,7 +1020,10 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
  * this does NOT check if the mob is missing it's eyeballs. Also see_in_dark is a BYOND mob var (that defaults to 2)
 **/
 /mob/proc/has_nightvision()
-	return HAS_TRAIT(src, TRAIT_NIGHT_VISION)
+	var/light_offset = lighting_cutoff
+	if(length(lighting_color_cutoffs) == 3)
+		light_offset += (lighting_color_cutoffs[1] + lighting_color_cutoffs[2] + lighting_color_cutoffs[3]) / 3
+	return light_offset >= LIGHTING_NIGHTVISION_THRESHOLD
 
 /// Is this mob affected by nearsight
 /mob/proc/is_nearsighted()

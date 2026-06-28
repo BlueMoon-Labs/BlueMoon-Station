@@ -82,6 +82,7 @@ GLOBAL_LIST_EMPTY(announcement_systems)
 		return
 
 	var/message
+	var/list/announce_spans = (obj_flags & EMAGGED) ? list(SPAN_BROADCAST_STATIC) : null
 
 	// Assign unknown rank if rank is empty
 	if (isnull(rank) || trim(rank) == "")
@@ -99,10 +100,10 @@ GLOBAL_LIST_EMPTY(announcement_systems)
 		message = "The arrivals shuttle has been damaged. Docking for repairs..."
 
 	if(!length(channels))
-		radio.talk_into(src, message, null)
+		radio.talk_into(src, message, null, announce_spans)
 	else
 		for(var/channel in channels)
-			radio.talk_into(src, message, channel)
+			radio.talk_into(src, message, channel, announce_spans)
 
 /obj/machinery/announcement_system/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)

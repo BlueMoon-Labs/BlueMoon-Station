@@ -60,12 +60,16 @@
 
 /obj/item/clothing/glasses/wraith_spectacles/proc/set_vision_vars(update_vision)
 	lighting_alpha = null
+	lighting_cutoff = null
+	color_cutoffs = null
 	tint = 0
 	vision_flags = NONE
 	darkness_view = 2
 	if(!up)
 		if(is_servant_of_ratvar(loc))
 			lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
+			lighting_cutoff = LIGHTING_CUTOFF_HIGH
+			color_cutoffs = list(40, 30, 10)
 			vision_flags = SEE_MOBS | SEE_TURFS | SEE_OBJS
 			darkness_view = 3
 		else

@@ -236,12 +236,15 @@ distance_multiplier - Can be used to multiply the distance at which the sound is
 
 	SEND_SOUND(src, S)
 
-/proc/sound_to_playing_players(soundin, volume = 100, vary = FALSE, frequency = 0, channel = 0, pressure_affected = FALSE, sound/S)
+/proc/sound_to_playing_players(soundin, volume = 100, vary = FALSE, frequency = 0, channel = 0, pressure_affected = FALSE, sound/S, sound_id)
 	if(!S)
 		S = sound(get_sfx(soundin))
 	for(var/mob/M as anything in GLOB.player_list)
 		if(!isnewplayer(M))
-			M.playsound_local(M, null, volume, vary, frequency, null, channel, pressure_affected, S)
+			var/vol = volume
+			if(sound_id && M.client?.prefs)
+				vol = round(volume * M.client.prefs.get_sound_volume(sound_id) / 100)
+			M.playsound_local(M, null, vol, vary, frequency, null, channel, pressure_affected, S)
 
 /mob/proc/stop_sound_channel(chan)
 	if(QDELETED(src) || !isnum(chan) || chan <= 0)

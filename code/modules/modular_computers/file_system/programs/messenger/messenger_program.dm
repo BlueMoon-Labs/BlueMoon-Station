@@ -147,7 +147,7 @@
 			continue
 		if(!pda_device.saved_identification && !pda_device.saved_job)
 			continue
-		var/datum/computer_file/program/messenger/messenger = locate() in pda_device.get_all_files()
+		var/datum/computer_file/program/messenger/messenger = locate(/datum/computer_file/program/messenger) in pda_device.get_all_files()
 		if(!istype(messenger) || messenger.invisible)
 			continue
 
@@ -191,9 +191,6 @@
 		user.client.prefs.save_preferences()
 
 	return TRUE
-
-/datum/computer_file/program/messenger/ui_state(mob/user)
-	return GLOB.default_state
 
 /datum/computer_file/program/messenger/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()
@@ -326,7 +323,7 @@
 			else
 				// Fallback: search all PDAs for the messenger
 				for(var/obj/item/modular_computer/pda/pda_device in GLOB.PDAs)
-					var/datum/computer_file/program/messenger/messenger = locate() in pda_device.get_all_files()
+					var/datum/computer_file/program/messenger/messenger = locate(/datum/computer_file/program/messenger) in pda_device.get_all_files()
 					if(istype(messenger) && REF(messenger) == target_ref)
 						target = messenger
 						add_messenger(messenger)
@@ -394,7 +391,7 @@
 	var/list/static_data = list()
 	static_data["can_spam"] = spam_mode
 	static_data["is_silicon"] = issilicon(user)
-	static_data["remote_silicon"] = (isAI(user) || iscyborg(user)) && !computer.get_ntnet_status()
+	static_data["remote_silicon"] = FALSE
 	static_data["alert_able"] = alert_able
 	return static_data
 
@@ -473,7 +470,15 @@
 		chat.can_reply = FALSE
 		return
 	var/target_name = target.computer.saved_identification
-	var/input_message = tgui_input_text(user, "Enter [mime_mode ? "emojis":"a message"].", "NT Messaging[target_name ? " ([target_name])" : ""]", max_length = MAX_MESSAGE_LEN, encode = FALSE)
+	var/input_message
+	var/input_title = "NT Messaging[target_name ? " ([target_name])" : ""]"
+	var/input_desc = "Enter [mime_mode ? "emojis":"a message"]."
+	if(user.client?.prefs.tgui_input_verbs)
+		input_message = tgui_input_text(user, input_desc, input_title, max_length = MAX_MESSAGE_LEN, encode = FALSE)
+	else
+		input_message = stripped_input(user, input_desc, input_title)
+	if(!input_message)
+		return
 	send_message(user, input_message, list(chat))
 
 /// Helper that sends a message to everyone
@@ -687,8 +692,8 @@
 
 	// If it didn't reach
 	if(!signal.data["done"])
-		if(SSnetworks.ntnet_debug_global_signal)
-			// Debug override: bypass telecomms infrastructure and deliver directly
+		if(SSnetworks.ntnet_debug_global_signal || issilicon(sender))
+			// Bypass telecomms and deliver directly via NTNet
 			signal.broadcast()
 			signal.mark_done()
 		else
@@ -708,7 +713,7 @@
 		message_admins(log_text)
 
 	// Show to ghosts
-	var/ghost_message = span_notice("[span_name(signal.format_sender())] [rigged ? "(as [span_name(fake_name)]) Rigged " : ""]PDA Message --> [span_name("[signal.format_target()]")]: \"[signal.format_message()]\"")
+	var/ghost_message = span_notice("[span_name(signal.format_sender())] [rigged ? "(as [span_name(fake_name)]) Rigged " : ""]PDA Message --> [span_name("[everyone ? "Everyone" : signal.format_target()]")]: \"[signal.format_message()]\"")
 	var/list/message_listeners = GLOB.dead_mob_list + GLOB.current_observers_list
 	for(var/mob/listener as anything in message_listeners)
 		if(!listener.client)
@@ -731,6 +736,8 @@
 	return TRUE
 
 /datum/computer_file/program/messenger/proc/receive_message(datum/signal/subspace/messaging/tablet_message/signal)
+	if(QDELETED(computer))
+		return
 	var/datum/pda_chat/chat = null
 
 	var/is_rigged = signal.data["rigged"]
@@ -767,8 +774,10 @@
 	var/list/mob/living/receivers = list()
 	if(computer.inserted_pai && computer.inserted_pai.pai)
 		receivers += computer.inserted_pai.pai
-	if(computer.loc && isliving(computer.loc))
+	if(isliving(computer.loc))
 		receivers += computer.loc
+	else if(isliving(computer.loc?.loc))
+		receivers += computer.loc.loc
 
 	var/datum/computer_file/program/messenger/sender_messenger = chat?.recipient?.resolve()
 
@@ -822,6 +831,8 @@
 	..()
 
 	if(QDELETED(src))
+		return
+	if(QDELETED(computer))
 		return
 	if(!usr.canUseTopic(computer, BE_CLOSE, no_tk = TRUE, check_resting = FALSE))
 		return

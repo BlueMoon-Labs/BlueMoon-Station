@@ -118,7 +118,7 @@
 	return data
 
 /datum/antagonist/wizard/farewell()
-	to_chat(owner, span_userdanger("You have been brainwashed! You are no longer a wizard!"))
+	to_chat(owner, span_arcane("You have been brainwashed! You are no longer a wizard!"))
 
 /datum/antagonist/wizard/proc/rename_wizard()
 	set waitfor = FALSE
@@ -161,7 +161,7 @@
 	wiz_age = APPRENTICE_AGE_MIN
 
 /datum/antagonist/wizard/apprentice/greet()
-	to_chat(owner, "<B>Я ученик [master.current.real_name]! Из-за магического контракта я обязан следовать [master.ru_ego()] приказам и помогать [master.ru_emu()] в достижении целей.")
+	to_chat(owner, span_arcane("<B>Я ученик [master.current.real_name]! Из-за магического контракта я обязан следовать [master.ru_ego()] приказам и помогать [master.ru_emu()] в достижении целей.</B>"))
 	owner.announce_objectives()
 
 /datum/antagonist/wizard/apprentice/register()

@@ -602,7 +602,8 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 		L.client.ambience_playing = 0
 		if(L.client && !L.client.ambience_playing)
 			L.client.ambience_playing = 1
-			SEND_SOUND(L, sound(my_area.shipambience, repeat = 1, wait = 0, volume = 35, channel = CHANNEL_BUZZ))
+			var/buzz_vol = L.client?.prefs?.get_sound_volume("ship_ambience") || 35
+			SEND_SOUND(L, sound(my_area.shipambience, repeat = 1, wait = 0, volume = buzz_vol, channel = CHANNEL_BUZZ))
 
 	if(!(L.client && (L.client.prefs.toggles & SOUND_AMBIENCE)))
 		return //General ambience check is below the ship ambience so one can play without the other

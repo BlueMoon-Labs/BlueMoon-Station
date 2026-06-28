@@ -13,6 +13,18 @@
 #define FEAR_LEVEL_CHAPLAIN 5
 #define FEAR_LEVEL_OTHERS 6
 
+/// How often a propaganda host (poster/flag) re-scans view() for new victims.
+/// The expensive part is the view() sweep; throttling it well below the per-tick
+/// SSobj cadence is the whole point. The per-victim was_scared cooldown and
+/// next_scare keep the actual mood spam in check, so this only governs CPU.
+#define DEMORALISER_SCAN_INTERVAL (6 SECONDS)
+
+/// Tiles around the host that the propaganda scare sweep reaches.
+#define DEMORALISER_SCARE_RANGE 5
+/// Minimum delay between successive scare applications from one host's sweep
+/// (the mood-spam throttle, distinct from the can_scan() CPU throttle above).
+#define DEMORALISER_SCARE_COOLDOWN (12 SECONDS)
+
 // Чтобы из-за 10 плакатов все вокруг не охуевали каждые 5 наносекунд. Не самое лучшее решение, ну и ладно
 /mob/living/carbon/human
 	/// Last fear effect apply. Primarily used in inteq propaganda
@@ -20,6 +32,28 @@
 
 /datum/proximity_monitor/advanced/demoraliser
 	var/next_scare = 0
+	/// world.time before which the host should skip its view() scan (CPU throttle).
+	var/next_scan = 0
+
+/// Returns TRUE at most once per DEMORALISER_SCAN_INTERVAL, so a host's process()
+/// only runs the costly view() sweep on a throttled cadence instead of every tick.
+/datum/proximity_monitor/advanced/demoraliser/proc/can_scan()
+	if(world.time < next_scan)
+		return FALSE
+	next_scan = world.time + DEMORALISER_SCAN_INTERVAL
+	return TRUE
+
+/// Sweeps view() around the host and applies the scare to each living mob in range.
+/// Shared by the poster (contraband.dm) and flag (item.dm) hosts, which delegate here.
+/datum/proximity_monitor/advanced/demoraliser/proc/do_scare_scan()
+	if(world.time < next_scare)
+		return
+	var/scared_someone = FALSE
+	for(var/mob/living/viewer in view(DEMORALISER_SCARE_RANGE, host))
+		pugach(viewer)
+		scared_someone = TRUE
+	if(scared_someone)
+		next_scare = world.time + DEMORALISER_SCARE_COOLDOWN
 
 
 /datum/proximity_monitor/advanced/demoraliser/New(atom/_host, range, _ignore_if_not_on_turf = TRUE)
@@ -150,3 +184,6 @@
 #undef FEAR_LEVEL_MINDSHIELD
 #undef FEAR_LEVEL_CHAPLAIN
 #undef FEAR_LEVEL_OTHERS
+#undef DEMORALISER_SCAN_INTERVAL
+#undef DEMORALISER_SCARE_RANGE
+#undef DEMORALISER_SCARE_COOLDOWN

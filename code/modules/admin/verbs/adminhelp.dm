@@ -188,7 +188,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	id = ++ticket_counter
 	opened_at = world.time
 
-	name = length_char(msg) > 27 ? copytext_char(msg, 1, 28) + "..." : msg
+	name = length_char(msg) > 27 ? copytext_char(html_encode(msg), 1, 28) + "..." : html_encode(msg)
 
 	initiator = C
 	initiator_ckey = initiator.ckey
@@ -284,22 +284,24 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 //won't bug irc
 /datum/admin_help/proc/MessageNoRecipient(msg)
 	msg = copytext_char(sanitize(msg), 1, MAX_MESSAGE_LEN)
+	var/encoded_msg = html_encode(msg)
 	var/ref_src = "[REF(src)]"
 	//Message to be sent to all admins
 	var/admin_msg = "<span class='adminnotice'><span class='adminhelp'>Тикет [TicketHref("#[id]", ref_src)]</span><b>: \
 	[LinkedReplyName(ref_src)]:</b> <span class='linkify'>[keywords_lookup(msg)]</span><br>\
 	<hr><span style='font-size: 0.85em;'><center>[FullMonty(ref_src)]<br>[TicketVerbs(ref_src)]</center></span></font>"
-	AddInteraction("<font color='#f87171'>[LinkedReplyName(ref_src)]: [msg]</font>")
+	AddInteraction("<font color='#f87171'>[LinkedReplyName(ref_src)]: [encoded_msg]</font>")
 
 	//send this msg to all admins
 	for(var/client/X in GLOB.admins)
 		if(X.prefs.toggles & SOUND_ADMINHELP)
-			SEND_SOUND(X, sound('sound/effects/adminhelp.ogg'))
+			var/ah_vol = X.prefs?.get_sound_volume("adminhelp") || 100
+			SEND_SOUND(X, sound('sound/effects/adminhelp.ogg', volume = ah_vol))
 		window_flash(X, ignorepref = TRUE)
 		to_chat(X, examine_block(admin_msg))
 
 	//show it to the person adminhelping too
-	to_chat(initiator, "<span class='adminnotice'>PM to-<b>Admins</b>: <span class='linkify'>[msg]</span></span>")
+	to_chat(initiator, "<span class='adminnotice'>PM to-<b>Admins</b>: <span class='linkify'>[encoded_msg]</span></span>")
 	SSblackbox.LogAhelp(id, "Ticket Opened", msg, null, initiator.ckey) //BLUEMOON EDIT, enable ticket logging
 
 //Reopen a closed ticket

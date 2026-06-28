@@ -889,6 +889,20 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 					right_eye.pixel_y += offset_features[OFFSET_EYES][2]
 				standing += left_eye
 				standing += right_eye
+				// Свечение глаз
+				if(H.dna?.features["emissive_eyes"])
+					var/mutable_appearance/left_eye_emissive = emissive_appearance(left_eye.icon, left_eye.icon_state, EMISSIVE_BLOCKER_LAYER + 0.5)
+					var/mutable_appearance/right_eye_emissive = emissive_appearance(right_eye.icon, right_eye.icon_state, EMISSIVE_BLOCKER_LAYER + 0.5)
+					left_eye_emissive.pixel_x = left_eye.pixel_x
+					left_eye_emissive.pixel_y = left_eye.pixel_y
+					right_eye_emissive.pixel_x = right_eye.pixel_x
+					right_eye_emissive.pixel_y = right_eye.pixel_y
+					left_eye_emissive.category = "HEAD"
+					right_eye_emissive.category = "HEAD"
+					left_eye_emissive.appearance_flags = KEEP_TOGETHER|TILE_BOUND|PIXEL_SCALE // ЗАМЕТКА НА БУДУЩЕЕ ЕСЛИ КТО БУДЕТ ДЕЛАТЬ СВЕТЯЩИЕСЯ ЧАСТИ ТЕЛА
+					right_eye_emissive.appearance_flags = KEEP_TOGETHER|TILE_BOUND|PIXEL_SCALE // ЕБАННАЯ МАСКА ЭММЕСИВ-ПЛЕЙНА ДЫРЯВИТ ОСВЕЩЕНИЕ И ПРОСТРАНСТВО КАК БАРБОСИК ВАГИНУ БЕЛОЙ ЖЕНЩИНЫ. ПРОПИСЫВАЙТЕ ФЛАГИ KEEP_TOGETHER|TILE_BOUND|PIXEL_SCALE И СТО ЛЕТ БЕД ЗНАТЬ НЕ БУДЕТЕ.
+					standing += left_eye_emissive
+					standing += right_eye_emissive
 
 	/* skyrat edit
 	//Underwear, Undershirts & Socks
@@ -2475,7 +2489,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 			// BLUEMOON EDIT END
 			if(!forced && damage > 0 && HAS_TRAIT(H, TRAIT_TOUGHT) && damage <= TRAIT_TOUGHT_DAMAGE) // проверка на трейт стойкости
 				apply_damage(damage, damagetype = STAMINA)
-				return			
+				return
 			if(BP)
 				if(BP.receive_damage(damage_amount, 0, wound_bonus = wound_bonus, bare_wound_bonus = bare_wound_bonus, sharpness = sharpness))
 					H.update_damage_overlays()
@@ -2723,7 +2737,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 		//
 		if(H.w_uniform)
 			chest_clothes = H.w_uniform
-		if(H.wear_suit)
+		if(H.wear_suit && (H.wear_suit.body_parts_covered & CHEST))
 			chest_clothes = H.wear_suit
 
 		if(chest_clothes)
@@ -2741,10 +2755,10 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 		if(H.w_shirt && (H.w_shirt.body_parts_covered & ARMS))
 			arm_clothes = H.w_shirt
 		//
-		if(H.gloves)
-			arm_clothes = H.gloves
 		if(H.w_uniform && ((H.w_uniform.body_parts_covered & HANDS) || (H.w_uniform.body_parts_covered & ARMS)))
 			arm_clothes = H.w_uniform
+		if(H.gloves && ((H.gloves.body_parts_covered & HANDS) || (H.gloves.body_parts_covered & ARMS)))
+			arm_clothes = H.gloves //gloves (incl. MOD gauntlets) are worn over the uniform's arms, so they are the outer layer that takes the fire
 		if(H.wear_suit && ((H.wear_suit.body_parts_covered & HANDS) || (H.wear_suit.body_parts_covered & ARMS)))
 			arm_clothes = H.wear_suit
 		if(arm_clothes)
@@ -2760,10 +2774,10 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 		if(H.w_shirt && (H.w_shirt.body_parts_covered & LEGS))
 			leg_clothes = H.w_shirt
 		//
-		if(H.shoes)
-			leg_clothes = H.shoes
 		if(H.w_uniform && ((H.w_uniform.body_parts_covered & FEET) || (H.w_uniform.body_parts_covered & LEGS)))
 			leg_clothes = H.w_uniform
+		if(H.shoes && ((H.shoes.body_parts_covered & FEET) || (H.shoes.body_parts_covered & LEGS)))
+			leg_clothes = H.shoes //shoes (incl. MOD boots) are worn over the uniform's legs, so they are the outer layer that takes the fire
 		if(H.wear_suit && ((H.wear_suit.body_parts_covered & FEET) || (H.wear_suit.body_parts_covered & LEGS)))
 			leg_clothes = H.wear_suit
 		if(leg_clothes)
@@ -2843,24 +2857,38 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 /datum/species/proc/is_wagging_tail(mob/living/carbon/human/H)
 	return mutant_bodyparts[wagging_type]
 
+/// Replaces an associative key in mutant_bodyparts in-place, keeping its original position.
+/// handle_mutant_bodyparts decides intra-layer overlay draw order from the iteration order of
+/// mutant_bodyparts (every part in a layer shares the same numeric layer, so later entries draw
+/// on top). A plain delete+add would move the tail entry to the end of the list, past insect_wings,
+/// flipping the wagging tail in front of the wings. Renaming in place preserves draw order.
+/// Returns TRUE if the key was found and replaced.
+/datum/species/proc/swap_mutant_bodypart_key(old_key, new_key)
+	if(!(old_key in mutant_bodyparts))
+		return FALSE
+	var/list/rebuilt = list()
+	for(var/key in mutant_bodyparts)
+		if(key == old_key)
+			rebuilt[new_key] = mutant_bodyparts[old_key]
+		else
+			rebuilt[key] = mutant_bodyparts[key]
+	mutant_bodyparts = rebuilt
+	return TRUE
+
 /datum/species/proc/start_wagging_tail(mob/living/carbon/human/H)
 	if(tail_type && wagging_type)
 		if(mutant_bodyparts[tail_type])
-			mutant_bodyparts[wagging_type] = mutant_bodyparts[tail_type]
-			mutant_bodyparts -= tail_type
+			swap_mutant_bodypart_key(tail_type, wagging_type)
 			if(tail_type == "tail_lizard") //special lizard thing
-				mutant_bodyparts["waggingspines"] = mutant_bodyparts["spines"]
-				mutant_bodyparts -= "spines"
+				swap_mutant_bodypart_key("spines", "waggingspines")
 			H.update_body()
 
 /datum/species/proc/stop_wagging_tail(mob/living/carbon/human/H)
 	if(tail_type && wagging_type)
 		if(mutant_bodyparts[wagging_type])
-			mutant_bodyparts[tail_type] = mutant_bodyparts[wagging_type]
-			mutant_bodyparts -= wagging_type
+			swap_mutant_bodypart_key(wagging_type, tail_type)
 			if(tail_type == "tail_lizard") //special lizard thing
-				mutant_bodyparts["spines"] = mutant_bodyparts["waggingspines"]
-				mutant_bodyparts -= "waggingspines"
+				swap_mutant_bodypart_key("waggingspines", "spines")
 			H.update_body()
 
 ///////////////

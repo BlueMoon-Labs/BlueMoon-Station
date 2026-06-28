@@ -140,8 +140,12 @@
 				if(M.client && M.can_hear() && (M.client.prefs.toggles & SOUND_ANNOUNCEMENTS))
 					var/turf/T = get_turf(M)
 					if(T.z == z_level)
+						var/pref_vol = M.client?.prefs?.get_sound_volume("announcements") || 100
+						voice.volume = pref_vol
 						SEND_SOUND(M, voice)
 		else
+			var/pref_vol = only_listener.client?.prefs?.get_sound_volume("announcements") || 100
+			voice.volume = pref_vol
 			SEND_SOUND(only_listener, voice)
 		return TRUE
 	return FALSE

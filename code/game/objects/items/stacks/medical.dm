@@ -236,8 +236,8 @@
 				if(!silent)
 					patient.balloon_alert(user, "[ru_parse_zone(healed_zone)] закрыта скафандром!")
 				return FALSE
-		return patient.can_inject(user, !silent, healed_zone, TRUE)
-	return patient.can_inject(user, !silent, healed_zone)
+		return patient.can_inject(user, !silent, healed_zone, penetrate_thick = TRUE, bypass_immunity = TRUE)
+	return patient.can_inject(user, !silent, healed_zone, bypass_immunity = TRUE)
 
 /obj/item/stack/medical/proc/has_healable_damage(mob/living/carbon/patient)
 	if(heal_brute && patient.getBruteLoss_nonProsthetic() > 0)

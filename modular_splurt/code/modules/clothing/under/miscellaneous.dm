@@ -18,6 +18,10 @@
 	anthro_mob_worn_overlay = 'modular_splurt/icons/mob/clothing/uniform_digi.dmi'
 	can_adjust = FALSE
 
+/obj/item/clothing/under/latex/Initialize()
+	. = ..()
+	AddComponent(/datum/component/latex_lockable)
+
 /obj/item/clothing/under/latex/half
 	name = "latex bodysuit"
 	desc = "A tight fitting outfit made of latex, that covers the wearers torso."
@@ -624,3 +628,7 @@
 	icon_state = "latexbodysuit"
 	item_state = "latexbodysuit"
 	body_parts_covered = CHEST|ARMS|LEGS|GROIN
+
+/obj/item/clothing/under/latex_bodysuit/Initialize()
+	. = ..()
+	AddComponent(/datum/component/latex_lockable)

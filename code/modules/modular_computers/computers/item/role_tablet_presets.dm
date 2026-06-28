@@ -348,7 +348,7 @@
 
 /obj/item/modular_computer/pda/syndicate/Initialize(mapload)
 	. = ..()
-	var/datum/computer_file/program/messenger/msg = locate() in get_all_files()
+	var/datum/computer_file/program/messenger/msg = locate(/datum/computer_file/program/messenger) in get_all_files()
 	if(msg)
 		msg.invisible = TRUE
 

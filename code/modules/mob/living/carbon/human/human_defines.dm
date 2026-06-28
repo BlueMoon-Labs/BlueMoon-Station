@@ -12,7 +12,7 @@
 	status_flags = CANSTUN|CANKNOCKDOWN|CANUNCONSCIOUS|CANPUSH|CANSTAGGER
 	has_field_of_vision = FALSE //Handled by species.
 
-	blocks_emissive = EMISSIVE_BLOCK_UNIQUE
+	blocks_emissive = EMISSIVE_BLOCK_GENERIC
 
 	block_parry_data = /datum/block_parry_data/unarmed/human
 	default_block_parry_data = /datum/block_parry_data/unarmed/human

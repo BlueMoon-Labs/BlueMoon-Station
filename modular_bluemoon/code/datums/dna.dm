@@ -6,6 +6,7 @@
 	holder.resize = features["body_size"] / old_size
 	holder.maptext_height = 32 * features["body_size"] // Adjust runechat height
 	holder.update_transform()
+	holder.update_body(FALSE, TRUE)
 
 	//Handle the small icon
 	var/HSize = get_size(holder) //переменная для взятого размера holder

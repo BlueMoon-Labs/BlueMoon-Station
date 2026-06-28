@@ -24,6 +24,8 @@
 	var/datum/focus
 
 	var/lighting_alpha = LIGHTING_PLANE_ALPHA_VISIBLE
+	var/lighting_cutoff = LIGHTING_CUTOFF_VISIBLE
+	var/list/lighting_color_cutoffs
 	var/datum/mind/mind
 	var/list/datum/action/actions = list()
 	var/list/datum/action/chameleon_item_actions

@@ -26,7 +26,9 @@
 
 /obj/item/assembly/timer/Initialize(mapload)
 	. = ..()
-	START_PROCESSING(SSobj, src)
+	// process() is only the countdown; we register in SSobj when timing starts
+	// and PROCESS_KILL ourselves when it is not running.
+	return
 
 /obj/item/assembly/timer/Destroy()
 	STOP_PROCESSING(SSobj, src)
@@ -40,14 +42,14 @@
 	if(!..())
 		return FALSE//Cooldown check
 	timing = !timing
+	if(timing)
+		START_PROCESSING(SSobj, src) // run the countdown
 	update_icon()
 	return TRUE
 
 /obj/item/assembly/timer/toggle_secure()
 	secured = !secured
-	if(secured)
-		START_PROCESSING(SSobj, src)
-	else
+	if(!secured)
 		timing = FALSE
 		STOP_PROCESSING(SSobj, src)
 	update_icon()
@@ -68,7 +70,7 @@
 
 /obj/item/assembly/timer/process()
 	if(!timing)
-		return
+		return PROCESS_KILL
 	time--
 	if(time <= 0)
 		timing = FALSE
@@ -110,8 +112,10 @@
 	switch(action)
 		if("time")
 			timing = !timing
-			if(timing && istype(holder, /obj/item/transfer_valve))
-				log_game(usr, "activated a", src, "attachment on [holder]")
+			if(timing)
+				START_PROCESSING(SSobj, src) // run the countdown
+				if(istype(holder, /obj/item/transfer_valve))
+					log_game(usr, "activated a", src, "attachment on [holder]")
 			update_icon()
 			. = TRUE
 		if("repeat")

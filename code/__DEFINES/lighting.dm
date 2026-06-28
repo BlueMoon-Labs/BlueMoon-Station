@@ -183,6 +183,16 @@ GLOBAL_VAR_INIT(current_starlight_power, STARLIGHT_POWER_NIGHT) // Current solar
 
 #define LIGHT_RANGE_FIRE		3 //How many tiles standard fires glow.
 
+// Процентаж сколько света будет обрезаться при определенных условиях
+#define LIGHTING_CUTOFF_VISIBLE 0
+#define LIGHTING_CUTOFF_REAL_LOW 4.5
+#define LIGHTING_CUTOFF_LOW 10
+#define LIGHTING_CUTOFF_MEDIUM 15
+#define LIGHTING_CUTOFF_HIGH 30
+#define LIGHTING_CUTOFF_FULLBRIGHT 100
+// Сколько тайлов видим
+#define LIGHTING_NIGHTVISION_THRESHOLD 7
+
 #define LIGHTING_PLANE_ALPHA_VISIBLE 255
 #define LIGHTING_PLANE_ALPHA_NV_TRAIT 223
 #define LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE 192

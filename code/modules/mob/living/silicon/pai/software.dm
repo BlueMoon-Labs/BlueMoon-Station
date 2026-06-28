@@ -1,16 +1,34 @@
-// TODO:
-//	- Additional radio modules
-//	- Potentially roll HUDs and Records into one
-//	- Shock collar/lock system for prisoner pAIs?
-//  - Put cable in user's hand instead of on the ground
+/mob/living/silicon/pai/proc/get_software_metadata()
+	var/list/data = list()
+	data["medical records"] = list("desc" = "Просмотр и анализ медицинских записей экипажа.", "power_usage" = 0)
+	data["security records"] = list("desc" = "Просмотр служебных и криминальных записей экипажа.", "power_usage" = 0)
+	data["door jack"] = list("desc" = "Взлом электронных замков и шлюзов.", "power_usage" = 50)
+	data["internal camera bug"] = list("desc" = "Внедрение жучка в камеры для скрытого наблюдения.", "power_usage" = 30)
+	data["weakened ai capability"] = list("desc" = "Удалённое управление дверьми, ЛКП, светом и турелями.", "power_usage" = 100)
+	data["atmosphere sensor"] = list("desc" = "Сенсор атмосферного давления, температуры и состава газов.", "power_usage" = 10)
+	data["heartbeat sensor"] = list("desc" = "Мониторинг пульса и жизненных показателей носителя.", "power_usage" = 20)
+	data["security HUD"] = list("desc" = "Отображение криминального статуса на HUD.", "power_usage" = 15)
+	data["medical HUD"] = list("desc" = "Отображение медицинского статуса на HUD.", "power_usage" = 15)
+	data["universal translator"] = list("desc" = "Автоматический перевод всех известных языков галактики.", "power_usage" = 10)
+	data["projection array"] = list("desc" = "Развёртывание голографической оболочки для мобильности.", "power_usage" = 100)
+	data["remote signaller"] = list("desc" = "Дистанционный сигналер с настраиваемой частотой и кодом.", "power_usage" = 10)
+	data["flashlight"] = list("desc" = "Встроенный фонарик с питанием от батареи pAI.", "power_usage" = 20)
+	data["night vision"] = list("desc" = "Усиление яркости в условиях низкой освещённости.", "power_usage" = 50)
+	data["meson vision"] = list("desc" = "Обнаружение структур под полом и сквозь стены.", "power_usage" = 50)
+	data["loudness booster"] = list("desc" = "Усилитель громкости встроенных динамиков.", "power_usage" = 30)
+	data["encryption keys"] = list("desc" = "Ключи шифрования для защищённой связи по радио.", "power_usage" = 10)
+	data["encoder"] = list("desc" = "Маскировка голоса и подмена имени/должности в эфире.", "power_usage" = 20)
+	data["thermal vision"] = list("desc" = "Термальное зрение — обнаружение живых существ сквозь стены.", "power_usage" = 100)
+	data["chemical injector"] = list("desc" = "Впрыск регенерирующих химикатов носителю.", "power_usage" = 80)
+	return data
 
 /mob/living/silicon/pai/var/list/available_software = list(
-															"crew manifest" = 5,
 															//"digital messenger" = 5, // PAI uses the new TGUI messenger program on its PDA instead
 															"medical records" = 10,
 															"security records" = 10,
-															"camera jack" = 10,
 															"door jack" = 30,
+															"internal camera bug" = 30,
+															"weakened ai capability" = 60,
 															"atmosphere sensor" = 5,
 															"heartbeat sensor" = 10,
 															"security HUD" = 15,
@@ -18,6 +36,9 @@
 															"universal translator" = 25,
 															"projection array" = 15,
 															"remote signaller" = 5,
+															"flashlight" = 5,
+															"night vision" = 5,
+															"meson vision" = 5,
 															"loudness booster" = 25,
 															"encryption keys" = 20,
 															"encoder" = 5,
@@ -45,7 +66,7 @@
 				if(available_software.Find(target) && !software.Find(target))
 					var/cost = available_software[target]
 					if(ram >= cost)
-						if((target in list("thermal vision", "chemical injector")) && !istype(src, /mob/living/silicon/pai/syndicate))
+						if((target in list("thermal vision", "chemical injector", "weakened ai capability")) && !syndicate_model)
 							temp = "Данный модуль доступен только Syndicate pAI."
 						else
 							software.Add(target)
@@ -191,9 +212,10 @@
 			if(href_list["cancel"])
 				hackdoor = null
 			if(href_list["cable"])
-				var/turf/T = get_turf(loc)
-				cable = new /obj/item/pai_cable(T)
-				T.visible_message("<span class='warning'>A port on [src] opens to reveal [cable], which promptly falls to the floor.</span>", "<span class='italics'>You hear the soft click of something light and hard falling to the ground.</span>")
+				cable = new /obj/item/pai_cable(get_turf(loc))
+				if(!put_in_hands(cable))
+					var/turf/T = get_turf(loc)
+					T.visible_message("<span class='warning'>A port on [src] opens to reveal [cable], which promptly falls to the floor.</span>", "<span class='italics'>You hear the soft click of something light and hard falling to the ground.</span>")
 		if("loudness")
 			if(subscreen == 1) // Open Instrument
 				internal_instrument.ui_interact(src)
