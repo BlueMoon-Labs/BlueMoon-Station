@@ -26,6 +26,7 @@
 	gpstag = "TRAC"
 	icon_state = "gps-trac"
 	embedding = list("pain_mult" = 0, "embed_chance" = 100, "fall_chance" = 0, "embed_chance_turf_mod" = 15)
+	item_flags = DROPDEL
 	var/lifespan = 5 MINUTES
 	var/beep_timer
 
