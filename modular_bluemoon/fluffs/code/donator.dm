@@ -1994,6 +1994,18 @@
 	path = /obj/item/clothing/suit/armor/vest/mark40kk
 	ckeywhitelist = list("monolithxxv")
 
+/datum/gear/donator/bm/mark50k
+	name = "Gosei Chest Plates Mark50k"
+	slot = ITEM_SLOT_OCLOTHING
+	path = /obj/item/clothing/suit/armor/vest/mark50k
+	ckeywhitelist = list("monolithxxv")
+
+/datum/gear/donator/bm/mark50kk
+	name = "Gosei Plates Mark50kk"
+	slot = ITEM_SLOT_HEAD
+	path = /obj/item/clothing/head/helmet/sec/mark50kk
+	ckeywhitelist = list("monolithxxv")
+
 /datum/gear/donator/bm/nanotrasendripdigi
 	name = "NTR drip"
 	slot = "ITEM_SLOT_ICLOTHING"

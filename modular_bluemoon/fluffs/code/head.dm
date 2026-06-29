@@ -462,6 +462,21 @@
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR
 	unique_reskin = null
 
+/obj/item/clothing/head/helmet/sec/mark50kk
+	name = "Gosei Plates Mark50kk"
+	desc = "Система развёртываемых плит, предназначенных для вкручивания в голову или свободного ношения, правда будет болтаться на голове!"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	icon_state = "mark50kk"
+	item_state = "mark50kk"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	clothing_flags = ALLOWINTERNALS
+	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR
+	unique_reskin = null
+
 ///////////////////////////////////////////////
 
 /obj/item/clothing/head/donator/bm/chetky_cap

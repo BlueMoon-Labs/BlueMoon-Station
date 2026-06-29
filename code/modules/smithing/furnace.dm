@@ -7,7 +7,7 @@
 	anchored = TRUE
 	var/debug = FALSE //debugging only
 	var/working = TRUE
-	var/fueluse = 1
+	var/fueluse = 0.5
 
 
 /obj/structure/furnace/Initialize(mapload)
