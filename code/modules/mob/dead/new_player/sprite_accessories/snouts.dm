@@ -284,6 +284,13 @@
 	extra_color_src = MUTCOLORS3
 	matrixed_sections = MATRIX_ALL
 
+/datum/sprite_accessory/snouts/mam_snouts/hshark_eyes //BLUEMOON ADD
+	name = "hShark Synthetic"
+	icon_state = "hshark_eyes2"
+	extra = TRUE
+	extra_color_src = MUTCOLORS3
+	matrixed_sections = MATRIX_ALL
+
 /datum/sprite_accessory/snouts/mam_snouts/sharp
 	name = "Sharp"
 	icon_state = "sharp"
