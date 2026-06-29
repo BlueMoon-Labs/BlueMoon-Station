@@ -1,6 +1,27 @@
 //General modules for MODsuits
 
 ///Storage - Adds a storage component to the suit.
+
+/obj/item/mod/module/backpack_harness
+	name = "MOD harness system"
+	desc = "Продинутая система ремней и отсеков для крепления дополнительного груза/рюкзака на живот пользователя \
+			Она использует множество датчиков и гироскопов чтобы своевременно перераспределять нагрузку и стабилизировать \
+			её относительно корпуса пользователя для минимизации нагрузки на точки опоры."
+	icon_state = "harness"
+
+/obj/item/mod/module/backpack_harness/on_install()
+	. = ..()
+	var/obj/item/clothing/suit/mod/chestplate = mod.chestplate
+	chestplate.allowed += /obj/item/storage/backpack
+
+/obj/item/mod/module/backpack_harness/on_uninstall()
+	. = ..()
+	var/obj/item/clothing/suit/mod/chestplate = mod.chestplate
+	if(/obj/item/storage/backpack in chestplate.allowed)
+		chestplate.allowed -= /obj/item/storage/backpack
+		for(var/obj/item in chestplate.contents)
+			item.forceMove(item.drop_location())
+
 /obj/item/mod/module/storage
 	name = "MOD storage containment module"
 	desc = "Набор встроенных отделений для хранения и специализированных карманов, установленных по всей \
@@ -11,8 +32,32 @@
 	module_type = MODULE_USABLE
 	cooldown_time = 0.5 SECONDS
 	allowed_inactive = TRUE
-	mod_module_flags = MOD_MODULE_GENERAL // BLUEMOON ADD
+	mod_module_flags = MOD_MODULE_GENERAL // BLUEMOON
+	var/storage_flags = STORAGE_FLAGS_VOLUME_DEFAULT
+	var/max_volume = STORAGE_VOLUME_BACKPACK
+	var/max_w_class = MAX_WEIGHT_CLASS_BACKPACK
 	var/component_type = /datum/component/storage/concrete
+
+/obj/item/mod/module/storage/extended
+	name = "Extended MOD storage module"
+	icon_state = "storage_large"
+	desc = "Расширенная разгрузка с расширенным отделением под крупногабаритные предметы. \
+			Является улучшенной версией, по сравнению с обычным модулем рюкзака и равноценна спортивной сумке. \
+			Может быть улучшена с помощью БС ядра, путём вставки вручную в специальное отверстие."
+	max_volume = STORAGE_VOLUME_DUFFLEBAG
+
+/obj/item/mod/module/storage/extended/attackby(obj/item/I, mob/living/user, params)
+	. = ..()
+	if(istype(I, /obj/item/assembly/signaler/anomaly/bluespace) && do_after(user, 5 SECONDS, src))
+		icon_state = "storage_bluespace"
+		var/old_name = name
+		name = "Bluespace " + old_name
+		desc = "Продвинутая разгрузка с использованием БС технологий для хранения, переноски \
+				большого количества вещей в карманном измерении. Изолирована от воздействий телепортации."
+		max_w_class = MAX_WEIGHT_CLASS_BAG_OF_HOLDING
+		storage_flags = STORAGE_FLAGS_VOLUME_DEFAULT
+		max_volume = STORAGE_VOLUME_BAG_OF_HOLDING
+		qdel(I)
 
 /obj/item/mod/module/storage/on_install()
 	. = ..()
@@ -20,9 +65,9 @@
 		mod.AddComponent(component_type)
 
 		var/datum/component/storage/Storage = mod.GetComponent(/datum/component/storage)
-		Storage.storage_flags = STORAGE_FLAGS_VOLUME_DEFAULT
-		Storage.max_volume = STORAGE_VOLUME_BACKPACK
-		Storage.max_w_class = MAX_WEIGHT_CLASS_BACKPACK
+		Storage.storage_flags = storage_flags
+		Storage.max_volume = max_volume
+		Storage.max_w_class = max_w_class
 
 /obj/item/mod/module/storage/on_uninstall()
 	. = ..()
