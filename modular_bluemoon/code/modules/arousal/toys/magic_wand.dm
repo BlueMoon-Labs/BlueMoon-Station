@@ -152,7 +152,6 @@
 	. = ..()
 	Mob = M
 	START_PROCESSING(SSobj,src)
-	//vibrating(M)
 
 /obj/item/magicwand/process(delta_time)
 	if(Mob == null)
@@ -218,46 +217,3 @@
 	icon_state = "blackmwand"
 	base_icon_state = "blackmwand"
 
-/*/obj/item/magicwand/proc/vibrating(mob/living/carbon/human/M, slot)
-	if(!istype(src, M.w_underwear))
-		return
-	if(!on)
-		return
-
-	while(istype(src, M.w_underwear))
-		if(activate_after(src, 5))
-			switch(mode)
-				if(3)
-					if(M.has_penis())
-						to_chat(M, span_userdanger(pick("Сильная вибрация у члена сводит меня с ума!", "Вы чувствуете мучительное удовольствие от сильной стимуляции своего члена!")))
-					if(M.has_vagina())
-						to_chat(M, span_userdanger(pick("Сильная вибрация у киски сводит меня с ума!", "Вы чувствуете мучительное удовольствие от сильной стимуляции своей киски!")))
-					if(M.client?.prefs.cit_toggles & SEX_JITTER) //By Gardelin0
-						M.Jitter(3)
-					M.emote("moan")
-					M.handle_post_sex(intencity, null, src)
-					M.client?.plug13.send_emote(PLUG13_EMOTE_GROIN, intencity * 5)
-					playsound(loc, 'modular_bluemoon/sound/items/lewd/toys/magicwand3.ogg', 25, 1)
-					if(prob(50))
-						M.Stun(5)
-				if(2)
-					if(M.has_penis())
-						to_chat(M, span_love(pick("Я чувствую вибрацию у своего члена!", "Оно вибрирует мой член!")))
-					if(M.has_vagina())
-						to_chat(M, span_love(pick("Я чувствую вибрацию у своей киски!", "Оно вибрирует мою киску!")))
-						M.handle_post_sex(intencity, null, src)
-						M.client?.plug13.send_emote(PLUG13_EMOTE_GROIN, intencity * 5)
-						if(M.client?.prefs.cit_toggles & SEX_JITTER) //By Gardelin0
-							M.do_jitter_animation()
-						playsound(loc, "modular_bluemoon/sound/items/lewd/toys/magicwand[rand(1, 2)].ogg", 25, 1)
-				if(1)
-					if(M.has_penis())
-						to_chat(M, span_love(pick("Я чувствую слабую вибрацию у своего члена!", "Оно слабо вибрирует мой член!")))
-					if(M.has_vagina())
-						to_chat(M, span_love(pick("Я чувствую слабую вибрацию у своей киски!", "Оно слабо вибрирует мою киску!")))
-						M.handle_post_sex(intencity, null, src)
-						M.client?.plug13.send_emote(PLUG13_EMOTE_GROIN, intencity * 5)
-						if(M.client?.prefs.cit_toggles & SEX_JITTER) //By Gardelin0
-							M.do_jitter_animation()
-						playsound(loc, "modular_bluemoon/sound/items/lewd/toys/devicevibrator[rand(1, 3)].ogg", 25, 1)
-*/

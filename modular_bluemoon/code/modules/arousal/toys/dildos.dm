@@ -1,10 +1,3 @@
-/proc/activate_after(obj, delay)
-
-	var/endtime = world.time + delay
-	. = 1
-	while (world.time < endtime)
-		stoplag()
-
 /obj/item/dildo
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/items/items_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/items/items_righthand.dmi'
