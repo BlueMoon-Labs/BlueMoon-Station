@@ -17,10 +17,12 @@
 /obj/item/mod/module/backpack_harness/on_uninstall()
 	. = ..()
 	var/obj/item/clothing/suit/mod/chestplate = mod.chestplate
+	var/mob/living/carbon/human/wearer = mod.wearer
+	var/obj/item/item_to_drop
 	if(/obj/item/storage/backpack in chestplate.allowed)
 		chestplate.allowed -= /obj/item/storage/backpack
-		for(var/obj/item in chestplate.contents)
-			item.forceMove(item.drop_location())
+		item_to_drop = wearer.s_store
+		wearer.dropItemToGround(item_to_drop)
 
 /obj/item/mod/module/storage
 	name = "MOD storage containment module"
