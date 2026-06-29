@@ -166,7 +166,7 @@
 	name = "hammer"
 	icon_state = "hammer"
 	overlay_state = "hammerhandle"
-	var/qualitymod = 0
+	var/qualitymod = 1
 
 /obj/item/scythe/smithed //we need to inherit scythecode, but that's about it.
 	material_flags = MATERIAL_COLOR | MATERIAL_AFFECT_STATISTICS
@@ -256,13 +256,13 @@
 	icon_state = "rapier"
 	sharpness = SHARP_EDGED
 	overlay_state = "rapierhilt"
-	force = 6 //less force, stronger parry
+	force = 7 //less force, stronger parry, stronger penetration
 	sharpness = SHARP_POINTY
 	armour_penetration = 30
 	block_parry_data = /datum/block_parry_data/smithrapier
 
 /datum/block_parry_data/smithrapier //parry into riposte. i am pretty sure this is going to be nearly fucking impossible to land.
-	parry_stamina_cost = 12 //dont miss
+	parry_stamina_cost = 6 //parries doesnt work anyway bruh
 	parry_time_active = 4
 	parry_time_perfect = 2
 	parry_time_perfect_leeway = 2
@@ -284,7 +284,7 @@
 	w_class = WEIGHT_CLASS_BULKY
 	icon_state = "toolbox"
 	overlay_state = "hammerhandle"
-	qualitymod = -2
+	qualitymod = 0
 
 /obj/item/melee/smith/hammer/narsie
 	name = "runemetal hammer"

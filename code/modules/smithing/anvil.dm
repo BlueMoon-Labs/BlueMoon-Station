@@ -262,7 +262,7 @@
 				if(9 to INFINITY)
 					finisheditem.desc =  "It is positively radiant, a legendary piece."
 			var/stepexperience = currentsteps + finisheditem.quality
-			var/finalexperience = (150 *(stepexperience + finisheditem.quality))/5 //A total of 16x the amount of EXP at MAX, with a minimum gain of 150, Keep in mind that this is of course only possible with a max-tier anvil and an already insanely high level. Just makes earlier levels faster.
+			var/finalexperience = (300 *(stepexperience + finisheditem.quality))/5 //A total of 16x the amount of EXP at MAX, with a minimum gain of 300, Keep in mind that this is of course only possible with a max-tier anvil and an already insanely high level. Just makes earlier levels faster.
 			if(user.mind.skill_holder)
 				if(currentquality <= 1)
 					user.mind.auto_gain_experience(/datum/skill/level/dwarfy/blacksmithing, 400, 500000, silent = FALSE) //Incentivises not spamming Slag
@@ -298,7 +298,7 @@
 	name = "table anvil"
 	desc = "A slightly reinforced table. Good luck."
 	icon_state = "tablevil"
-	anvilquality = -2
+	anvilquality = 0
 	itemqualitymax = 0
 
 
@@ -323,15 +323,15 @@
 	desc = "A big block of sandstone. Useable as an anvil."
 	custom_materials = list(/datum/material/sandstone=8000)
 	icon_state = "sandvil"
-	anvilquality = -1
+	anvilquality = -0.5
 	itemqualitymax = 2
 
 /obj/structure/anvil/obtainable/basalt
 	name = "basalt brick anvil"
 	desc = "A big block of basalt. Useable as an anvil, better than sandstone. Igneous!"
 	icon_state = "sandvilnoir"
-	anvilquality = -0.5
-	itemqualitymax = 4
+	anvilquality = 0
+	itemqualitymax = 6
 
 /obj/structure/anvil/obtainable/basic
 	name = "anvil"
