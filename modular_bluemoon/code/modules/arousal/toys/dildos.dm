@@ -11,6 +11,7 @@
 	item_state = "dildo"
 	var/inside = FALSE
 	var/last_heavy_message_time = 0
+	var/timer = 0
 
 /obj/item/dildo/proc/update_lust()
 	switch(dildo_size)
@@ -161,13 +162,20 @@
 	update_lust()
 
 //Dildo
-/obj/item/dildo/proc/stuffed_movement(mob/living/user)
-	while(inside)
-		if(activate_after(src, rand(50,350))) //5 to 35 seconds, every 20 sec on average
-			if(!istype(src.loc, /obj/item/organ/genital))
-				return
-			target_reaction(user, null, 1, null, null, TRUE, TRUE, TRUE, TRUE, TRUE)
-			user.plug13_genital_emote(loc, lust_amount)
+/obj/item/dildo/process(delta_time)
+	if(timer > 0) // chech interval
+		timer -= delta_time
+		return
+	else
+		timer = rand(50,350)
+
+	if(!istype(src.loc, /obj/item/organ/genital))
+		return
+	var/obj/item/organ/genital/G = src.loc
+
+	var/mob/living/carbon/U = G.owner
+	target_reaction(U, null, 1, null, null, TRUE, TRUE, TRUE, TRUE, TRUE)
+	U.plug13_genital_emote(loc, lust_amount)
 
 /obj/item/dildo/ComponentInitialize()
 	. = ..()
@@ -177,6 +185,10 @@
 		"after_removing" = CALLBACK(src, PROC_REF(item_removed)),
 	)
 	AddComponent(/datum/component/genital_equipment, list(ORGAN_SLOT_PENIS, ORGAN_SLOT_WOMB, ORGAN_SLOT_VAGINA, ORGAN_SLOT_BREASTS, ORGAN_SLOT_ANUS), procs_list)
+
+/obj/item/dildo/Destroy()
+	STOP_PROCESSING(SSobj,src)
+	. = ..()
 
 /obj/item/dildo/proc/item_inserting(datum/source, obj/item/organ/genital/G, mob/living/user)
 	. = TRUE
@@ -214,13 +226,14 @@
 	to_chat(user, span_userlove("You attach [src] to <b>\The [G.owner]</b>'s [G]."))
 	playsound(G.owner, 'modular_sand/sound/lewd/champ_fingering.ogg', 50, 1, -1)
 	inside = TRUE
-	stuffed_movement(G.owner)
+	START_PROCESSING(SSobj,src)
 
 /obj/item/dildo/proc/item_removed(datum/source, obj/item/organ/genital/G, mob/user)
 	. = TRUE
 	to_chat(user, span_userlove("You retrieve [src] from <b>\The [G.owner]</b>'s [G]."))
 	playsound(G.owner, 'modular_sand/sound/lewd/champ_fingering.ogg', 50, 1, -1)
 	inside = FALSE
+	STOP_PROCESSING(SSobj,src)
 
 /obj/item/dildo/MouseDrop_T(mob/living/M, mob/living/user)
 	var/message = ""
