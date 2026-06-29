@@ -6,6 +6,29 @@
 #define VIB_MEDIUM 2
 #define VIB_HIGH 3
 
+#define VIB_VOL_LOW 30
+#define VIB_VOL_MEDIUM 60
+#define VIB_VOL_HIGH 80
+
+/datum/looping_sound/lewd/vibrator
+	start_sound = 'modular_splurt/sound/lewd/vibrate.ogg'
+	start_length = 1
+	mid_sounds = 'modular_splurt/sound/lewd/vibrate.ogg'
+	mid_length = 1
+	end_sound = 'modular_splurt/sound/lewd/vibrate.ogg'
+	falloff_distance = 1
+	falloff_exponent = 5
+	extra_range = SILENCED_SOUND_EXTRARANGE
+
+/datum/looping_sound/lewd/vibrator/low
+	volume = VIB_VOL_LOW
+
+/datum/looping_sound/lewd/vibrator/medium
+	volume = VIB_VOL_MEDIUM
+
+/datum/looping_sound/lewd/vibrator/high
+	volume = VIB_VOL_HIGH
+
 /obj/item/electropack/vibrator
 	name = "remote vibrator"
 	desc = "A remote device that can deliver pleasure at a fair. It has three intensities that can be set by twisting the base."
@@ -22,9 +45,16 @@
 	var/timer = 0
 	var/interval = 5
 
+	var/datum/looping_sound/lewd/vibrator/low/soundloop1
+	var/datum/looping_sound/lewd/vibrator/medium/soundloop2
+	var/datum/looping_sound/lewd/vibrator/high/soundloop3
+
 /obj/item/electropack/vibrator/Initialize() //give the device its own code
 	. = ..()
 	code = rand(1,30)
+	soundloop1 = new(src, FALSE)
+	soundloop2 = new(src, FALSE)
+	soundloop3 = new(src, FALSE)
 
 /obj/item/electropack/vibrator/ComponentInitialize()
 	. = ..()
@@ -37,6 +67,10 @@
 
 /obj/item/electropack/vibrator/Destroy()
 	STOP_PROCESSING(SSobj,src)
+	stopVibing()
+	QDEL_NULL(soundloop1)
+	QDEL_NULL(soundloop2)
+	QDEL_NULL(soundloop3)
 	. = ..()
 
 /obj/item/electropack/vibrator/proc/item_inserting(datum/source, obj/item/organ/genital/G, mob/user)
@@ -103,7 +137,7 @@
 				return
 			if(VIB_HIGH)
 				mode = VIB_OFF
-				STOP_PROCESSING(SSobj,src)
+				stopVibing()
 				to_chat(user, span_notice("You twist the bottom of [src], setting it to the off."))
 				return
 
@@ -117,7 +151,7 @@
 	if(vibrate_constant)
 		to_chat(usr, "[src] режим постоянной вибрации.")
 	else
-		STOP_PROCESSING(SSobj,src)
+		stopVibing()
 		to_chat(usr, "[src] режим единичной вибрации.")
 
 
@@ -136,19 +170,34 @@
 
 	switch(vibrate_constant)
 		if(FALSE)
-			STOP_PROCESSING(SSobj,src)
+			stopVibing()
 			vibrate_once()
 		if(TRUE)
 			if(datum_flags & DF_ISPROCESSING)
-				STOP_PROCESSING(SSobj,src)
+				stopVibing()
 			else
 				timer = 0
-				START_PROCESSING(SSobj,src)
+				startVibing()
 
 /obj/item/electropack/vibrator/proc/vibrate_once()
 	if(inside)
 		vibe(loc)
-	brrr()
+	switch(mode)
+		if(VIB_LOW)
+			playsound(src, 'modular_splurt/sound/lewd/vibrate.ogg', VIB_VOL_LOW, 1, -1)
+		if(VIB_MEDIUM)
+			playsound(src, 'modular_splurt/sound/lewd/vibrate.ogg', VIB_VOL_MEDIUM, 1, -1)
+		if(VIB_HIGH)
+			playsound(src, 'modular_splurt/sound/lewd/vibrate.ogg', VIB_VOL_HIGH, 1, -1)
+
+	if(style == "long")
+		icon_state = "vibing"
+		sleep(20)
+		icon_state = "vibe"
+	else
+		icon_state = "vibingsmall"
+		sleep(20)
+		icon_state = "vibesmall"
 
 /obj/item/electropack/vibrator/proc/vibe(var/genitals)
 	if(!istype(genitals, /obj/item/organ/genital))
@@ -165,7 +214,6 @@
 
 	U.handle_post_sex(intencity, null, src) //give pleasure
 	U.plug13_genital_emote(G, intencity * 5)
-	playsound(U.loc, 'modular_splurt/sound/lewd/vibrate.ogg', (intencity+5), 1, -1) //vibe intencity scaled up abit for sound
 
 	switch(mode)
 		if(VIB_LOW) //low, setting for RP, it wont force your character to do anything.
@@ -184,21 +232,9 @@
 			if(prob(50))
 				U.emote("moan")
 
-// по хорошему переделать под лупсаунд и включать вместе с процессом
-/obj/item/electropack/vibrator/proc/brrr()
-	playsound(src, 'modular_splurt/sound/lewd/vibrate.ogg', 40, 1, -1)
-	if(style == "long") //haha vibrator go brrrrrrr
-		icon_state = "vibing"
-
-		sleep(30)
-		icon_state = "vibe"
-	else
-		icon_state = "vibingsmall"
-		sleep(30)
-		icon_state = "vibesmall"
-
 /obj/item/electropack/vibrator/process(delta_time)
 	if(mode == VIB_OFF)	// just off
+		stopVibing()
 		return
 
 	if(timer > 0) // chech interval
@@ -209,10 +245,46 @@
 
 	if(inside)
 		vibe(loc)
-	brrr()
 
+/obj/item/electropack/vibrator/proc/startVibing()
+	if(style == "long")
+		icon_state = "vibing"
+	else
+		icon_state = "vibingsmall"
+
+	switch(mode)
+		if(VIB_LOW)
+			soundloop2.stop()
+			soundloop3.stop()
+			soundloop1.start()
+		if(VIB_MEDIUM)
+			soundloop1.stop()
+			soundloop3.stop()
+			soundloop2.start()
+		if(VIB_HIGH)
+			soundloop1.stop()
+			soundloop2.stop()
+			soundloop3.start()
+
+	START_PROCESSING(SSobj,src)
+
+/obj/item/electropack/vibrator/proc/stopVibing()
+	if(style == "long")
+		icon_state = "vibe"
+	else
+		icon_state = "vibesmall"
+
+	soundloop1.stop()
+	soundloop2.stop()
+	soundloop3.stop()
+
+	STOP_PROCESSING(SSobj,src)
 
 #undef VIB_OFF
 #undef VIB_LOW
 #undef VIB_MEDIUM
 #undef VIB_HIGH
+
+#undef VIB_VOL_LOW
+#undef VIB_VOL_MEDIUM
+#undef VIB_VOL_HIGH
