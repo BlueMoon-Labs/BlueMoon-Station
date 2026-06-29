@@ -170,6 +170,7 @@
 		timer = rand(50,350)
 
 	if(!istype(src.loc, /obj/item/organ/genital))
+		STOP_PROCESSING(SSobj,src)
 		return
 	var/obj/item/organ/genital/G = src.loc
 
