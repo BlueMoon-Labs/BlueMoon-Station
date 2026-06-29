@@ -732,6 +732,22 @@
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
+/obj/item/clothing/under/donator/nanotrasendrip
+	name = "Nanotrasen Representative Uniform"
+	icon_state = "ntrdrip"
+	item_state = "ntrdrip"
+	icon = 'modular_bluemoon/icons/obj/clothing/blastwave_uniforms.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/uniform.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/under/donator/nanotrasendrip
+	name = "Nanotrasen Representative Uniform 2"
+	icon_state = "ntrdripdigi"
+	item_state = "ntrdripdigi"
+	icon = 'modular_bluemoon/icons/obj/clothing/blastwave_uniforms.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/uniform.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
 ///////////////////////////////////////////////
 
 /obj/item/clothing/under/poly_maniac
