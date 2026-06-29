@@ -1988,12 +1988,6 @@
 	path = /obj/item/clothing/under/donator/nanotrasendrip
 	ckeywhitelist = list("monolithxxv, sketchyirishman")
 
-/datum/gear/donator/bm/nanotrasendripdigi
-	name = "NTR drip digi"
-	slot = "ITEM_SLOT_ICLOTHING"
-	path = /obj/item/clothing/under/donator/nanotrasendripdigi
-	ckeywhitelist = list("monolithxxv, sketchyirishman")
-
 /datum/gear/donator/bm/chetky_cap
 	name = "Chetky Cap"
 	slot = ITEM_SLOT_HEAD
