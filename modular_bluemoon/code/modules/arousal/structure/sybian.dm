@@ -9,10 +9,16 @@
 	var/on = 0
 	item_chair = null // нельзя брать в руки
 	flags_1 = NODECONSTRUCT_1
+	var/timer = 0
+	var/interval = 5
 
 /obj/structure/chair/sybian/New()
 	..()
 	add_overlay(mutable_appearance('modular_bluemoon/icons/obj/structures/lewd_devices.dmi', "sybian_over", MOB_LAYER + 1))
+
+/obj/structure/chair/sybian/Destroy()
+	STOP_PROCESSING(SSobj,src)
+	. = ..()
 
 /obj/structure/chair/sybian/verb/change_mode()
 	set name = "Change mode"
@@ -34,14 +40,20 @@
 	set category = "Object"
 	set src in oview(1)
 	on = !on
-	spawn()
-		while(on)
-			if(activate_after(src, 5))
-				vibrate()
 	if(on)
+		START_PROCESSING(SSobj,src)
 		to_chat(usr, "[src] вкл.")
 	else
+		STOP_PROCESSING(SSobj,src)
 		to_chat(usr, "[src] выкл.")
+
+/obj/structure/chair/sybian/process(delta_time)
+	if(timer > 0) // chech interval
+		timer -= delta_time
+		return
+	else
+		timer = interval
+	vibrate()
 
 /obj/structure/chair/sybian/proc/vibrate()
 	if(!on)
