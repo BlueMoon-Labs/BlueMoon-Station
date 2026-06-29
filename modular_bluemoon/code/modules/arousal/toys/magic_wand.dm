@@ -158,8 +158,8 @@
 		STOP_PROCESSING(SSobj,src)
 		return
 
-	var/mob/living/carbon/human/M = Mob
-	if(!istype(src, M.w_underwear))
+	var/mob/living/carbon/human/M = astype(Mob, /mob/living/carbon/human)
+	if(!M || !istype(src, M.w_underwear))
 		STOP_PROCESSING(SSobj,src)
 		Mob = null
 		return
@@ -169,8 +169,8 @@
 		Mob = null
 		return
 
-	if(timer > 0) // chech interval
-		timer -= delta_time
+	timer -= delta_time
+	if(timer >= 0) // chech interval
 		return
 	else
 		timer = interval
@@ -194,21 +194,21 @@
 				to_chat(M, span_love(pick("Я чувствую вибрацию у своего члена!", "Оно вибрирует мой член!")))
 			if(M.has_vagina())
 				to_chat(M, span_love(pick("Я чувствую вибрацию у своей киски!", "Оно вибрирует мою киску!")))
-				M.handle_post_sex(intencity, null, src)
-				M.client?.plug13.send_emote(PLUG13_EMOTE_GROIN, intencity * 5)
-				if(M.client?.prefs.cit_toggles & SEX_JITTER) //By Gardelin0
-					M.do_jitter_animation()
-				playsound(loc, "modular_bluemoon/sound/items/lewd/toys/magicwand[rand(1, 2)].ogg", 25, 1)
+			M.handle_post_sex(intencity, null, src)
+			M.client?.plug13.send_emote(PLUG13_EMOTE_GROIN, intencity * 5)
+			if(M.client?.prefs.cit_toggles & SEX_JITTER) //By Gardelin0
+				M.do_jitter_animation()
+			playsound(loc, "modular_bluemoon/sound/items/lewd/toys/magicwand[rand(1, 2)].ogg", 25, 1)
 		if(1)
 			if(M.has_penis())
 				to_chat(M, span_love(pick("Я чувствую слабую вибрацию у своего члена!", "Оно слабо вибрирует мой член!")))
 			if(M.has_vagina())
 				to_chat(M, span_love(pick("Я чувствую слабую вибрацию у своей киски!", "Оно слабо вибрирует мою киску!")))
-				M.handle_post_sex(intencity, null, src)
-				M.client?.plug13.send_emote(PLUG13_EMOTE_GROIN, intencity * 5)
-				if(M.client?.prefs.cit_toggles & SEX_JITTER) //By Gardelin0
-					M.do_jitter_animation()
-				playsound(loc, "modular_bluemoon/sound/items/lewd/toys/devicevibrator[rand(1, 3)].ogg", 25, 1)
+			M.handle_post_sex(intencity, null, src)
+			M.client?.plug13.send_emote(PLUG13_EMOTE_GROIN, intencity * 5)
+			if(M.client?.prefs.cit_toggles & SEX_JITTER) //By Gardelin0
+				M.do_jitter_animation()
+			playsound(loc, "modular_bluemoon/sound/items/lewd/toys/devicevibrator[rand(1, 3)].ogg", 25, 1)
 
 
 

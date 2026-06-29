@@ -101,6 +101,15 @@
 	if(tired >=1)
 		tired -= 1
 
+	timer -= delta_time
+	if(timer >= 0) // chech interval
+	else
+		timer = rand(5,20)
+		if(target != null)
+			var/mob/living/M = target
+			if(M.pulledby && !tired)
+				do_lewd_action(M)
+
 /mob/living/simple_animal/hostile/tentacles/MoveToTarget()
 	stop_automated_movement = 1
 	if(!target || !CanAttack(target))
@@ -168,19 +177,6 @@
 	if(get_refraction_dif() > 0)
 		..()
 		return
-
-/mob/living/simple_animal/hostile/tentacles/BiologicalLife(delta_time, times_fired)
-	. = ..()
-	if(timer > 0) // chech interval
-		timer -= delta_time
-		return
-	else
-		timer = rand(5,20)
-
-	var/mob/living/M = target
-
-	if(M.pulledby && !tired)
-		do_lewd_action(M)
 
 /mob/living/simple_animal/hostile/tentacles/proc/pickNewHole(mob/living/M)
 	var/hole_chosen = pick(1, 2)

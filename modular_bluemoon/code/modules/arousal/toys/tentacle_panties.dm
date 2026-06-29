@@ -21,7 +21,7 @@
 /obj/item/clothing/underwear/briefs/tentacle/equipped(mob/living/carbon/M)
 	. = ..()
 	Mob = M
-	START_PROCESSING(SSobj,src)
+	START_PROCESSING(SSobjlw,src)
 
 /obj/item/clothing/underwear/briefs/tentacle/chameleon
 	name = "panties?"
@@ -77,7 +77,7 @@
 
 /obj/item/clothing/underwear/briefs/tentacle/process(delta_time)
 	if(Mob == null)
-		STOP_PROCESSING(SSobj,src)
+		STOP_PROCESSING(SSobjlw,src)
 		return
 
 	var/mob/living/carbon/human/M = Mob
@@ -87,8 +87,8 @@
 		Mob = null
 		return
 
-	if(timer > 0) // chech interval
-		timer -= delta_time
+	timer -= delta_time
+	if(timer >= 0) // chech interval
 		return
 
 	if(tired == TRUE)

@@ -48,8 +48,8 @@
 		to_chat(usr, "[src] выкл.")
 
 /obj/structure/chair/sybian/process(delta_time)
-	if(timer > 0) // chech interval
-		timer -= delta_time
+	timer -= delta_time
+	if(timer >= 0) // chech interval
 		return
 	else
 		timer = interval

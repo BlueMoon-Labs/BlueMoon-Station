@@ -134,8 +134,8 @@
 	STOP_PROCESSING(SSobj,src)
 
 /obj/item/buttplug/process(delta_time)
-	if(timer > 0) // chech interval
-		timer -= delta_time
+	timer -= delta_time
+	if(timer >= 0) // chech interval
 		return
 	else
 		timer = rand(50,350)

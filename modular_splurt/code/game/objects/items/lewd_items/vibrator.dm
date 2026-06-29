@@ -122,24 +122,24 @@
 		return
 	if(isliving(user))
 		playsound(user, 'sound/effects/clock_tick.ogg', 50, 1, -1)
+		var/was_processing = datum_flags & DF_ISPROCESSING
 		switch(mode)
 			if(VIB_OFF)
 				mode = VIB_LOW
 				to_chat(user, span_notice("You twist the bottom of [src], setting it to the low setting."))
-				return
 			if(VIB_LOW)
 				mode = VIB_MEDIUM
 				to_chat(user, span_notice("You twist the bottom of [src], setting it to the medium setting."))
-				return
 			if(VIB_MEDIUM)
 				mode = VIB_HIGH
 				to_chat(user, span_warning("You twist the bottom of [src], setting it to the high setting."))
-				return
 			if(VIB_HIGH)
 				mode = VIB_OFF
 				stopVibing()
 				to_chat(user, span_notice("You twist the bottom of [src], setting it to the off."))
-				return
+		if(was_processing)
+			startVibing()
+		return
 
 /obj/item/electropack/vibrator/verb/toggle_constant()
 
@@ -237,8 +237,8 @@
 		stopVibing()
 		return
 
-	if(timer > 0) // chech interval
-		timer -= delta_time
+	timer -= delta_time
+	if(timer >= 0) // chech interval
 		return
 	else
 		timer = interval

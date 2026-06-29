@@ -23,7 +23,7 @@
 	..()
 	add_overlay(mutable_appearance('modular_bluemoon/icons/obj/structures/lewd_devices.dmi', "dilmachine_over", MOB_LAYER + 1))
 
-/obj/structure/bed/Destroy()
+/obj/structure/bed/dildo_machine/Destroy()
 	STOP_PROCESSING(SSobjlw,src)
 	. = ..()
 
@@ -133,12 +133,11 @@
 		to_chat(user, span_notice("[src] в[on ? "" : "ы"]ключена."))
 
 /obj/structure/bed/dildo_machine/process(delta_time)
-	if(timer > 0) // chech interval
-		timer -= delta_time
+	timer -= delta_time
+	if(timer >= 0) // chech interval
 		return
 	else
 		timer = speed_delay[mode]
-
 	fuck()
 
 /obj/structure/bed/dildo_machine/proc/fuck()

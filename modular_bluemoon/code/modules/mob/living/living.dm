@@ -34,7 +34,7 @@
 /mob/living/proc/snap_choker(mob/living/M, slot)
 	var/obj/item/clothing/neck/C = M.get_item_by_slot(slot)
 	if(C)
-		if(C in snaped)
+		if(is_type_in_list(C, snaped))
 			if(prob(15))
 				C.take_damage(80,BRUTE)
 				M.dropItemToGround(C)
