@@ -749,7 +749,11 @@
 
 /datum/sprite_accessory/hair/uniquespikycowlick
 	name = "Unique Spiky (Alt 2 Cowlick)"
-	icon_state = "hair_unique_spiky_cowlick_alt"
+	icon_state = "hair_unique_spiky_cowlick_alt2"
+
+/datum/sprite_accessory/hair/uniquecloudyshort
+	name = "Unique Cloudy short"
+	icon_state = "hair_unique_cloudy_short"
 
 /datum/sprite_accessory/hair/hiddeneyes
 	name = "Hidden Eyes"
