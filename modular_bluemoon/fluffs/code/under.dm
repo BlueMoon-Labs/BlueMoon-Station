@@ -739,7 +739,7 @@
 	icon = 'modular_bluemoon/icons/obj/clothing/blastwave_uniforms.dmi'
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/uniform.dmi'
 	anthro_mob_worn_overlay = 'modular_bluemoon/icons/mob/clothing/uniform_digi.dmi'
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	mutantrace_variation = STYLE_DIGITIGRADE
 
 ///////////////////////////////////////////////
 
