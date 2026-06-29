@@ -1982,10 +1982,22 @@
 	path = /obj/item/clothing/head/helmet/sec/gosei
 	ckeywhitelist = list("monolithxxv")
 
+/datum/gear/donator/bm/mark40k
+	name = "Gosei Plates Mark40k"
+	slot = ITEM_SLOT_HEAD
+	path = /obj/item/clothing/head/helmet/sec/mark40k
+	ckeywhitelist = list("monolithxxv")
+
+/datum/gear/donator/bm/mark40k
+	name = "Gosei Chest Plates Mark40kk"
+	slot = ITEM_SLOT_OCLOTHING
+	path = /obj/item/clothing/suit/armor/vest/mark40kk
+	ckeywhitelist = list("monolithxxv")
+
 /datum/gear/donator/bm/nanotrasendripdigi
 	name = "NTR drip"
 	slot = "ITEM_SLOT_ICLOTHING"
-	path = /obj/item/clothing/under/donator/nanotrasendrip
+	path = /obj/item/clothing/under/donator/bm/nanotrasendrip
 	ckeywhitelist = list("monolithxxv, sketchyirishman")
 
 /datum/gear/donator/bm/chetky_cap

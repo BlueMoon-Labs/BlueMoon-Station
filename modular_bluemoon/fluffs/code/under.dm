@@ -23,6 +23,15 @@
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
 	can_adjust = TRUE
 
+/obj/item/clothing/under/donator/bm/nanotrasendrip
+	name = "Nanotrasen Representative Uniform"
+	icon_state = "ntrdrip"
+	item_state = "ntrdrip"
+	icon = 'modular_bluemoon/icons/obj/clothing/blastwave_uniforms.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/uniform.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/icons/mob/clothing/uniform_digi.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE
+
 /obj/item/clothing/under/donator/bm/utilgen
 	name = "GG-66"
 	desc = "Aramid made uniform of a rising private defense company, with a purple planet(?) on the back and 6's on the shoulders"
@@ -731,15 +740,6 @@
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
-
-/obj/item/clothing/under/donator/nanotrasendrip
-	name = "Nanotrasen Representative Uniform"
-	icon_state = "ntrdrip"
-	item_state = "ntrdrip"
-	icon = 'modular_bluemoon/icons/obj/clothing/blastwave_uniforms.dmi'
-	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/uniform.dmi'
-	anthro_mob_worn_overlay = 'modular_bluemoon/icons/mob/clothing/uniform_digi.dmi'
-	mutantrace_variation = STYLE_DIGITIGRADE
 
 ///////////////////////////////////////////////
 

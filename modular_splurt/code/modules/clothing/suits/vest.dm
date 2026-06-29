@@ -83,6 +83,17 @@
 	item_state = "peacekeeper"
 	dog_fashion = null
 
+/obj/item/clothing/suit/armor/vest/mark40kk
+	name = "Gosei Mark40k Chest Plates"
+	desc = "Различные плиты для вкручивания, их много, но они легко собираются!."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
+	icon_state = "mark40kk"
+	item_state = "mark40kk"
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+
 /obj/item/clothing/suit/armor/vest/metrocop
 	name = "Civil Protection Armored Vest"
 	desc = "You feel like this may not stop a scientist armed with nothing but a crowbar."
