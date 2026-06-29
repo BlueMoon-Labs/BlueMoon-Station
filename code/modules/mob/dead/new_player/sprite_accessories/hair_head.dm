@@ -767,6 +767,10 @@
 	name = "Hidden Eyes (Alt 2)"
 	icon_state = "hair_hiddeneyes_alt2"
 
+/datum/sprite_accessory/hair/hiddeneyesalt3
+	name = "Hidden Eyes (Alt 3)"
+	icon_state = "hair_hiddeneyes_alt3"
+
 /datum/sprite_accessory/hair/sleeper
 	name = "Sleeper"
 	icon_state = "hair_sleeper"
@@ -778,6 +782,10 @@
 /datum/sprite_accessory/hair/uniquefluffy
 	name = "Unique Fluffy"
 	icon_state = "hair_unique_fluffy"
+
+/datum/sprite_accessory/hair/uniquefluffynotail
+	name = "Unique Fluffy No tail"
+	icon_state = "hair_unique_fluffy_notail"
 
 /datum/sprite_accessory/hair/uniquefluffyalt
 	name = "Unique Fluffy (Alt)"
