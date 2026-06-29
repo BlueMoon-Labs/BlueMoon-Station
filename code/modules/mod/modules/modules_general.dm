@@ -19,16 +19,16 @@
 	if(component_type)
 		mod.AddComponent(component_type)
 
-	var/datum/component/storage/STR = mod.GetComponent(/datum/component/storage)
-	STR.storage_flags = STORAGE_FLAGS_VOLUME_DEFAULT
-	STR.max_volume = STORAGE_VOLUME_BACKPACK
-	STR.max_w_class = MAX_WEIGHT_CLASS_BACKPACK
+		var/datum/component/storage/Storage = mod.GetComponent(/datum/component/storage)
+		Storage.storage_flags = STORAGE_FLAGS_VOLUME_DEFAULT
+		Storage.max_volume = STORAGE_VOLUME_BACKPACK
+		Storage.max_w_class = MAX_WEIGHT_CLASS_BACKPACK
 
 /obj/item/mod/module/storage/on_uninstall()
 	. = ..()
-	var/datum/component/storage/STR = mod.GetComponent(/datum/component/storage)
-	if(STR)
-		STR.RemoveComponent()
+	var/datum/component/storage/Storage = mod.GetComponent(/datum/component/storage)
+	if(Storage)
+		Storage.Destroy()
 
 ///Ion Jetpack - Lets the user fly freely through space using battery charge.
 /obj/item/mod/module/jetpack
