@@ -162,7 +162,7 @@
 	construction_time = 10 SECONDS
 	materials = list(/datum/material/iron = 15000, /datum/material/silver = 5000, /datum/material/diamond = 15000)
 	build_path = /obj/item/mod/module/backpack_harness
-	departmental_flags = DEPARTMENT_SCIENCE
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
 
 /datum/design/module/mod_visor_medhud
 	name = "Medical Visor Module"
