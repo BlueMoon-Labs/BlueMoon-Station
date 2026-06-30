@@ -102,7 +102,11 @@
 /obj/item/mod/module/jetpack/Initialize(mapload)
 	. = ..()
 	ion_trail = new
-	ion_trail.set_up(src)
+	// ion_trail.set_up(src)
+
+/obj/item/mod/module/jetpack/on_install()
+	. = ..()
+	ion_trail.set_up(mod)
 
 /obj/item/mod/module/jetpack/Destroy()
 	QDEL_NULL(ion_trail)
