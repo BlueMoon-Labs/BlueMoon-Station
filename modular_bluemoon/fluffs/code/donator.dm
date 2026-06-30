@@ -1989,7 +1989,7 @@
 	ckeywhitelist = list("monolithxxv")
 
 /datum/gear/donator/bm/mark50k_helmet
-	name = "Mark40k Armored Head plates"
+	name = "Mark50k Armored Head plates"
 	slot = ITEM_SLOT_HEAD
 	path = /obj/item/clothing/head/donator/bm/mark50k_helmet
 	ckeywhitelist = list("monolithxxv")
