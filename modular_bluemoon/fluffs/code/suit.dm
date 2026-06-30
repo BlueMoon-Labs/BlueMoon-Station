@@ -218,7 +218,7 @@
 	icon_state = "rhsa12"
 	item_state = "rhsa12"
 
-/obj/item/clothing/suit/mark40k_armor
+/obj/item/clothing/suit/donator/bm/mark40k_armor
 	name = "Mark40k Chest Armored Plates"
 	desc = "Fast attachable armored plates"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
@@ -229,7 +229,7 @@
 	body_parts_covered = CHEST
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
-/obj/item/clothing/suit/mark50k_armor
+/obj/item/clothing/suit/donator/bm/mark50k_armor
 	name = "Mark50k Chest Armored Plates"
 	desc = "Fast attachable armored plates"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'

@@ -447,7 +447,7 @@
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR
 	unique_reskin = null
 
-/obj/item/clothing/head/mark40k_helmet
+/obj/item/clothing/head/donator/bm/mark40k_helmet
 	name = "Mark40k Armored Head plates"
 	desc = "Система развёртываемых плит, предназначенных для вкручивания в голову или свободного ношения, правда будет болтаться на голове!"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
@@ -461,7 +461,7 @@
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR
 	unique_reskin = null
 
-/obj/item/clothing/head/mark50k_helmet
+/obj/item/clothing/head/donator/bm/mark50k_helmet
 	name = "Mark50k Armored Head plates"
 	desc = "Система развёртываемых плит, предназначенных для вкручивания в голову или свободного ношения, правда будет болтаться на голове!"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
