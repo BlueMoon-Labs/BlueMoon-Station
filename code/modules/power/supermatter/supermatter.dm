@@ -358,7 +358,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	update_icon()
 
 	var/speaking = "[emergency_alert] The supermatter has reached critical integrity failure. Emergency causality destabilization field has been activated."
-	radio.talk_into(src, speaking, common_channel, language = get_selected_language())
+	radio.talk_into(src, speaking, common_channel, list(SPAN_SUPERMATTER), language = get_selected_language())
 	for(var/i in SUPERMATTER_COUNTDOWN_TIME to 0 step -10)
 		if(damage < explosion_point) // Cutting it a bit close there engineers
 			radio.talk_into(src, "[safe_alert] Failsafe has been disengaged.", common_channel)
@@ -372,7 +372,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 			speaking = "[DisplayTimeText(i, TRUE)] remain before causality stabilization."
 		else
 			speaking = "[i*0.1]..."
-		radio.talk_into(src, speaking, common_channel, list(SPAN_COMMAND))	// IT GOT WORSE, LOUD TIME
+		radio.talk_into(src, speaking, common_channel, list(SPAN_SUPERMATTER))	// IT GOT WORSE, LOUD TIME
 		sleep(10)
 
 	explode()

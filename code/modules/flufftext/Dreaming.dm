@@ -26,7 +26,7 @@
 		if(findtext(fragment, "%A% "))
 			fragment = replacetext(fragment, "%ADJECTIVE% ", "")
 			fragment = "\a [replacetext(fragment, "%A% ", "")]"
-			to_chat(src, "<span class='warning'><b>Тебе приснился ужасный кошмар о [fragment]...</b></span>")
+			to_chat(src, "<span class='nightmare'><b>Тебе приснился ужасный кошмар о [fragment]...</b></span>")
 			src.visible_message("<span class='notice'>[src] трясется во сне.</span>")
 			src.do_jitter_animation() //shake in their sleep.
 			fragment = ""
@@ -82,7 +82,8 @@
 			return
 	var/next_message = dream_fragments[1]
 	dream_fragments.Cut(1,2)
-	to_chat(src, "<span class='notice'><i>... [next_message] ...</i></span>")
+	var/dream_class = dreaming_in_shower ? "thought" : "dream"
+	to_chat(src, "<span class='[dream_class]'><i>... [next_message] ...</i></span>")
 	if(LAZYLEN(dream_fragments))
 		addtimer(CALLBACK(src, PROC_REF(dream_sequence), dream_fragments, dreaming_in_shower), rand(10,30))
 	else

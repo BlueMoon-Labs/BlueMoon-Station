@@ -19,7 +19,7 @@
 	bot_core = /obj/machinery/bot_core/secbot
 	window_id = "autoed209"
 	window_name = "Automatic Security Unit v2.6"
-	allow_pai = 0
+	allow_pai = 1
 	data_hud_type = DATA_HUD_SECURITY_ADVANCED
 	path_image_color = "#FF0000"
 

@@ -222,14 +222,12 @@
 	if(!demotivator)
 		STOP_PROCESSING(SSobj, src)
 		return
-	if(world.time < demotivator.next_scare)
+	if(!demotivator.can_scan()) // throttle the expensive view() sweep
 		return
-	var/scared_someone = FALSE
-	for(var/mob/living/viewer in view(5, src))
-		demotivator.pugach(viewer)
-		scared_someone = TRUE
-	if(scared_someone)
-		demotivator.next_scare = world.time + 120
+	do_scare_scan()
+
+/obj/structure/sign/poster/contraband/inteq/proc/do_scare_scan()
+	demotivator.do_scare_scan()
 
 /obj/item/poster/random_inteq/poster_place_check(mob/user, turf/closed/wall)
 	// Хз, как ты пытаешься повесить постер, будучи не хуманом, но мало ли

@@ -1,5 +1,5 @@
-import { useBackend } from '../backend';
-import { Box, Button, Icon, LabeledList, NoticeBox, ProgressBar, Section, Stack, Table } from '../components';
+import { useBackend, useLocalState } from '../backend';
+import { Box, Button, Icon, Input, LabeledList, NoticeBox, ProgressBar, Section, Stack, Table } from '../components';
 import { Window } from '../layouts';
 
 export const PaiSoftware = (props, context) => {
@@ -31,7 +31,6 @@ export const PaiSoftware = (props, context) => {
     ...(software.includes('security HUD') ? [{ id: 'securityhud', label: 'СБ HUD', icon: 'shield-alt' }] : []),
     ...(software.includes('medical HUD') ? [{ id: 'medicalhud', label: 'Мед HUD', icon: 'heartbeat' }] : []),
     ...(software.includes('door jack') ? [{ id: 'doorjack', label: 'Взлом двери', icon: 'door-open' }] : []),
-    ...(software.includes('camera jack') ? [{ id: 'camerajack', label: 'Взлом камеры', icon: 'video' }] : []),
     ...(software.includes('heartbeat sensor') ? [{ id: 'heartbeat', label: 'Пульс', icon: 'heartbeat' }] : []),
     ...(software.includes('remote signaller') ? [{ id: 'signaller', label: 'Сигналер', icon: 'broadcast-tower' }] : []),
     ...(software.includes('loudness booster') ? [{ id: 'loudness', label: 'Громкость', icon: 'music' }] : []),
@@ -39,8 +38,13 @@ export const PaiSoftware = (props, context) => {
     ...(software.includes('universal translator') ? [{ id: 'translator', label: 'Переводчик', icon: 'language' }] : []),
     ...(software.includes('projection array') ? [{ id: 'projection', label: 'Голограмма', icon: 'cube' }] : []),
     ...(software.includes('encoder') ? [{ id: 'encoder', label: 'Энкодер', icon: 'user-secret' }] : []),
+    ...(software.includes('flashlight') ? [{ id: 'flashlight', label: 'Фонарик', icon: 'lightbulb' }] : []),
+    ...(software.includes('night vision') ? [{ id: 'nightvision', label: 'Ночное зрение', icon: 'moon' }] : []),
+    ...(software.includes('meson vision') ? [{ id: 'mesonvision', label: 'Мезонное зрение', icon: 'border-all' }] : []),
     ...(software.includes('thermal vision') ? [{ id: 'thermalvision', label: 'Термальное зрение', icon: 'fire' }] : []),
     ...(software.includes('chemical injector') ? [{ id: 'chemicalinjector', label: 'Инъектор', icon: 'syringe' }] : []),
+    ...(software.includes('internal camera bug') ? [{ id: 'camerabug', label: 'Камерный жучок', icon: 'eye' }] : []),
+    ...(software.includes('weakened ai capability') ? [{ id: 'weakenedai', label: 'Слабые возможности ИИ', icon: 'robot' }] : []),
     { id: 'buy', label: 'Загрузка ПО', icon: 'download' },
   ];
 
@@ -84,21 +88,45 @@ export const PaiSoftware = (props, context) => {
                     Мессенджер
                   </Button>
                 </Stack.Item>
-                <Stack.Item mt={1}>
-                  <Box fontSize={0.8} color="label">Память</Box>
+                <Stack.Divider />
+                <Stack.Item>
+                  <Box fontSize={0.8} color="label"><Icon name="microchip" /> ОЗУ</Box>
                   <ProgressBar
-                    value={ramUsed}
-                    minValue={0}
-                    maxValue={100}
-                    ranges={{ good: [0, 60], average: [60, 85], bad: [85, 100] }}
+                    value={ramUsed / 100}
+                    ranges={{ good: [0, 0.6], average: [0.6, 0.85], bad: [0.85, 1] }}
                   >
                     {ramUsed} / 100
                   </ProgressBar>
                 </Stack.Item>
+                <Stack.Item>
+                  <Box fontSize={0.8} color="label"><Icon name="battery-half" /> Батарея</Box>
+                  <ProgressBar
+                    value={(data.battery_percent ?? 0) / 100}
+                    ranges={{ good: [0.5, 1], average: [0.15, 0.5], bad: [0, 0.15] }}
+                  >
+                    {data.battery_charge !== null ? `${data.battery_percent}%${data.charging ? ' ⚡' : ''}` : 'N/A'}
+                  </ProgressBar>
+                </Stack.Item>
+                {!!data.charging && (
+                  <Stack.Item>
+                    <Box color="good" fontSize={0.8}><Icon name="bolt" /> Зарядка...</Box>
+                  </Stack.Item>
+                )}
+                <Stack.Item>
+                  <Button
+                    fluid
+                    icon="bolt"
+                    tooltip={data.cable_extended ? 'Убрать кабель' : 'Выдвинуть кабель для зарядки'}
+                    onClick={() => act(data.cable_extended ? 'doorjack_retract' : 'doorjack_cable')}
+                    color={data.cable_extended ? 'bad' : 'good'}
+                  >
+                    {data.cable_extended ? 'Убрать кабель' : 'Кабель'}
+                  </Button>
+                </Stack.Item>
               </Stack>
             </Section>
           </Stack.Item>
-          <Stack.Item grow>
+          <Stack.Item grow style={{ minHeight: '0' }}>
             {temp && (
               <NoticeBox info>
                 <Box inline mr={1}>{temp}</Box>
@@ -140,8 +168,6 @@ const PaiContent = (props, context) => {
       return <MedHudScreen />;
     case 'doorjack':
       return <DoorjackScreen />;
-    case 'camerajack':
-      return <CameraJackScreen />;
     case 'heartbeat':
       return <HeartbeatScreen />;
     case 'projection':
@@ -156,35 +182,56 @@ const PaiContent = (props, context) => {
       return <TranslatorScreen />;
     case 'encoder':
       return <EncoderScreen />;
+    case 'flashlight':
+      return <FlashlightScreen />;
+    case 'nightvision':
+      return <NightVisionScreen />;
+    case 'mesonvision':
+      return <MesonVisionScreen />;
     case 'thermalvision':
       return <ThermalVisionScreen />;
     case 'chemicalinjector':
       return <ChemicalInjectorScreen />;
+    case 'camerabug':
+      return <CameraBugScreen />;
+    case 'weakenedai':
+      return <WeakenedAIScreen />;
     default:
       return <Box>Интерфейс ПО готов.</Box>;
   }
 };
 
 const MainScreen = (props, context) => {
-  const { data } = useBackend(context);
-  const { master, master_dna, ram, software, secHUD, medHUD, encryptmod, translator_on } = data;
+  const { act, data } = useBackend(context);
+  const { master, master_dna, ram, software, secHUD, medHUD, encryptmod, translator_on, battery_charge, battery_max, battery_percent, charging, cell_type_name } = data;
   return (
     <>
-      <Section title="Статус системы">
+      <Section title={<><Icon name="info-circle" /> Статус системы</>}>
         <LabeledList>
-          <LabeledList.Item label="Статус" color="good">Оперативен</LabeledList.Item>
-          <LabeledList.Item label="Владелец">{master || 'Нет'}</LabeledList.Item>
-          <LabeledList.Item label="ДНК владельца">{master_dna || 'Нет'}</LabeledList.Item>
-          <LabeledList.Item label="Свободно ОЗУ">{ram}</LabeledList.Item>
-          <LabeledList.Item label="Модулей установлено">{software.length}</LabeledList.Item>
+          <LabeledList.Item label={<><Icon name="circle" color="good" /> Статус</>} color="good">Оперативен</LabeledList.Item>
+          <LabeledList.Item label={<><Icon name="user" /> Владелец</>}>{master || <Box color="average">Нет</Box>}</LabeledList.Item>
+          <LabeledList.Item label={<><Icon name="dna" /> ДНК владельца</>}>{master_dna || <Box color="average">Нет</Box>}</LabeledList.Item>
+          <LabeledList.Item label={<><Icon name="microchip" /> Свободно ОЗУ</>}>{ram}</LabeledList.Item>
+          <LabeledList.Item label={<><Icon name="cube" /> Модулей установлено</>}>{software.length}</LabeledList.Item>
+          <LabeledList.Item label={<><Icon name="battery-full" /> Батарея</>}>
+            <ProgressBar
+              value={(battery_percent ?? 0) / 100}
+              ranges={{ good: [0.5, 1], average: [0.15, 0.5], bad: [0, 0.15] }}
+              inline
+              width="200px"
+            >
+              {battery_charge !== null ? `${battery_percent}% (${battery_charge}/${battery_max})${charging ? ' ⚡' : ''}` : 'N/A'}
+            </ProgressBar>
+          </LabeledList.Item>
+          <LabeledList.Item label={<><Icon name="tag" /> Тип батареи</>}>{cell_type_name || 'Нет'}</LabeledList.Item>
         </LabeledList>
       </Section>
-      <Section title="Активные модули" mt={1}>
+      <Section title={<><Icon name="toggle-on" /> Активные модули</>} mt={1}>
         <LabeledList>
-          <LabeledList.Item label="СБ HUD">{secHUD ? <Box color="good">Вкл</Box> : <Box color="bad">Выкл</Box>}</LabeledList.Item>
-          <LabeledList.Item label="Мед HUD">{medHUD ? <Box color="good">Вкл</Box> : <Box color="bad">Выкл</Box>}</LabeledList.Item>
-          <LabeledList.Item label="Шифрование">{encryptmod ? <Box color="good">Вкл</Box> : <Box color="bad">Выкл</Box>}</LabeledList.Item>
-          <LabeledList.Item label="Переводчик">{translator_on ? <Box color="good">Вкл</Box> : <Box color="bad">Выкл</Box>}</LabeledList.Item>
+          <LabeledList.Item label={<><Icon name="shield-alt" /> СБ HUD</>}>{secHUD ? <Box color="good">Вкл</Box> : <Box color="bad">Выкл</Box>}</LabeledList.Item>
+          <LabeledList.Item label={<><Icon name="heartbeat" /> Мед HUD</>}>{medHUD ? <Box color="good">Вкл</Box> : <Box color="bad">Выкл</Box>}</LabeledList.Item>
+          <LabeledList.Item label={<><Icon name="key" /> Шифрование</>}>{encryptmod ? <Box color="good">Вкл</Box> : <Box color="bad">Выкл</Box>}</LabeledList.Item>
+          <LabeledList.Item label={<><Icon name="language" /> Переводчик</>}>{translator_on ? <Box color="good">Вкл</Box> : <Box color="bad">Выкл</Box>}</LabeledList.Item>
         </LabeledList>
       </Section>
     </>
@@ -194,21 +241,55 @@ const MainScreen = (props, context) => {
 const DirectivesScreen = (props, context) => {
   const { act, data } = useBackend(context);
   const { master, master_dna, laws_zeroth, laws_supplied } = data;
+  const [editing, setEditing] = useLocalState(context, 'dirEdit', false);
+  const [localZeroth, setLocalZeroth] = useLocalState(context, 'dirZero', laws_zeroth || '');
+  const [localSupplied, setLocalSupplied] = useLocalState(context, 'dirSupp', (laws_supplied || []).join('\n'));
+  if (editing) {
+    return (
+      <Box>
+        <Section title={<><Icon name="edit" /> Редактирование директив</>}>
+          <LabeledList>
+            <LabeledList.Item label={<><Icon name="user" /> Владелец</>}>{master || <Box color="average">Нет</Box>}</LabeledList.Item>
+            <LabeledList.Item label={<><Icon name="dna" /> ДНК</>}>{master_dna || <Box color="average">Нет</Box>}</LabeledList.Item>
+          </LabeledList>
+          <Box bold mt={1} mb={0.5}>Главная директива</Box>
+          <Input fluid value={localZeroth} onChange={(e, v) => setLocalZeroth(v)} />
+          <Box bold mt={1} mb={0.5}>Дополнительные директивы (по одной на строку)</Box>
+          <Input fluid value={localSupplied} onChange={(e, v) => setLocalSupplied(v)} />
+          <Box mt={1}>
+            <Button icon="save" color="good" onClick={() => {
+              act('save_directives', { zeroth: localZeroth, supplied: localSupplied });
+              setEditing(false);
+            }}>Сохранить</Button>
+            <Button ml={1} icon="times" onClick={() => setEditing(false)}>Отмена</Button>
+          </Box>
+        </Section>
+      </Box>
+    );
+  }
   return (
     <Box>
-      <Box bold mb={1}>Директивы</Box>
-      <LabeledList>
-        <LabeledList.Item label="Владелец">{master || 'Нет'}</LabeledList.Item>
-        <LabeledList.Item label="ДНК">{master_dna || 'Нет'}</LabeledList.Item>
-      </LabeledList>
-      <Box mt={1}><b>Главная директива:</b></Box>
-      <Box>{laws_zeroth || 'Нет'}</Box>
-      <Box mt={1}><b>Дополнительные директивы:</b></Box>
-      {(!laws_supplied || !laws_supplied.length) && <Box>Нет</Box>}
-      {laws_supplied?.map((law, i) => (
-        <Box key={i}>&nbsp;&nbsp;{law}</Box>
-      ))}
-      <Button mt={1} onClick={() => act('directive_dna')}>Запросить образец ДНК</Button>
+      <Section title={<><Icon name="clipboard-list" /> Директивы</>}>
+        <LabeledList>
+          <LabeledList.Item label={<><Icon name="user" /> Владелец</>}>{master || <Box color="average">Нет</Box>}</LabeledList.Item>
+          <LabeledList.Item label={<><Icon name="dna" /> ДНК</>}>{master_dna || <Box color="average">Нет</Box>}</LabeledList.Item>
+        </LabeledList>
+      </Section>
+      <Section title="Главная директива">
+        <Box color="label">{laws_zeroth || 'Нет'}</Box>
+      </Section>
+      <Section title="Дополнительные директивы" mt={1}>
+        {(!laws_supplied || !laws_supplied.length) && <Box color="average">Нет</Box>}
+        {laws_supplied?.map((law, i) => (
+          <Box key={i} p={1} mb={0.5} backgroundColor="rgba(0,0,0,0.2)">{law}</Box>
+        ))}
+      </Section>
+      <Button mt={1} icon="dna" onClick={() => act('directive_dna')}>Запросить образец ДНК</Button>
+      <Button mt={1} ml={1} icon="edit" onClick={() => {
+        setLocalZeroth(laws_zeroth || '');
+        setLocalSupplied((laws_supplied || []).join('\n'));
+        setEditing(true);
+      }}>Редактировать директивы</Button>
     </Box>
   );
 };
@@ -345,64 +426,130 @@ const SecurityRecordScreen = (props, context) => {
   );
 };
 
+const SYNDICATE_SOFTWARE = ['thermal vision', 'chemical injector', 'weakened ai capability'];
+
+const SOFTWARE_NAMES = {
+  'medical records': 'Медицинские записи',
+  'security records': 'Записи охраны',
+  'door jack': 'Взлом двери',
+  'internal camera bug': 'Встроенный камерный жучок',
+  'weakened ai capability': 'Слабые возможности ИИ',
+  'atmosphere sensor': 'Атмосферный датчик',
+  'heartbeat sensor': 'Биосканер хозяина',
+  'security HUD': 'HUD службы безопасности',
+  'medical HUD': 'Медицинский HUD',
+  'universal translator': 'Универсальный переводчик',
+  'projection array': 'Проекция голограммы',
+  'remote signaller': 'Дистанционный сигналер',
+  'loudness booster': 'Усилитель звука',
+  'encryption keys': 'Ключи шифрования',
+  'encoder': 'Энкодер',
+  'thermal vision': 'Термальное зрение',
+  'chemical injector': 'Инъектор химикатов',
+  'flashlight': 'Фонарик',
+  'night vision': 'Прибор ночного видения',
+  'meson vision': 'Мезонное зрение',
+};
+
 const BuyScreen = (props, context) => {
   const { act, data } = useBackend(context);
-  const { ram, software, available_software } = data;
+  const { ram, software, available_software, syndicate_model } = data;
   const ramUsed = 100 - ram;
+  const softName = (item) => SOFTWARE_NAMES[item.id] || item.id;
+  const normalSoftware = [];
+  const syndicateSoftware = [];
+  (available_software || []).forEach(item => {
+    if (SYNDICATE_SOFTWARE.includes(item.id)) {
+      syndicateSoftware.push(item);
+    } else {
+      normalSoftware.push(item);
+    }
+  });
   return (
     <>
-      <Section title="Статус памяти">
+      <Section title={<><Icon name="microchip" /> Статус памяти</>}>
         <ProgressBar
-          value={ramUsed}
-          minValue={0}
-          maxValue={100}
-          ranges={{ good: [0, 60], average: [60, 85], bad: [85, 100] }}
+          value={ramUsed / 100}
+          ranges={{ good: [0, 0.6], average: [0.6, 0.85], bad: [0.85, 1] }}
         >
           {ramUsed} / 100 ОЗУ использовано — {ram} свободно
         </ProgressBar>
       </Section>
       <Section title="Доступное ПО" mt={1}>
-        <Table>
-          <Table.Row header>
-            <Table.Cell>ПО</Table.Cell>
-            <Table.Cell>Стоимость</Table.Cell>
-            <Table.Cell>Статус</Table.Cell>
-          </Table.Row>
-          {Object.keys(available_software).map(key => {
-            const cost = available_software[key];
-            const installed = software.includes(key);
-            const canAfford = ram >= cost;
-            return (
-              <Table.Row key={key}>
-                <Table.Cell>{key}</Table.Cell>
-                <Table.Cell>{cost} ОЗУ</Table.Cell>
-                <Table.Cell>
-                  {installed ? (
-                    <Box>
-                      <Box color="good" inline mr={1}><Icon name="check" /> Установлено</Box>
-                      <Button
-                        icon="trash"
-                        color="red"
-                        onClick={() => act('uninstall', { uninstall: key })}
-                      >
-                        Удалить
-                      </Button>
-                    </Box>
-                  ) : (
-                    <Button
-                      disabled={!canAfford}
-                      onClick={() => act('buy', { buy: key })}
-                    >
-                      {canAfford ? 'Загрузить' : 'Недостаточно ОЗУ'}
-                    </Button>
-                  )}
-                </Table.Cell>
-              </Table.Row>
-            );
-          })}
-        </Table>
+        <Box>
+          {normalSoftware.map(item => (
+            <SoftwareCard
+              key={item.id}
+              item={item}
+              softName={softName(item)}
+              installed={software.includes(item.id)}
+              canAfford={ram >= item.cost}
+              syndicate={false}
+            />
+          ))}
+          {!!syndicate_model && syndicateSoftware.length > 0 && (
+            <>
+              <Box mt={2} mb={1} bold color="orange" fontSize={1.2}>
+                <Icon name="skull" /> Программы Синдиката
+              </Box>
+              {syndicateSoftware.map(item => (
+                <SoftwareCard
+                  key={item.id}
+                  item={item}
+                  softName={softName(item)}
+                  installed={software.includes(item.id)}
+                  canAfford={ram >= item.cost}
+                  syndicate={true}
+                />
+              ))}
+            </>
+          )}
+        </Box>
       </Section>
     </>
+  );
+};
+
+const SoftwareCard = (props, context) => {
+  const { act } = useBackend(context);
+  const { item, softName, installed, canAfford, syndicate } = props;
+  return (
+    <Box
+      mb={1}
+      p={1}
+      style={{
+        border: syndicate ? '1px solid #cf6a1f' : '1px solid #333',
+        borderRadius: '4px',
+        background: 'rgba(0,0,0,0.15)',
+      }}>
+      <Box bold fontSize={1.1} mb={0.5} color={syndicate ? 'orange' : null}>
+        {softName}
+      </Box>
+      {item.desc && (
+        <Box fontSize={0.85} color="label" mb={1}>
+          {item.desc}
+        </Box>
+      )}
+      <Box>
+        <Box inline mr={2} fontSize={0.9}>
+          <Icon name="microchip" /> <b>{item.cost}</b> ОЗУ
+        </Box>
+        {item.power_usage > 0 && (
+          <Box inline mr={2} fontSize={0.9}>
+            <Icon name="bolt" /> <b>{item.power_usage}</b> эн.
+          </Box>
+        )}
+        {installed ? (
+          <Button icon="trash" color="red" onClick={() => act('uninstall', { uninstall: item.id })}>
+            Удалить
+          </Button>
+        ) : (
+          <Button disabled={!canAfford} onClick={() => act('buy', { buy: item.id })}>
+            {canAfford ? 'Загрузить' : 'Недостаточно ОЗУ'}
+          </Button>
+        )}
+      </Box>
+    </Box>
   );
 };
 
@@ -437,14 +584,14 @@ const SecHudScreen = (props, context) => {
   const { act, data } = useBackend(context);
   const { secHUD } = data;
   return (
-    <Box>
+    <Section title={<><Icon name="shield-alt" /> СБ HUD</>}>
       <Box mb={1}>
         Модуль распознавания лиц {secHUD ? <Box inline color="good">включён</Box> : <Box inline color="bad">отключён</Box>}.
       </Box>
-      <Button onClick={() => act('toggle_sec_hud')}>
+      <Button icon={secHUD ? 'toggle-off' : 'toggle-on'} onClick={() => act('toggle_sec_hud')}>
         {secHUD ? 'Отключить' : 'Включить'} распознавание лиц
       </Button>
-    </Box>
+    </Section>
   );
 };
 
@@ -472,8 +619,8 @@ const MedHudScreen = (props, context) => {
     return (
       <Box>
         <Button onClick={() => act('set_screen', { screen: 'medicalhud', sub: 0 })}>Назад</Button>
-        <Box bold mt={1}>Результаты биоскана: {bioscan.name}</Box>
-        <LabeledList>
+        <Section title={<><Icon name="user-md" /> Результаты биоскана: {bioscan.name}</>} mt={1}>
+          <LabeledList>
           <LabeledList.Item label="Общий статус">{bioscan.stat}</LabeledList.Item>
           <LabeledList.Item label="Дыхание" color={bioscan.oxy > 50 ? 'bad' : 'good'}>{bioscan.oxy}</LabeledList.Item>
           <LabeledList.Item label="Токсины" color={bioscan.tox > 50 ? 'bad' : 'good'}>{bioscan.tox}</LabeledList.Item>
@@ -495,29 +642,31 @@ const MedHudScreen = (props, context) => {
             ))}
           </>
         )}
+        </Section>
       </Box>
     );
   }
   return (
-    <Box>
+    <Section title={<><Icon name="heartbeat" /> Медицинский анализатор</>}>
       <Box mb={1}>
         Медицинский анализатор {medHUD ? <Box inline color="good">включён</Box> : <Box inline color="bad">отключён</Box>}.
       </Box>
-      <Button onClick={() => act('toggle_med_hud')}>
+      <Button icon={medHUD ? 'toggle-off' : 'toggle-on'} onClick={() => act('toggle_med_hud')}>
         {medHUD ? 'Отключить' : 'Включить'} мед. анализ
       </Button>
-      <Button mt={1} onClick={() => act('medical_bioscan')}>Биоскан носителя</Button>
-    </Box>
+      <Button ml={1} icon="stethoscope" onClick={() => act('medical_bioscan')}>Биоскан носителя</Button>
+    </Section>
   );
 };
 
-const DoorjackScreen = (props, context) => {
+const CableHackSection = (props, context) => {
   const { act, data } = useBackend(context);
   const { cable_extended, cable_connected, hackprogress, hacking } = data;
+  const { startAction, cancelAction, title, icon } = props;
   return (
-    <Section title="Статус взлома шлюза">
+    <Section title={<><Icon name={icon || 'plug'} /> {title || 'Взлом (кабель)'}</>}>
       <LabeledList>
-        <LabeledList.Item label="Кабель">
+        <LabeledList.Item label={<><Icon name="signal" /> Статус</>}>
           {!cable_extended ? (
             <Box color="bad">Убран</Box>
           ) : !cable_connected ? (
@@ -526,24 +675,39 @@ const DoorjackScreen = (props, context) => {
             <Box color="good">Подключён</Box>
           )}
         </LabeledList.Item>
-        {hacking && (
-          <LabeledList.Item label="Прогресс">
-            <ProgressBar value={hackprogress} minValue={0} maxValue={100}>
+        {!!hacking && (
+          <LabeledList.Item label={<><Icon name="spinner" /> Прогресс</>}>
+            <ProgressBar value={hackprogress / 100} ranges={{ good: [0.8, 1], average: [0.3, 0.8], bad: [0, 0.3] }}>
               {hackprogress}%
             </ProgressBar>
           </LabeledList.Item>
         )}
       </LabeledList>
       {!cable_extended && (
-        <Button mt={1} onClick={() => act('doorjack_cable')}>Выдвинуть кабель</Button>
+        <Button mt={1} icon="plug" onClick={() => act('doorjack_cable')}>Выдвинуть кабель</Button>
       )}
-      {cable_connected && !hacking && (
-        <Button mt={1} onClick={() => act('doorjack_start')}>Начать взлом шлюза</Button>
+      {!!cable_extended && (
+        <Button mt={1} icon="times" color="bad" onClick={() => act('doorjack_retract')}>Убрать кабель</Button>
       )}
-      {hacking && (
-        <Button mt={1} color="bad" onClick={() => act('doorjack_cancel')}>Отменить взлом</Button>
+      {!!cable_connected && !hacking && (
+        <Button mt={1} icon="play" onClick={() => act(startAction)}>Начать взлом</Button>
+      )}
+      {!!hacking && (
+        <Button mt={1} icon="stop" color="bad" onClick={() => act(cancelAction)}>Отменить взлом</Button>
       )}
     </Section>
+  );
+};
+
+const DoorjackScreen = (props, context) => {
+  return (
+    <CableHackSection
+      {...props}
+      title="Взлом (кабель)"
+      icon="plug"
+      startAction="doorjack_start"
+      cancelAction="doorjack_cancel"
+    />
   );
 };
 
@@ -616,38 +780,47 @@ const TranslatorScreen = (props, context) => {
   );
 };
 
-const CameraJackScreen = (props, context) => {
+const FlashlightScreen = (props, context) => {
   const { act, data } = useBackend(context);
-  const { cable_extended, cable_connected, hackprogress, hacking } = data;
+  const { flashlight_on } = data;
   return (
-    <Section title="Статус взлома камеры">
-      <LabeledList>
-        <LabeledList.Item label="Кабель">
-          {!cable_extended ? (
-            <Box color="bad">Убран</Box>
-          ) : !cable_connected ? (
-            <Box color="average">Выдвинут (не подключён)</Box>
-          ) : (
-            <Box color="good">Подключён</Box>
-          )}
-        </LabeledList.Item>
-        {hacking && (
-          <LabeledList.Item label="Прогресс">
-            <ProgressBar value={hackprogress} minValue={0} maxValue={100}>
-              {hackprogress}%
-            </ProgressBar>
-          </LabeledList.Item>
-        )}
-      </LabeledList>
-      {!cable_extended && (
-        <Button mt={1} onClick={() => act('doorjack_cable')}>Выдвинуть кабель</Button>
-      )}
-      {cable_connected && !hacking && (
-        <Button mt={1} onClick={() => act('camerajack_start')}>Начать взлом камеры</Button>
-      )}
-      {hacking && (
-        <Button mt={1} color="bad" onClick={() => act('camerajack_cancel')}>Отменить взлом</Button>
-      )}
+    <Section title={<><Icon name="lightbulb" /> Фонарик</>}>
+      <Box mb={1}>
+        Фонарик {flashlight_on ? <Box inline color="good">включён</Box> : <Box inline color="bad">выключен</Box>}.
+      </Box>
+      <Button icon="power-off" onClick={() => act('toggle_flashlight')}>
+        {flashlight_on ? 'Выключить' : 'Включить'}
+      </Button>
+    </Section>
+  );
+};
+
+const NightVisionScreen = (props, context) => {
+  const { act, data } = useBackend(context);
+  const { night_vision } = data;
+  return (
+    <Section title={<><Icon name="moon" /> Ночное зрение</>}>
+      <Box mb={1}>
+        Ночное зрение {night_vision ? <Box inline color="good">активировано</Box> : <Box inline color="bad">неактивировано</Box>}.
+      </Box>
+      <Button icon={night_vision ? 'eye-slash' : 'eye'} onClick={() => act('toggle_night_vision')}>
+        {night_vision ? 'Деактивировать' : 'Активировать'}
+      </Button>
+    </Section>
+  );
+};
+
+const MesonVisionScreen = (props, context) => {
+  const { act, data } = useBackend(context);
+  const { meson_vision } = data;
+  return (
+    <Section title={<><Icon name="border-all" /> Мезонное зрение</>}>
+      <Box mb={1}>
+        Мезонное зрение {meson_vision ? <Box inline color="good">активировано</Box> : <Box inline color="bad">неактивировано</Box>}.
+      </Box>
+      <Button icon={meson_vision ? 'eye-slash' : 'eye'} onClick={() => act('toggle_meson_vision')}>
+        {meson_vision ? 'Деактивировать' : 'Активировать'}
+      </Button>
     </Section>
   );
 };
@@ -656,59 +829,79 @@ const HeartbeatScreen = (props, context) => {
   const { act, data } = useBackend(context);
   const { heartbeat_sensor } = data;
   return (
-    <Box>
+    <Section title={<><Icon name="heartbeat" /> Сенсор пульса</>}>
       <Box mb={1}>
         Сенсор пульса {heartbeat_sensor ? <Box inline color="good">включён</Box> : <Box inline color="bad">отключён</Box>}.
       </Box>
-      <Button onClick={() => act('toggle_heartbeat')}>
+      <Button icon={heartbeat_sensor ? 'heart' : 'heart'} onClick={() => act('toggle_heartbeat')}>
         {heartbeat_sensor ? 'Отключить' : 'Включить'} сенсор пульса
       </Button>
       <NoticeBox info mt={1}>
-        При включении сенсор будет отслеживать состояние биологического носителя и предупреждать о критических изменениях здоровья.
+        <Icon name="info-circle" /> При включении сенсор будет отслеживать состояние биологического носителя и предупреждать о критических изменениях здоровья.
       </NoticeBox>
-    </Box>
+    </Section>
   );
 };
 
 const ProjectionScreen = (props, context) => {
   const { act, data } = useBackend(context);
   const { holoform, emitterhealth, emittermaxhealth } = data;
-  const healthPercent = (emitterhealth / emittermaxhealth) * 100;
+  const healthPercent = emitterhealth / emittermaxhealth;
   return (
-    <Box>
+    <Section title={<><Icon name="cube" /> Голограмма</>}>
       <Box mb={1}>
         Голохассис {holoform ? <Box inline color="good">развёрнут</Box> : <Box inline color="bad">свёрнут</Box>}.
       </Box>
       <LabeledList>
-        <LabeledList.Item label="Целостность эмиттера">
-          <ProgressBar value={healthPercent} minValue={0} maxValue={100} ranges={{ good: [50, 100], average: [20, 50], bad: [0, 20] }}>
-            {emitterhealth} / {emittermaxhealth}
+        <LabeledList.Item label={<><Icon name="heart" /> Целостность эмиттера</>}>
+          <ProgressBar value={healthPercent} ranges={{ good: [0.5, 1], average: [0.2, 0.5], bad: [0, 0.2] }}>
+            <Icon name="bolt" /> {emitterhealth} / {emittermaxhealth}
           </ProgressBar>
         </LabeledList.Item>
       </LabeledList>
-      <Button mt={1} onClick={() => act('toggle_projection')}>
+      <Button mt={1} icon={holoform ? 'compress' : 'expand'} onClick={() => act('toggle_projection')}>
         {holoform ? 'Свернуть голохассис' : 'Развернуть голохассис'}
       </Button>
-    </Box>
+    </Section>
   );
 };
 
 const EncoderScreen = (props, context) => {
   const { act, data } = useBackend(context);
   const { encoder_active, encoder_name, encoder_job } = data;
+  const [name, setName] = useLocalState(context, 'encoderName', encoder_name || '');
+  const [job, setJob] = useLocalState(context, 'encoderJob', encoder_job || '');
+  if (!encoder_active) {
+    return (
+      <Box>
+        <Box mb={1}>
+          Энкодер <Box inline color="bad">неактивен</Box>.
+        </Box>
+        <LabeledList>
+          <LabeledList.Item label="Имя">
+            <Input value={name} onChange={(e, v) => setName(v)} />
+          </LabeledList.Item>
+          <LabeledList.Item label="Должность">
+            <Input value={job} onChange={(e, v) => setJob(v)} />
+          </LabeledList.Item>
+        </LabeledList>
+        <Button mt={1} onClick={() => act('save_encoder', { name, job })}>
+          Активировать
+        </Button>
+      </Box>
+    );
+  }
   return (
     <Box>
       <Box mb={1}>
-        Энкодер {encoder_active ? <Box inline color="good">активен</Box> : <Box inline color="bad">неактивен</Box>}.
+        Энкодер <Box inline color="good">активен</Box>.
       </Box>
-      {encoder_active && (
-        <LabeledList>
-          <LabeledList.Item label="Имя">{encoder_name || '—'}</LabeledList.Item>
-          <LabeledList.Item label="Должность">{encoder_job || '—'}</LabeledList.Item>
-        </LabeledList>
-      )}
-      <Button mt={1} onClick={() => act('toggle_encoder')}>
-        {encoder_active ? 'Деактивировать' : 'Активировать'}
+      <LabeledList>
+        <LabeledList.Item label="Имя">{encoder_name || '—'}</LabeledList.Item>
+        <LabeledList.Item label="Должность">{encoder_job || '—'}</LabeledList.Item>
+      </LabeledList>
+      <Button mt={1} icon="power-off" onClick={() => act('toggle_encoder')}>
+        Деактивировать
       </Button>
     </Box>
   );
@@ -732,24 +925,197 @@ const ThermalVisionScreen = (props, context) => {
 const ChemicalInjectorScreen = (props, context) => {
   const { act, data } = useBackend(context);
   const { chemical_injector, chemical_storage, chemical_max } = data;
+  const chemPercent = (chemical_storage ?? 0) / (chemical_max ?? 30);
   return (
-    <Box>
+    <Section title={<><Icon name="syringe" /> Химический инъектор</>}>
       <Box mb={1}>
         Химический инъектор {chemical_injector ? <Box inline color="good">активен</Box> : <Box inline color="bad">неактивен</Box>}.
       </Box>
       <LabeledList>
-        <LabeledList.Item label="Запас">
-          {chemical_storage ?? 0} / {chemical_max ?? 30} юнитов
+        <LabeledList.Item label={<><Icon name="flask" /> Запас реагентов</>}>
+          <ProgressBar value={chemPercent} ranges={{ good: [0.5, 1], average: [0.2, 0.5], bad: [0, 0.2] }}>
+            {chemical_storage ?? 0} / {chemical_max ?? 30} юнитов
+          </ProgressBar>
         </LabeledList.Item>
       </LabeledList>
-      <Button mt={1} onClick={() => act('toggle_chemical_injector')}>
+      <Button mt={1} icon="power-off" onClick={() => act('toggle_chemical_injector')}>
         {chemical_injector ? 'Отключить' : 'Активировать'}
       </Button>
-      {chemical_injector && (
-        <Button mt={1} ml={1} onClick={() => act('inject_chemicals')}>
+      {!!chemical_injector && (
+        <Button mt={1} ml={1} icon="share" onClick={() => act('inject_chemicals')}>
           Впрыснуть реагенты
         </Button>
       )}
-    </Box>
+    </Section>
   );
 };
+
+const CameraBugScreen = (props, context) => {
+  const { act, data } = useBackend(context);
+  const { camera_bug_active } = data;
+  return (
+    <Section title={<><Icon name="eye" /> Internal Camera Bug</>}>
+      <Box mb={1}>
+        Камерный жучок {camera_bug_active ? <Box inline color="good">активен</Box> : <Box inline color="bad">неактивен</Box>}.
+      </Box>
+      <Button icon="power-off" onClick={() => act('toggle_camera_bug')}>
+        {camera_bug_active ? 'Деактивировать' : 'Активировать'}
+      </Button>
+      {!!camera_bug_active && (
+        <Button ml={1} icon="video" onClick={() => act('open_camera_console')}>
+          Открыть просмотр камер
+        </Button>
+      )}
+    </Section>
+  );
+};
+
+const WeakenedAIScreen = (props, context) => {
+  const { act, data } = useBackend(context);
+  const { ai_capability, nearby_doors, nearby_apcs, nearby_turrets, ai_capability_cooldown, ai_capability_cooldown_time } = data;
+  const cdReady = ai_capability && ai_capability_cooldown <= 0;
+  const cdPercent = ai_capability_cooldown_time > 0 ? (1 - ai_capability_cooldown / ai_capability_cooldown_time) : 1;
+  const hasAny = (nearby_doors?.length || nearby_apcs?.length || nearby_turrets?.length);
+  return (
+    <Section title={<><Icon name="robot" /> Weakened AI Capability</>}>
+      <Box mb={1}>
+        Режим ослабленного ИИ {ai_capability ? <Box inline color="good">активен</Box> : <Box inline color="bad">неактивен</Box>}.
+      </Box>
+      <Button
+        icon="power-off"
+        onClick={() => act('toggle_ai_capability')}
+      >
+        {ai_capability ? 'Деактивировать' : 'Активировать'}
+      </Button>
+      {!!ai_capability && (
+        <>
+          {!hasAny && (
+            <Box mt={1} color="average">Рядом нет устройств для взаимодействия.</Box>
+          )}
+          {nearby_doors?.length > 0 && (
+            <Box bold mt={1} mb={0.5}>Шлюзы</Box>
+          )}
+          {nearby_doors?.map((door, i) => (
+            <Box key={'d'+i} mb={1}>
+              <b>{door.name}</b>
+              <Box inline ml={1} color={door.open ? 'good' : 'average'}>
+                {door.open ? 'Открыт' : 'Закрыт'}
+              </Box>
+              {door.locked !== null && (
+                <Box inline ml={1} color={door.locked ? 'bad' : 'good'}>
+                  {door.locked ? 'Замок' : ''}
+                </Box>
+              )}
+              {!!door.electrified && (
+                <Box inline ml={1} color="bad">⚡</Box>
+              )}
+              {!!door.emergency && (
+                <Box inline ml={1} color="average">Авар.доступ</Box>
+              )}
+              <Box mt={0.5}>
+                <Button
+                  disabled={!cdReady}
+                  icon={door.open ? 'door-closed' : 'door-open'}
+                  onClick={() => act('door_toggle_open', { ref: door.ref })}
+                >
+                  {door.open ? 'Закрыть' : 'Открыть'}
+                </Button>
+                {door.locked !== null && (
+                  <Button
+                    ml={1}
+                    disabled={!cdReady}
+                    icon="lock"
+                    onClick={() => act('door_toggle_bolt', { ref: door.ref })}
+                  >
+                    {door.locked ? 'Снять блок' : 'Блокировать'}
+                  </Button>
+                )}
+                {door.locked !== null && (
+                  <Button
+                    ml={1}
+                    disabled={!cdReady}
+                    icon="bolt"
+                    onClick={() => act('ai_door_electrify', { ref: door.ref })}
+                  >
+                    {door.electrified ? 'Снять шок' : 'Электричество'}
+                  </Button>
+                )}
+                {door.locked !== null && (
+                  <Button
+                    ml={1}
+                    disabled={!cdReady}
+                    icon="exclamation-triangle"
+                    onClick={() => act('ai_door_emergency', { ref: door.ref })}
+                  >
+                    {door.emergency ? 'Авар.выкл' : 'Авар.вкл'}
+                  </Button>
+                )}
+              </Box>
+            </Box>
+          ))}
+          {nearby_apcs?.length > 0 && (
+            <Box bold mt={1} mb={0.5}>ЛКП</Box>
+          )}
+          {nearby_apcs?.map((apc, i) => (
+            <Box key={'a'+i} mb={1}>
+              <b>{apc.name}</b>
+              <Box inline ml={1} color={apc.operating ? 'good' : 'bad'}>
+                {apc.operating ? 'Вкл' : 'Выкл'}
+              </Box>
+              <Box mt={0.5}>
+                <Button
+                  disabled={!cdReady}
+                  icon="power-off"
+                  onClick={() => act('ai_apc_breaker', { ref: apc.ref })}
+                >
+                  {apc.operating ? 'Выключить' : 'Включить'}
+                </Button>
+              </Box>
+            </Box>
+          ))}
+          {nearby_turrets?.length > 0 && (
+            <Box bold mt={1} mb={0.5}>Турели</Box>
+          )}
+          {nearby_turrets?.map((turret, i) => (
+            <Box key={'t'+i} mb={1}>
+              <b>{turret.name}</b>
+              <Box inline ml={1} color={turret.enabled ? 'bad' : 'good'}>
+                {turret.enabled ? 'Активна' : 'Выкл'}
+              </Box>
+              {turret.enabled && (
+                <Box inline ml={1} color={turret.lethal ? 'red' : 'average'}>
+                  {turret.lethal ? 'Летальный' : 'Нелетальный'}
+                </Box>
+              )}
+              <Box mt={0.5}>
+                <Button
+                  disabled={!cdReady}
+                  icon="power-off"
+                  onClick={() => act('ai_turret_power', { ref: turret.ref })}
+                >
+                  {turret.enabled ? 'Деактивировать' : 'Активировать'}
+                </Button>
+                <Button
+                  ml={1}
+                  disabled={!cdReady || !turret.enabled}
+                  icon="skull"
+                  onClick={() => act('ai_turret_lethal', { ref: turret.ref })}
+                >
+                  {turret.lethal ? 'Нелетальный' : 'Летальный'}
+                </Button>
+              </Box>
+            </Box>
+          ))}
+          {!cdReady && (
+            <Box mt={1}>
+              <ProgressBar value={cdPercent} ranges={{ bad: [0, 0.5], average: [0.5, 0.8], good: [0.8, 1] }}>
+                <Icon name="clock" /> Кулдаун: {Math.ceil(ai_capability_cooldown / 10)}с
+              </ProgressBar>
+            </Box>
+          )}
+        </>
+      )}
+    </Section>
+  );
+};
+ 

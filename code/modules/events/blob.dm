@@ -17,7 +17,7 @@
 
 /datum/round_event/ghost_role/blob/announce(fake)
 	if(prob(75))
-		priority_announce("Подтвержденная вспышка биологической опасности уровня 5 на борту [station_name()]. Весь персонал должен противостоять эпидемии.", "Биологическая Тревога", "outbreak5", has_important_message = TRUE)
+		priority_announce("Подтвержденная вспышка биологической опасности уровня 5 на борту [station_name()]. Весь персонал должен противостоять эпидемии.", "Биологическая Тревога", "outbreak5", type = "outbreak5", has_important_message = TRUE)
 	else
 		print_command_report("Подтвержденная вспышка биологической опасности уровня 5 на борту [station_name()]. Весь персонал должен противостоять эпидемии.", "Биологическая Тревога")
 

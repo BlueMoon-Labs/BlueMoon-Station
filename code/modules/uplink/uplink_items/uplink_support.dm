@@ -101,6 +101,6 @@
 			продвинутый Security HUD, продвинутые Security Records, термальное зрение и \
 			инъектор химикатов."
 	item = /obj/item/paicard/syndicate
-	cost = 15
+	cost = 10
 	restricted = TRUE
 	purchasable_from = UPLINK_TRAITORS | UPLINK_NUKE_OPS

@@ -403,6 +403,7 @@
 	LAZYADD(user.vis_contents, particle_effect_holder)
 	LAZYADD(user.vis_contents, echo)
 
+	user.render_target = user.render_target || ref(user);
 	echo.render_source = user.render_target
 	var/list/monitors = list(
 			/datum/neural_monitor/nt_net = list(src),

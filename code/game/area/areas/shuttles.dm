@@ -286,3 +286,7 @@
 
 /area/shuttle/lf_haron
 	name = "Haron"
+
+/area/shuttle/ruin/bigderelict/outpost
+	requires_power = TRUE
+	name = "Outpost shuttle"

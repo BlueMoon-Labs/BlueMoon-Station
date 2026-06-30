@@ -141,6 +141,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/list/color_presets_tint = list() // Пример: list(/obj/item/clothing = list("Стандарт" = "#ffffff"))
 	var/list/color_presets_hsv = list() // Пример: list(/obj/item/clothing = list("Стандарт" = list("hue" = 0, "sat" = 1, "val" = 1)))
 	var/list/color_presets_matrix = list() // Пример: list(/obj/item/clothing = list("Стандарт" = list(1,0,0,0,1,0,0,0,1,0,0,0)))
+	var/tmp/datum/loadout_color_handler/loadout_color_handler
 	// BLUEMOON ADD END
 
 	//character preferences
@@ -339,11 +340,26 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	// 0 = character settings, 1 = game preferences
 	var/current_tab = SETTINGS_TAB
 
+	var/kb_capture_kb_name
+	var/kb_capture_old_key
+	var/kb_capture_independent = FALSE
+
 	var/unlock_content = 0
 
 	var/list/ignoring = list()
 
 	var/clientfps = 120
+
+	// Sound volume preferences
+	var/sound_volume_midi = 100
+	var/sound_volume_ambience = 27
+	var/sound_volume_ship_ambience = 35
+	var/sound_volume_announcements = 100
+	var/sound_volume_bark = 70
+	var/sound_volume_prayers = 100
+	var/sound_volume_adminhelp = 100
+	var/sound_volume_instruments = 100
+	var/sound_volume_jukeboxes = 100
 
 	var/parallax = PARALLAX_INSANE
 
@@ -383,6 +399,17 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/toggledigestionnoise = TRUE
 	var/hound_sleeper = TRUE
 	var/cit_toggles = TOGGLES_CITADEL
+	var/body_weight = NAME_WEIGHT_NORMAL
+	var/normalized_size = RESIZE_NORMAL
+	var/custom_laugh = "Default"
+	var/metadollar_minute_pool = 0
+	var/list/metadollar_pending_items = list()
+	var/list/favorite_interactions
+	var/use_arousal_multiplier = FALSE
+	var/arousal_multiplier = 100
+	var/use_moaning_multiplier = FALSE
+	var/moaning_multiplier = 65
+	var/datum/character_offer_instance/offer
 
 	//backgrounds
 	var/mutable_appearance/character_background
@@ -495,8 +522,15 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/collapse_empty_character_slots = FALSE
 	/// UI decoration level for modern theme: "minimal" (performance), "standard" (current), "enhanced" (gradients)
 	var/ui_decoration_level = "enhanced"
+	var/unholypref = "No"
+	var/new_character_creator = TRUE
+	var/list/gfluid_blacklist = list()
+	var/fuzzy = FALSE
 
 /datum/preferences/New(client/C)
+	if(!GLOB.genital_fluids_list)
+		build_genital_fluids_list()
+
 	parent = C
 
 	for(var/custom_name_id in GLOB.preferences_custom_names)
@@ -508,7 +542,15 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			load_path(C.ckey)
 			unlock_content = C.IsByondMember() || IS_CKEY_DONATOR_GROUP(C.key, DONATOR_GROUP_TIER_1)
 			if(unlock_content)
-				max_save_slots += 8 //SPLURT EDIT
+				max_save_slots += 8
+			var/extra_slots = 0
+			if(IS_CKEY_DONATOR_GROUP(C.key, DONATOR_GROUP_TIER_3))
+				extra_slots = 30
+			else if(IS_CKEY_DONATOR_GROUP(C.key, DONATOR_GROUP_TIER_2))
+				extra_slots = 20
+			else if(IS_CKEY_DONATOR_GROUP(C.key, DONATOR_GROUP_TIER_1))
+				extra_slots = 10
+			max_save_slots = max_save_slots + extra_slots
 	var/loaded_preferences_successfully = load_preferences()
 	if(loaded_preferences_successfully)
 		if(load_character())
@@ -708,8 +750,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 /datum/preferences/proc/ShowChoices(mob/user)
 	if(!user || !user.client)
 		return
-	update_preview_icon(current_tab)
-	var/is_modern_theme = (new_character_creator && !!findtext(charcreation_theme, "modern"))
+	current_tab = SETTINGS_TAB
+	update_preview_icon(SETTINGS_TAB)
+	var/is_modern_theme = TRUE
 	var/list/dat
 	if(new_character_creator)
 		// Compact inline CSS: конкретные значения цветов для BYOND-браузера.
@@ -745,6 +788,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				var/accent_b = text2num("0x[copytext(accent_hex, 5, 7)]")
 				custom_vars = "--csetup-bg:[bg_primary];--csetup-panel:[bg_secondary];--csetup-panel-2:[bg_secondary];--csetup-border:[border_color];--csetup-text:[text_primary];--csetup-muted:[text_secondary];--csetup-accent:[accent_color];--csetup-accent-rgb:[accent_r],[accent_g],[accent_b];--csetup-btn-bg:[button_bg];--csetup-btn-hover:[button_hover];--csetup-btn-active:[button_active];--csetup-btn-active-text:[button_text];"
 			modern_palette_css = "<style>\n\
+	body{background-color:[bg_primary]}\n\
 	.csetup-root{[custom_vars]background-color:[bg_primary];color:[text_primary];background-image:[bg_pattern]}\n\
 	.csetup-root a,.csetup-root a:link,.csetup-root a:visited{color:[text_primary];background-color:[button_bg];border-color:[border_color];border-radius:[button_radius]}\n\
 	.csetup-root a:hover{background-color:[button_hover]}\n\
@@ -923,24 +967,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		dat += "<center>"
 	else
 		dat = list("<center>")
-
-	var/tab_class_settings = ""
-	var/tab_class_preferences = ""
-	var/tab_class_keybindings = ""
-	if(current_tab == SETTINGS_TAB)
-		tab_class_settings = "class='linkOn'"
-	if(current_tab == PREFERENCES_TAB)
-		tab_class_preferences = "class='linkOn'"
-	if(current_tab == KEYBINDINGS_TAB)
-		tab_class_keybindings = "class='linkOn'"
-
-	var/main_tab_settings = src.use_modern_translations ? get_modern_text("tab_character_settings", src) : "Character Settings"
-	var/main_tab_preferences = src.use_modern_translations ? get_modern_text("tab_preferences", src) : "Preferences"
-	var/main_tab_keybindings = src.use_modern_translations ? get_modern_text("tab_keybindings", src) : "Keybindings"
-
-	dat += "<a href='?_src_=prefs;preference=tab;tab=[SETTINGS_TAB]' [tab_class_settings]>[main_tab_settings]</a>"
-	dat += "<a href='?_src_=prefs;preference=tab;tab=[PREFERENCES_TAB]' [tab_class_preferences]>[main_tab_preferences]</a>"
-	dat += "<a href='?_src_=prefs;preference=tab;tab=[KEYBINDINGS_TAB]' [tab_class_keybindings]>[main_tab_keybindings]</a>"
 
 	if(!path)
 		dat += "<div class='notice'>Please create an account to save your preferences</div>"
@@ -1770,6 +1796,11 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "Vore : <a href='?_src_=prefs;preference=vore_pref'>[vorepref]</a><br>"
 					dat += "Mob Non-Con Sex : <a href='?_src_=prefs;preference=mobsex_pref'>[mobsexpref]</a><br>"
 					dat += "Horny Antags : <a href='?_src_=prefs;preference=hornyantags_pref'>[hornyantagspref]</a><br>"
+					dat += "Tattoo : <a href='?_src_=prefs;preference=tattoo_pref'>[tattoopref]</a><br>"
+					dat += "Unholy : <a href='?_src_=prefs;preference=unholypref'>[unholypref]</a><br>"
+					dat += "Extreme : <a href='?_src_=prefs;preference=extremepref'>[extremepref]</a><br>"
+					dat += "Extreme Harm : <a href='?_src_=prefs;preference=extremeharm'>[extremeharm]</a><br>"
+					dat += "Antag Victim : <a href='?_src_=prefs;preference=be_victim'>[be_victim ? be_victim : "No"]</a><br>"
 
 					dat += "<h2>Lewd preferences</h2>"
 					dat += "<b>Lust tolerance:</b><a href='?_src_=prefs;preference=lust_tolerance;task=input'>[lust_tolerance]</a><br>"
@@ -2045,8 +2076,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "</center>"
 					dat += "<hr>"
 					// BLUEMOON ADD END
-					var/iterated_markings = 0
-					var/total_pages = 0
 					// rp marking selection
 					// assume you can only have mam markings or regular markings or none, never both
 					var/marking_type
@@ -2094,8 +2123,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 									var/list/markings = features[marking_type]
 									if(!islist(markings))
 										markings = list()
-									for(var/list/marking_list in markings)
-										var/marking_index = markings.Find(marking_list)
+									for(var/marking_index in 1 to length(markings))
+										var/marking_list = markings[marking_index]
+										if(!istype(marking_list, /list))
+											continue
 										var/limb_value = marking_list[1]
 										var/actual_name = GLOB.bodypart_names[num2text(limb_value)]
 										if(actual_name != limb)
@@ -2126,7 +2157,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 												if(MATRIX_BLUE)
 													primary_index = 3
 												if(MATRIX_RED_BLUE)
-													secondary_index = 2
+													secondary_index = 3
 												if(MATRIX_GREEN_BLUE)
 													primary_index = 2
 													secondary_index = 3
@@ -2159,124 +2190,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							dat += "<a href='?_src_=prefs;preference=markings_remove;task=input'>[remove_all_markings_label]</a>"
 							dat += "</div>"
 							dat += "</div>"
-							dat += "<div class='csetup-markings-classic'>"
-						var/add_marking_label = src.use_modern_translations ? get_modern_text("add_marking", src) : "Add marking"
-						dat += "<center>"
-						dat += "<h3>[src.use_modern_translations ? get_modern_text(marking_type, src) : GLOB.all_mutant_parts[marking_type]]</h3>" // give it the appropriate title for the type of marking
-						dat += "<a href='?_src_=prefs;preference=marking_add;marking_type=[marking_type];task=input'>[add_marking_label]</a>"
-						dat += "</center>"
 
-						dat += "<table width=100%><tr>"
-
-						for(var/limb in GLOB.bodypart_values)
-							if(length(GLOB.bodypart_values) % 3 != 0)
-								continue
-							total_pages++
-
-						for(var/limb in GLOB.bodypart_values)
-							if(!iterated_markings)
-								dat += "<td width=[(100 / total_pages)]%>"
-							dat += "<h3><center>[limb]</center></h3>"
-							dat += "<table align='center'; width='100%'; height='100px'; style='background-color:#13171C'>"
-							dat += "<td width=4%><font size=2> </font></td>"
-							dat += "<td width=10%><font size=2> </font></td>"
-							dat += "<td width=6%><font size=2> </font></td>"
-							dat += "<td width=20%><font size=2> </font></td>"
-							dat += "<td width=40%><font size=2> </font></td>"
-							dat += "<td width=15%><font size=2> </font></td>"
-							dat += "</tr>"
-
-							// list out the current markings you have
-							if(length(features[marking_type]))
-								var/list/markings = features[marking_type]
-								if(!islist(markings))
-									// something went terribly wrong
-									markings = list()
-
-								for(var/list/marking_list in markings)
-									var/marking_index = markings.Find(marking_list) // consider changing loop to go through indexes over lists instead of using Find here
-									var/limb_value = marking_list[1]
-									var/actual_name = GLOB.bodypart_names[num2text(limb_value)] // get the actual name from the bitflag representing the part the marking is applied to
-									if(actual_name != limb)
-										continue
-									var/color_marking_dat = ""
-									var/number_colors = 1
-									var/datum/sprite_accessory/mam_body_markings/S = GLOB.mam_body_markings_list[marking_list[2]]
-									var/matrixed_sections = S.covered_limbs[actual_name]
-									if(S && matrixed_sections)
-										// if it has nothing initialize it to white
-										if(length(marking_list) == 2)
-											var/first = "#FFFFFF"
-											var/second = "#FFFFFF"
-											var/third = "#FFFFFF"
-											if(features["mcolor"])
-												first = "#[features["mcolor"]]"
-											if(features["mcolor2"])
-												second = "#[features["mcolor2"]]"
-											if(features["mcolor3"])
-												third = "#[features["mcolor3"]]"
-											marking_list += list(list(first, second, third)) // just assume its 3 colours if it isnt it doesnt matter we just wont use the other values
-										// index magic
-										var/primary_index = 1
-										var/secondary_index = 2
-										var/tertiary_index = 3
-										switch(matrixed_sections)
-											if(MATRIX_GREEN)
-												primary_index = 2
-											if(MATRIX_BLUE)
-												primary_index = 3
-											if(MATRIX_RED_BLUE)
-												secondary_index = 2
-											if(MATRIX_GREEN_BLUE)
-												primary_index = 2
-												secondary_index = 3
-
-										// we know it has one matrixed section at minimum
-										color_marking_dat += "<a href='?_src_=prefs;preference=marking_color_specific;marking_index=[marking_index];marking_type=[marking_type];number_color=[number_colors];task=input'><span style='border: 1px solid #161616; background-color: [marking_list[3][primary_index]];'><font color='[color_hex2num(marking_list[3][primary_index]) < 200 ? "FFFFFF" : "000000"]'>[marking_list[3][primary_index]]</font></span></a>"
-										// if it has a second section, add it
-										if(matrixed_sections == MATRIX_RED_BLUE || matrixed_sections == MATRIX_GREEN_BLUE || matrixed_sections == MATRIX_RED_GREEN || matrixed_sections == MATRIX_ALL)
-											number_colors = 2
-											color_marking_dat += "<a href='?_src_=prefs;preference=marking_color_specific;marking_index=[marking_index];marking_type=[marking_type];number_color=[number_colors];task=input'><span style='border: 1px solid #161616; background-color: [marking_list[3][secondary_index]];'><font color='[color_hex2num(marking_list[3][secondary_index]) < 200 ? "FFFFFF" : "000000"]'>[marking_list[3][secondary_index]]</font></span></a>"
-										// if it has a third section, add it
-										if(matrixed_sections == MATRIX_ALL)
-											number_colors = 3
-											color_marking_dat += "<a href='?_src_=prefs;preference=marking_color_specific;marking_index=[marking_index];marking_type=[marking_type];number_color=[number_colors];task=input'><span style='border: 1px solid #161616; background-color: [marking_list[3][tertiary_index]];'><font color='[color_hex2num(marking_list[3][tertiary_index]) < 200 ? "FFFFFF" : "000000"]'>[marking_list[3][tertiary_index]]</font></span></a>"
-									dat += "<tr style='vertical-align:top;'>"
-									dat += "<td>[marking_index]</td>"
-									dat += "<td><a href='?_src_=prefs;preference=marking_up;task=input;marking_index=[marking_index];marking_type=[marking_type]'>&#709;</a></td>"
-									dat += "<td><a href='?_src_=prefs;preference=marking_down;task=input;marking_index=[marking_index];marking_type=[marking_type];'>&#708;</a></td>"
-									dat += "<td>[marking_list[2]]</td>"
-									dat += "<td>[color_marking_dat]</td>"
-									dat += "<td><a href='?_src_=prefs;preference=marking_remove;task=input;marking_index=[marking_index];marking_type=[marking_type]'>X</a></td>"
-									dat += "</tr>"
-
-							else
-								dat += "<tr style='vertical-align:top;'>"
-								dat += "<td> </td>"
-								dat += "<td> </td>"
-								dat += "<td> </td>"
-								dat += "<td> </td>"
-								dat += "<td> </td>"
-								dat += "<td> </td>"
-								dat += "<td> </td>"
-								dat += "</tr>"
-
-							dat += "</table>"
-
-							iterated_markings++
-							if(iterated_markings >= 3)
-								dat += "</td>"
-								iterated_markings = 0
-						dat += "</tr></table>"
-						// BLUEMOON ADD START - кнопка для удаления всех маркингов на персонаже
-						dat += "<center>"
-						dat += "<h3>Danger Zone</h3>"
-						dat += "<a href='?_src_=prefs;preference=markings_remove;task=input'>Remove All Markings</a>"
-						dat += "</center>"
-						// BLUEMOON ADD END
-						if(is_modern_theme)
-							dat += "</div>"
-							dat += "</div>"
+						dat += "</td>"
 
 				if(SPEECH_CHAR_TAB)
 					dat += "<table><tr><td width='340px' height='300px' valign='top'>"
@@ -2404,6 +2319,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 									var/datum/gear/gear = subcategory_items[name]
 									if(!gear)
 										continue
+									var/display_name = html_encode(name)
 									var/donoritem = gear.donoritem
 									if(donoritem && !gear.donator_ckey_check(user.ckey))
 										continue
@@ -2415,20 +2331,29 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 									var/list/loadout_item = has_loadout_gear(loadout_slot, "[gear.type]")
 									var/extra_loadout_data = ""
 									if(gear.base64icon)
-										extra_loadout_data += "<center><img src='data:image/jpeg;base64,[gear.base64icon]'></center>"
+										extra_loadout_data += "<center><img src='data:image/png;base64,[gear.base64icon]'></center>"
 									if(loadout_item)
-										class_link = "style='white-space:normal;' class='linkOn' href='?_src_=prefs;preference=gear;toggle_gear_path=[url_encode(name)];toggle_gear=0'"
+										var/loadout_color_display = "#FFFFFF"
+										var/loadout_color_label = "#FFFFFF"
+										if(length(loadout_item[LOADOUT_COLOR]))
+											var/raw_color = loadout_item[LOADOUT_COLOR][1]
+											if(istext(raw_color))
+												loadout_color_display = raw_color
+												loadout_color_label = raw_color
+											else
+												loadout_color_display = "#FFFFFF"
+												loadout_color_label = "CMatrix"
+										extra_loadout_data += "<BR><a href='?_src_=prefs;preference=gear;loadout_color=1;loadout_gear_name=[url_encode(gear.name)];'>Color</a>"
+										extra_loadout_data += "<span style='border: 1px solid #161616; background-color: [loadout_color_display];'><font color='[color_hex2num(loadout_color_display) < 200 ? "FFFFFF" : "000000"]'>[loadout_color_label]</font></span>"
 										if(gear.loadout_flags & LOADOUT_CAN_COLOR_POLYCHROMIC)
-											extra_loadout_data += "<BR><a href='?_src_=prefs;preference=gear;loadout_color_polychromic=1;loadout_gear_name=[url_encode(gear.name)];'>Color</a>"
-											for(var/loadout_color in loadout_item[LOADOUT_COLOR])
-												extra_loadout_data += "<span style='border: 1px solid #161616; background-color: [loadout_color];'><font color='[color_hex2num(loadout_color) < 200 ? "FFFFFF" : "000000"]'>[loadout_color]</font></span>"
-										else
-											var/loadout_color_non_poly = "#FFFFFF"
+											extra_loadout_data += "<BR><a href='?_src_=prefs;preference=gear;loadout_color_polychromic=1;loadout_gear_name=[url_encode(gear.name)];'>Channels</a>"
 											if(length(loadout_item[LOADOUT_COLOR]))
-												loadout_color_non_poly = loadout_item[LOADOUT_COLOR][1]
-											extra_loadout_data += "<BR><a href='?_src_=prefs;preference=gear;loadout_color=1;loadout_gear_name=[url_encode(gear.name)];'>Color</a>"
-											extra_loadout_data += "<span style='border: 1px solid #161616; background-color: [loadout_color_non_poly];'><font color='[color_hex2num(loadout_color_non_poly) < 200 ? "FFFFFF" : "000000"]'>[loadout_color_non_poly]</font></span>"
-											extra_loadout_data += "<BR><a href='?_src_=prefs;preference=gear;loadout_color_HSV=1;loadout_gear_name=[url_encode(gear.name)];'>HSV Color</a>" // SPLURT EDIT
+												for(var/loadout_color in loadout_item[LOADOUT_COLOR])
+													var/display_color = istext(loadout_color) ? loadout_color : "#FFFFFF"
+													var/display_label = istext(loadout_color) ? loadout_color : "M"
+													var/text_color = (istext(loadout_color) && color_hex2num(loadout_color) < 200) ? "FFFFFF" : "000000"
+													extra_loadout_data += "<span style='border: 1px solid #161616; background-color: [display_color];'><font color='[text_color]'>[display_label]</font></span>"
+
 										if(gear.loadout_flags & LOADOUT_CAN_NAME)
 											extra_loadout_data += "<BR><a href='?_src_=prefs;preference=gear;loadout_rename=1;loadout_gear_name=[url_encode(gear.name)];'>Name</a> [loadout_item[LOADOUT_CUSTOM_NAME] ? loadout_item[LOADOUT_CUSTOM_NAME] : "N/A"]"
 										if(gear.loadout_flags & LOADOUT_CAN_DESCRIPTION)
@@ -2442,9 +2367,11 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 											extra_loadout_data += "<BR><a href='?_src_=prefs;preference=gear;loadout_addheirloom=1;loadout_gear_name=[url_encode(gear.name)];'>Select as Heirloom</a><BR>"
 										if(ispath(gear.path, /obj/item/clothing))
 											extra_loadout_data += "<BR><a [loadout_item["loadout_examtooltip"] ? "class='linkOn' " : ""]href='?_src_=prefs;preference=gear;loadout_examtooltip=1;loadout_gear_name=[url_encode(gear.name)];'>Examine tooltip: [loadout_item["loadout_examtooltip"] ? "Set!" : "None"]</a>"
-										if(ispath(gear.path, /obj/item/clothing/neck/petcollar)) //"name tag" sounds better for me, but in petcollar code "tagname" is used so let it be.
+										if(ispath(gear.path, /obj/item/clothing/neck/petcollar))
 											extra_loadout_data += "<BR><a href='?_src_=prefs;preference=gear;loadout_tagname=1;loadout_gear_name=[url_encode(gear.name)];'>Name tag</a> [loadout_item["loadout_custom_tagname"] ? loadout_item["loadout_custom_tagname"] : "Name tag is visible for everyone looking at wearer."]"
-								  // BLUEMOON ADD END
+										// BLUEMOON ADD END
+									if(loadout_item)
+										class_link = "style='white-space:normal;' class='linkOn' href='?_src_=prefs;preference=gear;toggle_gear_path=[url_encode(name)];toggle_gear=0'"
 									else if(!is_loadout_slot_available(gear.category))
 										class_link = "style='white-space:normal;' class='linkOff'"
 									else if((gear_points - gear.cost) < 0)
@@ -2455,7 +2382,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 										class_link = "style='white-space:normal;' href='?_src_=prefs;preference=gear;toggle_gear_path=[url_encode(name)];toggle_gear=1'"
 									else
 										class_link = "style='white-space:normal;background:#eb2e2e;' class='linkOff'"
-									dat += "<tr style='vertical-align:top; background-color: [background_cl];'><td width=15%><a [class_link]>[name]</a>[extra_loadout_data]</td>"
+									dat += "<tr style='vertical-align:top; background-color: [background_cl];'><td width=15%><a [class_link]>[display_name]</a>[extra_loadout_data]</td>"
 									dat += "<td width = 5% style='vertical-align:top'>[gear.cost]</td><td>"
 									if(islist(gear.restricted_roles))
 										if(gear.restricted_roles.len)
@@ -2502,536 +2429,14 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 									dat += json_encode(other_data)
 									dat += "</td></tr>"
 					dat += "</table>"
-		if(PREFERENCES_TAB) // Game Preferences
-			dat += "<center>"
-			// Declare common labels used across multiple preferences tabs to avoid undefined var errors
-			var/enabled_label = src.use_modern_translations ? get_modern_text("enabled", src) : "Enabled"
-			var/disabled_label = src.use_modern_translations ? get_modern_text("disabled", src) : "Disabled"
-			var/change_label = src.use_modern_translations ? get_modern_text("change", src) : "Change"
-			var/yes_label = src.use_modern_translations ? get_modern_text("yes", src) : "Yes"
-			var/no_label = src.use_modern_translations ? get_modern_text("no", src) : "No"
-			var/pref_general = src.use_modern_translations ? get_modern_text("pref_general", src) : "General"
-			var/pref_ooc = src.use_modern_translations ? get_modern_text("pref_ooc", src) : "OOC"
-			var/pref_content = src.use_modern_translations ? get_modern_text("pref_content", src) : "Content"
-			dat += "<a href='?_src_=prefs;preference=preferences_tab;tab=[GAME_PREFS_TAB]' " + (preferences_tab == GAME_PREFS_TAB ? "class='linkOn'" : "") + ">[pref_general]</a>"
-			dat += "<a href='?_src_=prefs;preference=preferences_tab;tab=[OOC_PREFS_TAB]' " + (preferences_tab == OOC_PREFS_TAB ? "class='linkOn'" : "") + ">[pref_ooc]</a>"
-			dat += "<a href='?_src_=prefs;preference=preferences_tab;tab=[CONTENT_PREFS_TAB]' " + (preferences_tab == CONTENT_PREFS_TAB ? "class='linkOn'" : "") + ">[pref_content]</a>"
-			dat += "</center>"
-			dat += "<HR>"
-			switch(preferences_tab)
-				if(GAME_PREFS_TAB)
-					dat += "<table><tr><td width='340px' height='300px' valign='top'>"
-					var/general_settings_label = src.use_modern_translations ? get_modern_text("general_settings", src) : "General Settings"
-					var/char_setup_ui_label = src.use_modern_translations ? get_modern_text("char_setup_ui", src) : "Character Setup UI"
-					var/char_setup_old = src.use_modern_translations ? get_modern_text("char_setup_old", src) : "Old"
-					var/char_setup_new = src.use_modern_translations ? get_modern_text("char_setup_new", src) : "New"
-					var/char_setup_modern = src.use_modern_translations ? get_modern_text("char_setup_modern", src) : "Modern"
-					var/ui_style_label = src.use_modern_translations ? get_modern_text("ui_style", src) : "UI Style"
-					var/outline_label = src.use_modern_translations ? get_modern_text("outline", src) : "Outline"
-					var/outline_color_label = src.use_modern_translations ? get_modern_text("outline_color", src) : "Outline Color"
-					var/outline_color_theme_based = src.use_modern_translations ? get_modern_text("outline_color_theme_based", src) : "Theme-based (null)"
-					var/screentip_label = src.use_modern_translations ? get_modern_text("screentip", src) : "Screentip"
-					var/screentip_color_label = src.use_modern_translations ? get_modern_text("screentip_color", src) : "Screentip Color"
-					var/screentip_images_label = src.use_modern_translations ? get_modern_text("screentip_images_label", src) : "Screentip context with images"
-					var/screentip_images_tooltip = src.use_modern_translations ? get_modern_text("screentip_images_tooltip", src) : "This is an accessibility preference, if disabled, fallbacks to only text which colorblind people can understand better"
-					var/allowed_label = src.use_modern_translations ? get_modern_text("allowed", src) : "Allowed"
-					var/disallowed_label = src.use_modern_translations ? get_modern_text("disallowed", src) : "Disallowed"
-					var/tgui_input_label = src.tgui_input_mode ? get_modern_text("tgui_input_mode", src) : "Input Framework"
-					var/tgui_input_verbs_label = src.tgui_input_verbs ? get_modern_text("tgui_input_verbs", src) : "Input Verbs (SAY, ME, OOC, etc.) Framework"
-					var/tgui_monitors_label = src.use_modern_translations ? get_modern_text("tgui_monitors", src) : "tgui Monitors"
-					var/tgui_monitor_primary = src.use_modern_translations ? get_modern_text("tgui_monitor_primary", src) : "Primary"
-					var/tgui_monitor_all = src.use_modern_translations ? get_modern_text("tgui_monitor_all", src) : "All"
-					var/tgui_style_label = src.use_modern_translations ? get_modern_text("tgui_style", src) : "tgui Style"
-					var/tgui_style_fancy = src.use_modern_translations ? get_modern_text("tgui_style_fancy", src) : "Fancy"
-					var/tgui_style_no_frills = src.use_modern_translations ? get_modern_text("tgui_style_no_frills", src) : "No Frills"
-					var/runechat_bubbles_label = src.use_modern_translations ? get_modern_text("runechat_bubbles", src) : "Show Runechat Chat Bubbles"
-					var/runechat_looc_bubbles_label = src.use_modern_translations ? get_modern_text("runechat_looc_bubbles", src) : "Show Runechat LOOC Chat Bubbles"
-					var/runechat_char_limit_label = src.use_modern_translations ? get_modern_text("runechat_char_limit", src) : "Runechat message char limit"
-					var/runechat_non_mobs_label = src.use_modern_translations ? get_modern_text("runechat_non_mobs", src) : "See Runechat for non-mobs"
-					var/runechat_emotes_label = src.use_modern_translations ? get_modern_text("runechat_emotes", src) : "See Runechat for emotes"
-					var/pixelshift_view_label = src.use_modern_translations ? get_modern_text("pixelshift_view", src) : "Shift view when pixelshifting"
-					var/ghost_ears_label = src.use_modern_translations ? get_modern_text("ghost_ears", src) : "Ghost Ears"
-					var/ghost_radio_label = src.use_modern_translations ? get_modern_text("ghost_radio", src) : "Ghost Radio"
-					var/ghost_sight_label = src.use_modern_translations ? get_modern_text("ghost_sight", src) : "Ghost Sight"
-					var/ghost_whispers_label = src.use_modern_translations ? get_modern_text("ghost_whispers", src) : "Ghost Whispers"
-					var/ghost_pda_label = src.use_modern_translations ? get_modern_text("ghost_pda", src) : "Ghost PDA"
-					var/ghost_all_speech_label = src.use_modern_translations ? get_modern_text("ghost_all_speech", src) : "All Speech"
-					var/ghost_nearest_creatures_label = src.use_modern_translations ? get_modern_text("ghost_nearest_creatures", src) : "Nearest Creatures"
-					var/ghost_all_messages_label = src.use_modern_translations ? get_modern_text("ghost_all_messages", src) : "All Messages"
-					var/ghost_no_messages_label = src.use_modern_translations ? get_modern_text("ghost_no_messages", src) : "No Messages"
-					var/ghost_all_emotes_label = src.use_modern_translations ? get_modern_text("ghost_all_emotes", src) : "All Emotes"
-					var/auto_capitalize_label = src.use_modern_translations ? get_modern_text("auto_capitalize", src) : "Auto-Capitalize Speech"
-					var/preferred_chaos_level_label = src.use_modern_translations ? get_modern_text("preferred_chaos_level", src) : "Preferred Chaos Level"
-					var/special_role_settings_label = src.use_modern_translations ? get_modern_text("special_role_settings", src) : "Special Role Settings"
-					var/antag_banned_label = src.use_modern_translations ? get_modern_text("antag_banned", src) : "You are banned from antagonist roles."
-					var/disable_all_antag_label = src.use_modern_translations ? get_modern_text("disable_all_antag", src) : "DISABLE ALL ANTAGONISM"
-					var/be_role_label = src.use_modern_translations ? get_modern_text("be_role", src) : "Be"
-					var/banned_label = src.use_modern_translations ? get_modern_text("banned", src) : "BANNED"
-					var/in_label = src.use_modern_translations ? get_modern_text("in_label", src) : "IN"
-					var/days_label = src.use_modern_translations ? get_modern_text("days_label", src) : "DAYS"
-					var/low_label = src.use_modern_translations ? get_modern_text("low", src) : "Low"
-					var/allow_midround_antag_label = src.use_modern_translations ? get_modern_text("allow_midround_antag", src) : "Allow Midround Antagonist Roll"
-					dat += "<h2>[general_settings_label]</h2>"
-					var/char_setup_ui = "Old"
-					if(new_character_creator)
-						char_setup_ui = "New"
-						if(findtext(charcreation_theme, "modern"))
-							char_setup_ui = "Modern"
-					dat += "<b>[char_setup_ui_label] ([char_setup_ui]):</b> <a href='?_src_=prefs;preference=charcreation_set;theme=old'>[char_setup_old]</a> <a href='?_src_=prefs;preference=charcreation_set;theme=classic'>[char_setup_new]</a> <a href='?_src_=prefs;preference=charcreation_set;theme=modern'>[char_setup_modern]</a><br>"
-					dat += "<b>[ui_style_label]:</b> <a href='?_src_=prefs;task=input;preference=ui'>[UI_style]</a><br>"
-					dat += "<b>[outline_label]:</b> <a href='?_src_=prefs;preference=outline_enabled'>[outline_enabled ? enabled_label : disabled_label]</a><br>"
-					dat += "<b>[outline_color_label]:</b> [outline_color ? "<span style='border:1px solid #161616; background-color: [outline_color];'>" : "[outline_color_theme_based]"]<font color='[color_hex2num(outline_color) < 200 ? "FFFFFF" : "000000"]'>[outline_color]</font></span> <a href='?_src_=prefs;preference=outline_color'>[change_label]</a><BR>"
-					dat += "<b>[screentip_label]:</b> <a href='?_src_=prefs;preference=screentip_pref'>[screentip_pref]</a><br>"
-					dat += "<b>[screentip_color_label]:</b> <span style='border:1px solid #161616; background-color: [screentip_color];'><font color='[color_hex2num(screentip_color) < 200 ? "FFFFFF" : "000000"]'>[screentip_color]</font></span> <a href='?_src_=prefs;preference=screentip_color'>[change_label]</a><BR>"
-					dat += "<font style='border-bottom:2px dotted white; cursor:help;'\
-						title=\"[screentip_images_tooltip]\">\
-						<b>[screentip_images_label]:</b></font> <a href='?_src_=prefs;preference=screentip_images'>[screentip_images ? allowed_label : disallowed_label]</a><br>"
-					dat += "<b>[tgui_input_label]:</b> <a href='?_src_=prefs;preference=tgui_input_mode'>[(tgui_input_mode) ? "TGUI" : "BYOND"]</a><br>"
-					if(tgui_input_mode)
-						dat += "<b>[tgui_input_verbs_label]:</b> <a href='?_src_=prefs;preference=tgui_input_verbs'>[(tgui_input_verbs) ? "TGUI" : "BYOND"]</a><br>"
-					dat += "<b>[tgui_monitors_label]:</b> <a href='?_src_=prefs;preference=tgui_lock'>[(tgui_lock) ? tgui_monitor_primary : tgui_monitor_all]</a><br>"
-					dat += "<b>[tgui_style_label]:</b> <a href='?_src_=prefs;preference=tgui_fancy'>[(tgui_fancy) ? tgui_style_fancy : tgui_style_no_frills]</a><br>"
-					dat += "<b>[runechat_bubbles_label]:</b> <a href='?_src_=prefs;preference=chat_on_map'>[chat_on_map ? enabled_label : disabled_label]</a><br>"
-					if(chat_on_map)
-						dat += "<b>[runechat_looc_bubbles_label]:</b> <a href='?_src_=prefs;preference=chat_on_map_looc'>[chat_on_map_looc ? enabled_label : disabled_label]</a><br>"
-					dat += "<b>[runechat_char_limit_label]:</b> <a href='?_src_=prefs;preference=max_chat_length;task=input'>[max_chat_length]</a><br>"
-					dat += "<b>[runechat_non_mobs_label]:</b> <a href='?_src_=prefs;preference=see_chat_non_mob'>[see_chat_non_mob ? enabled_label : disabled_label]</a><br>"
-					//SANDSTORM CHANGES BEGIN
-					dat += "<b>[runechat_emotes_label]:</b> <a href='?_src_=prefs;preference=see_chat_emotes'>[see_chat_emotes ? enabled_label : disabled_label]</a><br>"
-					//SANDSTORM CHANGES END
-					dat += "<b>[pixelshift_view_label]:</b> <a href='?_src_=prefs;preference=view_pixelshift'>[view_pixelshift ? enabled_label : disabled_label]</a><br>" //SPLURT Edit
-					dat += "<br>"
-					dat += "<b>[ghost_ears_label]:</b> <a href='?_src_=prefs;preference=ghost_ears'>[(chat_toggles & CHAT_GHOSTEARS) ? ghost_all_speech_label : ghost_nearest_creatures_label]</a><br>"
-					dat += "<b>[ghost_radio_label]:</b> <a href='?_src_=prefs;preference=ghost_radio'>[(chat_toggles & CHAT_GHOSTRADIO) ? ghost_all_messages_label : ghost_no_messages_label]</a><br>"
-					dat += "<b>[ghost_sight_label]:</b> <a href='?_src_=prefs;preference=ghost_sight'>[(chat_toggles & CHAT_GHOSTSIGHT) ? ghost_all_emotes_label : ghost_nearest_creatures_label]</a><br>"
-					dat += "<b>[ghost_whispers_label]:</b> <a href='?_src_=prefs;preference=ghost_whispers'>[(chat_toggles & CHAT_GHOSTWHISPER) ? ghost_all_speech_label : ghost_nearest_creatures_label]</a><br>"
-					dat += "<b>[ghost_pda_label]:</b> <a href='?_src_=prefs;preference=ghost_pda'>[(chat_toggles & CHAT_GHOSTPDA) ? ghost_all_messages_label : ghost_nearest_creatures_label]</a><br>"
-					dat += "<br>"
-					dat += "<b>[auto_capitalize_label]:</b> <a href='?_src_=prefs;preference=auto_capitalize_enabled'>[(auto_capitalize_enabled ? enabled_label : disabled_label)]</a><br>"
-					dat += "<b>[preferred_chaos_level_label]:</b> <a style='display:block;width:30px' href='?_src_=prefs;preference=preferred_chaos_level'>[preferred_chaos_level]</a><br>"
 
-					dat += "</td>"
-
-					dat += "<td width='300px' height='300px' valign='top'>"
-
-					dat += "<h2>[special_role_settings_label]</h2>"
-
-					if(jobban_isbanned(user, ROLE_INTEQ))
-						dat += "<font color=red><b>[antag_banned_label]</b></font>"
-						src.be_special = list()
-
-					dat += "<b>[disable_all_antag_label]</b> <a href='?_src_=prefs;preference=disable_antag'>[(toggles & NO_ANTAG) ? yes_label : no_label]</a><br>"
-
-					for (var/i in GLOB.special_roles)
-						if(jobban_isbanned(user, i))
-							dat += "<b>[be_role_label] [capitalize(i)]:</b> <a href='?_src_=prefs;jobbancheck=[i]'>[banned_label]</a><br>"
-						else
-							var/days_remaining = null
-							if(ispath(GLOB.special_roles[i]) && CONFIG_GET(flag/use_age_restriction_for_jobs)) //If it's a game mode antag, check if the player meets the minimum age
-								var/mode_path = GLOB.special_roles[i]
-								var/datum/game_mode/temp_mode = new mode_path
-								days_remaining = temp_mode.get_remaining_days(user.client)
-
-							if(days_remaining)
-								dat += "<b>[be_role_label] [capitalize(i)]:</b> <font color=red> \[[in_label] [days_remaining] [days_label]\]</font><br>"
-							else
-								var/enabled_text = ""
-								if(i in be_special)
-									if(be_special[i] >= 1)
-										enabled_text = enabled_label
-									else
-										enabled_text = low_label
-								else
-									enabled_text = disabled_label
-								dat += "<b>[be_role_label] [capitalize(i)]:</b> <a href='?_src_=prefs;preference=be_special;be_special_type=[i]'>[enabled_text]</a><br>"
-					dat += "<b>[allow_midround_antag_label]:</b> <a href='?_src_=prefs;preference=allow_midround_antag'>[(toggles & MIDROUND_ANTAG) ? enabled_label : disabled_label]</a><br>"
-
-					dat += "</td></tr></table>"
-
-				if(OOC_PREFS_TAB)
-					dat += "<table>"
-					dat += "<tr><td width='340px' height='300px' valign='top'>"
-					var/ooc_settings_label = src.use_modern_translations ? get_modern_text("ooc_settings", src) : "OOC Settings"
-					var/window_flashing_label = src.use_modern_translations ? get_modern_text("window_flashing", src) : "Window Flashing"
-					var/window_noise_label = src.use_modern_translations ? get_modern_text("window_noise", src) : "Window Noise"
-					var/action_buttons_hide_on_spawn_label =  src.use_modern_translations ? get_modern_text("action_buttons_hide_on_spawn", src) : "Hide Action Buttons On Spawn"
-					var/play_admin_midis_label = src.use_modern_translations ? get_modern_text("play_admin_midis", src) : "Play Admin MIDIs"
-					var/play_lobby_music_label = src.use_modern_translations ? get_modern_text("play_lobby_music", src) : "Play Lobby Music"
-					var/see_pull_requests_label = src.use_modern_translations ? get_modern_text("see_pull_requests", src) : "See Pull Requests"
-					var/byond_publicity_label = src.use_modern_translations ? get_modern_text("byond_membership_publicity", src) : "BYOND Membership Publicity"
-					var/public_label = src.use_modern_translations ? get_modern_text("public", src) : "Public"
-					var/hidden_label = src.use_modern_translations ? get_modern_text("hidden", src) : "Hidden"
-					var/custom_color_ooc_label = src.use_modern_translations ? get_modern_text("custom_color_ooc", src) : "Custom OOC Color"
-					var/ooc_color_label = src.use_modern_translations ? get_modern_text("ooc_color", src) : "OOC Color"
-					var/custom_color_aooc_label = src.use_modern_translations ? get_modern_text("custom_color_aooc", src) : "Custom AOOC Color"
-					var/antag_ooc_color_label = src.use_modern_translations ? get_modern_text("antag_ooc_color", src) : "Antag OOC Color"
-					var/admin_settings_label = src.use_modern_translations ? get_modern_text("admin_settings", src) : "Admin Settings"
-					var/adminhelp_sounds_label = src.use_modern_translations ? get_modern_text("adminhelp_sounds", src) : "Adminhelp Sounds"
-					var/announce_login_label = src.use_modern_translations ? get_modern_text("announce_login", src) : "Announce Login"
-					var/combo_hud_lighting_label = src.use_modern_translations ? get_modern_text("combo_hud_lighting", src) : "Combo HUD Lighting"
-					var/full_bright_label = src.use_modern_translations ? get_modern_text("full_bright", src) : "Full-bright"
-					var/no_change_label = src.use_modern_translations ? get_modern_text("no_change", src) : "No Change"
-					var/deadmin_while_playing_label = src.use_modern_translations ? get_modern_text("deadmin_while_playing", src) : "Deadmin While Playing"
-					var/onlogin_deadmin_label = src.use_modern_translations ? get_modern_text("onlogin_deadmin", src) : "Deadmin On Login"
-					var/onspawn_deadmin_label = src.use_modern_translations ? get_modern_text("onspawn_deadmin", src) : "Deadmin On Spawn"
-					var/forced_label = src.use_modern_translations ? get_modern_text("forced", src) : "FORCED"
-					var/as_antag_label = src.use_modern_translations ? get_modern_text("as_antag", src) : "As Antag"
-					var/as_command_label = src.use_modern_translations ? get_modern_text("as_command", src) : "As Command"
-					var/as_security_label = src.use_modern_translations ? get_modern_text("as_security", src) : "As Security"
-					var/as_silicon_label = src.use_modern_translations ? get_modern_text("as_silicon", src) : "As Silicon"
-					var/deadmin_label = src.use_modern_translations ? get_modern_text("deadmin", src) : "Deadmin"
-					var/keep_admin_label = src.use_modern_translations ? get_modern_text("keep_admin", src) : "Keep Admin"
-					dat += "<h2>[ooc_settings_label]</h2>"
-					dat += "<b>[window_flashing_label]:</b> <a href='?_src_=prefs;preference=winflash'>[(windowflashing) ? enabled_label : disabled_label]</a><br>"
-					dat += "<b>[window_noise_label]:</b> <a href='?_src_=prefs;preference=winnoise'>[(windownoise) ? enabled_label : disabled_label]</a><br>"
-					dat += "<br>"
-					dat += "<b>[action_buttons_hide_on_spawn_label]:</b> <a href='?_src_=prefs;preference=action_buttons_hide_on_spawn'>[(action_buttons_hide_on_spawn) ? enabled_label : disabled_label]</a><br>"
-					dat += "<br>"
-					dat += "<b>[play_admin_midis_label]:</b> <a href='?_src_=prefs;preference=hear_midis'>[(toggles & SOUND_MIDI) ? enabled_label : disabled_label]</a><br>"
-					dat += "<b>[play_lobby_music_label]:</b> <a href='?_src_=prefs;preference=lobby_music'>[(toggles & SOUND_LOBBY) ? enabled_label : disabled_label]</a><br>"
-					dat += "<b>Личные музыкальные боксы:</b> <a href='?_src_=prefs;preference=hear_personal_jukeboxes'>[(toggles & SOUND_PERSONAL_JUKEBOXES) ? enabled_label : disabled_label]</a><br>"
-					dat += "<b>[see_pull_requests_label]:</b> <a href='?_src_=prefs;preference=pull_requests'>[(chat_toggles & CHAT_PULLR) ? enabled_label : disabled_label]</a><br>"
-					dat += "<br>"
-					if(user.client)
-						if(unlock_content)
-							dat += "<b>[byond_publicity_label]:</b> <a href='?_src_=prefs;preference=publicity'>[(toggles & MEMBER_PUBLIC) ? public_label : hidden_label]</a><br>"
-						if(unlock_content || is_admin(user.client))
-							dat += "<b>[custom_color_ooc_label]:</b> <a href='?_src_=prefs;preference=custom_color_ooc'>[(custom_colors & CUSTOM_OOC)? enabled_label : disabled_label]</a><br>"
-							if(custom_colors & CUSTOM_OOC)
-								dat += "<b>[ooc_color_label]:</b> <span style='border: 1px solid #161616; background-color: [ooccolor ? ooccolor : GLOB.normal_ooc_colour];'><font color='[color_hex2num(ooccolor ? ooccolor : GLOB.normal_ooc_colour) < 200 ? "FFFFFF" : "000000"]'>[ooccolor ? ooccolor : GLOB.normal_ooc_colour]</font></span> <a href='?_src_=prefs;preference=ooccolor;task=input'>[change_label]</a><br>"
-							dat += "<b>[custom_color_aooc_label]:</b> <a href='?_src_=prefs;preference=custom_color_aooc'>[(custom_colors & CUSTOM_AOOC)? enabled_label : disabled_label]</a><br>"
-							if(custom_colors & CUSTOM_AOOC)
-								dat += "<b>[antag_ooc_color_label]:</b> <span style='border: 1px solid #161616; background-color: [aooccolor ? aooccolor : GLOB.normal_aooc_colour];'><font color='[color_hex2num(aooccolor ? aooccolor : GLOB.normal_aooc_colour) < 200 ? "FFFFFF" : "000000"]'>[aooccolor ? aooccolor : GLOB.normal_aooc_colour]</font></span> <a href='?_src_=prefs;preference=aooccolor;task=input'>[change_label]</a><br>"
-
-					if(is_admin(user.client))
-						dat += "<h2>[admin_settings_label]</h2>"
-						dat += "<b>[adminhelp_sounds_label]:</b> <a href='?_src_=prefs;preference=hear_adminhelps'>[(toggles & SOUND_ADMINHELP)? enabled_label : disabled_label]</a><br>"
-						dat += "<b>[announce_login_label]:</b> <a href='?_src_=prefs;preference=announce_login'>[(toggles & ANNOUNCE_LOGIN)? enabled_label : disabled_label]</a><br>"
-						dat += "<br>"
-						dat += "<b>[combo_hud_lighting_label]:</b> <a href = '?_src_=prefs;preference=combohud_lighting'>[(toggles & COMBOHUD_LIGHTING)? full_bright_label : no_change_label]</a><br>"
-
-						//deadmin
-						dat += "<h2>[deadmin_while_playing_label]</h2>"
-						dat += "<b>[onlogin_deadmin_label]:</b> <a href = '?_src_=prefs;preference=toggle_deadmin_onlogin'>[(deadmin & DEADMIN_ONLOGIN)? enabled_label : disabled_label]</a><br>"
-						if(CONFIG_GET(flag/auto_deadmin_players))
-							dat += "<b>[onspawn_deadmin_label]:</b> [forced_label]</a><br>"
-						else
-							dat += "<b>[onspawn_deadmin_label]:</b> <a href = '?_src_=prefs;preference=toggle_deadmin_onspawn'>[(deadmin & DEADMIN_ONSPAWN)? enabled_label : disabled_label]</a><br>"
-							if(!(deadmin & DEADMIN_ONSPAWN))
-								dat += "<br>"
-								if(!CONFIG_GET(flag/auto_deadmin_antagonists))
-									dat += "<b>[as_antag_label]:</b> <a href = '?_src_=prefs;preference=toggle_deadmin_antag'>[(deadmin & DEADMIN_ANTAGONIST)? deadmin_label : keep_admin_label]</a><br>"
-								else
-									dat += "<b>[as_antag_label]:</b> [forced_label]<br>"
-
-								if(!CONFIG_GET(flag/auto_deadmin_heads))
-									dat += "<b>[as_command_label]:</b> <a href = '?_src_=prefs;preference=toggle_deadmin_head'>[(deadmin & DEADMIN_POSITION_HEAD)? deadmin_label : keep_admin_label]</a><br>"
-								else
-									dat += "<b>[as_command_label]:</b> [forced_label]<br>"
-
-								if(!CONFIG_GET(flag/auto_deadmin_security))
-									dat += "<b>[as_security_label]:</b> <a href = '?_src_=prefs;preference=toggle_deadmin_security'>[(deadmin & DEADMIN_POSITION_SECURITY)? deadmin_label : keep_admin_label]</a><br>"
-								else
-									dat += "<b>[as_security_label]:</b> [forced_label]<br>"
-
-								if(!CONFIG_GET(flag/auto_deadmin_silicons))
-									dat += "<b>[as_silicon_label]:</b> <a href = '?_src_=prefs;preference=toggle_deadmin_silicon'>[(deadmin & DEADMIN_POSITION_SILICON)? deadmin_label : keep_admin_label]</a><br>"
-								else
-									dat += "<b>[as_silicon_label]:</b> [forced_label]<br>"
-
-					dat += "</td>"
-
-					dat += "<td width='300px' height='300px' valign='top'>"
-
-					// Citadel Preferences labels
-					var/citadel_prefs_label = src.use_modern_translations ? get_modern_text("citadel_prefs", src) : "Citadel Preferences"
-					var/widescreen_label = src.use_modern_translations ? get_modern_text("widescreen", src) : "Widescreen"
-					var/fullscreen_label = src.use_modern_translations ? get_modern_text("fullscreen", src) : "Fullscreen"
-					var/long_strip_menu_label = src.use_modern_translations ? get_modern_text("long_strip_menu", src) : "Long strip menu"
-					var/modern_accent_label_text = src.use_modern_translations ? get_modern_text("modern_accent", src) : "Modern Accent"
-					var/auto_stand_label = src.use_modern_translations ? get_modern_text("auto_stand", src) : "Auto stand"
-					var/auto_ooc_label = src.use_modern_translations ? get_modern_text("auto_ooc", src) : "Auto OOC"
-					var/force_slot_storage_label = src.use_modern_translations ? get_modern_text("force_slot_storage", src) : "Force Slot Storage HUD"
-					var/screen_shake_label = src.use_modern_translations ? get_modern_text("screen_shake", src) : "Screen Shake"
-					var/damage_screen_shake_label = src.use_modern_translations ? get_modern_text("damage_screen_shake", src) : "Damage Screen Shake"
-					var/recoil_screen_push_label = src.use_modern_translations ? get_modern_text("recoil_screen_push", src) : "Recoil Screen Push"
-					var/full_label = src.use_modern_translations ? get_modern_text("full", src) : "Full"
-					var/none_label = src.use_modern_translations ? get_modern_text("none", src) : "None"
-					var/on_label = src.use_modern_translations ? get_modern_text("on", src) : "On"
-					var/off_label = src.use_modern_translations ? get_modern_text("off", src) : "Off"
-					var/only_when_down_label = src.use_modern_translations ? get_modern_text("only_when_down", src) : "Only when down"
-
-					// S.P.L.U.R.T. Preferences labels
-					var/splurt_prefs_label = src.use_modern_translations ? get_modern_text("splurt_prefs", src) : "S.P.L.U.R.T. Preferences"
-					var/be_victim_label = src.use_modern_translations ? get_modern_text("be_victim", src) : "Be Antagonist Victim"
-					var/disable_combat_cursor_label = src.use_modern_translations ? get_modern_text("disable_combat_cursor", src) : "Disable combat mode cursor"
-					var/disable_combat_mouse_lock_label = src.use_modern_translations ? get_modern_text("disable_combat_mouse_lock", src) : "Disable combat mode mouse lock"
-					var/playerpanel_style_label = src.use_modern_translations ? get_modern_text("playerpanel_style", src) : "Splashscreen Player Panel Style"
-					var/tg_label = src.use_modern_translations ? get_modern_text("tg_label", src) : "TG"
-					var/old_label = src.use_modern_translations ? get_modern_text("old_label", src) : "Old"
-
-					// Ghost settings labels
-					var/ghost_form_label = src.use_modern_translations ? get_modern_text("ghost_form", src) : "Ghost Form"
-					var/ghost_orbit_label = src.use_modern_translations ? get_modern_text("ghost_orbit", src) : "Ghost Orbit"
-					var/ghost_accessories_label = src.use_modern_translations ? get_modern_text("ghost_accessories", src) : "Ghost Accessories"
-					var/ghosts_of_others_label = src.use_modern_translations ? get_modern_text("ghosts_of_others", src) : "Ghosts of Others"
-
-					// Display settings labels
-					var/fps_label = src.use_modern_translations ? get_modern_text("fps", src) : "FPS"
-					var/income_updates_label = src.use_modern_translations ? get_modern_text("income_updates", src) : "Income Updates"
-					var/allowed_label = src.use_modern_translations ? get_modern_text("allowed", src) : "Allowed"
-					var/muted_label = src.use_modern_translations ? get_modern_text("muted", src) : "Muted"
-					var/parallax_label = src.use_modern_translations ? get_modern_text("parallax", src) : "Parallax (Fancy Space)"
-					var/low_label = src.use_modern_translations ? get_modern_text("low", src) : "Low"
-					var/medium_label = src.use_modern_translations ? get_modern_text("medium", src) : "Medium"
-					var/high_label = src.use_modern_translations ? get_modern_text("high", src) : "High"
-					var/insane_label = src.use_modern_translations ? get_modern_text("insane", src) : "Insane"
-					var/ambient_occlusion_label = src.use_modern_translations ? get_modern_text("ambient_occlusion", src) : "Ambient Occlusion"
-					var/fit_viewport_label = src.use_modern_translations ? get_modern_text("fit_viewport", src) : "Fit Viewport"
-					var/auto_label = src.use_modern_translations ? get_modern_text("auto", src) : "Auto"
-					var/manual_label = src.use_modern_translations ? get_modern_text("manual", src) : "Manual"
-					var/hud_button_flashes_label = src.use_modern_translations ? get_modern_text("hud_button_flashes", src) : "HUD Button Flashes"
-					var/hud_flash_color_label = src.use_modern_translations ? get_modern_text("hud_flash_color", src) : "HUD Button Flash Color"
-					var/preferred_map_label = src.use_modern_translations ? get_modern_text("preferred_map", src) : "Preferred Map"
-					var/default_label = src.use_modern_translations ? get_modern_text("default", src) : "Default"
-
-					dat += "<h2>[citadel_prefs_label]</h2>" //Because fuck me if preferences can't be fucking modularized and expected to update in a reasonable timeframe.
-					dat += "<b>[widescreen_label]:</b> <a href='?_src_=prefs;preference=widescreenpref'>[widescreenpref ? "[enabled_label] ([CONFIG_GET(string/default_view)])" : "[disabled_label] (15x15)"]</a><br>"
-					dat += "<b>[fullscreen_label]:</b> <a href='?_src_=prefs;preference=fullscreen'>[fullscreen ? enabled_label : disabled_label]</a><br>"
-					dat += "<b>[long_strip_menu_label]:</b> <a href='?_src_=prefs;preference=long_strip_menu'>[long_strip_menu ? enabled_label : disabled_label]</a><br>"
-					var/modern_accent_label = "—"
-					if(new_character_creator && findtext(charcreation_theme, "modern"))
-						switch(charcreation_theme)
-							if("modern_neutral")
-								modern_accent_label = "—"
-							if("modern_classic")
-								modern_accent_label = "—"
-							if("modern_purple")
-								modern_accent_label = "Purple"
-							if("modern_green")
-								modern_accent_label = "Green"
-							else
-								modern_accent_label = "Blue"
-						dat += "<b>[modern_accent_label_text]:</b> <a href='?_src_=prefs;preference=charcreation_accent'>[modern_accent_label]</a><br>"
-					dat += "<b>[auto_stand_label]:</b> <a href='?_src_=prefs;preference=autostand'>[autostand ? enabled_label : disabled_label]</a><br>"
-					dat += "<b>[auto_ooc_label]:</b> <a href='?_src_=prefs;preference=auto_ooc'>[auto_ooc ? enabled_label : disabled_label]</a><br>"
-					dat += "<b>[force_slot_storage_label]:</b> <a href='?_src_=prefs;preference=no_tetris_storage'>[no_tetris_storage ? enabled_label : disabled_label]</a><br>"
-					dat += "<b>[screen_shake_label]:</b> <a href='?_src_=prefs;preference=screenshake'>[(screenshake==100) ? full_label : ((screenshake==0) ? none_label : screenshake)]</a><br>"
-					if (user && user.client && !user.client.prefs.screenshake==0)
-						dat += "<b>[damage_screen_shake_label]:</b> <a href='?_src_=prefs;preference=damagescreenshake'>[(damagescreenshake==1) ? on_label : ((damagescreenshake==0) ? off_label : only_when_down_label)]</a><br>"
-					dat += "<b>[recoil_screen_push_label]:</b> <a href='?_src_=prefs;preference=recoil_screenshake'>[(recoil_screenshake==100) ? full_label : ((recoil_screenshake==0) ? none_label : recoil_screenshake)]</a><br>"
-
-					//SPLURT Edit
-					dat += "<h2>[splurt_prefs_label]</h2>"
-					dat += "<b>[be_victim_label]:</b> <a href='?_src_=prefs;preference=be_victim;task=input'>[be_victim ? be_victim : BEVICTIM_ASK]</a><br>"
-					dat += "<b>[disable_combat_cursor_label]:</b> <a href='?_src_=prefs;preference=disable_combat_cursor'>[disable_combat_cursor ? yes_label : no_label]</a><br>"
-					dat += "<b>[disable_combat_mouse_lock_label]:</b> <a href='?_src_=prefs;preference=disable_combat_mouse_lock'>[disable_combat_mouse_lock ? yes_label : no_label]</a><br>"
-					dat += "<b>[playerpanel_style_label]:</b> <a href='?_src_=prefs;preference=tg_playerpanel'>[(toggles & TG_PLAYER_PANEL) ? tg_label : old_label]</a><br>"
-					//SPLURT Edit end
-
-					dat += "<br>"
-
-					if(unlock_content)
-						dat += "<b>[ghost_form_label]:</b> <a href='?_src_=prefs;task=input;preference=ghostform'>[ghost_form]</a><br>"
-						dat += "<b>[ghost_orbit_label]:</b> <a href='?_src_=prefs;task=input;preference=ghostorbit'>[ghost_orbit]</a><br>"
-					var/button_name = "If you see this something went wrong."
-					switch(ghost_accs)
-						if(GHOST_ACCS_FULL)
-							button_name = GHOST_ACCS_FULL_NAME
-						if(GHOST_ACCS_DIR)
-							button_name = GHOST_ACCS_DIR_NAME
-						if(GHOST_ACCS_NONE)
-							button_name = GHOST_ACCS_NONE_NAME
-
-					dat += "<b>[ghost_accessories_label]:</b> <a href='?_src_=prefs;task=input;preference=ghostaccs'>[button_name]</a><br>"
-					switch(ghost_others)
-						if(GHOST_OTHERS_THEIR_SETTING)
-							button_name = GHOST_OTHERS_THEIR_SETTING_NAME
-						if(GHOST_OTHERS_DEFAULT_SPRITE)
-							button_name = GHOST_OTHERS_DEFAULT_SPRITE_NAME
-						if(GHOST_OTHERS_SIMPLE)
-							button_name = GHOST_OTHERS_SIMPLE_NAME
-
-					dat += "<b>[ghosts_of_others_label]:</b> <a href='?_src_=prefs;task=input;preference=ghostothers'>[button_name]</a><br>"
-					dat += "<br>"
-
-					dat += "<b>[fps_label]:</b> <a href='?_src_=prefs;preference=clientfps;task=input'>[clientfps ? clientfps : "Авто ([CONFIG_GET(number/fps)])"]</a><br>"
-
-					dat += "<b>[income_updates_label]:</b> <a href='?_src_=prefs;preference=income_pings'>[(chat_toggles & CHAT_BANKCARD) ? allowed_label : muted_label]</a><br>"
-					dat += "<br>"
-
-					dat += "<b>[parallax_label]:</b> <a href='?_src_=prefs;preference=parallaxdown' oncontextmenu='window.location.href=\"?_src_=prefs;preference=parallaxup\";return false;'>"
-					switch (parallax)
-						if (PARALLAX_LOW)
-							dat += low_label
-						if (PARALLAX_MED)
-							dat += medium_label
-						if (PARALLAX_INSANE)
-							dat += insane_label
-						if (PARALLAX_DISABLE)
-							dat += disabled_label
-						else
-							dat += high_label
-					dat += "</a><br>"
-					dat += "<b>[ambient_occlusion_label]:</b> <a href='?_src_=prefs;preference=ambientocclusion'>[ambientocclusion ? enabled_label : disabled_label]</a><br>"
-					dat += "<b>Размытие освещения:</b> <a href='?_src_=prefs;preference=lighting_blur'>[lighting_blur]</a>[lighting_blur >= 3 ? " <span style='color:#ff6600'>(может снизить FPS)</span>" : ""]<br>"
-					dat += "<b>[fit_viewport_label]:</b> <a href='?_src_=prefs;preference=auto_fit_viewport'>[auto_fit_viewport ? auto_label : manual_label]</a><br>"
-					dat += "<b>[hud_button_flashes_label]:</b> <a href='?_src_=prefs;preference=hud_toggle_flash'>[hud_toggle_flash ? enabled_label : disabled_label]</a><br>"
-					dat += "<b>[hud_flash_color_label]:</b> <span style='border: 1px solid #161616; background-color: [hud_toggle_color];'><font color='[color_hex2num(hud_toggle_color) < 200 ? "FFFFFF" : "000000"]'>[hud_toggle_color]</font></span> <a href='?_src_=prefs;preference=hud_toggle_color;task=input'>[change_label]</a><br>"
-
-					if (CONFIG_GET(flag/maprotation) && CONFIG_GET(flag/tgstyle_maprotation))
-						var/p_map = preferred_map
-						if (!p_map)
-							p_map = default_label
-							if (config.defaultmap)
-								p_map += " ([config.defaultmap.map_name])"
-						else
-							if (p_map in config.maplist)
-								var/datum/map_config/VM = config.maplist[p_map]
-								if (!VM)
-									p_map += " (No longer exists)"
-								else
-									p_map = VM.map_name
-							else
-								p_map += " (No longer exists)"
-						if(CONFIG_GET(flag/allow_map_voting))
-							dat += "<b>[preferred_map_label]:</b> <a href='?_src_=prefs;preference=preferred_map;task=input'>[p_map]</a><br>"
-					dat += "</table></tr>"
-				if(CONTENT_PREFS_TAB)
-					dat += "<table><tr><td width='340px' height='300px' valign='top'>"
-					dat += "<h2>Fetish content prefs</h2>"
-					dat += "<b>Allow Lewd Verbs:</b> <a href='?_src_=prefs;preference=verb_consent'>[(toggles & VERB_CONSENT) ? "Yes":"No"]</a><br>" // Skyrat - ERP Mechanic Addition
-					dat += "<b>Allow Lewd Ranged Verbs:</b> <a href='?_src_=prefs;preference=ranged_verb_consent'>[(toggles & RANGED_VERBS_CONSENT) ? "Yes":"No"]</a><br>" // BLUEMOON ADD интеракты с расстояния
-					dat += "<b>Lewd Verb Sounds:</b> <a href='?_src_=prefs;preference=lewd_verb_sounds'>[(toggles & LEWD_VERB_SOUNDS) ? "Yes":"No"]</a><br>" // Sandstorm - ERP Mechanic Addition
-					dat += "<b>Arousal:</b><a href='?_src_=prefs;preference=arousable'>[arousable == TRUE ? "Enabled" : "Disabled"]</a><BR>"
-					dat += "<b>Allow Knotting:</b><a href='?_src_=prefs;preference=sexknotting'>[sexknotting == TRUE ? "Enabled" : "Disabled"]</a><BR>"
-					dat += "<b>Genital examine text</b>:<a href='?_src_=prefs;preference=genital_examine'>[(cit_toggles & GENITAL_EXAMINE) ? "Enabled" : "Disabled"]</a><BR>"
-					dat += "<b>Vore examine text</b>:<a href='?_src_=prefs;preference=vore_examine'>[(cit_toggles & VORE_EXAMINE) ? "Enabled" : "Disabled"]</a><BR>"
-					dat += "<b>Voracious MediHound sleepers:</b> <a href='?_src_=prefs;preference=hound_sleeper'>[(cit_toggles & MEDIHOUND_SLEEPER) ? "Yes" : "No"]</a><br>"
-					dat += "<b>Hear Vore Sounds:</b> <a href='?_src_=prefs;preference=toggleeatingnoise'>[(cit_toggles & EATING_NOISES) ? "Yes" : "No"]</a><br>"
-					dat += "<b>Hear Vore Digestion Sounds:</b> <a href='?_src_=prefs;preference=toggledigestionnoise'>[(cit_toggles & DIGESTION_NOISES) ? "Yes" : "No"]</a><br>"
-					dat += "<b>Allow trash forcefeeding (requires Trashcan quirk)</b> <a href='?_src_=prefs;preference=toggleforcefeedtrash'>[(cit_toggles & TRASH_FORCEFEED) ? "Yes" : "No"]</a><br>"
-					dat += "<b>Forced Feminization:</b> <a href='?_src_=prefs;preference=feminization'>[(cit_toggles & FORCED_FEM) ? "Allowed" : "Disallowed"]</a><br>"
-					dat += "<b>Forced Masculinization:</b> <a href='?_src_=prefs;preference=masculinization'>[(cit_toggles & FORCED_MASC) ? "Allowed" : "Disallowed"]</a><br>"
-					dat += "<b>Lewd Hypno:</b> <a href='?_src_=prefs;preference=hypno'>[(cit_toggles & HYPNO) ? "Allowed" : "Disallowed"]</a><br>"
-					dat += "<b>Bimbofication:</b> <a href='?_src_=prefs;preference=bimbo'>[(cit_toggles & BIMBOFICATION) ? "Allowed" : "Disallowed"]</a><br>"
-					dat += "</td>"
-					dat +="<td width='300px' height='300px' valign='top'>"
-					dat += "<h2>Other content prefs</h2>"
-					dat += "<b>Breast Enlargement:</b> <a href='?_src_=prefs;preference=breast_enlargement'>[(cit_toggles & BREAST_ENLARGEMENT) ? "Allowed" : "Disallowed"]</a><br>"
-					dat += "<b>Penis Enlargement:</b> <a href='?_src_=prefs;preference=penis_enlargement'>[(cit_toggles & PENIS_ENLARGEMENT) ? "Allowed" : "Disallowed"]</a><br>"
-					dat += "<b>Butt Enlargement:</b> <a href='?_src_=prefs;preference=butt_enlargement'>[(cit_toggles & BUTT_ENLARGEMENT) ? "Allowed" : "Disallowed"]</a><br>"
-					dat += "<b>Belly Inflation:</b> <a href='?_src_=prefs;preference=belly_inflation'>[(cit_toggles & BELLY_INFLATION) ? "Allowed" : "Disallowed"]</a><br>" //SPLURT Edit
-					dat += "<b>Hypno:</b> <a href='?_src_=prefs;preference=never_hypno'>[(cit_toggles & NEVER_HYPNO) ? "Disallowed" : "Allowed"]</a><br>"
-					dat += "<b>Aphrodisiacs:</b> <a href='?_src_=prefs;preference=aphro'>[(cit_toggles & NO_APHRO) ? "Disallowed" : "Allowed"]</a><br>"
-					dat += "<b>Ass Slapping:</b> <a href='?_src_=prefs;preference=ass_slap'>[(cit_toggles & NO_ASS_SLAP) ? "Disallowed" : "Allowed"]</a><br>"
-					//Gardelin0 EDIT
-					dat += "<b>Sex Jitter:</b> <a href='?_src_=prefs;preference=sex_jitter'>[(cit_toggles & SEX_JITTER) ? "Allowed" : "Disallowed"]</a><br>"
-					//SPLURT EDIT
-					dat += "<b>Chastity Interactions :</b> <a href='?_src_=prefs;preference=chastitypref'>[(cit_toggles & CHASTITY) ? "Allowed" : "Disallowed"]</a><br>"
-					dat += "<b>Genital Stimulation Modifiers :</b> <a href='?_src_=prefs;preference=stimulationpref'>[(cit_toggles & STIMULATION) ? "Allowed" : "Disallowed"]</a><br>"
-					dat += "<b>Edging :</b> <a href='?_src_=prefs;preference=edgingpref'>[(cit_toggles & EDGING) ? "Allowed" : "Disallowed"]</a><br>"
-					dat += "<b>Receive Cum Covering :</b> <a href='?_src_=prefs;preference=cumontopref'>[(cit_toggles & CUM_ONTO) ? "Allowed" : "Disallowed"]</a><br>"
-					dat += "<span style='border-radius: 2px;border:1px dotted white;cursor:help;' title='Enables verbs involving farts, shit and piss.'>?</span> "
-					dat += "<b>Unholy ERP verbs :</b> <a href='?_src_=prefs;preference=unholypref'>[unholypref]</a><br>" //https://www.youtube.com/watch?v=OHKARc-GObU
-					dat += "<span style='border-radius: 2px;border:1px dotted white;cursor:help;' title='Enables macro / micro stepping and stomping interactions.'>?</span> "
-//					dat += "<b>Stomping Interactions :</b> <a href='?_src_=prefs;preference=stomppref'>[stomppref ? "Yes" : "No"]</a><br>"
-					//END OF SPLURT EDIT
-					dat += "<span style='border-radius: 2px;border:1px dotted white;cursor:help;' title='Enables verbs involving ear/brain fucking.'>?</span> " //SPLURT Edit (wow! editception???)
-					//SANDSTORM EDIT
-					dat += 	"<b>Extreme ERP verbs :</b> <a href='?_src_=prefs;preference=extremepref'>[extremepref]</a><br>" // https://youtu.be/0YrU9ASVw6w
-					if(extremepref != "No")
-						dat += "<span style='border-radius: 2px;border:1px dotted white;cursor:help;' title='Enables verbs involving ear/brain fucking.'>?</span> " //SPLURT Edit
-						dat += "<b><span style='color: #e60000;'>Harmful ERP verbs :</b> <a href='?_src_=prefs;preference=extremeharm'>[extremeharm]</a><br>"
-					//END OF SANDSTORM EDIT
-					dat += "<b>Automatic Wagging:</b> <a href='?_src_=prefs;preference=auto_wag'>[(cit_toggles & NO_AUTO_WAG) ? "Disabled" : "Enabled"]</a><br>"
-					dat += "<b>Dance Near Disco Ball:</b> <a href='?_src_=prefs;preference=disco_dance'>[(cit_toggles & NO_DISCO_DANCE) ? "Disabled" : "Enabled"]</a><br>"
-					dat += "<b>Tattoos from others:</b> <a href='?_src_=prefs;preference=tattoo_pref'>[tattoopref]</a><br>" // BLUEMOON ADD - tattoo consent
-					dat += "<span style='border-radius: 2px;border:1px dotted white;cursor:help;' title='If anyone cums a blacklisted fluid into you, it uses the default fluid for that genital.'>?</span> "
-					dat += "<b><a href='?_src_=prefs;preference=gfluid_black;task=input'>Genital Fluid Blacklist</a></b><br>"
-					if(gfluid_blacklist?.len)
-						dat += "<span style='border-radius: 2px;border:1px dotted white;cursor:help;' title='Remove a genital fluid from your blacklist.'>?</span> "
-						dat += "<b><a href='?_src_=prefs;preference=gfluid_unblack;task=input'>Genital Fluid Un-Blacklist</a></b><br>"
-					//SPLURT Edit end
-					dat += "</tr></table>"
-
-		if(KEYBINDINGS_TAB) // Custom keybindings
-			dat += "<b>Keybindings:</b> <a href='?_src_=prefs;preference=hotkeys'>[(hotkeys) ? "Hotkeys" : "Input"]</a><br>"
-			dat += "Keybindings mode controls how the game behaves with tab and map/input focus.<br>If it is on <b>Hotkeys</b>, the game will always attempt to force you to map focus, meaning keypresses are sent \
-			directly to the map instead of the input. You will still be able to use the command bar, but you need to tab to do it every time you click on the game map.<br>\
-			If it is on <b>Input</b>, the game will not force focus away from the input bar, and you can switch focus using TAB between these two modes: If the input bar is pink, that means that you are in non-hotkey mode, sending all keypresses of the normal \
-			alphanumeric characters, punctuation, spacebar, backspace, enter, etc, typing keys into the input bar. If the input bar is white, you are in hotkey mode, meaning all keypresses go into the game's keybind handling system unless you \
-			manually click on the input bar to shift focus there.<br>\
-			Input mode is the closest thing to the old input system.<br>\
-			<b>IMPORTANT:</b> While in input mode's non hotkey setting (tab toggled), Ctrl + KEY will send KEY to the keybind system as the key itself, not as Ctrl + KEY. This means Ctrl + T/W/A/S/D/all your familiar stuff still works, but you \
-			won't be able to access any regular Ctrl binds.<br>"
-			dat += "<br><b>Modifier-Independent binding</b> - This is a singular bind that works regardless of if Ctrl/Shift/Alt are held down. For example, if combat mode is bound to C in modifier-independent binds, it'll trigger regardless of if you are \
-			holding down shift for sprint. <b>Each keybind can only have one independent binding, and each key can only have one keybind independently bound to it.</b>"
-			// Create an inverted list of keybindings -> key
-			var/list/user_binds = list()
-			var/list/user_modless_binds = list()
-			for (var/key in key_bindings)
-				for(var/kb_name in key_bindings[key])
-					user_binds[kb_name] += list(key)
-			for (var/key in modless_key_bindings)
-				user_modless_binds[modless_key_bindings[key]] = key
-
-			var/list/kb_categories = list()
-			// Group keybinds by category
-			for (var/name in GLOB.keybindings_by_name)
-				var/datum/keybinding/kb = GLOB.keybindings_by_name[name]
-				kb_categories[kb.category] += list(kb)
-
-			dat += {"
-			<style>
-			span.bindname { display: inline-block; position: absolute; width: 20% ; left: 5px; padding: 5px; } \
-			span.bindings { display: inline-block; position: relative; width: auto; left: 20%; width: auto; right: 20%; padding: 5px; } \
-			span.independent { display: inline-block; position: absolute; width: 20%; right: 5px; padding: 5px; } \
-			</style><body>
-			"}
-
-			for (var/category in kb_categories)
-				dat += "<h3>[category]</h3>"
-				for (var/i in kb_categories[category])
-					var/datum/keybinding/kb = i
-					var/current_independent_binding = user_modless_binds[kb.name] || "Unbound"
-					if(!length(user_binds[kb.name]))
-						dat += "<span class='bindname'>[kb.full_name]</span><span class='bindings'><a href ='?_src_=prefs;preference=keybindings_capture;keybinding=[kb.name];old_key=Unbound'>Unbound</a>"
-						var/list/default_keys = hotkeys ? kb.hotkey_keys : kb.classic_keys
-						if(LAZYLEN(default_keys))
-							dat += "| Default: [default_keys.Join(", ")]"
-						dat += "</span>"
-						if(!kb.special && !kb.clientside)
-							dat += "<span class='independent'>Independent Binding: <a href='?_src_=prefs;preference=keybindings_capture;keybinding=[kb.name];old_key=[current_independent_binding];independent=1'>[current_independent_binding]</a></span>"
-						dat += "<br>"
-					else
-						var/bound_key = user_binds[kb.name][1]
-						dat += "<span class='bindname'l>[kb.full_name]</span><span class='bindings'><a href ='?_src_=prefs;preference=keybindings_capture;keybinding=[kb.name];old_key=[bound_key]'>[bound_key]</a>"
-						for(var/bound_key_index in 2 to length(user_binds[kb.name]))
-							bound_key = user_binds[kb.name][bound_key_index]
-							dat += " | <a href ='?_src_=prefs;preference=keybindings_capture;keybinding=[kb.name];old_key=[bound_key]'>[bound_key]</a>"
-						if(length(user_binds[kb.name]) < MAX_KEYS_PER_KEYBIND)
-							dat += "| <a href ='?_src_=prefs;preference=keybindings_capture;keybinding=[kb.name]'>Add Secondary</a>"
-						var/list/default_keys = hotkeys ? kb.classic_keys : kb.hotkey_keys
-						if(LAZYLEN(default_keys))
-							dat += "| Default: [default_keys.Join(", ")]"
-						dat += "</span>"
-						if(!kb.special && !kb.clientside)
-							dat += "<span class='independent'>Independent Binding: <a href='?_src_=prefs;preference=keybindings_capture;keybinding=[kb.name];old_key=[current_independent_binding];independent=1'>[current_independent_binding]</a></span>"
-						dat += "<br>"
-
-			dat += "<br><br>"
-			dat += "<a href ='?_src_=prefs;preference=keybindings_reset'>\[Reset to default\]</a>"
-			dat += "</body>"
-
-
-	dat += "<hr><center>"
+	dat += "<center>"
 
 	if(!IsGuestKey(user.key))
-		dat += "<a href='?_src_=prefs;preference=load'>Undo</a> "
-		dat += "<a href='?_src_=prefs;preference=save'>Save Setup</a> "
+		dat += "<a class='csetup-btn' href='?_src_=prefs;preference=load'>Undo</a> "
+		dat += "<a class='csetup-btn' href='?_src_=prefs;preference=save'>Save Setup</a> "
 
-	dat += "<a href='?_src_=prefs;preference=reset_all'>Reset Setup</a>"
+	dat += "<a class='csetup-btn' href='?_src_=prefs;preference=reset_all'>Reset Setup</a>"
 	dat += "</center>"
 
 	if(new_character_creator)
@@ -3050,25 +2455,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	popup.open(FALSE)
 	onclose(user, "preferences_window", src)
 
-/datum/preferences/proc/cycle_character_creation_menu_style()
-	// Cycle: Old -> New (classic) -> New (modern) -> Old
-	if(!new_character_creator)
-		new_character_creator = TRUE
-		charcreation_theme = "classic"
-		return
 
-	if(charcreation_theme == "classic")
-		charcreation_theme = "modern"
-		return
-
-	// Any modern variant should go back to Old with one click.
-	if(findtext(charcreation_theme, "modern"))
-		charcreation_theme = "classic"
-		new_character_creator = FALSE
-		return
-
-	charcreation_theme = "classic"
-	new_character_creator = FALSE
 
 /datum/preferences/proc/cycle_character_creation_modern_accent()
 	// Only cycles the accent for Modern themes. Style cycle remains 3-state.
@@ -3099,6 +2486,68 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 #undef APPEARANCE_CATEGORY_COLUMN
 #undef MAX_MUTANT_ROWS
+
+/datum/preferences/proc/ClearKeybindingCapture()
+	kb_capture_kb_name = null
+	kb_capture_old_key = null
+	kb_capture_independent = FALSE
+
+/datum/preferences/proc/ApplyKeybindingSet(mob/user, list/input)
+	var/kb_name = input["keybinding"]
+	if(!kb_name)
+		return FALSE
+
+	var/independent = input["independent"]
+	var/clear_key = text2num(input["clear_key"])
+	var/old_key = input["old_key"]
+	var/special = input["special"]
+
+	if(clear_key)
+		if(independent)
+			modless_key_bindings -= old_key
+		else if(key_bindings[old_key])
+			key_bindings[old_key] -= kb_name
+			LAZYADD(key_bindings["Unbound"], kb_name)
+			if(!length(key_bindings[old_key]))
+				key_bindings -= old_key
+		if(special && user?.client)
+			user.client.ensure_keys_set(src)
+		return TRUE
+
+	var/new_key = uppertext(input["key"])
+	var/AltMod = text2num(input["alt"]) ? "Alt" : ""
+	var/CtrlMod = text2num(input["ctrl"]) ? "Ctrl" : ""
+	var/ShiftMod = text2num(input["shift"]) ? "Shift" : ""
+	var/numpad = text2num(input["numpad"]) ? "Numpad" : ""
+
+	if(GLOB._kbMap[new_key])
+		new_key = GLOB._kbMap[new_key]
+
+	var/full_key
+	switch(new_key)
+		if("Alt")
+			full_key = "[new_key][CtrlMod][ShiftMod]"
+		if("Ctrl")
+			full_key = "[AltMod][new_key][ShiftMod]"
+		if("Shift")
+			full_key = "[AltMod][CtrlMod][new_key]"
+		else
+			full_key = "[AltMod][CtrlMod][ShiftMod][numpad][new_key]"
+
+	if(independent)
+		modless_key_bindings -= old_key
+		modless_key_bindings[full_key] = kb_name
+	else
+		if(key_bindings[old_key])
+			key_bindings[old_key] -= kb_name
+			if(!length(key_bindings[old_key]))
+				key_bindings -= old_key
+		key_bindings[full_key] += list(kb_name)
+		key_bindings[full_key] = sort_list(key_bindings[full_key])
+
+	if(special && user?.client)
+		user.client.ensure_keys_set(src)
+	return TRUE
 
 /datum/preferences/proc/CaptureKeybinding(mob/user, datum/keybinding/kb, old_key, independent = FALSE, special = FALSE)
 	var/HTML = {"
@@ -3574,14 +3023,13 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		qdel(query_get_jobban)
 		return
 
-	if(href_list["preference"] == "charcreation_style")
-		cycle_character_creation_menu_style()
-		ShowChoices(user)
-		return TRUE
-
 	if(href_list["preference"] == "charcreation_accent")
 		cycle_character_creation_modern_accent()
 		ShowChoices(user)
+		return TRUE
+
+	if(href_list["preference"] == "open_tgui_settings")
+		ui_interact(user)
 		return TRUE
 
 	if(href_list["preference"] == "charcreation_set")
@@ -3589,18 +3037,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		if(selected_theme)
 			// Interface style + CSS themes.
 			switch(selected_theme)
-				if("old")
-					new_character_creator = FALSE
-					charcreation_theme = "classic"
-					save_preferences(silent = TRUE)
-					ShowChoices(user)
-					return TRUE
-				if("classic")
-					new_character_creator = TRUE
-					charcreation_theme = "classic"
-					save_preferences(silent = TRUE)
-					ShowChoices(user)
-					return TRUE
 				if("modern")
 					new_character_creator = TRUE
 					charcreation_theme = "modern"
@@ -3934,6 +3370,28 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			if("reset")
 				language = list()
 		SetLanguage(user)
+		return TRUE
+
+	else if(href_list["preference"] == "headshot")
+		var/i = href_list["select_slot"] || 1
+		if(istext(i))
+			i = text2num(i)
+		i = clamp(i, 1, MAX_HEADSHOTS)
+		set_headshot_link(user, i, features["headshot_links"])
+		ShowChoices(user)
+		return TRUE
+
+	else if(href_list["preference"] == "headshot_naked")
+		var/i = href_list["select_slot"] || 1
+		if(istext(i))
+			i = text2num(i)
+		i = clamp(i, 1, MAX_HEADSHOTS_NAKED)
+		set_headshot_link(user, i, features["headshot_naked_links"])
+		ShowChoices(user)
+		return TRUE
+
+	else if(href_list["preference"] == "open_tattoo_manager")
+		user.client?.open_tattoo_manager()
 		return TRUE
 
 	switch(href_list["task"])
@@ -5225,7 +4683,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if ("be_victim")
 					var/pickedvictim = tgui_input_list(user, "Are you ok with antagonists interacting with you (e.g. kidnapping)? ERP consent is seperate: This setting does NOT mean they are allowed to rape you.", "Antag Victim Consent", list(BEVICTIM_NO,BEVICTIM_ASK,BEVICTIM_YES))
-					be_victim = pickedvictim
+					if(!isnull(pickedvictim))
+						be_victim = pickedvictim
+						save_preferences()
 				if ("clientfps")
 					var/config_fps = CONFIG_GET(number/fps)
 					var/list/fps_options = list(
@@ -5431,45 +4891,53 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					// move the specified marking down
 					var/index = text2num(href_list["marking_index"])
 					var/marking_type = href_list["marking_type"]
-					if(index && marking_type && features[marking_type] && index != length(features[marking_type]))
-						var/index_down = index + 1
-						var/markings = features[marking_type]
-						var/first_marking = markings[index]
-						var/second_marking = markings[index_down]
-						markings[index] = second_marking
-						markings[index_down] = first_marking
+					if(marking_type && features[marking_type])
+						var/list/markings = features[marking_type]
+						if(index >= 1 && index < length(markings))
+							var/index_down = index + 1
+							var/first_marking = markings[index]
+							var/second_marking = markings[index_down]
+							if(istype(first_marking, /list) && istype(second_marking, /list))
+								markings[index] = second_marking
+								markings[index_down] = first_marking
 
 				if("marking_up")
 					// move the specified marking up
 					var/index = text2num(href_list["marking_index"])
 					var/marking_type = href_list["marking_type"]
-					if(index && marking_type && features[marking_type] && index != 1)
-						var/index_up = index - 1
-						var/markings = features[marking_type]
-						var/first_marking = markings[index]
-						var/second_marking = markings[index_up]
-						markings[index] = second_marking
-						markings[index_up] = first_marking
+					if(marking_type && features[marking_type])
+						var/list/markings = features[marking_type]
+						if(index > 1 && index <= length(markings))
+							var/index_up = index - 1
+							var/first_marking = markings[index]
+							var/second_marking = markings[index_up]
+							if(istype(first_marking, /list) && istype(second_marking, /list))
+								markings[index] = second_marking
+								markings[index_up] = first_marking
 
 				if("marking_top")
 					// move the specified marking to the top
 					var/index = text2num(href_list["marking_index"])
 					var/marking_type = href_list["marking_type"]
-					if(index && marking_type && features[marking_type] && index != 1)
+					if(marking_type && features[marking_type])
 						var/list/markings = features[marking_type]
-						var/list/entry = markings[index]
-						markings.Cut(index, index + 1)
-						markings.Insert(1, entry)
+						if(index >= 1 && index <= length(markings) && index != 1)
+							var/entry = markings[index]
+							if(istype(entry, /list))
+								for(var/i = index; i > 1; i--)
+									markings.Swap(i, i - 1)
 
 				if("marking_bottom")
 					// move the specified marking to the bottom
 					var/index = text2num(href_list["marking_index"])
 					var/marking_type = href_list["marking_type"]
-					if(index && marking_type && features[marking_type] && index != length(features[marking_type]))
+					if(marking_type && features[marking_type])
 						var/list/markings = features[marking_type]
-						var/list/entry = markings[index]
-						markings.Cut(index, index + 1)
-						markings += list(entry)
+						if(index >= 1 && index < length(markings))
+							var/entry = markings[index]
+							if(istype(entry, /list))
+								for(var/i = index; i < length(markings); i++)
+									markings.Swap(i, i + 1)
 
 				if("marking_remove")
 					// move the specified marking up
@@ -5548,7 +5016,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						var/matrixed_sections = S.covered_limbs[GLOB.bodypart_names[num2text(marking_list[1])]]
 						if(color_number == 1)
 							switch(matrixed_sections)
-								if(MATRIX_GREEN)
+								if(MATRIX_GREEN, MATRIX_GREEN_BLUE)
 									color_number = 2
 								if(MATRIX_BLUE)
 									color_number = 3
@@ -5560,7 +5028,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 									color_number = 3
 
 						var/color_list = features[marking_type][index][3]
-						var/new_marking_color = input(user, "Choose your character's marking color:", "Character Preference","#"+color_list[color_number]) as color|null
+						var/new_marking_color = input(user, "Choose your character's marking color:", "Character Preference", color_list[color_number]) as color|null
 						if(new_marking_color)
 							var/temp_hsv = RGBtoHSV(new_marking_color)
 							if((MUTCOLORS_PARTSONLY in pref_species.species_traits) || ReadHSV(temp_hsv)[3] >= ReadHSV(MINIMUM_MUTANT_COLOR)[3] || !CONFIG_GET(flag/character_color_limits)) // mutantcolors must be bright, but only if they affect the skin //SPLURT EDIT
@@ -5831,66 +5299,22 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					return
 
 				if("keybindings_set")
-					var/kb_name = href_list["keybinding"]
-					if(!kb_name)
+					if(!href_list["keybinding"])
 						user << browse(null, "window=capturekeypress")
-						ShowChoices(user)
+						tgui_or_html_refresh(user)
 						return
-
-					var/independent = href_list["independent"]
-
-					var/clear_key = text2num(href_list["clear_key"])
-					var/old_key = href_list["old_key"]
-					if(clear_key)
-						if(independent)
-							modless_key_bindings -= old_key
-						else
-							if(key_bindings[old_key])
-								key_bindings[old_key] -= kb_name
-								LAZYADD(key_bindings["Unbound"], kb_name)
-								if(!length(key_bindings[old_key]))
-									key_bindings -= old_key
+					if(!GLOB.keybindings_by_name[href_list["keybinding"]])
 						user << browse(null, "window=capturekeypress")
-						if(href_list["special"])		// special keys need a full reset
-							user.client.ensure_keys_set(src)
-						save_preferences()
-						ShowChoices(user)
+						tgui_or_html_refresh(user)
 						return
-
-					var/new_key = uppertext(href_list["key"])
-					var/AltMod = text2num(href_list["alt"]) ? "Alt" : ""
-					var/CtrlMod = text2num(href_list["ctrl"]) ? "Ctrl" : ""
-					var/ShiftMod = text2num(href_list["shift"]) ? "Shift" : ""
-					var/numpad = text2num(href_list["numpad"]) ? "Numpad" : ""
-					// var/key_code = text2num(href_list["key_code"])
-
-					if(GLOB._kbMap[new_key])
-						new_key = GLOB._kbMap[new_key]
-
-					var/full_key
-					switch(new_key)
-						if("Alt")
-							full_key = "[new_key][CtrlMod][ShiftMod]"
-						if("Ctrl")
-							full_key = "[AltMod][new_key][ShiftMod]"
-						if("Shift")
-							full_key = "[AltMod][CtrlMod][new_key]"
-						else
-							full_key = "[AltMod][CtrlMod][ShiftMod][numpad][new_key]"
-					if(independent)
-						modless_key_bindings -= old_key
-						modless_key_bindings[full_key] = kb_name
-					else
-						if(key_bindings[old_key])
-							key_bindings[old_key] -= kb_name
-							if(!length(key_bindings[old_key]))
-								key_bindings -= old_key
-						key_bindings[full_key] += list(kb_name)
-						key_bindings[full_key] = sort_list(key_bindings[full_key])
-					if(href_list["special"])		// special keys need a full reset
-						user.client.ensure_keys_set(src)
+					if(!ApplyKeybindingSet(user, href_list))
+						user << browse(null, "window=capturekeypress")
+						tgui_or_html_refresh(user)
+						return
 					user << browse(null, "window=capturekeypress")
 					save_preferences()
+					tgui_or_html_refresh(user)
+					return
 
 				if("keybindings_reset")
 					var/choice = tgalert(user, "Would you prefer 'hotkey' or 'classic' defaults?", "Setup keybindings", "Hotkey", "Classic", "Cancel")
@@ -6223,8 +5647,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						user.client.tgui_panel?.window.send_message("emotes/setList", payload)
 
 				if("tab")
-					if(href_list["tab"])
-						current_tab = text2num(href_list["tab"])
+					ui_interact(user)
+					return TRUE
 
 				if("character_preview")
 					preview_pref = href_list["tab"]
@@ -6414,7 +5838,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						return
 					var/list/new_loadout_data = list(LOADOUT_ITEM = "[G.type]")
 					if(length(G.loadout_initial_colors))
-						new_loadout_data[LOADOUT_COLOR] = G.loadout_initial_colors
+						new_loadout_data[LOADOUT_COLOR] = G.loadout_initial_colors.Copy()
 					else
 						new_loadout_data[LOADOUT_COLOR] = list("#FFFFFF")
 					if(loadout_data["SAVE_[loadout_slot]"])
@@ -6434,6 +5858,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			var/existing = has_loadout_gear(loadout_slot, "[G2.type]")
 			if(existing)
 				existing[LOADOUT_COLOR] = list(sanitize_hexcolor(color, 6, TRUE, "#FF0000"))
+				save_preferences(silent = TRUE)
 				ShowChoices(user)
 				return
 			if(!is_loadout_slot_available(G2.category))
@@ -6452,6 +5877,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				loadout_data["SAVE_[loadout_slot]"] += list(new_loadout_data)
 			else
 				loadout_data["SAVE_[loadout_slot]"] = list(new_loadout_data)
+			save_preferences(silent = TRUE)
 			ShowChoices(user)
 			return
 
@@ -6465,7 +5891,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					sanitize_current_slot.Remove(list(entry))
 					break
 
-		if(href_list["loadout_color"] || href_list["loadout_color_polychromic"] || href_list["loadout_color_HSV"] || href_list["loadout_rename"] || href_list["loadout_redescribe"] || href_list["loadout_addheirloom"] || href_list["loadout_removeheirloom"] || href_list["loadout_tagname"] || href_list["loadout_examtooltip"])
+		if(href_list["loadout_color"] || href_list["loadout_color_polychromic"] || href_list["loadout_rename"] || href_list["loadout_redescribe"] || href_list["loadout_addheirloom"] || href_list["loadout_removeheirloom"] || href_list["loadout_tagname"] || href_list["loadout_examtooltip"])
 
 			//if the gear doesn't exist, or they don't have it, ignore the request
 			var/name = url_decode(href_list["loadout_gear_name"])
@@ -6483,26 +5909,55 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			//possible requests: recolor, recolor (polychromic), rename, redescribe
 			//always make sure the gear allows said request before proceeding
 
-			//non-poly coloring can only be done by non-poly items
-			if(href_list["loadout_color"] && !(G.loadout_flags & LOADOUT_CAN_COLOR_POLYCHROMIC))
+			// Colormate
+			if(href_list["loadout_color"])
+				if(src.loadout_color_handler)
+					SStgui.close_uis(src.loadout_color_handler)
 				if(!length(user_gear[LOADOUT_COLOR]))
 					user_gear[LOADOUT_COLOR] = list("#FFFFFF")
+				src.loadout_color_handler = new /datum/loadout_color_handler
+				var/datum/loadout_color_handler/LCH = src.loadout_color_handler
+				LCH.user = user
+				LCH.prefs = src
+				LCH.gear_name = name
+				LCH.loadout_slot = loadout_slot
+				LCH.user_gear = user_gear
+				LCH.gear = G
 				var/current_color = user_gear[LOADOUT_COLOR][1]
-				if(!istext(current_color))
-					current_color = "#FFFFFF"
-				var/new_color = input(user, "Polychromic options", "Choose Color", current_color) as color|null
-				user_gear[LOADOUT_COLOR][1] = sanitize_hexcolor(new_color, 6, TRUE, current_color)
-
-			// HSV Coloring (SPLURT EDIT)
-			if(href_list["loadout_color_HSV"] && !(G.loadout_flags & LOADOUT_CAN_COLOR_POLYCHROMIC))
-				var/hue = input(user, "Enter Hue (0-360)", "HSV options") as num|null
-				var/saturation = input(user, "Enter Saturation (-10 to 10)", "HSV options") as num|null
-				var/value = input(user, "Enter Value (-10 to 10)", "HSV options") as num|null
-				if(hue && saturation && value)
-					saturation = clamp(saturation, -10, 10)
-					value = clamp(value, -10, 10)
-					var/color_to_use = color_matrix_hsv(hue, saturation, value)
-					user_gear[LOADOUT_COLOR][1] = color_to_use
+				var/saved_mode = user_gear[LOADOUT_COLOR_MODE]
+				if(!isnum(saved_mode))
+					saved_mode = COLORMATE_HSV
+				else
+					// if stored color format doesn't match saved mode, infer from format
+					switch(saved_mode)
+						if(COLORMATE_TINT)
+							if(!istext(current_color))
+								saved_mode = COLORMATE_HSV
+						if(COLORMATE_MATRIX)
+							if(!islist(current_color) || length(current_color) < 12)
+								saved_mode = COLORMATE_TINT
+						if(COLORMATE_HSV)
+							if(!islist(current_color) || length(current_color) < 12)
+								saved_mode = COLORMATE_TINT
+				LCH.active_mode = saved_mode
+				switch(saved_mode)
+					if(COLORMATE_TINT)
+						if(istext(current_color))
+							LCH.activecolor = current_color
+					if(COLORMATE_MATRIX)
+						if(islist(current_color) && length(current_color) >= 12)
+							var/list/color_matrix = current_color
+							LCH.color_matrix_last = color_matrix.Copy()
+					if(COLORMATE_HSV)
+						if(islist(current_color) && length(current_color) >= 12)
+							var/list/color_matrix = current_color
+							LCH.color_matrix_last = color_matrix.Copy()
+						var/list/hsv_data = user_gear[LOADOUT_COLOR_HSV_DATA]
+						if(length(hsv_data) == 3)
+							LCH.build_hue = hsv_data[1]
+							LCH.build_sat = hsv_data[2]
+							LCH.build_val = hsv_data[3]
+				LCH.open(user)
 
 			//poly coloring can only be done by poly items
 			if(href_list["loadout_color_polychromic"] && (G.loadout_flags & LOADOUT_CAN_COLOR_POLYCHROMIC))
@@ -6575,8 +6030,15 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				else
 					user_gear -= "loadout_examtooltip"
 
+	save_preferences(silent = TRUE)
 	ShowChoices(user)
 	return TRUE
+
+/datum/preferences/proc/get_sound_volume(sound_id)
+	var/varname = "sound_volume_[sound_id]"
+	. = vars[varname]
+	if(isnull(.))
+		return 100
 
 /datum/preferences/proc/copy_to(mob/living/carbon/human/character, icon_updates = 1, roundstart_checks = TRUE, initial_spawn = FALSE)
 	if(be_random_name)
@@ -6937,3 +6399,153 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	"}
 
 	user << browse(dat, "window=lipstick_color;size=420x280;can_close=1;can_resize=0")
+
+/datum/preferences/proc/SetLanguage(mob/user)
+	var/list/dat = list()
+	dat += "<center><b>Choose Additional Languages</b></center><br>"
+	if(!CONFIG_GET(number/max_languages) == 0)
+		dat += "<center>Do note, however, you can have many languages. <b>Do not abuse this.</b></center><br>"
+		dat += "<center>If you want no additional language at all, click reset to disable all languages.</center><br>"
+		dat += "<hr>"
+		if(SSlanguage && SSlanguage.languages_by_name.len)
+			for(var/V in SSlanguage.languages_by_name)
+				var/datum/language/L = SSlanguage.languages_by_name[V]
+				if(!L)
+					return
+				var/language_name = L.name
+				var/restricted = FALSE
+				if(L.restricted)
+					restricted = TRUE
+				if(restricted && !(language_name in pref_species.languagewhitelist))
+					var/quirklanguagefound = FALSE
+					for(var/qname in all_quirks)
+						var/datum/quirk/Q = SSquirks.quirks[qname]
+						if(Q && (language_name in Q.languagewhitelist))
+							quirklanguagefound = TRUE
+							break
+					if(!quirklanguagefound)
+						continue
+
+				var/link_class = (language_name in language) ? "class='linkOn'" : ""
+				dat += "<a [link_class] href='?_src_=prefs;preference=language;task=update;language=[language_name]'><b>[language_name]</a></b> [L.desc]<br><br>"
+		else
+			dat += "<center><b>The language subsystem hasn't fully loaded yet! Please wait a bit and try again.</b></center><br>"
+		dat += "<hr>"
+		dat += "<td><center><a style='white-space:normal;background:#eb2e2e;' href='?_src_=prefs;preference=language;task=reset'>Reset</center></span></td>"
+	else
+		dat += "<hr>"
+		dat += "<b>Additional Languages are disabled.</b>"
+		dat += "<hr>"
+	dat += "<center><a href='?_src_=prefs;preference=language;task=close'>Done</a></center>"
+
+	var/datum/browser/popup = new(user, "mob_occupation", "<div align='center'>Language Preference</div>", 900, 600)
+	popup.set_window_options("can_close=0")
+	popup.set_content(dat.Join())
+	popup.open(FALSE)
+
+/datum/preferences/proc/toggle_language(lang)
+	if(lang in language)
+		language -= lang
+		return TRUE
+	else if(check_language_maxhit())
+		if(CONFIG_GET(number/max_languages) == 1)
+			tgui_alert(usr, "You can only have 1 additional language!", timeout = 5 SECONDS)
+		else
+			tgui_alert(usr, "You can only have up to [CONFIG_GET(number/max_languages)] additional languages!", timeout = 5 SECONDS)
+		return FALSE
+	else
+		language += lang
+		return TRUE
+
+/datum/preferences/proc/check_language_maxhit()
+	if(CONFIG_GET(number/max_languages) == -1)
+		return FALSE
+	else if(language.len >= CONFIG_GET(number/max_languages))
+		return TRUE
+
+#define ACTION_HEADSHOT_LINK_NOOP 0
+#define ACTION_HEADSHOT_LINK_REMOVE -1
+#define HEADSHOT_LINK_MAX_LENGTH 400
+
+/datum/preferences/vv_edit_var(var_name, var_value, massedit)
+	if(var_name == NAMEOF(src, metadollar_minute_pool) || var_name == NAMEOF(src, metadollar_pending_items))
+		if(usr)
+			to_chat(usr, span_warning("Метадоллары нельзя менять через VV. Используйте команду TGS <b>metadollars</b> (add / remove / set)."))
+		var/path_display = path || "no path"
+		log_admin("Metadollars: VV edit of [var_name] blocked for prefs [path_display] by [key_name(usr)].")
+		return FALSE
+	return ..()
+
+/datum/preferences/proc/set_headshot_link(mob/user, link_index, list/links_list)
+	if(!user || !link_index || !islist(links_list))
+		return
+	var/headshot_link = get_headshot_link(user, links_list[link_index])
+	switch(headshot_link)
+		if (ACTION_HEADSHOT_LINK_REMOVE)
+			links_list[link_index] = null
+			return
+		if (ACTION_HEADSHOT_LINK_NOOP)
+			return
+		else
+			if(links_list[link_index] == headshot_link)
+				return
+
+			to_chat(user, span_notice("Если картинка не отображается в игре должным образом, убедитесь, что это прямая ссылка на изображение, которая правильно открывается в обычном браузере."))
+			to_chat(user, span_notice("Имейте в виду, что размер фотографии будет уменьшен до 256x256 пикселей, поэтому чем квадратнее фотография, тем лучше она будет выглядеть."))
+
+			links_list[link_index] = headshot_link
+
+/datum/preferences/proc/get_headshot_link(mob/user, old_link)
+	var/usr_input = input(user, "Input the image link: (For Discord links, try putting the file's type at the end of the link, after the '&'. for example '&.jpg/.png/.jpeg/.gif/.webm/.mp4')", "Headshot Image", old_link) as text|null
+	if(isnull(usr_input))
+		return ACTION_HEADSHOT_LINK_NOOP
+
+	if(!usr_input)
+		return ACTION_HEADSHOT_LINK_REMOVE
+
+	var/static/link_regex = regex("^https?://.*\\.(jpg|png|jpeg|gif|webm|mp4)(\[?#].*)?$", "i")
+
+	if (length(usr_input) > HEADSHOT_LINK_MAX_LENGTH)
+		to_chat(user, span_warning("The link is too long! Max length: [HEADSHOT_LINK_MAX_LENGTH] characters!"))
+		return ACTION_HEADSHOT_LINK_NOOP
+
+	if(!findtext(usr_input, link_regex))
+		to_chat(user, span_warning("The link must be a direct http(s):// image/video URL ending with .png, .jpg, .jpeg, .gif, .webm, or .mp4!"))
+		return ACTION_HEADSHOT_LINK_NOOP
+
+	var/static/list/repl_chars = list("\n"="#","\t"="#","'"="","\""=""," "="")
+	return sanitize(usr_input, repl_chars)
+
+/proc/headshot_preview_html(link, width = 140, height = 140)
+	if(!link)
+		return ""
+	var/static/video_regex = regex("\\.(webm|mp4)(\[?#]|$)", "i")
+	if(findtext(link, video_regex))
+		return "<video src='[link]' autoplay loop muted playsinline style='border: 1px solid black; object-fit: contain;' width='[width]' height='[height]'></video>"
+	return "<img src='[link]' style='border: 1px solid black; object-fit: contain;' width='[width]' height='[height]'>"
+
+/datum/preferences/proc/mob_size_name_to_num(body_weight_name)
+	switch(body_weight_name)
+		if(NAME_WEIGHT_LIGHT)
+			return MOB_WEIGHT_LIGHT
+		if(NAME_WEIGHT_NORMAL)
+			return MOB_WEIGHT_NORMAL
+		if(NAME_WEIGHT_HEAVY)
+			return MOB_WEIGHT_HEAVY
+		if(NAME_WEIGHT_HEAVY_SUPER)
+			return MOB_WEIGHT_HEAVY_SUPER
+		else
+			return MOB_WEIGHT_NORMAL
+
+/datum/preferences/proc/mob_size_name_to_quirk_cost(body_weight_name)
+	switch(body_weight_name)
+		if(NAME_WEIGHT_HEAVY)
+			return 1
+		if(NAME_WEIGHT_HEAVY_SUPER)
+			return 2
+		else
+			return 0
+
+#undef HEADSHOT_LINK_MAX_LENGTH
+#undef ACTION_HEADSHOT_LINK_NOOP
+#undef ACTION_HEADSHOT_LINK_REMOVE

@@ -1170,7 +1170,7 @@
 	return TRUE
 
 /datum/action/innate/custom_holoform
-	name = "Select Custom Holoform"
+	name = "Выбор облика"
 	desc = "Выбрать один из существующих аватаров для использования в качестве голоформы."
 	icon_icon = 'icons/mob/actions/actions_silicon.dmi'
 	button_icon_state = "custom_holoform"
@@ -1186,6 +1186,7 @@
 		if(istype(S, /mob/living/silicon/pai))
 			var/mob/living/silicon/pai/P = S
 			P.chassis = "custom"
+			P.update_icon()
 		else if(istype(S, /mob/living/silicon/ai))
 			var/mob/living/silicon/ai/A = S
 			if(A.client?.prefs?.custom_holoform_icon)

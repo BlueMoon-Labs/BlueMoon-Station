@@ -44,6 +44,7 @@ interface CharacterProfileContext {
   unholy_tag: string;
   extreme_tag: string;
   very_extreme_tag: string;
+  tattoo_tag: string;
 }
 
 export const CharacterProfile = (props, context) => {
@@ -59,6 +60,7 @@ export const CharacterProfile = (props, context) => {
     { name: "Unholy", title: "Грязный секс", value: data.unholy_tag },
     { name: "Extreme", title: "Жестокий секс", value: data.extreme_tag },
     { name: "Extreme Harm", title: "Очень жестокий секс", value: data.very_extreme_tag },
+    { name: "Tattoo", title: "Татуировки от других", value: data.tattoo_tag },
   ];
 
   return (

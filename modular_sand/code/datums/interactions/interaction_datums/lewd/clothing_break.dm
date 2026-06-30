@@ -29,7 +29,8 @@
 	if (!target_uniform)
 		to_chat(user, span_warning("У цели нет униформы!"))
 		return
-
+	to_chat(partner_human, span_big_warning("[user] начинает рвать вашу одежду при помощью [item_in_hand.name]"))
+	partner_human.visible_message(span_danger("[user] начинает рвать одежду [partner_human] при помощью [item_in_hand.name]"))
 	if(!partner_human.can_inject_syringe(user, FALSE, BODY_ZONE_CHEST, SYRINGE_PIERCE_THICK)) //Можем ли добраться до униформы?
 		to_chat(user, span_warning("Что-то не даёт пробиться до униформы!"))
 		return

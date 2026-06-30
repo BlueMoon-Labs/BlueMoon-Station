@@ -22,7 +22,7 @@
 	return FALSE
 
 /datum/round_event/disease_outbreak/announce(fake)
-	priority_announce("Подтвержденная вспышка вирусной биологической опасности уровня 7 на борту [station_name()]. Весь персонал должен противостоять эпидемии.", "Биологическая тревога", "outbreak7")
+	priority_announce("Подтвержденная вспышка вирусной биологической опасности уровня 7 на борту [station_name()]. Весь персонал должен противостоять эпидемии.", "Биологическая тревога", "outbreak7", type = "outbreak7")
 
 /datum/round_event/disease_outbreak/setup()
 	announce_when = rand(15, 30)
