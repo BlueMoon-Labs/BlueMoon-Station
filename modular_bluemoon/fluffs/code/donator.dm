@@ -1988,7 +1988,7 @@
 	path = /obj/item/clothing/head/helmet/sec/mark40k
 	ckeywhitelist = list("monolithxxv")
 
-/datum/gear/donator/bm/mark40k
+/datum/gear/donator/bm/mark40kk
 	name = "Gosei Chest Plates Mark40kk"
 	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/suit/armor/vest/mark40kk
