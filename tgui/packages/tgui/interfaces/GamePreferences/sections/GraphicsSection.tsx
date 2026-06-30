@@ -73,8 +73,8 @@ const GFX_TOGGLES: { key: string; label: string; flag: string; tooltip?: string 
   { key: 'see_chat_emotes', label: 'Руначат для эмоутов', flag: 'see_chat_emotes', tooltip: 'Показывать эмоуты (*действия) персонажей в руначате на карте' },
 ];
 
-export const GraphicsSection = (props, context) => {
-  const { act, data } = useBackend<GraphicsData>(context);
+export const GraphicsSection = (props) => {
+  const { act, data } = useBackend<GraphicsData>();
   const parallaxValue = Number(data.parallax ?? 4);
   const selectedParallax = PARALLAX_OPTIONS.find(o => o.value === parallaxValue)?.label
     || PARALLAX_OPTIONS[4].label;

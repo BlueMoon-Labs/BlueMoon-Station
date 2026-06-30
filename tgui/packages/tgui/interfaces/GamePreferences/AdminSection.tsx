@@ -44,8 +44,8 @@ const SoundToggleButton = (props: { enabled: boolean; onClick: () => void }) => 
   );
 };
 
-export const AdminSection = (props, context) => {
-  const { act, data } = useBackend<AdminData>(context);
+export const AdminSection = (props) => {
+  const { act, data } = useBackend<AdminData>();
   const { has_admin, deadmin, sound_adminhelp, sound_prayers, sound_volume_adminhelp, sound_volume_prayers, announce_login, combohud_lighting } = data;
 
   if (!has_admin) {

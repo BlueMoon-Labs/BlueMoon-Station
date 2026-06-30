@@ -44,8 +44,8 @@ const GAMEPLAY_TOGGLES: { key: string; label: string; flag: string; invert?: boo
   { key: 'tg_player_panel', label: 'Новый стиль панели игрока (TG)', flag: 'tg_player_panel', tooltip: 'Использовать обновлённый интерфейс панели информации об игроке (TG-стиль)' },
 ];
 
-export const GameplaySection = (props, context) => {
-  const { act, data } = useBackend<GameplayData>(context);
+export const GameplaySection = (props) => {
+  const { act, data } = useBackend<GameplayData>();
   const damageShakeValue = Number(data.damage_screenshake ?? 2);
 
   return (

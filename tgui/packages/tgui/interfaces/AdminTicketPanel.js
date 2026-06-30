@@ -707,7 +707,7 @@ const TicketDetailPanel = (props) => {
       {isActive && (
         <Stack.Item>
           {(typingAdmins.length > 0 || !!ticket.initiator_typing) && (
-            <Box fontSize="11px" color="#ffcc00" textAlign="left" py={0.5} style={{fontWeight: 'bold'}}>
+            <Box fontSize="11px" color="#ffcc00" textAlign="left" py={0.5} style={{ fontWeight: 'bold' }}>
               <Icon name="pencil-alt" mr={0.5} />
               {typingAdmins.concat(
                 ticket.initiator_typing

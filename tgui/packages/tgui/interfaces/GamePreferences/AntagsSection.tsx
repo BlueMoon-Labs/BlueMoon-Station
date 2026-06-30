@@ -16,8 +16,8 @@ type AntagData = {
 const capitalize = (str: string) =>
   str.charAt(0).toUpperCase() + str.slice(1);
 
-export const AntagsSection = (props, context) => {
-  const { act, data } = useBackend<AntagData>(context);
+export const AntagsSection = (props) => {
+  const { act, data } = useBackend<AntagData>();
   const { antag_roles, no_antag, midround_antag } = data;
 
   if (!antag_roles) {
