@@ -1,3 +1,11 @@
+var/static/list/snaped = list(
+	/obj/item/clothing/neck/petcollar/choker,
+	/obj/item/clothing/neck/petcollar/locked/choker,
+	/obj/item/clothing/neck/petcollar/donorchoker,
+	/obj/item/clothing/neck/syntech/choker,
+	/obj/item/clothing/neck/undertale
+	)
+
 /datum/interaction/lewd/facefuck
 	description = "Член. Вытрахать в рот."
 	interaction_sound = null
