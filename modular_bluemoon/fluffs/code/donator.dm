@@ -2009,7 +2009,7 @@
 /datum/gear/donator/bm/ntrdrip
 	name = "Mark50k Armored Chest plates"
 	slot = ITEM_SLOT_ICLOTHING
-	path = /obj/item/clothing/head/helmet/sec/ntrdrip
+	path = /obj/item/clothing/under/donator/bm/ntrdrip
 	ckeywhitelist = list("monolithxxv", "sketchyirishman")
 
 /datum/gear/donator/bm/chetky_cap
