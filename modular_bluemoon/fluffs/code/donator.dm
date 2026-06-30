@@ -1991,7 +1991,7 @@
 /datum/gear/donator/bm/mark50k_helmet
 	name = "Mark40k Armored Head plates"
 	slot = ITEM_SLOT_HEAD
-	path = /datum/gear/donator/bm/mark40k_helmet
+	path = /obj/item/clothing/head/donator/bm/mark50k_helmet
 	ckeywhitelist = list("monolithxxv")
 
 /datum/gear/donator/bm/mark40k_armor
