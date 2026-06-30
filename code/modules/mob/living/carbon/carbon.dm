@@ -637,7 +637,7 @@
 		if(!isnull(E.lighting_cutoff))
 			lighting_cutoff = E.lighting_cutoff
 		if(!isnull(E.color_cutoffs))
-			color_cutoffs_accumulator = E.color_cutoffs.Copy()
+			color_cutoffs_accumulator = E.color_cutoffs?.Copy()
 
 	if(HAS_TRAIT(src, TRAIT_NIGHT_VISION))
 		lighting_alpha = min(LIGHTING_PLANE_ALPHA_NV_TRAIT, lighting_alpha)

@@ -714,6 +714,10 @@
 				to_chat(user, "<span class='notice'>You add cables to the APC frame.</span>")
 				make_terminal()
 				terminal.connect_to_network()
+	else if(istype(W, /obj/item/pai_cable))
+		var/obj/item/pai_cable/cable = W
+		cable.plugin(src, user)
+		return TRUE
 	else if (istype(W, /obj/item/electronics/apc) && opened)
 		if (has_electronics)
 			to_chat(user, "<span class='warning'>There is already a board inside the [src]!</span>")

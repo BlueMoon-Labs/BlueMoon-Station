@@ -337,7 +337,14 @@ em {
   font-weight: bold;
 }
 
-.say, .emote, .infoplain, .oocplain, .warningplain {
+.say, .infoplain, .oocplain, .warningplain {
+}
+
+.emote {
+  color: #c8c8d2;
+  font-style: italic;
+  padding-left: 0.6em;
+  border-left: 2px solid rgba(150, 150, 170, 0.25);
 }
 
 .deadsay {
@@ -1049,7 +1056,12 @@ blockquote.nicegreen {
 }
 
 .lewd {
-  color: #800080;
+  font-style: italic;
+  background: linear-gradient(90deg, #ff5ea8, #c14bd6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: #b14fd0;
+  -webkit-text-fill-color: transparent;
 }
 
 /* BLUEMOON ADD START - напитки для синтетиков */
@@ -1418,6 +1430,23 @@ blockquote.brass {
 .singing {
   font-family: "Trebuchet MS", cursive, sans-serif;
   font-style: italic;
+  letter-spacing: 0.6px;
+  background: linear-gradient(90deg, #7fd4ff, #c79cff, #ffa6d6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: #c79cff;
+  -webkit-text-fill-color: transparent;
+  animation: song-drift 6000ms ease-in-out infinite alternate;
+}
+
+@keyframes song-drift {
+  0% {
+    filter: hue-rotate(0deg);
+  }
+
+  100% {
+    filter: hue-rotate(20deg);
+  }
 }
 
 .his_grace {
@@ -1730,4 +1759,442 @@ li {
 
 .votewrap, .voteresult {
     box-sizing: border-box;
+}
+
+/* BlueMoon - новые уникальные стили чата */
+
+/* Голоса видов и существ */
+.ember {
+  color: #c8753a;
+  font-family: Georgia, "Times New Roman", serif;
+  text-shadow: 0 0 2px rgba(120, 45, 10, 0.55);
+}
+
+.felinspeak {
+  color: #e58fce;
+  font-family: "Trebuchet MS", Verdana, sans-serif;
+}
+
+.voxshriek {
+  color: #4f9e8c;
+  font-family: "Consolas", "Courier New", monospace;
+  letter-spacing: -0.04em;
+  font-weight: bold;
+}
+
+.etherealvoice {
+  color: #3fd9ff;
+  text-shadow: 0 0 5px rgba(63, 217, 255, 0.6);
+}
+
+.plasmavoice {
+  color: #b58cff;
+  font-family: "Consolas", "Courier New", monospace;
+  text-shadow: 0 0 2px rgba(150, 100, 255, 0.35);
+}
+
+.chitvoice {
+  color: #8a9a32;
+  font-family: "Verdana", sans-serif;
+  letter-spacing: 0.02em;
+}
+
+.shadekinvoice {
+  color: #6b6f7a;
+  font-style: italic;
+  text-shadow: 0 0 3px rgba(40, 30, 70, 0.7);
+}
+
+.frostvoice {
+  color: #9fd6e8;
+  font-size: 310%;
+  font-weight: bold;
+  text-shadow: 0 0 4px rgba(120, 200, 230, 0.5);
+}
+
+.bloodmad {
+  color: #c41010;
+  font-size: 310%;
+  font-weight: bold;
+  font-style: italic;
+  text-shadow: 0 0 3px rgba(120, 0, 0, 0.6);
+}
+
+/* Голоса антагонистов и фракций */
+.eldritch {
+  color: #7d5a9e;
+  font-style: italic;
+  text-shadow: 0 0 4px rgba(80, 30, 110, 0.55);
+}
+
+.eldritch_big {
+  color: #7d5a9e;
+  font-style: italic;
+  font-weight: bold;
+  font-size: 185%;
+  text-shadow: 0 0 5px rgba(80, 30, 110, 0.6);
+}
+
+.changeling_hivemind {
+  color: #9b2d9b;
+  font-style: italic;
+  letter-spacing: -0.2px;
+  text-shadow: 0 0 3px rgba(80, 0, 64, 0.5);
+}
+
+.syndicate {
+  color: #b34b5a;
+  font-weight: bold;
+}
+
+.syndicate_big {
+  color: #c2536a;
+  font-weight: bold;
+  font-size: 150%;
+  font-family: Consolas, "Courier New", monospace;
+  letter-spacing: 0.04em;
+}
+
+.infernal {
+  color: #d63a1e;
+  font-weight: bold;
+  text-shadow: 0 0 4px rgba(180, 40, 0, 0.5);
+}
+
+.infernal_ascension {
+  color: #ff5a1f;
+  font-weight: bold;
+  font-size: 245%;
+  text-shadow: 0 0 8px rgba(255, 90, 0, 0.7);
+  animation: infernoflicker 220ms infinite alternate;
+}
+
+@keyframes infernoflicker {
+  0% {
+    opacity: 0.82;
+    text-shadow: 0 0 6px rgba(255, 80, 0, 0.55);
+  }
+
+  100% {
+    opacity: 1;
+    text-shadow: 0 0 11px rgba(255, 140, 40, 0.85);
+  }
+}
+
+.arcane {
+  color: #6f7bff;
+  font-weight: bold;
+  font-style: italic;
+  text-shadow: 0 0 6px rgba(90, 110, 255, 0.55);
+}
+
+.terror {
+  color: #7a18d0;
+  font-weight: bold;
+  font-style: italic;
+  text-shadow: 0 0 4px rgba(60, 0, 110, 0.55);
+}
+
+.revolution {
+  color: #c0202a;
+  font-weight: bold;
+}
+
+.revolution_big {
+  color: #d4242f;
+  font-weight: 900;
+  font-size: 185%;
+  letter-spacing: 0.03em;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+}
+
+.mesmerize {
+  color: #b5103a;
+  font-style: italic;
+  font-weight: bold;
+  text-shadow: 0 0 7px rgba(120, 0, 30, 0.7);
+  animation: mesmer-pulse 2600ms ease-in-out infinite alternate;
+}
+
+@keyframes mesmer-pulse {
+  0% {
+    color: #7a0020;
+    text-shadow: 0 0 4px rgba(90, 0, 20, 0.6);
+  }
+
+  100% {
+    color: #ff385f;
+    text-shadow: 0 0 11px rgba(180, 20, 60, 0.9);
+  }
+}
+
+/* Системы и связь */
+.supermatter_delam {
+  color: #ff7a2f;
+  font-weight: bold;
+  letter-spacing: 0.03em;
+  text-shadow: 0 0 4px rgba(255, 60, 0, 0.55);
+  animation: sm_delam_pulse 2000ms ease-in-out infinite;
+}
+
+@keyframes sm_delam_pulse {
+  0% {
+    color: #e23a16;
+    text-shadow: 0 0 3px rgba(255, 40, 0, 0.4);
+  }
+
+  50% {
+    color: #ff9d3a;
+    text-shadow: 0 0 8px rgba(255, 90, 0, 0.75);
+  }
+
+  100% {
+    color: #e23a16;
+    text-shadow: 0 0 3px rgba(255, 40, 0, 0.4);
+  }
+}
+
+.ai_corruption {
+  font-family: Consolas, "Courier New", monospace;
+  font-weight: bold;
+  letter-spacing: 0.04em;
+  color: #38e0e0;
+  animation: ai_glitch 900ms steps(2) infinite;
+}
+
+@keyframes ai_glitch {
+  0% {
+    color: #38e0e0;
+    text-shadow: 1px 0 #ff2b4d, -1px 0 #1affff;
+  }
+
+  45% {
+    color: #ff3b5c;
+    text-shadow: -1px 0 #38e0e0, 1px 0 #ff2b4d;
+  }
+
+  55% {
+    color: #9ef7f7;
+    text-shadow: 1px 0 #ff2b4d, -1px 0 #1affff;
+  }
+
+  100% {
+    color: #38e0e0;
+    text-shadow: -1px 0 #ff2b4d, 1px 0 #1affff;
+  }
+}
+
+.terminal_readout {
+  font-family: Consolas, "Courier New", monospace;
+  color: #4ad66a;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 2px rgba(74, 214, 106, 0.45);
+}
+
+.broadcast_static {
+  color: #9aa0a3;
+  font-family: Consolas, "Courier New", monospace;
+  letter-spacing: 0.03em;
+  transform: skewX(-3deg);
+  display: inline-block;
+  animation: bcast_flicker 1600ms steps(3) infinite;
+}
+
+@keyframes bcast_flicker {
+  0% {
+    opacity: 0.85;
+  }
+
+  30% {
+    opacity: 0.55;
+  }
+
+  60% {
+    opacity: 0.92;
+  }
+
+  100% {
+    opacity: 0.7;
+  }
+}
+
+.telemetry {
+  font-family: Consolas, "Courier New", monospace;
+  color: #8fb3c9;
+  letter-spacing: 0.04em;
+}
+
+/* Коммуникационные режимы и состояния персонажа */
+.whisper {
+  color: #8f9bb3;
+  font-style: italic;
+  font-size: 92%;
+  opacity: 0.82;
+  letter-spacing: 0.02em;
+}
+
+.last_breath {
+  color: #9bb0d6;
+  font-style: italic;
+  letter-spacing: 1px;
+  opacity: 0.78;
+  text-shadow: 0 0 5px rgba(155, 176, 214, 0.45);
+  animation: last-fade 2200ms ease-out 1 both;
+}
+
+@keyframes last-fade {
+  0% {
+    opacity: 0.95;
+    letter-spacing: 0.3px;
+  }
+
+  100% {
+    opacity: 0.6;
+    letter-spacing: 1.4px;
+  }
+}
+
+.slurring {
+  display: inline-block;
+  filter: blur(0.35px);
+  letter-spacing: 0.4px;
+  transform: skewX(-3deg);
+  opacity: 0.9;
+}
+
+.glitch {
+  display: inline-block;
+  font-family: "Courier New", monospace;
+  color: #6fe3ff;
+  text-shadow: -1px 0 rgba(255, 0, 90, 0.7), 1px 0 rgba(0, 255, 160, 0.7);
+  animation: glitch-jit 400ms steps(3) infinite;
+}
+
+@keyframes glitch-jit {
+  0% {
+    transform: translateX(0);
+  }
+
+  33% {
+    transform: translateX(-0.6px);
+  }
+
+  66% {
+    transform: translateX(0.6px);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.telepathy {
+  color: #6fd0e0;
+  font-style: italic;
+  text-shadow: 0 0 5px rgba(80, 180, 210, 0.45);
+}
+
+.telepathybold {
+  color: #6fd0e0;
+  font-style: italic;
+  font-weight: bold;
+  text-shadow: 0 0 6px rgba(80, 180, 210, 0.55);
+}
+
+.signlang {
+  color: #c2a86a;
+  font-family: "Trebuchet MS", Verdana, sans-serif;
+  font-style: italic;
+}
+
+.signlang::before {
+  content: '\270B';
+  margin-right: 0.25em;
+  opacity: 0.7;
+}
+
+.thought {
+  color: #9d8fc4;
+  font-style: italic;
+  opacity: 0.9;
+}
+
+.thought::before {
+  content: '\201C';
+  opacity: 0.5;
+  margin-right: 0.15em;
+}
+
+.dream {
+  color: #8a86b8;
+  font-style: italic;
+  letter-spacing: 0.08em;
+  animation: dreamhaze 5000ms infinite alternate;
+}
+
+@keyframes dreamhaze {
+  0% {
+    opacity: 0.55;
+  }
+
+  100% {
+    opacity: 0.95;
+  }
+}
+
+.nightmare {
+  color: #7a2a3a;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 4px rgba(120, 20, 30, 0.5);
+}
+
+.purr {
+  color: #ff7eb0;
+  font-style: italic;
+  letter-spacing: 0.04em;
+  text-shadow: 0 0 5px rgba(200, 80, 120, 0.4);
+}
+
+.croon {
+  color: #e07a8a;
+  font-style: italic;
+  text-shadow: 0 0 5px rgba(150, 60, 70, 0.45);
+}
+
+/* Темы экзистенциальных тревог для priority_announcement */
+.priority_announcement--ionstorm {
+  --priority-border: #3b5a9d;
+  --priority-accent: #6f8fff;
+  --priority-badge-bg: #141d33;
+  --priority-badge-color: #b9c8ff;
+  --priority-source-color: #e2e9ff;
+  --priority-title-color: #9aa8d8;
+  --priority-body-color: #cdd6f7;
+  --priority-body-border: #2c3a63;
+  background: #0e1018;
+}
+
+.priority_announcement--aimalf {
+  --priority-border: #4a7a3e;
+  --priority-accent: #7fe05a;
+  --priority-badge-bg: #16240f;
+  --priority-badge-color: #c2f5a7;
+  --priority-source-color: #eafbe0;
+  --priority-title-color: #9ccb88;
+  --priority-body-color: #d3f4c6;
+  --priority-body-border: #2f4a24;
+  background: #0e1410;
+}
+
+.priority_announcement--biohazard {
+  --priority-border: #8a8d2f;
+  --priority-accent: #cfe046;
+  --priority-badge-bg: #23240f;
+  --priority-badge-color: #eef5a7;
+  --priority-source-color: #f8fbe0;
+  --priority-title-color: #c0c888;
+  --priority-body-color: #eef4c6;
+  --priority-body-border: #494a24;
+  background: #14140d;
 }

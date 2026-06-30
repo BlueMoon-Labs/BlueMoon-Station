@@ -111,6 +111,7 @@
 	var/icon/custom_holoform_icon
 
 /mob/living/silicon/pai/Destroy()
+	UnregisterSignal(src, COMSIG_PROCESS_BORGCHARGER_OCCUPANT)
 	QDEL_NULL(signaler)
 	QDEL_NULL(pda)
 	QDEL_NULL(internal_instrument)
@@ -147,7 +148,7 @@
 	card = P
 	signaler = new(src)
 	secureye_program = new(src)
-	cell = new /obj/item/stock_parts/cell(src)
+	cell = new /obj/item/stock_parts/cell/high(src)
 	cell.charge = cell.maxcharge
 	if(!radio)
 		radio = new /obj/item/radio/headset/silicon/pai(src)
@@ -170,6 +171,8 @@
 	chassis_pixel_offsets_x = typelist(NAMEOF(src, chassis_pixel_offsets_x), default_chassis_pixel_offsets_x())
 
 	. = ..()
+
+	RegisterSignal(src, COMSIG_PROCESS_BORGCHARGER_OCCUPANT, PROC_REF(on_recharge))
 
 	var/datum/action/innate/pai/software/SW = new
 	SW.Grant(src)
@@ -393,6 +396,8 @@
 	// Зарядка от APC через кабель
 	if(cable && istype(cable.machine, /obj/machinery/power/apc))
 		charge_from_apc(200)
+	else if(!cable)
+		charge_from_nearby_apc()
 	// Потребление активных программ
 	var/power_usage = 0
 	if(holoform)
@@ -668,6 +673,26 @@
 		return
 	cell.charge += power_taken
 	APC.terminal.add_load(power_taken)
+
+/mob/living/silicon/pai/proc/on_recharge(datum/source, amount, repairs)
+	if(cell)
+		cell.charge = min(cell.charge + amount, cell.maxcharge)
+		if(repairs > 0)
+			heal_bodypart_damage(repairs, max(0, repairs - 1))
+
+/mob/living/silicon/pai/proc/charge_from_nearby_apc()
+	if(!cell || cell.charge >= cell.maxcharge)
+		return
+	var/obj/machinery/power/apc/nearby_apc = locate(/obj/machinery/power/apc) in range(1, src)
+	if(!istype(nearby_apc) || !nearby_apc.operating || !nearby_apc.terminal)
+		return
+	var/power_taken = min(50, cell.maxcharge - cell.charge)
+	var/excess = nearby_apc.surplus()
+	power_taken = min(power_taken, excess)
+	if(power_taken <= 0)
+		return
+	cell.charge += power_taken
+	nearby_apc.terminal.add_load(power_taken)
 
 /mob/living/silicon/pai/proc/toggle_thermal_vision()
 	thermal_vision_active = !thermal_vision_active

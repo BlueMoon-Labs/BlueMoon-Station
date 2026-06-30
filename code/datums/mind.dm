@@ -931,7 +931,8 @@ GLOBAL_LIST(objective_choices)
 		for(var/a in GLOB.admins)
 			var/client/admin_client = a
 			if(admin_client.prefs.toggles & SOUND_ADMINHELP)
-				SEND_SOUND(admin_client, sound('sound/effects/adminhelp.ogg'))
+				var/ah_vol = admin_client.prefs?.get_sound_volume("adminhelp") || 100
+				SEND_SOUND(admin_client, sound('sound/effects/adminhelp.ogg', volume = ah_vol))
 			window_flash(admin_client)
 		message_admins("<span class='adminhelp'>[ADMIN_TPMONTY(usr)] has requested a review of their objective changes. (<a href='?_src_=holder;[HrefToken(TRUE)];ObjectiveRequest=[REF(src)]'>RPLY</a>)</span>")
 		do_edit_objectives_ambitions()

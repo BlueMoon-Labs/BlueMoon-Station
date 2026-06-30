@@ -12,6 +12,7 @@ GLOBAL_LIST_EMPTY(doppler_arrays)
 	var/next_announce = 0
 	var/max_dist = 150
 	verb_say = "states coldly"
+	speech_span = SPAN_TELEMETRY
 	var/list/message_log = list()
 
 /obj/machinery/doppler_array/Initialize(mapload)

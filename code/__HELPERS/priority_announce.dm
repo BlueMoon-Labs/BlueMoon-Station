@@ -27,6 +27,18 @@
 			data["theme"] = "silicon"
 			data["badge"] = "SILICON"
 			data["header"] = "Силиконовое Объявление"
+		if("ionstorm")
+			data["theme"] = "ionstorm"
+			data["badge"] = "ИОННЫЙ ШТОРМ"
+			data["header"] = "Ионная Аномалия"
+		if("aimalf")
+			data["theme"] = "aimalf"
+			data["badge"] = "СБОЙ ИИ"
+			data["header"] = "Тревога ИИ"
+		if("outbreak5", "outbreak7")
+			data["theme"] = "biohazard"
+			data["badge"] = "БИОУГРОЗА"
+			data["header"] = "Биологическая Тревога"
 		else
 			if(sender_override)
 				var/sender_lower = lowertext("[sender_override]")
@@ -80,7 +92,7 @@
 
 	return announcement
 
-/proc/priority_announce(text, title = "", sound, type , sender_override, has_important_message)
+/proc/priority_announce(text, title = "", sound, type , sender_override, has_important_message, sound_id = "announcements")
 	if(!text)
 		return
 
@@ -106,11 +118,15 @@
 
 	announcement = build_priority_announcement(text, title, type, sender_override, has_important_message)
 
-	var/s = sound(sound)
+	var/sound/s = sound(sound)
 	for(var/mob/M in GLOB.player_list)
 		if(!isnewplayer(M) && M.can_hear())
 			to_chat(M, announcement)
-			if(M.client.prefs.toggles & SOUND_ANNOUNCEMENTS)
+			if(M.client?.prefs?.toggles & SOUND_ANNOUNCEMENTS)
+				var/pref_vol = M.client?.prefs?.get_sound_volume(sound_id)
+				if(isnull(pref_vol))
+					pref_vol = 100
+				s.volume = pref_vol
 				SEND_SOUND(M, s)
 
 /**
@@ -170,11 +186,14 @@
 	for(var/mob/M in GLOB.player_list)
 		if(!isnewplayer(M) && M.can_hear())
 			to_chat(M, "[span_minorannounce("<font color = red>[title]</font color><BR>[message]")]<BR>")
-			if(M.client.prefs.toggles & SOUND_ANNOUNCEMENTS)
+			if(M.client?.prefs?.toggles & SOUND_ANNOUNCEMENTS)
+				var/pref_vol = M.client?.prefs?.get_sound_volume("announcements")
+				if(isnull(pref_vol))
+					pref_vol = 100
 				if(alert)
-					SEND_SOUND(M, sound('sound/misc/notice1.ogg'))
+					SEND_SOUND(M, sound('sound/misc/notice1.ogg', volume = pref_vol))
 				else
-					SEND_SOUND(M, sound('sound/misc/notice2.ogg'))
+					SEND_SOUND(M, sound('sound/misc/notice2.ogg', volume = pref_vol))
 
 /proc/build_system_notice(title, body, theme = "notice", label = null, focus = null)
 	var/list/classes = list(
@@ -206,11 +225,14 @@
 	for(var/mob/M in GLOB.player_list)
 		if(!isnewplayer(M) && M.can_hear())
 			to_chat(M, html)
-			if(M.client.prefs.toggles & SOUND_ANNOUNCEMENTS)
+			if(M.client?.prefs?.toggles & SOUND_ANNOUNCEMENTS)
+				var/pref_vol = M.client?.prefs?.get_sound_volume("announcements")
+				if(isnull(pref_vol))
+					pref_vol = 100
 				if(raised)
-					SEND_SOUND(M, sound('sound/misc/notice1.ogg'))
+					SEND_SOUND(M, sound('sound/misc/notice1.ogg', volume = pref_vol))
 				else
-					SEND_SOUND(M, sound('sound/misc/notice2.ogg'))
+					SEND_SOUND(M, sound('sound/misc/notice2.ogg', volume = pref_vol))
 
 /proc/announce_captain_arrival(displayed_rank, captain_name)
 	if(!displayed_rank)
@@ -222,8 +244,11 @@
 	for(var/mob/M in GLOB.player_list)
 		if(!isnewplayer(M) && M.can_hear())
 			to_chat(M, html)
-			if(M.client.prefs.toggles & SOUND_ANNOUNCEMENTS)
-				SEND_SOUND(M, sound('sound/misc/notice2.ogg'))
+			if(M.client?.prefs?.toggles & SOUND_ANNOUNCEMENTS)
+				var/pref_vol = M.client?.prefs?.get_sound_volume("announcements")
+				if(isnull(pref_vol))
+					pref_vol = 100
+				SEND_SOUND(M, sound('sound/misc/notice2.ogg', volume = pref_vol))
 
 /proc/build_ai_upload_notice(remote_access_restored = FALSE)
 	if(remote_access_restored)

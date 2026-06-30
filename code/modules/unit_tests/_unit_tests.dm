@@ -177,6 +177,7 @@
 #include "space_drift.dm"
 #include "statpanel_listedturf.dm"
 #include "ssmobs_optimization.dm"
+#include "ssobj_idle_processing.dm"
 #include "tattoo_system.dm"
 #include "techweb_copy.dm"
 

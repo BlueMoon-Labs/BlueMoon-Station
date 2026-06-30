@@ -55,10 +55,15 @@
 	if(AH)
 		message_admins("[key_name_admin(src, FALSE)] [ADMIN_FLW(src.mob)] начал отвечать на админхелп [key_name_admin(C, FALSE)] [ADMIN_FLW(C.mob)].",\
 		islog = FALSE, prefix = "AHELP")
+		AH.typing_admins[usr.ckey] = world.time
+		reply_modal_open = TRUE
 	var/msg = input(src,"Сообщение:", "Приватное сообщение [C.holder?.fakekey ? "администрации" : key_name(C, FALSE)].") as message|null
+	reply_modal_open = FALSE
 	if (!msg)
 		message_admins("[key_name_admin(src, FALSE)] [ADMIN_FLW(src.mob)] прекратил отвечать на admin help [key_name_admin(C, FALSE)] [ADMIN_FLW(C.mob)].",\
 		islog = FALSE, prefix = "AHELP")
+		if(AH)
+			AH.typing_admins -= usr.ckey
 		return
 	if(!C) //We lost the client during input, disconnected or relogged.
 		if(GLOB.directory[AH.initiator_ckey]) // Client has reconnected, lets try to recover
@@ -67,7 +72,15 @@
 			to_chat(src, "<span class='danger'>Ошибка: Admin-PM: Клиент не найден.</span>", confidential = TRUE)
 			to_chat(src, "<span class='danger'><b>Сообщение не отправлено:</b></span><br>[msg]", confidential = TRUE)
 			AH.AddInteraction("<b>Клиент не найден, сообщение не отправлено:</b><br>[msg]")
+			if(AH)
+				AH.typing_admins -= usr.ckey
 			return
+	if(AH && !AH.handler && holder)
+		AH.handle_issue()
+
+	if(AH)
+		AH.typing_admins -= usr.ckey
+
 	cmd_admin_pm(whom, msg)
 
 //takes input from cmd_admin_pm_context, cmd_admin_pm_panel or /client/Topic and sends them a PM.
@@ -118,9 +131,26 @@
 	else
 		//get message text, limit it's length.and clean/escape html
 		if(!msg)
+			//track typing indicator
+			var/datum/admin_help/typing_ticket
+			if(!holder && current_ticket)
+				typing_ticket = current_ticket
+				typing_ticket.initiator_typing_time = world.time
+			else if(holder && recipient?.current_ticket)
+				typing_ticket = recipient.current_ticket
+				typing_ticket.typing_admins[src.ckey] = world.time
+			if(typing_ticket)
+				reply_modal_open = TRUE
+
 			msg = input(src,"Сообщение:", "Приватное сообщение для [recipient.holder?.fakekey ? "администрации" : key_name(recipient, 0, 0)].") as message|null
+			reply_modal_open = FALSE
 			msg = trim(msg)
 			if(!msg)
+				if(typing_ticket)
+					if(!holder)
+						typing_ticket.initiator_typing_time = null
+					else
+						typing_ticket.typing_admins -= src.ckey
 				return
 
 		if(!recipient)
@@ -138,7 +168,11 @@
 					if(!check_rights(R_SERVER|R_DEBUG,0)||external)//no sending html to the poor bots
 						msg = sanitize(copytext_char(msg, 1, MAX_MESSAGE_LEN))
 						if(!msg)
+							if(!holder && current_ticket)
+								current_ticket.initiator_typing_time = null
 							return
+					if(!holder && current_ticket)
+						current_ticket.initiator_typing_time = null
 					current_ticket.MessageNoRecipient(msg)
 					return
 
@@ -188,6 +222,10 @@
 				if(current_ticket)
 					SSblackbox.LogAhelp(current_ticket.id, "Reply", msg, recipient.ckey, src.ckey)
 			else		//recipient is an admin but sender is not
+				//clear initiator
+				if(!holder && current_ticket)
+					current_ticket.initiator_typing_time = null
+
 				var/replymsg = "PM-ответ от <b>[key_name(src, recipient, 1)]</b>: <span class='linkify'>[keywordparsedmsg]</span>"
 				admin_ticket_log(src, "<font color='#f87171'>[replymsg]</font>")
 				to_chat(recipient, "<span class='danger'>[replymsg]</span>", confidential = TRUE)
@@ -204,6 +242,14 @@
 					new /datum/admin_help(msg, recipient, TRUE)
 					already_logged = TRUE //BLUEMOON EDIT, enable ticket logging
 					SSblackbox.LogAhelp(recipient.current_ticket.id, "Ticket Opened", msg, recipient.ckey, src.ckey)
+
+				//auto-assign ticket
+				if(recipient.current_ticket && !recipient.current_ticket.handler)
+					recipient.current_ticket.handle_issue()
+
+				//clear typing
+				if(recipient.current_ticket)
+					recipient.current_ticket.typing_admins -= src.ckey
 
 				var/recipient_message = ""
 				recipient_message += "<br><center><font color='red' size='4'><b>-- Administrator private message --</b></font></center>"

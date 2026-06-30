@@ -112,6 +112,7 @@ GLOBAL_LIST_EMPTY(cached_previews)
 	data["unholy_tag"] = M?.client?.prefs?.unholypref || "No"
 	data["extreme_tag"] = M?.client?.prefs?.extremepref || "No"
 	data["very_extreme_tag"] = M?.client?.prefs?.extremeharm || "No"
+	data["tattoo_tag"] = M?.client?.prefs?.tattoopref || "No"
 
 	return data
 
@@ -241,7 +242,8 @@ GLOBAL_LIST_EMPTY(cached_previews)
 		data["unholy_tag"] = prefs.unholypref
 		data["extreme_tag"] = prefs.extremepref
 		data["very_extreme_tag"] = prefs.extremeharm
-	else for(var/i in list("vore_tag", "erp_tag", "mob_tag", "nc_tag", "unholy_tag", "extreme_tag", "very_extreme_tag"))
+		data["tattoo_tag"] = prefs.tattoopref
+	else for(var/i in list("vore_tag", "erp_tag", "mob_tag", "nc_tag", "unholy_tag", "extreme_tag", "very_extreme_tag", "tattoo_tag"))
 		data[i] = "No"
 
 	return data
