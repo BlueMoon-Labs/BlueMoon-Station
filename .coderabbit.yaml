@@ -73,8 +73,8 @@ reviews:
         === LOCALIZATION ===
         - English is expected and correct for: name, technical terms, programming references, Linux command parodies, chemical names, and game mechanic strings
         - Do NOT suggest translating these to Russian — they follow SS13 conventions
-        - Translate all other user-facing text to Russian
-				- Flag any English text in user-facing chat messages, UI labels, or other player-visible text that is not covered by the exceptions above
+        - All player-visible text should be in Russian unless covered by the exceptions above.
+        - Flag any English text in user-facing chat messages, UI labels, or other player-visible text that is not covered by the exceptions above
 
         === GARBAGE COLLECTION ===
         - Always use qdel(obj) to delete objects, NEVER use del(obj) or del obj
