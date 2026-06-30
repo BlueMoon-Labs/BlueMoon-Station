@@ -2007,7 +2007,7 @@
 	ckeywhitelist = list("monolithxxv")
 
 /datum/gear/donator/bm/ntrdrip
-	name = "Mark50k Armored Chest plates"
+	name = "Nanotrasen Representative Uniform"
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/under/donator/bm/ntrdrip
 	ckeywhitelist = list("monolithxxv", "sketchyirishman")
