@@ -1982,6 +1982,36 @@
 	path = /obj/item/clothing/head/helmet/sec/gosei
 	ckeywhitelist = list("monolithxxv")
 
+/datum/gear/donator/bm/mark40k_helmet
+	name = "Mark40k Armored Head plates"
+	slot = ITEM_SLOT_HEAD
+	path = /obj/item/clothing/head/helmet/sec/mark40k_helmet
+	ckeywhitelist = list("monolithxxv")
+
+/datum/gear/donator/bm/mark50k_helmet
+	name = "Mark40k Armored Head plates"
+	slot = ITEM_SLOT_HEAD
+	path = /obj/item/clothing/head/helmet/sec/mark50k_helmet
+	ckeywhitelist = list("monolithxxv")
+
+/datum/gear/donator/bm/mark40k_armor
+	name = "Mark40k Armored Chest plates"
+	slot = ITEM_SLOT_OCLOTHING
+	path = /obj/item/clothing/head/helmet/sec/mark40k_armor
+	ckeywhitelist = list("monolithxxv")
+
+/datum/gear/donator/bm/mark50k_armor
+	name = "Mark50k Armored Chest plates"
+	slot = ITEM_SLOT_OCLOTHING
+	path = /obj/item/clothing/head/helmet/sec/mark50k_armor
+	ckeywhitelist = list("monolithxxv")
+
+/datum/gear/donator/bm/ntrdrip
+	name = "Mark50k Armored Chest plates"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/head/helmet/sec/ntrdrip
+	ckeywhitelist = list("monolithxxv")
+
 /datum/gear/donator/bm/chetky_cap
 	name = "Chetky Cap"
 	slot = ITEM_SLOT_HEAD
