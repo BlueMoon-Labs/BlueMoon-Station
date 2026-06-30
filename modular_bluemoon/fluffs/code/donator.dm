@@ -2010,7 +2010,7 @@
 	name = "Mark50k Armored Chest plates"
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/head/helmet/sec/ntrdrip
-	ckeywhitelist = list("monolithxxv")
+	ckeywhitelist = list("monolithxxv", "sketchyirishman")
 
 /datum/gear/donator/bm/chetky_cap
 	name = "Chetky Cap"
