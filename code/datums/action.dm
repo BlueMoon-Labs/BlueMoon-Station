@@ -1058,10 +1058,6 @@
 	var/small_icon
 	var/small_icon_state
 
-/datum/action/small_sprite/queen
-	small_icon = 'icons/Xeno/castes/queen.dmi'
-	small_icon_state = "Queen Walking"
-
 /datum/action/small_sprite/drake
 	small_icon = 'icons/mob/lavaland/lavaland_monsters.dmi'
 	small_icon_state = "ash_whelp"
@@ -1077,6 +1073,8 @@
 
 /datum/action/small_sprite/Trigger()
 	..()
+	if(!owner)
+		return
 	if(!small)
 		var/image/I = image(icon = small_icon, icon_state = small_icon_state, loc = owner)
 		I.override = TRUE

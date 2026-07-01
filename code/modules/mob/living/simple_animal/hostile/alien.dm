@@ -192,10 +192,10 @@
 	obj_damage = 0
 	environment_smash = ENVIRONMENT_SMASH_NONE
 	gold_core_spawnable = HOSTILE_SPAWN
-	icon = 'icons/Xeno/castes/hunter.dmi'
-	icon_state = "Hunter Walking"
-	icon_living = "Hunter Walking"
-	icon_dead = "Hunter Dead"
+	icon = 'modular_bluemoon/icons/mob/alien_maid_splurt.dmi'
+	icon_state = "maid"
+	icon_living = "maid"
+	icon_dead = "maid_dead"
 
 /mob/living/simple_animal/hostile/alien/maid/Initialize(mapload)
 	. = ..()

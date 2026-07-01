@@ -25,6 +25,9 @@
 					CAT_TOOL,
 					CAT_FURNITURE,
 				),
+				CAT_ATMOSPHERIC = list(
+					CAT_ATMOSPHERICS,
+				),
 				CAT_PRIMAL = CAT_NONE,
 				CAT_FOOD = list(
 					CAT_BREAD,
@@ -124,26 +127,35 @@
 	.["tool_behaviour"] = list()
 	.["other"] = list()
 	.["instances"] = list()
-	for(var/obj/item/I in get_environment(a))
-		if(I.flags_1 & HOLOGRAM_1)
+	for(var/atom/movable/AM in get_environment(a))
+		if(AM.flags_1 & HOLOGRAM_1)
 			continue
-		if(.["instances"][I.type])
-			.["instances"][I.type] += I
-		else
-			.["instances"][I.type] = list(I)
-		if(istype(I, /obj/item/stack))
-			var/obj/item/stack/S = I
-			.["other"][I.type] += S.amount
-		else if(I.tool_behaviour)
-			.["tool_behaviour"] += I.tool_behaviour
-			.["other"][I.type] += 1
-		else
-			if(istype(I, /obj/item/reagent_containers))
-				var/obj/item/reagent_containers/RC = I
-				if(RC.is_drainable())
-					for(var/datum/reagent/A in RC.reagents.reagent_list)
-						.["other"][A.type] += A.volume
-			.["other"][I.type] += 1
+		if(istype(AM, /obj/item))
+			var/obj/item/I = AM
+			if(.["instances"][I.type])
+				.["instances"][I.type] += I
+			else
+				.["instances"][I.type] = list(I)
+			if(istype(I, /obj/item/stack))
+				var/obj/item/stack/S = I
+				.["other"][I.type] += S.amount
+			else if(I.tool_behaviour)
+				.["tool_behaviour"] += I.tool_behaviour
+				.["other"][I.type] += 1
+			else
+				if(istype(I, /obj/item/reagent_containers))
+					var/obj/item/reagent_containers/RC = I
+					if(RC.is_drainable())
+						for(var/datum/reagent/A in RC.reagents.reagent_list)
+							.["other"][A.type] += A.volume
+				.["other"][I.type] += 1
+		else if(isobj(AM))
+			var/obj/O = AM
+			if(.["instances"][O.type])
+				.["instances"][O.type] += O
+			else
+				.["instances"][O.type] = list(O)
+			.["other"][O.type] += 1
 
 /datum/component/personal_crafting/proc/check_tools(atom/a, datum/crafting_recipe/R, list/contents)
 	if(!R.tools.len)

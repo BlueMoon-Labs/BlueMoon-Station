@@ -61,6 +61,3 @@ MMMMMMMMMMMNNNMMMMMMMMMMMMMMMyoo+so/..-/++osssyyyyyyyyyyyyyyyyssysyyysssyyysyysy
 	hub_password = "kMZy3U5jJHSiBQjr"
 	name = "Space Station 13"
 	fps = 60
-#ifdef FIND_REF_NO_CHECK_TICK
-	loop_checks = FALSE
-#endif

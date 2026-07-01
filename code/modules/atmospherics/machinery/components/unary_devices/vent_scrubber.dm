@@ -169,18 +169,21 @@
 		return FALSE
 	var/datum/gas_mixture/environment = tile.return_air()
 	var/datum/gas_mixture/air_contents = airs[1]
+	var/environment_volume = environment.return_volume()
 
 	if(air_contents.return_pressure() >= 50*ONE_ATMOSPHERE || !islist(clean_filter_types))
 		return FALSE
+	if(environment_volume <= 0)
+		return FALSE
 
 	if(scrubbing & SCRUBBING)
-		environment.scrub_into(air_contents, volume_rate/environment.return_volume(), clean_filter_types)
+		environment.scrub_into(air_contents, volume_rate/environment_volume, clean_filter_types)
 
 		tile.air_update_turf()
 
 	else //Just siphoning all air
 
-		environment.transfer_ratio_to(air_contents, volume_rate/environment.return_volume())
+		environment.transfer_ratio_to(air_contents, volume_rate/environment_volume)
 		tile.air_update_turf()
 
 	update_parents()

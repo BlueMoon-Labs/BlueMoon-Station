@@ -82,16 +82,23 @@
 
 /obj/item/projectile/bullet/c38/trac/on_hit(atom/target, blocked = FALSE)
 	. = ..()
-	var/mob/living/carbon/M = target
-	if(!istype(M))
+	if(!iscarbon(target))
 		return
-	var/obj/item/implant/tracking/c38/imp
-	for(var/obj/item/implant/tracking/c38/TI in M.implants) //checks if the target already contains a tracking implant
-		imp = TI
+
+	var/mob/living/carbon/C = target
+	if(locate(/obj/item/gps/embed_gps) in C)
 		return
-	if(!imp)
-		imp = new /obj/item/implant/tracking/c38(M)
-		imp.implant(M)
+
+	var/obj/item/gps/embed_gps/gps = new(target)
+	gps.tryEmbed(C, forced = TRUE, silent = TRUE)
+
+	// var/obj/item/implant/tracking/c38/imp
+	// for(var/obj/item/implant/tracking/c38/TI in M.implants) //checks if the target already contains a tracking implant
+	// 	imp = TI
+	// 	return
+	// if(!imp)
+	// 	imp = new /obj/item/implant/tracking/c38(M)
+	// 	imp.implant(M)
 
 /obj/item/projectile/bullet/c38/hotshot //similar to incendiary bullets, but do not leave a flaming trail
 	name = ".38 Hot Shot bullet"

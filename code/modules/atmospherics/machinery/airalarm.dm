@@ -262,6 +262,7 @@
 	return CONTEXTUAL_SCREENTIP_SET
 
 /obj/machinery/airalarm/Destroy()
+	UnregisterSignal(SSdcs, COMSIG_GLOB_NEW_GAS)
 	SSradio.remove_object(src, frequency)
 	QDEL_NULL(wires)
 	QDEL_NULL(alarm_manager)

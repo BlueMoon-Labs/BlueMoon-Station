@@ -29,7 +29,11 @@
 	var/current = air.get_moles(GAS_HOOKAH_VAPOR)
 	if(current < MINIMUM_MOLE_COUNT)
 		return NO_REACTION
-	air.adjust_moles(GAS_HOOKAH_VAPOR, -max(current * 0.1, MINIMUM_MOLE_COUNT))
+	// Never remove more than present — negative moles crash auxmos (native illegal op).
+	var/remove_amount = min(current, max(current * 0.1, MINIMUM_MOLE_COUNT))
+	if(remove_amount <= 0)
+		return NO_REACTION
+	air.adjust_moles(GAS_HOOKAH_VAPOR, -remove_amount)
 	if(air.get_moles(GAS_HOOKAH_VAPOR) < MINIMUM_MOLE_COUNT)
 		air.set_moles(GAS_HOOKAH_VAPOR, 0)
 	return NO_REACTION

@@ -247,6 +247,70 @@
 	atmosanalyzer_scan(airs, user, src)
 	return TRUE
 
+/// Disconnects from pipenets, re-runs atmosinit, and rebuilds pipeline membership. Used after assembly or rotation.
+/obj/machinery/atmospherics/components/proc/reconnect_nodes()
+	for(var/i in 1 to device_type)
+		var/obj/machinery/atmospherics/node = nodes[i]
+		if(node)
+			if(src in node.nodes)
+				node.disconnect(src)
+			nodes[i] = null
+		if(parents[i])
+			nullifyPipenet(parents[i])
+	if(!SSair.initialized)
+		return
+	atmosinit()
+	for(var/i in 1 to device_type)
+		var/obj/machinery/atmospherics/node = nodes[i]
+		if(node)
+			node.atmosinit()
+			node.addMember(src)
+	build_network()
+	update_icon()
+
+/obj/machinery/atmospherics/components/default_change_direction_wrench(mob/user, obj/item/I)
+	if(!..())
+		return FALSE
+	SetInitDirections()
+	reconnect_nodes()
+	return TRUE
+
+/obj/machinery/atmospherics/components/proc/crowbar_deconstruction_act(mob/living/user, obj/item/tool, internal_pressure = 0)
+	if(!panel_open)
+		balloon_alert(user, "open the panel first!")
+		return TRUE
+
+	var/unsafe_wrenching = FALSE
+	var/filled_pipe = FALSE
+	var/datum/gas_mixture/environment_air = loc.return_air()
+
+	for(var/i in 1 to device_type)
+		var/datum/gas_mixture/inside_air = airs[i]
+		if(inside_air?.total_moles() > 0 || internal_pressure)
+			filled_pipe = TRUE
+		if(nodes[i])
+			internal_pressure = max(internal_pressure, airs[i].return_pressure())
+
+	if(!filled_pipe)
+		return default_deconstruction_crowbar(tool)
+
+	to_chat(user, span_notice("You begin to unfasten \the [src]..."))
+
+	if(environment_air)
+		internal_pressure -= environment_air.return_pressure()
+
+	if(internal_pressure > 2 * ONE_ATMOSPHERE)
+		to_chat(user, span_warning("As you begin deconstructing \the [src] a gush of air blows in your face... maybe you should reconsider?"))
+		unsafe_wrenching = TRUE
+
+	if(!do_after(user, 2 SECONDS, src))
+		return TRUE
+	if(unsafe_wrenching)
+		unsafe_pressure_release(user, internal_pressure)
+	tool.play_tool_sound(src, 50)
+	deconstruct(TRUE)
+	return TRUE
+
 // IMPORTANT: Call parent FIRST because parent's nullifyNode() accesses parents[] and airs[]
 // Do NOT change this order to match child classes - they clean up different vars
 /obj/machinery/atmospherics/components/Destroy()

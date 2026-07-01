@@ -545,10 +545,16 @@
 	MA.pixel_x = current_canvas.framed_offset_x
 	MA.pixel_y = current_canvas.framed_offset_y
 	. += MA
-	var/mutable_appearance/frame = mutable_appearance(current_canvas.icon,"[current_canvas.icon_state]frame")
-	frame.pixel_x = current_canvas.framed_offset_x - 1
-	frame.pixel_y = current_canvas.framed_offset_y - 1
-	. += frame
+	if(istype(current_canvas, /obj/item/canvas/thirtysix_twentyfour) || istype(current_canvas, /obj/item/canvas/fortyfive_twentyseven))
+		var/mutable_appearance/frame = mutable_appearance('icons/obj/art/artstuff_64x64.dmi', "[current_canvas.icon_state]frame_simple")
+		frame.pixel_x = current_canvas.framed_offset_x - 9
+		frame.pixel_y = current_canvas.framed_offset_y - 4
+		. += frame
+	else
+		var/mutable_appearance/frame = mutable_appearance(current_canvas.icon,"[current_canvas.icon_state]frame")
+		frame.pixel_x = current_canvas.framed_offset_x - 1
+		frame.pixel_y = current_canvas.framed_offset_y - 1
+		. += frame
 
 /obj/structure/sign/painting/proc/load_persistent()
 	if(!persistence_id)

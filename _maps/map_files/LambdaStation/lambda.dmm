@@ -73846,6 +73846,10 @@
 /obj/structure/lattice/catwalk,
 /turf/open/space,
 /area/solars/starboard)
+"jPI" = (
+/obj/machinery/electrolyzer,
+/turf/open/floor/plasteel,
+/area/engineering/atmos)
 "jQh" = (
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
@@ -73864,6 +73868,10 @@
 	},
 /turf/open/floor/plasteel/grimy,
 /area/service/chapel/office)
+"jQz" = (
+/obj/machinery/atmospherics/components/binary/crystallizer,
+/turf/open/floor/plasteel,
+/area/engineering/atmos)
 "jQI" = (
 /obj/structure/cable{
 	icon_state = "2-4"
@@ -88912,6 +88920,7 @@
 /area/engineering/atmos)
 "ujf" = (
 /obj/machinery/light,
+/obj/machinery/electrolyzer,
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
 "ujn" = (
@@ -91815,6 +91824,10 @@
 /obj/machinery/microwave,
 /turf/open/floor/plating,
 /area/maintenance/central)
+"wcH" = (
+/obj/structure/closet/crate/engineering/hfr,
+/turf/open/floor/plasteel,
+/area/engineering/atmos)
 "wdC" = (
 /obj/structure/lattice/catwalk,
 /obj/structure/cable{
@@ -148636,7 +148649,7 @@ cRt
 gaT
 dXg
 eFh
-cKU
+jPI
 cdy
 cdy
 cdy
@@ -149150,7 +149163,7 @@ cRt
 fQS
 fHV
 uNc
-cKU
+wcH
 cdy
 cfg
 cfL
@@ -151209,7 +151222,7 @@ cKU
 uNc
 quL
 cKU
-cKU
+jQz
 cgH
 cOE
 cHq

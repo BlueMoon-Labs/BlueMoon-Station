@@ -32,13 +32,12 @@
 	maxHealth = 400
 	health = 400
 	icon_state = "Queen Walking"
-	var/datum/action/small_sprite/smallsprite = new/datum/action/small_sprite/queen()
+	var/datum/action/maid/maidify_action
 	var/obj/effect/proc_holder/alien/royal/queen/promote/promote
 
 /mob/living/carbon/alien/humanoid/royal/queen/Initialize(mapload)
 	if(prob(1))
 		rouny = TRUE
-		icon_state = "Queen rouny Walking"
 	//there should only be one queen
 	for(var/mob/living/carbon/alien/humanoid/royal/queen/Q in GLOB.carbon_list)
 		if(Q == src)
@@ -54,13 +53,15 @@
 	AddSpell(new /obj/effect/proc_holder/spell/aoe_turf/repulse/xeno(src))
 	promote = new(null)
 	AddAbility(promote)
-	smallsprite.Grant(src)
+	if(caste != "qmaid")
+		maidify_action = new()
+		maidify_action.Grant(src)
 	return ..()
 
 /mob/living/carbon/alien/humanoid/royal/queen/Destroy()
 	RemoveAbility(promote)
 	QDEL_NULL(promote)
-	QDEL_NULL(smallsprite)
+	QDEL_NULL(maidify_action)
 	return ..()
 
 /mob/living/carbon/alien/humanoid/royal/queen/create_internal_organs()

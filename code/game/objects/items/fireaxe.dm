@@ -86,6 +86,25 @@
 	. = ..()
 	AddComponent(/datum/component/two_handed, force_unwielded=12, force_wielded=35, icon_wielded="bonemetal_axe1")
 
+// Металл-водородный топор — мощнее пожарного, можно вешать на слот костюма Elder Atmosian (из WhiteMoon-station)
+/obj/item/fireaxe/metal_h2_axe
+	icon = 'icons/obj/weapons/fireaxe.dmi'
+	icon_state = "metalh2_axe0"
+	name = "metal hydrogen fire axe"
+	desc = "Монтировочный топор с очень острым лезвием из металлического водорода — прочнее и опаснее обычного пожарного. Удобно носить в слоте костюма Elder Atmosian, не занимая рюкзак."
+	armour_penetration = 40
+	wound_bonus = 12
+	bare_wound_bonus = 18
+	w_class = WEIGHT_CLASS_NORMAL
+	slot_flags = ITEM_SLOT_BACK | ITEM_SLOT_SUITSTORE
+
+/obj/item/fireaxe/metal_h2_axe/update_icon_state()
+	icon_state = "metalh2_axe0"
+
+/obj/item/fireaxe/metal_h2_axe/ComponentInitialize()
+	. = ..()
+	AddComponent(/datum/component/two_handed, force_unwielded=8, force_wielded=38, icon_wielded="metalh2_axe1")
+
 /obj/item/fireaxe/energized
 	desc = "Someone with a love for fire axes decided to turn this one into a high-powered energy weapon. Seems excessive."
 	armour_penetration = 50

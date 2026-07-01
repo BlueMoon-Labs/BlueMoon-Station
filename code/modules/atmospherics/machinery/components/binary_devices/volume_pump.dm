@@ -70,7 +70,11 @@
 	if((input_starting_pressure < 0.01) || (output_starting_pressure > 9000))
 		return
 
-	var/transfer_ratio = transfer_rate/air1.return_volume()
+	var/input_volume = air1.return_volume()
+	if(input_volume <= 0)
+		return
+
+	var/transfer_ratio = transfer_rate/input_volume
 
 	air1.transfer_ratio_to(air2,transfer_ratio)
 
