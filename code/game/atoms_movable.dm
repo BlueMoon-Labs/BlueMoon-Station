@@ -848,6 +848,9 @@
 	set waitfor = FALSE
 	if(!istype(loc, /turf))
 		return
+	// image(icon = src) клонирует полную внешность вместе с underlays: оверлейный свет
+	// обязан спрятать маску до снимка, иначе призрак подбора мигает дублем света.
+	SEND_SIGNAL(src, COMSIG_ITEM_BEFORE_PICKUP_ANIMATION)
 	var/image/I = image(icon = src, loc = loc, layer = layer + 0.1)
 	I.plane = GAME_PLANE
 	I.transform *= 0.75

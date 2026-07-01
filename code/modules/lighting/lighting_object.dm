@@ -40,9 +40,10 @@
 	// turf.contents, or every contents walk (camera capture, shuttle moves, teleports)
 	// sees a service atom. Canonical creation is new(null, turf).
 	if(!isnull(passed_loc))
+		// В дереве вызовов канон new(null, turf) соблюдён везде; ветка - громкая страховка от будущих вызовов
+		stack_trace("lighting_object created with a loc ([passed_loc]); canonical creation is new(null, turf)")
 		if(isturf(passed_loc) && isnull(source))
-			source = passed_loc // legacy new(turf) caller - recover, but loudly
-			stack_trace("lighting_object created with the turf as loc; pass the turf as the second argument")
+			source = passed_loc // легаси new(turf) - восстанавливаем
 		loc = null
 	..()
 	if(!isturf(source))

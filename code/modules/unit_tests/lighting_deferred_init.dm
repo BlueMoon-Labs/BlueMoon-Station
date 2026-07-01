@@ -74,9 +74,11 @@
 
 	var/flushed = !(emitter in GLOB.lighting_deferred_atoms)
 	var/has_source = !isnull(emitter.light)
-	var/lights_left = GLOB.lighting_update_lights.len
-	var/corners_left = GLOB.lighting_update_corners.len
-	var/objects_left = GLOB.lighting_update_objects.len
+	// Контракт Fix A ассертим source-local: источник игрока обработан синхронно, а не оставлен
+	// в throttled-очереди fire(). Глобальные очереди не меряем: во время CHECK_TICK-снов дрейна
+	// fire() легитимно доливает работу (фоновый инит другого z, отложенный старлайт этого z).
+	var/source_still_queued = has_source && (emitter.light in GLOB.lighting_update_lights)
+	var/source_still_dirty = has_source && emitter.light.needs_update != LIGHTING_NO_UPDATE
 
 	GLOB.lighting_update_lights = saved_lights
 	GLOB.lighting_update_corners = saved_corners
@@ -88,10 +90,9 @@
 	TEST_ASSERT(precond_no_source, "precondition: deferred emitter must have no live source yet")
 	TEST_ASSERT(flushed, "on-demand init must flush the deferred atom")
 	TEST_ASSERT(has_source, "on-demand init must create the deferred light source")
-	// Контракт Fix A: занятую z дренить синхронно, не оставляя бэклог в throttled-очереди.
-	TEST_ASSERT_EQUAL(lights_left, 0, "on-demand init for an occupied z must drain its light source backlog (left [lights_left] queued)")
-	TEST_ASSERT_EQUAL(corners_left, 0, "on-demand init must drain queued corners (left [corners_left])")
-	TEST_ASSERT_EQUAL(objects_left, 0, "on-demand init must drain queued objects (left [objects_left])")
+	// Контракт Fix A: источник занятой z дренится синхронно, а не оставляется throttled-очереди.
+	TEST_ASSERT(!source_still_queued, "on-demand init must drain the flushed source synchronously, not leave it in the throttled fire() queue")
+	TEST_ASSERT(!source_still_dirty, "the flushed source must come out of the drain fully processed (needs_update == LIGHTING_NO_UPDATE)")
 
 /// Fix B: повторный on-demand init самовосстанавливает застрявшую z - флашит осевшие отложенные
 /// источники, даже если уровень уже помечен lighting_initialized (прерванный init = вечная чернота).
@@ -326,3 +327,90 @@
 
 	TEST_ASSERT(trojan_removed, "the processed source must be cut from the queue")
 	TEST_ASSERT(!sibling_stranded, "a source enqueued during the drain must never end stranded (absent from every queue yet still dirty); prefix-cut keeps it for fire() instead of blanket-discarding it")
+
+// ----------------------------------------------------------------------------------------------------
+// Гонки on-demand инита: два параллельных create_lighting_for_zlevel (или инит против фонового краула)
+// не должны терять атомы, запаркованные во время CHECK_TICK-сна. Инвариант: глобальный список
+// НИКОГДА не переприсваивается устаревшим снапшотом - флаш убирает только обработанные атомы.
+// ----------------------------------------------------------------------------------------------------
+
+/// Флаш отложенных атомов не подменяет объект GLOB.lighting_deferred_atoms: атомы, добавленные
+/// в живой список во время сна инита, обязаны пережить завершение прогона.
+/datum/unit_test/light_ondemand_flush_keeps_deferred_list_object/Run()
+	TEST_ASSERT(SSlighting.initialized, "SSlighting was not initialized")
+	var/turf/test_turf = run_loc_floor_bottom_left
+	var/test_z = test_turf.z
+	var/datum/space_level/level = SSmapping.get_level(test_z)
+
+	var/old_init = level.lighting_initialized
+	var/list/saved_deferred = GLOB.lighting_deferred_atoms.Copy()
+	var/list/saved_lights = GLOB.lighting_update_lights.Copy()
+	var/list/saved_corners = GLOB.lighting_update_corners.Copy()
+	var/list/saved_objects = GLOB.lighting_update_objects.Copy()
+
+	var/obj/effect/light_emitter/emitter = park_deferred_emitter(test_turf, level)
+	var/precond_parked = (emitter in GLOB.lighting_deferred_atoms)
+	GLOB.lighting_update_lights.Cut()
+	GLOB.lighting_update_corners.Cut()
+	GLOB.lighting_update_objects.Cut()
+	var/list/live_list_before = GLOB.lighting_deferred_atoms
+
+	create_lighting_for_zlevel(test_z)
+
+	var/same_list_object = (GLOB.lighting_deferred_atoms == live_list_before)
+	var/flushed = !(emitter in GLOB.lighting_deferred_atoms)
+
+	GLOB.lighting_update_lights = saved_lights
+	GLOB.lighting_update_corners = saved_corners
+	GLOB.lighting_update_objects = saved_objects
+	GLOB.lighting_deferred_atoms = saved_deferred
+	level.lighting_initialized = old_init
+
+	TEST_ASSERT(precond_parked, "precondition: emitter parked as deferred")
+	TEST_ASSERT(flushed, "on-demand init must flush the parked atom for its z")
+	TEST_ASSERT(same_list_object, "flush must mutate GLOB.lighting_deferred_atoms in place, not swap the list object (a swap loses atoms parked into the live list during CHECK_TICK sleeps of a concurrent run)")
+
+/// Рантайм внутри спасательного вызова не должен вечно отключать сейфнет: маркер занятости
+/// скана обязан протухать, а не латчиться навсегда.
+/datum/unit_test/light_safetynet_survives_crashed_scan/Run()
+	TEST_ASSERT(SSlighting.initialized, "SSlighting was not initialized")
+	var/turf/test_turf = run_loc_floor_bottom_left
+	var/test_z = test_turf.z
+	var/datum/space_level/level = SSmapping.get_level(test_z)
+
+	var/old_init = level.lighting_initialized
+	var/list/saved_deferred = GLOB.lighting_deferred_atoms.Copy()
+	var/list/saved_lights = GLOB.lighting_update_lights.Copy()
+	var/list/saved_corners = GLOB.lighting_update_corners.Copy()
+	var/list/saved_objects = GLOB.lighting_update_objects.Copy()
+	TEST_ASSERT(test_z <= length(SSmobs.dead_players_by_zlevel), "test premise: dead_players_by_zlevel must have a slot for the reservation z")
+	var/list/saved_deadslot = SSmobs.dead_players_by_zlevel[test_z]
+
+	var/obj/effect/light_emitter/emitter = park_deferred_emitter(test_turf, level)
+	var/precond_parked = (emitter in GLOB.lighting_deferred_atoms)
+	GLOB.lighting_deferred_atoms = list(emitter)
+	level.lighting_initialized = TRUE
+	SSmobs.dead_players_by_zlevel[test_z] = list(src)
+	GLOB.lighting_update_lights.Cut()
+	GLOB.lighting_update_corners.Cut()
+	GLOB.lighting_update_objects.Cut()
+
+	// Имитация скана, упавшего с рантаймом: лиза взята и не сброшена, но уже протухла
+	SSlighting.stuck_scan_busy_until = world.time
+
+	SSlighting.scan_stuck_deferred_zlevels()
+
+	var/flushed = !(emitter in GLOB.lighting_deferred_atoms)
+	var/has_source = !isnull(emitter.light)
+
+	SSlighting.stuck_scan_busy_until = 0
+	GLOB.lighting_update_lights = saved_lights
+	GLOB.lighting_update_corners = saved_corners
+	GLOB.lighting_update_objects = saved_objects
+	GLOB.lighting_deferred_atoms = saved_deferred
+	SSmobs.dead_players_by_zlevel[test_z] = saved_deadslot
+	level.lighting_initialized = old_init
+
+	TEST_ASSERT(precond_parked, "precondition: emitter parked as deferred")
+	TEST_ASSERT(flushed, "a stale busy marker left by a crashed scan must not block future rescues (lease must expire, not latch)")
+	TEST_ASSERT(has_source, "the rescued deferred source must be created despite the stale busy marker")

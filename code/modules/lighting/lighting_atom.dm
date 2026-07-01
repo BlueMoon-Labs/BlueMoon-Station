@@ -29,15 +29,23 @@
 	if(light_system != COMPLEX_LIGHT)
 		// Легаси-вызов на атоме с оверлейным светом: шумим в CI, но не роняем раунд -
 		// маршрутизируем базовые параметры в гранулярные сеттеры (конусы/высота оверлею неприменимы).
+		// Легаси-контракт тумблера сохраняем: set_light(0) = погасить, set_light(N) без l_on = зажечь.
+		// Иначе range-ноль давал односторонний тумблер: компонент гас, light_on оставался TRUE,
+		// и set_light_on(TRUE) no-op'ал по гарду "значение не изменилось".
 		stack_trace("set_light() on overlay-light atom [type]; use set_light_range/power/color/on")
 		if(!isnull(l_range))
-			set_light_range(l_range)
+			if(l_range <= 0)
+				set_light_on(FALSE)
+			else
+				set_light_range(l_range)
 		if(!isnull(l_power))
 			set_light_power(l_power)
 		if(l_color != NONSENSICAL_VALUE)
 			set_light_color(l_color)
 		if(!isnull(l_on))
 			set_light_on(l_on)
+		else if(!isnull(l_range) && l_range > 0)
+			set_light_on(TRUE)
 		return
 	if(l_range > 0 && l_range < MINIMUM_USEFUL_LIGHT_RANGE)
 		l_range = MINIMUM_USEFUL_LIGHT_RANGE	//Brings the range up to 1.4, which is just barely brighter than the soft lighting that surrounds players.
@@ -97,6 +105,7 @@
 					var/datum/space_level/level = SSmapping.z_list.len >= T.z ? SSmapping.z_list[T.z] : null
 					if(level && !level.lighting_initialized && (level.traits[ZTRAIT_MINING] || level.traits[ZTRAIT_RESERVED]))
 						GLOB.lighting_deferred_atoms |= src
+						GLOB.lighting_deferred_z_cache = null // множество отложенных z изменилось
 						return
 			light = new/datum/light_source(src, .)
 

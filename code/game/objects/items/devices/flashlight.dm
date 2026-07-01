@@ -42,17 +42,19 @@
 	else
 		icon_state = initial(icon_state)
 	if(light_system == COMPLEX_LIGHT)
-		// Несконвертированные сабтайпы (eyelight, spotlight, flashdark): корнер-система с конусами
+		// Несконвертированные сабтайпы (eyelight, spotlight, flashdark): корнер-система с конусами.
+		// l_on обязателен: update_light() культит источник при light_on=FALSE, а база фонарика
+		// стартует с выключенным тумблером - без явного включения эти типы не светят вообще.
 		if(on)
 			var/use_cone = 0
 			if(ismob(loc) && cone_angle > 0)
 				use_cone = cone_angle
 			if(flashlight_power)
-				set_light(l_range = brightness_on, l_power = flashlight_power, l_cone_angle = use_cone)
+				set_light(l_range = brightness_on, l_power = flashlight_power, l_cone_angle = use_cone, l_on = TRUE)
 			else
-				set_light(brightness_on, l_cone_angle = use_cone)
+				set_light(brightness_on, l_cone_angle = use_cone, l_on = TRUE)
 		else
-			set_light(0, l_cone_angle = 0)
+			set_light(0, l_cone_angle = 0, l_on = FALSE)
 		return
 	// Оверлейный путь: синкаем легаси-вары яркости в гранулярные сеттеры
 	if(brightness_on != light_range)

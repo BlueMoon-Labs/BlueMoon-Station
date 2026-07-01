@@ -252,7 +252,13 @@
 			visible_message("<span class='danger'>[light] on [O] flickers out and disintegrates!</span>")
 	else
 		visible_message("<span class='danger'>[O] flickers out!</span>") // BLUEMOON CHANGE - [O] is disintegrated by [src]!
-		O.set_light_on(FALSE) // BLUEMOON CHANGE - O.burn(); set_light_on гасит и корнер-, и оверлейный свет
+		// Оверлейные предметы гасим тумблером (их код мигрирован на set_light_on и умеет включать
+		// обратно), а COMPLEX - обнулением дальности: их потребители (свечи и т.п.) перезажигаются
+		// голым set_light(range) без l_on, и выключенный тумблер окирпичил бы предмет навсегда.
+		if(IS_OVERLAY_LIGHT_SYSTEM(O.light_system))
+			O.set_light_on(FALSE)
+		else
+			O.set_light(0)
 	playsound(src, 'sound/items/welder.ogg', 50, 1)
 
 #undef HEART_SPECIAL_SHADOWIFY

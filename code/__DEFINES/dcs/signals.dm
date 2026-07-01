@@ -367,14 +367,8 @@
 #define COMSIG_ATOM_SET_LIGHT_HEIGHT "atom_set_light_height"
 ///Called right after the atom changes the value of light_height to a different one, from base of [/atom/proc/set_light_height]: (old_height)
 #define COMSIG_ATOM_UPDATE_LIGHT_HEIGHT "atom_update_light_height"
-///from /datum/component/overlay_lighting/proc/show_to_holder(): (mutable_appearance/mask_clone, mutable_appearance/cone_clone, atom/movable/holder)
-#define COMSIG_ATOM_OVERLAY_LIGHT_APPLIED "atom_overlay_light_applied"
-///from /datum/component/overlay_lighting/proc/hide_from_holder(): (atom/movable/holder)
-#define COMSIG_ATOM_OVERLAY_LIGHT_REMOVED "atom_overlay_light_removed"
-///on the holder, from /datum/component/overlay_lighting/proc/show_to_holder(): (mutable_appearance/mask_clone, mutable_appearance/cone_clone, atom/parent)
-#define COMSIG_ATOM_HOLDER_OVERLAY_LIGHT_APPLIED "atom_holder_overlay_light_applied"
-///on the holder, from /datum/component/overlay_lighting/proc/hide_from_holder(): (atom/parent)
-#define COMSIG_ATOM_HOLDER_OVERLAY_LIGHT_REMOVED "atom_holder_overlay_light_removed"
+///from /obj/item/proc/do_pickup_animation(): () - оверлейный свет прячет маску, чтобы летящий призрак подбора не нёс её дубль
+#define COMSIG_ITEM_BEFORE_PICKUP_ANIMATION "item_before_pickup_animation"
 
 // /client signals
 #define COMSIG_MOB_CLIENT_LOGOUT "mob_client_logout"				//sent when a mob/logout() starts: (client)

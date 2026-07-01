@@ -237,7 +237,7 @@
 	AddComponent(/datum/component/butchering, 30, 130, 20) // it's good for butchering stuff
 
 /obj/item/kitchen/knife/combat/survival/knuckledagger/ui_action_click(mob/user, actiontype)
-	light_on = !light_on
+	set_light_on(!light_on) // сеттер вместо сырой записи: сигналы + независимость от порядка с update_brightness
 	playsound(user, 'sound/weapons/empty.ogg', 100, TRUE)
 	update_brightness(user)
 	update_icon()

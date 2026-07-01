@@ -10,6 +10,7 @@ GLOBAL_LIST_EMPTY(lighting_deferred_starlight) // Turfs that need starlight reca
 GLOBAL_LIST_EMPTY(lighting_starlight_queue) // Space turfs queued for deferred update_starlight() — filled by shuttle docking, drained by SSlighting Phase -1.
 GLOBAL_LIST_EMPTY(lighting_deferred_shadow_turfs) // Turfs queued for deferred shadow + blend recalc — filled by shuttle docking, drained by SSlighting Phase -0.5.
 GLOBAL_LIST_EMPTY(lighting_deferred_atoms) // Atoms whose light_source creation was deferred because their z-level was skipped during init.
+GLOBAL_VAR(lighting_deferred_z_cache) // Кэш списка z с запаркованными атомами для сейфнет-скана; null = грязный (пересчитать). Инвалидируется при парковке/флаше/удалении.
 GLOBAL_VAR_INIT(starlight_color_dirty, FALSE) // Set by SSnightshift when solar starlight color/power changes. Drained incrementally by SSlighting.
 GLOBAL_LIST_EMPTY(nightshift_apc_queue) // APCs queued for batched indoor nightshift propagation.
 GLOBAL_LIST_EMPTY(nightshift_light_queue) // Lamps queued for batched indoor nightshift refresh.
@@ -131,9 +132,11 @@ SUBSYSTEM_DEF(lighting)
 	var/list/bg_turfs
 	/// Progress index through bg_turfs
 	var/bg_turf_index = 0
-	/// Re-entrancy guard for scan_stuck_deferred_zlevels(): create_lighting_for_zlevel CHECK_TICKs can
-	/// yield and let the MC re-enter fire() before times_fired advances, which would re-run the scan.
-	var/scanning_stuck = FALSE
+	/// Лиза занятости scan_stuck_deferred_zlevels() (world.time истечения): create_lighting_for_zlevel
+	/// CHECK_TICK'ает и может отдать тик MC до продвижения times_fired, что перезапустило бы скан.
+	/// Именно лиза, а не булевый флаг: рантайм внутри спасательного вызова не должен латчить
+	/// сейфнет выключенным навечно - протухшая лиза истекает через LIGHTING_STUCK_SCAN_LEASE.
+	var/stuck_scan_busy_until = 0
 
 /datum/controller/subsystem/lighting/stat_entry(msg)
 	var/total_cost = cost_sources + cost_corners + cost_objects
@@ -548,20 +551,27 @@ SUBSYSTEM_DEF(lighting)
 /// ghost) and re-runs create_lighting_for_zlevel, letting its self-heal guard flush them. Unoccupied
 /// deferred z-levels are intentionally left alone (preserving the deferral optimization).
 /datum/controller/subsystem/lighting/proc/scan_stuck_deferred_zlevels()
-	if(scanning_stuck)
+	// Лиза вместо булевого латча: рантайм внутри спасательного вызова оставлял бы флаг занятости
+	// взведённым навечно, молча отключая сейфнет до конца раунда. Протухшая лиза истекает сама.
+	if(world.time < stuck_scan_busy_until)
 		return
 	if(!length(GLOB.lighting_deferred_atoms) || !SSmapping?.initialized)
 		return
-	scanning_stuck = TRUE
-	// One pass over the parked atoms to collect the distinct z-levels that still have deferred lighting.
+	stuck_scan_busy_until = world.time + LIGHTING_STUCK_SCAN_LEASE
+	// Кэш множества z с запаркованными атомами: полный проход по списку (get_turf на атом) платится
+	// только после фактической парковки/флаша/удаления. В steady state (непосещённый эвей-z держит
+	// список непустым весь раунд) скан стоит O(числа отложенных z), а не O(числа атомов).
 	// |= dedups numeric z values as list ELEMENTS (a numeric assoc key would index out of bounds in DM).
-	var/list/parked_z = list()
-	for(var/atom/deferred_atom as anything in GLOB.lighting_deferred_atoms)
-		if(QDELETED(deferred_atom))
-			continue
-		var/turf/atom_turf = get_turf(deferred_atom)
-		if(atom_turf)
-			parked_z |= atom_turf.z
+	var/list/parked_z = GLOB.lighting_deferred_z_cache
+	if(isnull(parked_z))
+		parked_z = list()
+		for(var/atom/deferred_atom as anything in GLOB.lighting_deferred_atoms)
+			if(QDELETED(deferred_atom))
+				continue
+			var/turf/atom_turf = get_turf(deferred_atom)
+			if(atom_turf)
+				parked_z |= atom_turf.z
+		GLOB.lighting_deferred_z_cache = parked_z
 	// Recover only z-levels with a present occupant (living client or ghost; dead players are the
 	// dominant stuck case since they reach away/reserved z first). A parked-but-empty reserved z stays
 	// deferred on purpose; force-initing it would defeat the deferral optimization.
@@ -571,8 +581,10 @@ SUBSYSTEM_DEF(lighting)
 		var/has_occupant = (z <= length(SSmobs.clients_by_zlevel) && length(SSmobs.clients_by_zlevel[z])) || (z <= length(SSmobs.dead_players_by_zlevel) && length(SSmobs.dead_players_by_zlevel[z]))
 		if(!has_occupant)
 			continue
+		// Спасение флашит атомы этого z и само инвалидирует кэш (Phase 1); гард self-heal внутри
+		// create_lighting_for_zlevel отсеивает ложное срабатывание протухшего кэша авторитетным проходом.
 		create_lighting_for_zlevel(z)
-	scanning_stuck = FALSE
+	stuck_scan_busy_until = 0
 
 /datum/controller/subsystem/lighting/proc/process_bg_zlevel_init()
 	// Pick a z-level to work on
@@ -620,7 +632,9 @@ SUBSYSTEM_DEF(lighting)
 		if(MC_TICK_CHECK)
 			return
 
-	// Phase 1: Create deferred light sources — objects exist now, corners are active
+	// Phase 1: Create deferred light sources — objects exist now, corners are active.
+	// Сплайс-переприсваивание здесь безопасно: внутри fire() нет yield'ов (MC_TICK_CHECK возвращается,
+	// а не спит), так что параллельная парковка между чтением и записью списка невозможна.
 	if(bg_phase == 1)
 		var/list/remaining = list()
 		for(var/atom/A as anything in GLOB.lighting_deferred_atoms)
@@ -633,8 +647,10 @@ SUBSYSTEM_DEF(lighting)
 				remaining += A
 			if(MC_TICK_CHECK)
 				GLOB.lighting_deferred_atoms = remaining + GLOB.lighting_deferred_atoms.Copy(GLOB.lighting_deferred_atoms.Find(A) + 1)
+				GLOB.lighting_deferred_z_cache = null
 				return
 		GLOB.lighting_deferred_atoms = remaining
+		GLOB.lighting_deferred_z_cache = null
 		bg_phase = 2
 		if(MC_TICK_CHECK)
 			return

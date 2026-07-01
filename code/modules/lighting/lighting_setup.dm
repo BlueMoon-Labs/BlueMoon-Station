@@ -1,45 +1,39 @@
-/// Drains the three lighting work queues (sources -> corners -> objects) synchronously, in order,
-/// using fire()'s prefix-cut idiom: snapshot the length at loop entry, process [1..i], then Cut only
-/// the processed prefix. A source dirtied via EFFECT_UPDATE during a CHECK_TICK yield lands past the
-/// snapshot and SURVIVES in the queue for SSlighting.fire(), instead of being blanket-discarded by an
-/// unconditional .Cut() (which would strand it dark: its needs_update stays non-NO_UPDATE, so the
-/// re-append guard then refuses to re-enqueue it). Each loop fully drains before the next snapshots,
-/// so the cascade lights->corners->objects is covered.
+/// Drains the three lighting work queues (sources -> corners -> objects) synchronously, in order.
+/// Each queue is claimed atomically (Copy + Cut with no yield between) and processed from the private
+/// snapshot. This is interleave-safe: the drain sleeps in CHECK_TICK on an async stack, and a
+/// concurrent SSlighting.fire() (or second drain) only ever sees entries it owns - unlike an
+/// index/prefix-cut over the SHARED list, where a fire() Cut during the yield shifts elements under
+/// the saved cursor and the closing Cut discards sources nobody processed (needs_update stays
+/// non-NO_UPDATE, so the EFFECT_UPDATE re-append guard then refuses to re-enqueue them - permanently
+/// stale lights). A source dirtied DURING the drain either sits later in the snapshot (we process it)
+/// or re-enters the live queue for fire() (its needs_update was already reset). Each queue fully
+/// drains before the next is claimed, so the cascade lights->corners->objects is covered.
 /proc/drain_lighting_queues_snapshot()
-	var/i = 0
-	for(i in 1 to GLOB.lighting_update_lights.len)
-		if(i > GLOB.lighting_update_lights.len) // queue may shrink if a CHECK_TICK yield re-enters fire()
-			break
-		var/datum/light_source/queued_source = GLOB.lighting_update_lights[i]
-		if(!QDELETED(queued_source))
-			queued_source.update_corners()
-			queued_source.needs_update = LIGHTING_NO_UPDATE
-		CHECK_TICK
-	if(i)
-		GLOB.lighting_update_lights.Cut(1, min(i + 1, length(GLOB.lighting_update_lights) + 1))
+	if(GLOB.lighting_update_lights.len)
+		var/list/pending_sources = GLOB.lighting_update_lights.Copy()
+		GLOB.lighting_update_lights.Cut()
+		for(var/datum/light_source/queued_source as anything in pending_sources)
+			if(!QDELETED(queued_source))
+				queued_source.update_corners()
+				queued_source.needs_update = LIGHTING_NO_UPDATE
+			CHECK_TICK
 
-	i = 0
-	for(i in 1 to GLOB.lighting_update_corners.len)
-		if(i > GLOB.lighting_update_corners.len)
-			break
-		var/datum/lighting_corner/queued_corner = GLOB.lighting_update_corners[i]
-		queued_corner.update_objects()
-		queued_corner.needs_update = FALSE
-		CHECK_TICK
-	if(i)
-		GLOB.lighting_update_corners.Cut(1, min(i + 1, length(GLOB.lighting_update_corners) + 1))
+	if(GLOB.lighting_update_corners.len)
+		var/list/pending_corners = GLOB.lighting_update_corners.Copy()
+		GLOB.lighting_update_corners.Cut()
+		for(var/datum/lighting_corner/queued_corner as anything in pending_corners)
+			queued_corner.update_objects()
+			queued_corner.needs_update = FALSE
+			CHECK_TICK
 
-	i = 0
-	for(i in 1 to GLOB.lighting_update_objects.len)
-		if(i > GLOB.lighting_update_objects.len)
-			break
-		var/atom/movable/lighting_object/queued_object = GLOB.lighting_update_objects[i]
-		if(!QDELETED(queued_object))
-			queued_object.update(use_animate = FALSE)
-			queued_object.needs_update = FALSE
-		CHECK_TICK
-	if(i)
-		GLOB.lighting_update_objects.Cut(1, min(i + 1, length(GLOB.lighting_update_objects) + 1))
+	if(GLOB.lighting_update_objects.len)
+		var/list/pending_objects = GLOB.lighting_update_objects.Copy()
+		GLOB.lighting_update_objects.Cut()
+		for(var/atom/movable/lighting_object/queued_object as anything in pending_objects)
+			if(!QDELETED(queued_object))
+				queued_object.update(use_animate = FALSE)
+				queued_object.needs_update = FALSE
+			CHECK_TICK
 
 /proc/create_all_lighting_objects()
 	SSlighting.init_in_progress = TRUE
@@ -153,28 +147,29 @@
 	SSlighting.init_in_progress = FALSE
 
 	// Phase 1: Create deferred light sources — objects exist now, corners are active
-	// Sources get queued to GLOB.lighting_update_lights; fire() processes them with active corners
-	var/list/remaining_atoms = list()
-	for(var/atom/A as anything in GLOB.lighting_deferred_atoms)
+	// Sources get queued to GLOB.lighting_update_lights; fire() processes them with active corners.
+	// Живой список мутируем ТОЛЬКО in place (удаление до ближайшего CHECK_TICK): переприсваивание
+	// глобала устаревшим снапшотом теряло атомы, запаркованные во время сна параллельным прогоном
+	// (второй игрок на другом отложенном z, фоновый краул) - такой атом навсегда выпадал из
+	// отложки и был невидим для сейфнет-скана.
+	for(var/atom/A as anything in GLOB.lighting_deferred_atoms.Copy())
 		if(QDELETED(A))
+			GLOB.lighting_deferred_atoms -= A
 			continue
 		var/turf/T = get_turf(A)
 		if(T?.z == z_level)
+			GLOB.lighting_deferred_atoms -= A
 			A.update_light()
-		else
-			remaining_atoms += A
 		CHECK_TICK
-	GLOB.lighting_deferred_atoms = remaining_atoms
+	GLOB.lighting_deferred_z_cache = null
 
-	// Phase 2: Queue deferred starlight for fire() Phase -1 instead of processing synchronously
-	var/list/remaining_starlight = list()
-	for(var/turf/open/space/S in GLOB.lighting_deferred_starlight)
+	// Phase 2: Queue deferred starlight for fire() Phase -1 instead of processing synchronously.
+	// Тот же инвариант: только in-place удаление, никаких переприсваиваний глобала.
+	for(var/turf/open/space/S in GLOB.lighting_deferred_starlight.Copy())
 		if(S.z == z_level)
 			GLOB.lighting_starlight_queue |= S
-		else
-			remaining_starlight[S] = TRUE
+			GLOB.lighting_deferred_starlight -= S
 		CHECK_TICK
-	GLOB.lighting_deferred_starlight = remaining_starlight
 
 	// Drain the work this on-demand init just queued so the z a player is standing on lights up
 	// immediately, instead of leaving the backlog under fire()'s dilation-adaptive source cap (which

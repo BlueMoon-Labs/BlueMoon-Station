@@ -235,8 +235,8 @@
 /datum/action/innate/minedrone/toggle_light/Activate()
 	var/mob/living/simple_animal/hostile/mining_drone/user = owner
 
-	// Флаг переворачивается ДО set_light: update_light() гасит источник при light_on=FALSE
-	user.light_on = !user.light_on
+	// set_light_on вместо сырой записи: сеттер шлёт сигналы и не зависит от порядка со set_light
+	user.set_light_on(!user.light_on)
 	if(user.light_on)
 		user.set_light(6)
 	else

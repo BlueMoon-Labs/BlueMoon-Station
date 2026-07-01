@@ -11,8 +11,9 @@
  * Movable atom overlay-based lighting component.
  * Порт из tgstation (версия после rework #89868) на сигнальную обвязку BlueMoon.
  * Отличия от tg: COMSIG_PARENT_QDELETING вместо COMSIG_QDELETING; без light_render_source,
- * light eater, крафта, pickup-анимации и мультиз-оффсетов плоскостей; сторадж определяется
- * компонентом /datum/component/storage, а не типом.
+ * light eater, крафта и мультиз-оффсетов плоскостей (сигналы APPLIED/REMOVED и клоны
+ * appearance не портированы - потребителей нет); сторадж определяется компонентом
+ * /datum/component/storage, а не типом.
  *
  * * Component works by applying a visual object to the parent target.
  *
@@ -128,6 +129,8 @@
 	RegisterSignal(parent, COMSIG_ATOM_UPDATE_LIGHT_ON, PROC_REF(on_toggle))
 	RegisterSignal(parent, COMSIG_ATOM_UPDATE_LIGHT_FLAGS, PROC_REF(on_light_flags_change))
 	RegisterSignal(parent, COMSIG_MOVABLE_MOVED, PROC_REF(on_parent_moved))
+	if(isitem(parent))
+		RegisterSignal(parent, COMSIG_ITEM_BEFORE_PICKUP_ANIMATION, PROC_REF(on_pickup_anim))
 	var/atom/movable/movable_parent = parent
 	if(movable_parent.light_flags & LIGHT_ATTACHED)
 		overlay_lighting_flags |= LIGHTING_ATTACHED
@@ -149,6 +152,7 @@
 		COMSIG_ATOM_UPDATE_LIGHT_COLOR,
 		COMSIG_ATOM_UPDATE_LIGHT_ON,
 		COMSIG_ATOM_UPDATE_LIGHT_FLAGS,
+		COMSIG_ITEM_BEFORE_PICKUP_ANIMATION,
 		))
 	if(directional)
 		UnregisterSignal(parent, COMSIG_ATOM_DIR_CHANGE)
@@ -219,12 +223,6 @@
 	if(directional)
 		current_holder.underlays += cone
 	currently_displaying = TRUE
-	// These are very intentionally copies so recipients cannot
-	// Accidentially brick lighting overlays by mutating them
-	var/mutable_appearance/mask_clone = new (visible_mask)
-	var/mutable_appearance/cone_clone = directional ? new /mutable_appearance(cone) : null
-	SEND_SIGNAL(parent, COMSIG_ATOM_OVERLAY_LIGHT_APPLIED, mask_clone, cone_clone, current_holder)
-	SEND_SIGNAL(current_holder, COMSIG_ATOM_HOLDER_OVERLAY_LIGHT_APPLIED, mask_clone, cone_clone, parent)
 
 /// Removes our overlay from our holder, assuming everything's setup proper
 /// MUST be called before modifying cone or visible_mask, or you will cause stuck lighting
@@ -237,8 +235,6 @@
 	if(directional)
 		current_holder.underlays -= cone
 	currently_displaying = FALSE
-	SEND_SIGNAL(parent, COMSIG_ATOM_OVERLAY_LIGHT_REMOVED, current_holder)
-	SEND_SIGNAL(current_holder, COMSIG_ATOM_HOLDER_OVERLAY_LIGHT_REMOVED, parent)
 
 ///Called to change the value of parent_attached_to.
 /datum/component/overlay_lighting/proc/set_parent_attached_to(atom/movable/new_parent_attached_to)
@@ -312,6 +308,13 @@
 	set_holder(null)
 
 
+/// Прячет маску перед анимацией подбора: do_pickup_animation() клонирует внешность предмета
+/// вместе с underlays, и летящий призрак подбора нёс бы дубль светового квадрата/конуса.
+/// Свет вернётся на новом держателе через check_holder() после фактического перемещения.
+/datum/component/overlay_lighting/proc/on_pickup_anim(atom/source)
+	SIGNAL_HANDLER
+	hide_from_holder()
+
 ///Called when the current_holder is qdeleted, to remove the light effect.
 /datum/component/overlay_lighting/proc/on_holder_qdel(atom/movable/source, force)
 	SIGNAL_HANDLER
@@ -366,15 +369,18 @@
 	make_luminosity_update()
 
 
-///Changes the range which the light reaches. 0 means no light, 6 is the maximum value.
+///Changes the range which the light reaches. 0 means no light, OVERLAY_LIGHT_RANGE_CAP is the maximum value.
 /datum/component/overlay_lighting/proc/set_range(atom/source, old_range)
 	SIGNAL_HANDLER
 	var/new_range = source.light_range
 	if(range == new_range)
 		return
 	if(new_range == 0)
+		// Нулевая дальность = погасить; маску/дальность не трогаем, чтобы возврат
+		// range > 0 зажёг свет обратно ровно в прежнем виде.
 		turn_off()
-	range = clamp(CEILING(new_range, 0.5), 1, 6)
+		return
+	range = clamp(CEILING(new_range, 0.5), 1, OVERLAY_LIGHT_RANGE_CAP)
 	var/pixel_bounds = ((range - 1) * 64) + 32
 	lumcount_range = CEILING(range, 1)
 	hide_from_holder()
@@ -396,6 +402,10 @@
 			cast_range = clamp(round(new_range * 0.5), 1, 3)
 	if(overlay_lighting_flags & LIGHTING_ON)
 		make_luminosity_update()
+	else if(source.light_on)
+		// Симметрия нулевого пути: свет погашен range-нулём, но тумблер атома включён -
+		// возврат положительной дальности обязан зажечь обратно (иначе односторонний тумблер).
+		turn_on()
 
 
 ///Changes the intensity/brightness of the light by altering the visual object's alpha.
@@ -403,12 +413,12 @@
 	SIGNAL_HANDLER
 	var/new_power = source.light_power
 	set_lum_power(new_power >= 0 ? 0.5 : -0.5)
-	set_alpha = min(230, (abs(new_power) * 120) + 30)
+	set_alpha = min(OVERLAY_LIGHT_MASK_ALPHA_CAP, (abs(new_power) * OVERLAY_LIGHT_MASK_ALPHA_MULT) + OVERLAY_LIGHT_MASK_ALPHA_BASE)
 	hide_from_holder()
 	visible_mask.alpha = set_alpha
 	visible_mask.blend_mode = new_power > 0 ? BLEND_ADD : BLEND_SUBTRACT
 	if(directional)
-		cone.alpha = min(120, (abs(new_power) * 60) + 15)
+		cone.alpha = min(OVERLAY_LIGHT_CONE_ALPHA_CAP, (abs(new_power) * OVERLAY_LIGHT_CONE_ALPHA_MULT) + OVERLAY_LIGHT_CONE_ALPHA_BASE)
 		cone.blend_mode = new_power > 0 ? BLEND_ADD : BLEND_SUBTRACT
 	show_to_holder()
 
@@ -499,8 +509,6 @@
 			break
 		scanning = next_turf
 
-	hide_from_holder()
-
 	var/translate_x = -((range - 1) * 32)
 	var/translate_y = translate_x
 	var/scale_x = 1
@@ -523,15 +531,20 @@
 			if(beam && range > 1)
 				scale_y = 1 / (range - (range/5))
 
-	if((directional_offset_x != translate_x) || (directional_offset_y != translate_y))
-		directional_offset_x = translate_x
-		directional_offset_y = translate_y
-		var/matrix/transform = matrix()
-		if(beam && range > 1)
-			transform.Scale(scale_x, scale_y)
-		transform.Translate(translate_x, translate_y)
-		visible_mask.transform = transform
-
+	if((directional_offset_x == translate_x) && (directional_offset_y == translate_y))
+		// Трансформ не изменился (шаг по прямой в коридоре) - underlays держателя не трогаем.
+		// hide/show здесь = снятие и пересборка appearance на каждом тайле движения впустую
+		// (у tg этот путь безусловный - локальное улучшение).
+		return
+	directional_offset_x = translate_x
+	directional_offset_y = translate_y
+	// hide до мутации visible_mask, show после - underlays хранят копию appearance
+	hide_from_holder()
+	var/matrix/transform = matrix()
+	if(beam && range > 1)
+		transform.Scale(scale_x, scale_y)
+	transform.Translate(translate_x, translate_y)
+	visible_mask.transform = transform
 	show_to_holder()
 
 ///Called when current_holder changes dir.

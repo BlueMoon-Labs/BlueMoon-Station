@@ -78,7 +78,13 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	if(!GLOB.use_preloader && path == type && !(flags & CHANGETURF_FORCEOP) && (baseturfs == new_baseturfs)) // Don't no-op if the map loader requires it to be reconstructed, or if this is a new set of baseturfs
 		return src
 	if(flags & CHANGETURF_SKIP)
-		return new path(src)
+		// dynamic_lumcount переносим и здесь: оверлейные источники держат ссылку на турф в
+		// affected_turfs, и обнулённый счётчик позже уходит в постоянный минус при
+		// clean_old_turfs() (свет ушёл - вычли из нуля).
+		var/skip_dynamic_lumcount = dynamic_lumcount
+		var/turf/skipped_turf = new path(src)
+		skipped_turf.dynamic_lumcount = skip_dynamic_lumcount
+		return skipped_turf
 
 	var/old_opacity = opacity
 	var/old_dynamic_lighting = dynamic_lighting
@@ -125,6 +131,10 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 
 	W.blueprint_data = old_bp
 
+	// dynamic_lumcount переносится безусловно (не только при SSlighting.initialized):
+	// оверлейный свет живёт поверх корнер-системы и может гореть до её инициализации.
+	dynamic_lumcount = old_dynamic_lumcount
+
 	if(SSlighting.initialized)
 		// Restore all lighting state FIRST — reconsider_lights/recalc_atom_opacity need these
 		lighting_object = old_lighting_object
@@ -134,7 +144,6 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 		lc_topleft = old_lc_topleft
 		lc_bottomright = old_lc_bottomright
 		lc_bottomleft = old_lc_bottomleft
-		dynamic_lumcount = old_dynamic_lumcount
 
 		// Restore cached opacity state — contents are unchanged, only turf type changed
 		has_opaque_atom = old_has_opaque

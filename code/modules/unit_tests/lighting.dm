@@ -666,3 +666,114 @@
 	lamp.adjust_lamppost_light()
 	TEST_ASSERT(light_source.light_on, "lamp light must switch on again after a full off/on cycle")
 	TEST_ASSERT(comp.currently_displaying, "re-lit lamp light must project its mask again")
+
+// ----------------------------------------------------------------------------------------------------
+// Регрессии одностороннего light_on: гейт !light_on в update_light() требует, чтобы каждый
+// COMPLEX-потребитель хоть раз включил тумблер, а оверлейный компонент умел зажигаться обратно
+// после range 0. Ассерты source-local (light источника, light_on, currently_displaying).
+// ----------------------------------------------------------------------------------------------------
+
+/// COMPLEX-подтипы фонарика (eyelight, flashdark, spotlight) обязаны уметь светить: их управляющий
+/// код (органы глаз, джукбокс) не трогает light_on напрямую и полагается на update_brightness()/update_light().
+/datum/unit_test/complex_flashlight_subtypes_emit/Run()
+	// Глаза-фонарики: орган делает eye.on = TRUE и зовёт update_brightness()
+	var/obj/item/flashlight/eyelight/eye = allocate(/obj/item/flashlight/eyelight)
+	eye.on = TRUE
+	eye.update_brightness()
+	TEST_ASSERT(eye.light_on, "eyelight: update_brightness при on=TRUE должен включать light_on")
+	TEST_ASSERT_NOTNULL(eye.light, "eyelight: включённые глаза-фонарики должны создавать живой источник")
+
+	// Фонарь тьмы: негативный свет тем же путём
+	var/obj/item/flashlight/flashdark/dark = allocate(/obj/item/flashlight/flashdark)
+	dark.on = TRUE
+	dark.update_brightness()
+	TEST_ASSERT_NOTNULL(dark.light, "flashdark: включённый фонарь тьмы должен создавать живой источник")
+
+	// Спотлайт дискотеки: джукбокс пишет range/power напрямую и зовёт update_light()
+	var/obj/item/flashlight/spotlight/spot = allocate(/obj/item/flashlight/spotlight)
+	TEST_ASSERT(spot.light_on, "spotlight: тип с on=TRUE должен инициализироваться с light_on")
+	spot.light_range = 4
+	spot.light_power = 2
+	spot.update_light()
+	TEST_ASSERT_NOTNULL(spot.light, "spotlight: прямое выставление range/power джукбоксом должно зажигать источник")
+
+/// Light eater теневиков не должен окирпичивать COMPLEX-предметы: немигрированные потребители
+/// (свечи и т.п.) перезажигаются голым set_light(range) без l_on.
+/datum/unit_test/light_eater_leaves_items_relightable/Run()
+	var/obj/item/light_eater/eater = allocate(/obj/item/light_eater)
+	var/obj/item/lit_item = allocate(/obj/item)
+	lit_item.set_light(2, 1)
+	TEST_ASSERT_NOTNULL(lit_item.light, "precondition: COMPLEX-предмет с set_light(2,1) должен светить")
+
+	eater.disintegrate(lit_item)
+	TEST_ASSERT_NULL(lit_item.light, "light eater должен гасить свет предмета")
+
+	// Старый контракт перезажигания: свеча зовёт set_light(CANDLE_LUMINOSITY) без l_on
+	lit_item.set_light(2, 1)
+	TEST_ASSERT_NOTNULL(lit_item.light, "после light eater предмет должен снова зажигаться голым set_light() (контракт немигрированных потребителей)")
+
+/// Оверлейный свет: range 0 гасит, возврат range > 0 при light_on=TRUE обязан зажечь обратно.
+/// Раньше это был односторонний тумблер: turn_off() без синка light_on, а set_light_on(TRUE)
+/// no-op'ал по гарду "значение не изменилось" - свет кирпичился до ручного FALSE->TRUE.
+/datum/unit_test/overlay_zero_range_roundtrip/Run()
+	var/obj/effect/dummy/lighting_obj/light_source = allocate(/obj/effect/dummy/lighting_obj)
+	var/datum/component/overlay_lighting/comp = light_source.GetComponent(/datum/component/overlay_lighting)
+	TEST_ASSERT_NOTNULL(comp, "lighting_obj должен нести компонент оверлейного света")
+	TEST_ASSERT(comp.currently_displaying, "precondition: свежий lighting_obj на полу должен проецировать маску")
+
+	light_source.set_light_range(0)
+	TEST_ASSERT(!comp.currently_displaying, "range 0 должен гасить оверлейный свет")
+	TEST_ASSERT_EQUAL(light_source.luminosity, 0, "погашенный свет не должен держать динамическую люминосити")
+	TEST_ASSERT(light_source.light_on, "тумблер light_on не должен меняться range-сеттером")
+
+	light_source.set_light_range(3)
+	TEST_ASSERT(comp.currently_displaying, "возврат range > 0 при light_on=TRUE должен снова зажигать оверлейный свет")
+	TEST_ASSERT(light_source.luminosity > 0, "заново зажжённый свет должен вернуть динамическую люминосити")
+
+/// Атомный сеттер и компонент должны резать оверлейный range до одного потолка (таблица масок
+/// кончается на 352px = range 6), иначе light_range атома врёт про реально рисуемый свет
+/// (флаер 7, lighting_obj флешбенга 9).
+/datum/unit_test/overlay_light_range_cap_consistent/Run()
+	var/obj/effect/dummy/lighting_obj/light_source = allocate(/obj/effect/dummy/lighting_obj)
+	light_source.set_light_range(OVERLAY_LIGHT_RANGE_CAP + 3)
+	TEST_ASSERT_EQUAL(light_source.light_range, OVERLAY_LIGHT_RANGE_CAP, "оверлейный light_range должен резаться до потолка таблицы масок (OVERLAY_LIGHT_RANGE_CAP)")
+
+/// Анимация подбора клонирует внешность предмета вместе с underlays: без хендлера
+/// COMSIG_ITEM_BEFORE_PICKUP_ANIMATION летящий призрак подбора несёт дубль светового квадрата.
+/datum/unit_test/pickup_animation_hides_overlay_light/Run()
+	var/mob/living/carbon/human/holder = allocate(/mob/living/carbon/human)
+	var/obj/item/flashlight/test_light = allocate(/obj/item/flashlight)
+	test_light.on = TRUE
+	test_light.update_brightness()
+	TEST_ASSERT(test_light.light_on, "precondition: включённый фонарик должен иметь light_on")
+	TEST_ASSERT(test_light.underlays.len, "precondition: лежащий на полу фонарик держит маску света в собственных underlays")
+
+	test_light.do_pickup_animation(holder)
+	TEST_ASSERT_EQUAL(test_light.underlays.len, 0, "перед анимацией подбора маска света должна сниматься с предмета (иначе призрак подбора мигает дублем света)")
+
+	// Сам подбор возвращает свет уже на новом держателе
+	var/holder_underlays_before = holder.underlays.len
+	TEST_ASSERT(holder.put_in_active_hand(test_light), "тестовый моб должен суметь подобрать фонарик")
+	TEST_ASSERT(holder.underlays.len > holder_underlays_before, "после подбора маска света должна переехать на держателя")
+	TEST_ASSERT_EQUAL(test_light.underlays.len, 0, "после подбора на предмете не должно оставаться дубля маски")
+
+/// dynamic_lumcount обязан переезжать через ChangeTurf на ВСЕХ путях: оверлейные источники держат
+/// ссылку на турф в affected_turfs, и обнулённый счётчик позже уходит в минус при clean_old_turfs().
+/datum/unit_test/changeturf_preserves_dynamic_lumcount/Run()
+	var/turf/test_turf = run_loc_floor_bottom_left
+	var/old_lumcount = test_turf.dynamic_lumcount
+
+	// Путь CHANGETURF_SKIP (резервации шаттлов)
+	test_turf.dynamic_lumcount = 0.5
+	var/turf/skip_replacement = test_turf.ChangeTurf(/turf/open/floor/plasteel/white, null, CHANGETURF_SKIP)
+	var/skip_carried = skip_replacement.dynamic_lumcount
+
+	// Обычный путь - регрессионный гард
+	skip_replacement.dynamic_lumcount = 0.25
+	var/turf/normal_replacement = skip_replacement.ChangeTurf(/turf/open/floor/plasteel)
+	var/normal_carried = normal_replacement.dynamic_lumcount
+
+	normal_replacement.dynamic_lumcount = old_lumcount
+
+	TEST_ASSERT_EQUAL(skip_carried, 0.5, "CHANGETURF_SKIP должен переносить dynamic_lumcount на новый турф")
+	TEST_ASSERT_EQUAL(normal_carried, 0.25, "обычный ChangeTurf должен переносить dynamic_lumcount")

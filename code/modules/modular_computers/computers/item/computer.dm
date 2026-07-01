@@ -478,9 +478,7 @@
 /obj/item/modular_computer/proc/toggle_flashlight()
 	if(!has_light)
 		return FALSE
-	set_light_range(comp_light_luminosity)
-	set_light_power(1)
-	set_light_color(comp_light_color)
+	set_light_range_power_color(comp_light_luminosity, 1, comp_light_color)
 	set_light_on(!light_on)
 	return TRUE
 
