@@ -1,5 +1,7 @@
 #define AUTOLATHE_EFFICIENCY_BASE 100 * 0.01	// базовая эффективность машины (В процентах, для игры 100% = 1)
 #define AUTOLATHE_EFFICIENCY_STEP 9 * 0.01		// эффективность машины за тир деталей (В процентах)
+#define AUTOLATHE_TIME_PROD_BASE 3.2 SECONDS
+#define AUTOLATHE_TIME_PROD_AMMO 0.5 SECONDS
 
 /obj/machinery/autolathe
 	name = "autolathe"
@@ -222,7 +224,12 @@
 				to_chat(usr, span_notice("You print [multiplier] item(s) from the [src]"))
 				use_power(power)
 				icon_state = "autolathe_n"
-				var/time = is_stack ? 32 : (32 * coeff * multiplier) ** 0.8
+				var/time
+				if(is_stack)
+					time = AUTOLATHE_TIME_PROD_BASE
+				else
+					var/base_time = ispath(being_built.build_path, /obj/item/ammo_casing) ? AUTOLATHE_TIME_PROD_AMMO : AUTOLATHE_TIME_PROD_BASE
+					time = (base_time * coeff * multiplier) ** 0.8
 				playsound(src, 'sound/machines/prod.ogg', 50)
 				addtimer(CALLBACK(src, PROC_REF(make_item), power, materials_used, custom_materials, multiplier, coeff, is_stack, usr), time)
 				. = TRUE
@@ -488,3 +495,5 @@
 
 #undef AUTOLATHE_EFFICIENCY_BASE
 #undef AUTOLATHE_EFFICIENCY_STEP
+#undef AUTOLATHE_TIME_PROD_BASE
+#undef AUTOLATHE_TIME_PROD_AMMO
