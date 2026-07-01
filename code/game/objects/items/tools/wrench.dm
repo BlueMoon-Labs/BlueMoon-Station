@@ -157,7 +157,7 @@
 	// Let the sound effect finish playing
 	sleep(20)
 
-	if(!user)
+	if(QDELETED(user))
 		return
 
 	for(var/obj/item/W in user)
@@ -167,12 +167,9 @@
 	W.add_fingerprint(user)
 	W.desc += " For some reason, it reminds you of [user.name]."
 
-	if(!user)
-		return
-
 	user.dust()
 
-	return OXYLOSS
+	return MANUAL_SUICIDE
 
 /obj/item/wrench/bolter
 	name = "bolter wrench"
