@@ -144,4 +144,4 @@
 	name = "upgraded size tool"
 	max_size = RESIZE_MACRO
 	charge_modif = 0
-	time_modif = 0.5
+	time_modif = 0.1
