@@ -114,17 +114,17 @@
 	initial_modules += theme.inbuilt_modules
 	set_wires(new /datum/wires/mod(src))
 	if(ispath(cell))
-		cell = new cell(src)
-	helmet = new /obj/item/clothing/head/mod(src)
+		cell = new cell
+	helmet = new /obj/item/clothing/head/mod
 	helmet.mod = src
 	mod_parts += helmet
-	chestplate = new /obj/item/clothing/suit/mod(src)
+	chestplate = new /obj/item/clothing/suit/mod
 	chestplate.mod = src
 	mod_parts += chestplate
-	gauntlets = new /obj/item/clothing/gloves/mod(src)
+	gauntlets = new /obj/item/clothing/gloves/mod
 	gauntlets.mod = src
 	mod_parts += gauntlets
-	boots = new /obj/item/clothing/shoes/mod(src)
+	boots = new /obj/item/clothing/shoes/mod
 	boots.mod = src
 	mod_parts += boots
 	var/list/all_parts = mod_parts.Copy() + src
@@ -144,7 +144,7 @@
 	update_flags()
 	update_speed()
 	for(var/obj/item/mod/module/module as anything in initial_modules)
-		module = new module(src)
+		module = new module
 		install(module)
 	RegisterSignal(src, COMSIG_ATOM_EXITED, PROC_REF(on_exit))
 	movedelay = CONFIG_GET(number/movedelay/run_delay)
@@ -180,6 +180,7 @@
 	for(var/obj/item/mod/module/module as anything in modules)
 		module.mod = null
 		modules -= module
+		qdel(module)
 	QDEL_NULL(ai)
 	QDEL_NULL(wires)
 	QDEL_NULL(cell)
@@ -239,7 +240,7 @@
 	if(src != wearer?.back || !istype(over_object, /atom/movable/screen/inventory/hand))
 		return ..()
 	for(var/obj/item/part in mod_parts)
-		if(part.loc != src)
+		if(part.loc != null)
 			balloon_alert(wearer, "retract parts first!")
 			playsound(src, 'sound/machines/scanbuzz.ogg', 25, FALSE, SILENCED_SOUND_EXTRARANGE)
 			return
@@ -273,12 +274,12 @@
 	if(seconds_electrified && cell?.charge)
 		if(shock(user))
 			return
-	if(!open)
-		for(var/obj/item/mod/module/storage/S in modules)
-			if(S.stored)
-				playsound(user, "rustle", 50, 1, -5)
-				SEND_SIGNAL(S.stored, COMSIG_TRY_STORAGE_SHOW, wearer, TRUE)
-				return
+	// if(!open)
+	// 	for(var/obj/item/mod/module/storage/S in modules)
+	// 		if(S.stored)
+	// 			playsound(user, "rustle", 50, 1, -5)
+	// 			SEND_SIGNAL(S.stored, COMSIG_TRY_STORAGE_SHOW, wearer, TRUE)
+	// 			return
 	. = ..()
 
 /obj/item/mod/control/screwdriver_act(mob/living/user, obj/item/screwdriver)
@@ -359,7 +360,7 @@
 			playsound(src, 'sound/machines/click.ogg', 50, TRUE, SILENCED_SOUND_EXTRARANGE)
 			cell.forceMove(drop_location())
 			user.put_in_hands(cell)
-		attacking_item.forceMove(src)
+		attacking_item.moveToNullspace()
 		cell = attacking_item
 		balloon_alert(user, "cell installed")
 		playsound(src, 'sound/machines/click.ogg', 50, TRUE, SILENCED_SOUND_EXTRARANGE)
@@ -516,7 +517,7 @@
 			balloon_alert(user, "[new_module] would make [src] too complex!")
 			playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 		return
-	new_module.forceMove(src)
+	new_module.moveToNullspace()
 	modules += new_module
 	complexity += new_module.complexity
 	new_module.mod = src
