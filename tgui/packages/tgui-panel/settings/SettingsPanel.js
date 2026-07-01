@@ -332,7 +332,7 @@ export const SettingsGeneral = (props, context) => {
 // Инлайн-стиль превью: настройки применяются к чату через переменные
 // и динамическую таблицу на корне .Chat, панель настроек ими не
 // покрывается, поэтому превью собирает те же значения инлайном.
-const getStylePreviewStyle = (override) => {
+const getStylePreviewStyle = (override, spanAnimations) => {
   if (!override || override.disabled) {
     return undefined;
   }
@@ -360,15 +360,19 @@ const getStylePreviewStyle = (override) => {
   if (size && size !== 100) {
     style['font-size'] = Math.min(200, Math.max(50, size)) + '%';
   }
-  const anim = MESSAGE_STYLE_ANIMATIONS.find(a => a.id === override.anim);
-  if (anim?.css) {
-    style['animation'] = anim.css;
+  // Как и в чате (.Chat--fxAnimOff), глобальный тумблер гасит
+  // пользовательские анимации и в превью.
+  if (spanAnimations !== false) {
+    const anim = MESSAGE_STYLE_ANIMATIONS.find(a => a.id === override.anim);
+    if (anim?.css) {
+      style['animation'] = anim.css;
+    }
   }
   return Object.keys(style).length > 0 ? style : undefined;
 };
 
 const MessageStyleRow = (props, context) => {
-  const { style, override, setOverride } = props;
+  const { style, override, setOverride, spanAnimations } = props;
   const selectedFont = MESSAGE_STYLE_FONTS.find(
     f => f.id === (override.font || ''));
   const selectedAnim = MESSAGE_STYLE_ANIMATIONS.find(
@@ -384,7 +388,7 @@ const MessageStyleRow = (props, context) => {
             <Box
               as="span"
               className={style.id}
-              style={getStylePreviewStyle(override)}>
+              style={getStylePreviewStyle(override, spanAnimations)}>
               {style.example}
             </Box>
           ) || (
@@ -497,6 +501,7 @@ export const SettingsTextStyles = (props, context) => {
           style={style}
           override={styleOverrides?.[style.id] || {}}
           setOverride={setOverride}
+          spanAnimations={spanAnimations}
         />
       ))}
       <Divider />

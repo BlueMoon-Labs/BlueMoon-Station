@@ -795,8 +795,12 @@ export class ChatRenderer {
     if (!spanAnimations) {
       root.classList.add('Chat--fxAnimOff');
     }
-    for (const [styleId, override] of Object.entries(overrides)) {
-      const prop = '--cs-' + styleId + '-color';
+    // Iterate the full known style list rather than the passed map,
+    // so a partial or empty overrides object still clears every stale
+    // --cs-* variable from previous calls.
+    for (const style of MESSAGE_STYLES) {
+      const override = overrides[style.id];
+      const prop = '--cs-' + style.id + '-color';
       if (override?.color) {
         root.style.setProperty(prop, override.color);
       }
@@ -804,7 +808,7 @@ export class ChatRenderer {
         root.style.removeProperty(prop);
       }
       if (override?.disabled) {
-        root.classList.add('Chat--plain-' + styleId);
+        root.classList.add('Chat--plain-' + style.id);
       }
     }
     updateStyleOverrideSheet(buildStyleOverrideCss(overrides));

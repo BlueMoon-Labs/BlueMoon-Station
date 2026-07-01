@@ -936,6 +936,22 @@ describe('ChatRenderer', () => {
       expect(root.classList.contains('Chat--fxAnimOff')).toBe(false);
     });
 
+    test('empty overrides map fully resets root state', () => {
+      const renderer = createReadyRenderer();
+      renderer.setStyleOverrides({
+        emote: { color: '#ff0000', disabled: true },
+        whisper: { color: '#00ff00' },
+      }, false);
+
+      renderer.setStyleOverrides({}, true);
+
+      const root = renderer.rootNode;
+      expect(root.style.getPropertyValue('--cs-emote-color')).toBe('');
+      expect(root.style.getPropertyValue('--cs-whisper-color')).toBe('');
+      expect(root.classList.contains('Chat--plain-emote')).toBe(false);
+      expect(root.classList.contains('Chat--fxAnimOff')).toBe(false);
+    });
+
     test('queues overrides until mount via pending appearance', () => {
       const renderer = new ChatRenderer();
       renderer.setStyleOverrides({

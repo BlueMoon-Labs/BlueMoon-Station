@@ -84,6 +84,7 @@ $color-bg-section: base.$color-bg-section !default;
 
 .Chat__highlight {
   color: #000;
+
   // Спаны с background-clip: text делают текст прозрачным через
   // наследуемый -webkit-text-fill-color; без сброса подсветка
   // превращается в нечитаемую цветную плашку.
@@ -178,6 +179,10 @@ hr {
   padding-left: 0;
   animation: none;
   transform: none;
+  background: none;
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
 }
 
 .Chat--plain-emote .emote {
