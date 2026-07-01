@@ -507,9 +507,7 @@
 			var/turf/turf_target = get_turf(M)
 			for(var/obj/item/I in heretic.summon_items)
 				I.forceMove(turf_target)
-				if(!(I.item_flags & NO_PIXEL_RANDOM_DROP))
-					I.pixel_x = I.base_pixel_x + rand(-6, 6)
-					I.pixel_y = I.base_pixel_y + rand(-6, 6)
+				I.randomize_pixel_position()
 			heretic.summon_items.Cut()
 		M.jitteriness = 0
 		M.stuttering = 0
