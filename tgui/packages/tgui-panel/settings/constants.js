@@ -14,8 +14,71 @@ export const SETTINGS_TABS = [
     name: 'Оформление',
   },
   {
+    id: 'textStyles',
+    name: 'Стили текста',
+  },
+  {
     id: 'chatPage',
     name: 'Вкладки чата',
+  },
+];
+
+// Стили сообщений, доступные для кастомизации игроком.
+// id совпадает с CSS-классом спана и именем переменной --cs-<id>-color.
+// extraClasses - дополнительные спаны, которые красятся той же переменной
+// и сбрасываются тем же plain-классом.
+export const MESSAGE_STYLES = [
+  { id: 'emote', name: 'Эмоции', example: '* Пример эмоции персонажа' },
+  { id: 'whisper', name: 'Шёпот', example: 'Пример шёпота' },
+  { id: 'singing', name: 'Пение', example: 'Пример песни ~' },
+  { id: 'lewd', name: 'НСФВ', example: 'Пример непристойной фразы' },
+  { id: 'purr', name: 'Мурчание', example: 'Пример мурчания' },
+  { id: 'croon', name: 'Воркование', example: 'Пример воркования' },
+  { id: 'deadsay', name: 'Мёртвые', example: 'Пример речи призрака' },
+  {
+    id: 'telepathy',
+    name: 'Телепатия',
+    example: 'Пример телепатии',
+    extraClasses: ['telepathybold'],
+  },
+  { id: 'signlang', name: 'Жесты', example: 'Пример жестовой речи' },
+  { id: 'thought', name: 'Мысли', example: 'Пример мысли' },
+  { id: 'dream', name: 'Сны', example: 'Пример сна' },
+];
+
+// Начертание текста стиля: пусто = как в теме.
+export const MESSAGE_STYLE_FONTS = [
+  { id: '', name: 'Тема' },
+  { id: 'normal', name: 'Обычный' },
+  { id: 'italic', name: 'Курсив' },
+  { id: 'bold', name: 'Жирный' },
+  { id: 'bolditalic', name: 'Жирный курсив' },
+];
+
+// Декоративные анимации стиля: пусто = как в теме.
+// css - значение свойства animation; кейфреймы cs-* лежат в Chat.scss.
+export const MESSAGE_STYLE_ANIMATIONS = [
+  { id: '', name: 'Тема', css: null },
+  { id: 'none', name: 'Нет', css: 'none' },
+  {
+    id: 'pulse',
+    name: 'Пульс',
+    css: 'cs-pulse 2000ms ease-in-out infinite alternate',
+  },
+  {
+    id: 'glow',
+    name: 'Свечение',
+    css: 'cs-glow 2400ms ease-in-out infinite alternate',
+  },
+  {
+    id: 'flicker',
+    name: 'Мерцание',
+    css: 'cs-flicker 1600ms steps(4) infinite',
+  },
+  {
+    id: 'rainbow',
+    name: 'Радуга',
+    css: 'cs-rainbow 6000ms linear infinite',
   },
 ];
 
