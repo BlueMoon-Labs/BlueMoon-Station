@@ -97,8 +97,6 @@
 		/obj/item/reagent_containers/glass/bottle/salglu_solution = 3,
 		/obj/item/reagent_containers/syringe/antiviral = 5,
 		/obj/item/reagent_containers/hypospray/medipen = 6,
-		/obj/item/stack/medical/ointment = 2,
-		/obj/item/stack/medical/suture = 2,
 		/obj/item/stack/medical/bone_gel = 4,
 		/obj/item/stack/medical/nanogel = 4,
 		/obj/item/storage/hypospraykit/fire = 3,
