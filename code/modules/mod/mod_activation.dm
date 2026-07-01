@@ -78,7 +78,7 @@
 	var/obj/item/piece = part
 	REMOVE_TRAIT(piece, TRAIT_NODROP, MOD_TRAIT)
 	if(wearer)
-		wearer.doUnEquip(piece, force, null, FALSE)
+		wearer.transferItemToLoc(piece, piece.drop_location(), TRUE)
 	if(piece == helmet)
 		helmet.show_overslot()
 	if(piece == chestplate)
