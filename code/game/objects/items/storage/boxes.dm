@@ -221,8 +221,7 @@
 	/// Базовый /datum/component/storage ограничивает по `max_w_class` (только SMALL) и сумме w_class (7×SMALL).
 	/// При спавне `new(..., src)` проверки обходятся; при ручной укладке ломается — нужны лимиты под набор ERT/CentCom.
 	STR.max_w_class = WEIGHT_CLASS_NORMAL
-	STR.max_combined_w_class = WEIGHT_CLASS_NORMAL * 10
-	STR.storage_flags = STORAGE_FLAGS_LEGACY_DEFAULT
+	STR.storage_flags = STORAGE_FLAGS_LEGACY
 
 /obj/item/storage/box/survival/centcom/PopulateContents()
 	..() // we want the regular stuff too
@@ -1661,9 +1660,8 @@
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
 	STR.max_w_class = MAX_WEIGHT_CLASS_BACKPACK
-	STR.storage_flags = STORAGE_FLAGS_LEGACY_DEFAULT
+	STR.storage_flags = STORAGE_FLAGS_LEGACY
 	STR.max_volume = STORAGE_VOLUME_BAG_OF_HOLDING_DEBUG
-	STR.max_combined_w_class = 50
 	STR.max_items = 20
 
 /obj/item/storage/box/material/PopulateContents() 	//less uranium because radioactive
@@ -1698,9 +1696,8 @@
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
 	STR.max_w_class = MAX_WEIGHT_CLASS_BACKPACK
-	STR.storage_flags = STORAGE_FLAGS_LEGACY_DEFAULT
+	STR.storage_flags = STORAGE_FLAGS_LEGACY
 	STR.max_volume = STORAGE_VOLUME_BAG_OF_HOLDING_DEBUG
-	STR.max_combined_w_class = 50
 	STR.max_items = 16
 
 /obj/item/storage/box/debugtools/PopulateContents()
