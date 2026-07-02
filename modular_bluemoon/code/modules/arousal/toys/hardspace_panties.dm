@@ -19,25 +19,17 @@
 #define HS_LUST_MULT_VIB 1
 
 #define HS_TEXT_CHANCE 15
-#define HS_EMP_DURATION 5
 
 /obj/item/clothing/underwear/briefs/hardspace_panties
-	//icon = 'modular_sand/icons/mob/clothing/underwear.dmi'
-	//mob_overlay_icon = 'modular_sand/icons/mob/clothing/underwear.dmi'
 	name = "Hardspace panties"
 	icon_state = "panties_slim"
 	desc = "С виду обычное белье, но сбоку на наблюдается небольшая, гибкая панель."
-
-	//var/isEMPed = FALSE
-	//var/EMPedTimer = 0 //in SS tick
-
 
 	var/mode = HS_MODE_STRETCH
 	var/intence = HS_INTENCE_OFF
 	var/edging = FALSE
 
 	var/mob/living/carbon/human/owner = null
-
 
 	// STRETCH
 	// ANL
@@ -215,12 +207,12 @@
 	name = "panties"
 	icon_state = "panties_slim"
 
+/datum/gear/underwear/boxers/panties/hardspace_panties
+	name = "Hardspace panties"
+	path = /obj/item/clothing/underwear/briefs/hardspace_panties/female
+
 /obj/item/clothing/underwear/briefs/hardspace_panties/Initialize(mapload)
 	. = ..()
-	/*var/datum/action/item_action/chameleon/change/chameleon_action = new(src)
-	chameleon_action.chameleon_type = /obj/item/clothing/underwear/briefs
-	chameleon_action.chameleon_name = "HardSpacePanties"
-	chameleon_action.initialize_disguises()*/
 	var/datum/action/item_action/hardspace_panties/control/button = new(src)
 	button.panties = src
 
@@ -254,36 +246,6 @@
 	. = ..()
 	on_unequip(user)
 
-/*
-//FOR EMP
-/obj/item/clothing/underwear/briefs/hardspace_panties/attack_hand(mob/living/carbon/human/user)
-	if(loc == user && ITEM_SLOT_UNDERWEAR)
-		if(!istype(src, user.w_underwear))
-			..()
-		else
-			if(isEMPed)
-				user.visible_message("<span class='warning'>[user] пытается снять [src]!.</span>")
-				if(do_after(user, rand(5,35)))
-					if(prob(25))
-						..()
-					else
-						to_chat(user, "<span class='warning'>Белье плотно обхватило вас, не давая снять!</span>")
-						return
-			else
-				..()
-	else
-		..()
-
-/obj/item/clothing/underwear/briefs/hardspace_panties/emp_act(severity)
-	. = ..()
-	// emp react
-	// panties go crazy
-	EMPedTimer = round(HS_EMP_DURATION * (severity/100))
-	isEMPed = TRUE
-	//H.moan()
-	//H.cum()
-*/
-
 /obj/item/clothing/underwear/briefs/hardspace_panties/proc/on_equip(mob/user)
 	if(!user)
 		return
@@ -299,8 +261,6 @@
 
 	STOP_PROCESSING(SSobj,src)
 
-	//isEMPed = FALSE
-	//EMPedTimer = 0
 	mode = HS_MODE_STRETCH
 	intence = HS_INTENCE_OFF
 	edging = FALSE
@@ -312,19 +272,19 @@
 	switch(value)
 		if(HS_INTENCE_LOW)
 			intence = HS_INTENCE_LOW
-			to_chat(user, span_notice("Был выбраный режим мощности: [HS_INTENCE_LOW]."))
+			to_chat(user, span_notice("Был выбраный режим мощности: [intence]."))
 			return
 		if(HS_INTENCE_MED)
 			intence = HS_INTENCE_MED
-			to_chat(user, span_notice("Был выбраный режим мощности: [ HS_INTENCE_MED]."))
+			to_chat(user, span_notice("Был выбраный режим мощности: [intence]."))
 			return
 		if(HS_INTENCE_HIG)
 			intence = HS_INTENCE_HIG
-			to_chat(user, span_notice("Был выбраный режим мощности: [HS_INTENCE_HIG]."))
+			to_chat(user, span_notice("Был выбраный режим мощности: [intence]."))
 			return
 		if(HS_INTENCE_OFF)
 			intence = HS_INTENCE_OFF
-			to_chat(user, span_notice("Был выбраный режим мощности: [HS_INTENCE_OFF]."))
+			to_chat(user, span_notice("Был выбраный режим мощности: [intence]."))
 			return
 
 /obj/item/clothing/underwear/briefs/hardspace_panties/proc/select_edging(mob/user, value)
@@ -503,7 +463,7 @@
 			return
 		panties.select_intence(H,picked_intence)
 	if(picked_menu == HS_MENU_EDGE)
-		var/picked_edge = tgui_input_list(owner, "Включить режим \"На Грани\"", "Панель настроек ХардСпейс", list(HS_MODE_STRETCH, HS_MODE_MASSAGE, HS_MODE_VIBRO))
+		var/picked_edge = tgui_input_list(owner, "Включить режим \"На Грани\"", "Панель настроек ХардСпейс", list(HS_EDGE_ON, HS_EDGE_OFF))
 		if(!picked_edge)
 			return
 		panties.select_edging(H,picked_edge)
@@ -528,3 +488,5 @@
 #undef HS_LUST_MULT_STR
 #undef HS_LUST_MULT_MSG
 #undef HS_LUST_MULT_VIB
+
+#undef HS_TEXT_CHANCE
