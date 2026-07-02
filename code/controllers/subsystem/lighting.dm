@@ -615,7 +615,7 @@ SUBSYSTEM_DEF(lighting)
 			var/area/A = T.loc
 			if(!IS_DYNAMIC_LIGHTING(A) || !IS_DYNAMIC_LIGHTING(T) || T.lighting_object)
 				continue
-			new /atom/movable/lighting_object(null, T)
+			new /atom/movable/lighting_object(T)
 			if(T.lighting_corners_initialised)
 				if(T.lc_topright) T.lc_topright.active = TRUE
 				if(T.lc_bottomright) T.lc_bottomright.active = TRUE

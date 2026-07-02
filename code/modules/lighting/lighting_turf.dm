@@ -58,7 +58,7 @@
 	if (!lighting_corners_initialised)
 		generate_missing_corners()
 
-	new /atom/movable/lighting_object(null, src)
+	new /atom/movable/lighting_object(src)
 
 	var/datum/light_source/S
 	var/i

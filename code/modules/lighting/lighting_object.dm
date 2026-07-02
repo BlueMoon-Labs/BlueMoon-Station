@@ -35,16 +35,14 @@
 	var/blended_contact_shadow = 1
 	var/blended_ambient = AMBIENT_LIGHT_DEFAULT
 
-/atom/movable/lighting_object/New(atom/passed_loc, turf/source)
-	// Renders from nullspace strictly via vis_contents: the object must never sit in
-	// turf.contents, or every contents walk (camera capture, shuttle moves, teleports)
-	// sees a service atom. Canonical creation is new(null, turf).
-	if(!isnull(passed_loc))
-		// В дереве вызовов канон new(null, turf) соблюдён везде; ветка - громкая страховка от будущих вызовов
-		stack_trace("lighting_object created with a loc ([passed_loc]); canonical creation is new(null, turf)")
-		if(isturf(passed_loc) && isnull(source))
-			source = passed_loc // легаси new(turf) - восстанавливаем
-		loc = null
+/atom/movable/lighting_object/New(turf/source)
+	// Гибридный рендер: объект лежит на турфе (loc = source) И продублирован в vis_contents.
+	// loc-канал обязателен для ДОСТАВКИ обновлений: BYOND надёжно шлёт клиентам animate() и
+	// смену appearance только у ин-ворлд атомов. У nullspace-атома, видимого исключительно
+	// через vis_contents, анимации цвета до клиентов не доезжают - зоны застревают в устаревшей
+	// тьме до полного пересинка турфа (выход за край view, смена z-уровня, реконнект).
+	// Обходы contents от служебного атома огорожены точечно: onShuttleMove() no-op,
+	// скип в фотозахвате, блэклист радиации. Каноническое создание - new(turf).
 	..()
 	if(!isturf(source))
 		qdel(src, force=TRUE)

@@ -33,7 +33,7 @@
 			if(!isfloorturf(T))
 				T = T.ChangeTurf(/turf/open/floor/plasteel)
 			if(!T.lighting_object)
-				new /atom/movable/lighting_object(null, T)
+				new /atom/movable/lighting_object(T)
 				created_los += T.lighting_object
 			T.lighting_object.color = LIGHTING_DARK_MATRIX
 			T.lighting_object.update(animate_time = 0, use_animate = FALSE)

@@ -173,12 +173,12 @@
 		return T.lighting_object
 	return allocate_lighting_object(T)
 
-/// Helper: create a lighting_object the canonical way (nullspace loc, turf as the second
-/// argument) with end-of-test cleanup. allocate() itself can't be used - it substitutes
-/// a null first argument with run_loc_floor_bottom_left, and its plain qdel teardown is
-/// ignored by lighting_object/Destroy(), so these go into the force-qdel cleanup list.
+/// Helper: create a lighting_object the canonical way (new(turf) - loc на турфе, гибридный
+/// рендер loc+vis_contents) with end-of-test cleanup. allocate() itself can't be used - its
+/// plain qdel teardown is ignored by lighting_object/Destroy(), so these go into the
+/// force-qdel cleanup list.
 /datum/unit_test/proc/allocate_lighting_object(turf/T)
-	var/atom/movable/lighting_object/lo = new(null, T)
+	var/atom/movable/lighting_object/lo = new(T)
 	allocated_force_qdel += lo
 	return lo
 
@@ -584,9 +584,11 @@
 	test_turf.recalc_atom_opacity()
 	TEST_ASSERT(test_turf.shadow_weight_sum >= 0.49, "shadow_weight_sum should be updated after recalc (got [test_turf.shadow_weight_sum])")
 
-/// lighting_object живёт в nullspace: рендер только через vis_contents, contents турфа чист.
-/// Любой обход turf.contents (камера, шаттлы, телепорты) не должен видеть служебный объект.
-/datum/unit_test/lighting_object_nullspace/Run()
+/// Гибридный рендер lighting_object: объект лежит на турфе (loc) И продублирован в
+/// vis_contents. loc-канал - доставка animate()/appearance клиентам (у nullspace-атома,
+/// видимого только через vis_contents, анимации до клиентов не доезжают - устаревшие
+/// "тёмные зоны" до пересинка view/реконнекта). vis_contents-канал сохранён (паритет master).
+/datum/unit_test/lighting_object_hybrid_render/Run()
 	TEST_ASSERT(SSlighting.initialized, "SSlighting was not initialized")
 
 	var/turf/test_turf = run_loc_floor_bottom_left
@@ -597,14 +599,12 @@
 
 	var/atom/movable/lighting_object/test_object = allocate_lighting_object(test_turf)
 	TEST_ASSERT_EQUAL(test_turf.lighting_object, test_object, "Lighting object was not attached to the test turf")
-	TEST_ASSERT_NULL(test_object.loc, "Lighting object must live in nullspace, had loc [test_object.loc]")
-	TEST_ASSERT(test_object in test_turf.vis_contents, "Lighting object must render via turf vis_contents")
-	TEST_ASSERT(!(test_object in test_turf.contents), "Lighting object must not pollute turf contents")
+	TEST_ASSERT_EQUAL(test_object.loc, test_turf, "Lighting object must sit on its turf (delivery channel), had loc [test_object.loc]")
+	TEST_ASSERT(test_object in test_turf.vis_contents, "Lighting object must also be referenced in turf vis_contents")
 
 	var/turf/replacement_turf = test_turf.ChangeTurf(/turf/open/floor/plasteel/white)
-	TEST_ASSERT_NULL(test_object.loc, "Lighting object gained a loc after ChangeTurf")
+	TEST_ASSERT_EQUAL(test_object.loc, replacement_turf, "Lighting object must stay on the tile after ChangeTurf, had loc [test_object.loc]")
 	TEST_ASSERT(test_object in replacement_turf.vis_contents, "Replacement turf did not keep the lighting object in vis_contents")
-	TEST_ASSERT(!(test_object in replacement_turf.contents), "Lighting object leaked into turf contents after ChangeTurf")
 	qdel(test_object, force = TRUE)
 
 /// Оверлейный свет: компонент вешается по light_system, тумблер двигает маску в underlays

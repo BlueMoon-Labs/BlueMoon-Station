@@ -27,7 +27,7 @@
 				continue
 			if(T.lighting_object)
 				qdel(T.lighting_object, force = TRUE)
-			var/atom/movable/lighting_object/lo = new(null, T)
+			var/atom/movable/lighting_object/lo = new(T)
 			objects += lo
 			count++
 
@@ -65,7 +65,7 @@
 				continue
 			if(T.lighting_object)
 				qdel(T.lighting_object, force = TRUE)
-			var/atom/movable/lighting_object/lo = new(null, T)
+			var/atom/movable/lighting_object/lo = new(T)
 			if((dx + dy) % 2 == 0) // Orphan every other one
 				T.lighting_object = null
 				T.vis_contents -= lo
@@ -189,7 +189,7 @@
 			if(!T || !isturf(T))
 				continue
 			if(!T.lighting_object)
-				new /atom/movable/lighting_object(null, T)
+				new /atom/movable/lighting_object(T)
 			test_objects += T.lighting_object
 			if(!T.lighting_corners_initialised)
 				T.generate_missing_corners()
@@ -295,7 +295,7 @@
 			if(!T || !isturf(T))
 				continue
 			if(!T.lighting_object)
-				new /atom/movable/lighting_object(null, T)
+				new /atom/movable/lighting_object(T)
 
 	// Drain any pending work from object creation
 	drain_nightshift_lighting_work()
@@ -369,7 +369,7 @@
 			if(!T || !isturf(T))
 				continue
 			if(!T.lighting_object)
-				new /atom/movable/lighting_object(null, T)
+				new /atom/movable/lighting_object(T)
 	drain_nightshift_lighting_work()
 
 	// Benchmark: create 25 emitters, drain, delete all, drain — 3 cycles
@@ -429,7 +429,7 @@
 /datum/unit_test/lighting_rapid_toggle_stress/Run()
 	var/turf/test_turf = run_loc_floor_bottom_left
 	if(!test_turf.lighting_object)
-		new /atom/movable/lighting_object(null, test_turf)
+		new /atom/movable/lighting_object(test_turf)
 	drain_nightshift_lighting_work()
 
 	var/obj/effect/light_emitter/emitter = allocate(/obj/effect/light_emitter, test_turf)
@@ -474,7 +474,7 @@
 			if(!T || !isturf(T))
 				continue
 			if(!T.lighting_object)
-				new /atom/movable/lighting_object(null, T)
+				new /atom/movable/lighting_object(T)
 	drain_nightshift_lighting_work()
 
 	// Create a single light source at center
@@ -529,7 +529,7 @@
 	// Generate some real load first
 	var/turf/test_turf = run_loc_floor_bottom_left
 	if(!test_turf.lighting_object)
-		new /atom/movable/lighting_object(null, test_turf)
+		new /atom/movable/lighting_object(test_turf)
 	var/obj/effect/light_emitter/emitter = allocate(/obj/effect/light_emitter, test_turf)
 	emitter.set_light(3, 1, COLOR_WHITE)
 	drain_nightshift_lighting_work()
@@ -602,7 +602,7 @@
 			if(!T || !isturf(T))
 				continue
 			if(!T.lighting_object)
-				new /atom/movable/lighting_object(null, T)
+				new /atom/movable/lighting_object(T)
 			var/atom/movable/lighting_object/lo = T.lighting_object
 			lo.prev_was_dark = TRUE
 			// Ensure corners report dark
@@ -664,7 +664,7 @@
 				continue
 			if(T.lighting_object)
 				qdel(T.lighting_object, force = TRUE)
-			var/atom/movable/lighting_object/lo = new(null, T)
+			var/atom/movable/lighting_object/lo = new(T)
 			out_objects += lo
 			if(animate_them)
 				animate(lo, color = LIGHTING_BASE_MATRIX, time = LIGHTING_ANIMATE_TIME)
@@ -688,7 +688,7 @@
 				continue
 			if(T.lighting_object)
 				qdel(T.lighting_object, force = TRUE)
-			var/atom/movable/lighting_object/lo = new(null, T)
+			var/atom/movable/lighting_object/lo = new(T)
 			out_objects += lo
 			// Two chained animate() calls create a multi-stage animation queue
 			animate(lo, color = LIGHTING_BASE_MATRIX, time = LIGHTING_ANIMATE_TIME)

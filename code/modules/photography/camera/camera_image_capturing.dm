@@ -30,9 +30,9 @@
 				atoms += new /obj/effect/appearance_clone(newT, T.loc)
 			for(var/i in T.contents)
 				var/atom/A = i
-				// Lighting objects render from nullspace via vis_contents and should never be in
-				// turf.contents anymore; keep this guard as defense-in-depth - cloning one renders
-				// a solid black tile on LIGHTING_LAYER, painting the floor black in shaded areas.
+				// Lighting objects live in turf.contents (hybrid render: loc for client update
+				// delivery + vis_contents). Cloning one renders a solid black tile on
+				// LIGHTING_LAYER, painting the floor black in shaded areas - always skip.
 				if(istype(A, /atom/movable/lighting_object))
 					continue
 				if(!A.invisibility || (see_ghosts && isobserver(A)))

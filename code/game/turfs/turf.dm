@@ -62,8 +62,8 @@ GLOBAL_LIST_EMPTY(station_turfs)
 	// by default, vis_contents is inherited from the turf that was here before
 	vis_contents.Cut()
 	// Маплоадер (initTemplateBounds) инициализирует турфы ПОСЛЕ того, как ChangeTurf
-	// привязал lighting_object к vis_contents - возвращаем рендер света, иначе турф
-	// навсегда чёрный от backdrop'а lighting plane (свет в новых шаблонных комнатах)
+	// привязал lighting_object к vis_contents - возвращаем ссылку, чтобы vis-канал
+	// гибридного рендера (loc + vis_contents) оставался согласованным на шаблонных турфах
 	if(lighting_object)
 		vis_contents += lighting_object
 
