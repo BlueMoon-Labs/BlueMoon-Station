@@ -74,6 +74,14 @@
 ///to prevent accent sounds from layering
 #define SUPERMATTER_ACCENT_SOUND_MIN_COOLDOWN 2 SECONDS
 
+/// i-th contributing emitter adds i * this much to the arithmetic EER sum (9 emitters -> 120*45 = 5400).
+#define EMITTER_EER_AP_UNIT 120
+#define EMITTER_EER_RANGE 14
+/// Extra deciseconds after an emitter's fire delay before a beam hit registration expires.
+#define EMITTER_BEAM_HIT_SLACK 25
+/// How quickly power ramps toward the arithmetic EER target each atmos tick.
+#define EMITTER_EER_RAMP 0.35
+
 #define DEFAULT_ZAP_ICON_STATE "sm_arc"
 #define SLIGHTLY_CHARGED_ZAP_ICON_STATE "sm_arc_supercharged"
 #define OVER_9000_ZAP_ICON_STATE "sm_arc_dbz_referance" //Witty I know
@@ -196,6 +204,8 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 
 	/// If the SM is decorated with holiday lights
 	var/holiday_lights = FALSE
+	/// Emitters whose beam struck this crystal (emitter -> world.time of last hit).
+	var/list/emitter_beam_active = list()
 
 /obj/machinery/power/supermatter_crystal/Initialize(mapload)
 	. = ..()
@@ -650,7 +660,17 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	//Transitions between one function and another, one we use for the fast inital startup, the other is used to prevent errors with fusion temperatures.
 	//Use of the second function improves the power gain imparted by using co2
 	if(power_changes)
-		power = max(power - min(((power/500)**3) * powerloss_inhibitor, power * 0.83 * powerloss_inhibitor),0)
+		var/emitter_eer_floor = 0
+		var/emitter_count = get_contributing_emitter_count()
+		if(emitter_count)
+			emitter_eer_floor = EMITTER_EER_AP_UNIT * emitter_count * (emitter_count + 1) / 2
+		power -= min(((power/500)**3) * powerloss_inhibitor, power * 0.83 * powerloss_inhibitor)
+		if(emitter_eer_floor)
+			if(power < emitter_eer_floor)
+				power += max(EMITTER_EER_AP_UNIT, (emitter_eer_floor - power) * EMITTER_EER_RAMP)
+			power = max(power, emitter_eer_floor)
+		else
+			power = max(power, 0)
 	//After this point power is lowered
 	//This wraps around to the begining of the function
 	//Handle high power zaps/anomaly generation
@@ -689,7 +709,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 		if(zap_count >= 1)
 			playsound(src.loc, 'sound/weapons/emitter2.ogg', 100, TRUE, extrarange = 10)
 			for(var/i in 1 to zap_count)
-				supermatter_zap(src, range, clamp(power*2, 4000, 20000), flags)
+				supermatter_zap(src, range, clamp(power*2, 4000, 20000), flags, list(), power)
 
 		if(prob(5))
 			supermatter_anomaly_gen(src, FLUX_ANOMALY, rand(5, 10))
@@ -742,11 +762,73 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	qdel(removed)
 	return TRUE
 
+/// Regular emitters and energy cannons count; CTF cannons do not.
+/proc/is_supermatter_beam_emitter(atom/source)
+	if(!istype(source, /obj/machinery/power/emitter))
+		return FALSE
+	if(istype(source, /obj/machinery/power/emitter/ctf))
+		return FALSE
+	return TRUE
+
+/obj/machinery/power/supermatter_crystal/proc/register_emitter_beam_hit(obj/machinery/power/emitter/E)
+	if(!is_supermatter_beam_emitter(E))
+		return
+	LAZYSET(emitter_beam_active, E, world.time)
+
+/obj/machinery/power/supermatter_crystal/proc/unregister_emitter_beam_hit(obj/machinery/power/emitter/E)
+	LAZYREMOVE(emitter_beam_active, E)
+
+/obj/machinery/power/supermatter_crystal/proc/prune_emitter_beam_hits()
+	for(var/obj/machinery/power/emitter/E in emitter_beam_active)
+		if(QDELETED(E) || !E.active)
+			unregister_emitter_beam_hit(E)
+			continue
+		var/timeout = max(E.maximum_fire_delay, E.fire_delay) + EMITTER_BEAM_HIT_SLACK
+		if(world.time > emitter_beam_active[E] + timeout)
+			unregister_emitter_beam_hit(E)
+
+/obj/machinery/power/supermatter_crystal/proc/is_beam_contributing_emitter(obj/machinery/power/emitter/E)
+	return !QDELETED(E) && LAZYACCESS(emitter_beam_active, E)
+
+/obj/machinery/power/supermatter_crystal/proc/get_contributing_emitter_count()
+	prune_emitter_beam_hits()
+	return length(emitter_beam_active)
+
+/// Arithmetic index (1..n) among emitters whose beam is hitting (nearest = 1); 0 if not contributing.
+/obj/machinery/power/supermatter_crystal/proc/get_emitter_arithmetic_index(obj/machinery/power/emitter/E)
+	prune_emitter_beam_hits()
+	if(!is_beam_contributing_emitter(E))
+		return 0
+	var/index = 1
+	var/my_dist = get_dist(src, E)
+	for(var/obj/machinery/power/emitter/other in emitter_beam_active)
+		if(other == E)
+			continue
+		if(get_dist(src, other) < my_dist)
+			index++
+	return index
+
 /obj/machinery/power/supermatter_crystal/bullet_act(obj/item/projectile/Proj)
 	var/turf/L = loc
 	if(!istype(L))
 		return FALSE
-	if(!istype(Proj.firer, /obj/machinery/power/emitter) && power_changes)
+	if(istype(Proj.firer, /obj/machinery/power/emitter) || istype(Proj.fired_from, /obj/machinery/power/emitter))
+		var/obj/machinery/power/emitter/emitter_source = Proj.fired_from
+		if(!istype(emitter_source))
+			emitter_source = Proj.firer
+		if(is_supermatter_beam_emitter(emitter_source))
+			emitter_source.last_shot_hit_sm = src
+			if(power_changes)
+				var/index = get_emitter_arithmetic_index(emitter_source)
+				if(!index)
+					index = 1
+				power += EMITTER_EER_AP_UNIT * index
+				if(!has_been_powered)
+					investigate_log("has been powered for the first time.", INVESTIGATE_SUPERMATTER)
+					message_admins("[src] has been powered for the first time [ADMIN_JMP(src)].")
+					has_been_powered = TRUE
+		return BULLET_ACT_HIT
+	if(!istype(Proj.firer, /obj/machinery/power/emitter) && !istype(Proj.fired_from, /obj/machinery/power/emitter) && power_changes)
 		investigate_log("has been hit by [Proj] fired by [key_name(Proj.firer)]", INVESTIGATE_SUPERMATTER)
 	if(Proj.flag != BULLET)
 		if(power_changes) //This needs to be here I swear
@@ -1056,9 +1138,11 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 			if(PYRO_ANOMALY)
 				new /obj/effect/anomaly/pyro(L, 200, SUPERMATTER_ANOMALY_DROP_CHANCE)
 
-/obj/machinery/power/supermatter_crystal/proc/supermatter_zap(atom/zapstart = src, range = 5, zap_str = 4000, zap_flags = ZAP_SUPERMATTER_FLAGS, list/targets_hit = list())
+/obj/machinery/power/supermatter_crystal/proc/supermatter_zap(atom/zapstart = src, range = 5, zap_str = 4000, zap_flags = ZAP_SUPERMATTER_FLAGS, list/targets_hit = list(), power_level = 0)
 	if(QDELETED(zapstart))
 		return
+	if(!power_level && istype(zapstart, /obj/machinery/power/supermatter_crystal))
+		power_level = zapstart:power
 	. = zapstart.dir
 	//If the strength of the zap decays past the cutoff, we stop
 	if(zap_str < zap_cutoff)
@@ -1183,8 +1267,13 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 		//This gotdamn variable is a boomer and keeps giving me problems
 		var/turf/T = get_turf(target)
 		var/pressure = 1
-		if(T && T.return_air())
-			pressure = max(1,T.return_air().return_pressure())
+		if(T)
+			var/datum/gas_mixture/air_mixture = T.return_air()
+			if(air_mixture)
+				pressure = max(1, air_mixture.return_pressure())
+				if(power_level > POWER_PENALTY_THRESHOLD)
+					air_mixture.electrolyze(zap_str / 200, list(ELECTROLYSIS_ARGUMENT_SUPERMATTER_POWER = power_level))
+					T.air_update_turf()
 		//We get our range with the strength of the zap and the pressure, the higher the former and the lower the latter the better
 		var/new_range = clamp(zap_str / pressure * 10, 2, 7)
 		var/zap_count = 1
@@ -1194,7 +1283,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 		for(var/j in 1 to zap_count)
 			if(zap_count > 1)
 				targets_hit = targets_hit.Copy() //Pass by ref begone
-			supermatter_zap(target, new_range, zap_str, zap_flags, targets_hit)
+			supermatter_zap(target, new_range, zap_str, zap_flags, targets_hit, power_level)
 
 /obj/machinery/power/supermatter_crystal/proc/holiday_lights()
 	holiday_lights = TRUE

@@ -69,6 +69,8 @@
 	pressure_resistance = 200
 	gold_core_spawnable = HOSTILE_SPAWN
 
+	var/timer = 0
+
 /mob/living/simple_animal/hostile/tentacles/Initialize()
 	. = ..()
 	status_flags &= !CANPUSH
@@ -98,6 +100,15 @@
 		heal_overall_damage(REGEN_AMOUNT)
 	if(tired >=1)
 		tired -= 1
+
+	timer -= delta_time
+	if(timer >= 0) // chech interval
+	else
+		timer = rand(5,20)
+		if(target != null)
+			var/mob/living/M = target
+			if(M.pulledby && !tired)
+				do_lewd_action(M)
 
 /mob/living/simple_animal/hostile/tentacles/MoveToTarget()
 	stop_automated_movement = 1
@@ -166,10 +177,6 @@
 	if(get_refraction_dif() > 0)
 		..()
 		return
-
-	while(M.pulledby && !tired)
-		if(activate_after(src, 25))
-			do_lewd_action(M)
 
 /mob/living/simple_animal/hostile/tentacles/proc/pickNewHole(mob/living/M)
 	var/hole_chosen = pick(1, 2)

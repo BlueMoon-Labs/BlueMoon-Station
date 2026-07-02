@@ -218,6 +218,28 @@
 	icon_state = "rhsa12"
 	item_state = "rhsa12"
 
+/obj/item/clothing/suit/donator/bm/mark40k_armor
+	name = "Mark40k Chest Armored Plates"
+	desc = "Fast attachable armored plates"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	icon_state = "mark40k_armor"
+	item_state = "mark40k_armor"
+	blood_overlay_type = "armor"
+	body_parts_covered = CHEST
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/suit/donator/bm/mark50k_armor
+	name = "Mark50k Chest Armored Plates"
+	desc = "Fast attachable armored plates"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	icon_state = "mark50k_armor"
+	item_state = "mark50k_armor"
+	blood_overlay_type = "armor"
+	body_parts_covered = CHEST
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
 /obj/item/clothing/under/rank/security/officer/acradorsuit
 	name = "Underarmor suit"
 	desc= "A dark, tight suit for wearing underneath hard plates. It does not restrict movement and protects the body from rubbing by armor plates."

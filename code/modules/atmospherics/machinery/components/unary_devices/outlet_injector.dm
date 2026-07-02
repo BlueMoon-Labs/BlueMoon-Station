@@ -66,9 +66,10 @@
 		return
 
 	var/datum/gas_mixture/air_contents = airs[1]
+	var/air_volume = air_contents.return_volume()
 
-	if(air_contents.return_temperature() > 0)
-		loc.assume_air_ratio(air_contents, volume_rate / air_contents.return_volume())
+	if(air_contents.return_temperature() > 0 && air_volume > 0)
+		loc.assume_air_ratio(air_contents, volume_rate / air_volume)
 		air_update_turf()
 
 		update_parents()
@@ -79,11 +80,12 @@
 		return
 
 	var/datum/gas_mixture/air_contents = airs[1]
+	var/air_volume = air_contents.return_volume()
 
 	injecting = 1
 
-	if(air_contents.return_temperature() > 0)
-		loc.assume_air_ratio(air_contents, volume_rate / air_contents.return_volume())
+	if(air_contents.return_temperature() > 0 && air_volume > 0)
+		loc.assume_air_ratio(air_contents, volume_rate / air_volume)
 		update_parents()
 
 	flick("inje_inject", src)

@@ -32425,10 +32425,11 @@
 /turf/open/floor/mineral/plastitanium,
 /area/engineering/atmos)
 "bRy" = (
-/obj/machinery/portable_atmospherics/pump,
+/obj/machinery/atmospherics/pipe/simple/cyan/visible,
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 6
 	},
+/obj/machinery/electrolyzer,
 /turf/open/floor/mineral/plastitanium,
 /area/engineering/atmos)
 "bRA" = (
@@ -45821,6 +45822,13 @@
 	},
 /turf/open/floor/grass,
 /area/service/park)
+"ded" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/components/binary/crystallizer,
+/turf/open/floor/plating,
+/area/engineering/atmos)
 "dev" = (
 /obj/structure/disposalpipe/segment{
 	dir = 9
@@ -47414,10 +47422,13 @@
 /turf/open/floor/mineral/plastitanium,
 /area/hallway/primary/port)
 "eus" = (
-/obj/machinery/portable_atmospherics/scrubber,
+/obj/machinery/atmospherics/pipe/simple/cyan/visible{
+	dir = 6
+	},
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 5
 	},
+/obj/machinery/electrolyzer,
 /turf/open/floor/mineral/plastitanium,
 /area/engineering/atmos)
 "euy" = (
@@ -73735,6 +73746,10 @@
 	},
 /turf/open/floor/engine,
 /area/maintenance/port/aft)
+"xuY" = (
+/obj/structure/closet/crate/engineering/hfr,
+/turf/open/floor/mineral/plastitanium,
+/area/engineering/atmos)
 "xuZ" = (
 /obj/structure/window/reinforced{
 	dir = 8
@@ -106653,7 +106668,7 @@ bBR
 bLK
 bMN
 bNV
-bOd
+xuY
 giT
 bRw
 bSF
@@ -108204,14 +108219,14 @@ bUN
 bOd
 bOd
 bOd
-bYQ
+ded
 bOd
 bOd
 bOd
 cBJ
 bOd
-eus
-bRy
+rmQ
+lzt
 bTP
 cha
 civ
@@ -108467,8 +108482,8 @@ bOd
 bOd
 bOd
 bOd
-bTO
-cez
+eus
+bRy
 bUL
 cgZ
 rdl

@@ -75,9 +75,15 @@
 		var/pressure_delta = target_pressure - output_starting_pressure
 		var/transfer_moles = pressure_delta*air2.return_volume()/(air1.return_temperature() * R_IDEAL_GAS_EQUATION)
 
-		air1.transfer_to(air2,transfer_moles)
-
-		update_parents()
+		if(air2.gc_share)
+			var/datum/gas_mixture/vented = air1.remove(transfer_moles)
+			if(vented)
+				var/had_moles = vented.total_moles() > 0
+				qdel(vented)
+				if(had_moles)
+					update_parents()
+		else if(air1.transfer_to(air2,transfer_moles))
+			update_parents()
 
 //Radio remote control
 /obj/machinery/atmospherics/components/binary/pump/proc/set_frequency(new_frequency)

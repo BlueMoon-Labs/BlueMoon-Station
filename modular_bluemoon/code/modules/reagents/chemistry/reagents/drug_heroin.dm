@@ -164,14 +164,14 @@
 
 /datum/reagent/drug/heroin/addiction_act_stage1(mob/living/M)
 	var/datum/component/mood/mood = M.GetComponent(/datum/component/mood)
-	mood.setSanity(min(mood.sanity, SANITY_DISTURBED))
+	mood?.setSanity(min(mood.sanity, SANITY_DISTURBED))
 	if(prob(10))
 		M.emote(pick("twitch","shiver","frown"))
 	..()
 
 /datum/reagent/drug/heroin/addiction_act_stage2(mob/living/M)
 	var/datum/component/mood/mood = M.GetComponent(/datum/component/mood)
-	mood.setSanity(min(mood.sanity, SANITY_DISTURBED))
+	mood?.setSanity(min(mood.sanity, SANITY_DISTURBED))
 	M.Jitter(5)
 	if(prob(20))
 		create_zavisimost(M)
@@ -181,7 +181,7 @@
 
 /datum/reagent/drug/heroin/addiction_act_stage3(mob/living/M)
 	var/datum/component/mood/mood = M.GetComponent(/datum/component/mood)
-	mood.setSanity(min(mood.sanity, SANITY_UNSTABLE))
+	mood?.setSanity(min(mood.sanity, SANITY_UNSTABLE))
 	ADD_TRAIT(M, TRAIT_UNSTABLE, type)
 	M.Jitter(15)
 	if(prob(50))
@@ -192,7 +192,7 @@
 
 /datum/reagent/drug/heroin/addiction_act_stage4(mob/living/carbon/human/M)
 	var/datum/component/mood/mood = M.GetComponent(/datum/component/mood)
-	mood.setSanity(SANITY_UNSTABLE)
+	mood?.setSanity(SANITY_UNSTABLE)
 	M.Jitter(20)
 	if(prob(80))
 		create_zavisimost(M)
@@ -213,7 +213,7 @@
 	M.add_client_colour(/datum/client_colour/heroin)
 	SEND_SIGNAL(M, COMSIG_ADD_MOOD_EVENT, "heroin", /datum/mood_event/heroin, name)
 	var/datum/component/mood/mood = M.GetComponent(/datum/component/mood)
-	mood.setSanity(SANITY_NEUTRAL)
+	mood?.setSanity(SANITY_NEUTRAL)
 	ADD_TRAIT(M, TRAIT_PAINKILLER, PAINKILLER_MORPHINE)
 	M.throw_alert("painkiller", /atom/movable/screen/alert/painkiller)
 	M.overlay_fullscreen("depression", /atom/movable/screen/fullscreen/scaled/depression, 3)

@@ -148,6 +148,16 @@ Unless you know what you're doing, only use the first three numbers. They're in 
 	qdel(source.GetComponent(/datum/component/slippery))
 	qdel(source.GetComponent(/datum/component/squeak))
 
+/// Metallic hydrogen (crystallizer product); used in atmos crafts and Elder Atmosian statue
+/datum/material/metalhydrogen
+	name = "Metal Hydrogen"
+	desc = "Solid metallic hydrogen. Some say it should be impossible."
+	color = "#62708A"
+	categories = list(MAT_CATEGORY_ORE = TRUE, MAT_CATEGORY_RIGID = TRUE, MAT_CATEGORY_BASE_RECIPES = TRUE)
+	sheet_type = /obj/item/stack/sheet/mineral/metal_hydrogen
+	value_per_unit = 0.07
+	beauty_modifier = 0.35
+	strength_modifier = 1.2
 
 ///Mediocre force increase
 /datum/material/titanium

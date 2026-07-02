@@ -43756,6 +43756,7 @@
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/components/binary/crystallizer,
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
 "buW" = (
@@ -66056,9 +66057,6 @@
 /obj/machinery/light{
 	dir = 1
 	},
-/obj/item/kirbyplants{
-	icon_state = "plant-05"
-	},
 /obj/effect/turf_decal/tile/neutral{
 	dir = 1
 	},
@@ -66069,6 +66067,7 @@
 /obj/structure/disposalpipe/segment{
 	dir = 6
 	},
+/obj/machinery/electrolyzer,
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
 "cfs" = (
@@ -68694,6 +68693,7 @@
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer1{
 	dir = 1
 	},
+/obj/structure/closet/crate/engineering/hfr,
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
 "cjP" = (
@@ -70150,9 +70150,7 @@
 /obj/structure/noticeboard{
 	pixel_y = 28
 	},
-/obj/item/kirbyplants{
-	icon_state = "plant-05"
-	},
+/obj/machinery/electrolyzer,
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
 "cmv" = (

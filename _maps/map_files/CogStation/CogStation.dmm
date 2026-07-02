@@ -18960,6 +18960,7 @@
 	alpha = 150
 	},
 /obj/machinery/atmospherics/pipe/simple/cyan/visible,
+/obj/structure/closet/crate/engineering/hfr,
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
 "aZe" = (
@@ -64738,6 +64739,10 @@
 /obj/effect/turf_decal/delivery,
 /turf/open/floor/plasteel,
 /area/engineering/atmospherics_engine)
+"itE" = (
+/obj/machinery/atmospherics/components/binary/crystallizer,
+/turf/open/floor/plating,
+/area/engineering/atmos)
 "itG" = (
 /obj/machinery/computer/secure_data{
 	dir = 1
@@ -70383,6 +70388,7 @@
 	dir = 4;
 	name = "high pressure supply"
 	},
+/obj/machinery/electrolyzer,
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
 "kvc" = (
@@ -148666,7 +148672,7 @@ cMo
 bap
 bkT
 cwB
-bdW
+itE
 bdW
 bdW
 bdW

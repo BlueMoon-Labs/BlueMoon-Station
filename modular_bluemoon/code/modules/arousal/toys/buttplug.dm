@@ -2,6 +2,7 @@
 	icon 		= 'modular_splurt/icons/obj/lewd_items/lewd_items.dmi'
 	var/buttplug_size  = 1
 	var/inside = FALSE
+	var/timer = 0
 
 /obj/item/buttplug/small
 	name		= "Small Buttplug"
@@ -81,6 +82,10 @@
 	)
 	AddComponent(/datum/component/genital_equipment, list(ORGAN_SLOT_PENIS, ORGAN_SLOT_WOMB, ORGAN_SLOT_VAGINA, ORGAN_SLOT_BREASTS, ORGAN_SLOT_ANUS), procs_list)
 
+/obj/item/buttplug/Destroy()
+	STOP_PROCESSING(SSobj,src)
+	. = ..()
+
 /obj/item/buttplug/proc/item_inserting(datum/source, obj/item/organ/genital/G, mob/living/user)
 	. = TRUE
 	if(!(G.owner.client?.prefs?.erppref == "Yes"))
@@ -119,36 +124,46 @@
 	to_chat(user, span_userlove("You attach [src] to <b>\The [G.owner]</b>'s [G]."))
 	playsound(G.owner, 'modular_sand/sound/lewd/champ_fingering.ogg', 50, 1, -1)
 	inside = TRUE
-	stuffed_movement(G.owner)
+	START_PROCESSING(SSobj,src)
 
 /obj/item/buttplug/proc/item_removed(datum/source, obj/item/organ/genital/G, mob/user)
 	. = TRUE
 	to_chat(user, span_userlove("You retrieve [src] from <b>\The [G.owner]</b>'s [G]."))
 	playsound(G.owner, 'modular_sand/sound/lewd/champ_fingering.ogg', 50, 1, -1)
 	inside = FALSE
+	STOP_PROCESSING(SSobj,src)
 
-/obj/item/buttplug/proc/stuffed_movement(mob/living/user)
-	while(inside)
-		if(activate_after(src, rand(50,350))) //5 to 35 seconds, every 20 sec on average
-			if(!istype(src.loc, /obj/item/organ/genital))
-				return
-			if(buttplug_size == 4)
-				to_chat(user, span_userdanger(pick("Огромная затычка внутри сводит вас с ума!", "Вы чувствуете мучительное удовольствие от огромной затычки глубоко внутри!")))
-				user.handle_post_sex(HIGH_LUST*2, null, user)
-				user.plug13_genital_emote(loc, HIGH_LUST*2 * 2)
-				if(user.client?.prefs.cit_toggles & SEX_JITTER) //By Gardelin0
-					user.Jitter(2)
-				user.Stun(3)
-				user.emote("moan")
-			else if(buttplug_size != 1)
-				to_chat(user, span_love(pick("Затычка внутри сводит вас с ума!", "Вы чувствуете мучительное удовольствие от затычки глубоко внутри!")))
-				user.handle_post_sex(NORMAL_LUST*2, null, user)
-				user.plug13_genital_emote(loc, NORMAL_LUST*2 * 2)
-				if(user.client?.prefs.cit_toggles & SEX_JITTER) //By Gardelin0
-					user.Jitter(1)
-				user.Stun(1)
-				user.emote("moan")
-			else
-				to_chat(user, span_love(pick("Я чувствую анальную затычку внутри!", "Вы чувствуете удовольствие от затычки глубоко внутри!")))
-				user.handle_post_sex(LOW_LUST*2, null, user)
-				user.plug13_genital_emote(loc, LOW_LUST*2 * 2)
+/obj/item/buttplug/process(delta_time)
+	timer -= delta_time
+	if(timer >= 0) // chech interval
+		return
+	else
+		timer = rand(50,350)
+
+	if(!istype(src.loc, /obj/item/organ/genital))
+		STOP_PROCESSING(SSobj,src)
+		return
+
+	var/obj/item/organ/genital/G = src.loc
+	var/mob/living/user = G.owner
+	if(buttplug_size == 4)
+		to_chat(user, span_userdanger(pick("Огромная затычка внутри сводит вас с ума!", "Вы чувствуете мучительное удовольствие от огромной затычки глубоко внутри!")))
+		user.handle_post_sex(HIGH_LUST*2, null, user)
+		user.plug13_genital_emote(loc, HIGH_LUST*2 * 2)
+		if(user.client?.prefs.cit_toggles & SEX_JITTER) //By Gardelin0
+			user.Jitter(2)
+		if(prob(20))
+			user.Stun(3)
+			user.emote("moan")
+	else if(buttplug_size != 1)
+		to_chat(user, span_love(pick("Затычка внутри сводит вас с ума!", "Вы чувствуете мучительное удовольствие от затычки глубоко внутри!")))
+		user.handle_post_sex(NORMAL_LUST*2, null, user)
+		user.plug13_genital_emote(loc, NORMAL_LUST*2 * 2)
+		if(user.client?.prefs.cit_toggles & SEX_JITTER) //By Gardelin0
+			user.Jitter(1)
+		if(prob(5))
+			user.Stun(1)
+	else
+		to_chat(user, span_love(pick("Я чувствую анальную затычку внутри!", "Вы чувствуете удовольствие от затычки глубоко внутри!")))
+		user.handle_post_sex(LOW_LUST*2, null, user)
+		user.plug13_genital_emote(loc, LOW_LUST*2 * 2)

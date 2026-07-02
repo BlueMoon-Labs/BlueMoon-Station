@@ -3,15 +3,27 @@ import { flow } from 'common/fp';
 import { toFixed } from 'common/math';
 
 import { useBackend } from '../backend';
-import { Box, Button, LabeledList, NumberInput, ProgressBar, Section, Stack } from '../components';
+import { Box, Button, LabeledList, NumberInput, ProgressBar, Section, Slider, Stack } from '../components';
 import { getGasColor, getGasLabel } from '../constants';
 import { formatSiBaseTenUnit, formatSiUnit } from '../format';
 import { Window } from '../layouts';
 
+/** Heat output is in K; negative = endothermic cooling. formatSiBaseTenUnit breaks on 0 and negatives. */
+const formatHeatOutputKelvin = (kelvin) => {
+  if (!Number.isFinite(kelvin)) {
+    return '0 K';
+  }
+  if (kelvin === 0) {
+    return '0 K';
+  }
+  const sign = kelvin > 0 ? '+' : '-';
+  return sign + formatSiBaseTenUnit(Math.abs(kelvin), 1, 'K');
+};
+
 export const Hypertorus = (props, context) => {
   const { act, data } = useBackend(context);
   const filterTypes = data.filter_types || [];
-  const selectedFuels = data.selected_fuel || [];
+  const selectableFuels = data.selectable_fuel || [];
   const {
     energy_level,
     core_temperature,
@@ -19,7 +31,6 @@ export const Hypertorus = (props, context) => {
     power_output,
     heat_limiter_modifier,
     heat_output,
-    heat_output_bool,
     heating_conductor,
     magnetic_constrictor,
     fuel_injection_rate,
@@ -31,6 +42,7 @@ export const Hypertorus = (props, context) => {
     start_power,
     start_cooling,
     start_fuel,
+    start_moderator,
     internal_fusion_temperature,
     moderator_internal_temperature,
     internal_output_temperature,
@@ -38,7 +50,20 @@ export const Hypertorus = (props, context) => {
     waste_remove,
     selected,
     product_gases,
+    cooling_volume,
+    mod_filtering_rate,
+    heat_output_min,
+    heat_output_max,
   } = data;
+  const safeHeatOutput = Number.isFinite(heat_output) ? heat_output : 0;
+  const heatOutputKelvin = safeHeatOutput * 1000;
+  const heatLimitMin = Number.isFinite(heat_output_min) ? heat_output_min : -1;
+  const heatLimitMax = Number.isFinite(heat_output_max) && heat_output_max !== 0
+    ? heat_output_max
+    : 1;
+  const heatDenom = safeHeatOutput < 0 ? heatLimitMin : heatLimitMax;
+  const heatActivity = heatDenom !== 0 ? safeHeatOutput / heatDenom : 0;
+  const safeHeatActivity = Number.isFinite(heatActivity) ? heatActivity : 0;
   const fusion_gases = flow([
     filter(gas => gas.amount >= 0.01),
     sortBy(gas => -gas.amount),
@@ -70,6 +95,7 @@ export const Hypertorus = (props, context) => {
               {'Start cooling: '}
               <Button
                 disabled={start_fuel === 1
+                  || start_moderator === 1
                   || start_power === 0
                   || (start_cooling && data.power_level > 0)}
                 icon={data.start_cooling ? 'power-off' : 'times'}
@@ -89,14 +115,15 @@ export const Hypertorus = (props, context) => {
             </Stack.Item>
           </Stack>
         </Section>
-        <Section>
+        <Section title="Reaction">
           <LabeledList>
             <LabeledList.Item label="Fuel">
-              {selectedFuels.map(recipe => (
+              {selectableFuels.map(recipe => (
                 <Button
                   disabled={data.power_level > 0}
-                  key={recipe.id}
-                  selected={recipe.id === selected}
+                  key={recipe.id ?? 'nothing'}
+                  selected={(recipe.id === selected)
+                    || (selected === null && recipe.id === null)}
                   content={recipe.name}
                   onClick={() => act('fuel', {
                     mode: recipe.id,
@@ -107,7 +134,7 @@ export const Hypertorus = (props, context) => {
               <Box m={1} style={{
                 'white-space': 'pre-wrap',
               }}>
-                {product_gases}
+                {product_gases ?? 'None'}
               </Box>
             </LabeledList.Item>
           </LabeledList>
@@ -116,10 +143,10 @@ export const Hypertorus = (props, context) => {
           <LabeledList>
             {fusion_gases.map(gas => (
               <LabeledList.Item
-                key={gas.name}
-                label={getGasLabel(gas.name)}>
+                key={gas.id}
+                label={getGasLabel(gas.id)}>
                 <ProgressBar
-                  color={getGasColor(gas.name)}
+                  color={getGasColor(gas.id)}
                   value={gas.amount}
                   minValue={0}
                   maxValue={fusionMax}>
@@ -131,12 +158,30 @@ export const Hypertorus = (props, context) => {
         </Section>
         <Section title="Moderator Gases">
           <LabeledList>
+            <LabeledList.Item label="Moderator injection">
+              <Button
+                disabled={start_power === 0 || start_cooling === 0}
+                icon={start_moderator ? 'power-off' : 'times'}
+                content={start_moderator ? 'On' : 'Off'}
+                selected={start_moderator}
+                onClick={() => act('start_moderator')} />
+              <NumberInput
+                animated
+                value={parseFloat(moderator_injection_rate)}
+                width="63px"
+                unit="mol/s"
+                minValue={5}
+                maxValue={1500}
+                onDrag={(e, value) => act('moderator_injection_rate', {
+                  moderator_injection_rate: value,
+                })} />
+            </LabeledList.Item>
             {moderator_gases.map(gas => (
               <LabeledList.Item
-                key={gas.name}
-                label={getGasLabel(gas.name)}>
+                key={gas.id}
+                label={getGasLabel(gas.id)}>
                 <ProgressBar
-                  color={getGasColor(gas.name)}
+                  color={getGasColor(gas.id)}
                   value={gas.amount}
                   minValue={0}
                   maxValue={moderatorMax}>
@@ -196,10 +241,10 @@ export const Hypertorus = (props, context) => {
             <LabeledList.Item label="Heat Output">
               <ProgressBar
                 color={'grey'}
-                value={heat_output}
-                minValue={-1e40}
-                maxValue={1e30}>
-                {heat_output_bool + formatSiBaseTenUnit(heat_output * 1000, 1, 'K')}
+                value={safeHeatActivity}
+                minValue={-1}
+                maxValue={1.3}>
+                {formatHeatOutputKelvin(heatOutputKelvin)}
               </ProgressBar>
             </LabeledList.Item>
           </LabeledList>
@@ -275,23 +320,11 @@ export const Hypertorus = (props, context) => {
                 animated
                 value={parseFloat(data.fuel_injection_rate)}
                 width="63px"
-                unit="g/s"
+                unit="mol/s"
                 minValue={5}
                 maxValue={1500}
                 onDrag={(e, value) => act('fuel_injection_rate', {
                   fuel_injection_rate: value,
-                })} />
-            </LabeledList.Item>
-            <LabeledList.Item label="Moderator Injection Rate">
-              <NumberInput
-                animated
-                value={parseFloat(data.moderator_injection_rate)}
-                width="63px"
-                unit="g/s"
-                minValue={5}
-                maxValue={1500}
-                onDrag={(e, value) => act('moderator_injection_rate', {
-                  moderator_injection_rate: value,
                 })} />
             </LabeledList.Item>
             <LabeledList.Item label="Current Damper">
@@ -306,6 +339,19 @@ export const Hypertorus = (props, context) => {
                   current_damper: value,
                 })} />
             </LabeledList.Item>
+            <LabeledList.Item label="Cooling Volume">
+              <NumberInput
+                animated
+                value={parseFloat(cooling_volume)}
+                width="63px"
+                unit="L"
+                minValue={50}
+                maxValue={2000}
+                step={25}
+                onDrag={(e, value) => act('cooling_volume', {
+                  cooling_volume: value,
+                })} />
+            </LabeledList.Item>
           </LabeledList>
         </Section>
         <Section>
@@ -318,14 +364,27 @@ export const Hypertorus = (props, context) => {
                 selected={data.waste_remove}
                 onClick={() => act('waste_remove')} />
             </LabeledList.Item>
+            <LabeledList.Item label="Moderator filtering rate">
+              <Slider
+                value={mod_filtering_rate}
+                minValue={5}
+                maxValue={200}
+                step={1}
+                stepPixelSize={6}
+                onDrag={(e, value) => act('mod_filtering_rate', {
+                  mod_filtering_rate: value,
+                })}>
+                {mod_filtering_rate + ' mol/s'}
+              </Slider>
+            </LabeledList.Item>
             <LabeledList.Item label="Filter from moderator mix">
               {filterTypes.map(filter => (
                 <Button
-                  key={filter.id}
-                  selected={filter.selected}
-                  content={getGasLabel(filter.id, filter.name)}
+                  key={filter.gas_id}
+                  selected={filter.enabled}
+                  content={getGasLabel(filter.gas_id, filter.gas_name)}
                   onClick={() => act('filter', {
-                    mode: filter.id,
+                    mode: filter.gas_id,
                   })} />
               ))}
             </LabeledList.Item>

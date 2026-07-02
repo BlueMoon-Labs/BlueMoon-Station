@@ -55,12 +55,19 @@
 		"water vapor" = /obj/machinery/portable_atmospherics/canister/water_vapor,
 		"tritium" = /obj/machinery/portable_atmospherics/canister/tritium,
 		"hyper-noblium" = /obj/machinery/portable_atmospherics/canister/nob,
-		"stimulum" = /obj/machinery/portable_atmospherics/canister/stimulum,
 		"pluoxium" = /obj/machinery/portable_atmospherics/canister/pluoxium,
 		"caution" = /obj/machinery/portable_atmospherics/canister,
 		"miasma" = /obj/machinery/portable_atmospherics/canister/miasma,
 		"methane" = /obj/machinery/portable_atmospherics/canister/methane,
-		"methyl bromide" = /obj/machinery/portable_atmospherics/canister/methyl_bromide
+		"hydrogen" = /obj/machinery/portable_atmospherics/canister/hydrogen,
+		"helium" = /obj/machinery/portable_atmospherics/canister/helium,
+		"freon" = /obj/machinery/portable_atmospherics/canister/freon,
+		"halon" = /obj/machinery/portable_atmospherics/canister/halon,
+		"antinoblium" = /obj/machinery/portable_atmospherics/canister/antinoblium,
+		"proto nitrate" = /obj/machinery/portable_atmospherics/canister/proto_nitrate,
+		"zauker" = /obj/machinery/portable_atmospherics/canister/zauker,
+		"healium" = /obj/machinery/portable_atmospherics/canister/healium,
+		"nitrium" = /obj/machinery/portable_atmospherics/canister/nitrium
 	)
 
 /obj/machinery/portable_atmospherics/canister/interact(mob/user)
@@ -129,6 +136,7 @@
 	icon_state = "brown"
 	gas_type = GAS_NITRYL
 
+// Убраны из label2types (не заказываются), но оставлены для совместимости с картами (Academy, ihategordon, undergroundoutpost45)
 /obj/machinery/portable_atmospherics/canister/stimulum
 	name = "stimulum canister"
 	desc = "Stimulum. High energy gas, high energy people."
@@ -161,11 +169,66 @@
 	icon_state = "greyblackred"
 	gas_type = GAS_METHANE
 
+// Убраны из label2types (не заказываются), оставлены для совместимости с картами (undergroundoutpost45)
 /obj/machinery/portable_atmospherics/canister/methyl_bromide
 	name = "methyl bromide canister"
 	desc = "Methyl bromide. A potent toxin to most, essential for the Kharmaan to live."
 	icon_state = "purplecyan"
 	gas_type = GAS_METHYL_BROMIDE
+
+/obj/machinery/portable_atmospherics/canister/hydrogen
+	name = "hydrogen canister"
+	desc = "Hydrogen. Flammable and used in fusion."
+	icon_state = "green"
+	gas_type = GAS_HYDROGEN
+
+/obj/machinery/portable_atmospherics/canister/helium
+	name = "helium canister"
+	desc = "Helium. Inert gas, byproduct of fusion."
+	icon_state = "grey"
+	gas_type = GAS_HELIUM
+
+/obj/machinery/portable_atmospherics/canister/freon
+	name = "freon canister"
+	desc = "Freon. Coolant gas. Breathing causes burn damage and slowdown."
+	icon_state = "darkblue"
+	gas_type = GAS_FREON
+
+/obj/machinery/portable_atmospherics/canister/halon
+	name = "halon canister"
+	desc = "Halon. Fire suppressant. Heavy slowdown and heat proof when inhaled."
+	icon_state = "purple"
+	gas_type = GAS_HALON
+
+/obj/machinery/portable_atmospherics/canister/antinoblium
+	name = "antinoblium canister"
+	desc = "Antinoblium. Rare fuel for fusion, replicates by consuming other gases."
+	icon_state = "darkpurple"
+	gas_type = GAS_ANTINOBLIUM
+
+/obj/machinery/portable_atmospherics/canister/proto_nitrate
+	name = "proto nitrate canister"
+	desc = "Proto nitrate. Highly reactive gas, catalyst for many reactions."
+	icon_state = "brown"
+	gas_type = GAS_PROTO_NITRATE
+
+/obj/machinery/portable_atmospherics/canister/zauker
+	name = "zauker canister"
+	desc = "Zauker. Incredibly deadly if inhaled."
+	icon_state = "black"
+	gas_type = GAS_ZAUKER
+
+/obj/machinery/portable_atmospherics/canister/healium
+	name = "healium canister"
+	desc = "Healium. Healing gas, stronger sleeping agent than N2O."
+	icon_state = "red"
+	gas_type = GAS_HEALIUM
+
+/obj/machinery/portable_atmospherics/canister/nitrium
+	name = "nitrium canister"
+	desc = "Nitrium. Gaseous stimulant, enhances speed and endurance."
+	icon_state = "orange"
+	gas_type = GAS_NITRIUM
 
 /obj/machinery/portable_atmospherics/canister/proc/get_time_left()
 	if(timing)

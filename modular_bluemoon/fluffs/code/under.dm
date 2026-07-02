@@ -403,6 +403,7 @@
 	LAZYADD(user.vis_contents, particle_effect_holder)
 	LAZYADD(user.vis_contents, echo)
 
+	user.render_target = user.render_target || ref(user);
 	echo.render_source = user.render_target
 	var/list/monitors = list(
 			/datum/neural_monitor/nt_net = list(src),
@@ -913,4 +914,15 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/underwear.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+	can_adjust = FALSE
+
+/obj/item/clothing/under/donator/bm/ntrdrip
+	name = "Nanotrasen Representative Uniform"
+	desc = "Белые пиджачки чистят мусор"
+	icon_state = "ntrdrip"
+	item_state = "ntrdrip"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/under_digi.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE
 	can_adjust = FALSE
