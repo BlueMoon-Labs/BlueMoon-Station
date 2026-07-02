@@ -196,7 +196,10 @@
 	// log_admin("DEBUG \[[world.timeofday]\]: /obj/machinery/atmospherics/components/unary/vent_pump/receive_signal([signal.debug_print()])")
 	if(!signal.data["tag"] || (signal.data["tag"] != id_tag) || (signal.data["sigtype"]!="command"))
 		return
-	atmos_wake()
+	// init (rename) and status polls are read-only telemetry; only real commands
+	// may reset the idle heartbeat.
+	if(!("status" in signal.data) && !("init" in signal.data))
+		atmos_wake()
 
 	var/mob/signal_sender = signal.data["user"]
 

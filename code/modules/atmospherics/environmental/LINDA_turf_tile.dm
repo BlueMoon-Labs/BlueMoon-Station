@@ -191,14 +191,14 @@
 	var/list/cached_gases = air.gases
 	var/list/gas_overlays = GLOB.gas_data.overlays
 	var/list/gas_visibility = GLOB.gas_data.visibility
-	for(var/id in cached_gases)
-		if (nonoverlaying_gases[id])
+	for(var/gas_id as anything in cached_gases)
+		if (nonoverlaying_gases[gas_id])
 			continue
-		var/gas_overlay = gas_overlays[id]
+		var/gas_overlay = gas_overlays[gas_id]
 		if(!gas_overlay)
 			continue
-		var/moles = cached_gases[id]
-		if(moles <= gas_visibility[id])
+		var/moles = cached_gases[gas_id]
+		if(moles <= gas_visibility[gas_id])
 			continue
 		LAZYADD(new_overlay_types, gas_overlay[min(FACTOR_GAS_VISIBLE_MAX, CEILING(moles / MOLES_GAS_VISIBLE_STEP, 1))])
 
@@ -415,6 +415,16 @@
 			our_air.vent_ratio(our_share_coeff)
 			if(abs(our_air.temperature - TCMB) > MINIMUM_TEMPERATURE_DELTA_TO_CONSIDER)
 				our_air.temperature_share(null, OPEN_HEAT_TRANSFER_COEFFICIENT, TCMB, HEAT_CAPACITY_VACUUM)
+			// A turf draining to space must stay active until it is actually empty:
+			// without a group the end-of-proc check deactivates a lone leaking turf
+			// after one pass, freezing the leak mid-drain. The moles/temperature gate
+			// above ends the churn once the turf reaches vacuum.
+			if(!our_excited_group)
+				var/datum/excited_group/space_group = new
+				space_group.add_turf(src)
+				our_excited_group = excited_group
+			else
+				our_excited_group.reset_cooldowns()
 			// Derive both pressures from the known mole scaling instead of
 			// re-summing the gas list twice through return_pressure().
 			var/volume_cache = our_air.volume

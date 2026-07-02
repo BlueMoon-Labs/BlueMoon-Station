@@ -243,7 +243,10 @@
 	if(!is_operational || !signal.data["tag"] || (signal.data["tag"] != id_tag) || (signal.data["sigtype"]!="command"))
 		return FALSE
 
-	atmos_wake()
+	// init (rename) and status polls are read-only telemetry; only real commands
+	// may reset the idle heartbeat.
+	if(!("status" in signal.data) && !("init" in signal.data))
+		atmos_wake()
 	var/mob/signal_sender = signal.data["user"]
 
 	if("power" in signal.data)

@@ -85,10 +85,13 @@
 
 	var/transfer_ratio = transfer_rate/input_volume
 
-	air1.transfer_ratio_to(air2,transfer_ratio)
-	atmos_idle_streak = 0
-
-	update_parents()
+	if(air1.transfer_ratio_to(air2, transfer_ratio))
+		atmos_idle_streak = 0
+		update_parents()
+	else
+		// Zero transfer rate (or nothing actually moved): a no-op must not keep
+		// the pump awake and dirty the pipenet every fire. Woken by UI/signals.
+		atmos_consider_idle()
 
 /obj/machinery/atmospherics/components/binary/volume_pump/proc/set_frequency(new_frequency)
 	SSradio.remove_object(src, frequency)
@@ -160,7 +163,9 @@
 	if(!signal.data["tag"] || (signal.data["tag"] != id) || (signal.data["sigtype"]!="command"))
 		return
 
-	atmos_wake()
+	// Pure status polls are read-only telemetry and must not reset the idle heartbeat.
+	if(!("status" in signal.data))
+		atmos_wake()
 	var/old_on = on //for logging
 
 	if("power" in signal.data)

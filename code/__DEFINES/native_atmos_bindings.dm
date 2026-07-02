@@ -1,5 +1,9 @@
 // Атмосфера на DM (газ в gas_mixture.gases, реакции в react(), без Auxmos).
 
+/// Sentinel temperature gate meaning "no temperature-gated reactions exist".
+/// A plain huge constant because this file compiles before the INFINITY define.
+#define ATMOS_NO_TEMPERATURE_GATE 1e30
+
 // Подсистема и глобальные заглушки
 /datum/controller/subsystem/air
 	/// Open turfs that participate in native DM atmos processing.
@@ -21,8 +25,7 @@
 	/// Reactions with no gas requirement at all (assoc: reaction -> its TEMP gate).
 	var/list/temp_gated_reactions
 	/// Lowest TEMP gate among temp_gated_reactions, for a single cheap precheck.
-	/// 1e30 acts as "no such reactions" (this file compiles before the INFINITY define).
-	var/temp_gated_min_temp = 1e30
+	var/temp_gated_min_temp = ATMOS_NO_TEMPERATURE_GATE
 
 /datum/controller/subsystem/air/proc/get_max_gas_mixes()
 	return dm_max_registered_gas_mixtures
@@ -242,7 +245,7 @@
 /datum/controller/subsystem/air/proc/auxtools_update_reactions()
 	var/list/by_gas = list()
 	var/list/temp_gated = list()
-	var/gate_floor = 1e30
+	var/gate_floor = ATMOS_NO_TEMPERATURE_GATE
 	var/index = 0
 	for(var/datum/gas_reaction/reaction as anything in gas_reactions)
 		index++
@@ -801,6 +804,10 @@
 	for(var/id in cached_gases)
 		total += cached_gases[id]
 	if(!total)
+		// A mixture that reacted on a previous call and has since been emptied
+		// must not leave stale per-call results (hotspots read them after react()).
+		if(length(reaction_results))
+			reaction_results.Cut()
 		return
 
 	// Gather candidates through the key-gas index instead of scanning every

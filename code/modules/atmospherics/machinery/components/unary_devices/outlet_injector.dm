@@ -73,11 +73,12 @@
 	var/datum/gas_mixture/air_contents = airs[1]
 	var/air_volume = air_contents.return_volume()
 
-	// An empty pipe must not reactivate the turf and dirty the pipenet every
-	// fire; the pipenet pressure-jump broadcast wakes us when gas arrives.
-	if(air_contents.return_temperature() > 0 && air_volume > 0 && air_contents.total_moles() > 0)
-		// assume_air_ratio already reactivates the turf.
-		loc.assume_air_ratio(air_contents, volume_rate / air_volume)
+	// An empty pipe or a zero volume_rate must not reactivate the turf and dirty
+	// the pipenet every fire; the pipenet pressure-jump broadcast and UI/signal
+	// wakes cover the moment that changes. assume_air_ratio reports whether any
+	// gas actually moved and already reactivates the turf on success.
+	if(air_contents.return_temperature() > 0 && air_volume > 0 \
+		&& loc.assume_air_ratio(air_contents, volume_rate / air_volume))
 		update_parents()
 		atmos_idle_streak = 0
 	else
@@ -130,7 +131,9 @@
 	if(!signal.data["tag"] || (signal.data["tag"] != id) || (signal.data["sigtype"]!="command"))
 		return
 
-	atmos_wake()
+	// Pure status polls are read-only telemetry and must not reset the idle heartbeat.
+	if(!("status" in signal.data))
+		atmos_wake()
 	if("power" in signal.data)
 		on = text2num(signal.data["power"])
 
