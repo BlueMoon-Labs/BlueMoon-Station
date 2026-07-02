@@ -19,6 +19,10 @@ What are the archived variables for?
 	var/min_heat_capacity = 0
 	var/last_share = 0
 	var/gc_share = FALSE
+	/// Heat capacity frozen at mark_immutable() time; immutable mixtures cannot
+	/// change gases afterwards, so hot readers (share_with_template) use this
+	/// instead of re-walking the gas list every call.
+	var/tmp/immutable_heat_capacity = 0
 	var/list/gas_archive
 	/// Native DM atmos registration guard.
 	var/dm_registered_to_ssair = FALSE
@@ -181,10 +185,11 @@ What are the archived variables for?
 
 	var/temperature_delta = temperature_archived - sharer.temperature_archived
 	var/abs_temperature_delta = abs(temperature_delta)
+	var/consider_heat = abs_temperature_delta > MINIMUM_TEMPERATURE_DELTA_TO_CONSIDER
 
 	var/old_self_heat_capacity = 0
 	var/old_sharer_heat_capacity = 0
-	if(abs_temperature_delta > MINIMUM_TEMPERATURE_DELTA_TO_CONSIDER)
+	if(consider_heat)
 		old_self_heat_capacity = heat_capacity()
 		old_sharer_heat_capacity = sharer.heat_capacity()
 
@@ -193,32 +198,77 @@ What are the archived variables for?
 
 	var/moved_moles = 0
 	var/abs_moved_moles = 0
+	var/our_moles = 0
+	var/their_moles = 0
+	var/list/zero_ours
+	var/list/zero_theirs
 
 	var/list/cached_gasheats = GLOB.gas_data.specific_heats
-	for(var/id in cached_gases | sharer_gases)
+	// This runs for every sharing turf pair every cycle: iterate the two key sets
+	// directly instead of allocating a `cached_gases | sharer_gases` union, fold the
+	// final mole recount into the same pass, and collect emptied ids instead of
+	// sweeping full .Copy() snapshots afterwards.
+	for(var/id in cached_gases)
+		var/ours = cached_gases[id]
+		var/theirs = sharer_gases[id]
 		var/delta = QUANTIZE((self_archive[id] || 0) - (sharer_archive[id] || 0))
-		if(!delta)
-			continue
-		if(delta > 0)
-			delta *= our_coeff
-		else
-			delta *= sharer_coeff
-
-		if(abs_temperature_delta > MINIMUM_TEMPERATURE_DELTA_TO_CONSIDER)
-			var/gas_heat_capacity = delta * (cached_gasheats[id] || 0)
+		if(delta)
 			if(delta > 0)
-				heat_capacity_self_to_sharer += gas_heat_capacity
+				delta *= our_coeff
 			else
-				heat_capacity_sharer_to_self -= gas_heat_capacity
+				delta *= sharer_coeff
+			if(consider_heat)
+				var/gas_heat_capacity = delta * (cached_gasheats[id] || 0)
+				if(delta > 0)
+					heat_capacity_self_to_sharer += gas_heat_capacity
+				else
+					heat_capacity_sharer_to_self -= gas_heat_capacity
+			ours -= delta
+			theirs = (theirs || 0) + delta
+			cached_gases[id] = ours
+			sharer_gases[id] = theirs
+			moved_moles += delta
+			abs_moved_moles += abs(delta)
+		our_moles += ours
+		if(QUANTIZE(ours) <= 0)
+			LAZYADD(zero_ours, id)
+		if(!isnull(theirs))
+			their_moles += theirs
+			if(QUANTIZE(theirs) <= 0)
+				LAZYADD(zero_theirs, id)
 
-		cached_gases[id] = (cached_gases[id] || 0) - delta
-		sharer_gases[id] = (sharer_gases[id] || 0) + delta
-		moved_moles += delta
-		abs_moved_moles += abs(delta)
+	for(var/id in sharer_gases)
+		if(id in cached_gases)
+			continue
+		var/theirs = sharer_gases[id]
+		var/delta = QUANTIZE((self_archive[id] || 0) - (sharer_archive[id] || 0))
+		if(delta)
+			if(delta > 0)
+				delta *= our_coeff
+			else
+				delta *= sharer_coeff
+			if(consider_heat)
+				var/gas_heat_capacity = delta * (cached_gasheats[id] || 0)
+				if(delta > 0)
+					heat_capacity_self_to_sharer += gas_heat_capacity
+				else
+					heat_capacity_sharer_to_self -= gas_heat_capacity
+			var/ours = -delta
+			theirs += delta
+			cached_gases[id] = ours
+			sharer_gases[id] = theirs
+			moved_moles += delta
+			abs_moved_moles += abs(delta)
+			our_moles += ours
+			if(QUANTIZE(ours) <= 0)
+				LAZYADD(zero_ours, id)
+		their_moles += theirs
+		if(QUANTIZE(theirs) <= 0)
+			LAZYADD(zero_theirs, id)
 
 	last_share = abs_moved_moles
 
-	if(abs_temperature_delta > MINIMUM_TEMPERATURE_DELTA_TO_CONSIDER)
+	if(consider_heat)
 		var/new_self_heat_capacity = old_self_heat_capacity + heat_capacity_sharer_to_self - heat_capacity_self_to_sharer
 		var/new_sharer_heat_capacity = old_sharer_heat_capacity + heat_capacity_self_to_sharer - heat_capacity_sharer_to_self
 
@@ -231,22 +281,99 @@ What are the archived variables for?
 				if(abs(new_sharer_heat_capacity / old_sharer_heat_capacity - 1) < 0.1)
 					temperature_share(sharer, OPEN_HEAT_TRANSFER_COEFFICIENT)
 
-	for(var/id in cached_gases.Copy())
-		if(QUANTIZE(cached_gases[id]) <= 0)
-			cached_gases -= id
-	for(var/id in sharer_gases.Copy())
-		if(QUANTIZE(sharer_gases[id]) <= 0)
-			sharer_gases -= id
+	if(zero_ours)
+		cached_gases.Remove(zero_ours)
+	if(zero_theirs)
+		sharer_gases.Remove(zero_theirs)
 
 	if(temperature_delta > MINIMUM_TEMPERATURE_TO_MOVE || abs(moved_moles) > MINIMUM_MOLES_DELTA_TO_MOVE)
-		var/our_moles = 0
-		for(var/id in cached_gases)
-			our_moles += cached_gases[id]
-		var/their_moles = 0
-		for(var/id in sharer_gases)
-			their_moles += sharer_gases[id]
 		return (temperature_archived * (our_moles + moved_moles) - sharer.temperature_archived * (their_moles - moved_moles)) * R_IDEAL_GAS_EQUATION / volume
 	return 0
+
+/// One-sided share() against an immutable template mixture (planetary atmosphere):
+/// src moves toward the template exactly as share(fresh_template_copy, coeff, coeff)
+/// would move it, but nothing is written to the template and no copy is allocated.
+/// The template must be archived with gases matching its archive (parse_gas_string does this).
+/datum/gas_mixture/proc/share_with_template(datum/gas_mixture/template, coeff)
+	if(!template || gc_share)
+		return
+	coeff = clamp(coeff, 0, 1)
+	if(!coeff)
+		return
+
+	var/list/cached_gases = gases
+	var/list/template_gases = template.gases
+	var/list/self_archive = gas_archive || cached_gases
+
+	var/temperature_delta = temperature_archived - template.temperature_archived
+	var/consider_heat = abs(temperature_delta) > MINIMUM_TEMPERATURE_DELTA_TO_CONSIDER
+
+	var/old_self_heat_capacity = 0
+	var/old_template_heat_capacity = 0
+	if(consider_heat)
+		old_self_heat_capacity = heat_capacity()
+		// The template never changes after mark_immutable(); the fallback only
+		// covers a mutable mixture passed in by mistake.
+		old_template_heat_capacity = template.immutable_heat_capacity || template.heat_capacity()
+
+	var/heat_capacity_self_to_sharer = 0
+	var/heat_capacity_sharer_to_self = 0
+	var/abs_moved_moles = 0
+	var/list/zero_ours
+
+	var/list/cached_gasheats = GLOB.gas_data.specific_heats
+	for(var/id in cached_gases)
+		var/ours = cached_gases[id]
+		var/delta = QUANTIZE((self_archive[id] || 0) - (template_gases[id] || 0))
+		if(delta)
+			delta *= coeff
+			if(consider_heat)
+				var/gas_heat_capacity = delta * (cached_gasheats[id] || 0)
+				if(delta > 0)
+					heat_capacity_self_to_sharer += gas_heat_capacity
+				else
+					heat_capacity_sharer_to_self -= gas_heat_capacity
+			ours -= delta
+			cached_gases[id] = ours
+			abs_moved_moles += abs(delta)
+		if(QUANTIZE(ours) <= 0)
+			LAZYADD(zero_ours, id)
+
+	for(var/id in template_gases)
+		if(id in cached_gases)
+			continue
+		var/delta = QUANTIZE((self_archive[id] || 0) - (template_gases[id] || 0))
+		if(!delta)
+			continue
+		delta *= coeff
+		if(consider_heat)
+			var/gas_heat_capacity = delta * (cached_gasheats[id] || 0)
+			if(delta > 0)
+				heat_capacity_self_to_sharer += gas_heat_capacity
+			else
+				heat_capacity_sharer_to_self -= gas_heat_capacity
+		var/ours = -delta
+		cached_gases[id] = ours
+		abs_moved_moles += abs(delta)
+		if(QUANTIZE(ours) <= 0)
+			LAZYADD(zero_ours, id)
+
+	last_share = abs_moved_moles
+
+	if(consider_heat)
+		var/new_self_heat_capacity = old_self_heat_capacity + heat_capacity_sharer_to_self - heat_capacity_self_to_sharer
+		if(new_self_heat_capacity > MINIMUM_HEAT_CAPACITY)
+			temperature = (old_self_heat_capacity * temperature - heat_capacity_self_to_sharer * temperature_archived + heat_capacity_sharer_to_self * template.temperature_archived) / new_self_heat_capacity
+		// share() follows up with conductive equalization when the sharer heat
+		// capacity barely changed; replicate that against the template values
+		// through the null-sharer temperature_share path (no writes to template).
+		var/new_template_heat_capacity = old_template_heat_capacity + heat_capacity_self_to_sharer - heat_capacity_sharer_to_self
+		if(new_template_heat_capacity > MINIMUM_HEAT_CAPACITY && abs(old_template_heat_capacity) > MINIMUM_HEAT_CAPACITY)
+			if(abs(new_template_heat_capacity / old_template_heat_capacity - 1) < 0.1)
+				temperature_share(null, OPEN_HEAT_TRANSFER_COEFFICIENT, template.temperature_archived, old_template_heat_capacity)
+
+	if(zero_ours)
+		cached_gases.Remove(zero_ours)
 
 /datum/gas_mixture/remove_by_flag(flag, amount)
 	var/datum/gas_mixture/removed = new type
@@ -385,12 +512,8 @@ get_true_breath_pressure(pp) --> gas_pp = pp/breath_pp*total_moles()
 
 		//Actually transfer the gas
 		if(output_air.gc_share)
-			var/datum/gas_mixture/removed = input_air.remove(transfer_moles)
-			if(!removed || removed.total_moles() <= 0)
-				if(removed)
-					qdel(removed)
+			if(!input_air.vent_moles(transfer_moles))
 				return FALSE
-			qdel(removed)
 		else if(!input_air.transfer_to(output_air, transfer_moles))
 			return FALSE
 

@@ -105,6 +105,7 @@
 			reference.other_airs -= airs[i] // Disconnects from the pipeline side
 			parents[i] = null // Disconnects from the machinery side.
 	reference.other_atmosmch -= src
+	LAZYREMOVE(reference.bridging_atmosmch, src)
 	/**
 	 *  We explicitly qdel pipeline when this particular pipeline
 	 *  is projected to have no member and cause GC problems.
@@ -135,6 +136,7 @@
 			var/changed = FALSE
 			if(src in P.other_atmosmch)
 				P.other_atmosmch -= src
+				LAZYREMOVE(P.bridging_atmosmch, src)
 				changed = TRUE
 			if(air_ref && (air_ref in P.other_airs))
 				P.other_airs -= air_ref

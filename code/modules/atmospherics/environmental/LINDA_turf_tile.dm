@@ -33,6 +33,9 @@
 	var/planetary_atmos = FALSE //air will revert to initial_gas_mix over time
 
 	var/list/atmos_overlay_types //gas IDs of current active gas overlays
+	///Vents/scrubbers that want an instant wake-up when air on this turf changes.
+	///Maintained by /obj/machinery/atmospherics/register_turf_wake().
+	var/tmp/list/atmos_wake_machines
 
 /turf/open/Initialize(mapload, inherited_virtual_z)
 	air = new(2500,src)
@@ -59,12 +62,8 @@
 	if(!giver)
 		return FALSE
 	if(air?.gc_share)
-		var/datum/gas_mixture/removed = giver.remove(moles)
-		if(!removed || removed.total_moles() <= 0)
-			if(removed)
-				qdel(removed)
+		if(!giver.vent_moles(moles))
 			return FALSE
-		qdel(removed)
 	else if(!giver.transfer_to(air, moles))
 		return FALSE
 	update_visuals()
@@ -76,12 +75,8 @@
 	if(!giver)
 		return FALSE
 	if(air?.gc_share)
-		var/datum/gas_mixture/removed = giver.remove_ratio(ratio)
-		if(!removed || removed.total_moles() <= 0)
-			if(removed)
-				qdel(removed)
+		if(!giver.vent_ratio(ratio))
 			return FALSE
-		qdel(removed)
 	else if(!giver.transfer_ratio_to(air, ratio))
 		return FALSE
 	update_visuals()
@@ -92,7 +87,8 @@
 /turf/open/transfer_air(datum/gas_mixture/taker, moles)
 	if(!taker || !return_air()) // shouldn't transfer from space
 		return FALSE
-	air.transfer_to(taker, moles)
+	if(!air.transfer_to(taker, moles))
+		return FALSE
 	update_visuals()
 	if(SSair)
 		SSair.add_to_active(src)
@@ -101,7 +97,8 @@
 /turf/open/transfer_air_ratio(datum/gas_mixture/taker, ratio)
 	if(!taker || !return_air())
 		return FALSE
-	air.transfer_ratio_to(taker, ratio)
+	if(!air.transfer_ratio_to(taker, ratio))
+		return FALSE
 	update_visuals()
 	if(SSair)
 		SSair.add_to_active(src)
@@ -179,7 +176,6 @@
 /turf/open/proc/update_visuals()
 
 	var/list/atmos_overlay_types = src.atmos_overlay_types // Cache for free performance
-	var/list/new_overlay_types = list()
 	var/static/list/nonoverlaying_gases = typecache_of_gases_with_no_overlays()
 
 	if(!air) // 2019-05-14: was not able to get this path to fire in testing. Consider removing/looking at callers -Naksu
@@ -189,13 +185,27 @@
 			src.atmos_overlay_types = null
 		return
 
-
-	for(var/id in air.get_gases())
+	// Runs for every active turf every cycle: read the gas list directly and only
+	// allocate the overlay list once a visible gas is actually found.
+	var/list/new_overlay_types
+	var/list/cached_gases = air.gases
+	var/list/gas_overlays = GLOB.gas_data.overlays
+	var/list/gas_visibility = GLOB.gas_data.visibility
+	for(var/id in cached_gases)
 		if (nonoverlaying_gases[id])
 			continue
-		var/gas_overlay = GLOB.gas_data.overlays[id]
-		if(gas_overlay && air.get_moles(id) > GLOB.gas_data.visibility[id])
-			new_overlay_types += gas_overlay[min(FACTOR_GAS_VISIBLE_MAX, CEILING(air.get_moles(id) / MOLES_GAS_VISIBLE_STEP, 1))]
+		var/gas_overlay = gas_overlays[id]
+		if(!gas_overlay)
+			continue
+		var/moles = cached_gases[id]
+		if(moles <= gas_visibility[id])
+			continue
+		LAZYADD(new_overlay_types, gas_overlay[min(FACTOR_GAS_VISIBLE_MAX, CEILING(moles / MOLES_GAS_VISIBLE_STEP, 1))])
+
+	if(!new_overlay_types && !atmos_overlay_types)
+		return
+	if(!new_overlay_types)
+		new_overlay_types = list()
 
 	if (atmos_overlay_types)
 		for(var/overlay in atmos_overlay_types-new_overlay_types) //doesn't remove overlays that would only be added
@@ -315,9 +325,7 @@
 
 		var/starting_pressure = edge_turf.air.return_pressure()
 		var/ratio = min(1, 0.25 * space_sides)
-		var/datum/gas_mixture/released = edge_turf.air.remove_ratio(ratio)
-		if(released)
-			qdel(released)
+		edge_turf.air.vent_ratio(ratio)
 		edge_turf.air.temperature_share(null, OPEN_HEAT_TRANSFER_COEFFICIENT, TCMB, HEAT_CAPACITY_VACUUM)
 
 		var/pressure_drop = max(0, starting_pressure - edge_turf.air.return_pressure())
@@ -391,24 +399,31 @@
 	var/datum/gas_mixture/our_air = air
 
 	for(var/turf/open/enemy_tile as anything in adjacent_turfs)
-		if(!istype(enemy_tile) || enemy_tile.blocks_air || !enemy_tile.air)
+		if(!istype(enemy_tile) || enemy_tile.blocks_air)
+			continue
+		var/datum/gas_mixture/enemy_air = enemy_tile.air
+		if(!enemy_air)
 			continue
 
-		// Space is represented by a shared immutable mix, so vent explicitly instead of mutating it.
-		if(istype(enemy_tile, /turf/open/space))
+		// Space is represented by a shared immutable mix (the only turf air with
+		// gc_share set), so vent explicitly instead of mutating it.
+		if(enemy_air.gc_share)
 			var/moles_before = our_air.total_moles()
-			var/temperature_before = our_air.return_temperature()
+			var/temperature_before = our_air.temperature
 			if(moles_before <= MINIMUM_MOLES_DELTA_TO_MOVE && abs(temperature_before - TCMB) <= MINIMUM_TEMPERATURE_DELTA_TO_CONSIDER)
 				continue
-			var/pressure_before = our_air.return_pressure()
-			var/datum/gas_mixture/vented = our_air.remove_ratio(our_share_coeff)
-			if(vented)
-				qdel(vented)
-			if(abs(our_air.return_temperature() - TCMB) > MINIMUM_TEMPERATURE_DELTA_TO_CONSIDER)
+			our_air.vent_ratio(our_share_coeff)
+			if(abs(our_air.temperature - TCMB) > MINIMUM_TEMPERATURE_DELTA_TO_CONSIDER)
 				our_air.temperature_share(null, OPEN_HEAT_TRANSFER_COEFFICIENT, TCMB, HEAT_CAPACITY_VACUUM)
-			var/pressure_delta_space = pressure_before - our_air.return_pressure()
-			if(pressure_delta_space > 0)
-				consider_pressure_difference(enemy_tile, pressure_delta_space)
+			// Derive both pressures from the known mole scaling instead of
+			// re-summing the gas list twice through return_pressure().
+			var/volume_cache = our_air.volume
+			if(volume_cache > 0)
+				var/pressure_before = moles_before * R_IDEAL_GAS_EQUATION * temperature_before / volume_cache
+				var/pressure_after = moles_before * (1 - our_share_coeff) * R_IDEAL_GAS_EQUATION * our_air.temperature / volume_cache
+				var/pressure_delta_space = pressure_before - pressure_after
+				if(pressure_delta_space > 0)
+					consider_pressure_difference(enemy_tile, pressure_delta_space)
 			continue
 
 		if(fire_count <= enemy_tile.current_cycle)
@@ -416,7 +431,6 @@
 		enemy_tile.archive()
 
 		var/should_share_air = FALSE
-		var/datum/gas_mixture/enemy_air = enemy_tile.air
 		var/datum/excited_group/enemy_excited_group = enemy_tile.excited_group
 
 		if(our_excited_group && enemy_excited_group)
@@ -446,17 +460,14 @@
 			LAST_SHARE_CHECK
 
 	if(planet_atmos)
-		var/datum/gas_mixture/G = new
-		G.copy_from_turf(src)
-		G.archive()
-		if(our_air.compare(G))
+		var/datum/gas_mixture/template = SSair.get_planetary_template(src)
+		if(our_air.compare(template))
 			if(!our_excited_group)
 				var/datum/excited_group/EG = new
 				EG.add_turf(src)
 				our_excited_group = excited_group
-			our_air.share(G, our_share_coeff, our_share_coeff)
+			our_air.share_with_template(template, our_share_coeff)
 			LAST_SHARE_CHECK
-		qdel(G)
 
 	var/reaction_result = our_air.react(src)
 
