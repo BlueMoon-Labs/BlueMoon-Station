@@ -4582,6 +4582,7 @@
 #include "modular_bluemoon\code\modules\arousal\toys\dildos.dm"
 #include "modular_bluemoon\code\modules\arousal\toys\magic_wand.dm"
 #include "modular_bluemoon\code\modules\arousal\toys\tentacle_panties.dm"
+#include "modular_bluemoon\code\modules\arousal\toys\hardspace_panties.dm"
 #include "modular_bluemoon\code\modules\ashwalkers\code\effects\ash_ritual.dm"
 #include "modular_bluemoon\code\modules\ashwalkers\code\effects\ash_rituals.dm"
 #include "modular_bluemoon\code\modules\ashwalkers\code\effects\ash_rune.dm"
