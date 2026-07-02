@@ -1714,9 +1714,9 @@
 		/obj/item/disk/tech_disk/debug,
 		/obj/item/uplink/debug,
 		/obj/item/uplink/nuclear/debug,
-		/obj/item/storage/box/beakers/bluespace
-		/obj/item/storage/box/beakers/variety
-		/obj/item/storage/box/material
+		/obj/item/storage/box/beakers/bluespace,
+		/obj/item/storage/box/beakers/variety,
+		/obj/item/storage/box/material,
 		/obj/item/storage/belt/medical/surgery_belt_adv,
 		/obj/item/debug/omnitool,
 		/obj/item/door_remote/omni,
