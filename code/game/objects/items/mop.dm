@@ -139,8 +139,11 @@
 	item_state = "smmop"
 	force = 128
 
-/obj/item/mop/advanced/New()
-	..()
+/obj/item/mop/advanced/Initialize(mapload)
+	. = ..()
+	// Processing must not start before Initialize: the parent creates reagents
+	// here, and a map-loaded mop otherwise gets process() calls with null
+	// reagents for the whole deferred-init window of the map load.
 	START_PROCESSING(SSobj, src)
 
 /obj/item/mop/advanced/AltClick(mob/user)
