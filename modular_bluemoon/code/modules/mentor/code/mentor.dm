@@ -1,4 +1,4 @@
-GLOBAL_LIST_EMPTY(mentor_datums)
+GLOBAL_LIST_EMPTY_TYPED(mentor_datums, /datum/mentors)
 GLOBAL_PROTECT(mentor_datums)
 
 GLOBAL_VAR_INIT(mentor_href_token, GenerateToken())

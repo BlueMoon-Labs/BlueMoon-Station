@@ -53,7 +53,8 @@
 			continue
 
 		// Only save them if they're still a super mentor in-game.
-		if(!GLOB.mentor_datums[existing_mentor]?.is_super)
+		var/datum/mentors/existing_datum = GLOB.mentor_datums[existing_mentor]
+		if(!existing_datum?.is_super)
 			continue
 
 		// Associative list for extra SPEED!
