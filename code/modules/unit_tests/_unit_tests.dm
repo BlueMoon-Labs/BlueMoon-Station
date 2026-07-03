@@ -174,6 +174,7 @@
 #include "image_leak_audit.dm"
 #include "rtt_window.dm"
 #include "screen_gc.dm"
+#include "shapeshift_gc.dm"
 #include "space_drift.dm"
 #include "statpanel_listedturf.dm"
 #include "ssmobs_optimization.dm"
