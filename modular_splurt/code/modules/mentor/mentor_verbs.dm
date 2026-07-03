@@ -5,7 +5,7 @@ GLOBAL_PROTECT(splurt_mentor_verbs)
 
 /client/add_mentor_verbs()
 	. = ..()
-	if(mentor_datum)
+	if(mentor_datum && is_super_mentor())
 		add_verb(src, GLOB.splurt_mentor_verbs)
 
 /client/remove_mentor_verbs()

@@ -15,11 +15,18 @@
 		return
 
 	var/show_char = CONFIG_GET(flag/mentors_mobname_only)
-	var/mentor_msg = "<span class='mentornotice'><b><font color='purple'>MENTORHELP:</b> <b>[key_name_mentor(src, 1, 0, 1, show_char)]</b>: [msg]</font></span>"
 	log_mentor("MENTORHELP: [key_name_mentor(src, 0, 0, 0, 0)]: [msg]")
 
-	for(var/client/X in GLOB.mentors | GLOB.admins)
-		SEND_SOUND(X, 'sound/items/bikehorn.ogg')
+	for(var/client/X in GLOB.clients)
+		if(!X.is_mentor())
+			continue
+		var/sender_name
+		if(X.is_super_mentor())
+			sender_name = key_name_mentor(src, 1, 0, 1, show_char)
+			SEND_SOUND(X, 'sound/items/bikehorn.ogg')
+		else
+			sender_name = "Кто-то спрашивает"
+		var/mentor_msg = "<span class='mentornotice'><b><font color='purple'>MENTORHELP:</b> <b>[sender_name]</b>: [msg]</font></span>"
 		to_chat(X, mentor_msg)
 
 	to_chat(src, "<span class='mentornotice'><font color='purple'>PM to-<b>Mentors</b>: [msg]</font></span>")

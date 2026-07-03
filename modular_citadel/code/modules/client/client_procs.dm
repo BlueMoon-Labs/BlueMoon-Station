@@ -24,6 +24,9 @@
 
 	//Mentor Follow
 	if(href_list["mentor_follow"])
+		if(!is_super_mentor())
+			to_chat(src, span_warning("Only super mentors can follow players."))
+			return TRUE
 		var/mob/living/M = locate(href_list["mentor_follow"])
 
 		if(istype(M))
