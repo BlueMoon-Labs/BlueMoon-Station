@@ -1,5 +1,5 @@
 /datum/job/expeditor
-	title = "Expeditor"
+	title = "Vanguard operative"
 	flag = EXPEDITOR
 	department_head = list("Captain", "Research Director")
 	department_flag = MEDSCI
@@ -15,7 +15,7 @@
 	exp_type_department = EXP_TYPE_SCIENCE
 	considered_combat_role = FALSE
 	outfit = /datum/outfit/job/expeditor
-	custom_spawn_text = "вы — экспедитор, член исследовательского отдела. Вы здесь, чтобы исследовать космос и пространство гейтвэя — на станции вы не имеете никакой власти. Беспрекословно выполняйте приказы капитана и РД. \n<p class='warning'>Не ломайте стреляющие отбойники на табельном оружии без причины, иначе вы будете наказаны.</p>"
+	custom_spawn_text = "вы — боец подразделения Авангард, работающий в тандеме с иследовательским отделом станции. Вы здесь, чтобы исследовать космос и пространство гейтвэя — на станции вы не имеете никакой власти. Беспрекословно выполняйте приказы капитана и РД. \n<p class='warning'>Не ломайте стреляющие отбойники на табельном оружии без причины, иначе вы будете наказаны.</p>"
 	access = list(ACCESS_RESEARCH, ACCESS_MINERAL_STOREROOM, ACCESS_TECH_STORAGE, ACCESS_GATEWAY, ACCESS_EVA, ACCESS_PRODUCTION_SCIENCE)
 	minimal_access = list(ACCESS_RESEARCH, ACCESS_MINERAL_STOREROOM, ACCESS_TECH_STORAGE, ACCESS_GATEWAY, ACCESS_EVA, ACCESS_PRODUCTION_SCIENCE)
 	paycheck = PAYCHECK_HARD
@@ -26,29 +26,30 @@
 	threat = 2
 	alt_titles = list(
 		"Space Explorer",
-		"Space Expeditor",
+		"Space Diver",
 		"Sexplorer",
 		"Sexpeditor",
-		"Gateway Explorer",
-		"Exploration Operative",
+		"Gateway diver",
+		"Vanguard Combatant",
 		"Exploration Mercenary",
-		"Exploration Field Medic",
-		"Exploration Engineer"
+		"Vanguard Field Medic",
+		"Vanguard recruit",
+		"Vanguard Demolition expert"
 		)
 
 /datum/outfit/job/expeditor
 	name = "Expeditor"
 	jobtype = /datum/job/expeditor
 	id = /obj/item/card/id
-	belt = /obj/item/storage/belt/military/assault
-	ears = /obj/item/radio/headset/headset_sci
+//	belt = /obj/item/storage/belt/military/assault
+	ears = /obj/item/radio/headset/headset_exp/bowman
 	uniform = /obj/item/clothing/under/syndicate/combat/exp
-	suit = /obj/item/clothing/suit/armor/vest/exp
-	head = /obj/item/clothing/head/helmet/exp
+//	suit = /obj/item/clothing/suit/armor/vest/exp
+//	head = /obj/item/clothing/head/helmet/exp
 	gloves = /obj/item/clothing/gloves/tackler/combat/insulated
 	glasses = /obj/item/clothing/glasses/sunglasses
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
-	suit_store = /obj/item/gun/energy/e_gun/mini/expeditor
+//	suit_store = /obj/item/gun/energy/e_gun/mini/expeditor
 	r_pocket = /obj/item/kitchen/knife/combat
 	l_pocket = /obj/item/modular_computer/pda
 	accessory = list(/obj/item/clothing/accessory/permit/special/explorer)
@@ -60,14 +61,14 @@
 
 	//l_pocket = /obj/item/modular_computer/pda/syndicate/no_deto
 
-	ears = /obj/item/radio/headset/headset_sci
+	ears = /obj/item/radio/headset/headset_exp/bowman
 	uniform = /obj/item/clothing/under/syndicate/combat/exp
-	suit = /obj/item/clothing/suit/armor/vest/exp
-	head = /obj/item/clothing/head/helmet/exp
+//	suit = /obj/item/clothing/suit/armor/vest/exp
+//	head = /obj/item/clothing/head/helmet/exp
 	gloves = /obj/item/clothing/gloves/tackler/combat/insulated
 	glasses = /obj/item/clothing/glasses/sunglasses
 	shoes = /obj/item/clothing/shoes/combat
-	suit_store = /obj/item/gun/energy/e_gun/mini/expeditor
+//	suit_store = /obj/item/gun/energy/e_gun/mini/expeditor
 	r_pocket = /obj/item/kitchen/knife/combat
 
 	backpack = /obj/item/storage/backpack/duffelbag/syndie
@@ -93,13 +94,6 @@
 	icon_state = "exp_headset_alt"
 	item_state = "exp_headset_alt"
 	bowman = TRUE
-
-/obj/item/gun/energy/e_gun/mini/expeditor
-	name = "expeditor's miniature energy gun"
-	desc = "Modernized pistol-sized energy gun with a built-in flashlight and expanded cell. It has two settings: stun and kill."
-	w_class = WEIGHT_CLASS_SMALL
-	cell_type = /obj/item/stock_parts/cell{charge = 1200; maxcharge = 1200}
-	pin = /obj/item/firing_pin/explorer
 
 /obj/item/clothing/under/syndicate/combat/exp
 	name = "expeditionary turtleneck"
