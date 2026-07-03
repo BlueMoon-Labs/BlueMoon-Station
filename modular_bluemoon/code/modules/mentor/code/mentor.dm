@@ -10,32 +10,48 @@ GLOBAL_PROTECT(mentor_href_token)
 	var/target // the mentor's ckey
 	var/href_token // href token for mentor commands, uses the same token used by admins.
 	var/mob/following
+	/// Super mentors receive mentorhelp pings and can spawn mentor drones.
+	var/is_super = FALSE
 
-/datum/mentors/New(ckey)
+/datum/mentors/New(ckey, super = FALSE)
 	if(!ckey)
 		QDEL_IN(src, 0)
 		CRASH("Mentor datum created without a ckey")
 	target = ckey(ckey)
 	name = "[ckey]'s mentor datum"
 	href_token = GenerateToken()
+	is_super = super
 	GLOB.mentor_datums[target] = src
 	//set the owner var and load commands
 	owner = GLOB.directory[ckey]
 	if(owner)
 		owner.mentor_datum = src
 		owner.add_mentor_verbs()
-		if(!check_rights_for(owner, R_ADMIN,0)) // don't add admins to mentor list.
+		if(is_super && !check_rights_for(owner, R_ADMIN, 0))
 			GLOB.mentors += owner
 
-/datum/mentors/proc/remove_mentor()
+/datum/mentors/proc/promote_super_mentor()
+	if(is_super)
+		return
+	is_super = TRUE
 	if(owner)
-		owner.remove_mentor_verbs()
+		owner.add_mentor_verbs()
+		if(!check_rights_for(owner, R_ADMIN, 0))
+			GLOB.mentors += owner
+	log_admin_private("[target] was promoted to super mentor.")
+
+/datum/mentors/proc/demote_super_mentor()
+	if(!is_super)
+		return
+	is_super = FALSE
+	if(owner)
 		GLOB.mentors -= owner
-		owner.mentor_datum = null
-		owner = null
-	log_admin_private("[target] was removed from the rank of mentor.")
-	GLOB.mentor_datums -= target
-	qdel(src)
+		owner.add_mentor_verbs()
+	log_admin_private("[target] was removed from the rank of super mentor.")
+
+/// Legacy name used by admin tooling; only strips super mentor status.
+/datum/mentors/proc/remove_mentor()
+	demote_super_mentor()
 
 /datum/mentors/proc/CheckMentorHREF(href, href_list)
 	var/auth = href_list["mentor_token"]

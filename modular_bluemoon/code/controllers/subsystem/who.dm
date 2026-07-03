@@ -188,7 +188,7 @@ SUBSYSTEM_DEF(who)
 		"Management" = list(R_PERMISSIONS, list(), "purple"),
 		"Administrators" = list(R_ADMIN, list(), "red"),
 		"Moderators" = list(R_BAN, list(), "orange"),
-		"Mentors" = list(0, GLOB.mentors, "green")
+		"Super Mentors" = list(0, GLOB.mentors, "green")
 	)
 
 	for(var/client/client as anything in GLOB.admins)
