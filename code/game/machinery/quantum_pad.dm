@@ -224,6 +224,24 @@
 		linked_pad = link
 		. = TRUE
 
+#define QUANTUMPAD_ALERT_CATEGORY "quantumpad"
+
+/obj/machinery/quantumpad/Crossed(atom/movable/AM, oldloc)
+	. = ..()
+	if(!isliving(AM))
+		return
+	var/mob/living/user = AM
+	user.throw_alert(QUANTUMPAD_ALERT_CATEGORY, /atom/movable/screen/alert/object_master, new_master = src)
+
+/obj/machinery/quantumpad/Uncrossed(atom/movable/AM)
+	. = ..()
+	if(!isliving(AM))
+		return
+	var/mob/living/user = AM
+	user.clear_alert(QUANTUMPAD_ALERT_CATEGORY)
+
+#undef QUANTUMPAD_ALERT_CATEGORY
+
 /obj/item/paper/guides/quantumpad
 	name = "Quantum Pad For Dummies"
 	default_raw_text = "<center><b>Dummies Guide To Quantum Pads</b></center><br><br><center>Do you hate the concept of having to use your legs, let alone <i>walk</i> to places? Well, with the Quantum Pad (tm), never again will the fear of cardio keep you from going places!<br><br><c><b>How to set up your Quantum Pad(tm)</b></center><br><br>1.Unscrew the Quantum Pad(tm) you wish to link.<br>2. Use your multi-tool to cache the buffer of the Quantum Pad(tm) you wish to link.<br>3. Apply the multi-tool to the secondary Quantum Pad(tm) you wish to link to the first Quantum Pad(tm)<br><br><center>If you followed these instructions carefully, your Quantum Pad(tm) should now be properly linked together for near-instant movement across the station! Bear in mind that this is technically a one-way teleport, so you'll need to do the same process with the secondary pad to the first one if you wish to travel between both.</center>"
