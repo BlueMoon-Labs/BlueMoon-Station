@@ -353,6 +353,161 @@
 	SSair.remove_from_active(first)
 	SSair.remove_from_active(second)
 
+/// A grouped turf whose shares stalled must rest individually (leave the
+/// active list, stay in the group). Ejecting it through remove_from_active
+/// nuked the whole group, which kept entire planetary surfaces (19k turfs)
+/// cycling forever whenever any single member kept churning.
+/// Interior turfs of the reservation: the testing zone borders reserved
+/// space, and a space-adjacent turf is a genuine churner that must not rest.
+/datum/unit_test/atmos_stalled_turf_rests/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/origin = run_loc_floor_bottom_left
+	var/turf/open/first = locate(origin.x + 1, origin.y + 1, origin.z)
+	var/turf/open/second = locate(origin.x + 2, origin.y + 1, origin.z)
+	TEST_ASSERT(istype(first), "test location is not an open turf")
+	TEST_ASSERT(istype(second), "adjacent test location is not an open turf")
+
+	var/datum/excited_group/group = new
+	group.add_turf(first)
+	group.add_turf(second)
+	SSair.add_to_active(first, FALSE)
+	SSair.add_to_active(second, FALSE)
+
+	// Both turfs hold settled identical air; first has been stalling for a
+	// full dismantle window already.
+	first.atmos_cooldown = EXCITED_GROUP_DISMANTLE_CYCLES
+	var/fire_count = max(first.current_cycle, second.current_cycle) + 1
+	first.process_cell(fire_count)
+
+	TEST_ASSERT(!(first in SSair.active_turfs), "stalled group member did not rest out of the active list")
+	TEST_ASSERT_EQUAL(first.excited_group, group, "resting a stalled turf detached it from its excited group")
+	TEST_ASSERT_EQUAL(second.excited_group, group, "resting a stalled turf destroyed the group for other members")
+	TEST_ASSERT(group in SSair.excited_groups, "resting a stalled turf removed the group from SSair")
+
+	group.garbage_collect()
+	first.atmos_cooldown = 0
+	second.atmos_cooldown = 0
+	SSair.remove_from_active(first)
+	SSair.remove_from_active(second)
+
+/// Group averaging must not reset the members' personal stall counters:
+/// zeroing atmos_cooldown every breakdown blocked the individual rest path
+/// for every member of a group pinned awake by a single churning turf.
+/datum/unit_test/atmos_breakdown_preserves_stall_counter/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/first = run_loc_floor_bottom_left
+	var/turf/open/second = locate(first.x + 1, first.y, first.z)
+	TEST_ASSERT(istype(first), "test location is not an open turf")
+	TEST_ASSERT(istype(second), "adjacent test location is not an open turf")
+
+	var/datum/excited_group/group = new
+	group.add_turf(first)
+	group.add_turf(second)
+	first.atmos_cooldown = 10
+	second.atmos_cooldown = 10
+
+	group.self_breakdown()
+
+	TEST_ASSERT_EQUAL(first.atmos_cooldown, 10, "self_breakdown reset a member's stall counter")
+	TEST_ASSERT_EQUAL(second.atmos_cooldown, 10, "self_breakdown reset a member's stall counter")
+
+	group.garbage_collect()
+	first.atmos_cooldown = 0
+	second.atmos_cooldown = 0
+	first.air.copy_from_turf(first)
+	second.air.copy_from_turf(second)
+	SSair.remove_from_active(first)
+	SSair.remove_from_active(second)
+
+/// Group averaging must only cover members that are still awake: resting
+/// members hold their local equilibrium and nobody processes them afterwards,
+/// so folding them in smears churner gas across the whole group (planetary
+/// surfaces drifted off-template toward leaks, space-drained edges dragged
+/// entire areas toward vacuum) and keeps every breakdown O(group size).
+/datum/unit_test/atmos_breakdown_skips_resting_members/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/origin = run_loc_floor_bottom_left
+	var/turf/open/first = locate(origin.x + 1, origin.y + 1, origin.z)
+	var/turf/open/second = locate(origin.x + 2, origin.y + 1, origin.z)
+	var/turf/open/resting = locate(origin.x + 3, origin.y + 1, origin.z)
+	TEST_ASSERT(istype(first), "test location is not an open turf")
+	TEST_ASSERT(istype(second), "adjacent test location is not an open turf")
+	TEST_ASSERT(istype(resting), "resting test location is not an open turf")
+
+	var/datum/excited_group/group = new
+	group.add_turf(first)
+	group.add_turf(second)
+	group.add_turf(resting)
+	SSair.add_to_active(first, FALSE)
+	SSair.add_to_active(second, FALSE)
+	SSair.add_to_active(resting, FALSE)
+	SSair.sleep_active_turf(resting)
+	TEST_ASSERT(!(resting in SSair.active_turfs), "sleep_active_turf left the turf in the active list")
+	TEST_ASSERT_EQUAL(resting.excited_group, group, "sleep_active_turf detached the turf from its group")
+
+	var/resting_o2_before = resting.air.get_moles(GAS_O2)
+	first.air.set_moles(GAS_O2, resting_o2_before + 20)
+
+	group.self_breakdown()
+
+	TEST_ASSERT(abs(resting.air.get_moles(GAS_O2) - resting_o2_before) < 0.001, "breakdown averaging rewrote a resting member's air")
+	TEST_ASSERT(abs(first.air.get_moles(GAS_O2) - second.air.get_moles(GAS_O2)) < 0.001, "breakdown averaging did not equalize the awake members")
+	TEST_ASSERT(abs(first.air.get_moles(GAS_O2) - (resting_o2_before + 10)) < 0.001, "awake members did not average to the expected mix")
+
+	group.garbage_collect()
+	first.air.copy_from_turf(first)
+	second.air.copy_from_turf(second)
+	SSair.remove_from_active(first)
+	SSair.remove_from_active(second)
+	SSair.remove_from_active(resting)
+
+/// A planetary turf must shed most of a pure-temperature excess in one cycle
+/// (upstream follows the template share with a conductive share against a
+/// 5x-inflated template heat capacity). The turf and all its neighbors are
+/// heated uniformly so neighbor conduction is zero and only the template pull
+/// acts, making the expectation independent of the local neighbor count.
+/datum/unit_test/atmos_planetary_temperature_pull/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	// Center of the reservation: the zone borders reserved space, and a space
+	// neighbor's conductive pull (vacuum heat capacity 7000) would swamp the
+	// template pull being measured here.
+	var/turf/open/origin = run_loc_floor_bottom_left
+	var/turf/open/planet_turf = locate(origin.x + 2, origin.y + 2, origin.z)
+	TEST_ASSERT(istype(planet_turf), "test location is not an open turf")
+	for(var/turf/neighbor as anything in planet_turf.atmos_adjacent_turfs)
+		TEST_ASSERT(isfloorturf(neighbor), "center test turf has a non-floor neighbor; the reservation layout changed")
+
+	planet_turf.planetary_atmos = TRUE
+	var/datum/gas_mixture/template = SSair.get_planetary_template(planet_turf)
+	var/template_temperature = template.return_temperature()
+	planet_turf.air.copy_from(template)
+	planet_turf.air.set_temperature(template_temperature + 100)
+	var/fire_count = planet_turf.current_cycle + 1
+	for(var/turf/open/neighbor as anything in planet_turf.atmos_adjacent_turfs)
+		neighbor.air.copy_from(template)
+		neighbor.air.set_temperature(template_temperature + 100)
+		fire_count = max(fire_count, neighbor.current_cycle + 1)
+	SSair.add_to_active(planet_turf, FALSE)
+
+	planet_turf.process_cell(fire_count)
+
+	// The in-share coupling alone pulls 20% per cycle (80K left); with the
+	// inflated-capacity conductive follow-up about 47K is left. Assert the
+	// midpoint with margin on both sides.
+	var/remaining_delta = planet_turf.air.return_temperature() - template_temperature
+	TEST_ASSERT(remaining_delta < 60, "planetary turf kept [remaining_delta]K of a 100K excess after one cycle")
+
+	if(planet_turf.excited_group)
+		planet_turf.excited_group.garbage_collect()
+	planet_turf.planetary_atmos = FALSE
+	planet_turf.atmos_cooldown = 0
+	planet_turf.air.copy_from_turf(planet_turf)
+	SSair.remove_from_active(planet_turf)
+	for(var/turf/open/neighbor as anything in planet_turf.atmos_adjacent_turfs)
+		neighbor.atmos_cooldown = 0
+		neighbor.air.copy_from_turf(neighbor)
+		SSair.remove_from_active(neighbor)
+
 /// Idle-heartbeat machines must wake instantly when air on their turf changes,
 /// and enter the heartbeat only after a full streak of no-op fires.
 /datum/unit_test/atmos_machine_idle_wake/Run()

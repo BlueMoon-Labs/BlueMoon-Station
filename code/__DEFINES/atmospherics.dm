@@ -31,6 +31,10 @@
 #define MINIMUM_TEMPERATURE_START_SUPERCONDUCTION	(T20C+200)
 #define MINIMUM_HEAT_CAPACITY	0.0003
 
+//PLANETARY ATMOS
+#define PLANET_SHARE_RATIO							0.8		//Ratio of the difference a planetary turf shares with its template atmosphere each cycle
+#define PLANET_SHARE_TEMPERATURE_CAPACITY			5		//Template heat capacity multiplier for the follow-up conductive temperature share, simulating a large atmosphere above the turf
+
 //HEAT TRANSFER COEFFICIENTS
 //Must be between 0 and 1. Values closer to 1 equalize temperature faster
 //Should not exceed 0.4 else strange heat flow occur

@@ -216,8 +216,15 @@
 		// /turf/air_update_turf(update = TRUE).
 		T.excited_group.reset_cooldowns()
 
+/// Rests a turf without touching its excited group: the turf stops paying
+/// process_cell, but stays in the group's turf_list so breakdown/dismantle
+/// bookkeeping continues. This is the individual escape hatch for settled
+/// members of groups that are pinned awake by a few churning turfs
+/// (planetary surfaces around a leak, space-edge drains).
 /datum/controller/subsystem/air/proc/sleep_active_turf(turf/open/T)
 	active_turfs -= T
+	if(istype(T))
+		T.excited = FALSE
 
 /datum/controller/subsystem/air/proc/thread_running()
 	return FALSE

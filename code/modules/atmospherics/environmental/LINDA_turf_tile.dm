@@ -242,12 +242,36 @@
 
 /////////////////////////////SIMULATION///////////////////////////////////
 
+// Significant gas movement also resets the receiving tile's stall counter and
+// wakes it if it was resting: resting turfs stay in their excited group and
+// receive gas passively, so anything meaningfully fed by a neighbor must come
+// back to the active list to re-share (and, for planetary turfs, re-equalize
+// with their template).
 #define LAST_SHARE_CHECK \
 	var/last_share = our_air.last_share; \
 	if(last_share > MINIMUM_AIR_TO_SUSPEND){ \
 		our_excited_group.reset_cooldowns(); \
 		cached_atmos_cooldown = 0; \
+		enemy_tile.atmos_cooldown = 0; \
+		if(!enemy_tile.excited && SSair){ \
+			SSair.add_to_active(enemy_tile, FALSE); \
+		} \
 	} else if(last_share > MINIMUM_MOLES_DELTA_TO_MOVE) { \
+		our_excited_group.dismantle_cooldown = 0; \
+		cached_atmos_cooldown = 0; \
+		enemy_tile.atmos_cooldown = 0; \
+		if(!enemy_tile.excited && SSair){ \
+			SSair.add_to_active(enemy_tile, FALSE); \
+		} \
+	}
+
+// Same cooldown handling for the template share; there is no enemy tile here.
+#define PLANET_SHARE_CHECK \
+	var/planet_last_share = our_air.last_share; \
+	if(planet_last_share > MINIMUM_AIR_TO_SUSPEND){ \
+		our_excited_group.reset_cooldowns(); \
+		cached_atmos_cooldown = 0; \
+	} else if(planet_last_share > MINIMUM_MOLES_DELTA_TO_MOVE) { \
 		our_excited_group.dismantle_cooldown = 0; \
 		cached_atmos_cooldown = 0; \
 	}
@@ -393,8 +417,6 @@
 	var/cached_atmos_cooldown = atmos_cooldown + 1
 
 	var/planet_atmos = planetary_atmos
-	if(planet_atmos)
-		adjacent_turfs_length++
 
 	var/datum/gas_mixture/our_air = air
 
@@ -417,14 +439,20 @@
 				our_air.temperature_share(null, OPEN_HEAT_TRANSFER_COEFFICIENT, TCMB, HEAT_CAPACITY_VACUUM)
 			// A turf draining to space must stay active until it is actually empty:
 			// without a group the end-of-proc check deactivates a lone leaking turf
-			// after one pass, freezing the leak mid-drain. The moles/temperature gate
-			// above ends the churn once the turf reaches vacuum.
+			// after one pass, freezing the leak mid-drain. Cooldown resets are gated
+			// by the vented amount (mirroring LAST_SHARE_CHECK) so a residual
+			// trickle stops pinning the whole group's breakdown/dismantle forever.
 			if(!our_excited_group)
 				var/datum/excited_group/space_group = new
 				space_group.add_turf(src)
 				our_excited_group = excited_group
-			else
+			var/vented_moles = moles_before * our_share_coeff
+			if(vented_moles > MINIMUM_AIR_TO_SUSPEND)
 				our_excited_group.reset_cooldowns()
+				cached_atmos_cooldown = 0
+			else if(vented_moles > MINIMUM_MOLES_DELTA_TO_MOVE)
+				our_excited_group.dismantle_cooldown = 0
+				cached_atmos_cooldown = 0
 			// Derive both pressures from the known mole scaling instead of
 			// re-summing the gas list twice through return_pressure().
 			var/volume_cache = our_air.volume
@@ -476,17 +504,34 @@
 				var/datum/excited_group/EG = new
 				EG.add_turf(src)
 				our_excited_group = excited_group
-			our_air.share_with_template(template, our_share_coeff)
-			LAST_SHARE_CHECK
+			// Neighbor shares above already moved gas this cycle: re-archive so
+			// the template share works from current values. With the stale
+			// cycle-start archive, an aggressive pull plus the neighbor shares
+			// can overdraw the turf below the template.
+			our_air.archive()
+			our_air.share_with_template(template, PLANET_SHARE_RATIO)
+			// Follow up with a conductive share against an inflated template
+			// heat capacity (upstream behavior): pure temperature deltas are the
+			// dominant planetary churn, and the weak in-share coupling alone
+			// crawls toward the 4K suspend threshold for hundreds of cycles.
+			our_air.temperature_share(null, OPEN_HEAT_TRANSFER_COEFFICIENT, template.temperature_archived, template.immutable_heat_capacity * PLANET_SHARE_TEMPERATURE_CAPACITY)
+			PLANET_SHARE_CHECK
 
 	var/reaction_result = our_air.react(src)
 
 	update_visuals()
 
-	if((!our_excited_group && !active_hotspot && !(reaction_result & (REACTING | STOP_REACTIONS))) \
-	  || (cached_atmos_cooldown > (EXCITED_GROUP_DISMANTLE_CYCLES * 2)))
-		if(SSair)
-			SSair.remove_from_active(src)
+	if(!active_hotspot && !(reaction_result & (REACTING | STOP_REACTIONS)))
+		if(!our_excited_group)
+			if(SSair)
+				SSair.remove_from_active(src)
+		else if(cached_atmos_cooldown > EXCITED_GROUP_DISMANTLE_CYCLES)
+			// Stalled for a full dismantle window inside a live group: rest this
+			// turf alone. remove_from_active here would garbage-collect the whole
+			// group, letting one churning member keep thousands of settled group
+			// mates paying process_cell every fire.
+			if(SSair)
+				SSair.sleep_active_turf(src)
 
 	atmos_cooldown = cached_atmos_cooldown
 
@@ -595,8 +640,13 @@
 	var/turflen = 0
 	var/space_in_group = FALSE
 
+	// Average only members that are still awake. Resting members sat idle for a
+	// full dismantle window and hold their local equilibrium; folding them in
+	// would smear churner gas across turfs nobody processes anymore (planetary
+	// surfaces slowly drifted toward leaks and space-drained edges) and would
+	// keep every breakdown O(group size) when only a handful of turfs churn.
 	for(var/turf/open/T as anything in turf_list)
-		if(!istype(T) || !T.air)
+		if(!istype(T) || !T.air || !T.excited)
 			continue
 		if(space_is_all_consuming && !space_in_group && istype(T.air, /datum/gas_mixture/immutable/space))
 			space_in_group = TRUE
@@ -610,10 +660,9 @@
 		A.divide(turflen)
 
 	for(var/turf/open/T as anything in turf_list)
-		if(!istype(T) || !T.air)
+		if(!istype(T) || !T.air || !T.excited)
 			continue
 		T.air.copy_from(A)
-		T.atmos_cooldown = 0
 		T.update_visuals()
 
 	breakdown_cooldown = 0
@@ -638,3 +687,4 @@
 		SSair.excited_groups -= src
 
 #undef LAST_SHARE_CHECK
+#undef PLANET_SHARE_CHECK
