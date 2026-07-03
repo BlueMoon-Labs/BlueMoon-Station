@@ -144,7 +144,8 @@
 	// Processing must not start before Initialize: the parent creates reagents
 	// here, and a map-loaded mop otherwise gets process() calls with null
 	// reagents for the whole deferred-init window of the map load.
-	START_PROCESSING(SSobj, src)
+	if(refill_enabled)
+		START_PROCESSING(SSobj, src)
 
 /obj/item/mop/advanced/AltClick(mob/user)
 	refill_enabled = !refill_enabled
@@ -165,8 +166,9 @@
 	. += span_notice("The condenser switch is set to <b>[refill_enabled ? "ON" : "OFF"]</b>. Alt-Click to toggle.")
 
 /obj/item/mop/advanced/Destroy()
-	if(refill_enabled)
-		STOP_PROCESSING(SSobj, src)
+	// Unconditional: refill_enabled can change over the item's lifetime
+	// (AltClick, VV), and STOP_PROCESSING on a non-processing item is a no-op.
+	STOP_PROCESSING(SSobj, src)
 	return ..()
 
 /obj/item/mop/advanced/cyborg

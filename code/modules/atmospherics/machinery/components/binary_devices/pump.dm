@@ -92,6 +92,9 @@
 		else if(air1.transfer_to(air2,transfer_moles))
 			update_parents()
 			atmos_idle_streak = 0
+		else
+			// No-op transfer (nothing actually moved): same idle path as venting.
+			atmos_consider_idle()
 	else
 		// Empty input: woken by the pipenet broadcast when gas arrives.
 		atmos_consider_idle()
