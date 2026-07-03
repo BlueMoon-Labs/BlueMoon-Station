@@ -1,33 +1,28 @@
 #define HS_MENU_MODE "Режим"
 #define HS_MENU_INTENCE "Мощность"
-#define HS_MENU_EDGE "На Грани"
 
 #define HS_MODE_STRETCH "Растяжения"
 #define HS_MODE_MASSAGE "Массажа"
 #define HS_MODE_VIBRO "Вибрации"
-
-#define HS_EDGE_ON "Включен"
-#define HS_EDGE_OFF "Выключен"
 
 #define HS_INTENCE_OFF "Выключен"
 #define HS_INTENCE_LOW "Слабый"
 #define HS_INTENCE_MED "Средний"
 #define HS_INTENCE_HIG "Сильный"
 
-#define HS_LUST_MULT_STR 0.5
-#define HS_LUST_MULT_MSG 1.5
-#define HS_LUST_MULT_VIB 1
+#define HS_LUST_MULT_STR 0.1
+#define HS_LUST_MULT_MSG 0.2
+#define HS_LUST_MULT_VIB 0.15
 
-#define HS_TEXT_CHANCE 15
+#define HS_TEXT_CHANCE 25
 
 /obj/item/clothing/underwear/briefs/hardspace_panties
 	name = "Hardspace panties"
 	icon_state = "panties_slim"
-	desc = "С виду обычное белье, но сбоку на наблюдается небольшая, гибкая панель."
+	desc = "С виду обычное белье, но сбоку наблюдается небольшая, гибкая панель."
 
 	var/mode = HS_MODE_STRETCH
 	var/intence = HS_INTENCE_OFF
-	var/edging = FALSE
 
 	var/mob/living/carbon/human/owner = null
 
@@ -56,6 +51,31 @@
 		"Это ощущается как бесконечные, идеально подогнанные объемы, которые плавно обволакивают меня изнутри. Кажется, будто внутри моей попы пульсирует живое наполнение, которое уверенно раздвигает границы.",
 		"Массивный, гладкий фаллос проталкивается глубоко внутрь, заставляя анус раскрываться во всей красе. Ощущение растяжения настолько сильное, что дыхание невольно прерывается.",
 		"Я чувствую, как формы доводят мою попку до точки невозврата. Это сладкое напряжение - когда границы расширяются до самого последнего предела возможностей!"
+	)
+	//VAG
+	var/static/list/stretchTextLowVag = list(
+		"Мягкая, гладкая форма едва ощутимо скользит внутрь киски, словно нежный шелк. Она плавно расширяет пространство, даря приятное чувство наполненности и легкого, расслабляющего растяжения.",
+		"Тонкое шипастое нечто проникает в глубину влагалища, бережно раздвигая стенки. Ощущение очень нежное - будто маленькая иголка ласково исследует внутренний рельеф, пробуждая чувствительность.",
+		"Ребристая форма проникает в киску, создавая легкую текстурную волну на стенках. Оно не торопится, просто мягко расширяет внутреннее пространство, позволяя каждой клеточке проснуться.",
+		"Гладкий цилиндр едва касается дна влагалища, плавно растягивая его изнутри. Это почти гипнотическое ощущение наполнения, которое приятно разминает внутренние мышцы без лишнего напора.",
+		"Гладкий фаллос просачивается внутрь, как теплая вода, наполняя влагалище. Стенки плавно расходятся в стороны под действием этого мягкого внутреннего объема.",
+		"Щупальце плавно втягивается в глубину дырочки, растягивая её изнутри. Это ощущение похоже на легкое потягивание ткани, которое наполняет тело приятным теплом."
+	)
+	var/static/list/stretchTextMedVag = list(
+		"Гладкий стержень мягко скользит вглубь моей киски, плавно расширяя её границы. Ощущение приятного наполнения заставляет меня едва заметно выгибаться вперед.",
+		"Ребристая форма проникает внутрь, словно каждый бугорок слегка отпечатывается на стенках влагалища. Это чувство структурности и объема очень приятно раздвигает внутреннее пространство.",
+		"Мягкое щупальце плавно ныряет внутрь, увеличивая свой диаметр по мере продвижения. Оно как будто обнимает внутренности моей киски, мягко раздвигая их края.",
+		"Анатомически точная форма члена входит идеально, словно она была создана именно для моей киски. Она растягивает ткани равномерно, даря чувство комфортного и глубокого заполнения.",
+		"Нечто гладкое и мощное проталкивается вглубь, заставляя влагалище раскрыться шире. Это приятное давление ощущается как теплое объятие изнутри.",
+		"Широкая и гладкая форма заполняет внутренность практически полностью, заставляя киску раскрыться полность. Ощущение объема невероятно удовлетворяющее."
+	)
+	var/static/list/stretchTextHigVag = list(
+		"Конский член мощно входит в глубоко в киску, растягивая её до предела своей внушительной формой! Стенки растягиваются до предела, позволяя почувствовать приятное давление каждой клеточки плоти.",
+		"Тонкое, почти эфирное щупальце медленно, но уверенно прошивает влагалище насквозь, растягивая его до звона в теле!",
+		"Мощный и широкий член входит с такой экспрессией, что киска едва справляется с таким объемом. Ощущение предельного растяжения граничит с сладким напряжением, заставляя тело невольно выгибаться вперед.",
+		"Ребристая форма проскальзывает внутрь, словно увеличиваясь в размере с каждым движением. Моя киска ощущает каждое новое деление, растягиваясь под напором этой сложной, многогранной структуры!",
+		"Гладкая форма проникает внутрь, словно расширяющаяся сфера, раздвигающая края дырочки до самого основания. Интенсивность давления настолько велика, что киска буквально пульсирует от этого объема!",
+		"Мощный и широкий член входит на всю глубину, заставляя влагалище раскрыться на всю мощь своих возможностей. Ощущение растяжения настолько сильное, что кажется, будто пытается захватить всё внутреннее пространство!"
 	)
 	// DP
 	var/static/list/stretchTextLowDp = list(
@@ -113,6 +133,31 @@
 		"Нечто ребристое и мощное начинает бешено пульсировать в глубине моей дырочки. Каждое движение - это резкий, четкий удар по рецепторам, вызывающий волны жара по всему телу!",
 		"Шипастый фаллос пронзает попу, совершая быстрые, почти яростные выпады вперед и назад. Это экстремальная стимуляция, где каждое движение ощущается как мощный взрыв энергии внутри самой глубины!"
 	)
+	//VAG
+	var/static/list/massageTextLowVag = list(
+		"Внутри киски просыпается нечто гладкое и обтекаемое. Оно медленно скользит по стенкам, словно шелковая лента, лаская каждый миллиметр мягкой ткани едва заметными движениями.",
+		"Маленький ребристый стержень начинает свой путь внутрь влагалища. Он осторожно пробирается вглубь, слегка царапая внутреннюю поверхность и вызывая приятное покалывание.",
+		"Внутри ощущается тонкое щупальце. Оно извивается с удивительной грацией, словно исследуя глубины киски, создавая легкое чувство приятного трепета!",
+		"Внутри влагалища зародилась шипастая форма. Каждый её крошечный шип нежно касается стенок, создавая эффект легкого, дразнящего массажа, который заставляет тело расслабиться.",
+		"Что-то объемное и гладкое просочилось в киску. Оно совершает медленные, почти ленивые движения, позволяя каждой клеточке ощутить легкую волну удовольствия.",
+		"Внутри киски появилось нечто ребристое. Оно едва заметно движется из стороны в сторону, словно аккуратно разглаживая внутренние складки и даря мягкое тепло."
+	)
+	var/static/list/massageTextMedVag = list(
+		"Шипастая форма проникает в дырочку, едва заметно изгибаясь. Она массирует внутреннее пространство, создавая эффект множественных легких касаний одновременно!",
+		"Небольшой конский член уверенно проникает в глубину, слегка раздвигая края влагалища. Он двигается волнообразно, создавая ощущение глубокого и стабильного удовлетворения.",
+		"Нечто гладкое и плотное медленно скользит в киску, проникая до самого основания. Оно двигается уверенно, сочетая в себе плавность хода и приятную глубину каждого толчка.",
+		"Ребристый фаллос начинает свой путь внутрь киски, мягко извиваясь при каждом шаге. Его текстура создает идеальное сцепление со стенками, позволяя ощутить каждый миллиметр движения максимально четко.",
+		"Ребристый стержень проникает глубоко в киску и начинает двигаться в ритме сердца. Каждое движение ощущается как волна удовольствия!",
+		""
+	)
+	var/static/list/massageTextHigVag = list(
+		"Мощная, гладкая форма стремительно входит и выходит из влагалища, работая с такой динамикой, что киска кажется наполненной жидким электричеством. Это интенсивный массаж на пределе возможностей, где каждое движение отзывается глубоким резонансом!",
+		"Шипастый член проникает глубоко, буквально прошивая внутренности киски своими острыми кончиками! Высокая интенсивность превращает каждый толчок в маленький взрыв, вызывающий дрожь во всем теле!",
+		"Конский член с агрессивной текстурой врывается внутрь, заполняя влагалище до предела и массируя каждую складку своей мощью. Каждое движение заставляет киску пульсировать от неистового ритма!",
+		"Гладкая форма движется туда-сюда с такой скоростью, что киска начинает буквально гореть от интенсивности стимуляции! Каждое проникновение ощущается как мощный удар волны, который разбивается о нежные стенки влагалища.",
+		"Мощный конский член с бешеной динамикой заполняет киску целиком, буквально вбиваясь внутрь и выталкивая остатки воздуха! Скорость движения такая, что каждый толчок отзывается глубоким, почти болезненным трепетом в самом низу живота.",
+		"Гладкая, почти идеально ровная форма с бешеной скоростью вонзается в киску, сминая внутренние стенки и заполняя все пространство до отказа! Ощущения настолько острые, что удовольствие сливается с приятной пульсацией боли."
+	)
 	// DP
 	var/static/list/massageTextLowDp = list(
 		"Стимуляция начинается плавно: тонкое щупальце едва касается стенок влагалища, в то время как ребристая форма мягко поглаживает анус. Очень уютно и расслабляюще.",
@@ -166,6 +211,31 @@
 		"Внутри попки пробуждается щупальце, которое вибрирует так сильно, будто оно хочет пробить саму плоть. Оно бешено дрожит, доводя каждое нервное окончание в дырочке до предела!",
 		"Внутри попки пульсирует мощный член, чья вибрация нарастает до предела, словно бешеное сердцебиение. Оно буквально встряхивает всё тело, заставляя дыхание спершимся прерываться!"
 	)
+	//VAG
+	var/static/list/vibrationTextLowVag = list(
+		"Мягкое, идеально гладкое продолжение едва касается моих недр, посылая в киску легкую, едва уловимую дрожь. Оно словно шепчет внутри, пробуждая первобытное желание!",
+		"Нечто ребристое и нежное проскользнуло внутрь, начав едва заметно покачиваться. Внутри киски разливается приятное мурашки, словно по коже пробежал легкий ветерок.",
+		"Гладкая форма внутри меня начала очень медленно вибрировать. Это почти медитативное ощущение - мягкое, дразнящее и невероятно уютное.",
+		"Кончик гладкого члена внутри влагалища едва заметно пульсирует. Это нежная стимуляция, которая больше дразнит воображение, чем заполняет тело.",
+		"Ребристая форма мягко заполнила внутренность, начав совершать крошечные, почти незаметные колебания. В киске рождается приятное, едва ощутимое томление.",
+		"Гладкий член заполняет пространство, вибрируя в такт спокойному сердцебиению. Это приятное, умиротворяющее движение внутри каждой клеточки."
+	)
+	var/static/list/vibrationTextMedVag = list(
+		"Ребристый штырь входит внутрь, создавая волнообразную вибрацию по всей длине. Каждое движение внутри киски ощущается как мелкая, но отчетливая дрожь.",
+		"Тонкое щупальце скользит внутрь и начинает быстро дрожать, словно живое существо. Оно мягко обхватывает киску изнутри, даря приятное, непрерывное покачивание.",
+		"Нечто гладкое и массивное погружается в глубину, отдавая мягкую, обволакивающую вибрацию. Ощущение такое, будто киска едва заметно «дышит» от этого ритма.",
+		"Ребристая форма входит почти до упора, и её поверхность начинает быстро вибрировать, стимулируя каждый миллиметр внутренней поверхности. Это очень приятное, стабильное движение.",
+		"Широкий член заполняет влагалище, создавая эффект объемного гула внутри тела. Вибрация идет из самого центра, заставляя киску слегка сокращаться в такт пульсации.",
+		"Гладкая форма проникает внутрь и начинает совершать быстрые колебания, словно струна. Это приятное чувство легкого зуда и постоянного движения заполняет всё нутро."
+	)
+	var/static/list/vibrationTextHigVag = list(
+		"Член грубой формы внутри моей киски буквально взрывается от бешеной пульсации! Кажется, будто мелкие искры удовольствия разлетаются в разные стороны, заставляя меня невольно выгибаться!",
+		"Шипастая форма пронзает влагалище и начинает вибрировать с такой силой, что всё тело дрожит! Эта интенсивная чехарда внутри делает каждый миллиметр ощущений почти болезненно острым!",
+		"Конский член глубоко внутри моей киски превращается в настоящий отбойный молоток! Вибрация настолько мощная и быстрая, что я чувствую, как он буквально вбивается в глубину, выжимая из меня все силы!",
+		"Гладкий член внутри меня буквально лихорадит от мощных вибраций! Каждое движение этой формы во влагалище ощущается как электрический разряд, заставляющий мои бедра непроизвольно сжиматься!",
+		"Ребристая поверхность внутри киски вибрирует так интенсивно, что ощущения становятся почти осязаемыми. Это дикая стимуляция, которая доводит меня до предела в каждое мгновение!",
+		"Гладкий, плотный стержень входит в киску и начинает бешено пульсировать! Каждая пульсация отзывается резким электрическим разрядом внутри, заставляя тело непроизвольно выгибаться!"
+	)
 	// DP
 	var/static/list/vibrationTextLowDp = list(
 		"Легкая пульсация гладкого фаллоса внутри киски и едва заметное дрожание ребристой формы в попке создают приятный резонанс. Ощущения мягкие, как будто внутри разливается тепло.",
@@ -204,7 +274,7 @@
 	)
 
 /obj/item/clothing/underwear/briefs/hardspace_panties/female
-	name = "panties"
+	name = "Hardspace panties"
 	icon_state = "panties_slim"
 
 /datum/gear/underwear/boxers/panties/hardspace_panties
@@ -216,19 +286,15 @@
 	var/datum/action/item_action/hardspace_panties/control/button = new(src)
 	button.panties = src
 
-/obj/item/clothing/underwear/briefs/hardspace_panties/ComponentInitialize()
+/*/obj/item/clothing/underwear/briefs/hardspace_panties/ComponentInitialize()
 	. = ..()
-	AddElement(/datum/element/polychromic, list("#d9d9d9"), 1)
+	AddElement(/datum/element/polychromic, list("#d9d9d9"), 1)*/
 
 /obj/item/clothing/underwear/briefs/hardspace_panties/examine(mob/user)
 	. = ..()
 	. += span_notice("На дисплее управления ХардСпейс:")
 	. += span_notice("	<i>Режим: <b>[mode]</b></i>")
 	. += span_notice("	<i>Интенсивность: <b>[intence] режим</b></i>")
-	if(edging)
-		. += span_notice("	<i>На Грани: <b>ВКЛ</b></i>")
-	else
-		. += span_notice("	<i>На Грани: <b>ВЫКЛ</b></i>")
 
 /obj/item/clothing/underwear/briefs/hardspace_panties/Destroy()
 	STOP_PROCESSING(SSobj,src)
@@ -263,222 +329,247 @@
 
 	mode = HS_MODE_STRETCH
 	intence = HS_INTENCE_OFF
-	edging = FALSE
 	owner = null
 
 
 // MODE SELECTION
 /obj/item/clothing/underwear/briefs/hardspace_panties/proc/select_intence(mob/user, value)
-	switch(value)
-		if(HS_INTENCE_LOW)
-			intence = HS_INTENCE_LOW
-			to_chat(user, span_notice("Был выбраный режим мощности: [intence]."))
-			return
-		if(HS_INTENCE_MED)
-			intence = HS_INTENCE_MED
-			to_chat(user, span_notice("Был выбраный режим мощности: [intence]."))
-			return
-		if(HS_INTENCE_HIG)
-			intence = HS_INTENCE_HIG
-			to_chat(user, span_notice("Был выбраный режим мощности: [intence]."))
-			return
-		if(HS_INTENCE_OFF)
-			intence = HS_INTENCE_OFF
-			to_chat(user, span_notice("Был выбраный режим мощности: [intence]."))
-			return
-
-/obj/item/clothing/underwear/briefs/hardspace_panties/proc/select_edging(mob/user, value)
-	edging = value
-	to_chat(user, span_notice("Режим \"На Грани\" был: [edging]."))
+	intence = value
+	to_chat(owner, span_notice("Был выбран режим мощности: [intence]."))
 
 /obj/item/clothing/underwear/briefs/hardspace_panties/proc/select_mode(mob/user, value)
-	switch(value)
-		if(HS_MODE_STRETCH)
-			mode = HS_MODE_STRETCH
-			to_chat(user, span_notice("Был выбран режим: [HS_MODE_STRETCH]."))
-			return
-		if(HS_MODE_MASSAGE)
-			mode = HS_MODE_MASSAGE
-			to_chat(user, span_notice("Был выбран режим: [HS_MODE_MASSAGE]."))
-			return
-		if(HS_MODE_VIBRO)
-			mode = HS_MODE_VIBRO
-			to_chat(user, span_notice("Был выбран режим: [HS_MODE_VIBRO]."))
-			return
+	mode = value
+	to_chat(owner, span_notice("Был выбран режим: [mode]."))
 
 
 //PROCESS------
 /obj/item/clothing/underwear/briefs/hardspace_panties/process(delta_time)
-	var/lust = 0
+	if(intence == HS_INTENCE_OFF)
+		return
+
+	if(!owner)
+		STOP_PROCESSING(SSobj,src)
+		return
+
+	var/vagina = owner.getorganslot(ORGAN_SLOT_VAGINA)
+	var/anus = owner.getorganslot(ORGAN_SLOT_ANUS)
+	if(!vagina && !anus)
+		return
+
+	var/lustV = 0
+	var/lustA = 0
 	var/dp = FALSE
 
 	switch(mode)
 		if(HS_MODE_STRETCH)
-			if(owner.has_vagina() && owner.has_anus())
+			if(vagina && anus)
 				dp = TRUE
 				switch(intence)
 					if(HS_INTENCE_LOW)
-						lust += LOW_LUST * HS_LUST_MULT_STR * 2
+						lustV += LOW_LUST * HS_LUST_MULT_STR
+						lustA += LOW_LUST * HS_LUST_MULT_STR
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(stretchTextLowDp)))
 					if(HS_INTENCE_MED)
-						lust += NORMAL_LUST * HS_LUST_MULT_STR * 2
+						lustV += NORMAL_LUST * HS_LUST_MULT_STR
+						lustA += NORMAL_LUST * HS_LUST_MULT_STR
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(stretchTextMedDp)))
 					if(HS_INTENCE_HIG)
-						lust += HIGH_LUST * HS_LUST_MULT_STR * 2
+						lustV += HIGH_LUST * HS_LUST_MULT_STR
+						lustA += HIGH_LUST * HS_LUST_MULT_STR
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(stretchTextHigDp)))
 
-			if(!dp && owner.has_anus())
+			if(!dp && anus)
 				switch(intence)
 					if(HS_INTENCE_LOW)
-						lust += LOW_LUST * HS_LUST_MULT_STR
+						lustA += LOW_LUST * HS_LUST_MULT_STR
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(stretchTextLowAnl)))
 					if(HS_INTENCE_MED)
-						lust += NORMAL_LUST * HS_LUST_MULT_STR
+						lustA += NORMAL_LUST * HS_LUST_MULT_STR
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(stretchTextMedAnl)))
 					if(HS_INTENCE_HIG)
-						lust += HIGH_LUST * HS_LUST_MULT_STR
+						lustA += HIGH_LUST * HS_LUST_MULT_STR
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(stretchTextHigAnl)))
+
+			if(!dp && vagina)
+				switch(intence)
+					if(HS_INTENCE_LOW)
+						lustV += LOW_LUST * HS_LUST_MULT_STR
+						if(prob(HS_TEXT_CHANCE))
+							to_chat(owner, span_lewd(pick(stretchTextLowVag)))
+					if(HS_INTENCE_MED)
+						lustV += NORMAL_LUST * HS_LUST_MULT_STR
+						if(prob(HS_TEXT_CHANCE))
+							to_chat(owner, span_lewd(pick(stretchTextMedVag)))
+					if(HS_INTENCE_HIG)
+						lustV += HIGH_LUST * HS_LUST_MULT_STR
+						if(prob(HS_TEXT_CHANCE))
+							to_chat(owner, span_lewd(pick(stretchTextHigVag)))
 
 
 
 		if(HS_MODE_MASSAGE)
-			if(owner.has_vagina() && owner.has_anus())
+			if(vagina && anus)
 				dp = TRUE
 				switch(intence)
 					if(HS_INTENCE_LOW)
-						lust += LOW_LUST * HS_LUST_MULT_MSG * 2
+						lustV += LOW_LUST * HS_LUST_MULT_MSG
+						lustA += LOW_LUST * HS_LUST_MULT_MSG
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(massageTextLowDp)))
 					if(HS_INTENCE_MED)
-						lust += NORMAL_LUST * HS_LUST_MULT_MSG * 2
+						lustV += NORMAL_LUST * HS_LUST_MULT_MSG
+						lustA += NORMAL_LUST * HS_LUST_MULT_MSG
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(massageTextMedDp)))
 					if(HS_INTENCE_HIG)
-						lust += HIGH_LUST * HS_LUST_MULT_MSG * 2
+						lustV += HIGH_LUST * HS_LUST_MULT_MSG
+						lustA += HIGH_LUST * HS_LUST_MULT_MSG
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(massageTextHigDp)))
 
-			if(!dp && owner.has_anus())
+			if(!dp && anus)
 				switch(intence)
 					if(HS_INTENCE_LOW)
-						lust += LOW_LUST * HS_LUST_MULT_MSG
+						lustA += LOW_LUST * HS_LUST_MULT_MSG
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(massageTextLowAnl)))
 					if(HS_INTENCE_MED)
-						lust += NORMAL_LUST * HS_LUST_MULT_MSG
+						lustA += NORMAL_LUST * HS_LUST_MULT_MSG
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(massageTextMedAnl)))
 					if(HS_INTENCE_HIG)
-						lust += HIGH_LUST * HS_LUST_MULT_MSG
+						lustA += HIGH_LUST * HS_LUST_MULT_MSG
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(massageTextHigAnl)))
+
+			if(!dp && vagina)
+				switch(intence)
+					if(HS_INTENCE_LOW)
+						lustV += LOW_LUST * HS_LUST_MULT_MSG
+						if(prob(HS_TEXT_CHANCE))
+							to_chat(owner, span_lewd(pick(massageTextLowVag)))
+					if(HS_INTENCE_MED)
+						lustV += NORMAL_LUST * HS_LUST_MULT_MSG
+						if(prob(HS_TEXT_CHANCE))
+							to_chat(owner, span_lewd(pick(massageTextMedVag)))
+					if(HS_INTENCE_HIG)
+						lustV += HIGH_LUST * HS_LUST_MULT_MSG
+						if(prob(HS_TEXT_CHANCE))
+							to_chat(owner, span_lewd(pick(massageTextHigVag)))
 
 
 
 		if(HS_MODE_VIBRO)
-			if(owner.has_vagina() && owner.has_anus())
+			if(vagina && anus)
 				dp = TRUE
 				switch(intence)
 					if(HS_INTENCE_LOW)
-						lust += LOW_LUST * HS_LUST_MULT_VIB * 2
+						lustV += LOW_LUST * HS_LUST_MULT_VIB
+						lustA += LOW_LUST * HS_LUST_MULT_VIB
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(vibrationTextLowDp)))
 					if(HS_INTENCE_MED)
-						lust += NORMAL_LUST * HS_LUST_MULT_VIB * 2
+						lustV += NORMAL_LUST * HS_LUST_MULT_VIB
+						lustA += NORMAL_LUST * HS_LUST_MULT_VIB
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(vibrationTextMedDp)))
 					if(HS_INTENCE_HIG)
-						lust += HIGH_LUST * HS_LUST_MULT_VIB * 2
+						lustV += HIGH_LUST * HS_LUST_MULT_VIB
+						lustA += HIGH_LUST * HS_LUST_MULT_VIB
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(vibrationTextHigDp)))
 
-			if(!dp && owner.has_anus())
+			if(!dp && anus)
 				switch(intence)
 					if(HS_INTENCE_LOW)
-						lust += LOW_LUST * HS_LUST_MULT_VIB
+						lustA += LOW_LUST * HS_LUST_MULT_VIB
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(vibrationTextLowAnl)))
 					if(HS_INTENCE_MED)
-						lust += NORMAL_LUST * HS_LUST_MULT_VIB
+						lustA += NORMAL_LUST * HS_LUST_MULT_VIB
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(vibrationTextMedAnl)))
 					if(HS_INTENCE_HIG)
-						lust += HIGH_LUST * HS_LUST_MULT_VIB
+						lustA += HIGH_LUST * HS_LUST_MULT_VIB
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(vibrationTextHigAnl)))
 
+			if(!dp && vagina)
+				switch(intence)
+					if(HS_INTENCE_LOW)
+						lustV += LOW_LUST * HS_LUST_MULT_VIB
+						if(prob(HS_TEXT_CHANCE))
+							to_chat(owner, span_lewd(pick(vibrationTextLowVag)))
+					if(HS_INTENCE_MED)
+						lustV += NORMAL_LUST * HS_LUST_MULT_VIB
+						if(prob(HS_TEXT_CHANCE))
+							to_chat(owner, span_lewd(pick(vibrationTextMedVag)))
+					if(HS_INTENCE_HIG)
+						lustV += HIGH_LUST * HS_LUST_MULT_VIB
+						if(prob(HS_TEXT_CHANCE))
+							to_chat(owner, span_lewd(pick(vibrationTextHigVag)))
 
 
-	if(edging == HS_EDGE_ON)
-		var/ownerLust = owner.get_lust()
-		var/ownerTH = owner.get_climax_threshold()
-		var/tempLust = ownerLust + lust
-		if(tempLust > ownerTH)
-			lust = min(0,tempLust - (ownerTH * 1.1))
-
-	if(lust > HIGH_LUST)
+	var/lust = lustA + lustV
+	if(lust > LOW_LUST)
 		if(owner.client?.prefs.cit_toggles & SEX_JITTER)
 			owner.do_jitter_animation()
-	if(lust > HIGH_LUST * 1.2)
+	if(lust > LOW_LUST)
 		if(prob(20))
 			owner.Stun(20)
 			owner.moan()
 			to_chat(owner, span_lewd("<b>[pick(overLustText)]</b>"))
 
 	owner.client?.plug13.send_emote(PLUG13_EMOTE_GROIN, lust)
-	owner.handle_post_sex(lust, null, owner)
+	if(anus)
+		owner.handle_post_sex(lustA, null, owner, anus)
+	if(vagina)
+		owner.handle_post_sex(lustV, null, owner, vagina)
 
 //ACTIONS------
 /datum/action/item_action/hardspace_panties/
 	var/obj/item/clothing/underwear/briefs/hardspace_panties/panties
 
 /datum/action/item_action/hardspace_panties/control
-	name = "Control"
-	desc = "Выбор режима работы"
+	name = "Control HS Panties"
+	desc = "Выбор режима работы <b>трусиков</b>"
 	button_icon_state = "nanite_repair"
 	icon_icon = 'icons/mob/actions/actions_items.dmi'
 	background_icon_state = "bg_hive"
 
 /datum/action/item_action/hardspace_panties/control/Trigger()
+	if(!owner)
+		return
 	var/mob/living/carbon/human/H = owner
 
 	// мне искренне лень писать красивый УИ
-	var/picked_menu = tgui_input_list(owner, "Выберите настройку", "Панель настроек ХардСпейс", list(HS_MENU_MODE, HS_MENU_INTENCE, HS_MENU_EDGE))
+	var/picked_menu = tgui_input_list(owner, "Выберите настройку", "Панель настроек ХардСпейс Трусиков", list(HS_MENU_MODE, HS_MENU_INTENCE))
 	if(!picked_menu)
 		return
 	if(picked_menu == HS_MENU_MODE)
-		var/picked_mode = tgui_input_list(owner, "Выберите режим", "Панель настроек ХардСпейс", list(HS_MODE_STRETCH, HS_MODE_MASSAGE, HS_MODE_VIBRO))
+		var/picked_mode = tgui_input_list(owner, "Выберите режим", "Панель настроек ХардСпейс Трусиков", list(HS_MODE_STRETCH, HS_MODE_MASSAGE, HS_MODE_VIBRO))
 		if(!picked_mode)
 			return
 		panties.select_mode(H,picked_mode)
 	if(picked_menu == HS_MENU_INTENCE)
-		var/picked_intence = tgui_input_list(owner, "Выберите мощность", "Панель настроек ХардСпейс", list(HS_INTENCE_OFF, HS_INTENCE_LOW, HS_INTENCE_MED, HS_INTENCE_HIG))
+		var/picked_intence = tgui_input_list(owner, "Выберите мощность", "Панель настроек ХардСпейс Трусиков", list(HS_INTENCE_OFF, HS_INTENCE_LOW, HS_INTENCE_MED, HS_INTENCE_HIG))
 		if(!picked_intence)
 			return
 		panties.select_intence(H,picked_intence)
-	if(picked_menu == HS_MENU_EDGE)
-		var/picked_edge = tgui_input_list(owner, "Включить режим \"На Грани\"", "Панель настроек ХардСпейс", list(HS_EDGE_ON, HS_EDGE_OFF))
-		if(!picked_edge)
-			return
-		panties.select_edging(H,picked_edge)
 
 
 #undef HS_MENU_MODE
 #undef HS_MENU_INTENCE
-#undef HS_MENU_EDGE
 
 #undef HS_MODE_STRETCH
 #undef HS_MODE_MASSAGE
 #undef HS_MODE_VIBRO
-
-#undef HS_EDGE_ON
-#undef HS_EDGE_OFF
 
 #undef HS_INTENCE_OFF
 #undef HS_INTENCE_LOW
