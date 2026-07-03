@@ -71,6 +71,7 @@
 
 /obj/item/clothing/mask/hardspace_mask/Destroy()
 	STOP_PROCESSING(SSobj,src)
+	REMOVE_TRAIT(owner, TRAIT_TONGUELESS_SPEECH, CLOTHING_TRAIT)
 	owner = null
 	. = ..()
 
@@ -93,6 +94,8 @@
 	if(!M)
 		return
 	owner = M
+	if(intence == HS_INTENCE_HIG)
+		ADD_TRAIT(owner, TRAIT_TONGUELESS_SPEECH, src)
 	START_PROCESSING(SSobj,src)
 
 /obj/item/clothing/mask/hardspace_mask/proc/on_unequip(mob/user)
@@ -100,6 +103,7 @@
 		return
 
 	STOP_PROCESSING(SSobj,src)
+	REMOVE_TRAIT(owner, TRAIT_TONGUELESS_SPEECH, src)
 
 	intence = HS_INTENCE_OFF
 	owner = null
@@ -130,17 +134,18 @@
 			if(prob(HS_TEXT_CHANCE))
 				to_chat(owner, span_lewd(pick(penitrateHig)))
 
-			if(prob(10))
-				owner.emote(pick("gasp", "gag", "choke"))
-
 			if(owner.getOxyLoss() < 20)
 				owner.adjustOxyLoss(25 - owner.getOxyLoss())
-
-			owner.Silence(20)
 
 			if(prob(50))
 				if(owner.client?.prefs.cit_toggles & SEX_JITTER)
 					owner.do_jitter_animation()
+
+			if(prob(10))
+				owner.emote(pick("gasp", "gag", "choke"))
+
+			if(prob(1))
+				owner.snap_choker(owner, ITEM_SLOT_NECK)
 
 	owner.client?.plug13.send_emote(PLUG13_EMOTE_GROIN, lust)
 	owner.handle_post_sex(lust, null, owner)
@@ -151,6 +156,10 @@
 /obj/item/clothing/mask/hardspace_mask/proc/select_intence(mob/user, value)
 	intence = value
 	to_chat(owner, span_notice("Был выбран режим мощности: [intence]."))
+	if(intence == HS_INTENCE_HIG)
+		ADD_TRAIT(owner, TRAIT_TONGUELESS_SPEECH, src)
+	else
+		REMOVE_TRAIT(owner, TRAIT_TONGUELESS_SPEECH, src)
 
 
 //ACTIONS------
