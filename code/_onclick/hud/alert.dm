@@ -1162,7 +1162,7 @@ so as to remain in compliance with the most up-to-date laws."
 	if(LAZYACCESS(modifiers, SHIFT_CLICK)) // screen objects don't do the normal Click() stuff so we'll cheat
 		if(master_ref && click_master)
 			var/atom/resolved = master_ref.resolve()
-			resolved.attempt_examinate(usr)
+			resolved?.attempt_examinate(usr)
 		else
 			to_chat(usr, examine_block("[jointext(examine(usr), "\n")]"))
 		return FALSE
@@ -1170,7 +1170,7 @@ so as to remain in compliance with the most up-to-date laws."
 	if(master_ref && click_master)
 		var/atom/resolved = master_ref.resolve()
 		if(resolved)
-			return usr.client.Click(resolved, location, control, params, ignore_last_click = TRUE)
+			return usr.client.Click(resolved, location, control, params, ignore_spam = TRUE, ignore_last_click = TRUE)
 
 	return TRUE
 
