@@ -88,16 +88,18 @@
 	if(!do_after(user, 5 SECONDS, target = src))
 		balloon_alert(user, "interrupted!")
 		return FALSE
-	if(!user.transferItemToLoc(card, src))
+	if(!card.pai.forceMove(src))
 		return
 
 	card.pai.canholo = FALSE
 	ai = card.pai
+	ai.remote_control = src
+	var/mob/living/silicon/pai/pai = ai
 	balloon_alert(user, "pAI transferred to suit")
 	balloon_alert(ai, "transferred to a suit")
-	ai.remote_control = src
 	for(var/datum/action/action as anything in actions)
-		action.Grant(ai)
+		action.Grant(pai)
+	card.moveToNullspace()
 	return TRUE
 
 /**
