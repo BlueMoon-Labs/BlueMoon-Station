@@ -146,7 +146,8 @@
 	var/mob/living/silicon/pai/pai = ai
 	var/turf/drop_off = get_turf(src)
 	if(drop_off) // In case there's no drop_off, the pAI will simply get deleted.
-		var/obj/item/paicard/card = pai.card.forceMove(drop_off)
+		var/obj/item/paicard/card = pai.card
+		card.forceMove(drop_off)
 		pai.forceMove(card)
 		pai.client.eye = card
 
