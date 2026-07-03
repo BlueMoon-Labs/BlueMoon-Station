@@ -146,7 +146,7 @@
 	w_class = WEIGHT_CLASS_BULKY
 	weapon_weight = WEAPON_HEAVY
 	recoil = 2
-	mag_type = /obj/item/ammo_box/magazine/aa12/small
+	mag_type = /obj/item/ammo_box/magazine/aa12
 	fire_sound = 'sound/weapons/gunshotshotgunshot.ogg'
 	automatic_burst_overlay = FALSE
 	can_suppress = FALSE
