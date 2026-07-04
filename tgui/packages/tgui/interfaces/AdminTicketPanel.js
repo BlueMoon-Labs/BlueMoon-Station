@@ -379,7 +379,6 @@ const TicketDetailPanel = (props) => {
     ''
   );
   const [lastTypingPing, setLastTypingPing] = useLocalState(
-    context,
     'lastTypingPing_' + ticket.ref,
     0
   );

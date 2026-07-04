@@ -16,6 +16,14 @@ import { changeSettingsTab, updateSettings } from './actions';
 import { CHAT_ANIM_SPEEDS, CHAT_ANIMATIONS, CHAT_BG_ANIMATIONS, CHAT_STYLES, FONTS, MESSAGE_STYLE_ANIMATIONS, MESSAGE_STYLE_FONTS, MESSAGE_STYLES, SETTINGS_TABS, TEXT_GLOW_OPTIONS, TIME_DIVIDER_INTERVALS, TIMESTAMP_FORMATS } from './constants';
 import { selectActiveTab, selectSettings } from './selectors';
 
+// React's onChange fires continuously while dragging inside the color
+// dialog; debounce so we do not rewrite stored settings on every tick.
+const colorCommitTimers = new WeakMap();
+const debouncedColorCommit = (input, commit) => {
+  clearTimeout(colorCommitTimers.get(input));
+  colorCommitTimers.set(input, setTimeout(() => commit(input.value), 250));
+};
+
 /**
  * Color input with a native color picker and text field.
  */
@@ -41,7 +49,7 @@ const ColorInput = (props) => {
             'background': 'transparent',
             'cursor': 'pointer',
           }}
-          onChange={e => onChange(e.target.value)}
+          onChange={e => debouncedColorCommit(e.target, onChange)}
         />
       </Stack.Item>
       <Stack.Item>

@@ -28,6 +28,14 @@ type GraphicsData = {
   mood_vignette: boolean;
 };
 
+// React's onChange fires continuously while dragging inside the color
+// dialog; debounce so we do not flood the server with act() messages.
+const colorCommitTimers = new WeakMap();
+const debouncedColorCommit = (input: HTMLInputElement, commit: (value: string) => void) => {
+  clearTimeout(colorCommitTimers.get(input));
+  colorCommitTimers.set(input, setTimeout(() => commit(input.value), 250));
+};
+
 const PARALLAX_OPTIONS = [
   { value: 0, label: 'Выкл.' },
   { value: 1, label: 'Низкий' },
@@ -112,7 +120,8 @@ export const GraphicsSection = (props) => {
                 background: 'transparent',
                 cursor: 'pointer',
               }}
-              onChange={e => act('set_gfx_val', { flag, value: e.target.value })}
+              onChange={e => debouncedColorCommit(e.target,
+                value => act('set_gfx_val', { flag, value }))}
             />
           </Stack.Item>
           <Stack.Item shrink={0} basis="80px">

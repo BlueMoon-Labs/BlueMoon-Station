@@ -30,6 +30,14 @@ type ChatData = {
   auto_capitalize_enabled: boolean;
 };
 
+// React's onChange fires continuously while dragging inside the color
+// dialog; debounce so we do not flood the server with act() messages.
+const colorCommitTimers = new WeakMap();
+const debouncedColorCommit = (input: HTMLInputElement, commit: (value: string) => void) => {
+  clearTimeout(colorCommitTimers.get(input));
+  colorCommitTimers.set(input, setTimeout(() => commit(input.value), 250));
+};
+
 const GHOST_FORM_OPTIONS = [
   'ghost', 'ghost1', 'ghost2', 'ghostking', 'ghostian2', 'skeleghost',
   'ghost_red', 'ghost_black', 'ghost_blue', 'ghost_yellow', 'ghost_green',
@@ -88,7 +96,8 @@ const OOC_COLORS = (data: ChatData, act: Function) => (
                 background: 'transparent',
                 cursor: 'pointer',
               }}
-              onChange={e => act('set_ooc_pref', { flag: 'ooccolor', value: e.target.value })}
+              onChange={e => debouncedColorCommit(e.target,
+                value => act('set_ooc_pref', { flag: 'ooccolor', value }))}
             />
           </Stack.Item>
           <Stack.Item shrink={0} basis="80px">
@@ -126,7 +135,8 @@ const OOC_COLORS = (data: ChatData, act: Function) => (
                 background: 'transparent',
                 cursor: 'pointer',
               }}
-              onChange={e => act('set_ooc_pref', { flag: 'aooccolor', value: e.target.value })}
+              onChange={e => debouncedColorCommit(e.target,
+                value => act('set_ooc_pref', { flag: 'aooccolor', value }))}
             />
           </Stack.Item>
           <Stack.Item shrink={0} basis="80px">
