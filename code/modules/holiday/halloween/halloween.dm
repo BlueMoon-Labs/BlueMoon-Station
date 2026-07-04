@@ -36,6 +36,7 @@
 #define SCARY_BATS 		3
 #define INSANE_CLOWN	4
 #define HOWLING_GHOST	5
+#define EVILL_HUNTER    6
 
 //Spookoween variables
 /obj/structure/closet
@@ -54,6 +55,9 @@
 /obj/structure/closet/proc/set_spooky_trap()
 	if(prob(5))
 		trapped = INSANE_CLOWN
+		return
+	if(prob(8))
+		trapped = EVILL_HUNTER
 		return
 	if(prob(10))
 		trapped = ANGRY_FAITHLESS
@@ -110,6 +114,13 @@
 		playsound(loc, 'sound/spookoween/scary_clown_appear.ogg', 500, 1)
 		spawn_atom_to_turf(/mob/living/simple_animal/hostile/retaliate/clown/insane, loc, 1, FALSE)
 		trapped = 0
+	else if(trapped == EVILL_HUNTER)
+		visible_message("<span class='userdanger'>Комод с треском открывается!</span>")
+		visible_message("<span class='userdanger'><font size='5'>ЭТО СУЩЕСТВО ВООРУЖЕНО КОПЬЁМ! БЕГИТЕ!!!</font></span>")
+		playsound(loc, 'sound/hallucinations/wail.ogg', 50, 1)
+		var/mob/living/simple_animal/hostile/slugcat_hunter/H = new(loc)
+		trapped = 0
+		QDEL_IN(H, 120)
 
 //don't spawn in crates
 /obj/structure/closet/crate/trigger_spooky_trap()

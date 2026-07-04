@@ -21,7 +21,7 @@
 	gold_core_spawnable = FRIENDLY_SPAWN
 	footstep_type = FOOTSTEP_MOB_SLIME
 	faction = list("slime","neutral")
-	speed = -1
+	speed = 1
 
 	// Переменные инвентаря
 	var/obj/item/inventory_head
@@ -340,3 +340,55 @@
 /mob/living/simple_animal/pet/slugcat/proc/null_hand()
 	unspeared()
 	inventory_hand = null
+
+/mob/living/simple_animal/hostile/slugcat_hunter
+	name = "дикий слизнекот-охотник"
+	desc = "Опасное существо, напоминающее кота и слизня в одном обличии. Крайне агрессивное и умелое в обращении с копьём. Лучше держаться подальше!"
+	icon = 'modular_sand/icons/mob/animal.dmi'
+	icon_state = "slugcat_hunter_spear"
+	icon_living = "slugcat_hunter_spear"
+	icon_dead = "slugcat_hunter_dead"
+	mob_biotypes = MOB_ORGANIC|MOB_HUMANOID
+	gender = MALE
+	speak_chance = 0
+	turns_per_move = 3
+	speed = 0
+	maxHealth = 150
+	health = 150
+	mob_size = MOB_SIZE_SMALL
+	see_in_dark = 8
+	stat_attack = UNCONSCIOUS
+	robust_searching = 1
+	blood_volume = BLOOD_VOLUME_NORMAL
+
+	harm_intent_damage = 10
+	obj_damage = 40
+	melee_damage_lower = 15
+	melee_damage_upper = 25
+	melee_damage_type = BRUTE
+	attack_verb_continuous = "бьёт копьём"
+	attack_verb_simple = "бьёт"
+	attack_sound = 'sound/weapons/bladeslice.ogg'
+	speak_emote = list("growls")
+
+	atmos_requirements = list("min_oxy" = 0, "max_oxy" = 0, "min_tox" = 0, "max_tox" = 0, "min_co2" = 0, "max_co2" = 0, "min_n2" = 0, "max_n2" = 0)
+	minbodytemp = 0
+
+	faction = list("hostile")
+	gold_core_spawnable = HOSTILE_SPAWN
+	footstep_type = FOOTSTEP_MOB_SLIME
+
+	emote_taunt = list("hisses", "growls")
+	taunt_chance = 30
+
+/mob/living/simple_animal/hostile/slugcat_hunter/AttackingTarget()
+	. = ..()
+	if(. && prob(15) && iscarbon(target))
+		var/mob/living/carbon/C = target
+		C.DefaultCombatKnockdown(40)
+		C.visible_message("<span class='danger'>\The [src] сбивает \the [C] с ног копьём!</span>", \
+				"<span class='userdanger'>\The [src] сбивает вас с ног копьём!</span>")
+
+/mob/living/simple_animal/hostile/slugcat_hunter/death(gibbed)
+	visible_message("<span class='danger'>[src] издаёт последний вздох...</span>")
+	. = ..()
