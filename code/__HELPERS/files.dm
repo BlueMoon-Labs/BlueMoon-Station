@@ -74,8 +74,10 @@
 	return replacetext(path, "/", "_")
 
 /// Returns the md5 of a file at a given path.
+/// Нативный хеш rust-g: BYOND'овский md5(file()) на путях с диска блокировал тик на ~20мс за файл
+/// (генерация ассетов при коннектах). Читает файл напрямую с диска, минуя маршаллинг в BYOND.
 /proc/md5filepath(path)
-	. = md5(file(path))
+	. = rustg_hash_file(RUSTG_HASH_MD5, path)
 
 /// Save file as an external file then md5 it.
 /// Used because md5ing files stored in the rsc sometimes gives incorrect md5 results.
