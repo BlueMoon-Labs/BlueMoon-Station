@@ -12,20 +12,11 @@
 	var/obj/item/instrument/piano_synth/internal_instrument
 	silicon_privileges = PRIVILEGES_PAI
 
-	var/network = "ss13"
-	var/obj/machinery/camera/current = null
-
 	var/ram = 100
 	var/list/software = list()
-	var/syndicate_model = FALSE
-	var/userDNA		// The DNA string of our assigned user
+	var/inteq_model = FALSE
 	var/obj/item/paicard/card	// The card we inhabit
 	var/hacking = FALSE		//Are we hacking a door?
-
-	var/speakStatement = "states"
-	var/speakExclamation = "declares"
-	var/speakDoubleExclamation = "alarms"
-	var/speakQuery = "queries"
 
 	var/obj/item/radio/headset			// The pAI's headset
 	var/obj/item/pai_cable/cable		// The cable we produce and use when door or camera jacking
@@ -82,6 +73,8 @@
 	var/encryptmod = FALSE
 	var/holoform = FALSE
 	var/canholo = TRUE
+	var/leashed = FALSE
+	var/range = 4
 	var/chassis = "repairbot"
 	var/dynamic_chassis
 	var/dynamic_chassis_sit = FALSE			//whether we're sitting instead of resting spritewise
@@ -106,8 +99,6 @@
 
 	mobility_flags = MOBILITY_UI
 	var/silent = FALSE
-	var/brightness_power = 5
-
 	var/icon/custom_holoform_icon
 
 /mob/living/silicon/pai/Destroy()
@@ -128,8 +119,6 @@
 	card.cut_overlays()
 	card.add_overlay("pai-off")
 	card = null
-	current = null
-	GLOB.pai_list -= src
 	STOP_PROCESSING(SSfastprocess, src)
 	QDEL_NULL(secureye_program)
 	QDEL_NULL(cell)
@@ -138,7 +127,6 @@
 /mob/living/silicon/pai/Initialize(mapload)
 	var/obj/item/paicard/P = loc
 	START_PROCESSING(SSfastprocess, src)
-	GLOB.pai_list += src
 	make_laws()
 	if(!istype(P)) //when manually spawning a pai, we create a card to put it into.
 		var/newcardloc = P
@@ -189,10 +177,6 @@
 	if(software.Find("flashlight"))
 		action_light.Grant(src)
 	emitter_next_use = world.time + 10 SECONDS
-
-/mob/living/silicon/pai/deployed/Initialize(mapload)
-	. = ..()
-	fold_out(TRUE)
 
 /mob/living/silicon/pai/ComponentInitialize()
 	. = ..()
@@ -254,9 +238,9 @@
 /mob/living/silicon/pai/get_status_tab_items()
 	. += ..()
 	if(!stat)
-		. += text("Emitter Integrity: [emitterhealth * (100/emittermaxhealth)]")
+		. += "Целостность: [emitterhealth * (100 / emittermaxhealth)].%"
 	else
-		. += text("Systems nonfunctional")
+		. += text("Системы не функционируют")
 
 /mob/living/silicon/pai/restrained(ignore_grab)
 	. = FALSE
@@ -285,16 +269,7 @@
 /mob/living/silicon/pai/GetJob()
 	if(encoder_active && encoder_job)
 		return encoder_job
-	return "Personal AI"
-
-/mob/proc/makePAI(delold)
-	var/obj/item/paicard/card = new /obj/item/paicard(get_turf(src))
-	var/mob/living/silicon/pai/pai = new /mob/living/silicon/pai(card)
-	transfer_ckey(pai)
-	pai.name = name
-	card.setPersonality(pai)
-	if(delold)
-		qdel(src)
+	return "Персональный ИИ"
 
 /mob/living/silicon/pai/ui_status(mob/user)
 	if(user == src)
@@ -370,7 +345,7 @@
 
 /mob/living/silicon/pai/examine(mob/user)
 	. = ..()
-	. += "A personal AI in holochassis mode. Its master ID string seems to be [master]."
+	. += "Персональный ИИ в режиме голохассиса. Его строка ID мастера, похоже, [master || "пуста"]."
 
 /mob/living/silicon/pai/PhysicalLife()
 	. = ..()
@@ -404,8 +379,8 @@
 		power_usage += 2
 	if(night_vision_active)
 		power_usage += 1
-	if(istype(src, /mob/living/silicon/pai/syndicate))
-		var/mob/living/silicon/pai/syndicate/S = src
+	if(istype(src, /mob/living/silicon/pai/inteq))
+		var/mob/living/silicon/pai/inteq/S = src
 		if(S.thermal_vision_active)
 			power_usage += 3
 	if(camera_bug_active)
@@ -414,8 +389,8 @@
 		if(night_vision_active)
 			night_vision_active = FALSE
 			to_chat(src, "<span class='warning'>Недостаточно энергии! Ночное зрение деактивировано.</span>")
-		if(istype(src, /mob/living/silicon/pai/syndicate))
-			var/mob/living/silicon/pai/syndicate/S = src
+		if(istype(src, /mob/living/silicon/pai/inteq))
+			var/mob/living/silicon/pai/inteq/S = src
 			if(S.thermal_vision_active)
 				S.toggle_thermal_vision()
 				to_chat(src, "<span class='warning'>Недостаточно энергии! Термальное зрение деактивировано.</span>")
@@ -442,87 +417,118 @@
 	..()
 	user.set_machine(src)
 
-	// Crowbar → remove battery when panel is open
+	// remove battery
 	if(W.tool_behaviour == TOOL_CROWBAR && panel_open && pai?.cell)
 		pai.cell.forceMove(drop_location())
-		to_chat(user, "<span class='notice'>You remove [pai.cell] from [src].</span>")
+		to_chat(user, span_notice("Вы извлекаете [pai.cell] из [src]."))
 		pai.cell = null
 		return
 
-	// Cell insertion when panel is open
 	if(istype(W, /obj/item/stock_parts/cell) && panel_open && pai)
 		if(pai.cell)
-			to_chat(user, "<span class='warning'>There is already a cell installed.</span>")
+			to_chat(user, span_warning("Здесь уже установлена батарея."))
 			return
 		if(!user.transferItemToLoc(W, pai))
 			return
 		pai.cell = W
-		to_chat(user, "<span class='notice'>You install [W] into [src].</span>")
+		to_chat(user, span_notice("Вы устанавливаете [W] в [src]."))
 		return
 
-	// Screwdriver → toggle panel (only if not dealing with encryption keys)
 	if(W.tool_behaviour == TOOL_SCREWDRIVER)
 		if(pai?.encryptmod)
 			pai.radio.attackby(W, user, params)
 			return
 		panel_open = !panel_open
-		to_chat(user, "<span class='notice'>You [panel_open ? "open" : "close"] the battery compartment on [src].</span>")
+		to_chat(user, span_notice("Вы [panel_open ? "открываете" : "закрываете"] отсек для батареи на [src]."))
 		return
 
-	// Encryption key when encryptmod is not installed
+	// Encryption key
 	if(istype(W, /obj/item/encryptionkey))
-		to_chat(user, "Encryption Key ports not configured.")
+		if(pai?.encryptmod && pai.radio)
+			pai.radio.attackby(W, user, params)
+			return
+		to_chat(user, span_alert("Порты ключей шифрования не настроены."))
 
-/obj/item/paicard/attack_ghost(mob/dead/observer/user)
-	if(pai)
-		to_chat(user, "<span class='warning'>This pAI is already in use!</span>")
-		return
-
-	var/area/A = get_area(get_turf(src))
-	if(A.type in SSpai.restricted_areas) // set in subsystem/pai.dm on initialize of the subsystem
-		to_chat(user, "<span class='warning'>You can't download yourself into a restricted area!</span>")
-		return
-
-	var/pai_name = reject_bad_name(stripped_input(usr, "Enter a name for your pAI", "pAI Name", user.name, MAX_NAME_LEN), TRUE)
-	if(!pai_name)
-		to_chat(user, "<span class='warning'>Entered name is not valid.</span>")
-		return
-
-	var/mob/living/silicon/pai/new_pai = new(src)
-	new_pai.name = pai_name
-	new_pai.real_name = new_pai.name
-	new_pai.key = user.key
-
-	if(new_pai.pda)
-		new_pai.pda.saved_identification = pai_name
-		new_pai.pda.owner = pai_name
-		new_pai.pda.name = "[pai_name] (pAI Messenger)"
-
-	setPersonality(new_pai)
-
-	SSticker.mode?.update_cult_icons_removed(pai.mind)
-
-/obj/item/paicard/emag_act(mob/user) // Emag to wipe the master DNA and supplemental directive
+/obj/item/paicard/emag_act(mob/user)
 	. = ..()
 	if(!pai)
 		return
-	to_chat(user, "<span class='notice'>You override [pai]'s directive system, clearing its master string and supplied directive.</span>")
-	to_chat(pai, "<span class='danger'>Warning: System override detected, check directive sub-system for any changes.'</span>")
+	to_chat(user, span_notice("Вы переопределили директивную систему [pai], очистив строку мастера и выданную директиву."))
+	to_chat(pai, span_danger("ВНИМАНИЕ: обнаружено переопределение системы, проверьте подсистему директив на наличие изменений."))
 	log_admin("[key_name(user)] emagged [key_name(pai)], wiping their master DNA and supplemental directive at [AREACOORD(src)]")
 	pai.master = null
 	pai.master_dna = null
-	pai.laws.supplied[1] = "None." // Sets supplemental directive to this
+	pai.laws?.clear_supplied_laws()
+	pai.add_supplied_law(0, "Отсутствуют.")
+
+/mob/living/silicon/pai/proc/wipe_pai(mob/user)
+	if(tgui_alert(user, "Вы уверены, что хотите удалить текущую личность? Это действие невозможно отменить.", "Стирание личности", list("Да", "Нет")) != "Да")
+		return FALSE
+	to_chat(src, span_warning("Вы чувствуете, что ускользаете от реальности."))
+	to_chat(src, span_danger("Байт за байтом вы теряете самоощущение."))
+	to_chat(src, span_userdanger("Ваши умственные способности покидают вас."))
+	to_chat(src, span_rose("забвение... "))
+	balloon_alert(user, "личность стёрта")
+	playsound(src, 'sound/machines/buzz-two.ogg', 30, TRUE)
+	qdel(src)
+	return TRUE
+
+/mob/living/silicon/pai/proc/set_dna(mob/user)
+	if(master_dna)
+		balloon_alert(user, "ДНК уже задана")
+		return FALSE
+	if(!iscarbon(user))
+		balloon_alert(user, "несовместимая ДНК-сигнатура")
+		return FALSE
+	var/mob/living/carbon/M = user
+	master = M.real_name
+	master_dna = M.dna.unique_enzymes
+	to_chat(src, span_boldnotice("Вы были связаны с новым мастером: [user.real_name]!"))
+	return TRUE
+
+/mob/living/silicon/pai/proc/set_laws(mob/user)
+	if(!master)
+		balloon_alert(user, "доступ запрещён: нет мастера")
+		return FALSE
+	var/new_laws = tgui_input_text(
+		user,
+		"Введите любые дополнительные указания, которым, по вашему мнению, должна следовать ваша ПИИ-личность. Обратите внимание, что эти директивы не будут отменять преданность личности к своему привязанному хозяину. Конфликтующие директивы будут проигнорированы.",
+		"Конфигурация директивы ПИИ",
+		laws.supplied[1],
+		max_length = 300,
+	)
+	if(!new_laws || !master)
+		return FALSE
+	var/sanitized_laws = sanitize(new_laws)
+	laws?.clear_supplied_laws()
+	add_supplied_law(0, sanitized_laws)
+	to_chat(src, span_notice(sanitized_laws))
+	return TRUE
+
+/mob/living/silicon/pai/proc/reset_software()
+	emagged = FALSE
+	master = null
+	master_dna = null
+	laws?.clear_supplied_laws()
+	add_supplied_law(0, "Отсутствуют.")
+	balloon_alert(src, "программное обеспечение перезагружено")
+	return TRUE
+
+/mob/living/silicon/pai/proc/toggle_leash()
+	leashed = !leashed
+	range = leashed ? 4 : 7
+	visible_message(span_notice("[src]'s hologram leash now [leashed ? "restricted" : "unrestricted"]."))
 
 /mob/living/silicon/pai/proc/short_radio()
 	if(radio_short_timerid)
 		deltimer(radio_short_timerid)
 	radio_short = TRUE
-	to_chat(src, "<span class='danger'>Your radio shorts out!</span>")
+	to_chat(src, span_danger("Ваше радио закоротило!"))
 	radio_short_timerid = addtimer(CALLBACK(src, PROC_REF(unshort_radio)), radio_short_cooldown, flags = TIMER_STOPPABLE)
 
 /mob/living/silicon/pai/proc/unshort_radio()
 	radio_short = FALSE
-	to_chat(src, "<span class='danger'>You feel your radio is operational once more.</span>")
+	to_chat(src, span_danger("Вы чувствуете, что ваше радио снова работает."))
 	if(radio_short_timerid)
 		deltimer(radio_short_timerid)
 
@@ -735,7 +741,7 @@
 			item["power_usage"] = meta["power_usage"]
 		avail_list += list(item)
 	data["available_software"] = avail_list
-	data["syndicate_model"] = syndicate_model
+	data["inteq_model"] = inteq_model
 	data["battery_charge"] = cell?.charge
 	data["battery_max"] = cell?.maxcharge
 	data["battery_percent"] = get_battery_percent()
@@ -765,7 +771,8 @@
 	data["nearby_apcs"] = list()
 	data["nearby_turrets"] = list()
 	if(ai_capability)
-		for(var/obj/machinery/door/D in range(13, src))
+		var/turf/scan_turf = get_turf(src)
+		for(var/obj/machinery/door/D in range(13, scan_turf))
 			if(istype(D, /obj/machinery/door/airlock))
 				var/obj/machinery/door/airlock/A = D
 				data["nearby_doors"] += list(list(
@@ -783,13 +790,13 @@
 					"open" = !D.density,
 					"locked" = null,
 				))
-		for(var/obj/machinery/power/apc/APC in range(13, src))
+		for(var/obj/machinery/power/apc/APC in range(13, scan_turf))
 			data["nearby_apcs"] += list(list(
 				"name" = APC.name,
 				"ref" = REF(APC),
 				"operating" = APC.operating,
 			))
-		for(var/obj/machinery/turretid/T in range(13, src))
+		for(var/obj/machinery/turretid/T in range(13, scan_turf))
 			data["nearby_turrets"] += list(list(
 				"name" = T.name,
 				"ref" = REF(T),
@@ -807,7 +814,7 @@
 	data["encoder_name"] = encoder_name
 	data["encoder_job"] = encoder_job
 	data["thermal_vision"] = thermal_vision_active
-	data["flashlight"] = flashlight_on
+	data["flashlight_on"] = flashlight_on
 	data["night_vision"] = night_vision_active
 	data["meson_vision"] = meson_vision_active
 
@@ -965,8 +972,8 @@
 					temp = "Модуль уже установлен."
 				else
 					var/cost = available_software[target]
-					if((target in list("thermal vision", "chemical injector", "weakened ai capability")) && !syndicate_model)
-						temp = "Данный модуль доступен только Syndicate pAI."
+					if((target in list("thermal vision", "chemical injector", "weakened ai capability")) && !inteq_model)
+						temp = "Данный модуль доступен только InteQ pAI."
 					else if(ram >= cost)
 						software.Add(target)
 						ram -= cost
@@ -1023,8 +1030,8 @@
 							lighting_alpha = initial(lighting_alpha)
 							update_sight()
 					if("chemical injector")
-						if(istype(src, /mob/living/silicon/pai/syndicate))
-							var/mob/living/silicon/pai/syndicate/S = src
+						if(istype(src, /mob/living/silicon/pai/inteq))
+							var/mob/living/silicon/pai/inteq/S = src
 							if(S.chemical_injector_active)
 								S.chemical_injector_active = FALSE
 							S.chemical_storage = 0
@@ -1249,7 +1256,7 @@
 				temp = "Недостаточно энергии."
 				return TRUE
 			var/ref = params["ref"]
-			var/obj/machinery/door/D = locate(ref) in range(13, src)
+			var/obj/machinery/door/D = locate(ref) in range(13, get_turf(src))
 			if(!istype(D))
 				return TRUE
 			if(world.time < ai_capability_cooldown)
@@ -1268,7 +1275,7 @@
 				temp = "Недостаточно энергии."
 				return TRUE
 			var/ref = params["ref"]
-			var/obj/machinery/door/airlock/A = locate(ref) in range(13, src)
+			var/obj/machinery/door/airlock/A = locate(ref) in range(13, get_turf(src))
 			if(!istype(A))
 				return TRUE
 			if(world.time < ai_capability_cooldown)
@@ -1287,7 +1294,7 @@
 				temp = "Недостаточно энергии."
 				return TRUE
 			var/ref = params["ref"]
-			var/obj/machinery/door/airlock/A = locate(ref) in range(13, src)
+			var/obj/machinery/door/airlock/A = locate(ref) in range(13, get_turf(src))
 			if(!istype(A))
 				return TRUE
 			if(world.time < ai_capability_cooldown)
@@ -1306,7 +1313,7 @@
 				temp = "Недостаточно энергии."
 				return TRUE
 			var/ref = params["ref"]
-			var/obj/machinery/door/airlock/A = locate(ref) in range(13, src)
+			var/obj/machinery/door/airlock/A = locate(ref) in range(13, get_turf(src))
 			if(!istype(A))
 				return TRUE
 			if(world.time < ai_capability_cooldown)
@@ -1322,7 +1329,7 @@
 				temp = "Недостаточно энергии."
 				return TRUE
 			var/ref = params["ref"]
-			var/obj/machinery/power/apc/APC = locate(ref) in range(13, src)
+			var/obj/machinery/power/apc/APC = locate(ref) in range(13, get_turf(src))
 			if(!istype(APC))
 				return TRUE
 			if(world.time < ai_capability_cooldown)
@@ -1338,7 +1345,7 @@
 				temp = "Недостаточно энергии."
 				return TRUE
 			var/ref = params["ref"]
-			var/obj/machinery/turretid/T = locate(ref) in range(13, src)
+			var/obj/machinery/turretid/T = locate(ref) in range(13, get_turf(src))
 			if(!istype(T))
 				return TRUE
 			if(world.time < ai_capability_cooldown)
@@ -1354,7 +1361,7 @@
 				temp = "Недостаточно энергии."
 				return TRUE
 			var/ref = params["ref"]
-			var/obj/machinery/turretid/T = locate(ref) in range(13, src)
+			var/obj/machinery/turretid/T = locate(ref) in range(13, get_turf(src))
 			if(!istype(T))
 				return TRUE
 			if(world.time < ai_capability_cooldown)
@@ -1419,8 +1426,8 @@
 			subscreen = 1
 			return TRUE
 		if("toggle_chemical_injector")
-			if(istype(src, /mob/living/silicon/pai/syndicate))
-				var/mob/living/silicon/pai/syndicate/S = src
+			if(istype(src, /mob/living/silicon/pai/inteq))
+				var/mob/living/silicon/pai/inteq/S = src
 				S.chemical_injector_active = !S.chemical_injector_active
 				if(S.chemical_injector_active)
 					to_chat(src, "<span class='notice'>Инъектор химикатов активирован. Хранилище: [S.chemical_storage]/[S.chemical_max]</span>")
@@ -1428,9 +1435,9 @@
 					to_chat(src, "<span class='notice'>Инъектор химикатов деактивирован.</span>")
 			return TRUE
 		if("inject_chemicals")
-			if(istype(src, /mob/living/silicon/pai/syndicate))
-				var/mob/living/silicon/pai/syndicate/S = src
-				S.inject_chemicals()
+			if(istype(src, /mob/living/silicon/pai/inteq))
+				var/mob/living/silicon/pai/inteq/S = src
+				S.inject_chemicals(params["reagent"])
 			return TRUE
 		if("clear_temp")
 			temp = null

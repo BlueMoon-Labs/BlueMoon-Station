@@ -1,5 +1,6 @@
 /obj/item/paicard
 	name = "personal AI device"
+	desc = "Загружает персонального ИИ-помощника для сопровождения своего владельца или других."
 	icon = 'icons/obj/aicards.dmi'
 	icon_state = "pai"
 	item_state = "electronic"
@@ -9,11 +10,12 @@
 	slot_flags = ITEM_SLOT_BELT
 	var/mob/living/silicon/pai/pai
 	var/panel_open = FALSE
+	var/request_spam = FALSE
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	max_integrity = 200
 
 /obj/item/paicard/suicide_act(mob/living/user)
-	user.visible_message("<span class='suicide'>[user] is staring sadly at [src]! [user.ru_who()] can't keep living without real human intimacy!</span>")
+	user.visible_message(span_suicide("[user] печально смотрит на [src]! [user.ru_who()] не может продолжать жить без настоящей человеческой близости!"))
 	return OXYLOSS
 
 /obj/item/paicard/Initialize(mapload)
@@ -30,96 +32,158 @@
 	return ..()
 
 /obj/item/paicard/attack_self(mob/user)
-	if (!in_range(src, user))
+	if(!in_range(src, user))
 		return
-	user.set_machine(src)
-	var/dat = "<TT><B>Personal AI Device</B><BR>"
+	ui_interact(user)
+
+/obj/item/paicard/ui_interact(mob/user, datum/tgui/ui)
+	. = ..()
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "PaiCard")
+		ui.set_autoupdate(TRUE)
+		ui.open()
+
+/obj/item/paicard/ui_status(mob/user, datum/ui_state/state)
+	if(user in get_nested_locs(src))
+		return UI_INTERACTIVE
+	return ..()
+
+/obj/item/paicard/ui_static_data(mob/user)
+	. = ..()
+	.["range_max"] = 7
+	.["range_min"] = 1
+
+/obj/item/paicard/ui_data(mob/user)
+	. = ..()
+	var/list/data = list()
+	if(!pai)
+		data["candidates"] = pool_candidates() || list()
+		return data
+	data["pai"] = list(
+		can_holo = pai.canholo,
+		dna = pai.master_dna,
+		emagged = pai.emagged,
+		laws = pai.laws.supplied,
+		master = pai.master,
+		name = pai.name,
+		transmit = pai.radio ? !pai.radio.wires.is_cut(WIRE_TX) : FALSE,
+		receive = pai.radio ? !pai.radio.wires.is_cut(WIRE_RX) : FALSE,
+		leashed = pai.leashed,
+		range = pai.range,
+	)
+	return data
+
+/obj/item/paicard/ui_act(action, list/params, datum/tgui/ui)
+	. = ..()
+	if(.)
+		return TRUE
+	if(action == "download")
+		if(!pai)
+			SSpai.download_candidate_card(params["ckey"], src, usr)
+		return TRUE
+	if(action == "request")
+		find_pai(usr)
+		return TRUE
+	if(!pai)
+		return FALSE
+	switch(action)
+		if("fix_speech")
+			to_chat(pai, "<span class='notice'>Коррекция модуляции речи.</span>")
+			return TRUE
+		if("reset_software")
+			pai.reset_software()
+			. = TRUE
+		if("set_dna")
+			pai.set_dna(usr)
+			. = TRUE
+		if("set_laws")
+			pai.set_laws(usr)
+			. = TRUE
+		if("toggle_holo")
+			pai.canholo = !pai.canholo
+			to_chat(pai, "<span class='userdanger'>Ваш хозяин [pai.canholo ? "включил" : "отключил"] ваши голоматричные проекторы!</span>")
+			to_chat(usr, "<span class='notice'>Вы [pai.canholo ? "включили" : "отключили"] голоматрицу вашего ПИИ!</span>")
+			. = TRUE
+		if("toggle_leash")
+			pai.toggle_leash()
+			. = TRUE
+		if("toggle_radio")
+			if(pai.radio)
+				pai.radio.wires.cut(params["option"] == "transmit" ? WIRE_TX : WIRE_RX)
+			. = TRUE
+		if("increase_range")
+			pai.range = min(pai.range + 1, 7)
+			. = TRUE
+		if("decrease_range")
+			pai.range = max(pai.range - 1, 1)
+			. = TRUE
+		if("wipe_pai")
+			pai.wipe_pai(usr)
+			ui.close()
+			return TRUE
+	if(.)
+		SStgui.update_uis(src)
+		return TRUE
+	return FALSE
+
+/obj/item/paicard/proc/find_pai(mob/user)
 	if(pai)
-		if(!pai.master_dna || !pai.master)
-			dat += "<a href='byond://?src=[REF(src)];setdna=1'>Imprint Master DNA</a><br>"
-		dat += "Installed Personality: [pai.name]<br>"
-		dat += "Prime directive: <br>[pai.laws.zeroth]<br>"
-		for(var/slaws in pai.laws.supplied)
-			dat += "Additional directives: <br>[slaws]<br>"
-		dat += "<a href='byond://?src=[REF(src)];setlaws=1'>Configure Directives</a><br>"
-		dat += "<br>"
-		dat += "<h3>Device Settings</h3><br>"
-		if(pai.radio)
-			dat += "<b>Radio Uplink</b><br>"
-			dat += "Transmit: <A href='byond://?src=[REF(src)];wires=[WIRE_TX]'>[(pai.radio.wires.is_cut(WIRE_TX)) ? "Disabled" : "Enabled"]</A><br>"
-			dat += "Receive: <A href='byond://?src=[REF(src)];wires=[WIRE_RX]'>[(pai.radio.wires.is_cut(WIRE_RX)) ? "Disabled" : "Enabled"]</A><br>"
-			if(pai.radio_short)
-				dat += "<font color='red'>Reset radio short: <a href='byond://?src=[REF(src)];reset_radio_short=1'>\[RESET\]</a><br>"
-		else
-			dat += "<b>Radio Uplink</b><br>"
-			dat += "<font color=red><i>Radio firmware not loaded. Please install a pAI personality to load firmware.</i></font><br>"
-		if(ishuman(user))
-			var/mob/living/carbon/human/H = user
-			if(H.real_name == pai.master || H.dna.unique_enzymes == pai.master_dna)
-				dat += "<A href='byond://?src=[REF(src)];toggle_holo=1'>\[[pai.canholo? "Disable" : "Enable"] holomatrix projectors\]</a><br>"
-		dat += "<A href='byond://?src=[REF(src)];wipe=1'>\[Wipe current pAI personality\]</a><br>"
-	else
-		dat += "No personality installed.<br>"
-		dat += "Searching for a personality... Press view available personalities to notify potential candidates."
-		dat += "<A href='byond://?src=[REF(src)];request=1'>\[View available personalities\]</a><br>"
-	var/datum/browser/popup = new(user, "paicard", "pAI Card")
-	popup.set_content(dat)
-	popup.open()
-	return
+		return FALSE
+	if(request_spam)
+		to_chat(user, "<span class='warning'>Запрос отправляется слишком часто.</span>")
+		return FALSE
+	request_spam = TRUE
+	playsound(src, 'sound/machines/ping.ogg', 20, TRUE)
+	for(var/mob/dead/observer/G in GLOB.player_list)
+		if(!G.key || !G.client)
+			continue
+		if(!G.can_reenter_round())
+			continue
+		SEND_SOUND(G, sound('sound/effects/ghost2.ogg'))
+		window_flash(G.client)
+		var/atom/movable/screen/alert/notify_action/A = G.throw_alert("[REF(src)]_pai", /atom/movable/screen/alert/notify_action)
+		if(A)
+			if(istype(src, /obj/item/paicard/inteq))
+				A.name = "Нелегальный ПИИ"
+				A.desc = "[user.real_name] ищет личность для нелегального ПИИ! Нажмите, чтобы подать заявку."
+			else
+				A.name = "ПИИ"
+				A.desc = "[user.real_name] ищет личность для ПИИ! Нажмите, чтобы подать заявку."
+			A.action = NOTIFY_ATTACK
+			A.target = src
+			var/mutable_appearance/alert_overlay = new(src)
+			alert_overlay.layer = FLOAT_LAYER
+			alert_overlay.plane = FLOAT_PLANE
+			A.add_overlay(alert_overlay)
+	addtimer(VARSET_CALLBACK(src, request_spam, FALSE), 10 SECONDS, TIMER_UNIQUE|TIMER_DELETE_ME)
+	return TRUE
 
-/obj/item/paicard/Topic(href, href_list)
-
-	if(!usr || usr.stat)
-		return
-
-	if(href_list["request"])
-		SSpai.findPAI(src, usr)
-
+/obj/item/paicard/attack_ghost(mob/dead/observer/user)
 	if(pai)
-		if(!(loc == usr))
-			return
-		if(href_list["setdna"])
-			if(pai.master_dna)
-				return
-			if(!iscarbon(usr))
-				to_chat(usr, "<span class='warning'>You don't have any DNA, or your DNA is incompatible with this device!</span>")
-			else
-				var/mob/living/carbon/M = usr
-				pai.master = M.real_name
-				pai.master_dna = M.dna.unique_enzymes
-				to_chat(pai, "<span class='notice'>You have been bound to a new master.</span>")
-		if(href_list["wipe"])
-			var/confirm = input("Are you CERTAIN you wish to delete the current personality? This action cannot be undone.", "Personality Wipe") in list("Yes", "No")
-			if(confirm == "Yes")
-				if(pai)
-					to_chat(pai, "<span class='warning'>You feel yourself slipping away from reality.</span>")
-					to_chat(pai, "<span class='danger'>Byte by byte you lose your sense of self.</span>")
-					to_chat(pai, "<span class='userdanger'>Your mental faculties leave you.</span>")
-					to_chat(pai, "<span class='rose'>oblivion... </span>")
-					qdel(pai)
-		if(href_list["wires"] && pai.radio)
-			pai.radio.wires.cut(href_list["wires"])
-		if(href_list["reset_radio_short"])
-			pai.unshort_radio()
-		if(href_list["setlaws"])
-			var/newlaws = stripped_multiline_input(usr, "Enter any additional directives you would like your pAI personality to follow. Note that these directives will not override the personality's allegiance to its imprinted master. Conflicting directives will be ignored.", "pAI Directive Configuration", "", MAX_MESSAGE_LEN)
-			if(newlaws && pai)
-				pai.add_supplied_law(0,newlaws)
-		if(href_list["toggle_holo"])
-			if(pai.canholo)
-				to_chat(pai, "<span class='userdanger'>Your owner has disabled your holomatrix projectors!</span>")
-				pai.canholo = FALSE
-				to_chat(usr, "<span class='warning'>You disable your pAI's holomatrix!</span>")
-			else
-				to_chat(pai, "<span class='boldnotice'>Your owner has enabled your holomatrix projectors!</span>")
-				pai.canholo = TRUE
-				to_chat(usr, "<span class='notice'>You enable your pAI's holomatrix!</span>")
+		to_chat(user, "<span class='warning'>Это устройство уже занято другой личностью.</span>")
+		return FALSE
+	var/area/A = get_area(get_turf(src))
+	if(A.type in SSpai.restricted_areas)
+		to_chat(user, "<span class='warning'>Вы не можете загрузиться в запрещённую зону!</span>")
+		return FALSE
+	SSpai.recruitWindow(user, src)
+	return TRUE
 
-	attack_self(usr)
-
-// 		WIRE_SIGNAL = 1
-//		WIRE_RECEIVE = 2
-//		WIRE_TRANSMIT = 4
+/obj/item/paicard/proc/pool_candidates()
+	var/list/candidates = list()
+	if(pai || !length(SSpai?.candidates))
+		return candidates
+	for(var/datum/paiCandidate/candidate in SSpai.candidates)
+		if(SSpai.check_ready(candidate) != candidate)
+			continue
+		candidates += list(list(
+			ckey = candidate.key,
+			comments = candidate.comments,
+			description = candidate.description,
+			name = candidate.name,
+		))
+	return candidates
 
 /obj/item/paicard/proc/setPersonality(mob/living/silicon/pai/personality)
 	src.pai = personality
@@ -130,7 +194,7 @@
 	if(policy)
 		to_chat(personality, policy)
 	playsound(loc, 'sound/effects/pai_boot.ogg', 50, 1, -1)
-	audible_message("\The [src] plays a cheerful startup noise!")
+	audible_message(span_notice("[src] издаёт радостный шум запуска!"))
 
 /obj/item/paicard/proc/setEmotion(emotion)
 	if(pai)
@@ -166,20 +230,20 @@
 				src.add_overlay("pai-mal-0")
 
 /obj/item/paicard/proc/alertUpdate()
-	visible_message("<span class ='info'>[src] flashes a message across its screen, \"Additional personalities available for download.\"", "<span class='notice'>[src] bleeps electronically.</span>")
+	visible_message(span_notice("[src] высвечивает сообщение на экране: новые персонали доступны для скачивания!"), span_notice("[src] издаёт электронный сигнал."))
 
-/obj/item/paicard/syndicate
-	name = "Syndicate personal AI device"
-	desc = "A Syndicate-modified personal AI device. It seems to be deactivated."
+/obj/item/paicard/inteq
+	name = "InteQ personal AI device"
+	desc = "Модифицированное InteQ устройство ПИИ. Кажется, оно деактивировано."
 	icon_state = "pai"
 
-/obj/item/paicard/syndicate/setPersonality(mob/living/silicon/pai/personality)
+/obj/item/paicard/inteq/setPersonality(mob/living/silicon/pai/personality)
 	. = ..()
-	log_world("PAI_DEBUG: syndicate card setPersonality pai=[personality] pai.type=[personality?.type]")
-	personality.syndicate_model = TRUE
+	log_world("PAI_DEBUG: inteq card setPersonality pai=[personality] pai.type=[personality?.type]")
+	personality.inteq_model = TRUE
 	personality.software = list("thermal vision", "chemical injector", "internal camera bug", "weakened ai capability")
-	if(istype(personality, /mob/living/silicon/pai/syndicate))
-		var/mob/living/silicon/pai/syndicate/S = personality
+	if(istype(personality, /mob/living/silicon/pai/inteq))
+		var/mob/living/silicon/pai/inteq/S = personality
 		S.chemical_injector_active = TRUE
 	if(!istype(personality.cell, /obj/item/stock_parts/cell/bluespace))
 		log_world("PAI_DEBUG: forcing bluespace cell (was [personality.cell?.type])")
@@ -187,11 +251,11 @@
 			QDEL_NULL(personality.cell)
 		personality.cell = new /obj/item/stock_parts/cell/bluespace(personality)
 		personality.cell.charge = personality.cell.maxcharge
-	if(!istype(personality.radio, /obj/item/radio/headset/silicon/pai/syndicate))
-		log_world("PAI_DEBUG: forcing syndicate radio (was [personality.radio?.type])")
+	if(!istype(personality.radio, /obj/item/radio/headset/silicon/pai/inteq))
+		log_world("PAI_DEBUG: forcing inteq radio (was [personality.radio?.type])")
 		if(personality.radio)
 			QDEL_NULL(personality.radio)
-		personality.radio = new /obj/item/radio/headset/silicon/pai/syndicate(personality)
+		personality.radio = new /obj/item/radio/headset/silicon/pai/inteq(personality)
 
 /obj/item/paicard/get_cell()
 	if(pai?.cell)

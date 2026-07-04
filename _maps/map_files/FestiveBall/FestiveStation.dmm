@@ -58601,6 +58601,10 @@
 	},
 /turf/open/floor/plasteel,
 /area/medical/cryo)
+"lxn" = (
+/obj/machinery/atmospherics/components/binary/crystallizer,
+/turf/open/floor/plasteel,
+/area/engineering/atmos)
 "lxo" = (
 /obj/effect/festive/street/streetlinenm,
 /obj/effect/festive/street/streetlinesm,
@@ -63728,6 +63732,10 @@
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel,
 /area/engineering/main)
+"vKn" = (
+/obj/structure/closet/crate/engineering/hfr,
+/turf/open/floor/plasteel,
+/area/engineering/atmos)
 "vLd" = (
 /obj/structure/chair/sofa/right/brown,
 /obj/effect/landmark/start/assistant,
@@ -64539,6 +64547,13 @@
 /obj/machinery/portable_atmospherics/canister/air,
 /turf/open/floor/engine/air,
 /area/engineering/atmos)
+"xkb" = (
+/obj/machinery/light{
+	dir = 4
+	},
+/obj/machinery/electrolyzer,
+/turf/open/floor/plasteel,
+/area/engineering/atmos)
 "xkz" = (
 /obj/machinery/light{
 	dir = 4
@@ -65050,6 +65065,10 @@
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer1,
 /turf/open/floor/wood,
 /area/ai_monitored/security/armory)
+"yfF" = (
+/obj/machinery/electrolyzer,
+/turf/open/floor/plasteel,
+/area/engineering/atmos)
 "ygA" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 8
@@ -74251,7 +74270,7 @@ aoQ
 aoQ
 aoQ
 aoQ
-aoQ
+lxn
 aoQ
 aoQ
 aoQ
@@ -76569,9 +76588,9 @@ tRk
 cpX
 aoQ
 aoQ
-aoQ
-cpX
-aoQ
+vKn
+xkb
+yfF
 aoQ
 aoQ
 aoQ

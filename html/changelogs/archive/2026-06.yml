@@ -268,3 +268,28 @@
   shahribek:
   - bugfix: исправлен баг с получением 16 кратного урона вместо 4 кратного у нуклеаций
       при высокой температуре
+2026-06-30:
+  IO979996:
+  - rscadd: Добавил спрайты ксено мейды
+  - bugfix: пофиксил пиксельшифт хантера
+  - rscadd: 'Гиперториевый термоядерный реактор: полноценная мультиблочная конструкция
+      реактора с пользовательским интерфейсом, различными видами топлива, замедлителями,
+      системами безопасности, атмосферными эффектами и звуковым сопровождением, заменяет
+      термояд в прошлом.'
+  - rscadd: 'Кристаллизатор: устройство для превращения газов в кристаллы/материалы,
+      добавляющее множество новых рецептов и метаемые кристаллические предметы.'
+  - rscadd: 'Электролизёр: новый аппарат для обработки атмосферы, оснащённый панельным
+      интерфейсом и позволяющий проводить химические реакции.'
+  - rscadd: Девять новых газов, а также различные доработки и улучшения.
+  Kubic70:
+  - refactor: refactor vibrators loop code
+  - refactor: refactor dildo loop code
+  - refactor: refactor sybian loop code
+  - refactor: refactor buttplug loop code
+  - refactor: refactor tentacle attack code
+  - refactor: refactor magicwand loop code
+  - refactor: refactor dildomachine loop code
+  - refactor: refactor tentaclepanties loop code
+  - code_imp: added SSobjlw (more faster subsystem for some lewd toys)
+  - bugfix: fixed large canvas frames
+  - bugfix: fixed choker snap

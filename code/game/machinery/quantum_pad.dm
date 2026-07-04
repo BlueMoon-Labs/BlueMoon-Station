@@ -39,9 +39,29 @@
 	if(map_pad_id)
 		mapped_quantum_pads[map_pad_id] = src
 
+#define QUANTUMPAD_ALERT_CATEGORY "quantumpad"
+
+/obj/machinery/quantumpad/Crossed(atom/movable/AM, oldloc)
+	. = ..()
+	if(!isliving(AM))
+		return
+	var/mob/living/user = AM
+	user.throw_alert(QUANTUMPAD_ALERT_CATEGORY, /atom/movable/screen/alert/object_master, new_master = src)
+
+/obj/machinery/quantumpad/Uncrossed(atom/movable/AM)
+	. = ..()
+	if(!isliving(AM))
+		return
+	var/mob/living/user = AM
+	user.clear_alert(QUANTUMPAD_ALERT_CATEGORY)
+
 /obj/machinery/quantumpad/Destroy()
 	mapped_quantum_pads -= map_pad_id
+	for(var/mob/living/M in get_turf(src))
+		M.clear_alert(QUANTUMPAD_ALERT_CATEGORY)
 	return ..()
+
+#undef QUANTUMPAD_ALERT_CATEGORY
 
 /obj/machinery/quantumpad/examine(mob/user)
 	. = ..()

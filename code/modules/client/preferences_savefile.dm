@@ -522,6 +522,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["ui_zoom_preferences"]	>> ui_zoom_preferences
 	S["windowflash"] 			>> windowflashing
 	S["windownoise"] 			>> windownoise
+	S["mood_vignette"] 			>> mood_vignette
 	S["action_buttons_hide_on_spawn"] 			>> action_buttons_hide_on_spawn
 	S["be_special"] 			>> be_special
 
@@ -602,6 +603,24 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["gfluid_blacklist"]		>> gfluid_blacklist
 
 	S["collapse_empty_character_slots"] >> collapse_empty_character_slots
+	S["charcreation_theme"]		>> charcreation_theme
+	S["modern_button_shape"]	>> modern_button_shape
+	S["modern_custom_enabled"]	>> modern_custom_enabled
+	S["modern_custom_bg_primary"]	>> modern_custom_bg_primary
+	S["modern_custom_bg_secondary"]	>> modern_custom_bg_secondary
+	S["modern_custom_text_primary"]	>> modern_custom_text_primary
+	S["modern_custom_text_secondary"]	>> modern_custom_text_secondary
+	S["modern_custom_button_bg"]	>> modern_custom_button_bg
+	S["modern_custom_button_hover"]	>> modern_custom_button_hover
+	S["modern_custom_button_active"]	>> modern_custom_button_active
+	S["modern_custom_button_text"]	>> modern_custom_button_text
+	S["modern_custom_border_color"]	>> modern_custom_border_color
+	S["modern_custom_accent_color"]	>> modern_custom_accent_color
+	S["modern_custom_bg_pattern"]	>> modern_custom_bg_pattern
+	S["ui_decoration_level"]	>> ui_decoration_level
+	S["modern_ui_language"]		>> modern_ui_language
+	S["use_modern_translations"]	>> use_modern_translations
+	S["new_character_creator"]	>> new_character_creator
 	S["view_pixelshift"]		>> view_pixelshift
 
 	//favorite outfits
@@ -665,6 +684,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		ui_zoom_preferences = sanitized_ui_zoom_preferences
 	windowflashing = sanitize_integer(windowflashing, 0, 1, initial(windowflashing))
 	windownoise = sanitize_integer(windownoise, 0, 1, initial(windownoise))
+	mood_vignette = sanitize_integer(mood_vignette, 0, 1, initial(mood_vignette))
 	action_buttons_hide_on_spawn = sanitize_integer(action_buttons_hide_on_spawn, 0, 1, initial(action_buttons_hide_on_spawn))
 	default_slot = sanitize_integer(default_slot, 1, max_save_slots, initial(default_slot))
 	toggles = sanitize_integer(toggles, 0, 16777215, initial(toggles))
@@ -723,6 +743,24 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	gfluid_blacklist = sanitize_islist(gfluid_blacklist, list())
 
 	collapse_empty_character_slots = sanitize_integer(collapse_empty_character_slots, 0, 1, initial(collapse_empty_character_slots))
+	charcreation_theme = sanitize_inlist(charcreation_theme, list("classic", "modern", "modern_classic", "modern_purple", "modern_green", "modern_neutral", "modern_custom"), initial(charcreation_theme))
+	modern_button_shape = sanitize_inlist(modern_button_shape, list("rect", "soft", "round"), initial(modern_button_shape))
+	modern_custom_enabled = sanitize_integer(modern_custom_enabled, 0, 1, initial(modern_custom_enabled))
+	modern_custom_bg_primary = sanitize_hexcolor(modern_custom_bg_primary, 6, 0, initial(modern_custom_bg_primary))
+	modern_custom_bg_secondary = sanitize_hexcolor(modern_custom_bg_secondary, 6, 0, initial(modern_custom_bg_secondary))
+	modern_custom_text_primary = sanitize_hexcolor(modern_custom_text_primary, 6, 0, initial(modern_custom_text_primary))
+	modern_custom_text_secondary = sanitize_hexcolor(modern_custom_text_secondary, 6, 0, initial(modern_custom_text_secondary))
+	modern_custom_button_bg = sanitize_hexcolor(modern_custom_button_bg, 6, 0, initial(modern_custom_button_bg))
+	modern_custom_button_hover = sanitize_hexcolor(modern_custom_button_hover, 6, 0, initial(modern_custom_button_hover))
+	modern_custom_button_active = sanitize_hexcolor(modern_custom_button_active, 6, 0, initial(modern_custom_button_active))
+	modern_custom_button_text = sanitize_hexcolor(modern_custom_button_text, 6, 0, initial(modern_custom_button_text))
+	modern_custom_border_color = sanitize_hexcolor(modern_custom_border_color, 6, 0, initial(modern_custom_border_color))
+	modern_custom_accent_color = sanitize_hexcolor(modern_custom_accent_color, 6, 0, initial(modern_custom_accent_color))
+	modern_custom_bg_pattern = sanitize_integer(modern_custom_bg_pattern, 0, 1, initial(modern_custom_bg_pattern))
+	ui_decoration_level = sanitize_inlist(ui_decoration_level, list("minimal", "standard", "enhanced"), initial(ui_decoration_level))
+	modern_ui_language = sanitize_integer(modern_ui_language, 0, 1, initial(modern_ui_language))
+	use_modern_translations = sanitize_integer(use_modern_translations, 0, 1, initial(use_modern_translations))
+	new_character_creator = sanitize_integer(new_character_creator, 0, 1, initial(new_character_creator))
 	//SPLURT CHANGES END
 
 	verify_keybindings_valid()		// one of these days this will runtime and you'll be glad that i put it in a different proc so no one gets their saves wiped
@@ -854,6 +892,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["ui_zoom_preferences"], ui_zoom_preferences)
 	WRITE_FILE(S["windowflash"], windowflashing)
 	WRITE_FILE(S["windownoise"], windownoise)
+	WRITE_FILE(S["mood_vignette"], mood_vignette)
 	WRITE_FILE(S["action_buttons_hide_on_spawn"], action_buttons_hide_on_spawn)
 	WRITE_FILE(S["be_special"], be_special)
 	WRITE_FILE(S["default_slot"], default_slot)
@@ -927,6 +966,24 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["gfluid_blacklist"], gfluid_blacklist)
 
 	WRITE_FILE(S["collapse_empty_character_slots"], collapse_empty_character_slots)
+	WRITE_FILE(S["charcreation_theme"], charcreation_theme)
+	WRITE_FILE(S["modern_button_shape"], modern_button_shape)
+	WRITE_FILE(S["modern_custom_enabled"], modern_custom_enabled)
+	WRITE_FILE(S["modern_custom_bg_primary"], modern_custom_bg_primary)
+	WRITE_FILE(S["modern_custom_bg_secondary"], modern_custom_bg_secondary)
+	WRITE_FILE(S["modern_custom_text_primary"], modern_custom_text_primary)
+	WRITE_FILE(S["modern_custom_text_secondary"], modern_custom_text_secondary)
+	WRITE_FILE(S["modern_custom_button_bg"], modern_custom_button_bg)
+	WRITE_FILE(S["modern_custom_button_hover"], modern_custom_button_hover)
+	WRITE_FILE(S["modern_custom_button_active"], modern_custom_button_active)
+	WRITE_FILE(S["modern_custom_button_text"], modern_custom_button_text)
+	WRITE_FILE(S["modern_custom_border_color"], modern_custom_border_color)
+	WRITE_FILE(S["modern_custom_accent_color"], modern_custom_accent_color)
+	WRITE_FILE(S["modern_custom_bg_pattern"], modern_custom_bg_pattern)
+	WRITE_FILE(S["ui_decoration_level"], ui_decoration_level)
+	WRITE_FILE(S["modern_ui_language"], modern_ui_language)
+	WRITE_FILE(S["use_modern_translations"], use_modern_translations)
+	WRITE_FILE(S["new_character_creator"], new_character_creator)
 	WRITE_FILE(S["view_pixelshift"], view_pixelshift)
 	WRITE_FILE(S["eorg_enabled"], eorg_enabled)
 

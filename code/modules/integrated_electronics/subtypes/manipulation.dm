@@ -592,7 +592,7 @@
 
     switch(mode)
         if(TRUE) // Insert mode 1
-            if(!container || !istype(container,/obj/item/storage))
+            if(!container)
                 return
 
             var/datum/component/storage/STR = container.GetComponent(/datum/component/storage)

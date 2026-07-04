@@ -52,10 +52,13 @@
 	if(new_port.loc != get_turf(src))
 		return FALSE
 
+	var/datum/pipeline/connected_port_parent = new_port.parents[1]
+	if(!connected_port_parent)
+		return FALSE
+
 	//Perform the connection
 	connected_port = new_port
 	connected_port.connected_device = src
-	var/datum/pipeline/connected_port_parent = connected_port.parents[1]
 	connected_port_parent.reconcile_air()
 
 	anchored = TRUE //Prevent movement
@@ -71,8 +74,13 @@
 /obj/machinery/portable_atmospherics/proc/disconnect()
 	if(!connected_port)
 		return FALSE
+	var/obj/machinery/atmospherics/components/unary/portables_connector/old_port = connected_port
+	var/datum/pipeline/old_parent = old_port.parents[1]
+	if(old_parent)
+		// Flush last pending portable<->pipenet changes before detaching.
+		old_parent.reconcile_air()
 	anchored = FALSE
-	connected_port.connected_device = null
+	old_port.connected_device = null
 	connected_port = null
 	pixel_x = 0
 	pixel_y = 0

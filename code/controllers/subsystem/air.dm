@@ -40,7 +40,7 @@ SUBSYSTEM_DEF(air)
 	//atmos singletons
 	var/list/gas_reactions = list()
 	var/list/atmos_gen
-	var/list/planetary = list() //auxmos already caches static planetary mixes but could be convenient to do so here too
+	var/list/planetary = list()
 	//Special functions lists
 	var/list/turf/open/high_pressure_delta = list()
 
@@ -89,6 +89,7 @@ SUBSYSTEM_DEF(air)
 	setup_atmos_machinery()
 	setup_pipenets()
 	gas_reactions = init_gas_reactions()
+	atmos_handbooks_init()
 	auxtools_update_reactions()
 	equalize_enabled = CONFIG_GET(flag/atmos_equalize_enabled)
 	apply_atmos_speed_multiplier()
@@ -118,6 +119,74 @@ SUBSYSTEM_DEF(air)
 	set desc="Fixes air that has weird NaNs (-1.#IND and such). Hopefully."
 	set name="Fix Infinite Air"
 	fix_corrupted_atmos()
+
+/datum/admins/proc/atmos_active_report()
+	set category = "Debug.3) Fixing"
+	set desc = "Breakdown of SSair active turfs by z-level and area, for hunting atmos churn."
+	set name = "Atmos Active Turfs Report"
+
+	var/list/z_counts = list()
+	var/list/area_turfs = list()
+	var/planetary_count = 0
+	var/grouped_count = 0
+	var/sharing_count = 0
+	for(var/turf/open/active_turf as anything in SSair.active_turfs)
+		if(!istype(active_turf))
+			continue
+		z_counts["z[active_turf.z]"]++
+		var/area/turf_area = active_turf.loc
+		var/area_key = "[turf_area.type]"
+		var/list/bucket = area_turfs[area_key]
+		if(!bucket)
+			bucket = list()
+			area_turfs[area_key] = bucket
+		bucket += active_turf
+		if(active_turf.planetary_atmos)
+			planetary_count++
+		if(active_turf.excited_group)
+			grouped_count++
+		if(active_turf.air?.last_share > MINIMUM_MOLES_DELTA_TO_MOVE)
+			sharing_count++
+
+	var/list/output = list("<b>SSair active turfs: [length(SSair.active_turfs)]</b> (excited groups: [length(SSair.excited_groups)], in groups: [grouped_count], planetary: [planetary_count], actively sharing: [sharing_count])")
+	var/list/z_lines = list()
+	for(var/z_key in z_counts)
+		z_lines += "[z_key]: [z_counts[z_key]]"
+	output += "By z-level: [z_lines.Join(", ")]"
+	output += "Top areas (count, sharing, planetary, pressure span, temp span):"
+	var/shown = 0
+	while(shown < 15 && length(area_turfs))
+		var/best_key
+		var/best_count = 0
+		for(var/area_key in area_turfs)
+			if(length(area_turfs[area_key]) > best_count)
+				best_count = length(area_turfs[area_key])
+				best_key = area_key
+		var/list/turfs = area_turfs[best_key]
+		var/area_sharing = 0
+		var/area_planetary = 0
+		var/pressure_min = INFINITY
+		var/pressure_max = 0
+		var/temp_min = INFINITY
+		var/temp_max = 0
+		for(var/turf/open/area_turf as anything in turfs)
+			if(!area_turf.air)
+				continue
+			if(area_turf.air.last_share > MINIMUM_MOLES_DELTA_TO_MOVE)
+				area_sharing++
+			if(area_turf.planetary_atmos)
+				area_planetary++
+			var/pressure = area_turf.air.return_pressure()
+			pressure_min = min(pressure_min, pressure)
+			pressure_max = max(pressure_max, pressure)
+			var/turf_temp = area_turf.air.return_temperature()
+			temp_min = min(temp_min, turf_temp)
+			temp_max = max(temp_max, turf_temp)
+		output += "  [best_count] ([area_sharing] sharing, [area_planetary] planetary, [round(pressure_min, 0.1)]-[round(pressure_max, 0.1)] kPa, [round(temp_min, 0.1)]-[round(temp_max, 0.1)] K) - [best_key]"
+		area_turfs -= best_key
+		shown++
+
+	to_chat(usr, output.Join("<br>"))
 
 /datum/controller/subsystem/air/fire(resumed = 0)
 	var/timer = TICK_USAGE_REAL
@@ -176,30 +245,49 @@ SUBSYSTEM_DEF(air)
 
 	if(currentpart == SSAIR_ACTIVETURFS)
 		timer = TICK_USAGE_REAL
+		if(!resumed)
+			cached_cost = 0
 		process_turfs(resumed)
+		cached_cost += TICK_USAGE_REAL - timer
 		if(state != SS_RUNNING)
 			return
+		cost_turfs = MC_AVERAGE(cost_turfs, TICK_DELTA_TO_MS(cached_cost))
 		resumed = 0
 		currentpart = equalize_enabled ? SSAIR_EQUALIZE : SSAIR_EXCITEDGROUPS
 
 	if(currentpart == SSAIR_EQUALIZE)
+		timer = TICK_USAGE_REAL
+		if(!resumed)
+			cached_cost = 0
 		process_turf_equalize(resumed)
+		cached_cost += TICK_USAGE_REAL - timer
 		if(state != SS_RUNNING)
 			return
+		cost_equalize = MC_AVERAGE(cost_equalize, TICK_DELTA_TO_MS(cached_cost))
 		resumed = 0
 		currentpart = SSAIR_EXCITEDGROUPS
 
 	if(currentpart == SSAIR_EXCITEDGROUPS)
+		timer = TICK_USAGE_REAL
+		if(!resumed)
+			cached_cost = 0
 		process_excited_groups(resumed)
+		cached_cost += TICK_USAGE_REAL - timer
 		if(state != SS_RUNNING)
 			return
+		cost_groups = MC_AVERAGE(cost_groups, TICK_DELTA_TO_MS(cached_cost))
 		resumed = 0
 		currentpart = SSAIR_FINALIZE_TURFS
 
 	if(currentpart == SSAIR_FINALIZE_TURFS)
+		timer = TICK_USAGE_REAL
+		if(!resumed)
+			cached_cost = 0
 		finish_turf_processing(resumed)
+		cached_cost += TICK_USAGE_REAL - timer
 		if(state != SS_RUNNING)
 			return
+		cost_post_process = MC_AVERAGE(cost_post_process, TICK_DELTA_TO_MS(cached_cost))
 		resumed = 0
 		currentpart = SSAIR_HIGHPRESSURE
 
@@ -280,8 +368,10 @@ SUBSYSTEM_DEF(air)
 	while(currentrun.len)
 		var/obj/machinery/M = currentrun[currentrun.len]
 		currentrun.len--
-		if(!M || (M.process_atmos(seconds) == PROCESS_KILL))
-			atmos_machinery.Remove(M)
+		if(!M)
+			atmos_machinery -= M
+		else if(M.process_atmos(seconds) == PROCESS_KILL)
+			stop_processing_machine(M)
 		if(MC_TICK_CHECK)
 			return
 

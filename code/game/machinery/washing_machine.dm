@@ -481,7 +481,7 @@ GLOBAL_LIST_INIT(dye_registry, list(
 /obj/machinery/washing_machine/proc/handle_unbuckling(mob/living/carbon/human/H, mob/living/user)
 	if(H == user)
 		H.visible_message(span_danger("[H] is trying to get out of \the [src]..."), span_notice("It might take a while..."))
-		return do_after(user, 1 MINUTES, src)
+		return do_after(user, 1 MINUTES, src, timed_action_flags = IGNORE_HELD_ITEM | IGNORE_INCAPACITATED | IGNORE_USER_LOC_CHANGE | IGNORE_TARGET_LOC_CHANGE)
 	else
 		user.visible_message("[user] is trying to help [H]. It might take a while...")
 		return do_after(user, 10 SECONDS, src)

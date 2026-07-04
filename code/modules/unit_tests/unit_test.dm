@@ -47,6 +47,9 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 	var/focus = FALSE
 	var/succeeded = TRUE
 	var/list/allocated
+	/// Allocated instances whose Destroy() refuses non-forced deletion (e.g. lighting_object);
+	/// cleaned up with qdel(force = TRUE) so they don't leak into subsequent tests
+	var/list/allocated_force_qdel
 	var/list/fail_reasons
 
 	var/static/datum/turf_reservation/reservation
@@ -64,6 +67,7 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 		reserved_turf.ChangeTurf(/turf/open/floor/plasteel)
 
 	allocated = new
+	allocated_force_qdel = new
 	run_loc_floor_bottom_left = locate(reservation.bottom_left_coords[1], reservation.bottom_left_coords[2], reservation.bottom_left_coords[3])
 	run_loc_floor_top_right = locate(reservation.top_right_coords[1], reservation.top_right_coords[2], reservation.top_right_coords[3])
 
@@ -74,6 +78,9 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 
 /datum/unit_test/Destroy()
 	QDEL_LIST(allocated)
+	for(var/thing in allocated_force_qdel)
+		qdel(thing, force = TRUE)
+	allocated_force_qdel.Cut()
 	// clear the test area
 	for (var/turf/turf in block(locate(1, 1, run_loc_floor_bottom_left.z), locate(world.maxx, world.maxy, run_loc_floor_bottom_left.z)))
 		for (var/content in turf.contents)

@@ -202,7 +202,7 @@ GLOBAL_DATUM_INIT(crewmonitor_command, /datum/crewmonitor/command, new)
 					continue
 
 				if (nanite_sensors || U.sensor_mode >= SENSOR_LIVING)
-					life_status = (!H.stat ? TRUE : FALSE)
+					life_status = H.stat != DEAD
 				else
 					life_status = null
 

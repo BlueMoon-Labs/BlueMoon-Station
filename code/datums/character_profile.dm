@@ -1,5 +1,10 @@
 /mob/living/carbon/human
 	var/datum/description_profile/profile
+	/**
+	 * Отображение описания и изображений оголенного тела персонажа в окне осмотра вне зависимости от наличия закрывающей одежды. Переключается через панельку.
+	 * Не сохраняется в настройках игрока, т.к. задумывается как временное состояние для конкретных ЕРП ситуаций, не требующее переноса между раундами.
+	 */
+	var/force_naked_flavor = FALSE
 
 /mob/living/silicon/robot
 	var/datum/description_profile/robot/profile
@@ -135,21 +140,22 @@ GLOBAL_LIST_EMPTY(cached_previews)
 		if (istype(M, /mob/living/carbon/human))
 			var/mob/living/carbon/human/H = C
 			var/can_see_naked = TRUE
-			var/list/obj/item/clothings = list(
-				H.wear_suit,
-				H.w_uniform,
-				H.belt,
-				H.w_underwear,
-				H.w_socks,
-				H.w_shirt,
-				H.wrists,
-				H.wear_neck
-			)
-			removeNullsFromList(clothings)
-			for (var/obj/item/clothing/clothpiece in clothings)
-				if(clothpiece.body_parts_covered & GROIN || clothpiece.body_parts_covered & CHEST)
-					can_see_naked = FALSE
-					break
+			if(!H.force_naked_flavor)
+				var/list/obj/item/clothings = list(
+					H.wear_suit,
+					H.w_uniform,
+					H.belt,
+					H.w_underwear,
+					H.w_socks,
+					H.w_shirt,
+					H.wrists,
+					H.wear_neck
+				)
+				removeNullsFromList(clothings)
+				for (var/obj/item/clothing/clothpiece in clothings)
+					if(clothpiece.body_parts_covered & GROIN || clothpiece.body_parts_covered & CHEST)
+						can_see_naked = FALSE
+						break
 			data["flavortext_naked"] = can_see_naked ? (C.dna?.naked_flavor_text || "") : ""
 			data["headshot_naked_links"] =  (check_rights_for(user.client, R_ADMIN) && isobserver(user)) || ((!unknown) && can_see_naked) ? (C.dna.headshot_naked_links.Copy() || "") : list()
 	// BLUEMOON EDIT END

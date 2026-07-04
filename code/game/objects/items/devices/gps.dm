@@ -20,6 +20,49 @@
 		return FALSE
 	. = ..()
 
+/obj/item/gps/embed_gps
+	name = "Tracking bug"
+	desc = "Грубо обрезанная, маленькая версия обычного ГПС с очень слабой батарейкой и слоем клея на множестве сторон."
+	gpstag = "TRAC"
+	icon_state = "gps-trac"
+	embedding = list("pain_mult" = 0, "embed_chance" = 100, "fall_chance" = 0, "embed_chance_turf_mod" = 15)
+	item_flags = DROPDEL
+	var/lifespan = 5 MINUTES
+	var/beep_timer
+
+/obj/item/gps/embed_gps/proc/set_gpstag(mob/living/target)
+	gpstag += "_[target.name]"
+
+/obj/item/gps/embed_gps/isEmbedHarmless()
+	return TRUE
+
+/obj/item/gps/embed_gps/Initialize(mapload)
+	if(iscarbon(loc))
+		set_gpstag(loc)
+	. = ..()
+	if(. == INITIALIZE_HINT_QDEL || . == INITIALIZE_HINT_QDEL_FORCE)
+		return
+
+	start_beeping()
+	QDEL_IN(src, lifespan)
+
+/obj/item/gps/embed_gps/proc/start_beeping()
+	beep_timer = addtimer(CALLBACK(src, PROC_REF(beep_loop)), 15 SECONDS, TIMER_STOPPABLE)
+
+/obj/item/gps/embed_gps/proc/beep_loop()
+	if(QDELETED(src))
+		return
+
+	playsound(src, 'sound/machines/signal.ogg', 30, FALSE, 0)
+
+	beep_timer = addtimer(CALLBACK(src, PROC_REF(beep_loop)), 15 SECONDS, TIMER_STOPPABLE)
+
+/obj/item/gps/embed_gps/Destroy()
+	. = ..()
+	if(beep_timer)
+		deltimer(beep_timer)
+		beep_timer = null
+
 /obj/item/gps/science
 	icon_state = "gps-s"
 	gpstag = "SCI0"

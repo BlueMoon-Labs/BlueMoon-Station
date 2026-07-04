@@ -72,6 +72,7 @@
 	.["chat_bankcard"] = !!(chat_toggles & CHAT_BANKCARD)
 	.["windowflashing"] = windowflashing
 	.["windownoise"] = windownoise
+	.["mood_vignette"] = mood_vignette
 
 	// Gameplay toggles
 	.["no_antag"] = !!(toggles & NO_ANTAG)
@@ -83,6 +84,7 @@
 	.["announce_login"] = !!(toggles & ANNOUNCE_LOGIN)
 	.["combohud_lighting"] = !!(toggles & COMBOHUD_LIGHTING)
 	.["tg_player_panel"] = !!(toggles & TG_PLAYER_PANEL)
+	.["autostand"] = autostand
 
 	// Gameplay: victim & combat
 	.["be_victim"] = be_victim || BEVICTIM_NO
@@ -128,16 +130,16 @@
 	.["penis_enlargement"] = !!(cit_toggles & PENIS_ENLARGEMENT)
 	.["butt_enlargement"] = !!(cit_toggles & BUTT_ENLARGEMENT)
 	.["belly_inflation"] = !!(cit_toggles & BELLY_INFLATION)
-	.["never_hypno"] = !!(cit_toggles & NEVER_HYPNO)
-	.["no_aphro"] = !!(cit_toggles & NO_APHRO)
-	.["no_ass_slap"] = !!(cit_toggles & NO_ASS_SLAP)
-	.["no_auto_wag"] = !!(cit_toggles & NO_AUTO_WAG)
+	.["never_hypno"] = !(cit_toggles & NEVER_HYPNO)
+	.["no_aphro"] = !(cit_toggles & NO_APHRO)
+	.["no_ass_slap"] = !(cit_toggles & NO_ASS_SLAP)
+	.["no_auto_wag"] = !(cit_toggles & NO_AUTO_WAG)
 	.["chastity_pref"] = !!(cit_toggles & CHASTITY)
 	.["stimulation_pref"] = !!(cit_toggles & STIMULATION)
 	.["edging_pref"] = !!(cit_toggles & EDGING)
 	.["cum_onto_pref"] = !!(cit_toggles & CUM_ONTO)
 	.["sex_jitter"] = !!(cit_toggles & SEX_JITTER)
-	.["dance_disco"] = !(cit_toggles & NO_DISCO_DANCE)
+	.["no_disco_dance"] = !(cit_toggles & NO_DISCO_DANCE)
 	.["gfluid_blacklist"] = gfluid_blacklist
 
 	// Old settings restoration
@@ -302,6 +304,8 @@
 					see_chat_emotes = !see_chat_emotes
 				if("hud_button_flashes")
 					hud_toggle_flash = !hud_toggle_flash
+				if("mood_vignette")
+					mood_vignette = !mood_vignette
 			save_preferences()
 			tgui_or_html_refresh(user)
 
@@ -370,6 +374,8 @@
 					toggles ^= COMBOHUD_LIGHTING
 				if("tg_player_panel")
 					toggles ^= TG_PLAYER_PANEL
+				if("autostand")
+					autostand = !autostand
 				if("disable_combat_cursor")
 					disable_combat_cursor = !disable_combat_cursor
 				if("disable_combat_mouse_lock")
@@ -561,7 +567,7 @@
 					cit_toggles ^= CUM_ONTO
 				if("sex_jitter")
 					cit_toggles ^= SEX_JITTER
-				if("dance_disco")
+				if("no_disco_dance")
 					cit_toggles ^= NO_DISCO_DANCE
 			save_preferences()
 

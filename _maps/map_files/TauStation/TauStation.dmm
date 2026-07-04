@@ -22840,6 +22840,7 @@
 /obj/effect/turf_decal/tile/yellow{
 	dir = 4
 	},
+/obj/machinery/electrolyzer,
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
 "hNp" = (
@@ -34186,6 +34187,13 @@
 /obj/machinery/vending/sovietsoda,
 /turf/open/floor/plasteel/dark,
 /area/hallway/primary/port)
+"lPb" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/atmospherics/components/binary/crystallizer,
+/turf/open/floor/plating,
+/area/engineering/atmos)
 "lPf" = (
 /obj/structure/loot_pile/maint,
 /turf/open/floor/plating,
@@ -41181,6 +41189,10 @@
 	icon_state = "wood-broken2"
 	},
 /area/maintenance/bar)
+"ohw" = (
+/obj/structure/closet/crate/engineering/hfr,
+/turf/open/floor/plasteel,
+/area/engineering/atmos)
 "ohz" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/structure/disposalpipe/segment,
@@ -70819,6 +70831,10 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /turf/open/floor/plasteel/white/side,
 /area/science/robotics/lab)
+"ybl" = (
+/obj/machinery/electrolyzer,
+/turf/open/floor/plasteel,
+/area/engineering/atmos)
 "ybH" = (
 /obj/machinery/ai_slipper{
 	uses = 10
@@ -88931,7 +88947,7 @@ yiM
 yiM
 yiM
 pCx
-nni
+lPb
 nni
 nni
 nni
@@ -92795,8 +92811,8 @@ moy
 fza
 xUL
 hNh
-yiM
-yiM
+ybl
+ohw
 osG
 osG
 yiM

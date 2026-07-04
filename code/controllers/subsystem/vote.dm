@@ -433,7 +433,7 @@ SUBSYSTEM_DEF(vote)
 					var/prior_initiator = initiator
 					log_vote("Prime-time roundtype runoff: второй тур Extended vs Dynamic (Light). До конца — [DisplayTimeText(runoff_vote_ds)].")
 					if(initiate_vote("roundtype", prior_initiator ? prior_initiator : "server", \
-							display = NONE, votesystem = PLURALITY_VOTING, forced = TRUE, \
+							display = SHOW_RESULTS|SHOW_WINNER, votesystem = PLURALITY_VOTING, forced = TRUE, \
 							vote_time = runoff_vote_ds, roundtype_runoff_second_ballot = TRUE, replacing_active_vote = TRUE))
 						return .
 					message_admins("Roundtype runoff (Extended vs Dynamic Light) failed to start (cooldown or guard); finalizing Extended for this round.")
@@ -980,7 +980,7 @@ SUBSYSTEM_DEF(vote)
 			return TRUE
 		if("map")
 			if(C.holder)
-				if(initiate_vote("map", C.key, display = SHOW_RESULTS, forced = FALSE))
+				if(initiate_vote("map", C.key, display = SHOW_RESULTS|SHOW_WINNER, forced = FALSE))
 					message_admins("[ADMIN_LOOKUP(user)] Начал голосование за смену карты")
 					log_admin("[C.key] Начал голосование за смену карты")
 			return TRUE

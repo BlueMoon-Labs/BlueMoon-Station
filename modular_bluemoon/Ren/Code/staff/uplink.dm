@@ -246,8 +246,8 @@
 			new /obj/item/clothing/suit/space/hardsuit/syndi/inteq(src) // 8 tc
 			new /obj/item/gun/ballistic/automatic/shotgun/aa12(src) // 8 tc
 			new /obj/item/implanter/explosive(src) // 2 tc
-			new /obj/item/ammo_box/magazine/aa12/small(src) // 2 tc
-			new /obj/item/ammo_box/magazine/aa12/small(src) // 2 tc
+			new /obj/item/ammo_box/magazine/aa12(src) // 2 tc
+			new /obj/item/ammo_box/magazine/aa12(src) // 2 tc
 			new /obj/item/grenade/plastic/c4 (src) // 1 tc
 			new /obj/item/grenade/plastic/c4 (src) // 1 tc
 			new /obj/item/card/emag(src) // 6 tc

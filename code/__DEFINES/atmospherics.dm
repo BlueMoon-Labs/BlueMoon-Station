@@ -29,6 +29,11 @@
 #define MINIMUM_TEMPERATURE_DELTA_TO_CONSIDER		0.5		//Minimum temperature difference before the gas temperatures are just set to be equal
 #define MINIMUM_TEMPERATURE_FOR_SUPERCONDUCTION		(T20C+10)
 #define MINIMUM_TEMPERATURE_START_SUPERCONDUCTION	(T20C+200)
+#define MINIMUM_HEAT_CAPACITY	0.0003
+
+//PLANETARY ATMOS
+#define PLANET_SHARE_RATIO							0.8		//Ratio of the difference a planetary turf shares with its template atmosphere each cycle
+#define PLANET_SHARE_TEMPERATURE_CAPACITY			5		//Template heat capacity multiplier for the follow-up conductive temperature share, simulating a large atmosphere above the turf
 
 //HEAT TRANSFER COEFFICIENTS
 //Must be between 0 and 1. Values closer to 1 equalize temperature faster
@@ -330,6 +335,15 @@ GLOBAL_LIST_INIT(atmos_adjacent_savings, list(0,0))
 #define GAS_ETHANOL				"ethanol"
 #define GAS_MOTOR_OIL			"motor_oil" // BLUEMOON ADD - Напитки для синтетиков
 #define GAS_QCD					"qcd"
+// HFR / fusion gases (from WhiteMoon HFR port)
+#define GAS_HELIUM				"helium"
+#define GAS_FREON				"freon"
+#define GAS_HALON				"halon"
+#define GAS_ANTINOBLIUM			"antinoblium"
+#define GAS_PROTO_NITRATE		"proto_nitrate"
+#define GAS_ZAUKER				"zauker"
+#define GAS_HEALIUM				"healium"
+#define GAS_NITRIUM				"nitrium"
 
 #define GAS_GROUP_CHEMICALS		"Chemicals"
 
@@ -364,6 +378,21 @@ GLOBAL_LIST_INIT(atmos_adjacent_savings, list(0,0))
 
 //If you're doing spreading things related to atmos, DO NOT USE CANATMOSPASS, IT IS NOT CHEAP. use this instead, the info is cached after all. it's tweaked just a bit to allow for circular checks
 #define TURFS_CAN_SHARE(T1, T2) (LAZYACCESS(T2.atmos_adjacent_turfs, T1) || LAZYLEN(T1.atmos_adjacent_turfs & T2.atmos_adjacent_turfs))
+
+/// Consecutive no-op SSair fires before a vent/scrubber drops into the idle heartbeat.
+#define ATMOS_MACHINE_IDLE_STREAK 4
+/// While idle, vents/scrubbers only run a full recheck this often. Event wakes
+/// (turf activation, pipenet pressure jump, radio signals, power, welding) clear
+/// the idle state instantly, so this is a safety net, not the response time.
+#define ATMOS_MACHINE_IDLE_HEARTBEAT (5 SECONDS)
+/// Pipenet pressure change (kPa) after reconcile that wakes idle machines attached to it.
+#define ATMOS_PIPENET_WAKE_PRESSURE_DELTA 5
+/// Vents ignore pressure imbalances smaller than this (kPa). Stops perpetual
+/// sub-visible top-ups that keep every room's turfs excited forever.
+#define ATMOS_VENT_PRESSURE_EPSILON 0.05
+/// Pure-telemetry devices (meters, air sensors) only report once per this many
+/// SSair fires; their power draw is compensated by the same constant.
+#define ATMOS_TELEMETRY_INTERVAL 4
 
 //Unomos - So for whatever reason, garbage collection actually drastically decreases the cost of atmos later in the round. Turning this into a define yields massively improved performance.
 #define GAS_GARBAGE_COLLECT(GASGASGAS)\

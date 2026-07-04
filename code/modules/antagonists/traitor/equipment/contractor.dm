@@ -133,10 +133,10 @@
 	limited = 1
 	cost = 1
 
-/datum/contractor_item/syndicate_pai
-	name = "Syndicate Personal AI"
+/datum/contractor_item/inteq_pai
+	name = "InteQ Personal AI"
 	desc = "Модифицированный pAI с предустановленными модулями для скрытных операций: закрытый канал связи, камерный жучок, Security HUD, термальное зрение и инъектор химикатов."
-	item = /obj/item/paicard/syndicate
+	item = /obj/item/paicard/inteq
 	item_icon = "microchip"
 	limited = 1
 	cost = 2

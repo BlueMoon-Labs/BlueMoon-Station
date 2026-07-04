@@ -37,6 +37,8 @@
 	var/obj/item/gun/energy/gun
 	var/list/gun_properties
 	var/mode = 0
+	/// Supermatter hitscan: set during P.fire() when the beam strikes a crystal this shot.
+	var/obj/machinery/power/supermatter_crystal/last_shot_hit_sm
 
 	// The following 3 vars are mostly for the prototype
 	var/manual = FALSE
@@ -109,6 +111,7 @@
 		message_admins("Emitter deleted at [ADMIN_VERBOSEJMP(T)]")
 		log_game("Emitter deleted at [AREACOORD(T)]")
 		investigate_log("<font color='red'>deleted</font> at [AREACOORD(T)]", INVESTIGATE_SINGULO)
+	clear_supermatter_beam_registrations()
 	QDEL_NULL(sparks)
 	QDEL_NULL(wires)
 	return ..()
@@ -129,6 +132,7 @@
 		if(!locked && allow_switch_interact)
 			if(active == TRUE)
 				active = FALSE
+				clear_supermatter_beam_registrations()
 				to_chat(user, "<span class='notice'>You turn off [src].</span>")
 			else
 				active = TRUE
@@ -162,6 +166,8 @@
 	if(machine_stat & (BROKEN))
 		return
 	if(state != EMITTER_WELDED || (!powernet && active_power_usage))
+		if(active)
+			clear_supermatter_beam_registrations()
 		active = FALSE
 		update_icon()
 		return
@@ -176,6 +182,7 @@
 			if(powered)
 				powered = FALSE
 				update_icon()
+				clear_supermatter_beam_registrations()
 				investigate_log("lost power and turned <font color='red'>OFF</font> at [AREACOORD(src)]", INVESTIGATE_SINGULO)
 				log_game("Emitter lost power in [AREACOORD(src)]")
 			return
@@ -206,12 +213,19 @@
 		sparks.start()
 	P.firer = user ? user : src
 	P.fired_from = src
+	last_shot_hit_sm = null
 	if(last_projectile_params)
 		P.p_x = last_projectile_params[2]
 		P.p_y = last_projectile_params[3]
 		P.fire(last_projectile_params[1])
 	else
 		P.fire(dir2angle(dir))
+	if(is_supermatter_beam_emitter(src))
+		if(last_shot_hit_sm)
+			last_shot_hit_sm.register_emitter_beam_hit(src)
+		else
+			clear_supermatter_beam_registrations()
+		last_shot_hit_sm = null
 	if(!manual)
 		last_shot = world.time
 		if(shot_number < 3)
@@ -221,6 +235,12 @@
 			fire_delay = rand(minimum_fire_delay,maximum_fire_delay)
 			shot_number = 0
 	return P
+
+/// Clears supermatter beam-hit tracking for this emitter on all nearby crystals.
+/obj/machinery/power/emitter/proc/clear_supermatter_beam_registrations()
+	for(var/obj/machinery/power/supermatter_crystal/SM in range(20, src))
+		SM.unregister_emitter_beam_hit(src)
+	last_shot_hit_sm = null
 
 /obj/machinery/power/emitter/can_be_unfasten_wrench(mob/user, silent)
 	if(active)

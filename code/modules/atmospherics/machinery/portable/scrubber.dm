@@ -42,7 +42,12 @@
 		scrub(T.return_air())
 
 /obj/machinery/portable_atmospherics/scrubber/proc/scrub(var/datum/gas_mixture/mixture)
-	mixture.scrub_into(air_contents, volume_rate / mixture.return_volume(), scrubbing)
+	if(!mixture)
+		return
+	var/mixture_volume = mixture.return_volume()
+	if(mixture_volume <= 0)
+		return
+	mixture.scrub_into(air_contents, volume_rate / mixture_volume, scrubbing)
 	if(!holding)
 		air_update_turf()
 

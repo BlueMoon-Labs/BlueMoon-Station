@@ -40045,6 +40045,7 @@
 /obj/machinery/light{
 	dir = 8
 	},
+/obj/structure/closet/crate/engineering/hfr,
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
 "bSh" = (
@@ -42102,9 +42103,6 @@
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/visible{
 	dir = 8
 	},
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 1
-	},
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
 "bWJ" = (
@@ -42113,7 +42111,7 @@
 	dir = 10
 	},
 /obj/effect/turf_decal/stripes/yellow/line{
-	dir = 5
+	dir = 4
 	},
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
@@ -52848,6 +52846,10 @@
 /obj/structure/bookcase/random/religion,
 /turf/open/floor/plasteel/dark,
 /area/service/library/lounge)
+"gsr" = (
+/obj/machinery/atmospherics/components/binary/crystallizer,
+/turf/open/floor/plasteel,
+/area/engineering/atmos)
 "gtX" = (
 /obj/structure/barricade/wooden,
 /turf/open/floor/plating,
@@ -60833,6 +60835,13 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/security/brig/brig_medical)
+"rbd" = (
+/obj/machinery/electrolyzer,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 5
+	},
+/turf/open/floor/plasteel,
+/area/engineering/atmos)
 "rbe" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -64156,6 +64165,14 @@
 /obj/item/pen,
 /turf/open/floor/carpet,
 /area/command/blueshieldoffice)
+"vLM" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible,
+/obj/machinery/electrolyzer,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel,
+/area/engineering/atmos)
 "vMx" = (
 /obj/structure/disposalpipe/segment{
 	dir = 6
@@ -100643,7 +100660,7 @@ bLW
 bTH
 bUp
 bVe
-bUp
+vLM
 bWI
 bXr
 bKQ
@@ -100900,7 +100917,7 @@ bSQ
 bTI
 bUq
 bVf
-bMf
+rbd
 bWJ
 bXs
 bJN
@@ -102949,7 +102966,7 @@ bPT
 bOn
 bOX
 bMf
-bMf
+gsr
 bMf
 bMf
 bMf

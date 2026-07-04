@@ -4,6 +4,7 @@
 	icon = 'modular_bluemoon/icons/obj/food/pet_bowl.dmi'
 	icon_state = "pet_bowl"
 	// interaction_flags_item = NONE
+	item_flags = NO_PIXEL_RANDOM_DROP
 	resistance_flags = NONE
 	possible_transfer_amounts = list(5, 10, 15, 20, 25, 30, 40, 50, 80)
 	reagent_flags = OPENCONTAINER
@@ -15,9 +16,6 @@
 
 /obj/item/reagent_containers/food/snacks/customizable/pet_bowl/Initialize(mapload)
 	. = ..()
-	pixel_x = base_pixel_x
-	pixel_y = base_pixel_y
-	item_flags |= NO_PIXEL_RANDOM_DROP
 	register_context()
 
 /obj/item/reagent_containers/food/snacks/customizable/pet_bowl/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)

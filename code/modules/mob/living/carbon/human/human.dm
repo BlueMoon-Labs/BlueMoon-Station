@@ -609,6 +609,9 @@
 		say(pick(";РАААААААААРГ!", ";ХНННННННГГГГГГГ!", ";ГВААААРРХХ!", "ННННННГГГГГГХ!", ";ААААААРРГГ!" ), forced = "hulk")
 		if(..(I, cuff_break = FAST_CUFFBREAK))
 			dropItemToGround(I)
+	else if(iszombie_infectious(src))
+		if(..(I, cuff_break = FAST_CUFFBREAK))
+			dropItemToGround(I)
 	else
 		if(..())
 			dropItemToGround(I)

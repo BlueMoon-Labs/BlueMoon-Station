@@ -56,9 +56,15 @@
 
 	var/SA_para_min = 1 //nitrous values
 	var/SA_sleep_min = 5
-	var/BZ_trip_balls_min = 0.1 //BZ gas
-	var/BZ_brain_damage_min = 1
+	var/BZ_trip_balls_min = 1 //BZ gas
+	var/BZ_brain_damage_min = 10 // partial pressure over 10: 33% per tick for 3 brain damage, max 150
 	var/gas_stimulation_min = 0.002 //Nitryl and Stimulum
+	var/helium_speech_min = 5
+	var/tritium_irradiation_moles_min = 1
+	var/tritium_irradiation_moles_max = 15
+	var/tritium_irradiation_probability_min = 10
+	var/tritium_irradiation_probability_max = 60
+	var/helium_voice_active = FALSE
 
 	var/cold_message = "your face freezing and an icicle forming"
 	var/cold_level_1_threshold = 260
@@ -283,13 +289,12 @@
 		var/bz_pp = PP(breath, GAS_BZ)
 		if(bz_pp > BZ_brain_damage_min)
 			H.hallucination += 10
-			H.reagents.add_reagent(/datum/reagent/bz_metabolites,5)
+			H.reagents.add_reagent(/datum/reagent/bz_metabolites, clamp(bz_pp, 1, 5))
 			if(prob(33))
 				H.adjustOrganLoss(ORGAN_SLOT_BRAIN, 3, 150)
-
 		else if(bz_pp > BZ_trip_balls_min)
 			H.hallucination += 5
-			H.reagents.add_reagent(/datum/reagent/bz_metabolites,1)
+			H.reagents.add_reagent(/datum/reagent/bz_metabolites, clamp(bz_pp, 1, 5))
 
 	// Nitryl
 		var/nitryl_pp = PP(breath,GAS_NITRYL)
@@ -309,6 +314,45 @@
 
 		breath.adjust_moles(GAS_NITRYL, -gas_breathed)
 
+	// Freon — burn damage + slowdown (reagent from breath_reagent)
+		gas_breathed = breath.get_moles(GAS_FREON)
+		if (gas_breathed > 0.0001)
+			var/freon_pp = PP(breath, GAS_FREON)
+			if (prob(freon_pp))
+				to_chat(H, "<span class='alert'>Your mouth feels like it's burning!</span>")
+			if (freon_pp > 40)
+				H.emote("gasp")
+				H.adjustFireLoss(15)
+				if (prob(freon_pp / 2))
+					to_chat(H, "<span class='alert'>Your throat closes up!</span>")
+					H.silent = max(H.silent, 6)
+			else
+				H.adjustFireLoss(freon_pp / 4)
+
+	// Halon — oxyloss on inhale (reagent from breath_reagent)
+		gas_breathed = breath.get_moles(GAS_HALON)
+		if (gas_breathed > 0.0001)
+			var/halon_pp = PP(breath, GAS_HALON)
+			if(halon_pp > gas_stimulation_min)
+				H.adjustOxyLoss(5)
+
+	// Nitrium — speed boost at moderate concentrations, side effects at high pressure
+		gas_breathed = breath.get_moles(GAS_NITRIUM)
+		if (gas_breathed > 0.0001)
+			var/nitrium_pp = PP(breath, GAS_NITRIUM)
+			if(prob(20))
+				H.emote("burp")
+			if(prob(nitrium_pp) && nitrium_pp > 15)
+				H.adjustOrganLoss(ORGAN_SLOT_LUNGS, nitrium_pp * 0.1)
+				to_chat(H, "<span class='notice'>You feel a burning sensation in your chest</span>")
+			if(nitrium_pp > 5)
+				var/existing = H.reagents.get_reagent_amount(/datum/reagent/nitrium_low_metabolization)
+				H.reagents.add_reagent(/datum/reagent/nitrium_low_metabolization, max(0, 2 - existing))
+			if(nitrium_pp > 10)
+				var/existing = H.reagents.get_reagent_amount(/datum/reagent/nitrium_high_metabolization)
+				H.reagents.add_reagent(/datum/reagent/nitrium_high_metabolization, max(0, 2 - existing))
+			breath.adjust_moles(GAS_NITRIUM, -gas_breathed)
+
 	// Stimulum
 		gas_breathed = PP(breath,GAS_STIMULUM)
 		if (gas_breathed > gas_stimulation_min)
@@ -316,51 +360,104 @@
 			H.reagents.add_reagent(/datum/reagent/stimulum, max(0, 5 - existing))
 		breath.adjust_moles(GAS_STIMULUM, -gas_breathed)
 
-	// Miasma
-		if (breath.get_moles(GAS_MIASMA))
-			var/miasma_pp = PP(breath,GAS_MIASMA)
-			if(miasma_pp > MINIMUM_MOLES_DELTA_TO_MOVE)
+	// Pluoxium — organ healing reagent while knocked out (8x O2 handled by breathing_class)
+		var/pluox_pp = PP(breath, GAS_PLUOXIUM)
+		if(pluox_pp > gas_stimulation_min)
+			var/existing = H.reagents.get_reagent_amount(/datum/reagent/pluoxium)
+			H.reagents.add_reagent(/datum/reagent/pluoxium, max(0, 1 - existing))
 
-				//Miasma sickness
+	// Hyper-noblium
+		gas_breathed = breath.get_moles(GAS_HYPERNOB)
+		if (gas_breathed > 0.0001)
+			var/hypernob_pp = PP(breath, GAS_HYPERNOB)
+			if(hypernob_pp > gas_stimulation_min)
+				var/existing = H.reagents.get_reagent_amount(/datum/reagent/hypernoblium)
+				H.reagents.add_reagent(/datum/reagent/hypernoblium, max(0, 1 - existing))
+			breath.adjust_moles(GAS_HYPERNOB, -gas_breathed)
+
+	// Zauker
+		gas_breathed = breath.get_moles(GAS_ZAUKER)
+		if (gas_breathed > 0.0001)
+			var/zauker_pp = PP(breath, GAS_ZAUKER)
+			if(zauker_pp > gas_stimulation_min)
+				var/existing = H.reagents.get_reagent_amount(/datum/reagent/zauker)
+				H.reagents.add_reagent(/datum/reagent/zauker, max(0, 1 - existing))
+			breath.adjust_moles(GAS_ZAUKER, -gas_breathed)
+
+	// Healium — лечит брутал и берн при дыхании (не breath_reagent: иначе газ вычитается до этого блока и лечение не срабатывает)
+		gas_breathed = breath.get_moles(GAS_HEALIUM)
+		if (gas_breathed > 0.0001)
+			var/healium_pp = PP(breath, GAS_HEALIUM)
+			var/heal_amount = clamp(round(healium_pp * 6), 3, 18)
+			H.adjustBruteLoss(-heal_amount)
+			H.adjustFireLoss(-heal_amount)
+			H.adjustOxyLoss(-max(round(heal_amount * 0.5), 1))
+			H.adjustToxLoss(-max(round(heal_amount * 0.3), 1))
+			breath.adjust_moles(GAS_HEALIUM, -gas_breathed)
+
+	// Helium — high-pitched voice
+		gas_breathed = breath.get_moles(GAS_HELIUM)
+		if (gas_breathed > 0.0001)
+			var/helium_pp = PP(breath, GAS_HELIUM)
+			if(helium_pp > helium_speech_min)
+				if(!helium_voice_active)
+					helium_voice_active = TRUE
+					RegisterSignal(H, COMSIG_MOB_SAY, PROC_REF(handle_helium_speech))
+			else if(helium_voice_active)
+				helium_voice_active = FALSE
+				UnregisterSignal(H, COMSIG_MOB_SAY, PROC_REF(handle_helium_speech))
+			breath.adjust_moles(GAS_HELIUM, -gas_breathed)
+		else if(helium_voice_active)
+			helium_voice_active = FALSE
+			UnregisterSignal(H, COMSIG_MOB_SAY, PROC_REF(handle_helium_speech))
+
+	// Tritium — toxin damage and irradiation chance
+		gas_breathed = breath.get_moles(GAS_TRITIUM)
+		if (gas_breathed > 0.0001)
+			var/trit_pp = PP(breath, GAS_TRITIUM)
+			var/moles_visible = MOLES_GAS_VISIBLE * BREATH_PERCENTAGE
+			if(gas_breathed > moles_visible)
+				H.adjustToxLoss(clamp(gas_breathed * 15, MIN_TOXIC_GAS_DAMAGE, MAX_TOXIC_GAS_DAMAGE))
+			if(trit_pp > tritium_irradiation_moles_min)
+				var/lerp_scale = min(tritium_irradiation_moles_max, trit_pp - tritium_irradiation_moles_min) / (tritium_irradiation_moles_max - tritium_irradiation_moles_min)
+				var/chance = LERP(tritium_irradiation_probability_min, tritium_irradiation_probability_max, lerp_scale)
+				if(prob(chance))
+					H.radiation += max(trit_pp, 1)
+			breath.adjust_moles(GAS_TRITIUM, -gas_breathed)
+
+	// Miasma
+		gas_breathed = breath.get_moles(GAS_MIASMA)
+		if (gas_breathed > 0.0001)
+			var/miasma_pp = PP(breath, GAS_MIASMA)
+			if(miasma_pp > MINIMUM_MOLES_DELTA_TO_MOVE)
 				if(prob(0.05 * miasma_pp))
-					var/datum/disease/advance/miasma_disease = new /datum/disease/advance/random(TRUE, 2,3)
+					var/datum/disease/advance/miasma_disease = new /datum/disease/advance/random(TRUE, 2, 3)
 					miasma_disease.name = "Unknown"
 					miasma_disease.try_infect(owner)
-
-				// Miasma side effects
-				switch(miasma_pp)
-					if(1 to 5)
-						// At lower pp, give out a little warning
-						SEND_SIGNAL(owner, COMSIG_CLEAR_MOOD_EVENT, "smell")
-						if(prob(5))
-							to_chat(owner, "<span class='notice'>There is an unpleasant smell in the air.</span>")
-					if(5 to 15)
-						//At somewhat higher pp, warning becomes more obvious
-						if(prob(15))
-							to_chat(owner, "<span class='warning'>You smell something horribly decayed inside this room.</span>")
-							SEND_SIGNAL(owner, COMSIG_ADD_MOOD_EVENT, "smell", /datum/mood_event/disgust/bad_smell)
-					if(15 to 30)
-						//Small chance to vomit. By now, people have internals on anyway
-						if(prob(5))
-							to_chat(owner, "<span class='warning'>The stench of rotting carcasses is unbearable!</span>")
-							SEND_SIGNAL(owner, COMSIG_ADD_MOOD_EVENT, "smell", /datum/mood_event/disgust/nauseating_stench)
-							owner.vomit()
-					if(30 to INFINITY)
-						//Higher chance to vomit. Let the horror start
-						if(prob(15))
-							to_chat(owner, "<span class='warning'>The stench of rotting carcasses is unbearable!</span>")
-							SEND_SIGNAL(owner, COMSIG_ADD_MOOD_EVENT, "smell", /datum/mood_event/disgust/nauseating_stench)
-							owner.vomit()
-					else
-						SEND_SIGNAL(owner, COMSIG_CLEAR_MOOD_EVENT, "smell")
-
-				// In a full miasma atmosphere with 101.34 pKa, about 10 disgust per breath, is pretty low compared to threshholds
-				// Then again, this is a purely hypothetical scenario and hardly reachable
-				owner.adjust_disgust(0.1 * miasma_pp)
-
-				breath.adjust_moles(GAS_MIASMA, -gas_breathed)
-
-		// Clear out moods when no miasma at all
+				if(!HAS_TRAIT(owner, TRAIT_ANOSMIA))
+					switch(miasma_pp)
+						if(0.25 to 5)
+							SEND_SIGNAL(owner, COMSIG_CLEAR_MOOD_EVENT, "smell")
+							if(prob(5))
+								to_chat(owner, "<span class='notice'>There is an unpleasant smell in the air.</span>")
+						if(5 to 15)
+							if(prob(15))
+								to_chat(owner, "<span class='warning'>You smell something horribly decayed inside this room.</span>")
+								SEND_SIGNAL(owner, COMSIG_ADD_MOOD_EVENT, "smell", /datum/mood_event/disgust/bad_smell)
+						if(15 to 30)
+							if(prob(5))
+								to_chat(owner, "<span class='warning'>The stench of rotting carcasses is unbearable!</span>")
+								SEND_SIGNAL(owner, COMSIG_ADD_MOOD_EVENT, "smell", /datum/mood_event/disgust/nauseating_stench)
+								owner.vomit()
+						if(30 to INFINITY)
+							if(prob(15))
+								to_chat(owner, "<span class='warning'>The stench of rotting carcasses is unbearable!</span>")
+								SEND_SIGNAL(owner, COMSIG_ADD_MOOD_EVENT, "smell", /datum/mood_event/disgust/nauseating_stench)
+								owner.vomit()
+						else
+							SEND_SIGNAL(owner, COMSIG_CLEAR_MOOD_EVENT, "smell")
+					owner.adjust_disgust(0.1 * miasma_pp)
+			breath.adjust_moles(GAS_MIASMA, -gas_breathed)
 		else
 			SEND_SIGNAL(owner, COMSIG_CLEAR_MOOD_EVENT, "smell")
 
@@ -656,6 +753,10 @@
 	. = ..()
 	if(.)
 		applyOrganDamage(2) //Yamerol lungs are temporary
+
+/obj/item/organ/lungs/proc/handle_helium_speech(mob/living/carbon/breather, list/speech_args)
+	SIGNAL_HANDLER
+	speech_args[SPEECH_SPANS] |= SPAN_SMALL_VOICE
 
 #undef PP
 #undef PP_MOLES

@@ -261,6 +261,28 @@
 	name = "pulse pistol power cell"
 	maxcharge = 2000
 
+/obj/item/stock_parts/cell/crystal_cell
+	name = "crystal power cell"
+	desc = "A very high power cell made from crystallized plasma."
+	icon_state = "crystal_cell"
+	maxcharge = 50000
+	chargerate = 0
+	has_charge_overlay = FALSE
+	custom_materials = null
+	grind_results = null
+
+/obj/item/stock_parts/cell/crystal_ultra_cell
+	name = "crystal ultra power cell"
+	desc = "An ultra-high capacity transdimensional cell grown in a crystallizer from exotic gases."
+	icon_state = "crystalUltraCell"
+	maxcharge = 100000 // 100 MJ
+	chargerate = 1600 // 2x vortex self-recharge / recharger rate
+	self_recharge = 1
+	rating = 7
+	has_charge_overlay = FALSE
+	custom_materials = null
+	grind_results = null
+
 /obj/item/stock_parts/cell/high
 	name = "high-capacity power cell"
 	icon_state = "hcell"

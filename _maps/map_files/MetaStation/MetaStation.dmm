@@ -43793,6 +43793,7 @@
 /obj/effect/turf_decal/tile/yellow{
 	dir = 4
 	},
+/obj/structure/closet/crate/engineering/hfr,
 /turf/open/floor/plasteel/dark/corner{
 	dir = 1
 	},
@@ -47903,6 +47904,7 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
+/obj/machinery/electrolyzer,
 /turf/open/floor/plasteel/cafeteria,
 /area/engineering/atmos)
 "dFh" = (
@@ -51960,6 +51962,13 @@
 	},
 /turf/open/floor/grass,
 /area/service/park)
+"fCP" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/components/binary/crystallizer,
+/turf/open/floor/plating,
+/area/engineering/atmos)
 "fCR" = (
 /obj/machinery/shower{
 	dir = 4
@@ -135803,7 +135812,7 @@ mMn
 mMn
 mMn
 mMn
-fYL
+fCP
 mMn
 mMn
 mMn

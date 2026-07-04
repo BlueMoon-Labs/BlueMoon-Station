@@ -52,6 +52,7 @@
 	use_power = NO_POWER_USE //Test site is an unpowered area
 	invuln = TRUE
 	light_range = 10
+	light_flags = LIGHT_NO_RANGE_CAP // статичная камера тест-полигона: внешний свет выше базового капа
 	start_active = TRUE
 
 /obj/machinery/camera/Initialize(mapload, obj/structure/camera_assembly/CA)

@@ -55,6 +55,8 @@
 		new_master.plane = old_plane
 		thealert.icon_state = "template" // We'll set the icon to the client's ui pref in reorganize_alerts()
 		thealert.master_ref = WEAKREF(new_master) // weakref — не держим прямой ref, чтобы не блокировать GC
+		if(!thealert.name)
+			thealert.name = capitalize(new_master.name)
 	else
 		thealert.icon_state = "[initial(thealert.icon_state)][severity]"
 		thealert.severity = severity
@@ -1029,6 +1031,13 @@ so as to remain in compliance with the most up-to-date laws."
 
 //OBJECT-BASED
 
+// Берет имя и иконку из переданного объекта. При клике, воспроизводится клик по объекту
+/atom/movable/screen/alert/object_master
+	name = ""
+	desc = ""
+	clickable_glow = TRUE
+	click_master = TRUE
+
 /atom/movable/screen/alert/buckled
 	name = "Buckled"
 	desc = "You've been buckled to something. Click the alert to unbuckle unless you're handcuffed."
@@ -1151,12 +1160,17 @@ so as to remain in compliance with the most up-to-date laws."
 		return FALSE
 	var/modifiers = params2list(params)
 	if(LAZYACCESS(modifiers, SHIFT_CLICK)) // screen objects don't do the normal Click() stuff so we'll cheat
-		to_chat(usr, examine_block("[jointext(examine(usr), "\n")]"))
+		if(master_ref && click_master)
+			var/atom/resolved = master_ref.resolve()
+			resolved?.attempt_examinate(usr)
+		else
+			to_chat(usr, examine_block("[jointext(examine(usr), "\n")]"))
 		return FALSE
+
 	if(master_ref && click_master)
 		var/atom/resolved = master_ref.resolve()
-		if(resolved && !QDELETED(resolved))
-			return usr.client.Click(resolved, location, control, params)
+		if(resolved)
+			return usr.client.Click(resolved, location, control, params, ignore_spam = TRUE, ignore_last_click = TRUE)
 
 	return TRUE
 

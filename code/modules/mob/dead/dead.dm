@@ -111,6 +111,11 @@ INITIALIZE_IMMEDIATE(/mob/dead)
 		if (client)
 			if (new_z)
 				SSmobs.dead_players_by_zlevel[new_z] += src
+				// Ghosts get on-demand lighting init too: /mob/living/update_z does this for the living;
+				// without it a ghost teleporting to a not-yet-lit reserved/away z sits in darkness until a
+				// living player arrives or background init crawls there.
+				if(should_ondemand_init_zlevel(new_z))
+					INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(create_lighting_for_zlevel), new_z)
 			registered_z = new_z
 		else
 			registered_z = null
