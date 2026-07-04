@@ -39,6 +39,19 @@
 #define TICK_SPIKES_MAX_EVENTS 40
 /// Минимальный дрифт (мс) для учёта в гистограмме
 #define TICK_SPIKES_HISTOGRAM_FLOOR 25
+// Верхние границы корзин гистограммы дрифтов (мс); нижняя граница первой - TICK_SPIKES_HISTOGRAM_FLOOR
+#define TICK_SPIKES_HISTOGRAM_BUCKET_1 50
+#define TICK_SPIKES_HISTOGRAM_BUCKET_2 100
+#define TICK_SPIKES_HISTOGRAM_BUCKET_3 300
+#define TICK_SPIKES_HISTOGRAM_BUCKET_4 1000
+/// Сколько последних тиков считаются "тиками спайка" при классификации источника
+#define TICK_SPIKES_CLASSIFY_WINDOW_TICKS 3
+/// Порог cpu (%) в тиках спайка, с которого источник классифицируется как DM вне МК
+#define TICK_SPIKES_CLASSIFY_CPU_THRESHOLD 70
+/// Порог map_cpu (%) в тиках спайка, с которого источник классифицируется как SendMaps
+#define TICK_SPIKES_CLASSIFY_MAP_CPU_THRESHOLD 50
+/// На сколько тиков после нашего дампа профайлера спайки считаются самонаведёнными
+#define TICK_SPIKES_SELF_INFLICTED_TICKS 2
 
 // Классы источников спайка
 #define TICK_SPIKE_CLASS_MC "подсистема МК"
@@ -90,7 +103,7 @@ SUBSYSTEM_DEF(tick_spikes)
 	var/worst_drift_ms = 0
 	var/worst_drift_at = 0
 	var/total_spike_drift_ms = 0
-	/// Гистограмма дрифтов: 25-50 / 50-100 / 100-300 / 300-1000 / 1000+
+	/// Гистограмма дрифтов: 5 корзин по границам TICK_SPIKES_HISTOGRAM_FLOOR / BUCKET_1..4, последняя - всё выше BUCKET_4
 	var/list/drift_histogram
 
 	/// Список текстовых блоков последних событий (для отчёта)
@@ -193,13 +206,13 @@ SUBSYSTEM_DEF(tick_spikes)
 	samples_collected++
 
 	if(drift >= TICK_SPIKES_HISTOGRAM_FLOOR)
-		if(drift < 50)
+		if(drift < TICK_SPIKES_HISTOGRAM_BUCKET_1)
 			drift_histogram[1]++
-		else if(drift < 100)
+		else if(drift < TICK_SPIKES_HISTOGRAM_BUCKET_2)
 			drift_histogram[2]++
-		else if(drift < 300)
+		else if(drift < TICK_SPIKES_HISTOGRAM_BUCKET_3)
 			drift_histogram[3]++
-		else if(drift < 1000)
+		else if(drift < TICK_SPIKES_HISTOGRAM_BUCKET_4)
 			drift_histogram[4]++
 		else
 			drift_histogram[5]++
@@ -249,7 +262,7 @@ SUBSYSTEM_DEF(tick_spikes)
 /datum/controller/subsystem/tick_spikes/proc/classify_spike(now_world, drift)
 	if(world.time < self_inflicted_until)
 		return TICK_SPIKE_CLASS_SELF
-	var/tight_window_start = now_world - (3 * world.tick_lag)
+	var/tight_window_start = now_world - (TICK_SPIKES_CLASSIFY_WINDOW_TICKS * world.tick_lag)
 	var/list/culprits = list()
 	var/culprits_ms = 0
 	for(var/i in heavy_ring_chronological())
@@ -264,18 +277,18 @@ SUBSYSTEM_DEF(tick_spikes)
 		if(drift && culprits_ms < drift * 0.5)
 			. += " - объясняют лишь ~[round(culprits_ms)]мс из [round(drift)]мс, остальное вне МК"
 		return .
-	// Смотрим 3 последних тика кольца: cpu отражает предыдущий тик
+	// Смотрим последние TICK_SPIKES_CLASSIFY_WINDOW_TICKS тика кольца: cpu отражает предыдущий тик
 	var/max_cpu = 0
 	var/max_map_cpu = 0
-	for(var/offset in 0 to 2)
+	for(var/offset in 0 to TICK_SPIKES_CLASSIFY_WINDOW_TICKS - 1)
 		var/idx = ring_pos - offset
 		if(idx < 1)
 			idx += TICK_SPIKES_HISTORY
 		max_cpu = max(max_cpu, ring_cpu[idx] || 0)
 		max_map_cpu = max(max_map_cpu, ring_map_cpu[idx] || 0)
-	if(max_cpu >= 70)
+	if(max_cpu >= TICK_SPIKES_CLASSIFY_CPU_THRESHOLD)
 		return TICK_SPIKE_CLASS_DM
-	if(max_map_cpu >= 50)
+	if(max_map_cpu >= TICK_SPIKES_CLASSIFY_MAP_CPU_THRESHOLD)
 		return TICK_SPIKE_CLASS_SENDMAPS
 	return TICK_SPIKE_CLASS_EXTERNAL
 
@@ -354,7 +367,7 @@ SUBSYSTEM_DEF(tick_spikes)
 	last_profile_dump_ms = now_ms
 	profile_dumps_done++
 	// Наш собственный дамп растянет следующий тик - не считать его новым спайком
-	self_inflicted_until = world.time + (2 * world.tick_lag)
+	self_inflicted_until = world.time + (TICK_SPIKES_SELF_INFLICTED_TICKS * world.tick_lag)
 	var/file_name = "tick_spike_profile_[profile_dumps_done].json"
 	// PROFILE_REFRESH возвращает данные, но НЕ обнуляет их: снапшот кумулятивный с момента
 	// старта профайлера. Окно между спайками = дифф соседних дампов (числа монотонные).
@@ -411,7 +424,7 @@ SUBSYSTEM_DEF(tick_spikes)
 	out += "клиентов: [length(GLOB.clients)], TD тек/быстр/сред/медл: [round(SStime_track.time_dilation_current, 0.1)]% / [round(SStime_track.time_dilation_avg_fast, 0.1)]% / [round(SStime_track.time_dilation_avg, 0.1)]% / [round(SStime_track.time_dilation_avg_slow, 0.1)]%"
 	out += "тиков замерено: [samples_collected]"
 	out += "спайков: [session_spike_count] (из них кратко в логе: [suppressed_event_count]), худший [round(worst_drift_ms)]мс в [worst_drift_at ? time_stamp_from_world(worst_drift_at) : "-"], суммарно потеряно в спайках ~[round(total_spike_drift_ms)]мс"
-	out += "гистограмма дрифтов (мс): 25-50: [drift_histogram[1]] | 50-100: [drift_histogram[2]] | 100-300: [drift_histogram[3]] | 300-1000: [drift_histogram[4]] | 1000+: [drift_histogram[5]]"
+	out += "гистограмма дрифтов (мс): [TICK_SPIKES_HISTOGRAM_FLOOR]-[TICK_SPIKES_HISTOGRAM_BUCKET_1]: [drift_histogram[1]] | [TICK_SPIKES_HISTOGRAM_BUCKET_1]-[TICK_SPIKES_HISTOGRAM_BUCKET_2]: [drift_histogram[2]] | [TICK_SPIKES_HISTOGRAM_BUCKET_2]-[TICK_SPIKES_HISTOGRAM_BUCKET_3]: [drift_histogram[3]] | [TICK_SPIKES_HISTOGRAM_BUCKET_3]-[TICK_SPIKES_HISTOGRAM_BUCKET_4]: [drift_histogram[4]] | [TICK_SPIKES_HISTOGRAM_BUCKET_4]+: [drift_histogram[5]]"
 	out += "лог событий: [log_path ? log_path : "ещё не создан"]"
 	if(length(spike_events))
 		out += ""
@@ -437,6 +450,14 @@ SUBSYSTEM_DEF(tick_spikes)
 #undef TICK_SPIKES_CLOCK
 #undef TICK_SPIKES_MAX_EVENTS
 #undef TICK_SPIKES_HISTOGRAM_FLOOR
+#undef TICK_SPIKES_HISTOGRAM_BUCKET_1
+#undef TICK_SPIKES_HISTOGRAM_BUCKET_2
+#undef TICK_SPIKES_HISTOGRAM_BUCKET_3
+#undef TICK_SPIKES_HISTOGRAM_BUCKET_4
+#undef TICK_SPIKES_CLASSIFY_WINDOW_TICKS
+#undef TICK_SPIKES_CLASSIFY_CPU_THRESHOLD
+#undef TICK_SPIKES_CLASSIFY_MAP_CPU_THRESHOLD
+#undef TICK_SPIKES_SELF_INFLICTED_TICKS
 #undef TICK_SPIKE_CLASS_MC
 #undef TICK_SPIKE_CLASS_DM
 #undef TICK_SPIKE_CLASS_SENDMAPS
