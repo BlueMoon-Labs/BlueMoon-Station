@@ -85,8 +85,10 @@
 /obj/item/mod/module/pai
 	name = "MOD PAI module"
 	desc = "Модуль для подключения ПИИ к панели управления МОДом."
+	icon_state = "pai"
 	var/mob/living/silicon/pai/my_pai
 	incompatible_modules = list(/obj/item/mod/module/pai)
+	complexity = 2
 
 /obj/item/mod/module/pai/on_install()
 	. = ..()
