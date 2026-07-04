@@ -81,11 +81,15 @@ const createViteConfig = ({ entry, bundleName, globalName }) => {
       target: 'es2020',
       outDir: path.resolve(workspaceRoot, 'public'),
       emptyOutDir: false,
-      chunkSizeWarningLimit: 2000,
+      // Single-file IIFE by design (BYOND cannot fetch split chunks),
+      // so the code-splitting advice in the size warning is not actionable.
+      chunkSizeWarningLimit: 3000,
       minify: mode === 'production' ? 'terser' : false,
       terserOptions: {
         format: {
-          ascii_only: true,
+          // No ascii_only: the bundle is loaded by tgui.html which declares
+          // <meta charset="utf-8">, and escaping Cyrillic UI text would
+          // inflate the bundle by ~225 kB.
           comments: false,
         },
       },
