@@ -78,6 +78,8 @@ SUBSYSTEM_DEF(tick_spikes)
 	/// постоянные и спамят, а информация нужна разработчикам в логе, не админам в раунде.
 	/// Включается через VV на время целевой отладки.
 	var/announce_to_admins = FALSE
+	/// Минимум мс между анонсами в админ-чат
+	var/announce_cooldown_ms = 30000
 
 	// --- Пер-тиковый кольцевой буфер ---
 	var/list/ring_world_time
@@ -211,6 +213,11 @@ SUBSYSTEM_DEF(tick_spikes)
 	ring_map_cpu[ring_pos] = map_cpu
 	samples_collected++
 
+	// Пустой сервер (sleep_offline, ребут, ожидание) даёт гигантские ложные дрифты -
+	// не пускать их ни в гистограмму, ни в события (кольцо выше оставляем: это контекст, не статистика)
+	if(!length(GLOB.clients) && !ignore_empty_server)
+		return drift
+
 	if(drift >= TICK_SPIKES_HISTOGRAM_FLOOR)
 		if(drift < TICK_SPIKES_HISTOGRAM_BUCKET_1)
 			drift_histogram[1]++
@@ -224,9 +231,6 @@ SUBSYSTEM_DEF(tick_spikes)
 			drift_histogram[5]++
 
 	if(drift < spike_threshold_ms)
-		return drift
-	// Пустой сервер (sleep_offline, ребут, ожидание) даёт гигантские ложные дрифты
-	if(!length(GLOB.clients) && !ignore_empty_server)
 		return drift
 
 	register_spike(drift, now_ms, now_world)
@@ -372,7 +376,7 @@ SUBSYSTEM_DEF(tick_spikes)
 
 	if(!suppress_side_effects)
 		write_to_log("\n[event_text]\n")
-		if(announce_to_admins && drift >= announce_threshold_ms && (!last_announce_ms || now_ms - last_announce_ms > 30000))
+		if(announce_to_admins && drift >= announce_threshold_ms && (!last_announce_ms || now_ms - last_announce_ms > announce_cooldown_ms))
 			last_announce_ms = now_ms
 			message_admins("Тик-спайк: [round(drift)]мс, источник: [spike_class]. Подробности: Debug -> Tick Spikes Report.")
 
