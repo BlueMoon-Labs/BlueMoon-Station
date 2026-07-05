@@ -159,6 +159,73 @@ describe('PaperSheet PrimaryView', () => {
     expect(JSON.parse(saveCall[0].payload).text).toBe('saved text');
   });
 
+  // Regression: with a single innerHTML blob for the whole page, every
+  // textarea keystroke rewrote the DM text block and recreated its input
+  // fields, wiping whatever the user had typed into them. The DM block's
+  // HTML must stay byte-identical while the textarea preview updates, so
+  // React never touches the fields' DOM.
+  // (jsdom re-applies innerHTML on every rerender, so DOM node identity
+  // can't be asserted here - string identity is the contract that matters.)
+  test('typing in the textarea does not alter the DM text block', () => {
+    setupStore({
+      raw_text_input: [
+        { raw_text: 'Sign: [______]' },
+      ],
+      held_item_details: heldPen,
+    });
+    const { container, rerender } = render(<PrimaryView />);
+    const field = container.querySelector(
+      'input#paperfield_0'
+    ) as HTMLInputElement;
+    fireEvent.input(field, { target: { value: 'Иванов' } });
+    rerender(<PrimaryView />);
+
+    const dmBlockBefore = container.querySelectorAll('.paper-text')[0]
+      .innerHTML;
+
+    const textarea = container.querySelector('textarea') as HTMLTextAreaElement;
+    fireEvent.focus(textarea);
+    fireEvent.input(textarea, { target: { value: 'текст отчёта' } });
+    rerender(<PrimaryView />);
+
+    const blocks = container.querySelectorAll('.paper-text');
+    expect(blocks.length).toBe(2);
+    expect(blocks[0].innerHTML).toBe(dmBlockBefore);
+    expect(blocks[1].innerHTML).toContain('текст отчёта');
+  });
+
+  test('unsaved field text survives losing and regaining the pen', () => {
+    const store = setupStore({
+      raw_text_input: [
+        { raw_text: 'Sign: [______]' },
+      ],
+      held_item_details: heldPen,
+    });
+    const { container, rerender } = render(<PrimaryView />);
+    const field = container.querySelector(
+      'input#paperfield_0'
+    ) as HTMLInputElement;
+    fireEvent.input(field, { target: { value: 'Иванов' } });
+    rerender(<PrimaryView />);
+
+    // Pen swapped out of the active hand: read-only mode.
+    store.dispatch(backendUpdate({ data: { held_item_details: null } }));
+    rerender(<PrimaryView />);
+    const readOnlyField = container.querySelector(
+      'input#paperfield_0'
+    ) as HTMLInputElement;
+    expect(readOnlyField.disabled).toBe(true);
+
+    // Pen back: the unsaved text must be restored from the store.
+    store.dispatch(backendUpdate({ data: { held_item_details: heldPen } }));
+    rerender(<PrimaryView />);
+    const restoredField = container.querySelector(
+      'input#paperfield_0'
+    ) as HTMLInputElement;
+    expect(restoredField.disabled).toBe(false);
+    expect(restoredField.value).toBe('Иванов');
+  });
+
   test('typing into a paper field stores field data for saving', () => {
     setupStore({
       raw_text_input: [

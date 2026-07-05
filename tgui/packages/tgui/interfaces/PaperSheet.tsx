@@ -479,6 +479,29 @@ export class PreviewView extends Component<PreviewViewProps> {
   parsedDMCache: string = '';
   parsedTextBoxCache: string = '';
 
+  // Stable dangerouslySetInnerHTML wrappers. React 19 re-applies innerHTML
+  // whenever the wrapper OBJECT identity changes (unlike React 18/Inferno,
+  // it no longer compares the __html strings), and the server pushes an
+  // update every second - an inline `{ __html }` literal would recreate the
+  // whole page DOM each tick, kicking the caret out of input fields and
+  // wiping unsaved text.
+  dmHtmlWrapper: { __html: string } = { __html: '' };
+  textAreaHtmlWrapper: { __html: string } = { __html: '' };
+
+  getDmHtmlWrapper = (text: string): { __html: string } => {
+    if (this.dmHtmlWrapper.__html !== text) {
+      this.dmHtmlWrapper = { __html: text };
+    }
+    return this.dmHtmlWrapper;
+  };
+
+  getTextAreaHtmlWrapper = (text: string): { __html: string } => {
+    if (this.textAreaHtmlWrapper.__html !== text) {
+      this.textAreaHtmlWrapper = { __html: text };
+    }
+    return this.textAreaHtmlWrapper;
+  };
+
   constructor(props, context) {
     super(props, context);
     this.configureMarked();
@@ -624,8 +647,8 @@ export class PreviewView extends Component<PreviewViewProps> {
     // Then use any cached values.
     if (
       this.lastReadOnly === readOnly
-      && this.lastDMInputCount === raw_text_input?.length
-      && this.lastFieldInputCount === raw_field_input?.length
+      && this.lastDMInputCount === (raw_text_input?.length || 0)
+      && this.lastFieldInputCount === (raw_field_input?.length || 0)
     ) {
       return { text: this.parsedDMCache, newFieldCount: this.lastFieldCount };
     }
@@ -902,9 +925,12 @@ export class PreviewView extends Component<PreviewViewProps> {
 
     if (input) {
       // If we've gone to readOnly now, drop the cache because we're no longer
-      // in write mode. Will reset the input field the next time it's writable.
+      // in write mode, and serialize the field as actually disabled - the
+      // cached node was created enabled and would otherwise leak a writable
+      // field into the read-only view.
       if (readOnly) {
         delete this.enabledInputFieldCache[id];
+        input.disabled = true;
       }
       // If we do, recycle it, updating font and color incase we've changed
       // writing implements.
@@ -926,6 +952,15 @@ export class PreviewView extends Component<PreviewViewProps> {
     input.maxLength = Math.min(max_input_field_length, length);
     input.size = length;
     input.disabled = readOnly;
+
+    // Restore unsaved text typed into this field earlier: rebuilds of the
+    // preview HTML (mode flips, new DM data) recreate the DOM from scratch,
+    // but the typed values live on in the store until saved.
+    const [inputFieldData] = useLocalState('inputFieldData', {});
+    const storedValue = inputFieldData[this.getHeaderID(id)];
+    if (storedValue) {
+      input.defaultValue = storedValue;
+    }
 
     if (!readOnly) {
       this.enabledInputFieldCache[id] = input;
@@ -980,20 +1015,17 @@ export class PreviewView extends Component<PreviewViewProps> {
       = held_item_details?.interaction_mode || InteractionType.reading;
 
     const dmTextPreviewData = this.createPreviewFromDM();
-    let previewText = dmTextPreviewData.text;
 
-    if (interactMode === InteractionType.writing) {
-      previewText += this.createPreviewFromTextArea(
-        dmTextPreviewData.newFieldCount
-      );
-    }
-
-    const textHTML = {
-      __html: `<span class='paper-text'>${previewText}</span>`,
-    };
+    const textAreaPreview = interactMode === InteractionType.writing
+      ? this.createPreviewFromTextArea(dmTextPreviewData.newFieldCount)
+      : null;
 
     const { scrollableRef, handleOnScroll } = this.props;
 
+    // The DM text (with live input fields) and the textarea preview are
+    // rendered as two independent innerHTML blocks. With a single blob,
+    // every textarea keystroke would rewrite the whole page and recreate
+    // the input fields, wiping whatever the user had typed into them.
     return (
       <Section
         fill
@@ -1008,9 +1040,24 @@ export class PreviewView extends Component<PreviewViewProps> {
           minHeight="100%"
           backgroundColor={paper_color}
           className="Paper__Page"
-          dangerouslySetInnerHTML={textHTML}
-          p="10px"
-        />
+          p="10px">
+          <Box
+            as="span"
+            className="paper-text"
+            dangerouslySetInnerHTML={this.getDmHtmlWrapper(
+              dmTextPreviewData.text
+            )}
+          />
+          {textAreaPreview !== null && (
+            <Box
+              as="span"
+              className="paper-text"
+              dangerouslySetInnerHTML={this.getTextAreaHtmlWrapper(
+                textAreaPreview
+              )}
+            />
+          )}
+        </Box>
         <StampView />
       </Section>
     );
