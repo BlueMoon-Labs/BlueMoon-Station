@@ -13,6 +13,7 @@
  *    ВАЖНО: это wall-time - столл ОС/BYOND во время слота подсистемы выглядит как её
  *    тяжёлый прогон. Прежде чем винить подсистему, сверяй с дампом профайлера: если под
  *    ней нет соответствующего проковского self/over времени - это был столл в её слоте;
+ *  - недавние хардделы из кольца SSgarbage - одиночный дорогой del() объясняет спайки Garbage;
  *  - автоклассификация источника (подсистема МК / DM вне МК / SendMaps / внешний столл);
  *  - при активном захвате - JSON-снапшот профайлера (кумулятивный; окно спайка = дифф
  *    соседних дампов, числа в них монотонно растут).
@@ -92,6 +93,11 @@ SUBSYSTEM_DEF(tick_spikes)
 	var/list/heavy_name
 	var/list/heavy_usage
 	var/heavy_pos = 0
+
+	// --- Последний завершённый прогон очереди МК (пишется тем же хуком из Master/RunQueue).
+	// Master.last_type_processed в момент нашего fire() - всегда мы сами, поэтому свой учёт ---
+	var/last_run_subsystem_name
+	var/last_run_subsystem_time = 0
 
 	// --- Состояние часов ---
 	var/has_baseline = FALSE
@@ -243,6 +249,19 @@ SUBSYSTEM_DEF(tick_spikes)
 		lines += "  [time_stamp_from_world(run_time)] (wt [run_time]) [heavy_name[i]]: [round(heavy_usage[i], 0.1)]% тика (~[round(heavy_usage[i] * world.tick_lag, 0.1)]мс)"
 	return lines
 
+/// Хардделы из кольца SSgarbage за окно [since_world, сейчас]: del() с полным поиском
+/// ссылок по миру - на проде одиночный харддел давал спайки по 200-330мс
+/datum/controller/subsystem/tick_spikes/proc/collect_recent_harddels(since_world)
+	var/list/lines = list()
+	if(isnull(SSgarbage?.recent_hard_deletes))
+		return lines
+	for(var/list/entry in SSgarbage.recent_hard_deletes)
+		var/del_time = entry[1]
+		if(del_time < since_world)
+			continue
+		lines += "  [time_stamp_from_world(del_time)] (wt [del_time]) [entry[2]]: [entry[3]]мс"
+	return lines
+
 /// Индексы кольца тяжёлых прогонов от старых к новым (кольцо пишется по кругу от heavy_pos)
 /datum/controller/subsystem/tick_spikes/proc/heavy_ring_chronological()
 	var/list/order = list()
@@ -321,14 +340,18 @@ SUBSYSTEM_DEF(tick_spikes)
 	event += "дрифт: [round(drift)]мс (порог [spike_threshold_ms]мс), тик [world.tick_lag * 100]мс"
 	event += "вероятный источник: [spike_class]"
 	event += "клиентов: [length(GLOB.clients)], TD тек/быстр/сред: [round(SStime_track.time_dilation_current, 0.1)]% / [round(SStime_track.time_dilation_avg_fast, 0.1)]% / [round(SStime_track.time_dilation_avg, 0.1)]%"
-	var/datum/controller/subsystem/last_processed = Master.last_type_processed
-	event += "МК: итерация [Master.iteration], sleep_delta [round(Master.sleep_delta, 0.01)], ticklimit [round(Master.current_ticklimit, 0.1)], последняя подсистема: [istype(last_processed) ? last_processed.name : "нет"]"
+	event += "МК: итерация [Master.iteration], sleep_delta [round(Master.sleep_delta, 0.01)], ticklimit [round(Master.current_ticklimit, 0.1)], последний прогон очереди: [last_run_subsystem_name ? "[last_run_subsystem_name] (wt [last_run_subsystem_time])" : "нет"]"
 
 	if(length(heavy_lines))
 		event += "тяжёлые прогоны подсистем за последние [TICK_SPIKES_HEAVY_WINDOW / 10] сек (wall-time: столл во время слота подсистемы выглядит как её прогон, сверяй с профайлером):"
 		event += heavy_lines
 	else
 		event += "тяжёлых прогонов подсистем МК (>=[heavy_run_threshold]% тика) за последние [TICK_SPIKES_HEAVY_WINDOW / 10] сек не было"
+
+	var/list/harddel_lines = collect_recent_harddels(now_world - TICK_SPIKES_HEAVY_WINDOW)
+	if(length(harddel_lines))
+		event += "хардделы за последние [TICK_SPIKES_HEAVY_WINDOW / 10] сек (одиночный дорогой del() - типовой виновник спайков в слоте Garbage):"
+		event += harddel_lines
 
 	event += "последние тики (время | дрифт мс | usage% до МК | cpu% | map_cpu%):"
 	var/window = min(TICK_SPIKES_REPORT_WINDOW, samples_collected)
