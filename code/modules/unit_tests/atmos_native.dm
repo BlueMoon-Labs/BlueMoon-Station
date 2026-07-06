@@ -549,4 +549,78 @@
 	TEST_ASSERT(!LAZYLEN(room.atmos_wake_machines), "Destroy() left a stale wake registration on the turf")
 	SSair.remove_from_active(room)
 
+/// Machines that entered the idle heartbeat must leave SSair.atmos_machinery
+/// entirely (and rejoin on wake); settled portables and empty connectors must
+/// drop out of processing via PROCESS_KILL.
+/datum/unit_test/atmos_machinery_sleep/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/room = run_loc_floor_bottom_left
+	TEST_ASSERT(istype(room), "test location is not an open turf")
+
+	// A full no-op streak must remove the machine from the processing list.
+	var/obj/machinery/atmospherics/components/unary/vent_scrubber/scrubber = allocate(/obj/machinery/atmospherics/components/unary/vent_scrubber, room)
+	TEST_ASSERT(scrubber.atmos_processing, "freshly created scrubber is not in SSair processing")
+	for(var/i in 1 to ATMOS_MACHINE_IDLE_STREAK)
+		scrubber.atmos_consider_idle()
+	TEST_ASSERT(!scrubber.atmos_processing, "idle-heartbeat machine stayed in SSair processing")
+	TEST_ASSERT(!(scrubber in SSair.atmos_machinery), "idle-heartbeat machine stayed in atmos_machinery")
+	TEST_ASSERT(scrubber.atmos_idle_queued, "sleeping machine is not flagged as queued")
+	TEST_ASSERT(scrubber in SSair.atmos_idle_queue, "sleeping machine is not in the idle wake queue")
+
+	// An expired heartbeat deadline returns it for one full recheck. The queue
+	// is FIFO by deadline, so simulating expiry means moving to the head too
+	// (live station machines with future deadlines are queued ahead of us).
+	SSair.atmos_idle_queue.Remove(scrubber)
+	SSair.atmos_idle_queue.Insert(1, scrubber)
+	SSair.atmos_idle_queue[scrubber] = world.time - 1
+	SSair.wake_expired_idle_machines()
+	TEST_ASSERT(scrubber.atmos_processing, "expired heartbeat did not return the machine to processing")
+	TEST_ASSERT(!scrubber.atmos_idle_queued, "heartbeat-woken machine kept its queued flag")
+	TEST_ASSERT(!(scrubber in SSair.atmos_idle_queue), "heartbeat-woken machine stayed in the idle wake queue")
+
+	// Going idle again re-enqueues; an event wake must put it straight back.
+	for(var/i in 1 to ATMOS_MACHINE_IDLE_STREAK)
+		scrubber.atmos_consider_idle()
+	TEST_ASSERT(!scrubber.atmos_processing, "second idle streak did not remove the machine again")
+	scrubber.atmos_wake()
+	TEST_ASSERT(scrubber.atmos_processing, "woken machine did not rejoin SSair processing")
+	TEST_ASSERT(scrubber in SSair.atmos_machinery, "woken machine did not rejoin atmos_machinery")
+
+	// Destroy() must pull a sleeping machine out of the wake queue: the queue
+	// holds a strong ref that would otherwise pin the deleted machine.
+	var/obj/machinery/atmospherics/components/unary/vent_scrubber/doomed_sleeper = new(room)
+	for(var/i in 1 to ATMOS_MACHINE_IDLE_STREAK)
+		doomed_sleeper.atmos_consider_idle()
+	TEST_ASSERT(doomed_sleeper in SSair.atmos_idle_queue, "sleeping test machine did not enter the idle wake queue")
+	qdel(doomed_sleeper)
+	TEST_ASSERT(!(doomed_sleeper in SSair.atmos_idle_queue), "Destroy() left the machine in the idle wake queue")
+
+	// A settled canister with a closed valve sleeps entirely.
+	var/obj/machinery/portable_atmospherics/canister/oxygen/settled = allocate(/obj/machinery/portable_atmospherics/canister/oxygen, room)
+	settled.process_atmos() // first pass after spawn may consume the initial excited state
+	TEST_ASSERT_EQUAL(settled.process_atmos(), PROCESS_KILL, "settled closed canister did not return PROCESS_KILL")
+
+	// An open valve (into a holding tank) must keep the canister processing.
+	var/obj/machinery/portable_atmospherics/canister/oxygen/venting = allocate(/obj/machinery/portable_atmospherics/canister/oxygen, room)
+	venting.holding = allocate(/obj/item/tank/internals/emergency_oxygen, room)
+	venting.valve_open = TRUE
+	venting.process_atmos()
+	TEST_ASSERT(venting.process_atmos() != PROCESS_KILL, "open-valve canister went to sleep")
+	venting.valve_open = FALSE
+	venting.holding = null
+
+	// A connector with no docked portable must not keep processing.
+	var/obj/machinery/atmospherics/components/unary/portables_connector/port = allocate(/obj/machinery/atmospherics/components/unary/portables_connector, room)
+	TEST_ASSERT_EQUAL(port.process_atmos(), PROCESS_KILL, "unused portables connector did not return PROCESS_KILL")
+
+	// The internal pump of a portable pump is never in SSair processing;
+	// idle bookkeeping must not drag it in.
+	var/obj/machinery/portable_atmospherics/pump/portable = allocate(/obj/machinery/portable_atmospherics/pump, room)
+	TEST_ASSERT(!portable.pump.atmos_processing, "internal pump of a portable is in SSair processing")
+	for(var/i in 1 to ATMOS_MACHINE_IDLE_STREAK + 1)
+		portable.pump.atmos_consider_idle()
+	TEST_ASSERT(!portable.pump.atmos_processing, "idle bookkeeping dragged the internal pump into SSair processing")
+	TEST_ASSERT(!portable.pump.atmos_idle_queued, "idle bookkeeping enqueued the internal pump for heartbeat wake-ups")
+	SSair.remove_from_active(room)
+
 #undef TEST_GAS_EPSILON

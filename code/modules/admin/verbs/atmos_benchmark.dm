@@ -142,7 +142,8 @@ GLOBAL_PROTECT(atmos_benchmark_run)
 			"eg" = "excited groups",
 			"hs" = "hotspots",
 			"pn" = "pipenets",
-			"am" = "processing atmos machines",
+			"am" = "processing (awake) atmos machines",
+			"ami" = "sleeping atmos machines waiting in the idle heartbeat queue",
 			"hpd" = "high pressure delta turfs",
 			"rbq" = "pipenets awaiting rebuild",
 			"gm" = "alive gas mixtures",
@@ -193,6 +194,7 @@ GLOBAL_PROTECT(atmos_benchmark_run)
 		"hs" = length(air.hotspots),
 		"pn" = length(air.networks),
 		"am" = length(air.atmos_machinery),
+		"ami" = length(air.atmos_idle_queue),
 		"hpd" = length(air.high_pressure_delta),
 		"rbq" = length(air.pipenets_needing_rebuilt),
 		"gm" = air.gas_mixes_count,
@@ -364,7 +366,9 @@ GLOBAL_PROTECT(atmos_benchmark_run)
 /datum/atmos_benchmark/proc/write_static_census()
 	var/list/type_counts = list()
 	var/total_machines = 0
-	for(var/obj/machinery/machine as anything in SSair.atmos_machinery.Copy())
+	// Awake machines plus sleepers in the heartbeat queue. Machines that left
+	// via PROCESS_KILL (settled canisters, empty connectors) are not counted.
+	for(var/obj/machinery/machine as anything in (SSair.atmos_machinery.Copy() + SSair.atmos_idle_queue.Copy()))
 		if(!machine)
 			continue
 		total_machines++

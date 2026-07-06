@@ -43,6 +43,9 @@
 	req_access = list()
 
 	var/update = 0
+	///Pressure band currently shown by the sprite (see update_overlays); process_atmos
+	///refreshes the icon only when this moves, instead of rebuilding overlays every fire.
+	var/shown_pressure_band = -1
 	var/static/list/label2types = list(
 		"n2" = /obj/machinery/portable_atmospherics/canister/nitrogen,
 		"o2" = /obj/machinery/portable_atmospherics/canister/oxygen,
@@ -240,6 +243,7 @@
 	timing = !timing
 	if(timing)
 		valve_timer = world.time + (timer_set * 10)
+	excite()
 	update_icon()
 
 /obj/machinery/portable_atmospherics/canister/proto
@@ -298,15 +302,29 @@
 		. += "can-open"
 	if(connected_port)
 		. += "can-connector"
+	shown_pressure_band = pressure_band()
+	switch(shown_pressure_band)
+		if(4)
+			. += "can-o3"
+		if(3)
+			. += "can-o2"
+		if(2)
+			. += "can-o1"
+		if(1)
+			. += "can-o0"
+
+///Bucket of the pressure indicator lights on the sprite; process_atmos redraws only on change.
+/obj/machinery/portable_atmospherics/canister/proc/pressure_band()
 	var/pressure = air_contents?.return_pressure()
 	if(pressure >= 40 * ONE_ATMOSPHERE)
-		. += "can-o3"
-	else if(pressure >= 10 * ONE_ATMOSPHERE)
-		. += "can-o2"
-	else if(pressure >= 5 * ONE_ATMOSPHERE)
-		. += "can-o1"
-	else if(pressure >= 10)
-		. += "can-o0"
+		return 4
+	if(pressure >= 10 * ONE_ATMOSPHERE)
+		return 3
+	if(pressure >= 5 * ONE_ATMOSPHERE)
+		return 2
+	if(pressure >= 10)
+		return 1
+	return 0
 
 /obj/machinery/portable_atmospherics/canister/temperature_expose(datum/gas_mixture/air, exposed_temperature, exposed_volume)
 	if(exposed_temperature > temperature_resistance)
@@ -375,13 +393,18 @@
 			investigate_log("[key_name(user)] started a transfer into [holding].<br>", INVESTIGATE_ATMOS)
 
 /obj/machinery/portable_atmospherics/canister/process_atmos()
-	..()
 	if(machine_stat & BROKEN)
 		return PROCESS_KILL
-	if(timing && valve_timer < world.time)
-		valve_open = !valve_open
-		timing = FALSE
+	if(timing)
+		// An armed valve timer must keep ticking even when nothing else happens.
+		excited = TRUE
+		if(valve_timer < world.time)
+			valve_open = !valve_open
+			timing = FALSE
 	if(valve_open)
+		// An open valve watches outside pressure (breach -> resume leaking);
+		// there is no wake event for that, so never sleep while open.
+		excited = TRUE
 		var/turf/T = get_turf(src)
 		var/datum/gas_mixture/target_air = holding ? holding.air_contents : T.return_air()
 
@@ -395,7 +418,12 @@
 	// currently unused
 	// if(our_temperature > heat_limit || our_pressure > pressure_limit)
 	// 	take_damage(clamp((our_temperature/heat_limit) * (our_pressure/pressure_limit) * delta_time * 2, 5, 50), BURN, 0)
-	update_icon()
+
+	// Rebuilding identical overlays every fire costs more than the whole gas
+	// step; redraw only when the indicator lights actually move.
+	if(pressure_band() != shown_pressure_band)
+		update_icon()
+	return ..()
 
 /obj/machinery/portable_atmospherics/canister/ui_state(mob/user)
 	return GLOB.physical_state
@@ -550,4 +578,7 @@
 					investigate_log("[key_name(usr)] removed the [holding], leaving the valve open and transferring into the [span_antigrif("AIR")].", INVESTIGATE_ATMOS)
 				replace_tank(usr, FALSE)
 				. = TRUE
+	// Any UI interaction may have opened the valve or armed the timer on a
+	// sleeping canister.
+	excite()
 	update_icon()

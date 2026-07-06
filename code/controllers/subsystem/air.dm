@@ -35,6 +35,10 @@ SUBSYSTEM_DEF(air)
 	var/list/networks = list()
 	var/list/pipenets_needing_rebuilt = list()
 	var/list/obj/machinery/atmos_machinery = list()
+	///Assoc (sleeping atmos machine -> world.time deadline of its heartbeat recheck).
+	///Machines that finished an idle streak leave atmos_machinery entirely and wait
+	///here; the constant heartbeat makes this FIFO, so only the head needs checking.
+	var/list/obj/machinery/atmospherics/atmos_idle_queue = list()
 	var/list/pipe_init_dirs_cache = list()
 
 	//atmos singletons
@@ -362,6 +366,7 @@ SUBSYSTEM_DEF(air)
 /datum/controller/subsystem/air/proc/process_atmos_machinery(resumed = 0)
 	var/seconds = wait * 0.1
 	if (!resumed)
+		wake_expired_idle_machines()
 		src.currentrun = atmos_machinery.Copy()
 	//cache for sanic speed (lists are references anyways)
 	var/list/currentrun = src.currentrun
@@ -371,9 +376,29 @@ SUBSYSTEM_DEF(air)
 		if(!M)
 			atmos_machinery -= M
 		else if(M.process_atmos(seconds) == PROCESS_KILL)
-			stop_processing_machine(M)
+			stop_processing_machine(M, popped_from_currentrun = TRUE)
 		if(MC_TICK_CHECK)
 			return
+
+///Returns sleeping machines whose heartbeat deadline expired to the processing
+///list for one full recheck (a no-op pass puts them straight back to sleep).
+/datum/controller/subsystem/air/proc/wake_expired_idle_machines()
+	var/expired = 0
+	for(var/i in 1 to atmos_idle_queue.len)
+		var/obj/machinery/atmospherics/machine = atmos_idle_queue[i]
+		if(!machine)
+			// Hard deletion nulls list entries in place; drop the slot.
+			expired = i
+			continue
+		if(atmos_idle_queue[machine] > world.time)
+			break
+		expired = i
+		machine.atmos_idle_queued = FALSE
+		if(QDELETED(machine) || machine.atmos_processing)
+			continue
+		start_processing_machine(machine)
+	if(expired)
+		atmos_idle_queue.Cut(1, expired + 1)
 
 /datum/controller/subsystem/air/proc/process_hotspots(resumed = 0)
 	if (!resumed)
@@ -503,17 +528,38 @@ SUBSYSTEM_DEF(air)
 	return mix.gas_string
 
 /datum/controller/subsystem/air/proc/start_processing_machine(obj/machinery/machine)
-	if(machine.atmos_processing)
+	if(machine.atmos_processing || QDELETED(machine))
 		return
 	machine.atmos_processing = TRUE
 	atmos_machinery += machine
 
-/datum/controller/subsystem/air/proc/stop_processing_machine(obj/machinery/machine)
+///popped_from_currentrun skips the O(n) currentrun scan when the caller knows the
+///machine was already popped this fire (PROCESS_KILL returns, atmos_consider_idle).
+/datum/controller/subsystem/air/proc/stop_processing_machine(obj/machinery/machine, popped_from_currentrun = FALSE)
 	if(!machine.atmos_processing)
 		return
 	machine.atmos_processing = FALSE
 	atmos_machinery -= machine
-	currentrun -= machine
+	if(!popped_from_currentrun)
+		currentrun -= machine
+
+///Drops a machine that just finished its idle streak out of the per-fire loop;
+///the heartbeat queue (or any event wake) returns it later.
+/datum/controller/subsystem/air/proc/sleep_processing_machine(obj/machinery/atmospherics/machine)
+	stop_processing_machine(machine, popped_from_currentrun = TRUE)
+	if(machine.atmos_idle_queued)
+		// A stale queue entry from an earlier sleep is still pending; its
+		// deadline will recheck us early, which is harmless.
+		return
+	machine.atmos_idle_queued = TRUE
+	atmos_idle_queue[machine] = machine.atmos_idle_until
+
+///Removes a machine from the heartbeat queue (Destroy: the queue holds a strong ref).
+/datum/controller/subsystem/air/proc/dequeue_idle_machine(obj/machinery/atmospherics/machine)
+	if(!machine.atmos_idle_queued)
+		return
+	machine.atmos_idle_queued = FALSE
+	atmos_idle_queue -= machine
 
 #undef SSAIR_PIPENETS
 #undef SSAIR_ATMOSMACHINERY
