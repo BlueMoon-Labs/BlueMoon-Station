@@ -3,7 +3,11 @@
 #define HS_INTENCE_MED "Средний"
 #define HS_INTENCE_HIG "Сильный"
 
-#define HS_LUST_MULT 0.1
+#define HS_LUST_MULT 0.3
+
+#define HS_LUST_LOW_MULT 1
+#define HS_LUST_NORMAL_MULT 1.2
+#define HS_LUST_HIGH_MULT 2
 
 #define HS_TEXT_CHANCE 20
 
@@ -122,15 +126,15 @@
 
 	switch(intence)
 		if(HS_INTENCE_LOW)
-			lust += LOW_LUST * HS_LUST_MULT
+			lust += LOW_LUST * HS_LUST_LOW_MULT * HS_LUST_MULT
 			if(prob(HS_TEXT_CHANCE))
 				to_chat(owner, span_lewd(pick(penitrateLow)))
 		if(HS_INTENCE_MED)
-			lust += NORMAL_LUST * HS_LUST_MULT
+			lust += NORMAL_LUST * HS_LUST_NORMAL_MULT * HS_LUST_MULT
 			if(prob(HS_TEXT_CHANCE))
 				to_chat(owner, span_lewd(pick(penitrateMed)))
 		if(HS_INTENCE_HIG)
-			lust += HIGH_LUST * HS_LUST_MULT
+			lust += HIGH_LUST * HS_LUST_HIGH_MULT * HS_LUST_MULT
 			if(prob(HS_TEXT_CHANCE))
 				to_chat(owner, span_lewd(pick(penitrateHig)))
 
@@ -190,5 +194,9 @@
 #undef HS_INTENCE_HIG
 
 #undef HS_LUST_MULT
+
+#undef HS_LUST_LOW_MULT
+#undef HS_LUST_NORMAL_MULT
+#undef HS_LUST_HIGH_MULT
 
 #undef HS_TEXT_CHANCE

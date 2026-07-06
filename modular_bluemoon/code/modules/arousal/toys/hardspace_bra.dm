@@ -9,8 +9,12 @@
 #define HS_INTENCE_MED "Средний"
 #define HS_INTENCE_HIG "Сильный"
 
-#define HS_LUST_MULT_ALL 0.1
-#define HS_LUST_MULT_NIP 0.18
+#define HS_LUST_MULT_ALL 0.15
+#define HS_LUST_MULT_NIP 0.3
+
+#define HS_LUST_LOW_MULT 1
+#define HS_LUST_NORMAL_MULT 1.2
+#define HS_LUST_HIGH_MULT 2
 
 #define HS_TEXT_CHANCE 20
 
@@ -165,15 +169,15 @@
 			if(breasts)
 				switch(intence)
 					if(HS_INTENCE_LOW)
-						lust += LOW_LUST * HS_LUST_MULT_ALL
+						lust += LOW_LUST * HS_LUST_LOW_MULT * HS_LUST_MULT_ALL
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(massageAllLow)))
 					if(HS_INTENCE_MED)
-						lust += NORMAL_LUST * HS_LUST_MULT_ALL
+						lust += NORMAL_LUST * HS_LUST_NORMAL_MULT * HS_LUST_MULT_ALL
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(massageAllMed)))
 					if(HS_INTENCE_HIG)
-						lust += HIGH_LUST * HS_LUST_MULT_ALL
+						lust += HIGH_LUST * HS_LUST_HIGH_MULT * HS_LUST_MULT_ALL
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(massageAllHig)))
 
@@ -181,15 +185,15 @@
 			if(breasts)
 				switch(intence)
 					if(HS_INTENCE_LOW)
-						lust += LOW_LUST * HS_LUST_MULT_NIP
+						lust += LOW_LUST * HS_LUST_LOW_MULT * HS_LUST_MULT_NIP
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(massageNipLow)))
 					if(HS_INTENCE_MED)
-						lust += NORMAL_LUST * HS_LUST_MULT_NIP
+						lust += NORMAL_LUST * HS_LUST_NORMAL_MULT * HS_LUST_MULT_NIP
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(massageNipMed)))
 					if(HS_INTENCE_HIG)
-						lust += HIGH_LUST * HS_LUST_MULT_NIP
+						lust += HIGH_LUST * HS_LUST_HIGH_MULT * HS_LUST_MULT_NIP
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(massageNipHig)))
 
@@ -253,5 +257,9 @@
 
 #undef HS_LUST_MULT_ALL
 #undef HS_LUST_MULT_NIP
+
+#undef HS_LUST_LOW_MULT
+#undef HS_LUST_NORMAL_MULT
+#undef HS_LUST_HIGH_MULT
 
 #undef HS_TEXT_CHANCE

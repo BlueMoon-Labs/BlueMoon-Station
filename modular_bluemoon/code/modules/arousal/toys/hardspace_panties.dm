@@ -10,9 +10,13 @@
 #define HS_INTENCE_MED "Средний"
 #define HS_INTENCE_HIG "Сильный"
 
-#define HS_LUST_MULT_STR 0.1
-#define HS_LUST_MULT_MSG 0.2
-#define HS_LUST_MULT_VIB 0.15
+#define HS_LUST_MULT_STR 0.2
+#define HS_LUST_MULT_MSG 0.5
+#define HS_LUST_MULT_VIB 0.25
+
+#define HS_LUST_LOW_MULT 1
+#define HS_LUST_NORMAL_MULT 1.2
+#define HS_LUST_HIGH_MULT 2
 
 #define HS_TEXT_CHANCE 25
 
@@ -366,48 +370,48 @@
 				dp = TRUE
 				switch(intence)
 					if(HS_INTENCE_LOW)
-						lustV += LOW_LUST * HS_LUST_MULT_STR
-						lustA += LOW_LUST * HS_LUST_MULT_STR
+						lustV += LOW_LUST * HS_LUST_LOW_MULT * HS_LUST_MULT_STR
+						lustA += LOW_LUST * HS_LUST_LOW_MULT * HS_LUST_MULT_STR
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(stretchTextLowDp)))
 					if(HS_INTENCE_MED)
-						lustV += NORMAL_LUST * HS_LUST_MULT_STR
-						lustA += NORMAL_LUST * HS_LUST_MULT_STR
+						lustV += NORMAL_LUST * HS_LUST_NORMAL_MULT * HS_LUST_MULT_STR
+						lustA += NORMAL_LUST * HS_LUST_NORMAL_MULT * HS_LUST_MULT_STR
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(stretchTextMedDp)))
 					if(HS_INTENCE_HIG)
-						lustV += HIGH_LUST * HS_LUST_MULT_STR
-						lustA += HIGH_LUST * HS_LUST_MULT_STR
+						lustV += HIGH_LUST * HS_LUST_HIGH_MULT * HS_LUST_MULT_STR
+						lustA += HIGH_LUST * HS_LUST_HIGH_MULT * HS_LUST_MULT_STR
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(stretchTextHigDp)))
 
 			if(!dp && anus)
 				switch(intence)
 					if(HS_INTENCE_LOW)
-						lustA += LOW_LUST * HS_LUST_MULT_STR
+						lustA += LOW_LUST * HS_LUST_LOW_MULT * HS_LUST_MULT_STR
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(stretchTextLowAnl)))
 					if(HS_INTENCE_MED)
-						lustA += NORMAL_LUST * HS_LUST_MULT_STR
+						lustA += NORMAL_LUST * HS_LUST_NORMAL_MULT * HS_LUST_MULT_STR
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(stretchTextMedAnl)))
 					if(HS_INTENCE_HIG)
-						lustA += HIGH_LUST * HS_LUST_MULT_STR
+						lustA += HIGH_LUST * HS_LUST_HIGH_MULT * HS_LUST_MULT_STR
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(stretchTextHigAnl)))
 
 			if(!dp && vagina)
 				switch(intence)
 					if(HS_INTENCE_LOW)
-						lustV += LOW_LUST * HS_LUST_MULT_STR
+						lustV += LOW_LUST * HS_LUST_LOW_MULT * HS_LUST_MULT_STR
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(stretchTextLowVag)))
 					if(HS_INTENCE_MED)
-						lustV += NORMAL_LUST * HS_LUST_MULT_STR
+						lustV += NORMAL_LUST * HS_LUST_NORMAL_MULT * HS_LUST_MULT_STR
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(stretchTextMedVag)))
 					if(HS_INTENCE_HIG)
-						lustV += HIGH_LUST * HS_LUST_MULT_STR
+						lustV += HIGH_LUST * HS_LUST_HIGH_MULT * HS_LUST_MULT_STR
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(stretchTextHigVag)))
 
@@ -418,48 +422,48 @@
 				dp = TRUE
 				switch(intence)
 					if(HS_INTENCE_LOW)
-						lustV += LOW_LUST * HS_LUST_MULT_MSG
-						lustA += LOW_LUST * HS_LUST_MULT_MSG
+						lustV += LOW_LUST * HS_LUST_LOW_MULT * HS_LUST_MULT_MSG
+						lustA += LOW_LUST * HS_LUST_LOW_MULT * HS_LUST_MULT_MSG
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(massageTextLowDp)))
 					if(HS_INTENCE_MED)
-						lustV += NORMAL_LUST * HS_LUST_MULT_MSG
-						lustA += NORMAL_LUST * HS_LUST_MULT_MSG
+						lustV += NORMAL_LUST * HS_LUST_NORMAL_MULT * HS_LUST_MULT_MSG
+						lustA += NORMAL_LUST * HS_LUST_NORMAL_MULT * HS_LUST_MULT_MSG
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(massageTextMedDp)))
 					if(HS_INTENCE_HIG)
-						lustV += HIGH_LUST * HS_LUST_MULT_MSG
-						lustA += HIGH_LUST * HS_LUST_MULT_MSG
+						lustV += HIGH_LUST * HS_LUST_HIGH_MULT * HS_LUST_MULT_MSG
+						lustA += HIGH_LUST * HS_LUST_HIGH_MULT * HS_LUST_MULT_MSG
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(massageTextHigDp)))
 
 			if(!dp && anus)
 				switch(intence)
 					if(HS_INTENCE_LOW)
-						lustA += LOW_LUST * HS_LUST_MULT_MSG
+						lustA += LOW_LUST * HS_LUST_LOW_MULT * HS_LUST_MULT_MSG
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(massageTextLowAnl)))
 					if(HS_INTENCE_MED)
-						lustA += NORMAL_LUST * HS_LUST_MULT_MSG
+						lustA += NORMAL_LUST * HS_LUST_NORMAL_MULT * HS_LUST_MULT_MSG
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(massageTextMedAnl)))
 					if(HS_INTENCE_HIG)
-						lustA += HIGH_LUST * HS_LUST_MULT_MSG
+						lustA += HIGH_LUST * HS_LUST_HIGH_MULT * HS_LUST_MULT_MSG
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(massageTextHigAnl)))
 
 			if(!dp && vagina)
 				switch(intence)
 					if(HS_INTENCE_LOW)
-						lustV += LOW_LUST * HS_LUST_MULT_MSG
+						lustV += LOW_LUST * HS_LUST_LOW_MULT * HS_LUST_MULT_MSG
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(massageTextLowVag)))
 					if(HS_INTENCE_MED)
-						lustV += NORMAL_LUST * HS_LUST_MULT_MSG
+						lustV += NORMAL_LUST * HS_LUST_NORMAL_MULT * HS_LUST_MULT_MSG
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(massageTextMedVag)))
 					if(HS_INTENCE_HIG)
-						lustV += HIGH_LUST * HS_LUST_MULT_MSG
+						lustV += HIGH_LUST * HS_LUST_HIGH_MULT * HS_LUST_MULT_MSG
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(massageTextHigVag)))
 
@@ -470,48 +474,48 @@
 				dp = TRUE
 				switch(intence)
 					if(HS_INTENCE_LOW)
-						lustV += LOW_LUST * HS_LUST_MULT_VIB
-						lustA += LOW_LUST * HS_LUST_MULT_VIB
+						lustV += LOW_LUST * HS_LUST_LOW_MULT * HS_LUST_MULT_VIB
+						lustA += LOW_LUST * HS_LUST_LOW_MULT * HS_LUST_MULT_VIB
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(vibrationTextLowDp)))
 					if(HS_INTENCE_MED)
-						lustV += NORMAL_LUST * HS_LUST_MULT_VIB
-						lustA += NORMAL_LUST * HS_LUST_MULT_VIB
+						lustV += NORMAL_LUST * HS_LUST_NORMAL_MULT * HS_LUST_MULT_VIB
+						lustA += NORMAL_LUST * HS_LUST_NORMAL_MULT * HS_LUST_MULT_VIB
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(vibrationTextMedDp)))
 					if(HS_INTENCE_HIG)
-						lustV += HIGH_LUST * HS_LUST_MULT_VIB
-						lustA += HIGH_LUST * HS_LUST_MULT_VIB
+						lustV += HIGH_LUST * HS_LUST_HIGH_MULT * HS_LUST_MULT_VIB
+						lustA += HIGH_LUST * HS_LUST_HIGH_MULT * HS_LUST_MULT_VIB
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(vibrationTextHigDp)))
 
 			if(!dp && anus)
 				switch(intence)
 					if(HS_INTENCE_LOW)
-						lustA += LOW_LUST * HS_LUST_MULT_VIB
+						lustA += LOW_LUST * HS_LUST_LOW_MULT * HS_LUST_MULT_VIB
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(vibrationTextLowAnl)))
 					if(HS_INTENCE_MED)
-						lustA += NORMAL_LUST * HS_LUST_MULT_VIB
+						lustA += NORMAL_LUST * HS_LUST_NORMAL_MULT * HS_LUST_MULT_VIB
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(vibrationTextMedAnl)))
 					if(HS_INTENCE_HIG)
-						lustA += HIGH_LUST * HS_LUST_MULT_VIB
+						lustA += HIGH_LUST * HS_LUST_HIGH_MULT * HS_LUST_MULT_VIB
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(vibrationTextHigAnl)))
 
 			if(!dp && vagina)
 				switch(intence)
 					if(HS_INTENCE_LOW)
-						lustV += LOW_LUST * HS_LUST_MULT_VIB
+						lustV += LOW_LUST * HS_LUST_LOW_MULT * HS_LUST_MULT_VIB
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(vibrationTextLowVag)))
 					if(HS_INTENCE_MED)
-						lustV += NORMAL_LUST * HS_LUST_MULT_VIB
+						lustV += NORMAL_LUST * HS_LUST_NORMAL_MULT * HS_LUST_MULT_VIB
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(vibrationTextMedVag)))
 					if(HS_INTENCE_HIG)
-						lustV += HIGH_LUST * HS_LUST_MULT_VIB
+						lustV += HIGH_LUST * HS_LUST_HIGH_MULT * HS_LUST_MULT_VIB
 						if(prob(HS_TEXT_CHANCE))
 							to_chat(owner, span_lewd(pick(vibrationTextHigVag)))
 
@@ -578,5 +582,9 @@
 #undef HS_LUST_MULT_STR
 #undef HS_LUST_MULT_MSG
 #undef HS_LUST_MULT_VIB
+
+#undef HS_LUST_LOW_MULT
+#undef HS_LUST_NORMAL_MULT
+#undef HS_LUST_HIGH_MULT
 
 #undef HS_TEXT_CHANCE
