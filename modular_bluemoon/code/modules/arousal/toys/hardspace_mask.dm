@@ -107,9 +107,11 @@
 		return
 
 	STOP_PROCESSING(SSobj,src)
-	REMOVE_TRAIT(owner, TRAIT_TONGUELESS_SPEECH, src)
-
 	intence = HS_INTENCE_OFF
+
+	if(!owner)
+		return
+	REMOVE_TRAIT(owner, TRAIT_TONGUELESS_SPEECH, src)
 	owner = null
 
 
@@ -159,7 +161,9 @@
 // MODE SELECTION
 /obj/item/clothing/mask/hardspace_mask/proc/select_intence(mob/user, value)
 	intence = value
-	to_chat(owner, span_notice("Был выбран режим мощности: [intence]."))
+	to_chat(user, span_notice("Был выбран режим мощности: [intence]."))
+	if(!owner)
+		return
 	if(intence == HS_INTENCE_HIG)
 		ADD_TRAIT(owner, TRAIT_TONGUELESS_SPEECH, src)
 	else

@@ -339,11 +339,11 @@
 // MODE SELECTION
 /obj/item/clothing/underwear/briefs/hardspace_panties/proc/select_intence(mob/user, value)
 	intence = value
-	to_chat(owner, span_notice("Был выбран режим мощности: [intence]."))
+	to_chat(user, span_notice("Был выбран режим мощности: [intence]."))
 
 /obj/item/clothing/underwear/briefs/hardspace_panties/proc/select_mode(mob/user, value)
 	mode = value
-	to_chat(owner, span_notice("Был выбран режим: [mode]."))
+	to_chat(user, span_notice("Был выбран режим: [mode]."))
 
 
 //PROCESS------
