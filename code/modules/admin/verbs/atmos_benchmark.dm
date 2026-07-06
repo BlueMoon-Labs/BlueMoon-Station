@@ -10,8 +10,11 @@
 #define ATMOS_BENCH_DEEP_INTERVAL (30 SECONDS)
 #define ATMOS_BENCH_TOP_AREAS 12
 #define ATMOS_BENCH_TOP_TYPES 25
+/// Most active turfs the per-second z histogram may read; larger lists are stride-sampled.
+#define ATMOS_BENCH_Z_HOT_BUDGET 2000
 
 GLOBAL_DATUM(atmos_benchmark_run, /datum/atmos_benchmark)
+GLOBAL_PROTECT(atmos_benchmark_run)
 
 /datum/admins/proc/atmos_benchmark()
 	set category = "Debug.3) Fixing"
@@ -156,7 +159,7 @@ GLOBAL_DATUM(atmos_benchmark_run, /datum/atmos_benchmark)
 			"cl" = "connected clients",
 			"sms" = "share_max_steps now (< target means adaptive throttle engaged)",
 			"adjq" = "SSadjacent_air queue length",
-			"z_hot" = "z histogram of active turfs, recorded only when the active list exceeds 500",
+			"z_hot" = "z histogram of active turfs, recorded only when the active list exceeds 500; stride-sampled and rescaled above [ATMOS_BENCH_Z_HOT_BUDGET] turfs",
 		),
 	))
 
@@ -209,11 +212,18 @@ GLOBAL_DATUM(atmos_benchmark_run, /datum/atmos_benchmark)
 	)
 	// An anomalously large active list deserves a cheap z histogram: the deep
 	// walk samples a different phase of the fire cycle and can miss transient
-	// mass wake-ups entirely (shuttle transits, adjacency wake loops).
-	if(length(air.active_turfs) > 500)
+	// mass wake-ups entirely (shuttle transits, adjacency wake loops). Those
+	// wake-ups are also exactly when a full walk would stall this synchronous
+	// timer callback, so past the budget the list is stride-sampled and the
+	// buckets scaled back up to approximate true counts.
+	var/active_count = length(air.active_turfs)
+	if(active_count > 500)
 		var/list/z_hot = list()
-		for(var/turf/hot_turf as anything in air.active_turfs)
-			z_hot["[hot_turf.z]"]++
+		var/list/active_turfs = air.active_turfs
+		var/stride = max(1, CEILING(active_count / ATMOS_BENCH_Z_HOT_BUDGET, 1))
+		for(var/i in 1 to active_count step stride)
+			var/turf/hot_turf = active_turfs[i]
+			z_hot["[hot_turf.z]"] += stride
 		record["z_hot"] = z_hot
 	for(var/field in summary_fields)
 		var/value = record[field]
@@ -435,5 +445,6 @@ GLOBAL_DATUM(atmos_benchmark_run, /datum/atmos_benchmark)
 #undef ATMOS_BENCH_DEEP_INTERVAL
 #undef ATMOS_BENCH_TOP_AREAS
 #undef ATMOS_BENCH_TOP_TYPES
+#undef ATMOS_BENCH_Z_HOT_BUDGET
 
 #endif // ifndef TGS
