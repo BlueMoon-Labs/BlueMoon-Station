@@ -3,12 +3,46 @@
 	desc = "Пластиковая безделушка.."
 	icon_state = "coin_valid"
 	var/antag_type = null
+	var/metashop_refund_amount = 0
+	var/metashop_purchaser_ckey
 
 /obj/item/coin/antagtoken/metashop/examine(mob/user)
 	. = ..()
 
 /obj/item/coin/antagtoken/metashop/AltClick(mob/user)
 	try_activate(user)
+
+/obj/item/coin/antagtoken/metashop/CtrlClick(mob/user)
+	if(try_metashop_refund(user))
+		return
+	. = ..()
+
+/obj/item/coin/antagtoken/metashop/proc/try_metashop_refund(mob/user)
+	if(metashop_refund_amount <= 0)
+		return FALSE
+	if(!isliving(user))
+		return FALSE
+	if(!user.canUseTopic(src, BE_CLOSE, FALSE, NO_TK))
+		return FALSE
+	if(!user.client?.ckey)
+		return FALSE
+	var/mob/living/L = user
+	if(L.incapacitated())
+		to_chat(L, span_warning("Сейчас вы не можете сделать это."))
+		return TRUE
+	if(src.loc != L && !L.is_holding(src))
+		to_chat(L, span_warning("Держите жетон при себе."))
+		return TRUE
+	if(metashop_purchaser_ckey && L.client.ckey != metashop_purchaser_ckey)
+		to_chat(L, span_warning("Вернуть жетон в казначейство может только тот, кто его купил."))
+		return TRUE
+	var/refund_ckey = metashop_purchaser_ckey || L.client.ckey
+	SSmetadollars.metadollar_adjust(metashop_refund_amount, refund_ckey, L.client.key)
+	SSmetadollars.unregister_traitor_token_purchase()
+	playsound(L, 'sound/items/coinflip.ogg', 50, TRUE)
+	to_chat(L, span_notice("Жетон обменян на [metashop_refund_amount] М$."))
+	qdel(src)
+	return TRUE
 
 /obj/item/coin/antagtoken/metashop/proc/try_activate(mob/user)
 	if(!isliving(user))
@@ -80,12 +114,14 @@
 	name = "Traitor Radio"
 	desc = "Пластиковая безделушка с отметиной InteQ. Одноразовая."
 	antag_type = /datum/antagonist/traitor
+	metashop_refund_amount = METASHOP_TRAITOR_TOKEN_REFUND_COST
 	icon = 'modular_bluemoon/krashly/icons/obj/inteq-uplink.dmi'
 	icon_state = "inteq-uplink"
 
 /obj/item/coin/antagtoken/metashop/traitor/examine(mob/user)
 	. = ..()
-	. += span_notice("Активация: <b>Alt+ЛКМ</b> по предмету, чтобы получить роль предателя.")
+	. += span_notice("Активация: <b>Alt+ЛКМ</b> — получить роль предателя.")
+	. += span_notice("Возврат: <b>Ctrl+ЛКМ</b> — обменять на [metashop_refund_amount] М$ (пока не активирован).")
 
 /obj/item/coin/antagtoken/metashop/traitor/activation_extra_block_reason(mob/living/carbon/human/H)
 	if(jobban_isbanned(H, ROLE_TRAITOR) || jobban_isbanned(H, ROLE_INTEQ))

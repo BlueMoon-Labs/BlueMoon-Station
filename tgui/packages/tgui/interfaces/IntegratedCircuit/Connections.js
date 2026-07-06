@@ -1,4 +1,4 @@
-import { Component } from 'inferno';
+import { Component } from 'react';
 
 import { classes } from '../../../common/react';
 import { CSS_COLORS } from '../../constants';
@@ -83,9 +83,9 @@ export class Connections extends Component {
             position: 'absolute',
             top: 0,
             left: 0,
-            'z-index': 0,
+            zIndex: 0,
             overflow: 'visible',
-            'pointer-events': 'none',
+            pointerEvents: 'none',
           }}>
           {connections.map((val, index) => {
             const d = renderPathD(val);
@@ -126,9 +126,9 @@ export class Connections extends Component {
             position: 'absolute',
             top: 0,
             left: 0,
-            'z-index': 0,
+            zIndex: 0,
             overflow: 'visible',
-            'pointer-events': 'none',
+            pointerEvents: 'none',
           }}
           onMouseLeave={this.handleClearHover}>
           {connections.map((val, index) => {
@@ -146,7 +146,7 @@ export class Connections extends Component {
                 stroke="rgba(255,255,255,0.001)"
                 strokeWidth="14"
                 vectorEffect="non-scaling-stroke"
-                style={{ 'pointer-events': 'stroke', cursor: 'crosshair' }}
+                style={{ pointerEvents: 'stroke', cursor: 'crosshair' }}
                 onMouseEnter={this.handleOverlayWireMouseEnter}
               />
             );

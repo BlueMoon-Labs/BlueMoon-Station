@@ -1,11 +1,11 @@
-import { Fragment } from 'inferno';
+import { Fragment, useState } from 'react';
 
 import { useBackend, useLocalState } from '../backend';
 import { Box, Button, Flex, Input, NoticeBox, Section, Tabs } from '../components';
 import { NtosWindow } from '../layouts';
 import { AccessList } from './common/AccessList';
 
-export const NtosCard = (props, context) => {
+export const NtosCard = (props) => {
   return (
     <NtosWindow
       width={500}
@@ -18,9 +18,9 @@ export const NtosCard = (props, context) => {
   );
 };
 
-export const NtosCardContent = (props, context) => {
-  const { act, data } = useBackend(context);
-  const [tab, setTab] = useLocalState(context, 'tab', 1);
+export const NtosCardContent = (props) => {
+  const { act, data } = useBackend();
+  const [tab, setTab] = useState(1);
   const {
     authenticated,
     regions = [],
@@ -39,7 +39,13 @@ export const NtosCardContent = (props, context) => {
   const [
     selectedDepartment,
     setSelectedDepartment,
-  ] = useLocalState(context, 'department', Object.keys(jobs)[0]);
+  ] = useLocalState('department', Object.keys(jobs)[0]);
+
+  // Для id_custom_job
+  const serverCustom = id_custom_job || '';
+  const [customDraft, setCustomDraft] = useState(serverCustom);
+  const [isEditingCustom, setIsEditingCustom] = useState(false);
+
   if (!have_id_slot) {
     return (
       <NoticeBox>
@@ -49,15 +55,10 @@ export const NtosCardContent = (props, context) => {
   }
   const departmentJobs = jobs[selectedDepartment] || [];
 
-  // Для id_custom_job
-  const serverCustom = id_custom_job || '';
-  const [customDraft, setCustomDraft] = useLocalState(context, 'customDraft', serverCustom);
-  const [isEditingCustom, setIsEditingCustom] = useLocalState(context, 'isEditingCustom', false);
-
   // что показываем в кнопке/инпуте
   const customValue = isEditingCustom ? customDraft : serverCustom;
   return (
-    <Fragment>
+    <>
       <Section
         title={has_id && authenticated
           ? (
@@ -70,7 +71,7 @@ export const NtosCardContent = (props, context) => {
           )
           : (id_owner || 'No Card Inserted')}
         buttons={(
-          <Fragment>
+          <>
             <Button
               icon="print"
               content="Print"
@@ -88,7 +89,7 @@ export const NtosCardContent = (props, context) => {
               color={has_main_id && "good"}
               tooltipPosition="bottom-start"
               onClick={() => act('PRG_eject', { name: "MainID" })} />
-          </Fragment>
+          </>
         )}>
         <Button
           fluid
@@ -205,6 +206,6 @@ export const NtosCardContent = (props, context) => {
           )}
         </Box>
       )}
-    </Fragment>
+    </>
   );
 };

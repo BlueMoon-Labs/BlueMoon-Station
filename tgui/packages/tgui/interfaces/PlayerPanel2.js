@@ -1,4 +1,4 @@
-import { Fragment } from "inferno";
+import { Fragment, useState } from 'react';
 
 import { useBackend, useLocalState } from '../backend';
 import { Box, Button, Collapsible, Dropdown, Flex, Input, LabeledList, NoticeBox, NumberInput, Section, Slider, Tabs } from '../components';
@@ -64,9 +64,9 @@ const PAGES = [
   },
 ];
 
-export const PlayerPanel2 = (props, context) => {
-  const { act, data } = useBackend(context);
-  const [pageIndex, setPageIndex] = useLocalState(context, 'pageIndex', 0);
+export const PlayerPanel2 = (props) => {
+  const { act, data } = useBackend();
+  const [pageIndex, setPageIndex] = useState(0);
   const PageComponent = PAGES[pageIndex].component();
 
   const { mob_name, mob_type, client_ckey, client_rank, playtimes_enabled,
@@ -181,20 +181,20 @@ export const PlayerPanel2 = (props, context) => {
   );
 };
 
-const PhysicalActions = (props, context) => {
-  const { act, data } = useBackend(context);
+const PhysicalActions = (props) => {
+  const { act, data } = useBackend();
   const { glob_limbs, godmode, mob_type, initial_scale, active_martial_art,
     martial_arts_list, active_quirks, quirks_list, has_loadout,
     current_organs, organ_slots, current_implants, implants_list,
     mob_weight, weight_options, can_toggle_dextrous, is_dextrous } = data;
-  const [mobScale, setMobScale] = useLocalState(context, 'mobScale', initial_scale);
+  const [mobScale, setMobScale] = useLocalState('mobScale', initial_scale);
   const limbs = Object.keys(glob_limbs);
   const limb_flags = limbs.map((_, i) => (1<<i));
-  const [delimbOption, setDelimbOption] = useLocalState(context, "delimb_flags", 0);
-  const [maSearch, setMaSearch] = useLocalState(context, 'maSearch', '');
-  const [quirkSearch, setQuirkSearch] = useLocalState(context, 'quirkSearch', '');
-  const [organSearch, setOrganSearch] = useLocalState(context, 'organSearch', '');
-  const [implantSearch, setImplantSearch] = useLocalState(context, 'implantSearch', '');
+  const [delimbOption, setDelimbOption] = useState(0);
+  const [maSearch, setMaSearch] = useState('');
+  const [quirkSearch, setQuirkSearch] = useState('');
+  const [organSearch, setOrganSearch] = useState('');
+  const [implantSearch, setImplantSearch] = useState('');
 
   const filteredArts = (martial_arts_list || []).filter(art =>
     art.name.toLowerCase().includes(maSearch.toLowerCase())
@@ -550,10 +550,10 @@ const QuirkCategory = (props) => {
   );
 };
 
-const OrganSlotRow = (props, context) => {
+const OrganSlotRow = (props) => {
   const { slot, current, available, mob_type, act } = props;
-  const [expanded, setExpanded] = useLocalState(context, 'organ_' + slot, false);
-  const [organFilter, setOrganFilter] = useLocalState(context, 'organ_filter_' + slot, '');
+  const [expanded, setExpanded] = useState(false);
+  const [organFilter, setOrganFilter] = useState('');
 
   const filtered = available.filter(o =>
     o.name.toLowerCase().includes(organFilter.toLowerCase())
@@ -636,10 +636,10 @@ const OrganSlotRow = (props, context) => {
   );
 };
 
-const ImplantSection = (props, context) => {
+const ImplantSection = (props) => {
   const { current_implants, implants_list, implantSearch, setImplantSearch,
     mob_type, act } = props;
-  const [showAdd, setShowAdd] = useLocalState(context, 'implant_showAdd', false);
+  const [showAdd, setShowAdd] = useState(false);
 
   const filteredImplants = (implants_list || []).filter(imp =>
     imp.name.toLowerCase().includes(implantSearch.toLowerCase())
@@ -723,9 +723,9 @@ const ImplantSection = (props, context) => {
 };
 
 
-const FeatureBanTabs = (props, context) => {
-  const { data } = useBackend(context);
-  const [jobbanTab, setJobbanTab] = useLocalState(context, 'jobbanTab', 0);
+const FeatureBanTabs = (props) => {
+  const { data } = useBackend();
+  const [jobbanTab, setJobbanTab] = useLocalState('jobbanTab', 0);
   const { roles } = data;
   return (
     <Flex>
@@ -753,16 +753,16 @@ const FeatureBanTabs = (props, context) => {
   );
 };
 
-const FeatureBans = (props, context) => {
-  const { act, data } = useBackend(context);
-  const [jobbanTab] = useLocalState(context, 'jobbanTab', 0);
+const FeatureBans = (props) => {
+  const { act, data } = useBackend();
+  const [jobbanTab] = useLocalState('jobbanTab', 0);
   const { roles, antag_ban_reason } = data;
   return (
     <Section fill>
       <Section
         title={roles[jobbanTab].category_name}
         buttons={(
-          <Fragment>
+          <>
             <Button
               content="Unban All"
               color="good"
@@ -784,7 +784,7 @@ const FeatureBans = (props, context) => {
                 is_category: true,
                 want_to_ban: true,
               })} />
-          </Fragment>
+          </>
         )}
       >
         <Flex wrap="wrap" justify="space-between">
@@ -843,8 +843,8 @@ const FeatureBans = (props, context) => {
   );
 };
 
-const GeneralActions = (props, context) => {
-  const { act, data } = useBackend(context);
+const GeneralActions = (props) => {
+  const { act, data } = useBackend();
   const { client_ckey, mob_type, admin_mob_type } = data;
   return (
     <Section>
@@ -964,8 +964,8 @@ const GeneralActions = (props, context) => {
   );
 };
 
-const PunishmentActions = (props, context) => {
-  const { act, data } = useBackend(context);
+const PunishmentActions = (props) => {
+  const { act, data } = useBackend();
   const { client_ckey, mob_type, is_frozen, is_slept, glob_mute_bits,
     client_muted, data_related_cid, data_related_ip, data_cid, data_byond_version,
     data_player_join_date, data_account_join_date, active_role_ban_count,
@@ -1055,7 +1055,7 @@ const PunishmentActions = (props, context) => {
       </Section>
 
       <Section title="Mute" buttons={
-        <Fragment>
+        <>
           <Button
             icon="lock-open"
             color="green"
@@ -1070,7 +1070,7 @@ const PunishmentActions = (props, context) => {
             disabled={!has_live_client || !client_ckey}
             onClick={() => act("mute_all")}
           />
-        </Fragment>
+        </>
       }>
         <Flex>
           {glob_mute_bits.map((bit, i) => {
@@ -1136,8 +1136,8 @@ const PunishmentActions = (props, context) => {
   );
 };
 
-const TransformActions = (props, context) => {
-  const { act, data } = useBackend(context);
+const TransformActions = (props) => {
+  const { act, data } = useBackend();
   const { transformables, mob_type } = data;
   return (
     <Section>
@@ -1175,8 +1175,8 @@ const TransformActions = (props, context) => {
   );
 };
 
-const FunActions = (props, context) => {
-  const { act } = useBackend(context);
+const FunActions = (props) => {
+  const { act } = useBackend();
 
   const colours = {
     'White': '#a4bad6',
@@ -1192,27 +1192,27 @@ const FunActions = (props, context) => {
     'Ratvar': '#BE8700',
   };
 
-  const [lockExplode, setLockExplode] = useLocalState(context, "explode_lock_toggle", true);
-  const [empMode, setEmpMode] = useLocalState(context, "empMode", false);
-  const [extinguishMode, setExtinguishMode] = useLocalState(context, "extinguishMode", false);
-  const [expPower, setExpPower] = useLocalState(context, "exp_power", 8);
-  const [narrateSize, setNarrateSize] = useLocalState(context, "narrateSize", 1);
-  const [narrateMessage, setNarrateMessage] = useLocalState(context, "narrateMessage", "");
-  const [narrateColour, setNarrateColour] = useLocalState(context, "narrateColour", Object.keys(colours)[0]);
-  const [narrateFont, setNarrateFont] = useLocalState(context, "narrateFont", "Verdana");
-  const [narrateBold, setNarrateBold] = useLocalState(context, "narrateBold", false);
-  const [narrateItalic, setNarrateItalic] = useLocalState(context, "narrateItalic", false);
-  const [narrateGlobal, setNarrateGlobal] = useLocalState(context, "narrateGlobal", false);
-  const [narrateRange, setNarrateRange] = useLocalState(context, "narrateRange", 7);
+  const [lockExplode, setLockExplode] = useState(true);
+  const [empMode, setEmpMode] = useState(false);
+  const [extinguishMode, setExtinguishMode] = useState(false);
+  const [expPower, setExpPower] = useState(8);
+  const [narrateSize, setNarrateSize] = useLocalState("narrateSize", 1);
+  const [narrateMessage, setNarrateMessage] = useLocalState("narrateMessage", "");
+  const [narrateColour, setNarrateColour] = useLocalState("narrateColour", Object.keys(colours)[0]);
+  const [narrateFont, setNarrateFont] = useLocalState("narrateFont", "Verdana");
+  const [narrateBold, setNarrateBold] = useLocalState("narrateBold", false);
+  const [narrateItalic, setNarrateItalic] = useLocalState("narrateItalic", false);
+  const [narrateGlobal, setNarrateGlobal] = useLocalState("narrateGlobal", false);
+  const [narrateRange, setNarrateRange] = useLocalState("narrateRange", 7);
 
 
 
   const narrateStyles = {
     'color': colours[narrateColour],
-    'font-size': narrateSize + 'rem',
-    'font-weight': (narrateBold ? 'bold' : ''),
-    'font-family': narrateFont,
-    'font-style': (narrateItalic ? 'italic' : ''),
+    fontSize: narrateSize + 'rem',
+    fontWeight: (narrateBold ? 'bold' : ''),
+    fontFamily: narrateFont,
+    fontStyle: (narrateItalic ? 'italic' : ''),
   };
 
   return (
@@ -1222,7 +1222,7 @@ const FunActions = (props, context) => {
       </NoticeBox>
 
       <Section title="Explosion" buttons={(
-        <Fragment>
+        <>
           <Button.Checkbox
             checked={extinguishMode}
             color="transparent"
@@ -1241,7 +1241,7 @@ const FunActions = (props, context) => {
             onClick={() => setLockExplode(!lockExplode)}
             color={lockExplode? "green" : "bad"}
           />
-        </Fragment>
+        </>
       )}>
         <Flex
           align="right"
@@ -1394,10 +1394,10 @@ const FunActions = (props, context) => {
   );
 };
 
-const SmiteActions = (props, context) => {
-  const { act, data } = useBackend(context);
+const SmiteActions = (props) => {
+  const { act, data } = useBackend();
   const { smites_list } = data;
-  const [smiteSearch, setSmiteSearch] = useLocalState(context, 'smiteSearch', '');
+  const [smiteSearch, setSmiteSearch] = useState('');
 
   const filteredSmites = (smites_list || []).filter(name =>
     name.toLowerCase().includes(smiteSearch.toLowerCase())
@@ -1428,8 +1428,8 @@ const SmiteActions = (props, context) => {
   );
 };
 
-const OtherActions = (props, context) => {
-  const { act, data } = useBackend(context);
+const OtherActions = (props) => {
+  const { act, data } = useBackend();
   const { mob_type, client_ckey } = data;
 
   return (

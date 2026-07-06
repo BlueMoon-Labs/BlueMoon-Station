@@ -8,9 +8,9 @@
 
 import { map } from 'common/collections';
 import { createSearch } from 'common/string';
-import { Fragment } from 'inferno';
+import { Fragment, useState } from 'react';
 
-import { useBackend, useLocalState, useSharedState } from '../backend';
+import { useBackend, useSharedState } from '../backend';
 import { Box, Button, Divider, Input, NoticeBox, Section, Table, Tabs } from '../components';
 import { Window } from '../layouts';
 
@@ -22,8 +22,8 @@ for (let index = 0; index < Math.min(Math.random()*100); index++) {
   REC_RATVAR += "HONOR RATVAR ";
 }
 
-export const ClockworkSlab = (props, context) => {
-  const { act, data } = useBackend(context);
+export const ClockworkSlab = (props) => {
+  const { act, data } = useBackend();
   const {
     recollection = true,
     scripture = {},
@@ -35,14 +35,14 @@ export const ClockworkSlab = (props, context) => {
   const [
     tab,
     setTab,
-  ] = useSharedState(context, 'tab', defaultTab);
+  ] = useSharedState('tab', defaultTab);
 
   const categoryInfo = category_infos.find(cat => cat.name === tab) || {};
 
   const [
     searchText,
     setSearchText,
-  ] = useLocalState(context, 'searchText', '');
+  ] = useState('');
 
   const testSearch = createSearch(searchText, script => {
     return script.name + script.descname;
@@ -75,7 +75,7 @@ export const ClockworkSlab = (props, context) => {
           <Section
             title="Энергия"
             buttons={(
-              <Fragment>
+              <>
                 Поиск
                 <Input
                   autoFocus
@@ -89,7 +89,7 @@ export const ClockworkSlab = (props, context) => {
                   onClick={() => act('toggle')}>
                   Память
                 </Button>
-              </Fragment>
+              </>
             )}>
             <b>{power}</b> энергии доступно для писаний
             и других потребителей.
@@ -155,8 +155,8 @@ export const ClockworkSlab = (props, context) => {
   );
 };
 
-export const CSScripture = (props, context) => {
-  const { act, data } = useBackend(context);
+export const CSScripture = (props) => {
+  const { act, data } = useBackend();
   const {
     power_unformatted = 0,
     tier_infos = {},
@@ -228,8 +228,8 @@ export const CSScripture = (props, context) => {
   );
 };
 
-export const CSTutorial = (props, context) => {
-  const { act, data } = useBackend(context);
+export const CSTutorial = (props) => {
+  const { act, data } = useBackend();
   const {
     recollection_categories = [],
     rec_section = null,
@@ -332,7 +332,7 @@ export const CSTutorial = (props, context) => {
           <Fragment key={bind.name ? bind.name : "none"}>
             Слот <b>быстрой привязки</b> ({rec_binds.indexOf(bind)+1}),
             сейчас:&nbsp;
-            <span style={`color:${bind ? bind.color : "#BE8700"}`}>
+            <span style={{ color: bind ? bind.color : "#BE8700" }}>
               {bind?.name ? bind.name : "Нет"}
             </span>
             .

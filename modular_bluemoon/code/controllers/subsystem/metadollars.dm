@@ -1,3 +1,6 @@
+#define METASHOP_TRAITOR_TOKEN_ROUND_LIMIT 3
+#define METASHOP_TRAITOR_TOKEN_REFUND_COST 250
+
 SUBSYSTEM_DEF(metadollars)
 	name = "Metadollars"
 	flags = SS_NO_FIRE
@@ -6,6 +9,7 @@ SUBSYSTEM_DEF(metadollars)
 	var/list/metadollar_amount_cache = list()
 	var/list/metadollar_leaderboard = list()
 	var/metadollar_leaderboard_positions_tracked = 5
+	var/metashop_traitor_token_round_sold = 0
 
 /proc/bm_metadollar_json_path(target_ckey)
 	return "data/player_saves/[target_ckey[1]]/[target_ckey]/metadollars.json"
@@ -31,6 +35,24 @@ SUBSYSTEM_DEF(metadollars)
 	SIGNAL_HANDLER
 	round_earnings = list()
 	metadollar_burn_round_notice = null
+	metashop_traitor_token_round_sold = 0
+
+/datum/controller/subsystem/metadollars/proc/get_traitor_token_round_sold()
+	return metashop_traitor_token_round_sold
+
+/datum/controller/subsystem/metadollars/proc/get_traitor_token_round_remaining()
+	return max(0, METASHOP_TRAITOR_TOKEN_ROUND_LIMIT - metashop_traitor_token_round_sold)
+
+/datum/controller/subsystem/metadollars/proc/can_purchase_traitor_token()
+	return metashop_traitor_token_round_sold < METASHOP_TRAITOR_TOKEN_ROUND_LIMIT
+
+/datum/controller/subsystem/metadollars/proc/register_traitor_token_purchase()
+	metashop_traitor_token_round_sold++
+
+/datum/controller/subsystem/metadollars/proc/unregister_traitor_token_purchase()
+	if(metashop_traitor_token_round_sold <= 0)
+		return
+	metashop_traitor_token_round_sold--
 
 /datum/controller/subsystem/metadollars/proc/metadollar_save(target_ckey)
 	if(!target_ckey || !(target_ckey in metadollar_amount_cache))
@@ -63,6 +85,10 @@ SUBSYSTEM_DEF(metadollars)
 
 /datum/controller/subsystem/metadollars/proc/reconcile_legacy_balance(target_ckey, legacy_hint = null)
 	if(!target_ckey)
+		return FALSE
+	// metadollars.json — единственный источник правды после миграции; TGS set/add/remove пишет сюда.
+	// Иначе старый ключ metadollars в preferences.sav перезаписывает админские правки.
+	if(fexists(bm_metadollar_json_path(target_ckey)))
 		return FALSE
 	var/legacy = legacy_hint
 	if(!isnum(legacy) || legacy < 0)
@@ -115,15 +141,14 @@ SUBSYSTEM_DEF(metadollars)
 		var/list/loaded = json_decode(file2text(target_file))
 		if(islist(loaded) && isnum(loaded["metadollar_count"]))
 			amount = max(0, round(loaded["metadollar_count"]))
-	else
-		amount = bm_read_legacy_metadollars_from_prefs_sav(target_ckey)
 		metadollar_amount_cache[target_ckey] = amount
-		metadollar_save(target_ckey)
 		return amount
-	reconcile_legacy_balance(target_ckey)
+	amount = bm_read_legacy_metadollars_from_prefs_sav(target_ckey)
+	reconcile_legacy_balance(target_ckey, amount)
 	if(target_ckey in metadollar_amount_cache)
 		return metadollar_amount_cache[target_ckey]
 	metadollar_amount_cache[target_ckey] = amount
+	metadollar_save(target_ckey)
 	return amount
 
 /datum/controller/subsystem/metadollars/proc/set_metadollars(target_ckey, amount, client_key = null)
@@ -434,6 +459,9 @@ SUBSYSTEM_DEF(metadollars)
 				break
 		if(QDELETED(I) || !istype(I, /obj/item))
 			continue
+		if(istype(I, /obj/item/coin/antagtoken/metashop))
+			var/obj/item/coin/antagtoken/metashop/MS = I
+			MS.metashop_purchaser_ckey = C.ckey
 		did_any = TRUE
 		if(istype(backpack))
 			if(!SEND_SIGNAL(backpack, COMSIG_TRY_STORAGE_INSERT, I, null, TRUE, TRUE))

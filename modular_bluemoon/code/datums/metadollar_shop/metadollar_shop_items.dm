@@ -84,7 +84,7 @@
 /datum/metadollar_shop_item/item/freak_command_case
 	name = "Командный кейс с сюрпризами"
 	desc = "Большой офицерский кейс: случайная еда, алкогольные напитки и шприцы с контрабандой."
-	cost = 25
+	cost = 50
 	catalog = METADOLLAR_CATALOG_SMUGGLE
 	spawn_type = /obj/item/storage/backpack/case/command/freak
 
@@ -97,11 +97,25 @@
 
 /datum/metadollar_shop_item/item/traitor_token
 	name = "Жетон «Предатель»"
-	desc = "Пластиковая монета. ALT+ЛКМ по жетону, чтобы получить роль предателя."
+	desc = "Пластиковая монета. Alt+ЛКМ — роль предателя; Ctrl+ЛКМ — вернуть 250 М$. На всю станцию — не более 3 штук за раунд."
 	cost = 250
 	catalog = METADOLLAR_CATALOG_SMUGGLE
 	minimum_players = 50
 	spawn_type = /obj/item/coin/antagtoken/metashop/traitor
+
+/datum/metadollar_shop_item/item/traitor_token/try_purchase(client/C)
+	if(!C?.ckey)
+		return FALSE
+	if(!SSmetadollars.can_purchase_traitor_token())
+		to_chat(C.mob, span_warning("В этом раунде все жетоны «Предатель» уже раскуплены (лимит [METASHOP_TRAITOR_TOKEN_ROUND_LIMIT] на станцию)."))
+		return TRUE
+	return ..()
+
+/datum/metadollar_shop_item/item/traitor_token/queue_delivery(client/C)
+	. = ..()
+	if(.)
+		SSmetadollars.register_traitor_token_purchase()
+	return .
 
 /datum/metadollar_shop_item/item/metadollar_total_burn
 	name = "Протокол «Пепелище»"
@@ -271,6 +285,27 @@
 	cost = 100
 	catalog = METADOLLAR_CATALOG_LEGIT
 	spawn_type = /obj/item/book/granter/spell/smoke/crocin
+
+/datum/metadollar_shop_item/item/chameleon_stamp
+	name = "Хамелеон-штамп"
+	desc = "Маскируется под любой штамп должности - удобен для подделки бумаг."
+	cost = 25
+	catalog = METADOLLAR_CATALOG_SMUGGLE
+	spawn_type = /obj/item/stamp/chameleon
+
+/datum/metadollar_shop_item/item/holoparasite_injector
+	name = "Инжектор голопаразита"
+	desc = "Одноразовый нанороечный инжектор: выберите тип голопаразита и привяжите его к себе."
+	cost = 100
+	catalog = METADOLLAR_CATALOG_SMUGGLE
+	spawn_type = /obj/item/guardiancreator/tech/choose/traitor
+
+/datum/metadollar_shop_item/item/traitor_announcer
+	name = "odd device"
+	desc = "Странный пульт. Одноразовая подделка приоритетного объявления по вашему сценарию."
+	cost = 50
+	catalog = METADOLLAR_CATALOG_SMUGGLE
+	spawn_type = /obj/item/device/traitor_announcer
 
 #undef METADOLLAR_CATALOG_LEGIT
 #undef METADOLLAR_CATALOG_SMUGGLE

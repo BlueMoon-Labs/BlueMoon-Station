@@ -1,6 +1,6 @@
-import { Fragment } from 'inferno';
+import { Fragment, useState } from 'react';
 
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import { Box, Button, Collapsible, Flex, Input, NoticeBox, NumberInput, Section, Tabs } from '../components';
 import { Window } from '../layouts';
 
@@ -10,9 +10,9 @@ const TABS = {
   MIND: 2,
 };
 
-export const TraitorPanel = (props, context) => {
-  const { act, data } = useBackend(context);
-  const [currentTab, setCurrentTab] = useLocalState(context, 'tab', TABS.ACTIVE);
+export const TraitorPanel = (props) => {
+  const { act, data } = useBackend();
+  const [currentTab, setCurrentTab] = useState(TABS.ACTIVE);
 
   const {
     mind_name, mind_key, mind_active, assigned_role,
@@ -85,8 +85,8 @@ export const TraitorPanel = (props, context) => {
   );
 };
 
-const StatusBadges = (props, context) => {
-  const { data } = useBackend(context);
+const StatusBadges = (props) => {
+  const { data } = useBackend();
   const { has_body, is_mindshielded, is_emagged, is_silicon } = data;
 
   return (
@@ -110,8 +110,8 @@ const StatusBadges = (props, context) => {
   );
 };
 
-const ActiveAntags = (props, context) => {
-  const { act, data } = useBackend(context);
+const ActiveAntags = (props) => {
+  const { act, data } = useBackend();
   const { active_antags } = data;
 
   if (!active_antags || active_antags.length === 0) {
@@ -142,7 +142,7 @@ const ActiveAntags = (props, context) => {
             </Flex>
           )}
           buttons={(
-            <Fragment>
+            <>
               {antag.commands && antag.commands.map((cmd) => (
                 <Button
                   key={cmd}
@@ -164,7 +164,7 @@ const ActiveAntags = (props, context) => {
                 color="red"
                 onClick={() => act("remove_antag", { antag_ref: antag.ref })}
               />
-            </Fragment>
+            </>
           )}
         >
           {/* Objectives */}
@@ -227,10 +227,10 @@ const ActiveAntags = (props, context) => {
   );
 };
 
-const AddAntagPanel = (props, context) => {
-  const { act, data } = useBackend(context);
+const AddAntagPanel = (props) => {
+  const { act, data } = useBackend();
   const { available_categories } = data;
-  const [antagSearch, setAntagSearch] = useLocalState(context, 'antagSearch', '');
+  const [antagSearch, setAntagSearch] = useState('');
 
   const filteredCategories = (available_categories || [])
     .map(cat => {
@@ -334,8 +334,8 @@ const AddAntagPanel = (props, context) => {
   );
 };
 
-const MindPanel = (props, context) => {
-  const { act, data } = useBackend(context);
+const MindPanel = (props) => {
+  const { act, data } = useBackend();
   const {
     assigned_role, memory, has_uplink, uplink_tc,
     is_human, activity_level, activity_idle_time,

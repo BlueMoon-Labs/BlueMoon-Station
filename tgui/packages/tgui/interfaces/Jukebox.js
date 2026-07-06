@@ -1,4 +1,6 @@
-import { useBackend, useLocalState, useSharedState } from '../backend';
+import { useState } from 'react';
+
+import { useBackend, useSharedState } from '../backend';
 import {
   Box,
   Button,
@@ -13,8 +15,8 @@ import {
 } from '../components';
 import { Window } from '../layouts';
 
-export const Jukebox = (props, context) => {
-  const { act, data, config } = useBackend(context);
+export const Jukebox = (props) => {
+  const { act, data, config } = useBackend();
 
   const {
     active,
@@ -37,12 +39,12 @@ export const Jukebox = (props, context) => {
     config?.title?.toLowerCase() === 'handled jukebox' ? 'main' :
       'main';
 
-  const [query, setQuery] = useSharedState(context, 'query', '');
-  const [page, setPage] = useSharedState(context, 'page', 1);
-  const [tab, setTab] = useSharedState(context, 'tab', 'tracks');
-  const [inFavoritesMode, setinFavoritesMode] = useSharedState(context, 'inFavoritesMode', false);
-  const [inputPage, setInputPage] = useSharedState(context, 'inputPage', page);
-  const [playlist, setPlaylist] = useLocalState(context, 'playlist', '');
+  const [query, setQuery] = useSharedState('query', '');
+  const [page, setPage] = useSharedState('page', 1);
+  const [tab, setTab] = useSharedState('tab', 'tracks');
+  const [inFavoritesMode, setinFavoritesMode] = useSharedState('inFavoritesMode', false);
+  const [inputPage, setInputPage] = useSharedState('inputPage', page);
+  const [playlist, setPlaylist] = useState('');
 
   const songsPerPage = 25;
 

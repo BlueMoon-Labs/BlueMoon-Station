@@ -14,6 +14,9 @@
 #define STATPANEL_STAGGER_GROUPS 3
 /// LRU cap for per-client statpanel_sent_icons; older entries are evicted as new ones arrive.
 #define STATPANEL_ICON_CACHE_CAP 256
+/// Атомам с большим числом оверлеев иконку не флаттеним: один getFlatIcon одетого человека
+/// (30-80 оверлеев) блокирует тик на 150-250мс Blend'ов. Таким отдаётся базовая иконка.
+#define STATPANEL_MAX_FLAT_OVERLAYS 12
 /// Send tidi only every Nth ping fire — non-Status-tab clients still see fresh ping every fire.
 #define STATPANEL_TIDI_INTERVAL 10
 /// Bridge protocol version. Bump whenever the DM->JS payload shape changes incompatibly.
@@ -365,7 +368,8 @@ SUBSYSTEM_DEF(statpanels)
 			if(C.statpanel_sent_icons[ref])
 				continue
 			var/icon_url
-			if(ismob(A) || length(A.overlays) > 4)
+			var/overlay_count = length(A.overlays)
+			if((ismob(A) || overlay_count > 4) && overlay_count <= STATPANEL_MAX_FLAT_OVERLAYS)
 				icon_url = costly_icon2html(A, C, sourceonly=TRUE)
 			else
 				icon_url = icon2html(A, C, sourceonly=TRUE)
@@ -373,6 +377,10 @@ SUBSYSTEM_DEF(statpanels)
 				cache_sent_icon(C, ref, icon_url)
 				batch[++batch.len] = list(ref, icon_url)
 			icons_done++
+			// Бюджет в штуках не ограничивает время: тик-чек после каждой сгенерированной иконки,
+			// иначе пачка дорогих флаттенов складывается в сотни мс одним тиком
+			if(MC_TICK_CHECK)
+				break
 		if(length(batch))
 			C << output("[url_encode(json_encode(batch))];", "statbrowser:update_turf_icons")
 		if(!length(pending))
@@ -779,6 +787,7 @@ SUBSYSTEM_DEF(statpanels)
 #undef STATPANEL_SLOW_CYCLE_FULLS
 #undef STATPANEL_STAGGER_GROUPS
 #undef STATPANEL_ICON_CACHE_CAP
+#undef STATPANEL_MAX_FLAT_OVERLAYS
 #undef STATPANEL_TIDI_INTERVAL
 #undef STATBROWSER_PROTOCOL_VERSION
 #undef STATPANEL_CHANNEL_STATUS

@@ -13,8 +13,8 @@ type CharacterPrefsInfo = {
   be_victim: number,
 }
 
-export const CharacterPrefsTab = (props, context) => {
-  const { act, data } = useBackend<CharacterPrefsInfo>(context);
+export const CharacterPrefsTab = (props) => {
+  const { act, data } = useBackend<CharacterPrefsInfo>();
   const {
     erp_pref,
     noncon_pref,

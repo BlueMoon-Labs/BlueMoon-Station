@@ -12,6 +12,10 @@ module.exports = {
   moduleNameMapper: {
     '\\.(svg|png|jpg|jpeg|gif|ogg|wav|mp3)$': '<rootDir>/scripts/jest/fileMock.js',
   },
+  // marked ships ESM-only; let babel transform it instead of skipping it.
+  transformIgnorePatterns: [
+    '[\\\\/]node_modules[\\\\/](?!marked[\\\\/])',
+  ],
   moduleFileExtensions: ['js', 'cjs', 'ts', 'tsx', 'json'],
   resetMocks: true,
 };

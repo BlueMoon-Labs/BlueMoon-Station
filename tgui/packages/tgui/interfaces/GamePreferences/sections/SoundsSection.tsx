@@ -46,8 +46,8 @@ const SoundToggleButton = (props: { enabled: boolean; onClick: () => void }) => 
   );
 };
 
-export const SoundsSection = (props, context) => {
-  const { act, data } = useBackend<SoundsData>(context);
+export const SoundsSection = (props) => {
+  const { act, data } = useBackend<SoundsData>();
 
   return (
     <Stack vertical>

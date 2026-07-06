@@ -2,8 +2,8 @@ import { useBackend } from '../backend';
 import { Box, Button, Icon, Section, Stack } from '../components';
 import { Window } from '../layouts';
 
-export const OutfitEditor = (props, context) => {
-  const { act, data } = useBackend(context);
+export const OutfitEditor = (props) => {
+  const { act, data } = useBackend();
   const { outfit, saveable, dummy64 } = data;
   return (
     <Window
@@ -28,8 +28,8 @@ export const OutfitEditor = (props, context) => {
               <Stack.Item grow={1}
                 style={{
                   'overflow': 'hidden',
-                  'white-space': 'nowrap',
-                  'text-overflow': 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  textOverflow: 'ellipsis',
                 }}>
                 <Button
                   ml={0.5}
@@ -109,8 +109,8 @@ export const OutfitEditor = (props, context) => {
   );
 };
 
-const OutfitSlot = (props, context) => {
-  const { act, data } = useBackend(context);
+const OutfitSlot = (props) => {
+  const { act, data } = useBackend();
   const { name, icon, iconRot, slot } = props;
   const { outfit } = data;
   const currItem = outfit[slot];
@@ -146,8 +146,8 @@ const OutfitSlot = (props, context) => {
         color="label"
         style={{
           'overflow': 'hidden',
-          'white-space': 'nowrap',
-          'text-overflow': 'ellipsis',
+          whiteSpace: 'nowrap',
+          textOverflow: 'ellipsis',
         }}
         title={currItem?.path}>
         {currItem?.name || "Empty"}

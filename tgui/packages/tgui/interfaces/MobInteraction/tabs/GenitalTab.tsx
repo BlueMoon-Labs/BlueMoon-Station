@@ -20,12 +20,12 @@ type GenitalData = {
   always_accessible: boolean,
 }
 
-export const GenitalTab = (props, context) => {
-  const { act, data } = useBackend<GenitalInfo>(context);
+export const GenitalTab = (props) => {
+  const { act, data } = useBackend<GenitalInfo>();
   const [
     searchText,
     setSearchText,
-  ] = useLocalState(context, 'searchText', '');
+  ] = useLocalState('searchText', '');
   const genitals = sortGenitals(data.genitals, searchText) || [];
   const force_naked_flavor = data.force_naked_flavor;
   return (

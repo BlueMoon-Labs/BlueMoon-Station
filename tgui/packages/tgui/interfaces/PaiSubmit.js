@@ -2,10 +2,10 @@ import { useBackend, useLocalState } from '../backend';
 import { Box, Button, Input, NoticeBox, Section, Stack } from '../components';
 import { Window } from '../layouts';
 
-const DirectRecruit = (props, context) => {
-  const { act, data } = useBackend(context);
+const DirectRecruit = (props) => {
+  const { act, data } = useBackend();
   const { name, comments, is_inteq } = data;
-  const [input, setInput] = useLocalState(context, 'paiDirectInput', {
+  const [input, setInput] = useLocalState('paiDirectInput', {
     name: name || '',
     comments: comments || '',
   });
@@ -79,10 +79,10 @@ const DirectRecruit = (props, context) => {
   );
 };
 
-const NormalRecruit = (props, context) => {
-  const { act, data } = useBackend(context);
+const NormalRecruit = (props) => {
+  const { act, data } = useBackend();
   const { comments, description, name, has_candidate } = data;
-  const [input, setInput] = useLocalState(context, 'paiInput', {
+  const [input, setInput] = useLocalState('paiInput', {
     comments: comments || '',
     description: description || '',
     name: name || '',
@@ -229,8 +229,8 @@ const NormalRecruit = (props, context) => {
   );
 };
 
-export const PaiSubmit = (props, context) => {
-  const { data } = useBackend(context);
+export const PaiSubmit = (props) => {
+  const { data } = useBackend();
   const { card_ref, load_version } = data;
 
   if (card_ref) {

@@ -1,4 +1,4 @@
-import { Fragment } from 'inferno';
+import { Fragment } from 'react';
 
 import { useBackend } from '../backend';
 import { Box, Button, LabeledList, ProgressBar, Section } from '../components';
@@ -14,8 +14,8 @@ const skillyellow = {
   fontWeight: 'bold',
 };
 
-export const SkillPanel = (props, context) => {
-  const { act, data } = useBackend(context);
+export const SkillPanel = (props) => {
+  const { act, data } = useBackend();
   const skills = data.skills || [];
   return (
     <Window
@@ -35,12 +35,12 @@ export const SkillPanel = (props, context) => {
                 </span>
                 <br />
                 {!!skill.level_based && (
-                  <Fragment>
+                  <>
                     <Level
                       skill_lvl_num={skill.lvl_base_num}
                       skill_lvl={skill.lvl_base} />
                     <br />
-                  </Fragment>
+                  </>
                 )}
                 Total Experience: [{skill.value_base} XP]
                 <br />
@@ -61,7 +61,7 @@ export const SkillPanel = (props, context) => {
                   color="good" />
                 <br />
                 {!!data.admin && (
-                  <Fragment>
+                  <>
                     <Button
                       content="Adjust Exp"
                       onClick={() => act('adj_exp', {
@@ -79,7 +79,7 @@ export const SkillPanel = (props, context) => {
                       })} />
                     <br />
                     <br />
-                  </Fragment>
+                  </>
                 )}
               </LabeledList.Item>
             ))}

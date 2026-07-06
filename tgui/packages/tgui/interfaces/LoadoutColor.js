@@ -2,8 +2,8 @@ import { useBackend, useLocalState } from '../backend';
 import { Button, Dropdown, Flex, NoticeBox, NumberInput, PixelArtImage, Section, Slider, Table, Tabs } from '../components';
 import { Window } from '../layouts';
 
-export const LoadoutColor = (props, context) => {
-  const { act, data } = useBackend(context);
+export const LoadoutColor = (props) => {
+  const { act, data } = useBackend();
   const { activemode, gear_name, temp_message, sprite, preview } = data;
 
   const presets_tint = data.presets_tint || [];
@@ -15,7 +15,7 @@ export const LoadoutColor = (props, context) => {
       : activemode === 2 ? presets_hsv
         : presets_matrix;
 
-  const [selectedPreset, setSelectedPreset] = useLocalState(context, 'selectedPreset', '');
+  const [selectedPreset, setSelectedPreset] = useLocalState('selectedPreset', '');
 
   const currentPresetIdx = selectedPreset
     ? currentPresetList.indexOf(selectedPreset)
@@ -174,8 +174,8 @@ export const LoadoutColor = (props, context) => {
   );
 };
 
-const LoadoutColorTint = (props, context) => {
-  const { act } = useBackend(context);
+const LoadoutColorTint = (props) => {
+  const { act } = useBackend();
   return (
     <Button
       fluid
@@ -186,8 +186,8 @@ const LoadoutColorTint = (props, context) => {
   );
 };
 
-const LoadoutColorMatrix = (props, context) => {
-  const { act, data } = useBackend(context);
+const LoadoutColorMatrix = (props) => {
+  const { act, data } = useBackend();
   const matrixcolors = data.matrixcolors || [];
   return (
     <Table>
@@ -351,8 +351,8 @@ const LoadoutColorMatrix = (props, context) => {
   );
 };
 
-const LoadoutColorHSV = (props, context) => {
-  const { act, data } = useBackend(context);
+const LoadoutColorHSV = (props) => {
+  const { act, data } = useBackend();
   const { buildhue, buildsat, buildval } = data;
   return (
     <Table>

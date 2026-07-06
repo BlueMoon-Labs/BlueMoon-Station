@@ -1,6 +1,7 @@
 import { classes } from 'common/react';
+import { useState } from 'react';
 
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import { Box, Button, ColorBox, Flex, LabeledList, Section, Tabs } from '../components';
 import { Window } from '../layouts';
 
@@ -55,8 +56,8 @@ const TOOLS = [
   },
 ];
 
-export const RapidPipeDispenser = (props, context) => {
-  const { act, data } = useBackend(context);
+export const RapidPipeDispenser = (props) => {
+  const { act, data } = useBackend();
   const {
     category: rootCategoryIndex,
     categories = [],
@@ -68,7 +69,7 @@ export const RapidPipeDispenser = (props, context) => {
   const [
     categoryName,
     setCategoryName,
-  ] = useLocalState(context, 'categoryName');
+  ] = useState();
   const shownCategory = categories
     .find(category => category.cat_name === categoryName)
     || categories[0];

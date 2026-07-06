@@ -4,8 +4,8 @@
 
 import { clamp } from 'common/math';
 import { classes } from 'common/react';
-import { Component, createRef, RefObject } from 'inferno';
 import { marked } from 'marked';
+import { Component, createRef, RefObject } from 'react';
 
 import { useBackend, useLocalState } from '../backend';
 import { Box, Button, Flex, Section, TextArea } from '../components';
@@ -138,7 +138,22 @@ class PaperSheetStamper extends Component<PaperSheetStamperProps> {
     return false;
   };
 
+  // The mousemove/click listeners live on the document and survive any
+  // held item changes: without this gate every click on the UI (with a pen,
+  // with nothing) would fire an add_stamp act at the server.
+  isStamping = (): boolean => {
+    const { data } = useBackend<PaperContext>();
+    const { held_item_details } = data;
+    return (
+      held_item_details?.interaction_mode === InteractionType.stamping
+      && !!held_item_details?.stamp_class
+    );
+  };
+
   handleMouseMove = (e: MouseEvent): void => {
+    if (!this.isStamping()) {
+      return;
+    }
     const pos = this.findStampPosition(e);
     if (!pos) {
       return;
@@ -154,6 +169,9 @@ class PaperSheetStamper extends Component<PaperSheetStamperProps> {
   };
 
   handleMouseClick = (e: MouseEvent): void => {
+    if (!this.isStamping()) {
+      return;
+    }
     const scrollable = this.scrollableRef.current;
     if (!scrollable) {
       return;
@@ -163,7 +181,7 @@ class PaperSheetStamper extends Component<PaperSheetStamperProps> {
     if (e.clientY - rect.top <= 0) {
       return;
     }
-    const { act } = useBackend<PaperContext>(this.context);
+    const { act } = useBackend<PaperContext>();
 
     act('add_stamp', {
       x: this.state.x,
@@ -245,7 +263,7 @@ class PaperSheetStamper extends Component<PaperSheetStamperProps> {
   }
 
   render() {
-    const { data } = useBackend<PaperContext>(this.context);
+    const { data } = useBackend<PaperContext>();
     const { held_item_details } = data;
 
     if (!held_item_details?.stamp_class) {
@@ -266,14 +284,14 @@ class PaperSheetStamper extends Component<PaperSheetStamperProps> {
 }
 
 // Creates a full stamp div to render the given stamp to the preview.
-export const Stamp = (props, context) => {
+export const Stamp = (props) => {
   const { activeStamp, sprite, x, y, rotation, opacity, yOffset = 0 } = props;
   const stamp_transform = {
     'left': x + 'px',
     'top': y + yOffset + 'px',
     'transform': 'rotate(' + rotation + 'deg)',
     'opacity': opacity || 1.0,
-    'z-index': activeStamp ? Z_INDEX_STAMP_PREVIEW : Z_INDEX_STAMP,
+    'zIndex': activeStamp ? Z_INDEX_STAMP_PREVIEW : Z_INDEX_STAMP,
   };
 
   return (
@@ -315,7 +333,7 @@ export class PrimaryView extends Component {
   }
 
   render() {
-    const { act, data } = useBackend<PaperContext>(this.context);
+    const { act, data } = useBackend<PaperContext>();
     const {
       raw_text_input,
       raw_field_input,
@@ -330,15 +348,11 @@ export class PrimaryView extends Component {
     const useColor = held_item_details?.color || default_pen_color;
     const useBold = held_item_details?.use_bold || false;
 
-    const [inputFieldData, setInputFieldData] = useLocalState(
-      this.context,
-      'inputFieldData',
+    const [inputFieldData, setInputFieldData] = useLocalState('inputFieldData',
       {}
     );
 
-    const [textAreaText, setTextAreaText] = useLocalState(
-      this.context,
-      'textAreaText',
+    const [textAreaText, setTextAreaText] = useLocalState('textAreaText',
       ''
     );
 
@@ -417,13 +431,17 @@ export class PrimaryView extends Component {
                   onInput={(e, text) => {
                     setTextAreaText(text);
 
-                    if (this.scrollableRef.current) {
-                      let thisDistFromBottom
-                        = this.scrollableRef.current.scrollHeight
-                        - this.scrollableRef.current.scrollTop;
-                      this.scrollableRef.current.scrollTop
-                        += thisDistFromBottom - this.lastDistanceFromBottom;
-                    }
+                    // setTextAreaText re-renders asynchronously in React;
+                    // measure the preview only after the new text committed.
+                    requestAnimationFrame(() => {
+                      if (this.scrollableRef.current) {
+                        let thisDistFromBottom
+                          = this.scrollableRef.current.scrollHeight
+                          - this.scrollableRef.current.scrollTop;
+                        this.scrollableRef.current.scrollTop
+                          += thisDistFromBottom - this.lastDistanceFromBottom;
+                      }
+                    });
                   }}
                 />
               </Section>
@@ -460,6 +478,29 @@ export class PreviewView extends Component<PreviewViewProps> {
   // super fast on the BYOND/IE js engine.
   parsedDMCache: string = '';
   parsedTextBoxCache: string = '';
+
+  // Stable dangerouslySetInnerHTML wrappers. React 19 re-applies innerHTML
+  // whenever the wrapper OBJECT identity changes (unlike React 18/Inferno,
+  // it no longer compares the __html strings), and the server pushes an
+  // update every second - an inline `{ __html }` literal would recreate the
+  // whole page DOM each tick, kicking the caret out of input fields and
+  // wiping unsaved text.
+  dmHtmlWrapper: { __html: string } = { __html: '' };
+  textAreaHtmlWrapper: { __html: string } = { __html: '' };
+
+  getDmHtmlWrapper = (text: string): { __html: string } => {
+    if (this.dmHtmlWrapper.__html !== text) {
+      this.dmHtmlWrapper = { __html: text };
+    }
+    return this.dmHtmlWrapper;
+  };
+
+  getTextAreaHtmlWrapper = (text: string): { __html: string } => {
+    if (this.textAreaHtmlWrapper.__html !== text) {
+      this.textAreaHtmlWrapper = { __html: text };
+    }
+    return this.textAreaHtmlWrapper;
+  };
 
   constructor(props, context) {
     super(props, context);
@@ -555,13 +596,11 @@ export class PreviewView extends Component<PreviewViewProps> {
       return;
     }
 
-    const [inputFieldData, setInputFieldData] = useLocalState(
-      this.context,
-      'inputFieldData',
+    const [inputFieldData, setInputFieldData] = useLocalState('inputFieldData',
       {}
     );
 
-    const { data } = useBackend<PaperContext>(this.context);
+    const { data } = useBackend<PaperContext>();
     const { default_pen_font, default_pen_color, held_item_details } = data;
 
     const newFieldData = { ...inputFieldData };
@@ -588,7 +627,7 @@ export class PreviewView extends Component<PreviewViewProps> {
   // Creates the partial inline HTML for previewing or reading the paper from
   // only static_ui_data from DM.
   createPreviewFromDM = (): { text: string; newFieldCount: number } => {
-    const { data } = useBackend<PaperContext>(this.context);
+    const { data } = useBackend<PaperContext>();
     const {
       raw_field_input,
       raw_text_input,
@@ -608,8 +647,8 @@ export class PreviewView extends Component<PreviewViewProps> {
     // Then use any cached values.
     if (
       this.lastReadOnly === readOnly
-      && this.lastDMInputCount === raw_text_input?.length
-      && this.lastFieldInputCount === raw_field_input?.length
+      && this.lastDMInputCount === (raw_text_input?.length || 0)
+      && this.lastFieldInputCount === (raw_field_input?.length || 0)
     ) {
       return { text: this.parsedDMCache, newFieldCount: this.lastFieldCount };
     }
@@ -654,7 +693,7 @@ export class PreviewView extends Component<PreviewViewProps> {
   // Creates the partial inline HTML for previewing or reading the paper from
   // the text input area.
   createPreviewFromTextArea = (fieldCount: number = 0): string => {
-    const { data } = useBackend<PaperContext>(this.context);
+    const { data } = useBackend<PaperContext>();
     const {
       default_pen_font,
       default_pen_color,
@@ -767,7 +806,7 @@ export class PreviewView extends Component<PreviewViewProps> {
     advanced_html: boolean = false
   ): FieldCreationReturn => {
     // First lets make sure it ends in a new line
-    const { data } = useBackend<PaperContext>(this.context);
+    const { data } = useBackend<PaperContext>();
     rawText += rawText[rawText.length] === '\n' ? '\n' : '\n\n';
 
     // Second, parse the text using markup
@@ -823,7 +862,7 @@ export class PreviewView extends Component<PreviewViewProps> {
     forceReadonlyFields: boolean,
     counter: number = 0
   ): FieldCreationReturn => {
-    const { data } = useBackend<PaperContext>(this.context);
+    const { data } = useBackend<PaperContext>();
     const { raw_field_input } = data;
 
     const ret_text = rawText.replace(
@@ -875,7 +914,7 @@ export class PreviewView extends Component<PreviewViewProps> {
   ): string => {
     // This are fields that may potentially be fillable, so we'll use the
     // currently held item's stats for them if possible.
-    const { data } = useBackend<PaperContext>(this.context);
+    const { data } = useBackend<PaperContext>();
     const { held_item_details, max_input_field_length } = data;
 
     const fontColor = held_item_details?.color || color;
@@ -886,9 +925,12 @@ export class PreviewView extends Component<PreviewViewProps> {
 
     if (input) {
       // If we've gone to readOnly now, drop the cache because we're no longer
-      // in write mode. Will reset the input field the next time it's writable.
+      // in write mode, and serialize the field as actually disabled - the
+      // cached node was created enabled and would otherwise leak a writable
+      // field into the read-only view.
       if (readOnly) {
         delete this.enabledInputFieldCache[id];
+        input.disabled = true;
       }
       // If we do, recycle it, updating font and color incase we've changed
       // writing implements.
@@ -911,6 +953,15 @@ export class PreviewView extends Component<PreviewViewProps> {
     input.size = length;
     input.disabled = readOnly;
 
+    // Restore unsaved text typed into this field earlier: rebuilds of the
+    // preview HTML (mode flips, new DM data) recreate the DOM from scratch,
+    // but the typed values live on in the store until saved.
+    const [inputFieldData] = useLocalState('inputFieldData', {});
+    const storedValue = inputFieldData[this.getHeaderID(id)];
+    if (storedValue) {
+      input.defaultValue = storedValue;
+    }
+
     if (!readOnly) {
       this.enabledInputFieldCache[id] = input;
     }
@@ -932,7 +983,7 @@ export class PreviewView extends Component<PreviewViewProps> {
     paperColor: string,
     id: string
   ): string => {
-    const { data } = useBackend<PaperContext>(this.context);
+    const { data } = useBackend<PaperContext>();
     const { max_input_field_length } = data;
 
     const fieldData = field.field_data;
@@ -958,26 +1009,23 @@ export class PreviewView extends Component<PreviewViewProps> {
   };
 
   render() {
-    const { data } = useBackend<PaperContext>(this.context);
+    const { data } = useBackend<PaperContext>();
     const { paper_color, held_item_details } = data;
     const interactMode
       = held_item_details?.interaction_mode || InteractionType.reading;
 
     const dmTextPreviewData = this.createPreviewFromDM();
-    let previewText = dmTextPreviewData.text;
 
-    if (interactMode === InteractionType.writing) {
-      previewText += this.createPreviewFromTextArea(
-        dmTextPreviewData.newFieldCount
-      );
-    }
-
-    const textHTML = {
-      __html: `<span class='paper-text'>${previewText}</span>`,
-    };
+    const textAreaPreview = interactMode === InteractionType.writing
+      ? this.createPreviewFromTextArea(dmTextPreviewData.newFieldCount)
+      : null;
 
     const { scrollableRef, handleOnScroll } = this.props;
 
+    // The DM text (with live input fields) and the textarea preview are
+    // rendered as two independent innerHTML blocks. With a single blob,
+    // every textarea keystroke would rewrite the whole page and recreate
+    // the input fields, wiping whatever the user had typed into them.
     return (
       <Section
         fill
@@ -992,9 +1040,24 @@ export class PreviewView extends Component<PreviewViewProps> {
           minHeight="100%"
           backgroundColor={paper_color}
           className="Paper__Page"
-          dangerouslySetInnerHTML={textHTML}
-          p="10px"
-        />
+          p="10px">
+          <Box
+            as="span"
+            className="paper-text"
+            dangerouslySetInnerHTML={this.getDmHtmlWrapper(
+              dmTextPreviewData.text
+            )}
+          />
+          {textAreaPreview !== null && (
+            <Box
+              as="span"
+              className="paper-text"
+              dangerouslySetInnerHTML={this.getTextAreaHtmlWrapper(
+                textAreaPreview
+              )}
+            />
+          )}
+        </Box>
         <StampView />
       </Section>
     );
@@ -1002,8 +1065,8 @@ export class PreviewView extends Component<PreviewViewProps> {
 }
 
 // Renders all the stamp components for every valid stamp.
-export const StampView = (props, context) => {
-  const { data } = useBackend<PaperContext>(context);
+export const StampView = (props) => {
+  const { data } = useBackend<PaperContext>();
 
   const { raw_stamp_input = [] } = data;
 
@@ -1027,8 +1090,8 @@ export const StampView = (props, context) => {
   );
 };
 
-export const PaperSheet = (props, context) => {
-  const { data } = useBackend<PaperContext>(context);
+export const PaperSheet = (props) => {
+  const { data } = useBackend<PaperContext>();
   const { paper_color, paper_name, held_item_details } = data;
 
   const writeMode = canEdit(held_item_details);

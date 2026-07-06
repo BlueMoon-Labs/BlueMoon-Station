@@ -6,7 +6,7 @@
 
 import { toFixed } from 'common/math';
 import { useDispatch, useSelector } from 'common/redux';
-import { useLocalState } from 'tgui/backend';
+import { useState } from 'react';
 import { Box, Button, Divider, Dropdown, Flex, Input, LabeledList, NumberInput, Section, Stack, Tabs, TextArea } from 'tgui/components';
 
 import { ChatPageSettings } from '../chat';
@@ -15,6 +15,14 @@ import { THEMES } from '../themes';
 import { changeSettingsTab, updateSettings } from './actions';
 import { CHAT_ANIM_SPEEDS, CHAT_ANIMATIONS, CHAT_BG_ANIMATIONS, CHAT_STYLES, FONTS, MESSAGE_STYLE_ANIMATIONS, MESSAGE_STYLE_FONTS, MESSAGE_STYLES, SETTINGS_TABS, TEXT_GLOW_OPTIONS, TIME_DIVIDER_INTERVALS, TIMESTAMP_FORMATS } from './constants';
 import { selectActiveTab, selectSettings } from './selectors';
+
+// React's onChange fires continuously while dragging inside the color
+// dialog; debounce so we do not rewrite stored settings on every tick.
+const colorCommitTimers = new WeakMap();
+const debouncedColorCommit = (input, commit) => {
+  clearTimeout(colorCommitTimers.get(input));
+  colorCommitTimers.set(input, setTimeout(() => commit(input.value), 250));
+};
 
 /**
  * Color input with a native color picker and text field.
@@ -37,11 +45,11 @@ const ColorInput = (props) => {
             'height': '22px',
             'padding': '0',
             'border': '1px solid rgba(255,255,255,0.2)',
-            'border-radius': '2px',
+            borderRadius: '2px',
             'background': 'transparent',
             'cursor': 'pointer',
           }}
-          onChange={e => onChange(e.target.value)}
+          onChange={e => debouncedColorCommit(e.target, onChange)}
         />
       </Stack.Item>
       <Stack.Item>
@@ -66,9 +74,9 @@ const ColorInput = (props) => {
   );
 };
 
-export const SettingsPanel = (props, context) => {
-  const activeTab = useSelector(context, selectActiveTab);
-  const dispatch = useDispatch(context);
+export const SettingsPanel = (props) => {
+  const activeTab = useSelector(selectActiveTab);
+  const dispatch = useDispatch();
   return (
     <Stack fill>
       <Stack.Item>
@@ -105,7 +113,7 @@ export const SettingsPanel = (props, context) => {
   );
 };
 
-export const SettingsGeneral = (props, context) => {
+export const SettingsGeneral = (props) => {
   const {
     theme,
     fontFamily,
@@ -120,9 +128,9 @@ export const SettingsGeneral = (props, context) => {
     timestampFormat,
     enableTimeDividers,
     timeDividerInterval,
-  } = useSelector(context, selectSettings);
-  const dispatch = useDispatch(context);
-  const [freeFont, setFreeFont] = useLocalState(context, "freeFont", false);
+  } = useSelector(selectSettings);
+  const dispatch = useDispatch();
+  const [freeFont, setFreeFont] = useState(false);
   const selectedTsFormat = TIMESTAMP_FORMATS.find(
     f => f.id === timestampFormat);
   const selectedDivInterval = TIME_DIVIDER_INTERVALS.find(
@@ -341,24 +349,24 @@ const getStylePreviewStyle = (override, spanAnimations) => {
     style['color'] = override.color;
   }
   if (override.font === 'normal') {
-    style['font-weight'] = 'normal';
-    style['font-style'] = 'normal';
+    style['fontWeight'] = 'normal';
+    style['fontStyle'] = 'normal';
   }
   else if (override.font === 'italic') {
-    style['font-weight'] = 'normal';
-    style['font-style'] = 'italic';
+    style['fontWeight'] = 'normal';
+    style['fontStyle'] = 'italic';
   }
   else if (override.font === 'bold') {
-    style['font-weight'] = 'bold';
-    style['font-style'] = 'normal';
+    style['fontWeight'] = 'bold';
+    style['fontStyle'] = 'normal';
   }
   else if (override.font === 'bolditalic') {
-    style['font-weight'] = 'bold';
-    style['font-style'] = 'italic';
+    style['fontWeight'] = 'bold';
+    style['fontStyle'] = 'italic';
   }
   const size = parseFloat(override.size);
   if (size && size !== 100) {
-    style['font-size'] = Math.min(200, Math.max(50, size)) + '%';
+    style['fontSize'] = Math.min(200, Math.max(50, size)) + '%';
   }
   // Как и в чате (.Chat--fxAnimOff), глобальный тумблер гасит
   // пользовательские анимации и в превью.
@@ -371,7 +379,7 @@ const getStylePreviewStyle = (override, spanAnimations) => {
   return Object.keys(style).length > 0 ? style : undefined;
 };
 
-const MessageStyleRow = (props, context) => {
+const MessageStyleRow = (props) => {
   const { style, override, setOverride, spanAnimations } = props;
   const selectedFont = MESSAGE_STYLE_FONTS.find(
     f => f.id === (override.font || ''));
@@ -470,12 +478,12 @@ const MessageStyleRow = (props, context) => {
   );
 };
 
-export const SettingsTextStyles = (props, context) => {
+export const SettingsTextStyles = (props) => {
   const {
     styleOverrides,
     spanAnimations,
-  } = useSelector(context, selectSettings);
-  const dispatch = useDispatch(context);
+  } = useSelector(selectSettings);
+  const dispatch = useDispatch();
   const setOverride = (styleId, patch) => {
     const prevEntry = styleOverrides?.[styleId] || {};
     dispatch(updateSettings({
@@ -526,7 +534,7 @@ export const SettingsTextStyles = (props, context) => {
   );
 };
 
-export const SettingsAppearance = (props, context) => {
+export const SettingsAppearance = (props) => {
   const {
     chatStyle,
     chatAnimation,
@@ -544,8 +552,8 @@ export const SettingsAppearance = (props, context) => {
     fontWeight,
     letterSpacing,
     borderRadius,
-  } = useSelector(context, selectSettings);
-  const dispatch = useDispatch(context);
+  } = useSelector(selectSettings);
+  const dispatch = useDispatch();
   const selectedStyle = CHAT_STYLES.find(s => s.id === chatStyle);
   const selectedAnim = CHAT_ANIMATIONS.find(a => a.id === chatAnimation);
   const selectedSpeed = CHAT_ANIM_SPEEDS.find(s => s.id === chatAnimSpeed);

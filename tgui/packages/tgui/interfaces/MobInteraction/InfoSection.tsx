@@ -18,8 +18,8 @@ type HeaderInfo = {
   moaning_multiplier: number;
 }
 
-export const InfoSection = (props, context) => {
-  const { act, data } = useBackend<HeaderInfo>(context);
+export const InfoSection = (props) => {
+  const { act, data } = useBackend<HeaderInfo>();
   const {
     isTargetSelf,
     target,

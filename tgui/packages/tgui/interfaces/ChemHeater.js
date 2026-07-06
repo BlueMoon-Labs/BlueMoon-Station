@@ -1,13 +1,13 @@
 import { round, toFixed } from 'common/math';
-import { Fragment } from 'inferno';
+import { Fragment } from 'react';
 
 import { useBackend } from '../backend';
 import { AnimatedNumber, Box, Button, LabeledList, NumberInput, Section } from '../components';
 import { Window } from '../layouts';
 import { BeakerContents } from './common/BeakerContents';
 
-export const ChemHeater = (props, context) => {
-  const { act, data } = useBackend(context);
+export const ChemHeater = (props) => {
+  const { act, data } = useBackend();
   const {
     targetTemp,
     isActive,
@@ -62,7 +62,7 @@ export const ChemHeater = (props, context) => {
         <Section
           title="Ёмкость"
           buttons={!!isBeakerLoaded && (
-            <Fragment>
+            <>
               <Box inline color="label" mr={2}>
                 {beakerCurrentVolume} / {beakerMaxVolume} u
               </Box>
@@ -70,7 +70,7 @@ export const ChemHeater = (props, context) => {
                 icon="eject"
                 content="Извлечь"
                 onClick={() => act('eject')} />
-            </Fragment>
+            </>
           )}>
           <BeakerContents
             beakerLoaded={isBeakerLoaded}

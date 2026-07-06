@@ -3,11 +3,11 @@ import { useBackend, useSharedState } from '../backend';
 import { Button, Flex, Input, NoticeBox, PixelArtImage, Section, Stack, Tabs } from '../components';
 import { NtosWindow } from '../layouts';
 
-export const NtosPortraitPrinter = (props, context) => {
-  const { act, data } = useBackend(context);
-  const [tabIndex, setTabIndex] = useSharedState(context, 'tabIndex', 0);
-  const [listIndex, setListIndex] = useSharedState(context, 'listIndex', 0);
-  const [query, setQuery] = useSharedState(context, 'query', '');
+export const NtosPortraitPrinter = (props) => {
+  const { act, data } = useBackend();
+  const [tabIndex, setTabIndex] = useSharedState('tabIndex', 0);
+  const [listIndex, setListIndex] = useSharedState('listIndex', 0);
+  const [query, setQuery] = useSharedState('query', '');
   const {
     library,
     library_secure,
