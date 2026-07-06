@@ -147,8 +147,7 @@
 		"Небольшой конский член уверенно проникает в глубину, слегка раздвигая края влагалища. Он двигается волнообразно, создавая ощущение глубокого и стабильного удовлетворения.",
 		"Нечто гладкое и плотное медленно скользит в киску, проникая до самого основания. Оно двигается уверенно, сочетая в себе плавность хода и приятную глубину каждого толчка.",
 		"Ребристый фаллос начинает свой путь внутрь киски, мягко извиваясь при каждом шаге. Его текстура создает идеальное сцепление со стенками, позволяя ощутить каждый миллиметр движения максимально четко.",
-		"Ребристый стержень проникает глубоко в киску и начинает двигаться в ритме сердца. Каждое движение ощущается как волна удовольствия!",
-		""
+		"Ребристый стержень проникает глубоко в киску и начинает двигаться в ритме сердца. Каждое движение ощущается как волна удовольствия!"
 	)
 	var/static/list/massageTextHigVag = list(
 		"Мощная, гладкая форма стремительно входит и выходит из влагалища, работая с такой динамикой, что киска кажется наполненной жидким электричеством. Это интенсивный массаж на пределе возможностей, где каждое движение отзывается глубоким резонансом!",
@@ -303,14 +302,15 @@
 
 /obj/item/clothing/underwear/briefs/hardspace_panties/equipped(mob/living/carbon/human/M, slot)
 	.=..()
-	if(!istype(src, M.w_underwear))
-		on_unequip(M)
+	if(slot == ITEM_SLOT_UNDERWEAR)
+		on_equip(M)
 		return
-	on_equip(M)
+	on_unequip(M)
 
 /obj/item/clothing/underwear/briefs/hardspace_panties/dropped(mob/user)
 	. = ..()
-	on_unequip(user)
+	if(current_equipped_slot == ITEM_SLOT_UNDERWEAR)
+		on_unequip(user)
 
 /obj/item/clothing/underwear/briefs/hardspace_panties/proc/on_equip(mob/user)
 	if(!user)
@@ -520,9 +520,8 @@
 	if(lust > LOW_LUST)
 		if(owner.client?.prefs.cit_toggles & SEX_JITTER)
 			owner.do_jitter_animation()
-	if(lust > LOW_LUST)
 		if(prob(20))
-			owner.Stun(20)
+			owner.Stun(2 SECONDS)
 			owner.moan()
 			to_chat(owner, span_lewd("<b>[pick(overLustText)]</b>"))
 

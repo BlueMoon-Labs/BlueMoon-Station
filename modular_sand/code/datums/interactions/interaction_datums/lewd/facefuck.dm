@@ -57,7 +57,7 @@ var/static/list/snaped = list(
 			if("penis")
 				// BLUEMOON EDIT START
 				if(has_penis || user.has_strapon())
-					if(prob(15))
+					if(user.a_intent == INTENT_HARM && prob(15))
 						partner.snap_choker(partner, ITEM_SLOT_NECK)	//Snap my choker!~ - Gardelin0
 					message = pick(
 						"грубо трахает \the <b>[partner]</b> в рот с громким чавкающим звуком.",
@@ -101,7 +101,7 @@ var/static/list/snaped = list(
 					improv = TRUE
 			if("penis")
 				if(has_penis || user.has_strapon())
-					if(prob(15))
+					if(user.a_intent == INTENT_HARM && prob(15))
 						partner.snap_choker(partner, ITEM_SLOT_NECK)	//Snap my choker!~ - Gardelin0
 					if(user.is_fucking(partner, CUM_TARGET_THROAT))
 					// BLUEMOON EDIT START
@@ -206,7 +206,7 @@ var/static/list/snaped = list(
 		user.set_is_fucking(partner, CUM_TARGET_THROAT, genital)
 		try_apply_knot(user, partner, CUM_TARGET_THROAT) // Проверка на узлирование.
 
-	if(prob(15))
+	if(user.a_intent == INTENT_HARM && prob(15))
 		partner.snap_choker(partner, ITEM_SLOT_NECK)	//Snap my choker!~ - Gardelin0
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/oral1.ogg',
 						'modular_sand/sound/interactions/oral2.ogg'), volume, 1, extrarange)

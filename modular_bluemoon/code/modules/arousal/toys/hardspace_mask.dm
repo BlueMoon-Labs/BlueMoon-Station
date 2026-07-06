@@ -71,7 +71,7 @@
 
 /obj/item/clothing/mask/hardspace_mask/Destroy()
 	STOP_PROCESSING(SSobj,src)
-	REMOVE_TRAIT(owner, TRAIT_TONGUELESS_SPEECH, CLOTHING_TRAIT)
+	REMOVE_TRAIT(owner, TRAIT_TONGUELESS_SPEECH, src)
 	owner = null
 	. = ..()
 
