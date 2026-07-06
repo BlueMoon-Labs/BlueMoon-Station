@@ -180,8 +180,8 @@ const ItemList = (props) => {
           fluid
           content={item.cost * item.amount + ' ' + "BIO"}
           disabled={item.disabled}
-          onmouseover={() => setHoveredItem(item)}
-          onmouseout={() => setHoveredItem({})}
+          onMouseOver={() => setHoveredItem(item)}
+          onMouseOut={() => setHoveredItem({})}
           onClick={() => act('create', {
             id: item.id,
             amount: item.amount,
