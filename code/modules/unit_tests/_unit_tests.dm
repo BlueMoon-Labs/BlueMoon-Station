@@ -70,8 +70,10 @@
 #define TRAIT_SOURCE_UNIT_TESTS "unit_tests"
 
 #include "anchored_mobs.dm"
+#include "atmos_gas_propagation.dm"
 #include "atmos_native.dm"
 #include "atmos_performance.dm"
+#include "atmos_planetary_churn.dm"
 #include "bespoke_id.dm"
 #include "binary_insert.dm"
 // #include "bloody_footprints.dm"

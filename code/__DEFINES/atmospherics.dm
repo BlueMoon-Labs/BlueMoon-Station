@@ -24,6 +24,12 @@
 #define MINIMUM_AIR_RATIO_TO_MOVE					0.001	//Minimum ratio of air that must move to/from a tile
 #define MINIMUM_AIR_TO_SUSPEND						(MOLES_CELLSTANDARD*MINIMUM_AIR_RATIO_TO_SUSPEND)	//Minimum amount of air that has to move before a group processing can be suspended
 #define MINIMUM_MOLES_DELTA_TO_MOVE					(MOLES_CELLSTANDARD*MINIMUM_AIR_RATIO_TO_MOVE) //Either this must be active
+///Content-relative floor for the share-significance gates: movement below this fraction of a tile's
+///contents never counts as significant, so 100+ atm supply tanks don't stay excited forever from
+///sub-percent machinery ripple. Deliberately far below MINIMUM_AIR_RATIO_TO_SUSPEND: real
+///decompression flows on high-mole tiles (canister floods) must still reset the group cooldowns,
+///or excited group breakdown averages the flood flat mid-flow (stepwise gas movement, no winds).
+#define SIGNIFICANT_SHARE_CONTENT_RATIO				0.01
 #define MINIMUM_TEMPERATURE_TO_MOVE					(T20C+100)			//or this (or both, obviously)
 #define MINIMUM_TEMPERATURE_DELTA_TO_SUSPEND		4		//Minimum temperature difference before group processing is suspended
 #define MINIMUM_TEMPERATURE_DELTA_TO_CONSIDER		0.5		//Minimum temperature difference before the gas temperatures are just set to be equal

@@ -249,14 +249,14 @@
 // with their template).
 #define LAST_SHARE_CHECK \
 	var/last_share = our_air.last_share; \
-	if(last_share > MINIMUM_AIR_TO_SUSPEND){ \
+	if(last_share > our_suspend_threshold){ \
 		our_excited_group.reset_cooldowns(); \
 		cached_atmos_cooldown = 0; \
 		enemy_tile.atmos_cooldown = 0; \
 		if(!enemy_tile.excited && SSair){ \
 			SSair.add_to_active(enemy_tile, FALSE); \
 		} \
-	} else if(last_share > MINIMUM_MOLES_DELTA_TO_MOVE) { \
+	} else if(last_share > our_move_threshold) { \
 		our_excited_group.dismantle_cooldown = 0; \
 		cached_atmos_cooldown = 0; \
 		enemy_tile.atmos_cooldown = 0; \
@@ -268,10 +268,10 @@
 // Same cooldown handling for the template share; there is no enemy tile here.
 #define PLANET_SHARE_CHECK \
 	var/planet_last_share = our_air.last_share; \
-	if(planet_last_share > MINIMUM_AIR_TO_SUSPEND){ \
+	if(planet_last_share > our_suspend_threshold){ \
 		our_excited_group.reset_cooldowns(); \
 		cached_atmos_cooldown = 0; \
-	} else if(planet_last_share > MINIMUM_MOLES_DELTA_TO_MOVE) { \
+	} else if(planet_last_share > our_move_threshold) { \
 		our_excited_group.dismantle_cooldown = 0; \
 		cached_atmos_cooldown = 0; \
 	}
@@ -411,6 +411,14 @@
 	current_cycle = fire_count
 
 	var/list/adjacent_turfs = atmos_adjacent_turfs
+	if(!LAZYLEN(adjacent_turfs))
+		// An active turf nothing can flow out of: either genuinely walled in,
+		// or stranded by a blocking object that left (moved, lost density)
+		// without an air update. Re-verify the adjacency - the queue dedupes,
+		// and for genuinely sealed tiles the recalculation is four cheap
+		// neighbor checks. Without this a stranded tile fed by a rotting
+		// corpse hoards pressure forever.
+		CALCULATE_ADJACENT_TURFS(src)
 	var/datum/excited_group/our_excited_group = excited_group
 	var/adjacent_turfs_length = max(1, LAZYLEN(adjacent_turfs))
 	var/our_share_coeff = 1 / (adjacent_turfs_length + 1)
@@ -419,6 +427,19 @@
 	var/planet_atmos = planetary_atmos
 
 	var/datum/gas_mixture/our_air = air
+	// The share-significance defines are absolute moles calibrated for a
+	// 104-mol standard cell. In a 400+ atm supply tank the same constants
+	// read a 0.05% machinery ripple (dozens of moles) as "significant
+	// movement" and kept whole engine rooms excited forever, because grouped
+	// tiles share unconditionally and every share re-armed the cooldowns.
+	// Scale the gates with tile content; at standard pressure the max()
+	// resolves to the original constants. The scaled part must stay gentle
+	// (1%, not the 10% the absolute define encodes at standard pressure):
+	// canister-flood tiles hold thousands of moles, and gating their real
+	// flows as insignificant lets breakdown average the flood flat mid-flow.
+	var/our_cycle_moles = our_air.total_moles()
+	var/our_suspend_threshold = max(MINIMUM_AIR_TO_SUSPEND, our_cycle_moles * SIGNIFICANT_SHARE_CONTENT_RATIO)
+	var/our_move_threshold = max(MINIMUM_MOLES_DELTA_TO_MOVE, our_cycle_moles * MINIMUM_AIR_RATIO_TO_MOVE)
 
 	for(var/turf/open/enemy_tile as anything in adjacent_turfs)
 		if(!istype(enemy_tile) || enemy_tile.blocks_air)
@@ -430,6 +451,13 @@
 		// Space is represented by a shared immutable mix (the only turf air with
 		// gc_share set), so vent explicitly instead of mutating it.
 		if(enemy_air.gc_share)
+			// A planetary turf never trades with space: the template refills
+			// whatever the vacuum takes, so the pair is a perpetual vent/refill
+			// pump that keeps the tile excited forever (space-ruin exteriors
+			// mapped with planetary dirt: syndicate mothership, reactor ruin).
+			// The sky wins - the tile just keeps its template air.
+			if(planet_atmos)
+				continue
 			var/moles_before = our_air.total_moles()
 			var/temperature_before = our_air.temperature
 			if(moles_before <= MINIMUM_MOLES_DELTA_TO_MOVE && abs(temperature_before - TCMB) <= MINIMUM_TEMPERATURE_DELTA_TO_CONSIDER)
@@ -462,6 +490,14 @@
 				var/pressure_delta_space = pressure_before - pressure_after
 				if(pressure_delta_space > 0)
 					consider_pressure_difference(enemy_tile, pressure_delta_space)
+			continue
+
+		// Two different skies meeting (lava shore, jungle river bank): both
+		// tiles are anchored to their own template, so anything exchanged here
+		// regenerates next cycle - an endless gradient that keeps whole surface
+		// bands excited forever. Each side keeps its own sky; spilled gas still
+		// leaves through the 0.8-ratio template pull within a couple of cycles.
+		if(planet_atmos && enemy_tile.planetary_atmos && enemy_tile.initial_gas_mix != initial_gas_mix)
 			continue
 
 		if(fire_count <= enemy_tile.current_cycle)
@@ -631,7 +667,18 @@
 	breakdown_cooldown = 0
 	dismantle_cooldown = 0
 
-/datum/excited_group/proc/self_breakdown(space_is_all_consuming = FALSE)
+/// One SSair group-stage step: advance both cooldowns and run whichever
+/// lifecycle event is due. Kept as a proc so tests can drive the exact
+/// stage behavior.
+/datum/excited_group/proc/tick_lifecycle()
+	breakdown_cooldown++
+	dismantle_cooldown++
+	if(breakdown_cooldown >= EXCITED_GROUP_BREAKDOWN_CYCLES)
+		self_breakdown(poke_resting = TRUE)
+	else if(dismantle_cooldown >= EXCITED_GROUP_DISMANTLE_CYCLES)
+		dismantle()
+
+/datum/excited_group/proc/self_breakdown(space_is_all_consuming = FALSE, poke_resting = FALSE)
 	if(!length(turf_list))
 		garbage_collect()
 		return
@@ -665,6 +712,29 @@
 		T.air.copy_from(A)
 		T.update_visuals()
 
+	if(poke_resting)
+		// Wake resting members with a maxed stall counter - share something
+		// next cycle or rest right back. Resting turfs receive gas passively
+		// but never process, so without this periodic prod a drip-fed pocket
+		// (corpse rot, plague rats) never hands its gas past the first ring
+		// of neighbors. Only the flow boundary gets poked - resting members
+		// bordering an awake one: gas still propagates ring by ring (each
+		// breakdown extends the frontier), but a single churner (a draining
+		// gas tank, a breach edge) no longer re-processes a thousand-turf
+		// disaster group in full every four fires for the whole recovery.
+		var/list/turf/open/to_poke = list()
+		for(var/turf/open/T as anything in turf_list)
+			if(!istype(T) || !T.air || !T.excited)
+				continue
+			for(var/turf/open/neighbor as anything in T.atmos_adjacent_turfs)
+				if(!istype(neighbor) || neighbor.excited || neighbor.excited_group != src || !neighbor.air)
+					continue
+				to_poke[neighbor] = TRUE
+		for(var/turf/open/T as anything in to_poke)
+			if(SSair)
+				SSair.add_to_active(T, FALSE)
+			T.atmos_cooldown = EXCITED_GROUP_DISMANTLE_CYCLES
+
 	breakdown_cooldown = 0
 	qdel(A)
 
@@ -673,6 +743,9 @@
 		if(!istype(T))
 			continue
 		T.excited = FALSE
+		// Upstream parity: a dismantled turf must not carry its stall counter
+		// into the next activation, or it rests again after a single cycle.
+		T.atmos_cooldown = 0
 		T.excited_group = null
 		if(SSair)
 			SSair.active_turfs -= T

@@ -321,8 +321,11 @@
 	qdel(old_path)
 
 /// External air changes (vent top-ups, breathing) must postpone excited group
-/// averaging/dismantling without destroying the group: rebuilding room groups
-/// from scratch every fire was a major source of permanently active turfs.
+/// dismantling without destroying the group: rebuilding room groups from
+/// scratch every fire was a major source of permanently active turfs. They
+/// must NOT postpone group averaging - self_breakdown pokes resting members,
+/// and that is the only path gas has out of a drip-fed pocket (corpse rot)
+/// whose per-cycle shares stay under the wake threshold.
 /datum/unit_test/atmos_group_survives_external_change/Run()
 	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
 	var/turf/open/first = run_loc_floor_bottom_left
@@ -339,7 +342,7 @@
 	SSair.add_to_active(first)
 	TEST_ASSERT_EQUAL(first.excited_group, group, "external change destroyed the excited group")
 	TEST_ASSERT_EQUAL(second.excited_group, group, "external change detached a group member")
-	TEST_ASSERT_EQUAL(group.breakdown_cooldown, 0, "external change must reset the breakdown cooldown")
+	TEST_ASSERT_EQUAL(group.breakdown_cooldown, 3, "external change must not postpone group averaging")
 	TEST_ASSERT_EQUAL(group.dismantle_cooldown, 0, "external change must reset the dismantle cooldown")
 
 	// A structural change (adjacency recalculated: door closed, wall built) must

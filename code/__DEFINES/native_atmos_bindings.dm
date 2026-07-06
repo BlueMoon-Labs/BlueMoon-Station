@@ -138,12 +138,7 @@
 		if(!EG)
 			continue
 		num_group_turfs_processed += length(EG.turf_list)
-		EG.breakdown_cooldown++
-		EG.dismantle_cooldown++
-		if(EG.breakdown_cooldown >= EXCITED_GROUP_BREAKDOWN_CYCLES)
-			EG.self_breakdown()
-		else if(EG.dismantle_cooldown >= EXCITED_GROUP_DISMANTLE_CYCLES)
-			EG.dismantle()
+		EG.tick_lifecycle()
 		if(world.tick_usage > Master.current_ticklimit)
 			pause()
 			return TRUE
@@ -203,18 +198,25 @@
 	if(!istype(T) || T.blocks_air || !T.air)
 		return
 	T.excited = TRUE
+	// Upstream parity: activation grants a fresh stall budget. Without this a
+	// turf that rested with a maxed counter (dismantle, individual sleep)
+	// processes exactly one cell per activation and immediately rests again,
+	// so a corpse drip-feeding miasma never pushed its gas anywhere.
+	T.atmos_cooldown = 0
 	active_turfs |= T
 	if(T.atmos_wake_machines)
 		for(var/obj/machinery/atmospherics/machine as anything in T.atmos_wake_machines)
 			machine.atmos_wake()
 	if(blockchanges && T.excited_group)
-		// External gas changes must postpone group averaging/dismantling, which
-		// reset_cooldowns does; destroying the group here (the old behavior) made
-		// every vent top-up and mob breath rebuild whole room groups from scratch
-		// each fire, keeping hundreds of settled turfs permanently active.
-		// Structural (adjacency) changes DO dismantle the group - see
+		// External gas changes must postpone group death but NOT group
+		// averaging: self_breakdown is what wakes resting members (poke), and
+		// that is the only path gas has out of a drip-fed pocket whose
+		// per-cycle shares stay under MINIMUM_MOLES_DELTA_TO_MOVE. Resetting
+		// breakdown_cooldown here starved sleeping neighbors of pokes for as
+		// long as the feed lasted. Destroying the group (the oldest behavior)
+		// is still wrong - see the structural path in
 		// /turf/air_update_turf(update = TRUE).
-		T.excited_group.reset_cooldowns()
+		T.excited_group.dismantle_cooldown = 0
 
 /// Rests a turf without touching its excited group: the turf stops paying
 /// process_cell, but stays in the group's turf_list so breakdown/dismantle
@@ -310,6 +312,14 @@
 	// During world bootstrap adjacency is recalculated for every open turf; waking all of them
 	// at once causes massive active-list churn and slows perceived flow dramatically.
 	if(!SSair.initialized)
+		return
+	// A recalculation that confirms the turf is sealed must not wake it: there
+	// is nothing to share with, so process_cell would queue yet another
+	// recalculation and rest, and the SSair <-> SSadjacent_air bounce becomes
+	// a permanent loop. Every fulltile-window turf poked once (a door cycling
+	// next to it) joined that loop forever - with each recalculation also
+	// waking its open neighbors, thousands of wake/drop pairs per fire.
+	if(!length(open_turf.atmos_adjacent_turfs))
 		return
 	SSair.add_to_active(open_turf, FALSE)
 

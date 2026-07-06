@@ -228,6 +228,9 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	/datum/admins/proc/create_or_modify_area,
 	/datum/admins/proc/fixcorruption,
 	/datum/admins/proc/atmos_active_report,
+	#ifndef TGS
+	/datum/admins/proc/atmos_benchmark,
+	#endif
 	// /client/proc/check_timer_sources,
 	/client/proc/toggle_cdn,
 	/client/proc/discordnulls,
