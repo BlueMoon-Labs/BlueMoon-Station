@@ -74,9 +74,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/max_chat_length = CHAT_MESSAGE_MAX_LENGTH
 	///Whether non-mob messages will be displayed, such as machine vendor announcements. Requires chat_on_map to have effect. Boolean.
 	var/see_chat_non_mob = TRUE
-	///Whether emotes will be displayed on runechat. Requires chat_on_map to have effect. Boolean.
-	var/see_rc_emotes = TRUE
-
 	/// Custom Keybindings
 	var/list/key_bindings = list()
 	/// List with a key string associated to a list of keybindings. Unlike key_bindings, this one operates on raw key, allowing for binding a key that triggers regardless of if a modifier is depressed as long as the raw key is sent.
@@ -93,6 +90,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/list/ui_zoom_preferences = list()
 	var/windowflashing = TRUE
 	var/windownoise = TRUE
+	var/mood_vignette = TRUE
 	var/toggles = TOGGLES_DEFAULT
 	/// A separate variable for deadmin toggles, only deals with those.
 	var/deadmin = NONE
@@ -789,7 +787,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				custom_vars = "--csetup-bg:[bg_primary];--csetup-panel:[bg_secondary];--csetup-panel-2:[bg_secondary];--csetup-border:[border_color];--csetup-text:[text_primary];--csetup-muted:[text_secondary];--csetup-accent:[accent_color];--csetup-accent-rgb:[accent_r],[accent_g],[accent_b];--csetup-btn-bg:[button_bg];--csetup-btn-hover:[button_hover];--csetup-btn-active:[button_active];--csetup-btn-active-text:[button_text];"
 			modern_palette_css = "<style>\n\
 	body{background-color:[bg_primary]}\n\
-	.csetup-root{[custom_vars]background-color:[bg_primary];color:[text_primary];background-image:[bg_pattern]}\n\
+	.csetup-root{background-color:[bg_primary];color:[text_primary];background-image:[bg_pattern]}\n\
 	.csetup-root a,.csetup-root a:link,.csetup-root a:visited{color:[text_primary];background-color:[button_bg];border-color:[border_color];border-radius:[button_radius]}\n\
 	.csetup-root a:hover{background-color:[button_hover]}\n\
 	.csetup-root .linkOn{background-color:[button_active];color:[button_text]}\n\
@@ -810,7 +808,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	.csetup-root a.theme-gear{border-radius:[button_radius]}\n\
 	.csetup-root .theme-custom-editor{background-color:[bg_secondary];border-color:[border_color];color:[text_primary]}\n\
 	.csetup-root .theme-custom-editor-hint{color:[text_secondary]}\n\
-</style>"
+	</style>"
+			if(custom_vars)
+				modern_palette_css = replacetext(modern_palette_css, "</style>", ".csetup-root.csetup-theme-modern.csetup-scheme-custom{[custom_vars]background-color:[bg_primary];color:[text_primary];background-image:[bg_pattern]}\n</style>")
 		var/theme_class = "csetup-theme-classic"
 		switch(charcreation_theme)
 			if("classic")
@@ -825,6 +825,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				theme_class = "csetup-theme-modern csetup-scheme-green csetup-accent-green"
 			if("modern_neutral")
 				theme_class = "csetup-theme-modern csetup-scheme-neutral csetup-accent-neutral"
+			if("modern_custom")
+				theme_class = "csetup-theme-modern csetup-scheme-custom"
 			else
 				if(is_modern_theme)
 					theme_class = "csetup-theme-modern csetup-accent-blue"

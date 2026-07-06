@@ -16,6 +16,7 @@
 	// on_player_ready_change must run before ..() - otherwise we invoke SStitle_bm during/after
 	// destruction when we're invalid, causing "illegal operation" crash in GC (REF/Queue chain).
 	GLOB.new_player_list -= src
+	GLOB.player_list -= src
 	var/was_ready = ready
 	if(was_ready && SStitle_bm)
 		SStitle_bm.on_player_ready_change(-1)

@@ -120,6 +120,74 @@ SUBSYSTEM_DEF(air)
 	set name="Fix Infinite Air"
 	fix_corrupted_atmos()
 
+/datum/admins/proc/atmos_active_report()
+	set category = "Debug.3) Fixing"
+	set desc = "Breakdown of SSair active turfs by z-level and area, for hunting atmos churn."
+	set name = "Atmos Active Turfs Report"
+
+	var/list/z_counts = list()
+	var/list/area_turfs = list()
+	var/planetary_count = 0
+	var/grouped_count = 0
+	var/sharing_count = 0
+	for(var/turf/open/active_turf as anything in SSair.active_turfs)
+		if(!istype(active_turf))
+			continue
+		z_counts["z[active_turf.z]"]++
+		var/area/turf_area = active_turf.loc
+		var/area_key = "[turf_area.type]"
+		var/list/bucket = area_turfs[area_key]
+		if(!bucket)
+			bucket = list()
+			area_turfs[area_key] = bucket
+		bucket += active_turf
+		if(active_turf.planetary_atmos)
+			planetary_count++
+		if(active_turf.excited_group)
+			grouped_count++
+		if(active_turf.air?.last_share > MINIMUM_MOLES_DELTA_TO_MOVE)
+			sharing_count++
+
+	var/list/output = list("<b>SSair active turfs: [length(SSair.active_turfs)]</b> (excited groups: [length(SSair.excited_groups)], in groups: [grouped_count], planetary: [planetary_count], actively sharing: [sharing_count])")
+	var/list/z_lines = list()
+	for(var/z_key in z_counts)
+		z_lines += "[z_key]: [z_counts[z_key]]"
+	output += "By z-level: [z_lines.Join(", ")]"
+	output += "Top areas (count, sharing, planetary, pressure span, temp span):"
+	var/shown = 0
+	while(shown < 15 && length(area_turfs))
+		var/best_key
+		var/best_count = 0
+		for(var/area_key in area_turfs)
+			if(length(area_turfs[area_key]) > best_count)
+				best_count = length(area_turfs[area_key])
+				best_key = area_key
+		var/list/turfs = area_turfs[best_key]
+		var/area_sharing = 0
+		var/area_planetary = 0
+		var/pressure_min = INFINITY
+		var/pressure_max = 0
+		var/temp_min = INFINITY
+		var/temp_max = 0
+		for(var/turf/open/area_turf as anything in turfs)
+			if(!area_turf.air)
+				continue
+			if(area_turf.air.last_share > MINIMUM_MOLES_DELTA_TO_MOVE)
+				area_sharing++
+			if(area_turf.planetary_atmos)
+				area_planetary++
+			var/pressure = area_turf.air.return_pressure()
+			pressure_min = min(pressure_min, pressure)
+			pressure_max = max(pressure_max, pressure)
+			var/turf_temp = area_turf.air.return_temperature()
+			temp_min = min(temp_min, turf_temp)
+			temp_max = max(temp_max, turf_temp)
+		output += "  [best_count] ([area_sharing] sharing, [area_planetary] planetary, [round(pressure_min, 0.1)]-[round(pressure_max, 0.1)] kPa, [round(temp_min, 0.1)]-[round(temp_max, 0.1)] K) - [best_key]"
+		area_turfs -= best_key
+		shown++
+
+	to_chat(usr, output.Join("<br>"))
+
 /datum/controller/subsystem/air/fire(resumed = 0)
 	var/timer = TICK_USAGE_REAL
 

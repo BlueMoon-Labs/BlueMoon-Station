@@ -40,6 +40,13 @@
 	var/pipe_state //icon_state as a pipe item
 	var/on = FALSE
 
+	///world.time until which this machine may skip full atmos processing (idle heartbeat for vents/scrubbers)
+	var/atmos_idle_until = 0
+	///consecutive SSair fires that did no work; drives atmos_idle_until
+	var/atmos_idle_streak = 0
+	///the turf whose atmos_wake_machines list we are registered in
+	var/turf/open/registered_wake_turf
+
 /obj/machinery/atmospherics/Initialize(mapload)
 	. = ..()
 	register_context()
@@ -84,6 +91,9 @@
 
 	SSair.stop_processing_machine(src)
 	SSair.pipenets_needing_rebuilt -= src
+	// Every idling machine registers itself in turf.atmos_wake_machines (a strong
+	// ref); without this the turf pins the deleted machine forever.
+	unregister_turf_wake()
 
 	dropContents()
 	if(pipe_vision_img)
@@ -91,6 +101,50 @@
 
 	return ..()
 	//return QDEL_HINT_FINDREFERENCE
+
+/// Instantly pulls an idle-heartbeat machine (vent/scrubber) back to full processing.
+/obj/machinery/atmospherics/proc/atmos_wake()
+	atmos_idle_until = 0
+	atmos_idle_streak = 0
+
+/obj/machinery/atmospherics/power_change()
+	..()
+	// Power flips must instantly pull idle-heartbeat machines back to work.
+	atmos_wake()
+
+/// Counts a no-op processing pass; after ATMOS_MACHINE_IDLE_STREAK of those the
+/// machine only rechecks on the idle heartbeat until an event wakes it.
+/obj/machinery/atmospherics/proc/atmos_consider_idle()
+	atmos_idle_streak++
+	if(atmos_idle_streak >= ATMOS_MACHINE_IDLE_STREAK)
+		atmos_idle_until = world.time + ATMOS_MACHINE_IDLE_HEARTBEAT
+		// Re-registering on every idle transition self-heals lost registrations
+		// (ChangeTurf under the machine replaces the turf and drops its list).
+		register_turf_wake()
+
+/// Subscribes this machine to instant wake-ups when air changes on its turf
+/// (SSair.add_to_active clears the idle state of everything registered here).
+/// Idempotent; call again freely after the machine or its turf changed.
+/obj/machinery/atmospherics/proc/register_turf_wake()
+	var/turf/open/wake_turf = loc
+	if(!istype(wake_turf))
+		// Still drop any old registration so a stale ref never lingers.
+		unregister_turf_wake()
+		return
+	if(registered_wake_turf != wake_turf)
+		unregister_turf_wake()
+	LAZYOR(wake_turf.atmos_wake_machines, src)
+	registered_wake_turf = wake_turf
+
+/obj/machinery/atmospherics/proc/unregister_turf_wake()
+	var/turf/open/wake_turf = registered_wake_turf
+	registered_wake_turf = null
+	// ChangeTurf replaces the turf in place, retargeting our ref to the new
+	// instance: a /turf/closed has no atmos_wake_machines (the list died with
+	// the old turf), so there is nothing to remove ourselves from.
+	if(!istype(wake_turf))
+		return
+	LAZYREMOVE(wake_turf.atmos_wake_machines, src)
 
 /obj/machinery/atmospherics/proc/destroy_network()
 	return

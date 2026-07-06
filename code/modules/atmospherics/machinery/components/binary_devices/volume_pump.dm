@@ -35,6 +35,7 @@
 /obj/machinery/atmospherics/components/binary/volume_pump/CtrlClick(mob/user)
 	if(user.canUseTopic(src, BE_CLOSE, FALSE,))
 		on = !on
+		atmos_wake()
 		investigate_log("was turned [on ? "on" : "off"] by [key_name(user)]", INVESTIGATE_ATMOS)
 		update_appearance()
 		return ..()
@@ -42,6 +43,7 @@
 /obj/machinery/atmospherics/components/binary/volume_pump/AltClick(mob/user)
 	if(can_interact(user))
 		transfer_rate = MAX_TRANSFER_RATE
+		atmos_wake()
 		investigate_log("was set to [transfer_rate] L/s by [key_name(user)]", INVESTIGATE_ATMOS)
 		balloon_alert(user, "volume output set to [transfer_rate] L/s")
 		update_appearance()
@@ -56,7 +58,11 @@
 
 /obj/machinery/atmospherics/components/binary/volume_pump/process_atmos()
 //	..()
+	if(atmos_idle_until > world.time)
+		return
 	if(!on || !is_operational)
+		// Woken by ui_act()/receive_signal()/power_change().
+		atmos_consider_idle()
 		return
 
 	var/datum/gas_mixture/air1 = airs[1]
@@ -68,17 +74,24 @@
 	var/output_starting_pressure = air2.return_pressure()
 
 	if((input_starting_pressure < 0.01) || (output_starting_pressure > 9000))
+		// Woken by the pipenet pressure-jump broadcast.
+		atmos_consider_idle()
 		return
 
 	var/input_volume = air1.return_volume()
 	if(input_volume <= 0)
+		atmos_consider_idle()
 		return
 
 	var/transfer_ratio = transfer_rate/input_volume
 
-	air1.transfer_ratio_to(air2,transfer_ratio)
-
-	update_parents()
+	if(air1.transfer_ratio_to(air2, transfer_ratio))
+		atmos_idle_streak = 0
+		update_parents()
+	else
+		// Zero transfer rate (or nothing actually moved): a no-op must not keep
+		// the pump awake and dirty the pipenet every fire. Woken by UI/signals.
+		atmos_consider_idle()
 
 /obj/machinery/atmospherics/components/binary/volume_pump/proc/set_frequency(new_frequency)
 	SSradio.remove_object(src, frequency)
@@ -120,6 +133,7 @@
 /obj/machinery/atmospherics/components/binary/volume_pump/ui_act(action, params)
 	if(..())
 		return
+	atmos_wake()
 	var/turf/T = get_turf(src)
 	var/area/A = get_area(src)
 	switch(action)
@@ -149,6 +163,9 @@
 	if(!signal.data["tag"] || (signal.data["tag"] != id) || (signal.data["sigtype"]!="command"))
 		return
 
+	// Pure status polls are read-only telemetry and must not reset the idle heartbeat.
+	if(!("status" in signal.data))
+		atmos_wake()
 	var/old_on = on //for logging
 
 	if("power" in signal.data)

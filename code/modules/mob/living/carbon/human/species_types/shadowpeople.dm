@@ -236,8 +236,7 @@
 /obj/item/light_eater/proc/disintegrate(obj/item/O)
 	if(istype(O, /obj/item/modular_computer/pda))
 		var/obj/item/modular_computer/pda/PDA = O
-		PDA.set_light(0)
-		PDA.light_on = FALSE
+		PDA.set_light_on(FALSE) // оверлейный свет ПДА: гасим через сеттер, а не легаси set_light()
 		PDA.fon = FALSE
 		PDA.update_icon()
 		visible_message("<span class='danger'>The light in [PDA] shorts out!</span>")
@@ -253,7 +252,13 @@
 			visible_message("<span class='danger'>[light] on [O] flickers out and disintegrates!</span>")
 	else
 		visible_message("<span class='danger'>[O] flickers out!</span>") // BLUEMOON CHANGE - [O] is disintegrated by [src]!
-		O.set_light(0) // BLUEMOON CHANGE - O.burn()
+		// Оверлейные предметы гасим тумблером (их код мигрирован на set_light_on и умеет включать
+		// обратно), а COMPLEX - обнулением дальности: их потребители (свечи и т.п.) перезажигаются
+		// голым set_light(range) без l_on, и выключенный тумблер окирпичил бы предмет навсегда.
+		if(IS_OVERLAY_LIGHT_SYSTEM(O.light_system))
+			O.set_light_on(FALSE)
+		else
+			O.set_light(0)
 	playsound(src, 'sound/items/welder.ogg', 50, 1)
 
 #undef HEART_SPECIAL_SHADOWIFY

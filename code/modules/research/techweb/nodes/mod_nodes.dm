@@ -33,6 +33,7 @@
 		"mod_drill",
 		"mod_orebag",
 		"mod_storage_extended",
+		"pai_module",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
 

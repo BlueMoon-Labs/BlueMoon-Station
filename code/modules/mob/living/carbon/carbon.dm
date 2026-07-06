@@ -18,6 +18,7 @@
 	//This must be done first, so the mob ghosts correctly before DNA etc is nulled
 	. =  ..()
 
+	QDEL_NULL(small_sprite)
 	QDEL_LIST(internal_organs)
 	QDEL_LIST(stomach_contents)
 	QDEL_LAZYLIST(all_wounds)

@@ -359,14 +359,14 @@ em {
 }
 
 .emote {
-  color: #55555f;
+  color: var(--cs-emote-color, #4a4a55);
   font-style: italic;
   padding-left: 0.6em;
-  border-left: 2px solid rgba(80, 80, 95, 0.25);
+  border-left: 2px solid rgba(80, 80, 95, 0.4);
 }
 
 .deadsay {
-  color: #5c00e6;
+  color: var(--cs-deadsay-color, #5c00e6);
 }
 
 .binarysay {
@@ -1091,11 +1091,7 @@ blockquote.nicegreen {
 
 .lewd {
   font-style: italic;
-  background: linear-gradient(90deg, #d6258f, #8b2fb0);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: #7a2d8f;
-  -webkit-text-fill-color: transparent;
+  color: var(--cs-lewd-color, #b0269c);
 }
 
 /* BLUEMOON ADD START - напитки для синтетиков */
@@ -1465,23 +1461,7 @@ blockquote.brass {
 .singing {
   font-family: "Trebuchet MS", cursive, sans-serif;
   font-style: italic;
-  letter-spacing: 0.6px;
-  background: linear-gradient(90deg, #2b6fb0, #6a3fb0, #b03d7a);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: #6a3fb0;
-  -webkit-text-fill-color: transparent;
-  animation: song-drift 6000ms ease-in-out infinite alternate;
-}
-
-@keyframes song-drift {
-  0% {
-    filter: hue-rotate(0deg);
-  }
-
-  100% {
-    filter: hue-rotate(20deg);
-  }
+  color: var(--cs-singing-color, #6a3fb0);
 }
 
 .his_grace {
@@ -1801,19 +1781,15 @@ li {
 /* Голоса видов и существ */
 .ember {
   color: #a85a23;
-  font-family: Georgia, "Times New Roman", serif;
   text-shadow: 0 0 2px rgba(120, 45, 10, 0.3);
 }
 
 .felinspeak {
   color: #c85bb0;
-  font-family: "Trebuchet MS", Verdana, sans-serif;
 }
 
 .voxshriek {
   color: #3a7d6d;
-  font-family: "Consolas", "Courier New", monospace;
-  letter-spacing: -0.04em;
   font-weight: bold;
 }
 
@@ -1824,14 +1800,11 @@ li {
 
 .plasmavoice {
   color: #7d4fd6;
-  font-family: "Consolas", "Courier New", monospace;
   text-shadow: 0 0 2px rgba(150, 100, 255, 0.2);
 }
 
 .chitvoice {
   color: #6f7d22;
-  font-family: "Verdana", sans-serif;
-  letter-spacing: 0.02em;
 }
 
 .shadekinvoice {
@@ -1842,14 +1815,14 @@ li {
 
 .frostvoice {
   color: #4f9bb5;
-  font-size: 310%;
+  font-size: 185%;
   font-weight: bold;
   text-shadow: 0 0 4px rgba(120, 200, 230, 0.3);
 }
 
 .bloodmad {
   color: #c41010;
-  font-size: 310%;
+  font-size: 185%;
   font-weight: bold;
   font-style: italic;
   text-shadow: 0 0 3px rgba(120, 0, 0, 0.35);
@@ -1899,20 +1872,20 @@ li {
 .infernal_ascension {
   color: #e0461a;
   font-weight: bold;
-  font-size: 245%;
+  font-size: 185%;
   text-shadow: 0 0 8px rgba(255, 90, 0, 0.4);
-  animation: infernoflicker 220ms infinite alternate;
+  animation: infernoflicker 1400ms ease-in-out infinite alternate;
 }
 
 @keyframes infernoflicker {
   0% {
-    opacity: 0.82;
+    opacity: 0.92;
     text-shadow: 0 0 6px rgba(255, 80, 0, 0.4);
   }
 
   100% {
     opacity: 1;
-    text-shadow: 0 0 11px rgba(220, 110, 30, 0.6);
+    text-shadow: 0 0 10px rgba(220, 110, 30, 0.55);
   }
 }
 
@@ -1947,19 +1920,19 @@ li {
   color: #b5103a;
   font-style: italic;
   font-weight: bold;
-  text-shadow: 0 0 7px rgba(120, 0, 30, 0.45);
+  text-shadow: 0 0 6px rgba(120, 0, 30, 0.4);
   animation: mesmer-pulse 2600ms ease-in-out infinite alternate;
 }
 
 @keyframes mesmer-pulse {
   0% {
     color: #9c1030;
-    text-shadow: 0 0 4px rgba(90, 0, 20, 0.4);
+    text-shadow: 0 0 4px rgba(90, 0, 20, 0.35);
   }
 
   100% {
-    color: #ff385f;
-    text-shadow: 0 0 11px rgba(180, 20, 60, 0.6);
+    color: #d92b52;
+    text-shadow: 0 0 9px rgba(180, 20, 60, 0.5);
   }
 }
 
@@ -1994,28 +1967,21 @@ li {
   font-weight: bold;
   letter-spacing: 0.04em;
   color: #0aa0a0;
-  animation: ai_glitch 900ms steps(2) infinite;
+  text-shadow: 1px 0 rgba(209, 31, 60, 0.5), -1px 0 rgba(10, 160, 160, 0.5);
+  animation: ai_glitch 2400ms steps(2) infinite;
 }
 
 @keyframes ai_glitch {
   0% {
-    color: #0aa0a0;
-    text-shadow: 1px 0 #d11f3c, -1px 0 #0aa0a0;
+    text-shadow: 1px 0 rgba(209, 31, 60, 0.5), -1px 0 rgba(10, 160, 160, 0.5);
   }
 
-  45% {
-    color: #d11f3c;
-    text-shadow: -1px 0 #0aa0a0, 1px 0 #d11f3c;
-  }
-
-  55% {
-    color: #1593b8;
-    text-shadow: 1px 0 #d11f3c, -1px 0 #0aa0a0;
+  50% {
+    text-shadow: -1px 0 rgba(209, 31, 60, 0.5), 1px 0 rgba(10, 160, 160, 0.5);
   }
 
   100% {
-    color: #0aa0a0;
-    text-shadow: -1px 0 #d11f3c, 1px 0 #0aa0a0;
+    text-shadow: 1px 0 rgba(209, 31, 60, 0.5), -1px 0 rgba(10, 160, 160, 0.5);
   }
 }
 
@@ -2029,26 +1995,24 @@ li {
   color: #5c6163;
   font-family: Consolas, "Courier New", monospace;
   letter-spacing: 0.03em;
-  transform: skewX(-3deg);
-  display: inline-block;
-  animation: bcast_flicker 1600ms steps(3) infinite;
+  animation: bcast_flicker 2400ms steps(3) infinite;
 }
 
 @keyframes bcast_flicker {
   0% {
-    opacity: 0.85;
+    opacity: 0.95;
   }
 
   30% {
-    opacity: 0.55;
+    opacity: 0.75;
   }
 
   60% {
-    opacity: 0.92;
+    opacity: 1;
   }
 
   100% {
-    opacity: 0.7;
+    opacity: 0.85;
   }
 }
 
@@ -2060,10 +2024,9 @@ li {
 
 /* Коммуникационные режимы и состояния персонажа */
 .whisper {
-  color: #5a6478;
+  color: var(--cs-whisper-color, #5a6478);
   font-style: italic;
-  font-size: 92%;
-  opacity: 0.9;
+  opacity: 0.92;
   letter-spacing: 0.02em;
 }
 
@@ -2083,25 +2046,22 @@ li {
   }
 
   100% {
-    opacity: 0.7;
-    letter-spacing: 1.4px;
+    opacity: 0.78;
+    letter-spacing: 1.2px;
   }
 }
 
 .slurring {
   display: inline-block;
-  filter: blur(0.35px);
   letter-spacing: 0.4px;
   transform: skewX(-3deg);
-  opacity: 0.9;
 }
 
 .glitch {
   display: inline-block;
-  font-family: "Courier New", monospace;
   color: #0a6e9c;
-  text-shadow: -1px 0 rgba(200, 0, 70, 0.8), 1px 0 rgba(0, 150, 90, 0.8);
-  animation: glitch-jit 400ms steps(3) infinite;
+  text-shadow: -1px 0 rgba(200, 0, 70, 0.6), 1px 0 rgba(0, 150, 90, 0.6);
+  animation: glitch-jit 700ms steps(3) infinite;
 }
 
 @keyframes glitch-jit {
@@ -2123,21 +2083,20 @@ li {
 }
 
 .telepathy {
-  color: #2a8a9c;
+  color: var(--cs-telepathy-color, #2a8a9c);
   font-style: italic;
   text-shadow: 0 0 5px rgba(80, 180, 210, 0.25);
 }
 
 .telepathybold {
-  color: #2a8a9c;
+  color: var(--cs-telepathy-color, #2a8a9c);
   font-style: italic;
   font-weight: bold;
   text-shadow: 0 0 6px rgba(80, 180, 210, 0.3);
 }
 
 .signlang {
-  color: #8a6f2e;
-  font-family: "Trebuchet MS", Verdana, sans-serif;
+  color: var(--cs-signlang-color, #8a6f2e);
   font-style: italic;
 }
 
@@ -2148,7 +2107,7 @@ li {
 }
 
 .thought {
-  color: #6e5d9c;
+  color: var(--cs-thought-color, #6e5d9c);
   font-style: italic;
   opacity: 0.9;
 }
@@ -2160,7 +2119,7 @@ li {
 }
 
 .dream {
-  color: #5f5b8c;
+  color: var(--cs-dream-color, #5f5b8c);
   font-style: italic;
   letter-spacing: 0.08em;
   animation: dreamhaze 5000ms infinite alternate;
@@ -2168,7 +2127,7 @@ li {
 
 @keyframes dreamhaze {
   0% {
-    opacity: 0.7;
+    opacity: 0.75;
   }
 
   100% {
@@ -2184,14 +2143,14 @@ li {
 }
 
 .purr {
-  color: #c85b8a;
+  color: var(--cs-purr-color, #c85b8a);
   font-style: italic;
   letter-spacing: 0.04em;
   text-shadow: 0 0 5px rgba(200, 80, 120, 0.2);
 }
 
 .croon {
-  color: #b04d5d;
+  color: var(--cs-croon-color, #b04d5d);
   font-style: italic;
   text-shadow: 0 0 5px rgba(150, 60, 70, 0.25);
 }

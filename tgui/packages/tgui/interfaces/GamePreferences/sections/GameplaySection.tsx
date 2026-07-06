@@ -18,6 +18,7 @@ type GameplayData = {
   action_buttons_hide: boolean;
   announce_login: boolean;
   combohud_lighting: boolean;
+  autostand: boolean;
 };
 
 const BE_VICTIM_OPTIONS = [
@@ -42,6 +43,7 @@ const GAMEPLAY_TOGGLES: { key: string; label: string; flag: string; invert?: boo
   { key: 'disable_combat_cursor', label: 'Отключить курсор боя', flag: 'disable_combat_cursor', tooltip: 'Не менять курсор при входе в боевой режим (harm intent)' },
   { key: 'disable_combat_mouse_lock', label: 'Отключить захват мыши в бою', flag: 'disable_combat_mouse_lock', tooltip: 'Не блокировать курсор мыши в пределах окна при входе в боевой режим' },
   { key: 'tg_player_panel', label: 'Новый стиль панели игрока (TG)', flag: 'tg_player_panel', tooltip: 'Использовать обновлённый интерфейс панели информации об игроке (TG-стиль)' },
+  { key: 'autostand', label: 'Автоматическое вставание', flag: 'autostand', tooltip: 'Автоматически вставать после падения или когда вас поднимают' },
 ];
 
 export const GameplaySection = (props, context) => {

@@ -77,6 +77,28 @@
 	if(Storage)
 		Storage.Destroy()
 
+
+
+//PAI модуль
+//функции вытаскивания и изъятия pai в файле mod_ai.dm
+
+/obj/item/mod/module/pai
+	name = "MOD PAI module"
+	desc = "Модуль для подключения ПИИ к панели управления МОДом."
+	icon_state = "pai"
+	var/mob/living/silicon/pai/my_pai
+	incompatible_modules = list(/obj/item/mod/module/pai)
+	complexity = 2
+
+/obj/item/mod/module/pai/on_install()
+	. = ..()
+	mod.can_install_pai = TRUE
+
+/obj/item/mod/module/pai/on_uninstall()
+	. = ..()
+	mod.can_install_pai = FALSE
+	mod.remove_pai()
+
 ///Ion Jetpack - Lets the user fly freely through space using battery charge.
 /obj/item/mod/module/jetpack
 	name = "MOD ion jetpack module"

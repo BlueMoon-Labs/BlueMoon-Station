@@ -181,22 +181,32 @@
 				SShilbertshotel.user_data[user.ckey]["status"] = STATUS_IDLE
 			return TRUE
 
-/obj/item/hilbertshotel/proc/check_user(mob/user)
+/obj/item/hilbertshotel/proc/check_user(mob/user, pulled = FALSE)
+	. = FALSE
+	var/static/list/protected_jobs = list(
+		"Captain", "NanoTrasen Representative", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director", "Head of Security",
+		"Security Officer", "Blueshield", "Peacekeeper", "Brig Physician", "Warden", "Detective"
+	)
+	// Защита от NonCon без последствий для важных ролей
+	if(pulled && iscarbon(user))
+		var/mob/living/carbon/C = user
+		if((C.stat > CONSCIOUS || C.restrained(TRUE)) && ((user.job in protected_jobs) || (user.mind?.assigned_role in protected_jobs)) \
+			&& !is_away_level(user.z))
+			return
 	if(GLOB.master_mode == "Extended")
 		return TRUE
 	if(!user.mind)
 		return TRUE
 
 	var/datum/mind/mind = user.mind
-	if(!(mind.antag_datums || HAS_MIND_TRAIT(user, TRAIT_MINDSHIELD)))
-		return TRUE
 	if(mind.has_antag_datum(/datum/antagonist/ghost_role))
+		return TRUE
+	if(!(mind.antag_datums || HAS_MIND_TRAIT(user, TRAIT_MINDSHIELD)))
 		return TRUE
 	if(mind.has_antag_datum(/datum/antagonist/ashwalker))
 		return TRUE
 
-	to_chat(user, "<span class='warning'>Your special role doesn't allow you to enter infinity dormitory.</span>")
-	return FALSE
+	to_chat(user, span_warning("Your special role doesn't allow you to enter infinity dormitory."))
 
 /obj/item/hilbertshotel/proc/promptAndCheckIn(mob/user, mob/target, room_number, template)
 	//SPLURT EDIT - max infinidorms rooms
@@ -352,15 +362,19 @@
 		return
 	if(!istype(T))
 		return
-	var/atom/movable/AM
+	var/atom/movable/pulledAtom
 	if(user.pulling)
-		AM = user.pulling
-		if(istype(AM, /mob/living))
-			if(check_user(AM))
-				MobTransfer(AM, T, depth)
+		pulledAtom = user.pulling
+		if(istype(pulledAtom, /mob/living))
+			if(check_user(pulledAtom, TRUE))
+				MobTransfer(pulledAtom, T, depth)
+			else
+				pulledAtom = null
 		else
-			AM.forceMove(T)
+			pulledAtom.forceMove(T)
 	if(user.buckled && !user.buckled.anchored)
+		if(!check_user(user, TRUE))
+			return
 		var/atom/movable/seating = user.buckled
 		if(istype(seating, /mob/living))
 			if(check_user(seating))
@@ -375,19 +389,22 @@
 		var/datum/component/riding/human/riding_datum_human = user.GetComponent(/datum/component/riding/human)
 		var/mob/living/buckled_mob
 		for(var/mob/living/I in user.buckled_mobs)
+			if(!check_user(I, TRUE))
+				continue
 			buckled_mob = I
 			I.forceMove(T)
 		user.unbuckle_all_mobs(TRUE)
 		user.forceMove(T)
-		if(riding_datum_human && ishuman(user))
-			var/mob/living/carbon/human/H = user
-			H.buckle_mob(buckled_mob, TRUE, TRUE, buckle_type = riding_datum_human.buckle_type, auto_by_type = TRUE)
-		else
-			user.buckle_mob(buckled_mob, TRUE, TRUE)
+		if(buckled_mob)
+			if(riding_datum_human && ishuman(user))
+				var/mob/living/carbon/human/H = user
+				H.buckle_mob(buckled_mob, TRUE, TRUE, buckle_type = riding_datum_human.buckle_type, auto_by_type = TRUE)
+			else
+				user.buckle_mob(buckled_mob, TRUE, TRUE)
 	else
 		user.forceMove(T)
-	if(AM)
-		user.start_pulling(AM)
+	if(pulledAtom)
+		user.start_pulling(pulledAtom)
 
 /obj/item/hilbertshotel/proc/getMapTemplate(roomType) // To load a map and remove it's atoms
 	if(roomType == "Mystery Room")

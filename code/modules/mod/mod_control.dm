@@ -98,6 +98,8 @@
 	COOLDOWN_DECLARE(cooldown_mod_move)
 	/// Person wearing the MODsuit.
 	var/mob/living/carbon/human/wearer
+	/// Определяет, может ли быть установлен ПИИ в МОД
+	var/can_install_pai = FALSE
 
 /obj/item/mod/control/Initialize(mapload, new_theme, new_skin)
 	. = ..()
@@ -334,8 +336,9 @@
 		if(!open) //mod must be open
 			balloon_alert(user, "suit must be open to transfer!")
 			return FALSE
-		insert_pai(user, attacking_item)
-		return TRUE
+		if(can_install_pai)
+			insert_pai(user, attacking_item)
+			return TRUE
 	if(istype(attacking_item, /obj/item/mod/module))
 		if(!open)
 			balloon_alert(user, "open the panel first!")

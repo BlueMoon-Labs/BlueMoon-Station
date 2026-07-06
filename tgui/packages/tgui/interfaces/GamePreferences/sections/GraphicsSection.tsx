@@ -25,6 +25,7 @@ type GraphicsData = {
   view_pixelshift: boolean;
   lighting_blur: number;
   UI_style: string;
+  mood_vignette: boolean;
 };
 
 const PARALLAX_OPTIONS = [
@@ -52,7 +53,7 @@ const LIGHTING_BLUR_OPTIONS = [
   { value: 4, label: '4' },
 ];
 
-const UI_STYLE_OPTIONS = ['Midnight', 'Plasma', 'Retro', 'Operative', 'Minimal'];
+const UI_STYLE_OPTIONS = ['Midnight', 'Retro', 'Plasmafire', 'Slimecore', 'Operative', 'Glass', 'Clockwork', 'Trasen-Knox', 'Detective', 'Liteweb', 'Corru'];
 
 const GFX_TOGGLES: { key: string; label: string; flag: string; tooltip?: string }[] = [
   { key: 'ambient_occlusion', label: 'Объёмное затенение (AO)', flag: 'ambient_occlusion', tooltip: 'Эффект затенения в углах и стыках объектов для более реалистичной картинки. Влияет на производительность' },
@@ -71,6 +72,7 @@ const GFX_TOGGLES: { key: string; label: string; flag: string; tooltip?: string 
   { key: 'chat_on_map_looc', label: 'Руначат для LOOC', flag: 'chat_on_map_looc', tooltip: 'Показывать LOOC-сообщения в руначате на карте (требует включённого руначата)' },
   { key: 'see_chat_non_mob', label: 'Руначат для не-мобов', flag: 'see_chat_non_mob', tooltip: 'Показывать руначат от объектов, структур и прочих не-мобов' },
   { key: 'see_chat_emotes', label: 'Руначат для эмоутов', flag: 'see_chat_emotes', tooltip: 'Показывать эмоуты (*действия) персонажей в руначате на карте' },
+  { key: 'mood_vignette', label: 'Виньетка плохого настроения', flag: 'mood_vignette', tooltip: 'Показывать затемнение экрана при низком уровне настроения и рассудка' },
 ];
 
 export const GraphicsSection = (props, context) => {

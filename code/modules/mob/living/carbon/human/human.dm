@@ -48,6 +48,7 @@
 /mob/living/carbon/human/Destroy()
 	QDEL_NULL(profile)
 	QDEL_NULL(physiology)
+	QDEL_NULL(mob_panel)
 	QDEL_NULL_LIST(vore_organs) // CITADEL EDIT belly stuff
 	GLOB.human_list -= src
 	GLOB.suit_sensors_list -= src
@@ -607,6 +608,9 @@
 /mob/living/carbon/human/cuff_resist(obj/item/I)
 	if(dna && dna.check_mutation(HULK) || istype(mind.martial_art, /datum/martial_art/nanosuit))
 		say(pick(";РАААААААААРГ!", ";ХНННННННГГГГГГГ!", ";ГВААААРРХХ!", "ННННННГГГГГГХ!", ";ААААААРРГГ!" ), forced = "hulk")
+		if(..(I, cuff_break = FAST_CUFFBREAK))
+			dropItemToGround(I)
+	else if(iszombie_infectious(src))
 		if(..(I, cuff_break = FAST_CUFFBREAK))
 			dropItemToGround(I)
 	else

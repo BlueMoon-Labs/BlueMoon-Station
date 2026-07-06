@@ -31,12 +31,16 @@ type ChatData = {
 };
 
 const GHOST_FORM_OPTIONS = [
-  'ghost', 'ghostking', 'ghostian', 'ghostian2', 'ghostblade',
-  'ghostdragon', 'catghost', 'shittybill',
+  'ghost', 'ghost1', 'ghost2', 'ghostking', 'ghostian2', 'skeleghost',
+  'ghost_red', 'ghost_black', 'ghost_blue', 'ghost_yellow', 'ghost_green',
+  'ghost_pink', 'ghost_cyan', 'ghost_dblue', 'ghost_dred', 'ghost_dgreen',
+  'ghost_dcyan', 'ghost_grey', 'ghost_dyellow', 'ghost_dpink',
+  'ghost_purpleswirl', 'ghost_funkypurp', 'ghost_pinksherbert', 'ghost_blazeit',
+  'ghost_mellow', 'ghost_rainbow', 'ghost_camo', 'ghost_fire', 'catghost',
 ];
 
 const GHOST_ORBIT_OPTIONS = [
-  'orbit', 'triangle', 'hexagon', 'square', 'pentagon', 'circle', 'star',
+  'circle', 'triangle', 'square', 'hexagon', 'pentagon',
 ];
 
 const GHOST_ACCS_OPTIONS = [
@@ -211,7 +215,7 @@ export const ChatSection = (props, context) => {
           <Stack.Divider />
           {dropdownRow('Форма призрака', GHOST_FORM_OPTIONS, data.ghost_form || 'ghost',
             value => act('set_ui_pref', { flag: 'ghost_form', value }))}
-          {dropdownRow('Орбита призрака', GHOST_ORBIT_OPTIONS, data.ghost_orbit || 'pentagon',
+          {dropdownRow('Орбита призрака', GHOST_ORBIT_OPTIONS, data.ghost_orbit || 'circle',
             value => act('set_ui_pref', { flag: 'ghost_orbit', value }))}
           {dropdownRow('Аксессуары призрака', GHOST_ACCS_OPTIONS, Number(data.ghost_accs ?? 100),
             value => act('set_ui_pref', { flag: 'ghost_accs', value }),

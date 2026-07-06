@@ -23,6 +23,7 @@
 /obj/machinery/atmospherics/components/unary/outlet_injector/CtrlClick(mob/user)
 	if(can_interact(user))
 		on = !on
+		atmos_wake()
 		investigate_log("was turned [on ? "on" : "off"] by [key_name(user)]", INVESTIGATE_ATMOS)
 		update_appearance()
 	return ..()
@@ -30,6 +31,7 @@
 /obj/machinery/atmospherics/components/unary/outlet_injector/AltClick(mob/user)
 	if(can_interact(user))
 		volume_rate = MAX_TRANSFER_RATE
+		atmos_wake()
 		investigate_log("was set to [volume_rate] L/s by [key_name(user)]", INVESTIGATE_ATMOS)
 		balloon_alert(user, "volume output set to [volume_rate] L/s")
 		update_appearance()
@@ -58,21 +60,29 @@
 
 
 /obj/machinery/atmospherics/components/unary/outlet_injector/process_atmos()
-	..()
+	if(atmos_idle_until > world.time)
+		return
 
 	injecting = 0
 
 	if(!on || !is_operational)
+		// Woken by ui_act()/receive_signal()/power_change().
+		atmos_consider_idle()
 		return
 
 	var/datum/gas_mixture/air_contents = airs[1]
 	var/air_volume = air_contents.return_volume()
 
-	if(air_contents.return_temperature() > 0 && air_volume > 0)
-		loc.assume_air_ratio(air_contents, volume_rate / air_volume)
-		air_update_turf()
-
+	// An empty pipe or a zero volume_rate must not reactivate the turf and dirty
+	// the pipenet every fire; the pipenet pressure-jump broadcast and UI/signal
+	// wakes cover the moment that changes. assume_air_ratio reports whether any
+	// gas actually moved and already reactivates the turf on success.
+	if(air_contents.return_temperature() > 0 && air_volume > 0 \
+		&& loc.assume_air_ratio(air_contents, volume_rate / air_volume))
 		update_parents()
+		atmos_idle_streak = 0
+	else
+		atmos_consider_idle()
 
 /obj/machinery/atmospherics/components/unary/outlet_injector/proc/inject()
 
@@ -121,6 +131,9 @@
 	if(!signal.data["tag"] || (signal.data["tag"] != id) || (signal.data["sigtype"]!="command"))
 		return
 
+	// Pure status polls are read-only telemetry and must not reset the idle heartbeat.
+	if(!("status" in signal.data))
+		atmos_wake()
 	if("power" in signal.data)
 		on = text2num(signal.data["power"])
 
@@ -159,6 +172,7 @@
 	if(..())
 		return
 
+	atmos_wake()
 	switch(action)
 		if("power")
 			on = !on

@@ -812,6 +812,12 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 		pixel_x = rand(-8, 8)
 		pixel_y = rand(-8, 8)
 
+/obj/item/proc/randomize_pixel_position()
+	if(item_flags & NO_PIXEL_RANDOM_DROP)
+		return
+	pixel_x = base_pixel_x + rand(-6, 6)
+	pixel_y = base_pixel_y + rand(-6, 6)
+
 /obj/item/proc/remove_item_from_storage(atom/newLoc) //please use this if you're going to snowflake an item out of a obj/item/storage
 	if(!newLoc)
 		return FALSE

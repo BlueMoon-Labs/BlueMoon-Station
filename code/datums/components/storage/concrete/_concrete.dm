@@ -186,6 +186,9 @@
 			else
 				I.forceMove(parent.drop_location())
 		return FALSE
+	if(!(I.item_flags & NO_PIXEL_RANDOM_DROP))
+		I.pixel_x = I.base_pixel_x
+		I.pixel_y = I.base_pixel_y
 	I.on_enter_storage(master)
 	I.item_flags |= IN_STORAGE
 	refresh_mob_views()

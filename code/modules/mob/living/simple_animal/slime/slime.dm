@@ -112,18 +112,14 @@
 /mob/living/simple_animal/slime/Destroy()
 	deltimer(atkcool_timer_id)
 	AIproc = 0
-	for(var/friend in Friends)
-		UnregisterSignal(friend, COMSIG_PARENT_QDELETING)
-	for (var/A in actions)
-		var/datum/action/AC = A
-		AC.Remove(src)
 	Target = null
 	Leader = null
-	AIproc = 0
 	for(var/friend in Friends)
 		UnregisterSignal(friend, COMSIG_PARENT_QDELETING)
-	Friends.Cut()
-	speech_buffer.Cut()
+	Friends = null
+	speech_buffer = null
+	for(var/datum/action/innate/slime/A in actions)
+		A.Remove(src)
 	return ..()
 
 /mob/living/simple_animal/slime/proc/initialize_mutations()

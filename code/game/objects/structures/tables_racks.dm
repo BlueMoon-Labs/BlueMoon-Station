@@ -1093,7 +1093,8 @@
 	icon = 'icons/obj/items_and_weapons.dmi'
 	icon_state = "rack_parts"
 	flags_1 = CONDUCT_1
-	custom_materials = list(/datum/material/iron=2000)
+	custom_materials = list(/datum/material/iron=MINERAL_MATERIAL_AMOUNT*3)
+	var/buildstackamount = 3
 	var/building = FALSE
 	// MODULAR_JUICY-ADD - Делаем дефолтный путь к объекту в виде переменной, чтобы можно было передать что за тип конструкции
 	var/obj/construction_type = /obj/structure/rack
@@ -1105,12 +1106,12 @@
 	icon = 'icons/obj/items_and_weapons.dmi'
 	icon_state = "rack_parts"
 	flags_1 = CONDUCT_1
-	custom_materials = list(/datum/material/iron=2000)
+	custom_materials = list(/datum/material/iron=MINERAL_MATERIAL_AMOUNT*5)
 	var/building = FALSE
 
 /obj/item/rack_parts/attackby(obj/item/W, mob/user, params)
 	if(W.tool_behaviour == TOOL_WRENCH)
-		new /obj/item/stack/sheet/metal(user.loc)
+		new /obj/item/stack/sheet/metal(drop_location(), buildstackamount)
 		qdel(src)
 	else
 		. = ..()
@@ -1137,7 +1138,7 @@
 
 /obj/item/shelf_parts/attackby(obj/item/W, mob/user, params)
 	if(W.tool_behaviour == TOOL_WRENCH)
-		new /obj/item/stack/sheet/metal(user.loc)
+		new /obj/item/stack/sheet/metal(drop_location(), 5)
 		qdel(src)
 	else
 		. = ..()

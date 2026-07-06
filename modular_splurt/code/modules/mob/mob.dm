@@ -6,10 +6,6 @@
 	. = ..()
 	create_player_panel()
 
-/mob/Destroy()
-	QDEL_NULL(mob_panel)
-	. = ..()
-
 /mob/verb/tilt_left()
 	set hidden = TRUE
 	if(!canface() || is_tilted < -45)
