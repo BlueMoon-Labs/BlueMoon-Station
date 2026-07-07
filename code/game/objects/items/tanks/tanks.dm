@@ -230,9 +230,11 @@
 				distribute_pressure = clamp(round(pressure), TANK_MIN_RELEASE_PRESSURE, TANK_MAX_RELEASE_PRESSURE)
 
 /obj/item/tank/remove_air(amount)
+	excite_tank()
 	return air_contents.remove(amount)
 
 /obj/item/tank/remove_air_ratio(ratio)
+	excite_tank()
 	return air_contents.remove_ratio(ratio)
 
 /obj/item/tank/return_air()
@@ -244,18 +246,21 @@
 /obj/item/tank/assume_air(datum/gas_mixture/giver)
 	air_contents.merge(giver)
 
+	excite_tank()
 	check_status()
 	return TRUE
 
 /obj/item/tank/assume_air_moles(datum/gas_mixture/giver, moles)
 	giver.transfer_to(air_contents, moles)
 
+	excite_tank()
 	check_status()
 	return TRUE
 
 /obj/item/tank/assume_air_ratio(datum/gas_mixture/giver, ratio)
 	giver.transfer_ratio_to(air_contents, ratio)
 
+	excite_tank()
 	check_status()
 	return TRUE
 
@@ -272,8 +277,28 @@
 
 /obj/item/tank/process()
 	//Allow for reactions
-	air_contents.react()
-	check_status()
+	var/reacted = air_contents?.react()
+	check_status() // may qdel us (rupture/meltdown)
+	if(QDELETED(src) || !air_contents)
+		return
+	// Anything still in motion keeps the tank on SSobj: an active reaction, pressure in
+	// the leak/rupture band, integrity mid-regen, contents hot enough to melt the shell,
+	// or being docked in a portable that can pump into our mixture directly. A settled
+	// tank parks itself and waits for excite_tank() from one of the air mutators.
+	if(reacted || integrity < initial(integrity))
+		return
+	if(air_contents.return_pressure() > TANK_LEAK_PRESSURE || air_contents.return_temperature() > TANK_MELT_TEMPERATURE)
+		return
+	if(istype(loc, /obj/machinery/portable_atmospherics))
+		return
+	return PROCESS_KILL
+
+///Puts the tank back on SSobj after its contents changed; process() re-parks it once the
+///mixture settles. Every path that mutates air_contents from outside must call this.
+/obj/item/tank/proc/excite_tank()
+	if(QDELETED(src))
+		return
+	START_PROCESSING(SSobj, src)
 
 /obj/item/tank/proc/check_status()
 	//Handle exploding, leaking, and rupturing of the tank

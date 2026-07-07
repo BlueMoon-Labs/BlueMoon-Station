@@ -111,6 +111,9 @@
 			user.put_in_hands(holding)
 	if(new_tank)
 		holding = new_tank
+		// portables pump into holding.air_contents directly (canister valve, pump,
+		// scrubber), bypassing the tank's own mutators - a docked tank must not sleep
+		holding.excite_tank()
 	else
 		holding = null
 	update_icon()

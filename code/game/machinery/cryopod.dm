@@ -536,10 +536,17 @@ GLOBAL_LIST_EMPTY(ghost_records)
 	else
 		mob_occupant.ghostize(FALSE, penalize = TRUE, voluntary = TRUE, cryo = TRUE)
 
-	QDEL_LIST(destroying)
 	cryo_handle_objectives(mob_occupant)
-	QDEL_NULL(mob_occupant)
-	QDEL_LIST(destroy_later)
+	// Hand the whole despawn cascade to SSauto_cryo: qdel'ing a geared player mob in one
+	// go eats an entire tick. The mob leaves gameplay right here (nullspace + off the SSD
+	// list so the cryo scan cannot pick it a second time); the deletions are staggered.
+	// FIFO order matters: gear before the mob still wearing part of it, the mob before
+	// destroy_later (borg MMIs must outlive their shell).
+	GLOB.ssd_mob_list -= mob_occupant
+	mob_occupant.moveToNullspace()
+	SSauto_cryo.queue_deletion_list(destroying)
+	SSauto_cryo.queue_deletion(mob_occupant)
+	SSauto_cryo.queue_deletion_list(destroy_later)
 
 	if (pod)
 		pod.open_machine()

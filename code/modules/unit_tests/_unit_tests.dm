@@ -140,6 +140,7 @@
 #include "strippable_hands_gate.dm"
 #include "subsystem_init.dm"
 #include "surgeries.dm"
+#include "tank_idle_sleep.dm"
 #include "teleporters.dm"
 #include "tgui_create_message.dm"
 #include "tgui_dev_asset_url.dm"
