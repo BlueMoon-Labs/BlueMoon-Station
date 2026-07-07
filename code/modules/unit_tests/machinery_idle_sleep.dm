@@ -139,6 +139,67 @@
 	panel.queue_update_solar_exposure()
 	TEST_ASSERT(!panel.machine_sleeping, "the sun-moved path must wake the panel")
 
+/// D7: APC standby - a fixed-point APC (full cell, healthy grid, static-only draw) parks its
+/// load on the powernet and leaves SSmachines; area activity and grid shortfalls unpark it.
+/datum/unit_test/apc_standby/Run()
+	var/turf/floor = run_loc_floor_bottom_left
+	var/area/original_area = get_area(floor)
+	var/area/test_area = new /area
+	allocated += test_area
+	test_area.contents.Add(floor) // reassigns floor.loc → test_area
+
+	var/obj/machinery/power/apc/apc = allocate(/obj/machinery/power/apc)
+	TEST_ASSERT_EQUAL(apc.area, test_area, "the test APC must belong to the synthetic area (precondition)")
+	TEST_ASSERT_NOTNULL(apc.terminal, "the APC must have spawned its terminal (precondition)")
+	TEST_ASSERT_EQUAL(test_area.power_apc, apc, "the synthetic area must know its APC (precondition)")
+
+	var/datum/powernet/net = new
+	SSmachines.powernets -= net // keep the live SSmachines fire from resetting our test grid
+	net.add_machine(apc.terminal)
+	apc.cell.charge = apc.cell.maxcharge
+	test_area.static_equip = 500 // pretend sleeping machines parked 500 W of static draw here
+
+	// A comfortable grid and a full cell settle into standby within a few fires.
+	for(var/i in 1 to 5)
+		if(apc.apc_parked)
+			break
+		net.newavail = 1000000 // the test generator refills every cycle
+		net.reset()
+		apc.process()
+	TEST_ASSERT(apc.apc_parked, "a full-cell APC with static-only draw on a healthy grid must park")
+	TEST_ASSERT_EQUAL(net.standby_load, 500, "the parked APC must leave its static draw on the powernet")
+	TEST_ASSERT(apc.machine_sleeping, "a parked APC is off SSmachines")
+
+	// Dynamic draw in the area unparks it immediately.
+	test_area.use_power(100, EQUIP)
+	TEST_ASSERT(!apc.apc_parked, "dynamic area draw must unpark the APC")
+	TEST_ASSERT_EQUAL(net.standby_load, 0, "unparking must pull the parked load back off the powernet")
+
+	// Settle again, then kill the grid: the shortfall check in reset() must unpark it.
+	for(var/i in 1 to 5)
+		if(apc.apc_parked)
+			break
+		net.newavail = 1000000
+		net.reset()
+		apc.process()
+	TEST_ASSERT(apc.apc_parked, "the APC must re-park once the dynamic draw is gone")
+	net.newavail = 0
+	net.reset() // avail 0 < standby load
+	TEST_ASSERT(!apc.apc_parked, "a grid shortfall must unpark the APC in powernet reset()")
+
+	// Destroying the powernet while parked must also unpark (no phantom loads on dead nets).
+	for(var/i in 1 to 5)
+		if(apc.apc_parked)
+			break
+		net.newavail = 1000000
+		net.reset()
+		apc.process()
+	TEST_ASSERT(apc.apc_parked, "the APC must re-park for the destroy check")
+	qdel(net)
+	TEST_ASSERT(!apc.apc_parked, "destroying the powernet must unpark its standby APCs")
+
+	original_area.contents.Add(floor) // restore before teardown qdels test_area
+
 /// D6: idle holopads and empty cryopods park themselves.
 /datum/unit_test/holopad_cryopod_idle_sleep/Run()
 	var/obj/machinery/holopad/pad = allocate(/obj/machinery/holopad)

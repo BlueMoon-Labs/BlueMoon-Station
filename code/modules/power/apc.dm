@@ -159,6 +159,13 @@
 	var/obj/item/clockwork/integration_cog/integration_cog //Is there a cog siphoning power?
 	var/cog_drained = 0 //How much of the cell's charge was drained by an integration cog, recovering this amount takes priority over the normal APC cell recharge calculations, but comes after powering Essentials.
 	var/longtermpower = 10
+	/// TRUE while the APC is in standby: off SSmachines with its area's static-only draw parked
+	/// on the powernet as a baseline load. See apc_park()/apc_unpark().
+	var/apc_parked = FALSE
+	/// Watts parked on the powernet while in standby.
+	var/parked_load = 0
+	/// The powernet currently holding parked_load.
+	var/datum/powernet/parked_powernet
 	var/auto_name = FALSE
 	var/failure_timer = 0
 	var/force_update = FALSE
@@ -316,6 +323,7 @@
 		return CONTEXTUAL_SCREENTIP_SET
 
 /obj/machinery/power/apc/Destroy()
+	apc_unpark()
 	GLOB.apcs_list -= src
 	GLOB.nightshift_apc_queue -= src
 	nightshift_refresh_queued = FALSE
@@ -658,6 +666,7 @@
 			return TRUE
 
 /obj/machinery/power/apc/attackby(obj/item/W, mob/living/user, params)
+	apc_unpark() // cells, tools and wires can invalidate the standby fixed point
 
 	if(area.hasSiliconAccessInArea(user) && get_dist(src,user)>1)
 		return attack_hand(user)
@@ -928,6 +937,7 @@
 
 /obj/machinery/power/apc/emag_act(mob/user)
 	. = ..()
+	apc_unpark()
 	if(obj_flags & EMAGGED || malfhack)
 		return
 	if(opened)
@@ -1126,6 +1136,7 @@
 /obj/machinery/power/apc/ui_act(action, params)
 	if(..() || !can_use(usr, 1))
 		return
+	apc_unpark() // channel toggles, charge mode and overrides all invalidate standby
 	if(action == "hijack" && can_use(usr, 1)) //don't need auth for hijack button
 		hijack(usr)
 		return
@@ -1416,15 +1427,18 @@
 		force_update = TRUE
 		return
 
-	lastused_light = area.usage(STATIC_LIGHT)
-	lastused_light += area.usage(LIGHT)
-	lastused_equip = area.usage(EQUIP)
-	lastused_equip += area.usage(STATIC_EQUIP)
-	lastused_environ = area.usage(ENVIRON)
-	lastused_environ += area.usage(STATIC_ENVIRON)
+	var/dynamic_light = area.usage(LIGHT)
+	var/dynamic_equip = area.usage(EQUIP)
+	var/dynamic_environ = area.usage(ENVIRON)
+	lastused_light = area.usage(STATIC_LIGHT) + dynamic_light
+	lastused_equip = area.usage(STATIC_EQUIP) + dynamic_equip
+	lastused_environ = area.usage(STATIC_ENVIRON) + dynamic_environ
 	area.clear_usage()
 
 	lastused_total = lastused_light + lastused_equip + lastused_environ
+	// Zero dynamic draw means every consumer left in the area is a sleeping machine's static
+	// stand-in: the precondition for parking this APC's whole load on the powernet (see below).
+	var/dynamic_usage = dynamic_light + dynamic_equip + dynamic_environ
 
 	//store states to update icon if any change
 	var/last_lt = lighting
@@ -1550,6 +1564,42 @@
 		update()
 	else if (last_ch != charging)
 		queue_icon_update()
+
+	// APC standby: this cycle was a fixed point - full cell on a comfortable grid, and the
+	// only draw left is the static stand-ins of sleeping machines. Repeating it every fire
+	// changes nothing, so park that static load on the powernet as a baseline and leave
+	// SSmachines. Area activity, grid shortfalls and every interaction path unpark us.
+	if(charging == APC_FULLY_CHARGED && main_status == APC_HAS_POWER && !dynamic_usage \
+		&& !shorted && !failure_timer && !force_update && terminal?.powernet)
+		return apc_park()
+
+/// Parks the APC's current (static-only) load on the powernet as a baseline and takes the APC
+/// off SSmachines. Only valid from the fixed point checked at the end of process().
+/obj/machinery/power/apc/proc/apc_park()
+	if(apc_parked)
+		return PROCESS_KILL
+	var/datum/powernet/net = terminal?.powernet
+	if(!net)
+		return
+	apc_parked = TRUE
+	parked_load = lastused_total
+	parked_powernet = net
+	net.standby_load += parked_load
+	LAZYADD(net.standby_apcs, src)
+	return machine_sleep()
+
+/// Ends APC standby: pulls the parked load back off the powernet and resumes normal per-fire
+/// processing. Safe to call from anywhere, including powernet reset()/Destroy().
+/obj/machinery/power/apc/proc/apc_unpark()
+	if(!apc_parked)
+		return
+	apc_parked = FALSE
+	if(parked_powernet)
+		parked_powernet.standby_load -= parked_load
+		LAZYREMOVE(parked_powernet.standby_apcs, src)
+	parked_powernet = null
+	parked_load = 0
+	machine_wake()
 
 /**
  * Returns the new status value for an APC channel.
@@ -1686,6 +1736,7 @@
 			return
 
 	failure_timer = max(failure_timer, round(duration))
+	apc_unpark() // the failure countdown runs in process()
 	update()
 	queue_icon_update()
 

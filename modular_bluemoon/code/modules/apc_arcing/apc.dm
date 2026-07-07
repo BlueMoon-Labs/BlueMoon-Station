@@ -98,6 +98,8 @@
 /proc/force_apc_arcing(force_mode = FALSE)
 	for(var/obj/machinery/power/apc/controller as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/power/apc))
 		controller.force_arcing = force_mode
+		if(force_mode)
+			controller.apc_unpark() // the arc rolls happen in process()
 
 #undef APC_ARC_LOWERLIMIT
 #undef APC_ARC_MEDIUMLIMIT

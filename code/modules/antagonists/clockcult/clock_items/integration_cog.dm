@@ -31,6 +31,7 @@
 		if(cell && (cell.charge / cell.maxcharge > COG_MAX_SIPHON_THRESHOLD))
 			cell.use(1)
 			apc.cog_drained++
+			apc.apc_unpark() // recovering the siphoned charge happens in the APC's process()
 			adjust_clockwork_power(2) //Power is shared, so only do it once; this runs very quickly so it's about 10 W/second
 		else
 			adjust_clockwork_power(1) //Continue generating power when the cell has run dry; 5 W/second
