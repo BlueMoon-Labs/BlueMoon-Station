@@ -1026,7 +1026,7 @@
 "ajK" = (
 /obj/structure/lattice/catwalk,
 /obj/structure/fence/handrail,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "akg" = (
 /turf/open/floor/engine,
@@ -6417,7 +6417,7 @@
 	pixel_y = 6
 	},
 /obj/structure/lattice/catwalk,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "biU" = (
 /obj/structure/flora/rock/icy,
@@ -21733,7 +21733,7 @@
 	dir = 8
 	},
 /obj/structure/lattice/catwalk,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "dTP" = (
 /obj/effect/turf_decal/box/white/corners{
@@ -25111,7 +25111,7 @@
 	dir = 4
 	},
 /obj/structure/lattice,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "eyH" = (
 /obj/effect/turf_decal/bot/white{
@@ -25460,7 +25460,7 @@
 /obj/structure/fence/handrail/handrail_corner{
 	dir = 1
 	},
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "eBB" = (
 /obj/structure/disposalpipe/segment,
@@ -26814,7 +26814,7 @@
 "eNd" = (
 /obj/structure/transit_tube/horizontal,
 /obj/structure/lattice,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "eNq" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/visible,
@@ -27144,7 +27144,7 @@
 /obj/structure/railing{
 	dir = 8
 	},
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "eQH" = (
 /obj/structure/light_construct/small,
@@ -31832,7 +31832,7 @@
 /area/service/chapel/main/monastery)
 "fLI" = (
 /obj/structure/transit_tube/diagonal,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "fLJ" = (
 /obj/effect/turf_decal/siding/wood{
@@ -34830,7 +34830,7 @@
 /obj/structure/fence/handrail/handrail_end{
 	dir = 1
 	},
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "goP" = (
 /obj/effect/turf_decal/siding/wood{
@@ -35106,7 +35106,7 @@
 /obj/structure/railing{
 	dir = 6
 	},
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "grp" = (
 /obj/machinery/camera/autoname{
@@ -36818,7 +36818,7 @@
 "gIi" = (
 /obj/structure/table,
 /obj/structure/lattice/catwalk,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "gIk" = (
 /obj/machinery/atmospherics/pipe/simple/yellow/visible{
@@ -42195,7 +42195,7 @@
 /obj/structure/railing{
 	dir = 1
 	},
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "hHl" = (
 /obj/effect/decal/cleanable/dirt/dust,
@@ -45858,7 +45858,7 @@
 /obj/structure/fence/handrail{
 	dir = 4
 	},
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "ioD" = (
 /obj/machinery/modular_computer/console/preset/id{
@@ -55917,7 +55917,7 @@
 /area/maintenance/department/science/xenobiology)
 "kbQ" = (
 /obj/structure/disposalpipe/broken,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "kbY" = (
 /turf/open/floor/wood,
@@ -62952,7 +62952,7 @@
 /obj/structure/fence/handrail/handrail_corner{
 	dir = 4
 	},
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "lmM" = (
 /obj/machinery/light{
@@ -76758,7 +76758,7 @@
 /area/command/heads_quarters/cmo)
 "nRW" = (
 /obj/structure/railing,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "nRZ" = (
 /obj/structure/cable{
@@ -77155,7 +77155,7 @@
 "nVw" = (
 /obj/structure/transit_tube/curved,
 /obj/structure/lattice/catwalk,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "nVD" = (
 /obj/machinery/button/door{
@@ -79558,7 +79558,7 @@
 "oqC" = (
 /obj/structure/lattice/catwalk,
 /obj/structure/marker_beacon/bronze,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "oqD" = (
 /obj/structure/closet,
@@ -80791,7 +80791,7 @@
 "oEo" = (
 /obj/structure/lattice/catwalk,
 /obj/structure/fence/handrail/handrail_corner,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "oEp" = (
 /obj/effect/turf_decal/loading_area{
@@ -83819,7 +83819,7 @@
 /obj/structure/railing{
 	dir = 4
 	},
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "pgu" = (
 /turf/open/floor/plating/snowed/smoothed/icemoon,
@@ -89479,7 +89479,7 @@
 	pixel_y = 6
 	},
 /obj/structure/lattice/catwalk,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "qjO" = (
 /obj/structure/cable{
@@ -94043,7 +94043,7 @@
 "qZn" = (
 /obj/structure/transit_tube/crossing/horizontal,
 /obj/structure/lattice,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "qZo" = (
 /obj/machinery/vending/kink,
@@ -94195,7 +94195,7 @@
 "raJ" = (
 /obj/structure/transit_tube/crossing/horizontal,
 /obj/structure/lattice/catwalk,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "raO" = (
 /obj/machinery/suit_storage_unit/mining,
@@ -101288,7 +101288,7 @@
 	},
 /area/engineering/atmos/upper)
 "sre" = (
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "srg" = (
 /obj/machinery/computer/scan_consolenew{
@@ -101773,7 +101773,7 @@
 	dir = 4;
 	layer = 4.8
 	},
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "svS" = (
 /obj/effect/turf_decal/trimline/purple/filled/line{
@@ -109826,7 +109826,7 @@
 /area/science/xenobiology)
 "tSW" = (
 /obj/structure/lattice,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "tTf" = (
 /obj/effect/turf_decal/trimline/blue/filled/corner{
@@ -115509,7 +115509,7 @@
 "uTO" = (
 /obj/structure/marker_beacon/bronze,
 /obj/structure/lattice/catwalk,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "uUf" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
@@ -120100,7 +120100,7 @@
 "vKV" = (
 /obj/structure/transit_tube/horizontal,
 /obj/structure/lattice/catwalk,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "vKZ" = (
 /obj/effect/turf_decal/tile/neutral/diagonal_centre,
@@ -122821,7 +122821,7 @@
 /obj/structure/fence/handrail/handrail_corner{
 	dir = 8
 	},
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "wkp" = (
 /obj/structure/sign/directions/medical{
@@ -123148,7 +123148,7 @@
 /area/command/heads_quarters/ce)
 "wnx" = (
 /obj/structure/lattice/catwalk,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "wnz" = (
 /obj/effect/spawner/structure/window/reinforced,
@@ -130982,7 +130982,7 @@
 /obj/structure/railing{
 	dir = 5
 	},
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "xIu" = (
 /obj/machinery/computer/monitor/secret{
