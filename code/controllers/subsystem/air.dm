@@ -441,6 +441,10 @@ SUBSYSTEM_DEF(air)
 /datum/controller/subsystem/air/proc/finish_turf_processing(resumed = 0)
 	if(finish_turf_processing_auxtools(TICK_REMAINING_MS))
 		pause()
+	#ifdef ATMOS_HEADLESS_BENCH
+	else
+		atmos_headless_bench_tick()
+	#endif
 
 /datum/controller/subsystem/air/proc/equalize_turfs(resumed = 0)
 	if(equalize_turfs_auxtools(TICK_REMAINING_MS))

@@ -452,3 +452,210 @@ GLOBAL_PROTECT(atmos_benchmark_run)
 #undef ATMOS_BENCH_Z_HOT_BUDGET
 
 #endif // ifndef TGS
+
+// ============================================================================
+// ATMOS_HEADLESS_BENCH: unattended atmos settling benchmark.
+// Compile with `node tools/build/build.js dm -D ATMOS_HEADLESS_BENCH`, point
+// data/next_map.json at the map under test and launch DreamDaemon with no
+// clients (tools/atmos_bench/run_headless.sh does all of it). The world is
+// kept awake, SSair fires without a round, one JSONL heartbeat per completed
+// SSair cycle plus periodic deep snapshots go to data/atmos_headless_bench_*.jsonl,
+// and after ATMOS_HEADLESS_BENCH_CYCLES cycles the server shuts itself down.
+// Never define this for a production build: it force-starts atmos in the lobby
+// and kills the world when done.
+// ============================================================================
+#ifdef ATMOS_HEADLESS_BENCH
+
+#ifndef ATMOS_HEADLESS_BENCH_CYCLES
+#define ATMOS_HEADLESS_BENCH_CYCLES 240
+#endif
+/// Deep per-turf snapshot every this many completed cycles.
+#define ATMOS_HEADLESS_BENCH_SNAPSHOT_EVERY 15
+
+GLOBAL_VAR_INIT(atmos_headless_bench_path, "data/atmos_headless_bench_[time2text(world.realtime, "YYYY-MM-DD_hh.mm.ss")].jsonl")
+GLOBAL_VAR_INIT(atmos_headless_bench_snapshot_running, FALSE)
+GLOBAL_VAR_INIT(atmos_headless_bench_finished, FALSE)
+
+/datum/controller/subsystem/air
+	/// Completed finish-phase cycles since round start (bench cadence counter).
+	var/headless_bench_cycles = 0
+
+/// Cycle budget: world.params override (dd -params "atmos-bench-cycles=600") wins
+/// over the compile-time default, so run length changes need no rebuild.
+/datum/controller/subsystem/air/proc/atmos_headless_bench_target()
+	var/static/target_cycles = 0
+	if(!target_cycles)
+		target_cycles = text2num(world.params["atmos-bench-cycles"]) || ATMOS_HEADLESS_BENCH_CYCLES
+	return target_cycles
+
+/// Called once per fully completed SSair cycle (end of finish_turf_processing).
+/datum/controller/subsystem/air/proc/atmos_headless_bench_tick()
+	if(GLOB.atmos_headless_bench_finished)
+		return
+	headless_bench_cycles++
+	var/list/record = list(
+		"rec" = "hb",
+		"cyc" = headless_bench_cycles,
+		"fired" = times_fired,
+		"t" = world.time,
+		"at" = length(active_turfs),
+		"eg" = length(excited_groups),
+		"hs" = length(hotspots),
+		"cost" = round(cost, 0.01),
+		"c_at" = round(cost_turfs, 0.01),
+		"c_eg" = round(cost_groups, 0.01),
+		"c_pp" = round(cost_post_process, 0.01),
+	)
+	var/encoded = json_encode(record)
+	rustg_file_append("[encoded]\n", GLOB.atmos_headless_bench_path)
+	if(headless_bench_cycles >= atmos_headless_bench_target())
+		GLOB.atmos_headless_bench_finished = TRUE
+		INVOKE_ASYNC(src, PROC_REF(atmos_headless_bench_finish))
+		return
+	if(headless_bench_cycles % ATMOS_HEADLESS_BENCH_SNAPSHOT_EVERY == 0 && !GLOB.atmos_headless_bench_snapshot_running)
+		GLOB.atmos_headless_bench_snapshot_running = TRUE
+		INVOKE_ASYNC(src, PROC_REF(atmos_headless_bench_snapshot))
+
+/// Per-turf walk: where the active set lives and whether planetary turfs sit at
+/// their templates. CHECK_TICK spread, so it runs async off the timer.
+/datum/controller/subsystem/air/proc/atmos_headless_bench_snapshot()
+	var/fired_now = times_fired
+	var/cycle_now = headless_bench_cycles
+	var/list/cooldown_hist = list()
+	var/list/planet_compare_hist = list()
+	var/list/type_hist = list()
+	var/list/area_hist = list()
+	// Perpetual-churner census: tiles that moved significant gas last cycle,
+	// keyed by "type|self sky|neighbor profile" so pump classes (station-air
+	// bridges between two skies, ruin floors, seam rings) are named directly.
+	var/list/sharer_signatures = list()
+	var/list/sharer_examples = list()
+	var/temp_max = 0
+	var/pressure_max = 0
+	var/list/snapshot = active_turfs.Copy()
+	for(var/turf/open/T as anything in snapshot)
+		if(!istype(T) || !T.air)
+			continue
+		var/cd = T.atmos_cooldown
+		var/cd_key = cd <= 0 ? "0" : (cd <= 4 ? "1-4" : (cd <= 16 ? "5-16" : "17+"))
+		cooldown_hist[cd_key]++
+		type_hist["[T.type]"]++
+		area_hist["[T.loc?.type]"]++
+		if(T.planetary_atmos)
+			var/datum/gas_mixture/template = get_planetary_template(T)
+			var/compare_result = template ? T.air.compare(template) : "no_template"
+			planet_compare_hist[compare_result == "" ? "equal" : compare_result]++
+		if(T.air.last_share > MINIMUM_MOLES_DELTA_TO_MOVE)
+			var/same_sky = 0
+			var/other_sky = 0
+			var/non_planetary = 0
+			for(var/turf/neighbor as anything in T.atmos_adjacent_turfs)
+				var/turf/open/open_neighbor = neighbor
+				if(!istype(open_neighbor))
+					continue
+				if(!open_neighbor.planetary_atmos)
+					non_planetary++
+				else if(open_neighbor.initial_gas_mix == T.initial_gas_mix)
+					same_sky++
+				else
+					other_sky++
+			var/self_key = T.planetary_atmos ? "sky" : "non"
+			var/signature = "[T.type]|[self_key]|same=[same_sky] other=[other_sky] non=[non_planetary]"
+			sharer_signatures[signature]++
+			var/list/examples = sharer_examples[signature]
+			if(!examples)
+				examples = list()
+				sharer_examples[signature] = examples
+			if(length(examples) < 4)
+				examples += "[T.x],[T.y],[T.z] ls=[round(T.air.last_share, 0.01)] t=[round(T.air.return_temperature(), 0.1)]"
+		var/turf_temp = T.air.return_temperature()
+		temp_max = max(temp_max, turf_temp)
+		pressure_max = max(pressure_max, T.air.return_pressure())
+		CHECK_TICK
+	var/list/group_records = list()
+	for(var/datum/excited_group/group as anything in excited_groups.Copy())
+		if(!group)
+			continue
+		var/awake_count = 0
+		for(var/turf/open/T as anything in group.turf_list)
+			if(istype(T) && T.excited)
+				awake_count++
+		var/group_area_key = null
+		if(length(group.turf_list))
+			var/area/group_area = get_area(group.turf_list[1])
+			group_area_key = group_area ? "[group_area.type]" : null
+		group_records += list(list(
+			"size" = length(group.turf_list),
+			"awake" = awake_count,
+			"bd_cd" = group.breakdown_cooldown,
+			"dm_cd" = group.dismantle_cooldown,
+			"area" = group_area_key,
+		))
+		CHECK_TICK
+	sortTim(type_hist, GLOBAL_PROC_REF(cmp_numeric_dsc), TRUE)
+	sortTim(area_hist, GLOBAL_PROC_REF(cmp_numeric_dsc), TRUE)
+	var/list/top_types = list()
+	for(var/key in type_hist)
+		if(length(top_types) >= 12)
+			break
+		top_types[key] = type_hist[key]
+	var/list/top_areas = list()
+	for(var/key in area_hist)
+		if(length(top_areas) >= 12)
+			break
+		top_areas[key] = area_hist[key]
+	sortTim(sharer_signatures, GLOBAL_PROC_REF(cmp_numeric_dsc), TRUE)
+	var/list/top_sharers = list()
+	for(var/signature in sharer_signatures)
+		if(length(top_sharers) >= 20)
+			break
+		top_sharers += list(list(
+			"sig" = signature,
+			"n" = sharer_signatures[signature],
+			"ex" = sharer_examples[signature],
+		))
+	var/list/record = list(
+		"rec" = "snapshot",
+		"cyc" = cycle_now,
+		"fired" = fired_now,
+		"t" = world.time,
+		"at" = length(snapshot),
+		"cooldown" = cooldown_hist,
+		"planet_compare" = planet_compare_hist,
+		"top_types" = top_types,
+		"top_areas" = top_areas,
+		"sharers" = top_sharers,
+		"temp_max" = temp_max,
+		"pressure_max" = pressure_max,
+		"groups" = group_records,
+	)
+	var/encoded = json_encode(record)
+	rustg_file_append("[encoded]\n", GLOB.atmos_headless_bench_path)
+	GLOB.atmos_headless_bench_snapshot_running = FALSE
+
+/// Final snapshot, summary record, then kill the server so the runner script
+/// can collect the file without babysitting the process.
+/datum/controller/subsystem/air/proc/atmos_headless_bench_finish()
+	// Wait out a snapshot that may still be walking, then take the final one.
+	while(GLOB.atmos_headless_bench_snapshot_running)
+		stoplag()
+	GLOB.atmos_headless_bench_snapshot_running = TRUE
+	atmos_headless_bench_snapshot()
+	var/list/record = list(
+		"rec" = "summary",
+		"cycles" = headless_bench_cycles,
+		"fired" = times_fired,
+		"t" = world.time,
+		"at" = length(active_turfs),
+		"eg" = length(excited_groups),
+		"map" = SSmapping.config?.map_name,
+	)
+	var/encoded = json_encode(record)
+	rustg_file_append("[encoded]\n", GLOB.atmos_headless_bench_path)
+	log_world("ATMOS-BENCH: finished [headless_bench_cycles] cycles on [SSmapping.config?.map_name], shutting down")
+	sleep(1 SECONDS) // let the log flush
+	del(world)
+
+#undef ATMOS_HEADLESS_BENCH_SNAPSHOT_EVERY
+
+#endif // ifdef ATMOS_HEADLESS_BENCH
