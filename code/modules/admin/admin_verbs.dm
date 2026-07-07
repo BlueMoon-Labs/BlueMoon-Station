@@ -235,7 +235,10 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	/client/proc/toggle_cdn,
 	/client/proc/discordnulls,
 	/client/proc/generate_wikichem_list, //DO NOT PRESS UNLESS YOU WANT SUPERLAG
-	/client/proc/allow_browser_inspect
+	/client/proc/allow_browser_inspect,
+	#ifdef TESTING
+	/datum/admins/proc/machines_benchmark,
+	#endif
 	)
 GLOBAL_LIST_INIT(admin_verbs_possess, list(/proc/possess, /proc/release))
 GLOBAL_PROTECT(admin_verbs_possess)

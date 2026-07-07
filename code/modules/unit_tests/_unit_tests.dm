@@ -107,6 +107,7 @@
 #include "login_path_async_audit.dm"
 #include "lighting_performance.dm"
 #include "machine_disassembly.dm"
+#include "machinery_idle_sleep.dm"
 #include "machinery_optimization.dm"
 #include "mapload_space_verification.dm"	// BLUEMOON EDIT: Invalid Space Turfs
 #include "mapping.dm"						// BLUEMOON EDIT: Invalid Space Turfs

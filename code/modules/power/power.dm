@@ -108,6 +108,8 @@
 	SHOULD_NOT_SLEEP(TRUE)
 	//SHOULD_CALL_PARENT(TRUE)
 
+	if(machine_sleeping) // re-home the static stand-in draw: this fires on area entry too, where machine_stat may not flip
+		update_sleep_static_power()
 	if(machine_stat & BROKEN)
 		return
 	if(powered(power_channel))

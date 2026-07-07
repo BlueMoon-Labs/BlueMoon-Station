@@ -20,6 +20,7 @@
 
 /obj/machinery/computer/holodeck
 	name = "holodeck control console"
+	idle_sleeps = FALSE // own periodic work in process(); must not doze off via the parent typing-indicator path
 	desc = "A computer used to control a nearby holodeck."
 	icon_screen = "holocontrol"
 	idle_power_usage = 10

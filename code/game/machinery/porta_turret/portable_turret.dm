@@ -454,6 +454,14 @@ DEFINE_BITFIELD(turret_flags, list(
 	if(!on || (machine_stat & (NOPOWER|BROKEN)) || manual_control)
 		return PROCESS_KILL
 
+	// Nobody with a client on our z-level: view() can find nothing worth shooting and nobody
+	// would see us react. Keep ticking cheaply so we resume the moment somebody arrives.
+	var/turf/our_turf = get_turf(base || src)
+	if(our_turf && our_turf.z <= length(SSmobs.clients_by_zlevel) && !length(SSmobs.clients_by_zlevel[our_turf.z]))
+		if(!always_up)
+			popDown()
+		return
+
 	var/list/targets
 	if(COOLDOWN_FINISHED(src, target_scan_cooldown))
 		targets = scan_for_targets()

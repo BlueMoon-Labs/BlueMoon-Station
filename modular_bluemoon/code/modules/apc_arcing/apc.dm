@@ -22,10 +22,10 @@
 
 /obj/machinery/power/apc/process(seconds_per_tick)
 	. = ..()
-	if(!cell || shorted)
+	if(!cell || shorted || arc_shielded)
 		return
 	var/excess = surplus()
-	if(((excess < APC_ARC_LOWERLIMIT) && !force_arcing) || arc_shielded)
+	if((excess < APC_ARC_LOWERLIMIT) && !force_arcing)
 		return
 	var/shock_chance = 5
 	if(excess >= APC_ARC_UPPERLIMIT)
