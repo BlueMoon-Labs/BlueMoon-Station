@@ -265,6 +265,14 @@
 				if(istype(g, /datum/plant_gene/trait))
 					var/datum/plant_gene/trait/selectedtrait = g
 					selectedtrait.on_grow(src)
+
+	// A tray that can no longer change on its own leaves SSmachines: nothing alive growing,
+	// no autogrow upkeep, weeds below invasion level and no watered-and-fertilized empty
+	// soil for weeds to sprout in. Interactions wake it via attackby()/the adjust* mutators.
+	var/live_plant = myseed && !dead
+	var/weeds_can_sprout = !myseed && waterlevel > 10 && reagents.total_volume > 0
+	if(!live_plant && !self_sustaining && !weeds_can_sprout && weedlevel < 10)
+		return machine_sleep()
 	return
 
 /obj/machinery/hydroponics/update_icon()
@@ -463,6 +471,7 @@
 
 /obj/machinery/hydroponics/attackby(obj/item/O, mob/user, params)
 	//Called when mob user "attacks" it with object O
+	machine_wake() // seeds, water, chems, shovels: any of these can restart tray life
 	if(istype(O, /obj/item/reagent_containers) )  // Syringe stuff (and other reagent containers now too)
 		var/obj/item/reagent_containers/reagent_source = O
 
@@ -649,6 +658,7 @@
 		return
 	if(issilicon(user)) //How does AI know what plant is?
 		return
+	machine_wake() // harvesting/clearing can leave watered soil for weeds to sprout in
 	if(harvest)
 		myseed.harvest(user)
 		return
@@ -670,6 +680,7 @@
 		return
 	self_sustaining = !self_sustaining
 	idle_power_usage = self_sustaining ? 2500 : 0
+	machine_wake() // autogrow upkeep runs in process()
 	to_chat(user, "<span class='notice'>You [self_sustaining ? "activate" : "deactivated"] [src]'s autogrow function[self_sustaining ? ", maintaining the tray's health while using high amounts of power" : ""].")
 	update_icon()
 
@@ -705,6 +716,7 @@
 /obj/machinery/hydroponics/proc/adjustWater(adjustamt)
 	waterlevel = clamp(waterlevel + adjustamt, 0, maxwater)
 
+	machine_wake() // fresh water can let weeds sprout in a parked tray
 	if(adjustamt>0)
 		adjustToxic(-round(adjustamt/4))//Toxicity dilutation code. The more water you put in, the lesser the toxin concentration.
 
@@ -717,9 +729,11 @@
 
 /obj/machinery/hydroponics/proc/adjustPests(adjustamt)
 	pestlevel = clamp(pestlevel + adjustamt, 0, 10)
+	machine_wake()
 
 /obj/machinery/hydroponics/proc/adjustWeeds(adjustamt)
 	weedlevel = clamp(weedlevel + adjustamt, 0, 10)
+	machine_wake() // weeds at invasion level need the process() rolls
 
 /obj/machinery/hydroponics/proc/spawnplant() // why would you put strange reagent in a hydro tray you monster I bet you also feed them blood
 	var/list/livingplants = list(/mob/living/simple_animal/hostile/tree, /mob/living/simple_animal/hostile/killertomato)

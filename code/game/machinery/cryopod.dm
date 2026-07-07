@@ -197,6 +197,7 @@ GLOBAL_LIST_EMPTY(ghost_records)
 	if(!control_computer_weakref)
 		control_computer_weakref = cryo_find_control_computer(src, TRUE)
 	if((isnull(target) || isliving(target)) && state_open && !panel_open)
+		machine_wake() // the despawn countdown runs in process()
 		..(target)
 		var/mob/living/mob_occupant = occupant
 		investigate_log("\The [src] closed with occupant [key_name(occupant)] by user [key_name(target)].", INVESTIGATE_CRYOGENICS)
@@ -225,7 +226,7 @@ GLOBAL_LIST_EMPTY(ghost_records)
 
 /obj/machinery/cryopod/process()
 	if(!occupant)
-		return
+		return machine_sleep() // empty pod: close_machine() wakes it when someone climbs in
 
 	var/mob/living/mob_occupant = occupant
 	if(mob_occupant.stat == DEAD)

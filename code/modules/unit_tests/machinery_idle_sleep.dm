@@ -111,3 +111,42 @@
 	result = bin.process()
 	TEST_ASSERT_EQUAL(result, PROCESS_KILL, "an unpressurised pump-off bin must go back to sleep")
 	TEST_ASSERT(bin.machine_sleeping, "...and be machine_sleeping")
+
+/// D4: a lifeless hydroponics tray leaves SSmachines; water (a state injection that can
+/// restart the weed lottery) wakes it back up.
+/datum/unit_test/hydroponics_idle_sleep/Run()
+	var/obj/machinery/hydroponics/constructable/tray = allocate(/obj/machinery/hydroponics/constructable)
+	tray.set_machine_stat(0)
+	tray.waterlevel = 0 // dry, unplanted, weedless: fully inert
+
+	TEST_ASSERT_EQUAL(tray.process(), PROCESS_KILL, "a dry empty tray must park itself")
+	TEST_ASSERT(tray.machine_sleeping, "...and be machine_sleeping")
+
+	tray.adjustWater(50)
+	TEST_ASSERT(!tray.machine_sleeping, "adjustWater() must wake the tray")
+
+/// D5: a dark solar panel parks itself; the sun-moved signal path wakes it.
+/datum/unit_test/solar_idle_sleep/Run()
+	var/obj/machinery/power/solar/panel = allocate(/obj/machinery/power/solar)
+	panel.set_machine_stat(0)
+	panel.total_flux = 0
+	panel.needs_to_turn = FALSE
+	panel.needs_to_update_solar_exposure = FALSE
+
+	TEST_ASSERT_EQUAL(panel.process(), PROCESS_KILL, "a dark panel must park itself")
+	TEST_ASSERT(panel.machine_sleeping, "...and be machine_sleeping")
+
+	panel.queue_update_solar_exposure()
+	TEST_ASSERT(!panel.machine_sleeping, "the sun-moved path must wake the panel")
+
+/// D6: idle holopads and empty cryopods park themselves.
+/datum/unit_test/holopad_cryopod_idle_sleep/Run()
+	var/obj/machinery/holopad/pad = allocate(/obj/machinery/holopad)
+	pad.set_machine_stat(0)
+	TEST_ASSERT_EQUAL(pad.process(), PROCESS_KILL, "an idle holopad must park itself")
+	TEST_ASSERT(pad.machine_sleeping, "...and be machine_sleeping")
+
+	var/obj/machinery/cryopod/pod = allocate(/obj/machinery/cryopod)
+	pod.set_machine_stat(0)
+	TEST_ASSERT_EQUAL(pod.process(), PROCESS_KILL, "an empty cryopod must park itself")
+	TEST_ASSERT(pod.machine_sleeping, "...and be machine_sleeping")

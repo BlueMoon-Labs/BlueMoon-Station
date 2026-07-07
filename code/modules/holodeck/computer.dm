@@ -158,7 +158,12 @@
 				do_sparks(2, 1, T)
 				return
 
-	if(!..() || !active)
+	if(!..() || !active || program == offline_program)
+		// power_change() keeps `active` TRUE whenever the console is powered, so an unused
+		// holodeck otherwise walks floorcheck() over every linked turf each fire for nothing.
+		// Sleep until toggle_power()/load_program() bring a real program up.
+		if(!damaged && !length(typing_users))
+			return machine_sleep()
 		return
 
 	if(!floorcheck())
@@ -232,6 +237,7 @@
 	if(active == toggleOn)
 		return
 
+	machine_wake()
 	if(toggleOn)
 		if(last_program && last_program != offline_program)
 			addtimer(CALLBACK(src, PROC_REF(load_program), last_program, TRUE), 25)
@@ -273,6 +279,7 @@
 		current_cd = world.time + HOLODECK_CD
 		if(damaged)
 			current_cd += HOLODECK_DMG_CD
+	machine_wake() // a program swap always needs process() (derez sweep, effects, floorcheck)
 	active = (A != offline_program)
 	use_power = active + IDLE_POWER_USE
 
