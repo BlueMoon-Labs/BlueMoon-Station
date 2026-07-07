@@ -273,6 +273,35 @@
 	cleanup_room()
 	TEST_ASSERT_EQUAL(breakdown_after, 0, "a ~5% content flow on a 3000-mol tile did not reset group cooldowns: breakdown will average floods mid-flow")
 
+/// Excited group breakdown must not average planetary members across template
+/// boundaries. A mixed group (two different skies plus a station-air bridge)
+/// used to blend everything into one mix that matched no template, so every
+/// planetary member immediately re-shared with its own sky and re-armed the
+/// group cooldowns forever - the icemoon surface (150K snow + 320K basalt
+/// caves in one giant group) never went to sleep.
+/datum/unit_test/planetary_churn/breakdown_respects_templates/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	build_room()
+	var/turf/base = run_loc_floor_bottom_left
+	var/turf/open/sky_a_turf = locate(base.x + 1, base.y + 2, base.z)
+	var/turf/open/bridge = locate(base.x + 2, base.y + 2, base.z)
+	var/turf/open/sky_b_turf = locate(base.x + 3, base.y + 2, base.z)
+	make_planetary(sky_a_turf, PLANETARY_CHURN_TEMPLATE_A)
+	make_planetary(sky_b_turf, PLANETARY_CHURN_TEMPLATE_B)
+	settle_room()
+	var/datum/gas_mixture/template_a = SSair.get_planetary_template(sky_a_turf)
+	var/datum/gas_mixture/template_b = SSair.get_planetary_template(sky_b_turf)
+	var/datum/excited_group/group = new
+	for(var/turf/open/member in list(sky_a_turf, bridge, sky_b_turf))
+		SSair.add_to_active(member, FALSE)
+		group.add_turf(member)
+	group.self_breakdown()
+	var/sky_a_diff = sky_a_turf.air.compare(template_a)
+	var/sky_b_diff = sky_b_turf.air.compare(template_b)
+	cleanup_room()
+	TEST_ASSERT_EQUAL(sky_a_diff, "", "breakdown polluted a planetary turf away from its own template (differs by '[sky_a_diff]')")
+	TEST_ASSERT_EQUAL(sky_b_diff, "", "breakdown polluted a planetary turf away from its own template (differs by '[sky_b_diff]')")
+
 /// The planetary templates themselves must be chemically inert: a template
 /// whose react() consumes its own gases turns every planetary turf into a
 /// perpetual reaction+regeneration pump.

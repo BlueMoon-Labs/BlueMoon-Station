@@ -683,34 +683,61 @@
 		garbage_collect()
 		return
 
-	var/datum/gas_mixture/A = new
-	var/turflen = 0
 	var/space_in_group = FALSE
+	if(space_is_all_consuming)
+		for(var/turf/open/T as anything in turf_list)
+			if(!istype(T) || !T.air || !T.excited)
+				continue
+			if(istype(T.air, /datum/gas_mixture/immutable/space))
+				space_in_group = TRUE
+				break
 
-	// Average only members that are still awake. Resting members sat idle for a
-	// full dismantle window and hold their local equilibrium; folding them in
-	// would smear churner gas across turfs nobody processes anymore (planetary
-	// surfaces slowly drifted toward leaks and space-drained edges) and would
-	// keep every breakdown O(group size) when only a handful of turfs churn.
-	for(var/turf/open/T as anything in turf_list)
-		if(!istype(T) || !T.air || !T.excited)
-			continue
-		if(space_is_all_consuming && !space_in_group && istype(T.air, /datum/gas_mixture/immutable/space))
-			space_in_group = TRUE
-			qdel(A)
-			A = new /datum/gas_mixture/immutable/space
-			break
-		A.merge(T.air)
-		turflen++
-
-	if(!space_in_group && turflen > 0)
-		A.divide(turflen)
-
-	for(var/turf/open/T as anything in turf_list)
-		if(!istype(T) || !T.air || !T.excited)
-			continue
-		T.air.copy_from(A)
-		T.update_visuals()
+	if(space_in_group)
+		var/datum/gas_mixture/space_mix = new /datum/gas_mixture/immutable/space
+		for(var/turf/open/T as anything in turf_list)
+			if(!istype(T) || !T.air || !T.excited)
+				continue
+			T.air.copy_from(space_mix)
+			T.update_visuals()
+		qdel(space_mix)
+	else
+		// Average only members that are still awake, and only within one
+		// atmosphere domain: planetary turfs bucket by their template string,
+		// everything else shares the "" bucket. Resting members sat idle for a
+		// full dismantle window and hold their local equilibrium; folding them
+		// in would smear churner gas across turfs nobody processes anymore
+		// (planetary surfaces slowly drifted toward leaks and space-drained
+		// edges) and would keep every breakdown O(group size) when only a
+		// handful of turfs churn.
+		// Cross-template averaging is what kept whole planetary surfaces awake:
+		// icemoon groups span 150K snow, 320K basalt caves and station-air
+		// bridges, and one blended mix matches no template, so every planetary
+		// member immediately re-shared with its own sky, re-armed the group
+		// cooldowns, and the next breakdown re-polluted everyone - the surface
+		// never slept and the active list grew without bound.
+		var/list/bucket_mixes = list()
+		var/list/bucket_counts = list()
+		for(var/turf/open/T as anything in turf_list)
+			if(!istype(T) || !T.air || !T.excited)
+				continue
+			var/bucket_key = T.planetary_atmos ? T.initial_gas_mix : ""
+			var/datum/gas_mixture/bucket_mix = bucket_mixes[bucket_key]
+			if(!bucket_mix)
+				bucket_mix = new
+				bucket_mixes[bucket_key] = bucket_mix
+			bucket_mix.merge(T.air)
+			bucket_counts[bucket_key]++
+		for(var/bucket_key in bucket_mixes)
+			var/datum/gas_mixture/bucket_mix = bucket_mixes[bucket_key]
+			bucket_mix.divide(bucket_counts[bucket_key])
+		for(var/turf/open/T as anything in turf_list)
+			if(!istype(T) || !T.air || !T.excited)
+				continue
+			var/bucket_key = T.planetary_atmos ? T.initial_gas_mix : ""
+			T.air.copy_from(bucket_mixes[bucket_key])
+			T.update_visuals()
+		for(var/bucket_key in bucket_mixes)
+			qdel(bucket_mixes[bucket_key])
 
 	if(poke_resting)
 		// Wake resting members with a maxed stall counter - share something
@@ -736,7 +763,6 @@
 			T.atmos_cooldown = EXCITED_GROUP_DISMANTLE_CYCLES
 
 	breakdown_cooldown = 0
-	qdel(A)
 
 /datum/excited_group/proc/dismantle()
 	for(var/turf/open/T as anything in turf_list)
