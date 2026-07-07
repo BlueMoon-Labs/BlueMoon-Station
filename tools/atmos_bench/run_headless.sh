@@ -13,7 +13,7 @@
 # Result: tools/atmos_bench/results/<timestamp>_<tag>.jsonl
 # Analyze: python tools/atmos_bench/analyze.py <file> [file2 ...]
 set -u
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/../.." || { echo "ERROR: could not cd to project root" >&2; exit 1; }
 
 TAG="${1:?usage: run_headless.sh <tag> [map] [skip-build] [cycles]}"
 MAP="${2:-icemoonstation}"
@@ -38,7 +38,14 @@ if [ -f data/next_map.json ]; then
     NEXT_MAP_BACKUP="$(mktemp)"
     cp data/next_map.json "$NEXT_MAP_BACKUP"
 fi
-cp "_maps/${MAP}.json" data/next_map.json || exit 1
+if ! cp "_maps/${MAP}.json" data/next_map.json; then
+    echo "ERROR: could not copy _maps/${MAP}.json to data/next_map.json" >&2
+    if [ -n "$NEXT_MAP_BACKUP" ]; then
+        cp "$NEXT_MAP_BACKUP" data/next_map.json
+        rm -f "$NEXT_MAP_BACKUP"
+    fi
+    exit 1
+fi
 echo '{"data":"GRACEFULLY_ENDED"}' > data/GracefulEnding.json
 rm -f data/atmos_headless_bench_*.jsonl
 

@@ -292,7 +292,7 @@
 	var/datum/gas_mixture/template_a = SSair.get_planetary_template(sky_a_turf)
 	var/datum/gas_mixture/template_b = SSair.get_planetary_template(sky_b_turf)
 	var/datum/excited_group/group = new
-	for(var/turf/open/member in list(sky_a_turf, bridge, sky_b_turf))
+	for(var/turf/open/member as anything in list(sky_a_turf, bridge, sky_b_turf))
 		SSair.add_to_active(member, FALSE)
 		group.add_turf(member)
 	group.self_breakdown()

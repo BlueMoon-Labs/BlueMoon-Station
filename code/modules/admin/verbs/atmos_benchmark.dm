@@ -12,6 +12,8 @@
 #define ATMOS_BENCH_TOP_TYPES 25
 /// Most active turfs the per-second z histogram may read; larger lists are stride-sampled.
 #define ATMOS_BENCH_Z_HOT_BUDGET 2000
+/// Active-turf count past which the per-second z histogram is recorded at all.
+#define ATMOS_BENCH_Z_HOT_THRESHOLD 500
 
 GLOBAL_DATUM(atmos_benchmark_run, /datum/atmos_benchmark)
 GLOBAL_PROTECT(atmos_benchmark_run)
@@ -160,7 +162,7 @@ GLOBAL_PROTECT(atmos_benchmark_run)
 			"cl" = "connected clients",
 			"sms" = "share_max_steps now (< target means adaptive throttle engaged)",
 			"adjq" = "SSadjacent_air queue length",
-			"z_hot" = "z histogram of active turfs, recorded only when the active list exceeds 500; stride-sampled and rescaled above [ATMOS_BENCH_Z_HOT_BUDGET] turfs",
+			"z_hot" = "z histogram of active turfs, recorded only when the active list exceeds [ATMOS_BENCH_Z_HOT_THRESHOLD]; stride-sampled and rescaled above [ATMOS_BENCH_Z_HOT_BUDGET] turfs",
 		),
 	))
 
@@ -219,7 +221,7 @@ GLOBAL_PROTECT(atmos_benchmark_run)
 	// timer callback, so past the budget the list is stride-sampled and the
 	// buckets scaled back up to approximate true counts.
 	var/active_count = length(air.active_turfs)
-	if(active_count > 500)
+	if(active_count > ATMOS_BENCH_Z_HOT_THRESHOLD)
 		var/list/z_hot = list()
 		var/list/active_turfs = air.active_turfs
 		var/stride = max(1, CEILING(active_count / ATMOS_BENCH_Z_HOT_BUDGET, 1))
@@ -450,6 +452,7 @@ GLOBAL_PROTECT(atmos_benchmark_run)
 #undef ATMOS_BENCH_TOP_AREAS
 #undef ATMOS_BENCH_TOP_TYPES
 #undef ATMOS_BENCH_Z_HOT_BUDGET
+#undef ATMOS_BENCH_Z_HOT_THRESHOLD
 
 #endif // ifndef TGS
 
