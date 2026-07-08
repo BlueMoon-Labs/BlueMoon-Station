@@ -114,6 +114,7 @@
 						TR.plant_health = TR.myseed.endurance
 						TR.lastcycle = world.time
 						O.forceMove(TR)
+						TR.machine_wake() // an asleep empty tray now holds a live plant that must grow
 						TR.update_icon()
 	activate_pin(2)
 
