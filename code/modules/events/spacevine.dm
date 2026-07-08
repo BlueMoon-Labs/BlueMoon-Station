@@ -1,11 +1,11 @@
 /datum/round_event_control/spacevine
-	name = "Kudzu"
+	name = "Spacevine"
 	typepath = /datum/round_event/spacevine
 	weight = 55
 	max_occurrences = 3
 	min_players = 10
 	category = EVENT_CATEGORY_ENTITIES
-	description = "Kudzu (space vine) starts spreading in station hallways. May include dangerous mutations; flowering can spawn traps."
+	description = "Kudzu (spacevine) starts spreading in station hallways. May include dangerous mutations; flowering can spawn traps."
 	admin_setup = list(
 		/datum/event_admin_setup/set_location/spacevine,
 		/datum/event_admin_setup/input_number/spacevine_potency,
@@ -28,16 +28,17 @@
 		var/obj/structure/spacevine/vine_override = new()
 		if(override_turf.Enter(vine_override))
 			final_turf_candidates += override_turf
+		else
+			message_admins("Spacevine event: admin-selected turf [override_turf] is invalid (dense, wall, or transparent). Falling back to a random hallway floor.")
 		qdel(vine_override)
-	else
+
+	if(!length(final_turf_candidates))
 		var/list/floor_candidates = list()
-		for(var/subtype in subtypesof(/area/hallway))
-			var/area/hallway/HA = GLOB.areas_by_type[subtype]
+		for(var/area_type in typesof(/area/hallway))
+			var/area/hallway/HA = GLOB.areas_by_type[area_type]
 			if(!istype(HA))
 				continue
-			for(var/turf/T in HA)
-				if(!istype(T, /turf/open/floor))
-					continue
+			for(var/turf/open/floor/T in HA)
 				if(istransparentturf(T))
 					continue
 				floor_candidates += T
@@ -58,8 +59,11 @@
 		return
 
 	var/turf/floor = pick(final_turf_candidates)
-	var/mut_path = pick(subtypesof(/datum/spacevine_mutation))
-	var/list/selected_mutations = mut_path ? list(new mut_path) : list()
+	var/list/selected_mutations = list()
+	if(prob(50))
+		var/mut_path = pick(subtypesof(/datum/spacevine_mutation))
+		if(mut_path)
+			selected_mutations += new mut_path
 
 	if(isnull(potency))
 		potency = rand(50, 100)
