@@ -462,9 +462,23 @@
 			var/temperature_before = our_air.temperature
 			if(moles_before <= MINIMUM_MOLES_DELTA_TO_MOVE && abs(temperature_before - TCMB) <= MINIMUM_TEMPERATURE_DELTA_TO_CONSIDER)
 				continue
-			our_air.vent_ratio(our_share_coeff)
-			if(abs(our_air.temperature - TCMB) > MINIMUM_TEMPERATURE_DELTA_TO_CONSIDER)
-				our_air.temperature_share(null, OPEN_HEAT_TRANSFER_COEFFICIENT, TCMB, HEAT_CAPACITY_VACUUM)
+			// Derive pressures from the known mole scaling instead of re-summing
+			// the gas list through return_pressure().
+			var/volume_cache = our_air.volume
+			var/pressure_before = volume_cache > 0 ? (moles_before * R_IDEAL_GAS_EQUATION * temperature_before / volume_cache) : 0
+			var/vent_everything = pressure_before < SPACE_DRAIN_FINISH_PRESSURE
+			if(vent_everything)
+				// Below survivable pressure the exponential bleed is pure churn:
+				// space takes the rest in one pass and the tile leaves the drain
+				// loop instead of asymptoting for tens of cycles. The emptied
+				// tile matches space temperature too - a near-zero heat capacity
+				// residue otherwise keeps paying temperature_share toward TCMB.
+				our_air.vent_ratio(1)
+				our_air.set_temperature(TCMB)
+			else
+				our_air.vent_ratio(our_share_coeff)
+				if(abs(our_air.temperature - TCMB) > MINIMUM_TEMPERATURE_DELTA_TO_CONSIDER)
+					our_air.temperature_share(null, OPEN_HEAT_TRANSFER_COEFFICIENT, TCMB, HEAT_CAPACITY_VACUUM)
 			// A turf draining to space must stay active until it is actually empty:
 			// without a group the end-of-proc check deactivates a lone leaking turf
 			// after one pass, freezing the leak mid-drain. Cooldown resets are gated
@@ -474,19 +488,15 @@
 				var/datum/excited_group/space_group = new
 				space_group.add_turf(src)
 				our_excited_group = excited_group
-			var/vented_moles = moles_before * our_share_coeff
+			var/vented_moles = vent_everything ? moles_before : (moles_before * our_share_coeff)
 			if(vented_moles > MINIMUM_AIR_TO_SUSPEND)
 				our_excited_group.reset_cooldowns()
 				cached_atmos_cooldown = 0
 			else if(vented_moles > MINIMUM_MOLES_DELTA_TO_MOVE)
 				our_excited_group.dismantle_cooldown = 0
 				cached_atmos_cooldown = 0
-			// Derive both pressures from the known mole scaling instead of
-			// re-summing the gas list twice through return_pressure().
-			var/volume_cache = our_air.volume
 			if(volume_cache > 0)
-				var/pressure_before = moles_before * R_IDEAL_GAS_EQUATION * temperature_before / volume_cache
-				var/pressure_after = moles_before * (1 - our_share_coeff) * R_IDEAL_GAS_EQUATION * our_air.temperature / volume_cache
+				var/pressure_after = vent_everything ? 0 : (moles_before * (1 - our_share_coeff) * R_IDEAL_GAS_EQUATION * our_air.temperature / volume_cache)
 				var/pressure_delta_space = pressure_before - pressure_after
 				if(pressure_delta_space > 0)
 					consider_pressure_difference(enemy_tile, pressure_delta_space)

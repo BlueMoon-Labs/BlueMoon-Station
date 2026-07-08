@@ -627,6 +627,60 @@
 		neighbor.air.copy_from_turf(neighbor)
 		SSair.remove_from_active(neighbor)
 
+/// Space drains must finish the job: below SPACE_DRAIN_FINISH_PRESSURE the
+/// tile dumps everything in one pass and matches space temperature - the
+/// exponential 1/(neighbors+1) bleed spends tens of cycles on residue that is
+/// already unsurvivable, and that tail was pure churn. Above the threshold
+/// the gradual drain (and its spacewind) must stay untouched.
+/datum/unit_test/atmos_space_drain_finish/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/origin = run_loc_floor_bottom_left
+	var/turf/open/drain = locate(origin.x + 1, origin.y + 1, origin.z)
+	TEST_ASSERT(istype(drain), "test location is not an open turf")
+
+	// Pocket arena: three walls and one space neighbor, so the only exchange
+	// the drain tile has is the space drain itself.
+	var/turf/hole = locate(origin.x + 1, origin.y + 2, origin.z)
+	var/turf/west_wall = locate(origin.x, origin.y + 1, origin.z)
+	var/turf/east_wall = locate(origin.x + 2, origin.y + 1, origin.z)
+	var/turf/south_wall = locate(origin.x + 1, origin.y, origin.z)
+	hole.ChangeTurf(/turf/open/space/basic)
+	west_wall.ChangeTurf(/turf/closed/wall)
+	east_wall.ChangeTurf(/turf/closed/wall)
+	south_wall.ChangeTurf(/turf/closed/wall)
+	drain.ImmediateCalculateAdjacentTurfs()
+	TEST_ASSERT_EQUAL(LAZYLEN(drain.atmos_adjacent_turfs), 1, "pocket arena should have exactly the space neighbor")
+	TEST_ASSERT(locate(/turf/open/space) in drain.atmos_adjacent_turfs, "arena setup failed: no space neighbor")
+	if(drain.excited_group)
+		drain.excited_group.garbage_collect()
+	SSair.remove_from_active(drain)
+
+	// Above the threshold: one cycle takes 1/(neighbors+1) = half, not all.
+	drain.air.copy_from_turf(drain)
+	var/moles_full = drain.air.total_moles()
+	TEST_ASSERT(moles_full > 0, "drain tile has no default air")
+	SSair.add_to_active(drain, FALSE)
+	var/fire_count = drain.current_cycle + 1
+	drain.process_cell(fire_count)
+	TEST_ASSERT(abs(drain.air.total_moles() - moles_full * 0.5) < 0.1, "above-threshold space drain is no longer gradual: [drain.air.total_moles()] of [moles_full] mol left")
+
+	// Below the threshold: the tile dumps everything and matches space.
+	drain.air.copy_from_turf(drain)
+	drain.air.multiply(0.15)
+	SSair.add_to_active(drain, FALSE)
+	fire_count++
+	drain.process_cell(fire_count)
+	TEST_ASSERT(drain.air.total_moles() < 0.001, "sub-threshold space drain left residue: [drain.air.total_moles()] mol")
+	TEST_ASSERT(abs(drain.air.return_temperature() - TCMB) < 0.01, "dumped tile did not match space temperature")
+
+	if(drain.excited_group)
+		drain.excited_group.garbage_collect()
+	SSair.high_pressure_delta -= drain
+	drain.pressure_difference = 0
+	drain.atmos_cooldown = 0
+	drain.air.copy_from_turf(drain)
+	SSair.remove_from_active(drain)
+
 /// Idle-heartbeat machines must wake instantly when air on their turf changes,
 /// and enter the heartbeat only after a full streak of no-op fires.
 /datum/unit_test/atmos_machine_idle_wake/Run()

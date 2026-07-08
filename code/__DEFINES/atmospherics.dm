@@ -24,6 +24,10 @@
 ///its group, see sleep_active_turf). Kept above EXCITED_GROUP_BREAKDOWN_CYCLES so an idling turf
 ///holds the group average through at least one more breakdown before it stops processing.
 #define EXCITED_GROUP_INDIVIDUAL_REST_CYCLES		6
+///A space-adjacent tile below this pressure vents everything in one pass instead of bleeding
+///1/(neighbors+1) per cycle: the exponential tail spends tens of cycles per tile on residue
+///that is already deep past HAZARD_LOW_PRESSURE, and that whole tail was pure churn.
+#define SPACE_DRAIN_FINISH_PRESSURE					20
 #define MINIMUM_AIR_RATIO_TO_SUSPEND				0.1		//Ratio of air that must move to/from a tile to reset group processing
 #define MINIMUM_AIR_RATIO_TO_MOVE					0.001	//Minimum ratio of air that must move to/from a tile
 #define MINIMUM_AIR_TO_SUSPEND						(MOLES_CELLSTANDARD*MINIMUM_AIR_RATIO_TO_SUSPEND)	//Minimum amount of air that has to move before a group processing can be suspended
