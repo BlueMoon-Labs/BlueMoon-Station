@@ -50,7 +50,7 @@
 
 	// No hands - no stripping: keeps carp/swarmers/roaches and other handless fauna from undressing people.
 	// TRAIT_CAN_STRIP covers mobs with manipulators instead of hands (cyborgs, adult xenomorphs).
-	if (!user.can_hold_items() && !HAS_TRAIT(user, TRAIT_CAN_STRIP) && !IsAdminGhost(user))
+	if (!user.can_hold_items() && !HAS_TRAIT(user, TRAIT_CAN_STRIP) && !isobserver(user))
 		return
 
 	if (!isnull(should_strip_proc_path) && !call(source, should_strip_proc_path)(user))
