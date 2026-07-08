@@ -161,6 +161,8 @@ Class Procs:
 	var/sleep_static_power = 0
 	///The area currently holding our sleep_static_power contribution; tracked so we can pull it back out even after moving.
 	var/area/sleep_static_power_area
+	///The STATIC_* channel our sleep_static_power was billed to; tracked so a later power_channel change still removes from the right channel.
+	var/sleep_static_power_channel
 
 /obj/machinery/Initialize(mapload)
 	if(!armor)
@@ -275,19 +277,31 @@ Class Procs:
 	set_sleep_static_power(watts)
 
 ///Moves our static stand-in draw from wherever it is registered onto the current area at the new wattage.
+///Always removes the old contribution from the channel it was actually billed to, not the live power_channel,
+///so a power_channel change while asleep cannot strand load on the wrong channel.
 /obj/machinery/proc/set_sleep_static_power(new_watts)
 	var/area/new_area = new_watts ? get_area(src) : null
 	if(!new_area)
 		new_watts = 0
-	if(new_watts == sleep_static_power && new_area == sleep_static_power_area)
+	var/new_channel = DYNAMIC_TO_STATIC_CHANNEL(power_channel)
+	if(new_watts == sleep_static_power && new_area == sleep_static_power_area && new_channel == sleep_static_power_channel)
 		return
-	var/static_channel = DYNAMIC_TO_STATIC_CHANNEL(power_channel)
 	if(sleep_static_power_area)
-		sleep_static_power_area.addStaticPower(-sleep_static_power, static_channel)
+		sleep_static_power_area.addStaticPower(-sleep_static_power, sleep_static_power_channel)
 	if(new_area)
-		new_area.addStaticPower(new_watts, static_channel)
+		new_area.addStaticPower(new_watts, new_channel)
 	sleep_static_power = new_watts
 	sleep_static_power_area = new_area
+	sleep_static_power_channel = new_channel
+
+/obj/machinery/vv_edit_var(var_name, var_value)
+	. = ..()
+	// A sleeping machine's static stand-in is only re-derived on power/area hooks, never on a bare
+	// var write. Re-home it when an admin live-edits what it should bill (channel or wattage).
+	if(machine_sleeping)
+		switch(var_name)
+			if(NAMEOF(src, power_channel), NAMEOF(src, use_power), NAMEOF(src, idle_power_usage), NAMEOF(src, active_power_usage))
+				update_sleep_static_power()
 
 /obj/machinery/emp_act(severity)
 	. = ..()
