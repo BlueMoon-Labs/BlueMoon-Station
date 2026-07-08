@@ -27,7 +27,7 @@
 	for(var/category_name in categorys)
 		data[category_name] = SSpersistence.paintings[category_name]
 	data["favorite_paintings_md5"] = user?.client?.prefs?.favorite_paintings_md5
-	data["is_admin"] = check_rights_for(user?.client, R_ADMIN)
+	data["is_admin"] = check_rights_for(user?.client, R_DEBUG)
 	// BLUEMOON EDIT END
 	return data
 
@@ -64,7 +64,7 @@
 
 			return TRUE
 		if("delete_painting")
-			if(!check_rights_for(usr?.client, R_ADMIN))
+			if(!check_rights_for(usr?.client, R_DEBUG))
 				return
 			var/asset_prefix = params["asset_prefix"]
 			var/md5 = params["md5"]
