@@ -864,7 +864,7 @@
 
 	if(user == target)
 		target.visible_message(span_warning("[user] вдавливает дуло [src] к своим яйцам, в готовности спустить курок..."), \
-			span_userdanger("Вы вдаливаете дуло [src] к своим яйцами, в готовности спустить курок..."))
+			span_userdanger("Вы вдавливаете дуло [src] к своим яйцам, в готовности спустить курок..."))
 	else
 		target.visible_message(span_warning("[user] направляет [src] на яйца [target], в готовности спустить курок..."), \
 			span_userdanger("[user] направляет [src] на ваши яйца, в готовности спустить курок..."))
