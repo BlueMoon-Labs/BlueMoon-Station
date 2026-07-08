@@ -22337,6 +22337,9 @@
 /turf/open/floor/plasteel,
 /area/science/robotics/lab)
 "bdd" = (
+/obj/machinery/computer/holodeck{
+	dir = 1
+	},
 /turf/open/floor/plasteel,
 /area/commons/fitness/recreation)
 "bde" = (
@@ -24127,7 +24130,10 @@
 /turf/open/floor/festive/cobblestone,
 /area/edina/street/primary/perimeter)
 "bhO" = (
-/turf/closed/festive/greypanel/greypanelcornernw,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+	dir = 1
+	},
+/turf/open/floor/plasteel,
 /area/commons/fitness/recreation)
 "bhP" = (
 /turf/closed/festive/greypanel/greypanelns,
@@ -25036,9 +25042,7 @@
 /area/service/chapel/main)
 "bkC" = (
 /obj/machinery/camera/autoname,
-/obj/machinery/airalarm{
-	pixel_y = 24
-	},
+/obj/machinery/airalarm/directional/west,
 /turf/open/floor/plasteel,
 /area/commons/fitness/recreation)
 "bkD" = (
@@ -25528,14 +25532,6 @@
 	dir = 5
 	},
 /area/commons/fitness/recreation)
-"bls" = (
-/obj/machinery/power/apc/auto_name{
-	pixel_y = -30
-	},
-/obj/structure/cable/yellow,
-/obj/machinery/vending/snack/random,
-/turf/open/floor/plasteel/dark,
-/area/commons/fitness/recreation)
 "blt" = (
 /obj/structure/cable/yellow{
 	icon_state = "2-8"
@@ -25620,9 +25616,7 @@
 /turf/open/indestructible/hotelwood,
 /area/service/chapel/main)
 "blC" = (
-/obj/structure/chair{
-	dir = 8
-	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1,
 /turf/open/floor/plasteel,
 /area/commons/fitness/recreation)
 "blD" = (
@@ -26514,12 +26508,6 @@
 /obj/structure/chair/stool/bar,
 /turf/open/floor/wood,
 /area/maintenance/bar)
-"bnF" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
-	dir = 8
-	},
-/turf/open/floor/plasteel,
-/area/commons/fitness/recreation)
 "bnG" = (
 /obj/machinery/light/small{
 	brightness = 3;
@@ -26603,10 +26591,11 @@
 /turf/open/floor/wood,
 /area/edina/crew_quarters/store/clothes)
 "bnW" = (
-/obj/machinery/door/airlock/public/glass{
-	name = "Holodeck Door"
+/obj/machinery/power/apc/auto_name{
+	pixel_y = -30
 	},
-/turf/open/floor/plasteel,
+/obj/structure/cable/yellow,
+/turf/open/floor/plasteel/dark,
 /area/commons/fitness/recreation)
 "bnX" = (
 /obj/structure/disposalpipe/segment,
@@ -27145,16 +27134,11 @@
 /turf/open/floor/plasteel,
 /area/commons/fitness/recreation)
 "bpm" = (
-/obj/machinery/door/airlock/wood,
-/obj/machinery/door/firedoor,
-/obj/structure/fans/tiny,
-/turf/open/floor/plasteel,
-/area/commons/fitness/recreation)
-"bpn" = (
-/obj/machinery/computer/holodeck{
-	dir = 8
+/obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer3,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
 	},
-/turf/open/floor/plasteel,
+/turf/open/floor/plasteel/dark,
 /area/commons/fitness/recreation)
 "bpo" = (
 /obj/structure/table,
@@ -27593,9 +27577,8 @@
 /turf/open/floor/festive/cobblestone,
 /area/edina/street/primary/perimeter)
 "bqK" = (
-/obj/structure/table,
-/obj/item/paper/fluff/holodeck/disclaimer,
-/turf/open/floor/plasteel,
+/obj/machinery/vending/snack/random,
+/turf/open/floor/plasteel/dark,
 /area/commons/fitness/recreation)
 "bqL" = (
 /obj/effect/turf_decal/tile/purple{
@@ -28227,12 +28210,6 @@
 /area/edina/street/primary/perimeter)
 "brW" = (
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer3,
-/turf/open/floor/plasteel,
-/area/commons/fitness/recreation)
-"brX" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
-	dir = 8
-	},
 /turf/open/floor/plasteel,
 /area/commons/fitness/recreation)
 "brY" = (
@@ -51178,9 +51155,6 @@
 /turf/open/floor/festive/cobblestone,
 /area/edina/street/intersection/princessservitor)
 "csh" = (
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
-	},
 /obj/machinery/vending/cola/random,
 /turf/open/floor/plasteel/dark,
 /area/commons/fitness/recreation)
@@ -60303,13 +60277,6 @@
 	},
 /turf/open/floor/festive/sidewalk,
 /area/edina/street/secondary/supply)
-"oWb" = (
-/obj/machinery/light/small{
-	brightness = 3;
-	dir = 4
-	},
-/turf/open/floor/plasteel,
-/area/commons/fitness/recreation)
 "oWw" = (
 /obj/effect/turf_decal/weather/snow/corner{
 	dir = 1
@@ -82032,12 +81999,12 @@ biI
 bjs
 alM
 bkf
-bkn
-aeZ
-mYc
+bpm
+tTW
+bqK
 csh
-bls
-bjY
+bjt
+bmC
 bkC
 blC
 bpl
@@ -82046,7 +82013,7 @@ bpl
 brW
 brU
 brW
-blC
+bhO
 bdd
 bhP
 bFs
@@ -82289,22 +82256,22 @@ biJ
 bjs
 aBk
 bkg
-pCq
-tTW
-bjt
-bjt
-bjt
-bmC
-bdd
-bdd
-bnF
-bdd
-bpn
-bqK
-bdd
-brX
-bdd
-bdd
+bkn
+aeZ
+mYc
+mYc
+bnW
+bjY
+bmD
+bmD
+bmD
+bob
+bmD
+bmD
+bob
+bmD
+bmD
+bmD
 bhP
 bFs
 bHZ
@@ -82551,17 +82518,17 @@ tTW
 bjt
 bln
 blv
-bhO
-bmD
-bmD
-bmD
-bob
-bmD
-bmD
-bob
-bmD
-bmD
-bmD
+bhP
+bkE
+bkE
+bkE
+bkE
+bkE
+bkE
+bkE
+bkE
+bkE
+bkE
 bhP
 bFs
 bHZ
@@ -84093,17 +84060,17 @@ bll
 blm
 blr
 bmz
-bil
-bmD
-bmD
-bmD
-bnW
-bmD
-bmD
-bnW
-bmD
-bmD
-bmD
+bhP
+bkE
+bkE
+bkE
+bkE
+bkE
+bkE
+bkE
+bkE
+bkE
+bkE
 bhP
 bFs
 bHZ
@@ -84350,17 +84317,17 @@ bjt
 bjt
 bjt
 bjt
-bmC
-bdd
-bdd
-bdd
-bdd
-bdd
-bdd
-bdd
-bdd
-bdd
-bdd
+bhP
+bkE
+bkE
+bkE
+bkE
+bkE
+bkE
+bkE
+bkE
+bkE
+bkE
 bhP
 bFs
 bHZ
@@ -84608,16 +84575,16 @@ bkk
 bkk
 biH
 bjY
-bdd
-bdd
-bdd
-oWb
-bdd
-bdd
-oWb
-bdd
-bdd
-bdd
+bkE
+bkE
+bkE
+bkE
+bkE
+bkE
+bkE
+bkE
+bkE
+bkE
 bhP
 bFs
 bHZ
@@ -84867,12 +84834,12 @@ bTi
 bil
 biH
 biH
-biH
-biH
-bpm
-bpm
-biH
-biH
+bkk
+bkk
+bkk
+bkk
+bkk
+bkk
 biH
 biH
 bjY
