@@ -22,9 +22,11 @@
 
 /obj/machinery/power/apc/process(seconds_per_tick)
 	. = ..()
+	if(. == PROCESS_KILL) // base just parked us off SSmachines; running arc logic here would re-add then get stripped, stranding the APC
+		return .
 	if(!cell || shorted || arc_shielded)
 		return
-	var/excess = surplus()
+	var/excess = cached_surplus // computed once by the base process() this fire (see /obj/machinery/power/apc/process)
 	if((excess < APC_ARC_LOWERLIMIT) && !force_arcing)
 		return
 	var/shock_chance = 5

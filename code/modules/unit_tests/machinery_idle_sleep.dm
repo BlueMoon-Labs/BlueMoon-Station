@@ -160,7 +160,7 @@
 	test_area.static_equip = 500 // pretend sleeping machines parked 500 W of static draw here
 
 	// A comfortable grid and a full cell settle into standby within a few fires.
-	for(var/i in 1 to 5)
+	for(var/i in 1 to 8) // headroom for the APC_PARK_SETTLE_FIRES debounce (parks a few fires after the fixed point holds)
 		if(apc.apc_parked)
 			break
 		net.newavail = 1000000 // the test generator refills every cycle
@@ -176,7 +176,7 @@
 	TEST_ASSERT_EQUAL(net.standby_load, 0, "unparking must pull the parked load back off the powernet")
 
 	// Settle again, then kill the grid: the shortfall check in reset() must unpark it.
-	for(var/i in 1 to 5)
+	for(var/i in 1 to 8) // headroom for the APC_PARK_SETTLE_FIRES debounce (parks a few fires after the fixed point holds)
 		if(apc.apc_parked)
 			break
 		net.newavail = 1000000
@@ -188,7 +188,7 @@
 	TEST_ASSERT(!apc.apc_parked, "a grid shortfall must unpark the APC in powernet reset()")
 
 	// Destroying the powernet while parked must also unpark (no phantom loads on dead nets).
-	for(var/i in 1 to 5)
+	for(var/i in 1 to 8) // headroom for the APC_PARK_SETTLE_FIRES debounce (parks a few fires after the fixed point holds)
 		if(apc.apc_parked)
 			break
 		net.newavail = 1000000
