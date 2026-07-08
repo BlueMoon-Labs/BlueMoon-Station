@@ -5236,7 +5236,6 @@
 #include "modular_sand\code\datums\interactions\interaction_mob.dm"
 #include "modular_sand\code\datums\interactions\lewd_definitions.dm"
 #include "modular_sand\code\datums\interactions\lewd_interactions.dm"
-#include "modular_sand\code\datums\interactions\lewd_objects.dm"
 #include "modular_sand\code\datums\interactions\interaction_datums\interaction_definitions.dm"
 #include "modular_sand\code\datums\interactions\interaction_datums\lewd\breasts.dm"
 #include "modular_sand\code\datums\interactions\interaction_datums\lewd\clothing_break.dm"

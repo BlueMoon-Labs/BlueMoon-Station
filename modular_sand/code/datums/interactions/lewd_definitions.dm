@@ -428,7 +428,7 @@
 								silicon_sex = src
 								silicon_sex.do_climax_silicon(silicon_sex, src, TRUE) // BLUEMOON EDIT END
 
-							if(partner.has_breasts(REQUIRE_EXPOSED))
+							if(partner.has_breasts() == HAS_EXPOSED_GENITAL)
 								message = "кончает на грудь [partner_name]."
 							else
 								message = "кончает на грудину и торс [partner_name]."
