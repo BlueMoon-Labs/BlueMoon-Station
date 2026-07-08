@@ -2,9 +2,9 @@ import { useBackend } from '../backend';
 import { Box, Button, Divider, Flex, Input, NoticeBox, Section } from '../components';
 import { Window } from '../layouts';
 
-export const MechpadControl = (props, context) => {
+export const MechpadControl = (props) => {
   const { topLevel } = props;
-  const { act, data } = useBackend(context);
+  const { act, data } = useBackend();
   const {
     pad_name,
     connected_mechpad,
@@ -43,8 +43,8 @@ export const MechpadControl = (props, context) => {
   );
 };
 
-export const MechpadConsole = (props, context) => {
-  const { act, data } = useBackend(context);
+export const MechpadConsole = (props) => {
+  const { act, data } = useBackend();
   const {
     mechpads = [],
     selected_id,

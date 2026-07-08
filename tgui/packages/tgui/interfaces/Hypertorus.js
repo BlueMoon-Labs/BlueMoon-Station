@@ -20,8 +20,8 @@ const formatHeatOutputKelvin = (kelvin) => {
   return sign + formatSiBaseTenUnit(Math.abs(kelvin), 1, 'K');
 };
 
-export const Hypertorus = (props, context) => {
-  const { act, data } = useBackend(context);
+export const Hypertorus = (props) => {
+  const { act, data } = useBackend();
   const filterTypes = data.filter_types || [];
   const selectableFuels = data.selectable_fuel || [];
   const {
@@ -132,7 +132,7 @@ export const Hypertorus = (props, context) => {
             </LabeledList.Item>
             <LabeledList.Item label="Gases">
               <Box m={1} style={{
-                'white-space': 'pre-wrap',
+                whiteSpace: 'pre-wrap',
               }}>
                 {product_gases ?? 'None'}
               </Box>

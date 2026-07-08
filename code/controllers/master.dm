@@ -600,6 +600,14 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 
 			if (tick_usage < 0)
 				tick_usage = 0
+
+			//сырой (неусреднённый) прогон для диагностики тик-спайков: усреднённый cost прячет одиночные фризы
+			if (SStick_spikes && queue_node != SStick_spikes)
+				SStick_spikes.last_run_subsystem_name = queue_node.name
+				SStick_spikes.last_run_subsystem_time = world.time
+				if (tick_usage >= SStick_spikes.heavy_run_threshold)
+					SStick_spikes.record_heavy_run(queue_node, tick_usage)
+
 			queue_node.tick_overrun = max(0, MC_AVG_FAST_UP_SLOW_DOWN(queue_node.tick_overrun, tick_usage-tick_precentage))
 			queue_node.state = state
 

@@ -403,7 +403,7 @@ Traitors and the like can also be revived with the previous role mostly intact.
 
 	//Two variables to properly announce later on.
 	var/admin = key_name_admin(src)
-	var/player_key = G_found.key
+	var/player_key = new_character.key // после transfer_ckey() ключ уже на новом персонаже, а призрак мог быть уничтожен
 
 	//Now for special roles and equipment.
 	var/datum/antagonist/traitor/traitordatum = new_character.mind.has_antag_datum(/datum/antagonist/traitor)

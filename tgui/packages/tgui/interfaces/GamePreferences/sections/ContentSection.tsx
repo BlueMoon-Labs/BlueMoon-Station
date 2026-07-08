@@ -34,8 +34,8 @@ const PREF_TOGGLES: { key: string; label: string; flag: string; tooltip?: string
   { key: 'no_disco_dance', label: 'Танцевать возле диско-шара', flag: 'no_disco_dance', tooltip: 'Автоматически танцевать при нахождении рядом с диско-шаром' },
 ];
 
-export const ContentSection = (props, context) => {
-  const { act, data } = useBackend(context);
+export const ContentSection = (props) => {
+  const { act, data } = useBackend();
 
   const mid = Math.ceil(PREF_TOGGLES.length / 2);
   const leftCol = PREF_TOGGLES.slice(0, mid);

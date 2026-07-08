@@ -2,8 +2,9 @@ import { filter, sortBy } from 'common/collections';
 import { flow } from 'common/fp';
 import { classes } from 'common/react';
 import { createSearch } from 'common/string';
+import { useState } from 'react';
 
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import { Button, ByondUi, Flex, Input, Section } from '../components';
 import { Window } from '../layouts';
 
@@ -41,8 +42,8 @@ export const selectCameras = (cameras, searchText = '') => {
   ])(cameras);
 };
 
-export const CameraConsole = (props, context) => {
-  const { act, data } = useBackend(context);
+export const CameraConsole = (props) => {
+  const { act, data } = useBackend();
   const { mapRef, activeCamera } = data;
   const cameras = selectCameras(data.cameras);
   const [
@@ -90,12 +91,12 @@ export const CameraConsole = (props, context) => {
   );
 };
 
-export const CameraConsoleContent = (props, context) => {
-  const { act, data } = useBackend(context);
+export const CameraConsoleContent = (props) => {
+  const { act, data } = useBackend();
   const [
     searchText,
     setSearchText,
-  ] = useLocalState(context, 'searchText', '');
+  ] = useState('');
   const { activeCamera } = data;
   const cameras = selectCameras(data.cameras, searchText);
   return (

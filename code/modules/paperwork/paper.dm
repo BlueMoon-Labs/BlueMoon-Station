@@ -581,7 +581,7 @@
 			var/obj/item/holding = user.get_active_held_item()
 			var/stamp_info = holding?.get_writing_implement_details()
 			if(!stamp_info || (stamp_info["interaction_mode"] != MODE_STAMPING))
-				to_chat(src, span_warning("You can't stamp with the [holding]!"))
+				to_chat(user, span_warning("You can't stamp with the [holding]!"))
 				return TRUE
 
 			var/stamp_class = stamp_info["stamp_class"];

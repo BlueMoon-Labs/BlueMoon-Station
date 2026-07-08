@@ -1,4 +1,4 @@
-import { Fragment } from 'inferno';
+import { Fragment, useState } from 'react';
 
 import { useBackend, useLocalState } from '../backend';
 import { Box, Button, Collapsible, Icon, Input, LabeledList, Section, Table, Tooltip } from '../components';
@@ -48,8 +48,8 @@ const genderTagTextColor = {
   'Unset': 'label',
 };
 
-export const CharacterDirectory = (props, context) => {
-  const { act, data } = useBackend(context);
+export const CharacterDirectory = (props) => {
+  const { act, data } = useBackend();
 
   const {
     personalVisibility,
@@ -62,15 +62,15 @@ export const CharacterDirectory = (props, context) => {
     prefsOnly,
   } = data;
 
-  const [overlay, setOverlay] = useLocalState(context, 'overlay', null);
+  const [overlay, setOverlay] = useLocalState('overlay', null);
 
-  const [overwritePrefs, setOverwritePrefs] = useLocalState(context, 'overwritePrefs', true);
+  const [overwritePrefs, setOverwritePrefs] = useState(true);
 
   return (
     <Window width={940} height={560} resizeable>
       <Window.Content scrollable>
         {(overlay && <ViewCharacter />) || (
-          <Fragment>
+          <>
             <Section title="Настройки">
               <LabeledList>
                 <LabeledList.Item label="Видимость">
@@ -140,7 +140,7 @@ export const CharacterDirectory = (props, context) => {
               </Section>
             </Collapsible>
             <CharacterDirectoryList />
-          </Fragment>
+          </>
         )}
       </Window.Content>
     </Window>
@@ -160,10 +160,10 @@ const PrefTagButton = (props) => {
   );
 };
 
-const ViewCharacter = (props, context) => {
-  const { act, data } = useBackend(context);
+const ViewCharacter = (props) => {
+  const { act, data } = useBackend();
   const { directory_notes } = data;
-  const [overlay, setOverlay] = useLocalState(context, 'overlay', null);
+  const [overlay, setOverlay] = useLocalState('overlay', null);
 
   const prefTags = [
     { name: 'Изнасилование', value: overlay.noncon_tag },
@@ -176,14 +176,14 @@ const ViewCharacter = (props, context) => {
   const genderDisplay = overlay.gender_tag || 'Unset';
 
   const headshots = (overlay.headshot_links || []).filter(link => link && link.length);
-  const [selectedHeadshot, setSelectedHeadshot] = useLocalState(context, 'viewHeadshot', 0);
+  const [selectedHeadshot, setSelectedHeadshot] = useState(0);
   const safeIdx = headshots.length > 0 ? selectedHeadshot % headshots.length : 0;
   const currentLink = headshots[safeIdx];
   const isVideo = typeof currentLink === 'string' && /\.(webm|mp4)$/i.test(currentLink);
   const mediaStyle = {
-    'max-width': '256px',
-    'max-height': '256px',
-    'object-fit': 'contain',
+    maxWidth: '256px',
+    maxHeight: '256px',
+    objectFit: 'contain',
   };
 
   return (
@@ -251,17 +251,17 @@ const ViewCharacter = (props, context) => {
         </LabeledList>
       </Section>
       <Section level={2} title="Объявление">
-        <Box style={{ 'word-break': 'break-all' }} preserveWhitespace>
+        <Box style={{ wordBreak: 'break-all' }} preserveWhitespace>
           {overlay.character_ad || 'Не задано.'}
         </Box>
       </Section>
       <Section level={2} title="OOC Заметки">
-        <Box style={{ 'word-break': 'break-all' }} preserveWhitespace>
+        <Box style={{ wordBreak: 'break-all' }} preserveWhitespace>
           {overlay.ooc_notes || 'Не задано.'}
         </Box>
       </Section>
       <Section level={2} title="Описание">
-        <Box style={{ 'word-break': 'break-all' }} preserveWhitespace>
+        <Box style={{ wordBreak: 'break-all' }} preserveWhitespace>
           {overlay.flavor_text || 'Не задано.'}
         </Box>
       </Section>
@@ -275,7 +275,7 @@ const ViewCharacter = (props, context) => {
             onClick={() => act('editNote', { target_ckey: overlay.ckey })}
           />
         }>
-        <Box style={{ 'word-break': 'break-all' }} preserveWhitespace>
+        <Box style={{ wordBreak: 'break-all' }} preserveWhitespace>
           {(directory_notes && directory_notes[overlay.ckey]) || 'Нет заметки.'}
         </Box>
       </Section>
@@ -283,15 +283,15 @@ const ViewCharacter = (props, context) => {
   );
 };
 
-const CharacterDirectoryList = (props, context) => {
-  const { act, data } = useBackend(context);
+const CharacterDirectoryList = (props) => {
+  const { act, data } = useBackend();
 
   const { directory, canOrbit, directory_notes } = data;
 
-  const [sortId, _setSortId] = useLocalState(context, 'sortId', 'name');
-  const [sortOrder, _setSortOrder] = useLocalState(context, 'sortOrder', 'name');
-  const [overlay, setOverlay] = useLocalState(context, 'overlay', null);
-  const [searchText, setSearchText] = useLocalState(context, 'searchText', '');
+  const [sortId, _setSortId] = useLocalState('sortId', 'name');
+  const [sortOrder, _setSortOrder] = useLocalState('sortOrder', 'name');
+  const [overlay, setOverlay] = useLocalState('overlay', null);
+  const [searchText, setSearchText] = useLocalState('searchText', '');
 
   const filteredDirectory = (directory || []).filter(
     (character) =>
@@ -301,7 +301,7 @@ const CharacterDirectoryList = (props, context) => {
 
   return (
     <Section title="Каталог" buttons={
-      <Fragment>
+      <>
         <Input
           width="180px"
           placeholder="Поиск по имени..."
@@ -309,7 +309,7 @@ const CharacterDirectoryList = (props, context) => {
           onInput={(e, value) => setSearchText(value)}
         />
         <Button icon="sync" content="Обновить" ml={1} onClick={() => act('refresh')} />
-      </Fragment>
+      </>
     }>
       <Table>
         <Table.Row bold>
@@ -336,7 +336,7 @@ const CharacterDirectoryList = (props, context) => {
             <Table.Row
               key={i}
               style={{
-                'background-color': erpTagRowColor[character.erptag] || 'transparent',
+                backgroundColor: erpTagRowColor[character.erptag] || 'transparent',
               }}>
               <Table.Cell p={1}>
                 {canOrbit ? (
@@ -409,14 +409,14 @@ const CharacterDirectoryList = (props, context) => {
   );
 };
 
-const SortButton = (props, context) => {
-  const { act, data } = useBackend(context);
+const SortButton = (props) => {
+  const { act, data } = useBackend();
 
   const { id, children } = props;
 
   // Hey, same keys mean same data~
-  const [sortId, setSortId] = useLocalState(context, 'sortId', 'name');
-  const [sortOrder, setSortOrder] = useLocalState(context, 'sortOrder', 'name');
+  const [sortId, setSortId] = useLocalState('sortId', 'name');
+  const [sortOrder, setSortOrder] = useLocalState('sortOrder', 'name');
 
   return (
     <Table.Cell collapsing>

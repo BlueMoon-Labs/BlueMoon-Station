@@ -46,8 +46,8 @@ const GAMEPLAY_TOGGLES: { key: string; label: string; flag: string; invert?: boo
   { key: 'autostand', label: 'Автоматическое вставание', flag: 'autostand', tooltip: 'Автоматически вставать после падения или когда вас поднимают' },
 ];
 
-export const GameplaySection = (props, context) => {
-  const { act, data } = useBackend<GameplayData>(context);
+export const GameplaySection = (props) => {
+  const { act, data } = useBackend<GameplayData>();
   const damageShakeValue = Number(data.damage_screenshake ?? 2);
 
   return (

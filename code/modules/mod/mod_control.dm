@@ -233,7 +233,7 @@
 		return ..()
 	for(var/obj/item/part in mod_parts)
 		if(part.loc != src)
-			balloon_alert(carbon_user, "retract parts first!")
+			balloon_alert(carbon_user, "выдвиньте элементы МОДа!")
 			playsound(src, 'sound/machines/scanbuzz.ogg', 25, FALSE, SILENCED_SOUND_EXTRARANGE)
 			return FALSE
 	return ..()
@@ -243,7 +243,7 @@
 		return ..()
 	for(var/obj/item/part in mod_parts)
 		if(part.loc != null)
-			balloon_alert(wearer, "retract parts first!")
+			balloon_alert(wearer, "выдвиньте элементы МОДа!")
 			playsound(src, 'sound/machines/scanbuzz.ogg', 25, FALSE, SILENCED_SOUND_EXTRARANGE)
 			return
 	if(!wearer.incapacitated())
@@ -258,13 +258,13 @@
 			return
 	if(open && loc == user)
 		if(!cell)
-			balloon_alert(user, "no cell!")
+			balloon_alert(user, "нет батареи!")
 			return
-		balloon_alert(user, "removing cell...")
+		balloon_alert(user, "изъятие батареи...")
 		if(!do_after(user, 1 SECONDS, target = src))
-			balloon_alert(user, "interrupted!")
+			balloon_alert(user, "прервано!")
 			return
-		balloon_alert(user, "cell removed")
+		balloon_alert(user, "батарея вытащена")
 		playsound(src, 'sound/machines/click.ogg', 50, TRUE, SILENCED_SOUND_EXTRARANGE)
 		if(!user.put_in_hands(cell))
 			cell.forceMove(drop_location())
@@ -276,12 +276,7 @@
 	if(seconds_electrified && cell?.charge)
 		if(shock(user))
 			return
-	// if(!open)
-	// 	for(var/obj/item/mod/module/storage/S in modules)
-	// 		if(S.stored)
-	// 			playsound(user, "rustle", 50, 1, -5)
-	// 			SEND_SIGNAL(S.stored, COMSIG_TRY_STORAGE_SHOW, wearer, TRUE)
-	// 			return
+
 	. = ..()
 
 /obj/item/mod/control/screwdriver_act(mob/living/user, obj/item/screwdriver)
@@ -289,29 +284,29 @@
 	if(.)
 		return TRUE
 	if(active || activating)
-		balloon_alert(user, "deactivate suit first!")
+		balloon_alert(user, "сначала отключите костюм!")
 		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 		return FALSE
-	balloon_alert(user, "[open ? "closing" : "opening"] panel...")
-	screwdriver.play_tool_sound(src, 100)
+	balloon_alert(user, "[open ? "закрытие" : "открытие"] панели...")
 	if(screwdriver.use_tool(src, user, 0.5 SECONDS))
 		if(active || activating)
-			balloon_alert(user, "deactivate suit first!")
+			balloon_alert(user, "сначала отключите костюм!")
+			return FALSE
 		screwdriver.play_tool_sound(src, 100)
-		balloon_alert(user, "panel [open ? "closed" : "opened"]")
+		balloon_alert(user, "успешно!")
 		open = !open
 	else
-		balloon_alert(user, "interrupted!")
+		balloon_alert(user, "прервано!")
 	return TRUE
 
 /obj/item/mod/control/crowbar_act(mob/living/user, obj/item/crowbar)
 	. = ..()
 	if(!open)
-		balloon_alert(user, "open the panel first!")
+		balloon_alert(user, "сначала откройте панель!")
 		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 		return FALSE
 	if(!allowed(user))
-		balloon_alert(user, "insufficient access!")
+		balloon_alert(user, "недостаточный доступ!")
 		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 		return
 	if(length(modules))
@@ -320,52 +315,49 @@
 			if(!module.removable)
 				continue
 			removable_modules += module
-		var/obj/item/mod/module/module_to_remove = tgui_input_list(user, "Which module to remove?", "Module Removal", removable_modules)
+		var/obj/item/mod/module/module_to_remove = tgui_input_list(user, "Какой модуль вы хотите снять?", "Снять модули", removable_modules)
 		if(!module_to_remove?.mod)
 			return FALSE
 		uninstall(module_to_remove)
 		module_to_remove.forceMove(drop_location())
 		crowbar.play_tool_sound(src, 100)
 		return TRUE
-	balloon_alert(user, "no modules!")
+	balloon_alert(user, "нет модулей!")
 	playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 	return FALSE
 
 /obj/item/mod/control/attackby(obj/item/attacking_item, mob/living/user, params)
 	if(istype(attacking_item, /obj/item/paicard))
 		if(!open) //mod must be open
-			balloon_alert(user, "suit must be open to transfer!")
+			balloon_alert(user, "панель костюма должна быть открыта!")
 			return FALSE
 		if(can_install_pai)
 			insert_pai(user, attacking_item)
 			return TRUE
 	if(istype(attacking_item, /obj/item/mod/module))
 		if(!open)
-			balloon_alert(user, "open the panel first!")
+			balloon_alert(user, "сначала откройте панель!")
 			playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 			return FALSE
 		install(attacking_item, user)
 		return TRUE
 	else if(istype(attacking_item, /obj/item/stock_parts/cell))
 		if(!open)
-			balloon_alert(user, "open the panel first!")
+			balloon_alert(user, "сначала откройте панель!")
 			playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 			return FALSE
 		if(cell)
-			//balloon_alert(user, "cell already installed!")
-			//playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
-			//return FALSE
-			balloon_alert(user, "removing cell...")
+			balloon_alert(user, "изъятие батареи...")
 			if(!do_after(user, 1 SECONDS, target = src))
-				balloon_alert(user, "interrupted!")
+				balloon_alert(user, "прервано!")
 				return FALSE
-			balloon_alert(user, "cell removed")
+			balloon_alert(user, "батарея изъята")
 			playsound(src, 'sound/machines/click.ogg', 50, TRUE, SILENCED_SOUND_EXTRARANGE)
 			cell.forceMove(drop_location())
 			user.put_in_hands(cell)
 		attacking_item.moveToNullspace()
 		cell = attacking_item
-		balloon_alert(user, "cell installed")
+		balloon_alert(user, "батарея установлена")
 		playsound(src, 'sound/machines/click.ogg', 50, TRUE, SILENCED_SOUND_EXTRARANGE)
 		update_cell_alert()
 		return TRUE
@@ -383,12 +375,12 @@
 
 /obj/item/mod/control/emp_act(severity)
 	. = ..()
-	to_chat(wearer, span_notice("[severity > 1 ? "Light" : "Strong"] electromagnetic pulse detected!"))
+	to_chat(wearer, span_notice("Обнаружен [severity > 1 ? "слабый" : "сильный"] электромагнитный импульс!"))
 	if(!active || !wearer || . & EMP_PROTECT_CONTENTS)
 		return
 	selected_module = null
 	wearer.apply_damage(10 / severity, BURN, spread_damage=TRUE)
-	to_chat(wearer, span_danger("You feel [src] heat up from the EMP, burning you slightly."))
+	to_chat(wearer, span_danger("Вы ощущаете как [src] нагревается из-за ЭМИ и обжигает вас!"))
 	if (wearer.stat < UNCONSCIOUS && prob(10))
 		wearer.emote("realagony")
 
@@ -505,19 +497,19 @@
 	for(var/obj/item/mod/module/old_module as anything in modules)
 		if(is_type_in_list(new_module, old_module.incompatible_modules) || is_type_in_list(old_module, new_module.incompatible_modules))
 			if(user)
-				balloon_alert(user, "[new_module] incompatible with [old_module]!")
+				balloon_alert(user, "[new_module] несовместим с [old_module]!")
 				playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 			return
 	if(is_type_in_list(module, theme.module_blacklist))
 		if(user)
-			balloon_alert(user, "[src] doesn't accept [new_module]!")
+			balloon_alert(user, "[src] не принимает [new_module]!")
 			playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 		return
 	var/complexity_with_module = complexity
 	complexity_with_module += new_module.complexity
 	if(complexity_with_module > complexity_max)
 		if(user)
-			balloon_alert(user, "[new_module] would make [src] too complex!")
+			balloon_alert(user, "[new_module] превышает вместимость [src]!")
 			playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 		return
 	new_module.moveToNullspace()
@@ -528,7 +520,7 @@
 	if(wearer)
 		new_module.on_equip()
 	if(user)
-		balloon_alert(user, "[new_module] added")
+		balloon_alert(user, "[new_module] добавлен")
 		playsound(src, 'sound/machines/click.ogg', 50, TRUE, SILENCED_SOUND_EXTRARANGE)
 
 /obj/item/mod/control/proc/uninstall(module)
@@ -546,7 +538,7 @@
 
 /obj/item/mod/control/proc/update_access(mob/user, obj/item/card/id/card)
 	if(!allowed(user))
-		balloon_alert(user, "insufficient access!")
+		balloon_alert(user, "недостаточный доступ!")
 		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 		return
 	req_access = card.access.Copy()
@@ -577,7 +569,7 @@
 	wearer?.update_equipment_speed_mods()
 
 /obj/item/mod/control/proc/power_off()
-	balloon_alert(wearer, "no power!")
+	balloon_alert(wearer, "обесточено!")
 	toggle_activate(wearer, force_deactivate = TRUE)
 
 /obj/item/mod/control/proc/on_exit(datum/source, atom/movable/part, direction)

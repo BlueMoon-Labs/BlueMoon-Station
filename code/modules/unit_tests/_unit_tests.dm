@@ -170,12 +170,14 @@
 #include "hallucination_stationmessage.dm"
 #include "memory_leak_limits.dm"
 #include "human_mob_gc.dm"
+#include "observer_reenter_race.dm"
 #include "latex_lockable.dm"
 #include "parallax_position.dm"
 #include "perf_optimizations.dm"
 #include "psychosis_pools.dm"
 #include "preload_size_budgets.dm"
 #include "image_leak_audit.dm"
+#include "radiation_contamination.dm"
 #include "rtt_window.dm"
 #include "screen_gc.dm"
 #include "shapeshift_gc.dm"
@@ -185,6 +187,7 @@
 #include "ssobj_idle_processing.dm"
 #include "tattoo_system.dm"
 #include "techweb_copy.dm"
+#include "tick_spike_recorder.dm"
 
 #undef TEST_ASSERT
 #undef TEST_ASSERT_EQUAL

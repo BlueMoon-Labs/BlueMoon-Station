@@ -28,6 +28,14 @@ type GraphicsData = {
   mood_vignette: boolean;
 };
 
+// React's onChange fires continuously while dragging inside the color
+// dialog; debounce so we do not flood the server with act() messages.
+const colorCommitTimers = new WeakMap();
+const debouncedColorCommit = (input: HTMLInputElement, commit: (value: string) => void) => {
+  clearTimeout(colorCommitTimers.get(input));
+  colorCommitTimers.set(input, setTimeout(() => commit(input.value), 250));
+};
+
 const PARALLAX_OPTIONS = [
   { value: 0, label: 'Выкл.' },
   { value: 1, label: 'Низкий' },
@@ -75,8 +83,8 @@ const GFX_TOGGLES: { key: string; label: string; flag: string; tooltip?: string 
   { key: 'mood_vignette', label: 'Виньетка плохого настроения', flag: 'mood_vignette', tooltip: 'Показывать затемнение экрана при низком уровне настроения и рассудка' },
 ];
 
-export const GraphicsSection = (props, context) => {
-  const { act, data } = useBackend<GraphicsData>(context);
+export const GraphicsSection = (props) => {
+  const { act, data } = useBackend<GraphicsData>();
   const parallaxValue = Number(data.parallax ?? 4);
   const selectedParallax = PARALLAX_OPTIONS.find(o => o.value === parallaxValue)?.label
     || PARALLAX_OPTIONS[4].label;
@@ -112,7 +120,8 @@ export const GraphicsSection = (props, context) => {
                 background: 'transparent',
                 cursor: 'pointer',
               }}
-              onChange={e => act('set_gfx_val', { flag, value: e.target.value })}
+              onChange={e => debouncedColorCommit(e.target,
+                value => act('set_gfx_val', { flag, value }))}
             />
           </Stack.Item>
           <Stack.Item shrink={0} basis="80px">

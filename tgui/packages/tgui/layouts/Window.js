@@ -7,7 +7,7 @@
 import { classes } from 'common/react';
 import { useDispatch } from 'common/redux';
 import { decodeHtmlEntities, toTitleCase } from 'common/string';
-import { Component } from 'inferno';
+import { Component } from 'react';
 
 import { backendSuspendStart, useBackend } from '../backend';
 import { Icon } from '../components';
@@ -30,7 +30,7 @@ const getZoomKey = config => (
 
 export class Window extends Component {
   componentDidMount() {
-    const { suspended, config } = useBackend(this.context);
+    const { suspended, config } = useBackend();
     const { canClose = true } = this.props;
     this._wasSuspended = suspended;
     this._lastWindowKey = config.window?.key;
@@ -47,7 +47,7 @@ export class Window extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const { suspended, config } = useBackend(this.context);
+    const { suspended, config } = useBackend();
     const wasSuspended = this._wasSuspended;
     const zoomKey = getZoomKey(config);
     const shouldUpdateGeometry = (
@@ -68,7 +68,7 @@ export class Window extends Component {
   }
 
   updateGeometry() {
-    const { config } = useBackend(this.context);
+    const { config } = useBackend();
     const options = {
       size: DEFAULT_SIZE,
       ...config.window,
@@ -94,9 +94,9 @@ export class Window extends Component {
     const {
       config,
       suspended,
-    } = useBackend(this.context);
-    const { debugLayout } = useDebug(this.context);
-    const dispatch = useDispatch(this.context);
+    } = useBackend();
+    const { debugLayout } = useDebug();
+    const dispatch = useDispatch();
     const fancy = config.window?.fancy;
     // Determine when to show dimmer
     const showDimmer = config.user && (
@@ -134,11 +134,11 @@ export class Window extends Component {
         {fancy && (
           <>
             <div className="Window__resizeHandle__e"
-              onMousedown={resizeStartHandler(1, 0)} />
+              onMouseDown={resizeStartHandler(1, 0)} />
             <div className="Window__resizeHandle__s"
-              onMousedown={resizeStartHandler(0, 1)} />
+              onMouseDown={resizeStartHandler(0, 1)} />
             <div className="Window__resizeHandle__se"
-              onMousedown={resizeStartHandler(1, 1)} />
+              onMouseDown={resizeStartHandler(1, 1)} />
           </>
         )}
       </Layout>
@@ -183,7 +183,7 @@ const statusToColor = status => {
   }
 };
 
-const TitleBar = (props, context) => {
+const TitleBar = (props) => {
   const {
     className,
     title,
@@ -194,7 +194,7 @@ const TitleBar = (props, context) => {
     onClose,
     children,
   } = props;
-  const dispatch = useDispatch(context);
+  const dispatch = useDispatch();
   return (
     <div
       className={classes([
@@ -214,7 +214,7 @@ const TitleBar = (props, context) => {
       )}
       <div
         className="TitleBar__dragZone"
-        onMousedown={onDragStart} />
+        onMouseDown={onDragStart} />
       <div className="TitleBar__title">
         {typeof title === 'string'
           && title === title.toLowerCase()

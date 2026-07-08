@@ -1,7 +1,7 @@
 import { NtosWindow } from '../layouts';
 import { SignalerContent } from './Signaler';
 
-export const NtosSignaler = (props, context) => {
+export const NtosSignaler = (props) => {
   return (
     <NtosWindow
       width={400}

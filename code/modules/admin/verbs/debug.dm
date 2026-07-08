@@ -128,7 +128,7 @@
 	choice.transfer_ckey(pai)
 	card.setPersonality(pai)
 	for(var/datum/paiCandidate/candidate in SSpai.candidates)
-		if(candidate.key == choice.key)
+		if(candidate.key == pai.key) // после transfer_ckey() ключ уже на pAI, а призрак мог быть уничтожен
 			SSpai.candidates.Remove(candidate)
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Make pAI") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 

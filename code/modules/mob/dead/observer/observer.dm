@@ -465,10 +465,18 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		to_chat(usr, "<span class='warning'>Another consciousness is in your body...It is resisting you.</span>")
 		return
 	client.view_size.setDefault(getScreenSize(client.prefs.widescreenpref))//Let's reset so people can't become allseeing gods
-	transfer_ckey(mind.current, FALSE)
-	SStgui.on_transfer(src, mind.current) // Transfer NanoUIs.
-	mind.current.client.init_verbs()
-	qdel(src) // Remove observer from dead_mob_list and all HUDs - prevents GC failures
+	return do_reenter_corpse()
+
+/// Ядро возврата в тело. Вербы проверяют входные условия, здесь только сам перенос.
+/mob/dead/observer/proc/do_reenter_corpse()
+	// После transfer_ckey() Logout() призрака ставит spawn(0) qdel(src), который успевает
+	// сработать до возврата сюда: Destroy() зануляет mind. Поэтому тело кешируем заранее,
+	// tgui переносим до переноса ключа (как в tg), а src после переноса не трогаем.
+	var/mob/living/body = mind.current
+	SStgui.on_transfer(src, body) // Transfer NanoUIs.
+	transfer_ckey(body, FALSE)
+	body.client?.init_verbs()
+	qdel(src) // Remove observer from dead_mob_list and all HUDs - prevents GC failures; no-op, если Logout уже удалил призрака
 	return TRUE
 
 /mob/dead/observer/verb/stay_dead()

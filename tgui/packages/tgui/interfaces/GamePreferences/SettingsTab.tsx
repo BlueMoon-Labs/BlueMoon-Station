@@ -1,10 +1,10 @@
-import { AdminSection } from './AdminSection';
 import { Button, Section, Stack } from '../../components';
-import { SoundsSection } from './sections/SoundsSection';
-import { GraphicsSection } from './sections/GraphicsSection';
+import { AdminSection } from './AdminSection';
 import { ChatSection } from './sections/ChatSection';
-import { GameplaySection } from './sections/GameplaySection';
 import { ContentSection } from './sections/ContentSection';
+import { GameplaySection } from './sections/GameplaySection';
+import { GraphicsSection } from './sections/GraphicsSection';
+import { SoundsSection } from './sections/SoundsSection';
 
 const BASE_CATEGORIES = [
   { key: 'sounds', label: 'Звуки', section: SoundsSection },
@@ -21,7 +21,7 @@ const scrollToCategory = (key: string) => {
   });
 };
 
-export const SettingsTab = (props, context) => {
+export const SettingsTab = (props) => {
   const { has_admin } = props;
 
   const categories = has_admin

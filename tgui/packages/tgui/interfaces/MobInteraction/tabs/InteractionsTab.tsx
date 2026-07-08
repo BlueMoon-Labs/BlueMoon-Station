@@ -48,12 +48,12 @@ const INTERACTION_FLAG_REQUIRE_BONDAGE = (1<<7);
 const INTERACTION_FLAG_RANGED_CONSENT = (1<<8);
 const INTERACTION_FLAG_HIDE_IN_PANEL = (1<<9);
 
-export const InteractionsTab = (props, context) => {
-  const { act, data } = useBackend<ContentInfo>(context);
+export const InteractionsTab = (props) => {
+  const { act, data } = useBackend<ContentInfo>();
   const [
     searchText,
     setSearchText,
-  ] = useLocalState(context, 'searchText', '');
+  ] = useLocalState('searchText', '');
   const interactions = sortInteractions(
     data.interactions,
     searchText,
@@ -62,7 +62,7 @@ export const InteractionsTab = (props, context) => {
 
   const favorite_interactions = data.favorite_interactions || [];
   const hidden_keys = data.hidden_interactions_keys || [];
-  const [inFavorites, setInFavorites] = useLocalState(context, 'inFavorites', false);
+  const [inFavorites, setInFavorites] = useLocalState('inFavorites', false);
   const valid_favorites = interactions.filter(interaction => favorite_interactions.includes(interaction.key));
   const interactions_to_display = inFavorites
     ? valid_favorites
