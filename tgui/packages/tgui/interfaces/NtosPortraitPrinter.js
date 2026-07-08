@@ -15,6 +15,7 @@ export const NtosPortraitPrinter = (props) => {
     library_large,
     library_large_private,
     favorite_paintings_md5 = [],
+    is_admin = false,
   } = data;
 
   const allPortraits = [
@@ -142,6 +143,19 @@ export const NtosPortraitPrinter = (props) => {
                       selected={isFavorite}
                       onClick={() => act('toggle_favorite', {
                         md5: currentPortrait.md5,
+                      })}
+                    />
+                  )}
+                  {hasPortraits && is_admin && (
+                    <Button.Confirm
+                      icon="trash"
+                      color="bad"
+                      tooltip="Delete this painting from the database"
+                      tooltipPosition="bottom"
+                      confirmContent="Are you sure?"
+                      onClick={() => act('delete_painting', {
+                        md5: currentPortrait.md5,
+                        asset_prefix: current_portrait_asset_prefix,
                       })}
                     />
                   )}

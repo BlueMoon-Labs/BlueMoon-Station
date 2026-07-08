@@ -112,9 +112,9 @@ GLOBAL_LIST_EMPTY(cached_previews)
 	data["vore_tag"] = M?.client?.prefs?.vorepref || "No"
 	data["erp_tag"] = M?.client?.prefs?.erppref || "No"
 	data["mob_tag"] = M?.client?.prefs?.mobsexpref || "No"
-	data["hornyantags_tag"] = M?.client?.prefs?.hornyantagspref || "No"
 	data["nc_tag"] = M?.client?.prefs?.nonconpref || "No"
 	data["unholy_tag"] = M?.client?.prefs?.unholypref || "No"
+	data["unholy_hard_tag"] = M?.client?.prefs?.unholyhardpref || "No"
 	data["extreme_tag"] = M?.client?.prefs?.extremepref || "No"
 	data["very_extreme_tag"] = M?.client?.prefs?.extremeharm || "No"
 	data["tattoo_tag"] = M?.client?.prefs?.tattoopref || "No"
@@ -246,10 +246,11 @@ GLOBAL_LIST_EMPTY(cached_previews)
 		data["mob_tag"] = prefs.mobsexpref
 		data["nc_tag"] = prefs.nonconpref
 		data["unholy_tag"] = prefs.unholypref
+		data["unholy_hard_tag"] = prefs.unholyhardpref
 		data["extreme_tag"] = prefs.extremepref
 		data["very_extreme_tag"] = prefs.extremeharm
 		data["tattoo_tag"] = prefs.tattoopref
-	else for(var/i in list("vore_tag", "erp_tag", "mob_tag", "nc_tag", "unholy_tag", "extreme_tag", "very_extreme_tag", "tattoo_tag"))
+	else for(var/i in list("vore_tag", "erp_tag", "mob_tag", "nc_tag", "unholy_tag", "unholy_hard_tag", "extreme_tag", "very_extreme_tag", "tattoo_tag"))
 		data[i] = "No"
 
 	return data

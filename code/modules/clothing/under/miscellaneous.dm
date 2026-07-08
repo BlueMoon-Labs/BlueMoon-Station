@@ -184,45 +184,10 @@
 	item_state = "gear_harness"
 	can_adjust = TRUE
 	body_parts_covered = CHEST|GROIN
-	var/filled_condoms_counter = 0
-
-/obj/item/clothing/under/misc/gear_harness/ComponentInitialize()
-	. = ..()
-	var/datum/component/storage/STR = AddComponent(/datum/component/storage/concrete)
-	STR.max_w_class = WEIGHT_CLASS_TINY
-	STR.max_combined_w_class = WEIGHT_CLASS_TINY*100
-	STR.max_items = 100
-	STR.can_hold = typecacheof(list(/obj/item/genital_equipment/condom))
-	STR.insert_preposition = "on"
-	STR.display_numerical_stacking = TRUE
-	STR.click_gather = TRUE
-	STR.allow_quick_empty = TRUE
 
 /obj/item/clothing/under/misc/gear_harness/examine(mob/user)
 	. = ..()
-	. += "You can clip condoms onto it."
 	. += "<b>Alt-Click</b> to adjust coverage of your body."
-	if(filled_condoms_counter > 1)
-		. += "There are <b>[filled_condoms_counter]</b> filled condoms clipped onto it."
-	else if(filled_condoms_counter == 1)
-		. += "There is <b>[filled_condoms_counter]</b> filled condom clipped onto it."
-
-/obj/item/clothing/under/misc/gear_harness/get_examine_string(mob/user, thats)
-	. = ..()
-	if(filled_condoms_counter)
-		. += " with <span class='love'>[filled_condoms_counter] filled condom[filled_condoms_counter > 1 ? "s" : ""]</span> clipped onto it"
-
-/obj/item/clothing/under/misc/gear_harness/Entered(atom/movable/AM, atom/oldLoc)
-	. = ..()
-	var/obj/item/genital_equipment/condom/C = AM
-	if(C.reagents?.total_volume >= 1)
-		filled_condoms_counter++
-
-/obj/item/clothing/under/misc/gear_harness/Exited(atom/movable/AM, atom/newLoc)
-	. = ..()
-	var/obj/item/genital_equipment/condom/C = AM
-	if(C.reagents?.total_volume >= 1)
-		filled_condoms_counter--
 
 /obj/item/clothing/under/misc/gear_harness/toggle_jumpsuit_adjust()
 	if(!body_parts_covered)

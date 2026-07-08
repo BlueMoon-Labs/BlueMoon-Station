@@ -1,5 +1,6 @@
 #define METASHOP_TRAITOR_TOKEN_ROUND_LIMIT 3
 #define METASHOP_TRAITOR_TOKEN_REFUND_COST 250
+#define METASHOP_ANTAG_TOKEN_TRAITOR_LIMIT_KEY "traitor_token"
 
 SUBSYSTEM_DEF(metadollars)
 	name = "Metadollars"
@@ -9,7 +10,7 @@ SUBSYSTEM_DEF(metadollars)
 	var/list/metadollar_amount_cache = list()
 	var/list/metadollar_leaderboard = list()
 	var/metadollar_leaderboard_positions_tracked = 5
-	var/metashop_traitor_token_round_sold = 0
+	var/list/metashop_round_limited_purchases = list()
 
 /proc/bm_metadollar_json_path(target_ckey)
 	return "data/player_saves/[target_ckey[1]]/[target_ckey]/metadollars.json"
@@ -35,24 +36,39 @@ SUBSYSTEM_DEF(metadollars)
 	SIGNAL_HANDLER
 	round_earnings = list()
 	metadollar_burn_round_notice = null
-	metashop_traitor_token_round_sold = 0
+	metashop_round_limited_purchases = list()
 
-/datum/controller/subsystem/metadollars/proc/get_traitor_token_round_sold()
-	return metashop_traitor_token_round_sold
+/datum/controller/subsystem/metadollars/proc/get_round_limited_purchase_count(limit_key)
+	if(!limit_key)
+		return 0
+	return metashop_round_limited_purchases[limit_key] || 0
 
-/datum/controller/subsystem/metadollars/proc/get_traitor_token_round_remaining()
-	return max(0, METASHOP_TRAITOR_TOKEN_ROUND_LIMIT - metashop_traitor_token_round_sold)
+/datum/controller/subsystem/metadollars/proc/get_round_limited_purchase_remaining(limit_key, limit_amount)
+	if(!limit_key || limit_amount <= 0)
+		return 0
+	return max(0, limit_amount - get_round_limited_purchase_count(limit_key))
 
-/datum/controller/subsystem/metadollars/proc/can_purchase_traitor_token()
-	return metashop_traitor_token_round_sold < METASHOP_TRAITOR_TOKEN_ROUND_LIMIT
+/datum/controller/subsystem/metadollars/proc/can_purchase_round_limited_item(limit_key, limit_amount)
+	if(!limit_key || limit_amount <= 0)
+		return TRUE
+	return get_round_limited_purchase_count(limit_key) < limit_amount
 
-/datum/controller/subsystem/metadollars/proc/register_traitor_token_purchase()
-	metashop_traitor_token_round_sold++
-
-/datum/controller/subsystem/metadollars/proc/unregister_traitor_token_purchase()
-	if(metashop_traitor_token_round_sold <= 0)
+/datum/controller/subsystem/metadollars/proc/register_round_limited_purchase(limit_key)
+	if(!limit_key)
 		return
-	metashop_traitor_token_round_sold--
+	metashop_round_limited_purchases[limit_key] = get_round_limited_purchase_count(limit_key) + 1
+
+/datum/controller/subsystem/metadollars/proc/unregister_round_limited_purchase(limit_key)
+	if(!limit_key)
+		return
+	var/current_count = get_round_limited_purchase_count(limit_key)
+	if(current_count <= 0)
+		return
+	current_count--
+	if(current_count)
+		metashop_round_limited_purchases[limit_key] = current_count
+	else
+		metashop_round_limited_purchases -= limit_key
 
 /datum/controller/subsystem/metadollars/proc/metadollar_save(target_ckey)
 	if(!target_ckey || !(target_ckey in metadollar_amount_cache))

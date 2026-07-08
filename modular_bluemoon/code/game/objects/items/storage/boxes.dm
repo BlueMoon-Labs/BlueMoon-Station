@@ -81,3 +81,12 @@
 	new	/obj/item/clothing/accessory/permit/special/bouncer(src)
 	new	/obj/item/clothing/accessory/permit/special/bouncer(src)
 	new	/obj/item/clothing/accessory/permit/special/bouncer(src)
+
+/obj/item/storage/box/metashop/holoparasite_kit
+	name = "holoparasite kit"
+	desc = "Коробка с инжектором голопаразита и разрешением на его ношение."
+	illustration = "syringe"
+
+/obj/item/storage/box/metashop/holoparasite_kit/PopulateContents()
+	new /obj/item/guardiancreator/tech/choose/traitor(src)
+	new /obj/item/clothing/accessory/permit/special/holoparasite(src)

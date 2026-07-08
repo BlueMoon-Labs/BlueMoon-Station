@@ -261,6 +261,7 @@
 	category = "Holiday"
 	item = /obj/item/gun/energy/kinetic_accelerator/crossbow/halloween
 	surplus = 0
+	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/device_tools/emag/hack_o_lantern
 	name = "Hack-o'-Lantern"
@@ -268,6 +269,7 @@
 	category = "Holiday"
 	item = /obj/item/card/emag/halloween
 	surplus = 0
+	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
 
 /////////////////////////
 // Ball map Items      //

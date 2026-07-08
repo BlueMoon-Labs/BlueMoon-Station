@@ -68,6 +68,27 @@
 	else
 		return
 
+//Аплинк экипажа Синдистанции
+
+/obj/item/syndicate_uplink/station
+	name = "Syndicate & Nanotrasen Crew Uplink"
+	desc = "Аплинк, имеющий в своём ассортименте только разрешенные к использованию контрабандные предметы и \
+			некоторые дополнительные, разрешенные ПАКТом элементы снабжения."
+	uplink_flag = UPLINK_SYNDICATE_PACT_CREW
+
+/obj/item/syndicate_uplink/station/Initialize(mapload, owner, tc_amount = 10)
+	. = ..()
+	var/datum/component/old_component = GetComponent(/datum/component/uplink/syndicate)
+	old_component.Destroy()//я не смог решить иначе. Оно ТК суммирует :(
+	AddComponent(/datum/component/uplink/syndicate/pact, owner, FALSE, TRUE, uplink_flag, tc_amount)
+
+/datum/component/uplink/syndicate/pact
+	name = "Pact Uplink"
+
+/datum/component/uplink/syndicate/pact/ui_data(mob/user)
+	. = ..()
+	.["uplink_type"] = name
+
 /obj/item/syndicate_uplink_high
 	name = "Great One Syndicate Uplink"
 	icon = 'modular_bluemoon/krashly/icons/obj/inteq-uplink.dmi'

@@ -55,6 +55,7 @@ GLOBAL_LIST_INIT(interaction_speeds, list(
 #define INTERACTION_NORMAL 0
 #define INTERACTION_LEWD 1
 #define INTERACTION_EXTREME 2
+#define INTERACTION_UNHOLY_HARD 4
 
 #define CUM_TARGET_MOUTH "mouth"
 #define CUM_TARGET_THROAT "throat"
@@ -123,6 +124,7 @@ GLOBAL_LIST_INIT(interaction_speeds, list(
 #define INTERACTION_FLAG_REQUIRE_BONDAGE (1<<7) //TODO: move the bondage interactions out of the interaction menu
 #define INTERACTION_FLAG_RANGED_CONSENT (1<<8)
 #define INTERACTION_FLAG_HIDE_IN_PANEL (1<<9) // not show for users
+#define INTERACTION_FLAG_UNHOLY_HARD (1<<10) // C богом
 
 /// Copy-paste prevention for additional details
 /// Fills containers

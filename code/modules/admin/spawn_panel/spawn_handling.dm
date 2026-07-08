@@ -6,6 +6,9 @@
 	if(!path)
 		to_chat(user, span_warning("SpawnPanel: invalid typepath '[spawn_params["type"]]'"))
 		return
+	if(bm_is_forbidden_admin_metadollar_spawn(path, user) || bm_is_forbidden_admin_metashop_token_spawn(path))
+		to_chat(user, span_warning("SpawnPanel: metadollars and metashop antag tokens cannot be spawned through admin spawn tools."))
+		return
 	if(!ispath(path, /obj) && !ispath(path, /turf) && !ispath(path, /mob))
 		to_chat(user, span_warning("SpawnPanel: path must be /obj, /turf, or /mob."))
 		return

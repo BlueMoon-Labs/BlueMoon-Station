@@ -87,14 +87,14 @@
 	//suit = /obj/item/clothing/suit/toggle/lawyer/black
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
 	l_pocket = /obj/item/laser_pointer
-	r_pocket = /obj/item/syndicate_uplink
+	r_pocket = /obj/item/syndicate_uplink/station
 
 	backpack = /obj/item/storage/backpack/duffelbag/syndie
 	satchel = /obj/item/storage/backpack/duffelbag/syndie
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
-	accessory = list(/obj/item/clothing/accessory/permit/special/lawyer, /obj/item/clothing/accessory/lawyers_badge)
+	accessory = list(/obj/item/clothing/accessory/permit/special/lawyer, /obj/item/clothing/accessory/lawyers_badge, /obj/item/clothing/accessory/permit/special/syndie_station)
 
 	backpack_contents = list(/obj/item/gun/energy/e_gun=1, /obj/item/stamp/law=1)
 
