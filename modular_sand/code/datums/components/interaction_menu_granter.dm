@@ -170,6 +170,9 @@
 			required_from_user |= INTERACTION_REQUIRE_KNOT
 		if(findtext(shape_desc, "двойн"))
 			required_from_user |= INTERACTION_REQUIRE_DOUBLE_PENIS
+	var/user_has_breasts = self.has_breasts()
+	if(user_has_breasts)
+		required_from_user |= INTERACTION_REQUIRE_BREASTS
 	var/user_has_belly = self.has_belly()
 	if(user_has_belly)
 		required_from_user |= INTERACTION_REQUIRE_BELLY
@@ -218,7 +221,6 @@
 			required_from_user_exposed |= INTERACTION_REQUIRE_VAGINA
 			required_from_user_unexposed |= INTERACTION_REQUIRE_VAGINA
 
-	var/user_has_breasts = self.has_breasts()
 	switch(user_has_breasts)
 		if(HAS_EXPOSED_GENITAL)
 			required_from_user_exposed |= INTERACTION_REQUIRE_BREASTS
