@@ -761,9 +761,14 @@
 
 	// While danger_level has been stable, skip the (relatively expensive) turf air read on
 	// most fires. Snaps back to reading every fire the moment danger_level changes (below).
+	// Exception: if the monitored turf has just entered active atmos exchange it may be drifting
+	// toward a hazard, so cut the backoff short and read now instead of coasting up to ~30s blind.
 	if(process_skips_left > 0)
-		process_skips_left--
-		return
+		var/turf/open/open_location = get_turf(src)
+		if(!istype(open_location) || (!open_location.excited && !open_location.excited_group))
+			process_skips_left--
+			return
+		process_skips_left = 0
 
 	var/turf/location = get_turf(src)
 	if(!location)
