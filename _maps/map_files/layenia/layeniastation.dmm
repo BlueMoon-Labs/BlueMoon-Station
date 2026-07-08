@@ -38801,6 +38801,13 @@
 	icon_state = "darkfull_plate"
 	},
 /area/hallway/primary/port/fore)
+"fLH" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer1{
+	dir = 4;
+	name = "scrubbers pipe"
+	},
+/turf/closed/wall,
+/area/commons/fitness)
 "fLI" = (
 /obj/structure/table/reinforced,
 /obj/item/clothing/glasses/meson/engine,
@@ -114270,6 +114277,13 @@
 	icon_state = "floor_plate"
 	},
 /area/hallway/primary/central)
+"qII" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer3{
+	dir = 8;
+	name = "air supply pipe"
+	},
+/turf/closed/wall,
+/area/commons/fitness)
 "qIL" = (
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
@@ -179923,7 +179937,7 @@ gyt
 oDp
 vNH
 vzF
-vfW
+qII
 foF
 foF
 foF
@@ -179934,7 +179948,7 @@ foF
 foF
 foF
 foF
-vfW
+fLH
 iFN
 tAA
 oDp
@@ -181979,7 +181993,7 @@ nVy
 nVy
 ajt
 ouM
-qEf
+qII
 foF
 foF
 foF
@@ -181990,7 +182004,7 @@ foF
 foF
 foF
 foF
-sFb
+fLH
 ouM
 tAA
 aOc

@@ -20605,10 +20605,6 @@
 /obj/effect/turf_decal/tile/red/opposingcorners,
 /turf/open/floor/plasteel/white,
 /area/centcom/holding)
-"lMD" = (
-/obj/item/melee/skateboard,
-/turf/open/floor/holofloor/plating,
-/area/holodeck/rec_center/skatepark)
 "lMO" = (
 /obj/effect/turf_decal/tile/dark_blue/half,
 /turf/open/floor/plasteel/dark,
@@ -24094,12 +24090,12 @@
 "pvx" = (
 /obj/structure/table/wood,
 /obj/item/storage/crayons,
+/obj/item/storage/crayons,
 /obj/item/storage/crayons{
-	pixel_y = 1
+	pixel_y = 4
 	},
 /obj/item/storage/crayons{
-	pixel_x = 1;
-	pixel_y = 4
+	pixel_y = 8
 	},
 /turf/open/floor/holofloor/carpet,
 /area/holodeck/rec_center/photobooth)
@@ -88858,7 +88854,7 @@ rzt
 rzt
 rzt
 rzt
-lMD
+rzt
 afx
 aaa
 aaa
@@ -89115,7 +89111,7 @@ rzt
 aje
 aje
 rzt
-lMD
+rzt
 afx
 aaa
 aaa
@@ -89372,7 +89368,7 @@ aje
 aje
 rzt
 rzt
-lMD
+rzt
 afx
 aaa
 aaa
@@ -89629,7 +89625,7 @@ aje
 aje
 rzt
 rzt
-lMD
+rzt
 afx
 aaa
 aaa
@@ -89886,7 +89882,7 @@ aje
 rzt
 rzt
 rzt
-lMD
+rzt
 afx
 aaa
 aaa
@@ -90143,7 +90139,7 @@ rzt
 aje
 aje
 rzt
-lMD
+rzt
 afx
 aab
 aab
