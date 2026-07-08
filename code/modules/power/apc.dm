@@ -1088,18 +1088,15 @@
 
 
 /obj/machinery/power/apc/proc/get_malf_status(mob/living/silicon/ai/malf)
-	if(istype(malf) && malf.malf_picker)
-		if(malfai == (malf.parent || malf))
-			if(occupier == malf)
-				return 3 // 3 = User is shunted in this APC
-			else if(istype(malf.loc, /obj/machinery/power/apc))
-				return 4 // 4 = User is shunted in another APC
-			else
-				return 2 // 2 = APC hacked by user, and user is in its core.
-		else
-			return 1 // 1 = APC not hacked.
-	else
+	if(!istype(malf) || !malf.malf_picker)
 		return 0 // 0 = User is not a Malf AI
+	if(malfai != (malf.parent || malf))
+		return 1 // 1 = APC not hacked.
+	if(occupier == malf)
+		return 3 // 3 = User is shunted in this APC
+	if(istype(malf.loc, /obj/machinery/power/apc))
+		return 4 // 4 = User is shunted in another APC
+	return 2 // 2 = APC hacked by user, and user is in its core.
 
 /obj/machinery/power/apc/proc/report()
 	return "[area.name] : [equipment]/[lighting]/[environ] ([lastused_equip+lastused_light+lastused_environ]) : [cell? cell.percent() : "N/C"] ([charging])"
