@@ -187,6 +187,7 @@
 #include "statpanel_listedturf.dm"
 #include "ssmobs_optimization.dm"
 #include "ssobj_idle_processing.dm"
+#include "proximity_monitor.dm"
 #include "tattoo_system.dm"
 #include "techweb_copy.dm"
 #include "tick_spike_recorder.dm"
