@@ -209,10 +209,10 @@
 			machine.atmos_wake()
 	if(blockchanges && T.excited_group)
 		// External gas changes must postpone group death but NOT group
-		// averaging: self_breakdown is what wakes resting members (poke), and
-		// that is the only path gas has out of a drip-fed pocket whose
-		// per-cycle shares stay under MINIMUM_MOLES_DELTA_TO_MOVE. Resetting
-		// breakdown_cooldown here starved sleeping neighbors of pokes for as
+		// averaging: self_breakdown spreading the gas across the whole group
+		// is the only path gas has out of a drip-fed pocket whose per-cycle
+		// shares stay under MINIMUM_MOLES_DELTA_TO_MOVE. Resetting
+		// breakdown_cooldown here starved the group of averaging for as
 		// long as the feed lasted. Destroying the group (the oldest behavior)
 		// is still wrong - see the structural path in
 		// /turf/air_update_turf(update = TRUE).

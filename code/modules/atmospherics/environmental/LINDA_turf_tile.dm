@@ -561,11 +561,13 @@
 		if(!our_excited_group)
 			if(SSair)
 				SSair.remove_from_active(src)
-		else if(cached_atmos_cooldown > EXCITED_GROUP_DISMANTLE_CYCLES)
-			// Stalled for a full dismantle window inside a live group: rest this
+		else if(cached_atmos_cooldown > EXCITED_GROUP_INDIVIDUAL_REST_CYCLES)
+			// Stalled for a full rest window inside a live group: rest this
 			// turf alone. remove_from_active here would garbage-collect the whole
 			// group, letting one churning member keep thousands of settled group
-			// mates paying process_cell every fire.
+			// mates paying process_cell every fire. Resting early is safe: group
+			// averaging keeps covering this turf, and anything meaningful wakes
+			// it back through add_to_active or a boundary poke.
 			if(SSair)
 				SSair.sleep_active_turf(src)
 
@@ -671,6 +673,18 @@
 /// lifecycle event is due. Kept as a proc so tests can drive the exact
 /// stage behavior.
 /datum/excited_group/proc/tick_lifecycle()
+	// A group with no awake members can generate no new deltas on its own:
+	// every member idled through a full rest window, and any external change
+	// wakes its member back through add_to_active. Waiting out the rest of the
+	// dismantle window would just keep re-averaging an already-quiet room.
+	var/any_awake = FALSE
+	for(var/turf/open/member as anything in turf_list)
+		if(istype(member) && member.excited)
+			any_awake = TRUE
+			break
+	if(!any_awake)
+		dismantle()
+		return
 	breakdown_cooldown++
 	dismantle_cooldown++
 	if(breakdown_cooldown >= EXCITED_GROUP_BREAKDOWN_CYCLES)
@@ -686,7 +700,7 @@
 	var/space_in_group = FALSE
 	if(space_is_all_consuming)
 		for(var/turf/open/T as anything in turf_list)
-			if(!istype(T) || !T.air || !T.excited)
+			if(!istype(T) || !T.air)
 				continue
 			if(istype(T.air, /datum/gas_mixture/immutable/space))
 				space_in_group = TRUE
@@ -695,20 +709,24 @@
 	if(space_in_group)
 		var/datum/gas_mixture/space_mix = new /datum/gas_mixture/immutable/space
 		for(var/turf/open/T as anything in turf_list)
-			if(!istype(T) || !T.air || !T.excited)
+			if(!istype(T) || !T.air)
 				continue
 			T.air.copy_from(space_mix)
 			T.update_visuals()
 		qdel(space_mix)
 	else
-		// Average only members that are still awake, and only within one
-		// atmosphere domain: planetary turfs bucket by their template string,
-		// everything else shares the "" bucket. Resting members sat idle for a
-		// full dismantle window and hold their local equilibrium; folding them
-		// in would smear churner gas across turfs nobody processes anymore
-		// (planetary surfaces slowly drifted toward leaks and space-drained
-		// edges) and would keep every breakdown O(group size) when only a
-		// handful of turfs churn.
+		// Average the ENTIRE group, resting members included, one atmosphere
+		// domain at a time: planetary turfs bucket by their template string,
+		// everything else shares the "" bucket. Excluding resting members
+		// preserved every settled pocket, so post-breach fields flattened ring
+		// by ring through the poke frontier (O(diameter^2) cycles of awake
+		// churn for a large room) and drip-fed gas crawled out one ring per
+		// breakdown. One pass here makes the bucket uniform: awake members
+		// then find no deltas, rest within EXCITED_GROUP_INDIVIDUAL_REST_CYCLES
+		// and the group dies, instead of the frontier staying awake for the
+		// whole diffusive recovery. The O(group size) cost runs only once per
+		// EXCITED_GROUP_BREAKDOWN_CYCLES and is far cheaper than the frontier
+		// paying process_cell every fire.
 		// Cross-template averaging is what kept whole planetary surfaces awake:
 		// icemoon groups span 150K snow, 320K basalt caves and station-air
 		// bridges, and one blended mix matches no template, so every planetary
@@ -718,7 +736,7 @@
 		var/list/bucket_mixes = list()
 		var/list/bucket_counts = list()
 		for(var/turf/open/T as anything in turf_list)
-			if(!istype(T) || !T.air || !T.excited)
+			if(!istype(T) || !T.air)
 				continue
 			var/bucket_key = T.planetary_atmos ? T.initial_gas_mix : ""
 			var/datum/gas_mixture/bucket_mix = bucket_mixes[bucket_key]
@@ -731,36 +749,42 @@
 			var/datum/gas_mixture/bucket_mix = bucket_mixes[bucket_key]
 			bucket_mix.divide(bucket_counts[bucket_key])
 		for(var/turf/open/T as anything in turf_list)
-			if(!istype(T) || !T.air || !T.excited)
+			if(!istype(T) || !T.air)
 				continue
 			var/bucket_key = T.planetary_atmos ? T.initial_gas_mix : ""
 			T.air.copy_from(bucket_mixes[bucket_key])
 			T.update_visuals()
+			// The write-back changes air on tiles that stay resting, so their
+			// registered vents/scrubbers must get their wake call here - the
+			// turf itself never goes through add_to_active.
+			if(T.atmos_wake_machines)
+				for(var/obj/machinery/atmospherics/machine as anything in T.atmos_wake_machines)
+					machine.atmos_wake()
 		for(var/bucket_key in bucket_mixes)
 			qdel(bucket_mixes[bucket_key])
 
 	if(poke_resting)
-		// Wake resting members with a maxed stall counter - share something
-		// next cycle or rest right back. Resting turfs receive gas passively
-		// but never process, so without this periodic prod a drip-fed pocket
-		// (corpse rot, plague rats) never hands its gas past the first ring
-		// of neighbors. Only the flow boundary gets poked - resting members
-		// bordering an awake one: gas still propagates ring by ring (each
-		// breakdown extends the frontier), but a single churner (a draining
-		// gas tank, a breach edge) no longer re-processes a thousand-turf
-		// disaster group in full every four fires for the whole recovery.
+		// With the whole group averaged flat, the only place new deltas can
+		// come from is OUTSIDE the group: wake resting members that border a
+		// non-member open turf so they compare against it next cycle (that
+		// comparison is the only way the group grows into a settled room or
+		// keeps draining into space). They get a maxed stall budget - share
+		// something or rest right back. Interior resting members already sit
+		// at the bucket average and stay asleep; a fully-enclosed room stops
+		// poking entirely once the group covers it.
 		var/list/turf/open/to_poke = list()
 		for(var/turf/open/T as anything in turf_list)
-			if(!istype(T) || !T.air || !T.excited)
+			if(!istype(T) || !T.air || T.excited)
 				continue
 			for(var/turf/open/neighbor as anything in T.atmos_adjacent_turfs)
-				if(!istype(neighbor) || neighbor.excited || neighbor.excited_group != src || !neighbor.air)
+				if(!istype(neighbor) || neighbor.excited_group == src)
 					continue
-				to_poke[neighbor] = TRUE
+				to_poke += T
+				break
 		for(var/turf/open/T as anything in to_poke)
 			if(SSair)
 				SSair.add_to_active(T, FALSE)
-			T.atmos_cooldown = EXCITED_GROUP_DISMANTLE_CYCLES
+			T.atmos_cooldown = EXCITED_GROUP_INDIVIDUAL_REST_CYCLES
 
 	breakdown_cooldown = 0
 

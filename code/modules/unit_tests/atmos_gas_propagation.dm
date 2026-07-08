@@ -34,13 +34,13 @@
 
 	// Settle the room the way a real one settles: identical standard air,
 	// no excited groups, everything off the active list, and the personal
-	// stall counters left at the value a dismantle leaves behind.
+	// stall counters left maxed out (stale from the last activity).
 	for(var/turf/open/T as anything in room)
 		T.air.copy_from_turf(T)
 		if(T.excited_group)
 			T.excited_group.garbage_collect()
 		SSair.remove_from_active(T)
-		T.atmos_cooldown = EXCITED_GROUP_DISMANTLE_CYCLES + 1
+		T.atmos_cooldown = EXCITED_GROUP_INDIVIDUAL_REST_CYCLES + 1
 
 	var/turf/open/corpse_turf = locate(base.x + 2, base.y + 2, base.z)
 	var/turf/open/corner_one = locate(base.x + 1, base.y + 1, base.z)
