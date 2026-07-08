@@ -98,6 +98,7 @@
 // #include "heretic_knowledge.dm"
 // #include "holidays.dm"
 // #include "hydroponics_harvest.dm"
+#include "jetpack_thrust.dm"
 // #include "keybinding_init.dm"
 #include "keybindings_stuck_keys.dm"
 // #include "language_transfer.dm"

@@ -81,7 +81,12 @@
 		turn_off(user)
 		return
 
-	assume_air_moles(air_contents, num)
+	// Выхлоп уходит из баллона в турф под носителем: вызов на src переливал
+	// смесь саму в себя, и джетпак летал бесконечно.
+	var/turf/exhaust_turf = get_turf(user)
+	if(!exhaust_turf)
+		return
+	exhaust_turf.assume_air_moles(air_contents, num)
 
 	return TRUE
 
@@ -114,7 +119,10 @@
 		turn_off(user)
 		return
 
-	assume_air_moles(air_contents, num)
+	var/turf/exhaust_turf = get_turf(user)
+	if(!exhaust_turf)
+		return
+	exhaust_turf.assume_air_moles(air_contents, num)
 
 	return TRUE
 
