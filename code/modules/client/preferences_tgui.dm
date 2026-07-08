@@ -86,8 +86,7 @@
 	.["tg_player_panel"] = !!(toggles & TG_PLAYER_PANEL)
 	.["autostand"] = autostand
 
-	// Gameplay: victim & combat
-	.["be_victim"] = be_victim || BEVICTIM_NO
+	// Gameplay: combat
 	.["disable_combat_cursor"] = disable_combat_cursor
 	.["disable_combat_mouse_lock"] = disable_combat_mouse_lock
 
@@ -358,6 +357,10 @@
 			switch(flag)
 				if("no_antag")
 					toggles ^= NO_ANTAG
+					if(toggles & NO_ANTAG)
+						toggles &= ~MIDROUND_ANTAG
+					else
+						toggles |= MIDROUND_ANTAG
 				if("midround_antag")
 					toggles ^= MIDROUND_ANTAG
 				if("deathrattle")
@@ -416,10 +419,6 @@
 					deadmin ^= DEADMIN_POSITION_SECURITY
 				if("deadmin_silicon")
 					deadmin ^= DEADMIN_POSITION_SILICON
-			save_preferences()
-
-		if("set_be_victim")
-			be_victim = params["value"]
 			save_preferences()
 
 		if("set_screenshake")

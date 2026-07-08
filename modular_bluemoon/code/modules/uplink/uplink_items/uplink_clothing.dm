@@ -9,6 +9,29 @@
 	cost = 18 // 39 ---> 18
 	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
 
+/datum/uplink_item/mod/syndie
+	name = "Syndicate MOD"
+	desc = "Базовая версия модулярного костюма, используемая синдикатом. Имеет предустановленный джетпак, рюкзак и ДНК-замок."
+	cost = 6
+	purchasable_from = (UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
+	item = /obj/item/mod/control/pre_equipped/traitor
+
+/datum/uplink_item/mod/nanotrasen
+	name = "ERT MOD"
+	desc = "Списанный МОД костюм, побывавший во многих сражений, доказавши свою практичность, но не бронированность. Очень стильный."
+	cost = 10
+	item = /obj/item/mod/control/pre_equipped/responsory
+	purchasable_from = UPLINK_SYNDICATE_PACT_CREW
+
+/datum/uplink_item/mod/syndie_jet
+	name = "MOD Advanced Jetpack"
+	desc = "Улучшение предыдущей модели электрических двигателей.\
+			Эта достигает более высоких скоростей за счёт установки \
+			большего количества двигателей и нанесения красной краски."
+	item = /obj/item/mod/module/jetpack/advanced
+	cost = 4
+	purchasable_from = UPLINK_SYNDICATE_PACT_CREW
+
 /datum/uplink_item/mod/noslip //
 	name = "MOD anti slip module"
 	desc = "Модифицированная версия стандартных магнитных ботинок с пьезоэлектрическими кристаллами на подошве. \
@@ -17,7 +40,7 @@
 		на мокром полу. Honk Co. неоднократно протестовала против легальности этих модулей."
 	item = /obj/item/mod/module/noslip
 	cost = 3
-	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
+	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/mod/thermal //
 	name = "MOD thermal visor module"
@@ -35,4 +58,4 @@
 		включая аугментации. Однако для этого расходуется энергия костюма."
 	item = /obj/item/mod/module/emp_shield/advanced
 	cost = 6
-	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
+	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW)

@@ -8,14 +8,17 @@ import { Window } from '../layouts';
 
 const MAX_SEARCH_RESULTS = 25;
 
-export const Uplink = (props) => {
-  const { data } = useBackend();
-  const { telecrystals } = data;
+export const Uplink = (props, context) => {
+  const { data } = useBackend(context);
+  const { telecrystals, uplink_type } = data;
+
+  const theme = uplink_type === 'Pact Uplink' ? 'pact' : 'syndicate';
+
   return (
     <Window
       width={620}
       height={580}
-      theme="syndicate">
+      theme={theme}>
       <Window.Content overflow="auto">
         <GenericUplink
           currencyAmount={telecrystals}
@@ -163,8 +166,8 @@ const ItemList = (props) => {
                 disabled={item.disabled}
                 tooltip={item.desc}
                 tooltipPosition="left"
-                onmouseover={() => setHoveredItem(item)}
-                onmouseout={() => setHoveredItem({})}
+                onMouseOver={() => setHoveredItem(item)}
+                onMouseOut={() => setHoveredItem({})}
                 onClick={() => act('buy', {
                   name: item.name,
                 })} />
@@ -183,8 +186,8 @@ const ItemList = (props) => {
         <Button
           content={item.cost + ' ' + currencySymbol}
           disabled={item.disabled}
-          onmouseover={() => setHoveredItem(item)}
-          onmouseout={() => setHoveredItem({})}
+          onMouseOver={() => setHoveredItem(item)}
+          onMouseOut={() => setHoveredItem({})}
           onClick={() => act('buy', {
             name: item.name,
           })} />

@@ -1088,9 +1088,12 @@
 
 
 /obj/machinery/power/apc/proc/get_malf_status(mob/living/silicon/ai/malf)
-	if(!istype(malf) || !malf.malf_picker)
+	if(!istype(malf))
 		return 0 // 0 = User is not a Malf AI
-	if(malfai != (malf.parent || malf))
+	var/mob/living/silicon/ai/base_malf = malf.parent || malf
+	if(!istype(base_malf) || !base_malf.malf_picker)
+		return 0 // 0 = User is not a Malf AI
+	if(malfai != base_malf)
 		return 1 // 1 = APC not hacked.
 	if(occupier == malf)
 		return 3 // 3 = User is shunted in this APC
@@ -1336,11 +1339,11 @@
 	if(!occupier)
 		return
 	if(occupier.parent && occupier.parent.stat != DEAD)
+		remove_verb(occupier, /mob/living/silicon/ai/proc/corereturn)
 		occupier.mind.transfer_to(occupier.parent)
 		occupier.parent.shunted = 0
 		occupier.parent.setOxyLoss(occupier.getOxyLoss())
 		occupier.parent.cancel_camera()
-		remove_verb(occupier.parent, /mob/living/silicon/ai/proc/corereturn)
 		qdel(occupier)
 	else
 		to_chat(occupier, "<span class='danger'>Primary core damaged, unable to return core processes.</span>")

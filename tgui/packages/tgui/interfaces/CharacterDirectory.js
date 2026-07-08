@@ -167,8 +167,8 @@ const ViewCharacter = (props) => {
 
   const prefTags = [
     { name: 'Изнасилование', value: overlay.noncon_tag },
-    { name: 'Хорни антаги', value: overlay.hornyantags_tag },
     { name: 'Грязный секс', value: overlay.unholy_tag },
+    { name: 'Очень грязный секс', value: overlay.unholy_hard_tag },
     { name: 'Жестокий секс', value: overlay.extreme_tag },
     { name: 'Очень жестокий секс', value: overlay.extreme_harm_tag },
   ];
@@ -292,12 +292,37 @@ const CharacterDirectoryList = (props) => {
   const [sortOrder, _setSortOrder] = useLocalState('sortOrder', 'name');
   const [overlay, setOverlay] = useLocalState('overlay', null);
   const [searchText, setSearchText] = useLocalState('searchText', '');
+  const [tagFilters, setTagFilters] = useLocalState('tagFilters', {});
+  const [showFilters, setShowFilters] = useLocalState('showFilters', false);
 
-  const filteredDirectory = (directory || []).filter(
-    (character) =>
-      !searchText ||
-      character.name.toLowerCase().includes(searchText.toLowerCase())
-  );
+  const toggleTagFilter = (tag) => {
+    const current = tagFilters[tag];
+    let next;
+    if (!current) { next = 'Yes'; }
+    else if (current === 'Yes') { next = 'Ask'; }
+    else if (current === 'Ask') { next = 'No'; }
+    else { next = null; }
+    if (next) {
+      setTagFilters({ ...tagFilters, [tag]: next });
+    } else {
+      const { [tag]: _, ...rest } = tagFilters;
+      setTagFilters(rest);
+    }
+  };
+
+  const filteredDirectory = (directory || []).filter((character) => {
+    if (searchText && !character.name.toLowerCase().includes(searchText.toLowerCase())) {
+      return false;
+    }
+    for (const [tagName, filterValue] of Object.entries(tagFilters)) {
+      if (character[tagName] !== filterValue) {
+        return false;
+      }
+    }
+    return true;
+  });
+
+  const activeFilterCount = Object.keys(tagFilters).length;
 
   return (
     <Section title="Каталог" buttons={
@@ -308,9 +333,44 @@ const CharacterDirectoryList = (props) => {
           value={searchText}
           onInput={(e, value) => setSearchText(value)}
         />
+        <Button icon="filter" color={activeFilterCount > 0 ? 'green' : 'transparent'} ml={1}
+          tooltip="Фильтр по тегам"
+          onClick={() => setShowFilters(!showFilters)} />
+        {activeFilterCount > 0 && (
+          <Button icon="times" color="red" ml={1}
+            tooltip="Сбросить фильтры"
+            onClick={() => setTagFilters({})} />
+        )}
         <Button icon="sync" content="Обновить" ml={1} onClick={() => act('refresh')} />
       </>
     }>
+      {showFilters && (
+        <Box mb={1}>
+          {[
+            ['noncon_tag', 'Non-Con'],
+            ['unholy_tag', 'Unholy'],
+            ['unholy_hard_tag', 'Ex. Unholy'],
+            ['extreme_tag', 'Extreme'],
+            ['extreme_harm_tag', 'Ex.Harm'],
+          ].map(([tag, label]) => {
+            const active = tagFilters[tag];
+            return (
+              <Button
+                key={tag}
+                compact
+                fontSize="0.7rem"
+                mr={0.5}
+                color={active
+                  ? (active === 'Yes' ? 'green' : active === 'Ask' ? 'blue' : 'red')
+                  : 'transparent'}
+                icon={active ? 'check-circle' : 'circle'}
+                onClick={() => toggleTagFilter(tag)}>
+                {label}: {active || 'All'}
+              </Button>
+            );
+          })}
+        </Box>
+      )}
       <Table>
         <Table.Row bold>
           <SortButton id="name">Name</SortButton>
@@ -320,9 +380,9 @@ const CharacterDirectoryList = (props) => {
           <SortButton id="erptag">ERP</SortButton>
           <SortButton id="noncon_tag">Non-Con</SortButton>
           <SortButton id="unholy_tag">Unholy</SortButton>
+          <SortButton id="unholy_hard_tag">Unh.Hard</SortButton>
           <SortButton id="extreme_tag">Extreme</SortButton>
           <SortButton id="extreme_harm_tag">Ex. Harm</SortButton>
-          <SortButton id="hornyantags_tag">H. Antags</SortButton>
           <Table.Cell collapsing textAlign="right">
             Ad
           </Table.Cell>
@@ -379,6 +439,11 @@ const CharacterDirectoryList = (props) => {
                 </Box>
               </Table.Cell>
               <Table.Cell>
+                <Box inline bold color={prefTagTextColor[character.unholy_hard_tag]}>
+                  {character.unholy_hard_tag}
+                </Box>
+              </Table.Cell>
+              <Table.Cell>
                 <Box inline bold color={prefTagTextColor[character.extreme_tag]}>
                   {character.extreme_tag}
                 </Box>
@@ -386,11 +451,6 @@ const CharacterDirectoryList = (props) => {
               <Table.Cell>
                 <Box inline bold color={prefTagTextColor[character.extreme_harm_tag]}>
                   {character.extreme_harm_tag}
-                </Box>
-              </Table.Cell>
-              <Table.Cell>
-                <Box inline bold color={prefTagTextColor[character.hornyantags_tag]}>
-                  {character.hornyantags_tag}
                 </Box>
               </Table.Cell>
               <Table.Cell collapsing textAlign="right">

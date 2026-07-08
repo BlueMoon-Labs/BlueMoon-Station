@@ -198,7 +198,7 @@ GLOBAL_LIST_INIT(uplink_items, subtypesof(/datum/uplink_item))
 // Role-specific items
 /datum/uplink_item/role_restricted
 	category = "Role-Restricted"
-	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE)
+	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 	surplus = 0
 
 // Pointless

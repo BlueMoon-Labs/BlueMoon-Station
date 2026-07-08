@@ -88,6 +88,7 @@
 		SSmapping.unused_turfs["[T.z]"] += T
 		T.flags_1 |= UNUSED_RESERVATION_TURF_1
 		GLOB.areas_by_type[world.area].contents += T
+		T.ChangeTurf(turf_type, turf_type, changeturf_flags)
 	reserved_turfs.Cut()
 	LAZYREMOVE(SSmapping.turf_reservations, src)
 	return ..()

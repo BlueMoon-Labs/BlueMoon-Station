@@ -442,6 +442,7 @@
 			.["theyAllowLewd"] = !!(target.client.prefs.toggles & VERB_CONSENT)
 			.["theyAllowExtreme"] = !!pref_to_num(target.client.prefs.extremepref)
 			.["theyAllowUnholy"] = !!pref_to_num(target.client.prefs.unholypref) //SPLURT EDIT
+			.["theyAllowUnholyHard"] = !!pref_to_num(target.client.prefs.unholyhardpref)
 			.["theyAllowRanged"] = !!(target.client.prefs.toggles & RANGED_VERBS_CONSENT)
 		if(HAS_TRAIT(user, TRAIT_ESTROUS_DETECT))
 			.["theirLust"] = target.get_lust()
@@ -526,12 +527,11 @@
 		.["noncon_pref"] = 				pref_to_num(prefs.nonconpref)
 		.["vore_pref"] = 				pref_to_num(prefs.vorepref)
 		.["mobsex_pref"] = 				pref_to_num(prefs.mobsexpref)	//Hentai
-		.["hornyantags_pref"] = 		pref_to_num(prefs.hornyantagspref)	//Hentai
 		.["extreme_pref"] = 			pref_to_num(prefs.extremepref)
 		.["extreme_harm"] = 			pref_to_num(prefs.extremeharm)
 		.["unholy_pref"] =				pref_to_num(prefs.unholypref)
+		.["unholy_hard_pref"] =			pref_to_num(prefs.unholyhardpref)
 		.["tattoo_pref"] =				pref_to_num(prefs.tattoopref)
-		.["be_victim"] =				pref_to_num(prefs.be_victim)
 
 	//Getting preferences
 		.["verb_consent"] = 			!!CHECK_BITFIELD(prefs.toggles, VERB_CONSENT)
@@ -584,6 +584,10 @@
 			else if(O.interaction_flags & INTERACTION_FLAG_UNHOLY_CONTENT)
 				interaction["type"] = INTERACTION_UNHOLY
 			//SPLURT EDIT END
+			//BLUEMOON ADD START
+			else if(O.interaction_flags & INTERACTION_FLAG_UNHOLY_HARD)
+				interaction["type"] = INTERACTION_UNHOLY_HARD
+			//BLUEMOON ADD END
 			else
 				interaction["type"] = INTERACTION_LEWD
 			interaction["require_user_num_feet"] = O.require_user_num_feet
@@ -749,17 +753,16 @@
 					else
 						prefs.mobsexpref = value
 
-				if("hornyantags_pref") //Hentai
-					if(prefs.hornyantagspref == value)
-						return FALSE
-					else
-						prefs.hornyantagspref = value
-
 				if("unholy_pref")
 					if(prefs.unholypref == value)
 						return FALSE
 					else
 						prefs.unholypref = value
+				if("unholy_hard_pref")
+					if(prefs.unholyhardpref == value)
+						return FALSE
+					else
+						prefs.unholyhardpref = value
 				if("extreme_pref")
 					if(prefs.extremepref == value)
 						return FALSE
@@ -777,11 +780,6 @@
 						return FALSE
 					else
 						prefs.tattoopref = value
-				if("be_victim")
-					if(prefs.be_victim == value)
-						return FALSE
-					else
-						prefs.be_victim = value
 				else
 					return FALSE
 			prefs.save_character()

@@ -1004,6 +1004,16 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 		SSquirks.AssignQuirks(new_spawn, new_spawn.client, TRUE, TRUE, null, FALSE, new_spawn)
 		SSlanguage.AssignLanguage(new_spawn, new_spawn.client)
 		new_spawn.ghost_cafe_traits(TRUE, GC.adittonal_allowed_area)
+
+		if(istype(new_spawn.dna.species, /datum/species/lizard/ashwalker))
+			var/obj/item/organ/lungs/old_lungs = new_spawn.getorganslot(ORGAN_SLOT_LUNGS)
+
+			if(old_lungs)
+				qdel(old_lungs)
+			var/obj/item/organ/lungs/new_lungs = new /obj/item/organ/lungs()
+			new_lungs.Insert(new_spawn)
+			to_chat(new_spawn, span_notice("Ваши лёгкие адаптируются к воздуху кафе."))
+
 		to_chat(new_spawn,"<span class='boldwarning'>Ghosting is free!</span>")
 
 /datum/outfit/ghostcafe

@@ -270,7 +270,7 @@
 	restricted_roles = list("AI", "Cyborg", "Prisoner", "NanoTrasen Representative", "Internal Affairs Agent", "Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director")  //BLUEMOON CHANGES
 	required_candidates = 9
 	required_round_type = list(ROUNDTYPE_DYNAMIC_LIGHT) // BLUEMOON ADD
-	weight = 16 //BLUEMOON CHANGES
+	weight = 24 //BLUEMOON CHANGES
 	cost = 10 //BLUEMOON CHANGES - низкая цена, т.к. надо в соло поднять семью
 	requirements = list(101,101,101,50,30,20,10,10,10,10)
 	flags = HIGH_IMPACT_RULESET

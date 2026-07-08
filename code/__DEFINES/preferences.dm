@@ -106,11 +106,6 @@
 #define JP_MEDIUM 2
 #define JP_HIGH 3
 
-// 'Be Victim' consent options for preferences panel / antag target HUD
-#define BEVICTIM_NO "No"
-#define BEVICTIM_ASK "Ask"
-#define BEVICTIM_YES "Yes"
-
 // Values for /datum/preference/savefile_identifier
 /// This preference is character specific.
 #define PREFERENCE_CHARACTER "character"

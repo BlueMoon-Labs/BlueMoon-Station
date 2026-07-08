@@ -552,7 +552,7 @@
 	protected_roles = list("NanoTrasen Representative", "Internal Affairs Agent", "Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director")  //BLUEMOON CHANGES
 	restricted_roles = list("Cyborg", "AI", "Positronic Brain")
 	required_candidates = 3 //BLUEMOON CHANGES
-	weight = 32
+	weight = 48
 	cost = 10
 	required_round_type = list(ROUNDTYPE_DYNAMIC_LIGHT) // BLUEMOON ADD
 	requirements = list(101,10,10,10,10,10,10,10,10,10) //BLUEMOON CHANGES

@@ -46,6 +46,10 @@
 	COOLDOWN_DECLARE(cooldown_timer)
 	/// BLUEMOON ADD Bitflag for exosuit fabricator sub-categories
 	var/mod_module_flags
+	/// Нужно для выдвижных модулей
+	var/my_retract_sound = 'sound/mecha/mechmove03.ogg'
+	///Быстрая ссылка на компонент втягиваемости
+	var/datum/component/mod_retractable/my_retract_component
 
 /obj/item/mod/module/Initialize(mapload)
 	. = ..()
@@ -67,7 +71,7 @@
 /obj/item/mod/module/examine(mob/user)
 	. = ..()
 	if(user.hud_list[DIAG_HUD] && user.client.images & user.hud_list[DIAG_HUD])
-		. += span_notice("Complexity level: [complexity]")
+		. += span_notice("Использовано места: [complexity]")
 
 /// Called from MODsuit's install() proc, so when the module is installed.
 /obj/item/mod/module/proc/on_install()
@@ -97,9 +101,8 @@
 /obj/item/mod/module/proc/on_select()
 	if(!mod?.wearer) //the control's TGUI is reachable on an unworn suit; every module action below needs a wearer
 		return
-	if(((!mod.active || mod.activating) && !allowed_inactive) || module_type == MODULE_PASSIVE)
-		if(mod.wearer)
-			balloon_alert(mod.wearer, "not active!")
+	if(((!mod.active || mod.activating) && !allowed_inactive))
+		mod.balloon_alert(mod.wearer, "Сначала активируйте костюм!")
 		return
 	if(module_type != MODULE_USABLE)
 		if(active)
@@ -113,14 +116,14 @@
 /// Called when the module is activated
 /obj/item/mod/module/proc/on_activation()
 	if(!COOLDOWN_FINISHED(src, cooldown_timer))
-		balloon_alert(mod.wearer, "on cooldown!")
+		mod.balloon_alert(mod.wearer, "на перезарядке!")
 		return FALSE
 	if(!mod.active || mod.activating || !mod.cell?.charge)
-		balloon_alert(mod.wearer, "unpowered!")
+		mod.balloon_alert(mod.wearer, "обесточен!")
 		return FALSE
 	if(!allowed_in_phaseout && istype(mod.wearer.loc, /obj/effect/dummy/phased_mob))
 		//specifically a to_chat because the user is phased out.
-		to_chat(mod.wearer, span_warning("You cannot activate this right now."))
+		to_chat(mod.wearer, span_warning("Вы не можете активировать это сейчас!"))
 		return FALSE
 	if(module_type == MODULE_ACTIVE)
 		if(mod.selected_module && !mod.selected_module.on_deactivation())
@@ -128,14 +131,14 @@
 		mod.selected_module = src
 		if(device)
 			if(mod.wearer.put_in_hands(device))
-				balloon_alert(mod.wearer, "[device] extended")
+				mod.balloon_alert(mod.wearer, "[device] выдвинут")
 				RegisterSignal(mod.wearer, COMSIG_ATOM_EXITED, PROC_REF(on_exit))
 			else
-				balloon_alert(mod.wearer, "can't extend [device]!")
+				mod.balloon_alert(mod.wearer, "невозможно выдвинуть [device]!")
 				return
 		else
 			update_signal()
-			balloon_alert(mod.wearer, "[src] activated, alt-click to use")
+			mod.balloon_alert(mod.wearer, "[src] активирован. Нажмите Alt+click по цели, чтобы использовать")
 	active = TRUE
 	mod.wearer.update_inv_back()
 	return TRUE
@@ -147,10 +150,10 @@
 		mod.selected_module = null
 		if(device)
 			mod.wearer.transferItemToLoc(device, src, TRUE)
-			balloon_alert(mod.wearer, "[device] retracted")
+			mod.balloon_alert(mod.wearer, "[device] выдвинут")
 			UnregisterSignal(mod.wearer, COMSIG_ATOM_EXITED)
 		else
-			balloon_alert(mod.wearer, "[src] deactivated")
+			mod.balloon_alert(mod.wearer, "[src] деактивирован")
 			UnregisterSignal(mod.wearer, used_signal)
 			used_signal = null
 	mod.wearer.update_inv_back()
@@ -164,7 +167,7 @@
 		return FALSE
 	if(!allowed_in_phaseout && istype(mod.wearer.loc, /obj/effect/dummy/phased_mob))
 		//specifically a to_chat because the user is phased out.
-		to_chat(mod.wearer, span_warning("You cannot activate this right now."))
+		to_chat(mod.wearer, span_warning("Вы не можете активировать это сейчас!"))
 		return FALSE
 	COOLDOWN_START(src, cooldown_timer, cooldown_time)
 	addtimer(CALLBACK(mod.wearer, TYPE_PROC_REF(/mob, update_inv_back)), cooldown_time)
@@ -312,7 +315,7 @@
 
 /obj/item/mod/module/anomaly_locked/on_select()
 	if(!core)
-		balloon_alert(mod.wearer, "no core!")
+		mod.balloon_alert(mod.wearer, "нет ядра!")
 		return
 	return ..()
 
@@ -329,12 +332,12 @@
 /obj/item/mod/module/anomaly_locked/attackby(obj/item/item, mob/living/user, params)
 	if(item.type in accepted_anomalies)
 		if(core)
-			balloon_alert(user, "core already in!")
+			mod.balloon_alert(user, "ядро уже внутри!")
 			return
 		if(!user.transferItemToLoc(item, src))
 			return
 		core = item
-		balloon_alert(user, "core installed")
+		mod.balloon_alert(user, "ядро установлено")
 		playsound(src, 'sound/machines/click.ogg', 30, TRUE)
 		update_icon_state()
 	else
@@ -343,13 +346,13 @@
 /obj/item/mod/module/anomaly_locked/screwdriver_act(mob/living/user, obj/item/tool)
 	. = ..()
 	if(!core)
-		balloon_alert(user, "no core!")
+		mod.balloon_alert(user, "нет ядра!")
 		return
-	balloon_alert(user, "removing core...")
+	mod.balloon_alert(user, "изъятие ядра...")
 	if(!do_after(user, 3 SECONDS, target = src))
-		balloon_alert(user, "interrupted!")
+		mod.balloon_alert(user, "прервано!")
 		return
-	balloon_alert(user, "core removed")
+	mod.balloon_alert(user, "ядро изъято")
 	core.forceMove(drop_location())
 	if(Adjacent(user) && !issilicon(user))
 		user.put_in_hands(core)

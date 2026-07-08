@@ -12,35 +12,35 @@
 	desc = "Слегка бронированный комбинезон без датчиков. Если кто-то увидит вас в нём — остаётся лишь надеяться, что они примут его за подделку."
 	item = /obj/item/clothing/under/inteq
 	cost = 1
-	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE)
+	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/suits/turtlenck_skirt
 	name = "Brown Tactical Skirtleneck"
 	desc = "Слегка бронированный комбинезон без датчиков. Если кто-то увидит вас в нём — остаётся лишь надеяться, что они примут его за подделку."
 	item = /obj/item/clothing/under/inteq/skirt
 	cost = 1
-	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE)
+	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/suits/padding
 	name = "Soft Padding"
 	desc = "Неприметная мягкая подкладка, носимая под комбинезоном. Смягчает удары в ближнем бою."
 	item = /obj/item/clothing/accessory/padding
 	cost = 1
-	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
+	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/suits/kevlar
 	name = "Kevlar Padding"
 	desc = "Неприметная кевларовая подкладка, носимая под комбинезоном. Защищает от баллистического урона."
 	item = /obj/item/clothing/accessory/kevlar
 	cost = 1
-	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
+	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/suits/plastic
 	name = "Ablative Padding"
 	desc = "Неприметная аблятивная подкладка, носимая под комбинезоном. Защищает от энергетических лазеров."
 	item = /obj/item/clothing/accessory/plastics
 	cost = 1
-	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
+	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/suits/space_suit
 	name = "Syndicate Space Suit"
@@ -59,7 +59,7 @@
 			Экипаж Nanotrasen паникует при виде этих скафандров."
 	item = /obj/item/clothing/suit/space/hardsuit/syndi
 	cost = 6
-	purchasable_from = ~(UPLINK_TRAITORS | UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS) //you can't buy it in nuke, because the elite hardsuit costs the same while being better
+	purchasable_from = ~(UPLINK_TRAITORS | UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW) //you can't buy it in nuke, because the elite hardsuit costs the same while being better
 
 /datum/uplink_item/suits/chameleon_hardsuit
 	name = "Chameleon Hardsuit"
@@ -68,6 +68,7 @@
 	распространённые варианты в зоне операции. Этот замаскирован под инженерный скафандр."
 	cost = 10 //reskinned blood-red hardsuit with chameleon
 	item = /obj/item/storage/box/inteq_kit/chameleon_hardsuit
+	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/suits/hardsuit/elite
 	name = "Elite Syndicate Hardsuit"
@@ -98,13 +99,13 @@
 			так как большая часть атомов из лёгких высасывается в твёрдые объекты."
 	item = /obj/item/clothing/shoes/wallwalkers
 	cost = 6
-	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
+	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/device_tools/guerrillagloves
 	name = "Guerrilla Gloves"
 	desc = "Крайне прочные боевые перчатки-хваталки, отличные для ближних захватов, с изоляционной подкладкой. Осторожно — не врежьтесь в стену!"
 	item = /obj/item/clothing/gloves/tackler/combat/insulated
-	purchasable_from = UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS
+	purchasable_from = UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW
 	cost = 2
 
 /datum/uplink_item/device_tools/syndicate_eyepatch

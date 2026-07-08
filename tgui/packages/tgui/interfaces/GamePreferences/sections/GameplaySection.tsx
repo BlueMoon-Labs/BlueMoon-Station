@@ -5,7 +5,6 @@ import { PrefRow } from '../components/PrefRow';
 type GameplayData = {
   no_antag: boolean;
   midround_antag: boolean;
-  be_victim: string;
   disable_combat_cursor: boolean;
   disable_combat_mouse_lock: boolean;
   tg_player_panel: boolean;
@@ -20,12 +19,6 @@ type GameplayData = {
   combohud_lighting: boolean;
   autostand: boolean;
 };
-
-const BE_VICTIM_OPTIONS = [
-  { value: 'No', label: 'Нет' },
-  { value: 'Ask', label: 'Спросить' },
-  { value: 'Yes', label: 'Да' },
-];
 
 const DAMAGE_SHAKE_OPTIONS = [
   { value: 0, label: 'Отключено' },
@@ -61,25 +54,6 @@ export const GameplaySection = (props) => {
           onClick={() => act('toggle_gameplay', { flag })}
         />
       ))}
-      <Stack.Item>
-        <Stack align="center" fill className="GamePreferences__row">
-          <Stack.Item grow basis={0}>
-            <div className="GamePreferences__label">Стать жертвой антагониста</div>
-            <div className="GamePreferences__hint">Разрешить антагонистам выбирать вас в качестве цели</div>
-          </Stack.Item>
-          <Stack.Item>
-            <Dropdown
-              width="160px"
-              options={BE_VICTIM_OPTIONS.map(o => o.label)}
-              selected={BE_VICTIM_OPTIONS.find(o => o.value === data.be_victim)?.label || 'Нет'}
-              onSelected={value => {
-                const opt = BE_VICTIM_OPTIONS.find(o => o.label === value);
-                if (opt) act('set_be_victim', { value: opt.value });
-              }}
-            />
-          </Stack.Item>
-        </Stack>
-      </Stack.Item>
       <Stack.Item>
         <Stack align="center" fill className="GamePreferences__row">
           <Stack.Item grow basis={0}>

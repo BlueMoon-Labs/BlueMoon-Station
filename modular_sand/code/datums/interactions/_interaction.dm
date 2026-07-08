@@ -223,6 +223,8 @@
 		var/list/ignored_mobs
 		if(interaction_flags & INTERACTION_FLAG_UNHOLY_CONTENT)
 			ignored_mobs = sound_source.get_unconsenting(unholy = TRUE)
+		else if(interaction_flags & INTERACTION_FLAG_UNHOLY_HARD)
+			ignored_mobs = sound_source.get_unconsenting(unholy_hard = TRUE)
 		playlewdinteractionsound(sound_turf, soundin, volume, 1, extrarange, ignored_mobs = ignored_mobs)
 	else
 		playsound(sound_turf, soundin, volume, 1, extrarange)

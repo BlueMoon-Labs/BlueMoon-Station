@@ -42,7 +42,7 @@
 			костюм подарит рефлексы своего прошлого владельца. Увернуться от пули ещё никогда не было так стильно."
 	item = /obj/item/storage/box/inteq_kit/hank
 	cost = 13
-	purchasable_from = ~(UPLINK_CLOWN_OPS | UPLINK_SYNDICATE)
+	purchasable_from = ~(UPLINK_CLOWN_OPS | UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/suits/iron_tombstone
 	name = "Iron tombstone"
@@ -50,14 +50,14 @@
 			Теперь эта пятнадцати килограммовая пластина сбережёт твоё личико от недружественного огня."
 	item = /obj/item/clothing/suit/space/hardsuit/iron_tombstone
 	cost = 10
-	purchasable_from = ~(UPLINK_CLOWN_OPS | UPLINK_SYNDICATE)
+	purchasable_from = ~(UPLINK_CLOWN_OPS | UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/suits/quet
 	name = "Quiet kid kit"
 	desc = "Тебя выгоняют из дома на самоубийственную миссию, а менять толстовку с кепкой на каску с бронежилетом не хочется? Наборы из гибких пластин помогут с этим и будут отлично сидеть под любой одеждой."
 	item = /obj/item/storage/box/inteq_kit/quetkid
 	cost = 3
-	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE)
+	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 
 ///Оружие
 /datum/uplink_item/inteq/angle_grinder
