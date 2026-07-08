@@ -3,7 +3,12 @@
 # If you set this mutiple times, the server will rotate between the links.
 # To use this, the compile option PRELOAD_RSC must be set to 0 to keep byond from preloading resources
 
-EXTERNAL_RSC_URLS https://wiki.ss13-bluemoon.ru/images/5/5f/tgstationv2.zip
+# Disabled: this wiki URL no longer serves the .rsc zip (returns an HTML page), and byond's
+# rsc downloader can't fetch https anyway. With PRELOAD_RSC set to 1 byond preloads resources
+# from the game server, so this entry is not read. To re-enable external rsc offload: set
+# PRELOAD_RSC to 0 and point this at an http:// static host serving a valid .rsc zip that is
+# re-uploaded on every build.
+#EXTERNAL_RSC_URLS http://your-cdn.example/byond/tgstationv2.zip
 
 ########################
 # Browser Asset Config #
