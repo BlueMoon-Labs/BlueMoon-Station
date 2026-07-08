@@ -281,9 +281,9 @@
 
 	// A tray that can no longer change on its own leaves SSmachines: nothing alive growing,
 	// no autogrow upkeep, weeds below invasion level and no watered-and-fertilized empty
-	// soil for weeds to sprout in. Interactions wake it via attackby()/the adjust* mutators.
+	// or dead soil for weeds to sprout in. Interactions wake it via attackby()/the adjust* mutators.
 	var/live_plant = myseed && !dead
-	var/weeds_can_sprout = !myseed && waterlevel > 10 && reagents.total_volume > 0
+	var/weeds_can_sprout = !live_plant && waterlevel > 10 && reagents.total_volume > 0
 	if(!live_plant && !self_sustaining && !weeds_can_sprout && weedlevel < 10)
 		return machine_sleep()
 	return

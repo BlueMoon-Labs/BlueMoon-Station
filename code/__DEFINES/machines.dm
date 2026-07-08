@@ -7,7 +7,7 @@
 #define STATIC_LIGHT	6
 #define STATIC_ENVIRON	7
 /// Maps a dynamic power channel (EQUIP/LIGHT/ENVIRON) onto its static counterpart.
-#define DYNAMIC_TO_STATIC_CHANNEL(channel) ((channel) + 4)
+#define DYNAMIC_TO_STATIC_CHANNEL(channel) ((channel) + TOTAL)
 
 //Power use
 #define NO_POWER_USE 0
