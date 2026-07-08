@@ -1009,7 +1009,9 @@ GLOBAL_LIST_EMPTY(vending_products)
 			free = !!product_record.returned_products,
 		)
 
-		.["stock"][product_record.name] = product_data
+		// Ключ - REF записи (он же ref в статик-данных): имена товаров не уникальны,
+		// и запись с совпадающим именем перекрывала чужой остаток - цифра в UI замирала.
+		.["stock"][REF(product_record)] = product_data
 
 	.["extended_inventory"] = extended_inventory
 

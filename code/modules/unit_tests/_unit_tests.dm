@@ -146,6 +146,7 @@
 #include "tgui_dev_asset_url.dm"
 #include "timer_sanity.dm"
 #include "unit_test.dm"
+#include "vending_stock_keys.dm"
 // #include "wizard.dm"
 
 /// CIT TESTS
