@@ -762,12 +762,19 @@
 			if(!istype(T) || !T.air)
 				continue
 			var/bucket_key = T.planetary_atmos ? T.initial_gas_mix : ""
-			T.air.copy_from(bucket_mixes[bucket_key])
-			T.update_visuals()
 			// The write-back changes air on tiles that stay resting, so their
 			// registered vents/scrubbers must get their wake call here - the
-			// turf itself never goes through add_to_active.
-			if(T.atmos_wake_machines)
+			// turf itself never goes through add_to_active. Gate it on the same
+			// significance check turf shares use: perpetual groups (freezer
+			// rooms, engine storages) break down every
+			// EXCITED_GROUP_BREAKDOWN_CYCLES fires while a machine needs
+			// ATMOS_MACHINE_IDLE_STREAK no-op fires to rest, so an
+			// unconditional wake pinned every machine in such a room awake
+			// forever (and their pumping re-broadcast through pipenet wakes).
+			var/wake_machines = T.atmos_wake_machines && T.air.compare(bucket_mixes[bucket_key])
+			T.air.copy_from(bucket_mixes[bucket_key])
+			T.update_visuals()
+			if(wake_machines)
 				for(var/obj/machinery/atmospherics/machine as anything in T.atmos_wake_machines)
 					machine.atmos_wake()
 		for(var/bucket_key in bucket_mixes)
@@ -793,7 +800,10 @@
 				break
 		for(var/turf/open/T as anything in to_poke)
 			if(SSair)
-				SSair.add_to_active(T, FALSE)
+				// A poke does not change the tile's air - room perimeters are
+				// exactly where vents/scrubbers stand, and waking them on
+				// every poke of a perpetual group pinned them awake forever.
+				SSair.add_to_active(T, FALSE, wake_machines = FALSE)
 			T.atmos_cooldown = EXCITED_GROUP_INDIVIDUAL_REST_CYCLES
 
 	breakdown_cooldown = 0

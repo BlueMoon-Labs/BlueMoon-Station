@@ -580,6 +580,97 @@
 	SSair.remove_from_active(room)
 	SSair.remove_from_active(neighbor)
 
+/// The write-back wake is for tiles whose air actually changed. A tile already
+/// sitting at the bucket average gets identical air written back, and its
+/// sleeping vent/scrubber must stay in the idle heartbeat: perpetual excited
+/// groups (freezer rooms, engine storages) break down every
+/// EXCITED_GROUP_BREAKDOWN_CYCLES fires while a machine needs
+/// ATMOS_MACHINE_IDLE_STREAK no-op fires to rest - an unconditional wake pins
+/// every machine in such a room awake forever.
+/datum/unit_test/atmos_breakdown_wake_needs_air_change/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/room = run_loc_floor_bottom_left
+	var/turf/open/neighbor = locate(room.x + 1, room.y, room.z)
+	TEST_ASSERT(istype(room), "test location is not an open turf")
+	TEST_ASSERT(istype(neighbor), "adjacent test location is not an open turf")
+	var/obj/machinery/atmospherics/components/unary/vent_scrubber/scrubber = allocate(/obj/machinery/atmospherics/components/unary/vent_scrubber, room)
+	scrubber.register_turf_wake()
+
+	// Both tiles hold the exact same mix, so averaging rewrites them with what
+	// they already have.
+	room.air.copy_from_turf(room)
+	neighbor.air.copy_from(room.air)
+
+	var/datum/excited_group/group = new
+	group.add_turf(room)
+	group.add_turf(neighbor)
+	SSair.add_to_active(room, FALSE)
+	SSair.add_to_active(neighbor, FALSE)
+	SSair.sleep_active_turf(room)
+
+	for(var/i in 1 to ATMOS_MACHINE_IDLE_STREAK)
+		scrubber.atmos_consider_idle()
+	TEST_ASSERT(!scrubber.atmos_processing, "scrubber did not go to sleep during setup")
+
+	group.self_breakdown()
+
+	TEST_ASSERT(!scrubber.atmos_processing, "breakdown woke a machine on a tile whose air did not change")
+
+	scrubber.unregister_turf_wake()
+	group.garbage_collect()
+	room.air.copy_from_turf(room)
+	neighbor.air.copy_from_turf(neighbor)
+	room.atmos_cooldown = 0
+	neighbor.atmos_cooldown = 0
+	SSair.remove_from_active(room)
+	SSair.remove_from_active(neighbor)
+
+/// A boundary poke asks a resting tile to re-compare against neighbors OUTSIDE
+/// the group - the tile's own air has not changed, so machines on it must stay
+/// asleep. Room perimeters are exactly where vents and scrubbers stand; waking
+/// them on every poke re-armed them each breakdown and they never slept. If the
+/// comparison does move gas, the changed air wakes them through the normal
+/// changed-air paths instead.
+/datum/unit_test/atmos_poke_leaves_machines_asleep/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/room = run_loc_floor_bottom_left
+	var/turf/open/neighbor = locate(room.x + 1, room.y, room.z)
+	TEST_ASSERT(istype(room), "test location is not an open turf")
+	TEST_ASSERT(istype(neighbor), "adjacent test location is not an open turf")
+	var/obj/machinery/atmospherics/components/unary/vent_scrubber/scrubber = allocate(/obj/machinery/atmospherics/components/unary/vent_scrubber, room)
+	scrubber.register_turf_wake()
+
+	// Identical mixes keep the write-back wake gate shut; only the poke path
+	// is under test.
+	room.air.copy_from_turf(room)
+	neighbor.air.copy_from(room.air)
+
+	var/datum/excited_group/group = new
+	group.add_turf(room)
+	group.add_turf(neighbor)
+	SSair.add_to_active(room, FALSE)
+	SSair.add_to_active(neighbor, FALSE)
+	SSair.sleep_active_turf(room)
+	SSair.sleep_active_turf(neighbor)
+
+	for(var/i in 1 to ATMOS_MACHINE_IDLE_STREAK)
+		scrubber.atmos_consider_idle()
+	TEST_ASSERT(!scrubber.atmos_processing, "scrubber did not go to sleep during setup")
+
+	group.self_breakdown(poke_resting = TRUE)
+
+	TEST_ASSERT(room in SSair.active_turfs, "boundary poke skipped a resting member bordering outside turfs")
+	TEST_ASSERT(!scrubber.atmos_processing, "boundary poke woke a machine although the tile's air did not change")
+
+	scrubber.unregister_turf_wake()
+	group.garbage_collect()
+	room.air.copy_from_turf(room)
+	neighbor.air.copy_from_turf(neighbor)
+	room.atmos_cooldown = 0
+	neighbor.atmos_cooldown = 0
+	SSair.remove_from_active(room)
+	SSair.remove_from_active(neighbor)
+
 /// A planetary turf must shed most of a pure-temperature excess in one cycle
 /// (upstream follows the template share with a conductive share against a
 /// 5x-inflated template heat capacity). The turf and all its neighbors are

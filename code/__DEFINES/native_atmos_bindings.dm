@@ -194,7 +194,7 @@
 		if(T.excited_group)
 			T.excited_group.garbage_collect()
 
-/datum/controller/subsystem/air/proc/add_to_active(turf/open/T, blockchanges = TRUE)
+/datum/controller/subsystem/air/proc/add_to_active(turf/open/T, blockchanges = TRUE, wake_machines = TRUE)
 	if(!istype(T) || T.blocks_air || !T.air)
 		return
 	T.excited = TRUE
@@ -204,7 +204,12 @@
 	// so a corpse drip-feeding miasma never pushed its gas anywhere.
 	T.atmos_cooldown = 0
 	active_turfs |= T
-	if(T.atmos_wake_machines)
+	// wake_machines=FALSE is for activations that do not change the tile's air
+	// (boundary pokes): the turf must re-compare against its neighbors, but its
+	// registered vents/scrubbers have nothing new to react to. If the
+	// comparison does move gas, the changed air wakes them through the regular
+	// paths (neighbor activation, breakdown write-back, pipenet delta).
+	if(wake_machines && T.atmos_wake_machines)
 		for(var/obj/machinery/atmospherics/machine as anything in T.atmos_wake_machines)
 			machine.atmos_wake()
 	if(blockchanges && T.excited_group)

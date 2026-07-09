@@ -139,7 +139,9 @@
 			SSair.sleep_processing_machine(src)
 
 /// Subscribes this machine to instant wake-ups when air changes on its turf
-/// (SSair.add_to_active clears the idle state of everything registered here).
+/// (air-changing SSair.add_to_active calls and breakdown write-backs clear the
+/// idle state of everything registered here; activations that leave the air
+/// untouched, like boundary pokes, skip the wake).
 /// Idempotent; call again freely after the machine or its turf changed.
 /obj/machinery/atmospherics/proc/register_turf_wake()
 	var/turf/open/wake_turf = loc
