@@ -47,14 +47,6 @@
 	pixel_x = -3;
 	pixel_y = 3
 	},
-/obj/item/gun/ballistic/shotgun/riot{
-	layer = 3.1
-	},
-/obj/item/gun/ballistic/shotgun/riot{
-	layer = 3.2;
-	pixel_x = 3;
-	pixel_y = -3
-	},
 /obj/effect/turf_decal/bot/yellow,
 /turf/open/floor/plasteel/textured/large,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
@@ -281,14 +273,6 @@
 	name = "security PDW";
 	spawnwithmagazine = 0
 	},
-/obj/item/gun/ballistic/automatic/wt550{
-	desc = "An outdated personal defence weapon. Uses 4.6x30mm rounds and is designated the WT-550 PDW.";
-	layer = 3.2;
-	name = "security PDW";
-	pixel_x = 3;
-	pixel_y = -3;
-	spawnwithmagazine = 0
-	},
 /obj/effect/turf_decal/bot/yellow,
 /turf/open/floor/plasteel/textured/large,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
@@ -404,10 +388,6 @@
 	pixel_y = 3
 	},
 /obj/item/clothing/suit/armor/hos/platecarrier,
-/obj/item/clothing/suit/armor/hos/platecarrier{
-	pixel_x = 3;
-	pixel_y = -3
-	},
 /obj/structure/window/reinforced{
 	dir = 8
 	},
@@ -2165,9 +2145,7 @@
 /area/ruin/space/has_grav/bluemoon/hotel/power)
 "lL" = (
 /obj/structure/rack,
-/obj/item/clothing/suit/hooded/ablative,
 /obj/item/gun/energy/temperature/security,
-/obj/item/gun/energy/ionrifle,
 /obj/effect/turf_decal/bot/yellow,
 /obj/structure/window/reinforced,
 /obj/structure/window/reinforced{
@@ -2763,27 +2741,6 @@
 /obj/structure/closet/secure_closet/lethalshots{
 	req_access = "list(205)"
 	},
-/obj/item/ammo_box/magazine/wt550m9,
-/obj/item/ammo_box/magazine/wt550m9,
-/obj/item/ammo_box/magazine/wt550m9,
-/obj/item/ammo_box/magazine/wt550m9,
-/obj/item/ammo_box/magazine/wt550m9,
-/obj/item/ammo_box/magazine/wt550m9,
-/obj/item/ammo_box/magazine/wt550m9,
-/obj/item/ammo_box/magazine/wt550m9,
-/obj/item/ammo_box/magazine/wt550m9,
-/obj/item/ammo_box/magazine/wt550m9/wtap{
-	pixel_x = 2;
-	pixel_y = -2
-	},
-/obj/item/ammo_box/magazine/wt550m9/wtap{
-	pixel_x = 2;
-	pixel_y = -2
-	},
-/obj/item/ammo_box/magazine/wt550m9/wtap{
-	pixel_x = 2;
-	pixel_y = -2
-	},
 /obj/item/ammo_box/magazine/e45/lethal,
 /obj/item/ammo_box/magazine/e45/lethal,
 /obj/item/ammo_box/magazine/e45/lethal,
@@ -3284,30 +3241,15 @@
 	},
 /obj/structure/rack,
 /obj/item/clothing/suit/armor/bulletproof{
-	pixel_x = 3;
-	pixel_y = -3
-	},
-/obj/item/clothing/suit/armor/bulletproof,
-/obj/item/clothing/suit/armor/bulletproof{
 	pixel_x = -3;
 	pixel_y = 3
 	},
 /obj/item/clothing/suit/armor/bulletproof{
 	pixel_x = -3;
 	pixel_y = 3
-	},
-/obj/item/clothing/head/helmet/alt{
-	layer = 3.00001;
-	pixel_x = 3;
-	pixel_y = -3
 	},
 /obj/item/clothing/head/helmet/alt{
 	layer = 3.00001
-	},
-/obj/item/clothing/head/helmet/alt{
-	layer = 3.00001;
-	pixel_x = -3;
-	pixel_y = 3
 	},
 /obj/item/clothing/head/helmet/alt{
 	layer = 3.00001;
@@ -4158,11 +4100,6 @@
 /obj/item/gun/energy/e_gun{
 	layer = 3.1
 	},
-/obj/item/gun/energy/e_gun{
-	layer = 3.2;
-	pixel_x = 3;
-	pixel_y = -3
-	},
 /obj/effect/turf_decal/bot/yellow,
 /obj/machinery/light{
 	dir = 8
@@ -4517,10 +4454,6 @@
 /obj/item/gun/energy/e_gun/dragnet{
 	pixel_x = 1;
 	pixel_y = -3
-	},
-/obj/item/gun/energy/e_gun/dragnet{
-	pixel_x = -2;
-	pixel_y = 2
 	},
 /obj/machinery/power/apc/auto_name/east,
 /obj/machinery/light{
@@ -5018,11 +4951,6 @@
 /obj/item/gun/energy/laser{
 	pixel_x = -3;
 	pixel_y = 3
-	},
-/obj/item/gun/energy/laser,
-/obj/item/gun/energy/laser{
-	pixel_x = 3;
-	pixel_y = -3
 	},
 /obj/structure/window/reinforced{
 	dir = 1;
@@ -8723,9 +8651,6 @@
 /obj/item/gun/grenadelauncher{
 	pixel_y = 3
 	},
-/obj/item/gun/grenadelauncher{
-	pixel_y = -3
-	},
 /turf/open/floor/plasteel/textured/large,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
 "Wk" = (
@@ -8960,20 +8885,6 @@
 	pixel_x = 3;
 	pixel_y = -3
 	},
-/obj/item/shield/riot,
-/obj/item/shield/riot{
-	pixel_x = -3;
-	pixel_y = 3
-	},
-/obj/item/shield/riot{
-	pixel_x = -3;
-	pixel_y = 3
-	},
-/obj/item/clothing/head/helmet/riot{
-	pixel_x = 3;
-	pixel_y = -3
-	},
-/obj/item/clothing/head/helmet/riot,
 /obj/item/clothing/head/helmet/riot{
 	pixel_x = -3;
 	pixel_y = 3
@@ -8985,11 +8896,6 @@
 /obj/item/clothing/suit/armor/riot{
 	pixel_x = 3;
 	pixel_y = -3
-	},
-/obj/item/clothing/suit/armor/riot,
-/obj/item/clothing/suit/armor/riot{
-	pixel_x = -3;
-	pixel_y = 3
 	},
 /obj/item/clothing/suit/armor/riot{
 	pixel_x = -3;
