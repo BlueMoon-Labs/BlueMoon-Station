@@ -15,9 +15,9 @@
 			return
 		user.temporarilyRemoveItemFromInventory(src)
 		var/created_boh = new backpack_type(get_tur(loc))
-		user.put_in_hands(created_boh)
 		qdel(I)
 		qdel(src)
+		user.put_in_hands(created_boh)
 
 /obj/item/BoH_inert/bag
 	name = "inert bag of holding"
