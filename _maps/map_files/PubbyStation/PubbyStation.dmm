@@ -61200,9 +61200,11 @@
 /turf/open/floor/plasteel/cafeteria,
 /area/service/kitchen)
 "rzm" = (
-/obj/structure/table/wood,
 /obj/item/stack/packageWrap,
 /obj/item/coin/gold,
+/obj/item/barcodescanner,
+/obj/item/instrument/saxophone,
+/obj/structure/table/wood,
 /turf/open/floor/plasteel/dark,
 /area/service/library)
 "rzp" = (
@@ -64646,9 +64648,6 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on{
 	dir = 8
 	},
-/obj/machinery/modular_computer/console/preset/curator{
-	dir = 1
-	},
 /turf/open/floor/plasteel/dark,
 /area/service/library)
 "wnJ" = (
@@ -65749,9 +65748,9 @@
 /turf/open/space,
 /area/space/station_ruins)
 "xGY" = (
-/obj/structure/table/wood,
-/obj/item/instrument/saxophone,
-/obj/item/barcodescanner,
+/obj/machinery/modular_computer/console/preset/curator{
+	dir = 1
+	},
 /turf/open/floor/plasteel/dark,
 /area/service/library)
 "xIa" = (

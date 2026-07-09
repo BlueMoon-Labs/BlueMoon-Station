@@ -86,7 +86,7 @@
 	icon_state = "white_checker_man"
 
 /obj/structure/chess/checker/whiteking
-	name = "\improper White Checker Man"
+	name = "\improper White Checker King"
 	desc = "A white checker piece. It's stacked!"
 	icon_state = "white_checker_king"
 

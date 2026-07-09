@@ -349,16 +349,16 @@
 		return
 	. = charges_used
 
-	if(flags_1 & HOLOGRAM_1)
-		if(!istype(target, /turf/open/floor/holofloor))
-			to_chat(user, "<span class='warning'>[src] is a hologram and can only draw inside holodeck!</span>")
-			return
-
 	if(istype(target, /obj/effect/decal/cleanable))
 		target = target.loc
 
 	if(!isValidSurface(target))
 		return
+
+	if(flags_1 & HOLOGRAM_1)
+		if(!istype(target, /turf/open/floor/holofloor))
+			to_chat(user, "<span class='warning'>[src] - голограмма, рисовать можно только на полу голодека!</span>")
+			return
 
 	var/drawing = drawtype
 	switch(drawtype)
@@ -821,7 +821,7 @@
 
 	if(flags_1 & HOLOGRAM_1)
 		if(!istype(target, /turf/open/floor/holofloor))
-			to_chat(user, "<span class='warning'>[src] is a hologram and can only draw inside holodeck!</span>")
+			to_chat(user, "<span class='warning'>[src] - голограмма, рисовать можно только на полу голодека!</span>")
 			return FALSE
 
 	if(isobj(target) && !istype(target, /obj/effect/decal/cleanable/crayon/gang))
