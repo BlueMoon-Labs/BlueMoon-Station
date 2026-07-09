@@ -55,9 +55,9 @@
 	w_class = WEIGHT_CLASS_SMALL
 	var/uplink_flag = UPLINK_SYNDICATE
 
-/obj/item/syndicate_uplink/Initialize(mapload, owner, tc_amount = 10)
+/obj/item/syndicate_uplink/Initialize(mapload, owner, tc_amount = 10, syndicate = TRUE)
 	. = ..()
-	AddComponent(/datum/component/uplink/syndicate, owner, FALSE, TRUE, uplink_flag, tc_amount)
+	AddComponent(/datum/component/uplink/syndicate, owner, FALSE, TRUE, uplink_flag, tc_amount, syndicate)
 
 /obj/item/syndicate_uplink/AltClick(mob/user)
 	. = ..()
@@ -76,11 +76,11 @@
 			некоторые дополнительные, разрешенные ПАКТом элементы снабжения."
 	uplink_flag = UPLINK_SYNDICATE_PACT_CREW
 
-/obj/item/syndicate_uplink/station/Initialize(mapload, owner, tc_amount = 10)
+/obj/item/syndicate_uplink/station/Initialize(mapload, owner, tc_amount = 10, syndicate = TRUE)
 	. = ..()
 	var/datum/component/old_component = GetComponent(/datum/component/uplink/syndicate)
 	old_component.Destroy()//я не смог решить иначе. Оно ТК суммирует :(
-	AddComponent(/datum/component/uplink/syndicate/pact, owner, FALSE, TRUE, uplink_flag, tc_amount)
+	AddComponent(/datum/component/uplink/syndicate/pact, owner, FALSE, TRUE, uplink_flag, tc_amount, syndicate)
 
 /datum/component/uplink/syndicate/pact
 	name = "Pact Uplink"
@@ -106,9 +106,9 @@
 	w_class = WEIGHT_CLASS_SMALL
 	var/uplink_flag = UPLINK_SYNDICATE
 
-/obj/item/syndicate_uplink_high/Initialize(mapload, owner, tc_amount = 20)
+/obj/item/syndicate_uplink_high/Initialize(mapload, owner, tc_amount = 10, syndicate = TRUE)
 	. = ..()
-	AddComponent(/datum/component/uplink/syndicate, owner, FALSE, TRUE, uplink_flag, tc_amount)
+	AddComponent(/datum/component/uplink/syndicate, owner, FALSE, TRUE, uplink_flag, tc_amount, syndicate)
 
 /obj/item/syndicate_uplink_high/AltClick(mob/user)
 	. = ..()
