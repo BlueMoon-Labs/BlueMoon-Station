@@ -932,8 +932,8 @@
 	desc = "Read the name, dunno."
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
-	icon_state = "h_slim_body_adn_shorts"
-	item_state = "h_slim_body_adn_shorts"
+	icon_state = "slim_body_and_shorts"
+	item_state = "slim_body_adn_shorts"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	fitted = NO_FEMALE_UNIFORM
 	can_adjust = FALSE
