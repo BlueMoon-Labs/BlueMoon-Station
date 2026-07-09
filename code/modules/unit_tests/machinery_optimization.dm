@@ -200,11 +200,9 @@
 	var/was_excited = alarm_turf.excited
 	alarm_turf.excited = TRUE
 
-	// Steady state on an active turf: the per-fire interval ramps up to the cap and stays there.
-	// Each iteration first burns any queued skips so we always observe a real air read.
+	// Steady state on an active turf: an excited turf cuts queued skips short, so EVERY fire is
+	// a real air read, and the per-fire interval ramps up to the cap and stays there.
 	for(var/i in 1 to 2 * AALARM_MAX_PROCESS_INTERVAL + 4)
-		while(alarm.process_skips_left > 0)
-			alarm.process()
 		var/interval_before = alarm.process_interval
 		alarm.process()
 		TEST_ASSERT(alarm.process_interval >= interval_before, "process_interval must not shrink while danger_level is stable (was [interval_before], now [alarm.process_interval])")
@@ -212,24 +210,30 @@
 		TEST_ASSERT_EQUAL(alarm.process_skips_left, alarm.process_interval - 1, "after a real read the alarm queues (interval - 1) skipped fires")
 	TEST_ASSERT_EQUAL(alarm.process_interval, AALARM_MAX_PROCESS_INTERVAL, "process_interval must saturate at the cap in steady state")
 
-	// The turf leaves active exchange: the cap opens up to the inactive interval.
+	// The turf leaves active exchange: queued skips now burn down one per fire, and the cap
+	// opens up to the inactive interval. The burn loops are bounded by the queued count so a
+	// contract change fails the test instead of hanging it.
 	alarm_turf.excited = FALSE
 	for(var/i in 1 to 2 * AALARM_INACTIVE_PROCESS_INTERVAL + 4)
-		while(alarm.process_skips_left > 0)
+		var/queued_skips = alarm.process_skips_left
+		for(var/burn in 1 to queued_skips)
 			alarm.process()
+		TEST_ASSERT_EQUAL(alarm.process_skips_left, 0, "on a parked turf each skipped fire must decrement the queue by exactly one")
 		alarm.process()
 		TEST_ASSERT(alarm.process_interval <= AALARM_INACTIVE_PROCESS_INTERVAL, "process_interval ([alarm.process_interval]) must never exceed AALARM_INACTIVE_PROCESS_INTERVAL ([AALARM_INACTIVE_PROCESS_INTERVAL]) on an inactive turf")
 	TEST_ASSERT_EQUAL(alarm.process_interval, AALARM_INACTIVE_PROCESS_INTERVAL, "process_interval must saturate at the inactive cap on a parked turf")
 
-	// The turf re-enters active exchange: the very next real read clamps back to the active cap.
+	// The turf re-enters active exchange: the very next fire must cut through the queued skips,
+	// read now, and clamp the interval back to the active cap.
 	alarm_turf.excited = TRUE
-	while(alarm.process_skips_left > 0)
-		alarm.process()
+	TEST_ASSERT(alarm.process_skips_left > 0, "precondition: skips must be queued before the re-excite check")
 	alarm.process()
 	TEST_ASSERT(alarm.process_interval <= AALARM_MAX_PROCESS_INTERVAL, "a re-excited turf must clamp the interval back to AALARM_MAX_PROCESS_INTERVAL (got [alarm.process_interval])")
-	alarm_turf.excited = was_excited
+	TEST_ASSERT_EQUAL(alarm.process_skips_left, alarm.process_interval - 1, "the re-excited fire performs a real read and re-queues from the clamped interval")
 
 	// A queued skip must not touch the air: a real read can never produce this danger_level.
+	// Park the turf again - an excited turf never skips.
+	alarm_turf.excited = FALSE
 	alarm.process_skips_left = AALARM_MAX_PROCESS_INTERVAL
 	var/sentinel = 1234
 	alarm.danger_level = sentinel
@@ -237,11 +241,13 @@
 	alarm.process()
 	TEST_ASSERT_EQUAL(alarm.danger_level, sentinel, "an air alarm with skips queued must not read the air")
 	TEST_ASSERT_EQUAL(alarm.process_skips_left, queued - 1, "a skipped fire decrements the skip counter")
-	while(alarm.process_skips_left > 0)
+	for(var/burn in 1 to alarm.process_skips_left)
 		alarm.process()
+	TEST_ASSERT_EQUAL(alarm.process_skips_left, 0, "burning the queued skips must leave none behind")
 	TEST_ASSERT_EQUAL(alarm.danger_level, sentinel, "danger_level stays untouched while skips remain")
 	alarm.process()
 	TEST_ASSERT_NOTEQUAL(alarm.danger_level, sentinel, "with no skips queued the alarm reads the air and recomputes danger_level")
+	alarm_turf.excited = was_excited
 
 	// danger_level changing snaps the alarm back to processing every fire. Rig a TLV so the
 	// next read produces a different level than the current one (no_checks → 0; an impossibly
