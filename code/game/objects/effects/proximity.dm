@@ -60,8 +60,10 @@
 	last_host_loc = null
 	return ..()
 
-/// Overridable hook for host movement. The base monitor reacts through on_moved(); the /advanced field
-/// engine overrides this to recalculate its field turfs.
+/// Manual API for the /advanced field engine, which overrides this to recalculate its field turfs.
+/// Deliberately NOT called from on_moved(): advanced fields are built via make_field() and never pass
+/// through SetHost(), so no movement signal is registered on them. Owners with moving hosts pump this
+/// themselves (e.g. the peaceborg dampener from its process()).
 /datum/proximity_monitor/proc/HandleMove()
 	return
 
