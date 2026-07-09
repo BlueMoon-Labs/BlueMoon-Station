@@ -39,6 +39,16 @@ SUBSYSTEM_DEF(air)
 	///Machines that finished an idle streak leave atmos_machinery entirely and wait
 	///here; the constant heartbeat makes this FIFO, so only the head needs checking.
 	var/list/obj/machinery/atmospherics/atmos_idle_queue = list()
+	///Machines the idle heartbeat returned to processing on the last machinery
+	///pass. The heartbeat rotation is a standing share of the machinery phase,
+	///so the benchmark records this to split rotation cost from real workers.
+	var/heartbeat_wakes_last = 0
+	///Benchmark hook: set TRUE to make the next full machinery pass run timed
+	///per machine type (profile_machinery_pass). Clears itself; the result
+	///lands in benchmark_machinery_profile_result until a sampler consumes it.
+	var/benchmark_machinery_profile_pending = FALSE
+	///Result of the last profiled machinery pass (see profile_machinery_pass).
+	var/list/benchmark_machinery_profile_result
 	var/list/pipe_init_dirs_cache = list()
 
 	//atmos singletons
@@ -366,7 +376,14 @@ SUBSYSTEM_DEF(air)
 /datum/controller/subsystem/air/proc/process_atmos_machinery(resumed = 0)
 	var/seconds = wait * 0.1
 	if (!resumed)
-		wake_expired_idle_machines()
+		heartbeat_wakes_last = wake_expired_idle_machines()
+		if(benchmark_machinery_profile_pending)
+			// The profiled pass IS this fire's machinery pass: same machines,
+			// same semantics, just timed per type. One deliberately unyielding
+			// fire per deep interval while a benchmark runs.
+			benchmark_machinery_profile_pending = FALSE
+			benchmark_machinery_profile_result = profile_machinery_pass(seconds)
+			return
 		src.currentrun = atmos_machinery.Copy()
 	//cache for sanic speed (lists are references anyways)
 	var/list/currentrun = src.currentrun
@@ -382,8 +399,11 @@ SUBSYSTEM_DEF(air)
 
 ///Returns sleeping machines whose heartbeat deadline expired to the processing
 ///list for one full recheck (a no-op pass puts them straight back to sleep).
+///Returns how many machines it woke, so the benchmark can attribute the
+///standing rotation share of the machinery phase.
 /datum/controller/subsystem/air/proc/wake_expired_idle_machines()
 	var/expired = 0
+	var/woken = 0
 	for(var/i in 1 to atmos_idle_queue.len)
 		var/obj/machinery/atmospherics/machine = atmos_idle_queue[i]
 		if(!machine)
@@ -397,8 +417,60 @@ SUBSYSTEM_DEF(air)
 		if(QDELETED(machine) || machine.atmos_processing)
 			continue
 		start_processing_machine(machine)
+		woken++
 	if(expired)
 		atmos_idle_queue.Cut(1, expired + 1)
+	return woken
+
+///One fully-timed machinery pass bucketed by machine type, standing in for a
+///normal pass when the benchmark armed benchmark_machinery_profile_pending.
+///Keeps normal semantics (PROCESS_KILL leaves the list, stale nulls dropped)
+///but runs the whole list without MC yields so the per-type numbers describe
+///one coherent fire. Returns list(n, np, ms, hbw, types = type -> (n, ms)).
+/datum/controller/subsystem/air/proc/profile_machinery_pass(seconds)
+	var/list/type_buckets = list()
+	var/total_ms = 0
+	var/machine_count = 0
+	var/nopower_count = 0
+	for(var/obj/machinery/M as anything in atmos_machinery.Copy())
+		if(!M)
+			atmos_machinery -= M
+			continue
+		machine_count++
+		if(M.machine_stat & NOPOWER)
+			nopower_count++
+		var/type_key = "[M.type]"
+		var/list/bucket = type_buckets[type_key]
+		if(!bucket)
+			bucket = list("n" = 0, "ms" = 0)
+			type_buckets[type_key] = bucket
+		var/timer = TICK_USAGE_REAL
+		var/process_result = M.process_atmos(seconds)
+		var/spent_ms = TICK_DELTA_TO_MS(TICK_USAGE_REAL - timer)
+		bucket["n"] += 1
+		bucket["ms"] += spent_ms
+		total_ms += spent_ms
+		if(process_result == PROCESS_KILL)
+			stop_processing_machine(M)
+	for(var/type_key in type_buckets)
+		var/list/bucket = type_buckets[type_key]
+		bucket["ms"] = round(bucket["ms"], 0.001)
+	return list(
+		"n" = machine_count,
+		"np" = nopower_count,
+		"ms" = round(total_ms, 0.01),
+		"hbw" = heartbeat_wakes_last,
+		"types" = type_buckets,
+	)
+
+///Pipenets whose update flag is set right now - each reconciles on its next
+///process(). Benchmark decomposition helper for cost_pipenets.
+/datum/controller/subsystem/air/proc/count_dirty_pipenets()
+	var/count = 0
+	for(var/datum/pipeline/net as anything in networks)
+		if(net?.update)
+			count++
+	return count
 
 /datum/controller/subsystem/air/proc/process_hotspots(resumed = 0)
 	if (!resumed)

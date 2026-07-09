@@ -810,6 +810,51 @@
 	TEST_ASSERT(!LAZYLEN(room.atmos_wake_machines), "Destroy() left a stale wake registration on the turf")
 	SSair.remove_from_active(room)
 
+/// The heartbeat is a standing cost: every sleeping machine returns for one
+/// full recheck each ATMOS_MACHINE_IDLE_HEARTBEAT. To attribute machinery-phase
+/// cost the benchmark needs the per-fire wake count, so the wake proc must
+/// report how many machines it returned to processing.
+/datum/unit_test/atmos_heartbeat_wake_counter/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/room = run_loc_floor_bottom_left
+	TEST_ASSERT(istype(room), "test location is not an open turf")
+	var/obj/machinery/atmospherics/components/unary/vent_scrubber/scrubber = allocate(/obj/machinery/atmospherics/components/unary/vent_scrubber, room)
+	for(var/i in 1 to ATMOS_MACHINE_IDLE_STREAK)
+		scrubber.atmos_consider_idle()
+	TEST_ASSERT(scrubber in SSair.atmos_idle_queue, "scrubber did not enter the idle queue during setup")
+	// The queue is FIFO by deadline; simulating expiry means moving to the head.
+	SSair.atmos_idle_queue.Remove(scrubber)
+	SSair.atmos_idle_queue.Insert(1, scrubber)
+	SSair.atmos_idle_queue[scrubber] = world.time - 1
+	var/woken = SSair.wake_expired_idle_machines()
+	TEST_ASSERT_EQUAL(woken, 1, "wake_expired_idle_machines did not report the single woken machine")
+	TEST_ASSERT(scrubber.atmos_processing, "the counted machine was not actually returned to processing")
+
+/// The benchmark's machinery decomposition: a profiled pass times every
+/// processing machine bucketed by type, standing in for the normal pass without
+/// changing its semantics (PROCESS_KILL returns still leave the list).
+/datum/unit_test/atmos_machinery_profile_pass/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/room = run_loc_floor_bottom_left
+	TEST_ASSERT(istype(room), "test location is not an open turf")
+	var/obj/machinery/atmospherics/components/unary/vent_scrubber/scrubber = allocate(/obj/machinery/atmospherics/components/unary/vent_scrubber, room)
+	TEST_ASSERT(scrubber.atmos_processing, "freshly created scrubber is not in SSair processing")
+	var/obj/machinery/atmospherics/components/unary/portables_connector/port = allocate(/obj/machinery/atmospherics/components/unary/portables_connector, room)
+	TEST_ASSERT(port.atmos_processing, "freshly created connector is not in SSair processing")
+
+	var/list/result = SSair.profile_machinery_pass(SSair.wait * 0.1)
+
+	TEST_ASSERT(islist(result), "profile pass returned no result")
+	TEST_ASSERT(result["n"] >= 2, "profile pass did not count the processing machines")
+	var/list/type_buckets = result["types"]
+	TEST_ASSERT(islist(type_buckets), "profile result has no type buckets")
+	var/list/bucket = type_buckets["[scrubber.type]"]
+	TEST_ASSERT(islist(bucket), "profile pass did not bucket the processing scrubber")
+	TEST_ASSERT(bucket["n"] >= 1, "scrubber type bucket has no count")
+	TEST_ASSERT(!isnull(bucket["ms"]), "scrubber type bucket has no timing")
+	// An unused connector PROCESS_KILLs itself: the profiled pass must honor it.
+	TEST_ASSERT(!port.atmos_processing, "profiled pass ignored a PROCESS_KILL return")
+
 /// Machines that entered the idle heartbeat must leave SSair.atmos_machinery
 /// entirely (and rejoin on wake); settled portables and empty connectors must
 /// drop out of processing via PROCESS_KILL.

@@ -162,7 +162,10 @@ GLOBAL_PROTECT(atmos_benchmark_run)
 			"cl" = "connected clients",
 			"sms" = "share_max_steps now (< target means adaptive throttle engaged)",
 			"adjq" = "SSadjacent_air queue length",
+			"hbw" = "machines the idle heartbeat returned for a recheck on the last machinery pass (rotation share of c_am)",
+			"pnu" = "pipenets flagged dirty (update=TRUE) at sample time - they reconcile next fire",
 			"z_hot" = "z histogram of active turfs, recorded only when the active list exceeds [ATMOS_BENCH_Z_HOT_THRESHOLD]; stride-sampled and rescaled above [ATMOS_BENCH_Z_HOT_BUDGET] turfs",
+			"mprof" = "separate record type: one fully-timed machinery pass per deep interval, per-type n/ms buckets plus powered state (np) and heartbeat wakes (hbw)",
 		),
 	))
 
@@ -213,7 +216,18 @@ GLOBAL_PROTECT(atmos_benchmark_run)
 		"cl" = length(GLOB.clients),
 		"sms" = air.share_max_steps,
 		"adjq" = length(SSadjacent_air.queue),
+		"hbw" = air.heartbeat_wakes_last,
+		"pnu" = air.count_dirty_pipenets(),
 	)
+	// A profiled machinery pass armed by the previous deep sample: write it out
+	// as its own record and free the slot for the next arming.
+	if(air.benchmark_machinery_profile_result)
+		var/list/machinery_profile = air.benchmark_machinery_profile_result
+		air.benchmark_machinery_profile_result = null
+		machinery_profile["rec"] = "mprof"
+		machinery_profile["t"] = world.time
+		machinery_profile["fired"] = air.times_fired
+		write_record(machinery_profile)
 	// An anomalously large active list deserves a cheap z histogram: the deep
 	// walk samples a different phase of the fire cycle and can miss transient
 	// mass wake-ups entirely (shuttle transits, adjacency wake loops). Those
@@ -242,6 +256,9 @@ GLOBAL_PROTECT(atmos_benchmark_run)
 /datum/atmos_benchmark/proc/deep_sample()
 	if(finished)
 		return
+	// Arm the per-type machinery timing: the next machinery pass runs profiled
+	// and the next per-second sample writes it out as an mprof record.
+	SSair.benchmark_machinery_profile_pending = TRUE
 	var/walk_started = REALTIMEOFDAY
 	var/list/z_counts = list()
 	var/list/area_counts = list()
@@ -411,6 +428,9 @@ GLOBAL_PROTECT(atmos_benchmark_run)
 	finished = TRUE
 	deltimer(sample_timer_id)
 	deltimer(deep_timer_id)
+	// A profile armed by the last deep sample has no consumer anymore.
+	SSair.benchmark_machinery_profile_pending = FALSE
+	SSair.benchmark_machinery_profile_result = null
 	var/list/averages = list()
 	var/list/maximums = list()
 	if(sample_count)
@@ -515,9 +535,19 @@ GLOBAL_VAR_INIT(atmos_headless_bench_finished, FALSE)
 		"c_am" = round(cost_atmos_machinery, 0.01),
 		"am" = length(atmos_machinery),
 		"ami" = length(atmos_idle_queue),
+		"hbw" = heartbeat_wakes_last,
+		"pnu" = count_dirty_pipenets(),
 	)
 	var/encoded = json_encode(record)
 	rustg_file_append("[encoded]\n", GLOB.atmos_headless_bench_path)
+	// Per-type machinery timing armed by the previous snapshot.
+	if(benchmark_machinery_profile_result)
+		var/list/machinery_profile = benchmark_machinery_profile_result
+		benchmark_machinery_profile_result = null
+		machinery_profile["rec"] = "mprof"
+		machinery_profile["t"] = world.time
+		machinery_profile["fired"] = times_fired
+		rustg_file_append("[json_encode(machinery_profile)]\n", GLOB.atmos_headless_bench_path)
 	if(headless_bench_cycles >= atmos_headless_bench_target())
 		GLOB.atmos_headless_bench_finished = TRUE
 		INVOKE_ASYNC(src, PROC_REF(atmos_headless_bench_finish))
@@ -529,6 +559,9 @@ GLOBAL_VAR_INIT(atmos_headless_bench_finished, FALSE)
 /// Per-turf walk: where the active set lives and whether planetary turfs sit at
 /// their templates. CHECK_TICK spread, so it runs async off the timer.
 /datum/controller/subsystem/air/proc/atmos_headless_bench_snapshot()
+	// Arm the per-type machinery timing; the tick after the profiled pass
+	// writes it out as an mprof record.
+	benchmark_machinery_profile_pending = TRUE
 	var/fired_now = times_fired
 	var/cycle_now = headless_bench_cycles
 	var/list/cooldown_hist = list()
