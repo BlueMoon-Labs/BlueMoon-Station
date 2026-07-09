@@ -398,7 +398,11 @@ GLOBAL_LIST_INIT(atmos_adjacent_savings, list(0,0))
 /// While idle, vents/scrubbers only run a full recheck this often. Event wakes
 /// (turf activation, pipenet pressure jump, radio signals, power, welding) clear
 /// the idle state instantly, so this is a safety net, not the response time.
-#define ATMOS_MACHINE_IDLE_HEARTBEAT (5 SECONDS)
+/// The rotation is a standing share of the machinery phase: every sleeping
+/// machine returns for one recheck per period, so on a station with ~1400
+/// sleepers a 5 SECONDS period meant ~110 rechecks every fire (mprof: ~2ms of
+/// c_am, half the pass size). Keep it long; correctness rides the event wakes.
+#define ATMOS_MACHINE_IDLE_HEARTBEAT (15 SECONDS)
 /// Pipenet pressure change (kPa) after reconcile that wakes idle machines attached to it.
 #define ATMOS_PIPENET_WAKE_PRESSURE_DELTA 5
 /// Vents ignore pressure imbalances smaller than this (kPa). Stops perpetual
