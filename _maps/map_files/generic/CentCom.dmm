@@ -11318,11 +11318,9 @@
 /turf/open/floor/plasteel/dark,
 /area/centcom/control)
 "cCk" = (
-/obj/structure/closet/wardrobe/white,
 /obj/item/clothing/under/color/green,
 /obj/item/clothing/under/color/green,
-/obj/item/clothing/shoes/sneakers/green,
-/obj/item/clothing/shoes/sneakers/green,
+/obj/structure/table,
 /turf/open/floor/holofloor,
 /area/holodeck/rec_center/basketball)
 "cCv" = (
@@ -17900,7 +17898,8 @@
 	dir = 8
 	},
 /obj/structure/table,
-/obj/item/storage/box/cups,
+/obj/item/clothing/shoes/sneakers/green,
+/obj/item/clothing/shoes/sneakers/green,
 /turf/open/floor/holofloor,
 /area/holodeck/rec_center/basketball)
 "jic" = (
@@ -22233,6 +22232,15 @@
 /obj/machinery/door/window/survival_pod,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/inteq/collosus)
+"nAx" = (
+/obj/structure/window{
+	dir = 4
+	},
+/obj/structure/table,
+/obj/item/clothing/shoes/sneakers/green,
+/obj/item/clothing/shoes/sneakers/green,
+/turf/open/floor/holofloor,
+/area/holodeck/rec_center/basketball)
 "nAy" = (
 /obj/structure/closet/syndicate/inteq/personal,
 /obj/effect/turf_decal/siding/wood{
@@ -24687,11 +24695,9 @@
 /turf/open/floor/plasteel/white,
 /area/centcom/control)
 "qbE" = (
-/obj/structure/closet/wardrobe/white,
 /obj/item/clothing/under/color/red,
 /obj/item/clothing/under/color/red,
-/obj/item/clothing/shoes/sneakers/red,
-/obj/item/clothing/shoes/sneakers/red,
+/obj/structure/table,
 /turf/open/floor/holofloor,
 /area/holodeck/rec_center/basketball)
 "qbO" = (
@@ -28849,7 +28855,8 @@
 	dir = 4
 	},
 /obj/structure/table,
-/obj/item/storage/box/cups,
+/obj/item/clothing/shoes/sneakers/red,
+/obj/item/clothing/shoes/sneakers/red,
 /turf/open/floor/holofloor,
 /area/holodeck/rec_center/basketball)
 "tTl" = (
@@ -32804,6 +32811,15 @@
 /obj/structure/flora/ausbushes/ywflowers,
 /turf/open/floor/grass,
 /area/centcom/control)
+"xLP" = (
+/obj/structure/window{
+	dir = 8
+	},
+/obj/structure/table,
+/obj/item/clothing/shoes/sneakers/red,
+/obj/item/clothing/shoes/sneakers/red,
+/turf/open/floor/holofloor,
+/area/holodeck/rec_center/basketball)
 "xMn" = (
 /turf/open/floor/plasteel/dark,
 /area/centcom/ferry)
@@ -91424,7 +91440,7 @@ aeW
 nqs
 aeW
 aeW
-tTk
+nAx
 afx
 aab
 lds
@@ -92957,7 +92973,7 @@ atv
 atv
 aNB
 abj
-jhw
+xLP
 adn
 adn
 xJG
