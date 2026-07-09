@@ -508,6 +508,13 @@ GLOBAL_VAR_INIT(atmos_headless_bench_finished, FALSE)
 		"c_at" = round(cost_turfs, 0.01),
 		"c_eg" = round(cost_groups, 0.01),
 		"c_pp" = round(cost_post_process, 0.01),
+		// Machinery visibility: the turf-only records hid a machinery-wake
+		// regression once (breakdown wakes pinning vents awake), so A/B runs
+		// must see the awake set and its cost too.
+		"c_pn" = round(cost_pipenets, 0.01),
+		"c_am" = round(cost_atmos_machinery, 0.01),
+		"am" = length(atmos_machinery),
+		"ami" = length(atmos_idle_queue),
 	)
 	var/encoded = json_encode(record)
 	rustg_file_append("[encoded]\n", GLOB.atmos_headless_bench_path)
