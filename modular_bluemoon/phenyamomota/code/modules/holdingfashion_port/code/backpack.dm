@@ -14,7 +14,7 @@
 		if(!do_after(user, 30, src))
 			return
 		user.temporarilyRemoveItemFromInventory(src)
-		var/created_boh = new backpack_type(get_tur(loc))
+		var/created_boh = new backpack_type(get_turf(loc))
 		qdel(I)
 		qdel(src)
 		user.put_in_hands(created_boh)
