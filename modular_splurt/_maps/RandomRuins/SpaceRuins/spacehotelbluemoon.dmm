@@ -209,6 +209,7 @@
 	pixel_y = 3
 	},
 /obj/item/pen,
+/obj/item/storage/belt/utility/chief/full,
 /turf/open/floor/carpet/blackred,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
 "bj" = (
@@ -4222,7 +4223,6 @@
 /obj/item/storage/toolbox/electrical,
 /obj/item/clothing/gloves/color/yellow,
 /obj/item/storage/belt/utility/full,
-/obj/item/storage/belt/utility/full,
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
 	dir = 1
 	},
@@ -5173,6 +5173,7 @@
 /obj/effect/turf_decal/tile/yellow/half{
 	dir = 4
 	},
+/obj/machinery/vending/engivend,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/hotel/power)
 "Ct" = (
