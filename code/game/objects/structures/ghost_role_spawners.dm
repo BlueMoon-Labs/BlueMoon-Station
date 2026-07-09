@@ -475,7 +475,7 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 	outfit = /datum/outfit/hotelstaff
 	short_desc = "Вы - член обслуживающего персонала космического отеля."
 	flavour_text = "Вы нанялись в качестве персонала общего профиля для уборки, готовки, обслуживания гостей и всего, что прикажет менеджер на время пребывания на борту космического отеля. Ни в коем случае не грубите, не хамите и не ругайтесь с посетителями. Помните, что в вашем случае, клиент всегда прав."
-	important_info = "Персоналу отеля запрещается покидать его (кроме неординарных случаев или установки телепада)."
+	important_info = "Персоналу отеля запрещается покидать его (кроме неординарных случаев или установки телепада). Помните, что отель - запасная станция на случай экстренных ситуаций. КЗ и НРП действует на территории отеля и он не защищен от нападения агентов враждебных организаций."
 	assignedrole = "Hotel Staff"
 	can_load_appearance = TRUE
 	loadout_enabled = TRUE
@@ -497,8 +497,11 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 	job_description = "Hotel Security"
 	outfit = /datum/outfit/hotelstaff/security
 	short_desc = "Вы - охранник космического отеля."
-	flavour_text = "Вы были назначены в этот отель, чтобы защищать интересы компании Nanotrasen, недавно выкупившей его. Ведите себя вежливо, не размахивайте оружием и бронёй, не грубите посетителям - в первую очередь, вы не должны мешать наслаждаться пребыванием и отпугивать адекватных клиентов."
-	important_info = "Персоналу отеля запрещается покидать его (кроме неординарных случаев или для установки телепада). Не ведите себя как СБ со станции - вы обычный гражданский и не обучены для борьбы с террористами, предателями, аномалиями и другими неординарными сущностями."
+	flavour_text = "Вы были назначены в этот отель, чтобы защищать интересы компании Nanotrasen, недавно выкупившей его. Ведите себя вежливо,\
+	не размахивайте оружием и бронёй, не грубите посетителям - в первую очередь, вы не должны мешать наслаждаться пребыванием и отпугивать адекватных клиентов."
+	important_info = "Персоналу отеля запрещается покидать его (кроме неординарных случаев или для установки телепада). Вы можете вести себя как СБ со станции и \
+	полностью подчиняетесь КЗ и НРП СБ. Любых преступников, или нарушителей порядка вам следует передавать на станцию для вынесения и исполнения приговора. Вам нужно помнить, \
+	что отель не защищен от нападения агентов вражеских организаций."
 
 /datum/outfit/hotelstaff/security
 	name = "Hotel Secuirty"
@@ -508,6 +511,15 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 	head = /obj/item/clothing/head/helmet/blueshirt
 	back = /obj/item/storage/backpack/security
 	belt = /obj/item/storage/belt/security/full
+	backpack_contents = list(/obj/item/storage/ifak, /obj/item/storage/box/sec_kit,
+						/obj/item/gun/ballistic/automatic/pistol/enforcer/nomag,
+						/obj/item/ammo_box/magazine/e45/taser=3
+						)
+	suit_store = /obj/item/gun/energy/e_gun/advtaser
+
+	box = /obj/item/storage/box/survival/security
+	accessory = list(/obj/item/clothing/accessory/permit/special/security, /obj/item/clothing/accessory/badge)
+	chameleon_extras = list(/obj/item/gun/energy/disabler, /obj/item/clothing/glasses/hud/security/sunglasses, /obj/item/clothing/head/helmet)
 
 /obj/effect/mob_spawn/human/hotel_staff/Destroy()
 	new/obj/structure/fluff/empty_sleeper/syndicate(get_turf(src))
