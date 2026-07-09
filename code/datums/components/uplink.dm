@@ -80,6 +80,9 @@ GLOBAL_LIST_EMPTY(uplinks)
 	lockable |= U.lockable
 	active |= U.active
 	uplink_flag |= U.uplink_flag
+	if((is_syndicate && istype(U.telecrystals, /obj/item/stack/telecrystal/inteq)) || (!is_syndicate && !istype(U.telecrystals, /obj/item/stack/telecrystal/inteq)))
+		user.balloon_alert(user, "Аплинк не принимает валюту враждебной организации!")
+		return
 	telecrystals += U.telecrystals
 	if(purchase_log && U.purchase_log)
 		purchase_log.MergeWithAndDel(U.purchase_log)
