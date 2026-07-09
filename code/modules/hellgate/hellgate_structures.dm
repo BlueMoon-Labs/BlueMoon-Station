@@ -53,6 +53,15 @@
 	name = "подбитая РСЗО"
 	icon_state = "mlrs_broken"
 
+// Hell_tank.dmi: single unnamed state (192x192)
+/obj/structure/hellgate_tank
+	name = "танк"
+	desc = "Тяжёлая боевая машина. Пока просто декоративный объект."
+	icon = 'icons/obj/hellgate/Hell_tank.dmi'
+	icon_state = ""
+	anchored = TRUE
+	density = TRUE
+
 // npc_beacon.dmi: beacon_undeployed, beacon_deployed_off, beacon_deployed_on, beacon_activating, beacon_emissive, beacon_deploying, fc_beacon_*
 /obj/structure/hellgate_beacon
 	name = "маяк НПС"
