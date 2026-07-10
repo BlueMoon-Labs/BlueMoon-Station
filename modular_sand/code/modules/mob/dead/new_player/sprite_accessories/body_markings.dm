@@ -27,3 +27,57 @@
 	icon = 'modular_sand/icons/mob/mam_markings.dmi'
 	icon_state = "gloss"
 	covered_limbs = list("Chest" = MATRIX_RED, "Right Arm" = MATRIX_RED, "Left Arm" = MATRIX_RED, "Right Leg" = MATRIX_RED, "Left Leg" = MATRIX_RED, "Head" = MATRIX_RED)
+
+/datum/sprite_accessory/mam_body_markings/scar_l_eye_long
+	name = "Long scar under left eye"
+	icon = 'modular_sand/icons/mob/mam_markings.dmi'
+	icon_state = "scarleyelong"
+	covered_limbs = list("Head" = MATRIX_RED)
+
+/datum/sprite_accessory/mam_body_markings/scar_l_eye_short
+	name = "Short scar under left eye"
+	icon = 'modular_sand/icons/mob/mam_markings.dmi'
+	icon_state = "scarleyeshort"
+	covered_limbs = list("Head" = MATRIX_RED)
+
+/datum/sprite_accessory/mam_body_markings/scar_l_eye_short_alt
+	name = "Short scar under left eye - ALT"
+	icon = 'modular_sand/icons/mob/mam_markings.dmi'
+	icon_state = "scarleyeshortalt"
+	covered_limbs = list("Head" = MATRIX_RED)
+
+/datum/sprite_accessory/mam_body_markings/scar_r_eye_long
+	name = "Long scar under right eye"
+	icon = 'modular_sand/icons/mob/mam_markings.dmi'
+	icon_state = "scarreyelong"
+	covered_limbs = list("Head" = MATRIX_RED)
+
+/datum/sprite_accessory/mam_body_markings/scar_r_eye_short
+	name = "Short scar under right eye"
+	icon = 'modular_sand/icons/mob/mam_markings.dmi'
+	icon_state = "scarreyeshort"
+	covered_limbs = list("Head" = MATRIX_RED)
+
+/datum/sprite_accessory/mam_body_markings/scar_r_eye_short_alt
+	name = "Short scar under right eye - ALT"
+	icon = 'modular_sand/icons/mob/mam_markings.dmi'
+	icon_state = "scarreyeshortalt"
+	covered_limbs = list("Head" = MATRIX_RED)
+
+/datum/sprite_accessory/mam_body_markings/curved_scar_l_eye_long
+	name = "Curved long scar under left eye"
+	icon = 'modular_sand/icons/mob/mam_markings.dmi'
+	icon_state = "curvscarleyelong"
+	covered_limbs = list("Head" = MATRIX_RED)
+
+/datum/sprite_accessory/mam_body_markings/curved_scar_l_eye_short
+	name = "Curved short scar under left eye"
+	icon = 'modular_sand/icons/mob/mam_markings.dmi'
+	icon_state = "curvscarleyeshort"
+	covered_limbs = list("Head" = MATRIX_RED)
+
+/datum/sprite_accessory/mam_body_markings/curved_scar_l_eye_short_alt
+	name = "Curved short scar under left eye - ALT"
+	icon = 'modular_sand/icons/mob/mam_markings.dmi'
+	icon_state = "curvscarleyeshortalt"
+	covered_limbs = list("Head" = MATRIX_RED)

@@ -34,10 +34,14 @@
 
 	// Clear currentrun so fire() rebuilds from ssd_mob_list
 	SSauto_cryo.currentrun_cryo = list()
-	SSauto_cryo.fire()
+	SSauto_cryo.next_scan = 0
+	SSauto_cryo.fire() // scan + cryoMob: the mob leaves gameplay, its deletion is queued
 
-	TEST_ASSERT(QDELETED(ssd_human), "SSD mob with expired time should be deleted by auto cryo")
 	TEST_ASSERT(!(ssd_human in GLOB.ssd_mob_list), "SSD mob should be removed from ssd_mob_list after cryo")
+	TEST_ASSERT_NULL(ssd_human.loc, "cryo'd mob should be parked in nullspace while awaiting staggered deletion")
+
+	SSauto_cryo.fire() // drain the staggered-deletion queue
+	TEST_ASSERT(QDELETED(ssd_human), "SSD mob with expired time should be deleted by auto cryo")
 
 	// Cleanup
 	GLOB.ssd_mob_list = prev_ssd_list
@@ -57,6 +61,8 @@
 	GLOB.ssd_mob_list |= ssd_human
 
 	SSauto_cryo.currentrun_cryo = list()
+	SSauto_cryo.next_scan = 0
+	SSauto_cryo.fire()
 	SSauto_cryo.fire()
 
 	TEST_ASSERT(!QDELETED(ssd_human), "SSD mob with unexpired time should NOT be deleted")
@@ -83,6 +89,7 @@
 	qdel(doomed)
 
 	SSauto_cryo.currentrun_cryo = list()
+	SSauto_cryo.next_scan = 0
 	SSauto_cryo.fire()
 
 	// If we got here without runtime, the test passes
@@ -106,6 +113,7 @@
 	TEST_ASSERT((ghost in GLOB.dead_mob_list), "Ghost should be in dead_mob_list after creation")
 
 	SSauto_cryo.currentrun_ghosts = list()
+	SSauto_cryo.next_scan = 0
 	SSauto_cryo.fire()
 
 	TEST_ASSERT(QDELETED(ghost), "Ghost without client and expired time should be deleted")
@@ -125,6 +133,7 @@
 	ghost.lastclienttime = world.time // Fresh disconnect
 
 	SSauto_cryo.currentrun_ghosts = list()
+	SSauto_cryo.next_scan = 0
 	SSauto_cryo.fire()
 
 	TEST_ASSERT(!QDELETED(ghost), "Ghost with unexpired time should NOT be deleted")
@@ -145,6 +154,7 @@
 	GLOB.ssd_mob_list = list()
 	SSauto_cryo.currentrun_cryo = list()
 	SSauto_cryo.currentrun_ghosts = list()
+	SSauto_cryo.next_scan = 0
 
 	SSauto_cryo.fire()
 
@@ -173,6 +183,12 @@
 	// Fire multiple times to ensure all mobs get processed (yield between them)
 	for(var/i in 1 to 15)
 		SSauto_cryo.currentrun_cryo = list() // Force re-scan each time
+		SSauto_cryo.next_scan = 0
+		SSauto_cryo.fire()
+	// Drain whatever is still sitting in the staggered-deletion queue
+	for(var/i in 1 to 15)
+		if(!length(SSauto_cryo.delete_queue))
+			break
 		SSauto_cryo.fire()
 
 	for(var/mob/living/carbon/human/test_mob as anything in test_mobs)
@@ -197,6 +213,7 @@
 
 	// Pre-populate currentrun_cryo manually (simulating mid-batch state)
 	SSauto_cryo.currentrun_cryo = list(reconnected)
+	SSauto_cryo.next_scan = world.time + 10 MINUTES // keep fire() from rescanning over the manual batch
 
 	// Simulate player reconnecting — remove from SSD list
 	GLOB.ssd_mob_list -= reconnected
@@ -208,6 +225,7 @@
 	// Cleanup
 	GLOB.ssd_mob_list = prev_ssd_list
 	SSauto_cryo.currentrun_cryo = list()
+	SSauto_cryo.next_scan = 0
 	auto_cryo_test_restore_config(prev_config)
 
 // ===== Test 9: Disabled config — cryo does not process =====
@@ -230,6 +248,7 @@
 
 	SSauto_cryo.currentrun_cryo = list()
 	SSauto_cryo.currentrun_ghosts = list()
+	SSauto_cryo.next_scan = 0
 	SSauto_cryo.fire()
 
 	TEST_ASSERT(!QDELETED(ssd_human), "SSD mob should NOT be processed when autocryo_enabled is FALSE")
@@ -254,6 +273,7 @@
 
 	// Pre-fill currentrun with this ghost
 	SSauto_cryo.currentrun_ghosts = list(ghost)
+	SSauto_cryo.next_scan = world.time + 10 MINUTES // keep fire() from rescanning over the manual batch
 
 	// Delete ghost BEFORE fire
 	qdel(ghost)
@@ -264,6 +284,7 @@
 
 	// Cleanup
 	SSauto_cryo.currentrun_ghosts = list()
+	SSauto_cryo.next_scan = 0
 	auto_cryo_test_restore_config(prev_config)
 
 // ==================== Datacore Index Tests ====================
@@ -385,7 +406,9 @@
 	GLOB.ssd_mob_list |= ssd_human
 
 	SSauto_cryo.currentrun_cryo = list()
-	SSauto_cryo.fire()
+	SSauto_cryo.next_scan = 0
+	SSauto_cryo.fire() // scan + cryoMob (datacore is cleaned synchronously here)
+	SSauto_cryo.fire() // drain the staggered-deletion queue
 
 	TEST_ASSERT(QDELETED(ssd_human), "SSD mob should be cryo'd")
 	TEST_ASSERT_NULL(GLOB.data_core.general_by_name[test_name], "General record should be cleaned after cryo")

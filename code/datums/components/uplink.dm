@@ -31,9 +31,11 @@ GLOBAL_LIST_EMPTY(uplinks)
 	var/traitor_contract_rerolls = 0
 	///Instructions on how to access the uplink based on location
 	var/unlock_text
+	var/is_syndicate = FALSE
 	var/list/previous_attempts
 
-/datum/component/uplink/Initialize(_owner, _lockable = TRUE, _enabled = FALSE, uplink_flag = UPLINK_TRAITORS, starting_tc = TELECRYSTALS_DEFAULT)
+/datum/component/uplink/Initialize(_owner, _lockable = TRUE, _enabled = FALSE, uplink_flag = UPLINK_TRAITORS, starting_tc = TELECRYSTALS_DEFAULT, syndicate = FALSE)
+	is_syndicate = syndicate
 	if(!isitem(parent))
 		return COMPONENT_INCOMPATIBLE
 
@@ -78,6 +80,8 @@ GLOBAL_LIST_EMPTY(uplinks)
 	lockable |= U.lockable
 	active |= U.active
 	uplink_flag |= U.uplink_flag
+	if((is_syndicate && istype(U.telecrystals, /obj/item/stack/telecrystal/inteq)) || (!is_syndicate && !istype(U.telecrystals, /obj/item/stack/telecrystal/inteq)))
+		return
 	telecrystals += U.telecrystals
 	if(purchase_log && U.purchase_log)
 		purchase_log.MergeWithAndDel(U.purchase_log)
@@ -138,6 +142,9 @@ GLOBAL_LIST_EMPTY(uplinks)
 	return TRUE
 
 /datum/component/uplink/proc/LoadTC(mob/user, obj/item/stack/telecrystal/TC, silent = FALSE)
+	if((is_syndicate && istype(TC, /obj/item/stack/telecrystal/inteq)) || (!is_syndicate && !istype(TC, /obj/item/stack/telecrystal/inteq)))
+		user.balloon_alert(user, "Аплинк не принимает валюту враждебной организации!")
+		return
 	if(!silent)
 		to_chat(user, span_notice("You slot [TC] into [parent] and charge its internal uplink."))
 	var/amt = TC.amount

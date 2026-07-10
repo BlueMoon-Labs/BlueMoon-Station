@@ -1229,6 +1229,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["feature_color_scheme"] 				>> features["color_scheme"]
 	S["shriek_type"] 						>> shriek_type // BLUEMOON ADD - выбор вида крика для квирка
 	S["summon_nickname"] 					>> summon_nickname // BLUEMOON ADD - выбор прозвища для призываемого
+	S["phobia_type"] 						>> phobia_type // BLUEMOON ADD - выбор фобии для квирка
 	S["feature_hardsuit_with_tail"] 		>> features["hardsuit_with_tail"]
 	S["persistent_scars"] 					>> persistent_scars
 	S["scars1"] 							>> scars_list["1"]
@@ -1573,6 +1574,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	grad_color = sanitize_hexcolor(grad_color, 6, FALSE)
 	eye_type = sanitize_inlist(eye_type, GLOB.eye_types, DEFAULT_EYES_TYPE)
 	shriek_type = sanitize_inlist(shriek_type, GLOB.shriek_types, SHRIEK_TYPE_GENERIC) // BLUEMOON ADD
+	if(phobia_type && SStraumas && !(phobia_type in SStraumas.phobia_types))
+		phobia_type = null // BLUEMOON ADD - проверка валидности выбранной фобии
 	left_eye_color = sanitize_hexcolor(left_eye_color, 6, FALSE)
 	right_eye_color = sanitize_hexcolor(right_eye_color, 6, FALSE)
 
@@ -1898,6 +1901,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["eye_type"]							, eye_type)
 	WRITE_FILE(S["shriek_type"]							, shriek_type) // BLUEMOON ADD
 	WRITE_FILE(S["summon_nickname"]						, summon_nickname) // BLUEMOON ADD
+	WRITE_FILE(S["phobia_type"]							, phobia_type) // BLUEMOON ADD
 	WRITE_FILE(S["feature_hardsuit_with_tail"]			, features["hardsuit_with_tail"])
 	WRITE_FILE(S["left_eye_color"]						, left_eye_color)
 	WRITE_FILE(S["right_eye_color"]						, right_eye_color)

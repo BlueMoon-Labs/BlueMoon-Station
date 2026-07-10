@@ -106,6 +106,8 @@ GLOBAL_LIST_INIT(aperture_turret_ally_death_vo, list(
 /proc/is_aperture_turret_candidate(obj/machinery/porta_turret/turret)
 	if(!turret)
 		return FALSE
+	if(!is_station_level(turret.z))
+		return FALSE
 	if(istype(turret, /obj/machinery/porta_turret/lasertag))
 		return FALSE
 	if(istype(turret, /obj/machinery/porta_turret/syndicate))

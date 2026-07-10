@@ -1,15 +1,15 @@
 //Prolonging Prism: A prism that consumes power to delay the shuttle
 /obj/structure/destructible/clockwork/powered/prolonging_prism
 	name = "prolonging prism"
-	desc = "A dark onyx prism, held in midair by spiraling tendrils of stone."
-	clockwork_desc = "A powerful prism that will delay the arrival of an emergency shuttle."
+	desc = "Призма из темного оникса, удерживаемая в воздухе спиралевидными каменными щупальцами."
+	clockwork_desc = "Мощная призма, которая задержит прибытие эвакуационного шаттла."
 	icon_state = "prolonging_prism_inactive"
 	active_icon = "prolonging_prism"
 	inactive_icon = "prolonging_prism_inactive"
 	unanchored_icon = "prolonging_prism_unwrenched"
 	construction_value = 20
 	max_integrity = 125
-	break_message = "<span class='warning'>The prism falls to the ground with a heavy thud!</span>"
+	break_message = "<span class='warning'>Призма с глухим стуком падает на землю!</span>"
 	debris = list(/obj/item/clockwork/alloy_shards/small = 3, \
 	/obj/item/clockwork/alloy_shards/medium = 1, \
 	/obj/item/clockwork/alloy_shards/large = 1, \
@@ -23,24 +23,24 @@
 	. = ..()
 	if(is_servant_of_ratvar(user) || isobserver(user))
 		if(SSshuttle.emergency.mode == SHUTTLE_DOCKED || SSshuttle.emergency.mode == SHUTTLE_IGNITING || SSshuttle.emergency.mode == SHUTTLE_STRANDED || SSshuttle.emergency.mode == SHUTTLE_ESCAPE)
-			. += "<span class='inathneq'>An emergency shuttle has arrived and this prism is no longer useful; attempt to activate it to gain a partial refund of components used.</span>"
+			. += "<span class='inathneq'>Эвакуационный шаттл уже прибыл, и эта призма теперь бесполезна; попытайтесь активировать ее, чтобы получить частичный возврат использованных компонентов.</span>"
 		else
 			var/efficiency = get_efficiency_mod(TRUE)
-			. += "<span class='inathneq_small'>It requires at least <b>[DisplayPower(get_delay_cost())]</b> of power to attempt to delay the arrival of an emergency shuttle by <b>[2 * efficiency]</b> minutes.</span>"
-			. += "<span class='inathneq_small'>This cost increases by <b>[DisplayPower(delay_cost_increase)]</b> for every previous activation.</span>"
+			. += "<span class='inathneq_small'>Требуется как минимум <b>[DisplayPower(get_delay_cost())]</b> энергии, чтобы попытаться задержать прибытие эвакуационного шаттла на <b>[2 * efficiency]</b> минут.</span>"
+			. += "<span class='inathneq_small'>Эта стоимость увеличивается на <b>[DisplayPower(delay_cost_increase)]</b> за каждую предыдущую активацию.</span>"
 
 /obj/structure/destructible/clockwork/powered/prolonging_prism/forced_disable(bad_effects)
 	if(active)
 		if(bad_effects)
 			try_use_power(MIN_CLOCKCULT_POWER*4)
-		visible_message("<span class='warning'>[src] emits an airy chuckling sound and falls dark!</span>")
+		visible_message("<span class='warning'>[src] издает воздушный смешливый звук и темнеет!</span>")
 		toggle()
 		return TRUE
 
 /obj/structure/destructible/clockwork/powered/prolonging_prism/on_attack_hand(mob/living/user)
 	if(user.canUseTopic(src, !issilicon(user), NO_DEXTERY) && is_servant_of_ratvar(user))
 		if(SSshuttle.emergency.mode == SHUTTLE_DOCKED || SSshuttle.emergency.mode == SHUTTLE_IGNITING || SSshuttle.emergency.mode == SHUTTLE_STRANDED || SSshuttle.emergency.mode == SHUTTLE_ESCAPE)
-			to_chat(user, "<span class='brass'>You break [src] apart, refunding some of the power used.</span>")
+			to_chat(user, "<span class='brass'>Вы разбиваете [src] на части, возвращая часть израсходованной энергии.</span>")
 			adjust_clockwork_power(power_refund)
 			take_damage(max_integrity)
 			return FALSE
@@ -48,13 +48,13 @@
 			return FALSE
 		var/turf/T = get_turf(src)
 		if(!T || !is_station_level(T.z))
-			to_chat(user, "<span class='warning'>[src] must be on the station to function!</span>")
+			to_chat(user, "<span class='warning'>[src] должна быть на станции, чтобы функционировать!</span>")
 			return FALSE
 		if(SSshuttle.emergency.mode != SHUTTLE_CALL)
-			to_chat(user, "<span class='warning'>No emergency shuttles are attempting to arrive at the station!</span>")
+			to_chat(user, "<span class='warning'>Никакие эвакуационные шаттлы не пытаются прибыть на станцию!</span>")
 			return FALSE
 		if(!try_use_power(get_delay_cost()))
-			to_chat(user, "<span class='warning'>[src] needs more power to function!</span>")
+			to_chat(user, "<span class='warning'>[src] необходимо больше энергии для работы!</span>")
 			return FALSE
 		delay_cost += delay_cost_increase
 		delay_remaining += PRISM_DELAY_DURATION

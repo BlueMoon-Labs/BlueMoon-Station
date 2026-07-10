@@ -36,6 +36,7 @@
 
 /obj/machinery/computer/scan_consolenew
 	name = "DNA Console"
+	idle_sleeps = FALSE // own periodic work in process(); must not doze off via the parent typing-indicator path
 	desc = "Для работы с ДНК-цепями."
 	icon_screen = "dna"
 	icon_keyboard = "med_key"

@@ -1,8 +1,8 @@
 //Repeater: Activates every second.
 /obj/structure/destructible/clockwork/trap/trigger/repeater
 	name = "repeater"
-	desc = "A small black prism with a gem in the center."
-	clockwork_desc = "A repeater that will send an activation signal every second."
+	desc = "Маленькая черная призма с драгоценным камнем в центре."
+	clockwork_desc = "Репитер, который будет отправлять сигнал активации каждую секунду."
 	max_integrity = 15 //Fragile!
 	icon_state = "repeater"
 
@@ -14,11 +14,11 @@
 		return
 	if(!(datum_flags & DF_ISPROCESSING))
 		START_PROCESSING(SSprocessing, src)
-		to_chat(user, "<span class='notice'>You activate [src].</span>")
+		to_chat(user, "<span class='notice'>Вы активируете [src].</span>")
 		icon_state = "[icon_state]_on"
 	else
 		STOP_PROCESSING(SSprocessing, src)
-		to_chat(user, "<span class='notice'>You halt [src]'s ticking.</span>")
+		to_chat(user, "<span class='notice'>Вы останавливаете тиканье [src].</span>")
 		icon_state = initial(icon_state)
 
 /obj/structure/destructible/clockwork/trap/trigger/repeater/process()

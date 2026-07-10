@@ -192,19 +192,48 @@
 	TEST_ASSERT_EQUAL(alarm.process_interval, 1, "a fresh air alarm processes every fire")
 	TEST_ASSERT_EQUAL(alarm.process_skips_left, 0, "...with nothing queued to skip")
 
-	// Steady state: the per-fire interval ramps up to the cap and stays there. Each iteration
-	// first burns any queued skips so we always observe the result of a real air read.
+	// The backoff cap depends on whether the local turf takes part in active atmos exchange:
+	// an excited turf caps at AALARM_MAX_PROCESS_INTERVAL, a parked one coasts much longer at
+	// AALARM_INACTIVE_PROCESS_INTERVAL. Excite the test turf for the first steady-state block.
+	var/turf/open/alarm_turf = get_turf(alarm)
+	TEST_ASSERT(istype(alarm_turf), "the test reservation floor must be an open turf")
+	var/was_excited = alarm_turf.excited
+	alarm_turf.excited = TRUE
+
+	// Steady state on an active turf: an excited turf cuts queued skips short, so EVERY fire is
+	// a real air read, and the per-fire interval ramps up to the cap and stays there.
 	for(var/i in 1 to 2 * AALARM_MAX_PROCESS_INTERVAL + 4)
-		while(alarm.process_skips_left > 0)
-			alarm.process()
 		var/interval_before = alarm.process_interval
 		alarm.process()
 		TEST_ASSERT(alarm.process_interval >= interval_before, "process_interval must not shrink while danger_level is stable (was [interval_before], now [alarm.process_interval])")
-		TEST_ASSERT(alarm.process_interval <= AALARM_MAX_PROCESS_INTERVAL, "process_interval ([alarm.process_interval]) must never exceed AALARM_MAX_PROCESS_INTERVAL ([AALARM_MAX_PROCESS_INTERVAL])")
+		TEST_ASSERT(alarm.process_interval <= AALARM_MAX_PROCESS_INTERVAL, "process_interval ([alarm.process_interval]) must never exceed AALARM_MAX_PROCESS_INTERVAL ([AALARM_MAX_PROCESS_INTERVAL]) on an active turf")
 		TEST_ASSERT_EQUAL(alarm.process_skips_left, alarm.process_interval - 1, "after a real read the alarm queues (interval - 1) skipped fires")
 	TEST_ASSERT_EQUAL(alarm.process_interval, AALARM_MAX_PROCESS_INTERVAL, "process_interval must saturate at the cap in steady state")
 
+	// The turf leaves active exchange: queued skips now burn down one per fire, and the cap
+	// opens up to the inactive interval. The burn loops are bounded by the queued count so a
+	// contract change fails the test instead of hanging it.
+	alarm_turf.excited = FALSE
+	for(var/i in 1 to 2 * AALARM_INACTIVE_PROCESS_INTERVAL + 4)
+		var/queued_skips = alarm.process_skips_left
+		for(var/burn in 1 to queued_skips)
+			alarm.process()
+		TEST_ASSERT_EQUAL(alarm.process_skips_left, 0, "on a parked turf each skipped fire must decrement the queue by exactly one")
+		alarm.process()
+		TEST_ASSERT(alarm.process_interval <= AALARM_INACTIVE_PROCESS_INTERVAL, "process_interval ([alarm.process_interval]) must never exceed AALARM_INACTIVE_PROCESS_INTERVAL ([AALARM_INACTIVE_PROCESS_INTERVAL]) on an inactive turf")
+	TEST_ASSERT_EQUAL(alarm.process_interval, AALARM_INACTIVE_PROCESS_INTERVAL, "process_interval must saturate at the inactive cap on a parked turf")
+
+	// The turf re-enters active exchange: the very next fire must cut through the queued skips,
+	// read now, and clamp the interval back to the active cap.
+	alarm_turf.excited = TRUE
+	TEST_ASSERT(alarm.process_skips_left > 0, "precondition: skips must be queued before the re-excite check")
+	alarm.process()
+	TEST_ASSERT(alarm.process_interval <= AALARM_MAX_PROCESS_INTERVAL, "a re-excited turf must clamp the interval back to AALARM_MAX_PROCESS_INTERVAL (got [alarm.process_interval])")
+	TEST_ASSERT_EQUAL(alarm.process_skips_left, alarm.process_interval - 1, "the re-excited fire performs a real read and re-queues from the clamped interval")
+
 	// A queued skip must not touch the air: a real read can never produce this danger_level.
+	// Park the turf again - an excited turf never skips.
+	alarm_turf.excited = FALSE
 	alarm.process_skips_left = AALARM_MAX_PROCESS_INTERVAL
 	var/sentinel = 1234
 	alarm.danger_level = sentinel
@@ -212,11 +241,13 @@
 	alarm.process()
 	TEST_ASSERT_EQUAL(alarm.danger_level, sentinel, "an air alarm with skips queued must not read the air")
 	TEST_ASSERT_EQUAL(alarm.process_skips_left, queued - 1, "a skipped fire decrements the skip counter")
-	while(alarm.process_skips_left > 0)
+	for(var/burn in 1 to alarm.process_skips_left)
 		alarm.process()
+	TEST_ASSERT_EQUAL(alarm.process_skips_left, 0, "burning the queued skips must leave none behind")
 	TEST_ASSERT_EQUAL(alarm.danger_level, sentinel, "danger_level stays untouched while skips remain")
 	alarm.process()
 	TEST_ASSERT_NOTEQUAL(alarm.danger_level, sentinel, "with no skips queued the alarm reads the air and recomputes danger_level")
+	alarm_turf.excited = was_excited
 
 	// danger_level changing snaps the alarm back to processing every fire. Rig a TLV so the
 	// next read produces a different level than the current one (no_checks → 0; an impossibly
@@ -250,6 +281,14 @@
 	turret.set_machine_stat(0) // clear NOPOWER — the test reservation is unpowered
 	turret.on = TRUE
 
+	// process() skips scanning entirely on z-levels without clients, so simulate one
+	// (same trick as the ssmobs_optimization tests).
+	var/turf/turret_turf = get_turf(turret)
+	if(!islist(SSmobs.clients_by_zlevel) || turret_turf.z > SSmobs.clients_by_zlevel.len)
+		SSmobs.MaxZChanged()
+	var/mob/living/carbon/human/fake_player = allocate(/mob/living/carbon/human)
+	SSmobs.clients_by_zlevel[turret_turf.z] += fake_player
+
 	turret.scan_count = 0
 	turret.process()
 	TEST_ASSERT_EQUAL(turret.scan_count, 1, "the first process() (cooldown unset) must scan once")
@@ -261,6 +300,13 @@
 	turret.target_scan_cooldown = world.time - 1 // force the cooldown to be finished
 	turret.process()
 	TEST_ASSERT_EQUAL(turret.scan_count, 1, "process() after the scan cooldown lapses must scan again")
+
+	// C2b: with no clients left on the z-level the turret must not scan at all.
+	SSmobs.clients_by_zlevel[turret_turf.z] -= fake_player
+	turret.scan_count = 0
+	turret.target_scan_cooldown = world.time - 1
+	turret.process()
+	TEST_ASSERT_EQUAL(turret.scan_count, 0, "process() on a clientless z-level must skip scanning entirely")
 
 /// Counts how many times a status display rebuilds its appearance/overlays.
 /obj/machinery/status_display/unit_test_appearance_counter

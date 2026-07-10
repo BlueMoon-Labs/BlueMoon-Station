@@ -321,8 +321,11 @@
 	qdel(old_path)
 
 /// External air changes (vent top-ups, breathing) must postpone excited group
-/// averaging/dismantling without destroying the group: rebuilding room groups
-/// from scratch every fire was a major source of permanently active turfs.
+/// dismantling without destroying the group: rebuilding room groups from
+/// scratch every fire was a major source of permanently active turfs. They
+/// must NOT postpone group averaging - self_breakdown spreading the gas across
+/// the whole group is the only path gas has out of a drip-fed pocket (corpse
+/// rot) whose per-cycle shares stay under the wake threshold.
 /datum/unit_test/atmos_group_survives_external_change/Run()
 	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
 	var/turf/open/first = run_loc_floor_bottom_left
@@ -339,7 +342,7 @@
 	SSair.add_to_active(first)
 	TEST_ASSERT_EQUAL(first.excited_group, group, "external change destroyed the excited group")
 	TEST_ASSERT_EQUAL(second.excited_group, group, "external change detached a group member")
-	TEST_ASSERT_EQUAL(group.breakdown_cooldown, 0, "external change must reset the breakdown cooldown")
+	TEST_ASSERT_EQUAL(group.breakdown_cooldown, 3, "external change must not postpone group averaging")
 	TEST_ASSERT_EQUAL(group.dismantle_cooldown, 0, "external change must reset the dismantle cooldown")
 
 	// A structural change (adjacency recalculated: door closed, wall built) must
@@ -374,12 +377,15 @@
 	SSair.add_to_active(second, FALSE)
 
 	// Both turfs hold settled identical air; first has been stalling for a
-	// full dismantle window already.
-	first.atmos_cooldown = EXCITED_GROUP_DISMANTLE_CYCLES
+	// full individual-rest window already, second is one cycle short of it.
+	first.atmos_cooldown = EXCITED_GROUP_INDIVIDUAL_REST_CYCLES
+	second.atmos_cooldown = EXCITED_GROUP_INDIVIDUAL_REST_CYCLES - 1
 	var/fire_count = max(first.current_cycle, second.current_cycle) + 1
 	first.process_cell(fire_count)
+	second.process_cell(fire_count)
 
 	TEST_ASSERT(!(first in SSair.active_turfs), "stalled group member did not rest out of the active list")
+	TEST_ASSERT(second in SSair.active_turfs, "a group member one cycle short of the rest window rested early")
 	TEST_ASSERT_EQUAL(first.excited_group, group, "resting a stalled turf detached it from its excited group")
 	TEST_ASSERT_EQUAL(second.excited_group, group, "resting a stalled turf destroyed the group for other members")
 	TEST_ASSERT(group in SSair.excited_groups, "resting a stalled turf removed the group from SSair")
@@ -419,12 +425,13 @@
 	SSair.remove_from_active(first)
 	SSair.remove_from_active(second)
 
-/// Group averaging must only cover members that are still awake: resting
-/// members hold their local equilibrium and nobody processes them afterwards,
-/// so folding them in smears churner gas across the whole group (planetary
-/// surfaces drifted off-template toward leaks, space-drained edges dragged
-/// entire areas toward vacuum) and keeps every breakdown O(group size).
-/datum/unit_test/atmos_breakdown_skips_resting_members/Run()
+/// Group averaging must cover the ENTIRE group, resting members included,
+/// without waking them. Excluding resting members preserved every settled
+/// pocket, so post-breach fields flattened ring by ring through the poke
+/// frontier - O(diameter^2) cycles of frontier churn for a large room - and
+/// drip-fed gas (corpse rot) only left its pocket one poke ring at a time.
+/// One breakdown must make the whole bucket uniform in a single pass.
+/datum/unit_test/atmos_breakdown_averages_resting_members/Run()
 	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
 	var/turf/open/origin = run_loc_floor_bottom_left
 	var/turf/open/first = locate(origin.x + 1, origin.y + 1, origin.z)
@@ -446,20 +453,396 @@
 	TEST_ASSERT_EQUAL(resting.excited_group, group, "sleep_active_turf detached the turf from its group")
 
 	var/resting_o2_before = resting.air.get_moles(GAS_O2)
-	first.air.set_moles(GAS_O2, resting_o2_before + 20)
+	first.air.set_moles(GAS_O2, resting_o2_before + 30)
 
 	group.self_breakdown()
 
-	TEST_ASSERT(abs(resting.air.get_moles(GAS_O2) - resting_o2_before) < 0.001, "breakdown averaging rewrote a resting member's air")
-	TEST_ASSERT(abs(first.air.get_moles(GAS_O2) - second.air.get_moles(GAS_O2)) < 0.001, "breakdown averaging did not equalize the awake members")
 	TEST_ASSERT(abs(first.air.get_moles(GAS_O2) - (resting_o2_before + 10)) < 0.001, "awake members did not average to the expected mix")
+	TEST_ASSERT(abs(second.air.get_moles(GAS_O2) - (resting_o2_before + 10)) < 0.001, "awake members did not average to the expected mix")
+	TEST_ASSERT(abs(resting.air.get_moles(GAS_O2) - (resting_o2_before + 10)) < 0.001, "breakdown averaging skipped a resting member")
+	TEST_ASSERT(!(resting in SSair.active_turfs), "breakdown averaging woke a resting member")
+	TEST_ASSERT(!resting.excited, "breakdown averaging set a resting member excited")
+	TEST_ASSERT_EQUAL(resting.excited_group, group, "breakdown averaging detached a resting member from its group")
 
 	group.garbage_collect()
 	first.air.copy_from_turf(first)
 	second.air.copy_from_turf(second)
+	resting.air.copy_from_turf(resting)
 	SSair.remove_from_active(first)
 	SSair.remove_from_active(second)
 	SSair.remove_from_active(resting)
+
+/// With full-group averaging, the poke's only remaining job is frontier
+/// expansion: a resting member bordering turfs OUTSIDE the group must wake to
+/// compare against them (that comparison is the only way the group can grow
+/// into a settled room), while an interior resting member whose every open
+/// neighbor is a group mate must stay asleep - it is already at the average.
+/datum/unit_test/atmos_breakdown_pokes_group_boundary/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/origin = run_loc_floor_bottom_left
+	var/turf/open/center = locate(origin.x + 2, origin.y + 2, origin.z)
+	TEST_ASSERT(istype(center), "test location is not an open turf")
+	TEST_ASSERT(LAZYLEN(center.atmos_adjacent_turfs), "center test turf has no atmos adjacency")
+
+	var/datum/excited_group/group = new
+	var/list/turf/open/members = list(center)
+	for(var/turf/open/neighbor as anything in center.atmos_adjacent_turfs)
+		TEST_ASSERT(istype(neighbor), "center neighbor is not an open turf")
+		members += neighbor
+	for(var/turf/open/member as anything in members)
+		group.add_turf(member)
+		SSair.add_to_active(member, FALSE)
+		SSair.sleep_active_turf(member)
+
+	// The breakdown must actually change every member's air: unchanged resting
+	// members are evicted from the group instead of poked.
+	center.air.set_moles(GAS_O2, center.air.get_moles(GAS_O2) + 150)
+
+	group.self_breakdown(poke_resting = TRUE)
+
+	TEST_ASSERT(!(center in SSair.active_turfs), "breakdown poked an interior resting member (all its neighbors are group mates)")
+	var/poked = 0
+	for(var/turf/open/member as anything in members)
+		if(member == center)
+			continue
+		if(member in SSair.active_turfs)
+			poked++
+			TEST_ASSERT_EQUAL(member.atmos_cooldown, EXCITED_GROUP_INDIVIDUAL_REST_CYCLES, "poked boundary member did not get the one-shot stall budget")
+	TEST_ASSERT_EQUAL(poked, length(members) - 1, "not every group-boundary resting member was poked")
+
+	group.garbage_collect()
+	for(var/turf/open/member as anything in members)
+		member.atmos_cooldown = 0
+		member.air.copy_from_turf(member)
+		SSair.remove_from_active(member)
+
+/// A group whose every member has individually rested can generate no new
+/// deltas on its own (anything external wakes members back through
+/// add_to_active): waiting out the rest of the dismantle window just kept
+/// re-averaging an already-quiet room every breakdown. The next lifecycle
+/// tick must dismantle such a group outright.
+/datum/unit_test/atmos_group_dismantles_when_all_rest/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/first = run_loc_floor_bottom_left
+	var/turf/open/second = locate(first.x + 1, first.y, first.z)
+	TEST_ASSERT(istype(first), "test location is not an open turf")
+	TEST_ASSERT(istype(second), "adjacent test location is not an open turf")
+
+	var/datum/excited_group/group = new
+	group.add_turf(first)
+	group.add_turf(second)
+	SSair.add_to_active(first, FALSE)
+	SSair.add_to_active(second, FALSE)
+	SSair.sleep_active_turf(first)
+	SSair.sleep_active_turf(second)
+
+	group.tick_lifecycle()
+
+	TEST_ASSERT(!(group in SSair.excited_groups), "an all-resting group survived its lifecycle tick")
+	TEST_ASSERT_NULL(first.excited_group, "dismantling an all-resting group left a member attached")
+	TEST_ASSERT_NULL(second.excited_group, "dismantling an all-resting group left a member attached")
+
+	first.atmos_cooldown = 0
+	second.atmos_cooldown = 0
+	SSair.remove_from_active(first)
+	SSair.remove_from_active(second)
+
+/// Averaging writes new air onto resting tiles without waking the tile itself;
+/// a sleeping vent/scrubber registered on such a tile must still get its wake
+/// call, or it only notices the new gas on its idle heartbeat much later.
+/datum/unit_test/atmos_breakdown_wakes_registered_machines/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/room = run_loc_floor_bottom_left
+	var/turf/open/neighbor = locate(room.x + 1, room.y, room.z)
+	TEST_ASSERT(istype(room), "test location is not an open turf")
+	TEST_ASSERT(istype(neighbor), "adjacent test location is not an open turf")
+	var/obj/machinery/atmospherics/components/unary/vent_scrubber/scrubber = allocate(/obj/machinery/atmospherics/components/unary/vent_scrubber, room)
+	scrubber.register_turf_wake()
+
+	var/datum/excited_group/group = new
+	group.add_turf(room)
+	group.add_turf(neighbor)
+	SSair.add_to_active(room, FALSE)
+	SSair.add_to_active(neighbor, FALSE)
+	SSair.sleep_active_turf(room)
+	neighbor.air.set_moles(GAS_CO2, 20)
+
+	for(var/i in 1 to ATMOS_MACHINE_IDLE_STREAK)
+		scrubber.atmos_consider_idle()
+	TEST_ASSERT(!scrubber.atmos_processing, "scrubber did not go to sleep during setup")
+
+	group.self_breakdown()
+
+	TEST_ASSERT(scrubber.atmos_processing, "breakdown rewrote the tile's air but did not wake the registered machine")
+
+	scrubber.unregister_turf_wake()
+	group.garbage_collect()
+	room.air.copy_from_turf(room)
+	neighbor.air.copy_from_turf(neighbor)
+	room.atmos_cooldown = 0
+	neighbor.atmos_cooldown = 0
+	SSair.remove_from_active(room)
+	SSair.remove_from_active(neighbor)
+
+/// The write-back wake is for tiles whose air actually changed. A tile already
+/// sitting at the bucket average gets identical air written back, and its
+/// sleeping vent/scrubber must stay in the idle heartbeat: perpetual excited
+/// groups (freezer rooms, engine storages) break down every
+/// EXCITED_GROUP_BREAKDOWN_CYCLES fires while a machine needs
+/// ATMOS_MACHINE_IDLE_STREAK no-op fires to rest - an unconditional wake pins
+/// every machine in such a room awake forever.
+/datum/unit_test/atmos_breakdown_wake_needs_air_change/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/room = run_loc_floor_bottom_left
+	var/turf/open/neighbor = locate(room.x + 1, room.y, room.z)
+	TEST_ASSERT(istype(room), "test location is not an open turf")
+	TEST_ASSERT(istype(neighbor), "adjacent test location is not an open turf")
+	var/obj/machinery/atmospherics/components/unary/vent_scrubber/scrubber = allocate(/obj/machinery/atmospherics/components/unary/vent_scrubber, room)
+	scrubber.register_turf_wake()
+
+	// Both tiles hold the exact same mix, so averaging rewrites them with what
+	// they already have.
+	room.air.copy_from_turf(room)
+	neighbor.air.copy_from(room.air)
+
+	var/datum/excited_group/group = new
+	group.add_turf(room)
+	group.add_turf(neighbor)
+	SSair.add_to_active(room, FALSE)
+	SSair.add_to_active(neighbor, FALSE)
+	SSair.sleep_active_turf(room)
+
+	for(var/i in 1 to ATMOS_MACHINE_IDLE_STREAK)
+		scrubber.atmos_consider_idle()
+	TEST_ASSERT(!scrubber.atmos_processing, "scrubber did not go to sleep during setup")
+
+	group.self_breakdown()
+
+	TEST_ASSERT(!scrubber.atmos_processing, "breakdown woke a machine on a tile whose air did not change")
+
+	scrubber.unregister_turf_wake()
+	group.garbage_collect()
+	room.air.copy_from_turf(room)
+	neighbor.air.copy_from_turf(neighbor)
+	room.atmos_cooldown = 0
+	neighbor.atmos_cooldown = 0
+	SSair.remove_from_active(room)
+	SSair.remove_from_active(neighbor)
+
+/// Eviction replaces the boundary poke for settled members: a resting tile
+/// whose air the breakdown did not change leaves the group without a wake, and
+/// the vents/scrubbers standing on it (room perimeters are exactly where they
+/// live) must stay in the idle heartbeat instead of being re-armed every
+/// EXCITED_GROUP_BREAKDOWN_CYCLES fires.
+/datum/unit_test/atmos_eviction_leaves_machines_asleep/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/room = run_loc_floor_bottom_left
+	var/turf/open/neighbor = locate(room.x + 1, room.y, room.z)
+	TEST_ASSERT(istype(room), "test location is not an open turf")
+	TEST_ASSERT(istype(neighbor), "adjacent test location is not an open turf")
+	var/obj/machinery/atmospherics/components/unary/vent_scrubber/scrubber = allocate(/obj/machinery/atmospherics/components/unary/vent_scrubber, room)
+	scrubber.register_turf_wake()
+
+	// Identical mixes keep the write-back wake gate shut; only the poke path
+	// is under test.
+	room.air.copy_from_turf(room)
+	neighbor.air.copy_from(room.air)
+
+	var/datum/excited_group/group = new
+	group.add_turf(room)
+	group.add_turf(neighbor)
+	SSair.add_to_active(room, FALSE)
+	SSair.add_to_active(neighbor, FALSE)
+	SSair.sleep_active_turf(room)
+	SSair.sleep_active_turf(neighbor)
+
+	for(var/i in 1 to ATMOS_MACHINE_IDLE_STREAK)
+		scrubber.atmos_consider_idle()
+	TEST_ASSERT(!scrubber.atmos_processing, "scrubber did not go to sleep during setup")
+
+	group.self_breakdown(poke_resting = TRUE)
+
+	TEST_ASSERT(!(room in SSair.active_turfs), "breakdown woke an unchanged resting member instead of evicting it")
+	TEST_ASSERT_NULL(room.excited_group, "breakdown kept an unchanged resting member in the group")
+	TEST_ASSERT(!scrubber.atmos_processing, "eviction woke a machine although the tile's air did not change")
+
+	scrubber.unregister_turf_wake()
+	group.garbage_collect()
+	room.air.copy_from_turf(room)
+	neighbor.air.copy_from_turf(neighbor)
+	room.atmos_cooldown = 0
+	neighbor.atmos_cooldown = 0
+	SSair.remove_from_active(room)
+	SSair.remove_from_active(neighbor)
+
+/// Perpetual groups (planetary surfaces around a leak, space-edge drains) never
+/// dismantle, and a turf has no individual way out of turf_list - over hours a
+/// group accumulates every turf that was ever excited near it (32k members on a
+/// live lavaland) and every EXCITED_GROUP_BREAKDOWN_CYCLES fires re-averages all
+/// of them in one atomic unyieldable pass. Breakdown must evict resting members
+/// it did not change: they sit exactly at the bucket average, contribute nothing
+/// and receive nothing, and any real future delta re-adds them through the
+/// normal share paths.
+/datum/unit_test/atmos_breakdown_evicts_settled_members/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/origin = run_loc_floor_bottom_left
+	var/turf/open/awake = locate(origin.x + 1, origin.y + 1, origin.z)
+	var/turf/open/settled = locate(origin.x + 2, origin.y + 1, origin.z)
+	var/turf/open/settled_too = locate(origin.x + 3, origin.y + 1, origin.z)
+	TEST_ASSERT(istype(awake), "test location is not an open turf")
+	TEST_ASSERT(istype(settled), "adjacent test location is not an open turf")
+	TEST_ASSERT(istype(settled_too), "adjacent test location is not an open turf")
+
+	// All three hold the exact same mix: the bucket average IS their air, so the
+	// write-back changes nothing on the resting members.
+	awake.air.copy_from_turf(awake)
+	settled.air.copy_from(awake.air)
+	settled_too.air.copy_from(awake.air)
+
+	var/datum/excited_group/group = new
+	group.add_turf(awake)
+	group.add_turf(settled)
+	group.add_turf(settled_too)
+	SSair.add_to_active(awake, FALSE)
+	SSair.add_to_active(settled, FALSE)
+	SSair.add_to_active(settled_too, FALSE)
+	SSair.sleep_active_turf(settled)
+	SSair.sleep_active_turf(settled_too)
+
+	group.self_breakdown(poke_resting = TRUE)
+
+	TEST_ASSERT(!(settled in group.turf_list), "breakdown kept an unchanged resting member in the group")
+	TEST_ASSERT(!(settled_too in group.turf_list), "breakdown kept an unchanged resting member in the group")
+	TEST_ASSERT_NULL(settled.excited_group, "evicted member still points at the group")
+	TEST_ASSERT_NULL(settled_too.excited_group, "evicted member still points at the group")
+	TEST_ASSERT(!(settled in SSair.active_turfs), "eviction woke a settled member")
+	TEST_ASSERT(!settled.excited, "eviction left a settled member excited")
+	TEST_ASSERT(awake in group.turf_list, "breakdown evicted an awake member")
+	TEST_ASSERT_EQUAL(awake.excited_group, group, "breakdown detached an awake member")
+	TEST_ASSERT(group in SSair.excited_groups, "breakdown killed a group that still has an awake member")
+
+	group.garbage_collect()
+	awake.air.copy_from_turf(awake)
+	settled.air.copy_from_turf(settled)
+	settled_too.air.copy_from_turf(settled_too)
+	awake.atmos_cooldown = 0
+	settled.atmos_cooldown = 0
+	settled_too.atmos_cooldown = 0
+	SSair.remove_from_active(awake)
+	SSair.remove_from_active(settled)
+	SSair.remove_from_active(settled_too)
+
+/// The dismantle decision used to scan the whole turf_list for an awake member
+/// every group-stage tick - a permanent O(N) tax once a perpetual group grows
+/// large. The group must track its awake member count incrementally through
+/// every excited-flag transition instead.
+/datum/unit_test/atmos_group_awake_counter/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/first = run_loc_floor_bottom_left
+	var/turf/open/second = locate(first.x + 1, first.y, first.z)
+	TEST_ASSERT(istype(first), "test location is not an open turf")
+	TEST_ASSERT(istype(second), "adjacent test location is not an open turf")
+
+	var/datum/excited_group/group = new
+	group.add_turf(first)
+	TEST_ASSERT_EQUAL(group.awake_members, 1, "add_turf did not count a new awake member")
+	group.add_turf(second)
+	TEST_ASSERT_EQUAL(group.awake_members, 2, "add_turf did not count a second awake member")
+	group.add_turf(first)
+	TEST_ASSERT_EQUAL(group.awake_members, 2, "re-adding an awake member double-counted it")
+	SSair.add_to_active(first, FALSE)
+	TEST_ASSERT_EQUAL(group.awake_members, 2, "add_to_active double-counted an already-awake member")
+	SSair.sleep_active_turf(first)
+	TEST_ASSERT_EQUAL(group.awake_members, 1, "sleep_active_turf did not release an awake slot")
+	SSair.add_to_active(first, FALSE)
+	TEST_ASSERT_EQUAL(group.awake_members, 2, "add_to_active did not count a woken resting member")
+	SSair.sleep_active_turf(first)
+	SSair.sleep_active_turf(second)
+	TEST_ASSERT_EQUAL(group.awake_members, 0, "resting every member left a nonzero awake count")
+
+	group.tick_lifecycle()
+	TEST_ASSERT(!(group in SSair.excited_groups), "an all-resting group survived its lifecycle tick")
+	TEST_ASSERT_NULL(first.excited_group, "dismantling left a member attached")
+
+	first.atmos_cooldown = 0
+	second.atmos_cooldown = 0
+	SSair.remove_from_active(first)
+	SSair.remove_from_active(second)
+
+/// Merging groups must transfer the awake count to the winner and leave the
+/// loser truly empty: a dropped group that still lists turfs holds strong refs
+/// to them until the datum is collected, and a stale awake count on it would
+/// make any accidental lifecycle tick misjudge the dismantle decision.
+/datum/unit_test/atmos_merge_transfers_awake_count/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/origin = run_loc_floor_bottom_left
+	var/turf/open/first = locate(origin.x + 1, origin.y + 1, origin.z)
+	var/turf/open/second = locate(origin.x + 2, origin.y + 1, origin.z)
+	var/turf/open/third = locate(origin.x + 3, origin.y + 1, origin.z)
+	TEST_ASSERT(istype(first), "test location is not an open turf")
+	TEST_ASSERT(istype(second), "adjacent test location is not an open turf")
+	TEST_ASSERT(istype(third), "adjacent test location is not an open turf")
+
+	// Bigger group keeps its identity and absorbs the smaller one.
+	var/datum/excited_group/big = new
+	big.add_turf(first)
+	big.add_turf(second)
+	var/datum/excited_group/small = new
+	small.add_turf(third)
+	big.merge_groups(small)
+	TEST_ASSERT_EQUAL(big.awake_members, 3, "merge did not transfer the loser's awake count")
+	TEST_ASSERT_EQUAL(third.excited_group, big, "merge did not repoint the loser's member")
+	TEST_ASSERT_EQUAL(length(small.turf_list), 0, "merge left members listed in the dead loser group")
+	TEST_ASSERT(!(small in SSair.excited_groups), "merge left the loser group registered")
+	big.garbage_collect()
+
+	// Mirror branch: the caller is the smaller group and dissolves into the
+	// bigger one.
+	var/datum/excited_group/tiny = new
+	tiny.add_turf(first)
+	var/datum/excited_group/pair = new
+	pair.add_turf(second)
+	pair.add_turf(third)
+	tiny.merge_groups(pair)
+	TEST_ASSERT_EQUAL(pair.awake_members, 3, "merge into the bigger group did not transfer the awake count")
+	TEST_ASSERT_EQUAL(first.excited_group, pair, "merge into the bigger group did not repoint the smaller group's member")
+	TEST_ASSERT_EQUAL(length(tiny.turf_list), 0, "merge left members listed in the dead smaller group")
+	pair.garbage_collect()
+
+	SSair.remove_from_active(first)
+	SSair.remove_from_active(second)
+	SSair.remove_from_active(third)
+
+/// The awake counter is maintained incrementally; exotic paths (a turf type
+/// change under a live group) can strand it. Every breakdown already walks the
+/// whole membership, so it must recount the counter exactly - drift heals
+/// within EXCITED_GROUP_BREAKDOWN_CYCLES instead of pinning the group alive
+/// forever.
+/datum/unit_test/atmos_breakdown_recounts_awake_members/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/first = run_loc_floor_bottom_left
+	var/turf/open/second = locate(first.x + 1, first.y, first.z)
+	TEST_ASSERT(istype(first), "test location is not an open turf")
+	TEST_ASSERT(istype(second), "adjacent test location is not an open turf")
+	first.air.copy_from_turf(first)
+	second.air.copy_from(first.air)
+
+	var/datum/excited_group/group = new
+	group.add_turf(first)
+	group.add_turf(second)
+	group.awake_members = 99
+
+	group.self_breakdown()
+
+	TEST_ASSERT_EQUAL(group.awake_members, 2, "breakdown did not recount the awake members")
+
+	group.garbage_collect()
+	first.air.copy_from_turf(first)
+	second.air.copy_from_turf(second)
+	first.atmos_cooldown = 0
+	second.atmos_cooldown = 0
+	SSair.remove_from_active(first)
+	SSair.remove_from_active(second)
 
 /// A planetary turf must shed most of a pure-temperature excess in one cycle
 /// (upstream follows the template share with a conductive share against a
@@ -508,6 +891,60 @@
 		neighbor.air.copy_from_turf(neighbor)
 		SSair.remove_from_active(neighbor)
 
+/// Space drains must finish the job: below SPACE_DRAIN_FINISH_PRESSURE the
+/// tile dumps everything in one pass and matches space temperature - the
+/// exponential 1/(neighbors+1) bleed spends tens of cycles on residue that is
+/// already unsurvivable, and that tail was pure churn. Above the threshold
+/// the gradual drain (and its spacewind) must stay untouched.
+/datum/unit_test/atmos_space_drain_finish/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/origin = run_loc_floor_bottom_left
+	var/turf/open/drain = locate(origin.x + 1, origin.y + 1, origin.z)
+	TEST_ASSERT(istype(drain), "test location is not an open turf")
+
+	// Pocket arena: three walls and one space neighbor, so the only exchange
+	// the drain tile has is the space drain itself.
+	var/turf/hole = locate(origin.x + 1, origin.y + 2, origin.z)
+	var/turf/west_wall = locate(origin.x, origin.y + 1, origin.z)
+	var/turf/east_wall = locate(origin.x + 2, origin.y + 1, origin.z)
+	var/turf/south_wall = locate(origin.x + 1, origin.y, origin.z)
+	hole.ChangeTurf(/turf/open/space/basic)
+	west_wall.ChangeTurf(/turf/closed/wall)
+	east_wall.ChangeTurf(/turf/closed/wall)
+	south_wall.ChangeTurf(/turf/closed/wall)
+	drain.ImmediateCalculateAdjacentTurfs()
+	TEST_ASSERT_EQUAL(LAZYLEN(drain.atmos_adjacent_turfs), 1, "pocket arena should have exactly the space neighbor")
+	TEST_ASSERT(locate(/turf/open/space) in drain.atmos_adjacent_turfs, "arena setup failed: no space neighbor")
+	if(drain.excited_group)
+		drain.excited_group.garbage_collect()
+	SSair.remove_from_active(drain)
+
+	// Above the threshold: one cycle takes 1/(neighbors+1) = half, not all.
+	drain.air.copy_from_turf(drain)
+	var/moles_full = drain.air.total_moles()
+	TEST_ASSERT(moles_full > 0, "drain tile has no default air")
+	SSair.add_to_active(drain, FALSE)
+	var/fire_count = drain.current_cycle + 1
+	drain.process_cell(fire_count)
+	TEST_ASSERT(abs(drain.air.total_moles() - moles_full * 0.5) < 0.1, "above-threshold space drain is no longer gradual: [drain.air.total_moles()] of [moles_full] mol left")
+
+	// Below the threshold: the tile dumps everything and matches space.
+	drain.air.copy_from_turf(drain)
+	drain.air.multiply(0.15)
+	SSair.add_to_active(drain, FALSE)
+	fire_count++
+	drain.process_cell(fire_count)
+	TEST_ASSERT(drain.air.total_moles() < 0.001, "sub-threshold space drain left residue: [drain.air.total_moles()] mol")
+	TEST_ASSERT(abs(drain.air.return_temperature() - TCMB) < 0.01, "dumped tile did not match space temperature")
+
+	if(drain.excited_group)
+		drain.excited_group.garbage_collect()
+	SSair.high_pressure_delta -= drain
+	drain.pressure_difference = 0
+	drain.atmos_cooldown = 0
+	drain.air.copy_from_turf(drain)
+	SSair.remove_from_active(drain)
+
 /// Idle-heartbeat machines must wake instantly when air on their turf changes,
 /// and enter the heartbeat only after a full streak of no-op fires.
 /datum/unit_test/atmos_machine_idle_wake/Run()
@@ -544,6 +981,125 @@
 	TEST_ASSERT(LAZYLEN(room.atmos_wake_machines), "register_turf_wake did not register the pump")
 	qdel(doomed)
 	TEST_ASSERT(!LAZYLEN(room.atmos_wake_machines), "Destroy() left a stale wake registration on the turf")
+	SSair.remove_from_active(room)
+
+/// The heartbeat is a standing cost: every sleeping machine returns for one
+/// full recheck each ATMOS_MACHINE_IDLE_HEARTBEAT. To attribute machinery-phase
+/// cost the benchmark needs the per-fire wake count, so the wake proc must
+/// report how many machines it returned to processing.
+/datum/unit_test/atmos_heartbeat_wake_counter/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/room = run_loc_floor_bottom_left
+	TEST_ASSERT(istype(room), "test location is not an open turf")
+	var/obj/machinery/atmospherics/components/unary/vent_scrubber/scrubber = allocate(/obj/machinery/atmospherics/components/unary/vent_scrubber, room)
+	for(var/i in 1 to ATMOS_MACHINE_IDLE_STREAK)
+		scrubber.atmos_consider_idle()
+	TEST_ASSERT(scrubber in SSair.atmos_idle_queue, "scrubber did not enter the idle queue during setup")
+	// The queue is FIFO by deadline; simulating expiry means moving to the head.
+	SSair.atmos_idle_queue.Remove(scrubber)
+	SSair.atmos_idle_queue.Insert(1, scrubber)
+	SSair.atmos_idle_queue[scrubber] = world.time - 1
+	var/woken = SSair.wake_expired_idle_machines()
+	TEST_ASSERT_EQUAL(woken, 1, "wake_expired_idle_machines did not report the single woken machine")
+	TEST_ASSERT(scrubber.atmos_processing, "the counted machine was not actually returned to processing")
+
+/// The benchmark's machinery decomposition: a profiled pass times every
+/// processing machine bucketed by type, standing in for the normal pass without
+/// changing its semantics (PROCESS_KILL returns still leave the list).
+/datum/unit_test/atmos_machinery_profile_pass/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/room = run_loc_floor_bottom_left
+	TEST_ASSERT(istype(room), "test location is not an open turf")
+	var/obj/machinery/atmospherics/components/unary/vent_scrubber/scrubber = allocate(/obj/machinery/atmospherics/components/unary/vent_scrubber, room)
+	TEST_ASSERT(scrubber.atmos_processing, "freshly created scrubber is not in SSair processing")
+	var/obj/machinery/atmospherics/components/unary/portables_connector/port = allocate(/obj/machinery/atmospherics/components/unary/portables_connector, room)
+	TEST_ASSERT(port.atmos_processing, "freshly created connector is not in SSair processing")
+
+	var/list/result = SSair.profile_machinery_pass(SSair.wait * 0.1)
+
+	TEST_ASSERT(islist(result), "profile pass returned no result")
+	TEST_ASSERT(result["n"] >= 2, "profile pass did not count the processing machines")
+	var/list/type_buckets = result["types"]
+	TEST_ASSERT(islist(type_buckets), "profile result has no type buckets")
+	var/list/bucket = type_buckets["[scrubber.type]"]
+	TEST_ASSERT(islist(bucket), "profile pass did not bucket the processing scrubber")
+	TEST_ASSERT(bucket["n"] >= 1, "scrubber type bucket has no count")
+	TEST_ASSERT(!isnull(bucket["ms"]), "scrubber type bucket has no timing")
+	// An unused connector PROCESS_KILLs itself: the profiled pass must honor it.
+	TEST_ASSERT(!port.atmos_processing, "profiled pass ignored a PROCESS_KILL return")
+
+/// Machines that entered the idle heartbeat must leave SSair.atmos_machinery
+/// entirely (and rejoin on wake); settled portables and empty connectors must
+/// drop out of processing via PROCESS_KILL.
+/datum/unit_test/atmos_machinery_sleep/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/room = run_loc_floor_bottom_left
+	TEST_ASSERT(istype(room), "test location is not an open turf")
+
+	// A full no-op streak must remove the machine from the processing list.
+	var/obj/machinery/atmospherics/components/unary/vent_scrubber/scrubber = allocate(/obj/machinery/atmospherics/components/unary/vent_scrubber, room)
+	TEST_ASSERT(scrubber.atmos_processing, "freshly created scrubber is not in SSair processing")
+	for(var/i in 1 to ATMOS_MACHINE_IDLE_STREAK)
+		scrubber.atmos_consider_idle()
+	TEST_ASSERT(!scrubber.atmos_processing, "idle-heartbeat machine stayed in SSair processing")
+	TEST_ASSERT(!(scrubber in SSair.atmos_machinery), "idle-heartbeat machine stayed in atmos_machinery")
+	TEST_ASSERT(scrubber.atmos_idle_queued, "sleeping machine is not flagged as queued")
+	TEST_ASSERT(scrubber in SSair.atmos_idle_queue, "sleeping machine is not in the idle wake queue")
+
+	// An expired heartbeat deadline returns it for one full recheck. The queue
+	// is FIFO by deadline, so simulating expiry means moving to the head too
+	// (live station machines with future deadlines are queued ahead of us).
+	SSair.atmos_idle_queue.Remove(scrubber)
+	SSair.atmos_idle_queue.Insert(1, scrubber)
+	SSair.atmos_idle_queue[scrubber] = world.time - 1
+	SSair.wake_expired_idle_machines()
+	TEST_ASSERT(scrubber.atmos_processing, "expired heartbeat did not return the machine to processing")
+	TEST_ASSERT(!scrubber.atmos_idle_queued, "heartbeat-woken machine kept its queued flag")
+	TEST_ASSERT(!(scrubber in SSair.atmos_idle_queue), "heartbeat-woken machine stayed in the idle wake queue")
+
+	// Going idle again re-enqueues; an event wake must put it straight back.
+	for(var/i in 1 to ATMOS_MACHINE_IDLE_STREAK)
+		scrubber.atmos_consider_idle()
+	TEST_ASSERT(!scrubber.atmos_processing, "second idle streak did not remove the machine again")
+	scrubber.atmos_wake()
+	TEST_ASSERT(scrubber.atmos_processing, "woken machine did not rejoin SSair processing")
+	TEST_ASSERT(scrubber in SSair.atmos_machinery, "woken machine did not rejoin atmos_machinery")
+
+	// Destroy() must pull a sleeping machine out of the wake queue: the queue
+	// holds a strong ref that would otherwise pin the deleted machine.
+	var/obj/machinery/atmospherics/components/unary/vent_scrubber/doomed_sleeper = new(room)
+	for(var/i in 1 to ATMOS_MACHINE_IDLE_STREAK)
+		doomed_sleeper.atmos_consider_idle()
+	TEST_ASSERT(doomed_sleeper in SSair.atmos_idle_queue, "sleeping test machine did not enter the idle wake queue")
+	qdel(doomed_sleeper)
+	TEST_ASSERT(!(doomed_sleeper in SSair.atmos_idle_queue), "Destroy() left the machine in the idle wake queue")
+
+	// A settled canister with a closed valve sleeps entirely.
+	var/obj/machinery/portable_atmospherics/canister/oxygen/settled = allocate(/obj/machinery/portable_atmospherics/canister/oxygen, room)
+	settled.process_atmos() // first pass after spawn may consume the initial excited state
+	TEST_ASSERT_EQUAL(settled.process_atmos(), PROCESS_KILL, "settled closed canister did not return PROCESS_KILL")
+
+	// An open valve (into a holding tank) must keep the canister processing.
+	var/obj/machinery/portable_atmospherics/canister/oxygen/venting = allocate(/obj/machinery/portable_atmospherics/canister/oxygen, room)
+	venting.holding = allocate(/obj/item/tank/internals/emergency_oxygen, room)
+	venting.valve_open = TRUE
+	venting.process_atmos()
+	TEST_ASSERT(venting.process_atmos() != PROCESS_KILL, "open-valve canister went to sleep")
+	venting.valve_open = FALSE
+	venting.holding = null
+
+	// A connector with no docked portable must not keep processing.
+	var/obj/machinery/atmospherics/components/unary/portables_connector/port = allocate(/obj/machinery/atmospherics/components/unary/portables_connector, room)
+	TEST_ASSERT_EQUAL(port.process_atmos(), PROCESS_KILL, "unused portables connector did not return PROCESS_KILL")
+
+	// The internal pump of a portable pump is never in SSair processing;
+	// idle bookkeeping must not drag it in.
+	var/obj/machinery/portable_atmospherics/pump/portable = allocate(/obj/machinery/portable_atmospherics/pump, room)
+	TEST_ASSERT(!portable.pump.atmos_processing, "internal pump of a portable is in SSair processing")
+	for(var/i in 1 to ATMOS_MACHINE_IDLE_STREAK + 1)
+		portable.pump.atmos_consider_idle()
+	TEST_ASSERT(!portable.pump.atmos_processing, "idle bookkeeping dragged the internal pump into SSair processing")
+	TEST_ASSERT(!portable.pump.atmos_idle_queued, "idle bookkeeping enqueued the internal pump for heartbeat wake-ups")
 	SSair.remove_from_active(room)
 
 #undef TEST_GAS_EPSILON

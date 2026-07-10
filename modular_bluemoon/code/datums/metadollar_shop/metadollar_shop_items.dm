@@ -102,7 +102,7 @@
 /datum/metadollar_shop_item/item/gift_anything_lootbox
 	name = "Коробка-сюрприз"
 	desc = "Внутри вас ждёт случайный предмет."
-	cost = 25
+	cost = 50
 	catalog = METADOLLAR_CATALOG_LEGIT
 	spawn_type = /obj/item/a_gift/anything
 

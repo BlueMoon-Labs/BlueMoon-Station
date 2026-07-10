@@ -396,7 +396,3 @@ All ShuttleMove procs go here
 
 /obj/docking_port/stationary/public_mining_dock/onShuttleMove(turf/newT, turf/oldT, list/movement_force, move_dir, obj/docking_port/stationary/old_dock, obj/docking_port/mobile/moving_dock)
 	shuttle_id = "mining_public" //It will not move with the base, but will become enabled as a docking point.
-
-/obj/effect/abstract/proximity_checker/onShuttleMove(turf/newT, turf/oldT, list/movement_force, move_dir, obj/docking_port/stationary/old_dock, obj/docking_port/mobile/moving_dock)
-	//timer so it only happens once
-	addtimer(CALLBACK(monitor, TYPE_PROC_REF(/datum/proximity_monitor, SetRange), monitor.current_range, TRUE), 0, TIMER_UNIQUE)
