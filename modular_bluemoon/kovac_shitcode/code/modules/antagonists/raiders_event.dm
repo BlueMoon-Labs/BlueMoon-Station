@@ -8,7 +8,7 @@
 	category = EVENT_CATEGORY_INVASION
 	description = "The crew will face a PMC assault."
 
-/datum/round_event_control/raiders/preRunEvent()
+/datum/round_event_control/raiders/preRunEvent(admin_window = TRUE)
 	if(!SSmapping.empty_space && !length(SSmapping.levels_by_trait(ZTRAIT_SPACE_RUINS)) && !SSmapping.station_start)
 		return EVENT_CANT_RUN
 

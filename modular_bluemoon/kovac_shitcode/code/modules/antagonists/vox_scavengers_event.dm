@@ -9,7 +9,7 @@
 	description = "A vox scavengers heist."
 	var/ship_template
 
-/datum/round_event_control/vox_scavengers/preRunEvent()
+/datum/round_event_control/vox_scavengers/preRunEvent(admin_window = TRUE)
 	if (!SSmapping.empty_space)
 		return EVENT_CANT_RUN
 
