@@ -25060,7 +25060,6 @@
 	},
 /obj/effect/turf_decal/tile/brown/opposingcorners,
 /obj/effect/turf_decal/tile/brown/opposingcorners,
-/obj/machinery/computer/operating,
 /turf/open/floor/plasteel/white/smooth/small,
 /area/syndicate_mothership/control)
 "rcM" = (
@@ -28048,8 +28047,7 @@
 /area/centcom/holding)
 "tTs" = (
 /obj/effect/turf_decal/tile/brown/opposingcorners,
-/obj/effect/turf_decal/tile/brown/opposingcorners,
-/obj/machinery/sleeper/syndie{
+/obj/machinery/computer/operating{
 	dir = 8
 	},
 /turf/open/floor/plasteel/white/smooth/small,
