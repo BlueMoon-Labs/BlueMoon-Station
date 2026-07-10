@@ -329,7 +329,8 @@
 		var/genital_part = tgui_input_list(owner, "Select what part of your genitals to alter", "Genital Color", list("Penis", "Butt", "Balls", "Anus", "Vagina", "Breasts", "Belly", "Toggle genitals using skintone"))
 		if(genital_part == "Toggle genitals using skintone")
 			var/use_skintone = tgui_alert(owner, "Do you want to use your skin tone for all genitals? (Only works for Species that support Skin Tones)", "Genital Color", list("Yes", "No"))
-			H.dna.features["genitals_use_skintone"] = use_skintone == "Yes"
+			if(!isnull(use_skintone))
+				H.dna.features["genitals_use_skintone"] = use_skintone == "Yes"
 		else
 			var/hex_color = null
 			if (genital_part == "Penis")
