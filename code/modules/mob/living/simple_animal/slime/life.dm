@@ -17,6 +17,8 @@
 		handle_feeding()
 	if(!stat) // Slimes in stasis don't lose nutrition, don't change mood and don't respond to speech
 		handle_nutrition()
+		if(QDELETED(src)) // Reproduce()/Evolve() qdel-ят слайма прямо из handle_nutrition; Destroy() уже занулил speech_buffer и прочее
+			return
 		handle_targets()
 		if (!ckey)
 			handle_mood()
