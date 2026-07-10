@@ -197,6 +197,9 @@
 /datum/controller/subsystem/air/proc/add_to_active(turf/open/T, blockchanges = TRUE, wake_machines = TRUE)
 	if(!istype(T) || T.blocks_air || !T.air)
 		return
+	// Group awake bookkeeping: only a resting member waking up takes a slot.
+	if(!T.excited && T.excited_group)
+		T.excited_group.awake_members++
 	T.excited = TRUE
 	// Upstream parity: activation grants a fresh stall budget. Without this a
 	// turf that rested with a maxed counter (dismantle, individual sleep)
@@ -231,6 +234,8 @@
 /datum/controller/subsystem/air/proc/sleep_active_turf(turf/open/T)
 	active_turfs -= T
 	if(istype(T))
+		if(T.excited && T.excited_group)
+			T.excited_group.awake_members = max(0, T.excited_group.awake_members - 1)
 		T.excited = FALSE
 
 /datum/controller/subsystem/air/proc/thread_running()

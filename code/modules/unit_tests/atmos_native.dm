@@ -494,6 +494,10 @@
 		SSair.add_to_active(member, FALSE)
 		SSair.sleep_active_turf(member)
 
+	// The breakdown must actually change every member's air: unchanged resting
+	// members are evicted from the group instead of poked.
+	center.air.set_moles(GAS_O2, center.air.get_moles(GAS_O2) + 150)
+
 	group.self_breakdown(poke_resting = TRUE)
 
 	TEST_ASSERT(!(center in SSair.active_turfs), "breakdown poked an interior resting member (all its neighbors are group mates)")
@@ -625,13 +629,12 @@
 	SSair.remove_from_active(room)
 	SSair.remove_from_active(neighbor)
 
-/// A boundary poke asks a resting tile to re-compare against neighbors OUTSIDE
-/// the group - the tile's own air has not changed, so machines on it must stay
-/// asleep. Room perimeters are exactly where vents and scrubbers stand; waking
-/// them on every poke re-armed them each breakdown and they never slept. If the
-/// comparison does move gas, the changed air wakes them through the normal
-/// changed-air paths instead.
-/datum/unit_test/atmos_poke_leaves_machines_asleep/Run()
+/// Eviction replaces the boundary poke for settled members: a resting tile
+/// whose air the breakdown did not change leaves the group without a wake, and
+/// the vents/scrubbers standing on it (room perimeters are exactly where they
+/// live) must stay in the idle heartbeat instead of being re-armed every
+/// EXCITED_GROUP_BREAKDOWN_CYCLES fires.
+/datum/unit_test/atmos_eviction_leaves_machines_asleep/Run()
 	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
 	var/turf/open/room = run_loc_floor_bottom_left
 	var/turf/open/neighbor = locate(room.x + 1, room.y, room.z)
@@ -659,8 +662,9 @@
 
 	group.self_breakdown(poke_resting = TRUE)
 
-	TEST_ASSERT(room in SSair.active_turfs, "boundary poke skipped a resting member bordering outside turfs")
-	TEST_ASSERT(!scrubber.atmos_processing, "boundary poke woke a machine although the tile's air did not change")
+	TEST_ASSERT(!(room in SSair.active_turfs), "breakdown woke an unchanged resting member instead of evicting it")
+	TEST_ASSERT_NULL(room.excited_group, "breakdown kept an unchanged resting member in the group")
+	TEST_ASSERT(!scrubber.atmos_processing, "eviction woke a machine although the tile's air did not change")
 
 	scrubber.unregister_turf_wake()
 	group.garbage_collect()
@@ -670,6 +674,175 @@
 	neighbor.atmos_cooldown = 0
 	SSair.remove_from_active(room)
 	SSair.remove_from_active(neighbor)
+
+/// Perpetual groups (planetary surfaces around a leak, space-edge drains) never
+/// dismantle, and a turf has no individual way out of turf_list - over hours a
+/// group accumulates every turf that was ever excited near it (32k members on a
+/// live lavaland) and every EXCITED_GROUP_BREAKDOWN_CYCLES fires re-averages all
+/// of them in one atomic unyieldable pass. Breakdown must evict resting members
+/// it did not change: they sit exactly at the bucket average, contribute nothing
+/// and receive nothing, and any real future delta re-adds them through the
+/// normal share paths.
+/datum/unit_test/atmos_breakdown_evicts_settled_members/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/origin = run_loc_floor_bottom_left
+	var/turf/open/awake = locate(origin.x + 1, origin.y + 1, origin.z)
+	var/turf/open/settled = locate(origin.x + 2, origin.y + 1, origin.z)
+	var/turf/open/settled_too = locate(origin.x + 3, origin.y + 1, origin.z)
+	TEST_ASSERT(istype(awake), "test location is not an open turf")
+	TEST_ASSERT(istype(settled), "adjacent test location is not an open turf")
+	TEST_ASSERT(istype(settled_too), "adjacent test location is not an open turf")
+
+	// All three hold the exact same mix: the bucket average IS their air, so the
+	// write-back changes nothing on the resting members.
+	awake.air.copy_from_turf(awake)
+	settled.air.copy_from(awake.air)
+	settled_too.air.copy_from(awake.air)
+
+	var/datum/excited_group/group = new
+	group.add_turf(awake)
+	group.add_turf(settled)
+	group.add_turf(settled_too)
+	SSair.add_to_active(awake, FALSE)
+	SSair.add_to_active(settled, FALSE)
+	SSair.add_to_active(settled_too, FALSE)
+	SSair.sleep_active_turf(settled)
+	SSair.sleep_active_turf(settled_too)
+
+	group.self_breakdown(poke_resting = TRUE)
+
+	TEST_ASSERT(!(settled in group.turf_list), "breakdown kept an unchanged resting member in the group")
+	TEST_ASSERT(!(settled_too in group.turf_list), "breakdown kept an unchanged resting member in the group")
+	TEST_ASSERT_NULL(settled.excited_group, "evicted member still points at the group")
+	TEST_ASSERT_NULL(settled_too.excited_group, "evicted member still points at the group")
+	TEST_ASSERT(!(settled in SSair.active_turfs), "eviction woke a settled member")
+	TEST_ASSERT(!settled.excited, "eviction left a settled member excited")
+	TEST_ASSERT(awake in group.turf_list, "breakdown evicted an awake member")
+	TEST_ASSERT_EQUAL(awake.excited_group, group, "breakdown detached an awake member")
+	TEST_ASSERT(group in SSair.excited_groups, "breakdown killed a group that still has an awake member")
+
+	group.garbage_collect()
+	awake.air.copy_from_turf(awake)
+	settled.air.copy_from_turf(settled)
+	settled_too.air.copy_from_turf(settled_too)
+	awake.atmos_cooldown = 0
+	settled.atmos_cooldown = 0
+	settled_too.atmos_cooldown = 0
+	SSair.remove_from_active(awake)
+	SSair.remove_from_active(settled)
+	SSair.remove_from_active(settled_too)
+
+/// The dismantle decision used to scan the whole turf_list for an awake member
+/// every group-stage tick - a permanent O(N) tax once a perpetual group grows
+/// large. The group must track its awake member count incrementally through
+/// every excited-flag transition instead.
+/datum/unit_test/atmos_group_awake_counter/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/first = run_loc_floor_bottom_left
+	var/turf/open/second = locate(first.x + 1, first.y, first.z)
+	TEST_ASSERT(istype(first), "test location is not an open turf")
+	TEST_ASSERT(istype(second), "adjacent test location is not an open turf")
+
+	var/datum/excited_group/group = new
+	group.add_turf(first)
+	TEST_ASSERT_EQUAL(group.awake_members, 1, "add_turf did not count a new awake member")
+	group.add_turf(second)
+	TEST_ASSERT_EQUAL(group.awake_members, 2, "add_turf did not count a second awake member")
+	group.add_turf(first)
+	TEST_ASSERT_EQUAL(group.awake_members, 2, "re-adding an awake member double-counted it")
+	SSair.add_to_active(first, FALSE)
+	TEST_ASSERT_EQUAL(group.awake_members, 2, "add_to_active double-counted an already-awake member")
+	SSair.sleep_active_turf(first)
+	TEST_ASSERT_EQUAL(group.awake_members, 1, "sleep_active_turf did not release an awake slot")
+	SSair.add_to_active(first, FALSE)
+	TEST_ASSERT_EQUAL(group.awake_members, 2, "add_to_active did not count a woken resting member")
+	SSair.sleep_active_turf(first)
+	SSair.sleep_active_turf(second)
+	TEST_ASSERT_EQUAL(group.awake_members, 0, "resting every member left a nonzero awake count")
+
+	group.tick_lifecycle()
+	TEST_ASSERT(!(group in SSair.excited_groups), "an all-resting group survived its lifecycle tick")
+	TEST_ASSERT_NULL(first.excited_group, "dismantling left a member attached")
+
+	first.atmos_cooldown = 0
+	second.atmos_cooldown = 0
+	SSair.remove_from_active(first)
+	SSair.remove_from_active(second)
+
+/// Merging groups must transfer the awake count to the winner and leave the
+/// loser truly empty: a dropped group that still lists turfs holds strong refs
+/// to them until the datum is collected, and a stale awake count on it would
+/// make any accidental lifecycle tick misjudge the dismantle decision.
+/datum/unit_test/atmos_merge_transfers_awake_count/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/origin = run_loc_floor_bottom_left
+	var/turf/open/first = locate(origin.x + 1, origin.y + 1, origin.z)
+	var/turf/open/second = locate(origin.x + 2, origin.y + 1, origin.z)
+	var/turf/open/third = locate(origin.x + 3, origin.y + 1, origin.z)
+	TEST_ASSERT(istype(first), "test location is not an open turf")
+	TEST_ASSERT(istype(second), "adjacent test location is not an open turf")
+	TEST_ASSERT(istype(third), "adjacent test location is not an open turf")
+
+	// Bigger group keeps its identity and absorbs the smaller one.
+	var/datum/excited_group/big = new
+	big.add_turf(first)
+	big.add_turf(second)
+	var/datum/excited_group/small = new
+	small.add_turf(third)
+	big.merge_groups(small)
+	TEST_ASSERT_EQUAL(big.awake_members, 3, "merge did not transfer the loser's awake count")
+	TEST_ASSERT_EQUAL(third.excited_group, big, "merge did not repoint the loser's member")
+	TEST_ASSERT_EQUAL(length(small.turf_list), 0, "merge left members listed in the dead loser group")
+	TEST_ASSERT(!(small in SSair.excited_groups), "merge left the loser group registered")
+	big.garbage_collect()
+
+	// Mirror branch: the caller is the smaller group and dissolves into the
+	// bigger one.
+	var/datum/excited_group/tiny = new
+	tiny.add_turf(first)
+	var/datum/excited_group/pair = new
+	pair.add_turf(second)
+	pair.add_turf(third)
+	tiny.merge_groups(pair)
+	TEST_ASSERT_EQUAL(pair.awake_members, 3, "merge into the bigger group did not transfer the awake count")
+	TEST_ASSERT_EQUAL(first.excited_group, pair, "merge into the bigger group did not repoint the smaller group's member")
+	TEST_ASSERT_EQUAL(length(tiny.turf_list), 0, "merge left members listed in the dead smaller group")
+	pair.garbage_collect()
+
+	SSair.remove_from_active(first)
+	SSair.remove_from_active(second)
+	SSair.remove_from_active(third)
+
+/// The awake counter is maintained incrementally; exotic paths (a turf type
+/// change under a live group) can strand it. Every breakdown already walks the
+/// whole membership, so it must recount the counter exactly - drift heals
+/// within EXCITED_GROUP_BREAKDOWN_CYCLES instead of pinning the group alive
+/// forever.
+/datum/unit_test/atmos_breakdown_recounts_awake_members/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/first = run_loc_floor_bottom_left
+	var/turf/open/second = locate(first.x + 1, first.y, first.z)
+	TEST_ASSERT(istype(first), "test location is not an open turf")
+	TEST_ASSERT(istype(second), "adjacent test location is not an open turf")
+	first.air.copy_from_turf(first)
+	second.air.copy_from(first.air)
+
+	var/datum/excited_group/group = new
+	group.add_turf(first)
+	group.add_turf(second)
+	group.awake_members = 99
+
+	group.self_breakdown()
+
+	TEST_ASSERT_EQUAL(group.awake_members, 2, "breakdown did not recount the awake members")
+
+	group.garbage_collect()
+	first.air.copy_from_turf(first)
+	second.air.copy_from_turf(second)
+	first.atmos_cooldown = 0
+	second.atmos_cooldown = 0
+	SSair.remove_from_active(first)
+	SSair.remove_from_active(second)
 
 /// A planetary turf must shed most of a pure-temperature excess in one cycle
 /// (upstream follows the template share with a conductive share against a

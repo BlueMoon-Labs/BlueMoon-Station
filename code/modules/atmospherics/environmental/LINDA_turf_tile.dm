@@ -644,6 +644,10 @@
 	var/list/turf_list = list()
 	var/breakdown_cooldown = 0
 	var/dismantle_cooldown = 0
+	/// Members currently excited. Maintained incrementally on every excited-flag
+	/// transition and recounted exactly by self_breakdown, so the dismantle
+	/// decision does not scan the whole turf_list every group-stage tick.
+	var/awake_members = 0
 
 /datum/excited_group/New()
 	if(SSair)
@@ -652,6 +656,10 @@
 /datum/excited_group/proc/add_turf(turf/open/T)
 	if(!istype(T))
 		return
+	// The turf leaves this proc awake: count it unless it is already an awake
+	// member of this very group (re-adding one must not double count).
+	if(T.excited_group != src || !T.excited)
+		awake_members++
 	turf_list |= T
 	T.excited_group = src
 	T.excited = TRUE
@@ -660,12 +668,18 @@
 /datum/excited_group/proc/merge_groups(datum/excited_group/E)
 	if(!E || E == src)
 		return
+	// The loser keeps no state: its awake count moves to the winner, and its
+	// turf_list empties so the dropped datum neither pins turf references nor
+	// misjudges a lifecycle tick should anything still hold it.
 	if(turf_list.len >= E.turf_list.len)
 		if(SSair)
 			SSair.excited_groups -= E
 		for(var/turf/open/T as anything in E.turf_list)
 			T.excited_group = src
 			turf_list |= T
+		awake_members += E.awake_members
+		E.awake_members = 0
+		E.turf_list.Cut()
 		reset_cooldowns()
 	else
 		if(SSair)
@@ -673,6 +687,9 @@
 		for(var/turf/open/T as anything in turf_list)
 			T.excited_group = E
 			E.turf_list |= T
+		E.awake_members += awake_members
+		awake_members = 0
+		turf_list.Cut()
 		E.reset_cooldowns()
 
 /datum/excited_group/proc/reset_cooldowns()
@@ -687,12 +704,11 @@
 	// every member idled through a full rest window, and any external change
 	// wakes its member back through add_to_active. Waiting out the rest of the
 	// dismantle window would just keep re-averaging an already-quiet room.
-	var/any_awake = FALSE
-	for(var/turf/open/member as anything in turf_list)
-		if(istype(member) && member.excited)
-			any_awake = TRUE
-			break
-	if(!any_awake)
+	// The incremental counter replaces a full turf_list scan here - a permanent
+	// O(N) per-fire tax once a perpetual group grows large. Drift from exotic
+	// paths (turf type changes under a live group) only ever delays this
+	// dismantle until self_breakdown recounts it exactly.
+	if(awake_members <= 0)
 		dismantle()
 		return
 	breakdown_cooldown++
@@ -745,8 +761,16 @@
 		// never slept and the active list grew without bound.
 		var/list/bucket_mixes = list()
 		var/list/bucket_counts = list()
+		// This is the only place that already pays a full membership walk, so it
+		// doubles as the exact recount for the incrementally-maintained awake
+		// counter: any drift heals within EXCITED_GROUP_BREAKDOWN_CYCLES.
+		var/awake_recount = 0
 		for(var/turf/open/T as anything in turf_list)
-			if(!istype(T) || !T.air)
+			if(!istype(T))
+				continue
+			if(T.excited)
+				awake_recount++
+			if(!T.air)
 				continue
 			var/bucket_key = T.planetary_atmos ? T.initial_gas_mix : ""
 			var/datum/gas_mixture/bucket_mix = bucket_mixes[bucket_key]
@@ -755,13 +779,16 @@
 				bucket_mixes[bucket_key] = bucket_mix
 			bucket_mix.merge(T.air)
 			bucket_counts[bucket_key]++
+		awake_members = awake_recount
 		for(var/bucket_key in bucket_mixes)
 			var/datum/gas_mixture/bucket_mix = bucket_mixes[bucket_key]
 			bucket_mix.divide(bucket_counts[bucket_key])
+		var/list/to_evict = list()
 		for(var/turf/open/T as anything in turf_list)
 			if(!istype(T) || !T.air)
 				continue
 			var/bucket_key = T.planetary_atmos ? T.initial_gas_mix : ""
+			var/datum/gas_mixture/bucket_mix = bucket_mixes[bucket_key]
 			// The write-back changes air on tiles that stay resting, so their
 			// registered vents/scrubbers must get their wake call here - the
 			// turf itself never goes through add_to_active. Gate it on the same
@@ -771,12 +798,29 @@
 			// ATMOS_MACHINE_IDLE_STREAK no-op fires to rest, so an
 			// unconditional wake pinned every machine in such a room awake
 			// forever (and their pumping re-broadcast through pipenet wakes).
-			var/wake_machines = T.atmos_wake_machines && T.air.compare(bucket_mixes[bucket_key])
-			T.air.copy_from(bucket_mixes[bucket_key])
+			var/air_changed = T.air.compare(bucket_mix)
+			T.air.copy_from(bucket_mix)
 			T.update_visuals()
-			if(wake_machines)
-				for(var/obj/machinery/atmospherics/machine as anything in T.atmos_wake_machines)
-					machine.atmos_wake()
+			if(air_changed)
+				if(T.atmos_wake_machines)
+					for(var/obj/machinery/atmospherics/machine as anything in T.atmos_wake_machines)
+						machine.atmos_wake()
+			else if(!T.excited)
+				// A resting member the breakdown did not change sits exactly at
+				// the bucket average: it contributes nothing and receives
+				// nothing, yet stays on the books forever - a turf has no other
+				// way out of turf_list while the group lives, so perpetual
+				// groups (planetary surfaces around a leak, space-edge drains)
+				// accumulate tens of thousands of settled members and every
+				// breakdown re-averages all of them in one atomic unyieldable
+				// pass. Evict it: any real future delta re-adds it through the
+				// normal share paths, and the final copy_from above already ran
+				// so the bucket mass stays conserved.
+				to_evict += T
+		for(var/turf/open/T as anything in to_evict)
+			turf_list -= T
+			if(T.excited_group == src)
+				T.excited_group = null
 		for(var/bucket_key in bucket_mixes)
 			qdel(bucket_mixes[bucket_key])
 
@@ -826,6 +870,7 @@
 		if(istype(T))
 			T.excited_group = null
 	turf_list.Cut()
+	awake_members = 0
 	if(SSair)
 		SSair.excited_groups -= src
 
