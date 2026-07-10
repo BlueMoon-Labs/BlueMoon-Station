@@ -41,3 +41,17 @@
 #define DIRECTOR_REJECT_BUDGET "budget"
 #define DIRECTOR_REJECT_CAN_FIRE "can_fire"
 #define DIRECTOR_REJECT_NO_WEIGHT "no_weight"
+
+/// Вердикты оценки пула действий для панели (поверх причин DIRECTOR_REJECT_*)
+#define DIRECTOR_VERDICT_OK "ok"
+#define DIRECTOR_VERDICT_LATEJOIN "latejoin"
+
+/// Расшифровка DIRECTOR_REJECT_CAN_FIRE по полям базового контракта (для панели)
+#define DIRECTOR_CANTFIRE_DISABLED "disabled"
+#define DIRECTOR_CANTFIRE_ADMIN_ONLY "admin_only"
+#define DIRECTOR_CANTFIRE_OCCURRENCES "max_occurrences"
+#define DIRECTOR_CANTFIRE_EARLY "early"
+#define DIRECTOR_CANTFIRE_MIN_PLAYERS "min_players"
+#define DIRECTOR_CANTFIRE_ROUND_TYPE "round_type"
+#define DIRECTOR_CANTFIRE_STAFFING "staffing"
+#define DIRECTOR_CANTFIRE_SPECIAL "special"

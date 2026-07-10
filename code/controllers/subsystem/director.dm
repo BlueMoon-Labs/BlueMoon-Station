@@ -3,6 +3,9 @@
 /// DIRECTOR_BEAT_EVERY файров, то есть раз в WAIT * BEAT_EVERY = 60 секунд.
 #define DIRECTOR_WAIT (2 SECONDS)
 #define DIRECTOR_BEAT_EVERY 30
+/// Срок жизни кэша оценки пула для панели: она полится каждые ~2 секунды и открыта бывает
+/// у нескольких админов сразу, а оценка обходит все действия с can_fire каждого.
+#define DIRECTOR_POOL_CACHE_TIME (5 SECONDS)
 /// Мост intensity рулсета на окно delay между schedule (note_fired) и execute (assigned наполнен).
 /// После execute живой рулсет считается динамически (get_ruleset_intensity), мост снимается.
 #define DIRECTOR_RULESET_BRIDGE_TIME (5 MINUTES)
@@ -56,6 +59,9 @@ SUBSYSTEM_DEF(director)
 	var/datum/director_signals/last_signals
 	/// Отсев кандидатов последнего боевого бита: severity -> (DIRECTOR_REJECT_* -> счётчик) (для панели)
 	var/list/last_reject_stats
+	/// Кэш живой оценки пула (evaluate_pool) и время его сборки
+	var/list/pool_cache
+	var/pool_cache_at = 0
 	/// Действие, ожидающее окно отмены (MODERATE+)
 	var/datum/director_action/pending_action
 	/// Список кандидатов, из которых было выбрано pending_action (для reroll)
@@ -300,7 +306,9 @@ SUBSYSTEM_DEF(director)
 /// Отбор кандидатов с фильтрами темпа. guaranteed: только MINOR/MODERATE, бюджет игнорируется.
 /// reject_stats (опционально): сюда считается отсев severity -> (DIRECTOR_REJECT_* -> число действий),
 /// структурные пропуски (латеджойн-рулсеты, чужие ступени guaranteed-бита) не считаются.
-/datum/controller/subsystem/director/proc/filter_candidates(datum/director_signals/signals, guaranteed = FALSE, list/reject_stats = null)
+/// verdicts (опционально, для панели): по-действийный вердикт на КАЖДОЕ действие, включая
+/// структурные пропуски; у прошедших эффективный вес лежит в "eff_weight".
+/datum/controller/subsystem/director/proc/filter_candidates(datum/director_signals/signals, guaranteed = FALSE, list/reject_stats = null, list/verdicts = null)
 	var/list/result = list()
 	var/intensity_full = signals.active_intensity >= profile.intensity_cap
 	var/active_majors = count_active_majors()
@@ -310,61 +318,145 @@ SUBSYSTEM_DEF(director)
 	for(var/datum/director_action/action as anything in actions)
 		var/sev = action.severity
 		if(sev in blocked_severities)
-			note_reject(reject_stats, sev, DIRECTOR_REJECT_BLOCKED)
+			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_BLOCKED)
 			continue
 		if(action.director_kind == DIRECTOR_KIND_EVENT && !CONFIG_GET(flag/allow_random_events))
-			note_reject(reject_stats, sev, DIRECTOR_REJECT_EVENTS_OFF)
+			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_EVENTS_OFF)
 			continue
 		// Латеджойн-рулсеты не участвуют в битах: их единственный путь - on_latejoin,
 		// где кандидатом ставится сам зашедший игрок. Бит запустил бы их с пустым candidates.
+		// В reject_stats не считаются (структурный пропуск), но вердикт для панели получают.
 		if(istype(action, /datum/dynamic_ruleset/latejoin))
+			note_reject(null, verdicts, action, DIRECTOR_VERDICT_LATEJOIN)
 			continue
 		if(guaranteed && !(sev in list(DIRECTOR_SEVERITY_MINOR, DIRECTOR_SEVERITY_MODERATE)))
 			continue
 		if(intensity_full && sev != DIRECTOR_SEVERITY_FLAVOR)
-			note_reject(reject_stats, sev, DIRECTOR_REJECT_INTENSITY_CAP)
+			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_INTENSITY_CAP,
+				detail = isnull(verdicts) ? null : "[round(signals.active_intensity)] при потолке [profile.intensity_cap]")
 			continue
 		if(signals.evac_state == DIRECTOR_EVAC_CALLED && (sev == DIRECTOR_SEVERITY_MAJOR || sev == DIRECTOR_SEVERITY_ANTAG))
-			note_reject(reject_stats, sev, DIRECTOR_REJECT_EVAC)
+			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_EVAC)
 			continue
 		if(dead_crisis && (sev == DIRECTOR_SEVERITY_MAJOR || (sev == DIRECTOR_SEVERITY_ANTAG && action.antag_heavy)))
-			note_reject(reject_stats, sev, DIRECTOR_REJECT_DEAD_CRISIS)
+			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_DEAD_CRISIS)
 			continue
 		if(sev == DIRECTOR_SEVERITY_MAJOR && active_majors >= profile.max_active_major)
-			note_reject(reject_stats, sev, DIRECTOR_REJECT_MAJOR_CAP)
+			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_MAJOR_CAP,
+				detail = isnull(verdicts) ? null : "[active_majors] из [profile.max_active_major]")
 			continue
 		if(!spacing_allows(action))
-			note_reject(reject_stats, sev, DIRECTOR_REJECT_SPACING)
+			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_SPACING,
+				detail = isnull(verdicts) ? null : minutes_left_text(spacing_remaining(sev, action.antag_heavy)))
 			continue
 		// Гейт по кошельку своей ступени, а не по общему бюджету: MAJOR/ANTAG больше не голодают
 		// из-за трат дешёвых MINOR/MODERATE.
 		if(!guaranteed && budgets[action.severity] < action.cost)
-			note_reject(reject_stats, sev, DIRECTOR_REJECT_BUDGET)
+			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_BUDGET,
+				detail = isnull(verdicts) ? null : "[round(budgets[sev], 0.1)] из [action.cost]")
 			continue
 		if(!action.can_fire(signals))
-			note_reject(reject_stats, sev, DIRECTOR_REJECT_CAN_FIRE)
+			var/list/diag = isnull(verdicts) ? null : diagnose_can_fire(action, signals)
+			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_CAN_FIRE,
+				verdict_reason = diag ? diag["reason"] : null, detail = diag ? diag["detail"] : null)
 			continue
 		var/action_weight = action.get_weight(signals)
 		if(action_weight <= 0)
-			note_reject(reject_stats, sev, DIRECTOR_REJECT_NO_WEIGHT)
+			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_NO_WEIGHT,
+				detail = (isnull(verdicts) || action.weight >= 0) ? null : "форс-событие праздника, в выборе не участвует")
 			continue
 		if(sec_short && (sev == DIRECTOR_SEVERITY_MAJOR || (sev == DIRECTOR_SEVERITY_ANTAG && action.antag_heavy)))
 			action_weight *= profile.security_penalty_mult
 		action_weight *= share_correction(sev)
 		action_weight *= repeat_falloff(action)
 		if(action_weight > 0)
-			result[action] = max(1, round(action_weight * 100))
+			var/weighted = max(1, round(action_weight * 100))
+			result[action] = weighted
+			if(!isnull(verdicts))
+				var/list/entry = pool_entry(action, DIRECTOR_VERDICT_OK, null)
+				entry["eff_weight"] = weighted
+				verdicts += list(entry)
+		else if(!isnull(verdicts))
+			// Нулевая доля ступени в профиле (share_correction = 0): в боевом бите отсев молчаливый,
+			// панель показывает причину.
+			note_reject(null, verdicts, action, DIRECTOR_REJECT_NO_WEIGHT, detail = "доля ступени в профиле = 0")
 	return result
 
-/// Счётчик отсева для диагностики бита. reject_stats может быть null (вызовы вне бита).
-/datum/controller/subsystem/director/proc/note_reject(list/reject_stats, severity, reason)
-	if(isnull(reject_stats))
-		return
-	var/list/sev_counts = reject_stats[severity]
-	if(isnull(sev_counts))
-		sev_counts = list()
-		reject_stats[severity] = sev_counts
-	sev_counts[reason] = (sev_counts[reason] || 0) + 1
+/// Счётчик отсева для бит-лога + по-действийный вердикт для панели. Оба приёмника опциональны:
+/// боевой бит передаёт только reject_stats, живая оценка пула - оба (или только verdicts).
+/// verdict_reason: причина для вердикта, если она детальнее, чем reason (расшифровка can_fire).
+/datum/controller/subsystem/director/proc/note_reject(list/reject_stats, list/verdicts, datum/director_action/action, reason, verdict_reason = null, detail = null)
+	if(!isnull(reject_stats))
+		var/list/sev_counts = reject_stats[action.severity]
+		if(isnull(sev_counts))
+			sev_counts = list()
+			reject_stats[action.severity] = sev_counts
+		sev_counts[reason] = (sev_counts[reason] || 0) + 1
+	if(!isnull(verdicts))
+		verdicts += list(pool_entry(action, verdict_reason || reason, detail))
+
+/// Строка пула для панели: паспорт действия + вердикт текущей оценки.
+/datum/controller/subsystem/director/proc/pool_entry(datum/director_action/action, verdict, detail)
+	return list(
+		"name" = action.action_name(),
+		"kind" = action.director_kind,
+		"severity" = action.severity,
+		"cost" = action.cost,
+		"intensity" = action.intensity,
+		"weight" = action.weight,
+		"occurrences" = action.occurrences,
+		"verdict" = verdict,
+		"detail" = detail,
+	)
+
+/// Расшифровка провала can_fire() по полям базового контракта: гейты проверяются в том же
+/// порядке, что и в /datum/director_action/can_fire(). Специфику подклассов (погода, цели,
+/// внутренние проверки рулсетов) отсюда не видно - для неё общий DIRECTOR_CANTFIRE_SPECIAL.
+/datum/controller/subsystem/director/proc/diagnose_can_fire(datum/director_action/action, datum/director_signals/signals)
+	if(!action.enabled)
+		return list("reason" = DIRECTOR_CANTFIRE_DISABLED, "detail" = null)
+	if(action.admin_only)
+		return list("reason" = DIRECTOR_CANTFIRE_ADMIN_ONLY, "detail" = null)
+	if(action.max_occurrences && action.occurrences >= action.max_occurrences)
+		return list("reason" = DIRECTOR_CANTFIRE_OCCURRENCES, "detail" = "[action.occurrences] из [action.max_occurrences]")
+	var/round_elapsed = now() - SSticker.round_start_time
+	if(action.earliest_start && round_elapsed < action.earliest_start)
+		return list("reason" = DIRECTOR_CANTFIRE_EARLY, "detail" = minutes_left_text(action.earliest_start - round_elapsed))
+	if(signals.effective_crew < action.min_players)
+		return list("reason" = DIRECTOR_CANTFIRE_MIN_PLAYERS, "detail" = "[signals.effective_crew] из [action.min_players]")
+	if(action.required_round_type && !(GLOB.round_type in action.required_round_type))
+		return list("reason" = DIRECTOR_CANTFIRE_ROUND_TYPE, "detail" = null)
+	if(action.min_staffing)
+		for(var/dept in action.min_staffing)
+			if(signals.staffing[dept] < action.min_staffing[dept])
+				return list("reason" = DIRECTOR_CANTFIRE_STAFFING, "detail" = "[dept]: [signals.staffing[dept]] из [action.min_staffing[dept]]")
+	return list("reason" = DIRECTOR_CANTFIRE_SPECIAL, "detail" = null)
+
+/// "ещё N мин" для деталей вердиктов панели
+/datum/controller/subsystem/director/proc/minutes_left_text(deciseconds)
+	return "ещё [max(1, CEILING(deciseconds / (1 MINUTES), 1))] мин"
+
+/// Живая оценка всего пула для панели: тот же filter_candidates, что и в бою, но с вердиктами.
+/// Кэш общий для всех открытых панелей; прошедшим действиям дописывается шанс выбора в процентах.
+/datum/controller/subsystem/director/proc/evaluate_pool()
+	if(pool_cache && (world.time - pool_cache_at) < DIRECTOR_POOL_CACHE_TIME)
+		return pool_cache
+	if(!profile || !SSticker.HasRoundStarted())
+		return list()
+	var/list/verdicts = list()
+	var/datum/director_signals/signals = collect_signals()
+	filter_candidates(signals, FALSE, null, verdicts)
+	var/total_weight = 0
+	for(var/list/entry in verdicts)
+		if(entry["verdict"] == DIRECTOR_VERDICT_OK)
+			total_weight += entry["eff_weight"]
+	if(total_weight)
+		for(var/list/entry in verdicts)
+			if(entry["verdict"] == DIRECTOR_VERDICT_OK)
+				entry["chance"] = round(entry["eff_weight"] / total_weight * 100, 0.1)
+	pool_cache = verdicts
+	pool_cache_at = world.time
+	return verdicts
 
 /// Множитель затухания повторов: вес делится на (1 + occurrences * repeat_penalty),
 /// чтобы уже стрелявшие действия уступали место ещё не виденным ("спавнит одно и то же").
@@ -381,16 +473,20 @@ SUBSYSTEM_DEF(director)
 			count++
 	return count
 
-/datum/controller/subsystem/director/proc/spacing_allows(datum/director_action/action)
-	if(action.severity == DIRECTOR_SEVERITY_ANTAG)
-		var/spacing = action.antag_heavy ? profile.antag_heavy_spacing : profile.antag_light_spacing
-		var/last_key = action.antag_heavy ? "antag_heavy" : DIRECTOR_SEVERITY_ANTAG
-		var/last_time = action.antag_heavy ? last_antag_heavy_at : (last_fired_at[last_key] || 0)
-		return (now() - last_time) >= spacing
-	var/spacing = profile.severity_spacing[action.severity]
+/// Сколько децисекунд осталось до конца паузы ступени (<= 0 - пауза не мешает).
+/// antag_heavy: у тяжёлых антаг-инжекций отдельные пауза и счётчик последнего запуска.
+/datum/controller/subsystem/director/proc/spacing_remaining(severity, antag_heavy = FALSE)
+	if(severity == DIRECTOR_SEVERITY_ANTAG)
+		var/spacing = antag_heavy ? profile.antag_heavy_spacing : profile.antag_light_spacing
+		var/last_time = antag_heavy ? last_antag_heavy_at : (last_fired_at[DIRECTOR_SEVERITY_ANTAG] || 0)
+		return spacing - (now() - last_time)
+	var/spacing = profile.severity_spacing[severity]
 	if(isnull(spacing))
-		return TRUE
-	return (now() - (last_fired_at[action.severity] || 0)) >= spacing
+		return 0
+	return spacing - (now() - (last_fired_at[severity] || 0))
+
+/datum/controller/subsystem/director/proc/spacing_allows(datum/director_action/action)
+	return spacing_remaining(action.severity, action.antag_heavy) <= 0
 
 /// Поправка веса ступени: отстающие от целевой доли ступени получают буст, обогнавшие - штраф.
 /datum/controller/subsystem/director/proc/share_correction(sev)
@@ -590,3 +686,4 @@ SUBSYSTEM_DEF(director)
 
 #undef DIRECTOR_WAIT
 #undef DIRECTOR_BEAT_EVERY
+#undef DIRECTOR_POOL_CACHE_TIME

@@ -20,13 +20,37 @@
 	var/from_index = max(1, length(D.beat_log) - 19)
 	for(var/i in from_index to length(D.beat_log))
 		beats_out += list(D.beat_log[i])
-	var/list/budgets_out = list()
+	// Кошельки со всей экономикой ступени: пауза, счётчик запусков, поправка веса.
+	var/list/wallets_out = list()
+	var/total_fired = 0
+	for(var/sev in D.fired_counts)
+		total_fired += D.fired_counts[sev]
 	for(var/sev in D.budgets)
-		budgets_out[sev] = round(D.budgets[sev], 0.1)
+		var/list/row = list(
+			"severity" = sev,
+			"points" = round(D.budgets[sev], 0.1),
+			"share" = D.profile ? D.profile.pool_shares[sev] : 0,
+			"spacingLeft" = D.profile ? max(0, CEILING(D.spacing_remaining(sev) / (1 MINUTES), 1)) : 0,
+			"fired" = D.fired_counts[sev] || 0,
+			"correction" = (D.profile && total_fired) ? round(D.share_correction(sev), 0.01) : 1,
+		)
+		if(sev == DIRECTOR_SEVERITY_ANTAG && D.profile)
+			row["heavySpacingLeft"] = max(0, CEILING(D.spacing_remaining(sev, TRUE) / (1 MINUTES), 1))
+		wallets_out += list(row)
+	// Текущая капля с разложением по множителям профиля.
+	var/drip_rate = 0
+	var/time_mult = 1
+	var/pop_mult = 1
+	var/dead_halved = FALSE
+	if(D.profile && SSticker.HasRoundStarted())
+		var/minutes = (D.now() - SSticker.round_start_time) / (1 MINUTES)
+		time_mult = piecewise_eval(D.profile.time_curve, minutes)
+		pop_mult = piecewise_eval(D.profile.pop_curve, D.last_signals ? D.last_signals.effective_crew : 0)
+		dead_halved = D.last_signals && (D.last_signals.dead_fraction > D.profile.dead_fraction_threshold)
+		drip_rate = D.profile.base_drip * time_mult * pop_mult * (dead_halved ? 0.5 : 1)
 	return list(
 		"paused" = D.paused,
 		"budget" = round(D.total_budget(), 0.1),
-		"budgets" = budgets_out,
 		"profileName" = D.profile ? GLOB.round_type : null,
 		"intensity" = D.get_active_intensity(),
 		"intensityCap" = D.profile ? D.profile.intensity_cap : 0,
@@ -35,10 +59,22 @@
 		"staffing" = D.last_signals ? D.last_signals.staffing : list(),
 		"configError" = D.config_error,
 		"pending" = D.pending_action ? D.pending_action.action_name() : null,
+		"pendingSeverity" = D.pending_action ? D.pending_action.severity : null,
+		"pendingLeft" = (D.pending_action && D.pending_timer_id) ? max(0, round(timeleft(D.pending_timer_id) / 10)) : null,
 		"ledger" = ledger_out,
 		"beats" = beats_out,
 		"blockedSeverities" = D.blocked_severities,
 		"lastRejects" = D.last_reject_stats,
+		"wallets" = wallets_out,
+		"dripRate" = round(drip_rate, 0.01),
+		"dripTimeMult" = round(time_mult, 0.01),
+		"dripPopMult" = round(pop_mult, 0.01),
+		"dripDeadHalved" = dead_halved,
+		"quietFor" = SSticker.HasRoundStarted() ? round((D.now() - D.last_any_fired_at) / (1 MINUTES)) : 0,
+		"maxQuiet" = D.profile ? D.profile.max_quiet_time / (1 MINUTES) : 0,
+		"quietThreshold" = D.profile ? D.profile.quiet_intensity_threshold : 0,
+		"maxActiveMajor" = D.profile ? D.profile.max_active_major : 0,
+		"pool" = D.evaluate_pool(),
 	)
 
 /datum/director_panel/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
@@ -80,6 +116,9 @@
 			return TRUE
 		if("cancel_pending")
 			D.Topic(null, list("cancel_pending" = "1"))
+			return TRUE
+		if("reroll_pending")
+			D.Topic(null, list("reroll_pending" = "1"))
 			return TRUE
 		if("toggle_severity_block")
 			var/sev = params["severity"]

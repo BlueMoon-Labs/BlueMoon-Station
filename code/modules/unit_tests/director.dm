@@ -222,6 +222,86 @@
 		throw e
 	SSdirector.restore_simulation_state(saved)
 
+/// Проверяет по-действийные вердикты для панели: инвариант "ровно один вердикт на действие",
+/// причину и деталь у отсеянных, eff_weight у прошедших и расшифровку can_fire по полям
+/// базового контракта (diagnose_can_fire).
+/datum/unit_test/director_pool_verdicts
+
+/datum/unit_test/director_pool_verdicts/Run()
+	// Мутирует живой SSdirector - capture/restore c try/catch (см. комментарий в director_beat_logic).
+	var/list/saved = SSdirector.capture_simulation_state()
+	try
+		var/datum/director_profile/profile = new /datum/director_profile/medium
+		SSdirector.profile = profile
+		SSdirector.reset_budgets(100)
+		SSdirector.intensity_ledger = list()
+		SSdirector.fired_counts = list()
+		SSdirector.last_fired_at = list(
+			DIRECTOR_SEVERITY_MINOR = world.time - profile.severity_spacing[DIRECTOR_SEVERITY_MINOR] - 1,
+			DIRECTOR_SEVERITY_MODERATE = world.time - profile.severity_spacing[DIRECTOR_SEVERITY_MODERATE] - 1,
+		)
+
+		var/datum/director_signals/signals = new
+		signals.effective_crew = 40
+		signals.staffing = list(DIRECTOR_DEPT_SECURITY = 4, DIRECTOR_DEPT_ENGINEERING = 1,
+			DIRECTOR_DEPT_MEDICAL = 1, DIRECTOR_DEPT_SCIENCE = 0, DIRECTOR_DEPT_SUPPLY = 0, DIRECTOR_DEPT_COMMAND = 1)
+
+		var/datum/director_action/test_stub/ready_action = new
+		var/datum/director_action/test_stub/disabled_action = new
+		disabled_action.enabled = FALSE
+		var/datum/director_action/test_stub/poor_action = new
+		poor_action.severity = DIRECTOR_SEVERITY_MODERATE
+		poor_action.cost = 500
+		SSdirector.actions = list(ready_action, disabled_action, poor_action)
+
+		var/list/verdicts = list()
+		SSdirector.filter_candidates(signals, FALSE, null, verdicts)
+		TEST_ASSERT_EQUAL(length(verdicts), 3, "Каждое действие должно получить ровно один вердикт")
+		var/list/by_verdict = list()
+		for(var/list/entry in verdicts)
+			by_verdict[entry["verdict"]] = entry
+		var/list/ok_entry = by_verdict[DIRECTOR_VERDICT_OK]
+		TEST_ASSERT_NOTNULL(ok_entry, "Проходное действие должно получить вердикт OK")
+		TEST_ASSERT_NOTNULL(ok_entry["eff_weight"], "У прошедшего действия должен быть эффективный вес")
+		TEST_ASSERT_NOTNULL(by_verdict[DIRECTOR_CANTFIRE_DISABLED], "Выключенное действие должно получить расшифровку disabled, а не общий can_fire")
+		var/list/budget_entry = by_verdict[DIRECTOR_REJECT_BUDGET]
+		TEST_ASSERT_NOTNULL(budget_entry, "Действие дороже кошелька должно отсеяться по бюджету")
+		TEST_ASSERT_NOTNULL(budget_entry["detail"], "У отсева по бюджету должна быть деталь \"сколько из скольких\"")
+
+		// Боевой путь (без verdicts) не должен меняться: те же гейты, только счётчики отсева.
+		var/list/reject_stats = list()
+		var/list/candidates = SSdirector.filter_candidates(signals, FALSE, reject_stats)
+		TEST_ASSERT_EQUAL(length(candidates), 1, "Из трёх действий пройти должно ровно одно")
+		TEST_ASSERT_NOTNULL(reject_stats[DIRECTOR_SEVERITY_MODERATE], "Отсев по бюджету должен считаться в reject_stats")
+
+		// Расшифровка can_fire: гейты в порядке базового контракта, с деталями где есть числа.
+		var/datum/director_action/test_stub/probe = new
+		probe.admin_only = TRUE
+		var/list/diag = SSdirector.diagnose_can_fire(probe, signals)
+		TEST_ASSERT_EQUAL(diag["reason"], DIRECTOR_CANTFIRE_ADMIN_ONLY, "admin_only должен диагностироваться")
+		probe.admin_only = FALSE
+		probe.max_occurrences = 1
+		probe.occurrences = 1
+		diag = SSdirector.diagnose_can_fire(probe, signals)
+		TEST_ASSERT_EQUAL(diag["reason"], DIRECTOR_CANTFIRE_OCCURRENCES, "Достигнутый max_occurrences должен диагностироваться")
+		probe.occurrences = 0
+		probe.max_occurrences = 0
+		probe.earliest_start = 1000 HOURS
+		diag = SSdirector.diagnose_can_fire(probe, signals)
+		TEST_ASSERT_EQUAL(diag["reason"], DIRECTOR_CANTFIRE_EARLY, "Недостигнутый earliest_start должен диагностироваться")
+		TEST_ASSERT_NOTNULL(diag["detail"], "У ранней диагностики должна быть деталь с минутами")
+		probe.earliest_start = 0
+		probe.min_players = 50
+		diag = SSdirector.diagnose_can_fire(probe, signals)
+		TEST_ASSERT_EQUAL(diag["reason"], DIRECTOR_CANTFIRE_MIN_PLAYERS, "min_players выше экипажа должен диагностироваться")
+		probe.min_players = 0
+		diag = SSdirector.diagnose_can_fire(probe, signals)
+		TEST_ASSERT_EQUAL(diag["reason"], DIRECTOR_CANTFIRE_SPECIAL, "Проходное по базовым полям действие должно давать SPECIAL-фолбэк")
+	catch(var/exception/e)
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	SSdirector.restore_simulation_state(saved)
+
 /// Проверяет затухание повторов: математику repeat_falloff и то, что в кандидатах бита
 /// уже стрелявшее действие весит меньше свежего с теми же параметрами.
 /datum/unit_test/director_repeat_falloff
