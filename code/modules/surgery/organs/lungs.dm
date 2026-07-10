@@ -391,7 +391,6 @@
 			var/heal_amount = clamp(round(healium_pp * 6), 3, 18)
 			H.adjustBruteLoss(-heal_amount)
 			H.adjustFireLoss(-heal_amount)
-			H.adjustOxyLoss(-max(round(heal_amount * 0.5), 1))
 			H.adjustToxLoss(-max(round(heal_amount * 0.3), 1))
 			breath.adjust_moles(GAS_HEALIUM, -gas_breathed)
 
