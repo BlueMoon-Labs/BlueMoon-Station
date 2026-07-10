@@ -2,6 +2,7 @@
 	name = "Anomaly: Vortex"
 	typepath = /datum/round_event/anomaly/anomaly_vortex
 
+	enabled = TRUE // база выключена, подтипы включаются явно
 	min_players = 20
 	max_occurrences = 2
 	weight = 10

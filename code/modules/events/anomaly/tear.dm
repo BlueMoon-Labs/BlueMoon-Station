@@ -1,6 +1,7 @@
 /datum/round_event_control/anomaly/tear
 	name = "Dimensional Tear"
 	typepath = /datum/round_event/anomaly/tear
+	enabled = TRUE // база выключена, подтипы включаются явно
 	weight = 15
 	max_occurrences = 1
 	min_players = 30

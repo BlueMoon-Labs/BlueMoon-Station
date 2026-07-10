@@ -5,6 +5,7 @@
 	weight = 50
 	max_occurrences = 2
 	category = EVENT_CATEGORY_ENTITIES
+	severity = DIRECTOR_SEVERITY_MINOR
 
 /datum/round_event/rogue_drone
 	start_when = 10

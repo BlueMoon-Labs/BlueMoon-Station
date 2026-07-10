@@ -5,7 +5,6 @@
 	weight = 10
 	earliest_start = 45 MINUTES
 	min_players = 35
-	dynamic_should_hijack = TRUE
 	category = EVENT_CATEGORY_INVASION
 	description = "A space ninja infiltrates the station."
 

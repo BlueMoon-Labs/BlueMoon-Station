@@ -5,7 +5,6 @@
 	max_occurrences = 1
 	earliest_start = 30 MINUTES
 	min_players = 30
-	dynamic_should_hijack = TRUE
 	category = EVENT_CATEGORY_ENTITIES
 	description = "Spawns a space dragon, which will try to take over the station."
 

@@ -3,7 +3,7 @@
 // (and SSpersistence.SaveMapDebris / wipe_existing_debris through it) used to do
 // `for(var/obj/effect/decal/cleanable/C in world)` — an O(N_atoms_in_world) walk
 // over every atom in the world, not over cleanables. Same issue lived in
-// /datum/round_event_control/slaughter/canSpawnEvent.
+// /datum/round_event_control/slaughter/can_fire.
 //
 // GLOB.cleanable_decals tracks every live cleanable so the scan is O(N_cleanables).
 // These tests verify:

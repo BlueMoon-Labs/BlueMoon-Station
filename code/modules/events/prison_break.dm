@@ -5,6 +5,7 @@
 	min_players = 10
 	weight = 45
 	category = EVENT_CATEGORY_AI
+	severity = DIRECTOR_SEVERITY_MINOR
 
 /datum/round_event/grey_tide
 	announce_when = 50

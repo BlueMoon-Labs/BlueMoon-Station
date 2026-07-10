@@ -9,7 +9,7 @@
 	category = EVENT_CATEGORY_FRIENDLY
 	description = "A belt of comets passes near the station, creating a spectacular light show."
 
-/datum/round_event_control/comet_belt/canSpawnEvent(players, gamemode)
+/datum/round_event_control/comet_belt/can_fire(datum/director_signals/signals)
 	if(!CONFIG_GET(flag/starlight))
 		return FALSE
 	return ..()

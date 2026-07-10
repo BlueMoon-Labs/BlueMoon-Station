@@ -1,7 +1,7 @@
 /datum/round_event_control/portal_storm_syndicate
 	name = "Portal Storm: Syndicate Shocktroops"
 	typepath = /datum/round_event/portal_storm/syndicate_shocktroop
-	weight = 5
+	weight = 15
 	min_players = 40
 	earliest_start = 60 MINUTES
 	max_occurrences = 1
@@ -21,7 +21,7 @@
 /datum/round_event_control/portal_storm_inteq
 	name = "Portal Storm: Inteq Shocktroops"
 	typepath = /datum/round_event/portal_storm/inteq_shocktroop
-	weight = 55
+	weight = 20
 	min_players = 40
 	earliest_start = 60 MINUTES
 	max_occurrences = 1
@@ -41,7 +41,7 @@
 /datum/round_event_control/portal_storm_narsie
 	name = "Portal Storm: Constructs"
 	typepath = /datum/round_event/portal_storm/portal_storm_narsie
-	weight = 30
+	weight = 17
 	min_players = 40
 	earliest_start = 60 MINUTES
 	max_occurrences = 1
@@ -63,7 +63,7 @@
 /datum/round_event_control/portal_storm_clown
 	name = "Portal Storm: Clowns"
 	typepath = /datum/round_event/portal_storm/portal_storm_clown
-	weight = 30
+	weight = 17
 	min_players = 40
 	earliest_start = 60 MINUTES
 	max_occurrences = 1
@@ -83,7 +83,7 @@
 /datum/round_event_control/portal_storm_necros
 	name = "Portal Storm: Necromorphs"
 	typepath = /datum/round_event/portal_storm/portal_storm_necros
-	weight = 40
+	weight = 19
 	min_players = 50
 	earliest_start = 60 MINUTES
 	max_occurrences = 1
@@ -101,7 +101,7 @@
 /datum/round_event_control/portal_storm_funclaws
 	name = "Portal Storm: Funclaws"
 	typepath = /datum/round_event/portal_storm/portal_storm_funclaws
-	weight = 40
+	weight = 19
 	min_players = 50
 	earliest_start = 60 MINUTES
 	max_occurrences = 1
@@ -118,7 +118,7 @@
 /datum/round_event_control/portal_storm_skibidi
 	name = "Portal Storm: Skibidi"
 	typepath = /datum/round_event/portal_storm/portal_storm_skibidi
-	weight = 5
+	weight = 15
 	min_players = 75
 	earliest_start = 60 MINUTES
 	max_occurrences = 1
@@ -135,7 +135,7 @@
 /datum/round_event_control/portal_storm_clock
 	name = "Portal Storm: Clock Cult"
 	typepath = /datum/round_event/portal_storm/portal_storm_clock
-	weight = 30
+	weight = 17
 	min_players = 40
 	earliest_start = 60 MINUTES
 	max_occurrences = 1

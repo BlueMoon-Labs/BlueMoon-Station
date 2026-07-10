@@ -5,7 +5,6 @@
 	max_occurrences = 1
 	min_players = 30
 	earliest_start = 45 MINUTES
-	dynamic_should_hijack = FALSE
 	category = EVENT_CATEGORY_INVASION
 	description = "The crew will face a PMC assault."
 

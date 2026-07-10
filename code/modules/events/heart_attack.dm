@@ -5,8 +5,9 @@
 	max_occurrences = 5
 	min_players = 35 // To avoid shafting lowpop
 	category = EVENT_CATEGORY_HEALTH
+	severity = DIRECTOR_SEVERITY_MINOR
 
-/datum/round_event_control/heart_attack/canSpawnEvent(var/players_amt, var/gamemode)
+/datum/round_event_control/heart_attack/can_fire(datum/director_signals/signals)
 	if(!..()) return FALSE
 	var/list/enemy_roles = list("Medical Doctor","Chief Medical Officer","Paramedic","Chemist")
 	for (var/mob/M in GLOB.alive_mob_list)

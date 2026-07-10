@@ -2,6 +2,9 @@
 #define STATION_VICTORY 2
 
 /datum/dynamic_ruleset
+	parent_type = /datum/director_action
+	director_kind = DIRECTOR_KIND_RULESET
+	severity = DIRECTOR_SEVERITY_ANTAG
 	/// For admin logging and round end screen.
 	// If you want to change this variable name, the force latejoin/midround rulesets
 	// to not use sortNames.
@@ -36,10 +39,6 @@
 	var/required_enemies = list(1,1,0,0,0,0,0,0,0,0)
 	/// The rule needs this many candidates (post-trimming) to be executed (example: Cult needs 4 players at round start)
 	var/required_candidates = 0
-	/// 0 -> 9, probability for this rule to be picked against other rules. If zero this will effectively disable the rule.
-	var/weight = 5
-	/// Threat cost for this rule, this is decreased from the mode's threat when the rule is executed.
-	var/cost = 0
 	/// Cost per level the rule scales up.
 	var/scaling_cost = 0
 	/// How many times a rule has scaled up upon getting picked.
@@ -59,8 +58,6 @@
 	var/antag_flag_override = null
 	/// If a ruleset type which is in this list has been executed, then the ruleset will not be executed.
 	var/list/blocking_rules = list()
-	/// The minimum amount of players required for the rule to be considered.
-	var/minimum_players = 0
 	/// The maximum amount of players required for the rule to be considered.
 	/// Anything below zero or exactly zero is ignored.
 	var/maximum_players = 0
@@ -78,9 +75,9 @@
 	/// If written as a linear equation, will be in the form of `list("denominator" = denominator, "offset" = offset).
 	var/antag_cap = 0
 
-	// BLUEMOON ADD START - если GLOB.round_type (выставляется через голосование или админами) нет в списке, то рулсет не может выпасть
-	var/list/required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_LIGHT)
-	// BLUEMOON ADD END
+	/// Если GLOB.round_type (выставляется через голосование или админами) нет в списке, то рулсет не может выпасть.
+	/// Переопределяет унаследованный дефолт null ("любые типы раунда"), чтобы не менять поведение после переезда на director_action.
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_LIGHT)
 
 /datum/dynamic_ruleset/New()
 	// Rulesets can be instantiated more than once, such as when an admin clicks
@@ -92,6 +89,9 @@
 
 	..()
 
+/datum/dynamic_ruleset/action_name()
+	return name
+
 /datum/dynamic_ruleset/roundstart // One or more of those drafted at roundstart
 	ruletype = "Roundstart"
 
@@ -99,19 +99,49 @@
 /datum/dynamic_ruleset/latejoin
 	ruletype = "Latejoin"
 
+/// Кандидат уже установлен, trim/ready вызваны в SSdirector.on_latejoin; бюджет списан директором.
+/// Остаётся отложенно исполнить рулсет с учётом его delay.
+/datum/dynamic_ruleset/latejoin/execute_action()
+	addtimer(CALLBACK(mode, TYPE_PROC_REF(/datum/game_mode/dynamic, execute_scheduled_ruleset), src), delay)
+	return TRUE
+
 /// By default, a rule is acceptable if it satisfies the threat level/population requirements.
 /// If your rule has extra checks, such as counting security officers, do that in ready() instead
 /datum/dynamic_ruleset/proc/acceptable(population = 0, threat_level = 0)
 	pop_per_requirement = pop_per_requirement > 0 ? pop_per_requirement : mode.pop_per_requirement
 	indice_pop = min(requirements.len,round(population/pop_per_requirement)+1)
 
-	if(minimum_players > population)
+	if(min_players > population)
 		SSblackbox.record_feedback("tally","dynamic",1,"Times rulesets rejected due to low pop")
 		return FALSE
 	if(maximum_players > 0 && population > maximum_players)
 		SSblackbox.record_feedback("tally","dynamic",1,"Times rulesets rejected due to high pop")
 		return FALSE
 	return (threat_level >= requirements[indice_pop])
+
+/// Проверки директора поверх acceptable() (порог по популяции/трету раунда).
+/// Здесь же гейты only_ruleset, повторяемости, blocking_rules и стекинга HIGH_IMPACT.
+/// mode может быть null вне раунда (юнит-тесты) - тогда остальные проверки неприменимы.
+/datum/dynamic_ruleset/can_fire(datum/director_signals/signals)
+	. = ..()
+	if(!.)
+		return
+	if(!acceptable(signals.effective_crew, mode ? mode.threat_level : 0))
+		return FALSE
+	if(!mode)
+		return TRUE
+	if(mode.only_ruleset_executed)
+		return FALSE
+	// Неповторяемый рулсет, уже отработавший, больше не выбирается.
+	if(!repeatable && (src in mode.executed_rules))
+		return FALSE
+	if(mode.check_blocking(blocking_rules, mode.executed_rules))
+		return FALSE
+	// Стекинг раунд-эндеров: без стекинга второй HIGH_IMPACT не выпадет, пока трет ниже лимита.
+	if((flags & HIGH_IMPACT_RULESET) && mode.high_impact_ruleset_executed \
+		&& mode.threat_level < GLOB.dynamic_stacking_limit && GLOB.dynamic_no_stacking)
+		return FALSE
+	return TRUE
 
 /// When picking rulesets, if dynamic picks the same one multiple times, it will "scale up".
 /// However, doing this blindly would result in lowpop rounds (think under 10 people) where over 80% of the crew is antags!
@@ -169,13 +199,14 @@
 /// Runs from gamemode process() if ruleset fails to start, like delayed rulesets not getting valid candidates.
 /// This one only handles refunding the threat, override in ruleset to clean up the rest.
 /datum/dynamic_ruleset/proc/clean_up()
-	mode.refund_threat(cost + (scaled_times * scaling_cost))
+	mode.refund_threat(src, cost + (scaled_times * scaling_cost))
 	mode.threat_log += "[worldtime2text()]: [ruletype] [name] refunded [cost + (scaled_times * scaling_cost)]. Failed to execute."
 
 /// Gets weight of the ruleset
 /// Note that this decreases weight if repeatable is TRUE and repeatable_weight_decrease is higher than 0
 /// Note: If you don't want repeatable rulesets to decrease their weight use the weight variable directly
-/datum/dynamic_ruleset/proc/get_weight()
+/// Сигнатура с опциональным signals переопределяет базовый director_action/get_weight(); существующие вызовы rule.get_weight() без аргументов не ломаются.
+/datum/dynamic_ruleset/get_weight(datum/director_signals/signals)
 	if(repeatable && weight > 1 && repeatable_weight_decrease > 0)
 		for(var/datum/dynamic_ruleset/DR in mode.executed_rules)
 			if(istype(DR, type))

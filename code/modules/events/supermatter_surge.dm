@@ -5,9 +5,10 @@
 	max_occurrences = 12
 	earliest_start = 10 MINUTES
 	category = EVENT_CATEGORY_ENGINEERING
+	min_staffing = list(DIRECTOR_DEPT_ENGINEERING = 1)
 	description = "Randomly modifies the supermatter's power, giving the engineers a lot of headaches."
 
-/datum/round_event_control/supermatter_surge/canSpawnEvent()
+/datum/round_event_control/supermatter_surge/can_fire(datum/director_signals/signals)
 	if(GLOB.main_supermatter_engine?.has_been_powered)
 		return ..()
 

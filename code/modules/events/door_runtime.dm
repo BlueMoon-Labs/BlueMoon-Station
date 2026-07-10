@@ -5,6 +5,7 @@
 	min_players = 10
 	weight = 50
 	category = EVENT_CATEGORY_AI
+	severity = DIRECTOR_SEVERITY_MINOR
 	description = "Блокировка шлюзов. Секрет «самосбор» (10% при случайном); в Trigger Event можно выбрать вручную."
 	admin_setup = list(/datum/event_admin_setup/door_runtime_secret_mode)
 

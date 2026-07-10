@@ -5,6 +5,7 @@
 	min_players = 10
 	max_occurrences = 2
 	category = EVENT_CATEGORY_ENTITIES
+	severity = DIRECTOR_SEVERITY_MINOR // категория ENTITIES по умолчанию даёт MAJOR, но мыши безобидны
 
 /datum/round_event/mice_migration
 	var/minimum_mice = 15

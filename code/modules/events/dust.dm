@@ -6,6 +6,7 @@
 	earliest_start = 0 MINUTES
 	alert_observers = FALSE
 	category = EVENT_CATEGORY_SPACE
+	severity = DIRECTOR_SEVERITY_FLAVOR // фоновый шум, не полноценная космическая угроза
 	description = "A single space dust is hurled at the station."
 
 /datum/round_event/space_dust
@@ -24,6 +25,7 @@
 	min_players = 10
 	earliest_start = 20 MINUTES
 	category = EVENT_CATEGORY_SPACE
+	severity = DIRECTOR_SEVERITY_MODERATE
 	description = "The station is pelted by an extreme amount of sand for several minutes."
 
 /datum/round_event/sandstorm

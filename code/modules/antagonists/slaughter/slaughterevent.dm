@@ -7,7 +7,7 @@
 	min_players = 30
 	category = EVENT_CATEGORY_ENTITIES
 
-/datum/round_event_control/slaughter/canSpawnEvent()
+/datum/round_event_control/slaughter/can_fire(datum/director_signals/signals)
 	weight = initial(src.weight)
 	var/list/allowed_turf_typecache = typecacheof(/turf/open) - typecacheof(/turf/open/space)
 	var/list/allowed_z_cache = list()

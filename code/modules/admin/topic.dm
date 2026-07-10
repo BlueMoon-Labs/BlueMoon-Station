@@ -1558,6 +1558,13 @@
 			return tgui_alert(usr, "The game has already started.")
 
 		dynamic_mode_options(usr)
+
+	else if(href_list["director_panel"])
+		if(!check_rights(R_ADMIN))
+			return
+
+		var/datum/director_panel/panel = new
+		panel.ui_interact(usr)
 	/* BLUEMOON REMOVAL START - мы используем GLOB.round_type
 	else if(href_list["f_dynamic_force_extended"])
 		if(!check_rights(R_ADMIN))

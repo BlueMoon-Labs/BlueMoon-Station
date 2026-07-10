@@ -6,7 +6,6 @@
 
 	earliest_start = 90 MINUTES
 	min_players = 40
-	dynamic_should_hijack = TRUE
 	category = EVENT_CATEGORY_ENTITIES
 	description = "Spawns a new blob overmind."
 

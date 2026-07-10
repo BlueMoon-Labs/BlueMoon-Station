@@ -371,8 +371,8 @@ GLOBAL_LIST_INIT(plant_loot_dynamic, list(
 
 /proc/get_plant_loot_pool()
 	var/list/pool = list()
-	if(SSevents.holidays)
-		for(var/holiday_name in SSevents.holidays)
+	if(SSholidays.holidays)
+		for(var/holiday_name in SSholidays.holidays)
 			switch(holiday_name)
 				if(NEW_YEAR, CHRISTMAS, FESTIVE_SEASON)
 					add_pool(pool, GLOB.plant_loot_winter)

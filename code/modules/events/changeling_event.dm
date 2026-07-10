@@ -11,7 +11,6 @@
 	weight = 8
 	max_occurrences = 3
 	min_players = 20
-	dynamic_should_hijack = FALSE // иначе Dynamic отменяет ивент и подставляет другой — метеор почти никогда не запускался
 	category = EVENT_CATEGORY_ENTITIES
 	description = "A meteor containing a changeling is summoned and thrown at the exterior of the station."
 

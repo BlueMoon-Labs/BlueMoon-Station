@@ -1,11 +1,10 @@
 /datum/round_event_control/vox_scavengers
 	name = "Vox Scavengers"
 	typepath = /datum/round_event/vox_scavengers
-	weight = 0
+	admin_only = TRUE
 	max_occurrences = 1
 	min_players = 30
 	earliest_start = 15 MINUTES
-	dynamic_should_hijack = TRUE
 	category = EVENT_CATEGORY_INVASION
 	description = "A vox scavengers heist."
 	var/ship_template
@@ -60,6 +59,7 @@
 	required_candidates = 0
 	weight = 3
 	cost = 12
+	intensity = 15
 	requirements = list(101,101,101,40,30,20,10,10,10,10)
 	repeatable = FALSE
 
@@ -71,3 +71,9 @@
 /datum/dynamic_ruleset/midround/vox_scavengers/execute()
 	spawn_vox_scavengers()
 	return ..()
+
+// name совпадает с /datum/round_event_control/vox_scavengers ("Vox Scavengers"), который этот
+// рулсет сам же и запускает через spawn_vox_scavengers() - без суффикса они делили бы
+// ключ конфига/intensity_ledger.
+/datum/dynamic_ruleset/midround/vox_scavengers/action_name()
+	return "[name] (Ruleset)"

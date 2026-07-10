@@ -3,6 +3,7 @@
 	typepath = /datum/round_event/fake_virus
 	weight = 90
 	category = EVENT_CATEGORY_HEALTH
+	severity = DIRECTOR_SEVERITY_FLAVOR
 
 /datum/round_event/fake_virus/start()
 	var/list/fake_virus_victims = list()

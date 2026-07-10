@@ -5,7 +5,6 @@
 	max_occurrences = 1
 	min_players = 30
 	earliest_start = 30 MINUTES
-	dynamic_should_hijack = TRUE
 	category = EVENT_CATEGORY_INVASION
 	description = "One or more abductor teams spawns, and they plan to experiment on the crew."
 

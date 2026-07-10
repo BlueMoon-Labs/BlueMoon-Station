@@ -4,8 +4,9 @@
 	weight = 60
 	min_players = 10
 	category = EVENT_CATEGORY_HEALTH
+	severity = DIRECTOR_SEVERITY_MINOR
 
-/datum/round_event_control/brain_trauma/canSpawnEvent(var/players_amt, var/gamemode)
+/datum/round_event_control/brain_trauma/can_fire(datum/director_signals/signals)
 	if(!..()) return FALSE
 	var/list/enemy_roles = list("Medical Doctor","Chief Medical Officer","Paramedic","AI","Chemist","Virologist","Captain","Head of Personnel","Roboticist")
 	for (var/mob/M in GLOB.alive_mob_list)

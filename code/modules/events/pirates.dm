@@ -5,7 +5,6 @@
 	max_occurrences = 1
 	min_players = 30
 	earliest_start = 45 MINUTES
-	dynamic_should_hijack = FALSE
 	category = EVENT_CATEGORY_INVASION
 	description = "The crew will either pay up, or face a pirate assault."
 
@@ -13,7 +12,7 @@
 // #define PIRATES_SILVERSCALES "Silverscales"
 // #define PIRATES_DUTCHMAN "Flying Dutchman"
 
-/datum/round_event_control/pirates/preRunEvent()
+/datum/round_event_control/pirates/preRunEvent(admin_window = TRUE)
 	if(!SSmapping.empty_space && !length(SSmapping.levels_by_trait(ZTRAIT_SPACE_RUINS)) && !SSmapping.station_start)
 		return EVENT_CANT_RUN
 

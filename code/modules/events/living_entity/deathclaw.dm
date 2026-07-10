@@ -4,6 +4,7 @@
 	max_occurrences = 5
 	weight = 50
 	category = EVENT_CATEGORY_ENTITIES
+	severity = DIRECTOR_SEVERITY_MODERATE
 
 /datum/round_event/deathclaw_in_maints/announce(fake)
 	send_fax_to_area(new /obj/item/paper/fax_CC_message/escapee/deathclaw_announce, /area/security, "Психиатрический Отдел Nanotrasen", FALSE)

@@ -403,8 +403,6 @@
 	min_val = 1
 	max_val = 20
 
-/datum/config_entry/flag/dynamic_config_enabled
-
 /datum/config_entry/flag/station_name_needs_approval
 
 //ambition start

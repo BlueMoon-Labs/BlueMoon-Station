@@ -103,7 +103,7 @@
 	if(!scrubbers.len)
 		return kill()
 
-/datum/round_event_control/scrubber_overflow/canSpawnEvent(players_amt, allow_magic = FALSE)
+/datum/round_event_control/scrubber_overflow/can_fire(datum/director_signals/signals)
 	. = ..()
 	if(!.)
 		return
@@ -150,6 +150,7 @@
 	min_players = 25
 	max_occurrences = 1
 	earliest_start = 35 MINUTES
+	severity = DIRECTOR_SEVERITY_MODERATE
 	description = "The scrubbers release a tide of moderately harmless froth."
 
 /datum/round_event/scrubber_overflow/threatening
@@ -163,6 +164,7 @@
 	min_players = 35
 	max_occurrences = 1
 	earliest_start = 45 MINUTES
+	severity = DIRECTOR_SEVERITY_MODERATE
 	description = "The scrubbers release a tide of mildly harmless froth."
 
 /datum/round_event/scrubber_overflow/catastrophic
@@ -172,7 +174,7 @@
 /datum/round_event_control/scrubber_overflow/every_vent
 	name = "Scrubber Overflow: Every Vent"
 	typepath = /datum/round_event/scrubber_overflow/every_vent
-	weight = 0
+	admin_only = TRUE
 	max_occurrences = 0
 	description = "The scrubbers release a tide of mostly harmless froth, but every scrubber is affected."
 

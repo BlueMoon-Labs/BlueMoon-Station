@@ -44,7 +44,7 @@
 	if(!atmos_devices.len)
 		return kill()
 
-/datum/round_event_control/space_cleaner_spill/canSpawnEvent(players_amt, allow_magic = FALSE)
+/datum/round_event_control/space_cleaner_spill/can_fire(datum/director_signals/signals)
 	. = ..()
 	if(!.)
 		return

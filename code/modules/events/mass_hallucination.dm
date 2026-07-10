@@ -13,6 +13,7 @@
 	min_players = 1
 	var/forced_hallucination
 	category = EVENT_CATEGORY_HEALTH
+	severity = DIRECTOR_SEVERITY_FLAVOR
 	description = "Multiple crewmembers start to hallucinate the same thing."
 	admin_setup = list(/datum/event_admin_setup/mass_hallucination)
 

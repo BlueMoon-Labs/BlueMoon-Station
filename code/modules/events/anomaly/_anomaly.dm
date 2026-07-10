@@ -3,7 +3,9 @@
 	typepath = /datum/round_event/anomaly
 
 	min_players = 1
-	max_occurrences = 0 //This one probably shouldn't occur! It'd work, but it wouldn't be very fun.
+	// Шаблонная база: сама не запускается. enabled наследуется, поэтому каждый
+	// конкретный подтип обязан явно ставить enabled = TRUE.
+	enabled = FALSE
 	weight = 15
 	earliest_start = 10 MINUTES
 	category = EVENT_CATEGORY_ANOMALIES

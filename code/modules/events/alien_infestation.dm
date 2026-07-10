@@ -4,7 +4,6 @@
 	weight = 20
 	min_players = 40
 	max_occurrences = 1
-	dynamic_should_hijack = TRUE
 	category = EVENT_CATEGORY_ENTITIES
 	description = "A xenomorph larva spawns on a random vent."
 

@@ -324,7 +324,7 @@ GLOBAL_DATUM_INIT(shield_goal_coverage_dummy, /datum/station_goal/station_shield
 			change_meteor_chance(0.5)
 
 /obj/machinery/satellite/meteor_shield/proc/change_meteor_chance(mod)
-	var/datum/round_event_control/E = locate(/datum/round_event_control/meteor_wave) in SSevents.control
+	var/datum/round_event_control/E = locate(/datum/round_event_control/meteor_wave) in SSdirector.event_controls()
 	if(E)
 		E.weight *= mod
 

@@ -1,7 +1,7 @@
 /datum/round_event_control/operative
 	name = "Lone Operative"
 	typepath = /datum/round_event/ghost_role/operative
-	weight = 0 //Admin only
+	admin_only = TRUE
 	max_occurrences = 1
 	min_players = 30
 	category = EVENT_CATEGORY_INVASION

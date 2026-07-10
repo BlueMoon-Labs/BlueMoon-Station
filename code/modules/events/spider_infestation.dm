@@ -5,6 +5,7 @@
 	max_occurrences = 5
 	min_players = 25
 	category = EVENT_CATEGORY_ENTITIES
+	severity = DIRECTOR_SEVERITY_MODERATE
 	description = "Spawns spider eggs, ready to hatch."
 
 /datum/round_event/spider_infestation

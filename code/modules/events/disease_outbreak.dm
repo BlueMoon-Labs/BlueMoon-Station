@@ -5,6 +5,7 @@
 	min_players = 15
 	weight = 30
 	category = EVENT_CATEGORY_HEALTH
+	min_staffing = list(DIRECTOR_DEPT_MEDICAL = 1)
 
 /datum/round_event/disease_outbreak
 	announce_when	= 15
@@ -13,7 +14,7 @@
 
 	var/max_severity = 3
 
-/datum/round_event_control/disease_outbreak/canSpawnEvent(var/players_amt, var/gamemode)
+/datum/round_event_control/disease_outbreak/can_fire(datum/director_signals/signals)
 	if(!..()) return FALSE
 	var/list/enemy_roles = list("Medical Doctor","Chief Medical Officer","Paramedic","AI","Chemist","Virologist","Captain","Head of Personnel", "Geneticist")
 	for (var/mob/M in GLOB.alive_mob_list)

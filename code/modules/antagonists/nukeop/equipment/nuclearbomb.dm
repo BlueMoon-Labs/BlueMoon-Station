@@ -69,7 +69,7 @@
 
 /obj/machinery/nuclearbomb/selfdestruct/Initialize(mapload)
 	. = ..()
-	if(SSevents.holidays && SSevents.holidays[PRIDE_MONTH] && prob(10))
+	if(SSholidays.holidays && SSholidays.holidays[PRIDE_MONTH] && prob(10))
 		name = "station-wide gender-reveal terminal"
 		desc = "For when the whole sector deserves to know a gender. But of whom? Don't ask."
 
@@ -78,7 +78,7 @@
 
 /obj/machinery/nuclearbomb/syndicate/Initialize(mapload)
 	. = ..()
-	if(SSevents.holidays && SSevents.holidays[PRIDE_MONTH] && prob(50))
+	if(SSholidays.holidays && SSholidays.holidays[PRIDE_MONTH] && prob(50))
 		name = "tactical gender-reveal device"
 		desc = "\"But whose gender is it revealing?\" you ponder. Don't worry. That comes later."
 
@@ -592,7 +592,7 @@
 		disarm()
 		return
 	if(is_station_level(bomb_location.z))
-		var/datum/round_event_control/E = locate(/datum/round_event_control/scrubber_overflow/beer) in SSevents.control
+		var/datum/round_event_control/E = locate(/datum/round_event_control/scrubber_overflow/beer) in SSdirector.event_controls()
 		if(E)
 			E.runEvent()
 		addtimer(CALLBACK(src, PROC_REF(really_actually_explode)), 110)
@@ -711,7 +711,7 @@ This is here to make the tiles around the station mininuke change when it's arme
 			if(!(process_tick % 30))
 				visible_message("<span class='notice'>[src] sleeps soundly. Sleep tight, disky.</span>")
 		if(last_disk_move < world.time - 5000 && prob((world.time - 5000 - last_disk_move)*0.0001 / max(disk_comfort_level,1)))
-			var/datum/round_event_control/operative/loneop = locate(/datum/round_event_control/operative) in SSevents.control
+			var/datum/round_event_control/operative/loneop = locate(/datum/round_event_control/operative) in SSdirector.event_controls()
 			if(istype(loneop) && loneop.occurrences < loneop.max_occurrences)
 				loneop.weight += 1
 				if(loneop.weight % 5 == 0 && SSticker.totalPlayers > 1 && (CONFIG_GET(flag/admin_disk_inactive_msg))) //players count now
@@ -721,7 +721,7 @@ This is here to make the tiles around the station mininuke change when it's arme
 	else
 		lastlocation = newturf
 		last_disk_move = world.time
-		var/datum/round_event_control/operative/loneop = locate(/datum/round_event_control/operative) in SSevents.control
+		var/datum/round_event_control/operative/loneop = locate(/datum/round_event_control/operative) in SSdirector.event_controls()
 		if(istype(loneop) && loneop.occurrences < loneop.max_occurrences && prob(loneop.weight))
 			loneop.weight = max(loneop.weight - 1, 0)
 			if(loneop.weight % 5 == 0 && SSticker.totalPlayers > 1)

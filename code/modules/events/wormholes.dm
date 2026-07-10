@@ -5,6 +5,7 @@
 	weight = 25
 	min_players = 20
 	category = EVENT_CATEGORY_ANOMALIES
+	severity = DIRECTOR_SEVERITY_MODERATE
 
 /datum/round_event/wormholes
 	announce_when = 10

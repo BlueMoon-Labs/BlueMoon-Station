@@ -1,7 +1,7 @@
 /datum/round_event_control/scrubber_overflow/cope_and_seethe
 	name = "Copium Flood"
 	typepath = /datum/round_event/scrubber_overflow/cope_and_seethe
-	max_occurrences = 0
+	enabled = FALSE
 
 /datum/round_event/scrubber_overflow/cope_and_seethe/announce()
 	priority_announce("Мы обнаружили высокий уровень Агрессии на станции. Для борьбы с этим мы будем использовать массовое количество копиума. Пожалуйста, держитесь подальше от вентиляционных отверстий, пока давление не выровняется.", "Центральное Командование")
@@ -110,7 +110,7 @@
 	name = "Strong Aphrodisiac Flood"
 	typepath = /datum/round_event/scrubber_overflow/crocin/hexacrocin
 	admin_setup = list()
-	max_occurrences = 0 //Only adminspawn because this one causes brain damage
+	enabled = FALSE //Only adminspawn because this one causes brain damage
 
 /datum/round_event/scrubber_overflow/crocin/hexacrocin
 	safer_chems = list(
@@ -124,7 +124,7 @@
 /datum/round_event_control/scrubber_overflow/beer
 	name = "Clogged Vents: Beer"
 	typepath = /datum/round_event/scrubber_overflow/beer
-	max_occurrences = 0
+	enabled = FALSE
 	description = "Spits out beer through the scrubber system."
 
 /datum/round_event/scrubber_overflow/beer
