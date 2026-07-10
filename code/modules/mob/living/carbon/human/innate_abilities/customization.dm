@@ -47,6 +47,8 @@
 			return
 
 		var/heterochromia = tgui_alert(owner, "Do you want to have heterochromia?", "Confirm Multicolors", list("Yes", "No"))
+		if(isnull(heterochromia))
+			return
 		if(heterochromia == "Yes")
 			var/new_color1 = input(owner, "Choose your left eye color:", "Eye Color Change","#"+H.dna?.features["left_eye_color"]) as color|null
 			if(new_color1)
@@ -104,8 +106,7 @@
 				var/datum/sprite_accessory/S = instance
 				if((!S.ckeys_allowed) || (S.ckeys_allowed.Find(H.client.ckey)))
 					snowflake_ears_list[S.name] = path
-		var/new_ears
-		new_ears = input(owner, "Choose your character's ears:", "Ear Alteration") as null|anything in snowflake_ears_list
+		var/new_ears = tgui_input_list(owner, "Choose your character's ears:", "Ear Alteration", snowflake_ears_list)
 		if(new_ears)
 			H.dna.features["mam_ears"] = new_ears
 		H.update_body()
@@ -118,8 +119,7 @@
 				var/datum/sprite_accessory/S = instance
 				if((!S.ckeys_allowed) || (S.ckeys_allowed.Find(H.client.ckey)))
 					snowflake_snouts_list[S.name] = path
-		var/new_snout
-		new_snout = tgui_input_list(owner, "Choose your character's face:", "Face Alteration", snowflake_snouts_list)
+		var/new_snout = tgui_input_list(owner, "Choose your character's face:", "Face Alteration", snowflake_snouts_list)
 		if(new_snout)
 			H.dna.features["mam_snouts"] = new_snout
 		H.update_body()
@@ -137,8 +137,7 @@
 				var/datum/sprite_accessory/S = instance
 				if((!S.ckeys_allowed) || (S.ckeys_allowed.Find(H.client.ckey)))
 					snowflake_wings_list[S.name] = path
-		var/new_wings
-		new_wings = tgui_input_list(owner, "Choose your character's wings:", "Wing Alteration", snowflake_wings_list)
+		var/new_wings = tgui_input_list(owner, "Choose your character's wings:", "Wing Alteration", snowflake_wings_list)
 		if(new_wings)
 			H.dna.features["deco_wings"] = new_wings
 		H.update_body()
@@ -151,8 +150,7 @@
 				var/datum/sprite_accessory/S = instance
 				if((!S.ckeys_allowed) || (S.ckeys_allowed.Find(H.client.ckey)))
 					snowflake_markings_list[S.name] = path
-		var/new_mam_body_markings
-		new_mam_body_markings = tgui_input_list(H, "Choose your character's body markings:", "Marking Alteration", snowflake_markings_list)
+		var/new_mam_body_markings = tgui_input_list(H, "Choose your character's body markings:", "Marking Alteration", snowflake_markings_list)
 		if(new_mam_body_markings)
 			H.dna.features["mam_body_markings"] = new_mam_body_markings
 		for(var/X in H.bodyparts) //propagates the markings changes
@@ -168,8 +166,7 @@
 				var/datum/sprite_accessory/S = instance
 				if((!S.ckeys_allowed) || (S.ckeys_allowed.Find(H.client.ckey)))
 					snowflake_tails_list[S.name] = path
-		var/new_tail
-		new_tail = tgui_input_list(owner, "Choose your character's Tail(s):", "Tail Alteration", snowflake_tails_list)
+		var/new_tail = tgui_input_list(owner, "Choose your character's Tail(s):", "Tail Alteration", snowflake_tails_list)
 		if(new_tail)
 			H.dna.features["mam_tail"] = new_tail
 			if(new_tail != "None")
@@ -186,8 +183,7 @@
 					continue
 				if((!S.ckeys_allowed) || (S.ckeys_allowed.Find(H.client.ckey)))
 					snowflake_taur_list[S.name] = path
-		var/new_taur
-		new_taur = tgui_input_list(owner, "Choose your character's tauric body:", "Tauric Alteration", snowflake_taur_list)
+		var/new_taur = tgui_input_list(owner, "Choose your character's tauric body:", "Tauric Alteration", snowflake_taur_list)
 		if(new_taur)
 			H.dna.features["taur"] = new_taur
 			if(new_taur != "None")
@@ -197,8 +193,7 @@
 	else if (select_alteration == "Penis")
 		for(var/obj/item/organ/genital/penis/X in H.internal_organs)
 			qdel(X)
-		var/new_shape
-		new_shape = tgui_input_list(owner, "Choose your character's dong", "Genital Alteration", GLOB.cock_shapes_list)
+		var/new_shape = tgui_input_list(owner, "Choose your character's dong", "Genital Alteration", GLOB.cock_shapes_list)
 		if(new_shape)
 			H.dna.features["cock_shape"] = new_shape
 		H.update_genitals()
@@ -208,8 +203,7 @@
 	else if (select_alteration == "Testicles")
 		for(var/obj/item/organ/genital/testicles/X in H.internal_organs)
 			qdel(X)
-		var/new_shape
-		new_shape = tgui_input_list(owner, "Choose your character's testicles", "Genital Alteration", GLOB.balls_shapes_list)
+		var/new_shape = tgui_input_list(owner, "Choose your character's testicles", "Genital Alteration", GLOB.balls_shapes_list)
 		if(new_shape)
 			H.dna.features["balls_shape"] = new_shape
 		H.update_genitals()
@@ -220,8 +214,7 @@
 	else if (select_alteration == "Vagina")
 		for(var/obj/item/organ/genital/vagina/X in H.internal_organs)
 			qdel(X)
-		var/new_shape
-		new_shape = tgui_input_list(owner, "Choose your character's pussy", "Genital Alteration", GLOB.vagina_shapes_list)
+		var/new_shape = tgui_input_list(owner, "Choose your character's pussy", "Genital Alteration", GLOB.vagina_shapes_list)
 		if(new_shape)
 			H.dna.features["vag_shape"] = new_shape
 		H.update_genitals()
@@ -254,8 +247,7 @@
 	else if (select_alteration == "Breast Shape")
 		for(var/obj/item/organ/genital/breasts/X in H.internal_organs)
 			qdel(X)
-		var/new_shape
-		new_shape = tgui_input_list(owner, "Breast Shape", "Genital Alteration", GLOB.breasts_shapes_list)
+		var/new_shape = tgui_input_list(owner, "Breast Shape", "Genital Alteration", GLOB.breasts_shapes_list)
 		if(new_shape)
 			H.dna.features["breasts_shape"] = new_shape
 		H.update_genitals()
@@ -403,7 +395,7 @@
 	else if (select_alteration == "Gender & Lewd")
 		var/lewd_selection = tgui_alert(owner, "Select what aspect of gender and lewd preferences to alter", "Gender & Lewd", list("Gender", "Body Model"))
 		if(lewd_selection == "Gender")
-			var/new_gender = input(owner, "Select your gender:", "Gender Selection") as null|anything in list("Male", "Female", "Non-binary", "Object")
+			var/new_gender = tgui_input_list(owner, "Select your gender:", "Gender Selection", list("Male", "Female", "Non-binary", "Object"))
 			if(new_gender)
 				switch(new_gender)
 					if("Male")
@@ -414,8 +406,8 @@
 						H.gender = PLURAL
 					if("Object")
 						H.gender = NEUTER
-		if(lewd_selection == "Body Model")
-			var/new_body_model = input(owner, "Select your body model:", "Body Model Selection") as null|anything in list("Masculine", "Feminine")
+		else if(lewd_selection == "Body Model")
+			var/new_body_model = tgui_alert(owner, "Select your body model:", "Body Model Selection", list("Masculine", "Feminine"))
 			if(new_body_model)
 				H.dna.features["body_model"] = new_body_model == "Masculine" ? MALE : FEMALE
 				H.update_body()
@@ -435,5 +427,3 @@
 			H.update_body()
 
 /// SPLURT EDIT END
-	else
-		return
