@@ -43,11 +43,14 @@
 	layer = 2.9
 	},
 /obj/structure/rack,
-/obj/item/gun/ballistic/shotgun/riot{
-	pixel_x = -3;
-	pixel_y = 3
-	},
 /obj/effect/turf_decal/bot/yellow,
+/obj/item/grenade/smokebomb{
+	pixel_x = 5
+	},
+/obj/item/grenade/smokebomb{
+	pixel_x = 8
+	},
+/obj/item/grenade/smokebomb,
 /turf/open/floor/plasteel/textured/large,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
 "ai" = (
@@ -261,20 +264,11 @@
 	layer = 2.9
 	},
 /obj/structure/rack,
-/obj/item/gun/ballistic/automatic/wt550{
-	desc = "An outdated personal defence weapon. Uses 4.6x30mm rounds and is designated the WT-550 PDW.";
-	name = "security PDW";
-	pixel_x = -3;
-	pixel_y = 3;
-	spawnwithmagazine = 0
-	},
-/obj/item/gun/ballistic/automatic/wt550{
-	desc = "An outdated personal defence weapon. Uses 4.6x30mm rounds and is designated the WT-550 PDW.";
-	layer = 3.1;
-	name = "security PDW";
-	spawnwithmagazine = 0
-	},
 /obj/effect/turf_decal/bot/yellow,
+/obj/item/melee/classic_baton/telescopic,
+/obj/machinery/door/window/brigdoor/security/cell/westleft{
+	req_access = list("205")
+	},
 /turf/open/floor/plasteel/textured/large,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
 "bx" = (
@@ -384,17 +378,14 @@
 "bY" = (
 /obj/structure/rack,
 /obj/effect/turf_decal/bot/yellow,
-/obj/item/clothing/suit/armor/hos/platecarrier{
-	pixel_x = -3;
-	pixel_y = 3
-	},
-/obj/item/clothing/suit/armor/hos/platecarrier,
 /obj/structure/window/reinforced{
 	dir = 8
 	},
 /obj/structure/window/reinforced{
 	dir = 4
 	},
+/obj/item/weaponcrafting/gunkit/vector,
+/obj/item/weaponcrafting/gunkit/vector,
 /turf/open/floor/plasteel/textured/large,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
 "cb" = (
@@ -1694,30 +1685,6 @@
 	},
 /turf/open/floor/plasteel/showroomfloor,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
-"jd" = (
-/obj/item/storage/box/rubbershot,
-/obj/item/storage/box/rubbershot,
-/obj/item/storage/box/rubbershot,
-/obj/item/storage/box/rubbershot,
-/obj/item/storage/box/rubbershot,
-/obj/item/storage/box/rubbershot,
-/obj/item/storage/box/rubbershot,
-/obj/item/ammo_box/magazine/wt550m9/wtrubber,
-/obj/item/ammo_box/magazine/wt550m9/wtrubber,
-/obj/item/ammo_box/magazine/wt550m9/wtrubber,
-/obj/item/ammo_box/magazine/wt550m9/wtrubber,
-/obj/item/ammo_box/magazine/wt550m9/wtrubber,
-/obj/item/ammo_box/magazine/wt550m9/wtrubber,
-/obj/item/ammo_box/magazine/wt550m9/wtrubber,
-/obj/item/ammo_box/magazine/wt550m9/wtrubber,
-/obj/item/ammo_box/magazine/wt550m9/wtrubber,
-/obj/effect/turf_decal/delivery,
-/obj/structure/closet/secure_closet{
-	name = "nonlethal ammunition";
-	req_access = "list(205)"
-	},
-/turf/open/floor/plasteel/textured/large,
-/area/ruin/space/has_grav/bluemoon/hotel/workroom)
 "je" = (
 /turf/closed/wall,
 /area/ruin/space/has_grav/bluemoon/hotel/custodial)
@@ -2146,7 +2113,6 @@
 /area/ruin/space/has_grav/bluemoon/hotel/power)
 "lL" = (
 /obj/structure/rack,
-/obj/item/gun/energy/temperature/security,
 /obj/effect/turf_decal/bot/yellow,
 /obj/structure/window/reinforced,
 /obj/structure/window/reinforced{
@@ -2156,6 +2122,13 @@
 /obj/machinery/light{
 	dir = 4
 	},
+/obj/item/grenade/chem_grenade/teargas{
+	pixel_x = 8
+	},
+/obj/item/grenade/chem_grenade/teargas{
+	pixel_x = 3
+	},
+/obj/item/grenade/chem_grenade/teargas,
 /turf/open/floor/plasteel/textured/large,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
 "lN" = (
@@ -2739,20 +2712,8 @@
 	icon_state = "shower"
 	})
 "oQ" = (
-/obj/structure/closet/secure_closet/lethalshots{
-	req_access = "list(205)"
-	},
-/obj/item/ammo_box/magazine/e45/lethal,
-/obj/item/ammo_box/magazine/e45/lethal,
-/obj/item/ammo_box/magazine/e45/lethal,
-/obj/item/ammo_box/magazine/e45/lethal,
-/obj/item/ammo_box/magazine/e45/lethal,
-/obj/item/ammo_box/magazine/e45/lethal,
-/obj/item/ammo_box/magazine/e45/lethal,
-/obj/item/ammo_box/magazine/e45/lethal,
-/obj/item/ammo_box/magazine/e45/lethal,
-/obj/item/ammo_box/magazine/e45/lethal,
 /obj/effect/turf_decal/delivery,
+/obj/structure/barricade/security,
 /turf/open/floor/plasteel/textured/large,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
 "oR" = (
@@ -4094,16 +4055,18 @@
 	dir = 1;
 	layer = 2.9
 	},
-/obj/item/gun/energy/e_gun{
-	pixel_x = -3;
-	pixel_y = 3
-	},
-/obj/item/gun/energy/e_gun{
-	layer = 3.1
-	},
 /obj/effect/turf_decal/bot/yellow,
 /obj/machinery/light{
 	dir = 8
+	},
+/obj/item/shield/riot{
+	pixel_x = 3;
+	pixel_y = -3
+	},
+/obj/item/shield/riot,
+/obj/item/shield/riot{
+	pixel_x = 3;
+	pixel_y = -3
 	},
 /turf/open/floor/plasteel/textured/large,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
@@ -4450,16 +4413,12 @@
 /area/ruin/space/has_grav/bluemoon/hotel/dock)
 "xJ" = (
 /obj/effect/turf_decal/bot/yellow,
-/obj/structure/rack,
-/obj/item/gun/energy/e_gun/dragnet{
-	pixel_x = 1;
-	pixel_y = -3
-	},
 /obj/machinery/power/apc/auto_name/east,
 /obj/machinery/light{
 	light_color = "#cee5d2"
 	},
 /obj/structure/cable,
+/obj/machinery/shieldgen,
 /turf/open/floor/plasteel/textured/large,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
 "xT" = (
@@ -4948,14 +4907,12 @@
 /obj/structure/rack,
 /obj/structure/window/reinforced,
 /obj/effect/turf_decal/bot/yellow,
-/obj/item/gun/energy/laser{
-	pixel_x = -3;
-	pixel_y = 3
-	},
 /obj/structure/window/reinforced{
 	dir = 1;
 	layer = 2.9
 	},
+/obj/item/clothing/gloves/tackler/combat,
+/obj/item/clothing/gloves/tackler/combat,
 /turf/open/floor/plasteel/textured/large,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
 "AK" = (
@@ -6200,7 +6157,8 @@
 /area/ruin/space/has_grav/bluemoon/hotel/guestroom)
 "IZ" = (
 /obj/machinery/shieldgen,
-/turf/open/floor/plasteel/dark,
+/obj/effect/turf_decal/bot/yellow,
+/turf/open/floor/plasteel/textured/large,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
 "Jd" = (
 /turf/open/pool,
@@ -8650,9 +8608,16 @@
 	dir = 1;
 	layer = 2.9
 	},
-/obj/item/gun/grenadelauncher{
-	pixel_y = 3
+/obj/item/mod/control/pre_equipped/security{
+	pixel_x = -5
 	},
+/obj/item/mod/control/pre_equipped/security{
+	pixel_x = 5
+	},
+/obj/item/mod/control/pre_equipped/security{
+	pixel_x = 10
+	},
+/obj/item/mod/control/pre_equipped/security,
 /turf/open/floor/plasteel/textured/large,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
 "Wk" = (
@@ -8883,10 +8848,6 @@
 	dir = 8
 	},
 /obj/structure/rack,
-/obj/item/shield/riot{
-	pixel_x = 3;
-	pixel_y = -3
-	},
 /obj/item/clothing/head/helmet/riot{
 	pixel_x = -3;
 	pixel_y = 3
@@ -9572,7 +9533,7 @@ Qh
 Bo
 rr
 Zd
-Zd
+IZ
 ah
 lL
 bw
@@ -9710,7 +9671,7 @@ Qh
 qN
 Uj
 Bo
-jd
+oQ
 Zd
 IZ
 Bo
