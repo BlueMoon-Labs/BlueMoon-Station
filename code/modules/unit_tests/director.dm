@@ -622,6 +622,31 @@
 	// с заново заинстансированными в этом цикле объектами тех же типов давала бы ложные срабатывания
 	// (тот же тип дважды под разными ссылками, а не настоящая коллизия).
 
+/// Проверяет, что геймод Extended поднимает директора. Регрессия: setup_profile() звался только из
+/// dynamic, а master_mode "Extended" в pick_mode() матчится на config_tag геймода extended/announced -
+/// dynamic не создавался, profile оставался null и гейт fire() глушил каплю и биты весь раунд.
+/datum/unit_test/director_extended_gamemode
+
+/datum/unit_test/director_extended_gamemode/Run()
+	// Мутирует живой SSdirector и GLOB.round_type - capture/restore c try/catch (см. director_beat_logic).
+	var/list/saved = SSdirector.capture_simulation_state()
+	var/saved_round_type = GLOB.round_type
+	try
+		SSdirector.profile = null
+		// Форс/секрет-путь: round_type мог остаться от прошлого выбора - профиль всё равно обязан быть Extended.
+		GLOB.round_type = ROUNDTYPE_DYNAMIC_MEDIUM
+		var/datum/game_mode/extended/mode = new
+		TEST_ASSERT(mode.pre_setup(), "pre_setup Extended должен проходить")
+		TEST_ASSERT_NOTNULL(SSdirector.profile, "Extended должен поднимать профиль директора")
+		TEST_ASSERT_EQUAL(SSdirector.profile.round_type, ROUNDTYPE_EXTENDED, "Extended должен получать профиль Extended, а не фолбэк")
+		TEST_ASSERT_EQUAL(GLOB.round_type, ROUNDTYPE_EXTENDED, "pre_setup Extended должен выставлять round_type для контент-гейтов")
+	catch(var/exception/e)
+		SSdirector.restore_simulation_state(saved)
+		GLOB.round_type = saved_round_type
+		throw e
+	SSdirector.restore_simulation_state(saved)
+	GLOB.round_type = saved_round_type
+
 /// CI-санити пейсинга: 2 симулированных часа Medium при 40 экипажа не должны быть ни пустыми
 /// (гарантированный бит сломан), ни беспрерывными (fired на каждом бите - спейсинг ступеней
 /// не работает), ни захлёбывающимися (потолок intensity не держит). Рулсеты режима
