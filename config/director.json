@@ -14,8 +14,10 @@
 		"intensity_cap": "потолок суммарной активной intensity: выше него стреляет только флейвор",
 		"max_active_major": "максимум одновременно живых MAJOR-действий",
 		"severity_spacing": "минуты паузы между запусками одной ступени: {flavor/minor/moderate/major: минуты}",
-		"antag_light_spacing": "минуты паузы между лёгкими антаг-инжекциями",
-		"antag_heavy_spacing": "минуты паузы между тяжёлыми антаг-инжекциями (antag_heavy)",
+		"antag_light_spacing": "минуты паузы между лёгкими антаг-инжекциями из экипажа (ступень antag)",
+		"antag_heavy_spacing": "минуты паузы между тяжёлыми антаг-инжекциями из экипажа (antag_heavy)",
+		"ghost_light_spacing": "минуты паузы между лёгкими гост-инжекциями (ступень ghost); трек независим от antag",
+		"ghost_heavy_spacing": "минуты паузы между тяжёлыми гост-инжекциями (antag_heavy); трек независим от antag",
 		"pool_shares": "целевые доли ступеней в выборе и в раскладке капли по кошелькам, сумма ~1",
 		"max_quiet_time": "минуты тишины, после которых бит гарантированно запускает Малое/Среднее",
 		"quiet_intensity_threshold": "гарантированный бит срабатывает только при intensity ниже этого порога",
@@ -38,8 +40,8 @@
 		"earliest_start": "минута раунда, раньше которой действие не выбирается",
 		"max_occurrences": "жёсткий потолок запусков за раунд (0 - без лимита)",
 		"repeat_penalty": "персональное затухание повторов вместо профильного",
-		"antag_heavy": "true - тяжёлая антаг-инжекция (считается по antag_heavy_spacing)",
-		"severity": "ступень flavor/minor/moderate/major/antag - менять с осторожностью"
+		"antag_heavy": "true - тяжёлая антаг-инжекция (считается по antag_heavy_spacing или ghost_heavy_spacing своей ступени)",
+		"severity": "ступень flavor/minor/moderate/major/antag/ghost - менять с осторожностью; antag = антаги из экипажа, ghost = из призраков"
 	},
 	"_example": {
 		"profiles": {

@@ -3,8 +3,13 @@
 #define DIRECTOR_SEVERITY_MINOR "minor"
 #define DIRECTOR_SEVERITY_MODERATE "moderate"
 #define DIRECTOR_SEVERITY_MAJOR "major"
-/// Пул антаг-инжекций (midround/latejoin рулсеты)
+/// Пул антаг-инжекций из живого экипажа (crew-миды и latejoin-рулсеты)
 #define DIRECTOR_SEVERITY_ANTAG "antag"
+/// Пул гост-антагонистов: рулсеты, чьи игроки приходят из призраков (required_type = observer)
+#define DIRECTOR_SEVERITY_GHOST "ghost"
+
+/// Обе антаг-ступени: общие гейты (эвакуация, dead_crisis, недобор СБ) бьют по обеим
+#define DIRECTOR_IS_ANTAG_POOL(sev) ((sev) == DIRECTOR_SEVERITY_ANTAG || (sev) == DIRECTOR_SEVERITY_GHOST)
 
 /// Вид действия
 #define DIRECTOR_KIND_EVENT "event"

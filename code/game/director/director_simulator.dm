@@ -10,6 +10,7 @@
 	state["last_fired_at"] = last_fired_at.Copy()
 	state["last_any_fired_at"] = last_any_fired_at
 	state["last_antag_heavy_at"] = last_antag_heavy_at
+	state["last_ghost_heavy_at"] = last_ghost_heavy_at
 	state["dry_run"] = dry_run
 	state["paused"] = paused
 	// pending_*: если админ дёрнет симулятор посреди живого окна отмены, run_beat() увидит
@@ -49,6 +50,7 @@
 	last_fired_at = state["last_fired_at"]
 	last_any_fired_at = state["last_any_fired_at"]
 	last_antag_heavy_at = state["last_antag_heavy_at"]
+	last_ghost_heavy_at = state["last_ghost_heavy_at"]
 	dry_run = state["dry_run"]
 	paused = state["paused"]
 	pending_action = state["pending_action"]
@@ -82,6 +84,7 @@
 	D.fired_counts = list()
 	D.last_fired_at = list()
 	D.last_antag_heavy_at = 0
+	D.last_ghost_heavy_at = 0
 	var/list/log_out = list()
 	var/datum/director_signals/signals = new
 	signals.effective_crew = sim_crew

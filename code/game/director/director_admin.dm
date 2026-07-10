@@ -34,7 +34,7 @@
 			"fired" = D.fired_counts[sev] || 0,
 			"correction" = (D.profile && total_fired) ? round(D.share_correction(sev), 0.01) : 1,
 		)
-		if(sev == DIRECTOR_SEVERITY_ANTAG && D.profile)
+		if(DIRECTOR_IS_ANTAG_POOL(sev) && D.profile)
 			row["heavySpacingLeft"] = max(0, CEILING(D.spacing_remaining(sev, TRUE) / (1 MINUTES), 1))
 		wallets_out += list(row)
 	// Текущая капля с разложением по множителям профиля.
@@ -123,7 +123,7 @@
 		if("toggle_severity_block")
 			var/sev = params["severity"]
 			// Не верим клиенту: VV/модифицированный клиент мог бы засорить blocked_severities мусорными строками.
-			if(!(sev in list(DIRECTOR_SEVERITY_FLAVOR, DIRECTOR_SEVERITY_MINOR, DIRECTOR_SEVERITY_MODERATE, DIRECTOR_SEVERITY_MAJOR, DIRECTOR_SEVERITY_ANTAG)))
+			if(!(sev in list(DIRECTOR_SEVERITY_FLAVOR, DIRECTOR_SEVERITY_MINOR, DIRECTOR_SEVERITY_MODERATE, DIRECTOR_SEVERITY_MAJOR, DIRECTOR_SEVERITY_ANTAG, DIRECTOR_SEVERITY_GHOST)))
 				return
 			if(sev in D.blocked_severities)
 				D.blocked_severities -= sev

@@ -26,6 +26,9 @@
 	return TRUE
 
 /datum/dynamic_ruleset/midround/from_ghosts
+	// Игроки приходят из призраков, а не из экипажа - своя ступень директора со своим
+	// кошельком и своими паузами, независимыми от станционных антагов.
+	severity = DIRECTOR_SEVERITY_GHOST
 	weight = 0
 	required_type = /mob/dead/observer
 	should_use_midround_pref = FALSE
@@ -1041,6 +1044,7 @@
 
 /datum/dynamic_ruleset/midround/swarmers
 	name = "Swarmers"
+	severity = DIRECTOR_SEVERITY_GHOST // спавнер для призраков, экипаж не тратится
 	antag_flag = "Swarmer"
 	antag_flag_override = ROLE_ALIEN
 	required_type = /mob/dead/observer
@@ -1190,6 +1194,7 @@
 /// Space Pirates ruleset
 /datum/dynamic_ruleset/midround/pirates
 	name = "Space Pirates"
+	severity = DIRECTOR_SEVERITY_GHOST // событие поллит призраков, экипаж не тратится
 	antag_flag = "Space Pirates"
 	required_type = /mob/dead/observer
 	enemy_roles = list("Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain") //BLUEMOON CHANGE
@@ -1225,6 +1230,7 @@
 //////////////////////////////////////////////
 /datum/dynamic_ruleset/midround/raiders
 	name = "InteQ Raiders"
+	severity = DIRECTOR_SEVERITY_GHOST // событие поллит призраков, экипаж не тратится
 	antag_flag = "InteQ Raiders"
 	required_type = /mob/dead/observer
 	enemy_roles = list("Security Officer", "Detective", "Head of Security","Bridge Officer", "Captain")

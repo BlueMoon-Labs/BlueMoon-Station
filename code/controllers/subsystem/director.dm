@@ -30,6 +30,7 @@ SUBSYSTEM_DEF(director)
 		DIRECTOR_SEVERITY_MODERATE = 0,
 		DIRECTOR_SEVERITY_MAJOR = 0,
 		DIRECTOR_SEVERITY_ANTAG = 0,
+		DIRECTOR_SEVERITY_GHOST = 0,
 	)
 	/// Активный профиль темпа
 	var/datum/director_profile/profile
@@ -43,8 +44,10 @@ SUBSYSTEM_DEF(director)
 	var/fires_until_beat = DIRECTOR_BEAT_EVERY
 	/// world.time последнего запуска на каждую ступень (spacing)
 	var/list/last_fired_at = list()
-	/// Отдельно для тяжёлых антагов
+	/// Отдельно для тяжёлых антагов из экипажа (ANTAG)
 	var/last_antag_heavy_at = 0
+	/// Отдельно для тяжёлых гост-антагов (GHOST): треки категорий полностью независимы
+	var/last_ghost_heavy_at = 0
 	/// world.time последнего успешного запуска вообще (для гарантированного бита)
 	var/last_any_fired_at = 0
 	/// Активные вклады intensity: список list(name, amount, expires_at или 0 если "пока живо", severity или null для внешних вкладов)
@@ -181,6 +184,7 @@ SUBSYSTEM_DEF(director)
 		DIRECTOR_SEVERITY_MODERATE = value,
 		DIRECTOR_SEVERITY_MAJOR = value,
 		DIRECTOR_SEVERITY_ANTAG = value,
+		DIRECTOR_SEVERITY_GHOST = value,
 	)
 
 /// Раскладывает amount по кошелькам ступеней в пропорции profile.pool_shares.
@@ -252,7 +256,7 @@ SUBSYSTEM_DEF(director)
 			intensity_ledger.Cut(i, i + 1)
 			continue
 		// Мост рулсета, чей assigned уже наполнен: динамический вклад учтён выше, мост снимаем.
-		if(entry[4] == DIRECTOR_SEVERITY_ANTAG && live_names[entry[1]])
+		if(DIRECTOR_IS_ANTAG_POOL(entry[4]) && live_names[entry[1]])
 			intensity_ledger.Cut(i, i + 1)
 			continue
 		total += entry[2]
@@ -346,10 +350,10 @@ SUBSYSTEM_DEF(director)
 			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_INTENSITY_CAP,
 				detail = isnull(verdicts) ? null : "[round(signals.active_intensity)] при потолке [profile.intensity_cap]")
 			continue
-		if(signals.evac_state == DIRECTOR_EVAC_CALLED && (sev == DIRECTOR_SEVERITY_MAJOR || sev == DIRECTOR_SEVERITY_ANTAG))
+		if(signals.evac_state == DIRECTOR_EVAC_CALLED && (sev == DIRECTOR_SEVERITY_MAJOR || DIRECTOR_IS_ANTAG_POOL(sev)))
 			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_EVAC)
 			continue
-		if(dead_crisis && (sev == DIRECTOR_SEVERITY_MAJOR || (sev == DIRECTOR_SEVERITY_ANTAG && action.antag_heavy)))
+		if(dead_crisis && (sev == DIRECTOR_SEVERITY_MAJOR || (DIRECTOR_IS_ANTAG_POOL(sev) && action.antag_heavy)))
 			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_DEAD_CRISIS)
 			continue
 		if(sev == DIRECTOR_SEVERITY_MAJOR && active_majors >= profile.max_active_major)
@@ -376,7 +380,7 @@ SUBSYSTEM_DEF(director)
 			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_NO_WEIGHT,
 				detail = (isnull(verdicts) || action.weight >= 0) ? null : "форс-событие праздника, в выборе не участвует")
 			continue
-		if(sec_short && (sev == DIRECTOR_SEVERITY_MAJOR || (sev == DIRECTOR_SEVERITY_ANTAG && action.antag_heavy)))
+		if(sec_short && (sev == DIRECTOR_SEVERITY_MAJOR || (DIRECTOR_IS_ANTAG_POOL(sev) && action.antag_heavy)))
 			action_weight *= profile.security_penalty_mult
 		action_weight *= share_correction(sev)
 		action_weight *= repeat_falloff(action)
@@ -488,10 +492,15 @@ SUBSYSTEM_DEF(director)
 
 /// Сколько децисекунд осталось до конца паузы ступени (<= 0 - пауза не мешает).
 /// antag_heavy: у тяжёлых антаг-инжекций отдельные пауза и счётчик последнего запуска.
+/// Паузы и треки ANTAG и GHOST полностью независимы: культ не откладывает нюков и наоборот.
 /datum/controller/subsystem/director/proc/spacing_remaining(severity, antag_heavy = FALSE)
 	if(severity == DIRECTOR_SEVERITY_ANTAG)
 		var/spacing = antag_heavy ? profile.antag_heavy_spacing : profile.antag_light_spacing
 		var/last_time = antag_heavy ? last_antag_heavy_at : (last_fired_at[DIRECTOR_SEVERITY_ANTAG] || 0)
+		return spacing - (now() - last_time)
+	if(severity == DIRECTOR_SEVERITY_GHOST)
+		var/spacing = antag_heavy ? profile.ghost_heavy_spacing : profile.ghost_light_spacing
+		var/last_time = antag_heavy ? last_ghost_heavy_at : (last_fired_at[DIRECTOR_SEVERITY_GHOST] || 0)
 		return spacing - (now() - last_time)
 	var/spacing = profile.severity_spacing[severity]
 	if(isnull(spacing))
@@ -539,13 +548,16 @@ SUBSYSTEM_DEF(director)
 /datum/controller/subsystem/director/proc/note_fired(datum/director_action/action)
 	last_any_fired_at = now()
 	fired_counts[action.severity] = (fired_counts[action.severity] || 0) + 1
-	if(action.severity == DIRECTOR_SEVERITY_ANTAG && action.antag_heavy)
-		last_antag_heavy_at = now()
+	if(DIRECTOR_IS_ANTAG_POOL(action.severity) && action.antag_heavy)
+		if(action.severity == DIRECTOR_SEVERITY_GHOST)
+			last_ghost_heavy_at = now()
+		else
+			last_antag_heavy_at = now()
 	else
 		last_fired_at[action.severity] = now()
 	// Симулятор читает ступень последнего запуска этого бита отсюда (боевая логика поля не трогает).
 	sim_last_severity = action.severity
-	sim_last_antag_heavy = (action.severity == DIRECTOR_SEVERITY_ANTAG && action.antag_heavy)
+	sim_last_antag_heavy = (DIRECTOR_IS_ANTAG_POOL(action.severity) && action.antag_heavy)
 	if(action.intensity > 0)
 		var/expires_at
 		if(dry_run)
@@ -587,12 +599,15 @@ SUBSYSTEM_DEF(director)
 		return
 	// хотим ли тратиться на антага: живых антагов по intensity меньше целевой доли.
 	// Живые рулсеты считаются динамически (доля выживших), их мосты в ledger не дублируем.
+	// Давление и порог считаются по ОБЕИМ антаг-ступеням: латеджойн-инжекция отвечает
+	// на общий дефицит антагонистов, а не на дефицит одной категории.
 	var/list/live_names = list()
 	var/antag_intensity = get_ruleset_intensity(live_names)
 	for(var/list/entry in intensity_ledger)
-		if(entry[4] == DIRECTOR_SEVERITY_ANTAG && !live_names[entry[1]] && (!entry[3] || entry[3] > now()))
+		if(DIRECTOR_IS_ANTAG_POOL(entry[4]) && !live_names[entry[1]] && (!entry[3] || entry[3] > now()))
 			antag_intensity += entry[2]
-	if(antag_intensity >= profile.intensity_cap * profile.pool_shares[DIRECTOR_SEVERITY_ANTAG] * 2)
+	var/antag_pool_share = (profile.pool_shares[DIRECTOR_SEVERITY_ANTAG] || 0) + (profile.pool_shares[DIRECTOR_SEVERITY_GHOST] || 0)
+	if(antag_intensity >= profile.intensity_cap * antag_pool_share * 2)
 		return
 	var/list/candidates = list()
 	for(var/datum/director_action/action as anything in actions)
@@ -601,7 +616,7 @@ SUBSYSTEM_DEF(director)
 		var/datum/dynamic_ruleset/latejoin/rule = action
 		if(!istype(rule))
 			continue
-		if(!spacing_allows(rule) || budgets[DIRECTOR_SEVERITY_ANTAG] < rule.cost || !rule.can_fire(signals))
+		if(!spacing_allows(rule) || budgets[rule.severity] < rule.cost || !rule.can_fire(signals))
 			continue
 		rule.candidates = list(newPlayer)
 		rule.trim_candidates()

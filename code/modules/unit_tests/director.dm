@@ -83,7 +83,8 @@
 	for(var/datum/dynamic_ruleset/ruleset_path as anything in subtypesof(/datum/dynamic_ruleset))
 		if(!initial(ruleset_path.name))
 			continue
-		TEST_ASSERT_EQUAL(initial(ruleset_path.severity), DIRECTOR_SEVERITY_ANTAG, "[ruleset_path] должен иметь severity ANTAG")
+		var/ruleset_severity = initial(ruleset_path.severity)
+		TEST_ASSERT(DIRECTOR_IS_ANTAG_POOL(ruleset_severity), "[ruleset_path] должен иметь severity ANTAG или GHOST, а не [ruleset_severity]")
 
 /datum/unit_test/director_profiles
 
@@ -93,7 +94,7 @@
 		var/datum/director_profile/profile = director_profile_for(round_type)
 		TEST_ASSERT_NOTNULL(profile, "Нет профиля для [round_type]")
 		TEST_ASSERT_EQUAL(profile.round_type, round_type, "director_profile_for вернул чужой профиль для [round_type]")
-		for(var/severity in list(DIRECTOR_SEVERITY_FLAVOR, DIRECTOR_SEVERITY_MINOR, DIRECTOR_SEVERITY_MODERATE, DIRECTOR_SEVERITY_MAJOR, DIRECTOR_SEVERITY_ANTAG))
+		for(var/severity in list(DIRECTOR_SEVERITY_FLAVOR, DIRECTOR_SEVERITY_MINOR, DIRECTOR_SEVERITY_MODERATE, DIRECTOR_SEVERITY_MAJOR, DIRECTOR_SEVERITY_ANTAG, DIRECTOR_SEVERITY_GHOST))
 			TEST_ASSERT(!isnull(profile.pool_shares[severity]), "[round_type]: нет доли для [severity]")
 
 	TEST_ASSERT_EQUAL(piecewise_eval(list(list(0, 0), list(10, 1)), 5), 0.5, "Интерполяция середины")
@@ -217,6 +218,100 @@
 		var/list/candidates = SSdirector.filter_candidates(signals)
 		TEST_ASSERT(!(latejoin_rule in candidates), "Латеджойн-рулсет не должен попадать в пул битов")
 		TEST_ASSERT(midround_rule in candidates, "Midround-контроль с теми же параметрами обязан пройти фильтры бита")
+	catch(var/exception/e)
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	SSdirector.restore_simulation_state(saved)
+
+/// Проверяет независимость ступеней ANTAG и GHOST: запуск одной не двигает паузы другой
+/// (и лёгкие, и тяжёлые треки раздельны), кошельки не пересекаются, эвакуация закрывает обе.
+/datum/unit_test/director_ghost_pool_independence
+
+/datum/unit_test/director_ghost_pool_independence/Run()
+	// Мутирует живой SSdirector - capture/restore c try/catch (см. комментарий в director_beat_logic).
+	var/list/saved = SSdirector.capture_simulation_state()
+	try
+		var/datum/director_profile/profile = new /datum/director_profile/medium
+		SSdirector.profile = profile
+		SSdirector.reset_budgets(100)
+		SSdirector.intensity_ledger = list()
+		SSdirector.fired_counts = list()
+
+		var/datum/director_signals/signals = new
+		signals.effective_crew = 40
+		signals.staffing = list(DIRECTOR_DEPT_SECURITY = 4, DIRECTOR_DEPT_ENGINEERING = 1,
+			DIRECTOR_DEPT_MEDICAL = 1, DIRECTOR_DEPT_SCIENCE = 0, DIRECTOR_DEPT_SUPPLY = 0, DIRECTOR_DEPT_COMMAND = 1)
+
+		var/datum/director_action/test_stub/crew_antag = new
+		crew_antag.severity = DIRECTOR_SEVERITY_ANTAG
+		var/datum/director_action/test_stub/ghost_antag = new
+		ghost_antag.severity = DIRECTOR_SEVERITY_GHOST
+		SSdirector.actions = list(crew_antag, ghost_antag)
+
+		// Обе паузы прогнаны в прошлое - чистый стол.
+		SSdirector.last_fired_at = list(
+			DIRECTOR_SEVERITY_ANTAG = world.time - profile.antag_light_spacing - 1,
+			DIRECTOR_SEVERITY_GHOST = world.time - profile.ghost_light_spacing - 1,
+		)
+		SSdirector.last_antag_heavy_at = world.time - profile.antag_heavy_spacing - 1
+		SSdirector.last_ghost_heavy_at = world.time - profile.ghost_heavy_spacing - 1
+
+		var/list/candidates = SSdirector.filter_candidates(signals)
+		TEST_ASSERT(crew_antag in candidates, "ANTAG-стаб обязан проходить на чистом столе")
+		TEST_ASSERT(ghost_antag in candidates, "GHOST-стаб обязан проходить на чистом столе")
+
+		// Лёгкая пауза: свежий запуск ANTAG не должен закрывать GHOST.
+		SSdirector.last_fired_at[DIRECTOR_SEVERITY_ANTAG] = world.time
+		candidates = SSdirector.filter_candidates(signals)
+		TEST_ASSERT(!(crew_antag in candidates), "Свежий запуск ANTAG должен закрывать ANTAG по паузе")
+		TEST_ASSERT(ghost_antag in candidates, "Свежий запуск ANTAG не должен закрывать GHOST")
+
+		// И наоборот.
+		SSdirector.last_fired_at[DIRECTOR_SEVERITY_ANTAG] = world.time - profile.antag_light_spacing - 1
+		SSdirector.last_fired_at[DIRECTOR_SEVERITY_GHOST] = world.time
+		candidates = SSdirector.filter_candidates(signals)
+		TEST_ASSERT(crew_antag in candidates, "Свежий запуск GHOST не должен закрывать ANTAG")
+		TEST_ASSERT(!(ghost_antag in candidates), "Свежий запуск GHOST должен закрывать GHOST по паузе")
+		SSdirector.last_fired_at[DIRECTOR_SEVERITY_GHOST] = world.time - profile.ghost_light_spacing - 1
+
+		// Тяжёлые треки раздельны: heavy-запуск ANTAG (культ) не откладывает heavy GHOST (нюков).
+		crew_antag.antag_heavy = TRUE
+		ghost_antag.antag_heavy = TRUE
+		SSdirector.last_antag_heavy_at = world.time
+		candidates = SSdirector.filter_candidates(signals)
+		TEST_ASSERT(!(crew_antag in candidates), "Свежий heavy ANTAG должен закрывать heavy ANTAG")
+		TEST_ASSERT(ghost_antag in candidates, "Свежий heavy ANTAG не должен закрывать heavy GHOST")
+		SSdirector.last_antag_heavy_at = world.time - profile.antag_heavy_spacing - 1
+		crew_antag.antag_heavy = FALSE
+		ghost_antag.antag_heavy = FALSE
+
+		// note_fired обязан роутить heavy-таймстемп в трек своей ступени.
+		var/datum/director_action/test_stub/ghost_heavy = new
+		ghost_heavy.severity = DIRECTOR_SEVERITY_GHOST
+		ghost_heavy.antag_heavy = TRUE
+		var/antag_heavy_before = SSdirector.last_antag_heavy_at
+		SSdirector.note_fired(ghost_heavy)
+		TEST_ASSERT_EQUAL(SSdirector.last_ghost_heavy_at, SSdirector.now(), "note_fired heavy GHOST должен обновлять ghost-трек")
+		TEST_ASSERT_EQUAL(SSdirector.last_antag_heavy_at, antag_heavy_before, "note_fired heavy GHOST не должен трогать antag-трек")
+		SSdirector.last_ghost_heavy_at = world.time - profile.ghost_heavy_spacing - 1
+		SSdirector.fired_counts = list()
+
+		// Кошельки не пересекаются: пустой ANTAG-кошелёк не отсекает GHOST-кандидата.
+		crew_antag.cost = 5
+		ghost_antag.cost = 5
+		SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] = 0
+		candidates = SSdirector.filter_candidates(signals)
+		TEST_ASSERT(!(crew_antag in candidates), "Пустой ANTAG-кошелёк должен отсекать ANTAG")
+		TEST_ASSERT(ghost_antag in candidates, "Пустой ANTAG-кошелёк не должен отсекать GHOST")
+		SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] = 100
+		crew_antag.cost = 0
+		ghost_antag.cost = 0
+
+		// Эвакуация закрывает обе антаг-ступени.
+		signals.evac_state = DIRECTOR_EVAC_CALLED
+		candidates = SSdirector.filter_candidates(signals)
+		TEST_ASSERT(!(crew_antag in candidates), "После вызова эвакуации ANTAG должен быть закрыт")
+		TEST_ASSERT(!(ghost_antag in candidates), "После вызова эвакуации GHOST должен быть закрыт")
 	catch(var/exception/e)
 		SSdirector.restore_simulation_state(saved)
 		throw e
@@ -478,7 +573,7 @@
 /datum/unit_test/director_action_tagging
 
 /datum/unit_test/director_action_tagging/Run()
-	var/list/valid = list(DIRECTOR_SEVERITY_FLAVOR, DIRECTOR_SEVERITY_MINOR, DIRECTOR_SEVERITY_MODERATE, DIRECTOR_SEVERITY_MAJOR, DIRECTOR_SEVERITY_ANTAG)
+	var/list/valid = list(DIRECTOR_SEVERITY_FLAVOR, DIRECTOR_SEVERITY_MINOR, DIRECTOR_SEVERITY_MODERATE, DIRECTOR_SEVERITY_MAJOR, DIRECTOR_SEVERITY_ANTAG, DIRECTOR_SEVERITY_GHOST)
 	var/list/seen_names = list()
 	for(var/datum/director_action/action as anything in SSdirector.actions)
 		var/action_name = action.action_name()
@@ -501,7 +596,10 @@
 		if(!initial(ruleset_path.name) || (ruleset_path in tagging_test_fixtures))
 			continue
 		var/datum/dynamic_ruleset/midround/ruleset = new ruleset_path()
-		TEST_ASSERT_EQUAL(ruleset.severity, DIRECTOR_SEVERITY_ANTAG, "[ruleset_path]: рулсет обязан иметь severity ANTAG")
+		// Классификация по источнику игрока: наблюдательские рулсеты (ветка from_ghosts плюс
+		// swarmers/pirates/raiders) обязаны лежать в GHOST, рулсеты по живому экипажу - в ANTAG.
+		var/expected_severity = (ruleset.required_type == /mob/dead/observer) ? DIRECTOR_SEVERITY_GHOST : DIRECTOR_SEVERITY_ANTAG
+		TEST_ASSERT_EQUAL(ruleset.severity, expected_severity, "[ruleset_path]: severity обязана соответствовать источнику игроков ([expected_severity])")
 		TEST_ASSERT(ruleset.intensity >= 0, "[ruleset_path]: отрицательная intensity")
 		TEST_ASSERT(ruleset.intensity > 0, "[ruleset_path]: рулсет без вклада в intensity")
 		var/ruleset_action_name = ruleset.action_name()
@@ -560,6 +658,6 @@
 	for(var/list/entry in hard_log)
 		if(entry["result"] != DIRECTOR_BEAT_FIRED && entry["result"] != DIRECTOR_BEAT_GUARANTEED)
 			continue
-		if(entry["severity"] == DIRECTOR_SEVERITY_MAJOR || (entry["severity"] == DIRECTOR_SEVERITY_ANTAG && entry["antag_heavy"]))
+		if(entry["severity"] == DIRECTOR_SEVERITY_MAJOR || (DIRECTOR_IS_ANTAG_POOL(entry["severity"]) && entry["antag_heavy"]))
 			heavy_fired++
 	TEST_ASSERT(heavy_fired >= 1, "За 2 часа Hard при 60 экипажа тяжёлая ступень (MAJOR или тяжёлый ANTAG) ни разу не выстрелила - голодание вернулось")

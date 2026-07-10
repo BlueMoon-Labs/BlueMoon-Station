@@ -51,6 +51,7 @@
 /// Dynamic ruleset additions
 /datum/dynamic_ruleset/midround/vox_scavengers
 	name = "Vox Scavengers"
+	severity = DIRECTOR_SEVERITY_GHOST // событие поллит призраков, экипаж не тратится
 	antag_flag = "Vox Scavengers"
 	required_type = /mob/dead/observer
 	enemy_roles = list("Security Officer", "Detective", "Head of Security","Bridge Officer", "Captain")

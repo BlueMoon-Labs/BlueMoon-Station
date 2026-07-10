@@ -40,16 +40,22 @@
 		DIRECTOR_SEVERITY_MODERATE = 8 MINUTES,
 		DIRECTOR_SEVERITY_MAJOR = 25 MINUTES,
 	)
-	/// Паузы пула ANTAG: лёгкие и тяжёлые отдельно
+	/// Паузы пула ANTAG (антаги из живого экипажа): лёгкие и тяжёлые отдельно
 	var/antag_light_spacing = 12 MINUTES
 	var/antag_heavy_spacing = 30 MINUTES
-	/// Целевые доли ступеней при выборе: severity -> доля (сумма ~1)
+	/// Паузы пула GHOST (антаги из призраков): свой трек, полностью независимый от ANTAG
+	var/ghost_light_spacing = 12 MINUTES
+	var/ghost_heavy_spacing = 30 MINUTES
+	/// Целевые доли ступеней при выборе: severity -> доля (сумма ~1).
+	/// Сумма ANTAG + GHOST - общая доля антагонистов раунда; баланс между экипажными
+	/// и гост-инжекциями тюнится их соотношением.
 	var/list/pool_shares = list(
 		DIRECTOR_SEVERITY_FLAVOR = 0.25,
 		DIRECTOR_SEVERITY_MINOR = 0.3,
 		DIRECTOR_SEVERITY_MODERATE = 0.25,
 		DIRECTOR_SEVERITY_MAJOR = 0.08,
-		DIRECTOR_SEVERITY_ANTAG = 0.12,
+		DIRECTOR_SEVERITY_ANTAG = 0.07,
+		DIRECTOR_SEVERITY_GHOST = 0.05,
 	)
 	/// Затишье: если дольше этого не было запусков и intensity ниже порога - гарантированный бит
 	var/max_quiet_time = 12 MINUTES
@@ -81,12 +87,15 @@
 	)
 	antag_light_spacing = 18 MINUTES
 	antag_heavy_spacing = 60 MINUTES
+	ghost_light_spacing = 18 MINUTES
+	ghost_heavy_spacing = 60 MINUTES
 	pool_shares = list(
 		DIRECTOR_SEVERITY_FLAVOR = 0.35,
 		DIRECTOR_SEVERITY_MINOR = 0.35,
 		DIRECTOR_SEVERITY_MODERATE = 0.2,
 		DIRECTOR_SEVERITY_MAJOR = 0,
-		DIRECTOR_SEVERITY_ANTAG = 0.1,
+		DIRECTOR_SEVERITY_ANTAG = 0.06,
+		DIRECTOR_SEVERITY_GHOST = 0.04,
 	)
 	max_quiet_time = 15 MINUTES
 	quiet_intensity_threshold = 20
@@ -110,12 +119,15 @@
 	)
 	antag_light_spacing = 8 MINUTES
 	antag_heavy_spacing = 20 MINUTES
+	ghost_light_spacing = 8 MINUTES
+	ghost_heavy_spacing = 20 MINUTES
 	pool_shares = list(
 		DIRECTOR_SEVERITY_FLAVOR = 0.15,
 		DIRECTOR_SEVERITY_MINOR = 0.2,
 		DIRECTOR_SEVERITY_MODERATE = 0.3,
 		DIRECTOR_SEVERITY_MAJOR = 0.15,
-		DIRECTOR_SEVERITY_ANTAG = 0.2,
+		DIRECTOR_SEVERITY_ANTAG = 0.11,
+		DIRECTOR_SEVERITY_GHOST = 0.09,
 	)
 	max_quiet_time = 8 MINUTES
 	quiet_intensity_threshold = 30
@@ -132,7 +144,8 @@
 		DIRECTOR_SEVERITY_MINOR = 0.15,
 		DIRECTOR_SEVERITY_MODERATE = 0.25,
 		DIRECTOR_SEVERITY_MAJOR = 0.15,
-		DIRECTOR_SEVERITY_ANTAG = 0.35,
+		DIRECTOR_SEVERITY_ANTAG = 0.2,
+		DIRECTOR_SEVERITY_GHOST = 0.15,
 	)
 	max_quiet_time = 10 MINUTES
 	quiet_intensity_threshold = 30
@@ -156,6 +169,7 @@
 		DIRECTOR_SEVERITY_MODERATE = 0.1,
 		DIRECTOR_SEVERITY_MAJOR = 0,
 		DIRECTOR_SEVERITY_ANTAG = 0,
+		DIRECTOR_SEVERITY_GHOST = 0,
 	)
 	max_quiet_time = 20 MINUTES
 	quiet_intensity_threshold = 15
