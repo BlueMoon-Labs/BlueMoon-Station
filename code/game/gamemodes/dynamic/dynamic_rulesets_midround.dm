@@ -220,13 +220,18 @@
 	var/max_traitors = round(player_count / 16) + 1 //BLUEMOON CNANGES - 1 предатель на каждые 16 человек
 
 	// adding traitors if the antag population is getting low
+	// Отказы не логируются из симулятора и оценки пула панелью: acceptable() зовётся там
+	// каждые несколько секунд, а game.log должен отражать только боевые решения.
+	var/real_decision = !SSdirector.dry_run && !SSdirector.quiet_eval
 	var/too_little_antags = antag_count < max_traitors
 	if (!too_little_antags)
-		log_game("DYNAMIC: Too many living antags compared to living players ([antag_count] living antags, [player_count] living players, [max_traitors] max traitors)")
+		if(real_decision)
+			log_game("DYNAMIC: Too many living antags compared to living players ([antag_count] living antags, [player_count] living players, [max_traitors] max traitors)")
 		return FALSE
 
 	if (has_failure_chance && !prob(mode.threat_level))
-		log_game("DYNAMIC: Random chance to roll autotraitor failed, it was a [mode.threat_level]% chance.")
+		if(real_decision)
+			log_game("DYNAMIC: Random chance to roll autotraitor failed, it was a [mode.threat_level]% chance.")
 		return FALSE
 
 	..()

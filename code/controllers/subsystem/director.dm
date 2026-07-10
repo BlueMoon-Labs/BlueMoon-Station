@@ -62,6 +62,9 @@ SUBSYSTEM_DEF(director)
 	/// Кэш живой оценки пула (evaluate_pool) и время его сборки
 	var/list/pool_cache
 	var/pool_cache_at = 0
+	/// TRUE на время оценки пула панелью: контент-код (acceptable автотрейтора) не должен
+	/// логировать свои отказы при каждой перерисовке - это не решение директора
+	var/quiet_eval = FALSE
 	/// Действие, ожидающее окно отмены (MODERATE+)
 	var/datum/director_action/pending_action
 	/// Список кандидатов, из которых было выбрано pending_action (для reroll)
@@ -152,8 +155,12 @@ SUBSYSTEM_DEF(director)
 			return
 
 /datum/controller/subsystem/director/proc/accumulate_drip()
-	var/minutes = (now() - SSticker.round_start_time) / (1 MINUTES)
 	var/datum/director_signals/quick = last_signals || collect_signals()
+	// Пустая станция: бюджет не копится, иначе первый вернувшийся экипаж встречала бы
+	// очередь накоплений за все пустые часы.
+	if(quick.effective_crew <= 0)
+		return
+	var/minutes = (now() - SSticker.round_start_time) / (1 MINUTES)
 	var/rate = profile.base_drip * piecewise_eval(profile.time_curve, minutes) * piecewise_eval(profile.pop_curve, quick.effective_crew)
 	if(quick.dead_fraction > profile.dead_fraction_threshold)
 		rate *= 0.5
@@ -277,6 +284,10 @@ SUBSYSTEM_DEF(director)
 	if(!dry_run && !holiday_forced_done)
 		run_forced_events(signals)
 		holiday_forced_done = TRUE
+	// Пустая станция: события некому играть, биты простаивают (пустой дев-сервер иначе копил бы
+	// аномалии и поды). Форс-бит админа проходит - это его осознанное решение.
+	if(!forced && signals.effective_crew <= 0)
+		return DIRECTOR_BEAT_IDLE
 	// Живое окно отмены: новый пик перезаписал бы pending без deltimer. Это ожидание, не решение - без лога.
 	if(pending_action)
 		return DIRECTOR_BEAT_IDLE
@@ -445,7 +456,9 @@ SUBSYSTEM_DEF(director)
 		return list()
 	var/list/verdicts = list()
 	var/datum/director_signals/signals = collect_signals()
+	quiet_eval = TRUE
 	filter_candidates(signals, FALSE, null, verdicts)
+	quiet_eval = FALSE
 	var/total_weight = 0
 	for(var/list/entry in verdicts)
 		if(entry["verdict"] == DIRECTOR_VERDICT_OK)

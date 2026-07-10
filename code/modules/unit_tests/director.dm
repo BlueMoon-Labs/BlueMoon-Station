@@ -302,6 +302,57 @@
 		throw e
 	SSdirector.restore_simulation_state(saved)
 
+/// Проверяет гейт пустой станции: без эффективного экипажа биты простаивают и капля
+/// не копится, с экипажем тот же сетап стреляет и копит (контроль от вакуума).
+/datum/unit_test/director_empty_station_gate
+
+/datum/unit_test/director_empty_station_gate/Run()
+	// Мутирует живой SSdirector - capture/restore c try/catch (см. комментарий в director_beat_logic).
+	var/list/saved = SSdirector.capture_simulation_state()
+	try
+		var/datum/director_profile/profile = new /datum/director_profile/medium
+		SSdirector.profile = profile
+		SSdirector.reset_budgets(100)
+		SSdirector.intensity_ledger = list()
+		SSdirector.fired_counts = list()
+		SSdirector.last_any_fired_at = world.time
+		SSdirector.last_fired_at = list(
+			DIRECTOR_SEVERITY_MINOR = world.time - profile.severity_spacing[DIRECTOR_SEVERITY_MINOR] - 1,
+		)
+		// dry_run: решение учитывается (бюджет/счётчики), но не исполняется и не трогает форс-праздники.
+		SSdirector.dry_run = TRUE
+
+		var/datum/director_action/test_stub/ready_action = new
+		SSdirector.actions = list(ready_action)
+
+		var/datum/director_signals/empty_signals = new
+		empty_signals.effective_crew = 0
+		empty_signals.staffing = list(DIRECTOR_DEPT_SECURITY = 0, DIRECTOR_DEPT_ENGINEERING = 0,
+			DIRECTOR_DEPT_MEDICAL = 0, DIRECTOR_DEPT_SCIENCE = 0, DIRECTOR_DEPT_SUPPLY = 0, DIRECTOR_DEPT_COMMAND = 0)
+
+		TEST_ASSERT_EQUAL(SSdirector.run_beat(empty_signals), DIRECTOR_BEAT_IDLE, "Бит на пустой станции должен простаивать")
+		TEST_ASSERT_EQUAL(SSdirector.fired_counts[DIRECTOR_SEVERITY_MINOR] || 0, 0, "Пустая станция не должна получать запуски")
+
+		SSdirector.last_signals = empty_signals
+		var/budget_before = SSdirector.total_budget()
+		SSdirector.accumulate_drip()
+		TEST_ASSERT_EQUAL(SSdirector.total_budget(), budget_before, "Капля не должна копиться на пустой станции")
+
+		// Контроль: с экипажем тот же сетап стреляет и капает.
+		var/datum/director_signals/crewed_signals = new
+		crewed_signals.effective_crew = 40
+		crewed_signals.staffing = list(DIRECTOR_DEPT_SECURITY = 4, DIRECTOR_DEPT_ENGINEERING = 1,
+			DIRECTOR_DEPT_MEDICAL = 1, DIRECTOR_DEPT_SCIENCE = 0, DIRECTOR_DEPT_SUPPLY = 0, DIRECTOR_DEPT_COMMAND = 1)
+		TEST_ASSERT_EQUAL(SSdirector.run_beat(crewed_signals), DIRECTOR_BEAT_FIRED, "Контрольный бит с экипажем обязан стрелять")
+		SSdirector.last_signals = crewed_signals
+		budget_before = SSdirector.total_budget()
+		SSdirector.accumulate_drip()
+		TEST_ASSERT(SSdirector.total_budget() > budget_before, "Контрольная капля с экипажем обязана копиться")
+	catch(var/exception/e)
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	SSdirector.restore_simulation_state(saved)
+
 /// Проверяет затухание повторов: математику repeat_falloff и то, что в кандидатах бита
 /// уже стрелявшее действие весит меньше свежего с теми же параметрами.
 /datum/unit_test/director_repeat_falloff
