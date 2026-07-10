@@ -451,8 +451,8 @@
 	if(SPT_PROB(100 - critical_threshold_proximity / 15, seconds_per_tick))
 		return
 	var/grav_range = round(log(2.5, critical_threshold_proximity))
-	for(var/mob/alive_mob in view(grav_range, src))
-		if(alive_mob.mob_negates_gravity())
+	for(var/mob/alive_mob in GLOB.alive_mob_list)
+		if(alive_mob.z != z || get_dist(alive_mob, src) > grav_range || alive_mob.mob_negates_gravity())
 			continue
 		step_towards(alive_mob, loc)
 
