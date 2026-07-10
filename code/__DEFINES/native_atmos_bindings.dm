@@ -12,8 +12,6 @@
 	var/list/turf/open/active_turfs = list()
 	/// Groups of turfs with active gas exchange.
 	var/list/datum/excited_group/excited_groups = list()
-	/// Deferred callbacks that used to be serviced by auxmos.
-	var/list/datum/callback/dm_atmos_callbacks = list()
 	/// Number of currently alive gas mixtures (for stat panel parity).
 	var/dm_registered_gas_mixtures = 0
 	/// Maximum number of simultaneously alive gas mixtures.
@@ -299,18 +297,6 @@
 
 /proc/_auxtools_register_gas(gas)
 	return
-
-/proc/process_atmos_callbacks(remaining)
-	if(!SSair || !length(SSair.dm_atmos_callbacks))
-		return FALSE
-	while(SSair.dm_atmos_callbacks.len)
-		var/datum/callback/CB = SSair.dm_atmos_callbacks[1]
-		SSair.dm_atmos_callbacks.Cut(1, 2)
-		if(CB)
-			CB.Invoke()
-		if(world.tick_usage > Master.current_ticklimit)
-			return TRUE
-	return FALSE
 
 /turf/proc/__update_auxtools_turf_adjacency_info()
 	if(!SSair || !istype(src, /turf/open))

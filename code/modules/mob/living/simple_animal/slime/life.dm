@@ -6,6 +6,7 @@
 	var/Tempstun = 0 // temporary temperature stuns
 	var/Discipline = 0 // if a slime has been hit with a freeze gun, or wrestled/attacked off a human, they become disciplined and don't attack anymore for a while
 	var/SStun = 0 // stun variable
+	var/next_hunt_scan = 0 // world.time gate for the prey view() scan in handle_targets(); set only after a scan that found nothing
 
 	typing_indicator_state = /obj/effect/overlay/typing_indicator/slime
 
@@ -324,7 +325,7 @@
 				--Friends[nofriend]
 
 		if(!Target)
-			if(will_hunt() && hungry || attacked || rabid) // Only add to the list if we need to
+			if(world.time >= next_hunt_scan && (will_hunt() && hungry || attacked || rabid)) // Only add to the list if we need to
 				var/list/targets = list()
 
 				for(var/mob/living/L in view(7,src))
@@ -357,6 +358,9 @@
 						continue
 
 					targets += L // Possible target found!
+
+				if(!targets.len) // Empty pen: don't burn a full view() scan every Life tick, prey rarely appears
+					next_hunt_scan = world.time + SLIME_HUNT_SCAN_COOLDOWN
 
 				if(targets.len > 0)
 					if(attacked || rabid || hungry == 2)
@@ -527,6 +531,8 @@
 	else if(prob(1))
 		emote(pick("bounce","sway","light","vibrate","jiggle"))
 	else
+		if (!prob(2)) // roll the rare-chatter die before the view() scan: its results only feed the phrase list below
+			return
 		var/t = 10
 		var/slimes_near = 0
 		var/dead_slimes = 0
@@ -543,7 +549,7 @@
 			t += 10
 		if (nutrition < get_starve_nutrition())
 			t += 10
-		if (prob(2) && prob(t))
+		if (prob(t))
 			var/phrases = list()
 			if (Target)
 				phrases += "[Target]... look yummy..."

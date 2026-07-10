@@ -306,7 +306,10 @@ SUBSYSTEM_DEF(metadollars)
 	round_earnings[ck][category] += amount
 	round_earnings[ck]["total"] = (round_earnings[ck]["total"] || 0) + amount
 	if(category == "living")
-		C.prefs.save_preferences()
+		// Тут сохраняется только metadollar_minute_pool (баланс уже лёг в metadollars.json).
+		// Полный сейв префов дорогой, а начисления у игроков приходят пачками в один фаер
+		// SSblackbox - откладываем через таймер, чтобы не собирать все записи в один тик.
+		C.prefs.queue_save_pref(PREF_SAVE_COOLDOWN, TRUE)
 	if(category == "living" && isliving(C.mob))
 		to_chat(C.mob, span_purple("Вы получили [amount] М$ за работу."))
 		SEND_SOUND(C.mob, sound('sound/machines/terminal_success.ogg', volume = 35))
