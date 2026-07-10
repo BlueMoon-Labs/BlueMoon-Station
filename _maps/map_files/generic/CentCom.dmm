@@ -22214,11 +22214,6 @@
 	dir = 8
 	},
 /obj/machinery/light/dim/directional/south,
-/obj/machinery/power/apc/auto_name/south{
-	req_access = null;
-	req_access_txt = "150"
-	},
-/obj/machinery/power/apc/auto_name/south,
 /obj/structure/chair/sofa/corner{
 	dir = 1
 	},
