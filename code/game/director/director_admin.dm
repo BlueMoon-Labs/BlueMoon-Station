@@ -12,7 +12,14 @@
 
 /datum/director_panel/ui_data(mob/user)
 	var/datum/controller/subsystem/director/D = SSdirector
+	// Итог считаем до сборки таблицы: get_active_intensity() заодно выкидывает истёкшие записи
+	// и мосты исполненных рулсетов, иначе мост и его же динамическая строка задвоились бы в таблице.
+	var/list/ruleset_rows = list()
+	var/active_intensity = D.get_active_intensity(ruleset_rows)
 	var/list/ledger_out = list()
+	for(var/list/ruleset_row in ruleset_rows)
+		ledger_out += list(list("name" = ruleset_row[1], "intensity" = round(ruleset_row[2], 0.1),
+			"living" = ruleset_row[3], "assigned" = ruleset_row[4]))
 	for(var/list/entry in D.intensity_ledger)
 		ledger_out += list(list("name" = entry[1], "intensity" = entry[2],
 			"expires_in" = entry[3] ? max(0, round((entry[3] - D.now()) / 600)) : null))
@@ -52,7 +59,7 @@
 		"paused" = D.paused,
 		"budget" = round(D.total_budget(), 0.1),
 		"profileName" = D.profile ? GLOB.round_type : null,
-		"intensity" = D.get_active_intensity(),
+		"intensity" = active_intensity,
 		"intensityCap" = D.profile ? D.profile.intensity_cap : 0,
 		"crew" = D.last_signals ? D.last_signals.effective_crew : 0,
 		"deadFraction" = D.last_signals ? round(D.last_signals.dead_fraction * 100) : 0,

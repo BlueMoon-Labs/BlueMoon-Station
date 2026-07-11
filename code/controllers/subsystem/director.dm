@@ -225,8 +225,9 @@ SUBSYSTEM_DEF(director)
 /// Динамический вклад живых ANTAG-рулсетов: intensity рулсета * доля выживших назначенных.
 /// Рулсеты не держат постоянных записей в intensity_ledger: вырезанные антаги
 /// не должны глушить директора до конца раунда. Опционально помечает имена живых рулсетов в
-/// live_names - их временные мосты в ledger вытесняются этим расчётом.
-/datum/controller/subsystem/director/proc/get_ruleset_intensity(list/live_names = null)
+/// live_names - их временные мосты в ledger вытесняются этим расчётом. В breakdown (если передан)
+/// складываются строки list(имя, вклад, живых, назначено) - панель показывает их рядом с ledger.
+/datum/controller/subsystem/director/proc/get_ruleset_intensity(list/live_names = null, list/breakdown = null)
 	var/total = 0
 	for(var/datum/director_action/action as anything in actions)
 		if(action.director_kind != DIRECTOR_KIND_RULESET)
@@ -239,14 +240,17 @@ SUBSYSTEM_DEF(director)
 			if(istype(assigned_mind) && assigned_mind.current && assigned_mind.current.stat != DEAD)
 				living++
 		if(living)
-			total += rule.intensity * living / length(rule.assigned)
+			var/contribution = rule.intensity * living / length(rule.assigned)
+			total += contribution
+			if(!isnull(breakdown))
+				breakdown += list(list(rule.action_name(), contribution, living, length(rule.assigned)))
 		if(!isnull(live_names))
 			live_names[rule.action_name()] = TRUE
 	return total
 
-/datum/controller/subsystem/director/proc/get_active_intensity()
+/datum/controller/subsystem/director/proc/get_active_intensity(list/breakdown = null)
 	var/list/live_names = list()
-	var/total = get_ruleset_intensity(live_names)
+	var/total = get_ruleset_intensity(live_names, breakdown)
 	// Итерация по индексам с конца: удаление записи внутри for-in сдвигало бы список
 	// и пропускало элемент, следующий за истёкшим (он бы не суммировался в этом вызове).
 	for(var/i = length(intensity_ledger), i >= 1, i--)

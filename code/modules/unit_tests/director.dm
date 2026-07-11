@@ -223,6 +223,54 @@
 		throw e
 	SSdirector.restore_simulation_state(saved)
 
+/// Проверяет динамический вклад живых рулсетов в get_active_intensity(): доля выживших,
+/// строки разбивки для панели, вытеснение моста из ledger и суммирование с обычными записями.
+/datum/unit_test/director_ruleset_intensity_breakdown
+
+/datum/unit_test/director_ruleset_intensity_breakdown/Run()
+	// Мутирует живой SSdirector - capture/restore c try/catch возвращает состояние даже при падении
+	// ассерта (см. комментарий в director_beat_logic/Run()).
+	var/list/saved = SSdirector.capture_simulation_state()
+	try
+		var/datum/dynamic_ruleset/midround/test_pool_isolation/rule = new
+		rule.intensity = 15
+		rule.occurrences = 1
+		var/mob/living/carbon/human/alive = allocate(/mob/living/carbon/human)
+		alive.mind_initialize()
+		var/mob/living/carbon/human/corpse = allocate(/mob/living/carbon/human)
+		corpse.mind_initialize()
+		corpse.death()
+		rule.assigned = list(alive.mind, corpse.mind)
+		SSdirector.actions = list(rule)
+		// Обычная запись события + мост рулсета, оставшийся между schedule и execute:
+		// мост обязан вытесниться динамическим расчётом, а не задваивать вклад.
+		SSdirector.intensity_ledger = list(
+			list("Тестовое событие", 5, 0, null),
+			list(rule.action_name(), rule.intensity, 0, rule.severity),
+		)
+
+		var/list/breakdown = list()
+		var/total = SSdirector.get_active_intensity(breakdown)
+		TEST_ASSERT_EQUAL(total, 15 * 0.5 + 5, "Итог: вклад рулсета по доле живых плюс запись события, без моста")
+		TEST_ASSERT_EQUAL(length(SSdirector.intensity_ledger), 1, "Мост исполненного рулсета должен вытесниться из ledger")
+		TEST_ASSERT_EQUAL(length(breakdown), 1, "Живой рулсет должен дать ровно одну строку разбивки")
+		var/list/row = breakdown[1]
+		TEST_ASSERT_EQUAL(row[1], rule.action_name(), "Имя строки разбивки должно совпадать с именем рулсета")
+		TEST_ASSERT_EQUAL(row[2], 7.5, "Вклад строки = intensity * живые / назначенные")
+		TEST_ASSERT_EQUAL(row[3], 1, "Число живых в строке разбивки")
+		TEST_ASSERT_EQUAL(row[4], 2, "Число назначенных в строке разбивки")
+
+		// Полностью мёртвый рулсет не даёт ни вклада, ни строки.
+		alive.death()
+		breakdown = list()
+		total = SSdirector.get_active_intensity(breakdown)
+		TEST_ASSERT_EQUAL(total, 5, "Мёртвый рулсет не должен давать вклада")
+		TEST_ASSERT_EQUAL(length(breakdown), 0, "Мёртвый рулсет не должен давать строк разбивки")
+	catch(var/exception/e)
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	SSdirector.restore_simulation_state(saved)
+
 /// Проверяет независимость ступеней ANTAG и GHOST: запуск одной не двигает паузы другой
 /// (и лёгкие, и тяжёлые треки раздельны), кошельки не пересекаются, эвакуация закрывает обе.
 /datum/unit_test/director_ghost_pool_independence

@@ -19,7 +19,19 @@ import { Window } from '../layouts';
 type LedgerEntry = {
   name: string;
   intensity: number;
-  expires_in: number | null;
+  expires_in?: number | null;
+  living?: number;
+  assigned?: number;
+};
+
+// Динамическая строка рулсета живёт, пока живы его антаги; записи ledger - по таймеру или до конца события.
+const ledgerExpiryText = (entry: LedgerEntry) => {
+  if (entry.living) {
+    return `пока живы антаги (${entry.living} из ${entry.assigned})`;
+  }
+  return entry.expires_in
+    ? `истекает через ${entry.expires_in} мин`
+    : 'пока активно';
 };
 
 type BeatEntry = {
@@ -365,11 +377,7 @@ const OverviewTab = (props) => {
               <Table.Row key={index}>
                 <Table.Cell>{entry.name}</Table.Cell>
                 <Table.Cell>{entry.intensity}</Table.Cell>
-                <Table.Cell>
-                  {entry.expires_in
-                    ? `истекает через ${entry.expires_in} мин`
-                    : 'пока активно'}
-                </Table.Cell>
+                <Table.Cell>{ledgerExpiryText(entry)}</Table.Cell>
               </Table.Row>
             ))}
           </Table>
@@ -604,7 +612,8 @@ const HelpTab = (props) => {
           (Малое 5, Среднее 15, Крупное 40; антаги считаются динамически по
           доле выживших). Пока сумма выше потолка профиля, новые запуски
           блокируются - кроме флейвора. Вклады событий гаснут по их
-          завершении, текущие видны в таблице &quot;Активные вклады&quot;.
+          завершении, антагов - по смерти; все текущие видны в таблице
+          &quot;Активные вклады&quot;.
         </Box>
         <Box mb={1}>
           <b>Темп.</b> У каждой ступени своя минимальная пауза между
