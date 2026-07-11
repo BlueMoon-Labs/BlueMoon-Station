@@ -6,14 +6,27 @@
 	earliest_start = 2 HOURS
 	min_players = 30
 	category = EVENT_CATEGORY_ENTITIES
+	/// Тайпкэш дозволенных турфов для скана крови: набор типов фиксирован на компиляции,
+	/// пересборка двух typecacheof на каждый вызов не нужна.
+	var/static/list/allowed_turf_typecache
 
 /datum/round_event_control/slaughter/can_fire(datum/director_signals/signals)
+	. = ..()
+	if(!.)
+		return
+	// Скан всех клинэблов мира стоит сотен мс на грязной станции, поэтому только после
+	// дешёвых базовых гейтов (earliest_start, min_players): до них он выжигал слот
+	// директора на каждом бите с накопленным MAJOR-кошельком. CHECK_TICK стоит первым
+	// в теле цикла: после continue он недостижим, а не-кровь (грязь, копоть) - это
+	// почти весь список, и без него скан не отдаёт тик вообще.
 	weight = initial(src.weight)
-	var/list/allowed_turf_typecache = typecacheof(/turf/open) - typecacheof(/turf/open/space)
+	if(isnull(allowed_turf_typecache))
+		allowed_turf_typecache = typecacheof(/turf/open) - typecacheof(/turf/open/space)
 	var/list/allowed_z_cache = list()
 	for(var/z in SSmapping.levels_by_trait(ZTRAIT_STATION))
 		allowed_z_cache[num2text(z)] = TRUE
 	for(var/obj/effect/decal/cleanable/C as anything in GLOB.cleanable_decals)
+		CHECK_TICK
 		if(!C.loc || QDELETED(C))
 			continue
 		if(!C.can_bloodcrawl_in())
@@ -21,8 +34,6 @@
 		if(!SSpersistence.IsValidDebrisLocation(C.loc, allowed_turf_typecache, allowed_z_cache, C.type, FALSE))
 			continue
 		weight += 0.03
-		CHECK_TICK
-	return ..()
 
 /datum/round_event/ghost_role/slaughter
 	minimum_required = 1
