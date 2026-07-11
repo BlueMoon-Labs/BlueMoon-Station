@@ -394,6 +394,22 @@
 	default = GC_HARDDEL_LOBBY_MAX_PER_FIRE
 	min_val = 1
 
+/// Режим авто-скана ссылок при GC-фейлах: 0 = выкл, 1 = только помеченные типы, 2 = все warnfail.
+/datum/config_entry/number/gc_reftrack_mode
+	default = GC_REFTRACK_OFF
+	min_val = 0
+	max_val = 2
+
+/// Минимальный интервал между авто-сканами ссылок, в секундах.
+/datum/config_entry/number/gc_reftrack_autoscan_cooldown_seconds
+	default = 30
+	min_val = 0
+
+/// Максимум авто-сканов ссылок за раунд.
+/datum/config_entry/number/gc_reftrack_autoscan_max_per_round
+	default = GC_REFTRACK_AUTOSCAN_MAX_PER_ROUND
+	min_val = 0
+
 /datum/config_entry/flag/atmos_equalize_enabled
 	default = FALSE
 

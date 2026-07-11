@@ -172,6 +172,7 @@
 #include "can_inject_clothing.dm"
 #include "disposal_holder.dm"
 #include "fov_hearers.dm"
+#include "gc_refcount.dm"
 #include "ghost_role_limbs.dm"
 #include "hallucination_stationmessage.dm"
 #include "memory_leak_limits.dm"

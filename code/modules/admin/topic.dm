@@ -2570,6 +2570,15 @@
 			return
 		usr.client?.cmd_gc_health_help()
 
+	else if(href_list["gc_reftrack_mode"])
+		if(!check_rights(R_DEBUG))
+			return
+		var/new_reftrack_mode = clamp(text2num(href_list["gc_reftrack_mode"]), GC_REFTRACK_OFF, GC_REFTRACK_ALL)
+		SSgarbage.reftrack_mode = new_reftrack_mode
+		message_admins("[key_name_admin(usr)] переключил режим авто-скана ссылок GC на [new_reftrack_mode] ([new_reftrack_mode == GC_REFTRACK_OFF ? "выкл" : new_reftrack_mode == GC_REFTRACK_FLAGGED ? "помеченные типы" : "все warnfail"]).")
+		log_admin("[key_name(usr)] переключил режим авто-скана ссылок GC на [new_reftrack_mode]")
+		usr.client?.cmd_gc_health_panel()
+
 	else if(href_list["gc_toggle_notify"])
 		if(!check_rights(R_DEBUG))
 			return
@@ -2759,6 +2768,20 @@
 			to_chat(usr, span_warning("GC failure entry больше не существует."))
 			return
 		INVOKE_ASYNC(entry, TYPE_PROC_REF(/datum/gc_failure_viewer/gc_failure_entry, trigger_world_scan), owner, null)
+
+	else if(href_list["viewgcfailure_refcount"])
+		var/datum/gc_failure_viewer/gc_failure_entry/entry = locate(href_list["viewgcfailure_refcount"])
+		if(!istype(entry))
+			to_chat(usr, span_warning("GC failure entry больше не существует."))
+			return
+		if(!entry.datum_ref)
+			to_chat(usr, span_warning("Нет ссылки на объект."))
+			return
+		var/datum/refcount_target = locate(entry.datum_ref)
+		if(isnull(refcount_target))
+			to_chat(usr, span_notice("[entry.type_path]: объект уже собран или удалён."))
+			return
+		to_chat(usr, span_notice("[entry.type_path]: внешних ссылок сейчас: [EXTERNAL_REFCOUNT(refcount_target)]."))
 
 	else if(href_list["viewgcfailure_refscan"])
 		var/datum/gc_failure_viewer/gc_failure_entry/entry = locate(href_list["viewgcfailure_refscan"])
