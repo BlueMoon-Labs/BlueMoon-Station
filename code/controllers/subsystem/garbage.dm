@@ -142,7 +142,8 @@ SUBSYSTEM_DEF(garbage)
 	var/reftrack_autoscans_this_round = 0
 	/// Авто-сканов по типам за раунд: type string -> count.
 	var/list/reftrack_autoscan_type_counts = list()
-	#ifdef UNIT_TESTS
+	// Тесты компилируются и под SPACEMAN_DMM — гард обязан совпадать с _unit_tests.dm.
+	#if defined(UNIT_TESTS) || defined(SPACEMAN_DMM)
 	/// Test hook: skip async ref scans while still exercising GC control flow.
 	var/test_ref_scan_skip_async = FALSE
 	#endif
@@ -1166,7 +1167,9 @@ SUBSYSTEM_DEF(garbage)
 				SSgarbage.Queue(D, qdel_hint = hint)
 			if (QDEL_HINT_FINDREFERENCE)
 				SSgarbage.Queue(D, qdel_hint = hint)
-				D.find_references()
+				// Только асинхронно: qdel зовётся из не-спящих контекстов (Initialize и далее),
+				// а find_references спит (CHECK_TICK) на протяжении всего обхода мира.
+				SSgarbage.ScheduleReferenceScan(D)
 			if (QDEL_HINT_IFFAIL_FINDREFERENCE)
 				SSgarbage.Queue(D, qdel_hint = hint)
 				SSgarbage.reference_find_on_fail[REF(D)] = TRUE
