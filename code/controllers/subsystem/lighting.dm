@@ -466,37 +466,32 @@ SUBSYSTEM_DEF(lighting)
 		if(ns_queue_len > peak_nightshift)
 			peak_nightshift = ns_queue_len
 	var/ns_timer = TICK_USAGE_REAL
-	if(GLOB.nightshift_apc_queue.len)
-		var/k = 0
-		for(k in 1 to GLOB.nightshift_apc_queue.len)
-			if(k > GLOB.nightshift_apc_queue.len) // Queue may shrink if CHECK_TICK yields and fire() re-enters
-				break
-			var/obj/machinery/power/apc/APC = GLOB.nightshift_apc_queue[k]
-			if(!QDELETED(APC))
-				SSnightshift.last_nightshift_lights_queued += APC.apply_queued_nightshift_refresh()
-				nightshift_apcs_processed++
-			if(init_tick_checks)
-				CHECK_TICK
-			else if(MC_TICK_CHECK)
-				break
-		if(k)
-			GLOB.nightshift_apc_queue.Cut(1, min(k + 1, length(GLOB.nightshift_apc_queue) + 1))
-	if(GLOB.nightshift_light_queue.len)
-		var/k = 0
-		for(k in 1 to GLOB.nightshift_light_queue.len)
-			if(k > GLOB.nightshift_light_queue.len) // Queue may shrink if CHECK_TICK yields and fire() re-enters
-				break
-			var/obj/machinery/light/L = GLOB.nightshift_light_queue[k]
-			if(!QDELETED(L))
-				L.nightshift_update_queued = FALSE
-				L.update(FALSE, TRUE)
-				nightshift_lights_processed++
-			if(init_tick_checks)
-				CHECK_TICK
-			else if(MC_TICK_CHECK)
-				break
-		if(k)
-			GLOB.nightshift_light_queue.Cut(1, min(k + 1, length(GLOB.nightshift_light_queue) + 1))
+	// Pop-from-tail: элемент снимается из очереди ДО обработки. По этим очередям ходят
+	// два конкурентных прохода (fire() поверх CHECK_TICK-сна админ-дрейна), и прежний
+	// k-индексный цикл с хвостовым Cut на конкурентном уменьшении очереди выкидывал
+	// необработанные записи: лампа оставалась с nightshift_update_queued = TRUE вне
+	// очереди и навсегда теряла обновления цвета (флак nightshift_admin_controls).
+	while(GLOB.nightshift_apc_queue.len)
+		var/obj/machinery/power/apc/APC = GLOB.nightshift_apc_queue[GLOB.nightshift_apc_queue.len]
+		GLOB.nightshift_apc_queue.len--
+		if(!QDELETED(APC))
+			SSnightshift.last_nightshift_lights_queued += APC.apply_queued_nightshift_refresh()
+			nightshift_apcs_processed++
+		if(init_tick_checks)
+			CHECK_TICK
+		else if(MC_TICK_CHECK)
+			break
+	while(GLOB.nightshift_light_queue.len)
+		var/obj/machinery/light/L = GLOB.nightshift_light_queue[GLOB.nightshift_light_queue.len]
+		GLOB.nightshift_light_queue.len--
+		if(!QDELETED(L))
+			L.nightshift_update_queued = FALSE
+			L.update(FALSE, TRUE)
+			nightshift_lights_processed++
+		if(init_tick_checks)
+			CHECK_TICK
+		else if(MC_TICK_CHECK)
+			break
 	if(!init_tick_checks)
 		cost_nightshift = MC_AVERAGE(cost_nightshift, TICK_USAGE_TO_MS(ns_timer))
 

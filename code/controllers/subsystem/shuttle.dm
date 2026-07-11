@@ -135,16 +135,8 @@ SUBSYSTEM_DEF(shuttle)
 		if(!T.owner)
 			qdel(T, force=TRUE)
 			continue
-		// This next one removes transit docks/zones that aren't
-		// immediately being used. This will mean that the zone creation
-		// code will be running a lot.
-		var/obj/docking_port/mobile/owner = T.owner
-		if(owner)
-			var/idle = owner.mode == SHUTTLE_IDLE
-			var/not_centcom_evac = owner.launch_status == NOLAUNCH
-			var/not_in_use = (!T.get_docked())
-			if(idle && not_centcom_evac && not_in_use)
-				qdel(T, force=TRUE)
+		// Keep the reservation assigned to its shuttle between flights. Reusing it avoids
+		// another reservation scan and bulk ChangeTurf when the shuttle next launches.
 	CheckAutoEvac()
 
 	// Skyrat change. Handles Problem Computer charges here

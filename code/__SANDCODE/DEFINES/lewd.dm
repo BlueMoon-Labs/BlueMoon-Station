@@ -77,6 +77,7 @@ GLOBAL_LIST_INIT(interaction_speeds, list(
 #define GRINDING_MOUTH_WITH_FEET "mouthfeet"
 #define THIGH_SMOTHERING "thigh_smother"
 #define NUTS_TO_FACE "nut_face"
+#define NUTS_MASSAGE "nuts_massage"
 
 #define HIGH_LUST 20
 #define NORMAL_LUST 12

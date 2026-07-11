@@ -37,6 +37,7 @@ SUBSYSTEM_DEF(metadollars)
 	round_earnings = list()
 	metadollar_burn_round_notice = null
 	metashop_round_limited_purchases = list()
+	refresh_metadollar_leaderboard_from_saves()
 
 /datum/controller/subsystem/metadollars/proc/get_round_limited_purchase_count(limit_key)
 	if(!limit_key)
@@ -199,6 +200,53 @@ SUBSYSTEM_DEF(metadollars)
 	metadollar_leaderboard = json_decode(file2text(json_file))
 	sort_metadollar_leaderboard()
 
+/datum/controller/subsystem/metadollars/proc/resolve_leaderboard_display_key(target_ckey, save_dir_name)
+	if(!target_ckey)
+		return null
+	var/client/C = GLOB.directory[target_ckey]
+	if(C?.key)
+		return C.key
+	for(var/display_key in metadollar_leaderboard)
+		if(ckey(display_key) == target_ckey)
+			return display_key
+	return save_dir_name || target_ckey
+
+/datum/controller/subsystem/metadollars/proc/read_metadollar_balance_from_save(target_ckey)
+	if(!target_ckey)
+		return 0
+	if(target_ckey in metadollar_amount_cache)
+		return metadollar_amount_cache[target_ckey]
+	var/json_path = bm_metadollar_json_path(target_ckey)
+	if(fexists(json_path))
+		var/list/loaded = json_decode(file2text(file(json_path)))
+		if(islist(loaded) && isnum(loaded["metadollar_count"]))
+			return max(0, round(loaded["metadollar_count"]))
+	return max(0, round(bm_read_legacy_metadollars_from_prefs_sav(target_ckey)))
+
+/datum/controller/subsystem/metadollars/proc/refresh_metadollar_leaderboard_from_saves()
+	var/list/rebuilt = list()
+	if(fexists("data/player_saves"))
+		for(var/letterdir in flist("data/player_saves/"))
+			var/prefix = "data/player_saves/[letterdir]"
+			if(!fexists(prefix))
+				continue
+			for(var/save_dir_name in flist(prefix))
+				var/target_ckey = ckey(save_dir_name)
+				if(!target_ckey)
+					continue
+				var/amount = read_metadollar_balance_from_save(target_ckey)
+				if(amount < 1)
+					continue
+				var/display_key = resolve_leaderboard_display_key(target_ckey, save_dir_name)
+				if(!display_key)
+					continue
+				rebuilt[display_key] = amount
+	metadollar_leaderboard = rebuilt
+	sort_metadollar_leaderboard()
+	while(metadollar_leaderboard.len > metadollar_leaderboard_positions_tracked)
+		metadollar_leaderboard.Cut(metadollar_leaderboard.len)
+	save_metadollar_leaderboard()
+
 /datum/controller/subsystem/metadollars/proc/save_metadollar_leaderboard()
 	var/leaderboard_file = file("data/metadollar_leaderboard.json")
 	if(fexists(leaderboard_file))
@@ -306,7 +354,10 @@ SUBSYSTEM_DEF(metadollars)
 	round_earnings[ck][category] += amount
 	round_earnings[ck]["total"] = (round_earnings[ck]["total"] || 0) + amount
 	if(category == "living")
-		C.prefs.save_preferences()
+		// Тут сохраняется только metadollar_minute_pool (баланс уже лёг в metadollars.json).
+		// Полный сейв префов дорогой, а начисления у игроков приходят пачками в один фаер
+		// SSblackbox - откладываем через таймер, чтобы не собирать все записи в один тик.
+		C.prefs.queue_save_pref(PREF_SAVE_COOLDOWN, TRUE)
 	if(category == "living" && isliving(C.mob))
 		to_chat(C.mob, span_purple("Вы получили [amount] М$ за работу."))
 		SEND_SOUND(C.mob, sound('sound/machines/terminal_success.ogg', volume = 35))

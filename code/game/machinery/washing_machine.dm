@@ -521,7 +521,7 @@ GLOBAL_LIST_INIT(dye_registry, list(
 
 /obj/machinery/washing_machine/shove_act(mob/living/target, mob/living/user)
 	. = ..()
-	if(target.y <= y && buckle_mob(target)) // изначально планировалось "target.y < y", но на половине карт стиралки "смотрят" в стену, поэтому увы во имя механа.
+	if(target.y <= y && prob(50) && buckle_mob(target)) // изначально планировалось "target.y < y", но на половине карт стиралки "смотрят" в стену, поэтому увы во имя механа.
 		user.visible_message(span_danger("[user.name] заталкивает [target.name] внутрь \the [src]!"),
 							span_danger("Вы впихиваете [target.name] внутрь \the [src]!"), null, COMBAT_MESSAGE_RANGE)
 		log_combat(user, target, "shoved", "into [src] (washing machine)")

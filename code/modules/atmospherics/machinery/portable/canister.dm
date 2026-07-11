@@ -181,7 +181,7 @@
 
 /obj/machinery/portable_atmospherics/canister/hydrogen
 	name = "hydrogen canister"
-	desc = "Hydrogen. Flammable and used in fusion."
+	desc = "Hydrogen. Flammable and used in fusion. Ionizing radiation converts it into tritium."
 	icon_state = "green"
 	gas_type = GAS_HYDROGEN
 
