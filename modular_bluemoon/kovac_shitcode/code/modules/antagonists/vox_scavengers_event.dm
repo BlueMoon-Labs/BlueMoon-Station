@@ -6,6 +6,11 @@
 	min_players = 30
 	earliest_start = 15 MINUTES
 	category = EVENT_CATEGORY_INVASION
+	// Гост-команда со своего корабля: admin-only, но при форсе обязана считаться
+	// антаг-нагрузкой гост-пула, а не MAJOR по дефолту категории INVASION (ср. devil).
+	severity = DIRECTOR_SEVERITY_GHOST
+	cost = 10
+	intensity = 15
 	description = "A vox scavengers heist."
 	var/ship_template
 

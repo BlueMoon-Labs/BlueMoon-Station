@@ -171,7 +171,9 @@
 			new_character = generate_ruleset_body(applicant)
 
 		finish_setup(new_character, i)
-		assigned += applicant
+		// Разум нового тела, не моб-призрак: assigned держит minds - по ним директор
+		// считает живой вклад рулсета в intensity (см. tally_ruleset_intensity).
+		assigned += new_character.mind
 		notify_ghosts("[new_character] has been picked for the ruleset [name]!", source = new_character, action = NOTIFY_ORBIT, header="Something Interesting!")
 
 /datum/dynamic_ruleset/midround/from_ghosts/proc/generate_ruleset_body(mob/applicant)
@@ -261,7 +263,7 @@
 		return FALSE
 	// BLUEMOON ADD END
 	var/mob/M = pick_n_take(living_players)
-	assigned += M
+	assigned += M.mind // mind, не моб: по assigned директор считает вклад в intensity
 	var/datum/antagonist/traitor/newTraitor = new
 	M.mind.add_antag_datum(newTraitor)
 	message_admins("[ADMIN_LOOKUPFLW(M)] was selected by the [name] ruleset and has been made into a midround traitor.")
@@ -380,7 +382,7 @@
 
 /datum/dynamic_ruleset/midround/wizard/execute()
 	var/mob/M = pick_n_take(living_players)
-	assigned += M
+	assigned += M.mind // mind, не моб: по assigned директор считает вклад в intensity
 	var/datum/antagonist/wizard/on_station/wiz = new
 	M.mind.add_antag_datum(wiz)
 	wizard = M.mind
@@ -1064,6 +1066,7 @@
 	weight = 2 //BLUEMOON CHANGES
 	cost = 10
 	intensity = 15
+	family = "swarmers" // с событием-двойником: не подряд
 	requirements = list(101,101,101,101,50,40,30,20,10,10)
 	repeatable = TRUE
 

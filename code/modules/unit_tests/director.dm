@@ -345,6 +345,39 @@
 		mode.executed_rules -= roundstart_rule
 	SSdirector.restore_simulation_state(saved)
 
+/// Гост-рулсет фикстура: weight = 0, чтобы init_rulesets живого раунда его не подобрал;
+/// makeBody = FALSE и пустой finish_setup - тесту нужен только путь наполнения assigned.
+/datum/dynamic_ruleset/midround/from_ghosts/test_assigned_minds
+	name = "Test From Ghosts Assigned"
+	weight = 0
+	cost = 0
+	required_candidates = 1 // база = 0: без этого цикл назначения review_applications не крутится
+	requirements = list(0,0,0,0,0,0,0,0,0,0)
+	required_round_type = null
+	makeBody = FALSE
+
+/datum/dynamic_ruleset/midround/from_ghosts/test_assigned_minds/finish_setup(mob/new_character, index)
+	return // антаг-датум контенту не нужен: тест проверяет только содержимое assigned
+
+/// Регрессия "Space Dragon не учитывался в intensity": review_applications клал в assigned
+/// моба-призрака вместо mind. tally_ruleset_intensity молча пропускал не-mind (вклад 0),
+/// а live_names при этом помечался - и get_active_intensity вытеснял мост рулсета из ledger.
+/// Итог: ни один from_ghosts-рулсет (вся ступень гост-антагов) не давал intensity вовсе.
+/datum/unit_test/director_from_ghosts_assigned_minds
+
+/datum/unit_test/director_from_ghosts_assigned_minds/Run()
+	var/datum/dynamic_ruleset/midround/from_ghosts/test_assigned_minds/rule = new
+	var/mob/dead/observer/ghost = allocate(/mob/dead/observer)
+	var/datum/mind/ghost_mind = allocate(/datum/mind, "unit_test_from_ghosts")
+	ghost_mind.current = ghost
+	ghost.mind = ghost_mind
+	rule.candidates = list(ghost)
+	rule.review_applications()
+	TEST_ASSERT_EQUAL(length(rule.assigned), 1, "review_applications должен назначить одного кандидата")
+	var/datum/mind/assigned_mind = rule.assigned[1]
+	TEST_ASSERT(istype(assigned_mind), "В assigned обязан лежать mind, а не моб: по нему директор считает вклад рулсета в intensity")
+	TEST_ASSERT_EQUAL(assigned_mind, ghost_mind, "В assigned обязан лежать mind назначенного кандидата")
+
 /// Проверяет независимость ступеней ANTAG и GHOST: запуск одной не двигает паузы другой
 /// (и лёгкие, и тяжёлые треки раздельны), кошельки не пересекаются, эвакуация закрывает обе.
 /datum/unit_test/director_ghost_pool_independence
@@ -723,7 +756,7 @@
 	// от событийных seen_names, чтобы диагностика коллизии ruleset-vs-ruleset не путалась с event-vs-ruleset.
 	// test_pool_isolation и test_roundstart_intensity - фикстуры других тестов в этом же файле,
 	// не реальный игровой контент; требования тегирования на них не распространяются.
-	var/list/tagging_test_fixtures = list(/datum/dynamic_ruleset/midround/test_pool_isolation, /datum/dynamic_ruleset/latejoin/test_pool_isolation, /datum/dynamic_ruleset/roundstart/test_roundstart_intensity)
+	var/list/tagging_test_fixtures = list(/datum/dynamic_ruleset/midround/test_pool_isolation, /datum/dynamic_ruleset/latejoin/test_pool_isolation, /datum/dynamic_ruleset/roundstart/test_roundstart_intensity, /datum/dynamic_ruleset/midround/from_ghosts/test_assigned_minds)
 	var/list/ruleset_names = list()
 	for(var/datum/dynamic_ruleset/midround/ruleset_path as anything in subtypesof(/datum/dynamic_ruleset/midround))
 		if(!initial(ruleset_path.name) || (ruleset_path in tagging_test_fixtures))
