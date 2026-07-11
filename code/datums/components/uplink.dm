@@ -88,6 +88,9 @@ GLOBAL_LIST_EMPTY(uplinks)
 	traitor_contract_rerolls = max(traitor_contract_rerolls, U.traitor_contract_rerolls)
 
 /datum/component/uplink/Destroy()
+	// Аплинк - src_object собственного tgui: без закрытия открытое окно держит
+	// компонент в SStgui.open_uis после удаления носителя (та же логика уже есть в lock)
+	SStgui.close_uis(src)
 	GLOB.uplinks -= src
 	purchase_log = null
 	return ..()

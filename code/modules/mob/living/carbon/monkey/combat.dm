@@ -49,6 +49,18 @@
 		pickupTarget = null
 		pickupTimer = 0
 
+/mob/living/carbon/monkey/proc/on_enemy_qdeleting(mob/living/enemy)
+	SIGNAL_HANDLER
+
+	// Ключи enemies не имеют другого пути очистки по qdel: мёртвая или спящая
+	// обезьяна не гоняет handle_combat, и удалённый враг (например, слайм с фермы)
+	// висел бы в assoc-списке до харддела
+	UnregisterSignal(enemy, COMSIG_PARENT_QDELETING)
+	enemies -= enemy
+	if(target == enemy)
+		target = null
+		walk(src, 0)
+
 // blocks
 // taken from /mob/living/carbon/human/interactive/
 /mob/living/carbon/monkey/proc/walk2derpless(target)
@@ -372,6 +384,7 @@
 	// if we are not angry at our target, go back to idle
 	if(enemies[L] <= 0)
 		enemies.Remove(L)
+		UnregisterSignal(L, COMSIG_PARENT_QDELETING)
 		if( target == L )
 			back_to_idle()
 
@@ -380,6 +393,8 @@
 	mode = MONKEY_HUNT
 	target = L
 	if(L != src)
+		if(isnull(enemies[L])) // новый враг - подписываемся на его удаление
+			RegisterSignal(L, COMSIG_PARENT_QDELETING, PROC_REF(on_enemy_qdeleting))
 		enemies[L] += MONKEY_HATRED_AMOUNT
 
 	if(a_intent != INTENT_HARM)

@@ -99,9 +99,14 @@ GLOBAL_LIST_EMPTY(escape_menus)
 /datum/escape_menu/proc/populate_base_ui()
 	PRIVATE_PROC(TRUE)
 
-	base_holder.give_screen_object(new /atom/movable/screen/fullscreen/dimmer)
-	base_holder.give_screen_object(new /atom/movable/screen/fullscreen/dimmer/right)
-	base_holder.give_screen_object(new /atom/movable/screen/fullscreen/dimmer/bottom)
+	for(var/dimmer_type in list(
+		/atom/movable/screen/fullscreen/dimmer,
+		/atom/movable/screen/fullscreen/dimmer/right,
+		/atom/movable/screen/fullscreen/dimmer/bottom,
+	))
+		var/atom/movable/screen/fullscreen/dimmer/dimmer = new dimmer_type
+		dimmer.owner_client = client
+		base_holder.give_screen_object(dimmer)
 	add_blur()
 
 	base_holder.give_protected_screen_object(give_escape_menu_title())

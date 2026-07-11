@@ -252,17 +252,20 @@
 	flash_protect = -1
 	see_in_dark = 8
 	to_activate_text = "thermal vision"
+	/// Цветовой буст включённых термалов. initial() на list-переменной не возвращает
+	/// список (update_sight падал на .Copy() и терял тепловизионную подсветку навсегда)
+	var/list/active_color_cutoffs = list(25, 8, 5)
 
 /obj/item/organ/eyes/robotic/toggled/thermals/toggle(silent)
 	if(active)
 		sight_flags &= ~(initial(sight_flags))
 		lighting_alpha = initial(lighting_alpha)
-		color_cutoffs = initial(color_cutoffs)
+		color_cutoffs = null
 		flash_protect = initial(flash_protect)
 	else
 		sight_flags |= (initial(sight_flags))
 		lighting_alpha = initial(lighting_alpha)
-		color_cutoffs = initial(color_cutoffs)
+		color_cutoffs = active_color_cutoffs.Copy()
 		flash_protect = initial(flash_protect)
 	return ..()
 

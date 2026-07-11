@@ -336,6 +336,16 @@
 	..()
 	return INITIALIZE_HINT_LATELOAD
 
+/obj/machinery/computer/piratepad_control/Destroy()
+	// Таймер прогрева send() держал бы терминал в SStimer, а loot-objective
+	// пиратов/воксов/рейдеров - до конца раунда через cargo_hold
+	deltimer(sending_timer)
+	pad = null
+	for(var/datum/objective/loot/booty in GLOB.objectives)
+		if(booty.cargo_hold == src)
+			booty.cargo_hold = null
+	return ..()
+
 /obj/machinery/computer/piratepad_control/multitool_act(mob/living/user, obj/item/multitool/I)
 	. = ..()
 	if (istype(I) && istype(I.buffer,/obj/machinery/piratepad))
