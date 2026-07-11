@@ -6,6 +6,7 @@
 	max_occurrences = 2
 	category = EVENT_CATEGORY_ENTITIES
 	severity = DIRECTOR_SEVERITY_MINOR // категория ENTITIES по умолчанию даёт MAJOR, но мыши безобидны
+	family = "vermin" // с Vermin Infestation: два грызунных события подряд - перебор
 
 /datum/round_event/mice_migration
 	var/minimum_mice = 15
