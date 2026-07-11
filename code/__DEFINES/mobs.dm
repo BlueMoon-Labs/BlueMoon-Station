@@ -203,6 +203,10 @@
 // Slime extract crossing. Controls how many extracts is required to feed to a slime to core-cross.
 #define SLIME_EXTRACT_CROSSING_REQUIRED 10
 
+// How long a slime waits before re-scanning view() for prey after a scan that found no targets.
+// Keeps idle pens from paying a full view(7) scan every Life tick.
+#define SLIME_HUNT_SCAN_COOLDOWN (4 SECONDS)
+
 // Slime commands defines
 #define SLIME_FRIENDSHIP_FOLLOW 			3 // Min friendship to order it to follow
 #define SLIME_FRIENDSHIP_STOPEAT 			5 // Min friendship to order it to stop eating someone

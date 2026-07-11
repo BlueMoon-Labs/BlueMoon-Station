@@ -170,7 +170,8 @@
 
 /mob/living/simple_animal/slime/updatehealth()
 	. = ..()
-	remove_movespeed_modifier(/datum/movespeed_modifier/slime_healthmod)
+	// No remove_movespeed_modifier() here: add_or_update below overwrites the value
+	// in place, and this proc runs every Life tick via handle_environment().
 	var/mod = 0
 	if(!HAS_TRAIT(src, TRAIT_IGNOREDAMAGESLOWDOWN))
 		var/health_deficiency = (maxHealth - health)

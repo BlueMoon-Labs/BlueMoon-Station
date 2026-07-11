@@ -275,6 +275,11 @@
 
 	return remove_air(moles_needed)
 
+/obj/item/tank/rad_act(pulse_strength)
+	. = ..()
+	if(air_contents?.react_to_radiation(pulse_strength))
+		excite_tank()
+
 /obj/item/tank/process()
 	//Allow for reactions
 	var/reacted = air_contents?.react()

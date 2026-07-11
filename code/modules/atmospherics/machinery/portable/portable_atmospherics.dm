@@ -180,6 +180,11 @@
 	else
 		return ..()
 
+/obj/machinery/portable_atmospherics/rad_act(pulse_strength)
+	. = ..()
+	if(air_contents?.react_to_radiation(pulse_strength))
+		excite()
+
 /obj/machinery/portable_atmospherics/analyzer_act(mob/living/user, obj/item/I)
 	atmosanalyzer_scan(air_contents, user, src)
 	return TRUE

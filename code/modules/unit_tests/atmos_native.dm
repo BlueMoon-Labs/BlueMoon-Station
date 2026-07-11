@@ -995,6 +995,12 @@
 	for(var/i in 1 to ATMOS_MACHINE_IDLE_STREAK)
 		scrubber.atmos_consider_idle()
 	TEST_ASSERT(scrubber in SSair.atmos_idle_queue, "scrubber did not enter the idle queue during setup")
+	// Флаш уже истёкших ЧУЖИХ машин: heartbeat-очередь глобальная и живая станция
+	// подмешивает в счётчик свои спящие вентиляции (наблюдалось woken=4 на Box).
+	// Между флашем и замером снов нет, world.time заморожен - новые дедлайны истечь
+	// не могут, значит следующий вызов посчитает ровно нашу машину.
+	SSair.wake_expired_idle_machines()
+	TEST_ASSERT(scrubber in SSair.atmos_idle_queue, "flushing expired machines must not touch the unexpired scrubber")
 	// The queue is FIFO by deadline; simulating expiry means moving to the head.
 	SSair.atmos_idle_queue.Remove(scrubber)
 	SSair.atmos_idle_queue.Insert(1, scrubber)
