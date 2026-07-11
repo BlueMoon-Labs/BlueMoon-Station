@@ -1,5 +1,5 @@
 import { BooleanLike } from 'common/react';
-import { useState } from 'react';
+import { ReactNode, useState } from 'react';
 
 import { useBackend } from '../backend';
 import {
@@ -56,6 +56,38 @@ type PoolEntry = {
   chance?: number;
 };
 
+type ProfileEntry = {
+  roundType: string;
+  desc: string;
+  active: BooleanLike;
+  baseDrip: number;
+  initialGrant: number;
+  roundstartMin: number;
+  roundstartMax: number;
+  timeCurve: [number, number][];
+  popCurve: [number, number][];
+  intensityCap: number;
+  maxActiveMajor: number;
+  severitySpacing: Record<string, number>;
+  globalSpacing: number;
+  familySpacing: number;
+  antagLightSpacing: number;
+  antagHeavySpacing: number;
+  ghostLightSpacing: number;
+  ghostHeavySpacing: number;
+  poolShares: Record<string, number>;
+  disruptionMults: Record<string, number>;
+  antagPerCrew: number;
+  antagHeavyEnabled: BooleanLike;
+  maxQuiet: number;
+  quietThreshold: number;
+  securityPerPlayers: number;
+  securityPenaltyMult: number;
+  deadFractionThreshold: number;
+  adminCancelTime: number;
+  repeatPenalty: number;
+};
+
 type WalletEntry = {
   severity: string;
   points: number;
@@ -95,6 +127,7 @@ type DirectorPanelData = {
   quietThreshold: number;
   maxActiveMajor: number;
   pool: PoolEntry[];
+  profiles: ProfileEntry[];
 };
 
 const SEVERITY_LABELS: Record<string, string> = {
@@ -602,6 +635,315 @@ const PoolTab = (props) => {
   );
 };
 
+// Порядок колонок вкладки "Профили": от самого фонового к самому плотному
+const PROFILE_ORDER = [
+  'Extended',
+  'Dynamic (Light)',
+  'Dynamic (Medium)',
+  'Dynamic (Hard)',
+  'Dynamic (Team-Based)',
+];
+
+const PROFILE_LABELS: Record<string, string> = {
+  'Extended': 'Extended',
+  'Dynamic (Light)': 'Light',
+  'Dynamic (Medium)': 'Medium',
+  'Dynamic (Hard)': 'Hard',
+  'Dynamic (Team-Based)': 'Team-Based',
+};
+
+const profileSortIndex = (profile: ProfileEntry) => {
+  const index = PROFILE_ORDER.indexOf(profile.roundType);
+  return index === -1 ? PROFILE_ORDER.length : index;
+};
+
+const curveText = (curve: [number, number][], unit: string) =>
+  (curve || []).map(([x, y]) => `${x} ${unit}: x${y}`).join('; ');
+
+type ProfileRowSpec = {
+  label: string;
+  render: (profile: ProfileEntry) => ReactNode;
+};
+
+const TEMPO_ROWS: ProfileRowSpec[] = [
+  { label: 'Капля, очков/мин', render: (profile) => profile.baseDrip },
+  { label: 'Стартовый аванс', render: (profile) => profile.initialGrant },
+  {
+    label: 'Roundstart-бюджет',
+    render: (profile) =>
+      profile.roundstartMax > 0 ? (
+        `${profile.roundstartMin}-${profile.roundstartMax}`
+      ) : (
+        <Box inline color="bad">
+          нет
+        </Box>
+      ),
+  },
+  {
+    label: 'Множитель от времени',
+    render: (profile) => curveText(profile.timeCurve, 'мин'),
+  },
+  {
+    label: 'Множитель от экипажа',
+    render: (profile) => curveText(profile.popCurve, 'чел'),
+  },
+];
+
+const CAPS_ROWS: ProfileRowSpec[] = [
+  { label: 'Потолок intensity', render: (profile) => profile.intensityCap },
+  {
+    label: 'Крупных одновременно',
+    render: (profile) =>
+      profile.maxActiveMajor > 0 ? (
+        profile.maxActiveMajor
+      ) : (
+        <Box inline color="bad">
+          0
+        </Box>
+      ),
+  },
+  {
+    label: 'Гарантированный бит после тишины',
+    render: (profile) => `${profile.maxQuiet} мин`,
+  },
+  {
+    label: 'Порог intensity для гарантии',
+    render: (profile) => profile.quietThreshold,
+  },
+];
+
+const SHARE_ROWS: ProfileRowSpec[] = SEVERITY_ORDER.map((severity) => ({
+  label: SEVERITY_LABELS[severity],
+  render: (profile) => {
+    const share = profile.poolShares?.[severity] ?? 0;
+    return share > 0 ? (
+      `${Math.round(share * 100)}%`
+    ) : (
+      <Box inline color="bad">
+        0%
+      </Box>
+    );
+  },
+}));
+
+const SPACING_ROWS: ProfileRowSpec[] = [
+  ...['flavor', 'minor', 'moderate', 'major'].map((severity) => ({
+    label: SEVERITY_LABELS[severity],
+    render: (profile: ProfileEntry) =>
+      profile.severitySpacing?.[severity] ?? '-',
+  })),
+  {
+    label: 'Глобальная (между любыми)',
+    render: (profile) => profile.globalSpacing,
+  },
+  {
+    label: 'Семейство однотипных',
+    render: (profile) => profile.familySpacing,
+  },
+  {
+    label: 'Антаги: лёгкие / тяжёлые',
+    render: (profile) =>
+      `${profile.antagLightSpacing} / ${profile.antagHeavySpacing}`,
+  },
+  {
+    label: 'Гост-антаги: лёгкие / тяжёлые',
+    render: (profile) =>
+      `${profile.ghostLightSpacing} / ${profile.ghostHeavySpacing}`,
+  },
+];
+
+const DISRUPTION_ROW_LABELS: Record<string, string> = {
+  ambient: 'Фоновые (ambient)',
+  mild: 'Заметные (mild)',
+  disruptive: 'Мешающие (disruptive)',
+};
+
+const DISRUPTION_ROWS: ProfileRowSpec[] = [
+  'ambient',
+  'mild',
+  'disruptive',
+].map((disruption) => ({
+  label: DISRUPTION_ROW_LABELS[disruption],
+  render: (profile) => {
+    const mult = profile.disruptionMults?.[disruption];
+    if (mult === undefined) {
+      return 'x1';
+    }
+    return mult > 0 ? (
+      `x${mult}`
+    ) : (
+      <Box inline color="bad">
+        выкл
+      </Box>
+    );
+  },
+}));
+
+const ANTAG_ROWS: ProfileRowSpec[] = [
+  {
+    label: 'Цель нагрузки на голову экипажа',
+    render: (profile) => profile.antagPerCrew,
+  },
+  {
+    label: 'Тяжёлые антаг-действия',
+    render: (profile) =>
+      profile.antagHeavyEnabled ? (
+        <Box inline color="good">
+          да
+        </Box>
+      ) : (
+        <Box inline color="bad">
+          нет
+        </Box>
+      ),
+  },
+];
+
+const SAFETY_ROWS: ProfileRowSpec[] = [
+  {
+    label: 'Норма СБ: 1 офицер на',
+    render: (profile) => `${profile.securityPerPlayers} экипажа`,
+  },
+  {
+    label: 'Штраф веса при недоборе СБ',
+    render: (profile) => `x${profile.securityPenaltyMult}`,
+  },
+  {
+    label: 'Кризис мёртвых: порог доли',
+    render: (profile) => `${Math.round(profile.deadFractionThreshold * 100)}%`,
+  },
+  {
+    label: 'Окно отмены админом',
+    render: (profile) => `${profile.adminCancelTime} с`,
+  },
+  {
+    label: 'Затухание повторов',
+    render: (profile) => profile.repeatPenalty,
+  },
+];
+
+const ProfileTable = (props: {
+  title: string;
+  profiles: ProfileEntry[];
+  rows: ProfileRowSpec[];
+  note?: string;
+}) => {
+  const { title, profiles, rows, note } = props;
+  return (
+    <Stack.Item>
+      <Section title={title}>
+        {!!note && (
+          <Box mb={1} color="label">
+            {note}
+          </Box>
+        )}
+        <Table>
+          {/* Явные ширины: каждая секция - своя таблица, без них колонки гуляют от секции к секции */}
+          <Table.Row header>
+            <Table.Cell width="30%" />
+            {profiles.map((profile) => (
+              <Table.Cell
+                key={profile.roundType}
+                width="14%"
+                color={profile.active ? 'good' : undefined}>
+                {PROFILE_LABELS[profile.roundType] || profile.roundType}
+              </Table.Cell>
+            ))}
+          </Table.Row>
+          {rows.map((row) => (
+            <Table.Row key={row.label}>
+              <Table.Cell color="label">{row.label}</Table.Cell>
+              {profiles.map((profile) => (
+                <Table.Cell key={profile.roundType}>
+                  {row.render(profile)}
+                </Table.Cell>
+              ))}
+            </Table.Row>
+          ))}
+        </Table>
+      </Section>
+    </Stack.Item>
+  );
+};
+
+const ProfilesTab = (props) => {
+  const { data } = useBackend<DirectorPanelData>();
+  const profiles = (data.profiles || [])
+    .slice()
+    .sort((a, b) => profileSortIndex(a) - profileSortIndex(b));
+
+  if (!profiles.length) {
+    return (
+      <Stack.Item>
+        <Section>Профили не загружены.</Section>
+      </Stack.Item>
+    );
+  }
+
+  return (
+    <>
+      <Stack.Item>
+        <Section title="Профили темпа">
+          <Box mb={1} color="label">
+            Значения с учётом config/director.json: активный профиль показан
+            живым (подсвечен), остальные - такими, какими станут при выборе
+            их типа раунда. Времена в минутах.
+          </Box>
+          <LabeledList>
+            {profiles.map((profile) => (
+              <LabeledList.Item
+                key={profile.roundType}
+                label={PROFILE_LABELS[profile.roundType] || profile.roundType}
+                color={profile.active ? 'good' : undefined}>
+                {profile.desc}
+                {!!profile.active && (
+                  <Box inline ml={1} color="good">
+                    (активен)
+                  </Box>
+                )}
+              </LabeledList.Item>
+            ))}
+          </LabeledList>
+        </Section>
+      </Stack.Item>
+      <ProfileTable title="Бюджет и темп" profiles={profiles} rows={TEMPO_ROWS} />
+      <ProfileTable
+        title="Потолки и тишина"
+        profiles={profiles}
+        rows={CAPS_ROWS}
+      />
+      <ProfileTable
+        title="Доли капли по ступеням"
+        profiles={profiles}
+        rows={SHARE_ROWS}
+        note="Доля Флейвора раскладывается по остальным ступеням: его действия бесплатны, кошелёк ему не нужен. Доля 0% выключает ступень."
+      />
+      <ProfileTable
+        title="Паузы между запусками, мин"
+        profiles={profiles}
+        rows={SPACING_ROWS}
+      />
+      <ProfileTable
+        title="Навязчивость: множители веса"
+        profiles={profiles}
+        rows={DISRUPTION_ROWS}
+        note="Насколько профиль глушит мешающие играть события внутри своей ступени."
+      />
+      <ProfileTable
+        title="Антагонисты"
+        profiles={profiles}
+        rows={ANTAG_ROWS}
+        note="Цель нагрузки: живой лёгкий антаг = 15 intensity; при достижении цели (экипаж x значение) новые антаги не льются."
+      />
+      <ProfileTable
+        title="Предохранители и прочее"
+        profiles={profiles}
+        rows={SAFETY_ROWS}
+      />
+    </>
+  );
+};
+
 const HelpTab = (props) => {
   return (
     <Stack.Item>
@@ -660,6 +1002,13 @@ const HelpTab = (props) => {
           бюджета или экипажа). Оценка обновляется раз в несколько секунд.
           Латеджойн-рулсеты в битах не участвуют - они срабатывают только
           на зашедшего игрока.
+        </Box>
+        <Box mb={1}>
+          <b>Профили.</b> Вкладка со всеми профилями темпа и их ручками:
+          капля, доли ступеней, паузы, множители навязчивости,
+          предохранители. Значения показаны с учётом config/director.json;
+          активный профиль подсвечен и показан живым, остальные - такими,
+          какими станут при выборе их типа раунда.
         </Box>
         <Box mb={1}>
           <b>Предохранители.</b> После вызова эвакуации Крупные и антаги не
@@ -741,6 +1090,11 @@ export const DirectorPanel = (props) => {
                 Пул действий
               </Tabs.Tab>
               <Tabs.Tab
+                selected={tab === 'profiles'}
+                onClick={() => setTab('profiles')}>
+                Профили
+              </Tabs.Tab>
+              <Tabs.Tab
                 selected={tab === 'help'}
                 onClick={() => setTab('help')}>
                 Справочник
@@ -749,6 +1103,7 @@ export const DirectorPanel = (props) => {
           </Stack.Item>
           {tab === 'overview' && <OverviewTab />}
           {tab === 'pool' && <PoolTab />}
+          {tab === 'profiles' && <ProfilesTab />}
           {tab === 'help' && <HelpTab />}
         </Stack>
       </Window.Content>

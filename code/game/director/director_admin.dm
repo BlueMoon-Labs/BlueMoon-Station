@@ -10,6 +10,30 @@
 		ui = new(user, src, "DirectorPanel")
 		ui.open()
 
+/// Справочник профилей для вкладки "Профили": меняется только на перезагрузке конфига,
+/// поэтому static. Активный профиль отдаётся живым объектом (видны VV-правки и применённый
+/// конфиг), остальные - свежими экземплярами с наложенной их секцией director.json:
+/// "каким профиль станет, если выбрать его тип раунда".
+/datum/director_panel/ui_static_data(mob/user)
+	var/datum/controller/subsystem/director/D = SSdirector
+	var/list/profiles_conf = islist(D.cached_config) ? D.cached_config["profiles"] : null
+	var/list/profiles_out = list()
+	for(var/datum/director_profile/path as anything in subtypesof(/datum/director_profile))
+		var/round_type = initial(path.round_type)
+		var/is_active = D.profile && (D.profile.round_type == round_type)
+		var/list/row
+		if(is_active)
+			row = D.profile.panel_snapshot()
+		else
+			var/datum/director_profile/preview = new path
+			if(islist(profiles_conf) && islist(profiles_conf[round_type]))
+				D.apply_profile_config(preview, profiles_conf[round_type], quiet = TRUE)
+			row = preview.panel_snapshot()
+			qdel(preview)
+		row["active"] = is_active
+		profiles_out += list(row)
+	return list("profiles" = profiles_out)
+
 /datum/director_panel/ui_data(mob/user)
 	var/datum/controller/subsystem/director/D = SSdirector
 	// Итог считаем до сборки таблицы: get_active_intensity() заодно выкидывает истёкшие записи
@@ -122,6 +146,8 @@
 			return TRUE
 		if("reload_config")
 			D.load_config()
+			// Вкладка "Профили" сидит на static-данных - без пинка она показывала бы старый конфиг
+			update_static_data(usr, ui)
 			message_admins("[key_name_admin(usr)] перезагрузил director.json.")
 			log_admin("[key_name(usr)] перезагрузил director.json.")
 			return TRUE

@@ -21,6 +21,8 @@
 /datum/director_profile
 	/// Тип раунда (ROUNDTYPE_*), ключ выбора
 	var/round_type
+	/// Короткое описание идентичности профиля для вкладки "Профили" панели
+	var/desc = ""
 	/// Очков бюджета в минуту до множителей
 	var/base_drip = 1
 	/// Стартовый аванс кошельков: раскладывается по pool_shares при setup_profile(). С нулевого
@@ -112,8 +114,45 @@
 	var/mult = disruption_weight_mults[action.get_disruption()]
 	return isnull(mult) ? 1 : mult
 
+/// Слепок всех ручек для вкладки "Профили" панели. Времена в минутах (окно отмены в секундах).
+/datum/director_profile/proc/panel_snapshot()
+	var/list/spacing_out = list()
+	for(var/sev in severity_spacing)
+		spacing_out[sev] = round(severity_spacing[sev] / (1 MINUTES), 0.1)
+	return list(
+		"roundType" = round_type,
+		"desc" = desc,
+		"baseDrip" = base_drip,
+		"initialGrant" = initial_grant,
+		"roundstartMin" = roundstart_budget_min,
+		"roundstartMax" = roundstart_budget_max,
+		"timeCurve" = time_curve,
+		"popCurve" = pop_curve,
+		"intensityCap" = intensity_cap,
+		"maxActiveMajor" = max_active_major,
+		"severitySpacing" = spacing_out,
+		"globalSpacing" = round(global_spacing / (1 MINUTES), 0.1),
+		"familySpacing" = round(family_spacing / (1 MINUTES), 0.1),
+		"antagLightSpacing" = round(antag_light_spacing / (1 MINUTES), 0.1),
+		"antagHeavySpacing" = round(antag_heavy_spacing / (1 MINUTES), 0.1),
+		"ghostLightSpacing" = round(ghost_light_spacing / (1 MINUTES), 0.1),
+		"ghostHeavySpacing" = round(ghost_heavy_spacing / (1 MINUTES), 0.1),
+		"poolShares" = pool_shares,
+		"disruptionMults" = disruption_weight_mults,
+		"antagPerCrew" = antag_intensity_per_crew,
+		"antagHeavyEnabled" = antag_heavy_enabled,
+		"maxQuiet" = round(max_quiet_time / (1 MINUTES), 0.1),
+		"quietThreshold" = quiet_intensity_threshold,
+		"securityPerPlayers" = security_per_players,
+		"securityPenaltyMult" = security_penalty_mult,
+		"deadFractionThreshold" = dead_fraction_threshold,
+		"adminCancelTime" = round(admin_cancel_time / (1 SECONDS), 0.1),
+		"repeatPenalty" = repeat_penalty,
+	)
+
 /datum/director_profile/light
 	round_type = ROUNDTYPE_DYNAMIC_LIGHT
+	desc = "Ступень между Extended и Medium: антаги и средние события живут, но крупных событий и тяжёлых антаг-команд нет, мешающие играть события приглушены."
 	base_drip = 0.6
 	intensity_cap = 60
 	max_active_major = 0
@@ -157,10 +196,12 @@
 
 /datum/director_profile/medium
 	round_type = ROUNDTYPE_DYNAMIC_MEDIUM
+	desc = "Базовый темп директора: все значения - дефолты, от них отсчитываются остальные профили."
 	// все значения - дефолты базы
 
 /datum/director_profile/hard
 	round_type = ROUNDTYPE_DYNAMIC_HARD
+	desc = "Плотный раунд: больше живых антагов одновременно, разгон с первых минут, крен долей из фонового шума в угрозы."
 	base_drip = 1.5
 	intensity_cap = 140
 	max_active_major = 2
@@ -199,6 +240,7 @@
 
 /datum/director_profile/teambased
 	round_type = ROUNDTYPE_DYNAMIC_TEAMBASED
+	desc = "Одна большая война вместо парада одиночек: антаг-пулы забирают крупную долю капли, события служат фоном конфликта."
 	base_drip = 0.8
 	intensity_cap = 140
 	max_active_major = 2
@@ -227,6 +269,7 @@
 
 /datum/director_profile/extended
 	round_type = ROUNDTYPE_EXTENDED
+	desc = "Фоновый профиль: события разбавляют игру, а не ведут её; из антагов - только штучные гост-спавнеры."
 	base_drip = 0.4
 	intensity_cap = 40
 	max_active_major = 0

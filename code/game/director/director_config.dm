@@ -44,7 +44,9 @@
 				apply_action_config(action, action_conf)
 
 /// Накатывает один объект конфига на профиль. Неизвестные ключи не рантайм, а config_error + сообщение админам.
-/datum/controller/subsystem/director/proc/apply_profile_config(datum/director_profile/target, list/conf)
+/// quiet - без жалоб на неизвестные ключи: панель применяет секции НЕактивных профилей при каждой
+/// сборке static-данных, и чужая опечатка спамила бы админ-чат на каждое открытие вкладки.
+/datum/controller/subsystem/director/proc/apply_profile_config(datum/director_profile/target, list/conf, quiet = FALSE)
 	for(var/key in conf)
 		if(key == "severity_spacing" || key == "pool_shares" || key == "disruption_weight_mults")
 			var/list/sub = conf[key]
@@ -53,8 +55,9 @@
 				dest[sev] = (key == "severity_spacing") ? (sub[sev] MINUTES) : sub[sev]
 			continue
 		if(!(key in target.vars))
-			config_error = "Неизвестный ключ профиля: [key]"
-			message_admins("DIRECTOR: [config_error]")
+			if(!quiet)
+				config_error = "Неизвестный ключ профиля: [key]"
+				message_admins("DIRECTOR: [config_error]")
 			continue
 		var/value = conf[key]
 		if(key in DIRECTOR_CONFIG_MINUTE_FIELDS)
