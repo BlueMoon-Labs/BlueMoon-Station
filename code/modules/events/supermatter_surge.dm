@@ -2,7 +2,7 @@
 	name = "Supermatter Surge"
 	typepath = /datum/round_event/supermatter_surge
 	weight = 15
-	max_occurrences = 12
+	max_occurrences = 5 // 12 сурджей за раунд - это уже не "иногда встряхнуть инженеров", а осада
 	earliest_start = 10 MINUTES
 	category = EVENT_CATEGORY_ENGINEERING
 	min_staffing = list(DIRECTOR_DEPT_ENGINEERING = 1)

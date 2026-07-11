@@ -40,6 +40,22 @@
 		DIRECTOR_SEVERITY_MODERATE = 8 MINUTES,
 		DIRECTOR_SEVERITY_MAJOR = 25 MINUTES,
 	)
+	/// Минимальная пауза между ЛЮБЫМИ двумя запусками: гейт против очередей "три ивента за четыре
+	/// минуты" (moderate + minor + flavor подряд легальны по ступенчатым паузам, но душат игроков).
+	/// Гарантированный бит и форс админа проходят мимо.
+	var/global_spacing = 2 MINUTES
+	/// Пауза внутри семейства однотипных действий (director_action.family): после любого "перелива труб"
+	/// другие варианты того же шаблона ждут, а не выпадают следующим же битом.
+	var/family_spacing = 10 MINUTES
+	/// Множители веса по навязчивости (DIRECTOR_DISRUPTION_*): мягкие профили глушат мешающие играть
+	/// события внутри своей ступени, не трогая фоновые. 0 полностью исключает метку из выбора.
+	/// Важно: share_correction выравнивает доли МЕЖДУ ступенями, поэтому множитель реально работает
+	/// как сдвиг ВНУТРИ ступени (goo против грузовых подов в MINOR, галлюцинации против пыли во FLAVOR).
+	var/list/disruption_weight_mults = list(
+		DIRECTOR_DISRUPTION_AMBIENT = 1,
+		DIRECTOR_DISRUPTION_MILD = 1,
+		DIRECTOR_DISRUPTION_DISRUPTIVE = 1,
+	)
 	/// Паузы пула ANTAG (антаги из живого экипажа): лёгкие и тяжёлые отдельно
 	var/antag_light_spacing = 12 MINUTES
 	var/antag_heavy_spacing = 30 MINUTES
@@ -74,15 +90,29 @@
 	/// чтобы директор не крутил одно и то же. 0 выключает; переопределяется per-action.
 	var/repeat_penalty = 0.5
 
+/// Множитель веса действия по его навязчивости. Неизвестная метка не штрафуется.
+/datum/director_profile/proc/disruption_mult(datum/director_action/action)
+	var/mult = disruption_weight_mults[action.get_disruption()]
+	return isnull(mult) ? 1 : mult
+
 /datum/director_profile/light
 	round_type = ROUNDTYPE_DYNAMIC_LIGHT
 	base_drip = 0.6
 	intensity_cap = 60
 	max_active_major = 0
+	// Идентичность Light - ступень между Extended и Medium, а не копия одного из них:
+	// в отличие от Extended антаги и moderate-события живут (доли 0.1 и 0.2), в отличие от
+	// Medium - никаких MAJOR, мягче мешающие события (mults) и заметно реже тяжёлые запуски.
+	family_spacing = 12 MINUTES
+	disruption_weight_mults = list(
+		DIRECTOR_DISRUPTION_AMBIENT = 1,
+		DIRECTOR_DISRUPTION_MILD = 0.7,
+		DIRECTOR_DISRUPTION_DISRUPTIVE = 0.3,
+	)
 	severity_spacing = list(
 		DIRECTOR_SEVERITY_FLAVOR = 6 MINUTES,
 		DIRECTOR_SEVERITY_MINOR = 5 MINUTES,
-		DIRECTOR_SEVERITY_MODERATE = 12 MINUTES,
+		DIRECTOR_SEVERITY_MODERATE = 10 MINUTES,
 		DIRECTOR_SEVERITY_MAJOR = 60 MINUTES,
 	)
 	antag_light_spacing = 18 MINUTES
@@ -111,6 +141,8 @@
 	base_drip = 1.5
 	intensity_cap = 140
 	max_active_major = 2
+	global_spacing = 1 MINUTES
+	family_spacing = 6 MINUTES
 	severity_spacing = list(
 		DIRECTOR_SEVERITY_FLAVOR = 4 MINUTES,
 		DIRECTOR_SEVERITY_MINOR = 3 MINUTES,
@@ -139,6 +171,11 @@
 	base_drip = 0.8
 	intensity_cap = 140
 	max_active_major = 2
+	// Антаг-доли профиля (0.35 на двоих) не прожать через дефолтные паузы 12/30 - антаг-треки чаще
+	antag_light_spacing = 10 MINUTES
+	antag_heavy_spacing = 25 MINUTES
+	ghost_light_spacing = 10 MINUTES
+	ghost_heavy_spacing = 25 MINUTES
 	pool_shares = list(
 		DIRECTOR_SEVERITY_FLAVOR = 0.1,
 		DIRECTOR_SEVERITY_MINOR = 0.15,
@@ -157,16 +194,26 @@
 	base_drip = 0.4
 	intensity_cap = 40
 	max_active_major = 0
+	// Самый мягкий профиль: экста - фоновые раунды, события должны разбавлять, а не вести игру.
+	// Паузы шире дефолта (жалобы "4-5 ивентов за 10 минут"), глобальная пауза режет очереди,
+	// мешающие играть события почти выключены множителями навязчивости.
 	severity_spacing = list(
-		DIRECTOR_SEVERITY_FLAVOR = 6 MINUTES,
-		DIRECTOR_SEVERITY_MINOR = 4 MINUTES,
-		DIRECTOR_SEVERITY_MODERATE = 8 MINUTES,
+		DIRECTOR_SEVERITY_FLAVOR = 8 MINUTES,
+		DIRECTOR_SEVERITY_MINOR = 6 MINUTES,
+		DIRECTOR_SEVERITY_MODERATE = 12 MINUTES,
 		DIRECTOR_SEVERITY_MAJOR = 25 MINUTES,
 	)
+	global_spacing = 3 MINUTES
+	family_spacing = 15 MINUTES
+	disruption_weight_mults = list(
+		DIRECTOR_DISRUPTION_AMBIENT = 1,
+		DIRECTOR_DISRUPTION_MILD = 0.4,
+		DIRECTOR_DISRUPTION_DISRUPTIVE = 0.08,
+	)
 	pool_shares = list(
-		DIRECTOR_SEVERITY_FLAVOR = 0.5,
+		DIRECTOR_SEVERITY_FLAVOR = 0.55,
 		DIRECTOR_SEVERITY_MINOR = 0.4,
-		DIRECTOR_SEVERITY_MODERATE = 0.1,
+		DIRECTOR_SEVERITY_MODERATE = 0.05,
 		DIRECTOR_SEVERITY_MAJOR = 0,
 		DIRECTOR_SEVERITY_ANTAG = 0,
 		DIRECTOR_SEVERITY_GHOST = 0,

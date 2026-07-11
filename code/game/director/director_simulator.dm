@@ -8,6 +8,8 @@
 	state["intensity_ledger"] = intensity_ledger.Copy()
 	state["fired_counts"] = fired_counts.Copy()
 	state["last_fired_at"] = last_fired_at.Copy()
+	state["family_fired_counts"] = family_fired_counts.Copy()
+	state["family_last_fired_at"] = family_last_fired_at.Copy()
 	state["last_any_fired_at"] = last_any_fired_at
 	state["last_antag_heavy_at"] = last_antag_heavy_at
 	state["last_ghost_heavy_at"] = last_ghost_heavy_at
@@ -48,6 +50,8 @@
 	intensity_ledger = state["intensity_ledger"]
 	fired_counts = state["fired_counts"]
 	last_fired_at = state["last_fired_at"]
+	family_fired_counts = state["family_fired_counts"]
+	family_last_fired_at = state["family_last_fired_at"]
 	last_any_fired_at = state["last_any_fired_at"]
 	last_antag_heavy_at = state["last_antag_heavy_at"]
 	last_ghost_heavy_at = state["last_ghost_heavy_at"]
@@ -83,6 +87,8 @@
 	D.intensity_ledger = list()
 	D.fired_counts = list()
 	D.last_fired_at = list()
+	D.family_fired_counts = list()
+	D.family_last_fired_at = list()
 	D.last_antag_heavy_at = 0
 	D.last_ghost_heavy_at = 0
 	var/list/log_out = list()

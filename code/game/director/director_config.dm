@@ -1,5 +1,5 @@
 /// Поля профиля, задаваемые в минутах в конфиге и конвертируемые в децисекунды при применении.
-#define DIRECTOR_CONFIG_MINUTE_FIELDS list("max_quiet_time", "antag_light_spacing", "antag_heavy_spacing", "ghost_light_spacing", "ghost_heavy_spacing", "admin_cancel_time")
+#define DIRECTOR_CONFIG_MINUTE_FIELDS list("max_quiet_time", "antag_light_spacing", "antag_heavy_spacing", "ghost_light_spacing", "ghost_heavy_spacing", "admin_cancel_time", "global_spacing", "family_spacing")
 /// То же для полей действий: в коде они в децисекундах, оператору - в минутах.
 #define DIRECTOR_CONFIG_ACTION_MINUTE_FIELDS list("earliest_start", "intensity_linger")
 
@@ -46,7 +46,7 @@
 /// Накатывает один объект конфига на профиль. Неизвестные ключи не рантайм, а config_error + сообщение админам.
 /datum/controller/subsystem/director/proc/apply_profile_config(datum/director_profile/target, list/conf)
 	for(var/key in conf)
-		if(key == "severity_spacing" || key == "pool_shares")
+		if(key == "severity_spacing" || key == "pool_shares" || key == "disruption_weight_mults")
 			var/list/sub = conf[key]
 			var/list/dest = target.vars[key]
 			for(var/sev in sub)

@@ -1,7 +1,7 @@
 /datum/round_event_control/gremlin
 	name = "Spawn Gremlins"
 	typepath = /datum/round_event/gremlin
-	weight = 45
+	weight = 25 // был 45: тройка мягких мажоров (абдукторы/беглецы/гремлины) забирала почти весь пул
 	max_occurrences = 2
 	earliest_start = 60 MINUTES
 	min_players = 15

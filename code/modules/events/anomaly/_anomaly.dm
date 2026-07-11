@@ -9,6 +9,7 @@
 	weight = 15
 	earliest_start = 10 MINUTES
 	category = EVENT_CATEGORY_ANOMALIES
+	family = "anomaly" // наследуется всеми аномалиями: общий фолл-офф, раунд не превращается в парад аномалий
 	description = "This anomaly shocks and explodes. This is the base type."
 	admin_setup = list(/datum/event_admin_setup/set_location/anomaly)
 

@@ -26,6 +26,8 @@
 /datum/round_event_control/scrubber_overflow/female
 	name = "Clogged Vents: Girlcum"
 	typepath = /datum/round_event/scrubber_overflow/female
+	// Явный вес: без него подтип наследовал вес базового перелива и выпадал почти каждый раунд.
+	weight = 8
 	max_occurrences = 1
 	category = EVENT_CATEGORY_JANITORIAL
 
@@ -53,6 +55,8 @@
 /datum/round_event_control/scrubber_overflow/male
 	name = "Clogged Vents: Semen"
 	typepath = /datum/round_event/scrubber_overflow/male
+	// Явный вес: без него подтип наследовал вес базового перелива и выпадал почти каждый раунд.
+	weight = 8
 	max_occurrences = 1
 	category = EVENT_CATEGORY_JANITORIAL
 

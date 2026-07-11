@@ -458,7 +458,9 @@
 		SSdirector.reset_budgets(100)
 		SSdirector.intensity_ledger = list()
 		SSdirector.fired_counts = list()
-		SSdirector.last_any_fired_at = world.time
+		// За глобальной паузой (иначе контрольный бит с экипажем отсёкся бы global_spacing),
+		// но до порога затишья - гарантированный бит не должен маскировать обычный путь.
+		SSdirector.last_any_fired_at = world.time - profile.global_spacing - 1
 		SSdirector.last_fired_at = list(
 			DIRECTOR_SEVERITY_MINOR = world.time - profile.severity_spacing[DIRECTOR_SEVERITY_MINOR] - 1,
 		)
@@ -594,18 +596,26 @@
 /datum/unit_test/director_config_apply/Run()
 	var/datum/director_profile/profile = new /datum/director_profile/medium
 	SSdirector.profile = profile
-	SSdirector.apply_profile_config(profile, list("base_drip" = 2.5, "max_quiet_time" = 5, "repeat_penalty" = 0.7))
+	SSdirector.apply_profile_config(profile, list("base_drip" = 2.5, "max_quiet_time" = 5, "repeat_penalty" = 0.7, "global_spacing" = 4, "family_spacing" = 20))
 	TEST_ASSERT_EQUAL(profile.base_drip, 2.5, "base_drip должен примениться")
 	TEST_ASSERT_EQUAL(profile.max_quiet_time, 5 MINUTES, "max_quiet_time должен конвертироваться из минут")
 	TEST_ASSERT_EQUAL(profile.repeat_penalty, 0.7, "repeat_penalty профиля должен примениться")
+	TEST_ASSERT_EQUAL(profile.global_spacing, 4 MINUTES, "global_spacing должен конвертироваться из минут")
+	TEST_ASSERT_EQUAL(profile.family_spacing, 20 MINUTES, "family_spacing должен конвертироваться из минут")
+	// Частичный мердж множителей навязчивости: тронутая метка меняется, остальные не сбрасываются.
+	SSdirector.apply_profile_config(profile, list("disruption_weight_mults" = list(DIRECTOR_DISRUPTION_DISRUPTIVE = 0.2)))
+	TEST_ASSERT_EQUAL(profile.disruption_weight_mults[DIRECTOR_DISRUPTION_DISRUPTIVE], 0.2, "Множитель навязчивости должен примениться")
+	TEST_ASSERT_EQUAL(profile.disruption_weight_mults[DIRECTOR_DISRUPTION_AMBIENT], 1, "Нетронутые множители навязчивости должны сохраняться")
 	SSdirector.apply_profile_config(profile, list("no_such_key" = 1))
 	TEST_ASSERT_NOTNULL(SSdirector.config_error, "Неизвестный ключ должен фиксироваться как ошибка")
 	SSdirector.config_error = null
 
 	var/datum/director_action/test_stub/action = new
-	SSdirector.apply_action_config(action, list("repeat_penalty" = 2, "earliest_start" = 10))
+	SSdirector.apply_action_config(action, list("repeat_penalty" = 2, "earliest_start" = 10, "family" = "cfg_family", "disruption" = DIRECTOR_DISRUPTION_AMBIENT))
 	TEST_ASSERT_EQUAL(action.repeat_penalty, 2, "repeat_penalty действия должен примениться")
 	TEST_ASSERT_EQUAL(action.earliest_start, 10 MINUTES, "earliest_start действия должен конвертироваться из минут")
+	TEST_ASSERT_EQUAL(action.family, "cfg_family", "family действия должен применяться из конфига")
+	TEST_ASSERT_EQUAL(action.get_disruption(), DIRECTOR_DISRUPTION_AMBIENT, "disruption действия должен применяться из конфига")
 	SSdirector.apply_action_config(action, list("no_such_key" = 1))
 	TEST_ASSERT_NOTNULL(SSdirector.config_error, "Неизвестный ключ действия должен фиксироваться как ошибка")
 	SSdirector.config_error = null
@@ -734,3 +744,174 @@
 		if(entry["severity"] == DIRECTOR_SEVERITY_MAJOR || (DIRECTOR_IS_ANTAG_POOL(entry["severity"]) && entry["antag_heavy"]))
 			heavy_fired++
 	TEST_ASSERT(heavy_fired >= 1, "За 2 часа Hard при 60 экипажа тяжёлая ступень (MAJOR или тяжёлый ANTAG) ни разу не выстрелила - голодание вернулось")
+
+/// Проверяет механику семейств: общий фолл-офф повторов (запуски любого члена гасят вес всех),
+/// паузу семейства в filter_candidates и учёт запусков в note_fired.
+/datum/unit_test/director_family_mechanics
+
+/datum/unit_test/director_family_mechanics/Run()
+	// Мутирует живой SSdirector - capture/restore c try/catch (см. комментарий в director_beat_logic).
+	var/list/saved = SSdirector.capture_simulation_state()
+	try
+		var/datum/director_profile/profile = new /datum/director_profile/medium
+		SSdirector.profile = profile
+		SSdirector.reset_budgets(100)
+		SSdirector.intensity_ledger = list()
+		SSdirector.fired_counts = list()
+		SSdirector.family_fired_counts = list()
+		SSdirector.family_last_fired_at = list()
+		SSdirector.last_fired_at = list(
+			DIRECTOR_SEVERITY_MINOR = world.time - profile.severity_spacing[DIRECTOR_SEVERITY_MINOR] - 1,
+		)
+
+		var/datum/director_action/test_stub/kin_one = new
+		kin_one.family = "test_kin"
+		var/datum/director_action/test_stub/kin_two = new
+		kin_two.family = "test_kin"
+		var/datum/director_action/test_stub/loner = new
+		SSdirector.actions = list(kin_one, kin_two, loner)
+
+		var/datum/director_signals/signals = new
+		signals.effective_crew = 40
+		signals.staffing = list(DIRECTOR_DEPT_SECURITY = 4, DIRECTOR_DEPT_ENGINEERING = 1,
+			DIRECTOR_DEPT_MEDICAL = 1, DIRECTOR_DEPT_SCIENCE = 0, DIRECTOR_DEPT_SUPPLY = 0, DIRECTOR_DEPT_COMMAND = 1)
+
+		// Чистый стол: все трое - кандидаты.
+		var/list/candidates = SSdirector.filter_candidates(signals)
+		TEST_ASSERT_EQUAL(length(candidates), 3, "На чистом столе все три действия должны быть кандидатами")
+
+		// note_fired обязан вести счётчики семейства.
+		SSdirector.note_fired(kin_one)
+		TEST_ASSERT_EQUAL(SSdirector.family_fired_counts["test_kin"], 1, "note_fired должен считать запуск семейства")
+		TEST_ASSERT_EQUAL(SSdirector.family_last_fired_at["test_kin"], SSdirector.now(), "note_fired должен обновлять время семейства")
+		// note_fired двигает и паузу ступени - возвращаем её в прошлое, чтобы проверить именно семейный гейт.
+		SSdirector.last_fired_at[DIRECTOR_SEVERITY_MINOR] = world.time - profile.severity_spacing[DIRECTOR_SEVERITY_MINOR] - 1
+
+		// Пауза семейства: оба родственника отсечены, одиночка проходит.
+		var/list/reject_stats = list()
+		candidates = SSdirector.filter_candidates(signals, FALSE, reject_stats)
+		TEST_ASSERT(!(kin_one in candidates), "Свежий запуск семейства должен отсекать его члена")
+		TEST_ASSERT(!(kin_two in candidates), "Свежий запуск семейства должен отсекать ДРУГОГО члена семейства")
+		TEST_ASSERT(loner in candidates, "Действие вне семейства не должно гейтиться чужой паузой")
+		var/list/minor_stats = reject_stats[DIRECTOR_SEVERITY_MINOR]
+		TEST_ASSERT_EQUAL(minor_stats[DIRECTOR_REJECT_FAMILY], 2, "Оба члена семейства должны попасть в счётчик family_spacing")
+
+		// Пауза истекла: семейство снова в пуле, но фолл-офф общий - kin_two ни разу не стрелял сам,
+		// а весит как ветеран из-за запуска kin_one.
+		SSdirector.family_last_fired_at["test_kin"] = world.time - profile.family_spacing - 1
+		kin_one.occurrences = 1 // боевой путь: spend_and_execute инкрементирует стрелявшему
+		candidates = SSdirector.filter_candidates(signals)
+		TEST_ASSERT(kin_two in candidates, "После истечения паузы член семейства должен вернуться в пул")
+		TEST_ASSERT(candidates[kin_two] < candidates[loner], "Фолл-офф семейства должен резать вес не стрелявшего члена ([candidates[kin_two]] против [candidates[loner]])")
+		TEST_ASSERT_EQUAL(candidates[kin_one], candidates[kin_two], "Члены семейства с общим счётчиком должны весить одинаково")
+	catch(var/exception/e)
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	SSdirector.restore_simulation_state(saved)
+
+/// Проверяет глобальную паузу битов: сразу после любого запуска бит простаивает целиком,
+/// после истечения паузы стреляет, форс админа проходит мимо гейта.
+/datum/unit_test/director_global_spacing
+
+/datum/unit_test/director_global_spacing/Run()
+	// Мутирует живой SSdirector - capture/restore c try/catch (см. комментарий в director_beat_logic).
+	var/list/saved = SSdirector.capture_simulation_state()
+	try
+		var/datum/director_profile/profile = new /datum/director_profile/medium
+		SSdirector.profile = profile
+		SSdirector.reset_budgets(100)
+		SSdirector.intensity_ledger = list()
+		SSdirector.fired_counts = list()
+		SSdirector.last_fired_at = list(
+			DIRECTOR_SEVERITY_MINOR = world.time - profile.severity_spacing[DIRECTOR_SEVERITY_MINOR] - 1,
+		)
+		// dry_run: решения учитываются без реального исполнения и форс-праздников.
+		SSdirector.dry_run = TRUE
+		SSdirector.pending_action = null
+
+		var/datum/director_action/test_stub/ready_action = new
+		SSdirector.actions = list(ready_action)
+
+		var/datum/director_signals/signals = new
+		signals.effective_crew = 40
+		signals.staffing = list(DIRECTOR_DEPT_SECURITY = 4, DIRECTOR_DEPT_ENGINEERING = 1,
+			DIRECTOR_DEPT_MEDICAL = 1, DIRECTOR_DEPT_SCIENCE = 0, DIRECTOR_DEPT_SUPPLY = 0, DIRECTOR_DEPT_COMMAND = 1)
+
+		// Только что был запуск: бит обязан простаивать, причина - в статистике отсева.
+		SSdirector.last_any_fired_at = world.time
+		TEST_ASSERT_EQUAL(SSdirector.run_beat(signals), DIRECTOR_BEAT_IDLE, "Бит внутри глобальной паузы должен простаивать")
+		TEST_ASSERT_EQUAL(SSdirector.fired_counts[DIRECTOR_SEVERITY_MINOR] || 0, 0, "Внутри глобальной паузы запусков быть не должно")
+
+		// Форс админа проходит мимо гейта.
+		TEST_ASSERT_EQUAL(SSdirector.run_beat(signals, forced = TRUE), DIRECTOR_BEAT_FIRED, "Форс-бит должен игнорировать глобальную паузу")
+		SSdirector.fired_counts = list()
+		SSdirector.last_fired_at = list(
+			DIRECTOR_SEVERITY_MINOR = world.time - profile.severity_spacing[DIRECTOR_SEVERITY_MINOR] - 1,
+		)
+
+		// Пауза истекла (но затишье короче max_quiet_time - обычный путь, не гарантированный).
+		SSdirector.last_any_fired_at = world.time - profile.global_spacing - 1
+		TEST_ASSERT_EQUAL(SSdirector.run_beat(signals), DIRECTOR_BEAT_FIRED, "Бит за глобальной паузой обязан стрелять")
+	catch(var/exception/e)
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	SSdirector.restore_simulation_state(saved)
+
+/// Проверяет уровни навязчивости: дефолты от severity, явную метку, множитель веса профиля
+/// и полное исключение метки нулевым множителем.
+/datum/unit_test/director_disruption
+
+/datum/unit_test/director_disruption/Run()
+	// Дефолты get_disruption от ступени и приоритет явной метки.
+	var/datum/director_action/test_stub/probe = new
+	probe.severity = DIRECTOR_SEVERITY_FLAVOR
+	TEST_ASSERT_EQUAL(probe.get_disruption(), DIRECTOR_DISRUPTION_AMBIENT, "Флавор по умолчанию фоновый")
+	probe.severity = DIRECTOR_SEVERITY_MINOR
+	TEST_ASSERT_EQUAL(probe.get_disruption(), DIRECTOR_DISRUPTION_MILD, "MINOR по умолчанию mild")
+	probe.severity = DIRECTOR_SEVERITY_MODERATE
+	TEST_ASSERT_EQUAL(probe.get_disruption(), DIRECTOR_DISRUPTION_DISRUPTIVE, "MODERATE по умолчанию disruptive")
+	probe.severity = DIRECTOR_SEVERITY_MINOR
+	probe.disruption = DIRECTOR_DISRUPTION_DISRUPTIVE
+	TEST_ASSERT_EQUAL(probe.get_disruption(), DIRECTOR_DISRUPTION_DISRUPTIVE, "Явная метка должна перекрывать дефолт от ступени")
+
+	// Мутирует живой SSdirector - capture/restore c try/catch (см. комментарий в director_beat_logic).
+	var/list/saved = SSdirector.capture_simulation_state()
+	try
+		var/datum/director_profile/profile = new /datum/director_profile/medium
+		profile.disruption_weight_mults = list(
+			DIRECTOR_DISRUPTION_AMBIENT = 1,
+			DIRECTOR_DISRUPTION_MILD = 0.5,
+			DIRECTOR_DISRUPTION_DISRUPTIVE = 0,
+		)
+		SSdirector.profile = profile
+		SSdirector.reset_budgets(100)
+		SSdirector.intensity_ledger = list()
+		SSdirector.fired_counts = list()
+		SSdirector.last_fired_at = list(
+			DIRECTOR_SEVERITY_MINOR = world.time - profile.severity_spacing[DIRECTOR_SEVERITY_MINOR] - 1,
+		)
+
+		var/datum/director_action/test_stub/ambient_action = new
+		ambient_action.disruption = DIRECTOR_DISRUPTION_AMBIENT
+		var/datum/director_action/test_stub/mild_action = new // MINOR -> mild по дефолту
+		var/datum/director_action/test_stub/heavy_action = new
+		heavy_action.disruption = DIRECTOR_DISRUPTION_DISRUPTIVE
+		SSdirector.actions = list(ambient_action, mild_action, heavy_action)
+
+		var/datum/director_signals/signals = new
+		signals.effective_crew = 40
+		signals.staffing = list(DIRECTOR_DEPT_SECURITY = 4, DIRECTOR_DEPT_ENGINEERING = 1,
+			DIRECTOR_DEPT_MEDICAL = 1, DIRECTOR_DEPT_SCIENCE = 0, DIRECTOR_DEPT_SUPPLY = 0, DIRECTOR_DEPT_COMMAND = 1)
+
+		var/list/reject_stats = list()
+		var/list/candidates = SSdirector.filter_candidates(signals, FALSE, reject_stats)
+		TEST_ASSERT(ambient_action in candidates, "Фоновое действие должно проходить")
+		TEST_ASSERT(mild_action in candidates, "Mild-действие должно проходить с урезанным весом")
+		TEST_ASSERT(!(heavy_action in candidates), "Нулевой множитель метки должен исключать действие")
+		TEST_ASSERT_EQUAL(candidates[mild_action], candidates[ambient_action] / 2, "Множитель 0.5 должен вдвое резать вес mild-действия")
+		var/list/minor_stats = reject_stats[DIRECTOR_SEVERITY_MINOR]
+		TEST_ASSERT_EQUAL(minor_stats[DIRECTOR_REJECT_DISRUPTION], 1, "Исключение по навязчивости должно попасть в счётчик disruption")
+	catch(var/exception/e)
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	SSdirector.restore_simulation_state(saved)

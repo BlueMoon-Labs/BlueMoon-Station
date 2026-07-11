@@ -6,6 +6,7 @@
 	max_occurrences = 2
 	category = EVENT_CATEGORY_ENTITIES
 	severity = DIRECTOR_SEVERITY_MINOR
+	disruption = DIRECTOR_DISRUPTION_DISRUPTIVE // враждебные дроны, а не фоновая мелочь
 
 /datum/round_event/rogue_drone
 	start_when = 10

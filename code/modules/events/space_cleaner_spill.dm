@@ -1,10 +1,13 @@
 /datum/round_event_control/space_cleaner_spill
 	name = "Scrubber overflow: space cleaner"
 	typepath = /datum/round_event/space_cleaner_spill
-	weight = 40
-	max_occurrences = 3
+	// Часть семейства труб: общий фолл-офф и пауза с остальными переливами (см. scrubber_overflow).
+	weight = 15
+	max_occurrences = 2
 	min_players = 5
 	category = EVENT_CATEGORY_JANITORIAL
+	family = "scrubbers"
+	disruption = DIRECTOR_DISRUPTION_DISRUPTIVE
 	description = "Scrubbers and vents spill space cleaner foam."
 
 /datum/round_event/space_cleaner_spill

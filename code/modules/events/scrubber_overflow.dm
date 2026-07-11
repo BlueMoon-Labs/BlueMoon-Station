@@ -1,10 +1,15 @@
 /datum/round_event_control/scrubber_overflow
 	name = "Scrubber Overflow: Normal"
 	typepath = /datum/round_event/scrubber_overflow
-	weight = 75
-	max_occurrences = 3
+	// Вес 75 (при типичных 25-50 у соседей по MINOR) плюс наследование его всеми подтипами давали
+	// семейству труб ~28% каждого minor-ролла: по 3-5 переливов за раунд. Семейство "scrubbers"
+	// делит фолл-офф повторов и паузу, метка disruptive глушит переливы в мягких профилях.
+	weight = 20
+	max_occurrences = 2
 	min_players = 10
 	category = EVENT_CATEGORY_JANITORIAL
+	family = "scrubbers"
+	disruption = DIRECTOR_DISRUPTION_DISRUPTIVE
 	description = "The scrubbers release a tide of mostly harmless froth."
 	admin_setup = list(/datum/event_admin_setup/listed_options/scrubber_overflow)
 

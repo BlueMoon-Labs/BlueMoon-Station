@@ -3,6 +3,9 @@
 	typepath = /datum/round_event/falsealarm
 	weight = 20
 	max_occurrences = 5
+	// Раньше 30 минут (дефолт базы) флавор-пул почти пуст и крутится одна пыль - безобидную
+	// ложную тревогу можно пускать раньше для разнообразия.
+	earliest_start = 10 MINUTES
 	category = EVENT_CATEGORY_BUREAUCRATIC
 	severity = DIRECTOR_SEVERITY_FLAVOR
 	description = "Fakes an event announcement."

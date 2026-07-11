@@ -4,7 +4,7 @@
 	name = "Aurora Caelus"
 	typepath = /datum/round_event/aurora_caelus
 	max_occurrences = 1
-	weight = 5
+	weight = 10 // чисто косметический флавор, пусть выпадает чаще на фоне ужатой пыли
 	earliest_start = 10 MINUTES
 	category = EVENT_CATEGORY_FRIENDLY
 	description = "A colourful display can be seen through select windows. And the kitchen."

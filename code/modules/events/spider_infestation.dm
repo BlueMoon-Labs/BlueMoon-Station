@@ -2,7 +2,7 @@
 	name = "Spider Infestation"
 	typepath = /datum/round_event/spider_infestation
 	weight = 30
-	max_occurrences = 5
+	max_occurrences = 3 // пять выводков за раунд заваливали станцию пауками
 	min_players = 25
 	category = EVENT_CATEGORY_ENTITIES
 	severity = DIRECTOR_SEVERITY_MODERATE

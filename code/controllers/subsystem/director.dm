@@ -48,8 +48,12 @@ SUBSYSTEM_DEF(director)
 	var/last_antag_heavy_at = 0
 	/// Отдельно для тяжёлых гост-антагов (GHOST): треки категорий полностью независимы
 	var/last_ghost_heavy_at = 0
-	/// world.time последнего успешного запуска вообще (для гарантированного бита)
+	/// world.time последнего успешного запуска вообще (для гарантированного бита и global_spacing)
 	var/last_any_fired_at = 0
+	/// Счётчик запусков по семействам действий (director_action.family) за раунд: общий фолл-офф повторов
+	var/list/family_fired_counts = list()
+	/// world.time последнего запуска на каждое семейство (пауза profile.family_spacing)
+	var/list/family_last_fired_at = list()
 	/// Активные вклады intensity: список list(name, amount, expires_at или 0 если "пока живо", severity или null для внешних вкладов)
 	var/list/intensity_ledger = list()
 	/// Счётчик запусков по ступеням за раунд (для share_correction)
@@ -302,6 +306,15 @@ SUBSYSTEM_DEF(director)
 	var/guaranteed = FALSE
 	if(!forced && (now() - last_any_fired_at) > profile.max_quiet_time && signals.active_intensity < profile.quiet_intensity_threshold)
 		guaranteed = TRUE
+	// Глобальная пауза: что-то только что стреляло - бит простаивает целиком, чтобы легальные по
+	// ступенчатым паузам очереди "moderate + minor + flavor за четыре минуты" не собирались.
+	// Гарантированный бит по определению после долгого затишья, форс админа - осознанное решение.
+	if(!forced && !guaranteed && (now() - last_any_fired_at) < profile.global_spacing)
+		var/list/global_stats = list(DIRECTOR_REJECT_SEV_ALL = list(DIRECTOR_REJECT_GLOBAL = 1))
+		if(!dry_run)
+			last_reject_stats = global_stats
+		director_log_beat(signals, null, DIRECTOR_BEAT_IDLE, global_stats)
+		return DIRECTOR_BEAT_IDLE
 	var/list/reject_stats = list()
 	var/list/candidates = filter_candidates(signals, guaranteed, reject_stats)
 	if(!dry_run)
@@ -368,6 +381,13 @@ SUBSYSTEM_DEF(director)
 			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_SPACING,
 				detail = isnull(verdicts) ? null : minutes_left_text(spacing_remaining(sev, action.antag_heavy)))
 			continue
+		// Пауза семейства: после любого запуска из семейства его остальные варианты ждут тоже -
+		// иначе десять "переливов труб" чередуются, легально обходя ступенчатые паузы и фолл-офф.
+		var/family_left = family_spacing_remaining(action)
+		if(family_left > 0)
+			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_FAMILY,
+				detail = isnull(verdicts) ? null : minutes_left_text(family_left))
+			continue
 		// Гейт по кошельку своей ступени, а не по общему бюджету: MAJOR/ANTAG больше не голодают
 		// из-за трат дешёвых MINOR/MODERATE.
 		if(!guaranteed && budgets[action.severity] < action.cost)
@@ -379,6 +399,13 @@ SUBSYSTEM_DEF(director)
 			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_CAN_FIRE,
 				verdict_reason = diag ? diag["reason"] : null, detail = diag ? diag["detail"] : null)
 			continue
+		// Навязчивость: мягкие профили глушат мешающие играть события. Нулевой множитель - это
+		// осознанное "в этом профиле такому не место", отдельная причина отсева для панели.
+		var/disruption_mult = profile.disruption_mult(action)
+		if(disruption_mult <= 0)
+			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_DISRUPTION,
+				detail = isnull(verdicts) ? null : "профиль исключает метку [action.get_disruption()]")
+			continue
 		var/action_weight = action.get_weight(signals)
 		if(action_weight <= 0)
 			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_NO_WEIGHT,
@@ -388,6 +415,7 @@ SUBSYSTEM_DEF(director)
 			action_weight *= profile.security_penalty_mult
 		action_weight *= share_correction(sev)
 		action_weight *= repeat_falloff(action)
+		action_weight *= disruption_mult
 		if(action_weight > 0)
 			var/weighted = max(1, round(action_weight * 100))
 			result[action] = weighted
@@ -424,6 +452,8 @@ SUBSYSTEM_DEF(director)
 		"intensity" = action.intensity,
 		"weight" = action.weight,
 		"occurrences" = action.occurrences,
+		"family" = action.family,
+		"disruption" = action.get_disruption(),
 		"verdict" = verdict,
 		"detail" = detail,
 	)
@@ -481,11 +511,26 @@ SUBSYSTEM_DEF(director)
 
 /// Множитель затухания повторов: вес делится на (1 + occurrences * repeat_penalty),
 /// чтобы уже стрелявшие действия уступали место ещё не виденным ("спавнит одно и то же").
+/// Члены семейства считаются по запускам всего семейства: у "Clogged Vents: Semen" и
+/// "Scrubber Overflow: Normal" разные счётчики occurrences, но для игрока это один и тот же ивент.
 /datum/controller/subsystem/director/proc/repeat_falloff(datum/director_action/action)
 	var/penalty = isnull(action.repeat_penalty) ? profile.repeat_penalty : action.repeat_penalty
-	if(penalty <= 0 || !action.occurrences)
+	var/effective_occurrences = action.occurrences
+	if(action.family)
+		effective_occurrences = max(effective_occurrences, family_fired_counts[action.family] || 0)
+	if(penalty <= 0 || !effective_occurrences)
 		return 1
-	return 1 / (1 + action.occurrences * penalty)
+	return 1 / (1 + effective_occurrences * penalty)
+
+/// Сколько децисекунд осталось до конца паузы семейства (<= 0 - пауза не мешает).
+/// Действия вне семейств и семейства без запусков не гейтятся.
+/datum/controller/subsystem/director/proc/family_spacing_remaining(datum/director_action/action)
+	if(!action.family)
+		return 0
+	var/last_time = family_last_fired_at[action.family]
+	if(!last_time)
+		return 0
+	return profile.family_spacing - (now() - last_time)
 
 /datum/controller/subsystem/director/proc/count_active_majors()
 	var/count = 0
@@ -552,6 +597,9 @@ SUBSYSTEM_DEF(director)
 /datum/controller/subsystem/director/proc/note_fired(datum/director_action/action)
 	last_any_fired_at = now()
 	fired_counts[action.severity] = (fired_counts[action.severity] || 0) + 1
+	if(action.family)
+		family_fired_counts[action.family] = (family_fired_counts[action.family] || 0) + 1
+		family_last_fired_at[action.family] = now()
 	if(DIRECTOR_IS_ANTAG_POOL(action.severity) && action.antag_heavy)
 		if(action.severity == DIRECTOR_SEVERITY_GHOST)
 			last_ghost_heavy_at = now()

@@ -33,6 +33,13 @@
 	var/antag_heavy = FALSE
 	/// Персональное затухание повторов вместо профильного (см. director_profile.repeat_penalty); null = профиль
 	var/repeat_penalty = null
+	/// Семейство однотипных действий (произвольный строковый тег). Члены семейства делят затухание
+	/// повторов (repeat_falloff считает по запускам всего семейства) и паузу profile.family_spacing:
+	/// десять вариантов "перелива труб" не обходят анти-повторы поодиночке.
+	var/family = null
+	/// Навязчивость запуска (DIRECTOR_DISRUPTION_*): насколько действие мешает играть. Мягкие профили
+	/// режут вес по этой метке (profile.disruption_weight_mults). null = дефолт от severity, см. get_disruption().
+	var/disruption = null
 
 /// Имя для конфига/логов/панели. Обязано быть уникальным среди действий.
 /datum/director_action/proc/action_name()
@@ -61,6 +68,18 @@
 /// Вес с учётом сигналов. Наследники могут модифицировать.
 /datum/director_action/proc/get_weight(datum/director_signals/signals)
 	return weight
+
+/// Навязчивость действия: явная метка или дефолт от ступени.
+/// Флавор фоновый, minor заметный-но-терпимый, всё тяжелее (и антаг-пулы) - мешающее.
+/datum/director_action/proc/get_disruption()
+	if(disruption)
+		return disruption
+	switch(severity)
+		if(DIRECTOR_SEVERITY_FLAVOR)
+			return DIRECTOR_DISRUPTION_AMBIENT
+		if(DIRECTOR_SEVERITY_MINOR)
+			return DIRECTOR_DISRUPTION_MILD
+	return DIRECTOR_DISRUPTION_DISRUPTIVE
 
 /// Запуск действия. Возвращает TRUE при успехе.
 /datum/director_action/proc/execute_action()

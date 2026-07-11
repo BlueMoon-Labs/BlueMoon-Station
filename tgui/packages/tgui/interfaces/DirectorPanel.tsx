@@ -102,6 +102,8 @@ const SEVERITY_LABELS: Record<string, string> = {
   major: 'Крупное',
   antag: 'Антагонист',
   ghost: 'Гост-антаг',
+  // Псевдо-ступень бита, отсечённого глобальной паузой (гейт бьёт по всем ступеням сразу)
+  all: 'Все ступени',
 };
 
 const SEVERITY_ORDER = ['flavor', 'minor', 'moderate', 'major', 'antag', 'ghost'];
@@ -122,6 +124,9 @@ const REJECT_LABELS: Record<string, string> = {
   dead_crisis: 'доля мёртвых',
   major_cap: 'лимит крупных',
   spacing: 'пауза ступени',
+  family_spacing: 'пауза семейства',
+  global_spacing: 'глобальная пауза',
+  disruption: 'приглушено профилем',
   budget: 'нет бюджета',
   can_fire: 'не готово (can_fire)',
   no_weight: 'нулевой вес',
@@ -136,6 +141,8 @@ const VERDICT_LABELS: Record<string, string> = {
   dead_crisis: 'слишком много мёртвых',
   major_cap: 'лимит одновременных крупных',
   spacing: 'пауза ступени',
+  family_spacing: 'пауза семейства',
+  disruption: 'приглушено профилем (навязчивость)',
   budget: 'не хватает кошелька',
   can_fire: 'внутреннее условие действия',
   no_weight: 'нулевой вес',

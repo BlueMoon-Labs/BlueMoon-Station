@@ -11,6 +11,7 @@
 	max_occurrences = 1
 	earliest_start = 60 MINUTES
 	category = EVENT_CATEGORY_SPACE
+	family = "meteors" // наследуется всеми волнами (threatening/catastrophic/meaty/major dust): не подряд
 
 /datum/round_event/meteor_wave
 	start_when		= 6

@@ -8,9 +8,12 @@
 /datum/round_event_control/mass_hallucination
 	name = "Mass Hallucination"
 	typepath = /datum/round_event/mass_hallucination
-	weight = 60
-	max_occurrences = 5
+	// Флавор, но навязчивый: звуки и видения ловит вся станция разом, посреди спокойной сцены
+	// это мешает. Метка mild режет его вес в мягких профилях (Extended/Light).
+	weight = 40
+	max_occurrences = 3
 	min_players = 1
+	disruption = DIRECTOR_DISRUPTION_MILD
 	var/forced_hallucination
 	category = EVENT_CATEGORY_HEALTH
 	severity = DIRECTOR_SEVERITY_FLAVOR

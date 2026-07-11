@@ -4,7 +4,7 @@
 	name = "Comet Belt"
 	typepath = /datum/round_event/comet_belt
 	max_occurrences = 1
-	weight = 5
+	weight = 10 // чисто косметический флавор, пусть выпадает чаще на фоне ужатой пыли
 	earliest_start = 10 MINUTES
 	category = EVENT_CATEGORY_FRIENDLY
 	description = "A belt of comets passes near the station, creating a spectacular light show."

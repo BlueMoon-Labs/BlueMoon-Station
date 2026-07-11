@@ -15,6 +15,12 @@
 #define DIRECTOR_KIND_EVENT "event"
 #define DIRECTOR_KIND_RULESET "ruleset"
 
+/// Уровни навязчивости действий: насколько запуск мешает играть (director_action.disruption).
+/// Мягкие профили режут вес по этой метке через profile.disruption_weight_mults.
+#define DIRECTOR_DISRUPTION_AMBIENT "ambient"
+#define DIRECTOR_DISRUPTION_MILD "mild"
+#define DIRECTOR_DISRUPTION_DISRUPTIVE "disruptive"
+
 /// Отделы для staffing-подсчёта
 #define DIRECTOR_DEPT_SECURITY "security"
 #define DIRECTOR_DEPT_ENGINEERING "engineering"
@@ -43,9 +49,15 @@
 #define DIRECTOR_REJECT_DEAD_CRISIS "dead_crisis"
 #define DIRECTOR_REJECT_MAJOR_CAP "major_cap"
 #define DIRECTOR_REJECT_SPACING "spacing"
+#define DIRECTOR_REJECT_FAMILY "family_spacing"
+#define DIRECTOR_REJECT_GLOBAL "global_spacing"
+#define DIRECTOR_REJECT_DISRUPTION "disruption"
 #define DIRECTOR_REJECT_BUDGET "budget"
 #define DIRECTOR_REJECT_CAN_FIRE "can_fire"
 #define DIRECTOR_REJECT_NO_WEIGHT "no_weight"
+
+/// Псевдо-ступень в reject_stats бита, отсечённого глобальной паузой: гейт бьёт по всем ступеням сразу
+#define DIRECTOR_REJECT_SEV_ALL "all"
 
 /// Вердикты оценки пула действий для панели (поверх причин DIRECTOR_REJECT_*)
 #define DIRECTOR_VERDICT_OK "ok"

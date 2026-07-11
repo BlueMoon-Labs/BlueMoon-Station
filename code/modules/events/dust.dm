@@ -1,7 +1,9 @@
 /datum/round_event_control/space_dust
 	name = "Minor Space Dust"
 	typepath = /datum/round_event/space_dust
-	weight = 200
+	// Вес 200 при 5-90 у остального флавора съедал треть роллов ступени, а до 30-й минуты
+	// (earliest_start большинства флавора) пыль была почти единственным кандидатом: 5 пылей за раунд.
+	weight = 60
 	max_occurrences = 1000
 	earliest_start = 0 MINUTES
 	alert_observers = FALSE
