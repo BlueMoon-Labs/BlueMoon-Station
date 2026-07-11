@@ -35,7 +35,7 @@
 /datum/round_event/travelling_trader/end()
 	if(trader) // the /datum/round_event/travelling_trader has given up on waiting!
 		trader.visible_message("The <b>[trader]</b> has given up on waiting!")
-		qdel(trader)
+		QDEL_NULL(trader) // event-датум переживает конец события и не должен держать дамми
 
 //the actual trader mob
 /mob/living/carbon/human/dummy/travelling_trader //similar to a dummy because we want to be resource-efficient

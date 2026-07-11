@@ -15,7 +15,7 @@
 	var/minimize_when_attached = TRUE // TRUE if shown as a small icon in corner, FALSE if overlayed
 	var/datum/component/storage/detached_pockets
 	//skyrat edit
-	var/current_uniform = null
+	var/obj/item/clothing/under/current_uniform = null
 	// BLUEMOON ADD START - изменение аксессуаров
 	// У некоторых акссессуаров теперь типо будет доступ. Костыль, да.
 	var/list/access = list()
@@ -29,6 +29,10 @@
 	// BLUEMOON ADD END
 
 /obj/item/clothing/accessory/Destroy()
+	// Прямой qdel прицепленного аксессуара идёт мимо обычного UI-пути: полный
+	// detach убирает список/оверлеи/броню и возвращает storage-компонент с формы.
+	if(current_uniform)
+		detach(current_uniform, null)
 	current_uniform = null
 	detached_pockets = null
 	return ..()

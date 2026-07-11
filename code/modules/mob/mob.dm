@@ -44,8 +44,14 @@
 	for (var/alert in alerts.Copy())
 		clear_alert(alert, TRUE)
 	if(observers?.len)
-		for(var/mob/dead/observe as anything in observers)
+		// reset_perspective() выпиливает наблюдателя из observers - итерируем копию,
+		// иначе каждый второй пропускается и его client.eye/observetarget навсегда
+		// держат удалённого моба (утечка обсерверов при наблюдении друг за другом).
+		for(var/mob/dead/observer/observe as anything in observers.Copy())
 			observe.reset_perspective(null)
+			// У бесклиентных наблюдателей reset_perspective не чистит observetarget.
+			observe.observetarget = null
+		observers = null
 	dispose_rendering()
 	qdel(hud_used)
 	if(hud_list)

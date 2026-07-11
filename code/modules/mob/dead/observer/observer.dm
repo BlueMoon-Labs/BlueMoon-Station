@@ -953,6 +953,13 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 /mob/dead/observer/proc/do_observe(mob/mob_eye)
 	//Istype so we filter out points of interest that are not mobs
 	if(client && mob_eye && istype(mob_eye))
+		// Отвязка от прошлой цели: путь toggle_observe зовёт do_observe без
+		// reset_perspective, иначе мы навечно остаёмся в observers старой цели.
+		if(observetarget && observetarget != mob_eye)
+			// Канарейка как у tg: любой путь, попавший сюда, раньше стрэндил госта
+			// в observers старой цели (класс утечек обсерверов). Лечим, но логируем.
+			stack_trace("do_observe у [src] при уже занятой цели (была: [observetarget], новая: [mob_eye])")
+			reset_perspective(null)
 		client.eye = mob_eye
 		if(mob_eye.hud_used)
 			client.clear_screen()

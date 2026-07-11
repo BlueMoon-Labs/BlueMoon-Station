@@ -21,7 +21,7 @@ GLOBAL_LIST_EMPTY(refcount_monitors)
 	src.sample_interval = max(sample_interval, 2)
 	src.end_time = world.time + duration
 	GLOB.refcount_monitors += src
-	Report("старт мониторинга (интервал [src.sample_interval / 10]с, до [duration / 10]с)")
+	Report("старт мониторинга (интервал [src.sample_interval / 10]с, до [duration / 10]с). Короткие скачки на +-1 - VM-пины проходящих проков; значимы устойчивые дельты.")
 	Sample()
 
 /datum/refcount_monitor/Destroy()

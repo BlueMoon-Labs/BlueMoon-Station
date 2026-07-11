@@ -15,9 +15,13 @@
 /obj/proc/set_armor(datum/armor/armor)
 	if(src.armor == armor)
 		return
-	if(!(src.armor?.type in GLOB.armor_by_type))
-		qdel(src.armor)
-	src.armor = ispath(armor) ? getArmor(armor) : armor
+	var/datum/armor/old_armor = src.armor
+	var/datum/armor/new_armor = ispath(armor) ? getArmor(armor) : armor
+	src.armor = new_armor
+	// getArmor() и GLOB.armor_by_type шарят помеченные tag-ом датумы. Генераторы
+	// приватных модифицированных armor снимают tag: их после замены нужно удалить.
+	if(old_armor && old_armor != new_armor && !old_armor.tag)
+		qdel(old_armor)
 
 /// Helper to update the atom's armor to a new armor with the specified rating
 /obj/proc/set_armor_rating(damage_type, rating)

@@ -1,6 +1,16 @@
 /// Пустой датум для замеров refcount - никто на него не ссылается.
 /datum/gc_refcount_probe
 
+/// Имитирует рантайм внутри полного обхода, не сканируя весь мир.
+/datum/gc_refcount_probe/reftracker_runtime
+
+/datum/gc_refcount_probe/reftracker_runtime/_search_references(references_to_clear)
+	CRASH("Ожидаемый тестовый рантайм рефтрекера")
+
+/datum/gc_refcount_duplicate_holder
+	var/list/first_path
+	var/list/second_path
+
 /// Калибровка EXTERNAL_REFCOUNT: если BYOND сменит семантику refcount(),
 /// этот тест упадёт первым и покажет, что все показания GC-телеметрии сдвинулись.
 /datum/unit_test/gc_refcount_calibration/Run()
@@ -66,3 +76,77 @@
 	SSgarbage.reftrack_last_autoscan = saved_last
 	SSgarbage.reftrack_autoscans_this_round = saved_count
 	SSgarbage.reftrack_autoscan_type_counts = saved_types
+
+/// Авто-скан объекта без внешних держателей только тратит полный обход мира.
+/datum/unit_test/gc_reftrack_skips_zero_external_refs/Run()
+	var/saved_last = SSgarbage.reftrack_last_autoscan
+	var/saved_count = SSgarbage.reftrack_autoscans_this_round
+	var/list/saved_types = SSgarbage.reftrack_autoscan_type_counts
+	SSgarbage.reftrack_last_autoscan = 0
+	SSgarbage.reftrack_autoscans_this_round = 0
+	SSgarbage.reftrack_autoscan_type_counts = list()
+	var/datum/gc_refcount_probe/probe = new
+	TEST_ASSERT(!SSgarbage.TryAutoScan(probe, 0), "Авто-скан запустился без внешних ссылок")
+	TEST_ASSERT_EQUAL(SSgarbage.reftrack_autoscans_this_round, 0, "Пропущенный авто-скан израсходовал раундовый лимит")
+	qdel(probe)
+	SSgarbage.reftrack_last_autoscan = saved_last
+	SSgarbage.reftrack_autoscans_this_round = saved_count
+	SSgarbage.reftrack_autoscan_type_counts = saved_types
+
+/// Рантайм в полном скане не должен навсегда остановить SSgarbage или заблокировать следующие сканы.
+/datum/unit_test/gc_reftrack_runtime_cleanup/Run()
+	var/saved_gc_can_fire = SSgarbage.can_fire
+	var/saved_active = GLOB.reftracker_active
+	var/saved_cancel = GLOB.reftracker_cancel
+	var/saved_remaining = GLOB.reftracker_references_to_clear
+	SSgarbage.can_fire = TRUE
+	GLOB.reftracker_active = FALSE
+	GLOB.reftracker_cancel = FALSE
+	var/datum/gc_refcount_probe/reftracker_runtime/probe = new
+	probe.find_references(skip_alert = TRUE)
+	TEST_ASSERT(SSgarbage.can_fire, "Рантайм полного скана оставил SSgarbage выключенным")
+	TEST_ASSERT(!GLOB.reftracker_active, "Рантайм полного скана оставил глобальную блокировку")
+	TEST_ASSERT(!GLOB.reftracker_cancel, "Рантайм полного скана оставил флаг отмены")
+	TEST_ASSERT_EQUAL(GLOB.reftracker_references_to_clear, INFINITY, "Рантайм полного скана оставил счётчик ссылок")
+	qdel(probe)
+	SSgarbage.can_fire = saved_gc_can_fire
+	GLOB.reftracker_active = saved_active
+	GLOB.reftracker_cancel = saved_cancel
+	GLOB.reftracker_references_to_clear = saved_remaining
+
+/// GC failure world scan обязан принимать qdel-помеченную, но ещё живую цель.
+/datum/unit_test/gc_world_scan_accepts_qdeling_target/Run()
+	var/datum/gc_refcount_probe/probe = new
+	probe.gc_destroyed = world.time || 1
+	var/datum/gc_failure_viewer/gc_failure_entry/entry = new(null, probe.type, REF(probe), world.time, QDEL_HINT_QUEUE)
+	TEST_ASSERT(entry.can_scan_target(probe), "World scan ошибочно считает QDELING-цель уже удалённой")
+	qdel(entry)
+	qdel(probe, force = TRUE)
+
+/// Положительная метка обхода для прямого вызова DoSearchVar: боевые сканы используют
+/// только отрицательные значения GLOB.reftracker_scan_id, а глобал тестам трогать нельзя -
+/// сдвиг счётчика к нулю совпадает с дефолтным last_find_references и глушит обход.
+#define REFTRACKER_TEST_SEARCH_MARK 100
+
+/// Один и тот же список может быть достижим несколькими путями, но его элемент остаётся одной физической ссылкой.
+/datum/unit_test/gc_reftrack_deduplicates_shared_list/Run()
+	var/saved_remaining = GLOB.reftracker_references_to_clear
+	var/list/saved_identities = GLOB.reftracker_found_identities.Copy()
+	var/datum/gc_refcount_probe/probe = new
+	var/datum/gc_refcount_duplicate_holder/holder = new
+	var/list/shared_list = list(probe)
+	holder.first_path = shared_list
+	holder.second_path = shared_list
+	GLOB.reftracker_references_to_clear = 2
+	GLOB.reftracker_found_identities.Cut()
+	probe.DoSearchVar(holder, "duplicate path test", REFTRACKER_TEST_SEARCH_MARK)
+	TEST_ASSERT_EQUAL(GLOB.reftracker_references_to_clear, 1, "Одна ссылка через два пути была ошибочно посчитана дважды")
+	holder.first_path = null
+	holder.second_path = null
+	shared_list.Cut()
+	qdel(holder)
+	qdel(probe)
+	GLOB.reftracker_references_to_clear = saved_remaining
+	GLOB.reftracker_found_identities = saved_identities
+
+#undef REFTRACKER_TEST_SEARCH_MARK

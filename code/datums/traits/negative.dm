@@ -139,6 +139,7 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 /datum/quirk/family_heirloom/proc/on_heirloom_deleted()
 	SIGNAL_HANDLER
 	GLOB.family_heirlooms -= heirloom
+	heirloom = null // квирк живёт дальше и не должен держать удалённую реликвию
 
 /datum/quirk/family_heirloom/remove()
 	SEND_SIGNAL(quirk_holder, COMSIG_CLEAR_MOOD_EVENT, "family_heirloom")

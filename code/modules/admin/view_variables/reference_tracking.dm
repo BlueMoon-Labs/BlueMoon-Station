@@ -7,6 +7,16 @@
 
 /// TRUE = активный скан должен прерваться при следующей проверке.
 GLOBAL_VAR_INIT(reftracker_cancel, FALSE)
+/// Не даёт двум тяжёлым сканам одновременно управлять SSgarbage и общим состоянием поиска.
+GLOBAL_VAR_INIT(reftracker_active, FALSE)
+/// Уникальная отрицательная метка обхода. Положительные значения оставлены прямым unit-тестам DoSearchVar.
+GLOBAL_VAR_INIT(reftracker_scan_id, 0)
+/// Сколько внешних ссылок осталось найти текущему сериализованному скану.
+GLOBAL_VAR_INIT(reftracker_references_to_clear, INFINITY)
+/// Сколько внешних ссылок скан искал изначально - для отчёта о недоборе в FinishSearch.
+GLOBAL_VAR_INIT(reftracker_scan_requested, INFINITY)
+/// Уже посчитанные физические ссылки текущего скана: повторный путь к тому же списку не должен съедать лимит.
+GLOBAL_LIST_EMPTY(reftracker_found_identities)
 
 /// Типы, которые заведомо не держат чужих ссылок - пропускаются при полном скане.
 GLOBAL_LIST_INIT(reftracker_skip_typecache, init_reftracker_skip_typecache())
@@ -29,24 +39,40 @@ GLOBAL_LIST_INIT(reftracker_skip_typecache, init_reftracker_skip_typecache())
 /// Ищет и логирует все ссылки на src. references_to_clear ограничивает поиск
 /// известным числом внешних держателей (из refcount) - нашли все, вышли рано.
 /datum/proc/find_references(references_to_clear = INFINITY, skip_alert = FALSE)
+	if(GLOB.reftracker_active)
+		log_reftracker("Поиск ссылок на [type] [text_ref(src)] не запущен: другой полный скан уже активен.")
+		return
 	if(usr?.client && !skip_alert)
 		if(tgui_alert(usr, "Полный скан заблокирует сервер на десятки секунд или минуты. Начать поиск?", "Find References", list("Да", "Нет")) != "Да")
 			return
 	GLOB.reftracker_cancel = FALSE
-	running_find_references = type
+	GLOB.reftracker_active = TRUE
+	var/garbage_was_enabled = SSgarbage.can_fire
 	// Останавливаем GC, чтобы он не собрал цель посреди поиска.
 	SSgarbage.can_fire = FALSE
-	_search_references(references_to_clear)
-	running_find_references = null
-	SSgarbage.can_fire = TRUE
-	SSgarbage.update_nextfire(reset_time = TRUE)
+	try
+		_search_references(references_to_clear)
+	catch(var/exception/error)
+		log_reftracker("Поиск ссылок на [type] [text_ref(src)] аварийно завершён: [error] ([error.file]:[error.line]).")
+	// Этот cleanup обязан выполниться и после рантайма внутри произвольного vars/list.
+	GLOB.reftracker_active = FALSE
+	GLOB.reftracker_cancel = FALSE
+	GLOB.reftracker_references_to_clear = INFINITY
+	GLOB.reftracker_scan_requested = INFINITY
+	GLOB.reftracker_found_identities.Cut()
+	SSgarbage.can_fire = garbage_was_enabled
+	if(garbage_was_enabled)
+		SSgarbage.update_nextfire(reset_time = TRUE)
 
 /datum/proc/_search_references(references_to_clear)
-	src.references_to_clear = references_to_clear
+	GLOB.reftracker_references_to_clear = references_to_clear
+	GLOB.reftracker_scan_requested = references_to_clear
+	GLOB.reftracker_found_identities.Cut()
 	log_reftracker("Начат поиск ссылок на [type] [text_ref(src)], ищем [references_to_clear == INFINITY ? "все" : references_to_clear].")
-	var/starting_time = world.time
+	GLOB.reftracker_scan_id--
+	var/search_id = GLOB.reftracker_scan_id
 
-	DoSearchVar(GLOB, "GLOB", starting_time)
+	DoSearchVar(GLOB, "GLOB", search_id)
 	log_reftracker("GLOB просканирован")
 	if(SearchDone())
 		return FinishSearch()
@@ -56,7 +82,7 @@ GLOBAL_LIST_INIT(reftracker_skip_typecache, init_reftracker_skip_typecache())
 	var/list/global_vars = list()
 	for(var/key in global.vars)
 		global_vars[key] = global.vars[key]
-	DoSearchVar(global_vars, "Native Global", starting_time)
+	DoSearchVar(global_vars, "Native Global", search_id)
 	log_reftracker("Нативные глобалы просканированы")
 	if(SearchDone())
 		return FinishSearch()
@@ -65,7 +91,7 @@ GLOBAL_LIST_INIT(reftracker_skip_typecache, init_reftracker_skip_typecache())
 	for(var/datum/thing in world) //atoms (don't beleive its lies)
 		if(skip_types[thing.type])
 			continue
-		DoSearchVar(thing, "World -> [thing.type]", starting_time)
+		DoSearchVar(thing, "World -> [thing.type]", search_id)
 		if(SearchDone())
 			return FinishSearch()
 	log_reftracker("Атомы просканированы")
@@ -73,7 +99,7 @@ GLOBAL_LIST_INIT(reftracker_skip_typecache, init_reftracker_skip_typecache())
 	for(var/datum/thing) //datums
 		if(skip_types[thing.type])
 			continue
-		DoSearchVar(thing, "Datums -> [thing.type]", starting_time)
+		DoSearchVar(thing, "Datums -> [thing.type]", search_id)
 		if(SearchDone())
 			return FinishSearch()
 	log_reftracker("Датумы просканированы")
@@ -93,11 +119,19 @@ GLOBAL_LIST_INIT(reftracker_skip_typecache, init_reftracker_skip_typecache())
 	if(SSgarbage.should_save_refs)
 		return FALSE
 	#endif
-	return references_to_clear <= 0
+	return GLOB.reftracker_references_to_clear <= 0
 
 /datum/proc/FinishSearch()
 	if(GLOB.reftracker_cancel)
 		log_reftracker("Поиск ссылок на [type] [text_ref(src)] ОТМЕНЁН.")
+	else if(GLOB.reftracker_scan_requested != INFINITY && GLOB.reftracker_references_to_clear > 0)
+		// Полный обход мира закончился, а ожидаемые ссылки не нашлись: датумы,
+		// списки, image-держатели и клиентские структуры уже исключены.
+		var/found = GLOB.reftracker_scan_requested - GLOB.reftracker_references_to_clear
+		log_reftracker("Поиск ссылок на [type] [text_ref(src)] завершён: найдено [found] из [GLOB.reftracker_scan_requested]. \
+			Недостающие держатели вне датумов - как правило это VM-пины (локали и temp-слоты живых проков, \
+			отпускают при смерти фрейма; refcount в момент фейла тоже мог быть завышен фреймом GC). \
+			Устойчивый недобор при повторных сканах = реальный держатель во внутренностях BYOND.")
 	else
 		log_reftracker("Поиск ссылок на [type] [text_ref(src)] завершён.")
 	GLOB.reftracker_cancel = FALSE
@@ -139,28 +173,30 @@ GLOBAL_LIST_INIT(reftracker_skip_typecache, init_reftracker_skip_typecache())
 					recursion_count + 1, \
 					/*is_special_list = */ is_atom && (varname == "contents" || varname == "vis_contents" || varname == "locs"))
 			else if(variable == src)
-				MarkRefFound(varname, "Найден [type] [text_ref(src)] в [datum_container.type] [datum_container.ref_search_details()], вар [varname]. [container_name]")
+				MarkRefFound(varname, "Найден [type] [text_ref(src)] в [datum_container.type] [datum_container.ref_search_details()], вар [varname]. [container_name]", "[REF(datum_container)]|var|[varname]")
 			else if(isimage(variable) && !isimage(src))
 				var/image/attached = variable
 				if(attached.loc == src)
-					MarkRefFound(varname, "Найден [type] [text_ref(src)] как loc у image [text_ref(attached)] в [datum_container.type] [datum_container.ref_search_details()], вар [varname]. [container_name]")
+					MarkRefFound(varname, "Найден [type] [text_ref(src)] как loc у image [text_ref(attached)] в [datum_container.type] [datum_container.ref_search_details()], вар [varname]. [container_name]", "image|[REF(attached)]")
 			if(SearchDone())
 				return
 
 	else if(islist(potential_container))
 		var/list/potential_cache = potential_container
+		var/list_index = 0
 		for(var/element_in_list in potential_cache)
+			list_index++
 			//Check normal sublists
 			if(islist(element_in_list))
 				if(length(element_in_list))
 					DoSearchVar(element_in_list, "[container_name] -> (list)", search_time, recursion_count + 1)
 			//Check normal entrys
 			else if(element_in_list == src)
-				MarkRefFound(potential_cache, "Найден [type] [text_ref(src)] в списке [container_name].")
+				MarkRefFound(potential_cache, "Найден [type] [text_ref(src)] в списке [container_name].", "\ref[potential_cache]|entry|[list_index]")
 			else if(isimage(element_in_list) && !isimage(src))
 				var/image/attached_entry = element_in_list
 				if(attached_entry.loc == src)
-					MarkRefFound(potential_cache, "Найден [type] [text_ref(src)] как loc у image [text_ref(attached_entry)] в списке [container_name].")
+					MarkRefFound(potential_cache, "Найден [type] [text_ref(src)] как loc у image [text_ref(attached_entry)] в списке [container_name].", "image|[REF(attached_entry)]")
 			if(SearchDone())
 				return
 			//Check assoc entrys
@@ -174,7 +210,8 @@ GLOBAL_LIST_INIT(reftracker_skip_typecache, init_reftracker_skip_typecache())
 						if(length(assoc_val))
 							DoSearchVar(assoc_val, "[container_name]\[[element_in_list]\] -> (list)", search_time, recursion_count + 1)
 					else if(assoc_val == src)
-						MarkRefFound(potential_cache, "Найден [type] [text_ref(src)] в списке [container_name]\[[element_in_list]\]")
+						var/key_identity = isdatum(element_in_list) ? REF(element_in_list) : "[element_in_list]"
+						MarkRefFound(potential_cache, "Найден [type] [text_ref(src)] в списке [container_name]\[[element_in_list]\]", "\ref[potential_cache]|assoc|[key_identity]")
 				catch
 					is_special_list = TRUE
 					log_reftracker("Особый список: [container_name] бросил при доступе к [element_in_list]")
@@ -182,7 +219,7 @@ GLOBAL_LIST_INIT(reftracker_skip_typecache, init_reftracker_skip_typecache())
 				return
 
 /// Регистрирует найденную ссылку: лог + учёт раннего выхода + запись для тестов.
-/datum/proc/MarkRefFound(found_key, message)
+/datum/proc/MarkRefFound(found_key, message, reference_identity)
 	#ifdef REFERENCE_TRACKING_DEBUG
 	if(SSgarbage.should_save_refs)
 		if(!found_refs)
@@ -190,9 +227,13 @@ GLOBAL_LIST_INIT(reftracker_skip_typecache, init_reftracker_skip_typecache())
 		found_refs[found_key] = TRUE
 		return //End early, don't want these logging
 	#endif
+	if(reference_identity && GLOB.reftracker_found_identities[reference_identity])
+		return
+	if(reference_identity)
+		GLOB.reftracker_found_identities[reference_identity] = TRUE
 	log_reftracker(message)
-	references_to_clear -= 1
-	if(references_to_clear <= 0)
+	GLOB.reftracker_references_to_clear -= 1
+	if(GLOB.reftracker_references_to_clear <= 0)
 		log_reftracker("Все ссылки на [type] [text_ref(src)] найдены, выходим.")
 
 /// Контекст датума в логах рефтрекера.

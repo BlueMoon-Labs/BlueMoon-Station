@@ -686,6 +686,10 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 		if (islist(entry))
 			scan_list_for_ref(target, entry, "[path]\[[idx]\]", depth + 1)
 
+/// QDELING-цель и есть штатный объект диагностики: останавливаемся только после настоящего del()/GC.
+/datum/gc_failure_viewer/gc_failure_entry/proc/can_scan_target(datum/target)
+	return !isnull(target)
+
 /// Full world scan for references to the GC-failed datum.
 /// Scans all atoms in world and (in TESTING) all datums. Uses CHECK_TICK to yield.
 /// Can be called automatically (D passed directly) or on-demand via button (D = null, located by ref).
@@ -713,8 +717,8 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 	// for(var/atom/thing) iterates every atom that exists — correct for a full scan.
 	var/scan_count = 0
 	for (var/atom/thing)
-		if (QDELETED(D))
-			break // Target is gone or pending deletion; stop the expensive scan.
+		if (!can_scan_target(D))
+			break // Target was actually collected or hard-deleted; stop the expensive scan.
 		if (thing == D)
 			continue
 		scan_count++
@@ -735,7 +739,7 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 		CHECK_TICK
 	// Also scan pure datums (not atoms). CHECK_TICK keeps this production-safe.
 	for (var/datum/thing)
-		if (isnull(D))
+		if (!can_scan_target(D))
 			break // D was hard-deleted during scan, stop
 		if (thing == D)
 			continue

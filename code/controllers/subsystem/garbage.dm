@@ -1012,6 +1012,9 @@ SUBSYSTEM_DEF(garbage)
 
 /// Запускает авто-скан ссылок, если позволяет анти-шторм. TRUE = запущен.
 /datum/controller/subsystem/garbage/proc/TryAutoScan(datum/D, external_refs)
+	// Объект без внешних держателей уже может собраться сам после возврата из GC-прохода.
+	if (external_refs <= 0)
+		return FALSE
 	var/type_string = "[D.type]"
 	if (!CanAutoScan(type_string))
 		return FALSE

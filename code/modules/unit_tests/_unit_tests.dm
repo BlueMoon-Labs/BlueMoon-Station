@@ -174,6 +174,7 @@
 #include "fov_hearers.dm"
 #include "gc_refcount.dm"
 #include "ghost_role_limbs.dm"
+#include "harddel_cleanup.dm"
 #include "hallucination_stationmessage.dm"
 #include "memory_leak_limits.dm"
 #include "human_mob_gc.dm"
