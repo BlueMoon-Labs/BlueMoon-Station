@@ -223,20 +223,44 @@
 		throw e
 	SSdirector.restore_simulation_state(saved)
 
+/// Раундстарт-фикстура для проверки вклада исполненных раундстартовых рулсетов.
+/// weight = 0 на типе, чтобы init_rulesets живого раунда его не подобрал; intensity ставит тест.
+/// LONE_RULESET - только ради dynamic_roundstart_ruleset_sanity (не-lone обязан иметь scaling_cost).
+/datum/dynamic_ruleset/roundstart/test_roundstart_intensity
+	name = "Test Roundstart Intensity"
+	weight = 0
+	cost = 0
+	requirements = list(0,0,0,0,0,0,0,0,0,0)
+	required_round_type = null
+	flags = LONE_RULESET
+
 /// Проверяет динамический вклад живых рулсетов в get_active_intensity(): доля выживших,
 /// строки разбивки для панели, вытеснение моста из ledger и суммирование с обычными записями.
+/// Плюс нейтрализация и раундстарт: разантаженный (без жёстких антаг-датумов) и посаженный
+/// в пермабриг не считаются угрозой, исполненные раундстарт-рулсеты дают вклад из
+/// executed_rules динамика и затухают с возрастом раунда.
 /datum/unit_test/director_ruleset_intensity_breakdown
+
+/// Минимальный жёсткий (не soft_antag) антаг-датум: маркер "разум всё ещё антагонист"
+/// для расчёта вклада, без контент-эффектов конкретных ролей.
+/datum/unit_test/director_ruleset_intensity_breakdown/proc/grant_hard_antag(datum/mind/target_mind)
+	var/datum/antagonist/marker = new
+	marker.silent = TRUE
+	target_mind.add_antag_datum(marker)
 
 /datum/unit_test/director_ruleset_intensity_breakdown/Run()
 	// Мутирует живой SSdirector - capture/restore c try/catch возвращает состояние даже при падении
 	// ассерта (см. комментарий в director_beat_logic/Run()).
 	var/list/saved = SSdirector.capture_simulation_state()
+	var/datum/game_mode/dynamic/mode = SSticker.mode
+	var/datum/dynamic_ruleset/roundstart/test_roundstart_intensity/roundstart_rule
 	try
 		var/datum/dynamic_ruleset/midround/test_pool_isolation/rule = new
 		rule.intensity = 15
 		rule.occurrences = 1
 		var/mob/living/carbon/human/alive = allocate(/mob/living/carbon/human)
 		alive.mind_initialize()
+		grant_hard_antag(alive.mind)
 		var/mob/living/carbon/human/corpse = allocate(/mob/living/carbon/human)
 		corpse.mind_initialize()
 		corpse.death()
@@ -251,24 +275,74 @@
 
 		var/list/breakdown = list()
 		var/total = SSdirector.get_active_intensity(breakdown)
-		TEST_ASSERT_EQUAL(total, 15 * 0.5 + 5, "Итог: вклад рулсета по доле живых плюс запись события, без моста")
+		// Свежий антаг без единого проявления весит DIRECTOR_ACTIVITY_MULT_MIN своей доли.
+		TEST_ASSERT_EQUAL(total, 15 * 0.5 * DIRECTOR_ACTIVITY_MULT_MIN + 5, "Итог: вклад рулсета по доле живых с множителем тихони плюс запись события, без моста")
 		TEST_ASSERT_EQUAL(length(SSdirector.intensity_ledger), 1, "Мост исполненного рулсета должен вытесниться из ledger")
 		TEST_ASSERT_EQUAL(length(breakdown), 1, "Живой рулсет должен дать ровно одну строку разбивки")
 		var/list/row = breakdown[1]
 		TEST_ASSERT_EQUAL(row[1], rule.action_name(), "Имя строки разбивки должно совпадать с именем рулсета")
-		TEST_ASSERT_EQUAL(row[2], 7.5, "Вклад строки = intensity * живые / назначенные")
+		TEST_ASSERT_EQUAL(row[2], 15 * 0.5 * DIRECTOR_ACTIVITY_MULT_MIN, "Вклад строки = intensity * активность живых / назначенные")
 		TEST_ASSERT_EQUAL(row[3], 1, "Число живых в строке разбивки")
 		TEST_ASSERT_EQUAL(row[4], 2, "Число назначенных в строке разбивки")
 
-		// Полностью мёртвый рулсет не даёт ни вклада, ни строки.
+		// Активность: буйный антаг (score на капе) весит максимум своей доли - "занял всё СБ"
+		// насыщает клапан давления сильнее тихони.
+		SSdirector.bump_antag_activity(alive.mind, DIRECTOR_ACTIVITY_CAP * 2)
+		total = SSdirector.get_active_intensity()
+		TEST_ASSERT_EQUAL(total, 15 * 0.5 * DIRECTOR_ACTIVITY_MULT_MAX + 5, "Антаг на капе активности должен весить максимум своей доли")
+		alive.mind.director_activity = 0
+
+		// Разантаженный (деконверсия, снятие роли админом) больше не угроза, хоть и жив.
+		alive.mind.remove_antag_datum(/datum/antagonist)
+		total = SSdirector.get_active_intensity()
+		TEST_ASSERT_EQUAL(total, 5, "Назначенный без жёстких антаг-датумов не должен давать вклада")
+		grant_hard_antag(alive.mind)
+
+		// Пойманный: сидящий в пермабриге антаг не двигает раунд (только если на карте CI есть перма).
+		var/area/prison_area = GLOB.areas_by_type[/area/security/prison]
+		var/turf/prison_turf
+		if(prison_area)
+			for(var/turf/prison_candidate in prison_area)
+				prison_turf = prison_candidate
+				break
+		if(prison_turf)
+			var/turf/home_turf = get_turf(alive)
+			alive.forceMove(prison_turf)
+			total = SSdirector.get_active_intensity()
+			TEST_ASSERT_EQUAL(total, 5, "Антаг в пермабриге не должен давать вклада")
+			alive.forceMove(home_turf)
+
+		// Раундстарт-рулсет: в actions не регистрируется, вклад обязан идти из executed_rules динамика.
+		TEST_ASSERT(istype(mode), "Тестовый раунд обязан идти на динамике (источник executed_rules)")
+		roundstart_rule = new
+		roundstart_rule.intensity = 30
+		roundstart_rule.assigned = list(alive.mind, corpse.mind)
+		mode.executed_rules += roundstart_rule
+		// Свежий раунд (time_override двигает часы now()): затухания ещё нет.
+		SSdirector.time_override = SSticker.round_start_time + 1 MINUTES
+		breakdown = list()
+		total = SSdirector.get_active_intensity(breakdown)
+		TEST_ASSERT_EQUAL(total, (15 * 0.5 + 30 * 0.5) * DIRECTOR_ACTIVITY_MULT_MIN + 5, "Итог обязан включать вклад раундстарт-рулсета по доле живых")
+		TEST_ASSERT_EQUAL(length(breakdown), 2, "Живой раундстарт-рулсет обязан дать свою строку разбивки")
+		// Поздний раунд: вклад раундстарта затухает до пола, midround-рулсет не затухает.
+		SSdirector.time_override = SSticker.round_start_time + 200 MINUTES
+		total = SSdirector.get_active_intensity()
+		TEST_ASSERT_EQUAL(total, (15 * 0.5 + 30 * 0.5 * 0.25) * DIRECTOR_ACTIVITY_MULT_MIN + 5, "Поздним раундом вклад раундстарта обязан затухнуть до пола")
+		SSdirector.time_override = 0
+
+		// Полностью мёртвые рулсеты не дают ни вклада, ни строк.
 		alive.death()
 		breakdown = list()
 		total = SSdirector.get_active_intensity(breakdown)
 		TEST_ASSERT_EQUAL(total, 5, "Мёртвый рулсет не должен давать вклада")
 		TEST_ASSERT_EQUAL(length(breakdown), 0, "Мёртвый рулсет не должен давать строк разбивки")
 	catch(var/exception/e)
+		if(istype(mode) && roundstart_rule)
+			mode.executed_rules -= roundstart_rule
 		SSdirector.restore_simulation_state(saved)
 		throw e
+	if(istype(mode) && roundstart_rule)
+		mode.executed_rules -= roundstart_rule
 	SSdirector.restore_simulation_state(saved)
 
 /// Проверяет независимость ступеней ANTAG и GHOST: запуск одной не двигает паузы другой
@@ -461,6 +535,7 @@
 		// За глобальной паузой (иначе контрольный бит с экипажем отсёкся бы global_spacing),
 		// но до порога затишья - гарантированный бит не должен маскировать обычный путь.
 		SSdirector.last_any_fired_at = world.time - profile.global_spacing - 1
+		SSdirector.last_real_fired_at = world.time - profile.global_spacing - 1
 		SSdirector.last_fired_at = list(
 			DIRECTOR_SEVERITY_MINOR = world.time - profile.severity_spacing[DIRECTOR_SEVERITY_MINOR] - 1,
 		)
@@ -646,9 +721,9 @@
 	// Рулсеты: severity/intensity проверяются через реальные инстансы (severity могла бы быть
 	// переопределена в теле датума, а не только унаследована от базы). Имена собираются отдельно
 	// от событийных seen_names, чтобы диагностика коллизии ruleset-vs-ruleset не путалась с event-vs-ruleset.
-	// test_pool_isolation - фикстуры другого теста (director_latejoin_pool_isolation) в этом же файле,
+	// test_pool_isolation и test_roundstart_intensity - фикстуры других тестов в этом же файле,
 	// не реальный игровой контент; требования тегирования на них не распространяются.
-	var/list/tagging_test_fixtures = list(/datum/dynamic_ruleset/midround/test_pool_isolation, /datum/dynamic_ruleset/latejoin/test_pool_isolation)
+	var/list/tagging_test_fixtures = list(/datum/dynamic_ruleset/midround/test_pool_isolation, /datum/dynamic_ruleset/latejoin/test_pool_isolation, /datum/dynamic_ruleset/roundstart/test_roundstart_intensity)
 	var/list/ruleset_names = list()
 	for(var/datum/dynamic_ruleset/midround/ruleset_path as anything in subtypesof(/datum/dynamic_ruleset/midround))
 		if(!initial(ruleset_path.name) || (ruleset_path in tagging_test_fixtures))
@@ -670,6 +745,23 @@
 		TEST_ASSERT_EQUAL(ruleset.severity, DIRECTOR_SEVERITY_ANTAG, "[ruleset_path]: рулсет обязан иметь severity ANTAG")
 		TEST_ASSERT(ruleset.intensity >= 0, "[ruleset_path]: отрицательная intensity")
 		TEST_ASSERT(ruleset.intensity > 0, "[ruleset_path]: рулсет без вклада в intensity")
+		var/ruleset_action_name = ruleset.action_name()
+		TEST_ASSERT(!(ruleset_action_name in ruleset_names), "[ruleset_action_name]: неуникальное имя рулсета (ключ конфига/intensity_ledger)")
+		ruleset_names += ruleset_action_name
+
+	// Раундстарт-рулсеты не регистрируются в actions, но их intensity читает get_ruleset_intensity
+	// через executed_rules динамика, а action_name - ключ строк разбивки/live_names, поэтому
+	// тегирование и уникальность имён проверяются тем же субтайп-обходом. Extended и Meteor никого
+	// не назначают (assigned пуст) - вклада в intensity у них нет по построению.
+	var/list/roundstart_no_intensity = list(/datum/dynamic_ruleset/roundstart/extended, /datum/dynamic_ruleset/roundstart/meteor)
+	for(var/datum/dynamic_ruleset/roundstart/ruleset_path as anything in subtypesof(/datum/dynamic_ruleset/roundstart))
+		if(!initial(ruleset_path.name) || (ruleset_path in tagging_test_fixtures))
+			continue
+		var/datum/dynamic_ruleset/roundstart/ruleset = new ruleset_path()
+		TEST_ASSERT_EQUAL(ruleset.severity, DIRECTOR_SEVERITY_ANTAG, "[ruleset_path]: раундстарт-рулсет обязан иметь severity ANTAG")
+		TEST_ASSERT(ruleset.intensity >= 0, "[ruleset_path]: отрицательная intensity")
+		if(!(ruleset_path in roundstart_no_intensity))
+			TEST_ASSERT(ruleset.intensity > 0, "[ruleset_path]: рулсет без вклада в intensity")
 		var/ruleset_action_name = ruleset.action_name()
 		TEST_ASSERT(!(ruleset_action_name in ruleset_names), "[ruleset_action_name]: неуникальное имя рулсета (ключ конфига/intensity_ledger)")
 		ruleset_names += ruleset_action_name
@@ -718,14 +810,22 @@
 	var/max_intensity = 0
 	var/quiet_streak = 0
 	var/max_quiet_streak = 0
+	var/list/fired_by_severity = list()
 	for(var/list/entry in log_out)
 		if(entry["result"] == DIRECTOR_BEAT_FIRED || entry["result"] == DIRECTOR_BEAT_GUARANTEED)
 			fired++
 			quiet_streak = 0
+			var/sev = entry["severity"] || "?"
+			fired_by_severity[sev] = (fired_by_severity[sev] || 0) + 1
 		else
 			quiet_streak++
 			max_quiet_streak = max(max_quiet_streak, quiet_streak)
 		max_intensity = max(max_intensity, entry["intensity"])
+	// Состав по ступеням в лог CI: сырьё для тюнинга темпа без ручного прогона симулятора.
+	var/list/composition = list()
+	for(var/sev in fired_by_severity)
+		composition += "[sev]=[fired_by_severity[sev]]"
+	log_world("DIRECTOR SIM: Medium@40, 2ч: [fired] запусков ([composition.Join(", ")]), пик intensity [max_intensity], макс. тишина [max_quiet_streak] мин")
 	TEST_ASSERT(fired >= 8, "За 2 часа Medium при 40 экипажа должно случиться не меньше 8 действий, случилось [fired]")
 	// Верхний порог ловит регрессию "директор стреляет каждый бит" (дыра нулевого FLAVOR-spacing,
 	// починена в профилях). Норма Medium ~58 из 120 битов - запас двукратный в обе стороны.
@@ -738,12 +838,61 @@
 	// (base 1.5 * pop 1.4 = 2.1/мин) доля MAJOR стабильно копит на cost и обязана выстрелить за 2 часа.
 	var/list/hard_log = director_simulate(ROUNDTYPE_DYNAMIC_HARD, 2, 60)
 	var/heavy_fired = 0
+	var/list/hard_by_severity = list()
 	for(var/list/entry in hard_log)
 		if(entry["result"] != DIRECTOR_BEAT_FIRED && entry["result"] != DIRECTOR_BEAT_GUARANTEED)
 			continue
+		var/sev = entry["severity"] || "?"
+		hard_by_severity[sev] = (hard_by_severity[sev] || 0) + 1
 		if(entry["severity"] == DIRECTOR_SEVERITY_MAJOR || (DIRECTOR_IS_ANTAG_POOL(entry["severity"]) && entry["antag_heavy"]))
 			heavy_fired++
+	var/list/hard_composition = list()
+	for(var/sev in hard_by_severity)
+		hard_composition += "[sev]=[hard_by_severity[sev]]"
+	log_world("DIRECTOR SIM: Hard@60, 2ч: состав [hard_composition.Join(", ")]")
 	TEST_ASSERT(heavy_fired >= 1, "За 2 часа Hard при 60 экипажа тяжёлая ступень (MAJOR или тяжёлый ANTAG) ни разу не выстрелила - голодание вернулось")
+
+	// Мягкие профили: Light и Extended живут (в т.ч. гост-антаги - регрессия "на эксте раньше
+	// спаунились антаги"), но без MAJOR и без тяжёлых антаг-команд. Teambased обязан кормить
+	// антаг-пулы. Экипажи прогонов подобраны под min_players гост-событий (кошмар/дракон = 30).
+	var/list/soft_specs = list(
+		list(ROUNDTYPE_DYNAMIC_LIGHT, 30, 4),
+		list(ROUNDTYPE_EXTENDED, 30, 3),
+		list(ROUNDTYPE_DYNAMIC_TEAMBASED, 40, 8),
+	)
+	for(var/list/spec in soft_specs)
+		var/spec_type = spec[1]
+		var/spec_crew = spec[2]
+		var/spec_min_fired = spec[3]
+		var/list/spec_log = director_simulate(spec_type, 2, spec_crew)
+		var/spec_fired = 0
+		var/spec_heavy = 0
+		var/spec_ghost = 0
+		var/spec_major = 0
+		var/list/spec_by_severity = list()
+		for(var/list/entry in spec_log)
+			if(entry["result"] != DIRECTOR_BEAT_FIRED && entry["result"] != DIRECTOR_BEAT_GUARANTEED)
+				continue
+			spec_fired++
+			var/sev = entry["severity"] || "?"
+			spec_by_severity[sev] = (spec_by_severity[sev] || 0) + 1
+			if(entry["antag_heavy"])
+				spec_heavy++
+			if(sev == DIRECTOR_SEVERITY_GHOST)
+				spec_ghost++
+			if(sev == DIRECTOR_SEVERITY_MAJOR)
+				spec_major++
+		var/list/spec_composition = list()
+		for(var/sev in spec_by_severity)
+			spec_composition += "[sev]=[spec_by_severity[sev]]"
+		log_world("DIRECTOR SIM: [spec_type]@[spec_crew], 2ч: [spec_fired] запусков ([spec_composition.Join(", ")])")
+		TEST_ASSERT(spec_fired >= spec_min_fired, "За 2 часа [spec_type] при [spec_crew] экипажа должно случиться не меньше [spec_min_fired] действий, случилось [spec_fired]")
+		if(spec_type == ROUNDTYPE_DYNAMIC_LIGHT || spec_type == ROUNDTYPE_EXTENDED)
+			TEST_ASSERT_EQUAL(spec_heavy, 0, "[spec_type]: тяжёлые антаг-действия обязаны быть выключены профилем, случилось [spec_heavy]")
+			TEST_ASSERT_EQUAL(spec_major, 0, "[spec_type]: MAJOR-события обязаны быть недоступны (доля 0), случилось [spec_major]")
+			TEST_ASSERT(spec_ghost >= 1, "[spec_type]: за 2 часа гост-антаг обязан появиться хотя бы раз (регрессия отсутствия антагов), случилось [spec_ghost]")
+		if(spec_type == ROUNDTYPE_DYNAMIC_TEAMBASED)
+			TEST_ASSERT(spec_ghost >= 1, "[spec_type]: антаг-крен профиля обязан кормить гост-пул, случилось [spec_ghost]")
 
 /// Проверяет механику семейств: общий фолл-офф повторов (запуски любого члена гасят вес всех),
 /// паузу семейства в filter_candidates и учёт запусков в note_fired.
@@ -838,7 +987,9 @@
 			DIRECTOR_DEPT_MEDICAL = 1, DIRECTOR_DEPT_SCIENCE = 0, DIRECTOR_DEPT_SUPPLY = 0, DIRECTOR_DEPT_COMMAND = 1)
 
 		// Только что был запуск: бит обязан простаивать, причина - в статистике отсева.
+		// Таймер тишины тоже свежий - гарантия не должна пробивать глобальную паузу в этом тесте.
 		SSdirector.last_any_fired_at = world.time
+		SSdirector.last_real_fired_at = world.time
 		TEST_ASSERT_EQUAL(SSdirector.run_beat(signals), DIRECTOR_BEAT_IDLE, "Бит внутри глобальной паузы должен простаивать")
 		TEST_ASSERT_EQUAL(SSdirector.fired_counts[DIRECTOR_SEVERITY_MINOR] || 0, 0, "Внутри глобальной паузы запусков быть не должно")
 
@@ -955,6 +1106,211 @@
 		throw e
 	SSdirector.restore_simulation_state(saved)
 
+/// Проверяет гарантированный бит при стелс-антагах и флейвор-маскировке: таймер тишины двигает
+/// только реальный контент (не флейвор и не филлер), порог intensity смотрит на видимую
+/// событийную нагрузку (event_intensity), а не на стелс-вклад живых рулсетов, бюджет игнорируется.
+/datum/unit_test/director_quiet_guarantee
+
+/datum/unit_test/director_quiet_guarantee/Run()
+	// Мутирует живой SSdirector - capture/restore c try/catch (см. комментарий в director_beat_logic).
+	var/list/saved = SSdirector.capture_simulation_state()
+	try
+		var/datum/director_profile/profile = new /datum/director_profile/medium
+		SSdirector.profile = profile
+		SSdirector.reset_budgets(0) // кошельки пусты: гарантия обязана стрелять мимо бюджета
+		SSdirector.intensity_ledger = list()
+		SSdirector.fired_counts = list()
+		// Тесты бегут в начале мира: world.time мал, и пустой last_fired_at (точка отсчёта 0)
+		// не проходит паузу ступени - ставим последний запуск явно за паузой.
+		SSdirector.last_fired_at = list(
+			DIRECTOR_SEVERITY_MINOR = world.time - profile.severity_spacing[DIRECTOR_SEVERITY_MINOR] - 1,
+		)
+		SSdirector.dry_run = TRUE
+		SSdirector.pending_action = null
+
+		var/datum/director_action/test_stub/real_action = new
+		real_action.cost = 5
+		SSdirector.actions = list(real_action)
+
+		var/datum/director_signals/signals = new
+		signals.effective_crew = 40
+		signals.staffing = list(DIRECTOR_DEPT_SECURITY = 4, DIRECTOR_DEPT_ENGINEERING = 1,
+			DIRECTOR_DEPT_MEDICAL = 1, DIRECTOR_DEPT_SCIENCE = 0, DIRECTOR_DEPT_SUPPLY = 0, DIRECTOR_DEPT_COMMAND = 1)
+
+		// Видимая нагрузка: события и внешние вклады считаются, антаг-пул (мосты) - нет.
+		SSdirector.intensity_ledger = list(
+			list("Тестовое событие", 10, 0, DIRECTOR_SEVERITY_MODERATE),
+			list("Мост антаг-инжекции", 15, 0, DIRECTOR_SEVERITY_ANTAG),
+			list("Внешний вклад", 5, 0, null),
+		)
+		TEST_ASSERT_EQUAL(SSdirector.get_event_intensity(), 15, "Видимая нагрузка = события + внешние вклады, без антаг-пула")
+		SSdirector.intensity_ledger = list()
+
+		// Флейвор капал только что (глобальная пауза активна), реального контента не было дольше
+		// max_quiet_time, стелс-intensity высокая, но видимой нагрузки нет - гарантия обязана
+		// пробить и глобальную паузу, и пустой кошелёк, и стелс-intensity.
+		SSdirector.last_any_fired_at = world.time - 30 SECONDS
+		SSdirector.last_real_fired_at = world.time - profile.max_quiet_time - 1
+		signals.active_intensity = 60
+		signals.event_intensity = 0
+		var/list/probe_stats = list()
+		var/list/probe = SSdirector.filter_candidates(signals, TRUE, probe_stats)
+		TEST_ASSERT(length(probe), "Стаб обязан проходить гарантированный фильтр, отсев: [json_encode(probe_stats)]")
+		TEST_ASSERT_EQUAL(SSdirector.run_beat(signals), DIRECTOR_BEAT_GUARANTEED, "Гарантия обязана пробивать флейвор-маскировку, стелс-intensity и пустой кошелёк")
+		TEST_ASSERT_EQUAL(SSdirector.fired_counts[DIRECTOR_SEVERITY_MINOR], 1, "Гарантированный бит обязан реально запустить действие")
+
+		// Контроль: видимая событийная нагрузка на пороге глушит гарантию, бит держит глобальная пауза.
+		SSdirector.fired_counts = list()
+		SSdirector.last_fired_at = list(
+			DIRECTOR_SEVERITY_MINOR = world.time - profile.severity_spacing[DIRECTOR_SEVERITY_MINOR] - 1,
+		)
+		SSdirector.last_any_fired_at = world.time - 30 SECONDS
+		SSdirector.last_real_fired_at = world.time - profile.max_quiet_time - 1
+		signals.event_intensity = profile.quiet_intensity_threshold
+		TEST_ASSERT_EQUAL(SSdirector.run_beat(signals), DIRECTOR_BEAT_IDLE, "При видимой нагрузке на пороге гарантия молчит и глобальная пауза держит бит")
+
+		// note_fired: флейвор и филлер не двигают таймер тишины, реальный контент двигает.
+		var/datum/director_action/test_stub/flavor_action = new
+		flavor_action.severity = DIRECTOR_SEVERITY_FLAVOR
+		var/datum/director_action/test_stub/filler_action = new
+		filler_action.filler = TRUE
+		SSdirector.last_real_fired_at = 12345
+		SSdirector.note_fired(flavor_action)
+		TEST_ASSERT_EQUAL(SSdirector.last_real_fired_at, 12345, "Флейвор не должен двигать таймер тишины")
+		SSdirector.note_fired(filler_action)
+		TEST_ASSERT_EQUAL(SSdirector.last_real_fired_at, 12345, "Филлер не должен двигать таймер тишины")
+		SSdirector.note_fired(real_action)
+		TEST_ASSERT_NOTEQUAL(SSdirector.last_real_fired_at, 12345, "Реальный контент обязан двигать таймер тишины")
+	catch(var/exception/e)
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	SSdirector.restore_simulation_state(saved)
+
+/// Проверяет клапан антаг-давления: цель масштабируется от экипажа, дефицит удваивает долю
+/// антаг-пулов в капле (сумма раздачи не меняется), насыщение останавливает накопление
+/// и закрывает антаг-действия в битах причиной antag_saturated.
+/datum/unit_test/director_antag_pressure_valve
+
+/datum/unit_test/director_antag_pressure_valve/Run()
+	// Мутирует живой SSdirector - capture/restore c try/catch (см. комментарий в director_beat_logic).
+	var/list/saved = SSdirector.capture_simulation_state()
+	try
+		var/datum/director_profile/profile = new /datum/director_profile/medium
+		SSdirector.profile = profile
+		SSdirector.reset_budgets(0)
+		SSdirector.intensity_ledger = list()
+		SSdirector.fired_counts = list()
+		SSdirector.actions = list()
+
+		TEST_ASSERT_EQUAL(SSdirector.antag_target(40), 40 * profile.antag_intensity_per_crew, "Цель антаг-нагрузки должна масштабироваться от экипажа")
+
+		// Дефицит (антагов нет вообще): доля антаг-пулов удвоена, сумма раздачи прежняя.
+		TEST_ASSERT_EQUAL(SSdirector.antag_drip_mult(40), 2, "Станция без антагов - дефицит, капля антаг-пулов x2")
+		SSdirector.distribute_to_budgets(10, 2)
+		var/total = SSdirector.total_budget()
+		TEST_ASSERT(abs(total - 10) < 0.01, "Клапан не должен менять сумму раздачи ([total] из 10)")
+		var/antag_wallets = SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST]
+		TEST_ASSERT(antag_wallets > 10 * 0.3, "Дефицит должен заметно ускорять антаг-кошельки ([antag_wallets])")
+
+		// Насыщение: антаг-нагрузка в ledger выше цели.
+		SSdirector.intensity_ledger = list(list("Тяжёлая инжекция", SSdirector.antag_target(40) + 5, 0, DIRECTOR_SEVERITY_ANTAG))
+		TEST_ASSERT_EQUAL(SSdirector.antag_drip_mult(40), 0, "Нагрузка на цели должна останавливать накопление антаг-кошельков")
+		SSdirector.reset_budgets(0)
+		SSdirector.distribute_to_budgets(10, 0)
+		TEST_ASSERT_EQUAL(SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG], 0, "При насыщении антаг-кошелёк не должен расти")
+		total = SSdirector.total_budget()
+		TEST_ASSERT(abs(total - 10) < 0.01, "Доля насыщенных пулов должна уходить остальным ступеням ([total] из 10)")
+
+		// Гейт насыщения в битах: антаг-действие отсеивается с причиной antag_saturated.
+		var/datum/director_action/test_stub/antag_action = new
+		antag_action.severity = DIRECTOR_SEVERITY_ANTAG
+		SSdirector.actions = list(antag_action)
+		SSdirector.reset_budgets(100)
+		SSdirector.last_fired_at = list(
+			DIRECTOR_SEVERITY_ANTAG = world.time - profile.antag_light_spacing - 1,
+		)
+		var/datum/director_signals/signals = new
+		signals.effective_crew = 40
+		signals.staffing = list(DIRECTOR_DEPT_SECURITY = 4, DIRECTOR_DEPT_ENGINEERING = 1,
+			DIRECTOR_DEPT_MEDICAL = 1, DIRECTOR_DEPT_SCIENCE = 0, DIRECTOR_DEPT_SUPPLY = 0, DIRECTOR_DEPT_COMMAND = 1)
+		var/list/reject_stats = list()
+		var/list/candidates = SSdirector.filter_candidates(signals, FALSE, reject_stats)
+		TEST_ASSERT(!(antag_action in candidates), "Насыщение должно закрывать антаг-действия в битах")
+		var/list/antag_stats = reject_stats[DIRECTOR_SEVERITY_ANTAG]
+		TEST_ASSERT_EQUAL(antag_stats[DIRECTOR_REJECT_ANTAG_SATURATED], 1, "Отсев должен считаться причиной antag_saturated")
+
+		// Контроль: без нагрузки то же действие проходит фильтры.
+		SSdirector.intensity_ledger = list()
+		candidates = SSdirector.filter_candidates(signals)
+		TEST_ASSERT(antag_action in candidates, "Без нагрузки антаг-действие обязано проходить фильтры")
+	catch(var/exception/e)
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	SSdirector.restore_simulation_state(saved)
+
+/// Проверяет копилку антаг-пула: цель роллится по весам без оглядки на кошелёк (латеджойны
+/// целью не становятся), дешёвые соседи по пулу блокируются причиной saving и не выжигают
+/// кошелёк, накопленный кошелёк пропускает цель, запуск цели снимает копилку.
+/datum/unit_test/director_antag_pool_saving
+
+/datum/unit_test/director_antag_pool_saving/Run()
+	// Мутирует живой SSdirector - capture/restore c try/catch (см. комментарий в director_beat_logic).
+	var/list/saved = SSdirector.capture_simulation_state()
+	try
+		var/datum/director_profile/profile = new /datum/director_profile/medium
+		SSdirector.profile = profile
+		SSdirector.reset_budgets(10)
+		SSdirector.intensity_ledger = list()
+		SSdirector.fired_counts = list()
+		SSdirector.pool_saving = list()
+		SSdirector.last_fired_at = list(
+			DIRECTOR_SEVERITY_ANTAG = world.time - profile.antag_light_spacing - 1,
+		)
+
+		var/datum/director_action/test_stub/cheap = new
+		cheap.severity = DIRECTOR_SEVERITY_ANTAG
+		cheap.cost = 5
+		cheap.weight = 0 // ролл цели обязан детерминированно выбрать дорогое
+		var/datum/director_action/test_stub/expensive = new
+		expensive.severity = DIRECTOR_SEVERITY_ANTAG
+		expensive.cost = 20
+		// Латеджойн с огромным весом: целью копилки стать не должен (стреляет только в окно захода).
+		var/datum/dynamic_ruleset/latejoin/test_pool_isolation/latejoin_rule = new
+		latejoin_rule.mode = null
+		latejoin_rule.weight = 100
+		SSdirector.actions = list(cheap, expensive, latejoin_rule)
+
+		var/datum/director_signals/signals = new
+		signals.effective_crew = 40
+		signals.staffing = list(DIRECTOR_DEPT_SECURITY = 4, DIRECTOR_DEPT_ENGINEERING = 1,
+			DIRECTOR_DEPT_MEDICAL = 1, DIRECTOR_DEPT_SCIENCE = 0, DIRECTOR_DEPT_SUPPLY = 0, DIRECTOR_DEPT_COMMAND = 1)
+
+		var/datum/director_action/target = SSdirector.roll_pool_target(DIRECTOR_SEVERITY_ANTAG, signals)
+		TEST_ASSERT_EQUAL(target, expensive, "Ролл цели должен идти по весам без гейта кошелька и мимо латеджойнов")
+
+		// Кошелёк 10: дешёвое (5) заблокировано копилкой, дорогое (20) - кошельком. Пул копит.
+		cheap.weight = 10
+		var/list/reject_stats = list()
+		var/list/candidates = SSdirector.filter_candidates(signals, FALSE, reject_stats)
+		TEST_ASSERT(!(cheap in candidates), "Дешёвое действие не должно выжигать копилку пула")
+		TEST_ASSERT(!(expensive in candidates), "Цель без накопленного кошелька ещё не кандидат")
+		var/list/antag_stats = reject_stats[DIRECTOR_SEVERITY_ANTAG]
+		TEST_ASSERT_EQUAL(antag_stats[DIRECTOR_REJECT_SAVING], 1, "Дешёвое должно отсеиваться причиной saving")
+
+		// Накопили: цель проходит, дешёвое всё ещё ждёт своей очереди.
+		SSdirector.reset_budgets(25)
+		candidates = SSdirector.filter_candidates(signals)
+		TEST_ASSERT(expensive in candidates, "Накопленный кошелёк обязан пропустить цель")
+		TEST_ASSERT(!(cheap in candidates), "Дешёвое ждёт, пока цель не исполнится")
+
+		// Запуск цели снимает копилку - следующий бит отроллит новую.
+		SSdirector.note_fired(expensive)
+		TEST_ASSERT(isnull(SSdirector.pool_saving[DIRECTOR_SEVERITY_ANTAG]), "Запуск цели должен снимать копилку")
+	catch(var/exception/e)
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	SSdirector.restore_simulation_state(saved)
+
 /// Сторожевой тест инварианта основателя: верхушка малой категории - пустышка "Nothing"
 /// и лампочки "Faulty Lighting". Никакое другое включённое MINOR-событие не должно весить больше.
 /datum/unit_test/director_minor_filler_top
@@ -972,3 +1328,178 @@
 		if(action.director_kind != DIRECTOR_KIND_EVENT)
 			continue
 		TEST_ASSERT(action.weight <= nothing_control.weight, "[action.action_name()] весит больше пустышки ([action.weight] против [nothing_control.weight]) - верхушка малой категории должна оставаться за \"ничего и лампочками\"")
+
+/// Проверяет активность антагов: гейт "только жёсткие антаги" в bump, кап, ленивое затухание
+/// с полураспадом (без перезаписи score чтением) и перевод score в множитель вклада.
+/datum/unit_test/director_antag_activity
+
+/datum/unit_test/director_antag_activity/Run()
+	var/mob/living/carbon/human/antag = allocate(/mob/living/carbon/human)
+	antag.mind_initialize()
+	var/datum/antagonist/marker = new
+	marker.silent = TRUE
+	antag.mind.add_antag_datum(marker)
+
+	var/mob/living/carbon/human/civilian = allocate(/mob/living/carbon/human)
+	civilian.mind_initialize()
+
+	// Не-антаг игнорируется: шум мирного экипажа не должен попадать в score.
+	SSdirector.bump_antag_activity(civilian.mind, DIRECTOR_ACTIVITY_KILL)
+	TEST_ASSERT_EQUAL(civilian.mind.director_activity, 0, "bump не должен начислять score не-антагу")
+
+	// Начисление и кап.
+	SSdirector.bump_antag_activity(antag.mind, DIRECTOR_ACTIVITY_KILL)
+	TEST_ASSERT_EQUAL(SSdirector.antag_activity(antag.mind), DIRECTOR_ACTIVITY_KILL, "bump должен начислять score антагу")
+	SSdirector.bump_antag_activity(antag.mind, DIRECTOR_ACTIVITY_CAP * 10)
+	TEST_ASSERT_EQUAL(SSdirector.antag_activity(antag.mind), DIRECTOR_ACTIVITY_CAP, "score должен клампиться на капе")
+
+	// Затухание: через полураспад остаётся ровно половина, чтение не переписывает score.
+	antag.mind.director_activity = DIRECTOR_ACTIVITY_CAP
+	antag.mind.director_activity_at = world.time - DIRECTOR_ACTIVITY_HALF_LIFE
+	TEST_ASSERT_EQUAL(SSdirector.antag_activity(antag.mind), DIRECTOR_ACTIVITY_CAP / 2, "Через полураспад должна остаться половина score")
+	TEST_ASSERT_EQUAL(antag.mind.director_activity, DIRECTOR_ACTIVITY_CAP, "Чтение активности не должно переписывать score на mind")
+
+	// Множитель вклада: тихоня на минимуме, кап - на максимуме.
+	antag.mind.director_activity = 0
+	TEST_ASSERT_EQUAL(SSdirector.antag_activity_mult(antag.mind), DIRECTOR_ACTIVITY_MULT_MIN, "Тихоня должен весить минимум")
+	antag.mind.director_activity = DIRECTOR_ACTIVITY_CAP
+	antag.mind.director_activity_at = world.time
+	TEST_ASSERT_EQUAL(SSdirector.antag_activity_mult(antag.mind), DIRECTOR_ACTIVITY_MULT_MAX, "Кап активности должен весить максимум")
+
+/// Проверяет профильный гейт тяжёлых антагов (antag_heavy_enabled = FALSE у Light/Extended):
+/// heavy-действие отсеивается причиной antag_heavy_off и не становится целью копилки,
+/// лёгкое живёт; включённый профиль пропускает heavy (контроль от вакуума).
+/datum/unit_test/director_antag_heavy_gate
+
+/datum/unit_test/director_antag_heavy_gate/Run()
+	// Мутирует живой SSdirector - capture/restore c try/catch (см. комментарий в director_beat_logic).
+	var/list/saved = SSdirector.capture_simulation_state()
+	try
+		var/datum/director_profile/profile = new /datum/director_profile/medium
+		profile.antag_heavy_enabled = FALSE
+		SSdirector.profile = profile
+		SSdirector.reset_budgets(100)
+		SSdirector.intensity_ledger = list()
+		SSdirector.fired_counts = list()
+		SSdirector.pool_saving = list()
+		SSdirector.last_fired_at = list(
+			DIRECTOR_SEVERITY_GHOST = world.time - profile.ghost_light_spacing - 1,
+		)
+		SSdirector.last_ghost_heavy_at = world.time - profile.ghost_heavy_spacing - 1
+
+		var/datum/director_action/test_stub/light_action = new
+		light_action.severity = DIRECTOR_SEVERITY_GHOST
+		var/datum/director_action/test_stub/heavy_action = new
+		heavy_action.severity = DIRECTOR_SEVERITY_GHOST
+		heavy_action.antag_heavy = TRUE
+		heavy_action.weight = 100 // ролл цели детерминированно выбрал бы его, если бы гейт не работал
+		SSdirector.actions = list(light_action, heavy_action)
+
+		var/datum/director_signals/signals = new
+		signals.effective_crew = 40
+		signals.staffing = list(DIRECTOR_DEPT_SECURITY = 4, DIRECTOR_DEPT_ENGINEERING = 1,
+			DIRECTOR_DEPT_MEDICAL = 1, DIRECTOR_DEPT_SCIENCE = 0, DIRECTOR_DEPT_SUPPLY = 0, DIRECTOR_DEPT_COMMAND = 1)
+
+		var/list/reject_stats = list()
+		var/list/candidates = SSdirector.filter_candidates(signals, FALSE, reject_stats)
+		TEST_ASSERT(light_action in candidates, "Лёгкое гост-действие должно проходить при выключенных heavy")
+		TEST_ASSERT(!(heavy_action in candidates), "Heavy-действие при antag_heavy_enabled = FALSE должно отсеиваться")
+		var/list/ghost_stats = reject_stats[DIRECTOR_SEVERITY_GHOST]
+		TEST_ASSERT_EQUAL(ghost_stats[DIRECTOR_REJECT_ANTAG_HEAVY], 1, "Отсев должен считаться причиной antag_heavy_off")
+
+		TEST_ASSERT_EQUAL(SSdirector.roll_pool_target(DIRECTOR_SEVERITY_GHOST, signals), light_action, "Цель копилки не должна выбирать выключенный heavy")
+
+		// Контроль: профиль с включёнными heavy пропускает то же действие.
+		profile.antag_heavy_enabled = TRUE
+		SSdirector.pool_saving = list()
+		candidates = SSdirector.filter_candidates(signals)
+		TEST_ASSERT(heavy_action in candidates, "При antag_heavy_enabled = TRUE heavy-действие обязано проходить")
+	catch(var/exception/e)
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	SSdirector.restore_simulation_state(saved)
+
+/// Сторожевой тест регрессии "на эксте раньше спаунились антаги": все события-спавнеры гост-ролей
+/// обязаны жить в GHOST-пуле (а не в MAJOR, который у Light/Extended выключен долей 0), с ненулевыми
+/// cost/intensity и долгим linger - вклад держит antag_load, пока спавненный антаг живёт.
+/// Исключения: wizard-события (пул Summon Events), праздничные (holidayID) и осознанно
+/// не-антагские (sentience - дружелюбная, qareen - джинн не гарантированно враждебен).
+/datum/unit_test/director_ghost_event_classification
+
+/datum/unit_test/director_ghost_event_classification/Run()
+	// По именам, не тайп-пасам: qareen живёт в modular_splurt и не входит в текущую сборку -
+	// ссылка на его тип не компилируется, а событие при подключении обязано остаться исключением.
+	var/list/exempt_names = list("Random Human-level Intelligence", "Station-wide Human-level Intelligence", "Spawn Qareen")
+	for(var/datum/round_event_control/control as anything in SSdirector.event_controls())
+		if(control.wizardevent || control.holidayID || (control.name in exempt_names))
+			continue
+		if(!ispath(control.typepath, /datum/round_event/ghost_role))
+			continue
+		var/control_name = control.action_name()
+		TEST_ASSERT_EQUAL(control.severity, DIRECTOR_SEVERITY_GHOST, "[control_name]: событие-спавнер гост-роли обязано жить в GHOST-пуле")
+		TEST_ASSERT(control.cost > 0, "[control_name]: гост-антаг событие без cost")
+		TEST_ASSERT(control.intensity > 0, "[control_name]: гост-антаг событие без intensity")
+		TEST_ASSERT(control.intensity_linger >= 30 MINUTES, "[control_name]: вклад гост-антага обязан жить после спавнера (linger)")
+	// Пираты и рейдеры реализованы обычными событиями (не ghost_role), но поллят призраков.
+	var/datum/round_event_control/pirates/pirates_control = locate() in SSdirector.actions
+	TEST_ASSERT_NOTNULL(pirates_control, "Событие Space Pirates должно быть зарегистрировано у директора")
+	TEST_ASSERT_EQUAL(pirates_control.severity, DIRECTOR_SEVERITY_GHOST, "Space Pirates обязаны жить в GHOST-пуле")
+	var/datum/round_event_control/raiders/raiders_control = locate() in SSdirector.actions
+	TEST_ASSERT_NOTNULL(raiders_control, "Событие InteQ Raiders должно быть зарегистрировано у директора")
+	TEST_ASSERT_EQUAL(raiders_control.severity, DIRECTOR_SEVERITY_GHOST, "InteQ Raiders обязаны жить в GHOST-пуле")
+
+	// Профили: гост-пул реально достижим на Light/Extended (сама причина регрессии - доля 0),
+	// тяжёлые антаг-команды на фоновых профилях выключены.
+	var/datum/director_profile/extended_profile = director_profile_for(ROUNDTYPE_EXTENDED)
+	TEST_ASSERT(extended_profile.pool_shares[DIRECTOR_SEVERITY_GHOST] > 0, "У Extended должна быть ненулевая доля GHOST - иначе гост-антаги не появятся никогда")
+	TEST_ASSERT(!extended_profile.antag_heavy_enabled, "Extended не должен пускать тяжёлые антаг-команды")
+	var/datum/director_profile/light_profile = director_profile_for(ROUNDTYPE_DYNAMIC_LIGHT)
+	TEST_ASSERT(light_profile.pool_shares[DIRECTOR_SEVERITY_GHOST] > 0, "У Light должна быть ненулевая доля GHOST")
+	TEST_ASSERT(light_profile.pool_shares[DIRECTOR_SEVERITY_ANTAG] > 0, "У Light должна быть ненулевая доля ANTAG")
+	TEST_ASSERT(!light_profile.antag_heavy_enabled, "Light не должен пускать тяжёлые антаг-команды")
+
+/// Проверяет рефанд провального спавна гост-роли: попытка, кошелёк ступени и вклад intensity
+/// возвращаются сразу (иначе фантомная нагрузка глушила бы клапан давления 30 минут),
+/// форс админа (не triggered_randomly) кошелёк не трогает.
+/datum/unit_test/director_ghost_spawn_refund
+
+/datum/unit_test/director_ghost_spawn_refund/Run()
+	// Мутирует живой SSdirector - capture/restore c try/catch (см. комментарий в director_beat_logic).
+	var/list/saved = SSdirector.capture_simulation_state()
+	var/datum/round_event/ghost_role/event
+	try
+		var/datum/director_profile/profile = new /datum/director_profile/medium
+		SSdirector.profile = profile
+		SSdirector.reset_budgets(0)
+		SSdirector.intensity_ledger = list()
+		var/datum/round_event_control/nightmare/control = locate() in SSdirector.actions
+		TEST_ASSERT_NOTNULL(control, "Событие Spawn Nightmare должно быть зарегистрировано у директора")
+
+		// Ручная симуляция боевого запуска: учёт попытки + вклад в ledger (кошелёк уже списан в 0).
+		var/occurrences_before = control.occurrences
+		control.occurrences++
+		SSdirector.intensity_ledger += list(list(control.action_name(), control.intensity, 0, control.severity))
+		event = new(FALSE)
+		SSdirector.running -= event // тестовый датум не должен тикаться подсистемой
+		event.control = control
+		event.triggered_randomly = TRUE
+		event.refund_failed_spawn()
+		TEST_ASSERT_EQUAL(control.occurrences, occurrences_before, "Провал спавна должен возвращать попытку")
+		TEST_ASSERT_EQUAL(length(SSdirector.intensity_ledger), 0, "Провал спавна должен снимать вклад сразу, без linger")
+		TEST_ASSERT_EQUAL(SSdirector.budgets[control.severity], control.cost, "Провал спавна должен возвращать кошелёк ступени")
+
+		// Форс админа шёл мимо кошельков - и рефанд не должен дарить бюджет.
+		SSdirector.reset_budgets(0)
+		control.occurrences++
+		SSdirector.intensity_ledger += list(list(control.action_name(), control.intensity, 0, control.severity))
+		event.triggered_randomly = FALSE
+		event.refund_failed_spawn()
+		TEST_ASSERT_EQUAL(control.occurrences, occurrences_before, "Провал форс-спавна тоже должен возвращать попытку")
+		TEST_ASSERT_EQUAL(SSdirector.budgets[control.severity], 0, "Провал форс-спавна не должен дарить кошельку бюджет")
+	catch(var/exception/e)
+		if(event)
+			SSdirector.running -= event
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	SSdirector.running -= event
+	SSdirector.restore_simulation_state(saved)

@@ -5,6 +5,9 @@
 	max_occurrences = 1
 	min_players = 30
 	category = EVENT_CATEGORY_INVASION
+	severity = DIRECTOR_SEVERITY_GHOST // admin_only, но форс-запуск обязан считаться антаг-нагрузкой
+	cost = 15
+	intensity = 20 // одиночка, но с ядерным риском
 	description = "A single nuclear operative assaults the station."
 
 /datum/round_event/ghost_role/operative

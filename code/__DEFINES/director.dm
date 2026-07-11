@@ -55,6 +55,29 @@
 #define DIRECTOR_REJECT_BUDGET "budget"
 #define DIRECTOR_REJECT_CAN_FIRE "can_fire"
 #define DIRECTOR_REJECT_NO_WEIGHT "no_weight"
+/// Антаг-нагрузка достигла цели профиля (crew * antag_intensity_per_crew) - новых антагов не льём
+#define DIRECTOR_REJECT_ANTAG_SATURATED "antag_saturated"
+/// Пул копит кошелёк на выбранную цель (pool_saving) - дешёвые соседи по пулу ждут
+#define DIRECTOR_REJECT_SAVING "saving"
+/// Тяжёлые антаг-действия выключены профилем (Light/Extended: блоб-асолты не для фоновых раундов)
+#define DIRECTOR_REJECT_ANTAG_HEAVY "antag_heavy_off"
+
+// --- Активность антагов (динамическая мера "как громко играет") ---
+/// Полураспад score активности: тихие 10 минут - и буйный антаг снова считается обычным
+#define DIRECTOR_ACTIVITY_HALF_LIFE (10 MINUTES)
+/// Потолок score: дальше кап - один антаг не должен изображать нагрузку целого рулсета бесконечно
+#define DIRECTOR_ACTIVITY_CAP 60
+/// Бонус за атаку по игроку (log_combat): перестрелка с СБ быстро набирает счёт
+#define DIRECTOR_ACTIVITY_ATTACK 2
+/// Бонус за убийство игрока (death с атрибуцией lastattackerckey)
+#define DIRECTOR_ACTIVITY_KILL 25
+/// Бонус за объявление в розыск/на казнь (set_criminal_status): СБ уже занята этим антагом
+#define DIRECTOR_ACTIVITY_WANTED 10
+/// Множитель вклада в intensity: тихоня даёт минимум, буйный - до максимума
+#define DIRECTOR_ACTIVITY_MULT_MIN 0.75
+#define DIRECTOR_ACTIVITY_MULT_MAX 2
+/// Делитель score при переводе в множитель: при капе 60 множитель ровно 0.75 + 60/48 = 2
+#define DIRECTOR_ACTIVITY_MULT_SCALE 48
 
 /// Псевдо-ступень в reject_stats бита, отсечённого глобальной паузой: гейт бьёт по всем ступеням сразу
 #define DIRECTOR_REJECT_SEV_ALL "all"

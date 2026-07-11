@@ -11,6 +11,8 @@
 	state["family_fired_counts"] = family_fired_counts.Copy()
 	state["family_last_fired_at"] = family_last_fired_at.Copy()
 	state["last_any_fired_at"] = last_any_fired_at
+	state["last_real_fired_at"] = last_real_fired_at
+	state["pool_saving"] = pool_saving.Copy()
 	state["last_antag_heavy_at"] = last_antag_heavy_at
 	state["last_ghost_heavy_at"] = last_ghost_heavy_at
 	state["dry_run"] = dry_run
@@ -53,6 +55,8 @@
 	family_fired_counts = state["family_fired_counts"]
 	family_last_fired_at = state["family_last_fired_at"]
 	last_any_fired_at = state["last_any_fired_at"]
+	last_real_fired_at = state["last_real_fired_at"]
+	pool_saving = state["pool_saving"]
 	last_antag_heavy_at = state["last_antag_heavy_at"]
 	last_ghost_heavy_at = state["last_ghost_heavy_at"]
 	dry_run = state["dry_run"]
@@ -80,15 +84,25 @@
 	// Симулятор проверяет пейсинг профиля, а не текущий тумблер админа, поэтому включает его
 	// на время прогона; вся симуляция синхронна (без sleep), другой код блип не увидит.
 	CONFIG_SET(flag/allow_random_events, TRUE)
+	// Гейты required_round_type у действий читают GLOB.round_type - подменяем на симулируемый,
+	// иначе прогон Extended кормился бы рулсетами живого Medium-раунда. Восстанавливается ниже
+	// (и в catch), симуляция синхронна - другой код подмену не увидит.
+	var/saved_round_type = GLOB.round_type
+	if(round_type)
+		GLOB.round_type = round_type
 
 	D.dry_run = TRUE
 	D.profile = director_profile_for(round_type || GLOB.round_type)
 	D.reset_budgets(0)
+	// Стартовый аванс кошельков как в бою (setup_profile): симуляция обязана отражать
+	// реальную экономику первой половины часа.
+	D.distribute_to_budgets(D.profile.initial_grant)
 	D.intensity_ledger = list()
 	D.fired_counts = list()
 	D.last_fired_at = list()
 	D.family_fired_counts = list()
 	D.family_last_fired_at = list()
+	D.pool_saving = list()
 	D.last_antag_heavy_at = 0
 	D.last_ghost_heavy_at = 0
 	var/list/log_out = list()
@@ -101,15 +115,17 @@
 	var/beat_step = 1 MINUTES
 	D.time_override = world.time
 	D.last_any_fired_at = D.time_override
+	D.last_real_fired_at = D.time_override
 	try
 		for(var/i in 1 to (hours * 60))
 			sim_now += beat_step
 			D.time_override = world.time + sim_now
-			// капля за минуту, разложенная по кошелькам ступеней
+			// капля за минуту, разложенная по кошелькам ступеней (с боевым клапаном антаг-давления)
 			var/minutes = sim_now / (1 MINUTES)
 			var/rate = D.profile.base_drip * piecewise_eval(D.profile.time_curve, minutes) * piecewise_eval(D.profile.pop_curve, signals.effective_crew)
-			D.distribute_to_budgets(rate)
+			D.distribute_to_budgets(rate, D.antag_drip_mult(signals.effective_crew))
 			signals.active_intensity = D.get_active_intensity()
+			signals.event_intensity = D.get_event_intensity()
 			// Сбрасываем перед битом: note_fired выставит их, если этот бит выстрелит.
 			D.sim_last_severity = null
 			D.sim_last_antag_heavy = FALSE
@@ -117,10 +133,12 @@
 			log_out += list(list("minute" = minutes, "result" = result, "budget" = round(D.total_budget(), 0.1), \
 				"intensity" = signals.active_intensity, "severity" = D.sim_last_severity, "antag_heavy" = D.sim_last_antag_heavy))
 	catch(var/exception/sim_error)
+		GLOB.round_type = saved_round_type
 		D.restore_simulation_state(saved)
 		log_runtime("DIRECTOR: симуляция аварийно прервана: [sim_error] ([sim_error.file]:[sim_error.line])")
 		message_admins("DIRECTOR: симуляция аварийно прервана рантаймом ([sim_error]), боевое состояние директора восстановлено.")
 		return log_out
+	GLOB.round_type = saved_round_type
 	D.restore_simulation_state(saved)
 	return log_out
 

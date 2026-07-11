@@ -6,6 +6,10 @@
 	earliest_start = 2 HOURS
 	min_players = 30
 	category = EVENT_CATEGORY_ENTITIES
+	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
+	cost = 15
+	intensity = 30 // одиночка, но мясорубка
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // не экста и не лайт
 	/// Тайпкэш дозволенных турфов для скана крови: набор типов фиксирован на компиляции,
 	/// пересборка двух typecacheof на каждый вызов не нужна.
 	var/static/list/allowed_turf_typecache

@@ -61,6 +61,11 @@
 	var/static/default_martial_art = new/datum/martial_art
 	var/miming = 0 // Mime's vow of silence
 	var/list/antag_datums
+	/// Активность антага для директора: score шума (атаки/убийства/розыск), затухает с полураспадом
+	/// DIRECTOR_ACTIVITY_HALF_LIFE. Читать через SSdirector.antag_activity() - он применяет затухание.
+	var/director_activity = 0
+	/// world.time последнего изменения director_activity (точка отсчёта затухания)
+	var/director_activity_at = 0
 	var/antag_hud_icon_state = null //this mind's ANTAG_HUD should have this icon_state
 	var/datum/atom_hud/antag/antag_hud = null //this mind's antag HUD
 	var/datum/traitor_panel_tgui/tgui_panel // cached TGUI traitor panel

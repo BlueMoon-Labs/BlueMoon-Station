@@ -43,6 +43,10 @@
 		)
 		if(DIRECTOR_IS_ANTAG_POOL(sev) && D.profile)
 			row["heavySpacingLeft"] = max(0, CEILING(D.spacing_remaining(sev, TRUE) / (1 MINUTES), 1))
+			var/datum/director_action/saving_for = D.pool_saving[sev]
+			if(saving_for)
+				row["savingFor"] = saving_for.action_name()
+				row["savingCost"] = saving_for.cost
 		wallets_out += list(row)
 	// Текущая капля с разложением по множителям профиля.
 	var/drip_rate = 0

@@ -53,7 +53,11 @@
 			if(DIRECTOR_SEVERITY_MODERATE)
 				cost = 6
 			if(DIRECTOR_SEVERITY_MAJOR)
-				cost = 25
+				// 25 при капле MAJOR-кошелька ~0.15-0.2/мин означало "первый мажор через три часа";
+				// 20 с поднятой долей MAJOR в профилях даёт мажору шанс в пределах длинного раунда.
+				cost = 20
+			if(DIRECTOR_SEVERITY_ANTAG, DIRECTOR_SEVERITY_GHOST)
+				cost = 10
 	if(!intensity)
 		switch(severity)
 			if(DIRECTOR_SEVERITY_MINOR)
@@ -62,8 +66,22 @@
 				intensity = 15
 			if(DIRECTOR_SEVERITY_MAJOR)
 				intensity = 40
-	if(!intensity_linger && severity == DIRECTOR_SEVERITY_MAJOR)
-		intensity_linger = 10 MINUTES
+			if(DIRECTOR_SEVERITY_ANTAG, DIRECTOR_SEVERITY_GHOST)
+				intensity = 15
+	if(!intensity_linger)
+		switch(severity)
+			if(DIRECTOR_SEVERITY_MAJOR)
+				intensity_linger = 10 MINUTES
+			if(DIRECTOR_SEVERITY_MODERATE)
+				// One-shot спавнеры (аномалии, манекен) гаснут за тик, а их последствия живут
+				// минуты: без linger панель показывала intensity 0 при двух живых аномалиях,
+				// и порог тишины не видел только что случившийся контент.
+				intensity_linger = 8 MINUTES
+			if(DIRECTOR_SEVERITY_ANTAG, DIRECTOR_SEVERITY_GHOST)
+				// Антаг-события - спавнеры: событие гаснет за тик, а кошмар/дракон живут дальше.
+				// Долгий linger держит их вклад в antag_load (клапан давления) без трекинга моба;
+				// провал спавна снимает вклад сразу (см. refund_failed_spawn в ghost_role.dm).
+				intensity_linger = 30 MINUTES
 	if(!length(admin_setup))
 		return
 	var/list/admin_setup_types = admin_setup.Copy()

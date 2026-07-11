@@ -7,6 +7,10 @@
 	max_occurrences = 1
 	min_players = 5
 	category = EVENT_CATEGORY_ENTITIES
+	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
+	cost = 8
+	intensity = 10 // мягкий фоновый призрак, классика лоупопа
+	family = "revenant" // с рулсетом-двойником динамика: не подряд
 	description = "Spawns an angry, soul sucking ghost."
 
 /datum/round_event/ghost_role/revenant

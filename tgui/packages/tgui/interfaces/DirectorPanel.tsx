@@ -64,6 +64,8 @@ type WalletEntry = {
   fired: number;
   correction: number;
   heavySpacingLeft?: number;
+  savingFor?: string;
+  savingCost?: number;
 };
 
 type DirectorPanelData = {
@@ -130,6 +132,9 @@ const REJECT_LABELS: Record<string, string> = {
   budget: 'нет бюджета',
   can_fire: 'не готово (can_fire)',
   no_weight: 'нулевой вес',
+  antag_saturated: 'антагов достаточно',
+  saving: 'пул копит на цель',
+  antag_heavy_off: 'тяжёлые антаги выключены',
 };
 
 // Вердикты пула: причины отсева бита + расшифровка can_fire + структурные пропуски
@@ -146,6 +151,9 @@ const VERDICT_LABELS: Record<string, string> = {
   budget: 'не хватает кошелька',
   can_fire: 'внутреннее условие действия',
   no_weight: 'нулевой вес',
+  antag_saturated: 'живых антагов достаточно',
+  saving: 'пул копит на другую цель',
+  antag_heavy_off: 'тяжёлые антаги выключены профилем',
   disabled: 'выключено',
   admin_only: 'только ручной запуск',
   max_occurrences: 'лимит запусков исчерпан',
@@ -331,7 +339,18 @@ const OverviewTab = (props) => {
                 <Table.Cell>
                   {SEVERITY_LABELS[wallet.severity] || wallet.severity}
                 </Table.Cell>
-                <Table.Cell>{wallet.points}</Table.Cell>
+                <Table.Cell>
+                  {wallet.points}
+                  {wallet.savingFor !== undefined && (
+                    <Box inline ml={1} color="label">
+                      (копит на {wallet.savingFor}
+                      {wallet.savingCost !== undefined
+                        ? `, cost ${wallet.savingCost}`
+                        : ''}
+                      )
+                    </Box>
+                  )}
+                </Table.Cell>
                 <Table.Cell>{Math.round(wallet.share * 100)}%</Table.Cell>
                 <Table.Cell>
                   {wallet.spacingLeft > 0 ? (

@@ -6,6 +6,11 @@
 	earliest_start = 30 MINUTES
 	min_players = 30
 	category = EVENT_CATEGORY_ENTITIES
+	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
+	cost = 10
+	intensity = 15
+	family = "space_dragon" // с рулсетом-двойником динамика: не подряд
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_LIGHT) // не экста
 	description = "Spawns a space dragon, which will try to take over the station."
 
 /datum/round_event/ghost_role/space_dragon

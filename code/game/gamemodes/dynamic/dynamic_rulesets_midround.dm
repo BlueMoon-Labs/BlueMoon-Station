@@ -658,6 +658,7 @@
 	weight = 3 //BLUEMOON CHANGES
 	cost = 10
 	intensity = 15
+	family = "blob" // с событием-двойником и заражением: не подряд
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	requirements = list(101,101,101,101,50,40,30,20,10,10)
 	repeatable = TRUE
@@ -686,6 +687,7 @@
 	weight = 2
 	cost = 10
 	intensity = 15
+	family = "blob" // с событием-двойником и гост-блобом: не подряд
 	requirements = list(101,101,101,101,50,40,30,20,10,10)
 	repeatable = TRUE
 
@@ -729,6 +731,7 @@
 	cost = 15
 	antag_heavy = TRUE
 	intensity = 45
+	family = "xenomorph" // с событием-двойником: не подряд
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	requirements = list(101,101,101,101,50,40,30,20,10,10)
 	repeatable = TRUE
@@ -781,6 +784,7 @@
 	cost = 20
 	antag_heavy = TRUE
 	intensity = 45
+	family = "terror_spiders" // с событием-двойником: не подряд
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD) // BLUEMOON ADD
 	requirements = list(101,101,101,101,50,40,30,20,10,10)
 	flags = HIGH_IMPACT_RULESET
@@ -839,6 +843,7 @@
 	weight = 6 //BLUEMOON CHANGES
 	cost = 10
 	intensity = 15
+	family = "nightmare" // с событием-двойником: не подряд
 	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	requirements = list(101,101,101,50,30,25,20,10,10,10) //BLUEMOON CHANGES
 	repeatable = TRUE
@@ -887,6 +892,7 @@
 	weight = 6 //BLUEMOON CHANGES
 	cost = 10
 	intensity = 15
+	family = "space_dragon" // с событием-двойником: не подряд
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	requirements = list(101,101,101,101,50,40,30,20,10,10)
 	repeatable = TRUE
@@ -933,6 +939,7 @@
 	weight = 6
 	cost = 10
 	intensity = 15
+	family = "morph" // с событием-двойником: не подряд
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM)
 	requirements = list(101,101,101,50,30,25,20,10,10,10)
 	repeatable = TRUE
@@ -972,6 +979,7 @@
 	weight = 5
 	cost = 10
 	intensity = 15
+	family = "devil" // с событием-двойником: не подряд
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM)
 	requirements = list(101,101,101,50,40,30,20,10,10,10)
 	repeatable = TRUE
@@ -1008,6 +1016,7 @@
 	weight = 3
 	cost = 10
 	intensity = 15
+	family = "abductors" // с событием-двойником: не подряд
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	requirements = list(101,101,101,101,101,30,20,15,10,10)
 	repeatable = TRUE
@@ -1132,6 +1141,7 @@
 	weight = 3 //BLUEMOON CHANGES
 	cost = 10
 	intensity = 15
+	family = "revenant" // с событием-двойником: не подряд
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // not extended
 	requirements = list(101,101,101,50,30,25,20,10,10,10) //BLUEMOON CHANGES
 	repeatable = TRUE
@@ -1179,6 +1189,7 @@
 	weight = 6 //BLUEMOON CHANGES
 	cost = 10
 	intensity = 15
+	family = "sentient_disease" // с событием-двойником: не подряд
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	requirements = list(101,101,101,50,30,25,20,10,10,10) //BLUEMOON CHANGES
 	repeatable = TRUE
@@ -1204,6 +1215,7 @@
 	weight = 6 //BLUEMOON CHANGES
 	cost = 10
 	intensity = 15
+	family = "pirates" // с событием-двойником (execute() запускает его же): не подряд
 	requirements = list(101,101,101,101,101,40,30,20,10,10) //BLUEMOON CHANGES
 	repeatable = TRUE
 
@@ -1241,6 +1253,7 @@
 	cost = 15
 	antag_heavy = TRUE
 	intensity = 45
+	family = "raiders" // с событием-двойником (execute() запускает его же): не подряд
 	requirements = list(101,101,101,40,30,20,10,10,10,10)
 	repeatable = FALSE
 

@@ -10,6 +10,10 @@
 	var/living_antags = 0
 	/// Суммарная активная intensity (заполняет SSdirector)
 	var/active_intensity = 0
+	/// Видимая (событийная) часть intensity: только ledger-записи вне антаг-пулов (заполняет
+	/// SSdirector). Порог тишины гарантированного бита смотрит сюда: стелс-нагрузка живых
+	/// антагов не должна выключать гарантию в раундах, где активности "не видно".
+	var/event_intensity = 0
 	/// DIRECTOR_EVAC_*
 	var/evac_state = DIRECTOR_EVAC_NONE
 

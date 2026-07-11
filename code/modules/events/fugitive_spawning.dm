@@ -6,6 +6,9 @@
 	weight = 25 // был 45: вместе с абдукторами и гремлинами душил остальные крупные события
 	earliest_start = 30 MINUTES //deadchat sink, lets not even consider it early on.
 	category = EVENT_CATEGORY_INVASION
+	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
+	cost = 8
+	intensity = 10 // беглецы прячутся, охотники приходят позже - самый мягкий гост-антаг
 	description = "Fugitives will hide on the station, followed by hunters."
 
 /datum/round_event/ghost_role/fugitives

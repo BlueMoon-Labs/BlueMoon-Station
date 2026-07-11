@@ -6,6 +6,10 @@
 	earliest_start = 45 MINUTES
 	min_players = 35
 	category = EVENT_CATEGORY_INVASION
+	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
+	cost = 12
+	intensity = 20 // одиночка, но очень громкий
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_LIGHT) // не экста
 	description = "A space ninja infiltrates the station."
 
 /datum/round_event/ghost_role/space_ninja

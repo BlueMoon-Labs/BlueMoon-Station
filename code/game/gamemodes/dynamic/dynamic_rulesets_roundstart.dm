@@ -17,6 +17,9 @@
 	weight = 13 //BLUEMOON CHANGES
 	cost = 8 // Avoid raising traitor threat above 10, as it is the default low cost ruleset.
 	scaling_cost = 9
+	// Вклад в активную нагрузку SSdirector, пока антаги рулсета живы (считается из executed_rules,
+	// см. get_ruleset_intensity). Тиры как у мидраундов: лёгкие соло-антаги 15, тяжёлые/командные 45.
+	intensity = 15
 	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_LIGHT) // BLUEMOON ADD
 	requirements = list(101,10,10,10,10,10,10,10,10,10) //BLUEMOON CHANGES
 	antag_cap = list("denominator" = 20) //BLUEMOON CHANGES
@@ -55,6 +58,7 @@
 	weight = 6 //BLUEMOON CHANGES
 	cost = 15
 	scaling_cost = 15
+	intensity = 15
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	requirements = list(101,101,101,101,60,50,40,30,20,10) //BLUEMOON CHANGES
 	antag_cap = 2 // Can pick 3 per team, but rare enough it doesn't matter.
@@ -105,6 +109,7 @@
 	cost = 15 //BLUEMOON CHANGES
 	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	scaling_cost = 10
+	intensity = 15
 	requirements = list(101,101,60,50,40,30,20,15,10,10) //BLUEMOON CHANGES
 	antag_cap = 1 //BLUEMOON CHANGES
 
@@ -153,6 +158,7 @@
 	weight = 8 //BLUEMOON CHANGES
 	cost = 15
 	scaling_cost = 9
+	intensity = 15
 	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD; Существовал в тимбазе до удаления.
 	requirements = list(101,101,101,50,40,20,20,15,10,10) //higher because of 'round end'
 	antag_cap = 1 //BLUEMOON CHANGES
@@ -199,6 +205,7 @@
 	required_candidates = 1
 	weight = 6 //BLUEMOON CHANGES
 	cost = 20
+	intensity = 45
 	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD) // BLUEMOON ADD
 	requirements = list(101,101,101,60,40,20,20,20,10,10)  //BLUEMOON CHANGES
 	var/list/roundstart_wizards = list()
@@ -249,6 +256,7 @@
 	required_candidates = 2
 	weight = 3  //BLUEMOON CHANGES
 	cost = 20
+	intensity = 45
 	//requirements = list(100,90,80,60,40,30,10,10,10,10)
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	requirements = list(101,101,101,101,101,60,40,20,15,10) //BLUEMOON CHANGES
@@ -310,6 +318,7 @@
 	required_candidates = 5
 	weight = 3 //BLUEMOON CHANGES
 	cost = 20
+	intensity = 45
 	requirements = list(101,101,101,101,101,101,60,40,30,10) //BLUEMOON CHANGES
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD) // BLUEMOON ADD
 	flags = HIGH_IMPACT_RULESET
@@ -401,6 +410,7 @@
 	weight = 3 //BLUEMOON CHANGES
 	delay = 5 MINUTES //BLUEMOON CHANGES
 	cost = 20
+	intensity = 45
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	requirements = list(101,101,101,101,101,60,50,40,30,20) //BLUEMOON CHANGES
 	antag_cap = 3
@@ -487,6 +497,7 @@
 	required_candidates = 2
 	weight = 3
 	cost = 20
+	intensity = 45
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	requirements = list(101,101,101,101,101,50,40,30,20,15) //BLUEMOON CHANGES
 	flags = HIGH_IMPACT_RULESET
@@ -548,6 +559,7 @@
 	required_candidates = 3 //BLUEMOON CHANGES
 	weight = 48
 	cost = 10
+	intensity = 45
 	required_round_type = list(ROUNDTYPE_DYNAMIC_LIGHT) // BLUEMOON ADD
 	requirements = list(101,10,10,10,10,10,10,10,10,10) //BLUEMOON CHANGES
 	flags = HIGH_IMPACT_RULESET
@@ -646,6 +658,7 @@ BLUEMOON REMOVAL END*/
 	required_candidates = 1
 	weight = 3
 	cost = 0
+	intensity = 15
 	requirements = list(101,101,101,101,101,101,101,101,101,101)
 	flags = LONE_RULESET
 	var/players_per_carrier = 30
@@ -752,8 +765,13 @@ BLUEMOON REMOVAL END*/
 	weight = 6
 	cost = 5
 	scaling_cost = 10
+	intensity = 15
 	requirements = list(101,101,60,50,40,30,20,15,10,10)
 	antag_cap = list("denominator" = 39, "offset" = 1)
+
+// Мидраунд-тёзка "Bloodsuckers" уже занимает ключ конфига/intensity_ledger - суффикс разводит их.
+/datum/dynamic_ruleset/roundstart/bloodsuckers/action_name()
+	return "[name] (Roundstart)"
 
 /datum/dynamic_ruleset/roundstart/bloodsuckers/pre_execute(population)
 	. = ..()
@@ -798,9 +816,14 @@ BLUEMOON REMOVAL END*/
 	weight = 4
 	cost = 18
 	scaling_cost = 0
+	intensity = 45
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	requirements = list(101,101,101,101,50,40,30,20,10,10)
 	flags = HIGH_IMPACT_RULESET
+
+// Мидраунд-тёзка "Blob Infection" уже занимает ключ конфига/intensity_ledger - суффикс разводит их.
+/datum/dynamic_ruleset/roundstart/blob_infection/action_name()
+	return "[name] (Roundstart)"
 
 /datum/dynamic_ruleset/roundstart/blob_infection/ready(population, forced = FALSE)
 	if(forced)
@@ -840,6 +863,7 @@ BLUEMOON REMOVAL END*/
 	required_candidates = 4
 	weight = 3
 	cost = 20
+	intensity = 45
 	requirements = list(101,101,101,101,101,101,60,40,30,10)
 	required_round_type = list(ROUNDTYPE_DYNAMIC_LIGHT)
 	flags = LONE_RULESET
@@ -896,8 +920,13 @@ BLUEMOON REMOVAL END*/
 	weight = 4
 	cost = 15
 	scaling_cost = 0
+	intensity = 15
 	flags = LONE_RULESET
 	requirements = list(101,101,101,101,40,30,20,15,10,10)
+
+// Событие-тёзка "Abductors" уже занимает ключ конфига/intensity_ledger - суффикс разводит их.
+/datum/dynamic_ruleset/roundstart/abductors/action_name()
+	return "[name] (Roundstart)"
 
 /datum/dynamic_ruleset/roundstart/abductors/ready(population, forced = FALSE)
 	if(forced)
@@ -970,6 +999,7 @@ BLUEMOON REMOVAL END*/
 	exclusive_roles = list("AI")
 	weight = 3
 	cost = 20
+	intensity = 45
 	requirements = list(101,101,101,101,101,101,60,40,30,10)
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM)
 	flags = HIGH_IMPACT_RULESET
