@@ -1686,16 +1686,10 @@
 /turf/open/floor/plasteel/showroomfloor,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
 "jd" = (
-/obj/effect/turf_decal/bot/yellow,
-/obj/item/ammo_box/magazine/e45/e45_drum/taser,
-/obj/item/ammo_box/magazine/e45/e45_drum/taser,
+/obj/effect/turf_decal/delivery,
 /obj/structure/rack,
-/obj/structure/window/reinforced{
-	dir = 8
-	},
-/obj/structure/window/reinforced{
-	dir = 4
-	},
+/obj/item/grenade/barrier,
+/obj/item/grenade/barrier,
 /turf/open/floor/plasteel/textured/large,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
 "je" = (
@@ -2725,8 +2719,16 @@
 	icon_state = "shower"
 	})
 "oQ" = (
-/obj/effect/turf_decal/delivery,
-/obj/structure/barricade/security,
+/obj/effect/turf_decal/bot/yellow,
+/obj/item/ammo_box/magazine/e45/e45_drum/taser,
+/obj/item/ammo_box/magazine/e45/e45_drum/taser,
+/obj/structure/rack,
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/obj/structure/window/reinforced{
+	dir = 4
+	},
 /turf/open/floor/plasteel/textured/large,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
 "oR" = (
@@ -9546,7 +9548,7 @@ Qh
 Bo
 rr
 Zd
-jd
+oQ
 ah
 lL
 bw
@@ -9684,7 +9686,7 @@ Qh
 qN
 Uj
 Bo
-oQ
+jd
 Zd
 IZ
 Bo
@@ -9754,7 +9756,7 @@ Qh
 qg
 Qh
 Bo
-oQ
+jd
 kI
 xJ
 Bo
