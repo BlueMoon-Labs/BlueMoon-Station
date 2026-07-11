@@ -363,6 +363,10 @@ SUBSYSTEM_DEF(director)
 			continue
 		if(guaranteed && !(sev in list(DIRECTOR_SEVERITY_MINOR, DIRECTOR_SEVERITY_MODERATE)))
 			continue
+		// Гарантированный бит случается после долгой тишины - филлер-пустышка там не ответ.
+		// Структурный пропуск без учёта в reject_stats: панель оценивает пул не-гарантированным путём.
+		if(guaranteed && action.filler)
+			continue
 		if(intensity_full && sev != DIRECTOR_SEVERITY_FLAVOR)
 			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_INTENSITY_CAP,
 				detail = isnull(verdicts) ? null : "[round(signals.active_intensity)] при потолке [profile.intensity_cap]")

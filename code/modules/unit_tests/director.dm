@@ -915,3 +915,60 @@
 		SSdirector.restore_simulation_state(saved)
 		throw e
 	SSdirector.restore_simulation_state(saved)
+
+/// Проверяет филлер-гейт гарантированного бита: пустышки (filler = TRUE) не выбираются после
+/// долгой тишины, но живут в обычных битах наравне со всеми.
+/datum/unit_test/director_filler_guaranteed
+
+/datum/unit_test/director_filler_guaranteed/Run()
+	// Мутирует живой SSdirector - capture/restore c try/catch (см. комментарий в director_beat_logic).
+	var/list/saved = SSdirector.capture_simulation_state()
+	try
+		var/datum/director_profile/profile = new /datum/director_profile/medium
+		SSdirector.profile = profile
+		SSdirector.reset_budgets(100)
+		SSdirector.intensity_ledger = list()
+		SSdirector.fired_counts = list()
+		SSdirector.last_fired_at = list(
+			DIRECTOR_SEVERITY_MINOR = world.time - profile.severity_spacing[DIRECTOR_SEVERITY_MINOR] - 1,
+		)
+
+		var/datum/director_action/test_stub/filler_action = new
+		filler_action.filler = TRUE
+		var/datum/director_action/test_stub/real_action = new
+		SSdirector.actions = list(filler_action, real_action)
+
+		var/datum/director_signals/signals = new
+		signals.effective_crew = 40
+		signals.staffing = list(DIRECTOR_DEPT_SECURITY = 4, DIRECTOR_DEPT_ENGINEERING = 1,
+			DIRECTOR_DEPT_MEDICAL = 1, DIRECTOR_DEPT_SCIENCE = 0, DIRECTOR_DEPT_SUPPLY = 0, DIRECTOR_DEPT_COMMAND = 1)
+
+		var/list/candidates = SSdirector.filter_candidates(signals)
+		TEST_ASSERT(filler_action in candidates, "Филлер должен участвовать в обычном бите")
+		TEST_ASSERT(real_action in candidates, "Контрольное действие должно участвовать в обычном бите")
+
+		candidates = SSdirector.filter_candidates(signals, guaranteed = TRUE)
+		TEST_ASSERT(!(filler_action in candidates), "Гарантированный бит не должен выбирать филлер")
+		TEST_ASSERT(real_action in candidates, "Гарантированный бит обязан видеть реальное действие")
+	catch(var/exception/e)
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	SSdirector.restore_simulation_state(saved)
+
+/// Сторожевой тест инварианта основателя: верхушка малой категории - пустышка "Nothing"
+/// и лампочки "Faulty Lighting". Никакое другое включённое MINOR-событие не должно весить больше.
+/datum/unit_test/director_minor_filler_top
+
+/datum/unit_test/director_minor_filler_top/Run()
+	var/datum/round_event_control/nothing/nothing_control = locate() in SSdirector.actions
+	var/datum/round_event_control/faulty_lighting/lighting_control = locate() in SSdirector.actions
+	TEST_ASSERT_NOTNULL(nothing_control, "Событие Nothing должно быть зарегистрировано у директора")
+	TEST_ASSERT_NOTNULL(lighting_control, "Событие Faulty Lighting должно быть зарегистрировано у директора")
+	TEST_ASSERT(nothing_control.enabled && !nothing_control.admin_only, "Nothing должно быть доступно естественному выбору")
+	TEST_ASSERT(lighting_control.enabled && !lighting_control.admin_only, "Faulty Lighting должно быть доступно естественному выбору")
+	for(var/datum/director_action/action as anything in SSdirector.actions)
+		if(action.severity != DIRECTOR_SEVERITY_MINOR || !action.enabled || action.admin_only)
+			continue
+		if(action.director_kind != DIRECTOR_KIND_EVENT)
+			continue
+		TEST_ASSERT(action.weight <= nothing_control.weight, "[action.action_name()] весит больше пустышки ([action.weight] против [nothing_control.weight]) - верхушка малой категории должна оставаться за \"ничего и лампочками\"")
