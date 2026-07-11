@@ -20,7 +20,7 @@
 
 	return preview
 
-/datum/borg_donator_skin
+/datum/borg_donator_skin	
 	var/name = ""
 	var/module_type = /obj/item/robot_module
 
@@ -305,13 +305,19 @@
 	module_type = /obj/item/robot_module/peacekeeper
 	preview_icon = 'modular_splurt/icons/mob/robots_32x64.dmi'
 	preview_icon_state = "mekamoth"
-	ckey_whitelist = list("techgrid")
+	ckey_whitelist = list("techgrid", "mrpelmenik007")
 	cyborg_base_icon = "mekamoth"
 	cyborg_icon_override = 'modular_splurt/icons/mob/robots_32x64.dmi'
 	hat_offset = TALL_HAT_OFFSET
 	hasrest = TRUE
 	sit_lamp_has_state = TRUE
 
+/proc/smart_init_borgs_skin()
+	. = list()
+	for(var/datum/borg_donator_skin/donor_skin_type as anything in subtypesof(/datum/borg_donator_skin))
+		var/datum/borg_donator_skin/donor_skin = new donor_skin_type
+		if(length(donor_skin.ckey_whitelist) || donor_skin.donator_group != DONATOR_GROUP_NONE)
+			. += donor_skin
 
-GLOBAL_LIST_INIT(borg_donator_skins, init_subtypes(/datum/borg_donator_skin))
+GLOBAL_LIST_INIT(borg_donator_skins, smart_init_borgs_skin())
 

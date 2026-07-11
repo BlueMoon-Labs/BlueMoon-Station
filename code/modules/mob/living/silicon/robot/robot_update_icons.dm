@@ -7,11 +7,11 @@
 	update_equipment_overlays()
 	update_sleeper_overlays()
 	update_cover_overlay()
-	update_fire()
 	update_rest_icon()
 	// Applied after update_rest_icon() so the resting lamp overlay survives its cut_overlays().
 	update_eye_lights()
 	update_hat_overlay()
+	update_fire()
 
 	SEND_SIGNAL(src, COMSIG_ROBOT_UPDATE_ICONS)
 
