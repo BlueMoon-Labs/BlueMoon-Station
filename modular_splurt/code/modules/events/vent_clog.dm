@@ -26,9 +26,13 @@
 /datum/round_event_control/scrubber_overflow/female
 	name = "Clogged Vents: Girlcum"
 	typepath = /datum/round_event/scrubber_overflow/female
-	// Явный вес: без него подтип наследовал вес базового перелива и выпадал почти каждый раунд.
+	// Компромисс с прода: кам-ивенты живут только в эксте и лайте, в боевых динамиках их нет.
+	// Целевая частота "раз в 5-8 экст" задана явным весом и гейтом типов раундов напрямую,
+	// поэтому метка mild: профильный множитель disruptive задавил бы её ниже согласованной.
 	weight = 8
 	max_occurrences = 1
+	required_round_type = list(ROUNDTYPE_EXTENDED, ROUNDTYPE_DYNAMIC_LIGHT)
+	disruption = DIRECTOR_DISRUPTION_MILD
 	category = EVENT_CATEGORY_JANITORIAL
 
 /datum/round_event/scrubber_overflow/female
@@ -55,9 +59,11 @@
 /datum/round_event_control/scrubber_overflow/male
 	name = "Clogged Vents: Semen"
 	typepath = /datum/round_event/scrubber_overflow/male
-	// Явный вес: без него подтип наследовал вес базового перелива и выпадал почти каждый раунд.
+	// Компромисс с прода: см. комментарий у Girlcum выше - только экста/лайт, "раз в 5-8 экст".
 	weight = 8
 	max_occurrences = 1
+	required_round_type = list(ROUNDTYPE_EXTENDED, ROUNDTYPE_DYNAMIC_LIGHT)
+	disruption = DIRECTOR_DISRUPTION_MILD
 	category = EVENT_CATEGORY_JANITORIAL
 
 /datum/round_event/scrubber_overflow/male
@@ -85,8 +91,11 @@
 	name = "Aphrodisiac Flood"
 	typepath = /datum/round_event/scrubber_overflow/crocin
 	admin_setup = list()
+	// Тот же компромисс, что и у кам-ивентов выше: только экста/лайт, редкий явный вес.
 	weight = 10
 	max_occurrences = 1
+	required_round_type = list(ROUNDTYPE_EXTENDED, ROUNDTYPE_DYNAMIC_LIGHT)
+	disruption = DIRECTOR_DISRUPTION_MILD
 
 /datum/round_event/scrubber_overflow/crocin
 	safer_chems = list(

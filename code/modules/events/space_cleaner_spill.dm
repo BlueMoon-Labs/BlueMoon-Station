@@ -2,12 +2,14 @@
 	name = "Scrubber overflow: space cleaner"
 	typepath = /datum/round_event/space_cleaner_spill
 	// Часть семейства труб: общий фолл-офф и пауза с остальными переливами (см. scrubber_overflow).
-	weight = 15
+	// Метка mild, а не disruptive: мыло станцию моет, а не пачкает, и по договорённости с прода
+	// должно выпадать заметно чаще кам-ивентов (примерно два космочиста на один кам).
+	weight = 25
 	max_occurrences = 2
 	min_players = 5
 	category = EVENT_CATEGORY_JANITORIAL
 	family = "scrubbers"
-	disruption = DIRECTOR_DISRUPTION_DISRUPTIVE
+	disruption = DIRECTOR_DISRUPTION_MILD
 	description = "Scrubbers and vents spill space cleaner foam."
 
 /datum/round_event/space_cleaner_spill
