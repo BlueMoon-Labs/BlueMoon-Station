@@ -384,8 +384,8 @@
 /obj/structure/window/reinforced{
 	dir = 4
 	},
-/obj/item/weaponcrafting/gunkit/vector,
-/obj/item/weaponcrafting/gunkit/vector,
+/obj/item/gun/ballistic/automatic/mk60/vector,
+/obj/item/gun/ballistic/automatic/mk60/vector,
 /turf/open/floor/plasteel/textured/large,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
 "cb" = (
@@ -1684,6 +1684,19 @@
 	req_access = list(200)
 	},
 /turf/open/floor/plasteel/showroomfloor,
+/area/ruin/space/has_grav/bluemoon/hotel/workroom)
+"jd" = (
+/obj/effect/turf_decal/bot/yellow,
+/obj/item/ammo_box/magazine/e45/e45_drum/taser,
+/obj/item/ammo_box/magazine/e45/e45_drum/taser,
+/obj/structure/rack,
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/obj/structure/window/reinforced{
+	dir = 4
+	},
+/turf/open/floor/plasteel/textured/large,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
 "je" = (
 /turf/closed/wall,
@@ -9533,7 +9546,7 @@ Qh
 Bo
 rr
 Zd
-IZ
+jd
 ah
 lL
 bw
