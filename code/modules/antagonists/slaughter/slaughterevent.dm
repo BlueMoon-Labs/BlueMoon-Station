@@ -13,6 +13,9 @@
 	/// Тайпкэш дозволенных турфов для скана крови: набор типов фиксирован на компиляции,
 	/// пересборка двух typecacheof на каждый вызов не нужна.
 	var/static/list/allowed_turf_typecache
+	/// world.time, до которого скан декалей не повторяется: бит зовёт can_fire до трёх раз
+	/// (план гост-пула, отбор кандидатов, оценка панели) - весу хватает свежести раз в полминуты.
+	var/decal_scan_expires = 0
 
 /datum/round_event_control/slaughter/can_fire(datum/director_signals/signals)
 	. = ..()
@@ -23,6 +26,11 @@
 	// директора на каждом бите с накопленным MAJOR-кошельком. CHECK_TICK стоит первым
 	// в теле цикла: после continue он недостижим, а не-кровь (грязь, копоть) - это
 	// почти весь список, и без него скан не отдаёт тик вообще.
+	if(world.time < decal_scan_expires)
+		return .
+	// Метка ставится ДО скана: он спит на CHECK_TICK, и параллельный вызов (оценка панели
+	// поверх бита) не должен запускать второй такой же скан рядом.
+	decal_scan_expires = world.time + 30 SECONDS
 	weight = initial(src.weight)
 	if(isnull(allowed_turf_typecache))
 		allowed_turf_typecache = typecacheof(/turf/open) - typecacheof(/turf/open/space)

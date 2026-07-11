@@ -9,6 +9,12 @@
 /// Мост intensity рулсета на окно delay между schedule (note_fired) и execute (assigned наполнен).
 /// После execute живой рулсет считается динамически (get_ruleset_intensity), мост снимается.
 #define DIRECTOR_RULESET_BRIDGE_TIME (5 MINUTES)
+/// Порог (в % тика) стоимости одного process() события, с которого запуск попадает в лог:
+/// tick() события исполняется атомарно, кусок в полтика и больше - это уже видимый статтер.
+#define DIRECTOR_EVENT_HEAVY_TICK_USAGE 50
+/// Пауза между записями лога о тяжёлом тике одного и того же события: событие с вечно
+/// тяжёлым tick() (каждые 2 секунды) не должно засорять game.log построчным спамом.
+#define DIRECTOR_EVENT_HEAVY_LOG_COOLDOWN (30 SECONDS)
 /// Возраст раунда, до которого исполненный раундстарт-рулсет даёт полный вклад в intensity.
 #define DIRECTOR_ROUNDSTART_FULL_TIME (40 MINUTES)
 /// Возраст раунда, к которому вклад раундстарта линейно опускается до пола затухания.
@@ -110,6 +116,8 @@ SUBSYSTEM_DEF(director)
 	/// Ступень и тяжесть последнего запуска - для лога симулятора (боевая логика не читает).
 	var/sim_last_severity = null
 	var/sim_last_antag_heavy = FALSE
+	/// Троттлинг лога тяжёлых тиков: имя события -> world.time, с которого можно писать снова
+	var/list/heavy_tick_log_at = list()
 
 /datum/controller/subsystem/director/Initialize(start_timeofday)
 	register_event_actions()
@@ -174,16 +182,38 @@ SUBSYSTEM_DEF(director)
 				var/datum/director_signals/signals = collect_signals()
 				run_beat(signals)
 		currentrun = running.Copy()
+		// Бит (fires_until_beat == 0) сам мог съесть тик - раннер событий получает свежий слайс,
+		// иначе спайк бита и тяжёлый tick() события складываются в один и тот же игровой тик.
+		if(MC_TICK_CHECK)
+			return
 	var/list/current = currentrun
 	while(current.len)
-		var/datum/thing = current[current.len]
+		var/datum/round_event/thing = current[current.len]
 		current.len--
 		if(thing)
+			var/started_at = world.time
+			var/usage_before = TICK_USAGE
 			thing.process(wait * 0.1)
+			// Атрибуция статтеров: tick() события исполняется атомарным куском, и раннер не может
+			// его прервать - но может назвать виновника. При сне внутри process() (CHECK_TICK
+			// в start() сканов) дельта TICK_USAGE через тики бессмысленна - такой запуск не меряем.
+			if(world.time == started_at)
+				var/usage = TICK_USAGE - usage_before
+				if(usage >= DIRECTOR_EVENT_HEAVY_TICK_USAGE)
+					log_heavy_event_tick(thing, usage)
 		else
 			running.Remove(thing)
 		if(MC_TICK_CHECK)
 			return
+
+/// Лог тяжёлого тика события с троттлингом по имени: прод-жалоба "статтерит раз в 2 секунды"
+/// должна раскрываться грепом game.log по DIRECTOR HEAVY, а не VV-раскопками running.
+/datum/controller/subsystem/director/proc/log_heavy_event_tick(datum/round_event/event, usage)
+	var/event_name = event.control ? event.control.name : "[event.type]"
+	if(world.time < heavy_tick_log_at[event_name])
+		return
+	heavy_tick_log_at[event_name] = world.time + DIRECTOR_EVENT_HEAVY_LOG_COOLDOWN
+	log_game("DIRECTOR HEAVY: тик события [event_name] съел [round(TICK_DELTA_TO_MS(usage), 0.1)]мс ([round(usage)]% тика)")
 
 /datum/controller/subsystem/director/proc/accumulate_drip()
 	var/datum/director_signals/quick = last_signals || collect_signals()
@@ -990,3 +1020,5 @@ SUBSYSTEM_DEF(director)
 #undef DIRECTOR_WAIT
 #undef DIRECTOR_BEAT_EVERY
 #undef DIRECTOR_POOL_CACHE_TIME
+#undef DIRECTOR_EVENT_HEAVY_TICK_USAGE
+#undef DIRECTOR_EVENT_HEAVY_LOG_COOLDOWN

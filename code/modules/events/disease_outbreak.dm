@@ -16,11 +16,7 @@
 
 /datum/round_event_control/disease_outbreak/can_fire(datum/director_signals/signals)
 	if(!..()) return FALSE
-	var/list/enemy_roles = list("Medical Doctor","Chief Medical Officer","Paramedic","AI","Chemist","Virologist","Captain","Head of Personnel", "Geneticist")
-	for (var/mob/M in GLOB.alive_mob_list)
-		if(M.stat != DEAD && (M.mind?.assigned_role in enemy_roles))
-			return TRUE
-	return FALSE
+	return director_has_living_role(list("Medical Doctor","Chief Medical Officer","Paramedic","AI","Chemist","Virologist","Captain","Head of Personnel", "Geneticist"))
 
 /datum/round_event/disease_outbreak/announce(fake)
 	priority_announce("Подтвержденная вспышка вирусной биологической опасности уровня 7 на борту [station_name()]. Весь персонал должен противостоять эпидемии.", "Биологическая тревога", "outbreak7", type = "outbreak7")

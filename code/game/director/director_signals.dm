@@ -47,6 +47,15 @@
 		return "other"
 	return null
 
+/// Есть ли живой персонаж с одной из перечисленных должностей. Обход SSticker.minds
+/// (записей - по числу заходивших игроков), а не GLOB.alive_mob_list (тысячи, почти всё -
+/// фауна без mind): гейты "есть ли живой врач" зовутся битом директора по несколько раз в минуту.
+/proc/director_has_living_role(list/roles)
+	for(var/datum/mind/checked_mind as anything in SSticker.minds)
+		if(checked_mind.current && checked_mind.current.stat != DEAD && (checked_mind.assigned_role in roles))
+			return TRUE
+	return FALSE
+
 /datum/director_signals/proc/update()
 	effective_crew = 0
 	living_antags = 0

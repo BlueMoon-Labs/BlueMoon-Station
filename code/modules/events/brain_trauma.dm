@@ -8,11 +8,7 @@
 
 /datum/round_event_control/brain_trauma/can_fire(datum/director_signals/signals)
 	if(!..()) return FALSE
-	var/list/enemy_roles = list("Medical Doctor","Chief Medical Officer","Paramedic","AI","Chemist","Virologist","Captain","Head of Personnel","Roboticist")
-	for (var/mob/M in GLOB.alive_mob_list)
-		if(M.stat != DEAD && (M.mind?.assigned_role in enemy_roles))
-			return TRUE
-	return FALSE
+	return director_has_living_role(list("Medical Doctor","Chief Medical Officer","Paramedic","AI","Chemist","Virologist","Captain","Head of Personnel","Roboticist"))
 
 /datum/round_event/brain_trauma
 	fakeable = FALSE
