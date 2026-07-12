@@ -2777,9 +2777,8 @@
 		if(!entry.datum_ref)
 			to_chat(usr, span_warning("Нет ссылки на объект."))
 			return
-		var/datum/refcount_target = locate(entry.datum_ref)
-		// BYOND переиспользует ref-строки: после сборки цели locate() может вернуть чужой датум.
-		if(isnull(refcount_target) || refcount_target.type != text2path(entry.type_path))
+		var/datum/refcount_target = entry.resolve_target()
+		if(isnull(refcount_target))
 			to_chat(usr, span_notice("[entry.type_path]: объект уже собран или удалён."))
 			return
 		to_chat(usr, span_notice("[entry.type_path]: внешних ссылок сейчас: [EXTERNAL_REFCOUNT(refcount_target)]."))
@@ -2795,8 +2794,8 @@
 		var/response = tgui_alert(usr, "Сканирование ссылок пройдёт по всем GLOB-переменным, подсистемам и соседним объектам. Это может вызвать лаг на несколько секунд. Продолжить?", "Сканирование ссылок", list("Да", "Нет"))
 		if(response != "Да")
 			return
-		var/datum/D = locate(entry.datum_ref)
-		if(!D || D.type != text2path(entry.type_path))
+		var/datum/D = entry.resolve_target()
+		if(!D)
 			to_chat(usr, span_warning("Объект больше не существует, сканирование невозможно."))
 			return
 		entry.build_reference_info(D)

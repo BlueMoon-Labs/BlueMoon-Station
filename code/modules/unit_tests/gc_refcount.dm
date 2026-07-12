@@ -123,6 +123,24 @@
 	qdel(entry)
 	qdel(probe, force = TRUE)
 
+/// resolve_target обязан отвергать чужой объект того же типа в переиспользованном ref-слоте.
+/datum/unit_test/gc_entry_resolve_recycled_ref/Run()
+	var/datum/gc_refcount_probe/probe = new
+	probe.gc_destroyed = world.time || 1
+	var/datum/gc_failure_viewer/gc_failure_entry/entry = new(null, probe.type, REF(probe), world.time, QDEL_HINT_QUEUE)
+	entry.datum_ref = REF(probe)
+	entry.target_gc_destroyed = probe.gc_destroyed
+	TEST_ASSERT_EQUAL(entry.resolve_target(), probe, "Живая qdel-помеченная цель обязана резолвиться")
+	del(probe)
+	TEST_ASSERT_NULL(entry.resolve_target(), "resolve_target вернул объект после hard-delete цели")
+	// Занимаем освободившийся слот объектами того же типа - имитация переиспользования ref.
+	var/list/imposters = list()
+	for (var/i in 1 to 8)
+		imposters += new /datum/gc_refcount_probe
+	TEST_ASSERT_NULL(entry.resolve_target(), "resolve_target вернул чужой объект того же типа в переиспользованном слоте")
+	qdel(entry)
+	QDEL_LIST(imposters)
+
 /// Положительная метка обхода для прямого вызова DoSearchVar: боевые сканы используют
 /// только отрицательные значения GLOB.reftracker_scan_id, а глобал тестам трогать нельзя -
 /// сдвиг счётчика к нулю совпадает с дефолтным last_find_references и глушит обход.

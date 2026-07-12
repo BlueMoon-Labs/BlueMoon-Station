@@ -809,7 +809,12 @@ SUBSYSTEM_DEF(garbage)
 			if (isatom(D))
 				var/atom/A = D
 				extra_name = " \"[A.name]\""
-			log_world("## GC: -- \ref[D] | [type][extra_name] не собрался (warnfail, ~[round((GC_SOFTCHECK_TIMEOUT + GC_WARNFAIL_TIMEOUT) / 10)]с, внешних ссылок: [external_refs]) --")
+			var/prompt_note = ""
+			if (ismob(D))
+				var/mob/leaked_mob = D
+				if (leaked_mob.pending_native_prompts > 0)
+					prompt_note = ", висящих нативных промптов: [leaked_mob.pending_native_prompts]"
+			log_world("## GC: -- \ref[D] | [type][extra_name] не собрался (warnfail, ~[round((GC_SOFTCHECK_TIMEOUT + GC_WARNFAIL_TIMEOUT) / 10)]с, внешних ссылок: [external_refs][prompt_note]) --")
 			gc_notify_opted_admins("GC утечка: [type][extra_name] - [refID] не собрался за ~[round((GC_SOFTCHECK_TIMEOUT + GC_WARNFAIL_TIMEOUT) / 10)]с, внешних ссылок: [external_refs]")
 			GLOB.gc_failure_cache.log_gc_failure(D, type, refID, origin_time, hint, external_refs)
 			// Подтверждённая утечка - момент для авто-скана держателей (гейт рантайм-режимом).

@@ -134,6 +134,11 @@ GLOBAL_LIST_INIT(reftracker_skip_typecache, init_reftracker_skip_typecache())
 			Недостающие держатели вне датумов - как правило это VM-пины (локали и temp-слоты живых проков, \
 			отпускают при смерти фрейма; refcount в момент фейла тоже мог быть завышен фреймом GC). \
 			Устойчивый недобор при повторных сканах = реальный держатель во внутренностях BYOND.")
+		if(ismob(src))
+			var/mob/target_mob = src
+			if(target_mob.pending_native_prompts > 0)
+				log_reftracker("У [type] [text_ref(src)] висит [target_mob.pending_native_prompts] незакрытых нативных input()/alert() - \
+					вероятный держатель: спящий фрейм промпта (BYOND хранит диалог до ответа даже после дисконнекта игрока).")
 	else
 		log_reftracker("Поиск ссылок на [type] [text_ref(src)] завершён.")
 	GLOB.reftracker_cancel = FALSE

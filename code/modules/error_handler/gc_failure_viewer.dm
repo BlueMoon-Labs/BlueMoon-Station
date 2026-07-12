@@ -271,6 +271,8 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 	var/origin_time
 	var/extra_info
 	var/datum_ref
+	/// gc_destroyed цели на момент фейла - identity-метка против переиспользования ref-слота.
+	var/target_gc_destroyed
 	// --- Extended diagnostic data (always collected) ---
 	/// The QDEL_HINT_* value returned by Destroy()
 	var/qdel_hint
@@ -343,6 +345,7 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 				loc_walker = loc_walker.loc
 				loc_depth++
 		datum_ref = REF(D)
+		target_gc_destroyed = D.gc_destroyed
 		extra_info = build_extra_info(D)
 		build_extended_info(D)
 		#ifdef TESTING
@@ -389,6 +392,17 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 			info += "ckey: [M.ckey]"
 		else if (M.key)
 			info += "key: [M.key]"
+		if (M.pending_native_prompts > 0)
+			// Висящий нативный input()/alert() = спящий фрейм, который пинит моба
+			// невидимо для ref-сканов - главная зацепка при "найдено 0 из N".
+			info += "нативных промптов: [M.pending_native_prompts]"
+
+	if (istype(D, /datum/callback))
+		var/datum/callback/leaked_callback = D
+		// Destroy() колбека обнуляет object/arguments, но delegate переживает - только он и опознаёт утечку.
+		info += "delegate: [leaked_callback.delegate || "null"]"
+		if (leaked_callback.object && leaked_callback.object != GLOBAL_PROC)
+			info += "object: [leaked_callback.object.type]"
 
 	if (!length(info))
 		return null
@@ -693,6 +707,19 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 /datum/gc_failure_viewer/gc_failure_entry/proc/can_scan_target(datum/target)
 	return !isnull(target)
 
+/// Возвращает объект фейла по сохранённому ref, если это всё ещё именно он.
+/// Голого locate() + проверки типа недостаточно: BYOND переиспользует ref-слоты,
+/// и после hard-delete слот может занять чужой объект того же типа (обсерверы и
+/// new_player черняться постоянно). Метка gc_destroyed однозначна: новый жилец
+/// слота либо жив (null), либо qdel-нут строго позже освобождения слота.
+/datum/gc_failure_viewer/gc_failure_entry/proc/resolve_target()
+	if (isnull(datum_ref))
+		return null
+	var/datum/D = locate(datum_ref)
+	if (isnull(D) || "[D.type]" != "[type_path]" || D.gc_destroyed != target_gc_destroyed)
+		return null
+	return D
+
 /// Full world scan for references to the GC-failed datum.
 /// Scans all atoms in world and (in TESTING) all datums. Uses CHECK_TICK to yield.
 /// Can be called automatically (D passed directly) or on-demand via button (D = null, located by ref).
@@ -706,8 +733,8 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 			if (user)
 				to_chat(user, span_warning("Нет ссылки на объект для сканирования."))
 			return
-		D = locate(datum_ref)
-		if (!D || D.type != text2path(type_path))
+		D = resolve_target()
+		if (!D)
 			if (user)
 				to_chat(user, span_warning("Объект больше не существует, сканирование невозможно."))
 			world_scan_done = TRUE
@@ -927,8 +954,8 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 
 	// VV link to the object if it still exists
 	if (datum_ref)
-		var/datum/D = locate(datum_ref)
-		if (D && D.type == text2path(type_path))
+		var/datum/D = resolve_target()
+		if (D)
 			html += "<br><b>Объект</b>: <a href='?_src_=vars;[HrefToken()];Vars=[datum_ref]'>VV</a>"
 		else
 			html += "<br><b>Объект</b>: больше не существует ([ref_id])"
