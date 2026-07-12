@@ -23,6 +23,8 @@
 	var/list/datum/mind/assigned = list()
 	/// Preferences flag such as ROLE_WIZARD that need to be turned on for players to be antag
 	var/antag_flag = null
+	/// Treat this ruleset's antagonist preference as enabled for every otherwise eligible player.
+	var/force_antag_preference = FALSE
 	/// The antagonist datum that is assigned to the mobs mind on ruleset execution.
 	var/datum/antagonist/antag_datum = null
 	/// The required minimum account age for this ruleset.
@@ -222,6 +224,15 @@
 /datum/dynamic_ruleset/proc/trim_candidates()
 	return
 
+/// Whether a candidate opted into this antagonist role, including rulesets that explicitly force the preference on.
+/datum/dynamic_ruleset/proc/has_required_antag_preference(client/candidate_client)
+	if(force_antag_preference)
+		return TRUE
+	if(!candidate_client)
+		return FALSE
+	var/role_preference = antag_flag_override ? antag_flag_override : antag_flag
+	return HAS_ANTAG_PREF(candidate_client, role_preference)
+
 /// Set mode result and news report here.
 /// Only called if ruleset is flagged as HIGH_IMPACT_RULESET
 /datum/dynamic_ruleset/proc/round_result()
@@ -248,14 +259,9 @@
 			candidates.Remove(candidate_player)
 			continue
 
-		if(antag_flag_override)
-			if(!(HAS_ANTAG_PREF(candidate_player.client, antag_flag_override)))
-				candidates.Remove(candidate_player)
-				continue
-		else
-			if(!(HAS_ANTAG_PREF(candidate_player.client, antag_flag)))
-				candidates.Remove(candidate_player)
-				continue
+		if(!has_required_antag_preference(candidate_client))
+			candidates.Remove(candidate_player)
+			continue
 
 		var/role_to_bancheck = antag_flag_override ? antag_flag_override : antag_flag
 		if(role_to_bancheck && (jobban_isbanned(candidate_player, role_to_bancheck) || QDELETED(candidate_player)))

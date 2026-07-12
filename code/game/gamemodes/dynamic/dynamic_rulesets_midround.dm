@@ -58,14 +58,9 @@
 		if(!mode.check_age(M.client, minimum_required_age))
 			trimmed_list.Remove(M)
 			continue
-		if(antag_flag_override)
-			if(!(HAS_ANTAG_PREF(M.client, antag_flag_override)))
-				trimmed_list.Remove(M)
-				continue
-		else
-			if(!(HAS_ANTAG_PREF(M.client, antag_flag)))
-				trimmed_list.Remove(M)
-				continue
+		if(!has_required_antag_preference(M.client))
+			trimmed_list.Remove(M)
+			continue
 		var/role_to_bancheck_mr = antag_flag_override ? antag_flag_override : antag_flag
 		if(role_to_bancheck_mr && (jobban_isbanned(M, role_to_bancheck_mr) || QDELETED(M)))
 			trimmed_list.Remove(M)
@@ -282,6 +277,7 @@
 	antag_datum = /datum/antagonist/gang
 	antag_flag = ROLE_FAMILY_HEAD_ASPIRANT
 	antag_flag_override = ROLE_FAMILIES
+	force_antag_preference = TRUE
 	restricted_roles = list("AI", "Cyborg", "Prisoner", "NanoTrasen Representative", "Internal Affairs Agent", "Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director")  //BLUEMOON CHANGES
 	required_candidates = 9
 	required_round_type = list(ROUNDTYPE_DYNAMIC_LIGHT) // BLUEMOON ADD

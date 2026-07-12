@@ -23,14 +23,9 @@
 			candidates.Remove(P)
 			continue
 		// BLUEMOON ADD END
-		if(antag_flag_override)
-			if(!(HAS_ANTAG_PREF(P.client, antag_flag_override)))
-				candidates.Remove(P)
-				continue
-		else
-			if(!(HAS_ANTAG_PREF(P.client, antag_flag)))
-				candidates.Remove(P)
-				continue
+		if(!has_required_antag_preference(P.client))
+			candidates.Remove(P)
+			continue
 		var/role_to_bancheck_lj = antag_flag_override ? antag_flag_override : antag_flag
 		if(role_to_bancheck_lj && (jobban_isbanned(P, role_to_bancheck_lj) || QDELETED(P)))
 			candidates.Remove(P)
