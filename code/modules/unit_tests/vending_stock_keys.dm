@@ -44,3 +44,22 @@
 	stock = data["stock"]
 	var/list/entry = stock[REF(second)]
 	TEST_ASSERT_EQUAL(entry["amount"], 2, "a decremented record must report its new amount under its own key")
+
+// Brand Intelligence turns infected vendors into mimics. The original machine must
+// remain inside the mimic and fall back onto the turf when that mimic dies.
+/datum/unit_test/vending_mimic_restores_machine/Run()
+	var/obj/machinery/vending/machine = allocate(/obj/machinery/vending/assist)
+	var/mob/living/simple_animal/hostile/mimic/copy/vending/mimic = allocate(
+		/mob/living/simple_animal/hostile/mimic/copy/vending,
+		run_loc_floor_bottom_left,
+		machine,
+	)
+
+	TEST_ASSERT(!QDELETED(machine), "creating a Brand Intelligence mimic must not delete its vending machine")
+	TEST_ASSERT_EQUAL(machine.loc, mimic, "the vending machine must be stored inside its mimic while it is alive")
+
+	var/turf/death_turf = get_turf(mimic)
+	mimic.death()
+
+	TEST_ASSERT(!QDELETED(machine), "the vending machine must survive the mimic's death")
+	TEST_ASSERT_EQUAL(machine.loc, death_turf, "the vending machine must fall onto the mimic's turf when it dies")
