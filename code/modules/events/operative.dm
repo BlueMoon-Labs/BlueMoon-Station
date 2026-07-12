@@ -10,6 +10,20 @@
 	intensity = 20 // одиночка, но с ядерным риском
 	description = "A single nuclear operative assaults the station."
 
+// Экста-вариант по правилам проекта: одинокий оперативник "может появиться в режим игры Extended"
+// как защитник Диска Ядерной Аутентификации. spawn_role() в эксте сам выдаёт
+// /datum/antagonist/nukeop/lone/syndicate (Disk Keeper, цель revert - охранять диск и станцию),
+// поэтому контролу достаточно гейта required_round_type.
+/datum/round_event_control/operative/keeper
+	name = "Lone Operative (Disk Keeper)"
+	admin_only = FALSE
+	weight = 10
+	earliest_start = 30 MINUTES
+	required_round_type = list(ROUNDTYPE_EXTENDED)
+	cost = 10
+	intensity = 10 // защитник, а не угроза: мягкий вклад в гост-пул эксты
+	description = "A syndicate specialist arrives to guard the nuclear authentication disk."
+
 /datum/round_event/ghost_role/operative
 	minimum_required = 1
 	role_name = "lone operative"
@@ -44,11 +58,13 @@
 	A.copy_to(operative)
 	operative.dna.update_dna_identity()
 
+	// GLOB.round_type, не master_mode: смена режима мидгеймом дописывает master_mode суффиксом
+	// "(Changed Midgame)" и строковое сравнение с ROUNDTYPE_* умирает.
 	var/datum/antagonist/nukeop/lone/antag_type = keeper_force ? /datum/antagonist/nukeop/lone/syndicate : /datum/antagonist/nukeop/lone
-	if(GLOB.master_mode == ROUNDTYPE_EXTENDED)
+	if(GLOB.round_type == ROUNDTYPE_EXTENDED)
 		antag_type = new /datum/antagonist/nukeop/lone/syndicate
 		antag_type.nukeop_outfit = /datum/outfit/syndicate/lone/extended
-	else if(GLOB.master_mode == ROUNDTYPE_DYNAMIC_LIGHT && !keeper_force)
+	else if(GLOB.round_type == ROUNDTYPE_DYNAMIC_LIGHT && !keeper_force)
 		addtimer(CALLBACK(src, PROC_REF(spawn_operative), TRUE, get_turf(spawn_loc)), 10 SECONDS)
 
 	var/antag_name = initial(antag_type.name)

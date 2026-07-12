@@ -9,6 +9,8 @@
 	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
 	cost = 8
 	intensity = 10 // беглецы прячутся, охотники приходят позже - самый мягкий гост-антаг
+	// Живёт в эксте (вместе с хранителем диска): конфликт беглецов и охотников не направлен
+	// на экипаж (правила: в эксте антагонисты мирные, визиты гост-ролей легитимны).
 	description = "Fugitives will hide on the station, followed by hunters."
 
 /datum/round_event/ghost_role/fugitives
