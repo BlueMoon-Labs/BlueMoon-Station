@@ -324,10 +324,16 @@
 		total = SSdirector.get_active_intensity(breakdown)
 		TEST_ASSERT_EQUAL(total, (15 * 0.5 + 30 * 0.5) * DIRECTOR_ACTIVITY_MULT_MIN + 5, "Итог обязан включать вклад раундстарт-рулсета по доле живых")
 		TEST_ASSERT_EQUAL(length(breakdown), 2, "Живой раундстарт-рулсет обязан дать свою строку разбивки")
-		// Поздний раунд: вклад раундстарта затухает до пола, midround-рулсет не затухает.
+		// Поздний раунд: вклад раундстарта затухает до пола; midround без штампа запуска
+		// (executed_at = 0) считается от старта раунда и затухает так же.
 		SSdirector.time_override = SSticker.round_start_time + 200 MINUTES
 		total = SSdirector.get_active_intensity()
-		TEST_ASSERT_EQUAL(total, (15 * 0.5 + 30 * 0.5 * 0.25) * DIRECTOR_ACTIVITY_MULT_MIN + 5, "Поздним раундом вклад раундстарта обязан затухнуть до пола")
+		TEST_ASSERT_EQUAL(total, (15 * 0.5 * 0.25 + 30 * 0.5 * 0.25) * DIRECTOR_ACTIVITY_MULT_MIN + 5, "Поздним раундом вклад рулсетов без штампа обязан затухнуть до пола")
+		// Свежая инжекция (executed_at = только что) даёт полный вклад независимо от возраста раунда.
+		rule.executed_at = SSdirector.now() - 1 MINUTES
+		total = SSdirector.get_active_intensity()
+		TEST_ASSERT_EQUAL(total, (15 * 0.5 + 30 * 0.5 * 0.25) * DIRECTOR_ACTIVITY_MULT_MIN + 5, "Свежая инжекция не должна затухать по возрасту раунда")
+		rule.executed_at = 0
 		SSdirector.time_override = 0
 
 		// Полностью мёртвые рулсеты не дают ни вклада, ни строк.
@@ -1245,22 +1251,32 @@
 
 		TEST_ASSERT_EQUAL(SSdirector.antag_target(40), 40 * profile.antag_intensity_per_crew, "Цель антаг-нагрузки должна масштабироваться от экипажа")
 
-		// Дефицит (антагов нет вообще): доля антаг-пулов удвоена, сумма раздачи прежняя.
-		TEST_ASSERT_EQUAL(SSdirector.antag_drip_mult(40), 2, "Станция без антагов - дефицит, капля антаг-пулов x2")
-		SSdirector.distribute_to_budgets(10, 2)
-		var/total = SSdirector.total_budget()
-		TEST_ASSERT(abs(total - 10) < 0.01, "Клапан не должен менять сумму раздачи ([total] из 10)")
+		// Дефицит (антагов нет вообще): полный, антаг-капля идёт полным ходом.
+		TEST_ASSERT_EQUAL(SSdirector.antag_deficit(40), 1, "Станция без антагов - полный дефицит")
+		SSdirector.feed_antag_pools(10)
 		var/antag_wallets = SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST]
-		TEST_ASSERT(antag_wallets > 10 * 0.3, "Дефицит должен заметно ускорять антаг-кошельки ([antag_wallets])")
+		TEST_ASSERT(abs(antag_wallets - 10) < 0.01, "feed_antag_pools обязан отдавать всю сумму антаг-кошелькам ([antag_wallets] из 10)")
+		var/expected_antag_split = 10 * profile.pool_shares[DIRECTOR_SEVERITY_ANTAG] / (profile.pool_shares[DIRECTOR_SEVERITY_ANTAG] + profile.pool_shares[DIRECTOR_SEVERITY_GHOST])
+		TEST_ASSERT(abs(SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] - expected_antag_split) < 0.01, "Раздача антаг-капли должна делиться по pool_shares")
 
-		// Насыщение: антаг-нагрузка в ledger выше цели.
-		SSdirector.intensity_ledger = list(list("Тяжёлая инжекция", SSdirector.antag_target(40) + 5, 0, DIRECTOR_SEVERITY_ANTAG))
-		TEST_ASSERT_EQUAL(SSdirector.antag_drip_mult(40), 0, "Нагрузка на цели должна останавливать накопление антаг-кошельков")
+		// Событийная капля антаг-кошельки не трогает: у них собственный дефицит-поток.
 		SSdirector.reset_budgets(0)
-		SSdirector.distribute_to_budgets(10, 0)
-		TEST_ASSERT_EQUAL(SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG], 0, "При насыщении антаг-кошелёк не должен расти")
-		total = SSdirector.total_budget()
-		TEST_ASSERT(abs(total - 10) < 0.01, "Доля насыщенных пулов должна уходить остальным ступеням ([total] из 10)")
+		SSdirector.distribute_to_budgets(10, include_antag_pools = FALSE)
+		TEST_ASSERT_EQUAL(SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG], 0, "Событийная капля не должна кормить антаг-кошельки")
+		var/total = SSdirector.total_budget()
+		TEST_ASSERT(abs(total - 10) < 0.01, "Событийная капля обязана раздать всю сумму по событийным ступеням ([total] из 10)")
+		// Разовые вливания (донат, initial_grant, кнопка админа) раздаются по всем кошелькам.
+		SSdirector.reset_budgets(0)
+		SSdirector.distribute_to_budgets(10)
+		TEST_ASSERT(SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] > 0, "Разовые вливания должны кормить и антаг-кошельки")
+
+		// Полунагрузка: дефицит пропорционален (1 - load/target).
+		SSdirector.intensity_ledger = list(list("Полунагрузка", SSdirector.antag_target(40) * 0.5, 0, DIRECTOR_SEVERITY_ANTAG))
+		TEST_ASSERT(abs(SSdirector.antag_deficit(40) - 0.5) < 0.01, "Дефицит при нагрузке в полцели должен быть 0.5")
+
+		// Насыщение: антаг-нагрузка в ledger выше цели - дефицит нулевой, капля стоит.
+		SSdirector.intensity_ledger = list(list("Тяжёлая инжекция", SSdirector.antag_target(40) + 5, 0, DIRECTOR_SEVERITY_ANTAG))
+		TEST_ASSERT_EQUAL(SSdirector.antag_deficit(40), 0, "Нагрузка на цели должна останавливать накопление антаг-кошельков")
 
 		// Гейт насыщения в битах: антаг-действие отсеивается с причиной antag_saturated.
 		var/datum/director_action/test_stub/antag_action = new
@@ -1347,6 +1363,44 @@
 		// Запуск цели снимает копилку - следующий бит отроллит новую.
 		SSdirector.note_fired(expensive)
 		TEST_ASSERT(isnull(SSdirector.pool_saving[DIRECTOR_SEVERITY_ANTAG]), "Запуск цели должен снимать копилку")
+	catch(var/exception/e)
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	SSdirector.restore_simulation_state(saved)
+
+/// Проверяет независимость латеджойн-канала от полосы битов: note_fired(from_latejoin = TRUE)
+/// двигает только свой трек (last_latejoin_at) и штампует executed_at рулсета, не трогая
+/// ступенчатые паузы, глобальную паузу, таймер тишины и счётчики долей ступеней.
+/datum/unit_test/director_latejoin_channel
+
+/datum/unit_test/director_latejoin_channel/Run()
+	// Мутирует живой SSdirector - capture/restore c try/catch (см. комментарий в director_beat_logic).
+	var/list/saved = SSdirector.capture_simulation_state()
+	try
+		var/datum/director_profile/profile = new /datum/director_profile/medium
+		SSdirector.profile = profile
+		SSdirector.fired_counts = list()
+		SSdirector.last_fired_at = list()
+		SSdirector.last_latejoin_at = 0
+		SSdirector.last_any_fired_at = world.time - 5 MINUTES
+		SSdirector.last_real_fired_at = world.time - 5 MINUTES
+		var/frozen_any = SSdirector.last_any_fired_at
+		var/frozen_real = SSdirector.last_real_fired_at
+
+		var/datum/dynamic_ruleset/latejoin/test_pool_isolation/rule = new
+		rule.mode = null
+		SSdirector.note_fired(rule, from_latejoin = TRUE)
+		TEST_ASSERT(SSdirector.last_latejoin_at > 0, "Латеджойн-инжекция должна двигать свой трек спейсинга")
+		TEST_ASSERT(rule.executed_at > 0, "Латеджойн-инжекция должна штамповать executed_at рулсета")
+		TEST_ASSERT(isnull(SSdirector.last_fired_at[DIRECTOR_SEVERITY_ANTAG]), "Латеджойн не должен запирать полосу ANTAG битов")
+		TEST_ASSERT_EQUAL(SSdirector.last_any_fired_at, frozen_any, "Латеджойн не должен трогать глобальную паузу битов")
+		TEST_ASSERT_EQUAL(SSdirector.last_real_fired_at, frozen_real, "Латеджойн не должен сбрасывать таймер тишины")
+		TEST_ASSERT(!SSdirector.fired_counts[DIRECTOR_SEVERITY_ANTAG], "Латеджойн не должен искажать доли ступеней (share_correction)")
+
+		// Контроль: тот же запуск через бит двигает и полосу ступени, и счётчики.
+		SSdirector.note_fired(rule)
+		TEST_ASSERT(!isnull(SSdirector.last_fired_at[DIRECTOR_SEVERITY_ANTAG]), "Запуск битом обязан двигать полосу ступени")
+		TEST_ASSERT_EQUAL(SSdirector.fired_counts[DIRECTOR_SEVERITY_ANTAG], 1, "Запуск битом обязан считаться в долях ступеней")
 	catch(var/exception/e)
 		SSdirector.restore_simulation_state(saved)
 		throw e

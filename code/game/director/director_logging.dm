@@ -19,6 +19,12 @@
 		"action" = action ? action.action_name() : null,
 		"severity" = action ? action.severity : null,
 		"cost" = action ? action.cost : 0,
+		// Экономика антаг-пулов: разбор прод-дампа "почему антагов нет" должен видеть нагрузку,
+		// цель и кошельки прямо в бите, а не восстанавливать их по косвенным признакам.
+		"antag_load" = round(antag_load(), 0.1),
+		"antag_target" = signals ? round(antag_target(signals.effective_crew), 0.1) : 0,
+		"wallet_antag" = round(budgets[DIRECTOR_SEVERITY_ANTAG], 0.1),
+		"wallet_ghost" = round(budgets[DIRECTOR_SEVERITY_GHOST], 0.1),
 	)
 	if(length(rejected))
 		entry["rejected"] = rejected

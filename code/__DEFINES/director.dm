@@ -73,11 +73,13 @@
 #define DIRECTOR_ACTIVITY_KILL 25
 /// Бонус за объявление в розыск/на казнь (set_criminal_status): СБ уже занята этим антагом
 #define DIRECTOR_ACTIVITY_WANTED 10
-/// Множитель вклада в intensity: тихоня даёт минимум, буйный - до максимума
-#define DIRECTOR_ACTIVITY_MULT_MIN 0.75
+/// Множитель вклада в intensity: тихоня даёт минимум, буйный - до максимума.
+/// Пол 0.5, а не 0.75: полностью пассивный антаг (прод-жалоба "4 трейтора ничего не вносят")
+/// оставляет директору половину своего слота нагрузки - дефицитная антаг-капля доливает новых.
+#define DIRECTOR_ACTIVITY_MULT_MIN 0.5
 #define DIRECTOR_ACTIVITY_MULT_MAX 2
-/// Делитель score при переводе в множитель: при капе 60 множитель ровно 0.75 + 60/48 = 2
-#define DIRECTOR_ACTIVITY_MULT_SCALE 48
+/// Делитель score при переводе в множитель: при капе 60 множитель ровно 0.5 + 60/40 = 2
+#define DIRECTOR_ACTIVITY_MULT_SCALE 40
 
 /// Псевдо-ступень в reject_stats бита, отсечённого глобальной паузой: гейт бьёт по всем ступеням сразу
 #define DIRECTOR_REJECT_SEV_ALL "all"

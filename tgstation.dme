@@ -2546,6 +2546,7 @@
 #include "code\modules\events\_event_admin_setup.dm"
 #include "code\modules\events\abductor.dm"
 #include "code\modules\events\alien_infestation.dm"
+#include "code\modules\events\antag_funding.dm"
 #include "code\modules\events\apc_scramble.dm"
 #include "code\modules\events\atmos_speed.dm"
 #include "code\modules\events\aurora_caelus.dm"

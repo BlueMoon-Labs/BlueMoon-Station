@@ -15,6 +15,7 @@
 	state["pool_saving"] = pool_saving.Copy()
 	state["last_antag_heavy_at"] = last_antag_heavy_at
 	state["last_ghost_heavy_at"] = last_ghost_heavy_at
+	state["last_latejoin_at"] = last_latejoin_at
 	state["dry_run"] = dry_run
 	state["paused"] = paused
 	// pending_*: если админ дёрнет симулятор посреди живого окна отмены, run_beat() увидит
@@ -34,6 +35,15 @@
 	for(var/datum/director_action/action as anything in actions)
 		occurrences_snapshot[action] = action.occurrences
 	state["occurrences"] = occurrences_snapshot
+	// executed_at рулсетов тоже мутируется dry_run-учётом (note_fired штампует возраст исполнения
+	// для затухания intensity) - снимаем слепок по той же причине, что и occurrences.
+	var/list/executed_at_snapshot = list()
+	for(var/datum/director_action/action as anything in actions)
+		if(action.director_kind != DIRECTOR_KIND_RULESET)
+			continue
+		var/datum/dynamic_ruleset/rule = action
+		executed_at_snapshot[rule] = rule.executed_at
+	state["executed_at"] = executed_at_snapshot
 	return state
 
 /// Полное восстановление боевого состояния после симуляции. Вызывается и на нормальном пути,
@@ -45,6 +55,9 @@
 	var/list/occurrences_snapshot = state["occurrences"]
 	for(var/datum/director_action/action as anything in occurrences_snapshot)
 		action.occurrences = occurrences_snapshot[action]
+	var/list/executed_at_snapshot = state["executed_at"]
+	for(var/datum/dynamic_ruleset/rule as anything in executed_at_snapshot)
+		rule.executed_at = executed_at_snapshot[rule]
 	time_override = 0
 	profile = state["profile"]
 	budgets = state["budgets"]
@@ -61,6 +74,7 @@
 	last_ghost_heavy_at = state["last_ghost_heavy_at"]
 	dry_run = state["dry_run"]
 	paused = state["paused"]
+	last_latejoin_at = state["last_latejoin_at"]
 	pending_action = state["pending_action"]
 	pending_candidates = state["pending_candidates"]
 	pending_guaranteed = state["pending_guaranteed"]
@@ -105,6 +119,7 @@
 	D.pool_saving = list()
 	D.last_antag_heavy_at = 0
 	D.last_ghost_heavy_at = 0
+	D.last_latejoin_at = 0
 	var/list/log_out = list()
 	var/datum/director_signals/signals = new
 	signals.effective_crew = sim_crew
@@ -120,10 +135,14 @@
 		for(var/i in 1 to (hours * 60))
 			sim_now += beat_step
 			D.time_override = world.time + sim_now
-			// капля за минуту, разложенная по кошелькам ступеней (с боевым клапаном антаг-давления)
+			// капля за минуту как в бою: событийная по кошелькам ступеней + дефицит-поток антаг-пулов
 			var/minutes = sim_now / (1 MINUTES)
 			var/rate = D.profile.base_drip * piecewise_eval(D.profile.time_curve, minutes) * piecewise_eval(D.profile.pop_curve, signals.effective_crew)
-			D.distribute_to_budgets(rate, D.antag_drip_mult(signals.effective_crew))
+			D.distribute_to_budgets(rate, include_antag_pools = FALSE)
+			// Кэш дефицита обновляется как в бою (collect_signals): его читают и капля ниже,
+			// и can_fire событий фондирования внутри бита.
+			D.last_antag_deficit = D.antag_deficit(signals.effective_crew)
+			D.feed_antag_pools(D.profile.antag_drip * D.last_antag_deficit)
 			signals.active_intensity = D.get_active_intensity()
 			signals.event_intensity = D.get_event_intensity()
 			// Сбрасываем перед битом: note_fired выставит их, если этот бит выстрелит.

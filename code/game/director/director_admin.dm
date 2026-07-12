@@ -77,12 +77,18 @@
 	var/time_mult = 1
 	var/pop_mult = 1
 	var/dead_halved = FALSE
+	var/antag_drip_rate = 0
+	var/antag_load_now = 0
+	var/antag_target_now = 0
 	if(D.profile && SSticker.HasRoundStarted())
 		var/minutes = (D.now() - SSticker.round_start_time) / (1 MINUTES)
 		time_mult = piecewise_eval(D.profile.time_curve, minutes)
 		pop_mult = piecewise_eval(D.profile.pop_curve, D.last_signals ? D.last_signals.effective_crew : 0)
 		dead_halved = D.last_signals && (D.last_signals.dead_fraction > D.profile.dead_fraction_threshold)
 		drip_rate = D.profile.base_drip * time_mult * pop_mult * (dead_halved ? 0.5 : 1)
+		antag_drip_rate = D.profile.antag_drip * D.last_antag_deficit * (dead_halved ? 0.5 : 1)
+		antag_load_now = D.antag_load()
+		antag_target_now = D.antag_target(D.last_signals ? D.last_signals.effective_crew : 0)
 	return list(
 		"paused" = D.paused,
 		"budget" = round(D.total_budget(), 0.1),
@@ -105,6 +111,10 @@
 		"dripTimeMult" = round(time_mult, 0.01),
 		"dripPopMult" = round(pop_mult, 0.01),
 		"dripDeadHalved" = dead_halved,
+		"antagDripRate" = round(antag_drip_rate, 0.01),
+		"antagDeficit" = round(D.last_antag_deficit * 100),
+		"antagLoad" = round(antag_load_now, 0.1),
+		"antagTarget" = round(antag_target_now, 0.1),
 		"quietFor" = SSticker.HasRoundStarted() ? round((D.now() - D.last_any_fired_at) / (1 MINUTES)) : 0,
 		"maxQuiet" = D.profile ? D.profile.max_quiet_time / (1 MINUTES) : 0,
 		"quietThreshold" = D.profile ? D.profile.quiet_intensity_threshold : 0,

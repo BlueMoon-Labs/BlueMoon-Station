@@ -61,6 +61,7 @@ type ProfileEntry = {
   desc: string;
   active: BooleanLike;
   baseDrip: number;
+  antagDrip: number;
   initialGrant: number;
   roundstartMin: number;
   roundstartMax: number;
@@ -75,6 +76,7 @@ type ProfileEntry = {
   antagHeavySpacing: number;
   ghostLightSpacing: number;
   ghostHeavySpacing: number;
+  latejoinSpacing: number;
   poolShares: Record<string, number>;
   disruptionMults: Record<string, number>;
   antagPerCrew: number;
@@ -122,6 +124,10 @@ type DirectorPanelData = {
   dripTimeMult: number;
   dripPopMult: number;
   dripDeadHalved: BooleanLike;
+  antagDripRate: number;
+  antagDeficit: number;
+  antagLoad: number;
+  antagTarget: number;
   quietFor: number;
   maxQuiet: number;
   quietThreshold: number;
@@ -232,6 +238,10 @@ const OverviewTab = (props) => {
     dripTimeMult,
     dripPopMult,
     dripDeadHalved,
+    antagDripRate,
+    antagDeficit,
+    antagLoad,
+    antagTarget,
     quietFor,
     maxQuiet,
     quietThreshold,
@@ -262,6 +272,13 @@ const OverviewTab = (props) => {
               <Box inline ml={1} color="label">
                 +{dripRate}/мин (время x{dripTimeMult}, экипаж x{dripPopMult}
                 {!!dripDeadHalved && ', кризис мёртвых /2'})
+              </Box>
+            </LabeledList.Item>
+            <LabeledList.Item label="Антаг-капля">
+              +{antagDripRate}/мин
+              <Box inline ml={1} color="label">
+                дефицит {antagDeficit}% (нагрузка {antagLoad} при цели{' '}
+                {antagTarget})
               </Box>
             </LabeledList.Item>
             <LabeledList.Item label="Intensity">
@@ -667,6 +684,10 @@ type ProfileRowSpec = {
 
 const TEMPO_ROWS: ProfileRowSpec[] = [
   { label: 'Капля, очков/мин', render: (profile) => profile.baseDrip },
+  {
+    label: 'Антаг-капля при полном дефиците',
+    render: (profile) => profile.antagDrip,
+  },
   { label: 'Стартовый аванс', render: (profile) => profile.initialGrant },
   {
     label: 'Roundstart-бюджет',
@@ -749,6 +770,10 @@ const SPACING_ROWS: ProfileRowSpec[] = [
     label: 'Гост-антаги: лёгкие / тяжёлые',
     render: (profile) =>
       `${profile.ghostLightSpacing} / ${profile.ghostHeavySpacing}`,
+  },
+  {
+    label: 'Латеджойн-канал',
+    render: (profile) => profile.latejoinSpacing,
   },
 ];
 

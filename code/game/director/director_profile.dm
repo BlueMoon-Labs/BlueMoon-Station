@@ -23,8 +23,14 @@
 	var/round_type
 	/// Короткое описание идентичности профиля для вкладки "Профили" панели
 	var/desc = ""
-	/// Очков бюджета в минуту до множителей
+	/// Очков бюджета в минуту до множителей (событийные кошельки FLAVOR..MAJOR)
 	var/base_drip = 1
+	/// Очков в минуту в антаг-кошельки (ANTAG + GHOST, делится по pool_shares) при ПОЛНОМ
+	/// дефиците антаг-нагрузки; реальная скорость = antag_drip * (1 - load/target).
+	/// Раунд без живых антагов наполняется полным ходом, насыщенный не копит вовсе.
+	/// Калибровка Medium: при типичном дефиците ~0.5 кошелёк ANTAG собирает лёгкую
+	/// инжекцию (6-8) за 20-30 минут - раньше на долях от общей капли выходило 40-80.
+	var/antag_drip = 0.9
 	/// Стартовый аванс кошельков: раскладывается по pool_shares при setup_profile(). С нулевого
 	/// старта первое MODERATE набиралось только к ~25 минуте - аванс оживляет первые полчаса,
 	/// не меняя крейсерский темп (капля та же).
@@ -69,6 +75,9 @@
 	/// Паузы пула GHOST (антаги из призраков): свой трек, полностью независимый от ANTAG
 	var/ghost_light_spacing = 12 MINUTES
 	var/ghost_heavy_spacing = 30 MINUTES
+	/// Пауза латеджойн-канала (инжекция в окно захода игрока): трек независим от полосы битов -
+	/// латеджойн не запирает биты и наоборот, темп канала держит только эта пауза и дефицит.
+	var/latejoin_spacing = 8 MINUTES
 	/// Целевые доли ступеней при выборе: severity -> доля (сумма ~1).
 	/// Сумма ANTAG + GHOST - общая доля антагонистов раунда; баланс между экипажными
 	/// и гост-инжекциями тюнится их соотношением.
@@ -123,6 +132,7 @@
 		"roundType" = round_type,
 		"desc" = desc,
 		"baseDrip" = base_drip,
+		"antagDrip" = antag_drip,
 		"initialGrant" = initial_grant,
 		"roundstartMin" = roundstart_budget_min,
 		"roundstartMax" = roundstart_budget_max,
@@ -137,6 +147,7 @@
 		"antagHeavySpacing" = round(antag_heavy_spacing / (1 MINUTES), 0.1),
 		"ghostLightSpacing" = round(ghost_light_spacing / (1 MINUTES), 0.1),
 		"ghostHeavySpacing" = round(ghost_heavy_spacing / (1 MINUTES), 0.1),
+		"latejoinSpacing" = round(latejoin_spacing / (1 MINUTES), 0.1),
 		"poolShares" = pool_shares,
 		"disruptionMults" = disruption_weight_mults,
 		"antagPerCrew" = antag_intensity_per_crew,
@@ -154,6 +165,8 @@
 	round_type = ROUNDTYPE_DYNAMIC_LIGHT
 	desc = "Ступень между Extended и Medium: антаги и средние события живут, но крупных событий и тяжёлых антаг-команд нет, мешающие играть события приглушены."
 	base_drip = 0.6
+	antag_drip = 0.4
+	latejoin_spacing = 15 MINUTES
 	intensity_cap = 60
 	max_active_major = 0
 	// Идентичность Light - ступень между Extended и Medium, а не копия одного из них:
@@ -203,6 +216,8 @@
 	round_type = ROUNDTYPE_DYNAMIC_HARD
 	desc = "Плотный раунд: больше живых антагов одновременно, разгон с первых минут, крен долей из фонового шума в угрозы."
 	base_drip = 1.5
+	antag_drip = 1.4
+	latejoin_spacing = 5 MINUTES
 	intensity_cap = 140
 	max_active_major = 2
 	global_spacing = 1 MINUTES
@@ -242,6 +257,8 @@
 	round_type = ROUNDTYPE_DYNAMIC_TEAMBASED
 	desc = "Одна большая война вместо парада одиночек: антаг-пулы забирают крупную долю капли, события служат фоном конфликта."
 	base_drip = 0.8
+	antag_drip = 1.1
+	latejoin_spacing = 6 MINUTES
 	intensity_cap = 140
 	max_active_major = 2
 	// Идентичность Teambased - одна большая война, а не парад одиночек: цель нагрузки 2.0
@@ -271,6 +288,9 @@
 	round_type = ROUNDTYPE_EXTENDED
 	desc = "Фоновый профиль: события разбавляют игру, а не ведут её; из антагов - только штучные гост-спавнеры."
 	base_drip = 0.4
+	// Вся антаг-капля уходит в GHOST (доля ANTAG = 0): один мирный гост-спавнер (10) за ~час
+	// хронического дефицита, что и есть штучный темп эксты.
+	antag_drip = 0.15
 	intensity_cap = 40
 	max_active_major = 0
 	// Самый мягкий профиль: экста - фоновые раунды, события должны разбавлять, а не вести игру.
