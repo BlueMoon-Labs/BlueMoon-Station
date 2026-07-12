@@ -145,7 +145,7 @@
 
 	var/turf/T = safepick(get_area_turfs(picked_area))
 	if(!T)
-		to_chat(user, "<span class='warning'>No suitable landing zone found in [target_area]!</span>")
+		to_chat(user, "<span class='warning'>Не найдена подходящая зона для посадки в [target_area]!</span>")
 		return
 
 	var/obj/docking_port/stationary/landing_zone = new /obj/docking_port/stationary(T)
@@ -157,13 +157,14 @@
 	landing_zone.height = height
 	landing_zone.dir = lz_dir
 
-	to_chat(user, "DEBUG: Port created at [T.x],[T.y] size [width]x[height]")
+	// УДАЛЕНО: to_chat(user, "DEBUG: Port created at [T.x],[T.y] size [width]x[height]")
 
 	if(SSshuttle.stationary)
 		SSshuttle.stationary += landing_zone
-		to_chat(user, "DEBUG: Port added to stationary list. Total ports: [LAZYLEN(SSshuttle.stationary)]")
+		// УДАЛЕНО: to_chat(user, "DEBUG: Port added to stationary list. Total ports: [LAZYLEN(SSshuttle.stationary)]")
 	else
-		to_chat(user, "WARNING: SSshuttle.stationary not found!")
+		// УДАЛЕНО: to_chat(user, "WARNING: SSshuttle.stationary not found!")
+		to_chat(user, "<span class='warning'>Не удалось зарегистрировать зону посадки!</span>")
 		qdel(landing_zone)
 		return
 
@@ -175,5 +176,5 @@
 				S.possible_destinations += "[landing_zone.shuttle_id];"
 			S.updateUsrDialog()
 
-	to_chat(user, "<span class='notice'>Landing zone set. The ship will crash into [target_area]!</span>")
+	to_chat(user, "<span class='notice'>Зона посадки установлена! Шаттл врежется в [target_area]!</span>")
 	qdel(src)
