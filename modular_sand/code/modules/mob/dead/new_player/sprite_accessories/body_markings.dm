@@ -81,3 +81,21 @@
 	icon = 'modular_sand/icons/mob/mam_markings.dmi'
 	icon_state = "curvscarleyeshortalt"
 	covered_limbs = list("Head" = MATRIX_RED)
+
+/datum/sprite_accessory/mam_body_markings/face_scar_l
+	name = "Left face scar"
+	icon = 'modular_sand/icons/mob/mam_markings.dmi'
+	icon_state = "facescarl"
+	covered_limbs = list("Head" = MATRIX_RED)
+
+/datum/sprite_accessory/mam_body_markings/face_scar_r
+	name = "Right face scar"
+	icon = 'modular_sand/icons/mob/mam_markings.dmi'
+	icon_state = "facescarr"
+	covered_limbs = list("Head" = MATRIX_RED)
+
+/datum/sprite_accessory/mam_body_markings/sixpack
+	name = "Six-pack only abs"
+	icon = 'modular_sand/icons/mob/mam_markings.dmi'
+	icon_state = "sixpack"
+	covered_limbs = list("Chest" = MATRIX_RED)
