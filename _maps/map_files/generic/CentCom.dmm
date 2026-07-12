@@ -2570,7 +2570,7 @@
 "aiH" = (
 /obj/machinery/door/airlock/centcom{
 	name = "CentCom Supply";
-	req_access_txt = "15"
+	req_access_txt = "110"
 	},
 /turf/open/floor/plasteel/dark,
 /area/centcom/supply)
@@ -2991,7 +2991,7 @@
 "alM" = (
 /obj/machinery/door/airlock/centcom{
 	name = "Response Area 21";
-	req_access_txt = "15";
+	req_access_txt = "110";
 	damage_deflection = 70;
 	armor = list("melee" = 100, "bullet" = 100, "laser" = 100, "energy" = 100, "bomb" = 100, "bio" = 100, "rad" = 100, "fire" = 100, "acid" = 100)
 	},
@@ -3134,7 +3134,7 @@
 "amD" = (
 /obj/machinery/door/airlock/centcom{
 	name = "ERT Armory";
-	req_access_txt = "15";
+	req_access_txt = "110";
 	damage_deflection = 70;
 	armor = list("melee" = 100, "bullet" = 100, "laser" = 100, "energy" = 100, "bomb" = 100, "bio" = 100, "rad" = 100, "fire" = 100, "acid" = 100)
 	},
@@ -3272,7 +3272,7 @@
 	name = "Entrance Blast Door Control";
 	pixel_x = 7;
 	pixel_y = 19;
-	req_access_txt = "15";
+	req_access_txt = "110";
 	dir = 4
 	},
 /turf/open/floor/wood,
@@ -4368,7 +4368,7 @@
 "awx" = (
 /obj/machinery/door/airlock/centcom{
 	name = "CentCom Security";
-	req_access_txt = "15";
+	req_access_txt = "110";
 	armor = list("melee" = 100, "bullet" = 100, "laser" = 100, "energy" = 100, "bomb" = 100, "bio" = 100, "rad" = 100, "fire" = 100, "acid" = 100)
 	},
 /obj/effect/turf_decal/tile/red/half{
@@ -10255,7 +10255,7 @@
 	name = "Entrance Blast Door Control";
 	pixel_x = -4;
 	pixel_y = 28;
-	req_access_txt = "15"
+	req_access_txt = "110"
 	},
 /obj/effect/turf_decal/tile/dark_blue/half{
 	dir = 1
@@ -10427,7 +10427,7 @@
 	name = "Entrance Blast Door Control";
 	pixel_x = 22;
 	pixel_y = 12;
-	req_access_txt = "15"
+	req_access_txt = "110"
 	},
 /turf/open/floor/plasteel/dark,
 /area/centcom/control)
@@ -10823,7 +10823,7 @@
 	name = "Entrance Blast Door Control";
 	pixel_x = 10;
 	pixel_y = 24;
-	req_access_txt = "15"
+	req_access_txt = "110"
 	},
 /turf/open/floor/plasteel/dark,
 /area/centcom/control)
@@ -11317,7 +11317,7 @@
 "cKT" = (
 /obj/machinery/door/airlock/centcom{
 	name = "Special Ops Officer Office";
-	req_access_txt = "15";
+	req_access_txt = "110";
 	armor = list("melee" = 100, "bullet" = 100, "laser" = 100, "energy" = 100, "bomb" = 100, "bio" = 100, "rad" = 100, "fire" = 100, "acid" = 100)
 	},
 /obj/effect/mapping_helpers/airlock/unres,
@@ -12088,7 +12088,7 @@
 	name = "Entrance Blast Door Control";
 	pixel_x = 7;
 	pixel_y = -22;
-	req_access_txt = "15";
+	req_access_txt = "110";
 	dir = 1
 	},
 /turf/open/floor/plasteel/dark,
@@ -12834,7 +12834,7 @@
 /area/horny_antags/qareen)
 "eyq" = (
 /obj/machinery/computer/bsa_control{
-	req_access_txt = "15";
+	req_access_txt = "110";
 	ricochet_chance_mod = 0;
 	ricochet_damage_mod = 0;
 	pass_flags_self = null
@@ -13545,7 +13545,7 @@
 /area/centcom/holding)
 "fgs" = (
 /obj/machinery/bsa/full{
-	req_access_txt = "15";
+	req_access_txt = "110";
 	ricochet_chance_mod = 0;
 	ricochet_damage_mod = 0;
 	pass_flags_self = null
@@ -13645,7 +13645,7 @@
 	name = "Entrance Blast Door Control";
 	pixel_x = -6;
 	pixel_y = 24;
-	req_access_txt = "15"
+	req_access_txt = "110"
 	},
 /turf/open/floor/plasteel/dark,
 /area/centcom/control)
@@ -13772,7 +13772,7 @@
 	name = "Entrance Blast Door Control";
 	pixel_x = 23;
 	pixel_y = 9;
-	req_access_txt = "15";
+	req_access_txt = "110";
 	dir = 8
 	},
 /turf/open/floor/plasteel/dark,
@@ -13940,14 +13940,14 @@
 	name = "Entrance Blast Door Control";
 	pixel_x = -6;
 	pixel_y = 24;
-	req_access_txt = "15"
+	req_access_txt = "110"
 	},
 /obj/machinery/button/door{
 	id = "ERTArmory2";
 	name = "Entrance Blast Door Control";
 	pixel_x = 7;
 	pixel_y = 24;
-	req_access_txt = "15"
+	req_access_txt = "110"
 	},
 /turf/open/floor/plasteel/dark,
 /area/centcom/control)
@@ -15157,7 +15157,7 @@
 	name = "Entrance Blast Door Control";
 	pixel_x = -10;
 	pixel_y = 22;
-	req_access_txt = "15"
+	req_access_txt = "110"
 	},
 /obj/effect/turf_decal/tile/red/half{
 	dir = 1
@@ -17842,7 +17842,7 @@
 "jAG" = (
 /obj/machinery/door/airlock/centcom{
 	name = "CentCom Security";
-	req_access_txt = "15";
+	req_access_txt = "110";
 	armor = list("melee" = 100, "bullet" = 100, "laser" = 100, "energy" = 100, "bomb" = 100, "bio" = 100, "rad" = 100, "fire" = 100, "acid" = 100)
 	},
 /turf/open/floor/plasteel/dark,
@@ -21199,7 +21199,7 @@
 "mZR" = (
 /obj/machinery/door/airlock/centcom{
 	name = "Response Area 21";
-	req_access_txt = "15";
+	req_access_txt = "110";
 	damage_deflection = 70;
 	armor = list("melee" = 100, "bullet" = 100, "laser" = 100, "energy" = 100, "bomb" = 100, "bio" = 100, "rad" = 100, "fire" = 100, "acid" = 100)
 	},
@@ -23260,7 +23260,7 @@
 	name = "Entrance Blast Door Control";
 	pixel_x = 7;
 	pixel_y = 24;
-	req_access_txt = "15"
+	req_access_txt = "110"
 	},
 /turf/open/floor/plasteel/dark,
 /area/centcom/ferry)
@@ -25514,7 +25514,7 @@
 "ruy" = (
 /obj/machinery/door/airlock/centcom{
 	name = "BSA Control Room";
-	req_access_txt = "15";
+	req_access_txt = "110";
 	damage_deflection = 70;
 	armor = list("melee" = 100, "bullet" = 100, "laser" = 100, "energy" = 100, "bomb" = 100, "bio" = 100, "rad" = 100, "fire" = 100, "acid" = 100)
 	},
@@ -25647,14 +25647,14 @@
 	name = "Entrance Blast Door Control";
 	pixel_x = -6;
 	pixel_y = 24;
-	req_access_txt = "15"
+	req_access_txt = "110"
 	},
 /obj/machinery/button/door{
 	id = "ERTArmory4";
 	name = "Entrance Blast Door Control";
 	pixel_x = 7;
 	pixel_y = 24;
-	req_access_txt = "15"
+	req_access_txt = "110"
 	},
 /turf/open/floor/plasteel/dark,
 /area/centcom/control)
@@ -26309,7 +26309,7 @@
 "sfP" = (
 /obj/machinery/door/airlock/centcom{
 	name = "CentCom Security";
-	req_access_txt = "15";
+	req_access_txt = "110";
 	armor = list("melee" = 100, "bullet" = 100, "laser" = 100, "energy" = 100, "bomb" = 100, "bio" = 100, "rad" = 100, "fire" = 100, "acid" = 100)
 	},
 /obj/effect/turf_decal/tile/dark_blue/half{
@@ -29593,7 +29593,7 @@
 	name = "Exit Blast Door Control";
 	pixel_x = -4;
 	pixel_y = -25;
-	req_access_txt = "15";
+	req_access_txt = "110";
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/red/half,
@@ -30601,7 +30601,7 @@
 	name = "Entrance Blast Door Control";
 	pixel_x = 4;
 	pixel_y = 24;
-	req_access_txt = "15"
+	req_access_txt = "110"
 	},
 /turf/open/floor/plasteel/dark,
 /area/centcom/ferry)
