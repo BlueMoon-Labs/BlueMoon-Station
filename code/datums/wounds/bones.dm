@@ -34,6 +34,16 @@
 	var/trauma_cycle_cooldown
 	/// If this is a chest wound and this is set, we have this chance to cough up blood when hit in the chest
 	var/internal_bleeding_chance = 0
+	// BLUEMOON ADD START - прогрессирующая внутренняя травма CHEST/HEAD
+	/// Текущая интенсивность приступа за тик. Растёт арифметически, пока не начато лечение (gel()).
+	var/internal_injury_intensity = 0
+	/// Шаг прироста интенсивности за тик
+	var/internal_injury_increment = 0
+	/// Раз в сколько тиков handle_process() применяется приступ
+	var/internal_injury_tick_interval = 5
+	/// Внутренний счётчик тиков
+	var/internal_injury_tick_counter = 0
+	// BLUEMOON ADD END
 	/// Cooldown for fumble/drop checks when using an item with a wounded arm
 	var/next_fumble_check = 0
 
