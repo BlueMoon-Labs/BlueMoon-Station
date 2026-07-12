@@ -10,7 +10,7 @@
 	cost = 10
 	intensity = 15
 	family = "pirates" // с рулсетом-двойником динамика (он запускает это же событие): не подряд
-	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_LIGHT) // не экста
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // как у рулсета-двойника: не экста и не лайт
 	description = "The crew will either pay up, or face a pirate assault."
 
 #define PIRATES_ROGUES "Rogues"

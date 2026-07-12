@@ -12,7 +12,7 @@
 	family = "sentient_disease" // с рулсетом-двойником динамика: не подряд
 	// Не экста: цель болезни - заражать экипаж, а правила эксты разрешают только мирных
 	// к экипажу антагов (враждебное - по запросу через OPFOR/администрацию).
-	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_LIGHT)
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // как у рулсета-двойника: не экста и не лайт
 	description = "Spawns a sentient disease, who wants to infect as many people as possible."
 
 /datum/round_event/ghost_role/sentient_disease

@@ -1553,6 +1553,25 @@
 	TEST_ASSERT(light_profile.pool_shares[DIRECTOR_SEVERITY_ANTAG] > 0, "У Light должна быть ненулевая доля ANTAG")
 	TEST_ASSERT(!light_profile.antag_heavy_enabled, "Light не должен пускать тяжёлые антаг-команды")
 
+/// Политика Dynamic Light: автоматические гост-инжекции ограничены малыми беглецами.
+/// Боевые гост-антаги исторически убраны из Light у dynamic-ruleset'ов и не должны возвращаться
+/// через одноимённые event control'ы директора (именно так в Light смог выпасть Space Dragon).
+/datum/unit_test/director_light_ghost_policy
+
+/datum/unit_test/director_light_ghost_policy/Run()
+	var/list/allowed_light_ghost_controls = list(/datum/round_event_control/fugitives)
+	for(var/datum/round_event_control/control as anything in SSdirector.event_controls())
+		if(control.severity != DIRECTOR_SEVERITY_GHOST || !control.enabled || control.admin_only || control.weight <= 0)
+			continue
+		if(control.required_round_type && !(ROUNDTYPE_DYNAMIC_LIGHT in control.required_round_type))
+			continue
+		var/is_allowed = FALSE
+		for(var/allowed_type in allowed_light_ghost_controls)
+			if(istype(control, allowed_type))
+				is_allowed = TRUE
+				break
+		TEST_ASSERT(is_allowed, "[control.action_name()]: автоматический гост-антаг не разрешён политикой Dynamic Light")
+
 /// Проверяет рефанд провального спавна гост-роли: попытка, кошелёк ступени и вклад intensity
 /// возвращаются сразу (иначе фантомная нагрузка глушила бы клапан давления 30 минут),
 /// форс админа (не triggered_randomly) кошелёк не трогает.
