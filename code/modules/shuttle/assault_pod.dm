@@ -42,7 +42,7 @@ GLOBAL_VAR_INIT(pod_attack_direction, 0)
 						turfs_to_destroy |= neighbor
 
 			// Исключаем турфы, занятые самим шаттлом (чтобы не ломать под)
-			var/list/shuttle_turfs = return_turf_list()
+			var/list/shuttle_turfs = return_turfs()  // <-- ИСПРАВЛЕНО
 			turfs_to_destroy -= shuttle_turfs
 
 			// Разрушаем собранные турфы и гибаем всех живых мобов
