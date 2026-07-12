@@ -13,18 +13,23 @@ GLOBAL_LIST_EMPTY(refcount_monitors)
 	var/end_time
 	var/last_count = -1
 	var/samples = 0
+	/// id отложенного Sample(): CALLBACK в таймере держит монитор, гасим его в Destroy.
+	var/sample_timer
 
 /datum/refcount_monitor/New(datum/target, client/owner, duration = 5 MINUTES, sample_interval = 1 SECONDS)
 	src.target_ref = REF(target)
 	src.target_type = "[target.type]"
 	src.owner_ckey = owner.ckey
-	src.sample_interval = max(sample_interval, 2)
+	src.sample_interval = max(sample_interval, REFCOUNT_MONITOR_MIN_INTERVAL)
 	src.end_time = world.time + duration
 	GLOB.refcount_monitors += src
-	Report("старт мониторинга (интервал [src.sample_interval / 10]с, до [duration / 10]с). Короткие скачки на +-1 - VM-пины проходящих проков; значимы устойчивые дельты.")
+	Report("старт мониторинга (интервал [src.sample_interval / (1 SECONDS)]с, до [duration / (1 SECONDS)]с). Короткие скачки на +-1 - VM-пины проходящих проков; значимы устойчивые дельты.")
 	Sample()
 
 /datum/refcount_monitor/Destroy()
+	if(sample_timer)
+		deltimer(sample_timer)
+		sample_timer = null
 	GLOB.refcount_monitors -= src
 	return ..()
 
@@ -45,7 +50,7 @@ GLOBAL_LIST_EMPTY(refcount_monitors)
 		Report("время вышло - мониторинг завершён ([samples] замеров)")
 		qdel(src)
 		return
-	addtimer(CALLBACK(src, PROC_REF(Sample)), sample_interval)
+	sample_timer = addtimer(CALLBACK(src, PROC_REF(Sample)), sample_interval, TIMER_STOPPABLE)
 
 /datum/refcount_monitor/proc/Report(msg)
 	var/full_message = "REFCOUNT MONITOR [target_type] [target_ref]: [msg]"

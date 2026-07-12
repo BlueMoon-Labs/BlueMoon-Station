@@ -2778,7 +2778,8 @@
 			to_chat(usr, span_warning("Нет ссылки на объект."))
 			return
 		var/datum/refcount_target = locate(entry.datum_ref)
-		if(isnull(refcount_target))
+		// BYOND переиспользует ref-строки: после сборки цели locate() может вернуть чужой датум.
+		if(isnull(refcount_target) || refcount_target.type != text2path(entry.type_path))
 			to_chat(usr, span_notice("[entry.type_path]: объект уже собран или удалён."))
 			return
 		to_chat(usr, span_notice("[entry.type_path]: внешних ссылок сейчас: [EXTERNAL_REFCOUNT(refcount_target)]."))

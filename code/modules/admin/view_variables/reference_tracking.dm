@@ -42,11 +42,13 @@ GLOBAL_LIST_INIT(reftracker_skip_typecache, init_reftracker_skip_typecache())
 	if(GLOB.reftracker_active)
 		log_reftracker("Поиск ссылок на [type] [text_ref(src)] не запущен: другой полный скан уже активен.")
 		return
+	// Флаг ставится до сна в tgui_alert, иначе второй админ успеет запустить параллельный скан.
+	GLOB.reftracker_active = TRUE
 	if(usr?.client && !skip_alert)
 		if(tgui_alert(usr, "Полный скан заблокирует сервер на десятки секунд или минуты. Начать поиск?", "Find References", list("Да", "Нет")) != "Да")
+			GLOB.reftracker_active = FALSE
 			return
 	GLOB.reftracker_cancel = FALSE
-	GLOB.reftracker_active = TRUE
 	var/garbage_was_enabled = SSgarbage.can_fire
 	// Останавливаем GC, чтобы он не собрал цель посреди поиска.
 	SSgarbage.can_fire = FALSE

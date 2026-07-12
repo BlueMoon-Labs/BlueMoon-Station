@@ -780,10 +780,13 @@ SUBSYSTEM_DEF(garbage)
 
 			// Точечные запросы (qdel_and_find_ref_if_fail, IFFAIL_FINDREFERENCE) работают в любом режиме.
 			var/should_yield_for_scan = FALSE
-			if (reference_find_on_fail[refID] && !(I.qdel_flags & QDEL_ITEM_SKIP_REFSCAN))
+			if (reference_find_on_fail[refID])
+				// Запись снимается всегда: BYOND переиспользует ref-строки, и застрявший
+				// ключ SKIP_REFSCAN-типа позже запустил бы скан по чужому датуму.
 				reference_find_on_fail -= refID
-				should_yield_for_scan = TRUE
-				ScheduleReferenceScan(D, external_refs > 0 ? external_refs : INFINITY)
+				if (!(I.qdel_flags & QDEL_ITEM_SKIP_REFSCAN))
+					should_yield_for_scan = TRUE
+					ScheduleReferenceScan(D, external_refs > 0 ? external_refs : INFINITY)
 			// Type-wide fast reftrack is a diagnostic aid; do not stall the whole GC pass for it.
 			else if (GetReftrackMode() != GC_REFTRACK_OFF && (I.qdel_flags & QDEL_ITEM_FAST_REFTRACK) && !(I.qdel_flags & QDEL_ITEM_SKIP_REFSCAN))
 				TryAutoScan(D, external_refs)

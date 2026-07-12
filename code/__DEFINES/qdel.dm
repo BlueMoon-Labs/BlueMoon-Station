@@ -145,6 +145,8 @@
 #define GC_REFTRACK_AUTOSCAN_MAX_PER_TYPE 2
 /// Максимум одновременных мониторов refcount.
 #define REFCOUNT_MONITOR_MAX 5
+/// Минимальный интервал семплирования монитора refcount.
+#define REFCOUNT_MONITOR_MIN_INTERVAL (0.2 SECONDS)
 
 /// Число ссылок на датум помимо ОДНОЙ локальной переменной, через которую его читают.
 /// Контракт: на момент вызова D хранится ровно в одной локали текущего прока.

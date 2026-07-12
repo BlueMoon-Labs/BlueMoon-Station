@@ -321,6 +321,9 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 	var/list/timer_details
 #endif
 
+/// Диагностический лимит глубины loc-цепочки для каскад-группировки.
+#define GC_FAILURE_LOC_CHAIN_DEPTH 6
+
 /datum/gc_failure_viewer/gc_failure_entry/New(datum/D, path, refid, qdel_origin_time, hint, external_refs = -1)
 	type_path = path
 	ref_id = refid
@@ -335,7 +338,7 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 			// Цепочка loc для каскад-группировки: утёкший предмет внутри утёкшего моба.
 			var/atom/loc_walker = A.loc
 			var/loc_depth = 0
-			while (loc_walker && loc_depth < 6)
+			while (loc_walker && loc_depth < GC_FAILURE_LOC_CHAIN_DEPTH)
 				LAZYADD(loc_ref_chain, REF(loc_walker))
 				loc_walker = loc_walker.loc
 				loc_depth++
