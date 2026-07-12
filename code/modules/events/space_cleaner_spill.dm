@@ -4,8 +4,9 @@
 	// Часть семейства труб: общий фолл-офф и пауза с остальными переливами (см. scrubber_overflow).
 	// Метка mild, а не disruptive: мыло станцию моет, а не пачкает, и по договорённости с прода
 	// должно выпадать заметно чаще кам-ивентов (примерно два космочиста на один кам).
+	// Один раз за раунд: даже мягкая мойка всей станции надоедает при повторе (жалоба прода).
 	weight = 25
-	max_occurrences = 2
+	max_occurrences = 1
 	min_players = 5
 	category = EVENT_CATEGORY_JANITORIAL
 	family = "scrubbers"
@@ -72,7 +73,9 @@
 
 		var/datum/reagents/dispensed_reagent = new /datum/reagents(reagents_amount)
 		dispensed_reagent.my_atom = vent
-		dispensed_reagent.add_reagent(/datum/reagent/space_cleaner, reagents_amount)
+		// Мягкий очиститель: смывает грязь и кровь, но не рисунки крайонов и не покраску
+		// спрейканами - ивент не должен уничтожать оформление, сделанное игроками (жалоба прода).
+		dispensed_reagent.add_reagent(/datum/reagent/space_cleaner/gentle, reagents_amount)
 		dispensed_reagent.create_foam(/datum/effect_system/foam_spread/short, reagents_amount)
 
 		CHECK_TICK

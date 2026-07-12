@@ -4,7 +4,9 @@
 	name = "Aurora Caelus"
 	typepath = /datum/round_event/aurora_caelus
 	max_occurrences = 1
-	weight = 10 // чисто косметический флавор, пусть выпадает чаще на фоне ужатой пыли
+	// Редкое зрелище, как и кометный пояс: на весе 10 большие шоу приедаются
+	// (жалоба прода на кометы), держим оба на 3.
+	weight = 3
 	earliest_start = 10 MINUTES
 	category = EVENT_CATEGORY_FRIENDLY
 	description = "A colourful display can be seen through select windows. And the kitchen."

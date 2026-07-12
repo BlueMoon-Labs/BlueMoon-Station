@@ -13,6 +13,9 @@
 	earliest_start = 15 MINUTES
 	alert_observers = FALSE
 	category = EVENT_CATEGORY_BUREAUCRATIC
+	// Экономические события (лотерея, обвал рынка, страховка, ошибка отгрузки) в одном
+	// семействе: общий фолл-офф, чтобы раунд не превращался в биржевую сводку.
+	family = "economy"
 	disruption = DIRECTOR_DISRUPTION_AMBIENT // газетная заметка никому не мешает
 	description = "Newscasters print lottery results: a real crew account wins, or a scam asks for a processing fee."
 
