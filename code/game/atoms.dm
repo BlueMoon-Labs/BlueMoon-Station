@@ -317,8 +317,10 @@
 		LAZYREMOVE(M.do_afters, src)
 	targeted_by = null
 
-	GLOB.lighting_deferred_atoms -= src
+	if(GLOB.lighting_deferred_atoms.Remove(src)) // кэш отложенных z протухает только если атом реально был запаркован
+		GLOB.lighting_deferred_z_cache = null
 	QDEL_NULL(light)
+	QDEL_NULL(proximity_monitor)
 
 	return ..()
 
@@ -1331,6 +1333,13 @@
   * * addition - is any additional text, which will be appended to the rest of the log line
   */
 /proc/log_combat(atom/user, atom/target, what_done, atom/object=null, addition=null)
+	// Атрибуция активности антагов для директора: атака по чужому игровому персонажу двигает
+	// score атакующего. bump_antag_activity сам отсеивает не-антагов - здесь только дешёвые гейты.
+	if(user != target && isliving(user) && ismob(target))
+		var/mob/living/attacking_mob = user
+		var/mob/victim_mob = target
+		if(attacking_mob.mind && victim_mob.mind && victim_mob.mind != attacking_mob.mind)
+			SSdirector.bump_antag_activity(attacking_mob.mind, DIRECTOR_ACTIVITY_ATTACK)
 	var/ssource = key_name(user)
 	var/starget = key_name(target)
 

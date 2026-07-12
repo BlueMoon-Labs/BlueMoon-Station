@@ -303,6 +303,17 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 		var/datum/language/L = GLOB.language_datum_instances[language]
 		spans |= L.spans
 
+	//BlueMoon add - стили шёпота, последнего вздоха, невнятной и глитч-речи
+	if(message_mode == MODE_WHISPER)
+		spans |= SPAN_WHISPER
+	else if(message_mode == MODE_WHISPER_CRIT)
+		spans |= SPAN_LAST_BREATH
+	if(isrobotic(src))
+		if(slurring || stuttering || derpspeech)
+			spans |= SPAN_GLITCH
+	else if(slurring)
+		spans |= SPAN_SLURRING
+
 // Skyrat edits
 	if(message_mode == MODE_SING)
 	#if DM_VERSION < 513

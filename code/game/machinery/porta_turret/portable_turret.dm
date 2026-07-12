@@ -136,6 +136,11 @@ DEFINE_BITFIELD(turret_flags, list(
 		underlays += base
 	if(!has_cover)
 		INVOKE_ASYNC(src, PROC_REF(popUp))
+	if(HAS_TRAIT(SSstation, STATION_TRAIT_APERTURE_SCIENCE))
+		INVOKE_ASYNC(src, PROC_REF(deferred_aperture_skin))
+
+/obj/machinery/porta_turret/proc/deferred_aperture_skin()
+	apply_aperture_turret_skin(src)
 
 /obj/machinery/porta_turret/proc/toggle_on(var/set_to)
 	var/current = on
@@ -448,6 +453,14 @@ DEFINE_BITFIELD(turret_flags, list(
 
 	if(!on || (machine_stat & (NOPOWER|BROKEN)) || manual_control)
 		return PROCESS_KILL
+
+	// Nobody with a client on our z-level: view() can find nothing worth shooting and nobody
+	// would see us react. Keep ticking cheaply so we resume the moment somebody arrives.
+	var/turf/our_turf = get_turf(base || src)
+	if(our_turf && our_turf.z <= length(SSmobs.clients_by_zlevel) && !length(SSmobs.clients_by_zlevel[our_turf.z]))
+		if(!always_up)
+			popDown()
+		return
 
 	var/list/targets
 	if(COOLDOWN_FINISHED(src, target_scan_cooldown))

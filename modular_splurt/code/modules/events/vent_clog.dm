@@ -1,7 +1,7 @@
 /datum/round_event_control/scrubber_overflow/cope_and_seethe
 	name = "Copium Flood"
 	typepath = /datum/round_event/scrubber_overflow/cope_and_seethe
-	max_occurrences = 0
+	enabled = FALSE
 
 /datum/round_event/scrubber_overflow/cope_and_seethe/announce()
 	priority_announce("Мы обнаружили высокий уровень Агрессии на станции. Для борьбы с этим мы будем использовать массовое количество копиума. Пожалуйста, держитесь подальше от вентиляционных отверстий, пока давление не выровняется.", "Центральное Командование")
@@ -26,7 +26,13 @@
 /datum/round_event_control/scrubber_overflow/female
 	name = "Clogged Vents: Girlcum"
 	typepath = /datum/round_event/scrubber_overflow/female
+	// Компромисс с прода: кам-ивенты живут только в эксте и лайте, в боевых динамиках их нет.
+	// Целевая частота "раз в 5-8 экст" задана явным весом и гейтом типов раундов напрямую,
+	// поэтому метка mild: профильный множитель disruptive задавил бы её ниже согласованной.
+	weight = 8
 	max_occurrences = 1
+	required_round_type = list(ROUNDTYPE_EXTENDED, ROUNDTYPE_DYNAMIC_LIGHT)
+	disruption = DIRECTOR_DISRUPTION_MILD
 	category = EVENT_CATEGORY_JANITORIAL
 
 /datum/round_event/scrubber_overflow/female
@@ -53,7 +59,11 @@
 /datum/round_event_control/scrubber_overflow/male
 	name = "Clogged Vents: Semen"
 	typepath = /datum/round_event/scrubber_overflow/male
+	// Компромисс с прода: см. комментарий у Girlcum выше - только экста/лайт, "раз в 5-8 экст".
+	weight = 8
 	max_occurrences = 1
+	required_round_type = list(ROUNDTYPE_EXTENDED, ROUNDTYPE_DYNAMIC_LIGHT)
+	disruption = DIRECTOR_DISRUPTION_MILD
 	category = EVENT_CATEGORY_JANITORIAL
 
 /datum/round_event/scrubber_overflow/male
@@ -81,8 +91,11 @@
 	name = "Aphrodisiac Flood"
 	typepath = /datum/round_event/scrubber_overflow/crocin
 	admin_setup = list()
+	// Тот же компромисс, что и у кам-ивентов выше: только экста/лайт, редкий явный вес.
 	weight = 10
 	max_occurrences = 1
+	required_round_type = list(ROUNDTYPE_EXTENDED, ROUNDTYPE_DYNAMIC_LIGHT)
+	disruption = DIRECTOR_DISRUPTION_MILD
 
 /datum/round_event/scrubber_overflow/crocin
 	safer_chems = list(
@@ -110,7 +123,7 @@
 	name = "Strong Aphrodisiac Flood"
 	typepath = /datum/round_event/scrubber_overflow/crocin/hexacrocin
 	admin_setup = list()
-	max_occurrences = 0 //Only adminspawn because this one causes brain damage
+	enabled = FALSE //Only adminspawn because this one causes brain damage
 
 /datum/round_event/scrubber_overflow/crocin/hexacrocin
 	safer_chems = list(
@@ -124,7 +137,7 @@
 /datum/round_event_control/scrubber_overflow/beer
 	name = "Clogged Vents: Beer"
 	typepath = /datum/round_event/scrubber_overflow/beer
-	max_occurrences = 0
+	enabled = FALSE
 	description = "Spits out beer through the scrubber system."
 
 /datum/round_event/scrubber_overflow/beer

@@ -1,4 +1,4 @@
-import { Component, createRef } from 'inferno';
+import { Component, createRef } from 'react';
 
 import { resolveAsset } from '../../assets';
 import { useBackend } from '../../backend';
@@ -10,17 +10,16 @@ import {
   Stack,
 } from '../../components';
 import { Window } from '../../layouts';
-import { CircuitInfo } from './CircuitInfo';
-import { CircuitToolbar } from './CircuitToolbar';
-import { Connections } from './Connections';
-import { ABSOLUTE_Y_OFFSET, MOUSE_BUTTON_LEFT } from './constants';
 import {
   byondListToArray,
   connectedToRefList,
   normalizeCircuitComponent,
 } from './byondPayload';
+import { CircuitInfo } from './CircuitInfo';
+import { CircuitToolbar } from './CircuitToolbar';
+import { Connections } from './Connections';
+import { ABSOLUTE_Y_OFFSET, MOUSE_BUTTON_LEFT } from './constants';
 import { ObjectComponent } from './ObjectComponent';
-import { VariableMenu } from './VariableMenu';
 import type {
   CircuitComponentView,
   CircuitPortPayload,
@@ -30,14 +29,15 @@ import type {
   SelectedPortState,
   WireConnection,
 } from './types';
+import { VariableMenu } from './VariableMenu';
 
 export class IntegratedCircuit extends Component<unknown, IntegratedCircuitState> {
   connectionsSvgRef = createRef<SVGSVGElement>();
   /** Смещали ли поле мышью с прошлого сохранённого screen_x/y (не слать move_screen на каждый mouseup). */
   planePanDirty = false;
 
-  constructor() {
-    super();
+  constructor(props: unknown) {
+    super(props);
     this.state = {
       locations: {},
       selectedPort: null,
@@ -161,7 +161,7 @@ export class IntegratedCircuit extends Component<unknown, IntegratedCircuitState
     isOutput: boolean,
     event: MouseEvent,
   ) {
-    const { act } = useBackend<IntegratedCircuitData>(this.context);
+    const { act } = useBackend<IntegratedCircuitData>();
     const {
       selectedPort,
     } = this.state;
@@ -215,7 +215,7 @@ export class IntegratedCircuit extends Component<unknown, IntegratedCircuitState
     isOutput: boolean,
     event: MouseEvent,
   ) {
-    const { act } = useBackend<IntegratedCircuitData>(this.context);
+    const { act } = useBackend<IntegratedCircuitData>();
 
     event.preventDefault();
     act('remove_connection', {
@@ -246,7 +246,7 @@ export class IntegratedCircuit extends Component<unknown, IntegratedCircuitState
 
   /** Поле схемы к началу координат (0, 0) — сервер и локальный якорь. */
   handlePanToOrigin() {
-    const { act } = useBackend<IntegratedCircuitData>(this.context);
+    const { act } = useBackend<IntegratedCircuitData>();
     this.planePanDirty = false;
     this.setState((s) => ({
       screenPanOverride: { x: 0, y: 0 },
@@ -272,7 +272,7 @@ export class IntegratedCircuit extends Component<unknown, IntegratedCircuitState
   }
 
   handleShiftPlaneMouseDown = (event: MouseEvent) => {
-    const { act, data } = useBackend<IntegratedCircuitData>(this.context);
+    const { act, data } = useBackend<IntegratedCircuitData>();
     if (!data.ie_circuit || data.ie_clone_copy_mode !== 'assembly') {
       return;
     }
@@ -281,7 +281,7 @@ export class IntegratedCircuit extends Component<unknown, IntegratedCircuitState
   };
 
   handleIePlaceChipCenter = () => {
-    const { act, data } = useBackend<IntegratedCircuitData>(this.context);
+    const { act, data } = useBackend<IntegratedCircuitData>();
     if (!data.ie_circuit || data.ie_clone_copy_mode !== 'assembly') {
       return;
     }
@@ -299,7 +299,7 @@ export class IntegratedCircuit extends Component<unknown, IntegratedCircuitState
   };
 
   componentDidUpdate(_prevProps: unknown, _prevState: IntegratedCircuitState) {
-    const { data } = useBackend<IntegratedCircuitData>(this.context);
+    const { data } = useBackend<IntegratedCircuitData>();
     if (!this.state.screenPanOverride) {
       return;
     }
@@ -323,7 +323,7 @@ export class IntegratedCircuit extends Component<unknown, IntegratedCircuitState
   }
 
   handleMouseDown(_event: MouseEvent) {
-    const { act, data } = useBackend<IntegratedCircuitData>(this.context);
+    const { act, data } = useBackend<IntegratedCircuitData>();
     const { examined_name } = data;
     if (examined_name) {
       act('remove_examined_component');
@@ -335,7 +335,7 @@ export class IntegratedCircuit extends Component<unknown, IntegratedCircuitState
       return;
     }
     this.planePanDirty = false;
-    const { act } = useBackend<IntegratedCircuitData>(this.context);
+    const { act } = useBackend<IntegratedCircuitData>();
     const { backgroundX, backgroundY } = this.state;
     act("move_screen", {
       screen_x: backgroundX,
@@ -434,7 +434,7 @@ export class IntegratedCircuit extends Component<unknown, IntegratedCircuitState
   }
 
   render() {
-    const { act, data } = useBackend<IntegratedCircuitData>(this.context);
+    const { act, data } = useBackend<IntegratedCircuitData>();
     const {
       circuit_on,
       display_name,
@@ -538,7 +538,7 @@ export class IntegratedCircuit extends Component<unknown, IntegratedCircuitState
           className="IntegratedCircuit__content"
           data-ic-rainbow={this.state.lgbtqRainbowMode ? '' : undefined}
           style={{
-            'background-image': 'none',
+            backgroundImage: 'none',
           }}>
           <Box className="IntegratedCircuit__frame">
             <CircuitToolbar

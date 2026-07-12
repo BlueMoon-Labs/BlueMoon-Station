@@ -1142,6 +1142,10 @@
 	name = "Fade Down"
 	icon_state = "fadedown"
 
+/datum/sprite_accessory/hair_gradient/full
+	name = "Full"
+	icon_state = "full"
+
 /datum/sprite_accessory/hair_gradient/vertical_split
 	name = "Vertical Split"
 	icon_state = "vsplit"

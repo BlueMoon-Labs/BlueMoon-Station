@@ -29,6 +29,16 @@
 			return L
 	return FALSE
 
+/mob/living/carbon/put_in_hand(obj/item/I, hand_index, forced = FALSE, ignore_anim = TRUE)
+	if(!forced && hand_index && length(hand_bodyparts) >= hand_index)
+		var/obj/item/bodypart/arm = hand_bodyparts[hand_index]
+		if(arm && arm.is_disabled() == BODYPART_DISABLED_WOUND)
+			to_chat(src, span_warning("Ваша [arm.ru_name] слишком повреждена, чтобы удержать [I]!"))
+			if(has_pain(arm))
+				emote("agony")
+			return FALSE
+	return ..()
+
 /mob/proc/has_left_hand(check_disabled = TRUE)
 	return TRUE
 

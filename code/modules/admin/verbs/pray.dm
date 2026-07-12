@@ -45,16 +45,17 @@
 			prayer_type = "SPIRITUAL PRAYER"
 
 	var/msg_tmp = message
-	message = "<span class='adminnotice'>[icon2html(cross, GLOB.admins)]<b><font color=[font_color]>[prayer_type][deity ? " (to [deity])" : ""]: </font>[ADMIN_FULLMONTY(src)] [ADMIN_SC(src)]:</b> <span class='linkify'>[message]</span></span>"
+	message = span_message_to_admin("[icon2html(cross, GLOB.admins)]<b><font color=[font_color]>[prayer_type][deity ? " (to [deity])" : ""]: </font>[ADMIN_FULLMONTY(src)] [ADMIN_SC(src)]:</b> <span class='linkify'>[message]</span>")
 
 	for(var/client/C in GLOB.admins)
 		if(C.prefs.chat_toggles & CHAT_PRAYER)
 			to_chat(C, message, confidential = TRUE)
 			if(C.prefs.toggles & SOUND_PRAYERS)
+				var/pray_vol = C.prefs?.get_sound_volume("prayers") || 100
 				if(usr.job == "Chaplain")
-					SEND_SOUND(C, sound('sound/effects/pray.ogg'))
+					SEND_SOUND(C, sound('sound/effects/pray.ogg', volume = pray_vol))
 				else
-					SEND_SOUND(C, sound('sound/effects/ding.ogg'))
+					SEND_SOUND(C, sound('sound/effects/ding.ogg', volume = pray_vol))
 	to_chat(usr, "<span class='info'>You pray to the gods: \"[msg_tmp]\"</span>", confidential = TRUE)
 
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Prayer") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!

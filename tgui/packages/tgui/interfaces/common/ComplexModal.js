@@ -5,12 +5,11 @@ let bodyOverrides = {};
 
 /**
  * Sends a call to BYOND to open a modal
- * @param {any} context The React context
  * @param {string} id The identifier of the modal
  * @param {object=} args The arguments to pass to the modal
  */
-export const modalOpen = (context, id, args) => {
-  const { act, data } = useBackend(context);
+export const modalOpen = (id, args) => {
+  const { act, data } = useBackend();
   const newArgs = Object.assign(data.modal ? data.modal.args : {}, args || {});
 
   act('modal_open', {
@@ -29,8 +28,8 @@ export const modalRegisterBodyOverride = (id, bodyOverride) => {
   bodyOverrides[id] = bodyOverride;
 };
 
-export const modalAnswer = (context, id, answer, args) => {
-  const { act, data } = useBackend(context);
+export const modalAnswer = (id, answer, args) => {
+  const { act, data } = useBackend();
   if (!data.modal) {
     return;
   }
@@ -43,8 +42,8 @@ export const modalAnswer = (context, id, answer, args) => {
   });
 };
 
-export const modalClose = (context, id) => {
-  const { act } = useBackend(context);
+export const modalClose = (id) => {
+  const { act } = useBackend();
   act('modal_close', {
     id: id,
   });
@@ -65,10 +64,9 @@ export const modalClose = (context, id) => {
  * Overriden by a body override registered to the identifier if applicable.
  * Defaults to `message` if not found
  * @param {object} props
- * @param {object} context
  */
-export const ComplexModal = (props, context) => {
-  const { data } = useBackend(context);
+export const ComplexModal = (props) => {
+  const { data } = useBackend();
   if (!data.modal) {
     return;
   }
@@ -86,17 +84,17 @@ export const ComplexModal = (props, context) => {
       icon="arrow-left"
       content="Cancel"
       color="grey"
-      onClick={() => modalClose(context)}
+      onClick={() => modalClose()}
     />
   );
   let overflowY = "auto";
 
   // Different contents depending on the type
   if (bodyOverrides[id]) {
-    modalBody = bodyOverrides[id](data.modal, context);
+    modalBody = bodyOverrides[id](data.modal);
   } else if (type === "input") {
     let curValue = data.modal.value;
-    modalOnEnter = e => modalAnswer(context, id, curValue);
+    modalOnEnter = e => modalAnswer(id, curValue);
     modalBody = (
       <Input
         value={data.modal.value}
@@ -115,7 +113,7 @@ export const ComplexModal = (props, context) => {
           icon="arrow-left"
           content="Cancel"
           color="grey"
-          onClick={() => modalClose(context)}
+          onClick={() => modalClose()}
         />
         <Button
           icon="check"
@@ -123,7 +121,7 @@ export const ComplexModal = (props, context) => {
           color="good"
           float="right"
           m="0"
-          onClick={() => modalAnswer(context, id, curValue)}
+          onClick={() => modalAnswer(id, curValue)}
         />
         <Box clear="both" />
       </Box>
@@ -138,7 +136,7 @@ export const ComplexModal = (props, context) => {
         selected={data.modal.value}
         width="100%"
         my="0.5rem"
-        onSelected={val => modalAnswer(context, id, val)}
+        onSelected={val => modalAnswer(id, val)}
       />
     );
     overflowY = "initial";
@@ -153,7 +151,7 @@ export const ComplexModal = (props, context) => {
           <Flex.Item key={i} flex="1 1 auto">
             <Button
               selected={(i + 1) === parseInt(data.modal.value, 10)}
-              onClick={() => modalAnswer(context, id, i + 1)}>
+              onClick={() => modalAnswer(id, i + 1)}>
               <img src={c} />
             </Button>
           </Flex.Item>
@@ -169,7 +167,7 @@ export const ComplexModal = (props, context) => {
           color="bad"
           float="left"
           mb="0"
-          onClick={() => modalAnswer(context, id, 0)}
+          onClick={() => modalAnswer(id, 0)}
         />
         <Button
           icon="check"
@@ -177,7 +175,7 @@ export const ComplexModal = (props, context) => {
           color="good"
           float="right"
           m="0"
-          onClick={() => modalAnswer(context, id, 1)}
+          onClick={() => modalAnswer(id, 1)}
         />
         <Box clear="both" />
       </Box>

@@ -1,8 +1,16 @@
+#define LUST_MAXIMUM 300
+
 /obj/item/clothing/underwear/briefs/tentacle
 	name = "panties?"
 	icon_state = "panties_slim"
 	var/tired = FALSE
 	var/lust = 0
+	var/timer = 0
+	var/mob/living/carbon/Mob = null
+
+/obj/item/clothing/underwear/briefs/tentacle/Destroy()
+	STOP_PROCESSING(SSobjlw,src)
+	. = ..()
 
 /obj/item/clothing/underwear/briefs/tentacle/random
 	name = "undies"
@@ -12,7 +20,8 @@
 
 /obj/item/clothing/underwear/briefs/tentacle/equipped(mob/living/carbon/M)
 	. = ..()
-	tentacle_panties(M)
+	Mob = M
+	START_PROCESSING(SSobjlw,src)
 
 /obj/item/clothing/underwear/briefs/tentacle/chameleon
 	name = "panties?"
@@ -66,43 +75,68 @@
 	new /obj/item/clothing/underwear/briefs/tentacle/portal(src)
 	new /obj/item/clothing/underwear/briefs/tentacle/chameleon(src)
 
-/obj/item/clothing/underwear/briefs/tentacle/proc/tentacle_panties(mob/living/carbon/human/M, slot)
-	if(!istype(src, M.w_underwear))
+/obj/item/clothing/underwear/briefs/tentacle/process(delta_time)
+	if(Mob == null)
+		STOP_PROCESSING(SSobjlw,src)
 		return
-	while(istype(src, M.w_underwear))
-		if(tired == TRUE)
-			if(activate_after(src, rand(500,1000)))
-				tired = FALSE
 
-		if(activate_after(src, rand(25 ,50)) && tired == FALSE)
-			if(prob(15))
-				if(M.has_penis())
-					to_chat(M, span_userdanger(pick("Движения в уретре сводят меня с ума!", "Вы чувствуете мучительное удовольствие от сильной стимуляции своего члена!")))
-				if(M.has_vagina())
-					to_chat(M, span_userdanger(pick("Сильные фрикции внутри сводят меня с ума!", "Вы чувствуете мучительное удовольствие от сильных фрикций внутри своих дырочек!")))
-				M.client?.plug13.send_emote(PLUG13_EMOTE_GROIN, NORMAL_LUST*2 * 2)
-				M.handle_post_sex(NORMAL_LUST*2, null, M)
-				if(M.client?.prefs.cit_toggles & SEX_JITTER) //By Gardelin0
-					M.Jitter(3)
-				M.Stun(30)
-				M.emote("moan")
-			else
-				if(M.has_penis())
-					to_chat(M, span_love(pick("Я чувствую что-то у своего члена!", "Оно обсасывает мой член!")))
-				if(M.has_vagina())
-					to_chat(M, span_love(pick("Я чувствую что-то внутри!", "Оно движется внутри меня!", "Я ощущаю фрикции в своих дырочках!")))
-				M.client?.plug13.send_emote(PLUG13_EMOTE_GROIN, NORMAL_LUST * 2)
-				M.handle_post_sex(NORMAL_LUST, null, M)
-				if(M.client?.prefs.cit_toggles & SEX_JITTER) //By Gardelin0
-					M.do_jitter_animation()
-			lust += rand(1 ,10)
-			playsound(loc, 'modular_sand/sound/lewd/champ_fingering.ogg', 25, 1, -1)
+	var/mob/living/carbon/human/M = Mob
 
-			if(prob(50) && lust >= 300)
-				tired = TRUE
-				to_chat(M, span_love(pick("Оно меня обкончало!")))
-				visible_message("<font color=purple>Вязкая жидкость вытекает из <b>[src]</b> и стекает по бедрам <b>[M]</b>!</font>")
-				if(M.reagents)
-					M.reagents.add_reagent(/datum/reagent/consumable/semen, 10)
-					M.reagents.add_reagent(/datum/reagent/drug/aphrodisiacplus, 5) //Cum contains hexocrocin
-				new /obj/effect/decal/cleanable/semen(loc)
+	if(!istype(src, M.w_underwear))
+		STOP_PROCESSING(SSobjlw,src)
+		Mob = null
+		return
+
+	timer -= delta_time
+	if(timer >= 0) // chech interval
+		return
+
+	if(tired == TRUE)
+		lust = 0
+		timer = rand(120,300)
+		to_chat(M, span_love(pick("Кажется оно успокоилось.")))
+		tired = FALSE
+
+	if(tired == FALSE)
+		if(prob(15))
+			if(M.has_penis())
+				to_chat(M, span_userdanger(pick("Движения в уретре сводят меня с ума!", "Вы чувствуете мучительное удовольствие от сильной стимуляции своего члена!")))
+			if(M.has_vagina())
+				to_chat(M, span_userdanger(pick("Сильные фрикции внутри сводят меня с ума!", "Вы чувствуете мучительное удовольствие от сильных фрикций внутри своих дырочек!")))
+			M.client?.plug13.send_emote(PLUG13_EMOTE_GROIN, NORMAL_LUST*2 * 2)
+			M.handle_post_sex(NORMAL_LUST*2, null, M)
+			if(M.client?.prefs.cit_toggles & SEX_JITTER) //By Gardelin0
+				M.Jitter(3)
+			M.Stun(30)
+			M.emote("moan")
+		else
+			if(M.has_penis())
+				to_chat(M, span_love(pick("Я чувствую что-то у своего члена!", "Оно обсасывает мой член!")))
+			if(M.has_vagina())
+				to_chat(M, span_love(pick("Я чувствую что-то внутри!", "Оно движется внутри меня!", "Я ощущаю фрикции в своих дырочках!")))
+			M.client?.plug13.send_emote(PLUG13_EMOTE_GROIN, NORMAL_LUST * 2)
+			M.handle_post_sex(NORMAL_LUST, null, M)
+			if(M.client?.prefs.cit_toggles & SEX_JITTER) //By Gardelin0
+				M.do_jitter_animation()
+		lust += rand(1 ,5)
+		playsound(loc, 'modular_sand/sound/lewd/champ_fingering.ogg', 25, 1, -1)
+
+		if(prob(20) && lust >= LUST_MAXIMUM)
+			tired = TRUE
+			to_chat(M, span_love(pick("Оно меня обкончало!")))
+			visible_message("<font color=purple>Вязкая жидкость вытекает из <b>[src]</b> и стекает по бедрам <b>[M]</b>!</font>")
+			if(M.reagents)
+				M.reagents.add_reagent(/datum/reagent/consumable/semen, 10)
+				M.reagents.add_reagent(/datum/reagent/drug/aphrodisiacplus, 5) //Cum contains hexocrocin
+			new /obj/effect/decal/cleanable/semen(loc)
+
+		if(lust < LUST_MAXIMUM * 0.20)
+			timer = rand(5,10)
+		else if(lust < LUST_MAXIMUM * 0.50)
+			timer = rand(2,5)
+		else if(lust < LUST_MAXIMUM * 0.70)
+			timer = rand(0.8,2)
+		else
+			timer = rand(0.2,0.5)
+
+#undef LUST_MAXIMUM

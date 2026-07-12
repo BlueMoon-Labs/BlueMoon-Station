@@ -933,7 +933,7 @@ structure_check() searches for nearby cultist structures required for the invoca
 									  "<span class='cultlarge'>Your link to the world fades. Your form breaks apart.</span>")
 			for(var/obj/item/I in new_human)
 				new_human.dropItemToGround(I, TRUE)
-			new_human.dust()
+			new_human.dust(TRUE)
 	else if(choice == "Ascend as a Dark Spirit")
 		affecting = user
 		affecting.add_atom_colour(RUNE_COLOR_DARKRED, ADMIN_COLOUR_PRIORITY)

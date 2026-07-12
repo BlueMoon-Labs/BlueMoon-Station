@@ -11,11 +11,14 @@
 	can_adjust = FALSE
 	strip_delay = 80
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC
-	var/seamless = FALSE
+
+/obj/item/clothing/under/misc/latex_catsuit/Initialize()
+	. = ..()
+	AddComponent(/datum/component/latex_lockable)
 
 /obj/item/clothing/under/misc/latex_catsuit/attack_hand(mob/living/carbon/human/user)
 	var/mob/living/carbon/human/C = user
-	if(iscarbon(user) && seamless && (src == C.w_uniform))
+	if(iscarbon(user) && HAS_TRAIT(src, TRAIT_NODROP) && (src == C.w_uniform))
 		to_chat(C, span_purple(pick("Your hands uselessly roam across your rubber predicament and you fail to find a seam",
 									"You find it impossible to leverage your fingers beneath the suit.",
 									"The suit almost seems to be tightening away from your pointless clawing")))
@@ -83,15 +86,3 @@
 		C.apply_overlay(BODY_FRONT_LAYER)
 		C.apply_overlay(BODY_ADJ_UPPER_LAYER)
 	C.regenerate_icons() //Just in case
-
-/obj/item/clothing/under/misc/latex_catsuit/MouseDrop(atom/over_object)
-
-/obj/item/clothing/under/misc/latex_catsuit/attackby(obj/item/K, mob/user, params)
-	if(istype(K, /obj/item/key/latex))
-		if(seamless != FALSE)
-			to_chat(user, span_warning("The suit suddenly loosens!"))
-			seamless = FALSE
-		else
-			to_chat(user, span_warning("The suit suddenly tighten!"))
-			seamless = TRUE
-	return

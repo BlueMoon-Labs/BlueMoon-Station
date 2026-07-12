@@ -5,3 +5,4 @@
 		сжигает передатчик с заметным фейерверком. Не сработает на носителе настоящей защиты разума."
 	item = /obj/item/storage/box/syndie_kit/imp_fake_mindshield
 	cost = 2
+	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW

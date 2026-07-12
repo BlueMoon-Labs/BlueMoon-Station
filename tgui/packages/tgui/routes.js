@@ -11,9 +11,16 @@ import { selectDebug } from './debug/selectors';
 import { IS_DEVELOPMENT } from './env';
 import { Window } from './layouts';
 
-const interfaceModules = import.meta.glob('./interfaces/**/*.{js,tsx}', {
-  eager: true,
-});
+const interfaceModules = import.meta.glob(
+  [
+    './interfaces/**/*.{js,tsx}',
+    // Jest test files must never be bundled: a top-level describe() would
+    // crash the whole bundle at boot.
+    '!./interfaces/**/*.{test,spec}.{js,tsx}',
+    '!./interfaces/**/__tests__/**',
+  ],
+  { eager: true },
+);
 const loggedMissingExports = new Set();
 
 const routingError = (type, name) => () => {

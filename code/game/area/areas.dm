@@ -547,6 +547,15 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 			static_light += value
 		if(STATIC_ENVIRON)
 			static_environ += value
+	wake_parked_apc() // the standby baseline this area's APC parked on the powernet went stale
+
+///Ends the standby of this area's APC (see apc_park()): any change in what the area draws
+///invalidates the load it parked on the powernet.
+/area/proc/wake_parked_apc()
+	var/area/root_area = base_area || src
+	var/obj/machinery/power/apc/parked = root_area.power_apc
+	if(parked?.apc_parked)
+		parked.apc_unpark()
 
 /area/proc/clear_usage()
 	used_equip = 0
@@ -566,6 +575,7 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 			used_light += amount
 		if(ENVIRON)
 			used_environ += amount
+	wake_parked_apc() // dynamic draw appeared: the APC must resume billing it per fire
 
 
 /**
@@ -602,7 +612,8 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 		L.client.ambience_playing = 0
 		if(L.client && !L.client.ambience_playing)
 			L.client.ambience_playing = 1
-			SEND_SOUND(L, sound(my_area.shipambience, repeat = 1, wait = 0, volume = 35, channel = CHANNEL_BUZZ))
+			var/buzz_vol = L.client?.prefs?.get_sound_volume("ship_ambience") || 35
+			SEND_SOUND(L, sound(my_area.shipambience, repeat = 1, wait = 0, volume = buzz_vol, channel = CHANNEL_BUZZ))
 
 	if(!(L.client && (L.client.prefs.toggles & SOUND_AMBIENCE)))
 		return //General ambience check is below the ship ambience so one can play without the other

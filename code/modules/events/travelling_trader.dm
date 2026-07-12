@@ -24,10 +24,17 @@
 	//spawn a type of trader
 	var/trader_type = pick(subtypesof(/mob/living/carbon/human/dummy/travelling_trader))
 	trader = new trader_type(get_turf(spawn_location))
+	// При успешной сделке трейдер qdel-ит сам себя (attackby), а ивент-датум жил бы
+	// с висячей ссылкой до конца ивента и держал дамми со всей одеждой от GC
+	RegisterSignal(trader, COMSIG_PARENT_QDELETING, PROC_REF(on_trader_qdeleting))
 	var/datum/effect_system/smoke_spread/smoke = new
 	smoke.set_up(1, spawn_location)
 	smoke.start()
 	trader.visible_message("<b>[trader]</b> suddenly appears in a puff of smoke!")
+
+/datum/round_event/travelling_trader/proc/on_trader_qdeleting(datum/source)
+	SIGNAL_HANDLER
+	trader = null
 
 /datum/round_event/travelling_trader/announce(fake)
 	priority_announce("Таинственная фигура была обнаружена на камерах в [get_area(spawn_location)]", "Таинственная Фигура", has_important_message = !fake)
@@ -35,7 +42,7 @@
 /datum/round_event/travelling_trader/end()
 	if(trader) // the /datum/round_event/travelling_trader has given up on waiting!
 		trader.visible_message("The <b>[trader]</b> has given up on waiting!")
-		qdel(trader)
+		QDEL_NULL(trader) // event-датум переживает конец события и не должен держать дамми
 
 //the actual trader mob
 /mob/living/carbon/human/dummy/travelling_trader //similar to a dummy because we want to be resource-efficient

@@ -3,15 +3,19 @@
 	typepath = /datum/round_event/spawners
 
 	min_players = 1
-	max_occurrences = 0 // base type, no spawn
+	// Шаблонная база: сама не запускается. enabled наследуется, поэтому каждый
+	// конкретный подтип обязан явно ставить enabled = TRUE.
+	enabled = FALSE
 	weight = 5
 	earliest_start = 25 MINUTES
 	category = EVENT_CATEGORY_SPAWNERS
+	severity = DIRECTOR_SEVERITY_MODERATE // портал с угрозами из иных планов - не просто бюрократическая мелочь
 	description = "Don't spawn."
 	admin_setup = list(/datum/event_admin_setup/set_location/spawners)
 
 /datum/round_event_control/spawners/nether
 	name = "Portal in netherworld"
+	enabled = TRUE // база выключена, подтипы включаются явно
 	max_occurrences = 1
 
 /datum/round_event/spawners

@@ -1,6 +1,5 @@
 import { useBackend } from '../../backend';
-import { Box, Button, Dropdown, Icon, Input, NumberInput, Section, Slider, Stack, Table } from '../../components';
-
+import { Box, Button, Dropdown, Icon, Input, NumberInput, Slider, Stack } from '../../components';
 import {
   DIR_ICONS,
   DIR_NAMES,
@@ -13,7 +12,6 @@ import {
   PRECISE_MODE_TARGET,
   SPAWN_LOCATION_ICONS,
   SPAWN_LOCATIONS,
-  TAB_TYPE_COLORS,
 } from './constants';
 import { SpawnPanelData } from './types';
 
@@ -28,8 +26,8 @@ function idxToDir(idx: number): number {
   return DIR_SLIDER_ORDER[idx] ?? DIR_SLIDER_ORDER[0];
 }
 
-export const CreateObjectSettings = (props: any, context: any) => {
-  const { act, data } = useBackend<SpawnPanelData>(context);
+export const CreateObjectSettings = (props: any) => {
+  const { act, data } = useBackend<SpawnPanelData>();
   const {
     selected_object,
     selected_icon,
@@ -89,7 +87,7 @@ export const CreateObjectSettings = (props: any, context: any) => {
     <Box
       style={{
         'background': 'rgba(0,0,0,0.25)',
-        'border-bottom': '1px solid rgba(255,255,255,0.07)',
+        borderBottom: '1px solid rgba(255,255,255,0.07)',
         'padding': '6px 8px',
       }}
     >
@@ -103,19 +101,19 @@ export const CreateObjectSettings = (props: any, context: any) => {
             style={{
               'width': '48px',
               'height': '48px',
-              'image-rendering': 'pixelated',
+              imageRendering: 'pixelated',
               'background': 'rgba(0,0,0,0.45)',
-              'border-radius': '6px',
+              borderRadius: '6px',
               'border': selected_object
                 ? '2px solid rgba(0,200,100,0.7)'
                 : '2px solid rgba(255,255,255,0.08)',
-              'flex-shrink': '0',
+              flexShrink: '0',
             }}
           />
         </Stack.Item>
 
         {/* Name + path */}
-        <Stack.Item grow={1} style={{ 'overflow': 'hidden', 'min-width': '0' }}>
+        <Stack.Item grow={1} style={{ 'overflow': 'hidden', minWidth: '0' }}>
           {selected_object ? (
             <>
               <Box
@@ -123,10 +121,10 @@ export const CreateObjectSettings = (props: any, context: any) => {
                 fontSize="13px"
                 color="#00e87a"
                 style={{
-                  'white-space': 'nowrap',
+                  whiteSpace: 'nowrap',
                   'overflow': 'hidden',
-                  'text-overflow': 'ellipsis',
-                  'line-height': '1.3',
+                  textOverflow: 'ellipsis',
+                  lineHeight: '1.3',
                 }}
               >
                 {displayName}
@@ -135,9 +133,9 @@ export const CreateObjectSettings = (props: any, context: any) => {
                 color="label"
                 fontSize="10px"
                 style={{
-                  'white-space': 'nowrap',
+                  whiteSpace: 'nowrap',
                   'overflow': 'hidden',
-                  'text-overflow': 'ellipsis',
+                  textOverflow: 'ellipsis',
                   'opacity': '0.65',
                 }}
               >
@@ -145,7 +143,7 @@ export const CreateObjectSettings = (props: any, context: any) => {
               </Box>
             </>
           ) : (
-            <Box color="average" fontSize="12px" style={{ 'font-style': 'italic' }}>
+            <Box color="average" fontSize="12px" style={{ fontStyle: 'italic' }}>
               No atom selected
             </Box>
           )}
@@ -167,8 +165,8 @@ export const CreateObjectSettings = (props: any, context: any) => {
                   'height': '24px',
                   'padding': '0',
                   'display': 'flex',
-                  'align-items': 'center',
-                  'justify-content': 'center',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
                 tooltip={needsClick
                   ? (precise_mode === PRECISE_MODE_TARGET ? 'Target mode active — click a tile' : 'Set target tile (needs targeted location)')
@@ -190,8 +188,8 @@ export const CreateObjectSettings = (props: any, context: any) => {
                   'height': '24px',
                   'padding': '0',
                   'display': 'flex',
-                  'align-items': 'center',
-                  'justify-content': 'center',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
                 tooltip={precise_mode === PRECISE_MODE_COPY ? 'Copy mode active — click an atom' : 'Copy atom type by clicking'}
                 onClick={() => togglePrecise(PRECISE_MODE_COPY)}
@@ -208,8 +206,8 @@ export const CreateObjectSettings = (props: any, context: any) => {
                   'height': '24px',
                   'padding': '0',
                   'display': 'flex',
-                  'align-items': 'center',
-                  'justify-content': 'center',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   'color': 'rgba(255,100,100,0.7)',
                 }}
                 tooltip="Clear selection"
@@ -234,15 +232,15 @@ export const CreateObjectSettings = (props: any, context: any) => {
               : 'Сначала выберите объект'}
             style={{
               'height': '48px',
-              'min-width': '72px',
-              'font-size': '15px',
-              'font-weight': 'bold',
-              'letter-spacing': '1px',
+              minWidth: '72px',
+              fontSize: '15px',
+              fontWeight: 'bold',
+              letterSpacing: '1px',
               'display': 'flex',
-              'flex-direction': 'column',
-              'align-items': 'center',
-              'justify-content': 'center',
-              'border-radius': '6px',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '6px',
             }}
             onClick={() => {
               if (needsClick) {
@@ -265,7 +263,7 @@ export const CreateObjectSettings = (props: any, context: any) => {
           >
             <Box>SPAWN</Box>
             {atom_amount > 1 && (
-              <Box style={{ 'font-size': '10px', 'opacity': '0.75', 'font-weight': 'normal', 'letter-spacing': '0' }}>
+              <Box style={{ fontSize: '10px', 'opacity': '0.75', fontWeight: 'normal', letterSpacing: '0' }}>
                 ×{atom_amount}
               </Box>
             )}
@@ -279,7 +277,7 @@ export const CreateObjectSettings = (props: any, context: any) => {
         <Stack.Item>
           <Stack spacing="3px" align="center">
             <Stack.Item>
-              <Box color="label" fontSize="11px" bold style={{ 'white-space': 'nowrap' }}>Amt</Box>
+              <Box color="label" fontSize="11px" bold style={{ whiteSpace: 'nowrap' }}>Amt</Box>
             </Stack.Item>
             <Stack.Item>
               <NumberInput
@@ -298,7 +296,7 @@ export const CreateObjectSettings = (props: any, context: any) => {
         <Stack.Item grow={1}>
           <Stack spacing="3px" align="center">
             <Stack.Item>
-              <Box color="label" fontSize="11px" bold style={{ 'white-space': 'nowrap' }}>Dir</Box>
+              <Box color="label" fontSize="11px" bold style={{ whiteSpace: 'nowrap' }}>Dir</Box>
             </Stack.Item>
             <Stack.Item>
               <Button
@@ -331,7 +329,8 @@ export const CreateObjectSettings = (props: any, context: any) => {
                 selected={offset_type === OFFSET_ABSOLUTE}
                 tooltip="Absolute world coordinates"
                 onClick={() => send({ offset_type: OFFSET_ABSOLUTE })}
-              >A</Button>
+              >A
+              </Button>
             </Stack.Item>
             <Stack.Item>
               <Button
@@ -339,7 +338,8 @@ export const CreateObjectSettings = (props: any, context: any) => {
                 selected={offset_type === OFFSET_RELATIVE}
                 tooltip="Relative to spawn position"
                 onClick={() => send({ offset_type: OFFSET_RELATIVE })}
-              >R</Button>
+              >R
+              </Button>
             </Stack.Item>
           </Stack>
         </Stack.Item>
@@ -382,7 +382,7 @@ export const CreateObjectSettings = (props: any, context: any) => {
             options={SPAWN_LOCATIONS as unknown as string[]}
             selected={where_target_type ?? SPAWN_LOCATIONS[0]}
             onSelected={(val: string) => send({ where_target_type: val })}
-            style={{ 'min-width': '160px' }}
+            style={{ minWidth: '160px' }}
           />
         </Stack.Item>
       </Stack>
@@ -395,12 +395,12 @@ export const CreateObjectSettings = (props: any, context: any) => {
           fontSize="11px"
           color="average"
           style={{
-            'border-left': '3px solid rgba(255,180,0,0.7)',
+            borderLeft: '3px solid rgba(255,180,0,0.7)',
             'background': 'rgba(255,180,0,0.06)',
-            'border-radius': '0 3px 3px 0',
+            borderRadius: '0 3px 3px 0',
           }}
         >
-          <Icon name="circle" color="average" mr={1} style={{ 'font-size': '7px', 'vertical-align': '1px' }} />
+          <Icon name="circle" color="average" mr={1} style={{ fontSize: '7px', verticalAlign: '1px' }} />
           {precise_mode === PRECISE_MODE_TARGET
             ? 'Target mode — click a tile in-game'
             : 'Copy mode — click an atom in-game'}

@@ -4,6 +4,8 @@
   */
 /mob/living/proc/Life(seconds, times_fired)
 	SHOULD_NOT_SLEEP(TRUE)
+	if(QDELETED(src)) // моб qdel-нут посреди фаера SSmobs, но currentrun ещё держит хардреф
+		return
 	if(mob_transforming)
 		return
 

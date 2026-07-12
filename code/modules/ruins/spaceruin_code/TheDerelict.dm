@@ -20,6 +20,7 @@
 /// Vault controller for use on the derelict/KS13.
 /obj/machinery/computer/vaultcontroller
 	name = "vault controller"
+	idle_sleeps = FALSE // own periodic work in process(); must not doze off via the parent typing-indicator path
 	desc = "It seems to be powering and controlling the vault locks."
 	icon_screen = "power"
 	icon_keyboard = "power_key"

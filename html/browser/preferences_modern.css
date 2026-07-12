@@ -87,6 +87,7 @@ body {
 .csetup-root {
 	position: relative;
 	overflow-anchor: none;
+	min-height: 100vh;
 }
 
 .csetup-root.csetup-theme-classic,
@@ -1434,14 +1435,25 @@ body {
 	box-shadow: none;
 }
 
-/* Optional utility classes you can use later for custom buttons */
+/* Undo, Save Setup, Reset Setup */
 .csetup-root.csetup-theme-modern .csetup-btn {
 	display: inline-block;
-	padding: 5px 8px;
+	padding: 5px 12px;
 	border-radius: 8px;
 	background: var(--csetup-panel-2);
-	border: 1px solid var(--csetup-border);
+	border: 1px solid rgba(var(--csetup-accent-rgb, 77, 163, 255), 0.35);
 	color: var(--csetup-text);
+	font-size: 11px;
+	transition: background 0.12s ease, border-color 0.12s ease;
+}
+.csetup-root.csetup-theme-modern .csetup-btn:hover {
+	background: var(--csetup-btn-hover);
+	border-color: rgba(var(--csetup-accent-rgb, 77, 163, 255), 0.7);
+}
+.csetup-root.csetup-theme-modern .csetup-btn:active {
+	background: var(--csetup-btn-active);
+	color: var(--csetup-btn-active-text);
+	border-color: var(--csetup-btn-active);
 }
 
 .csetup-root.csetup-theme-modern .csetup-btn--danger {

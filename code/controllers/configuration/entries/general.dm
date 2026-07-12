@@ -332,7 +332,7 @@
 
 //adds a set amount to any injury rolls on a limb using get_damage() multiplied by this number
 /datum/config_entry/number/wound_damage_multiplier
-	default = 0.333
+	default = 0.4
 	min_val = 0
 	integer = FALSE
 
@@ -394,6 +394,22 @@
 	default = GC_HARDDEL_LOBBY_MAX_PER_FIRE
 	min_val = 1
 
+/// Режим авто-скана ссылок при GC-фейлах: 0 = выкл, 1 = только помеченные типы, 2 = все warnfail.
+/datum/config_entry/number/gc_reftrack_mode
+	default = GC_REFTRACK_OFF
+	min_val = 0
+	max_val = 2
+
+/// Минимальный интервал между авто-сканами ссылок, в секундах.
+/datum/config_entry/number/gc_reftrack_autoscan_cooldown_seconds
+	default = 30
+	min_val = 0
+
+/// Максимум авто-сканов ссылок за раунд.
+/datum/config_entry/number/gc_reftrack_autoscan_max_per_round
+	default = GC_REFTRACK_AUTOSCAN_MAX_PER_ROUND
+	min_val = 0
+
 /datum/config_entry/flag/atmos_equalize_enabled
 	default = FALSE
 
@@ -402,8 +418,6 @@
 	default = 1
 	min_val = 1
 	max_val = 20
-
-/datum/config_entry/flag/dynamic_config_enabled
 
 /datum/config_entry/flag/station_name_needs_approval
 

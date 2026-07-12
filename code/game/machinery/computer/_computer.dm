@@ -23,6 +23,10 @@
 	var/list/typing_users = list() // list(user = last_typing_time)
 	var/typing = FALSE
 	var/datum/looping_sound/computer_typing/soundloop_press
+	/// Plain consoles only process to time out the typing overlay, so let them machine_sleep()
+	/// between keystrokes. Subtypes whose process() does real periodic work MUST set this to
+	/// FALSE, or a `..()` call in their process() will park them off SSmachines for good.
+	var/idle_sleeps = TRUE
 
 /obj/machinery/computer/Initialize(mapload, obj/item/circuitboard/C)
 	. = ..()
@@ -82,6 +86,7 @@
 		return
 
 	typing_users[user] = world.time
+	machine_wake() // resume timing out the typing overlay
 	check_typing()
 
 /obj/machinery/computer/proc/stop_typing(mob/living/user, no_check = FALSE)
@@ -104,6 +109,8 @@
 		soundloop_press.start()
 	else
 		soundloop_press.stop()
+		if(idle_sleeps && !length(typing_users))
+			return machine_sleep() // nothing to time out; start_typing() wakes us back up
 
 /obj/machinery/computer/ratvar_act()
 	if(!clockwork)

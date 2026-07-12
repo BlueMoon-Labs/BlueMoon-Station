@@ -210,27 +210,39 @@
         toggle_nightvision(target)
 
 /obj/effect/proc_holder/spell/targeted/night_vision/proc/toggle_nightvision(mob/living/target)
-	var/original_darksight = initial(target.see_in_dark) // То, как далеко турфов видит моб в полной темноте
-	var/turfs_value = target.lighting_alpha // То, насколько яркие турфы
+	var/original_darksight = initial(target.see_in_dark)
+	var/turfs_value = target.lighting_alpha
+	var/cutoff_value = target.lighting_cutoff
+	var/list/color_cutoffs_value = target.lighting_color_cutoffs
 	var/darksight
 	switch(turfs_value)
 		if(LIGHTING_PLANE_ALPHA_VISIBLE)
 			turfs_value = LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE
+			cutoff_value = LIGHTING_CUTOFF_MEDIUM
+			color_cutoffs_value = list(15, 15, 15)
 			darksight = min(original_darksight, NIGHT_VISION_DARKSIGHT_RANGE)
 			name = "Toggle Nightvision \[More]"
 		if(LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE)
 			turfs_value = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
+			cutoff_value = LIGHTING_CUTOFF_HIGH
+			color_cutoffs_value = list(25, 25, 25)
 			darksight = max(original_darksight, NIGHT_VISION_DARKSIGHT_RANGE)
 			name = "Toggle Nightvision \[Full]"
 		if(LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE)
 			turfs_value = LIGHTING_PLANE_ALPHA_INVISIBLE
+			cutoff_value = LIGHTING_CUTOFF_FULLBRIGHT
+			color_cutoffs_value = list(40, 40, 40)
 			darksight = original_darksight
 			name = "Toggle Nightvision \[OFF]"
 		else
 			turfs_value = LIGHTING_PLANE_ALPHA_VISIBLE
+			cutoff_value = LIGHTING_CUTOFF_VISIBLE
+			color_cutoffs_value = null
 			darksight = max(original_darksight, NIGHT_VISION_DARKSIGHT_RANGE)
 			name = "Toggle Nightvision \[ON]"
 	target.lighting_alpha = turfs_value
+	target.lighting_cutoff = cutoff_value
+	target.lighting_color_cutoffs = color_cutoffs_value
 	target.see_in_dark = darksight
 	target.update_sight(forced = FALSE)
 

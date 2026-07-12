@@ -6,15 +6,23 @@
 
 import { toFixed } from 'common/math';
 import { useDispatch, useSelector } from 'common/redux';
-import { useLocalState } from 'tgui/backend';
+import { useState } from 'react';
 import { Box, Button, Divider, Dropdown, Flex, Input, LabeledList, NumberInput, Section, Stack, Tabs, TextArea } from 'tgui/components';
 
 import { ChatPageSettings } from '../chat';
 import { rebuildChat, saveChatToDisk } from '../chat/actions';
 import { THEMES } from '../themes';
 import { changeSettingsTab, updateSettings } from './actions';
-import { CHAT_ANIM_SPEEDS, CHAT_ANIMATIONS, CHAT_BG_ANIMATIONS, CHAT_STYLES, FONTS, SETTINGS_TABS, TEXT_GLOW_OPTIONS, TIME_DIVIDER_INTERVALS, TIMESTAMP_FORMATS } from './constants';
+import { CHAT_ANIM_SPEEDS, CHAT_ANIMATIONS, CHAT_BG_ANIMATIONS, CHAT_STYLES, FONTS, MESSAGE_STYLE_ANIMATIONS, MESSAGE_STYLE_FONTS, MESSAGE_STYLES, SETTINGS_TABS, TEXT_GLOW_OPTIONS, TIME_DIVIDER_INTERVALS, TIMESTAMP_FORMATS } from './constants';
 import { selectActiveTab, selectSettings } from './selectors';
+
+// React's onChange fires continuously while dragging inside the color
+// dialog; debounce so we do not rewrite stored settings on every tick.
+const colorCommitTimers = new WeakMap();
+const debouncedColorCommit = (input, commit) => {
+  clearTimeout(colorCommitTimers.get(input));
+  colorCommitTimers.set(input, setTimeout(() => commit(input.value), 250));
+};
 
 /**
  * Color input with a native color picker and text field.
@@ -37,11 +45,11 @@ const ColorInput = (props) => {
             'height': '22px',
             'padding': '0',
             'border': '1px solid rgba(255,255,255,0.2)',
-            'border-radius': '2px',
+            borderRadius: '2px',
             'background': 'transparent',
             'cursor': 'pointer',
           }}
-          onChange={e => onChange(e.target.value)}
+          onChange={e => debouncedColorCommit(e.target, onChange)}
         />
       </Stack.Item>
       <Stack.Item>
@@ -66,9 +74,9 @@ const ColorInput = (props) => {
   );
 };
 
-export const SettingsPanel = (props, context) => {
-  const activeTab = useSelector(context, selectActiveTab);
-  const dispatch = useDispatch(context);
+export const SettingsPanel = (props) => {
+  const activeTab = useSelector(selectActiveTab);
+  const dispatch = useDispatch();
   return (
     <Stack fill>
       <Stack.Item>
@@ -94,6 +102,9 @@ export const SettingsPanel = (props, context) => {
         {activeTab === 'appearance' && (
           <SettingsAppearance />
         )}
+        {activeTab === 'textStyles' && (
+          <SettingsTextStyles />
+        )}
         {activeTab === 'chatPage' && (
           <ChatPageSettings />
         )}
@@ -102,7 +113,7 @@ export const SettingsPanel = (props, context) => {
   );
 };
 
-export const SettingsGeneral = (props, context) => {
+export const SettingsGeneral = (props) => {
   const {
     theme,
     fontFamily,
@@ -117,9 +128,9 @@ export const SettingsGeneral = (props, context) => {
     timestampFormat,
     enableTimeDividers,
     timeDividerInterval,
-  } = useSelector(context, selectSettings);
-  const dispatch = useDispatch(context);
-  const [freeFont, setFreeFont] = useLocalState(context, "freeFont", false);
+  } = useSelector(selectSettings);
+  const dispatch = useDispatch();
+  const [freeFont, setFreeFont] = useState(false);
   const selectedTsFormat = TIMESTAMP_FORMATS.find(
     f => f.id === timestampFormat);
   const selectedDivInterval = TIME_DIVIDER_INTERVALS.find(
@@ -326,7 +337,204 @@ export const SettingsGeneral = (props, context) => {
   );
 };
 
-export const SettingsAppearance = (props, context) => {
+// Инлайн-стиль превью: настройки применяются к чату через переменные
+// и динамическую таблицу на корне .Chat, панель настроек ими не
+// покрывается, поэтому превью собирает те же значения инлайном.
+const getStylePreviewStyle = (override, spanAnimations) => {
+  if (!override || override.disabled) {
+    return undefined;
+  }
+  const style = {};
+  if (override.color) {
+    style['color'] = override.color;
+  }
+  if (override.font === 'normal') {
+    style['fontWeight'] = 'normal';
+    style['fontStyle'] = 'normal';
+  }
+  else if (override.font === 'italic') {
+    style['fontWeight'] = 'normal';
+    style['fontStyle'] = 'italic';
+  }
+  else if (override.font === 'bold') {
+    style['fontWeight'] = 'bold';
+    style['fontStyle'] = 'normal';
+  }
+  else if (override.font === 'bolditalic') {
+    style['fontWeight'] = 'bold';
+    style['fontStyle'] = 'italic';
+  }
+  const size = parseFloat(override.size);
+  if (size && size !== 100) {
+    style['fontSize'] = Math.min(200, Math.max(50, size)) + '%';
+  }
+  // Как и в чате (.Chat--fxAnimOff), глобальный тумблер гасит
+  // пользовательские анимации и в превью.
+  if (spanAnimations !== false) {
+    const anim = MESSAGE_STYLE_ANIMATIONS.find(a => a.id === override.anim);
+    if (anim?.css) {
+      style['animation'] = anim.css;
+    }
+  }
+  return Object.keys(style).length > 0 ? style : undefined;
+};
+
+const MessageStyleRow = (props) => {
+  const { style, override, setOverride, spanAnimations } = props;
+  const selectedFont = MESSAGE_STYLE_FONTS.find(
+    f => f.id === (override.font || ''));
+  const selectedAnim = MESSAGE_STYLE_ANIMATIONS.find(
+    a => a.id === (override.anim || ''));
+  return (
+    <Box mb={1.5}>
+      <Stack align="center" mb={0.5}>
+        <Stack.Item grow>
+          <Box as="span" bold color="label" mr={1}>
+            {style.name}:
+          </Box>
+          {!override.disabled && (
+            <Box
+              as="span"
+              className={style.id}
+              style={getStylePreviewStyle(override, spanAnimations)}>
+              {style.example}
+            </Box>
+          ) || (
+            <Box as="span">
+              {style.example}
+            </Box>
+          )}
+        </Stack.Item>
+        <Stack.Item shrink={0}>
+          <Button.Checkbox
+            checked={!!override.disabled}
+            tooltip="Показывать как обычный текст"
+            onClick={() => setOverride(style.id, {
+              disabled: !override.disabled,
+            })}>
+            Откл.
+          </Button.Checkbox>
+        </Stack.Item>
+      </Stack>
+      {!override.disabled && (
+        <Flex wrap align="center">
+          <Flex.Item mr={1} mb={0.5}>
+            <ColorInput
+              value={override.color || ''}
+              placeholder="авто"
+              onChange={v => setOverride(style.id, {
+                color: v,
+              })}
+              onClear={() => setOverride(style.id, {
+                color: '',
+              })}
+            />
+          </Flex.Item>
+          <Flex.Item mr={1} mb={0.5}>
+            <Dropdown
+              width="8em"
+              selected={selectedFont?.name || MESSAGE_STYLE_FONTS[0].name}
+              options={MESSAGE_STYLE_FONTS.map(f => f.name)}
+              onSelected={value => {
+                const font = MESSAGE_STYLE_FONTS.find(f => f.name === value);
+                setOverride(style.id, {
+                  font: font?.id || '',
+                });
+              }}
+            />
+          </Flex.Item>
+          <Flex.Item mr={1} mb={0.5}>
+            <NumberInput
+              width="5.5em"
+              step={5}
+              stepPixelSize={4}
+              minValue={50}
+              maxValue={200}
+              unit="%"
+              value={parseFloat(override.size) || 100}
+              format={value => toFixed(value)}
+              onChange={(e, value) => setOverride(style.id, {
+                size: value,
+              })}
+            />
+          </Flex.Item>
+          <Flex.Item mb={0.5}>
+            <Dropdown
+              width="8em"
+              selected={selectedAnim?.name || MESSAGE_STYLE_ANIMATIONS[0].name}
+              options={MESSAGE_STYLE_ANIMATIONS.map(a => a.name)}
+              onSelected={value => {
+                const anim = MESSAGE_STYLE_ANIMATIONS.find(
+                  a => a.name === value);
+                setOverride(style.id, {
+                  anim: anim?.id || '',
+                });
+              }}
+            />
+          </Flex.Item>
+        </Flex>
+      )}
+    </Box>
+  );
+};
+
+export const SettingsTextStyles = (props) => {
+  const {
+    styleOverrides,
+    spanAnimations,
+  } = useSelector(selectSettings);
+  const dispatch = useDispatch();
+  const setOverride = (styleId, patch) => {
+    const prevEntry = styleOverrides?.[styleId] || {};
+    dispatch(updateSettings({
+      styleOverrides: {
+        ...styleOverrides,
+        [styleId]: {
+          ...prevEntry,
+          ...patch,
+        },
+      },
+    }));
+  };
+  return (
+    <Section>
+      <Box color="label" mb={1}>
+        Настройте вид частых стилей сообщений под себя: цвет,
+        начертание, размер и анимацию - или полностью стандартный
+        текст. Пустой цвет и вариант Тема = как в оформлении темы.
+      </Box>
+      {MESSAGE_STYLES.map(style => (
+        <MessageStyleRow
+          key={style.id}
+          style={style}
+          override={styleOverrides?.[style.id] || {}}
+          setOverride={setOverride}
+          spanAnimations={spanAnimations}
+        />
+      ))}
+      <Divider />
+      <Button.Checkbox
+        checked={spanAnimations !== false}
+        tooltip="Мерцание и пульсация особых стилей: гипноз, глитч ИИ, помехи, делам и т.п. Выключает и ваши анимации выше."
+        onClick={() => dispatch(updateSettings({
+          spanAnimations: spanAnimations === false,
+        }))}>
+        Анимации особых стилей
+      </Button.Checkbox>
+      <Divider />
+      <Button
+        icon="undo"
+        onClick={() => dispatch(updateSettings({
+          styleOverrides: {},
+          spanAnimations: true,
+        }))}>
+        Сбросить стили текста
+      </Button>
+    </Section>
+  );
+};
+
+export const SettingsAppearance = (props) => {
   const {
     chatStyle,
     chatAnimation,
@@ -344,8 +552,8 @@ export const SettingsAppearance = (props, context) => {
     fontWeight,
     letterSpacing,
     borderRadius,
-  } = useSelector(context, selectSettings);
-  const dispatch = useDispatch(context);
+  } = useSelector(selectSettings);
+  const dispatch = useDispatch();
   const selectedStyle = CHAT_STYLES.find(s => s.id === chatStyle);
   const selectedAnim = CHAT_ANIMATIONS.find(a => a.id === chatAnimation);
   const selectedSpeed = CHAT_ANIM_SPEEDS.find(s => s.id === chatAnimSpeed);

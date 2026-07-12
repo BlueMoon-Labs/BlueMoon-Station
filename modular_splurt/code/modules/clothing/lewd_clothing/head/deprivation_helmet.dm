@@ -24,7 +24,6 @@
 	var/earmuffs = FALSE
 	var/prevent_vision = FALSE
 	var/color_changed = FALSE
-	var/seamless = FALSE
 
 	var/static/list/helmet_designs
 	actions_types = list(/datum/action/item_action/toggle_vision, /datum/action/item_action/toggle_hearing, /datum/action/item_action/toggle_speech)
@@ -189,6 +188,11 @@
 	update_action_buttons_icons()
 	if(!length(helmet_designs))
 		populate_helmet_designs()
+	AddComponent(/datum/component/latex_lockable, FALSE, list(
+		"You roam your hands around the helmet for some sort of release!",
+		"You find it impossible to leverage your fingers underneath the helmet",
+		"The durable material seems to reflect your pointless force.",
+	))
 
 //updating both and icon in hands and icon worn
 /obj/item/clothing/head/helmet/space/deprivation_helmet/update_icon_state()
@@ -238,26 +242,6 @@
 			to_chat(user, span_purple("Finally you can hear the world around you once more."))
 		if(prevent_vision == TRUE)
 			to_chat(user, span_purple("The helmet no longer restricts your vision."))
-
-/obj/item/clothing/head/helmet/space/deprivation_helmet/attack_hand(mob/living/carbon/human/user)
-	if(iscarbon(user) && seamless && (user.get_item_by_slot(ITEM_SLOT_HEAD) == src))
-		to_chat(user, span_purple(pick("You roam your hands around the helmet for some sort of release!",
-									"You find it impossible to leverage your fingers underneath the helmet",
-									"The durable material seems to reflect your pointless force.")))
-		return
-	. = ..()
-
-/obj/item/clothing/head/helmet/space/deprivation_helmet/MouseDrop(atom/over_object)
-
-/obj/item/clothing/head/helmet/space/deprivation_helmet/attackby(obj/item/K, mob/user, params)
-	if(istype(K, /obj/item/key/latex))
-		if(seamless != FALSE)
-			to_chat(user, span_warning("The latches suddenly loosen"))
-			seamless = FALSE
-		else
-			to_chat(user, span_warning("The latches suddenly tighten!"))
-			seamless = TRUE
-	return
 
 #undef NO_MUZZLE
 #undef HALF_MUZZLE

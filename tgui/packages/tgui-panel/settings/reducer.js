@@ -35,6 +35,9 @@ const initialState = {
   fontWeight: 400,
   letterSpacing: 0,
   borderRadius: 8,
+  // Кастомизация стилей сообщений: { [styleId]: { color, disabled } }
+  styleOverrides: {},
+  spanAnimations: true,
   // Timestamps & time dividers
   enableTimestamps: false,
   timestampFormat: 'hm',

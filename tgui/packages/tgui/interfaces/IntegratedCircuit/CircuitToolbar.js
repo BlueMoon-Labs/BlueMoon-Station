@@ -49,7 +49,7 @@ export const CircuitToolbar = (props) => {
             className={powered
               ? 'IntegratedCircuit__chip IntegratedCircuit__chip--on'
               : 'IntegratedCircuit__chip IntegratedCircuit__chip--off'}>
-            <Icon name="power-off" style={{ 'margin-right': '0.35em' }} />
+            <Icon name="power-off" style={{ marginRight: '0.35em' }} />
             {powered ? 'Плата вкл.' : 'Плата выкл.'}
           </Box>
         </Stack.Item>
@@ -59,7 +59,7 @@ export const CircuitToolbar = (props) => {
             title={ieBatteryPercent !== undefined
               ? 'Считаются только микросхемы (чипы с интегрального принтера). Батарея — отдельно.'
               : undefined}>
-            <Icon name="microchip" style={{ 'margin-right': '0.35em' }} />
+            <Icon name="microchip" style={{ marginRight: '0.35em' }} />
             {ieBatteryPercent !== undefined ? (
               <Box as="span" color="#ff79c6">
                 Чипов (принтер)
@@ -75,7 +75,7 @@ export const CircuitToolbar = (props) => {
             <Box
               className="IntegratedCircuit__chip IntegratedCircuit__chip--muted"
               title="Занято места: сумма размеров (size) всех чипов. Максимум — запас корпуса; при переполнении нельзя вставить деталь.">
-              <Icon name="expand-arrows-alt" style={{ 'margin-right': '0.35em' }} />
+              <Icon name="expand-arrows-alt" style={{ marginRight: '0.35em' }} />
               Размер:{' '}
               <Box as="span" color={sizeFull ? '#ff5555' : undefined}>
                 <b>
@@ -91,7 +91,7 @@ export const CircuitToolbar = (props) => {
             <Box
               className="IntegratedCircuit__chip IntegratedCircuit__chip--muted"
               title="Сумма сложностей всех чипов. Максимум задаёт корпус; при переполнении схема слишком сложная для этого кейса.">
-              <Icon name="project-diagram" style={{ 'margin-right': '0.35em' }} />
+              <Icon name="project-diagram" style={{ marginRight: '0.35em' }} />
               Сложность:{' '}
               <Box as="span" color={complexityFull ? '#ff5555' : undefined}>
                 <b>
@@ -108,7 +108,7 @@ export const CircuitToolbar = (props) => {
               <Box
                 className="IntegratedCircuit__chip IntegratedCircuit__chip--muted"
                 title="Элемент питания в отсеке батареи, не логический чип.">
-                <Icon name="battery-half" style={{ 'margin-right': '0.35em' }} />
+                <Icon name="battery-half" style={{ marginRight: '0.35em' }} />
                 Батарея:{' '}
                 <b>{ieBatteryPercent === null ? 'нет' : `${ieBatteryPercent}%`}</b>
               </Box>
@@ -130,7 +130,7 @@ export const CircuitToolbar = (props) => {
               <Box
                 className="IntegratedCircuit__chip IntegratedCircuit__chip--muted"
                 title="Элемент питания платы (wiremod).">
-                <Icon name="battery-half" style={{ 'margin-right': '0.35em' }} />
+                <Icon name="battery-half" style={{ marginRight: '0.35em' }} />
                 Ячейка:{' '}
                 <b>{circuitCellPercent === null ? 'нет' : `${circuitCellPercent}%`}</b>
               </Box>
@@ -149,7 +149,7 @@ export const CircuitToolbar = (props) => {
         {!!showVariableChip && (
           <Stack.Item>
             <Box className="IntegratedCircuit__chip IntegratedCircuit__chip--muted">
-              <Icon name="database" style={{ 'margin-right': '0.35em' }} />
+              <Icon name="database" style={{ marginRight: '0.35em' }} />
               Переменных: <b>{variableCount}</b>
             </Box>
           </Stack.Item>
@@ -194,7 +194,7 @@ export const CircuitToolbar = (props) => {
         )}
         <Stack.Item>
           <Box className="IntegratedCircuit__chip IntegratedCircuit__chip--muted">
-            <Icon name="search-plus" style={{ 'margin-right': '0.35em' }} />
+            <Icon name="search-plus" style={{ marginRight: '0.35em' }} />
             Масштаб: <b>{zoomPercent}</b>%
           </Box>
         </Stack.Item>
@@ -241,7 +241,7 @@ export const CircuitToolbar = (props) => {
             }>
             <Icon
               name="mouse-pointer"
-              style={{ 'margin-right': '0.35em', opacity: 0.75 }}
+              style={{ marginRight: '0.35em', opacity: 0.75 }}
             />
             Поле · ЛКМ — сдвиг · +/− — зум · связь выход→вход · ПКМ — снять
           </Box>

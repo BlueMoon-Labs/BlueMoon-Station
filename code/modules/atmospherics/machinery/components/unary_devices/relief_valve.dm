@@ -51,12 +51,23 @@
 		update_icon_nopipes()
 	if(opened)
 		var/datum/gas_mixture/environment = loc.return_air()
+		if(!environment)
+			return
 		var/pressure_delta = abs(our_pressure - environment.return_pressure())
 		if(pressure_delta > 0.1)
-			equalize_all_gases_in_list(list(air_contents,environment))
-			air_update_turf()
-
-			update_parents()
+			var/active = FALSE
+			if(environment.gc_share)
+				if(our_pressure > environment.return_pressure())
+					var/total_volume = air_contents.return_volume() + environment.return_volume()
+					var/vent_fraction = total_volume > 0 ? clamp(environment.return_volume() / total_volume, 0, 1) : 0
+					if(vent_fraction > 0)
+						active = air_contents.vent_ratio(vent_fraction)
+			else
+				equalize_all_gases_in_list(list(air_contents,environment))
+				active = TRUE
+			if(active)
+				air_update_turf()
+				update_parents()
 
 /obj/machinery/atmospherics/components/unary/relief_valve/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)

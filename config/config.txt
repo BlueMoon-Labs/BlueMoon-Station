@@ -21,7 +21,6 @@ $include entries/connections.txt
 $include entries/dbconfig.txt
 $include entries/debris.txt
 $include entries/donator.txt
-$include entries/dynamic.txt
 $include entries/fetish_content.txt
 $include entries/gamemodes.txt
 $include entries/general.txt

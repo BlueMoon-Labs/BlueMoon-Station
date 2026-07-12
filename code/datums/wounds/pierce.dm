@@ -176,11 +176,11 @@
 	occur_text = "извергает тонкую струйку крови"
 	sound_effect = 'sound/effects/wounds/pierce1.ogg'
 	severity = WOUND_SEVERITY_MODERATE
-	initial_flow = 1.4
+	initial_flow = 1.75
 	gauzed_clot_rate = 0.8
-	internal_bleeding_chance = 45
+	internal_bleeding_chance = 55
 	internal_bleeding_coefficient = 1.1
-	threshold_minimum = 40
+	threshold_minimum = 32
 	threshold_penalty = 8
 	status_effect_type = /datum/status_effect/wound/pierce/moderate
 	scar_keyword = "piercemoderate"
@@ -209,11 +209,11 @@
 	occur_text = "выплескивает струю крови, обнажая сквозную рану"
 	sound_effect = 'sound/effects/wounds/pierce2.ogg'
 	severity = WOUND_SEVERITY_SEVERE
-	initial_flow = 1.8
+	initial_flow = 2.25
 	gauzed_clot_rate = 0.6
-	internal_bleeding_chance = 65
+	internal_bleeding_chance = 75
 	internal_bleeding_coefficient = 1.3
-	threshold_minimum = 65
+	threshold_minimum = 55
 	threshold_penalty = 15
 	status_effect_type = /datum/status_effect/wound/pierce/severe
 	scar_keyword = "piercesevere"
@@ -243,11 +243,11 @@
 	occur_text = "разрывается, разбрасывая вокруг обломки костей и плоти"
 	sound_effect = 'sound/effects/wounds/pierce3.ogg'
 	severity = WOUND_SEVERITY_CRITICAL
-	initial_flow = 2.75
+	initial_flow = 3.35
 	gauzed_clot_rate = 0.4
-	internal_bleeding_chance = 80
+	internal_bleeding_chance = 90
 	internal_bleeding_coefficient = 1.6
-	threshold_minimum = 95
+	threshold_minimum = 85
 	threshold_penalty = 20
 	status_effect_type = /datum/status_effect/wound/pierce/critical
 	scar_keyword = "piercecritical"
@@ -267,3 +267,52 @@
 
 	return ..()
 // BLUEMOON ADD END
+
+/datum/wound/pierce/severe/eye
+	name = "Eyeball Puncture"
+	ru_name = "Прокол глаза"
+	ru_name_r = "прокола глаза"
+	desc = "Глаз пациента сильно повреждён, из глазницы идёт обильное кровотечение."
+	treat_text = "Перекрыть кровотечение бинтом или прижиганием, затем оказать офтальмологическую помощь."
+	examine_desc = "имеет проколотый глаз, из глазницы хлещет кровь"
+	occur_text = "выплёскивает струю крови, обнажая раздавленный глаз"
+	viable_zones = list(BODY_ZONE_HEAD)
+	/// TRUE = right eye overlay, FALSE = left
+	var/right_side = FALSE
+
+/datum/wound/pierce/severe/eye/apply_wound(obj/item/bodypart/L, silent, datum/wound/old_wound, smited, right_side)
+	if(!istype(L) || !L.owner)
+		qdel(src)
+		return FALSE
+	var/obj/item/organ/eyes/eyes = L.owner.getorganslot(ORGAN_SLOT_EYES)
+	if(!istype(eyes))
+		qdel(src)
+		return FALSE
+	if(!isnull(right_side))
+		src.right_side = right_side
+	else
+		src.right_side = prob(50)
+	examine_desc = "имеет проколотый [src.right_side ? "правый" : "левый"] глаз, из глазницы хлещет кровь"
+	. = ..()
+	if(QDELETED(src) || !limb)
+		return FALSE
+	RegisterSignal(limb, COMSIG_BODYPART_UPDATE_WOUND_OVERLAY, PROC_REF(wound_overlay))
+	limb.update_part_wound_overlay()
+	return TRUE
+
+/datum/wound/pierce/severe/eye/remove_wound(ignore_limb, replaced)
+	if(!isnull(limb))
+		UnregisterSignal(limb, COMSIG_BODYPART_UPDATE_WOUND_OVERLAY)
+	return ..()
+
+/datum/wound/pierce/severe/eye/proc/wound_overlay(obj/item/bodypart/source, limb_bleed_rate)
+	SIGNAL_HANDLER
+
+	if(limb_bleed_rate <= BLEED_OVERLAY_LOW || limb_bleed_rate > BLEED_OVERLAY_GUSH)
+		return
+
+	if(blood_flow <= BLEED_OVERLAY_LOW)
+		return
+
+	source.bleed_overlay_icon = right_side ? "r_eye" : "l_eye"
+	return COMPONENT_PREVENT_WOUND_OVERLAY_UPDATE

@@ -26,10 +26,10 @@
 
 /datum/antagonist/heretic/greet()
 	owner.current.playsound_local(get_turf(owner.current), 'sound/ambience/antag/ecult_op.ogg', 100, FALSE, pressure_affected = FALSE)//subject to change
-	to_chat(owner, "<span class='boldannounce'>Ты Еретик!</span><br>\
+	to_chat(owner, "<span class='eldritch_big'>Ты Еретик!</span><br>\
 	<B>Забытые боги дали вам следующие задания:</B>")
 	owner.announce_objectives()
-	to_chat(owner, "<span class='cult'>Книга шепчет мне, её запретные знания вновь появились в этом мире!<br>\
+	to_chat(owner, "<span class='eldritch'>Книга шепчет мне, её запретные знания вновь появились в этом мире!<br>\
 	Книга позволит мне исследовать новые способности. Нужно читать очень внимательно, ибо то что сделано уже не вернуть!<br>\
 	Я получу нужные мне знания собирая их из разломов или принося в жертву цели которое укажет мне живое сердце.<br> \
 	Основное руководство : https://tgstation13.org/wiki/Heresy_101 </span>")

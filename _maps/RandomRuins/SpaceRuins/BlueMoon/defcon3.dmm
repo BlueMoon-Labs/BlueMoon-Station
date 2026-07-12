@@ -4703,7 +4703,7 @@
 /obj/effect/turf_decal/tile/brown/half{
 	dir = 4
 	},
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/mineral/equipment_vendor/golem,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/mining)
 "Bp" = (
@@ -8353,8 +8353,10 @@
 /obj/item/storage/box/firingpins,
 /obj/item/gun/ballistic/automatic/pistol/deagle/camo,
 /obj/item/gun/ballistic/automatic/pistol/deagle/camo,
-/obj/item/ammo_box/magazine/m357/dumdum,
-/obj/item/ammo_box/magazine/m357/dumdum,
+/obj/item/ammo_box/magazine/m50,
+/obj/item/ammo_box/magazine/m50,
+/obj/item/ammo_box/magazine/m50,
+/obj/item/ammo_box/magazine/m50,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/storage)
 "Xg" = (

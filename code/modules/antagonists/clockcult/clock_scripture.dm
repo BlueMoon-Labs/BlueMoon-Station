@@ -9,9 +9,9 @@ Judgement 80k power or nine converts
 */
 
 /datum/clockwork_scripture
-	var/descname = "useless" //a simple name for the scripture's effect
+	var/descname = "бесполезное" //a simple name for the scripture's effect
 	var/name = "scripture"
-	var/desc = "Ancient Ratvarian lore. This piece seems particularly mundane."
+	var/desc = "Древние ратварские писания. Эта часть кажется особенно обыденной."
 	var/list/invocations = list() //Spoken over time in the ancient language of Ratvar. See clock_unsorted.dm for more details on the language and how to make it.
 	var/chanting = FALSE //If the invocation's words are being spoken
 	var/channel_time = 10 //In deciseconds, how long a ritual takes to chant
@@ -21,7 +21,7 @@ Judgement 80k power or nine converts
 	var/obj/item/clockwork/slab/slab //The parent clockwork slab
 	var/mob/living/invoker //The slab's holder
 	var/whispered = FALSE //If the invocation is whispered rather than spoken aloud
-	var/usage_tip = "This piece seems to serve no purpose and is a waste of components." //A generalized tip that gives advice on a certain scripture
+	var/usage_tip = "Эта деталь, по-видимому, не служит никакой цели и является пустой тратой компонентов." //A generalized tip that gives advice on a certain scripture
 	var/invokers_required = 1 //How many people are required, assuming that a scripture requires multiple
 	var/multiple_invokers_used = FALSE //If scripture requires more than one invoker
 	var/multiple_invokers_optional = FALSE //If scripture can have multiple invokers to bolster its effects
@@ -29,22 +29,22 @@ Judgement 80k power or nine converts
 	var/category = SCRIPTURE_CATEGORY_SUPPORT //Functional category shown in the slab UI
 	var/hidden_from_ui = FALSE //If TRUE, this scripture is hidden from the slab interface
 	var/quickbind = FALSE //if this scripture can be quickbound to a clockwork slab
-	var/quickbind_desc = "This shouldn't be quickbindable. File a bug report!"
+	var/quickbind_desc = "Это не должно быть доступно для быстрой привязки. Отправьте баг-репорт!"
 	var/primary_component
 	var/important = FALSE //important scripture will be italicized in the slab's interface
 	var/sort_priority = 1 //what position the scripture should have in a list of scripture. Should be based off of component costs/reqs, but you can't initial() lists.
 	var/requires_full_power = FALSE		//requires the user to be a full, non neutered servant of ratvar
 
 //messages for offstation scripture recital, courtesy ratvar's generals(and neovgre)
-	var/static/list/neovgre_penalty = list("Go to the station.", "Useless.", "Don't waste time.", "Pathetic.", "Wasteful.")
-	var/static/list/inathneq_penalty = list("Child, this is too far out!", "The barrier isn't thin enough for for me to help!", "Please, go to the station so I can assist you.", \
-	"Don't waste my Cogs on this...", "There isn't enough time to linger out here!")
-	var/static/list/sevtug_penalty = list("Fool! Get to the station and don't waste capacitors.", "You go this far out and expect help?", "The veil is too strong, idiot.", \
-	"How does the Justicar get anything done with servants like you?", "Oh, you love wasting time, don't you?")
-	var/static/list/nezbere_penalty = list("You disgrace our master's name with this endeavour.", "This is too far from the station to be a good base.", "This will take too long, friend.", \
-	"The barrier isn't weakened enough to make this practical.", "Don't waste alloy.")
-	var/static/list/nzcrentr_penalty = list("You'd be easy to hunt in that little hunk of metal.", "Boss says you need to get back to the beacon.", "Boss says I can kill you if you do this again.", \
-	"Sending you power is too difficult here.", "Boss says stop wasting time.")
+	var/static/list/neovgre_penalty = list("Иди на станцию.", "Бесполезность.", "Не трать время.", "Жалкий.", "Затратный.")
+	var/static/list/inathneq_penalty = list("Дитя, это слишком далеко заходит!", "Барьер недостаточно тонок, чтобы я мог помочь!", "Пожалуйста, иди на станцию, чтобы я мог тебе помочь.", \
+	"Не трать мои Шестерни на это...", "У нас нет времени здесь задерживаться!")
+	var/static/list/sevtug_penalty = list("Идиот! Доберись до станции и не трать зря конденсаторы.", "Ты зашел так далеко и ждешь помощи?", "Завеса слишком плотная, идиот.", \
+	"Как Юстициар справляется с такими слугами, как ты?", "Ох, тебе нравится тратить время впустую, не так ли?")
+	var/static/list/nezbere_penalty = list("Этим поступком ты позоришь имя нашего хозяина.", "Это слишком далеко от станции, чтобы быть хорошей базой.", "Это займет слишком много времени, друг.", \
+	"Барьер не настолько ослаблен, чтобы сделать это практичным.", "Не трать сплав впустую.")
+	var/static/list/nzcrentr_penalty = list("На тебя было бы легко охотиться в этом маленьком куске металла.", "Босс сказал, что тебе нужно вернуться на маяк.", "Босс говорит, что я могу убить тебя, если ты сделаешь это снова.", \
+	"Посылать тебе энергию здесь слишком сложно.", "Босс говорит, хватит тратить время впустую.")
 
 /datum/clockwork_scripture/New()
 	creation_update()
@@ -56,10 +56,10 @@ Judgement 80k power or nine converts
 	var/successful = FALSE
 	if(can_recite() && has_requirements())
 		if(slab.busy)
-			to_chat(invoker, "<span class='warning'>[slab] refuses to work, displaying the message: \"[slab.busy]!\"</span>")
+			to_chat(invoker, "<span class='warning'>[slab] отказывается работать, выводя на экран сообщение: \"[slab.busy]!\"</span>")
 			return FALSE
 		pre_recital()
-		slab.busy = "Invocation ([name]) in progress"
+		slab.busy = "Вызов([name]) в процессе"
 		if(GLOB.ratvar_awakens)
 			channel_time *= 0.5 //if ratvar has awoken, half channel time and no cost
 		else if(!slab.no_cost)
@@ -82,10 +82,10 @@ Judgement 80k power or nine converts
 	if(!invoker || !slab || invoker.get_active_held_item() != slab)
 		return FALSE
 	if(!is_servant_of_ratvar(invoker, requires_full_power))
-		to_chat(invoker, "<span class='warning'>You aren't strongly connected enough to Ratvar to invoke this!</span>")
+		to_chat(invoker, "<span class='warning'>Вы недостаточно сильно связаны с Ратваром, чтобы вызвать это!</span>")
 		return FALSE
 	if(!invoker.can_speak_vocal())
-		to_chat(invoker, "<span class='warning'>You are unable to speak the words of the scripture!</span>")
+		to_chat(invoker, "<span class='warning'>Вы не в состоянии произнести слова Священного Писания!</span>")
 		return FALSE
 	return TRUE
 
@@ -94,7 +94,7 @@ Judgement 80k power or nine converts
 	if(!GLOB.ratvar_awakens && !slab.no_cost)
 		checked_penalty = check_offstation_penalty()
 		if(!get_clockwork_power(power_cost))
-			to_chat(invoker, "<span class='warning'>There isn't enough power to recite this scripture! ([DisplayPower(get_clockwork_power())]/[DisplayPower(power_cost)])</span>")
+			to_chat(invoker, "<span class='warning'>У меня не хватит сил пересказать эту часть Писания! ([DisplayPower(get_clockwork_power())]/[DisplayPower(power_cost)])</span>")
 			return
 	if(multiple_invokers_used && !multiple_invokers_optional && !GLOB.ratvar_awakens && !slab.no_cost)
 		var/nearby_servants = 0
@@ -102,7 +102,7 @@ Judgement 80k power or nine converts
 			if(can_recite_scripture(L))
 				nearby_servants++
 		if(nearby_servants < invokers_required)
-			to_chat(invoker, "<span class='warning'>There aren't enough non-mute servants nearby ([nearby_servants]/[invokers_required])!</span>")
+			to_chat(invoker, "<span class='warning'>Поблизости не хватает слуг, что могут говорить([nearby_servants]/[invokers_required])!</span>")
 			return FALSE
 	if(!check_special_requirements())
 		return FALSE
@@ -152,7 +152,7 @@ Judgement 80k power or nine converts
 		else
 			for(var/invocation in invocations)
 				clockwork_say(invoker, text2ratvar(invocation), whispered)
-	to_chat(invoker, "<span class='brass'>You [channel_time <= 0 ? "recite" : "begin reciting"] a piece of scripture entitled \"[name]\".</span>")
+	to_chat(invoker, "<span class='brass'>Вы [channel_time <= 0 ? "читаете" : "начинаете читать"] часть писания, названную \"[name]\".</span>")
 	if(!channel_time)
 		return TRUE
 	chant()
@@ -219,14 +219,14 @@ Judgement 80k power or nine converts
 /datum/clockwork_scripture/channeled/proc/chant_effects(chant_number) //The chant's periodic effects
 
 /datum/clockwork_scripture/channeled/proc/chant_end_effects() //The chant's effect upon ending
-	to_chat(invoker, "<span class='brass'>You cease your chant.</span>")
+	to_chat(invoker, "<span class='brass'>Ты прекращаешь свое заклинание.</span>")
 
 
 //Creates an object at the invoker's feet
 /datum/clockwork_scripture/create_object
 	var/object_path = /obj/item/clockwork //The path of the object created
 	var/put_object_in_hands = TRUE
-	var/creator_message = "<span class='brass'>You create a meme.</span>" //Shown to the invoker
+	var/creator_message = "<span class='brass'>Вы создаете мем.</span>" //Shown to the invoker
 	var/observer_message
 	var/one_per_tile = FALSE
 	var/atom/movable/prevent_path
@@ -240,15 +240,15 @@ Judgement 80k power or nine converts
 /datum/clockwork_scripture/create_object/check_special_requirements()
 	var/turf/T = get_turf(invoker)
 	if(!space_allowed && isspaceturf(T))
-		to_chat(invoker, "<span class='warning'>You need solid ground to place this object!</span>")
+		to_chat(invoker, "<span class='warning'>Вам нужна твердая поверхность, чтобы разместить этот объект!</span>")
 		return FALSE
 	var/spawn_path = get_spawn_path(invoker)
 	if(ispath(spawn_path, /obj/structure/destructible/clockwork))
 		for(var/obj/structure/destructible/clockwork/existing in T)
-			to_chat(invoker, "<span class='warning'>There is already a clockwork structure here!</span>")
+			to_chat(invoker, "<span class='warning'>Здесь уже есть часовая конструкция!</span>")
 			return FALSE
 	if(one_per_tile && (locate(prevent_path) in T))
-		to_chat(invoker, "<span class='warning'>You can only place one of this object on each tile!</span>")
+		to_chat(invoker, "<span class='warning'>Вы можете разместить только один такой объект на каждой плитке!</span>")
 		return FALSE
 	return TRUE
 
@@ -279,11 +279,11 @@ Judgement 80k power or nine converts
 	update_construct_limit()
 	var/constructs = get_constructs()
 	if(constructs >= construct_limit)
-		to_chat(invoker, "<span class='warning'>There are too many constructs of this type ([constructs])! You may only have [round(construct_limit)] at once.</span>")
+		to_chat(invoker, "<span class='warning'>Существует слишком много конструкций такого типа([constructs])! У вас может быть только [round(construct_limit)] таких конструкций одновременно.</span>")
 		return
 	var/obj/structure/destructible/clockwork/massive/celestial_gateway/G = GLOB.ark_of_the_clockwork_justiciar
 	if(G && !G.active && combat_construct && is_reebe(invoker.z) && !confirmed) //Putting marauders on the base during the prep phase is a bad idea mmkay
-		if(alert(invoker, "This is a combat construct, and you cannot easily get it to the station. Are you sure you want to make one here?", "Construct Alert", "Yes", "Cancel") == "Cancel")
+		if(alert(invoker, "Это боевая конструкция, и вам нелегко доставить ее на станцию. Вы уверены, что хотите сделать ее здесь?", "Предупреждение Создания", "Да", "Отмена") == "Отмена")
 			return
 		if(!is_servant_of_ratvar(invoker) || !invoker.canUseTopic(slab))
 			return
@@ -311,7 +311,7 @@ Judgement 80k power or nine converts
 /datum/clockwork_scripture/ranged_ability
 	var/slab_overlay
 	var/ranged_type = /obj/effect/proc_holder/slab
-	var/ranged_message = "This is a huge goddamn bug, how'd you cast this?"
+	var/ranged_message = "Это чертова огромная ошибка, как ты ее сделал?"
 	var/timeout_time = 0
 	var/allow_mobility = TRUE //if moving and swapping hands is allowed during the while
 	var/datum/progressbar/progbar

@@ -182,6 +182,7 @@
 		"arachnid_mandibles"	= pick(GLOB.arachnid_mandibles_list),
 		"taur"				= "None",
 		"mam_body_markings" = list(),
+		"emissive_eyes" = FALSE,
 		"mam_ears" 			= snowflake_ears_list ? pick(snowflake_ears_list) : "None",
 		"mam_snouts"		= snowflake_mam_snouts_list ? pick(snowflake_mam_snouts_list) : "None",
 		"mam_tail"			= snowflake_mam_tails_list ? pick(snowflake_mam_tails_list) : "None",
@@ -595,6 +596,14 @@ GLOBAL_LIST_EMPTY(species_datums)
 		if("discharged", SEC_RECORD_STATUS_DISCHARGED)
 			status = SEC_RECORD_STATUS_DISCHARGED
 	target_records.fields["criminal"] = status
+	// Атрибуция активности антагов для директора: объявление в розыск/на казнь означает,
+	// что СБ уже занята этим персонажем. Ищем разум по имени записи - смена личности (агент-ID)
+	// уводит от атрибуции, это приемлемая цена дешёвого поиска на редком ручном действии.
+	if(status == SEC_RECORD_STATUS_ARREST || status == SEC_RECORD_STATUS_EXECUTE)
+		for(var/datum/mind/wanted_mind as anything in SSticker.minds)
+			if(wanted_mind.name == their_name)
+				SSdirector.bump_antag_activity(wanted_mind, DIRECTOR_ACTIVITY_WANTED)
+				break
 	log_admin("[key_name_admin(user)] set secstatus of [their_rank] [their_name] to [status], comment: [comment]")
 	target_records.fields["comments"] += "Set to [status] by [user_name || user.name] ([user_rank]) on [GLOB.current_date_string] [STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)], comment: [comment]"
 	// BLUEMOON EDIT - логгирование

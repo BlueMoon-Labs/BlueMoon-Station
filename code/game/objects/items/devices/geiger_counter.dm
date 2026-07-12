@@ -34,8 +34,8 @@
 
 /obj/item/geiger_counter/Initialize(mapload)
 	. = ..()
-	START_PROCESSING(SSobj, src)
-
+	// Only an actively-scanning geiger has per-tick work; it registers in SSobj
+	// when switched on (attack_self) and PROCESS_KILLs itself when switched off.
 	soundloop = new(src, FALSE)
 
 /obj/item/geiger_counter/Destroy()
@@ -47,7 +47,7 @@
 /obj/item/geiger_counter/process(delta_time)
 	if(!scanning)
 		current_tick_amount = 0
-		return
+		return PROCESS_KILL
 
 	radiation_count -= radiation_count/RAD_MEASURE_SMOOTHING
 	radiation_count += current_tick_amount/RAD_MEASURE_SMOOTHING
@@ -133,6 +133,8 @@
 
 /obj/item/geiger_counter/attack_self(mob/user)
 	scanning = !scanning
+	if(scanning)
+		START_PROCESSING(SSobj, src) // switched off geigers PROCESS_KILL themselves
 	update_appearance()
 	to_chat(user, span_notice("[icon2html(src, user)] You switch [scanning ? "on" : "off"] [src]."))
 

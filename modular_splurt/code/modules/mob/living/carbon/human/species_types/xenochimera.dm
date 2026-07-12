@@ -20,7 +20,10 @@
 	name = "chimeric eyes"
 	desc = "These eyes seem to have incredible sensitivity to bright light, offset by basic night vision. It seems that they are actively used by their owner. Almost a perfection for combatants, but won't save them from being harmed without proper protection."
 	see_in_dark = 8
-	flash_protect = -2 //new eyes to balance the ones they had - shadow eyes.
+	flash_protect = -2
+	low_light_cutoff = list(5, 15, 10)
+	medium_light_cutoff = list(10, 30, 20)
+	high_light_cutoff = list(20, 50, 35)
 
 /datum/species/mammal/xenochimera/on_species_gain(mob/living/carbon/human/C, datum/species/old_species, pref_load)
 	. = ..() // BLUEMOON ADD - явная ошибка, этой штуки не было

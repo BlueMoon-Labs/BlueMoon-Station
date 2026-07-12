@@ -12115,6 +12115,7 @@
 	icon_state = "1-2"
 	},
 /obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate/engineering/hfr,
 /turf/open/floor/plasteel/dark/corner{
 	dir = 4
 	},
@@ -38566,6 +38567,10 @@
 /obj/machinery/atmospherics/pipe/simple/green/visible,
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
+"rQW" = (
+/obj/machinery/atmospherics/components/binary/crystallizer,
+/turf/open/floor/plasteel,
+/area/engineering/atmos)
 "rVj" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/high_volume/siphon/atmos/air_output{
 	dir = 1
@@ -41450,6 +41455,13 @@
 	icon_state = "wood-broken2"
 	},
 /area/maintenance/starboard/aft)
+"usn" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible{
+	dir = 4
+	},
+/obj/machinery/electrolyzer,
+/turf/open/floor/plasteel,
+/area/engineering/atmos)
 "uuj" = (
 /obj/machinery/plantgenes{
 	pixel_y = 6
@@ -73219,7 +73231,7 @@ vuh
 asw
 jxc
 mae
-hqX
+usn
 wqL
 diG
 aPQ
@@ -73476,7 +73488,7 @@ qFw
 asw
 jxc
 mae
-hqX
+usn
 bpB
 qoT
 eaf
@@ -73991,7 +74003,7 @@ bhS
 jxc
 mae
 hqX
-diG
+rQW
 diG
 yba
 idD

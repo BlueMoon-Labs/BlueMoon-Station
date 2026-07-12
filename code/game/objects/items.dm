@@ -750,7 +750,12 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 		if (prob(eyes.damage - 10 + 1))
 			M.become_blind(EYE_DAMAGE)
 			to_chat(M, "<span class='danger'>You go blind!</span>")
-
+		// Bleeding eye puncture wound + overlay (r_eye / l_eye)
+		if(affecting && is_human_victim && prob(eyes.damage - 10 + 1))
+			var/picked_right = prob(50)
+			to_chat(M, "<span class='userdanger'>Вы чувствуете жгучую боль в [picked_right ? "правом" : "левом"] глазу!</span>")
+			var/datum/wound/pierce/severe/eye/eye_puncture = new
+			eye_puncture.apply_wound(affecting, right_side = picked_right)
 /obj/item/clean_blood()
 	. = ..()
 	// Quick fix for shoes being clean but the blood splatter was still on them, I suspect it is blood_dna on shoes were setting to null before the if (maybe it is a racing condition)
@@ -811,6 +816,12 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 		transform = M
 		pixel_x = rand(-8, 8)
 		pixel_y = rand(-8, 8)
+
+/obj/item/proc/randomize_pixel_position()
+	if(item_flags & NO_PIXEL_RANDOM_DROP)
+		return
+	pixel_x = base_pixel_x + rand(-6, 6)
+	pixel_y = base_pixel_y + rand(-6, 6)
 
 /obj/item/proc/remove_item_from_storage(atom/newLoc) //please use this if you're going to snowflake an item out of a obj/item/storage
 	if(!newLoc)

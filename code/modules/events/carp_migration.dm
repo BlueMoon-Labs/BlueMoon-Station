@@ -6,6 +6,7 @@
 	earliest_start = 10 MINUTES
 	max_occurrences = 6
 	category = EVENT_CATEGORY_ENTITIES
+	severity = DIRECTOR_SEVERITY_MINOR
 	description = "Summons a school of space carp."
 
 /datum/round_event_control/carp_migration/New()

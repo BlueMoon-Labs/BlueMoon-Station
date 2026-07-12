@@ -16,7 +16,7 @@
 	. = ..()
 	if(!.)
 		return
-	playsound(src, 'sound/items/bikehorn.ogg', 100, FALSE)
+	playsound(mod, 'sound/items/bikehorn.ogg', 100, FALSE)
 	drain_power(use_power_cost)
 
 ///Microwave Beam - Microwaves items instantly.
@@ -48,7 +48,7 @@
 	if(!isitem(target))
 		return
 	if(!isturf(target.loc))
-		balloon_alert(mod.wearer, "must be on the floor!")
+		mod.balloon_alert(mod.wearer, "должно быть на полу!")
 		return
 	var/obj/item/microwave_target = target
 	var/turf/microwave_target_loc = target.loc
@@ -57,9 +57,9 @@
 	spark_effect.start()
 	mod.wearer.Beam(target,icon_state="lightning[rand(1,12)]", time = 5)
 	if(microwave_target.microwave_act(microwave))
-		playsound(src, 'sound/machines/microwave/microwave-end.ogg', 50, FALSE)
+		playsound(mod, 'sound/machines/microwave/microwave-end.ogg', 50, FALSE)
 	else
-		balloon_alert(mod.wearer, "can't be microwaved!")
+		mod.balloon_alert(mod.wearer, "не может быть облучено микроволнами!")
 	var/datum/effect_system/spark_spread/spark_effect_two = new()
 	spark_effect_two.set_up(2, 1, microwave_target_loc)
 	spark_effect_two.start()

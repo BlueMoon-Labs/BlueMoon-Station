@@ -4,8 +4,17 @@
 
 	var/list/obj/machinery/atmospherics/pipe/members
 	var/list/obj/machinery/atmospherics/components/other_atmosmch
+	/// Subset of other_atmosmch that can bridge into other pipelines or portables
+	/// (valves, relief valves, portables connectors). Maintained on membership
+	/// changes so get_all_connected_airs() does not istype-scan every attached
+	/// machine on every reconcile.
+	var/list/obj/machinery/atmospherics/components/bridging_atmosmch
 
 	var/update = TRUE
+	///Pipenet pressure at the last idle-machine wake broadcast; reconcile_air
+	///wakes attached machines when pressure moves more than
+	///ATMOS_PIPENET_WAKE_PRESSURE_DELTA away from it.
+	var/last_wake_pressure = 0
 
 /datum/pipeline/New()
 	other_airs = list()
@@ -33,6 +42,7 @@
 	members.Cut()
 	other_atmosmch.Cut()
 	other_airs.Cut()
+	bridging_atmosmch = null
 	QDEL_NULL(air)
 	return ..()
 
@@ -42,6 +52,27 @@
 	update = FALSE
 	reconcile_air()
 	update = air?.react(src)
+	// A meaningful pressure change (pipe emptied, distro refilled) must pull
+	// idle-heartbeat vents attached to this net back to full processing; small
+	// jitter around a steady pressure must not.
+	if(!length(other_atmosmch) && !bridging_atmosmch)
+		return
+	var/current_pressure = air ? air.return_pressure() : 0
+	if(abs(current_pressure - last_wake_pressure) <= ATMOS_PIPENET_WAKE_PRESSURE_DELTA)
+		return
+	last_wake_pressure = current_pressure
+	// The filtering `in` form skips stale nulls left by hard-deleted members.
+	for(var/obj/machinery/atmospherics/components/component in other_atmosmch)
+		component.atmos_wake()
+	// Nets bridged through this one (open valve, portables connector) receive gas
+	// from reconcile_air without their update flag ever being set, so they would
+	// sleep through the jump. Dirty them for one pass: each then runs this same
+	// comparison against its own baseline (a closed bridge sees no delta and goes
+	// straight back to sleep).
+	for(var/obj/machinery/atmospherics/components/bridge in bridging_atmosmch)
+		for(var/datum/pipeline/bridged_net in bridge.parents)
+			if(bridged_net != src)
+				bridged_net.update = TRUE
 
 /datum/pipeline/proc/build_pipeline(obj/machinery/atmospherics/base)
 	if(QDELETED(base))
@@ -124,6 +155,10 @@
  */
 /datum/pipeline/proc/addMachineryMember(obj/machinery/atmospherics/components/C)
 	other_atmosmch |= C
+	if(istype(C, /obj/machinery/atmospherics/components/binary/valve) \
+		|| istype(C, /obj/machinery/atmospherics/components/binary/relief_valve) \
+		|| istype(C, /obj/machinery/atmospherics/components/unary/portables_connector))
+		LAZYOR(bridging_atmosmch, C)
 	var/list/returned_airs = C.returnPipenetAirs(src)
 	if (!length(returned_airs) || (null in returned_airs))
 		stack_trace("addMachineryMember: Nonexistent (empty list) or null machinery gasmix added to pipeline datum from [C] \
@@ -162,6 +197,8 @@
 	for(var/obj/machinery/atmospherics/components/C in E.other_atmosmch)
 		C.replacePipenet(E, src)
 	other_atmosmch |= E.other_atmosmch
+	if(E.bridging_atmosmch)
+		LAZYOR(bridging_atmosmch, E.bridging_atmosmch)
 	if(null in E.other_airs)
 		stack_trace("merge(): Pipeline [E]([REF(E)]) contains null gas mixtures in other_airs. Cleaning before merge.")
 		listclearnulls(E.other_airs)
@@ -279,7 +316,7 @@
 			GL += P.other_airs
 		if(P.air)
 			GL += P.air
-		for(var/obj/machinery/atmospherics/components/atmosmch as anything in P.other_atmosmch)
+		for(var/obj/machinery/atmospherics/components/atmosmch as anything in P.bridging_atmosmch)
 			if (istype(atmosmch, /obj/machinery/atmospherics/components/binary/valve))
 				var/obj/machinery/atmospherics/components/binary/valve/V = atmosmch
 				if(V.on)

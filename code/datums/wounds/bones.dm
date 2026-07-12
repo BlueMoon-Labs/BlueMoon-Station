@@ -34,16 +34,9 @@
 	var/trauma_cycle_cooldown
 	/// If this is a chest wound and this is set, we have this chance to cough up blood when hit in the chest
 	var/internal_bleeding_chance = 0
-	// BLUEMOON ADD START - прогрессирующая внутренняя травма CHEST/HEAD
-	/// Текущая интенсивность приступа за тик. Растёт арифметически, пока не начато лечение (gel()).
-	var/internal_injury_intensity = 0
-	/// Шаг прироста интенсивности за тик
-	var/internal_injury_increment = 0
-	/// Раз в сколько тиков handle_process() применяется приступ
-	var/internal_injury_tick_interval = 5
-	/// Внутренний счётчик тиков
-	var/internal_injury_tick_counter = 0
-	// BLUEMOON ADD END
+	/// Cooldown for fumble/drop checks when using an item with a wounded arm
+	var/next_fumble_check = 0
+
 /*
 	Overwriting of base procs
 */
@@ -73,6 +66,8 @@
 		next_trauma_cycle = world.time + (rand(100-WOUND_BONE_HEAD_TIME_VARIANCE, 100+WOUND_BONE_HEAD_TIME_VARIANCE) * 0.01 * trauma_cycle_cooldown)
 
 	RegisterSignal(victim, COMSIG_HUMAN_EARLY_UNARMED_ATTACK, PROC_REF(attack_with_hurt_hand))
+	if(limb.held_index)
+		RegisterSignal(victim, COMSIG_MOB_CLICKON, PROC_REF(fumble_hurt_hand))
 	if(limb.held_index && victim.get_item_for_held_index(limb.held_index) && (disabling || prob(33 * severity)))
 		var/obj/item/I = victim.get_item_for_held_index(limb.held_index)
 		if(istype(I, /obj/item/offhand))
@@ -87,6 +82,8 @@
 				? span_warning(span_bold("Ваша изнывающая от боли [limb.ru_name] больше не может удержать [I]!")) \
 				: span_warning(span_bold("Ваша [limb.ru_name] травмирована и не может удержать [I]!"))
 			victim.visible_message(message, message_self, vision_distance=COMBAT_MESSAGE_RANGE)
+			if(has_pain)
+				victim.emote("agony")
 
 	update_inefficiencies()
 
@@ -98,7 +95,7 @@
 	// BLUEMOON ADD END
 	QDEL_NULL(active_trauma)
 	if(victim)
-		UnregisterSignal(victim, COMSIG_HUMAN_EARLY_UNARMED_ATTACK)
+		UnregisterSignal(victim, list(COMSIG_HUMAN_EARLY_UNARMED_ATTACK, COMSIG_MOB_CLICKON))
 	return ..()
 
 /datum/wound/blunt/handle_process()
@@ -196,12 +193,53 @@
 				span_userdanger("Вам не удается ударить [target] из-за [has_pain ? "боли и " : ""][robo_limb ? "повреждений" : "перелома"] в вашей конечности - [limb.ru_name]!"), vision_distance=COMBAT_MESSAGE_RANGE
 			)
 			if(has_pain)
-				victim.pain_emote(has_pain)
+				victim.emote("agony")
 				if(has_pain > PAIN_LOW)
 					victim.adjustStaminaLoss(15)
 			victim.Stun(0.5 SECONDS)
 			limb.receive_damage(brute=rand(3,7))
 			return COMPONENT_NO_ATTACK_HAND
+
+/**
+ * Chance to drop a held item when trying to use it with a wounded arm.
+ */
+/datum/wound/blunt/proc/fumble_hurt_hand(mob/source, atom/A, params)
+	SIGNAL_HANDLER
+
+	if(!victim || !limb?.held_index)
+		return
+	if(world.time < next_fumble_check)
+		return
+	if(victim.get_active_hand() != limb)
+		return
+	var/list/modifiers = params2list(params)
+	if(LAZYACCESS(modifiers, SHIFT_CLICK) || LAZYACCESS(modifiers, ALT_CLICK) || LAZYACCESS(modifiers, CTRL_CLICK) || LAZYACCESS(modifiers, MIDDLE_CLICK))
+		return
+	var/obj/item/held = victim.get_active_held_item()
+	if(!held || (held.item_flags & ABSTRACT))
+		return
+
+	next_fumble_check = world.time + 2 SECONDS
+	var/drop_chance = 10 * severity // moderate 10%, severe 20%, critical 30%
+	if(limb.current_gauze)
+		drop_chance *= limb.current_gauze.splint_factor
+	if(victim.has_pain(limb) <= PAIN_LOW)
+		drop_chance *= 0.5
+	if(!prob(drop_chance))
+		return
+
+	if(!victim.dropItemToGround(held))
+		return
+	var/has_pain = victim.has_pain(limb)
+	var/robo_limb = limb.is_robotic_limb()
+	victim.visible_message(
+		span_danger("[victim] роняет [held] из [robo_limb ? "повреждённой" : "сломанной"] [limb.ru_name]!"),
+		span_userdanger("Ваша [limb.ru_name] отказывает, и вы роняете [held]!"),
+		vision_distance = COMBAT_MESSAGE_RANGE
+	)
+	if(has_pain)
+		victim.emote("agony")
+	return COMSIG_MOB_CANCEL_CLICKON
 
 /datum/wound/blunt/receive_damage(wounding_type, wounding_dmg, wound_bonus)
 	if(!victim || wounding_dmg < WOUND_MINIMUM_DAMAGE)

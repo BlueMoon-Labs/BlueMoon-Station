@@ -1,9 +1,9 @@
 import { useBackend } from '../backend';
-import { Button, Section, Flex } from '../components';
+import { Button, Flex, Section } from '../components';
 import { Window } from '../layouts';
 
-export const AdminJumpTo = (props, context) => {
-  const { act } = useBackend(context);
+export const AdminJumpTo = (props) => {
+  const { act } = useBackend();
   return (
     <Window title="Admin Jump To" width={220} height={280}>
       <Window.Content>

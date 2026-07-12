@@ -75,7 +75,7 @@
 /datum/round_event_control/sentience/all
 	name = "Station-wide Human-level Intelligence"
 	typepath = /datum/round_event/ghost_role/sentience/all
-	weight = 0
+	admin_only = TRUE
 	category = EVENT_CATEGORY_FRIENDLY
 	description = "ALL animals and robots become sentient, provided there is enough ghosts."
 

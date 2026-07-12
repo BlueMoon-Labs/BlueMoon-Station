@@ -20,6 +20,9 @@
 		if(T == /datum/metadollar_shop_item/item)
 			continue
 		var/datum/metadollar_shop_item/item/I = new T()
+		if(!I.is_visible(src))
+			qdel(I)
+			continue
 		if(I.catalog != catalog_key)
 			qdel(I)
 			continue

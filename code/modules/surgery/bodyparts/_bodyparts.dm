@@ -70,6 +70,8 @@
 
 	var/species_flags_list = list()
 	var/dmg_overlay_type //the type of damage overlay (if any) to use when this bodypart is bruised/burned.
+	/// If we're bleeding, which icon are we displaying on this part
+	var/bleed_overlay_icon
 
 	//Damage messages used by help_shake_act()
 	var/light_brute_msg = "немного повреждена"
@@ -1094,8 +1096,10 @@
 	if(!LAZYLEN(wounds) && current_gauze && !replaced)
 		owner.visible_message("<span class='notice'>\The [current_gauze] on [owner]'s [name] fall away.</span>", "<span class='notice'>The [current_gauze] on your [name] fall away.</span>")
 		QDEL_NULL(current_gauze)
+		owner.update_bandage_overlays()
 	wound_damage_multiplier = dam_mul
 	update_disabled()
+	update_part_wound_overlay()
 
 /obj/item/bodypart/proc/get_bleed_rate()
 	if(!is_organic_limb() && !HAS_TRAIT(owner, TRAIT_ROBOTIC_ORGANISM)) // BLUEMOON EDIT - добавлена проверка на robotic_organism
@@ -1118,6 +1122,58 @@
 	return bleed_rate
 
 /**
+ * Updates the bleed overlay icon for this bodypart based on current bleed rate.
+ * Returns TRUE if the overlay icon changed.
+ */
+/obj/item/bodypart/proc/update_part_wound_overlay()
+	if(!owner)
+		return FALSE
+	if(!can_bleed())
+		if(bleed_overlay_icon)
+			bleed_overlay_icon = null
+			owner.update_wound_overlays()
+		return FALSE
+
+	var/bleed_rate = get_bleed_rate() || 0
+	if(SEND_SIGNAL(src, COMSIG_BODYPART_UPDATE_WOUND_OVERLAY, bleed_rate) & COMPONENT_PREVENT_WOUND_OVERLAY_UPDATE)
+		return FALSE
+
+	var/new_bleed_icon = null
+
+	switch(bleed_rate)
+		if(-INFINITY to BLEED_OVERLAY_LOW)
+			new_bleed_icon = null
+		if(BLEED_OVERLAY_LOW to BLEED_OVERLAY_MED)
+			new_bleed_icon = "[body_zone]_1"
+		if(BLEED_OVERLAY_MED to BLEED_OVERLAY_GUSH)
+			if(!(owner.mobility_flags & MOBILITY_STAND) || owner.stat == DEAD)
+				new_bleed_icon = "[body_zone]_2s"
+			else
+				new_bleed_icon = "[body_zone]_2"
+		if(BLEED_OVERLAY_GUSH to INFINITY)
+			if(owner.stat == DEAD)
+				new_bleed_icon = "[body_zone]_2s"
+			else
+				new_bleed_icon = "[body_zone]_3"
+
+	if(new_bleed_icon != bleed_overlay_icon)
+		bleed_overlay_icon = new_bleed_icon
+		owner.update_wound_overlays()
+		return TRUE
+	return FALSE
+
+/obj/item/bodypart/proc/can_bleed()
+	if(!owner)
+		return is_organic_limb()
+	if(ishuman(owner))
+		var/mob/living/carbon/human/human_owner = owner
+		if(NOBLOOD in human_owner.dna?.species?.species_traits)
+			return FALSE
+		if(human_owner.bleedsuppress)
+			return FALSE
+	return is_organic_limb() || HAS_TRAIT(owner, TRAIT_ROBOTIC_ORGANISM)
+
+/**
   * apply_gauze() is used to- well, apply gauze to a bodypart
   *
   * As of the Wounds 2 PR, all bleeding is now bodypart based rather than the old bleedstacks system, and 90% of standard bleeding comes from flesh wounds (the exception is embedded weapons).
@@ -1134,14 +1190,8 @@
 	QDEL_NULL(current_gauze)
 	current_gauze = new gauze.type(src, 1)
 	gauze.use(1)
-	// BLUEMOON ADD START - уведомляем, если на конечности есть активная прогрессирующая внутренняя травма
-	if(owner && (body_zone == BODY_ZONE_CHEST || body_zone == BODY_ZONE_HEAD))
-		for(var/i in wounds)
-			var/datum/wound/blunt/blunt_wound = i
-			if(istype(blunt_wound) && blunt_wound.internal_injury_intensity > 0 && !blunt_wound.gelled)
-				to_chat(owner, span_notice("Повязка немного сдерживает [body_zone == BODY_ZONE_HEAD ? "давление в голове" : "внутреннее кровотечение в груди"], но это не заменит настоящего лечения!"))
-				break
-	// BLUEMOON ADD END
+	if(owner)
+		owner.update_bandage_overlays()
 
 /**
   * seep_gauze() is for when a gauze wrapping absorbs blood or pus from wounds, lowering its absorption capacity.
@@ -1158,3 +1208,4 @@
 	if(current_gauze.absorption_capacity < 0)
 		owner.visible_message("<span class='danger'>\The [current_gauze] on [owner]'s [name] fall away in rags.</span>", "<span class='warning'>\The [current_gauze] on your [name] fall away in rags.</span>", vision_distance=COMBAT_MESSAGE_RANGE)
 		QDEL_NULL(current_gauze)
+		owner.update_bandage_overlays()

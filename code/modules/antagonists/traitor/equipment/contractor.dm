@@ -133,6 +133,14 @@
 	limited = 1
 	cost = 1
 
+/datum/contractor_item/inteq_pai
+	name = "InteQ Personal AI"
+	desc = "Модифицированный pAI с предустановленными модулями для скрытных операций: закрытый канал связи, камерный жучок, Security HUD, термальное зрение и инъектор химикатов."
+	item = /obj/item/paicard/inteq
+	item_icon = "microchip"
+	limited = 1
+	cost = 2
+
 /datum/contractor_item/contractor_partner
 	name = "Reinforcements"
 	desc = "Upon purchase we'll contact available units in the area. Should there be an agent free, we'll send them down to assist you immediately. If no units are free, we give a full refund."

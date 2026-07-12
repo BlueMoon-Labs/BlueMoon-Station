@@ -103,6 +103,7 @@
 			S.directive = directive
 			if(player_spiders)
 				S.player_spiders = 1
+				S.no_nurses = TRUE
 		qdel(src)
 
 /obj/structure/spider/spiderling
@@ -121,6 +122,7 @@
 	var/poison_type = "toxin"
 	var/poison_per_bite = 5
 	var/list/faction = list("spiders")
+	var/no_nurses = FALSE
 	attack_hand_speed = CLICK_CD_MELEE
 	attack_hand_is_action = TRUE
 
@@ -240,7 +242,9 @@
 		amount_grown += rand(0,2)
 		if(amount_grown >= 100)
 			if(!grow_as)
-				if(prob(3))
+				if(no_nurses)
+					grow_as = pick(/mob/living/simple_animal/hostile/poison/giant_spider, /mob/living/simple_animal/hostile/poison/giant_spider/hunter, /mob/living/simple_animal/hostile/poison/giant_spider/hunter/viper, /mob/living/simple_animal/hostile/poison/giant_spider/tarantula)
+				else if(prob(3))
 					grow_as = pick(/mob/living/simple_animal/hostile/poison/giant_spider/tarantula, /mob/living/simple_animal/hostile/poison/giant_spider/hunter/viper, /mob/living/simple_animal/hostile/poison/giant_spider/nurse/midwife)
 				else
 					grow_as = pick(/mob/living/simple_animal/hostile/poison/giant_spider, /mob/living/simple_animal/hostile/poison/giant_spider/hunter, /mob/living/simple_animal/hostile/poison/giant_spider/nurse)

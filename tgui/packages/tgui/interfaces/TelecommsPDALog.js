@@ -3,15 +3,15 @@
  * @copyright 2020 LetterN (https://github.com/LetterN)
  * @license MIT
  */
-import { Fragment } from 'inferno';
+import { Fragment } from 'react';
 
 import { useBackend, useSharedState } from '../backend';
 import { Button, Input, LabeledList, NoticeBox, Section, Tabs } from '../components';
 import { Window } from '../layouts';
 
 // This is the entrypoint, don't mind the others
-export const TelecommsPDALog = (props, context) => {
-  const { act, data } = useBackend(context);
+export const TelecommsPDALog = (props) => {
+  const { act, data } = useBackend();
   const {
     network,
     notice = "",
@@ -25,7 +25,7 @@ export const TelecommsPDALog = (props, context) => {
   const [
     tab,
     setTab,
-  ] = useSharedState(context, 'tab', 'pdalog-servers');
+  ] = useSharedState('tab', 'pdalog-servers');
   const valid = (selected && selected.status && authenticated);
   if (hack_status) {
     return ( // should have used en -> jp unicode -> other encoding method->utf8
@@ -44,7 +44,7 @@ export const TelecommsPDALog = (props, context) => {
             </b>
             <i>
               {(silicon && !hack_status.emagging) ? (
-                <Fragment>
+                <>
                   Brute-forcing for server key. <br />
                   It will take 20 seconds for every character that
                   the password has.
@@ -52,9 +52,9 @@ export const TelecommsPDALog = (props, context) => {
                   In the meantime, this console can reveal your
                   true intentions if you let someone access it.
                   Make sure no humans enter the room during that time.
-                </Fragment>
+                </>
               ) : (
-                <Fragment>
+                <>
                   QnJ1dGUtZm9yY2luZyBmb3Igc2VydmVyIGtleS48YnI+IEl0IHdpbG<br />
                   wgdGFrZSAyMCBzZWNvbmRzIGZvciBldmVyeSBjaGFyYWN0ZXIgdGhh<br />
                   dCB0aGUgcGFzc3dvcmQgaGFzLiBJbiB0aGUgbWVhbnRpbWUsIHRoaX<br />
@@ -62,7 +62,7 @@ export const TelecommsPDALog = (props, context) => {
                   IGlmIHlvdSBsZXQgc29tZW9uZSBhY2Nlc3MgaXQuIE1ha2Ugc3VyZS<br />
                   BubyBodW1hbnMgZW50ZXIgdGhlIHJvb20gZHVyaW5nIHRoYXQgdGltZS4=
                   <br /><br />
-                </Fragment>
+                </>
               )}
             </i>
           </NoticeBox>
@@ -74,7 +74,7 @@ export const TelecommsPDALog = (props, context) => {
   return (
     <Window theme="ntos" resizable>
       <Window.Content overflow="auto">
-        <Fragment>
+        <>
           {!!notice && (
             <NoticeBox>
               {notice}
@@ -94,7 +94,7 @@ export const TelecommsPDALog = (props, context) => {
               <LabeledList.Item
                 label="Memory"
                 buttons={(
-                  <Fragment>
+                  <>
                     <Button
                       icon="minus-circle"
                       disabled={!servers.length}
@@ -107,7 +107,7 @@ export const TelecommsPDALog = (props, context) => {
                       onClick={() => act('probe')}>
                       Probe Network
                     </Button>
-                  </Fragment>
+                  </>
                 )}>
                 {servers ? (
                   `${servers.length} currently probed and buffered`
@@ -119,7 +119,7 @@ export const TelecommsPDALog = (props, context) => {
                 label="Authentication"
                 color={authenticated ? 'good' : 'bad'}
                 buttons={(
-                  <Fragment>
+                  <>
                     <Button
                       disabled={!authenticated || !selected}
                       onClick={() => act('change_auth')}>
@@ -133,14 +133,14 @@ export const TelecommsPDALog = (props, context) => {
                         Brute Force
                       </Button>
                     )}
-                  </Fragment>
+                  </>
                 )}>
                 {authenticated ? "KEY OK" : "KEY FAIL"}
               </LabeledList.Item>
               <LabeledList.Item
                 label="PDA Server"
                 buttons={(
-                  <Fragment>
+                  <>
                     <Button
                       icon={authenticated ? 'unlock' : 'lock'}
                       color={authenticated ? 'good' : 'bad'}
@@ -154,7 +154,7 @@ export const TelecommsPDALog = (props, context) => {
                       onClick={() => act('mainmenu')}>
                       Disconnect
                     </Button>
-                  </Fragment>
+                  </>
                 )}>
                 {selected ? (
                   `${selected.name} (${selected.id})`
@@ -234,7 +234,7 @@ export const TelecommsPDALog = (props, context) => {
               )}
             </Section>
           ) : (
-            <Fragment>
+            <>
               {(tab === "pdalog-message" && authenticated) && (
                 <TeleLogs />
               )}
@@ -244,20 +244,20 @@ export const TelecommsPDALog = (props, context) => {
               {(tab === "pdalog-custommsg" && authenticated) && (
                 <CustomMsg />
               )}
-            </Fragment>
+            </>
           )}
-        </Fragment>
+        </>
       </Window.Content>
     </Window>
   );
 };
 
 // They're the same, so merged it into this. Idea stolen from cargonia
-export const TeleLogs = (props, context) => {
+export const TeleLogs = (props) => {
   const {
     msgs_log = false, // <TeleLogs msgs_log/>
   } = props;
-  const { act, data } = useBackend(context);
+  const { act, data } = useBackend();
   const {
     message_logs = [],
     recon_logs = [],
@@ -330,7 +330,7 @@ export const TeleLogs = (props, context) => {
                 {message.message}
               </LabeledList.Item>
               {!!msgs_log && (
-                <Fragment>
+                <>
                   <LabeledList.Item
                     label="Stamp"
                     color={message.stamp !== "Unstamped" ? (
@@ -364,7 +364,7 @@ export const TeleLogs = (props, context) => {
                       message.priority
                     )}
                   </LabeledList.Item>
-                </Fragment>
+                </>
               )}
             </LabeledList>
           </Section>
@@ -374,8 +374,8 @@ export const TeleLogs = (props, context) => {
   );
 };
 
-export const CustomMsg = (props, context) => {
-  const { act, data } = useBackend(context);
+export const CustomMsg = (props) => {
+  const { act, data } = useBackend();
   const fake_message = data.fake_message !== {} ? data.fake_message : {
     'sender': 'System Administrator',
     'job': 'Admin',

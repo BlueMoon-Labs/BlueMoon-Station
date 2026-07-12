@@ -14,6 +14,8 @@ SUBSYSTEM_DEF(machines)
 	var/list/currentrun = list()
 	///List of all powernets on the server.
 	var/list/datum/powernet/powernets = list()
+	///How many machines currently sit in machine_sleep() (off the processing list, drawing statically). Diagnostics only.
+	var/sleeping_machines = 0
 	var/static/list/bluespaceminer_by_zlevel[][] //BLUEMOON ADD счётчик бс майнеров на z уровне
 
 /datum/controller/subsystem/machines/Initialize()
@@ -53,6 +55,10 @@ SUBSYSTEM_DEF(machines)
 	while(currentrun.len)
 		var/obj/machinery/thing = currentrun[currentrun.len]
 		currentrun.len--
+#ifdef TESTING
+		var/datum/machines_benchmark/bench = GLOB.machines_benchmark_run
+		var/bench_tick_start = bench ? TICK_USAGE : 0
+#endif
 		if(!QDELETED(thing) && thing.process(wait * 0.1) != PROCESS_KILL)
 			if(thing.use_power)
 				thing.auto_use_power() //add back the power state
@@ -60,6 +66,10 @@ SUBSYSTEM_DEF(machines)
 			processing -= thing
 			if (!QDELETED(thing))
 				thing.datum_flags &= ~DF_ISPROCESSING
+#ifdef TESTING
+		if(bench)
+			bench.record_machine_cost(thing.type, TICK_USAGE - bench_tick_start)
+#endif
 		if (MC_TICK_CHECK)
 			return
 
@@ -109,7 +119,7 @@ SUBSYSTEM_DEF(machines)
 	return length(machines_by_type)
 
 /datum/controller/subsystem/machines/stat_entry(msg)
-	msg = "M:[length(all_machines)]|MT:[length(machines_by_type)]|PM:[length(processing)]|PN:[length(powernets)]"
+	msg = "M:[length(all_machines)]|MT:[length(machines_by_type)]|PM:[length(processing)]|SLP:[sleeping_machines]|PN:[length(powernets)]"
 	return ..()
 
 /datum/controller/subsystem/machines/proc/setup_template_powernets(list/cables)
@@ -122,6 +132,8 @@ SUBSYSTEM_DEF(machines)
 			propagate_network(PC,PC.powernet)
 
 /datum/controller/subsystem/machines/Recover()
+	if(isnum(SSmachines.sleeping_machines))
+		sleeping_machines = SSmachines.sleeping_machines
 	if(islist(SSmachines.processing))
 		processing = SSmachines.processing
 	if(islist(SSmachines.powernets))

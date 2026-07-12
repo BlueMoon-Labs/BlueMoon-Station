@@ -584,3 +584,36 @@
 	TEST_ASSERT(GLOB.cached_icon_states_by_file != null, "GLOB.cached_icon_states_by_file must be a list")
 	TEST_ASSERT(GLOB.cached_icon_state_directional != null, "GLOB.cached_icon_state_directional must be a list")
 	TEST_ASSERT(GLOB.icon_dmi_path_cache != null, "GLOB.icon_dmi_path_cache must be a list")
+
+
+// ===== Slime/mob Life-tick movespeed churn: add_or_update short-circuits unchanged values =====
+
+/// Test subtype: counts update_movespeed() rebuilds so the test can assert that
+/// re-applying an unchanged variable slowdown (the every-Life-tick pattern used by
+/// slime updatehealth, human hunger, etc.) no longer rebuilds the modifier cache.
+/mob/living/simple_animal/unit_test_movespeed_counter
+	var/movespeed_updates = 0
+
+/mob/living/simple_animal/unit_test_movespeed_counter/update_movespeed()
+	movespeed_updates++
+	return ..()
+
+/datum/unit_test/movespeed_variable_update_short_circuit/Run()
+	var/mob/living/simple_animal/unit_test_movespeed_counter/critter = allocate(/mob/living/simple_animal/unit_test_movespeed_counter)
+
+	// Initialize() already registered simplemob_varspeed (slowdown = speed, default 0).
+	// Applying a new value must rebuild the movespeed cache and land in it.
+	var/updates_before = critter.movespeed_updates
+	critter.add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/simplemob_varspeed, multiplicative_slowdown = 2)
+	TEST_ASSERT_EQUAL(critter.movespeed_updates, updates_before + 1, "Changing a variable slowdown must rebuild movespeed")
+	var/cache_at_two = critter.cached_multiplicative_slowdown
+
+	// Re-applying the same value must be a no-op: no rebuild, cache untouched.
+	critter.add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/simplemob_varspeed, multiplicative_slowdown = 2)
+	TEST_ASSERT_EQUAL(critter.movespeed_updates, updates_before + 1, "Re-applying an unchanged variable slowdown must not rebuild movespeed")
+	TEST_ASSERT_EQUAL(critter.cached_multiplicative_slowdown, cache_at_two, "Cached slowdown must be unchanged after a same-value re-apply")
+
+	// A different value must still propagate (positive slowdowns are additive).
+	critter.add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/simplemob_varspeed, multiplicative_slowdown = 5)
+	TEST_ASSERT_EQUAL(critter.movespeed_updates, updates_before + 2, "Changing the slowdown again must rebuild movespeed")
+	TEST_ASSERT_EQUAL(critter.cached_multiplicative_slowdown, cache_at_two + 3, "Cached slowdown must reflect the new value")

@@ -185,8 +185,8 @@
 			I.pulledby.stop_pulling()
 		update_inv_hands()
 		if(!(I.item_flags & NO_PIXEL_RANDOM_DROP))
-			I.pixel_x = initial(I.pixel_x)
-			I.pixel_y = initial(I.pixel_y)
+			I.pixel_x = I.base_pixel_x
+			I.pixel_y = I.base_pixel_y
 		I.transform = initial(I.transform)
 		return hand_index || TRUE
 	return FALSE
@@ -326,9 +326,7 @@
 	if(HAS_TRAIT(I, TRAIT_NODROP) && !force)
 		return FALSE
 
-	if(!(I.item_flags & NO_PIXEL_RANDOM_DROP))
-		I.pixel_x = I.base_pixel_x + rand(-6, 6)
-		I.pixel_y = I.base_pixel_y + rand(-6, 6)
+	I.randomize_pixel_position()
 
 	var/hand_index = get_held_index_of_item(I)
 	if(hand_index)

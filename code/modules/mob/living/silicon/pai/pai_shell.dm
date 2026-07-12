@@ -115,12 +115,12 @@
 	return FALSE
 
 /mob/living/silicon/pai/proc/toggle_integrated_light()
-	if(!light_range)
-		set_light(brightness_power)
-		to_chat(src, "<span class='notice'>You enable your integrated light.</span>")
+	flashlight_on = !flashlight_on
+	if(flashlight_on)
+		set_light(5, 5, l_color = LIGHT_COLOR_WHITE)
 	else
 		set_light(0)
-		to_chat(src, "<span class='notice'>You disable your integrated light.</span>")
+	to_chat(src, "<span class='notice'>Фонарик [flashlight_on ? "включён" : "выключен"].</span>")
 
 /mob/living/silicon/pai/verb/toggle_chassis_sit()
 	set name = "Toggle Chassis Sit"

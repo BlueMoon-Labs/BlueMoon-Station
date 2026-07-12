@@ -7,6 +7,7 @@
 	max_occurrences = 2
 	alert_observers = FALSE
 	category = EVENT_CATEGORY_JANITORIAL
+	disruption = DIRECTOR_DISRUPTION_DISRUPTIVE // бьёт освещение по всей станции
 
 /datum/round_event/electrical_storm
 	var/lightsoutAmount	= 1
