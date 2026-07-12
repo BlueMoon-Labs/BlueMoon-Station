@@ -189,6 +189,7 @@
 #include "rtt_window.dm"
 #include "screen_gc.dm"
 #include "shapeshift_gc.dm"
+#include "simple_animal_buckets.dm"
 #include "space_drift.dm"
 #include "statpanel_listedturf.dm"
 #include "ssmobs_optimization.dm"
