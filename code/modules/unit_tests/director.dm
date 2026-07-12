@@ -888,6 +888,11 @@
 	// Мягкие профили: Light и Extended живут (в т.ч. гост-антаги - регрессия "на эксте раньше
 	// спаунились антаги"), но без MAJOR и без тяжёлых антаг-команд. Teambased обязан кормить
 	// антаг-пулы. Экипажи прогонов подобраны под min_players гост-событий (кошмар/дракон = 30).
+	// Гост-ассерты стохастические: одиночный 2ч-прогон даёт 0 гост-запусков с шансом ~10%
+	// (копилка пула может весь прогон копить на дорогую цель, CI-статистика: 5 падений на 38
+	// прогонов карт). Ретраи давят флейк, не пряча структурную регрессию: мёртвый пул (нулевая
+	// доля, все действия отфильтрованы) даст 0 во ВСЕХ попытках. Детерминированные инварианты
+	// профиля (без MAJOR, без тяжёлых команд) проверяются на каждой попытке - ретрай их не размывает.
 	var/list/soft_specs = list(
 		list(ROUNDTYPE_DYNAMIC_LIGHT, 30, 4),
 		list(ROUNDTYPE_EXTENDED, 30, 3),
@@ -897,35 +902,38 @@
 		var/spec_type = spec[1]
 		var/spec_crew = spec[2]
 		var/spec_min_fired = spec[3]
-		var/list/spec_log = director_simulate(spec_type, 2, spec_crew)
 		var/spec_fired = 0
-		var/spec_heavy = 0
 		var/spec_ghost = 0
-		var/spec_major = 0
-		var/list/spec_by_severity = list()
-		for(var/list/entry in spec_log)
-			if(entry["result"] != DIRECTOR_BEAT_FIRED && entry["result"] != DIRECTOR_BEAT_GUARANTEED)
-				continue
-			spec_fired++
-			var/sev = entry["severity"] || "?"
-			spec_by_severity[sev] = (spec_by_severity[sev] || 0) + 1
-			if(entry["antag_heavy"])
-				spec_heavy++
-			if(sev == DIRECTOR_SEVERITY_GHOST)
-				spec_ghost++
-			if(sev == DIRECTOR_SEVERITY_MAJOR)
-				spec_major++
-		var/list/spec_composition = list()
-		for(var/sev in spec_by_severity)
-			spec_composition += "[sev]=[spec_by_severity[sev]]"
-		log_world("DIRECTOR SIM: [spec_type]@[spec_crew], 2ч: [spec_fired] запусков ([spec_composition.Join(", ")])")
-		TEST_ASSERT(spec_fired >= spec_min_fired, "За 2 часа [spec_type] при [spec_crew] экипажа должно случиться не меньше [spec_min_fired] действий, случилось [spec_fired]")
-		if(spec_type == ROUNDTYPE_DYNAMIC_LIGHT || spec_type == ROUNDTYPE_EXTENDED)
-			TEST_ASSERT_EQUAL(spec_heavy, 0, "[spec_type]: тяжёлые антаг-действия обязаны быть выключены профилем, случилось [spec_heavy]")
-			TEST_ASSERT_EQUAL(spec_major, 0, "[spec_type]: MAJOR-события обязаны быть недоступны (доля 0), случилось [spec_major]")
-			TEST_ASSERT(spec_ghost >= 1, "[spec_type]: за 2 часа гост-антаг обязан появиться хотя бы раз (регрессия отсутствия антагов), случилось [spec_ghost]")
-		if(spec_type == ROUNDTYPE_DYNAMIC_TEAMBASED)
-			TEST_ASSERT(spec_ghost >= 1, "[spec_type]: антаг-крен профиля обязан кормить гост-пул, случилось [spec_ghost]")
+		for(var/attempt in 1 to 4)
+			var/list/spec_log = director_simulate(spec_type, 2, spec_crew)
+			spec_fired = 0
+			spec_ghost = 0
+			var/spec_heavy = 0
+			var/spec_major = 0
+			var/list/spec_by_severity = list()
+			for(var/list/entry in spec_log)
+				if(entry["result"] != DIRECTOR_BEAT_FIRED && entry["result"] != DIRECTOR_BEAT_GUARANTEED)
+					continue
+				spec_fired++
+				var/sev = entry["severity"] || "?"
+				spec_by_severity[sev] = (spec_by_severity[sev] || 0) + 1
+				if(entry["antag_heavy"])
+					spec_heavy++
+				if(sev == DIRECTOR_SEVERITY_GHOST)
+					spec_ghost++
+				if(sev == DIRECTOR_SEVERITY_MAJOR)
+					spec_major++
+			var/list/spec_composition = list()
+			for(var/sev in spec_by_severity)
+				spec_composition += "[sev]=[spec_by_severity[sev]]"
+			log_world("DIRECTOR SIM: [spec_type]@[spec_crew], 2ч, попытка [attempt]: [spec_fired] запусков ([spec_composition.Join(", ")])")
+			if(spec_type == ROUNDTYPE_DYNAMIC_LIGHT || spec_type == ROUNDTYPE_EXTENDED)
+				TEST_ASSERT_EQUAL(spec_heavy, 0, "[spec_type]: тяжёлые антаг-действия обязаны быть выключены профилем, случилось [spec_heavy]")
+				TEST_ASSERT_EQUAL(spec_major, 0, "[spec_type]: MAJOR-события обязаны быть недоступны (доля 0), случилось [spec_major]")
+			if(spec_fired >= spec_min_fired && spec_ghost >= 1)
+				break
+		TEST_ASSERT(spec_fired >= spec_min_fired, "За 2 часа [spec_type] при [spec_crew] экипажа должно случиться не меньше [spec_min_fired] действий, случилось [spec_fired] (после 4 попыток)")
+		TEST_ASSERT(spec_ghost >= 1, "[spec_type]: за 2 часа гост-антаг обязан появиться хотя бы раз (Light/Extended - регрессия отсутствия антагов, Teambased - антаг-крен обязан кормить гост-пул), случилось [spec_ghost] (после 4 попыток)")
 
 /// Проверяет механику семейств: общий фолл-офф повторов (запуски любого члена гасят вес всех),
 /// паузу семейства в filter_candidates и учёт запусков в note_fired.
