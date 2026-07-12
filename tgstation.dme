@@ -4505,8 +4505,8 @@
 #include "modular_bluemoon\code\game\objects\items\circuitboards\machine_circuitboards.dm"
 #include "modular_bluemoon\code\game\objects\items\clothing\collectable_hat_random.dm"
 #include "modular_bluemoon\code\game\objects\items\devices\multitool.dm"
-#include "modular_bluemoon\code\game\objects\items\devices\traitor_announcer.dm"
 #include "modular_bluemoon\code\game\objects\items\devices\scanners.dm"
+#include "modular_bluemoon\code\game\objects\items\devices\traitor_announcer.dm"
 #include "modular_bluemoon\code\game\objects\items\devices\tricoder.dm"
 #include "modular_bluemoon\code\game\objects\items\devices\tvcamera.dm"
 #include "modular_bluemoon\code\game\objects\items\granters\rebarxbowsyndie.dm"
@@ -4575,6 +4575,7 @@
 #include "modular_bluemoon\code\modules\aesthetics\sign\_signs.dm"
 #include "modular_bluemoon\code\modules\antagonists\bloodsucker.dm"
 #include "modular_bluemoon\code\modules\antagonists\bloodsucker_crypt.dm"
+#include "modular_bluemoon\code\modules\antagonists\medival_warmongers.dm"
 #include "modular_bluemoon\code\modules\antagonists\_common\monkey_antag_spawner.dm"
 #include "modular_bluemoon\code\modules\antagonists\bloodsucker\bloodsucker_flaws.dm"
 #include "modular_bluemoon\code\modules\antagonists\bloodsucker\bloodsucker_objectives.dm"
@@ -4702,6 +4703,7 @@
 #include "modular_bluemoon\code\modules\clothing\syndie_edits\syndie_edits_civil-version.dm"
 #include "modular_bluemoon\code\modules\clothing\under\_under.dm"
 #include "modular_bluemoon\code\modules\clothing\under\accessories.dm"
+#include "modular_bluemoon\code\modules\clothing\under\costume.dm"
 #include "modular_bluemoon\code\modules\clothing\under\miscellaneous.dm"
 #include "modular_bluemoon\code\modules\clothing\under\skirt_dress.dm"
 #include "modular_bluemoon\code\modules\clothing\under\jobs\civilian\civilian.dm"
@@ -4712,6 +4714,7 @@
 #include "modular_bluemoon\code\modules\clothing\underwear\tape_underwear.dm"
 #include "modular_bluemoon\code\modules\clothing\wrists\_wrists.dm"
 #include "modular_bluemoon\code\modules\death_memory\death_memory.dm"
+#include "modular_bluemoon\code\modules\events\medival_warmongers_event.dm"
 #include "modular_bluemoon\code\modules\events\psi_wave.dm"
 #include "modular_bluemoon\code\modules\events\spacebattle.dm"
 #include "modular_bluemoon\code\modules\events\zombie_event.dm"
@@ -6249,3 +6252,5 @@
 #include "modular_splurt\code\modules\vending\wardrobes.dm"
 #include "tools\Redirector\textprocs.dm"
 // END_INCLUDE
+// BEGIN_PREFERENCES
+// END_PREFERENCES

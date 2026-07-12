@@ -81,6 +81,30 @@
 	item_state = "blueshift"
 	custom_premium_price = PRICE_ABOVE_EXPENSIVE
 
+// Bluemoon add start - добовляю броню вармонгеров
+/obj/item/clothing/suit/armor/vest/military
+	name = "Crude chestplate"
+	desc = "It may look rough, rusty and battered, but it's also made out of junk and uncomfortable to wear."
+	icon_state = "military"
+	dog_fashion = null
+	armor = list(MELEE = 45, BULLET = 25, LASER = 25, ENERGY = 25, BOMB = 25, BIO = 0, RAD = 0, FIRE = 10, ACID = 50, WOUND = 20)
+	allowed = list(
+		/obj/item/banner,
+		/obj/item/claymore/shortsword,
+		/obj/item/nullrod,
+		/obj/item/spear,
+		/obj/item/gun/ballistic/bow
+	)
+
+/obj/item/clothing/suit/armor/riot/knight/warlord
+	name = "golden plate armor"
+	desc = "This bulky set of armor is coated with a shiny layer of gold. It seems to almost reflect all light sources."
+	icon_state = "warlord"
+	armor = list(MELEE = 70, BULLET = 60, LASER = 70, ENERGY = 70, BOMB = 45, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 30)
+	w_class = WEIGHT_CLASS_BULKY
+	clothing_flags = THICKMATERIAL
+	slowdown = 0.8
+
 /obj/item/clothing/suit/armor/hos
 	name = "armored greatcoat"
 	desc = "A greatcoat enhanced with a special alloy for some extra protection and style for those with a commanding presence."

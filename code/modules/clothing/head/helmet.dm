@@ -89,6 +89,26 @@
 			return
 	return ..()
 
+// Bluemoon add start - шлема пиратов из космоса
+/obj/item/clothing/head/helmet/military
+	name = "Crude Helmet"
+	desc = "A cheaply made kettle helmet with an added faceplate to protect your eyes and mouth."
+	icon_state = "military"
+	flags_inv = HIDEEARS|HIDEEYES|HIDEFACE|HIDESNOUT
+	flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
+	strip_delay = 80
+	dog_fashion = null
+	armor = list(MELEE = 45, BULLET = 25, LASER = 25,ENERGY = 25, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 20)
+
+/obj/item/clothing/head/helmet/knight/warlord
+	name = "golden barbute helmet"
+	desc = "There is no man behind the helmet, only a terrible thought."
+	icon_state = "warlord"
+	armor = list(MELEE = 70, BULLET = 60, LASER = 70,ENERGY = 70, BOMB = 45, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 30)
+	flags_inv = HIDEEARS|HIDEEYES|HIDEFACE|HIDEMASK|HIDEHAIR|HIDEFACIALHAIR|HIDESNOUT
+	flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
+	slowdown = 0.2
+
 /obj/item/clothing/head/helmet/nvg
 	name = "NVG Helmet"
 	desc = "Standard Security gear. Protects the head from impacts. Equipped with a night vision apparatus on the front edge."
