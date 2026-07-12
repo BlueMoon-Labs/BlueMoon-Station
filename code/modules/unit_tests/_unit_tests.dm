@@ -94,6 +94,7 @@
 // #include "dynamic_ruleset_sanity.dm"
 // #include "emoting.dm"
 #include "event_ports.dm"
+#include "families.dm"
 // #include "food_edibility_check.dm"
 #include "gc_rewrite.dm"
 // #include "greyscale_config.dm"
