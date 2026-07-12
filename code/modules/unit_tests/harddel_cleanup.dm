@@ -64,3 +64,23 @@
 	TEST_ASSERT(!QDELETED(shared_photo), "Security-запись удалила фото, принадлежащее general-записи")
 	qdel(general_record)
 	TEST_ASSERT(QDELETED(shared_photo), "General-запись не удалила принадлежащее ей фото")
+
+/// Радиал-меню не владеет колбеками вызывающего: show_radial_menu делает qdel(menu) до финального
+/// custom_check.Invoke(), поэтому закрытие меню не должно удалять чужой колбек.
+/datum/unit_test/radial_menu_caller_callback_ownership/Run()
+	var/datum/callback/check = CALLBACK(src, PROC_REF(radial_check_stub))
+	var/datum/radial_menu/menu = new
+	menu.custom_check_callback = check
+	qdel(menu)
+	TEST_ASSERT(!QDELETED(check), "Закрытие радиал-меню удалило custom_check колбек вызывающего")
+	TEST_ASSERT(check.Invoke(), "custom_check колбек не сработал после закрытия радиал-меню")
+
+	var/datum/callback/select = CALLBACK(src, PROC_REF(radial_check_stub))
+	var/datum/radial_menu/persistent/persistent_menu = new
+	persistent_menu.select_proc_callback = select
+	qdel(persistent_menu)
+	TEST_ASSERT(!QDELETED(select), "Закрытие persistent радиал-меню удалило select_proc колбек вызывающего")
+	TEST_ASSERT(select.Invoke(), "select_proc колбек не сработал после закрытия persistent радиал-меню")
+
+/datum/unit_test/radial_menu_caller_callback_ownership/proc/radial_check_stub()
+	return TRUE
