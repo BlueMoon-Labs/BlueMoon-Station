@@ -10,18 +10,18 @@
 	intensity = 20 // одиночка, но с ядерным риском
 	description = "A single nuclear operative assaults the station."
 
-// Экста-вариант по правилам проекта: одинокий оперативник "может появиться в режим игры Extended"
-// как защитник Диска Ядерной Аутентификации. spawn_role() в эксте сам выдаёт
-// /datum/antagonist/nukeop/lone/syndicate (Disk Keeper, цель revert - охранять диск и станцию),
-// поэтому контролу достаточно гейта required_round_type.
+// Мирный вариант по правилам проекта: на Extended и Dynamic Light одинокий оперативник
+// появляется защитником Диска Ядерной Аутентификации, а не боевым раунд-эндером.
 /datum/round_event_control/operative/keeper
 	name = "Lone Operative (Disk Keeper)"
+	typepath = /datum/round_event/ghost_role/operative/keeper
 	admin_only = FALSE
 	weight = 10
+	min_players = 15 // Light предлагается на лоупопе; унаследованные 30 делали событие практически недоступным
 	earliest_start = 30 MINUTES
-	required_round_type = list(ROUNDTYPE_EXTENDED)
+	required_round_type = list(ROUNDTYPE_EXTENDED, ROUNDTYPE_DYNAMIC_LIGHT)
 	cost = 10
-	intensity = 10 // защитник, а не угроза: мягкий вклад в гост-пул эксты
+	intensity = 10 // защитник, а не угроза: мягкий вклад в гост-пул фоновых режимов
 	description = "A syndicate specialist arrives to guard the nuclear authentication disk."
 
 /datum/round_event/ghost_role/operative
@@ -32,7 +32,13 @@
 /datum/round_event/ghost_role/operative/spawn_role()
 	return spawn_operative()
 
-/datum/round_event/ghost_role/operative/proc/spawn_operative(keeper_force = FALSE, turf/last_spawn_loc)
+/datum/round_event/ghost_role/operative/keeper
+	role_name = "disk keeper"
+
+/datum/round_event/ghost_role/operative/keeper/spawn_role()
+	return spawn_operative(TRUE)
+
+/datum/round_event/ghost_role/operative/proc/spawn_operative(keeper_force = FALSE)
 	var/list/candidates = get_candidates(ROLE_OPERATIVE, null, ROLE_OPERATIVE)
 	if(!candidates.len)
 		return NOT_ENOUGH_PLAYERS
@@ -44,9 +50,6 @@
 		spawn_locs += L.loc
 	for(var/obj/effect/landmark/loneopspawn/L in GLOB.landmarks_list)
 		spawn_locs += L.loc
-
-	if(keeper_force && spawn_locs.len > 1 && !QDELETED(last_spawn_loc))
-		spawn_locs -= last_spawn_loc
 
 	if(!spawn_locs.len)
 		return MAP_ERROR
@@ -64,8 +67,6 @@
 	if(GLOB.round_type == ROUNDTYPE_EXTENDED)
 		antag_type = new /datum/antagonist/nukeop/lone/syndicate
 		antag_type.nukeop_outfit = /datum/outfit/syndicate/lone/extended
-	else if(GLOB.round_type == ROUNDTYPE_DYNAMIC_LIGHT && !keeper_force)
-		addtimer(CALLBACK(src, PROC_REF(spawn_operative), TRUE, get_turf(spawn_loc)), 10 SECONDS)
 
 	var/antag_name = initial(antag_type.name)
 	var/datum/mind/Mind = new(selected.key)
