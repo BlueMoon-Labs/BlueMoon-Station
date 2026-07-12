@@ -32,14 +32,14 @@ export const AntagInfoClockwork = (props) => {
               Chetr nyy hagehguf naq ubabe Ratvar.
             </Stack.Item>
             <Stack.Item fontSize={1.2} color="#BE8700">
-              {`Assist your new companions in their righteous efforts.
-                Your goal is theirs, and theirs yours.
-                You serve the Clockwork Justiciar above all else.`}
+              {`Помогайте своим новым товарищам в их праведных усилиях.
+                Ваша цель - это их цель, а их цель - ваша.
+                Вы служите Часовому Юстициару, не смотря ни на что.`}
             </Stack.Item>
             <br />
             <Stack.Item>
               <Section
-                title="This is Ratvar's will"
+                title="Такова воля Ратвара"
                 vertical
                 fill>
                 <Stack.Item grow >
@@ -55,8 +55,8 @@ export const AntagInfoClockwork = (props) => {
                       textColor="#dab44d"
                       fontSize={2}
                       bold>
-                      Construct the Ark of the
-                      Clockwork Justicar and free Ratvar.
+                      Постройте Ковчег
+                      Часового Юстициара и освободите Ратвара.
                     </Stack.Item>
                   )}
                 </Stack.Item>
@@ -65,7 +65,7 @@ export const AntagInfoClockwork = (props) => {
             <br />
             <Stack.Divider />
             <Stack.Item fontSize={2} color="#BE8700" bold>
-              Perform his every whim without hesitation.
+              Выполняйте все его прихоти без колебаний.
             </Stack.Item>
           </Stack>
         </Section>

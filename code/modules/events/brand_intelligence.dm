@@ -53,6 +53,8 @@
 	vendingMachines.Remove(originMachine)
 	originMachine.shut_up = 0
 	originMachine.shoot_inventory = 1
+	originMachine.machine_wake() // item-flinging happens in process()
+	originMachine.schedule_slogan()
 	announce_to_ghosts(originMachine)
 
 
@@ -85,6 +87,8 @@
 		infectedMachines.Add(rebel)
 		rebel.shut_up = 0
 		rebel.shoot_inventory = 1
+		rebel.machine_wake() // item-flinging happens in process()
+		rebel.schedule_slogan()
 
 		if(ISMULTIPLE(activeFor, 8))
 			originMachine.speak(pick(rampant_speeches))

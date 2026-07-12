@@ -777,3 +777,63 @@
 	TEST_ASSERT(!SSnightshift.admin_solar_time_override, "Clearing solar time should restore normal progression.")
 	TEST_ASSERT_EQUAL(SSticker.gametime_offset, 21 HOURS, "Clearing solar time should restore the pre-override offset.")
 	assert_fixture_state("Solar Clear", TRUE, auto_level)
+
+// ===== Реентерабельность дренажа ночных очередей =====
+
+/// Пробник: его update() один раз симулирует конкурентный проход fire() по тем же
+/// очередям (вложенный process_nightshift_queues) и подбрасывает "позднюю" лампу,
+/// встающую в очередь посреди внешнего прохода.
+/obj/machinery/light/nightshift_reentrant_drain_probe
+	var/nested_drain_armed = FALSE
+	var/obj/machinery/light/late_arrival
+
+/obj/machinery/light/nightshift_reentrant_drain_probe/update(trigger = TRUE, silent = FALSE)
+	if(nested_drain_armed)
+		nested_drain_armed = FALSE
+		SSlighting.process_nightshift_queues(TRUE)
+		if(late_arrival && !QDELETED(late_arrival))
+			late_arrival.queue_nightshift_update()
+	return ..()
+
+/// Регресс на прежний k-индексный проход с хвостовым Cut: конкурентный дренаж посреди
+/// внешнего прохода выкидывал вставшую во время него лампу из очереди необработанной,
+/// с застрявшим nightshift_update_queued = TRUE - она навсегда теряла обновления цвета
+/// (флак nightshift_admin_controls на layenia). Ассерты только на source-local state
+/// (флаги конкретных ламп), не на длины глобальных очередей.
+/datum/unit_test/nightshift_queue_reentrant_drain
+	var/list/saved_apc_queue
+	var/list/saved_light_queue
+
+/datum/unit_test/nightshift_queue_reentrant_drain/New()
+	..()
+	saved_apc_queue = GLOB.nightshift_apc_queue.Copy()
+	saved_light_queue = GLOB.nightshift_light_queue.Copy()
+	GLOB.nightshift_apc_queue.Cut()
+	GLOB.nightshift_light_queue.Cut()
+
+/datum/unit_test/nightshift_queue_reentrant_drain/Destroy()
+	GLOB.nightshift_apc_queue += saved_apc_queue
+	GLOB.nightshift_light_queue += saved_light_queue
+	return ..()
+
+/datum/unit_test/nightshift_queue_reentrant_drain/Run()
+	var/obj/machinery/light/filler = allocate(/obj/machinery/light, run_loc_floor_bottom_left)
+	var/obj/machinery/light/nightshift_reentrant_drain_probe/probe = allocate(/obj/machinery/light/nightshift_reentrant_drain_probe, run_loc_floor_top_right)
+	var/obj/machinery/light/late = allocate(/obj/machinery/light, run_loc_floor_bottom_left)
+
+	TEST_ASSERT(filler.queue_nightshift_update(), "Обычная лампа должна вставать в очередь")
+	TEST_ASSERT(probe.queue_nightshift_update(), "Пробник должен вставать в очередь")
+	probe.late_arrival = late
+	probe.nested_drain_armed = TRUE
+
+	SSlighting.process_nightshift_queues(TRUE)
+
+	TEST_ASSERT(!probe.nested_drain_armed, "Пробник должен был отыграть вложенный дренаж во время внешнего прохода")
+	TEST_ASSERT(!filler.nightshift_update_queued, "Флаг обычной лампы должен быть снят дренажем")
+	TEST_ASSERT(!probe.nightshift_update_queued, "Флаг пробника должен быть снят дренажем")
+	TEST_ASSERT(!late.nightshift_update_queued, "Поздняя лампа не должна остаться с висящим nightshift_update_queued вне очереди")
+
+	// Застрявший флаг раньше навсегда блокировал повторную постановку - проверяем, что путь жив.
+	TEST_ASSERT(late.queue_nightshift_update(), "Поздняя лампа должна снова вставать в очередь после дренажа")
+	SSlighting.process_nightshift_queues(TRUE)
+	TEST_ASSERT(!late.nightshift_update_queued, "Повторно поставленная лампа должна быть обработана следующим дренажем")

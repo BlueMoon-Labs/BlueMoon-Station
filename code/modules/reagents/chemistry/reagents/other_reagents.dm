@@ -1828,7 +1828,6 @@
 	var/heal_amount = clamp(round(3 + volume * 1.2), 3, 18)
 	M.adjustBruteLoss(-heal_amount)
 	M.adjustFireLoss(-heal_amount)
-	M.adjustOxyLoss(-max(round(heal_amount * 0.5), 1))
 	M.adjustToxLoss(-max(round(heal_amount * 0.3), 1))
 	. = ..()
 

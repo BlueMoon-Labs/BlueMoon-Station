@@ -141,6 +141,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/tmp/datum/loadout_color_handler/loadout_color_handler
 	// BLUEMOON ADD END
 
+	// BLUEMOON ADD START || Phobia selection
+	var/phobia_type = null
+	// BLUEMOON ADD END
+
 	//character preferences
 	var/real_name							//our character's name
 	var/nameless = FALSE					//whether or not our character is nameless
@@ -2799,6 +2803,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		dat += "Настройки для отдельных квирков. Если нужный квирк не будет выставлен, то они работать не будут.<br>"
 		dat += "<a href='?_src_=prefs;preference=traits_setup;task=change_shriek_option'>([BLUEMOON_TRAIT_NAME_SHRIEK]) Тип Крика: [shriek_type]</a>"
 		dat += "<a href='?_src_=prefs;preference=traits_setup;task=lewd_summon_nickname'>([TRAIT_LEWD_SUMMON]) Прозвище для призываемого[summon_nickname ? ": ": ""][summon_nickname]</a>"
+		var/phobia_text = phobia_type ? phobia_type : "Случайная"
+		dat += "<a href='?_src_=prefs;preference=traits_setup;task=change_phobia_option'>([BLUEMOON_TRAIT_NAME_PHOBIA]) Тип фобии: [phobia_text]</a><br>"
 		dat += "<hr>"
 		// BLUEMOON ADD END
 		dat += "<div align='center'>Left-click to add or remove quirks. You need negative quirks to have positive ones.<br>\
@@ -2875,6 +2881,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	dat += "<div class='csetup-quirk-settings'>"
 	dat += "<a class='csetup-quirk-setting' href='?_src_=prefs;preference=traits_setup;task=change_shriek_option'>Тип крика: <b>[shriek_type]</b></a>"
 	dat += "<a class='csetup-quirk-setting' href='?_src_=prefs;preference=traits_setup;task=lewd_summon_nickname'>Прозвище: <b>[display_summon_nickname]</b></a>"
+	dat += "<a class='csetup-quirk-setting' href='?_src_=prefs;preference=traits_setup;task=change_phobia_option'>([BLUEMOON_TRAIT_NAME_PHOBIA]) Тип: <b>[phobia_type ? phobia_type : "Случайная"]</b></a>"
 	dat += "</div>"
 
 	dat += "<h3>Текущие квирки</h3>"
@@ -3323,20 +3330,20 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					ShowChoices(user)
 				else
 					SetQuirks(user)
-	// BLUEMOON ADD START - возможность настраивать квирки
+// BLUEMOON ADD START - возможность настраивать квирки
 	else if(href_list["preference"] == "traits_setup")
 		var/is_inline_quirks = (new_character_creator && findtext(charcreation_theme, "modern") && character_settings_tab == QUIRKS_CHAR_TAB && CONFIG_GET(flag/roundstart_traits))
 		switch(href_list["task"])
-			if("change_shriek_option") // изменение вида крика от квирка крикуна
+			if("change_shriek_option")
 				var/client/C = usr.client
 				if(C)
 					var/new_shriek_type = tgui_input_list(user, "Choose your character's shriek type.", "Character Preference", GLOB.shriek_types)
 					if(new_shriek_type)
 						shriek_type = new_shriek_type
-						if(is_inline_quirks)
-							ShowChoices(user)
-						else
-							SetQuirks(user)
+					if(is_inline_quirks)
+						ShowChoices(user)
+					else
+						SetQuirks(user)
 			if("lewd_summon_nickname")
 				var/client/C = usr.client
 				if(C)
@@ -3351,9 +3358,21 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 								SetQuirks(user)
 						else
 							to_chat(user, "<font color='red'>Invalid name. Your name should be at least 2 and at most [MAX_NAME_LEN] characters long. It may only contain the characters A-Z, a-z, А-Я, а-я, -, ' and .</font>")
-
-	// BLUEMOON ADD END
-		return TRUE
+			if("change_phobia_option")
+				var/list/phobia_choices = list("Случайная")
+				if(SStraumas && SStraumas.phobia_types)
+					phobia_choices += SStraumas.phobia_types
+				var/new_choice = input(user, "Выберите вашу фобию. Если не выберете — будет случайная.", "Настройка фобии") as null|anything in phobia_choices
+				if(new_choice)
+					if(new_choice == "Случайная")
+						phobia_type = null
+					else
+						phobia_type = new_choice
+				if(is_inline_quirks)
+					ShowChoices(user)
+				else
+					SetQuirks(user)
+// BLUEMOON ADD END
 
 	else if(href_list["quirk_category"])
 		var/is_inline_quirks = (new_character_creator && findtext(charcreation_theme, "modern") && character_settings_tab == QUIRKS_CHAR_TAB && CONFIG_GET(flag/roundstart_traits))

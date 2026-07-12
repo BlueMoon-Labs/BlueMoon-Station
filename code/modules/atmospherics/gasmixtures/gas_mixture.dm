@@ -520,6 +520,27 @@ get_true_breath_pressure(pp) --> gas_pp = pp/breath_pp*total_moles()
 		return TRUE
 	return FALSE
 
+/// Converts gases when exposed to radiation (pluoxium from CO2+O2, tritium from hydrogen).
+/// Returns TRUE if any conversion occurred.
+/datum/gas_mixture/proc/react_to_radiation(pulse_strength)
+	if(!pulse_strength || pulse_strength <= RAD_BACKGROUND_RADIATION)
+		return FALSE
+	var/remaining = pulse_strength
+	if(get_moles(GAS_CO2) && get_moles(GAS_O2))
+		var/pluox_strength = min(remaining, get_moles(GAS_CO2) * PLUOXIUM_RADIATION_CO2_DIVISOR, get_moles(GAS_O2) * PLUOXIUM_RADIATION_O2_DIVISOR)
+		set_moles(GAS_CO2, max(get_moles(GAS_CO2) - (pluox_strength / PLUOXIUM_RADIATION_CO2_DIVISOR), 0))
+		set_moles(GAS_O2, max(get_moles(GAS_O2) - (pluox_strength / PLUOXIUM_RADIATION_O2_DIVISOR), 0))
+		adjust_moles(GAS_PLUOXIUM, pluox_strength / PLUOXIUM_RADIATION_OUTPUT_DIVISOR)
+		remaining -= pluox_strength
+		. = TRUE
+	var/h2_moles = get_moles(GAS_HYDROGEN)
+	if(remaining && h2_moles)
+		var/trit_strength = min(remaining, h2_moles * HYDROGEN_IRRADIATION_DIVISOR)
+		var/converted = trit_strength / HYDROGEN_IRRADIATION_DIVISOR
+		adjust_moles(GAS_HYDROGEN, -converted)
+		adjust_moles(GAS_TRITIUM, converted)
+		. = TRUE
+
 /// Runs electrolyzer reactions on this gas mixture (see /datum/electrolyzer_reaction).
 /datum/gas_mixture/proc/electrolyze(working_power = 0, list/electrolyzer_args = list())
 	for(var/reaction_id in GLOB.electrolyzer_reactions)

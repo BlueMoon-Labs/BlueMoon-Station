@@ -231,11 +231,17 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	/datum/admins/proc/create_or_modify_area,
 	/datum/admins/proc/fixcorruption,
 	/datum/admins/proc/atmos_active_report,
+	#ifndef TGS
+	/datum/admins/proc/atmos_benchmark,
+	#endif
 	// /client/proc/check_timer_sources,
 	/client/proc/toggle_cdn,
 	/client/proc/discordnulls,
 	/client/proc/generate_wikichem_list, //DO NOT PRESS UNLESS YOU WANT SUPERLAG
-	/client/proc/allow_browser_inspect
+	/client/proc/allow_browser_inspect,
+	#ifdef TESTING
+	/datum/admins/proc/machines_benchmark,
+	#endif
 	)
 GLOBAL_LIST_INIT(admin_verbs_possess, list(/proc/possess, /proc/release))
 GLOBAL_PROTECT(admin_verbs_possess)

@@ -451,10 +451,10 @@
 	if(SPT_PROB(100 - critical_threshold_proximity / 15, seconds_per_tick))
 		return
 	var/grav_range = round(log(2.5, critical_threshold_proximity))
-	for(var/mob/alive_mob in view(grav_range, src))
-		if(alive_mob.mob_negates_gravity())
+	for(var/mob/living/grav_mob in view(grav_range, src))
+		if(grav_mob.mob_negates_gravity())
 			continue
-		step_towards(alive_mob, loc)
+		step_towards(grav_mob, loc)
 
 /// Сливает в output отфильтрованные газы модератора и побочные продукты fusion (primary_products). Топливо не выводится.
 /obj/machinery/atmospherics/components/unary/hypertorus/core/proc/remove_waste(seconds_per_tick)

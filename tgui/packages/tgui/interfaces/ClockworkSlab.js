@@ -114,10 +114,10 @@ export const ClockworkSlab = (props) => {
                 <Box
                   key={tier}
                   as={'span'}
-                  textColor={info.ready ? '#BE8700' : '#888888'}
+                  textColor={info.ready ? '#BE8700' : '#B00000'}
                   bold={!!info.ready}
                   italic={!info.ready}>
-                  <b>{tier}:</b> {info.ready
+                  <b>Писания {tier}:</b> {info.ready
                     ? "Эти писания уже открыты."
                     : info.requirement}
                   <br />
@@ -269,12 +269,12 @@ export const CSTutorial = (props) => {
               ВНИМАНИЕ: Информация устарела.
               Читайте гайд в рюкзаке или вики.
             </NoticeBox>
-            Архивы Ратвара, Часового Судии. Здесь — советы
+            Архивы Ратвара, Часового Юстициара. Здесь — советы
             для слуг, что делать дальше и как служить
             мастеру. Загляните сюда, если застряли.
             <br /> <br />
             <NoticeBox info>
-              Servant, Cache, Slab и прочие термины
+              Слуга, Плита и прочие термины
               пишутся с большой буквы — это особенность
               языка Ратвара, не путайтесь.
             </NoticeBox>
@@ -310,7 +310,7 @@ export const CSTutorial = (props) => {
         {rec_section?.info ? (
           rec_section.info
         ) : (
-          "Когскараб, видимо, потерял этот раздел."
+          "Жук-шестерня, видимо, потерял этот раздел."
         )}
       </Box>
       <br />

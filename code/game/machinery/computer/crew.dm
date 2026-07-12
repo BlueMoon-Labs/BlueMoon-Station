@@ -2,6 +2,7 @@
 
 /obj/machinery/computer/crew
 	name = "crew monitoring console"
+	idle_sleeps = FALSE // own periodic work in process(); must not doze off via the parent typing-indicator path
 	desc = "Used to monitor active health sensors built into most of the crew's uniforms."
 	icon_screen = "crew"
 	icon_keyboard = "med_key"

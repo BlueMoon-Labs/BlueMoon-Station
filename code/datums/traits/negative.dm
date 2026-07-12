@@ -387,8 +387,24 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 
 /datum/quirk/phobia/post_add()
 	var/mob/living/carbon/human/H = quirk_holder
-	phobia = new
+	var/selected_phobia
+
+	// BLUEMOON EDIT START - получение выбранной фобии из настроек персонажа
+	if(quirk_holder.client?.prefs)
+		selected_phobia = quirk_holder.client.prefs.phobia_type
+
+	// Если фобия не выбрана или невалидна — берём случайную из доступных в подсистеме
+	if(!selected_phobia || !(selected_phobia in SStraumas.phobia_types))
+		selected_phobia = pick(SStraumas.phobia_types)
+	// BLUEMOON EDIT END
+
+	// Создаем травму с выбранным типом фобии
+	phobia = new /datum/brain_trauma/mild/phobia(selected_phobia)
 	H.gain_trauma(phobia, TRAUMA_RESILIENCE_ABSOLUTE)
+
+	// BLUEMOON EDIT START - обновление мед. записи с указанием конкретной фобии
+	medical_record_text = "Пациент имеет иррациональный страх перед [selected_phobia]."
+	// BLUEMOON EDIT END
 
 /datum/quirk/phobia/remove()
 	var/mob/living/carbon/human/H = quirk_holder

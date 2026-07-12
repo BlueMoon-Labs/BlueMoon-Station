@@ -348,6 +348,18 @@
 	var/list/saved_corners = GLOB.lighting_update_corners.Copy()
 	var/list/saved_objects = GLOB.lighting_update_objects.Copy()
 
+	// Фоновый инит на паузу на время прогона: его Phase 1/2 легально ПОДМЕНЯЮТ объект
+	// GLOB.lighting_deferred_atoms (сплайс без yield'ов внутри fire - для прода это
+	// безопасно), и, попав в CHECK_TICK-сон нашего create_lighting_for_zlevel, фоновая
+	// подмена роняла проверку идентичности списка, которая тестирует именно on-demand путь.
+	var/old_bg_current = SSlighting.bg_current_zlevel
+	var/old_bg_phase = SSlighting.bg_phase
+	var/list/old_bg_turfs = SSlighting.bg_turfs
+	var/old_bg_index = SSlighting.bg_turf_index
+	var/list/old_bg_queue = SSlighting.bg_queued_zlevels
+	SSlighting.bg_current_zlevel = 0
+	SSlighting.bg_queued_zlevels = list()
+
 	var/obj/effect/light_emitter/emitter = park_deferred_emitter(test_turf, level)
 	var/precond_parked = (emitter in GLOB.lighting_deferred_atoms)
 	GLOB.lighting_update_lights.Cut()
@@ -365,6 +377,14 @@
 	GLOB.lighting_update_objects = saved_objects
 	GLOB.lighting_deferred_atoms = saved_deferred
 	level.lighting_initialized = old_init
+	// Восстановление фонового инита. Середину прогона по нашему test_z не восстанавливаем:
+	// прод-семантика create_lighting_for_zlevel - отменить фоновый краул этого z.
+	if(old_bg_current != test_z)
+		SSlighting.bg_current_zlevel = old_bg_current
+		SSlighting.bg_phase = old_bg_phase
+		SSlighting.bg_turfs = old_bg_turfs
+		SSlighting.bg_turf_index = old_bg_index
+	SSlighting.bg_queued_zlevels = old_bg_queue
 
 	TEST_ASSERT(precond_parked, "precondition: emitter parked as deferred")
 	TEST_ASSERT(flushed, "on-demand init must flush the parked atom for its z")

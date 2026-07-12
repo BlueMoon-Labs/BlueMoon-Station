@@ -48,7 +48,7 @@
 /mob/living/simple_animal/hostile/deathclaw/funclaw/proc/CanRape(mob/living/M)
 	. = FALSE
 
-	if(!M.client)
+	if(!M.client || issilicon(M) || isobserver(M))
 		return FALSE
 
 	//So the new pref mobsexpref checks - Gardelin0

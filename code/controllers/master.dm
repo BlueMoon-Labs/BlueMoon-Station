@@ -299,6 +299,18 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 	if (!current_runlevel)
 		SetRunLevel(1)
 
+	#ifdef ATMOS_HEADLESS_BENCH
+	// Headless benchmark: with no clients the world would sleep_offline after
+	// init (the Master loop halts) and a 0-player round never leaves the lobby,
+	// so SSair would never fire. Keep the world awake and force the game
+	// runlevel - the fully loaded map is enough, no round needed.
+	if(!length(GLOB.clients))
+		sleep_offline_after_initializations = FALSE
+		world.sleep_offline = FALSE
+		SetRunLevel(RUNLEVEL_GAME)
+		log_world("ATMOS-BENCH: headless mode - world kept awake, runlevel GAME forced")
+	#endif
+
 	// Sort subsystems by display setting for easy access.
 	sortTim(subsystems, GLOBAL_PROC_REF(cmp_subsystem_display))
 

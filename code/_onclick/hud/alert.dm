@@ -690,22 +690,22 @@ or shoot a gun to move around via Newton's 3rd Law of Motion."
 				servants++
 		var/datum/antagonist/clockcult/C = owner.mind.has_antag_datum(/datum/antagonist/clockcult,TRUE)
 		if(C && C.clock_team)
-			textlist += "[C.clock_team.eminence ? "There is an Eminence." : "<b>There is no Eminence! Get one ASAP!</b>"]<br>"
-		textlist += "There are currently <b>[servants]</b> servant[servants > 1 ? "s" : ""] of Ratvar.<br>"
+			textlist += "[C.clock_team.eminence ? "Епископ присутствует." : "<b>Епископ отсутствует! Изберите его как можно скорее!</b>"]<br>"
+		textlist += "Сейчас у Ратвара <b>[servants]</b> слуг[servants % 10 == 1 && servants % 100 != 11 ? "а" : (servants % 10 >= 2 && servants % 10 <= 4 && (servants % 100 < 10 || servants % 100 >= 20) ? "и" : "")].<br>"
 		for(var/i in SSticker.scripture_states)
 			if(i != SCRIPTURE_DRIVER) //ignore the always-unlocked stuff
-				textlist += "[i] Scripture: <b>[SSticker.scripture_states[i] ? "UNLOCKED":"LOCKED"]</b><br>"
+				textlist += "Писания [i]: <b>[SSticker.scripture_states[i] ? "РАЗБЛОКИРОВАНЫ":"ЗАБЛОКИРОВАНЫ"]</b><br>"
 		var/obj/structure/destructible/clockwork/massive/celestial_gateway/G = GLOB.ark_of_the_clockwork_justiciar
 		if(G)
 			var/time_info = G.get_arrival_time(FALSE)
 			var/time_name
 			if(G.seconds_until_activation)
-				time_name = "until the Ark activates"
+				time_name = "до активации Ковчега"
 			else if(G.progress_in_seconds)
-				time_name = "until the Ark finishes summoning"
+				time_name = "до завершения призыва Ковчега"
 			if(time_info)
-				textlist += "<b>[time_info / 60] minutes</b> [time_name].<br>"
-		textlist += "<b>[DisplayPower(get_clockwork_power())] / [DisplayPower(MAX_CLOCKWORK_POWER)]</b> power available for use."
+				textlist += "<b>[time_info / 60] минут</b> [time_name].<br>"
+		textlist += "<b>Доступно [DisplayPower(get_clockwork_power())] / [DisplayPower(MAX_CLOCKWORK_POWER)]</b> энергии для использования."
 		desc = textlist.Join()
 	..()
 
