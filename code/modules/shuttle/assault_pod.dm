@@ -10,16 +10,16 @@
 		return ..()
 
 // Глобальная переменная для направления следа (устанавливается при первом запуске)
-var/global/pod_attack_direction = 0
+GLOBAL_VAR_INIT(pod_attack_direction, 0)
 
 /obj/docking_port/mobile/assault_pod/initiate_docking(obj/docking_port/stationary/S1)
     if(!istype(S1, /obj/docking_port/stationary/transit))
         var/turf/end = get_turf(S1)
         if(end)
             // Если направление ещё не задано, выбираем случайное
-            if(!pod_attack_direction)
-                pod_attack_direction = pick(NORTH, SOUTH, EAST, WEST)
-            var/dir = pod_attack_direction
+            if(!GLOB.pod_attack_direction)
+                GLOB.pod_attack_direction = pick(NORTH, SOUTH, EAST, WEST)
+            var/dir = GLOB.pod_attack_direction
 
             // Строим линию из 5 турфов, начиная с цели и уходя в этом направлении
             var/turf/current = end
