@@ -62,9 +62,14 @@ SUBSYSTEM_DEF(decay)
 
 	return SS_INIT_SUCCESS
 
+/datum/controller/subsystem/decay/proc/can_decay_break_floor(turf/open/floor/floor_turf)
+	if(istype(floor_turf, /turf/open/floor/plating) || istype(floor_turf, /turf/open/floor/glass))
+		return FALSE
+	return TRUE
+
 /datum/controller/subsystem/decay/proc/do_common()
 	for(var/turf/open/floor/iterating_floor as anything in possible_turfs)
-		if(iterating_floor.can_ssdecay_break())
+		if(can_decay_break_floor(iterating_floor))
 			if(prob(FLOOR_TILE_MISSING_PERCENT_CHANCE * severity_modifier) && prob(60))
 				iterating_floor.break_tile_to_plating()
 
@@ -84,8 +89,7 @@ SUBSYSTEM_DEF(decay)
 	for(var/area/maintenance/iterating_maintenance as anything in possible_areas)
 		for(var/turf/open/iterating_floor as anything in iterating_maintenance)
 			if(prob(FLOOR_BLOOD_PERCENT_CHANCE * severity_modifier))
-				var/obj/effect/decal/cleanable/blood/spawned_blood = new(iterating_floor)
-				spawned_blood.dry()
+				var/obj/effect/decal/cleanable/blood/old/spawned_blood = new(iterating_floor)
 				if(!iterating_floor.Enter(spawned_blood))
 					qdel(spawned_blood)
 
@@ -98,13 +102,12 @@ SUBSYSTEM_DEF(decay)
 	for(var/area/engineering/iterating_engineering as anything in possible_areas)
 		for(var/turf/open/iterating_floor as anything in iterating_engineering)
 			if(prob(FLOOR_BLOOD_PERCENT_CHANCE * severity_modifier))
-				var/obj/effect/decal/cleanable/blood/spawned_blood = new(iterating_floor)
-				spawned_blood.dry()
+				var/obj/effect/decal/cleanable/blood/old/spawned_blood = new(iterating_floor)
 				if(!iterating_floor.Enter(spawned_blood))
 					qdel(spawned_blood)
 
 			if(prob(FLOOR_OIL_PERCENT_CHANCE * severity_modifier))
-				var/obj/effect/decal/cleanable/blood/oil/spawned_oil = new(iterating_floor)
+				var/obj/effect/decal/cleanable/oil/spawned_oil = new(iterating_floor)
 				if(!iterating_floor.Enter(spawned_oil))
 					qdel(spawned_oil)
 
@@ -112,8 +115,7 @@ SUBSYSTEM_DEF(decay)
 	for(var/area/medical/iterating_medical as anything in possible_areas)
 		for(var/turf/open/iterating_floor as anything in iterating_medical)
 			if(prob(FLOOR_BLOOD_PERCENT_CHANCE * severity_modifier))
-				var/obj/effect/decal/cleanable/blood/spawned_blood = new(iterating_floor)
-				spawned_blood.dry()
+				var/obj/effect/decal/cleanable/blood/old/spawned_blood = new(iterating_floor)
 				if(!iterating_floor.Enter(spawned_blood))
 					qdel(spawned_blood)
 
