@@ -24,6 +24,7 @@ SUBSYSTEM_DEF(decay)
 	var/severity_modifier = 1
 
 /datum/controller/subsystem/decay/Initialize()
+	. = ..()
 	if(CONFIG_GET(flag/ssdecay_disabled))
 		message_admins("SSDecay was disabled in config.")
 		log_world("SSDecay was disabled in config.")

@@ -187,6 +187,14 @@
 	smoothing_groups = SMOOTH_GROUP_ABDUCTOR_WALLS + SMOOTH_GROUP_WALLS + SMOOTH_GROUP_CLOSED_TURFS
 	canSmoothWith = SMOOTH_GROUP_AIRLOCK + SMOOTH_GROUP_WINDOW_FULLTILE + SMOOTH_GROUP_ABDUCTOR_WALLS + SMOOTH_GROUP_WALLS
 
+/turf/closed/wall/mineral/cult
+	icon = 'modular_bluemoon/icons/turf/walls/cult_wall.dmi'
+	icon_state = "cult_wall-0"
+	base_icon_state = "cult_wall"
+	smooth = SMOOTH_FALSE
+	smoothing_groups = SMOOTH_GROUP_CULT_WALLS
+	canSmoothWith = SMOOTH_GROUP_AIRLOCK + SMOOTH_GROUP_WINDOW_FULLTILE + SMOOTH_GROUP_CULT_WALLS
+
 /turf/closed/wall/clockwork
 	icon = 'modular_bluemoon/icons/turf/walls/clockwork_wall.dmi'
 	icon_state = "clockwork_wall-0"
