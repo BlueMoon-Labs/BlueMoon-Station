@@ -36,6 +36,12 @@
 #endif // 1 to use the default behaviour;
 								// 2 for preloading absolutely everything;
 
+// Set by tools/rsc_deploy during TGS PreCompile. Keeping this null makes local
+// builds fall back to EXTERNAL_RSC_URLS from config/entries/resources.txt.
+#ifndef DEPLOYMENT_RSC_URL
+#define DEPLOYMENT_RSC_URL null
+#endif
+
 #ifdef LOWMEMORYMODE
 #ifdef ABSOLUTE_MINIMUM_MODE
 #define FORCE_MAP "_maps/runtimestation_minimal.json"

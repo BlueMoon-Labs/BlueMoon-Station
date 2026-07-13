@@ -7,6 +7,12 @@
 #Ignore byond config folder.
 /cfg/**/*
 
+# Per-host external RSC publishing settings.
+/config/rsc_deploy.env
+
+# Generated in a TGS deployment copy between PreCompile and PostCompile.
+/.rsc-deploy.json
+
 # Ignore compiled linux libs in the root folder, e.g. librust_g.so
 /*.so
 

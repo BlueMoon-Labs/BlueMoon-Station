@@ -8,6 +8,7 @@ set -x
 #load dep exports
 #need to switch to game dir for Dockerfile weirdness
 original_dir=$PWD
+event_scripts_dir="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 cd "$1"
 . dependencies.sh
 cd "$original_dir"
@@ -20,6 +21,7 @@ has_sudo="$(command -v sudo)"
 has_grep="$(command -v grep)"
 has_ytdlp="$(command -v yt-dlp)"
 has_pip3="$(command -v pip3)"
+has_python3="$(command -v python3)"
 set -e
 
 # install cargo if needed
@@ -28,6 +30,16 @@ if ! [ -x "$has_cargo" ]; then
 	curl https://sh.rustup.rs -sSf | sh -s -- -y
 	. ~/.profile
 	export PATH="/usr/local/.cargo/bin:$PATH"
+fi
+
+if ! [ -x "$has_python3" ]; then
+	if ! [ -x "$has_sudo" ]; then
+		apt-get update
+		apt-get install -y python3
+	else
+		sudo apt-get update
+		sudo apt-get install -y python3
+	fi
 fi
 
 # apt packages, libssl needed by rust-g but not included in TGS barebones install
@@ -90,3 +102,10 @@ echo "Compiling tgui..."
 cd "$1"
 chmod +x tools/bootstrap/node  # Workaround for https://github.com/tgstation/tgstation-server/issues/1167
 env TG_BOOTSTRAP_CACHE="$original_dir" TG_BOOTSTRAP_NODE_LINUX=1 CBT_BUILD_MODE="TGS" tools/bootstrap/node tools/build/build.js
+
+# Generate a deployment-specific external RSC URL before DreamMaker runs.
+# PostCompile publishes the matching archive and fails the deployment if it cannot.
+python3 tools/rsc_deploy/rsc_deploy.py prepare \
+	--game-dir "$1" \
+	--revision "${2:-}" \
+	--config "$event_scripts_dir/../GameStaticFiles/config/rsc_deploy.env"

@@ -1416,11 +1416,17 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 /// Sends both game resources and browser assets.
 /client/proc/send_resources()
 #if (PRELOAD_RSC == 0)
-	var/static/next_external_rsc = 0
-	var/list/external_rsc_urls = CONFIG_GET(keyed_list/external_rsc_urls)
-	if(length(external_rsc_urls))
-		next_external_rsc = WRAP(next_external_rsc+1, 1, external_rsc_urls.len+1)
-		preload_rsc = external_rsc_urls[next_external_rsc]
+	var/static/deployment_rsc_url = DEPLOYMENT_RSC_URL
+	if(deployment_rsc_url)
+		// This URL is generated before compilation and published by PostCompile.
+		// The DMB and its immutable resource archive therefore always move together.
+		preload_rsc = deployment_rsc_url
+	else
+		var/static/next_external_rsc = 0
+		var/list/external_rsc_urls = CONFIG_GET(keyed_list/external_rsc_urls)
+		if(length(external_rsc_urls))
+			next_external_rsc = WRAP(next_external_rsc+1, 1, external_rsc_urls.len+1)
+			preload_rsc = external_rsc_urls[next_external_rsc]
 #endif
 
 	spawn (10) //removing this spawn causes all clients to not get verbs.

@@ -16,8 +16,10 @@ static_files:
 # This one is for Linux hosted servers
 linux_scripts:
   PreCompile.sh: tools/tgs4_scripts/PreCompile.sh
+  PostCompile.sh: tools/tgs4_scripts/PostCompile.sh
 # Same as above for Windows hosted servers
 windows_scripts:
   PreCompile.bat: tools/tgs4_scripts/PreCompile.bat
+  PostCompile.bat: tools/tgs4_scripts/PostCompile.bat
 # The security level the game should be run at
 security: Trusted

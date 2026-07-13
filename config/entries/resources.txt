@@ -3,7 +3,9 @@
 # If you set this mutiple times, the server will rotate between the links.
 # To use this, the compile option PRELOAD_RSC must be set to 0 to keep byond from preloading resources
 
-EXTERNAL_RSC_URLS https://wiki.ss13-bluemoon.ru/images/5/5f/tgstationv2.zip
+# Production TGS builds override this with an immutable, versioned URL embedded
+# by tools/rsc_deploy. This alias is only a fallback for unmanaged builds.
+EXTERNAL_RSC_URLS http://download.ss13-bluemoon.ru:8080/byond_rsc/Moon-Blue.zip
 
 ########################
 # Browser Asset Config #
