@@ -5,7 +5,7 @@
 	min_players = 10
 	category = EVENT_CATEGORY_HEALTH
 	severity = DIRECTOR_SEVERITY_MINOR
-	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM)
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_LIGHT)
 
 /datum/round_event_control/brain_trauma/can_fire(datum/director_signals/signals)
 	. = ..()
