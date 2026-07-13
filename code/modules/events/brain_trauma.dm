@@ -44,3 +44,10 @@
 	))
 
 	H.gain_trauma_type(trauma_type, resistance)
+	to_chat(H, span_userdanger(pick("ЧТО-ТО ДАВИТ НА МОЙ ЧЕРЕП!", "ГОЛОВА РАСКАЛЫВАЕТСЯ!", "ГОЛОВУ ЗАПОЛНЯЕТ БОЛЬ!")))
+	H.DefaultCombatKnockdown(150)
+	H.Stun(20)
+	H.blind_eyes(10)
+	H.dizziness += 50
+	H.confused += 10
+	H.stuttering += 15
