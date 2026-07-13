@@ -5,8 +5,14 @@
 	max_occurrences = 1
 	min_players = 35
 	earliest_start = 40 MINUTES
-	dynamic_should_hijack = FALSE
 	category = EVENT_CATEGORY_INVASION
+	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
+	cost = 15
+	intensity = 45
+	intensity_linger = 45 MINUTES // штурм живёт заметно дольше спавнера
+	antag_heavy = TRUE // командный асолт: мягкие профили такое выключают
+	family = "pirates" // с рулсетом-двойником динамика (он запускает это же событие): не подряд
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // не экста и не лайт
 	description = "Medieval space pirates will demand homage or assault the station."
 
 /datum/round_event_control/medieval_warmongers/preRunEvent()
