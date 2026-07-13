@@ -60,4 +60,4 @@
 		partner_human.apply_damage(rand(1, 5), BRUTE, BODY_ZONE_CHEST, partner_human.run_armor_check(BODY_ZONE_CHEST, MELEE), wound_bonus = CANT_WOUND)
 
 	user.visible_message(span_danger(message), "Вы рвёте одежду на [partner_human], превращая её в клочья.", ignored_mobs = user.get_unconsenting(), vision_distance = distance,\
-						target = partner_human, target_message = span_userdanger("[user] рвет на вас одежду. врепращая её в клочья!"))
+						target = partner_human, target_message = span_userdanger("[user] рвет на вас одежду, превращая её в клочья!"))
