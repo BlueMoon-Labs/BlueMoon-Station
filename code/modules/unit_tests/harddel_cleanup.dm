@@ -84,3 +84,104 @@
 
 /datum/unit_test/radial_menu_caller_callback_ownership/proc/radial_check_stub()
 	return TRUE
+
+/// remote_materials владеет after_insert и не должен оставлять удалённый callback в своём поле.
+/datum/unit_test/remote_materials_callback_cleanup/Run()
+	var/obj/effect/parent = allocate(/obj/effect)
+	var/datum/callback/after_insert = CALLBACK(src, PROC_REF(after_insert_stub))
+	var/datum/component/remote_materials/component = parent.AddComponent(/datum/component/remote_materials, "unit_test", FALSE, FALSE, FALSE, after_insert)
+	TEST_ASSERT_NOTNULL(component, "Не удалось создать remote_materials")
+
+	qdel(component)
+	TEST_ASSERT(QDELETED(after_insert), "Удаление remote_materials не удалило принадлежащий ему callback")
+	TEST_ASSERT_NULL(component.after_insert, "remote_materials оставил ссылку на удалённый callback")
+
+/datum/unit_test/remote_materials_callback_cleanup/proc/after_insert_stub()
+	return
+
+/// Conjure spell владеет последним созданным предметом и обязан обнулить ссылку после qdel.
+/datum/unit_test/conjure_item_destroy_clears_item/Run()
+	var/obj/effect/proc_holder/spell/targeted/conjure_item/summon_pie/spell = new
+	var/obj/item/item = spell.make_item()
+	TEST_ASSERT_NOTNULL(item, "Summon pie не создал предмет")
+
+	qdel(spell)
+	TEST_ASSERT(QDELETED(item), "Удаление conjure spell не удалило созданный предмет")
+	TEST_ASSERT_NULL(spell.item, "Conjure spell оставил ссылку на удалённый предмет")
+
+/// Удалившаяся slab ability должна разорвать обратную ссылку живого slab.
+/datum/unit_test/clockwork_slab_ability_backref_cleanup/Run()
+	var/obj/item/clockwork/slab/slab = allocate(/obj/item/clockwork/slab)
+	var/obj/effect/proc_holder/slab/volt/ability = new(slab)
+	slab.slab_ability = ability
+	ability.slab = slab
+
+	qdel(ability)
+	TEST_ASSERT_NULL(slab.slab_ability, "Clockwork slab оставил ссылку на удалённую ability")
+
+/// Однотиковый список конвейера не должен сохраняться в var машины после process().
+/datum/unit_test/conveyor_process_does_not_cache_affecting/Run()
+	var/source = read_source_file("code/modules/recycling/conveyor2.dm")
+	TEST_ASSERT_NOTNULL(source, "Не удалось прочитать conveyor2.dm")
+	TEST_ASSERT(!findtext(source, "\tvar/list/affecting\t// the list of all items that will be moved this ptick"), "Конвейер хранит однотиковый affecting как долгоживущий var")
+	TEST_ASSERT(findtext(source, "\tvar/list/affecting = loc.contents - src"), "process() не использует локальный affecting")
+
+/// Кэш screentip обязан инвалидироваться, если закэшированный атом удалён.
+/datum/unit_test/hud_screentip_cache_qdel_cleanup/Run()
+	var/mob/owner = allocate(/mob)
+	var/datum/hud/hud = new(owner)
+	var/atom/movable/screen/fullscreen/dimmer/target = allocate(/atom/movable/screen/fullscreen/dimmer)
+	hud.set_screentip_cache(target, null)
+	TEST_ASSERT_EQUAL(hud.last_screentip_atom, target, "Тест не заполнил screentip-кэш")
+
+	qdel(target)
+	TEST_ASSERT_NULL(hud.last_screentip_atom, "HUD оставил ссылку на удалённый screentip target")
+	qdel(hud)
+
+/// Cached spawnpanel живёт дольше тела админа и должен отпустить удаляемого owner.
+/datum/unit_test/spawnpanel_owner_qdel_cleanup/Run()
+	var/mob/owner = allocate(/mob)
+	var/datum/spawnpanel/panel = new(owner)
+	TEST_ASSERT_EQUAL(panel.owner, owner, "Spawnpanel проигнорировал переданного owner")
+
+	qdel(owner)
+	TEST_ASSERT_NULL(panel.owner, "Spawnpanel оставил ссылку на удалённого owner")
+	qdel(panel)
+
+/// Mind живёт дольше loadout-реликвии и должен очистить assigned_heirloom по её qdel.
+/datum/unit_test/mind_assigned_heirloom_qdel_cleanup/Run()
+	var/datum/mind/mind = new
+	var/obj/item/clothing/wrists/clockwork_watch/red/heirloom = allocate(/obj/item/clothing/wrists/clockwork_watch/red)
+	mind.set_assigned_heirloom(heirloom)
+	TEST_ASSERT_EQUAL(mind.assigned_heirloom, heirloom, "Тест не назначил реликвию")
+
+	qdel(heirloom)
+	TEST_ASSERT_NULL(mind.assigned_heirloom, "Mind оставил ссылку на удалённую assigned_heirloom")
+	qdel(mind)
+
+/// Обезьяна должна удалять qdeleted предметы из blacklistItems.
+/datum/unit_test/monkey_blacklist_item_qdel_cleanup/Run()
+	var/mob/living/carbon/monkey/monkey = allocate(/mob/living/carbon/monkey)
+	var/obj/item/item = allocate(/obj/item)
+	item.setAnchored(TRUE)
+	monkey.set_pickup_target(item)
+	TEST_ASSERT(!monkey.equip_item(item), "Обезьяна неожиданно подобрала anchored предмет")
+	TEST_ASSERT_NULL(monkey.pickupTarget, "Blacklist-путь не очистил pickupTarget")
+	TEST_ASSERT(item in monkey.blacklistItems, "Тестовый предмет не попал в blacklistItems")
+
+	qdel(item)
+	TEST_ASSERT(!(item in monkey.blacklistItems), "Обезьяна оставила удалённый предмет в blacklistItems")
+
+/// Halloween closet не должен удерживать моба после удаления или постановки delayed qdel.
+/datum/unit_test/spooky_closet_trapped_mob_cleanup/Run()
+	var/obj/structure/closet/closet = allocate(/obj/structure/closet)
+	var/mob/first_mob = allocate(/mob)
+	closet.set_trapped_mob(first_mob)
+	qdel(first_mob)
+	TEST_ASSERT_NULL(closet.trapped_mob, "Шкаф оставил ссылку на удалённого trapped_mob")
+
+	var/mob/second_mob = allocate(/mob)
+	closet.set_trapped_mob(second_mob)
+	closet.trapped = SPOOKY_SKELETON
+	closet.trigger_spooky_trap()
+	TEST_ASSERT_NULL(closet.trapped_mob, "Шкаф удерживает trapped_mob во время delayed qdel")

@@ -200,10 +200,31 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 	mymob = null
 
 	QDEL_NULL(screentip_text)
-	last_screentip_atom = null
-	last_screentip_held = null
+	set_screentip_cache(null, null)
 
 	return ..()
+
+/// Updates the strong screentip cache references and makes them self-clearing on qdel.
+/datum/hud/proc/set_screentip_cache(atom/new_atom, obj/item/new_held_item)
+	if(last_screentip_atom == new_atom && last_screentip_held == new_held_item)
+		return
+	if(last_screentip_atom)
+		UnregisterSignal(last_screentip_atom, COMSIG_PARENT_QDELETING)
+	if(last_screentip_held && last_screentip_held != last_screentip_atom)
+		UnregisterSignal(last_screentip_held, COMSIG_PARENT_QDELETING)
+
+	last_screentip_atom = new_atom
+	last_screentip_held = new_held_item
+
+	if(last_screentip_atom)
+		RegisterSignal(last_screentip_atom, COMSIG_PARENT_QDELETING, PROC_REF(on_screentip_cache_target_qdeleting))
+	if(last_screentip_held && last_screentip_held != last_screentip_atom)
+		RegisterSignal(last_screentip_held, COMSIG_PARENT_QDELETING, PROC_REF(on_screentip_cache_target_qdeleting))
+
+/datum/hud/proc/on_screentip_cache_target_qdeleting(datum/source)
+	SIGNAL_HANDLER
+	if(source == last_screentip_atom || source == last_screentip_held)
+		set_screentip_cache(null, null)
 
 /mob/proc/create_mob_hud()
 	if(!client || hud_used)
