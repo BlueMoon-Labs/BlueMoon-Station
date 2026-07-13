@@ -239,7 +239,6 @@
 	. = ..()
 	AddComponent(/datum/component/two_handed, force_unwielded=18, force_wielded=27, icon_wielded="[icon_prefix]1")
 
-// Bluemoon add start - копьё пиратов из космоса
 /obj/item/spear/military
 	icon_state = "military_spear0"
 	base_icon_state = "military_spear0"
@@ -250,10 +249,14 @@
 	desc = "A stick with a seemingly blunt spearhead on its end. Looks like it might break bones easily."
 	attack_verb_continuous = list("attacks", "pokes", "jabs")
 	attack_verb_simple = list("attack", "poke", "jab")
-	force = 25
+	force = 20
 	throwforce = 50
 	wound_bonus = 5
 	bare_wound_bonus = 25
 	throw_range = 9
 	throw_speed = 5
 	sharpness = NONE // we break bones instead of cutting flesh
+
+/obj/item/spear/military/ComponentInitialize()
+	. = ..()
+	AddComponent(/datum/component/two_handed, force_unwielded=20, force_wielded=30, icon_wielded="[icon_prefix]1")

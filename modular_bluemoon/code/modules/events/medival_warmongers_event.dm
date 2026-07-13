@@ -212,6 +212,7 @@
 	name = "Medieval Warmonger"
 	id = null
 	glasses = null
+
 	uniform = /obj/item/clothing/under/costume/gamberson/military
 	suit = /obj/item/clothing/suit/armor/vest/military
 	suit_store = /obj/item/spear/military
@@ -220,21 +221,63 @@
 	head = /obj/item/clothing/head/helmet/military
 	mask = /obj/item/clothing/mask/balaclava
 	shoes = /obj/item/clothing/shoes/workboots
-	belt = /obj/item/claymore
-	l_hand = /obj/item/flashlight/flare/torch
-	backpack_contents = list(/obj/item/storage/box/syndie_kit/throwing_weapons)
+	belt = /obj/item/storage/belt/iron_tasset
+	l_hand = /obj/item/claymore/cerberus
+	l_pocket = /obj/item/flashlight/flare/torch
+	r_pocket = /obj/item/gun/energy/taser/bolestrel/censor
+	backpack_contents = list(/obj/item/stack/sheet/cloth, /obj/item/feather)
 
 
 /datum/outfit/medieval/warlord
 	name = "Medieval Warlord"
 	neck = /obj/item/bedsheet/pirate
 	suit = /obj/item/clothing/suit/armor/riot/knight/warlord
-	suit_store = null
+	suit_store = /obj/item/gun/magic/hook
 	back = /obj/item/fireaxe/boardingaxe
 	gloves = /obj/item/clothing/gloves/combat
 	head = /obj/item/clothing/head/helmet/knight/warlord
 	mask = /obj/item/clothing/mask/breath
 	shoes = /obj/item/clothing/shoes/bronze
-	belt = /obj/item/gun/magic/hook
-	l_pocket = /obj/item/tank/internals/emergency_oxygen
-	r_pocket = /obj/item/flashlight/lantern
+	belt = /obj/item/storage/belt/gold_tasset
+	l_pocket = /obj/item/flashlight/flare/torch
+	r_pocket = /obj/item/gun/energy/taser/bolestrel/censor
+
+// Medieval Belts
+
+/obj/item/storage/belt/iron_tasset
+	name = "tasseted iron belt"
+	desc = "A fine leather belt that's been sleeved within many segments of iron, and further reinforced with the tassets of a fluted cuirass."
+	icon_state = "irontasset"
+	item_state = "irontasset"
+	mob_overlay_icon = 'icons/mob/clothing/belt.dmi'
+	w_class = WEIGHT_CLASS_NORMAL
+
+/obj/item/storage/belt/iron_tasset/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.max_items = 5
+	STR.max_w_class = WEIGHT_CLASS_NORMAL
+	STR.can_hold = typecacheof(list(/obj/item/restraints/legcuffs))
+
+/obj/item/storage/belt/iron_tasset/PopulateContents()
+	for(var/i in 1 to 5)
+		new /obj/item/restraints/legcuffs/bola/tactical(src)
+
+/obj/item/storage/belt/gold_tasset
+	name = "tasseted gold belt"
+	desc = "A fine leather belt that's been sleeved within many segments of steel, and further reinforced with the tassets of a fluted cuirass."
+	icon_state = "steeltasset"
+	item_state = "steeltasset"
+	mob_overlay_icon = 'icons/mob/clothing/belt.dmi'
+	w_class = WEIGHT_CLASS_NORMAL
+
+/obj/item/storage/belt/gold_tasset/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.max_items = 5
+	STR.max_w_class = WEIGHT_CLASS_NORMAL
+	STR.can_hold = typecacheof(list(/obj/item/restraints/legcuffs))
+
+/obj/item/storage/belt/gold_tasset/PopulateContents()
+	for(var/i in 1 to 5)
+		new /obj/item/restraints/legcuffs/bola/tactical(src)

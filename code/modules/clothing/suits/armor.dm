@@ -81,13 +81,14 @@
 	item_state = "blueshift"
 	custom_premium_price = PRICE_ABOVE_EXPENSIVE
 
-// Bluemoon add start - добовляю броню вармонгеров
 /obj/item/clothing/suit/armor/vest/military
-	name = "Crude chestplate"
-	desc = "It may look rough, rusty and battered, but it's also made out of junk and uncomfortable to wear."
+	name = "Fluted Plate Armor"
+	desc = "A suit of ornate plate armor, noble in both presentation and protection. Such resplendent maille is \
+	traditionally reserved for the higher echelons of nobility; seasoned knights, venerated kings, and pot-bellied \
+	councilmen that wish to flaunt their opulence towards the unwashed masses."
 	icon_state = "military"
 	dog_fashion = null
-	armor = list(MELEE = 45, BULLET = 25, LASER = 25, ENERGY = 25, BOMB = 25, BIO = 0, RAD = 0, FIRE = 10, ACID = 50, WOUND = 20)
+	armor = list(MELEE = 40, BULLET = 80, LASER = 80, ENERGY = 40, BOMB = 25, BIO = 0, RAD = 0, FIRE = 10, ACID = 50, WOUND = 50)
 	allowed = list(
 		/obj/item/banner,
 		/obj/item/claymore/shortsword,
@@ -97,13 +98,13 @@
 	)
 
 /obj/item/clothing/suit/armor/riot/knight/warlord
-	name = "golden plate armor"
+	name = "Golden Plate Armor"
 	desc = "This bulky set of armor is coated with a shiny layer of gold. It seems to almost reflect all light sources."
 	icon_state = "warlord"
-	armor = list(MELEE = 70, BULLET = 60, LASER = 70, ENERGY = 70, BOMB = 45, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 30)
+	armor = list(MELEE = 80, BULLET = 80, LASER = 80, ENERGY = 80, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 50)
 	w_class = WEIGHT_CLASS_BULKY
 	clothing_flags = THICKMATERIAL
-	slowdown = 0.8
+	slowdown = 0.5
 
 /obj/item/clothing/suit/armor/hos
 	name = "armored greatcoat"
@@ -397,6 +398,14 @@
 	armor = list(MELEE = 80, BULLET = 40, LASER = 10, ENERGY = 10, BOMB = 10, BIO = 0, RAD = 0, FIRE = 80, ACID = 80, WOUND = 30)
 	slowdown = 0.5
 	flags_inv = HIDEGLOVES|HIDESHOES|HIDEJUMPSUIT
+	allowed = list(
+		/obj/item/banner,
+		/obj/item/claymore/shortsword,
+		/obj/item/nullrod,
+		/obj/item/spear,
+		/obj/item/gun/ballistic/bow,
+		/obj/item/gun/magic
+	)
 
 /obj/item/clothing/suit/armor/riot/knight/Initialize(mapload)
 	allowed = GLOB.security_vest_allowed.Copy()
