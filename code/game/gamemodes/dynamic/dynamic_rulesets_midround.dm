@@ -210,31 +210,9 @@
 	requirements = list(101,40,30,20,10,10,10,10,10,10)
 	repeatable = TRUE
 
-	/// Whether or not this instance of sleeper agent should be randomly acceptable.
-	/// If TRUE, then this has a threat level% chance to succeed.
-	var/has_failure_chance = TRUE
-
-/datum/dynamic_ruleset/midround/autotraitor/acceptable(population = 0, threat = 0)
-	var/player_count = mode.current_players[CURRENT_LIVING_PLAYERS].len
-	var/antag_count = mode.current_players[CURRENT_LIVING_ANTAGS].len
-	var/max_traitors = round(player_count / 16) + 1 //BLUEMOON CNANGES - 1 предатель на каждые 16 человек
-
-	// adding traitors if the antag population is getting low
-	// Отказы не логируются из симулятора и оценки пула панелью: acceptable() зовётся там
-	// каждые несколько секунд, а game.log должен отражать только боевые решения.
-	var/real_decision = !SSdirector.dry_run && !SSdirector.quiet_eval
-	var/too_little_antags = antag_count < max_traitors
-	if (!too_little_antags)
-		if(real_decision)
-			log_game("DYNAMIC: Too many living antags compared to living players ([antag_count] living antags, [player_count] living players, [max_traitors] max traitors)")
-		return FALSE
-
-	if (has_failure_chance && !prob(mode.threat_level))
-		if(real_decision)
-			log_game("DYNAMIC: Random chance to roll autotraitor failed, it was a [mode.threat_level]% chance.")
-		return FALSE
-
-	..()
+	// Дефицит антагов уже гейтится общим клапаном SSdirector (antag_load/antag_target), а шанс
+	// задаётся весом действия. Старые отдельные счётчик current_players и prob(threat_level)
+	// здесь дублировали клапан и делали can_fire() недетерминированным для панели/ролла копилки.
 
 /datum/dynamic_ruleset/midround/autotraitor/trim_candidates()
 	. = ..()

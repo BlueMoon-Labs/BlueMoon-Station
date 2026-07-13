@@ -1305,6 +1305,63 @@
 		throw e
 	SSdirector.restore_simulation_state(saved)
 
+/// Sleeper Agent не должен повторно гейтиться старым глобальным счётчиком антагов: Director уже
+/// сравнивает живую антаг-нагрузку со своей целью до can_fire(). Глобальный список может содержать
+/// гост-роли/устаревшие тела и в прод-дампе блокировал единственного лёгкого ANTAG-кандидата Medium.
+/datum/unit_test/director_autotraitor_uses_pressure_valve
+
+/datum/unit_test/director_autotraitor_uses_pressure_valve/Run()
+	var/list/saved = SSdirector.capture_simulation_state()
+	var/saved_round_type = GLOB.round_type
+	var/datum/game_mode/dynamic/test_mode = new
+	var/datum/dynamic_ruleset/midround/autotraitor/rule = new
+	try
+		GLOB.round_type = ROUNDTYPE_DYNAMIC_MEDIUM
+		test_mode.threat_level = 100 // гарантированно проходит базовый requirements-гейт
+		test_mode.current_players[CURRENT_LIVING_PLAYERS] = list(
+			"crew01", "crew02", "crew03", "crew04", "crew05", "crew06", "crew07", "crew08",
+			"crew09", "crew10", "crew11", "crew12", "crew13", "crew14", "crew15", "crew16",
+		)
+		// Старый autotraitor/acceptable считал бы 3 >= round(16 / 16) + 1 и закрыл действие,
+		// хотя собственная нагрузка Director ниже цели (ledger пуст).
+		test_mode.current_players[CURRENT_LIVING_ANTAGS] = list("stale_antag1", "stale_antag2", "stale_antag3")
+		rule.mode = test_mode
+
+		var/datum/director_profile/profile = new /datum/director_profile/medium
+		SSdirector.profile = profile
+		SSdirector.reset_budgets(0)
+		SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] = rule.cost
+		SSdirector.intensity_ledger = list()
+		SSdirector.fired_counts = list()
+		SSdirector.pool_saving = list()
+		SSdirector.last_fired_at = list(
+			DIRECTOR_SEVERITY_ANTAG = world.time - profile.antag_light_spacing - 1,
+		)
+		SSdirector.actions = list(rule)
+
+		var/datum/director_signals/signals = new
+		signals.effective_crew = 16
+		signals.staffing = list(
+			DIRECTOR_DEPT_SECURITY = 2,
+			DIRECTOR_DEPT_ENGINEERING = 1,
+			DIRECTOR_DEPT_MEDICAL = 1,
+			DIRECTOR_DEPT_SCIENCE = 1,
+			DIRECTOR_DEPT_SUPPLY = 1,
+			DIRECTOR_DEPT_COMMAND = 1,
+		)
+		var/list/candidates = SSdirector.filter_candidates(signals)
+		TEST_ASSERT(rule in candidates, "Sleeper Agent должен проходить при накопленном ANTAG-кошельке и дефиците нагрузки")
+	catch(var/exception/e)
+		GLOB.round_type = saved_round_type
+		SSdirector.restore_simulation_state(saved)
+		qdel(rule)
+		qdel(test_mode)
+		throw e
+	GLOB.round_type = saved_round_type
+	SSdirector.restore_simulation_state(saved)
+	qdel(rule)
+	qdel(test_mode)
+
 /// Проверяет копилку антаг-пула: цель роллится по весам без оглядки на кошелёк (латеджойны
 /// целью не становятся), дешёвые соседи по пулу блокируются причиной saving и не выжигают
 /// кошелёк, накопленный кошелёк пропускает цель, запуск цели снимает копилку.
