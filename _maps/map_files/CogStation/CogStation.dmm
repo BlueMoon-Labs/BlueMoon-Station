@@ -51073,10 +51073,6 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
 /area/maintenance/department/eva)
-"diK" = (
-/turf/closed/wall/r_wall,
-/area/space,
-/area/maintenance/fore/upper)
 "dje" = (
 /obj/machinery/light_switch/directional/east,
 /obj/machinery/light,
@@ -142234,7 +142230,7 @@ aaa
 aaa
 qaC
 qaC
-diK
+rXx
 qaC
 cVy
 tUs
