@@ -170,16 +170,43 @@ def load_settings(game_dir, configured_path=None):
 		settings[setting_name] = value
 	settings["RSC_PUBLISH_LOBBY_MEDIA"] = parse_bool(settings.get("RSC_PUBLISH_LOBBY_MEDIA", "1"), "RSC_PUBLISH_LOBBY_MEDIA")
 	settings["RSC_ENABLE_ASSET_WEBROOT"] = parse_bool(settings.get("RSC_ENABLE_ASSET_WEBROOT", "1"), "RSC_ENABLE_ASSET_WEBROOT")
+	settings["RSC_PRUNE_ENABLED"] = parse_bool(settings.get("RSC_PRUNE_ENABLED", "1"), "RSC_PRUNE_ENABLED")
 
 	try:
 		settings["RSC_COMPRESSION_LEVEL"] = int(settings.get("RSC_COMPRESSION_LEVEL", "6"))
 		settings["RSC_MIN_FREE_BYTES"] = int(settings.get("RSC_MIN_FREE_BYTES", str(512 * 1024 * 1024)))
+		settings["RSC_KEEP_UNREFERENCED"] = int(settings.get("RSC_KEEP_UNREFERENCED", "2"))
+		settings["RSC_PRUNE_GRACE_HOURS"] = int(settings.get("RSC_PRUNE_GRACE_HOURS", "24"))
 	except ValueError as error:
-		raise DeployError("RSC_COMPRESSION_LEVEL and RSC_MIN_FREE_BYTES must be integers") from error
+		raise DeployError(
+			"RSC_COMPRESSION_LEVEL, RSC_MIN_FREE_BYTES, RSC_KEEP_UNREFERENCED and "
+			"RSC_PRUNE_GRACE_HOURS must be integers"
+		) from error
 	if not 0 <= settings["RSC_COMPRESSION_LEVEL"] <= 9:
 		raise DeployError("RSC_COMPRESSION_LEVEL must be between 0 and 9")
 	if settings["RSC_MIN_FREE_BYTES"] < 0:
 		raise DeployError("RSC_MIN_FREE_BYTES must not be negative")
+	if settings["RSC_KEEP_UNREFERENCED"] < 0:
+		raise DeployError("RSC_KEEP_UNREFERENCED must not be negative")
+	if settings["RSC_PRUNE_GRACE_HOURS"] < 0:
+		raise DeployError("RSC_PRUNE_GRACE_HOURS must not be negative")
+
+	configured_roots = settings.get("RSC_DEPLOYMENT_ROOTS", "").strip()
+	if configured_roots:
+		deployment_roots = []
+		for configured_root in configured_roots.split(";"):
+			configured_root = configured_root.strip()
+			if not configured_root:
+				continue
+			root = Path(configured_root).expanduser()
+			if not root.is_absolute():
+				raise DeployError("every RSC_DEPLOYMENT_ROOTS entry must be an absolute path")
+			deployment_roots.append(root.resolve())
+		if not deployment_roots:
+			raise DeployError("RSC_DEPLOYMENT_ROOTS does not contain any paths")
+		settings["RSC_DEPLOYMENT_ROOTS"] = deployment_roots
+	else:
+		settings["RSC_DEPLOYMENT_ROOTS"] = None
 	return settings
 
 
@@ -390,6 +417,152 @@ def validate_writable_directory(path, minimum_free_bytes, additional_required_by
 	return free_bytes
 
 
+def _path_is_within(path, root):
+	try:
+		Path(path).resolve().relative_to(Path(root).resolve())
+		return True
+	except ValueError:
+		return False
+
+
+def deployment_roots(settings):
+	configured_roots = settings["RSC_DEPLOYMENT_ROOTS"]
+	if configured_roots:
+		return configured_roots
+
+	config_path = Path(settings["_CONFIG_PATH"])
+	for parent in config_path.parents:
+		if parent.name.lower() == "configuration":
+			return [(parent.parent / "Game").resolve()]
+	return []
+
+
+def _manifest_archive_name(manifest_path):
+	try:
+		manifest = json.loads(Path(manifest_path).read_text(encoding="utf-8"))
+	except (OSError, json.JSONDecodeError) as error:
+		raise DeployError("cannot read deployment manifest {}: {}".format(manifest_path, error)) from error
+	archive_name = manifest.get("archive_name")
+	if not isinstance(archive_name, str) or Path(archive_name).name != archive_name or not SAFE_NAME.fullmatch(archive_name):
+		raise DeployError("deployment manifest {} has an unsafe archive_name".format(manifest_path))
+	return archive_name
+
+
+def inventory_deployment_archives(root, max_depth=3):
+	"""Return archives referenced by deployable DMB directories below a TGS Game root."""
+	root = Path(root).resolve()
+	try:
+		if not root.is_dir():
+			raise DeployError("TGS deployment root does not exist: {}".format(root))
+	except OSError as error:
+		raise DeployError("cannot inspect TGS deployment root {}: {}".format(root, error)) from error
+
+	protected = set()
+	dmb_count = 0
+	stack = [(root, 0)]
+	while stack:
+		current, depth = stack.pop()
+		try:
+			entries = list(os.scandir(current))
+		except OSError as error:
+			raise DeployError("cannot list TGS deployment directory {}: {}".format(current, error)) from error
+
+		manifest_path = None
+		dmb_entries = []
+		directories = []
+		for entry in entries:
+			try:
+				if entry.name == MANIFEST_NAME and entry.is_file(follow_symlinks=True):
+					manifest_path = Path(entry.path)
+				elif entry.name.lower().endswith(".dmb") and entry.is_file(follow_symlinks=True):
+					dmb_entries.append(entry.name)
+				elif depth < max_depth and entry.is_dir(follow_symlinks=False):
+					directories.append(Path(entry.path))
+			except OSError as error:
+				raise DeployError("cannot inspect TGS deployment entry {}: {}".format(entry.path, error)) from error
+
+		if dmb_entries:
+			dmb_count += len(dmb_entries)
+			if manifest_path is None:
+				raise DeployError(
+					"DMB without {} found in {}; refusing to prune".format(MANIFEST_NAME, current)
+				)
+			protected.add(_manifest_archive_name(manifest_path))
+			continue
+		if manifest_path is not None:
+			# A failed deployment may leave a manifest before TGS removes its
+			# directory. Protecting it temporarily is safer than guessing.
+			protected.add(_manifest_archive_name(manifest_path))
+			continue
+		for directory in sorted(directories, reverse=True):
+			stack.append((directory, depth + 1))
+
+	return protected, dmb_count
+
+
+def prune_archives(game_dir, settings, current_archive_name):
+	if not settings["RSC_PRUNE_ENABLED"]:
+		return 0
+
+	roots = deployment_roots(settings)
+	if not roots:
+		log("warning: archive cleanup skipped: could not infer the TGS Game directory")
+		return 0
+	game_dir = Path(game_dir).resolve()
+	if not any(_path_is_within(game_dir, root) for root in roots):
+		log("warning: archive cleanup skipped: current game directory is outside RSC_DEPLOYMENT_ROOTS")
+		return 0
+
+	try:
+		protected = {current_archive_name}
+		dmb_count = 0
+		for root in roots:
+			root_protected, root_dmb_count = inventory_deployment_archives(root)
+			protected.update(root_protected)
+			dmb_count += root_dmb_count
+		if not dmb_count:
+			raise DeployError("no deployable DMBs were found below RSC_DEPLOYMENT_ROOTS")
+	except DeployError as error:
+		log("warning: archive cleanup skipped: {}".format(error))
+		return 0
+
+	publish_dir = Path(settings["RSC_PUBLISH_DIR"]).expanduser()
+	if not publish_dir.is_dir():
+		return 0
+	try:
+		archives = sorted(
+			publish_dir.glob("{}-*.zip".format(settings["RSC_ARCHIVE_PREFIX"])),
+			key=lambda path: path.stat().st_mtime,
+			reverse=True,
+		)
+	except OSError as error:
+		log("warning: archive cleanup skipped: cannot inventory published archives: {}".format(error))
+		return 0
+	unreferenced = [archive for archive in archives if archive.name not in protected]
+	keep_count = settings["RSC_KEEP_UNREFERENCED"]
+	grace_seconds = settings["RSC_PRUNE_GRACE_HOURS"] * 60 * 60
+	cutoff = dt.datetime.now(dt.timezone.utc).timestamp() - grace_seconds
+	removed = 0
+	for archive in unreferenced[keep_count:]:
+		try:
+			if archive.is_symlink() or not archive.is_file():
+				log("warning: archive cleanup ignored non-regular path {}".format(archive))
+				continue
+			if archive.stat().st_mtime > cutoff:
+				continue
+			archive.unlink()
+			removed += 1
+			log("removed unreferenced archive {}".format(archive.name))
+		except OSError as error:
+			log("warning: could not remove unreferenced archive {}: {}".format(archive, error))
+	log(
+		"archive cleanup protected {} names from {} DMBs, kept {} newest unreferenced, removed {}".format(
+			len(protected), dmb_count, min(keep_count, len(unreferenced)), removed
+		)
+	)
+	return removed
+
+
 def collect_lobby_media(game_dir, config_root):
 	media = {}
 
@@ -506,6 +679,9 @@ def publish(args):
 	if not publish_dir.is_absolute():
 		raise DeployError("RSC_PUBLISH_DIR must be an absolute path")
 	final_path = publish_dir / manifest["archive_name"]
+	# Prune before checking free space so old, unreferenced archives cannot
+	# deadlock a deployment by consuming the room needed for its replacement.
+	prune_archives(game_dir, settings, manifest["archive_name"])
 	validate_writable_directory(
 		publish_dir,
 		settings["RSC_MIN_FREE_BYTES"],

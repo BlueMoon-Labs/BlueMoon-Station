@@ -37,10 +37,19 @@ No production URL needs to be edited on later deployments. The old constant
 names such as `Moon-Blue-<resource-input-sha256>.zip`. Code-only deployments
 whose compiled RSC is unchanged reuse the same URL and preserve client caches.
 
-The nginx `immutable` cache policy is appropriate for these names. Archives are
-not pruned automatically: modification time cannot prove that an archive is no
-longer referenced by an active or rollback DMB. Any external retention job must
-first inventory every deployable DMB and protect all embedded archive URLs.
+The nginx `immutable` cache policy is appropriate for these names. PostCompile
+automatically inventories `.rsc-deploy.json` next to every DMB in the TGS `Game`
+directory and protects all referenced archives before pruning. This follows the
+TGS deployment lifecycle: directories remain present while a compile job is the
+latest or is locked by a running DreamDaemon, and are deleted after the locks
+are released. Cleanup keeps two additional unreferenced archives and applies a
+24-hour grace period by default. It aborts without deleting anything if a DMB
+has no manifest, a manifest cannot be read, or the deployment root is unknown.
+
+`RSC_DEPLOYMENT_ROOTS` is inferred from the normal
+`Configuration/GameStaticFiles/config` layout. If multiple TGS instances share
+one `RSC_PUBLISH_DIR`, configure every absolute `Game` directory as a
+semicolon-separated list so an archive used by another instance is protected.
 Both `lobby-media/` and `browser-assets/` are served below the already configured
 public base URL, so no additional nginx location is needed when the publish
 directory is served recursively.

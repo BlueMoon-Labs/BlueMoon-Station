@@ -18,7 +18,7 @@ class RscDeployIntegrationTest(unittest.TestCase):
 	def test_archive_media_and_webroot_are_published_together(self):
 		with tempfile.TemporaryDirectory() as temporary_directory:
 			root = Path(temporary_directory)
-			game_dir = root / "compile-output"
+			game_dir = root / "Game" / "current" / "A"
 			config_root = root / "Configuration" / "GameStaticFiles" / "config"
 			publish_dir = root / "nginx" / "byond_rsc"
 			settings_path = config_root / "rsc_deploy.env"
@@ -35,6 +35,7 @@ class RscDeployIntegrationTest(unittest.TestCase):
 			)
 			compiled_rsc = b"resource payload\n" * 4096
 			(game_dir / "tgstation.rsc").write_bytes(compiled_rsc)
+			(game_dir / "tgstation.dmb").write_bytes(b"compiled game")
 			(game_dir / "strings" / "round_start_sounds.txt").write_text(
 				"sound/ambience/title1.ogg\n", encoding="utf-8"
 			)
@@ -60,6 +61,8 @@ class RscDeployIntegrationTest(unittest.TestCase):
 				"RSC_ARCHIVE_PREFIX=Moon-Test\n"
 				"RSC_COMPRESSION_LEVEL=0\n"
 				"RSC_MIN_FREE_BYTES=0\n"
+				"RSC_KEEP_UNREFERENCED=0\n"
+				"RSC_PRUNE_GRACE_HOURS=0\n"
 				"RSC_PUBLISH_LOBBY_MEDIA=1\n"
 				"RSC_ENABLE_ASSET_WEBROOT=1\n".format(publish_dir.as_posix()),
 				encoding="utf-8",
@@ -94,14 +97,23 @@ class RscDeployIntegrationTest(unittest.TestCase):
 			code_only_manifest = json.loads((game_dir / ".rsc-deploy.json").read_text(encoding="utf-8"))
 			self.assertEqual(code_only_manifest["archive_name"], build_manifest["archive_name"])
 
+			old_game_dir = root / "Game" / "old" / "A"
+			old_game_dir.mkdir(parents=True)
+			(old_game_dir / "tgstation.dmb").write_bytes(b"active old game")
+			protected_archive = publish_dir / "Moon-Test-protected.zip"
 			stale_archive = publish_dir / "Moon-Test-stale.zip"
 			publish_dir.mkdir(parents=True)
-			stale_archive.write_bytes(b"must not be pruned")
+			protected_archive.write_bytes(b"referenced by active DMB")
+			stale_archive.write_bytes(b"unreferenced")
+			(old_game_dir / ".rsc-deploy.json").write_text(
+				json.dumps({"archive_name": protected_archive.name}), encoding="utf-8"
+			)
 
 			subprocess.run([sys.executable, str(SCRIPT), "publish", *common], check=True)
 			# Publishing the same content-addressed RSC again is an idempotent success.
 			subprocess.run([sys.executable, str(SCRIPT), "publish", *common], check=True)
-			self.assertEqual(stale_archive.read_bytes(), b"must not be pruned")
+			self.assertFalse(stale_archive.exists())
+			self.assertEqual(protected_archive.read_bytes(), b"referenced by active DMB")
 			# Reconfiguring an existing instance must not duplicate the managed
 			# block or retain stale active CDN settings.
 			loaded_settings = rsc_deploy.load_settings(game_dir, settings_path)
@@ -177,6 +189,36 @@ class RscDeployIntegrationTest(unittest.TestCase):
 
 			resource.write_bytes(b"changed icon")
 			self.assertNotEqual(rsc_deploy.resource_inputs_sha256(game_dir), with_reference)
+
+	def test_pruning_fails_closed_when_a_dmb_has_no_manifest(self):
+		with tempfile.TemporaryDirectory() as temporary_directory:
+			root = Path(temporary_directory)
+			game_root = root / "Game"
+			current_dir = game_root / "current" / "A"
+			unknown_dir = game_root / "unknown" / "A"
+			publish_dir = root / "publish"
+			current_dir.mkdir(parents=True)
+			unknown_dir.mkdir(parents=True)
+			publish_dir.mkdir()
+			(current_dir / "tgstation.dmb").write_bytes(b"current")
+			(current_dir / ".rsc-deploy.json").write_text(
+				json.dumps({"archive_name": "Moon-Test-current.zip"}), encoding="utf-8"
+			)
+			(unknown_dir / "unknown.dmb").write_bytes(b"unknown")
+			candidate = publish_dir / "Moon-Test-unreferenced.zip"
+			candidate.write_bytes(b"keep me")
+
+			settings = {
+				"RSC_PRUNE_ENABLED": True,
+				"RSC_DEPLOYMENT_ROOTS": [game_root],
+				"RSC_PUBLISH_DIR": str(publish_dir),
+				"RSC_ARCHIVE_PREFIX": "Moon-Test",
+				"RSC_KEEP_UNREFERENCED": 0,
+				"RSC_PRUNE_GRACE_HOURS": 0,
+			}
+			removed = rsc_deploy.prune_archives(current_dir, settings, "Moon-Test-current.zip")
+			self.assertEqual(removed, 0)
+			self.assertEqual(candidate.read_bytes(), b"keep me")
 
 
 if __name__ == "__main__":
