@@ -443,6 +443,9 @@
 // /mob/living/carbon physiology signals
 #define COMSIG_CARBON_GAIN_WOUND "carbon_gain_wound"				//from /datum/wound/proc/apply_wound() (/mob/living/carbon/C, /datum/wound/W, /obj/item/bodypart/L)
 #define COMSIG_CARBON_LOSE_WOUND "carbon_lose_wound"				//from /datum/wound/proc/remove_wound() (/mob/living/carbon/C, /datum/wound/W, /obj/item/bodypart/L)
+/// from /obj/item/bodypart/proc/update_part_wound_overlay(): (bleed_rate)
+#define COMSIG_BODYPART_UPDATE_WOUND_OVERLAY "bodypart_update_wound_overlay"
+	#define COMPONENT_PREVENT_WOUND_OVERLAY_UPDATE (1 << 0)
 ///from base of /obj/item/bodypart/proc/attach_limb(): (new_limb, special) allows you to fail limb attachment
 #define COMSIG_CARBON_ATTACH_LIMB "carbon_attach_limb"
 	#define COMPONENT_NO_ATTACH (1<<0)

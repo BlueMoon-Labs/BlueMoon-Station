@@ -1,8 +1,3 @@
-/// Probability the AI going malf will be accompanied by an ion storm announcement and some ion laws.
-#define MALF_ION_PROB 33
-/// The probability to replace an existing law with an ion law instead of adding a new ion law.
-#define REPLACE_LAW_WITH_ION_PROB 10
-
 //////////////////////////////////////////////
 //                                          //
 //            MIDROUND RULESETS             //
@@ -21,7 +16,19 @@
 	var/list/dead_players = list()
 	var/list/list_observers = list()
 
+/// Директор выбрал midround-рулсет: собираем кандидатов (trim -> ready),
+/// затем отложенно исполняем с учётом delay. Бюджет уже списан в SSdirector.spend_and_execute.
+/datum/dynamic_ruleset/midround/execute_action()
+	trim_candidates()
+	if(!ready())
+		return FALSE
+	addtimer(CALLBACK(mode, TYPE_PROC_REF(/datum/game_mode/dynamic, execute_scheduled_ruleset), src), delay)
+	return TRUE
+
 /datum/dynamic_ruleset/midround/from_ghosts
+	// Игроки приходят из призраков, а не из экипажа - своя ступень директора со своим
+	// кошельком и своими паузами, независимыми от станционных антагов.
+	severity = DIRECTOR_SEVERITY_GHOST
 	weight = 0
 	required_type = /mob/dead/observer
 	should_use_midround_pref = FALSE
@@ -51,14 +58,9 @@
 		if(!mode.check_age(M.client, minimum_required_age))
 			trimmed_list.Remove(M)
 			continue
-		if(antag_flag_override)
-			if(!(HAS_ANTAG_PREF(M.client, antag_flag_override)))
-				trimmed_list.Remove(M)
-				continue
-		else
-			if(!(HAS_ANTAG_PREF(M.client, antag_flag)))
-				trimmed_list.Remove(M)
-				continue
+		if(!has_required_antag_preference(M.client))
+			trimmed_list.Remove(M)
+			continue
 		var/role_to_bancheck_mr = antag_flag_override ? antag_flag_override : antag_flag
 		if(role_to_bancheck_mr && (jobban_isbanned(M, role_to_bancheck_mr) || QDELETED(M)))
 			trimmed_list.Remove(M)
@@ -164,7 +166,9 @@
 			new_character = generate_ruleset_body(applicant)
 
 		finish_setup(new_character, i)
-		assigned += applicant
+		// Разум нового тела, не моб-призрак: assigned держит minds - по ним директор
+		// считает живой вклад рулсета в intensity (см. tally_ruleset_intensity).
+		assigned += new_character.mind
 		notify_ghosts("[new_character] has been picked for the ruleset [name]!", source = new_character, action = NOTIFY_ORBIT, header="Something Interesting!")
 
 /datum/dynamic_ruleset/midround/from_ghosts/proc/generate_ruleset_body(mob/applicant)
@@ -181,10 +185,10 @@
 /datum/dynamic_ruleset/midround/from_ghosts/proc/setup_role(datum/antagonist/new_role)
 	return
 
-/// Fired when there are no valid candidates. Will try to roll again in a minute.
+/// Кандидатов не нашлось. Повторную попытку теперь ведёт SSdirector на своих битах,
+/// поэтому здесь ничего форсить не нужно.
 /datum/dynamic_ruleset/midround/from_ghosts/proc/attempt_replacement()
-	COOLDOWN_START(mode, midround_injection_cooldown, 1 MINUTES)
-	mode.forced_injection = TRUE
+	return
 
 //////////////////////////////////////////////
 //                                          //
@@ -200,8 +204,9 @@
 	restricted_roles = list("Cyborg", "AI", "Positronic Brain")
 	required_candidates = 1
 	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_LIGHT) // BLUEMOON ADD
-	weight = 0  //BLUEMOON CHANGES
+	weight = 7 // реальный лёгкий вес в ANTAG-пуле директора (был 0 - самоспавн из roundstart-трейтора)
 	cost = 8  //BLUEMOON CHANGES
+	intensity = 15
 	requirements = list(101,40,30,20,10,10,10,10,10,10)
 	repeatable = TRUE
 
@@ -215,13 +220,18 @@
 	var/max_traitors = round(player_count / 16) + 1 //BLUEMOON CNANGES - 1 предатель на каждые 16 человек
 
 	// adding traitors if the antag population is getting low
+	// Отказы не логируются из симулятора и оценки пула панелью: acceptable() зовётся там
+	// каждые несколько секунд, а game.log должен отражать только боевые решения.
+	var/real_decision = !SSdirector.dry_run && !SSdirector.quiet_eval
 	var/too_little_antags = antag_count < max_traitors
 	if (!too_little_antags)
-		log_game("DYNAMIC: Too many living antags compared to living players ([antag_count] living antags, [player_count] living players, [max_traitors] max traitors)")
+		if(real_decision)
+			log_game("DYNAMIC: Too many living antags compared to living players ([antag_count] living antags, [player_count] living players, [max_traitors] max traitors)")
 		return FALSE
 
 	if (has_failure_chance && !prob(mode.threat_level))
-		log_game("DYNAMIC: Random chance to roll autotraitor failed, it was a [mode.threat_level]% chance.")
+		if(real_decision)
+			log_game("DYNAMIC: Random chance to roll autotraitor failed, it was a [mode.threat_level]% chance.")
 		return FALSE
 
 	..()
@@ -248,7 +258,7 @@
 		return FALSE
 	// BLUEMOON ADD END
 	var/mob/M = pick_n_take(living_players)
-	assigned += M
+	assigned += M.mind // mind, не моб: по assigned директор считает вклад в intensity
 	var/datum/antagonist/traitor/newTraitor = new
 	M.mind.add_antag_datum(newTraitor)
 	message_admins("[ADMIN_LOOKUPFLW(M)] was selected by the [name] ruleset and has been made into a midround traitor.")
@@ -267,11 +277,13 @@
 	antag_datum = /datum/antagonist/gang
 	antag_flag = ROLE_FAMILY_HEAD_ASPIRANT
 	antag_flag_override = ROLE_FAMILIES
+	force_antag_preference = TRUE
 	restricted_roles = list("AI", "Cyborg", "Prisoner", "NanoTrasen Representative", "Internal Affairs Agent", "Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director")  //BLUEMOON CHANGES
 	required_candidates = 9
 	required_round_type = list(ROUNDTYPE_DYNAMIC_LIGHT) // BLUEMOON ADD
 	weight = 24 //BLUEMOON CHANGES
 	cost = 10 //BLUEMOON CHANGES - низкая цена, т.к. надо в соло поднять семью
+	intensity = 15
 	requirements = list(101,101,101,50,30,20,10,10,10,10)
 	flags = HIGH_IMPACT_RULESET
 	blocking_rules = list(/datum/dynamic_ruleset/roundstart/families)
@@ -318,60 +330,6 @@
 /datum/dynamic_ruleset/midround/families/round_result()
 	return handler.set_round_result_analogue()
 
-// //////////////////////////////////////////////
-// //                                          //
-// //         Malfunctioning AI                //
-// //                                         //
-// //////////////////////////////////////////////
-
-// /datum/dynamic_ruleset/midround/malf
-// 	name = "Malfunctioning AI"
-// 	antag_datum = /datum/antagonist/traitor
-// 	antag_flag = ROLE_MALF
-// 	enemy_roles = list("Blueshield",  "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Scientist", "Chemist", "Research Director", "Chief Engineer") //BLUEMOON CHANGES
-// 	exclusive_roles = list("AI")
-// 	required_enemies = list(0,0,0,0,0,0,0,0,0,0)
-// 	required_candidates = 1
-// 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
-// 	weight = 6 //BLUEMOON CHANGES
-// 	cost = 15 //BLUEMOON CHANGES - было 35, сейчас это обычный предатель
-// 	requirements = list(101,101,80,70,60,60,50,50,40,40)
-// 	required_type = /mob/living/silicon/ai
-
-// /datum/dynamic_ruleset/midround/malf/trim_candidates()
-// 	. = ..()
-// 	candidates = living_players
-// 	for(var/mob/living/player in candidates)
-// 		if(!isAI(player))
-// 			candidates -= player
-// 			continue
-
-// 		if(is_centcom_level(player.z))
-// 			candidates -= player
-// 			continue
-
-// 		if(player.mind && (player.mind.special_role || length(player.mind.antag_datums)))
-// 			candidates -= player
-
-// /datum/dynamic_ruleset/midround/malf/execute()
-// 	// BLUEMOON ADD START - если нет кандидатов и не выданы все роли, иначе выдаст рантайм
-// 	if(candidates.len <= 0)
-// 		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
-// 		return FALSE
-// 	// BLUEMOON ADD END
-// 	var/mob/living/silicon/ai/M = pick_n_take(candidates)
-// 	assigned += M.mind
-// 	var/datum/antagonist/traitor/AI = new
-// 	M.mind.special_role = antag_flag
-// 	M.mind.add_antag_datum(AI)
-// 	if(prob(MALF_ION_PROB))
-// 		priority_announce("Ion storm detected near the station. Please check all AI-controlled equipment for errors.", "ВНИМАНИЕ: АНОМАЛИЯ", "ionstorm")
-// 		if(prob(REPLACE_LAW_WITH_ION_PROB))
-// 			M.replace_random_law(generate_ion_law(), list(LAW_INHERENT, LAW_SUPPLIED, LAW_ION))
-// 		else
-// 			M.add_ion_law(generate_ion_law())
-// 	return TRUE
-
 //////////////////////////////////////////////
 //                                          //
 //              WIZARD (CREW)               //
@@ -389,9 +347,14 @@
 	required_enemies = list(0,0,0,0,0,0,0,0,0,0)
 	weight = 0
 	cost = 20
+	intensity = 45 // тяжёлый по cost, хотя вне ANTAG-пула директора (weight = 0, самоспавн из roundstart-визарда)
+	antag_heavy = TRUE // для консистентности будущего использования, если weight когда-нибудь включат
 	requirements = list(101,101,100,60,40,20,20,20,10,10)
 	repeatable = TRUE
 	var/datum/mind/wizard
+
+/datum/dynamic_ruleset/midround/wizard/action_name()
+	return "[name] (Crew)"
 
 /datum/dynamic_ruleset/midround/wizard/trim_candidates()
 	..()
@@ -415,7 +378,7 @@
 
 /datum/dynamic_ruleset/midround/wizard/execute()
 	var/mob/M = pick_n_take(living_players)
-	assigned += M
+	assigned += M.mind // mind, не моб: по assigned директор считает вклад в intensity
 	var/datum/antagonist/wizard/on_station/wiz = new
 	M.mind.add_antag_datum(wiz)
 	wizard = M.mind
@@ -430,9 +393,8 @@
 		if(P.mind && P.mind.has_antag_datum(/datum/antagonist/wizard))
 			return FALSE
 
-	if(SSevents.wizardmode) //If summon events was active, turn it off
-		SSevents.toggleWizardmode()
-		SSevents.resetFrequency()
+	if(SSdirector.wizardmode) //If summon events was active, turn it off
+		SSdirector.toggle_wizardmode()
 
 	return RULESET_STOP_PROCESSING
 
@@ -453,9 +415,14 @@
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	weight = 5 //BLUEMOON CHANGES
 	cost = 15 //BLUEMOON CHANGES
+	intensity = 45
+	antag_heavy = TRUE
 	requirements = list(101,101,100,60,40,20,20,20,10,10)
 	repeatable = TRUE
 	var/datum/mind/wizard
+
+/datum/dynamic_ruleset/midround/from_ghosts/wizard/action_name()
+	return "[name] (Ghost)"
 
 /datum/dynamic_ruleset/midround/from_ghosts/wizard/ready(forced = FALSE)
 	if (required_candidates > (dead_players.len + list_observers.len))
@@ -478,9 +445,8 @@
 		if(P.mind && P.mind.has_antag_datum(/datum/antagonist/wizard))
 			return FALSE
 
-	if(SSevents.wizardmode) //If summon events was active, turn it off
-		SSevents.toggleWizardmode()
-		SSevents.resetFrequency()
+	if(SSdirector.wizardmode) //If summon events was active, turn it off
+		SSdirector.toggle_wizardmode()
 
 	return RULESET_STOP_PROCESSING
 
@@ -500,6 +466,8 @@
 	required_candidates = 5
 	weight = 3
 	cost = 30 //BLUEMOON CHANGES
+	antag_heavy = TRUE
+	intensity = 45
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	requirements = list(101,101,101,101,101,101,60,40,30,10) //BLUEMOON CHANGES
 	var/list/operative_cap = list(5,5,5,5,5,5,5,5,5,5)
@@ -550,6 +518,8 @@
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	weight = 3
 	cost = 20
+	antag_heavy = TRUE
+	intensity = 45
 	requirements = list(101,101,101,101,50,40,30,20,10,10)
 	var/list/clock_cap = list(1,1,1,2,3,4,5,5,5,5)
 	flags = HIGH_IMPACT_RULESET
@@ -618,6 +588,8 @@
 	required_candidates = 6
 	weight = 3
 	cost = 20
+	antag_heavy = TRUE
+	intensity = 45
 	requirements = list(101,101,101,101,50,40,30,20,10,10)
 	var/list/blood_cap = list(1,1,2,3,4,5,6,6,6,6)
 	var/datum/team/cult/main_cult
@@ -683,6 +655,8 @@
 	required_candidates = 1
 	weight = 3 //BLUEMOON CHANGES
 	cost = 10
+	intensity = 15
+	family = "blob" // с событием-двойником и заражением: не подряд
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	requirements = list(101,101,101,101,50,40,30,20,10,10)
 	repeatable = TRUE
@@ -690,6 +664,11 @@
 /datum/dynamic_ruleset/midround/from_ghosts/blob/generate_ruleset_body(mob/applicant)
 	var/body = applicant.become_overmind()
 	return body
+
+// name совпадает с /datum/round_event_control/blob ("Blob") - без суффикса рулсет и событие
+// делили бы ключ конфига/intensity_ledger.
+/datum/dynamic_ruleset/midround/from_ghosts/blob/action_name()
+	return "[name] (Ruleset)"
 
 /// Infects a random player, making them explode into a blob.
 /datum/dynamic_ruleset/midround/blob_infection
@@ -705,6 +684,8 @@
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	weight = 2
 	cost = 10
+	intensity = 15
+	family = "blob" // с событием-двойником и гост-блобом: не подряд
 	requirements = list(101,101,101,101,50,40,30,20,10,10)
 	repeatable = TRUE
 
@@ -746,6 +727,9 @@
 	required_candidates = 1
 	weight = 5
 	cost = 15
+	antag_heavy = TRUE
+	intensity = 45
+	family = "xenomorph" // с событием-двойником: не подряд
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	requirements = list(101,101,101,101,50,40,30,20,10,10)
 	repeatable = TRUE
@@ -767,6 +751,11 @@
 
 /datum/dynamic_ruleset/midround/from_ghosts/xenomorph/proc/announce_xenos()
 	priority_announce("Неизвестные признаки жизни обнаружены на борту [station_name()]. Заблокируйте любой внешний доступ, включая воздуховоды и вентиляцию.", "ВНИМАНИЕ: НЕОПОЗНАННЫЕ ФОРМЫ ЖИЗНИ", ANNOUNCER_ALIENS)
+
+// name совпадает с /datum/round_event_control/alien_infestation ("Alien Infestation") - без суффикса
+// рулсет и событие делили бы ключ конфига/intensity_ledger.
+/datum/dynamic_ruleset/midround/from_ghosts/xenomorph/action_name()
+	return "[name] (Ruleset)"
 
 /datum/dynamic_ruleset/midround/from_ghosts/xenomorph/generate_ruleset_body(mob/applicant)
 	var/obj/vent = length(vents) >= 2 ? pick_n_take(vents) : vents[1]
@@ -791,6 +780,9 @@
 	required_candidates = 1
 	weight = 3
 	cost = 20
+	antag_heavy = TRUE
+	intensity = 45
+	family = "terror_spiders" // с событием-двойником: не подряд
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD) // BLUEMOON ADD
 	requirements = list(101,101,101,101,50,40,30,20,10,10)
 	flags = HIGH_IMPACT_RULESET
@@ -848,6 +840,8 @@
 	required_candidates = 1
 	weight = 6 //BLUEMOON CHANGES
 	cost = 10
+	intensity = 15
+	family = "nightmare" // с событием-двойником: не подряд
 	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	requirements = list(101,101,101,50,30,25,20,10,10,10) //BLUEMOON CHANGES
 	repeatable = TRUE
@@ -895,6 +889,8 @@
 	required_candidates = 1
 	weight = 6 //BLUEMOON CHANGES
 	cost = 10
+	intensity = 15
+	family = "space_dragon" // с событием-двойником: не подряд
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	requirements = list(101,101,101,101,50,40,30,20,10,10)
 	repeatable = TRUE
@@ -940,6 +936,8 @@
 	required_candidates = 1
 	weight = 6
 	cost = 10
+	intensity = 15
+	family = "morph" // с событием-двойником: не подряд
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM)
 	requirements = list(101,101,101,50,30,25,20,10,10,10)
 	repeatable = TRUE
@@ -978,6 +976,8 @@
 	required_candidates = 1
 	weight = 5
 	cost = 10
+	intensity = 15
+	family = "devil" // с событием-двойником: не подряд
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM)
 	requirements = list(101,101,101,50,40,30,20,10,10,10)
 	repeatable = TRUE
@@ -1013,6 +1013,8 @@
 	required_applicants = 2
 	weight = 3
 	cost = 10
+	intensity = 15
+	family = "abductors" // с событием-двойником: не подряд
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	requirements = list(101,101,101,101,101,30,20,15,10,10)
 	repeatable = TRUE
@@ -1034,6 +1036,11 @@
 		var/datum/antagonist/abductor/agent/new_role = new
 		new_character.mind.add_antag_datum(new_role, new_team)
 
+// name совпадает с /datum/round_event_control/abductor ("Abductors") - без суффикса рулсет
+// и событие делили бы ключ конфига/intensity_ledger.
+/datum/dynamic_ruleset/midround/from_ghosts/abductors/action_name()
+	return "[name] (Ruleset)"
+
 #undef ABDUCTOR_MAX_TEAMS
 
 //////////////////////////////////////////////
@@ -1044,6 +1051,7 @@
 
 /datum/dynamic_ruleset/midround/swarmers
 	name = "Swarmers"
+	severity = DIRECTOR_SEVERITY_GHOST // спавнер для призраков, экипаж не тратится
 	antag_flag = "Swarmer"
 	antag_flag_override = ROLE_ALIEN
 	required_type = /mob/dead/observer
@@ -1053,6 +1061,8 @@
 	required_candidates = 0
 	weight = 2 //BLUEMOON CHANGES
 	cost = 10
+	intensity = 15
+	family = "swarmers" // с событием-двойником: не подряд
 	requirements = list(101,101,101,101,50,40,30,20,10,10)
 	repeatable = TRUE
 
@@ -1087,6 +1097,7 @@
 	required_candidates = 1
 	weight = 6 //BLUEMOON CHANGES
 	cost = 10
+	intensity = 15
 	requirements = list(101,101,101,101,60,50,30,20,10,10) //BLUEMOON CHANGES
 	repeatable = TRUE
 	var/list/spawn_locs = list()
@@ -1128,6 +1139,8 @@
 	required_candidates = 1
 	weight = 3 //BLUEMOON CHANGES
 	cost = 10
+	intensity = 15
+	family = "revenant" // с событием-двойником: не подряд
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // not extended
 	requirements = list(101,101,101,50,30,25,20,10,10,10) //BLUEMOON CHANGES
 	repeatable = TRUE
@@ -1174,6 +1187,8 @@
 	required_candidates = 1
 	weight = 6 //BLUEMOON CHANGES
 	cost = 10
+	intensity = 15
+	family = "sentient_disease" // с событием-двойником: не подряд
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	requirements = list(101,101,101,50,30,25,20,10,10,10) //BLUEMOON CHANGES
 	repeatable = TRUE
@@ -1189,6 +1204,7 @@
 /// Space Pirates ruleset
 /datum/dynamic_ruleset/midround/pirates
 	name = "Space Pirates"
+	severity = DIRECTOR_SEVERITY_GHOST // событие поллит призраков, экипаж не тратится
 	antag_flag = "Space Pirates"
 	required_type = /mob/dead/observer
 	enemy_roles = list("Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain") //BLUEMOON CHANGE
@@ -1197,6 +1213,8 @@
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	weight = 6 //BLUEMOON CHANGES
 	cost = 10
+	intensity = 15
+	family = "pirates" // с событием-двойником (execute() запускает его же): не подряд
 	requirements = list(101,101,101,101,101,40,30,20,10,10) //BLUEMOON CHANGES
 	repeatable = TRUE
 
@@ -1206,10 +1224,15 @@
 	return ..()
 
 /datum/dynamic_ruleset/midround/pirates/execute()
-	var/datum/round_event_control/event = locate(/datum/round_event_control/pirates) in SSevents.control
+	var/datum/round_event_control/event = locate(/datum/round_event_control/pirates) in SSdirector.event_controls()
 	if(event)
-		SSevents.TriggerEvent(event)
+		event.execute_action()
 	return ..()
+
+// name совпадает с /datum/round_event_control/pirates ("Space Pirates"), который этот рулсет сам
+// же и запускает через execute() - без суффикса они делили бы ключ конфига/intensity_ledger.
+/datum/dynamic_ruleset/midround/pirates/action_name()
+	return "[name] (Ruleset)"
 
 //////////////////////////////////////////////
 //                                          //
@@ -1218,6 +1241,7 @@
 //////////////////////////////////////////////
 /datum/dynamic_ruleset/midround/raiders
 	name = "InteQ Raiders"
+	severity = DIRECTOR_SEVERITY_GHOST // событие поллит призраков, экипаж не тратится
 	antag_flag = "InteQ Raiders"
 	required_type = /mob/dead/observer
 	enemy_roles = list("Security Officer", "Detective", "Head of Security","Bridge Officer", "Captain")
@@ -1226,6 +1250,9 @@
 	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_TEAMBASED) // BLUEMOON ADD
 	weight = 4
 	cost = 15
+	antag_heavy = TRUE
+	intensity = 45
+	family = "raiders" // с событием-двойником (execute() запускает его же): не подряд
 	requirements = list(101,101,101,40,30,20,10,10,10,10)
 	repeatable = FALSE
 
@@ -1235,10 +1262,15 @@
 	return ..()
 
 /datum/dynamic_ruleset/midround/raiders/execute()
-	var/datum/round_event_control/event = locate(/datum/round_event_control/raiders) in SSevents.control
+	var/datum/round_event_control/event = locate(/datum/round_event_control/raiders) in SSdirector.event_controls()
 	if(event && event.occurrences < event.max_occurrences)
-		SSevents.TriggerEvent(event)
+		event.execute_action()
 	return TRUE
+
+// name совпадает с /datum/round_event_control/raiders ("InteQ Raiders"), который этот рулсет сам
+// же и запускает через execute() - без суффикса они делили бы ключ конфига/intensity_ledger.
+/datum/dynamic_ruleset/midround/raiders/action_name()
+	return "[name] (Ruleset)"
 
 // BLUEMOON ADD START
 
@@ -1261,6 +1293,7 @@
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED) // BLUEMOON ADD
 	weight = 6
 	cost = 5
+	intensity = 15
 	scaling_cost = 10
 	requirements = list(101,101,60,50,40,30,20,15,10,10)
 	antag_cap = list("denominator" = 39, "offset" = 1)
@@ -1296,8 +1329,3 @@
 		M.mind.restricted_roles = restricted_roles
 		M.mind.special_role = antag_flag
 	return TRUE
-
-/// Probability the AI going malf will be accompanied by an ion storm announcement and some ion laws.
-#undef MALF_ION_PROB
-/// The probability to replace an existing law with an ion law instead of adding a new ion law.
-#undef REPLACE_LAW_WITH_ION_PROB

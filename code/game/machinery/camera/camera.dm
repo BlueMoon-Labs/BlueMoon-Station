@@ -86,6 +86,17 @@
 	if(can_use())
 		toggle_cam(null, 0) //kick anyone viewing out and remove from the camera chunks
 	GLOB.cameranet.cameras -= src
+	// toggle_cam не зовётся для выключенных/EMP-нутых камер, а радиус удаления в
+	// majorChunkChange (8) уже скана при создании чанка (16 от центра) - добираем
+	// все чанки вручную, иначе chunk.cameras держит удалённую камеру
+	for(var/key in GLOB.cameranet.chunks)
+		var/datum/camerachunk/chunk = GLOB.cameranet.chunks[key]
+		if(src in chunk.cameras)
+			chunk.cameras -= src
+			chunk.hasChanged()
+	// Подсветка камеры малф-ИИ: lit_cameras нигде не чистится по qdel камеры
+	for(var/mob/living/silicon/ai/AI in GLOB.ai_list)
+		AI.lit_cameras -= src
 	cancelCameraAlarm()
 	if(isarea(myarea))
 		LAZYREMOVE(myarea.cameras, src)

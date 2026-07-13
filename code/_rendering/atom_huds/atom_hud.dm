@@ -60,7 +60,8 @@ GLOBAL_LIST_INIT(huds, alist(
 	if(!M || !hudusers[M])
 		return
 	if(absolute || !--hudusers[M])
-		UnregisterSignal(M, COMSIG_PARENT_QDELETING)
+		if(!(M in hudatoms)) // сигнал общий на обе роли - снимаем только когда обе кончились
+			UnregisterSignal(M, COMSIG_PARENT_QDELETING)
 		hudusers -= M
 		if(next_time_allowed[M])
 			next_time_allowed -= M
@@ -76,6 +77,8 @@ GLOBAL_LIST_INIT(huds, alist(
 	for(var/mob/M in hudusers)
 		remove_from_single_hud(M, A)
 	hudatoms -= A
+	if(!hudusers[A]) // сигнал общий на обе роли - снимаем только когда обе кончились
+		UnregisterSignal(A, COMSIG_PARENT_QDELETING)
 	return TRUE
 
 /datum/atom_hud/proc/remove_from_single_hud(mob/M, atom/A) //unsafe, no sanity apart from client
@@ -89,7 +92,7 @@ GLOBAL_LIST_INIT(huds, alist(
 		return
 	if(!hudusers[M])
 		hudusers[M] = 1
-		RegisterSignal(M, COMSIG_PARENT_QDELETING, PROC_REF(unregister_mob))
+		RegisterSignal(M, COMSIG_PARENT_QDELETING, PROC_REF(unregister_mob), override = TRUE)
 		if(next_time_allowed[M] > world.time)
 			if(!queued_to_see[M])
 				addtimer(CALLBACK(src, PROC_REF(show_hud_images_after_cooldown), M), next_time_allowed[M] - world.time)
@@ -100,9 +103,16 @@ GLOBAL_LIST_INIT(huds, alist(
 	else
 		hudusers[M]++
 
+/// Общий обработчик qdel для обеих ролей (huduser и hudatom).
+/// Раньше hudatoms не имели авто-снятия вовсе: remove_from_all_data_huds покрывает
+/// только /datum/atom_hud/data, а из antag/abductor/прочих худов удалённый атом
+/// не выпадал никогда - худ держал труп до конца раунда.
 /datum/atom_hud/proc/unregister_mob(datum/source, force)
 	SIGNAL_HANDLER
-	remove_hud_from(source, TRUE)
+	if(hudusers[source])
+		remove_hud_from(source, TRUE)
+	if(source in hudatoms)
+		remove_from_hud(source)
 
 /datum/atom_hud/proc/show_hud_images_after_cooldown(M)
 	if(queued_to_see[M])
@@ -114,6 +124,8 @@ GLOBAL_LIST_INIT(huds, alist(
 	if(!A)
 		return FALSE
 	hudatoms |= A
+	// override: атом может уже быть зарегистрирован как huduser этим же худом.
+	RegisterSignal(A, COMSIG_PARENT_QDELETING, PROC_REF(unregister_mob), override = TRUE)
 	for(var/mob/M in hudusers)
 		if(!queued_to_see[M])
 			add_to_single_hud(M, A)

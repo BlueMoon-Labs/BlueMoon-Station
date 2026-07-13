@@ -89,6 +89,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/tgui_panel_state = ""
 	var/list/ui_zoom_preferences = list()
 	var/windowflashing = TRUE
+	var/adminhelp_windowflash = TRUE
 	var/windownoise = TRUE
 	var/mood_vignette = TRUE
 	var/toggles = TOGGLES_DEFAULT
@@ -162,7 +163,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/extremeharm = "No" 					//If "extreme content" is enabled, this option serves as a toggle for the related interactions to cause damage or not
 	var/see_chat_emotes = TRUE
 	var/view_pixelshift = FALSE
-	var/eorg_enabled = TRUE
 	var/enable_personal_chat_color = FALSE
 	var/personal_chat_color = "#ffffff"
 	var/lust_tolerance = 100
@@ -360,6 +360,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/sound_volume_adminhelp = 100
 	var/sound_volume_instruments = 100
 	var/sound_volume_jukeboxes = 100
+	var/sound_volume_personal_jukeboxes = 100
+	var/sound_volume_emote = 100
 
 	var/parallax = PARALLAX_INSANE
 
@@ -5087,10 +5089,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					disable_combat_cursor = !disable_combat_cursor
 				if("disable_combat_mouse_lock")
 					disable_combat_mouse_lock = !disable_combat_mouse_lock
-				if("tg_playerpanel")
-					toggles ^= TG_PLAYER_PANEL
-					to_chat(user, span_warning("Please relog in order to apply the changes"))
-					save_preferences()
 				//CITADEL PREFERENCES EDIT - I can't figure out how to modularize these, so they have to go here. :c -Pooj
 				if("genital_colour")
 					features["genitals_use_skintone"] = !features["genitals_use_skintone"]

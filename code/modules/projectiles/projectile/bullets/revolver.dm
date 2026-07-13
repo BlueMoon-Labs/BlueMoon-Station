@@ -69,7 +69,7 @@
 
 /obj/item/projectile/bullet/c38/rubber
 	name = ".38 Rubber bullet"
-	damage = 2 // Зачем такой дикий урон резине???
+	damage = 2
 	stamina = 50
 	shrapnel_type = NONE
 	sharpness = SHARP_NONE

@@ -21,6 +21,9 @@ SUBSYSTEM_DEF(economy)
 	var/station_target_buffer = 0
 	/// A var that displays the result of inflation_value for easier debugging and tracking.
 	var/inflation_value = 1
+	/// Множитель цен от события Market Crash: 1 в обычное время, выше во время обвала.
+	/// Применяется поверх штатной инфляции в inflation_value().
+	var/price_surge_mult = 1
 	/// Contains the message to send to newscasters about earnings, updated on price_update()
 	var/civ_bounty_tracker = 0
 	var/full_ancap = FALSE // Enables extra money charges for things that normally would be free, such as sleepers/cryo/cloning.
@@ -187,6 +190,6 @@ SUBSYSTEM_DEF(economy)
  **/
 /datum/controller/subsystem/economy/proc/inflation_value()
 	if(!bank_accounts_by_id.len)
-		return 1
-	inflation_value = max(round(((station_total / bank_accounts_by_id.len) / station_target), 0.1), 1.0)
+		return price_surge_mult
+	inflation_value = max(round(((station_total / bank_accounts_by_id.len) / station_target), 0.1), 1.0) * price_surge_mult
 	return inflation_value

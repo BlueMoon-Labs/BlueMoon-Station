@@ -482,9 +482,6 @@
 		/obj/item/book/granter/crafting_recipe/coldcooking = 2,
 		/obj/item/clothing/gloves/color/white = 3,
 	)
-	contraband = list(
-		/obj/item/card_sticker/muck = 2,
-	)
 	refill_canister = /obj/item/vending_refill/wardrobe/chef_wardrobe
 	payment_department = ACCOUNT_SRV
 

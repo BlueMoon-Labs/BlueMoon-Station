@@ -287,6 +287,11 @@
 		var/obj/effect/holodeck_effect/HE = e
 		HE.deactivate(src)
 
+	for(var/turf/T in linked)
+		for(var/obj/effect/O in T)
+			if(is_cleanable(O))
+				qdel(O)
+
 	for(var/item in spawned)
 		derez(item, !force)
 

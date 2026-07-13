@@ -116,6 +116,10 @@
 	/// Boolean. If TRUE, the Click() proc will attempt to Click() on the master first if there is a master.
 	var/click_master = TRUE
 	var/datum/weakref/master_ref = null
+	/// If set, this overlay will be added on top of the alert icon (typically used with icon_state = "template").
+	var/overlay_state
+	/// The file to fetch the overlay from
+	var/overlay_icon = 'icons/mob/screen_alert.dmi'
 
 /atom/movable/screen/alert/proc/detach_from_owner(remove_from_alerts = FALSE)
 	var/mob/alert_owner = owner
@@ -142,6 +146,13 @@
 	if(clickable_glow)
 		add_filter("clickglow", 2, outline_filter(color = COLOR_GOLD, size = 1))
 		mouse_over_pointer = MOUSE_HAND_POINTER
+	if(overlay_state)
+		update_appearance(UPDATE_OVERLAYS)
+
+/atom/movable/screen/alert/update_overlays()
+	. = ..()
+	if(overlay_state)
+		. += mutable_appearance(overlay_icon, overlay_state)
 
 /atom/movable/screen/alert/MouseEntered(location,control,params)
 	if(!QDELETED(src))
@@ -352,17 +363,20 @@ If you're feeling frisky, examine yourself and click the underlined item to pull
 wall or lattice, to push yourself off if you want to move. A jetpack would enable free range of motion. A pair of \
 magboots would let you walk around normally on the floor. Barring those, you can throw things, use a fire extinguisher, \
 or shoot a gun to move around via Newton's 3rd Law of Motion."
-	icon_state = "weightless"
+	icon_state = "template"
+	overlay_state = "weightless"
 
 /atom/movable/screen/alert/highgravity
 	name = "High Gravity"
 	desc = "You're getting crushed by high gravity, picking up items and movement will be slowed."
-	icon_state = "paralysis"
+	icon_state = "template"
+	overlay_state = "paralysis"
 
 /atom/movable/screen/alert/veryhighgravity
 	name = "Crushing Gravity"
 	desc = "You're getting crushed by high gravity, picking up items and movement will be slowed. You'll also accumulate brute damage!"
-	icon_state = "paralysis"
+	icon_state = "template"
+	overlay_state = "paralysis"
 
 /atom/movable/screen/alert/fire
 	name = "On Fire"
@@ -1056,6 +1070,12 @@ so as to remain in compliance with the most up-to-date laws."
 	name = "Legcuffed"
 	desc = "You're legcuffed, which slows you down considerably. Click the alert to free yourself."
 	click_master = FALSE
+
+/atom/movable/screen/alert/restrained/legcuffed/beartrap
+	name = "Caught in a Bear Trap"
+	desc = "A bear trap has clamped onto your legs! Click the alert to free yourself."
+	icon_state = "template"
+	overlay_state = "hooked_jaws"
 
 /atom/movable/screen/alert/restrained/Click()
 	. = ..()

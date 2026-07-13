@@ -272,6 +272,7 @@
 	var/original_can_fire
 	var/original_power_light
 	var/original_lightswitch
+	var/original_requires_power
 	var/area/test_area
 	var/turf/light_turf
 	var/obj/machinery/power/apc/test_apc
@@ -291,6 +292,11 @@
 	original_area_apc = test_area.power_apc
 	original_power_light = test_area.power_light
 	original_lightswitch = test_area.lightswitch
+	original_requires_power = test_area.requires_power
+	// Без requires_power = FALSE форс power_light/lightswitch ниже недолговечен: во время
+	// sleep/дренажей теста успевает выстрелить SSmachines, и АПЦ без сети через autoset
+	// гасит световой канал области обратно (см. коммент в nightshift_admin_controls).
+	test_area.requires_power = FALSE
 	GLOB.the_station_areas = list(test_area.type)
 	GLOB.nightshift_apc_queue.Cut()
 	GLOB.nightshift_light_queue.Cut()
@@ -317,6 +323,7 @@
 	test_area.power_apc = original_area_apc
 	test_area.power_light = original_power_light
 	test_area.lightswitch = original_lightswitch
+	test_area.requires_power = original_requires_power
 	if(original_area_apc && !QDELETED(original_area_apc))
 		original_area_apc.area = test_area
 		original_area_apc.register_area_apc()
@@ -628,6 +635,9 @@
 	var/original_round_start_time
 	var/original_area_apc
 	var/original_nightshift_public_area
+	var/original_requires_power
+	var/original_lightswitch
+	var/original_power_light
 	var/area/test_area
 	var/obj/machinery/power/apc/test_apc
 	var/obj/machinery/light/test_light
@@ -657,9 +667,21 @@
 	original_round_start_time = SSticker.round_start_time
 	original_area_apc = test_area.power_apc
 	original_nightshift_public_area = test_area.nightshift_public_area
+	original_requires_power = test_area.requires_power
+	original_lightswitch = test_area.lightswitch
+	original_power_light = test_area.power_light
 
 	GLOB.the_station_areas = list(test_area.type)
 	test_area.nightshift_public_area = NIGHTSHIFT_AREA_FORCED
+	// Вывод области из симуляции питания на время теста: дренажи спят (sleep/CHECK_TICK), и на
+	// нагруженном CI между тиками успевает выстрелить SSmachines - АПЦ без сети (и тестовый, и
+	// маповый) через autoset гасит световой канал, area.power_light падает, power_change() тушит
+	// лампу (световой датум умирает, цвет замерзает на бульбовом). requires_power = FALSE
+	// останавливает process() ВСЕХ АПЦ области, явные lightswitch/power_light дают лампе
+	// стабильное питание независимо от исхода прошлых интерливов.
+	test_area.requires_power = FALSE
+	test_area.lightswitch = TRUE
+	test_area.power_light = TRUE
 	GLOB.nightshift_apc_queue.Cut()
 	GLOB.nightshift_light_queue.Cut()
 
@@ -714,6 +736,9 @@
 	SSticker.round_start_time = original_round_start_time
 	test_area.power_apc = original_area_apc
 	test_area.nightshift_public_area = original_nightshift_public_area
+	test_area.requires_power = original_requires_power
+	test_area.lightswitch = original_lightswitch
+	test_area.power_light = original_power_light
 	return ..()
 
 /datum/unit_test/nightshift_admin_controls/proc/expected_color(level)

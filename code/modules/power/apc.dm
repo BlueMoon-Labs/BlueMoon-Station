@@ -1687,6 +1687,19 @@
 		return APC_CHANNEL_AUTO_OFF
 	return APC_CHANNEL_OFF
 
+/// Тихо отщёлкивает один случайный канал в жёсткий OFF (ивент APC Scramble). Автоматика
+/// такой канал обратно не поднимает - только руки экипажа через интерфейс щитка.
+/obj/machinery/power/apc/proc/scramble_channel()
+	switch(rand(1, 3))
+		if(1)
+			lighting = APC_CHANNEL_OFF
+		if(2)
+			equipment = APC_CHANNEL_OFF
+		if(3)
+			environ = APC_CHANNEL_OFF
+	update_appearance()
+	update()
+
 /obj/machinery/power/apc/proc/reset(wire)
 	switch(wire)
 		if(WIRE_IDSCAN)

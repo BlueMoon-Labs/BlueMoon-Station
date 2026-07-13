@@ -216,3 +216,48 @@
       урон
   iamasay:
   - admin: Сообщение в чате о сингулярности теперь визуально больше
+2026-07-12:
+  DuLL-FoX:
+  - refactor: 'Система случайных событий и мидраундов переписана: единый директор
+      раунда с капельным бюджетом по ступеням тяжести вместо независимых SSevents
+      и инжекций динамика'
+  - rscadd: 'Админ-панель Director Panel: живой пул действий с шансами и причинами
+      отсева, кошельки бюджета, окно отмены тяжёлых запусков с заменой, встроенный
+      справочник'
+  - rscadd: Конфиг director.json с горячей перезагрузкой, JSON-лог решений раунда,
+      оффлайн-симулятор пейсинга
+  - rscdel: SSevents, hijack случайных событий динамиком и мёртвые конфиг-ключи динамика
+  - balance: События и антаги подчиняются общим потолкам нагрузки и паузам; при затишье
+      гарантированное событие, после эвакуации и при куче мёртвых тяжёлое не стартует,
+      повторы затухают
+  - bugfix: Убран висячий "0" в углу не-fancy tgui-окон
+  - bugfix: 'пачка фиксов harddel-утечек: обсерверы, эскейп-меню, записи, atom-худы,
+      экранные объекты и предметы'
+  - admin: 'панель здоровья GC: авто-сканы ссылок, refcount, каскад-группировка утечек,
+      VV-опция "Monitor Refcount"'
+  - code_imp: рефтрекер компилируется всегда и включается на рантайме без пересборки
+  - config: настройки режима авто-сканов ссылок
+  Kubic70:
+  - code_imp: added decal cleaner for linked holodeck
+  - code_imp: added HOLOGRAM_1 flag check for crayons
+  - image: added checkers icons
+  - map: modified CentCom Holodeck rooms
+  - map: modified MetaStation Holodeck area
+  - map: modified DeltaStation Holodeck area
+  - map: modified IcemoonStation Holodeck area
+  - map: modified FestiveStation Holodeck area
+  - map: modified BoxStation Holodeck area
+  - map: modified LambdaStation Holodeck area
+  - map: modified LayeniaStation Holodeck area
+  - map: modified PubbyStation Holodeck area
+  - map: modified TauStation Holodeck area
+  - map: modified SyndicateStation Holodeck area
+  - map: modified CogStation Holodeck area
+  - map: modified KiloStation Holodeck area
+  Pingvas:
+  - rscadd: Настройка громкости эмоутов.
+  - bugfix: Пофикшены некоторые настройки меню.
+  iamasay:
+  - map: отелю добавлена оружейка, допроска, новая камера
+  - code_imp: изменён лодаут отельного сб, изменены описания отельных ролей
+  - bugfix: пофиксил багоюз стрельбы в крите/после смерти

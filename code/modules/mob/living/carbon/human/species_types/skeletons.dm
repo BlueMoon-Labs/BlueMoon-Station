@@ -22,14 +22,14 @@
 	blacklisted_quirks = list(/datum/quirk/paper_skin)
 
 /datum/species/skeleton/New()
-	if(SSevents.holidays && SSevents.holidays[HALLOWEEN]) //skeletons are stronger during the spooky season!
+	if(SSholidays.holidays && SSholidays.holidays[HALLOWEEN]) //skeletons are stronger during the spooky season!
 		inherent_traits |= list(TRAIT_RESISTHEAT, TRAIT_NOBREATH, TRAIT_PIERCEIMMUNE, TRAIT_FAKEDEATH, TRAIT_RESISTCOLD, TRAIT_RADIMMUNE)
 		brutemod = 0.25
 		burnmod = 0.25
 	..()
 
 /datum/species/skeleton/check_roundstart_eligible()
-	if(SSevents.holidays && SSevents.holidays[HALLOWEEN])
+	if(SSholidays.holidays && SSholidays.holidays[HALLOWEEN])
 		return TRUE
 	return ..()
 

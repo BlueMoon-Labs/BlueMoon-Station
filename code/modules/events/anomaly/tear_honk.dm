@@ -1,6 +1,7 @@
 /datum/round_event_control/anomaly/tear/honk
 	name = "Honked Dimensional Tear"
 	typepath = /datum/round_event/anomaly/tear/honk
+	enabled = TRUE // база выключена, подтипы включаются явно
 	weight = 5
 	max_occurrences = 1
 	min_players = 30

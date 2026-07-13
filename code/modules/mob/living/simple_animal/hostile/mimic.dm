@@ -195,6 +195,13 @@ GLOBAL_LIST_INIT(protected_objects, list(/obj/structure/table, /obj/structure/ca
 				 "My logic is undeniable.", "One of us.", "FLESH IS WEAK", "THIS ISN'T WAR, THIS IS EXTERMINATION!")
 	speak_chance = 7
 
+/// A Brand Intelligence mimic keeps its vending machine inside it so the machine
+/// is restored by /copy/death() instead of disappearing with the dead mimic.
+/mob/living/simple_animal/hostile/mimic/copy/vending
+
+/mob/living/simple_animal/hostile/mimic/copy/vending/CheckObject(obj/O)
+	return istype(O, /obj/machinery/vending)
+
 /mob/living/simple_animal/hostile/mimic/copy/machine/CanAttack(atom/the_target)
 	if(the_target == creator) // Don't attack our creator AI.
 		return FALSE

@@ -444,7 +444,9 @@
 	var/obj/item/organ/internal/eyes/user_eyes = user.get_organ_slot(ORGAN_SLOT_EYES)
 	if(user_eyes)
 		user_eyes.flash_protect = initial(user_eyes.flash_protect)
-		user_eyes.color_cutoffs = initial(user_eyes.color_cutoffs)
+		// Не initial(): на list-переменной он возвращает не список, и update_sight
+		// падал на .Copy(). Глаза со списочным дефолтом восстановят буст своим тогглом
+		user_eyes.color_cutoffs = null
 		user_eyes.sight_flags = initial(user_eyes.sight_flags)
 	user.update_sight()
 

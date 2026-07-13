@@ -27,7 +27,10 @@
 			return
 	/// Client does NOT have tgui_input on: Returns regular input
 	if(!user.client.prefs.tgui_input_mode && !strict_modern)
-		return input(user, message, title, default) as null|anything in items
+		var/mob/prompt_mob = begin_native_prompt(user)
+		var/native_answer = input(user, message, title, default) as null|anything in items
+		end_native_prompt(prompt_mob)
+		return native_answer
 	var/datum/tgui_list_input/input = new(user, message, title, items, default, timeout)
 	input.ui_interact(user)
 	input.wait()

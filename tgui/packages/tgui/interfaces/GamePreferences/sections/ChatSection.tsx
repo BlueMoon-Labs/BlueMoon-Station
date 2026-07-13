@@ -301,7 +301,7 @@ export const ChatSection = (props) => {
             label="Автокапитализация речи"
             checked={data.auto_capitalize_enabled}
             tooltip="Автоматически делать первую букву предложения заглавной в IC-чате"
-            onClick={() => act('toggle_gfx_val', { flag: 'auto_capitalize_enabled' })}
+            onClick={() => act('toggle_chat', { flag: 'auto_capitalize_enabled' })}
           />
         </Stack>
       </Stack.Item>

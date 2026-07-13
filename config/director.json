@@ -1,0 +1,74 @@
+{
+	"_readme": [
+		"Конфиг директора раунда (SSdirector). Файл опционален: дефолты живут в коде, здесь только переопределения.",
+		"Горячая перезагрузка: верб Reload Director Config или кнопка в Director Panel; ошибки парсинга и неизвестные ключи видны там же.",
+		"profiles: ключ - тип раунда: Dynamic (Light) / Dynamic (Medium) / Dynamic (Hard) / Dynamic (Team-Based) / Extended. Dynamic (Random) использует профиль Medium.",
+		"actions: ключ - имя действия, как в колонке Действие панели и в поле action лога director.json.",
+		"ВСЕ времена в этом файле задаются в МИНУТАХ, конвертация в игровые единицы автоматическая.",
+		"Ключи, начинающиеся с подчёркивания (_readme, _help_*, _example, _migration), парсером игнорируются."
+	],
+	"_help_profile_keys": {
+		"base_drip": "очков бюджета в минуту до множителей (событийные кошельки flavor..major)",
+		"antag_drip": "очков в минуту в антаг-кошельки (antag + ghost, делятся по pool_shares) при полном дефиците антаг-нагрузки; реальная скорость пропорциональна дефициту (1 - нагрузка/цель)",
+		"time_curve": "кривая множителя капли от минуты раунда: [[минута, множитель], ...]",
+		"pop_curve": "кривая множителя капли от эффективного экипажа: [[экипаж, множитель], ...]",
+		"intensity_cap": "потолок суммарной активной intensity: выше него стреляет только флейвор",
+		"max_active_major": "максимум одновременно живых MAJOR-действий",
+		"severity_spacing": "минуты паузы между запусками одной ступени: {flavor/minor/moderate/major: минуты}",
+		"antag_light_spacing": "минуты паузы между лёгкими антаг-инжекциями из экипажа (ступень antag)",
+		"antag_heavy_spacing": "минуты паузы между тяжёлыми антаг-инжекциями из экипажа (antag_heavy)",
+		"ghost_light_spacing": "минуты паузы между лёгкими гост-инжекциями (ступень ghost); трек независим от antag",
+		"ghost_heavy_spacing": "минуты паузы между тяжёлыми гост-инжекциями (antag_heavy); трек независим от antag",
+		"latejoin_spacing": "минуты паузы латеджойн-канала (инжекция в окно захода игрока); трек независим от пауз битов",
+		"pool_shares": "целевые доли ступеней в выборе и в раскладке капли по кошелькам, сумма ~1",
+		"max_quiet_time": "минуты тишины, после которых бит гарантированно запускает Малое/Среднее",
+		"quiet_intensity_threshold": "гарантированный бит срабатывает только при intensity ниже этого порога",
+		"security_per_players": "норма: 1 офицер СБ на столько экипажа; при недоборе тяжёлое режется по весу",
+		"security_penalty_mult": "множитель веса MAJOR и тяжёлых антагов при недоборе СБ",
+		"dead_fraction_threshold": "доля мёртвых, выше которой капля вдвое медленнее, а MAJOR и тяжёлые антаги закрыты",
+		"roundstart_budget_min": "нижняя граница стартового бюджета",
+		"roundstart_budget_max": "верхняя граница стартового бюджета",
+		"admin_cancel_time": "минуты окна отмены перед запуском Среднего и тяжелее (0.25 = 15 секунд)",
+		"repeat_penalty": "затухание повторов: вес действия делится на (1 + запуски * repeat_penalty); 0 выключает"
+	},
+	"_help_action_keys": {
+		"enabled": "false полностью выключает естественный выбор действия",
+		"admin_only": "true - действие доступно только для ручного запуска админом",
+		"weight": "базовый вес во взвешенном выборе",
+		"cost": "цена запуска из кошелька своей ступени",
+		"intensity": "вклад в активную нагрузку, пока действие живо",
+		"intensity_linger": "минуты, которые вклад держится после завершения события",
+		"min_players": "минимальный эффективный экипаж",
+		"earliest_start": "минута раунда, раньше которой действие не выбирается",
+		"max_occurrences": "жёсткий потолок запусков за раунд (0 - без лимита)",
+		"repeat_penalty": "персональное затухание повторов вместо профильного",
+		"antag_heavy": "true - тяжёлая антаг-инжекция (считается по antag_heavy_spacing или ghost_heavy_spacing своей ступени)",
+		"severity": "ступень flavor/minor/moderate/major/antag/ghost - менять с осторожностью; antag = антаги из экипажа, ghost = из призраков"
+	},
+	"_example": {
+		"profiles": {
+			"Dynamic (Hard)": {
+				"base_drip": 1.8,
+				"severity_spacing": { "moderate": 5 },
+				"repeat_penalty": 0.7
+			}
+		},
+		"actions": {
+			"Minor Space Dust": { "weight": 3, "repeat_penalty": 1 },
+			"Space Pirates (Ruleset)": { "enabled": false }
+		}
+	},
+	"_migration": {
+		"general.txt: events_min_time_mul, events_min_players_mul": "живы: множители earliest_start/min_players событий применяются при инициализации",
+		"config.txt: allow_random_events": "жив: выключает все событийные действия директора (антаг-рулсеты остаются)",
+		"dynamic: threat_curve_*, roundstart_split_curve_*": "живы: roundstart-жеребьёвка динамика не тронута",
+		"dynamic_config_enabled и dynamic.json целиком": "умерло: переопределения рулсетов теперь в секции actions этого файла",
+		"dynamic_midround/latejoin_delay_*, dynamic_first_*": "умерло: инжекции планирует директор (severity_spacing + кошелёк antag)",
+		"dynamic_cost/weight/requirements/high_population_requirement": "умерло: cost и weight рулсетов - в секции actions",
+		"random_event_hijack_*, hijacked_random_event_injection_chance": "умерло: механизм hijack вырезан целиком",
+		"storyteller_weight/min_players/min_chaos/max_chaos": "умерло вместе со сторителлером",
+		"частота случайных событий (SSevents, привязка к 15 минутам)": "умерло: теперь бит директора раз в минуту, темп задают severity_spacing и капля профиля"
+	},
+	"profiles": {},
+	"actions": {}
+}

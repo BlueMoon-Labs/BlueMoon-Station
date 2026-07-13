@@ -1,8 +1,10 @@
 /datum/round_event_control/devil
 	name = "Create Devil"
 	typepath = /datum/round_event/ghost_role/devil
-	max_occurrences = 0
+	enabled = FALSE
 	category = EVENT_CATEGORY_ENTITIES
+	severity = DIRECTOR_SEVERITY_GHOST // выключен, но при форсе обязан считаться антаг-нагрузкой
+	family = "devil" // с рулсетом-двойником динамика: не подряд
 	description = "Spawns a devil, looking forward to makings deals with crewmembers to get their souls."
 
 /datum/round_event/ghost_role/devil

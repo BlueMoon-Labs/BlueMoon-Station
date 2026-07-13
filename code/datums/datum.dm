@@ -58,14 +58,12 @@
 	var/list/cooldowns
 	var/tmp/unique_datum_id = null
 
-#ifdef REFERENCE_TRACKING
-	var/running_find_references
+	/// Метка последнего прохода рефтрекера по этому датуму (защита от повторного обхода).
 	var/last_find_references = 0
 	#ifdef REFERENCE_TRACKING_DEBUG
 	///Stores info about where refs are found, used for sanity checks and testing
 	var/list/found_refs
 	#endif
-#endif
 
 #ifdef DATUMVAR_DEBUGGING_MODE
 	var/list/cached_vars
@@ -116,10 +114,8 @@
 			continue
 		qdel(timer)
 
-	#ifdef REFERENCE_TRACKING
 	#ifdef REFERENCE_TRACKING_DEBUG
 	found_refs = null
-	#endif
 	#endif
 
 	//BEGIN: ECS SHIT

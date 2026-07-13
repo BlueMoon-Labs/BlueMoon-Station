@@ -3,7 +3,7 @@
 // (and SSpersistence.SaveMapDebris / wipe_existing_debris through it) used to do
 // `for(var/obj/effect/decal/cleanable/C in world)` — an O(N_atoms_in_world) walk
 // over every atom in the world, not over cleanables. Same issue lived in
-// /datum/round_event_control/slaughter/canSpawnEvent.
+// /datum/round_event_control/slaughter/can_fire.
 //
 // GLOB.cleanable_decals tracks every live cleanable so the scan is O(N_cleanables).
 // These tests verify:
@@ -73,6 +73,21 @@
 		qdel(c)
 
 	TEST_ASSERT_EQUAL(GLOB.cleanable_decals.len, initial, "GLOB.cleanable_decals must return to initial length after mass qdel")
+
+/// can_fire slaughter-события обязан резать дешёвые базовые гейты (earliest_start,
+/// min_players) ДО скана GLOB.cleanable_decals: скан стоит сотни мс на живой станции
+/// (спайки в слоте Director по профилю 2026-07-11) и платился каждым битом директора
+/// с горячим MAJOR-кошельком, даже когда событие заведомо недоступно ещё два часа.
+/// Наблюдаемый признак запуска скана - пересчёт weight с нуля.
+/datum/unit_test/slaughter_can_fire_gates_before_decal_scan/Run()
+	var/datum/round_event_control/slaughter/event = new()
+	var/datum/director_signals/signals = new()
+	// effective_crew = 0 (меньше min_players) и свежий раунд (младше earliest_start):
+	// базовые гейты режут событие, скан декалей не должен даже начинаться.
+	event.weight = 424242
+	TEST_ASSERT(!event.can_fire(signals), "Premise broken: base gates must reject slaughter with zero crew on a fresh round")
+	TEST_ASSERT_EQUAL(event.weight, 424242, "can_fire ran the decal scan (weight was recalculated) before the base gates rejected the event")
+	qdel(event)
 
 /// Verifies SSpersistence.RelevantPersistentDebris returns the same set whether it
 /// scans GLOB.cleanable_decals or every atom in world. Guards against the GLOB

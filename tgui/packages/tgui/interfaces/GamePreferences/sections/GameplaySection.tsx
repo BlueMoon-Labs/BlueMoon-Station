@@ -7,7 +7,6 @@ type GameplayData = {
   midround_antag: boolean;
   disable_combat_cursor: boolean;
   disable_combat_mouse_lock: boolean;
-  tg_player_panel: boolean;
   deathrattle: boolean;
   arrivalrattle: boolean;
   intent_style: boolean;
@@ -15,9 +14,8 @@ type GameplayData = {
   damage_screenshake: number;
   recoil_push: number;
   action_buttons_hide: boolean;
-  announce_login: boolean;
-  combohud_lighting: boolean;
   autostand: boolean;
+  long_strip_menu: boolean;
 };
 
 const DAMAGE_SHAKE_OPTIONS = [
@@ -27,16 +25,16 @@ const DAMAGE_SHAKE_OPTIONS = [
 ];
 
 const GAMEPLAY_TOGGLES: { key: string; label: string; flag: string; invert?: boolean; tooltip?: string }[] = [
-  { key: 'no_antag', label: 'Разрешить роли антагонистов', flag: 'no_antag', invert: true, tooltip: 'Включите, чтобы иметь возможность получать роли антагонистов при их выдаче сервером' },
-  { key: 'midround_antag', label: 'Выдача антага в середине раунда', flag: 'midround_antag', tooltip: 'Разрешить получение роли антагониста после начала раунда (мидраунд)' },
+  { key: 'no_antag', label: 'Разрешить роли антагонистов', flag: 'no_antag', invert: true, tooltip: 'Если включено — вы можете получать роли антагонистов при их выдаче сервером' },
+  { key: 'midround_antag', label: 'Выдача антага в середине раунда', flag: 'midround_antag', tooltip: 'Если включено — разрешает получение роли антагониста после начала раунда (мидраунд)' },
   { key: 'deathrattle', label: 'Уведомления о смерти мобов', flag: 'deathrattle', tooltip: 'Показывать уведомление и воспроизводить звук при смерти другого моба в зоне слышимости' },
   { key: 'arrivalrattle', label: 'Уведомления о прибытии игроков', flag: 'arrivalrattle', tooltip: 'Уведомлять о появлении новых игроков поблизости' },
   { key: 'intent_style', label: 'Прямой выбор интента', flag: 'intent_style', tooltip: 'Переключать интенты (помощь/захват/удар/толчок) последовательно, а не через веерное меню' },
   { key: 'action_buttons_hide', label: 'Скрыть кнопки действий при спавне', flag: 'action_buttons_hide', tooltip: 'Не показывать кнопки способностей и предметов в интерфейсе при старте раунда' },
   { key: 'disable_combat_cursor', label: 'Отключить курсор боя', flag: 'disable_combat_cursor', tooltip: 'Не менять курсор при входе в боевой режим (harm intent)' },
   { key: 'disable_combat_mouse_lock', label: 'Отключить захват мыши в бою', flag: 'disable_combat_mouse_lock', tooltip: 'Не блокировать курсор мыши в пределах окна при входе в боевой режим' },
-  { key: 'tg_player_panel', label: 'Новый стиль панели игрока (TG)', flag: 'tg_player_panel', tooltip: 'Использовать обновлённый интерфейс панели информации об игроке (TG-стиль)' },
   { key: 'autostand', label: 'Автоматическое вставание', flag: 'autostand', tooltip: 'Автоматически вставать после падения или когда вас поднимают' },
+  { key: 'long_strip_menu', label: 'Длинное меню раздевания', flag: 'long_strip_menu', tooltip: 'Показывать расширенное меню взаимодействия с одеждой' },
 ];
 
 export const GameplaySection = (props) => {

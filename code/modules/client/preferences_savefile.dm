@@ -5,7 +5,7 @@
 //	You do not need to raise this if you are adding new values that have sane defaults.
 //	Only raise this value when changing the meaning/format/name/layout of an existing value
 //	where you would want the updater procs below to run
-#define SAVEFILE_VERSION_MAX	74
+#define SAVEFILE_VERSION_MAX	75
 
 /// Upper bound for character slot indices during savefile migration (loop over S.dir).
 /// Prevents corrupted or garbage directory names (e.g. huge slot numbers) from inflating max_save_slots
@@ -118,6 +118,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	if(current_version < 74)
 		new_character_creator = TRUE
 		charcreation_theme = "modern"
+
+	if(current_version < 75)
+		toggles |= SOUND_EMOTE
 
 /datum/preferences/proc/update_character(current_version, savefile/S)
 	if(current_version < 19)
@@ -525,6 +528,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["tgui_panel_state"]		>> tgui_panel_state
 	S["ui_zoom_preferences"]	>> ui_zoom_preferences
 	S["windowflash"] 			>> windowflashing
+	S["adminhelp_windowflash"]	>> adminhelp_windowflash
 	S["windownoise"] 			>> windownoise
 	S["mood_vignette"] 			>> mood_vignette
 	S["action_buttons_hide_on_spawn"] 			>> action_buttons_hide_on_spawn
@@ -569,6 +573,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["sound_volume_adminhelp"] >> sound_volume_adminhelp
 	S["sound_volume_instruments"] >> sound_volume_instruments
 	S["sound_volume_jukeboxes"] >> sound_volume_jukeboxes
+	S["sound_volume_personal_jukeboxes"] >> sound_volume_personal_jukeboxes
+	S["sound_volume_emote"] >> sound_volume_emote
 	S["parallax"] >> parallax
 	S["ambientocclusion"] >> ambientocclusion
 	S["lighting_blur"] >> lighting_blur
@@ -686,6 +692,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 				ui_zoom_count++
 		ui_zoom_preferences = sanitized_ui_zoom_preferences
 	windowflashing = sanitize_integer(windowflashing, 0, 1, initial(windowflashing))
+	adminhelp_windowflash = sanitize_integer(adminhelp_windowflash, 0, 1, initial(adminhelp_windowflash))
 	windownoise = sanitize_integer(windownoise, 0, 1, initial(windownoise))
 	mood_vignette = sanitize_integer(mood_vignette, 0, 1, initial(mood_vignette))
 	action_buttons_hide_on_spawn = sanitize_integer(action_buttons_hide_on_spawn, 0, 1, initial(action_buttons_hide_on_spawn))
@@ -703,6 +710,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	sound_volume_adminhelp = sanitize_integer(sound_volume_adminhelp, 0, 100, initial(sound_volume_adminhelp))
 	sound_volume_instruments = sanitize_integer(sound_volume_instruments, 0, 100, initial(sound_volume_instruments))
 	sound_volume_jukeboxes = sanitize_integer(sound_volume_jukeboxes, 0, 100, initial(sound_volume_jukeboxes))
+	sound_volume_personal_jukeboxes = sanitize_integer(sound_volume_personal_jukeboxes, 0, 100, initial(sound_volume_personal_jukeboxes))
+	sound_volume_emote = sanitize_integer(sound_volume_emote, 0, 100, initial(sound_volume_emote))
 	preferred_chaos_level = sanitize_integer(preferred_chaos_level, 0, 3, 2)
 	parallax = sanitize_integer(parallax, PARALLAX_DISABLE, PARALLAX_INSANE, null)
 	ambientocclusion = sanitize_integer(ambientocclusion, 0, 1, initial(ambientocclusion))
@@ -894,6 +903,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["tgui_panel_state"], tgui_panel_state)
 	WRITE_FILE(S["ui_zoom_preferences"], ui_zoom_preferences)
 	WRITE_FILE(S["windowflash"], windowflashing)
+	WRITE_FILE(S["adminhelp_windowflash"], adminhelp_windowflash)
 	WRITE_FILE(S["windownoise"], windownoise)
 	WRITE_FILE(S["mood_vignette"], mood_vignette)
 	WRITE_FILE(S["action_buttons_hide_on_spawn"], action_buttons_hide_on_spawn)
@@ -933,6 +943,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["sound_volume_adminhelp"], sound_volume_adminhelp)
 	WRITE_FILE(S["sound_volume_instruments"], sound_volume_instruments)
 	WRITE_FILE(S["sound_volume_jukeboxes"], sound_volume_jukeboxes)
+	WRITE_FILE(S["sound_volume_personal_jukeboxes"], sound_volume_personal_jukeboxes)
+	WRITE_FILE(S["sound_volume_emote"], sound_volume_emote)
 	WRITE_FILE(S["parallax"], parallax)
 	WRITE_FILE(S["ambientocclusion"], ambientocclusion)
 	WRITE_FILE(S["lighting_blur"], lighting_blur)
@@ -987,7 +999,6 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["use_modern_translations"], use_modern_translations)
 	WRITE_FILE(S["new_character_creator"], new_character_creator)
 	WRITE_FILE(S["view_pixelshift"], view_pixelshift)
-	WRITE_FILE(S["eorg_enabled"], eorg_enabled)
 
 	//SKYRAT CHANGES BEGIN
 	WRITE_FILE(S["see_chat_emotes"], see_chat_emotes)

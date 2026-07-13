@@ -5,6 +5,11 @@
 	max_occurrences = 1
 	min_players = 30
 	category = EVENT_CATEGORY_ANOMALIES
+	// Категория ANOMALIES по умолчанию даёт MAJOR (cost 20, intensity 40), но видимая часть
+	// события - лотерея силы: громкий анонс с шансом prob(сила*25), рад-штормы только при
+	// больших роллах. Гарантированы лишь буст соляров и допплер-пинг - это цена среднего,
+	// а не съеденный кошелёк крупного при intensity 40 на 10 минут.
+	severity = DIRECTOR_SEVERITY_MODERATE
 
 /datum/round_event/supernova
 	announce_when = 40

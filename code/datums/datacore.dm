@@ -74,7 +74,7 @@
 		if(R in security)
 			security_by_id[new_id] = R
 
-/// Removes all records (medical, security, general) for a given name. Returns the rank from general record if found.
+/// Removes all records (medical, security, general, locked) for a given name. Returns the rank from general record if found.
 /datum/datacore/proc/remove_records_by_name(target_name)
 	var/announce_rank = null
 	var/datum/data/record/gen = general_by_name[target_name]
@@ -87,6 +87,12 @@
 	var/datum/data/record/sec = security_by_name[target_name]
 	if(sec)
 		qdel(sec)
+	// Locked-записи индексируются по id, не по имени - ищем перебором.
+	// Без этого GLOB.data_core.locked бесконечно копит записи ушедших в крио,
+	// а каждая держит mind (скиллы, антаг-датумы, флэт-иконку).
+	for(var/datum/data/record/locked_record as anything in locked.Copy())
+		if(locked_record.fields["name"] == target_name)
+			qdel(locked_record)
 	return announce_rank
 
 /datum/data
@@ -97,6 +103,27 @@
 	var/list/fields = list()
 
 /datum/data/record/Destroy()
+	// Консоли кэшируют выбранную запись в active1/active2 и обнуляют их только в
+	// собственном Destroy - удалённая запись иначе висит на консоли вечно.
+	for(var/obj/machinery/computer/secure_data/sec_console in GLOB.machines)
+		if(sec_console.active1 == src)
+			sec_console.active1 = null
+		if(sec_console.active2 == src)
+			sec_console.active2 = null
+	for(var/obj/machinery/computer/med_data/med_console in GLOB.machines)
+		if(med_console.active1 == src)
+			med_console.active1 = null
+		if(med_console.active2 == src)
+			med_console.active2 = null
+	// Только general-запись владеет фотографиями. Security-запись после EMP
+	// может ссылаться на те же объекты и не должна удалять их из-под владельца.
+	if(src in GLOB.data_core.general)
+		var/obj/item/photo/photo_front = fields["photo_front"]
+		if(istype(photo_front))
+			qdel(photo_front)
+		var/obj/item/photo/photo_side = fields["photo_side"]
+		if(istype(photo_side))
+			qdel(photo_side)
 	var/record_name = fields["name"]
 	var/record_id = fields["id"]
 	if(record_name)

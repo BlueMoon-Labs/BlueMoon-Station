@@ -217,12 +217,14 @@
 		end = length(source) + 1
 	var/body = copytext(source, start, end)
 
-	// The collection loop `for(var/turf/open/floor/T in world)` must contain a CHECK_TICK
-	// (or stoplag) before the work that follows — otherwise on a real station this freezes a tick.
-	var/loop_pos = findtext(body, "for(var/turf/open/floor/T in world)")
+	// The collection loop (per-station-z block() walk since the perf fix) must contain a
+	// CHECK_TICK (or stoplag) before the work that follows - otherwise on a real station
+	// this freezes a tick.
+	var/loop_pos = findtext(body, "for(var/turf/open/floor/T in block(")
 	TEST_ASSERT(loop_pos, "wormholes.start() must still iterate floor turfs (test needs updating if the iterator changed)")
 	var/loop_tail = copytext(body, loop_pos)
 	TEST_ASSERT(findtext(loop_tail, "CHECK_TICK") || findtext(loop_tail, "stoplag"), "wormholes.start() floor-turf loop must contain CHECK_TICK or stoplag to avoid freezing a tick on full stations")
+	TEST_ASSERT(!findtext(body, " in world)"), "wormholes.start() must not walk the whole world - collect turfs per station z-level")
 
 // Synthetic area for the lifecycle test — needs no map placement, just a fresh allocation.
 /area/test_area

@@ -26,14 +26,9 @@ In `/datum/game_mode/dynamic/proc/roundstart()` (called when no admin chooses th
 
 After this process is done, any leftover roundstart threat will be given to the existing midround budget (done in `/datum/game_mode/dynamic/pre_setup()`).
 
-## Deciding midround threats
+## Roundstart setup order
 
-Latejoin and midround injection cooldowns are set using exponential distribution between
-
-- 5 minutes and 25 for latejoin (configurable as latejoin_delay_min and latejoin_delay_max)
-- 15 minutes and 35 for midround (configurable as midround_delay_min and midround_delay_max)
-
-this value is then added to `world.time` and assigned to the injection cooldown variables.
+Midround and latejoin pacing no longer lives here: `SSdirector` owns it (see the Round Director section below). The roundstart draft still runs in this order.
 
 [rigged_roundstart][/datum/game_mode/dynamic/proc/rigged_roundstart] is called instead if there are forced rules (an admin set the mode)
 
@@ -46,9 +41,7 @@ this value is then added to `world.time` and assigned to the injection cooldown 
 ## Rule Processing
 
 Calls [rule_process][/datum/dynamic_ruleset/proc/rule_process] on every rule which is in the current_rules list.
-Every sixty seconds, update_playercounts()
-Midround injection time is checked against world.time to see if an injection should happen.
-If midround injection time is lower than world.time, it updates playercounts again, then tries to inject and generates a new cooldown regardless of whether a rule is picked.
+Midround and latejoin injections are no longer decided here; `SSdirector` schedules them on its own beats.
 
 ## Latejoin
 
@@ -157,28 +150,11 @@ Rulesets have the following variables notable to developers and those interested
 
 The "Dynamic" key has the following configurable values:
 - `pop_per_requirement` - The default value of `pop_per_requirement` for any ruleset that does not explicitly set it. Defaults to 6.
-- `latejoin_delay_min`, `latejoin_delay_max` - The time range, in deciseconds (take your seconds, and multiply by 10), for a latejoin to attempt rolling. Once this timer is finished, a new one will be created within the same range.
-	- Suppose you have a `latejoin_delay_min` of 600 (60 seconds, 1 minute) and a `latejoin_delay_max` of 1800 (180 seconds, 3 minutes). Once the round starts, a random number in this range will be picked--let's suppose 1.5 minutes. After 1.5 minutes, Dynamic will decide if a latejoin threat should be created (a probability of `/datum/game_mode/dynamic/proc/get_injection_chance()`). Regardless of its decision, a new timer will be started within the range of 1 to 3 minutes, repeatedly.
-- `midround_delay_min`, `midround_delay_max` - Same as `latejoin_delay_min` and `latejoin_delay_max`, except for midround threats instead of latejoin ones.
-- `higher_injection_chance`, `higher_injection_chance_minimum_threat` - Manipulates the injection chance (`/datum/game_mode/dynamic/proc/get_injection_chance()`). If the *current midround budget* is above `higher_injection_chance_minimum_threat`, then this chance will be increased by `higher_injection_chance`.
-	- For example: suppose you have a `higher_injection_chance_minimum_threat` of 70, and a `higher_injection_chance` of 15. This means that, if when a midround threat is trying to roll, there is 75 midround budget left, then the injection chance will go up 15%.
-- `lower_injection_chance`, `lower_injection_chance_minimum_threat` - The inverse of the `higher_injection_chance` variables. If the *current midround budget* is *below* `lower_injection_chance`, then the chance is lowered by `lower_injection_chance_minimum_threat`.
-	- For example: suppose you have a `lower_injection_chance_minimum_threat` of 30, and a `lower_injection_chance` of 15. This means if there is 20 midround budget left, then the chance will lower by 15%.
 - `threat_curve_centre` - A number between -5 and +5. A negative value will give a more peaceful round and a positive value will give a round with higher threat.
 - `threat_curve_width` - A number between 0.5 and 4. Higher value will favour extreme rounds and lower value rounds closer to the average.
 - `roundstart_split_curve_centre` - A number between -5 and +5. Equivalent to threat_curve_centre, but for the budget split. A negative value will weigh towards midround rulesets, and a positive value will weight towards roundstart ones.
 - `roundstart_split_curve_width` - A number between 0.5 and 4. Equivalent to threat_curve_width, but for the budget split. Higher value will favour more variance in splits and lower value rounds closer to the average.
-- `random_event_hijack_minimum` - The minimum amount of time for antag random events to be hijacked. (See [Random Event Hijacking](#random-event-hijacking))
-- `random_event_hijack_maximum` - The maximum amount of time for antag random events to be hijacked. (See [Random Event Hijacking](#random-event-hijacking))
-- `hijacked_random_event_injection_chance` - The amount of injection chance to give to Dynamic when a random event is hijacked. (See [Random Event Hijacking](#random-event-hijacking))
 
-## Random Event "Hijacking"
-Random events have the potential to be hijacked by Dynamic to keep the pace of midround injections, while also allowing greenshifts to contain some antagonists.
+## Round Director
 
-`/datum/round_event_control/dynamic_should_hijack` is a variable to random events to allow Dynamic to hijack them, and defaults to FALSE. This is set to TRUE for random events that spawn antagonists.
-
-In `/datum/game_mode/dynamic/on_pre_random_event` (in `dynamic_hijacking.dm`), Dynamic hooks to random events. If the `dynamic_should_hijack` variable is TRUE, the following sequence of events occurs:
-
-![Flow chart to describe the chain of events for Dynamic 2021 to take](https://user-images.githubusercontent.com/35135081/109071468-9cab7e00-76a8-11eb-8f9f-2b920c602ef4.png)
-
-`n` is a random value between `random_event_hijack_minimum` and `random_event_hijack_maximum`. Injection chance, should it need to be raised, is increased by `hijacked_random_event_injection_chance`.
+Random event hijacking described in earlier revisions of this document no longer exists. Pacing of both random events and Dynamic's midround/latejoin rulesets is now owned entirely by `SSdirector` (`code/controllers/subsystem/director.dm`), which schedules every action through a single drip-fed budget instead of Dynamic reaching into random events. See `config/director.json` for tunables.

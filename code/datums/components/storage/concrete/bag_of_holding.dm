@@ -5,9 +5,16 @@
 	var/list/obj/item/storage/backpack/holding/matching = typecache_filter_list(W.GetAllContents(), typecacheof(/obj/item/storage/backpack/holding))
 	matching -= A
 	if(istype(W, /obj/item/storage/backpack/holding) || matching.len)
-		var/safety = alert(user, "Doing this will have extremely dire consequences for the station and its crew. Be sure you know what you're doing.", "Put in [A.name]?", "Abort", "Proceed")
-		if(safety != "Proceed" || QDELETED(A) || QDELETED(W) || QDELETED(user) || !user.canUseTopic(A, BE_CLOSE, iscarbon(user)))
+		var/safety = alert(user, "Это действие будет иметь крайне серьёзные последствия для станции и её экипажа. Убедитесь, что вы знаете, что делаете.", "Засунуть это в [A.name]?", "Не делать это", "Сделать это")
+		if(safety != "Сделать это" || QDELETED(A) || QDELETED(W) || QDELETED(user) || !user.canUseTopic(A, BE_CLOSE, iscarbon(user)))
 			return
+
+		var/final_safety = alert(user, "ПОСЛЕДНЕЕ ПРЕДУПРЕЖДЕНИЕ!\n\nСоздание сингулярности приведёт к уничтожению станции и гибели всего экипажа.\nВы уверены, что хотите сделать это? ЭТО НЕЛЬЗЯ ОТМЕНИТЬ!", "ФИНАЛЬНОЕ ПОДТВЕРЖДЕНИЕ", "НЕТ, НЕ ДЕЛАТЬ!", "ДА, УНИЧТОЖИТЬ ВСЁ!")
+
+		if(final_safety == "НЕТ, НЕ ДЕЛАТЬ!" || QDELETED(A) || QDELETED(W) || QDELETED(user) || !user.canUseTopic(A, BE_CLOSE, iscarbon(user)))
+			to_chat(user, span_notice("Вы вовремя остановились. Катастрофа предотвращена."))
+			return
+
 		var/turf/loccheck = get_turf(A)
 		if(is_reebe(loccheck.z))
 			user.visible_message("<span class='warning'>An unseen force knocks [user] to the ground!</span>", "<span class='big_brass'>\"I think not!\"</span>")

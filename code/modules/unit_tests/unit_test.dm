@@ -234,6 +234,13 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 /proc/RunUnitTests()
 	CHECK_TICK
 
+	// Поздний посев станционных комнат (ticker.dm, addtimer +60с после раундстарта)
+	// иначе идёт параллельно тестам: immediate-GC тесты с нулевыми таймаутами доводят
+	// его qdel-нутые атомы до del() прямо из списка InitializeAtoms - шторм
+	// world-обходов и фантомные warnfail в счётчиках. Сеем синхронно до первого
+	// теста; таймер потом отработает вхолостую по пустому списку лендмарков.
+	SSmapping.seedStation(TRUE)
+
 	var/list/tests_to_run = subtypesof(/datum/unit_test)
 	var/list/focused_tests = list()
 	for (var/_test_to_run in tests_to_run)

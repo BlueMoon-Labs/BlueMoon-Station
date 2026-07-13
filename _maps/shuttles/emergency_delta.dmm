@@ -270,6 +270,7 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
+/mob/living/simple_animal/bot/medbot/catmedbot,
 /turf/open/floor/plasteel/white,
 /area/shuttle/escape)
 "at" = (
@@ -284,6 +285,7 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
+/mob/living/simple_animal/bot/medbot/catmedbot,
 /turf/open/floor/plasteel/white,
 /area/shuttle/escape)
 "au" = (

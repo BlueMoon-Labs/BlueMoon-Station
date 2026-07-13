@@ -6,10 +6,12 @@
 	name = "Anomaly: Ectoplasmic Outburst"
 	description = "Anomaly that produces an effect of varying intensity based on how many ghosts are orbiting it."
 	typepath = /datum/round_event/anomaly/anomaly_ectoplasm
+	enabled = TRUE // база выключена, подтипы включаются явно
 	min_players = 30
 	max_occurrences = 2
 	weight = 4 //Rare because of it's wacky and silly nature
 	category = EVENT_CATEGORY_ANOMALIES
+	severity = DIRECTOR_SEVERITY_MODERATE
 	admin_setup = list(/datum/event_admin_setup/set_location/anomaly, /datum/event_admin_setup/anomaly_ectoplasm)
 
 /datum/round_event/anomaly/anomaly_ectoplasm

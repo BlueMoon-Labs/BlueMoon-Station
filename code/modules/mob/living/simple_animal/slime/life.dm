@@ -11,6 +11,13 @@
 	typing_indicator_state = /obj/effect/overlay/typing_indicator/slime
 
 /mob/living/simple_animal/slime/BiologicalLife(delta_time, times_fired)
+	// Слайм в стазисе/бессознанке не доходит до AI-очистки ниже, поэтому удалённые
+	// цели вычищаем до всех гейтов - иначе Target/Leader вечно держат qdel-нутого
+	// моба (массовые хардделы обезьян на ферме)
+	if(Target && QDELETED(Target))
+		Target = null
+	if(Leader && QDELETED(Leader))
+		Leader = null
 	if(!(. = ..()))
 		return
 	if(buckled)

@@ -52,6 +52,9 @@ SUBSYSTEM_DEF(shuttle)
 
 	var/datum/round_event/shuttle_loan/shuttle_loan
 
+	/// Экипаж купил страховку шаттла (событие Shuttle Insurance): катастрофа покрывается страховой
+	var/shuttle_insurance = FALSE
+
 	var/shuttle_purchased = SHUTTLEPURCHASE_PURCHASABLE //If the station has purchased a replacement escape shuttle this round
 	var/list/shuttle_purchase_requirements_met = list() //For keeping track of ingame events that would unlock new shuttles, such as defeating a boss or discovering a secret item
 
@@ -641,6 +644,7 @@ SUBSYSTEM_DEF(shuttle)
 	emergencyNoEscape = SSshuttle.emergencyNoEscape
 	emergencyCallAmount = SSshuttle.emergencyCallAmount
 	shuttle_purchased = SSshuttle.shuttle_purchased
+	shuttle_insurance = SSshuttle.shuttle_insurance
 	lockdown = SSshuttle.lockdown
 
 	selected = SSshuttle.selected

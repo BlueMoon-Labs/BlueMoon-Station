@@ -72,7 +72,6 @@ const GFX_TOGGLES: { key: string; label: string; flag: string; tooltip?: string 
   { key: 'view_pixelshift', label: 'Сдвигать вид при pixelshift', flag: 'view_pixelshift', tooltip: 'Автоматически сдвигать экран при использовании pixel-сдвига (наклон, тряска)' },
   { key: 'screentip_pref', label: 'Подсказки на экране', flag: 'screentip_pref', tooltip: 'Показывать названия объектов и кнопки взаимодействия в верхней части экрана' },
   { key: 'screentip_images', label: 'Подсказки с изображениями', flag: 'screentip_images', tooltip: 'Показывать иконки действий в подсказках на экране (требует включённой опции «Подсказки на экране»)' },
-  { key: 'auto_capitalize_enabled', label: 'Автокапитализация речи', flag: 'auto_capitalize_enabled', tooltip: 'Автоматически делать первую букву предложения заглавной в IC-чате' },
   { key: 'tgui_fancy', label: 'Украшенный стиль TGUI', flag: 'tgui_fancy', tooltip: 'Использовать стилизованное оформление окон TGUI с закруглениями и тенями. Требует перезапуска клиента' },
   { key: 'tgui_lock', label: 'Блокировка окон TGUI', flag: 'tgui_lock', tooltip: 'Заблокировать возможность перемещать и изменять размер окон TGUI' },
   { key: 'hud_button_flashes', label: 'Мигание кнопок HUD', flag: 'hud_button_flashes', tooltip: 'Анимировать мигание кнопок в интерфейсе при переключении состояний' },

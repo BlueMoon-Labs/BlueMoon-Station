@@ -1,10 +1,11 @@
 /datum/round_event_control/spacevine
 	name = "Spacevine"
 	typepath = /datum/round_event/spacevine
-	weight = 55
+	weight = 35 // был 55 - вдвое тяжелее любой аномалии, кудзу выпадал непропорционально часто
 	max_occurrences = 3
 	min_players = 10
 	category = EVENT_CATEGORY_ENTITIES
+	severity = DIRECTOR_SEVERITY_MODERATE
 	description = "Kudzu (spacevine) starts spreading in station hallways. May include dangerous mutations; flowering can spawn traps."
 	admin_setup = list(
 		/datum/event_admin_setup/set_location/spacevine,
