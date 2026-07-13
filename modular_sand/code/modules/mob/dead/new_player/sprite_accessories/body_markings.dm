@@ -101,7 +101,7 @@
 	covered_limbs = list("Chest" = MATRIX_RED)
 
 /datum/sprite_accessory/mam_body_markings/sixpacktwo
-	name = "Six-pack only abs"
+	name = "Six-pack only abs - TWO"
 	icon = 'modular_sand/icons/mob/mam_markings.dmi'
 	icon_state = "sixpacktwo"
 	covered_limbs = list("Chest" = MATRIX_RED)
