@@ -220,7 +220,7 @@
 	gloves = /obj/item/clothing/gloves/color/brown
 	head = /obj/item/clothing/head/helmet/military
 	mask = /obj/item/clothing/mask/balaclava
-	shoes = /obj/item/clothing/shoes/workboots
+	shoes = /obj/item/clothing/shoes/workboots/mining
 	belt = /obj/item/storage/belt/iron_tasset
 	l_hand = /obj/item/claymore/cerberus
 	l_pocket = /obj/item/flashlight/flare/torch
