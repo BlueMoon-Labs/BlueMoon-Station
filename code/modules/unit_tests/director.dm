@@ -1769,7 +1769,8 @@
 	TEST_ASSERT(!light_profile.antag_heavy_enabled, "Light не должен пускать тяжёлые антаг-команды")
 
 /// Политика Dynamic Light: автоматические гост-инжекции ограничены малыми беглецами
-/// и мирным вариантом Lone Operative, который защищает диск.
+/// и условным Lone Operative. Защитник диска в Light приходит только второй волной после него;
+/// самостоятельно control защитника доступен исключительно в Extended.
 /// Боевые гост-антаги исторически убраны из Light у dynamic-ruleset'ов и не должны возвращаться
 /// через одноимённые event control'ы директора (именно так в Light смог выпасть Space Dragon).
 /datum/unit_test/director_light_ghost_policy
@@ -1777,13 +1778,33 @@
 /datum/unit_test/director_light_ghost_policy/Run()
 	var/list/allowed_light_ghost_controls = list(
 		/datum/round_event_control/fugitives,
-		/datum/round_event_control/operative/keeper,
 	)
+	var/datum/round_event_control/operative/operative_control = locate() in SSdirector.event_controls()
 	var/datum/round_event_control/operative/keeper/keeper_control = locate() in SSdirector.event_controls()
+	TEST_ASSERT_NOTNULL(operative_control, "Lone Operative должен быть зарегистрирован у директора")
+	TEST_ASSERT(!operative_control.admin_only, "Lone Operative должен входить в условный автоматический пул")
+	TEST_ASSERT_EQUAL(initial(operative_control.weight), 0, "Lone Operative не должен иметь шанс до срабатывания условия неподвижного диска")
+	TEST_ASSERT(initial(operative_control.weight_can_change), "Панель должна знать, что нулевой вес Lone Operative меняется во время раунда")
+	TEST_ASSERT(ROUNDTYPE_DYNAMIC_LIGHT in operative_control.required_round_type, "Lone Operative должен быть доступен в Dynamic Light")
+	TEST_ASSERT(ROUNDTYPE_DYNAMIC_MEDIUM in operative_control.required_round_type, "Lone Operative должен быть доступен в Dynamic Medium")
+	TEST_ASSERT(ROUNDTYPE_DYNAMIC_HARD in operative_control.required_round_type, "Lone Operative должен быть доступен в Dynamic Hard")
+	TEST_ASSERT(ROUNDTYPE_DYNAMIC_TEAMBASED in operative_control.required_round_type, "Lone Operative должен быть доступен в Dynamic Team-Based")
+	TEST_ASSERT(!(ROUNDTYPE_EXTENDED in operative_control.required_round_type), "Боевой Lone Operative не должен входить в пул Extended")
 	TEST_ASSERT_NOTNULL(keeper_control, "Случайный защитник диска должен быть зарегистрирован у директора")
 	TEST_ASSERT(!keeper_control.admin_only, "Защитник диска должен выпадать случайно, а не только через админ-форс")
-	TEST_ASSERT(ROUNDTYPE_DYNAMIC_LIGHT in keeper_control.required_round_type, "Защитник диска должен быть доступен в Dynamic Light")
+	TEST_ASSERT_EQUAL(length(keeper_control.required_round_type), 1, "Самостоятельный защитник диска должен иметь ровно один разрешённый профиль")
+	TEST_ASSERT(ROUNDTYPE_EXTENDED in keeper_control.required_round_type, "Самостоятельный защитник диска должен быть доступен в Extended")
+	TEST_ASSERT(!(ROUNDTYPE_DYNAMIC_LIGHT in keeper_control.required_round_type), "Защитник диска не должен выпадать в Light без Lone Operative")
 	TEST_ASSERT_EQUAL(keeper_control.typepath, /datum/round_event/ghost_role/operative/keeper, "Случайный Lone Operative должен получать роль защитника диска")
+	var/datum/round_event/ghost_role/operative/operative_event = new(FALSE)
+	operative_event.kill()
+	TEST_ASSERT(operative_event.should_spawn_linked_keeper(FALSE, ROUNDTYPE_DYNAMIC_LIGHT), "Обычный Lone Operative в Light должен планировать защитника")
+	TEST_ASSERT(!operative_event.should_spawn_linked_keeper(TRUE, ROUNDTYPE_DYNAMIC_LIGHT), "Сам защитник не должен рекурсивно планировать ещё одного защитника")
+	TEST_ASSERT(!operative_event.should_spawn_linked_keeper(FALSE, ROUNDTYPE_DYNAMIC_MEDIUM), "В Medium после Lone Operative не должен появляться защитник")
+	TEST_ASSERT(!operative_event.should_spawn_linked_keeper(FALSE, ROUNDTYPE_DYNAMIC_HARD), "В Hard после Lone Operative не должен появляться защитник")
+	TEST_ASSERT(!operative_event.should_spawn_linked_keeper(FALSE, ROUNDTYPE_DYNAMIC_TEAMBASED), "В Team-Based после Lone Operative не должен появляться защитник")
+	TEST_ASSERT(!operative_event.should_spawn_linked_keeper(FALSE, ROUNDTYPE_EXTENDED), "Extended использует самостоятельный control защитника, а не пару")
+	qdel(operative_event)
 	for(var/datum/round_event_control/control as anything in SSdirector.event_controls())
 		if(control.severity != DIRECTOR_SEVERITY_GHOST || !control.enabled || control.admin_only || control.weight <= 0)
 			continue

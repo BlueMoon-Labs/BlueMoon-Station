@@ -95,6 +95,19 @@ type ProfileEntry = {
   repeatPenalty: number;
 };
 
+type ProfileActionEntry = {
+  name: string;
+  kind: string;
+  severity: string;
+  weight: number;
+  weightCanChange: BooleanLike;
+  enabled: BooleanLike;
+  adminOnly: BooleanLike;
+  antagHeavy: BooleanLike;
+  disruption: string;
+  requiredRoundTypes: string[] | null;
+};
+
 type WalletEntry = {
   severity: string;
   points: number;
@@ -109,6 +122,7 @@ type WalletEntry = {
 
 type DirectorPanelData = {
   paused: BooleanLike;
+  randomEventsEnabled: BooleanLike;
   budget: number;
   profileName: string | null;
   intensity: number;
@@ -139,6 +153,7 @@ type DirectorPanelData = {
   maxActiveMajor: number;
   pool: PoolEntry[];
   profiles: ProfileEntry[];
+  profileActions: ProfileActionEntry[];
 };
 
 const SEVERITY_LABELS: Record<string, string> = {
@@ -163,6 +178,17 @@ const RESULT_LABELS: Record<string, string> = {
   scheduled: 'Выбрано / ожидает исполнения',
   executed: 'Исполнено',
   failed: 'Не исполнилось',
+};
+
+const RESULT_COLORS: Record<string, StatusColor> = {
+  fired: 'good',
+  executed: 'good',
+  guaranteed: 'average',
+  scheduled: 'average',
+  blocked: 'bad',
+  cancelled: 'bad',
+  failed: 'bad',
+  idle: 'label',
 };
 
 const REJECT_LABELS: Record<string, string> = {
@@ -229,6 +255,44 @@ const DEPARTMENT_LABELS: Record<string, string> = {
   command: 'Командование',
 };
 
+type StatusColor = 'good' | 'average' | 'bad' | 'label';
+
+const StatusTag = (props: {
+  children: ReactNode;
+  color?: StatusColor;
+}) => {
+  const { children, color } = props;
+  return (
+    <Box inline className="DirectorPanel__StatusTag" color={color}>
+      {children}
+    </Box>
+  );
+};
+
+const MetricCard = (props: {
+  label: string;
+  value: ReactNode;
+  detail?: ReactNode;
+  color?: StatusColor;
+  children?: ReactNode;
+}) => {
+  const { label, value, detail, color, children } = props;
+  return (
+    <Stack.Item grow basis="16rem">
+      <Box className="DirectorPanel__Metric">
+        <Box className="DirectorPanel__MetricLabel">{label}</Box>
+        <Box className="DirectorPanel__MetricValue" color={color}>
+          {value}
+        </Box>
+        {children}
+        {detail !== undefined && (
+          <Box className="DirectorPanel__MetricDetail">{detail}</Box>
+        )}
+      </Box>
+    </Stack.Item>
+  );
+};
+
 const OverviewTab = (props) => {
   const { data, act } = useBackend<DirectorPanelData>();
   const {
@@ -274,55 +338,60 @@ const OverviewTab = (props) => {
     <>
       <Stack.Item>
         <Section title="Статус">
-          <LabeledList>
-            <LabeledList.Item label="Профиль">
-              {profileName || 'не выбран'}
-            </LabeledList.Item>
-            <LabeledList.Item label="Бюджет">
-              {budget}
-              <Box inline ml={1} color="label">
-                +{dripRate}/мин (время x{dripTimeMult}, экипаж x{dripPopMult}
-                {!!dripDeadHalved && ', кризис мёртвых /2'})
-              </Box>
-            </LabeledList.Item>
-            <LabeledList.Item label="Антаг-капля">
-              +{antagDripRate}/мин
-              <Box inline ml={1} color="label">
-                дефицит {antagDeficit}% (нагрузка {antagLoad} при цели{' '}
-                {antagTarget})
-              </Box>
-            </LabeledList.Item>
-            <LabeledList.Item label="Intensity">
+          <Stack wrap className="DirectorPanel__Metrics">
+            <MetricCard label="Профиль" value={profileName || 'не выбран'} />
+            <MetricCard
+              label="Бюджет"
+              value={budget}
+              color={budget > 0 ? 'good' : 'average'}
+              detail={
+                <>
+                  +{dripRate}/мин · время x{dripTimeMult} · экипаж x
+                  {dripPopMult}
+                  {!!dripDeadHalved && ' · кризис /2'}
+                </>
+              }
+            />
+            <MetricCard label="Intensity" value={`${intensity} / ${intensityCap}`}>
               <ProgressBar
+                className="DirectorPanel__MetricBar"
                 value={intensity}
                 minValue={0}
-                maxValue={intensityCap || 1}>
-                {intensity} / {intensityCap}
-              </ProgressBar>
-            </LabeledList.Item>
-            <LabeledList.Item label="Тишина">
-              <Box inline color={quietReady ? 'average' : undefined}>
-                {quietFor} / {maxQuiet} мин
-              </Box>
-              <Box inline ml={1} color="label">
-                {quietReady && intensity < quietThreshold
-                  ? 'следующий бит гарантированный'
-                  : `гарантированный бит при intensity ниже ${quietThreshold}`}
-              </Box>
-            </LabeledList.Item>
-            <LabeledList.Item label="Крупные">
-              {`одновременно не больше ${maxActiveMajor}`}
-            </LabeledList.Item>
-            <LabeledList.Item label="Экипаж">
-              {crew}
-            </LabeledList.Item>
-            <LabeledList.Item label="Доля мёртвых">
-              {deadFraction}%
-            </LabeledList.Item>
-            <LabeledList.Item label="По отделам">
-              {staffingText || 'нет данных'}
-            </LabeledList.Item>
-          </LabeledList>
+                maxValue={intensityCap || 1}
+              />
+            </MetricCard>
+            <MetricCard
+              label="Антаг-нагрузка"
+              value={`${antagLoad} / ${antagTarget}`}
+              detail={`+${antagDripRate}/мин · дефицит ${antagDeficit}%`}
+            />
+            <MetricCard
+              label="Тишина"
+              value={`${quietFor} / ${maxQuiet} мин`}
+              color={quietReady ? 'average' : undefined}
+              detail={
+                quietReady && intensity < quietThreshold
+                  ? 'следующий бит гарантирован'
+                  : `гарантия при intensity < ${quietThreshold}`
+              }
+            />
+            <MetricCard
+              label="Экипаж"
+              value={crew}
+              detail={`мёртвых ${deadFraction}%`}
+              color={deadFraction > 50 ? 'bad' : undefined}
+            />
+          </Stack>
+          <Box mt={0.5}>
+            <LabeledList>
+              <LabeledList.Item label="Крупные">
+                {`одновременно не больше ${maxActiveMajor}`}
+              </LabeledList.Item>
+              <LabeledList.Item label="По отделам">
+                {staffingText || 'нет данных'}
+              </LabeledList.Item>
+            </LabeledList>
+          </Box>
         </Section>
       </Stack.Item>
       <Stack.Item>
@@ -386,42 +455,43 @@ const OverviewTab = (props) => {
       </Stack.Item>
       <Stack.Item>
         <Section title="Кошельки бюджета">
-          <Table>
+          <Table className="DirectorPanel__Table">
             <Table.Row header>
-              <Table.Cell>Ступень</Table.Cell>
-              <Table.Cell>Очки</Table.Cell>
-              <Table.Cell>Доля капли</Table.Cell>
-              <Table.Cell>Пауза ступени</Table.Cell>
-              <Table.Cell>Запусков</Table.Cell>
-              <Table.Cell>Поправка веса</Table.Cell>
+              <Table.Cell width="16%">Ступень</Table.Cell>
+              <Table.Cell width="24%">Кошелёк</Table.Cell>
+              <Table.Cell width="38%">Готовность</Table.Cell>
+              <Table.Cell width="22%">Запуски / вес</Table.Cell>
             </Table.Row>
             {walletRows.map((wallet) => (
-              <Table.Row key={wallet.severity}>
+              <Table.Row key={wallet.severity} className="candystripe">
                 <Table.Cell>
                   {SEVERITY_LABELS[wallet.severity] || wallet.severity}
                 </Table.Cell>
                 <Table.Cell>
                   {wallet.points}
+                  <ProgressBar
+                    className="DirectorPanel__ShareBar"
+                    value={wallet.share}
+                    minValue={0}
+                    maxValue={1}>
+                    {Math.round(wallet.share * 100)}% капли
+                  </ProgressBar>
                   {wallet.savingFor !== undefined && (
-                    <Box inline ml={1} color="label">
-                      (копит на {wallet.savingFor}
+                    <Box color="label">
+                      копит на {wallet.savingFor}
                       {wallet.savingCost !== undefined
                         ? `, cost ${wallet.savingCost}`
                         : ''}
-                      )
                     </Box>
                   )}
                 </Table.Cell>
-                <Table.Cell>{Math.round(wallet.share * 100)}%</Table.Cell>
                 <Table.Cell>
                   {wallet.spacingLeft > 0 ? (
-                    <Box inline color="average">
+                    <StatusTag color="average">
                       ещё {wallet.spacingLeft} мин
-                    </Box>
+                    </StatusTag>
                   ) : (
-                    <Box inline color="good">
-                      готова
-                    </Box>
+                    <StatusTag color="good">готова</StatusTag>
                   )}
                   {wallet.heavySpacingLeft !== undefined && (
                     <Box inline ml={1} color="label">
@@ -433,10 +503,9 @@ const OverviewTab = (props) => {
                     </Box>
                   )}
                 </Table.Cell>
-                <Table.Cell>{wallet.fired}</Table.Cell>
                 <Table.Cell>
+                  {wallet.fired}
                   <Box
-                    inline
                     color={
                       wallet.correction > 1
                         ? 'good'
@@ -444,7 +513,7 @@ const OverviewTab = (props) => {
                           ? 'bad'
                           : undefined
                     }>
-                    x{wallet.correction}
+                    вес x{wallet.correction}
                   </Box>
                 </Table.Cell>
               </Table.Row>
@@ -454,20 +523,27 @@ const OverviewTab = (props) => {
       </Stack.Item>
       <Stack.Item>
         <Section title="Активные вклады">
-          <Table>
-            <Table.Row header>
-              <Table.Cell>Источник</Table.Cell>
-              <Table.Cell>Intensity</Table.Cell>
-              <Table.Cell>Истекает</Table.Cell>
-            </Table.Row>
-            {ledgerEntries.map((entry, index) => (
-              <Table.Row key={index}>
-                <Table.Cell>{entry.name}</Table.Cell>
-                <Table.Cell>{entry.intensity}</Table.Cell>
-                <Table.Cell>{ledgerExpiryText(entry)}</Table.Cell>
+          {ledgerEntries.length ? (
+            <Table className="DirectorPanel__Table">
+              <Table.Row header>
+                <Table.Cell width="34%">Источник</Table.Cell>
+                <Table.Cell width="20%">Intensity</Table.Cell>
+                <Table.Cell width="46%">Истекает</Table.Cell>
               </Table.Row>
-            ))}
-          </Table>
+              {ledgerEntries.map((entry, index) => (
+                <Table.Row key={index} className="candystripe">
+                  <Table.Cell>{entry.name}</Table.Cell>
+                  <Table.Cell>{entry.intensity}</Table.Cell>
+                  <Table.Cell>{ledgerExpiryText(entry)}</Table.Cell>
+                </Table.Row>
+              ))}
+            </Table>
+          ) : (
+            <Box className="DirectorPanel__EmptyState">
+              Нет активных вкладов — intensity сейчас ничем не
+              удерживается.
+            </Box>
+          )}
         </Section>
       </Stack.Item>
       <Stack.Item>
@@ -494,30 +570,35 @@ const OverviewTab = (props) => {
       </Stack.Item>
       <Stack.Item>
         <Section title="Последние решения">
-          <Table>
+          <Table className="DirectorPanel__Table">
             <Table.Row header>
-              <Table.Cell>Минута</Table.Cell>
-              <Table.Cell>Результат</Table.Cell>
-              <Table.Cell>Действие</Table.Cell>
-              <Table.Cell>Ступень</Table.Cell>
-              <Table.Cell>Cost</Table.Cell>
-              <Table.Cell>Бюджет</Table.Cell>
-              <Table.Cell>Почему</Table.Cell>
+              <Table.Cell width="20%">Минута / результат</Table.Cell>
+              <Table.Cell width="26%">Действие</Table.Cell>
+              <Table.Cell width="20%">Цена / бюджет</Table.Cell>
+              <Table.Cell width="34%">Почему</Table.Cell>
             </Table.Row>
             {beatEntries.map((entry, index) => (
-              <Table.Row key={index}>
-                <Table.Cell>{Math.round(entry.time / 600)}</Table.Cell>
+              <Table.Row key={index} className="candystripe">
                 <Table.Cell>
-                  {RESULT_LABELS[entry.result] || entry.result}
+                  {Math.round(entry.time / 600)} мин
+                  <Box mt={0.25}>
+                    <StatusTag color={RESULT_COLORS[entry.result] || 'label'}>
+                    {RESULT_LABELS[entry.result] || entry.result}
+                    </StatusTag>
+                  </Box>
                 </Table.Cell>
-                <Table.Cell>{entry.action || '-'}</Table.Cell>
                 <Table.Cell>
-                  {entry.severity
-                    ? SEVERITY_LABELS[entry.severity] || entry.severity
-                    : '-'}
+                  {entry.action || '-'}
+                  <Box color="label">
+                    {entry.severity
+                      ? SEVERITY_LABELS[entry.severity] || entry.severity
+                      : '-'}
+                  </Box>
                 </Table.Cell>
-                <Table.Cell>{entry.cost}</Table.Cell>
-                <Table.Cell>{entry.budget}</Table.Cell>
+                <Table.Cell>
+                  cost {entry.cost}
+                  <Box color="label">бюджет {entry.budget}</Box>
+                </Table.Cell>
                 <Table.Cell>{entry.detail || '-'}</Table.Cell>
               </Table.Row>
             ))}
@@ -543,9 +624,7 @@ const PoolStatusCell = (props: { entry: PoolEntry }) => {
   if (entry.verdict === 'ok') {
     return (
       <Box>
-        <Box inline color="good">
-          шанс {entry.chance ?? 0}%
-        </Box>
+        <StatusTag color="good">шанс {entry.chance ?? 0}%</StatusTag>
         {!!entry.preflight && (
           <Box color="label" mt={0.5}>
             {entry.preflight}
@@ -556,18 +635,12 @@ const PoolStatusCell = (props: { entry: PoolEntry }) => {
   }
   const label = VERDICT_LABELS[entry.verdict] || entry.verdict;
   if (entry.verdict === 'latejoin') {
-    return (
-      <Box inline color="average">
-        {label}
-      </Box>
-    );
+    return <StatusTag color="average">{label}</StatusTag>;
   }
   return (
     <Box>
-      <Box inline color="bad">
-        {label}
-        {entry.detail ? ` (${entry.detail})` : ''}
-      </Box>
+      <StatusTag color="bad">{label}</StatusTag>
+      {!!entry.detail && <Box color="label" mt={0.5}>{entry.detail}</Box>}
       {!!entry.preflight && (
         <Box color="label" mt={0.5}>
           Готовность роли: {entry.preflight}
@@ -645,28 +718,29 @@ const PoolTab = (props) => {
           <Stack.Item key={severity}>
             <Section
               title={`${SEVERITY_LABELS[severity]} - доступно ${readyCount} из ${entries.length}`}>
-              <Table>
+              <Table className="DirectorPanel__Table">
                 <Table.Row header>
-                  <Table.Cell>Действие</Table.Cell>
-                  <Table.Cell>Тип</Table.Cell>
-                  <Table.Cell>Cost</Table.Cell>
-                  <Table.Cell>Int</Table.Cell>
-                  <Table.Cell>Вес</Table.Cell>
-                  <Table.Cell>Эфф. вес</Table.Cell>
-                  <Table.Cell>Запуски</Table.Cell>
-                  <Table.Cell>Статус</Table.Cell>
+                  <Table.Cell width="22%">Действие</Table.Cell>
+                  <Table.Cell width="16%">Цена / intensity</Table.Cell>
+                  <Table.Cell width="16%">Вес / запуски</Table.Cell>
+                  <Table.Cell width="46%">Статус</Table.Cell>
                 </Table.Row>
                 {shown.map((entry) => (
-                  <Table.Row key={entry.name}>
-                    <Table.Cell>{entry.name}</Table.Cell>
+                  <Table.Row key={entry.name} className="candystripe">
                     <Table.Cell>
-                      {KIND_LABELS[entry.kind] || entry.kind}
+                      {entry.name}
+                      <Box color="label">
+                        {KIND_LABELS[entry.kind] || entry.kind}
+                      </Box>
                     </Table.Cell>
-                    <Table.Cell>{entry.cost}</Table.Cell>
-                    <Table.Cell>{entry.intensity}</Table.Cell>
-                    <Table.Cell>{entry.weight}</Table.Cell>
-                    <Table.Cell>{entry.effectiveWeight ?? '-'}</Table.Cell>
-                    <Table.Cell>{entry.occurrences}</Table.Cell>
+                    <Table.Cell>
+                      cost {entry.cost}
+                      <Box color="label">intensity {entry.intensity}</Box>
+                    </Table.Cell>
+                    <Table.Cell>
+                      {entry.weight} → {entry.effectiveWeight ?? '-'}
+                      <Box color="label">запусков {entry.occurrences}</Box>
+                    </Table.Cell>
                     <Table.Cell>
                       <PoolStatusCell entry={entry} />
                     </Table.Cell>
@@ -886,11 +960,11 @@ const SAFETY_ROWS: ProfileRowSpec[] = [
 
 const ProfileTable = (props: {
   title: string;
-  profiles: ProfileEntry[];
+  profile: ProfileEntry;
   rows: ProfileRowSpec[];
   note?: string;
 }) => {
-  const { title, profiles, rows, note } = props;
+  const { title, profile, rows, note } = props;
   return (
     <Stack.Item>
       <Section title={title}>
@@ -899,32 +973,362 @@ const ProfileTable = (props: {
             {note}
           </Box>
         )}
-        <Table>
-          {/* Явные ширины: каждая секция - своя таблица, без них колонки гуляют от секции к секции */}
-          <Table.Row header>
-            <Table.Cell width="30%" />
-            {profiles.map((profile) => (
-              <Table.Cell
-                key={profile.roundType}
-                width="14%"
-                color={profile.active ? 'good' : undefined}>
-                {PROFILE_LABELS[profile.roundType] || profile.roundType}
-              </Table.Cell>
-            ))}
-          </Table.Row>
+        <Table className="DirectorPanel__Table">
           {rows.map((row) => (
-            <Table.Row key={row.label}>
-              <Table.Cell color="label">{row.label}</Table.Cell>
-              {profiles.map((profile) => (
-                <Table.Cell key={profile.roundType}>
-                  {row.render(profile)}
-                </Table.Cell>
-              ))}
+            <Table.Row key={row.label} className="candystripe">
+              <Table.Cell width="55%" color="label">
+                {row.label}
+              </Table.Cell>
+              <Table.Cell>{row.render(profile)}</Table.Cell>
             </Table.Row>
           ))}
         </Table>
       </Section>
     </Stack.Item>
+  );
+};
+
+type ProfileActionFilter = 'all' | 'included' | 'excluded';
+
+type ProfileActionAvailability = {
+  included: boolean;
+  label: string;
+  detail?: string;
+  color: 'good' | 'average' | 'bad';
+};
+
+const profileActionAvailability = (
+  action: ProfileActionEntry,
+  profile: ProfileEntry,
+  randomEventsEnabled: BooleanLike,
+): ProfileActionAvailability => {
+  if (!action.enabled) {
+    return {
+      included: false,
+      label: 'Выключено',
+      detail: 'enabled = false у действия',
+      color: 'bad',
+    };
+  }
+  if (action.adminOnly) {
+    return {
+      included: false,
+      label: 'Только вручную',
+      detail: 'автоматический выбор запрещён',
+      color: 'average',
+    };
+  }
+  if (action.kind === 'event' && !randomEventsEnabled) {
+    return {
+      included: false,
+      label: 'События выключены',
+      detail: 'серверный allow_random_events отключён',
+      color: 'bad',
+    };
+  }
+  if (
+    action.requiredRoundTypes?.length &&
+    !action.requiredRoundTypes.includes(profile.roundType)
+  ) {
+    return {
+      included: false,
+      label: 'Исключено типом раунда',
+      detail: `${PROFILE_LABELS[profile.roundType] || profile.roundType} отсутствует в required_round_type`,
+      color: 'bad',
+    };
+  }
+  if ((profile.poolShares?.[action.severity] ?? 0) <= 0) {
+    return {
+      included: false,
+      label: 'Ступень выключена',
+      detail: `${SEVERITY_LABELS[action.severity] || action.severity}: доля профиля 0%`,
+      color: 'bad',
+    };
+  }
+  if (action.severity === 'major' && profile.maxActiveMajor <= 0) {
+    return {
+      included: false,
+      label: 'Крупные выключены',
+      detail: 'профиль не допускает активных крупных событий',
+      color: 'bad',
+    };
+  }
+  if (action.antagHeavy && !profile.antagHeavyEnabled) {
+    return {
+      included: false,
+      label: 'Тяжёлые антаги выключены',
+      detail: 'ограничение выбранного профиля',
+      color: 'bad',
+    };
+  }
+  const disruptionMult = profile.disruptionMults?.[action.disruption] ?? 1;
+  if (disruptionMult <= 0) {
+    return {
+      included: false,
+      label: 'Исключено профилем',
+      detail: `множитель навязчивости ${action.disruption} равен 0`,
+      color: 'bad',
+    };
+  }
+  if (action.weight <= 0) {
+    if (action.weightCanChange) {
+      return {
+        included: true,
+        label: 'Условно включено',
+        detail: 'вес управляется живым условием во время раунда',
+        color: 'average',
+      };
+    }
+    return {
+      included: false,
+      label: action.weight < 0 ? 'Специальный запуск' : 'Нулевой вес',
+      detail:
+        action.weight < 0
+          ? 'форс-событие, в обычном выборе не участвует'
+          : 'обычный выбор требует положительного веса',
+      color: 'average',
+    };
+  }
+  return {
+    included: true,
+    label: 'Включено',
+    detail:
+      disruptionMult === 1
+        ? undefined
+        : `вес навязчивости умножается на ${disruptionMult}`,
+    color: 'good',
+  };
+};
+
+const ProfileActions = (props: {
+  actions: ProfileActionEntry[];
+  profile: ProfileEntry;
+  randomEventsEnabled: BooleanLike;
+}) => {
+  const { actions, profile, randomEventsEnabled } = props;
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState<ProfileActionFilter>('all');
+  const query = search.trim().toLowerCase();
+  const withAvailability = actions.map((action) => ({
+    action,
+    availability: profileActionAvailability(
+      action,
+      profile,
+      randomEventsEnabled,
+    ),
+  }));
+  const includedCount = withAvailability.filter(
+    ({ availability }) => availability.included,
+  ).length;
+  const eventCount = withAvailability.filter(
+    ({ action, availability }) =>
+      action.kind === 'event' && availability.included,
+  ).length;
+  const eventTotal = actions.filter((action) => action.kind === 'event').length;
+  const rulesetCount = withAvailability.filter(
+    ({ action, availability }) =>
+      action.kind === 'ruleset' && availability.included,
+  ).length;
+  const rulesetTotal = actions.filter(
+    (action) => action.kind === 'ruleset',
+  ).length;
+  const shown = withAvailability
+    .filter(({ action, availability }) => {
+      if (filter === 'included' && !availability.included) {
+        return false;
+      }
+      if (filter === 'excluded' && availability.included) {
+        return false;
+      }
+      if (!query) {
+        return true;
+      }
+      return `${action.name} ${KIND_LABELS[action.kind] || action.kind} ${SEVERITY_LABELS[action.severity] || action.severity}`
+        .toLowerCase()
+        .includes(query);
+    })
+    .sort((a, b) => {
+      if (a.availability.included !== b.availability.included) {
+        return a.availability.included ? -1 : 1;
+      }
+      const kindOrder = a.action.kind.localeCompare(b.action.kind);
+      if (kindOrder !== 0) {
+        return kindOrder;
+      }
+      const severityOrder =
+        SEVERITY_ORDER.indexOf(a.action.severity) -
+        SEVERITY_ORDER.indexOf(b.action.severity);
+      return severityOrder || a.action.name.localeCompare(b.action.name);
+    });
+
+  return (
+    <Stack.Item>
+      <Section
+        title={`Состав пула — включено ${includedCount} из ${actions.length}`}>
+        <Box mb={1} color="label">
+          Структурная доступность событий и мидраунд/латеджойн-рулсетов.
+          Живые условия экипажа, времени, бюджета и карты проверяются отдельно
+          на вкладке «Пул действий».
+        </Box>
+        <Box mb={1}>
+          События: <Box inline color="good">{eventCount}</Box> / {eventTotal}
+          {' · '}Рулсеты:{' '}
+          <Box inline color="good">{rulesetCount}</Box> / {rulesetTotal}
+        </Box>
+        <Stack align="center" wrap mb={1}>
+          <Stack.Item grow basis="18rem">
+            <Input
+              fluid
+              placeholder="Поиск по действию, типу или ступени..."
+              value={search}
+              onInput={(e, value) => setSearch(value)}
+            />
+          </Stack.Item>
+          <Stack.Item>
+            <Button
+              selected={filter === 'all'}
+              onClick={() => setFilter('all')}>
+              Все
+            </Button>
+            <Button
+              selected={filter === 'included'}
+              color="good"
+              onClick={() => setFilter('included')}>
+              Включённые
+            </Button>
+            <Button
+              selected={filter === 'excluded'}
+              color="bad"
+              onClick={() => setFilter('excluded')}>
+              Исключённые
+            </Button>
+          </Stack.Item>
+        </Stack>
+        {shown.length ? (
+          <Table className="DirectorPanel__Table">
+            <Table.Row header>
+              <Table.Cell width="30%">Действие</Table.Cell>
+              <Table.Cell width="22%">Тип / ступень</Table.Cell>
+              <Table.Cell width="48%">Доступность</Table.Cell>
+            </Table.Row>
+            {shown.map(({ action, availability }) => (
+              <Table.Row
+                key={`${action.kind}-${action.name}`}
+                className="candystripe">
+                <Table.Cell>{action.name}</Table.Cell>
+                <Table.Cell>
+                  {KIND_LABELS[action.kind] || action.kind}
+                  <Box color="label">
+                    {SEVERITY_LABELS[action.severity] || action.severity}
+                    {!!action.antagHeavy && ' · тяжёлое'}
+                  </Box>
+                </Table.Cell>
+                <Table.Cell>
+                  <StatusTag color={availability.color}>
+                    {availability.label}
+                  </StatusTag>
+                  {!!availability.detail && (
+                    <Box color="label" mt={0.35}>
+                      {availability.detail}
+                    </Box>
+                  )}
+                </Table.Cell>
+              </Table.Row>
+            ))}
+          </Table>
+        ) : (
+          <NoticeBox>По выбранным фильтрам ничего не найдено.</NoticeBox>
+        )}
+      </Section>
+    </Stack.Item>
+  );
+};
+
+const ProfilesContent = (props: {
+  profiles: ProfileEntry[];
+  actions: ProfileActionEntry[];
+  randomEventsEnabled: BooleanLike;
+}) => {
+  const { profiles, actions, randomEventsEnabled } = props;
+  const activeProfile = profiles.find((profile) => profile.active);
+  const [selectedRoundType, setSelectedRoundType] = useState(
+    activeProfile?.roundType || profiles[0].roundType,
+  );
+  const selectedProfile =
+    profiles.find((profile) => profile.roundType === selectedRoundType) ||
+    activeProfile ||
+    profiles[0];
+
+  return (
+    <>
+      <Stack.Item>
+        <Section title="Профиль темпа">
+          <Stack wrap mb={1}>
+            {profiles.map((profile) => (
+              <Stack.Item key={profile.roundType}>
+                <Button
+                  selected={profile.roundType === selectedProfile.roundType}
+                  color={profile.active ? 'good' : undefined}
+                  icon={profile.active ? 'circle' : undefined}
+                  onClick={() => setSelectedRoundType(profile.roundType)}>
+                  {PROFILE_LABELS[profile.roundType] || profile.roundType}
+                </Button>
+              </Stack.Item>
+            ))}
+          </Stack>
+          <Box>{selectedProfile.desc}</Box>
+          <Box mt={0.5} color="label">
+            {selectedProfile.active
+              ? 'Активный профиль; показаны живые значения.'
+              : 'Предпросмотр значений при выборе этого типа раунда.'}{' '}
+            Переопределения config/director.json учтены.
+          </Box>
+        </Section>
+      </Stack.Item>
+      <ProfileTable
+        title="Бюджет и темп"
+        profile={selectedProfile}
+        rows={TEMPO_ROWS}
+      />
+      <ProfileTable
+        title="Потолки и тишина"
+        profile={selectedProfile}
+        rows={CAPS_ROWS}
+      />
+      <ProfileTable
+        title="Доли капли по ступеням"
+        profile={selectedProfile}
+        rows={SHARE_ROWS}
+        note="Доля Флейвора раскладывается по остальным ступеням: его действия бесплатны, кошелёк ему не нужен. Доля 0% выключает ступень."
+      />
+      <ProfileTable
+        title="Паузы между запусками, мин"
+        profile={selectedProfile}
+        rows={SPACING_ROWS}
+      />
+      <ProfileTable
+        title="Навязчивость: множители веса"
+        profile={selectedProfile}
+        rows={DISRUPTION_ROWS}
+        note="Насколько профиль глушит мешающие играть события внутри своей ступени."
+      />
+      <ProfileTable
+        title="Антагонисты"
+        profile={selectedProfile}
+        rows={ANTAG_ROWS}
+        note="Цель нагрузки: живой лёгкий антаг = 15 intensity; при достижении цели (экипаж x значение) новые антаги не льются."
+      />
+      <ProfileTable
+        title="Предохранители и прочее"
+        profile={selectedProfile}
+        rows={SAFETY_ROWS}
+      />
+      <ProfileActions
+        actions={actions}
+        profile={selectedProfile}
+        randomEventsEnabled={randomEventsEnabled}
+      />
+    </>
   );
 };
 
@@ -943,66 +1347,11 @@ const ProfilesTab = (props) => {
   }
 
   return (
-    <>
-      <Stack.Item>
-        <Section title="Профили темпа">
-          <Box mb={1} color="label">
-            Значения с учётом config/director.json: активный профиль показан
-            живым (подсвечен), остальные - такими, какими станут при выборе
-            их типа раунда. Времена в минутах.
-          </Box>
-          <LabeledList>
-            {profiles.map((profile) => (
-              <LabeledList.Item
-                key={profile.roundType}
-                label={PROFILE_LABELS[profile.roundType] || profile.roundType}
-                color={profile.active ? 'good' : undefined}>
-                {profile.desc}
-                {!!profile.active && (
-                  <Box inline ml={1} color="good">
-                    (активен)
-                  </Box>
-                )}
-              </LabeledList.Item>
-            ))}
-          </LabeledList>
-        </Section>
-      </Stack.Item>
-      <ProfileTable title="Бюджет и темп" profiles={profiles} rows={TEMPO_ROWS} />
-      <ProfileTable
-        title="Потолки и тишина"
-        profiles={profiles}
-        rows={CAPS_ROWS}
-      />
-      <ProfileTable
-        title="Доли капли по ступеням"
-        profiles={profiles}
-        rows={SHARE_ROWS}
-        note="Доля Флейвора раскладывается по остальным ступеням: его действия бесплатны, кошелёк ему не нужен. Доля 0% выключает ступень."
-      />
-      <ProfileTable
-        title="Паузы между запусками, мин"
-        profiles={profiles}
-        rows={SPACING_ROWS}
-      />
-      <ProfileTable
-        title="Навязчивость: множители веса"
-        profiles={profiles}
-        rows={DISRUPTION_ROWS}
-        note="Насколько профиль глушит мешающие играть события внутри своей ступени."
-      />
-      <ProfileTable
-        title="Антагонисты"
-        profiles={profiles}
-        rows={ANTAG_ROWS}
-        note="Цель нагрузки: живой лёгкий антаг = 15 intensity; при достижении цели (экипаж x значение) новые антаги не льются."
-      />
-      <ProfileTable
-        title="Предохранители и прочее"
-        profiles={profiles}
-        rows={SAFETY_ROWS}
-      />
-    </>
+    <ProfilesContent
+      profiles={profiles}
+      actions={data.profileActions || []}
+      randomEventsEnabled={data.randomEventsEnabled}
+    />
   );
 };
 
@@ -1082,7 +1431,9 @@ const HelpTab = (props) => {
           капля, доли ступеней, паузы, множители навязчивости,
           предохранители. Значения показаны с учётом config/director.json;
           активный профиль подсвечен и показан живым, остальные - такими,
-          какими станут при выборе их типа раунда.
+          какими станут при выборе их типа раунда. В «Составе пула» видно,
+          какие события и мидраунд/латеджойн-рулсеты доступны выбранному
+          профилю, а для исключённых показан конкретный профильный гейт.
         </Box>
         <Box mb={1}>
           <b>Предохранители.</b> После вызова эвакуации Крупные и антаги не
@@ -1114,7 +1465,7 @@ export const DirectorPanel = (props) => {
 
   return (
     <Window theme="admin" title="Director Panel" width={800} height={720}>
-      <Window.Content scrollable>
+      <Window.Content scrollable className="DirectorPanel">
         <Stack vertical fill>
           {!!configError && (
             <Stack.Item>
@@ -1152,23 +1503,27 @@ export const DirectorPanel = (props) => {
             </Stack.Item>
           )}
           <Stack.Item>
-            <Tabs>
+            <Tabs fluid>
               <Tabs.Tab
+                icon="chart-bar"
                 selected={tab === 'overview'}
                 onClick={() => setTab('overview')}>
                 Обзор
               </Tabs.Tab>
               <Tabs.Tab
+                icon="list"
                 selected={tab === 'pool'}
                 onClick={() => setTab('pool')}>
                 Пул действий
               </Tabs.Tab>
               <Tabs.Tab
+                icon="sliders-h"
                 selected={tab === 'profiles'}
                 onClick={() => setTab('profiles')}>
                 Профили
               </Tabs.Tab>
               <Tabs.Tab
+                icon="book"
                 selected={tab === 'help'}
                 onClick={() => setTab('help')}>
                 Справочник

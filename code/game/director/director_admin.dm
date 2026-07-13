@@ -10,10 +10,10 @@
 		ui = new(user, src, "DirectorPanel")
 		ui.open()
 
-/// Справочник профилей для вкладки "Профили": меняется только на перезагрузке конфига,
-/// поэтому static. Активный профиль отдаётся живым объектом (видны VV-правки и применённый
-/// конфиг), остальные - свежими экземплярами с наложенной их секцией director.json:
-/// "каким профиль станет, если выбрать его тип раунда".
+/// Справочник профилей и структурный каталог их действий для вкладки "Профили": меняются
+/// только на перезагрузке конфига, поэтому static. Активный профиль отдаётся живым объектом
+/// (видны VV-правки и применённый конфиг), остальные - свежими экземплярами с наложенной их
+/// секцией director.json: "каким профиль станет, если выбрать его тип раунда".
 /datum/director_panel/ui_static_data(mob/user)
 	var/datum/controller/subsystem/director/D = SSdirector
 	var/list/profiles_conf = islist(D.cached_config) ? D.cached_config["profiles"] : null
@@ -32,7 +32,27 @@
 			qdel(preview)
 		row["active"] = is_active
 		profiles_out += list(row)
-	return list("profiles" = profiles_out)
+	// Каталог структурной доступности действий нужен профилям отдельно от живой оценки пула:
+	// can_fire зависит от текущего экипажа/времени/бюджета, а здесь администратор должен видеть,
+	// может ли действие в принципе попасть в каждый тип раунда и какой профильный гейт его режет.
+	var/list/profile_actions_out = list()
+	for(var/datum/director_action/action as anything in D.actions)
+		profile_actions_out += list(list(
+			"name" = action.action_name(),
+			"kind" = action.director_kind,
+			"severity" = action.severity,
+			"weight" = action.weight,
+			"weightCanChange" = action.weight_can_change,
+			"enabled" = action.enabled,
+			"adminOnly" = action.admin_only,
+			"antagHeavy" = action.antag_heavy,
+			"disruption" = action.get_disruption(),
+			"requiredRoundTypes" = islist(action.required_round_type) ? action.required_round_type.Copy() : null,
+		))
+	return list(
+		"profiles" = profiles_out,
+		"profileActions" = profile_actions_out,
+	)
 
 /datum/director_panel/ui_data(mob/user)
 	var/datum/controller/subsystem/director/D = SSdirector
@@ -91,6 +111,7 @@
 		antag_target_now = D.antag_target(D.last_signals ? D.last_signals.effective_crew : 0)
 	return list(
 		"paused" = D.paused,
+		"randomEventsEnabled" = CONFIG_GET(flag/allow_random_events),
 		"budget" = round(D.total_budget(), 0.1),
 		"profileName" = D.profile ? GLOB.round_type : null,
 		"intensity" = active_intensity,
