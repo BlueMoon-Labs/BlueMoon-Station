@@ -85,7 +85,8 @@
 		SShilbertshotel.user_data[user.ckey] = list(
 			"room_number" = 1,
 			"template" = SShilbertshotel.default_template,
-			"donator_tier" = is_donator_group(user.ckey, DONATOR_GROUP_TIER_2) ? DONATOR_GROUP_TIER_2 : is_donator_group(user.ckey, DONATOR_GROUP_TIER_1) ? DONATOR_GROUP_TIER_1 : DONATOR_GROUP_NONE
+			"donator_tier" = is_donator_group(user.ckey, DONATOR_GROUP_TIER_2) ? DONATOR_GROUP_TIER_2 : is_donator_group(user.ckey, DONATOR_GROUP_TIER_1) ? DONATOR_GROUP_TIER_1 : DONATOR_GROUP_NONE,
+			"status" = STATUS_IDLE
 		)
 
 	data["current_room"] = SShilbertshotel.user_data[user.ckey]["room_number"]
@@ -148,6 +149,10 @@
 			"template" = SShilbertshotel.default_template,
 			"status" = STATUS_IDLE
 		)
+	if(SShilbertshotel.user_data[user.ckey]["donator_tier"] == null)
+		SShilbertshotel.user_data[user.ckey]["donator_tier"] = is_donator_group(user.ckey, DONATOR_GROUP_TIER_2) ? DONATOR_GROUP_TIER_2 : is_donator_group(user.ckey, DONATOR_GROUP_TIER_1) ? DONATOR_GROUP_TIER_1 : DONATOR_GROUP_NONE
+	if(SShilbertshotel.user_data[user.ckey]["status"] == null)
+		SShilbertshotel.user_data[user.ckey]["status"] = STATUS_IDLE
 
 	user.DelayNextAction(CLICK_CD_RAPID)
 	switch(action)
@@ -248,6 +253,9 @@
 	sendToNewRoom(room_number, user, template)
 
 /area/hilbertshotel/proc/storeRoom()
+	if(storing || !reservation)
+		return
+	storing = TRUE
 	// Calculate the actual room size based on the reservation coordinates
 	var/roomWidth = reservation.top_right_coords[1] - reservation.bottom_left_coords[1] + 1
 	var/roomHeight = reservation.top_right_coords[2] - reservation.bottom_left_coords[2] + 1
@@ -277,6 +285,7 @@
 	var/datum/turf_reservation/old_res = reservation
 	reservation = null
 	qdel(old_res)
+	storing = FALSE
 
 /area/hilbertshotel/proc/update_light_switches() //SPLURT ADDITION: This will update all light switches in the given area
 	for(var/obj/machinery/light_switch/LS in src)
@@ -476,9 +485,7 @@
 						var/_y = rand(min,max)
 						var/turf/T = locate(_x, _y, _z)
 						A.forceMove(T)
-			var/area/hilbertshotel/roomArea = get_area(locate(room.bottom_left_coords[1], room.bottom_left_coords[2], room.bottom_left_coords[3]))
-			if(roomArea)
-				roomArea.reservation = null
+			qdel(room)
 	if(storedRooms.len)
 		for(var/x in storedRooms)
 			var/list/atomList = storedRooms[x]
@@ -495,6 +502,10 @@
 				var/_y = rand(min,max)
 				var/turf/T = locate(_x, _y, _z)
 				A.forceMove(T)
+		for(var/obj/item/abstracthotelstorage/S in SShilbertshotel.storageTurf)
+			if(S.parentSphere == src)
+				qdel(S)
+		storedRooms.Cut()
 
 //Turfs and Areas
 /turf/closed/indestructible/hotelwall
@@ -657,6 +668,7 @@
 	var/datum/turf_reservation/reservation
 	var/turf/storageTurf
 	var/roomType = "Hotel Room" // SPLURT ADDITION: Default room type
+	var/storing = FALSE
 
 /area/hilbertshotel/illuminated
 	dynamic_lighting = DYNAMIC_LIGHTING_DISABLED

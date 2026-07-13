@@ -926,3 +926,14 @@
 	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/under_digi.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE
 	can_adjust = FALSE
+
+/obj/item/clothing/under/donator/bm/h_slim_body_and_shorts
+	name = "Comfortable short bodysuit with athletic shorts"
+	desc = "Read the name, dunno."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	icon_state = "slim_body_and_shorts"
+	item_state = "slim_body_and_shorts"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	fitted = NO_FEMALE_UNIFORM
+	can_adjust = FALSE

@@ -103,7 +103,7 @@ SUBSYSTEM_DEF(vote)
 			if(P.ready != PLAYER_READY_TO_PLAY && voted[P.ckey])
 				choices[choices[voted[P.ckey]]]--
 	for(var/option in choices)
-		var/votes = choices[option]
+		var/votes = get_effective_votes(option)
 		total_votes += votes
 //BLUEMOON ADD START - голоса за некоторые режимы (динамик и тимбаза, лёгкий динамик и экста) должны считаться вместе.
 		if(group_roundtype_choices)
@@ -119,7 +119,7 @@ SUBSYSTEM_DEF(vote)
 	if(group_roundtype_choices)
 		var/second_round_votes = 0 //голоса между вариациями
 		for(var/option in choices)
-			var/votes = choices[option]
+			var/votes = get_effective_votes(option)
 			if(extended_votes <= dynamic_votes)
 				if(option == ROUNDTYPE_EXTENDED || option ==  ROUNDTYPE_DYNAMIC_LIGHT) //экста и лёгкий динамик всегда должны быть в конце списка, чтобы это работало
 					continue
@@ -165,9 +165,15 @@ SUBSYSTEM_DEF(vote)
 					if(option == ROUNDTYPE_DYNAMIC || option ==  ROUNDTYPE_DYNAMIC_TEAMBASED) //экста и лёгкий динамик всегда должны быть в конце списка, чтобы это работало
 						continue
 //BLUEMOON ADD END
-			if(choices[option] == greatest_votes)
+			if(get_effective_votes(option) == greatest_votes)
 				. += option
 	return .
+
+/datum/controller/subsystem/vote/proc/get_effective_votes(option)
+	var/votes = choices[option]
+	if(mode == "roundtype" && option == ROUNDTYPE_DYNAMIC_LIGHT)
+		votes *= CONFIG_GET(number/dynamic_light_vote_multiplier)
+	return votes
 
 /datum/controller/subsystem/vote/proc/calculate_condorcet_votes(var/blackbox_text)
 	if((mode == "gamemode" || mode == "dynamic" || mode == "roundtype") && CONFIG_GET(flag/must_be_readied_to_vote_gamemode))
@@ -331,7 +337,7 @@ SUBSYSTEM_DEF(vote)
 		var/votes_left = "<div class='left-column'>"
 		var/votes_right = "<div class='right-column' id='results-container'>"
 		for(var/i = 1, i <= choices.len, i++)
-			var/votes_amount = choices[choices[i]]
+			var/votes_amount = get_effective_votes(choices[i])
 			if(!votes_amount)
 				votes_amount = 0
 			if(was_roundtype_vote)
@@ -343,7 +349,7 @@ SUBSYSTEM_DEF(vote)
 				if (length(choices) == 1)
 					votes_right += "<div class='votewrap'><div class='voteresult' style='width: calc(100% + 2px);'><span>1984%</span></div></div>";
 				else
-					var/votes_amount = choices[choices[i]]
+					var/votes_amount = get_effective_votes(choices[i])
 					var/percent = total_votes > 0 ? round((votes_amount / total_votes) * 100, 1) : 0
 					if (percent > 0)
 						votes_right += "<div class='votewrap'><div class='voteresult' style='width: calc([percent]% + 2px);'><span>[percent]%</span></div></div>"
@@ -395,7 +401,7 @@ SUBSYSTEM_DEF(vote)
 			else if(vote_system == HIGHEST_MEDIAN_VOTING)
 				admintext += "\nIt should be noted that this is not a raw tally of votes but the number of runoffs done by majority judgement!"
 			for(var/i=1,i<=choices.len,i++)
-				var/votes = choices[choices[i]]
+				var/votes = get_effective_votes(choices[i])
 				admintext += "\n<b>[choices[i]]:</b> [votes ? votes : "0"]" //This is raw data, but the raw data is null by default. If ya don't compensate for it, then it'll look weird!
 		else
 			for(var/i=1,i<=scores.len,i++)

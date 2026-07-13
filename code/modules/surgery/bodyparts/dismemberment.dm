@@ -110,6 +110,8 @@
 		W.remove_wound(TRUE)
 
 	owner = null
+	bleed_overlay_icon = null
+	C.update_wound_overlays()
 
 	for(var/X in C.surgeries) //if we had an ongoing surgery on that limb, we stop it.
 		var/datum/surgery/S = X
@@ -373,6 +375,7 @@
 	C.update_body(FALSE, TRUE) // again block recursive calls because dullahans will try update their icons by regenerating their head
 	C.update_hair()
 	C.update_damage_overlays()
+	C.update_wound_overlays()
 	C.update_mobility()
 
 /obj/item/bodypart/head/attach_limb(mob/living/carbon/C, special)

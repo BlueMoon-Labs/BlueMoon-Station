@@ -14,6 +14,7 @@
 		var/obj/item/bodypart/BP = X
 		temp_bleed += BP.get_bleed_rate()
 		BP.generic_bleedstacks = max(0, BP.generic_bleedstacks - 1)
+		BP.update_part_wound_overlay()
 	if(temp_bleed)
 		bleed(temp_bleed)
 
@@ -113,14 +114,15 @@
 
 		var/temp_bleed = 0
 		//Bleeding out
-		if(blood_volume > 0) // BLUEMOON ADD - если в теле есть кровь, то она будет вытекать
-			for(var/X in bodyparts)
-				var/obj/item/bodypart/BP = X
+		for(var/X in bodyparts)
+			var/obj/item/bodypart/BP = X
+			if(blood_volume > 0) // BLUEMOON ADD - если в теле есть кровь, то она будет вытекать
 				temp_bleed += BP.get_bleed_rate()
 				BP.generic_bleedstacks = max(0, BP.generic_bleedstacks - 1)
+			BP.update_part_wound_overlay()
 
-			if(temp_bleed )
-				bleed(temp_bleed)
+		if(temp_bleed)
+			bleed(temp_bleed)
 
 //Makes a blood drop, leaking amt units of blood from the mob
 /mob/living/carbon/proc/bleed(amt, force)

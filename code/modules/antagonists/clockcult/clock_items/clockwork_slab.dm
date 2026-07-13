@@ -1,8 +1,8 @@
 /obj/item/clockwork/slab //Clockwork slab: The most important tool in Ratvar's arsenal. Allows scripture recital, tutorials, and generates components.
 	name = "clockwork slab"
-	desc = "A strange metal tablet. A clock in the center turns around and around."
-	clockwork_desc = "A link between you and the Celestial Derelict. It contains information, recites scripture, and is your most vital tool as a Servant.\
-	It can be used to link traps and triggers by attacking them with the slab. Keep in mind that traps linked with one another will activate in tandem!"
+	desc = "Странная металлическая табличка. В центре находится часовой механизм, который крутится и крутится."
+	clockwork_desc = "Связь между вами и Небесным обломком. Он содержит информацию, цитирует священные тексты и является вашим важнейшим инструментом как Слуги.\
+	Его можно использовать для соединения ловушек и триггеров, ударяя по ним плитой. Имейте в виду, что соединенные между собой ловушки сработают одновременно!"
 
 	icon_state = "clockwork_slab"
 	lefthand_file = 'icons/mob/inhands/antag/clockwork_lefthand.dmi'
@@ -51,18 +51,18 @@
 
 /obj/item/clockwork/slab/traitor/attack_self(mob/living/user)
 	if(!is_servant_of_ratvar(user) && !spent)
-		to_chat(user, "<span class='userdanger'>You press your hand onto [src], golden tendrils of light latching onto you. Was this the best of ideas?</span>")
+		to_chat(user, "<span class='userdanger'>Ты прижимаешь ладонь к [src], и золотые струи света обволакивают тебя. Неужели это была лучшая из идей?</span>")
 		if(add_servant_of_ratvar(user, FALSE, FALSE, /datum/antagonist/clockcult/neutered/traitor))
 			spent = TRUE
 			// Add some (5 KW) power so they don't suffer for 100 ticks
 			GLOB.clockwork_power += 5000
 			// This intentionally does not use adjust_clockwork_power.
 		else
-			to_chat(user, "<span class='userdanger'>[src] falls dark. It appears you weren't worthy.</span>")
+			to_chat(user, "<span class='userdanger'>[src] погружается во тьму. Похоже, ты оказался недостоин.</span>")
 	return ..()
 
 /obj/item/clockwork/slab/cyborg //three scriptures, plus a spear and fabricator
-	clockwork_desc = "A divine link to the Celestial Derelict, allowing for limited recital of scripture."
+	clockwork_desc = "Божественная связь с Небесным брошенным кораблём, позволяющая в ограниченном объёме читать Священное Писание."
 	quickbound = list(/datum/clockwork_scripture/ranged_ability/judicial_marker, /datum/clockwork_scripture/ranged_ability/linked_vanguard, \
 	/datum/clockwork_scripture/create_object/stargazer)
 	maximum_quickbound = 6 //we usually have one or two unique scriptures, so if ratvar is up let us bind one more
@@ -97,7 +97,7 @@
 
 /obj/item/clockwork/slab/cyborg/access_display(mob/living/user)
 	if(!GLOB.ratvar_awakens)
-		to_chat(user, "<span class='warning'>Use the action buttons to recite your limited set of scripture!</span>")
+		to_chat(user, "<span class='warning'>Используйте кнопки действий, чтобы прочитать свой ограниченный набор отрывков из Священного Писания!</span>")
 	else
 		..()
 
@@ -151,8 +151,8 @@
 			if(!quickbound[i])
 				continue
 			var/datum/clockwork_scripture/quickbind_slot = quickbound[i]
-			. += "Quickbind button: <span class='[get_component_span(initial(quickbind_slot.primary_component))]'>[initial(quickbind_slot.name)]</span>."
-	. += "Available power: <span class='bold brass'>[DisplayPower(get_clockwork_power())].</span>"
+			. += "Кнопка быстрого доступа: <span class='[get_component_span(initial(quickbind_slot.primary_component))]'>[initial(quickbind_slot.name)]</span>."
+	. += "Доступная энергия: <span class='bold brass'>[DisplayPower(get_clockwork_power())].</span>"
 
 //Slab actions; Hierophant, Quickbind
 /obj/item/clockwork/slab/ui_action_click(mob/user, action)
@@ -163,8 +163,8 @@
 //Scripture Recital
 /obj/item/clockwork/slab/attack_self(mob/living/user)
 	if(iscultist(user))
-		to_chat(user, "<span class='heavy_brass'>\"You reek of blood. You've got a lot of nerve to even look at that slab.\"</span>")
-		user.visible_message("<span class='warning'>A sizzling sound comes from [user]'s hands!</span>", "<span class='userdanger'>[src] suddenly grows extremely hot in your hands!</span>")
+		to_chat(user, "<span class='heavy_brass'>\"От тебя разит кровью. И у тебя ещё хватает наглости смотреть на эту плиту.\"</span>")
+		user.visible_message("<span class='warning'>Из рук [user] раздается шипение!</span>", "<span class='userdanger'>[src] вдруг становится очень горячим в руках!</span>")
 		playsound(get_turf(user), 'sound/weapons/sear.ogg', 50, 1)
 		user.dropItemToGround(src)
 		user.emote("realagony")
@@ -172,16 +172,16 @@
 		user.apply_damage(5, BURN, BODY_ZONE_R_ARM)
 		return FALSE
 	if(!is_servant_of_ratvar(user))
-		to_chat(user, "<span class='warning'>The information on [src]'s display shifts rapidly. After a moment, your head begins to pound, and you tear your eyes away.</span>")
+		to_chat(user, "<span class='warning'>Информация на экране [src] быстро меняется. Через мгновение у вас начинает раскалываться голова, и вы отводите взгляд.</span>")
 		if(user.confused || user.dizziness)
 			user.confused += 5
 			user.dizziness += 5
 		return FALSE
 	if(busy)
-		to_chat(user, "<span class='warning'>[src] refuses to work, displaying the message: \"[busy]!\"</span>")
+		to_chat(user, "<span class='warning'>[src] отказывается работать, показывая сообщение: \"[busy]!\"</span>")
 		return FALSE
 	if(!no_cost && !can_recite_scripture(user))
-		to_chat(user, "<span class='nezbere'>[src] hums fitfully in your hands, but doesn't seem to do anything...</span>")
+		to_chat(user, "<span class='nezbere'>[src] в руках слышен прерывистый гул, но, похоже, ничего не происходит...</span>")
 		return FALSE
 	access_display(user)
 
@@ -189,7 +189,7 @@
 	. = ..()
 	if(is_servant_of_ratvar(user) && linking && user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
 		linking = null
-		to_chat(user, "<span class='notice'>Object link canceled.</span>")
+		to_chat(user, "<span class='notice'>Связь с объектом прервана.</span>")
 		return TRUE
 
 /obj/item/clockwork/slab/proc/access_display(mob/living/user)
@@ -202,14 +202,14 @@
 	if(!scripture || !user || !user.canUseTopic(src) || (!no_cost && !can_recite_scripture(user)))
 		return FALSE
 	if(user.get_active_held_item() != src)
-		to_chat(user, "<span class='warning'>You need to hold the slab in your active hand to recite scripture!</span>")
+		to_chat(user, "<span class='warning'>Чтобы читать Священное Писание, нужно держать плиту в активной руке!</span>")
 		return FALSE
 	var/initial_tier = initial(scripture.tier)
 	if(initial_tier == SCRIPTURE_PERIPHERAL && !issilicon(user))	//Silicons use peripheral scripture & cannot open the slab.
-		to_chat(user, "<span class='warning'>Nice try using href exploits</span>")
+		to_chat(user, "<span class='warning'>Неплохая попытка воспользоваться уязвимостями в атрибуте href</span>")
 		return
 	if(!GLOB.ratvar_awakens && !no_cost && !SSticker.scripture_states[initial_tier] &&!issilicon(user))	//silicons can't choose their spells, so lets allow them to always cast their assigned ones.
-		to_chat(user, "<span class='warning'>That scripture is not unlocked, and cannot be recited!</span>")
+		to_chat(user, "<span class='warning'>Этот отрывок из Священного Писания не раскрыт и не может быть прочитан!</span>")
 		return FALSE
 	var/datum/clockwork_scripture/scripture_to_recite = new scripture
 	scripture_to_recite.slab = src
@@ -232,8 +232,8 @@
 	. = list()
 	switch(what) //need someone to rewrite info for this.
 		if("Default")
-			.["title"] = "Default"
-			.["info"] = "Hello servant! Currently these categories dosen't work!"
+			.["title"] = "По умолчанию"
+			.["info"] = "Привет, слуга! В настоящее время эти категории не работают!"
 		/*
 		if("Basics")
 			.["title"] = "Basics"
@@ -297,7 +297,7 @@
 		data["name"] = S.name
 		data["descname"] = S.descname
 		data["tip"] = "[S.desc]\n[S.usage_tip]"
-		data["required"] = "([DisplayPower(S.power_cost)][S.special_power_text ? "+ [replacetext(S.special_power_text, "POWERCOST", "[DisplayPower(S.special_power_cost)]")]" : ""])"
+		data["required"] = "([DisplayPower(S.power_cost)][S.special_power_text ? "+ [replacetext(S.special_power_text, "ПОТРЕБЛЕНИЕ ЭНЕРГИИ", "[DisplayPower(S.special_power_cost)]")]" : ""])"
 		data["required_unformatted"] = S.power_cost
 		data["type"] = "[S.type]"
 		data["tier"] = S.tier
@@ -309,31 +309,31 @@
 		if(found)
 			data["bound"] = found
 		if(S.invokers_required > 1)
-			data["invokers"] = "Чтецы: [S.invokers_required]"
+			data["invokers"] = "Призывающих: [S.invokers_required]"
 
 		.["scripture"][S.category] += list(data)
 
 /obj/item/clockwork/slab/ui_static_data(mob/user)
 	. = list()
 	.["tier_infos"] = list() //HEY!! WHEN ADDING NEW TIER, ADD IT HERE
-	.["tier_infos"][SCRIPTURE_PERIPHERAL] = list(
-		"requirement" = "Ошибка кода. Сообщите кодерам!",
-		"ready" = FALSE //just in case. Should NOT exist at all
-	)
+//	.["tier_infos"][SCRIPTURE_PERIPHERAL] = list(
+//		"requirement" = "Ошибка кода. Сообщите кодерам!",
+//		"ready" = FALSE //just in case. Should NOT exist at all        Почему-то это не закомментили, хоть прямо написано НЕ ДОЛЖНО СУЩЕСТВОВАТЬ
+//	)
 	.["tier_infos"][SCRIPTURE_DRIVER] = list(
-		"requirement" = "Уже открыто",
+		"requirement" = "Не-а, это уже разблокировано",
 		"ready" = TRUE //to bold it on JS side, and to say "These scriptures are permanently unlocked."
 	)
 	.["tier_infos"][SCRIPTURE_SCRIPT] = list(
-		"requirement" = "Откроется при половине готовности Ковчега или при [DisplayPower(SCRIPT_UNLOCK_THRESHOLD)] энергии.",
+		"requirement" = "Эти писания будут автоматически разблокированы, когда Ковчег будет готов наполовину или при достижении уровня мощности [DisplayPower(SCRIPT_UNLOCK_THRESHOLD)].",
 		"ready" = SSticker.scripture_states[SCRIPTURE_SCRIPT] //huh, on the gamemode ticker? okay...
 	)
 	.["tier_infos"][SCRIPTURE_APPLICATION] = list(
-		"requirement" = "Конвертируйте слугу или накопите [DisplayPower(APPLICATION_UNLOCK_THRESHOLD)] энергии.",
+		"requirement" = "Разблокируйте эти дополнительные отрывки из Священного Писания, обратив в веру другого слугу или при достижении уровня силы [DisplayPower(APPLICATION_UNLOCK_THRESHOLD)].",
 		"ready" = SSticker.scripture_states[SCRIPTURE_APPLICATION]
 	)
 	.["tier_infos"][SCRIPTURE_JUDGEMENT] = list(
-		"requirement" = "Конвертируйте 5 слуг или накопите [DisplayPower(JUDGEMENT_UNLOCK_THRESHOLD)] энергии.",
+		"requirement" = "Разблокируйте мощное снаряжение и сооружения, преобразовав пятерых слуг или при достижении уровня силы [DisplayPower(JUDGEMENT_UNLOCK_THRESHOLD)].",
 		"ready" = SSticker.scripture_states[SCRIPTURE_JUDGEMENT]
 	)
 	.["category_infos"] = list(
@@ -348,13 +348,13 @@
 	if(GLOB.ratvar_awakens)
 		return
 	.["recollection_categories"] = list(
-		list("name" = "Getting Started", "desc" = "First-time servant? Read this first."),
-		list("name" = "Basics", "desc" = "A primer on how to play as a servant."),
-		list("name" = "Terminology", "desc" = "Common acronyms, words, and terms."),
-		list("name" = "Components", "desc" = "Information on components, your primary resource."),
-		list("name" = "Scripture", "desc" = "Information on scripture, ancient tools used by the cult."),
-		list("name" = "Power", "desc" = "The power system that certain objects use to function."),
-		list("name" = "Conversion", "desc" = "Converting the crew, cyborgs, and very walls to your cause.")
+		list("name" = "Начало работы", "desc" = "Впервые становитесь слугой? Сначала прочтите это."),
+		list("name" = "Основы", "desc" = "Введение в игру за слугу."),
+		list("name" = "Терминология", "desc" = "Распространенные аббревиатуры, слова и термины."),
+		list("name" = "Компоненты", "desc" = "Информация о компонентах, ваш основной ресурс."),
+		list("name" = "Священное Писание", "desc" = "Информация о священных текстах и древних предметах, использовавшихся членами культа."),
+		list("name" = "Энергия", "desc" = "Система питания, обеспечивающая работу определенных устройств."),
+		list("name" = "Конвертация", "desc" = "Привлечь экипаж, киборгов и даже сами стены на свою сторону.")
 	)
 	.["rec_section"] = get_recollection(recollection_category)
 	generate_all_scripture()
@@ -375,7 +375,7 @@
 		if("bind")
 			var/datum/clockwork_scripture/path = text2path(params["script"]) //we need a path and not a string
 			if(!ispath(path, /datum/clockwork_scripture) || !initial(path.quickbind) || initial(path.tier) == SCRIPTURE_PERIPHERAL) //fuck you href bus
-				to_chat(usr, "<span class='warning'>Nice try using href exploits</span>")
+				to_chat(usr, "<span class='warning'>Неплохая попытка воспользоваться уязвимостями в атрибуте href</span>")
 				return FALSE
 			var/found_index = quickbound.Find(path)
 			if(found_index) //hey, we already HAVE this bound
@@ -386,7 +386,7 @@
 				update_quickbind()
 			else
 				// todo: async this due to ((input)) but its fine for now
-				var/target_index = input("Position of [initial(path.name)], 1 to [maximum_quickbound]?", "Input")  as num|null
+				var/target_index = input("Позиция [initial(path.name)], от 1 до [maximum_quickbound]?", "Ввод")  as num|null
 				if(isnum(target_index) && target_index > 0 && target_index <= maximum_quickbound && !..())
 					var/datum/clockwork_scripture/S
 					if(LAZYLEN(quickbound) >= target_index)

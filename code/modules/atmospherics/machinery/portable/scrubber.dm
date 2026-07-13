@@ -31,15 +31,18 @@
 		. += "scrubber-connector"
 
 /obj/machinery/portable_atmospherics/scrubber/process_atmos()
-	..()
 	if(!on)
-		return
+		return ..()
 
+	// A working scrubber watches turf/tank air that changes without wake
+	// events, so it never sleeps while switched on.
+	excited = TRUE
 	if(holding)
 		scrub(holding.air_contents)
 	else
 		var/turf/T = get_turf(src)
 		scrub(T.return_air())
+	return ..()
 
 /obj/machinery/portable_atmospherics/scrubber/proc/scrub(var/datum/gas_mixture/mixture)
 	if(!mixture)
@@ -58,6 +61,7 @@
 	if(is_operational)
 		if(prob(severity/3))
 			on = !on
+		excite()
 		update_icon()
 
 /obj/machinery/portable_atmospherics/scrubber/ui_interact(mob/user, datum/tgui/ui)
@@ -100,6 +104,8 @@
 		if("toggle_filter")
 			scrubbing ^= params["val"]
 			. = TRUE
+	// Power/filter changes must pull a sleeping scrubber back in.
+	excite()
 	update_icon()
 
 /obj/machinery/portable_atmospherics/scrubber/huge
@@ -122,14 +128,13 @@
 	icon_state = "scrubber:[on]"
 
 /obj/machinery/portable_atmospherics/scrubber/huge/process_atmos()
-	if((!anchored && !movable) || !is_operational)
+	if(((!anchored && !movable) || !is_operational) && on)
 		on = FALSE
 		update_icon()
 	use_power = on ? ACTIVE_POWER_USE : IDLE_POWER_USE
+	. = ..()
 	if(!on)
 		return
-
-	..()
 	if(!holding)
 		var/turf/T = get_turf(src)
 		for(var/turf/AT in T.GetAtmosAdjacentTurfs(alldir = TRUE))

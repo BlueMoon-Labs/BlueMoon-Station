@@ -52,6 +52,9 @@ SUBSYSTEM_DEF(shuttle)
 
 	var/datum/round_event/shuttle_loan/shuttle_loan
 
+	/// Экипаж купил страховку шаттла (событие Shuttle Insurance): катастрофа покрывается страховой
+	var/shuttle_insurance = FALSE
+
 	var/shuttle_purchased = SHUTTLEPURCHASE_PURCHASABLE //If the station has purchased a replacement escape shuttle this round
 	var/list/shuttle_purchase_requirements_met = list() //For keeping track of ingame events that would unlock new shuttles, such as defeating a boss or discovering a secret item
 
@@ -135,16 +138,8 @@ SUBSYSTEM_DEF(shuttle)
 		if(!T.owner)
 			qdel(T, force=TRUE)
 			continue
-		// This next one removes transit docks/zones that aren't
-		// immediately being used. This will mean that the zone creation
-		// code will be running a lot.
-		var/obj/docking_port/mobile/owner = T.owner
-		if(owner)
-			var/idle = owner.mode == SHUTTLE_IDLE
-			var/not_centcom_evac = owner.launch_status == NOLAUNCH
-			var/not_in_use = (!T.get_docked())
-			if(idle && not_centcom_evac && not_in_use)
-				qdel(T, force=TRUE)
+		// Keep the reservation assigned to its shuttle between flights. Reusing it avoids
+		// another reservation scan and bulk ChangeTurf when the shuttle next launches.
 	CheckAutoEvac()
 
 	// Skyrat change. Handles Problem Computer charges here
@@ -649,6 +644,7 @@ SUBSYSTEM_DEF(shuttle)
 	emergencyNoEscape = SSshuttle.emergencyNoEscape
 	emergencyCallAmount = SSshuttle.emergencyCallAmount
 	shuttle_purchased = SSshuttle.shuttle_purchased
+	shuttle_insurance = SSshuttle.shuttle_insurance
 	lockdown = SSshuttle.lockdown
 
 	selected = SSshuttle.selected

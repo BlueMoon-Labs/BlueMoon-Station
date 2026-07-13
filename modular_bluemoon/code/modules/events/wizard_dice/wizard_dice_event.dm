@@ -7,6 +7,7 @@
 	max_occurrences = 1
 	weight = 10
 	earliest_start = 60 MINUTES
+	severity = DIRECTOR_SEVERITY_MAJOR // не обычное wizard-заклинание, а полноценный ролл на артефакт станционного масштаба
 
 /datum/round_event/wizard_dice
 	announce_chance = 100

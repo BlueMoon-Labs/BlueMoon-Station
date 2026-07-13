@@ -68,95 +68,15 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 	var/list/current_rules = list()
 	/// List of executed rulesets.
 	var/list/executed_rules = list()
-	/// When TRUE GetInjectionChance returns 100.
-	var/forced_injection = FALSE
 	/// Forced ruleset to be executed for the next latejoin.
 	var/datum/dynamic_ruleset/latejoin/forced_latejoin_rule = null
-	/// How many percent of the rounds are more peaceful.
-	var/peaceful_percentage = 50
 	/// If a high impact ruleset was executed. Only one will run at a time in most circumstances.
 	var/high_impact_ruleset_executed = FALSE
 	/// If a only ruleset has been executed.
 	var/only_ruleset_executed = FALSE
-	/// Dynamic configuration, loaded on pre_setup
-	var/list/configuration = null
-
-	/// When world.time is over this number the mode tries to inject a latejoin ruleset.
-	var/latejoin_injection_cooldown = 0
-
-	/// The minimum time the recurring latejoin ruleset timer is allowed to be.
-	var/latejoin_delay_min = (10 MINUTES) //BLUEMOON CHANGES
-
-	/// The maximum time the recurring latejoin ruleset timer is allowed to be.
-	var/latejoin_delay_max = (20 MINUTES)
-
-	/// When world.time is over this number the mode tries to inject a midround ruleset.
-	var/midround_injection_cooldown = 0
-
-	/// The minimum time the recurring midround ruleset timer is allowed to be.
-	var/midround_delay_min = (10 MINUTES) //BLUEMOON CHANGES
-
-	/// The maximum time the recurring midround ruleset timer is allowed to be.
-	var/midround_delay_max = (20 MINUTES) //BLUEMOON CHANGES
-
-	/// If above this threat, increase the chance of injection
-	var/higher_injection_chance_minimum_threat = 70
-
-	/// The chance of injection increase when above higher_injection_chance_minimum_threat
-	var/higher_injection_chance = 15
-
-	/// If below this threat, decrease the chance of injection
-	var/lower_injection_chance_minimum_threat = 10
-
-	/// The chance of injection decrease when above lower_injection_chance_minimum_threat
-	var/lower_injection_chance = 15
-
-	/// A number between -5 and +5.
-	/// A negative value will give a more peaceful round and
-	/// a positive value will give a round with higher threat.
-	var/threat_curve_centre = 0
-
-	/// A number between 0.5 and 4.
-	/// Higher value will favour extreme rounds and
-	/// lower value rounds closer to the average.
-	var/threat_curve_width = 1.8
-
-	/// A number between -5 and +5.
-	/// Equivalent to threat_curve_centre, but for the budget split.
-	/// A negative value will weigh towards midround rulesets, and a positive
-	/// value will weight towards roundstart ones.
-	var/roundstart_split_curve_centre = 1
-
-	/// A number between 0.5 and 4.
-	/// Equivalent to threat_curve_width, but for the budget split.
-	/// Higher value will favour more variance in splits and
-	/// lower value rounds closer to the average.
-	var/roundstart_split_curve_width = 1.8
-
-	/// The minimum amount of time for antag random events to be hijacked.
-	var/random_event_hijack_minimum = 10 MINUTES
-
-	/// The maximum amount of time for antag random events to be hijacked.
-	var/random_event_hijack_maximum = 18 MINUTES
 
 	/// A list of recorded "snapshots" of the round, stored in the dynamic.json log
 	var/list/datum/dynamic_snapshot/snapshots
-
-	/// The time when the last midround injection was attempted, whether or not it was successful
-	var/last_midround_injection_attempt = 0
-
-	/// The amount to inject when a round event is hijacked
-	var/hijacked_random_event_injection_chance = 50
-
-	/// Whether or not a random event has been hijacked this midround cycle
-	var/random_event_hijacked = HIJACKED_NOTHING
-
-	/// The timer ID for the cancellable midround rule injection
-	var/midround_injection_timer_id
-
-	/// The last drafted midround rulesets (without the current one included).
-	/// Used for choosing different midround injections.
-	var/list/current_midround_rulesets
 
 	/// The amount of threat shown on the piece of paper.
 	/// Can differ from the actual threat amount.
@@ -168,11 +88,9 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 	dat += "Threat Level: <b>[threat_level]</b><br/>"
 	dat += "Budgets (Roundstart/Midrounds): <b>[initial_round_start_budget]/[threat_level - initial_round_start_budget]</b><br/>"
 
-	dat += "Midround budget to spend: <b>[mid_round_budget]</b> <a href='?src=\ref[src];[HrefToken()];adjustthreat=1'>\[Adjust\]</A> <a href='?src=\ref[src];[HrefToken()];threatlog=1'>\[View Log\]</a><br/>"
+	dat += "Director budget to spend: <b>[round(SSdirector.total_budget(), 0.1)]</b> <a href='?src=\ref[src];[HrefToken()];adjustthreat=1'>\[Adjust\]</A> <a href='?src=\ref[src];[HrefToken()];threatlog=1'>\[View Log\]</a><br/>"
+	dat += "<a href='?_src_=holder;[HrefToken()];director_panel=1'>Открыть Director Panel</a><br/>"
 	dat += "<br/>"
-	dat += "Parameters: centre = [threat_curve_centre] ; width = [threat_curve_width].<br/>"
-	dat += "Split parameters: centre = [roundstart_split_curve_centre] ; width = [roundstart_split_curve_width].<br/>"
-	dat += "<i>On average, <b>[peaceful_percentage]</b>% of the rounds are more peaceful.</i><br/>"
 	/* BLUEMOON CHANGES START - мы используем GLOB.round_type
 	dat += "Forced extended: <a href='?src=\ref[src];[HrefToken()];forced_extended=1'><b>[GLOB.dynamic_forced_extended ? "On" : "Off"]</b></a><br/>"
 	dat += "Dynamic extended: <a href='?src=\ref[src];[HrefToken()];extended=1'><b>[GLOB.dynamic_extended ? "On" : "Off"]</b></a><br/>"
@@ -195,9 +113,6 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 			dat += "[DR.ruletype] - <b>[DR.name]</b><br>"
 	else
 		dat += "none.<br>"
-	dat += "<br>Injection Timers: (<b>[get_injection_chance(dry_run = TRUE)]%</b> latejoin chance, <b>[get_midround_injection_chance(dry_run = TRUE)]%</b> midround chance)<BR>"
-	dat += "Latejoin: [(latejoin_injection_cooldown-world.time)>60*10 ? "[round((latejoin_injection_cooldown-world.time)/60/10,0.1)] minutes" : "[(latejoin_injection_cooldown-world.time)/10] seconds"] <a href='?src=\ref[src];[HrefToken()];injectlate=1'>\[Now!\]</a><BR>"
-	dat += "Midround: [(midround_injection_cooldown-world.time)>60*10 ? "[round((midround_injection_cooldown-world.time)/60/10,0.1)] minutes" : "[(midround_injection_cooldown-world.time)/10] seconds"] <a href='?src=\ref[src];[HrefToken()];injectmid=1'>\[Now!\]</a><BR>"
 	var/datum/browser/popup = new(usr, "gamemode_panel", "Dynamic Mode", 500, 500)
 	popup.set_content(dat.Join())
 	popup.open()
@@ -225,23 +140,11 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 	else if (href_list["no_stacking"])
 		GLOB.dynamic_no_stacking = !GLOB.dynamic_no_stacking
 	else if (href_list["adjustthreat"])
-		var/threatadd = input("Specify how much threat to add (negative to subtract). This can inflate the threat level.", "Adjust Threat", 0) as null|num
+		var/threatadd = input("Укажите, сколько бюджета добавить директору (отрицательное - убавить).", "Adjust Director Budget", 0) as null|num
 		if(!threatadd)
 			return
-		if(threatadd > 0)
-			create_threat(threatadd)
-			threat_log += "[worldtime2text()]: [key_name(usr)] increased threat by [threatadd] threat."
-		else
-			spend_midround_budget(-threatadd)
-			threat_log += "[worldtime2text()]: [key_name(usr)] decreased threat by [-threatadd] threat."
-	else if (href_list["injectlate"])
-		latejoin_injection_cooldown = 0
-		forced_injection = TRUE
-		message_admins("[key_name(usr)] forced a latejoin injection.")
-	else if (href_list["injectmid"])
-		midround_injection_cooldown = 0
-		forced_injection = TRUE
-		message_admins("[key_name(usr)] forced a midround injection.")
+		SSdirector.distribute_to_budgets(threatadd)
+		threat_log += "[worldtime2text()]: [key_name(usr)] изменил бюджет директора на [threatadd]."
 	else if (href_list["threatlog"])
 		show_threatlog(usr)
 	else if (href_list["stacking_limit"])
@@ -264,12 +167,6 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 		log_admin("[key_name(usr)] executed the [added_rule] ruleset.")
 		message_admins("[key_name(usr)] executed the [added_rule] ruleset.")
 		picking_specific_rule(added_rule, TRUE)
-	else if(href_list["cancelmidround"])
-		admin_cancel_midround(usr, href_list["cancelmidround"])
-		return
-	else if (href_list["differentmidround"])
-		admin_different_midround(usr, href_list["differentmidround"])
-		return
 
 	admin_panel() // Refreshes the window
 
@@ -331,16 +228,15 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 		if(istext(entry))
 			out += "[entry]<BR>"
 
-	out += "<B>Remaining threat/threat_level:</B> [mid_round_budget]/[threat_level]"
+	out += "<B>Director budget/threat_level:</B> [round(SSdirector.total_budget(), 0.1)]/[threat_level]"
 
 	var/datum/browser/popup = new(usr, "threatlog", "Threat Log", 700, 500)
 	popup.set_content(out.Join())
 	popup.open()
 
-/// Generates the threat level using lorentz distribution and assigns peaceful_percentage.
+/// Выставляет отображаемую угрозу и roundstart-бюджет; каплю и мидраунды ведёт SSdirector.
 /datum/game_mode/dynamic/proc/generate_threat()
-
-	// BLUEMOON ADD START - присвоение минимального и максимального возможного уровня угрозы
+	// BLUEMOON: пределы уровня угрозы по типу раунда (читаются пресетами антагов и cellular_emporium)
 	switch(GLOB.round_type)
 		if(ROUNDTYPE_DYNAMIC_TEAMBASED)
 			GLOB.dynamic_type_threat_min = 90 //от 1 до 2 командных антагов
@@ -360,45 +256,34 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 			GLOB.dynamic_type_threat_max = 0
 		if("dynamic")
 			GLOB.master_mode = ROUNDTYPE_DYNAMIC_MEDIUM
-	// BLUEMOON ADD END
 
-	threat_level = round(rand(GLOB.dynamic_type_threat_min, GLOB.dynamic_type_threat_max), 0.1) //BLUEMOON ADDITION
-/*BLUEMOON REMOVAL START - мы не центрируем уровень угрозы по Лоуренцу
-	var/relative_threat = LORENTZ_DISTRIBUTION(threat_curve_centre, threat_curve_width)
-	threat_level = round(lorentz_to_amount(relative_threat), 0.1)
-	peaceful_percentage = round(LORENTZ_CUMULATIVE_DISTRIBUTION(relative_threat, threat_curve_centre, threat_curve_width), 0.01)*100
-
-	SSblackbox.record_feedback("tally","dynamic_threat",threat_level,"Initial threat level")
-	SSblackbox.record_feedback("tally","dynamic_threat",threat_curve_centre,"Curve centre")
-	SSblackbox.record_feedback("tally","dynamic_threat",threat_curve_width,"Curve width")
-	SSblackbox.record_feedback("tally","dynamic_threat",peaceful_percentage,"Percent of same-center rounds that are more peaceful")
-BLUEMOON REMOVAL END*/
-
-/// Generates the midround and roundstart budgets
-/datum/game_mode/dynamic/proc/generate_budgets()
-/*BLUEMOON REMOVAL START - динамичная экста не должна жрать весь раундстартовый бюджет
-	if(GLOB.dynamic_extended)
-		mid_round_budget = threat_level
-		round_start_budget = 0
+	SSdirector.setup_profile()
+	var/datum/director_profile/profile = SSdirector.profile
+	round_start_budget = rand(profile.roundstart_budget_min, profile.roundstart_budget_max)
+	if(GLOB.round_type == ROUNDTYPE_EXTENDED)
+		threat_level = 0 // экста репортит нулевую угрозу, без оценки flavor-капли
 	else
-	var/relative_round_start_budget_scale = LORENTZ_DISTRIBUTION(roundstart_split_curve_centre, roundstart_split_curve_width)
-	round_start_budget = round((lorentz_to_amount(relative_round_start_budget_scale) / 100) * threat_level, 0.1)
-BLUEMOON REMOVAL END*/
-	round_start_budget = round(threat_level / 2, 0.1)
-	round_start_budget = min(round_start_budget, 30) //BLUEMOON ADDITION - чтобы динамик не расходился на все деньги с начала раунда и не пугал людей
+		// Отображаемая угроза: roundstart-бюджет + оценка капли за типовые 90 минут
+		threat_level = round(round_start_budget + profile.base_drip * 90 * 0.5, 0.1)
+	SSblackbox.record_feedback("tally", "director_threat", threat_level)
+
+/// Roundstart-бюджет уже выбран в generate_threat; мидраунд-пул теперь у SSdirector.
+/datum/game_mode/dynamic/proc/generate_budgets()
 	initial_round_start_budget = round_start_budget
-	mid_round_budget = threat_level - round_start_budget
+	mid_round_budget = 0 // капает у SSdirector
 
 /datum/game_mode/dynamic/proc/setup_parameters()
 	log_game("DYNAMIC: Dynamic mode parameters for the round:")
-	log_game("DYNAMIC: Centre is [threat_curve_centre], Width is [threat_curve_width], Extended is [GLOB.dynamic_extended ? "Enabled" : "Disabled"], No stacking is [GLOB.dynamic_no_stacking ? "Enabled" : "Disabled"].")
+	log_game("DYNAMIC: No stacking is [GLOB.dynamic_no_stacking ? "Enabled" : "Disabled"].")
 	log_game("DYNAMIC: Stacking limit is [GLOB.dynamic_stacking_limit].")
 	if(GLOB.dynamic_forced_threat_level >= 0)
 		threat_level = round(GLOB.dynamic_forced_threat_level, 0.1)
+		round_start_budget = min(GLOB.dynamic_forced_threat_level / 2, 30)
+		SSdirector.setup_profile() // профиль нужен даже при форсе, иначе директор не запустится
+		SSdirector.distribute_to_budgets(GLOB.dynamic_forced_threat_level / 2) // совместимость админ-привычки
 	else
 		generate_threat()
 	generate_budgets()
-	set_cooldowns()
 	log_game("DYNAMIC: Dynamic Mode initialized with a Threat Level of... [threat_level]! ([round_start_budget] round start budget)")
 	return TRUE
 
@@ -408,35 +293,14 @@ BLUEMOON REMOVAL END*/
 	else
 		shown_threat = clamp(threat_level + rand(REPORT_NEG_DIVERGENCE, REPORT_POS_DIVERGENCE), 0, 100)
 
-/datum/game_mode/dynamic/proc/set_cooldowns()
-	var/coeff = 1 //BLUEMOON CHANGES - Removed check for dynamic_extended
-	latejoin_delay_min *= coeff
-	latejoin_delay_max *= coeff
-	var/latejoin_injection_cooldown_middle = 0.5*(latejoin_delay_max + latejoin_delay_min)
-	latejoin_injection_cooldown = round(clamp(EXP_DISTRIBUTION(latejoin_injection_cooldown_middle), latejoin_delay_min, latejoin_delay_max)) + world.time
-
-	midround_delay_min *= coeff
-	midround_delay_max *= coeff
-
-	var/midround_injection_cooldown_middle = 0.5*(midround_delay_max + midround_delay_min)
-	midround_injection_cooldown = round(clamp(EXP_DISTRIBUTION(midround_injection_cooldown_middle), midround_delay_min, midround_delay_max)) + world.time
-
 /datum/game_mode/dynamic/pre_setup()
-	if(CONFIG_GET(flag/dynamic_config_enabled))
-		var/json_file = file("[global.config.directory]/dynamic.json")
-		if(fexists(json_file))
-			configuration = json_decode(file2text(json_file))
-			if(configuration["Dynamic"])
-				for(var/variable in configuration["Dynamic"])
-					if(!(variable in vars))
-						stack_trace("Invalid dynamic configuration variable [variable] in game mode variable changes.")
-						continue
-					vars[variable] = configuration["Dynamic"][variable]
-
 	setup_parameters()
-	setup_hijacking()
 	setup_shown_threat()
 	setup_rulesets()
+
+	// Мидраунды и латеджойны теперь ведёт SSdirector: отдаём ему рулсеты (защита ролей уже применена в init_rulesets).
+	SSdirector.register_ruleset_actions(midround_rules)
+	SSdirector.register_ruleset_actions(latejoin_rules)
 
 	//We do this here instead of with the midround rulesets and such because these rules can hang refs
 	//To new_player and such, and we want the datums to just free when the roundstart work is done
@@ -459,9 +323,9 @@ BLUEMOON REMOVAL END*/
 	else
 		roundstart(roundstart_rules)
 
-	log_game("DYNAMIC: [round_start_budget] round start budget was left, donating it to midrounds.")
-	threat_log += "[worldtime2text()]: [round_start_budget] round start budget was left, donating it to midrounds."
-	mid_round_budget += round_start_budget
+	log_game("DYNAMIC: [round_start_budget] round start budget was left, donating it to the director drip.")
+	threat_log += "[worldtime2text()]: [round_start_budget] round start budget was left, donating it to the director drip."
+	SSdirector.distribute_to_budgets(round_start_budget) // неистраченный roundstart раскладывается по кошелькам директора
 
 	var/starting_rulesets = ""
 	for (var/datum/dynamic_ruleset/roundstart/DR in executed_rules)
@@ -495,7 +359,7 @@ BLUEMOON REMOVAL END*/
 			continue
 
 		var/ruleset = new ruleset_type
-		configure_ruleset(ruleset)
+		SSdirector.apply_role_protection(ruleset)
 		rulesets += ruleset
 
 	return rulesets
@@ -505,7 +369,7 @@ BLUEMOON REMOVAL END*/
 	message_admins("[GLOB.dynamic_forced_roundstart_ruleset.len] rulesets being forced. Will now attempt to draft players for them.")
 	log_game("DYNAMIC: [GLOB.dynamic_forced_roundstart_ruleset.len] rulesets being forced. Will now attempt to draft players for them.")
 	for (var/datum/dynamic_ruleset/roundstart/rule in GLOB.dynamic_forced_roundstart_ruleset)
-		configure_ruleset(rule)
+		SSdirector.apply_role_protection(rule)
 		message_admins("Drafting players for forced ruleset [rule.name].")
 		log_game("DYNAMIC: Drafting players for forced ruleset [rule.name].")
 		rule.mode = src
@@ -619,12 +483,13 @@ BLUEMOON REMOVAL END*/
 	stack_trace("The starting rule \"[rule.name]\" failed to execute.")
 	return FALSE
 
-/// An experimental proc to allow admins to call rules on the fly or have rules call other rules.
-/datum/game_mode/dynamic/proc/picking_specific_rule(ruletype, forced = FALSE)
+/// Форс-исполнение midround-рулсета админом в обход бюджета и потолков директора.
+/// Единственный вызывающий - панель динамика (Execute Midround Ruleset).
+/datum/game_mode/dynamic/proc/picking_specific_rule(ruletype, forced = TRUE)
 	var/datum/dynamic_ruleset/midround/new_rule
 	if(ispath(ruletype))
-		new_rule = new ruletype() // You should only use it to call midround rules though.
-		configure_ruleset(new_rule) // This makes sure the rule is set up properly.
+		new_rule = new ruletype() // Использовать только для midround-рулсетов.
+		SSdirector.apply_role_protection(new_rule)
 	else if(istype(ruletype, /datum/dynamic_ruleset))
 		new_rule = ruletype
 	else
@@ -633,40 +498,52 @@ BLUEMOON REMOVAL END*/
 	if(!new_rule)
 		return FALSE
 
-	if(!forced)
-		if(only_ruleset_executed)
-			return FALSE
-		// Check if a blocking ruleset has been executed.
-		else if(check_blocking(new_rule.blocking_rules, executed_rules))
-			return FALSE
-		// Check if the ruleset is high impact and if a high impact ruleset has been executed
-		else if(new_rule.flags & HIGH_IMPACT_RULESET)
-			/* BLUEMOON REMOVAL START - глоб больше не используется, его заменил glob.round_type
-			if(GLOB.dynamic_extended)
-				return FALSE
-			/ BLUEMOON REMOVAL END */
-			if(high_impact_ruleset_executed && threat_level < GLOB.dynamic_stacking_limit && GLOB.dynamic_no_stacking)
-				return FALSE
+	new_rule.trim_candidates()
+	if(!new_rule.ready(forced))
+		log_game("DYNAMIC: The ruleset [new_rule.name] couldn't be executed due to lack of elligible players.")
+		return FALSE
 
-	var/population = current_players[CURRENT_LIVING_PLAYERS].len
-	if((new_rule.acceptable(population, threat_level) && new_rule.cost <= mid_round_budget) || forced)
-		new_rule.trim_candidates()
-		if (new_rule.ready(forced))
-			spend_midround_budget(new_rule.cost)
-			threat_log += "[worldtime2text()]: Forced rule [new_rule.name] spent [new_rule.cost]"
-			new_rule.pre_execute(population)
-			if (new_rule.execute()) // This should never fail since ready() returned 1
-				if(new_rule.flags & HIGH_IMPACT_RULESET)
-					high_impact_ruleset_executed = TRUE
-				else if(new_rule.flags & ONLY_RULESET)
-					only_ruleset_executed = TRUE
-				log_game("DYNAMIC: Making a call to a specific ruleset...[new_rule.name]!")
-				executed_rules += new_rule
-				if (new_rule.persistent)
-					current_rules += new_rule
-				return TRUE
-		else if (forced)
-			log_game("DYNAMIC: The ruleset [new_rule.name] couldn't be executed due to lack of elligible players.")
+	threat_log += "[worldtime2text()]: Forced rule [new_rule.name]"
+	new_rule.pre_execute(current_players[CURRENT_LIVING_PLAYERS].len)
+	if (new_rule.execute()) // Не должно падать, раз ready() вернул TRUE.
+		if(new_rule.flags & HIGH_IMPACT_RULESET)
+			high_impact_ruleset_executed = TRUE
+		else if(new_rule.flags & ONLY_RULESET)
+			only_ruleset_executed = TRUE
+		log_game("DYNAMIC: Making a call to a specific ruleset...[new_rule.name]!")
+		executed_rules += new_rule
+		if (new_rule.persistent)
+			current_rules += new_rule
+		SSdirector.note_forced_run(new_rule) // регистрируем запуск в директоре, не трогая бюджет
+		return TRUE
+	// clean_up() тут не зовём: форс-путь бюджета не списывал, а рефанд clean_up
+	// теперь уходит в кошельки SSdirector - была бы бесплатная накачка бюджета.
+	// Это совпадает со старой семантикой picking_specific_rule (без clean_up на провале).
+	return FALSE
+
+/// Отложенное исполнение midround/latejoin рулсета, выбранного директором.
+/// Бюджет уже списан в SSdirector.spend_and_execute; здесь - собственно запуск и бухгалтерия.
+/datum/game_mode/dynamic/proc/execute_scheduled_ruleset(datum/dynamic_ruleset/rule)
+	threat_log += "[worldtime2text()]: [rule.ruletype] [rule.name] spent [rule.cost]"
+	rule.pre_execute(current_players[CURRENT_LIVING_PLAYERS].len)
+	if (rule.execute())
+		log_game("DYNAMIC: Injected a [rule.ruletype] ruleset [rule.name].")
+		if(rule.flags & HIGH_IMPACT_RULESET)
+			high_impact_ruleset_executed = TRUE
+		else if(rule.flags & ONLY_RULESET)
+			only_ruleset_executed = TRUE
+		if(rule.ruletype == "Latejoin")
+			var/mob/M = pick(rule.candidates)
+			message_admins("[key_name(M)] joined the station, and was selected by the [rule.name] ruleset.")
+			log_game("DYNAMIC: [key_name(M)] joined the station, and was selected by the [rule.name] ruleset.")
+		executed_rules += rule
+		rule.candidates.Cut()
+		if (rule.persistent)
+			current_rules += rule
+		new_snapshot(rule)
+		return TRUE
+	rule.clean_up()
+	stack_trace("The [rule.ruletype] rule \"[rule.name]\" failed to execute.")
 	return FALSE
 
 /datum/game_mode/dynamic/process()
@@ -678,112 +555,7 @@ BLUEMOON REMOVAL END*/
 		if(rule.rule_process() == RULESET_STOP_PROCESSING) // If rule_process() returns 1 (RULESET_STOP_PROCESSING), stop processing.
 			current_rules -= rule
 			SSblackbox.record_feedback("tally","dynamic",1,"Rulesets finished")
-	midround_rule_draft()
-
-/datum/game_mode/dynamic/proc/midround_rule_draft()
-	set waitfor = FALSE
-	if (midround_injection_cooldown < world.time)
-		if (GLOB.dynamic_forced_extended)
-			return
-
-		// Somehow it managed to trigger midround multiple times so this was moved here.
-		// There is no way this should be able to trigger an injection twice now.
-		var/midround_injection_cooldown_middle = 0.5*(midround_delay_max + midround_delay_min)
-		midround_injection_cooldown = (round(clamp(EXP_DISTRIBUTION(midround_injection_cooldown_middle), midround_delay_min, midround_delay_max)) + world.time)
-
-		// Time to inject some threat into the round
-		if(EMERGENCY_ESCAPED_OR_ENDGAMED) // Unless the shuttle is gone
-			return
-
-		message_admins("DYNAMIC: Checking for midround injection.")
-		log_game("DYNAMIC: Checking for midround injection.")
-
-		last_midround_injection_attempt = world.time
-
-		var/chance_to_appear = get_midround_injection_chance() // BLUEMOON ADD - берём отсюда шанс для появления антагонистов, чтобы потом вывести его админам
-
-		if(prob(chance_to_appear)) // BLUEMOON CHANGES - было prob(get_midround_injection_chance()
-			var/list/drafted_rules = list()
-			for (var/datum/dynamic_ruleset/midround/rule in midround_rules)
-				if (!rule.weight)
-					continue
-				// BLUEMOON ADD START - в тимбазу некоторые режимы не должны ролиться
-				if(!(GLOB.round_type in rule.required_round_type))
-					continue
-				// BLUEMOON ADD END
-				if(rule.flags & HIGH_IMPACT_RULESET)
-					if (high_impact_ruleset_executed && threat_level < GLOB.dynamic_stacking_limit && GLOB.dynamic_no_stacking)
-						continue
-					/* BLUEMOON REMOVAL START - глоб больше не используется, его заменил glob.round_type
-					if(GLOB.dynamic_extended)
-						continue
-					/ BLUEMOON REMOVAL END */
-				if (rule.acceptable(current_players[CURRENT_LIVING_PLAYERS].len, threat_level) && mid_round_budget >= rule.cost)
-					rule.trim_candidates()
-					if (rule.ready())
-						drafted_rules[rule] = rule.get_weight()
-			if (drafted_rules.len > 0)
-				pick_midround_rule(drafted_rules)
-		else if (random_event_hijacked == HIJACKED_TOO_SOON)
-			message_admins("DYNAMIC: Midround injection failed when random event was hijacked. Spawning another random event in its place.")
-			log_game("DYNAMIC: Midround injection failed when random event was hijacked. Spawning another random event in its place.")
-
-			// A random event antag would have rolled had this injection check passed.
-			// As a refund, spawn a non-ghost-role random event.
-			SSevents.spawnEvent()
-			SSevents.reschedule()
-
-		// BLUEMOON ADD START - больше логирования и информации о режиме админам
-		else
-			message_admins("DYNAMIC: Шанс на появление антагонистов в [chance_to_appear] не прошёл.")
-		// BLUEMOON ADD END
-
-		random_event_hijacked = HIJACKED_NOTHING
-
-/// Gets the chance for latejoin injection, the dry_run argument is only used for forced injection.
-/datum/game_mode/dynamic/proc/get_injection_chance(dry_run = FALSE)
-	if(forced_injection)
-		forced_injection = dry_run
-		return 100
-	var/chance = 0
-	var/effective_living_players = current_players[CURRENT_LIVING_PLAYERS].len
-	/* BLUEMOON REMOVAL START - динамичная экста (лайт динамик) не должны сокращать количество игроков
-	if(GLOB.dynamic_extended)
-		effective_living_players = min(effective_living_players, length(SSjob.get_living_sec())*2 + length(SSjob.get_living_heads()))
-	/ BLUEMOON REMOVAL END*/
-	var/max_pop_per_antag = max(5,15 - round(threat_level/10) - round(effective_living_players/5))
-	if (!current_players[CURRENT_LIVING_ANTAGS].len)
-		/* BLUEMOON REMOVAL START - динамичная экста (лайт динамик) не должны уменьшать шанс появления ролей
-		if(GLOB.dynamic_extended)
-			chance += min(50,effective_living_players*5)
-		else
-		/ BLUEMOON REMOVAL END*/
-		chance += 50 // No antags at all? let's boost those odds!
-	else
-		var/current_pop_per_antag = effective_living_players / current_players[CURRENT_LIVING_ANTAGS].len
-		if (current_pop_per_antag > max_pop_per_antag)
-			chance += min(50, 25+10*(current_pop_per_antag-max_pop_per_antag))
-		else
-			chance += 25-10*(max_pop_per_antag-current_pop_per_antag)
-	/* BLUEMOON REMOVAL START - мёртвыми могут быть в т.ч. игроки не со станции, из-за чего система работает некорректно
-	if (current_players[CURRENT_DEAD_PLAYERS].len > current_players[CURRENT_LIVING_PLAYERS].len)
-		chance -= 30 // More than half the crew died? ew, let's calm down on antags
-	/ BLUEMOON REMOVAL END */
-	if (mid_round_budget > higher_injection_chance_minimum_threat)
-		chance += higher_injection_chance
-	if (mid_round_budget < lower_injection_chance_minimum_threat)
-		chance -= lower_injection_chance
-	return round(max(0,chance))
-
-/// Gets the chance for midround injection, the dry_run argument is only used for forced injection.
-/// Usually defers to the latejoin injection chance.
-/datum/game_mode/dynamic/proc/get_midround_injection_chance(dry_run)
-	var/chance = get_injection_chance(dry_run)
-
-	if (random_event_hijacked != HIJACKED_NOTHING)
-		chance += hijacked_random_event_injection_chance
-
-	return chance
+	// Драфт мидраундов теперь ведёт SSdirector на своих битах.
 
 /// Removes type from the list
 /datum/game_mode/dynamic/proc/remove_from_list(list/type_list, type)
@@ -823,54 +595,26 @@ BLUEMOON REMOVAL END*/
 		if (forced_latejoin_rule.ready(TRUE))
 			if (!forced_latejoin_rule.repeatable)
 				latejoin_rules = remove_from_list(latejoin_rules, forced_latejoin_rule.type)
-			addtimer(CALLBACK(src, TYPE_PROC_REF(/datum/game_mode/dynamic, execute_midround_latejoin_rule), forced_latejoin_rule), forced_latejoin_rule.delay)
+			addtimer(CALLBACK(src, TYPE_PROC_REF(/datum/game_mode/dynamic, execute_scheduled_ruleset), forced_latejoin_rule), forced_latejoin_rule.delay)
+			SSdirector.note_forced_run(forced_latejoin_rule) // учёт форса в темпе директора, бюджет не трогаем
 		forced_latejoin_rule = null
+		return
 
-	else if (latejoin_injection_cooldown < world.time && prob(get_injection_chance()))
-		var/list/drafted_rules = list()
-		for (var/datum/dynamic_ruleset/latejoin/rule in latejoin_rules)
-			if (!rule.weight)
-				continue
-			if (rule.acceptable(current_players[CURRENT_LIVING_PLAYERS].len, threat_level) && mid_round_budget >= rule.cost)
-				// No stacking : only one round-ender, unless threat level > stacking_limit.
-				if (threat_level < GLOB.dynamic_stacking_limit && GLOB.dynamic_no_stacking)
-					if(rule.flags & HIGH_IMPACT_RULESET && high_impact_ruleset_executed)
-						continue
-				//BLUEMOON ADDITION START
-				if(!(GLOB.round_type in rule.required_round_type))
-					continue
-				//BLUEMOON ADDITION END
-				rule.candidates = list(newPlayer)
-				rule.trim_candidates()
-				if (rule.ready())
-					drafted_rules[rule] = rule.get_weight()
+	// Естественный латеджойн-драфт теперь ведёт SSdirector: он сам собирает latejoin-рулсеты,
+	// ставит кандидата и решает по темпу/бюджету.
+	SSdirector.on_latejoin(newPlayer)
 
-		if (drafted_rules.len > 0 && pick_latejoin_rule(drafted_rules))
-			var/latejoin_injection_cooldown_middle = 0.5*(latejoin_delay_max + latejoin_delay_min)
-			latejoin_injection_cooldown = round(clamp(EXP_DISTRIBUTION(latejoin_injection_cooldown_middle), latejoin_delay_min, latejoin_delay_max)) + world.time
+/// Возврат бюджета при провале рулсета. mid_round_budget мёртв (всегда 0),
+/// поэтому рефанд уходит в кошелёк ступени рулсета (ANTAG) - иначе провал execute сжигал бы бюджет насовсем.
+/datum/game_mode/dynamic/proc/refund_threat(datum/dynamic_ruleset/rule, regain)
+	SSdirector.refund_to_budget(rule.severity, regain)
 
-/// Apply configurations to rule.
-/datum/game_mode/dynamic/proc/configure_ruleset(datum/dynamic_ruleset/ruleset)
-	var/rule_conf = LAZYACCESSASSOC(configuration, ruleset.ruletype, ruleset.name)
-	for(var/variable in rule_conf)
-		if(!(variable in ruleset.vars))
-			stack_trace("Invalid dynamic configuration variable [variable] in [ruleset.ruletype] [ruleset.name].")
-			continue
-		ruleset.vars[variable] = rule_conf[variable]
-	if(CONFIG_GET(flag/protect_roles_from_antagonist))
-		ruleset.restricted_roles |= ruleset.protected_roles
-	if(CONFIG_GET(flag/protect_assistant_from_antagonist))
-		ruleset.restricted_roles |= "Assistant"
-
-/// Refund threat, but no more than threat_level.
-/datum/game_mode/dynamic/proc/refund_threat(regain)
-	mid_round_budget = min(threat_level, mid_round_budget + regain)
-
-/// Generate threat and increase the threat_level if it goes beyond, capped at 100
+/// Внешний приток угрозы (например, победа революции). mid_round_budget мёртв, поэтому приток
+/// раскладываем по кошелькам директора как донат; threat_level поднимаем для отчёта ЦК.
 /datum/game_mode/dynamic/proc/create_threat(gain)
-	mid_round_budget = min(100, mid_round_budget + gain)
-	if(mid_round_budget > threat_level)
-		threat_level = mid_round_budget
+	SSdirector.distribute_to_budgets(gain)
+	threat_level = min(100, threat_level + gain)
+	threat_log += "[worldtime2text()]: +[gain] угрозы направлено в бюджет директора."
 
 /// Expend round start threat, can't fall under 0.
 /datum/game_mode/dynamic/proc/spend_roundstart_budget(cost)
@@ -879,31 +623,6 @@ BLUEMOON REMOVAL END*/
 /// Expend midround threat, can't fall under 0.
 /datum/game_mode/dynamic/proc/spend_midround_budget(cost)
 	mid_round_budget = max(mid_round_budget - cost,0)
-
-/// Turns the value generated by lorentz distribution to number between 0 and 100.
-/// Used for threat level and splitting the budgets.
-/datum/game_mode/dynamic/proc/lorentz_to_amount(x)
-	switch (x)
-		if (-INFINITY to -20)
-			return rand(0, 10)
-		if (-20 to -10)
-			return RULE_OF_THREE(-40, -20, x) + 50
-		if (-10 to -5)
-			return RULE_OF_THREE(-30, -10, x) + 50
-		if (-5 to -2.5)
-			return RULE_OF_THREE(-20, -5, x) + 50
-		if (-2.5 to -0)
-			return RULE_OF_THREE(-10, -2.5, x) + 50
-		if (0 to 2.5)
-			return RULE_OF_THREE(10, 2.5, x) + 50
-		if (2.5 to 5)
-			return RULE_OF_THREE(20, 5, x) + 50
-		if (5 to 10)
-			return RULE_OF_THREE(30, 10, x) + 50
-		if (10 to 20)
-			return RULE_OF_THREE(40, 20, x) + 50
-		if (20 to INFINITY)
-			return rand(90, 100)
 
 /// Log to messages and to the game
 /datum/game_mode/dynamic/proc/dynamic_log(text)

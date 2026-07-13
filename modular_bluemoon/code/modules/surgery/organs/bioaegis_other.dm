@@ -92,7 +92,7 @@
 
 /obj/item/organ/eyes/thermalaegis/ui_action_click()
 	sight_flags = initial(sight_flags)
-	color_cutoffs = initial(color_cutoffs)
+	color_cutoffs = null // не initial(): на list-переменной он возвращает не список; switch ниже всегда перезапишет
 	switch(lighting_alpha)
 		if (LIGHTING_PLANE_ALPHA_VISIBLE)
 			lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE

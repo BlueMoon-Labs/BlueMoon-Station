@@ -42,18 +42,11 @@
 	SEND_TEXT(world.log, text)
 #endif
 
-#if defined(REFERENCE_DOING_IT_LIVE)
+// Лог рефтрекера пишется всегда: файл data/logs/<раунд>/harddels.log создаётся каждый раунд.
 #define log_reftracker(msg) log_harddel("## REF SEARCH [msg]")
 
 /proc/log_harddel(text)
 	WRITE_LOG(GLOB.harddel_log, text)
-
-#elif defined(REFERENCE_TRACKING) // Doing it locally
-#define log_reftracker(msg) log_world("## REF SEARCH [msg]")
-
-#else //Not tracking at all
-#define log_reftracker(msg)
-#endif
 
 
 /* Items with ADMINPRIVATE prefixed are stripped from public logs. */

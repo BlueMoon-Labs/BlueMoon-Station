@@ -2,6 +2,10 @@ import { useBackend } from '../../../backend';
 import { Stack } from '../../../components';
 import { PrefRow } from '../components/PrefRow';
 
+type ContentData = {
+  member_public: boolean;
+};
+
 const PREF_TOGGLES: { key: string; label: string; flag: string; tooltip?: string }[] = [
   { key: 'verb_consent', label: 'Lewd вербы', flag: 'verb_consent', tooltip: 'Разрешить другим игрокам использовать эротические команды-вербы на вашем персонаже' },
   { key: 'ranged_verb_pref', label: 'Lewd вербы с расстояния', flag: 'ranged_verb_pref', tooltip: 'Позволяет использовать команды-вербы на других персонажей с расстояния' },
@@ -32,10 +36,11 @@ const PREF_TOGGLES: { key: string; label: string; flag: string; tooltip?: string
   { key: 'cum_onto_pref', label: 'Покрытие спермой', flag: 'cum_onto_pref', tooltip: 'Разрешить покрытие вашего персонажа спермой других (или наоборот)' },
   { key: 'sex_jitter', label: 'Дрожь при сексе', flag: 'sex_jitter', tooltip: 'Визуальная дрожь персонажа во время полового акта' },
   { key: 'no_disco_dance', label: 'Танцевать возле диско-шара', flag: 'no_disco_dance', tooltip: 'Автоматически танцевать при нахождении рядом с диско-шаром' },
+  { key: 'member_public', label: 'Показывать статус доната', flag: 'member_public', tooltip: 'Показывать другим игрокам ваш статус подписчика (MEMBER) в чатах OOC и AOOC' },
 ];
 
 export const ContentSection = (props) => {
-  const { act, data } = useBackend();
+  const { act, data } = useBackend<ContentData>();
 
   const mid = Math.ceil(PREF_TOGGLES.length / 2);
   const leftCol = PREF_TOGGLES.slice(0, mid);
@@ -57,7 +62,9 @@ export const ContentSection = (props) => {
         <Stack vertical>{leftCol.map(renderRow)}</Stack>
       </Stack.Item>
       <Stack.Item basis="50%">
-        <Stack vertical>{rightCol.map(renderRow)}</Stack>
+        <Stack vertical>
+          {rightCol.map(renderRow)}
+        </Stack>
       </Stack.Item>
     </Stack>
   );

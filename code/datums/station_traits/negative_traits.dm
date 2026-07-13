@@ -257,7 +257,7 @@
 
 /datum/station_trait/random_event_weight_modifier/on_round_start()
 	. = ..()
-	var/datum/round_event_control/modified_event = locate(event_control_path) in SSevents.control
+	var/datum/round_event_control/modified_event = locate(event_control_path) in SSdirector.event_controls()
 	if(!modified_event)
 		CRASH("[type] could not find a round event controller to modify on round start (likely has an invalid event_control_path set)!")
 
@@ -298,7 +298,7 @@
 
 /datum/station_trait/constant_ion_storms/proc/ion_storm_cycle()
 	if(prob(60))
-		var/datum/round_event_control/E = locate(/datum/round_event_control/ion_storm) in SSevents.control
+		var/datum/round_event_control/E = locate(/datum/round_event_control/ion_storm) in SSdirector.event_controls()
 		if(E)
 			E.runEvent()
 	timer_id = addtimer(CALLBACK(src, PROC_REF(ion_storm_cycle)), 5 MINUTES)

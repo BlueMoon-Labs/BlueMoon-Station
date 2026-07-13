@@ -4,6 +4,7 @@
 	name = "Ion Storm"
 	typepath = /datum/round_event/ion_storm
 	weight = 25
+	max_occurrences = 3 // дефолтные 20 запусков переписывали законы ИИ по несколько раз за длинный раунд
 	min_players = 15
 	category = EVENT_CATEGORY_AI
 	description = "Gives the AI a new, randomized law."

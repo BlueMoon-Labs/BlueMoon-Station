@@ -201,7 +201,9 @@ const ProductDisplay = (
   if (stockSearch.length >= 2) {
     filteredInventory = filteredInventory.filter(stockSearchFn);
   }
-  const stockByName = stock || {};
+  // Ключ - ref записи автомата: имена товаров могут совпадать, и остаток
+  // одного товара перекрывал другой (цифра в UI замирала до "распродано").
+  const stockByRef = stock || {};
 
   return (
     <Section
@@ -230,10 +232,10 @@ const ProductDisplay = (
       <Table>
           {filteredInventory.map((product) => (
             <VendingRow
-              key={product.name}
+              key={'ref' in product ? product.ref : product.name}
               custom={custom}
               product={product}
-              productStock={stockByName[product.name]}
+              productStock={'ref' in product ? stockByRef[product.ref] : undefined}
             />
           ))}
       </Table>

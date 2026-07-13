@@ -613,7 +613,10 @@
 	return FALSE
 
 /datum/component/riding/proc/unequip_buckle_inhands(mob/living/carbon/user)
-	for(var/a in offhands[user])
+	var/list/user_offhands = offhands[user]
+	if(!user_offhands)
+		return TRUE
+	for(var/a in user_offhands.Copy()) // удаление из списка по ходу итерации пропускало каждый второй оффхенд
 		LAZYREMOVE(offhands[user], a)
 		if(a) //edge cases null entries
 			var/obj/item/riding_offhand/O = a
@@ -652,6 +655,15 @@
 	if(selfdeleting)
 		if((rider in AM.buckled_mobs) && rider?.buckled == AM)
 			AM.unbuckle_mob(rider)
+	// Самоудаление (DROPDEL при дропе) не выписывало оффхенд из offhands
+	// riding-компонента - зомби-ссылка жила в списке до конца езды,
+	// а незанулённые rider/parent тащили за собой мобов
+	if(parent && !QDELING(parent))
+		var/datum/component/riding/riding_comp = parent.GetComponent(/datum/component/riding)
+		if(riding_comp && rider)
+			LAZYREMOVE(riding_comp.offhands[rider], src)
+	rider = null
+	parent = null
 	. = ..()
 
 /obj/item/riding_offhand/on_thrown(mob/living/carbon/user, atom/target)

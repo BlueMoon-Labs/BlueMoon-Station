@@ -1,15 +1,15 @@
 #define TRAITOR_ANNOUNCER_INFINITE_CHARGES -1
 
 var/static/list/traitor_announcer_styles = list(
-	"Центком" = null,
-	"Приоритетное" = "Priority",
-	"Капитан / консоль связи" = "CommunicationsConsole",
-	"Синдикат" = "Syndicate",
-	"ИИ" = "AI",
-	"Ионный шторм" = "ionstorm",
-	"Сбой ИИ" = "aimalf",
-	"Биоугроза (уровень 5)" = "outbreak5",
-	"Биоугроза (уровень 7)" = "outbreak7",
+	"Центком",
+	"Приоритетное",
+	"Капитан / консоль связи",
+	"Синдикат",
+	"ИИ",
+	"Ионный шторм",
+	"Сбой ИИ",
+	"Биоугроза (уровень 5)",
+	"Биоугроза (уровень 7)",
 )
 
 /obj/item/device/traitor_announcer
@@ -41,7 +41,7 @@ var/static/list/traitor_announcer_styles = list(
 	var/mob/living/L = user
 	if(L.incapacitated() || !L.canUseTopic(src, BE_CLOSE, FALSE, NO_TK))
 		return
-	var/origin = reject_bad_text(tgui_input_text(L, "Кто объявляет или откуда исходит сообщение?", "Источник объявления", get_area_name(L), max_length = 28))
+	var/origin = reject_bad_text(tgui_input_text(L, "Кто объявляет или откуда исходит сообщение?", "Источник объявления", get_area_name(L), max_length = 28), 28, FALSE)
 	if(!origin)
 		balloon_alert(L, "некорректный источник!")
 		return
@@ -50,15 +50,15 @@ var/static/list/traitor_announcer_styles = list(
 		balloon_alert(L, "некорректный звук!")
 		return
 	var/style_name = tgui_input_list(L, "Какой стиль оформления использовать?", "Стиль объявления", traitor_announcer_styles)
-	if(isnull(style_name))
+	if(!style_name)
 		balloon_alert(L, "некорректный стиль!")
 		return
-	var/announce_type = traitor_announcer_styles[style_name]
-	var/title = reject_bad_text(tgui_input_text(L, "Заголовок объявления.", "Заголовок", max_length = 42))
+	var/announce_type = resolve_announcement_type(style_name)
+	var/title = reject_bad_text(tgui_input_text(L, "Заголовок объявления.", "Заголовок", max_length = 42), 42, FALSE)
 	if(!title)
 		balloon_alert(L, "некорректный заголовок!")
 		return
-	var/input = reject_bad_text(tgui_input_text(L, "Текст объявления.", "Текст", max_length = 512, multiline = TRUE))
+	var/input = reject_bad_text(tgui_input_text(L, "Текст объявления.", "Текст", max_length = 512, multiline = TRUE), 512, FALSE)
 	if(!input)
 		balloon_alert(L, "некорректный текст!")
 		return
@@ -73,9 +73,31 @@ var/static/list/traitor_announcer_styles = list(
 	)
 	if(uses != TRAITOR_ANNOUNCER_INFINITE_CHARGES)
 		uses--
-	deadchat_broadcast(" сделал(а) поддельное приоритетное объявление из [span_name("[get_area_name(usr, TRUE)]")].", span_name("[L.real_name]"), L, message_type = DEADCHAT_ANNOUNCEMENT)
+	deadchat_broadcast(" сделал(а) поддельное приоритетное объявление из [span_name("[get_area_name(L, TRUE)]")].", span_name("[L.real_name]"), L, message_type = DEADCHAT_ANNOUNCEMENT)
 	L.log_talk("\[Заголовок\]: [title], \[Текст\]: [input], \[Ключ звука\]: [audio_key]", LOG_TELECOMMS, tag = "priority announcement")
 	message_admins("[ADMIN_LOOKUPFLW(L)] использовал(а) [src] для поддельного объявления: [input].")
+
+/obj/item/device/traitor_announcer/proc/resolve_announcement_type(style_name)
+	switch(style_name)
+		if("Центком")
+			return null
+		if("Приоритетное")
+			return "Priority"
+		if("Капитан / консоль связи")
+			return "CommunicationsConsole"
+		if("Синдикат")
+			return "Syndicate"
+		if("ИИ")
+			return "AI"
+		if("Ионный шторм")
+			return "ionstorm"
+		if("Сбой ИИ")
+			return "aimalf"
+		if("Биоугроза (уровень 5)")
+			return "outbreak5"
+		if("Биоугроза (уровень 7)")
+			return "outbreak7"
+	return null
 
 /obj/item/device/traitor_announcer/infinite
 	uses = TRAITOR_ANNOUNCER_INFINITE_CHARGES

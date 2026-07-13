@@ -131,7 +131,7 @@ export class Window extends Component {
             <div className="Window__dimmer" />
           )}
         </div>
-        {fancy && (
+        {!!fancy && (
           <>
             <div className="Window__resizeHandle__e"
               onMouseDown={resizeStartHandler(1, 0)} />

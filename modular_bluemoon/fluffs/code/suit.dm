@@ -801,3 +801,14 @@
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
 	icon_state = "blood_shinel"
 	item_state = "blood_shinel"
+
+///////////////////////////////////////////////////
+
+/obj/item/clothing/suit/donator/bm/torn_veil
+	name = "Shimmering torn veil"
+	desc = "Голубая, с переливом в тёмный оттенок, вуаль. Немного порванная."
+	icon_state = "torn_veil"
+	item_state = "torn_veil"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON

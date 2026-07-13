@@ -5,6 +5,7 @@
 	max_occurrences = 25
 	alert_observers = TRUE
 	category = EVENT_CATEGORY_ENGINEERING
+	severity = DIRECTOR_SEVERITY_MINOR
 
 /datum/round_event/camera_failure
 	fakeable = FALSE

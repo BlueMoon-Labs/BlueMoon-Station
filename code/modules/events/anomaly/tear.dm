@@ -1,11 +1,16 @@
 /datum/round_event_control/anomaly/tear
 	name = "Dimensional Tear"
 	typepath = /datum/round_event/anomaly/tear
+	enabled = TRUE // база выключена, подтипы включаются явно
 	weight = 15
 	max_occurrences = 1
 	min_players = 30
 	category = EVENT_CATEGORY_ANOMALIES
 	admin_setup = list(/datum/event_admin_setup/set_location/anomaly)
+	// Дефолт категории ANOMALIES - MAJOR (cost 20, intensity 40), но разрыв - разовый выброс
+	// пяти случайных хостильных мобов в одной точке с громким анонсом локации: уровень
+	// заражения пауками, а не кошелёк крупного (тем более с весом 15 он доминировал в MAJOR).
+	severity = DIRECTOR_SEVERITY_MODERATE
 
 /datum/round_event/anomaly/tear
 	start_when = 3

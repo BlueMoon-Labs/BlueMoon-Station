@@ -133,14 +133,23 @@
 	if(listeningTo == user)
 		return
 	if(listeningTo)
-		UnregisterSignal(listeningTo, COMSIG_MOVABLE_MOVED)
+		UnregisterSignal(listeningTo, list(COMSIG_MOVABLE_MOVED, COMSIG_PARENT_QDELETING))
+	// dropped() не вызывается, если носителя qdel-ят вместе с экипировкой (крио-деспаун),
+	// и listeningTo вечно держал удалённого шахтёра - отписываемся по qdel носителя
 	RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(Pickup_ores))
+	RegisterSignal(user, COMSIG_PARENT_QDELETING, PROC_REF(on_wearer_deleted))
 	listeningTo = user
 
 /obj/item/storage/bag/ore/dropped(mob/user)
 	. = ..()
 	if(listeningTo)
-		UnregisterSignal(listeningTo, COMSIG_MOVABLE_MOVED)
+		UnregisterSignal(listeningTo, list(COMSIG_MOVABLE_MOVED, COMSIG_PARENT_QDELETING))
+	listeningTo = null
+
+/obj/item/storage/bag/ore/proc/on_wearer_deleted(datum/source)
+	SIGNAL_HANDLER
+	if(listeningTo)
+		UnregisterSignal(listeningTo, list(COMSIG_MOVABLE_MOVED, COMSIG_PARENT_QDELETING))
 	listeningTo = null
 
 /obj/item/storage/bag/ore/proc/Pickup_ores(mob/living/user)

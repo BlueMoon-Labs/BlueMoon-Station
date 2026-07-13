@@ -58,4 +58,5 @@ SUBSYSTEM_DEF(ticket_ping)
 			// 	SEND_SOUND(staff, sound('modular_bluemoon/sound/voice/new_moan.ogg', volume = ah_vol))
 			// if(10)
 			// 	SEND_SOUND(staff, sound('modular_bluemoon/sound/ert/sergeant_dornan.ogg', volume = ah_vol)) Это пиздец такая подлянка конечно, зачем такие имбовые звуки надо было комментить.
-		window_flash(staff, ignorepref = TRUE)
+		if(staff.prefs?.adminhelp_windowflash)
+			window_flash(staff, ignorepref = TRUE)

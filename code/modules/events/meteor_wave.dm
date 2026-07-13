@@ -11,13 +11,12 @@
 	max_occurrences = 1
 	earliest_start = 60 MINUTES
 	category = EVENT_CATEGORY_SPACE
-	gamemode_blacklist = list(ROUNDTYPE_EXTENDED)
+	family = "meteors" // наследуется всеми волнами (threatening/catastrophic/meaty/major dust): не подряд
 
 /datum/round_event/meteor_wave
 	start_when		= 6
 	end_when			= 66
 	announce_when	= 1
-	threat = 50
 	var/list/wave_type
 	var/wave_name = "normal"
 	var/direction
@@ -48,7 +47,7 @@
 		if("threatening")
 			wave_type = GLOB.meteors_threatening
 		if("catastrophic")
-			if(SSevents.holidays && SSevents.holidays[HALLOWEEN])
+			if(SSholidays.holidays && SSholidays.holidays[HALLOWEEN])
 				wave_type = GLOB.meteorsSPOOKY
 			else
 				wave_type = GLOB.meteors_catastrophic
@@ -78,7 +77,7 @@
 			directionstring = " с восточной стороны"
 		if(WEST)
 			directionstring = " с западной стороны"
-	return "Метеоры были обнаружены на пути столкновения со станцией - [directionstring]. Время до столкновения: [round((start_when * SSevents.wait) / 10, 0.1)] секунд.[GLOB.singularity_counter && syndiealert ? " Предупреждение: Обнаружен аномальный гравитационный импульс, возможно вмешательство технологии Синдиката." : ""]"
+	return "Метеоры были обнаружены на пути столкновения со станцией - [directionstring]. Время до столкновения: [round((start_when * SSdirector.wait) / 10, 0.1)] секунд.[GLOB.singularity_counter && syndiealert ? " Предупреждение: Обнаружен аномальный гравитационный импульс, возможно вмешательство технологии Синдиката." : ""]"
 
 /datum/round_event/meteor_wave/tick()
 	if(ISMULTIPLE(activeFor, 3))
@@ -105,7 +104,6 @@
 
 /datum/round_event/meteor_wave/threatening
 	wave_name = "threatening"
-	threat = 100
 
 /datum/round_event_control/meteor_wave/catastrophic
 	name = "Meteor Wave: Catastrophic"
@@ -115,10 +113,10 @@
 	max_occurrences = 1
 	earliest_start = 120 MINUTES
 	category = EVENT_CATEGORY_SPACE
+	intensity = 60
 
 /datum/round_event/meteor_wave/catastrophic
 	wave_name = "catastrophic"
-	threat = 150
 
 #undef SINGULO_BEACON_DISTURBANCE
 #undef SINGULO_BEACON_MAX_DISTURBANCE

@@ -39,6 +39,7 @@
 	call_start_time = world.time
 	user = caller
 	calling_pad.outgoing_call = src
+	calling_pad.machine_wake() // idle pads sleep off SSmachines; ongoing calls are process()-driven
 	calling_holopad = calling_pad
 	head_call = elevated_access
 	dialed_holopads = list()
@@ -56,6 +57,7 @@
 			else
 				H.say("Incoming call.")
 			LAZYADD(H.holo_calls, src)
+			H.machine_wake() // ringing and auto-answer run in the pad's process()
 
 	if(!dialed_holopads.len)
 		calling_pad.say("Connection failure.")

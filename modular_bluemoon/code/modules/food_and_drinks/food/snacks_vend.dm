@@ -9,6 +9,30 @@
 	tastes = list("hot" = 1, "crisps" = 1)
 	custom_price = PRICE_CHEAP
 
+/obj/item/reagent_containers/food/snacks/lollipop/capsaicin
+	name = "Chupa-Chups"
+	desc = "Леденец на палочке с ”освежающим” вкусом перца. На этикетке мелким шрифтом: ”Соси и плачь, тупая дура”."
+	icon = 'icons/obj/lollipop.dmi'
+	icon_state = "lollipop_stick"
+	item_state = "lollipop_stick"
+	list_reagents = list(
+		/datum/reagent/consumable/nutriment = 1,
+		/datum/reagent/consumable/sugar = 3,
+		/datum/reagent/consumable/capsaicin = 2,
+		/datum/reagent/consumable/condensedcapsaicin = 5,
+		/datum/reagent/consumable/tearjuice = 4,
+	)
+	tastes = list("candy" = 1, "hot" = 2, "bitterness" = 1)
+	bitesize = 1
+	foodtype = JUNKFOOD | SUGAR
+	slot_flags = ITEM_SLOT_MASK
+	custom_price = PRICE_CHEAP
+
+/obj/item/reagent_containers/food/snacks/lollipop/capsaicin/Initialize(mapload)
+	. = ..()
+	change_head_color(rgb(220, 45, 15))
+	AddElement(/datum/element/chewable, metabolization_amount = REAGENTS_METABOLISM / 2)
+
 // Вульпиксы (чебупели)
 /obj/item/reagent_containers/food/snacks/donkpocket/vulpix
 	name = "\improper MacVulpix Original Taste"

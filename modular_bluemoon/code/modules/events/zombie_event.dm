@@ -8,6 +8,8 @@
 	max_occurrences = 1
 	min_players = 50
 	category = EVENT_CATEGORY_HEALTH
+	severity = DIRECTOR_SEVERITY_MAJOR
+	intensity = 60
 	description = "Случайные члены экипажа на станции получают скрытую ромерол-инфекцию."
 
 /datum/round_event/zombie_infestation
@@ -79,6 +81,8 @@
 	earliest_start = 60 MINUTES
 	min_players = 50
 	category = EVENT_CATEGORY_BUREAUCRATIC
+	severity = DIRECTOR_SEVERITY_MAJOR // тот же ромерол, что и в zombie_infestation, только через грузовой контейнер
+	intensity = 60
 	description = "На станцию падает капсула с ящиком биологической опасности (ромерол)."
 
 /datum/round_event/stray_cargo/zombie

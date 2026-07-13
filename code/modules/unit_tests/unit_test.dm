@@ -63,15 +63,22 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 	if (isnull(reservation))
 		reservation = SSmapping.RequestBlockReservation(5, 5)
 
-	for (var/turf/reserved_turf in reservation.reserved_turfs)
-		reserved_turf.ChangeTurf(/turf/open/floor/plasteel)
-
 	allocated = new
 	allocated_force_qdel = new
 	run_loc_floor_bottom_left = locate(reservation.bottom_left_coords[1], reservation.bottom_left_coords[2], reservation.bottom_left_coords[3])
 	run_loc_floor_top_right = locate(reservation.top_right_coords[1], reservation.top_right_coords[2], reservation.top_right_coords[3])
 
+	// Свет СТРОГО до сброса зоны: create_lighting_for_zlevel может уйти в полный краул z
+	// с CHECK_TICK-снами (self-heal гард видит недофлашенную отложку конкурентного краула,
+	// например шаттлового on-demand инита транзитного z на раундстарте). Если спать ПОСЛЕ
+	// сброса турфов, за время сна успевает отработать SSair: края зоны граничат с космосом
+	// резервного z и вентилируются, по зоне расползаются градиенты - и воздухочувствительные
+	// тесты (atmos_stalled_turf_rests и родня) флачат в зависимости от таймингов раннера.
+	// Сброс зоны - последний шаг, между ним и Run() снов нет.
 	create_lighting_for_zlevel(run_loc_floor_bottom_left.z)
+
+	for (var/turf/reserved_turf in reservation.reserved_turfs)
+		reserved_turf.ChangeTurf(/turf/open/floor/plasteel)
 
 	TEST_ASSERT(isfloorturf(run_loc_floor_bottom_left), "run_loc_floor_bottom_left was not a floor ([run_loc_floor_bottom_left])")
 	TEST_ASSERT(isfloorturf(run_loc_floor_top_right), "run_loc_floor_top_right was not a floor ([run_loc_floor_top_right])")
@@ -226,6 +233,13 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 
 /proc/RunUnitTests()
 	CHECK_TICK
+
+	// Поздний посев станционных комнат (ticker.dm, addtimer +60с после раундстарта)
+	// иначе идёт параллельно тестам: immediate-GC тесты с нулевыми таймаутами доводят
+	// его qdel-нутые атомы до del() прямо из списка InitializeAtoms - шторм
+	// world-обходов и фантомные warnfail в счётчиках. Сеем синхронно до первого
+	// теста; таймер потом отработает вхолостую по пустому списку лендмарков.
+	SSmapping.seedStation(TRUE)
 
 	var/list/tests_to_run = subtypesof(/datum/unit_test)
 	var/list/focused_tests = list()

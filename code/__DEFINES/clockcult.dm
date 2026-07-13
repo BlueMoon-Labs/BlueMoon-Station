@@ -28,10 +28,10 @@ GLOBAL_LIST_EMPTY(all_clockwork_rites) //a list containing all clockwork rites. 
 
 //Scripture tiers and requirements; peripherals should never be used
 #define SCRIPTURE_PERIPHERAL "Peripheral"
-#define SCRIPTURE_DRIVER "Driver"
-#define SCRIPTURE_SCRIPT "Script"
-#define SCRIPTURE_APPLICATION "Application"
-#define SCRIPTURE_JUDGEMENT "Judgement"
+#define SCRIPTURE_DRIVER "Двигателя"
+#define SCRIPTURE_SCRIPT "Скрипта"
+#define SCRIPTURE_APPLICATION "Применения"
+#define SCRIPTURE_JUDGEMENT "Правосудия"
 
 #define SCRIPTURE_CATEGORY_STRUCTURE "Постройки"
 #define SCRIPTURE_CATEGORY_ATTACK "Атакующие заклинания"
@@ -78,7 +78,7 @@ GLOBAL_LIST_EMPTY(all_clockwork_rites) //a list containing all clockwork rites. 
 #define GATEWAY_RATVAR_ARRIVAL 300 //when progress is at or above this, game over ratvar's here everybody go home
 
 //Objective text define
-#define CLOCKCULT_OBJECTIVE "Construct the Ark of the Clockwork Justicar and free Ratvar."
+#define CLOCKCULT_OBJECTIVE "Постройте ковчег Часового Юстициара и освободите Ратвара."
 
 #define CLOCK_RISEN 0.10 //percent before rise
 #define CLOCK_ASCENDENT 0.25 //percent before ascend

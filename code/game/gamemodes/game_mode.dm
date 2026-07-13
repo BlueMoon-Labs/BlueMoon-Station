@@ -31,6 +31,8 @@
 	var/required_enemies = 0
 	var/recommended_enemies = 0
 	var/antag_flag = null //preferences flag such as BE_WIZARD that need to be turned on for players to be antag
+	/// Treat this mode's antagonist preference as enabled for every otherwise eligible player.
+	var/force_antag_preference = FALSE
 	var/mob/living/living_antag_player = null
 	var/datum/game_mode/replacementmode = null
 	var/round_converted = 0 //0: round not converted, 1: round going to convert, 2: round converted
@@ -423,11 +425,11 @@
 
 	for(var/mob/dead/new_player/player in players)
 		if(player.client && player.ready == PLAYER_READY_TO_PLAY)
-			if(HAS_ANTAG_PREF(player.client, role))
+			if(force_antag_preference || HAS_ANTAG_PREF(player.client, role))
 				if(!jobban_isbanned(player, ROLE_INTEQ) && !QDELETED(player) && !jobban_isbanned(player, role) && !QDELETED(player)) //Nodrak/Carn: Antag Job-bans
 					if(age_check(player.client)) //Must be older than the minimum age
 						candidates += player.mind				// Get a list of all the people who want to be the antagonist for this round
-						candidates[player.mind] = player.client.prefs.be_special[role]
+						candidates[player.mind] = force_antag_preference ? 0 : player.client.prefs.be_special[role]
 
 	if(restricted_jobs)
 		for(var/datum/mind/player in candidates)
@@ -435,7 +437,7 @@
 				if(player.assigned_role == job)
 					candidates -= player
 
-	if(candidates.len < recommended_enemies && CONFIG_GET(keyed_list/force_antag_count)[config_tag])
+	if(!force_antag_preference && candidates.len < recommended_enemies && CONFIG_GET(keyed_list/force_antag_count)[config_tag])
 		for(var/mob/dead/new_player/player in players)
 			if(player.client && player.ready == PLAYER_READY_TO_PLAY)
 				if(!(role in player.client.prefs.be_special)) // We don't have enough people who want to be antagonist, make a separate list of people who don't want to be one

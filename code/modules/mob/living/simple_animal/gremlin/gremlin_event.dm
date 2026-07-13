@@ -1,11 +1,14 @@
 /datum/round_event_control/gremlin
 	name = "Spawn Gremlins"
 	typepath = /datum/round_event/gremlin
-	weight = 45
+	weight = 25 // был 45: тройка мягких мажоров (абдукторы/беглецы/гремлины) забирала почти весь пул
 	max_occurrences = 2
 	earliest_start = 60 MINUTES
 	min_players = 15
 	category = EVENT_CATEGORY_ENTITIES
+	// Дефолт категории ENTITIES - MAJOR (cost 20): "мягкий мажор" сжигал кошелёк крупного
+	// на горстку NPC-саботажников. Средний хаос уровня пауков/хедкрабов.
+	severity = DIRECTOR_SEVERITY_MODERATE
 
 /datum/round_event/gremlin
 	var/static/list/acceptable_spawns = list("xeno_spawn", "generic event spawn", "blobstart", "Assistant")

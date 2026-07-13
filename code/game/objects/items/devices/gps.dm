@@ -15,9 +15,9 @@
 	AddComponent(/datum/component/gps/item, gpstag, emp_proof, starton)
 
 /obj/item/gps/attack_self(mob/user)
-	if(HAS_TRAIT(src, TRAIT_CHUNKYFINGERS))
-		balloon_alert(src, "Кнопки слишком маленькие для твоих пальцев!")
-		return FALSE
+	if(HAS_TRAIT(user, TRAIT_CHUNKYFINGERS))
+		balloon_alert(user, "Кнопки слишком маленькие для твоих пальцев!")
+		return
 	. = ..()
 
 /obj/item/gps/embed_gps

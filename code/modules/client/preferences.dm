@@ -89,6 +89,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/tgui_panel_state = ""
 	var/list/ui_zoom_preferences = list()
 	var/windowflashing = TRUE
+	var/adminhelp_windowflash = TRUE
 	var/windownoise = TRUE
 	var/mood_vignette = TRUE
 	var/toggles = TOGGLES_DEFAULT
@@ -106,7 +107,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/inquisitive_ghost = 1
 	var/allow_midround_antag = 1
 	var/preferred_map = null
-	var/be_victim = null
 	var/disable_combat_cursor = FALSE
 	var/disable_combat_mouse_lock = FALSE
 	var/tg_playerpanel = "TG"
@@ -142,6 +142,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/tmp/datum/loadout_color_handler/loadout_color_handler
 	// BLUEMOON ADD END
 
+	// BLUEMOON ADD START || Phobia selection
+	var/phobia_type = null
+	// BLUEMOON ADD END
+
 	//character preferences
 	var/real_name							//our character's name
 	var/nameless = FALSE					//whether or not our character is nameless
@@ -154,13 +158,11 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/nonconpref = "Ask"
 	var/vorepref = "Ask"
 	var/mobsexpref = "No" 					//Added by Gardelin0 - Sex(mostly non-con) with hostile mobs(tentacles)
-	var/hornyantagspref = "No" 				//Added by Gardelin0 - Interactions(mostly non-con) with horny antags(Qareen)
 	var/tattoopref = "Ask"					//BLUEMOON ADD - Tattoo consent preference
 	var/extremepref = "No" 					//This is for extreme shit, maybe even literal shit, better to keep it on no by default
 	var/extremeharm = "No" 					//If "extreme content" is enabled, this option serves as a toggle for the related interactions to cause damage or not
 	var/see_chat_emotes = TRUE
 	var/view_pixelshift = FALSE
-	var/eorg_enabled = TRUE
 	var/enable_personal_chat_color = FALSE
 	var/personal_chat_color = "#ffffff"
 	var/lust_tolerance = 100
@@ -358,6 +360,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/sound_volume_adminhelp = 100
 	var/sound_volume_instruments = 100
 	var/sound_volume_jukeboxes = 100
+	var/sound_volume_personal_jukeboxes = 100
+	var/sound_volume_emote = 100
 
 	var/parallax = PARALLAX_INSANE
 
@@ -521,6 +525,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	/// UI decoration level for modern theme: "minimal" (performance), "standard" (current), "enhanced" (gradients)
 	var/ui_decoration_level = "enhanced"
 	var/unholypref = "No"
+	var/unholyhardpref = "No"
 	var/new_character_creator = TRUE
 	var/list/gfluid_blacklist = list()
 	var/fuzzy = FALSE
@@ -1793,17 +1798,27 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "<b>Uplink Location:</b><a style='display:block;width:100px' href ='?_src_=prefs;preference=uplink_loc;task=input'>[uplink_spawn_loc]</a>"
 
 					dat += "<h2>Consent preferences</h2>"
-					dat += "ERP : <a href='?_src_=prefs;preference=erp_pref'>[erppref]</a><br>"
-					dat += "Non-Con : <a href='?_src_=prefs;preference=noncon_pref'>[nonconpref]</a><br>"
-					dat += "Vore : <a href='?_src_=prefs;preference=vore_pref'>[vorepref]</a><br>"
-					dat += "Mob Non-Con Sex : <a href='?_src_=prefs;preference=mobsex_pref'>[mobsexpref]</a><br>"
-					dat += "Horny Antags : <a href='?_src_=prefs;preference=hornyantags_pref'>[hornyantagspref]</a><br>"
-					dat += "Tattoo : <a href='?_src_=prefs;preference=tattoo_pref'>[tattoopref]</a><br>"
-					dat += "Unholy : <a href='?_src_=prefs;preference=unholypref'>[unholypref]</a><br>"
-					dat += "Extreme : <a href='?_src_=prefs;preference=extremepref'>[extremepref]</a><br>"
-					dat += "Extreme Harm : <a href='?_src_=prefs;preference=extremeharm'>[extremeharm]</a><br>"
-					dat += "Antag Victim : <a href='?_src_=prefs;preference=be_victim'>[be_victim ? be_victim : "No"]</a><br>"
-
+					dat += "<span title='Эротические взаимодействия'>ERP : <a href='?_src_=prefs;preference=erp_pref'>[erppref]</a></span><br>"
+					dat += "<span title='Принудительные сцены без согласия вашего'>Non-Con : <a href='?_src_=prefs;preference=noncon_pref'>[nonconpref]</a></span><br>"
+					dat += "<span title='Пожирание и переваривание'>Vore : <a href='?_src_=prefs;preference=vore_pref'>[vorepref]</a></span><br>"
+					dat += "<span title='Особые мобы попытаются вас изнасиловать'>Mob Non-Con Sex : <a href='?_src_=prefs;preference=mobsex_pref'>[mobsexpref]</a></span><br>"
+					dat += "<span title='Другие игроки смогут оставлять тату на вас'>Tattoo : <a href='?_src_=prefs;preference=tattoo_pref'>[tattoopref]</a></span><br>"
+					if(unholypref == "No")
+						dat += "<span title='Разрешение на грязные взаимодействия: Моча, смегма, запахи и вкусы'>Unholy : <a href='?_src_=prefs;preference=unholypref' onclick=\"return confirm('Включить параметр грязного секса? В этом случае вам будут доступны взаимодействия с мочей, запахами.');\">[unholypref]</a></span><br>"
+					else
+						dat += "<span title='Разрешение на грязные взаимодействия: Моча, смегма, запахи и вкусы'>Unholy : <a href='?_src_=prefs;preference=unholypref'>[unholypref]</a></span><br>"
+					if(unholyhardpref == "No")
+						dat += "<span title='Особые грязные взаимодействия: выделения, газы, другое'>Unholy Hard : <a href='?_src_=prefs;preference=unholyhardpref' onclick=\"return confirm('Включить параметр особо грязного секса? В этом случае вам будут доступны расширенные взаимодействия.');\">[unholyhardpref]</a></span><br>"
+					else
+						dat += "<span title='Особые грязные взаимодействия: выделения, газы, другое'>Unholy Hard : <a href='?_src_=prefs;preference=unholyhardpref'>[unholyhardpref]</a></span><br>"
+					if(extremepref == "No")
+						dat += "<span title='Экстремальные сцены, ебля в: глаза, уши, удушение, укусы)'>Extreme : <a href='?_src_=prefs;preference=extremepref' onclick=\"return confirm('Разрешить жестокие сцены?');\">[extremepref]</a></span><br>"
+					else
+						dat += "<span title='Экстремальные сцены, ебля в: глаза, уши, удушение, укусы)'>Extreme : <a href='?_src_=prefs;preference=extremepref'>[extremepref]</a></span><br>"
+					if(extremeharm == "No")
+						dat += "<span title='Особые жестокие сцены: сдавливание головы ляжками, другое'>Extreme Harm : <a href='?_src_=prefs;preference=extremeharm' onclick=\"return confirm('Разрешить экстремальные сцены с физическим уроном?');\">[extremeharm]</a></span><br>"
+					else
+						dat += "<span title='Особые жестокие сцены: сдавливание головы ляжками, другое'>Extreme Harm : <a href='?_src_=prefs;preference=extremeharm'>[extremeharm]</a></span><br>"
 					dat += "<h2>Lewd preferences</h2>"
 					dat += "<b>Lust tolerance:</b><a href='?_src_=prefs;preference=lust_tolerance;task=input'>[lust_tolerance]</a><br>"
 					dat += "<b>Sexual potency:</b><a href='?_src_=prefs;preference=sexual_potency;task=input'>[sexual_potency]</a>"
@@ -2790,6 +2805,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		dat += "Настройки для отдельных квирков. Если нужный квирк не будет выставлен, то они работать не будут.<br>"
 		dat += "<a href='?_src_=prefs;preference=traits_setup;task=change_shriek_option'>([BLUEMOON_TRAIT_NAME_SHRIEK]) Тип Крика: [shriek_type]</a>"
 		dat += "<a href='?_src_=prefs;preference=traits_setup;task=lewd_summon_nickname'>([TRAIT_LEWD_SUMMON]) Прозвище для призываемого[summon_nickname ? ": ": ""][summon_nickname]</a>"
+		var/phobia_text = phobia_type ? phobia_type : "Случайная"
+		dat += "<a href='?_src_=prefs;preference=traits_setup;task=change_phobia_option'>([BLUEMOON_TRAIT_NAME_PHOBIA]) Тип фобии: [phobia_text]</a><br>"
 		dat += "<hr>"
 		// BLUEMOON ADD END
 		dat += "<div align='center'>Left-click to add or remove quirks. You need negative quirks to have positive ones.<br>\
@@ -2866,6 +2883,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	dat += "<div class='csetup-quirk-settings'>"
 	dat += "<a class='csetup-quirk-setting' href='?_src_=prefs;preference=traits_setup;task=change_shriek_option'>Тип крика: <b>[shriek_type]</b></a>"
 	dat += "<a class='csetup-quirk-setting' href='?_src_=prefs;preference=traits_setup;task=lewd_summon_nickname'>Прозвище: <b>[display_summon_nickname]</b></a>"
+	dat += "<a class='csetup-quirk-setting' href='?_src_=prefs;preference=traits_setup;task=change_phobia_option'>([BLUEMOON_TRAIT_NAME_PHOBIA]) Тип: <b>[phobia_type ? phobia_type : "Случайная"]</b></a>"
 	dat += "</div>"
 
 	dat += "<h3>Текущие квирки</h3>"
@@ -3314,20 +3332,20 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					ShowChoices(user)
 				else
 					SetQuirks(user)
-	// BLUEMOON ADD START - возможность настраивать квирки
+// BLUEMOON ADD START - возможность настраивать квирки
 	else if(href_list["preference"] == "traits_setup")
 		var/is_inline_quirks = (new_character_creator && findtext(charcreation_theme, "modern") && character_settings_tab == QUIRKS_CHAR_TAB && CONFIG_GET(flag/roundstart_traits))
 		switch(href_list["task"])
-			if("change_shriek_option") // изменение вида крика от квирка крикуна
+			if("change_shriek_option")
 				var/client/C = usr.client
 				if(C)
 					var/new_shriek_type = tgui_input_list(user, "Choose your character's shriek type.", "Character Preference", GLOB.shriek_types)
 					if(new_shriek_type)
 						shriek_type = new_shriek_type
-						if(is_inline_quirks)
-							ShowChoices(user)
-						else
-							SetQuirks(user)
+					if(is_inline_quirks)
+						ShowChoices(user)
+					else
+						SetQuirks(user)
 			if("lewd_summon_nickname")
 				var/client/C = usr.client
 				if(C)
@@ -3342,9 +3360,21 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 								SetQuirks(user)
 						else
 							to_chat(user, "<font color='red'>Invalid name. Your name should be at least 2 and at most [MAX_NAME_LEN] characters long. It may only contain the characters A-Z, a-z, А-Я, а-я, -, ' and .</font>")
-
-	// BLUEMOON ADD END
-		return TRUE
+			if("change_phobia_option")
+				var/list/phobia_choices = list("Случайная")
+				if(SStraumas && SStraumas.phobia_types)
+					phobia_choices += SStraumas.phobia_types
+				var/new_choice = input(user, "Выберите вашу фобию. Если не выберете — будет случайная.", "Настройка фобии") as null|anything in phobia_choices
+				if(new_choice)
+					if(new_choice == "Случайная")
+						phobia_type = null
+					else
+						phobia_type = new_choice
+				if(is_inline_quirks)
+					ShowChoices(user)
+				else
+					SetQuirks(user)
+// BLUEMOON ADD END
 
 	else if(href_list["quirk_category"])
 		var/is_inline_quirks = (new_character_creator && findtext(charcreation_theme, "modern") && character_settings_tab == QUIRKS_CHAR_TAB && CONFIG_GET(flag/roundstart_traits))
@@ -4683,11 +4713,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					if (pickedmap)
 						preferred_map = maplist[pickedmap]
 
-				if ("be_victim")
-					var/pickedvictim = tgui_input_list(user, "Are you ok with antagonists interacting with you (e.g. kidnapping)? ERP consent is seperate: This setting does NOT mean they are allowed to rape you.", "Antag Victim Consent", list(BEVICTIM_NO,BEVICTIM_ASK,BEVICTIM_YES))
-					if(!isnull(pickedvictim))
-						be_victim = pickedvictim
-						save_preferences()
 				if ("clientfps")
 					var/config_fps = CONFIG_GET(number/fps)
 					var/list/fps_options = list(
@@ -5064,10 +5089,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					disable_combat_cursor = !disable_combat_cursor
 				if("disable_combat_mouse_lock")
 					disable_combat_mouse_lock = !disable_combat_mouse_lock
-				if("tg_playerpanel")
-					toggles ^= TG_PLAYER_PANEL
-					to_chat(user, span_warning("Please relog in order to apply the changes"))
-					save_preferences()
 				//CITADEL PREFERENCES EDIT - I can't figure out how to modularize these, so they have to go here. :c -Pooj
 				if("genital_colour")
 					features["genitals_use_skintone"] = !features["genitals_use_skintone"]
@@ -5247,6 +5268,14 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							unholypref = "No"
 						if("No")
 							unholypref = "Yes"
+				if("unholyhardpref") // Господи благослови панк рок вечерники.
+					switch(unholyhardpref)
+						if("Yes")
+							unholyhardpref = "Ask"
+						if("Ask")
+							unholyhardpref = "No"
+						if("No")
+							unholyhardpref = "Yes"
 				//Gardelin0 Addoon
 				if("mobsex_pref") //...
 					switch(mobsexpref)
@@ -5254,12 +5283,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							mobsexpref = "No"
 						if("No")
 							mobsexpref = "Yes"
-				if("hornyantags_pref") //...
-					switch(hornyantagspref)
-						if("Yes")
-							hornyantagspref = "No"
-						if("No")
-							hornyantagspref = "Yes"
 				if("directory_erptag")
 					var/new_erp_pos = tgui_input_list(user, "Выберите ERP позицию персонажа для библиотеки", "ERP Позиция", GLOB.char_directory_erptags)
 					if(new_erp_pos)

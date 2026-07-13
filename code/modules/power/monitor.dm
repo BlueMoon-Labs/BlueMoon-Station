@@ -2,6 +2,7 @@
 
 /obj/machinery/computer/monitor
 	name = "power monitoring console"
+	idle_sleeps = FALSE // own periodic work in process(); must not doze off via the parent typing-indicator path
 	desc = "It monitors power levels across the station."
 	icon_screen = "power"
 	icon_keyboard = "power_key"

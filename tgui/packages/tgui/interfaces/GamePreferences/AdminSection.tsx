@@ -8,8 +8,7 @@ type AdminData = {
   sound_prayers: boolean;
   sound_volume_adminhelp: number;
   sound_volume_prayers: number;
-  announce_login: boolean;
-  combohud_lighting: boolean;
+  adminhelp_windowflash: boolean;
 };
 
 const DEADMIN_BITS: Record<string, number> = {
@@ -46,7 +45,7 @@ const SoundToggleButton = (props: { enabled: boolean; onClick: () => void }) => 
 
 export const AdminSection = (props) => {
   const { act, data } = useBackend<AdminData>();
-  const { has_admin, deadmin, sound_adminhelp, sound_prayers, sound_volume_adminhelp, sound_volume_prayers, announce_login, combohud_lighting } = data;
+  const { has_admin, deadmin, sound_adminhelp, sound_prayers, sound_volume_adminhelp, sound_volume_prayers, adminhelp_windowflash } = data;
 
   if (!has_admin) {
     return null;
@@ -129,30 +128,14 @@ export const AdminSection = (props) => {
       <Stack.Item>
         <Stack align="center" fill className="GamePreferences__row">
           <Stack.Item grow basis={0}>
-            <div className="GamePreferences__label">Оповещение о входе</div>
-            <div className="GamePreferences__hint">Оповещать о вашем входе в игру (видно в админ-панели)</div>
+            <div className="GamePreferences__label">Мигание окна триггерах</div>
+            <div className="GamePreferences__hint">Мигание окна при получении ахелпа, напоминалке тикетов и полученниии факса</div>
           </Stack.Item>
           <Stack.Item>
             <Button
-              icon={announce_login ? "toggle-on" : "toggle-off"}
-              selected={announce_login}
-              onClick={() => act('toggle_admin', { flag: 'announce_login' })}
-            />
-          </Stack.Item>
-        </Stack>
-      </Stack.Item>
-      <Stack.Item>
-        <Stack align="center" fill className="GamePreferences__row">
-          <Stack.Item grow basis={0}>
-            <div className="GamePreferences__label">Подсветка комбо-HUD</div>
-            <div className="GamePreferences__hint">Режим подсветки комбо-HUD: стандартный или полная яркость</div>
-          </Stack.Item>
-          <Stack.Item>
-            <Dropdown
-              width="150px"
-              options={['Без изменений', 'Полная яркость']}
-              selected={combohud_lighting ? 'Полная яркость' : 'Без изменений'}
-              onSelected={() => act('toggle_admin', { flag: 'combohud_lighting' })}
+              icon={adminhelp_windowflash ? "toggle-on" : "toggle-off"}
+              selected={adminhelp_windowflash}
+              onClick={() => act('toggle_admin', { flag: 'adminhelp_windowflash' })}
             />
           </Stack.Item>
         </Stack>

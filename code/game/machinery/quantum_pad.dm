@@ -61,6 +61,21 @@
 		M.clear_alert(QUANTUMPAD_ALERT_CATEGORY)
 	return ..()
 
+/// Линк односторонний и хранится у НАС на чужой пад: без подписки на его удаление
+/// снесённый пад вечно висел бы в linked_pad всех, кто на него линкован
+/obj/machinery/quantumpad/proc/set_linked_pad(obj/machinery/quantumpad/new_pad)
+	if(linked_pad == new_pad)
+		return
+	if(linked_pad)
+		UnregisterSignal(linked_pad, COMSIG_PARENT_QDELETING)
+	linked_pad = new_pad
+	if(linked_pad)
+		RegisterSignal(linked_pad, COMSIG_PARENT_QDELETING, PROC_REF(on_linked_pad_qdeleting))
+
+/obj/machinery/quantumpad/proc/on_linked_pad_qdeleting(datum/source)
+	SIGNAL_HANDLER
+	linked_pad = null
+
 #undef QUANTUMPAD_ALERT_CATEGORY
 
 /obj/machinery/quantumpad/examine(mob/user)
@@ -102,7 +117,7 @@
 				to_chat(user, "<span class='warning'>You cannot link a pad to itself!</span>")
 				return TRUE
 			else
-				linked_pad = I.buffer
+				set_linked_pad(I.buffer)
 				to_chat(user, "<span class='notice'>You link [src] to the one in [I]'s buffer.</span>")
 				return TRUE
 		else
@@ -118,7 +133,7 @@
 			to_chat(user, "<span class='notice'>You insert [K] into [src]'s card slot, initiating the link procedure.</span>")
 			if(do_after(user, 40, target = src))
 				to_chat(user, "<span class='notice'>You complete the link between [K] and [src].</span>")
-				K.qpad = src
+				K.set_qpad(src)
 
 	if(default_deconstruction_crowbar(I))
 		return
@@ -241,7 +256,7 @@
 	. = FALSE
 	var/obj/machinery/quantumpad/link = mapped_quantum_pads[map_pad_link_id]
 	if(link)
-		linked_pad = link
+		set_linked_pad(link)
 		. = TRUE
 
 /obj/item/paper/guides/quantumpad

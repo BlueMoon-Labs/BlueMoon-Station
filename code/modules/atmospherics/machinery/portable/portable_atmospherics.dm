@@ -14,6 +14,10 @@
 
 	var/maximum_pressure = 90 * ONE_ATMOSPHERE
 
+	///TRUE while something is going on (reaction, open valve, armed timer, working pump);
+	///FALSE lets process_atmos() drop the portable from SSair until excite() is called.
+	var/excited = TRUE
+
 /obj/machinery/portable_atmospherics/New()
 	..()
 	SSair.start_processing_machine(src)
@@ -32,10 +36,22 @@
 	return ..()
 
 /obj/machinery/portable_atmospherics/process_atmos()
-	if(!connected_port) // Pipe network handles reactions if connected.
-		air_contents.react(src)
-	else
-		update_icon()
+	if(connected_port) // Pipe network handles reactions if connected.
+		// The pipenet reshapes our mix without any interaction on this machine,
+		// so a docked portable never sleeps.
+		excited = FALSE
+		return
+	excited = excited || air_contents.react(src)
+	if(!excited)
+		// Settled and untouched: leave SSair until excite() is called by an
+		// interaction (or a subtype keeps setting excited while it works).
+		return PROCESS_KILL
+	excited = FALSE
+
+///Wake the portable up for SSair processing and keep it awake for at least one full pass.
+/obj/machinery/portable_atmospherics/proc/excite()
+	excited = TRUE
+	SSair.start_processing_machine(src)
 
 /obj/machinery/portable_atmospherics/return_air()
 	return air_contents
@@ -64,6 +80,10 @@
 	anchored = TRUE //Prevent movement
 	pixel_x = new_port.pixel_x
 	pixel_y = new_port.pixel_y
+	// Both sides sleep while unused: the docked portable must process again and
+	// the connector must resume dirtying its pipenet.
+	excite()
+	SSair.start_processing_machine(connected_port)
 	return TRUE
 
 /obj/machinery/portable_atmospherics/Move()
@@ -84,6 +104,9 @@
 	connected_port = null
 	pixel_x = 0
 	pixel_y = 0
+	// Undocked with possibly fresh gas inside: reevaluate before sleeping again
+	// (the connector kills itself on its next pass).
+	excite()
 	return TRUE
 
 /obj/machinery/portable_atmospherics/portableConnectorReturnAir()
@@ -111,8 +134,12 @@
 			user.put_in_hands(holding)
 	if(new_tank)
 		holding = new_tank
+		// portables pump into holding.air_contents directly (canister valve, pump,
+		// scrubber), bypassing the tank's own mutators - a docked tank must not sleep
+		holding.excite_tank()
 	else
 		holding = null
+	excite()
 	update_icon()
 	return TRUE
 
@@ -152,6 +179,11 @@
 				update_icon()
 	else
 		return ..()
+
+/obj/machinery/portable_atmospherics/rad_act(pulse_strength)
+	. = ..()
+	if(air_contents?.react_to_radiation(pulse_strength))
+		excite()
 
 /obj/machinery/portable_atmospherics/analyzer_act(mob/living/user, obj/item/I)
 	atmosanalyzer_scan(air_contents, user, src)

@@ -132,16 +132,24 @@ SUBSYSTEM_DEF(garbage)
 	var/list/queue_types
 	var/list/queue_heads
 
-	#ifdef REFERENCE_TRACKING
+	/// Точечные запросы "найти ссылки при фейле": REF-строка -> TRUE.
 	var/list/reference_find_on_fail = list()
-	#ifdef UNIT_TESTS
+	/// Рантайм-режим авто-сканов ссылок (GC_REFTRACK_*); -1 = ещё не прочитан из конфига.
+	var/reftrack_mode = -1
+	/// world.time последнего авто-скана.
+	var/reftrack_last_autoscan = 0
+	/// Авто-сканов запущено за раунд.
+	var/reftrack_autoscans_this_round = 0
+	/// Авто-сканов по типам за раунд: type string -> count.
+	var/list/reftrack_autoscan_type_counts = list()
+	// Тесты компилируются и под SPACEMAN_DMM — гард обязан совпадать с _unit_tests.dm.
+	#if defined(UNIT_TESTS) || defined(SPACEMAN_DMM)
 	/// Test hook: skip async ref scans while still exercising GC control flow.
 	var/test_ref_scan_skip_async = FALSE
 	#endif
 	#ifdef REFERENCE_TRACKING_DEBUG
 	/// Should we save found refs — used for unit testing.
 	var/should_save_refs = FALSE
-	#endif
 	#endif
 
 	#ifdef GC_PROFILER
@@ -550,10 +558,10 @@ SUBSYSTEM_DEF(garbage)
 		leak_rate_fail_accumulator = 0
 		leak_rate_fires = 0
 
-/datum/controller/subsystem/garbage/proc/PushRecentFailure(type_path, level, hint)
+/datum/controller/subsystem/garbage/proc/PushRecentFailure(type_path, level, hint, external_refs = -1)
 	if (length(recent_failures) >= GC_FAILURE_RING_SIZE)
 		recent_failures.Cut(1, 2)
-	recent_failures += list(list(world.time, "[type_path]", level, hint))
+	recent_failures += list(list(world.time, "[type_path]", level, hint, external_refs))
 
 /datum/controller/subsystem/garbage/proc/PushWarnfailTime(datum/qdel_item/I)
 	if (!I.failure_times)
@@ -705,9 +713,7 @@ SUBSYSTEM_DEF(garbage)
 			gcedlasttick++
 			totalgcs++
 			pass_counts[level]++
-			#ifdef REFERENCE_TRACKING
 			reference_find_on_fail -= refID
-			#endif
 		else
 			if (hd_level_start)
 				hd_count++
@@ -744,11 +750,13 @@ SUBSYSTEM_DEF(garbage)
 	. = FALSE
 	var/type = D.type
 	var/datum/qdel_item/I = GetOrCreateItem(type)
+	// D держат локаль HandleLevel и наш аргумент; остальное - внешние держатели.
+	var/external_refs = max(refcount(D) - GC_FAIL_PATH_INTERNAL_REFS, 0)
 
 	switch (level)
 		if (GC_QUEUE_SOFTCHECK)
 			I.failures++
-			PushRecentFailure(type, GC_QUEUE_SOFTCHECK, hint)
+			PushRecentFailure(type, GC_QUEUE_SOFTCHECK, hint, external_refs)
 
 			var/extra_name = ""
 			if (isatom(D))
@@ -770,28 +778,18 @@ SUBSYSTEM_DEF(garbage)
 				I.softfail_alert_failures++
 				gc_notify_opted_admins("GC softcheck alert: [type][extra_name] не собрался за [GC_SOFTCHECK_TIMEOUT / 10]с")
 
-			// Fast ref scan if admin-requested for this type
-			#ifdef REFERENCE_TRACKING
-			var/should_scan_refs = FALSE
+			// Точечные запросы (qdel_and_find_ref_if_fail, IFFAIL_FINDREFERENCE) работают в любом режиме.
 			var/should_yield_for_scan = FALSE
-			// Type-wide fast reftrack is a diagnostic aid; do not stall the whole GC pass for it.
-			if (I.qdel_flags & QDEL_ITEM_FAST_REFTRACK)
-				should_scan_refs = TRUE
 			if (reference_find_on_fail[refID])
-				should_scan_refs = TRUE
-				should_yield_for_scan = TRUE
+				// Запись снимается всегда: BYOND переиспользует ref-строки, и застрявший
+				// ключ SKIP_REFSCAN-типа позже запустил бы скан по чужому датуму.
 				reference_find_on_fail -= refID
-			#ifdef GC_FAILURE_HARD_LOOKUP
-			else
-				should_scan_refs = TRUE
-				should_yield_for_scan = TRUE
-			#endif
-			if (I.qdel_flags & QDEL_ITEM_SKIP_REFSCAN)
-				should_scan_refs = FALSE
-				should_yield_for_scan = FALSE
-			if (should_scan_refs)
-				ScheduleReferenceScan(D)
-			#endif
+				if (!(I.qdel_flags & QDEL_ITEM_SKIP_REFSCAN))
+					should_yield_for_scan = TRUE
+					ScheduleReferenceScan(D, external_refs > 0 ? external_refs : INFINITY)
+			// Type-wide fast reftrack is a diagnostic aid; do not stall the whole GC pass for it.
+			else if (GetReftrackMode() != GC_REFTRACK_OFF && (I.qdel_flags & QDEL_ITEM_FAST_REFTRACK) && !(I.qdel_flags & QDEL_ITEM_SKIP_REFSCAN))
+				TryAutoScan(D, external_refs)
 
 			if (hint == QDEL_HINT_QUEUE_THEN_HARDDEL)
 				// Skip warnfail stage — no log_world, no admin notifications, no gc_failure_cache.
@@ -799,23 +797,30 @@ SUBSYSTEM_DEF(garbage)
 			else
 				Queue(D, GC_QUEUE_WARNFAIL, hint, origin_time)
 
-			#ifdef REFERENCE_TRACKING
 			if (should_yield_for_scan)
 				return TRUE
-			#endif
 
 		if (GC_QUEUE_WARNFAIL)
 			I.warnfail_count++
 			PushWarnfailTime(I)
 			leak_rate_fail_accumulator++
-			PushRecentFailure(type, GC_QUEUE_WARNFAIL, hint)
+			PushRecentFailure(type, GC_QUEUE_WARNFAIL, hint, external_refs)
 			var/extra_name = ""
 			if (isatom(D))
 				var/atom/A = D
 				extra_name = " \"[A.name]\""
-			log_world("## GC: -- \ref[D] | [type][extra_name] не собрался (warnfail, ~[round((GC_SOFTCHECK_TIMEOUT + GC_WARNFAIL_TIMEOUT) / 10)]с) --")
-			gc_notify_opted_admins("GC утечка: [type][extra_name] — [refID] не собрался за ~[round((GC_SOFTCHECK_TIMEOUT + GC_WARNFAIL_TIMEOUT) / 10)]с")
-			GLOB.gc_failure_cache.log_gc_failure(D, type, refID, origin_time, hint)
+			var/prompt_note = ""
+			if (ismob(D))
+				var/mob/leaked_mob = D
+				if (leaked_mob.pending_native_prompts > 0)
+					prompt_note = ", висящих нативных промптов: [leaked_mob.pending_native_prompts]"
+			log_world("## GC: -- \ref[D] | [type][extra_name] не собрался (warnfail, ~[round((GC_SOFTCHECK_TIMEOUT + GC_WARNFAIL_TIMEOUT) / 10)]с, внешних ссылок: [external_refs][prompt_note]) --")
+			gc_notify_opted_admins("GC утечка: [type][extra_name] - [refID] не собрался за ~[round((GC_SOFTCHECK_TIMEOUT + GC_WARNFAIL_TIMEOUT) / 10)]с, внешних ссылок: [external_refs]")
+			GLOB.gc_failure_cache.log_gc_failure(D, type, refID, origin_time, hint, external_refs)
+			// Подтверждённая утечка - момент для авто-скана держателей (гейт рантайм-режимом).
+			var/reftrack_mode_now = GetReftrackMode()
+			if (!(I.qdel_flags & QDEL_ITEM_SKIP_REFSCAN) && (reftrack_mode_now == GC_REFTRACK_ALL || (reftrack_mode_now == GC_REFTRACK_FLAGGED && (I.qdel_flags & QDEL_ITEM_FAST_REFTRACK))))
+				TryAutoScan(D, external_refs)
 			Queue(D, GC_QUEUE_HARDDELETE, hint, origin_time)
 
 		if (GC_QUEUE_HARDDELETE)
@@ -983,14 +988,51 @@ SUBSYSTEM_DEF(garbage)
 		to_chat(admin, "<span class='warning'>[msg]</span>")
 
 /// Schedules a reference scan for a GC-failed datum.
-#ifdef REFERENCE_TRACKING
-/datum/controller/subsystem/garbage/proc/ScheduleReferenceScan(datum/D)
+/// references_to_clear ограничивает поиск числом реально оставшихся ссылок (ранний выход).
+/datum/controller/subsystem/garbage/proc/ScheduleReferenceScan(datum/D, references_to_clear = INFINITY)
 	#ifdef UNIT_TESTS
 	if (test_ref_scan_skip_async)
 		return
 	#endif
-	INVOKE_ASYNC(D, TYPE_PROC_REF(/datum, find_references))
-#endif
+	INVOKE_ASYNC(D, TYPE_PROC_REF(/datum, find_references), references_to_clear, TRUE)
+
+/// Текущий режим авто-сканов; первый вызов читает дефолт из конфига.
+/datum/controller/subsystem/garbage/proc/GetReftrackMode()
+	if (reftrack_mode < 0)
+		var/value = CONFIG_GET(number/gc_reftrack_mode)
+		reftrack_mode = isnum(value) ? clamp(round(value), GC_REFTRACK_OFF, GC_REFTRACK_ALL) : GC_REFTRACK_OFF
+	return reftrack_mode
+
+/// Разрешён ли сейчас авто-скан для этого типа (анти-шторм).
+/datum/controller/subsystem/garbage/proc/CanAutoScan(type_string)
+	var/cooldown_seconds = CONFIG_GET(number/gc_reftrack_autoscan_cooldown_seconds)
+	if (!isnum(cooldown_seconds) || cooldown_seconds < 0)
+		cooldown_seconds = GC_REFTRACK_AUTOSCAN_COOLDOWN / 10
+	if (reftrack_last_autoscan && world.time - reftrack_last_autoscan < cooldown_seconds SECONDS)
+		return FALSE
+	var/max_per_round = CONFIG_GET(number/gc_reftrack_autoscan_max_per_round)
+	if (!isnum(max_per_round) || max_per_round < 0)
+		max_per_round = GC_REFTRACK_AUTOSCAN_MAX_PER_ROUND
+	if (reftrack_autoscans_this_round >= max_per_round)
+		return FALSE
+	if (reftrack_autoscan_type_counts[type_string] >= GC_REFTRACK_AUTOSCAN_MAX_PER_TYPE)
+		return FALSE
+	return TRUE
+
+/// Запускает авто-скан ссылок, если позволяет анти-шторм. TRUE = запущен.
+/datum/controller/subsystem/garbage/proc/TryAutoScan(datum/D, external_refs)
+	// Объект без внешних держателей уже может собраться сам после возврата из GC-прохода.
+	if (external_refs <= 0)
+		return FALSE
+	var/type_string = "[D.type]"
+	if (!CanAutoScan(type_string))
+		return FALSE
+	reftrack_last_autoscan = world.time
+	reftrack_autoscans_this_round++
+	reftrack_autoscan_type_counts[type_string] += 1
+	log_reftracker("АВТО-СКАН #[reftrack_autoscans_this_round]: [type_string] [text_ref(D)], внешних ссылок: [external_refs]")
+	ScheduleReferenceScan(D, external_refs > 0 ? external_refs : INFINITY)
+	return TRUE
 
 /// Returns the qdel_item datum for a type path or type-path string, or null if none exists yet.
 /datum/controller/subsystem/garbage/proc/GetItem(type_path)
@@ -1131,14 +1173,14 @@ SUBSYSTEM_DEF(garbage)
 				SSgarbage.Queue(D, GC_QUEUE_SOFTCHECK, qdel_hint = hint)
 			if (QDEL_HINT_QUEUE_THEN_HARDDEL)
 				SSgarbage.Queue(D, qdel_hint = hint)
-			#ifdef REFERENCE_TRACKING
 			if (QDEL_HINT_FINDREFERENCE)
 				SSgarbage.Queue(D, qdel_hint = hint)
-				D.find_references()
+				// Только асинхронно: qdel зовётся из не-спящих контекстов (Initialize и далее),
+				// а find_references спит (CHECK_TICK) на протяжении всего обхода мира.
+				SSgarbage.ScheduleReferenceScan(D)
 			if (QDEL_HINT_IFFAIL_FINDREFERENCE)
 				SSgarbage.Queue(D, qdel_hint = hint)
 				SSgarbage.reference_find_on_fail[REF(D)] = TRUE
-			#endif
 			else
 				#ifdef TESTING
 				if (!I.no_hint)
