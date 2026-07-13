@@ -16,6 +16,7 @@
 	state["pool_saving"] = pool_saving.Copy()
 	state["action_failure_cooldowns"] = action_failure_cooldowns.Copy()
 	state["action_attempt_rollbacks"] = action_attempt_rollbacks.Copy()
+	state["last_antag_deficit"] = last_antag_deficit
 	state["last_antag_heavy_at"] = last_antag_heavy_at
 	state["last_ghost_heavy_at"] = last_ghost_heavy_at
 	state["last_latejoin_at"] = last_latejoin_at
@@ -76,6 +77,7 @@
 	pool_saving = state["pool_saving"]
 	action_failure_cooldowns = state["action_failure_cooldowns"]
 	action_attempt_rollbacks = state["action_attempt_rollbacks"]
+	last_antag_deficit = state["last_antag_deficit"]
 	last_antag_heavy_at = state["last_antag_heavy_at"]
 	last_ghost_heavy_at = state["last_ghost_heavy_at"]
 	dry_run = state["dry_run"]

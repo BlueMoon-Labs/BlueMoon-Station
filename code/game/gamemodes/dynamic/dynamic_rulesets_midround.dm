@@ -1406,7 +1406,10 @@
 	return ..()
 
 /datum/dynamic_ruleset/midround/bloodsuckers/director_preflight()
-	return director_preflight_candidates()
+	. = director_preflight_candidates()
+	if(.)
+		var/needed = get_antag_cap(length(living_players)) * (scaled_times + 1)
+		director_preflight_detail = "подходящих членов экипажа: [length(candidates)], требуется: [needed]"
 
 /datum/dynamic_ruleset/midround/bloodsuckers/pre_execute(population)
 	. = ..()

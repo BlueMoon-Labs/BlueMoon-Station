@@ -640,11 +640,14 @@ SUBSYSTEM_DEF(director)
 		return FALSE
 	var/list/minds = list()
 	var/list/mob_refs = list()
+	var/list/hard_minds = list()
 	for(var/mob/spawned as anything in spawned_mobs)
 		if(QDELETED(spawned))
 			continue
 		if(spawned.mind)
 			minds |= spawned.mind
+			if(is_hard_antag_mind(spawned.mind))
+				hard_minds |= spawned.mind
 		else
 			mob_refs += WEAKREF(spawned)
 	if(!length(minds) && !length(mob_refs))
@@ -657,7 +660,6 @@ SUBSYSTEM_DEF(director)
 				"amount" = share,
 				"at" = now(),
 				"activity" = insured_mind.director_activity_total,
-				"hard" = is_hard_antag_mind(insured_mind),
 			)
 		for(var/datum/weakref/insured_ref as anything in mob_refs)
 			refund_values[insured_ref] = list("amount" = share, "at" = now(), "activity" = 0)
@@ -667,6 +669,7 @@ SUBSYSTEM_DEF(director)
 		"intensity" = control.intensity,
 		"severity" = control.severity,
 		"minds" = minds,
+		"hard_minds" = hard_minds,
 		"mobs" = mob_refs,
 		"refund_values" = refund_values,
 	))
@@ -681,6 +684,7 @@ SUBSYSTEM_DEF(director)
 	for(var/i = length(live_ghost_role_spawns), i >= 1, i--)
 		var/list/entry = live_ghost_role_spawns[i]
 		var/list/minds = entry["minds"]
+		var/list/hard_minds = entry["hard_minds"]
 		var/list/mob_refs = entry["mobs"]
 		var/list/refund_values = entry["refund_values"]
 		var/assigned = length(minds) + length(mob_refs)
@@ -690,7 +694,7 @@ SUBSYSTEM_DEF(director)
 		for(var/datum/mind/assigned_mind as anything in minds)
 			var/mob/current = assigned_mind?.current
 			var/list/policy = refund_values?[assigned_mind]
-			var/role_removed = islist(policy) && policy["hard"] && !is_hard_antag_mind(assigned_mind)
+			var/role_removed = islist(hard_minds) && (assigned_mind in hard_minds) && !is_hard_antag_mind(assigned_mind)
 			if(!current || current.stat == DEAD || role_removed)
 				if(islist(policy))
 					refund_values -= assigned_mind
@@ -798,6 +802,7 @@ SUBSYSTEM_DEF(director)
 		if(!executed)
 			detail = "[execution_failure_detail(picked)]; [detail]"
 		director_log_beat(signals, picked, result, reject_stats, detail)
+		return result
 	else
 		announce_pick(picked, candidates, guaranteed, signals)
 	return guaranteed ? DIRECTOR_BEAT_GUARANTEED : DIRECTOR_BEAT_FIRED
@@ -1140,12 +1145,23 @@ SUBSYSTEM_DEF(director)
 	if(action.family && (family_fired_counts[action.family] || 0) > 0)
 		family_fired_counts[action.family]--
 	rollback_action_attempt(action)
-	remove_intensity(action.action_name())
+	var/refund_amount = action.cost
 	if(action.director_kind == DIRECTOR_KIND_RULESET)
 		var/datum/dynamic_ruleset/rule = action
+		refund_amount = rule.director_pending_cost
 		rule.director_pending_cost = 0
+		// Удаляем последний временный мост именно этой попытки. Обычный remove_intensity()
+		// намеренно пропускает записи с expires_at и для отложенного рулсета здесь не подходит.
+		for(var/i = length(intensity_ledger), i >= 1, i--)
+			var/list/entry = intensity_ledger[i]
+			if(entry[1] != action.action_name() || entry[4] != action.severity || !entry[3])
+				continue
+			intensity_ledger.Cut(i, i + 1)
+			break
+	else
+		remove_intensity(action.action_name())
 	if(refund_budget)
-		refund_to_budget(action.severity, action.cost)
+		refund_to_budget(action.severity, refund_amount)
 	if(retry_replacement)
 		action_failure_cooldowns[action] = now() + DIRECTOR_FAILED_ACTION_COOLDOWN
 		if(pool_saving[action.severity] == action)
@@ -1447,13 +1463,18 @@ SUBSYSTEM_DEF(director)
 	// вариант и даём админам такое же окно отмены для следующего всё ещё готового кандидата.
 	if(!executed && length(retry_candidates))
 		retry_candidates -= fired_action
+		var/datum/director_signals/retry_signals = collect_signals()
+		ensure_pool_targets(retry_signals)
+		var/list/current_candidates = filter_candidates(retry_signals, was_guaranteed)
 		for(var/datum/director_action/retry as anything in retry_candidates.Copy())
-			if(!retry.can_fire(fired_signals) || !action_preflight(retry))
+			if(!(retry in current_candidates))
 				retry_candidates -= retry
+				continue
+			retry_candidates[retry] = current_candidates[retry]
 		if(length(retry_candidates))
 			var/datum/director_action/next_pick = pickweight(retry_candidates)
 			message_admins("DIRECTOR: [fired_action.action_name()] не запустился ([execution_failure_detail(fired_action)]), выбираю замену.")
-			announce_pick(next_pick, retry_candidates, was_guaranteed, fired_signals)
+			announce_pick(next_pick, retry_candidates, was_guaranteed, retry_signals)
 
 /datum/controller/subsystem/director/Topic(href, href_list)
 	..()

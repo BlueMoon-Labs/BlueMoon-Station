@@ -850,7 +850,13 @@
 /datum/unit_test/director_simulation_sanity
 
 /datum/unit_test/director_simulation_sanity/Run()
+	var/saved_antag_deficit = SSdirector.last_antag_deficit
+	var/expected_antag_deficit = 0.37
+	SSdirector.last_antag_deficit = expected_antag_deficit
 	var/list/log_out = director_simulate(ROUNDTYPE_DYNAMIC_MEDIUM, 2, 40)
+	var/restored_antag_deficit = SSdirector.last_antag_deficit
+	SSdirector.last_antag_deficit = saved_antag_deficit
+	TEST_ASSERT_EQUAL(restored_antag_deficit, expected_antag_deficit, "Симуляция обязана восстановить реальный кэш дефицита антагов")
 	var/fired = 0
 	var/max_intensity = 0
 	var/quiet_streak = 0
@@ -1625,6 +1631,44 @@
 		SSdirector.tally_ruleset_intensity(late_rule)
 		antag_wallets = SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST]
 		TEST_ASSERT_EQUAL(round(antag_wallets, 0.1), 8.5, "Потеря после окна страховки не должна возвращать бюджет")
+
+		// Крио удаляет текущее тело mind: ранняя потеря должна закрыть полис и выплатиться один раз.
+		SSdirector.time_override = world.time + 2 MINUTES
+		var/mob/living/carbon/human/cryo = allocate(/mob/living/carbon/human)
+		cryo.mind_initialize()
+		var/datum/mind/cryo_mind = cryo.mind
+		var/datum/antagonist/cryo_marker = new
+		cryo_marker.silent = TRUE
+		cryo_mind.add_antag_datum(cryo_marker)
+		var/datum/dynamic_ruleset/midround/test_pool_isolation/cryo_rule = new
+		cryo_rule.assigned = list(cryo_mind)
+		cryo_rule.director_pending_cost = 6
+		SSdirector.confirm_action_success(cryo_rule)
+		var/before_cryo = antag_wallets
+		cryo_mind.set_current(null)
+		SSdirector.tally_ruleset_intensity(cryo_rule)
+		antag_wallets = SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST]
+		TEST_ASSERT_EQUAL(round(antag_wallets - before_cryo, 0.1), 6, "Ранняя потеря роли через крио должна вернуть её стоимость")
+		SSdirector.tally_ruleset_intensity(cryo_rule)
+		TEST_ASSERT_EQUAL(round(SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST] - before_cryo, 0.1), 6, "Повторный подсчёт крио не должен возвращать стоимость повторно")
+
+		// Снятие последнего hard-antag datum при живом теле — такая же окончательная потеря роли.
+		var/mob/living/carbon/human/removed = allocate(/mob/living/carbon/human)
+		removed.mind_initialize()
+		var/datum/antagonist/removed_marker = new
+		removed_marker.silent = TRUE
+		removed.mind.add_antag_datum(removed_marker)
+		var/datum/dynamic_ruleset/midround/test_pool_isolation/removed_rule = new
+		removed_rule.assigned = list(removed.mind)
+		removed_rule.director_pending_cost = 7
+		SSdirector.confirm_action_success(removed_rule)
+		var/before_removed = SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST]
+		removed.mind.remove_antag_datum(removed_marker.type)
+		SSdirector.tally_ruleset_intensity(removed_rule)
+		antag_wallets = SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST]
+		TEST_ASSERT_EQUAL(round(antag_wallets - before_removed, 0.1), 7, "Раннее снятие antagonist datum должно вернуть стоимость роли")
+		SSdirector.tally_ruleset_intensity(removed_rule)
+		TEST_ASSERT_EQUAL(round(SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST] - before_removed, 0.1), 7, "Повторный подсчёт снятой роли не должен возвращать стоимость повторно")
 	catch(var/exception/e)
 		SSdirector.restore_simulation_state(saved)
 		throw e
@@ -1815,6 +1859,12 @@
 	var/datum/game_mode/dynamic/mode = SSticker.mode
 	var/list/saved_dead = mode.current_players[CURRENT_DEAD_PLAYERS]
 	var/list/saved_observers = mode.current_players[CURRENT_OBSERVERS]
+	var/datum/dynamic_ruleset/midround/from_ghosts/test_assigned_minds/rule
+	var/rule_was_candidate
+	var/readiness_rejects
+	var/verdict
+	var/detail
+	var/has_pool_target
 	try
 		var/datum/director_profile/profile = new /datum/director_profile/medium
 		// Изолируем тест от реальных roundstart-антаг-вкладов unit-test раунда.
@@ -1830,13 +1880,14 @@
 		mode.current_players[CURRENT_DEAD_PLAYERS] = list()
 		mode.current_players[CURRENT_OBSERVERS] = list()
 
-		var/datum/dynamic_ruleset/midround/from_ghosts/morph/rule = new
+		// Общая from_ghosts-фикстура изолирует проверку кандидатов от дополнительных
+		// map-гейтов Morph (на MultiZ Debug нет xeno_spawn).
+		rule = new
 		rule.mode = mode
-		rule.required_round_type = null
-		rule.requirements = list(0,0,0,0,0,0,0,0,0,0)
+		rule.weight = 10
 		rule.enemy_roles = list()
+		rule.required_enemies = list(0,0,0,0,0,0,0,0,0,0)
 		rule.required_applicants = 1
-		rule.required_candidates = 1
 		SSdirector.actions = list(rule)
 
 		var/datum/director_signals/signals = new
@@ -1846,11 +1897,12 @@
 		var/list/reject_stats = list()
 		var/list/verdicts = list()
 		var/list/candidates = SSdirector.filter_candidates(signals, FALSE, reject_stats, verdicts)
-		TEST_ASSERT(!(rule in candidates), "Гост-рулсет без подходящих призраков не должен доходить до выбора")
-		TEST_ASSERT_EQUAL(reject_stats[DIRECTOR_SEVERITY_GHOST][DIRECTOR_REJECT_READINESS], 1, "Отказ должен иметь отдельную причину readiness")
-		TEST_ASSERT_EQUAL(verdicts[1]["verdict"], DIRECTOR_REJECT_READINESS, "Панель должна получить readiness, а не ложный ok")
-		TEST_ASSERT(findtext(verdicts[1]["detail"], "подходящих гостов 0 из 1"), "В панели должно быть точное число подходящих гостов")
-		TEST_ASSERT_NULL(SSdirector.roll_pool_target(DIRECTOR_SEVERITY_GHOST, signals), "Неисполнимый Morph не должен становиться целью копилки")
+		rule_was_candidate = (rule in candidates)
+		readiness_rejects = reject_stats[DIRECTOR_SEVERITY_GHOST]?[DIRECTOR_REJECT_READINESS] || 0
+		var/list/first_verdict = length(verdicts) ? verdicts[1] : null
+		verdict = first_verdict?["verdict"]
+		detail = first_verdict?["detail"]
+		has_pool_target = !isnull(SSdirector.roll_pool_target(DIRECTOR_SEVERITY_GHOST, signals))
 	catch(var/exception/e)
 		mode.current_players[CURRENT_DEAD_PLAYERS] = saved_dead
 		mode.current_players[CURRENT_OBSERVERS] = saved_observers
@@ -1859,6 +1911,14 @@
 	mode.current_players[CURRENT_DEAD_PLAYERS] = saved_dead
 	mode.current_players[CURRENT_OBSERVERS] = saved_observers
 	SSdirector.restore_simulation_state(saved)
+	qdel(rule)
+	// TEST_ASSERT делает ранний return из Run(), поэтому проверки идут только после восстановления
+	// глобального состояния — иначе одно падение загрязняет все последующие director-тесты.
+	TEST_ASSERT(!rule_was_candidate, "Гост-рулсет без подходящих призраков не должен доходить до выбора")
+	TEST_ASSERT_EQUAL(readiness_rejects, 1, "Отказ должен иметь отдельную причину readiness")
+	TEST_ASSERT_EQUAL(verdict, DIRECTOR_REJECT_READINESS, "Панель должна получить readiness, а не ложный ok")
+	TEST_ASSERT(findtext(detail, "подходящих гостов 0 из 1"), "В панели должно быть точное число подходящих гостов")
+	TEST_ASSERT(!has_pool_target, "Неисполнимый гост-рулсет не должен становиться целью копилки")
 
 /// Синхронный execute_action(FALSE) раньше всё равно попадал в историю как "fired".
 /datum/unit_test/director_failed_action_is_not_fired
@@ -1883,8 +1943,9 @@
 		signals.effective_crew = 10
 		signals.staffing = list(DIRECTOR_DEPT_SECURITY = 1, DIRECTOR_DEPT_ENGINEERING = 1,
 			DIRECTOR_DEPT_MEDICAL = 1, DIRECTOR_DEPT_SCIENCE = 0, DIRECTOR_DEPT_SUPPLY = 0, DIRECTOR_DEPT_COMMAND = 0)
-		SSdirector.run_beat(signals, forced = TRUE)
+		var/beat_result = SSdirector.run_beat(signals, forced = TRUE)
 		var/list/last_entry = SSdirector.beat_log[length(SSdirector.beat_log)]
+		TEST_ASSERT_EQUAL(beat_result, DIRECTOR_BEAT_FAILED, "run_beat должен вернуть фактический результат синхронного отказа")
 		TEST_ASSERT_EQUAL(last_entry["result"], DIRECTOR_BEAT_FAILED, "execute_action(FALSE) должен логироваться как failed, не fired")
 		TEST_ASSERT(findtext(last_entry["detail"], "бюджет возвращён"), "История должна объяснять синхронный провал")
 		TEST_ASSERT_EQUAL(SSdirector.budgets[DIRECTOR_SEVERITY_MINOR], 10, "Синхронный провал должен полностью вернуть кошелёк")
@@ -1912,12 +1973,15 @@
 		SSdirector.family_last_fired_at = list()
 		SSdirector.action_failure_cooldowns = list()
 		SSdirector.action_attempt_rollbacks = list()
+		SSdirector.last_fired_at = list()
 		var/datum/dynamic_ruleset/midround/ratvar_awakening/rule = new
 		rule.family = "test_clockcult"
+		var/old_severity = world.time - profile.antag_light_spacing - 1
 		var/old_any = world.time - 20 MINUTES
 		var/old_real = world.time - 21 MINUTES
 		var/old_heavy = world.time - profile.antag_heavy_spacing - 1
 		var/old_family = world.time - profile.family_spacing - 1
+		SSdirector.last_fired_at[rule.severity] = old_severity
 		SSdirector.last_any_fired_at = old_any
 		SSdirector.last_real_fired_at = old_real
 		SSdirector.last_antag_heavy_at = old_heavy
@@ -1925,6 +1989,8 @@
 		SSdirector.pool_saving = list(DIRECTOR_SEVERITY_ANTAG = rule)
 		rule.executed_at = world.time - 30 MINUTES
 		var/old_executed_at = rule.executed_at
+		var/spent = rule.cost - 3
+		rule.director_pending_cost = spent
 		rule.occurrences++
 		SSdirector.note_fired(rule)
 		TEST_ASSERT_EQUAL(SSdirector.last_antag_heavy_at, world.time, "Предварительный запуск должен поставить heavy-spacing")
@@ -1935,12 +2001,14 @@
 		SSdirector.dry_run = FALSE
 		TEST_ASSERT_EQUAL(SSdirector.last_any_fired_at, old_any, "Провал обязан вернуть global-spacing")
 		TEST_ASSERT_EQUAL(SSdirector.last_real_fired_at, old_real, "Провал обязан вернуть таймер реальной тишины")
+		TEST_ASSERT_EQUAL(SSdirector.last_fired_at[rule.severity], old_severity, "Провал обязан вернуть паузу ступени")
 		TEST_ASSERT_EQUAL(SSdirector.last_antag_heavy_at, old_heavy, "Провал обязан вернуть ANTAG heavy-spacing")
 		TEST_ASSERT_EQUAL(SSdirector.family_last_fired_at[rule.family], old_family, "Провал обязан вернуть паузу семейства")
 		TEST_ASSERT_EQUAL(rule.executed_at, old_executed_at, "Провал обязан вернуть возраст исполнения рулсета")
 		TEST_ASSERT_EQUAL(rule.occurrences, 0, "Провал не должен съедать occurrence")
 		TEST_ASSERT_EQUAL(SSdirector.fired_counts[rule.severity], 0, "Провал не должен считаться в доле ступени")
-		TEST_ASSERT_EQUAL(SSdirector.budgets[rule.severity], rule.cost, "Провал обязан вернуть бюджет")
+		TEST_ASSERT_EQUAL(SSdirector.budgets[rule.severity], spent, "Провал обязан вернуть фактически списанный бюджет")
+		TEST_ASSERT_EQUAL(length(SSdirector.intensity_ledger), 0, "Провал обязан удалить временный intensity-мост конкретной попытки")
 		TEST_ASSERT(SSdirector.action_recently_failed(rule), "Сам провалившийся вариант должен временно исключаться ради замены")
 	catch(var/exception/e)
 		SSdirector.restore_simulation_state(saved)
@@ -1973,6 +2041,21 @@
 		TEST_ASSERT_EQUAL(round(antag_wallets, 0.1), control.cost, "Ранняя тихая смерть естественной гост-роли должна вернуть её цену в антаг-кошельки")
 		SSdirector.get_active_intensity()
 		TEST_ASSERT_EQUAL(round(SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST], 0.1), control.cost, "Удалённая группа гост-роли не должна получить повторную выплату")
+
+		// Даже без страхового policy снятие выданной hard-antag роли должно немедленно
+		// освободить intensity; budget_backed = FALSE не должен удерживать живого бывшего антага.
+		var/mob/living/carbon/human/unbacked = allocate(/mob/living/carbon/human)
+		unbacked.mind_initialize()
+		var/datum/antagonist/unbacked_marker = new
+		unbacked_marker.silent = TRUE
+		unbacked.mind.add_antag_datum(unbacked_marker)
+		SSdirector.intensity_ledger = list(list(control.action_name(), control.intensity, 0, control.severity))
+		TEST_ASSERT(SSdirector.track_ghost_role_spawn(control, list(unbacked), budget_backed = FALSE), "Незастрахованный гост-спаун тоже должен перейти на живой трекинг")
+		TEST_ASSERT_EQUAL(SSdirector.get_active_intensity(), control.intensity, "Живая незастрахованная роль должна давать intensity")
+		unbacked.mind.remove_antag_datum(unbacked_marker.type)
+		TEST_ASSERT_EQUAL(SSdirector.get_active_intensity(), 0, "Снятая незастрахованная роль не должна продолжать давать intensity")
+		TEST_ASSERT_EQUAL(length(SSdirector.live_ghost_role_spawns), 0, "Группа без оставшихся hard-antag ролей должна удаляться")
+		TEST_ASSERT_EQUAL(round(SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST], 0.1), control.cost, "Незастрахованная роль не должна печатать возврат бюджета")
 	catch(var/exception/e)
 		SSdirector.restore_simulation_state(saved)
 		throw e
