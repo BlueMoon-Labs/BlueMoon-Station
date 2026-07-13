@@ -10,6 +10,8 @@
 	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
 	cost = 15
 	intensity = 30
+	director_ghost_jobban = ROLE_BLOB
+	director_ghost_preference = ROLE_BLOB
 	intensity_linger = 45 MINUTES // блоб-осада живёт заметно дольше спавнера
 	antag_heavy = TRUE // угроза всей станции: мягкие профили такое выключают
 	family = "blob" // с рулсетами-двойниками динамика (гост-блоб, заражение): не подряд

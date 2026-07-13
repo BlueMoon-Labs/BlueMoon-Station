@@ -1579,7 +1579,8 @@
 
 /// Сторожевой тест регрессии "на эксте раньше спаунились антаги": все события-спавнеры гост-ролей
 /// обязаны жить в GHOST-пуле (а не в MAJOR, который у Light/Extended выключен долей 0), с ненулевыми
-/// cost/intensity и долгим linger - вклад держит antag_load, пока спавненный антаг живёт.
+/// cost/intensity и метаданными точного preflight. После спавна вклад переводится на живой
+/// трекинг созданного моба, поэтому фиксированный долгий linger больше не нужен.
 /// Исключения: wizard-события (пул Summon Events), праздничные (holidayID) и осознанно
 /// не-антагские (sentience - дружелюбная, qareen - джинн не гарантированно враждебен).
 /datum/unit_test/director_ghost_event_classification
@@ -1597,7 +1598,8 @@
 		TEST_ASSERT_EQUAL(control.severity, DIRECTOR_SEVERITY_GHOST, "[control_name]: событие-спавнер гост-роли обязано жить в GHOST-пуле")
 		TEST_ASSERT(control.cost > 0, "[control_name]: гост-антаг событие без cost")
 		TEST_ASSERT(control.intensity > 0, "[control_name]: гост-антаг событие без intensity")
-		TEST_ASSERT(control.intensity_linger >= 30 MINUTES, "[control_name]: вклад гост-антага обязан жить после спавнера (linger)")
+		TEST_ASSERT(control.director_ghost_minimum > 0, "[control_name]: preflight гост-роли не знает минимального числа кандидатов")
+		TEST_ASSERT(control.director_ghost_preference, "[control_name]: preflight гост-роли не знает требуемый preference")
 	// Пираты и рейдеры реализованы обычными событиями (не ghost_role), но поллят призраков.
 	var/datum/round_event_control/pirates/pirates_control = locate() in SSdirector.actions
 	TEST_ASSERT_NOTNULL(pirates_control, "Событие Space Pirates должно быть зарегистрировано у директора")
@@ -1787,3 +1789,99 @@
 		throw e
 	SSdirector.beat_log = saved_beat_log
 	SSdirector.restore_simulation_state(saved)
+
+/// Провал после note_fired обязан полностью откатить пейсинг. Это сценарий Ratvar из прод-лога:
+/// бюджет вернулся, но ANTAG heavy-spacing и глобальная пауза оставались на 30 минут.
+/datum/unit_test/director_failed_action_rolls_back_spacing
+
+/datum/unit_test/director_failed_action_rolls_back_spacing/Run()
+	var/list/saved = SSdirector.capture_simulation_state()
+	try
+		var/datum/director_profile/profile = new /datum/director_profile/medium
+		SSdirector.profile = profile
+		SSdirector.reset_budgets(0)
+		SSdirector.intensity_ledger = list()
+		SSdirector.fired_counts = list()
+		SSdirector.family_fired_counts = list()
+		SSdirector.family_last_fired_at = list()
+		SSdirector.action_failure_cooldowns = list()
+		SSdirector.action_attempt_rollbacks = list()
+		var/datum/dynamic_ruleset/midround/ratvar_awakening/rule = new
+		rule.family = "test_clockcult"
+		var/old_any = world.time - 20 MINUTES
+		var/old_real = world.time - 21 MINUTES
+		var/old_heavy = world.time - profile.antag_heavy_spacing - 1
+		var/old_family = world.time - profile.family_spacing - 1
+		SSdirector.last_any_fired_at = old_any
+		SSdirector.last_real_fired_at = old_real
+		SSdirector.last_antag_heavy_at = old_heavy
+		SSdirector.family_last_fired_at[rule.family] = old_family
+		SSdirector.pool_saving = list(DIRECTOR_SEVERITY_ANTAG = rule)
+		rule.executed_at = world.time - 30 MINUTES
+		var/old_executed_at = rule.executed_at
+		rule.occurrences++
+		SSdirector.note_fired(rule)
+		TEST_ASSERT_EQUAL(SSdirector.last_antag_heavy_at, world.time, "Предварительный запуск должен поставить heavy-spacing")
+		TEST_ASSERT_NULL(SSdirector.pool_saving[DIRECTOR_SEVERITY_ANTAG], "Предварительный запуск должен снять исполненную цель копилки")
+		// Не создаём реальный двухсекундный таймер внутри unit test, но проверяем карантин замены.
+		SSdirector.dry_run = TRUE
+		SSdirector.note_failed_action(rule, refund_budget = TRUE, retry_replacement = TRUE)
+		SSdirector.dry_run = FALSE
+		TEST_ASSERT_EQUAL(SSdirector.last_any_fired_at, old_any, "Провал обязан вернуть global-spacing")
+		TEST_ASSERT_EQUAL(SSdirector.last_real_fired_at, old_real, "Провал обязан вернуть таймер реальной тишины")
+		TEST_ASSERT_EQUAL(SSdirector.last_antag_heavy_at, old_heavy, "Провал обязан вернуть ANTAG heavy-spacing")
+		TEST_ASSERT_EQUAL(SSdirector.family_last_fired_at[rule.family], old_family, "Провал обязан вернуть паузу семейства")
+		TEST_ASSERT_EQUAL(rule.executed_at, old_executed_at, "Провал обязан вернуть возраст исполнения рулсета")
+		TEST_ASSERT_EQUAL(rule.occurrences, 0, "Провал не должен съедать occurrence")
+		TEST_ASSERT_EQUAL(SSdirector.fired_counts[rule.severity], 0, "Провал не должен считаться в доле ступени")
+		TEST_ASSERT_EQUAL(SSdirector.budgets[rule.severity], rule.cost, "Провал обязан вернуть бюджет")
+		TEST_ASSERT(SSdirector.action_recently_failed(rule), "Сам провалившийся вариант должен временно исключаться ради замены")
+	catch(var/exception/e)
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	SSdirector.restore_simulation_state(saved)
+
+/// Статический linger Spawn Slaughter Demon раньше держал 30 intensity ещё десятки минут после
+/// смерти. Живая группа должна дать полный вклад при жизни и исчезнуть сразу после смерти моба.
+/datum/unit_test/director_ghost_role_intensity_tracks_life
+
+/datum/unit_test/director_ghost_role_intensity_tracks_life/Run()
+	var/list/saved = SSdirector.capture_simulation_state()
+	try
+		var/datum/round_event_control/slaughter/control = locate() in SSdirector.actions
+		TEST_ASSERT_NOTNULL(control, "Spawn Slaughter Demon должен быть зарегистрирован у директора")
+		var/mob/living/carbon/human/spawned = allocate(/mob/living/carbon/human)
+		spawned.mind_initialize()
+		SSdirector.actions = list(control)
+		SSdirector.intensity_ledger = list(list(control.action_name(), control.intensity, 0, control.severity))
+		SSdirector.live_ghost_role_spawns = list()
+		TEST_ASSERT(SSdirector.track_ghost_role_spawn(control, list(spawned)), "Успешный гост-спаун должен перейти на живой трекинг")
+		TEST_ASSERT_EQUAL(length(SSdirector.intensity_ledger), 0, "Статический мост должен сниматься после реального спауна")
+		TEST_ASSERT_EQUAL(SSdirector.get_active_intensity(), control.intensity, "Живой демон должен давать полный настроенный вклад")
+		spawned.stat = DEAD
+		TEST_ASSERT_EQUAL(SSdirector.get_active_intensity(), 0, "Мёртвый демон не должен занимать intensity")
+		TEST_ASSERT_EQUAL(length(SSdirector.live_ghost_role_spawns), 0, "Пустая живая группа должна удаляться")
+	catch(var/exception/e)
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	SSdirector.restore_simulation_state(saved)
+
+/// Ratvar не должен становиться планом ANTAG-пула, если после prefs/ban/job/antag фильтров
+/// некому выдать роль. Раньше его ready() проверял только контрроли и пропускал пустой candidates.
+/datum/unit_test/director_ratvar_preflight_requires_candidates
+
+/datum/unit_test/director_ratvar_preflight_requires_candidates/Run()
+	var/datum/game_mode/dynamic/mode = SSticker.mode
+	var/list/saved_living = mode.current_players[CURRENT_LIVING_PLAYERS]
+	try
+		mode.current_players[CURRENT_LIVING_PLAYERS] = list()
+		var/datum/dynamic_ruleset/midround/ratvar_awakening/rule = new
+		rule.mode = mode
+		rule.required_candidates = 1
+		rule.enemy_roles = list()
+		TEST_ASSERT(!rule.director_preflight(), "Ratvar без подходящего экипажа обязан провалить preflight")
+		TEST_ASSERT(findtext(rule.director_preflight_failure, "подходящих членов экипажа 0 из 1"), "Ratvar должен объяснить точное число кандидатов")
+	catch(var/exception/e)
+		mode.current_players[CURRENT_LIVING_PLAYERS] = saved_living
+		throw e
+	mode.current_players[CURRENT_LIVING_PLAYERS] = saved_living

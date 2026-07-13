@@ -9,6 +9,8 @@
 	severity = DIRECTOR_SEVERITY_GHOST // антаг из призраков - гост-пул, а не MODERATE от категории
 	cost = 8
 	intensity = 10 // медленная фоновая угроза, лечится вирусологией
+	director_ghost_jobban = ROLE_ALIEN
+	director_ghost_preference = ROLE_ALIEN
 	family = "sentient_disease" // с рулсетом-двойником динамика: не подряд
 	// Не экста: цель болезни - заражать экипаж, а правила эксты разрешают только мирных
 	// к экипажу антагов (враждебное - по запросу через OPFOR/администрацию).

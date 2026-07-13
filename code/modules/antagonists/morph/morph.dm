@@ -359,6 +359,8 @@
 	severity = DIRECTOR_SEVERITY_GHOST // форс-запуск обязан считаться антаг-нагрузкой
 	cost = 10
 	intensity = 15
+	director_ghost_jobban = ROLE_ALIEN
+	director_ghost_preference = ROLE_ALIEN
 	family = "morph" // с рулсетом-двойником динамика: не подряд
 	description = "Spawns a hungry shapeshifting blobby creature."
 

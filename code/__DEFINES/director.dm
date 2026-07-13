@@ -62,6 +62,7 @@
 #define DIRECTOR_REJECT_CAN_FIRE "can_fire"
 /// Рулсет прошёл can_fire(), но сейчас не наберёт кандидатов/контрролей или не имеет точки спауна
 #define DIRECTOR_REJECT_READINESS "readiness"
+#define DIRECTOR_REJECT_RECENT_FAILURE "recent_failure"
 #define DIRECTOR_REJECT_NO_WEIGHT "no_weight"
 /// Антаг-нагрузка достигла цели профиля (crew * antag_intensity_per_crew) - новых антагов не льём
 #define DIRECTOR_REJECT_ANTAG_SATURATED "antag_saturated"

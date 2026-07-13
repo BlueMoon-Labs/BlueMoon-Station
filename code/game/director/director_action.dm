@@ -43,6 +43,10 @@
 	/// Филлер: пустышки вроде "Nothing" и мигания ламп. Не выбирается гарантированным битом -
 	/// после долгой тишины директор обязан выдать реальный контент, а не ещё одну тишину.
 	var/filler = FALSE
+	/// Последняя неинтерактивная проверка фактической готовности. Панель читает эти поля,
+	/// поэтому preflight не должен открывать опросы, выдавать роли или менять состояние раунда.
+	var/director_preflight_detail = null
+	var/director_preflight_failure = null
 
 /// Имя для конфига/логов/панели. Обязано быть уникальным среди действий.
 /datum/director_action/proc/action_name()
@@ -83,6 +87,11 @@
 		if(DIRECTOR_SEVERITY_MINOR)
 			return DIRECTOR_DISRUPTION_MILD
 	return DIRECTOR_DISRUPTION_DISRUPTIVE
+
+/// Вторая ступень готовности непосредственно перед выбором. null = действие не реализует
+/// отдельный preflight и полагается на execute_action(); TRUE/FALSE = явный результат.
+/datum/director_action/proc/director_preflight()
+	return null
 
 /// Запуск действия. Возвращает TRUE при успехе.
 /datum/director_action/proc/execute_action()

@@ -17,8 +17,6 @@
 	var/list/list_observers = list()
 	/// Деталь последней проверки ready() для панели и истории исполнения.
 	var/ready_failure_reason = null
-	/// Сводка успешной preflight-проверки (например, число подходящих призраков).
-	var/director_preflight_detail = null
 
 /// Директор выбрал midround-рулсет: собираем кандидатов (trim -> ready),
 /// затем отложенно исполняем с учётом delay. Бюджет уже списан в SSdirector.spend_and_execute.
@@ -32,8 +30,23 @@
 /// Неинтерактивная проверка непосредственно перед выбором директора. null означает, что рулсет
 /// не поддерживает preflight и будет проверен обычным execute_action(). Наследники не должны
 /// открывать опросы или выдавать роли отсюда: панель вызывает этот proc каждые несколько секунд.
-/datum/dynamic_ruleset/midround/proc/director_preflight()
+/datum/dynamic_ruleset/midround/director_preflight()
 	return null
+
+/// Общий безопасный preflight для рулсетов, которые после trim_candidates() кладут всех
+/// потенциальных получателей роли в candidates. В отличие от crew-wizard этот путь не поллит.
+/datum/dynamic_ruleset/midround/proc/director_preflight_candidates()
+	trim_candidates()
+	if(length(candidates) < required_candidates)
+		ready_failure_reason = "подходящих членов экипажа [length(candidates)] из [required_candidates] (преференс midround, роль, бан и ограничения)"
+		director_preflight_failure = ready_failure_reason
+		return FALSE
+	if(!ready())
+		director_preflight_failure = ready_failure_reason
+		return FALSE
+	director_preflight_detail = "подходящих членов экипажа: [length(candidates)], требуется: [required_candidates]"
+	director_preflight_failure = null
+	return TRUE
 
 /datum/dynamic_ruleset/midround/from_ghosts
 	// Игроки приходят из призраков, а не из экипажа - своя ступень директора со своим
@@ -60,6 +73,9 @@
 			trimmed_list.Remove(M)
 			continue
 		if (!M.client) // Are they connected?
+			trimmed_list.Remove(M)
+			continue
+		if(required_type == /mob/dead/observer && !M.can_reenter_round(TRUE))
 			trimmed_list.Remove(M)
 			continue
 		if(should_use_midround_pref && !(M.client.prefs.toggles & MIDROUND_ANTAG))
@@ -103,6 +119,7 @@
 /datum/dynamic_ruleset/midround/ready(forced = FALSE)
 	ready_failure_reason = null
 	director_preflight_detail = null
+	director_preflight_failure = null
 	if (!forced)
 		var/job_check = 0
 		if (enemy_roles.len > 0)
@@ -131,7 +148,8 @@
 
 /datum/dynamic_ruleset/midround/from_ghosts/director_preflight()
 	trim_candidates()
-	return ready()
+	. = ready()
+	director_preflight_failure = . ? null : ready_failure_reason
 
 /datum/dynamic_ruleset/midround/from_ghosts/execute()
 	execution_failure_reason = null
@@ -265,7 +283,8 @@
 
 /datum/dynamic_ruleset/midround/autotraitor/director_preflight()
 	trim_candidates()
-	return ready()
+	. = ready()
+	director_preflight_failure = . ? null : ready_failure_reason
 
 /datum/dynamic_ruleset/midround/autotraitor/execute()
 	// BLUEMOON ADD START - если нет кандидатов и не выданы все роли, иначе выдаст рантайм
@@ -321,9 +340,13 @@
 
 
 /datum/dynamic_ruleset/midround/families/ready(forced = FALSE)
-	if (required_candidates > living_players.len)
+	if (required_candidates > candidates.len)
+		ready_failure_reason = "подходящих членов экипажа [candidates.len] из [required_candidates] для семей"
 		return FALSE
 	return ..()
+
+/datum/dynamic_ruleset/midround/families/director_preflight()
+	return director_preflight_candidates()
 
 /datum/dynamic_ruleset/midround/families/pre_execute()
 	..()
@@ -547,8 +570,17 @@
 /datum/dynamic_ruleset/midround/ratvar_awakening/acceptable(population=0, threat=0)
 	if (locate(/datum/dynamic_ruleset/roundstart/clockcult) in mode.executed_rules)
 		return FALSE // Unavailable if clockies exist at round start
-	indice_pop = min(clock_cap.len, round(living_players.len/5)+1)
+	indice_pop = min(clock_cap.len, round(population/5)+1)
 	required_candidates = clock_cap[indice_pop]
+	return ..()
+
+/datum/dynamic_ruleset/midround/ratvar_awakening/director_preflight()
+	return director_preflight_candidates()
+
+/datum/dynamic_ruleset/midround/ratvar_awakening/ready(forced = FALSE)
+	if(length(candidates) < required_candidates)
+		ready_failure_reason = "подходящих членов экипажа [length(candidates)] из [required_candidates] для культа Ратвара"
+		return FALSE
 	return ..()
 
 /datum/dynamic_ruleset/midround/ratvar_awakening/trim_candidates()
@@ -618,8 +650,17 @@
 /datum/dynamic_ruleset/midround/narsie_awakening/acceptable(population=0, threat=0)
 	if (locate(/datum/dynamic_ruleset/roundstart/bloodcult) in mode.executed_rules)
 		return FALSE
-	indice_pop = min(blood_cap.len, round(living_players.len/5)+1)
+	indice_pop = min(blood_cap.len, round(population/5)+1)
 	required_candidates = blood_cap[indice_pop]
+	return ..()
+
+/datum/dynamic_ruleset/midround/narsie_awakening/director_preflight()
+	return director_preflight_candidates()
+
+/datum/dynamic_ruleset/midround/narsie_awakening/ready(forced = FALSE)
+	if(length(candidates) < required_candidates)
+		ready_failure_reason = "подходящих членов экипажа [length(candidates)] из [required_candidates] для культа Нар'Си"
+		return FALSE
 	return ..()
 
 /datum/dynamic_ruleset/midround/narsie_awakening/trim_candidates()
@@ -720,6 +761,15 @@
 
 		if(player.mind && (player.mind.special_role || length(player.mind.antag_datums) > 0))
 			candidates -= player
+
+/datum/dynamic_ruleset/midround/blob_infection/director_preflight()
+	return director_preflight_candidates()
+
+/datum/dynamic_ruleset/midround/blob_infection/ready(forced = FALSE)
+	if(length(candidates) < required_candidates)
+		ready_failure_reason = "подходящих членов экипажа [length(candidates)] из [required_candidates] для заражения блобом"
+		return FALSE
+	return ..()
 
 /datum/dynamic_ruleset/midround/blob_infection/execute()
 	// BLUEMOON ADD START - если нет кандидатов и не выданы все роли, иначе выдаст рантайм
@@ -1347,6 +1397,16 @@
 			candidates -= player
 		else if(HAS_TRAIT(player, TRAIT_ROBOTIC_ORGANISM)) // никаких роботов-вампиров из далекого космоса
 			candidates -= player
+
+/datum/dynamic_ruleset/midround/bloodsuckers/ready(forced = FALSE)
+	var/needed = get_antag_cap(length(living_players)) * (scaled_times + 1)
+	if(length(candidates) < needed)
+		ready_failure_reason = "подходящих членов экипажа [length(candidates)] из [needed] для кровососов"
+		return FALSE
+	return ..()
+
+/datum/dynamic_ruleset/midround/bloodsuckers/director_preflight()
+	return director_preflight_candidates()
 
 /datum/dynamic_ruleset/midround/bloodsuckers/pre_execute(population)
 	. = ..()

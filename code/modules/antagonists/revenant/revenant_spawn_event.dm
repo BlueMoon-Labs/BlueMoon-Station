@@ -10,6 +10,8 @@
 	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
 	cost = 8
 	intensity = 10 // мягкий фоновый призрак, классика лоупопа
+	director_ghost_jobban = ROLE_REVENANT
+	director_ghost_preference = ROLE_REVENANT
 	family = "revenant" // с рулсетом-двойником динамика: не подряд
 	// Не экста: ревенант высасывает жизнь из экипажа, а правила эксты разрешают только мирных
 	// к экипажу антагов (враждебное - по запросу через OPFOR/администрацию).

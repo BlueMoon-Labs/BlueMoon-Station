@@ -9,6 +9,9 @@
 	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
 	cost = 10
 	intensity = 15
+	director_ghost_jobban = ROLE_ABDUCTOR
+	director_ghost_preference = ROLE_ABDUCTOR
+	director_ghost_minimum = 2
 	family = "abductors" // с рулсетом-двойником динамика: не подряд
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // не экста и не лайт; крупный антагонист
 	description = "One or more abductor teams spawns, and they plan to experiment on the crew."

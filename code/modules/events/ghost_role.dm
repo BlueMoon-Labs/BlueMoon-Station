@@ -42,13 +42,13 @@
 			signing up.")
 		refund_failed_spawn("гост-опрос завершился без достаточного числа желающих")
 	else if(status == SUCCESSFUL_SPAWN)
-		message_admins("[role_name] spawned successfully.")
-		if(spawned_mobs.len)
+		if(spawned_mobs.len && SSdirector.track_ghost_role_spawn(control, spawned_mobs))
+			message_admins("[role_name] spawned successfully.")
 			for(var/mob/M in spawned_mobs)
 				announce_to_ghosts(M)
 		else
-			message_admins("No mobs found in the `spawned_mobs` list, this is \
-				a bug.")
+			message_admins("[role_name] reported a successful spawn without any live spawned mobs. Aborting and refunding; this is a bug.")
+			refund_failed_spawn("spawn_role() сообщил успех, но не создал отслеживаемую роль")
 	else
 		message_admins("An attempt to spawn [role_name] returned [status], \
 			this is a bug.")
@@ -62,9 +62,9 @@
 	if(!control)
 		return
 	// Бюджет тратился только на естественный запуск через бит (админ-форс идёт мимо кошельков).
-	SSdirector.note_failed_action(control, refund_budget = triggered_randomly)
+	SSdirector.note_failed_action(control, refund_budget = triggered_randomly, retry_replacement = triggered_randomly)
 	SSdirector.director_log_beat(SSdirector.collect_signals(), control, DIRECTOR_BEAT_FAILED,
-		detail = "[reason]; [triggered_randomly ? "бюджет возвращён" : "ручной запуск, бюджет не списывался"]")
+		detail = "[reason]; [triggered_randomly ? "бюджет и паузы возвращены, запрошена замена" : "ручной запуск, бюджет не списывался; паузы возвращены"]")
 
 /datum/round_event/ghost_role/proc/spawn_role()
 	// Return true if role was successfully spawned, false if insufficent

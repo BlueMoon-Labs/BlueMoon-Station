@@ -177,6 +177,7 @@ const REJECT_LABELS: Record<string, string> = {
   budget: 'нет бюджета',
   can_fire: 'не готово (can_fire)',
   readiness: 'не готов рулсет (кандидаты/контрроли/карта)',
+  recent_failure: 'недавно не исполнилось — пробуем другой вариант',
   no_weight: 'нулевой вес',
   antag_saturated: 'антагов достаточно',
   saving: 'пул копит на цель',

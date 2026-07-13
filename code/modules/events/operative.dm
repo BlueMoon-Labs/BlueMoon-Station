@@ -8,6 +8,8 @@
 	severity = DIRECTOR_SEVERITY_GHOST // admin_only, но форс-запуск обязан считаться антаг-нагрузкой
 	cost = 15
 	intensity = 20 // одиночка, но с ядерным риском
+	director_ghost_jobban = ROLE_OPERATIVE
+	director_ghost_preference = ROLE_OPERATIVE
 	description = "A single nuclear operative assaults the station."
 
 // Мирный вариант по правилам проекта: на Extended и Dynamic Light одинокий оперативник

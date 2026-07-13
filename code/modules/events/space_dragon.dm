@@ -9,6 +9,8 @@
 	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
 	cost = 10
 	intensity = 15
+	director_ghost_jobban = ROLE_SPACE_DRAGON
+	director_ghost_preference = ROLE_SPACE_DRAGON
 	family = "space_dragon" // с рулсетом-двойником динамика: не подряд
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // как у рулсета-двойника: не экста и не лайт
 	description = "Spawns a space dragon, which will try to take over the station."

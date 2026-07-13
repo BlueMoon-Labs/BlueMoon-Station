@@ -15,6 +15,10 @@
 /// Пауза между записями лога о тяжёлом тике одного и того же события: событие с вечно
 /// тяжёлым tick() (каждые 2 секунды) не должно засорять game.log построчным спамом.
 #define DIRECTOR_EVENT_HEAVY_LOG_COOLDOWN (30 SECONDS)
+/// Провалившееся действие ненадолго исключается из выбора: быстрый повтор предлагает раунду
+/// другой вариант, а не тот же самый 30-секундный гост-опрос.
+#define DIRECTOR_FAILED_ACTION_COOLDOWN (5 MINUTES)
+#define DIRECTOR_FAILED_ACTION_RETRY_DELAY (2 SECONDS)
 /// Возраст исполнения, до которого живой рулсет даёт полный вклад в intensity.
 /// Для раундстартов возраст считается от старта раунда, для мидраунд/латеджойн-инжекций -
 /// от их собственного запуска (executed_at).
@@ -78,6 +82,9 @@ SUBSYSTEM_DEF(director)
 	var/list/family_last_fired_at = list()
 	/// Активные вклады intensity: список list(name, amount, expires_at или 0 если "пока живо", severity или null для внешних вкладов)
 	var/list/intensity_ledger = list()
+	/// Успешные ghost-role события: ассоциативные записи с minds/weakref мобов. Их вклад
+	/// существует по факту жизни созданных ролей, а не фиксированные 30-45 минут после спавнера.
+	var/list/live_ghost_role_spawns = list()
 	/// Счётчик запусков по ступеням за раунд (для share_correction)
 	var/list/fired_counts = list()
 	/// Кулдаун быстрых wizard-битов
@@ -94,6 +101,11 @@ SUBSYSTEM_DEF(director)
 	/// выжигали бы кошелёк раньше, чем дорогие вообще становились доступны, и нюк-асолт за 20
 	/// не случался бы никогда при живом автотрейторе за 8.
 	var/list/pool_saving = list()
+	/// Действие -> world.time конца короткого карантина после фактического провала.
+	var/list/action_failure_cooldowns = list()
+	/// Действие -> снимок пейсинга до note_fired(). Нужен, пока асинхронный рулсет/ghost poll
+	/// не подтвердит, что контент действительно появился.
+	var/list/action_attempt_rollbacks = list()
 	/// Отсев кандидатов последнего боевого бита: severity -> (DIRECTOR_REJECT_* -> счётчик) (для панели)
 	var/list/last_reject_stats
 	/// Кэш живой оценки пула (evaluate_pool) и время его сборки
@@ -247,6 +259,7 @@ SUBSYSTEM_DEF(director)
 /datum/controller/subsystem/director/proc/antag_load()
 	var/list/live_names = list()
 	. = get_ruleset_intensity(live_names)
+	. += get_ghost_role_intensity(live_names, only_antag = TRUE)
 	for(var/list/entry in intensity_ledger)
 		if(DIRECTOR_IS_ANTAG_POOL(entry[4]) && !live_names[entry[1]] && (!entry[3] || entry[3] > now()))
 			. += entry[2]
@@ -264,7 +277,7 @@ SUBSYSTEM_DEF(director)
 	quiet_eval = TRUE
 	for(var/sev in list(DIRECTOR_SEVERITY_ANTAG, DIRECTOR_SEVERITY_GHOST))
 		var/datum/director_action/target = pool_saving[sev]
-		if(!QDELETED(target) && target.can_fire(signals) && action_preflight(target))
+		if(!QDELETED(target) && !action_recently_failed(target) && target.can_fire(signals) && action_preflight(target))
 			continue
 		roll_pool_target(sev, signals)
 	quiet_eval = FALSE
@@ -283,6 +296,8 @@ SUBSYSTEM_DEF(director)
 		// накопления - пул заморозился бы на неисполнимом плане.
 		if(action.antag_heavy && !profile.antag_heavy_enabled)
 			continue
+		if(action_recently_failed(action))
+			continue
 		if(!action.can_fire(signals))
 			continue
 		if(!action_preflight(action))
@@ -293,14 +308,44 @@ SUBSYSTEM_DEF(director)
 	pool_saving[sev] = length(options) ? pickweight(options) : null
 	return pool_saving[sev]
 
-/// Неинтерактивная проверка второй ступени готовности рулсета (кандидаты, контрроли,
-/// точки спауна). Обычные события и рулсеты без реализации preflight считаются готовыми.
+/// Неинтерактивная проверка второй ступени готовности (кандидаты, контрроли, точки спауна).
+/// null от действия означает, что отдельной проверки у него нет.
 /datum/controller/subsystem/director/proc/action_preflight(datum/director_action/action)
-	if(!istype(action, /datum/dynamic_ruleset/midround))
-		return TRUE
-	var/datum/dynamic_ruleset/midround/rule = action
-	var/result = rule.director_preflight()
+	var/result = action.director_preflight()
 	return isnull(result) ? TRUE : result
+
+/// Точный неинтерактивный аналог фильтра до ghost poll: способен вернуться в раунд,
+/// подключён, включил нужную роль и не имеет соответствующего/InteQ-бана.
+/datum/controller/subsystem/director/proc/count_eligible_ghosts(jobban_type = null, preference_flag = null)
+	var/count = 0
+	for(var/mob/candidate as anything in get_all_ghost_role_eligible(priority_only = FALSE))
+		if(!candidate.key || !candidate.client)
+			continue
+		if(preference_flag && (!(candidate.client.prefs) || !(preference_flag in candidate.client.prefs.be_special)))
+			continue
+		if(jobban_type && (jobban_isbanned(candidate, jobban_type) || jobban_isbanned(candidate, ROLE_INTEQ)))
+			continue
+		count++
+	return count
+
+/datum/controller/subsystem/director/proc/ghost_event_preflight(datum/round_event_control/control)
+	var/eligible = count_eligible_ghosts(control.director_ghost_jobban, control.director_ghost_preference)
+	var/role_text = control.director_ghost_preference ? " для роли [control.director_ghost_preference]" : ""
+	control.director_preflight_detail = "подходящих гостов: [eligible], требуется: [control.director_ghost_minimum][role_text]"
+	if(eligible < control.director_ghost_minimum)
+		control.director_preflight_failure = "подходящих гостов [eligible] из [control.director_ghost_minimum][role_text] (роль, бан или таймаут возврата)"
+		return FALSE
+	control.director_preflight_failure = null
+	return TRUE
+
+/datum/controller/subsystem/director/proc/action_recently_failed(datum/director_action/action)
+	var/until = action_failure_cooldowns[action]
+	if(!until)
+		return FALSE
+	if(until <= now())
+		action_failure_cooldowns -= action
+		return FALSE
+	return TRUE
 
 /// Дефицит антаг-нагрузки (0..1) - скорость антаг-капли пропорциональна ему: пустой от антагов
 /// раунд (все выбыли или залегли) наполняет кошельки полным ходом, насыщенный не копит вовсе
@@ -499,6 +544,7 @@ SUBSYSTEM_DEF(director)
 /datum/controller/subsystem/director/proc/get_active_intensity(list/breakdown = null)
 	var/list/live_names = list()
 	var/total = get_ruleset_intensity(live_names, breakdown)
+	total += get_ghost_role_intensity(live_names, breakdown)
 	// Итерация по индексам с конца: удаление записи внутри for-in сдвигало бы список
 	// и пропускало элемент, следующий за истёкшим (он бы не суммировался в этом вызове).
 	for(var/i = length(intensity_ledger), i >= 1, i--)
@@ -519,13 +565,74 @@ SUBSYSTEM_DEF(director)
 /// антаг-инжекций) не считается: три скрытных раундстарт-антага дают intensity, но игрокам
 /// "ничего не видно" - гарантия обязана продолжать работать.
 /datum/controller/subsystem/director/proc/get_event_intensity()
-	var/total = 0
+	var/total = get_ghost_role_intensity(only_antag = FALSE)
 	for(var/list/entry in intensity_ledger)
 		if(DIRECTOR_IS_ANTAG_POOL(entry[4]))
 			continue
 		if(entry[3] && entry[3] < now())
 			continue
 		total += entry[2]
+	return total
+
+/// Перевод успешного ghost-role события со статического мостика ledger на реальные созданные
+/// роли. Mind переживает смену тела, weakref покрывает редкие управляемые мобы без mind.
+/datum/controller/subsystem/director/proc/track_ghost_role_spawn(datum/round_event_control/control, list/spawned_mobs)
+	if(!control || !length(spawned_mobs))
+		return FALSE
+	var/list/minds = list()
+	var/list/mob_refs = list()
+	for(var/mob/spawned as anything in spawned_mobs)
+		if(QDELETED(spawned))
+			continue
+		if(spawned.mind)
+			minds |= spawned.mind
+		else
+			mob_refs += WEAKREF(spawned)
+	if(!length(minds) && !length(mob_refs))
+		return FALSE
+	remove_intensity(control.action_name())
+	live_ghost_role_spawns += list(list(
+		"name" = control.action_name(),
+		"intensity" = control.intensity,
+		"severity" = control.severity,
+		"minds" = minds,
+		"mobs" = mob_refs,
+	))
+	confirm_action_success(control)
+	pool_cache = null
+	return TRUE
+
+/// Живая нагрузка ghost-role событий. only_antag: null = все для общего intensity,
+/// TRUE = только ANTAG/GHOST для клапана антагов, FALSE = только видимые не-антаг события.
+/datum/controller/subsystem/director/proc/get_ghost_role_intensity(list/live_names = null, list/breakdown = null, only_antag = null)
+	var/total = 0
+	for(var/i = length(live_ghost_role_spawns), i >= 1, i--)
+		var/list/entry = live_ghost_role_spawns[i]
+		var/list/minds = entry["minds"]
+		var/list/mob_refs = entry["mobs"]
+		var/assigned = length(minds) + length(mob_refs)
+		var/living = 0
+		for(var/datum/mind/assigned_mind as anything in minds)
+			var/mob/current = assigned_mind?.current
+			if(!current || current.stat == DEAD)
+				continue
+			living++
+		for(var/datum/weakref/mob_ref as anything in mob_refs)
+			var/mob/current = mob_ref.resolve()
+			if(current && current.stat != DEAD)
+				living++
+		if(!assigned || !living)
+			live_ghost_role_spawns.Cut(i, i + 1)
+			continue
+		var/is_antag = DIRECTOR_IS_ANTAG_POOL(entry["severity"])
+		if(!isnull(only_antag) && is_antag != only_antag)
+			continue
+		var/amount = entry["intensity"] * living / assigned
+		total += amount
+		if(!isnull(breakdown))
+			breakdown += list(list(entry["name"], amount, living, assigned))
+		if(!isnull(live_names))
+			live_names[entry["name"]] = TRUE
 	return total
 
 /// Регистрация вклада intensity. expires_at = 0 означает "снимется вручную по завершении".
@@ -625,11 +732,10 @@ SUBSYSTEM_DEF(director)
 	var/antag_load_now = antag_target_now > 0 ? antag_load() : 0
 	var/antag_saturated = antag_target_now > 0 && antag_load_now >= antag_target_now
 	for(var/datum/director_action/action as anything in actions)
-		// Не показываем в строке раннего глобального отсева результат preflight с прошлой
-		// оценки: он мог устареть вместе со списком призраков/экипажа.
-		if(istype(action, /datum/dynamic_ruleset/midround))
-			var/datum/dynamic_ruleset/midround/preflight_rule = action
-			preflight_rule.director_preflight_detail = null
+		// Не показываем результат preflight с прошлой оценки: он мог устареть вместе со
+		// списком призраков/экипажа.
+		action.director_preflight_detail = null
+		action.director_preflight_failure = null
 		var/sev = action.severity
 		if(sev in blocked_severities)
 			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_BLOCKED)
@@ -684,6 +790,10 @@ SUBSYSTEM_DEF(director)
 			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_FAMILY,
 				detail = isnull(verdicts) ? null : minutes_left_text(family_left))
 			continue
+		if(action_recently_failed(action))
+			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_RECENT_FAILURE,
+				detail = isnull(verdicts) ? null : "новая попытка через [minutes_left_text(action_failure_cooldowns[action] - now())]; сейчас выбирается замена")
+			continue
 		// can_fire проверяет статический контракт, preflight рулсета - живых кандидатов,
 		// контрроли и карту. Оба стоят до бюджета/копилки: неисполнимая цель не должна
 		// замораживать антаг-кошелёк и маскироваться в панели как "не хватает очков".
@@ -693,12 +803,8 @@ SUBSYSTEM_DEF(director)
 				verdict_reason = diag ? diag["reason"] : null, detail = diag ? diag["detail"] : null)
 			continue
 		if(!action_preflight(action))
-			var/preflight_detail
-			if(istype(action, /datum/dynamic_ruleset/midround))
-				var/datum/dynamic_ruleset/midround/rule = action
-				preflight_detail = rule.ready_failure_reason
 			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_READINESS,
-				detail = preflight_detail || "внутренняя проверка ready() не пройдена")
+				detail = action.director_preflight_failure || "внутренняя проверка ready() не пройдена")
 			continue
 		// Гейт по кошельку своей ступени, а не по общему бюджету: MAJOR/ANTAG больше не голодают
 		// из-за трат дешёвых MINOR/MODERATE.
@@ -773,9 +879,7 @@ SUBSYSTEM_DEF(director)
 		"verdict" = verdict,
 		"detail" = detail,
 	)
-	if(istype(action, /datum/dynamic_ruleset/midround))
-		var/datum/dynamic_ruleset/midround/rule = action
-		entry["preflight"] = rule.director_preflight_detail
+	entry["preflight"] = action.director_preflight_detail
 	return entry
 
 /// Объяснение конкретного взвешенного выбора: помогает отличить "выбрал случайно из пяти"
@@ -927,15 +1031,16 @@ SUBSYSTEM_DEF(director)
 		// Провал ДО планирования (например, рулсет не набрал кандидатов) - вернуть списанное.
 		// Провал ПОСЛЕ таймера (execute_scheduled_ruleset) рефандится отдельно через rule.clean_up().
 		budgets[action.severity] += spent
+		action_failure_cooldowns[action] = now() + DIRECTOR_FAILED_ACTION_COOLDOWN
 		return FALSE
 	action.occurrences++
 	note_fired(action, from_latejoin = (source == "latejoin"))
 	return TRUE
 
-/// Откат учёта действия, которое было принято/запланировано, но не породило контент
-/// (например, гост-опрос без желающих). Пауза попытки сохраняется намеренно, чтобы не
-/// спамить призраков тем же опросом каждый бит; попытка, доли, intensity и бюджет возвращаются.
-/datum/controller/subsystem/director/proc/note_failed_action(datum/director_action/action, refund_budget = FALSE)
+/// Откат учёта действия, которое было принято/запланировано, но не породило контент.
+/// Возвращаются не только бюджет/intensity, но и все паузы: провальный Ratvar не имеет права
+/// закрыть ANTAG-пул на полчаса. Само действие получает короткий карантин, затем ищется замена.
+/datum/controller/subsystem/director/proc/note_failed_action(datum/director_action/action, refund_budget = FALSE, retry_replacement = FALSE)
 	if(action.occurrences > 0)
 		action.occurrences--
 	// Латеджойн note_fired() намеренно не входит в доли битов, откатывать там нечего.
@@ -943,16 +1048,106 @@ SUBSYSTEM_DEF(director)
 		fired_counts[action.severity]--
 	if(action.family && (family_fired_counts[action.family] || 0) > 0)
 		family_fired_counts[action.family]--
+	rollback_action_attempt(action)
 	remove_intensity(action.action_name())
 	if(refund_budget)
 		refund_to_budget(action.severity, action.cost)
+	if(retry_replacement)
+		action_failure_cooldowns[action] = now() + DIRECTOR_FAILED_ACTION_COOLDOWN
+		if(pool_saving[action.severity] == action)
+			pool_saving[action.severity] = null
+		if(!dry_run)
+			addtimer(CALLBACK(src, PROC_REF(retry_failed_action), action), DIRECTOR_FAILED_ACTION_RETRY_DELAY)
 	pool_cache = null
+
+/// Сохраняем бухгалтерию до предварительного note_fired только для действий, которые способны
+/// подтвердить провал позже: отложенные рулсеты и события с ghost poll.
+/datum/controller/subsystem/director/proc/remember_action_attempt(datum/director_action/action)
+	if(dry_run)
+		return
+	var/is_delayed_ruleset = istype(action, /datum/dynamic_ruleset)
+	var/datum/round_event_control/event_control = action
+	var/is_ghost_poll = istype(event_control) && ispath(event_control.typepath, /datum/round_event/ghost_role)
+	if(!is_delayed_ruleset && !is_ghost_poll)
+		return
+	var/executed_at = 0
+	if(is_delayed_ruleset)
+		var/datum/dynamic_ruleset/rule = action
+		executed_at = rule.executed_at
+	action_attempt_rollbacks[action] = list(
+		"at" = now(),
+		"last_any" = last_any_fired_at,
+		"last_real" = last_real_fired_at,
+		"last_latejoin" = last_latejoin_at,
+		"last_severity" = last_fired_at[action.severity] || 0,
+		"last_antag_heavy" = last_antag_heavy_at,
+		"last_ghost_heavy" = last_ghost_heavy_at,
+		"family_last" = action.family ? (family_last_fired_at[action.family] || 0) : 0,
+		"executed_at" = executed_at,
+	)
+
+/datum/controller/subsystem/director/proc/rollback_action_attempt(datum/director_action/action)
+	var/list/snapshot = action_attempt_rollbacks[action]
+	if(!islist(snapshot))
+		return
+	var/stamped_at = snapshot["at"]
+	// Не затираем более новый форс/бит, если он успел случиться до ответа асинхронного опроса.
+	if(last_any_fired_at == stamped_at)
+		last_any_fired_at = snapshot["last_any"]
+	if(last_real_fired_at == stamped_at)
+		last_real_fired_at = snapshot["last_real"]
+	if(last_latejoin_at == stamped_at)
+		last_latejoin_at = snapshot["last_latejoin"]
+	if(last_fired_at[action.severity] == stamped_at)
+		last_fired_at[action.severity] = snapshot["last_severity"]
+	if(last_antag_heavy_at == stamped_at)
+		last_antag_heavy_at = snapshot["last_antag_heavy"]
+	if(last_ghost_heavy_at == stamped_at)
+		last_ghost_heavy_at = snapshot["last_ghost_heavy"]
+	if(action.family && family_last_fired_at[action.family] == stamped_at)
+		family_last_fired_at[action.family] = snapshot["family_last"]
+	if(action.director_kind == DIRECTOR_KIND_RULESET)
+		var/datum/dynamic_ruleset/rule = action
+		if(rule.executed_at == stamped_at)
+			rule.executed_at = snapshot["executed_at"]
+	action_attempt_rollbacks -= action
+
+/datum/controller/subsystem/director/proc/confirm_action_success(datum/director_action/action)
+	action_attempt_rollbacks -= action
+	action_failure_cooldowns -= action
+
+/// Асинхронный отказ не ждёт следующего минутного бита: после короткой технической задержки
+/// заново оцениваем именно тот же ANTAG/GHOST-пул, исключив провалившийся вариант.
+/datum/controller/subsystem/director/proc/retry_failed_action(datum/director_action/failed_action)
+	if(!action_recently_failed(failed_action))
+		return
+	if(paused || !profile || pending_action || !SSticker.HasRoundStarted())
+		return
+	var/severity = failed_action.severity
+	if(!(severity in list(DIRECTOR_SEVERITY_ANTAG, DIRECTOR_SEVERITY_GHOST)))
+		return
+	var/datum/director_signals/signals = collect_signals()
+	if(signals.evac_state == DIRECTOR_EVAC_GONE || signals.effective_crew <= 0)
+		return
+	ensure_pool_targets(signals)
+	var/list/reject_stats = list()
+	var/list/candidates = filter_candidates(signals, FALSE, reject_stats)
+	for(var/datum/director_action/candidate as anything in candidates.Copy())
+		if(candidate.severity != severity)
+			candidates -= candidate
+	last_reject_stats = reject_stats
+	if(!length(candidates))
+		return
+	var/datum/director_action/replacement = pickweight(candidates)
+	message_admins("DIRECTOR: [failed_action.action_name()] не породил антагониста; паузы и бюджет возвращены, предлагаю замену [replacement.action_name()].")
+	announce_pick(replacement, candidates, FALSE, signals)
 
 /// Общий учёт запуска (и естественного, и форса админом). from_latejoin: инжекция из окна захода
 /// игрока - у неё собственный трек спейсинга (last_latejoin_at), и она не трогает паузы битов:
 /// латеджойн-трейтор невидим для игроков в момент выдачи, он не "событие" в темпе раунда,
 /// и запирать им полосу битов (или таймер тишины) нельзя - именно так лейтджойны душили биты.
 /datum/controller/subsystem/director/proc/note_fired(datum/director_action/action, from_latejoin = FALSE)
+	remember_action_attempt(action)
 	// Возраст исполнения для затухания вклада (tally_ruleset_intensity): штампуется на ЛЮБОЙ
 	// запуск рулсета (бит, латеджойн, форс админа). Окно delay между schedule и execute на
 	// масштабе 40-минутного затухания несущественно.
@@ -1174,3 +1369,5 @@ SUBSYSTEM_DEF(director)
 #undef DIRECTOR_POOL_CACHE_TIME
 #undef DIRECTOR_EVENT_HEAVY_TICK_USAGE
 #undef DIRECTOR_EVENT_HEAVY_LOG_COOLDOWN
+#undef DIRECTOR_FAILED_ACTION_COOLDOWN
+#undef DIRECTOR_FAILED_ACTION_RETRY_DELAY

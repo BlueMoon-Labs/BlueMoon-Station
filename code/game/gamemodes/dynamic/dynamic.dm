@@ -526,8 +526,10 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 /datum/game_mode/dynamic/proc/execute_scheduled_ruleset(datum/dynamic_ruleset/rule)
 	threat_log += "[worldtime2text()]: [rule.ruletype] [rule.name] spent [rule.cost]"
 	rule.execution_failure_reason = null
-	rule.pre_execute(current_players[CURRENT_LIVING_PLAYERS].len)
-	if (rule.execute())
+	var/prepared = rule.pre_execute(current_players[CURRENT_LIVING_PLAYERS].len)
+	if(!prepared && !rule.execution_failure_reason)
+		rule.execution_failure_reason = "pre_execute() не нашёл достаточно кандидатов"
+	if (prepared && rule.execute())
 		log_game("DYNAMIC: Injected a [rule.ruletype] ruleset [rule.name].")
 		if(rule.flags & HIGH_IMPACT_RULESET)
 			high_impact_ruleset_executed = TRUE
@@ -542,11 +544,12 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 		if (rule.persistent)
 			current_rules += rule
 		new_snapshot(rule)
+		SSdirector.confirm_action_success(rule)
 		SSdirector.director_log_beat(SSdirector.collect_signals(), rule, DIRECTOR_BEAT_EXECUTED,
 			detail = "исполнение подтверждено; назначено ролей: [length(rule.assigned)]")
 		return TRUE
 	rule.clean_up()
-	SSdirector.note_failed_action(rule)
+	SSdirector.note_failed_action(rule, retry_replacement = istype(rule, /datum/dynamic_ruleset/midround))
 	var/failure_detail = rule.execution_failure_reason || "execute() вернул FALSE; бюджет возвращён"
 	SSdirector.director_log_beat(SSdirector.collect_signals(), rule, DIRECTOR_BEAT_FAILED, detail = failure_detail)
 	if(rule.execution_failure_reason)
