@@ -38,10 +38,10 @@
 			lim = processing_list.len
 		return processing_list
 
-/datum/unit_test/get_all_contents_fast_leaf/proc/assert_same_atoms(list/reference, list/optimized, context)
-	TEST_ASSERT_EQUAL(length(optimized), length(reference), "[context]: result length changed")
+/datum/unit_test/proc/assert_same_list_order(list/reference, list/optimized, length_error, order_error)
+	TEST_ASSERT_EQUAL(length(optimized), length(reference), length_error)
 	for(var/i in 1 to length(reference))
-		TEST_ASSERT_EQUAL(optimized[i], reference[i], "[context]: result order changed at index [i]")
+		TEST_ASSERT_EQUAL(optimized[i], reference[i], "[order_error] at index [i]")
 
 /datum/unit_test/get_all_contents_fast_leaf
 	priority = TEST_LONGER
@@ -54,13 +54,13 @@
 	allocate(/obj/effect/get_all_contents_test_other, nested)
 	allocate(/obj/effect/get_all_contents_test_leaf, nested)
 
-	assert_same_atoms(reference_get_all_contents(root, null), root.GetAllContents(), "unfiltered nested tree")
-	assert_same_atoms(reference_get_all_contents(root, /obj/effect/get_all_contents_test_leaf), root.GetAllContents(/obj/effect/get_all_contents_test_leaf), "filtered nested tree")
+	assert_same_list_order(reference_get_all_contents(root, null), root.GetAllContents(), "unfiltered nested tree: result length changed", "unfiltered nested tree: result order changed")
+	assert_same_list_order(reference_get_all_contents(root, /obj/effect/get_all_contents_test_leaf), root.GetAllContents(/obj/effect/get_all_contents_test_leaf), "filtered nested tree: result length changed", "filtered nested tree: result order changed")
 
 	var/obj/effect/get_all_contents_test_leaf/lone_leaf = allocate(/obj/effect/get_all_contents_test_leaf, test_turf)
-	assert_same_atoms(reference_get_all_contents(lone_leaf, null), lone_leaf.GetAllContents(), "unfiltered leaf")
-	assert_same_atoms(reference_get_all_contents(lone_leaf, /obj/effect/get_all_contents_test_leaf), lone_leaf.GetAllContents(/obj/effect/get_all_contents_test_leaf), "matching filtered leaf")
-	assert_same_atoms(reference_get_all_contents(lone_leaf, /mob), lone_leaf.GetAllContents(/mob), "non-matching filtered leaf")
+	assert_same_list_order(reference_get_all_contents(lone_leaf, null), lone_leaf.GetAllContents(), "unfiltered leaf: result length changed", "unfiltered leaf: result order changed")
+	assert_same_list_order(reference_get_all_contents(lone_leaf, /obj/effect/get_all_contents_test_leaf), lone_leaf.GetAllContents(/obj/effect/get_all_contents_test_leaf), "matching filtered leaf: result length changed", "matching filtered leaf: result order changed")
+	assert_same_list_order(reference_get_all_contents(lone_leaf, /mob), lone_leaf.GetAllContents(/mob), "non-matching filtered leaf: result length changed", "non-matching filtered leaf: result order changed")
 
 	for(var/i in 1 to 256)
 		allocate(/obj/effect/get_all_contents_test_leaf, root)
@@ -126,9 +126,7 @@
 
 	var/list/reference = reference_get_hearers_in_view(0, test_turf)
 	var/list/optimized = get_hearers_in_view(0, test_turf)
-	TEST_ASSERT_EQUAL(length(optimized), length(reference), "Recursive hearer count changed")
-	for(var/i in 1 to length(reference))
-		TEST_ASSERT_EQUAL(optimized[i], reference[i], "Recursive hearer order changed at index [i]")
+	assert_same_list_order(reference, optimized, "Recursive hearer count changed", "Recursive hearer order changed")
 
 	for(var/i in 1 to 48)
 		var/obj/effect/hearer_contents_test_container/bench_container = allocate(/obj/effect/hearer_contents_test_container, test_turf)

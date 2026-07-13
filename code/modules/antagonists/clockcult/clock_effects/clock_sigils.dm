@@ -239,9 +239,8 @@
 	alpha = TRANSMISSION_SIGIL_BASE_ALPHA
 	color = "#EC8A2D"
 	light_color = "#EC8A2D"
-	resist_string = "glows faintly"
+	resist_string = "слабо светится оранжевым светом"
 	sigil_name = "Sigil of Transmission"
-	affects_servants = TRUE
 
 /obj/effect/clockwork/sigil/transmission/ex_act(severity, target, origin)
 	if(severity == 3)

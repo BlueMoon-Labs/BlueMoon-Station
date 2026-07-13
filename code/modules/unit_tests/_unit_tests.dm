@@ -69,6 +69,7 @@
 /// A trait source when adding traits through unit tests
 #define TRAIT_SOURCE_UNIT_TESTS "unit_tests"
 
+#include "advanced_locator.dm"
 #include "anchored_mobs.dm"
 #include "atmos_gas_propagation.dm"
 #include "atmos_native.dm"
@@ -109,10 +110,8 @@
 #include "lighting_deferred_init.dm"
 #include "light_range_cap.dm"
 #include "area_tracking.dm"
-#include "advanced_locator.dm"
 #include "cleanable_decals_tracking.dm"
 #include "clockwork_power.dm"
-#include "recursive_hotpaths.dm"
 #include "login_path_async_audit.dm"
 #include "lighting_performance.dm"
 #include "machine_disassembly.dm"
@@ -136,6 +135,7 @@
 // #include "reagent_mod_expose.dm"
 // #include "reagent_mod_procs.dm"
 #include "reagent_recipe_collisions.dm"
+#include "recursive_hotpaths.dm"
 #include "resist.dm"
 // #include "say.dm"
 // #include "security_officer_distribution.dm"

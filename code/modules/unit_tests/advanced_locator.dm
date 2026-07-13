@@ -27,6 +27,9 @@
 /obj/effect/advanced_locator_unit_test_clutter
 	name = "advanced locator benchmark clutter"
 
+/// Non-atom target for weakref input validation.
+/datum/advanced_locator_unit_test_non_atom
+
 /// Covers output/pulse equivalence for rejected inputs and preserves both valid search modes.
 /datum/unit_test/advanced_locator_behavior/Run()
 	var/turf/test_turf = run_loc_floor_bottom_left
@@ -37,6 +40,7 @@
 	locator.do_work()
 	TEST_ASSERT(isnull(locator.get_pin_data(IC_OUTPUT, 1)), "Unsupported input must clear the located-ref output")
 	TEST_ASSERT_EQUAL(locator.not_found_pulses, 1, "Unsupported input must emit exactly one not-found pulse")
+	TEST_ASSERT_EQUAL(locator.found_pulses, 0, "Unsupported input must not emit a found pulse")
 
 	var/obj/effect/advanced_locator_unit_test_target/dead_target = allocate(/obj/effect/advanced_locator_unit_test_target, test_turf)
 	var/datum/weakref/dead_ref = WEAKREF(dead_target)
@@ -45,6 +49,15 @@
 	locator.do_work()
 	TEST_ASSERT(isnull(locator.get_pin_data(IC_OUTPUT, 1)), "A dead reference must clear the located-ref output")
 	TEST_ASSERT_EQUAL(locator.not_found_pulses, 2, "A dead reference must emit exactly one not-found pulse")
+	TEST_ASSERT_EQUAL(locator.found_pulses, 0, "A dead reference must not emit a found pulse")
+
+	var/datum/advanced_locator_unit_test_non_atom/non_atom_target = new
+	allocated += non_atom_target
+	locator.set_pin_data(IC_INPUT, 1, WEAKREF(non_atom_target))
+	locator.do_work()
+	TEST_ASSERT(isnull(locator.get_pin_data(IC_OUTPUT, 1)), "A non-atom reference must clear the located-ref output")
+	TEST_ASSERT_EQUAL(locator.not_found_pulses, 3, "A non-atom reference must emit exactly one not-found pulse")
+	TEST_ASSERT_EQUAL(locator.found_pulses, 0, "A non-atom reference must not emit a found pulse")
 
 	var/obj/effect/advanced_locator_unit_test_target/type_target = allocate(/obj/effect/advanced_locator_unit_test_target, test_turf)
 	allocate(/obj/effect/advanced_locator_unit_test_target/subtype, test_turf)
@@ -52,12 +65,14 @@
 	locator.do_work()
 	TEST_ASSERT_EQUAL(locator.get_pin_data(IC_OUTPUT, 1), type_target, "Reference lookup must retain exact-type matching and exclude subtypes")
 	TEST_ASSERT_EQUAL(locator.found_pulses, 1, "A reference match must emit exactly one found pulse")
+	TEST_ASSERT_EQUAL(locator.not_found_pulses, 3, "A reference match must not emit a not-found pulse")
 
 	var/obj/effect/advanced_locator_unit_test_text_target/text_target = allocate(/obj/effect/advanced_locator_unit_test_text_target, test_turf)
 	locator.set_pin_data(IC_INPUT, 1, "unique advanced locator needle")
 	locator.do_work()
 	TEST_ASSERT_EQUAL(locator.get_pin_data(IC_OUTPUT, 1), text_target, "Text lookup must still match the combined name and description")
 	TEST_ASSERT_EQUAL(locator.found_pulses, 2, "A text match must emit exactly one found pulse")
+	TEST_ASSERT_EQUAL(locator.not_found_pulses, 3, "A text match must not emit a not-found pulse")
 
 /// The pre-optimization implementation, retained only for a paired invalid-input benchmark.
 /datum/unit_test/advanced_locator_invalid_input_bench/proc/reference_do_work(obj/item/integrated_circuit/input/advanced_locator/unit_test/locator)
@@ -75,16 +90,14 @@
 			return
 		var/desired_type = A.type
 		if(desired_type)
-			for(var/i in nearby_things)
-				var/atom/thing = i
+			for(var/atom/thing as anything in nearby_things)
 				if(ismob(thing) && !isliving(thing))
 					continue
 				if(thing.type == desired_type)
 					valid_things.Add(thing)
 	else if(istext(I.data))
 		var/DT = I.data
-		for(var/i in nearby_things)
-			var/atom/thing = i
+		for(var/atom/thing as anything in nearby_things)
 			if(ismob(thing) && !isliving(thing))
 				continue
 			if(findtext(addtext(thing.name, " ", thing.desc), DT, 1, 0))
