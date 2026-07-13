@@ -200,11 +200,87 @@
 	icon = 'modular_bluemoon/icons/turf/walls/plastitanium_wall.dmi'
 	icon_state = "plastitanium_wall-0"
 	base_icon_state = "plastitanium_wall"
+	smooth = SMOOTH_FALSE
 	smoothing_flags = SMOOTH_BITMASK | SMOOTH_OBJ | SMOOTH_DIAGONAL_CORNERS
-	canSmoothWith = SMOOTH_GROUP_SHUTTLE_PARTS + SMOOTH_GROUP_AIRLOCK + SMOOTH_GROUP_WINDOW_FULLTILE_PLASTITANIUM + SMOOTH_GROUP_WINDOW_FULLTILE + SMOOTH_GROUP_PLASTITANIUM_WALLS + SMOOTH_GROUP_WALLS
+	smoothing_groups = SMOOTH_GROUP_PLASTITANIUM_WALLS + SMOOTH_GROUP_SHUTTLE_PARTS
+	canSmoothWith = SMOOTH_GROUP_SHUTTLE_PARTS + SMOOTH_GROUP_AIRLOCK + SMOOTH_GROUP_WINDOW_FULLTILE_PLASTITANIUM + SMOOTH_GROUP_PLASTITANIUM_WALLS
+
+/turf/closed/wall/r_wall/plastitanium/nodiagonal
+	smooth = SMOOTH_FALSE
+	smoothing_flags = SMOOTH_BITMASK | SMOOTH_OBJ
+	icon_state = "plastitanium_wall-0"
+
+/turf/closed/wall/r_wall/plastitanium/overspace
+	icon = 'icons/turf/walls/misc_wall.dmi'
+	icon_state = "plastitanium_overspace"
+	smooth = SMOOTH_FALSE
+	smoothing_flags = NONE
+	fixed_underlay = list("space" = TRUE)
 
 /turf/closed/wall/r_wall/plastitanium/syndicate
-	canSmoothWith = SMOOTH_GROUP_SHUTTLE_PARTS + SMOOTH_GROUP_AIRLOCK + SMOOTH_GROUP_WINDOW_FULLTILE_PLASTITANIUM + SMOOTH_GROUP_WINDOW_FULLTILE + SMOOTH_GROUP_PLASTITANIUM_WALLS + SMOOTH_GROUP_WALLS + SMOOTH_GROUP_SYNDICATE_WALLS
+	smoothing_groups = SMOOTH_GROUP_PLASTITANIUM_WALLS + SMOOTH_GROUP_SYNDICATE_WALLS + SMOOTH_GROUP_SHUTTLE_PARTS
+	canSmoothWith = SMOOTH_GROUP_SHUTTLE_PARTS + SMOOTH_GROUP_AIRLOCK + SMOOTH_GROUP_WINDOW_FULLTILE_PLASTITANIUM + SMOOTH_GROUP_PLASTITANIUM_WALLS + SMOOTH_GROUP_SYNDICATE_WALLS
+
+/turf/closed/wall/r_wall/plastitanium/syndicate/nodiagonal
+	smooth = SMOOTH_FALSE
+	smoothing_flags = SMOOTH_BITMASK | SMOOTH_OBJ
+	icon_state = "plastitanium_wall-0"
+
+/turf/closed/wall/r_wall/plastitanium/syndicate/overspace
+	icon = 'icons/turf/walls/misc_wall.dmi'
+	icon_state = "plastitanium_overspace"
+	smooth = SMOOTH_FALSE
+	smoothing_flags = NONE
+	fixed_underlay = list("space" = TRUE)
+
+/turf/closed/wall/r_wall/syndicate
+	icon = 'modular_bluemoon/icons/turf/walls/plastitanium_wall.dmi'
+	icon_state = "plastitanium_wall-0"
+	base_icon_state = "plastitanium_wall"
+	smooth = SMOOTH_FALSE
+	smoothing_flags = SMOOTH_BITMASK | SMOOTH_OBJ | SMOOTH_DIAGONAL_CORNERS
+	smoothing_groups = SMOOTH_GROUP_PLASTITANIUM_WALLS + SMOOTH_GROUP_SYNDICATE_WALLS + SMOOTH_GROUP_SHUTTLE_PARTS
+	canSmoothWith = SMOOTH_GROUP_SHUTTLE_PARTS + SMOOTH_GROUP_AIRLOCK + SMOOTH_GROUP_WINDOW_FULLTILE_PLASTITANIUM + SMOOTH_GROUP_PLASTITANIUM_WALLS + SMOOTH_GROUP_SYNDICATE_WALLS
+
+/turf/closed/wall/r_wall/syndicate/nodiagonal
+	smooth = SMOOTH_FALSE
+	smoothing_flags = SMOOTH_BITMASK | SMOOTH_OBJ
+	icon_state = "plastitanium_wall-0"
+
+/turf/closed/wall/r_wall/syndicate/nosmooth
+	icon = 'icons/turf/shuttle.dmi'
+	icon_state = "wall"
+	smooth = SMOOTH_FALSE
+	smoothing_flags = NONE
+
+/turf/closed/wall/r_wall/syndicate/overspace
+	icon = 'icons/turf/walls/misc_wall.dmi'
+	icon_state = "plastitanium_overspace"
+	smooth = SMOOTH_FALSE
+	smoothing_flags = NONE
+	fixed_underlay = list("space" = TRUE)
+
+/turf/closed/wall/r_wall/syndicate/pirate
+	smoothing_groups = SMOOTH_GROUP_PLASTITANIUM_WALLS + SMOOTH_GROUP_SYNDICATE_WALLS + SMOOTH_GROUP_SHUTTLE_PARTS
+	canSmoothWith = SMOOTH_GROUP_SHUTTLE_PARTS + SMOOTH_GROUP_AIRLOCK + SMOOTH_GROUP_WINDOW_FULLTILE_PLASTITANIUM + SMOOTH_GROUP_PLASTITANIUM_WALLS + SMOOTH_GROUP_SYNDICATE_WALLS
+
+/turf/closed/wall/r_wall/syndicate/pirate/nodiagonal
+	smooth = SMOOTH_FALSE
+	smoothing_flags = SMOOTH_BITMASK | SMOOTH_OBJ
+	icon_state = "plastitanium_wall-0"
+
+/turf/closed/wall/r_wall/syndicate/pirate/nosmooth
+	icon = 'icons/turf/shuttle.dmi'
+	icon_state = "wall"
+	smooth = SMOOTH_FALSE
+	smoothing_flags = NONE
+
+/turf/closed/wall/r_wall/syndicate/pirate/overspace
+	icon = 'icons/turf/walls/misc_wall.dmi'
+	icon_state = "plastitanium_overspace"
+	smooth = SMOOTH_FALSE
+	smoothing_flags = NONE
+	fixed_underlay = list("space" = TRUE)
 
 /turf/closed/indestructible/reinforced
 	icon = 'modular_bluemoon/icons/turf/walls/reinforced_wall.dmi'
@@ -221,8 +297,8 @@
 	base_icon_state = "wood_wall"
 	smooth = SMOOTH_FALSE
 	smoothing_flags = SMOOTH_BITMASK | SMOOTH_OBJ
-	smoothing_groups = SMOOTH_GROUP_WOOD_WALLS + SMOOTH_GROUP_WALLS + SMOOTH_GROUP_CLOSED_TURFS
-	canSmoothWith = SMOOTH_GROUP_AIRLOCK + SMOOTH_GROUP_WINDOW_FULLTILE + SMOOTH_GROUP_WOOD_WALLS + SMOOTH_GROUP_WALLS
+	smoothing_groups = SMOOTH_GROUP_WOOD_WALLS
+	canSmoothWith = SMOOTH_GROUP_AIRLOCK + SMOOTH_GROUP_WINDOW_FULLTILE + SMOOTH_GROUP_WOOD_WALLS
 
 /turf/closed/indestructible/sandstone
 	icon = 'modular_bluemoon/icons/turf/walls/sandstone_wall.dmi'
@@ -248,4 +324,7 @@
 	icon = 'modular_bluemoon/icons/turf/walls/plastitanium_wall.dmi'
 	icon_state = "plastitanium_wall-0"
 	base_icon_state = "plastitanium_wall"
-	canSmoothWith = SMOOTH_GROUP_AIRLOCK + SMOOTH_GROUP_WINDOW_FULLTILE + SMOOTH_GROUP_PLASTITANIUM_WALLS + SMOOTH_GROUP_WALLS
+	smooth = SMOOTH_FALSE
+	smoothing_flags = SMOOTH_BITMASK | SMOOTH_OBJ | SMOOTH_DIAGONAL_CORNERS
+	smoothing_groups = SMOOTH_GROUP_PLASTITANIUM_WALLS + SMOOTH_GROUP_SYNDICATE_WALLS + SMOOTH_GROUP_SHUTTLE_PARTS
+	canSmoothWith = SMOOTH_GROUP_SHUTTLE_PARTS + SMOOTH_GROUP_AIRLOCK + SMOOTH_GROUP_WINDOW_FULLTILE_PLASTITANIUM + SMOOTH_GROUP_PLASTITANIUM_WALLS + SMOOTH_GROUP_SYNDICATE_WALLS

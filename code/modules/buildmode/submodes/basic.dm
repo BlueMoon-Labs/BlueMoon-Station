@@ -43,10 +43,11 @@
 		log_admin("Build Mode: [key_name(c)] built an airlock at [AREACOORD(object)]")
 		new/obj/machinery/door/airlock(get_turf(object))
 	else if(istype(object,/turf) && ctrl_click && left_click)
-		var/obj/structure/window/reinforced/window
+		var/obj/structure/window/window
 		if(BM.build_dir == NORTHWEST)
 			window = new /obj/structure/window/reinforced/fulltile(get_turf(object))
 		else
 			window = new /obj/structure/window/reinforced(get_turf(object))
-		window.setDir(BM.build_dir)
+			window.setDir(BM.build_dir)
+		window.update_nearby_icons()
 		log_admin("Build Mode: [key_name(c)] built a window at [AREACOORD(object)]")
