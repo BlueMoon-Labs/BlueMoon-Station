@@ -8,12 +8,7 @@
 	write_log_target = "tailhuged by"
 	interaction_sound = 'sound/weapons/thudswoosh.ogg'
 
-/datum/interaction/tailhug/display_interaction(mob/living/user, mob/living/target)
-	..()
-	if(!HAS_TRAIT(user, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(user.loc)
-	if(!HAS_TRAIT(target, TRAIT_LEWD_JOB))
-		new /obj/effect/temp_visual/heart(target.loc)
+	hearts_effect = TRUE
 
 /datum/interaction/tailweave
 	description = "Сплестись хвостами."
@@ -26,13 +21,15 @@
 	write_log_target = "tailweaved by"
 	interaction_sound = 'sound/weapons/thudswoosh.ogg'
 
-/datum/interaction/tailweave/display_interaction(mob/living/user, mob/living/target)
-	..()
-	if(HAS_TRAIT(target, TRAIT_SHY) && prob(10))
-		target.emote("blush")
-	if(HAS_TRAIT(user, TRAIT_SHY) && prob(10))
-		user.emote("blush")
+	hearts_effect = TRUE
 
+/datum/interaction/tailweave/display_interaction(mob/living/user, mob/living/target, is_hidden)
+	. = ..()
+	var/chance = is_hidden ? 2 : 10
+	if(HAS_TRAIT(target, TRAIT_SHY) && prob(chance))
+		target.emote("blush")
+	if(HAS_TRAIT(user, TRAIT_SHY) && prob(chance))
+		user.emote("blush")
 
 /datum/interaction/selfhugtail
 	description = "Обнять свой хвост."
@@ -42,6 +39,7 @@
 	write_log_user = "selftailhug"
 	interaction_sound = 'sound/weapons/thudswoosh.ogg'
 	max_distance = 0
+	hearts_effect = TRUE
 
 /datum/interaction/lewd/slap/tail
 	description = "Хвост. Шлёпнуть по заднице хвостом."
@@ -353,19 +351,18 @@
 	write_log_target = "had tailchoked by"
 	p13target_emote = PLUG13_EMOTE_MASOCHISM
 
-/datum/interaction/lewd/tail_choke/display_interaction(mob/living/user, mob/living/partner)
+/datum/interaction/lewd/tail_choke/display_interaction(mob/living/user, mob/living/partner, is_hidden)
 	var/message
 	var/oxy_damage = user.a_intent == INTENT_HARM ? rand(3, 6) : 3
 	var/lust_amount = LOW_LUST //если наша цель довести до пика, то не стоит это закрывать за попытками увести в крит от удушья
 	if(partner.getOxyLoss() > 40) //задушить и руками можно, это чисто ЕРП эмоут
 		oxy_damage = 0
-	var/is_hidden = ..()
 	var/distance = 7
-	var/volume = 50
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 50
 	var/picked_hidden = pick(hidden_additional)
 	if(is_hidden)
 		distance = 1
-		volume = sound_quiet_volume
 	if(user.a_intent == INTENT_HARM)
 		message = list(
 			"грубо обхватывает своим хвостом шею <b>\the [partner]</b>, стараясь перекрыть доступ к воздуху.",
@@ -398,6 +395,6 @@
 	if(HAS_TRAIT(partner, TRAIT_CHOKE_SLUT))
 		lust_amount = NORMAL_LUST
 	partner.set_is_fucking(user, CUM_TARGET_TAIL)
-	user.visible_message(span_danger("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [(islist(message) ? pick(message) : message)]."), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
-	playlewdinteractionsound(get_turf(user), 'sound/weapons/thudswoosh.ogg', volume, 1, -1)
+	user.visible_message(span_danger("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [(islist(message) ? pick(message) : message)]."), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+	playlewdinteractionsound(get_turf(user), 'sound/weapons/thudswoosh.ogg', volume, 1, extrarange)
 	partner.handle_post_sex(lust_amount, CUM_TARGET_HAND, user)

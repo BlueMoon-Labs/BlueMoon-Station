@@ -602,12 +602,13 @@
 /obj/structure/carp_rift
 	name = "carp rift"
 	desc = "A rift akin to the ones space carp use to travel long distances."
-	armor = list(MELEE = 30, BULLET = 30, LASER = 30, ENERGY = 100, BOMB = 50, BIO = 100, RAD = 100, FIRE = 100, ACID = 100)
+	armor = list(MELEE = 30, BULLET = 30, LASER = 30, ENERGY = 100, BOMB = 100, BIO = 100, RAD = 100, FIRE = 100, ACID = 100)
 	max_integrity = 300
 	icon = 'icons/obj/carp_rift.dmi'
 	icon_state = "carp_rift_carpspawn"
 	light_color = LIGHT_COLOR_PURPLE
 	light_range = 10
+	light_flags = LIGHT_NO_RANGE_CAP // статичный заякоренный рифт: свечение выше базового капа
 	anchored = TRUE
 	density = FALSE
 	layer = MASSIVE_OBJ_LAYER

@@ -66,7 +66,8 @@
 	r_hand = /obj/item/storage/briefcase/medical
 	l_pocket = /obj/item/laser_pointer
 
-	backpack_contents = list(/obj/item/syndicate_uplink=1, /obj/item/storage/pill_bottle/mannitol, /obj/item/storage/pill_bottle/psicodine, /obj/item/storage/pill_bottle/paxpsych, /obj/item/storage/pill_bottle/happinesspsych, /obj/item/storage/pill_bottle/lsdpsych)
+	backpack_contents = list(/obj/item/syndicate_uplink/station=1, /obj/item/storage/pill_bottle/mannitol, /obj/item/storage/pill_bottle/psicodine, /obj/item/storage/pill_bottle/paxpsych, /obj/item/storage/pill_bottle/happinesspsych, /obj/item/storage/pill_bottle/lsdpsych)
+	accessory = list(/obj/item/clothing/accessory/permit/special/syndie_station)
 
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/med
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/med

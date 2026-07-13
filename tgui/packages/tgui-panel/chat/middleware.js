@@ -9,7 +9,7 @@ import DOMPurify from 'dompurify';
 
 import { flushSaveToServer, getLastSavedAt, scheduleSaveToServer } from '../serverState';
 import { loadSettings, updateSettings } from '../settings/actions';
-import { CHAT_ANIM_SPEEDS } from '../settings/constants';
+import { CHAT_ANIM_SPEEDS, MESSAGE_STYLES } from '../settings/constants';
 import { selectSettings } from '../settings/selectors';
 import { addChatPage, changeChatPage, changeScrollTracking, loadChat, rebuildChat, removeChatPage, saveChatToDisk, toggleAcceptedType, updateChatPage, updateMessageCount } from './actions';
 import { MAX_PERSISTED_MESSAGES, MESSAGE_SAVE_INTERVAL } from './constants';
@@ -140,6 +140,17 @@ const createApplySettings = () => {
         settings.chatBgColor,
         settings.chatTextColor,
         settings.chatAccentColor);
+    }
+    if (anyChanged(prev, settings, ['styleOverrides', 'spanAnimations'])) {
+      // Normalize so the renderer always sees every known style id and
+      // clears stale properties for styles that lost their override.
+      const normalized = {};
+      for (const style of MESSAGE_STYLES) {
+        normalized[style.id] = settings.styleOverrides?.[style.id] || {};
+      }
+      chatRenderer.setStyleOverrides(
+        normalized,
+        settings.spanAnimations !== false);
     }
 
     // Animation speed

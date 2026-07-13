@@ -549,6 +549,11 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 	refresh_actions()
 
 /datum/action_group/proc/refresh_actions()
+	var/list/cleaned_actions = list()
+	for(var/atom/movable/screen/button as anything in actions)
+		if(button && !QDELETED(button))
+			cleaned_actions += button
+	actions = cleaned_actions
 
 	// We don't use size() here because landings are not canon
 	var/total_rows = ROUND_UP(length(actions) / column_max)
@@ -557,11 +562,11 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 
 	var/button_number = 0
 	for(var/atom/movable/screen/button as anything in actions)
-		var/postion = ButtonNumberToScreenCoords(button_number )
+		var/postion = ButtonNumberToScreenCoords(button_number)
 		button.screen_loc = postion
 		button_number++
 
-	if(landing)
+	if(landing && !QDELETED(landing))
 		var/postion = ButtonNumberToScreenCoords(button_number, landing = TRUE) // Need a good way to count buttons off screen, but allow this to display in the right place if it's being placed with no concern for dropdown
 		landing.screen_loc = postion
 		button_number++

@@ -197,13 +197,15 @@ GLOBAL_LIST_INIT(available_depts, list(SEC_DEPT_ENGINEERING, SEC_DEPT_MEDICAL, S
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
 	l_pocket = /obj/item/restraints/handcuffs
 	r_pocket = /obj/item/assembly/flash/handheld
-	backpack_contents = list(/obj/item/storage/ifak, /obj/item/syndicate_uplink_high=1)
+	backpack_contents = list(/obj/item/storage/ifak, /obj/item/storage/box/sec_kit,
+						/obj/item/gun/ballistic/automatic/pistol/enforcer/nomag,
+						/obj/item/ammo_box/magazine/e45/taser=3, /obj/item/syndicate_uplink/station=1)
 
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	box = /obj/item/storage/box/survival/syndie
-	accessory = list(/obj/item/clothing/accessory/permit/special/security)
+	accessory = list(/obj/item/clothing/accessory/permit/special/security, /obj/item/clothing/accessory/permit/special/syndie_station)
 	pda_slot = ITEM_SLOT_BELT
 
 /obj/item/radio/headset/headset_sec/alt/department/Initialize(mapload)

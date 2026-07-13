@@ -33,7 +33,8 @@
 
 /obj/machinery/atmospherics/components/unary/portables_connector/process_atmos()
 	if(!connected_device)
-		return
+		// Nothing docked, nothing to reconcile; connect() re-adds us to SSair.
+		return PROCESS_KILL
 	update_parents()
 
 /obj/machinery/atmospherics/components/unary/portables_connector/can_unwrench(mob/user)

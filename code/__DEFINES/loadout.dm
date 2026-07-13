@@ -80,9 +80,11 @@
 #define LOADOUT_LIMBS		 		list(LOADOUT_LIMB_NORMAL,LOADOUT_LIMB_PROSTHETIC,LOADOUT_LIMB_AMPUTATED) //you can amputate your legs/arms though
 
 //loadout saving/loading specific defines
-#define MAXIMUM_LOADOUT_SAVES		5
+#define MAXIMUM_LOADOUT_SAVES		10
 #define LOADOUT_ITEM				"loadout_item"
 #define LOADOUT_COLOR				"loadout_color"
+#define LOADOUT_COLOR_MODE			"loadout_color_mode"
+#define LOADOUT_COLOR_HSV_DATA		"loadout_color_hsv_data"
 #define LOADOUT_CUSTOM_NAME			"loadout_custom_name"
 #define LOADOUT_CUSTOM_DESCRIPTION	"loadout_custom_description"
 #define LOADOUT_IS_HEIRLOOM			"loadout_is_heirloom" // BLUEMOON ADD - выбор вещей из лодаута как family heirloom

@@ -367,6 +367,7 @@
 		on = FALSE
 	mark_apc_light_cache_dirty(A)
 	nightshift_update_queued = FALSE
+	GLOB.nightshift_light_queue -= src
 	QDEL_NULL(cell)
 	return ..()
 

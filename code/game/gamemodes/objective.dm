@@ -86,6 +86,19 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 /datum/objective/proc/check_midround_completion()
 	return check_completion()
 
+/proc/bm_assassinate_target_eliminated(datum/mind/M)
+	if(!M)
+		return FALSE
+	var/mob/current = M.current
+	if(!current)
+		return FALSE
+	if(isobserver(current))
+		return TRUE
+	if(isliving(current))
+		var/mob/living/L = current
+		return L.stat == DEAD
+	return FALSE
+
 /datum/objective/proc/is_unique_objective(possible_target)
 	var/list/datum/mind/owners = get_owners()
 	for(var/datum/mind/M in owners)
@@ -116,7 +129,7 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 		if(O.late_joiner)
 			try_target_late_joiners = TRUE
 	for(var/datum/mind/possible_target in get_crewmember_minds())
-		if(!(possible_target in owners) && ishuman(possible_target.current) && (possible_target.current.stat != DEAD) && is_unique_objective(possible_target))
+		if(!(possible_target in owners) && ishuman(possible_target.current) && (possible_target.current.stat != DEAD) && is_unique_objective(possible_target) && !possible_target.is_ghost_role())
 			if(!(possible_target in blacklist))
 				// BLUEMOON ADD START - если персонаж сверхтяжёлый и установлена настройка, что сверхтяжёлые персонажи не могут быть по заданию, персонажа не добавляет в пулл
 				if(!(!include_superheavy_character && possible_target.current.mob_weight > MOB_WEIGHT_HEAVY))
@@ -140,7 +153,7 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 /datum/objective/proc/find_target_by_role(role, role_type=0, invert=0)//Option sets either to check assigned role or special role. Default to assigned., invert inverts the check, eg: "Don't choose a Ling"
 	var/list/datum/mind/owners = get_owners()
 	for(var/datum/mind/possible_target in get_crewmember_minds())
-		if(!(possible_target in owners) && ishuman(possible_target.current))
+		if(!(possible_target in owners) && ishuman(possible_target.current) && !possible_target.is_ghost_role())
 			var/is_role = 0
 			if(role_type)
 				if(possible_target.special_role == role)
@@ -188,11 +201,20 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 	target_amount = rand(2,6)
 	return target
 
+/datum/objective/assassinate/find_target(dupe_search_range, blacklist)
+	LAZYINITLIST(blacklist)
+	var/list/datum/mind/owners = get_owners()
+	for(var/datum/mind/O in owners)
+		for(var/datum/objective/obj in O.get_all_objectives())
+			if(istype(obj, /datum/objective/protect) && obj.get_target())
+				blacklist |= obj.get_target()
+	return ..(dupe_search_range, blacklist)
+
 /datum/objective/assassinate/check_completion()
-	return FALSE || ..()
+	return !target || bm_assassinate_target_eliminated(target) || ..()
 
 /datum/objective/assassinate/check_midround_completion()
-	return FALSE
+	return !target || bm_assassinate_target_eliminated(target)
 
 /datum/objective/assassinate/update_explanation_text()
 	..()
@@ -238,6 +260,12 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 	..()
 	if(target && !target.current)
 		explanation_text = "Наша цель - [target.name], [!target_role_type ? target.assigned_role : target.special_role]. Уничтожь эту цель! Кто бы это не был, эта станция будет ему могилой."
+
+/datum/objective/assassinate/internal/check_completion()
+	return !target || bm_assassinate_target_eliminated(target) || ..()
+
+/datum/objective/assassinate/internal/check_midround_completion()
+	return !target || bm_assassinate_target_eliminated(target)
 
 /datum/objective/mutiny
 	name = "mutiny"
@@ -336,6 +364,15 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 		target_role_type = role_type
 	..()
 	return target
+
+/datum/objective/protect/find_target(dupe_search_range, blacklist)
+	LAZYINITLIST(blacklist)
+	var/list/datum/mind/owners = get_owners()
+	for(var/datum/mind/O in owners)
+		for(var/datum/objective/obj in O.get_all_objectives())
+			if(istype(obj, /datum/objective/assassinate) && obj.get_target())
+				blacklist |= obj.get_target()
+	return ..(dupe_search_range, blacklist)
 
 /datum/objective/protect/check_completion()
 	return !target || considered_alive(target, enforce_human = human_check)

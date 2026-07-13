@@ -299,6 +299,18 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 	if (!current_runlevel)
 		SetRunLevel(1)
 
+	#ifdef ATMOS_HEADLESS_BENCH
+	// Headless benchmark: with no clients the world would sleep_offline after
+	// init (the Master loop halts) and a 0-player round never leaves the lobby,
+	// so SSair would never fire. Keep the world awake and force the game
+	// runlevel - the fully loaded map is enough, no round needed.
+	if(!length(GLOB.clients))
+		sleep_offline_after_initializations = FALSE
+		world.sleep_offline = FALSE
+		SetRunLevel(RUNLEVEL_GAME)
+		log_world("ATMOS-BENCH: headless mode - world kept awake, runlevel GAME forced")
+	#endif
+
 	// Sort subsystems by display setting for easy access.
 	sortTim(subsystems, GLOBAL_PROC_REF(cmp_subsystem_display))
 
@@ -600,6 +612,14 @@ GLOBAL_REAL(Master, /datum/controller/master) = new
 
 			if (tick_usage < 0)
 				tick_usage = 0
+
+			//сырой (неусреднённый) прогон для диагностики тик-спайков: усреднённый cost прячет одиночные фризы
+			if (SStick_spikes && queue_node != SStick_spikes)
+				SStick_spikes.last_run_subsystem_name = queue_node.name
+				SStick_spikes.last_run_subsystem_time = world.time
+				if (tick_usage >= SStick_spikes.heavy_run_threshold)
+					SStick_spikes.record_heavy_run(queue_node, tick_usage)
+
 			queue_node.tick_overrun = max(0, MC_AVG_FAST_UP_SLOW_DOWN(queue_node.tick_overrun, tick_usage-tick_precentage))
 			queue_node.state = state
 

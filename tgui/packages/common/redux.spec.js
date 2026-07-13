@@ -3,6 +3,7 @@ import {
   combineReducers,
   createAction,
   createStore,
+  setGlobalStore,
   useDispatch,
   useSelector,
 } from './redux';
@@ -230,8 +231,8 @@ describe('useDispatch', () => {
   test('возвращает dispatch из store', () => {
     const reducer = (state = 0) => state;
     const store = createStore(reducer);
-    const context = { store };
-    expect(useDispatch(context)).toBe(store.dispatch);
+    setGlobalStore(store);
+    expect(useDispatch()).toBe(store.dispatch);
   });
 
   test('dispatch через useDispatch обновляет state', () => {
@@ -240,7 +241,8 @@ describe('useDispatch', () => {
       return state;
     };
     const store = createStore(reducer);
-    const dispatch = useDispatch({ store });
+    setGlobalStore(store);
+    const dispatch = useDispatch();
     dispatch({ type: 'INC' });
     dispatch({ type: 'INC' });
     expect(store.getState()).toBe(2);
@@ -251,17 +253,17 @@ describe('useSelector', () => {
   test('вызывает selector с текущим state', () => {
     const reducer = (state = { count: 42, name: 'test' }) => state;
     const store = createStore(reducer);
-    const context = { store };
-    const result = useSelector(context, state => state);
+    setGlobalStore(store);
+    const result = useSelector(state => state);
     expect(result).toEqual({ count: 42, name: 'test' });
   });
 
   test('selector возвращает часть state', () => {
     const reducer = (state = { count: 42, name: 'test' }) => state;
     const store = createStore(reducer);
-    const context = { store };
-    expect(useSelector(context, state => state.count)).toBe(42);
-    expect(useSelector(context, state => state.name)).toBe('test');
+    setGlobalStore(store);
+    expect(useSelector(state => state.count)).toBe(42);
+    expect(useSelector(state => state.name)).toBe('test');
   });
 
   test('selector видит актуальный state после dispatch', () => {
@@ -270,9 +272,9 @@ describe('useSelector', () => {
       return state;
     };
     const store = createStore(reducer);
-    const context = { store };
-    expect(useSelector(context, s => s)).toBe(0);
+    setGlobalStore(store);
+    expect(useSelector(s => s)).toBe(0);
     store.dispatch({ type: 'INC' });
-    expect(useSelector(context, s => s)).toBe(1);
+    expect(useSelector(s => s)).toBe(1);
   });
 });

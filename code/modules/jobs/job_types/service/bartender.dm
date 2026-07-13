@@ -77,8 +77,8 @@
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
-	backpack_contents = list(/obj/item/storage/box/beanbag=1,/obj/item/book/granter/action/drink_fling=1, /obj/item/syndicate_uplink=1)
-	accessory = list(/obj/item/clothing/accessory/permit/special/bartender)
+	backpack_contents = list(/obj/item/storage/box/beanbag=1,/obj/item/book/granter/action/drink_fling=1,/obj/item/syndicate_uplink/station=1)
+	accessory = list(/obj/item/clothing/accessory/permit/special/bartender, /obj/item/clothing/accessory/permit/special/syndie_station)
 
 /datum/job/bartender/after_spawn(mob/living/H, client/C, latejoin = TRUE)
 	. = ..()

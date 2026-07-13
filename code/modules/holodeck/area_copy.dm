@@ -117,15 +117,20 @@ GLOBAL_LIST_INIT(duplicate_forbidden_vars_by_type, typecacheof_assoc_list(list(
 		B.icon_state = old_icon_state1
 
 		for(var/obj/O in T)
+			// Proximity checkers are spawned by proximity_monitor datums; copying them orphans them (no monitor ref).
+			if(istype(O, /obj/effect/abstract/proximity_checker))
+				continue
 			var/obj/O2 = DuplicateObject(O , perfectcopy=TRUE, newloc = B, nerf=nerf_weapons, holoitem=TRUE)
 			if(!O2)
 				continue
+			copiedobjs += O2
 			copiedobjs += O2.GetAllContents()
 
 		for(var/mob/M in T)
 			if(iscameramob(M))
 				continue // If we need to check for more mobs, I'll add a variable
 			var/mob/SM = DuplicateObject(M , perfectcopy=TRUE, newloc = B, holoitem=TRUE)
+			copiedobjs += SM
 			copiedobjs += SM.GetAllContents()
 
 		for(var/V in T.vars - GLOB.duplicate_forbidden_vars)
@@ -141,5 +146,6 @@ GLOBAL_LIST_INIT(duplicate_forbidden_vars_by_type, typecacheof_assoc_list(list(
 		for(var/turf/T1 in toupdate)
 			CALCULATE_ADJACENT_TURFS(T1)
 
+	rebuild_duplicated_proximity_monitors(copiedobjs)
 
 	return copiedobjs

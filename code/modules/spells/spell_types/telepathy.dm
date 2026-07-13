@@ -9,8 +9,8 @@
 	action_icon_state = "r_transmit"
 	action_background_icon_state = "bg_spell"
 	antimagic_allowed = TRUE
-	var/notice = "notice"
-	var/boldnotice = "boldnotice"
+	var/notice = "telepathy"
+	var/boldnotice = "telepathybold"
 	var/magic_check = FALSE
 	var/holy_check = FALSE
 	var/tinfoil_check = TRUE

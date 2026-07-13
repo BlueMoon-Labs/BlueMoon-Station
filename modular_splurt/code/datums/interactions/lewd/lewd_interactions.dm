@@ -62,6 +62,14 @@
 					to_chat(user, "<span class='warning'>Для тебя это слишком.</span>")
 				return FALSE
 
+	if(interaction_flags & INTERACTION_FLAG_UNHOLY_HARD)
+		var/client/cli = user.client
+		if(cli)
+			if(cli.prefs.unholyhardpref == "No")
+				if(!silent)
+					to_chat(user, "<span class='warning'>Ты не готов к такому уровню грязи.</span>")
+				return FALSE
+
 	var/user_require_penis_exposed = !!(required_from_user_exposed & INTERACTION_REQUIRE_PENIS)
 	var/user_require_penis_unexposed = !!(required_from_user_unexposed & INTERACTION_REQUIRE_PENIS)
 	if(user_require_penis_exposed || user_require_penis_unexposed)
@@ -145,6 +153,14 @@
 			if(target.client.prefs.unholypref == "No")
 				if(!silent)
 					to_chat(user, "<span class='warning'>По какой-то причине ты передумал это делать с <b>[target]</b>.</span>")
+				return FALSE
+
+	if(interaction_flags & INTERACTION_FLAG_UNHOLY_HARD)
+		var/client/cli = target.client
+		if(cli)
+			if(target.client.prefs.unholyhardpref == "No")
+				if(!silent)
+					to_chat(user, "<span class='warning'>Они не оценят такой уровень грязи.</span>")
 				return FALSE
 
 	var/target_require_penis_exposed = !!(required_from_target_exposed & INTERACTION_REQUIRE_PENIS)

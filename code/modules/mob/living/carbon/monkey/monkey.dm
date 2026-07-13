@@ -64,6 +64,7 @@ GLOBAL_LIST_INIT(strippable_monkey_items, create_strippable_list(list(
 
 /mob/living/carbon/monkey/Destroy()
 	walk(src, 0)
+	stop_pulling()
 	// Clean up references other monkeys hold to us (prevents GC failures)
 	for(var/mob/living/carbon/monkey/M in GLOB.carbon_list)
 		if(M == src)

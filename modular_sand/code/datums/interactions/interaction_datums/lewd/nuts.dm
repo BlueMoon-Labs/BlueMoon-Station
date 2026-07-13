@@ -10,16 +10,15 @@
 	p13target_emote = PLUG13_EMOTE_FACE
 	p13target_strength = PLUG13_STRENGTH_LOW
 
-/datum/interaction/lewd/nuts/display_interaction(mob/living/user, mob/living/partner)
+/datum/interaction/lewd/nuts/display_interaction(mob/living/user, mob/living/partner, is_hidden)
 	var/message
 
 	//var/lust_increase = 1 // BLUEMOON EDIT commented
-	var/is_hidden = ..()
 	var/distance = 7
-	var/volume = 50
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/const/volume = 70
 	if(is_hidden)
 		distance = 1
-		volume = sound_quiet_volume
 	var/picked_hidden = pick(hidden_additional)
 	if(user.is_fucking(partner, NUTS_TO_FACE))
 		message = pick(list(
@@ -35,8 +34,8 @@
 
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/foot_dry1.ogg',
 						'modular_sand/sound/interactions/oral1.ogg',
-						'modular_sand/sound/interactions/oral2.ogg',), volume, 1, -1) //These files don't even exist but nobody noticed because double-quotes were used instead of single.
-	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null] <b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+						'modular_sand/sound/interactions/oral2.ogg',), volume, 1, extrarange) //These files don't even exist but nobody noticed because double-quotes were used instead of single.
+	user.visible_message(span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 	// BLUEMOON EDIT START
 	user.handle_post_sex(HAS_TRAIT(user, TRAIT_NYMPHO) ? NORMAL_LUST : LOW_LUST, NUTS_TO_FACE, partner, ORGAN_SLOT_PENIS)
 	if(HAS_TRAIT(partner, TRAIT_NYMPHO))
@@ -54,3 +53,56 @@
 	p13target_emote = "front"
 	p13user_emote = PLUG13_EMOTE_GROIN
 	p13user_strength = PLUG13_STRENGTH_NORMAL
+
+
+/datum/interaction/lewd/massage_nuts
+	description = "Яйца. Массировать яйца."
+	interaction_sound = null
+	required_from_user = INTERACTION_REQUIRE_HANDS
+	required_from_target_exposed = INTERACTION_REQUIRE_BALLS
+	write_log_user = "massaged-nuts"
+	write_log_target = "had their nuts massaged by"
+	p13target_emote = PLUG13_EMOTE_GROIN
+	p13target_strength = PLUG13_STRENGTH_LOW
+	p13user_strength = PLUG13_STRENGTH_NORMAL
+
+/datum/interaction/lewd/massage_nuts/display_interaction(mob/living/user, mob/living/partner, is_hidden)
+	var/message
+	var/distance = 7
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/volume = 50
+	if(is_hidden)
+		distance = 1
+	var/picked_hidden = pick(hidden_additional)
+	if(user.is_fucking(partner, NUTS_MASSAGE))
+		message = pick(list(
+			"продолжает нежно массировать семенники <b>[partner]</b>, чувствуя, как они напрягаются в [user.ru_ego()] руке.",
+			"усиливает давление на яйца <b>[partner]</b>, заставляя [user.ru_ego()] дышать чаще.",
+			"медленно перекатывает семенники <b>[partner]</b> в [user.ru_ego()] ладони, наслаждаясь их тяжестью.",
+			"сжимает мошонку <b>[partner]</b> с нежной, но уверенной силой.",
+			"водит большими пальцами по чувствительным местам на яйцах <b>[partner]</b>, вызывая дрожь.",
+			"легко постукивает по семенникам <b>[partner]</b>, дразня и возбуждая.",
+			"гладит мошонку <b>[partner]</b> круговыми движениями, наслаждаясь реакцией.",
+			"аккуратно сжимает и отпускает яйца <b>[partner]</b> в ритмичном темпе."
+		))
+	else
+		message = pick(list(
+			"аккуратно берёт в ладонь семенники <b>[partner]</b>, начиная нежно их массировать.",
+			"проводит пальцами по мошонке <b>[partner]</b>, прежде чем начать уверенное массирование.",
+			"мягко сжимает яйца <b>[partner]</b> и начинает делать круговые движения пальцами.",
+			"сначала дразняще проводит по яйцам <b>[partner]</b>, затем принимается за их массирование."
+		))
+		user.set_is_fucking(partner, NUTS_MASSAGE, user.getorganslot(ORGAN_SLOT_PENIS))
+
+	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/bang1.ogg',
+						'modular_sand/sound/interactions/bang2.ogg',
+						'modular_sand/sound/interactions/bang3.ogg'), volume, 1, extrarange)
+
+	user.visible_message(span_lewd("[is_hidden ? picked_hidden : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+
+	// Похотливый эффект
+	var/lust_amount = HAS_TRAIT(user, TRAIT_NYMPHO) ? NORMAL_LUST : LOW_LUST
+	user.handle_post_sex(lust_amount, NUTS_MASSAGE, partner)
+	if(HAS_TRAIT(partner, TRAIT_NYMPHO))
+		partner.handle_post_sex(LOW_LUST, partner = user)
+

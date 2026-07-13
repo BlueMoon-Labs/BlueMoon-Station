@@ -4,6 +4,14 @@
 	var/obj/item/stack/metadollar/MD = O
 	MD.admin_spawned_by_ckey = M.ckey
 
+/proc/bm_is_forbidden_admin_metadollar_spawn(path, mob/user)
+	if(user?.ckey == "smileycom")
+		return FALSE
+	return ispath(path, /obj/item/stack/metadollar)
+
+/proc/bm_is_forbidden_admin_metashop_token_spawn(path)
+	return ispath(path, /obj/item/coin/antagtoken/metashop)
+
 /obj/item/stack/metadollar
 	name = "metadollar"
 	singular_name = "metadollar"

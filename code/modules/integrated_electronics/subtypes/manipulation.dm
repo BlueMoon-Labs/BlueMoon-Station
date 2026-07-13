@@ -114,6 +114,7 @@
 						TR.plant_health = TR.myseed.endurance
 						TR.lastcycle = world.time
 						O.forceMove(TR)
+						TR.machine_wake() // an asleep empty tray now holds a live plant that must grow
 						TR.update_icon()
 	activate_pin(2)
 
@@ -592,7 +593,7 @@
 
     switch(mode)
         if(TRUE) // Insert mode 1
-            if(!container || !istype(container,/obj/item/storage))
+            if(!container)
                 return
 
             var/datum/component/storage/STR = container.GetComponent(/datum/component/storage)

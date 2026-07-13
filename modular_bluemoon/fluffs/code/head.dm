@@ -51,6 +51,15 @@
 	if(istype(action, /datum/action/item_action/cerberbark))
 		cerberbark()
 
+/obj/item/clothing/head/donator/bm/krieg_helmet
+	name = "Шлем Крига"
+	desc = "Поношенная экипировка гвардейца Корпуса Смерти \"КРИГ\"."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	icon_state = "krieg_helmet"
+	item_state = "krieg_helmet"
+	flags_inv = HIDEHAIR|HIDEEARS
+
 /obj/item/clothing/head/helmet/space/plasmaman/security/reaper
 	name = "Security Plasma Envirosuit Helmet"
 	desc = "Plasmaman Envirohelmet. Has red markings and reinforced with some composite materials."
@@ -342,7 +351,7 @@
 
 /obj/item/clothing/head/bee_cap/ComponentInitialize()
 	. = ..()
-	AddElement(/datum/element/polychromic, list("#2A2A2A", "#A52F29"), 2)
+	AddElement(/datum/element/polychromic, poly_colors, 2)
 
 /obj/item/clothing/head/bee_cap/AltClick(mob/user)
 	. = ..()
@@ -369,7 +378,7 @@
 
 /obj/item/clothing/head/empire_head/ComponentInitialize()
 	. = ..()
-	AddElement(/datum/element/polychromic, list("#2A2A2A", "#A52F29"), 2)
+	AddElement(/datum/element/polychromic, poly_colors, 2)
 
 /obj/item/clothing/head/empire_head/AltClick(mob/user)
 	. = ..()
@@ -395,11 +404,11 @@
 	var/adjusted = FALSE
 	var/list/poly_colors = list("#2A2A2A","#A52F29")
 
-/obj/item/clothing/head/empire_head/ComponentInitialize()
+/obj/item/clothing/head/helmet/sec/empire_head/ComponentInitialize()
 	. = ..()
-	AddElement(/datum/element/polychromic, list("#2A2A2A", "#A52F29"), 2)
+	AddElement(/datum/element/polychromic, poly_colors, 2)
 
-/obj/item/clothing/head/empire_head/AltClick(mob/user)
+/obj/item/clothing/head/helmet/sec/empire_head/AltClick(mob/user)
 	. = ..()
 	adjusted = !adjusted
 	flags_inv = adjusted ? (HIDEHAIR) : (HIDEHAIR|HIDEEARS)
@@ -434,6 +443,34 @@
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 0)
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	clothing_flags = ALLOWINTERNALS
+	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR
+	unique_reskin = null
+
+/obj/item/clothing/head/donator/bm/mark40k_helmet
+	name = "Mark40k Armored Head plates"
+	desc = "Система развёртываемых плит, предназначенных для вкручивания в голову или свободного ношения, правда будет болтаться на голове!"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	icon_state = "mark40k_helmet"
+	item_state = "mark40k_helmet"
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	clothing_flags = ALLOWINTERNALS
+	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR
+	unique_reskin = null
+
+/obj/item/clothing/head/donator/bm/mark50k_helmet
+	name = "Mark50k Armored Head plates"
+	desc = "Система развёртываемых плит, предназначенных для вкручивания в голову или свободного ношения, правда будет болтаться на голове!"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	icon_state = "mark50k_helmet"
+	item_state = "mark50k_helmet"
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
 	clothing_flags = ALLOWINTERNALS
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR
 	unique_reskin = null
@@ -538,4 +575,4 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
 	icon_state = "renory_helmet"
 	item_state = "ygloves"
-	flags_inv = HIDEFACIALHAIR|HIDEFACE|HIDEEYES|HIDEEARS|HIDEHAIR
+	flags_inv = HIDEFACIALHAIR|HIDEEARS|HIDEHAIR

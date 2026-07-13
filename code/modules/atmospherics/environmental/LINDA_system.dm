@@ -65,7 +65,7 @@
 
 		//Conductivity Update
 		var/opp = REVERSE_DIR(direction)
-		//all these must be above zero for auxmos to even consider them
+		// all these must be above zero for processing
 		if(!thermal_conductivity || !heat_capacity || !current_turf.thermal_conductivity || !current_turf.heat_capacity)
 			conductivity_blocked_directions |= direction
 			current_turf.conductivity_blocked_directions |= opp
@@ -135,21 +135,36 @@
 
 	return adjacent_turfs
 
-/atom/proc/air_update_turf(calculate_adjacencies = FALSE)
+/atom/proc/air_update_turf(update = FALSE, remove = FALSE)
+	if(!SSair?.initialized)
+		return
 	var/turf/location = get_turf(src)
 	if(!location)
 		return
-	location.air_update_turf(calculate_adjacencies)
+	location.air_update_turf(update, remove)
 
-/turf/air_update_turf(calculate_adjacencies = FALSE)
-	if(!calculate_adjacencies)
+/turf/air_update_turf(update = FALSE, remove = FALSE)
+	if(!SSair?.initialized)
 		return
-	ImmediateCalculateAdjacentTurfs()
+	if(update)
+		ImmediateCalculateAdjacentTurfs()
+		// Adjacency just changed (door, window, densified atom): an excited group
+		// spanning the new blockage would later self_breakdown its averaged mix
+		// across both sides, so it must dismantle; the turfs stay active and
+		// rebuild groups that honor the new adjacency. Pure gas changes go through
+		// add_to_active alone and keep their group.
+		var/turf/open/open_self = src
+		if(istype(open_self) && open_self.excited_group)
+			open_self.excited_group.garbage_collect()
+	if(remove)
+		SSair.remove_from_active(src)
+	else
+		SSair.add_to_active(src)
 
 /atom/movable/proc/move_update_air(turf/T)
 	if(isturf(T))
-		T.air_update_turf(TRUE)
-	air_update_turf(TRUE)
+		T.air_update_turf(TRUE, FALSE)
+	air_update_turf(TRUE, TRUE)
 
 /atom/proc/atmos_spawn_air(text) //because a lot of people loves to copy paste awful code lets just make an easy proc to spawn your plasma fires
 	var/turf/open/T = get_turf(src)

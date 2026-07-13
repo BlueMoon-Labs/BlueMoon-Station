@@ -60,7 +60,7 @@
 		if(L.key)
 			L.ghostize(0)
 		if(!QDELETED(L))
-			L.dust()
+			L.dust(TRUE)
 
 /datum/antagonist/cult/get_team()
 	return cult_team
@@ -405,13 +405,13 @@
 		sac_objective.team = src
 
 	for(var/mob/living/carbon/human/player in GLOB.player_list)
-		if(player.mind && !player.mind.has_antag_datum(/datum/antagonist/cult) && !is_convertable_to_cult(player) && player.stat != DEAD)
+		if(player.mind && !player.mind.has_antag_datum(/datum/antagonist/cult) && !is_convertable_to_cult(player) && player.stat != DEAD && !player.mind.is_ghost_role())
 			target_candidates += player.mind
 
 	if(!length(target_candidates))
 		message_admins("Cult Sacrifice: Could not find unconvertible target, checking for convertible target.")
 		for(var/mob/living/carbon/human/player in GLOB.player_list)
-			if(player.mind && !player.mind.has_antag_datum(/datum/antagonist/cult) && player.stat != DEAD)
+			if(player.mind && !player.mind.has_antag_datum(/datum/antagonist/cult) && player.stat != DEAD && !player.mind.is_ghost_role())
 				target_candidates += player.mind
 
 	listclearnulls(target_candidates)

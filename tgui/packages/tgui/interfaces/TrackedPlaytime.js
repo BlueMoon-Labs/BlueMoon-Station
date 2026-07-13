@@ -27,7 +27,7 @@ const PlaytimeSection = props => {
         return (
           <Table.Row key={jobName}>
             <Table.Cell collapsing p={0.5} style={{
-              "vertical-align": "middle",
+              verticalAlign: "middle",
             }}>
               <Box align="right">{jobName}</Box>
             </Table.Cell>
@@ -53,8 +53,8 @@ const PlaytimeSection = props => {
   );
 };
 
-export const TrackedPlaytime = (props, context) => {
-  const { act, data } = useBackend(context);
+export const TrackedPlaytime = (props) => {
+  const { act, data } = useBackend();
   const {
     failReason,
     jobPlaytimes,

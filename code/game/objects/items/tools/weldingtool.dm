@@ -49,8 +49,10 @@
 	create_reagents(max_fuel)
 	reagents.add_reagent(/datum/reagent/fuel, max_fuel)
 	update_icon()
-	if(can_off_process)
-		START_PROCESSING(SSobj, src)
+	// Welders register in SSobj only when they have work: lit welders burn fuel,
+	// self-fueling welders refuel until full. A fresh welder spawns full, so it
+	// has no work and never needs to register here; switched_on() / process()
+	// (re-)arm it as needed and process() PROCESS_KILLs it once it is topped-up.
 
 /obj/item/weldingtool/ComponentInitialize()
 	. = ..()
@@ -88,9 +90,11 @@
 			force = 3
 			damtype = "brute"
 			update_icon()
-			if(!can_off_process)
-				STOP_PROCESSING(SSobj, src)
-			return
+			// Keep processing only while we still owe ourselves fuel; otherwise
+			// leave the processing list entirely instead of polling forever.
+			if(self_fueling && get_fuel() < max_fuel)
+				return
+			return PROCESS_KILL
 	//Welders left on now use up fuel, but lets not have them run out quite that fast
 		if(1)
 			force = 15
@@ -187,6 +191,11 @@
 		reagents.trans_to(O, reagents.total_volume)
 		to_chat(user, "<span class='notice'>You empty [src]'s fuel tank into [O].</span>")
 		update_icon()
+		// Draining can leave a self-fueling welder below max while it is off/idle and
+		// already PROCESS_KILL'd; re-register so refueling resumes. process()'s off
+		// branch keeps it processing until topped up, then PROCESS_KILLs it again.
+		if(self_fueling && get_fuel() < max_fuel)
+			START_PROCESSING(SSobj, src)
 	if(isOn())
 		use(1)
 		var/turf/location = get_turf(user)

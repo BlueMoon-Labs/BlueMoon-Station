@@ -32,6 +32,11 @@
 		return ..()
 
 /obj/item/nuke_core/process()
+	if(istype(loc, /obj/machinery/nuclearbomb))
+		var/datum/component/radioactive/stored_rad = GetComponent(/datum/component/radioactive)
+		if(stored_rad)
+			qdel(stored_rad)
+		return
 	var/datum/component/radioactive/Comp
 	AddComponent(/datum/component/radioactive, 0, src, 0, TRUE)
 	Comp = GetComponent(/datum/component/radioactive)

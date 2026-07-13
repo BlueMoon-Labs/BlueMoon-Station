@@ -112,18 +112,14 @@
 /mob/living/simple_animal/slime/Destroy()
 	deltimer(atkcool_timer_id)
 	AIproc = 0
-	for(var/friend in Friends)
-		UnregisterSignal(friend, COMSIG_PARENT_QDELETING)
-	for (var/A in actions)
-		var/datum/action/AC = A
-		AC.Remove(src)
 	Target = null
 	Leader = null
-	AIproc = 0
 	for(var/friend in Friends)
 		UnregisterSignal(friend, COMSIG_PARENT_QDELETING)
-	Friends.Cut()
-	speech_buffer.Cut()
+	Friends = null
+	speech_buffer = null
+	for(var/datum/action/innate/slime/A in actions)
+		A.Remove(src)
 	return ..()
 
 /mob/living/simple_animal/slime/proc/initialize_mutations()
@@ -174,7 +170,8 @@
 
 /mob/living/simple_animal/slime/updatehealth()
 	. = ..()
-	remove_movespeed_modifier(/datum/movespeed_modifier/slime_healthmod)
+	// No remove_movespeed_modifier() here: add_or_update below overwrites the value
+	// in place, and this proc runs every Life tick via handle_environment().
 	var/mod = 0
 	if(!HAS_TRAIT(src, TRAIT_IGNOREDAMAGESLOWDOWN))
 		var/health_deficiency = (maxHealth - health)

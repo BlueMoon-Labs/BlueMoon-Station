@@ -1,3 +1,5 @@
+import { Component, createRef, useState } from 'react';
+
 import { createSearch } from '../../common/string';
 import { useBackend, useLocalState } from '../backend';
 import {
@@ -15,8 +17,8 @@ import {
 } from '../components';
 import { NtosWindow } from '../layouts';
 
-export const NtosMessenger = (props, context) => {
-  const { data } = useBackend(context);
+export const NtosMessenger = (props) => {
+  const { data } = useBackend();
   const {
     is_silicon,
     remote_silicon,
@@ -62,7 +64,7 @@ export const NtosMessenger = (props, context) => {
   );
 };
 
-const AccessDeniedScreen = (props, context) => {
+const AccessDeniedScreen = (props) => {
   return (
     <Stack fill vertical>
       <Stack.Item>
@@ -94,8 +96,8 @@ const AccessDeniedScreen = (props, context) => {
   );
 };
 
-const ContactsScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const ContactsScreen = (props) => {
+  const { act, data } = useBackend();
   const {
     owner,
     alert_silenced,
@@ -112,8 +114,8 @@ const ContactsScreen = (props, context) => {
     current_ringtone,
   } = data;
 
-  const [searchUser, setSearchUser] = useLocalState(context, 'searchUser', '');
-  const [showRingtone, setShowRingtone] = useLocalState(context, 'showRingtone', false);
+  const [searchUser, setSearchUser] = useState('');
+  const [showRingtone, setShowRingtone] = useState(false);
 
   const sortByUnreads = (array) =>
     [...array].sort((a, b) => b.unread_messages - a.unread_messages);
@@ -276,7 +278,7 @@ const ContactsScreen = (props, context) => {
           <SendToAllSection />
         </Stack.Item>
       )}
-      </Stack>
+    </Stack>
       {showRingtone && (
         <Box style={{
           position: 'fixed',
@@ -321,8 +323,8 @@ const ContactsScreen = (props, context) => {
   );
 };
 
-const ChatButton = (props, context) => {
-  const { act } = useBackend(context);
+const ChatButton = (props) => {
+  const { act } = useBackend();
   const { unreads, chatRef, name, blocked } = props;
   const hasUnreads = unreads > 0;
   return (
@@ -339,11 +341,11 @@ const ChatButton = (props, context) => {
   );
 };
 
-const SendToAllSection = (props, context) => {
-  const { data, act } = useBackend(context);
+const SendToAllSection = (props) => {
+  const { data, act } = useBackend();
   const { on_spam_cooldown, has_scanned_photo, admin_photo_url } = data;
 
-  const [message, setMessage] = useLocalState(context, 'spamMessage', '');
+  const [message, setMessage] = useLocalState('spamMessage', '');
 
   return (
     <>
@@ -379,8 +381,8 @@ const SendToAllSection = (props, context) => {
   );
 };
 
-const ChatScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const ChatScreen = (props) => {
+  const { act, data } = useBackend();
   const {
     canReply,
     messages,
@@ -396,12 +398,12 @@ const ChatScreen = (props, context) => {
   const uniqueEmojis = [...new Set(rawList)].slice(0, 100);
   const base64Map = emoji_base64 || {};
 
-  const [message, setMessage] = useLocalState(context, 'chatMessage', '');
-  const [canSend, setCanSend] = useLocalState(context, 'canSend', true);
-  const [showEmoji, setShowEmoji] = useLocalState(context, 'showEmoji', false);
-  const [showAdminUrl, setShowAdminUrl] = useLocalState(context, 'showAdminUrl', false);
-  const [adminUrlInput, setAdminUrlInput] = useLocalState(context, 'adminUrlInput', '');
-  const [previewUrl, setPreviewUrl] = useLocalState(context, 'previewUrl', null);
+  const [message, setMessage] = useLocalState('chatMessage', '');
+  const [canSend, setCanSend] = useState(true);
+  const [showEmoji, setShowEmoji] = useState(false);
+  const [showAdminUrl, setShowAdminUrl] = useState(false);
+  const [adminUrlInput, setAdminUrlInput] = useState('');
+  const [previewUrl, setPreviewUrl] = useState(null);
 
   const handleSendMessage = () => {
     if (message === '' && !has_scanned_photo && !admin_photo_url) {
@@ -638,6 +640,7 @@ const ChatScreen = (props, context) => {
               </>
             )}
             {filteredMessages}
+            <AutoScrollToBottom triggerKey={messages.length} />
           </Stack>
         </Section>
       </Stack.Item>
@@ -775,6 +778,49 @@ const MediaAttachment = ({ src, maxHeight = '200px', maxWidth = '100%', onClick 
     />
   );
 };
+
+class AutoScrollToBottom extends Component {
+  constructor(props) {
+    super(props);
+    this.ref = createRef();
+    this.atBottom = true;
+    this.handleScroll = this.handleScroll.bind(this);
+  }
+
+  handleScroll(e) {
+    const el = e.currentTarget;
+    const threshold = 50;
+    this.atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - threshold;
+  }
+
+  componentDidMount() {
+    const content = this.ref.current?.parentElement?.closest('.Section__content');
+    if (content) {
+      content.addEventListener('scroll', this.handleScroll);
+      content.scrollTop = content.scrollHeight;
+    }
+  }
+
+  componentWillUnmount() {
+    const content = this.ref.current?.parentElement?.closest('.Section__content');
+    if (content) {
+      content.removeEventListener('scroll', this.handleScroll);
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.triggerKey !== prevProps.triggerKey && this.atBottom) {
+      const content = this.ref.current?.parentElement?.closest('.Section__content');
+      if (content) {
+        content.scrollTop = content.scrollHeight;
+      }
+    }
+  }
+
+  render() {
+    return <div ref={this.ref} />;
+  }
+}
 
 const ChatMessage = (props) => {
   const { message, everyone, outgoing, timestamp, photoPath, onPreview } = props;

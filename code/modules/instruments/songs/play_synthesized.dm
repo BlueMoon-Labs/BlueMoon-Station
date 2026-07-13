@@ -129,4 +129,5 @@
 		else
 			for(var/i in hearing_mobs)
 				var/mob/M = i
-				M.set_sound_channel_volume(channelnumber, (current_volume * 0.01) * volume * using_instrument.volume_multiplier)
+				var/instr_vol = M.client?.prefs?.get_sound_volume("instruments") / 100
+				M.set_sound_channel_volume(channelnumber, (current_volume * 0.01) * volume * using_instrument.volume_multiplier * instr_vol)

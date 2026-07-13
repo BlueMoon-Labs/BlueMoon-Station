@@ -343,3 +343,28 @@
 	icon = 'modular_bluemoon/icons/mob/hair.dmi'
 	name = "Sergal round"
 	icon_state = "hair_sergal_round"
+
+/datum/sprite_accessory/hair/longer_bedhead_alt
+	icon = 'modular_bluemoon/icons/mob/hair.dmi'
+	name = "Bedhead (Longer)(Alt)"
+	icon_state = "hair_longer_bedhead_alt"
+
+/datum/sprite_accessory/hair/flowerchild
+	icon = 'modular_bluemoon/icons/mob/hair.dmi'
+	name = "Flowerchild"
+	icon_state = "hair_flowerchild"
+
+/datum/sprite_accessory/hair/flowerchild_ponyless
+	icon = 'modular_bluemoon/icons/mob/hair.dmi'
+	name = "Flowerchild (Ponyless)"
+	icon_state = "hair_flowerchild_ponyless"
+
+/datum/sprite_accessory/hair/hair_flowerchild_ponyful
+	icon = 'modular_bluemoon/icons/mob/hair.dmi'
+	name = "Flowerchild (Ponyful)"
+	icon_state = "hair_flowerchild_ponyful"
+
+/datum/sprite_accessory/hair/dreadtail
+	icon = 'modular_bluemoon/icons/mob/hair.dmi'
+	name = "Dreadtail"
+	icon_state = "hair_dreadtail"

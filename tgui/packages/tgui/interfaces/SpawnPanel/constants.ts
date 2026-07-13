@@ -41,8 +41,8 @@ export const TAB_TYPE_LETTERS: Record<string, string> = {
 // BYOND direction constants (bitmask)
 export const DIR_SOUTH = 1;
 export const DIR_NORTH = 2;
-export const DIR_EAST  = 4;
-export const DIR_WEST  = 8;
+export const DIR_EAST = 4;
+export const DIR_WEST = 8;
 
 // Order for slider: index 0=South, 1=North, 2=East, 3=West
 export const DIR_SLIDER_ORDER = [DIR_SOUTH, DIR_NORTH, DIR_EAST, DIR_WEST];
@@ -61,9 +61,9 @@ export const DIR_ICONS: Record<number, string> = {
   [DIR_WEST]:  'arrow-left',
 };
 
-export const PRECISE_MODE_OFF    = 'Off';
+export const PRECISE_MODE_OFF = 'Off';
 export const PRECISE_MODE_TARGET = 'Target';
-export const PRECISE_MODE_COPY   = 'Copy';
+export const PRECISE_MODE_COPY = 'Copy';
 
 export const OFFSET_ABSOLUTE = 'Absolute offset';
 export const OFFSET_RELATIVE = 'Relative offset';

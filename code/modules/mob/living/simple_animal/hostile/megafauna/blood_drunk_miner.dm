@@ -17,8 +17,8 @@ Difficulty: Medium
 /mob/living/simple_animal/hostile/megafauna/blood_drunk_miner
 	name = "blood-drunk miner"
 	desc = "A miner destined to wander forever, engaged in an endless hunt."
-	health = 1750
-	maxHealth = 1750
+	health = 2100
+	maxHealth = 2100
 	icon_state = "miner"
 	icon_living = "miner"
 	icon = 'icons/mob/broadMobs.dmi'
@@ -71,21 +71,21 @@ Difficulty: Medium
 	name = "Dash To Target"
 	icon_icon = 'icons/mob/actions/actions_items.dmi'
 	button_icon_state = "sniper_zoom"
-	chosen_message = "<span class='colossus'>You are now dashing to your target.</span>"
+	chosen_message = "<span class='bloodmad'>You are now dashing to your target.</span>"
 	chosen_attack_num = 1
 
 /datum/action/innate/megafauna_attack/kinetic_accelerator
 	name = "Fire Kinetic Accelerator"
 	icon_icon = 'icons/obj/guns/energy.dmi'
 	button_icon_state = "kineticgun"
-	chosen_message = "<span class='colossus'>You are now shooting your kinetic accelerator.</span>"
+	chosen_message = "<span class='bloodmad'>You are now shooting your kinetic accelerator.</span>"
 	chosen_attack_num = 2
 
 /datum/action/innate/megafauna_attack/transform_weapon
 	name = "Transform Weapon"
 	icon_icon = 'icons/obj/lavaland/artefacts.dmi'
 	button_icon_state = "cleaving_saw"
-	chosen_message = "<span class='colossus'>You are now transforming your weapon.</span>"
+	chosen_message = "<span class='bloodmad'>You are now transforming your weapon.</span>"
 	chosen_attack_num = 3
 
 /mob/living/simple_animal/hostile/megafauna/blood_drunk_miner/OpenFire()
@@ -107,8 +107,8 @@ Difficulty: Medium
 	transform_weapon()
 
 /obj/item/melee/transforming/cleaving_saw/miner //nerfed saw because it is very murdery
-	force = 6
-	force_on = 10
+	force = 8
+	force_on = 13
 
 /obj/item/melee/transforming/cleaving_saw/miner/attack(mob/living/target, mob/living/carbon/human/user)
 	target.add_stun_absorption("miner", 10, INFINITY)
@@ -116,7 +116,7 @@ Difficulty: Medium
 	target.stun_absorption -= "miner"
 
 /obj/item/projectile/kinetic/miner
-	damage = 40
+	damage = 50
 	pixels_per_second = TILES_TO_PIXELS(11.111)
 	icon_state = "ka_tracer"
 	range = MINER_DASH_RANGE

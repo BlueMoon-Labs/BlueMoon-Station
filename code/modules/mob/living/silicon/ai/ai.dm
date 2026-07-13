@@ -231,6 +231,13 @@
 			continue
 		linked_robot.set_connected_ai(null)
 	connected_robots.Cut()
+	// Взломанные малфом APC держат ИИ через malfai/occupier до собственного
+	// Destroy - то есть обычно до конца раунда
+	for(var/obj/machinery/power/apc/apc as anything in GLOB.apcs_list)
+		if(apc.malfai == src)
+			apc.malfai = null
+		if(apc.occupier == src)
+			apc.occupier = null
 	return ..()
 
 /mob/living/silicon/ai/IgniteMob()

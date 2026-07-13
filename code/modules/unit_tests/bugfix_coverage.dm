@@ -91,9 +91,10 @@
 // without runtiming at L.forceMove() — the reported runtime scenario.
 /datum/unit_test/glow_eyes_update_visuals_null_safety/Run()
 	var/mob/living/carbon/human/test_mob = allocate(/mob/living/carbon/human)
-	var/obj/item/organ/eyes/robotic/glow/eyes = allocate(/obj/item/organ/eyes/robotic/glow)
+	var/obj/item/organ/eyes/robotic/toggled/glow/eyes = allocate(/obj/item/organ/eyes/robotic/toggled/glow)
 	eyes.Insert(test_mob, TRUE)
-	eyes.activate(silent = TRUE)
+	if(!eyes.active)
+		eyes.toggle(silent = TRUE)
 
 	TEST_ASSERT_NOTNULL(eyes.eye_lighting, "eye_lighting should exist after activation")
 	TEST_ASSERT(LAZYLEN(eyes.eye_lighting) >= 2, "eye_lighting should have multiple entries after regenerate_light_effects")
@@ -108,4 +109,50 @@
 	// Valid entries should still be accessible
 	TEST_ASSERT_NOTNULL(LAZYACCESS(eyes.eye_lighting, 1), "First entry should still be valid after update_visuals")
 
-	eyes.deactivate(silent = TRUE)
+	if(eyes.active)
+		eyes.toggle(silent = TRUE)
+
+// Test: black market uplink ui_data tolerates a viewer with no mind (e.g. a ghost
+// opening it through attack_ghost). The head-rev discount check used to deref
+// user.mind directly and runtimed ("Cannot execute null.has_antag_datum()") on
+// every UI refresh tick. The mindless viewer must fall through to the full price.
+/datum/unit_test/blackmarket_uplink_mindless_viewer/Run()
+	var/obj/item/blackmarket_uplink/uplink = allocate(/obj/item/blackmarket_uplink)
+
+	var/datum/blackmarket_market/market = SSblackmarket.markets[uplink.viewing_market]
+	TEST_ASSERT_NOTNULL(market, "Uplink should resolve to a real market after Initialize")
+
+	// Deterministically place a known item in the viewed category so the ui_data
+	// loop actually reaches the guarded discount check (init item rolls are RNG).
+	var/test_category = "unit test wares"
+	var/list/category_items = list()
+	market.available_items[test_category] = category_items
+	uplink.viewing_category = test_category
+
+	var/datum/blackmarket_item/probe = new()
+	probe.name = "unit test contraband"
+	probe.category = test_category
+	probe.price = 100
+	probe.stock = 1
+	category_items += probe
+
+	// A freshly created mob has no mind, mirroring the reported observer.
+	var/mob/living/carbon/human/viewer = allocate(/mob/living/carbon/human)
+	TEST_ASSERT_NULL(viewer.mind, "Test precondition: viewer must be mindless to reproduce the bug")
+
+	// Old code: user.mind.has_antag_datum(...) -> runtime caught by the error handler.
+	// The ?. guard avoids it; the mindless viewer takes the non-headrev branch.
+	var/list/data = uplink.ui_data(viewer)
+	TEST_ASSERT_NOTNULL(data, "ui_data should return data for a mindless viewer")
+
+	var/found_cost
+	for(var/list/entry as anything in data["items"])
+		if(entry["name"] == "unit test contraband")
+			found_cost = entry["cost"]
+			break
+	TEST_ASSERT_NOTNULL(found_cost, "Injected item should be present in ui_data output")
+	TEST_ASSERT_EQUAL(found_cost, 100, "Mindless viewer should be charged full price (no head-rev discount)")
+
+	// Cleanup: don't leave the probe/category lingering in the global market.
+	market.available_items -= test_category
+	qdel(probe)

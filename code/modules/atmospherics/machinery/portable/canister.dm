@@ -43,6 +43,9 @@
 	req_access = list()
 
 	var/update = 0
+	///Pressure band currently shown by the sprite (see update_overlays); process_atmos
+	///refreshes the icon only when this moves, instead of rebuilding overlays every fire.
+	var/shown_pressure_band = -1
 	var/static/list/label2types = list(
 		"n2" = /obj/machinery/portable_atmospherics/canister/nitrogen,
 		"o2" = /obj/machinery/portable_atmospherics/canister/oxygen,
@@ -55,12 +58,19 @@
 		"water vapor" = /obj/machinery/portable_atmospherics/canister/water_vapor,
 		"tritium" = /obj/machinery/portable_atmospherics/canister/tritium,
 		"hyper-noblium" = /obj/machinery/portable_atmospherics/canister/nob,
-		"stimulum" = /obj/machinery/portable_atmospherics/canister/stimulum,
 		"pluoxium" = /obj/machinery/portable_atmospherics/canister/pluoxium,
 		"caution" = /obj/machinery/portable_atmospherics/canister,
 		"miasma" = /obj/machinery/portable_atmospherics/canister/miasma,
 		"methane" = /obj/machinery/portable_atmospherics/canister/methane,
-		"methyl bromide" = /obj/machinery/portable_atmospherics/canister/methyl_bromide
+		"hydrogen" = /obj/machinery/portable_atmospherics/canister/hydrogen,
+		"helium" = /obj/machinery/portable_atmospherics/canister/helium,
+		"freon" = /obj/machinery/portable_atmospherics/canister/freon,
+		"halon" = /obj/machinery/portable_atmospherics/canister/halon,
+		"antinoblium" = /obj/machinery/portable_atmospherics/canister/antinoblium,
+		"proto nitrate" = /obj/machinery/portable_atmospherics/canister/proto_nitrate,
+		"zauker" = /obj/machinery/portable_atmospherics/canister/zauker,
+		"healium" = /obj/machinery/portable_atmospherics/canister/healium,
+		"nitrium" = /obj/machinery/portable_atmospherics/canister/nitrium
 	)
 
 /obj/machinery/portable_atmospherics/canister/interact(mob/user)
@@ -129,6 +139,7 @@
 	icon_state = "brown"
 	gas_type = GAS_NITRYL
 
+// Убраны из label2types (не заказываются), но оставлены для совместимости с картами (Academy, ihategordon, undergroundoutpost45)
 /obj/machinery/portable_atmospherics/canister/stimulum
 	name = "stimulum canister"
 	desc = "Stimulum. High energy gas, high energy people."
@@ -161,11 +172,66 @@
 	icon_state = "greyblackred"
 	gas_type = GAS_METHANE
 
+// Убраны из label2types (не заказываются), оставлены для совместимости с картами (undergroundoutpost45)
 /obj/machinery/portable_atmospherics/canister/methyl_bromide
 	name = "methyl bromide canister"
 	desc = "Methyl bromide. A potent toxin to most, essential for the Kharmaan to live."
 	icon_state = "purplecyan"
 	gas_type = GAS_METHYL_BROMIDE
+
+/obj/machinery/portable_atmospherics/canister/hydrogen
+	name = "hydrogen canister"
+	desc = "Hydrogen. Flammable and used in fusion. Ionizing radiation converts it into tritium."
+	icon_state = "green"
+	gas_type = GAS_HYDROGEN
+
+/obj/machinery/portable_atmospherics/canister/helium
+	name = "helium canister"
+	desc = "Helium. Inert gas, byproduct of fusion."
+	icon_state = "grey"
+	gas_type = GAS_HELIUM
+
+/obj/machinery/portable_atmospherics/canister/freon
+	name = "freon canister"
+	desc = "Freon. Coolant gas. Breathing causes burn damage and slowdown."
+	icon_state = "darkblue"
+	gas_type = GAS_FREON
+
+/obj/machinery/portable_atmospherics/canister/halon
+	name = "halon canister"
+	desc = "Halon. Fire suppressant. Heavy slowdown and heat proof when inhaled."
+	icon_state = "purple"
+	gas_type = GAS_HALON
+
+/obj/machinery/portable_atmospherics/canister/antinoblium
+	name = "antinoblium canister"
+	desc = "Antinoblium. Rare fuel for fusion, replicates by consuming other gases."
+	icon_state = "darkpurple"
+	gas_type = GAS_ANTINOBLIUM
+
+/obj/machinery/portable_atmospherics/canister/proto_nitrate
+	name = "proto nitrate canister"
+	desc = "Proto nitrate. Highly reactive gas, catalyst for many reactions."
+	icon_state = "brown"
+	gas_type = GAS_PROTO_NITRATE
+
+/obj/machinery/portable_atmospherics/canister/zauker
+	name = "zauker canister"
+	desc = "Zauker. Incredibly deadly if inhaled."
+	icon_state = "black"
+	gas_type = GAS_ZAUKER
+
+/obj/machinery/portable_atmospherics/canister/healium
+	name = "healium canister"
+	desc = "Healium. Healing gas, stronger sleeping agent than N2O."
+	icon_state = "red"
+	gas_type = GAS_HEALIUM
+
+/obj/machinery/portable_atmospherics/canister/nitrium
+	name = "nitrium canister"
+	desc = "Nitrium. Gaseous stimulant, enhances speed and endurance."
+	icon_state = "orange"
+	gas_type = GAS_NITRIUM
 
 /obj/machinery/portable_atmospherics/canister/proc/get_time_left()
 	if(timing)
@@ -177,6 +243,7 @@
 	timing = !timing
 	if(timing)
 		valve_timer = world.time + (timer_set * 10)
+	excite()
 	update_icon()
 
 /obj/machinery/portable_atmospherics/canister/proto
@@ -235,15 +302,29 @@
 		. += "can-open"
 	if(connected_port)
 		. += "can-connector"
+	shown_pressure_band = pressure_band()
+	switch(shown_pressure_band)
+		if(4)
+			. += "can-o3"
+		if(3)
+			. += "can-o2"
+		if(2)
+			. += "can-o1"
+		if(1)
+			. += "can-o0"
+
+///Bucket of the pressure indicator lights on the sprite; process_atmos redraws only on change.
+/obj/machinery/portable_atmospherics/canister/proc/pressure_band()
 	var/pressure = air_contents?.return_pressure()
 	if(pressure >= 40 * ONE_ATMOSPHERE)
-		. += "can-o3"
-	else if(pressure >= 10 * ONE_ATMOSPHERE)
-		. += "can-o2"
-	else if(pressure >= 5 * ONE_ATMOSPHERE)
-		. += "can-o1"
-	else if(pressure >= 10)
-		. += "can-o0"
+		return 4
+	if(pressure >= 10 * ONE_ATMOSPHERE)
+		return 3
+	if(pressure >= 5 * ONE_ATMOSPHERE)
+		return 2
+	if(pressure >= 10)
+		return 1
+	return 0
 
 /obj/machinery/portable_atmospherics/canister/temperature_expose(datum/gas_mixture/air, exposed_temperature, exposed_volume)
 	if(exposed_temperature > temperature_resistance)
@@ -312,13 +393,18 @@
 			investigate_log("[key_name(user)] started a transfer into [holding].<br>", INVESTIGATE_ATMOS)
 
 /obj/machinery/portable_atmospherics/canister/process_atmos()
-	..()
 	if(machine_stat & BROKEN)
 		return PROCESS_KILL
-	if(timing && valve_timer < world.time)
-		valve_open = !valve_open
-		timing = FALSE
+	if(timing)
+		// An armed valve timer must keep ticking even when nothing else happens.
+		excited = TRUE
+		if(valve_timer < world.time)
+			valve_open = !valve_open
+			timing = FALSE
 	if(valve_open)
+		// An open valve watches outside pressure (breach -> resume leaking);
+		// there is no wake event for that, so never sleep while open.
+		excited = TRUE
 		var/turf/T = get_turf(src)
 		var/datum/gas_mixture/target_air = holding ? holding.air_contents : T.return_air()
 
@@ -332,7 +418,12 @@
 	// currently unused
 	// if(our_temperature > heat_limit || our_pressure > pressure_limit)
 	// 	take_damage(clamp((our_temperature/heat_limit) * (our_pressure/pressure_limit) * delta_time * 2, 5, 50), BURN, 0)
-	update_icon()
+
+	// Rebuilding identical overlays every fire costs more than the whole gas
+	// step; redraw only when the indicator lights actually move.
+	if(pressure_band() != shown_pressure_band)
+		update_icon()
+	return ..()
 
 /obj/machinery/portable_atmospherics/canister/ui_state(mob/user)
 	return GLOB.physical_state
@@ -487,4 +578,7 @@
 					investigate_log("[key_name(usr)] removed the [holding], leaving the valve open and transferring into the [span_antigrif("AIR")].", INVESTIGATE_ATMOS)
 				replace_tank(usr, FALSE)
 				. = TRUE
+	// Any UI interaction may have opened the valve or armed the timer on a
+	// sleeping canister.
+	excite()
 	update_icon()

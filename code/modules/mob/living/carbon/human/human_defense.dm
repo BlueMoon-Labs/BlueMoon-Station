@@ -436,7 +436,7 @@
 		var/obj/item/clothing/chest_clothes = null
 		if(w_uniform)
 			chest_clothes = w_uniform
-		if(wear_suit)
+		if(wear_suit && (wear_suit.body_parts_covered & CHEST))
 			chest_clothes = wear_suit
 		if(chest_clothes)
 			if(!(chest_clothes.resistance_flags & UNACIDABLE))
@@ -462,10 +462,10 @@
 	//ARMS & HANDS//
 	if(!bodyzone_hit || bodyzone_hit == BODY_ZONE_L_ARM || bodyzone_hit == BODY_ZONE_R_ARM)
 		var/obj/item/clothing/arm_clothes = null
-		if(gloves)
-			arm_clothes = gloves
 		if(w_uniform && ((w_uniform.body_parts_covered & HANDS) || (w_uniform.body_parts_covered & ARMS)))
 			arm_clothes = w_uniform
+		if(gloves && ((gloves.body_parts_covered & HANDS) || (gloves.body_parts_covered & ARMS)))
+			arm_clothes = gloves //gloves (incl. MOD gauntlets) are the outer layer over the uniform's arms
 		if(wear_suit && ((wear_suit.body_parts_covered & HANDS) || (wear_suit.body_parts_covered & ARMS)))
 			arm_clothes = wear_suit
 
@@ -489,10 +489,10 @@
 	//LEGS & FEET//
 	if(!bodyzone_hit || bodyzone_hit == BODY_ZONE_L_LEG || bodyzone_hit == BODY_ZONE_R_LEG || bodyzone_hit == "feet")
 		var/obj/item/clothing/leg_clothes = null
-		if(shoes)
-			leg_clothes = shoes
 		if(w_uniform && ((w_uniform.body_parts_covered & FEET) || (bodyzone_hit != "feet" && (w_uniform.body_parts_covered & LEGS))))
 			leg_clothes = w_uniform
+		if(shoes && ((shoes.body_parts_covered & FEET) || (bodyzone_hit != "feet" && (shoes.body_parts_covered & LEGS))))
+			leg_clothes = shoes //shoes (incl. MOD boots) are the outer layer over the uniform's legs
 		if(wear_suit && ((wear_suit.body_parts_covered & FEET) || (bodyzone_hit != "feet" && (wear_suit.body_parts_covered & LEGS))))
 			leg_clothes = wear_suit
 		if(leg_clothes)
@@ -635,6 +635,9 @@
 						to_send += "\n\t<a href='?src=[REF(src)];embedded_object=[REF(I)];embedded_limb=[REF(LB)]' class='warning'>В вашей [LB.ru_name_v] прорезался \a [I]!</a>"
 					else
 						to_send += "\n\t<a href='?src=[REF(src)];embedded_object=[REF(I)];embedded_limb=[REF(LB)]' class='warning'>В вашей [LB.ru_name_v] застрял \a [I]!</a>"
+
+				if(LB.current_gauze)
+					to_send += "\n\t<a href='?src=[REF(src)];remove_gauze=1;gauze_limb=[REF(LB)]' class='notice'>На вашей [LB.ru_name_v] наложен \a [LB.current_gauze].</a>"
 
 			for(var/t in missing)
 				to_send += "<span class='boldannounce'>Ваша [ru_parse_zone(t)] отсутствует!</span>\n"
@@ -876,6 +879,9 @@
 				output += "\n\t <a href='?src=[REF(src)];embedded_object=[REF(I)];embedded_limb=[REF(LB)]' class='warning'>В вашей [LB.ru_name_v] прорезался \a [I]!</a>"
 			else
 				output += "\n\t <a href='?src=[REF(src)];embedded_object=[REF(I)];embedded_limb=[REF(LB)]' class='warning'>В вашей [LB.ru_name_v] застрял \a [I]!</a>"
+
+		if(LB.current_gauze)
+			output += "\n\t <a href='?src=[REF(src)];remove_gauze=1;gauze_limb=[REF(LB)]' class='notice'>На вашей [LB.ru_name_v] наложен \a [LB.current_gauze].</a>"
 	to_chat(src, examine_block(output))
 
 /mob/living/carbon/human/damage_clothes(damage_amount, damage_type = BRUTE, damage_flag = 0, def_zone)
@@ -905,7 +911,7 @@
 		var/obj/item/clothing/chest_clothes = null
 		if(w_uniform)
 			chest_clothes = w_uniform
-		if(wear_suit)
+		if(wear_suit && (wear_suit.body_parts_covered & CHEST))
 			chest_clothes = wear_suit
 		if(chest_clothes)
 			torn_items += chest_clothes
@@ -913,10 +919,10 @@
 	//ARMS & HANDS//
 	if(!def_zone || def_zone == BODY_ZONE_L_ARM || def_zone == BODY_ZONE_R_ARM)
 		var/obj/item/clothing/arm_clothes = null
-		if(gloves)
-			arm_clothes = gloves
 		if(w_uniform && ((w_uniform.body_parts_covered & HANDS) || (w_uniform.body_parts_covered & ARMS)))
 			arm_clothes = w_uniform
+		if(gloves && ((gloves.body_parts_covered & HANDS) || (gloves.body_parts_covered & ARMS)))
+			arm_clothes = gloves //gloves (incl. MOD gauntlets) are the outer layer over the uniform's arms
 		if(wear_suit && ((wear_suit.body_parts_covered & HANDS) || (wear_suit.body_parts_covered & ARMS)))
 			arm_clothes = wear_suit
 		if(arm_clothes)
@@ -925,10 +931,10 @@
 	//LEGS & FEET//
 	if(!def_zone || def_zone == BODY_ZONE_L_LEG || def_zone == BODY_ZONE_R_LEG)
 		var/obj/item/clothing/leg_clothes = null
-		if(shoes)
-			leg_clothes = shoes
 		if(w_uniform && ((w_uniform.body_parts_covered & FEET) || (w_uniform.body_parts_covered & LEGS)))
 			leg_clothes = w_uniform
+		if(shoes && ((shoes.body_parts_covered & FEET) || (shoes.body_parts_covered & LEGS)))
+			leg_clothes = shoes //shoes (incl. MOD boots) are the outer layer over the uniform's legs
 		if(wear_suit && ((wear_suit.body_parts_covered & FEET) || (wear_suit.body_parts_covered & LEGS)))
 			leg_clothes = wear_suit
 		if(leg_clothes)

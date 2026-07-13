@@ -30,6 +30,11 @@
 				atoms += new /obj/effect/appearance_clone(newT, T.loc)
 			for(var/i in T.contents)
 				var/atom/A = i
+				// Lighting objects live in turf.contents (hybrid render: loc for client update
+				// delivery + vis_contents). Cloning one renders a solid black tile on
+				// LIGHTING_LAYER, painting the floor black in shaded areas - always skip.
+				if(istype(A, /atom/movable/lighting_object))
+					continue
 				if(!A.invisibility || (see_ghosts && isobserver(A)))
 					atoms += new /obj/effect/appearance_clone(newT, A)
 		skip_normal = TRUE
@@ -41,6 +46,8 @@
 			var/turf/T = i
 			atoms += T
 			for(var/atom/movable/A in T)
+				if(istype(A, /atom/movable/lighting_object))
+					continue // see clone path above - lighting objects paint the floor black
 				if(A.invisibility)
 					if(!(see_ghosts && isobserver(A)))
 						continue

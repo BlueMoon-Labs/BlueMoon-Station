@@ -230,7 +230,10 @@
 /datum/emote/sound/run_emote(mob/user, params)
 	. = ..()
 	if(. && !(user?.is_muzzled() && !muzzle_ignore))
-		playsound(user.loc, sound, emote_volume, emote_pitch_variance, emote_range, emote_falloff_exponent, emote_frequency, emote_channel, emote_check_pressure, emote_ignore_walls, emote_falloff_distance, emote_wetness, emote_dryness, emote_distance_multiplier, emote_distance_multiplier_min_range)
+		if(user.client?.prefs && !(user.client.prefs.toggles & SOUND_EMOTE))
+			return TRUE
+		var/vol = round(emote_volume * (user.client?.prefs?.get_sound_volume("emote") || 100) / 100)
+		playsound(user.loc, sound, vol, emote_pitch_variance, emote_range, emote_falloff_exponent, emote_frequency, emote_channel, emote_check_pressure, emote_ignore_walls, emote_falloff_distance, emote_wetness, emote_dryness, emote_distance_multiplier, emote_distance_multiplier_min_range)
 
 		//Cooldown.
 		user.nextsoundemote = world.time + emote_cooldown

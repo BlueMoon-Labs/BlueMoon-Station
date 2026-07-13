@@ -105,3 +105,33 @@
 	desc = "Succulent and sweet, watermelon is a summertime picnic favorite that is now available year round. Use our Watermelon Syrup to freshen up your sodas, slushes, teas and exotic cocktails."
 	icon_state = "watermelon_syrop_b"
 	list_reagents = list(/datum/reagent/consumable/sugar/syrup/watermelon = 40)
+
+/obj/item/reagent_containers/food/drinks/bottle/macvulp
+	name = "Red Fox's strawberry milk"
+	desc = "Упаковка молочного коктейля с милой мордочкой лиса."
+	custom_price = PRICE_ALMOST_CHEAP
+	icon = 'modular_bluemoon/icons/obj/drinks.dmi'
+	icon_state = "macvulp_milk_strawberry"
+	list_reagents = list(/datum/reagent/consumable/milkshake_strawberry/lactose_free = 100)
+	foodtype = FRUIT | BREAKFAST
+
+/obj/item/reagent_containers/food/drinks/bottle/macvulp/choco
+	name = "Red Fox's choco milk"
+	icon_state = "macvulp_milk_choco"
+	list_reagents = list(/datum/reagent/consumable/choccyshake/lactose_free = 100)
+	foodtype = BREAKFAST
+
+/obj/item/reagent_containers/food/drinks/bottle/macvulp/banana
+	name = "Red Fox's banana milk"
+	icon_state = "macvulp_milk_banana"
+	list_reagents = list(/datum/reagent/consumable/milkshake_banana/lactose_free = 100)
+	foodtype = FRUIT | BREAKFAST
+
+/obj/item/reagent_containers/food/drinks/beer/macvulp
+	name = "Macvulp non-alcoholic beer"
+	desc = "Beer. In space."
+	icon = 'modular_bluemoon/icons/obj/drinks.dmi'
+	icon_state = "macvulp_beer"
+	list_reagents = list(/datum/reagent/consumable/non_alcoholic_beer = 30)
+	foodtype = GRAIN
+	custom_price = PRICE_BELOW_NORMAL

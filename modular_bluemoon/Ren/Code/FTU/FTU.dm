@@ -81,7 +81,6 @@
 	min_players = 15
 	category = EVENT_CATEGORY_FRIENDLY
 	description = "A trader ship full of goodys."
-	gamemode_whitelist = list(ROUNDTYPE_EXTENDED)
 	var/ship_template
 
 /datum/round_event/ftu_trader
@@ -91,7 +90,7 @@
 /datum/round_event/ftu_trader/announce(fake)
 	priority_announce("Корабль Свободного торгового объединения получил разрешение на стыковку и пересёк границы сектора. Можете потратить свои честно заработанные деньги на их товары.","Бюрократический отдел ЦК", 'sound/announcer/classic/traider_announce.ogg')
 
-/datum/round_event_control/ftu_trader/preRunEvent()
+/datum/round_event_control/ftu_trader/preRunEvent(admin_window = TRUE)
 	if (!SSmapping.empty_space)
 		return EVENT_CANT_RUN
 

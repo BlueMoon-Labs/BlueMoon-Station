@@ -183,7 +183,16 @@
 		ADD_TRAIT(src, trait, ROUNDSTART_TRAIT)
 
 /mob/living/simple_animal/Destroy()
-	GLOB.simple_animals[AIStatus] -= src
+	// Выписываемся из ВСЕХ бакетов, а не только из GLOB.simple_animals[AIStatus]:
+	// прямое присвоение AIStatus на живом мобе оставляет запись в старом бакете,
+	// и `-= src` по текущему статусу её не находит - труп висит в списке навечно
+	for(var/bucket_index in 1 to length(GLOB.simple_animals))
+		var/list/bucket = GLOB.simple_animals[bucket_index]
+		if(bucket_index == AIStatus)
+			bucket -= src
+		else if(src in bucket)
+			bucket -= src
+			log_world("## GC: [type] найден в бакете simple_animals\[[bucket_index]] при AIStatus=[AIStatus] - страндед-запись вычищена в Destroy()")
 	if (LAZYLEN(SSnpcpool.currentrun))
 		SSnpcpool.currentrun -= src
 
@@ -191,19 +200,14 @@
 		nest.spawned_mobs -= src
 		nest = null
 
-	var/turf/T = get_turf(src)
 	if (AIStatus == AI_Z_OFF && islist(SSidlenpcpool.idle_mobs_by_zlevel))
-		if (T)
-			var/list/idle_z_list = SSidlenpcpool.idle_mobs_by_zlevel[T.z]
+		// Регистрация в idle_mobs_by_zlevel шла по турфу НА МОМЕНТ toggle_ai(AI_Z_OFF);
+		// если моба с тех пор переместили между z (или он уже в nullspace), чистка по
+		// текущему турфу промахнётся - поэтому выписываемся из всех z-списков
+		for (var/i in 1 to SSidlenpcpool.idle_mobs_by_zlevel.len)
+			var/list/idle_z_list = SSidlenpcpool.idle_mobs_by_zlevel[i]
 			if(islist(idle_z_list))
 				idle_z_list -= src
-		else
-			// If we were moved to nullspace before Destroy(), we can no longer resolve our z-level.
-			// Remove from every idle z-list to avoid a dangling subsystem reference blocking GC.
-			for (var/i in 1 to SSidlenpcpool.idle_mobs_by_zlevel.len)
-				var/list/idle_z_list = SSidlenpcpool.idle_mobs_by_zlevel[i]
-				if(islist(idle_z_list))
-					idle_z_list -= src
 
 	return ..()
 
@@ -687,6 +691,11 @@
 	LoadComponent(/datum/component/riding)
 
 /mob/living/simple_animal/proc/toggle_ai(togglestatus)
+	// Отложенный toggle_ai по уже удалённому мобу (timestop, циклы мегафауны,
+	// подвисшие в currentrun ссылки) заново кладёт его в бакет simple_animals,
+	// откуда Destroy() его уже вынул - моб виснет там навечно (прод: слайм в warnfail)
+	if(QDELING(src))
+		return
 	if(!can_have_ai && (togglestatus != AI_OFF))
 		return
 	if (AIStatus != togglestatus)

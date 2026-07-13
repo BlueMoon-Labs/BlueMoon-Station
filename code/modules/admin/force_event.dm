@@ -53,7 +53,7 @@
 
 	var/list/events = list()
 
-	for(var/datum/round_event_control/event_control as anything in SSevents.control)
+	for(var/datum/round_event_control/event_control as anything in SSdirector.event_controls())
 		//add category
 		if(!categories_seen[event_control.category])
 			categories_seen[event_control.category] = TRUE
@@ -87,7 +87,7 @@
 			var/event_to_run_type = text2path(string_path)
 			if(!event_to_run_type)
 				return
-			var/datum/round_event_control/event = locate(event_to_run_type) in SSevents.control
+			var/datum/round_event_control/event = locate(event_to_run_type) in SSdirector.event_controls()
 			if(!event)
 				return
 			if(length(event.admin_setup))
@@ -97,5 +97,6 @@
 			var/always_announce_chance = 100
 			var/no_announce_chance = 0
 			event.runEvent(announce_chance_override = announce_event ? always_announce_chance : no_announce_chance, admin_forced = TRUE)
+			SSdirector.note_forced_run(event)
 			message_admins("[key_name_admin(usr)] has triggered an event. ([event.name])")
 			log_admin("[key_name(usr)] has triggered an event. ([event.name])")

@@ -1,16 +1,12 @@
-/proc/activate_after(obj, delay)
-
-	var/endtime = world.time + delay
-	. = 1
-	while (world.time < endtime)
-		stoplag()
-
 /obj/item/dildo
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/items/items_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/items/items_righthand.dmi'
 	item_state = "dildo"
 	var/inside = FALSE
 	var/last_heavy_message_time = 0
+	var/timer = 0
+	var/hole = CUM_TARGET_VAGINA
+	var/lust_amount = NORMAL_LUST
 
 /obj/item/dildo/proc/update_lust()
 	switch(dildo_size)
@@ -161,13 +157,21 @@
 	update_lust()
 
 //Dildo
-/obj/item/dildo/proc/stuffed_movement(mob/living/user)
-	while(inside)
-		if(activate_after(src, rand(50,350))) //5 to 35 seconds, every 20 sec on average
-			if(!istype(src.loc, /obj/item/organ/genital))
-				return
-			target_reaction(user, null, 1, null, null, TRUE, TRUE, TRUE, TRUE, TRUE)
-			user.plug13_genital_emote(loc, lust_amount)
+/obj/item/dildo/process(delta_time)
+	timer -= delta_time
+	if(timer >= 0) // chech interval
+		return
+	else
+		timer = rand(50,350)
+
+	if(!istype(src.loc, /obj/item/organ/genital))
+		STOP_PROCESSING(SSobj,src)
+		return
+	var/obj/item/organ/genital/G = src.loc
+
+	var/mob/living/carbon/U = G.owner
+	target_reaction(U, null, 1, null, null, TRUE, TRUE, TRUE, TRUE, TRUE)
+	U.plug13_genital_emote(loc, lust_amount)
 
 /obj/item/dildo/ComponentInitialize()
 	. = ..()
@@ -177,6 +181,10 @@
 		"after_removing" = CALLBACK(src, PROC_REF(item_removed)),
 	)
 	AddComponent(/datum/component/genital_equipment, list(ORGAN_SLOT_PENIS, ORGAN_SLOT_WOMB, ORGAN_SLOT_VAGINA, ORGAN_SLOT_BREASTS, ORGAN_SLOT_ANUS), procs_list)
+
+/obj/item/dildo/Destroy()
+	STOP_PROCESSING(SSobj,src)
+	. = ..()
 
 /obj/item/dildo/proc/item_inserting(datum/source, obj/item/organ/genital/G, mob/living/user)
 	. = TRUE
@@ -214,46 +222,94 @@
 	to_chat(user, span_userlove("You attach [src] to <b>\The [G.owner]</b>'s [G]."))
 	playsound(G.owner, 'modular_sand/sound/lewd/champ_fingering.ogg', 50, 1, -1)
 	inside = TRUE
-	stuffed_movement(G.owner)
+	START_PROCESSING(SSobj,src)
 
 /obj/item/dildo/proc/item_removed(datum/source, obj/item/organ/genital/G, mob/user)
 	. = TRUE
 	to_chat(user, span_userlove("You retrieve [src] from <b>\The [G.owner]</b>'s [G]."))
 	playsound(G.owner, 'modular_sand/sound/lewd/champ_fingering.ogg', 50, 1, -1)
 	inside = FALSE
+	STOP_PROCESSING(SSobj,src)
 
-/obj/item/dildo/MouseDrop_T(mob/living/M, mob/living/user)
+/obj/item/dildo/attack(mob/living/carbon/human/M, mob/living/carbon/human/user)
 	var/message = ""
-	var/lust_amt = 0
+	//var/lust_amt = 0 //BLUEMOON EDIT commented
+	var/organ //SPLURT edit
+
+	if(!user.canUseTopic(user, BE_CLOSE, FALSE, FALSE, FALSE)) //BLUEMOON EDIT
+		return
+	user.DelayNextAction(CLICK_CD_RANGE)
+
 	if(ishuman(M) && (M?.client?.prefs?.toggles & VERB_CONSENT))
 		switch(user.zone_selected)
 			if(BODY_ZONE_PRECISE_GROIN)
 				switch(hole)
 					if(CUM_TARGET_VAGINA)
-						if(M.has_vagina(REQUIRE_EXPOSED))
-							message = (user == M) ? pick("распологается над '\the [src]' и начинает пихать это прямо в свою киску.", "запихивает '\the [src]' в свою киску", "постанывает и садится на '\the [src]' киской.",  "скачет на '\the [src]' киской!") : pick("насаживает <b>[M]</b> киской на '\the [src]'", "надавливает на плечи <b>[M]</b>, заставляя скакать киской на '\the [src]!'")
-							lust_amt = NORMAL_LUST
+						if(M.has_vagina() == HAS_EXPOSED_GENITAL)
+							message = (user == M) ? pick("крепко обхватывает '\the [src]' и начинает пихать это прямо в свою киску.", "запихивает '\the [src]' в свою киску", "постанывает и садится на '\the [src]'.") : pick("трахает <b>[M]</b> прямо в киску с помощью '\the [src]'", "засовывает '\the [src]' прямо в киску <b>[M]</b>.")
+							//lust_amt = NORMAL_LUST //BLUEMOON EDIT commented
+							organ = CUM_TARGET_VAGINA //SPLURT edit
 					if(CUM_TARGET_ANUS)
-						if(M.has_anus(REQUIRE_EXPOSED))
-							message = (user == M) ? pick("распологается над '\the [src]' и начинает пихать это прямо в свою попку.","запихивает '\the [src]' прямо в свою собственную попку.", "постанывает и садится на '\the [src]' попой.",  "скачет на '\the [src]' попой!") : pick("насаживает <b>[M]</b> попой на '\the [src]'", "надавливает на плечи <b>[M]</b>, заставляя скакать попой на '\the [src]!'")
-							lust_amt = NORMAL_LUST
+						if(M.has_anus() == HAS_EXPOSED_GENITAL)
+							message = (user == M) ? pick("крепко обхватывает '\the [src]' и начинает пихать это прямо в свою попку.","запихивает '\the [src]' прямо в свою собственную попку.", "постанывает и садится на '\the [src]'.") : pick("трахает <b>[M]</b> прямо в попку '\the [src]'", "активно суёт '\the [src]' прямо в попку <b>[M]</b>.")
+							//lust_amt = NORMAL_LUST //BLUEMOON EDIT commented
+							organ = CUM_TARGET_ANUS //SPLURT edit
 			if(BODY_ZONE_PRECISE_MOUTH)
 				if(M.has_mouth() && !M.is_mouth_covered())
-					message = (user == M) ? pick("распологается над '\the [src]' и начинает пихать это прямо в свой ротик.", "запихивает '\the [src]' прямо в свой собственный ротик.", "втыкает '\the [src]' прямо в свой ротик.", "заглатывает '\the [src]' целиком!") : pick("насаживает <b>[M]</b> ротиком на '\the [src]'", "надавливает на затылок <b>[M]</b>, заставляя заглатывать '\the [src]!'")
+					message = (user == M) ? pick("крепко обхватывает '\the [src]' и начинает пихать это прямо в свой ротик.", "запихивает '\the [src]' прямо в свой собственный ротик.", "втыкает '\the [src]' прямо в свой ротик.") : pick("трахает <b>[M]</b> прямо в ротик при помощи '\the [src]'", "активно суёт '\the [src]' прямо в ротик <b>[M]</b>.")
+					organ = CUM_TARGET_MOUTH //BLUEMOON ADD
 	if(message)
-		user.visible_message("<span class='lewd'><b>[user]</b> [message].</span>")
-		M.handle_post_sex(lust_amt, null, user)
+		user.visible_message(span_lewd("<b>[user]</b> [message]."))
+		//BLUEMOON ADD START
+		var/where_cum = (user.zone_selected == BODY_ZONE_PRECISE_GROIN) ? CUM_TARGET_HAND : null
+		target_reaction(M, user, 1, organ, where_cum, (user != M && user.a_intent == INTENT_HARM))
+		//BLUEMOON ADD END
+		//M.handle_post_sex(lust_amt, null, user, organ) //SPLURT edit  //BLUEMOON EDIT commented
 
 		switch(user.zone_selected)
 			if(BODY_ZONE_PRECISE_GROIN)
 				switch (hole)
 					if (CUM_TARGET_VAGINA)
-						user.client?.plug13.send_emote(PLUG13_EMOTE_VAGINA, min(lust_amt * 3, 100), PLUG13_DURATION_NORMAL)
+						user.client?.plug13.send_emote(PLUG13_EMOTE_VAGINA, min(lust_amount * 3, 100), PLUG13_DURATION_NORMAL) //BLUEMOON EDIT lust_amt -> lust_amount
 					if (CUM_TARGET_ANUS)
-						user.client?.plug13.send_emote(PLUG13_EMOTE_ANUS, min(lust_amt * 3, 100), PLUG13_DURATION_NORMAL)
+						user.client?.plug13.send_emote(PLUG13_EMOTE_ANUS, min(lust_amount * 3, 100), PLUG13_DURATION_NORMAL) //BLUEMOON EDIT lust_amt -> lust_amount
 			if (BODY_ZONE_PRECISE_MOUTH)
 				user.client?.plug13.send_emote(PLUG13_EMOTE_MOUTH, 35, PLUG13_DURATION_NORMAL)
 
 		playsound(loc, pick('modular_sand/sound/interactions/bang4.ogg',
 							'modular_sand/sound/interactions/bang5.ogg',
 							'modular_sand/sound/interactions/bang6.ogg'), 70, 1, -1)
+		if(!HAS_TRAIT(M, TRAIT_LEWD_JOB))
+			new /obj/effect/temp_visual/heart(M.loc)
+
+
+	else if(user.a_intent == INTENT_HARM)
+		return ..()
+
+/obj/item/dildo/attack_self(mob/living/carbon/human/user as mob)
+	hole = hole == CUM_TARGET_VAGINA ? CUM_TARGET_ANUS : CUM_TARGET_VAGINA
+	to_chat(user, "<span class='notice'>Я целюсь в... [hole].</span>")
+
+//begin redds code
+/obj/item/dildo/cyborg
+	name = "F.I.S.T.R. Machine"
+	desc = "Fully Integrated Sexual Tension Relief Machine"
+//end redds code
+
+/obj/item/pneumatic_cannon/dildo
+	color = "#FFC0CB"
+	name = "pneumatic cannon"
+	desc = "A pneumatic cannon with a picture of a bus printed on the side that resembles an A-shape."
+	automatic = TRUE
+	selfcharge = TRUE
+	gasPerThrow = 0
+	checktank = FALSE
+	fire_mode = PCANNON_FIFO
+	throw_amount = 1
+	maxWeightClass = 60
+	var/static/list/dildo_typecache = typecacheof(/obj/item/dildo)
+	charge_type = /obj/item/dildo
+
+/obj/item/pneumatic_cannon/dildo/Initialize(mapload)
+	. = ..()
+	allowed_typecache = dildo_typecache

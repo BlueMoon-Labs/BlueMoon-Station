@@ -2,8 +2,8 @@ import { useBackend } from '../backend';
 import { Section, TextArea } from '../components';
 import { NtosWindow } from '../layouts';
 
-export const NtosNotepad = (props, context) => {
-  const { act, data } = useBackend(context);
+export const NtosNotepad = (props) => {
+  const { act, data } = useBackend();
   const { note = '' } = data;
 
   return (

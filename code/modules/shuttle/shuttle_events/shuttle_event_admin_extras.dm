@@ -10,9 +10,7 @@
 		active = TRUE
 	return SHUTTLE_EVENT_CLEAR
 
-#define INTEQ_HITCHHIKER_EQUIP_TRAIT "inteq_hitchhiker_equip"
-
-/// InteQ hitchhiker — ghost role with /datum/outfit/inteq/full, optional prefs load, then re-equip.
+/// InteQ hitchhiker — ghost role with /datum/outfit/inteq/full, gear first, optional prefs load, re-equip if prefs applied.
 /datum/shuttle_event/simple_spawner/player_controlled/human/hitchhiker/inteq
 	name = "Оперативники ИнтеКью (автостоп по гиперпространству)"
 	ghost_alert_string = "Налёт оперативников InteQ у эвакуационного шаттла. Я подсяду?"
@@ -32,18 +30,16 @@
 /datum/shuttle_event/simple_spawner/player_controlled/human/hitchhiker/inteq/post_spawn(atom/movable/spawnee)
 	// Skip assistant hitchhiker outfit from parent; gear is applied once in post_player_assigned / NPC path.
 	call(src, /datum/shuttle_event/simple_spawner/proc/post_spawn)(spawnee)
-	if(ishuman(spawnee))
-		var/mob/living/carbon/human/H = spawnee
-		H.status_flags |= GODMODE
 
 /datum/shuttle_event/simple_spawner/player_controlled/human/hitchhiker/inteq/post_player_assigned(mob/living/mob)
 	if(!ishuman(mob))
 		return
 	var/mob/living/carbon/human/human = mob
+	equip_inteq_hitchhiker(human)
 	if(human.client)
 		if(alert(human, "Загрузить внешность, расу и имя с ваших сохранённых персонажей?", "Внешность", "Да", "Нет") == "Да")
 			human.load_client_appearance(human.client, FALSE)
-	equip_inteq_hitchhiker(human)
+			equip_inteq_hitchhiker(human)
 
 /datum/shuttle_event/simple_spawner/player_controlled/human/hitchhiker/inteq/on_batch_npc_spawn(mob/living/mob)
 	if(ishuman(mob))
@@ -52,13 +48,6 @@
 /datum/shuttle_event/simple_spawner/player_controlled/human/hitchhiker/inteq/proc/equip_inteq_hitchhiker(mob/living/carbon/human/human)
 	if(QDELETED(human))
 		return
-	ADD_TRAIT(human, TRAIT_NOBREATH, INTEQ_HITCHHIKER_EQUIP_TRAIT)
-	var/previous_flags = human.status_flags
-	human.status_flags |= GODMODE
 	human.equipOutfit(/datum/outfit/inteq/full)
-	human.status_flags = previous_flags & ~GODMODE
-	REMOVE_TRAIT(human, TRAIT_NOBREATH, INTEQ_HITCHHIKER_EQUIP_TRAIT)
 	if(human.internal)
 		human.update_action_buttons_icon()
-
-#undef INTEQ_HITCHHIKER_EQUIP_TRAIT

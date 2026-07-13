@@ -88,16 +88,18 @@
 	if(!do_after(user, 5 SECONDS, target = src))
 		balloon_alert(user, "interrupted!")
 		return FALSE
-	if(!user.transferItemToLoc(card, src))
+	if(!card.pai.forceMove(src))
 		return
 
 	card.pai.canholo = FALSE
 	ai = card.pai
+	ai.remote_control = src
+	var/mob/living/silicon/pai/pai = ai
 	balloon_alert(user, "pAI transferred to suit")
 	balloon_alert(ai, "transferred to a suit")
-	ai.remote_control = src
 	for(var/datum/action/action as anything in actions)
-		action.Grant(ai)
+		action.Grant(pai)
+	card.moveToNullspace()
 	return TRUE
 
 /**
@@ -144,7 +146,10 @@
 	var/mob/living/silicon/pai/pai = ai
 	var/turf/drop_off = get_turf(src)
 	if(drop_off) // In case there's no drop_off, the pAI will simply get deleted.
-		pai.card.forceMove(drop_off)
+		var/obj/item/paicard/card = pai.card
+		card.forceMove(drop_off)
+		pai.forceMove(card)
+		pai.client.eye = card
 
 	for(var/datum/action/action as anything in actions)
 		if(action.owner == pai)

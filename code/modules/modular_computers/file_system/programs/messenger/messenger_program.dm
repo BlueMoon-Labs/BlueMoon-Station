@@ -50,7 +50,7 @@
 	extended_desc = "Позволяет вести классическую переписку с другими модульными устройствами."
 	size = 0
 	undeletable = TRUE
-	usage_flags = PROGRAM_PDA
+	usage_flags = PROGRAM_ON_TABLETS
 	ui_header = "ntnrc_idle.gif"
 	tgui_id = "NtosMessenger"
 	program_icon = "comment-alt"
@@ -147,7 +147,7 @@
 			continue
 		if(!pda_device.saved_identification && !pda_device.saved_job)
 			continue
-		var/datum/computer_file/program/messenger/messenger = locate() in pda_device.get_all_files()
+		var/datum/computer_file/program/messenger/messenger = locate(/datum/computer_file/program/messenger) in pda_device.get_all_files()
 		if(!istype(messenger) || messenger.invisible)
 			continue
 
@@ -173,6 +173,9 @@
 
 /// Set the ringtone if possible. Also handles encoding.
 /datum/computer_file/program/messenger/proc/set_ringtone(new_ringtone, mob/user)
+	// html_encode is required: a custom ringtone reaches an UNESCAPED maptext sink via
+	// computer.ring() -> balloon_alert(). To avoid double-encoding on re-edit, the
+	// PDA_ringSet dialog html_decode()s this value back when pre-filling its default.
 	new_ringtone = trim(html_encode(new_ringtone), MESSENGER_RINGTONE_MAX_LENGTH)
 	if(!new_ringtone)
 		return FALSE
@@ -189,11 +192,6 @@
 
 	return TRUE
 
-/datum/computer_file/program/messenger/ui_state(mob/user)
-	if(issilicon(user))
-		return GLOB.deep_inventory_state
-	return GLOB.default_state
-
 /datum/computer_file/program/messenger/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()
 	if(isobserver(usr))
@@ -201,7 +199,7 @@
 	switch(action)
 		if("PDA_ringSet")
 			var/mob/living/user = usr
-			var/new_ringtone = tgui_input_text(user, "Enter a new ringtone", "Ringtone", ringtone, max_length = MAX_MESSAGE_LEN, encode = FALSE)
+			var/new_ringtone = tgui_input_text(user, "Enter a new ringtone", "Ringtone", html_decode(ringtone), max_length = MAX_MESSAGE_LEN, encode = FALSE)
 			if(!new_ringtone)
 				return FALSE
 			return set_ringtone(new_ringtone, user)
@@ -325,7 +323,7 @@
 			else
 				// Fallback: search all PDAs for the messenger
 				for(var/obj/item/modular_computer/pda/pda_device in GLOB.PDAs)
-					var/datum/computer_file/program/messenger/messenger = locate() in pda_device.get_all_files()
+					var/datum/computer_file/program/messenger/messenger = locate(/datum/computer_file/program/messenger) in pda_device.get_all_files()
 					if(istype(messenger) && REF(messenger) == target_ref)
 						target = messenger
 						add_messenger(messenger)
@@ -393,7 +391,7 @@
 	var/list/static_data = list()
 	static_data["can_spam"] = spam_mode
 	static_data["is_silicon"] = issilicon(user)
-	static_data["remote_silicon"] = (isAI(user) || iscyborg(user)) && !istype(computer, /obj/item/modular_computer/pda/silicon)
+	static_data["remote_silicon"] = FALSE
 	static_data["alert_able"] = alert_able
 	return static_data
 
@@ -472,7 +470,15 @@
 		chat.can_reply = FALSE
 		return
 	var/target_name = target.computer.saved_identification
-	var/input_message = tgui_input_text(user, "Enter [mime_mode ? "emojis":"a message"].", "NT Messaging[target_name ? " ([target_name])" : ""]", max_length = MAX_MESSAGE_LEN, encode = FALSE)
+	var/input_message
+	var/input_title = "NT Messaging[target_name ? " ([target_name])" : ""]"
+	var/input_desc = "Enter [mime_mode ? "emojis":"a message"]."
+	if(user.client?.prefs.tgui_input_verbs)
+		input_message = tgui_input_text(user, input_desc, input_title, max_length = MAX_MESSAGE_LEN, encode = FALSE)
+	else
+		input_message = stripped_input(user, input_desc, input_title)
+	if(!input_message)
+		return
 	send_message(user, input_message, list(chat))
 
 /// Helper that sends a message to everyone
@@ -608,6 +614,8 @@
 
 			if(!istype(target_chat))
 				target_chat = create_chat(REF(target))
+			if(!target_chat)
+				continue
 
 		else
 			continue
@@ -621,6 +629,8 @@
 	// Log in our chat
 	var/datum/pda_message/message_datum = new(message, TRUE, STATION_TIME_TIMESTAMP(PDA_MESSAGE_TIMESTAMP_FORMAT, world.time), photo_asset, everyone)
 	for(var/datum/pda_chat/target_chat as anything in target_chats)
+		if(!target_chat)
+			continue
 		target_chat.add_message(message_datum, show_in_recents = !everyone)
 		target_chat.unread_messages = 0
 
@@ -682,8 +692,8 @@
 
 	// If it didn't reach
 	if(!signal.data["done"])
-		if(SSnetworks.ntnet_debug_global_signal)
-			// Debug override: bypass telecomms infrastructure and deliver directly
+		if(SSnetworks.ntnet_debug_global_signal || issilicon(sender))
+			// Bypass telecomms and deliver directly via NTNet
 			signal.broadcast()
 			signal.mark_done()
 		else
@@ -703,7 +713,7 @@
 		message_admins(log_text)
 
 	// Show to ghosts
-	var/ghost_message = span_notice("[span_name(signal.format_sender())] [rigged ? "(as [span_name(fake_name)]) Rigged " : ""]PDA Message --> [span_name("[signal.format_target()]")]: \"[signal.format_message()]\"")
+	var/ghost_message = span_notice("[span_name(signal.format_sender())] [rigged ? "(as [span_name(fake_name)]) Rigged " : ""]PDA Message --> [span_name("[everyone ? "Everyone" : signal.format_target()]")]: \"[signal.format_message()]\"")
 	var/list/message_listeners = GLOB.dead_mob_list + GLOB.current_observers_list
 	for(var/mob/listener as anything in message_listeners)
 		if(!listener.client)
@@ -726,6 +736,8 @@
 	return TRUE
 
 /datum/computer_file/program/messenger/proc/receive_message(datum/signal/subspace/messaging/tablet_message/signal)
+	if(QDELETED(computer))
+		return
 	var/datum/pda_chat/chat = null
 
 	var/is_rigged = signal.data["rigged"]
@@ -762,8 +774,10 @@
 	var/list/mob/living/receivers = list()
 	if(computer.inserted_pai && computer.inserted_pai.pai)
 		receivers += computer.inserted_pai.pai
-	if(computer.loc && isliving(computer.loc))
+	if(isliving(computer.loc))
 		receivers += computer.loc
+	else if(isliving(computer.loc?.loc))
+		receivers += computer.loc.loc
 
 	var/datum/computer_file/program/messenger/sender_messenger = chat?.recipient?.resolve()
 
@@ -818,6 +832,8 @@
 
 	if(QDELETED(src))
 		return
+	if(QDELETED(computer))
+		return
 	if(!usr.canUseTopic(computer, BE_CLOSE, no_tk = TRUE, check_resting = FALSE))
 		return
 	if(isobserver(usr))
@@ -825,7 +841,7 @@
 
 	// Ensure computer is on
 	if(!computer.enabled)
-		computer.turn_on(usr)
+		computer.turn_on(usr, FALSE)
 		if(!computer.enabled)
 			return
 

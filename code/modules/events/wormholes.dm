@@ -5,6 +5,7 @@
 	weight = 25
 	min_players = 20
 	category = EVENT_CATEGORY_ANOMALIES
+	severity = DIRECTOR_SEVERITY_MODERATE
 
 /datum/round_event/wormholes
 	announce_when = 10
@@ -20,13 +21,17 @@
 	end_when = rand(40, 80)
 
 /datum/round_event/wormholes/start()
-	for(var/turf/open/floor/T in world)
-		CHECK_TICK
-		if(is_station_level(T.z))
+	// Только станционные z: `in world` перебирал турфы ВСЕХ уровней (руины, шахта, резервы),
+	// хотя не-станционные тут же отсеивались - на большом мире это секунды лишнего CPU.
+	for(var/z in SSmapping.levels_by_trait(ZTRAIT_STATION))
+		for(var/turf/open/floor/T in block(locate(1, 1, z), locate(world.maxx, world.maxy, z)))
+			CHECK_TICK
 			var/area/A = get_area(T)
 			if(A.outdoors)
 				continue
 			pick_turfs += T
+	if(!length(pick_turfs))
+		return kill()
 
 	for(var/i = 1, i <= number_of_wormholes, i++)
 		var/turf/T = pick(pick_turfs)
@@ -36,11 +41,21 @@
 	priority_announce("На станции обнаружены пространственно-временные аномалии. Нет никаких дополнительных данных.", "ВНИМАНИЕ: АНОМАЛИЯ", "spanomalies", has_important_message = TRUE)
 
 /datum/round_event/wormholes/tick()
-	if(activeFor % shift_frequency == 0)
-		for(var/obj/effect/portal/wormhole/O in wormholes)
-			var/turf/T = pick(pick_turfs)
-			if(T)
-				O.forceMove(T)
+	// Прыжок всех 400 порталов одним куском каждые shift_frequency тиков - это атомарные
+	// 100+мс внутри фаера директора (раннер не может прервать tick() посреди). Вместо этого
+	// каждый тик прыгает срез в 1/shift_frequency списка: каждый портал по-прежнему прыгает
+	// раз в shift_frequency тиков, но кусок в фаере кратно меньше.
+	if(!length(wormholes) || !length(pick_turfs))
+		return
+	var/slice_size = CEILING(length(wormholes) / shift_frequency, 1)
+	var/slice_start = (activeFor % shift_frequency) * slice_size
+	for(var/i in slice_start + 1 to min(slice_start + slice_size, length(wormholes)))
+		var/obj/effect/portal/wormhole/hole = wormholes[i]
+		if(QDELETED(hole))
+			continue
+		var/turf/T = pick(pick_turfs)
+		if(T)
+			hole.forceMove(T)
 
 /datum/round_event/wormholes/end()
 	QDEL_LIST(wormholes)

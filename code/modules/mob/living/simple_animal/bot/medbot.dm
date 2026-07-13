@@ -168,7 +168,7 @@
 	var/list/data = ..()
 	if(reagent_glass)
 		data["custom_controls"]["beaker"] = reagent_glass
-		data["custom_contrlos"]["reagents"] = "[reagent_glass.reagents.total_volume]/[reagent_glass.reagents.maximum_volume]"
+		data["custom_controls"]["reagents"] = "[reagent_glass.reagents.total_volume]/[reagent_glass.reagents.maximum_volume]"
 	if(!locked || hasSiliconAccessInArea(user) || IsAdminGhost(user))
 		data["custom_controls"]["injection_amount"] = injection_amount
 		data["custom_controls"]["use_beaker"] = use_beaker
@@ -748,7 +748,7 @@
 
 /mob/living/simple_animal/bot/medbot/proc/check_overdose(mob/living/carbon/patient,reagent_id,injection_amount)
 	var/datum/reagent/R  = GLOB.chemical_reagents_list[reagent_id]
-	if(!R.overdose_threshold) //Some chems do not have an OD threshold
+	if(!R || !R.overdose_threshold) //Some chems do not have an OD threshold
 		return FALSE
 	var/current_volume = patient.reagents.get_reagent_amount(reagent_id)
 	if(current_volume + injection_amount > R.overdose_threshold)
@@ -765,7 +765,8 @@
 	drop_part(healthanalyzer, Tsec)
 
 	if(reagent_glass)
-		drop_part(reagent_glass, Tsec)
+		reagent_glass.forceMove(Tsec)
+		reagent_glass = null
 
 	if(prob(50))
 		drop_part(robot_arm, Tsec)

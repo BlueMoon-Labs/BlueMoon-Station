@@ -239,12 +239,14 @@
 /obj/machinery/computer/emergency_shuttle{
 	dir = 4
 	},
+/obj/effect/fun_balloon/sentience/emergency_shuttle,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/escape)
 "aG" = (
 /obj/structure/chair/office/dark{
 	dir = 8
 	},
+/mob/living/simple_animal/hostile/retaliate/nanotrasenpeace/ranged,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/escape)
 "aH" = (
@@ -850,6 +852,18 @@
 	},
 /turf/open/floor/mineral/plastitanium/red/brig,
 /area/shuttle/escape)
+"rz" = (
+/obj/structure/chair/office/dark{
+	dir = 1
+	},
+/mob/living/simple_animal/hostile/retaliate/nanotrasenpeace/ranged,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/escape)
+"Ge" = (
+/obj/structure/chair/office/dark,
+/mob/living/simple_animal/hostile/retaliate/nanotrasenpeace/ranged,
+/turf/open/floor/mineral/titanium/blue,
+/area/shuttle/escape)
 "LY" = (
 /turf/open/floor/mineral/titanium,
 /area/shuttle/escape)
@@ -925,9 +939,9 @@ ac
 ac
 am
 aq
-aC
+Ge
 aG
-ax
+rz
 aq
 aQ
 ad

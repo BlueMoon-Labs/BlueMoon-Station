@@ -12,10 +12,20 @@
 	var/obj/item/dildo/dual_mode_attached_dildo
 	buckle_lying = 90
 	flags_1 = NODECONSTRUCT_1
+	var/timer = 0
+	var/static/list/speed_delay = list(
+		"low"    = 2,
+		"normal" = 1,
+		"high"   = 0.2
+	)
 
 /obj/structure/bed/dildo_machine/New()
 	..()
 	add_overlay(mutable_appearance('modular_bluemoon/icons/obj/structures/lewd_devices.dmi', "dilmachine_over", MOB_LAYER + 1))
+
+/obj/structure/bed/dildo_machine/Destroy()
+	STOP_PROCESSING(SSobjlw,src)
+	. = ..()
 
 /obj/structure/bed/dildo_machine/examine(mob/user)
 	. = ..()
@@ -114,24 +124,27 @@
 				to_chat(user, span_warning("You can't toggle machine in dual mode, without second dildo."))
 			return
 
-	var/static/list/speed_delay = list(
-		"low"    = 8,
-		"normal" = 5,
-		"high"   = 3
-	)
 	on = !on
 	if(on)
-		spawn()
-			while(on)
-				if(activate_after(src, speed_delay[mode]))
-					fuck()
+		START_PROCESSING(SSobjlw,src)
+	if(!on)
+		STOP_PROCESSING(SSobjlw,src)
 	if(user)
 		to_chat(user, span_notice("[src] в[on ? "" : "ы"]ключена."))
+
+/obj/structure/bed/dildo_machine/process(delta_time)
+	timer -= delta_time
+	if(timer >= 0) // chech interval
+		return
+	else
+		timer = speed_delay[mode]
+	fuck()
 
 /obj/structure/bed/dildo_machine/proc/fuck()
 	if(!on || !attached_dildo || (dual_mode && !dual_mode_attached_dildo) || !hole || !has_buckled_mobs())
 		visible_message(span_alert("The machine warning: the subject or dildo is missing."))
 		on = FALSE
+		STOP_PROCESSING(SSobjlw,src)
 		return
 
 	for(var/mob/living/carbon/human/M in buckled_mobs)

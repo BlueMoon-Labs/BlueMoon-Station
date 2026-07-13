@@ -507,9 +507,7 @@
 			var/turf/turf_target = get_turf(M)
 			for(var/obj/item/I in heretic.summon_items)
 				I.forceMove(turf_target)
-				if(!(I.item_flags & NO_PIXEL_RANDOM_DROP))
-					I.pixel_x = I.base_pixel_x + rand(-6, 6)
-					I.pixel_y = I.base_pixel_y + rand(-6, 6)
+				I.randomize_pixel_position()
 			heretic.summon_items.Cut()
 		M.jitteriness = 0
 		M.stuttering = 0
@@ -1409,13 +1407,19 @@
 	pH = 5.5
 	molarity = 1
 	condensation_amount = MOLES_GAS_VISIBLE_STEP
+	/// Не смывать намеренное оформление: рисунки/граффити крайонов и WASHABLE-покраску
+	/// (спрейканы, вёдра с краской). Грязь, кровь и прочие декали моются как обычно.
+	var/preserves_decor = FALSE
 
 /datum/reagent/space_cleaner/reaction_obj(obj/O, reac_volume)
 	if(istype(O, /obj/effect/decal/cleanable)  || istype(O, /obj/item/projectile/bullet/reusable/foam_dart) || istype(O, /obj/item/ammo_casing/caseless/foam_dart))
+		if(preserves_decor && istype(O, /obj/effect/decal/cleanable/crayon))
+			return
 		qdel(O)
 	else
 		if(O)
-			O.remove_atom_colour(WASHABLE_COLOUR_PRIORITY)
+			if(!preserves_decor)
+				O.remove_atom_colour(WASHABLE_COLOUR_PRIORITY)
 			SEND_SIGNAL(O, COMSIG_COMPONENT_CLEAN_ACT, CLEAN_WEAK)
 			O.clean_blood()
 			O.wash_cum() //sandstorm edit
@@ -1423,15 +1427,25 @@
 /datum/reagent/space_cleaner/reaction_turf(turf/T, reac_volume)
 	..()
 	if(reac_volume >= 1)
-		T.remove_atom_colour(WASHABLE_COLOUR_PRIORITY)
+		if(!preserves_decor)
+			T.remove_atom_colour(WASHABLE_COLOUR_PRIORITY)
 		SEND_SIGNAL(T, COMSIG_COMPONENT_CLEAN_ACT, CLEAN_WEAK)
 		T.clean_blood()
 		T.wash_cum() //sandstorm edit
 		for(var/obj/effect/decal/cleanable/C in T)
+			if(preserves_decor && istype(C, /obj/effect/decal/cleanable/crayon))
+				continue
 			qdel(C)
 
 		for(var/mob/living/simple_animal/slime/M in T)
 			M.adjustToxLoss(rand(5,10))
+
+// Мягкая пена аварийной очистки станции: ивент моет грязь и кровь, но не уносит
+// покраску баров и библиотек, которую экипаж наносил целый раунд.
+/datum/reagent/space_cleaner/gentle
+	name = "Foaming space cleaner"
+	description = "A gentler cleaning compound that dissolves grime while sparing paint and artwork."
+	preserves_decor = TRUE
 
 /datum/reagent/space_cleaner/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)
 	if(method == TOUCH || method == VAPOR)
@@ -1664,16 +1678,28 @@
 
 /datum/reagent/nitrous_oxide/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)
 	if(method == VAPOR)
-		M.drowsyness += max(round(reac_volume, 1), 2)
+		M.drowsyness += max(round(reac_volume * 2), 4)
+
+/datum/reagent/nitrous_oxide/on_mob_metabolize(mob/living/L)
+	..()
+	if(!iscarbon(L))
+		return
+	var/mob/living/carbon/C = L
+	C.drowsyness += 12
+	C.Unconscious(25)
 
 /datum/reagent/nitrous_oxide/on_mob_life(mob/living/carbon/M)
-	M.drowsyness += 2
+	M.drowsyness += 6
+	if(volume >= 5)
+		M.Unconscious(20)
+	if(volume >= 8)
+		M.AdjustSleeping(40)
 	if(ishuman(M))
 		var/mob/living/carbon/human/H = M
 		H.blood_volume = max(H.blood_volume - 2.5, 0)
-	if(prob(20))
-		M.losebreath += 2
-		M.confused = min(M.confused + 2, 5)
+	if(prob(35))
+		M.losebreath += 3
+		M.confused = min(M.confused + 3, 10)
 	..()
 
 /datum/reagent/stimulum
@@ -1723,6 +1749,179 @@
 /datum/reagent/nitryl/on_mob_end_metabolize(mob/living/L)
 	L.remove_movespeed_modifier(/datum/movespeed_modifier/reagent/nitryl)
 	..()
+
+/datum/reagent/nitrium_low_metabolization
+	name = "Nitrium"
+	description = "A highly reactive gas that makes you feel faster."
+	reagent_state = LIQUID
+	metabolization_rate = 0.5 * REAGENTS_METABOLISM
+	color = "#90560B"
+	taste_description = "burning"
+	pH = 2
+	value = REAGENT_VALUE_VERY_RARE
+
+/datum/reagent/nitrium_low_metabolization/on_mob_metabolize(mob/living/L)
+	..()
+	L.add_movespeed_modifier(/datum/movespeed_modifier/reagent/nitrium)
+
+/datum/reagent/nitrium_low_metabolization/on_mob_end_metabolize(mob/living/L)
+	L.remove_movespeed_modifier(/datum/movespeed_modifier/reagent/nitrium)
+	..()
+
+/datum/reagent/nitrium_high_metabolization
+	name = "Nitrosyl plasmide"
+	description = "A highly reactive byproduct that stops you from sleeping, while dealing increasing toxin damage over time."
+	reagent_state = LIQUID
+	metabolization_rate = 0.5 * REAGENTS_METABOLISM
+	color = "#E1A116"
+	taste_description = "sourness"
+	pH = 1.8
+	value = REAGENT_VALUE_VERY_RARE
+
+/datum/reagent/nitrium_high_metabolization/on_mob_metabolize(mob/living/L)
+	..()
+	ADD_TRAIT(L, TRAIT_SLEEPIMMUNE, type)
+
+/datum/reagent/nitrium_high_metabolization/on_mob_end_metabolize(mob/living/L)
+	REMOVE_TRAIT(L, TRAIT_SLEEPIMMUNE, type)
+	..()
+
+/datum/reagent/nitrium_high_metabolization/on_mob_life(mob/living/carbon/M)
+	M.adjustStaminaLoss(-4 * REM * 0.5, 0)
+	M.adjustToxLoss(0.1 * (current_cycle - 1) * REM * 0.5, 0)
+	. = ..()
+
+/datum/reagent/hypernoblium
+	name = "Hyper-Noblium"
+	description = "A suppressive gas that stops gas reactions on those who inhale it."
+	reagent_state = LIQUID
+	metabolization_rate = 0.5 * REAGENTS_METABOLISM
+	color = "#90560B"
+	taste_description = "searingly cold"
+	value = REAGENT_VALUE_VERY_RARE
+
+/datum/reagent/hypernoblium/on_mob_metabolize(mob/living/L)
+	..()
+	L.add_movespeed_modifier(/datum/movespeed_modifier/reagent/hypernoblium)
+
+/datum/reagent/hypernoblium/on_mob_end_metabolize(mob/living/L)
+	L.remove_movespeed_modifier(/datum/movespeed_modifier/reagent/hypernoblium)
+	..()
+
+/datum/reagent/hypernoblium/on_mob_life(mob/living/carbon/M)
+	if(isplasmaman(M))
+		M.apply_status_effect(/datum/status_effect/hypernob_protection)
+	. = ..()
+
+/datum/reagent/pluoxium
+	name = "Pluoxium"
+	description = "A gas that is eight times more efficient than O2 at lung diffusion with organ healing properties on sleeping patients."
+	reagent_state = LIQUID
+	metabolization_rate = 0.5 * REAGENTS_METABOLISM
+	color = "#808080"
+	taste_description = "irradiated air"
+	value = REAGENT_VALUE_VERY_RARE
+
+/datum/reagent/pluoxium/on_mob_life(mob/living/carbon/M)
+	if(HAS_TRAIT(M, TRAIT_KNOCKEDOUT))
+		for(var/obj/item/organ/O in M.internal_organs)
+			if(IS_ROBOTIC_ORGAN(O) || !O.damage)
+				continue
+			O.applyOrganDamage(-0.5 * REM * 0.5)
+	. = ..()
+
+/datum/reagent/healium
+	name = "Healium"
+	description = "A miraculous gas that rapidly heals wounds."
+	reagent_state = LIQUID
+	metabolization_rate = 2.5 * REAGENTS_METABOLISM
+	gas = GAS_HEALIUM
+	color = "#ff4444"
+	taste_description = "cold relief"
+	value = REAGENT_VALUE_VERY_RARE
+
+/datum/reagent/healium/on_mob_life(mob/living/carbon/M)
+	var/heal_amount = clamp(round(3 + volume * 1.2), 3, 18)
+	M.adjustBruteLoss(-heal_amount)
+	M.adjustFireLoss(-heal_amount)
+	M.adjustToxLoss(-max(round(heal_amount * 0.3), 1))
+	. = ..()
+
+/datum/reagent/zauker
+	name = "Zauker"
+	description = "An unstable gas that is toxic to all living beings."
+	reagent_state = LIQUID
+	metabolization_rate = 2.5 * REAGENTS_METABOLISM
+	color = "#90560B"
+	taste_description = "bitter"
+	value = REAGENT_VALUE_VERY_RARE
+
+/datum/reagent/zauker/on_mob_life(mob/living/carbon/M)
+	M.adjustBruteLoss(15 * REM * 0.5, 0)
+	M.adjustOxyLoss(4.5 * REM * 0.5, 0)
+	M.adjustFireLoss(6 * REM * 0.5, 0)
+	M.adjustToxLoss(7.5 * REM * 0.5, 0)
+	. = ..()
+
+/datum/reagent/proto_nitrate
+	name = "Proto Nitrate"
+	description = "Crystallized proto nitrate. Extremely radioactive in living tissue; about 20 units is a lethal dose."
+	reagent_state = LIQUID
+	metabolization_rate = REAGENTS_METABOLISM
+	gas = GAS_PROTO_NITRATE
+	color = "#44dd66"
+	taste_description = "charged static"
+	pH = 1.5
+	value = REAGENT_VALUE_VERY_RARE
+
+/datum/reagent/proto_nitrate/on_mob_life(mob/living/carbon/M)
+	M.radiation += volume * 2.5
+	. = ..()
+
+/datum/reagent/freon
+	name = "Freon"
+	description = "A coolant gas. Breathing it causes burn damage and heavy slowdown."
+	reagent_state = GAS
+	gas = GAS_FREON
+	metabolization_rate = 0.5 * REAGENTS_METABOLISM
+	color = "#66ccff"
+	taste_description = "cold burn"
+	value = REAGENT_VALUE_UNCOMMON
+
+/datum/reagent/freon/on_mob_metabolize(mob/living/L)
+	..()
+	L.add_movespeed_modifier(/datum/movespeed_modifier/reagent/freon)
+
+/datum/reagent/freon/on_mob_end_metabolize(mob/living/L)
+	L.remove_movespeed_modifier(/datum/movespeed_modifier/reagent/freon)
+	..()
+
+/datum/reagent/halon
+	name = "Halon"
+	description = "A fire suppressant gas. Heavy slowdown when inhaled, but makes you heat proof."
+	reagent_state = GAS
+	gas = GAS_HALON
+	metabolization_rate = 0.5 * REAGENTS_METABOLISM
+	color = "#44cc44"
+	taste_description = "chemical stagnation"
+	value = REAGENT_VALUE_UNCOMMON
+
+/datum/reagent/halon/on_mob_metabolize(mob/living/L)
+	..()
+	L.add_movespeed_modifier(/datum/movespeed_modifier/reagent/halon)
+	ADD_TRAIT(L, TRAIT_RESISTHEAT, type)
+
+/datum/reagent/halon/on_mob_end_metabolize(mob/living/L)
+	L.remove_movespeed_modifier(/datum/movespeed_modifier/reagent/halon)
+	REMOVE_TRAIT(L, TRAIT_RESISTHEAT, type)
+	..()
+
+/datum/reagent/hot_ice_slush
+	name = "Hot Ice Slush"
+	description = "A slush of hot ice. Holds a great amount of power inside."
+	color = "#66ccff"
+	taste_description = "cold burn"
+	value = REAGENT_VALUE_VERY_RARE
 
 /////////////////////////Coloured Crayon Powder////////////////////////////
 //For colouring in /proc/mix_color_from_reagents
@@ -2965,3 +3164,103 @@
 	name = "Black Crayon Powder"
 	rarity = "Exodia"
 	color = "#1C1C1C" // not quite black
+
+/datum/reagent/luminescent_fluid
+	name = "Green Luminiscent Fluid"
+	description = "A colored fluid that produces light as a result of a chemical reaction with oxygen."
+	taste_description = "buttery acid"
+	color = LIGHT_COLOR_GREEN
+	metabolization_rate = 0.3 * REAGENTS_METABOLISM
+	overdose_threshold = 50
+	metabolized_traits = list(TRAIT_MINOR_NIGHT_VISION)
+	self_consuming = TRUE
+	var/obj/item/flashlight/eyelight/glow/glowing
+	var/added_light = FALSE
+	var/stored_left_color
+	var/stored_right_color
+
+/datum/reagent/luminescent_fluid/on_mob_metabolize(mob/living/affected_mob)
+	. = ..()
+	if(volume > 20)
+		glowing = new(affected_mob)
+		glowing.light_color = color
+		glowing.update_brightness()
+		added_light = TRUE
+
+	if(!ishuman(affected_mob))
+		return
+
+	var/mob/living/carbon/human/affected_human = affected_mob
+	stored_left_color = affected_human.left_eye_color
+	stored_right_color = affected_human.right_eye_color
+	affected_human.left_eye_color = sanitize_hexcolor(color, 6)
+	affected_human.right_eye_color = sanitize_hexcolor(color, 6)
+	affected_human.update_body()
+
+/datum/reagent/luminescent_fluid/on_mob_end_metabolize(mob/living/affected_mob)
+	. = ..()
+	QDEL_NULL(glowing)
+	added_light = FALSE
+	if(!ishuman(affected_mob))
+		return
+
+	var/mob/living/carbon/human/affected_human = affected_mob
+	if(stored_left_color)
+		affected_human.left_eye_color = stored_left_color
+	if(stored_right_color)
+		affected_human.right_eye_color = stored_right_color
+	affected_human.update_body()
+
+/datum/reagent/luminescent_fluid/on_mob_life(mob/living/carbon/affected_mob)
+	. = ..()
+
+	if(isnull(glowing) && !added_light && volume > 20)
+		glowing = new(affected_mob)
+		glowing.light_color = color
+		glowing.update_brightness()
+		added_light = TRUE
+
+	if(prob(8))
+		affected_mob.adjustToxLoss(3.34, updating_health = FALSE)
+
+/datum/reagent/luminescent_fluid/overdose_start(mob/living/affected_mob)
+	. = ..()
+	if(!ishuman(affected_mob))
+		return
+	var/mob/living/carbon/human/affected_human = affected_mob
+	var/obj/item/organ/eyes/eyes = affected_human.getorganslot(ORGAN_SLOT_EYES)
+	if(eyes && !IS_ROBOTIC_ORGAN(eyes))
+		eyes.left_eye_color = color
+		eyes.right_eye_color = color
+		affected_human.update_body()
+
+/datum/reagent/luminescent_fluid/red
+	name = "Red Luminiscent Fluid"
+	color = COLOR_SOFT_RED
+	metabolized_traits = list(TRAIT_MINOR_NIGHT_VISION, TRAIT_UNNATURAL_RED_GLOWY_EYES)
+
+/datum/reagent/luminescent_fluid/red/overdose_start(mob/living/affected_mob)
+	. = ..()
+	if(!ishuman(affected_mob))
+		return
+	ADD_TRAIT(affected_mob, TRAIT_UNNATURAL_RED_GLOWY_EYES, OVERDOSE_TRAIT)
+
+/datum/reagent/luminescent_fluid/blue
+	name = "Blue Luminiscent Fluid"
+	color = LIGHT_COLOR_BLUE
+
+/datum/reagent/luminescent_fluid/cyan
+	name = "Cyan Luminiscent Fluid"
+	color = LIGHT_COLOR_CYAN
+
+/datum/reagent/luminescent_fluid/yellow
+	name = "Yellow Luminiscent Fluid"
+	color = LIGHT_COLOR_YELLOW
+
+/datum/reagent/luminescent_fluid/orange
+	name = "Orange Luminiscent Fluid"
+	color = LIGHT_COLOR_ORANGE
+
+/datum/reagent/luminescent_fluid/pink
+	name = "Pink Luminiscent Fluid"
+	color = LIGHT_COLOR_PINK

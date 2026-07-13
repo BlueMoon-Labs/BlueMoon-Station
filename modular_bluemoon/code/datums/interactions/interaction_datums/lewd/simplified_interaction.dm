@@ -18,11 +18,9 @@
 /datum/interaction/lewd/simplified_interaction/proc/lust_granted(mob/living/partner) // разрешение на получение удовольствия
 	return TRUE
 
-/datum/interaction/lewd/simplified_interaction/display_interaction(mob/living/user, mob/living/partner)
-	var/is_hidden = ..()
-	var/volume = 50
-	if(is_hidden)
-		volume = sound_quiet_volume
+/datum/interaction/lewd/simplified_interaction/display_interaction(mob/living/user, mob/living/partner, is_hidden)
+	var/const/volume = 70
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 	var/obj/item/reagent_containers/liquid_container
 	if(try_milking)
 		var/obj/item/cached_item = user.get_active_held_item()
@@ -62,7 +60,7 @@
 	if(lust_granted(partner))
 		partner.handle_post_sex(lust_amount, cum_target, liquid_container ? liquid_container : user,  partner_organ)
 	if(message_by_user)
-		playlewdinteractionsound(get_turf(user), pick(lewd_sounds), volume, 1, -1)
+		playlewdinteractionsound(get_turf(user), pick(lewd_sounds), volume, 1, extrarange)
 	else
-		playlewdinteractionsound(get_turf(partner), pick(lewd_sounds), volume, 1, -1)
-	..() // отправка сообщения в родительском проке
+		playlewdinteractionsound(get_turf(partner), pick(lewd_sounds), volume, 1, extrarange)
+	return ..() // отправка сообщения в родительском проке

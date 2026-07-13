@@ -1,9 +1,11 @@
-import { useBackend, useLocalState } from '../backend';
+import { useState } from 'react';
+
+import { useBackend } from '../backend';
 import { Box, Button, Collapsible, Icon, Input, LabeledList, NoticeBox, Section, Stack } from '../components';
 import { Window } from '../layouts';
 
-export const Vote = (props, context) => {
-  const { data } = useBackend(context);
+export const Vote = (props) => {
+  const { data } = useBackend();
   const { mode, question, lower_admin, upper_admin, custom_setup, allow_vote_restart, allow_vote_mode } = data;
 
   let windowTitle = 'Голосование';
@@ -31,8 +33,8 @@ export const Vote = (props, context) => {
   );
 };
 
-const VoteOptions = (props, context) => {
-  const { act, data } = useBackend(context);
+const VoteOptions = (props) => {
+  const { act, data } = useBackend();
   const { allow_vote_restart, allow_vote_mode, lower_admin, upper_admin } = data;
 
   return (
@@ -93,10 +95,10 @@ const VoteOptions = (props, context) => {
   );
 };
 
-const CustomVoteSetup = (props, context) => {
-  const { act, data } = useBackend(context);
+const CustomVoteSetup = (props) => {
+  const { act, data } = useBackend();
   const { custom_setup, vote_type_options = [], all_display_settings = [] } = data;
-  const [newOpt, setNewOpt] = useLocalState(context, 'cs_opt', '');
+  const [newOpt, setNewOpt] = useState('');
 
   const cs = custom_setup || {};
   const optCount = cs.options ? cs.options.length : 0;
@@ -239,8 +241,8 @@ const CustomVoteSetup = (props, context) => {
   );
 };
 
-const ChoicesPanel = (props, context) => {
-  const { act, data } = useBackend(context);
+const ChoicesPanel = (props) => {
+  const { act, data } = useBackend();
   const { choices = [], vote_system, score_options = [], last_modes, combo_threshold, mode, roundtype_descs } = data;
 
   if (!mode) {
@@ -405,8 +407,8 @@ const ChoicesList = (props) => {
   );
 };
 
-const TimePanel = (props, context) => {
-  const { act, data } = useBackend(context);
+const TimePanel = (props) => {
+  const { act, data } = useBackend();
   const { lower_admin, time_remaining } = data;
 
   return (

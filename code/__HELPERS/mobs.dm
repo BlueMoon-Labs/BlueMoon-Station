@@ -182,6 +182,7 @@
 		"arachnid_mandibles"	= pick(GLOB.arachnid_mandibles_list),
 		"taur"				= "None",
 		"mam_body_markings" = list(),
+		"emissive_eyes" = FALSE,
 		"mam_ears" 			= snowflake_ears_list ? pick(snowflake_ears_list) : "None",
 		"mam_snouts"		= snowflake_mam_snouts_list ? pick(snowflake_mam_snouts_list) : "None",
 		"mam_tail"			= snowflake_mam_tails_list ? pick(snowflake_mam_tails_list) : "None",
@@ -271,12 +272,8 @@
 		"naked_flavor_text" = "", //SPLURT edit
 		"custom_deathgasp" = "застывает и падает без сил, глаза мертвы и безжизненны...", // BLUEMOON ADD - пользовательский эмоут смерти
 		"custom_species_lore" = "",
-		"headshot_link"		= "", //SPLURT edit
-		"headshot_link1"		= "", //BLUEMOON edit
-		"headshot_link2"		= "", //BLUEMOON edit
-		"headshot_naked_link"		= "", //BLUEMOON ADD
-		"headshot_naked_link1"		= "", //BLUEMOON ADD
-		"headshot_naked_link2"		= "", //BLUEMOON ADD
+		"headshot_links" = list(),
+		"headshot_naked_links" = list(),
 		"meat_type"			= "Mammalian",
 		"body_model"		= body_model,
 		"body_size"			= RESIZE_DEFAULT_SIZE,
@@ -599,6 +596,14 @@ GLOBAL_LIST_EMPTY(species_datums)
 		if("discharged", SEC_RECORD_STATUS_DISCHARGED)
 			status = SEC_RECORD_STATUS_DISCHARGED
 	target_records.fields["criminal"] = status
+	// Атрибуция активности антагов для директора: объявление в розыск/на казнь означает,
+	// что СБ уже занята этим персонажем. Ищем разум по имени записи - смена личности (агент-ID)
+	// уводит от атрибуции, это приемлемая цена дешёвого поиска на редком ручном действии.
+	if(status == SEC_RECORD_STATUS_ARREST || status == SEC_RECORD_STATUS_EXECUTE)
+		for(var/datum/mind/wanted_mind as anything in SSticker.minds)
+			if(wanted_mind.name == their_name)
+				SSdirector.bump_antag_activity(wanted_mind, DIRECTOR_ACTIVITY_WANTED)
+				break
 	log_admin("[key_name_admin(user)] set secstatus of [their_rank] [their_name] to [status], comment: [comment]")
 	target_records.fields["comments"] += "Set to [status] by [user_name || user.name] ([user_rank]) on [GLOB.current_date_string] [STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)], comment: [comment]"
 	// BLUEMOON EDIT - логгирование
@@ -676,7 +681,8 @@ GLOBAL_LIST_EMPTY(species_datums)
 	var/obj/item/organ/genital/penis/P = H?.getorganslot(ORGAN_SLOT_PENIS)
 	if(!P)
 		if(H.has_strapon())
-			return "дилдо"
+			//return "дилдо" т.к. дилдо не склоняется, заменяем на склоняемое слово
+			return "страпон"
 		else
 			return "член"
 
@@ -694,9 +700,10 @@ GLOBAL_LIST_EMPTY(species_datums)
 		if("taperedbarbed") return "утонченный шипованный член"
 		if("thick", "nondescript") return "обрезанный член"
 		// Если кто-то это будет трогать, придумайте что-то с окончаниями (автор не соизволил)
-		if("hemi") return "двойные члены"
-		if("hemiknot") return "двойные узловатые члены"
-		if("bhemiknot") return "двойные с узлами колючие члены"
+		// P.S. Ладно, я сам дописал, частично
+		if("hemi") return "двойной член"
+		if("hemiknot") return "двойной узловатый член"
+		if("bhemiknot") return "двойной с узлами колючий член"
 
 		else return "необычной формы член"
 

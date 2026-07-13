@@ -1,4 +1,5 @@
-import { Component } from 'inferno';
+import { Component } from 'react';
+
 import { useBackend } from '../backend';
 import {
   Button,
@@ -13,9 +14,6 @@ import {
 import { Window } from '../layouts';
 
 export class PersonalCrafting extends Component {
-  // Inferno class components need a contextType to use useBackend(this.context) outside of render. Setting it to the TGUI context makes it available.
-  static contextType = window.__TGUI_CONTEXT__;
-
   constructor(props) {
     super(props);
     this.searchTimer = null;
@@ -27,7 +25,7 @@ export class PersonalCrafting extends Component {
 
   componentDidMount() {
     // Get the current backend data and actions
-    const { act, data } = useBackend(this.context);
+    const { act, data } = useBackend();
     const crafting_recipes = data.crafting_recipes || {};
 
     // If there are any categories and we haven't picked a tab yet, choose the first one and tell the server.
@@ -105,7 +103,7 @@ export class PersonalCrafting extends Component {
   }
 
   render() {
-    const { act, data } = useBackend(this.context);
+    const { act, data } = useBackend();
     const {
       busy,
       display_craftable_only,
@@ -257,9 +255,9 @@ export class PersonalCrafting extends Component {
   }
 }
 
-const CraftingList = (props, context) => {
+const CraftingList = (props) => {
   const { craftables = [] } = props;
-  const { act, data } = useBackend(context);
+  const { act, data } = useBackend();
   const { craftability = {}, display_compact, display_craftable_only } = data;
 
   return craftables.map(craftable => {

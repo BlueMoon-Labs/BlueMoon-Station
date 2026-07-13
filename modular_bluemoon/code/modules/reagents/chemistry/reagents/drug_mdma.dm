@@ -67,7 +67,7 @@
 
 	SEND_SIGNAL(M, COMSIG_ADD_MOOD_EVENT, "mdma", /datum/mood_event/mdma, name)
 	var/datum/component/mood/mood = M.GetComponent(/datum/component/mood)
-	mood.setSanity(SANITY_NEUTRAL)
+	mood?.setSanity(SANITY_NEUTRAL)
 	var/sound/sound = sound(pick('modular_bluemoon/sound/hallucinations/mdma/slowslippy.ogg'), TRUE)
 	sound.environment = 35
 	sound.volume = 75

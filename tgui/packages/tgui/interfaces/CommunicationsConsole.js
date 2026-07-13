@@ -1,5 +1,6 @@
 import { sortBy } from "common/collections";
 import { capitalize } from "common/string";
+import { useState } from "react";
 
 import { useBackend, useLocalState } from "../backend";
 import { Blink, Box, Button, Dimmer, Flex, Icon, Input, LabeledList, Modal, NoticeBox, Section, TextArea } from "../components";
@@ -16,23 +17,41 @@ const STATE_MESSAGES = "messages";
 // Used for whether or not you need to swipe to confirm an alert level change
 const SWIPE_NEEDED = "SWIPE_NEEDED";
 
+const ALERT_LEVEL_ORDER = {
+  green: 0,
+  blue: 1,
+  orange: 2,
+  violet: 3,
+  amber: 4,
+  red: 5,
+  lambda: 6,
+  gamma: 7,
+  epsilon: 8,
+  delta: 9,
+};
+
 const sortByCreditCost = sortBy(shuttle => shuttle.creditCost);
 const sortByCreditCostERT = sortBy(ert => ert.creditCost);
 
-const AlertButton = (props, context) => {
-  const { act, data } = useBackend(context);
-  const { alertLevelTick, canSetAlertLevel } = data;
+const AlertButton = (props) => {
+  const { act, data } = useBackend();
+  const { alertLevelTick, canSetAlertLevel, redAlertKeycardLocked, highAlertKeycardLocked } = data;
   const { alertLevel, setShowAlertLevelConfirm } = props;
 
   const thisIsCurrent = data.alertLevel === alertLevel;
+  const currentOrder = ALERT_LEVEL_ORDER[data.alertLevel] ?? 0;
+  const targetOrder = ALERT_LEVEL_ORDER[alertLevel] ?? 0;
+  const lockedFromLowering = (redAlertKeycardLocked && targetOrder < currentOrder)
+    || (highAlertKeycardLocked && targetOrder < ALERT_LEVEL_ORDER.red);
 
   return (
     <Button
       icon="exclamation-triangle"
       color={thisIsCurrent && "good"}
       content={capitalize(alertLevel)}
+      disabled={lockedFromLowering}
       onClick={() => {
-        if (thisIsCurrent) {
+        if (thisIsCurrent || lockedFromLowering) {
           return;
         }
 
@@ -48,11 +67,11 @@ const AlertButton = (props, context) => {
   );
 };
 
-const MessageModal = (props, context) => {
-  const { data } = useBackend(context);
+const MessageModal = (props) => {
+  const { data } = useBackend();
   const { maxMessageLength } = data;
 
-  const [input, setInput] = useLocalState(context, props.label, "");
+  const [input, setInput] = useLocalState(props.label, "");
 
   const longEnough = props.minLength === undefined
     || input.length >= props.minLength;
@@ -144,8 +163,8 @@ const NoConnectionModal = () => {
   );
 };
 
-const PageBuyingShuttle = (props, context) => {
-  const { act, data } = useBackend(context);
+const PageBuyingShuttle = (props) => {
+  const { act, data } = useBackend();
 
   return (
     <Box>
@@ -200,8 +219,8 @@ const PageBuyingShuttle = (props, context) => {
   );
 };
 
-const PageCallingERT = (props, context) => {
-  const { act, data } = useBackend(context);
+const PageCallingERT = (props) => {
+  const { act, data } = useBackend();
 
   return (
     <Box>
@@ -251,12 +270,12 @@ const PageCallingERT = (props, context) => {
 };
 
 
-const PageChangingStatus = (props, context) => {
-  const { act, data } = useBackend(context);
+const PageChangingStatus = (props) => {
+  const { act, data } = useBackend();
   const { maxStatusLineLength } = data;
 
-  const [lineOne, setLineOne] = useLocalState(context, "lineOne", data.lineOne);
-  const [lineTwo, setLineTwo] = useLocalState(context, "lineTwo", data.lineTwo);
+  const [lineOne, setLineOne] = useLocalState("lineOne", data.lineOne);
+  const [lineTwo, setLineTwo] = useLocalState("lineTwo", data.lineTwo);
 
   return (
     <Box>
@@ -349,8 +368,8 @@ const PageChangingStatus = (props, context) => {
   );
 };
 
-const PageMain = (props, context) => {
-  const { act, data } = useBackend(context);
+const PageMain = (props) => {
+  const { act, data } = useBackend();
   const {
     alertLevel,
     alertLevelTick,
@@ -368,6 +387,8 @@ const PageMain = (props, context) => {
     emagged,
     emergencyAccess,
     importantActionReady,
+    redAlertKeycardLocked,
+    highAlertKeycardLocked,
     sectors,
     shuttleCalled,
     shuttleCalledPreviously,
@@ -378,19 +399,15 @@ const PageMain = (props, context) => {
     slaves,
   } = data;
 
-  const [callingShuttle, setCallingShuttle] = useLocalState(
-    context, "calling_shuttle", false);
-  const [messagingAssociates, setMessagingAssociates] = useLocalState(
-    context, "messaging_associates", false);
-  const [messagingSector, setMessagingSector] = useLocalState(
-    context, "messaing_sector", null);
-  const [requestingNukeCodes, setRequestingNukeCodes] = useLocalState(
-    context, "requesting_nuke_codes", false);
+  const [callingShuttle, setCallingShuttle] = useState(false);
+  const [messagingAssociates, setMessagingAssociates] = useState(false);
+  const [messagingSector, setMessagingSector] = useState(null);
+  const [requestingNukeCodes, setRequestingNukeCodes] = useState(false);
 
   const [
     [showAlertLevelConfirm, confirmingAlertLevelTick],
     setShowAlertLevelConfirm,
-  ] = useLocalState(context, "showConfirmPrompt", [null, null]);
+  ] = useState([null, null]);
 
   return (
     <Box>
@@ -439,6 +456,18 @@ const PageMain = (props, context) => {
 
       {!!canSetAlertLevel && (
         <Section title="Уровень тревоги">
+          {!!highAlertKeycardLocked && (
+            <NoticeBox mb={1}>
+              Активен высокий код тревоги. Понизить его можно только до
+              красного через устройства двойной авторизации ключ-карт.
+            </NoticeBox>
+          )}
+          {!!redAlertKeycardLocked && (
+            <NoticeBox mb={1}>
+              Красный код заблокирован. Снять его можно только через
+              устройства двойной авторизации ключ-карт.
+            </NoticeBox>
+          )}
           <Flex justify="space-between">
             <Flex.Item>
               <Box>
@@ -761,8 +790,8 @@ const PageMain = (props, context) => {
   );
 };
 
-const PageMessages = (props, context) => {
-  const { act, data } = useBackend(context);
+const PageMessages = (props) => {
+  const { act, data } = useBackend();
   const messages = data.messages || [];
   const { printerCooldown, messagesTrimmed = 0 } = data;
 
@@ -852,8 +881,8 @@ const PageMessages = (props, context) => {
   return children;
 };
 
-export const CommunicationsConsole = (props, context) => {
-  const { act, data } = useBackend(context);
+export const CommunicationsConsole = (props) => {
+  const { act, data } = useBackend();
   const {
     authenticated,
     authorizeName,

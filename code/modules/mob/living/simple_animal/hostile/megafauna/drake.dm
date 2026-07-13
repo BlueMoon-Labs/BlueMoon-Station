@@ -33,8 +33,8 @@ Difficulty: Medium
 /mob/living/simple_animal/hostile/megafauna/dragon
 	name = "ash drake"
 	desc = "Guardians of the necropolis."
-	health = 2500
-	maxHealth = 2500
+	health = 3000
+	maxHealth = 3000
 	spacewalk = TRUE
 	attack_verb_continuous = "chomps"
 	attack_verb_simple = "chomp"
@@ -47,8 +47,8 @@ Difficulty: Medium
 	friendly_verb_simple = "stare down"
 	speak_emote = list("roars")
 	armour_penetration = 40
-	melee_damage_lower = 40
-	melee_damage_upper = 40
+	melee_damage_lower = 50
+	melee_damage_upper = 50
 	speed = 1
 	move_to_delay = 5
 	ranged = 1
@@ -151,7 +151,7 @@ Difficulty: Medium
 		for(var/mob/living/L in J.contents - hit_things)
 			if(istype(L, /mob/living/simple_animal/hostile/megafauna/dragon))
 				continue
-			L.adjustFireLoss(20)
+			L.adjustFireLoss(28)
 			to_chat(L, "<span class='userdanger'>You're hit by the drake's fire breath!</span>")
 			hit_things += L
 		previousturf = J
@@ -250,7 +250,7 @@ Difficulty: Medium
 			visible_message("<span class='warning'>[src] slams down on [L], crushing [L.ru_na()]!</span>")
 			L.gib()
 		else
-			L.adjustBruteLoss(75)
+			L.adjustBruteLoss(95)
 			if(L && !QDELETED(L)) // Some mobs are deleted on death
 				var/throw_dir = get_dir(src, L)
 				if(L.loc == loc)

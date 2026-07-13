@@ -9,8 +9,8 @@ import { useBackend } from '../backend';
 import { Box, Button } from '../components';
 import { Window } from './Window';
 
-export const NtosWindow = (props, context) => {
-  const { act, data } = useBackend(context);
+export const NtosWindow = (props) => {
+  const { act, data } = useBackend();
   const {
     title,
     width = 575,

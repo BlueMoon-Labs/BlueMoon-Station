@@ -64,6 +64,15 @@
 	item_state = "hair_module_mask"
 	body_parts_covered = NONE
 
+/obj/item/clothing/mask/hair_module/on_mob_death(mob/living/L, gibbed)
+	. = ..()
+	if(gibbed)
+		qdel(src)
+
+/obj/item/clothing/mask/hair_module/Initialize(mapload)
+	. = ..()
+	ADD_TRAIT(src, TRAIT_NODROP, CLOTHING_TRAIT)
+
 /obj/item/clothing/mask/breath/gestapo
 	name = "Truth Enforcer mask"
 	desc = "Filter their thoughts"
@@ -95,3 +104,11 @@
 	desc = "A modkit for making a Security Gas Mask into a \"Star dust\" rebriser mask."
 	product = /obj/item/clothing/mask/gas/sechailer/star_dust
 	fromitem = list(/obj/item/clothing/mask/gas/sechailer)
+
+/obj/item/clothing/mask/gas/krieg
+	name = "Противогаз Крига"
+	desc = "Поношенная экипировка гвардейца Корпуса Смерти \"КРИГ\"."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/mask.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/mask.dmi'
+	icon_state = "krieg_mask"
+	item_state = "krieg_mask"

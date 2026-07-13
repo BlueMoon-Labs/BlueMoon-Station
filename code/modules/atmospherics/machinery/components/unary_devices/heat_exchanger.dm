@@ -55,6 +55,8 @@
 	update_cycle = SSair.times_fired
 	partner.update_cycle = SSair.times_fired
 
+	if(!length(airs) || !length(partner.airs))
+		return
 	var/datum/gas_mixture/air_contents = airs[1]
 	var/datum/gas_mixture/partner_air_contents = partner.airs[1]
 

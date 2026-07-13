@@ -19,6 +19,7 @@
 #define INVESTIGATE_RESEARCH "research"
 #define INVESTIGATE_SINGULO "singulo"
 #define INVESTIGATE_SUPERMATTER "supermatter"
+#define INVESTIGATE_HYPERTORUS "hypertorus"
 #define INVESTIGATE_TELESCI "telesci"
 #define INVESTIGATE_WIRES "wires"
 

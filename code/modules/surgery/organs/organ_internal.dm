@@ -113,6 +113,11 @@
 /obj/item/organ/proc/can_decay()
 	if(organ_flags & (ORGAN_NO_SPOIL | ORGAN_SYNTHETIC | ORGAN_FAILING))
 		return FALSE
+	if(owner) //species/effects with stabilized organs (vox, skeletons etc.) keep them from rotting inside the body
+		if(slot == ORGAN_SLOT_HEART && HAS_TRAIT(owner, TRAIT_STABLEHEART))
+			return FALSE
+		if(slot == ORGAN_SLOT_LIVER && HAS_TRAIT(owner, TRAIT_STABLELIVER))
+			return FALSE
 	return TRUE
 
 //Checks to see if the organ is frozen from temperature
@@ -176,17 +181,17 @@
 /obj/item/organ/examine(mob/user)
 	. = ..()
 
-	. += "<hr><span class='notice'>Можно вставить в [ru_parse_zone(zone)].</span>"
+	. += span_notice("Можно вставить в [ru_parse_zone(zone)].")
 
 	if(organ_flags & ORGAN_FAILING)
 		if(status == ORGAN_ROBOTIC)
-			. += span_warning("\n[capitalize(src.name)] повреждён.")
+			. += span_warning("[capitalize(src.name)] повреждён.")
 			return
-		. += span_warning("\n[capitalize(src.name)] слишком долго разлагался и приобрел болезненный цвет. Без ремонта наверное не заработает.")
+		. += span_warning("[capitalize(src.name)] слишком долго разлагался и приобрел болезненный цвет. Без ремонта наверное не заработает.")
 		return
 
 	if(damage > high_threshold)
-		. += "<hr><span class='warning'>[capitalize(src.name)] начинает обесцвечиваться.</span>"
+		. += span_warning("[capitalize(src.name)] начинает обесцвечиваться.")
 
 /obj/item/organ/proc/OnEatFrom(eater, feeder)
 	useable = FALSE //You can't use it anymore after eating it you spaztic
@@ -374,3 +379,84 @@
 	var/newtype = pick(list)
 	new newtype(loc)
 	return INITIALIZE_HINT_QDEL
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////// ПРОКИ ДЛЯ РЕГУЛИРОВАНИЯ ACTIONS У КИБЕРОРГАНОВ/ИМПЛАНТОВ //////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/obj/item/organ
+	// Должен ли орган/имплант работать только с определенного кода
+	var/active_security_level
+	/// Должен ли орган/имплант автоматически включаться с кода active_security_level (необходимо прописать прок активации code_activate)
+	var/auto_sec_level_toggle = TRUE
+
+/obj/item/organ/Insert(mob/living/carbon/organ_mob, special, drop_if_replaced)
+	. = ..()
+	if(!.)
+		return
+	if(!(organ_flags & ORGAN_SYNTHETIC)) // Ограничение чисто для оптимизации, т.к. у био органов нет такой логики на данный момент
+		return
+
+	for(var/datum/action/action in actions)
+		RegisterSignal(action, COMSIG_ACTION_TRIGGER, PROC_REF(action_trigger))
+		RegisterSignal(action, COMSIG_ACTION_ISAVAILABLE, PROC_REF(action_available))
+		action.UpdateButtons(TRUE)
+	if(!isnull(active_security_level))
+		RegisterSignal(SSsecurity_level, COMSIG_SECURITY_LEVEL_CHANGED, PROC_REF(on_sec_level_change))
+		if(!activate_allowed(silent = TRUE))
+			deactivate()
+
+/obj/item/organ/Remove(special)
+	deactivate(TRUE)
+	. = ..()
+	for(var/datum/action/action in actions)
+		UnregisterSignal(action, list(COMSIG_ACTION_TRIGGER, COMSIG_ACTION_ISAVAILABLE))
+	UnregisterSignal(SSsecurity_level, COMSIG_SECURITY_LEVEL_CHANGED)
+
+/obj/item/organ/examine(mob/user)
+	. = ..()
+	if(!isnull(active_security_level) || !isnull(initial(active_security_level)))
+		. += span_warning("Минимальный уровень тревоги для активации: <b>[isnull(active_security_level) ? SECURITY_LEVEL_COLOR_TEXT(SEC_LEVEL_GREEN,"G&R@EE%N") : SECURITY_LEVEL_COLORED_UPPERTEXT(active_security_level)]</b>")
+
+/obj/item/organ/proc/action_trigger(datum/action/source, obj/item/organ/target, mob/user)
+	SIGNAL_HANDLER
+	if(!activate_allowed(source, user))
+		return COMPONENT_ACTION_BLOCK_TRIGGER
+
+/obj/item/organ/proc/action_available(datum/action/source, obj/item/organ/target, mob/user, silent = TRUE)
+	SIGNAL_HANDLER
+	if(!activate_allowed(source, user, silent))
+		return COMPONENT_ACTION_NOT_AVAILABLE
+
+// action и user, могут быть null
+/obj/item/organ/proc/activate_allowed(datum/action/action, mob/user, silent = FALSE)
+	. = FALSE
+	if(!isnull(active_security_level) && GLOB.security_level < active_security_level)
+		if(!silent)
+			to_chat(user, span_warning("<b>ОШИБКА:</b> Уровень тревоги для активации: <b>[SECURITY_LEVEL_COLORED_UPPERTEXT(active_security_level)]</b>"))
+		return
+
+	return TRUE
+
+/obj/item/organ/proc/on_sec_level_change(datum/source, new_level)
+	SIGNAL_HANDLER
+	for(var/datum/action/action in actions)
+		action.UpdateButtons(TRUE)
+	if(!activate_allowed(silent = TRUE))
+		INVOKE_ASYNC(src, PROC_REF(deactivate))
+	else if(auto_sec_level_toggle)
+		INVOKE_ASYNC(src, PROC_REF(code_activate))
+
+/obj/item/organ/proc/code_activate()
+	return
+
+/obj/item/organ/proc/deactivate(removing = FALSE)
+	return
+
+/obj/item/organ/emag_act()
+	. = ..()
+	if(active_security_level)
+		active_security_level = null
+		UnregisterSignal(SSsecurity_level, COMSIG_SECURITY_LEVEL_CHANGED)
+		log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)] and clear sec level restrictions")
+		playsound(get_turf(src), 'sound/effects/light_flicker.ogg', 100, 1)

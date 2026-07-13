@@ -1,3 +1,11 @@
+/// Tool/signal procs sometimes return truthy atoms (e.g. turfs from pry_tile). Coerce to attackchain flags.
+/proc/coerce_item_interact_return(return_val)
+	if(!return_val)
+		return NONE
+	if(isnum(return_val))
+		return return_val
+	return TOOL_ACT_TOOLTYPE_SUCCESS
+
 /**
  * ## Item interaction
  *
@@ -10,7 +18,7 @@
 	PROTECTED_PROC(TRUE)
 
 	if(tool.tool_behaviour && !SEND_SIGNAL(user, COMSIG_COMBAT_MODE_CHECK, COMBAT_MODE_ACTIVE))
-		var/tool_return = tool_act(user, tool, tool.tool_behaviour)
+		var/tool_return = coerce_item_interact_return(tool_act(user, tool, tool.tool_behaviour))
 		if(tool_return)
 			return tool_return
 
@@ -25,7 +33,7 @@
 		|| SEND_SIGNAL(tool, COMSIG_ITEM_INTERACTING_WITH_ATOM, user, src, params) \
 		|| SEND_SIGNAL(user, COMSIG_USER_ITEM_INTERACTION, src, tool, params)
 	if(early_sig_return)
-		return early_sig_return
+		return coerce_item_interact_return(early_sig_return)
 
 	return NONE
 

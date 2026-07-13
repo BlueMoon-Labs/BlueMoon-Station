@@ -61,6 +61,9 @@
 /// the turf air at most every this-many SSmachines fires (2 s each). The instant danger_level
 /// changes it snaps back to reading every fire. (Not #undef'd — read by the regression test.)
 #define AALARM_MAX_PROCESS_INTERVAL 2
+/// Backoff cap while the local turf sits outside active atmos exchange entirely (not excited,
+/// no excited group): its air cannot drift, so reads only guard against missed excitations.
+#define AALARM_INACTIVE_PROCESS_INTERVAL 15
 
 #define AALARM_OVERLAY_OFF		"alarm_off"
 #define AALARM_OVERLAY_GREEN	"alarm_green"
@@ -262,6 +265,7 @@
 	return CONTEXTUAL_SCREENTIP_SET
 
 /obj/machinery/airalarm/Destroy()
+	UnregisterSignal(SSdcs, COMSIG_GLOB_NEW_GAS)
 	SSradio.remove_object(src, frequency)
 	QDEL_NULL(wires)
 	QDEL_NULL(alarm_manager)
@@ -275,8 +279,8 @@
 		if(1)
 			. += "<span class='notice'>Отсутствует проводка.</span>"
 		if(2)
-			. += "<span class='notice'>Alt-click, чтобы [locked ? "заблокировать" : "заблокировать"] интерфейс.</span>"
-	. += "<span class='notice'>Текущий уровень угрозы: <b><u>[capitalize(get_security_level())]</u></b>.</span>"
+			. += "<span class='notice'>Alt-click, чтобы [locked ? "раз" : "за"]блокировать интерфейс.</span>"
+	. += "<span class='notice'>Текущий уровень угрозы: <b><u>[SECURITY_LEVEL_COLORED_UPPERTEXT(GLOB.security_level)]</u></b>.</span>"
 
 /obj/machinery/airalarm/ui_status(mob/user)
 	if(hasSiliconAccessInArea(user))
@@ -491,6 +495,11 @@
 			if(alarm_manager.clear_alarm(ALARM_ATMOS))
 				post_alert(0)
 			. = TRUE
+	if(.)
+		// settings changed (thresholds, mode, vent/scrubber orders): re-read the air on the very
+		// next fire instead of coasting on the adaptive backoff
+		process_interval = 1
+		process_skips_left = 0
 	update_icon()
 
 /obj/machinery/airalarm/proc/reset(wire)
@@ -752,9 +761,14 @@
 
 	// While danger_level has been stable, skip the (relatively expensive) turf air read on
 	// most fires. Snaps back to reading every fire the moment danger_level changes (below).
+	// Exception: if the monitored turf has just entered active atmos exchange it may be drifting
+	// toward a hazard, so cut the backoff short and read now instead of coasting up to ~30s blind.
 	if(process_skips_left > 0)
-		process_skips_left--
-		return
+		var/turf/open/open_location = get_turf(src)
+		if(!istype(open_location) || (!open_location.excited && !open_location.excited_group))
+			process_skips_left--
+			return
+		process_skips_left = 0
 
 	var/turf/location = get_turf(src)
 	if(!location)
@@ -787,10 +801,15 @@
 
 	// Adaptive backoff: read every fire while danger_level is moving (or we're mid-air-replacement
 	// and watching for the pressure cutoff); coast at AALARM_MAX_PROCESS_INTERVAL once it settles.
+	// A turf parked outside active atmos exchange cannot drift at all, so coast much longer there.
 	if(old_danger_level != danger_level || mode == AALARM_MODE_REPLACEMENT)
 		process_interval = 1
 	else
-		process_interval = min(process_interval + 1, AALARM_MAX_PROCESS_INTERVAL)
+		var/max_interval = AALARM_MAX_PROCESS_INTERVAL
+		var/turf/open/open_location = location
+		if(!istype(open_location) || (!open_location.excited && !open_location.excited_group))
+			max_interval = AALARM_INACTIVE_PROCESS_INTERVAL
+		process_interval = min(process_interval + 1, max_interval)
 	process_skips_left = process_interval - 1
 
 	if(mode == AALARM_MODE_REPLACEMENT && environment_pressure < ONE_ATMOSPHERE * 0.05)

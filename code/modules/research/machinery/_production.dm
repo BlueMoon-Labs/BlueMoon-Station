@@ -143,6 +143,17 @@
 		for(var/datum/design/D in all_categories[category])
 			if(!D.build_path)
 				continue
+
+			// Скрытые дизайны
+			if(D.hacked_only && !(obj_flags & EMAGGED))
+				continue
+
+			// Проверка дизайна на ограничение по коду + его описание в одном проке
+			var/sec_desc = design_sec_level_desc(D)
+			// Если продакшн вне станции и не имеет доступов, разрешаем только предметы без требований к коду
+			if(sec_desc && hide_sec_designs)
+				continue
+
 			var/obj/item_path = D.build_path // ispath
 
 			// Формируем стоимость в материалах
@@ -165,12 +176,6 @@
 				desc = strip_html_tags(initial(circuit_build_path.desc))
 			if(!desc)
 				desc = strip_html_tags(initial(item_path.desc))
-
-			// Проверка дизайна на ограничение по коду + его описание в одном проке
-			var/sec_desc = design_sec_level_desc(D)
-			// Если продакшн вне станции и не имеет доступов, разрешаем только предметы без требований к коду
-			if(sec_desc && hide_sec_designs)
-				continue
 
 			cat["items"] += list(list(
 				"id" = D.id,

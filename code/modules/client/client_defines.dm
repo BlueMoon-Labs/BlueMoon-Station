@@ -21,6 +21,8 @@
 	show_verb_panel = FALSE
 	///Contains admin info. Null if client is not an admin.
 	var/datum/admins/holder = null
+	/// TRUE while blocking input() modal open
+	var/reply_modal_open = FALSE
 	/// If TRUE, this admin receives GC leak notifications (warnfail/softcheck alerts). Toggle via GC Health Panel.
 	var/gc_leak_notify = FALSE
 	var/datum/click_intercept = null // Needs to implement InterceptClickOn(user,params,atom) proc
@@ -103,14 +105,13 @@
 	var/lastping_rtt_raw = 0
 	var/avgping_rtt_raw
 	var/lastping_tick = 0
-	var/avgping_tick
 	var/lastping_server = 0
 	var/avgping_server
-	var/lastping_rtt_max = 0
-	var/lastping_jitter = 0
 	var/avgping_jitter
 	var/ping_updated = FALSE
 	var/list/ping_rtt_window = list()
+	/// Incrementally maintained sorted mirror of ping_rtt_window, see rtt_window_push()
+	var/list/ping_rtt_sorted = list()
 	var/connection_time //world.time they connected
 	var/connection_realtime //world.realtime they connected
 	var/connection_timeofday //world.timeofday they connected

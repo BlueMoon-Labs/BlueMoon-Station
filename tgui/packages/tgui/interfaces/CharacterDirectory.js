@@ -1,4 +1,4 @@
-import { Fragment } from 'inferno';
+import { Fragment, useState } from 'react';
 
 import { useBackend, useLocalState } from '../backend';
 import { Box, Button, Collapsible, Icon, Input, LabeledList, Section, Table, Tooltip } from '../components';
@@ -48,8 +48,8 @@ const genderTagTextColor = {
   'Unset': 'label',
 };
 
-export const CharacterDirectory = (props, context) => {
-  const { act, data } = useBackend(context);
+export const CharacterDirectory = (props) => {
+  const { act, data } = useBackend();
 
   const {
     personalVisibility,
@@ -62,15 +62,15 @@ export const CharacterDirectory = (props, context) => {
     prefsOnly,
   } = data;
 
-  const [overlay, setOverlay] = useLocalState(context, 'overlay', null);
+  const [overlay, setOverlay] = useLocalState('overlay', null);
 
-  const [overwritePrefs, setOverwritePrefs] = useLocalState(context, 'overwritePrefs', true);
+  const [overwritePrefs, setOverwritePrefs] = useState(true);
 
   return (
     <Window width={940} height={560} resizeable>
       <Window.Content scrollable>
         {(overlay && <ViewCharacter />) || (
-          <Fragment>
+          <>
             <Section title="Настройки">
               <LabeledList>
                 <LabeledList.Item label="Видимость">
@@ -140,7 +140,7 @@ export const CharacterDirectory = (props, context) => {
               </Section>
             </Collapsible>
             <CharacterDirectoryList />
-          </Fragment>
+          </>
         )}
       </Window.Content>
     </Window>
@@ -160,15 +160,15 @@ const PrefTagButton = (props) => {
   );
 };
 
-const ViewCharacter = (props, context) => {
-  const { act, data } = useBackend(context);
+const ViewCharacter = (props) => {
+  const { act, data } = useBackend();
   const { directory_notes } = data;
-  const [overlay, setOverlay] = useLocalState(context, 'overlay', null);
+  const [overlay, setOverlay] = useLocalState('overlay', null);
 
   const prefTags = [
     { name: 'Изнасилование', value: overlay.noncon_tag },
-    { name: 'Хорни антаги', value: overlay.hornyantags_tag },
     { name: 'Грязный секс', value: overlay.unholy_tag },
+    { name: 'Очень грязный секс', value: overlay.unholy_hard_tag },
     { name: 'Жестокий секс', value: overlay.extreme_tag },
     { name: 'Очень жестокий секс', value: overlay.extreme_harm_tag },
   ];
@@ -176,14 +176,14 @@ const ViewCharacter = (props, context) => {
   const genderDisplay = overlay.gender_tag || 'Unset';
 
   const headshots = (overlay.headshot_links || []).filter(link => link && link.length);
-  const [selectedHeadshot, setSelectedHeadshot] = useLocalState(context, 'viewHeadshot', 0);
+  const [selectedHeadshot, setSelectedHeadshot] = useState(0);
   const safeIdx = headshots.length > 0 ? selectedHeadshot % headshots.length : 0;
   const currentLink = headshots[safeIdx];
   const isVideo = typeof currentLink === 'string' && /\.(webm|mp4)$/i.test(currentLink);
   const mediaStyle = {
-    'max-width': '256px',
-    'max-height': '256px',
-    'object-fit': 'contain',
+    maxWidth: '256px',
+    maxHeight: '256px',
+    objectFit: 'contain',
   };
 
   return (
@@ -251,17 +251,17 @@ const ViewCharacter = (props, context) => {
         </LabeledList>
       </Section>
       <Section level={2} title="Объявление">
-        <Box style={{ 'word-break': 'break-all' }} preserveWhitespace>
+        <Box style={{ wordBreak: 'break-all' }} preserveWhitespace>
           {overlay.character_ad || 'Не задано.'}
         </Box>
       </Section>
       <Section level={2} title="OOC Заметки">
-        <Box style={{ 'word-break': 'break-all' }} preserveWhitespace>
+        <Box style={{ wordBreak: 'break-all' }} preserveWhitespace>
           {overlay.ooc_notes || 'Не задано.'}
         </Box>
       </Section>
       <Section level={2} title="Описание">
-        <Box style={{ 'word-break': 'break-all' }} preserveWhitespace>
+        <Box style={{ wordBreak: 'break-all' }} preserveWhitespace>
           {overlay.flavor_text || 'Не задано.'}
         </Box>
       </Section>
@@ -275,7 +275,7 @@ const ViewCharacter = (props, context) => {
             onClick={() => act('editNote', { target_ckey: overlay.ckey })}
           />
         }>
-        <Box style={{ 'word-break': 'break-all' }} preserveWhitespace>
+        <Box style={{ wordBreak: 'break-all' }} preserveWhitespace>
           {(directory_notes && directory_notes[overlay.ckey]) || 'Нет заметки.'}
         </Box>
       </Section>
@@ -283,34 +283,94 @@ const ViewCharacter = (props, context) => {
   );
 };
 
-const CharacterDirectoryList = (props, context) => {
-  const { act, data } = useBackend(context);
+const CharacterDirectoryList = (props) => {
+  const { act, data } = useBackend();
 
   const { directory, canOrbit, directory_notes } = data;
 
-  const [sortId, _setSortId] = useLocalState(context, 'sortId', 'name');
-  const [sortOrder, _setSortOrder] = useLocalState(context, 'sortOrder', 'name');
-  const [overlay, setOverlay] = useLocalState(context, 'overlay', null);
-  const [searchText, setSearchText] = useLocalState(context, 'searchText', '');
+  const [sortId, _setSortId] = useLocalState('sortId', 'name');
+  const [sortOrder, _setSortOrder] = useLocalState('sortOrder', 'name');
+  const [overlay, setOverlay] = useLocalState('overlay', null);
+  const [searchText, setSearchText] = useLocalState('searchText', '');
+  const [tagFilters, setTagFilters] = useLocalState('tagFilters', {});
+  const [showFilters, setShowFilters] = useLocalState('showFilters', false);
 
-  const filteredDirectory = (directory || []).filter(
-    (character) =>
-      !searchText ||
-      character.name.toLowerCase().includes(searchText.toLowerCase())
-  );
+  const toggleTagFilter = (tag) => {
+    const current = tagFilters[tag];
+    let next;
+    if (!current) { next = 'Yes'; }
+    else if (current === 'Yes') { next = 'Ask'; }
+    else if (current === 'Ask') { next = 'No'; }
+    else { next = null; }
+    if (next) {
+      setTagFilters({ ...tagFilters, [tag]: next });
+    } else {
+      const { [tag]: _, ...rest } = tagFilters;
+      setTagFilters(rest);
+    }
+  };
+
+  const filteredDirectory = (directory || []).filter((character) => {
+    if (searchText && !character.name.toLowerCase().includes(searchText.toLowerCase())) {
+      return false;
+    }
+    for (const [tagName, filterValue] of Object.entries(tagFilters)) {
+      if (character[tagName] !== filterValue) {
+        return false;
+      }
+    }
+    return true;
+  });
+
+  const activeFilterCount = Object.keys(tagFilters).length;
 
   return (
     <Section title="Каталог" buttons={
-      <Fragment>
+      <>
         <Input
           width="180px"
           placeholder="Поиск по имени..."
           value={searchText}
           onInput={(e, value) => setSearchText(value)}
         />
+        <Button icon="filter" color={activeFilterCount > 0 ? 'green' : 'transparent'} ml={1}
+          tooltip="Фильтр по тегам"
+          onClick={() => setShowFilters(!showFilters)} />
+        {activeFilterCount > 0 && (
+          <Button icon="times" color="red" ml={1}
+            tooltip="Сбросить фильтры"
+            onClick={() => setTagFilters({})} />
+        )}
         <Button icon="sync" content="Обновить" ml={1} onClick={() => act('refresh')} />
-      </Fragment>
+      </>
     }>
+      {showFilters && (
+        <Box mb={1}>
+          {[
+            ['noncon_tag', 'Non-Con'],
+            ['unholy_tag', 'Unholy'],
+            ['unholy_hard_tag', 'Ex. Unholy'],
+            ['extreme_tag', 'Extreme'],
+            ['extreme_harm_tag', 'Ex.Harm'],
+          ].map(([tag, label]) => {
+            const active = tagFilters[tag];
+            return (
+              <Button
+                key={tag}
+                compact
+                fontSize="0.7rem"
+                mr={0.5}
+                color={active
+                  ? (active === 'Yes' ? 'green' : active === 'Ask' ? 'blue' : 'red')
+                  : 'transparent'}
+                icon={active ? 'check-circle' : 'circle'}
+                onClick={() => toggleTagFilter(tag)}>
+                {label}: {active || 'All'}
+              </Button>
+            );
+          })}
+        </Box>
+      )}
       <Table>
         <Table.Row bold>
           <SortButton id="name">Name</SortButton>
@@ -320,9 +380,9 @@ const CharacterDirectoryList = (props, context) => {
           <SortButton id="erptag">ERP</SortButton>
           <SortButton id="noncon_tag">Non-Con</SortButton>
           <SortButton id="unholy_tag">Unholy</SortButton>
+          <SortButton id="unholy_hard_tag">Unh.Hard</SortButton>
           <SortButton id="extreme_tag">Extreme</SortButton>
           <SortButton id="extreme_harm_tag">Ex. Harm</SortButton>
-          <SortButton id="hornyantags_tag">H. Antags</SortButton>
           <Table.Cell collapsing textAlign="right">
             Ad
           </Table.Cell>
@@ -336,7 +396,7 @@ const CharacterDirectoryList = (props, context) => {
             <Table.Row
               key={i}
               style={{
-                'background-color': erpTagRowColor[character.erptag] || 'transparent',
+                backgroundColor: erpTagRowColor[character.erptag] || 'transparent',
               }}>
               <Table.Cell p={1}>
                 {canOrbit ? (
@@ -379,6 +439,11 @@ const CharacterDirectoryList = (props, context) => {
                 </Box>
               </Table.Cell>
               <Table.Cell>
+                <Box inline bold color={prefTagTextColor[character.unholy_hard_tag]}>
+                  {character.unholy_hard_tag}
+                </Box>
+              </Table.Cell>
+              <Table.Cell>
                 <Box inline bold color={prefTagTextColor[character.extreme_tag]}>
                   {character.extreme_tag}
                 </Box>
@@ -386,11 +451,6 @@ const CharacterDirectoryList = (props, context) => {
               <Table.Cell>
                 <Box inline bold color={prefTagTextColor[character.extreme_harm_tag]}>
                   {character.extreme_harm_tag}
-                </Box>
-              </Table.Cell>
-              <Table.Cell>
-                <Box inline bold color={prefTagTextColor[character.hornyantags_tag]}>
-                  {character.hornyantags_tag}
                 </Box>
               </Table.Cell>
               <Table.Cell collapsing textAlign="right">
@@ -409,14 +469,14 @@ const CharacterDirectoryList = (props, context) => {
   );
 };
 
-const SortButton = (props, context) => {
-  const { act, data } = useBackend(context);
+const SortButton = (props) => {
+  const { act, data } = useBackend();
 
   const { id, children } = props;
 
   // Hey, same keys mean same data~
-  const [sortId, setSortId] = useLocalState(context, 'sortId', 'name');
-  const [sortOrder, setSortOrder] = useLocalState(context, 'sortOrder', 'name');
+  const [sortId, setSortId] = useLocalState('sortId', 'name');
+  const [sortOrder, setSortOrder] = useLocalState('sortOrder', 'name');
 
   return (
     <Table.Cell collapsing>

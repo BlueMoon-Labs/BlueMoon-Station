@@ -97,6 +97,7 @@
 	darkness_view = 8
 	flash_protect = -1
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
+	color_cutoffs = list(10, 25, 10)
 
 /obj/item/clothing/head/helmet/nvg/hecu
 	name = "Powered Combat Helmet with NVG"
@@ -109,6 +110,7 @@
 	darkness_view = 10
 	flash_protect = -1
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
+	color_cutoffs = list(10, 25, 10)
 	mutantrace_variation = STYLE_MUZZLE
 	armor = list(MELEE = 40, BULLET = 40, LASER = 40,ENERGY = 40, BOMB = 50, BIO = 90, RAD = 30, FIRE = 50, ACID = 50, WOUND = 20)
 	cold_protection = HEAD
@@ -672,3 +674,22 @@
 	icon_state = "policehelm"
 	dynamic_hair_suffix = ""
 	flags_inv = HIDEEARS
+
+// Elder Atmosian — шлем легендарного атмос-теха (спрайты из WhiteMoon modular_zubbers)
+/obj/item/clothing/head/helmet/elder_atmosian
+	name = "\improper Elder Atmosian Helmet"
+	desc = "Вершина атмос-экипировки: огнезащитный шлем, усиленный металлическим водородом. Полная защита головы от огня и газов."
+	icon = 'modular_bluemoon/icons/obj/clothing/head/helmet.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/head/helmet.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/icons/mob/clothing/head/helmet_teshari.dmi'
+	icon_state = "h2helmet"
+	item_state = "h2_helmet"
+	armor = list(MELEE = 50, BULLET = 45, LASER = 55, ENERGY = 55, BOMB = 95, BIO = 100, RAD = 100, FIRE = 100, ACID = 90, WOUND = 30)
+	flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR|HIDESNOUT
+	flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
+	cold_protection = HEAD
+	heat_protection = HEAD
+	min_cold_protection_temperature = SPACE_HELM_MIN_TEMP_PROTECT
+	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
+	clothing_flags = STOPSPRESSUREDAMAGE | THICKMATERIAL | BLOCK_GAS_SMOKE_EFFECT
+	resistance_flags = FIRE_PROOF

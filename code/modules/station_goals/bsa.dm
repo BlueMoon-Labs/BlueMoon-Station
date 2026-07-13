@@ -401,6 +401,18 @@
 	invisibility = INVISIBILITY_ABSTRACT
 	var/obj/machinery/parent
 
+/obj/structure/filler/Destroy()
+	// Взрывы филлер игнорирует, но сингулярность/лава/админка удаляют его в обход
+	// родителя - вычищаем себя из parent.fillers, иначе мультитайл-машина держит
+	// зомби-структуру. При смерти самой машины список не трогаем (QDEL_LIST в её
+	// Destroy итерирует его, самоудаление ломало бы обход - остаток срежет Cut())
+	if(parent && !QDELING(parent) && ("fillers" in parent.vars))
+		var/list/parent_fillers = parent.vars["fillers"]
+		if(islist(parent_fillers))
+			parent_fillers -= src
+	parent = null
+	return ..()
+
 /obj/structure/filler/ex_act(severity, target, origin)
 	return
 

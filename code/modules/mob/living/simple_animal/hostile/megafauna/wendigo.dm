@@ -5,8 +5,8 @@ Difficulty: Hard
 /mob/living/simple_animal/hostile/megafauna/wendigo
 	name = "wendigo"
 	desc = "A mythological man-eating legendary creature, you probably aren't going to survive this."
-	health = 2500
-	maxHealth = 2500
+	health = 3000
+	maxHealth = 3000
 	icon_state = "wendigo"
 	icon_living = "wendigo"
 	icon_dead = "wendigo_dead"
@@ -16,9 +16,9 @@ Difficulty: Hard
 	attack_sound = 'sound/magic/demon_attack1.ogg'
 	weather_immunities = list(TRAIT_SNOWSTORM_IMMUNE)
 	speak_emote = list("roars")
-	armour_penetration = 40
-	melee_damage_lower = 40
-	melee_damage_upper = 40
+	armour_penetration = 50
+	melee_damage_lower = 50
+	melee_damage_upper = 50
 	vision_range = 9
 	aggro_vision_range = 18 // man-eating for a reason
 	speed = 8
@@ -53,21 +53,21 @@ Difficulty: Hard
 	name = "Heavy Stomp"
 	icon_icon = 'icons/mob/actions/actions_items.dmi'
 	button_icon_state = "sniper_zoom"
-	chosen_message = "<span class='colossus'>You are now stomping the ground around you.</span>"
+	chosen_message = "<span class='frostvoice'>You are now stomping the ground around you.</span>"
 	chosen_attack_num = 1
 
 /datum/action/innate/megafauna_attack/teleport
 	name = "Teleport"
 	icon_icon = 'icons/effects/bubblegum.dmi'
 	button_icon_state = "smack ya one"
-	chosen_message = "<span class='colossus'>You are now teleporting at the target you click on.</span>"
+	chosen_message = "<span class='frostvoice'>You are now teleporting at the target you click on.</span>"
 	chosen_attack_num = 2
 
 /datum/action/innate/megafauna_attack/disorienting_scream
 	name = "Disorienting Scream"
 	icon_icon = 'icons/turf/walls/wall.dmi'
 	button_icon_state = "wall"
-	chosen_message = "<span class='colossus'>You are now screeching, disorienting targets around you.</span>"
+	chosen_message = "<span class='frostvoice'>You are now screeching, disorienting targets around you.</span>"
 	chosen_attack_num = 3
 
 /mob/living/simple_animal/hostile/megafauna/wendigo/Initialize(mapload)
@@ -132,7 +132,7 @@ Difficulty: Hard
 				to_chat(L, "<span class='userdanger'>[src]'s ground slam shockwave sends you flying!</span>")
 				var/turf/thrownat = get_ranged_target_turf_direct(src, L, 8, rand(-10, 10))
 				L.throw_at(thrownat, 8, 2, src, TRUE)		//, force = MOVE_FORCE_OVERPOWERING, gentle = TRUE)
-				L.apply_damage(20, BRUTE, wound_bonus=10)
+				L.apply_damage(28, BRUTE, wound_bonus=12)
 				shake_camera(L, 2, 1)
 			all_turfs -= T
 		sleep(delay)

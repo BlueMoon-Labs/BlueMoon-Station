@@ -68,6 +68,14 @@
 	if(usr)
 		user = WEAKREF(usr)
 
+/datum/callback/Destroy(force, ...)
+	// qdel-нутый, но всё ещё удерживаемый колбек (таймер, thrownthing) не должен
+	// тащить за собой object и аргументы - Invoke после qdel гасится гардом !object
+	object = null
+	arguments = null
+	user = null
+	return ..()
+
 /**
  * Invoke this callback
  *

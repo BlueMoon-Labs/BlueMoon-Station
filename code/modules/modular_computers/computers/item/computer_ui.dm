@@ -1,7 +1,3 @@
-/obj/item/modular_computer/attack_self(mob/user)
-	. = ..()
-	ui_interact(user)
-
 // Operates TGUI
 /obj/item/modular_computer/ui_interact(mob/user, datum/tgui/ui)
 	if(!enabled)
@@ -20,7 +16,7 @@
 	// if(HAS_TRAIT(user, TRAIT_CHUNKYFINGERS))
 	// 	to_chat(user, span_warning("Your fingers are too big to use this right now!"))
 	// 	return
-	if(HAS_TRAIT(user, TRAIT_CHUNKYFINGERS))
+	if(HAS_TRAIT(user, TRAIT_CHUNKYFINGERS) && !allow_chunky)
 		to_chat(user, span_warning("Кнопки слишком маленькие для твоих пальцев!"))
 		return
 
@@ -121,7 +117,7 @@
 		data["available_themes"] += list(list("name" = theme_name, "id" = GLOB.pda_name_to_theme[theme_name]))
 
 	data["security_level"] = NUM2SECLEVEL(GLOB.security_level)
-	data["security_level_color"] = get_security_level_color()
+	data["security_level_color"] = SECURITY_LEVEL_COLOR(GLOB.security_level)
 
 	if(istype(inserted_disk, /obj/item/cartridge))
 		data["cartridge_name"] = inserted_disk.name
@@ -297,28 +293,3 @@
 	if(physical)
 		return physical
 	return src
-
-/// Returns a hex color string for the current station security level.
-/obj/item/modular_computer/proc/get_security_level_color()
-	switch(GLOB.security_level)
-		if(SEC_LEVEL_GREEN)
-			return "#b2ff59"
-		if(SEC_LEVEL_BLUE)
-			return "#99ccff"
-		if(SEC_LEVEL_ORANGE)
-			return "#fc7d15"
-		if(SEC_LEVEL_VIOLET)
-			return "#a059fe"
-		if(SEC_LEVEL_AMBER)
-			return "#ffae42"
-		if(SEC_LEVEL_RED)
-			return "#ff3f34"
-		if(SEC_LEVEL_LAMBDA)
-			return "#ffae42"
-		if(SEC_LEVEL_GAMMA)
-			return "#7f7f7f"
-		if(SEC_LEVEL_EPSILON)
-			return "#ffffff"
-		if(SEC_LEVEL_DELTA)
-			return "#aa00ff"
-	return "#ffffff"

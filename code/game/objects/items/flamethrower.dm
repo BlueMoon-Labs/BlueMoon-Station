@@ -154,7 +154,7 @@
 		. += "<span class='notice'>\The [src] has \a [ptank] attached. Alt-click to remove it.</span>"
 
 /obj/item/flamethrower/proc/toggle_igniter(mob/user)
-	if(!ptank)
+	if(!ptank || QDELETED(ptank) || !ptank.air_contents)
 		to_chat(user, "<span class='notice'>Attach a plasma tank first!</span>")
 		return
 	if(!status)
@@ -187,11 +187,13 @@
 	if(HAS_TRAIT(user, TRAIT_PACIFISM))
 		to_chat(user, "<span class='warning'>You don't want to put others in danger!</span>")
 		return
-	if(!lit || operating)
+	if(!lit || operating || !ptank || QDELETED(ptank) || !ptank.air_contents)
 		return
 	operating = TRUE
 	var/turf/previousturf = get_turf(src)
 	for(var/turf/T in turflist)
+		if(!isopenturf(T))
+			continue
 		if(T == previousturf)
 			continue	//so we don't burn the tile we be standin on
 		var/list/turfs_sharing_with_prev = previousturf.GetAtmosAdjacentTurfs(alldir=1)
@@ -209,15 +211,20 @@
 
 
 /obj/item/flamethrower/proc/default_ignite(turf/target, release_amount = 0.05)
-	//TODO: DEFERRED Consider checking to make sure tank pressure is high enough before doing this...
-	//Transfer 5% of current tank air contents to turf
-	var/datum/gas_mixture/air_transfer = ptank.air_contents.remove_ratio(release_amount)
+	if(!isopenturf(target) || !ptank || QDELETED(ptank) || !ptank.air_contents)
+		return
+	//Transfer a portion of current tank air contents to turf
+	var/datum/gas_mixture/air_transfer = ptank.remove_air_ratio(release_amount)
+	if(!air_transfer)
+		return
 	air_transfer.set_moles(GAS_PLASMA, air_transfer.get_moles(GAS_PLASMA) * 5)
-	target.assume_air(air_transfer)
+	var/turf/open/open_target = target
+	open_target.assume_air(air_transfer)
 	qdel(air_transfer)
-	//Burn it based on transfered gas
-	target.hotspot_expose((ptank.air_contents.return_temperature()*2) + 380,500)
-	//location.hotspot_expose(1000,500,1)
+	var/fire_power = clamp(round(release_amount * 50), 8, 50)
+	open_target.IgniteTurf(fire_power)
+	var/tank_temperature = ptank.air_contents?.return_temperature() || T20C
+	target.hotspot_expose((tank_temperature * 2) + 380, 500)
 
 /obj/item/flamethrower/Initialize(mapload)
 	. = ..()
@@ -247,10 +254,15 @@
 			var/target_turf = get_turf(owner)
 			igniter.ignite_turf(src,target_turf, release_amount = 100)
 			qdel(ptank)
+			ptank = null
+			lit = FALSE
+			STOP_PROCESSING(SSobj, src)
+			update_icon()
 			return BLOCK_SUCCESS | BLOCK_PHYSICAL_EXTERNAL
 	return ..()
 
 /obj/item/assembly/igniter/proc/flamethrower_process(turf/open/location)
+	location.IgniteTurf(6)
 	location.hotspot_expose(700,2)
 
 /obj/item/assembly/igniter/cold/flamethrower_process(turf/open/location)

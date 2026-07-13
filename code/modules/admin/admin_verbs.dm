@@ -58,6 +58,7 @@ GLOBAL_PROTECT(admin_verbs_admin)
 	/client/proc/check_antagonists,		/*shows all antags*/
 	/datum/admins/proc/access_news_network,	/*allows access of newscasters*/
 	/client/proc/admin_jump_to,			/*jump to interface*/
+	/client/proc/jumptoturf,			/*right-click jump to turf*/
 	/client/proc/Getmob,				/*teleports a mob to our location*/
 	/client/proc/Getkey,				/*teleports a mob with a certain ckey to our location*/
 	/client/proc/fax_panel, /*send a paper to fax*/
@@ -101,6 +102,9 @@ GLOBAL_PROTECT(admin_verbs_admin)
 	/datum/admins/proc/display_tags,
 	/client/proc/cmd_admin_set_starlight,	//BLUEMOON ADD dynamic starlight color
 	/client/proc/cmd_admin_toggle_falloff,	//BLUEMOON ADD runtime falloff toggle
+	/client/proc/reload_director_config,	/*горячая перезагрузка config/director.json*/
+	/client/proc/director_simulate_verb,	/*оффлайн-прогон битов директора без ожидания реального времени*/
+	/client/proc/director_panel_verb,	/*TGUI-панель директора*/
 	)
 GLOBAL_LIST_INIT(admin_verbs_ban, list(/client/proc/DB_ban_panel, /client/proc/stickybanpanel))
 GLOBAL_PROTECT(admin_verbs_ban)
@@ -211,6 +215,9 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	/client/proc/view_runtimes,
 	/client/proc/view_gc_failures,
 	/client/proc/pump_random_event,
+	/client/proc/tick_spikes_report,
+	/client/proc/tick_spikes_capture,
+	/client/proc/tick_spikes_simulate,
 	/client/proc/cmd_display_init_log,
 	/client/proc/cmd_display_overlay_log,
 	/client/proc/reload_configuration,
@@ -226,11 +233,18 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	#endif
 	/datum/admins/proc/create_or_modify_area,
 	/datum/admins/proc/fixcorruption,
+	/datum/admins/proc/atmos_active_report,
+	#ifndef TGS
+	/datum/admins/proc/atmos_benchmark,
+	#endif
 	// /client/proc/check_timer_sources,
 	/client/proc/toggle_cdn,
 	/client/proc/discordnulls,
 	/client/proc/generate_wikichem_list, //DO NOT PRESS UNLESS YOU WANT SUPERLAG
-	/client/proc/allow_browser_inspect
+	/client/proc/allow_browser_inspect,
+	#ifdef TESTING
+	/datum/admins/proc/machines_benchmark,
+	#endif
 	)
 GLOBAL_LIST_INIT(admin_verbs_possess, list(/proc/possess, /proc/release))
 GLOBAL_PROTECT(admin_verbs_possess)

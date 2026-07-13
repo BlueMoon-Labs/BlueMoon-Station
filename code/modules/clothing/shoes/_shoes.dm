@@ -106,6 +106,8 @@
 /obj/item/clothing/shoes/dropped(mob/user)
 	if(our_alert && (our_alert.owner == user))
 		user.clear_alert("shoealert")
+	// clear_alert qdel-ит алерт; висящая ссылка не давала ему собраться GC.
+	our_alert = null
 	if(offset && equipped_before_drop)
 		restore_offsets(user)
 	. = ..()
@@ -149,6 +151,7 @@
 	if(tied == SHOES_TIED)
 		if(our_guy)
 			our_guy.clear_alert("shoealert")
+		our_alert = null
 		UnregisterSignal(src, COMSIG_SHOES_STEP_ACTION)
 	else
 		if(tied == SHOES_UNTIED && our_guy && user == our_guy)

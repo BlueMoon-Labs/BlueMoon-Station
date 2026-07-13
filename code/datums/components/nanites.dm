@@ -83,6 +83,7 @@
 	RegisterSignal(parent, COMSIG_NANITE_DELETE, PROC_REF(delete_nanites))
 	RegisterSignal(parent, COMSIG_NANITE_UI_DATA, PROC_REF(nanite_ui_data))
 	RegisterSignal(parent, COMSIG_NANITE_GET_PROGRAMS, PROC_REF(get_programs))
+	RegisterSignal(parent, COMSIG_NANITE_GET_VOLUME, PROC_REF(get_volume))
 	RegisterSignal(parent, COMSIG_NANITE_SET_VOLUME, PROC_REF(set_volume))
 	RegisterSignal(parent, COMSIG_NANITE_ADJUST_VOLUME, PROC_REF(adjust_nanites))
 	RegisterSignal(parent, COMSIG_NANITE_SET_MAX_VOLUME, PROC_REF(set_max_volume))
@@ -114,6 +115,7 @@
 								COMSIG_NANITE_UI_DATA,
 								COMSIG_NANITE_GET_PROGRAMS,
 								COMSIG_NANITE_SET_VOLUME,
+								COMSIG_NANITE_GET_VOLUME,
 								COMSIG_NANITE_ADJUST_VOLUME,
 								COMSIG_NANITE_SET_MAX_VOLUME,
 								COMSIG_NANITE_SET_CLOUD,
@@ -403,6 +405,11 @@
 
 /datum/component/nanites/proc/set_volume(datum/source, amount)
 	nanite_volume = clamp(amount, 0, max_nanites)
+
+/datum/component/nanites/proc/get_volume(datum/source)
+	SIGNAL_HANDLER
+
+	return nanite_volume
 
 /datum/component/nanites/proc/set_max_volume(datum/source, amount)
 	SIGNAL_HANDLER

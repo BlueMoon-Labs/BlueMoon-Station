@@ -106,7 +106,8 @@
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_LPOCKET
-	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced/engineering=1, /obj/item/syndicate_uplink=1)
+	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced/engineering=1,/obj/item/syndicate_uplink/station=1)
+	accessory = list(/obj/item/clothing/accessory/permit/special/syndie_station)
 
 /datum/outfit/job/engineer/gloved
 	name = "Station Engineer (Gloves)"

@@ -48,12 +48,25 @@
 	var/list/playlists = list()
 	var/list/favorite_paintings_md5 = list()
 
-// save_preferences / load_preferences для metadollars и пр. — в modular_sand (последний в цепочке),
+// save_preferences / load_preferences для metadollar_minute_pool и пр. — в modular_sand (последний в цепочке),
 // иначе lobby_preferences.dm перезаписывает этот proc и поля не сохранялись на диск.
 
 /datum/preferences/update_preferences(current_version, savefile/S)
-	// Citadel added a new bitfield to toggles, we need to push our prefs forward starting from the last bit
 	if(current_version < 61)
 		if(CHECK_BITFIELD(toggles, VERB_CONSENT))
 			ENABLE_BITFIELD(toggles, RANGED_VERBS_CONSENT)
+	if(current_version < 71)
+		if(path && SSmetadollars)
+			var/legacy_md = bm_read_metadollars_from_savefile_path(path)
+			if(!legacy_md)
+				legacy_md = bm_read_metadollars_from_savefile_path("[path].updatebac")
+			if(legacy_md > 0)
+				var/ck = bm_ckey_from_prefs_path(path)
+				if(ck)
+					SSmetadollars.import_legacy_balance(ck, legacy_md)
+	if(current_version < 72)
+		if(path && SSmetadollars)
+			var/ck = bm_ckey_from_prefs_path(path)
+			if(ck)
+				SSmetadollars.reconcile_legacy_balance(ck)
 	. = ..()

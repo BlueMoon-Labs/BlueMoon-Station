@@ -116,14 +116,16 @@
 		/obj/item/storage/ifak,
 		/obj/item/storage/box/sec_kit,
 		/obj/item/melee/classic_baton,
-		/obj/item/stamp/security)
+		/obj/item/stamp/security,
+		/obj/item/syndicate_uplink/station
+		)
 	mask = /obj/item/clothing/mask/cigarette/cigar/havana
 
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	box = /obj/item/storage/box/survival/syndie
-	accessory = list(/obj/item/clothing/accessory/permit/special/security)
+	accessory = list(/obj/item/clothing/accessory/permit/special/security, /obj/item/clothing/accessory/permit/special/syndie_station)
 	pda_slot = ITEM_SLOT_BELT
 
 /datum/outfit/job/detective/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)

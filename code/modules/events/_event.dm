@@ -3,39 +3,23 @@
 
 //this datum is used by the events controller to dictate how it selects events
 /datum/round_event_control
+	parent_type = /datum/director_action
+	director_kind = DIRECTOR_KIND_EVENT
+	max_occurrences = 20
+	earliest_start = 30 MINUTES
 	var/name						//The human-readable name of the event
 	var/category					//The category of the event
 	var/description					//The description of the event
 	var/typepath					//The typepath of the event datum /datum/round_event
 
-	var/weight = 5					//The weight this event has in the random-selection process.
-									//Higher weights are more likely to be picked.
-									//10 is the default weight. 20 is twice more likely; 5 is half as likely as this default.
-									//0 here does NOT disable the event, it just makes it extremely unlikely
-
-
-	var/earliest_start = 30 MINUTES	//The earliest world.time that an event can start (round-duration in deciseconds) default: 20 mins
-
-	var/min_players = 0				//The minimum amount of alive, non-AFK human players on server required to start the event.
-
-	var/occurrences = 0				//How many times this event has occured
-	var/max_occurrences = 20		//The maximum number of times this event can occur (naturally), it can still be forced.
-									//By setting this to 0 you can effectively disable an event.
-
-	var/holidayID = ""				//string which should be in the SSeventss.holidays list if you wish this event to be holiday-specific
+	var/holidayID = ""				//string which should be in the SSholidays.holidays list if you wish this event to be holiday-specific
 									//anything with a (non-null) holidayID which does not match holiday, cannot run.
 	var/wizardevent = FALSE
 	var/random = FALSE				//If the event has occured randomly, or if it was forced by an admin or in-game occurance
 	var/alert_observers = TRUE		//should we let the ghosts and admins know this event is firing
 									//should be disabled on events that fire a lot
 
-	var/list/gamemode_blacklist = list() // Event won't happen in these gamemodes
-	var/list/gamemode_whitelist = list() // Event will happen ONLY in these gamemodes if not empty
-
 	var/triggering	//admin cancellation
-
-	/// Whether or not dynamic should hijack this event
-	var/dynamic_should_hijack = FALSE
 
 	/// Datum that will handle admin options for forcing the event.
 	/// If there are no options, just leave it as an empty list.
@@ -45,6 +29,59 @@
 	if(config && !wizardevent) // Magic is unaffected by configs
 		earliest_start = CEILING(earliest_start * CONFIG_GET(number/events_min_time_mul), 1)
 		min_players = CEILING(min_players * CONFIG_GET(number/events_min_players_mul), 1)
+	// Дефолты severity/cost/intensity по категории. Тела датумов могут переопределить severity
+	// явно выше по цепочке New() (переопределения живут как var-инициализация, а не в New()),
+	// поэтому здесь только достраиваем то, что ещё не проставлено.
+	if(isnull(severity))
+		switch(category)
+			if(EVENT_CATEGORY_FRIENDLY, EVENT_CATEGORY_HOLIDAY, EVENT_CATEGORY_WIZARD)
+				severity = DIRECTOR_SEVERITY_FLAVOR
+			if(EVENT_CATEGORY_JANITORIAL, EVENT_CATEGORY_BUREAUCRATIC, EVENT_CATEGORY_SPAWNERS)
+				severity = DIRECTOR_SEVERITY_MINOR
+			if(EVENT_CATEGORY_HEALTH, EVENT_CATEGORY_ENGINEERING, EVENT_CATEGORY_AI)
+				severity = DIRECTOR_SEVERITY_MODERATE
+			if(EVENT_CATEGORY_SPACE, EVENT_CATEGORY_INVASION, EVENT_CATEGORY_ENTITIES, EVENT_CATEGORY_ANOMALIES)
+				severity = DIRECTOR_SEVERITY_MAJOR
+			else
+				severity = DIRECTOR_SEVERITY_MINOR
+	if(!cost)
+		switch(severity)
+			if(DIRECTOR_SEVERITY_FLAVOR)
+				cost = 0
+			if(DIRECTOR_SEVERITY_MINOR)
+				cost = 2
+			if(DIRECTOR_SEVERITY_MODERATE)
+				cost = 6
+			if(DIRECTOR_SEVERITY_MAJOR)
+				// 25 при капле MAJOR-кошелька ~0.15-0.2/мин означало "первый мажор через три часа";
+				// 20 с поднятой долей MAJOR в профилях даёт мажору шанс в пределах длинного раунда.
+				cost = 20
+			if(DIRECTOR_SEVERITY_ANTAG, DIRECTOR_SEVERITY_GHOST)
+				cost = 10
+	if(!intensity)
+		switch(severity)
+			if(DIRECTOR_SEVERITY_MINOR)
+				intensity = 5
+			if(DIRECTOR_SEVERITY_MODERATE)
+				intensity = 15
+			if(DIRECTOR_SEVERITY_MAJOR)
+				intensity = 40
+			if(DIRECTOR_SEVERITY_ANTAG, DIRECTOR_SEVERITY_GHOST)
+				intensity = 15
+	if(!intensity_linger)
+		switch(severity)
+			if(DIRECTOR_SEVERITY_MAJOR)
+				intensity_linger = 10 MINUTES
+			if(DIRECTOR_SEVERITY_MODERATE)
+				// One-shot спавнеры (аномалии, манекен) гаснут за тик, а их последствия живут
+				// минуты: без linger панель показывала intensity 0 при двух живых аномалиях,
+				// и порог тишины не видел только что случившийся контент.
+				intensity_linger = 8 MINUTES
+			if(DIRECTOR_SEVERITY_ANTAG, DIRECTOR_SEVERITY_GHOST)
+				// Антаг-события - спавнеры: событие гаснет за тик, а кошмар/дракон живут дальше.
+				// Долгий linger держит их вклад в antag_load (клапан давления) без трекинга моба;
+				// провал спавна снимает вклад сразу (см. refund_failed_spawn в ghost_role.dm).
+				intensity_linger = 30 MINUTES
 	if(!length(admin_setup))
 		return
 	var/list/admin_setup_types = admin_setup.Copy()
@@ -57,40 +94,29 @@
 	wizardevent = TRUE
 	var/can_be_midround_wizard = TRUE
 
-// Checks if the event can be spawned. Used by event controller and "false alarm" event.
-// Admin-created events override this.
-/datum/round_event_control/proc/canSpawnEvent(var/players_amt, var/gamemode)
-	if(occurrences >= max_occurrences)
+/datum/round_event_control/can_fire(datum/director_signals/signals)
+	. = ..()
+	if(!.)
+		return
+	if(wizardevent != SSdirector.wizardmode)
 		return FALSE
-	if(earliest_start >= world.time-SSticker.round_start_time)
+	if(holidayID && (!SSholidays.holidays || !SSholidays.holidays[holidayID]))
 		return FALSE
-	if(wizardevent != SSevents.wizardmode)
-		return FALSE
-	if(players_amt < min_players)
-		return FALSE
-	if(gamemode_blacklist.len && (gamemode in gamemode_blacklist))
-		return FALSE
-	if(gamemode_whitelist.len && !(gamemode in gamemode_whitelist))
-		return FALSE
-	if(holidayID && (!SSevents.holidays || !SSevents.holidays[holidayID]))
-		return FALSE
-
-	var/datum/game_mode/dynamic/dynamic = SSticker.mode
-	if (istype(dynamic) && dynamic_should_hijack && dynamic.random_event_hijacked != HIJACKED_NOTHING)
-		return FALSE
-
 	return TRUE
 
-/datum/round_event_control/wizard/canSpawnEvent(var/players_amt, var/gamemode)
+/datum/round_event_control/wizard/can_fire(datum/director_signals/signals)
 	if(istype(SSticker.mode, /datum/game_mode/dynamic))
 		var/datum/game_mode/dynamic/mode = SSticker.mode
-		if (locate(/datum/dynamic_ruleset/midround/from_ghosts/wizard) in mode.executed_rules)
+		if(locate(/datum/dynamic_ruleset/midround/from_ghosts/wizard) in mode.executed_rules)
 			return can_be_midround_wizard && ..()
 	return ..()
 
 
 
-/datum/round_event_control/proc/preRunEvent()
+/// admin_window: открывать ли 30-секундное окно отмены с повторной проверкой.
+/// Запуски через директора (execute_action) идут с FALSE - у директора своё окно
+/// отмены для MODERATE+ в announce_pick(), второе окно подряд не нужно.
+/datum/round_event_control/proc/preRunEvent(admin_window = TRUE)
 	if(!ispath(typepath, /datum/round_event))
 		return EVENT_CANT_RUN
 
@@ -98,12 +124,10 @@
 		return EVENT_INTERRUPTED
 
 	triggering = TRUE
-	if (alert_observers)
+	if (admin_window && alert_observers)
 		message_admins("Random Event triggering in [RANDOM_EVENT_ADMIN_INTERVENTION_TIME] seconds: [name] (<a href='?src=[REF(src)];cancel=1'>CANCEL</a>)")
 		sleep(RANDOM_EVENT_ADMIN_INTERVENTION_TIME SECONDS)
-		var/gamemode = SSticker.mode.config_tag
-		var/players_amt = get_active_player_count(alive_check = TRUE, afk_check = TRUE, human_check = TRUE)
-		if(!canSpawnEvent(players_amt, gamemode))
+		if(!can_fire(SSdirector.collect_signals()))
 			message_admins("Second pre-condition check for [name] failed, skipping...")
 			return EVENT_INTERRUPTED
 
@@ -156,6 +180,21 @@ Runs the event
 /datum/round_event_control/proc/admin_setup()
 	return
 
+/datum/round_event_control/action_name()
+	return name
+
+/datum/round_event_control/execute_action()
+	var/result = preRunEvent(admin_window = FALSE)
+	if(result == EVENT_CANT_RUN)
+		max_occurrences = 0
+		return FALSE
+	if(result != EVENT_READY)
+		return FALSE
+	// occurrences считает только директор (spend_and_execute/run_forced_events/wizard_beat),
+	// иначе запуск через бит учитывался бы дважды.
+	runEvent(random = TRUE, increase_occurrences = FALSE)
+	return TRUE
+
 /datum/round_event	//NOTE: Times are measured in master controller ticks!
 	var/processing = TRUE
 	/// Set from runEvent(): true if the event was rolled by the random event system (not from admin/item).
@@ -178,7 +217,6 @@ Runs the event
 	var/activeFor = 0
 	/// Amount of of alive, non-AFK human players on server at the time of event start
 	var/current_players = 0
-	var/threat			= 0
 	/// Can be faked by fake news event.
 	var/fakeable = TRUE
 
@@ -231,10 +269,6 @@ Runs the event
 /datum/round_event/proc/end()
 	return
 
-// Returns threat; used for dynamic. Used for custom stuff, just returns the threat var by default.
-/datum/round_event/proc/threat()
-	return threat
-
 //Do not override this proc, instead use the appropiate procs.
 //This proc will handle the calls to the appropiate procs.
 /datum/round_event/process()
@@ -273,12 +307,14 @@ Runs the event
 //which should be the only place it's referenced.
 //Called when start(), announce() and end() has all been called.
 /datum/round_event/proc/kill()
-	SSevents.running -= src
+	SSdirector.running -= src
+	if(control)
+		SSdirector.remove_intensity(control.action_name(), control.intensity_linger)
 
 
 //Sets up the event then adds the event to the the list of running events
 /datum/round_event/New(my_processing = TRUE)
 	setup()
 	processing = my_processing
-	SSevents.running += src
+	SSdirector.running += src
 	return ..()

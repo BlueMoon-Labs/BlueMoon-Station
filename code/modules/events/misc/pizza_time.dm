@@ -26,7 +26,7 @@
 /datum/round_event_control/pizza_time_admin
 	name = "Present Time"
 	typepath = /datum/round_event/pizza_time/admin
-	weight = 0
+	admin_only = TRUE
 	max_occurrences = 0
 	category = EVENT_CATEGORY_FRIENDLY
 	description = "Доставка одного выбранного предмета всем людям подом."

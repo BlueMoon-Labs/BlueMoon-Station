@@ -105,6 +105,9 @@
 #define CAT_SPAGHETTI	"Spaghettis"
 #define CAT_ICE	"Frozen"
 #define CAT_EAST "East foods" //BLUEMOON ADD
+// Category tab; single subcategory for crystallizer crystals and gas crafts (BLUEMOON ADD)
+#define CAT_ATMOSPHERIC "Atmospherics"
+#define CAT_ATMOSPHERICS "Gas Crystals"
 
 #define RCD_FLOORWALL 1
 #define RCD_AIRLOCK 2
