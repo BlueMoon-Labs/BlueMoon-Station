@@ -483,6 +483,7 @@ SUBSYSTEM_DEF(director)
 /// Заодно добавляет строку разбивки для панели и помечает имя в live_names (см. get_ruleset_intensity).
 /datum/controller/subsystem/director/proc/tally_ruleset_intensity(datum/dynamic_ruleset/rule, list/live_names, list/breakdown)
 	. = 0
+	refund_lost_ruleset_antags(rule)
 	var/living = 0
 	var/activity_sum = 0
 	for(var/datum/mind/assigned_mind as anything in rule.assigned)
@@ -519,6 +520,63 @@ SUBSYSTEM_DEF(director)
 			return TRUE
 	return FALSE
 
+/// Окончательная потеря роли, в отличие от временного обезвреживания: смерть/удаление тела,
+/// крио или снятие последнего жёсткого антаг-датума. Перма и гулаг освобождают intensity,
+/// но страховку не выплачивают — заключённый ещё может вернуться в игру.
+/datum/controller/subsystem/director/proc/is_terminal_antag_loss(datum/mind/checked_mind)
+	var/mob/current_mob = checked_mind?.current
+	if(!current_mob || current_mob.stat == DEAD)
+		return TRUE
+	return !is_hard_antag_mind(checked_mind)
+
+/// Неотработанная доля индивидуальной страховки. policy хранит цену, время выдачи роли и
+/// накопленную активность mind на тот момент, поэтому повторная роль того же игрока считается с нуля.
+/datum/controller/subsystem/director/proc/antag_loss_refund_value(list/policy, activity_total = 0)
+	if(!islist(policy) || !profile || profile.antag_loss_refund_window <= 0 || profile.antag_loss_activity_threshold <= 0)
+		return 0
+	var/age = now() - policy["at"]
+	if(age < 0 || age > profile.antag_loss_refund_window)
+		return 0
+	var/activity = max(0, activity_total - (policy["activity"] || 0))
+	var/unworked_fraction = clamp(1 - activity / profile.antag_loss_activity_threshold, 0, 1)
+	return (policy["amount"] || 0) * unworked_fraction
+
+/// Направляет страховую выплату только в два антаг-кошелька. Так исчезнувшего экипажного
+/// антага можно заменить гост-ролью, если живых кандидатов в текущем раунде уже нет.
+/datum/controller/subsystem/director/proc/grant_antag_loss_refund(source_name, amount, lost_count)
+	if(amount <= 0)
+		return 0
+	var/before = budgets[DIRECTOR_SEVERITY_ANTAG] + budgets[DIRECTOR_SEVERITY_GHOST]
+	feed_antag_pools(amount)
+	var/granted = budgets[DIRECTOR_SEVERITY_ANTAG] + budgets[DIRECTOR_SEVERITY_GHOST] - before
+	if(granted <= 0)
+		return 0
+	pool_cache = null
+	var/shown = round(granted, 0.1)
+	message_admins("DIRECTOR: страховка [source_name] вернула [shown] бюджета за раннюю потерю ролей ([lost_count]).")
+	log_game("DIRECTOR: страховка [source_name] вернула [shown] бюджета за раннюю потерю ролей ([lost_count])")
+	return granted
+
+/// Одноразово страхует каждую подтверждённо выданную рулсетом роль. Стоимость уже разделена
+/// confirm_action_success() между новыми assigned, поэтому масштабированные и повторные рулсеты
+/// возвращают ровно свою фактически потраченную долю, а не текущий cost на глаз.
+/datum/controller/subsystem/director/proc/refund_lost_ruleset_antags(datum/dynamic_ruleset/rule)
+	if(!length(rule.director_loss_refund_values))
+		return 0
+	var/refund = 0
+	var/lost_count = 0
+	for(var/datum/mind/assigned_mind as anything in rule.assigned)
+		var/list/policy = rule.director_loss_refund_values[assigned_mind]
+		if(!islist(policy) || !is_terminal_antag_loss(assigned_mind))
+			continue
+		// Сначала закрываем полис: даже полная выплата не повторится после воскрешения/новой смерти,
+		// а слишком поздняя или уже отработанная роль тоже не будет проверяться бесконечно.
+		rule.director_loss_refund_values -= assigned_mind
+		rule.director_loss_accounted[assigned_mind] = TRUE
+		lost_count++
+		refund += antag_loss_refund_value(policy, assigned_mind.director_activity_total)
+	return grant_antag_loss_refund(rule.action_name(), refund, lost_count)
+
 /// Текущий score активности антага с ленивым затуханием: полураспад DIRECTOR_ACTIVITY_HALF_LIFE,
 /// сам score на mind не переписывается (перезапись - только в bump_antag_activity).
 /datum/controller/subsystem/director/proc/antag_activity(datum/mind/checked_mind)
@@ -540,6 +598,7 @@ SUBSYSTEM_DEF(director)
 		return
 	noisy_mind.director_activity = min(antag_activity(noisy_mind) + amount, DIRECTOR_ACTIVITY_CAP)
 	noisy_mind.director_activity_at = now()
+	noisy_mind.director_activity_total += amount
 
 /datum/controller/subsystem/director/proc/get_active_intensity(list/breakdown = null)
 	var/list/live_names = list()
@@ -576,7 +635,7 @@ SUBSYSTEM_DEF(director)
 
 /// Перевод успешного ghost-role события со статического мостика ledger на реальные созданные
 /// роли. Mind переживает смену тела, weakref покрывает редкие управляемые мобы без mind.
-/datum/controller/subsystem/director/proc/track_ghost_role_spawn(datum/round_event_control/control, list/spawned_mobs)
+/datum/controller/subsystem/director/proc/track_ghost_role_spawn(datum/round_event_control/control, list/spawned_mobs, budget_backed = FALSE)
 	if(!control || !length(spawned_mobs))
 		return FALSE
 	var/list/minds = list()
@@ -590,6 +649,18 @@ SUBSYSTEM_DEF(director)
 			mob_refs += WEAKREF(spawned)
 	if(!length(minds) && !length(mob_refs))
 		return FALSE
+	var/list/refund_values = list()
+	if(budget_backed && DIRECTOR_IS_ANTAG_POOL(control.severity) && control.cost > 0)
+		var/share = control.cost / (length(minds) + length(mob_refs))
+		for(var/datum/mind/insured_mind as anything in minds)
+			refund_values[insured_mind] = list(
+				"amount" = share,
+				"at" = now(),
+				"activity" = insured_mind.director_activity_total,
+				"hard" = is_hard_antag_mind(insured_mind),
+			)
+		for(var/datum/weakref/insured_ref as anything in mob_refs)
+			refund_values[insured_ref] = list("amount" = share, "at" = now(), "activity" = 0)
 	remove_intensity(control.action_name())
 	live_ghost_role_spawns += list(list(
 		"name" = control.action_name(),
@@ -597,6 +668,7 @@ SUBSYSTEM_DEF(director)
 		"severity" = control.severity,
 		"minds" = minds,
 		"mobs" = mob_refs,
+		"refund_values" = refund_values,
 	))
 	confirm_action_success(control)
 	pool_cache = null
@@ -610,17 +682,33 @@ SUBSYSTEM_DEF(director)
 		var/list/entry = live_ghost_role_spawns[i]
 		var/list/minds = entry["minds"]
 		var/list/mob_refs = entry["mobs"]
+		var/list/refund_values = entry["refund_values"]
 		var/assigned = length(minds) + length(mob_refs)
 		var/living = 0
+		var/refund = 0
+		var/lost_count = 0
 		for(var/datum/mind/assigned_mind as anything in minds)
 			var/mob/current = assigned_mind?.current
-			if(!current || current.stat == DEAD)
+			var/list/policy = refund_values?[assigned_mind]
+			var/role_removed = islist(policy) && policy["hard"] && !is_hard_antag_mind(assigned_mind)
+			if(!current || current.stat == DEAD || role_removed)
+				if(islist(policy))
+					refund_values -= assigned_mind
+					lost_count++
+					refund += antag_loss_refund_value(policy, assigned_mind.director_activity_total)
 				continue
 			living++
 		for(var/datum/weakref/mob_ref as anything in mob_refs)
 			var/mob/current = mob_ref.resolve()
 			if(current && current.stat != DEAD)
 				living++
+				continue
+			var/list/policy = refund_values?[mob_ref]
+			if(islist(policy))
+				refund_values -= mob_ref
+				lost_count++
+				refund += antag_loss_refund_value(policy)
+		grant_antag_loss_refund(entry["name"], refund, lost_count)
 		if(!assigned || !living)
 			live_ghost_role_spawns.Cut(i, i + 1)
 			continue
@@ -1033,6 +1121,9 @@ SUBSYSTEM_DEF(director)
 		budgets[action.severity] += spent
 		action_failure_cooldowns[action] = now() + DIRECTOR_FAILED_ACTION_COOLDOWN
 		return FALSE
+	if(action.director_kind == DIRECTOR_KIND_RULESET)
+		var/datum/dynamic_ruleset/rule = action
+		rule.director_pending_cost += spent
 	action.occurrences++
 	note_fired(action, from_latejoin = (source == "latejoin"))
 	return TRUE
@@ -1050,6 +1141,9 @@ SUBSYSTEM_DEF(director)
 		family_fired_counts[action.family]--
 	rollback_action_attempt(action)
 	remove_intensity(action.action_name())
+	if(action.director_kind == DIRECTOR_KIND_RULESET)
+		var/datum/dynamic_ruleset/rule = action
+		rule.director_pending_cost = 0
 	if(refund_budget)
 		refund_to_budget(action.severity, action.cost)
 	if(retry_replacement)
@@ -1115,6 +1209,27 @@ SUBSYSTEM_DEF(director)
 /datum/controller/subsystem/director/proc/confirm_action_success(datum/director_action/action)
 	action_attempt_rollbacks -= action
 	action_failure_cooldowns -= action
+	if(action.director_kind != DIRECTOR_KIND_RULESET)
+		return
+	var/datum/dynamic_ruleset/rule = action
+	var/confirmed_cost = rule.director_pending_cost
+	rule.director_pending_cost = 0
+	if(confirmed_cost <= 0)
+		return
+	var/list/newly_insured = list()
+	for(var/datum/mind/assigned_mind as anything in rule.assigned)
+		if(!istype(assigned_mind) || rule.director_loss_accounted[assigned_mind] || islist(rule.director_loss_refund_values[assigned_mind]))
+			continue
+		newly_insured += assigned_mind
+	if(length(newly_insured))
+		var/share = confirmed_cost / length(newly_insured)
+		for(var/datum/mind/insured_mind as anything in newly_insured)
+			rule.director_loss_refund_values[insured_mind] = list(
+				"amount" = share,
+				"at" = now(),
+				"activity" = insured_mind.director_activity_total,
+			)
+	rule.total_cost += confirmed_cost
 
 /// Асинхронный отказ не ждёт следующего минутного бита: после короткой технической задержки
 /// заново оцениваем именно тот же ANTAG/GHOST-пул, исключив провалившийся вариант.

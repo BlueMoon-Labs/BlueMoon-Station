@@ -897,14 +897,11 @@
 	log_world("DIRECTOR SIM: Hard@60, 2ч: состав [hard_composition.Join(", ")]")
 	TEST_ASSERT(heavy_fired >= 1, "За 2 часа Hard при 60 экипажа тяжёлая ступень (MAJOR или тяжёлый ANTAG) ни разу не выстрелила - голодание вернулось")
 
-	// Мягкие профили: Light и Extended живут (в т.ч. гост-антаги - регрессия "на эксте раньше
-	// спаунились антаги"), но без MAJOR и без тяжёлых антаг-команд. Teambased обязан кормить
-	// антаг-пулы. Экипажи прогонов подобраны под min_players гост-событий (кошмар/дракон = 30).
-	// Гост-ассерты стохастические: одиночный 2ч-прогон даёт 0 гост-запусков с шансом ~10%
-	// (копилка пула может весь прогон копить на дорогую цель, CI-статистика: 5 падений на 38
-	// прогонов карт). Ретраи давят флейк, не пряча структурную регрессию: мёртвый пул (нулевая
-	// доля, все действия отфильтрованы) даст 0 во ВСЕХ попытках. Детерминированные инварианты
-	// профиля (без MAJOR, без тяжёлых команд) проверяются на каждой попытке - ретрай их не размывает.
+	// Мягкие профили: Light и Extended живут, но без MAJOR и без тяжёлых антаг-команд;
+	// Teambased держит собственный темп. Случайный состав одного прогона годится для диагностики,
+	// но не для ассерта "обязательно выпал GHOST": даже живой пул законно может проиграть все
+	// pickweight-роллы за два часа. Структурную достижимость GHOST (контент, долю и накопление
+	// бюджета) без RNG проверяет director_profile_ghost_reachability ниже.
 	var/list/soft_specs = list(
 		list(ROUNDTYPE_DYNAMIC_LIGHT, 30, 4),
 		list(ROUNDTYPE_EXTENDED, 30, 3),
@@ -914,38 +911,78 @@
 		var/spec_type = spec[1]
 		var/spec_crew = spec[2]
 		var/spec_min_fired = spec[3]
+		var/list/spec_log = director_simulate(spec_type, 2, spec_crew)
 		var/spec_fired = 0
 		var/spec_ghost = 0
-		for(var/attempt in 1 to 4)
-			var/list/spec_log = director_simulate(spec_type, 2, spec_crew)
-			spec_fired = 0
-			spec_ghost = 0
-			var/spec_heavy = 0
-			var/spec_major = 0
-			var/list/spec_by_severity = list()
-			for(var/list/entry in spec_log)
-				if(entry["result"] != DIRECTOR_BEAT_FIRED && entry["result"] != DIRECTOR_BEAT_GUARANTEED)
-					continue
-				spec_fired++
-				var/sev = entry["severity"] || "?"
-				spec_by_severity[sev] = (spec_by_severity[sev] || 0) + 1
-				if(entry["antag_heavy"])
-					spec_heavy++
-				if(sev == DIRECTOR_SEVERITY_GHOST)
-					spec_ghost++
-				if(sev == DIRECTOR_SEVERITY_MAJOR)
-					spec_major++
-			var/list/spec_composition = list()
-			for(var/sev in spec_by_severity)
-				spec_composition += "[sev]=[spec_by_severity[sev]]"
-			log_world("DIRECTOR SIM: [spec_type]@[spec_crew], 2ч, попытка [attempt]: [spec_fired] запусков ([spec_composition.Join(", ")])")
-			if(spec_type == ROUNDTYPE_DYNAMIC_LIGHT || spec_type == ROUNDTYPE_EXTENDED)
-				TEST_ASSERT_EQUAL(spec_heavy, 0, "[spec_type]: тяжёлые антаг-действия обязаны быть выключены профилем, случилось [spec_heavy]")
-				TEST_ASSERT_EQUAL(spec_major, 0, "[spec_type]: MAJOR-события обязаны быть недоступны (доля 0), случилось [spec_major]")
-			if(spec_fired >= spec_min_fired && spec_ghost >= 1)
-				break
-		TEST_ASSERT(spec_fired >= spec_min_fired, "За 2 часа [spec_type] при [spec_crew] экипажа должно случиться не меньше [spec_min_fired] действий, случилось [spec_fired] (после 4 попыток)")
-		TEST_ASSERT(spec_ghost >= 1, "[spec_type]: за 2 часа гост-антаг обязан появиться хотя бы раз (Light/Extended - регрессия отсутствия антагов, Teambased - антаг-крен обязан кормить гост-пул), случилось [spec_ghost] (после 4 попыток)")
+		var/spec_heavy = 0
+		var/spec_major = 0
+		var/list/spec_by_severity = list()
+		for(var/list/entry in spec_log)
+			if(entry["result"] != DIRECTOR_BEAT_FIRED && entry["result"] != DIRECTOR_BEAT_GUARANTEED)
+				continue
+			spec_fired++
+			var/sev = entry["severity"] || "?"
+			spec_by_severity[sev] = (spec_by_severity[sev] || 0) + 1
+			if(entry["antag_heavy"])
+				spec_heavy++
+			if(sev == DIRECTOR_SEVERITY_GHOST)
+				spec_ghost++
+			if(sev == DIRECTOR_SEVERITY_MAJOR)
+				spec_major++
+		var/list/spec_composition = list()
+		for(var/sev in spec_by_severity)
+			spec_composition += "[sev]=[spec_by_severity[sev]]"
+		log_world("DIRECTOR SIM: [spec_type]@[spec_crew], 2ч: [spec_fired] запусков ([spec_composition.Join(", ")]), GHOST [spec_ghost]")
+		if(spec_type == ROUNDTYPE_DYNAMIC_LIGHT || spec_type == ROUNDTYPE_EXTENDED)
+			TEST_ASSERT_EQUAL(spec_heavy, 0, "[spec_type]: тяжёлые антаг-действия обязаны быть выключены профилем, случилось [spec_heavy]")
+			TEST_ASSERT_EQUAL(spec_major, 0, "[spec_type]: MAJOR-события обязаны быть недоступны (доля 0), случилось [spec_major]")
+		TEST_ASSERT(spec_fired >= spec_min_fired, "За 2 часа [spec_type] при [spec_crew] экипажа должно случиться не меньше [spec_min_fired] действий, случилось [spec_fired]")
+
+/// Детерминированная замена стохастическому ассерту simulation_sanity: для каждого профиля,
+/// от которого ожидаются гост-антаги, существует хотя бы одно естественное лёгкое GHOST-действие,
+/// доступное заданному онлайну в первые два часа, а полный дефицит-поток успевает оплатить его.
+/// Фактический запуск всё ещё зависит от призраков и pickweight — это условия раунда, не инварианты.
+/datum/unit_test/director_profile_ghost_reachability
+
+/datum/unit_test/director_profile_ghost_reachability/Run()
+	var/list/specs = list(
+		list(ROUNDTYPE_DYNAMIC_LIGHT, 30),
+		list(ROUNDTYPE_EXTENDED, 30),
+		list(ROUNDTYPE_DYNAMIC_TEAMBASED, 40),
+	)
+	for(var/list/spec in specs)
+		var/spec_type = spec[1]
+		var/spec_crew = spec[2]
+		var/datum/director_profile/profile = director_profile_for(spec_type)
+		var/antag_share = profile.pool_shares[DIRECTOR_SEVERITY_ANTAG] || 0
+		var/ghost_share = profile.pool_shares[DIRECTOR_SEVERITY_GHOST] || 0
+		var/total_antag_share = antag_share + ghost_share
+		TEST_ASSERT(ghost_share > 0, "[spec_type]: доля GHOST должна быть ненулевой")
+		TEST_ASSERT(profile.antag_drip > 0, "[spec_type]: GHOST-пул не накопит бюджет при antag_drip = 0")
+		TEST_ASSERT(total_antag_share > 0, "[spec_type]: сумма долей ANTAG/GHOST должна быть ненулевой")
+
+		var/min_reachable_cost
+		var/list/reachable_names = list()
+		for(var/datum/round_event_control/control as anything in SSdirector.event_controls())
+			if(control.severity != DIRECTOR_SEVERITY_GHOST || !control.enabled || control.admin_only || control.weight <= 0)
+				continue
+			if(control.antag_heavy && !profile.antag_heavy_enabled)
+				continue
+			if(control.min_players > spec_crew || control.earliest_start > 2 HOURS)
+				continue
+			if(control.required_round_type && !(spec_type in control.required_round_type))
+				continue
+			if(profile.disruption_mult(control) <= 0)
+				continue
+			reachable_names += control.action_name()
+			if(isnull(min_reachable_cost) || control.cost < min_reachable_cost)
+				min_reachable_cost = control.cost
+		TEST_ASSERT(length(reachable_names), "[spec_type]: нет ни одного естественного лёгкого GHOST-действия для онлайна [spec_crew] в первые два часа")
+
+		// При пустой антаг-нагрузке deficit = 1; feed_antag_pools делит поток ровно по
+		// соотношению ANTAG/GHOST. Это нижняя структурная проверка кошелька без случайного выбора.
+		var/two_hour_ghost_budget = profile.antag_drip * 120 * ghost_share / total_antag_share
+		TEST_ASSERT(two_hour_ghost_budget >= min_reachable_cost, "[spec_type]: за два часа GHOST-пул накопит [round(two_hour_ghost_budget, 0.1)], но самое дешёвое доступное действие [min_reachable_cost] ([reachable_names.Join(", ")])")
 
 /// Проверяет механику семейств: общий фолл-офф повторов (запуски любого члена гасят вес всех),
 /// паузу семейства в filter_candidates и учёт запусков в note_fired.
@@ -1510,6 +1547,7 @@
 	TEST_ASSERT_EQUAL(SSdirector.antag_activity(antag.mind), DIRECTOR_ACTIVITY_KILL, "bump должен начислять score антагу")
 	SSdirector.bump_antag_activity(antag.mind, DIRECTOR_ACTIVITY_CAP * 10)
 	TEST_ASSERT_EQUAL(SSdirector.antag_activity(antag.mind), DIRECTOR_ACTIVITY_CAP, "score должен клампиться на капе")
+	TEST_ASSERT_EQUAL(antag.mind.director_activity_total, DIRECTOR_ACTIVITY_KILL + DIRECTOR_ACTIVITY_CAP * 10, "Накопленная активность для страховки не должна теряться из-за капа текущего score")
 
 	// Затухание: через полураспад остаётся ровно половина, чтение не переписывает score.
 	antag.mind.director_activity = DIRECTOR_ACTIVITY_CAP
@@ -1523,6 +1561,74 @@
 	antag.mind.director_activity = DIRECTOR_ACTIVITY_CAP
 	antag.mind.director_activity_at = world.time
 	TEST_ASSERT_EQUAL(SSdirector.antag_activity_mult(antag.mind), DIRECTOR_ACTIVITY_MULT_MAX, "Кап активности должен весить максимум")
+
+/// Прод-регрессия: два roundstart-трейтора за 17 очков исчезли к 27-й минуте, antag_load упал
+/// в ноль, а директору вручную вернули 20 бюджета. Подтверждённая стоимость должна делиться
+/// между реально выданными ролями, тихая ранняя потеря — возвращать свою долю ровно один раз,
+/// активная или слишком поздняя потеря — ничего.
+/datum/unit_test/director_antag_loss_refund
+
+/datum/unit_test/director_antag_loss_refund/Run()
+	var/list/saved = SSdirector.capture_simulation_state()
+	try
+		var/datum/director_profile/profile = new /datum/director_profile/medium
+		SSdirector.profile = profile
+		SSdirector.reset_budgets(0)
+		SSdirector.time_override = world.time + 1 MINUTES
+
+		var/mob/living/carbon/human/quiet = allocate(/mob/living/carbon/human)
+		quiet.mind_initialize()
+		var/datum/antagonist/quiet_marker = new
+		quiet_marker.silent = TRUE
+		quiet.mind.add_antag_datum(quiet_marker)
+
+		var/mob/living/carbon/human/active = allocate(/mob/living/carbon/human)
+		active.mind_initialize()
+		var/datum/antagonist/active_marker = new
+		active_marker.silent = TRUE
+		active.mind.add_antag_datum(active_marker)
+
+		var/datum/dynamic_ruleset/midround/test_pool_isolation/rule = new
+		rule.intensity = 15
+		rule.assigned = list(quiet.mind, active.mind)
+		// Точная цена случая из прод-лога: traitor cost 8 + scaling_cost 9.
+		rule.director_pending_cost = 17
+		SSdirector.confirm_action_success(rule)
+		TEST_ASSERT_EQUAL(rule.total_cost, 17, "Подтверждение должно перенести фактически списанную цену в total_cost")
+		TEST_ASSERT_EQUAL(length(rule.director_loss_refund_values), 2, "Каждая подтверждённо выданная роль должна получить отдельный полис")
+
+		quiet.stat = DEAD
+		SSdirector.tally_ruleset_intensity(rule)
+		var/antag_wallets = SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST]
+		TEST_ASSERT_EQUAL(round(antag_wallets, 0.1), 8.5, "Тихая потеря одного из двух трейторов должна вернуть половину цены 17")
+		SSdirector.tally_ruleset_intensity(rule)
+		antag_wallets = SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST]
+		TEST_ASSERT_EQUAL(round(antag_wallets, 0.1), 8.5, "Повторный подсчёт мёртвой роли не должен печатать бюджет")
+
+		SSdirector.bump_antag_activity(active.mind, profile.antag_loss_activity_threshold)
+		active.stat = DEAD
+		SSdirector.tally_ruleset_intensity(rule)
+		antag_wallets = SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST]
+		TEST_ASSERT_EQUAL(round(antag_wallets, 0.1), 8.5, "Полностью отработавшая роль не должна возвращать свою долю")
+
+		var/mob/living/carbon/human/late = allocate(/mob/living/carbon/human)
+		late.mind_initialize()
+		var/datum/antagonist/late_marker = new
+		late_marker.silent = TRUE
+		late.mind.add_antag_datum(late_marker)
+		var/datum/dynamic_ruleset/midround/test_pool_isolation/late_rule = new
+		late_rule.assigned = list(late.mind)
+		late_rule.director_pending_cost = 8
+		SSdirector.confirm_action_success(late_rule)
+		SSdirector.time_override += profile.antag_loss_refund_window + 1
+		late.stat = DEAD
+		SSdirector.tally_ruleset_intensity(late_rule)
+		antag_wallets = SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST]
+		TEST_ASSERT_EQUAL(round(antag_wallets, 0.1), 8.5, "Потеря после окна страховки не должна возвращать бюджет")
+	catch(var/exception/e)
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	SSdirector.restore_simulation_state(saved)
 
 /// Проверяет профильный гейт тяжёлых антагов (antag_heavy_enabled = FALSE у Light/Extended):
 /// heavy-действие отсеивается причиной antag_heavy_off и не становится целью копилки,
@@ -1848,6 +1954,8 @@
 /datum/unit_test/director_ghost_role_intensity_tracks_life/Run()
 	var/list/saved = SSdirector.capture_simulation_state()
 	try
+		SSdirector.profile = new /datum/director_profile/medium
+		SSdirector.reset_budgets(0)
 		var/datum/round_event_control/slaughter/control = locate() in SSdirector.actions
 		TEST_ASSERT_NOTNULL(control, "Spawn Slaughter Demon должен быть зарегистрирован у директора")
 		var/mob/living/carbon/human/spawned = allocate(/mob/living/carbon/human)
@@ -1855,12 +1963,16 @@
 		SSdirector.actions = list(control)
 		SSdirector.intensity_ledger = list(list(control.action_name(), control.intensity, 0, control.severity))
 		SSdirector.live_ghost_role_spawns = list()
-		TEST_ASSERT(SSdirector.track_ghost_role_spawn(control, list(spawned)), "Успешный гост-спаун должен перейти на живой трекинг")
+		TEST_ASSERT(SSdirector.track_ghost_role_spawn(control, list(spawned), budget_backed = TRUE), "Успешный гост-спаун должен перейти на живой трекинг")
 		TEST_ASSERT_EQUAL(length(SSdirector.intensity_ledger), 0, "Статический мост должен сниматься после реального спауна")
 		TEST_ASSERT_EQUAL(SSdirector.get_active_intensity(), control.intensity, "Живой демон должен давать полный настроенный вклад")
 		spawned.stat = DEAD
 		TEST_ASSERT_EQUAL(SSdirector.get_active_intensity(), 0, "Мёртвый демон не должен занимать intensity")
 		TEST_ASSERT_EQUAL(length(SSdirector.live_ghost_role_spawns), 0, "Пустая живая группа должна удаляться")
+		var/antag_wallets = SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST]
+		TEST_ASSERT_EQUAL(round(antag_wallets, 0.1), control.cost, "Ранняя тихая смерть естественной гост-роли должна вернуть её цену в антаг-кошельки")
+		SSdirector.get_active_intensity()
+		TEST_ASSERT_EQUAL(round(SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST], 0.1), control.cost, "Удалённая группа гост-роли не должна получить повторную выплату")
 	catch(var/exception/e)
 		SSdirector.restore_simulation_state(saved)
 		throw e

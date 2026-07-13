@@ -104,6 +104,12 @@
 	/// Доступны ли профилю тяжёлые антаг-действия (antag_heavy: нюк-асолт, блоб, ксено, терор).
 	/// FALSE у фоновых профилей (Light/Extended): там командный асолт не "редкий", а неуместный.
 	var/antag_heavy_enabled = TRUE
+	/// Окно страховки антаг-роли: если за это время роль окончательно потеряна (смерть, крио,
+	/// деконверсия), неотработанная доля её цены возвращается в ANTAG/GHOST-кошельки.
+	var/antag_loss_refund_window = 40 MINUTES
+	/// Сколько накопленных очков активности полностью "отрабатывают" цену роли. Возврат линейный:
+	/// 0 активности = вся доля цены, половина порога = половина, порог и выше = ничего.
+	var/antag_loss_activity_threshold = 10
 	/// Недоукомплектованная СБ: если офицеров < ceil(экипаж / per_players), веса MAJOR и тяжёлого ANTAG *= penalty
 	var/security_per_players = 12
 	var/security_penalty_mult = 0.5
@@ -152,6 +158,8 @@
 		"disruptionMults" = disruption_weight_mults,
 		"antagPerCrew" = antag_intensity_per_crew,
 		"antagHeavyEnabled" = antag_heavy_enabled,
+		"antagLossRefundWindow" = round(antag_loss_refund_window / (1 MINUTES), 0.1),
+		"antagLossActivityThreshold" = antag_loss_activity_threshold,
 		"maxQuiet" = round(max_quiet_time / (1 MINUTES), 0.1),
 		"quietThreshold" = quiet_intensity_threshold,
 		"securityPerPlayers" = security_per_players,

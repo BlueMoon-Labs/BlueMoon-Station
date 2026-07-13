@@ -45,8 +45,15 @@
 	var/scaling_cost = 0
 	/// How many times a rule has scaled up upon getting picked.
 	var/scaled_times = 0
-	/// Used for the roundend report
+	/// Подтверждённая фактически потраченная стоимость запусков. Помимо roundend-отчёта служит
+	/// бухгалтерией страховки рано потерянных антаг-ролей директора.
 	var/total_cost = 0
+	/// Стоимость уже списана, но асинхронный execute ещё не подтвердил выдачу ролей.
+	var/director_pending_cost = 0
+	/// mind -> list(amount, at, activity): индивидуальная страховая доля подтверждённой роли.
+	var/list/director_loss_refund_values = list()
+	/// mind -> TRUE: роль уже была застрахована и не может получить покрытие повторно.
+	var/list/director_loss_accounted = list()
 	/// A flag that determines how the ruleset is handled. Check __DEFINES/dynamic.dm for an explanation of the accepted values.
 	var/flags = NONE
 	/// Pop range per requirement. If zero defaults to mode's pop_per_requirement.

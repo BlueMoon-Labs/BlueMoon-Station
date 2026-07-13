@@ -84,6 +84,8 @@ type ProfileEntry = {
   disruptionMults: Record<string, number>;
   antagPerCrew: number;
   antagHeavyEnabled: BooleanLike;
+  antagLossRefundWindow: number;
+  antagLossActivityThreshold: number;
   maxQuiet: number;
   quietThreshold: number;
   securityPerPlayers: number;
@@ -848,6 +850,14 @@ const ANTAG_ROWS: ProfileRowSpec[] = [
           нет
         </Box>
       ),
+  },
+  {
+    label: 'Страховка ранней потери роли',
+    render: (profile) => `${profile.antagLossRefundWindow} мин`,
+  },
+  {
+    label: 'Активность до полной отработки цены',
+    render: (profile) => profile.antagLossActivityThreshold,
   },
 ];
 

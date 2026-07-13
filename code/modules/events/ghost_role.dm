@@ -42,7 +42,7 @@
 			signing up.")
 		refund_failed_spawn("гост-опрос завершился без достаточного числа желающих")
 	else if(status == SUCCESSFUL_SPAWN)
-		if(spawned_mobs.len && SSdirector.track_ghost_role_spawn(control, spawned_mobs))
+		if(spawned_mobs.len && SSdirector.track_ghost_role_spawn(control, spawned_mobs, triggered_randomly))
 			message_admins("[role_name] spawned successfully.")
 			for(var/mob/M in spawned_mobs)
 				announce_to_ghosts(M)

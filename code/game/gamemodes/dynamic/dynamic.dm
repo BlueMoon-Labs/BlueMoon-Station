@@ -459,6 +459,7 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 	var/added_threat = ruleset.scale_up(roundstart_pop_ready, scaled_times)
 
 	if(ruleset.pre_execute(roundstart_pop_ready))
+		ruleset.director_pending_cost += ruleset.cost + added_threat
 		threat_log += "[worldtime2text()]: Roundstart [ruleset.name] spent [ruleset.cost + added_threat]. [ruleset.scaling_cost ? "Scaled up [ruleset.scaled_times]/[scaled_times] times." : ""]"
 		if(ruleset.flags & ONLY_RULESET)
 			only_ruleset_executed = TRUE
@@ -476,9 +477,11 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 	if(rule.execute())
 		if(rule.persistent)
 			current_rules += rule
+		SSdirector.confirm_action_success(rule)
 		new_snapshot(rule)
 		return TRUE
 	rule.clean_up() // Refund threat, delete teams and so on.
+	rule.director_pending_cost = 0
 	executed_rules -= rule
 	stack_trace("The starting rule \"[rule.name]\" failed to execute.")
 	return FALSE
