@@ -46,7 +46,7 @@
 								target = partner_human, target_message = span_userdanger("[user] начинает рвать вашу одежду[item_in_hand ? " при помощи [item_in_hand.name]" : null]."))
 	
 	var/obj/item/clothing/target_uniform = partner_human.w_uniform
-	if(!do_after(user, 6 SECONDS, partner_human) || QDELETED(target_uniform) || partner_human.w_uniform != target_uniform)
+	if(!do_after(user, 4 SECONDS, partner_human) || QDELETED(target_uniform) || partner_human.w_uniform != target_uniform)
 		return
 
 	target_uniform.obj_destruction(MELEE)
