@@ -37,6 +37,7 @@
 #define INSANE_CLOWN	4
 #define HOWLING_GHOST	5
 #define EVILL_HUNTER    6
+#define SPOOKY_SKELETON_DELETE_DELAY (9 SECONDS)
 
 //Spookoween variables
 /obj/structure/closet
@@ -101,7 +102,7 @@
 		trapped = 0
 		var/mob/doomed_mob = trapped_mob
 		set_trapped_mob(null)
-		QDEL_IN(doomed_mob, 90)
+		QDEL_IN(doomed_mob, SPOOKY_SKELETON_DELETE_DELAY)
 
 	else if(trapped == HOWLING_GHOST)
 		visible_message("<span class='userdanger'><font size='5'>[pick("OooOOooooOOOoOoOOooooOOOOO", "БуУууУуУУУУ", "БУУ!", "УуУУуУ	уУ")]</font></span>")
