@@ -5,10 +5,13 @@
 	min_players = 10
 	category = EVENT_CATEGORY_HEALTH
 	severity = DIRECTOR_SEVERITY_MINOR
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM)
 
 /datum/round_event_control/brain_trauma/can_fire(datum/director_signals/signals)
-	if(!..()) return FALSE
-	return director_has_living_role(list("Medical Doctor","Chief Medical Officer","Paramedic","AI","Chemist","Virologist","Captain","Head of Personnel","Roboticist"))
+	. = ..()
+	if(!.)
+		return
+	return director_has_living_role(list("Medical Doctor","Chief Medical Officer","Paramedic","Chemist","Virologist"))
 
 /datum/round_event/brain_trauma
 	fakeable = FALSE

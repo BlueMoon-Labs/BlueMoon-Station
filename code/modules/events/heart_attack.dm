@@ -8,7 +8,9 @@
 	severity = DIRECTOR_SEVERITY_MINOR
 
 /datum/round_event_control/heart_attack/can_fire(datum/director_signals/signals)
-	if(!..()) return FALSE
+	. = ..()
+	if(!.)
+		return
 	return director_has_living_role(list("Medical Doctor","Chief Medical Officer","Paramedic","Chemist"))
 
 /datum/round_event/heart_attack/start()
