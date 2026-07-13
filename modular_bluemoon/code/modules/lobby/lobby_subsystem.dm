@@ -15,6 +15,8 @@ SUBSYSTEM_DEF(title_bm)
 	var/cached_notice_js = ""        // JS-вызов для текущего объявления — кешируется в set_notice
 	var/current_sfw_image
 	var/current_nsfw_image
+	/// Local source path -> content-addressed HTTP URL, generated during deploy.
+	var/list/external_media_urls = list()
 
 /// Перечитывает BM_LOBBY_HTML_FILE с диска и пересылает свежий HTML всем игрокам в лобби.
 /// Возвращает количество обновлённых клиентов.
@@ -48,10 +50,13 @@ SUBSYSTEM_DEF(title_bm)
 		lobby_html = ""
 		log_game("[name]: файл лобби [BM_LOBBY_HTML_FILE] не найден — используется запасная преамбула из кода.")
 
+	_load_external_media_manifest()
 	_load_title_images()
 
 	if(fexists(loading_image))
-		loading_image = fcopy_rsc(loading_image)
+		// Keep the path lazy. HTTP delivery needs the original path as a manifest
+		// key; local fallback calls fcopy_rsc only if a client actually needs it.
+		loading_image = bm_normalize_lobby_media_path(loading_image)
 	else
 		log_game("[name]: Файл загрузочного GIF '[loading_image]' не найден. Фон лобби будет пустым до подбора картинки.")
 		loading_image = null
@@ -74,6 +79,7 @@ SUBSYSTEM_DEF(title_bm)
 	cached_static_html = ""
 	cached_js_url = ""
 	cached_notice_js = ""
+	external_media_urls = null
 	return ..();
 
 /datum/controller/subsystem/title_bm/Recover()
@@ -91,6 +97,51 @@ SUBSYSTEM_DEF(title_bm)
 	cached_notice_js        = SStitle_bm.cached_notice_js
 	current_sfw_image   = SStitle_bm.current_sfw_image
 	current_nsfw_image  = SStitle_bm.current_nsfw_image
+	external_media_urls = SStitle_bm.external_media_urls
+
+/proc/bm_normalize_lobby_media_path(media)
+	if(!istext(media))
+		return null
+	var/path = replacetext(media, "\\", "/")
+	while(copytext(path, 1, 3) == "./")
+		path = copytext(path, 3)
+	return path
+
+/datum/controller/subsystem/title_bm/proc/_load_external_media_manifest()
+	external_media_urls = list()
+	if(!fexists(BM_LOBBY_MEDIA_MANIFEST))
+		return
+	var/list/manifest
+	try
+		manifest = json_decode(file2text(BM_LOBBY_MEDIA_MANIFEST))
+	catch(var/exception/error)
+		log_game("[name]: не удалось прочитать [BM_LOBBY_MEDIA_MANIFEST]: [error]")
+		return
+	var/list/assets = manifest?["assets"]
+	if(!islist(assets))
+		log_game("[name]: [BM_LOBBY_MEDIA_MANIFEST] не содержит список assets.")
+		return
+	for(var/source_path in assets)
+		var/normalized_path = bm_normalize_lobby_media_path(source_path)
+		var/url = assets[source_path]
+		if(!normalized_path || !istext(url))
+			continue
+		if(findtext(url, "http://") != 1 && findtext(url, "https://") != 1)
+			continue
+		external_media_urls[normalized_path] = url
+
+/datum/controller/subsystem/title_bm/proc/get_external_media_url(media)
+	var/path = bm_normalize_lobby_media_path(media)
+	if(!path)
+		return null
+	return external_media_urls?[path]
+
+/datum/controller/subsystem/title_bm/proc/get_local_media_resource(media)
+	if(isnull(media))
+		return null
+	if(istext(media) && !fexists(media))
+		return null
+	return fcopy_rsc(media)
 
 /datum/controller/subsystem/title_bm/proc/_build_static_html()
 	var/list/parts = list()
@@ -121,7 +172,8 @@ SUBSYSTEM_DEF(title_bm)
 		if(!is_image)
 			continue
 		var/full_path = "[dir_path][filename]"
-		target_list += fcopy_rsc(full_path)
+		// Store paths instead of eagerly copying the entire pool into dyn.rsc.
+		target_list += bm_normalize_lobby_media_path(full_path)
 
 /datum/controller/subsystem/title_bm/proc/_load_title_images()
 	_load_images_from_dir(BM_LOBBY_IMAGES_SFW, sfw_images)

@@ -9,6 +9,7 @@
 
 # Per-host external RSC publishing settings.
 /config/rsc_deploy.env
+/config/lobby_media.json
 
 # Generated in a TGS deployment copy between PreCompile and PostCompile.
 /.rsc-deploy.json

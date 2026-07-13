@@ -13,6 +13,10 @@
 
 #define BM_LOBBY_LOADING_GIF "config/title_screens/cyberpunk_cityscape.gif"
 
+/// Generated atomically by tools/rsc_deploy after publishing content-addressed
+/// copies of lobby backgrounds and music to nginx.
+#define BM_LOBBY_MEDIA_MANIFEST "config/lobby_media.json"
+
 #define BM_DEFAULT_LOBBY_HTML_PREAMBLE {"<!DOCTYPE html>
 <html lang='ru'>
 <head>

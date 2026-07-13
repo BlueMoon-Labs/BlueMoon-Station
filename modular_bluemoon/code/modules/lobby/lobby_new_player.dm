@@ -38,17 +38,26 @@
 		lobby_asset.send(src)
 
 	if(!SSticker || SSticker.current_state <= GAME_STATE_STARTUP)
-		var/loading_rsc = SStitle_bm?.loading_image
-		if(loading_rsc)
-			src << browse(loading_rsc, "file=bm_stub_bg.gif;display=0")
-		src << browse(_bm_build_loading_stub(), "window=bm_lobby_browser")
+		var/loading_media = SStitle_bm?.loading_image
+		var/loading_url = SStitle_bm?.get_external_media_url(loading_media)
+		if(loading_url)
+			src << browse(_bm_build_loading_stub(loading_url), "window=bm_lobby_browser")
+		else
+			var/loading_rsc = SStitle_bm?.get_local_media_resource(loading_media)
+			if(loading_rsc)
+				src << browse(loading_rsc, "file=bm_stub_bg.gif;display=0")
+			src << browse(_bm_build_loading_stub(), "window=bm_lobby_browser")
 		winset(client, "bm_lobby_browser", "is-visible=true")
 		return
 
 	var/img_to_send = _bm_get_current_image()
-	if(img_to_send)
-		src << browse(img_to_send, "file=loading_screen.gif;display=0")
-	src << browse(_bm_build_html(), "window=bm_lobby_browser")
+	var/initial_background = SStitle_bm?.get_external_media_url(img_to_send)
+	if(!initial_background && img_to_send)
+		var/image_rsc = SStitle_bm?.get_local_media_resource(img_to_send)
+		if(image_rsc)
+			src << browse(image_rsc, "file=loading_screen.gif;display=0")
+			initial_background = "loading_screen.gif"
+	src << browse(_bm_build_html(initial_background), "window=bm_lobby_browser")
 	winset(client, "bm_lobby_browser", "is-visible=true")
 
 /mob/dead/new_player/proc/bm_update_lobby_html()
@@ -86,13 +95,20 @@
 	var/img_to_send = SStitle_bm?.get_image_for_player(show_nsfw, show_admin_bg)
 	if(!img_to_send)
 		return
+	var/external_url = SStitle_bm.get_external_media_url(img_to_send)
+	if(external_url)
+		client << output(external_url, "bm_lobby_browser:bm_set_background")
+		return
+	var/image_rsc = SStitle_bm.get_local_media_resource(img_to_send)
+	if(!image_rsc)
+		return
 	bm_bg_slot = bm_bg_slot ? 0 : 1
 	var/filename = "bm_bg_[bm_bg_slot].gif"
-	src << browse(img_to_send, "file=[filename];display=0")
+	src << browse(image_rsc, "file=[filename];display=0")
 	client << output(filename, "bm_lobby_browser:bm_set_background")
 
-/mob/dead/new_player/proc/_bm_build_loading_stub()
-	// Фон — bm_stub_bg.gif, отправленный через browse() до этого вызова.
+/mob/dead/new_player/proc/_bm_build_loading_stub(background_url = "bm_stub_bg.gif")
+	background_url = html_encode(background_url || "bm_stub_bg.gif")
 	return {"<!DOCTYPE html><html><head><meta charset='UTF-8'>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -112,7 +128,7 @@ body,html{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Co
 @keyframes bm-ray{from{transform:translateX(-100%)}to{transform:translateX(350%)}}
 </style></head>
 <body>
-<img class='bg' src='bm_stub_bg.gif' alt=''>
+<img class='bg' src='[background_url]' alt=''>
 <div class='overlay'></div>
 <div class='wrap'>
   <div class='top'>
@@ -129,7 +145,7 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 </script>
 </body></html>"}
 
-/mob/dead/new_player/proc/_bm_build_html()
+/mob/dead/new_player/proc/_bm_build_html(initial_background_url = "loading_screen.gif")
 	var/R = REF(src)
 	var/list/parts = list()
 
@@ -137,7 +153,10 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 
 	// статические части (bg, overlay, toasts, toggle-btn) из кеша подсистемы
 	if(SStitle_bm?.cached_static_html != "")
-		parts += SStitle_bm.cached_static_html
+		var/static_html = SStitle_bm.cached_static_html
+		if(initial_background_url && initial_background_url != "loading_screen.gif")
+			static_html = replacetext(static_html, "src=\"loading_screen.gif\"", "src=\"[html_encode(initial_background_url)]\"")
+		parts += static_html
 	else
 		parts += {"<img id="bm-bg" class="bg" src="loading_screen.gif" alt=\"\">"}
 		parts += {"<div id=\"bm-overlay\"></div>"}

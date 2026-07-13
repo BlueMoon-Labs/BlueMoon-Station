@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -18,6 +19,10 @@ MANIFEST_NAME = ".rsc-deploy.json"
 BEGIN_MARKER = "// BEGIN GENERATED RSC DEPLOYMENT URL"
 END_MARKER = "// END GENERATED RSC DEPLOYMENT URL"
 SAFE_NAME = re.compile(r"^[A-Za-z0-9._-]+$")
+ASSET_CONFIG_BEGIN = "# BEGIN MANAGED EXTERNAL BROWSER ASSETS"
+ASSET_CONFIG_END = "# END MANAGED EXTERNAL BROWSER ASSETS"
+LOBBY_IMAGE_EXTENSIONS = {".gif", ".jpeg", ".jpg", ".png", ".webp"}
+LOBBY_AUDIO_EXTENSIONS = {".flac", ".mp3", ".ogg", ".wav"}
 
 
 class DeployError(RuntimeError):
@@ -44,6 +49,37 @@ def atomic_write(path, content):
 		except OSError:
 			pass
 		raise
+
+
+def atomic_copy(source, destination):
+	source = Path(source)
+	destination = Path(destination)
+	destination.parent.mkdir(parents=True, exist_ok=True)
+	if destination.is_file() and destination.stat().st_size == source.stat().st_size:
+		return
+	fd, temporary_name = tempfile.mkstemp(prefix=".{}-".format(destination.name), dir=str(destination.parent))
+	try:
+		with source.open("rb") as input_file, os.fdopen(fd, "wb") as output_file:
+			shutil.copyfileobj(input_file, output_file, length=1024 * 1024)
+			output_file.flush()
+			os.fsync(output_file.fileno())
+		os.chmod(temporary_name, 0o644)
+		os.replace(temporary_name, str(destination))
+	except Exception:
+		try:
+			os.unlink(temporary_name)
+		except OSError:
+			pass
+		raise
+
+
+def parse_bool(value, setting_name):
+	normalized = str(value).strip().lower()
+	if normalized in ("1", "true", "yes", "on"):
+		return True
+	if normalized in ("0", "false", "no", "off"):
+		return False
+	raise DeployError("{} must be 0/1, true/false, yes/no or on/off".format(setting_name))
 
 
 def load_settings(game_dir, configured_path=None):
@@ -82,6 +118,18 @@ def load_settings(game_dir, configured_path=None):
 	if not SAFE_NAME.fullmatch(prefix):
 		raise DeployError("RSC_ARCHIVE_PREFIX may only contain letters, digits, dot, dash and underscore")
 	settings["RSC_ARCHIVE_PREFIX"] = prefix
+	settings["_CONFIG_PATH"] = config_path
+
+	for setting_name, default in (
+		("RSC_LOBBY_MEDIA_SUBDIR", "lobby-media"),
+		("RSC_ASSET_WEBROOT_SUBDIR", "browser-assets"),
+	):
+		value = settings.get(setting_name, default).strip("/\\")
+		if not SAFE_NAME.fullmatch(value):
+			raise DeployError("{} must be one safe directory name".format(setting_name))
+		settings[setting_name] = value
+	settings["RSC_PUBLISH_LOBBY_MEDIA"] = parse_bool(settings.get("RSC_PUBLISH_LOBBY_MEDIA", "1"), "RSC_PUBLISH_LOBBY_MEDIA")
+	settings["RSC_ENABLE_ASSET_WEBROOT"] = parse_bool(settings.get("RSC_ENABLE_ASSET_WEBROOT", "1"), "RSC_ENABLE_ASSET_WEBROOT")
 
 	try:
 		settings["RSC_KEEP_VERSIONS"] = max(2, int(settings.get("RSC_KEEP_VERSIONS", "5")))
@@ -161,6 +209,102 @@ def sha256_file(path):
 	return digest.hexdigest()
 
 
+def collect_lobby_media(game_dir, config_root):
+	media = {}
+
+	def add_tree(relative_root, extensions):
+		root = config_root / relative_root
+		if not root.is_dir():
+			return
+		for source in sorted(root.rglob("*")):
+			if source.is_file() and source.suffix.lower() in extensions:
+				key = (Path("config") / source.relative_to(config_root)).as_posix()
+				media[key] = source
+
+	add_tree(Path("title_screens"), LOBBY_IMAGE_EXTENSIONS)
+	add_tree(Path("title_music") / "sounds", LOBBY_AUDIO_EXTENSIONS)
+
+	round_music_list = game_dir / "strings" / "round_start_sounds.txt"
+	if round_music_list.is_file():
+		for raw_line in round_music_list.read_text(encoding="utf-8-sig").splitlines():
+			relative_path = raw_line.strip().replace("\\", "/")
+			if not relative_path or relative_path.startswith("#"):
+				continue
+			source = game_dir / relative_path
+			if source.is_file() and source.suffix.lower() in LOBBY_AUDIO_EXTENSIONS:
+				media[relative_path] = source
+	return media
+
+
+def publish_lobby_media(game_dir, settings):
+	if not settings["RSC_PUBLISH_LOBBY_MEDIA"]:
+		return 0, 0
+
+	publish_dir = Path(settings["RSC_PUBLISH_DIR"]).expanduser()
+	config_root = settings["_CONFIG_PATH"].parent
+	media_subdir = settings["RSC_LOBBY_MEDIA_SUBDIR"]
+	media_root = publish_dir / media_subdir
+	public_root = "{}/{}".format(settings["RSC_PUBLIC_BASE_URL"], media_subdir)
+	mappings = {}
+	total_size = 0
+	published_hashes = set()
+	for source_key, source in collect_lobby_media(game_dir, config_root).items():
+		file_hash = sha256_file(source)
+		extension = source.suffix.lower()
+		relative_target = Path(file_hash[:2]) / "asset.{}{}".format(file_hash, extension)
+		atomic_copy(source, media_root / relative_target)
+		mappings[source_key] = "{}/{}".format(public_root, relative_target.as_posix())
+		if file_hash not in published_hashes:
+			total_size += source.stat().st_size
+			published_hashes.add(file_hash)
+
+	payload = {
+		"assets": mappings,
+		"generated_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
+		"version": 1,
+	}
+	manifest_path = config_root / "lobby_media.json"
+	atomic_write(manifest_path, json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
+	os.chmod(manifest_path, 0o644)
+	log("published {} lobby media mappings ({} unique bytes)".format(len(mappings), total_size))
+	return len(mappings), total_size
+
+
+def remove_managed_asset_config(text):
+	start = text.find(ASSET_CONFIG_BEGIN)
+	if start >= 0:
+		end = text.find(ASSET_CONFIG_END, start)
+		if end < 0:
+			raise DeployError("managed browser asset block is incomplete in resources.txt")
+		end += len(ASSET_CONFIG_END)
+		text = text[:start].rstrip() + "\n" + text[end:].lstrip()
+	active_setting = re.compile(r"^\s*(ASSET_TRANSPORT|ASSET_CDN_WEBROOT|ASSET_CDN_URL)\s+", re.IGNORECASE)
+	return "\n".join(line for line in text.splitlines() if not active_setting.match(line)).rstrip() + "\n"
+
+
+def configure_asset_webroot(settings):
+	if not settings["RSC_ENABLE_ASSET_WEBROOT"]:
+		return
+
+	publish_dir = Path(settings["RSC_PUBLISH_DIR"]).expanduser()
+	asset_subdir = settings["RSC_ASSET_WEBROOT_SUBDIR"]
+	asset_webroot = publish_dir / asset_subdir
+	asset_webroot.mkdir(parents=True, exist_ok=True)
+	resources_path = settings["_CONFIG_PATH"].parent / "entries" / "resources.txt"
+	if not resources_path.is_file():
+		raise DeployError("{} is missing; cannot configure webroot asset transport".format(resources_path))
+	text = remove_managed_asset_config(resources_path.read_text(encoding="utf-8-sig"))
+	webroot_value = asset_webroot.as_posix().rstrip("/") + "/"
+	url_value = "{}/{}/".format(settings["RSC_PUBLIC_BASE_URL"], asset_subdir)
+	text += "\n{}\n".format(ASSET_CONFIG_BEGIN)
+	text += "ASSET_TRANSPORT webroot\n"
+	text += "ASSET_CDN_WEBROOT {}\n".format(webroot_value)
+	text += "ASSET_CDN_URL {}\n".format(url_value)
+	text += "{}\n".format(ASSET_CONFIG_END)
+	atomic_write(resources_path, text)
+	log("configured browser assets at {}".format(url_value))
+
+
 def publish(args):
 	game_dir = Path(args.game_dir).resolve()
 	settings = load_settings(game_dir, args.config)
@@ -220,6 +364,10 @@ def publish(args):
 			"zip_size": final_path.stat().st_size,
 		}
 	)
+	media_count, media_size = publish_lobby_media(game_dir, settings)
+	manifest["lobby_media_count"] = media_count
+	manifest["lobby_media_size"] = media_size
+	configure_asset_webroot(settings)
 	latest_manifest = publish_dir / "{}-latest.json".format(settings["RSC_ARCHIVE_PREFIX"])
 	atomic_write(latest_manifest, json.dumps(manifest, indent=2, sort_keys=True) + "\n")
 	os.chmod(latest_manifest, 0o644)

@@ -171,6 +171,7 @@
 #include "atom_hud_perf.dm"
 
 #include "auto_cryo.dm"
+#include "bluemoon_lobby_media.dm"
 #include "bad_defines_defined.dm"
 #include "bugfix_coverage.dm"
 #include "camera_photo_probe.dm"

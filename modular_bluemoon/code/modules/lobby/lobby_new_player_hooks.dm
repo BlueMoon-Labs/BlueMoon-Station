@@ -46,8 +46,15 @@
 		track_name = replacetext(replacetext(track_name, "_", " "), "-", " ")
 		// Сохраняем имя трека для повторных вызовов
 		player.bm_lobby_track_name = track_name
-	src << browse(fcopy_rsc(music_path), "file=bm_lobby_music.ogg;display=0")
-	src << output("bm_lobby_music.ogg", "bm_lobby_browser:bm_load_audio")
+	var/external_url = SStitle_bm?.get_external_media_url(music_path)
+	if(external_url)
+		src << output(external_url, "bm_lobby_browser:bm_load_audio")
+	else
+		var/music_rsc = SStitle_bm?.get_local_media_resource(music_path)
+		if(!music_rsc)
+			return
+		src << browse(music_rsc, "file=bm_lobby_music.ogg;display=0")
+		src << output("bm_lobby_music.ogg", "bm_lobby_browser:bm_load_audio")
 	if(track_name)
 		src << output(track_name, "bm_lobby_browser:bm_set_audio_track")
 
