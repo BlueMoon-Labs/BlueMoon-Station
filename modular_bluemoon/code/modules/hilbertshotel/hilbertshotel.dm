@@ -512,6 +512,7 @@
 	name = "hotel wall"
 	desc = "A wall designed to protect the security of the hotel's guests."
 	icon_state = "hotelwall"
+	smooth = SMOOTH_TRUE
 	canSmoothWith = list(/turf/closed/indestructible/hotelwall)
 	explosion_block = INFINITY
 
