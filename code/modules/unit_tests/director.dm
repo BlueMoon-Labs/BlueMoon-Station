@@ -32,6 +32,12 @@
 /datum/director_action/test_stub/execute_action()
 	return TRUE
 
+/// Фикстура синхронного отказа: директор не должен записывать такой выбор как успешный запуск.
+/datum/director_action/test_stub/fails
+
+/datum/director_action/test_stub/fails/execute_action()
+	return FALSE
+
 /datum/unit_test/director_action_gates
 
 /datum/unit_test/director_action_gates/Run()
@@ -1646,6 +1652,7 @@
 /datum/unit_test/director_ghost_spawn_refund/Run()
 	// Мутирует живой SSdirector - capture/restore c try/catch (см. комментарий в director_beat_logic).
 	var/list/saved = SSdirector.capture_simulation_state()
+	var/list/saved_beat_log = SSdirector.beat_log.Copy()
 	var/datum/round_event/ghost_role/event
 	try
 		var/datum/director_profile/profile = new /datum/director_profile/medium
@@ -1658,6 +1665,7 @@
 		// Ручная симуляция боевого запуска: учёт попытки + вклад в ledger (кошелёк уже списан в 0).
 		var/occurrences_before = control.occurrences
 		control.occurrences++
+		SSdirector.fired_counts[control.severity] = 1
 		SSdirector.intensity_ledger += list(list(control.action_name(), control.intensity, 0, control.severity))
 		event = new(FALSE)
 		SSdirector.running -= event // тестовый датум не должен тикаться подсистемой
@@ -1665,21 +1673,117 @@
 		event.triggered_randomly = TRUE
 		event.refund_failed_spawn()
 		TEST_ASSERT_EQUAL(control.occurrences, occurrences_before, "Провал спавна должен возвращать попытку")
+		TEST_ASSERT_EQUAL(SSdirector.fired_counts[control.severity], 0, "Провал спавна не должен считаться успешным запуском ступени")
 		TEST_ASSERT_EQUAL(length(SSdirector.intensity_ledger), 0, "Провал спавна должен снимать вклад сразу, без linger")
 		TEST_ASSERT_EQUAL(SSdirector.budgets[control.severity], control.cost, "Провал спавна должен возвращать кошелёк ступени")
 
 		// Форс админа шёл мимо кошельков - и рефанд не должен дарить бюджет.
 		SSdirector.reset_budgets(0)
 		control.occurrences++
+		SSdirector.fired_counts[control.severity] = 1
 		SSdirector.intensity_ledger += list(list(control.action_name(), control.intensity, 0, control.severity))
 		event.triggered_randomly = FALSE
 		event.refund_failed_spawn()
 		TEST_ASSERT_EQUAL(control.occurrences, occurrences_before, "Провал форс-спавна тоже должен возвращать попытку")
+		TEST_ASSERT_EQUAL(SSdirector.fired_counts[control.severity], 0, "Провал форс-спавна тоже должен откатить счётчик ступени")
 		TEST_ASSERT_EQUAL(SSdirector.budgets[control.severity], 0, "Провал форс-спавна не должен дарить кошельку бюджет")
 	catch(var/exception/e)
 		if(event)
 			SSdirector.running -= event
+		SSdirector.beat_log = saved_beat_log
 		SSdirector.restore_simulation_state(saved)
 		throw e
 	SSdirector.running -= event
+	SSdirector.beat_log = saved_beat_log
+	SSdirector.restore_simulation_state(saved)
+
+/// Регрессия из прод-дампа: Morph четыре раза попадал в director.json как fired, хотя ready()
+/// не находил подходящих призраков и опрос даже не открывался. Preflight обязан убрать такой
+/// рулсет и из боевого пула, и из целей копилки, оставив точную причину для панели.
+/datum/unit_test/director_ghost_ruleset_preflight
+
+/datum/unit_test/director_ghost_ruleset_preflight/Run()
+	var/list/saved = SSdirector.capture_simulation_state()
+	var/datum/game_mode/dynamic/mode = SSticker.mode
+	var/list/saved_dead = mode.current_players[CURRENT_DEAD_PLAYERS]
+	var/list/saved_observers = mode.current_players[CURRENT_OBSERVERS]
+	try
+		var/datum/director_profile/profile = new /datum/director_profile/medium
+		// Изолируем тест от реальных roundstart-антаг-вкладов unit-test раунда.
+		profile.antag_intensity_per_crew = 1000
+		SSdirector.profile = profile
+		SSdirector.reset_budgets(100)
+		SSdirector.intensity_ledger = list()
+		SSdirector.fired_counts = list()
+		SSdirector.pool_saving = list()
+		SSdirector.last_fired_at = list(
+			DIRECTOR_SEVERITY_GHOST = world.time - profile.ghost_light_spacing - 1,
+		)
+		mode.current_players[CURRENT_DEAD_PLAYERS] = list()
+		mode.current_players[CURRENT_OBSERVERS] = list()
+
+		var/datum/dynamic_ruleset/midround/from_ghosts/morph/rule = new
+		rule.mode = mode
+		rule.required_round_type = null
+		rule.requirements = list(0,0,0,0,0,0,0,0,0,0)
+		rule.enemy_roles = list()
+		rule.required_applicants = 1
+		rule.required_candidates = 1
+		SSdirector.actions = list(rule)
+
+		var/datum/director_signals/signals = new
+		signals.effective_crew = 40
+		signals.staffing = list(DIRECTOR_DEPT_SECURITY = 4, DIRECTOR_DEPT_ENGINEERING = 1,
+			DIRECTOR_DEPT_MEDICAL = 1, DIRECTOR_DEPT_SCIENCE = 0, DIRECTOR_DEPT_SUPPLY = 0, DIRECTOR_DEPT_COMMAND = 1)
+		var/list/reject_stats = list()
+		var/list/verdicts = list()
+		var/list/candidates = SSdirector.filter_candidates(signals, FALSE, reject_stats, verdicts)
+		TEST_ASSERT(!(rule in candidates), "Гост-рулсет без подходящих призраков не должен доходить до выбора")
+		TEST_ASSERT_EQUAL(reject_stats[DIRECTOR_SEVERITY_GHOST][DIRECTOR_REJECT_READINESS], 1, "Отказ должен иметь отдельную причину readiness")
+		TEST_ASSERT_EQUAL(verdicts[1]["verdict"], DIRECTOR_REJECT_READINESS, "Панель должна получить readiness, а не ложный ok")
+		TEST_ASSERT(findtext(verdicts[1]["detail"], "подходящих гостов 0 из 1"), "В панели должно быть точное число подходящих гостов")
+		TEST_ASSERT_NULL(SSdirector.roll_pool_target(DIRECTOR_SEVERITY_GHOST, signals), "Неисполнимый Morph не должен становиться целью копилки")
+	catch(var/exception/e)
+		mode.current_players[CURRENT_DEAD_PLAYERS] = saved_dead
+		mode.current_players[CURRENT_OBSERVERS] = saved_observers
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	mode.current_players[CURRENT_DEAD_PLAYERS] = saved_dead
+	mode.current_players[CURRENT_OBSERVERS] = saved_observers
+	SSdirector.restore_simulation_state(saved)
+
+/// Синхронный execute_action(FALSE) раньше всё равно попадал в историю как "fired".
+/datum/unit_test/director_failed_action_is_not_fired
+
+/datum/unit_test/director_failed_action_is_not_fired/Run()
+	var/list/saved = SSdirector.capture_simulation_state()
+	var/list/saved_beat_log = SSdirector.beat_log.Copy()
+	try
+		var/datum/director_profile/profile = new /datum/director_profile/medium
+		SSdirector.profile = profile
+		SSdirector.reset_budgets(0)
+		SSdirector.budgets[DIRECTOR_SEVERITY_MINOR] = 10
+		SSdirector.intensity_ledger = list()
+		SSdirector.fired_counts = list()
+		SSdirector.last_fired_at = list(DIRECTOR_SEVERITY_MINOR = world.time - profile.severity_spacing[DIRECTOR_SEVERITY_MINOR] - 1)
+		SSdirector.last_any_fired_at = world.time - profile.global_spacing - 1
+		var/datum/director_action/test_stub/fails/action = new
+		action.cost = 2
+		SSdirector.actions = list(action)
+
+		var/datum/director_signals/signals = new
+		signals.effective_crew = 10
+		signals.staffing = list(DIRECTOR_DEPT_SECURITY = 1, DIRECTOR_DEPT_ENGINEERING = 1,
+			DIRECTOR_DEPT_MEDICAL = 1, DIRECTOR_DEPT_SCIENCE = 0, DIRECTOR_DEPT_SUPPLY = 0, DIRECTOR_DEPT_COMMAND = 0)
+		SSdirector.run_beat(signals, forced = TRUE)
+		var/list/last_entry = SSdirector.beat_log[length(SSdirector.beat_log)]
+		TEST_ASSERT_EQUAL(last_entry["result"], DIRECTOR_BEAT_FAILED, "execute_action(FALSE) должен логироваться как failed, не fired")
+		TEST_ASSERT(findtext(last_entry["detail"], "бюджет возвращён"), "История должна объяснять синхронный провал")
+		TEST_ASSERT_EQUAL(SSdirector.budgets[DIRECTOR_SEVERITY_MINOR], 10, "Синхронный провал должен полностью вернуть кошелёк")
+		TEST_ASSERT_EQUAL(action.occurrences, 0, "Синхронный провал не должен съедать occurrence")
+	catch(var/exception/e)
+		SSdirector.beat_log = saved_beat_log
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	SSdirector.beat_log = saved_beat_log
 	SSdirector.restore_simulation_state(saved)

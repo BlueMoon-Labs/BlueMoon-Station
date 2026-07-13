@@ -525,6 +525,7 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 /// Бюджет уже списан в SSdirector.spend_and_execute; здесь - собственно запуск и бухгалтерия.
 /datum/game_mode/dynamic/proc/execute_scheduled_ruleset(datum/dynamic_ruleset/rule)
 	threat_log += "[worldtime2text()]: [rule.ruletype] [rule.name] spent [rule.cost]"
+	rule.execution_failure_reason = null
 	rule.pre_execute(current_players[CURRENT_LIVING_PLAYERS].len)
 	if (rule.execute())
 		log_game("DYNAMIC: Injected a [rule.ruletype] ruleset [rule.name].")
@@ -541,9 +542,17 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 		if (rule.persistent)
 			current_rules += rule
 		new_snapshot(rule)
+		SSdirector.director_log_beat(SSdirector.collect_signals(), rule, DIRECTOR_BEAT_EXECUTED,
+			detail = "исполнение подтверждено; назначено ролей: [length(rule.assigned)]")
 		return TRUE
 	rule.clean_up()
-	stack_trace("The [rule.ruletype] rule \"[rule.name]\" failed to execute.")
+	SSdirector.note_failed_action(rule)
+	var/failure_detail = rule.execution_failure_reason || "execute() вернул FALSE; бюджет возвращён"
+	SSdirector.director_log_beat(SSdirector.collect_signals(), rule, DIRECTOR_BEAT_FAILED, detail = failure_detail)
+	if(rule.execution_failure_reason)
+		log_game("DYNAMIC: [rule.ruletype] ruleset [rule.name] failed: [failure_detail]")
+	else
+		stack_trace("The [rule.ruletype] rule \"[rule.name]\" failed to execute.")
 	return FALSE
 
 /datum/game_mode/dynamic/process()

@@ -264,7 +264,7 @@ SUBSYSTEM_DEF(director)
 	quiet_eval = TRUE
 	for(var/sev in list(DIRECTOR_SEVERITY_ANTAG, DIRECTOR_SEVERITY_GHOST))
 		var/datum/director_action/target = pool_saving[sev]
-		if(!QDELETED(target) && target.can_fire(signals))
+		if(!QDELETED(target) && target.can_fire(signals) && action_preflight(target))
 			continue
 		roll_pool_target(sev, signals)
 	quiet_eval = FALSE
@@ -285,11 +285,22 @@ SUBSYSTEM_DEF(director)
 			continue
 		if(!action.can_fire(signals))
 			continue
+		if(!action_preflight(action))
+			continue
 		var/action_weight = action.get_weight(signals) * repeat_falloff(action) * profile.disruption_mult(action)
 		if(action_weight > 0)
 			options[action] = max(1, round(action_weight * 100))
 	pool_saving[sev] = length(options) ? pickweight(options) : null
 	return pool_saving[sev]
+
+/// Неинтерактивная проверка второй ступени готовности рулсета (кандидаты, контрроли,
+/// точки спауна). Обычные события и рулсеты без реализации preflight считаются готовыми.
+/datum/controller/subsystem/director/proc/action_preflight(datum/director_action/action)
+	if(!istype(action, /datum/dynamic_ruleset/midround))
+		return TRUE
+	var/datum/dynamic_ruleset/midround/rule = action
+	var/result = rule.director_preflight()
+	return isnull(result) ? TRUE : result
 
 /// Дефицит антаг-нагрузки (0..1) - скорость антаг-капли пропорциональна ему: пустой от антагов
 /// раунд (все выбыли или залегли) наполняет кошельки полным ходом, насыщенный не копит вовсе
@@ -582,8 +593,16 @@ SUBSYSTEM_DEF(director)
 	// dry_run обходит окно отмены целиком: announce_pick рассчитан на реальных админов и реальный
 	// таймер, симуляция идёт в один тик и должна исполнять решение сразу.
 	if(dry_run || picked.severity == DIRECTOR_SEVERITY_FLAVOR || picked.severity == DIRECTOR_SEVERITY_MINOR)
-		spend_and_execute(picked, guaranteed ? "guaranteed" : "beat")
-		director_log_beat(signals, picked, guaranteed ? DIRECTOR_BEAT_GUARANTEED : DIRECTOR_BEAT_FIRED, reject_stats)
+		var/executed = spend_and_execute(picked, guaranteed ? "guaranteed" : "beat")
+		var/result = guaranteed ? DIRECTOR_BEAT_GUARANTEED : DIRECTOR_BEAT_FIRED
+		if(!executed)
+			result = DIRECTOR_BEAT_FAILED
+		else if(!dry_run && picked.director_kind == DIRECTOR_KIND_RULESET)
+			result = DIRECTOR_BEAT_SCHEDULED
+		var/detail = selection_detail(picked, candidates)
+		if(!executed)
+			detail = "[execution_failure_detail(picked)]; [detail]"
+		director_log_beat(signals, picked, result, reject_stats, detail)
 	else
 		announce_pick(picked, candidates, guaranteed, signals)
 	return guaranteed ? DIRECTOR_BEAT_GUARANTEED : DIRECTOR_BEAT_FIRED
@@ -606,6 +625,11 @@ SUBSYSTEM_DEF(director)
 	var/antag_load_now = antag_target_now > 0 ? antag_load() : 0
 	var/antag_saturated = antag_target_now > 0 && antag_load_now >= antag_target_now
 	for(var/datum/director_action/action as anything in actions)
+		// Не показываем в строке раннего глобального отсева результат preflight с прошлой
+		// оценки: он мог устареть вместе со списком призраков/экипажа.
+		if(istype(action, /datum/dynamic_ruleset/midround))
+			var/datum/dynamic_ruleset/midround/preflight_rule = action
+			preflight_rule.director_preflight_detail = null
 		var/sev = action.severity
 		if(sev in blocked_severities)
 			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_BLOCKED)
@@ -660,6 +684,22 @@ SUBSYSTEM_DEF(director)
 			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_FAMILY,
 				detail = isnull(verdicts) ? null : minutes_left_text(family_left))
 			continue
+		// can_fire проверяет статический контракт, preflight рулсета - живых кандидатов,
+		// контрроли и карту. Оба стоят до бюджета/копилки: неисполнимая цель не должна
+		// замораживать антаг-кошелёк и маскироваться в панели как "не хватает очков".
+		if(!action.can_fire(signals))
+			var/list/diag = isnull(verdicts) ? null : diagnose_can_fire(action, signals)
+			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_CAN_FIRE,
+				verdict_reason = diag ? diag["reason"] : null, detail = diag ? diag["detail"] : null)
+			continue
+		if(!action_preflight(action))
+			var/preflight_detail
+			if(istype(action, /datum/dynamic_ruleset/midround))
+				var/datum/dynamic_ruleset/midround/rule = action
+				preflight_detail = rule.ready_failure_reason
+			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_READINESS,
+				detail = preflight_detail || "внутренняя проверка ready() не пройдена")
+			continue
 		// Гейт по кошельку своей ступени, а не по общему бюджету: MAJOR/ANTAG больше не голодают
 		// из-за трат дешёвых MINOR/MODERATE.
 		if(!guaranteed && budgets[action.severity] < action.cost)
@@ -674,11 +714,6 @@ SUBSYSTEM_DEF(director)
 				note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_SAVING,
 					detail = isnull(verdicts) ? null : "копим на [saving_for.action_name()]")
 				continue
-		if(!action.can_fire(signals))
-			var/list/diag = isnull(verdicts) ? null : diagnose_can_fire(action, signals)
-			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_CAN_FIRE,
-				verdict_reason = diag ? diag["reason"] : null, detail = diag ? diag["detail"] : null)
-			continue
 		// Навязчивость: мягкие профили глушат мешающие играть события. Нулевой множитель - это
 		// осознанное "в этом профиле такому не место", отдельная причина отсева для панели.
 		var/disruption_mult = profile.disruption_mult(action)
@@ -702,6 +737,7 @@ SUBSYSTEM_DEF(director)
 			if(!isnull(verdicts))
 				var/list/entry = pool_entry(action, DIRECTOR_VERDICT_OK, null)
 				entry["eff_weight"] = weighted
+				entry["effectiveWeight"] = round(action_weight, 0.01)
 				verdicts += list(entry)
 		else if(!isnull(verdicts))
 			// Нулевая доля ступени в профиле (share_correction = 0): в боевом бите отсев молчаливый,
@@ -724,7 +760,7 @@ SUBSYSTEM_DEF(director)
 
 /// Строка пула для панели: паспорт действия + вердикт текущей оценки.
 /datum/controller/subsystem/director/proc/pool_entry(datum/director_action/action, verdict, detail)
-	return list(
+	var/list/entry = list(
 		"name" = action.action_name(),
 		"kind" = action.director_kind,
 		"severity" = action.severity,
@@ -737,6 +773,29 @@ SUBSYSTEM_DEF(director)
 		"verdict" = verdict,
 		"detail" = detail,
 	)
+	if(istype(action, /datum/dynamic_ruleset/midround))
+		var/datum/dynamic_ruleset/midround/rule = action
+		entry["preflight"] = rule.director_preflight_detail
+	return entry
+
+/// Объяснение конкретного взвешенного выбора: помогает отличить "выбрал случайно из пяти"
+/// от единственного прошедшего кандидата. candidates хранит целочисленные эффективные веса.
+/datum/controller/subsystem/director/proc/selection_detail(datum/director_action/action, list/candidates)
+	var/total_weight = 0
+	for(var/datum/director_action/candidate as anything in candidates)
+		total_weight += candidates[candidate]
+	var/action_weight = candidates[action] || 0
+	var/chance = total_weight > 0 ? round(action_weight / total_weight * 100, 0.1) : 0
+	return "ролл: [chance]% (эффективный вес [round(action_weight / 100, 0.01)] из [round(total_weight / 100, 0.01)], кандидатов [length(candidates)])"
+
+/// Причина синхронного провала execute_action(). Для midround ready() уже оставил точную
+/// диагностику; для остального остаётся честный общий фолбэк.
+/datum/controller/subsystem/director/proc/execution_failure_detail(datum/director_action/action)
+	if(istype(action, /datum/dynamic_ruleset/midround))
+		var/datum/dynamic_ruleset/midround/rule = action
+		if(rule.ready_failure_reason)
+			return rule.ready_failure_reason
+	return "execute_action() вернул FALSE; бюджет возвращён"
 
 /// Расшифровка провала can_fire() по полям базового контракта: гейты проверяются в том же
 /// порядке, что и в /datum/director_action/can_fire(). Специфику подклассов (погода, цели,
@@ -873,6 +932,22 @@ SUBSYSTEM_DEF(director)
 	note_fired(action, from_latejoin = (source == "latejoin"))
 	return TRUE
 
+/// Откат учёта действия, которое было принято/запланировано, но не породило контент
+/// (например, гост-опрос без желающих). Пауза попытки сохраняется намеренно, чтобы не
+/// спамить призраков тем же опросом каждый бит; попытка, доли, intensity и бюджет возвращаются.
+/datum/controller/subsystem/director/proc/note_failed_action(datum/director_action/action, refund_budget = FALSE)
+	if(action.occurrences > 0)
+		action.occurrences--
+	// Латеджойн note_fired() намеренно не входит в доли битов, откатывать там нечего.
+	if(!istype(action, /datum/dynamic_ruleset/latejoin) && (fired_counts[action.severity] || 0) > 0)
+		fired_counts[action.severity]--
+	if(action.family && (family_fired_counts[action.family] || 0) > 0)
+		family_fired_counts[action.family]--
+	remove_intensity(action.action_name())
+	if(refund_budget)
+		refund_to_budget(action.severity, action.cost)
+	pool_cache = null
+
 /// Общий учёт запуска (и естественного, и форса админом). from_latejoin: инжекция из окна захода
 /// игрока - у неё собственный трек спейсинга (last_latejoin_at), и она не трогает паузы битов:
 /// латеджойн-трейтор невидим для игроков в момент выдачи, он не "событие" в темпе раунда,
@@ -984,8 +1059,12 @@ SUBSYSTEM_DEF(director)
 	if(!length(candidates))
 		return
 	var/datum/dynamic_ruleset/latejoin/picked = pickweight(candidates)
-	spend_and_execute(picked, "latejoin")
-	director_log_beat(signals, picked, DIRECTOR_BEAT_FIRED)
+	var/executed = spend_and_execute(picked, "latejoin")
+	var/result = executed ? DIRECTOR_BEAT_SCHEDULED : DIRECTOR_BEAT_FAILED
+	var/detail = selection_detail(picked, candidates)
+	if(!executed)
+		detail = "[execution_failure_detail(picked)]; [detail]"
+	director_log_beat(signals, picked, result, null, detail)
 
 /// Форс-события (weight < 0, например Halloween): разово в начале раунда, мимо бюджета и спейсинга -
 /// безусловный запуск для всех прошедших can_fire.
@@ -1040,12 +1119,31 @@ SUBSYSTEM_DEF(director)
 	var/datum/director_action/fired_action = pending_action
 	var/datum/director_signals/fired_signals = pending_signals
 	var/was_guaranteed = pending_guaranteed
-	spend_and_execute(fired_action, was_guaranteed ? "guaranteed" : "beat")
-	director_log_beat(fired_signals, fired_action, was_guaranteed ? DIRECTOR_BEAT_GUARANTEED : DIRECTOR_BEAT_FIRED)
+	var/list/retry_candidates = pending_candidates
+	var/detail = selection_detail(fired_action, retry_candidates)
+	var/executed = spend_and_execute(fired_action, was_guaranteed ? "guaranteed" : "beat")
+	var/result = was_guaranteed ? DIRECTOR_BEAT_GUARANTEED : DIRECTOR_BEAT_FIRED
+	if(!executed)
+		result = DIRECTOR_BEAT_FAILED
+		detail = "[execution_failure_detail(fired_action)]; [detail]"
+	else if(fired_action.director_kind == DIRECTOR_KIND_RULESET)
+		result = DIRECTOR_BEAT_SCHEDULED
+	director_log_beat(fired_signals, fired_action, result, null, detail)
 	pending_action = null
 	pending_candidates = null
 	pending_signals = null
 	pending_timer_id = null
+	// Кандидат мог исчезнуть за окно отмены. Не сжигаем весь бит: убираем провалившийся
+	// вариант и даём админам такое же окно отмены для следующего всё ещё готового кандидата.
+	if(!executed && length(retry_candidates))
+		retry_candidates -= fired_action
+		for(var/datum/director_action/retry as anything in retry_candidates.Copy())
+			if(!retry.can_fire(fired_signals) || !action_preflight(retry))
+				retry_candidates -= retry
+		if(length(retry_candidates))
+			var/datum/director_action/next_pick = pickweight(retry_candidates)
+			message_admins("DIRECTOR: [fired_action.action_name()] не запустился ([execution_failure_detail(fired_action)]), выбираю замену.")
+			announce_pick(next_pick, retry_candidates, was_guaranteed, fired_signals)
 
 /datum/controller/subsystem/director/Topic(href, href_list)
 	..()

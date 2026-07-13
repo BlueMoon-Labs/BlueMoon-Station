@@ -15,6 +15,10 @@
 	var/list/living_antags = list()
 	var/list/dead_players = list()
 	var/list/list_observers = list()
+	/// Деталь последней проверки ready() для панели и истории исполнения.
+	var/ready_failure_reason = null
+	/// Сводка успешной preflight-проверки (например, число подходящих призраков).
+	var/director_preflight_detail = null
 
 /// Директор выбрал midround-рулсет: собираем кандидатов (trim -> ready),
 /// затем отложенно исполняем с учётом delay. Бюджет уже списан в SSdirector.spend_and_execute.
@@ -24,6 +28,12 @@
 		return FALSE
 	addtimer(CALLBACK(mode, TYPE_PROC_REF(/datum/game_mode/dynamic, execute_scheduled_ruleset), src), delay)
 	return TRUE
+
+/// Неинтерактивная проверка непосредственно перед выбором директора. null означает, что рулсет
+/// не поддерживает preflight и будет проверен обычным execute_action(). Наследники не должны
+/// открывать опросы или выдавать роли отсюда: панель вызывает этот proc каждые несколько секунд.
+/datum/dynamic_ruleset/midround/proc/director_preflight()
+	return null
 
 /datum/dynamic_ruleset/midround/from_ghosts
 	// Игроки приходят из призраков, а не из экипажа - своя ступень директора со своим
@@ -91,6 +101,8 @@
 // IMPORTANT, since /datum/dynamic_ruleset/midround may accept candidates from both living, dead, and even antag players, you need to manually check whether there are enough candidates
 // (see /datum/dynamic_ruleset/midround/autotraitor/ready(forced = FALSE) for example)
 /datum/dynamic_ruleset/midround/ready(forced = FALSE)
+	ready_failure_reason = null
+	director_preflight_detail = null
 	if (!forced)
 		var/job_check = 0
 		if (enemy_roles.len > 0)
@@ -102,13 +114,27 @@
 
 		var/threat = round(mode.threat_level/10)
 		if (job_check < required_enemies[threat])
+			ready_failure_reason = "контрролей [job_check] из [required_enemies[threat]] (уровень угрозы [mode.threat_level])"
 			return FALSE
 	return TRUE
 
 /datum/dynamic_ruleset/midround/from_ghosts/ready(forced = FALSE)
-	return ..() && (length(dead_players) + length(list_observers) >= required_applicants)
+	if(!..())
+		return FALSE
+	var/eligible_ghosts = length(dead_players) + length(list_observers)
+	if(eligible_ghosts < required_applicants)
+		var/role_preference = antag_flag_override ? antag_flag_override : antag_flag
+		ready_failure_reason = "подходящих гостов [eligible_ghosts] из [required_applicants] (нужна включённая роль [role_preference], без бана и ограничений)"
+		return FALSE
+	director_preflight_detail = "подходящих гостов: [eligible_ghosts], требуется: [required_applicants]"
+	return TRUE
+
+/datum/dynamic_ruleset/midround/from_ghosts/director_preflight()
+	trim_candidates()
+	return ready()
 
 /datum/dynamic_ruleset/midround/from_ghosts/execute()
+	execution_failure_reason = null
 	var/list/possible_candidates = list()
 	possible_candidates.Add(dead_players)
 	possible_candidates.Add(list_observers)
@@ -116,11 +142,14 @@
 	if(assigned.len > 0)
 		return TRUE
 	else
+		if(!execution_failure_reason)
+			execution_failure_reason = "опрос завершился без достаточного числа подходящих желающих"
 		return FALSE
 
 /// This sends a poll to ghosts if they want to be a ghost spawn from a ruleset.
 /datum/dynamic_ruleset/midround/from_ghosts/proc/send_applications(list/possible_volunteers = list())
 	if (possible_volunteers.len <= 0) // This shouldn't happen, as ready() should return FALSE if there is not a single valid candidate
+		execution_failure_reason = "к моменту опроса не осталось подходящих призраков"
 		message_admins("Possible volunteers was 0. This shouldn't appear, because of ready(), unless you forced it!")
 		return
 	message_admins("Polling [possible_volunteers.len] players to apply for the [name] ruleset.")
@@ -129,6 +158,7 @@
 	candidates = pollGhostCandidates("The mode is looking for volunteers to become [antag_flag] for [name]", flag, be_special_flag = flag, ignore_category = antag_flag, poll_time = 300, poll_header = "[name] ([antag_flag])", poll_alert_pic = /obj/item/card/id/syndicate)
 
 	if(!length(candidates))
+		execution_failure_reason = "на гост-опрос не откликнулся ни один подходящий игрок"
 		mode.dynamic_log("The ruleset [name] received no applications.")
 		mode.executed_rules -= src
 		attempt_replacement()
@@ -142,6 +172,7 @@
 /// Called by send_applications().
 /datum/dynamic_ruleset/midround/from_ghosts/proc/review_applications()
 	if(candidates.len < required_applicants)
+		execution_failure_reason = "на гост-опрос откликнулось [candidates.len] из необходимых [required_applicants]"
 		mode.executed_rules -= src
 		return
 	for (var/i = 1, i <= required_candidates, i++)
@@ -226,8 +257,15 @@
 
 /datum/dynamic_ruleset/midround/autotraitor/ready(forced = FALSE)
 	if (required_candidates > living_players.len)
+		ready_failure_reason = "подходящих членов экипажа [living_players.len] из [required_candidates] (преференс midround, роль, бан и возраст)"
 		return FALSE
-	return ..()
+	. = ..()
+	if(.)
+		director_preflight_detail = "подходящих членов экипажа: [living_players.len], требуется: [required_candidates]"
+
+/datum/dynamic_ruleset/midround/autotraitor/director_preflight()
+	trim_candidates()
+	return ready()
 
 /datum/dynamic_ruleset/midround/autotraitor/execute()
 	// BLUEMOON ADD START - если нет кандидатов и не выданы все роли, иначе выдаст рантайм
@@ -404,10 +442,13 @@
 
 /datum/dynamic_ruleset/midround/from_ghosts/wizard/ready(forced = FALSE)
 	if (required_candidates > (dead_players.len + list_observers.len))
+		ready_failure_reason = "подходящих гостов [dead_players.len + list_observers.len] из [required_candidates]"
 		return FALSE
 	if(GLOB.wizardstart.len == 0)
-		log_admin("Cannot accept Wizard ruleset. Couldn't find any wizard spawn points.")
-		message_admins("Cannot accept Wizard ruleset. Couldn't find any wizard spawn points.")
+		ready_failure_reason = "на карте нет точек спауна волшебника"
+		if(!SSdirector.quiet_eval)
+			log_admin("Cannot accept Wizard ruleset. Couldn't find any wizard spawn points.")
+			message_admins("Cannot accept Wizard ruleset. Couldn't find any wizard spawn points.")
 		return FALSE
 	return ..()
 
@@ -462,6 +503,7 @@
 
 /datum/dynamic_ruleset/midround/from_ghosts/nuclear/ready(forced = FALSE)
 	if (required_candidates > (dead_players.len + list_observers.len))
+		ready_failure_reason = "подходящих гостов [dead_players.len + list_observers.len] из [required_candidates]"
 		return FALSE
 	return ..()
 
@@ -714,7 +756,12 @@
 	var/list/vents = list()
 
 /datum/dynamic_ruleset/midround/from_ghosts/xenomorph/ready(forced = FALSE)
-	return ..() && length(find_vent_spawns()) > 0
+	if(!..())
+		return FALSE
+	if(!length(find_vent_spawns()))
+		ready_failure_reason = "не найдено доступных вентиляций для спауна"
+		return FALSE
+	return TRUE
 
 /datum/dynamic_ruleset/midround/from_ghosts/xenomorph/execute()
 	required_candidates += prob(50)
@@ -922,8 +969,15 @@
 
 /datum/dynamic_ruleset/midround/from_ghosts/morph/execute()
 	if(!GLOB.xeno_spawn || !GLOB.xeno_spawn.len)
+		execution_failure_reason = "на карте нет точек xeno_spawn для морфа"
 		return FALSE
 	. = ..()
+
+/datum/dynamic_ruleset/midround/from_ghosts/morph/ready(forced = FALSE)
+	if(!GLOB.xeno_spawn || !GLOB.xeno_spawn.len)
+		ready_failure_reason = "на карте нет точек xeno_spawn для морфа"
+		return FALSE
+	return ..()
 
 /datum/dynamic_ruleset/midround/from_ghosts/morph/generate_ruleset_body(mob/applicant)
 	var/datum/mind/player_mind = new /datum/mind(applicant.key)
@@ -1000,6 +1054,7 @@
 
 /datum/dynamic_ruleset/midround/from_ghosts/abductors/ready(forced = FALSE)
 	if (required_candidates > (dead_players.len + list_observers.len))
+		ready_failure_reason = "подходящих гостов [dead_players.len + list_observers.len] из [required_candidates]"
 		return FALSE
 	return ..()
 

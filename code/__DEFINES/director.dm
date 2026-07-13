@@ -40,6 +40,12 @@
 #define DIRECTOR_BEAT_BLOCKED "blocked"
 #define DIRECTOR_BEAT_IDLE "idle"
 #define DIRECTOR_BEAT_CANCELLED "cancelled"
+/// Рулсет принят директором и поставлен на исполнение (опрос/выдача роли ещё впереди)
+#define DIRECTOR_BEAT_SCHEDULED "scheduled"
+/// Отложенный рулсет действительно выдал роль/запустился
+#define DIRECTOR_BEAT_EXECUTED "executed"
+/// Выбранное действие не прошло execute_action() либо отложенный запуск/опрос провалился
+#define DIRECTOR_BEAT_FAILED "failed"
 
 /// Причины отсева кандидатов на бите (диагностика "почему тихо" в бит-логе и панели)
 #define DIRECTOR_REJECT_BLOCKED "blocked"
@@ -54,6 +60,8 @@
 #define DIRECTOR_REJECT_DISRUPTION "disruption"
 #define DIRECTOR_REJECT_BUDGET "budget"
 #define DIRECTOR_REJECT_CAN_FIRE "can_fire"
+/// Рулсет прошёл can_fire(), но сейчас не наберёт кандидатов/контрролей или не имеет точки спауна
+#define DIRECTOR_REJECT_READINESS "readiness"
 #define DIRECTOR_REJECT_NO_WEIGHT "no_weight"
 /// Антаг-нагрузка достигла цели профиля (crew * antag_intensity_per_crew) - новых антагов не льём
 #define DIRECTOR_REJECT_ANTAG_SATURATED "antag_saturated"

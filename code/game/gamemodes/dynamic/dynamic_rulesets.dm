@@ -70,6 +70,8 @@
 	/// Delay for when execute will get called from the time of post_setup (roundstart) or process (midround/latejoin).
 	/// Make sure your ruleset works with execute being called during the game when using this, and that the clean_up proc reverts it properly in case of faliure.
 	var/delay = 0
+	/// Человекочитаемая причина последнего провала execute(); попадает в историю директора.
+	var/execution_failure_reason = null
 	/// world.time запуска рулсета директором (штамп в SSdirector.note_fired): возраст исполнения
 	/// для затухания вклада в intensity. 0 у раундстартов - их возраст считается от старта раунда.
 	var/executed_at = 0

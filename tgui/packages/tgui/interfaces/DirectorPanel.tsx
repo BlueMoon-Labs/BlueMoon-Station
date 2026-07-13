@@ -41,6 +41,7 @@ type BeatEntry = {
   action: string | null;
   severity: string | null;
   cost: number;
+  detail?: string | null;
 };
 
 type PoolEntry = {
@@ -53,6 +54,8 @@ type PoolEntry = {
   occurrences: number;
   verdict: string;
   detail: string | null;
+  preflight?: string | null;
+  effectiveWeight?: number;
   chance?: number;
 };
 
@@ -155,6 +158,9 @@ const RESULT_LABELS: Record<string, string> = {
   blocked: 'Заблокировано',
   idle: 'Простой',
   cancelled: 'Отменено',
+  scheduled: 'Выбрано / ожидает исполнения',
+  executed: 'Исполнено',
+  failed: 'Не исполнилось',
 };
 
 const REJECT_LABELS: Record<string, string> = {
@@ -170,6 +176,7 @@ const REJECT_LABELS: Record<string, string> = {
   disruption: 'приглушено профилем',
   budget: 'нет бюджета',
   can_fire: 'не готово (can_fire)',
+  readiness: 'не готов рулсет (кандидаты/контрроли/карта)',
   no_weight: 'нулевой вес',
   antag_saturated: 'антагов достаточно',
   saving: 'пул копит на цель',
@@ -201,6 +208,7 @@ const VERDICT_LABELS: Record<string, string> = {
   round_type: 'не тот тип раунда',
   staffing: 'не хватает штата отдела',
   special: 'специфичное условие действия',
+  readiness: 'не готов к фактическому исполнению',
   latejoin: 'только при латеджойне',
 };
 
@@ -491,6 +499,7 @@ const OverviewTab = (props) => {
               <Table.Cell>Ступень</Table.Cell>
               <Table.Cell>Cost</Table.Cell>
               <Table.Cell>Бюджет</Table.Cell>
+              <Table.Cell>Почему</Table.Cell>
             </Table.Row>
             {beatEntries.map((entry, index) => (
               <Table.Row key={index}>
@@ -506,6 +515,7 @@ const OverviewTab = (props) => {
                 </Table.Cell>
                 <Table.Cell>{entry.cost}</Table.Cell>
                 <Table.Cell>{entry.budget}</Table.Cell>
+                <Table.Cell>{entry.detail || '-'}</Table.Cell>
               </Table.Row>
             ))}
           </Table>
@@ -529,8 +539,15 @@ const PoolStatusCell = (props: { entry: PoolEntry }) => {
   const { entry } = props;
   if (entry.verdict === 'ok') {
     return (
-      <Box inline color="good">
-        шанс {entry.chance ?? 0}%
+      <Box>
+        <Box inline color="good">
+          шанс {entry.chance ?? 0}%
+        </Box>
+        {!!entry.preflight && (
+          <Box color="label" mt={0.5}>
+            {entry.preflight}
+          </Box>
+        )}
       </Box>
     );
   }
@@ -543,9 +560,16 @@ const PoolStatusCell = (props: { entry: PoolEntry }) => {
     );
   }
   return (
-    <Box inline color="bad">
-      {label}
-      {entry.detail ? ` (${entry.detail})` : ''}
+    <Box>
+      <Box inline color="bad">
+        {label}
+        {entry.detail ? ` (${entry.detail})` : ''}
+      </Box>
+      {!!entry.preflight && (
+        <Box color="label" mt={0.5}>
+          Готовность роли: {entry.preflight}
+        </Box>
+      )}
     </Box>
   );
 };
@@ -625,6 +649,7 @@ const PoolTab = (props) => {
                   <Table.Cell>Cost</Table.Cell>
                   <Table.Cell>Int</Table.Cell>
                   <Table.Cell>Вес</Table.Cell>
+                  <Table.Cell>Эфф. вес</Table.Cell>
                   <Table.Cell>Запуски</Table.Cell>
                   <Table.Cell>Статус</Table.Cell>
                 </Table.Row>
@@ -637,6 +662,7 @@ const PoolTab = (props) => {
                     <Table.Cell>{entry.cost}</Table.Cell>
                     <Table.Cell>{entry.intensity}</Table.Cell>
                     <Table.Cell>{entry.weight}</Table.Cell>
+                    <Table.Cell>{entry.effectiveWeight ?? '-'}</Table.Cell>
                     <Table.Cell>{entry.occurrences}</Table.Cell>
                     <Table.Cell>
                       <PoolStatusCell entry={entry} />
@@ -996,7 +1022,10 @@ const HelpTab = (props) => {
           (по рулсету). Антагонист - инжекции из живого экипажа
           (автотрейтор, культы), Гост-антаг - роли из призраков (нюки,
           ксеноморфы, дракон): у категорий свои кошельки и свои паузы, друг
-          друга они не откладывают. Среднее и тяжелее не стартуют
+          друга они не откладывают. Перед выбором рулсета отдельно
+          проверяются подходящие кандидаты, включённые преференсы роли,
+          необходимые контрроли и точки спауна; неподготовленный рулсет не
+          становится целью копилки. Среднее и тяжелее не стартуют
           мгновенно: открывается окно отмены (по умолчанию 15 с) с
           кнопками отмены и замены - и в чате админов, и в шапке панели.
         </Box>
@@ -1024,9 +1053,18 @@ const HelpTab = (props) => {
           действиями и живой оценкой: у доступных показан шанс выбора на
           ближайшем бите (доля эффективного веса), у отсеянных - конкретная
           причина с деталью (сколько ждать паузу, сколько не хватает
-          бюджета или экипажа). Оценка обновляется раз в несколько секунд.
+          бюджета или экипажа, сколько сейчас подходит гостов/членов
+          экипажа). Базовый и итоговый эффективный вес показаны отдельно.
+          Оценка обновляется раз в несколько секунд.
           Латеджойн-рулсеты в битах не участвуют - они срабатывают только
           на зашедшего игрока.
+        </Box>
+        <Box mb={1}>
+          <b>История решений.</b> Для отложенных рулсетов различаются этапы:
+          «выбрано / ожидает исполнения», «исполнено» и «не исполнилось».
+          В последнем случае показывается конкретная причина позднего отказа
+          или пустого гост-опроса; для выбора сохраняются шанс, эффективный
+          вес и число альтернатив на том бите.
         </Box>
         <Box mb={1}>
           <b>Профили.</b> Вкладка со всеми профилями темпа и их ручками:
