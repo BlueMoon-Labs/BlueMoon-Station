@@ -90,13 +90,22 @@
 		QUEUE_SMOOTH(src)
 
 /obj/structure/girder/reinforced
-	icon_state = "girder-0"
+	icon = 'icons/obj/smooth_structures/reinforced_girder.dmi'
+	base_icon_state = "reinforced"
+	icon_state = "reinforced-0"
 	smoothing_flags = SMOOTH_BITMASK | SMOOTH_OBJ
 
 /obj/structure/girder/displaced
-	icon_state = "girder-0"
-	smoothing_flags = SMOOTH_BITMASK | SMOOTH_OBJ
+	icon_state = "displaced"
+	smooth = SMOOTH_FALSE
+	smoothing_flags = NONE
+	smoothing_groups = NONE
+	canSmoothWith = null
 
 /obj/structure/girder/reinforced/displaced
-	icon_state = "girder-0"
-	smoothing_flags = SMOOTH_BITMASK | SMOOTH_OBJ
+	icon = 'icons/obj/smooth_structures/reinforced_girder.dmi'
+	icon_state = "displaced"
+	smooth = SMOOTH_FALSE
+	smoothing_flags = NONE
+	smoothing_groups = NONE
+	canSmoothWith = null

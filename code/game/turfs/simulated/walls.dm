@@ -62,7 +62,7 @@
 	return
 
 /turf/closed/wall/proc/dismantle_wall(devastated=0, explode=0)
-	if(devastated)
+	if(devastated || explode)
 		devastate_wall()
 	else
 		playsound(src, 'sound/items/welder.ogg', 100, 1)

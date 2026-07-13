@@ -337,3 +337,31 @@
 	smoothing_flags = SMOOTH_BITMASK | SMOOTH_OBJ | SMOOTH_DIAGONAL_CORNERS
 	smoothing_groups = SMOOTH_GROUP_PLASTITANIUM_WALLS + SMOOTH_GROUP_SYNDICATE_WALLS + SMOOTH_GROUP_SHUTTLE_PARTS
 	canSmoothWith = SMOOTH_GROUP_SHUTTLE_PARTS + SMOOTH_GROUP_AIRLOCK + SMOOTH_GROUP_WINDOW_FULLTILE_PLASTITANIUM + SMOOTH_GROUP_PLASTITANIUM_WALLS + SMOOTH_GROUP_SYNDICATE_WALLS
+
+/turf/closed/indestructible/wall
+	icon = 'modular_bluemoon/icons/turf/walls/wall.dmi'
+	icon_state = "wall-0"
+	base_icon_state = "wall"
+	smooth = SMOOTH_FALSE
+	smoothing_flags = SMOOTH_BITMASK | SMOOTH_OBJ
+	smoothing_groups = SMOOTH_GROUP_WALLS + SMOOTH_GROUP_CLOSED_TURFS
+	canSmoothWith = SMOOTH_GROUP_AIRLOCK + SMOOTH_GROUP_WINDOW_FULLTILE + SMOOTH_GROUP_WALLS + SMOOTH_GROUP_CLOSED_TURFS
+
+/turf/closed/wall/mineral/bronze
+	icon = 'modular_bluemoon/icons/turf/walls/clockwork_wall.dmi'
+	icon_state = "clockwork_wall-0"
+	base_icon_state = "clockwork_wall"
+	smoothing_groups = SMOOTH_GROUP_CLOCKWORK_WALLS + SMOOTH_GROUP_WALLS + SMOOTH_GROUP_CLOSED_TURFS
+	canSmoothWith = SMOOTH_GROUP_CLOCKWORK_WALLS + SMOOTH_GROUP_WALLS
+
+/turf/closed/wall/ice
+	smooth = SMOOTH_FALSE
+	smoothing_flags = NONE
+	smoothing_groups = NONE
+	canSmoothWith = null
+
+/turf/closed/wall/mineral/lead
+	smooth = SMOOTH_TRUE
+	smoothing_flags = NONE
+	smoothing_groups = NONE
+	canSmoothWith = list(/turf/closed/wall/mineral/lead)

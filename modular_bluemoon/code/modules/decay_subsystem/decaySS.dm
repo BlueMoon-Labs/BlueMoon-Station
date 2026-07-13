@@ -69,7 +69,10 @@ SUBSYSTEM_DEF(decay)
 	return TRUE
 
 /datum/controller/subsystem/decay/proc/do_common()
-	for(var/turf/open/floor/iterating_floor as anything in possible_turfs)
+	for(var/turf/iterating_turf as anything in possible_turfs)
+		if(!isopenturf(iterating_turf))
+			continue
+		var/turf/open/floor/iterating_floor = iterating_turf
 		if(can_decay_break_floor(iterating_floor))
 			if(prob(FLOOR_TILE_MISSING_PERCENT_CHANCE * severity_modifier) && prob(60))
 				iterating_floor.break_tile_to_plating()
@@ -80,7 +83,10 @@ SUBSYSTEM_DEF(decay)
 		if(prob(FLOOR_DIRT_PERCENT_CHANCE * severity_modifier))
 			new /obj/effect/decal/cleanable/dirt(iterating_floor)
 
-	for(var/turf/closed/iterating_wall as anything in possible_turfs)
+	for(var/turf/iterating_turf as anything in possible_turfs)
+		if(!isclosedturf(iterating_turf))
+			continue
+		var/turf/closed/iterating_wall = iterating_turf
 		if(HAS_TRAIT(iterating_wall, TRAIT_RUSTY))
 			continue
 		if(prob(WALL_RUST_PERCENT_CHANCE * severity_modifier))
