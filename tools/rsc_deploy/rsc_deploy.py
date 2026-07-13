@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare and atomically publish a versioned BYOND resource archive for TGS."""
+"""Prepare and atomically publish a content-addressed BYOND resource archive for TGS."""
 
 import argparse
 import datetime as dt
@@ -16,13 +16,53 @@ import zipfile
 
 
 MANIFEST_NAME = ".rsc-deploy.json"
-BEGIN_MARKER = "// BEGIN GENERATED RSC DEPLOYMENT URL"
-END_MARKER = "// END GENERATED RSC DEPLOYMENT URL"
+GENERATED_DEFINES_NAME = ".rsc-deployment.dm"
 SAFE_NAME = re.compile(r"^[A-Za-z0-9._-]+$")
 ASSET_CONFIG_BEGIN = "# BEGIN MANAGED EXTERNAL BROWSER ASSETS"
 ASSET_CONFIG_END = "# END MANAGED EXTERNAL BROWSER ASSETS"
 LOBBY_IMAGE_EXTENSIONS = {".gif", ".jpeg", ".jpg", ".png", ".webp"}
 LOBBY_AUDIO_EXTENSIONS = {".flac", ".mp3", ".ogg", ".wav"}
+RESOURCE_EXTENSIONS = {
+	".css",
+	".dmi",
+	".dmf",
+	".flac",
+	".gif",
+	".htm",
+	".html",
+	".ico",
+	".jpeg",
+	".jpg",
+	".js",
+	".json",
+	".mid",
+	".midi",
+	".mp3",
+	".ogg",
+	".otf",
+	".png",
+	".svg",
+	".ttf",
+	".wav",
+	".webp",
+	".woff",
+	".woff2",
+}
+RESOURCE_REFERENCE_SOURCE_EXTENSIONS = {".dm", ".dme", ".dmm"}
+RESOURCE_LITERAL = re.compile(rb"'([^'\r\n]+)'")
+RESOURCE_BUILD_INPUTS = (".tgs.yml",)
+RESOURCE_SCAN_IGNORED_DIRS = {
+	".cache",
+	".git",
+	"bot",
+	"config",
+	"data",
+	"node_modules",
+	"SQL",
+	"tgstation-server",
+	"tmp",
+	"tools",
+}
 
 
 class DeployError(RuntimeError):
@@ -132,12 +172,14 @@ def load_settings(game_dir, configured_path=None):
 	settings["RSC_ENABLE_ASSET_WEBROOT"] = parse_bool(settings.get("RSC_ENABLE_ASSET_WEBROOT", "1"), "RSC_ENABLE_ASSET_WEBROOT")
 
 	try:
-		settings["RSC_KEEP_VERSIONS"] = max(2, int(settings.get("RSC_KEEP_VERSIONS", "5")))
 		settings["RSC_COMPRESSION_LEVEL"] = int(settings.get("RSC_COMPRESSION_LEVEL", "6"))
+		settings["RSC_MIN_FREE_BYTES"] = int(settings.get("RSC_MIN_FREE_BYTES", str(512 * 1024 * 1024)))
 	except ValueError as error:
-		raise DeployError("RSC_KEEP_VERSIONS and RSC_COMPRESSION_LEVEL must be integers") from error
+		raise DeployError("RSC_COMPRESSION_LEVEL and RSC_MIN_FREE_BYTES must be integers") from error
 	if not 0 <= settings["RSC_COMPRESSION_LEVEL"] <= 9:
 		raise DeployError("RSC_COMPRESSION_LEVEL must be between 0 and 9")
+	if settings["RSC_MIN_FREE_BYTES"] < 0:
+		raise DeployError("RSC_MIN_FREE_BYTES must not be negative")
 	return settings
 
 
@@ -159,42 +201,126 @@ def git_revision(game_dir, supplied_revision):
 	return revision[:12]
 
 
-def remove_generated_block(text):
-	start = text.find(BEGIN_MARKER)
-	if start < 0:
-		return text.rstrip() + "\n"
-	end = text.find(END_MARKER, start)
-	if end < 0:
-		raise DeployError("generated RSC marker is incomplete in code/_compile_options.dm")
-	end += len(END_MARKER)
-	return (text[:start].rstrip() + "\n" + text[end:].lstrip()).rstrip() + "\n"
-
-
 def dm_string(value):
 	return '"{}"'.format(value.replace("\\", "\\\\").replace('"', '\\"'))
+
+
+def _hash_record(digest, record_type, name, payload=None):
+	digest.update(record_type.encode("ascii"))
+	digest.update(b"\0")
+	digest.update(name.encode("utf-8", errors="surrogateescape"))
+	digest.update(b"\0")
+	if payload is not None:
+		digest.update(str(len(payload)).encode("ascii"))
+		digest.update(b"\0")
+		digest.update(payload)
+	digest.update(b"\0")
+
+
+def _hash_file_record(digest, name, path):
+	path = Path(path)
+	digest.update(b"file\0")
+	digest.update(name.encode("utf-8", errors="surrogateescape"))
+	digest.update(b"\0")
+	digest.update(str(path.stat().st_size).encode("ascii"))
+	digest.update(b"\0")
+	with path.open("rb") as source:
+		for chunk in iter(lambda: source.read(1024 * 1024), b""):
+			digest.update(chunk)
+	digest.update(b"\0")
+
+
+def resource_inputs_sha256(game_dir):
+	"""Hash resource files and static DM resource references deterministically.
+
+	Hashing static references as well as the files catches code changes which add
+	or remove an already-existing resource. The actual compiled RSC hash is still
+	checked during publish so an incomplete fingerprint can never overwrite or
+	reuse an incompatible immutable archive.
+	"""
+	game_dir = Path(game_dir)
+	resource_files = {}
+	references = set()
+	for relative_name in RESOURCE_BUILD_INPUTS:
+		path = game_dir / relative_name
+		if path.is_file():
+			resource_files[relative_name] = path
+
+	for current_root, directories, filenames in os.walk(game_dir):
+		current_root = Path(current_root)
+		directories[:] = sorted(
+			directory for directory in directories if directory not in RESOURCE_SCAN_IGNORED_DIRS
+		)
+		for filename in sorted(filenames):
+			path = current_root / filename
+			try:
+				relative_path = path.relative_to(game_dir)
+			except ValueError:
+				continue
+			relative_name = relative_path.as_posix()
+			if relative_name in (MANIFEST_NAME, GENERATED_DEFINES_NAME):
+				continue
+			suffix = path.suffix.lower()
+			if relative_path.parts[0].lower() in ("icons", "sound") or suffix in RESOURCE_EXTENSIONS:
+				resource_files[relative_name] = path
+			if suffix not in RESOURCE_REFERENCE_SOURCE_EXTENSIONS:
+				continue
+			try:
+				source_lines = path.open("rb")
+			except OSError as error:
+				raise DeployError("could not read resource-reference source {}: {}".format(path, error)) from error
+			with source_lines:
+				for source_line in source_lines:
+					for match in RESOURCE_LITERAL.finditer(source_line):
+						literal = match.group(1).decode("utf-8", errors="surrogateescape").replace("\\", "/")
+						while literal.startswith("./"):
+							literal = literal[2:]
+						literal_path = Path(literal)
+						if literal_path.is_absolute() or ".." in literal_path.parts:
+							continue
+						referenced_path = game_dir / literal_path
+						if referenced_path.is_file():
+							references.add(literal)
+							resource_files[literal_path.as_posix()] = referenced_path
+
+	digest = hashlib.sha256()
+	_hash_record(digest, "version", "rsc-resource-inputs-v1")
+	for literal in sorted(references):
+		_hash_record(digest, "reference", literal)
+	for relative_name in sorted(resource_files):
+		path = resource_files[relative_name]
+		try:
+			_hash_file_record(digest, relative_name, path)
+		except OSError as error:
+			raise DeployError("could not read resource input {}: {}".format(path, error)) from error
+	return digest.hexdigest()
 
 
 def prepare(args):
 	game_dir = Path(args.game_dir).resolve()
 	settings = load_settings(game_dir, args.config)
 	if settings is None:
+		# _compile_options.dm includes this file for every TGS build. Keep the
+		# include valid even when external publishing is intentionally disabled.
+		atomic_write(game_dir / GENERATED_DEFINES_NAME, "// External RSC publishing is disabled.\n")
 		return
 
 	revision = git_revision(game_dir, args.revision or "")
 	stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-	archive_name = "{}-{}-{}.zip".format(settings["RSC_ARCHIVE_PREFIX"], revision, stamp)
+	input_hash = resource_inputs_sha256(game_dir)
+	archive_name = "{}-{}.zip".format(settings["RSC_ARCHIVE_PREFIX"], input_hash)
 	public_url = "{}/{}".format(settings["RSC_PUBLIC_BASE_URL"], archive_name)
 
-	compile_options = game_dir / "code" / "_compile_options.dm"
-	text = remove_generated_block(compile_options.read_text(encoding="utf-8"))
-	text += "\n{}\n#ifdef DEPLOYMENT_RSC_URL\n#undef DEPLOYMENT_RSC_URL\n#endif\n".format(BEGIN_MARKER)
-	text += "#define DEPLOYMENT_RSC_URL {}\n{}\n".format(dm_string(public_url), END_MARKER)
-	atomic_write(compile_options, text)
+	generated_defines = "// Generated by tools/rsc_deploy; do not commit.\n"
+	generated_defines += "#ifdef DEPLOYMENT_RSC_URL\n#undef DEPLOYMENT_RSC_URL\n#endif\n"
+	generated_defines += "#define DEPLOYMENT_RSC_URL {}\n".format(dm_string(public_url))
+	atomic_write(game_dir / GENERATED_DEFINES_NAME, generated_defines)
 
 	manifest = {
 		"archive_name": archive_name,
 		"public_url": public_url,
 		"revision": revision,
+		"resource_inputs_sha256": input_hash,
 		"created_utc": stamp,
 	}
 	atomic_write(game_dir / MANIFEST_NAME, json.dumps(manifest, indent=2, sort_keys=True) + "\n")
@@ -207,6 +333,61 @@ def sha256_file(path):
 		for chunk in iter(lambda: source.read(1024 * 1024), b""):
 			digest.update(chunk)
 	return digest.hexdigest()
+
+
+def validate_archive(path, expected_rsc_hash, expected_rsc_size):
+	path = Path(path)
+	with zipfile.ZipFile(path, "r") as archive:
+		entries = archive.infolist()
+		if len(entries) != 1 or entries[0].filename != "tgstation.rsc":
+			raise DeployError("{} has an unexpected layout".format(path))
+		if entries[0].file_size != expected_rsc_size:
+			raise DeployError("{} contains a different resource size".format(path))
+		digest = hashlib.sha256()
+		with archive.open(entries[0], "r") as resource:
+			for chunk in iter(lambda: resource.read(1024 * 1024), b""):
+				digest.update(chunk)
+		archive_hash = digest.hexdigest()
+	if archive_hash != expected_rsc_hash:
+		raise DeployError(
+			"immutable archive {} already exists with rsc sha256 {}, expected {}".format(
+				path, archive_hash, expected_rsc_hash
+			)
+		)
+
+
+def validate_writable_directory(path, minimum_free_bytes, additional_required_bytes=0):
+	path = Path(path)
+	path.mkdir(parents=True, exist_ok=True)
+	fd = None
+	probe_name = None
+	try:
+		fd, probe_name = tempfile.mkstemp(prefix=".rsc-write-test-", dir=str(path))
+		with os.fdopen(fd, "wb") as probe:
+			fd = None
+			probe.write(b"rsc-deploy write test\n")
+			probe.flush()
+			os.fsync(probe.fileno())
+	except OSError as error:
+		raise DeployError("{} is not writable: {}".format(path, error)) from error
+	finally:
+		if fd is not None:
+			os.close(fd)
+		if probe_name:
+			try:
+				os.unlink(probe_name)
+			except OSError:
+				pass
+
+	free_bytes = shutil.disk_usage(path).free
+	required_bytes = minimum_free_bytes + additional_required_bytes
+	if free_bytes < required_bytes:
+		raise DeployError(
+			"{} has {} free bytes, but {} are required (including the configured reserve)".format(
+				path, free_bytes, required_bytes
+			)
+		)
+	return free_bytes
 
 
 def collect_lobby_media(game_dir, config_root):
@@ -289,7 +470,7 @@ def configure_asset_webroot(settings):
 	publish_dir = Path(settings["RSC_PUBLISH_DIR"]).expanduser()
 	asset_subdir = settings["RSC_ASSET_WEBROOT_SUBDIR"]
 	asset_webroot = publish_dir / asset_subdir
-	asset_webroot.mkdir(parents=True, exist_ok=True)
+	free_bytes = validate_writable_directory(asset_webroot, settings["RSC_MIN_FREE_BYTES"])
 	resources_path = settings["_CONFIG_PATH"].parent / "entries" / "resources.txt"
 	if not resources_path.is_file():
 		raise DeployError("{} is missing; cannot configure webroot asset transport".format(resources_path))
@@ -302,7 +483,7 @@ def configure_asset_webroot(settings):
 	text += "ASSET_CDN_URL {}\n".format(url_value)
 	text += "{}\n".format(ASSET_CONFIG_END)
 	atomic_write(resources_path, text)
-	log("configured browser assets at {}".format(url_value))
+	log("configured writable browser assets at {} ({} free bytes)".format(url_value, free_bytes))
 
 
 def publish(args):
@@ -318,49 +499,54 @@ def publish(args):
 	rsc_path = game_dir / "tgstation.rsc"
 	if not rsc_path.is_file():
 		raise DeployError("DreamMaker did not create {}".format(rsc_path))
+	rsc_hash = sha256_file(rsc_path)
+	rsc_size = rsc_path.stat().st_size
 
 	publish_dir = Path(settings["RSC_PUBLISH_DIR"]).expanduser()
 	if not publish_dir.is_absolute():
 		raise DeployError("RSC_PUBLISH_DIR must be an absolute path")
-	publish_dir.mkdir(parents=True, exist_ok=True)
 	final_path = publish_dir / manifest["archive_name"]
+	validate_writable_directory(
+		publish_dir,
+		settings["RSC_MIN_FREE_BYTES"],
+		additional_required_bytes=0 if final_path.exists() else rsc_size,
+	)
+	archive_reused = False
 	if final_path.exists():
-		raise DeployError("refusing to overwrite immutable archive {}".format(final_path))
-
-	fd, temporary_name = tempfile.mkstemp(prefix=".{}-".format(final_path.name), suffix=".tmp", dir=str(publish_dir))
-	os.close(fd)
-	temporary_path = Path(temporary_name)
-	try:
-		compression = zipfile.ZIP_STORED if settings["RSC_COMPRESSION_LEVEL"] == 0 else zipfile.ZIP_DEFLATED
-		with zipfile.ZipFile(
-			temporary_path,
-			"w",
-			compression=compression,
-			compresslevel=settings["RSC_COMPRESSION_LEVEL"] if compression == zipfile.ZIP_DEFLATED else None,
-			allowZip64=True,
-		) as archive:
-			archive.write(rsc_path, arcname="tgstation.rsc")
-		with zipfile.ZipFile(temporary_path, "r") as archive:
-			entries = archive.infolist()
-			if len(entries) != 1 or entries[0].filename != "tgstation.rsc":
-				raise DeployError("created archive has an unexpected layout")
-			if entries[0].file_size != rsc_path.stat().st_size:
-				raise DeployError("created archive has an unexpected resource size")
-		with temporary_path.open("rb+") as archive_file:
-			os.fsync(archive_file.fileno())
-		os.chmod(temporary_path, 0o644)
-		os.replace(str(temporary_path), str(final_path))
-	except Exception:
+		validate_archive(final_path, rsc_hash, rsc_size)
+		archive_reused = True
+		log("immutable archive {} already contains the same RSC; reusing it".format(final_path))
+	else:
+		fd, temporary_name = tempfile.mkstemp(prefix=".{}-".format(final_path.name), suffix=".tmp", dir=str(publish_dir))
+		os.close(fd)
+		temporary_path = Path(temporary_name)
 		try:
-			temporary_path.unlink()
-		except OSError:
-			pass
-		raise
+			compression = zipfile.ZIP_STORED if settings["RSC_COMPRESSION_LEVEL"] == 0 else zipfile.ZIP_DEFLATED
+			with zipfile.ZipFile(
+				temporary_path,
+				"w",
+				compression=compression,
+				compresslevel=settings["RSC_COMPRESSION_LEVEL"] if compression == zipfile.ZIP_DEFLATED else None,
+				allowZip64=True,
+			) as archive:
+				archive.write(rsc_path, arcname="tgstation.rsc")
+			validate_archive(temporary_path, rsc_hash, rsc_size)
+			with temporary_path.open("rb+") as archive_file:
+				os.fsync(archive_file.fileno())
+			os.chmod(temporary_path, 0o644)
+			os.replace(str(temporary_path), str(final_path))
+		except Exception:
+			try:
+				temporary_path.unlink()
+			except OSError:
+				pass
+			raise
 
 	manifest.update(
 		{
-			"rsc_sha256": sha256_file(rsc_path),
-			"rsc_size": rsc_path.stat().st_size,
+			"archive_reused": archive_reused,
+			"rsc_sha256": rsc_hash,
+			"rsc_size": rsc_size,
 			"zip_size": final_path.stat().st_size,
 		}
 	)
@@ -371,18 +557,6 @@ def publish(args):
 	latest_manifest = publish_dir / "{}-latest.json".format(settings["RSC_ARCHIVE_PREFIX"])
 	atomic_write(latest_manifest, json.dumps(manifest, indent=2, sort_keys=True) + "\n")
 	os.chmod(latest_manifest, 0o644)
-
-	archives = sorted(
-		publish_dir.glob("{}-*.zip".format(settings["RSC_ARCHIVE_PREFIX"])),
-		key=lambda path: path.stat().st_mtime,
-		reverse=True,
-	)
-	for old_archive in archives[settings["RSC_KEEP_VERSIONS"] :]:
-		try:
-			old_archive.unlink()
-			log("removed old rollback archive {}".format(old_archive.name))
-		except OSError as error:
-			log("warning: could not remove {}: {}".format(old_archive, error))
 
 	log("published {} ({} bytes, rsc sha256 {})".format(final_path, final_path.stat().st_size, manifest["rsc_sha256"]))
 

@@ -36,8 +36,14 @@
 #endif // 1 to use the default behaviour;
 								// 2 for preloading absolutely everything;
 
-// Set by tools/rsc_deploy during TGS PreCompile. Keeping this null makes local
-// builds fall back to EXTERNAL_RSC_URLS from config/entries/resources.txt.
+// TGS PreCompile writes this ignored file instead of modifying tracked source.
+// Local builds do not define TGS and keep the null fallback below.
+#ifdef TGS
+#include "../.rsc-deployment.dm"
+#endif
+
+// Keeping this null makes unmanaged builds fall back to EXTERNAL_RSC_URLS from
+// config/entries/resources.txt.
 #ifndef DEPLOYMENT_RSC_URL
 #define DEPLOYMENT_RSC_URL null
 #endif

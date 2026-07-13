@@ -80,8 +80,20 @@
 		if (log)
 			log_asset("ERROR: [type]: Invalid Config: ASSET_CDN_URL")
 		return FALSE
-	if (!CONFIG_GET(string/asset_cdn_webroot))
+	var/webroot = CONFIG_GET(string/asset_cdn_webroot)
+	if (!webroot)
 		if (log)
 			log_asset("ERROR: [type]: Invalid Config: ASSET_CDN_WEBROOT")
 		return FALSE
+	// The deploy hook normally runs as the same service account as DreamDaemon,
+	// but validate that assumption in the process which will actually write the
+	// assets. Otherwise fcopy() failures leave clients with valid-looking CDN
+	// URLs that do not exist on disk.
+	var/probe_path = "[webroot].byond-write-test-[world.realtime]-[rand(100000, 999999)]"
+	if (!text2file("asset webroot write test", probe_path))
+		if (log)
+			log_asset("ERROR: [type]: ASSET_CDN_WEBROOT is not writable: [webroot]. Falling back to simple transport.")
+		return FALSE
+	if (!fdel(probe_path) && log)
+		log_asset("WARNING: [type]: Could not remove ASSET_CDN_WEBROOT write probe: [probe_path]")
 	return TRUE

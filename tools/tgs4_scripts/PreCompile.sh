@@ -103,7 +103,7 @@ cd "$1"
 chmod +x tools/bootstrap/node  # Workaround for https://github.com/tgstation/tgstation-server/issues/1167
 env TG_BOOTSTRAP_CACHE="$original_dir" TG_BOOTSTRAP_NODE_LINUX=1 CBT_BUILD_MODE="TGS" tools/bootstrap/node tools/build/build.js
 
-# Generate a deployment-specific external RSC URL before DreamMaker runs.
+# Generate a content-addressed external RSC URL before DreamMaker runs.
 # PostCompile publishes the matching archive and fails the deployment if it cannot.
 python3 tools/rsc_deploy/rsc_deploy.py prepare \
 	--game-dir "$1" \

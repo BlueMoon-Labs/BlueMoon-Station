@@ -13,6 +13,7 @@ IF NOT %1 == "" (
 	cd ..\Game\B
 )
 set CBT_BUILD_MODE=TGS
-python tools\rsc_deploy\rsc_deploy.py prepare --game-dir "%cd%" --revision "%~2" --config "%RSC_DEPLOY_CONFIG%"
-if errorlevel 1 exit /b %errorlevel%
 tools\build\build
+if errorlevel 1 exit /b %errorlevel%
+python tools\rsc_deploy\rsc_deploy.py prepare --game-dir "%cd%" --revision "%~2" --config "%RSC_DEPLOY_CONFIG%"
+exit /b %errorlevel%

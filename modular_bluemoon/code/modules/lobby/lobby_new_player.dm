@@ -5,6 +5,8 @@
 	COOLDOWN_DECLARE(bm_ready_cd)
 	var/bm_lobby_music_path = ""
 	var/bm_lobby_track_name = ""
+	/// Exact image path represented by the last external background URL.
+	var/bm_lobby_background_path = ""
 
 /mob/dead/new_player/Login()
 	. = ..()
@@ -51,6 +53,7 @@
 		return
 
 	var/img_to_send = _bm_get_current_image()
+	bm_lobby_background_path = bm_normalize_lobby_media_path(img_to_send) || ""
 	var/initial_background = SStitle_bm?.get_external_media_url(img_to_send)
 	if(!initial_background && img_to_send)
 		var/image_rsc = SStitle_bm?.get_local_media_resource(img_to_send)
@@ -95,19 +98,35 @@
 	var/img_to_send = SStitle_bm?.get_image_for_player(show_nsfw, show_admin_bg)
 	if(!img_to_send)
 		return
+	bm_lobby_background_path = bm_normalize_lobby_media_path(img_to_send) || ""
 	var/external_url = SStitle_bm.get_external_media_url(img_to_send)
 	if(external_url)
 		client << output(external_url, "bm_lobby_browser:bm_set_background")
 		return
-	var/image_rsc = SStitle_bm.get_local_media_resource(img_to_send)
+	bm_push_local_background(img_to_send)
+
+/// Sends a background through BYOND after the browser reports an HTTP failure.
+/mob/dead/new_player/proc/bm_push_local_background(media = null, loading_stub = FALSE)
+	if(!client)
+		return
+	if(!media)
+		media = loading_stub ? SStitle_bm?.loading_image : bm_lobby_background_path
+	if(!media && !loading_stub)
+		media = _bm_get_current_image()
+	var/image_rsc = SStitle_bm?.get_local_media_resource(media)
 	if(!image_rsc)
 		return
-	bm_bg_slot = bm_bg_slot ? 0 : 1
-	var/filename = "bm_bg_[bm_bg_slot].gif"
+	var/filename
+	if(loading_stub)
+		filename = "bm_stub_bg.gif"
+	else
+		bm_bg_slot = bm_bg_slot ? 0 : 1
+		filename = "bm_bg_[bm_bg_slot].gif"
 	src << browse(image_rsc, "file=[filename];display=0")
-	client << output(filename, "bm_lobby_browser:bm_set_background")
+	client << output(filename, "bm_lobby_browser:__bm_apply_background_fallback")
 
 /mob/dead/new_player/proc/_bm_build_loading_stub(background_url = "bm_stub_bg.gif")
+	var/R = REF(src)
 	background_url = html_encode(background_url || "bm_stub_bg.gif")
 	return {"<!DOCTYPE html><html><head><meta charset='UTF-8'>
 <style>
@@ -128,7 +147,7 @@ body,html{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Co
 @keyframes bm-ray{from{transform:translateX(-100%)}to{transform:translateX(350%)}}
 </style></head>
 <body>
-<img class='bg' src='[background_url]' alt=''>
+<img id='bm-bg' class='bg' src='[background_url]' alt='' onerror="this.onerror=null;location.href='?src=[R];bm_lobby_action=media_fallback;bm_media_kind=loading'">
 <div class='overlay'></div>
 <div class='wrap'>
   <div class='top'>
@@ -141,6 +160,7 @@ body,html{width:100%;height:100%;overflow:hidden;background:#000;font-family:'Co
   </div>
 </div>
 <script>
+function __bm_apply_background_fallback(url){var bg=document.getElementById('bm-bg');if(bg){bg.onerror=null;bg.src=url;}}
 var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textContent=s===1?' .':s===2?'..':s===3?'...':'';_i++;},400);
 </script>
 </body></html>"}
@@ -156,9 +176,10 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 		var/static_html = SStitle_bm.cached_static_html
 		if(initial_background_url && initial_background_url != "loading_screen.gif")
 			static_html = replacetext(static_html, "src=\"loading_screen.gif\"", "src=\"[html_encode(initial_background_url)]\"")
+		static_html = replacetext(static_html, "<img id=\"bm-bg\"", "<img id=\"bm-bg\" onerror=\"this.onerror=null;location.href='?src=[R];bm_lobby_action=media_fallback;bm_media_kind=background'\"")
 		parts += static_html
 	else
-		parts += {"<img id="bm-bg" class="bg" src="loading_screen.gif" alt=\"\">"}
+		parts += {"<img id="bm-bg" class="bg" src="loading_screen.gif" alt="" onerror="this.onerror=null;location.href='?src=[R];bm_lobby_action=media_fallback;bm_media_kind=background'">"}
 		parts += {"<div id=\"bm-overlay\"></div>"}
 		parts += {"<div id=\"bm-toasts\"></div>"}
 		parts += {"<div id=\"bm-toggle-btn\" onclick=\"bmToggleSidebar()\" title=\"Свернуть/развернуть меню\">&#9664;</div>"}
@@ -225,13 +246,32 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 		js_url = lobby_asset.get_url_mappings()["bm_lobby.js"]
 		if(SStitle_bm)
 			SStitle_bm.cached_js_url = js_url // кешируем, чтобы не пересчитывать каждый раз
-	// async — не блокирует парсинг HTML; page_ready отправляется только после загрузки скрипта
-	// при кеш-хите (typeof bm_set_admin==='function') init срабатывает сразу синхронно
-	parts += {"<script src=\"[js_url]\" async id=\"bm-js\"></script>"}
+	// async — не блокирует парсинг HTML; page_ready отправляется только после загрузки скрипта.
+	// Если webroot недоступен, onerror просит у DreamDaemon локальную копию того же JS.
 	parts += {"<script>
 (function(){
   var _src='[R]';
-  function __bm_init(){
+  window._BM_SRC=_src;
+  window.__bm_media_fallback_requested={};
+  window.__bm_request_media_fallback=function(kind){
+    if(kind==='background'){
+      if(window.__bm_media_fallback_requested.background) return;
+      window.__bm_media_fallback_requested.background=true;
+    } else if(kind==='audio'){
+      if(window.__bm_media_fallback_requested.audio) return;
+      window.__bm_media_fallback_requested.audio=true;
+    } else if(kind==='script'){
+      if(window.__bm_media_fallback_requested.script) return;
+      window.__bm_media_fallback_requested.script=true;
+    }
+    location.href='?src='+_src+';bm_lobby_action=media_fallback;bm_media_kind='+kind;
+  };
+  window.__bm_apply_background_fallback=function(url){
+    if(typeof bm_set_background==='function') bm_set_background(url);
+    else {var bg=document.getElementById('bm-bg');if(bg){bg.onerror=null;bg.src=url;}}
+  };
+  window.__bm_init=function(){
+    if(typeof bm_set_admin!=='function') return;
     window._BM_SRC=_src;
     bm_update_nsfw_indicator([show_nsfw ? 1 : 0]);
     bm_update_admin_bg_indicator([show_admin_bg ? 1 : 0]);
@@ -240,11 +280,16 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
     [antag_js]
     [notice_js]
     if(!window.__bm_page_ready_sent){window.__bm_page_ready_sent=true;location.href='?src='+_src+';bm_lobby_action=page_ready';}
-  }
-  if(typeof bm_set_admin==='function'){__bm_init();}
-  else{document.getElementById('bm-js').addEventListener('load',__bm_init);}
+  };
+  window.__bm_load_lobby_script=function(url){
+    if(typeof bm_set_admin==='function'){window.__bm_init();return;}
+    var script=document.createElement('script');
+    script.src=url;script.async=true;script.onload=window.__bm_init;
+    document.head.appendChild(script);
+  };
 })();
-</script>"}
+</script>
+<script src="[js_url]" async id="bm-js" onload="window.__bm_init()" onerror="window.__bm_request_media_fallback('script')"></script>"}
 
 	parts += "</body></html>"
 	return parts.Join("")
@@ -312,6 +357,21 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 			SStitle_bm?.push_player_count_to(src)
 			if(bm_lobby_music_path != "" || SSticker?.login_music)
 				client.bm_push_lobby_music()
+			return
+
+		if("media_fallback")
+			switch(href_list["bm_media_kind"])
+				if("loading")
+					bm_push_local_background(SStitle_bm?.loading_image, TRUE)
+				if("background")
+					bm_push_local_background(bm_lobby_background_path)
+				if("audio")
+					client.bm_push_local_lobby_music()
+				if("script")
+					var/local_script = fcopy_rsc('modular_bluemoon/assets/js/bm_lobby.js')
+					if(local_script)
+						src << browse(local_script, "file=bm_lobby_fallback.js;display=0")
+						client << output("bm_lobby_fallback.js", "bm_lobby_browser:__bm_load_lobby_script")
 			return
 
 		if("toggle_ready")

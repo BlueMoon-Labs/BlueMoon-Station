@@ -13,6 +13,7 @@
 
 # Generated in a TGS deployment copy between PreCompile and PostCompile.
 /.rsc-deploy.json
+/.rsc-deployment.dm
 
 # Ignore compiled linux libs in the root folder, e.g. librust_g.so
 /*.so
