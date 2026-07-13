@@ -5218,9 +5218,8 @@
 	dir = 4
 	},
 /obj/structure/table/wood,
-/obj/item/radio/intercom{
+/obj/item/radio/intercom/command{
 	dir = 8;
-	freerange = 1;
 	name = "Station Intercom (Command)"
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
@@ -10909,12 +10908,10 @@
 	pixel_x = -24;
 	pixel_y = -36
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -27;
 	pixel_y = -27;
-	prison_radio = 1
 	},
 /obj/machinery/light/small{
 	dir = 8
@@ -34909,10 +34906,8 @@
 /obj/effect/turf_decal/siding/dark_red{
 	dir = 4
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	prison_radio = 1;
 	pixel_x = 30
 	},
 /turf/open/floor/plasteel/textured/half{
@@ -39049,8 +39044,7 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
-/obj/item/radio/intercom{
-	freerange = 1;
+/obj/item/radio/intercom/command{
 	frequency = 1424;
 	name = "Interrogation Intercom";
 	pixel_y = -10;
@@ -46437,12 +46431,10 @@
 /obj/machinery/light/small{
 	dir = 8
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -27;
 	pixel_y = -27;
-	prison_radio = 1
 	},
 /obj/machinery/flasher{
 	id = "Cell 2";
@@ -49332,11 +49324,9 @@
 /obj/effect/turf_decal/tile/blue/opposingcorners{
 	dir = 8
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = 30;
-	prison_radio = 1
 	},
 /turf/open/floor/plasteel/cafeteria,
 /area/security/prison/rec)
@@ -61246,9 +61236,8 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 4
 	},
-/obj/item/radio/intercom{
+/obj/item/radio/intercom/command{
 	broadcasting = 1;
-	freerange = 1;
 	frequency = 1424;
 	listening = 0;
 	name = "Interrogation Intercom";
@@ -66793,12 +66782,10 @@
 /obj/machinery/light/small{
 	dir = 8
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -27;
 	pixel_y = -27;
-	prison_radio = 1
 	},
 /obj/machinery/flasher{
 	id = "Cell 3";
@@ -73819,9 +73806,8 @@
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/factory)
 "tbr" = (
-/obj/item/radio/intercom{
+/obj/item/radio/intercom/command{
 	dir = 8;
-	freerange = 1;
 	name = "Station Intercom (Command)";
 	pixel_y = -32
 	},
@@ -85641,11 +85627,9 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 8
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = 30;
-	prison_radio = 1
 	},
 /turf/open/floor/wood/wood_large,
 /area/security/prison/rec)

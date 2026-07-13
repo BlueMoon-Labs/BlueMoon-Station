@@ -1895,8 +1895,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/listeningstation)
 "uU" = (
-/obj/item/radio/intercom{
-	freerange = 1;
+/obj/item/radio/intercom/command{
 	name = "Syndicate Radio Intercom";
 	pixel_x = -30
 	},

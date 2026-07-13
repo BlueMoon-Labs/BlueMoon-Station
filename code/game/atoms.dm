@@ -253,8 +253,19 @@
 		var/turf/T = loc
 		T.has_opaque_atom = TRUE // No need to recalculate it in this case, it's guaranteed to be on afterwards anyways.
 
-	if (canSmoothWith)
+	if (canSmoothWith && islist(canSmoothWith) && !(smoothing_flags & USES_SMOOTHING))
 		canSmoothWith = typelist("canSmoothWith", canSmoothWith)
+
+	if (smoothing_flags & USES_SMOOTHING)
+		if(islist(canSmoothWith) && istext(initial(canSmoothWith)))
+			canSmoothWith = initial(canSmoothWith)
+		if(islist(smoothing_groups) && istext(initial(smoothing_groups)))
+			smoothing_groups = initial(smoothing_groups)
+
+	SETUP_SMOOTHING()
+
+	if (smoothing_flags & USES_SMOOTHING)
+		QUEUE_SMOOTH(src)
 
 	// apply materials properly from the default custom_materials value
 	set_custom_materials(custom_materials)

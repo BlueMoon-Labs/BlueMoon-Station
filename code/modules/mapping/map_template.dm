@@ -102,6 +102,7 @@
 	//initialize things that are normally initialized after map load
 	parsed.initTemplateBounds()
 	smooth_zlevel(world.maxz)
+	smooth_zlevel_bitmask(world.maxz)
 	log_game("Z-level [name] loaded at [x],[y],[world.maxz]")
 	on_map_loaded(world.maxz, parsed.bounds)
 

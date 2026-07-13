@@ -31426,11 +31426,9 @@
 /area/maintenance/department/electrical)
 "cQs" = (
 /obj/structure/table/wood,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -30;
-	prison_radio = 1
 	},
 /turf/open/floor/plasteel/dark/textured,
 /area/security/prison/upper)
@@ -64998,10 +64996,8 @@
 	name = "Privacy Shutters";
 	pixel_x = 25
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	prison_radio = 1;
 	pixel_y = -30
 	},
 /turf/open/floor/plasteel/dark/textured,
@@ -65322,11 +65318,9 @@
 	network = list("ss13","prison");
 	dir = 4
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -30;
-	prison_radio = 1
 	},
 /turf/open/floor/plasteel/dark/textured,
 /area/security/prison/upper)
@@ -87647,9 +87641,8 @@
 /area/service/chapel/main)
 "mfB" = (
 /obj/structure/table/wood,
-/obj/item/radio/intercom{
+/obj/item/radio/intercom/command{
 	dir = 8;
-	freerange = 1;
 	name = "Captain's Intercom";
 	pixel_x = -26
 	},
@@ -98883,11 +98876,9 @@
 /obj/effect/turf_decal/tile/red{
 	dir = 4
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = 30;
-	prison_radio = 1
 	},
 /turf/open/floor/plasteel,
 /area/security/prison/upper)
@@ -126535,11 +126526,9 @@
 /turf/open/floor/plasteel,
 /area/security/prison/upper)
 "wWP" = (
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -30;
-	prison_radio = 1
 	},
 /turf/open/floor/plasteel/dark/textured,
 /area/security/prison/upper)

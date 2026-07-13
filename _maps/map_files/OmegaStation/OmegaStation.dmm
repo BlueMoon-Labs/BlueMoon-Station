@@ -2676,9 +2676,8 @@
 /turf/open/floor/wood,
 /area/command/heads_quarters/captain/private)
 "afo" = (
-/obj/item/radio/intercom{
+/obj/item/radio/intercom/command{
 	dir = 8;
-	freerange = 1;
 	name = "Captain's Intercom";
 	pixel_x = 26
 	},

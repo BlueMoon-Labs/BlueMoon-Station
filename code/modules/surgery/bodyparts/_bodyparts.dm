@@ -194,6 +194,8 @@
 		playsound(T, 'sound/misc/splort.ogg', 50, 1, -1)
 	if(current_gauze)
 		QDEL_NULL(current_gauze)
+		if(owner)
+			owner.update_bandage_overlays()
 	for(var/obj/item/organ/drop_organ in get_organs())
 		drop_organ.transfer_to_limb(src, owner)
 
@@ -1215,8 +1217,10 @@
 	if(!current_gauze || !owner)
 		return FALSE
 	var/obj/item/stack/medical/gauze/removed = current_gauze
+	var/mob/living/carbon/gauze_owner = owner
 	current_gauze = null
-	removed.forceMove(user || owner)
+	removed.forceMove(user || gauze_owner)
 	if(to_hands && user)
 		user.put_in_hands(removed)
+	gauze_owner.update_bandage_overlays()
 	return TRUE

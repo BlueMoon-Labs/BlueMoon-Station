@@ -9,6 +9,10 @@
 	icon = 'modular_bluemoon/icons/turf/mapping/shipwalls.dmi'
 	icon_state = "ship_walls-0"
 	base_icon_state = "ship_walls"
+	smooth = SMOOTH_FALSE
+	smoothing_flags = SMOOTH_BITMASK | SMOOTH_OBJ | SMOOTH_DIAGONAL_CORNERS
+	smoothing_groups = SMOOTH_GROUP_TITANIUM_WALLS + SMOOTH_GROUP_SHUTTLE_PARTS
+	canSmoothWith = SMOOTH_GROUP_SHUTTLE_PARTS + SMOOTH_GROUP_AIRLOCK + SMOOTH_GROUP_TITANIUM_WALLS + SMOOTH_GROUP_WINDOW_FULLTILE_SHUTTLE
 	sheet_type = /obj/item/stack/sheet/spaceship
 
 /obj/item/stack/sheet/spaceship
@@ -40,10 +44,13 @@ GLOBAL_LIST_INIT(spaceshipglass_recipes, list(
 	. += GLOB.spaceshipglass_recipes
 
 /turf/closed/wall/mineral/titanium/spaceship/nodiagonal
-	icon_state = "map-shuttle_nd"
+	icon_state = "ship_walls-0"
+	smooth = SMOOTH_FALSE
+	smoothing_flags = SMOOTH_BITMASK | SMOOTH_OBJ
 
 /turf/closed/wall/mineral/titanium/spaceship/nosmooth
 	icon_state = "ship_walls-0"
+	smooth = SMOOTH_FALSE
 	smoothing_flags = NONE
 
 /turf/closed/wall/mineral/titanium/spaceship/overspace
@@ -74,9 +81,6 @@ GLOBAL_LIST_INIT(spaceshipglass_recipes, list(
 /obj/structure/window/shuttle/spaceship
 	name = "spaceship window"
 	desc = "A pressure-resistant spaceship window."
-	icon = 'modular_bluemoon/icons/turf/mapping/shipwindows.dmi'
-	icon_state = "pod_window-0"
-	base_icon_state = "pod_window"
 	glass_type = /obj/item/stack/sheet/spaceshipglass
 
 /obj/structure/window/shuttle/spaceship/tinted

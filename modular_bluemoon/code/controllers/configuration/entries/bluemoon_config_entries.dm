@@ -1,3 +1,10 @@
+/datum/config_entry/flag/ssdecay_disabled
+
+/datum/config_entry/number/ssdecay_intensity
+	default = 5
+	max_val = 5
+	min_val = 1
+
 /// Defines whether or not mentors can see ckeys alongside mobnames.
 /datum/config_entry/flag/mentors_mobname_only
 

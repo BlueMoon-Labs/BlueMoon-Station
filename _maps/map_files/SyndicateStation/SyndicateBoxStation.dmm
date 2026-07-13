@@ -112,11 +112,9 @@
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/red,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = 30;
-	prison_radio = 1
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/mineral/plastitanium,
@@ -5400,12 +5398,10 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/tile/blue,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -27;
 	pixel_y = -27;
-	prison_radio = 1
 	},
 /obj/machinery/flasher{
 	id = "Cell 3";
@@ -5676,12 +5672,10 @@
 	pixel_x = -24;
 	pixel_y = -36
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -27;
 	pixel_y = -27;
-	prison_radio = 1
 	},
 /obj/machinery/light/small{
 	dir = 8
@@ -17432,9 +17426,8 @@
 /area/command/meeting_room)
 "bcZ" = (
 /obj/structure/table/wood,
-/obj/item/radio/intercom{
+/obj/item/radio/intercom/command{
 	dir = 8;
-	freerange = 1;
 	name = "Station Intercom (Command)"
 	},
 /turf/open/floor/carpet,
@@ -19255,9 +19248,8 @@
 /turf/open/floor/mineral/plastitanium,
 /area/engineering/gravity_generator)
 "bik" = (
-/obj/item/radio/intercom{
+/obj/item/radio/intercom/command{
 	dir = 8;
-	freerange = 1;
 	name = "Station Intercom (Command)";
 	pixel_x = -28
 	},
@@ -47048,11 +47040,9 @@
 	dir = 8;
 	network = list("ss13","prison")
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = 30;
-	prison_radio = 1
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /turf/open/floor/mineral/plastitanium,
@@ -49141,12 +49131,10 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -1;
 	pixel_y = 30;
-	prison_radio = 1
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/security/prison/upper)
@@ -58463,12 +58451,10 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/tile/yellow,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -27;
 	pixel_y = -27;
-	prison_radio = 1
 	},
 /obj/machinery/flasher{
 	id = "Cell 4";
@@ -60416,12 +60402,10 @@
 /obj/machinery/shower{
 	dir = 8
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -1;
 	pixel_y = 30;
-	prison_radio = 1
 	},
 /turf/open/floor/plasteel/freezer,
 /area/security/prison/cells)
@@ -61280,12 +61264,10 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/tile/green,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -27;
 	pixel_y = -27;
-	prison_radio = 1
 	},
 /obj/machinery/flasher{
 	id = "Cell 2";
@@ -61865,11 +61847,9 @@
 	pixel_y = 8
 	},
 /obj/item/clothing/under/rank/prisoner/skirt,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = 30;
-	prison_radio = 1
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/security/prison/upper)
@@ -62450,12 +62430,10 @@
 /area/maintenance/starboard/aft)
 "pgY" = (
 /obj/machinery/hydroponics/soil,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -1;
 	pixel_y = 30;
-	prison_radio = 1
 	},
 /turf/open/floor/grass/grass0,
 /area/security/prison/upper)
@@ -63258,11 +63236,9 @@
 /obj/structure/cable{
 	icon_state = "1-4"
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -30;
-	prison_radio = 1
 	},
 /turf/open/floor/wood/wood_diagonal,
 /area/security/prison/upper)
@@ -63281,11 +63257,9 @@
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
 	dir = 4
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = 30;
-	prison_radio = 1
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /turf/open/floor/mineral/plastitanium,
@@ -64048,11 +64022,9 @@
 /turf/open/floor/wood/wood_large,
 /area/service/chapel/main)
 "qoA" = (
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -30;
-	prison_radio = 1
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/security/prison/upper)
@@ -66288,11 +66260,9 @@
 	dir = 4;
 	network = list("ss13","prison")
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -30;
-	prison_radio = 1
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /turf/open/floor/mineral/plastitanium,
@@ -66401,11 +66371,9 @@
 /obj/machinery/light{
 	dir = 8
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -30;
-	prison_radio = 1
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 5
@@ -67602,11 +67570,9 @@
 /area/engineering/atmos)
 "sYD" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = 30;
-	prison_radio = 1
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /turf/open/floor/mineral/plastitanium,
@@ -68258,11 +68224,9 @@
 /area/commons/fitness)
 "tAn" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -30;
-	prison_radio = 1
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /turf/open/floor/mineral/plastitanium,
@@ -70113,11 +70077,9 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = 30;
-	prison_radio = 1
 	},
 /turf/open/floor/wood/wood_diagonal,
 /area/security/prison/upper)
@@ -73541,11 +73503,9 @@
 /area/hallway/primary/central)
 "xnl" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = 30;
-	prison_radio = 1
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/security/prison/upper)

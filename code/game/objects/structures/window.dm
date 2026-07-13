@@ -369,6 +369,8 @@
 /obj/structure/window/setAnchored(anchorvalue)
 	..()
 	air_update_turf(TRUE)
+	if(smoothing_flags & USES_SMOOTHING)
+		QUEUE_SMOOTH(src)
 	update_nearby_icons()
 
 /obj/structure/window/proc/electrochromatic_dim()
@@ -561,18 +563,22 @@
 //This proc is used to update the icons of nearby windows.
 /obj/structure/window/proc/update_nearby_icons()
 	update_icon()
-	if(smooth)
+	if(smoothing_flags & USES_SMOOTHING)
+		QUEUE_SMOOTH_NEIGHBORS(src)
+	else if(smooth)
 		queue_smooth_neighbors(src)
 
 //merges adjacent full-tile windows into one
-/obj/structure/window/update_overlays()
+/obj/structure/window/update_overlays(updates = ALL)
 	. = ..()
 	if(QDELETED(src) || !fulltile)
 		return
 	var/ratio = obj_integrity / max_integrity
 	ratio = CEILING(ratio*4, 1) * 25
 
-	if(smooth)
+	if(smoothing_flags & USES_SMOOTHING)
+		QUEUE_SMOOTH(src)
+	else if(smooth)
 		queue_smooth(src)
 
 	if(ratio > 75)

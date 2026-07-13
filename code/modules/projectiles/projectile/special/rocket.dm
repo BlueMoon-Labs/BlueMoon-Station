@@ -13,7 +13,7 @@
 	name = "\improper HE rocket"
 	desc = "Boom."
 	icon_state= "missile"
-	damage = 150
+	damage = 200
 	sharpness = NONE
 	shrapnel_type = null
 	ricochets_max = 0
@@ -56,7 +56,7 @@ among other potential differences. This granularity is helpful for things like t
 	name = "\improper HEAP rocket"
 	desc = "I am become death."
 	icon_state = "84mm-heap"
-	damage = 200
+	damage = 250
 	armour_penetration = 100
 	dismemberment = 100
 	anti_armour_damage = 50
@@ -68,7 +68,7 @@ among other potential differences. This granularity is helpful for things like t
 	name ="\improper HE missile"
 	desc = "Boom."
 	icon_state = "missile"
-	damage = 100
+	damage = 150
 	dismemberment = 50
 	anti_armour_damage = 100
 
