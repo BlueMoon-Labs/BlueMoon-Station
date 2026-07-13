@@ -11,7 +11,7 @@
 	intensity = 45
 	intensity_linger = 45 MINUTES // штурм живёт заметно дольше спавнера
 	antag_heavy = TRUE // командный асолт: мягкие профили такое выключают
-	family = "pirates" // с рулсетом-двойником динамика (он запускает это же событие): не подряд
+	family = "warmongers" // с рулсетом-двойником динамика (он запускает это же событие): не подряд
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // не экста и не лайт
 	description = "Medieval space pirates will demand homage or assault the station."
 
@@ -157,6 +157,7 @@
 		S.brutemod *= 0.5
 		S.burnmod *= 0.5
 		S.coldmod *= 0.5
+	new_spawn.mind.add_antag_datum(/datum/antagonist/warmonger)
 
 /obj/effect/mob_spawn/human/medieval/Destroy()
 	return ..()
@@ -182,6 +183,7 @@
 		REMOVE_TRAIT(H, TRAIT_NOGUNS, INNATE_TRAIT)
 		H.dna.add_mutation(/datum/mutation/human/hulk/superhuman)
 		H.dna.add_mutation(/datum/mutation/human/gigantism)
+	new_spawn.mind.add_antag_datum(/datum/antagonist/warmonger)
 
 /obj/effect/mob_spawn/human/medieval/warlord/Destroy()
 	return ..()
@@ -218,8 +220,10 @@
 	head = /obj/item/clothing/head/helmet/military
 	mask = /obj/item/clothing/mask/balaclava
 	shoes = /obj/item/clothing/shoes/workboots
-	belt = /obj/item/claymore/shortsword
-	l_pocket = /obj/item/flashlight/flare/torch
+	belt = /obj/item/claymore
+	l_hand = /obj/item/flashlight/flare/torch
+	backpack_contents = list(/obj/item/storage/box/syndie_kit/throwing_weapons)
+
 
 /datum/outfit/medieval/warlord
 	name = "Medieval Warlord"
