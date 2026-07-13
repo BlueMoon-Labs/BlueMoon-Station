@@ -20,6 +20,20 @@
 			return BULLET_ACT_BLOCK
 		M.death(0)
 
+/obj/item/projectile/magic/dust
+	name = "bolt of dust"
+	icon_state = "pulse1_bl"
+
+/obj/item/projectile/magic/dust/on_hit(target)
+	. = ..()
+	if(!ismob(target))
+		return
+	var/mob/M = target
+	if(M.anti_magic_check())
+		M.visible_message("<span class='warning'>[src] vanishes on contact with [target]!</span>")
+		return BULLET_ACT_BLOCK
+	M.dust(TRUE, FALSE)
+
 /obj/item/projectile/magic/resurrection
 	name = "bolt of resurrection"
 	icon_state = "ion"
