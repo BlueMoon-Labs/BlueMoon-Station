@@ -15,10 +15,9 @@
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // не экста и не лайт
 	description = "Medieval space pirates will demand homage or assault the station."
 
-/datum/round_event_control/medieval_warmongers/preRunEvent()
+/datum/round_event_control/medieval_warmongers/preRunEvent(admin_window = TRUE)
 	if(!SSmapping.empty_space && !length(SSmapping.levels_by_trait(ZTRAIT_SPACE_RUINS)) && !SSmapping.station_start)
 		return EVENT_CANT_RUN
-	return ..()
 
 /datum/round_event/medieval_warmongers
 	var/warmongers_spawned = FALSE
