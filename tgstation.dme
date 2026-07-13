@@ -5131,6 +5131,7 @@
 #include "modular_bluemoon\krashly\code\uplink\uplink.dm"
 #include "modular_bluemoon\krashly\code\uplink\uplink_items.dm"
 #include "modular_bluemoon\krashly\modulars\clownfart\code.dm"
+#include "modular_bluemoon\modular_skyrat\modules\space_vines\scythes.dm"
 #include "modular_bluemoon\phenyamomota\code\modules\clothing\labcoat.dm"
 #include "modular_bluemoon\phenyamomota\code\modules\clothing\under_med.dm"
 #include "modular_bluemoon\phenyamomota\code\modules\clothing\under_sci.dm"
