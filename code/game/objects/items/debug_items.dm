@@ -165,16 +165,14 @@
 
 	playsound(user, 'sound/magic/wandodeath.ogg', 50, 1)
 
+	log_admin("[key_name(user)] deleted [target] [coords] with [src]")
+	message_admins("[key_name_admin(user)] deleted [target] [jmp_coords] with [src]")
+	SSblackbox.record_feedback("tally", "eraser", 1, "Delete")  //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 	if(isturf(target))
 		var/turf/T = target
 		T.ScrapeAway()
 	else
 		qdel(target)
-
-	if(QDELETED(target))
-		log_admin("[key_name(user)] deleted [target] [coords] with [src]")
-		message_admins("[key_name_admin(user)] deleted [target] [jmp_coords] with [src]")
-		SSblackbox.record_feedback("tally", "eraser", 1, "Delete")  //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
 /obj/item/debug/eraser/attack_self(mob/user)
 	. = ..()
