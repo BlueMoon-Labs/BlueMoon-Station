@@ -758,6 +758,8 @@
 
 /// Returns selected language, if it can be spoken, or finds, sets and returns a new selected language if possible.
 /atom/movable/proc/get_selected_language()
+	if(QDELING(src))
+		return
 	return get_language_holder().get_selected_language()
 
 /// Gets a random understood language, useful for hallucinations and such.

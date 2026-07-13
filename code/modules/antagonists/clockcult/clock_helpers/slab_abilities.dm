@@ -6,6 +6,8 @@
 	var/in_progress = FALSE
 
 /obj/effect/proc_holder/slab/Destroy()
+	if(!QDELETED(slab) && slab.slab_ability == src)
+		slab.slab_ability = null
 	slab = null
 	return ..()
 

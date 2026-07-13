@@ -12,19 +12,33 @@
 
 /datum/component/personal_crafting
 	var/busy
+	var/mode = FALSE //FALSE = craft mode, TRUE = cook mode
 	var/viewing_category = 1 //typical powergamer starting on the Weapons tab
 	var/viewing_subcategory = 1
 	var/list/categories = list(
 				CAT_WEAPONRY = list(
+					CAT_MELEE,
 					CAT_WEAPON,
 					CAT_AMMO,
 				),
 				CAT_ROBOT = CAT_NONE,
 				CAT_MISCELLANEOUS = list(
 					CAT_MISCELLANEOUS,
-					CAT_TOOL,
-					CAT_FURNITURE,
 				),
+				CAT_OTHER = CAT_NONE,
+				CAT_STRUCTURES = CAT_NONE,
+				CAT_TOOL = CAT_NONE,
+				CAT_FURNITURE = CAT_NONE,
+				CAT_TILES = CAT_NONE,
+				CAT_WINDOWS = CAT_NONE,
+				CAT_DOORS = CAT_NONE,
+				CAT_EQUIPMENT = CAT_NONE,
+				CAT_CONTAINERS = CAT_NONE,
+				CAT_ENTERTAINMENT = CAT_NONE,
+				CAT_GARDENING = CAT_NONE,
+				CAT_DECOR = CAT_NONE,
+				CAT_CHEMISTRY = CAT_NONE,
+				CAT_CLOTHING = CAT_NONE,
 				CAT_ATMOSPHERIC = list(
 					CAT_ATMOSPHERICS,
 				),
@@ -47,9 +61,9 @@
 					CAT_SANDWICH,
 					CAT_SOUP,
 					CAT_SPAGHETTI,
+					CAT_EAST,
 				),
 				CAT_DRINK = CAT_NONE,
-				CAT_CLOTHING = CAT_NONE,
 			)
 
 	var/cur_category = CAT_NONE
@@ -361,6 +375,7 @@
 /datum/component/personal_crafting/ui_data(mob/user)
 	var/list/data = list()
 	data["busy"] = busy
+	data["mode"] = mode
 	data["category"] = cur_category
 	data["subcategory"] = cur_subcategory
 	data["display_craftable_only"] = display_craftable_only
@@ -368,6 +383,8 @@
 
 	var/list/surroundings = get_surroundings(user)
 	var/list/craftability = list()
+	var/list/max_crafts = list()
+	var/list/craft_errors = list()
 
 	if(search_query && search_query != "")	// If we're currently using a search tab, use this check
 		for(var/rec in GLOB.crafting_recipes)
@@ -388,7 +405,15 @@
 			if(!matched)
 				continue	// No matches by name or ingridients
 
-			craftability["[REF(R)]"] = check_contents(user, R, surroundings)
+			if(check_contents(user, R, surroundings))
+				craftability["[REF(R)]"] = TRUE
+				if(check_tools(user, R, surroundings))
+					max_crafts["[REF(R)]"] = count_possible_crafts(R, surroundings)
+				else
+					craft_errors["[REF(R)]"] = "Нет нужных инструментов"
+			else
+				craftability["[REF(R)]"] = FALSE
+				craft_errors["[REF(R)]"] = "Нет нужных ингредиентов"
 	else	// Not searching right now, check for category
 		for(var/rec in GLOB.crafting_recipes)
 			var/datum/crafting_recipe/R = rec
@@ -399,14 +424,26 @@
 			if((R.category != cur_category) || (R.subcategory != cur_subcategory))
 				continue
 
-			craftability["[REF(R)]"] = check_contents(user, R, surroundings)
+			if(check_contents(user, R, surroundings))
+				craftability["[REF(R)]"] = TRUE
+				if(check_tools(user, R, surroundings))
+					max_crafts["[REF(R)]"] = count_possible_crafts(R, surroundings)
+				else
+					craft_errors["[REF(R)]"] = "Нет нужных инструментов"
+			else
+				craftability["[REF(R)]"] = FALSE
+				craft_errors["[REF(R)]"] = "Нет нужных ингредиентов"
 
 	data["craftability"] = craftability
+	data["max_crafts"] = max_crafts
+	data["craft_errors"] = craft_errors
 
 	return data
 
 /datum/component/personal_crafting/ui_static_data(mob/user)
 	var/list/data = list()
+
+	data["mode"] = mode
 
 	var/list/crafting_recipes = list()
 	for(var/rec in GLOB.crafting_recipes)
@@ -461,6 +498,8 @@
 			else
 				to_chat(user, "<span class='warning'>Construction failed[result]</span>")
 			busy = FALSE
+			ui_interact(user)
+			. = TRUE
 		if("toggle_recipes")
 			display_craftable_only = !display_craftable_only
 			. = TRUE
@@ -474,39 +513,133 @@
 		if("search")
 			search_query = params["query"]
 			. = TRUE
+		if("toggle_mode")
+			mode = !mode
+			. = TRUE
+		if("make_mass")
+			var/mob/user = usr
+			var/datum/crafting_recipe/TR = locate(params["recipe"]) in GLOB.crafting_recipes
+			busy = TRUE
+			ui_interact(user)
+			for(var/i in 1 to 100)
+				var/atom/movable/result = construct_item(user, TR)
+				if(istext(result))
+					break
+				if(ismob(user) && isitem(result))
+					user.put_in_hands(result)
+				else
+					result.forceMove(user.drop_location())
+			busy = FALSE
+			ui_interact(user)
+			. = TRUE
+		if("make_multiple")
+			var/mob/user = usr
+			var/datum/crafting_recipe/TR = locate(params["recipe"]) in GLOB.crafting_recipes
+			busy = TRUE
+			ui_interact(user)
+			for(var/i in 1 to clamp(text2num(params["count"]), 1, 100))
+				var/atom/movable/result = construct_item(user, TR)
+				if(istext(result))
+					break
+				if(ismob(user) && isitem(result))
+					user.put_in_hands(result)
+				else
+					result.forceMove(user.drop_location())
+			busy = FALSE
+			ui_interact(user)
+			. = TRUE
+
+/datum/component/personal_crafting/proc/count_possible_crafts(datum/crafting_recipe/R, list/contents)
+	var/list/possible_counts = list()
+
+	for(var/a in R.reqs)
+		var/needed = R.reqs[a]
+		var/available = 0
+		for(var/content_type in contents["other"])
+			if(ispath(content_type, a) && !R.blacklist.Find(content_type))
+				available += contents["other"][content_type]
+		if(available < needed)
+			return 0
+		possible_counts += round(available / needed)
+
+	for(var/a in R.chem_catalysts)
+		var/needed = R.chem_catalysts[a]
+		var/available = contents["other"][a] || 0
+		if(available < needed)
+			return 0
+
+	if(!possible_counts.len)
+		return 1
+	return min(possible_counts)
 
 /datum/component/personal_crafting/proc/build_recipe_data(datum/crafting_recipe/R)
 	var/list/data = list()
 	data["name"] = R.name
+	data["desc"] = R.desc
 	data["ref"] = "[REF(R)]"
+	data["category"] = R.category
+	data["subcategory"] = R.subcategory
+	data["complexity"] = R.complexity
+	data["mass_craftable"] = R.mass_craftable
+	if(R.result)
+		data["icon_data"] = get_cached_item_icon(R.result)
 	var/req_text = ""
 	var/tool_text = ""
-	var/catalyst_text = ""
+	var/list/reqs_detail = list()
+	var/list/catalysts_detail = list()
+	var/list/tools_detail = list()
 
 	for(var/a in R.reqs)
-		//We just need the name, so cheat-typecast to /atom for speed (even tho Reagents are /datum they DO have a "name" var)
-		//Also these are typepaths so sadly we can't just do "[a]"
 		var/atom/A = a
 		req_text += " [R.reqs[A]] [initial(A.name)],"
+		var/list/entry = list()
+		entry["name"] = initial(A.name)
+		entry["amount"] = R.reqs[A]
+		entry["icon_data"] = get_cached_item_icon(A)
+		reqs_detail += list(entry)
 	req_text = replacetext(req_text,",","",-1)
 	data["req_text"] = req_text
+	data["reqs_detail"] = reqs_detail
 
 	for(var/a in R.chem_catalysts)
-		var/atom/A = a //cheat-typecast
-		catalyst_text += " [R.chem_catalysts[A]] [initial(A.name)],"
-	catalyst_text = replacetext(catalyst_text,",","",-1)
-	data["catalyst_text"] = catalyst_text
+		var/atom/A = a
+		var/list/entry = list()
+		entry["name"] = initial(A.name)
+		entry["amount"] = R.chem_catalysts[A]
+		entry["icon_data"] = get_cached_item_icon(A)
+		catalysts_detail += list(entry)
+	data["catalysts_detail"] = catalysts_detail
 
 	for(var/a in R.tools)
 		if(ispath(a, /obj/item))
 			var/obj/item/b = a
 			tool_text += " [initial(b.name)],"
+			var/list/entry = list()
+			entry["name"] = initial(b.name)
+			entry["icon_data"] = get_cached_item_icon(b)
+			tools_detail += list(entry)
 		else
 			tool_text += " [a],"
+			tools_detail += list(list("name" = "[a]"))
 	tool_text = replacetext(tool_text,",","",-1)
 	data["tool_text"] = tool_text
+	data["tools_detail"] = tools_detail
 
 	return data
+
+/proc/get_cached_item_icon(atom/path)
+	var/static/list/icon_cache = list()
+	var/key = "[path]"
+	if(icon_cache[key])
+		return icon_cache[key]
+	var/icon_file = initial(path.icon)
+	if(!icon_file)
+		return null
+	var/icon/I = icon(icon_file, initial(path.icon_state), SOUTH, 1)
+	if(!isicon(I))
+		return null
+	. = icon2base64(I)
+	icon_cache[key] = .
 
 //Mind helpers
 

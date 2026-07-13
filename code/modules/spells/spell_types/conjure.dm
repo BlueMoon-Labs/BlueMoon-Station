@@ -91,8 +91,7 @@
 				C.put_in_hands(make_item(), TRUE)
 
 /obj/effect/proc_holder/spell/targeted/conjure_item/Destroy()
-	if(item)
-		qdel(item)
+	QDEL_NULL(item)
 	return ..()
 
 /obj/effect/proc_holder/spell/targeted/conjure_item/proc/make_item()

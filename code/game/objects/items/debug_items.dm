@@ -13,15 +13,15 @@
 	var/valid_species = list()
 
 /obj/item/debug/human_spawner/afterattack(atom/target, mob/user, proximity)
-	..()
+	. = ..()
 	if(isturf(target))
 		var/mob/living/carbon/human/H = new /mob/living/carbon/human(target)
 		if(selected_species)
 			H.set_species(selected_species)
 
 /obj/item/debug/human_spawner/attack_self(mob/user)
-	..()
-	var/choice = input("Select a species", "Human Spawner", null) in GLOB.species_list
+	. = ..()
+	var/choice = tgui_input_list(user, "Select a species", "Human Spawner", GLOB.species_list)
 	selected_species = GLOB.species_list[choice]
 
 // Revive this once we purge all the istype checks for tools for tool_behaviour
@@ -102,3 +102,92 @@
 			tool_behaviour = TOOL_BLOODFILTER
 		if("Saw")
 			tool_behaviour = TOOL_SAW
+
+#define ERASER_MODE_MOB "mob"
+#define ERASER_MODE_OBJ "obj_item"
+#define ERASER_MODE_TURF "turf"
+#define ERASER_MODE_ALL "all"
+
+/obj/item/debug/eraser
+	name = "eraser"
+	desc = "Erases things from reality."
+	icon = 'icons/obj/guns/magic.dmi'
+	icon_state = "arcanewand"
+	item_state = "wand"
+	lefthand_file = 'icons/mob/inhands/items_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/items_righthand.dmi'
+	w_class = WEIGHT_CLASS_SMALL
+	var/mode = ERASER_MODE_MOB
+	var/static/list/mode_desc = list(
+		ERASER_MODE_MOB = "mobs",
+		ERASER_MODE_OBJ = "items and objects",
+		ERASER_MODE_TURF = "turfs",
+		ERASER_MODE_ALL = "all",
+	)
+	var/punish_process = FALSE
+
+/obj/item/debug/eraser/examine(mob/user)
+	. = ..()
+	. += span_notice("<b>Erasing mode: [mode_desc[mode]].</b>")
+
+/obj/item/debug/eraser/afterattack(atom/target, mob/user, proximity)
+	. = ..()
+	if(!user.client?.holder)
+		if(punish_process)
+			return
+		to_chat(user, span_userdanger("У ТЕБЯ НЕТ МОГУЩЕСТВА!"))
+		punish_process = TRUE
+		lightningbolt(user)
+		punish_process = FALSE
+		return
+	if(user == target)
+		to_chat(user, span_warning("Ты правда хотел стереть себя?"))
+		return
+	if(istype(target, /atom/movable/screen))
+		return
+	if(mode == ERASER_MODE_MOB && !ismob(target))
+		return
+	if(mode == ERASER_MODE_OBJ && !isobj(target))
+		return
+	if(mode == ERASER_MODE_TURF && (!isturf(target) || isspaceturf(target)))
+		return
+
+	var/atom/A = target
+	var/coords = ""
+	var/jmp_coords = ""
+	if(istype(A))
+		var/turf/T = get_turf(A)
+		if(T)
+			coords = "at [COORD(T)]"
+			jmp_coords = "at [ADMIN_COORDJMP(T)]"
+		else
+			jmp_coords = coords = "in nullspace"
+
+	playsound(user, 'sound/magic/wandodeath.ogg', 50, 1)
+
+	log_admin("[key_name(user)] deleted [target] [coords] with [src]")
+	message_admins("[key_name_admin(user)] deleted [target] [jmp_coords] with [src]")
+	SSblackbox.record_feedback("tally", "eraser", 1, "Delete")  //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
+	if(isturf(target))
+		var/turf/T = target
+		T.ScrapeAway()
+	else
+		qdel(target)
+
+/obj/item/debug/eraser/attack_self(mob/user)
+	. = ..()
+	switch(mode)
+		if(ERASER_MODE_MOB)
+			mode = ERASER_MODE_OBJ
+		if(ERASER_MODE_OBJ)
+			mode = ERASER_MODE_TURF
+		if(ERASER_MODE_TURF)
+			mode = ERASER_MODE_ALL
+		else
+			mode = ERASER_MODE_MOB
+	user.balloon_alert(user, "Now erase only: [mode_desc[mode]]")
+
+#undef ERASER_MODE_MOB
+#undef ERASER_MODE_OBJ
+#undef ERASER_MODE_TURF
+#undef ERASER_MODE_ALL
