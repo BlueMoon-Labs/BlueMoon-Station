@@ -3020,6 +3020,7 @@
 		return
 	if(!ckey)
 		return
+	ckey = ckey(ckey)
 	var/client/C = GLOB.directory[ckey]
 	if(C)
 		if(check_rights_for(C, R_ADMIN,0))
@@ -3050,8 +3051,12 @@
 			return
 	else
 		to_chat(usr, "<span class='danger'>Failed to establish database connection. The changes will last only for the current round.</span>")
-	new /datum/mentors(ckey)
-	to_chat(usr, "<span class='adminnotice'>New mentor added.</span>")
+	var/datum/mentors/mentor_datum = GLOB.mentor_datums[ckey]
+	if(mentor_datum)
+		mentor_datum.promote_super_mentor()
+	else
+		new /datum/mentors(ckey, TRUE)
+	to_chat(usr, "<span class='adminnotice'>New super mentor added.</span>")
 
 /datum/admins/proc/removeMentor(ckey)
 	if(!usr.client)
@@ -3060,14 +3065,18 @@
 		return
 	if(!ckey)
 		return
+	ckey = ckey(ckey)
 	var/client/C = GLOB.directory[ckey]
 	if(C)
 		if(check_rights_for(C, R_ADMIN,0))
 			to_chat(usr, "<span class='danger'>The client chosen is an admin, not a mentor! Cannot de-mentorize.</span>")
 			return
-		C.remove_mentor_verbs()
-		C.mentor_datum = null
-		GLOB.mentors -= C
+		if(C.mentor_datum)
+			C.become_inactive_mentor()
+	var/datum/mentors/mentor_datum = GLOB.mentor_datums[ckey]
+	mentor_datum?.demote_super_mentor()
+	if(C && !C.mentor_datum)
+		C.ensure_mentor_datum()
 	if(SSdbcore.Connect())
 		var/datum/db_query/query_remove_mentor = SSdbcore.NewQuery("DELETE FROM [format_table_name("mentor")] WHERE ckey = '[ckey]'")
 		if(!query_remove_mentor.warn_execute())
@@ -3077,4 +3086,4 @@
 			return
 	else
 		to_chat(usr, "<span class='danger'>Failed to establish database connection. The changes will last only for the current round.</span>")
-	to_chat(usr, "<span class='adminnotice'>Mentor removed.</span>")
+	to_chat(usr, "<span class='adminnotice'>Super mentor rank removed.</span>")

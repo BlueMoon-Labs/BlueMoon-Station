@@ -86,6 +86,20 @@ GLOBAL_PROTECT(mentor_href_token)
 /proc/MentorHrefToken(forceGlobal = FALSE)
 	return "mentor_token=[RawMentorHrefToken(forceGlobal)]"
 
+/// Ensures every connected player has a mentor datum they can opt into.
+/client/proc/ensure_mentor_datum()
+	var/player_ckey = ckey
+	if(!player_ckey)
+		return FALSE
+	mentor_datum = GLOB.mentor_datums[player_ckey]
+	if(mentor_datum)
+		mentor_datum.owner = src
+		return TRUE
+	var/auto_super = check_rights_for(src, R_ADMIN, 0)
+	new /datum/mentors(player_ckey, auto_super)
+	mentor_datum = GLOB.mentor_datums[player_ckey]
+	return !!mentor_datum
+
 // new client var: mentor_datum. Acts the same way holder does towards admin: it holds the mentor datum. if set, the guy's a mentor.
 /client
 	/// Acts the same way holder does towards admin: it holds the mentor datum. if set, the guy's a mentor.

@@ -8,6 +8,7 @@
 
 /datum/admins/disassociate()
 	if(owner)
-		owner.remove_mentor_verbs()
-		owner.mentor_datum = null
+		if(owner.mentor_datum)
+			owner.become_inactive_mentor()
+		owner.mentor_datum_set()
 	..()

@@ -342,7 +342,7 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 
 		if("toggle_mentor")
 			_bm_play_click_sound()
-			if(!client?.mentor_datum)
+			if(!client?.ensure_mentor_datum())
 				client << output("Нет менторского доступа.", "bm_lobby_browser:bm_show_notice")
 				return
 			var/mentor_on = client.toggle_active_mentor()

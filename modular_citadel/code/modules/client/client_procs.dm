@@ -40,26 +40,20 @@
 		return TRUE
 
 /client/proc/mentor_datum_set(admin) //BLUEMOON EDIT: PLAYER RANKS
-	var/player_ckey = ckey
-	mentor_datum = GLOB.mentor_datums[player_ckey]
-	if(!mentor_datum)
-		var/auto_super = check_rights_for(src, R_ADMIN, 0)
-		new /datum/mentors(player_ckey, auto_super)
-		mentor_datum = GLOB.mentor_datums[player_ckey]
+	if(!ensure_mentor_datum())
+		return
+	if(/client/proc/cmd_mentor_become in verbs)
+		add_become_mentor_verb()
 	else
-		mentor_datum.owner = src
-		if(/client/proc/cmd_mentor_become in verbs)
-			add_become_mentor_verb()
-		else
-			add_mentor_verbs()
-			if(mentor_datum.is_super && !check_rights_for(src, R_ADMIN, 0))
-				GLOB.mentors |= src
+		add_mentor_verbs()
+		if(mentor_datum.is_super && !check_rights_for(src, R_ADMIN, 0))
+			GLOB.mentors |= src
 
 	if(mentor_datum?.is_super)
 		mentor_memo_output("Show")
 
-/client/proc/is_mentor(admin_bypass = TRUE) // all connected players are mentors; admins count too.
-	return mentor_datum || (admin_bypass && check_rights_for(src, R_ADMIN))
+/client/proc/is_mentor(admin_bypass = TRUE)
+	return is_active_mentor() || (admin_bypass && check_rights_for(src, R_ADMIN))
 
 /client/proc/is_super_mentor()
 	if(check_rights_for(src, R_ADMIN))

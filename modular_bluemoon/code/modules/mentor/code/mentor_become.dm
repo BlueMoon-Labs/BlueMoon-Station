@@ -13,7 +13,7 @@
 	set category = "Mentor"
 	set name = "Стать ментором"
 	set desc = "Включить менторские инструменты и начать отвечать на обращения."
-	if(!mentor_datum)
+	if(!ensure_mentor_datum())
 		return
 	add_mentor_verbs()
 	if(is_super_mentor() && !check_rights_for(src, R_ADMIN, 0))
@@ -27,7 +27,7 @@
 
 /// Toggles mentor mode. Returns TRUE when mentor tools are now active.
 /client/proc/toggle_active_mentor()
-	if(!mentor_datum)
+	if(!ensure_mentor_datum())
 		return FALSE
 	if(/client/proc/cmd_mentor_become in verbs)
 		cmd_mentor_become()
