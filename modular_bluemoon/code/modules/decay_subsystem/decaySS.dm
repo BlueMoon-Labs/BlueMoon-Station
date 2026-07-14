@@ -13,10 +13,6 @@ These procs are incredibly expensive and should only really be run once.
 SUBSYSTEM_DEF(decay)
 	name = "Decay System"
 	flags = SS_NO_FIRE
-	dependencies = list(
-		/datum/controller/subsystem/mapping,
-		/datum/controller/subsystem/atoms,
-	)
 	init_order = INIT_ORDER_OVERLAY
 
 	/// Maps that should not receive roundstart decay.
