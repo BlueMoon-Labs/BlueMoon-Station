@@ -568,7 +568,8 @@ GENETICS SCANNER
 
 	if(SEND_SIGNAL(M, COMSIG_NANITE_SCAN, null, FALSE))
 		msg += span_info("<b>Обнаружены наниты</b>")
-
+	else if(HAS_TRAIT_FROM(L, TRAIT_NANITES_IMMUNITY, NANITES_IMMUNITY_FROM_REAGENT))
+		msg += span_info("<b>Обнаружено действие Nanite Protector.</b>\n")
 	// BLUEMOON EDIT START - изменение анализаторов здоровья; to_chat_msg - чтобы на распечатанном листочке не было "распечатать"
 	var/to_chat_msg = msg
 	if(connected_analyzer && advanced)

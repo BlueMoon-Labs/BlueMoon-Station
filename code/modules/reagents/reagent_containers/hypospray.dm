@@ -308,7 +308,7 @@
 	list_reagents = list(/datum/reagent/magillitis = 5)
 
 /obj/item/reagent_containers/hypospray/medipen/nanite_protector
-	name = "Nanite protector autoinjector"
+	name = "Nanite Protector autoinjector"
 	desc = "Экспериментальный инжектор, содержащий серую массу непонятного происхождения. При попадании в организм она необратимо меняет клетки и перестраивает структуры, не давая им взаимодействовать с нанитами.\nИспользование более одного раза не несет эффекта."
 	icon_state = "purple_pen"
 	item_state = "purple_pen"
@@ -318,7 +318,7 @@
 
 /obj/item/reagent_containers/hypospray/medipen/nanite_protector/attack(mob/living/M, mob/user)
 	if(M != user)
-		to_chat(M, span_userdanger("Пытается ввести вам Nanite protector, навсегда лишив вас нанитов!"))
+		to_chat(M, span_userdanger("Пытается ввести вам Nanite Protector, навсегда лишив вас нанитов!"))
 		if(!do_after_mob(user, M, 5 SECONDS))
 			return
 	return ..()

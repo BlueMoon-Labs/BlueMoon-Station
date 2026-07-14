@@ -29,7 +29,7 @@
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL|DEPARTMENTAL_FLAG_SECURITY
 
 /datum/design/nanite_protector
-	name = "Nanite protector autoinjector"
+	name = "Nanite Protector"
 	desc = "Экспериментальный инжектор, содержащий серую массу непонятного происхождения. При попадании в организм она необратимо меняет клетки и перестраивает структуры, не давая им взаимодействовать с нанитами. Использование более одного раза не несет эффекта."
 	id = "nanite_protector"
 	build_type = PROTOLATHE

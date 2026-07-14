@@ -13,7 +13,7 @@
 	name = "Непереносимость нанитов"
 	desc = "Ваше тело отвергает наниты, вы не сможете установить или получить их случайно."
 	value = 1
-	mob_trait = NANITES_IMMUNITY
+	mob_trait = TRAIT_NANITES_IMMUNITY
 	gain_text = span_notice("Вы чувствуете что ваши клетки противятся нанитам.")
 	lose_text = span_notice("Вы чувствуете что наниты вновь могут взаимодействовать с вами.")
 
