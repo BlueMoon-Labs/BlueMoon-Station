@@ -25,7 +25,7 @@
 #define TRAIT_TK_POTENTIAL					"TK_potential"
 #define TRAIT_RETRACTABLE_CLAWS				"claws"
 #define TRAIT_CHAMELEON_QUIRK				"chameleon_quirk"
-#define TRAIT_KNOWS_RESEARCH 				"Знанине использования Пергаментом"
+#define TRAIT_KNOWS_RESEARCH 				"parchment_knowledge"
 #define BLUEMOON_TRAIT_NAME_PHOBIA			"Фобия"
 
 // Трейты для рас
