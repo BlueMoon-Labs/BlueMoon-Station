@@ -357,6 +357,17 @@
 	storedRooms -= "[roomNumber]"
 	activeRooms["[roomNumber]"] = roomReservation
 
+	// Atoms were force-moved back without re-init; re-smooth the whole room.
+	var/list/room_bounds = list(
+		roomReservation.bottom_left_coords[1],
+		roomReservation.bottom_left_coords[2],
+		roomReservation.bottom_left_coords[3],
+		roomReservation.top_right_coords[1],
+		roomReservation.top_right_coords[2],
+		roomReservation.bottom_left_coords[3],
+	)
+	mapTemplate.smooth_template_bounds(room_bounds)
+
 	//To send the user one tile above default when teleported
 	// SPLURT EDIT END
 	linkTurfs(roomReservation, roomNumber)
