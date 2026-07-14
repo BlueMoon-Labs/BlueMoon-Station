@@ -2,20 +2,25 @@
 	name = "Vox Scavengers"
 	typepath = /datum/round_event/vox_scavengers
 	admin_only = FALSE
-	weight = 6
+	// Вес против беглецов (10) в гост-пуле Light: воксы примерно каждый третий гост-бит.
+	weight = 4
 	max_occurrences = 1
 	min_players = 30
-	earliest_start = 15 MINUTES
+	// Рейд-корабль не должен падать на 15-й минуте лёгкого раунда: тот же порог, что у беглецов.
+	earliest_start = 30 MINUTES
 	category = EVENT_CATEGORY_INVASION
 	// Гост-команда со своего корабля: считается антаг-нагрузкой GHOST-пула,
 	// а не MAJOR по дефолту категории INVASION (ср. devil).
 	severity = DIRECTOR_SEVERITY_GHOST
-	cost = 10
+	// Дороже беглецов (8): гост-кошелёк Light копит ~0.27 очка в минуту, так что мягкий
+	// гост-конфликт обычно успевает первым, а рейд остаётся поздней дорогой покупкой.
+	cost = 12
 	intensity = 15
 	director_ghost_jobban = ROLE_TRAITOR
 	director_ghost_preference = ROLE_TRAITOR
 	family = "vox_scavengers"
-	required_round_type = list(ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_TEAMBASED)
+	// Решение геймдизайна: воксы живут только в лёгком профиле (ср. df50afe95d).
+	required_round_type = list(ROUNDTYPE_DYNAMIC_LIGHT)
 	description = "A vox scavengers heist."
 	var/ship_template
 
@@ -87,7 +92,9 @@
 	antag_flag = "Vox Scavengers"
 	required_type = /mob/dead/observer
 	enemy_roles = list("Security Officer", "Detective", "Head of Security","Bridge Officer", "Captain")
-	required_round_type = list(ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_TEAMBASED)
+	// Тот же профиль, что у прямого события: рулсет admin_only и естественным выбором не участвует,
+	// но панель директора и админ-форс не должны показывать противоречивую доступность.
+	required_round_type = list(ROUNDTYPE_DYNAMIC_LIGHT)
 	required_enemies = list(0,0,0,0,0,0,0,0,0,0)
 	required_candidates = 0
 	weight = 3

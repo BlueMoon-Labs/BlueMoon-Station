@@ -952,7 +952,7 @@
 
 /datum/unit_test/director_profile_ghost_reachability/Run()
 	var/list/specs = list(
-		// Light оставляет только мягкие гост-конфликты; из прямых событий это Fugitives.
+		// Light оставляет только мягкие гост-конфликты: беглецы и рейд воксов (единственный профиль воксов).
 		list(ROUNDTYPE_DYNAMIC_LIGHT, 30, 1),
 		list(ROUNDTYPE_EXTENDED, 30, 2),
 		list(ROUNDTYPE_DYNAMIC_MEDIUM, 40, 12),
@@ -1882,10 +1882,9 @@
 	var/datum/round_event_control/vox_scavengers/vox_control = locate() in SSdirector.actions
 	TEST_ASSERT_NOTNULL(vox_control, "Прямое событие Vox Scavengers должно быть зарегистрировано у директора")
 	TEST_ASSERT(!vox_control.admin_only, "Прямое событие Vox Scavengers должно оставаться естественным GHOST-действием")
-	TEST_ASSERT(!(ROUNDTYPE_DYNAMIC_LIGHT in vox_control.required_round_type), "Vox Scavengers должны быть исключены из Dynamic Light")
-	TEST_ASSERT(ROUNDTYPE_DYNAMIC_MEDIUM in vox_control.required_round_type, "Vox Scavengers должны быть доступны на Dynamic Medium")
-	TEST_ASSERT(ROUNDTYPE_DYNAMIC_HARD in vox_control.required_round_type, "Vox Scavengers должны быть доступны на Dynamic Hard")
-	TEST_ASSERT(ROUNDTYPE_DYNAMIC_TEAMBASED in vox_control.required_round_type, "Vox Scavengers должны быть доступны на Dynamic Team-Based")
+	TEST_ASSERT_EQUAL(length(vox_control.required_round_type), 1, "Vox Scavengers должны быть доступны ровно в одном профиле")
+	TEST_ASSERT(ROUNDTYPE_DYNAMIC_LIGHT in vox_control.required_round_type, "Vox Scavengers должны быть доступны только в Dynamic Light")
+	TEST_ASSERT(vox_control.earliest_start >= 30 MINUTES, "Рейд воксов не должен падать на первых минутах лёгкого раунда")
 	var/datum/round_event_control/morph/morph_control = locate() in SSdirector.actions
 	var/datum/dynamic_ruleset/midround/from_ghosts/morph/morph_ruleset = locate() in SSdirector.actions
 	var/datum/round_event_control/changeling/changeling_control = locate() in SSdirector.actions
@@ -1957,6 +1956,9 @@
 /datum/unit_test/director_light_ghost_policy/Run()
 	var/list/allowed_light_ghost_controls = list(
 		/datum/round_event_control/fugitives,
+		// Воксы - гост-команда со своего корабля, но не antag_heavy: решением геймдизайна это
+		// единственный рейд лёгкого профиля, и живёт он только в нём (см. vox_scavengers_event.dm).
+		/datum/round_event_control/vox_scavengers,
 	)
 	var/datum/round_event_control/operative/operative_control = locate() in SSdirector.event_controls()
 	var/datum/round_event_control/operative/keeper/keeper_control = locate() in SSdirector.event_controls()
