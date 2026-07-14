@@ -218,6 +218,9 @@
 
 /datum/dynamic_ruleset/latejoin/bloodsuckers
 	name = "Bloodsucker Guest"
+	// Кровососы сломаны и ждут починки/упрощения: естественно не выдаются ни в одном типе раунда.
+	// Прежний хак (только team-based) заменён честным выключателем - ручной форс админом работает.
+	admin_only = TRUE
 	antag_flag = "bloodsucker late"
 	antag_flag_override = ROLE_BLOODSUCKER
 	antag_datum = /datum/antagonist/bloodsucker

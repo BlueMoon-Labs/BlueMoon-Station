@@ -1444,6 +1444,9 @@
 
 /datum/dynamic_ruleset/midround/bloodsuckers
 	name = "Bloodsuckers"
+	// Кровососы сломаны и ждут починки/упрощения: естественно не выдаются ни в одном типе раунда.
+	// Прежний хак (только team-based) заменён честным выключателем - ручной форс админом работает.
+	admin_only = TRUE
 	antag_flag = "Bloodsucker Mid"
 	antag_flag_override = ROLE_BLOODSUCKER
 	antag_datum = /datum/antagonist/bloodsucker

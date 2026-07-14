@@ -398,6 +398,10 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 	for (var/datum/dynamic_ruleset/roundstart/rule in roundstart_rules)
 		if (!rule.weight)
 			continue
+		// Естественная жеребьёвка обязана уважать те же выключатели, что и биты директора.
+		// Ручной форс идёт мимо этого цикла через GLOB.dynamic_forced_roundstart_ruleset.
+		if (!rule.enabled || rule.admin_only)
+			continue
 		if (rule.acceptable(roundstart_pop_ready, threat_level) && round_start_budget >= rule.cost) // If we got the population and threat required
 			rule.candidates = candidates.Copy()
 			rule.trim_candidates()
