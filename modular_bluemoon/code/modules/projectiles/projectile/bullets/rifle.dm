@@ -46,7 +46,7 @@
 /obj/item/projectile/bullet/a556_rubber
 	name = "5.56mm rubber bullet"
 	damage = 1
-	stamina = 32
+	stamina = 35
 	sharpness = NONE
 	embedding = null
 
@@ -73,7 +73,7 @@
 /obj/item/projectile/bullet/a762x39_rubber
 	name = "7.62x39 rubber bullet"
 	damage = 1
-	stamina = 35
+	stamina = 40
 	sharpness = NONE
 	embedding = null
 

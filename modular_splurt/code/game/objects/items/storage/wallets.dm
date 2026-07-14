@@ -57,6 +57,7 @@
 	/obj/item/clothing/accessory/monolith_patch,
 	/obj/item/clothing/accessory/tratch_patch,
 	/obj/item/clothing/accessory/paws_patch,
+	/obj/item/buttplug,
 	))
 
 /obj/item/storage/wallet/tailbag/xtralg

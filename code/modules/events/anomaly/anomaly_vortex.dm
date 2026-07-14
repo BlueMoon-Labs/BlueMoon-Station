@@ -2,9 +2,13 @@
 	name = "Anomaly: Vortex"
 	typepath = /datum/round_event/anomaly/anomaly_vortex
 
+	enabled = TRUE // база выключена, подтипы включаются явно
 	min_players = 20
 	max_occurrences = 2
 	weight = 10
+	// Дефолт категории ANOMALIES - MAJOR (cost 20): вихрь злее собратьев, но это всё та же
+	// одиночная локальная аномалия с громким анонсом - цена среднего, как у пирокластики.
+	severity = DIRECTOR_SEVERITY_MODERATE
 	description = "This anomaly sucks in and detonates items."
 
 /datum/round_event/anomaly/anomaly_vortex

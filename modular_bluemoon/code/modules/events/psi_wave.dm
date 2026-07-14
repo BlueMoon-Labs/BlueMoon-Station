@@ -6,8 +6,8 @@
 	max_occurrences = 3
 	earliest_start = 20 MINUTES
 	category = EVENT_CATEGORY_ANOMALIES
+	severity = DIRECTOR_SEVERITY_MODERATE
 	description = "Через станцию проходит серия пси-волн, временно сводящая часть экипажа с ума."
-	gamemode_whitelist = list("dynamic")
 
 #define PSI_WAVE_SHIELDED_DURATION (25 SECONDS)
 

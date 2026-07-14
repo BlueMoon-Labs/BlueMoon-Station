@@ -116,8 +116,8 @@
 	r_pocket = /obj/item/reagent_containers/peacehypo
 	l_pocket = /obj/item/restraints/handcuffs
 	suit_store = /obj/item/gun/energy/pumpaction/defender
-	backpack_contents = list(/obj/item/syndicate_uplink_high=1)
-	accessory = list(/obj/item/clothing/accessory/permit/special/security)
+	backpack_contents = list(/obj/item/syndicate_uplink/station=1)
+	accessory = list(/obj/item/clothing/accessory/permit/special/security, /obj/item/clothing/accessory/permit/special/syndie_station)
 
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/ammo

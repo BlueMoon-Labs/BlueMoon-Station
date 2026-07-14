@@ -219,8 +219,8 @@ const getNextCleanBatch = (cleanBatches, multiplier) => {
   return cleanBatches.find((n) => n > multiplier) || 0;
 };
 
-export const RecipeDispenseControls = (props, context) => {
-  const { act } = useBackend(context);
+export const RecipeDispenseControls = (props) => {
+  const { act } = useBackend();
   const {
     variantRecipe,
     recipeName,
@@ -385,8 +385,8 @@ export const RecipeDispenseControls = (props, context) => {
   );
 };
 
-export const SubRecipeDispenseButton = (props, context) => {
-  const { act } = useBackend(context);
+export const SubRecipeDispenseButton = (props) => {
+  const { act } = useBackend();
   const {
     recipeName,
     reagentName,
@@ -531,8 +531,8 @@ export const hasFinalStep = (recipe) => {
   });
 };
 
-export const FinalStepButton = (props, context) => {
-  const { act } = useBackend(context);
+export const FinalStepButton = (props) => {
+  const { act } = useBackend();
   const {
     recipeName,
     recipe,

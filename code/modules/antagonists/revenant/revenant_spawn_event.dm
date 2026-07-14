@@ -7,6 +7,13 @@
 	max_occurrences = 1
 	min_players = 5
 	category = EVENT_CATEGORY_ENTITIES
+	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
+	cost = 8
+	intensity = 10 // мягкий фоновый призрак, классика лоупопа
+	family = "revenant" // с рулсетом-двойником динамика: не подряд
+	// Не экста: ревенант высасывает жизнь из экипажа, а правила эксты разрешают только мирных
+	// к экипажу антагов (враждебное - по запросу через OPFOR/администрацию).
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // как у рулсета-двойника: не экста и не лайт
 	description = "Spawns an angry, soul sucking ghost."
 
 /datum/round_event/ghost_role/revenant

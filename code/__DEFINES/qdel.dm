@@ -14,15 +14,10 @@
 #define QDEL_HINT_HARDDEL_NOW 4
 
 
-#ifdef REFERENCE_TRACKING
-/** If REFERENCE_TRACKING is enabled, qdel will call this object's find_references() verb.
- *
- * Functionally identical to [QDEL_HINT_QUEUE] if [GC_FAILURE_HARD_LOOKUP] is not enabled in _compiler_options.dm.
-*/
+/// `qdel` немедленно запустит поиск всех ссылок на объект (блокирует сервер!), затем поставит в обычную очередь.
 #define QDEL_HINT_FINDREFERENCE 5
-/// Behavior as [QDEL_HINT_FINDREFERENCE], but only if the GC fails and a hard delete is forced.
+/// Как [QDEL_HINT_FINDREFERENCE], но поиск запускается только если объект не соберётся за softcheck-окно.
 #define QDEL_HINT_IFFAIL_FINDREFERENCE 6
-#endif
 
 /// Queue normally, but treat a softcheck miss as an operator-facing alert.
 /// Prefer this canonical name over the deprecated QUICKDEL alias below.
@@ -134,6 +129,34 @@
 #define GC_HARDDEL_MODE_RECOVER 2
 #define GC_HARDDEL_MODE_OVERFLOW 3
 #define GC_HARDDEL_MODE_LOBBY 4
+
+// ===== Reference tracking (runtime) =====
+/// Авто-сканы ссылок выключены (ручные VV-сканы доступны всегда).
+#define GC_REFTRACK_OFF     0
+/// Авто-скан на warnfail только для типов с QDEL_ITEM_FAST_REFTRACK.
+#define GC_REFTRACK_FLAGGED 1
+/// Авто-скан на любой warnfail.
+#define GC_REFTRACK_ALL     2
+/// Минимальный интервал между авто-сканами ссылок.
+#define GC_REFTRACK_AUTOSCAN_COOLDOWN (30 SECONDS)
+/// Максимум авто-сканов за раунд.
+#define GC_REFTRACK_AUTOSCAN_MAX_PER_ROUND 20
+/// Максимум авто-сканов на один тип за раунд (первый скан обычно объясняет все).
+#define GC_REFTRACK_AUTOSCAN_MAX_PER_TYPE 2
+/// Максимум одновременных мониторов refcount.
+#define REFCOUNT_MONITOR_MAX 5
+/// Минимальный интервал семплирования монитора refcount.
+#define REFCOUNT_MONITOR_MIN_INTERVAL (0.2 SECONDS)
+
+/// Число ссылок на датум помимо ОДНОЙ локальной переменной, через которую его читают.
+/// Контракт: на момент вызова D хранится ровно в одной локали текущего прока.
+/// refcount() своих аргументов не считает (builtin), считает саму локаль - вычитаем её.
+/// Калибровка закреплена тестом /datum/unit_test/gc_refcount_calibration.
+#define EXTERNAL_REFCOUNT(D) (refcount(D) - 1)
+
+/// Служебные ссылки на датум в точке OnLevelFail: локаль HandleLevel + аргумент OnLevelFail.
+/// Закреплено тестом /datum/unit_test/gc_refcount_telemetry.
+#define GC_FAIL_PATH_INTERNAL_REFS 2
 
 // ===== Convenience macros =====
 #define QDELING(X)    (X.gc_destroyed)

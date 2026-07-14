@@ -94,6 +94,14 @@ GLOBAL_LIST_EMPTY(dummy_mob_list)
 				SSquirks.AssignQuirks(human_target, human_target.client, TRUE, TRUE, null, FALSE, human_target)
 			human_target.copy_clothing_prefs(copycat)
 
+			// Синхронизируем ДНА к мобам не на Z-левеле. Т.е. для тех, кто не на уровне map. Чиним превью в тгуи.
+			copycat.hair_style = human_target.hair_style
+			copycat.facial_hair_style = human_target.facial_hair_style
+			copycat.grad_style = human_target.grad_style
+			copycat.grad_color = human_target.grad_color
+			copycat.left_eye_color = human_target.left_eye_color
+			copycat.right_eye_color = human_target.right_eye_color
+
 		copycat.updateappearance(icon_update=TRUE, mutcolor_update=TRUE, mutations_overlay_update=TRUE)
 	else
 		//even if target isn't a carbon, if they have a client we can make the

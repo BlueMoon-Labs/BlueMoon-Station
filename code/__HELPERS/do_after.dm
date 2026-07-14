@@ -63,7 +63,7 @@
 		checked_health["health"] = health
 	return ..()
 
-/proc/do_after(mob/user, delay, atom/target, timed_action_flags = NONE, progress = TRUE, datum/callback/extra_checks, resume_time = 0 SECONDS)
+/proc/do_after(mob/user, delay, atom/target, timed_action_flags = NONE, progress = TRUE, datum/callback/extra_checks, resume_time = 0 SECONDS, progress_loc)
 	if(!user)
 		return FALSE
 	var/atom/target_loc = null
@@ -86,7 +86,7 @@
 
 	var/datum/progressbar/progbar
 	if (progress)
-		progbar = new(user, delay, target)
+		progbar = new(user, delay, progress_loc || target)
 
 	var/endtime = world.time + delay
 	var/starttime = world.time

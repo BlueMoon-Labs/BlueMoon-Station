@@ -19,7 +19,7 @@
  * * call any client login callbacks that exist
  * * grant any actions the mob has to the client
  * * calls [auto_deadmin_on_login](mob.html#proc/auto_deadmin_on_login)
- * * send signal COMSIG_MOB_CLIENT_LOGIN
+ * * send signal COMSIG_MOB_CLIENT_LOGIN on the mob and COMSIG_CLIENT_MOB_LOGIN on the client
  * * attaches the ash listener element so clients can hear weather
  * client can be deleted mid-execution of this proc, chiefly on parent calls, with lag
  */
@@ -87,6 +87,7 @@
 
 	log_message("Client [key_name(src)] has taken ownership of mob [src]([src.type])", LOG_OWNERSHIP)
 	SEND_SIGNAL(src, COMSIG_MOB_CLIENT_LOGIN, client)
+	SEND_SIGNAL(client, COMSIG_CLIENT_MOB_LOGIN, src)
 	client.init_verbs()
 
 	if(has_field_of_vision && CONFIG_GET(flag/use_field_of_vision))

@@ -1,8 +1,8 @@
 //Lever: Do I really need to explain this?
 /obj/structure/destructible/clockwork/trap/trigger/lever
 	name = "lever"
-	desc = "A fancy lever made of wood and capped with brass."
-	clockwork_desc = "A fancy lever.that activates when pulled."
+	desc = "Причудливый рычаг, сделанный из дерева и покрытый латунью."
+	clockwork_desc = "Необычный рычаг, который активируется при потягивании."
 	max_integrity = 75
 	icon_state = "lever"
 
@@ -10,8 +10,8 @@
 	. = ..()
 	if(.)
 		return
-	user.visible_message("<span class='notice'>[user] pulls [src]!</span>", "<span class='notice'>You pull [src]. It clicks, then lifts back upwards.</span>")
+	user.visible_message("<span class='notice'>[user] тянет [src]!</span>", "<span class='notice'>Вы тянете [src]. Он щелкает, а затем снова поднимается вверх.</span>")
 	if(wired_to.len)
-		audible_message("<i>You hear gears clanking.</i>")
+		audible_message("<i>Вы слышите лязг шестеренок.</i>")
 	playsound(src, 'sound/items/deconstruct.ogg', 50, TRUE)
 	activate()

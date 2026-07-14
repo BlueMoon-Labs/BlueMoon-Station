@@ -16,10 +16,10 @@
 	var/unlock_message
 	if(current_power >= SCRIPT_UNLOCK_THRESHOLD && !GLOB.script_scripture_unlocked)
 		GLOB.script_scripture_unlocked = TRUE
-		unlock_message = "<span class='large_brass bold'>The Ark swells as a key power threshold is reached. Script scriptures are now available.</span>"
+		unlock_message = "<span class='large_brass bold'>Ковчег расширяется по мере достижения ключевого порога мощности. Теперь доступны новые священные писания.</span>"
 	if(current_power >= APPLICATION_UNLOCK_THRESHOLD && !GLOB.application_scripture_unlocked)
 		GLOB.application_scripture_unlocked = TRUE
-		unlock_message = "<span class='large_brass bold'>The Ark surges as a key power threshold is reached. Application scriptures are now available.</span>"
+		unlock_message = "<span class='large_brass bold'>Ковчег расширяется по достижении ключевого порога мощности. Теперь доступны новые священные писания для практического применения.</span>"
 	if(unlock_message && GLOB.servants_active)
 		hierophant_message(unlock_message)
 	return TRUE

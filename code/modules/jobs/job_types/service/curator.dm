@@ -81,7 +81,7 @@
 	l_hand = /obj/item/storage/bag/books
 	r_pocket = /obj/item/key/displaycase
 	l_pocket = /obj/item/laser_pointer
-	accessory = list(/obj/item/clothing/accessory/pocketprotector/full)
+	accessory = list(/obj/item/clothing/accessory/pocketprotector/full, /obj/item/clothing/accessory/permit/special/syndie_station)
 
 	backpack = /obj/item/storage/backpack/duffelbag/syndie
 	satchel = /obj/item/storage/backpack/duffelbag/syndie
@@ -92,7 +92,7 @@
 		/obj/item/choice_beacon/hero = 1,
 		/obj/item/soapstone = 1,
 		/obj/item/barcodescanner = 1,
-		/obj/item/syndicate_uplink=1
+		/obj/item/syndicate_uplink/station=1
 	)
 
 /datum/outfit/job/curator/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)

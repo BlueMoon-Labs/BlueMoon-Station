@@ -8,6 +8,9 @@
 	var/catalog = METADOLLAR_CATALOG_LEGIT
 	var/minimum_players = 0
 
+/datum/metadollar_shop_item/proc/is_visible(datum/metadollar_shop/shop)
+	return TRUE
+
 /datum/metadollar_shop_item/proc/try_purchase(client/C)
 	if(!C?.ckey)
 		return FALSE
@@ -39,6 +42,42 @@
 	LAZYADD(C.prefs.metadollar_pending_items, "[spawn_type]")
 	return TRUE
 
+/datum/metadollar_shop_item/item/antag_token
+	catalog = null
+	var/token_spawn_type
+	var/round_limit = 0
+	var/round_limit_key = null
+	var/list/disallowed_modes = null
+	var/disallowed_mode_message = "Этот жетон недоступен в текущем режиме игры."
+
+/datum/metadollar_shop_item/item/antag_token/try_purchase(client/C)
+	if(!C?.ckey)
+		return FALSE
+	if(disallowed_modes && SSticker?.mode)
+		for(var/mode_type in disallowed_modes)
+			if(ispath(mode_type) && istype(SSticker.mode, mode_type))
+				to_chat(C.mob, span_warning(disallowed_mode_message))
+				return TRUE
+	if(round_limit > 0 && round_limit_key && !SSmetadollars.can_purchase_round_limited_item(round_limit_key, round_limit))
+		to_chat(C.mob, span_warning("В этом раунде все такие жетоны уже раскуплены (лимит [round_limit] на станцию)."))
+		return TRUE
+	return ..()
+
+/datum/metadollar_shop_item/item/antag_token/queue_delivery(client/C)
+	if(!ispath(token_spawn_type, /obj/item))
+		return FALSE
+	LAZYADD(C.prefs.metadollar_pending_items, "[token_spawn_type]")
+	if(round_limit > 0 && round_limit_key)
+		SSmetadollars.register_round_limited_purchase(round_limit_key)
+	return TRUE
+
+/datum/metadollar_shop_item/item/antag_token/is_visible(datum/metadollar_shop/shop)
+	if(disallowed_modes && SSticker?.mode)
+		for(var/mode_type in disallowed_modes)
+			if(ispath(mode_type) && istype(SSticker.mode, mode_type))
+				return FALSE
+	return TRUE
+
 /datum/metadollar_shop_item/item/metadollar_voucher
 	name = "Стопка метадолларов"
 	desc = "После доставки в рюкзак: зачисление 50 М$ на лобби-счёт проведением стопки по КПК или по ID-карте; Alt+ЛКМ — отделить любую сумму (можно передать другому игроку)."
@@ -63,7 +102,7 @@
 /datum/metadollar_shop_item/item/gift_anything_lootbox
 	name = "Коробка-сюрприз"
 	desc = "Внутри вас ждёт случайный предмет."
-	cost = 25
+	cost = 50
 	catalog = METADOLLAR_CATALOG_LEGIT
 	spawn_type = /obj/item/a_gift/anything
 
@@ -84,7 +123,7 @@
 /datum/metadollar_shop_item/item/freak_command_case
 	name = "Командный кейс с сюрпризами"
 	desc = "Большой офицерский кейс: случайная еда, алкогольные напитки и шприцы с контрабандой."
-	cost = 25
+	cost = 50
 	catalog = METADOLLAR_CATALOG_SMUGGLE
 	spawn_type = /obj/item/storage/backpack/case/command/freak
 
@@ -96,12 +135,26 @@
 	spawn_type = /obj/item/card/id/captains_spare
 
 /datum/metadollar_shop_item/item/traitor_token
+	parent_type = /datum/metadollar_shop_item/item/antag_token
 	name = "Жетон «Предатель»"
-	desc = "Пластиковая монета. ALT+ЛКМ по жетону, чтобы получить роль предателя."
+	desc = "Пластиковая монета. Alt+ЛКМ — роль предателя; Ctrl+ЛКМ — вернуть 250 М$. На всю станцию — не более 3 штук за раунд."
 	cost = 250
 	catalog = METADOLLAR_CATALOG_SMUGGLE
 	minimum_players = 50
-	spawn_type = /obj/item/coin/antagtoken/metashop/traitor
+	token_spawn_type = /obj/item/coin/antagtoken/metashop/traitor
+	round_limit = METASHOP_TRAITOR_TOKEN_ROUND_LIMIT
+	round_limit_key = METASHOP_ANTAG_TOKEN_TRAITOR_LIMIT_KEY
+	disallowed_modes = list(/datum/game_mode/extended)
+	disallowed_mode_message = "Жетон «Предатель» недоступен в Extended: он зарезервирован под Dynamic."
+
+/datum/metadollar_shop_item/item/changeling_token
+	parent_type = /datum/metadollar_shop_item/item/antag_token
+	name = "Жетон «Генокрад»"
+	desc = "Органический жетон. Alt+ЛКМ — стать генокрадом; Ctrl+ЛКМ — вернуть 250 М$."
+	cost = 250
+	catalog = METADOLLAR_CATALOG_SMUGGLE
+	minimum_players = 50
+	token_spawn_type = /obj/item/coin/antagtoken/metashop/changeling
 
 /datum/metadollar_shop_item/item/metadollar_total_burn
 	name = "Протокол «Пепелище»"
@@ -271,6 +324,27 @@
 	cost = 100
 	catalog = METADOLLAR_CATALOG_LEGIT
 	spawn_type = /obj/item/book/granter/spell/smoke/crocin
+
+/datum/metadollar_shop_item/item/chameleon_stamp
+	name = "Хамелеон-штамп"
+	desc = "Маскируется под любой штамп должности - удобен для подделки бумаг."
+	cost = 25
+	catalog = METADOLLAR_CATALOG_SMUGGLE
+	spawn_type = /obj/item/stamp/chameleon
+
+/datum/metadollar_shop_item/item/holoparasite_injector
+	name = "Инжектор голопаразита"
+	desc = "Коробка с одноразовым инжектором голопаразита и разрешением на ношение."
+	cost = 100
+	catalog = METADOLLAR_CATALOG_SMUGGLE
+	spawn_type = /obj/item/storage/box/metashop/holoparasite_kit
+
+/datum/metadollar_shop_item/item/traitor_announcer
+	name = "odd device"
+	desc = "Странный пульт. Одноразовая подделка приоритетного объявления по вашему сценарию."
+	cost = 100
+	catalog = METADOLLAR_CATALOG_SMUGGLE
+	spawn_type = /obj/item/device/traitor_announcer
 
 #undef METADOLLAR_CATALOG_LEGIT
 #undef METADOLLAR_CATALOG_SMUGGLE

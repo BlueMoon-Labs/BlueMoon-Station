@@ -14,11 +14,20 @@
 	var/viewload = 0			// the load as it appears on the power console (gradually updated)
 	var/netexcess = 0			// excess power on the powernet (typically avail-load)///////
 	var/delayedload = 0			// load applied to powernet between power ticks.
+	/// Watts parked here by APCs in standby (apc_park()): the static-only draw of their areas,
+	/// billed as a baseline in reset() instead of per-fire add_load() calls from each APC.
+	var/standby_load = 0
+	/// APCs currently parked on this powernet; unparked in reset() the moment the grid stops covering them.
+	var/list/standby_apcs
 
 /datum/powernet/New()
 	SSmachines.powernets += src
 
 /datum/powernet/Destroy()
+	// parked APCs must not sleep through their grid disappearing
+	if(LAZYLEN(standby_apcs))
+		for(var/obj/machinery/power/apc/parked as anything in standby_apcs.Copy())
+			parked.apc_unpark()
 	//Go away references, you suck!
 	for(var/obj/structure/cable/C in cables)
 		cables -= C
@@ -59,6 +68,12 @@
 /datum/powernet/proc/remove_machine(obj/machinery/power/M)
 	nodes -=M
 	M.powernet = null
+	// an APC terminal leaving the net takes its standby arrangement with it
+	if(istype(M, /obj/machinery/power/terminal))
+		var/obj/machinery/power/terminal/leaving_terminal = M
+		var/obj/machinery/power/apc/master_apc = leaving_terminal.master
+		if(istype(master_apc) && master_apc.apc_parked)
+			master_apc.apc_unpark()
 	if(is_empty())//the powernet is now empty...
 		qdel(src)///... delete it
 
@@ -89,10 +104,17 @@
 	viewload = round(0.8 * viewload + 0.2 * load)
 
 	// reset the powernet
-	load = delayedload
+	load = delayedload + standby_load
 	delayedload = 0
 	avail = newavail
 	newavail = 0
+
+	// The grid stopped covering the parked areas: hand their APCs back their cells and
+	// channel logic. This runs before SSmachines copies its processing list for the fire,
+	// so the woken APCs get processed this very cycle.
+	if(standby_load && avail < load && LAZYLEN(standby_apcs))
+		for(var/obj/machinery/power/apc/parked as anything in standby_apcs.Copy())
+			parked.apc_unpark()
 
 /datum/powernet/proc/get_electrocute_damage()
 	if(avail >= 1000)

@@ -42,6 +42,10 @@ SUBSYSTEM_DEF(atoms)
 		count = atoms.len
 		for(var/I in 1 to count)
 			var/atom/A = atoms[I]
+			// Атом мог быть qdel-нут и hard-del-нут (del() нуллит слот списка),
+			// пока инициализация ползла по CHECK_TICK - как в цикле late_loaders.
+			if(isnull(A))
+				continue
 			if(!(A.flags_1 & INITIALIZED_1))
 				InitAtom(A, mapload_arg)
 				CHECK_TICK

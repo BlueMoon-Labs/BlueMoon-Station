@@ -72,11 +72,9 @@
 	var/saved_master_ticklimit
 	var/saved_state
 	var/saved_flags
-	#ifdef REFERENCE_TRACKING
 	var/list/saved_reference_find_on_fail
 	#ifdef UNIT_TESTS
 	var/saved_test_ref_scan_skip_async
-	#endif
 	#endif
 
 /datum/unit_test/gc_rewrite_base/Run()
@@ -148,11 +146,9 @@
 	saved_master_ticklimit = Master.current_ticklimit
 	saved_state = SSgarbage.state
 	saved_flags = SSgarbage.flags
-	#ifdef REFERENCE_TRACKING
 	saved_reference_find_on_fail = SSgarbage.reference_find_on_fail.Copy()
 	#ifdef UNIT_TESTS
 	saved_test_ref_scan_skip_async = SSgarbage.test_ref_scan_skip_async
-	#endif
 	#endif
 
 	SSgarbage.items = list()
@@ -197,9 +193,7 @@
 	SSgarbage.harddel_yield_history = list()
 	SSgarbage.harddel_yield_total = 0
 	SSgarbage.flags = initial(SSgarbage.flags)
-	#ifdef REFERENCE_TRACKING
 	SSgarbage.reference_find_on_fail = list()
-	#endif
 
 /datum/unit_test/gc_rewrite_base/proc/reset_gc_queues()
 	for (var/i in 1 to GC_QUEUE_COUNT)
@@ -222,6 +216,12 @@
 		SSgarbage.fire()
 	SSgarbage.state = SS_IDLE
 
+/// ВНИМАНИЕ, фантомные держатели: BYOND VM пинит объекты во временных слотах фрейма
+/// прока (возврат allocate(), чтение var через объект, инлайновый list(obj)). Пока жив
+/// фрейм Run(), qdel-нутый объект может честно провалить softcheck/warnfail с нулевыми
+/// таймаутами, а ref-скан ничего не найдёт. Правило: весь жизненный цикл объекта,
+/// сбор которого ассертится, выносить в хелпер-прок (его фрейм умирает на return и
+/// освобождает пины) - образец: equip_and_qdel у gc_rewrite_sticky_moustache_destroy_cancels_timer.
 /datum/unit_test/gc_rewrite_base/proc/configure_immediate_gc()
 	reset_gc_queues()
 	SSgarbage.items = list()
@@ -311,11 +311,9 @@
 	CONFIG_SET(number/gc_harddel_overflow_threshold, saved_gc_harddel_overflow_threshold)
 	CONFIG_SET(number/gc_harddel_overflow_budget_max_ms, saved_gc_harddel_overflow_budget_max_ms)
 	CONFIG_SET(number/gc_harddel_overflow_max_per_fire, saved_gc_harddel_overflow_max_per_fire)
-	#ifdef REFERENCE_TRACKING
 	SSgarbage.reference_find_on_fail = saved_reference_find_on_fail.Copy()
 	#ifdef UNIT_TESTS
 	SSgarbage.test_ref_scan_skip_async = saved_test_ref_scan_skip_async
-	#endif
 	#endif
 
 /datum/unit_test/gc_rewrite_base/Destroy()
@@ -343,21 +341,27 @@
 /datum/unit_test/gc_rewrite_sticky_moustache_destroy_cancels_timer
 	parent_type = /datum/unit_test/gc_rewrite_base
 
-/datum/unit_test/gc_rewrite_sticky_moustache_destroy_cancels_timer/Run()
-	configure_immediate_gc()
-	var/mob/living/carbon/human/wearer = allocate(/mob/living/carbon/human)
-	var/obj/item/clothing/mask/fakemoustache/sticky/sticky = allocate(/obj/item/clothing/mask/fakemoustache/sticky)
+/// Весь жизненный цикл усов идёт в отдельном фрейме: VM пинит операнды выражений
+/// во временных слотах прока (возврат allocate(), чтение var через объект и т.п.),
+/// и живой фрейм Run() держал бы фантомную ссылку на qdel-нутый предмет,
+/// ложно валя softcheck с нулевым таймаутом. Возвращает timerid или null при фейле.
+/datum/unit_test/gc_rewrite_sticky_moustache_destroy_cancels_timer/proc/equip_and_qdel(mob/living/carbon/human/wearer)
+	var/obj/item/clothing/mask/fakemoustache/sticky/sticky = new(run_loc_floor_bottom_left)
 	wearer.equip_to_slot_or_del(sticky, ITEM_SLOT_MASK, TRUE, TRUE, TRUE, TRUE)
-
 	TEST_ASSERT_EQUAL(wearer.wear_mask, sticky, "Sticky moustache was not equipped into the mask slot")
 	TEST_ASSERT(HAS_TRAIT_FROM(wearer, TRAIT_NO_INTERNALS, STICKY_MOUSTACHE_TRAIT), "Sticky moustache did not apply the no-internals trait")
 	TEST_ASSERT_NOTNULL(sticky.unstick_timerid, "Sticky moustache did not create a stoppable unstick timer")
 	TEST_ASSERT_NOTNULL(SStimer.timer_id_dict[sticky.unstick_timerid], "Sticky moustache timer was not registered")
-
 	var/timerid = sticky.unstick_timerid
-	allocated -= sticky
 	qdel(sticky)
-	sticky = null
+	return timerid
+
+/datum/unit_test/gc_rewrite_sticky_moustache_destroy_cancels_timer/Run()
+	configure_immediate_gc()
+	var/mob/living/carbon/human/wearer = allocate(/mob/living/carbon/human)
+	var/timerid = equip_and_qdel(wearer)
+	if(!timerid) // ассерты внутри хелпера уже зафейлили тест
+		return
 
 	TEST_ASSERT_NULL(SStimer.timer_id_dict[timerid], "Sticky moustache timer was not cancelled during Destroy()")
 	TEST_ASSERT(!HAS_TRAIT_FROM(wearer, TRAIT_NO_INTERNALS, STICKY_MOUSTACHE_TRAIT), "Sticky moustache Destroy() did not clear the wearer no-internals trait")
@@ -989,7 +993,6 @@
 	entry.qdel_hint = QDEL_HINT_SLOWDESTROY
 	TEST_ASSERT(findtext(entry.qdel_hint_to_text(), "QDEL_HINT_SLOWDESTROY"), "QDEL_HINT_SLOWDESTROY was not rendered by qdel_hint_to_text()")
 
-#ifdef REFERENCE_TRACKING
 /datum/unit_test/gc_rewrite_fast_reftrack_does_not_yield_gc_pass
 	parent_type = /datum/unit_test/gc_rewrite_base
 
@@ -1087,7 +1090,6 @@
 	TEST_ASSERT_EQUAL(SSgarbage.GetQueueDepth(GC_QUEUE_WARNFAIL), 1, "The tracked datum was not promoted to warnfail before the GC pass yielded")
 	TEST_ASSERT_EQUAL(SSgarbage.GetQueuedDatum(GC_QUEUE_WARNFAIL, SSgarbage.queue_heads[GC_QUEUE_WARNFAIL]), tracked, "The warnfail queue did not retain the tracked datum")
 	TEST_ASSERT_NULL(SSgarbage.reference_find_on_fail[REF(tracked)], "The iffail reference-tracking flag was not cleared after scheduling the scan")
-#endif
 
 /datum/unit_test/gc_rewrite_gas_mixture_soft_gc
 	parent_type = /datum/unit_test/gc_rewrite_base

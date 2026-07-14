@@ -4530,15 +4530,15 @@
 /area/maintenance/fore)
 "aLz" = (
 /obj/structure/table,
+/obj/item/paper/fluff/holodeck/disclaimer,
 /obj/machinery/button/door{
 	id = "Holodeckshutter";
 	name = "Shutters";
 	pixel_y = 9
 	},
-/obj/item/paper/fluff/holodeck/disclaimer,
 /turf/open/floor/plasteel{
-	dir = 4;
-	icon_state = "floor_plate"
+	dir = 1;
+	icon_state = "floor_whole"
 	},
 /area/commons/fitness)
 "aLG" = (
@@ -13096,15 +13096,6 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
 /area/maintenance/fore)
-"bYc" = (
-/obj/machinery/computer/holodeck{
-	dir = 8
-	},
-/turf/open/floor/plasteel{
-	dir = 4;
-	icon_state = "floor_plate"
-	},
-/area/commons/fitness)
 "bYn" = (
 /obj/structure/table,
 /obj/machinery/airalarm{
@@ -16771,7 +16762,6 @@
 	},
 /obj/machinery/door/window/northleft{
 	name = "Reception Desk";
-
 	req_access_txt = "5"
 	},
 /turf/open/floor/plasteel/white{
@@ -18876,7 +18866,6 @@
 	dir = 4;
 	icon_state = "right";
 	name = "First-Aid Supplies";
-
 	req_access_txt = "40"
 	},
 /obj/structure/window/reinforced,
@@ -23680,10 +23669,9 @@
 	},
 /area/hallway/primary/fore)
 "dzO" = (
-/obj/structure/chair/office/dark{
-	dir = 4
+/obj/machinery/computer/holodeck{
+	dir = 8
 	},
-/obj/effect/landmark/start/assistant,
 /turf/open/floor/plasteel{
 	icon_state = "floor_whole"
 	},
@@ -31860,15 +31848,6 @@
 	icon_state = "floor_plate"
 	},
 /area/hallway/primary/port/fore)
-"eHy" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer1{
-	dir = 4;
-	name = "scrubbers pipe"
-	},
-/turf/open/floor/plasteel{
-	icon_state = "floor_plate"
-	},
-/area/commons/fitness)
 "eHC" = (
 /obj/machinery/power/deck_relay,
 /obj/structure/cable{
@@ -38822,6 +38801,13 @@
 	icon_state = "darkfull_plate"
 	},
 /area/hallway/primary/port/fore)
+"fLH" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer1{
+	dir = 4;
+	name = "scrubbers pipe"
+	},
+/turf/closed/wall,
+/area/commons/fitness)
 "fLI" = (
 /obj/structure/table/reinforced,
 /obj/item/clothing/glasses/meson/engine,
@@ -44595,7 +44581,6 @@
 	},
 /obj/machinery/door/window/northright{
 	name = "First-Aid Supplies";
-
 	req_access_txt = "5"
 	},
 /turf/open/floor/plasteel{
@@ -53062,13 +53047,6 @@
 	name = "concrete"
 	},
 /area/maintenance/port/aft)
-"hRI" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer3{
-	dir = 6;
-	name = "air supply pipe"
-	},
-/turf/closed/wall,
-/area/commons/fitness)
 "hRN" = (
 /obj/machinery/camera{
 	c_tag = "Bridge North";
@@ -63814,7 +63792,6 @@
 /obj/machinery/door/window/northright{
 	dir = 4;
 	name = "Engineering Desk";
-
 	req_access_txt = "10"
 	},
 /obj/machinery/door/firedoor{
@@ -65686,10 +65663,13 @@
 /turf/open/floor/plating,
 /area/engineering/main)
 "jFv" = (
-/turf/open/floor/plasteel{
-	dir = 1;
-	icon_state = "floor_whole"
+/obj/structure/lattice,
+/obj/effect/spawner/structure/window/reinforced,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer3{
+	dir = 6;
+	name = "air supply pipe"
 	},
+/turf/open/floor/plating,
 /area/commons/fitness)
 "jFC" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer3{
@@ -70497,7 +70477,6 @@
 /obj/item/pen,
 /obj/machinery/door/window/northright{
 	name = "Reception Desk";
-
 	req_access_txt = "5"
 	},
 /turf/open/floor/plasteel/white{
@@ -114298,6 +114277,13 @@
 	icon_state = "floor_plate"
 	},
 /area/hallway/primary/central)
+"qII" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer3{
+	dir = 8;
+	name = "air supply pipe"
+	},
+/turf/closed/wall,
+/area/commons/fitness)
 "qIL" = (
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
@@ -118589,10 +118575,13 @@
 	},
 /area/commons/fitness)
 "rpP" = (
-/obj/structure/table,
+/obj/effect/landmark/start/assistant,
+/obj/structure/chair/office/dark{
+	dir = 4
+	},
 /turf/open/floor/plasteel{
-	dir = 1;
-	icon_state = "floor_trim"
+	dir = 8;
+	icon_state = "floor_plate"
 	},
 /area/commons/fitness)
 "rpT" = (
@@ -119712,7 +119701,6 @@
 /obj/machinery/door/window/northleft{
 	dir = 4;
 	name = "First-Aid Supplies";
-
 	req_access_txt = "40"
 	},
 /obj/structure/window/reinforced{
@@ -127463,7 +127451,6 @@
 	},
 /obj/machinery/door/window/northleft{
 	name = "First-Aid Supplies";
-
 	req_access_txt = "5"
 	},
 /turf/open/floor/plasteel{
@@ -147624,7 +147611,6 @@
 /obj/machinery/door/window/northleft{
 	dir = 4;
 	name = "Engineering Desk";
-
 	req_access_txt = "10"
 	},
 /obj/machinery/door/firedoor{
@@ -147856,14 +147842,13 @@
 /turf/open/floor/plasteel/stairs/medium,
 /area/hallway/primary/starboard)
 "vCZ" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer3{
-	dir = 8;
-	name = "air supply pipe"
+/obj/structure/lattice,
+/obj/effect/spawner/structure/window/reinforced,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer1{
+	dir = 5;
+	name = "scrubbers pipe"
 	},
-/turf/open/floor/plasteel{
-	dir = 1;
-	icon_state = "floor_plate"
-	},
+/turf/open/floor/plating,
 /area/commons/fitness)
 "vDe" = (
 /obj/effect/turf_decal/tile/purple{
@@ -150250,13 +150235,6 @@
 /turf/open/floor/plasteel/dark{
 	icon_state = "darkfull_whole_alt"
 	},
-/area/commons/fitness)
-"vTG" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer1{
-	dir = 5;
-	name = "scrubbers pipe"
-	},
-/turf/closed/wall,
 /area/commons/fitness)
 "vTH" = (
 /obj/effect/turf_decal/tile/neutral{
@@ -176364,11 +176342,11 @@ boa
 boa
 boa
 boa
-boa
-boa
-boa
-boa
-boa
+gYN
+gYN
+gYN
+gYN
+gYN
 boa
 boa
 boa
@@ -176620,13 +176598,13 @@ boa
 boa
 boa
 boa
-boa
-boa
-boa
-boa
-boa
-boa
-boa
+gYN
+gYN
+sRA
+sRA
+sRA
+gYN
+gYN
 boa
 boa
 boa
@@ -176877,13 +176855,13 @@ boa
 boa
 boa
 boa
-boa
-boa
-boa
-boa
-boa
-boa
-boa
+gYN
+ouM
+pWF
+pWF
+pWF
+ouM
+gYN
 boa
 boa
 boa
@@ -177134,13 +177112,13 @@ boa
 boa
 boa
 boa
-boa
 gYN
+ouM
+ouM
+ouM
+ouM
+ouM
 gYN
-gYN
-gYN
-gYN
-boa
 boa
 boa
 boa
@@ -177392,11 +177370,11 @@ boa
 boa
 boa
 gYN
-gYN
-sRA
-sRA
-sRA
-gYN
+fxy
+ghY
+ouM
+ghY
+vGK
 gYN
 boa
 boa
@@ -177646,18 +177624,18 @@ boa
 boa
 boa
 boa
-boa
+tmn
 boa
 gYN
+fxy
+ghY
 ouM
-pWF
-pWF
-pWF
-ouM
+ghY
+vGK
 gYN
 boa
 boa
-boa
+tmn
 boa
 boa
 boa
@@ -177903,18 +177881,18 @@ boa
 boa
 boa
 boa
-boa
+gyt
 boa
 gYN
 ouM
+xfw
 ouM
-ouM
-ouM
+xfw
 ouM
 gYN
 boa
 boa
-boa
+gyt
 boa
 boa
 boa
@@ -178157,24 +178135,24 @@ boa
 boa
 boa
 boa
-boa
-boa
-boa
-boa
-boa
-gYN
-fxy
-ghY
-ouM
-ghY
-vGK
-gYN
-boa
-boa
-boa
-boa
-boa
-boa
+oDp
+oDp
+oDp
+oDp
+oDp
+oDp
+oDp
+vfW
+vCE
+vfW
+oDp
+oDp
+oDp
+oDp
+oDp
+oDp
+oDp
+oDp
 boa
 boa
 boa
@@ -178414,25 +178392,25 @@ boa
 boa
 boa
 boa
-boa
-boa
-boa
-tmn
-boa
-gYN
-fxy
-ghY
+oDp
+uHm
+lXA
+lXA
+lXA
+lXA
+lXA
+lXA
 ouM
-ghY
-vGK
-gYN
-boa
-boa
-tmn
-boa
-boa
-boa
-boa
+lXA
+lXA
+lXA
+lXA
+lXA
+lXA
+lXA
+ngu
+oDp
+oDp
 boa
 boa
 boa
@@ -178671,27 +178649,27 @@ boa
 boa
 boa
 boa
-boa
-boa
-boa
-gyt
-boa
-gYN
+oDp
+vNH
+hqZ
+nVy
+nVy
+cXh
 ouM
-xfw
 ouM
-xfw
 ouM
-gYN
-boa
-boa
-gyt
-boa
-boa
-boa
-boa
-boa
-boa
+ouM
+ouM
+ouM
+imX
+nVy
+nVy
+tpF
+ouM
+aDw
+oDp
+oDp
+oDp
 boa
 boa
 boa
@@ -178929,27 +178907,27 @@ boa
 boa
 boa
 oDp
+vNH
+tAA
 oDp
 oDp
+aOc
+aOc
+dOZ
+dOZ
+dOZ
+dOZ
+aOc
+aOc
 oDp
 oDp
-oDp
-oDp
-vfW
-vCE
-vfW
-oDp
-oDp
-oDp
-oDp
-oDp
-oDp
-oDp
-oDp
-boa
-boa
-boa
-boa
+vNH
+ouM
+ouM
+ntG
+ouM
+bXc
+aOL
 boa
 boa
 boa
@@ -179186,26 +179164,26 @@ boa
 boa
 boa
 oDp
-uHm
-lXA
-lXA
-lXA
-lXA
-lXA
-lXA
+vNH
+tAA
+oDp
+boa
+aOc
+rQN
+rve
+rpP
+tRu
+eUQ
+iow
+aOc
+boa
+oDp
+vNH
 ouM
-lXA
-lXA
-lXA
-lXA
-lXA
-lXA
-lXA
-ngu
+buV
 oDp
 oDp
-boa
-boa
+oDp
 boa
 boa
 boa
@@ -179444,25 +179422,25 @@ boa
 boa
 oDp
 vNH
-hqZ
-nVy
-nVy
-cXh
-ouM
-ouM
-ouM
-ouM
-ouM
-ouM
-imX
-nVy
-nVy
-tpF
-ouM
-aDw
+tAA
+oDp
+boa
+rFZ
+mxr
+mKd
+dzO
+aLz
+cNL
+kjQ
+rFZ
+boa
+oDp
+vNH
+tAA
 oDp
 oDp
-oDp
+boa
+boa
 boa
 boa
 boa
@@ -179702,25 +179680,25 @@ boa
 oDp
 vNH
 tAA
-oDp
-oDp
-aOc
-aOc
+jFv
+aYs
+hfN
+hfN
+xni
 dOZ
 dOZ
-dOZ
-dOZ
-aOc
-aOc
-oDp
-oDp
+noJ
+xdi
+xdi
+gkA
+vCZ
 vNH
-ouM
-ouM
-ntG
-ouM
-bXc
-aOL
+tAA
+oDp
+boa
+boa
+boa
+boa
 boa
 boa
 boa
@@ -179958,25 +179936,25 @@ gyt
 gyt
 oDp
 vNH
+vzF
+qII
+foF
+foF
+foF
+foF
+foF
+foF
+foF
+foF
+foF
+foF
+fLH
+iFN
 tAA
 oDp
 boa
-aOc
-rQN
-rve
-tRu
-tRu
-eUQ
-iow
-aOc
 boa
-oDp
-vNH
-ouM
-buV
-oDp
-oDp
-oDp
+boa
 boa
 boa
 boa
@@ -180215,23 +180193,23 @@ boa
 boa
 oDp
 vNH
+ouM
+qEf
+foF
+foF
+foF
+foF
+foF
+foF
+foF
+foF
+foF
+foF
+sFb
+ouM
 tAA
 oDp
-gyt
-rFZ
-rpP
-mKd
-dzO
-jFv
-cNL
-iow
-rFZ
-gyt
-oDp
-vNH
-tAA
-oDp
-oDp
+boa
 boa
 boa
 boa
@@ -180472,20 +180450,20 @@ boa
 boa
 oDp
 vNH
-tAA
-oDp
-boa
-rFZ
-mxr
-vCZ
-bYc
-aLz
-eHy
-kjQ
-rFZ
-boa
-oDp
-vNH
+ouM
+qEf
+foF
+foF
+foF
+foF
+foF
+foF
+foF
+foF
+foF
+foF
+sFb
+ouM
 tAA
 oDp
 boa
@@ -180729,20 +180707,20 @@ boa
 boa
 oDp
 vNH
-vzF
-hRI
-aYs
-hfN
-hfN
-xni
-dOZ
-dOZ
-noJ
-xdi
-xdi
-gkA
-vTG
-iFN
+ouM
+qEf
+foF
+foF
+foF
+foF
+foF
+foF
+foF
+foF
+foF
+foF
+sFb
+ouM
 tAA
 oDp
 boa
@@ -182015,7 +181993,7 @@ nVy
 nVy
 ajt
 ouM
-qEf
+qII
 foF
 foF
 foF
@@ -182026,7 +182004,7 @@ foF
 foF
 foF
 foF
-sFb
+fLH
 ouM
 tAA
 aOc

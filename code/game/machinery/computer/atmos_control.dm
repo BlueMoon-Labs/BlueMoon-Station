@@ -46,6 +46,10 @@
 		icon_state = "gsensor[on]"
 
 /obj/machinery/air_sensor/process_atmos()
+	// Pure telemetry for the atmos monitoring computers: a 2s report cadence is
+	// plenty and skips the per-fire signal allocation and radio dispatch.
+	if(SSair.times_fired % ATMOS_TELEMETRY_INTERVAL)
+		return
 	if(on)
 		var/datum/gas_mixture/air_sample = return_air()
 

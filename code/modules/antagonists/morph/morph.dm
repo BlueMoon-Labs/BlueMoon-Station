@@ -356,6 +356,10 @@
 	weight = 0 // Admin only; morph spawns via dynamic ruleset (not in extended)
 	max_occurrences = 1
 	category = EVENT_CATEGORY_ENTITIES
+	severity = DIRECTOR_SEVERITY_GHOST // форс-запуск обязан считаться антаг-нагрузкой
+	cost = 10
+	intensity = 15
+	family = "morph" // с рулсетом-двойником динамика: не подряд
 	description = "Spawns a hungry shapeshifting blobby creature."
 
 /datum/round_event/ghost_role/morph

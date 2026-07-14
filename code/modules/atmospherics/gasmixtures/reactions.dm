@@ -19,6 +19,10 @@
 	var/list/min_requirements
 	var/exclude = FALSE //do it this way to allow for addition/removal of reactions midmatch in the future
 	var/priority = 100 //lower numbers are checked/react later than higher numbers. if two reactions have the same priority they may happen in either order
+	/// Position in the priority-sorted SSair.gas_reactions list, maintained by
+	/// SSair.auxtools_update_reactions(); used to keep candidate evaluation order
+	/// identical to the full-list scan when gathering reactions from the key-gas index.
+	var/sort_index = 0
 	var/name = "reaction"
 	var/id = "r"
 	/// Short description for the atmos handbook.

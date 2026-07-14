@@ -76,7 +76,8 @@
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
-	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced=1, /obj/item/syndicate_uplink=1)
+	accessory = list(/obj/item/clothing/accessory/permit/special/syndie_station)
+	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced=1,/obj/item/syndicate_uplink/station=1)
 
 // BLUEMOON ADD уборщики не оставляют при своём хождении грязь
 /datum/outfit/job/janitor/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)

@@ -18,6 +18,9 @@
 /obj/item/ammo_casing/magic/death
 	projectile_type = /obj/item/projectile/magic/death
 
+/obj/item/ammo_casing/magic/dust
+	projectile_type = /obj/item/projectile/magic/dust
+
 /obj/item/ammo_casing/magic/teleport
 	projectile_type = /obj/item/projectile/magic/teleport
 	harmful = FALSE

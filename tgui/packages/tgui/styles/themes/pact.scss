@@ -1,0 +1,60 @@
+/**
+ * Copyright (c) 2020 Aleksej Komarov
+ * SPDX-License-Identifier: MIT
+ */
+
+@use 'sass:color';
+@use 'sass:meta';
+
+@use '../colors.scss' with (
+  $primary: #397439,
+  $fg-map-keys: (),
+  $bg-map-keys: (),
+);
+@use '../base.scss' with (
+  $color-bg: #151a36,
+  $color-bg-grad-spread: 20%,
+);
+
+.theme-pact{
+  // Atomic classes
+  @include meta.load-css('../atomic/color.scss');
+
+  // Components
+  @include meta.load-css('../components/Button.scss', $with: (
+    'color-default': colors.$primary,
+    'color-disabled': #363636,
+    'color-selected': #9d0808,
+    'color-caution': #be6209,
+    'color-danger': #9a9d00,
+  ));
+  @include meta.load-css('../components/Input.scss', $with: (
+    'border-color': #4460ff,
+  ));
+  @include meta.load-css('../components/NoticeBox.scss', $with: (
+    'background-color': #000000,
+  ));
+  @include meta.load-css('../components/NumberInput.scss', $with: (
+    'border-color': #87ce87,
+  ));
+  @include meta.load-css('../components/ProgressBar.scss', $with: (
+    'background-color': rgba(0, 0, 0, 0.5),
+  ));
+  @include meta.load-css('../components/Section.scss', $with: (
+    'background-color': rgba(#01040e, 0.75),
+  ));
+  @include meta.load-css('../components/Tooltip.scss', $with: (
+    'background-color': #270202,
+  ));
+
+  // Layouts
+  @include meta.load-css('../layouts/Layout.scss');
+  @include meta.load-css('../layouts/Window.scss');
+  @include meta.load-css('../layouts/TitleBar.scss', $with: (
+    'background-color': #111829,
+  ));
+
+  .Layout__content {
+    background-image: url('../../assets/bg-pact.svg');
+  }
+}

@@ -1,4 +1,4 @@
-import { Component, createRef } from 'inferno';
+import { Component, createRef, type KeyboardEvent } from 'react';
 
 import { useBackend } from '../../backend';
 import { Box, Button, NoticeBox, Section, Stack, Tooltip } from '../../components';
@@ -35,7 +35,7 @@ const MAX_KEYS = 4;
 class KeyCaptureOverlay extends Component<{
   capture: KbCapture;
   onCancel: () => void;
-  onKey: (event: KeyboardEvent) => void;
+  onKey: (event: KeyboardEvent<HTMLDivElement>) => void;
 }> {
   focusRef = createRef<HTMLDivElement>();
 
@@ -56,7 +56,7 @@ class KeyCaptureOverlay extends Component<{
           ref={this.focusRef}
           tabIndex={0}
           className="GamePreferences__captureFocus"
-          onKeyDown={(event: KeyboardEvent) => {
+          onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
             event.preventDefault();
             event.stopPropagation();
             onKey(event);
@@ -113,8 +113,8 @@ const BindButton = (props: {
   />
 );
 
-export const KeybindingsTab = (props, context) => {
-  const { act, data } = useBackend<KeybindingsData>(context);
+export const KeybindingsTab = (props) => {
+  const { act, data } = useBackend<KeybindingsData>();
   const { hotkeys, keybindings, kb_capture } = data;
 
   const categories: Record<string, KeybindingInfo[]> = {};
@@ -126,7 +126,7 @@ export const KeybindingsTab = (props, context) => {
   }
   const categoryKeys = Object.keys(categories).sort();
 
-  const submitCapture = (event: KeyboardEvent) => {
+  const submitCapture = (event: KeyboardEvent<HTMLDivElement>) => {
     if (!kb_capture) {
       return;
     }

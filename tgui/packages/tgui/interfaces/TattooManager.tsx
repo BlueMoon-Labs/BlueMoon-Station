@@ -1,4 +1,6 @@
-import { useBackend, useLocalState } from '../backend';
+import { useState } from 'react';
+
+import { useBackend } from '../backend';
 import {
   Box,
   Button,
@@ -110,8 +112,8 @@ const getZoneIcon = (zone: string): string => {
   }
 };
 
-export const TattooManager = (props, context) => {
-  const { act, data } = useBackend<TattooManagerData>(context);
+export const TattooManager = (props) => {
+  const { act, data } = useBackend<TattooManagerData>();
   const {
     tattoo_zones,
     has_tattoos,
@@ -121,19 +123,15 @@ export const TattooManager = (props, context) => {
     available_zones,
   } = data;
 
-  const [showAddModal, setShowAddModal] = useLocalState(
-    context,
-    'showAddModal',
-    false,
-  );
+  const [showAddModal, setShowAddModal] = useState(false);
 
-  const [editingTattoo, setEditingTattoo] = useLocalState<{
+  const [editingTattoo, setEditingTattoo] = useState<{
     zone: string;
     index: string;
     text: string;
     color: string;
     style: 'text' | 'description';
-  } | null>(context, 'editingTattoo', null);
+  } | null>(null);
 
   return (
     <Window title="Управление татуировками" width={550} height={650}>
@@ -292,7 +290,7 @@ interface TattooFormModalProps {
   onClose: () => void;
 }
 
-const TattooFormModal = (props: TattooFormModalProps, context) => {
+const TattooFormModal = (props: TattooFormModalProps) => {
   const {
     title,
     inkColors,
@@ -303,27 +301,15 @@ const TattooFormModal = (props: TattooFormModalProps, context) => {
     onClose,
   } = props;
 
-  const [formZone, setFormZone] = useLocalState(
-    context,
-    'formZone',
+  const [formZone, setFormZone] = useState(
     initialData?.zone || availableZones[0]?.id || '',
   );
 
-  const [formText, setFormText] = useLocalState(
-    context,
-    'formText',
-    initialData?.text || '',
-  );
+  const [formText, setFormText] = useState(initialData?.text || '');
 
-  const [formColor, setFormColor] = useLocalState(
-    context,
-    'formColor',
-    initialData?.color || '#4A4A4A',
-  );
+  const [formColor, setFormColor] = useState(initialData?.color || '#4A4A4A');
 
-  const [formStyle, setFormStyle] = useLocalState<'text' | 'description'>(
-    context,
-    'formStyle',
+  const [formStyle, setFormStyle] = useState<'text' | 'description'>(
     initialData?.style || 'text',
   );
 
@@ -468,7 +454,7 @@ const TattooFormModal = (props: TattooFormModalProps, context) => {
                 <span>{formText}</span>
               )
             ) : (
-              <span style={{ color: 'gray', 'font-style': 'italic' }}>
+              <span style={{ color: 'gray', fontStyle: 'italic' }}>
                 Введите текст для предпросмотра
               </span>
             )}
@@ -504,15 +490,11 @@ interface TattooZoneSectionProps {
   onEditTattoo: (tattoo: SingleTattoo) => void;
 }
 
-const TattooZoneSection = (props: TattooZoneSectionProps, context) => {
-  const { act } = useBackend<TattooManagerData>(context);
+const TattooZoneSection = (props: TattooZoneSectionProps) => {
+  const { act } = useBackend<TattooManagerData>();
   const { zone, onEditTattoo } = props;
 
-  const [confirmingIndex, setConfirmingIndex] = useLocalState<string | null>(
-    context,
-    `confirming_${zone.zone}`,
-    null,
-  );
+  const [confirmingIndex, setConfirmingIndex] = useState<string | null>(null);
 
   return (
     <Collapsible
@@ -556,8 +538,8 @@ interface TattooItemProps {
   onEdit: () => void;
 }
 
-const TattooItem = (props: TattooItemProps, context) => {
-  const { act } = useBackend<TattooManagerData>(context);
+const TattooItem = (props: TattooItemProps) => {
+  const { act } = useBackend<TattooManagerData>();
   const { tattoo, zone, isConfirming, onStartConfirm, onCancelConfirm, onEdit } =
     props;
 

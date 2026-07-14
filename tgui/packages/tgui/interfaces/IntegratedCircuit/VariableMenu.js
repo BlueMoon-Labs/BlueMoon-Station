@@ -1,4 +1,5 @@
-import { useLocalState } from '../../backend';
+import { useState } from 'react';
+
 import {
   Box,
   Button,
@@ -8,7 +9,7 @@ import {
   Stack,
 } from '../../components';
 
-export const VariableMenu = (props, context) => {
+export const VariableMenu = (props) => {
   const {
     variables,
     onAddVariable,
@@ -19,8 +20,8 @@ export const VariableMenu = (props, context) => {
     ...rest
   } = props;
 
-  const [name, setName] = useLocalState(context, "variable_name", null);
-  const [type, setType] = useLocalState(context, "variable_type", types[1]);
+  const [name, setName] = useState(null);
+  const [type, setType] = useState(types[1]);
 
   return (
     <Section

@@ -12,18 +12,18 @@
 		C.prefs.menuoptions[type] = !checked
 		winset(C, "[verbpath]", "is-checked = [!checked]")
 
-/datum/verbs/menu/Settings/verb/setup_character()
-	set name = "Game Preferences"
-	set category = "Preferences.Game"
-	set desc = "Open Game Preferences Window"
-	usr.client.prefs.ui_interact(usr)
-
 /datum/verbs/menu/Settings/verb/setup_character_appearance()
 	set name = "Character Preferences"
 	set category = "Preferences.Game"
 	set desc = "Open Character Preferences Window"
 	usr.client.prefs.current_tab = 0
 	usr.client.prefs.ShowChoices(usr)
+
+/datum/verbs/menu/Settings/verb/setup_character()
+	set name = "Game Preferences"
+	set category = "Preferences.Game"
+	set desc = "Open Game Preferences Window"
+	usr.client.prefs.ui_interact(usr)
 
 //toggles
 /datum/verbs/menu/Settings/Ghost/chatterbox

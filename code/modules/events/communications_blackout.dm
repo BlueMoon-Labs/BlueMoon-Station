@@ -4,6 +4,8 @@
 	weight = 50
 	max_occurrences = 5
 	category = EVENT_CATEGORY_ENGINEERING
+	severity = DIRECTOR_SEVERITY_MINOR
+	disruption = DIRECTOR_DISRUPTION_DISRUPTIVE // глушит связь всей станции - для мягких профилей не мелочь
 
 /datum/round_event/communications_blackout
 	announce_when	= 1

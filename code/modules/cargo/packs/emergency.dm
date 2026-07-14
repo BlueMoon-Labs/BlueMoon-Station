@@ -325,7 +325,7 @@
 	desc = "Держите эти сорняки ПОДАЛЬШЕ. Содержит косу, противогаз, два баллончика с растением-B-Gone и две химические гранаты против сорняков. Гарантия аннулируется, если используется на ambrosia. Для открытия требуется доступ к гидропонике."
 	cost = 1800
 	access = ACCESS_HYDROPONICS
-	contains = list(/obj/item/scythe,
+	contains = list(/obj/item/scythe/tier1,
 					/obj/item/clothing/mask/gas,
 					/obj/item/grenade/chem_grenade/antiweed,
 					/obj/item/grenade/chem_grenade/antiweed,

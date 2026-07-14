@@ -10,6 +10,13 @@
 	min_players = 40
 	earliest_start = 90 MINUTES
 	category = EVENT_CATEGORY_ENTITIES
+	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
+	cost = 20
+	intensity = 45
+	intensity_linger = 45 MINUTES // гнездо живёт заметно дольше спавнера
+	antag_heavy = TRUE // угроза всей станции: мягкие профили такое выключают
+	family = "terror_spiders" // с рулсетом-двойником динамика: не подряд
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // не экста и не лайт
 	description = "Spawns spider eggs, ready to hatch."
 
 /datum/round_event/ghost_role/spider_terror

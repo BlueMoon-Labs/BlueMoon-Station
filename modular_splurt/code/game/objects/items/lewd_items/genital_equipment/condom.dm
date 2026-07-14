@@ -84,6 +84,39 @@
 	to_chat(user, "<span class='notice'>You unwrap the condom.</span>")
 	playsound(user, 'sound/items/poster_ripped.ogg', 50, 1, -1)
 
+/obj/item/genital_equipment/condom/attack(mob/living/M, mob/living/user, attackchain_flags, damage_multiplier)
+	if(!reagents.total_volume)
+		return
+	var/list/obscured_slots = M.check_obscured_slots()
+	var/list/available_clothing = list()
+	var/datum/component/condom_clipping/cc = null
+	for(var/obj/item/clothing/C in M.get_contents())
+		cc = C.GetComponent(/datum/component/condom_clipping)
+		if(!istype(cc))
+			continue
+		if(C.item_flags & ABSTRACT || C.obj_flags & EXAMINE_SKIP)
+			continue
+		if(!(C.current_equipped_slot & C.slot_flags))
+			continue
+		if(C.current_equipped_slot in obscured_slots)
+			continue
+		available_clothing[C] = new /mutable_appearance(C)
+	if(isemptylist(available_clothing))
+		to_chat(user, span_warning("Не найдено подходящей одежды."))
+		return
+	var/obj/item/clothing/choice = show_radial_menu(user, M, available_clothing, require_near = TRUE, tooltips = TRUE)
+	if(!istype(choice) || QDELETED(src) || QDELETED(choice) || QDELETED(user) || QDELETED(M))
+		return
+	if(M != user)
+		M.visible_message("[user] пытается нацепить использованный презерватив на [choice.name] на [M].", \
+						span_userdanger("[user] пытается нацепить использованный презерватив тебе на [choice.name]."))
+		if(!do_after(user, 5 SECONDS, choice, progress_loc = user))
+			return
+		if(QDELETED(src) || QDELETED(M))
+			return
+	cc = choice.GetComponent(/datum/component/condom_clipping)
+	cc.clip_condom(choice, src, user, M)
+
 /obj/item/genital_equipment/condom/throw_impact(atom/hit_atom)
 	. = ..()
 	if(!. && reagents.total_volume) //if we're not being caught

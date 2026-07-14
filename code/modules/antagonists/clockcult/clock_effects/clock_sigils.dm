@@ -1,8 +1,8 @@
 //Sigils: Rune-like markings on the ground with various effects.
 /obj/effect/clockwork/sigil
 	name = "sigil"
-	desc = "A strange set of markings drawn on the ground."
-	clockwork_desc = "A sigil of some purpose."
+	desc = "Странный набор знаков, нарисованных на земле."
+	clockwork_desc = "Сигил, имеющий какое-то назначение."
 	icon_state = "sigil"
 	layer = LOW_OBJ_LAYER
 	plane = ABOVE_WALL_PLANE
@@ -11,7 +11,7 @@
 	var/affects_servants = FALSE
 	var/stat_affected = CONSCIOUS
 	var/sigil_name = "Sigil"
-	var/resist_string = "glows blinding white" //string for when a null rod blocks its effects, "glows [resist_string]"
+	var/resist_string = "светится ослепительно белым светом" //string for when a null rod blocks its effects, "glows [resist_string]"
 	var/check_antimagic = TRUE
 	var/check_holy = FALSE
 
@@ -36,7 +36,7 @@
 	. = ..()
 
 /obj/effect/clockwork/sigil/ex_act(severity, target, origin)
-	visible_message("<span class='warning'>[src] scatters into thousands of particles.</span>")
+	visible_message("<span class='warning'>[src] разлетается на тысячи частиц.</span>")
 	qdel(src)
 
 /obj/effect/clockwork/sigil/Crossed(atom/movable/AM)
@@ -48,8 +48,8 @@
 				var/atom/I = L.anti_magic_check(check_antimagic, check_holy)
 				if(I)
 					if(isitem(I))
-						L.visible_message("<span class='warning'>[L]'s [I.name] [resist_string], protecting [L.ru_na()] from [src]'s effects!</span>", \
-						"<span class='userdanger'>Your [I.name] [resist_string], protecting you!</span>")
+						L.visible_message("<span class='warning'>[I.name] в руках [L] [resist_string], защищая [L.ru_ego()] от эффектов [src]!</span>", \
+						"<span class='userdanger'>Ваш [I.name] [resist_string], защищая вас!</span>")
 					return
 				sigil_effects(L)
 
@@ -59,9 +59,9 @@
 //Sigil of Transgression: Stuns the first non-servant to walk on it and flashes all nearby non_servants. Nar'Sian cultists are damaged and knocked down for a longer time
 /obj/effect/clockwork/sigil/transgression
 	name = "dull sigil"
-	desc = "A dull, barely-visible golden sigil. It's as though light was carved into the ground."
+	desc = "Тусклый, едва различимый золотой сигил. Словно свет был высечен прямо в земле."
 	icon = 'icons/effects/clockwork_effects.dmi'
-	clockwork_desc = "A sigil that will stun the next non-Servant to cross it."
+	clockwork_desc = "Сигил, который оглушит следующее существо, не являющееся Слугой, которое наступит на него."
 	icon_state = "sigildull"
 	layer = HIGH_SIGIL_LAYER
 	alpha = 75
@@ -77,15 +77,15 @@
 		if(!is_servant_of_ratvar(M) && M != L)
 			M.flash_act()
 	if(iscultist(L)) //No longer stuns cultists, instead sets them on fire and burns them
-		to_chat(L, "<span class='heavy_brass'>\"Watch your step, wretch.\"</span>")
+		to_chat(L, "<span class='heavy_brass'>\"Смотри под ноги, ублюдок.\"</span>")
 		L.adjustFireLoss(10)
 		L.DefaultCombatKnockdown(20, FALSE)
 		L.adjust_fire_stacks(5) //Burn!
 		L.IgniteMob()
 	else
 		L.Stun(40)
-	L.visible_message("<span class='warning'>[src] appears around [L] in a burst of light!</span>", \
-	"<span class='userdanger'>[target_flashed ? "An unseen force":"The glowing sigil around you"] [iscultist(L) ? "painfully bursts into flames!" : "holds you in place!"]</span>")
+	L.visible_message("<span class='warning'>[src] появляется вокруг ног [L] в яркой вспышке света!</span>", \
+	"<span class='userdanger'>[target_flashed ? "Невидимая сила":"Светящийся сигил вокруг тебя"] [iscultist(L) ? " вспыхивает пламенем!" : "держит вас на месте!"]</span>")
 	L.apply_status_effect(STATUS_EFFECT_BELLIGERENT)
 	new /obj/effect/temp_visual/ratvar/sigil/transgression(get_turf(src))
 	qdel(src)
@@ -94,8 +94,8 @@
 //Sigil of Submission: After a short time, converts any non-servant standing on it. Knocks down and silences them for five seconds afterwards.
 /obj/effect/clockwork/sigil/submission
 	name = "ominous sigil"
-	desc = "A luminous golden sigil. Something about it really bothers you."
-	clockwork_desc = "A sigil that will enslave any non-Servant that remains on it for 8 seconds, including unconscious and dead targets. Cannot penetrate mindshield implants."
+	desc = "Светящийся золотой сигил. Что-то в нём вас сильно беспокоит."
+	clockwork_desc = "Сигил, который порабощает любое существо, не являющееся Слугой, если оно останется на нём в течение 8 секунд, включая целей без сознания и мертвых целей. Не проникает через имплант защиты разума."
 	icon_state = "sigilsubmission"
 	layer = LOW_SIGIL_LAYER
 	alpha = 125
@@ -104,7 +104,7 @@
 	light_power = 0.9
 	light_color = "#FAE48C"
 	stat_affected = DEAD
-	resist_string = "glows faintly yellow"
+	resist_string = "слабо светится желтым светом"
 	var/convert_time = 80
 	var/delete_on_finish = TRUE
 	sigil_name = "Sigil of Submission"
@@ -145,8 +145,8 @@
 	var/atom/I = L.anti_magic_check(check_antimagic, check_holy)
 	if(I)
 		if(isitem(I))
-			L.visible_message("<span class='warning'>[L]'s [I.name] [resist_string], protecting [L.ru_na()] from [src]'s effects!</span>", \
-			"<span class='userdanger'>Your [I.name] [resist_string], protecting you!</span>")
+			L.visible_message("<span class='warning'>[I.name] в руках [L] [resist_string], защищая [L.ru_ego()] от эффектов [src]</span>", \
+			"<span class='userdanger'>Ваш [I.name] [resist_string], защищая вас!</span>")
 		return FALSE
 	sigil_effects(L)
 	return TRUE
@@ -164,9 +164,9 @@
 		if(is_servant_of_ratvar(M) && !M.stat)
 			has_servant = TRUE
 	if(!has_sigil && !has_servant)
-		visible_message("<span class='danger'>[src] strains into a gentle violet color, but quietly fades...</span>")
+		visible_message("<span class='danger'>[src] переходит в нежный фиолетовый оттенок, но постепенно блекнет...</span>")
 		return
-	L.visible_message("<span class='warning'>[src] begins to glow a piercing magenta!</span>", "<span class='sevtug'>You feel something start to invade your mind...</span>")
+	L.visible_message("<span class='warning'>[src] начинает светиться ярким пурпурным светом!</span>", "<span class='sevtug'>Вы чувствуете, как что-то начинает проникать в ваш разум...</span>")
 	var/oldcolor = color
 	animate(src, color = "#AF0AAF", time = convert_time, flags = ANIMATION_END_NOW)
 	var/obj/effect/temp_visual/ratvar/sigil/glow
@@ -181,13 +181,13 @@
 			qdel(glow)
 		animate(src, color = oldcolor, time = 20, flags = ANIMATION_END_NOW)
 		addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_atom_colour)), 20)
-		visible_message("<span class='warning'>[src] slowly stops glowing!</span>")
+		visible_message("<span class='warning'>[src] постепенно перестает светиться!</span>")
 		return
 	if(is_eligible_servant(L))
-		to_chat(L, "<span class='heavy_brass'>\"You belong to me now.\"</span>")
+		to_chat(L, "<span class='heavy_brass'>\"Теперь ты принадлежишь мне.\"</span>")
 		if(!GLOB.application_scripture_unlocked)
 			GLOB.application_scripture_unlocked = TRUE
-			hierophant_message("<span class='large_brass bold'>With the conversion of a new servant the Hierophant Network's power grows. Application scriptures are now available.</span>")
+			hierophant_message("<span class='large_brass bold'>С присоединением нового слуги сила Сети Иерофанта растёт. Открыты новые Писания для служения Ратвару.</span>")
 	if(add_servant_of_ratvar(L))
 		L.log_message("conversion was done with a [sigil_name]", LOG_ATTACK, color="BE8700")
 		var/datum/antagonist/clockcult/clock_antag = L.mind?.has_antag_datum(/datum/antagonist/clockcult)
@@ -199,22 +199,22 @@
 		if(iscyborg(L) && was_dead)
 			var/mob/living/silicon/robot/R = L
 			R.revive(TRUE)
-			R.visible_message("<span class='warning'>[R]'s chassis shudders as brass light rewrites [R.ru_ego()] circuits!</span>", \
-			"<span class='heavy_brass'>Your systems reboot in service of the Justiciar.</span>")
+			R.visible_message("<span class='warning'>Шасси [R] содрогается, когда латунный свет перепрошивает [R.ru_ego()] схемы!</span>", \
+			"<span class='heavy_brass'>Ваши системы перезагружаются в пользу Юстициара.</span>")
 		else
 			var/brutedamage = L.getBruteLoss()
 			var/burndamage = L.getFireLoss()
 			if(brutedamage || burndamage)
 				L.adjustBruteLoss(-(brutedamage * 0.75))
 				L.adjustFireLoss(-(burndamage * 0.75))
-				L.visible_message("<span class='warning'>[L] writhes in pain even as [L.ru_ego()] wounds heal and close!</span>", \
+				L.visible_message("<span class='warning'>[L] корчится от боли, когда [L.ru_ego()]  раны заживают и затягиваются!</span>", \
 				"<span class='heavy_brass'><i>AAAAAAAAAAAAAA-</i></span>")
 		if(!was_dead)
 			L.DefaultCombatKnockdown(50) //Completely defenseless for five seconds - mainly to give them time to read over the information they've just been presented with
 			if(iscarbon(L))
 				var/mob/living/carbon/H = L
 				H.silent += 5
-	var/message = "[sigil_name] in [get_area(src)] <span class='sevtug'>[is_servant_of_ratvar(L) ? "successfully converted" : "failed to convert"]</span>"
+	var/message = "[sigil_name] в [get_area(src)] <span class='sevtug'>[is_servant_of_ratvar(L) ? "успешно конвертировал" : "не удалось конвертировать"]</span>"
 	new /obj/item/clockwork/slab (get_turf(src))
 	for(var/M in GLOB.mob_list)
 		if(isobserver(M))
@@ -222,19 +222,19 @@
 			to_chat(M,  "[link] <span class='heavy_brass'>[message] [L.real_name]!</span>")
 		else if(is_servant_of_ratvar(M))
 			if(M == L)
-				to_chat(M, "<span class='heavy_brass'>[message] you!</span>")
+				to_chat(M, "<span class='heavy_brass'>[message] вас!</span>")
 			else
 				to_chat(M, "<span class='heavy_brass'>[message] [L.real_name]!</span>")
 	animate(src, color = oldcolor, time = 20, flags = ANIMATION_END_NOW)
 	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_atom_colour)), 20)
-	visible_message("<span class='warning'>[src] slowly stops glowing!</span>")
+	visible_message("<span class='warning'>[src] медленно перестаёт светиться!</span>")
 
 
 //Sigil of Transmission: Serves as an access point for powered structures.
 /obj/effect/clockwork/sigil/transmission
 	name = "suspicious sigil"
-	desc = "A glowing orange sigil. The air around it feels staticky."
-	clockwork_desc = "A sigil that serves as power generation and a battery for clockwork structures, linked to all other sigils of its type."
+	desc = "Светящийся оранжевый сигил. Воздух вокруг него наполнен статическим электричеством."
+	clockwork_desc = "Сигил, служащий источником энергии и аккумулятором для механических конструкций, связанный со всеми другими сигилами этого типа."
 	icon_state = "sigiltransmission"
 	alpha = 50
 	color = "#EC8A2D"
@@ -250,7 +250,7 @@
 /obj/effect/clockwork/sigil/transmission/ex_act(severity, target, origin)
 	if(severity == 3)
 		adjust_clockwork_power(500) //Light explosions charge the network!
-		visible_message("<span class='warning'>[src] flares a brilliant orange!</span>")
+		visible_message("<span class='warning'>[src] сверкает ярким оранжевым цветом!</span>")
 	else
 		..()
 
@@ -260,17 +260,17 @@
 		var/structure_number = 0
 		for(var/obj/structure/destructible/clockwork/powered/P in range(SIGIL_ACCESS_RANGE, src))
 			structure_number++
-		. += "<span class='[get_clockwork_power() ? "brass":"alloy"]'>It is storing <b>[DisplayPower(get_clockwork_power())]</b> of shared power, \
-		and <b>[structure_number]</b> clockwork structure[structure_number == 1 ? " is":"s are"] in range.</span>"
+		. += "<span class='[get_clockwork_power() ? "brass":"alloy"]'>Оно хранит <b>[DisplayPower(get_clockwork_power())]</b> общей энергии \
+		и в зоне находится <b>[structure_number]</b> часов[structure_number == 1 ? "ой" : "ых"] механизм[structure_number == 1 ? "" : (structure_number >= 2 && structure_number <= 4 ? "а" : "ов")] .</span>"
 		if(iscyborg(user))
-			. += "<span class='brass'>You can recharge from the [sigil_name] by crossing it.</span>"
+			. += "<span class='brass'>Вы можете восполнить энергию [sigil_name], пройдя через него.</span>"
 
 /obj/effect/clockwork/sigil/transmission/sigil_effects(mob/living/L)
 	if(is_servant_of_ratvar(L))
 		if(iscyborg(L))
 			charge_cyborg(L)
 	else if(get_clockwork_power())
-		to_chat(L, "<span class='brass'>You feel a slight, static shock.</span>")
+		to_chat(L, "<span class='brass'>Вы чувствуете лёгкий статический разряд.</span>")
 
 /obj/effect/clockwork/sigil/transmission/Initialize(mapload)
 	. = ..()
@@ -301,12 +301,12 @@
 /obj/effect/clockwork/sigil/transmission/proc/charge_cyborg(mob/living/silicon/robot/cyborg)
 	if(!cyborg_checks(cyborg))
 		return
-	to_chat(cyborg, "<span class='brass'>You start to charge from the [sigil_name]...</span>")
+	to_chat(cyborg, "<span class='brass'>Вы начинаете заряжаться от [sigil_name]...</span>")
 	if(!do_after(cyborg, 50, target = src, extra_checks = CALLBACK(src, PROC_REF(cyborg_checks), cyborg, TRUE)))
 		return
 	var/giving_power = min(FLOOR(cyborg.cell.maxcharge - cyborg.cell.charge, MIN_CLOCKCULT_POWER), get_clockwork_power()) //give the borg either all our power or their missing power floored to MIN_CLOCKCULT_POWER
 	if(adjust_clockwork_power(-giving_power))
-		cyborg.visible_message("<span class='warning'>[cyborg] glows a brilliant orange!</span>")
+		cyborg.visible_message("<span class='warning'>[cyborg] светится ярким оранжевым цветом!</span>")
 		var/previous_color = cyborg.color
 		cyborg.color = list("#EC8A2D", "#EC8A2D", "#EC8A2D", rgb(0,0,0))
 		cyborg.apply_status_effect(STATUS_EFFECT_POWERREGEN, giving_power * 0.1) //ten ticks, restoring 10% each
@@ -316,19 +316,19 @@
 /obj/effect/clockwork/sigil/transmission/proc/cyborg_checks(mob/living/silicon/robot/cyborg, silent)
 	if(!cyborg.cell)
 		if(!silent)
-			to_chat(cyborg, "<span class='warning'>You have no cell!</span>")
+			to_chat(cyborg, "<span class='warning'>У вас нет батареи</span>")
 		return FALSE
 	if(!get_clockwork_power())
 		if(!silent)
-			to_chat(cyborg, "<span class='warning'>There is no power available across sigils!</span>")
+			to_chat(cyborg, "<span class='warning'>Нет доступной энергии в сети сигилов!</span>")
 		return FALSE
 	if(cyborg.cell.charge > cyborg.cell.maxcharge - MIN_CLOCKCULT_POWER)
 		if(!silent)
-			to_chat(cyborg, "<span class='warning'>You are already at maximum charge!</span>")
+			to_chat(cyborg, "<span class='warning'>Вы уже имеете максимальный заряд!</span>")
 		return FALSE
 	if(cyborg.has_status_effect(STATUS_EFFECT_POWERREGEN))
 		if(!silent)
-			to_chat(cyborg, "<span class='warning'>You are already regenerating power!</span>")
+			to_chat(cyborg, "<span class='warning'>Вы уже регенерируете энергию!</span>")
 		return FALSE
 	return TRUE
 
@@ -349,15 +349,15 @@
 //Vitality Matrix: Drains health from non-servants to heal or even revive servants.
 /obj/effect/clockwork/sigil/vitality
 	name = "comforting sigil"
-	desc = "A faint blue sigil. Looking at it makes you feel protected."
-	clockwork_desc = "A sigil that will drain non-Servants that remain on it. Servants that remain on it will be healed if it has any vitality drained."
+	desc = "Слабый голубой сигил. Глядя на него, чувствуешь себя в безопасности."
+	clockwork_desc = "Сигил, который будет поглощать жизненную силу всех существ, кроме Слуг, находящихся на его поверхности. Слуги, остающиеся на нем, будут восстанавливать здоровье, если с него будет поглощена жизненная сила."
 	icon_state = "sigilvitality"
 	layer = SIGIL_LAYER
 	alpha = 125
 	color = "#123456"
 	affects_servants = TRUE
 	stat_affected = DEAD
-	resist_string = "glows shimmering yellow"
+	resist_string = "светится мерцающим желтым светом"
 	sigil_name = "Vitality Matrix"
 	var/revive_cost = 150
 	var/sigil_active = FALSE
@@ -373,11 +373,11 @@
 /obj/effect/clockwork/sigil/vitality/examine(mob/user)
 	. = ..()
 	if(is_servant_of_ratvar(user) || isobserver(user))
-		. += "<span class='[GLOB.clockwork_vitality ? "inathneq_small":"alloy"]'>It has access to <b>[GLOB.ratvar_awakens ? "INFINITE":GLOB.clockwork_vitality]</b> units of vitality.</span>"
+		. += "<span class='[GLOB.clockwork_vitality ? "inathneq_small":"alloy"]'>Он имеет доступ к <b>[GLOB.ratvar_awakens ? "INFINITE":GLOB.clockwork_vitality]</b> единицами жизненной силы.</span>"
 		if(GLOB.ratvar_awakens)
-			. += "<span class='inathneq_small'>It can revive Servants at no cost!</span>"
+			. += "<span class='inathneq_small'>Он может воскрешать Слуг совершенно бесплатно!</span>"
 		else
-			. += "<span class='inathneq_small'>It can revive Servants at a cost of <b>[revive_cost]</b> vitality.</span>"
+			. += "<span class='inathneq_small'>Он может воскресить Слуг за <b>[revive_cost]</b> единиц жизненной силы.</span>"
 
 /obj/effect/clockwork/sigil/vitality/sigil_effects(mob/living/L)
 	if((is_servant_of_ratvar(L) && L.suiciding) || sigil_active)
@@ -400,8 +400,8 @@
 				var/obj/effect/temp_visual/ratvar/sigil/vitality/V = new /obj/effect/temp_visual/ratvar/sigil/vitality(get_turf(src))
 				animate(V, alpha = 0, transform = matrix()*2, time = 8)
 				playsound(L, 'sound/magic/wandodeath.ogg', 50, 1)
-				L.visible_message("<span class='warning'>[L] collapses in on [L.p_them()]self as [src] flares bright blue!</span>")
-				to_chat(L, "<span class='inathneq_large'>\"[text2ratvar("Your life will not be wasted.")]\"</span>")
+				L.visible_message("<span class='warning'>[L] сжимается в себя, когда [src] вспыхивает ярко-синим светом!</span>")
+				to_chat(L, "<span class='inathneq_large'>\"[text2ratvar("Твоя жизнь не будет потрачена впустую.")]\"</span>")
 				for(var/obj/item/W in L)
 					if(!L.dropItemToGround(W))
 						qdel(W)
@@ -423,9 +423,9 @@
 				var/mob/dead/observer/ghost = L.get_ghost(TRUE)
 				if(GLOB.clockwork_vitality >= revival_cost && (ghost || (L.mind && L.mind.active)))
 					if(L.has_status_effect(STATUS_EFFECT_ICHORIAL_STAIN))
-						visible_message("<span class='boldwarning'>[src] strains, but nothing happens...</span>")
+						visible_message("<span class='boldwarning'>[src] напрягается, но ничего не происходит...</span>")
 						if(L.pulledby)
-							to_chat(L.pulledby, "<span class='userdanger'>[L] was already revived recently by a vitality matrix! Wait a bit longer!</span>")
+							to_chat(L.pulledby, "<span class='userdanger'>[L] недавно уже был воскрешён с помощью матрицы жизненной силы! Подождите ещё немного!</span>")
 						break
 					else
 						if(ghost)
@@ -434,7 +434,7 @@
 						var/obj/effect/temp_visual/ratvar/sigil/vitality/V = new /obj/effect/temp_visual/ratvar/sigil/vitality(get_turf(src))
 						animate(V, alpha = 0, transform = matrix()*2, time = 8)
 						playsound(L, 'sound/magic/staff_healing.ogg', 50, 1)
-						to_chat(L, "<span class='inathneq'>\"[text2ratvar("You will be okay, child.")]\"</span>")
+						to_chat(L, "<span class='inathneq'>\"[text2ratvar("Все будет хорошо, дитя.")]\"</span>")
 						L.apply_status_effect(STATUS_EFFECT_ICHORIAL_STAIN)
 						GLOB.clockwork_vitality -= revival_cost
 				break
@@ -443,14 +443,14 @@
 				var/list/mob/candidates = pollCandidatesForMob("Do you want to play as a [L.name], an inactive clock cultist?", ROLE_SERVANT_OF_RATVAR, null, ROLE_SERVANT_OF_RATVAR, 50, L)
 				if(LAZYLEN(candidates))
 					var/mob/C = pick(candidates)
-					to_chat(L, "<span class='userdanger'>Your physical form has been taken over by another soul due to your inactivity! Ahelp if you wish to regain your form!</span>")
+					to_chat(L, "<span class='userdanger'>Из-за вашей бездеятельности ваше тело захватила другая душа! Обратитесь за помощью к админам, если хотите вернуть себе тело!</span>")
 					message_admins("[key_name_admin(C)] has taken control of ([key_name_admin(L)]) to replace an inactive clock cultist.")
 					L.ghostize(0)
 					C.transfer_ckey(L, FALSE)
 					var/obj/effect/temp_visual/ratvar/sigil/vitality/V = new /obj/effect/temp_visual/ratvar/sigil/vitality(get_turf(src))
 					animate(V, alpha = 0, transform = matrix()*2, time = 8)
 					playsound(L, 'sound/magic/staff_healing.ogg', 50, 1)
-					L.visible_message("<span class='warning'>[L]'s eyes suddenly open wide, gleaming with renewed vigor for the cause!</span>", "<span class='inathneq'>\"[text2ratvar("Awaken!")]\"</span>")
+					L.visible_message("<span class='warning'>Глаза [L] внезапно широко раскрылись, засияв новой энергией в борьбе за дело!</span>", "<span class='inathneq'>\"[text2ratvar("Пробудись!")]\"</span>")
 					break
 			var/vitality_for_cycle = 3
 			if(!GLOB.ratvar_awakens)
@@ -476,8 +476,8 @@
 
 /obj/effect/clockwork/sigil/rite
 	name = "radiant sigil"
-	desc = "A sigil glowing with barely-contained power."
-	clockwork_desc = "A sigil that will allow you to perform certain rites on it, provided you have access to sufficient power and materials."
+	desc = "Сигил, сияющий едва сдерживаемой силой."
+	clockwork_desc = "Сигил, с помощью которого вы сможете проводить определенные обряды, при условии, что у вас есть достаточный запас энергии и необходимые материалы."
 	icon_state = "sigiltransmission" //am big lazy - recolored transmission sigil
 	sigil_name = "Sigil of Rites"
 	alpha = 255
@@ -496,23 +496,23 @@
 	if(!GLOB.all_clockwork_rites.len) //Did we already generate the list?
 		generate_all_rites()
 	if(performing_rite)
-		to_chat(user, "<span class='warning'>Someone is already performing a rite here!")
+		to_chat(user, "<span class='warning'>Кто-то уже проводит ритуал здесь!</span>")
 		return
 	var/list/possible_rites = list()
 	for(var/datum/clockwork_rite/R in GLOB.all_clockwork_rites)
 		if(is_servant_of_ratvar(user, require_full_power = TRUE) || !R.requires_full_power)
 			possible_rites[R] = R
-	var/input_key = input(user, "Choose a rite", "Choosing a rite") as null|anything in possible_rites
+	var/input_key = input(user, "Выберите ритуал", "Выбор ритуала") as null|anything in possible_rites
 	if(!input_key)
 		return
 	var/datum/clockwork_rite/CR = possible_rites[input_key]
 	if(!CR)
 		return
-	var/choice = alert(user, "What to do with this rite?", "What to do?", "Cast", "Show Info", "Cancel")
+	var/choice = alert(user, "Что делать с этим ритуалом?", "Что сделать?", "Применить", "Показать информацию", "Отмена")
 	switch(choice)
-		if("Cast")
+		if("Применить")
 			CR.try_cast(src, user)
-		if("Show Info")
+		if("Показать информацию")
 			var/infotext = CR.build_info()
 			to_chat(user, infotext)
 

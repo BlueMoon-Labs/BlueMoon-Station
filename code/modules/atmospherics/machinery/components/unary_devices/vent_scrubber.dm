@@ -37,12 +37,15 @@
 	RegisterSignal(SSdcs,COMSIG_GLOB_NEW_GAS, PROC_REF(generate_clean_filter_types))
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/proc/generate_clean_filter_types()
+	// Assoc (gas id -> TRUE) so scrub() can probe the room's gases in O(1) each;
+	// scrub_into() iterates assoc keys the same way it iterated the plain list.
 	clean_filter_types = list()
 	for(var/id in filter_types)
 		if(id in GLOB.gas_data.groups)
-			clean_filter_types |= GLOB.gas_data.groups[id]
+			for(var/group_gas in GLOB.gas_data.groups[id])
+				clean_filter_types[group_gas] = TRUE
 		else
-			clean_filter_types += id
+			clean_filter_types[id] = TRUE
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/Destroy()
 	var/area/A = get_base_area(src)
@@ -149,19 +152,37 @@
 		set_frequency(frequency)
 	broadcast_status()
 	check_turfs()
+	register_turf_wake()
+	atmos_wake()
 	..()
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/process_atmos()
-	..()
+	if(atmos_idle_until > world.time)
+		return FALSE
 	if(welded || !is_operational)
+		// Woken by welder_act()/attack_alien()/power_change().
+		atmos_consider_idle()
 		return FALSE
 	if(!nodes[1] || !on)
 		on = FALSE
+		// Woken by receive_signal().
+		atmos_consider_idle()
 		return FALSE
-	scrub(loc)
+	var/scrubbed = scrub(loc)
 	if(widenet)
 		for(var/turf/tile in adjacent_turfs)
-			scrub(tile)
+			if(scrub(tile))
+				scrubbed = TRUE
+		// Widenet watches neighboring turfs we get no wake events from, so it
+		// never drops into the idle heartbeat.
+		atmos_idle_streak = 0
+		return TRUE
+	if(scrubbed)
+		atmos_idle_streak = 0
+	else
+		// Clean room: recheck on the heartbeat, or instantly when the turf
+		// activates (gas arriving is always an add_to_active call).
+		atmos_consider_idle()
 	return TRUE
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/proc/scrub(var/turf/tile)
@@ -177,12 +198,23 @@
 		return FALSE
 
 	if(scrubbing & SCRUBBING)
-		environment.scrub_into(air_contents, volume_rate/environment_volume, clean_filter_types)
-
+		// Probe the room's 2-4 gas ids before touching anything: a scrubber over a
+		// clean room must not reactivate its turf or dirty its pipenet every fire.
+		var/list/environment_gases = environment.get_gases()
+		var/any_filterable = FALSE
+		for(var/id in environment_gases)
+			if(clean_filter_types[id] && environment_gases[id] > 0)
+				any_filterable = TRUE
+				break
+		if(!any_filterable)
+			return FALSE
+		if(!environment.scrub_into(air_contents, volume_rate/environment_volume, clean_filter_types))
+			return FALSE
 		tile.air_update_turf()
 
 	else //Just siphoning all air
-
+		if(environment.total_moles() <= 0)
+			return FALSE
 		environment.transfer_ratio_to(air_contents, volume_rate/environment_volume)
 		tile.air_update_turf()
 
@@ -193,8 +225,10 @@
 //There is no easy way for an object to be notified of changes to atmos can pass flags
 //	So we check every machinery process (2 seconds)
 /obj/machinery/atmospherics/components/unary/vent_scrubber/process()
-	if(widenet)
-		check_turfs()
+	if(!widenet)
+		// Nothing to poll; receive_signal() re-adds us to SSmachines when widenet turns on.
+		return PROCESS_KILL
+	check_turfs()
 
 //we populate a list of turfs with nonatmos-blocked cardinal turfs AND
 //	diagonal turfs that can share atmos with *both* of the cardinal turfs
@@ -209,6 +243,10 @@
 	if(!is_operational || !signal.data["tag"] || (signal.data["tag"] != id_tag) || (signal.data["sigtype"]!="command"))
 		return FALSE
 
+	// init (rename) and status polls are read-only telemetry; only real commands
+	// may reset the idle heartbeat.
+	if(!("status" in signal.data) && !("init" in signal.data))
+		atmos_wake()
 	var/mob/signal_sender = signal.data["user"]
 
 	if("power" in signal.data)
@@ -216,10 +254,16 @@
 	if("power_toggle" in signal.data)
 		on = !on
 
+	var/old_widenet = widenet
 	if("widenet" in signal.data)
 		widenet = text2num(signal.data["widenet"])
 	if("toggle_widenet" in signal.data)
 		widenet = !widenet
+	if(widenet && widenet != old_widenet)
+		// Non-widenet scrubbers drop out of SSmachines (see process()); rejoin
+		// so the periodic adjacent-turf recalculation runs again.
+		START_PROCESSING(SSmachines, src)
+		check_turfs()
 
 	var/old_scrubbing = scrubbing
 	if("scrubbing" in signal.data)
@@ -252,7 +296,7 @@
 	return
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/power_change()
-	..()
+	..() // the base override already calls atmos_wake()
 	update_icon_nopipes()
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/welder_act(mob/living/user, obj/item/I)
@@ -266,6 +310,7 @@
 		else
 			user.visible_message("[user] unwelds the scrubber.", "You unweld the scrubber.", "You hear welding.")
 			welded = FALSE
+		atmos_wake()
 		update_icon()
 		pipe_vision_img = image(src, loc, layer = ABOVE_HUD_LAYER, dir = dir)
 		pipe_vision_img.plane = ABOVE_HUD_PLANE
@@ -290,6 +335,7 @@
 		return
 	user.visible_message("[user] furiously claws at [src]!", "You manage to clear away the stuff blocking the scrubber.", "You hear loud scraping noises.")
 	welded = FALSE
+	atmos_wake()
 	update_icon()
 	pipe_vision_img = image(src, loc, layer = ABOVE_HUD_LAYER, dir = dir)
 	pipe_vision_img.plane = ABOVE_HUD_PLANE

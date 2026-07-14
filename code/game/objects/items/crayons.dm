@@ -132,7 +132,7 @@
 
 /obj/item/toy/crayon/proc/use_charges(mob/user, amount = 1, requires_full = TRUE)
 	// Returns number of charges actually used
-	if(charges == -1)
+	if(charges == -1 || flags_1 & HOLOGRAM_1)
 		. = amount
 		refill()
 	else
@@ -354,6 +354,11 @@
 
 	if(!isValidSurface(target))
 		return
+
+	if(flags_1 & HOLOGRAM_1)
+		if(!istype(target, /turf/open/floor/holofloor))
+			to_chat(user, "<span class='warning'>[src] - голограмма, рисовать можно только на полу голодека!</span>")
+			return
 
 	var/drawing = drawtype
 	switch(drawtype)
@@ -787,7 +792,7 @@
 	if(check_empty(user))
 		return
 
-	if(iscarbon(target))
+	if(iscarbon(target) && !(flags_1 & HOLOGRAM_1))
 		if(pre_noise || post_noise)
 			playsound(user.loc, 'sound/effects/spray.ogg', 25, 1, 5)
 
@@ -813,6 +818,11 @@
 		reagents.reaction(C, VAPOR, fraction * volume_multiplier)
 
 		return
+
+	if(flags_1 & HOLOGRAM_1)
+		if(!istype(target, /turf/open/floor/holofloor))
+			to_chat(user, "<span class='warning'>[src] - голограмма, рисовать можно только на полу голодека!</span>")
+			return FALSE
 
 	if(isobj(target) && !istype(target, /obj/effect/decal/cleanable/crayon/gang))
 		if(actually_paints)

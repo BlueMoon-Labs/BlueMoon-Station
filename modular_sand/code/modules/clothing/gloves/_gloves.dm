@@ -2,7 +2,8 @@
 	var/dummy_thick = FALSE // is able to hold accessories on its item
 	var/max_accessories = 1
 	var/list/obj/item/clothing/accessory/ring/attached_accessories = list() //BLUEMOON FIX не трогаем листы, без них потом на перчатки ничего не нацепить
-	var/list/mutable_appearance/accessory_overlays = list() //BLUEMOON FIX без этого рантаймит при попытке снять кольцо (юзаем систему униформы для перчаток)
+	var/list/mutable_appearance/accessory_uniform_overlays = list() //BLUEMOON FIX без этого рантаймит при попытке снять кольцо (юзаем систему униформы для перчаток)
+	var/list/mutable_appearance/accessory_mob_overlays = list() // за подробностями в _under.dm
 
 /obj/item/clothing/gloves/Destroy()
 	QDEL_LIST(attached_accessories)

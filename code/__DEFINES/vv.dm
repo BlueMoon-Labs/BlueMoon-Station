@@ -79,6 +79,8 @@
 #define VV_HK_ADDCOMPONENT "addcomponent"
 #define VV_HK_MODIFY_TRAITS "modtraits"
 #define VV_HK_VIEW_REFERENCES "viewreferences"
+#define VV_HK_FIND_CLIENT_REFS "findclientrefs"
+#define VV_HK_REFCOUNT_MONITOR "refcountmonitor"
 
 // /datum/gas_mixture
 #define VV_HK_SET_MOLES "set_moles"

@@ -39,6 +39,7 @@ There are several things that need to be remembered:
 
 >	There are also these special cases:
 		update_damage_overlays()	//handles damage overlays for brute/burn damage
+		update_wound_overlays()		//handles bleeding wound overlays
 		update_body()				//Handles updating your mob's body layer and mutant bodyparts
 									as well as sprite-accessories that didn't really fit elsewhere (underwear, undershirts, socks, lips, eyes)
 									//NOTE: update_mutantrace() is now merged into this!
@@ -107,6 +108,7 @@ There are several things that need to be remembered:
 			update_mutations_overlay()
 			//damage overlays
 			update_damage_overlays()
+			update_bandage_overlays()
 			//antagonism
 			update_antag_overlays()
 			//abductor stealth: re-apply disguise after any full icon refresh so it doesn't break over time

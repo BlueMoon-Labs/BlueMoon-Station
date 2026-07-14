@@ -13,6 +13,7 @@
 
 /obj/machinery/computer/emergency_shuttle
 	name = "emergency shuttle console"
+	idle_sleeps = FALSE // own periodic work in process(); must not doze off via the parent typing-indicator path
 	desc = "For shuttle control."
 	icon_screen = "shuttle"
 	icon_keyboard = "tech_key"

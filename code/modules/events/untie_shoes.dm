@@ -1,10 +1,12 @@
 /datum/round_event_control/untied_shoes
 	name = "Untied Shoes"
 	typepath = /datum/round_event/untied_shoes
-	weight = 90
+	// Роняет игроков на пол: физическая помеха, а не фон - в мягких профилях режется.
+	weight = 50
 	max_occurrences = 25
 	alert_observers = TRUE
 	category = EVENT_CATEGORY_FRIENDLY
+	disruption = DIRECTOR_DISRUPTION_MILD
 
 /datum/round_event/untied_shoes
 	fakeable = FALSE

@@ -26,8 +26,7 @@
 	if((status == WAITING_FOR_SOMETHING))
 		if(retry >= MAX_SPAWN_ATTEMPT)
 			message_admins("[role_name] event has exceeded maximum spawn attempts. Aborting and refunding.")
-			if(control && control.occurrences > 0)	//Don't refund if it hasn't
-				control.occurrences--
+			refund_failed_spawn()
 			return
 		var/waittime = 600 * (2^retry)
 		message_admins("The event will not spawn a [role_name] until certain \
@@ -37,9 +36,11 @@
 
 	if(status == MAP_ERROR)
 		message_admins("[role_name] cannot be spawned due to a map error.")
+		refund_failed_spawn()
 	else if(status == NOT_ENOUGH_PLAYERS)
 		message_admins("[role_name] cannot be spawned due to lack of players \
 			signing up.")
+		refund_failed_spawn()
 	else if(status == SUCCESSFUL_SPAWN)
 		message_admins("[role_name] spawned successfully.")
 		if(spawned_mobs.len)
@@ -53,6 +54,19 @@
 			this is a bug.")
 
 	processing = TRUE
+
+/// Никто не заспаунился - события не случилось: вернуть попытку, кошелёк ступени и снять
+/// вклад intensity сразу (без linger). Иначе провальный ролл гост-антага висел бы 30 минут
+/// фантомной нагрузкой в antag_load и глушил клапан давления директора.
+/datum/round_event/ghost_role/proc/refund_failed_spawn()
+	if(!control)
+		return
+	if(control.occurrences > 0)
+		control.occurrences--
+	SSdirector.remove_intensity(control.action_name())
+	// Бюджет тратился только на естественный запуск через бит (админ-форс идёт мимо кошельков).
+	if(triggered_randomly)
+		SSdirector.refund_to_budget(control.severity, control.cost)
 
 /datum/round_event/ghost_role/proc/spawn_role()
 	// Return true if role was successfully spawned, false if insufficent

@@ -77,6 +77,7 @@
 	if(nanites)
 		nanites.programs -= src
 		nanites.permanent_programs -= src
+		nanites.set_need_sync(null, TRUE)
 	for(var/datum/nanite_rule/rule as anything in rules)
 		rule.remove()
 	rules.Cut()
@@ -301,6 +302,7 @@
 				deactivation_code = 0
 				kill_code = 0
 				trigger_code = 0
+				nanites.set_need_sync(null, TRUE)
 		if(3)
 			if(error_flicking)
 				toggle() //enable/disable
@@ -338,6 +340,7 @@
 	if(is_permanent())
 		return
 	qdel(src)
+
 ///A nanite program containing a behaviour protocol. Only one protocol of each class can be active at once.
 /datum/nanite_program/protocol
 	name = "Nanite Protocol"

@@ -64,8 +64,8 @@ const CheckPrint = (data : IntegratedPrinterData) : BooleanLike => {
 
 
 // Компонент статуса принтера (металл + апгрейды)
-const PrinterStatus = (props, context) => {
-  const { data, act } = useBackend<IntegratedPrinterData>(context);
+const PrinterStatus = (props) => {
+  const { data, act } = useBackend<IntegratedPrinterData>();
   const { metal_amount, max_metal, upgrades, debug_status, clone_config_status } = data;
 
   return (
@@ -161,8 +161,8 @@ const PrinterStatus = (props, context) => {
 };
 
 // Компонент сетки схем
-const CircuitsGrid = (props: { circuits?: CircuitData[], big_desc? : BooleanLike, rows? : number}, context) => {
-  const { act, data } = useBackend<IntegratedPrinterData>(context);
+const CircuitsGrid = (props: { circuits?: CircuitData[], big_desc? : BooleanLike, rows? : number}) => {
+  const { act, data } = useBackend<IntegratedPrinterData>();
   const { metal_amount } = data;
   const circuits = props.circuits || [];
 
@@ -294,11 +294,11 @@ const CircuitsGrid = (props: { circuits?: CircuitData[], big_desc? : BooleanLike
   );
 };
 
-export const ComponentsViewer = (props, context) => {
-  const { act, data } = useBackend<IntegratedPrinterData>(context);
-  const [searchText, setSearchText] = useSharedState(context, 'searchPrinterText', "");
-  const [tabID, setTabID] = useSharedState(context, 'tabPrinterIndex', 0);
-  const [fullComp, setCompMode] = useSharedState<boolean>(context, "setCompMode", false);
+export const ComponentsViewer = (props) => {
+  const { act, data } = useBackend<IntegratedPrinterData>();
+  const [searchText, setSearchText] = useSharedState('searchPrinterText', "");
+  const [tabID, setTabID] = useSharedState('tabPrinterIndex', 0);
+  const [fullComp, setCompMode] = useSharedState<boolean>("setCompMode", false);
 
   const searchResults = HardSearch(data.categories, searchText);
   let circuitsToShow: CircuitData[] = [];
@@ -372,8 +372,8 @@ export const ComponentsViewer = (props, context) => {
   );
 };
 
-export const CircuitPrinterUI = (props, context) => {
-  const { data } = useBackend<IntegratedPrinterData>(context);
+export const CircuitPrinterUI = (props) => {
+  const { data } = useBackend<IntegratedPrinterData>();
   return (
     <Window width={900} height={700} title={"Интегральный принтер"}>
       <Window.Content>
@@ -391,8 +391,8 @@ const formatTimeLeft = (seconds: number): string => {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 };
 
-export const CloneNotice = (props, context) => {
-  const { data, act } = useBackend<IntegratedPrinterData>(context);
+export const CloneNotice = (props) => {
+  const { data, act } = useBackend<IntegratedPrinterData>();
   const { print_end_time, print_start_time, world_time } = data;
 
 
@@ -435,7 +435,7 @@ export const CloneNotice = (props, context) => {
       >
         <Stack vertical align="center">
           <Stack.Item>
-            <h3 style={{ margin: '0 0 0.5rem 0', display: 'flex', "align-items": 'center', gap: '8px' }}>
+            <h3 style={{ margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
               В процессе печати
               <Icon name="sync" spin size={1.5} />
             </h3>

@@ -148,6 +148,14 @@
 		return
 	if(update)
 		ImmediateCalculateAdjacentTurfs()
+		// Adjacency just changed (door, window, densified atom): an excited group
+		// spanning the new blockage would later self_breakdown its averaged mix
+		// across both sides, so it must dismantle; the turfs stay active and
+		// rebuild groups that honor the new adjacency. Pure gas changes go through
+		// add_to_active alone and keep their group.
+		var/turf/open/open_self = src
+		if(istype(open_self) && open_self.excited_group)
+			open_self.excited_group.garbage_collect()
 	if(remove)
 		SSair.remove_from_active(src)
 	else

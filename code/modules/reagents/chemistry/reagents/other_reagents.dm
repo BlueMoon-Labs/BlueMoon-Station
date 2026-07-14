@@ -507,9 +507,7 @@
 			var/turf/turf_target = get_turf(M)
 			for(var/obj/item/I in heretic.summon_items)
 				I.forceMove(turf_target)
-				if(!(I.item_flags & NO_PIXEL_RANDOM_DROP))
-					I.pixel_x = I.base_pixel_x + rand(-6, 6)
-					I.pixel_y = I.base_pixel_y + rand(-6, 6)
+				I.randomize_pixel_position()
 			heretic.summon_items.Cut()
 		M.jitteriness = 0
 		M.stuttering = 0
@@ -1409,13 +1407,19 @@
 	pH = 5.5
 	molarity = 1
 	condensation_amount = MOLES_GAS_VISIBLE_STEP
+	/// Не смывать намеренное оформление: рисунки/граффити крайонов и WASHABLE-покраску
+	/// (спрейканы, вёдра с краской). Грязь, кровь и прочие декали моются как обычно.
+	var/preserves_decor = FALSE
 
 /datum/reagent/space_cleaner/reaction_obj(obj/O, reac_volume)
 	if(istype(O, /obj/effect/decal/cleanable)  || istype(O, /obj/item/projectile/bullet/reusable/foam_dart) || istype(O, /obj/item/ammo_casing/caseless/foam_dart))
+		if(preserves_decor && istype(O, /obj/effect/decal/cleanable/crayon))
+			return
 		qdel(O)
 	else
 		if(O)
-			O.remove_atom_colour(WASHABLE_COLOUR_PRIORITY)
+			if(!preserves_decor)
+				O.remove_atom_colour(WASHABLE_COLOUR_PRIORITY)
 			SEND_SIGNAL(O, COMSIG_COMPONENT_CLEAN_ACT, CLEAN_WEAK)
 			O.clean_blood()
 			O.wash_cum() //sandstorm edit
@@ -1423,15 +1427,25 @@
 /datum/reagent/space_cleaner/reaction_turf(turf/T, reac_volume)
 	..()
 	if(reac_volume >= 1)
-		T.remove_atom_colour(WASHABLE_COLOUR_PRIORITY)
+		if(!preserves_decor)
+			T.remove_atom_colour(WASHABLE_COLOUR_PRIORITY)
 		SEND_SIGNAL(T, COMSIG_COMPONENT_CLEAN_ACT, CLEAN_WEAK)
 		T.clean_blood()
 		T.wash_cum() //sandstorm edit
 		for(var/obj/effect/decal/cleanable/C in T)
+			if(preserves_decor && istype(C, /obj/effect/decal/cleanable/crayon))
+				continue
 			qdel(C)
 
 		for(var/mob/living/simple_animal/slime/M in T)
 			M.adjustToxLoss(rand(5,10))
+
+// Мягкая пена аварийной очистки станции: ивент моет грязь и кровь, но не уносит
+// покраску баров и библиотек, которую экипаж наносил целый раунд.
+/datum/reagent/space_cleaner/gentle
+	name = "Foaming space cleaner"
+	description = "A gentler cleaning compound that dissolves grime while sparing paint and artwork."
+	preserves_decor = TRUE
 
 /datum/reagent/space_cleaner/reaction_mob(mob/living/M, method=TOUCH, reac_volume, affected_bodypart)
 	if(method == TOUCH || method == VAPOR)
@@ -1830,7 +1844,6 @@
 	var/heal_amount = clamp(round(3 + volume * 1.2), 3, 18)
 	M.adjustBruteLoss(-heal_amount)
 	M.adjustFireLoss(-heal_amount)
-	M.adjustOxyLoss(-max(round(heal_amount * 0.5), 1))
 	M.adjustToxLoss(-max(round(heal_amount * 0.3), 1))
 	. = ..()
 

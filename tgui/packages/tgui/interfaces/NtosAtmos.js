@@ -17,9 +17,9 @@ import { NtosWindow } from '../layouts';
 const TAB_SCAN = 'scan';
 const TAB_HANDBOOK = 'handbook';
 
-export const NtosAtmos = (props, context) => {
-  const { data } = useBackend(context);
-  const [tab, setTab] = useLocalState(context, 'tab', TAB_SCAN);
+export const NtosAtmos = (props) => {
+  const { data } = useBackend();
+  const [tab, setTab] = useLocalState('tab', TAB_SCAN);
   const {
     AirTemp,
     AirPressure,

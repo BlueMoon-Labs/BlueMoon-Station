@@ -30,13 +30,25 @@ type ChatData = {
   auto_capitalize_enabled: boolean;
 };
 
+// React's onChange fires continuously while dragging inside the color
+// dialog; debounce so we do not flood the server with act() messages.
+const colorCommitTimers = new WeakMap();
+const debouncedColorCommit = (input: HTMLInputElement, commit: (value: string) => void) => {
+  clearTimeout(colorCommitTimers.get(input));
+  colorCommitTimers.set(input, setTimeout(() => commit(input.value), 250));
+};
+
 const GHOST_FORM_OPTIONS = [
-  'ghost', 'ghostking', 'ghostian', 'ghostian2', 'ghostblade',
-  'ghostdragon', 'catghost', 'shittybill',
+  'ghost', 'ghost1', 'ghost2', 'ghostking', 'ghostian2', 'skeleghost',
+  'ghost_red', 'ghost_black', 'ghost_blue', 'ghost_yellow', 'ghost_green',
+  'ghost_pink', 'ghost_cyan', 'ghost_dblue', 'ghost_dred', 'ghost_dgreen',
+  'ghost_dcyan', 'ghost_grey', 'ghost_dyellow', 'ghost_dpink',
+  'ghost_purpleswirl', 'ghost_funkypurp', 'ghost_pinksherbert', 'ghost_blazeit',
+  'ghost_mellow', 'ghost_rainbow', 'ghost_camo', 'ghost_fire', 'catghost',
 ];
 
 const GHOST_ORBIT_OPTIONS = [
-  'orbit', 'triangle', 'hexagon', 'square', 'pentagon', 'circle', 'star',
+  'circle', 'triangle', 'square', 'hexagon', 'pentagon',
 ];
 
 const GHOST_ACCS_OPTIONS = [
@@ -55,7 +67,7 @@ const OOC_COLORS = (data: ChatData, act: Function) => (
   <>
     <Stack.Divider />
     <Stack.Item>
-      <div className="GamePreferences__label" style={{ opacity: 0.65, 'font-size': '0.85em', 'margin-bottom': '0.25rem' }}>
+      <div className="GamePreferences__label" style={{ opacity: 0.65, fontSize: '0.85em', marginBottom: '0.25rem' }}>
         Цвета OOC
       </div>
     </Stack.Item>
@@ -84,7 +96,8 @@ const OOC_COLORS = (data: ChatData, act: Function) => (
                 background: 'transparent',
                 cursor: 'pointer',
               }}
-              onChange={e => act('set_ooc_pref', { flag: 'ooccolor', value: e.target.value })}
+              onChange={e => debouncedColorCommit(e.target,
+                value => act('set_ooc_pref', { flag: 'ooccolor', value }))}
             />
           </Stack.Item>
           <Stack.Item shrink={0} basis="80px">
@@ -122,7 +135,8 @@ const OOC_COLORS = (data: ChatData, act: Function) => (
                 background: 'transparent',
                 cursor: 'pointer',
               }}
-              onChange={e => act('set_ooc_pref', { flag: 'aooccolor', value: e.target.value })}
+              onChange={e => debouncedColorCommit(e.target,
+                value => act('set_ooc_pref', { flag: 'aooccolor', value }))}
             />
           </Stack.Item>
           <Stack.Item shrink={0} basis="80px">
@@ -187,15 +201,15 @@ const dropdownRow = (label: string, options: any[], selected: string | number, o
   </Stack.Item>
 );
 
-export const ChatSection = (props, context) => {
-  const { act, data } = useBackend<ChatData>(context);
+export const ChatSection = (props) => {
+  const { act, data } = useBackend<ChatData>();
 
   return (
     <Stack fill>
       <Stack.Item basis="50%">
         <Stack vertical>
           <Stack.Item>
-            <div className="GamePreferences__label" style={{ opacity: 0.65, 'font-size': '0.85em', 'margin-bottom': '0.25rem' }}>
+            <div className="GamePreferences__label" style={{ opacity: 0.65, fontSize: '0.85em', marginBottom: '0.25rem' }}>
               Слышимость в режиме призрака
             </div>
           </Stack.Item>
@@ -211,7 +225,7 @@ export const ChatSection = (props, context) => {
           <Stack.Divider />
           {dropdownRow('Форма призрака', GHOST_FORM_OPTIONS, data.ghost_form || 'ghost',
             value => act('set_ui_pref', { flag: 'ghost_form', value }))}
-          {dropdownRow('Орбита призрака', GHOST_ORBIT_OPTIONS, data.ghost_orbit || 'pentagon',
+          {dropdownRow('Орбита призрака', GHOST_ORBIT_OPTIONS, data.ghost_orbit || 'circle',
             value => act('set_ui_pref', { flag: 'ghost_orbit', value }))}
           {dropdownRow('Аксессуары призрака', GHOST_ACCS_OPTIONS, Number(data.ghost_accs ?? 100),
             value => act('set_ui_pref', { flag: 'ghost_accs', value }),
@@ -287,7 +301,7 @@ export const ChatSection = (props, context) => {
             label="Автокапитализация речи"
             checked={data.auto_capitalize_enabled}
             tooltip="Автоматически делать первую букву предложения заглавной в IC-чате"
-            onClick={() => act('toggle_gfx_val', { flag: 'auto_capitalize_enabled' })}
+            onClick={() => act('toggle_chat', { flag: 'auto_capitalize_enabled' })}
           />
         </Stack>
       </Stack.Item>

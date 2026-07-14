@@ -15,39 +15,54 @@
 	var/static/mutable_appearance/nest_overlay = mutable_appearance('icons/Xeno/Effects.dmi', "nest_overlay", LYING_MOB_LAYER)
 	var/weak = FALSE // BLUEMOON ADD - xenohybrids_improvements - если включено, из гнезда очень легко вырваться
 
-/obj/structure/bed/nest/user_unbuckle_mob(mob/living/buckled_mob, mob/living/user)
+/obj/structure/bed/nest/on_attack_hand(mob/living/user, act_intent = user.a_intent, unarmed_attack_flags)
 	if(has_buckled_mobs())
-		for(var/buck in buckled_mobs) //breaking a nest releases all the buckled mobs, because the nest isn't holding them down anymore
-			var/mob/living/M = buck
+		user_unbuckle_mob(user in buckled_mobs ? user : buckled_mobs[1], user)
+		return TRUE
+	return ..()
 
-			if(user.getorgan(/obj/item/organ/alien/plasmavessel))
-				unbuckle_mob(M)
-				add_fingerprint(user)
-				return
+/obj/structure/bed/nest/attackby(obj/item/W, mob/living/user, params)
+	if(has_buckled_mobs() && (user in buckled_mobs))
+		user_unbuckle_mob(user, user)
+		return TRUE
+	return ..()
 
-			if(M != user)
-				M.visible_message(\
-					"[user.name] pulls [M.name] free from the sticky nest!",\
-					"<span class='notice'>[user.name] pulls you free from the gelatinous resin.</span>",\
-					"<span class='italics'>You hear squelching...</span>")
-			else
-				M.visible_message(\
-					"<span class='warning'>[M.name] struggles to break free from the gelatinous resin!</span>",\
-					"<span class='notice'>You struggle to break free from the gelatinous resin... (Stay still for two minutes.)</span>",\
-					"<span class='italics'>You hear squelching...</span>")
-				if(!do_after(M, weak ? 2 SECONDS : 2 MINUTES, target = src, timed_action_flags = (IGNORE_HELD_ITEM | IGNORE_INCAPACITATED), extra_checks = CALLBACK(M, TYPE_PROC_REF(/mob/living/carbon, cuff_resist_check)))) // BLUEMOON EDUT - xenohybrids_improvements - добавлена проверка на weak
-					if(M && M.buckled)
-						to_chat(M, "<span class='warning'>You fail to unbuckle yourself!</span>")
-					return
-				if(!M.buckled)
-					return
-				M.visible_message(\
-					"<span class='warning'>[M.name] breaks free from the gelatinous resin!</span>",\
-					"<span class='notice'>You break free from the gelatinous resin!</span>",\
-					"<span class='italics'>You hear squelching...</span>")
+/obj/structure/bed/nest/user_unbuckle_mob(mob/living/buckled_mob, mob/living/user)
+	if(!has_buckled_mobs())
+		return FALSE
+	var/mob/living/M = buckled_mob
+	if(!(M in buckled_mobs))
+		M = buckled_mobs[1]
 
-			unbuckle_mob(M)
-			add_fingerprint(user)
+	if(user.getorgan(/obj/item/organ/alien/plasmavessel))
+		unbuckle_mob(M)
+		add_fingerprint(user)
+		return TRUE
+
+	if(M != user)
+		M.visible_message(\
+			"[user.name] pulls [M.name] free from the sticky nest!",\
+			"<span class='notice'>[user.name] pulls you free from the gelatinous resin.</span>",\
+			"<span class='italics'>You hear squelching...</span>")
+	else
+		M.visible_message(\
+			"<span class='warning'>[M.name] struggles to break free from the gelatinous resin!</span>",\
+			"<span class='notice'>You struggle to break free from the gelatinous resin... (Stay still for one minute.)</span>",\
+			"<span class='italics'>You hear squelching...</span>")
+		if(!do_after(M, weak ? 30 SECONDS : 1 MINUTES, target = src, timed_action_flags = (IGNORE_HELD_ITEM | IGNORE_INCAPACITATED), extra_checks = CALLBACK(M, TYPE_PROC_REF(/mob/living/carbon, cuff_resist_check)))) // BLUEMOON EDUT - xenohybrids_improvements - добавлена проверка на weak
+			if(M?.buckled)
+				to_chat(M, "<span class='warning'>You fail to unbuckle yourself!</span>")
+			return FALSE
+		if(!M?.buckled)
+			return FALSE
+		M.visible_message(\
+			"<span class='warning'>[M.name] breaks free from the gelatinous resin!</span>",\
+			"<span class='notice'>You break free from the gelatinous resin!</span>",\
+			"<span class='italics'>You hear squelching...</span>")
+
+	unbuckle_mob(M)
+	add_fingerprint(user)
+	return TRUE
 
 /obj/structure/bed/nest/user_buckle_mob(mob/living/M, mob/living/carbon/user, check_loc)
 	if ( !ismob(M) || (get_dist(src, user) > 1) || (M.loc != src.loc) || !user.cuff_resist_check() || M.buckled )

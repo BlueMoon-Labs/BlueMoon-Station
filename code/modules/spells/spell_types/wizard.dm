@@ -236,7 +236,7 @@
 	var/distfromcaster
 	playMagSound()
 	for(var/turf/T in targets) //Done this way so things don't get thrown all around hilariously.
-		for(var/mob/M in T)
+		for(var/mob/living/M in T)
 			mobs += M
 		for(var/obj/O in T)
 			objs += O
@@ -249,7 +249,7 @@
 		if(AM == user || AM.anchored)
 			continue
 
-		if(ismob(AM))
+		if(isliving(AM))
 			var/mob/M = AM
 			if(M.anti_magic_check(anti_magic_check, FALSE))
 				continue

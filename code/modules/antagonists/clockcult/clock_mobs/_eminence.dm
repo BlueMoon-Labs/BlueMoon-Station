@@ -6,7 +6,7 @@
 /mob/camera/eminence
 	name = "\the Emininence"
 	real_name = "\the Eminence"
-	desc = "The leader-elect of the servants of Ratvar."
+	desc = "Избранный лидер слуг Ратвара."
 	icon = 'icons/effects/clockwork_effects.dmi'
 	icon_state = "eminence"
 	mouse_opacity = MOUSE_OPACITY_OPAQUE
@@ -30,17 +30,17 @@
 		if(!GLOB.ratvar_awakens)
 			if(locate(/obj/effect/blessing, T))
 				if(last_failed_turf != T)
-					T.visible_message("<span class='warning'>[T] suddenly emits a ringing sound!</span>", null, null, null, src)
+					T.visible_message("<span class='warning'>[T] внезапно издает звонкий звук!</span>", null, null, null, src)
 					playsound(T, 'sound/machines/clockcult/ark_damage.ogg', 75, FALSE)
 					last_failed_turf = T
 				if((world.time - lastWarning) >= 30)
 					lastWarning = world.time
-					to_chat(src, "<span class='warning'>This turf is consecrated and can't be crossed!</span>")
+					to_chat(src, "<span class='warning'>Эта территория освящена, и на нее нельзя входить!</span>")
 				return
 			if(istype(get_area(T), /area/service/chapel))
 				if((world.time - lastWarning) >= 30)
 					lastWarning = world.time
-					to_chat(src, "<span class='warning'>The Chapel is hallowed ground under a heretical deity, and can't be accessed!</span>")
+					to_chat(src, "<span class='warning'>Церковь является священным местом, посвящённым еретическому божеству, и вход туда запрещён!</span>")
 				return
 		else
 			for(var/turf/TT in range(5, src))
@@ -63,10 +63,10 @@
 			return
 		else
 			C.clock_team.eminence = src
-	to_chat(src, "<span class='bold large_brass'>You have been selected as the Eminence!</span>")
-	to_chat(src, "<span class='brass'>As the Eminence, you lead the servants. Anything you say will be heard by the entire cult.</span>")
-	to_chat(src, "<span class='brass'>Though you can move through walls, you're also incorporeal, and largely can't interact with the world except for a few ways.</span>")
-	to_chat(src, "<span class='brass'>Additionally, unless the herald's beacon is activated, you can't understand any speech while away from Reebe.</span>")
+	to_chat(src, "<span class='bold large_brass'>Вы были выбраны в качестве Епископа!</span>")
+	to_chat(src, "<span class='brass'>Как Епископ, вы возглавляете служителей. Все, что вы скажете, услышит весь культ.</span>")
+	to_chat(src, "<span class='brass'>Хотя вы можете проходить сквозь стены, вы также бесплотны и практически не можете взаимодействовать с окружающим миром, за исключением нескольких способов.</span>")
+	to_chat(src, "<span class='brass'>Кроме того, если маяк вестника не активирован, вы не сможете понимать речь, находясь вдали от Риба.</span>")
 	eminence_help()
 	for(var/V in actions)
 		var/datum/action/A = V
@@ -79,7 +79,7 @@
 /mob/camera/eminence/say(message, bubble_type, var/list/spans = list(), sanitize = TRUE, datum/language/language = null, ignore_spam = FALSE, forced = null)
 	if(client)
 		if(client.prefs.muted & MUTE_IC)
-			to_chat(src, "You cannot send IC messages (muted).")
+			to_chat(src, "Вы не можете отправлять IC сообщения (muted).")
 			return
 		if(client.handle_spam_prevention(message,MUTE_IC))
 			return
@@ -88,9 +88,9 @@
 		return
 	src.log_talk(message, LOG_SAY, tag="clockwork eminence")
 	if(GLOB.ratvar_awakens)
-		visible_message("<span class='brass'><b>You feel light slam into your mind and form words:</b> \"[capitalize(message)]\"</span>")
+		visible_message("<span class='brass'><b>Ты чувствуешь, как свет врывается в твой разум и складывается в слова:</b> \"[capitalize(message)]\"</span>")
 		playsound(src, 'sound/machines/clockcult/ark_scream.ogg', 50, FALSE)
-	message = "<span class='big brass'><b>The [GLOB.ratvar_awakens ? "Radiance" : "Eminence"]:</b> \"[message]\"</span>"
+	message = "<span class='big brass'><b>[GLOB.ratvar_awakens ? "Сияние" : "Епископ"]:</b> \"[message]\"</span>"
 	for(var/mob/M in servants_and_ghosts())
 		if(isobserver(M))
 			var/link = FOLLOW_LINK(M, src)
@@ -103,7 +103,7 @@
 	if(is_reebe(z) || is_servant_of_ratvar(speaker) || GLOB.ratvar_approaches || GLOB.ratvar_awakens) //Away from Reebe, the Eminence can't hear anything
 		to_chat(src, message)
 		return
-	to_chat(src, "<i>[speaker] says something, but you can't understand any of it...</i>")
+	to_chat(src, "<i>[speaker] что-то говорит, но вы ни слова не понимаете...</i>")
 
 /mob/camera/eminence/ClickOn(atom/A, params)
 	var/list/modifiers = params2list(params)
@@ -121,24 +121,24 @@
 		INVOKE_ASYNC(src, PROC_REF(attempt_recall), G)
 	else if(istype(A, /obj/structure/destructible/clockwork/trap/trigger))
 		var/obj/structure/destructible/clockwork/trap/trigger/T = A
-		T.visible_message("<span class='danger'>[T] clunks as it's activated remotely.</span>")
-		to_chat(src, "<span class='brass'>You activate [T].</span>")
+		T.visible_message("<span class='danger'>[T] стучит при дистанционном включении.</span>")
+		to_chat(src, "<span class='brass'>Вы активируете [T].</span>")
 		T.activate()
 
 /mob/camera/eminence/proc/attempt_recall(obj/structure/destructible/clockwork/massive/celestial_gateway/G)
 	if(G.recalling)
 		return
 	if(!G.recalls_remaining)
-		to_chat(src, "<span class='warning'>The Ark can no longer recall!</span>")
+		to_chat(src, "<span class='warning'>Ковчег больше не может призывать слуг!</span>")
 		return
-	if(alert(src, "Initiate mass recall?", "Mass Recall", "Yes", "No") != "Yes" || QDELETED(src) || QDELETED(G) || !G.obj_integrity)
+	if(alert(src, "Инициировать массовое возвращение?", "Массовое возвращение", "Да", "Нет") != "Да" || QDELETED(src) || QDELETED(G) || !G.obj_integrity)
 		return
 	G.initiate_mass_recall() //wHOOPS LOOKS LIKE A HULK GOT THROUGH
 
 /mob/camera/eminence/ratvar_act()
 	name = "\improper Radiance"
 	real_name = "\improper Radiance"
-	desc = "The light, forgotten."
+	desc = "Свет, забытый."
 	transform = matrix() * 2
 	invisibility = SEE_INVISIBLE_MINIMUM
 
@@ -146,52 +146,52 @@
 	var/list/commands
 	var/atom/movable/command_location
 	if(A == src)
-		commands = list("Defend the Ark!", "Advance!", "Retreat!", "Generate Power", "Build Defenses (Bottom-Up)", "Build Defenses (Top-Down)")
+		commands = list("Защищайте Ковчег!", "Вперед!", "Отступайте!", "Генерируйте энергию", "Создавайте защитные механизмы (снизу вверх)", "Создавайте защитные механизмы (сверху вниз)")
 	else
 		command_location = A
-		commands = list("Rally Here", "Regroup Here", "Avoid This Area", "Reinforce This Area")
+		commands = list("Сбор здесь", "Перегруппировка здесь", "Не приближайтесь к этой зоне", "Укрепите эту зону")
 		if(istype(A, /obj/structure/destructible/clockwork/powered))
 			var/obj/structure/destructible/clockwork/powered/P = A
 			if(!can_access_clockwork_power(P))
-				commands += "Power This Structure"
+				commands += "Запитайте эту структуру"
 			if(P.obj_integrity < P.max_integrity)
-				commands += "Repair This Structure"
-	var/roma_invicta = input(src, "Choose a command to issue to your cult!", "Issue Commands") as null|anything in commands
+				commands += "Почините эту структуру"
+	var/roma_invicta = input(src, "Выбери команду, которую хочешь отдать своему культу!", "Выполнение команд") as null|anything in commands
 	if(!roma_invicta)
 		return
 	var/command_text = ""
 	var/marker_icon
 	switch(roma_invicta)
-		if("Rally Here")
-			command_text = "The Eminence orders an offensive rally at [command_location] to the GETDIR!"
+		if("Сбор здесь")
+			command_text = "Епископ отдает приказ о наступлении в точке [command_location] в направлении GETDIR!"
 			marker_icon = "eminence_rally"
-		if("Regroup Here")
-			command_text = "The Eminence orders a regroup to [command_location] to the GETDIR!"
+		if("Перегруппировка здесь")
+			command_text = "Епископ приказывает перегруппироваться в [command_location] в направлении GETDIR!"
 			marker_icon = "eminence_rally"
-		if("Avoid This Area")
-			command_text = "The Eminence has designated the area to your GETDIR as dangerous and to be avoided!"
+		if("Не приближайтесь к этой зоне")
+			command_text = "Епископ признало территорию, в направлении GETDIR, опасной и рекомендует держаться от неё подальше!"
 			marker_icon = "eminence_avoid"
-		if("Reinforce This Area")
-			command_text = "The Eminence orders the defense and fortification of the area to your GETDIR!"
+		if("Укрепите эту зону")
+			command_text = "Епископ приказывает укрепить и удерживать область в направлении GETDIR!"
 			marker_icon = "eminence_reinforce"
-		if("Power This Structure")
-			command_text = "[command_location] to your GETDIR has no power! Turn it on and make sure there's a sigil of transmission nearby!"
+		if("Запитайте эту структуру")
+			command_text = "[command_location] в направлении GETDIR не работает! Включите его и убедитесь, что поблизости есть сигил передачи!"
 			marker_icon = "eminence_unlimited_power"
-		if("Repair This Structure")
-			command_text = "The Eminence orders that [command_location] to your GETDIR should be repaired ASAP!"
+		if("Почините эту структуру")
+			command_text = "Епископ приказывает как можно скорее устранить неполадку в [command_location], в направлении GETDIR!"
 			marker_icon = "eminence_repair"
-		if("Defend the Ark!")
-			command_text = "The Eminence orders immediate defense of the Ark!"
-		if("Advance!")
-			command_text = "The Eminence commands you push forward!"
-		if("Retreat!")
-			command_text = "The Eminence has sounded the retreat! Fall back!"
-		if("Generate Power")
-			command_text = "The Eminence orders more power! Build power generations on the station!"
-		if("Build Defenses (Bottom-Up)")
-			command_text = "The Eminence orders that defenses should be built starting from the bottom of Reebe!"
-		if("Build Defenses (Top-Down)")
-			command_text = "The Eminence orders that defenses should be built starting from the top of Reebe!"
+		if("Защищайте Ковчег!")
+			command_text = "Епископ приказывает немедленно принять меры по защите Ковчега!"
+		if("Вперед!")
+			command_text = "Епископ приказывает вам идти вперед!"
+		if("Отступайте!")
+			command_text = "Епископ отдал приказ к отступлению! Отступаем!"
+		if("Генерируйте энергию")
+			command_text = "Епископ приказывает увеличить энергию! Постройте на станции энергетические генераторы!"
+		if("Создавайте защитные механизмы (снизу вверх)")
+			command_text = "Епископ приказал возвести оборонительные сооружения, начиная с нижней части Риба!"
+		if("Создавайте защитные механизмы (сверху вниз)")
+			command_text = "Его Преосвященство приказал возвести оборонительные сооружения, начиная с вершины Риба!"
 	if(marker_icon)
 		new/obj/effect/temp_visual/ratvar/command_point(get_turf(A), marker_icon)
 		for(var/mob/M in servants_and_ghosts())
@@ -206,31 +206,31 @@
 	if(!istype(wall))
 		return
 	if(superheated_walls >= SUPERHEATED_CLOCKWORK_WALL_LIMIT && !wall.heated)
-		to_chat(src, "<span class='warning'>You're exerting all of your power superheating this many walls already! Cool some down first!</span>")
+		to_chat(src, "<span class='warning'>Вы уже тратите все ваши силы на перегрев такого количества стен! Сначала остудите их!</span>")
 		return
 	wall.turn_up_the_heat()
 	if(wall.heated)
 		superheated_walls++
-		to_chat(src, "<span class='neovgre_small'>You superheat [wall]. <b>Superheated walls:</b> [superheated_walls]/[SUPERHEATED_CLOCKWORK_WALL_LIMIT]")
+		to_chat(src, "<span class='neovgre_small'>Вы перегреваете [wall]. <b>Перегретые стены:</b> [superheated_walls]/[SUPERHEATED_CLOCKWORK_WALL_LIMIT]")
 	else
 		superheated_walls--
-		to_chat(src, "<span class='neovgre_small'>You cool [wall]. <b>Superheated walls:</b> [superheated_walls]/[SUPERHEATED_CLOCKWORK_WALL_LIMIT]")
+		to_chat(src, "<span class='neovgre_small'>Вы остужаете [wall]. <b>Перегретые стены:</b> [superheated_walls]/[SUPERHEATED_CLOCKWORK_WALL_LIMIT]")
 
 /mob/camera/eminence/proc/eminence_help()
-	to_chat(src, "<span class='bold alloy'>You can make use of certain shortcuts to perform different actions:</span>")
-	to_chat(src, "<span class='alloy'><b>Alt-Click a clockwork wall</b> to superheat or cool it down. \
-	Superheated walls can't be destroyed by hulks or mechs and are much slower to deconstruct, and are marked by a bright red glow. \
-	This lasts indefinitely, but only [SUPERHEATED_CLOCKWORK_WALL_LIMIT] clockwork walls can be superheated at once.</span>")
-	to_chat(src, "<span class='alloy'><b>Interact with the Ark</b> to initiate an emergency recall that teleports all servants directly to its location after a short delay. \
-	This can only be used a single time, or twice if the herald's beacon was activated,</span>")
-	to_chat(src, "<span class='alloy'><b>Middle or Ctrl-Click anywhere</b> to allow you to issue a variety of contextual commands to your cult. Different objects allow for different \
-	commands. <i>Doing this on yourself will provide commands that tell the entire cult a goal.</i></span>")
+	to_chat(src, "<span class='bold alloy'>Вы можете использовать определенные сочетания клавиш для выполнения различных действий:</span>")
+	to_chat(src, "<span class='alloy'><b>Alt-Click по часовым стенам</b>, чтобы перегреть или охладить их. \
+	Перегретые стены не поддаются разрушению ни гигантами, ни мехами, их демонтаж занимает гораздо больше времени, и они отмечены ярким красным свечением. \
+	Этот эффект действует бесконечно, но одновременно можно перегреть не более [SUPERHEATED_CLOCKWORK_WALL_LIMIT] часовых стен.</span>")
+	to_chat(src, "<span class='alloy'><b>Взаимодействуйте с Ковчегом</b>, чтобы инициировать экстренный отзыв, который через небольшую задержку телепортирует всех слуг прямо к нему. \
+	Это можно использовать только один раз, или дважды, если был активирован маяк глашатая,</span>")
+	to_chat(src, "<span class='alloy'><b>Щелкните средней кнопкой мыши или зажмите Ctrl и щелкните в любом месте</b>, чтобы вывести контекстное меню команд для вашего культа. Различные объекты открывают доступ к разным \
+    командам. <i>Если вы выполните это действие на себе, появятся команды, позволяющие задать цель всему культу.</i></span>")
 
 
 //Eminence actions below this point
 /datum/action/innate/eminence
 	name = "Eminence Action"
-	desc = "You shouldn't see this. File a bug report!"
+	desc = "Вы не должны видеть это. Отправьте отчет об этом баге!"
 	icon_icon = 'icons/mob/actions/actions_clockcult.dmi'
 	background_icon_state = "bg_clock"
 	buttontooltipstyle = "clockcult"
@@ -244,7 +244,7 @@
 //Lists available powers
 /datum/action/innate/eminence/power_list
 	name = "Eminence Powers"
-	desc = "Forgot what you can do? This refreshes you on your powers as Eminence."
+	desc = "Забыли, на что вы способны? Здесь вы сможете освежить в памяти свои способности в роли Епископа."
 	button_icon_state = "eminence_rally"
 
 /datum/action/innate/eminence/power_list/Activate()
@@ -273,7 +273,7 @@
 //Warps to a chosen Obelisk
 /datum/action/innate/eminence/obelisk_jump
 	name = "Warp to Obelisk"
-	desc = "Warps to a chosen clockwork obelisk."
+	desc = "Переносит к выбранному механическому обелиску."
 	button_icon_state = "Abscond"
 
 /datum/action/innate/eminence/obelisk_jump/Activate()
@@ -287,17 +287,17 @@
 			possible_targets[avoid_assoc_duplicate_keys("[locname] [O.name]", warpnames)] = O
 
 	if(!possible_targets.len)
-		to_chat(owner, "<span class='warning'>There are no Obelisks to warp to!</span>")
+		to_chat(owner, "<span class='warning'>Нет обелисков, на которые можно было бы телепортироваться!</span>")
 		return
 
-	var/target_key = input(owner, "Choose an Obelisk to warp to.", "Obelisk Warp") as null|anything in possible_targets
+	var/target_key = input(owner, "Выберите обелиск, к которому хотите телепортироваться.", "Телепорт к обелиску") as null|anything in possible_targets
 	var/obj/structure/destructible/clockwork/powered/clockwork_obelisk/target = possible_targets[target_key]
 
 	if(!target_key || !owner)
 		return
 
 	if(!target)
-		to_chat(owner, "<span class='warning'>That Obelisk does no longer exist!</span>")
+		to_chat(owner, "<span class='warning'>Этот обелиск больше не существует!</span>")
 		return
 	owner.forceMove(get_turf(target))
 	owner.playsound_local(owner, 'sound/magic/magic_missile.ogg', 50, TRUE)
@@ -306,7 +306,7 @@
 //Warps to the Station
 /datum/action/innate/eminence/station_jump
 	name = "Warp to Station"
-	desc = "Warps to Space Station 13. You cannot hear anything while there!</span>"
+	desc = "Переносит на космическую станцию 13. Там ничего не слышно!</span>"
 	button_icon_state = "warp_down"
 
 /datum/action/innate/eminence/station_jump/Activate()
@@ -315,12 +315,12 @@
 		owner.playsound_local(owner, 'sound/magic/magic_missile.ogg', 50, TRUE)
 		flash_color(owner, flash_color = "#AF0AAF", flash_time = 25)
 	else
-		to_chat(owner, "<span class='warning'>You're already on the station!</span>")
+		to_chat(owner, "<span class='warning'>Вы уже на станции!</span>")
 
 //A quick-use button for recalling the servants to the Ark
 /datum/action/innate/eminence/mass_recall
 	name = "Mass Recall"
-	desc = "Initiates a mass recall, warping all servants to the Ark after a short delay. This can only be used once."
+	desc = "Инициирует массовый отзыв, перенося всех слуг на Ковчег через небольшую задержку. Эту способность можно использовать только один раз."
 	button_icon_state = "Spatial Gateway"
 
 /datum/action/innate/eminence/mass_recall/IsAvailable(silent = FALSE)
@@ -334,6 +334,6 @@
 /datum/action/innate/eminence/mass_recall/Activate()
 	var/obj/structure/destructible/clockwork/massive/celestial_gateway/G = GLOB.ark_of_the_clockwork_justiciar
 	if(G && !G.recalling && G.recalls_remaining)
-		if(alert(owner, "Initiate mass recall?", "Mass Recall", "Yes", "No") != "Yes" || QDELETED(owner) || QDELETED(G) || !G.obj_integrity)
+		if(alert(owner, "Инициировать массовый отзыв?", "Массовый отзыв", "Да", "Нет") != "Да" || QDELETED(owner) || QDELETED(G) || !G.obj_integrity)
 			return
 		G.initiate_mass_recall()

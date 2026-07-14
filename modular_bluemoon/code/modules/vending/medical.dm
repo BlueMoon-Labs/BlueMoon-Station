@@ -34,8 +34,8 @@
 		/obj/item/stack/sticky_tape/surgical = 3,
 		/obj/item/healthanalyzer/wound = 4,
 		/obj/item/reagent_containers/hypospray/medipen = 6,
-		/obj/item/stack/medical/ointment = 2,
-		/obj/item/stack/medical/suture = 2,
+		/obj/item/stack/medical/suture = 5,
+		/obj/item/stack/medical/mesh = 5,
 		/obj/item/stack/medical/bone_gel = 4,
 		/obj/item/stack/medical/nanogel = 4,
 	)
@@ -81,8 +81,12 @@
 	name = "\improper CyberMed ++"
 	desc = "Продвинутый раздатчик препаратов и лекарств, как \"рекреационных\", так и медицинских."
 	products = list(
-		/obj/item/reagent_containers/syringe = 4,
+		/obj/item/reagent_containers/syringe = 12,
+		/obj/item/reagent_containers/dropper = 3,
 		/obj/item/healthanalyzer/advanced = 4,
+		/obj/item/sensor_device = 4,
+		/obj/item/pinpointer/crew = 4,
+		/obj/item/stack/medical/gauze = 8,
 		/obj/item/reagent_containers/pill/patch/silver_sulf = 5,
 		/obj/item/reagent_containers/pill/patch/styptic = 5,
 		/obj/item/reagent_containers/glass/bottle/charcoal = 3,
@@ -93,8 +97,6 @@
 		/obj/item/reagent_containers/glass/bottle/salglu_solution = 3,
 		/obj/item/reagent_containers/syringe/antiviral = 5,
 		/obj/item/reagent_containers/hypospray/medipen = 6,
-		/obj/item/stack/medical/ointment = 2,
-		/obj/item/stack/medical/suture = 2,
 		/obj/item/stack/medical/bone_gel = 4,
 		/obj/item/stack/medical/nanogel = 4,
 		/obj/item/storage/hypospraykit/fire = 3,
@@ -102,9 +104,14 @@
 		/obj/item/storage/hypospraykit/o2 = 2,
 		/obj/item/storage/hypospraykit/brute = 3,
 		/obj/item/storage/hypospraykit/enlarge = 2,
+		/obj/item/stack/sticky_tape/surgical = 3,
 		/obj/item/reagent_containers/medspray/styptic = 2,
 		/obj/item/reagent_containers/medspray/silver_sulf = 2,
 		/obj/item/reagent_containers/medspray/sterilizine = 2,
+		/obj/item/stack/medical/suture = 5,
+		/obj/item/stack/medical/mesh = 5,
+		/obj/item/stack/medical/bone_gel = 4,
+		/obj/item/stack/medical/nanogel = 4,
 	)
 	contraband = list(
 		/obj/item/reagent_containers/glass/bottle/cold = 2,
@@ -120,12 +127,11 @@
 		/obj/item/storage/firstaid/fire = 2,
 		/obj/item/storage/firstaid/toxin = 2,
 		/obj/item/storage/firstaid/o2 = 2,
+		/obj/item/storage/backpack/duffelbag/med/surgery/upgraded = 2,
 		/obj/item/defibrillator/loaded = 1,
 		/obj/item/wallframe/defib_mount = 1,
 		/obj/item/clothing/glasses/hud/health/sunglasses = 6,
-		/obj/item/sensor_device = 3,
 		/obj/item/reagent_containers/blood/oilblood = 6,
-		/obj/item/pinpointer/crew = 3,
 	)
 
 /obj/machinery/vending/medical/syndicate_access/Initialize(mapload)

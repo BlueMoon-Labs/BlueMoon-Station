@@ -1,11 +1,11 @@
 // File modding Pe4henika (Bluemoon) 13.03.26
 import { useBackend, useSharedState } from '../backend';
-import { Box, Button, LabeledList, NoticeBox, Section, Tabs, ProgressBar } from '../components';
+import { Box, Button, LabeledList, NoticeBox, ProgressBar, Section, Tabs } from '../components';
 import { Window } from '../layouts';
 
-export const RoboticsControlConsole = (props, context) => {
-  const { act, data } = useBackend(context);
-  const [tab, setTab] = useSharedState(context, 'tab', 1);
+export const RoboticsControlConsole = (props) => {
+  const { act, data } = useBackend();
+  const [tab, setTab] = useSharedState('tab', 1);
   const {
     can_hack,
     cyborgs = [],
@@ -54,9 +54,9 @@ export const RoboticsControlConsole = (props, context) => {
   );
 };
 
-const Cyborgs = (props, context) => {
+const Cyborgs = (props) => {
   const { cyborgs, can_hack } = props;
-  const { act } = useBackend(context);
+  const { act } = useBackend();
   if (!cyborgs.length) {
     return (
       <NoticeBox>
@@ -135,9 +135,9 @@ const Cyborgs = (props, context) => {
   });
 };
 
-const Drones = (props, context) => {
+const Drones = (props) => {
   const { drones } = props;
-  const { act } = useBackend(context);
+  const { act } = useBackend();
 
   if (!drones.length) {
     return (
@@ -177,9 +177,9 @@ const Drones = (props, context) => {
   });
 };
 
-const Cybernetics = (props, context) => {
+const Cybernetics = (props) => {
   const { cybernetics } = props;
-  const { act, data } = useBackend(context);
+  const { act, data } = useBackend();
   const { is_ai } = data; // Получаем статус ИИ из бэкенда
 
   if (!cybernetics.length) {

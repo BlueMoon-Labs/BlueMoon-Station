@@ -31,9 +31,6 @@
 /turf/open/floor/plating,
 /area/shuttle/escape)
 "ag" = (
-/obj/effect/fun_balloon/sentience/emergency_shuttle{
-	group_name = "engineers fleeing the supermatter on the Hyperfractal Gigashuttle"
-	},
 /obj/structure/closet/radiation{
 	anchored = 1
 	},
@@ -51,6 +48,7 @@
 /obj/structure/chair/comfy/shuttle{
 	dir = 1
 	},
+/mob/living/simple_animal/hostile/hivebot/engineering,
 /turf/open/floor/mineral/titanium/yellow,
 /area/shuttle/escape)
 "ak" = (
@@ -329,6 +327,16 @@
 	},
 /turf/open/floor/mineral/titanium/yellow,
 /area/shuttle/escape)
+"zW" = (
+/obj/structure/closet/radiation{
+	anchored = 1
+	},
+/obj/item/clothing/glasses/meson/engine,
+/obj/effect/fun_balloon/sentience/emergency_shuttle{
+	group_name = "engineers fleeing the supermatter on the Hyperfractal Gigashuttle"
+	},
+/turf/open/floor/mineral/titanium/yellow,
+/area/shuttle/escape)
 "Bi" = (
 /obj/structure/closet/radiation{
 	anchored = 1
@@ -468,7 +476,7 @@ aX
 "}
 (6,1,1) = {"
 ad
-ag
+zW
 aj
 an
 at

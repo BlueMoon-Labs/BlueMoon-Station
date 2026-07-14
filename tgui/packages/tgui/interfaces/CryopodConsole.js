@@ -2,8 +2,8 @@ import { useBackend } from '../backend';
 import { Button, LabeledList, NoticeBox, Section, Stack } from '../components';
 import { Window } from '../layouts';
 
-export const CryopodConsole = (props, context) => {
-  const { data } = useBackend(context);
+export const CryopodConsole = (props) => {
+  const { data } = useBackend();
   const { account_name } = data;
 
   const welcomeTitle = `Hello, ${account_name || '[REDACTED]'}!`;
@@ -31,8 +31,8 @@ export const CryopodConsole = (props, context) => {
   );
 };
 
-const CrewList = (props, context) => {
-  const { data } = useBackend(context);
+const CrewList = (props) => {
+  const { data } = useBackend();
   const { frozen_crew } = data;
 
   return (
@@ -54,8 +54,8 @@ const CrewList = (props, context) => {
   );
 };
 
-const ItemList = (props, context) => {
-  const { data, act } = useBackend(context);
+const ItemList = (props) => {
+  const { data, act } = useBackend();
   const { item_meta } = data;
 
   return (

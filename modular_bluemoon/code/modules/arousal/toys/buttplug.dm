@@ -1,5 +1,6 @@
 /obj/item/buttplug
 	icon 		= 'modular_splurt/icons/obj/lewd_items/lewd_items.dmi'
+	w_class = WEIGHT_CLASS_SMALL
 	var/buttplug_size  = 1
 	var/inside = FALSE
 	var/timer = 0

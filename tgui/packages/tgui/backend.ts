@@ -13,7 +13,7 @@
 
 import { defer } from 'common/defer';
 import { perf } from 'common/perf';
-import { createAction } from 'common/redux';
+import { createAction, globalStore } from 'common/redux';
 
 import {
   resetInitialGeometryReady,
@@ -483,16 +483,13 @@ export const selectBackend = <TData>(state: any): BackendState<TData> => (
 );
 
 /**
- * A React hook (sort of) for getting tgui state and related functions.
+ * Gets the current tgui state and related functions.
  *
- * This is supposed to be replaced with a real React Hook, which can only
- * be used in functional components.
- *
- * You can make
+ * Reads straight from the global store, so unlike a real React hook
+ * it can be used anywhere, including class components.
  */
-export const useBackend = <TData>(context: any) => {
-  const { store } = context;
-  const state = selectBackend<TData>(store.getState());
+export const useBackend = <TData>() => {
+  const state = selectBackend<TData>(globalStore.getState());
   return {
     ...state,
     act: sendAct,
@@ -507,23 +504,24 @@ type StateWithSetter<T> = [T, (nextState: T) => void];
 /**
  * Allocates state on Redux store without sharing it with other clients.
  *
- * Use it when you want to have a stateful variable in your component
- * that persists between renders, but will be forgotten after you close
- * the UI.
+ * Legacy compatibility hook. Not a real React hook: it reads the global
+ * store, so it is legal anywhere (including class components), but its
+ * setter dispatches to the store and re-renders the ENTIRE app tree.
  *
- * It is a lot more performant than `setSharedState`.
+ * Prefer React `useState` in function components for new code. Keep
+ * `useLocalState` only when you need what the store gives you:
+ * - the same key read/written from several components (shared state),
+ * - state that survives component unmount/remount while the UI is open,
+ * - state access outside of function components.
  *
- * @param context React context.
  * @param key Key which uniquely identifies this state in Redux store.
  * @param initialState Initializes your global variable with this value.
  */
 export const useLocalState = <T>(
-  context: any,
   key: string,
   initialState: T,
 ): StateWithSetter<T> => {
-  const { store } = context;
-  const state = selectBackend(store.getState());
+  const state = selectBackend(globalStore.getState());
   const sharedStates = state.shared ?? {};
   const sharedState = (key in sharedStates)
     ? sharedStates[key]
@@ -531,7 +529,7 @@ export const useLocalState = <T>(
   return [
     sharedState,
     nextState => {
-      store.dispatch(backendSetSharedState({
+      globalStore.dispatch(backendSetSharedState({
         key,
         nextState: (
           typeof nextState === 'function'
@@ -553,17 +551,14 @@ export const useLocalState = <T>(
  *
  * This makes creation of observable s
  *
- * @param context React context.
  * @param key Key which uniquely identifies this state in Redux store.
  * @param initialState Initializes your global variable with this value.
  */
 export const useSharedState = <T>(
-  context: any,
   key: string,
   initialState: T,
 ): StateWithSetter<T> => {
-  const { store } = context;
-  const state = selectBackend(store.getState());
+  const state = selectBackend(globalStore.getState());
   const sharedStates = state.shared ?? {};
   const sharedState = (key in sharedStates)
     ? sharedStates[key]

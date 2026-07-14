@@ -197,8 +197,8 @@
 				goodies[quirk_goodie] = 5
 
 		// A little boost for the special times!
-		for(var/holiday_name in SSevents.holidays)
-			var/datum/holiday/holiday = SSevents.holidays[holiday_name]
+		for(var/holiday_name in SSholidays.holidays)
+			var/datum/holiday/holiday = SSholidays.holidays[holiday_name]
 			if(LAZYLEN(holiday.mail_goodies))
 				var/holiday_goodie = pick(holiday.mail_goodies)
 				goodies[holiday_goodie] = holiday.mail_goodies[holiday_goodie]

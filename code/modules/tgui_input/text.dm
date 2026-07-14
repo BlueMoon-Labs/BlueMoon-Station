@@ -37,10 +37,14 @@
 		else
 			// Even raw (encode=FALSE) input must drop control characters: they break
 			// the DM<->TGUI round-trip and any savefile key built from this text.
+			var/mob/prompt_mob = begin_native_prompt(user)
+			var/native_answer
 			if(multiline)
-				return strip_control_chars(input(user, message, title, default) as message|null)
+				native_answer = input(user, message, title, default) as message|null
 			else
-				return strip_control_chars(input(user, message, title, default) as text|null)
+				native_answer = input(user, message, title, default) as text|null
+			end_native_prompt(prompt_mob)
+			return strip_control_chars(native_answer)
 	var/datum/tgui_input_text/text_input = new(user, message, title, default, max_length, multiline, encode, timeout, prevent_enter)
 	text_input.ui_interact(user)
 	text_input.wait()

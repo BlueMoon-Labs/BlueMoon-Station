@@ -133,6 +133,9 @@
 	write_log_user = "piss over"
 	write_log_target = "get golden rain from"
 
+/datum/interaction/lewd/unholy/piss/vagina/over_body/post_reaction(mob/living/user, mob/living/partner, is_fucking, is_hidden)
+	partner.apply_external_stink()
+
 /datum/interaction/lewd/unholy/piss/vagina/over_body/pick_message(mob/living/user, mob/living/partner, is_fucking)
 	return pick(
 		MAIN_MESSAGES,
@@ -152,6 +155,9 @@
 	p13target_strength = PLUG13_STRENGTH_LOW
 	write_log_user = "piss over"
 	write_log_target = "get golden rain from"
+
+/datum/interaction/lewd/unholy/piss/penis/over_body/post_reaction(mob/living/user, mob/living/partner, is_fucking, is_hidden)
+	partner.apply_external_stink()
 
 /datum/interaction/lewd/unholy/piss/penis/over_body/pick_message(mob/living/user, mob/living/partner, is_fucking)
 	var/shape_desc = get_penis_shape_desc(user)
@@ -190,7 +196,11 @@
 	write_log_user = "piss over self"
 	write_log_target = null
 
+/datum/interaction/lewd/unholy/piss/vagina/over_body/self/post_reaction(mob/living/user, mob/living/partner, is_fucking, is_hidden)
+	user.apply_external_stink()
+
 /datum/interaction/lewd/unholy/piss/vagina/over_body/self/pick_message(mob/living/user, mob/living/partner, is_fucking)
+	user.apply_external_stink()
 	return pick(
 		SELF_MAIN_MESSAGES,
 		"USER выставляет свою киску и демонстративно мочится на себя",
@@ -206,7 +216,11 @@
 	write_log_user = "piss over self"
 	write_log_target = null
 
+/datum/interaction/lewd/unholy/piss/penis/over_body/self/post_reaction(mob/living/user, mob/living/partner, is_fucking, is_hidden)
+	user.apply_external_stink()
+
 /datum/interaction/lewd/unholy/piss/penis/over_body/self/pick_message(mob/living/user, mob/living/partner, is_fucking)
+	user.apply_external_stink()
 	var/shape_desc = get_penis_shape_desc(user)
 	return pick(
 		SELF_MAIN_MESSAGES,

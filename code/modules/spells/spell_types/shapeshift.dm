@@ -58,7 +58,7 @@
 	var/mob/living/shape = new shapeshift_type(caster.loc)
 	if(isanimal(shape)) //BLUEMOON ADD шейпы не двигаются и не пытаются кого-то убить если выйти
 		var/mob/living/simple_animal/s_a = shape
-		s_a.AIStatus = AI_OFF
+		s_a.toggle_ai(AI_OFF) // прямое присвоение AIStatus стрэндит моба в GLOB.simple_animals[AI_ON]
 		s_a.wander = FALSE //BLUEMOON ADD END
 	H = new(shape,src,caster)
 
@@ -116,13 +116,16 @@
 /obj/shapeshift_holder/Destroy()
 	if(!restoring)
 		restore()
+	slink = null
 	stored = null
 	shape = null
+	slink = null // qdel'ится в restore(); без обнуления держит цикл holder <-> soullink и оба хардделятся
+	source = null
 	. = ..()
 
 /obj/shapeshift_holder/Moved()
 	. = ..()
-	if(!restoring || QDELETED(src))
+	if(!restoring && !QDELETED(src))
 		restore()
 
 /obj/shapeshift_holder/handle_atom_del(atom/A)
@@ -170,6 +173,10 @@
 
 /datum/soullink/shapeshift
 	var/obj/shapeshift_holder/source
+
+/datum/soullink/shapeshift/Destroy()
+	source = null
+	return ..()
 
 /datum/soullink/shapeshift/ownerDies(gibbed, mob/living/owner)
 	if(source)

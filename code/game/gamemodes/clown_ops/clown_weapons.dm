@@ -236,8 +236,9 @@
 		var/mob/living/carbon/C = loc
 		if(C.wear_mask == src)
 			REMOVE_TRAIT(C, TRAIT_NO_INTERNALS, STICKY_MOUSTACHE_TRAIT)
-	..()
-	return QDEL_HINT_HARDDEL_NOW
+	// Легаси-хинт HARDDEL_NOW прикрывал ссылку из таймера снятия TRAIT_NODROP;
+	// таймер теперь гасится выше, тип собирается штатным GC без форс-del().
+	return ..()
 
 /obj/item/clothing/mask/fakemoustache/sticky/equipped(mob/user, slot)
 	. = ..()

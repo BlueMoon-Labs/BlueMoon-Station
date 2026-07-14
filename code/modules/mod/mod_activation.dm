@@ -18,7 +18,7 @@
 	if(!istype(part) || user.incapacitated())
 		return
 	if((active || activating) && part != helmet)  //BM added an exception for a helmet
-		balloon_alert(user, "deactivate the suit first!")
+		balloon_alert(user, "отключите костюм для начала!")
 		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 		return
 	var/parts_to_check = mod_parts - part
@@ -78,7 +78,7 @@
 	var/obj/item/piece = part
 	REMOVE_TRAIT(piece, TRAIT_NODROP, MOD_TRAIT)
 	if(wearer)
-		wearer.transferItemToLoc(piece, piece.drop_location(), TRUE)
+		wearer.transferItemToLoc(piece, null, TRUE)
 	if(piece == helmet)
 		helmet.show_overslot()
 	if(piece == chestplate)

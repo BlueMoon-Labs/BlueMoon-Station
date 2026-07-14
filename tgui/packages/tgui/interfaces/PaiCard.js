@@ -2,8 +2,8 @@ import { useBackend } from '../backend';
 import { BlockQuote, Box, Button, Icon, LabeledList, NoticeBox, Section, Stack } from '../components';
 import { Window } from '../layouts';
 
-export const PaiCard = (props, context) => {
-  const { data } = useBackend(context);
+export const PaiCard = (props) => {
+  const { data } = useBackend();
   const { pai } = data;
 
   return (
@@ -15,8 +15,8 @@ export const PaiCard = (props, context) => {
   );
 };
 
-const PaiDownload = (props, context) => {
-  const { act, data } = useBackend(context);
+const PaiDownload = (props) => {
+  const { act, data } = useBackend();
   const { candidates = [] } = data;
 
   return (
@@ -56,8 +56,8 @@ const PaiDownload = (props, context) => {
   );
 };
 
-const CandidateDisplay = (props, context) => {
-  const { act } = useBackend(context);
+const CandidateDisplay = (props) => {
+  const { act } = useBackend();
   const { candidate, index } = props;
   const { comments, ckey, description, name } = candidate;
 
@@ -109,8 +109,8 @@ const CandidateDisplay = (props, context) => {
   );
 };
 
-const PaiOptions = (props, context) => {
-  const { act, data } = useBackend(context);
+const PaiOptions = (props) => {
+  const { act, data } = useBackend();
   const {
     pai: {
       can_holo,
