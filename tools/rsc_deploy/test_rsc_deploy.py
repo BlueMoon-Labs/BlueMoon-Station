@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
 import json
+import os
 from pathlib import Path
 import struct
 import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 import zipfile
 
 
@@ -109,11 +111,12 @@ class RscDeployIntegrationTest(unittest.TestCase):
 			self.assertEqual(build_manifest["public_urls"], expected_public_urls)
 			generated_defines = (game_dir / ".rsc-deployment.dm").read_text(encoding="utf-8")
 			self.assertIn("#define DEPLOYMENT_RSC_URLS list(", generated_defines)
+			self.assertIn("#define DEPLOYMENT_ASSET_MANIFEST_NAME \"Moon-Test-", generated_defines)
 			for public_url in expected_public_urls:
 				self.assertIn(public_url, generated_defines)
 			self.assertEqual(
 				build_manifest["archive_name"],
-				"Moon-Test-{}.zip".format(build_manifest["resource_inputs_sha256"]),
+				"Moon-Test-{}.zip".format(build_manifest["archive_inputs_sha256"]),
 			)
 
 			# A pure logic change must retain the resource URL.
@@ -175,9 +178,13 @@ class RscDeployIntegrationTest(unittest.TestCase):
 			self.assertEqual(resources.count("\nASSET_TRANSPORT webroot\n"), 1)
 			self.assertIn("ASSET_CDN_WEBROOT {}/browser-assets/".format(publish_dir.as_posix()), resources)
 			self.assertIn("ASSET_CDN_URL http://download.example.test/byond_rsc/browser-assets/", resources)
-			self.assertNotIn("old-assets", resources)
-			self.assertNotIn("old.example.test", resources)
+			# Operator values remain below the managed override and become active
+			# again when external webroot management is disabled.
+			self.assertIn("ASSET_TRANSPORT simple", resources)
+			self.assertIn("ASSET_CDN_WEBROOT old-assets/", resources)
+			self.assertIn("ASSET_CDN_URL http://old.example.test/", resources)
 			self.assertTrue((publish_dir / "browser-assets").is_dir())
+			self.assertTrue((publish_dir / "browser-assets" / ".manifests").is_dir())
 
 			latest = json.loads((publish_dir / "Moon-Test-latest.json").read_text(encoding="utf-8"))
 			self.assertTrue(latest["archive_reused"])
@@ -224,7 +231,15 @@ class RscDeployIntegrationTest(unittest.TestCase):
 			rsc_deploy.configure_asset_webroot(loaded_settings)
 			resources = (config_root / "entries" / "resources.txt").read_text(encoding="utf-8")
 			self.assertNotIn("# BEGIN MANAGED EXTERNAL BROWSER ASSETS", resources)
-			self.assertNotRegex(resources, r"(?im)^\s*ASSET_(?:TRANSPORT|CDN_WEBROOT|CDN_URL)\s+")
+			self.assertIn("ASSET_TRANSPORT simple", resources)
+			self.assertIn("ASSET_CDN_WEBROOT old-assets/", resources)
+			self.assertIn("ASSET_CDN_URL http://old.example.test/", resources)
+
+			# Disabling lobby publication must remove the runtime switch, otherwise
+			# the next server keeps emitting HTTP URLs for files no longer managed.
+			loaded_settings["RSC_PUBLISH_LOBBY_MEDIA"] = False
+			rsc_deploy.publish_lobby_media(game_dir, loaded_settings)
+			self.assertFalse((config_root / "lobby_media.json").exists())
 
 	def test_resource_fingerprint_tracks_files_and_static_references(self):
 		with tempfile.TemporaryDirectory() as temporary_directory:
@@ -250,9 +265,18 @@ class RscDeployIntegrationTest(unittest.TestCase):
 			with_reference = rsc_deploy.resource_inputs_sha256(game_dir)
 			self.assertNotEqual(with_reference, initial)
 
+			# Compile-time variants must never collide even when they mention the
+			# same resource literals and files.
+			source.write_text(
+				"#define ALTERNATE_RESOURCE_SET\n/obj/example\n\ticon = 'icons/existing.dmi'\n",
+				encoding="utf-8",
+			)
+			with_build_define = rsc_deploy.resource_inputs_sha256(game_dir)
+			self.assertNotEqual(with_build_define, with_reference)
+
 			resource.write_bytes(b"changed icon")
 			with_changed_resource = rsc_deploy.resource_inputs_sha256(game_dir)
-			self.assertNotEqual(with_changed_resource, with_reference)
+			self.assertNotEqual(with_changed_resource, with_build_define)
 
 			# The interface file is compiled too, so its static resource literals
 			# must participate even though unrelated browser JS does not.
@@ -267,11 +291,102 @@ class RscDeployIntegrationTest(unittest.TestCase):
 			interface_resource.write_bytes(b"changed interface icon")
 			self.assertNotEqual(rsc_deploy.resource_inputs_sha256(game_dir), with_interface_reference)
 
+	def test_resource_fingerprint_cache_reuses_clean_git_blobs(self):
+		with tempfile.TemporaryDirectory() as temporary_directory:
+			game_dir = Path(temporary_directory)
+			(game_dir / "code").mkdir()
+			(game_dir / "icons").mkdir()
+			(game_dir / "code" / "feature.dm").write_text(
+				"/obj/example\n\ticon = 'icons/example.dmi'\n", encoding="utf-8"
+			)
+			(game_dir / "icons" / "example.dmi").write_bytes(b"icon")
+			subprocess.run(["git", "init", "-q", str(game_dir)], check=True)
+			subprocess.run(["git", "-C", str(game_dir), "config", "user.email", "test@example.test"], check=True)
+			subprocess.run(["git", "-C", str(game_dir), "config", "user.name", "RSC Test"], check=True)
+			subprocess.run(["git", "-C", str(game_dir), "add", "."], check=True)
+			subprocess.run(["git", "-C", str(game_dir), "commit", "-qm", "fixture"], check=True)
+			cache_path = game_dir / ".rsc-cache.json"
+			first = rsc_deploy.resource_inputs_sha256(game_dir, cache_path=cache_path)
+			self.assertTrue(cache_path.is_file())
+			with mock.patch.object(rsc_deploy, "_scan_resource_source", side_effect=AssertionError("cache miss")):
+				with mock.patch.object(rsc_deploy, "sha256_file", side_effect=AssertionError("cache miss")):
+					second = rsc_deploy.resource_inputs_sha256(game_dir, cache_path=cache_path)
+			self.assertEqual(second, first)
+
 	def test_windows_hooks_use_repository_python_bootstrap(self):
 		hooks_dir = SCRIPT.parent.parent / "tgs4_scripts"
 		for hook_name in ("PreCompile.bat", "PostCompile.bat"):
 			hook = (hooks_dir / hook_name).read_text(encoding="utf-8")
 			self.assertIn("bootstrap\\python.bat", hook)
+
+	def test_content_cleanup_protects_every_deployable_dmb_inventory(self):
+		with tempfile.TemporaryDirectory() as temporary_directory:
+			root = Path(temporary_directory)
+			game_root = root / "Game"
+			current_dir = game_root / "current" / "A"
+			old_dir = game_root / "old" / "A"
+			publish_dir = root / "publish"
+			lobby_root = publish_dir / "lobby-media"
+			asset_root = publish_dir / "browser-assets"
+			inventory_root = asset_root / ".manifests"
+			for directory in (current_dir, old_dir, lobby_root / "aa", asset_root / "bb", inventory_root):
+				directory.mkdir(parents=True, exist_ok=True)
+
+			(current_dir / "tgstation.dmb").write_bytes(b"current")
+			(old_dir / "tgstation.dmb").write_bytes(b"old")
+			current_manifest = {
+				"archive_name": "Moon-Test-current.zip",
+				"lobby_media_enabled": True,
+				"browser_asset_webroot_enabled": True,
+				"browser_asset_manifest": "current.txt",
+			}
+			old_manifest = {
+				"archive_name": "Moon-Test-old.zip",
+				"lobby_media_enabled": True,
+				"lobby_media_files": ["aa/old.ogg"],
+				"browser_asset_webroot_enabled": True,
+				"browser_asset_manifest": "old.txt",
+			}
+			(current_dir / ".rsc-deploy.json").write_text(json.dumps(current_manifest), encoding="utf-8")
+			(old_dir / ".rsc-deploy.json").write_text(json.dumps(old_manifest), encoding="utf-8")
+			(inventory_root / "current.txt").write_text("bb/current.js\n", encoding="utf-8")
+			(inventory_root / "old.txt").write_text("bb/old.js\n", encoding="utf-8")
+			(inventory_root / "stale.txt").write_text("bb/stale.js\n", encoding="utf-8")
+
+			protected_files = (
+				lobby_root / "aa" / "current.ogg",
+				lobby_root / "aa" / "old.ogg",
+				asset_root / "bb" / "current.js",
+				asset_root / "bb" / "old.js",
+			)
+			stale_files = (lobby_root / "aa" / "stale.ogg", asset_root / "bb" / "stale.js")
+			for path in protected_files + stale_files:
+				path.write_bytes(path.name.encode("ascii"))
+			for path in protected_files + stale_files + tuple(inventory_root.glob("*.txt")):
+				os.utime(path, (1, 1))
+
+			settings = {
+				"RSC_PRUNE_ENABLED": True,
+				"RSC_DEPLOYMENT_ROOTS": [game_root],
+				"RSC_PUBLISH_DIR": str(publish_dir),
+				"RSC_LOBBY_MEDIA_SUBDIR": "lobby-media",
+				"RSC_ASSET_WEBROOT_SUBDIR": "browser-assets",
+				"RSC_PRUNE_GRACE_HOURS": 0,
+			}
+			removed = rsc_deploy.prune_content_stores(
+				current_dir,
+				settings,
+				current_dir / ".rsc-deploy.json",
+				["aa/current.ogg"],
+			)
+			self.assertEqual(removed, 3)
+			for path in protected_files:
+				self.assertTrue(path.is_file())
+			for path in stale_files:
+				self.assertFalse(path.exists())
+			self.assertTrue((inventory_root / "current.txt").is_file())
+			self.assertTrue((inventory_root / "old.txt").is_file())
+			self.assertFalse((inventory_root / "stale.txt").exists())
 
 	def test_invalid_rsc_mirror_url_is_rejected(self):
 		with tempfile.TemporaryDirectory() as temporary_directory:
@@ -285,6 +400,25 @@ class RscDeployIntegrationTest(unittest.TestCase):
 			)
 			with self.assertRaisesRegex(rsc_deploy.DeployError, "entry 1 must start"):
 				rsc_deploy.load_settings(root, settings_path)
+
+	def test_archive_names_are_namespaced_per_tgs_instance(self):
+		with tempfile.TemporaryDirectory() as temporary_directory:
+			root = Path(temporary_directory)
+			settings = []
+			for instance_name in ("main", "test"):
+				config_path = root / instance_name / "Configuration" / "GameStaticFiles" / "config" / "rsc_deploy.env"
+				config_path.parent.mkdir(parents=True)
+				config_path.write_text(
+					"RSC_PUBLIC_BASE_URL=https://download.example.test/rsc\n"
+					"RSC_PUBLISH_DIR={}\n".format((root / "publish").as_posix()),
+					encoding="utf-8",
+				)
+				settings.append(rsc_deploy.load_settings(root, config_path))
+			resource_hash = "a" * 64
+			self.assertNotEqual(
+				rsc_deploy.archive_inputs_sha256(resource_hash, settings[0]),
+				rsc_deploy.archive_inputs_sha256(resource_hash, settings[1]),
+			)
 
 	def test_pruning_fails_closed_when_a_dmb_has_no_manifest(self):
 		with tempfile.TemporaryDirectory() as temporary_directory:

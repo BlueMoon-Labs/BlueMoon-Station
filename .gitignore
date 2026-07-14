@@ -196,6 +196,7 @@ Temporary Items
 !/config/title_music/sounds/exclude
 /config/title_screens/images/*
 !/config/title_screens/images/exclude
+/config/.rsc-input-cache.json
 
 #Linux docker
 /tools/LinuxOneShot/SetupProgram/obj/*

@@ -3,8 +3,8 @@
 # If you set this mutiple times, the server will rotate between the links.
 # To use this, the compile option PRELOAD_RSC must be set to 0 to keep byond from preloading resources
 
-# Production TGS builds override this with an immutable, versioned URL embedded
-# by tools/rsc_deploy. This alias is only a fallback for unmanaged builds.
+# Production TGS builds use an immutable, versioned URL embedded by
+# tools/rsc_deploy. Unmanaged builds retain the download-host fallback.
 EXTERNAL_RSC_URLS http://download.ss13-bluemoon.ru:8080/byond_rsc/Moon-Blue.zip
 
 ########################

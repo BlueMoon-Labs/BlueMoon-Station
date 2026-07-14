@@ -24,7 +24,9 @@ LOBBY_IMAGE_EXTENSIONS = {".gif", ".jpeg", ".jpg", ".png", ".webp"}
 LOBBY_AUDIO_EXTENSIONS = {".flac", ".mp3", ".ogg", ".wav"}
 RESOURCE_REFERENCE_SOURCE_EXTENSIONS = {".dm", ".dme", ".dmf", ".dmm"}
 RESOURCE_LITERAL = re.compile(rb"'([^'\r\n]+)'")
+BUILD_CONFIGURATION_DIRECTIVE = re.compile(rb"^\s*#\s*(?:define|undef)\b", re.IGNORECASE)
 RESOURCE_BUILD_INPUTS = (".tgs.yml",)
+FINGERPRINT_CACHE_NAME = ".rsc-input-cache.json"
 RESOURCE_SCAN_IGNORED_DIRS = {
 	".cache",
 	".git",
@@ -148,6 +150,10 @@ def load_settings(game_dir, configured_path=None):
 	if not SAFE_NAME.fullmatch(prefix):
 		raise DeployError("RSC_ARCHIVE_PREFIX may only contain letters, digits, dot, dash and underscore")
 	settings["RSC_ARCHIVE_PREFIX"] = prefix
+	deployment_namespace = settings.get("RSC_DEPLOYMENT_NAMESPACE", "").strip()
+	if deployment_namespace and not SAFE_NAME.fullmatch(deployment_namespace):
+		raise DeployError("RSC_DEPLOYMENT_NAMESPACE may only contain letters, digits, dot, dash and underscore")
+	settings["RSC_DEPLOYMENT_NAMESPACE"] = deployment_namespace
 	settings["_CONFIG_PATH"] = config_path
 
 	for setting_name, default in (
@@ -226,6 +232,20 @@ def dm_list(values):
 	return "list({})".format(", ".join(dm_string(value) for value in values))
 
 
+def archive_inputs_sha256(resource_input_hash, settings):
+	"""Refine a resource fingerprint with a stable per-instance namespace."""
+	digest = hashlib.sha256()
+	_hash_record(digest, "version", "rsc-archive-inputs-v1")
+	_hash_record(digest, "resources-and-build", resource_input_hash)
+	namespace = settings["RSC_DEPLOYMENT_NAMESPACE"]
+	if not namespace:
+		# Separate TGS instances normally have distinct persistent config paths.
+		# Hash rather than expose the host path in a public archive name.
+		namespace = os.path.normcase(str(Path(settings["_CONFIG_PATH"]).resolve()))
+	_hash_record(digest, "deployment-namespace", namespace)
+	return digest.hexdigest()
+
+
 def _hash_record(digest, record_type, name, payload=None):
 	digest.update(record_type.encode("ascii"))
 	digest.update(b"\0")
@@ -238,30 +258,113 @@ def _hash_record(digest, record_type, name, payload=None):
 	digest.update(b"\0")
 
 
-def _hash_file_record(digest, name, path):
-	path = Path(path)
-	digest.update(b"file\0")
-	digest.update(name.encode("utf-8", errors="surrogateescape"))
-	digest.update(b"\0")
-	digest.update(str(path.stat().st_size).encode("ascii"))
-	digest.update(b"\0")
-	with path.open("rb") as source:
-		for chunk in iter(lambda: source.read(1024 * 1024), b""):
-			digest.update(chunk)
-	digest.update(b"\0")
+def _git_file_identities(game_dir):
+	"""Return clean index blob IDs without reading every tracked file."""
+	try:
+		index_result = subprocess.run(
+			["git", "-C", str(game_dir), "ls-files", "--stage", "-z"],
+			check=True,
+			stdout=subprocess.PIPE,
+			stderr=subprocess.DEVNULL,
+		)
+		dirty_result = subprocess.run(
+			["git", "-C", str(game_dir), "status", "--porcelain=v1", "-z", "--untracked-files=no"],
+			check=True,
+			stdout=subprocess.PIPE,
+			stderr=subprocess.DEVNULL,
+		)
+	except (OSError, subprocess.CalledProcessError):
+		return {}, set()
+
+	identities = {}
+	for record in index_result.stdout.split(b"\0"):
+		if not record or b"\t" not in record:
+			continue
+		metadata, raw_name = record.split(b"\t", 1)
+		parts = metadata.split()
+		if len(parts) != 3 or parts[2] != b"0":
+			continue
+		name = raw_name.decode("utf-8", errors="surrogateescape").replace("\\", "/")
+		identities[name] = "git:{}".format(parts[1].decode("ascii"))
+
+	dirty = set()
+	records = dirty_result.stdout.split(b"\0")
+	index = 0
+	while index < len(records):
+		record = records[index]
+		index += 1
+		if len(record) < 4:
+			continue
+		status = record[:2]
+		name = record[3:].decode("utf-8", errors="surrogateescape").replace("\\", "/")
+		dirty.add(name)
+		# Rename/copy porcelain records carry the second path as another NUL item.
+		if b"R" in status or b"C" in status:
+			if index < len(records):
+				dirty.add(records[index].decode("utf-8", errors="surrogateescape").replace("\\", "/"))
+				index += 1
+	return identities, dirty
 
 
-def resource_inputs_sha256(game_dir):
+def _load_fingerprint_cache(cache_path):
+	if not cache_path:
+		return {"sources": {}, "files": {}}
+	try:
+		payload = json.loads(Path(cache_path).read_text(encoding="utf-8"))
+		if payload.get("version") != 1:
+			return {"sources": {}, "files": {}}
+		return {
+			"sources": payload.get("sources", {}),
+			"files": payload.get("files", {}),
+		}
+	except (OSError, ValueError, json.JSONDecodeError):
+		return {"sources": {}, "files": {}}
+
+
+def _scan_resource_source(path):
+	try:
+		payload = Path(path).read_bytes()
+	except OSError as error:
+		raise DeployError("could not read resource-reference source {}: {}".format(path, error)) from error
+	references = [
+		match.group(1).decode("utf-8", errors="surrogateescape").replace("\\", "/")
+		for match in RESOURCE_LITERAL.finditer(payload)
+	]
+	directives = []
+	lines = payload.splitlines(keepends=True)
+	line_number = 0
+	while line_number < len(lines):
+		line = lines[line_number]
+		line_number += 1
+		if not BUILD_CONFIGURATION_DIRECTIVE.match(line):
+			continue
+		directive = bytearray(line)
+		while directive.rstrip(b"\r\n").endswith(b"\\") and line_number < len(lines):
+			directive.extend(lines[line_number])
+			line_number += 1
+		directives.append(bytes(directive).decode("utf-8", errors="replace"))
+	return references, directives
+
+
+def resource_inputs_sha256(game_dir, cache_path=None):
 	"""Hash statically referenced resource files deterministically.
 
 	The source scan catches code changes which add or remove an already-existing
 	resource. Unreferenced media is deliberately excluded: browser bundles and
 	other repository assets which DreamMaker does not embed must not invalidate
-	the entire RSC cache.
+	the entire RSC cache. Compiler define/undef directives are included so two
+	build variants cannot accidentally select the same archive. A persistent
+	per-instance cache avoids reparsing unchanged maps and rehashing unchanged
+	resources on every TGS deployment.
 	"""
 	game_dir = Path(game_dir)
 	resource_files = {}
 	references = set()
+	build_directives = []
+	git_identities, dirty_files = _git_file_identities(game_dir)
+	cache = _load_fingerprint_cache(cache_path)
+	used_source_cache = {}
+	used_file_cache = {}
 	for relative_name in RESOURCE_BUILD_INPUTS:
 		path = game_dir / relative_name
 		if path.is_file():
@@ -284,34 +387,63 @@ def resource_inputs_sha256(game_dir):
 			suffix = path.suffix.lower()
 			if suffix not in RESOURCE_REFERENCE_SOURCE_EXTENSIONS:
 				continue
-			try:
-				source_lines = path.open("rb")
-			except OSError as error:
-				raise DeployError("could not read resource-reference source {}: {}".format(path, error)) from error
-			with source_lines:
-				for source_line in source_lines:
-					for match in RESOURCE_LITERAL.finditer(source_line):
-						literal = match.group(1).decode("utf-8", errors="surrogateescape").replace("\\", "/")
-						while literal.startswith("./"):
-							literal = literal[2:]
-						literal_path = Path(literal)
-						if literal_path.is_absolute() or ".." in literal_path.parts:
-							continue
-						referenced_path = game_dir / literal_path
-						if referenced_path.is_file():
-							references.add(literal)
-							resource_files[literal_path.as_posix()] = referenced_path
+			identity = git_identities.get(relative_name) if relative_name not in dirty_files else None
+			cached_source = cache["sources"].get(identity) if identity else None
+			if isinstance(cached_source, dict):
+				literals = cached_source.get("references", [])
+				directives = cached_source.get("directives", [])
+			else:
+				literals, directives = _scan_resource_source(path)
+			if identity:
+				used_source_cache[identity] = {"references": literals, "directives": directives}
+			for literal in literals:
+				while literal.startswith("./"):
+					literal = literal[2:]
+				literal_path = Path(literal)
+				if literal_path.is_absolute() or ".." in literal_path.parts:
+					continue
+				referenced_path = game_dir / literal_path
+				if referenced_path.is_file():
+					references.add(literal)
+					resource_files[literal_path.as_posix()] = referenced_path
+			for directive_number, directive in enumerate(directives):
+				build_directives.append((relative_name, directive_number, directive))
 
 	digest = hashlib.sha256()
-	_hash_record(digest, "version", "rsc-resource-inputs-v2")
+	_hash_record(digest, "version", "rsc-resource-inputs-v3")
 	for literal in sorted(references):
 		_hash_record(digest, "reference", literal)
+	for relative_name, directive_number, directive in sorted(build_directives):
+		_hash_record(
+			digest,
+			"build-directive",
+			"{}:{}".format(relative_name, directive_number),
+			directive.encode("utf-8"),
+		)
 	for relative_name in sorted(resource_files):
 		path = resource_files[relative_name]
 		try:
-			_hash_file_record(digest, relative_name, path)
+			identity = git_identities.get(relative_name) if relative_name not in dirty_files else None
+			file_hash = cache["files"].get(identity) if identity else None
+			if not isinstance(file_hash, str) or not re.fullmatch(r"[0-9a-f]{64}", file_hash):
+				file_hash = sha256_file(path)
+			if identity:
+				used_file_cache[identity] = file_hash
+			_hash_record(digest, "file-sha256", relative_name, file_hash.encode("ascii"))
 		except OSError as error:
 			raise DeployError("could not read resource input {}: {}".format(path, error)) from error
+	if cache_path:
+		try:
+			atomic_write(
+				cache_path,
+				json.dumps(
+					{"version": 1, "sources": used_source_cache, "files": used_file_cache},
+					ensure_ascii=True,
+					sort_keys=True,
+				) + "\n",
+			)
+		except OSError as error:
+			log("warning: could not update resource fingerprint cache {}: {}".format(cache_path, error))
 	return digest.hexdigest()
 
 
@@ -326,14 +458,25 @@ def prepare(args):
 
 	revision = git_revision(game_dir, args.revision or "")
 	stamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-	input_hash = resource_inputs_sha256(game_dir)
-	archive_name = "{}-{}.zip".format(settings["RSC_ARCHIVE_PREFIX"], input_hash)
+	cache_path = settings["_CONFIG_PATH"].parent / FINGERPRINT_CACHE_NAME
+	input_hash = resource_inputs_sha256(game_dir, cache_path=cache_path)
+	archive_input_hash = archive_inputs_sha256(input_hash, settings)
+	archive_name = "{}-{}.zip".format(settings["RSC_ARCHIVE_PREFIX"], archive_input_hash)
 	public_urls = ["{}/{}".format(base_url, archive_name) for base_url in settings["RSC_PUBLIC_BASE_URLS"]]
 	public_url = public_urls[0]
+	asset_manifest_name = None
+	if settings["RSC_ENABLE_ASSET_WEBROOT"]:
+		asset_manifest_name = "{}-{}-{}.txt".format(
+			settings["RSC_ARCHIVE_PREFIX"], revision, archive_input_hash[:16]
+		)
 
 	generated_defines = "// Generated by tools/rsc_deploy; do not commit.\n"
 	generated_defines += "#ifdef DEPLOYMENT_RSC_URLS\n#undef DEPLOYMENT_RSC_URLS\n#endif\n"
 	generated_defines += "#define DEPLOYMENT_RSC_URLS {}\n".format(dm_list(public_urls))
+	generated_defines += "#ifdef DEPLOYMENT_ASSET_MANIFEST_NAME\n#undef DEPLOYMENT_ASSET_MANIFEST_NAME\n#endif\n"
+	generated_defines += "#define DEPLOYMENT_ASSET_MANIFEST_NAME {}\n".format(
+		dm_string(asset_manifest_name) if asset_manifest_name else "null"
+	)
 	atomic_write(game_dir / GENERATED_DEFINES_NAME, generated_defines)
 
 	manifest = {
@@ -342,6 +485,10 @@ def prepare(args):
 		"public_urls": public_urls,
 		"revision": revision,
 		"resource_inputs_sha256": input_hash,
+		"archive_inputs_sha256": archive_input_hash,
+		"browser_asset_manifest": asset_manifest_name,
+		"browser_asset_webroot_enabled": settings["RSC_ENABLE_ASSET_WEBROOT"],
+		"lobby_media_enabled": settings["RSC_PUBLISH_LOBBY_MEDIA"],
 		"created_utc": stamp,
 	}
 	atomic_write(game_dir / MANIFEST_NAME, json.dumps(manifest, indent=2, sort_keys=True) + "\n")
@@ -439,7 +586,7 @@ def deployment_roots(settings):
 	return []
 
 
-def _manifest_archive_name(manifest_path):
+def _read_deployment_manifest(manifest_path):
 	try:
 		manifest = json.loads(Path(manifest_path).read_text(encoding="utf-8"))
 	except (OSError, json.JSONDecodeError) as error:
@@ -447,11 +594,11 @@ def _manifest_archive_name(manifest_path):
 	archive_name = manifest.get("archive_name")
 	if not isinstance(archive_name, str) or Path(archive_name).name != archive_name or not SAFE_NAME.fullmatch(archive_name):
 		raise DeployError("deployment manifest {} has an unsafe archive_name".format(manifest_path))
-	return archive_name
+	return manifest
 
 
 def inventory_deployment_archives(root, max_depth=3):
-	"""Return archives referenced by deployable DMB directories below a TGS Game root."""
+	"""Inventory manifests referenced by deployable DMB directories below a TGS Game root."""
 	root = Path(root).resolve()
 	try:
 		if not root.is_dir():
@@ -460,6 +607,7 @@ def inventory_deployment_archives(root, max_depth=3):
 		raise DeployError("cannot inspect TGS deployment root {}: {}".format(root, error)) from error
 
 	protected = set()
+	deployments = []
 	dmb_count = 0
 	stack = [(root, 0)]
 	while stack:
@@ -489,17 +637,21 @@ def inventory_deployment_archives(root, max_depth=3):
 				raise DeployError(
 					"DMB without {} found in {}; refusing to prune".format(MANIFEST_NAME, current)
 				)
-			protected.add(_manifest_archive_name(manifest_path))
+			manifest = _read_deployment_manifest(manifest_path)
+			protected.add(manifest["archive_name"])
+			deployments.append((manifest_path.resolve(), manifest))
 			continue
 		if manifest_path is not None:
 			# A failed deployment may leave a manifest before TGS removes its
 			# directory. Protecting it temporarily is safer than guessing.
-			protected.add(_manifest_archive_name(manifest_path))
+			manifest = _read_deployment_manifest(manifest_path)
+			protected.add(manifest["archive_name"])
+			deployments.append((manifest_path.resolve(), manifest))
 			continue
 		for directory in sorted(directories, reverse=True):
 			stack.append((directory, depth + 1))
 
-	return protected, dmb_count
+	return protected, dmb_count, deployments
 
 
 def prune_archives(game_dir, settings, current_archive_name):
@@ -519,7 +671,7 @@ def prune_archives(game_dir, settings, current_archive_name):
 		protected = {current_archive_name}
 		dmb_count = 0
 		for root in roots:
-			root_protected, root_dmb_count = inventory_deployment_archives(root)
+			root_protected, root_dmb_count, _ = inventory_deployment_archives(root)
 			protected.update(root_protected)
 			dmb_count += root_dmb_count
 		if not dmb_count:
@@ -565,6 +717,152 @@ def prune_archives(game_dir, settings, current_archive_name):
 	return removed
 
 
+def _safe_relative_content_path(value, setting_name):
+	if not isinstance(value, str):
+		raise DeployError("{} contains a non-string path".format(setting_name))
+	normalized = value.replace("\\", "/").strip("/")
+	path = Path(normalized)
+	if not normalized or path.is_absolute() or ".." in path.parts:
+		raise DeployError("{} contains an unsafe path: {}".format(setting_name, value))
+	return Path(*path.parts)
+
+
+def _deployment_content_inventories(game_dir, settings):
+	roots = deployment_roots(settings)
+	if not roots:
+		raise DeployError("could not infer the TGS Game directory")
+	game_dir = Path(game_dir).resolve()
+	if not any(_path_is_within(game_dir, root) for root in roots):
+		raise DeployError("current game directory is outside RSC_DEPLOYMENT_ROOTS")
+	deployments = []
+	dmb_count = 0
+	for root in roots:
+		_, root_dmb_count, root_deployments = inventory_deployment_archives(root)
+		deployments.extend(root_deployments)
+		dmb_count += root_dmb_count
+	if not dmb_count:
+		raise DeployError("no deployable DMBs were found below RSC_DEPLOYMENT_ROOTS")
+	return deployments, dmb_count
+
+
+def _read_browser_asset_inventory(path):
+	assets = set()
+	try:
+		lines = Path(path).read_text(encoding="utf-8-sig").splitlines()
+	except OSError as error:
+		raise DeployError("cannot read browser asset inventory {}: {}".format(path, error)) from error
+	for raw_line in lines:
+		line = raw_line.strip()
+		if not line or line.startswith("#"):
+			continue
+		assets.add(_safe_relative_content_path(line, "browser asset inventory"))
+	return assets
+
+
+def _prune_content_tree(root, protected_relative_paths, cutoff, ignored_top_level=None):
+	root = Path(root)
+	if not root.is_dir():
+		return 0
+	ignored_top_level = set(ignored_top_level or ())
+	protected = {Path(path).as_posix() for path in protected_relative_paths}
+	removed = 0
+	try:
+		files = sorted(root.rglob("*"), key=lambda path: len(path.parts), reverse=True)
+	except OSError as error:
+		raise DeployError("cannot inventory content store {}: {}".format(root, error)) from error
+	for path in files:
+		try:
+			relative = path.relative_to(root)
+			if relative.parts and relative.parts[0] in ignored_top_level:
+				continue
+			if path.is_symlink():
+				continue
+			if path.is_file():
+				if relative.as_posix() in protected or path.stat().st_mtime > cutoff:
+					continue
+				path.unlink()
+				removed += 1
+			elif path.is_dir():
+				try:
+					path.rmdir()
+				except OSError:
+					pass
+		except OSError as error:
+			log("warning: could not prune content path {}: {}".format(path, error))
+	return removed
+
+
+def prune_content_stores(game_dir, settings, current_manifest_path, current_lobby_files):
+	"""Prune only files unused by every deployable DMB, after a grace period."""
+	if not settings["RSC_PRUNE_ENABLED"]:
+		return 0
+	try:
+		deployments, dmb_count = _deployment_content_inventories(game_dir, settings)
+	except DeployError as error:
+		log("warning: content cleanup skipped: {}".format(error))
+		return 0
+
+	publish_dir = Path(settings["RSC_PUBLISH_DIR"]).expanduser()
+	lobby_subdir = settings["RSC_LOBBY_MEDIA_SUBDIR"]
+	asset_subdir = settings["RSC_ASSET_WEBROOT_SUBDIR"]
+	lobby_root = publish_dir / lobby_subdir
+	asset_root = publish_dir / asset_subdir
+	asset_manifest_root = asset_root / ".manifests"
+	current_manifest_path = Path(current_manifest_path).resolve()
+	protected_lobby = {
+		_safe_relative_content_path(path, "current lobby media") for path in current_lobby_files
+	}
+	protected_assets = set()
+	protected_asset_manifests = set()
+	legacy_lobby_inventory = False
+	legacy_asset_inventory = False
+
+	for manifest_path, manifest in deployments:
+		is_current = manifest_path == current_manifest_path
+		if "lobby_media_enabled" not in manifest:
+			if not is_current:
+				legacy_lobby_inventory = True
+		elif manifest["lobby_media_enabled"]:
+			files = manifest.get("lobby_media_files")
+			if files is None:
+				if not is_current:
+					legacy_lobby_inventory = True
+			else:
+				for path in files:
+					protected_lobby.add(_safe_relative_content_path(path, "lobby_media_files"))
+
+		if "browser_asset_webroot_enabled" not in manifest:
+			if not is_current:
+				legacy_asset_inventory = True
+		elif manifest["browser_asset_webroot_enabled"]:
+			manifest_name = manifest.get("browser_asset_manifest")
+			if not isinstance(manifest_name, str) or Path(manifest_name).name != manifest_name or not SAFE_NAME.fullmatch(manifest_name):
+				if not is_current:
+					legacy_asset_inventory = True
+				continue
+			protected_asset_manifests.add(Path(manifest_name))
+			inventory_path = asset_manifest_root / manifest_name
+			if inventory_path.is_file():
+				for relative_path in _read_browser_asset_inventory(inventory_path):
+					protected_assets.add(relative_path)
+					protected_assets.add(Path(relative_path.as_posix() + ".gz"))
+
+	grace_seconds = settings["RSC_PRUNE_GRACE_HOURS"] * 60 * 60
+	cutoff = dt.datetime.now(dt.timezone.utc).timestamp() - grace_seconds
+	removed = 0
+	if legacy_lobby_inventory:
+		log("warning: lobby-media cleanup skipped while a deployable DMB has no content inventory")
+	else:
+		removed += _prune_content_tree(lobby_root, protected_lobby, cutoff)
+	if legacy_asset_inventory:
+		log("warning: browser-assets cleanup skipped while a deployable DMB has no content inventory")
+	else:
+		removed += _prune_content_tree(asset_root, protected_assets, cutoff, ignored_top_level={".manifests"})
+		removed += _prune_content_tree(asset_manifest_root, protected_asset_manifests, cutoff)
+	log("content cleanup protected assets from {} DMBs and removed {} stale files".format(dmb_count, removed))
+	return removed
+
+
 def collect_lobby_media(game_dir, config_root):
 	media = {}
 
@@ -592,22 +890,40 @@ def collect_lobby_media(game_dir, config_root):
 	return media
 
 
-def publish_lobby_media(game_dir, settings):
+def plan_lobby_media(game_dir, settings):
 	if not settings["RSC_PUBLISH_LOBBY_MEDIA"]:
-		return 0, 0
+		return {}
+	config_root = settings["_CONFIG_PATH"].parent
+	plan = {}
+	for source_key, source in collect_lobby_media(game_dir, config_root).items():
+		file_hash = sha256_file(source)
+		extension = source.suffix.lower()
+		relative_target = Path(file_hash[:2]) / "asset.{}{}".format(file_hash, extension)
+		plan[source_key] = (source, relative_target, file_hash)
+	return plan
+
+
+def publish_lobby_media(game_dir, settings, media_plan=None):
+	config_root = settings["_CONFIG_PATH"].parent
+	manifest_path = config_root / "lobby_media.json"
+	if not settings["RSC_PUBLISH_LOBBY_MEDIA"]:
+		try:
+			manifest_path.unlink()
+		except FileNotFoundError:
+			pass
+		log("disabled external lobby media manifest")
+		return 0, 0, []
 
 	publish_dir = Path(settings["RSC_PUBLISH_DIR"]).expanduser()
-	config_root = settings["_CONFIG_PATH"].parent
 	media_subdir = settings["RSC_LOBBY_MEDIA_SUBDIR"]
 	media_root = publish_dir / media_subdir
 	public_root = "{}/{}".format(settings["RSC_PUBLIC_BASE_URL"], media_subdir)
 	mappings = {}
 	total_size = 0
 	published_hashes = set()
-	for source_key, source in collect_lobby_media(game_dir, config_root).items():
-		file_hash = sha256_file(source)
-		extension = source.suffix.lower()
-		relative_target = Path(file_hash[:2]) / "asset.{}{}".format(file_hash, extension)
+	if media_plan is None:
+		media_plan = plan_lobby_media(game_dir, settings)
+	for source_key, (source, relative_target, file_hash) in media_plan.items():
 		atomic_copy(source, media_root / relative_target)
 		mappings[source_key] = "{}/{}".format(public_root, relative_target.as_posix())
 		if file_hash not in published_hashes:
@@ -619,14 +935,13 @@ def publish_lobby_media(game_dir, settings):
 		"generated_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
 		"version": 1,
 	}
-	manifest_path = config_root / "lobby_media.json"
 	atomic_write(manifest_path, json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
 	os.chmod(manifest_path, 0o644)
 	log("published {} lobby media mappings ({} unique bytes)".format(len(mappings), total_size))
-	return len(mappings), total_size
+	return len(mappings), total_size, sorted(path.as_posix() for _, path, _ in media_plan.values())
 
 
-def remove_managed_asset_config(text, remove_active_settings=False):
+def remove_managed_asset_config(text):
 	start = text.find(ASSET_CONFIG_BEGIN)
 	if start >= 0:
 		end = text.find(ASSET_CONFIG_END, start)
@@ -634,9 +949,6 @@ def remove_managed_asset_config(text, remove_active_settings=False):
 			raise DeployError("managed browser asset block is incomplete in resources.txt")
 		end += len(ASSET_CONFIG_END)
 		text = text[:start].rstrip() + "\n" + text[end:].lstrip()
-	if remove_active_settings:
-		active_setting = re.compile(r"^\s*(ASSET_TRANSPORT|ASSET_CDN_WEBROOT|ASSET_CDN_URL)\s+", re.IGNORECASE)
-		text = "\n".join(line for line in text.splitlines() if not active_setting.match(line))
 	return text.rstrip() + "\n"
 
 
@@ -647,10 +959,10 @@ def configure_asset_webroot(settings):
 			raise DeployError("{} is missing; cannot configure webroot asset transport".format(resources_path))
 		return
 	original_text = resources_path.read_text(encoding="utf-8-sig")
-	text = remove_managed_asset_config(
-		original_text,
-		remove_active_settings=settings["RSC_ENABLE_ASSET_WEBROOT"],
-	)
+	# Managed values are appended and therefore take precedence while enabled.
+	# Keep the operator's original ASSET_* lines intact so removing our block
+	# restores their configuration exactly.
+	text = remove_managed_asset_config(original_text)
 	if not settings["RSC_ENABLE_ASSET_WEBROOT"]:
 		if text != original_text:
 			atomic_write(resources_path, text)
@@ -661,6 +973,7 @@ def configure_asset_webroot(settings):
 	asset_subdir = settings["RSC_ASSET_WEBROOT_SUBDIR"]
 	asset_webroot = publish_dir / asset_subdir
 	free_bytes = validate_writable_directory(asset_webroot, settings["RSC_MIN_FREE_BYTES"])
+	(asset_webroot / ".manifests").mkdir(parents=True, exist_ok=True)
 	webroot_value = asset_webroot.as_posix().rstrip("/") + "/"
 	url_value = "{}/{}/".format(settings["RSC_PUBLIC_BASE_URL"], asset_subdir)
 	text += "\n{}\n".format(ASSET_CONFIG_BEGIN)
@@ -681,7 +994,7 @@ def publish(args):
 	manifest_path = game_dir / MANIFEST_NAME
 	if not manifest_path.is_file():
 		raise DeployError("{} is missing; PreCompile did not prepare this build".format(manifest_path))
-	manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+	manifest = _read_deployment_manifest(manifest_path)
 	rsc_path = game_dir / "tgstation.rsc"
 	if not rsc_path.is_file():
 		raise DeployError("DreamMaker did not create {}".format(rsc_path))
@@ -692,13 +1005,25 @@ def publish(args):
 	if not publish_dir.is_absolute():
 		raise DeployError("RSC_PUBLISH_DIR must be an absolute path")
 	final_path = publish_dir / manifest["archive_name"]
+	media_plan = plan_lobby_media(game_dir, settings)
+	current_lobby_files = sorted(path.as_posix() for _, path, _ in media_plan.values())
 	# Prune before checking free space so old, unreferenced archives cannot
-	# deadlock a deployment by consuming the room needed for its replacement.
+	# or content-addressed browser/lobby files cannot deadlock a deployment by
+	# consuming the room needed for their replacement.
 	prune_archives(game_dir, settings, manifest["archive_name"])
+	prune_content_stores(game_dir, settings, manifest_path, current_lobby_files)
+	missing_lobby_bytes = 0
+	seen_lobby_targets = set()
+	for source, relative_target, _ in media_plan.values():
+		if relative_target in seen_lobby_targets:
+			continue
+		seen_lobby_targets.add(relative_target)
+		if not (publish_dir / settings["RSC_LOBBY_MEDIA_SUBDIR"] / relative_target).is_file():
+			missing_lobby_bytes += source.stat().st_size
 	validate_writable_directory(
 		publish_dir,
 		settings["RSC_MIN_FREE_BYTES"],
-		additional_required_bytes=0 if final_path.exists() else rsc_size,
+		additional_required_bytes=(0 if final_path.exists() else rsc_size) + missing_lobby_bytes,
 	)
 	archive_reused = False
 	archive_rsc_hash = rsc_hash
@@ -759,10 +1084,14 @@ def publish(args):
 			"zip_size": final_path.stat().st_size,
 		}
 	)
-	media_count, media_size = publish_lobby_media(game_dir, settings)
+	media_count, media_size, lobby_media_files = publish_lobby_media(game_dir, settings, media_plan=media_plan)
 	manifest["lobby_media_count"] = media_count
 	manifest["lobby_media_size"] = media_size
+	manifest["lobby_media_files"] = lobby_media_files
 	configure_asset_webroot(settings)
+	# This copy travels with the DMB. Future cleanup uses it (plus the runtime
+	# browser inventory) to protect every file needed by deployable versions.
+	atomic_write(manifest_path, json.dumps(manifest, indent=2, sort_keys=True) + "\n")
 	latest_manifest = publish_dir / "{}-latest.json".format(settings["RSC_ARCHIVE_PREFIX"])
 	atomic_write(latest_manifest, json.dumps(manifest, indent=2, sort_keys=True) + "\n")
 	os.chmod(latest_manifest, 0o644)

@@ -59,11 +59,13 @@
  * Called when initialization has timed out.
  */
 /datum/tgui_panel/proc/on_initialize_timed_out()
-	if(is_ready())
+	if(is_ready() || broken)
 		return
-	broken = TRUE
 	if(!client)
 		return
+	// A slow panel is still allowed to finish its handshake. Keep feeding its
+	// message queue while legacy output is visible so a late ready message can
+	// switch back without losing everything said after this timeout.
 	winset(client, "legacy_output_selector", "left=output_legacy")
 	SEND_TEXT(client, "<span class=\"userdanger\">Failed to load fancy chat, click <a href='?src=[REF(src)];reload_tguipanel=1'>HERE</a> to attempt to reload it.</span>")
 

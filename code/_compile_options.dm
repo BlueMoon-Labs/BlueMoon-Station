@@ -48,6 +48,12 @@
 #define DEPLOYMENT_RSC_URLS null
 #endif
 
+// Lets the webroot transport publish a per-build inventory. PostCompile uses
+// inventories belonging to deployable DMBs to prune only genuinely stale files.
+#ifndef DEPLOYMENT_ASSET_MANIFEST_NAME
+#define DEPLOYMENT_ASSET_MANIFEST_NAME null
+#endif
+
 #ifdef LOWMEMORYMODE
 #ifdef ABSOLUTE_MINIMUM_MODE
 #define FORCE_MAP "_maps/runtimestation_minimal.json"

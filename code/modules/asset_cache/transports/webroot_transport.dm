@@ -1,14 +1,52 @@
 /// CDN Webroot asset transport. 
 /datum/asset_transport/webroot
 	name = "CDN Webroot asset transport"
+	var/asset_manifest_path
+	var/asset_manifest_failed = FALSE
 
 /datum/asset_transport/webroot/Load()
 	if (validate_config(log = FALSE))
+		initialize_asset_manifest()
 		load_existing_assets()
+
+/// Opens the cumulative inventory for this exact DMB. Do not truncate it:
+/// multiple DreamDaemons may run the same deployment, and retaining their union
+/// is safer than racing two startup rewrites.
+/datum/asset_transport/webroot/proc/initialize_asset_manifest()
+	var/manifest_name = DEPLOYMENT_ASSET_MANIFEST_NAME
+	if (!manifest_name)
+		return
+	asset_manifest_path = "[CONFIG_GET(string/asset_cdn_webroot)].manifests/[manifest_name]"
+	var/write_error = rustg_file_append("# browser asset inventory v1\n", asset_manifest_path)
+	if (write_error)
+		log_asset("WARNING: [type]: Could not initialize browser asset inventory [asset_manifest_path]: [write_error]")
+		asset_manifest_path = null
+
+/// Records both newly copied and already present assets. Duplicate entries are
+/// harmless and avoid keeping a large in-memory set during initialization.
+/datum/asset_transport/webroot/proc/record_asset_path(relative_path)
+	if (!asset_manifest_path || asset_manifest_failed)
+		return
+	var/write_error = rustg_file_append("[relative_path]\n", asset_manifest_path)
+	if (write_error)
+		asset_manifest_failed = TRUE
+		log_asset("WARNING: [type]: Could not update browser asset inventory [asset_manifest_path]: [write_error]")
+
+/// A write can fail after the startup probe (filesystem full, mount lost,
+/// permissions changed). Stop issuing CDN URLs and use browse_rsc immediately.
+/datum/asset_transport/webroot/proc/fallback_to_simple_transport(failed_path)
+	log_asset("ERROR: [type]: Could not publish browser asset [failed_path]. Falling back to simple transport.")
+	if (SSassets.transport != src)
+		return
+	var/datum/asset_transport/simple_transport = new
+	SSassets.transport = simple_transport
+	simple_transport.Initialize(SSassets.cache)
 
 /// Processes thru any assets that were registered before we were loaded as a transport.
 /datum/asset_transport/webroot/proc/load_existing_assets()
 	for (var/asset_name in SSassets.cache)
+		if (SSassets.transport != src)
+			return
 		var/datum/asset_cache_item/ACI = SSassets.cache[asset_name]
 		save_asset_to_webroot(ACI)
 
@@ -26,12 +64,19 @@
 /// Saves the asset to the webroot taking into account namespaces and hashes.
 /datum/asset_transport/webroot/proc/save_asset_to_webroot(datum/asset_cache_item/ACI)
 	var/webroot = CONFIG_GET(string/asset_cdn_webroot)
-	var/newpath = "[webroot][get_asset_suffex(ACI)]"
+	var/relative_path = get_asset_suffex(ACI)
+	var/newpath = "[webroot][relative_path]"
 	if (fexists(newpath))
-		return
+		record_asset_path(relative_path)
+		return TRUE
 	if (fexists("[newpath].gz")) //its a common pattern in webhosting to save gzip'ed versions of text files and let the webserver serve them up as gzip compressed normal files, sometimes without keeping the original version.
-		return
-	return fcopy(ACI.resource, newpath)
+		record_asset_path(relative_path)
+		return TRUE
+	if (!fcopy(ACI.resource, newpath))
+		fallback_to_simple_transport(newpath)
+		return FALSE
+	record_asset_path(relative_path)
+	return TRUE
 
 /// Returns a url for a given asset.
 /// asset_name - Name of the asset.
@@ -90,9 +135,10 @@
 	// assets. Otherwise fcopy() failures leave clients with valid-looking CDN
 	// URLs that do not exist on disk.
 	var/probe_path = "[webroot].byond-write-test-[world.realtime]-[rand(100000, 999999)]"
-	if (!text2file("asset webroot write test", probe_path))
+	var/write_error = rustg_file_write("asset webroot write test", probe_path)
+	if (write_error)
 		if (log)
-			log_asset("ERROR: [type]: ASSET_CDN_WEBROOT is not writable: [webroot]. Falling back to simple transport.")
+			log_asset("ERROR: [type]: ASSET_CDN_WEBROOT is not writable: [webroot] ([write_error]). Falling back to simple transport.")
 		return FALSE
 	if (!fdel(probe_path) && log)
 		log_asset("WARNING: [type]: Could not remove ASSET_CDN_WEBROOT write probe: [probe_path]")
