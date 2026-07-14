@@ -19,11 +19,12 @@
 	var/size_set_to = 1
 	var/charge_modif = 1
 	var/time_modif = 1
-	var/min_size = RESIZE_MICRO
+	var/min_size = 0.25
 	var/max_size = RESIZE_BIG
 
 /obj/item/melee/sizetool/Initialize(mapload)
 	. = ..()
+	min_size = RESIZE_MICRO
 	cell = new /obj/item/stock_parts/cell/high(src)
 	register_item_context()
 
