@@ -125,7 +125,7 @@
 	user.visible_message("<span class='suicide'>[user] начинает давиться [src]! Похоже, [user.ru_who()] пытаются совершить суицид!</span>")
 	return OXYLOSS//ironic. he could save others from oxyloss, but not himself.
 
-/obj/item/reagent_containers/hypospray/medipen/attack(mob/M, mob/user)
+/obj/item/reagent_containers/hypospray/medipen/attack(mob/living/M, mob/user)
 	if(!reagents.total_volume)
 		to_chat(user, "<span class='warning'>[src] пуст!</span>")
 		return
@@ -316,9 +316,9 @@
 	volume = 3
 	list_reagents = list(/datum/reagent/nanite_protector = 3)
 
-/obj/item/reagent_containers/hypospray/medipen/nanite_protector/attack(mob/M, mob/user)
+/obj/item/reagent_containers/hypospray/medipen/nanite_protector/attack(mob/living/M, mob/user)
 	if(M != user)
-		to_chat(user, span_userdanger("Пытается ввести вам Nanite protector, навсегда лишив вас нанитов!"))
+		to_chat(M, span_userdanger("Пытается ввести вам Nanite protector, навсегда лишив вас нанитов!"))
 		if(!do_after_mob(user, M, 5 SECONDS))
 			return
 	return ..()
