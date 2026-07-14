@@ -94,9 +94,9 @@
 
 /obj/item/gun/magic/wand/dust/zap_self(mob/living/user)
 	. = ..()
+	charges--
 	to_chat(user, span_warning("You irradiate yourself with pure energy! You just disappeared, and that's the end of your story."))
 	user.dust(TRUE, FALSE)
-	charges--
 
 /obj/item/gun/magic/wand/dust/debug
 	name = "debug wand of dust"
