@@ -21,6 +21,12 @@
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // не экста и не лайт
 	description = "Spawns spider eggs, ready to hatch."
 
+/datum/round_event_control/spider_terror/director_preflight()
+	if(!length(GLOB.xeno_spawn))
+		director_preflight_failure = "на карте нет точек xeno_spawn для пауков ужаса"
+		return FALSE
+	return ..()
+
 /datum/round_event/ghost_role/spider_terror
 	announce_when = 240
 	role_name = "Паук Ужаса"
@@ -35,6 +41,9 @@
 		priority_announce("Вспышка биологической угрозы 3-го уровня зафиксирована на борту станции [station_name()]. Всему персоналу надлежит сдержать её распространение любой ценой!", "ВНИМАНИЕ: БИОЛОГИЧЕСКАЯ УГРОЗА.", 'sound/effects/siren-spooky.ogg')
 
 /datum/round_event/ghost_role/spider_terror/spawn_role()
+	if(!length(GLOB.xeno_spawn))
+		return MAP_ERROR
+
 	var/spider_type
 	var/infestation_type
 	if((length(GLOB.clients)) >= TS_HIGHPOP_TRIGGER)
