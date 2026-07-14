@@ -33,20 +33,33 @@
 /datum/round_event/vox_scavengers/start()
 	spawn_vox_scavengers(source_action = control, refund_cost = triggered_randomly ? control.cost : 0)
 
-/proc/spawn_vox_scavengers(ship_template, datum/director_action/source_action, refund_cost = 0)
+/// Спавн не состоялся: возвращаем директору бюджет и паузы, чтобы он подобрал замену.
+/proc/fail_vox_scavengers_spawn(datum/director_action/source_action, refund_cost, reason)
+	message_admins("Vox Scavengers event failed: [reason]")
+	if(!source_action)
+		return
+	// Бюджет списывался только на естественный запуск через бит (админ-форс идёт мимо кошельков),
+	// и ровно это отражает ненулевой refund_cost.
+	var/budget_backed = refund_cost > 0
+	SSdirector.note_failed_action(source_action, refund_budget = budget_backed, retry_replacement = budget_backed)
+	SSdirector.director_log_beat(SSdirector.collect_signals(), source_action, DIRECTOR_BEAT_FAILED,
+		detail = "[reason]; [budget_backed ? "бюджет и паузы возвращены, запрошена замена" : "ручной запуск, бюджет не списывался; паузы возвращены"]")
 
-	ship_template = /datum/map_template/shuttle/vox_raiders
+/proc/spawn_vox_scavengers(datum/director_action/source_action, refund_cost = 0)
+	var/ship_template = /datum/map_template/shuttle/vox_raiders
 
 	var/datum/map_template/shuttle/ship = new ship_template
 	var/x = rand(TRANSITIONEDGE,world.maxx - TRANSITIONEDGE - ship.width)
 	var/y = rand(TRANSITIONEDGE,world.maxy - TRANSITIONEDGE - ship.height)
-	var/z = SSmapping.empty_space.z_value
-	var/turf/T = locate(x,y,z)
-	if(!T)
-		CRASH("Skipjack found no turf to load in")
+	var/z = SSmapping.empty_space?.z_value
+	if(!z)
+		fail_vox_scavengers_spawn(source_action, refund_cost, "нет подходящего Z-уровня для корабля")
+		return
 
-	if(!ship.load(T))
-		CRASH("Loading Skipjack ship failed!")
+	var/turf/T = locate(x,y,z)
+	if(!T || !ship.load(T))
+		fail_vox_scavengers_spawn(source_action, refund_cost, "корабль не удалось загрузить на карту")
+		return
 
 	var/list/spawners_list = list()
 	for(var/turf/A in ship.get_affected_turfs(T))

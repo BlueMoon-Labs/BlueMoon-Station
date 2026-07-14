@@ -80,20 +80,38 @@
 		return pick(space_zlevels)
 	return SSmapping.station_start
 
+/// Спавн не состоялся: возвращаем директору бюджет и паузы, чтобы он подобрал замену.
+/// Провал терминален - иначе оставшийся таймер или ответ станции зашли бы сюда второй раз
+/// и вернули бы бюджет дважды.
+/datum/round_event/medieval_warmongers/proc/fail_spawn(reason)
+	warmongers_spawned = TRUE
+	if(spawn_timer_id)
+		deltimer(spawn_timer_id)
+		spawn_timer_id = null
+	message_admins("Medieval Warmongers event failed: [reason]")
+	if(!control)
+		return
+	// Бюджет тратился только на естественный запуск через бит (админ-форс идёт мимо кошельков).
+	SSdirector.note_failed_action(control, refund_budget = triggered_randomly, retry_replacement = triggered_randomly)
+	SSdirector.director_log_beat(SSdirector.collect_signals(), control, DIRECTOR_BEAT_FAILED,
+		detail = "[reason]; [triggered_randomly ? "бюджет и паузы возвращены, запрошена замена" : "ручной запуск, бюджет не списывался; паузы возвращены"]")
+
 /datum/round_event/medieval_warmongers/proc/spawn_warmongers(datum/comm_message/threat_msg, ship_template, skip_answer_check)
 	if(warmongers_spawned)
 		return
 	if(!skip_answer_check && threat_msg?.answered == 1)
 		return
 	if(!ship_template)
-		message_admins("Medieval Warmongers event failed: no ship template configured.")
+		fail_spawn("не задан шаблон корабля")
 		return
 
 	var/z = get_spawn_z()
 	if(!z)
-		message_admins("Medieval Warmongers event failed: no valid Z-level for ship spawn.")
+		fail_spawn("нет подходящего Z-уровня для корабля")
 		return
 
+	// Флаг ставится до загрузки: ship.load() спит (CHECK_TICK в парсере карты), и без него
+	// сработавший за это время таймер или ответ станции загрузили бы второй корабль.
 	warmongers_spawned = TRUE
 	if(spawn_timer_id)
 		deltimer(spawn_timer_id)
@@ -103,11 +121,9 @@
 	var/x = rand(TRANSITIONEDGE, world.maxx - TRANSITIONEDGE - ship.width)
 	var/y = rand(TRANSITIONEDGE, world.maxy - TRANSITIONEDGE - ship.height)
 	var/turf/T = locate(x, y, z)
-	if(!T)
-		CRASH("Medieval Warmongers event found no turf to load in")
-
-	if(!ship.load(T))
-		CRASH("Loading Medieval Warmongers ship failed!")
+	if(!T || !ship.load(T))
+		fail_spawn("корабль не удалось загрузить на карту")
+		return
 
 	var/list/spawners_list = list()
 	for(var/turf/A in ship.get_affected_turfs(T))

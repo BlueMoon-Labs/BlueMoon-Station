@@ -71,7 +71,7 @@
 @include meta.load-css('./interfaces/MedalsViewer.scss');
 @include meta.load-css('./interfaces/GamePreferences.scss');
 @include meta.load-css('./interfaces/DirectorPanel.scss');
-@include meta.load-css('./interfaces/PersonalCrafting.scss');
+@include meta.load-css('./interfaces/PersonalCrafting');
 
 // Layouts
 @include meta.load-css('./layouts/Layout.scss');
