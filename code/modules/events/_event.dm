@@ -195,7 +195,10 @@ Runs the event
 /datum/round_event_control/execute_action()
 	var/result = preRunEvent(admin_window = FALSE)
 	if(result == EVENT_CANT_RUN)
-		max_occurrences = 0
+		// Событие невозможно в этом раунде (нет космоса под корабль и т.п.) - убираем из пула на весь
+		// раунд. Именно enabled: max_occurrences = 0 у директора читается как "без лимита"
+		// (can_fire: if(max_occurrences && ...)), то есть гасило бы ровно наоборот.
+		enabled = FALSE
 		return FALSE
 	if(result != EVENT_READY)
 		return FALSE

@@ -19,6 +19,8 @@
 	if(!SSmapping.empty_space && !length(SSmapping.levels_by_trait(ZTRAIT_SPACE_RUINS)) && !SSmapping.station_start)
 		return EVENT_CANT_RUN
 
+	return ..()
+
 /datum/round_event/medieval_warmongers
 	var/warmongers_spawned = FALSE
 	var/spawn_timer_id

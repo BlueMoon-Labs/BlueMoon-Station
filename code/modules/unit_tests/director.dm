@@ -2311,3 +2311,40 @@
 		mode.current_players[CURRENT_LIVING_PLAYERS] = saved_living
 		throw e
 	mode.current_players[CURRENT_LIVING_PLAYERS] = saved_living
+
+/// Регрессия Medieval Warmongers: переопределённый preRunEvent() без вызова ..() проваливался
+/// в конец прока и возвращал null. null не равен ни одному коду EVENT_*, поэтому execute_action()
+/// отваливался на проверке result != EVENT_READY: событие не запускалось ни разу за весь раунд,
+/// а директор терял на нём бит гост-антагов. preRunEvent() обязан возвращать код EVENT_*.
+/datum/unit_test/director_prerun_event_never_null
+
+/datum/unit_test/director_prerun_event_never_null/Run()
+	for(var/datum/round_event_control/control_path as anything in typesof(/datum/round_event_control))
+		if(!initial(control_path.typepath))
+			continue
+		// admin_window = FALSE: без окна отмены preRunEvent не спит и не пишет админам,
+		// а COMSIG_GLOB_PRE_RANDOM_EVENT никто не слушает - проверка чистая.
+		var/datum/round_event_control/control = allocate(control_path)
+		var/result = control.preRunEvent(admin_window = FALSE)
+		TEST_ASSERT(!isnull(result), "[control_path] ([control.name]): preRunEvent() вернул null - \
+			переопределение не зовёт ..(). execute_action() провалит такой запуск (null != EVENT_READY)")
+
+/// Событие, которое preRunEvent объявил незапускаемым (например, корабельное на карте без космоса),
+/// обязано выключиться до конца раунда. Ветка EVENT_CANT_RUN гасила его через max_occurrences = 0,
+/// но базовый контракт директора читает 0 как "без лимита" (can_fire: if(max_occurrences && ...)) -
+/// выключатель делал обратное, и действие оставалось вечным кандидатом, жгущим биты на провалах.
+/datum/unit_test/director_cant_run_event_is_disabled
+
+/datum/unit_test/director_cant_run_event_is_disabled/Run()
+	var/datum/director_signals/signals = new
+	signals.effective_crew = 40
+	signals.staffing = list(DIRECTOR_DEPT_SECURITY = 4, DIRECTOR_DEPT_ENGINEERING = 1,
+		DIRECTOR_DEPT_MEDICAL = 1, DIRECTOR_DEPT_SCIENCE = 0, DIRECTOR_DEPT_SUPPLY = 0, DIRECTOR_DEPT_COMMAND = 1)
+
+	// Базовый контроль без typepath: preRunEvent честно возвращает EVENT_CANT_RUN (тот же путь,
+	// что у корабельных событий на карте без космоса), а в реестр директора он не попадает.
+	var/datum/round_event_control/control = allocate(/datum/round_event_control)
+	control.earliest_start = 0
+	TEST_ASSERT(control.can_fire(signals), "Контроль: до провала событие обязано проходить can_fire")
+	TEST_ASSERT(!control.execute_action(), "Событие без typepath обязано провалить запуск")
+	TEST_ASSERT(!control.can_fire(signals), "Незапускаемое событие обязано выключиться, а не остаться кандидатом на весь раунд")
