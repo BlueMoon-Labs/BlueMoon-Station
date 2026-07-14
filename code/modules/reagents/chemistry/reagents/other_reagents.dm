@@ -3089,11 +3089,11 @@
 
 /datum/reagent/nanite_protector/on_mob_add(mob/living/L, amount)
 	. = ..()
-	if(HAS_TRAIT_FROM(L, NANOMACHINES_IMMUNITY, "nanite_protector"))
+	if(HAS_TRAIT_FROM(L, NANITES_IMMUNITY, "nanite_protector"))
 		return
-	ADD_TRAIT(L, NANOMACHINES_IMMUNITY, "nanite_protector")
+	ADD_TRAIT(L, NANITES_IMMUNITY, "nanite_protector")
 	SEND_SIGNAL(L, COMSIG_NANITE_DELETE)
-	to_chat(L, "<b>[/datum/quirk/nanomachines_immunity::gain_text]</b>")
+	to_chat(L, "<b>[/datum/quirk/nanites_immunity::gain_text]</b>")
 
 /datum/reagent/red_ichor
 	name = "Red Ichor"

@@ -48,7 +48,8 @@ PROCESSING_SUBSYSTEM_DEF(quirks)
 						  list(BLUEMOON_TRAIT_NAME_SYSCLEANER, "Восстановительный Метаболизм"),
 						  list(BLUEMOON_TRAIT_NAME_RESTORATIVE_NANOBOTS, "Восстановительный Метаболизм"),
 						  list(BLUEMOON_TRAIT_NAME_COOLANT_GENERATOR, "Жаждущий"),
-						  list(BLUEMOON_TRAIT_NAME_WATER_VULNERABILITY, BLUEMOON_TRAIT_NAME_SHOWER_NEED)
+						  list(BLUEMOON_TRAIT_NAME_WATER_VULNERABILITY, BLUEMOON_TRAIT_NAME_SHOWER_NEED),
+						  list(/datum/quirk/compatible_with_nanites::name, /datum/quirk/nanites_immunity::name),
 						  )
 		//BLUEMOON ADD END
 	return ..()
