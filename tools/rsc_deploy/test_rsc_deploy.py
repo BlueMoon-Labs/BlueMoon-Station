@@ -2,6 +2,7 @@
 
 import json
 from pathlib import Path
+import struct
 import subprocess
 import sys
 import tempfile
@@ -12,6 +13,21 @@ import zipfile
 SCRIPT = Path(__file__).with_name("rsc_deploy.py")
 sys.path.insert(0, str(SCRIPT.parent))
 import rsc_deploy  # noqa: E402
+
+
+def dreammaker_rsc_fixture(compilation_timestamp):
+	"""Model DreamMaker resource records with build-time and source mtimes."""
+	entries = (
+		(b"icons/test.dmi", 1_720_000_001, b"DMI resource contents"),
+		(b"sound/test.ogg", 1_720_000_002, b"OggS resource contents"),
+	)
+	result = bytearray(b"RSC fixture\0")
+	for name, source_mtime, payload in entries:
+		result.extend(struct.pack("<II", compilation_timestamp, source_mtime))
+		result.extend(struct.pack("<II", len(name), len(payload)))
+		result.extend(name)
+		result.extend(payload)
+	return bytes(result)
 
 
 class RscDeployIntegrationTest(unittest.TestCase):
@@ -31,9 +47,9 @@ class RscDeployIntegrationTest(unittest.TestCase):
 			(config_root / "title_music" / "sounds").mkdir(parents=True)
 
 			(game_dir / "code" / "_compile_options.dm").write_text(
-				"#define DEPLOYMENT_RSC_URL null\n", encoding="utf-8"
+				"#define DEPLOYMENT_RSC_URLS null\n", encoding="utf-8"
 			)
-			compiled_rsc = b"resource payload\n" * 4096
+			compiled_rsc = dreammaker_rsc_fixture(1_720_000_100)
 			(game_dir / "tgstation.rsc").write_bytes(compiled_rsc)
 			(game_dir / "tgstation.dmb").write_bytes(b"compiled game")
 			(game_dir / "strings" / "round_start_sounds.txt").write_text(
@@ -57,6 +73,8 @@ class RscDeployIntegrationTest(unittest.TestCase):
 			)
 			settings_path.write_text(
 				"RSC_PUBLIC_BASE_URL=http://download.example.test/byond_rsc\n"
+				"RSC_PUBLIC_MIRROR_BASE_URLS=https://mirror-one.example.test/rsc/;"
+				"https://mirror-two.example.test/byond_rsc\n"
 				"RSC_PUBLISH_DIR={}\n"
 				"RSC_ARCHIVE_PREFIX=Moon-Test\n"
 				"RSC_COMPRESSION_LEVEL=0\n"
@@ -83,6 +101,16 @@ class RscDeployIntegrationTest(unittest.TestCase):
 				build_manifest["public_url"],
 				(game_dir / ".rsc-deployment.dm").read_text(encoding="utf-8"),
 			)
+			expected_public_urls = [
+				"http://download.example.test/byond_rsc/{}".format(build_manifest["archive_name"]),
+				"https://mirror-one.example.test/rsc/{}".format(build_manifest["archive_name"]),
+				"https://mirror-two.example.test/byond_rsc/{}".format(build_manifest["archive_name"]),
+			]
+			self.assertEqual(build_manifest["public_urls"], expected_public_urls)
+			generated_defines = (game_dir / ".rsc-deployment.dm").read_text(encoding="utf-8")
+			self.assertIn("#define DEPLOYMENT_RSC_URLS list(", generated_defines)
+			for public_url in expected_public_urls:
+				self.assertIn(public_url, generated_defines)
 			self.assertEqual(
 				build_manifest["archive_name"],
 				"Moon-Test-{}.zip".format(build_manifest["resource_inputs_sha256"]),
@@ -153,12 +181,32 @@ class RscDeployIntegrationTest(unittest.TestCase):
 
 			latest = json.loads((publish_dir / "Moon-Test-latest.json").read_text(encoding="utf-8"))
 			self.assertTrue(latest["archive_reused"])
+			self.assertEqual(latest["archive_rsc_sha256"], latest["rsc_sha256"])
 			self.assertEqual(latest["lobby_media_count"], 4)
 			self.assertEqual(latest["lobby_media_size"], sum(map(len, set(expected.values()))))
 
-			# A fingerprint collision must fail closed and keep the immutable archive.
+			# DreamMaker timestamps make repeated RSC builds bytewise different.
+			# Rebuild the same resource records with another compilation time: the
+			# size and source mtimes stay fixed, while the compiled bytes differ.
 			original_archive = archive_path.read_bytes()
-			(game_dir / "tgstation.rsc").write_bytes(b"x" * len(compiled_rsc))
+			timestamp_variant = dreammaker_rsc_fixture(1_720_000_207)
+			self.assertEqual(len(timestamp_variant), len(compiled_rsc))
+			self.assertNotEqual(timestamp_variant, compiled_rsc)
+			(game_dir / "tgstation.rsc").write_bytes(timestamp_variant)
+			result = subprocess.run(
+				[sys.executable, str(SCRIPT), "publish", *common],
+				check=True,
+				capture_output=True,
+				text=True,
+			)
+			self.assertIn("has the expected RSC size; reusing it", result.stdout)
+			self.assertEqual(archive_path.read_bytes(), original_archive)
+			latest = json.loads((publish_dir / "Moon-Test-latest.json").read_text(encoding="utf-8"))
+			self.assertNotEqual(latest["archive_rsc_sha256"], latest["rsc_sha256"])
+
+			# A changed resource set normally changes the RSC size and must not
+			# reuse an archive selected by a stale pre-compile fingerprint.
+			(game_dir / "tgstation.rsc").write_bytes(b"different size")
 			result = subprocess.run(
 				[sys.executable, str(SCRIPT), "publish", *common],
 				check=False,
@@ -166,21 +214,36 @@ class RscDeployIntegrationTest(unittest.TestCase):
 				text=True,
 			)
 			self.assertNotEqual(result.returncode, 0)
-			self.assertIn("already exists with rsc sha256", result.stdout)
+			self.assertIn("contains a different resource size", result.stdout)
+			self.assertIn("resource input fingerprint is stale", result.stdout)
 			self.assertEqual(archive_path.read_bytes(), original_archive)
+
+			# Disabling the feature must remove settings written by an earlier
+			# enabled deployment instead of leaving webroot transport active.
+			loaded_settings["RSC_ENABLE_ASSET_WEBROOT"] = False
+			rsc_deploy.configure_asset_webroot(loaded_settings)
+			resources = (config_root / "entries" / "resources.txt").read_text(encoding="utf-8")
+			self.assertNotIn("# BEGIN MANAGED EXTERNAL BROWSER ASSETS", resources)
+			self.assertNotRegex(resources, r"(?im)^\s*ASSET_(?:TRANSPORT|CDN_WEBROOT|CDN_URL)\s+")
 
 	def test_resource_fingerprint_tracks_files_and_static_references(self):
 		with tempfile.TemporaryDirectory() as temporary_directory:
 			game_dir = Path(temporary_directory)
 			(game_dir / "code").mkdir()
 			(game_dir / "icons").mkdir()
+			(game_dir / "tgui" / "public").mkdir(parents=True)
 			resource = game_dir / "icons" / "existing.dmi"
 			resource.write_bytes(b"first icon")
+			browser_bundle = game_dir / "tgui" / "public" / "bundle.js"
+			browser_bundle.write_bytes(b"first browser bundle")
 			source = game_dir / "code" / "feature.dm"
 			source.write_text("/proc/example()\n\treturn 1\n", encoding="utf-8")
 
 			initial = rsc_deploy.resource_inputs_sha256(game_dir)
 			source.write_text("/proc/example()\n\treturn 2\n", encoding="utf-8")
+			self.assertEqual(rsc_deploy.resource_inputs_sha256(game_dir), initial)
+			resource.write_bytes(b"unreferenced icon change")
+			browser_bundle.write_bytes(b"second browser bundle")
 			self.assertEqual(rsc_deploy.resource_inputs_sha256(game_dir), initial)
 
 			source.write_text("/obj/example\n\ticon = 'icons/existing.dmi'\n", encoding="utf-8")
@@ -188,7 +251,40 @@ class RscDeployIntegrationTest(unittest.TestCase):
 			self.assertNotEqual(with_reference, initial)
 
 			resource.write_bytes(b"changed icon")
-			self.assertNotEqual(rsc_deploy.resource_inputs_sha256(game_dir), with_reference)
+			with_changed_resource = rsc_deploy.resource_inputs_sha256(game_dir)
+			self.assertNotEqual(with_changed_resource, with_reference)
+
+			# The interface file is compiled too, so its static resource literals
+			# must participate even though unrelated browser JS does not.
+			(game_dir / "interface").mkdir()
+			interface_resource = game_dir / "icons" / "interface.dmi"
+			interface_resource.write_bytes(b"interface icon")
+			(game_dir / "interface" / "skin.dmf").write_text(
+				"icon = 'icons/interface.dmi'\n", encoding="utf-8"
+			)
+			with_interface_reference = rsc_deploy.resource_inputs_sha256(game_dir)
+			self.assertNotEqual(with_interface_reference, with_changed_resource)
+			interface_resource.write_bytes(b"changed interface icon")
+			self.assertNotEqual(rsc_deploy.resource_inputs_sha256(game_dir), with_interface_reference)
+
+	def test_windows_hooks_use_repository_python_bootstrap(self):
+		hooks_dir = SCRIPT.parent.parent / "tgs4_scripts"
+		for hook_name in ("PreCompile.bat", "PostCompile.bat"):
+			hook = (hooks_dir / hook_name).read_text(encoding="utf-8")
+			self.assertIn("bootstrap\\python.bat", hook)
+
+	def test_invalid_rsc_mirror_url_is_rejected(self):
+		with tempfile.TemporaryDirectory() as temporary_directory:
+			root = Path(temporary_directory)
+			settings_path = root / "rsc_deploy.env"
+			settings_path.write_text(
+				"RSC_PUBLIC_BASE_URL=https://download.example.test/rsc\n"
+				"RSC_PUBLIC_MIRROR_BASE_URLS=ftp://mirror.example.test/rsc\n"
+				"RSC_PUBLISH_DIR={}\n".format((root / "publish").as_posix()),
+				encoding="utf-8",
+			)
+			with self.assertRaisesRegex(rsc_deploy.DeployError, "entry 1 must start"):
+				rsc_deploy.load_settings(root, settings_path)
 
 	def test_pruning_fails_closed_when_a_dmb_has_no_manifest(self):
 		with tempfile.TemporaryDirectory() as temporary_directory:

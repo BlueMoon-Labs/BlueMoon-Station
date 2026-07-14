@@ -3,8 +3,12 @@
 <head>
 	<title>Tooltip</title>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-	<link rel='stylesheet' href='THE_FONT_GOES_HERE!!!!!!!!!!!!!!!' >
 	<style type="text/css">
+		@font-face {
+			font-family: "Space Mono";
+			src: url("tooltip-SpaceMono.ttf");
+		}
+
 		body, html {
 			margin: 0;
 			padding: 0;
@@ -117,7 +121,7 @@
 	<div id="wrap" class="wrap">
 		<div id="content" class="content"></div>
 	</div>
-	<script type="text/javascript" src="jquery.min.js"></script>
+	<script type="text/javascript" src="tooltip-jquery.min.js"></script>
 	<script type="text/javascript">
 		function byond_bridge_call(path, params) {
 			var query = "";

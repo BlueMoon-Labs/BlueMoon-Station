@@ -29,7 +29,7 @@
  * TRUE if panel is initialized and ready to receive messages.
  */
 /datum/tgui_panel/proc/is_ready()
-	return !broken && window.is_ready()
+	return !broken && window && !window.fatally_errored && window.is_ready()
 
 /**
  * public
@@ -41,6 +41,7 @@
 	// Minimal sleep to defer initialization to after client constructor
 	sleep(1)
 	initialized_at = world.time
+	broken = FALSE
 	// Perform a clean initialization
 	window.initialize(assets = list(
 		get_asset_datum(/datum/asset/simple/tgui_panel),
@@ -58,7 +59,12 @@
  * Called when initialization has timed out.
  */
 /datum/tgui_panel/proc/on_initialize_timed_out()
-	// Currently does nothing but sending a message to old chat.
+	if(is_ready())
+		return
+	broken = TRUE
+	if(!client)
+		return
+	winset(client, "legacy_output_selector", "left=output_legacy")
 	SEND_TEXT(client, "<span class=\"userdanger\">Failed to load fancy chat, click <a href='?src=[REF(src)];reload_tguipanel=1'>HERE</a> to attempt to reload it.</span>")
 
 /**
@@ -67,6 +73,11 @@
  * Callback for handling incoming tgui messages.
  */
 /datum/tgui_panel/proc/on_message(type, payload, href_list)
+	if(type == "log" && href_list?["fatal"])
+		broken = TRUE
+		winset(client, "legacy_output_selector", "left=output_legacy")
+		SEND_TEXT(client, "<span class=\"userdanger\">Fancy chat failed and was switched to the legacy output. Use Fix chat to retry.</span>")
+		return TRUE
 	if(type == "ready")
 		broken = FALSE
 		// Switch to new UI now that the panel is actually loaded.

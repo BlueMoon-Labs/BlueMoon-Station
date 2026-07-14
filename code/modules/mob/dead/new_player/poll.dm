@@ -296,6 +296,9 @@
 		if(POLLTYPE_IRV)
 			var/datum/asset/irv_assets = get_asset_datum(/datum/asset/group/irv)
 			irv_assets.send(src)
+			var/list/irv_asset_urls = irv_assets.get_url_mappings()
+			var/jquery_url = irv_asset_urls["jquery.min.js"]
+			var/jquery_ui_url = irv_asset_urls["jquery-ui.custom-core-widgit-mouse-sortable-min.js"]
 			var/datum/db_query/query_irv_get_votes = SSdbcore.NewQuery({"
 				SELECT optionid FROM [format_table_name("poll_vote")]
 				WHERE pollid = :pollid AND ckey = :ckey AND deleted = 0
@@ -362,8 +365,8 @@
 				<html>
 				<head>
 <meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
-				<script src="jquery.min.js"></script>
-				<script src="jquery-ui.custom-core-widgit-mouse-sortable-min.js"></script>
+<script src="[jquery_url]"></script>
+				<script src="[jquery_ui_url]"></script>
 				<style>
 					#sortable { list-style-type: none; margin: 0; padding: 2em; }
 					#sortable li { min-height: 1em; margin: 0px 1px 1px 1px; padding: 1px; border: 1px solid black; border-radius: 5px; background-color: white; cursor:move;}

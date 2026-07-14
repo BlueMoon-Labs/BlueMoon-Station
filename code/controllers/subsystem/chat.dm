@@ -18,11 +18,11 @@ SUBSYSTEM_DEF(chat)
 		var/payload = payload_by_client[key]
 		payload_by_client -= key
 		if(client)
-			// Send to tgchat
-			client.tgui_panel?.window.send_message("chat/message", payload)
-			// Send to old chat
-			for(var/message in payload)
-				SEND_TEXT(client, message_to_html(message))
+			if(client.should_receive_tgui_chat())
+				client.tgui_panel?.window.send_message("chat/message", payload)
+			if(client.should_receive_legacy_chat())
+				for(var/message in payload)
+					SEND_TEXT(client, message_to_html(message))
 		if(MC_TICK_CHECK)
 			return
 

@@ -114,7 +114,7 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 		statpanel_last_sent.Cut()
 		statpanel_last_mc_iter = -1
 		reset_listed_turf_icon_cache()
-		src << browse(file('html/statbrowser.html'), "window=statbrowser")
+		load_bluemoon_statbrowser()
 		addtimer(CALLBACK(src, PROC_REF(check_panel_loaded)), 30 SECONDS)
 	// Log all hrefs
 	log_href("[src] (usr:[usr]\[[COORD(usr)]\]) : [hsrc ? "[hsrc] " : ""][href]")
@@ -535,7 +535,7 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	// Initialize tgui panel
 	statbrowser_ready = FALSE
 	reset_listed_turf_icon_cache()
-	src << browse(file('html/statbrowser.html'), "window=statbrowser")
+	load_bluemoon_statbrowser()
 	addtimer(CALLBACK(src, PROC_REF(check_panel_loaded)), 30 SECONDS)
 	tgui_panel.initialize()
 	acquire_dpi()
@@ -1416,23 +1416,26 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 /// Sends both game resources and browser assets.
 /client/proc/send_resources()
 #if (PRELOAD_RSC == 0)
-	var/static/deployment_rsc_url = DEPLOYMENT_RSC_URL
-	if(deployment_rsc_url)
-		// This URL is generated before compilation and published by PostCompile.
+	var/static/next_external_rsc = 0
+	var/static/list/deployment_rsc_urls = DEPLOYMENT_RSC_URLS
+	var/list/external_rsc_urls
+	if(length(deployment_rsc_urls))
+		// These URLs are generated before compilation and published by PostCompile.
 		// The DMB and its immutable resource archive therefore always move together.
-		preload_rsc = deployment_rsc_url
+		external_rsc_urls = deployment_rsc_urls
 	else
-		var/static/next_external_rsc = 0
-		var/list/external_rsc_urls = CONFIG_GET(keyed_list/external_rsc_urls)
-		if(length(external_rsc_urls))
-			next_external_rsc = WRAP(next_external_rsc+1, 1, external_rsc_urls.len+1)
-			preload_rsc = external_rsc_urls[next_external_rsc]
+		external_rsc_urls = CONFIG_GET(keyed_list/external_rsc_urls)
+	if(length(external_rsc_urls))
+		next_external_rsc = WRAP(next_external_rsc+1, 1, external_rsc_urls.len+1)
+		preload_rsc = external_rsc_urls[next_external_rsc]
 #endif
 
 	spawn (10) //removing this spawn causes all clients to not get verbs.
 
-		//load info on what assets the client has
-		src << browse('code/modules/asset_cache/validate_assets.html', "window=asset_cache_browser")
+		// The webroot transport does not send browser assets through BYOND and
+		// therefore has no per-client asset cache jobs to acknowledge.
+		if(!istype(SSassets.transport, /datum/asset_transport/webroot))
+			src << browse('code/modules/asset_cache/validate_assets.html', "window=asset_cache_browser")
 
 		// BLUEMOON EDIT: defer the heavyweight preload (asset cache + VOX, multi-MB) until the
 		// statbrowser is up. The BYOND browse() queue is single-threaded per client; if we

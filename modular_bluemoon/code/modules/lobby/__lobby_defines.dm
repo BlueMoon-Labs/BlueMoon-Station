@@ -17,6 +17,8 @@
 /// copies of lobby backgrounds and music to nginx.
 #define BM_LOBBY_MEDIA_MANIFEST "config/lobby_media.json"
 
+#define BM_LOBBY_MEDIA_FALLBACK_COOLDOWN (10 SECONDS)
+
 #define BM_DEFAULT_LOBBY_HTML_PREAMBLE {"<!DOCTYPE html>
 <html lang='ru'>
 <head>

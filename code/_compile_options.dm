@@ -44,8 +44,8 @@
 
 // Keeping this null makes unmanaged builds fall back to EXTERNAL_RSC_URLS from
 // config/entries/resources.txt.
-#ifndef DEPLOYMENT_RSC_URL
-#define DEPLOYMENT_RSC_URL null
+#ifndef DEPLOYMENT_RSC_URLS
+#define DEPLOYMENT_RSC_URLS null
 #endif
 
 #ifdef LOWMEMORYMODE

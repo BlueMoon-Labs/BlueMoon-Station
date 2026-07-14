@@ -4613,6 +4613,7 @@
 #include "modular_bluemoon\code\modules\antagonists\changeling\changeling_zombie.dm"
 #include "modular_bluemoon\code\modules\antagonists\changeling\powers\hive_head.dm"
 #include "modular_bluemoon\code\modules\antagonists\changeling\powers\horny_prick.dm"
+#include "modular_bluemoon\code\modules\browser_assets\browser_assets.dm"
 #include "modular_bluemoon\code\modules\antagonists\changeling\powers\horror_form.dm"
 #include "modular_bluemoon\code\modules\antagonists\changeling\powers\mutations.dm"
 #include "modular_bluemoon\code\modules\antagonists\changeling\powers\spiders.dm"

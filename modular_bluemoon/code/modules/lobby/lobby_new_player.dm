@@ -3,6 +3,12 @@
 	var/bm_bg_slot = 0
 	var/bm_assets_sent = FALSE  // asset cache уже отправлен этому клиенту
 	COOLDOWN_DECLARE(bm_ready_cd)
+	// Keep independent limits so simultaneous failures of different HTTP assets
+	// can recover without allowing one large resource to be requested in a loop.
+	COOLDOWN_DECLARE(bm_loading_fallback_cd)
+	COOLDOWN_DECLARE(bm_background_fallback_cd)
+	COOLDOWN_DECLARE(bm_audio_fallback_cd)
+	COOLDOWN_DECLARE(bm_script_fallback_cd)
 	var/bm_lobby_music_path = ""
 	var/bm_lobby_track_name = ""
 	/// Exact image path represented by the last external background URL.
@@ -362,12 +368,24 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 		if("media_fallback")
 			switch(href_list["bm_media_kind"])
 				if("loading")
+					if(!COOLDOWN_FINISHED(src, bm_loading_fallback_cd))
+						return FALSE
+					COOLDOWN_START(src, bm_loading_fallback_cd, BM_LOBBY_MEDIA_FALLBACK_COOLDOWN)
 					bm_push_local_background(SStitle_bm?.loading_image, TRUE)
 				if("background")
+					if(!COOLDOWN_FINISHED(src, bm_background_fallback_cd))
+						return FALSE
+					COOLDOWN_START(src, bm_background_fallback_cd, BM_LOBBY_MEDIA_FALLBACK_COOLDOWN)
 					bm_push_local_background(bm_lobby_background_path)
 				if("audio")
+					if(!COOLDOWN_FINISHED(src, bm_audio_fallback_cd))
+						return FALSE
+					COOLDOWN_START(src, bm_audio_fallback_cd, BM_LOBBY_MEDIA_FALLBACK_COOLDOWN)
 					client.bm_push_local_lobby_music()
 				if("script")
+					if(!COOLDOWN_FINISHED(src, bm_script_fallback_cd))
+						return FALSE
+					COOLDOWN_START(src, bm_script_fallback_cd, BM_LOBBY_MEDIA_FALLBACK_COOLDOWN)
 					var/local_script = fcopy_rsc('modular_bluemoon/assets/js/bm_lobby.js')
 					if(local_script)
 						src << browse(local_script, "file=bm_lobby_fallback.js;display=0")

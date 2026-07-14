@@ -42,15 +42,9 @@ Notes:
 /datum/tooltip/New(client/C)
 	if (C)
 		owner = C
-		var/datum/asset/stuff = get_asset_datum(/datum/asset/simple/jquery)
-		stuff.send(owner)
-		var/datum/asset/simple/namespaced/fonts/fonts = get_asset_datum(/datum/asset/simple/namespaced/fonts)
-		fonts.send(owner)
-		var/static/file2send
-		if(!file2send)
-			file2send = replacetext(file2text('code/modules/tooltip/tooltip.html'), "THE_FONT_GOES_HERE!!!!!!!!!!!!!!!", SSassets.transport.get_asset_url("fonts.css"))
-
-		owner << browse(file2send, "window=[control]")
+		var/datum/asset/simple/namespaced/bluemoon_tooltip/tooltip_assets = get_asset_datum(/datum/asset/simple/namespaced/bluemoon_tooltip)
+		tooltip_assets.send(owner)
+		owner << browse(tooltip_assets.get_htmlloader("tooltip.html"), "window=[control]")
 
 	..()
 
