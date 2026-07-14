@@ -199,6 +199,7 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 	var/admin_js = "bm_set_admin([check_rights_for(client, R_SERVER) ? 1 : 0]);"
 	var/registered_js = "bm_set_registered([(!is_guest_key(src.key) && client?.prefs) ? 1 : 0]);"
 	var/antag_js = "_bm_antag_state=[!(client?.prefs?.toggles & NO_ANTAG) ? 1 : 0];"
+	var/mentor_js = "_bm_mentor_state=[client?.is_active_mentor() ? 1 : 0];"
 
 	var/js_url = SStitle_bm?.cached_js_url
 	if(!js_url)
@@ -219,6 +220,7 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
     [admin_js]
     [registered_js]
     [antag_js]
+    [mentor_js]
     [notice_js]
     if(!window.__bm_page_ready_sent){window.__bm_page_ready_sent=true;location.href='?src='+_src+';bm_lobby_action=page_ready';}
   }
@@ -260,6 +262,11 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 	var/is_antag_opted = !(client?.prefs?.toggles & NO_ANTAG)
 	parts += {"<a id='bm-btn-antag' class='bm-btn' href='?src=[R];bm_lobby_action=toggle_antag'>"}
 	parts += is_antag_opted ? {"<span class='bm-checked'>☑</span> РОЛЬ АНТАГОНИСТА"} : {"<span class='bm-unchecked'>☒</span> РОЛЬ АНТАГОНИСТА"}
+	parts += "</a>"
+
+	var/is_mentor_active = client?.is_active_mentor()
+	parts += {"<a id='bm-btn-mentor' class='bm-btn' href='?src=[R];bm_lobby_action=toggle_mentor'>"}
+	parts += is_mentor_active ? {"<span class='bm-checked'>☑</span> СТАТЬ МЕНТОРОМ"} : {"<span class='bm-unchecked'>☒</span> СТАТЬ МЕНТОРОМ"}
 	parts += "</a>"
 
 	if(!is_guest_key(src.key) && client?.prefs)
@@ -331,6 +338,15 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 					prefs.toggles &= ~MIDROUND_ANTAG
 				prefs.save_preferences()
 				client << output(antag_on, "bm_lobby_browser:bm_toggle_antag")
+			return
+
+		if("toggle_mentor")
+			_bm_play_click_sound()
+			if(!client?.mentor_datum)
+				client << output("Нет менторского доступа.", "bm_lobby_browser:bm_show_notice")
+				return
+			var/mentor_on = client.toggle_active_mentor()
+			client << output(mentor_on, "bm_lobby_browser:bm_toggle_mentor")
 			return
 
 		if("toggle_nsfw")
