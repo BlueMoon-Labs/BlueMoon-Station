@@ -566,6 +566,9 @@ GENETICS SCANNER
 			msg += "<span class='notice'>Обнаружены кибернетические модификации:</span>\n"
 			msg += "<span class='notice'>[cyberimp_detect]</span>\n"
 
+	if(SEND_SIGNAL(M, COMSIG_NANITE_SCAN, null, FALSE))
+		msg += span_notice("<b>NANITES DETECTED</b>")
+
 	// BLUEMOON EDIT START - изменение анализаторов здоровья; to_chat_msg - чтобы на распечатанном листочке не было "распечатать"
 	var/to_chat_msg = msg
 	if(connected_analyzer && advanced)
@@ -573,7 +576,6 @@ GENETICS SCANNER
 	to_chat_msg += "</body></html>"
 
 	SEND_SIGNAL(M, COMSIG_HEALTH_SCAN, user)//SPLURT EDIT ADD - gregnancy
-	SEND_SIGNAL(M, COMSIG_NANITE_SCAN, user, FALSE)
 	if(connected_analyzer)
 		connected_analyzer.last_msg = msg
 		connected_analyzer.last_recipient_name = M.get_visible_name()
