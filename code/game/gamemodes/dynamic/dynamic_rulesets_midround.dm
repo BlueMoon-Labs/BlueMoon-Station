@@ -249,13 +249,15 @@
 	name = "InteQ Sleeper Agent"
 	antag_datum = /datum/antagonist/traitor
 	antag_flag = "traitor mid"
+	antag_flag_override = ROLE_TRAITOR
 	protected_roles = list("Expeditor", "Prisoner", "NanoTrasen Representative", "Internal Affairs Agent", "Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director")  //BLUEMOON CHANGES
 	restricted_roles = list("Cyborg", "AI", "Positronic Brain")
 	required_candidates = 1
 	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_LIGHT) // BLUEMOON ADD
-	weight = 7 // реальный лёгкий вес в ANTAG-пуле директора (был 0 - самоспавн из roundstart-трейтора)
+	weight = 6 // лёгкая базовая инжекция, но не единственная цель ANTAG-пула
 	cost = 8  //BLUEMOON CHANGES
 	intensity = 15
+	family = "traitor"
 	requirements = list(101,40,30,20,10,10,10,10,10,10)
 	repeatable = TRUE
 
@@ -452,12 +454,12 @@
 	required_enemies = list(0,0,0,0,0,0,0,0,0,0)
 	required_candidates = 1
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
-	weight = 5 //BLUEMOON CHANGES
+	weight = 4
 	cost = 15 //BLUEMOON CHANGES
 	intensity = 45
 	antag_heavy = TRUE
 	requirements = list(101,101,100,60,40,20,20,20,10,10)
-	repeatable = TRUE
+	repeatable = FALSE
 	var/datum/mind/wizard
 
 /datum/dynamic_ruleset/midround/from_ghosts/wizard/action_name()
@@ -506,7 +508,7 @@
 	enemy_roles = list("AI", "Cyborg", "Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain") //BLUEMOON CHANGES
 	required_enemies = list(0,0,0,0,0,0,5,5,4,0) //BLUEMOON CHANGES
 	required_candidates = 5
-	weight = 3
+	weight = 2
 	cost = 30 //BLUEMOON CHANGES
 	antag_heavy = TRUE
 	intensity = 45
@@ -709,6 +711,9 @@
 
 /datum/dynamic_ruleset/midround/from_ghosts/blob
 	name = "Blob"
+	// Прямое событие Blob уже зарегистрировано в GHOST-пуле директора и умеет проверять/трекать
+	// реального госта. Двойник остаётся для ручного форса, но не удваивает шанс одного контента.
+	admin_only = TRUE
 	antag_datum = /datum/antagonist/blob
 	antag_flag = ROLE_BLOB
 	enemy_roles = list("Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain") //BLUEMOON CHANGES
@@ -734,6 +739,9 @@
 /// Infects a random player, making them explode into a blob.
 /datum/dynamic_ruleset/midround/blob_infection
 	name = "Blob Infection"
+	// Живого члена экипажа больше не превращаем в блоба естественным выбором директора.
+	// Рулсет остаётся доступен для осознанного ручного запуска; естественный Blob приходит гостом.
+	admin_only = TRUE
 	antag_datum = /datum/antagonist/blob
 	antag_flag = "blob mid"
 	antag_flag_override = ROLE_BLOB
@@ -748,7 +756,9 @@
 	intensity = 15
 	family = "blob" // с событием-двойником и гост-блобом: не подряд
 	requirements = list(101,101,101,101,50,40,30,20,10,10)
-	repeatable = TRUE
+	// Второе заражение в том же раунде вытесняло почти весь неблобовый ANTAG-пул. Одного
+	// заражения достаточно; отдельное позднее ghost-событие Blob остаётся самостоятельной угрозой.
+	repeatable = FALSE
 
 /datum/dynamic_ruleset/midround/blob_infection/trim_candidates()
 	..()
@@ -790,6 +800,7 @@
 
 /datum/dynamic_ruleset/midround/from_ghosts/xenomorph
 	name = "Alien Infestation"
+	admin_only = TRUE
 	antag_datum = /datum/antagonist/xeno
 	antag_flag = ROLE_ALIEN
 	enemy_roles = list("Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain") //BLUEMOON CHANGES
@@ -848,6 +859,7 @@
 
 /datum/dynamic_ruleset/midround/from_ghosts/terror_spiders
 	name = "Terror Infestation"
+	admin_only = TRUE
 	antag_datum = /datum/antagonist/terror_spiders
 	antag_flag = ROLE_TERROR_SPIDER
 	enemy_roles = list("Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain") //BLUEMOON CHANGES
@@ -907,6 +919,7 @@
 
 /datum/dynamic_ruleset/midround/from_ghosts/nightmare
 	name = "Nightmare"
+	admin_only = TRUE
 	antag_datum = /datum/antagonist/nightmare
 	antag_flag = "Nightmare"
 	antag_flag_override = ROLE_ALIEN
@@ -956,6 +969,7 @@
 
 /datum/dynamic_ruleset/midround/from_ghosts/space_dragon
 	name = "Space Dragon"
+	admin_only = TRUE
 	antag_datum = /datum/antagonist/space_dragon
 	antag_flag = ROLE_SPACE_DRAGON
 	antag_flag_override = ROLE_SPACE_DRAGON
@@ -1003,19 +1017,22 @@
 
 /datum/dynamic_ruleset/midround/from_ghosts/morph
 	name = "Morph"
+	// Каноническое естественное действие директора - /round_event_control/morph (Spawn Morph).
+	// Рулсет остаётся для ручного запуска, но не дублирует тот же контент в GHOST-пуле.
+	admin_only = TRUE
 	antag_datum = /datum/antagonist/morph
 	antag_flag = "Morph"
 	antag_flag_override = ROLE_ALIEN
 	enemy_roles = list("Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security", "Bridge Officer", "Captain")
 	required_enemies = list(0,0,0,0,0,5,4,3,3,0)
 	required_candidates = 1
-	weight = 6
+	weight = 8
 	cost = 10
 	intensity = 15
 	family = "morph" // с событием-двойником: не подряд
-	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM)
+	required_round_type = list(ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_TEAMBASED)
 	requirements = list(101,101,101,50,30,25,20,10,10,10)
-	repeatable = TRUE
+	repeatable = FALSE
 
 /datum/dynamic_ruleset/midround/from_ghosts/morph/execute()
 	if(!GLOB.xeno_spawn || !GLOB.xeno_spawn.len)
@@ -1056,13 +1073,13 @@
 	enemy_roles = list("Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security", "Bridge Officer", "Captain")
 	required_enemies = list(0,0,0,0,0,5,4,3,3,0)
 	required_candidates = 1
-	weight = 5
+	weight = 6
 	cost = 10
 	intensity = 15
 	family = "devil" // с событием-двойником: не подряд
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM)
 	requirements = list(101,101,101,50,40,30,20,10,10,10)
-	repeatable = TRUE
+	repeatable = FALSE
 
 /datum/dynamic_ruleset/midround/from_ghosts/devil/finish_setup(mob/new_character, index)
 	add_devil(new_character, ascendable = TRUE)
@@ -1087,6 +1104,7 @@
 
 /datum/dynamic_ruleset/midround/from_ghosts/abductors
 	name = "Abductors"
+	admin_only = TRUE
 	antag_flag = "Abductor"
 	antag_flag_override = ROLE_ABDUCTOR
 	enemy_roles = list("Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain") //BLUEMOON CHANGES
@@ -1134,6 +1152,9 @@
 
 /datum/dynamic_ruleset/midround/swarmers
 	name = "Swarmers"
+	// Spawn Swarmer Shell уже является самостоятельным действием директора. Этот legacy-дубль
+	// сохраняется для ручного запуска, но не удваивает шанс свормеров в естественном GHOST-пуле.
+	admin_only = TRUE
 	severity = DIRECTOR_SEVERITY_GHOST // спавнер для призраков, экипаж не тратится
 	antag_flag = "Swarmer"
 	antag_flag_override = ROLE_ALIEN
@@ -1159,9 +1180,14 @@
 	if(!spawn_locs.len)
 		message_admins("No valid spawn locations found in GLOB.xeno_spawn, aborting swarmer spawning...")
 		return MAP_ERROR
-	new /obj/effect/mob_spawn/swarmer(get_turf(GLOB.the_gateway))
+	var/obj/effect/mob_spawn/swarmer/spawner = new(get_turf(GLOB.the_gateway))
+	spawner.director_source_action = src
+	spawner.director_refund_cost = director_pending_cost
 	log_game("A Swarmer was spawned via Dynamic Mode.")
 	return ..()
+
+/datum/dynamic_ruleset/midround/swarmers/director_execution_detail(assigned_this_attempt)
+	return "исполнение подтверждено; создан спавнер роли, назначение ожидает активации"
 
 //////////////////////////////////////////////
 //                                          //
@@ -1171,6 +1197,7 @@
 
 /datum/dynamic_ruleset/midround/from_ghosts/space_ninja
 	name = "Space Ninja"
+	admin_only = TRUE
 	antag_datum = /datum/antagonist/ninja
 	antag_flag = "Space Ninja"
 	antag_flag_override = ROLE_NINJA
@@ -1214,6 +1241,7 @@
 /// Revenant ruleset
 /datum/dynamic_ruleset/midround/from_ghosts/revenant
 	name = "Revenant"
+	admin_only = TRUE
 	antag_datum = /datum/antagonist/revenant
 	antag_flag = "Revenant"
 	antag_flag_override = ROLE_REVENANT
@@ -1264,6 +1292,7 @@
 /// Sentient Disease ruleset
 /datum/dynamic_ruleset/midround/from_ghosts/sentient_disease
 	name = "Sentient Disease"
+	admin_only = TRUE
 	antag_datum = /datum/antagonist/disease
 	antag_flag = "Sentient Disease"
 	antag_flag_override = ROLE_ALIEN
@@ -1287,6 +1316,8 @@
 /// Space Pirates ruleset
 /datum/dynamic_ruleset/midround/pirates
 	name = "Space Pirates"
+	// Реальное событие уже зарегистрировано у директора; рулсет-дубль нужен только для админ-форса.
+	admin_only = TRUE
 	severity = DIRECTOR_SEVERITY_GHOST // событие поллит призраков, экипаж не тратится
 	antag_flag = "Space Pirates"
 	required_type = /mob/dead/observer
@@ -1324,6 +1355,8 @@
 //////////////////////////////////////////////
 /datum/dynamic_ruleset/midround/raiders
 	name = "InteQ Raiders"
+	// Реальное событие уже зарегистрировано у директора; рулсет-дубль нужен только для админ-форса.
+	admin_only = TRUE
 	severity = DIRECTOR_SEVERITY_GHOST // событие поллит призраков, экипаж не тратится
 	antag_flag = "InteQ Raiders"
 	required_type = /mob/dead/observer
@@ -1355,6 +1388,9 @@
 /datum/dynamic_ruleset/midround/raiders/action_name()
 	return "[name] (Ruleset)"
 
+/datum/dynamic_ruleset/midround/raiders/director_execution_detail(assigned_this_attempt)
+	return "исполнение подтверждено; роли назначит запущенное событие после ответа станции"
+
 // BLUEMOON ADD START
 
 //////////////////////////////////////////////
@@ -1373,10 +1409,11 @@
 	enemy_roles = list("Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain") //BLUEMOON CHANGES
 	required_enemies = list(3,3,3,3,3,3,3,3,3,3)
 	required_candidates = 1
-	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED) // BLUEMOON ADD
+	required_round_type = list(ROUNDTYPE_DYNAMIC_LIGHT, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_TEAMBASED)
 	weight = 6
-	cost = 5
+	cost = 8
 	intensity = 15
+	family = "bloodsuckers"
 	scaling_cost = 10
 	requirements = list(101,101,60,50,40,30,20,15,10,10)
 	antag_cap = list("denominator" = 39, "offset" = 1)

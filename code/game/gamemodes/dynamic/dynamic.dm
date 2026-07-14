@@ -529,6 +529,7 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 /datum/game_mode/dynamic/proc/execute_scheduled_ruleset(datum/dynamic_ruleset/rule)
 	threat_log += "[worldtime2text()]: [rule.ruletype] [rule.name] spent [rule.cost]"
 	rule.execution_failure_reason = null
+	var/assigned_before = length(rule.assigned)
 	var/prepared = rule.pre_execute(current_players[CURRENT_LIVING_PLAYERS].len)
 	if(!prepared && !rule.execution_failure_reason)
 		rule.execution_failure_reason = "pre_execute() не нашёл достаточно кандидатов"
@@ -548,8 +549,9 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 			current_rules += rule
 		new_snapshot(rule)
 		SSdirector.confirm_action_success(rule)
+		var/assigned_this_attempt = max(0, length(rule.assigned) - assigned_before)
 		SSdirector.director_log_beat(SSdirector.collect_signals(), rule, DIRECTOR_BEAT_EXECUTED,
-			detail = "исполнение подтверждено; назначено ролей: [length(rule.assigned)]")
+			detail = rule.director_execution_detail(assigned_this_attempt))
 		return TRUE
 	rule.clean_up()
 	SSdirector.note_failed_action(rule, retry_replacement = istype(rule, /datum/dynamic_ruleset/midround))

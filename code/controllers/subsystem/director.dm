@@ -296,6 +296,9 @@ SUBSYSTEM_DEF(director)
 		// накопления - пул заморозился бы на неисполнимом плане.
 		if(action.antag_heavy && !profile.antag_heavy_enabled)
 			continue
+		// Цель выбирается и на cooldown: её стоимость остаётся защищённым резервом, а готовый
+		// соседний трек может тратить только излишек сверх резерва (см. filter_candidates).
+		// Иначе дешёвые роли съедали бы кошелёк до того, как heavy вообще накопит свою цену.
 		if(action_recently_failed(action))
 			continue
 		if(!action.can_fire(signals))
@@ -633,10 +636,26 @@ SUBSYSTEM_DEF(director)
 		total += entry[2]
 	return total
 
-/// Перевод успешного ghost-role события со статического мостика ledger на реальные созданные
-/// роли. Mind переживает смену тела, weakref покрывает редкие управляемые мобы без mind.
-/datum/controller/subsystem/director/proc/track_ghost_role_spawn(datum/round_event_control/control, list/spawned_mobs, budget_backed = FALSE)
-	if(!control || !length(spawned_mobs))
+/// Полностью снимает временный вклад конкретного действия, включая уже поставленный на linger.
+/// Нужен отложенным гост-ролям: к моменту ответа на poll событие уже могло завершить datum,
+/// а его статический мост - получить expires_at, из-за чего remove_intensity() его не трогает.
+/datum/controller/subsystem/director/proc/clear_action_intensity(datum/director_action/action)
+	if(!action)
+		return FALSE
+	for(var/i = length(intensity_ledger), i >= 1, i--)
+		var/list/entry = intensity_ledger[i]
+		if(entry[1] != action.action_name() || entry[4] != action.severity)
+			continue
+		intensity_ledger.Cut(i, i + 1)
+		return TRUE
+	return FALSE
+
+/// Перевод успешного отложенного ghost-role действия со статического мостика ledger на реально
+/// созданные роли. Mind переживает смену тела, weakref покрывает управляемых мобов без mind.
+/// intensity_override/refund_cost_override нужны командным спавнерам: если poll пуст, каждый
+/// оставшийся спавнер позже добавляет только свою долю общей нагрузки и страховки команды.
+/datum/controller/subsystem/director/proc/track_ghost_role_spawn(datum/director_action/action, list/spawned_mobs, budget_backed = FALSE, intensity_override = null, refund_cost_override = null, log_execution = TRUE)
+	if(!action || !length(spawned_mobs))
 		return FALSE
 	var/list/minds = list()
 	var/list/mob_refs = list()
@@ -653,8 +672,9 @@ SUBSYSTEM_DEF(director)
 	if(!length(minds) && !length(mob_refs))
 		return FALSE
 	var/list/refund_values = list()
-	if(budget_backed && DIRECTOR_IS_ANTAG_POOL(control.severity) && control.cost > 0)
-		var/share = control.cost / (length(minds) + length(mob_refs))
+	var/refund_cost = isnull(refund_cost_override) ? (budget_backed ? action.cost : 0) : refund_cost_override
+	if(refund_cost > 0 && DIRECTOR_IS_ANTAG_POOL(action.severity))
+		var/share = refund_cost / (length(minds) + length(mob_refs))
 		for(var/datum/mind/insured_mind as anything in minds)
 			refund_values[insured_mind] = list(
 				"amount" = share,
@@ -663,19 +683,36 @@ SUBSYSTEM_DEF(director)
 			)
 		for(var/datum/weakref/insured_ref as anything in mob_refs)
 			refund_values[insured_ref] = list("amount" = share, "at" = now(), "activity" = 0)
-	remove_intensity(control.action_name())
+	clear_action_intensity(action)
+	var/tracked_intensity = isnull(intensity_override) ? action.intensity : intensity_override
 	live_ghost_role_spawns += list(list(
-		"name" = control.action_name(),
-		"intensity" = control.intensity,
-		"severity" = control.severity,
+		"name" = action.action_name(),
+		"intensity" = tracked_intensity,
+		"severity" = action.severity,
 		"minds" = minds,
 		"hard_minds" = hard_minds,
 		"mobs" = mob_refs,
 		"refund_values" = refund_values,
 	))
-	confirm_action_success(control)
+	confirm_action_success(action)
 	pool_cache = null
+	if(log_execution)
+		var/assigned_count = length(minds) + length(mob_refs)
+		director_log_beat(collect_signals(), action, DIRECTOR_BEAT_EXECUTED,
+			detail = "исполнение подтверждено; назначено ролей: [assigned_count]")
 	return TRUE
+
+/// Отложенное действие успешно завершилось без антагов (например, станция заплатила рейдерам).
+/// Контент состоялся, поэтому бюджет/occurrences не откатываются, но прогноз антаг-нагрузки
+/// больше не должен закрывать ANTAG/GHOST-пулы.
+/datum/controller/subsystem/director/proc/complete_deferred_action_without_roles(datum/director_action/action, detail)
+	if(!action)
+		return
+	clear_action_intensity(action)
+	confirm_action_success(action)
+	pool_cache = null
+	director_log_beat(collect_signals(), action, DIRECTOR_BEAT_EXECUTED,
+		detail = detail || "исполнение завершено без назначенных ролей")
 
 /// Живая нагрузка ghost-role событий. only_antag: null = все для общего intensity,
 /// TRUE = только ANTAG/GHOST для клапана антагов, FALSE = только видимые не-антаг события.
@@ -905,14 +942,20 @@ SUBSYSTEM_DEF(director)
 			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_BUDGET,
 				detail = isnull(verdicts) ? null : "[round(budgets[sev], 0.1)] из [action.cost]")
 			continue
-		// Копилка антаг-пула: пока пул копит на цель, дешёвые соседи не выжигают кошелёк -
-		// иначе дорогие действия (нюк-асолт, дракон) не набирались бы никогда.
+		// Копилка антаг-пула защищает полную стоимость выбранной цели. Если её трек временно
+		// закрыт cooldown/семейством (или heavy запрещён из-за смертности), независимый второй
+		// трек может запускаться только из бюджета СВЕРХ резерва. Так готовая light-роль не
+		// простаивает при уже накопленной heavy, но и не может проесть её накопление.
 		if(!guaranteed && DIRECTOR_IS_ANTAG_POOL(sev))
 			var/datum/director_action/saving_for = pool_saving[sev]
 			if(saving_for && saving_for != action)
-				note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_SAVING,
-					detail = isnull(verdicts) ? null : "копим на [saving_for.action_name()]")
-				continue
+				var/target_waiting = !spacing_allows(saving_for) || family_spacing_remaining(saving_for) > 0 || (dead_crisis && saving_for.antag_heavy)
+				var/other_track = saving_for.antag_heavy != action.antag_heavy
+				var/free_budget = max(0, budgets[sev] - saving_for.cost)
+				if(!target_waiting || !other_track || free_budget < action.cost)
+					note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_SAVING,
+						detail = isnull(verdicts) ? null : "резерв [saving_for.cost] на [saving_for.action_name()]; свободно [round(free_budget, 0.1)] из [action.cost]")
+					continue
 		// Навязчивость: мягкие профили глушат мешающие играть события. Нулевой множитель - это
 		// осознанное "в этом профиле такому не место", отдельная причина отсева для панели.
 		var/disruption_mult = profile.disruption_mult(action)
@@ -1363,10 +1406,10 @@ SUBSYSTEM_DEF(director)
 	if(antag_load() >= antag_target(signals.effective_crew))
 		return
 	// Защита копилки: латеджойн живёт из того же кошелька ANTAG, что и биты, но не должен
-	// вечно перебивать план накопления - кошелёк не опускается ниже половины стоимости цели
-	// (прод-жалоба "бюджет перебивается лейтджойнами": копилка не добиралась никогда).
+	// перебивать выбранный план. Полная стоимость цели неприкосновенна; латеджойн тратит
+	// только излишек, иначе дорогая heavy-роль могла бы вечно оставаться наполовину накопленной.
 	var/datum/director_action/saving_for = pool_saving[DIRECTOR_SEVERITY_ANTAG]
-	var/reserve = QDELETED(saving_for) ? 0 : saving_for.cost * 0.5
+	var/reserve = QDELETED(saving_for) ? 0 : saving_for.cost
 	var/list/candidates = list()
 	for(var/datum/director_action/action as anything in actions)
 		if(action.director_kind != DIRECTOR_KIND_RULESET)

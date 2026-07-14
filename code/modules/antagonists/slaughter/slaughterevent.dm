@@ -9,6 +9,7 @@
 	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
 	cost = 15
 	intensity = 30 // одиночка, но мясорубка
+	antag_heavy = TRUE
 	director_ghost_jobban = ROLE_ALIEN
 	director_ghost_preference = ROLE_ALIEN
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // не экста и не лайт

@@ -1,7 +1,7 @@
 /datum/round_event_control/blob
 	name = "Blob"
 	typepath = /datum/round_event/ghost_role/blob
-	weight = 5
+	weight = 3
 	max_occurrences = 1
 
 	earliest_start = 90 MINUTES

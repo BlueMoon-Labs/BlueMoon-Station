@@ -1,16 +1,21 @@
 /datum/round_event_control/vox_scavengers
 	name = "Vox Scavengers"
 	typepath = /datum/round_event/vox_scavengers
-	admin_only = TRUE
+	admin_only = FALSE
+	weight = 6
 	max_occurrences = 1
 	min_players = 30
 	earliest_start = 15 MINUTES
 	category = EVENT_CATEGORY_INVASION
-	// Гост-команда со своего корабля: admin-only, но при форсе обязана считаться
-	// антаг-нагрузкой гост-пула, а не MAJOR по дефолту категории INVASION (ср. devil).
+	// Гост-команда со своего корабля: считается антаг-нагрузкой GHOST-пула,
+	// а не MAJOR по дефолту категории INVASION (ср. devil).
 	severity = DIRECTOR_SEVERITY_GHOST
 	cost = 10
 	intensity = 15
+	director_ghost_jobban = ROLE_TRAITOR
+	director_ghost_preference = ROLE_TRAITOR
+	family = "vox_scavengers"
+	required_round_type = list(ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_TEAMBASED)
 	description = "A vox scavengers heist."
 	var/ship_template
 
@@ -21,9 +26,9 @@
 	return ..()
 
 /datum/round_event/vox_scavengers/start()
-	spawn_vox_scavengers()
+	spawn_vox_scavengers(source_action = control, refund_cost = triggered_randomly ? control.cost : 0)
 
-/proc/spawn_vox_scavengers(ship_template)
+/proc/spawn_vox_scavengers(ship_template, datum/director_action/source_action, refund_cost = 0)
 
 	ship_template = /datum/map_template/shuttle/vox_raiders
 
@@ -44,28 +49,51 @@
 			spawners_list += spawner
 
 	var/list/candidates = pollGhostCandidates("Do you wish to be considered for Vox Scavengers?", ROLE_TRAITOR, minimum_required = spawners_list.len)
+	var/list/spawned_scavengers = list()
+	var/spawner_count = length(spawners_list)
+	var/intensity_share = source_action && spawner_count ? source_action.intensity / spawner_count : 0
+	var/refund_share = spawner_count ? refund_cost / spawner_count : 0
 
 	for(var/obj/effect/mob_spawn/human/spawner in spawners_list)
 		if(LAZYLEN(candidates))
 			var/mob/our_candidate = pick_n_take(candidates)
-			spawner.create(our_candidate.ckey)
+			var/mob/living/spawned_scavenger = spawner.create(our_candidate.ckey)
+			if(spawned_scavenger)
+				spawned_scavengers += spawned_scavenger
 			notify_ghosts("Skipjack has an object of interest: [our_candidate]!", source=our_candidate, action=NOTIFY_ORBIT, header="Something's Interesting!")
 		else
+			spawner.director_source_action = source_action
+			spawner.director_intensity = intensity_share
+			spawner.director_refund_cost = refund_share
 			notify_ghosts("Skipjack ship has an object of interest: [spawner]!", source=spawner, action=NOTIFY_ORBIT, header="Something's Interesting!")
+	if(source_action && length(spawned_scavengers))
+		var/spawned_fraction = length(spawned_scavengers) / max(1, spawner_count)
+		SSdirector.track_ghost_role_spawn(
+			source_action,
+			spawned_scavengers,
+			budget_backed = refund_cost > 0,
+			intensity_override = source_action.intensity * spawned_fraction,
+			refund_cost_override = refund_cost * spawned_fraction,
+		)
+	else if(source_action)
+		SSdirector.director_log_beat(SSdirector.collect_signals(), source_action, DIRECTOR_BEAT_EXECUTED,
+			detail = "корабль создан; сразу назначено ролей: 0, свободные спавнеры оставлены призракам")
 
 /// Dynamic ruleset additions
 /datum/dynamic_ruleset/midround/vox_scavengers
 	name = "Vox Scavengers"
+	admin_only = TRUE
 	severity = DIRECTOR_SEVERITY_GHOST // событие поллит призраков, экипаж не тратится
 	antag_flag = "Vox Scavengers"
 	required_type = /mob/dead/observer
 	enemy_roles = list("Security Officer", "Detective", "Head of Security","Bridge Officer", "Captain")
-	required_round_type = list(ROUNDTYPE_DYNAMIC_LIGHT)
+	required_round_type = list(ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_TEAMBASED)
 	required_enemies = list(0,0,0,0,0,0,0,0,0,0)
 	required_candidates = 0
 	weight = 3
 	cost = 12
 	intensity = 15
+	family = "vox_scavengers"
 	requirements = list(101,101,101,40,30,20,10,10,10,10)
 	repeatable = FALSE
 
@@ -75,7 +103,7 @@
 	return ..()
 
 /datum/dynamic_ruleset/midround/vox_scavengers/execute()
-	spawn_vox_scavengers()
+	spawn_vox_scavengers(source_action = src, refund_cost = director_pending_cost)
 	return ..()
 
 // name совпадает с /datum/round_event_control/vox_scavengers ("Vox Scavengers"), который этот

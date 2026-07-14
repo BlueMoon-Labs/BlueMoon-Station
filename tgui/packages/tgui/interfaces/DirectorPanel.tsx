@@ -106,6 +106,8 @@ type ProfileActionEntry = {
   antagHeavy: BooleanLike;
   disruption: string;
   requiredRoundTypes: string[] | null;
+  linkedRoundTypes: string[] | null;
+  linkedDetail: string | null;
 };
 
 type WalletEntry = {
@@ -1024,6 +1026,16 @@ const profileActionAvailability = (
       label: 'События выключены',
       detail: 'серверный allow_random_events отключён',
       color: 'bad',
+    };
+  }
+  if (action.linkedRoundTypes?.includes(profile.roundType)) {
+    return {
+      included: true,
+      label: 'Связанное событие',
+      detail:
+        action.linkedDetail ||
+        'запускается только как продолжение другого действия',
+      color: 'average',
     };
   }
   if (

@@ -26,6 +26,8 @@
 	min_players = 15 // Extended живёт и на лоупопе; унаследованные 30 делали событие практически недоступным
 	earliest_start = 30 MINUTES
 	required_round_type = list(ROUNDTYPE_EXTENDED)
+	director_linked_round_types = list(ROUNDTYPE_DYNAMIC_LIGHT)
+	director_linked_detail = "появляется только второй волной после успешного Lone Operative"
 	cost = 10
 	intensity = 10 // защитник, а не угроза: мягкий вклад в гост-пул фонового режима
 	description = "A syndicate specialist arrives to guard the nuclear authentication disk."

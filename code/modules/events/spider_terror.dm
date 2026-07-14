@@ -5,7 +5,7 @@
 /datum/round_event_control/spider_terror
 	name = "Terror Spider Infestation"
 	typepath = /datum/round_event/ghost_role/spider_terror
-	weight = 1
+	weight = 2
 	max_occurrences = 1
 	min_players = 40
 	earliest_start = 90 MINUTES

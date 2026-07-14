@@ -30,6 +30,11 @@
 	var/max_occurrences = 0
 	/// Типы раундов, в которых действие доступно (null = любые)
 	var/list/required_round_type = null
+	/// Типы раундов, где действие не выбирается самостоятельно, но запускается связанным
+	/// сценарием другого действия. Используется каталогом профилей, а не can_fire().
+	var/list/director_linked_round_types = null
+	/// Пояснение связанной доступности для каталога профилей.
+	var/director_linked_detail = null
 	/// Ассоциация DIRECTOR_DEPT_* -> минимум активных; null = без требований
 	var/list/min_staffing = null
 	/// Для пула ANTAG: тяжёлая инжекция (nuke assault и т.п.)

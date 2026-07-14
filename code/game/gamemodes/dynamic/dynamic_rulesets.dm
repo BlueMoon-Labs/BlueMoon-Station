@@ -201,6 +201,11 @@
 		M.add_antag_datum(antag_datum)
 	return TRUE
 
+/// Текст подтверждения для истории директора. assigned_this_attempt, а не длина assigned:
+/// повторяемые рулсеты хранят предыдущие назначения для живого учёта intensity.
+/datum/dynamic_ruleset/proc/director_execution_detail(assigned_this_attempt)
+	return "исполнение подтверждено; назначено ролей: [assigned_this_attempt]"
+
 /// Here you can perform any additional checks you want. (such as checking the map etc)
 /// Remember that on roundstart no one knows what their job is at this point.
 /// IMPORTANT: If ready() returns TRUE, that means pre_execute() or execute() should never fail!

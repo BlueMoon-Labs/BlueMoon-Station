@@ -3,6 +3,7 @@
 	typepath = /datum/round_event/ghost_role/nightmare
 	max_occurrences = 2
 	min_players = 30
+	weight = 8
 	category = EVENT_CATEGORY_ENTITIES
 	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
 	cost = 10

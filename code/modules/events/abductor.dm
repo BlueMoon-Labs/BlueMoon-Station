@@ -1,7 +1,7 @@
 /datum/round_event_control/abductor
 	name = "Abductors"
 	typepath = /datum/round_event/ghost_role/abductor
-	weight = 25 // был 50 при 5-20 у остального MAJOR-пула: "крупный слот" почти всегда уходил абдукторам
+	weight = 8 // два госта и отдельный геймплей, но не четверть всего GHOST-пула
 	max_occurrences = 1
 	min_players = 30
 	earliest_start = 30 MINUTES
