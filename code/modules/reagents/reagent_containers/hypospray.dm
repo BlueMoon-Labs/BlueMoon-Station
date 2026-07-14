@@ -136,8 +136,8 @@
 	update_icon()
 	addtimer(CALLBACK(src, PROC_REF(cyborg_recharge), user), 80)
 
-/obj/item/reagent_containers/hypospray/medipen/attack_self()
-	attack(usr, usr)
+/obj/item/reagent_containers/hypospray/medipen/attack_self(mob/user)
+	attack(user, user)
 
 /obj/item/reagent_containers/hypospray/medipen/proc/cyborg_recharge(mob/living/silicon/robot/user)
 	if(!reagents.total_volume && iscyborg(user))
@@ -315,6 +315,13 @@
 	amount_per_transfer_from_this = 3
 	volume = 3
 	list_reagents = list(/datum/reagent/nanite_protector = 3)
+
+/obj/item/reagent_containers/hypospray/medipen/nanite_protector/attack(mob/M, mob/user)
+	if(M != user)
+		to_chat(user, span_userdanger("Пытается ввести вам Nanite protector, навсегда лишив вас нанитов!"))
+		if(!do_after_mob(user, M, 5 SECONDS))
+			return
+	return ..()
 
 #define HYPO_SPRAY 0
 #define HYPO_INJECT 1
