@@ -205,6 +205,16 @@
 	smoothing_groups = SMOOTH_GROUP_CLOCKWORK_WALLS + SMOOTH_GROUP_WALLS + SMOOTH_GROUP_CLOSED_TURFS
 	canSmoothWith = SMOOTH_GROUP_CLOCKWORK_WALLS + SMOOTH_GROUP_WALLS
 
+/turf/closed/wall/clockwork/Initialize(mapload)
+	return ..()
+
+/turf/closed/wall/clockwork/Destroy()
+	if(heated)
+		var/mob/camera/eminence/E = get_eminence()
+		if(E)
+			E.superheated_walls--
+	return ..()
+
 /turf/closed/wall/r_wall/plastitanium
 	icon = 'modular_bluemoon/icons/turf/walls/plastitanium_wall.dmi'
 	icon_state = "plastitanium_wall-0"

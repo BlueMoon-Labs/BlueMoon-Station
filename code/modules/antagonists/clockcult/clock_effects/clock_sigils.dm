@@ -399,13 +399,12 @@
 				vitality_drained = L.maxHealth
 				var/obj/effect/temp_visual/ratvar/sigil/vitality/V = new /obj/effect/temp_visual/ratvar/sigil/vitality(get_turf(src))
 				animate(V, alpha = 0, transform = matrix()*2, time = 8)
-				playsound(L, 'sound/magic/wandodeath.ogg', 50, 1)
-				L.visible_message("<span class='warning'>[L] сжимается в себя, когда [src] вспыхивает ярко-синим светом!</span>")
 				to_chat(L, "<span class='inathneq_large'>\"[text2ratvar("Твоя жизнь не будет потрачена впустую.")]\"</span>")
-				for(var/obj/item/W in L)
-					if(!L.dropItemToGround(W))
-						qdel(W)
-				L.dust()
+				if(ishuman(L))
+					playsound(L, 'sound/magic/disintegrate.ogg', 50, 1)
+					L.visible_message("<span class='warning'>[L] содрогается, когда [src] вспыхивает ярко-синим светом!</span>")
+					var/mob/living/carbon/human/H = L
+					H.spew_organ(2, 6)
 			else if(L.health > min_drain_health)
 				if(!GLOB.ratvar_awakens && L.stat == CONSCIOUS)
 					vitality_drained = L.adjustToxLoss(1, forced = TRUE, toxins_type = TOX_OMNI)
