@@ -26,18 +26,19 @@ GLOBAL_PROTECT(mentor_href_token)
 	owner = GLOB.directory[ckey]
 	if(owner)
 		owner.mentor_datum = src
-		owner.add_mentor_verbs()
-		if(is_super && !check_rights_for(owner, R_ADMIN, 0))
-			GLOB.mentors += owner
+		owner.add_become_mentor_verb()
 
 /datum/mentors/proc/promote_super_mentor()
 	if(is_super)
 		return
 	is_super = TRUE
 	if(owner)
-		owner.add_mentor_verbs()
-		if(!check_rights_for(owner, R_ADMIN, 0))
-			GLOB.mentors += owner
+		if(/client/proc/cmd_mentor_become in owner.verbs)
+			owner.add_become_mentor_verb()
+		else
+			owner.add_mentor_verbs()
+			if(!check_rights_for(owner, R_ADMIN, 0))
+				GLOB.mentors += owner
 	log_admin_private("[target] was promoted to super mentor.")
 
 /datum/mentors/proc/demote_super_mentor()
@@ -46,7 +47,10 @@ GLOBAL_PROTECT(mentor_href_token)
 	is_super = FALSE
 	if(owner)
 		GLOB.mentors -= owner
-		owner.add_mentor_verbs()
+		if(/client/proc/cmd_mentor_become in owner.verbs)
+			owner.add_become_mentor_verb()
+		else
+			owner.add_mentor_verbs()
 	log_admin_private("[target] was removed from the rank of super mentor.")
 
 /// Legacy name used by admin tooling; only strips super mentor status.

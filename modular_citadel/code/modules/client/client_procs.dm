@@ -48,9 +48,12 @@
 		mentor_datum = GLOB.mentor_datums[player_ckey]
 	else
 		mentor_datum.owner = src
-		add_mentor_verbs()
-		if(mentor_datum.is_super && !check_rights_for(src, R_ADMIN, 0))
-			GLOB.mentors |= src
+		if(/client/proc/cmd_mentor_become in verbs)
+			add_become_mentor_verb()
+		else
+			add_mentor_verbs()
+			if(mentor_datum.is_super && !check_rights_for(src, R_ADMIN, 0))
+				GLOB.mentors |= src
 
 	if(mentor_datum?.is_super)
 		mentor_memo_output("Show")
