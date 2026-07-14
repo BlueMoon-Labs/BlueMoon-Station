@@ -238,3 +238,25 @@
 /obj/item/spear/bonespear/Khasal/ComponentInitialize()
 	. = ..()
 	AddComponent(/datum/component/two_handed, force_unwielded=18, force_wielded=27, icon_wielded="[icon_prefix]1")
+
+/obj/item/spear/military
+	icon_state = "military_spear0"
+	base_icon_state = "military_spear0"
+	lefthand_file = 'icons/mob/inhands/weapons/polearms_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/weapons/polearms_righthand.dmi'
+	icon_prefix = "military_spear"
+	name = "military javelin"
+	desc = "A stick with a seemingly blunt spearhead on its end. Looks like it might break bones easily."
+	attack_verb_continuous = list("attacks", "pokes", "jabs")
+	attack_verb_simple = list("attack", "poke", "jab")
+	force = 20
+	throwforce = 50
+	wound_bonus = 5
+	bare_wound_bonus = 25
+	throw_range = 9
+	throw_speed = 5
+	sharpness = NONE // we break bones instead of cutting flesh
+
+/obj/item/spear/military/ComponentInitialize()
+	. = ..()
+	AddComponent(/datum/component/two_handed, force_unwielded=20, force_wielded=30, icon_wielded="[icon_prefix]1")

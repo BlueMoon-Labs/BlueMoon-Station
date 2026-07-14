@@ -144,3 +144,18 @@
 			target.confused += 15
 			var/atom/throw_target = get_edge_target_turf(M, get_dir(src, get_step_away(M, src)))
 			M.throw_at(throw_target, 5, 1)
+
+// boarding axe - оружие варлорда пиратов
+/obj/item/fireaxe/boardingaxe
+	name = "boarding axe"
+	desc = "A hulking cleaver that feels like a burden just looking at it. Seems excellent at halving obstacles like windows, airlocks, barricades and people."
+	icon_state = "boarding_axe0"
+	throwforce = 25
+	armour_penetration = 40
+
+/obj/item/fireaxe/boardingaxe/update_icon_state()
+	icon_state = "boarding_axe0"
+
+/obj/item/fireaxe/boardingaxe/ComponentInitialize()
+	. = ..()
+	AddComponent(/datum/component/two_handed, force_unwielded=5, force_wielded=30, icon_wielded="boarding_axe1")
