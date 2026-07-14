@@ -35,6 +35,20 @@ SUBSYSTEM_DEF(air)
 	var/list/networks = list()
 	var/list/pipenets_needing_rebuilt = list()
 	var/list/obj/machinery/atmos_machinery = list()
+	///Assoc (sleeping atmos machine -> world.time deadline of its heartbeat recheck).
+	///Machines that finished an idle streak leave atmos_machinery entirely and wait
+	///here; the constant heartbeat makes this FIFO, so only the head needs checking.
+	var/list/obj/machinery/atmospherics/atmos_idle_queue = list()
+	///Machines the idle heartbeat returned to processing on the last machinery
+	///pass. The heartbeat rotation is a standing share of the machinery phase,
+	///so the benchmark records this to split rotation cost from real workers.
+	var/heartbeat_wakes_last = 0
+	///Benchmark hook: set TRUE to make the next full machinery pass run timed
+	///per machine type (profile_machinery_pass). Clears itself; the result
+	///lands in benchmark_machinery_profile_result until a sampler consumes it.
+	var/benchmark_machinery_profile_pending = FALSE
+	///Result of the last profiled machinery pass (see profile_machinery_pass).
+	var/list/benchmark_machinery_profile_result
 	var/list/pipe_init_dirs_cache = list()
 
 	//atmos singletons
@@ -119,6 +133,74 @@ SUBSYSTEM_DEF(air)
 	set desc="Fixes air that has weird NaNs (-1.#IND and such). Hopefully."
 	set name="Fix Infinite Air"
 	fix_corrupted_atmos()
+
+/datum/admins/proc/atmos_active_report()
+	set category = "Debug.3) Fixing"
+	set desc = "Breakdown of SSair active turfs by z-level and area, for hunting atmos churn."
+	set name = "Atmos Active Turfs Report"
+
+	var/list/z_counts = list()
+	var/list/area_turfs = list()
+	var/planetary_count = 0
+	var/grouped_count = 0
+	var/sharing_count = 0
+	for(var/turf/open/active_turf as anything in SSair.active_turfs)
+		if(!istype(active_turf))
+			continue
+		z_counts["z[active_turf.z]"]++
+		var/area/turf_area = active_turf.loc
+		var/area_key = "[turf_area.type]"
+		var/list/bucket = area_turfs[area_key]
+		if(!bucket)
+			bucket = list()
+			area_turfs[area_key] = bucket
+		bucket += active_turf
+		if(active_turf.planetary_atmos)
+			planetary_count++
+		if(active_turf.excited_group)
+			grouped_count++
+		if(active_turf.air?.last_share > MINIMUM_MOLES_DELTA_TO_MOVE)
+			sharing_count++
+
+	var/list/output = list("<b>SSair active turfs: [length(SSair.active_turfs)]</b> (excited groups: [length(SSair.excited_groups)], in groups: [grouped_count], planetary: [planetary_count], actively sharing: [sharing_count])")
+	var/list/z_lines = list()
+	for(var/z_key in z_counts)
+		z_lines += "[z_key]: [z_counts[z_key]]"
+	output += "By z-level: [z_lines.Join(", ")]"
+	output += "Top areas (count, sharing, planetary, pressure span, temp span):"
+	var/shown = 0
+	while(shown < 15 && length(area_turfs))
+		var/best_key
+		var/best_count = 0
+		for(var/area_key in area_turfs)
+			if(length(area_turfs[area_key]) > best_count)
+				best_count = length(area_turfs[area_key])
+				best_key = area_key
+		var/list/turfs = area_turfs[best_key]
+		var/area_sharing = 0
+		var/area_planetary = 0
+		var/pressure_min = INFINITY
+		var/pressure_max = 0
+		var/temp_min = INFINITY
+		var/temp_max = 0
+		for(var/turf/open/area_turf as anything in turfs)
+			if(!area_turf.air)
+				continue
+			if(area_turf.air.last_share > MINIMUM_MOLES_DELTA_TO_MOVE)
+				area_sharing++
+			if(area_turf.planetary_atmos)
+				area_planetary++
+			var/pressure = area_turf.air.return_pressure()
+			pressure_min = min(pressure_min, pressure)
+			pressure_max = max(pressure_max, pressure)
+			var/turf_temp = area_turf.air.return_temperature()
+			temp_min = min(temp_min, turf_temp)
+			temp_max = max(temp_max, turf_temp)
+		output += "  [best_count] ([area_sharing] sharing, [area_planetary] planetary, [round(pressure_min, 0.1)]-[round(pressure_max, 0.1)] kPa, [round(temp_min, 0.1)]-[round(temp_max, 0.1)] K) - [best_key]"
+		area_turfs -= best_key
+		shown++
+
+	to_chat(usr, output.Join("<br>"))
 
 /datum/controller/subsystem/air/fire(resumed = 0)
 	var/timer = TICK_USAGE_REAL
@@ -294,6 +376,14 @@ SUBSYSTEM_DEF(air)
 /datum/controller/subsystem/air/proc/process_atmos_machinery(resumed = 0)
 	var/seconds = wait * 0.1
 	if (!resumed)
+		heartbeat_wakes_last = wake_expired_idle_machines()
+		if(benchmark_machinery_profile_pending)
+			// The profiled pass IS this fire's machinery pass: same machines,
+			// same semantics, just timed per type. One deliberately unyielding
+			// fire per deep interval while a benchmark runs.
+			benchmark_machinery_profile_pending = FALSE
+			benchmark_machinery_profile_result = profile_machinery_pass(seconds)
+			return
 		src.currentrun = atmos_machinery.Copy()
 	//cache for sanic speed (lists are references anyways)
 	var/list/currentrun = src.currentrun
@@ -303,9 +393,84 @@ SUBSYSTEM_DEF(air)
 		if(!M)
 			atmos_machinery -= M
 		else if(M.process_atmos(seconds) == PROCESS_KILL)
-			stop_processing_machine(M)
+			stop_processing_machine(M, popped_from_currentrun = TRUE)
 		if(MC_TICK_CHECK)
 			return
+
+///Returns sleeping machines whose heartbeat deadline expired to the processing
+///list for one full recheck (a no-op pass puts them straight back to sleep).
+///Returns how many machines it woke, so the benchmark can attribute the
+///standing rotation share of the machinery phase.
+/datum/controller/subsystem/air/proc/wake_expired_idle_machines()
+	var/expired = 0
+	var/woken = 0
+	for(var/i in 1 to atmos_idle_queue.len)
+		var/obj/machinery/atmospherics/machine = atmos_idle_queue[i]
+		if(!machine)
+			// Hard deletion nulls list entries in place; drop the slot.
+			expired = i
+			continue
+		if(atmos_idle_queue[machine] > world.time)
+			break
+		expired = i
+		machine.atmos_idle_queued = FALSE
+		if(QDELETED(machine) || machine.atmos_processing)
+			continue
+		start_processing_machine(machine)
+		woken++
+	if(expired)
+		atmos_idle_queue.Cut(1, expired + 1)
+	return woken
+
+///One fully-timed machinery pass bucketed by machine type, standing in for a
+///normal pass when the benchmark armed benchmark_machinery_profile_pending.
+///Keeps normal semantics (PROCESS_KILL leaves the list, stale nulls dropped)
+///but runs the whole list without MC yields so the per-type numbers describe
+///one coherent fire. Returns list(n, np, ms, hbw, types = type -> (n, ms)).
+/datum/controller/subsystem/air/proc/profile_machinery_pass(seconds)
+	var/list/type_buckets = list()
+	var/total_ms = 0
+	var/machine_count = 0
+	var/nopower_count = 0
+	for(var/obj/machinery/M as anything in atmos_machinery.Copy())
+		if(!M)
+			atmos_machinery -= M
+			continue
+		machine_count++
+		if(M.machine_stat & NOPOWER)
+			nopower_count++
+		var/type_key = "[M.type]"
+		var/list/bucket = type_buckets[type_key]
+		if(!bucket)
+			bucket = list("n" = 0, "ms" = 0)
+			type_buckets[type_key] = bucket
+		var/timer = TICK_USAGE_REAL
+		var/process_result = M.process_atmos(seconds)
+		var/spent_ms = TICK_DELTA_TO_MS(TICK_USAGE_REAL - timer)
+		bucket["n"] += 1
+		bucket["ms"] += spent_ms
+		total_ms += spent_ms
+		if(process_result == PROCESS_KILL)
+			stop_processing_machine(M)
+	for(var/type_key in type_buckets)
+		var/list/bucket = type_buckets[type_key]
+		bucket["ms"] = round(bucket["ms"], 0.001)
+	return list(
+		"n" = machine_count,
+		"np" = nopower_count,
+		"ms" = round(total_ms, 0.01),
+		"hbw" = heartbeat_wakes_last,
+		"types" = type_buckets,
+	)
+
+///Pipenets whose update flag is set right now - each reconciles on its next
+///process(). Benchmark decomposition helper for cost_pipenets.
+/datum/controller/subsystem/air/proc/count_dirty_pipenets()
+	var/count = 0
+	for(var/datum/pipeline/net as anything in networks)
+		if(net?.update)
+			count++
+	return count
 
 /datum/controller/subsystem/air/proc/process_hotspots(resumed = 0)
 	if (!resumed)
@@ -348,6 +513,10 @@ SUBSYSTEM_DEF(air)
 /datum/controller/subsystem/air/proc/finish_turf_processing(resumed = 0)
 	if(finish_turf_processing_auxtools(TICK_REMAINING_MS))
 		pause()
+	#ifdef ATMOS_HEADLESS_BENCH
+	else
+		atmos_headless_bench_tick()
+	#endif
 
 /datum/controller/subsystem/air/proc/equalize_turfs(resumed = 0)
 	if(equalize_turfs_auxtools(TICK_REMAINING_MS))
@@ -435,17 +604,38 @@ SUBSYSTEM_DEF(air)
 	return mix.gas_string
 
 /datum/controller/subsystem/air/proc/start_processing_machine(obj/machinery/machine)
-	if(machine.atmos_processing)
+	if(machine.atmos_processing || QDELETED(machine))
 		return
 	machine.atmos_processing = TRUE
 	atmos_machinery += machine
 
-/datum/controller/subsystem/air/proc/stop_processing_machine(obj/machinery/machine)
+///popped_from_currentrun skips the O(n) currentrun scan when the caller knows the
+///machine was already popped this fire (PROCESS_KILL returns, atmos_consider_idle).
+/datum/controller/subsystem/air/proc/stop_processing_machine(obj/machinery/machine, popped_from_currentrun = FALSE)
 	if(!machine.atmos_processing)
 		return
 	machine.atmos_processing = FALSE
 	atmos_machinery -= machine
-	currentrun -= machine
+	if(!popped_from_currentrun)
+		currentrun -= machine
+
+///Drops a machine that just finished its idle streak out of the per-fire loop;
+///the heartbeat queue (or any event wake) returns it later.
+/datum/controller/subsystem/air/proc/sleep_processing_machine(obj/machinery/atmospherics/machine)
+	stop_processing_machine(machine, popped_from_currentrun = TRUE)
+	if(machine.atmos_idle_queued)
+		// A stale queue entry from an earlier sleep is still pending; its
+		// deadline will recheck us early, which is harmless.
+		return
+	machine.atmos_idle_queued = TRUE
+	atmos_idle_queue[machine] = machine.atmos_idle_until
+
+///Removes a machine from the heartbeat queue (Destroy: the queue holds a strong ref).
+/datum/controller/subsystem/air/proc/dequeue_idle_machine(obj/machinery/atmospherics/machine)
+	if(!machine.atmos_idle_queued)
+		return
+	machine.atmos_idle_queued = FALSE
+	atmos_idle_queue -= machine
 
 #undef SSAIR_PIPENETS
 #undef SSAIR_ATMOSMACHINERY

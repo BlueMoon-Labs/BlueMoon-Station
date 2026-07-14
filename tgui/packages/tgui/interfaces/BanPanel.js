@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { useBackend, useLocalState } from '../backend';
 import {
   Box,
@@ -38,8 +40,8 @@ const BANTYPE_LABELS = {
   'PACIFICATION_BAN': { color: 'teal', icon: 'dove' },
 };
 
-export const BanPanel = (props, context) => {
-  const { act, data } = useBackend(context);
+export const BanPanel = (props) => {
+  const { act, data } = useBackend();
   const {
     db_connected,
     playerckey,
@@ -54,7 +56,7 @@ export const BanPanel = (props, context) => {
     total_count = 0,
   } = data;
 
-  const [tab, setTab] = useLocalState(context, 'tab', 0);
+  const [tab, setTab] = useState(0);
 
   if (!db_connected) {
     return (
@@ -91,7 +93,6 @@ export const BanPanel = (props, context) => {
               adminckey={adminckey}
               ip={ip}
               cid={cid}
-              tguiContext={context}
               onSearch={(fields) => act('search', fields)}
             />
           </Stack.Item>
@@ -121,7 +122,6 @@ export const BanPanel = (props, context) => {
                 job_categories={job_categories}
                 banned_roles={banned_roles}
                 job_list={job_list}
-                tguiContext={context}
                 onAddBan={(fields) => act('add_ban', fields)}
                 onUnbanJobs={(fields) => act('unban_jobs', fields)}
               />
@@ -145,19 +145,11 @@ export const BanPanel = (props, context) => {
 };
 
 const SearchBar = (props) => {
-  const { playerckey, adminckey, ip, cid, tguiContext, onSearch } = props;
-  const [localPlayer, setLocalPlayer] = useLocalState(
-    tguiContext, 'search_player', playerckey || ''
-  );
-  const [localAdmin, setLocalAdmin] = useLocalState(
-    tguiContext, 'search_admin', adminckey || ''
-  );
-  const [localIp, setLocalIp] = useLocalState(
-    tguiContext, 'search_ip', ip || ''
-  );
-  const [localCid, setLocalCid] = useLocalState(
-    tguiContext, 'search_cid', cid || ''
-  );
+  const { playerckey, adminckey, ip, cid, onSearch } = props;
+  const [localPlayer, setLocalPlayer] = useState(playerckey || '');
+  const [localAdmin, setLocalAdmin] = useState(adminckey || '');
+  const [localIp, setLocalIp] = useState(ip || '');
+  const [localCid, setLocalCid] = useState(cid || '');
 
   return (
     <Section py={0.5}>
@@ -222,21 +214,20 @@ const CustomBanForm = (props) => {
     job_categories,
     banned_roles,
     job_list,
-    tguiContext,
-    onAddBan,
+        onAddBan,
     onUnbanJobs,
   } = props;
 
-  const [banType, setBanType] = useLocalState(tguiContext, 'banType', '');
-  const [banKey, setBanKey] = useLocalState(tguiContext, 'banKey', playerckey || '');
-  const [banIp, setBanIp] = useLocalState(tguiContext, 'banIp', '');
-  const [banCid, setBanCid] = useLocalState(tguiContext, 'banCid', '');
-  const [banDuration, setBanDuration] = useLocalState(tguiContext, 'banDuration', 0);
-  const [banSeverity, setBanSeverity] = useLocalState(tguiContext, 'banSeverity', '');
-  const [banJob, setBanJob] = useLocalState(tguiContext, 'banJob', '');
-  const [banReason, setBanReason] = useLocalState(tguiContext, 'banReason', '');
-  const [checkedRoles, setCheckedRoles] = useLocalState(tguiContext, 'checkedRoles', {});
-  const [expandedCats, setExpandedCats] = useLocalState(tguiContext, 'expandedCats', {});
+  const [banType, setBanType] = useLocalState('banType', '');
+  const [banKey, setBanKey] = useLocalState('banKey', playerckey || '');
+  const [banIp, setBanIp] = useLocalState('banIp', '');
+  const [banCid, setBanCid] = useLocalState('banCid', '');
+  const [banDuration, setBanDuration] = useLocalState('banDuration', 0);
+  const [banSeverity, setBanSeverity] = useLocalState('banSeverity', '');
+  const [banJob, setBanJob] = useLocalState('banJob', '');
+  const [banReason, setBanReason] = useLocalState('banReason', '');
+  const [checkedRoles, setCheckedRoles] = useLocalState('checkedRoles', {});
+  const [expandedCats, setExpandedCats] = useState({});
 
   const flatRoles = [];
   job_categories.forEach((cat) => {
@@ -494,7 +485,7 @@ const CustomBanForm = (props) => {
               );
             })}
           </Flex>
-        </Box>
+      </Box>
 
       <Box bold mb={0.3} color="label" fontSize="11px">Reason</Box>
       <TextArea

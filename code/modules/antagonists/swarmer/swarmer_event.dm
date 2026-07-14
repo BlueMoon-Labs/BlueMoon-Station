@@ -5,8 +5,14 @@
 	max_occurrences = 1 //Only once okay fam
 	earliest_start = 30 MINUTES
 	min_players = 35
-	dynamic_should_hijack = TRUE
 	category = EVENT_CATEGORY_INVASION
+	// Гост-спавнер (шелл занимает призрак), пропущенный GHOST-свипом: не наследует
+	// /datum/round_event/ghost_role, поэтому падал в MAJOR по дефолту категории INVASION.
+	severity = DIRECTOR_SEVERITY_GHOST
+	cost = 10
+	intensity = 15
+	family = "swarmers" // с рулсетом-двойником динамика: не подряд
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // как у рулсета-двойника
 	description = "A robotic menace invades the station consuming everything for materials and reproducing."
 
 /datum/round_event/spawn_swarmer

@@ -5,15 +5,19 @@
 	max_occurrences = 1
 	min_players = 30
 	earliest_start = 45 MINUTES
-	dynamic_should_hijack = FALSE
 	category = EVENT_CATEGORY_INVASION
+	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
+	cost = 10
+	intensity = 15
+	family = "pirates" // с рулсетом-двойником динамика (он запускает это же событие): не подряд
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // как у рулсета-двойника: не экста и не лайт
 	description = "The crew will either pay up, or face a pirate assault."
 
 #define PIRATES_ROGUES "Rogues"
 // #define PIRATES_SILVERSCALES "Silverscales"
 // #define PIRATES_DUTCHMAN "Flying Dutchman"
 
-/datum/round_event_control/pirates/preRunEvent()
+/datum/round_event_control/pirates/preRunEvent(admin_window = TRUE)
 	if(!SSmapping.empty_space && !length(SSmapping.levels_by_trait(ZTRAIT_SPACE_RUINS)) && !SSmapping.station_start)
 		return EVENT_CANT_RUN
 
@@ -335,6 +339,16 @@
 /obj/machinery/computer/piratepad_control/Initialize(mapload)
 	..()
 	return INITIALIZE_HINT_LATELOAD
+
+/obj/machinery/computer/piratepad_control/Destroy()
+	// Таймер прогрева send() держал бы терминал в SStimer, а loot-objective
+	// пиратов/воксов/рейдеров - до конца раунда через cargo_hold
+	deltimer(sending_timer)
+	pad = null
+	for(var/datum/objective/loot/booty in GLOB.objectives)
+		if(booty.cargo_hold == src)
+			booty.cargo_hold = null
+	return ..()
 
 /obj/machinery/computer/piratepad_control/multitool_act(mob/living/user, obj/item/multitool/I)
 	. = ..()

@@ -20,6 +20,20 @@
 			return BULLET_ACT_BLOCK
 		M.death(0)
 
+/obj/item/projectile/magic/dust
+	name = "bolt of dust"
+	icon_state = "pulse1_bl"
+
+/obj/item/projectile/magic/dust/on_hit(target)
+	. = ..()
+	if(!ismob(target))
+		return
+	var/mob/M = target
+	if(M.anti_magic_check())
+		M.visible_message("<span class='warning'>[src] vanishes on contact with [target]!</span>")
+		return BULLET_ACT_BLOCK
+	M.dust(TRUE, FALSE)
+
 /obj/item/projectile/magic/resurrection
 	name = "bolt of resurrection"
 	icon_state = "ion"
@@ -409,7 +423,7 @@
 	animate(src, alpha = 0, time = 30)
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(qdel), src), 30)
 
-/obj/structure/closet/decay/open(mob/living/user)
+/obj/structure/closet/decay/open(mob/living/user, force = FALSE)
 	. = ..()
 	if(.)
 		if(icon_state == magic_icon) //check if we used the magic icon at all before giving it the lesser magic icon

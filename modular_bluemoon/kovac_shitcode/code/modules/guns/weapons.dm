@@ -432,7 +432,7 @@
 	desc = "A high powered chainsaw for cutting up ...you know...."
 	item = /obj/item/chainsaw/doomslayer/inteq_chainsaw
 	cost = 16
-	purchasable_from = ~(UPLINK_SYNDICATE)
+	purchasable_from = ~(UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 
 /// Clown Ops Uplink additions
 /datum/uplink_item/suits/hardsuit/elite_clown
@@ -470,7 +470,7 @@
 			Additionally the suit is collapsible, making it small enough to fit within a backpack."
 	item = /obj/item/clothing/suit/space/hardsuit/syndi
 	cost = 8
-	purchasable_from = UPLINK_SYNDICATE
+	purchasable_from = UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/suits/hardsuit/syndi_elite
 	name = "Syndicate Elite Hardsuit"
@@ -478,7 +478,7 @@
 			provides the user with superior armor and mobility compared to the standard Syndicate hardsuit."
 	item = /obj/item/clothing/suit/space/hardsuit/syndi/elite
 	cost = 12
-	purchasable_from = UPLINK_SYNDICATE
+	purchasable_from = UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/suits/hardsuit/syndi_shield
 	name = "Syndicate Shielded Hardsuit"

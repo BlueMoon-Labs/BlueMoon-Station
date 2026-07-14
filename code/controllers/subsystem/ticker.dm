@@ -203,7 +203,7 @@ SUBSYSTEM_DEF(ticker)
 				start_immediately = FALSE
 				mapvote_restarter_in_progress = TRUE
 				var/vote_type = CONFIG_GET(string/map_vote_type)
-				SSvote.initiate_vote("map","server", display = SHOW_RESULTS, votesystem = vote_type, forced = TRUE)
+				SSvote.initiate_vote("map","server", display = SHOW_RESULTS|SHOW_WINNER, votesystem = vote_type, forced = TRUE)
 				to_chat(world, span_boldwarning("Активировано голосование за смену карты из-за неудачного завершения прошлого раунда. После его окончания сервер будет перезапущен."))
 				return
 			#endif
@@ -364,10 +364,10 @@ SUBSYSTEM_DEF(ticker)
 	current_state = GAME_STATE_PLAYING
 	Master.SetRunLevel(RUNLEVEL_GAME)
 
-	if(SSevents.holidays)
+	if(SSholidays.holidays)
 		to_chat(world, "<span class='notice'>and...</span>")
-		for(var/holidayname in SSevents.holidays)
-			var/datum/holiday/holiday = SSevents.holidays[holidayname]
+		for(var/holidayname in SSholidays.holidays)
+			var/datum/holiday/holiday = SSholidays.holidays[holidayname]
 			to_chat(world, "<h4>[holiday.greet()]</h4>")
 
 	PostSetup()
@@ -560,7 +560,7 @@ SUBSYSTEM_DEF(ticker)
 		INVOKE_ASYNC(SSmapping, TYPE_PROC_REF(/datum/controller/subsystem/mapping, maprotate))
 	else
 		var/vote_type = CONFIG_GET(string/map_vote_type)
-		SSvote.initiate_vote("map","server", display = SHOW_RESULTS, votesystem = vote_type, forced = TRUE)
+		SSvote.initiate_vote("map","server", display = SHOW_RESULTS|SHOW_WINNER, votesystem = vote_type, forced = TRUE)
 
 /datum/controller/subsystem/ticker/proc/HasRoundStarted()
 	return current_state >= GAME_STATE_PLAYING
@@ -575,9 +575,9 @@ SUBSYSTEM_DEF(ticker)
 		SSticker.modevoted = TRUE
 		var/dynamic = CONFIG_GET(flag/dynamic_voting)
 		if(dynamic)
-			SSvote.initiate_vote("dynamic", "server", display = NONE, votesystem = SCORE_VOTING, forced = TRUE,vote_time = 20 MINUTES)
+			SSvote.initiate_vote("dynamic", "server", display = SHOW_RESULTS|SHOW_WINNER, votesystem = SCORE_VOTING, forced = TRUE,vote_time = 20 MINUTES)
 		else
-			SSvote.initiate_vote("roundtype", "server", display = NONE, votesystem = PLURALITY_VOTING, forced=TRUE, \
+			SSvote.initiate_vote("roundtype", "server", display = SHOW_RESULTS|SHOW_WINNER, votesystem = PLURALITY_VOTING, forced=TRUE, \
 			vote_time = SSticker.GetTimeLeft() - ROUNDTYPE_VOTE_END_PENALTY) //BLUEMOON CHANGE, WAS vote_time = (CONFIG_GET(flag/modetier_voting) ? 1 MINUTES : 20 MINUTES))
 
 /datum/controller/subsystem/ticker/Recover()

@@ -1,4 +1,5 @@
-import { Component, createRef } from 'inferno';
+import { Component, createRef, useState } from 'react';
+
 import { useBackend, useLocalState } from '../backend';
 import {
   Box,
@@ -32,8 +33,8 @@ const STATE_ICONS = {
   3: 'check-circle',
 };
 
-export const AdminTicketPanel = (props, context) => {
-  const { act, data } = useBackend(context);
+export const AdminTicketPanel = (props) => {
+  const { act, data } = useBackend();
   const {
     tickets = [],
     selected_ticket_ref,
@@ -45,8 +46,8 @@ export const AdminTicketPanel = (props, context) => {
     communications_unhandled = 0,
   } = data;
 
-  const [tab, setTab] = useLocalState(context, 'tab', selected_state);
-  const [selectedCommId, setSelectedCommId] = useLocalState(context, 'selectedCommId', null);
+  const [tab, setTab] = useState(selected_state);
+  const [selectedCommId, setSelectedCommId] = useState(null);
   const selectedComm =
     selectedCommId !== null
       ? communications.find((c) => c.id === selectedCommId) ?? null
@@ -372,15 +373,12 @@ const TicketListItem = (props) => {
   );
 };
 
-const TicketDetailPanel = (props, context) => {
+const TicketDetailPanel = (props) => {
   const { ticket, act, data } = props;
-  const [replyMessage, setReplyMessage] = useLocalState(
-    context,
-    'replyMessage',
+  const [replyMessage, setReplyMessage] = useLocalState('replyMessage',
     ''
   );
   const [lastTypingPing, setLastTypingPing] = useLocalState(
-    context,
     'lastTypingPing_' + ticket.ref,
     0
   );
@@ -708,7 +706,7 @@ const TicketDetailPanel = (props, context) => {
       {isActive && (
         <Stack.Item>
           {(typingAdmins.length > 0 || !!ticket.initiator_typing) && (
-            <Box fontSize="11px" color="#ffcc00" textAlign="left" py={0.5} style={{fontWeight: 'bold'}}>
+            <Box fontSize="11px" color="#ffcc00" textAlign="left" py={0.5} style={{ fontWeight: 'bold' }}>
               <Icon name="pencil-alt" mr={0.5} />
               {typingAdmins.concat(
                 ticket.initiator_typing

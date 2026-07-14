@@ -9,8 +9,8 @@ import {
 } from '../components';
 import { Window } from '../layouts';
 
-export const PersonalMusicBox = (props, context) => {
-  const { act, data } = useBackend(context);
+export const PersonalMusicBox = (props) => {
+  const { act, data } = useBackend();
   const {
     playing,
     has_track,

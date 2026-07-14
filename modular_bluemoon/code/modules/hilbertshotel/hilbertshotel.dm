@@ -85,7 +85,8 @@
 		SShilbertshotel.user_data[user.ckey] = list(
 			"room_number" = 1,
 			"template" = SShilbertshotel.default_template,
-			"donator_tier" = is_donator_group(user.ckey, DONATOR_GROUP_TIER_2) ? DONATOR_GROUP_TIER_2 : is_donator_group(user.ckey, DONATOR_GROUP_TIER_1) ? DONATOR_GROUP_TIER_1 : DONATOR_GROUP_NONE
+			"donator_tier" = is_donator_group(user.ckey, DONATOR_GROUP_TIER_2) ? DONATOR_GROUP_TIER_2 : is_donator_group(user.ckey, DONATOR_GROUP_TIER_1) ? DONATOR_GROUP_TIER_1 : DONATOR_GROUP_NONE,
+			"status" = STATUS_IDLE
 		)
 
 	data["current_room"] = SShilbertshotel.user_data[user.ckey]["room_number"]
@@ -148,6 +149,10 @@
 			"template" = SShilbertshotel.default_template,
 			"status" = STATUS_IDLE
 		)
+	if(SShilbertshotel.user_data[user.ckey]["donator_tier"] == null)
+		SShilbertshotel.user_data[user.ckey]["donator_tier"] = is_donator_group(user.ckey, DONATOR_GROUP_TIER_2) ? DONATOR_GROUP_TIER_2 : is_donator_group(user.ckey, DONATOR_GROUP_TIER_1) ? DONATOR_GROUP_TIER_1 : DONATOR_GROUP_NONE
+	if(SShilbertshotel.user_data[user.ckey]["status"] == null)
+		SShilbertshotel.user_data[user.ckey]["status"] = STATUS_IDLE
 
 	user.DelayNextAction(CLICK_CD_RAPID)
 	switch(action)
@@ -181,22 +186,32 @@
 				SShilbertshotel.user_data[user.ckey]["status"] = STATUS_IDLE
 			return TRUE
 
-/obj/item/hilbertshotel/proc/check_user(mob/user)
+/obj/item/hilbertshotel/proc/check_user(mob/user, pulled = FALSE)
+	. = FALSE
+	var/static/list/protected_jobs = list(
+		"Captain", "NanoTrasen Representative", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director", "Head of Security",
+		"Security Officer", "Blueshield", "Peacekeeper", "Brig Physician", "Warden", "Detective"
+	)
+	// Защита от NonCon без последствий для важных ролей
+	if(pulled && iscarbon(user))
+		var/mob/living/carbon/C = user
+		if((C.stat > CONSCIOUS || C.restrained(TRUE)) && ((user.job in protected_jobs) || (user.mind?.assigned_role in protected_jobs)) \
+			&& !is_away_level(user.z))
+			return
 	if(GLOB.master_mode == "Extended")
 		return TRUE
 	if(!user.mind)
 		return TRUE
 
 	var/datum/mind/mind = user.mind
-	if(!(mind.antag_datums || HAS_MIND_TRAIT(user, TRAIT_MINDSHIELD)))
-		return TRUE
 	if(mind.has_antag_datum(/datum/antagonist/ghost_role))
+		return TRUE
+	if(!(mind.antag_datums || HAS_MIND_TRAIT(user, TRAIT_MINDSHIELD)))
 		return TRUE
 	if(mind.has_antag_datum(/datum/antagonist/ashwalker))
 		return TRUE
 
-	to_chat(user, "<span class='warning'>Your special role doesn't allow you to enter infinity dormitory.</span>")
-	return FALSE
+	to_chat(user, span_warning("Your special role doesn't allow you to enter infinity dormitory."))
 
 /obj/item/hilbertshotel/proc/promptAndCheckIn(mob/user, mob/target, room_number, template)
 	//SPLURT EDIT - max infinidorms rooms
@@ -238,6 +253,9 @@
 	sendToNewRoom(room_number, user, template)
 
 /area/hilbertshotel/proc/storeRoom()
+	if(storing || !reservation)
+		return
+	storing = TRUE
 	// Calculate the actual room size based on the reservation coordinates
 	var/roomWidth = reservation.top_right_coords[1] - reservation.bottom_left_coords[1] + 1
 	var/roomHeight = reservation.top_right_coords[2] - reservation.bottom_left_coords[2] + 1
@@ -267,6 +285,7 @@
 	var/datum/turf_reservation/old_res = reservation
 	reservation = null
 	qdel(old_res)
+	storing = FALSE
 
 /area/hilbertshotel/proc/update_light_switches() //SPLURT ADDITION: This will update all light switches in the given area
 	for(var/obj/machinery/light_switch/LS in src)
@@ -352,15 +371,19 @@
 		return
 	if(!istype(T))
 		return
-	var/atom/movable/AM
+	var/atom/movable/pulledAtom
 	if(user.pulling)
-		AM = user.pulling
-		if(istype(AM, /mob/living))
-			if(check_user(AM))
-				MobTransfer(AM, T, depth)
+		pulledAtom = user.pulling
+		if(istype(pulledAtom, /mob/living))
+			if(check_user(pulledAtom, TRUE))
+				MobTransfer(pulledAtom, T, depth)
+			else
+				pulledAtom = null
 		else
-			AM.forceMove(T)
+			pulledAtom.forceMove(T)
 	if(user.buckled && !user.buckled.anchored)
+		if(!check_user(user, TRUE))
+			return
 		var/atom/movable/seating = user.buckled
 		if(istype(seating, /mob/living))
 			if(check_user(seating))
@@ -375,19 +398,22 @@
 		var/datum/component/riding/human/riding_datum_human = user.GetComponent(/datum/component/riding/human)
 		var/mob/living/buckled_mob
 		for(var/mob/living/I in user.buckled_mobs)
+			if(!check_user(I, TRUE))
+				continue
 			buckled_mob = I
 			I.forceMove(T)
 		user.unbuckle_all_mobs(TRUE)
 		user.forceMove(T)
-		if(riding_datum_human && ishuman(user))
-			var/mob/living/carbon/human/H = user
-			H.buckle_mob(buckled_mob, TRUE, TRUE, buckle_type = riding_datum_human.buckle_type, auto_by_type = TRUE)
-		else
-			user.buckle_mob(buckled_mob, TRUE, TRUE)
+		if(buckled_mob)
+			if(riding_datum_human && ishuman(user))
+				var/mob/living/carbon/human/H = user
+				H.buckle_mob(buckled_mob, TRUE, TRUE, buckle_type = riding_datum_human.buckle_type, auto_by_type = TRUE)
+			else
+				user.buckle_mob(buckled_mob, TRUE, TRUE)
 	else
 		user.forceMove(T)
-	if(AM)
-		user.start_pulling(AM)
+	if(pulledAtom)
+		user.start_pulling(pulledAtom)
 
 /obj/item/hilbertshotel/proc/getMapTemplate(roomType) // To load a map and remove it's atoms
 	if(roomType == "Mystery Room")
@@ -459,9 +485,7 @@
 						var/_y = rand(min,max)
 						var/turf/T = locate(_x, _y, _z)
 						A.forceMove(T)
-			var/area/hilbertshotel/roomArea = get_area(locate(room.bottom_left_coords[1], room.bottom_left_coords[2], room.bottom_left_coords[3]))
-			if(roomArea)
-				roomArea.reservation = null
+			qdel(room)
 	if(storedRooms.len)
 		for(var/x in storedRooms)
 			var/list/atomList = storedRooms[x]
@@ -478,6 +502,10 @@
 				var/_y = rand(min,max)
 				var/turf/T = locate(_x, _y, _z)
 				A.forceMove(T)
+		for(var/obj/item/abstracthotelstorage/S in SShilbertshotel.storageTurf)
+			if(S.parentSphere == src)
+				qdel(S)
+		storedRooms.Cut()
 
 //Turfs and Areas
 /turf/closed/indestructible/hotelwall
@@ -640,6 +668,7 @@
 	var/datum/turf_reservation/reservation
 	var/turf/storageTurf
 	var/roomType = "Hotel Room" // SPLURT ADDITION: Default room type
+	var/storing = FALSE
 
 /area/hilbertshotel/illuminated
 	dynamic_lighting = DYNAMIC_LIGHTING_DISABLED

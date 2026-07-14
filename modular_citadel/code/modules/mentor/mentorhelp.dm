@@ -14,15 +14,14 @@
 	if(!msg || !mob)
 		return
 
-	var/show_char = CONFIG_GET(flag/mentors_mobname_only)
-	log_mentor("MENTORHELP: [key_name_mentor(src, 0, 0, 0, 0)]: [msg]")
+	log_mentor("MENTORHELP: [key_name_mentor(src, FALSE, FALSE, FALSE)]: [msg]")
 
 	for(var/client/X in GLOB.clients)
 		if(!X.is_mentor())
 			continue
 		var/sender_name
 		if(X.is_super_mentor())
-			sender_name = key_name_mentor(src, 1, 0, 1, show_char)
+			sender_name = key_name_mentor(src, TRUE, FALSE, TRUE)
 			SEND_SOUND(X, 'sound/items/bikehorn.ogg')
 		else
 			sender_name = "Кто-то спрашивает"
@@ -42,7 +41,7 @@
 		else
 			.["present"]++
 
-/proc/key_name_mentor(var/whom, var/include_link = null, var/include_name = 0, var/include_follow = 0, var/char_name_only = 0)
+/proc/key_name_mentor(whom, include_link = null, include_follow = TRUE, char_name_only = TRUE)
 	var/mob/M
 	var/client/C
 	var/key
@@ -75,17 +74,15 @@
 
 	if(key)
 		if(include_link)
-			if(CONFIG_GET(flag/mentors_mobname_only))
-				. += "<a href='?_src_=mentor;mentor_msg=[REF(M)];[MentorHrefToken(TRUE)]'>"
-			else
-				. += "<a href='?_src_=mentor;mentor_msg=[ckey];[MentorHrefToken(TRUE)]'>"
+			var/link = CONFIG_GET(flag/mentors_mobname_only) ? REF(M) : ckey
+			. += "<a href='?_src_=mentor;mentor_msg=[link];[MentorHrefToken(TRUE)]'>"
 
-		if(C && C.holder && C.holder.fakekey)
+		if(C?.holder?.fakekey)
 			. += "Administrator"
 		else if (char_name_only && CONFIG_GET(flag/mentors_mobname_only))
-			if(istype(C.mob,/mob/dead/new_player) || istype(C.mob, /mob/dead/observer)) //If they're in the lobby or observing, display their ckey
+			if(istype(C?.mob,/mob/dead/new_player)) //If they're in the lobby, display their ckey
 				. += key
-			else if(C && C.mob) //If they're playing/in the round, only show the mob name
+			else if(C?.mob) //If they're playing/in the round, only show the mob name
 				. += C.mob.name
 			else //If for some reason neither of those are applicable and they're mentorhelping, show ckey
 				. += key

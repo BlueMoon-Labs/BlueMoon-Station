@@ -23,14 +23,9 @@
 			candidates.Remove(P)
 			continue
 		// BLUEMOON ADD END
-		if(antag_flag_override)
-			if(!(HAS_ANTAG_PREF(P.client, antag_flag_override)))
-				candidates.Remove(P)
-				continue
-		else
-			if(!(HAS_ANTAG_PREF(P.client, antag_flag)))
-				candidates.Remove(P)
-				continue
+		if(!has_required_antag_preference(P.client))
+			candidates.Remove(P)
+			continue
 		var/role_to_bancheck_lj = antag_flag_override ? antag_flag_override : antag_flag
 		if(role_to_bancheck_lj && (jobban_isbanned(P, role_to_bancheck_lj) || QDELETED(P)))
 			candidates.Remove(P)
@@ -79,6 +74,7 @@
 	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_LIGHT) // BLUEMOON ADD
 	weight = 6  //BLUEMOON CHANGES
 	cost = 6 //BLUEMOON CHANGES
+	intensity = 15
 	requirements = list(101,40,25,20,15,10,10,10,10,10)
 	repeatable = TRUE
 
@@ -103,6 +99,7 @@
 	weight = 2
 	delay = 1 MINUTES // Prevents rule start while head is offstation.
 	cost = 7 //BLUEMOON CHANGES - маленький шанс и низкая стоимость из-за сложности
+	intensity = 15
 	requirements = list(101,101,101,101,50,20,20,20,20,20)
 	flags = HIGH_IMPACT_RULESET
 	blocking_rules = list(/datum/dynamic_ruleset/roundstart/revs)
@@ -178,6 +175,7 @@
 	required_candidates = 1
 	weight = 4 //BLUEMOON CHANGES
 	cost = 10
+	intensity = 15
 	requirements = list(101,101,101,50,40,20,20,15,10,10)
 	repeatable = TRUE
 
@@ -199,6 +197,7 @@
 	required_candidates = 1
 	weight = 4
 	cost = 10
+	intensity = 15
 	requirements = list(101,101,60,50,40,30,20,15,10,10)
 	antag_cap = list("denominator" = 24)
 	repeatable = TRUE
@@ -228,6 +227,7 @@
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED) // BLUEMOON ADD
 	weight = 4
 	cost = 5
+	intensity = 15
 	scaling_cost = 10
 	requirements = list(101,101,60,50,40,30,20,15,10,10)
 	antag_cap = list("denominator" = 39, "offset" = 1)

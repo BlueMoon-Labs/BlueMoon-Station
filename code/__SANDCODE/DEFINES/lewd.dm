@@ -55,6 +55,7 @@ GLOBAL_LIST_INIT(interaction_speeds, list(
 #define INTERACTION_NORMAL 0
 #define INTERACTION_LEWD 1
 #define INTERACTION_EXTREME 2
+#define INTERACTION_UNHOLY_HARD 4
 
 #define CUM_TARGET_MOUTH "mouth"
 #define CUM_TARGET_THROAT "throat"
@@ -76,6 +77,7 @@ GLOBAL_LIST_INIT(interaction_speeds, list(
 #define GRINDING_MOUTH_WITH_FEET "mouthfeet"
 #define THIGH_SMOTHERING "thigh_smother"
 #define NUTS_TO_FACE "nut_face"
+#define NUTS_MASSAGE "nuts_massage"
 
 #define HIGH_LUST 20
 #define NORMAL_LUST 12
@@ -92,24 +94,24 @@ GLOBAL_LIST_INIT(interaction_speeds, list(
 #define INTERACTION_REQUIRE_MOUTH (1<<2)
 #define INTERACTION_REQUIRE_TOPLESS (1<<3)
 
-/// Interaction requirements -- Has require states
-#define INTERACTION_REQUIRE_ANUS (1<<0)
-#define INTERACTION_REQUIRE_BALLS (1<<1)
-#define INTERACTION_REQUIRE_BREASTS (1<<2)
+#define INTERACTION_REQUIRE_ANUS (1<<4)
+#define INTERACTION_REQUIRE_BALLS (1<<5)
+#define INTERACTION_REQUIRE_BREASTS (1<<6)
+#define INTERACTION_REQUIRE_BELLY (1<<7)
 // Terrible stuff start here
-#define INTERACTION_REQUIRE_EARS (1<<3)
-#define INTERACTION_REQUIRE_EARSOCKETS (1<<4)
-#define INTERACTION_REQUIRE_EYES (1<<5)
-#define INTERACTION_REQUIRE_EYESOCKETS (1<<6)
+#define INTERACTION_REQUIRE_EARS (1<<8)
+#define INTERACTION_REQUIRE_EARSOCKETS (1<<9)
+#define INTERACTION_REQUIRE_EYES (1<<10)
+#define INTERACTION_REQUIRE_EYESOCKETS (1<<11)
 // End here
-#define INTERACTION_REQUIRE_FEET (1<<7)
-#define INTERACTION_REQUIRE_PENIS (1<<8)
-#define INTERACTION_REQUIRE_VAGINA (1<<9)
+#define INTERACTION_REQUIRE_FEET (1<<12)
+#define INTERACTION_REQUIRE_PENIS (1<<13)
+#define INTERACTION_REQUIRE_VAGINA (1<<14)
 // BLUEMOON ADD хвостики!
-#define INTERACTION_REQUIRE_TAIL (1<<9)
-#define INTERACTION_REQUIRE_KNOT (1<<10) // not replace INTERACTION_REQUIRE_PENIS, use both
-#define INTERACTION_REQUIRE_DOUBLE_PENIS (1<<11) // not replace INTERACTION_REQUIRE_PENIS, use both
-#define INTERACTION_REQUIRE_TK (1<<12)
+#define INTERACTION_REQUIRE_TAIL (1<<15)
+#define INTERACTION_REQUIRE_KNOT (1<<16) // not replace INTERACTION_REQUIRE_PENIS, use both
+#define INTERACTION_REQUIRE_DOUBLE_PENIS (1<<17) // not replace INTERACTION_REQUIRE_PENIS, use both
+#define INTERACTION_REQUIRE_TK (1<<18)
 // BLUEMOON ADD END
 
 /// Interaction flags
@@ -123,6 +125,7 @@ GLOBAL_LIST_INIT(interaction_speeds, list(
 #define INTERACTION_FLAG_REQUIRE_BONDAGE (1<<7) //TODO: move the bondage interactions out of the interaction menu
 #define INTERACTION_FLAG_RANGED_CONSENT (1<<8)
 #define INTERACTION_FLAG_HIDE_IN_PANEL (1<<9) // not show for users
+#define INTERACTION_FLAG_UNHOLY_HARD (1<<10) // C богом
 
 /// Copy-paste prevention for additional details
 /// Fills containers

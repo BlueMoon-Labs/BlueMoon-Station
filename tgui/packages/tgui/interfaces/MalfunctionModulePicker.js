@@ -1,9 +1,9 @@
 import { useBackend } from '../backend';
+import { Box, Button, Grid, Icon, Section } from '../components';
 import { Window } from '../layouts';
-import { Section, Box, Button, Stack, Icon, Grid } from '../components';
 
-export const MalfunctionModulePicker = (props, context) => {
-  const { act, data } = useBackend(context);
+export const MalfunctionModulePicker = (props) => {
+  const { act, data } = useBackend();
   const {
     processing_time = 0,
     large_modules = [],
@@ -26,7 +26,7 @@ export const MalfunctionModulePicker = (props, context) => {
       <Box className="display-flex" style={{ alignItems: 'center', marginBottom: '6px' }}>
         <Icon name="microchip" color={typeColor} size={1.2} style={{
           marginRight: '10px',
-          textShadow: `0 0 10px ${typeColor}`
+          textShadow: `0 0 10px ${typeColor}`,
         }} />
         <Box fluid bold fontSize="14px" color={typeColor} style={{ textShadow: `0 0 5px ${typeColor}88` }}>
           {module.name.toUpperCase()}
@@ -70,7 +70,7 @@ export const MalfunctionModulePicker = (props, context) => {
             linear-gradient(90deg, rgba(28, 97, 213, 0.03) 1px, transparent 1px)
           `,
           backgroundSize: '100% 100%, 25px 25px, 25px 25px',
-          padding: '15px'
+          padding: '15px',
         }}
       >
         <Grid>
@@ -82,7 +82,7 @@ export const MalfunctionModulePicker = (props, context) => {
               boxShadow: '0 8px 15px -10px #1c61d5',
               background: 'rgba(0, 0, 0, 0.4)',
               padding: '10px',
-              borderRadius: '2px'
+              borderRadius: '2px',
             }}>
               <Box color="#1c61d5" bold fontSize="18px" style={{ letterSpacing: '2px', textShadow: '0 0 12px #1c61d5' }}>
                 MALFUNCTION SYSTEM
@@ -97,7 +97,7 @@ export const MalfunctionModulePicker = (props, context) => {
                 border: '1px solid #1c61d533',
                 borderRadius: '4px',
                 textAlign: 'center',
-                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.5)'
+                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.5)',
               }}
             >
               <Box color="label" fontSize="10px" mb={0.5} bold uppercase>Available Flops</Box>
@@ -110,7 +110,7 @@ export const MalfunctionModulePicker = (props, context) => {
             <Box mt={5} p={1.5} style={{
               borderLeft: '2px solid #1c61d5',
               background: 'rgba(0, 0, 0, 0.5)',
-              backdropFilter: 'blur(1px)'
+              backdropFilter: 'blur(1px)',
             }}>
               <Box color="#1c61d5" fontSize="11px" bold mb={1}>DIRECTIVE_LOG:</Box>
               <Box color="label" fontSize="10px" italic style={{ lineHeight: '1.3' }}>

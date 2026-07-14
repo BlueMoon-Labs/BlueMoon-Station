@@ -76,9 +76,9 @@
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
-	accessory = list(/obj/item/clothing/accessory/permit/special/bouncer)
+	accessory = list(/obj/item/clothing/accessory/permit/special/bouncer, /obj/item/clothing/accessory/permit/special/syndie_station)
 
-	backpack_contents = list(/obj/item/reagent_containers/spray/pepper=1, /obj/item/restraints/handcuffs/cable/zipties=2, /obj/item/choice_beacon/copgun=1, /obj/item/syndicate_uplink=1)
+	backpack_contents = list(/obj/item/reagent_containers/spray/pepper=1, /obj/item/restraints/handcuffs/cable/zipties=2, /obj/item/choice_beacon/copgun=1,/obj/item/syndicate_uplink/station=1)
 
 //BLUEMOON ADD
 /datum/martial_art/krav_maga/restricted/bouncer

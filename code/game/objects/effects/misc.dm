@@ -71,13 +71,17 @@
 	name = "lighting fx obj"
 	desc = "Tell a coder if you're seeing this."
 	icon_state = "nothing"
+	// Оверлейный свет: вспышки висят на движущихся мобах, корнер-систему не трогаем
+	light_system = OVERLAY_LIGHT
 	light_color = "#FFFFFF"
 	light_range = MINIMUM_USEFUL_LIGHT_RANGE
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 
 /obj/effect/dummy/lighting_obj/Initialize(mapload, _color, _range, _power, _duration)
 	. = ..()
-	set_light(_range ? _range : light_range, _power ? _power : light_power, _color ? _color : light_color)
+	set_light_color(_color ? _color : light_color)
+	set_light_range(isnull(_range) ? light_range : _range)
+	set_light_power(isnull(_power) ? light_power : _power)
 	if(_duration)
 		QDEL_IN(src, _duration)
 

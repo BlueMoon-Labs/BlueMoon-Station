@@ -183,6 +183,13 @@
 					contents.Cut(1, limited_random_access_stack_position + 1)
 				else
 					contents.Cut(1, length(contents) - limited_random_access_stack_position + 1)
+		var/obj/o
+		for(var/i = contents.len to 1 step -1)
+			o = contents[i]
+			if(!istype(o))
+				continue
+			if(o.obj_flags & NOT_VISIBLE_IN_STORAGE)
+				contents.Cut(i,i+1)
 	return contents
 
 /datum/component/storage/proc/canreach_react(datum/source, list/next)

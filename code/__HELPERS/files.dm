@@ -74,14 +74,16 @@
 	return replacetext(path, "/", "_")
 
 /// Returns the md5 of a file at a given path.
+/// Нативный хеш rust-g: BYOND'овский md5(file()) на путях с диска блокировал тик на ~20мс за файл
+/// (генерация ассетов при коннектах). Читает файл напрямую с диска, минуя маршаллинг в BYOND.
 /proc/md5filepath(path)
-	. = md5(file(path))
+	. = rustg_hash_file(RUSTG_HASH_MD5, path)
 
 /// Save file as an external file then md5 it.
 /// Used because md5ing files stored in the rsc sometimes gives incorrect md5 results.
 /proc/md5asfile(file)
 	var/static/notch = 0
-	// its importaint this code can handle md5filepath sleeping instead of hard blocking, if it's converted to use rust_g.
+	// md5filepath теперь на rust-g (hash_file): вызов по-прежнему синхронный и блокирующий, не спящий - просто заметно короче нативного md5(file()).
 	var/filename = "tmp/md5asfile.[world.realtime].[world.timeofday].[world.time].[world.tick_usage].[notch]"
 	notch = WRAP(notch+1, 0, 2^15)
 	fcopy(file, filename)

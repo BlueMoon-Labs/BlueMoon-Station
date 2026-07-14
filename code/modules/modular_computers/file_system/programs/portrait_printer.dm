@@ -27,6 +27,7 @@
 	for(var/category_name in categorys)
 		data[category_name] = SSpersistence.paintings[category_name]
 	data["favorite_paintings_md5"] = user?.client?.prefs?.favorite_paintings_md5
+	data["is_admin"] = check_rights_for(user?.client, R_DEBUG)
 	// BLUEMOON EDIT END
 	return data
 
@@ -61,6 +62,39 @@
 
 			L.client.prefs.save_preferences()
 
+			return TRUE
+		if("delete_painting")
+			var/mob/user = usr
+			if(!check_rights_for(user?.client, R_DEBUG))
+				return
+			var/choice = tgui_alert(user, "Вы УВЕРЕНЫ, что хотите удалить картину? ДЕЙСТВИЕ НЕОБРАТИМО!", "Удаление картины из БД", list("Нет", "Да"))
+			if(choice != "Да")
+				return
+			var/asset_prefix = params["asset_prefix"]
+			var/md5 = params["md5"]
+			if(!asset_prefix || !md5)
+				return
+			var/list/current_list = SSpersistence.paintings[asset_prefix]
+			if(!current_list)
+				return
+			var/list/chosen_portrait
+			for(var/i in 1 to length(current_list))
+				var/list/entry = current_list[i]
+				if(entry["md5"] == md5)
+					chosen_portrait = entry
+					current_list.Cut(i, i+1)
+					break
+			if(!chosen_portrait)
+				return
+			var/author = chosen_portrait["ckey"] || chosen_portrait["author"] || "unknown"
+			var/png = "data/paintings/[asset_prefix]/[md5].png"
+			fdel(png)
+			for(var/obj/structure/sign/painting/P in SSpersistence.painting_frames)
+				if(P.current_canvas && md5(P.current_canvas.get_data_string()) == md5)
+					QDEL_NULL(P.current_canvas)
+					P.update_icon()
+			log_admin("[key_name(user)] deleted a persistent painting ([chosen_portrait["title"]]) from [asset_prefix] by [author].")
+			message_admins(span_notice("[key_name_admin(user)] deleted persistent painting ([chosen_portrait["title"]]) from [asset_prefix] by [author]."))
 			return TRUE
 		if("select")
 			//printer check!

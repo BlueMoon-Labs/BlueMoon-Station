@@ -74,15 +74,15 @@
 		if(iscyborg(current) && !silent)
 			var/mob/living/silicon/robot/R = current
 			if(R.connected_ai && !is_servant_of_ratvar(R.connected_ai))
-				to_chat(R, "<span class='boldwarning'>You have been desynced from your master AI.<br>\
-				In addition, your onboard camera is no longer active and you have gained additional equipment, including a limited clockwork slab.</span>")
+				to_chat(R, "<span class='boldwarning'>Ваша синхронизация с главным ИИ была отключена.<br>\
+				Кроме того, ваша встроенная камера больше не активна, и вы получили ограниченный набор часовых механизмов, в том числе часовую плиту.</span>")
 			else
-				to_chat(R, "<span class='boldwarning'>Your onboard camera is no longer active and you have gained additional equipment, including a limited clockwork slab.</span>")
+				to_chat(R, "<span class='boldwarning'>Ваша встроенная камера больше не активна, и вы получили ограниченный набор часовых механизмов, в том числе часовую плиту.</span>")
 		if(isAI(current))
-			to_chat(current, "<span class='boldwarning'>You are now able to use your cameras to listen in on conversations, but can no longer speak in anything but Ratvarian.</span>")
-		to_chat(current, "<span class='heavy_brass'>You can communicate with other servants by using the Hierophant Network action button in the upper left.</span>")
+			to_chat(current, "<span class='boldwarning'>Теперь вы можете использовать свои камеры для прослушивания разговоров, но больше не можете говорить ни на каком другом языке, кроме ратварского.</span>")
+		to_chat(current, "<span class='heavy_brass'>Вы можете общаться с другими слугами, используя кнопку сети Иерофанта в левом верхнем углу.</span>")
 	else if(isbrain(current) || isclockmob(current))
-		to_chat(current, "<span class='nezbere'>You can communicate with other servants by using the Hierophant Network action button in the upper left.</span>")
+		to_chat(current, "<span class='nezbere'>Вы можете общаться с другими слугами, используя кнопку сети Иерофанта в левом верхнем углу.</span>")
 	..()
 	to_chat(current, "<b>Воля Ратвара:</b> [CLOCKCULT_OBJECTIVE]")
 	antag_memory += "<b>Воля Ратвара:</b> [CLOCKCULT_OBJECTIVE]<br>" //Memorize the objectives
@@ -98,7 +98,7 @@
 		H.dna.remove_mutation(CLOWNMUT)
 	. += cult_give_item(/obj/item/clockwork/slab, H)
 	. += cult_give_item(/obj/item/clockwork/replica_fabricator, H)
-	to_chat(owner, "These will help you start the cult on this station. Use them well, and remember - you are not the only one.</span>")
+	to_chat(owner, "Они помогут вам создать культ на этой станции. Используйте их с умом и помните - вы не единственный.</span>")
 
 /datum/antagonist/clockcult/proc/cult_give_item(obj/item/item_path, mob/living/carbon/human/mob)
 	var/list/slots = list(
@@ -111,10 +111,10 @@
 	var/item_name = initial(item_path.name)
 	var/where = mob.equip_in_one_of_slots(T, slots, critical = TRUE)
 	if(!where)
-		to_chat(mob, "<span class='userdanger'>Unfortunately, you weren't able to get a [item_name]. This is very bad and you should adminhelp immediately (press F1).</span>")
+		to_chat(mob, "<span class='userdanger'>К сожалению, вы не получили [item_name]. Это очень плохо, и вы должны немедленно обратиться за помощью к администратору (нажмите F1).</span>")
 		return 0
 	else
-		to_chat(mob, "<span class='danger'>You have a [item_name] in your [where].</span>")
+		to_chat(mob, "<span class='danger'>У вас есть [item_name] в вашем [where].</span>")
 		if(where == "backpack")
 			SEND_SIGNAL(mob.back, COMSIG_TRY_STORAGE_SHOW, mob)
 		return TRUE
@@ -216,7 +216,7 @@
 	owner.current.log_message("has renounced the cult of Ratvar!", LOG_ATTACK, color="#BE8700")
 	owner.special_role = null
 	if(iscyborg(owner.current))
-		to_chat(owner.current, "<span class='warning'>Despite your freedom from Ratvar's influence, you are still irreparably damaged and no longer possess certain functions such as AI linking.</span>")
+		to_chat(owner.current, "<span class='warning'>Несмотря на то, что вы свободны от влияния Ратвара, вы все еще непоправимо повреждены и больше не обладаете определенными функциями, такими как привязка к ИИ.</span>")
 	. = ..()
 
 
@@ -240,9 +240,9 @@
 
 /datum/antagonist/clockcult/proc/admin_give_slab(mob/admin)
 	if(!SSticker.mode.equip_servant(owner.current))
-		to_chat(admin, "<span class='warning'>Failed to outfit [owner.current]!</span>")
+		to_chat(admin, "<span class='warning'>Не удалось экипировать [owner.current]!</span>")
 	else
-		to_chat(admin, "<span class='notice'>Successfully gave [owner.current] servant equipment!</span>")
+		to_chat(admin, "<span class='notice'>Экипировка слуги для [owner.current] успешно выдана!</span>")
 
 /datum/team/clockcult
 	name = "Clockcult"
@@ -270,7 +270,7 @@
 		for(var/datum/mind/B in members)
 			if(B.current)
 				SEND_SOUND(B.current, 'sound/hallucinations/i_see_you2.ogg')
-				to_chat(B.current, "<span class='heavy_brass'>Покров реальности истончается по мере роста вашего культа — ваши глаза начинают светиться...</span>")
+				to_chat(B.current, "<span class='heavy_brass'>Покров реальности истончается по мере роста вашего культа - ваши глаза начинают светиться...</span>")
 				addtimer(CALLBACK(src, PROC_REF(rise), B.current), 200)
 		clock_risen = TRUE
 
@@ -278,9 +278,9 @@
 		for(var/datum/mind/B in members)
 			if(B.current)
 				SEND_SOUND(B.current, 'sound/hallucinations/im_here1.ogg')
-				to_chat(B.current, "<span class='large_brass'>Ваш культ достиг расцвета, и приближается час Юстициара — вы уже не можете скрывать свою истинную природу!</span>")
+				to_chat(B.current, "<span class='large_brass'>Ваш культ достиг расцвета, и приближается час Юстициара. Вы уже не можете скрывать свою истинную природу!</span>")
 				addtimer(CALLBACK(src, PROC_REF(ascend), B.current), 200)
-		priority_announce("На вашей станции зафиксирована аномальная активность, связанная с культом Ратвара. Данные свидетельствуют о том, что около десятой части экипажа станции уже служит Часовому Юстициару. Служба безопасности получает право свободно применять летальную силу против слуг Ратвара. Прочий персонал должен быть готов защищать себя и свои рабочие места от нападений культистов (в том числе используя летальную силу в качестве крайней меры самообороны), но не должен выслеживать культистов и охотиться на них. Погибшие члены экипажа должны быть оживлены и деконвертированы, как только ситуация будет взята под контроль.", "Центральное Командование, Отдел Работы с Реальностью", 'sound/magic/clockwork/ark_activation_sequence.ogg')
+		priority_announce("На вашей станции зафиксирована аномальная активность, связанная с культом Ратвара. Данные свидетельствуют о том, что около десятой части экипажа станции уже служит Часовому Юстициару. Служба безопасности получает право свободно применять летальную силу против слуг Ратвара. Прочий персонал должен быть готов защищать себя и свои рабочие места от нападений культистов, в том числе используя летальную силу в качестве крайней меры самообороны, но не должен выслеживать культистов и охотиться на них. Погибшие члены экипажа должны быть оживлены и деконвертированы, как только ситуация будет взята под контроль.", "Центральное Командование, Отдел Работы с Реальностью", 'sound/magic/clockwork/ark_activation_sequence.ogg')
 		clock_ascendent = TRUE
 
 /datum/team/clockcult/proc/rise(servant)
@@ -307,19 +307,19 @@
 	var/list/parts = list()
 
 	if(check_clockwork_victory())
-		parts += "<span class='greentext big'>Ratvar's servants defended the Ark until its activation!</span>"
+		parts += "<span class='greentext big'>Слуги Ратвара защищали Ковчег до его активации!</span>"
 	else
-		parts += "<span class='redtext big'>The Ark was destroyed! Ratvar will rust away for all eternity!</span>"
+		parts += "<span class='redtext big'>Ковчег был уничтожен! Ратвар будет ржаветь вечно!</span>"
 	parts += " "
-	parts += "<b>The servants' objective was:</b> [CLOCKCULT_OBJECTIVE]."
-	parts += "<b>Construction Value(CV)</b> was: <b>[GLOB.clockwork_construction_value]</b>"
+	parts += "<b>Целью слуг было:</b> [CLOCKCULT_OBJECTIVE]."
+	parts += "<b>Стоимость строительства(CV)</b> была: <b>[GLOB.clockwork_construction_value]</b>"
 	for(var/i in SSticker.scripture_states)
 		if(i != SCRIPTURE_DRIVER)
-			parts += "<b>[i] scripture</b> was: <b>[SSticker.scripture_states[i] ? "UN":""]LOCKED</b>"
+			parts += "<b>Писания [i]</b> были: <b>[SSticker.scripture_states[i] ? "РАЗ":""]БЛОКИРОВАНЫ</b>"
 	if(eminence)
-		parts += "<span class='header'>The Eminence was:</span> [printplayer(eminence)]"
+		parts += "<span class='header'>Епископом был:</span> [printplayer(eminence)]"
 	if(members.len)
-		parts += "<span class='header'>Ratvar's servants were:</span>"
+		parts += "<span class='header'>Слугами Ратвара были:</span>"
 		parts += printplayerlist(members - eminence)
 
 	return "<div class='panel clockborder'>[parts.Join("<br>")]</div>"
@@ -331,7 +331,7 @@
 	var/list/errorList = list()
 	var/list/reebes = SSmapping.LoadGroup(errorList, "Reebe", "map_files/generic", "City_of_Cogs.dmm", default_traits = ZTRAITS_REEBE, silent = TRUE)
 	if(errorList.len)	// reebe failed to load
-		message_admins("Reebe failed to load!")
+		message_admins("Риб не удалось загрузить")
 		log_game("Reebe failed to load!")
 		return FALSE
 	for(var/datum/parsed_map/PM in reebes)

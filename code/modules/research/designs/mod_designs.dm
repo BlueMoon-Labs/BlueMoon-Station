@@ -156,6 +156,12 @@
 	materials = list(/datum/material/iron = 15000, /datum/material/glass = 500, /datum/material/silver = 1000, /datum/material/diamond = 100)
 	build_path = /obj/item/mod/module/storage/extended
 
+/datum/design/module/pai_module
+	name = "PAI module connector"
+	id = "pai_module"
+	materials = list(/datum/material/iron = 2500, /datum/material/glass = 500)
+	build_path = /obj/item/mod/module/pai
+
 /datum/design/module/harness
 	name = "MOD harness system"
 	id = "mod_harness_system"

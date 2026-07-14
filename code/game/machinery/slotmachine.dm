@@ -23,6 +23,7 @@
 
 /obj/machinery/computer/slot_machine
 	name = "slot machine"
+	idle_sleeps = FALSE // own periodic work in process(); must not doze off via the parent typing-indicator path
 	desc = "Gambling for the antisocial."
 	icon = 'icons/obj/kazino.dmi'
 	icon_state = "mahins"

@@ -5,7 +5,7 @@
 	min_players = 20
 	weight = 10
 	category = EVENT_CATEGORY_ANOMALIES
-	gamemode_blacklist = list(ROUNDTYPE_EXTENDED)
+	severity = DIRECTOR_SEVERITY_MODERATE // одиночный мирный моб, не тянет на MAJOR из категории
 
 /datum/round_event/floor_cluwne/start()
 	var/list/spawn_locs = list()

@@ -139,6 +139,7 @@
 #define INIT_ORDER_RESEARCH			75
 #define INIT_ORDER_STATION			74 //This is high priority because it manipulates a lot of the subsystems that will initialize after it.
 #define INIT_ORDER_EVENTS			70
+#define INIT_ORDER_DIRECTOR			69
 #define INIT_ORDER_JOBS				65
 #define INIT_ORDER_QUIRKS			60
 #define INIT_ORDER_AI_MOVEMENT 		56 //We need the movement setup
@@ -221,10 +222,10 @@
 #define FIRE_PRIORITY_CHAT			400
 #define FIRE_PRIORITY_RUNECHAT		410
 #define FIRE_PRIORITY_OVERLAYS		500
-#define FIRE_PRIORITY_CALLBACKS		600
 // #define FIRE_PRIORITY_EXPLOSIONS	666
 #define FIRE_PRIORITY_TIMER			700
 #define FIRE_PRIORITY_SOUND_LOOPS 800
+#define FIRE_PRIORITY_TICK_SPIKES	900 // Замер дрифта тика должен идти до тяжёлых тикеров (таймеры и т.д.), чтобы читать usage до основной работы МК
 #define FIRE_PRIORITY_INPUT			1000 // This must always always be the max highest priority. Player input must never be lost.
 
 // SS runlevels

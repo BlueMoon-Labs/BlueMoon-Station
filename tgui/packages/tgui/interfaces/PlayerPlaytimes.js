@@ -2,8 +2,8 @@ import { useBackend } from '../backend';
 import { Button, Icon, Section, Table, Tooltip } from '../components';
 import { Window } from '../layouts';
 
-export const PlayerPlaytimes = (props, context) => {
-  const { act, data } = useBackend(context);
+export const PlayerPlaytimes = (props) => {
+  const { act, data } = useBackend();
   const {
     clients,
   } = data;

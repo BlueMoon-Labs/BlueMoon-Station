@@ -35,9 +35,8 @@
 	var/obj/item/clothing/neck/C = M.get_item_by_slot(slot)
 	if(C)
 		if(is_type_in_list(C, snaped))
-			if(prob(15))
-				C.take_damage(80,BRUTE)
-				M.dropItemToGround(C)
-				playsound(src,  'modular_bluemoon/sound/effects/snap.ogg', 30, 1, -1)
-				visible_message(span_danger("[C] snaps!"))
-				return TRUE
+			C.take_damage(80,BRUTE)
+			M.dropItemToGround(C)
+			playsound(src,  'modular_bluemoon/sound/effects/snap.ogg', 30, 1, -1)
+			visible_message(span_danger("[C] snaps!"))
+			return TRUE

@@ -2,6 +2,10 @@ import { useBackend } from '../../../backend';
 import { Stack } from '../../../components';
 import { PrefRow } from '../components/PrefRow';
 
+type ContentData = {
+  member_public: boolean;
+};
+
 const PREF_TOGGLES: { key: string; label: string; flag: string; tooltip?: string }[] = [
   { key: 'verb_consent', label: 'Lewd вербы', flag: 'verb_consent', tooltip: 'Разрешить другим игрокам использовать эротические команды-вербы на вашем персонаже' },
   { key: 'ranged_verb_pref', label: 'Lewd вербы с расстояния', flag: 'ranged_verb_pref', tooltip: 'Позволяет использовать команды-вербы на других персонажей с расстояния' },
@@ -22,20 +26,21 @@ const PREF_TOGGLES: { key: string; label: string; flag: string; tooltip?: string
   { key: 'penis_enlargement', label: 'Увеличение пениса', flag: 'penis_enlargement', tooltip: 'Разрешить изменение размера пениса через игровые механики' },
   { key: 'butt_enlargement', label: 'Увеличение попы', flag: 'butt_enlargement', tooltip: 'Разрешить изменение размера ягодиц через игровые механики' },
   { key: 'belly_inflation', label: 'Вздутие живота', flag: 'belly_inflation', tooltip: 'Разрешить вздутие живота (результат вор, беременности или иных механик)' },
-  { key: 'never_hypno', label: 'Гипноз (защита)', flag: 'never_hypno', tooltip: 'Полная защита от любых гипнотических воздействий, включая неролевые' },
-  { key: 'no_aphro', label: 'Афродизиаки', flag: 'no_aphro', tooltip: 'Защита от афродизиаков, приворотов и препаратов, повышающих возбуждение' },
-  { key: 'no_ass_slap', label: 'Шлепки по попе', flag: 'no_ass_slap', tooltip: 'Запретить другим игрокам шлёпать вашего персонажа по попе' },
-  { key: 'no_auto_wag', label: 'Автоматическое виляние хвостом', flag: 'no_auto_wag', tooltip: 'Отключить автоматическое виляние хвостом при возбуждении или других эмоциях' },
+  { key: 'never_hypno', label: 'Гипноз (воздействие)', flag: 'never_hypno', tooltip: 'Включает гипнотическое воздействие на вашего персонажа' },
+  { key: 'no_aphro', label: 'Афродизиаки', flag: 'no_aphro', tooltip: 'Включает воздействие афродизиаков, приворотов и препаратов, повышающих возбуждение' },
+  { key: 'no_ass_slap', label: 'Шлепки по попе', flag: 'no_ass_slap', tooltip: 'Разрешить другим игрокам шлёпать вашего персонажа по попе' },
+  { key: 'no_auto_wag', label: 'Автоматическое виляние хвостом', flag: 'no_auto_wag', tooltip: 'Автоматически вилять хвостом при возбуждении или других эмоциях' },
   { key: 'chastity_pref', label: 'Взаимодействие с поясом верности', flag: 'chastity_pref', tooltip: 'Разрешить надевать и снимать с вас пояс верности' },
   { key: 'stimulation_pref', label: 'Модификаторы стимуляции', flag: 'stimulation_pref', tooltip: 'Применять модификаторы стимуляции гениталий от навыков, расы и прочего' },
   { key: 'edging_pref', label: 'Эджинг', flag: 'edging_pref', tooltip: 'Разрешить отказ в разрядке во время полового акта (эджинг)' },
   { key: 'cum_onto_pref', label: 'Покрытие спермой', flag: 'cum_onto_pref', tooltip: 'Разрешить покрытие вашего персонажа спермой других (или наоборот)' },
   { key: 'sex_jitter', label: 'Дрожь при сексе', flag: 'sex_jitter', tooltip: 'Визуальная дрожь персонажа во время полового акта' },
   { key: 'no_disco_dance', label: 'Танцевать возле диско-шара', flag: 'no_disco_dance', tooltip: 'Автоматически танцевать при нахождении рядом с диско-шаром' },
+  { key: 'member_public', label: 'Показывать статус доната', flag: 'member_public', tooltip: 'Показывать другим игрокам ваш статус подписчика (MEMBER) в чатах OOC и AOOC' },
 ];
 
-export const ContentSection = (props, context) => {
-  const { act, data } = useBackend(context);
+export const ContentSection = (props) => {
+  const { act, data } = useBackend<ContentData>();
 
   const mid = Math.ceil(PREF_TOGGLES.length / 2);
   const leftCol = PREF_TOGGLES.slice(0, mid);
@@ -57,7 +62,9 @@ export const ContentSection = (props, context) => {
         <Stack vertical>{leftCol.map(renderRow)}</Stack>
       </Stack.Item>
       <Stack.Item basis="50%">
-        <Stack vertical>{rightCol.map(renderRow)}</Stack>
+        <Stack vertical>
+          {rightCol.map(renderRow)}
+        </Stack>
       </Stack.Item>
     </Stack>
   );

@@ -10,8 +10,8 @@ const formatPower = (x) => {
   return String(x) + ' W';
 };
 
-export const BluespaceArtillery = (props, context) => {
-  const { act, data } = useBackend(context);
+export const BluespaceArtillery = (props) => {
+  const { act, data } = useBackend();
   const {
     notice,
     connected,

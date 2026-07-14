@@ -5,7 +5,7 @@
  */
 
 import { clamp01, keyOfMatchingRange, scale, toFixed } from 'common/math';
-import { classes, pureComponentHooks } from 'common/react';
+import { classes } from 'common/react';
 
 import { computeBoxClassName, computeBoxProps } from './Box';
 
@@ -48,4 +48,3 @@ export const ProgressBar = props => {
   );
 };
 
-ProgressBar.defaultHooks = pureComponentHooks;

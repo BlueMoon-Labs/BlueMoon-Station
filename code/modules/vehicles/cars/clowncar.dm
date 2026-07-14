@@ -18,7 +18,6 @@
 	var/thankscount = 0
 	///Current status of the cannon, alternates between CLOWN_CANNON_INACTIVE, CLOWN_CANNON_BUSY and CLOWN_CANNON_READY
 	var/cannonmode = CLOWN_CANNON_INACTIVE
-	var/light_on = TRUE
 
 /obj/vehicle/sealed/car/clowncar/Initialize(mapload)
 	. = ..()

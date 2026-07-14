@@ -1,11 +1,11 @@
-import { Fragment } from 'inferno';
+import { Fragment } from 'react';
 
 import { useBackend, useSharedState } from '../backend';
 import { AnimatedNumber, Box, Button, ColorBox, LabeledList, NumberInput, Section, Table } from '../components';
 import { Window } from '../layouts';
 
-export const ChemMaster = (props, context) => {
-  const { data } = useBackend(context);
+export const ChemMaster = (props) => {
+  const { data } = useBackend();
   const { screen } = data;
   return (
     <Window
@@ -23,8 +23,8 @@ export const ChemMaster = (props, context) => {
   );
 };
 
-const ChemMasterContent = (props, context) => {
-  const { act, data } = useBackend(context);
+const ChemMasterContent = (props) => {
+  const { act, data } = useBackend();
   const {
     screen,
     beakerContents = [],
@@ -40,11 +40,11 @@ const ChemMasterContent = (props, context) => {
     return <AnalysisResults />;
   }
   return (
-    <Fragment>
+    <>
       <Section
         title="Ёмкость"
         buttons={!!data.isBeakerLoaded && (
-          <Fragment>
+          <>
             <Box inline color="label" mr={2}>
               <AnimatedNumber
                 value={beakerCurrentVolume}
@@ -55,7 +55,7 @@ const ChemMasterContent = (props, context) => {
               icon="eject"
               content="Извлечь"
               onClick={() => act('eject')} />
-          </Fragment>
+          </>
         )}>
         {!isBeakerLoaded && (
           <Box color="label" mt="3px" mb="5px">
@@ -79,7 +79,7 @@ const ChemMasterContent = (props, context) => {
       <Section
         title="Буфер"
         buttons={(
-          <Fragment>
+          <>
             <Box inline color="label" mr={1}>
               Режим:
             </Box>
@@ -88,7 +88,7 @@ const ChemMasterContent = (props, context) => {
               icon={data.mode ? 'exchange-alt' : 'times'}
               content={data.mode ? 'Переместить' : 'Утилизировать'}
               onClick={() => act('toggleMode')} />
-          </Fragment>
+          </>
         )}>
         {bufferContents.length === 0 && (
           <Box color="label" mt="3px" mb="5px">
@@ -112,7 +112,7 @@ const ChemMasterContent = (props, context) => {
         <Section
           title="Таблетница"
           buttons={(
-            <Fragment>
+            <>
               <Box inline color="label" mr={2}>
                 {pillBottleCurrentAmount} / {pillBottleMaxAmount} pills
               </Box>
@@ -120,17 +120,17 @@ const ChemMasterContent = (props, context) => {
                 icon="eject"
                 content="Извлечь"
                 onClick={() => act('ejectPillBottle')} />
-            </Fragment>
+            </>
           )} />
       )}
-    </Fragment>
+    </>
   );
 };
 
 const ChemicalBuffer = Table;
 
-const ChemicalBufferEntry = (props, context) => {
-  const { act } = useBackend(context);
+const ChemicalBufferEntry = (props) => {
+  const { act } = useBackend();
   const { chemical, transferTo } = props;
   return (
     <Table.Row key={chemical.id}>
@@ -188,8 +188,8 @@ const ChemicalBufferEntry = (props, context) => {
   );
 };
 
-const PackagingControlsItem = (props, context) => {
-  const { data } = useBackend(context);
+const PackagingControlsItem = (props) => {
+  const { data } = useBackend();
   const {
     label,
     amountUnit,
@@ -220,32 +220,32 @@ const PackagingControlsItem = (props, context) => {
   );
 };
 
-const PackagingControls = (props, context) => {
-  const { act, data } = useBackend(context);
+const PackagingControls = (props) => {
+  const { act, data } = useBackend();
   const [
     pillAmount,
     setPillAmount,
-  ] = useSharedState(context, 'pillAmount', 1);
+  ] = useSharedState('pillAmount', 1);
   const [
     patchAmount,
     setPatchAmount,
-  ] = useSharedState(context, 'patchAmount', 1);
+  ] = useSharedState('patchAmount', 1);
   const [
     bottleAmount,
     setBottleAmount,
-  ] = useSharedState(context, 'bottleAmount', 1);
+  ] = useSharedState('bottleAmount', 1);
   const [
     packAmount,
     setPackAmount,
-  ] = useSharedState(context, 'packAmount', 1);
+  ] = useSharedState('packAmount', 1);
   const [
     vialAmount,
     setvialAmount,
-  ] = useSharedState(context, 'setvialAmount', 1);
+  ] = useSharedState('setvialAmount', 1);
   const [
     dartAmount,
     setdartAmount,
-  ] = useSharedState(context, 'setdartAmount', 1);
+  ] = useSharedState('setdartAmount', 1);
   const {
     condi,
     chosenPillStyle,
@@ -378,8 +378,8 @@ const PackagingControls = (props, context) => {
   );
 };
 
-const AnalysisResults = (props, context) => {
-  const { act, data } = useBackend(context);
+const AnalysisResults = (props) => {
+  const { act, data } = useBackend();
   const { fermianalyze } = props;
   const { analyzeVars } = data;
   return (
@@ -424,7 +424,7 @@ const AnalysisResults = (props, context) => {
           {analyzeVars.purityF}
         </LabeledList.Item>
         {!! data.fermianalyze && ( // why did you do that before? it's bad.
-          <Fragment>
+          <>
             <LabeledList.Item label="Inverse Ratio">
               {analyzeVars.inverseRatioF}
             </LabeledList.Item>
@@ -443,7 +443,7 @@ const AnalysisResults = (props, context) => {
             <LabeledList.Item label="Края значений pH">
               {analyzeVars.pHpeak}
             </LabeledList.Item>
-          </Fragment>
+          </>
         )}
       </LabeledList>
     </Section>

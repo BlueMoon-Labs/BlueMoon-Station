@@ -15,7 +15,7 @@
 	var/minimize_when_attached = TRUE // TRUE if shown as a small icon in corner, FALSE if overlayed
 	var/datum/component/storage/detached_pockets
 	//skyrat edit
-	var/current_uniform = null
+	var/obj/item/clothing/under/current_uniform = null
 	// BLUEMOON ADD START - изменение аксессуаров
 	// У некоторых акссессуаров теперь типо будет доступ. Костыль, да.
 	var/list/access = list()
@@ -29,6 +29,10 @@
 	// BLUEMOON ADD END
 
 /obj/item/clothing/accessory/Destroy()
+	// Прямой qdel прицепленного аксессуара идёт мимо обычного UI-пути: полный
+	// detach убирает список/оверлеи/броню и возвращает storage-компонент с формы.
+	if(current_uniform)
+		detach(current_uniform, null)
 	current_uniform = null
 	detached_pockets = null
 	return ..()
@@ -36,7 +40,8 @@
 /obj/item/clothing/accessory/proc/attach(obj/item/clothing/under/U, user)
 	var/datum/component/storage/storage = GetComponent(/datum/component/storage)
 	if(storage)
-		if(SEND_SIGNAL(U, COMSIG_CONTAINS_STORAGE))
+		// if(SEND_SIGNAL(U, COMSIG_CONTAINS_STORAGE)) - не работает. Parent меняется, но сигналы не реагируют.
+		if(U.GetComponent(/datum/component/storage))
 			return FALSE
 		U.TakeComponent(storage)
 		detached_pockets = storage
@@ -76,55 +81,47 @@
 	if(isliving(user))
 		on_uniform_dropped(U, user)
 
-	if(minimize_when_attached)
-		transform *= 2
-		pixel_x = 0
-		pixel_y = 0
-	layer = initial(layer)
-	plane = initial(plane)
-	U.cut_overlays()
+	U.cut_overlay(U.accessory_uniform_overlays)
+	U.accessory_uniform_overlays = list()
+	U.accessory_mob_overlays = list()
 	U.attached_accessories -= src
-	U.accessory_overlays = list()
-	if(length(U.attached_accessories))
-		U.accessory_overlays = list(mutable_appearance('icons/mob/clothing/accessories.dmi', "blank"))
-		for(var/obj/item/clothing/accessory/attached_accessory in U.attached_accessories)
-			attached_accessory.force_unto(U)
-			var/datum/element/polychromic/polychromic = LAZYACCESS(attached_accessory.comp_lookup, "item_worn_overlays")
-			if(!polychromic)
-				var/mutable_appearance/accessory_overlay = mutable_appearance(attached_accessory.mob_overlay_icon, attached_accessory.item_state || attached_accessory.icon_state, -UNIFORM_LAYER)
-				accessory_overlay.alpha = attached_accessory.alpha
-				accessory_overlay.color = attached_accessory.color
-				U.accessory_overlays += accessory_overlay
-			else
-				polychromic.apply_worn_overlays(attached_accessory, FALSE, attached_accessory.mob_overlay_icon, attached_accessory.item_state || attached_accessory.icon_state, NONE, U.accessory_overlays)
+	for(var/obj/item/clothing/accessory/attached_accessory in U.attached_accessories)
+		attached_accessory.force_unto(U)
 
-//SANDSTORM EDIT
+/// Обработка наложений для униформы и для спрайта моба
 /obj/item/clothing/accessory/proc/force_unto(obj/item/clothing/under/U)
-	layer = FLOAT_LAYER
-	plane = FLOAT_PLANE
+	// Для униформы
+	var/mutable_appearance/accessory_overlay = new /mutable_appearance(src)
+	accessory_overlay.layer = FLOAT_LAYER
+	accessory_overlay.plane = FLOAT_PLANE
 	if(minimize_when_attached)
-		if(current_uniform != U)
-			transform *= 0.5	//halve the size so it doesn't overpower the under
-			pixel_x += 8
-			pixel_y -= 8
+		accessory_overlay.transform *= 0.5	//halve the size so it doesn't overpower the under
+		accessory_overlay.pixel_x += 8
+		accessory_overlay.pixel_y -= 8
 		if(length(U.attached_accessories) > 1)
 			if(length(U.attached_accessories) <= 3 && !current_uniform)
-				pixel_y += 8 * (length(U.attached_accessories) - 1)
+				accessory_overlay.pixel_y += 8 * (length(U.attached_accessories) - 1)
 			else if((length(U.attached_accessories) > 3) && (length(U.attached_accessories) <= 6) && !current_uniform)
-				pixel_x -= 8
-				pixel_y += 8 * (length(U.attached_accessories) - 4)
+				accessory_overlay.pixel_x -= 8
+				accessory_overlay.pixel_y += 8 * (length(U.attached_accessories) - 4)
 			else if((length(U.attached_accessories) > 6) && (length(U.attached_accessories) <= 9) && !current_uniform)
-				pixel_x -= 16
-				pixel_y += 8 * (length(U.attached_accessories) - 7)
+				accessory_overlay.pixel_x -= 16
+				accessory_overlay.pixel_y += 8 * (length(U.attached_accessories) - 7)
 			else
 				if(current_uniform != U)
 					//we ran out of space for accessories, so we just throw shit at the wall
-					pixel_x = 0
-					pixel_y = 0
-					pixel_x += rand(-16, 16)
-					pixel_y += rand(-16, 16)
-	U.add_overlay(src)
-//SANDSTORM EDIT END
+					accessory_overlay.pixel_x = 0
+					accessory_overlay.pixel_y = 0
+					accessory_overlay.pixel_x += rand(-16, 16)
+					accessory_overlay.pixel_y += rand(-16, 16)
+	U.accessory_uniform_overlays += accessory_overlay
+	U.add_overlay(accessory_overlay)
+	// Для спрайта моба
+	if(isemptylist(U.accessory_mob_overlays)) // без понятия зачем конретно это надо, такой алгоритм был до меня.
+		U.accessory_mob_overlays = list(mutable_appearance('icons/mob/clothing/accessories.dmi', "blank"))
+	var/datum/element/polychromic/polychromic = LAZYACCESS(comp_lookup, "item_worn_overlays")
+	polychromic?.apply_worn_overlays(src, FALSE, mob_overlay_icon, item_state || icon_state, NONE, U.accessory_mob_overlays)
+	U.accessory_mob_overlays += mutable_appearance(mob_overlay_icon, item_state || icon_state, -UNIFORM_LAYER, alpha = src.alpha, color = src.color)
 
 /obj/item/clothing/accessory/proc/on_uniform_equip(obj/item/clothing/under/U, user)
 	return

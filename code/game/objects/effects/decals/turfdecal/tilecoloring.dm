@@ -5,13 +5,13 @@
 	alpha = 110
 
 /obj/effect/turf_decal/tile/Initialize()
-	if(SSevents.holidays)
-		if (SSevents.holidays[APRIL_FOOLS])
+	if(SSholidays.holidays)
+		if (SSholidays.holidays[APRIL_FOOLS])
 			color = "#[random_short_color()]"
 		else
 			// Ассоциативный список: в цикле — ключи (имена), датум — holidays[key].
-			for(var/holiday_key in SSevents.holidays)
-				var/datum/holiday/active_holiday = SSevents.holidays[holiday_key]
+			for(var/holiday_key in SSholidays.holidays)
+				var/datum/holiday/active_holiday = SSholidays.holidays[holiday_key]
 				if(!istype(active_holiday, /datum/holiday/lgbt))
 					continue
 				var/datum/holiday/lgbt/L = active_holiday

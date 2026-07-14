@@ -49,6 +49,30 @@
 		pickupTarget = null
 		pickupTimer = 0
 
+/mob/living/carbon/monkey/proc/blacklist_item(obj/item/item)
+	if(!item)
+		return
+	if(!blacklistItems[item])
+		RegisterSignal(item, COMSIG_PARENT_QDELETING, PROC_REF(on_blacklisted_item_qdeleting))
+	blacklistItems[item]++
+
+/mob/living/carbon/monkey/proc/on_blacklisted_item_qdeleting(obj/item/item)
+	SIGNAL_HANDLER
+	UnregisterSignal(item, COMSIG_PARENT_QDELETING)
+	blacklistItems -= item
+
+/mob/living/carbon/monkey/proc/on_enemy_qdeleting(mob/living/enemy)
+	SIGNAL_HANDLER
+
+	// Ключи enemies не имеют другого пути очистки по qdel: мёртвая или спящая
+	// обезьяна не гоняет handle_combat, и удалённый враг (например, слайм с фермы)
+	// висел бы в assoc-списке до харддела
+	UnregisterSignal(enemy, COMSIG_PARENT_QDELETING)
+	enemies -= enemy
+	if(target == enemy)
+		target = null
+		walk(src, 0)
+
 // blocks
 // taken from /mob/living/carbon/human/interactive/
 /mob/living/carbon/monkey/proc/walk2derpless(target)
@@ -94,7 +118,9 @@
 		return TRUE
 
 	if(I.anchored || !put_in_hands(I))
-		blacklistItems[I] ++
+		if(pickupTarget == I)
+			set_pickup_target(null)
+		blacklist_item(I)
 		return FALSE
 
 	if(I.force >= best_force)
@@ -145,8 +171,9 @@
 		else if(!isobj(loc) || istype(loc, /obj/item/clothing/head/mob_holder))
 			pickupTimer++
 			if(pickupTimer >= 4)
-				blacklistItems[pickupTarget] ++
+				var/obj/item/timed_out_item = pickupTarget
 				set_pickup_target(null)
+				blacklist_item(timed_out_item)
 			else
 				INVOKE_ASYNC(src, PROC_REF(walk2derpless), pickupTarget.loc)
 				if(Adjacent(pickupTarget) || Adjacent(pickupTarget.loc)) // next to target
@@ -372,6 +399,7 @@
 	// if we are not angry at our target, go back to idle
 	if(enemies[L] <= 0)
 		enemies.Remove(L)
+		UnregisterSignal(L, COMSIG_PARENT_QDELETING)
 		if( target == L )
 			back_to_idle()
 
@@ -380,6 +408,8 @@
 	mode = MONKEY_HUNT
 	target = L
 	if(L != src)
+		if(isnull(enemies[L])) // новый враг - подписываемся на его удаление
+			RegisterSignal(L, COMSIG_PARENT_QDELETING, PROC_REF(on_enemy_qdeleting))
 		enemies[L] += MONKEY_HATRED_AMOUNT
 
 	if(a_intent != INTENT_HARM)

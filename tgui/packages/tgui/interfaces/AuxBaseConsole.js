@@ -3,9 +3,9 @@ import { Button, NoticeBox, Section, Table, Tabs } from '../components';
 import { Window } from '../layouts';
 import { ShuttleConsoleContent } from './ShuttleConsole';
 
-export const AuxBaseConsole = (props, context) => {
-  const { data } = useBackend(context);
-  const [tab, setTab] = useSharedState(context, 'tab', 1);
+export const AuxBaseConsole = (props) => {
+  const { data } = useBackend();
+  const [tab, setTab] = useSharedState('tab', 1);
   const {
     type,
     blind_drop,
@@ -52,8 +52,8 @@ const STATUS_COLOR_KEYS = {
   "All Clear": "good",
 };
 
-export const AuxBaseConsoleContent = (props, context) => {
-  const { act, data } = useBackend(context);
+export const AuxBaseConsoleContent = (props) => {
+  const { act, data } = useBackend();
   const {
     turrets = [],
   } = data;

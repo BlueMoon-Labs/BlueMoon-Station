@@ -1323,8 +1323,8 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 			message_admins("<span class='adminnotice'>Proxy Detection: [key_name_admin(src)] IP intel rated [res.intel*100]% likely to be a Proxy/VPN.</span>")
 		ip_intel = res.intel
 
-/client/Click(atom/object, atom/location, control, params, ignore_spam = FALSE, extra_info)
-	if(last_click > world.time - world.tick_lag)
+/client/Click(atom/object, atom/location, control, params, ignore_spam = FALSE, extra_info, ignore_last_click = FALSE)
+	if(!ignore_last_click && last_click > world.time - world.tick_lag)
 		return
 	last_activity = world.time
 	last_click = world.time

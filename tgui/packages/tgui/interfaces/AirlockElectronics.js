@@ -3,8 +3,8 @@ import { Button, LabeledList, Section } from '../components';
 import { Window } from '../layouts';
 import { AccessList } from './common/AccessList';
 
-export const AirlockElectronics = (props, context) => {
-  const { act, data } = useBackend(context);
+export const AirlockElectronics = (props) => {
+  const { act, data } = useBackend();
   const {
     oneAccess,
     unres_direction,

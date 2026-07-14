@@ -1,4 +1,4 @@
-import { Component, createRef } from 'inferno';
+import { Component, createRef } from 'react';
 
 import { computeBoxProps } from "./Box";
 import { Button } from "./Button";
@@ -160,24 +160,26 @@ export class InfinitePlane extends Component {
       initialTop = 0,
     } = this.props;
     if (this.state.mouseDown) {
-      let newX, newY;
-      this.setState((state) => {
-        newX = event.clientX - state.lastLeft;
-        newY = event.clientY - state.lastTop;
-        return {
-          left: newX,
-          top: newY,
-        };
+      // setState updaters run asynchronously in React: compute offsets
+      // in the functional updater and report them from the callback,
+      // after the state has been committed.
+      this.setState(prevState => ({
+        left: event.clientX - prevState.lastLeft,
+        top: event.clientY - prevState.lastTop,
+      }), () => {
+        if (onBackgroundMoved) {
+          onBackgroundMoved(
+            this.state.left + initialLeft,
+            this.state.top + initialTop,
+          );
+        }
       });
-      if (onBackgroundMoved) {
-        onBackgroundMoved(newX+initialLeft, newY+initialTop);
-      }
     }
   }
 
   componentDidUpdate(prevProps) {
-    /// Когда сервер присылает новый якорь панорамы или запрошен сброс к origin,
-    /// обнуляем локальный drag-offset. Иначе left/top суммируются с initial* — поле «прыгает».
+    // / Когда сервер присылает новый якорь панорамы или запрошен сброс к origin,
+    // / обнуляем локальный drag-offset. Иначе left/top суммируются с initial* — поле «прыгает».
     if (this.state.mouseDown) {
       return;
     }
@@ -234,9 +236,9 @@ export class InfinitePlane extends Component {
             "position": "fixed",
             "height": "100%",
             "width": "100%",
-            "background-image": `url("${backgroundImage}")`,
-            "background-position": `${finalLeft}px ${finalTop}px`,
-            "background-repeat": "repeat",
+            backgroundImage: `url("${backgroundImage}")`,
+            backgroundPosition: `${finalLeft}px ${finalTop}px`,
+            backgroundRepeat: "repeat",
             "background-size": `${zoom*imageWidth}px`,
           }}
         />

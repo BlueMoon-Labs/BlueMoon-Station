@@ -1,11 +1,12 @@
 /datum/round_event_control/portal_storm_syndicate
 	name = "Portal Storm: Syndicate Shocktroops"
 	typepath = /datum/round_event/portal_storm/syndicate_shocktroop
-	weight = 5
+	weight = 15
 	min_players = 40
 	earliest_start = 60 MINUTES
 	max_occurrences = 1
 	category = EVENT_CATEGORY_INVASION
+	family = "portal_storm" // восемь вариантов одного шаблона: общий фолл-офф и пауза, чтобы не шли подряд
 
 /datum/round_event/portal_storm/syndicate_shocktroop
 	boss_types = list(/mob/living/simple_animal/hostile/syndicate/ranged/space/anthro/cat = 3,\
@@ -21,11 +22,12 @@
 /datum/round_event_control/portal_storm_inteq
 	name = "Portal Storm: Inteq Shocktroops"
 	typepath = /datum/round_event/portal_storm/inteq_shocktroop
-	weight = 55
+	weight = 20
 	min_players = 40
 	earliest_start = 60 MINUTES
 	max_occurrences = 1
 	category = EVENT_CATEGORY_INVASION
+	family = "portal_storm" // восемь вариантов одного шаблона: общий фолл-офф и пауза, чтобы не шли подряд
 
 /datum/round_event/portal_storm/inteq_shocktroop
 	boss_types = list(/mob/living/simple_animal/hostile/syndicate/ranged/smg/space/stormtrooper = 3,\
@@ -41,11 +43,12 @@
 /datum/round_event_control/portal_storm_narsie
 	name = "Portal Storm: Constructs"
 	typepath = /datum/round_event/portal_storm/portal_storm_narsie
-	weight = 30
+	weight = 17
 	min_players = 40
 	earliest_start = 60 MINUTES
 	max_occurrences = 1
 	category = EVENT_CATEGORY_INVASION
+	family = "portal_storm" // восемь вариантов одного шаблона: общий фолл-офф и пауза, чтобы не шли подряд
 
 /datum/round_event/portal_storm/portal_storm_narsie
 	boss_types = list(/mob/living/simple_animal/hostile/cult/magic/elite = 2)
@@ -63,11 +66,12 @@
 /datum/round_event_control/portal_storm_clown
 	name = "Portal Storm: Clowns"
 	typepath = /datum/round_event/portal_storm/portal_storm_clown
-	weight = 30
+	weight = 17
 	min_players = 40
 	earliest_start = 60 MINUTES
 	max_occurrences = 1
 	category = EVENT_CATEGORY_INVASION
+	family = "portal_storm" // восемь вариантов одного шаблона: общий фолл-офф и пауза, чтобы не шли подряд
 
 /datum/round_event/portal_storm/portal_storm_clown
 	boss_types = list(/mob/living/simple_animal/hostile/retaliate/clown/clownhulk = 1)
@@ -83,11 +87,12 @@
 /datum/round_event_control/portal_storm_necros
 	name = "Portal Storm: Necromorphs"
 	typepath = /datum/round_event/portal_storm/portal_storm_necros
-	weight = 40
+	weight = 19
 	min_players = 50
 	earliest_start = 60 MINUTES
 	max_occurrences = 1
 	category = EVENT_CATEGORY_INVASION
+	family = "portal_storm" // восемь вариантов одного шаблона: общий фолл-офф и пауза, чтобы не шли подряд
 
 /datum/round_event/portal_storm/portal_storm_necros
 	boss_types = list(/mob/living/simple_animal/hostile/brute = 1)
@@ -101,11 +106,12 @@
 /datum/round_event_control/portal_storm_funclaws
 	name = "Portal Storm: Funclaws"
 	typepath = /datum/round_event/portal_storm/portal_storm_funclaws
-	weight = 40
+	weight = 19
 	min_players = 50
 	earliest_start = 60 MINUTES
 	max_occurrences = 1
 	category = EVENT_CATEGORY_INVASION
+	family = "portal_storm" // восемь вариантов одного шаблона: общий фолл-офф и пауза, чтобы не шли подряд
 
 /datum/round_event/portal_storm/portal_storm_funclaws
 	boss_types = list(/mob/living/simple_animal/hostile/deathclaw/funclaw/femclaw/mommyclaw = 1,\
@@ -118,11 +124,12 @@
 /datum/round_event_control/portal_storm_skibidi
 	name = "Portal Storm: Skibidi"
 	typepath = /datum/round_event/portal_storm/portal_storm_skibidi
-	weight = 5
+	weight = 15
 	min_players = 75
 	earliest_start = 60 MINUTES
 	max_occurrences = 1
 	category = EVENT_CATEGORY_INVASION
+	family = "portal_storm" // восемь вариантов одного шаблона: общий фолл-офф и пауза, чтобы не шли подряд
 
 /datum/round_event/portal_storm/portal_storm_skibidi
 	boss_types = list(/mob/living/simple_animal/hostile/skibidi_toilet = 2,\
@@ -135,11 +142,12 @@
 /datum/round_event_control/portal_storm_clock
 	name = "Portal Storm: Clock Cult"
 	typepath = /datum/round_event/portal_storm/portal_storm_clock
-	weight = 30
+	weight = 17
 	min_players = 40
 	earliest_start = 60 MINUTES
 	max_occurrences = 1
 	category = EVENT_CATEGORY_INVASION
+	family = "portal_storm" // восемь вариантов одного шаблона: общий фолл-офф и пауза, чтобы не шли подряд
 
 /datum/round_event/portal_storm/portal_storm_clock
 	boss_types = list(/mob/living/simple_animal/hostile/boss/clockcultistboss = 1)

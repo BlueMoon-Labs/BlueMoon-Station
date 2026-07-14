@@ -238,7 +238,7 @@
 	var/mob/living/shape = new shapeshift_type(caster.loc)
 	H = new(shape, src, action_owner)
 	var/mob/living/simple_animal/hostile/beastspirit/BEAST = shape
-	BEAST.AIStatus = AI_OFF //BLUEMOON ADD шейпы не двигаются и не пытаются кого-то убить если выйти
+	BEAST.toggle_ai(AI_OFF) //BLUEMOON ADD шейпы не двигаются и не пытаются кого-то убить если выйти; прямое присвоение AIStatus стрэндит моба в GLOB.simple_animals[AI_ON]
 	BEAST.wander = FALSE //BLUEMOON ADD END
 	BEAST.name = action_owner.name
 	BEAST.beast_type = beast_type

@@ -152,7 +152,10 @@
 
 	var/emp_timer
 
-/datum/action/item_action/chameleon/change/Destroy()	
+/datum/action/item_action/chameleon/change/Destroy()
+	// ЭМИ-рандомизация оставляла экшен в SSprocessing: process() снимает его только
+	// по истечении emp_timer, а удалённый вместе с вещью экшен висел в processing вечно
+	STOP_PROCESSING(SSprocessing, src)
 	QDEL_NULL(on_change)
 	return ..()
 

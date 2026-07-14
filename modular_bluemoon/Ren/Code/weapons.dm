@@ -109,7 +109,7 @@
 	burst_shot_delay = 2
 
 /// AA12
-/obj/item/ammo_box/magazine/aa12/small
+/obj/item/ammo_box/magazine/aa12
 	name = "AA12 magazine (12g buckshot)"
 	desc = "Здоровый коробчатый магазин для патрон 12 калибра"
 	icon_state = "mag-aa-small"
@@ -117,11 +117,11 @@
 	w_class = WEIGHT_CLASS_SMALL
 	max_ammo = 8
 
-/obj/item/ammo_box/magazine/aa12/small/update_icon()
+/obj/item/ammo_box/magazine/aa12/update_icon()
 	..()
 	icon_state = "mag-aa-small-[ammo_count() ? "1" : "0"]"
 
-/obj/item/ammo_box/magazine/aa12
+/obj/item/ammo_box/magazine/aa12/drum
 	name = "AA12 drum magazine (12g buckshot)"
 	desc = "Здоровый барабанный магазин для патрон 12 калибра"
 	icon_state = "mag-aa"
@@ -131,7 +131,7 @@
 	caliber = "shotgun"
 	max_ammo = 20
 
-/obj/item/ammo_box/magazine/aa12/update_icon()
+/obj/item/ammo_box/magazine/aa12/drum/update_icon()
 	..()
 	icon_state = "mag-aa-[ammo_count() ? "1" : "0"]"
 
@@ -146,7 +146,7 @@
 	w_class = WEIGHT_CLASS_BULKY
 	weapon_weight = WEAPON_HEAVY
 	recoil = 2
-	mag_type = /obj/item/ammo_box/magazine/aa12/small
+	mag_type = /obj/item/ammo_box/magazine/aa12
 	fire_sound = 'sound/weapons/gunshotshotgunshot.ogg'
 	automatic_burst_overlay = FALSE
 	can_suppress = FALSE

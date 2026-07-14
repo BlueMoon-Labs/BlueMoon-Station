@@ -4,6 +4,7 @@
 	max_occurrences = 2
 	weight = 15
 	category = EVENT_CATEGORY_ENTITIES
+	severity = DIRECTOR_SEVERITY_MODERATE
 
 /datum/round_event/gigachad_inteq/announce(fake)
 	send_fax_to_area(new /obj/item/paper/fax_CC_message/escapee/gigachad_inteq_announce, /area/security, "Психиатрический Отдел Nanotrasen", FALSE)
@@ -146,6 +147,7 @@
 	max_occurrences = 2
 	weight = 30
 	category = EVENT_CATEGORY_ENTITIES
+	severity = DIRECTOR_SEVERITY_MODERATE
 
 /datum/round_event/space_mosquito/announce(fake)
 	send_fax_to_area(new /obj/item/paper/fax_CC_message/escapee/mosquito_announce, /area/security, "Психиатрический Отдел Nanotrasen", FALSE)

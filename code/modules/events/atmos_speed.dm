@@ -4,6 +4,7 @@
 	max_occurrences = 5
 	weight = 10
 	category = EVENT_CATEGORY_ENGINEERING
+	min_staffing = list(DIRECTOR_DEPT_ENGINEERING = 1)
 	description = "Modifies the speed of the SSair randomly, ends after one minute."
 
 /datum/round_event/atmos_flux

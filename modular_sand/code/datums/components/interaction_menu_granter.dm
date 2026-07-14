@@ -141,6 +141,11 @@
 	.["selfAttributes"] = self.list_interaction_attributes(self)
 	.["lust"] = self.get_lust()
 	.["maxLust"] = self.get_climax_threshold() // BLUEMOON EDIT
+	if(ishuman(self))
+		var/mob/living/carbon/human/H = self
+		.["force_naked_flavor"] = H.force_naked_flavor
+	else
+		.["force_naked_flavor"] = null
 
 	.["max_distance"] = 0
 	.["user_is_blacklisted"] = SSinteractions.is_blacklisted(self)
@@ -165,6 +170,9 @@
 			required_from_user |= INTERACTION_REQUIRE_KNOT
 		if(findtext(shape_desc, "двойн"))
 			required_from_user |= INTERACTION_REQUIRE_DOUBLE_PENIS
+	var/user_has_breasts = self.has_breasts()
+	if(user_has_breasts)
+		required_from_user |= INTERACTION_REQUIRE_BREASTS
 	var/user_has_belly = self.has_belly()
 	if(user_has_belly)
 		required_from_user |= INTERACTION_REQUIRE_BELLY
@@ -213,7 +221,6 @@
 			required_from_user_exposed |= INTERACTION_REQUIRE_VAGINA
 			required_from_user_unexposed |= INTERACTION_REQUIRE_VAGINA
 
-	var/user_has_breasts = self.has_breasts()
 	switch(user_has_breasts)
 		if(HAS_EXPOSED_GENITAL)
 			required_from_user_exposed |= INTERACTION_REQUIRE_BREASTS
@@ -437,6 +444,7 @@
 			.["theyAllowLewd"] = !!(target.client.prefs.toggles & VERB_CONSENT)
 			.["theyAllowExtreme"] = !!pref_to_num(target.client.prefs.extremepref)
 			.["theyAllowUnholy"] = !!pref_to_num(target.client.prefs.unholypref) //SPLURT EDIT
+			.["theyAllowUnholyHard"] = !!pref_to_num(target.client.prefs.unholyhardpref)
 			.["theyAllowRanged"] = !!(target.client.prefs.toggles & RANGED_VERBS_CONSENT)
 		if(HAS_TRAIT(user, TRAIT_ESTROUS_DETECT))
 			.["theirLust"] = target.get_lust()
@@ -521,12 +529,11 @@
 		.["noncon_pref"] = 				pref_to_num(prefs.nonconpref)
 		.["vore_pref"] = 				pref_to_num(prefs.vorepref)
 		.["mobsex_pref"] = 				pref_to_num(prefs.mobsexpref)	//Hentai
-		.["hornyantags_pref"] = 		pref_to_num(prefs.hornyantagspref)	//Hentai
 		.["extreme_pref"] = 			pref_to_num(prefs.extremepref)
 		.["extreme_harm"] = 			pref_to_num(prefs.extremeharm)
 		.["unholy_pref"] =				pref_to_num(prefs.unholypref)
+		.["unholy_hard_pref"] =			pref_to_num(prefs.unholyhardpref)
 		.["tattoo_pref"] =				pref_to_num(prefs.tattoopref)
-		.["be_victim"] =				pref_to_num(prefs.be_victim)
 
 	//Getting preferences
 		.["verb_consent"] = 			!!CHECK_BITFIELD(prefs.toggles, VERB_CONSENT)
@@ -579,6 +586,10 @@
 			else if(O.interaction_flags & INTERACTION_FLAG_UNHOLY_CONTENT)
 				interaction["type"] = INTERACTION_UNHOLY
 			//SPLURT EDIT END
+			//BLUEMOON ADD START
+			else if(O.interaction_flags & INTERACTION_FLAG_UNHOLY_HARD)
+				interaction["type"] = INTERACTION_UNHOLY_HARD
+			//BLUEMOON ADD END
 			else
 				interaction["type"] = INTERACTION_LEWD
 			interaction["require_user_num_feet"] = O.require_user_num_feet
@@ -744,17 +755,16 @@
 					else
 						prefs.mobsexpref = value
 
-				if("hornyantags_pref") //Hentai
-					if(prefs.hornyantagspref == value)
-						return FALSE
-					else
-						prefs.hornyantagspref = value
-
 				if("unholy_pref")
 					if(prefs.unholypref == value)
 						return FALSE
 					else
 						prefs.unholypref = value
+				if("unholy_hard_pref")
+					if(prefs.unholyhardpref == value)
+						return FALSE
+					else
+						prefs.unholyhardpref = value
 				if("extreme_pref")
 					if(prefs.extremepref == value)
 						return FALSE
@@ -772,11 +782,6 @@
 						return FALSE
 					else
 						prefs.tattoopref = value
-				if("be_victim")
-					if(prefs.be_victim == value)
-						return FALSE
-					else
-						prefs.be_victim = value
 				else
 					return FALSE
 			prefs.save_character()
@@ -875,5 +880,15 @@
 					else
 						to_chat(parent_mob, span_warning("Unavailable for this mob."))
 						return FALSE
+		if("force_naked_flavor")
+			if(ishuman(parent_mob))
+				var/mob/living/carbon/human/H = parent_mob
+				H.force_naked_flavor = !H.force_naked_flavor
+				if(H.force_naked_flavor)
+					H.balloon_alert_to_viewers("Доступно описание голого тела")
+				return TRUE
+			else
+				to_chat(parent_mob, span_warning("Unavailable for non-humanoid mob."))
+				return FALSE
 
 #undef INTERACTION_UNHOLY //SPLURT Edit

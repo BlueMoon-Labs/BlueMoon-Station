@@ -12,6 +12,9 @@
 	var/tmp/has_opaque_atom = FALSE // Not to be confused with opacity, this will be TRUE if there's any opaque atom on the tile.
 	var/tmp/shadow_weight_sum = 0 // Accumulated shadow weight from non-opaque atoms with shadow_weight > 0. Clamped to 1.0.
 	var/tmp/cached_lumcount // Cached normalized brightness for get_lumcount() (null = dirty)
+	/// Lumcount от оверлейного света (/datum/component/overlay_lighting), поверх корнер-системы.
+	/// НЕ входит в cached_lumcount: меняется при движении источников без инвалидации кэша.
+	var/dynamic_lumcount = 0
 
 // counterclockwisse 0 to 360
 #define PROC_ON_CORNERS(operation) lc_topright?.##operation;lc_bottomright?.##operation;lc_bottomleft?.##operation;lc_topleft?.##operation
@@ -86,7 +89,7 @@
 		+ (lc_topleft? (lc_topleft.lum_r + lc_topleft.lum_g + lc_topleft.lum_b) : 0)) / 12
 		cached_lumcount = totallums
 
-	totallums = (totallums - minlum) / (maxlum - minlum)
+	totallums = (totallums + dynamic_lumcount - minlum) / (maxlum - minlum)
 
 	return CLAMP01(totallums)
 

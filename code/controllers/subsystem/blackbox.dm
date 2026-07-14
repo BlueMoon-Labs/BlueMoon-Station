@@ -1,7 +1,7 @@
 SUBSYSTEM_DEF(blackbox)
 	name = "Blackbox"
 	wait = 6000
-	flags = SS_NO_TICK_CHECK | SS_BACKGROUND
+	flags = SS_BACKGROUND
 	runlevels = RUNLEVEL_GAME | RUNLEVEL_POSTGAME
 	init_order = INIT_ORDER_BLACKBOX
 
@@ -9,6 +9,8 @@ SUBSYSTEM_DEF(blackbox)
 	var/list/first_death = list() //the first death of this round, assoc. vars keep track of different things
 	var/triggertime = 0
 	var/sealed = FALSE //time to stop tracking stats?
+	/// Clients still awaiting a playtime/metadollar update this fire, drained with tick yields.
+	var/list/exp_update_queue
 	var/list/versions = list("antagonists" = 3,
 							"admin_secrets_fun_used" = 2,
 							"explosion" = 2,
@@ -27,14 +29,25 @@ SUBSYSTEM_DEF(blackbox)
 	. = ..()
 
 //poll population
-/datum/controller/subsystem/blackbox/fire()
+/datum/controller/subsystem/blackbox/fire(resumed)
 	set waitfor = FALSE //for population query
 
-	CheckPlayerCount()
+	if(!resumed)
+		CheckPlayerCount()
+		// Метадоллары за живого персонажа идут через update_exp_list; не завязывать на use_exp_tracking.
+		if((triggertime < 0) || (world.time > (triggertime +3000))) //subsystem fires once at roundstart then once every 10 minutes. a 5 min check skips the first fire. The <0 is midnight rollover check
+			exp_update_queue = GLOB.clients.Copy()
 
-	// Метадоллары за живого персонажа идут через update_exp_list; не завязывать на use_exp_tracking.
-	if((triggertime < 0) || (world.time > (triggertime +3000))) //subsystem fires once at roundstart then once every 10 minutes. a 5 min check skips the first fire. The <0 is midnight rollover check
-		update_exp(10,FALSE)
+	// Начисление плейтайма/метадолларов может писать файлы на диск, поэтому клиентов
+	// обрабатываем с выходом по MC_TICK_CHECK, а не всей пачкой в один тик.
+	var/list/queue = exp_update_queue
+	while(length(queue))
+		var/client/target = queue[queue.len]
+		queue.len--
+		if(target && !target.is_afk())
+			target.update_exp_list(10, FALSE)
+		if(MC_TICK_CHECK)
+			return
 
 /datum/controller/subsystem/blackbox/proc/CheckPlayerCount()
 	set waitfor = FALSE

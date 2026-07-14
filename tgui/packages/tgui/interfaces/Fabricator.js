@@ -1,7 +1,8 @@
 import { classes } from 'common/react';
 import { createSearch } from 'common/string';
+import { useState } from 'react';
 
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import {
   Box,
   Button,
@@ -205,8 +206,8 @@ const costTooltipNode = (item, amt, materialsObj, chemsHaveById, chemsNameById) 
   );
 };
 
-export const Fabricator = (props, context) => {
-  const { data } = useBackend(context);
+export const Fabricator = (props) => {
+  const { data } = useBackend();
   const { busy } = data;
 
   return (
@@ -224,8 +225,8 @@ export const Fabricator = (props, context) => {
   );
 };
 
-export const FabricatorContent = (props, context) => {
-  const { act, data } = useBackend(context);
+export const FabricatorContent = (props) => {
+  const { act, data } = useBackend();
   const {
     categories = [],
     materials = [],
@@ -247,10 +248,8 @@ export const FabricatorContent = (props, context) => {
     return 0;
   });
 
-  const [searchText, setSearchText] = useLocalState(context, 'searchText', '');
-  const [selectedCategory, setSelectedCategory] = useLocalState(
-    context,
-    'category',
+  const [searchText, setSearchText] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState(
     categories[0]?.name,
   );
 
@@ -400,8 +399,8 @@ export const FabricatorContent = (props, context) => {
   );
 };
 
-const ItemList = (props, context) => {
-  const { act } = useBackend(context);
+const ItemList = (props) => {
+  const { act } = useBackend();
   const {
     items,
     materialsObj,
@@ -421,7 +420,7 @@ const ItemList = (props, context) => {
 
     return (
       <Table.Row key={item.id}>
-        <Table.Cell collapsing style={{ 'vertical-align': 'middle' }}>
+        <Table.Cell collapsing style={{ verticalAlign: 'middle' }}>
           <Flex align="center">
             <Flex.Item>
               <Button
@@ -431,8 +430,8 @@ const ItemList = (props, context) => {
                   padding: 0,
                   height: ROW_BTN_HEIGHT,
                   display: 'flex',
-                  'align-items': 'center',
-                  'justify-content': 'center',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
                 <Icon name="circle-question" />
@@ -447,8 +446,8 @@ const ItemList = (props, context) => {
                     padding: 0,
                     height: ROW_BTN_HEIGHT,
                     display: 'flex',
-                    'align-items': 'center',
-                    'justify-content': 'center',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                   }}
                 >
                   <Icon name="triangle-exclamation" color={!secLevelAllow && "orange"} />
@@ -458,7 +457,7 @@ const ItemList = (props, context) => {
           </Flex>
         </Table.Cell>
 
-        <Table.Cell style={{ 'vertical-align': 'middle' }}>
+        <Table.Cell style={{ verticalAlign: 'middle' }}>
           <Button
             fluid
             color="transparent"
@@ -468,7 +467,7 @@ const ItemList = (props, context) => {
               padding: 0,
               height: ROW_BTN_HEIGHT,
               display: 'flex',
-              'align-items': 'center',
+              alignItems: 'center',
             }}
             onClick={() => act('build', { id: item.id, amount: 1 })}
           >
@@ -483,7 +482,7 @@ const ItemList = (props, context) => {
           </Button>
         </Table.Cell>
 
-        <Table.Cell collapsing style={{ 'vertical-align': 'middle' }}>
+        <Table.Cell collapsing style={{ verticalAlign: 'middle' }}>
           <Flex align="center">
             {button_amounts.map((amt) => {
               const colorN = calcTextColor(materialsObj, chemsHaveById, item, amt);
@@ -496,7 +495,7 @@ const ItemList = (props, context) => {
                     style={{
                       height: ROW_BTN_HEIGHT,
                       display: 'flex',
-                      'align-items': 'center',
+                      alignItems: 'center',
                     }}
                     onClick={() => act('build', { id: item.id, amount: amt })}
                     content={
@@ -515,7 +514,7 @@ const ItemList = (props, context) => {
                 style={{
                   height: ROW_BTN_HEIGHT,
                   display: 'flex',
-                  'align-items': 'center',
+                  alignItems: 'center',
                 }}
                 content={
                   <Box color={maxBuild <= 0 && 'bad'}>

@@ -4,14 +4,14 @@
 //Stargazer: A very fragile but cheap generator that creates power from starlight.
 /obj/structure/destructible/clockwork/stargazer
 	name = "stargazer"
-	desc = "A large lantern-shaped machine made of thin brass. It looks fragile."
-	clockwork_desc = "A lantern-shaped generator that produces power when near starlight."
+	desc = "Большая машина в форме фонаря, изготовленная из тонкой латуни. Она выглядит хрупкой."
+	clockwork_desc = "Генератор в форме фонаря, который вырабатывает энергию вблизи звездного света."
 	icon_state = "stargazer"
 	unanchored_icon = "stargazer_unwrenched"
 	max_integrity = 40
 	construction_value = 5
 	layer = WALL_OBJ_LAYER
-	break_message = "<span class='warning'>The stargazer's fragile body shatters into pieces!</span>"
+	break_message = "<span class='warning'>Хрупкое тело старгейзера разлетается на куски!</span>"
 	resistance_flags = LAVA_PROOF | FIRE_PROOF | ACID_PROOF
 	light_color = "#DAAA18"
 	var/star_light_star_bright = FALSE //If this stargazer can see starlight
@@ -27,10 +27,10 @@
 /obj/structure/destructible/clockwork/stargazer/examine(mob/user)
 	. = ..()
 	if(is_servant_of_ratvar(user))
-		. += "<span class='nzcrentr_small'>Generates <b>[DisplayPower(STARGAZER_POWER)]</b> per second while viewing starlight within [STARGAZER_RANGE] tiles.</span>"
-		. += "<span class='nzcrentr_small'>It only functions wrenched inside a room with a view of space - it can not operate in open space or outdoors.</span>"
+		. += "<span class='nzcrentr_small'>Генерирует <b>[DisplayPower(STARGAZER_POWER)]</b> единиц энергии в секунду, пока наблюдает звёздный свет в радиусе [STARGAZER_RANGE] клеток.</span>"
+		. += "<span class='nzcrentr_small'>Он работает только внутри помещения с видом на космос - он не может работать в открытом космосе или снаружи.</span>"
 	if(star_light_star_bright)
-		. += "[is_servant_of_ratvar(user) ? "<span class='nzcrentr_small'>It can see starlight!</span>" : "It's shining brilliantly!"]"
+		. += "[is_servant_of_ratvar(user) ? "<span class='nzcrentr_small'>Он может видеть звездный свет!</span>" : "Он ослепительно сияет!"]"
 
 /obj/structure/destructible/clockwork/stargazer/process()
 	star_light_star_bright = check_starlight()
@@ -57,15 +57,15 @@
 			has_starlight = FALSE
 	if(old_status != has_starlight)
 		if(has_starlight)
-			visible_message("<span class='nzcrentr_small'>[src] hums and shines brilliantly!</span>")
+			visible_message("<span class='nzcrentr_small'>[src] жужжит и ослепительно сияет!</span>")
 			playsound(src, 'sound/machines/clockcult/stargazer_activate.ogg', 50, TRUE)
 			add_overlay("stargazer_light")
 			set_light(1.5, 5)
 		else
 			if(anchored) //We lost visibility somehow
-				visible_message("<span class='danger'>[src] flickers, and falls dark.</span>")
+				visible_message("<span class='danger'>[src] мерцает, и становится темным.</span>")
 			else
-				visible_message("<span class='danger'>[src] whooshes quietly as it slides into a less bulky form.</span>")
+				visible_message("<span class='danger'>[src] с тихим свистом он принимает менее громоздкую форму.</span>")
 			cut_overlays()
 			set_light(0)
 	return has_starlight

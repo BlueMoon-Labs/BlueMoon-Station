@@ -23,6 +23,17 @@
 	desc = "Intruder, remember! You're not immune to big sharks lady."
 	icon_state = "poster_secfish"
 
+/obj/structure/sign/poster/official/mac_vulpix
+	name = "MacVulpix Commercial Poster"
+	desc = "Рекламный постер с новой линейкой продукции “Большой Укус” от ресторана быстрого питания МакВульпикс."
+	icon = 'modular_bluemoon/icons/obj/contraband.dmi'
+	icon_state = "mac_vulpix"
+
+/obj/item/poster/mac_vulpix
+	name = "MacVulpix Commercial Poster"
+	poster_type = /obj/structure/sign/poster/official/mac_vulpix
+	icon_state = "rolled_legit"
+
 ////
 
 /obj/item/poster/erthelp

@@ -13,7 +13,6 @@
 	var/mob/living/split_personality/owner_backseat
 
 	//BLUEMOON ADD
-	var/time_personality_spent = 0	//Go change personalities on some time instead of random
 	var/last_attempt = 0
 	var/got_ghost = FALSE
 	//BLUEMOON ADD END
@@ -27,6 +26,13 @@
 	make_backseats()
 	get_ghost()
 	RegisterSignal(M, COMSIG_MOB_DEATH, PROC_REF(revert_to_normal))
+	setup_personality_actions()
+
+/datum/brain_trauma/severe/split_personality/proc/setup_personality_actions()
+	return
+
+/datum/brain_trauma/severe/split_personality/proc/cleanup_personality_actions()
+	return
 
 /datum/brain_trauma/severe/split_personality/proc/make_backseats()
 	stranger_backseat = new(owner, src)
@@ -42,24 +48,16 @@
 		log_game("[key_name(stranger_backseat)] became [key_name(owner)]'s split personality.")
 		message_admins("[ADMIN_LOOKUPFLW(stranger_backseat)] became [ADMIN_LOOKUPFLW(owner)]'s split personality.")
 		got_ghost = TRUE //BLUEMOON CHANGE
+		on_stranger_joined()
+
+/datum/brain_trauma/severe/split_personality/proc/on_stranger_joined()
+	return
 
 /datum/brain_trauma/severe/split_personality/on_life()
-
-//BLUEMOON CHANGE
-	if(got_ghost == TRUE)
-		if(time_personality_spent > 50)
-			time_personality_spent = 0
-			switch_personalities()
-		else
-			time_personality_spent += 1
-	else
-		if(last_attempt+100 < world.time)
-			get_ghost()
-			last_attempt = world.time
-//BLUEMOON CHANGE END
-	..()
+	return ..()
 
 /datum/brain_trauma/severe/split_personality/on_lose()
+	cleanup_personality_actions()
 	if(current_controller != OWNER) //it would be funny to cure a guy only to be left with the other personality, but it seems too cruel
 		switch_personalities(TRUE)
 	QDEL_NULL(stranger_backseat)
@@ -124,6 +122,7 @@
 		owner.lastKnownIP = s2h_ip
 
 	current_controller = !current_controller
+	setup_personality_actions()
 
 
 /mob/living/split_personality
@@ -153,13 +152,13 @@
 
 /mob/living/split_personality/Login()
 	..()
-	to_chat(src, "<span class='notice'>As a split personality, you cannot do anything but observe. However, you will eventually gain control of your body, switching places with the current personality.</span>")
+	to_chat(src, "<span class='notice'>Вы не можете ничего делать, кроме как наблюдать. Используйте кнопку <b>«Вторая личность»</b>, чтобы поговорить с другой личностью или забрать управление телом.</span>")
 	to_chat(src, "<span class='warning'><b>Do not commit suicide or put the body in a deadly position. Behave like you care about it as much as the owner.</b></span>")
 
 /mob/living/split_personality/say(message, bubble_type, var/list/spans = list(), sanitize = TRUE, datum/language/language = null, ignore_spam = FALSE, forced = null)
 //BLUEMOON CHANGE
 	if(length(message) && body)
-		to_chat(body, "You hear a strange voice in your head... \"[message]\"")
+		to_chat(body, span_notice("Вы слышите голос в голове... \"[message]\""))
 	return
 //BLUEMOON CHANGE END
 

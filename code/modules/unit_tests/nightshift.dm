@@ -272,6 +272,7 @@
 	var/original_can_fire
 	var/original_power_light
 	var/original_lightswitch
+	var/original_requires_power
 	var/area/test_area
 	var/turf/light_turf
 	var/obj/machinery/power/apc/test_apc
@@ -291,6 +292,11 @@
 	original_area_apc = test_area.power_apc
 	original_power_light = test_area.power_light
 	original_lightswitch = test_area.lightswitch
+	original_requires_power = test_area.requires_power
+	// Без requires_power = FALSE форс power_light/lightswitch ниже недолговечен: во время
+	// sleep/дренажей теста успевает выстрелить SSmachines, и АПЦ без сети через autoset
+	// гасит световой канал области обратно (см. коммент в nightshift_admin_controls).
+	test_area.requires_power = FALSE
 	GLOB.the_station_areas = list(test_area.type)
 	GLOB.nightshift_apc_queue.Cut()
 	GLOB.nightshift_light_queue.Cut()
@@ -317,6 +323,7 @@
 	test_area.power_apc = original_area_apc
 	test_area.power_light = original_power_light
 	test_area.lightswitch = original_lightswitch
+	test_area.requires_power = original_requires_power
 	if(original_area_apc && !QDELETED(original_area_apc))
 		original_area_apc.area = test_area
 		original_area_apc.register_area_apc()
@@ -628,6 +635,9 @@
 	var/original_round_start_time
 	var/original_area_apc
 	var/original_nightshift_public_area
+	var/original_requires_power
+	var/original_lightswitch
+	var/original_power_light
 	var/area/test_area
 	var/obj/machinery/power/apc/test_apc
 	var/obj/machinery/light/test_light
@@ -657,9 +667,21 @@
 	original_round_start_time = SSticker.round_start_time
 	original_area_apc = test_area.power_apc
 	original_nightshift_public_area = test_area.nightshift_public_area
+	original_requires_power = test_area.requires_power
+	original_lightswitch = test_area.lightswitch
+	original_power_light = test_area.power_light
 
 	GLOB.the_station_areas = list(test_area.type)
 	test_area.nightshift_public_area = NIGHTSHIFT_AREA_FORCED
+	// Вывод области из симуляции питания на время теста: дренажи спят (sleep/CHECK_TICK), и на
+	// нагруженном CI между тиками успевает выстрелить SSmachines - АПЦ без сети (и тестовый, и
+	// маповый) через autoset гасит световой канал, area.power_light падает, power_change() тушит
+	// лампу (световой датум умирает, цвет замерзает на бульбовом). requires_power = FALSE
+	// останавливает process() ВСЕХ АПЦ области, явные lightswitch/power_light дают лампе
+	// стабильное питание независимо от исхода прошлых интерливов.
+	test_area.requires_power = FALSE
+	test_area.lightswitch = TRUE
+	test_area.power_light = TRUE
 	GLOB.nightshift_apc_queue.Cut()
 	GLOB.nightshift_light_queue.Cut()
 
@@ -714,6 +736,9 @@
 	SSticker.round_start_time = original_round_start_time
 	test_area.power_apc = original_area_apc
 	test_area.nightshift_public_area = original_nightshift_public_area
+	test_area.requires_power = original_requires_power
+	test_area.lightswitch = original_lightswitch
+	test_area.power_light = original_power_light
 	return ..()
 
 /datum/unit_test/nightshift_admin_controls/proc/expected_color(level)
@@ -777,3 +802,63 @@
 	TEST_ASSERT(!SSnightshift.admin_solar_time_override, "Clearing solar time should restore normal progression.")
 	TEST_ASSERT_EQUAL(SSticker.gametime_offset, 21 HOURS, "Clearing solar time should restore the pre-override offset.")
 	assert_fixture_state("Solar Clear", TRUE, auto_level)
+
+// ===== Реентерабельность дренажа ночных очередей =====
+
+/// Пробник: его update() один раз симулирует конкурентный проход fire() по тем же
+/// очередям (вложенный process_nightshift_queues) и подбрасывает "позднюю" лампу,
+/// встающую в очередь посреди внешнего прохода.
+/obj/machinery/light/nightshift_reentrant_drain_probe
+	var/nested_drain_armed = FALSE
+	var/obj/machinery/light/late_arrival
+
+/obj/machinery/light/nightshift_reentrant_drain_probe/update(trigger = TRUE, silent = FALSE)
+	if(nested_drain_armed)
+		nested_drain_armed = FALSE
+		SSlighting.process_nightshift_queues(TRUE)
+		if(late_arrival && !QDELETED(late_arrival))
+			late_arrival.queue_nightshift_update()
+	return ..()
+
+/// Регресс на прежний k-индексный проход с хвостовым Cut: конкурентный дренаж посреди
+/// внешнего прохода выкидывал вставшую во время него лампу из очереди необработанной,
+/// с застрявшим nightshift_update_queued = TRUE - она навсегда теряла обновления цвета
+/// (флак nightshift_admin_controls на layenia). Ассерты только на source-local state
+/// (флаги конкретных ламп), не на длины глобальных очередей.
+/datum/unit_test/nightshift_queue_reentrant_drain
+	var/list/saved_apc_queue
+	var/list/saved_light_queue
+
+/datum/unit_test/nightshift_queue_reentrant_drain/New()
+	..()
+	saved_apc_queue = GLOB.nightshift_apc_queue.Copy()
+	saved_light_queue = GLOB.nightshift_light_queue.Copy()
+	GLOB.nightshift_apc_queue.Cut()
+	GLOB.nightshift_light_queue.Cut()
+
+/datum/unit_test/nightshift_queue_reentrant_drain/Destroy()
+	GLOB.nightshift_apc_queue += saved_apc_queue
+	GLOB.nightshift_light_queue += saved_light_queue
+	return ..()
+
+/datum/unit_test/nightshift_queue_reentrant_drain/Run()
+	var/obj/machinery/light/filler = allocate(/obj/machinery/light, run_loc_floor_bottom_left)
+	var/obj/machinery/light/nightshift_reentrant_drain_probe/probe = allocate(/obj/machinery/light/nightshift_reentrant_drain_probe, run_loc_floor_top_right)
+	var/obj/machinery/light/late = allocate(/obj/machinery/light, run_loc_floor_bottom_left)
+
+	TEST_ASSERT(filler.queue_nightshift_update(), "Обычная лампа должна вставать в очередь")
+	TEST_ASSERT(probe.queue_nightshift_update(), "Пробник должен вставать в очередь")
+	probe.late_arrival = late
+	probe.nested_drain_armed = TRUE
+
+	SSlighting.process_nightshift_queues(TRUE)
+
+	TEST_ASSERT(!probe.nested_drain_armed, "Пробник должен был отыграть вложенный дренаж во время внешнего прохода")
+	TEST_ASSERT(!filler.nightshift_update_queued, "Флаг обычной лампы должен быть снят дренажем")
+	TEST_ASSERT(!probe.nightshift_update_queued, "Флаг пробника должен быть снят дренажем")
+	TEST_ASSERT(!late.nightshift_update_queued, "Поздняя лампа не должна остаться с висящим nightshift_update_queued вне очереди")
+
+	// Застрявший флаг раньше навсегда блокировал повторную постановку - проверяем, что путь жив.
+	TEST_ASSERT(late.queue_nightshift_update(), "Поздняя лампа должна снова вставать в очередь после дренажа")
+	SSlighting.process_nightshift_queues(TRUE)
+	TEST_ASSERT(!late.nightshift_update_queued, "Повторно поставленная лампа должна быть обработана следующим дренажем")

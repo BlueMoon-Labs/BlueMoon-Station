@@ -97,8 +97,8 @@
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
-	accessory = list(/obj/item/clothing/accessory/permit/special/bridge_officer)
-	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced/command = 1, /obj/item/gun/energy/e_gun=1, /obj/item/stamp/command=1, /obj/item/syndicate_uplink=1)
+	accessory = list(/obj/item/clothing/accessory/permit/special/bridge_officer, /obj/item/clothing/accessory/permit/special/syndie_station)
+	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced/command = 1, /obj/item/gun/energy/e_gun=1, /obj/item/stamp/command=1,/obj/item/syndicate_uplink/station=1)
 
 /datum/outfit/plasmaman/bridgeofficer
 	name = "Bridge Officer Plasmaman"

@@ -63,10 +63,7 @@
 
 /mob/living/carbon/update_damage_overlays()
 	remove_overlay(DAMAGE_LAYER)
-	var/dam_colors = "#E62525"
-	if(ishuman(src))
-		var/mob/living/carbon/human/H = src
-		dam_colors = H.dna.species.exotic_blood_color
+	var/dam_colors = get_wound_color()
 
 	var/mutable_appearance/damage_overlay = mutable_appearance('icons/mob/dam_mob.dmi', "blank", -DAMAGE_LAYER, color = dam_colors)
 	overlays_standing[DAMAGE_LAYER] = damage_overlay
@@ -80,6 +77,54 @@
 				damage_overlay.add_overlay("[BP.dmg_overlay_type]_[BP.body_zone]_0[BP.burnstate]")
 
 	apply_overlay(DAMAGE_LAYER)
+
+/// Returns blood color used for wound bleeding overlays and brute damage overlays
+/mob/living/carbon/proc/get_wound_color()
+	return BLOOD_COLOR_HUMAN
+
+/mob/living/carbon/human/get_wound_color()
+	return dna?.species?.exotic_blood_color || BLOOD_COLOR_HUMAN
+
+/// Handles bleeding overlays on the mob
+/mob/living/carbon/proc/update_wound_overlays()
+	remove_overlay(WOUND_LAYER)
+
+	if(ishuman(src))
+		var/mob/living/carbon/human/human_src = src
+		if(NOBLOOD in human_src.dna?.species?.species_traits)
+			return
+
+	var/mutable_appearance/wound_overlay
+	var/wound_color = get_wound_color()
+	for(var/obj/item/bodypart/iter_part as anything in bodyparts)
+		if(iter_part.bleed_overlay_icon)
+			wound_overlay ||= mutable_appearance('icons/mob/effects/bleed_overlays.dmi', "blank", -WOUND_LAYER, appearance_flags = KEEP_TOGETHER)
+			wound_overlay.color = wound_color
+			wound_overlay.add_overlay(iter_part.bleed_overlay_icon)
+
+	if(isnull(wound_overlay))
+		return
+
+	overlays_standing[WOUND_LAYER] = wound_overlay
+	apply_overlay(WOUND_LAYER)
+
+/// Handles gauze and splint overlays on limbs
+/mob/living/carbon/proc/update_bandage_overlays()
+	remove_overlay(MEDICINE_LAYER)
+
+	var/mutable_appearance/bandage_overlay
+	for(var/obj/item/bodypart/bodypart as anything in bodyparts)
+		var/obj/item/stack/medical/gauze/our_gauze = bodypart.current_gauze
+		if(!our_gauze)
+			continue
+		bandage_overlay ||= mutable_appearance('icons/mob/effects/on_limb_overlays.dmi', "", -MEDICINE_LAYER)
+		bandage_overlay.add_overlay(our_gauze.get_overlay_prefix(bodypart))
+
+	if(isnull(bandage_overlay))
+		return
+
+	overlays_standing[MEDICINE_LAYER] = bandage_overlay
+	apply_overlay(MEDICINE_LAYER)
 
 
 /mob/living/carbon/update_inv_wear_mask()
@@ -167,7 +212,10 @@
 
 		overlays_standing[LEGCUFF_LAYER] = legcuffs
 		apply_overlay(LEGCUFF_LAYER)
-		throw_alert("legcuffed", /atom/movable/screen/alert/restrained/legcuffed, new_master = legcuffed)
+		if(istype(legcuffed, /obj/item/restraints/legcuffs/beartrap))
+			throw_alert("legcuffed", /atom/movable/screen/alert/restrained/legcuffed/beartrap)
+		else
+			throw_alert("legcuffed", /atom/movable/screen/alert/restrained/legcuffed, new_master = legcuffed)
 
 //mob HUD updates for items in our inventory
 
@@ -238,6 +286,8 @@
 
 	apply_overlay(BODYPARTS_LAYER)
 	update_damage_overlays()
+	update_wound_overlays()
+	update_bandage_overlays()
 
 
 
@@ -281,3 +331,5 @@
 		overlays_standing[BODYPARTS_LAYER] = limb_icon_cache[icon_render_key]
 		apply_overlay(BODYPARTS_LAYER)
 	update_damage_overlays()
+	update_wound_overlays()
+	update_bandage_overlays()

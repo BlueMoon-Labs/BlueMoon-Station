@@ -6,6 +6,13 @@
 	max_occurrences = 1
 	min_players = 5
 	category = EVENT_CATEGORY_HEALTH
+	severity = DIRECTOR_SEVERITY_GHOST // антаг из призраков - гост-пул, а не MODERATE от категории
+	cost = 8
+	intensity = 10 // медленная фоновая угроза, лечится вирусологией
+	family = "sentient_disease" // с рулсетом-двойником динамика: не подряд
+	// Не экста: цель болезни - заражать экипаж, а правила эксты разрешают только мирных
+	// к экипажу антагов (враждебное - по запросу через OPFOR/администрацию).
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // как у рулсета-двойника: не экста и не лайт
 	description = "Spawns a sentient disease, who wants to infect as many people as possible."
 
 /datum/round_event/ghost_role/sentient_disease

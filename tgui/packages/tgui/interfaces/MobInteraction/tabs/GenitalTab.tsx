@@ -7,6 +7,7 @@ import { Button, Flex, Section, Stack } from '../../../components';
 
 type GenitalInfo = {
   genitals: GenitalData[];
+  force_naked_flavor: boolean;
 }
 
 type GenitalData = {
@@ -19,15 +20,27 @@ type GenitalData = {
   always_accessible: boolean,
 }
 
-export const GenitalTab = (props, context) => {
-  const { act, data } = useBackend<GenitalInfo>(context);
+export const GenitalTab = (props) => {
+  const { act, data } = useBackend<GenitalInfo>();
   const [
     searchText,
     setSearchText,
-  ] = useLocalState(context, 'searchText', '');
+  ] = useLocalState('searchText', '');
   const genitals = sortGenitals(data.genitals, searchText) || [];
+  const force_naked_flavor = data.force_naked_flavor;
   return (
     <Section>
+      {(force_naked_flavor !== null && (
+        <Button
+          fluid
+          mb={1}
+          content="Force naked flavor"
+          icon={force_naked_flavor ? "toggle-on" : "toggle-off"}
+          selected={force_naked_flavor}
+          tooltip={`Отображение описания и изображений оголенного тела персонажа в окне осмотра вне зависимости от наличия закрывающей одежды`}
+          onClick={() => act('force_naked_flavor')}
+        />
+      ))}
       {genitals.length ? (
         <Flex direction="column">
           {genitals.map(genital => (

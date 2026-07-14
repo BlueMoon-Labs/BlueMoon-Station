@@ -898,6 +898,120 @@ describe('ChatRenderer', () => {
     });
   });
 
+  // ---- setStyleOverrides ----
+
+  describe('setStyleOverrides', () => {
+    test('sets color custom properties and plain classes', () => {
+      const renderer = createReadyRenderer();
+      renderer.setStyleOverrides({
+        emote: { color: '#ff0000', disabled: false },
+        whisper: { color: '', disabled: true },
+        lewd: {},
+      }, true);
+
+      const root = renderer.rootNode;
+      expect(root.style.getPropertyValue('--cs-emote-color'))
+        .toBe('#ff0000');
+      expect(root.style.getPropertyValue('--cs-whisper-color')).toBe('');
+      expect(root.classList.contains('Chat--plain-whisper')).toBe(true);
+      expect(root.classList.contains('Chat--plain-emote')).toBe(false);
+      expect(root.classList.contains('Chat--fxAnimOff')).toBe(false);
+    });
+
+    test('clears stale properties and classes on re-apply', () => {
+      const renderer = createReadyRenderer();
+      renderer.setStyleOverrides({
+        emote: { color: '#ff0000', disabled: true },
+      }, false);
+      expect(renderer.rootNode.classList.contains('Chat--fxAnimOff'))
+        .toBe(true);
+
+      renderer.setStyleOverrides({
+        emote: {},
+      }, true);
+
+      const root = renderer.rootNode;
+      expect(root.style.getPropertyValue('--cs-emote-color')).toBe('');
+      expect(root.classList.contains('Chat--plain-emote')).toBe(false);
+      expect(root.classList.contains('Chat--fxAnimOff')).toBe(false);
+    });
+
+    test('empty overrides map fully resets root state', () => {
+      const renderer = createReadyRenderer();
+      renderer.setStyleOverrides({
+        emote: { color: '#ff0000', disabled: true },
+        whisper: { color: '#00ff00' },
+      }, false);
+
+      renderer.setStyleOverrides({}, true);
+
+      const root = renderer.rootNode;
+      expect(root.style.getPropertyValue('--cs-emote-color')).toBe('');
+      expect(root.style.getPropertyValue('--cs-whisper-color')).toBe('');
+      expect(root.classList.contains('Chat--plain-emote')).toBe(false);
+      expect(root.classList.contains('Chat--fxAnimOff')).toBe(false);
+    });
+
+    test('queues overrides until mount via pending appearance', () => {
+      const renderer = new ChatRenderer();
+      renderer.setStyleOverrides({
+        emote: { color: '#00ff00' },
+      }, false);
+
+      const rootNode = document.createElement('div');
+      renderer.rootNode = rootNode;
+      renderer.applyPendingAppearance();
+
+      expect(rootNode.style.getPropertyValue('--cs-emote-color'))
+        .toBe('#00ff00');
+      expect(rootNode.classList.contains('Chat--fxAnimOff')).toBe(true);
+    });
+
+    test('font/size/anim overrides emit a dynamic stylesheet', () => {
+      const renderer = createReadyRenderer();
+      renderer.setStyleOverrides({
+        emote: { font: 'bold', size: 130, anim: 'pulse' },
+        telepathy: { font: 'bolditalic' },
+      }, true);
+
+      const sheet = document.getElementById('cs-style-overrides');
+      expect(sheet).not.toBeNull();
+      const css = sheet.textContent;
+      expect(css).toContain(
+        '.Chat .emote { font-weight: bold; font-style: normal; '
+        + 'font-size: 130%; }');
+      expect(css).toContain(
+        '.Chat:not(.Chat--fxAnimOff) .emote { animation: cs-pulse');
+      // extraClasses получают те же правила
+      expect(css).toContain('.Chat .telepathy, .Chat .telepathybold');
+    });
+
+    test('size is clamped and disabled styles emit no rules', () => {
+      const renderer = createReadyRenderer();
+      renderer.setStyleOverrides({
+        emote: { size: 500 },
+        whisper: { font: 'bold', size: 150, anim: 'glow', disabled: true },
+      }, true);
+
+      const css = document.getElementById('cs-style-overrides').textContent;
+      expect(css).toContain('font-size: 200%');
+      expect(css).not.toContain('whisper');
+    });
+
+    test('stylesheet is removed when no rules remain', () => {
+      const renderer = createReadyRenderer();
+      renderer.setStyleOverrides({
+        emote: { font: 'bold' },
+      }, true);
+      expect(document.getElementById('cs-style-overrides')).not.toBeNull();
+
+      renderer.setStyleOverrides({
+        emote: { color: '#ff0000' },
+      }, true);
+      expect(document.getElementById('cs-style-overrides')).toBeNull();
+    });
+  });
+
   // ---- Events ----
 
   describe('events', () => {

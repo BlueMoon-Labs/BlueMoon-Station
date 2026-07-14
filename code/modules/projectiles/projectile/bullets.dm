@@ -15,6 +15,10 @@
 	embed_falloff_tile = -5
 	wound_bonus = 4
 	bare_wound_bonus = 6
+	/// Brain damage applied on headshots when nonlethal_headshot_chance procs.
+	var/nonlethal_headshot_brain_damage = 0
+	/// Percent chance for nonlethal_headshot_brain_damage on headshots.
+	var/nonlethal_headshot_chance = 0
 
 /obj/item/projectile/bullet/smite
 	name = "divine retribution"
