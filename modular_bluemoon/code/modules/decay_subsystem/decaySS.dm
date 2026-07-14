@@ -8,7 +8,7 @@ These procs are incredibly expensive and should only really be run once.
 #define FLOOR_DIRT_PERCENT_CHANCE 15
 #define FLOOR_BLOOD_PERCENT_CHANCE 1
 #define FLOOR_TILE_MISSING_PERCENT_CHANCE 1
-#define FLOOR_COBWEB_PERCENT_CHANCE 1
+#define FLOOR_STRUCTURE_PERCENT_CHANCE 1
 
 SUBSYSTEM_DEF(decay)
 	name = "Decay System"
@@ -106,10 +106,15 @@ SUBSYSTEM_DEF(decay)
 				if(!iterating_floor.Enter(spawned_blood))
 					qdel(spawned_blood)
 
-			if(prob(FLOOR_COBWEB_PERCENT_CHANCE * severity_modifier))
+			if(prob(FLOOR_STRUCTURE_PERCENT_CHANCE * severity_modifier))
 				var/obj/structure/spider/stickyweb/spawned_web = new(iterating_floor)
 				if(!iterating_floor.Enter(spawned_web))
 					qdel(spawned_web)
+
+			if(prob(FLOOR_STRUCTURE_PERCENT_CHANCE * severity_modifier))
+				var/obj/structure/barricade/wooden/spawned_barricade = new(iterating_floor)
+				if(!iterating_floor.Enter(spawned_barricade))
+					qdel(spawned_barricade)
 
 /datum/controller/subsystem/decay/proc/try_spawn_decay_dirt(turf/open/floor/floor_turf)
 	if(!floor_turf || QDELETED(floor_turf))
@@ -130,4 +135,4 @@ SUBSYSTEM_DEF(decay)
 #undef FLOOR_DIRT_PERCENT_CHANCE
 #undef FLOOR_BLOOD_PERCENT_CHANCE
 #undef FLOOR_TILE_MISSING_PERCENT_CHANCE
-#undef FLOOR_COBWEB_PERCENT_CHANCE
+#undef FLOOR_STRUCTURE_PERCENT_CHANCE

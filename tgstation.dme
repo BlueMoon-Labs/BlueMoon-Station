@@ -4595,6 +4595,7 @@
 #include "modular_bluemoon\code\modules\wall_smoothing\falsewalls_and_girders.dm"
 #include "modular_bluemoon\code\modules\wall_smoothing\windows.dm"
 #include "modular_bluemoon\code\modules\wall_smoothing\mining_turfs.dm"
+#include "modular_bluemoon\code\modules\wall_smoothing\tables.dm"
 #include "modular_bluemoon\code\modules\decay_subsystem\decay_turf_handling.dm"
 #include "modular_bluemoon\code\modules\decay_subsystem\decaySS.dm"
 #include "modular_bluemoon\code\game\turfs\open.dm"
