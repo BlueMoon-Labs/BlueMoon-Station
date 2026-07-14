@@ -208,13 +208,16 @@
 
 // Medieval Outfits
 
+/obj/item/flashlight/flare/torch/pocket
+	w_class = WEIGHT_CLASS_SMALL
+
 /datum/outfit/medieval
 	name = "Medieval Warmonger"
 	id = null
 	glasses = null
 
 	uniform = /obj/item/clothing/under/costume/gamberson/military
-	suit = /obj/item/clothing/suit/armor/vest/military
+	suit = /obj/item/clothing/suit/armor/vest/knight/military
 	suit_store = /obj/item/spear/military
 	back = /obj/item/storage/backpack/satchel/leather
 	gloves = /obj/item/clothing/gloves/color/brown
@@ -223,7 +226,7 @@
 	shoes = /obj/item/clothing/shoes/workboots/mining
 	belt = /obj/item/storage/belt/iron_tasset
 	l_hand = /obj/item/claymore/cerberus
-	l_pocket = /obj/item/flashlight/flare/torch
+	l_pocket = /obj/item/flashlight/flare/torch/pocket
 	r_pocket = /obj/item/gun/energy/taser/bolestrel/censor
 	backpack_contents = list(/obj/item/stack/sheet/cloth, /obj/item/feather)
 
@@ -239,7 +242,7 @@
 	mask = /obj/item/clothing/mask/breath
 	shoes = /obj/item/clothing/shoes/bronze
 	belt = /obj/item/storage/belt/gold_tasset
-	l_pocket = /obj/item/flashlight/flare/torch
+	l_pocket = /obj/item/flashlight/flare/torch/pocket
 	r_pocket = /obj/item/gun/energy/taser/bolestrel/censor
 
 // Medieval Belts

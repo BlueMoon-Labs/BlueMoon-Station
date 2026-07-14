@@ -81,7 +81,7 @@
 	item_state = "blueshift"
 	custom_premium_price = PRICE_ABOVE_EXPENSIVE
 
-/obj/item/clothing/suit/armor/vest/military
+/obj/item/clothing/suit/armor/vest/knight/military
 	name = "Fluted Plate Armor"
 	desc = "A suit of ornate plate armor, noble in both presentation and protection. Such resplendent maille is \
 	traditionally reserved for the higher echelons of nobility; seasoned knights, venerated kings, and pot-bellied \
@@ -96,6 +96,7 @@
 		/obj/item/spear,
 		/obj/item/gun/ballistic/bow
 	)
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/suit/armor/riot/knight/warlord
 	name = "Golden Plate Armor"
@@ -105,6 +106,7 @@
 	w_class = WEIGHT_CLASS_BULKY
 	clothing_flags = THICKMATERIAL
 	slowdown = 0.5
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/suit/armor/hos
 	name = "armored greatcoat"
@@ -397,7 +399,7 @@
 	item_state = "knight_green"
 	armor = list(MELEE = 80, BULLET = 40, LASER = 10, ENERGY = 10, BOMB = 10, BIO = 0, RAD = 0, FIRE = 80, ACID = 80, WOUND = 30)
 	slowdown = 0.5
-	flags_inv = HIDEGLOVES|HIDESHOES|HIDEJUMPSUIT
+	flags_inv = HIDEGLOVES|HIDESHOES
 	allowed = list(
 		/obj/item/banner,
 		/obj/item/claymore/shortsword,
