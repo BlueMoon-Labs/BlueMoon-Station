@@ -1,6 +1,7 @@
 /turf/closed/mineral
 	icon = 'modular_bluemoon/icons/turf/walls/smoothrocks.dmi'
 	icon_state = "smoothrocks-0"
+	luminosity = 0
 	smooth = SMOOTH_FALSE
 	smoothing_flags = SMOOTH_BITMASK | SMOOTH_BORDER
 	smoothing_groups = SMOOTH_GROUP_CLOSED_TURFS + SMOOTH_GROUP_MINERAL_WALLS
@@ -23,13 +24,10 @@
 	overlays += wall_overlay
 
 /turf/closed/mineral/random/high_chance
-	wall_icon_state = "rock_highchance"
 
 /turf/closed/mineral/random/low_chance
-	wall_icon_state = "rock_lowchance"
 
 /turf/closed/mineral/random/labormineral
-	wall_icon_state = "rock_labor"
 
 /turf/closed/mineral/random/snow
 	icon = 'modular_bluemoon/icons/turf/walls/mountain_wall.dmi'

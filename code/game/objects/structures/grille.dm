@@ -193,10 +193,16 @@
 					WD = new/obj/structure/window/plastitanium(drop_location())
 				else
 					WD = new/obj/structure/window/fulltile(drop_location()) //normal window
-				WD.setDir(dir_to_set)
-				WD.ini_dir = dir_to_set
+				if(WD.smoothing_flags & USES_SMOOTHING)
+					WD.setDir()
+				else
+					WD.setDir(dir_to_set)
+					WD.ini_dir = dir_to_set
 				WD.setAnchored(FALSE)
 				WD.state = 0
+				if(WD.smoothing_flags & USES_SMOOTHING)
+					QUEUE_SMOOTH(WD)
+					QUEUE_SMOOTH_NEIGHBORS(WD)
 				ST.use(2)
 				to_chat(user, "<span class='notice'>You place [WD] on [src].</span>")
 			return

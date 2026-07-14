@@ -2,8 +2,7 @@
 	icon = 'modular_bluemoon/icons/obj/smooth_structures/window.dmi'
 	icon_state = "window-0"
 	base_icon_state = "window"
-	smooth = SMOOTH_FALSE
-	smoothing_flags = SMOOTH_BITMASK | SMOOTH_OBJ
+	smoothing_flags = SMOOTH_BITMASK
 	smoothing_groups = SMOOTH_GROUP_WINDOW_FULLTILE
 	canSmoothWith = SMOOTH_GROUP_AIRLOCK + SMOOTH_GROUP_WINDOW_FULLTILE + SMOOTH_GROUP_WALLS
 
@@ -11,8 +10,7 @@
 	icon = 'modular_bluemoon/icons/obj/smooth_structures/reinforced_window.dmi'
 	icon_state = "reinforced_window-0"
 	base_icon_state = "reinforced_window"
-	smooth = SMOOTH_FALSE
-	smoothing_flags = SMOOTH_BITMASK | SMOOTH_OBJ
+	smoothing_flags = SMOOTH_BITMASK
 	smoothing_groups = SMOOTH_GROUP_WINDOW_FULLTILE
 	canSmoothWith = SMOOTH_GROUP_AIRLOCK + SMOOTH_GROUP_WINDOW_FULLTILE + SMOOTH_GROUP_WALLS
 
@@ -20,8 +18,7 @@
 	icon = 'modular_bluemoon/icons/obj/smooth_structures/plasma_window.dmi'
 	icon_state = "plasma_window-0"
 	base_icon_state = "plasma_window"
-	smooth = SMOOTH_FALSE
-	smoothing_flags = SMOOTH_BITMASK | SMOOTH_OBJ
+	smoothing_flags = SMOOTH_BITMASK
 	smoothing_groups = SMOOTH_GROUP_WINDOW_FULLTILE
 	canSmoothWith = SMOOTH_GROUP_AIRLOCK + SMOOTH_GROUP_WINDOW_FULLTILE + SMOOTH_GROUP_WALLS
 
@@ -29,8 +26,7 @@
 	icon = 'modular_bluemoon/icons/obj/smooth_structures/rplasma_window.dmi'
 	icon_state = "rplasma_window-0"
 	base_icon_state = "rplasma_window"
-	smooth = SMOOTH_FALSE
-	smoothing_flags = SMOOTH_BITMASK | SMOOTH_OBJ
+	smoothing_flags = SMOOTH_BITMASK
 	smoothing_groups = SMOOTH_GROUP_WINDOW_FULLTILE
 	canSmoothWith = SMOOTH_GROUP_AIRLOCK + SMOOTH_GROUP_WINDOW_FULLTILE + SMOOTH_GROUP_WALLS
 
@@ -38,8 +34,7 @@
 	icon = 'modular_bluemoon/icons/obj/smooth_structures/tinted_window.dmi'
 	icon_state = "tinted_window-0"
 	base_icon_state = "tinted_window"
-	smooth = SMOOTH_FALSE
-	smoothing_flags = SMOOTH_BITMASK | SMOOTH_OBJ
+	smoothing_flags = SMOOTH_BITMASK
 	smoothing_groups = SMOOTH_GROUP_WINDOW_FULLTILE
 	canSmoothWith = SMOOTH_GROUP_AIRLOCK + SMOOTH_GROUP_WINDOW_FULLTILE + SMOOTH_GROUP_WALLS
 
@@ -47,8 +42,7 @@
 	icon = 'modular_bluemoon/icons/obj/smooth_structures/rice_window.dmi'
 	icon_state = "rice_window-0"
 	base_icon_state = "rice_window"
-	smooth = SMOOTH_FALSE
-	smoothing_flags = SMOOTH_BITMASK | SMOOTH_OBJ
+	smoothing_flags = SMOOTH_BITMASK
 	smoothing_groups = SMOOTH_GROUP_WINDOW_FULLTILE
 	canSmoothWith = SMOOTH_GROUP_AIRLOCK + SMOOTH_GROUP_WINDOW_FULLTILE + SMOOTH_GROUP_WALLS
 
@@ -107,7 +101,7 @@
 	canSmoothWith = SMOOTH_GROUP_AIRLOCK + SMOOTH_GROUP_WINDOW_FULLTILE_SHUTTLE + SMOOTH_GROUP_SHUTTLE_PARTS + SMOOTH_GROUP_TITANIUM_WALLS
 
 /obj/structure/window/reinforced/fulltile/indestructable
-	smoothing_flags = SMOOTH_BITMASK | SMOOTH_OBJ
+	smoothing_flags = SMOOTH_BITMASK
 	smoothing_groups = SMOOTH_GROUP_WINDOW_FULLTILE
 	canSmoothWith = SMOOTH_GROUP_AIRLOCK + SMOOTH_GROUP_WINDOW_FULLTILE + SMOOTH_GROUP_WALLS
 
@@ -115,8 +109,7 @@
 	icon = 'modular_bluemoon/icons/obj/smooth_structures/reinforced_window.dmi'
 	icon_state = "reinforced_window-0"
 	base_icon_state = "reinforced_window"
-	smooth = SMOOTH_FALSE
-	smoothing_flags = SMOOTH_BITMASK | SMOOTH_OBJ
+	smoothing_flags = SMOOTH_BITMASK
 	smoothing_groups = SMOOTH_GROUP_WINDOW_FULLTILE
 	canSmoothWith = SMOOTH_GROUP_AIRLOCK + SMOOTH_GROUP_WINDOW_FULLTILE + SMOOTH_GROUP_WALLS
 

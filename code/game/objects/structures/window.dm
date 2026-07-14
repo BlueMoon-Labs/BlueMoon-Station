@@ -161,6 +161,11 @@
 /obj/structure/window/setDir(direct)
 	if(!fulltile)
 		..()
+	else if(smoothing_flags & USES_SMOOTHING)
+		if(direct)
+			..(direct)
+	else if(direct)
+		..(direct)
 	else
 		..(FULLTILE_WINDOW_DIR)
 
@@ -168,6 +173,8 @@
 	. = ..()
 	if(.)
 		return
+	if(fulltile)
+		return FALSE
 	if(dir == FULLTILE_WINDOW_DIR)
 		return FALSE	//full tile window, you can't move into it!
 	var/attempted_dir = get_dir(loc, target)
@@ -562,7 +569,7 @@
 
 //This proc is used to update the icons of nearby windows.
 /obj/structure/window/proc/update_nearby_icons()
-	update_icon()
+	update_appearance()
 	if(smoothing_flags & USES_SMOOTHING)
 		QUEUE_SMOOTH_NEIGHBORS(src)
 	else if(smooth)
@@ -576,7 +583,7 @@
 	var/ratio = obj_integrity / max_integrity
 	ratio = CEILING(ratio*4, 1) * 25
 
-	if(smoothing_flags & USES_SMOOTHING)
+	if((updates & UPDATE_SMOOTHING) && (smoothing_flags & USES_SMOOTHING))
 		QUEUE_SMOOTH(src)
 	else if(smooth)
 		queue_smooth(src)
@@ -714,29 +721,16 @@
 
 /obj/structure/window/fulltile
 	icon = 'icons/obj/smooth_structures/window.dmi'
-	icon_state = "window"
-	dir = FULLTILE_WINDOW_DIR
+	icon_state = "window-0"
+	base_icon_state = "window"
 	max_integrity = 50
 	fulltile = TRUE
 	shadow_weight = 0.1
 	flags_1 = PREVENT_CLICK_UNDER_1
 	obj_flags = CAN_BE_HIT //BLUEMOON ADD
-	smooth = SMOOTH_TRUE
-	canSmoothWith = list(
-		/turf/closed/wall,
-		/turf/closed/wall/r_wall,
-		/obj/structure/falsewall,
-		/obj/structure/falsewall/brass,
-		/obj/structure/falsewall/reinforced,
-		/turf/closed/wall/rust,
-		/turf/closed/wall/r_wall/rust,
-		/turf/closed/wall/clockwork,
-		/obj/structure/window/fulltile,
-		/obj/structure/window/reinforced/fulltile,
-		/obj/structure/window/reinforced/tinted/fulltile,
-		/obj/structure/window/plasma/fulltile,
-		/obj/structure/window/plasma/reinforced/fulltile
-		)
+	smoothing_flags = SMOOTH_BITMASK
+	smoothing_groups = SMOOTH_GROUP_WINDOW_FULLTILE
+	canSmoothWith = SMOOTH_GROUP_WINDOW_FULLTILE
 	glass_amount = 2
 
 /obj/structure/window/fulltile/unanchored
@@ -744,27 +738,14 @@
 
 /obj/structure/window/plasma/fulltile
 	icon = 'icons/obj/smooth_structures/plasma_window.dmi'
-	icon_state = "plasmawindow"
-	dir = FULLTILE_WINDOW_DIR
+	icon_state = "plasma_window-0"
+	base_icon_state = "plasma_window"
 	max_integrity = 300
 	fulltile = TRUE
 	flags_1 = PREVENT_CLICK_UNDER_1
-	smooth = SMOOTH_TRUE
-	canSmoothWith = list(
-		/turf/closed/wall,
-		/turf/closed/wall/r_wall,
-		/obj/structure/falsewall,
-		/obj/structure/falsewall/brass,
-		/obj/structure/falsewall/reinforced,
-		/turf/closed/wall/rust,
-		/turf/closed/wall/r_wall/rust,
-		/turf/closed/wall/clockwork,
-		/obj/structure/window/fulltile,
-		/obj/structure/window/reinforced/fulltile,
-		/obj/structure/window/reinforced/tinted/fulltile,
-		/obj/structure/window/plasma/fulltile,
-		/obj/structure/window/plasma/reinforced/fulltile
-		)
+	smoothing_flags = SMOOTH_BITMASK
+	smoothing_groups = SMOOTH_GROUP_WINDOW_FULLTILE
+	canSmoothWith = SMOOTH_GROUP_WINDOW_FULLTILE
 	glass_amount = 2
 
 /obj/structure/window/plasma/fulltile/unanchored
@@ -772,29 +753,14 @@
 
 /obj/structure/window/plasma/reinforced/fulltile
 	icon = 'icons/obj/smooth_structures/rplasma_window.dmi'
-	icon_state = "rplasmawindow"
-	dir = FULLTILE_WINDOW_DIR
+	icon_state = "rplasma_window-0"
+	base_icon_state = "rplasma_window"
 	max_integrity = 1000
 	fulltile = TRUE
 	flags_1 = PREVENT_CLICK_UNDER_1
-	smooth = SMOOTH_TRUE
-	// BLUEMOON ADD - фикс соединения со стенами
-	canSmoothWith = list(
-		/turf/closed/wall,
-		/turf/closed/wall/r_wall,
-		/obj/structure/falsewall,
-		/obj/structure/falsewall/brass,
-		/obj/structure/falsewall/reinforced,
-		/turf/closed/wall/rust,
-		/turf/closed/wall/r_wall/rust,
-		/turf/closed/wall/clockwork,
-		/obj/structure/window/fulltile,
-		/obj/structure/window/reinforced/fulltile,
-		/obj/structure/window/reinforced/tinted/fulltile,
-		/obj/structure/window/plasma/fulltile,
-		/obj/structure/window/plasma/reinforced/fulltile
-		)
-	// BLUEMOON ADD END
+	smoothing_flags = SMOOTH_BITMASK
+	smoothing_groups = SMOOTH_GROUP_WINDOW_FULLTILE
+	canSmoothWith = SMOOTH_GROUP_WINDOW_FULLTILE
 	glass_amount = 2
 
 /obj/structure/window/plasma/reinforced/fulltile/unanchored
@@ -802,29 +768,14 @@
 
 /obj/structure/window/reinforced/fulltile
 	icon = 'icons/obj/smooth_structures/reinforced_window.dmi'
-	icon_state = "r_window"
-	dir = FULLTILE_WINDOW_DIR
+	icon_state = "reinforced_window-0"
+	base_icon_state = "reinforced_window"
 	max_integrity = 100
 	fulltile = TRUE
 	flags_1 = PREVENT_CLICK_UNDER_1
-	smooth = SMOOTH_TRUE
-	canSmoothWith = list(
-		/turf/closed/wall,
-		/turf/closed/wall/r_wall,
-		/turf/closed/wall/rust,
-		/turf/closed/wall/r_wall/rust,
-		/turf/closed/wall/clockwork,
-		/turf/closed/indestructible/riveted,
-		/obj/structure/falsewall,
-		/obj/structure/falsewall/brass,
-		/obj/structure/falsewall/reinforced,
-		/obj/structure/window/fulltile,
-		/obj/structure/window/reinforced/fulltile,
-		/obj/structure/window/reinforced/tinted/fulltile,
-		/obj/structure/window/plasma/fulltile,
-		/obj/structure/window/plasma/reinforced/fulltile,
-		/obj/structure/window/reinforced/fulltile/indestructable
-		)
+	smoothing_flags = SMOOTH_BITMASK
+	smoothing_groups = SMOOTH_GROUP_WINDOW_FULLTILE
+	canSmoothWith = SMOOTH_GROUP_WINDOW_FULLTILE
 	level = 3
 	glass_amount = 2
 
@@ -833,34 +784,24 @@
 
 /obj/structure/window/reinforced/tinted/fulltile
 	icon = 'icons/obj/smooth_structures/tinted_window.dmi'
-	icon_state = "tinted_window"
-	dir = FULLTILE_WINDOW_DIR
+	icon_state = "tinted_window-0"
+	base_icon_state = "tinted_window"
 	fulltile = TRUE
 	flags_1 = PREVENT_CLICK_UNDER_1
-	smooth = SMOOTH_TRUE
-	canSmoothWith = list(
-		/turf/closed/wall,
-		/turf/closed/wall/r_wall,
-		/obj/structure/falsewall,
-		/obj/structure/falsewall/brass,
-		/obj/structure/falsewall/reinforced,
-		/turf/closed/wall/rust,
-		/turf/closed/wall/r_wall/rust,
-		/turf/closed/wall/clockwork,
-		/obj/structure/window/fulltile,
-		/obj/structure/window/reinforced/fulltile,
-		/obj/structure/window/reinforced/tinted/fulltile,
-		/obj/structure/window/plasma/fulltile,
-		/obj/structure/window/plasma/reinforced/fulltile
-		)
+	smoothing_flags = SMOOTH_BITMASK
+	smoothing_groups = SMOOTH_GROUP_WINDOW_FULLTILE
+	canSmoothWith = SMOOTH_GROUP_WINDOW_FULLTILE
 	level = 3
 	glass_amount = 2
 
 /obj/structure/window/reinforced/fulltile/ice
 	icon = 'icons/obj/smooth_structures/rice_window.dmi'
-	icon_state = "ice_window"
+	icon_state = "rice_window-0"
+	base_icon_state = "rice_window"
 	max_integrity = 150
-	canSmoothWith = list(/obj/structure/window/fulltile, /obj/structure/window/reinforced/fulltile, /obj/structure/window/reinforced/tinted/fulltile, /obj/structure/window/plasma/fulltile, /obj/structure/window/plasma/reinforced/fulltile)
+	smoothing_flags = SMOOTH_BITMASK
+	smoothing_groups = SMOOTH_GROUP_WINDOW_FULLTILE
+	canSmoothWith = SMOOTH_GROUP_WINDOW_FULLTILE
 	level = 3
 	glass_amount = 2
 
@@ -868,8 +809,8 @@
 	name = "shuttle window"
 	desc = "A reinforced, air-locked pod window."
 	icon = 'icons/obj/smooth_structures/shuttle_window.dmi'
-	icon_state = "shuttle_window"
-	dir = FULLTILE_WINDOW_DIR
+	icon_state = "shuttle_window-0"
+	base_icon_state = "shuttle_window"
 	max_integrity = 100
 	wtype = "shuttle"
 	fulltile = TRUE
@@ -877,8 +818,9 @@
 	reinf = TRUE
 	heat_resistance = 1600
 	armor = list(MELEE = 50, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 50, BIO = 100, RAD = 100, FIRE = 80, ACID = 100)
-	smooth = SMOOTH_TRUE
-	canSmoothWith = null
+	smoothing_flags = SMOOTH_BITMASK
+	smoothing_groups = SMOOTH_GROUP_SHUTTLE_PARTS + SMOOTH_GROUP_WINDOW_FULLTILE_SHUTTLE
+	canSmoothWith = SMOOTH_GROUP_WINDOW_FULLTILE_SHUTTLE
 	explosion_block = 3
 	level = 3
 	glass_type = /obj/item/stack/sheet/titaniumglass
@@ -900,8 +842,8 @@
 	name = "plastitanium window"
 	desc = "An evil looking window of plasma and titanium."
 	icon = 'icons/obj/smooth_structures/plastitanium_window.dmi'
-	icon_state = "plastitanium_window"
-	dir = FULLTILE_WINDOW_DIR
+	icon_state = "plastitanium_window-0"
+	base_icon_state = "plastitanium_window"
 	max_integrity = 100
 	wtype = "shuttle"
 	fulltile = TRUE
@@ -910,8 +852,9 @@
 	extra_reinforced = TRUE
 	heat_resistance = 1600
 	armor = list(MELEE = 50, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 50, BIO = 100, RAD = 100, FIRE = 80, ACID = 100)
-	smooth = SMOOTH_TRUE
-	canSmoothWith = list(/turf/closed/wall/r_wall/syndicate, /turf/closed/wall/mineral/plastitanium, /obj/machinery/door/airlock/shuttle, /obj/machinery/door/airlock, /obj/structure/window/plastitanium, /obj/structure/shuttle/engine, /obj/structure/falsewall/plastitanium)
+	smoothing_flags = SMOOTH_BITMASK
+	smoothing_groups = SMOOTH_GROUP_SHUTTLE_PARTS + SMOOTH_GROUP_WINDOW_FULLTILE_PLASTITANIUM
+	canSmoothWith = SMOOTH_GROUP_WINDOW_FULLTILE_PLASTITANIUM
 	explosion_block = 3
 	level = 3
 	glass_type = /obj/item/stack/sheet/plastitaniumglass
@@ -986,12 +929,13 @@
 	anchored = FALSE
 
 /obj/structure/window/reinforced/clockwork/fulltile
-	icon_state = "clockwork_window"
-	smooth = SMOOTH_TRUE
-	canSmoothWith = null
+	icon_state = "clockwork_window-0"
+	base_icon_state = "clockwork_window"
+	smoothing_flags = SMOOTH_BITMASK
+	smoothing_groups = SMOOTH_GROUP_WINDOW_FULLTILE_BRONZE
+	canSmoothWith = SMOOTH_GROUP_WINDOW_FULLTILE_BRONZE
 	fulltile = TRUE
 	flags_1 = PREVENT_CLICK_UNDER_1
-	dir = FULLTILE_WINDOW_DIR
 	max_integrity = 120
 	level = 3
 	glass_amount = 2
@@ -1091,12 +1035,13 @@
 	anchored = FALSE
 
 /obj/structure/window/bronze/fulltile
-	icon_state = "clockwork_window"
-	canSmoothWith = null
-	smooth = SMOOTH_TRUE
+	icon_state = "clockwork_window-0"
+	base_icon_state = "clockwork_window"
+	smoothing_flags = SMOOTH_BITMASK
+	smoothing_groups = SMOOTH_GROUP_WINDOW_FULLTILE_BRONZE
+	canSmoothWith = SMOOTH_GROUP_WINDOW_FULLTILE_BRONZE
 	fulltile = TRUE
 	flags_1 = PREVENT_CLICK_UNDER_1
-	dir = FULLTILE_WINDOW_DIR
 	max_integrity = 50
 	glass_amount = 2
 
