@@ -567,7 +567,7 @@ GENETICS SCANNER
 			msg += "<span class='notice'>[cyberimp_detect]</span>\n"
 
 	if(SEND_SIGNAL(M, COMSIG_NANITE_SCAN, null, FALSE))
-		msg += span_notice("<b>NANITES DETECTED</b>")
+		msg += span_info("<b>Обнаружены наниты</b>")
 
 	// BLUEMOON EDIT START - изменение анализаторов здоровья; to_chat_msg - чтобы на распечатанном листочке не было "распечатать"
 	var/to_chat_msg = msg
