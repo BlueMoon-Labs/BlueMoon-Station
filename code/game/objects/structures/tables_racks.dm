@@ -485,7 +485,7 @@
 	name = "plasmaglass table"
 	desc = "Стеклянный стол, но розовый и куда более прочный. Что ещё Nanotrasen спроектирует на плазме?"
 	icon = 'icons/obj/smooth_structures/plasmaglass_table.dmi'
-	icon_state = "plasmaglass_table"
+	icon_state = "box"
 	climbable = TRUE
 	buildstack = /obj/item/stack/sheet/plasmaglass
 	canSmoothWith = null
@@ -662,7 +662,7 @@
 	name = "reinforced table"
 	desc = "Усиленная версия четырёхножного стола."
 	icon = 'icons/obj/smooth_structures/reinforced_table.dmi'
-	icon_state = "r_table"
+	icon_state = "box"
 	deconstruction_ready = 0
 	buildstack = /obj/item/stack/sheet/plasteel
 	max_integrity = 200
@@ -697,7 +697,7 @@
 	name = "reinforced glass table"
 	desc = "Усиленная версия стеклянного стола."
 	icon = 'icons/obj/smooth_structures/rglass_table.dmi'
-	icon_state = "rglass_table"
+	icon_state = "box"
 	buildstack = /obj/item/stack/sheet/rglass
 	max_integrity = 150
 
@@ -705,7 +705,7 @@
 	name = "reinforced plasma glass table"
 	desc = "Усиленная версия плазмо-стеклянного стола."
 	icon = 'icons/obj/smooth_structures/rplasmaglass_table.dmi'
-	icon_state = "rplasmaglass_table"
+	icon_state = "box"
 	buildstack = /obj/item/stack/sheet/plasmarglass
 	max_integrity = 400
 
@@ -713,7 +713,7 @@
 	name = "titanium glass table"
 	desc = "Стол из армированного титаном стекла, покрытый свежим слоем краски 'NT white'."
 	icon = 'icons/obj/smooth_structures/titaniumglass_table.dmi'
-	icon_state = "titaniumglass_table"
+	icon_state = "box"
 	buildstack = /obj/item/stack/sheet/titaniumglass
 	canSmoothWith = null
 	max_integrity = 350
@@ -731,7 +731,7 @@
 	name = "Plastitanium Glass Table"
 	desc = "Стол из силикат-плазменного композита с титановым усилением. Прочно так же, как и звучит."
 	icon = 'icons/obj/smooth_structures/plastitaniumglass_table.dmi'
-	icon_state = "plastitaniumglass_table"
+	icon_state = "box"
 	buildstack = /obj/item/stack/sheet/plastitaniumglass
 	canSmoothWith = list(/obj/structure/table/reinforced/plastitanium, /obj/structure/table/reinforced/plastitaniumglass)
 	max_integrity = 450
