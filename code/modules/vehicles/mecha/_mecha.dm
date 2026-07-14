@@ -597,10 +597,7 @@
 		if(!target)
 			return
 	var/mob/living/L = user
-	if(selected)
-		if(!(L in return_controllers_with_flag(VEHICLE_CONTROL_EQUIPMENT)))
-			to_chat(user, "You can't control mech equipment from here!")
-			return
+	if(selected && (L in return_controllers_with_flag(VEHICLE_CONTROL_EQUIPMENT)))
 		if(!Adjacent(target) && (selected.range & MECHA_RANGED))
 			if(HAS_TRAIT(L, TRAIT_PACIFISM) && selected.harmful)
 				to_chat(L, "<span class='warning'>You don't want to harm other living beings!</span>")

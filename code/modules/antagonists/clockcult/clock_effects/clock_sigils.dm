@@ -16,12 +16,23 @@
 	var/check_holy = FALSE
 
 /obj/effect/clockwork/sigil/attackby(obj/item/I, mob/living/user, params)
-	if(I.force)
-		if(is_servant_of_ratvar(user) && user.a_intent != INTENT_HARM)
-			return ..()
-		if(istype(I, /obj/item/nullrod) || istype(I, /obj/item/clockwork/slab))
-			user.visible_message("<span class='warning'>[user] убирает [src] при помощи [I]!</span>", "<span class='danger'>Ты убираешь [src] при помощи [I]!</span>")
+	if(!isliving(user))
+		return ..()
+	var/mob/living/L = user
+	if(is_servant_of_ratvar(L))
+		if(istype(I, /obj/item/clockwork/slab))
+			L.visible_message("<span class='warning'>[L] убирает [src] при помощи [I]!</span>", "<span class='danger'>Ты убираешь [src] при помощи [I]!</span>")
 			qdel(src)
+			return TRUE
+		return ..()
+	if(istype(I, /obj/item/storage/book/bible) || istype(I, /obj/item/nullrod))
+		L.say("BEGONE FOUL MAGICKS!!", forced = "bible")
+		to_chat(L, "<span class='danger'>You disrupt the magic of [src] with [I].</span>")
+		qdel(src)
+		return TRUE
+	if(I.reagents?.has_reagent(/datum/reagent/space_cleaner))
+		L.visible_message("<span class='warning'>[L] смывает [src] при помощи [I]!</span>", "<span class='danger'>Ты смываешь [src] при помощи [I]!</span>")
+		qdel(src)
 		return TRUE
 	return ..()
 
@@ -30,7 +41,11 @@
 
 /obj/effect/clockwork/sigil/on_attack_hand(mob/user, act_intent = user.a_intent, unarmed_attack_flags)
 	if(iscarbon(user) && !user.stat)
-		if(is_servant_of_ratvar(user) && user.a_intent != INTENT_HARM)
+		if(is_servant_of_ratvar(user))
+			if(user.a_intent == INTENT_HARM)
+				user.visible_message("<span class='warning'>[user] стирает [src]!</span>", "<span class='danger'>Ты стираешь [src]!</span>")
+				qdel(src)
+				return TRUE
 			return ..()
 		return TRUE
 	. = ..()
@@ -264,11 +279,16 @@
 		и в зоне находится <b>[structure_number]</b> часов[structure_number == 1 ? "ой" : "ых"] механизм[structure_number == 1 ? "" : (structure_number >= 2 && structure_number <= 4 ? "а" : "ов")] .</span>"
 		if(iscyborg(user))
 			. += "<span class='brass'>Вы можете восполнить энергию [sigil_name], пройдя через него.</span>"
+		. += "<span class='brass'>Мехи на сигиле могут заряжаться и чиниться от сети.</span>"
 
 /obj/effect/clockwork/sigil/transmission/sigil_effects(mob/living/L)
 	if(is_servant_of_ratvar(L))
 		if(iscyborg(L))
 			charge_cyborg(L)
+		else if(isliving(L))
+			var/obj/vehicle/sealed/mecha/M = L.loc
+			if(istype(M) && get_turf(M) == get_turf(src))
+				service_mecha(M, L)
 	else if(get_clockwork_power())
 		to_chat(L, "<span class='brass'>Вы чувствуете лёгкий статический разряд.</span>")
 
@@ -294,6 +314,9 @@
 			power_drained += A.power_drain(TRUE)
 
 		CHECK_TICK
+
+	for(var/obj/vehicle/sealed/mecha/M in range(SIGIL_ACCESS_RANGE, src))
+		passive_service_mecha(M)
 
 	adjust_clockwork_power(power_drained * power_mod * 15)
 	new /obj/effect/temp_visual/ratvar/sigil/transmission(loc, 1 + (power_drained * 0.0035))
@@ -331,6 +354,60 @@
 			to_chat(cyborg, "<span class='warning'>Вы уже регенерируете энергию!</span>")
 		return FALSE
 	return TRUE
+
+/obj/effect/clockwork/sigil/transmission/proc/mecha_checks(obj/vehicle/sealed/mecha/M, mob/living/user, silent)
+	if(!M || QDELETED(M))
+		return FALSE
+	if(!M.cell)
+		if(!silent && user)
+			to_chat(user, "<span class='warning'>У [M] нет энергоячейки.</span>")
+		return FALSE
+	if(!get_clockwork_power())
+		if(!silent && user)
+			to_chat(user, "<span class='warning'>Нет доступной энергии в сети сигилов!</span>")
+		return FALSE
+	if(M.cell.charge >= M.cell.maxcharge - MIN_CLOCKCULT_POWER && M.obj_integrity >= M.max_integrity)
+		if(!silent && user)
+			to_chat(user, "<span class='warning'>[M] уже полностью исправен и заряжен!</span>")
+		return FALSE
+	return TRUE
+
+/obj/effect/clockwork/sigil/transmission/proc/service_mecha(obj/vehicle/sealed/mecha/M, mob/living/user)
+	if(!mecha_checks(M, user))
+		return
+	to_chat(user, "<span class='brass'>Вы начинаете заряжать и чинить [M] от [sigil_name]...</span>")
+	if(!do_after(user, 50, target = src, extra_checks = CALLBACK(src, PROC_REF(mecha_checks), M, user, TRUE)))
+		return
+	var/giving_power = 0
+	if(M.cell && M.cell.charge < M.cell.maxcharge - MIN_CLOCKCULT_POWER)
+		giving_power = min(FLOOR(M.cell.maxcharge - M.cell.charge, MIN_CLOCKCULT_POWER), get_clockwork_power())
+	var/integrity_gain = 0
+	if(M.obj_integrity < M.max_integrity)
+		integrity_gain = min(25, M.max_integrity - M.obj_integrity)
+	var/total_cost = giving_power + (integrity_gain * 20)
+	if(!total_cost || !adjust_clockwork_power(-total_cost))
+		return
+	if(giving_power)
+		M.cell.charge += giving_power
+	if(integrity_gain)
+		M.obj_integrity = min(M.obj_integrity + integrity_gain, M.max_integrity)
+	M.visible_message("<span class='warning'>[M] светится ярким оранжевым цветом!</span>")
+	var/previous_color = M.color
+	M.color = list("#EC8A2D", "#EC8A2D", "#EC8A2D", rgb(0,0,0))
+	animate(M, color = previous_color, time = 100)
+	addtimer(CALLBACK(M, TYPE_PROC_REF(/atom, update_atom_colour)), 100)
+
+/obj/effect/clockwork/sigil/transmission/proc/passive_service_mecha(obj/vehicle/sealed/mecha/M)
+	if(!M?.cell || !get_clockwork_power())
+		return
+	if(M.cell.charge < M.cell.maxcharge)
+		var/delta = min(15, M.cell.maxcharge - M.cell.charge, get_clockwork_power())
+		if(delta && adjust_clockwork_power(-delta))
+			M.cell.charge += delta
+	if(M.obj_integrity < M.max_integrity)
+		var/repair_cost = 20
+		if(get_clockwork_power() >= repair_cost && adjust_clockwork_power(-repair_cost))
+			M.obj_integrity = min(M.obj_integrity + max(1, M.max_integrity / 100), M.max_integrity)
 
 /obj/effect/clockwork/sigil/transmission/update_icon()
 	. = ..()
@@ -404,7 +481,7 @@
 					playsound(L, 'sound/magic/disintegrate.ogg', 50, 1)
 					L.visible_message("<span class='warning'>[L] содрогается, когда [src] вспыхивает ярко-синим светом!</span>")
 					var/mob/living/carbon/human/H = L
-					H.spew_organ(2, 6)
+					H.spew_organ(2, 6, exclude_brain = TRUE)
 			else if(L.health > min_drain_health)
 				if(!GLOB.ratvar_awakens && L.stat == CONSCIOUS)
 					vitality_drained = L.adjustToxLoss(1, forced = TRUE, toxins_type = TOX_OMNI)

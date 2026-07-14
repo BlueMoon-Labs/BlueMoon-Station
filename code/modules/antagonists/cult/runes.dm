@@ -326,7 +326,7 @@ structure_check() searches for nearby cultist structures required for the invoca
 		else if(ishuman(sacrificial))
 			playsound(sacrificial, 'sound/magic/disintegrate.ogg', 100, TRUE)
 			var/mob/living/carbon/human/H = sacrificial
-			H.spew_organ(2, 6)
+			H.spew_organ(2, 6, exclude_brain = TRUE)
 	return TRUE
 
 /obj/effect/rune/empower
