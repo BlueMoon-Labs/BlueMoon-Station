@@ -10,6 +10,9 @@ import { backendReducer, backendUpdate } from '../backend';
 import { debugReducer } from '../debug';
 import { Jukebox } from './Jukebox';
 
+const exportedPlaylistsJson = '{"Imported playlist":["Valid Track"]}';
+const malformedFavoriteTracks = JSON.parse(exportedPlaylistsJson);
+
 const setupStore = (data = {}) => {
   (global as any).Byond = { winset: () => {}, topic: () => {} };
   const store = createStore(
@@ -30,9 +33,7 @@ const setupStore = (data = {}) => {
         repeat: false,
         songs: ['Valid Track'],
         queued_tracks: [],
-        favorite_tracks: {
-          'Imported playlist': ['Valid Track'],
-        },
+        favorite_tracks: malformedFavoriteTracks,
         playlists: {
           Broken: 'not an array',
           Valid: ['Valid Track'],
@@ -44,6 +45,13 @@ const setupStore = (data = {}) => {
 };
 
 describe('Jukebox imported preferences', () => {
+  test('reproduces the former array-operation crash from playlist JSON', () => {
+    expect(() => malformedFavoriteTracks.includes('Valid Track')).toThrow(
+      TypeError,
+    );
+    expect(() => [...malformedFavoriteTracks]).toThrow(TypeError);
+  });
+
   test('renders malformed imported collection shapes without crashing', () => {
     setupStore();
     const { container } = render(<Jukebox />);

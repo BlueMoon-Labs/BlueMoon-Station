@@ -1,9 +1,19 @@
 /// Exported playlist objects must never be accepted where a sequential track array is expected.
+/datum/unit_test/jukebox_import_shape_validation/proc/legacy_track_import_check(list/new_track_list)
+	if(!LAZYLEN(new_track_list))
+		return FALSE
+	for(var/song in new_track_list)
+		if(!istext(song) || !song)
+			return FALSE
+	return TRUE
+
 /datum/unit_test/jukebox_import_shape_validation/Run()
-	var/list/exported_playlists = list(
-		"Imported playlist" = list("Valid Track")
-	)
+	var/exported_playlists_json = "{\"Imported playlist\":\[\"Valid Track\"\]}"
+	var/decoded = safe_json_decode(exported_playlists_json)
+	TEST_ASSERT(islist(decoded), "Экспорт плейлистов не декодировался в список")
+	var/list/exported_playlists = decoded
 	TEST_ASSERT(is_assoc_list(exported_playlists), "Тестовые плейлисты не являются ассоциативным списком")
+	TEST_ASSERT(legacy_track_import_check(exported_playlists), "Тестовый JSON больше не воспроизводит принятие объекта старой проверкой импорта")
 	TEST_ASSERT(!jukebox_track_list_is_valid(exported_playlists), "Объект плейлистов принят как массив избранных треков")
 	TEST_ASSERT(!length(sanitize_jukebox_track_list(exported_playlists)), "Восстановление избранного сохранило ассоциативный список")
 
