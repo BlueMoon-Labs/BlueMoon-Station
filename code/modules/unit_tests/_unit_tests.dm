@@ -184,6 +184,7 @@
 #include "memory_leak_limits.dm"
 #include "human_mob_gc.dm"
 #include "observer_reenter_race.dm"
+#include "jukebox_import.dm"
 #include "latex_lockable.dm"
 #include "parallax_position.dm"
 #include "perf_optimizations.dm"

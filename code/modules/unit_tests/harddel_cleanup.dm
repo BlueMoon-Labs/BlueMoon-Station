@@ -159,6 +159,84 @@
 	TEST_ASSERT_NULL(mind.assigned_heirloom, "Mind оставил ссылку на удалённую assigned_heirloom")
 	qdel(mind)
 
+/// APC обязан немедленно отпустить удаляемый светильник из долгоживущего кэша.
+/datum/unit_test/apc_light_cache_qdel_cleanup/Run()
+	var/obj/machinery/power/apc/apc = allocate(/obj/machinery/power/apc)
+	var/obj/machinery/light/light = allocate(/obj/machinery/light)
+	apc.cached_area_lights = list(light)
+	apc.light_cache_dirty = FALSE
+
+	apc.mark_light_cache_dirty()
+	TEST_ASSERT(apc.light_cache_dirty, "APC не пометил кэш светильников грязным")
+	TEST_ASSERT_NULL(apc.cached_area_lights, "APC сохранил ссылку на светильник после инвалидации кэша")
+
+/// Virtualspeaker переживает исходный объект несколько секунд и должен отпустить его по qdel.
+/datum/unit_test/virtualspeaker_source_qdel_cleanup/Run()
+	var/obj/item/source = allocate(/obj/item)
+	var/obj/item/radio/radio = allocate(/obj/item/radio)
+	var/atom/movable/virtualspeaker/speaker = new(null, source, radio)
+	TEST_ASSERT_EQUAL(speaker.GetSource(), source, "Virtualspeaker не сохранил источник")
+	TEST_ASSERT_EQUAL(speaker.GetRadio(), radio, "Virtualspeaker не сохранил радио")
+
+	qdel(source)
+	TEST_ASSERT_NULL(speaker.GetSource(), "Virtualspeaker оставил ссылку на удалённый источник")
+	qdel(radio)
+	TEST_ASSERT_NULL(speaker.GetRadio(), "Virtualspeaker оставил ссылку на удалённое радио")
+	qdel(speaker)
+
+/// Завершённое парирование не должно удерживать использованный предмет.
+/datum/unit_test/active_parry_item_qdel_cleanup/Run()
+	var/mob/living/user = allocate(/mob/living)
+	var/obj/item/item = allocate(/obj/item)
+	user.set_active_parry_item(item)
+	TEST_ASSERT_EQUAL(user.active_parry_item, item, "Тест не назначил предмет парирования")
+
+	qdel(item)
+	TEST_ASSERT_NULL(user.active_parry_item, "Моб оставил ссылку на удалённый предмет парирования")
+
+/// Колода задаёт parentdeck на себя и обязана разорвать этот цикл в Destroy().
+/datum/unit_test/card_deck_parent_qdel_cleanup/Run()
+	var/obj/item/toy/cards/deck/deck = allocate(/obj/item/toy/cards/deck)
+	TEST_ASSERT_EQUAL(deck.parentdeck, deck, "Тестовая колода не создала self-reference parentdeck")
+
+	qdel(deck)
+	TEST_ASSERT_NULL(deck.parentdeck, "Удалённая колода оставила self-reference parentdeck")
+
+/// RemoveSpell должен удалить все совпадения, а внешний qdel — инвалидировать spell_list.
+/datum/unit_test/mind_spell_list_qdel_cleanup/Run()
+	var/datum/mind/mind = new
+	var/obj/effect/proc_holder/spell/first = new
+	var/obj/effect/proc_holder/spell/second = new
+	mind.AddSpell(first)
+	mind.AddSpell(second)
+
+	mind.RemoveSpell(/obj/effect/proc_holder/spell)
+	TEST_ASSERT(!length(mind.spell_list), "RemoveSpell пропустил заклинание при изменении spell_list во время обхода")
+	TEST_ASSERT(QDELETED(first) && QDELETED(second), "RemoveSpell не удалил все совпавшие заклинания")
+
+	var/obj/effect/proc_holder/spell/external = new
+	mind.AddSpell(external)
+	qdel(external)
+	TEST_ASSERT(!(external in mind.spell_list), "Mind оставил внешне удалённое заклинание в spell_list")
+
+	var/obj/effect/proc_holder/spell/owned = new
+	mind.AddSpell(owned)
+	qdel(mind)
+	TEST_ASSERT(QDELETED(owned), "Удаление mind не удалило принадлежащее ему заклинание")
+	TEST_ASSERT(!length(mind.spell_list), "Удалённый mind сохранил spell_list")
+
+/// RemoveSource может синхронно удалить последний neural_interface: holder очищается до вызова.
+/datum/unit_test/hud_neural_interface_qdel_cleanup/Run()
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human)
+	var/obj/item/clothing/glasses/hud/health/glasses = allocate(/obj/item/clothing/glasses/hud/health)
+	var/datum/component/neural_interface/interface = user.LoadComponent(/datum/component/neural_interface)
+	interface.AddSource(glasses.interface_source)
+	glasses.interface = interface
+
+	glasses.clear_neural_interface()
+	TEST_ASSERT_NULL(glasses.interface, "HUD-очки оставили ссылку на удалённый neural_interface")
+	TEST_ASSERT(QDELETED(interface), "Последний neural_interface не удалился после RemoveSource")
+
 /// Обезьяна должна удалять qdeleted предметы из blacklistItems.
 /datum/unit_test/monkey_blacklist_item_qdel_cleanup/Run()
 	var/mob/living/carbon/monkey/monkey = allocate(/mob/living/carbon/monkey)

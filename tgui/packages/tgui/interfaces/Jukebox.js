@@ -48,13 +48,23 @@ export const Jukebox = (props) => {
 
   const songsPerPage = 25;
 
-  const playlistNames = Object.keys(playlists || {});
+  const normalizeTracks = (tracks) => Array.isArray(tracks)
+    ? tracks.filter((track) => typeof track === 'string')
+    : [];
+  const songList = normalizeTracks(songs);
+  const favoriteTrackList = normalizeTracks(favorite_tracks);
+  const playlistMap = playlists
+    && typeof playlists === 'object'
+    && !Array.isArray(playlists)
+    ? playlists
+    : {};
+  const playlistNames = Object.keys(playlistMap);
   const isPlaylistMode = tab === 'playlist';
-  const playlistTracks = playlists[playlist] || [];
+  const playlistTracks = normalizeTracks(playlistMap[playlist]);
 
   const baseTracks = isPlaylistMode
     ? [...playlistTracks].reverse()
-    : (inFavoritesMode ? [...favorite_tracks].reverse() : songs);
+    : (inFavoritesMode ? [...favoriteTrackList].reverse() : songList);
 
   const baseIndexByTrack = {};
   for (let idx = 0; idx < baseTracks.length; idx++) {
@@ -70,7 +80,9 @@ export const Jukebox = (props) => {
   const startIndex = (safePage - 1) * songsPerPage;
   const currentSongs = filteredSongs.slice(startIndex, startIndex + songsPerPage);
 
-  const validQueuedTracks = Array.isArray(queued_tracks) ? queued_tracks : [];
+  const validQueuedTracks = Array.isArray(queued_tracks)
+    ? queued_tracks.filter((track) => track && typeof track.name === 'string')
+    : [];
 
   const truncate = (text, maxLength) => {
     return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
@@ -281,8 +293,8 @@ export const Jukebox = (props) => {
             icon="shuffle"
             tooltip="Добавить случайную песню в очередь"
             onClick={() => {
-              if (songs.length === 0) return;
-              const randomSongName = songs[Math.floor(Math.random() * songs.length)];
+              if (songList.length === 0) return;
+              const randomSongName = songList[Math.floor(Math.random() * songList.length)];
               act('add_to_queue', { track: randomSongName, up: false });
             }}
           />
@@ -310,8 +322,8 @@ export const Jukebox = (props) => {
               </Box>
             ) : (
               currentSongs.map((track, i) => {
-                const isAvailable = songs.includes(track);
-                const isFavorite = favorite_tracks.includes(track);
+                const isAvailable = songList.includes(track);
+                const isFavorite = favoriteTrackList.includes(track);
                 const inPlaylist = playlist && playlistTracks.includes(track);
                 const showIndexInput = isPlaylistMode || inFavoritesMode;
                 const onIndexChange = isPlaylistMode
