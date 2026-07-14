@@ -94,8 +94,7 @@ SUBSYSTEM_DEF(decay)
 				new /obj/effect/decal/cleanable/dirt(iterating_floor)
 
 			if(prob(FLOOR_BLOOD_PERCENT_CHANCE * severity_modifier))
-				var/obj/effect/decal/cleanable/blood/spawned_blood = new(iterating_floor)
-				spawned_blood.dry()
+				var/obj/effect/decal/cleanable/blood/old/spawned_blood = new(iterating_floor)
 				if(!iterating_floor.Enter(spawned_blood))
 					qdel(spawned_blood)
 
