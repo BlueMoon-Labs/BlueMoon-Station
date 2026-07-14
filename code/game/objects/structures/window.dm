@@ -706,7 +706,6 @@
 /obj/structure/window/reinforced/tinted
 	name = "tinted window"
 	icon_state = "twindow"
-	opacity = 1
 /obj/structure/window/reinforced/tinted/frosted
 	name = "frosted window"
 	icon_state = "fwindow"

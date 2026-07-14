@@ -46,22 +46,6 @@
 	fake_icon = 'modular_splurt/icons/turf/walls/wall_mushwood.dmi'
 	canSmoothWith = list(/turf/closed/wall/mineral/wood/mushroom, /obj/structure/falsewall/wood/mushroom)
 
-/obj/structure/table/wood/shadow
-	smooth = SMOOTH_TRUE
-	smoothing_flags = NONE
-
-/obj/structure/table/wood/mushroom
-	smooth = SMOOTH_TRUE
-	smoothing_flags = NONE
-
-/obj/structure/table/wood/poker/shadow
-	smooth = SMOOTH_TRUE
-	smoothing_flags = NONE
-
-/obj/structure/table/wood/poker/mushroom
-	smooth = SMOOTH_TRUE
-	smoothing_flags = NONE
-
 /obj/structure/falsewall/wood/shadow/update_icon_state()
 	if(opening)
 		icon = initial(icon)

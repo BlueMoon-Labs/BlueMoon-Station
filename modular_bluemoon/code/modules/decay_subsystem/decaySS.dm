@@ -7,8 +7,6 @@ These procs are incredibly expensive and should only really be run once.
 
 #define FLOOR_DIRT_PERCENT_CHANCE 15
 #define FLOOR_BLOOD_PERCENT_CHANCE 1
-#define FLOOR_VOMIT_PERCENT_CHANCE 1
-#define FLOOR_OIL_PERCENT_CHANCE 5
 #define FLOOR_TILE_MISSING_PERCENT_CHANCE 1
 #define FLOOR_COBWEB_PERCENT_CHANCE 1
 
@@ -58,8 +56,6 @@ SUBSYSTEM_DEF(decay)
 
 	do_common()
 	do_maintenance()
-	do_engineering()
-	do_medical()
 
 	return SS_INIT_SUCCESS
 
@@ -68,6 +64,7 @@ SUBSYSTEM_DEF(decay)
 		return FALSE
 	return TRUE
 
+/// Structural decay across the station — rusted walls and missing floor tiles.
 /datum/controller/subsystem/decay/proc/do_common()
 	for(var/turf/iterating_turf as anything in possible_turfs)
 		if(!isopenturf(iterating_turf))
@@ -76,12 +73,6 @@ SUBSYSTEM_DEF(decay)
 		if(can_decay_break_floor(iterating_floor))
 			if(prob(FLOOR_TILE_MISSING_PERCENT_CHANCE * severity_modifier) && prob(60))
 				iterating_floor.break_tile_to_plating()
-
-		if(prob(FLOOR_DIRT_PERCENT_CHANCE * severity_modifier))
-			new /obj/effect/decal/cleanable/dirt(iterating_floor)
-
-		if(prob(FLOOR_DIRT_PERCENT_CHANCE * severity_modifier))
-			new /obj/effect/decal/cleanable/dirt(iterating_floor)
 
 	for(var/turf/iterating_turf as anything in possible_turfs)
 		if(!isclosedturf(iterating_turf))
@@ -92,11 +83,19 @@ SUBSYSTEM_DEF(decay)
 		if(prob(WALL_RUST_PERCENT_CHANCE * severity_modifier))
 			iterating_wall.AddElement(/datum/element/rust)
 
+/// Cosmetic decay — dirt, blood, and cobwebs only in maintenance tunnels.
 /datum/controller/subsystem/decay/proc/do_maintenance()
 	for(var/area/maintenance/iterating_maintenance as anything in possible_areas)
 		for(var/turf/open/iterating_floor as anything in iterating_maintenance)
+			if(prob(FLOOR_DIRT_PERCENT_CHANCE * severity_modifier))
+				new /obj/effect/decal/cleanable/dirt(iterating_floor)
+
+			if(prob(FLOOR_DIRT_PERCENT_CHANCE * severity_modifier))
+				new /obj/effect/decal/cleanable/dirt(iterating_floor)
+
 			if(prob(FLOOR_BLOOD_PERCENT_CHANCE * severity_modifier))
-				var/obj/effect/decal/cleanable/blood/old/spawned_blood = new(iterating_floor)
+				var/obj/effect/decal/cleanable/blood/spawned_blood = new(iterating_floor)
+				spawned_blood.dry()
 				if(!iterating_floor.Enter(spawned_blood))
 					qdel(spawned_blood)
 
@@ -105,36 +104,8 @@ SUBSYSTEM_DEF(decay)
 				if(!iterating_floor.Enter(spawned_web))
 					qdel(spawned_web)
 
-/datum/controller/subsystem/decay/proc/do_engineering()
-	for(var/area/engineering/iterating_engineering as anything in possible_areas)
-		for(var/turf/open/iterating_floor as anything in iterating_engineering)
-			if(prob(FLOOR_BLOOD_PERCENT_CHANCE * severity_modifier))
-				var/obj/effect/decal/cleanable/blood/old/spawned_blood = new(iterating_floor)
-				if(!iterating_floor.Enter(spawned_blood))
-					qdel(spawned_blood)
-
-			if(prob(FLOOR_OIL_PERCENT_CHANCE * severity_modifier))
-				var/obj/effect/decal/cleanable/oil/spawned_oil = new(iterating_floor)
-				if(!iterating_floor.Enter(spawned_oil))
-					qdel(spawned_oil)
-
-/datum/controller/subsystem/decay/proc/do_medical()
-	for(var/area/medical/iterating_medical as anything in possible_areas)
-		for(var/turf/open/iterating_floor as anything in iterating_medical)
-			if(prob(FLOOR_BLOOD_PERCENT_CHANCE * severity_modifier))
-				var/obj/effect/decal/cleanable/blood/old/spawned_blood = new(iterating_floor)
-				if(!iterating_floor.Enter(spawned_blood))
-					qdel(spawned_blood)
-
-			if(prob(FLOOR_VOMIT_PERCENT_CHANCE * severity_modifier))
-				var/obj/effect/decal/cleanable/vomit/spawned_vomit = new(iterating_floor)
-				if(!iterating_floor.Enter(spawned_vomit))
-					qdel(spawned_vomit)
-
 #undef WALL_RUST_PERCENT_CHANCE
 #undef FLOOR_DIRT_PERCENT_CHANCE
 #undef FLOOR_BLOOD_PERCENT_CHANCE
-#undef FLOOR_VOMIT_PERCENT_CHANCE
-#undef FLOOR_OIL_PERCENT_CHANCE
 #undef FLOOR_TILE_MISSING_PERCENT_CHANCE
 #undef FLOOR_COBWEB_PERCENT_CHANCE
