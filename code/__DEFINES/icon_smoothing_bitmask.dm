@@ -87,7 +87,7 @@ DEFINE_BITFIELD(smoothing_junction, list(
 #define SMOOTH_GROUP_BRONZE_TABLES S_OBJ(54)
 
 #define SETUP_SMOOTHING(...) \
-	if (smoothing_groups) { \
+	if (istext(smoothing_groups)) { \
 		PARSE_SMOOTHING_GROUPS(smoothing_groups, smoothing_groups); \
 	} \
 	if (smoothing_flags & USES_SMOOTHING) { \

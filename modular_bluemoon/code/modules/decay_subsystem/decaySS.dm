@@ -68,15 +68,16 @@ SUBSYSTEM_DEF(decay)
 			if(prob(FLOOR_TILE_MISSING_PERCENT_CHANCE * severity_modifier) && prob(60))
 				iterating_floor.break_tile_to_plating()
 
-	for(var/area/iterating_area as anything in possible_areas)
-		for(var/turf/open/floor/iterating_floor in iterating_area)
-			if(prob(FLOOR_DIRT_PERCENT_CHANCE * severity_modifier))
-				try_spawn_decay_dirt(iterating_floor)
-			if(prob(FLOOR_DIRT_PERCENT_CHANCE * severity_modifier))
-				try_spawn_decay_dirt(iterating_floor)
+		if(prob(FLOOR_DIRT_PERCENT_CHANCE * severity_modifier))
+			try_spawn_decay_dirt(iterating_floor)
+
+		if(prob(FLOOR_DIRT_PERCENT_CHANCE * severity_modifier))
+			try_spawn_decay_dirt(iterating_floor)
 
 	for(var/turf/closed/iterating_wall in possible_turfs)
 		if(istype(iterating_wall, /turf/closed/indestructible))
+			continue
+		if(istype(iterating_wall, /turf/closed/mineral))
 			continue
 		if(istype(iterating_wall, /turf/closed/wall/rust) || istype(iterating_wall, /turf/closed/wall/r_wall/rust))
 			continue
@@ -125,11 +126,7 @@ SUBSYSTEM_DEF(decay)
 		return
 	if(locate(/obj/effect/decal/cleanable/dirt) in floor_turf)
 		return
-	var/obj/effect/decal/cleanable/dirt/spawned_dirt = new(floor_turf)
-	if(QDELETED(spawned_dirt))
-		return
-	if(spawned_dirt.loc != floor_turf || !floor_turf.Enter(spawned_dirt))
-		qdel(spawned_dirt)
+	new /obj/effect/decal/cleanable/dirt(floor_turf)
 
 #undef WALL_RUST_PERCENT_CHANCE
 #undef FLOOR_DIRT_PERCENT_CHANCE

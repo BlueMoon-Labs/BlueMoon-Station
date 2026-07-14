@@ -11,8 +11,8 @@ SUBSYSTEM_DEF(icon_smooth)
 /datum/controller/subsystem/icon_smooth/fire()
 	var/list/cached = smooth_queue
 	while(cached.len)
-		var/atom/A = cached[cached.len]
-		cached.len--
+		var/atom/A = cached[1]
+		cached.Cut(1, 2)
 		if(QDELETED(A))
 			continue
 		if(A.smoothing_flags & USES_SMOOTHING)
@@ -56,6 +56,12 @@ SUBSYSTEM_DEF(icon_smooth)
 		CHECK_TICK
 
 	return ..()
+
+/datum/controller/subsystem/icon_smooth/proc/remove_from_queues(atom/thing)
+	thing.smoothing_flags &= ~SMOOTH_QUEUED
+	thing.smooth &= ~SMOOTH_QUEUED
+	smooth_queue -= thing
+	deferred -= thing
 
 /datum/controller/subsystem/icon_smooth/proc/add_to_queue(atom/thing)
 	if(thing.smoothing_flags & SMOOTH_QUEUED)

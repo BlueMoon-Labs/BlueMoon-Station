@@ -124,6 +124,10 @@
 			A.diagonal_smooth(adjacencies)
 		else
 			cardinal_smooth(A, adjacencies)
+			if(!A.top_left_corner)
+				var/fallback_icon_state = initial(A.icon_state)
+				if(fallback_icon_state)
+					A.icon_state = fallback_icon_state
 
 /atom/proc/diagonal_smooth(adjacencies)
 	switch(adjacencies)
