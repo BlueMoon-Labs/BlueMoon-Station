@@ -307,6 +307,15 @@
 	reagent_flags = NONE
 	list_reagents = list(/datum/reagent/magillitis = 5)
 
+/obj/item/reagent_containers/hypospray/medipen/nanite_protector
+	name = "Nanite protector autoinjector"
+	desc = "Экспериментальный инжектор, содержит серую массу, непонятного происхождения, при попадании в организм необратимо меняет клетки и перестраивает конструкции, не давая им взаимодействовать с нанитами.\n Использование более одного раза не несет эффекта."
+	icon_state = "purple_pen"
+	item_state = "purple_pen"
+	amount_per_transfer_from_this = 3
+	volume = 3
+	list_reagents = list(/datum/reagent/nanite_protector = 3)
+
 #define HYPO_SPRAY 0
 #define HYPO_INJECT 1
 

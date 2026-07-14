@@ -28,13 +28,15 @@
 	category = list("Equipment")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL|DEPARTMENTAL_FLAG_SECURITY
 
-/datum/techweb_node/base/New()
-	var/extra_designs = list(
-		"heavy_roller_bed",
-		"normal_roller_bed"
-	)
-	LAZYADD(design_ids, extra_designs)
-	. = ..()
+/datum/design/nanite_protector
+	name = "Nanite protector autoinjector"
+	desc = "Экспериментальный инжектор, содержит серую массу, непонятного происхождения, при попадании в организм необратимо меняет клетки и перестраивает конструкции, не давая им взаимодействовать с нанитами.\n Использование более одного раза не несет эффекта."
+	id = "nanite_protector"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 600, /datum/material/glass = 200)
+	build_path = /obj/item/reagent_containers/hypospray/medipen/nanite_protector
+	category = list("Medical Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL|DEPARTMENTAL_FLAG_SCIENCE
 
 /datum/design/blast_control
 	name = "Blast Door Controller"
