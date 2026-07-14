@@ -15,6 +15,8 @@
 	M.Translate(-4, -4)
 	transform = M
 	. = ..()
+	if(istype(src, /turf/closed/mineral/random))
+		return
 	var/static/list/mutable_appearance/wall_overlays = list()
 	var/mutable_appearance/wall_overlay = wall_overlays[wall_icon_state]
 	if(!wall_overlay)

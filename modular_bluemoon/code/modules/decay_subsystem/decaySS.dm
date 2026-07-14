@@ -13,6 +13,10 @@ These procs are incredibly expensive and should only really be run once.
 SUBSYSTEM_DEF(decay)
 	name = "Decay System"
 	flags = SS_NO_FIRE
+	dependencies = list(
+		/datum/controller/subsystem/mapping,
+		/datum/controller/subsystem/atoms,
+	)
 	init_order = INIT_ORDER_OVERLAY
 
 	/// Maps that should not receive roundstart decay.
@@ -68,11 +72,12 @@ SUBSYSTEM_DEF(decay)
 			if(prob(FLOOR_TILE_MISSING_PERCENT_CHANCE * severity_modifier) && prob(60))
 				iterating_floor.break_tile_to_plating()
 
-		if(prob(FLOOR_DIRT_PERCENT_CHANCE * severity_modifier))
-			new /obj/effect/decal/cleanable/dirt(iterating_floor)
-
-		if(prob(FLOOR_DIRT_PERCENT_CHANCE * severity_modifier))
-			new /obj/effect/decal/cleanable/dirt(iterating_floor)
+	for(var/area/iterating_area as anything in possible_areas)
+		for(var/turf/open/floor/iterating_floor in iterating_area)
+			if(prob(FLOOR_DIRT_PERCENT_CHANCE * severity_modifier))
+				try_spawn_decay_dirt(iterating_floor)
+			if(prob(FLOOR_DIRT_PERCENT_CHANCE * severity_modifier))
+				try_spawn_decay_dirt(iterating_floor)
 
 	for(var/turf/closed/iterating_wall in possible_turfs)
 		if(istype(iterating_wall, /turf/closed/indestructible))
@@ -90,6 +95,8 @@ SUBSYSTEM_DEF(decay)
 		if(!istype(iterating_area, /area/maintenance))
 			continue
 		var/area/maintenance/iterating_maintenance = iterating_area
+		if(iterating_maintenance.sound_environment != SOUND_AREA_TUNNEL_ENCLOSED)
+			continue
 		for(var/turf/open/floor/iterating_floor in iterating_maintenance)
 			if(!(iterating_floor.flags_1 & CAN_BE_DIRTY_1))
 				continue
@@ -107,6 +114,21 @@ SUBSYSTEM_DEF(decay)
 				var/obj/structure/spider/stickyweb/spawned_web = new(iterating_floor)
 				if(!iterating_floor.Enter(spawned_web))
 					qdel(spawned_web)
+
+/datum/controller/subsystem/decay/proc/try_spawn_decay_dirt(turf/open/floor/floor_turf)
+	if(!floor_turf || QDELETED(floor_turf))
+		return
+	if(!(floor_turf.flags_1 & CAN_BE_DIRTY_1))
+		return
+	if(isspaceturf(floor_turf) || isgroundlessturf(floor_turf))
+		return
+	if(locate(/obj/effect/decal/cleanable/dirt) in floor_turf)
+		return
+	var/obj/effect/decal/cleanable/dirt/spawned_dirt = new(floor_turf)
+	if(QDELETED(spawned_dirt))
+		return
+	if(spawned_dirt.loc != floor_turf || !floor_turf.Enter(spawned_dirt))
+		qdel(spawned_dirt)
 
 #undef WALL_RUST_PERCENT_CHANCE
 #undef FLOOR_DIRT_PERCENT_CHANCE
