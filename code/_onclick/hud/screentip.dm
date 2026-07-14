@@ -14,6 +14,6 @@
 
 /atom/movable/screen/screentip/proc/update_view(datum/source)
 	SIGNAL_HANDLER
-	if(!hud || !hud.mymob.client.view_size) //Might not have been initialized by now
+	if(!hud?.mymob?.client?.view_size) //Might not have been initialized by now
 		return
 	maptext_width = view_to_pixels(hud.mymob.client.view_size.getView())[1]

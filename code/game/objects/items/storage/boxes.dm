@@ -1720,6 +1720,7 @@
 		/obj/item/storage/belt/medical/surgery_belt_adv,
 		/obj/item/debug/omnitool,
 		/obj/item/door_remote/omni,
+		/obj/item/debug/eraser,
 		)
 	generate_items_inside(items_inside, src)
 

@@ -880,7 +880,7 @@ SUBSYSTEM_DEF(job)
 		if(i[LOADOUT_IS_HEIRLOOM] && !QDELETED(I) && heirloomer)
 			I.item_flags |= FAMILY_HEIRLOOM
 			if(M.mind)
-				M.mind.assigned_heirloom = I
+				M.mind.set_assigned_heirloom(I)
 			if(!i[LOADOUT_CUSTOM_NAME])
 				var/list/family_name = splittext(M.real_name, " ")
 				if(length(family_name))
@@ -1012,7 +1012,7 @@ SUBSYSTEM_DEF(job)
 		if(i[LOADOUT_IS_HEIRLOOM] && !QDELETED(I) && heirloomer)
 			I.item_flags |= FAMILY_HEIRLOOM
 			if(M.mind)
-				M.mind.assigned_heirloom = I
+				M.mind.set_assigned_heirloom(I)
 			if(!i[LOADOUT_CUSTOM_NAME])
 				var/list/family_name = splittext(M.real_name, " ")
 				if(length(family_name))

@@ -1,0 +1,586 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"al" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/spawner/lootdrop/trashbin,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+	dir = 8
+	},
+/obj/effect/mob_spawn/human/medieval,
+/turf/open/floor/plating,
+/area/shuttle/medieval)
+"aS" = (
+/turf/closed/wall/mineral/wood,
+/area/shuttle/medieval)
+"bq" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/fermenting_barrel/thermite,
+/obj/item/reagent_containers/glass/beaker/large,
+/obj/item/reagent_containers/glass/beaker/large,
+/obj/item/reagent_containers/glass/beaker/large,
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"bR" = (
+/obj/structure/shuttle/engine/heater,
+/obj/effect/spawner/structure/window/plastitanium/pirate,
+/turf/open/floor/plating/airless,
+/area/shuttle/medieval)
+"bU" = (
+/obj/structure/table/wood,
+/obj/item/restraints/legcuffs/bola{
+	pixel_x = -4;
+	pixel_y = -6
+	},
+/obj/item/restraints/legcuffs/bola{
+	pixel_x = -4;
+	pixel_y = -6
+	},
+/obj/item/restraints/legcuffs/bola{
+	pixel_x = -4;
+	pixel_y = -6
+	},
+/obj/item/restraints/legcuffs/bola{
+	pixel_x = -4;
+	pixel_y = -6
+	},
+/obj/item/restraints/legcuffs/bola/tactical{
+	pixel_x = 7;
+	pixel_y = 7
+	},
+/obj/item/restraints/legcuffs/bola/tactical{
+	pixel_x = 7;
+	pixel_y = 7
+	},
+/obj/item/restraints/legcuffs/bola/tactical{
+	pixel_x = 7;
+	pixel_y = 7
+	},
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"df" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/window/reinforced{
+	dir = 4
+	},
+/obj/structure/mineral_door/iron,
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/shuttle/medieval)
+"dp" = (
+/obj/structure/table/wood,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/storage/firstaid/fire,
+/obj/item/stack/medical/mesh,
+/obj/item/stack/medical/mesh,
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"dq" = (
+/obj/effect/decal/cleanable/glass,
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"dM" = (
+/obj/structure/window/reinforced,
+/obj/structure/window/reinforced{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/simple/supply/visible{
+	dir = 4
+	},
+/turf/open/floor/festive/stairs/stairswest,
+/area/shuttle/medieval)
+"eb" = (
+/obj/structure/mineral_door/iron,
+/obj/structure/fans/tiny,
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"fp" = (
+/obj/effect/spawner/structure/window/plastitanium/pirate,
+/obj/structure/barricade/wooden/crude,
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"fO" = (
+/obj/structure/closet/cabinet,
+/obj/item/claymore,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/shield/riot/buckler,
+/obj/item/shield/riot/buckler,
+/obj/item/shield/riot/buckler,
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"gv" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"gL" = (
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/obj/structure/window/reinforced{
+	dir = 4
+	},
+/obj/structure/mineral_door/iron,
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/shuttle/medieval)
+"hM" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/window/reinforced{
+	dir = 4
+	},
+/obj/effect/spawner/lootdrop/trashbin,
+/turf/open/floor/plating,
+/area/shuttle/medieval)
+"ix" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/computer/shuttle/medieval/drop_pod,
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"jt" = (
+/obj/structure/table/wood,
+/obj/effect/decal/cleanable/blood/gibs,
+/obj/item/reagent_containers/food/snacks/burger/human,
+/obj/item/reagent_containers/food/drinks/bottle/rum{
+	pixel_x = 9
+	},
+/obj/item/reagent_containers/food/drinks/bottle/rum{
+	pixel_y = 6;
+	pixel_x = -6
+	},
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"jJ" = (
+/obj/machinery/piratepad{
+	pixel_y = 6
+	},
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"jP" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/manifold/supply/visible,
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"kq" = (
+/obj/machinery/atmospherics/pipe/simple/supply/visible{
+	dir = 4
+	},
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"lr" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/spawner/lootdrop/trashbin,
+/obj/structure/window/reinforced{
+	dir = 4
+	},
+/obj/effect/mob_spawn/human/medieval,
+/turf/open/floor/plating,
+/area/shuttle/medieval)
+"lE" = (
+/obj/effect/decal/cleanable/blood/gibs,
+/turf/closed/wall/mineral/wood,
+/area/shuttle/medieval)
+"mz" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/spawner/lootdrop/trashbin,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+	dir = 4
+	},
+/obj/effect/mob_spawn/human/medieval,
+/turf/open/floor/plating,
+/area/shuttle/medieval)
+"ny" = (
+/obj/machinery/loot_locator,
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"oc" = (
+/obj/structure/window/reinforced,
+/obj/structure/window/reinforced{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/simple/supply/visible{
+	dir = 4
+	},
+/turf/open/floor/festive/stairs/stairseast,
+/area/shuttle/medieval)
+"oi" = (
+/obj/structure/table/wood,
+/obj/item/spear/military{
+	pixel_x = 5;
+	pixel_y = -6
+	},
+/obj/item/spear/military,
+/obj/item/spear/military{
+	pixel_y = 7;
+	pixel_x = -6
+	},
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"oV" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/obj/effect/spawner/lootdrop/trashbin,
+/turf/open/floor/plating,
+/area/shuttle/medieval)
+"qd" = (
+/obj/structure/mineral_door/iron,
+/obj/structure/fans/tiny,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/docking_port/mobile/medieval{
+	dwidth = 7;
+	name = "medieval shuttle";
+	port_direction = 4;
+	preferred_direction = 4
+	},
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"qZ" = (
+/obj/structure/table/wood,
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"sO" = (
+/obj/effect/decal/cleanable/blood,
+/obj/item/reagent_containers/food/snacks/meat/slab/human/mutant/zombie,
+/obj/item/kitchen/fork,
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"vn" = (
+/obj/item/radio/intercom,
+/obj/structure/table/wood,
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"vE" = (
+/obj/effect/spawner/structure/window/plastitanium/pirate,
+/obj/structure/barricade/wooden/crude,
+/turf/open/floor/plating,
+/area/shuttle/medieval)
+"wi" = (
+/obj/machinery/computer/piratepad_control{
+	dir = 0
+	},
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"wY" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/components/unary/tank/air{
+	dir = 1
+	},
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"zn" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"zo" = (
+/obj/structure/mineral_door/gold,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/simple/supply/visible{
+	dir = 4
+	},
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"Fp" = (
+/turf/template_noop,
+/area/template_noop)
+"FI" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/mob_spawn/human/medieval/warlord,
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"FQ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/wood/wings,
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"Hx" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+	dir = 1
+	},
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"Iw" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/obj/structure/mineral_door/iron,
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/shuttle/medieval)
+"IH" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/simple/supply/visible{
+	dir = 4
+	},
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"Jc" = (
+/obj/structure/frame/computer,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/assault_pod/medieval,
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"Mj" = (
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"MZ" = (
+/obj/machinery/shuttle_scrambler,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"NX" = (
+/obj/machinery/airalarm/all_access{
+	pixel_x = -27
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"Ob" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/simple/supply/visible{
+	dir = 4
+	},
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"Oc" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/obj/effect/spawner/lootdrop/trashbin,
+/obj/effect/mob_spawn/human/medieval,
+/turf/open/floor/plating,
+/area/shuttle/medieval)
+"Ry" = (
+/obj/machinery/atmospherics/pipe/manifold/supply/visible{
+	dir = 1
+	},
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"RH" = (
+/obj/structure/window/reinforced{
+	dir = 4
+	},
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/obj/structure/mineral_door/iron,
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/shuttle/medieval)
+"RR" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/flashlight/lantern,
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"RV" = (
+/obj/structure/shuttle/engine/propulsion,
+/turf/open/floor/plating/airless,
+/area/shuttle/medieval)
+"Sr" = (
+/obj/item/reagent_containers/food/drinks/bottle/vodka,
+/obj/structure/window/reinforced{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/medieval)
+"Uq" = (
+/obj/structure/table/wood,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/bodypart/head{
+	pixel_x = -7
+	},
+/obj/item/bodypart/head{
+	pixel_y = 6
+	},
+/obj/item/bodypart/head{
+	pixel_x = 6
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/visible,
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+"Vn" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/flashlight/lantern,
+/turf/open/floor/plating/cobblestone/alleyway,
+/area/shuttle/medieval)
+
+(1,1,1) = {"
+Fp
+Fp
+aS
+aS
+eb
+aS
+bR
+RV
+Fp
+"}
+(2,1,1) = {"
+Fp
+Fp
+df
+hM
+mz
+lr
+Sr
+RH
+Fp
+"}
+(3,1,1) = {"
+Fp
+Fp
+Fp
+Fp
+dM
+Fp
+Fp
+Fp
+Fp
+"}
+(4,1,1) = {"
+aS
+aS
+aS
+aS
+zo
+aS
+fp
+aS
+Fp
+"}
+(5,1,1) = {"
+Fp
+fp
+wY
+Uq
+jP
+NX
+fO
+aS
+aS
+"}
+(6,1,1) = {"
+aS
+aS
+vn
+gv
+IH
+RR
+gv
+oi
+fp
+"}
+(7,1,1) = {"
+Fp
+fp
+ix
+gv
+Ob
+Mj
+zn
+bU
+aS
+"}
+(8,1,1) = {"
+vE
+fp
+Jc
+dq
+Ry
+Hx
+FI
+gv
+qd
+"}
+(9,1,1) = {"
+Fp
+fp
+MZ
+gv
+kq
+gv
+FQ
+qZ
+aS
+"}
+(10,1,1) = {"
+aS
+aS
+ny
+gv
+IH
+Vn
+sO
+dp
+fp
+"}
+(11,1,1) = {"
+Fp
+fp
+wi
+jJ
+kq
+bq
+jt
+aS
+aS
+"}
+(12,1,1) = {"
+aS
+aS
+aS
+aS
+zo
+aS
+fp
+lE
+Fp
+"}
+(13,1,1) = {"
+Fp
+Fp
+Fp
+Fp
+oc
+Fp
+Fp
+Fp
+Fp
+"}
+(14,1,1) = {"
+Fp
+Fp
+Iw
+oV
+al
+Oc
+oV
+gL
+Fp
+"}
+(15,1,1) = {"
+Fp
+Fp
+aS
+aS
+eb
+aS
+bR
+RV
+Fp
+"}

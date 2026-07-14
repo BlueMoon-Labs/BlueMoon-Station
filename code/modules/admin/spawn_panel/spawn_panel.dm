@@ -11,22 +11,36 @@
 	var/precise_mode = PRECISE_MODE_OFF
 	var/mob/owner = null
 
-/datum/spawnpanel/New()
-	. = (..())
-	owner = usr
+/datum/spawnpanel/New(mob/new_owner)
+	. = ..()
+	set_owner(new_owner || usr)
 	offset = list("X" = 0, "Y" = 0, "Z" = 0)
 
 /datum/spawnpanel/Destroy()
-	if(precise_mode != PRECISE_MODE_OFF && owner?.client)
-		owner.client.click_intercept = null
-		owner.client.mouse_up_icon = null
-		owner.client.mouse_down_icon = null
-		owner.client.mouse_override_icon = null
-		owner.update_mouse_pointer()
-	owner = null
+	set_owner(null)
 	. = ..()
 
+/datum/spawnpanel/proc/set_owner(mob/new_owner)
+	if(owner == new_owner)
+		return
+	if(owner)
+		if(precise_mode != PRECISE_MODE_OFF)
+			if(owner.client)
+				toggle_precise_mode(PRECISE_MODE_OFF, owner)
+			else
+				precise_mode = PRECISE_MODE_OFF
+		UnregisterSignal(owner, COMSIG_PARENT_QDELETING)
+	owner = new_owner
+	if(owner)
+		RegisterSignal(owner, COMSIG_PARENT_QDELETING, PROC_REF(on_owner_qdeleting))
+
+/datum/spawnpanel/proc/on_owner_qdeleting(mob/source)
+	SIGNAL_HANDLER
+	if(source == owner)
+		set_owner(null)
+
 /datum/spawnpanel/ui_interact(mob/user, datum/tgui/ui)
+	set_owner(user)
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
 		ui = new(user, src, "SpawnPanel")

@@ -37,6 +37,7 @@
 #define INSANE_CLOWN	4
 #define HOWLING_GHOST	5
 #define EVILL_HUNTER    6
+#define SPOOKY_SKELETON_DELETE_DELAY (9 SECONDS)
 
 //Spookoween variables
 /obj/structure/closet
@@ -51,6 +52,20 @@
 /obj/structure/closet/dump_contents(var/override = TRUE)
 	..()
 	trigger_spooky_trap()
+
+/obj/structure/closet/proc/set_trapped_mob(mob/new_trapped_mob)
+	if(trapped_mob == new_trapped_mob)
+		return
+	if(trapped_mob)
+		UnregisterSignal(trapped_mob, COMSIG_PARENT_QDELETING)
+	trapped_mob = new_trapped_mob
+	if(trapped_mob)
+		RegisterSignal(trapped_mob, COMSIG_PARENT_QDELETING, PROC_REF(on_trapped_mob_qdeleting))
+
+/obj/structure/closet/proc/on_trapped_mob_qdeleting(mob/source)
+	SIGNAL_HANDLER
+	if(source == trapped_mob)
+		set_trapped_mob(null)
 
 /obj/structure/closet/proc/set_spooky_trap()
 	if(prob(5))
@@ -73,7 +88,7 @@
 		H.makeSkeleton()
 		H.health = 1e5
 		insert(H)
-		trapped_mob = H
+		set_trapped_mob(H)
 		trapped = SPOOKY_SKELETON
 		return
 
@@ -85,7 +100,9 @@
 		visible_message("<span class='userdanger'><font size='5'>БУУ!</font></span>")
 		playsound(loc, 'sound/spookoween/girlscream.ogg', 500, 1)
 		trapped = 0
-		QDEL_IN(trapped_mob, 90)
+		var/mob/doomed_mob = trapped_mob
+		set_trapped_mob(null)
+		QDEL_IN(doomed_mob, SPOOKY_SKELETON_DELETE_DELAY)
 
 	else if(trapped == HOWLING_GHOST)
 		visible_message("<span class='userdanger'><font size='5'>[pick("OooOOooooOOOoOoOOooooOOOOO", "БуУууУуУУУУ", "БУУ!", "УуУУуУ	уУ")]</font></span>")
