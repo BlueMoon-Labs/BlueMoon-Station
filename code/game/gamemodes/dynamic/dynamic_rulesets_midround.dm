@@ -1391,6 +1391,49 @@
 /datum/dynamic_ruleset/midround/raiders/director_execution_detail(assigned_this_attempt)
 	return "исполнение подтверждено; роли назначит запущенное событие после ответа станции"
 
+//////////////////////////////////////////////
+//                                          //
+//            Medieval Warmongers           //
+//                                          //
+//////////////////////////////////////////////
+/datum/dynamic_ruleset/midround/warmongers
+	name = "Medieval Warmongers"
+	// Реальное событие уже зарегистрировано у директора; рулсет-дубль нужен только для админ-форса.
+	admin_only = TRUE
+	severity = DIRECTOR_SEVERITY_GHOST // событие поллит призраков, экипаж не тратится
+	antag_flag = "Medieval Warmongers"
+	required_type = /mob/dead/observer
+	enemy_roles = list("Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain") //BLUEMOON CHANGE
+	required_enemies = list(0,0,0,0,0,5,4,3,3,3) //BLUEMOON CHANGES
+	required_candidates = 0
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
+	weight = 3 //BLUEMOON CHANGES
+	cost = 5
+	intensity = 10
+	family = "warmongers" // с событием-двойником (execute() запускает его же): не подряд
+	requirements = list(101,101,101,101,101,40,30,20,10,10) //BLUEMOON CHANGES
+	repeatable = TRUE
+
+/datum/dynamic_ruleset/midround/warmongers/acceptable(population=0, threat=0)
+	if(!SSmapping.empty_space && !length(SSmapping.levels_by_trait(ZTRAIT_SPACE_RUINS)) && !SSmapping.station_start)
+		return FALSE
+	return ..()
+
+/datum/dynamic_ruleset/midround/warmongers/execute()
+	var/datum/round_event_control/event = locate(/datum/round_event_control/medieval_warmongers) in SSdirector.event_controls()
+	if(event)
+		event.execute_action()
+	return ..()
+
+// name совпадает с /datum/round_event_control/medieval_warmongers ("Medieval Warmongers"), который
+// этот рулсет сам же и запускает через execute() - без суффикса они делили бы ключ
+// конфига/intensity_ledger.
+/datum/dynamic_ruleset/midround/warmongers/action_name()
+	return "[name] (Ruleset)"
+
+/datum/dynamic_ruleset/midround/warmongers/director_execution_detail(assigned_this_attempt)
+	return "исполнение подтверждено; роли назначит запущенное событие после ответа станции"
+
 // BLUEMOON ADD START
 
 //////////////////////////////////////////////
