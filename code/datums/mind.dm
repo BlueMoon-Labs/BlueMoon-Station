@@ -1803,7 +1803,7 @@ GLOBAL_LIST(objective_choices)
 	special_role = ROLE_REV_HEAD
 
 /datum/mind/proc/AddSpell(obj/effect/proc_holder/spell/S)
-	if(!S || S in spell_list)
+	if(!S || (S in spell_list))
 		return
 	spell_list += S
 	RegisterSignal(S, COMSIG_PARENT_QDELETING, PROC_REF(on_spell_qdeleting))

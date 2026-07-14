@@ -207,7 +207,13 @@
 	var/datum/mind/mind = new
 	var/obj/effect/proc_holder/spell/first = new
 	var/obj/effect/proc_holder/spell/second = new
+
+	// `in` связывает слабее `||`: без скобок проверка вырождается в `(!S || S) in spell_list`.
+	mind.AddSpell(null)
+	TEST_ASSERT(!length(mind.spell_list), "AddSpell записал null в spell_list")
 	mind.AddSpell(first)
+	mind.AddSpell(first)
+	TEST_ASSERT_EQUAL(length(mind.spell_list), 1, "AddSpell продублировал заклинание в spell_list")
 	mind.AddSpell(second)
 
 	mind.RemoveSpell(/obj/effect/proc_holder/spell)
