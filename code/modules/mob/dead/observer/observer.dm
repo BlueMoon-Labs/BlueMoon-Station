@@ -679,11 +679,28 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 
 /mob/dead/observer/verb/toggle_ghostsee()
 	set name = "Toggle Ghost Vision"
-	set desc = "Toggles your ability to see things only ghosts can see, like other ghosts"
+	set desc = "Toggles your ability to see things only ghosts can see, like other ghosts."
 	set category = "Ghost"
 	ghostvision = !(ghostvision)
 	update_sight()
-	to_chat(usr, "You [(ghostvision?"now":"no longer")] have ghost vision.")
+	to_chat(usr, span_notice("You [(ghostvision?"now":"no longer")] have ghost vision."))
+
+/mob/dead/observer/verb/toggle_self_sprite()
+	set name = "Toggle Ghost Sprite"
+	set desc = "Делает ваш спрайт прозрачным (остальные все еще будут видеть вашего призрака)."
+	set category = "Ghost"
+
+	var/const/key_name = "self_ghost_invisible"
+	var/msg
+	if(!remove_alt_appearance(key_name))
+		var/image/I = image(loc = src)
+		I.appearance = mutable_appearance()
+		I.override = TRUE
+		add_alt_appearance(/datum/atom_hud/alternate_appearance/basic, key_name, I)
+		msg = "Ваш спрайт стал прозрачным для вас, но остальные все ещё будут его видеть."
+	else
+		msg = "Вы снова видите свой спрайт."
+	to_chat(usr, span_notice(msg))
 
 /mob/dead/observer/verb/toggle_darkness()
 	set name = "Toggle Darkness"
