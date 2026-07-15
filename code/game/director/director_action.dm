@@ -13,6 +13,9 @@
 	var/intensity_linger = 0
 	/// Вес во взвешенном выборе
 	var/weight = 5
+	/// Вес может стать положительным по живому условию уже во время раунда. Нужен панели:
+	/// нулевой текущий вес такого действия означает "ждёт условия", а не "выключено".
+	var/weight_can_change = FALSE
 	/// Выключенное действие никогда не выбирается естественно
 	var/enabled = TRUE
 	/// Только для ручного запуска админом (заменяет хак weight = 0)
@@ -27,6 +30,11 @@
 	var/max_occurrences = 0
 	/// Типы раундов, в которых действие доступно (null = любые)
 	var/list/required_round_type = null
+	/// Типы раундов, где действие не выбирается самостоятельно, но запускается связанным
+	/// сценарием другого действия. Используется каталогом профилей, а не can_fire().
+	var/list/director_linked_round_types = null
+	/// Пояснение связанной доступности для каталога профилей.
+	var/director_linked_detail = null
 	/// Ассоциация DIRECTOR_DEPT_* -> минимум активных; null = без требований
 	var/list/min_staffing = null
 	/// Для пула ANTAG: тяжёлая инжекция (nuke assault и т.п.)
@@ -43,6 +51,10 @@
 	/// Филлер: пустышки вроде "Nothing" и мигания ламп. Не выбирается гарантированным битом -
 	/// после долгой тишины директор обязан выдать реальный контент, а не ещё одну тишину.
 	var/filler = FALSE
+	/// Последняя неинтерактивная проверка фактической готовности. Панель читает эти поля,
+	/// поэтому preflight не должен открывать опросы, выдавать роли или менять состояние раунда.
+	var/director_preflight_detail = null
+	var/director_preflight_failure = null
 
 /// Имя для конфига/логов/панели. Обязано быть уникальным среди действий.
 /datum/director_action/proc/action_name()
@@ -83,6 +95,11 @@
 		if(DIRECTOR_SEVERITY_MINOR)
 			return DIRECTOR_DISRUPTION_MILD
 	return DIRECTOR_DISRUPTION_DISRUPTIVE
+
+/// Вторая ступень готовности непосредственно перед выбором. null = действие не реализует
+/// отдельный preflight и полагается на execute_action(); TRUE/FALSE = явный результат.
+/datum/director_action/proc/director_preflight()
+	return null
 
 /// Запуск действия. Возвращает TRUE при успехе.
 /datum/director_action/proc/execute_action()

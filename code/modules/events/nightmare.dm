@@ -3,10 +3,13 @@
 	typepath = /datum/round_event/ghost_role/nightmare
 	max_occurrences = 2
 	min_players = 30
+	weight = 8
 	category = EVENT_CATEGORY_ENTITIES
 	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
 	cost = 10
 	intensity = 15
+	director_ghost_jobban = ROLE_ALIEN
+	director_ghost_preference = ROLE_ALIEN
 	family = "nightmare" // с рулсетом-двойником динамика: не подряд
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // как у рулсета-двойника: не экста и не лайт
 	description = "Spawns a nightmare, aiming to darken the station."

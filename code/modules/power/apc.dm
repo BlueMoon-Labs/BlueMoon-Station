@@ -1865,6 +1865,7 @@
 
 /obj/machinery/power/apc/proc/mark_light_cache_dirty()
 	light_cache_dirty = TRUE
+	cached_area_lights = null
 
 /obj/machinery/power/apc/proc/get_cached_area_lights()
 	ensure_light_cache()

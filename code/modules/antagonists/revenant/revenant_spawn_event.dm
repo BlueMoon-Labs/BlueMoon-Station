@@ -3,17 +3,19 @@
 /datum/round_event_control/revenant
 	name = "Spawn Revenant" // Did you mean 'griefghost'?
 	typepath = /datum/round_event/ghost_role/revenant
-	weight = 7
+	weight = 10
 	max_occurrences = 1
 	min_players = 5
 	category = EVENT_CATEGORY_ENTITIES
 	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
 	cost = 8
 	intensity = 10 // мягкий фоновый призрак, классика лоупопа
+	director_ghost_jobban = ROLE_REVENANT
+	director_ghost_preference = ROLE_REVENANT
 	family = "revenant" // с рулсетом-двойником динамика: не подряд
-	// Не экста: ревенант высасывает жизнь из экипажа, а правила эксты разрешают только мирных
+	// Не экста и не Light: ревенант высасывает жизнь из экипажа, а мягкие профили оставляем
 	// к экипажу антагов (враждебное - по запросу через OPFOR/администрацию).
-	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // как у рулсета-двойника: не экста и не лайт
+	required_round_type = list(ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_TEAMBASED)
 	description = "Spawns an angry, soul sucking ghost."
 
 /datum/round_event/ghost_role/revenant

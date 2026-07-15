@@ -4,6 +4,8 @@
 	enabled = FALSE
 	category = EVENT_CATEGORY_ENTITIES
 	severity = DIRECTOR_SEVERITY_GHOST // выключен, но при форсе обязан считаться антаг-нагрузкой
+	director_ghost_jobban = ROLE_DEVIL
+	director_ghost_preference = ROLE_DEVIL
 	family = "devil" // с рулсетом-двойником динамика: не подряд
 	description = "Spawns a devil, looking forward to makings deals with crewmembers to get their souls."
 

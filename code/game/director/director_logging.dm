@@ -2,7 +2,7 @@
 /datum/controller/subsystem/director
 	var/list/beat_log = list()
 
-/datum/controller/subsystem/director/proc/director_log_beat(datum/director_signals/signals, datum/director_action/action, result, list/rejected = null)
+/datum/controller/subsystem/director/proc/director_log_beat(datum/director_signals/signals, datum/director_action/action, result, list/rejected = null, detail = null)
 	// Симулятор ведёт свой лог в возврат director_simulate() - боевой beat_log/director.json не трогаем,
 	// иначе 120 файловых записей за 2 симулированных часа засорили бы их за один клик админа.
 	if(dry_run)
@@ -28,6 +28,8 @@
 	)
 	if(length(rejected))
 		entry["rejected"] = rejected
+	if(detail)
+		entry["detail"] = detail
 	beat_log += list(entry)
 	export_director_log()
 

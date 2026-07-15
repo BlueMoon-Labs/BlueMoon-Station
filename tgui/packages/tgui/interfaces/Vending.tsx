@@ -15,7 +15,8 @@ type VendingData = {
   coin_records: CoinRecord[];
   hidden_records: HiddenRecord[];
   user?: UserData;
-  stock: Record<string, StockItem>;
+  stock: Record<string, number>;
+  free_stock: Record<string, BooleanLike>;
   extended_inventory: boolean;
   access: boolean;
   vending_machine_input?: CustomInput[];
@@ -31,6 +32,7 @@ type ProductRecord = {
   name: string;
   price: number;
   max_amount: number;
+  colorable: boolean;
   ref: string;
   category: string;
 };
@@ -48,13 +50,6 @@ type UserData = {
   cash: number;
   job: string;
   department: string;
-};
-
-type StockItem = {
-  name: string;
-  amount: number;
-  colorable: boolean;
-  free?: BooleanLike;
 };
 
 type CustomInput = {
@@ -181,7 +176,7 @@ const ProductDisplay = (
   }) => {
   const { data } = useBackend<VendingData>();
   const { custom, inventory, selectedCategory } = props;
-  const { stock, onstation, user } = data;
+  const { stock, free_stock, onstation, user } = data;
 
   const [stockSearch, setStockSearch] = useState<string>('');
   const stockSearchFn = createSearch(stockSearch, (item: ProductRecord | CustomInput) => item.name);
@@ -204,6 +199,7 @@ const ProductDisplay = (
   // Ключ - ref записи автомата: имена товаров могут совпадать, и остаток
   // одного товара перекрывал другой (цифра в UI замирала до "распродано").
   const stockByRef = stock || {};
+  const freeStockByRef = free_stock || {};
 
   return (
     <Section
@@ -236,6 +232,7 @@ const ProductDisplay = (
               custom={custom}
               product={product}
               productStock={'ref' in product ? stockByRef[product.ref] : undefined}
+              productIsFree={'ref' in product ? freeStockByRef[product.ref] : false}
             />
           ))}
       </Table>
@@ -249,11 +246,11 @@ const ProductDisplay = (
  */
 const VendingRow = (props) => {
   const { data } = useBackend<VendingData>();
-  const { custom, product, productStock } = props;
+  const { custom, product, productStock, productIsFree } = props;
   const { access, department, jobDiscount, onstation, user } = data;
-  const free = !onstation || product.price === 0 || (productStock?.free ?? false);
+  const free = !onstation || product.price === 0 || productIsFree;
   const discount = !product.premium && department === user?.department;
-  const remaining = custom ? product.amount : (productStock?.amount ?? 0);
+  const remaining = custom ? product.amount : (productStock ?? 0);
   const redPrice = Math.round(product.price * jobDiscount);
   const disabled =
     remaining === 0 ||
@@ -269,7 +266,7 @@ const VendingRow = (props) => {
       </Table.Cell>
       <Table.Cell bold>{capitalizeAll(product.name)}</Table.Cell>
       <Table.Cell>
-        {!!productStock?.colorable && (
+        {!!('colorable' in product && product.colorable) && (
           <ProductColorSelect disabled={disabled} product={product} />
         )}
       </Table.Cell>

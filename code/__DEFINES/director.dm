@@ -40,6 +40,12 @@
 #define DIRECTOR_BEAT_BLOCKED "blocked"
 #define DIRECTOR_BEAT_IDLE "idle"
 #define DIRECTOR_BEAT_CANCELLED "cancelled"
+/// Рулсет принят директором и поставлен на исполнение (опрос/выдача роли ещё впереди)
+#define DIRECTOR_BEAT_SCHEDULED "scheduled"
+/// Отложенный рулсет действительно выдал роль/запустился
+#define DIRECTOR_BEAT_EXECUTED "executed"
+/// Выбранное действие не прошло execute_action() либо отложенный запуск/опрос провалился
+#define DIRECTOR_BEAT_FAILED "failed"
 
 /// Причины отсева кандидатов на бите (диагностика "почему тихо" в бит-логе и панели)
 #define DIRECTOR_REJECT_BLOCKED "blocked"
@@ -54,6 +60,9 @@
 #define DIRECTOR_REJECT_DISRUPTION "disruption"
 #define DIRECTOR_REJECT_BUDGET "budget"
 #define DIRECTOR_REJECT_CAN_FIRE "can_fire"
+/// Рулсет прошёл can_fire(), но сейчас не наберёт кандидатов/контрролей или не имеет точки спауна
+#define DIRECTOR_REJECT_READINESS "readiness"
+#define DIRECTOR_REJECT_RECENT_FAILURE "recent_failure"
 #define DIRECTOR_REJECT_NO_WEIGHT "no_weight"
 /// Антаг-нагрузка достигла цели профиля (crew * antag_intensity_per_crew) - новых антагов не льём
 #define DIRECTOR_REJECT_ANTAG_SATURATED "antag_saturated"
@@ -81,6 +90,11 @@
 /// Делитель score при переводе в множитель: при капе 60 множитель ровно 0.5 + 60/40 = 2
 #define DIRECTOR_ACTIVITY_MULT_SCALE 40
 
+/// Базовый вклад в antag_load живого жёсткого антага, не отслеживаемого рулсетом или гост-ролью
+/// (выдан админом/жетоном, спавнер карты, обращённый культом/ревами). Тир лёгкого соло-антага;
+/// домножается на antag_activity_mult, поэтому тихий = 0.5x, буйный = до 2x.
+#define DIRECTOR_UNTRACKED_ANTAG_INTENSITY 15
+
 /// Псевдо-ступень в reject_stats бита, отсечённого глобальной паузой: гейт бьёт по всем ступеням сразу
 #define DIRECTOR_REJECT_SEV_ALL "all"
 
@@ -96,4 +110,9 @@
 #define DIRECTOR_CANTFIRE_MIN_PLAYERS "min_players"
 #define DIRECTOR_CANTFIRE_ROUND_TYPE "round_type"
 #define DIRECTOR_CANTFIRE_STAFFING "staffing"
+/// Событие недоступно из-за режима Summon Events (wizardmode): обычные события заглушены,
+/// пока активен маг, и наоборот - wizard-события доступны только в этом режиме.
+#define DIRECTOR_CANTFIRE_WIZARDMODE "summon_events"
+/// Событие привязано к празднику, которого сейчас нет (holidayID)
+#define DIRECTOR_CANTFIRE_HOLIDAY "holiday"
 #define DIRECTOR_CANTFIRE_SPECIAL "special"

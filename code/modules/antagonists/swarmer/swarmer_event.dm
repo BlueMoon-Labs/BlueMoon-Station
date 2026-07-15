@@ -1,7 +1,7 @@
 /datum/round_event_control/spawn_swarmer
 	name = "Spawn Swarmer Shell"
 	typepath = /datum/round_event/spawn_swarmer
-	weight = 7
+	weight = 8
 	max_occurrences = 1 //Only once okay fam
 	earliest_start = 30 MINUTES
 	min_players = 35
@@ -22,7 +22,9 @@
 		return FALSE
 	if(!GLOB.the_gateway)
 		return FALSE
-	new /obj/effect/mob_spawn/swarmer(get_turf(GLOB.the_gateway))
+	var/obj/effect/mob_spawn/swarmer/spawner = new(get_turf(GLOB.the_gateway))
+	spawner.director_source_action = control
+	spawner.director_refund_cost = triggered_randomly ? control.cost : 0
 	if(prob(25)) //25% chance to announce it to the crew
 		var/swarmer_report = "<span class='big bold'>[command_name()] Приоритетное оповещение</span>"
 		swarmer_report += "<br><br>Наши сенсоры дальнего действия обнаружили подозрительный сигнал, исходящий из гейтвея вашей станции. Рекомендуем немедленно его проверить, с целью удостовериться, что через него ничто не проникло."

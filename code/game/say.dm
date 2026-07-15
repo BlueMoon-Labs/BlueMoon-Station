@@ -276,10 +276,10 @@ GLOBAL_LIST_INIT(freqtospan, list(
 	var/obj/item/radio/radio
 
 INITIALIZE_IMMEDIATE(/atom/movable/virtualspeaker)
-/atom/movable/virtualspeaker/Initialize(mapload, atom/movable/M, radio)
+/atom/movable/virtualspeaker/Initialize(mapload, atom/movable/M, obj/item/radio/new_radio)
 	. = ..()
-	radio = radio
-	source = M
+	set_source(M)
+	set_radio(new_radio)
 	if (istype(M))
 		name = M.GetVoice()
 		verb_say = M.verb_say
@@ -311,9 +311,37 @@ INITIALIZE_IMMEDIATE(/atom/movable/virtualspeaker)
 		job = "Unknown"
 
 /atom/movable/virtualspeaker/Destroy()
-	source = null
-	radio = null
+	set_source(null)
+	set_radio(null)
 	return ..()
+
+/atom/movable/virtualspeaker/proc/set_source(atom/movable/new_source)
+	if(source == new_source)
+		return
+	if(source)
+		UnregisterSignal(source, COMSIG_PARENT_QDELETING)
+	source = new_source
+	if(source)
+		RegisterSignal(source, COMSIG_PARENT_QDELETING, PROC_REF(on_source_qdeleting))
+
+/atom/movable/virtualspeaker/proc/on_source_qdeleting(atom/movable/deleted_source)
+	SIGNAL_HANDLER
+	if(source == deleted_source)
+		set_source(null)
+
+/atom/movable/virtualspeaker/proc/set_radio(obj/item/radio/new_radio)
+	if(radio == new_radio)
+		return
+	if(radio)
+		UnregisterSignal(radio, COMSIG_PARENT_QDELETING)
+	radio = new_radio
+	if(radio)
+		RegisterSignal(radio, COMSIG_PARENT_QDELETING, PROC_REF(on_radio_qdeleting))
+
+/atom/movable/virtualspeaker/proc/on_radio_qdeleting(obj/item/radio/deleted_radio)
+	SIGNAL_HANDLER
+	if(radio == deleted_radio)
+		set_radio(null)
 
 /atom/movable/virtualspeaker/GetJob()
 	return job

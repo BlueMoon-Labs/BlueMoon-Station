@@ -263,15 +263,18 @@
 		var/lum = T.luminosity
 		T.luminosity = 6
 		for(var/atom/movable/AM in view(R, T))
-			processing += AM
+			processing.Add(AM)
 		T.luminosity = lum
 	var/i = 0
-	while(i < length(processing))
+	var/lim = length(processing)
+	while(i < lim)
 		var/atom/A = processing[++i]
 		if(A.flags_1 & HEAR_1)
 			. += A
 			SEND_SIGNAL(A, COMSIG_ATOM_HEARER_IN_VIEW, processing, .)
-		processing += A.contents
+		if(length(A.contents))
+			processing += A.contents
+			lim = length(processing)
 
 /proc/get_hearers_in_range(R, atom/source)
 	var/turf/T = get_turf(source)
