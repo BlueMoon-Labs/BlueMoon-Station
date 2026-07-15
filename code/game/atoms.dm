@@ -699,16 +699,59 @@
 		if(LAZYLEN(managed_vis_overlays))
 			SSvis_overlays.remove_vis_overlay(src, managed_vis_overlays)
 
+		// Normalize everything to interned appearances up front so the identity
+		// compare below works: BYOND interns appearances, so equal content means
+		// equal instance. Strings/icons are normalized here too (tg leaves them
+		// raw and never short-circuits string overlays).
 		var/list/new_overlays = update_overlays(updates)
-		if(managed_overlays)
-			cut_overlay(managed_overlays)
-			managed_overlays = null
-		if(length(new_overlays))
-			if (length(new_overlays) == 1)
-				managed_overlays = new_overlays[1]
+		var/nulls = 0
+		for(var/i in 1 to length(new_overlays))
+			var/atom/entry = new_overlays[i]
+			if(isnull(entry))
+				nulls++
+				continue
+			if(istext(entry))
+				new_overlays[i] = iconstate2appearance(icon, entry)
+			else if(isicon(entry))
+				new_overlays[i] = icon2appearance(entry)
 			else
-				managed_overlays = new_overlays
-			add_overlay(new_overlays)
+				new_overlays[i] = entry.appearance
+		if(nulls)
+			for(var/i in 1 to nulls)
+				new_overlays -= null
+
+		var/identical = FALSE
+		var/new_length = length(new_overlays)
+		if(!managed_overlays && !new_length)
+			identical = TRUE
+		else if(!islist(managed_overlays))
+			if(new_length == 1 && managed_overlays == new_overlays[1])
+				identical = TRUE
+		else if(length(managed_overlays) == new_length)
+			identical = TRUE
+			for(var/i in 1 to new_length)
+				if(managed_overlays[i] != new_overlays[i])
+					identical = FALSE
+					break
+
+		if(!identical)
+			var/full_control = FALSE
+			if(managed_overlays)
+				full_control = length(overlays) == (islist(managed_overlays) ? length(managed_overlays) : 1)
+				if(full_control)
+					overlays = null
+				else
+					cut_overlay(managed_overlays)
+
+			switch(new_length)
+				if(0)
+					managed_overlays = null
+				if(1)
+					add_overlay(new_overlays)
+					managed_overlays = new_overlays[1]
+				else
+					add_overlay(new_overlays)
+					managed_overlays = new_overlays
 		. |= UPDATE_OVERLAYS
 
 	. |= SEND_SIGNAL(src, COMSIG_ATOM_UPDATED_ICON, updates, .)
