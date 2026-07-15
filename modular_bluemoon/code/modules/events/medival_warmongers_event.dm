@@ -297,9 +297,10 @@
 /obj/item/storage/belt/iron_tasset/ComponentInitialize()
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.storage_flags = STORAGE_FLAGS_LEGACY
 	STR.max_items = 5
 	STR.max_w_class = WEIGHT_CLASS_NORMAL
-	STR.can_hold = typecacheof(list(/obj/item/restraints/legcuffs))
+	STR.can_hold = typecacheof(list(/obj/item/restraints/legcuffs/bola))
 
 /obj/item/storage/belt/iron_tasset/PopulateContents()
 	for(var/i in 1 to 5)
@@ -316,9 +317,10 @@
 /obj/item/storage/belt/gold_tasset/ComponentInitialize()
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.storage_flags = STORAGE_FLAGS_LEGACY
 	STR.max_items = 5
 	STR.max_w_class = WEIGHT_CLASS_NORMAL
-	STR.can_hold = typecacheof(list(/obj/item/restraints/legcuffs))
+	STR.can_hold = typecacheof(list(/obj/item/restraints/legcuffs/bola))
 
 /obj/item/storage/belt/gold_tasset/PopulateContents()
 	for(var/i in 1 to 5)
