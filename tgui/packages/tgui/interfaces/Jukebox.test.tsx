@@ -6,7 +6,11 @@
 import { render } from '@testing-library/react';
 import { combineReducers, createStore, setGlobalStore } from 'common/redux';
 
-import { backendReducer, backendUpdate } from '../backend';
+import {
+  backendReducer,
+  backendSetSharedState,
+  backendUpdate,
+} from '../backend';
 import { debugReducer } from '../debug';
 import { Jukebox } from './Jukebox';
 
@@ -42,6 +46,7 @@ const setupStore = (data = {}) => {
       },
     }),
   );
+  return store;
 };
 
 describe('Jukebox imported preferences', () => {
@@ -53,8 +58,11 @@ describe('Jukebox imported preferences', () => {
   });
 
   test('renders malformed imported collection shapes without crashing', () => {
-    setupStore();
+    const store = setupStore();
+    store.dispatch(
+      backendSetSharedState({ key: 'inFavoritesMode', nextState: true }),
+    );
     const { container } = render(<Jukebox />);
-    expect(container.innerHTML).toContain('Valid Track');
+    expect(container.innerHTML).toContain('Нет треков');
   });
 });
