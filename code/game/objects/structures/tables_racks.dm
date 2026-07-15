@@ -587,7 +587,7 @@
 	icon = smooth_icon
 	. = ..()
 	if(smooth)
-		queue_smooth(src)
+		smooth_icon(src)
 
 	if (!(flags_1 & NODECONSTRUCT_1))
 		var/static/list/tool_behaviors = list(
