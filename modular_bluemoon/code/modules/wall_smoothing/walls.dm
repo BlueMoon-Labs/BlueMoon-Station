@@ -356,8 +356,17 @@
 	base_icon_state = "plastitanium_wall"
 	smooth = SMOOTH_FALSE
 	smoothing_flags = SMOOTH_BITMASK | SMOOTH_OBJ
-	smoothing_groups = SMOOTH_GROUP_PLASTITANIUM_WALLS + SMOOTH_GROUP_SYNDICATE_WALLS
-	canSmoothWith = SMOOTH_GROUP_AIRLOCK + SMOOTH_GROUP_WINDOW_FULLTILE_PLASTITANIUM + SMOOTH_GROUP_PLASTITANIUM_WALLS + SMOOTH_GROUP_SYNDICATE_WALLS
+	smoothing_groups = SMOOTH_GROUP_PLASTITANIUM_WALLS + SMOOTH_GROUP_SYNDICATE_WALLS + SMOOTH_GROUP_WALLS + SMOOTH_GROUP_CLOSED_TURFS
+	canSmoothWith = SMOOTH_GROUP_SHUTTLE_PARTS + SMOOTH_GROUP_AIRLOCK + SMOOTH_GROUP_WINDOW_FULLTILE_PLASTITANIUM + SMOOTH_GROUP_PLASTITANIUM_WALLS + SMOOTH_GROUP_SYNDICATE_WALLS + SMOOTH_GROUP_WALLS + SMOOTH_GROUP_CLOSED_TURFS
+
+/turf/closed/indestructible/update_icon_state()
+	if(smoothing_flags & USES_SMOOTHING)
+		if(smoothing_flags & SMOOTH_DIAGONAL_CORNERS)
+			set_smoothed_icon_state(smoothing_junction)
+		else
+			icon_state = "[base_icon_state]-[smoothing_junction]"
+		return ..()
+	return ..()
 
 /turf/closed/indestructible/wall
 	icon = 'modular_bluemoon/icons/turf/walls/wall.dmi'

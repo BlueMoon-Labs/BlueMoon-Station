@@ -193,7 +193,10 @@
 	flags_1 = PREVENT_CLICK_UNDER_1 | NODECONSTRUCT_1
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
 	density = FALSE
-	canSmoothWith = list(/obj/effect/glass_smooth, /obj/structure/window/plastitanium/train_fake)
+	smooth = SMOOTH_FALSE
+	smoothing_flags = SMOOTH_BITMASK | SMOOTH_OBJ
+	smoothing_groups = SMOOTH_GROUP_SHUTTLE_PARTS + SMOOTH_GROUP_WINDOW_FULLTILE_PLASTITANIUM
+	canSmoothWith = SMOOTH_GROUP_AIRLOCK + SMOOTH_GROUP_WINDOW_FULLTILE_PLASTITANIUM + SMOOTH_GROUP_PLASTITANIUM_WALLS + SMOOTH_GROUP_SYNDICATE_WALLS + SMOOTH_GROUP_SHUTTLE_PARTS
 
 /obj/structure/grille/indestructable/fake
 	density = FALSE
