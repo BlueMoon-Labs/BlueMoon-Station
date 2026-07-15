@@ -15,6 +15,8 @@
 	var/list/living_antags = list()
 	var/list/dead_players = list()
 	var/list/list_observers = list()
+	/// Деталь последней проверки ready() для панели и истории исполнения.
+	var/ready_failure_reason = null
 
 /// Директор выбрал midround-рулсет: собираем кандидатов (trim -> ready),
 /// затем отложенно исполняем с учётом delay. Бюджет уже списан в SSdirector.spend_and_execute.
@@ -23,6 +25,27 @@
 	if(!ready())
 		return FALSE
 	addtimer(CALLBACK(mode, TYPE_PROC_REF(/datum/game_mode/dynamic, execute_scheduled_ruleset), src), delay)
+	return TRUE
+
+/// Неинтерактивная проверка непосредственно перед выбором директора. null означает, что рулсет
+/// не поддерживает preflight и будет проверен обычным execute_action(). Наследники не должны
+/// открывать опросы или выдавать роли отсюда: панель вызывает этот proc каждые несколько секунд.
+/datum/dynamic_ruleset/midround/director_preflight()
+	return null
+
+/// Общий безопасный preflight для рулсетов, которые после trim_candidates() кладут всех
+/// потенциальных получателей роли в candidates. В отличие от crew-wizard этот путь не поллит.
+/datum/dynamic_ruleset/midround/proc/director_preflight_candidates()
+	trim_candidates()
+	if(length(candidates) < required_candidates)
+		ready_failure_reason = "подходящих членов экипажа [length(candidates)] из [required_candidates] (преференс midround, роль, бан и ограничения)"
+		director_preflight_failure = ready_failure_reason
+		return FALSE
+	if(!ready())
+		director_preflight_failure = ready_failure_reason
+		return FALSE
+	director_preflight_detail = "подходящих членов экипажа: [length(candidates)], требуется: [required_candidates]"
+	director_preflight_failure = null
 	return TRUE
 
 /datum/dynamic_ruleset/midround/from_ghosts
@@ -50,6 +73,9 @@
 			trimmed_list.Remove(M)
 			continue
 		if (!M.client) // Are they connected?
+			trimmed_list.Remove(M)
+			continue
+		if(required_type == /mob/dead/observer && !M.can_reenter_round(TRUE))
 			trimmed_list.Remove(M)
 			continue
 		if(should_use_midround_pref && !(M.client.prefs.toggles & MIDROUND_ANTAG))
@@ -91,6 +117,9 @@
 // IMPORTANT, since /datum/dynamic_ruleset/midround may accept candidates from both living, dead, and even antag players, you need to manually check whether there are enough candidates
 // (see /datum/dynamic_ruleset/midround/autotraitor/ready(forced = FALSE) for example)
 /datum/dynamic_ruleset/midround/ready(forced = FALSE)
+	ready_failure_reason = null
+	director_preflight_detail = null
+	director_preflight_failure = null
 	if (!forced)
 		var/job_check = 0
 		if (enemy_roles.len > 0)
@@ -102,13 +131,28 @@
 
 		var/threat = round(mode.threat_level/10)
 		if (job_check < required_enemies[threat])
+			ready_failure_reason = "контрролей [job_check] из [required_enemies[threat]] (уровень угрозы [mode.threat_level])"
 			return FALSE
 	return TRUE
 
 /datum/dynamic_ruleset/midround/from_ghosts/ready(forced = FALSE)
-	return ..() && (length(dead_players) + length(list_observers) >= required_applicants)
+	if(!..())
+		return FALSE
+	var/eligible_ghosts = length(dead_players) + length(list_observers)
+	if(eligible_ghosts < required_applicants)
+		var/role_preference = antag_flag_override ? antag_flag_override : antag_flag
+		ready_failure_reason = "подходящих гостов [eligible_ghosts] из [required_applicants] (нужна включённая роль [role_preference], без бана и ограничений)"
+		return FALSE
+	director_preflight_detail = "подходящих гостов: [eligible_ghosts], требуется: [required_applicants]"
+	return TRUE
+
+/datum/dynamic_ruleset/midround/from_ghosts/director_preflight()
+	trim_candidates()
+	. = ready()
+	director_preflight_failure = . ? null : ready_failure_reason
 
 /datum/dynamic_ruleset/midround/from_ghosts/execute()
+	execution_failure_reason = null
 	var/list/possible_candidates = list()
 	possible_candidates.Add(dead_players)
 	possible_candidates.Add(list_observers)
@@ -116,11 +160,14 @@
 	if(assigned.len > 0)
 		return TRUE
 	else
+		if(!execution_failure_reason)
+			execution_failure_reason = "опрос завершился без достаточного числа подходящих желающих"
 		return FALSE
 
 /// This sends a poll to ghosts if they want to be a ghost spawn from a ruleset.
 /datum/dynamic_ruleset/midround/from_ghosts/proc/send_applications(list/possible_volunteers = list())
 	if (possible_volunteers.len <= 0) // This shouldn't happen, as ready() should return FALSE if there is not a single valid candidate
+		execution_failure_reason = "к моменту опроса не осталось подходящих призраков"
 		message_admins("Possible volunteers was 0. This shouldn't appear, because of ready(), unless you forced it!")
 		return
 	message_admins("Polling [possible_volunteers.len] players to apply for the [name] ruleset.")
@@ -129,6 +176,7 @@
 	candidates = pollGhostCandidates("The mode is looking for volunteers to become [antag_flag] for [name]", flag, be_special_flag = flag, ignore_category = antag_flag, poll_time = 300, poll_header = "[name] ([antag_flag])", poll_alert_pic = /obj/item/card/id/syndicate)
 
 	if(!length(candidates))
+		execution_failure_reason = "на гост-опрос не откликнулся ни один подходящий игрок"
 		mode.dynamic_log("The ruleset [name] received no applications.")
 		mode.executed_rules -= src
 		attempt_replacement()
@@ -142,6 +190,7 @@
 /// Called by send_applications().
 /datum/dynamic_ruleset/midround/from_ghosts/proc/review_applications()
 	if(candidates.len < required_applicants)
+		execution_failure_reason = "на гост-опрос откликнулось [candidates.len] из необходимых [required_applicants]"
 		mode.executed_rules -= src
 		return
 	for (var/i = 1, i <= required_candidates, i++)
@@ -200,41 +249,21 @@
 	name = "InteQ Sleeper Agent"
 	antag_datum = /datum/antagonist/traitor
 	antag_flag = "traitor mid"
+	antag_flag_override = ROLE_TRAITOR
 	protected_roles = list("Expeditor", "Prisoner", "NanoTrasen Representative", "Internal Affairs Agent", "Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director")  //BLUEMOON CHANGES
 	restricted_roles = list("Cyborg", "AI", "Positronic Brain")
 	required_candidates = 1
 	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_LIGHT) // BLUEMOON ADD
-	weight = 7 // реальный лёгкий вес в ANTAG-пуле директора (был 0 - самоспавн из roundstart-трейтора)
+	weight = 6 // лёгкая базовая инжекция, но не единственная цель ANTAG-пула
 	cost = 8  //BLUEMOON CHANGES
 	intensity = 15
+	family = "traitor"
 	requirements = list(101,40,30,20,10,10,10,10,10,10)
 	repeatable = TRUE
 
-	/// Whether or not this instance of sleeper agent should be randomly acceptable.
-	/// If TRUE, then this has a threat level% chance to succeed.
-	var/has_failure_chance = TRUE
-
-/datum/dynamic_ruleset/midround/autotraitor/acceptable(population = 0, threat = 0)
-	var/player_count = mode.current_players[CURRENT_LIVING_PLAYERS].len
-	var/antag_count = mode.current_players[CURRENT_LIVING_ANTAGS].len
-	var/max_traitors = round(player_count / 16) + 1 //BLUEMOON CNANGES - 1 предатель на каждые 16 человек
-
-	// adding traitors if the antag population is getting low
-	// Отказы не логируются из симулятора и оценки пула панелью: acceptable() зовётся там
-	// каждые несколько секунд, а game.log должен отражать только боевые решения.
-	var/real_decision = !SSdirector.dry_run && !SSdirector.quiet_eval
-	var/too_little_antags = antag_count < max_traitors
-	if (!too_little_antags)
-		if(real_decision)
-			log_game("DYNAMIC: Too many living antags compared to living players ([antag_count] living antags, [player_count] living players, [max_traitors] max traitors)")
-		return FALSE
-
-	if (has_failure_chance && !prob(mode.threat_level))
-		if(real_decision)
-			log_game("DYNAMIC: Random chance to roll autotraitor failed, it was a [mode.threat_level]% chance.")
-		return FALSE
-
-	..()
+	// Дефицит антагов уже гейтится общим клапаном SSdirector (antag_load/antag_target), а шанс
+	// задаётся весом действия. Старые отдельные счётчик current_players и prob(threat_level)
+	// здесь дублировали клапан и делали can_fire() недетерминированным для панели/ролла копилки.
 
 /datum/dynamic_ruleset/midround/autotraitor/trim_candidates()
 	. = ..()
@@ -248,8 +277,16 @@
 
 /datum/dynamic_ruleset/midround/autotraitor/ready(forced = FALSE)
 	if (required_candidates > living_players.len)
+		ready_failure_reason = "подходящих членов экипажа [living_players.len] из [required_candidates] (преференс midround, роль, бан и возраст)"
 		return FALSE
-	return ..()
+	. = ..()
+	if(.)
+		director_preflight_detail = "подходящих членов экипажа: [living_players.len], требуется: [required_candidates]"
+
+/datum/dynamic_ruleset/midround/autotraitor/director_preflight()
+	trim_candidates()
+	. = ready()
+	director_preflight_failure = . ? null : ready_failure_reason
 
 /datum/dynamic_ruleset/midround/autotraitor/execute()
 	// BLUEMOON ADD START - если нет кандидатов и не выданы все роли, иначе выдаст рантайм
@@ -305,9 +342,13 @@
 
 
 /datum/dynamic_ruleset/midround/families/ready(forced = FALSE)
-	if (required_candidates > living_players.len)
+	if (required_candidates > candidates.len)
+		ready_failure_reason = "подходящих членов экипажа [candidates.len] из [required_candidates] для семей"
 		return FALSE
 	return ..()
+
+/datum/dynamic_ruleset/midround/families/director_preflight()
+	return director_preflight_candidates()
 
 /datum/dynamic_ruleset/midround/families/pre_execute()
 	..()
@@ -338,6 +379,9 @@
 
 /datum/dynamic_ruleset/midround/wizard
 	name = "Wizard"
+	// persistent: rule_process() снимает Summon Events (wizardmode), когда волшебник погиб.
+	// Без него wizardmode залипал на весь раунд, глуша обычные события директора навсегда.
+	persistent = TRUE
 	antag_datum = /datum/antagonist/wizard
 	antag_flag = "wizard mid crew"
 	antag_flag_override = ROLE_WIZARD
@@ -406,6 +450,9 @@
 
 /datum/dynamic_ruleset/midround/from_ghosts/wizard
 	name = "Wizard"
+	// persistent: rule_process() снимает Summon Events (wizardmode), когда волшебник погиб.
+	// Без него wizardmode залипал на весь раунд, глуша обычные события директора навсегда.
+	persistent = TRUE
 	antag_datum = /datum/antagonist/wizard
 	antag_flag = "wizard mid"
 	antag_flag_override = ROLE_WIZARD
@@ -413,12 +460,17 @@
 	required_enemies = list(0,0,0,0,0,0,0,0,0,0)
 	required_candidates = 1
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
-	weight = 5 //BLUEMOON CHANGES
+	// Маг - единственный тяжёлый гост-рулсет без условий (1 гост + точки wizardstart есть везде),
+	// поэтому раньше выпадал "около первым" и перебивал шанс другим гост-антагам. earliest_start
+	// уводит его из первого получаса (лёгкие Devil/спавнеры играют раньше), вес снижен 4 -> 3,
+	// чтобы среди поздних тяжёлых он не доминировал. Раунд-дефайнеры не открывают смену.
+	earliest_start = 35 MINUTES
+	weight = 3
 	cost = 15 //BLUEMOON CHANGES
 	intensity = 45
 	antag_heavy = TRUE
 	requirements = list(101,101,100,60,40,20,20,20,10,10)
-	repeatable = TRUE
+	repeatable = FALSE
 	var/datum/mind/wizard
 
 /datum/dynamic_ruleset/midround/from_ghosts/wizard/action_name()
@@ -426,10 +478,13 @@
 
 /datum/dynamic_ruleset/midround/from_ghosts/wizard/ready(forced = FALSE)
 	if (required_candidates > (dead_players.len + list_observers.len))
+		ready_failure_reason = "подходящих гостов [dead_players.len + list_observers.len] из [required_candidates]"
 		return FALSE
 	if(GLOB.wizardstart.len == 0)
-		log_admin("Cannot accept Wizard ruleset. Couldn't find any wizard spawn points.")
-		message_admins("Cannot accept Wizard ruleset. Couldn't find any wizard spawn points.")
+		ready_failure_reason = "на карте нет точек спауна волшебника"
+		if(!SSdirector.quiet_eval)
+			log_admin("Cannot accept Wizard ruleset. Couldn't find any wizard spawn points.")
+			message_admins("Cannot accept Wizard ruleset. Couldn't find any wizard spawn points.")
 		return FALSE
 	return ..()
 
@@ -464,13 +519,21 @@
 	enemy_roles = list("AI", "Cyborg", "Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain") //BLUEMOON CHANGES
 	required_enemies = list(0,0,0,0,0,0,5,5,4,0) //BLUEMOON CHANGES
 	required_candidates = 5
-	weight = 3
+	weight = 2
+	// Тяжёлый раунд-дефайнер не открывает смену: earliest_start уводит его из первого получаса
+	// (как и мага). Дальше и так гейтится 5 гостами + cost 30.
+	earliest_start = 35 MINUTES
 	cost = 30 //BLUEMOON CHANGES
 	antag_heavy = TRUE
 	intensity = 45
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	requirements = list(101,101,101,101,101,101,60,40,30,10) //BLUEMOON CHANGES
 	var/list/operative_cap = list(5,5,5,5,5,5,5,5,5,5)
+	/// Минимум оперативников, с которого рейд уже стартует: полная команда из 5 гостов
+	/// одновременно почти никогда не набиралась, и мидраунд-нюки не появлялись авто вовсе.
+	/// Меньший отряд (3-5) - диверсионный удар вместо полной команды; poll всё равно берёт
+	/// до operative_cap, сколько откликнулось.
+	var/minimum_operatives = 3
 	var/datum/team/nuclear/nuke_team
 	flags = HIGH_IMPACT_RULESET
 
@@ -479,11 +542,13 @@
 		return FALSE // Unavailable if nuke ops were already sent at roundstart
 	indice_pop = min(operative_cap.len, round(living_players.len/5)+1)
 	required_candidates = operative_cap[indice_pop]
-	required_applicants = required_candidates
+	// Цель - required_candidates (до 5), гейт опроса/готовности - минимум отряда.
+	required_applicants = min(required_candidates, minimum_operatives)
 	return ..()
 
 /datum/dynamic_ruleset/midround/from_ghosts/nuclear/ready(forced = FALSE)
-	if (required_candidates > (dead_players.len + list_observers.len))
+	if (required_applicants > (dead_players.len + list_observers.len))
+		ready_failure_reason = "подходящих гостов [dead_players.len + list_observers.len] из [required_applicants]"
 		return FALSE
 	return ..()
 
@@ -522,13 +587,30 @@
 	intensity = 45
 	requirements = list(101,101,101,101,50,40,30,20,10,10)
 	var/list/clock_cap = list(1,1,1,2,3,4,5,5,5,5)
+	/// Минимум обращаемых, с которого культ уже стартует: культ - снежный ком, малый посев
+	/// вербует остальных в игре. Полная цель clock_cap 5-6 подходящих на среднем онлайне почти
+	/// не набиралась, и мидраунд-культ не появлялся вовсе. Гейт = min(цель, этот минимум).
+	var/minimum_candidates = 3
+	/// Сколько обращаемых культ пытается взять при достатке (цель clock_cap); execute берёт
+	/// столько, сколько есть, но не меньше required_candidates и не больше цели.
+	var/target_candidates = 0
 	flags = HIGH_IMPACT_RULESET
 
 /datum/dynamic_ruleset/midround/ratvar_awakening/acceptable(population=0, threat=0)
 	if (locate(/datum/dynamic_ruleset/roundstart/clockcult) in mode.executed_rules)
 		return FALSE // Unavailable if clockies exist at round start
-	indice_pop = min(clock_cap.len, round(living_players.len/5)+1)
-	required_candidates = clock_cap[indice_pop]
+	indice_pop = min(clock_cap.len, round(population/5)+1)
+	target_candidates = clock_cap[indice_pop]
+	required_candidates = min(target_candidates, minimum_candidates)
+	return ..()
+
+/datum/dynamic_ruleset/midround/ratvar_awakening/director_preflight()
+	return director_preflight_candidates()
+
+/datum/dynamic_ruleset/midround/ratvar_awakening/ready(forced = FALSE)
+	if(length(candidates) < required_candidates)
+		ready_failure_reason = "подходящих членов экипажа [length(candidates)] из [required_candidates] для культа Ратвара"
+		return FALSE
 	return ..()
 
 /datum/dynamic_ruleset/midround/ratvar_awakening/trim_candidates()
@@ -553,7 +635,9 @@
 		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
 		return FALSE
 	// BLUEMOON ADD END
-	for(var/i = 0; i < required_candidates; i++)
+	// Цель - target_candidates (полный clock_cap), но берём сколько есть сверх минимума.
+	var/to_convert = max(target_candidates, required_candidates)
+	for(var/i = 0; i < to_convert; i++)
 		if(!candidates.len)
 			break
 		var/mob/living/clock_antag = pick_n_take(candidates)
@@ -592,14 +676,29 @@
 	intensity = 45
 	requirements = list(101,101,101,101,50,40,30,20,10,10)
 	var/list/blood_cap = list(1,1,2,3,4,5,6,6,6,6)
+	/// Минимум обращаемых, с которого культ уже стартует (см. Ratvar Awakening): кровавый культ
+	/// снежным комом вербует остальных, полная цель blood_cap 6 почти не набиралась на среднем онлайне.
+	var/minimum_candidates = 3
+	/// Цель обращения (полный blood_cap); execute берёт сколько есть сверх минимума.
+	var/target_candidates = 0
 	var/datum/team/cult/main_cult
 	flags = HIGH_IMPACT_RULESET
 
 /datum/dynamic_ruleset/midround/narsie_awakening/acceptable(population=0, threat=0)
 	if (locate(/datum/dynamic_ruleset/roundstart/bloodcult) in mode.executed_rules)
 		return FALSE
-	indice_pop = min(blood_cap.len, round(living_players.len/5)+1)
-	required_candidates = blood_cap[indice_pop]
+	indice_pop = min(blood_cap.len, round(population/5)+1)
+	target_candidates = blood_cap[indice_pop]
+	required_candidates = min(target_candidates, minimum_candidates)
+	return ..()
+
+/datum/dynamic_ruleset/midround/narsie_awakening/director_preflight()
+	return director_preflight_candidates()
+
+/datum/dynamic_ruleset/midround/narsie_awakening/ready(forced = FALSE)
+	if(length(candidates) < required_candidates)
+		ready_failure_reason = "подходящих членов экипажа [length(candidates)] из [required_candidates] для культа Нар'Си"
+		return FALSE
 	return ..()
 
 /datum/dynamic_ruleset/midround/narsie_awakening/trim_candidates()
@@ -624,7 +723,9 @@
 		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
 		return FALSE
 	// BLUEMOON ADD END
-	for(var/i = 0; i < required_candidates; i++)
+	// Цель - target_candidates (полный blood_cap), но берём сколько есть сверх минимума.
+	var/to_convert = max(target_candidates, required_candidates)
+	for(var/i = 0; i < to_convert; i++)
 		if(!candidates.len)
 			break
 		var/mob/living/blood_antag = pick_n_take(candidates)
@@ -648,6 +749,9 @@
 
 /datum/dynamic_ruleset/midround/from_ghosts/blob
 	name = "Blob"
+	// Прямое событие Blob уже зарегистрировано в GHOST-пуле директора и умеет проверять/трекать
+	// реального госта. Двойник остаётся для ручного форса, но не удваивает шанс одного контента.
+	admin_only = TRUE
 	antag_datum = /datum/antagonist/blob
 	antag_flag = ROLE_BLOB
 	enemy_roles = list("Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain") //BLUEMOON CHANGES
@@ -673,6 +777,9 @@
 /// Infects a random player, making them explode into a blob.
 /datum/dynamic_ruleset/midround/blob_infection
 	name = "Blob Infection"
+	// Живого члена экипажа больше не превращаем в блоба естественным выбором директора.
+	// Рулсет остаётся доступен для осознанного ручного запуска; естественный Blob приходит гостом.
+	admin_only = TRUE
 	antag_datum = /datum/antagonist/blob
 	antag_flag = "blob mid"
 	antag_flag_override = ROLE_BLOB
@@ -687,7 +794,9 @@
 	intensity = 15
 	family = "blob" // с событием-двойником и гост-блобом: не подряд
 	requirements = list(101,101,101,101,50,40,30,20,10,10)
-	repeatable = TRUE
+	// Второе заражение в том же раунде вытесняло почти весь неблобовый ANTAG-пул. Одного
+	// заражения достаточно; отдельное позднее ghost-событие Blob остаётся самостоятельной угрозой.
+	repeatable = FALSE
 
 /datum/dynamic_ruleset/midround/blob_infection/trim_candidates()
 	..()
@@ -700,6 +809,15 @@
 
 		if(player.mind && (player.mind.special_role || length(player.mind.antag_datums) > 0))
 			candidates -= player
+
+/datum/dynamic_ruleset/midround/blob_infection/director_preflight()
+	return director_preflight_candidates()
+
+/datum/dynamic_ruleset/midround/blob_infection/ready(forced = FALSE)
+	if(length(candidates) < required_candidates)
+		ready_failure_reason = "подходящих членов экипажа [length(candidates)] из [required_candidates] для заражения блобом"
+		return FALSE
+	return ..()
 
 /datum/dynamic_ruleset/midround/blob_infection/execute()
 	// BLUEMOON ADD START - если нет кандидатов и не выданы все роли, иначе выдаст рантайм
@@ -720,6 +838,7 @@
 
 /datum/dynamic_ruleset/midround/from_ghosts/xenomorph
 	name = "Alien Infestation"
+	admin_only = TRUE
 	antag_datum = /datum/antagonist/xeno
 	antag_flag = ROLE_ALIEN
 	enemy_roles = list("Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain") //BLUEMOON CHANGES
@@ -736,7 +855,12 @@
 	var/list/vents = list()
 
 /datum/dynamic_ruleset/midround/from_ghosts/xenomorph/ready(forced = FALSE)
-	return ..() && length(find_vent_spawns()) > 0
+	if(!..())
+		return FALSE
+	if(!length(find_vent_spawns()))
+		ready_failure_reason = "не найдено доступных вентиляций для спауна"
+		return FALSE
+	return TRUE
 
 /datum/dynamic_ruleset/midround/from_ghosts/xenomorph/execute()
 	required_candidates += prob(50)
@@ -773,6 +897,7 @@
 
 /datum/dynamic_ruleset/midround/from_ghosts/terror_spiders
 	name = "Terror Infestation"
+	admin_only = TRUE
 	antag_datum = /datum/antagonist/terror_spiders
 	antag_flag = ROLE_TERROR_SPIDER
 	enemy_roles = list("Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain") //BLUEMOON CHANGES
@@ -832,6 +957,7 @@
 
 /datum/dynamic_ruleset/midround/from_ghosts/nightmare
 	name = "Nightmare"
+	admin_only = TRUE
 	antag_datum = /datum/antagonist/nightmare
 	antag_flag = "Nightmare"
 	antag_flag_override = ROLE_ALIEN
@@ -881,6 +1007,7 @@
 
 /datum/dynamic_ruleset/midround/from_ghosts/space_dragon
 	name = "Space Dragon"
+	admin_only = TRUE
 	antag_datum = /datum/antagonist/space_dragon
 	antag_flag = ROLE_SPACE_DRAGON
 	antag_flag_override = ROLE_SPACE_DRAGON
@@ -928,24 +1055,34 @@
 
 /datum/dynamic_ruleset/midround/from_ghosts/morph
 	name = "Morph"
+	// Каноническое естественное действие директора - /round_event_control/morph (Spawn Morph).
+	// Рулсет остаётся для ручного запуска, но не дублирует тот же контент в GHOST-пуле.
+	admin_only = TRUE
 	antag_datum = /datum/antagonist/morph
 	antag_flag = "Morph"
 	antag_flag_override = ROLE_ALIEN
 	enemy_roles = list("Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security", "Bridge Officer", "Captain")
 	required_enemies = list(0,0,0,0,0,5,4,3,3,0)
 	required_candidates = 1
-	weight = 6
+	weight = 8
 	cost = 10
 	intensity = 15
 	family = "morph" // с событием-двойником: не подряд
-	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM)
+	required_round_type = list(ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_TEAMBASED)
 	requirements = list(101,101,101,50,30,25,20,10,10,10)
-	repeatable = TRUE
+	repeatable = FALSE
 
 /datum/dynamic_ruleset/midround/from_ghosts/morph/execute()
 	if(!GLOB.xeno_spawn || !GLOB.xeno_spawn.len)
+		execution_failure_reason = "на карте нет точек xeno_spawn для морфа"
 		return FALSE
 	. = ..()
+
+/datum/dynamic_ruleset/midround/from_ghosts/morph/ready(forced = FALSE)
+	if(!GLOB.xeno_spawn || !GLOB.xeno_spawn.len)
+		ready_failure_reason = "на карте нет точек xeno_spawn для морфа"
+		return FALSE
+	return ..()
 
 /datum/dynamic_ruleset/midround/from_ghosts/morph/generate_ruleset_body(mob/applicant)
 	var/datum/mind/player_mind = new /datum/mind(applicant.key)
@@ -974,13 +1111,13 @@
 	enemy_roles = list("Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security", "Bridge Officer", "Captain")
 	required_enemies = list(0,0,0,0,0,5,4,3,3,0)
 	required_candidates = 1
-	weight = 5
+	weight = 6
 	cost = 10
 	intensity = 15
 	family = "devil" // с событием-двойником: не подряд
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM)
 	requirements = list(101,101,101,50,40,30,20,10,10,10)
-	repeatable = TRUE
+	repeatable = FALSE
 
 /datum/dynamic_ruleset/midround/from_ghosts/devil/finish_setup(mob/new_character, index)
 	add_devil(new_character, ascendable = TRUE)
@@ -1005,6 +1142,7 @@
 
 /datum/dynamic_ruleset/midround/from_ghosts/abductors
 	name = "Abductors"
+	admin_only = TRUE
 	antag_flag = "Abductor"
 	antag_flag_override = ROLE_ABDUCTOR
 	enemy_roles = list("Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain") //BLUEMOON CHANGES
@@ -1022,6 +1160,7 @@
 
 /datum/dynamic_ruleset/midround/from_ghosts/abductors/ready(forced = FALSE)
 	if (required_candidates > (dead_players.len + list_observers.len))
+		ready_failure_reason = "подходящих гостов [dead_players.len + list_observers.len] из [required_candidates]"
 		return FALSE
 	return ..()
 
@@ -1051,6 +1190,9 @@
 
 /datum/dynamic_ruleset/midround/swarmers
 	name = "Swarmers"
+	// Spawn Swarmer Shell уже является самостоятельным действием директора. Этот legacy-дубль
+	// сохраняется для ручного запуска, но не удваивает шанс свормеров в естественном GHOST-пуле.
+	admin_only = TRUE
 	severity = DIRECTOR_SEVERITY_GHOST // спавнер для призраков, экипаж не тратится
 	antag_flag = "Swarmer"
 	antag_flag_override = ROLE_ALIEN
@@ -1076,9 +1218,14 @@
 	if(!spawn_locs.len)
 		message_admins("No valid spawn locations found in GLOB.xeno_spawn, aborting swarmer spawning...")
 		return MAP_ERROR
-	new /obj/effect/mob_spawn/swarmer(get_turf(GLOB.the_gateway))
+	var/obj/effect/mob_spawn/swarmer/spawner = new(get_turf(GLOB.the_gateway))
+	spawner.director_source_action = src
+	spawner.director_refund_cost = director_pending_cost
 	log_game("A Swarmer was spawned via Dynamic Mode.")
 	return ..()
+
+/datum/dynamic_ruleset/midround/swarmers/director_execution_detail(assigned_this_attempt)
+	return "исполнение подтверждено; создан спавнер роли, назначение ожидает активации"
 
 //////////////////////////////////////////////
 //                                          //
@@ -1088,6 +1235,7 @@
 
 /datum/dynamic_ruleset/midround/from_ghosts/space_ninja
 	name = "Space Ninja"
+	admin_only = TRUE
 	antag_datum = /datum/antagonist/ninja
 	antag_flag = "Space Ninja"
 	antag_flag_override = ROLE_NINJA
@@ -1131,6 +1279,7 @@
 /// Revenant ruleset
 /datum/dynamic_ruleset/midround/from_ghosts/revenant
 	name = "Revenant"
+	admin_only = TRUE
 	antag_datum = /datum/antagonist/revenant
 	antag_flag = "Revenant"
 	antag_flag_override = ROLE_REVENANT
@@ -1181,6 +1330,7 @@
 /// Sentient Disease ruleset
 /datum/dynamic_ruleset/midround/from_ghosts/sentient_disease
 	name = "Sentient Disease"
+	admin_only = TRUE
 	antag_datum = /datum/antagonist/disease
 	antag_flag = "Sentient Disease"
 	antag_flag_override = ROLE_ALIEN
@@ -1204,6 +1354,8 @@
 /// Space Pirates ruleset
 /datum/dynamic_ruleset/midround/pirates
 	name = "Space Pirates"
+	// Реальное событие уже зарегистрировано у директора; рулсет-дубль нужен только для админ-форса.
+	admin_only = TRUE
 	severity = DIRECTOR_SEVERITY_GHOST // событие поллит призраков, экипаж не тратится
 	antag_flag = "Space Pirates"
 	required_type = /mob/dead/observer
@@ -1241,6 +1393,8 @@
 //////////////////////////////////////////////
 /datum/dynamic_ruleset/midround/raiders
 	name = "InteQ Raiders"
+	// Реальное событие уже зарегистрировано у директора; рулсет-дубль нужен только для админ-форса.
+	admin_only = TRUE
 	severity = DIRECTOR_SEVERITY_GHOST // событие поллит призраков, экипаж не тратится
 	antag_flag = "InteQ Raiders"
 	required_type = /mob/dead/observer
@@ -1272,6 +1426,9 @@
 /datum/dynamic_ruleset/midround/raiders/action_name()
 	return "[name] (Ruleset)"
 
+/datum/dynamic_ruleset/midround/raiders/director_execution_detail(assigned_this_attempt)
+	return "исполнение подтверждено; роли назначит запущенное событие после ответа станции"
+
 //////////////////////////////////////////////
 //                                          //
 //            Medieval Warmongers           //
@@ -1279,6 +1436,8 @@
 //////////////////////////////////////////////
 /datum/dynamic_ruleset/midround/warmongers
 	name = "Medieval Warmongers"
+	// Реальное событие уже зарегистрировано у директора; рулсет-дубль нужен только для админ-форса.
+	admin_only = TRUE
 	severity = DIRECTOR_SEVERITY_GHOST // событие поллит призраков, экипаж не тратится
 	antag_flag = "Medieval Warmongers"
 	required_type = /mob/dead/observer
@@ -1299,16 +1458,19 @@
 	return ..()
 
 /datum/dynamic_ruleset/midround/warmongers/execute()
-	var/datum/round_event_control/event = locate(/datum/round_event_control/pirates) in SSdirector.event_controls()
+	var/datum/round_event_control/event = locate(/datum/round_event_control/medieval_warmongers) in SSdirector.event_controls()
 	if(event)
 		event.execute_action()
 	return ..()
 
-// name совпадает с /datum/round_event_control/pirates ("Space Pirates"), который этот рулсет сам
-// же и запускает через execute() - без суффикса они делили бы ключ конфига/intensity_ledger.
-/datum/dynamic_ruleset/midround/pirates/action_name()
+// name совпадает с /datum/round_event_control/medieval_warmongers ("Medieval Warmongers"), который
+// этот рулсет сам же и запускает через execute() - без суффикса они делили бы ключ
+// конфига/intensity_ledger.
+/datum/dynamic_ruleset/midround/warmongers/action_name()
 	return "[name] (Ruleset)"
 
+/datum/dynamic_ruleset/midround/warmongers/director_execution_detail(assigned_this_attempt)
+	return "исполнение подтверждено; роли назначит запущенное событие после ответа станции"
 
 // BLUEMOON ADD START
 
@@ -1320,6 +1482,9 @@
 
 /datum/dynamic_ruleset/midround/bloodsuckers
 	name = "Bloodsuckers"
+	// Кровососы сломаны и ждут починки/упрощения: естественно не выдаются ни в одном типе раунда.
+	// Прежний хак (только team-based) заменён честным выключателем - ручной форс админом работает.
+	admin_only = TRUE
 	antag_flag = "Bloodsucker Mid"
 	antag_flag_override = ROLE_BLOODSUCKER
 	antag_datum = /datum/antagonist/bloodsucker
@@ -1328,10 +1493,11 @@
 	enemy_roles = list("Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain") //BLUEMOON CHANGES
 	required_enemies = list(3,3,3,3,3,3,3,3,3,3)
 	required_candidates = 1
-	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED) // BLUEMOON ADD
+	required_round_type = list(ROUNDTYPE_DYNAMIC_LIGHT, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_TEAMBASED)
 	weight = 6
-	cost = 5
+	cost = 8
 	intensity = 15
+	family = "bloodsuckers"
 	scaling_cost = 10
 	requirements = list(101,101,60,50,40,30,20,15,10,10)
 	antag_cap = list("denominator" = 39, "offset" = 1)
@@ -1352,6 +1518,19 @@
 			candidates -= player
 		else if(HAS_TRAIT(player, TRAIT_ROBOTIC_ORGANISM)) // никаких роботов-вампиров из далекого космоса
 			candidates -= player
+
+/datum/dynamic_ruleset/midround/bloodsuckers/ready(forced = FALSE)
+	var/needed = get_antag_cap(length(living_players)) * (scaled_times + 1)
+	if(length(candidates) < needed)
+		ready_failure_reason = "подходящих членов экипажа [length(candidates)] из [needed] для кровососов"
+		return FALSE
+	return ..()
+
+/datum/dynamic_ruleset/midround/bloodsuckers/director_preflight()
+	. = director_preflight_candidates()
+	if(.)
+		var/needed = get_antag_cap(length(living_players)) * (scaled_times + 1)
+		director_preflight_detail = "подходящих членов экипажа: [length(candidates)], требуется: [needed]"
 
 /datum/dynamic_ruleset/midround/bloodsuckers/pre_execute(population)
 	. = ..()

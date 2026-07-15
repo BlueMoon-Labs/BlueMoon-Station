@@ -398,6 +398,10 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 	for (var/datum/dynamic_ruleset/roundstart/rule in roundstart_rules)
 		if (!rule.weight)
 			continue
+		// Естественная жеребьёвка обязана уважать те же выключатели, что и биты директора.
+		// Ручной форс идёт мимо этого цикла через GLOB.dynamic_forced_roundstart_ruleset.
+		if (!rule.enabled || rule.admin_only)
+			continue
 		if (rule.acceptable(roundstart_pop_ready, threat_level) && round_start_budget >= rule.cost) // If we got the population and threat required
 			rule.candidates = candidates.Copy()
 			rule.trim_candidates()
@@ -459,6 +463,7 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 	var/added_threat = ruleset.scale_up(roundstart_pop_ready, scaled_times)
 
 	if(ruleset.pre_execute(roundstart_pop_ready))
+		ruleset.director_pending_cost += ruleset.cost + added_threat
 		threat_log += "[worldtime2text()]: Roundstart [ruleset.name] spent [ruleset.cost + added_threat]. [ruleset.scaling_cost ? "Scaled up [ruleset.scaled_times]/[scaled_times] times." : ""]"
 		if(ruleset.flags & ONLY_RULESET)
 			only_ruleset_executed = TRUE
@@ -476,9 +481,11 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 	if(rule.execute())
 		if(rule.persistent)
 			current_rules += rule
+		SSdirector.confirm_action_success(rule)
 		new_snapshot(rule)
 		return TRUE
 	rule.clean_up() // Refund threat, delete teams and so on.
+	rule.director_pending_cost = 0
 	executed_rules -= rule
 	stack_trace("The starting rule \"[rule.name]\" failed to execute.")
 	return FALSE
@@ -525,8 +532,12 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 /// Бюджет уже списан в SSdirector.spend_and_execute; здесь - собственно запуск и бухгалтерия.
 /datum/game_mode/dynamic/proc/execute_scheduled_ruleset(datum/dynamic_ruleset/rule)
 	threat_log += "[worldtime2text()]: [rule.ruletype] [rule.name] spent [rule.cost]"
-	rule.pre_execute(current_players[CURRENT_LIVING_PLAYERS].len)
-	if (rule.execute())
+	rule.execution_failure_reason = null
+	var/assigned_before = length(rule.assigned)
+	var/prepared = rule.pre_execute(current_players[CURRENT_LIVING_PLAYERS].len)
+	if(!prepared && !rule.execution_failure_reason)
+		rule.execution_failure_reason = "pre_execute() не нашёл достаточно кандидатов"
+	if (prepared && rule.execute())
 		log_game("DYNAMIC: Injected a [rule.ruletype] ruleset [rule.name].")
 		if(rule.flags & HIGH_IMPACT_RULESET)
 			high_impact_ruleset_executed = TRUE
@@ -541,9 +552,19 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 		if (rule.persistent)
 			current_rules += rule
 		new_snapshot(rule)
+		SSdirector.confirm_action_success(rule)
+		var/assigned_this_attempt = max(0, length(rule.assigned) - assigned_before)
+		SSdirector.director_log_beat(SSdirector.collect_signals(), rule, DIRECTOR_BEAT_EXECUTED,
+			detail = rule.director_execution_detail(assigned_this_attempt))
 		return TRUE
 	rule.clean_up()
-	stack_trace("The [rule.ruletype] rule \"[rule.name]\" failed to execute.")
+	SSdirector.note_failed_action(rule, retry_replacement = istype(rule, /datum/dynamic_ruleset/midround))
+	var/failure_detail = rule.execution_failure_reason || "execute() вернул FALSE; бюджет возвращён"
+	SSdirector.director_log_beat(SSdirector.collect_signals(), rule, DIRECTOR_BEAT_FAILED, detail = failure_detail)
+	if(rule.execution_failure_reason)
+		log_game("DYNAMIC: [rule.ruletype] ruleset [rule.name] failed: [failure_detail]")
+	else
+		stack_trace("The [rule.ruletype] rule \"[rule.name]\" failed to execute.")
 	return FALSE
 
 /datum/game_mode/dynamic/process()

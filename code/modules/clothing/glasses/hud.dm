@@ -37,11 +37,20 @@
 /obj/item/clothing/glasses/hud/dropped(mob/living/carbon/human/user)
 	..()
 	if(hud_type && istype(user) && hud_granted)
-		interface?.RemoveSource(interface_source)
-		interface = null
+		clear_neural_interface()
 		hud_granted = FALSE
 		var/datum/atom_hud/H = GLOB.huds[hud_type]
 		H.remove_hud_from(user)
+
+/obj/item/clothing/glasses/hud/Destroy()
+	clear_neural_interface()
+	return ..()
+
+/obj/item/clothing/glasses/hud/proc/clear_neural_interface()
+	var/datum/component/neural_interface/old_interface = interface
+	interface = null
+	if(!QDELETED(old_interface))
+		old_interface.RemoveSource(interface_source)
 
 /obj/item/clothing/glasses/hud/emp_act(severity)
 	. = ..()

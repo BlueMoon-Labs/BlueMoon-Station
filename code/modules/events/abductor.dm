@@ -1,7 +1,7 @@
 /datum/round_event_control/abductor
 	name = "Abductors"
 	typepath = /datum/round_event/ghost_role/abductor
-	weight = 25 // был 50 при 5-20 у остального MAJOR-пула: "крупный слот" почти всегда уходил абдукторам
+	weight = 8 // два госта и отдельный геймплей, но не четверть всего GHOST-пула
 	max_occurrences = 1
 	min_players = 30
 	earliest_start = 30 MINUTES
@@ -9,6 +9,9 @@
 	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
 	cost = 10
 	intensity = 15
+	director_ghost_jobban = ROLE_ABDUCTOR
+	director_ghost_preference = ROLE_ABDUCTOR
+	director_ghost_minimum = 2
 	family = "abductors" // с рулсетом-двойником динамика: не подряд
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // не экста и не лайт; крупный антагонист
 	description = "One or more abductor teams spawns, and they plan to experiment on the crew."

@@ -66,6 +66,9 @@
 	var/director_activity = 0
 	/// world.time последнего изменения director_activity (точка отсчёта затухания)
 	var/director_activity_at = 0
+	/// Накопленная за жизнь антага активность без затухания. Директор запоминает значение в момент
+	/// выдачи каждой роли и по дельте решает, заслуживает ли её ранняя потеря возврата бюджета.
+	var/director_activity_total = 0
 	var/antag_hud_icon_state = null //this mind's ANTAG_HUD should have this icon_state
 	var/datum/atom_hud/antag/antag_hud = null //this mind's antag HUD
 	var/datum/traitor_panel_tgui/tgui_panel // cached TGUI traitor panel
@@ -134,6 +137,7 @@
 	QDEL_NULL(tgui_panel)
 	QDEL_LIST(antag_datums)
 	QDEL_NULL(skill_holder)
+	RemoveAllSpells()
 	set_assigned_heirloom(null)
 	set_current(null)
 	soulOwner = null
@@ -1802,8 +1806,16 @@ GLOBAL_LIST(objective_choices)
 	special_role = ROLE_REV_HEAD
 
 /datum/mind/proc/AddSpell(obj/effect/proc_holder/spell/S)
+	if(!S || (S in spell_list))
+		return
 	spell_list += S
+	RegisterSignal(S, COMSIG_PARENT_QDELETING, PROC_REF(on_spell_qdeleting))
 	S.action.Grant(current)
+
+/datum/mind/proc/on_spell_qdeleting(obj/effect/proc_holder/spell/spell)
+	SIGNAL_HANDLER
+	UnregisterSignal(spell, COMSIG_PARENT_QDELETING)
+	spell_list -= spell
 
 /datum/mind/proc/owns_soul()
 	return soulOwner == src
@@ -1812,16 +1824,19 @@ GLOBAL_LIST(objective_choices)
 /datum/mind/proc/RemoveSpell(obj/effect/proc_holder/spell/spell)
 	if(!spell)
 		return
-	for(var/X in spell_list)
-		var/obj/effect/proc_holder/spell/S = X
+	for(var/obj/effect/proc_holder/spell/S in spell_list.Copy())
 		if(istype(S, spell))
 			spell_list -= S
+			UnregisterSignal(S, COMSIG_PARENT_QDELETING)
 			qdel(S)
 	current?.client << output(null, "statbrowser:check_spells")
 
 /datum/mind/proc/RemoveAllSpells()
-	for(var/obj/effect/proc_holder/S in spell_list)
-		RemoveSpell(S)
+	for(var/obj/effect/proc_holder/S in spell_list.Copy())
+		spell_list -= S
+		UnregisterSignal(S, COMSIG_PARENT_QDELETING)
+		qdel(S)
+	current?.client << output(null, "statbrowser:check_spells")
 
 /datum/mind/proc/transfer_martial_arts(mob/living/new_character)
 	if(!ishuman(new_character))

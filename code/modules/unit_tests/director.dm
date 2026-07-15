@@ -32,6 +32,12 @@
 /datum/director_action/test_stub/execute_action()
 	return TRUE
 
+/// Фикстура синхронного отказа: директор не должен записывать такой выбор как успешный запуск.
+/datum/director_action/test_stub/fails
+
+/datum/director_action/test_stub/fails/execute_action()
+	return FALSE
+
 /datum/unit_test/director_action_gates
 
 /datum/unit_test/director_action_gates/Run()
@@ -844,7 +850,13 @@
 /datum/unit_test/director_simulation_sanity
 
 /datum/unit_test/director_simulation_sanity/Run()
+	var/saved_antag_deficit = SSdirector.last_antag_deficit
+	var/expected_antag_deficit = 0.37
+	SSdirector.last_antag_deficit = expected_antag_deficit
 	var/list/log_out = director_simulate(ROUNDTYPE_DYNAMIC_MEDIUM, 2, 40)
+	var/restored_antag_deficit = SSdirector.last_antag_deficit
+	SSdirector.last_antag_deficit = saved_antag_deficit
+	TEST_ASSERT_EQUAL(restored_antag_deficit, expected_antag_deficit, "Симуляция обязана восстановить реальный кэш дефицита антагов")
 	var/fired = 0
 	var/max_intensity = 0
 	var/quiet_streak = 0
@@ -891,14 +903,11 @@
 	log_world("DIRECTOR SIM: Hard@60, 2ч: состав [hard_composition.Join(", ")]")
 	TEST_ASSERT(heavy_fired >= 1, "За 2 часа Hard при 60 экипажа тяжёлая ступень (MAJOR или тяжёлый ANTAG) ни разу не выстрелила - голодание вернулось")
 
-	// Мягкие профили: Light и Extended живут (в т.ч. гост-антаги - регрессия "на эксте раньше
-	// спаунились антаги"), но без MAJOR и без тяжёлых антаг-команд. Teambased обязан кормить
-	// антаг-пулы. Экипажи прогонов подобраны под min_players гост-событий (кошмар/дракон = 30).
-	// Гост-ассерты стохастические: одиночный 2ч-прогон даёт 0 гост-запусков с шансом ~10%
-	// (копилка пула может весь прогон копить на дорогую цель, CI-статистика: 5 падений на 38
-	// прогонов карт). Ретраи давят флейк, не пряча структурную регрессию: мёртвый пул (нулевая
-	// доля, все действия отфильтрованы) даст 0 во ВСЕХ попытках. Детерминированные инварианты
-	// профиля (без MAJOR, без тяжёлых команд) проверяются на каждой попытке - ретрай их не размывает.
+	// Мягкие профили: Light и Extended живут, но без MAJOR и без тяжёлых антаг-команд;
+	// Teambased держит собственный темп. Случайный состав одного прогона годится для диагностики,
+	// но не для ассерта "обязательно выпал GHOST": даже живой пул законно может проиграть все
+	// pickweight-роллы за два часа. Структурную достижимость GHOST (контент, долю и накопление
+	// бюджета) без RNG проверяет director_profile_ghost_reachability ниже.
 	var/list/soft_specs = list(
 		list(ROUNDTYPE_DYNAMIC_LIGHT, 30, 4),
 		list(ROUNDTYPE_EXTENDED, 30, 3),
@@ -908,38 +917,125 @@
 		var/spec_type = spec[1]
 		var/spec_crew = spec[2]
 		var/spec_min_fired = spec[3]
+		var/list/spec_log = director_simulate(spec_type, 2, spec_crew)
 		var/spec_fired = 0
 		var/spec_ghost = 0
-		for(var/attempt in 1 to 4)
-			var/list/spec_log = director_simulate(spec_type, 2, spec_crew)
-			spec_fired = 0
-			spec_ghost = 0
-			var/spec_heavy = 0
-			var/spec_major = 0
-			var/list/spec_by_severity = list()
-			for(var/list/entry in spec_log)
-				if(entry["result"] != DIRECTOR_BEAT_FIRED && entry["result"] != DIRECTOR_BEAT_GUARANTEED)
-					continue
-				spec_fired++
-				var/sev = entry["severity"] || "?"
-				spec_by_severity[sev] = (spec_by_severity[sev] || 0) + 1
-				if(entry["antag_heavy"])
-					spec_heavy++
-				if(sev == DIRECTOR_SEVERITY_GHOST)
-					spec_ghost++
-				if(sev == DIRECTOR_SEVERITY_MAJOR)
-					spec_major++
-			var/list/spec_composition = list()
-			for(var/sev in spec_by_severity)
-				spec_composition += "[sev]=[spec_by_severity[sev]]"
-			log_world("DIRECTOR SIM: [spec_type]@[spec_crew], 2ч, попытка [attempt]: [spec_fired] запусков ([spec_composition.Join(", ")])")
-			if(spec_type == ROUNDTYPE_DYNAMIC_LIGHT || spec_type == ROUNDTYPE_EXTENDED)
-				TEST_ASSERT_EQUAL(spec_heavy, 0, "[spec_type]: тяжёлые антаг-действия обязаны быть выключены профилем, случилось [spec_heavy]")
-				TEST_ASSERT_EQUAL(spec_major, 0, "[spec_type]: MAJOR-события обязаны быть недоступны (доля 0), случилось [spec_major]")
-			if(spec_fired >= spec_min_fired && spec_ghost >= 1)
-				break
-		TEST_ASSERT(spec_fired >= spec_min_fired, "За 2 часа [spec_type] при [spec_crew] экипажа должно случиться не меньше [spec_min_fired] действий, случилось [spec_fired] (после 4 попыток)")
-		TEST_ASSERT(spec_ghost >= 1, "[spec_type]: за 2 часа гост-антаг обязан появиться хотя бы раз (Light/Extended - регрессия отсутствия антагов, Teambased - антаг-крен обязан кормить гост-пул), случилось [spec_ghost] (после 4 попыток)")
+		var/spec_heavy = 0
+		var/spec_major = 0
+		var/list/spec_by_severity = list()
+		for(var/list/entry in spec_log)
+			if(entry["result"] != DIRECTOR_BEAT_FIRED && entry["result"] != DIRECTOR_BEAT_GUARANTEED)
+				continue
+			spec_fired++
+			var/sev = entry["severity"] || "?"
+			spec_by_severity[sev] = (spec_by_severity[sev] || 0) + 1
+			if(entry["antag_heavy"])
+				spec_heavy++
+			if(sev == DIRECTOR_SEVERITY_GHOST)
+				spec_ghost++
+			if(sev == DIRECTOR_SEVERITY_MAJOR)
+				spec_major++
+		var/list/spec_composition = list()
+		for(var/sev in spec_by_severity)
+			spec_composition += "[sev]=[spec_by_severity[sev]]"
+		log_world("DIRECTOR SIM: [spec_type]@[spec_crew], 2ч: [spec_fired] запусков ([spec_composition.Join(", ")]), GHOST [spec_ghost]")
+		if(spec_type == ROUNDTYPE_DYNAMIC_LIGHT || spec_type == ROUNDTYPE_EXTENDED)
+			TEST_ASSERT_EQUAL(spec_heavy, 0, "[spec_type]: тяжёлые антаг-действия обязаны быть выключены профилем, случилось [spec_heavy]")
+			TEST_ASSERT_EQUAL(spec_major, 0, "[spec_type]: MAJOR-события обязаны быть недоступны (доля 0), случилось [spec_major]")
+		TEST_ASSERT(spec_fired >= spec_min_fired, "За 2 часа [spec_type] при [spec_crew] экипажа должно случиться не меньше [spec_min_fired] действий, случилось [spec_fired]")
+
+/// Детерминированная замена стохастическому ассерту simulation_sanity: для каждого профиля,
+/// от которого ожидаются гост-антаги, существует хотя бы одно естественное лёгкое GHOST-действие,
+/// доступное заданному онлайну в первые два часа, а полный дефицит-поток успевает оплатить его.
+/// Фактический запуск всё ещё зависит от призраков и pickweight — это условия раунда, не инварианты.
+/datum/unit_test/director_profile_ghost_reachability
+
+/datum/unit_test/director_profile_ghost_reachability/Run()
+	var/list/specs = list(
+		// Light оставляет только мягкие гост-конфликты: беглецы и рейд воксов (единственный профиль воксов).
+		list(ROUNDTYPE_DYNAMIC_LIGHT, 30, 1),
+		list(ROUNDTYPE_EXTENDED, 30, 2),
+		list(ROUNDTYPE_DYNAMIC_MEDIUM, 40, 12),
+		list(ROUNDTYPE_DYNAMIC_HARD, 40, 12),
+		list(ROUNDTYPE_DYNAMIC_TEAMBASED, 40, 12),
+	)
+	for(var/list/spec in specs)
+		var/spec_type = spec[1]
+		var/spec_crew = spec[2]
+		var/min_role_types = spec[3]
+		var/datum/director_profile/profile = director_profile_for(spec_type)
+		var/antag_share = profile.pool_shares[DIRECTOR_SEVERITY_ANTAG] || 0
+		var/ghost_share = profile.pool_shares[DIRECTOR_SEVERITY_GHOST] || 0
+		var/total_antag_share = antag_share + ghost_share
+		TEST_ASSERT(ghost_share > 0, "[spec_type]: доля GHOST должна быть ненулевой")
+		TEST_ASSERT(profile.antag_drip > 0, "[spec_type]: GHOST-пул не накопит бюджет при antag_drip = 0")
+		TEST_ASSERT(total_antag_share > 0, "[spec_type]: сумма долей ANTAG/GHOST должна быть ненулевой")
+
+		var/min_reachable_cost
+		var/list/reachable_names = list()
+		for(var/datum/round_event_control/control as anything in SSdirector.event_controls())
+			if(control.severity != DIRECTOR_SEVERITY_GHOST || !control.enabled || control.admin_only || control.weight <= 0)
+				continue
+			if(control.antag_heavy && !profile.antag_heavy_enabled)
+				continue
+			if(control.min_players > spec_crew || control.earliest_start > 2 HOURS)
+				continue
+			if(control.required_round_type && !(spec_type in control.required_round_type))
+				continue
+			if(profile.disruption_mult(control) <= 0)
+				continue
+			reachable_names += control.action_name()
+			if(isnull(min_reachable_cost) || control.cost < min_reachable_cost)
+				min_reachable_cost = control.cost
+		TEST_ASSERT(length(reachable_names) >= min_role_types, "[spec_type]: доступно GHOST-действий [length(reachable_names)] из требуемых [min_role_types] для онлайна [spec_crew] в первые два часа ([reachable_names.Join(", ")])")
+
+		// При пустой антаг-нагрузке deficit = 1; feed_antag_pools делит поток ровно по
+		// соотношению ANTAG/GHOST. Это нижняя структурная проверка кошелька без случайного выбора.
+		var/two_hour_ghost_budget = profile.antag_drip * 120 * ghost_share / total_antag_share
+		TEST_ASSERT(two_hour_ghost_budget >= min_reachable_cost, "[spec_type]: за два часа GHOST-пул накопит [round(two_hour_ghost_budget, 0.1)], но самое дешёвое доступное действие [min_reachable_cost] ([reachable_names.Join(", ")])")
+
+/// Профили намеренно отдают гостам большую часть антаг-канала: каталог шире, а роль не забирается
+/// у уже играющего члена экипажа. antag_target по-прежнему ограничивает число живых угроз.
+/datum/unit_test/director_antag_pool_balance
+
+/datum/unit_test/director_antag_pool_balance/Run()
+	var/list/profile_paths = list(
+		/datum/director_profile/light,
+		/datum/director_profile/medium,
+		/datum/director_profile/hard,
+		/datum/director_profile/teambased,
+	)
+	for(var/profile_path in profile_paths)
+		var/datum/director_profile/profile = new profile_path
+		var/antag_share = profile.pool_shares[DIRECTOR_SEVERITY_ANTAG]
+		var/ghost_share = profile.pool_shares[DIRECTOR_SEVERITY_GHOST]
+		TEST_ASSERT(ghost_share > antag_share, "[profile.round_type]: доля GHOST [ghost_share] должна быть выше ANTAG [antag_share]")
+		TEST_ASSERT(profile.ghost_light_spacing < profile.antag_light_spacing, "[profile.round_type]: лёгкий GHOST-трек должен восстанавливаться быстрее ANTAG")
+		if(profile.antag_heavy_enabled)
+			TEST_ASSERT(profile.ghost_heavy_spacing < profile.antag_heavy_spacing, "[profile.round_type]: тяжёлый GHOST-трек должен восстанавливаться быстрее ANTAG")
+		else
+			TEST_ASSERT(profile.ghost_heavy_spacing <= profile.antag_heavy_spacing, "[profile.round_type]: выключенный GHOST-heavy трек не должен быть медленнее ANTAG")
+		var/ghost_budget = profile.antag_drip * 120 * ghost_share / (antag_share + ghost_share)
+		var/antag_budget = profile.antag_drip * 120 * antag_share / (antag_share + ghost_share)
+		TEST_ASSERT(ghost_budget > antag_budget, "[profile.round_type]: за два часа GHOST должен получать больше антаг-бюджета, чем ANTAG")
+
+	var/total_ghost_weight = 0
+	var/max_ghost_weight = 0
+	var/natural_ghost_actions = 0
+	var/list/natural_families = list()
+	for(var/datum/director_action/action as anything in SSdirector.actions)
+		if(action.severity != DIRECTOR_SEVERITY_GHOST || !action.enabled || action.admin_only || action.weight <= 0)
+			continue
+		if(action.required_round_type && !(ROUNDTYPE_DYNAMIC_MEDIUM in action.required_round_type))
+			continue
+		natural_ghost_actions++
+		total_ghost_weight += action.weight
+		max_ghost_weight = max(max_ghost_weight, action.weight)
+		if(action.family)
+			TEST_ASSERT(!(action.family in natural_families), "GHOST-семейство [action.family] задублировано естественными действиями")
+			natural_families += action.family
+	TEST_ASSERT(natural_ghost_actions >= 15, "Medium должен иметь хотя бы 15 естественных GHOST-действий, найдено [natural_ghost_actions]")
+	TEST_ASSERT(total_ghost_weight > 0 && max_ghost_weight / total_ghost_weight <= 0.15, "Одно GHOST-действие занимает [round(max_ghost_weight / max(1, total_ghost_weight) * 100, 0.1)]% базового веса пула")
 
 /// Проверяет механику семейств: общий фолл-офф повторов (запуски любого члена гасят вес всех),
 /// паузу семейства в filter_candidates и учёт запусков в note_fired.
@@ -1305,9 +1401,67 @@
 		throw e
 	SSdirector.restore_simulation_state(saved)
 
+/// Sleeper Agent не должен повторно гейтиться старым глобальным счётчиком антагов: Director уже
+/// сравнивает живую антаг-нагрузку со своей целью до can_fire(). Глобальный список может содержать
+/// гост-роли/устаревшие тела и в прод-дампе блокировал единственного лёгкого ANTAG-кандидата Medium.
+/datum/unit_test/director_autotraitor_uses_pressure_valve
+
+/datum/unit_test/director_autotraitor_uses_pressure_valve/Run()
+	var/list/saved = SSdirector.capture_simulation_state()
+	var/saved_round_type = GLOB.round_type
+	var/datum/game_mode/dynamic/test_mode = new
+	var/datum/dynamic_ruleset/midround/autotraitor/rule = new
+	try
+		TEST_ASSERT_EQUAL(rule.antag_flag_override, ROLE_TRAITOR, "Sleeper Agent обязан использовать существующий общий преференс трейтора")
+		GLOB.round_type = ROUNDTYPE_DYNAMIC_MEDIUM
+		test_mode.threat_level = 100 // гарантированно проходит базовый requirements-гейт
+		test_mode.current_players[CURRENT_LIVING_PLAYERS] = list(
+			"crew01", "crew02", "crew03", "crew04", "crew05", "crew06", "crew07", "crew08",
+			"crew09", "crew10", "crew11", "crew12", "crew13", "crew14", "crew15", "crew16",
+		)
+		// Старый autotraitor/acceptable считал бы 3 >= round(16 / 16) + 1 и закрыл действие,
+		// хотя собственная нагрузка Director ниже цели (ledger пуст).
+		test_mode.current_players[CURRENT_LIVING_ANTAGS] = list("stale_antag1", "stale_antag2", "stale_antag3")
+		rule.mode = test_mode
+
+		var/datum/director_profile/profile = new /datum/director_profile/medium
+		SSdirector.profile = profile
+		SSdirector.reset_budgets(0)
+		SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] = rule.cost
+		SSdirector.intensity_ledger = list()
+		SSdirector.fired_counts = list()
+		SSdirector.pool_saving = list()
+		SSdirector.last_fired_at = list(
+			DIRECTOR_SEVERITY_ANTAG = world.time - profile.antag_light_spacing - 1,
+		)
+		SSdirector.actions = list(rule)
+
+		var/datum/director_signals/signals = new
+		signals.effective_crew = 16
+		signals.staffing = list(
+			DIRECTOR_DEPT_SECURITY = 2,
+			DIRECTOR_DEPT_ENGINEERING = 1,
+			DIRECTOR_DEPT_MEDICAL = 1,
+			DIRECTOR_DEPT_SCIENCE = 1,
+			DIRECTOR_DEPT_SUPPLY = 1,
+			DIRECTOR_DEPT_COMMAND = 1,
+		)
+		var/list/candidates = SSdirector.filter_candidates(signals)
+		TEST_ASSERT(rule in candidates, "Sleeper Agent должен проходить при накопленном ANTAG-кошельке и дефиците нагрузки")
+	catch(var/exception/e)
+		GLOB.round_type = saved_round_type
+		SSdirector.restore_simulation_state(saved)
+		qdel(rule)
+		qdel(test_mode)
+		throw e
+	GLOB.round_type = saved_round_type
+	SSdirector.restore_simulation_state(saved)
+	qdel(rule)
+	qdel(test_mode)
+
 /// Проверяет копилку антаг-пула: цель роллится по весам без оглядки на кошелёк (латеджойны
 /// целью не становятся), дешёвые соседи по пулу блокируются причиной saving и не выжигают
-/// кошелёк, накопленный кошелёк пропускает цель, запуск цели снимает копилку.
+/// кошелёк. Временно закрытый второй трек может тратить только излишек сверх полного резерва.
 /datum/unit_test/director_antag_pool_saving
 
 /datum/unit_test/director_antag_pool_saving/Run()
@@ -1363,6 +1517,38 @@
 		// Запуск цели снимает копилку - следующий бит отроллит новую.
 		SSdirector.note_fired(expensive)
 		TEST_ASSERT(isnull(SSdirector.pool_saving[DIRECTOR_SEVERITY_ANTAG]), "Запуск цели должен снимать копилку")
+
+		// Один кошелёк обслуживает два независимых трека. Закрытая heavy-цель остаётся планом
+		// и защищает полную цену; готовая light-роль может потратить только бюджет сверх неё.
+		var/datum/director_action/test_stub/heavy = new
+		heavy.severity = DIRECTOR_SEVERITY_ANTAG
+		heavy.antag_heavy = TRUE
+		heavy.cost = 20
+		heavy.weight = 100
+		cheap.weight = 10
+		SSdirector.actions = list(cheap, heavy)
+		SSdirector.pool_saving[DIRECTOR_SEVERITY_ANTAG] = heavy
+		SSdirector.last_fired_at[DIRECTOR_SEVERITY_ANTAG] = world.time - profile.antag_light_spacing - 1
+		SSdirector.last_antag_heavy_at = world.time
+		SSdirector.ensure_pool_targets(signals)
+		TEST_ASSERT_EQUAL(SSdirector.pool_saving[DIRECTOR_SEVERITY_ANTAG], heavy, "Heavy-цель обязана сохраняться на cooldown, иначе light будет постоянно съедать накопление")
+
+		SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] = heavy.cost + cheap.cost - 1
+		candidates = SSdirector.filter_candidates(signals)
+		TEST_ASSERT(!(cheap in candidates), "Light не должен залезать в полный резерв heavy-цели")
+
+		SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] = heavy.cost + cheap.cost
+		candidates = SSdirector.filter_candidates(signals)
+		TEST_ASSERT(cheap in candidates, "Light должен использовать излишек сверх уже накопленной heavy-цели")
+		TEST_ASSERT(SSdirector.spend_and_execute(cheap), "Запуск light из свободного остатка должен пройти")
+		TEST_ASSERT_EQUAL(SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG], heavy.cost, "После light полная цена heavy должна остаться в кошельке")
+		TEST_ASSERT_EQUAL(SSdirector.pool_saving[DIRECTOR_SEVERITY_ANTAG], heavy, "Запуск соседнего трека не должен сбрасывать heavy-план")
+
+		SSdirector.last_fired_at[DIRECTOR_SEVERITY_ANTAG] = world.time - profile.antag_light_spacing - 1
+		SSdirector.last_antag_heavy_at = world.time - profile.antag_heavy_spacing - 1
+		candidates = SSdirector.filter_candidates(signals)
+		TEST_ASSERT(heavy in candidates, "Накопленная heavy-цель должна стать кандидатом сразу после cooldown")
+		TEST_ASSERT(!(cheap in candidates), "Готовая heavy-цель должна исполниться до новых light-трат")
 	catch(var/exception/e)
 		SSdirector.restore_simulation_state(saved)
 		throw e
@@ -1447,6 +1633,7 @@
 	TEST_ASSERT_EQUAL(SSdirector.antag_activity(antag.mind), DIRECTOR_ACTIVITY_KILL, "bump должен начислять score антагу")
 	SSdirector.bump_antag_activity(antag.mind, DIRECTOR_ACTIVITY_CAP * 10)
 	TEST_ASSERT_EQUAL(SSdirector.antag_activity(antag.mind), DIRECTOR_ACTIVITY_CAP, "score должен клампиться на капе")
+	TEST_ASSERT_EQUAL(antag.mind.director_activity_total, DIRECTOR_ACTIVITY_KILL + DIRECTOR_ACTIVITY_CAP * 10, "Накопленная активность для страховки не должна теряться из-за капа текущего score")
 
 	// Затухание: через полураспад остаётся ровно половина, чтение не переписывает score.
 	antag.mind.director_activity = DIRECTOR_ACTIVITY_CAP
@@ -1460,6 +1647,112 @@
 	antag.mind.director_activity = DIRECTOR_ACTIVITY_CAP
 	antag.mind.director_activity_at = world.time
 	TEST_ASSERT_EQUAL(SSdirector.antag_activity_mult(antag.mind), DIRECTOR_ACTIVITY_MULT_MAX, "Кап активности должен весить максимум")
+
+/// Прод-регрессия: два roundstart-трейтора за 17 очков исчезли к 27-й минуте, antag_load упал
+/// в ноль, а директору вручную вернули 20 бюджета. Подтверждённая стоимость должна делиться
+/// между реально выданными ролями, тихая ранняя потеря — возвращать свою долю ровно один раз,
+/// активная или слишком поздняя потеря — ничего.
+/datum/unit_test/director_antag_loss_refund
+
+/datum/unit_test/director_antag_loss_refund/Run()
+	var/list/saved = SSdirector.capture_simulation_state()
+	try
+		var/datum/director_profile/profile = new /datum/director_profile/medium
+		SSdirector.profile = profile
+		SSdirector.reset_budgets(0)
+		SSdirector.time_override = world.time + 1 MINUTES
+
+		var/mob/living/carbon/human/quiet = allocate(/mob/living/carbon/human)
+		quiet.mind_initialize()
+		var/datum/antagonist/quiet_marker = new
+		quiet_marker.silent = TRUE
+		quiet.mind.add_antag_datum(quiet_marker)
+
+		var/mob/living/carbon/human/active = allocate(/mob/living/carbon/human)
+		active.mind_initialize()
+		var/datum/antagonist/active_marker = new
+		active_marker.silent = TRUE
+		active.mind.add_antag_datum(active_marker)
+
+		var/datum/dynamic_ruleset/midround/test_pool_isolation/rule = new
+		rule.intensity = 15
+		rule.assigned = list(quiet.mind, active.mind)
+		// Точная цена случая из прод-лога: traitor cost 8 + scaling_cost 9.
+		rule.director_pending_cost = 17
+		SSdirector.confirm_action_success(rule)
+		TEST_ASSERT_EQUAL(rule.total_cost, 17, "Подтверждение должно перенести фактически списанную цену в total_cost")
+		TEST_ASSERT_EQUAL(length(rule.director_loss_refund_values), 2, "Каждая подтверждённо выданная роль должна получить отдельный полис")
+
+		quiet.stat = DEAD
+		SSdirector.tally_ruleset_intensity(rule)
+		var/antag_wallets = SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST]
+		TEST_ASSERT_EQUAL(round(antag_wallets, 0.1), 8.5, "Тихая потеря одного из двух трейторов должна вернуть половину цены 17")
+		SSdirector.tally_ruleset_intensity(rule)
+		antag_wallets = SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST]
+		TEST_ASSERT_EQUAL(round(antag_wallets, 0.1), 8.5, "Повторный подсчёт мёртвой роли не должен печатать бюджет")
+
+		SSdirector.bump_antag_activity(active.mind, profile.antag_loss_activity_threshold)
+		active.stat = DEAD
+		SSdirector.tally_ruleset_intensity(rule)
+		antag_wallets = SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST]
+		TEST_ASSERT_EQUAL(round(antag_wallets, 0.1), 8.5, "Полностью отработавшая роль не должна возвращать свою долю")
+
+		var/mob/living/carbon/human/late = allocate(/mob/living/carbon/human)
+		late.mind_initialize()
+		var/datum/antagonist/late_marker = new
+		late_marker.silent = TRUE
+		late.mind.add_antag_datum(late_marker)
+		var/datum/dynamic_ruleset/midround/test_pool_isolation/late_rule = new
+		late_rule.assigned = list(late.mind)
+		late_rule.director_pending_cost = 8
+		SSdirector.confirm_action_success(late_rule)
+		SSdirector.time_override += profile.antag_loss_refund_window + 1
+		late.stat = DEAD
+		SSdirector.tally_ruleset_intensity(late_rule)
+		antag_wallets = SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST]
+		TEST_ASSERT_EQUAL(round(antag_wallets, 0.1), 8.5, "Потеря после окна страховки не должна возвращать бюджет")
+
+		// Крио удаляет текущее тело mind: ранняя потеря должна закрыть полис и выплатиться один раз.
+		SSdirector.time_override = world.time + 2 MINUTES
+		var/mob/living/carbon/human/cryo = allocate(/mob/living/carbon/human)
+		cryo.mind_initialize()
+		var/datum/mind/cryo_mind = cryo.mind
+		var/datum/antagonist/cryo_marker = new
+		cryo_marker.silent = TRUE
+		cryo_mind.add_antag_datum(cryo_marker)
+		var/datum/dynamic_ruleset/midround/test_pool_isolation/cryo_rule = new
+		cryo_rule.assigned = list(cryo_mind)
+		cryo_rule.director_pending_cost = 6
+		SSdirector.confirm_action_success(cryo_rule)
+		var/before_cryo = antag_wallets
+		cryo_mind.set_current(null)
+		SSdirector.tally_ruleset_intensity(cryo_rule)
+		antag_wallets = SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST]
+		TEST_ASSERT_EQUAL(round(antag_wallets - before_cryo, 0.1), 6, "Ранняя потеря роли через крио должна вернуть её стоимость")
+		SSdirector.tally_ruleset_intensity(cryo_rule)
+		TEST_ASSERT_EQUAL(round(SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST] - before_cryo, 0.1), 6, "Повторный подсчёт крио не должен возвращать стоимость повторно")
+
+		// Снятие последнего hard-antag datum при живом теле — такая же окончательная потеря роли.
+		var/mob/living/carbon/human/removed = allocate(/mob/living/carbon/human)
+		removed.mind_initialize()
+		var/datum/antagonist/removed_marker = new
+		removed_marker.silent = TRUE
+		removed.mind.add_antag_datum(removed_marker)
+		var/datum/dynamic_ruleset/midround/test_pool_isolation/removed_rule = new
+		removed_rule.assigned = list(removed.mind)
+		removed_rule.director_pending_cost = 7
+		SSdirector.confirm_action_success(removed_rule)
+		var/before_removed = SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST]
+		removed.mind.remove_antag_datum(removed_marker.type)
+		SSdirector.tally_ruleset_intensity(removed_rule)
+		antag_wallets = SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST]
+		TEST_ASSERT_EQUAL(round(antag_wallets - before_removed, 0.1), 7, "Раннее снятие antagonist datum должно вернуть стоимость роли")
+		SSdirector.tally_ruleset_intensity(removed_rule)
+		TEST_ASSERT_EQUAL(round(SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST] - before_removed, 0.1), 7, "Повторный подсчёт снятой роли не должен возвращать стоимость повторно")
+	catch(var/exception/e)
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	SSdirector.restore_simulation_state(saved)
 
 /// Проверяет профильный гейт тяжёлых антагов (antag_heavy_enabled = FALSE у Light/Extended):
 /// heavy-действие отсеивается причиной antag_heavy_off и не становится целью копилки,
@@ -1514,9 +1807,50 @@
 		throw e
 	SSdirector.restore_simulation_state(saved)
 
+/// Каталог действий панели должен показывать структурные рулсеты ещё в лобби, а после Dynamic
+/// pre_setup() дополняться или заменяться живыми экземплярами без необходимости переоткрывать UI.
+/datum/unit_test/director_panel_ruleset_catalog_refresh
+
+/datum/unit_test/director_panel_ruleset_catalog_refresh/Run()
+	var/list/saved_actions = SSdirector.actions
+	var/datum/director_panel/panel = new
+	var/datum/round_event_control/nothing/event_control = new
+	var/datum/dynamic_ruleset/midround/test_pool_isolation/ruleset = new
+	try
+		SSdirector.actions = list(event_control)
+		var/list/before_registration = panel.profile_actions_data()
+		var/catalog_rulesets = 0
+		for(var/list/row as anything in before_registration)
+			if(row["kind"] == DIRECTOR_KIND_RULESET)
+				catalog_rulesets++
+		TEST_ASSERT(catalog_rulesets > 0, "Предпросмотр профиля должен показывать рулсеты до Dynamic.pre_setup(), а не 0 / 0")
+
+		// Нулевая фикстура не входит в структурный каталог, но после живой регистрации обязана
+		// появиться в следующем ui_data() уже открытой панели.
+		SSdirector.actions += ruleset
+		var/list/after_registration = panel.profile_actions_data()
+		TEST_ASSERT_EQUAL(length(after_registration), length(before_registration) + 1, "Живой рулсет должен дополнить структурный каталог без потери превью")
+		var/found_live_ruleset = FALSE
+		for(var/list/row as anything in after_registration)
+			if(row["name"] == ruleset.name)
+				found_live_ruleset = TRUE
+				break
+		TEST_ASSERT(found_live_ruleset, "Обновлённый каталог панели должен содержать зарегистрированный живой рулсет")
+	catch(var/exception/e)
+		SSdirector.actions = saved_actions
+		qdel(panel)
+		qdel(event_control)
+		qdel(ruleset)
+		throw e
+	SSdirector.actions = saved_actions
+	qdel(panel)
+	qdel(event_control)
+	qdel(ruleset)
+
 /// Сторожевой тест регрессии "на эксте раньше спаунились антаги": все события-спавнеры гост-ролей
 /// обязаны жить в GHOST-пуле (а не в MAJOR, который у Light/Extended выключен долей 0), с ненулевыми
-/// cost/intensity и долгим linger - вклад держит antag_load, пока спавненный антаг живёт.
+/// cost/intensity и метаданными точного preflight. После спавна вклад переводится на живой
+/// трекинг созданного моба, поэтому фиксированный долгий linger больше не нужен.
 /// Исключения: wizard-события (пул Summon Events), праздничные (holidayID) и осознанно
 /// не-антагские (sentience - дружелюбная, qareen - джинн не гарантированно враждебен).
 /datum/unit_test/director_ghost_event_classification
@@ -1534,14 +1868,73 @@
 		TEST_ASSERT_EQUAL(control.severity, DIRECTOR_SEVERITY_GHOST, "[control_name]: событие-спавнер гост-роли обязано жить в GHOST-пуле")
 		TEST_ASSERT(control.cost > 0, "[control_name]: гост-антаг событие без cost")
 		TEST_ASSERT(control.intensity > 0, "[control_name]: гост-антаг событие без intensity")
-		TEST_ASSERT(control.intensity_linger >= 30 MINUTES, "[control_name]: вклад гост-антага обязан жить после спавнера (linger)")
+		TEST_ASSERT(control.director_ghost_minimum > 0, "[control_name]: preflight гост-роли не знает минимального числа кандидатов")
+		TEST_ASSERT(control.director_ghost_preference, "[control_name]: preflight гост-роли не знает требуемый preference")
 	// Пираты и рейдеры реализованы обычными событиями (не ghost_role), но поллят призраков.
 	var/datum/round_event_control/pirates/pirates_control = locate() in SSdirector.actions
 	TEST_ASSERT_NOTNULL(pirates_control, "Событие Space Pirates должно быть зарегистрировано у директора")
 	TEST_ASSERT_EQUAL(pirates_control.severity, DIRECTOR_SEVERITY_GHOST, "Space Pirates обязаны жить в GHOST-пуле")
+	TEST_ASSERT(!pirates_control.admin_only, "Прямое событие Space Pirates должно оставаться в естественном пуле")
 	var/datum/round_event_control/raiders/raiders_control = locate() in SSdirector.actions
 	TEST_ASSERT_NOTNULL(raiders_control, "Событие InteQ Raiders должно быть зарегистрировано у директора")
 	TEST_ASSERT_EQUAL(raiders_control.severity, DIRECTOR_SEVERITY_GHOST, "InteQ Raiders обязаны жить в GHOST-пуле")
+	TEST_ASSERT(!raiders_control.admin_only, "Прямое событие InteQ Raiders должно оставаться в естественном пуле")
+	var/datum/round_event_control/vox_scavengers/vox_control = locate() in SSdirector.actions
+	TEST_ASSERT_NOTNULL(vox_control, "Прямое событие Vox Scavengers должно быть зарегистрировано у директора")
+	TEST_ASSERT(!vox_control.admin_only, "Прямое событие Vox Scavengers должно оставаться естественным GHOST-действием")
+	TEST_ASSERT_EQUAL(length(vox_control.required_round_type), 1, "Vox Scavengers должны быть доступны ровно в одном профиле")
+	TEST_ASSERT(ROUNDTYPE_DYNAMIC_LIGHT in vox_control.required_round_type, "Vox Scavengers должны быть доступны только в Dynamic Light")
+	TEST_ASSERT(vox_control.earliest_start >= 30 MINUTES, "Рейд воксов не должен падать на первых минутах лёгкого раунда")
+	var/datum/round_event_control/morph/morph_control = locate() in SSdirector.actions
+	var/datum/dynamic_ruleset/midround/from_ghosts/morph/morph_ruleset = locate() in SSdirector.actions
+	var/datum/round_event_control/changeling/changeling_control = locate() in SSdirector.actions
+	var/datum/round_event_control/revenant/revenant_control = locate() in SSdirector.actions
+	var/datum/round_event_control/sentient_disease/disease_control = locate() in SSdirector.actions
+	TEST_ASSERT_NOTNULL(morph_control, "Spawn Morph должен быть зарегистрирован у директора")
+	TEST_ASSERT(!morph_control.admin_only, "Прямое событие Spawn Morph должно оставаться в естественном пуле")
+	TEST_ASSERT(morph_control.weight > 0, "Прямое событие Spawn Morph должно иметь ненулевой естественный вес")
+	TEST_ASSERT(!(ROUNDTYPE_DYNAMIC_LIGHT in morph_control.required_round_type), "Spawn Morph должен быть исключён из Dynamic Light")
+	TEST_ASSERT(ROUNDTYPE_DYNAMIC_MEDIUM in morph_control.required_round_type, "Spawn Morph должен быть доступен на Dynamic Medium")
+	TEST_ASSERT(ROUNDTYPE_DYNAMIC_HARD in morph_control.required_round_type, "Spawn Morph должен быть доступен на Dynamic Hard")
+	TEST_ASSERT(ROUNDTYPE_DYNAMIC_TEAMBASED in morph_control.required_round_type, "Spawn Morph должен быть доступен на Dynamic Team-Based")
+	TEST_ASSERT_NOTNULL(morph_ruleset, "Legacy-рулсет Morph должен быть зарегистрирован у директора")
+	TEST_ASSERT_NOTNULL(changeling_control, "Changeling Meteor должен быть зарегистрирован у директора")
+	TEST_ASSERT_NOTNULL(revenant_control, "Spawn Revenant должен быть зарегистрирован у директора")
+	TEST_ASSERT_NOTNULL(disease_control, "Spawn Sentient Disease должен быть зарегистрирован у директора")
+	TEST_ASSERT(!(ROUNDTYPE_DYNAMIC_LIGHT in changeling_control.required_round_type), "Changeling Meteor должен быть исключён из Dynamic Light")
+	TEST_ASSERT(!(ROUNDTYPE_DYNAMIC_LIGHT in revenant_control.required_round_type), "Spawn Revenant должен быть исключён из Dynamic Light")
+	TEST_ASSERT(!(ROUNDTYPE_DYNAMIC_LIGHT in disease_control.required_round_type), "Spawn Sentient Disease должен быть исключён из Dynamic Light")
+	var/datum/dynamic_ruleset/midround/pirates/pirates_ruleset = locate() in SSdirector.actions
+	var/datum/dynamic_ruleset/midround/raiders/raiders_ruleset = locate() in SSdirector.actions
+	var/datum/dynamic_ruleset/midround/swarmers/swarmers_ruleset = locate() in SSdirector.actions
+	var/datum/dynamic_ruleset/midround/from_ghosts/blob/blob_ruleset = locate() in SSdirector.actions
+	var/datum/dynamic_ruleset/midround/from_ghosts/xenomorph/xeno_ruleset = locate() in SSdirector.actions
+	var/datum/dynamic_ruleset/midround/from_ghosts/terror_spiders/terror_ruleset = locate() in SSdirector.actions
+	var/datum/dynamic_ruleset/midround/from_ghosts/nightmare/nightmare_ruleset = locate() in SSdirector.actions
+	var/datum/dynamic_ruleset/midround/from_ghosts/space_dragon/dragon_ruleset = locate() in SSdirector.actions
+	var/datum/dynamic_ruleset/midround/from_ghosts/abductors/abductor_ruleset = locate() in SSdirector.actions
+	var/datum/dynamic_ruleset/midround/from_ghosts/space_ninja/ninja_ruleset = locate() in SSdirector.actions
+	var/datum/dynamic_ruleset/midround/from_ghosts/revenant/revenant_ruleset = locate() in SSdirector.actions
+	var/datum/dynamic_ruleset/midround/from_ghosts/sentient_disease/disease_ruleset = locate() in SSdirector.actions
+	var/datum/dynamic_ruleset/midround/vox_scavengers/vox_ruleset = locate() in SSdirector.actions
+	TEST_ASSERT(pirates_ruleset?.admin_only, "Legacy-рулсет Space Pirates не должен дублировать прямое событие в естественном пуле")
+	TEST_ASSERT(raiders_ruleset?.admin_only, "Legacy-рулсет InteQ Raiders не должен дублировать прямое событие в естественном пуле")
+	TEST_ASSERT(swarmers_ruleset?.admin_only, "Legacy-рулсет Swarmers не должен дублировать Spawn Swarmer Shell в естественном пуле")
+	TEST_ASSERT(blob_ruleset?.admin_only, "Legacy-рулсет Blob не должен дублировать прямое событие Blob в естественном пуле")
+	TEST_ASSERT(xeno_ruleset?.admin_only, "Legacy-рулсет Alien Infestation не должен дублировать прямое событие")
+	TEST_ASSERT(terror_ruleset?.admin_only, "Legacy-рулсет Terror Infestation не должен дублировать прямое событие")
+	TEST_ASSERT(nightmare_ruleset?.admin_only, "Legacy-рулсет Nightmare не должен дублировать прямое событие")
+	TEST_ASSERT(dragon_ruleset?.admin_only, "Legacy-рулсет Space Dragon не должен дублировать прямое событие")
+	TEST_ASSERT(abductor_ruleset?.admin_only, "Legacy-рулсет Abductors не должен дублировать прямое событие")
+	TEST_ASSERT(ninja_ruleset?.admin_only, "Legacy-рулсет Space Ninja не должен дублировать прямое событие")
+	TEST_ASSERT(revenant_ruleset?.admin_only, "Legacy-рулсет Revenant не должен дублировать прямое событие")
+	TEST_ASSERT(disease_ruleset?.admin_only, "Legacy-рулсет Sentient Disease не должен дублировать прямое событие")
+	TEST_ASSERT(vox_ruleset?.admin_only, "Legacy-рулсет Vox Scavengers не должен дублировать прямое событие")
+	TEST_ASSERT(morph_ruleset?.admin_only, "Legacy-рулсет Morph не должен дублировать Spawn Morph в естественном пуле")
+	var/datum/dynamic_ruleset/midround/blob_infection/blob_infection = locate() in SSdirector.actions
+	TEST_ASSERT(blob_infection?.admin_only, "Blob Infection не должен забирать члена экипажа естественным выбором директора")
+	var/datum/round_event_control/blob/blob_control = locate() in SSdirector.actions
+	TEST_ASSERT(!blob_control?.admin_only && blob_control?.weight > 0, "Гостовый Blob должен оставаться в естественном GHOST-пуле")
 
 	// Профили: гост-пул реально достижим на Light/Extended (сама причина регрессии - доля 0),
 	// тяжёлые антаг-команды на фоновых профилях выключены.
@@ -1554,7 +1947,8 @@
 	TEST_ASSERT(!light_profile.antag_heavy_enabled, "Light не должен пускать тяжёлые антаг-команды")
 
 /// Политика Dynamic Light: автоматические гост-инжекции ограничены малыми беглецами
-/// и мирным вариантом Lone Operative, который защищает диск.
+/// и условным Lone Operative. Защитник диска в Light приходит только второй волной после него;
+/// самостоятельно control защитника доступен исключительно в Extended.
 /// Боевые гост-антаги исторически убраны из Light у dynamic-ruleset'ов и не должны возвращаться
 /// через одноимённые event control'ы директора (именно так в Light смог выпасть Space Dragon).
 /datum/unit_test/director_light_ghost_policy
@@ -1562,13 +1956,38 @@
 /datum/unit_test/director_light_ghost_policy/Run()
 	var/list/allowed_light_ghost_controls = list(
 		/datum/round_event_control/fugitives,
-		/datum/round_event_control/operative/keeper,
+		// Воксы - гост-команда со своего корабля, но не antag_heavy: решением геймдизайна это
+		// единственный рейд лёгкого профиля, и живёт он только в нём (см. vox_scavengers_event.dm).
+		/datum/round_event_control/vox_scavengers,
 	)
+	var/datum/round_event_control/operative/operative_control = locate() in SSdirector.event_controls()
 	var/datum/round_event_control/operative/keeper/keeper_control = locate() in SSdirector.event_controls()
+	TEST_ASSERT_NOTNULL(operative_control, "Lone Operative должен быть зарегистрирован у директора")
+	TEST_ASSERT(!operative_control.admin_only, "Lone Operative должен входить в условный автоматический пул")
+	TEST_ASSERT_EQUAL(initial(operative_control.weight), 0, "Lone Operative не должен иметь шанс до срабатывания условия неподвижного диска")
+	TEST_ASSERT(initial(operative_control.weight_can_change), "Панель должна знать, что нулевой вес Lone Operative меняется во время раунда")
+	TEST_ASSERT(ROUNDTYPE_DYNAMIC_LIGHT in operative_control.required_round_type, "Lone Operative должен быть доступен в Dynamic Light")
+	TEST_ASSERT(ROUNDTYPE_DYNAMIC_MEDIUM in operative_control.required_round_type, "Lone Operative должен быть доступен в Dynamic Medium")
+	TEST_ASSERT(ROUNDTYPE_DYNAMIC_HARD in operative_control.required_round_type, "Lone Operative должен быть доступен в Dynamic Hard")
+	TEST_ASSERT(ROUNDTYPE_DYNAMIC_TEAMBASED in operative_control.required_round_type, "Lone Operative должен быть доступен в Dynamic Team-Based")
+	TEST_ASSERT(!(ROUNDTYPE_EXTENDED in operative_control.required_round_type), "Боевой Lone Operative не должен входить в пул Extended")
 	TEST_ASSERT_NOTNULL(keeper_control, "Случайный защитник диска должен быть зарегистрирован у директора")
 	TEST_ASSERT(!keeper_control.admin_only, "Защитник диска должен выпадать случайно, а не только через админ-форс")
-	TEST_ASSERT(ROUNDTYPE_DYNAMIC_LIGHT in keeper_control.required_round_type, "Защитник диска должен быть доступен в Dynamic Light")
+	TEST_ASSERT_EQUAL(length(keeper_control.required_round_type), 1, "Самостоятельный защитник диска должен иметь ровно один разрешённый профиль")
+	TEST_ASSERT(ROUNDTYPE_EXTENDED in keeper_control.required_round_type, "Самостоятельный защитник диска должен быть доступен в Extended")
+	TEST_ASSERT(!(ROUNDTYPE_DYNAMIC_LIGHT in keeper_control.required_round_type), "Защитник диска не должен выпадать в Light без Lone Operative")
+	TEST_ASSERT(ROUNDTYPE_DYNAMIC_LIGHT in keeper_control.director_linked_round_types, "Панель должна показывать защитника как связанную вторую волну в Dynamic Light")
+	TEST_ASSERT(keeper_control.director_linked_detail, "Связанное событие защитника должно объяснять условие появления в панели")
 	TEST_ASSERT_EQUAL(keeper_control.typepath, /datum/round_event/ghost_role/operative/keeper, "Случайный Lone Operative должен получать роль защитника диска")
+	var/datum/round_event/ghost_role/operative/operative_event = new(FALSE)
+	operative_event.kill()
+	TEST_ASSERT(operative_event.should_spawn_linked_keeper(FALSE, ROUNDTYPE_DYNAMIC_LIGHT), "Обычный Lone Operative в Light должен планировать защитника")
+	TEST_ASSERT(!operative_event.should_spawn_linked_keeper(TRUE, ROUNDTYPE_DYNAMIC_LIGHT), "Сам защитник не должен рекурсивно планировать ещё одного защитника")
+	TEST_ASSERT(!operative_event.should_spawn_linked_keeper(FALSE, ROUNDTYPE_DYNAMIC_MEDIUM), "В Medium после Lone Operative не должен появляться защитник")
+	TEST_ASSERT(!operative_event.should_spawn_linked_keeper(FALSE, ROUNDTYPE_DYNAMIC_HARD), "В Hard после Lone Operative не должен появляться защитник")
+	TEST_ASSERT(!operative_event.should_spawn_linked_keeper(FALSE, ROUNDTYPE_DYNAMIC_TEAMBASED), "В Team-Based после Lone Operative не должен появляться защитник")
+	TEST_ASSERT(!operative_event.should_spawn_linked_keeper(FALSE, ROUNDTYPE_EXTENDED), "Extended использует самостоятельный control защитника, а не пару")
+	qdel(operative_event)
 	for(var/datum/round_event_control/control as anything in SSdirector.event_controls())
 		if(control.severity != DIRECTOR_SEVERITY_GHOST || !control.enabled || control.admin_only || control.weight <= 0)
 			continue
@@ -1589,6 +2008,7 @@
 /datum/unit_test/director_ghost_spawn_refund/Run()
 	// Мутирует живой SSdirector - capture/restore c try/catch (см. комментарий в director_beat_logic).
 	var/list/saved = SSdirector.capture_simulation_state()
+	var/list/saved_beat_log = SSdirector.beat_log.Copy()
 	var/datum/round_event/ghost_role/event
 	try
 		var/datum/director_profile/profile = new /datum/director_profile/medium
@@ -1601,6 +2021,7 @@
 		// Ручная симуляция боевого запуска: учёт попытки + вклад в ledger (кошелёк уже списан в 0).
 		var/occurrences_before = control.occurrences
 		control.occurrences++
+		SSdirector.fired_counts[control.severity] = 1
 		SSdirector.intensity_ledger += list(list(control.action_name(), control.intensity, 0, control.severity))
 		event = new(FALSE)
 		SSdirector.running -= event // тестовый датум не должен тикаться подсистемой
@@ -1608,21 +2029,448 @@
 		event.triggered_randomly = TRUE
 		event.refund_failed_spawn()
 		TEST_ASSERT_EQUAL(control.occurrences, occurrences_before, "Провал спавна должен возвращать попытку")
+		TEST_ASSERT_EQUAL(SSdirector.fired_counts[control.severity], 0, "Провал спавна не должен считаться успешным запуском ступени")
 		TEST_ASSERT_EQUAL(length(SSdirector.intensity_ledger), 0, "Провал спавна должен снимать вклад сразу, без linger")
 		TEST_ASSERT_EQUAL(SSdirector.budgets[control.severity], control.cost, "Провал спавна должен возвращать кошелёк ступени")
 
 		// Форс админа шёл мимо кошельков - и рефанд не должен дарить бюджет.
 		SSdirector.reset_budgets(0)
 		control.occurrences++
+		SSdirector.fired_counts[control.severity] = 1
 		SSdirector.intensity_ledger += list(list(control.action_name(), control.intensity, 0, control.severity))
 		event.triggered_randomly = FALSE
 		event.refund_failed_spawn()
 		TEST_ASSERT_EQUAL(control.occurrences, occurrences_before, "Провал форс-спавна тоже должен возвращать попытку")
+		TEST_ASSERT_EQUAL(SSdirector.fired_counts[control.severity], 0, "Провал форс-спавна тоже должен откатить счётчик ступени")
 		TEST_ASSERT_EQUAL(SSdirector.budgets[control.severity], 0, "Провал форс-спавна не должен дарить кошельку бюджет")
 	catch(var/exception/e)
 		if(event)
 			SSdirector.running -= event
+		SSdirector.beat_log = saved_beat_log
 		SSdirector.restore_simulation_state(saved)
 		throw e
 	SSdirector.running -= event
+	SSdirector.beat_log = saved_beat_log
 	SSdirector.restore_simulation_state(saved)
+
+/// Регрессия из прод-дампа: Morph четыре раза попадал в director.json как fired, хотя ready()
+/// не находил подходящих призраков и опрос даже не открывался. Preflight обязан убрать такой
+/// рулсет и из боевого пула, и из целей копилки, оставив точную причину для панели.
+/datum/unit_test/director_ghost_ruleset_preflight
+
+/datum/unit_test/director_ghost_ruleset_preflight/Run()
+	var/list/saved = SSdirector.capture_simulation_state()
+	var/datum/game_mode/dynamic/mode = SSticker.mode
+	var/list/saved_dead = mode.current_players[CURRENT_DEAD_PLAYERS]
+	var/list/saved_observers = mode.current_players[CURRENT_OBSERVERS]
+	var/datum/dynamic_ruleset/midround/from_ghosts/test_assigned_minds/rule
+	var/rule_was_candidate
+	var/readiness_rejects
+	var/verdict
+	var/detail
+	var/has_pool_target
+	try
+		var/datum/director_profile/profile = new /datum/director_profile/medium
+		// Изолируем тест от реальных roundstart-антаг-вкладов unit-test раунда.
+		profile.antag_intensity_per_crew = 1000
+		SSdirector.profile = profile
+		SSdirector.reset_budgets(100)
+		SSdirector.intensity_ledger = list()
+		SSdirector.fired_counts = list()
+		SSdirector.pool_saving = list()
+		SSdirector.last_fired_at = list(
+			DIRECTOR_SEVERITY_GHOST = world.time - profile.ghost_light_spacing - 1,
+		)
+		mode.current_players[CURRENT_DEAD_PLAYERS] = list()
+		mode.current_players[CURRENT_OBSERVERS] = list()
+
+		// Общая from_ghosts-фикстура изолирует проверку кандидатов от дополнительных
+		// map-гейтов Morph (на MultiZ Debug нет xeno_spawn).
+		rule = new
+		rule.mode = mode
+		rule.weight = 10
+		rule.enemy_roles = list()
+		rule.required_enemies = list(0,0,0,0,0,0,0,0,0,0)
+		rule.required_applicants = 1
+		SSdirector.actions = list(rule)
+
+		var/datum/director_signals/signals = new
+		signals.effective_crew = 40
+		signals.staffing = list(DIRECTOR_DEPT_SECURITY = 4, DIRECTOR_DEPT_ENGINEERING = 1,
+			DIRECTOR_DEPT_MEDICAL = 1, DIRECTOR_DEPT_SCIENCE = 0, DIRECTOR_DEPT_SUPPLY = 0, DIRECTOR_DEPT_COMMAND = 1)
+		var/list/reject_stats = list()
+		var/list/verdicts = list()
+		var/list/candidates = SSdirector.filter_candidates(signals, FALSE, reject_stats, verdicts)
+		rule_was_candidate = (rule in candidates)
+		readiness_rejects = reject_stats[DIRECTOR_SEVERITY_GHOST]?[DIRECTOR_REJECT_READINESS] || 0
+		var/list/first_verdict = length(verdicts) ? verdicts[1] : null
+		verdict = first_verdict?["verdict"]
+		detail = first_verdict?["detail"]
+		has_pool_target = !isnull(SSdirector.roll_pool_target(DIRECTOR_SEVERITY_GHOST, signals))
+	catch(var/exception/e)
+		mode.current_players[CURRENT_DEAD_PLAYERS] = saved_dead
+		mode.current_players[CURRENT_OBSERVERS] = saved_observers
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	mode.current_players[CURRENT_DEAD_PLAYERS] = saved_dead
+	mode.current_players[CURRENT_OBSERVERS] = saved_observers
+	SSdirector.restore_simulation_state(saved)
+	qdel(rule)
+	// TEST_ASSERT делает ранний return из Run(), поэтому проверки идут только после восстановления
+	// глобального состояния — иначе одно падение загрязняет все последующие director-тесты.
+	TEST_ASSERT(!rule_was_candidate, "Гост-рулсет без подходящих призраков не должен доходить до выбора")
+	TEST_ASSERT_EQUAL(readiness_rejects, 1, "Отказ должен иметь отдельную причину readiness")
+	TEST_ASSERT_EQUAL(verdict, DIRECTOR_REJECT_READINESS, "Панель должна получить readiness, а не ложный ok")
+	TEST_ASSERT(findtext(detail, "подходящих гостов 0 из 1"), "В панели должно быть точное число подходящих гостов")
+	TEST_ASSERT(!has_pool_target, "Неисполнимый гост-рулсет не должен становиться целью копилки")
+
+/// Синхронный execute_action(FALSE) раньше всё равно попадал в историю как "fired".
+/datum/unit_test/director_failed_action_is_not_fired
+
+/datum/unit_test/director_failed_action_is_not_fired/Run()
+	var/list/saved = SSdirector.capture_simulation_state()
+	var/list/saved_beat_log = SSdirector.beat_log.Copy()
+	try
+		var/datum/director_profile/profile = new /datum/director_profile/medium
+		SSdirector.profile = profile
+		SSdirector.reset_budgets(0)
+		SSdirector.budgets[DIRECTOR_SEVERITY_MINOR] = 10
+		SSdirector.intensity_ledger = list()
+		SSdirector.fired_counts = list()
+		SSdirector.last_fired_at = list(DIRECTOR_SEVERITY_MINOR = world.time - profile.severity_spacing[DIRECTOR_SEVERITY_MINOR] - 1)
+		SSdirector.last_any_fired_at = world.time - profile.global_spacing - 1
+		var/datum/director_action/test_stub/fails/action = new
+		action.cost = 2
+		SSdirector.actions = list(action)
+
+		var/datum/director_signals/signals = new
+		signals.effective_crew = 10
+		signals.staffing = list(DIRECTOR_DEPT_SECURITY = 1, DIRECTOR_DEPT_ENGINEERING = 1,
+			DIRECTOR_DEPT_MEDICAL = 1, DIRECTOR_DEPT_SCIENCE = 0, DIRECTOR_DEPT_SUPPLY = 0, DIRECTOR_DEPT_COMMAND = 0)
+		var/beat_result = SSdirector.run_beat(signals, forced = TRUE)
+		var/list/last_entry = SSdirector.beat_log[length(SSdirector.beat_log)]
+		TEST_ASSERT_EQUAL(beat_result, DIRECTOR_BEAT_FAILED, "run_beat должен вернуть фактический результат синхронного отказа")
+		TEST_ASSERT_EQUAL(last_entry["result"], DIRECTOR_BEAT_FAILED, "execute_action(FALSE) должен логироваться как failed, не fired")
+		TEST_ASSERT(findtext(last_entry["detail"], "бюджет возвращён"), "История должна объяснять синхронный провал")
+		TEST_ASSERT_EQUAL(SSdirector.budgets[DIRECTOR_SEVERITY_MINOR], 10, "Синхронный провал должен полностью вернуть кошелёк")
+		TEST_ASSERT_EQUAL(action.occurrences, 0, "Синхронный провал не должен съедать occurrence")
+	catch(var/exception/e)
+		SSdirector.beat_log = saved_beat_log
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	SSdirector.beat_log = saved_beat_log
+	SSdirector.restore_simulation_state(saved)
+
+/// Провал после note_fired обязан полностью откатить пейсинг. Это сценарий Ratvar из прод-лога:
+/// бюджет вернулся, но ANTAG heavy-spacing и глобальная пауза оставались на 30 минут.
+/datum/unit_test/director_failed_action_rolls_back_spacing
+
+/datum/unit_test/director_failed_action_rolls_back_spacing/Run()
+	var/list/saved = SSdirector.capture_simulation_state()
+	try
+		var/datum/director_profile/profile = new /datum/director_profile/medium
+		SSdirector.profile = profile
+		SSdirector.reset_budgets(0)
+		SSdirector.intensity_ledger = list()
+		SSdirector.fired_counts = list()
+		SSdirector.family_fired_counts = list()
+		SSdirector.family_last_fired_at = list()
+		SSdirector.action_failure_cooldowns = list()
+		SSdirector.action_attempt_rollbacks = list()
+		SSdirector.last_fired_at = list()
+		var/datum/dynamic_ruleset/midround/ratvar_awakening/rule = new
+		rule.family = "test_clockcult"
+		var/old_severity = world.time - profile.antag_light_spacing - 1
+		var/old_any = world.time - 20 MINUTES
+		var/old_real = world.time - 21 MINUTES
+		var/old_heavy = world.time - profile.antag_heavy_spacing - 1
+		var/old_family = world.time - profile.family_spacing - 1
+		SSdirector.last_fired_at[rule.severity] = old_severity
+		SSdirector.last_any_fired_at = old_any
+		SSdirector.last_real_fired_at = old_real
+		SSdirector.last_antag_heavy_at = old_heavy
+		SSdirector.family_last_fired_at[rule.family] = old_family
+		SSdirector.pool_saving = list(DIRECTOR_SEVERITY_ANTAG = rule)
+		rule.executed_at = world.time - 30 MINUTES
+		var/old_executed_at = rule.executed_at
+		var/spent = rule.cost - 3
+		rule.director_pending_cost = spent
+		rule.occurrences++
+		SSdirector.note_fired(rule)
+		TEST_ASSERT_EQUAL(SSdirector.last_antag_heavy_at, world.time, "Предварительный запуск должен поставить heavy-spacing")
+		TEST_ASSERT_NULL(SSdirector.pool_saving[DIRECTOR_SEVERITY_ANTAG], "Предварительный запуск должен снять исполненную цель копилки")
+		// Не создаём реальный двухсекундный таймер внутри unit test, но проверяем карантин замены.
+		SSdirector.dry_run = TRUE
+		SSdirector.note_failed_action(rule, refund_budget = TRUE, retry_replacement = TRUE)
+		SSdirector.dry_run = FALSE
+		TEST_ASSERT_EQUAL(SSdirector.last_any_fired_at, old_any, "Провал обязан вернуть global-spacing")
+		TEST_ASSERT_EQUAL(SSdirector.last_real_fired_at, old_real, "Провал обязан вернуть таймер реальной тишины")
+		TEST_ASSERT_EQUAL(SSdirector.last_fired_at[rule.severity], old_severity, "Провал обязан вернуть паузу ступени")
+		TEST_ASSERT_EQUAL(SSdirector.last_antag_heavy_at, old_heavy, "Провал обязан вернуть ANTAG heavy-spacing")
+		TEST_ASSERT_EQUAL(SSdirector.family_last_fired_at[rule.family], old_family, "Провал обязан вернуть паузу семейства")
+		TEST_ASSERT_EQUAL(rule.executed_at, old_executed_at, "Провал обязан вернуть возраст исполнения рулсета")
+		TEST_ASSERT_EQUAL(rule.occurrences, 0, "Провал не должен съедать occurrence")
+		TEST_ASSERT_EQUAL(SSdirector.fired_counts[rule.severity], 0, "Провал не должен считаться в доле ступени")
+		TEST_ASSERT_EQUAL(SSdirector.budgets[rule.severity], spent, "Провал обязан вернуть фактически списанный бюджет")
+		TEST_ASSERT_EQUAL(length(SSdirector.intensity_ledger), 0, "Провал обязан удалить временный intensity-мост конкретной попытки")
+		TEST_ASSERT(SSdirector.action_recently_failed(rule), "Сам провалившийся вариант должен временно исключаться ради замены")
+	catch(var/exception/e)
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	SSdirector.restore_simulation_state(saved)
+
+/// Статический linger Spawn Slaughter Demon раньше держал 30 intensity ещё десятки минут после
+/// смерти. Живая группа должна дать полный вклад при жизни и исчезнуть сразу после смерти моба.
+/datum/unit_test/director_ghost_role_intensity_tracks_life
+
+/datum/unit_test/director_ghost_role_intensity_tracks_life/Run()
+	var/list/saved = SSdirector.capture_simulation_state()
+	try
+		SSdirector.profile = new /datum/director_profile/medium
+		SSdirector.reset_budgets(0)
+		var/datum/round_event_control/slaughter/control = locate() in SSdirector.actions
+		TEST_ASSERT_NOTNULL(control, "Spawn Slaughter Demon должен быть зарегистрирован у директора")
+		var/mob/living/carbon/human/spawned = allocate(/mob/living/carbon/human)
+		spawned.mind_initialize()
+		SSdirector.actions = list(control)
+		SSdirector.intensity_ledger = list(list(control.action_name(), control.intensity, 0, control.severity))
+		SSdirector.live_ghost_role_spawns = list()
+		TEST_ASSERT(SSdirector.track_ghost_role_spawn(control, list(spawned), budget_backed = TRUE, log_execution = FALSE), "Успешный гост-спаун должен перейти на живой трекинг")
+		TEST_ASSERT_EQUAL(length(SSdirector.intensity_ledger), 0, "Статический мост должен сниматься после реального спауна")
+		TEST_ASSERT_EQUAL(SSdirector.get_active_intensity(), control.intensity, "Живой демон должен давать полный настроенный вклад")
+		spawned.stat = DEAD
+		TEST_ASSERT_EQUAL(SSdirector.get_active_intensity(), 0, "Мёртвый демон не должен занимать intensity")
+		TEST_ASSERT_EQUAL(length(SSdirector.live_ghost_role_spawns), 0, "Пустая живая группа должна удаляться")
+		var/antag_wallets = SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST]
+		TEST_ASSERT_EQUAL(round(antag_wallets, 0.1), control.cost, "Ранняя тихая смерть естественной гост-роли должна вернуть её цену в антаг-кошельки")
+		SSdirector.get_active_intensity()
+		TEST_ASSERT_EQUAL(round(SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST], 0.1), control.cost, "Удалённая группа гост-роли не должна получить повторную выплату")
+
+		// Даже без страхового policy снятие выданной hard-antag роли должно немедленно
+		// освободить intensity; budget_backed = FALSE не должен удерживать живого бывшего антага.
+		var/mob/living/carbon/human/unbacked = allocate(/mob/living/carbon/human)
+		unbacked.mind_initialize()
+		var/datum/antagonist/unbacked_marker = new
+		unbacked_marker.silent = TRUE
+		unbacked.mind.add_antag_datum(unbacked_marker)
+		SSdirector.intensity_ledger = list(list(control.action_name(), control.intensity, 0, control.severity))
+		TEST_ASSERT(SSdirector.track_ghost_role_spawn(control, list(unbacked), budget_backed = FALSE, log_execution = FALSE), "Незастрахованный гост-спаун тоже должен перейти на живой трекинг")
+		TEST_ASSERT_EQUAL(SSdirector.get_active_intensity(), control.intensity, "Живая незастрахованная роль должна давать intensity")
+		unbacked.mind.remove_antag_datum(unbacked_marker.type)
+		TEST_ASSERT_EQUAL(SSdirector.get_active_intensity(), 0, "Снятая незастрахованная роль не должна продолжать давать intensity")
+		TEST_ASSERT_EQUAL(length(SSdirector.live_ghost_role_spawns), 0, "Группа без оставшихся hard-antag ролей должна удаляться")
+		TEST_ASSERT_EQUAL(round(SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST], 0.1), control.cost, "Незастрахованная роль не должна печатать возврат бюджета")
+	catch(var/exception/e)
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	SSdirector.restore_simulation_state(saved)
+
+/// Swarmers и командные события завершают первичное действие до фактического занятия роли.
+/// Поздний spawn обязан убрать даже уже истекающий статический мост рулсета и жить по мобу.
+/datum/unit_test/director_deferred_ruleset_spawn_tracks_life
+
+/datum/unit_test/director_deferred_ruleset_spawn_tracks_life/Run()
+	var/list/saved = SSdirector.capture_simulation_state()
+	try
+		SSdirector.profile = new /datum/director_profile/medium
+		SSdirector.reset_budgets(0)
+		var/datum/dynamic_ruleset/midround/swarmers/rule = new
+		var/mob/living/carbon/human/spawned = allocate(/mob/living/carbon/human)
+		spawned.mind_initialize()
+		SSdirector.actions = list(rule)
+		SSdirector.intensity_ledger = list(list(rule.action_name(), rule.intensity, world.time + 10 MINUTES, rule.severity))
+		SSdirector.live_ghost_role_spawns = list()
+		TEST_ASSERT(SSdirector.track_ghost_role_spawn(rule, list(spawned), budget_backed = TRUE, log_execution = FALSE), "Поздняя роль рулсета должна перейти на живой трекинг")
+		TEST_ASSERT_EQUAL(length(SSdirector.intensity_ledger), 0, "Живой spawn должен снять истекающий прогнозный мост рулсета")
+		TEST_ASSERT_EQUAL(SSdirector.get_active_intensity(), rule.intensity, "Живая поздняя роль должна давать полную intensity действия")
+		spawned.stat = DEAD
+		TEST_ASSERT_EQUAL(SSdirector.get_active_intensity(), 0, "После смерти поздняя роль не должна занимать intensity")
+		var/antag_wallets = SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST]
+		TEST_ASSERT_EQUAL(round(antag_wallets, 0.1), rule.cost, "Ранняя потеря поздней роли должна вернуть цену в антаг-кошельки")
+	catch(var/exception/e)
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	SSdirector.restore_simulation_state(saved)
+
+/// Ratvar не должен становиться планом ANTAG-пула, если после prefs/ban/job/antag фильтров
+/// некому выдать роль. Раньше его ready() проверял только контрроли и пропускал пустой candidates.
+/datum/unit_test/director_ratvar_preflight_requires_candidates
+
+/datum/unit_test/director_ratvar_preflight_requires_candidates/Run()
+	var/datum/game_mode/dynamic/mode = SSticker.mode
+	var/list/saved_living = mode.current_players[CURRENT_LIVING_PLAYERS]
+	try
+		mode.current_players[CURRENT_LIVING_PLAYERS] = list()
+		var/datum/dynamic_ruleset/midround/ratvar_awakening/rule = new
+		rule.mode = mode
+		rule.required_candidates = 1
+		rule.enemy_roles = list()
+		TEST_ASSERT(!rule.director_preflight(), "Ratvar без подходящего экипажа обязан провалить preflight")
+		TEST_ASSERT(findtext(rule.director_preflight_failure, "подходящих членов экипажа 0 из 1"), "Ratvar должен объяснить точное число кандидатов")
+	catch(var/exception/e)
+		mode.current_players[CURRENT_LIVING_PLAYERS] = saved_living
+		throw e
+	mode.current_players[CURRENT_LIVING_PLAYERS] = saved_living
+
+/// Регрессия Medieval Warmongers: переопределённый preRunEvent() без вызова ..() проваливался
+/// в конец прока и возвращал null. null не равен ни одному коду EVENT_*, поэтому execute_action()
+/// отваливался на проверке result != EVENT_READY: событие не запускалось ни разу за весь раунд,
+/// а директор терял на нём бит гост-антагов. preRunEvent() обязан возвращать код EVENT_*.
+/datum/unit_test/director_prerun_event_never_null
+
+/datum/unit_test/director_prerun_event_never_null/Run()
+	for(var/datum/round_event_control/control_path as anything in typesof(/datum/round_event_control))
+		if(!initial(control_path.typepath))
+			continue
+		// admin_window = FALSE: без окна отмены preRunEvent не спит и не пишет админам,
+		// а COMSIG_GLOB_PRE_RANDOM_EVENT никто не слушает - проверка чистая.
+		var/datum/round_event_control/control = allocate(control_path)
+		var/result = control.preRunEvent(admin_window = FALSE)
+		TEST_ASSERT(!isnull(result), "[control_path] ([control.name]): preRunEvent() вернул null - \
+			переопределение не зовёт ..(). execute_action() провалит такой запуск (null != EVENT_READY)")
+
+/// Событие, которое preRunEvent объявил незапускаемым (например, корабельное на карте без космоса),
+/// обязано выключиться до конца раунда. Ветка EVENT_CANT_RUN гасила его через max_occurrences = 0,
+/// но базовый контракт директора читает 0 как "без лимита" (can_fire: if(max_occurrences && ...)) -
+/// выключатель делал обратное, и действие оставалось вечным кандидатом, жгущим биты на провалах.
+/datum/unit_test/director_cant_run_event_is_disabled
+
+/datum/unit_test/director_cant_run_event_is_disabled/Run()
+	var/datum/director_signals/signals = new
+	signals.effective_crew = 40
+	signals.staffing = list(DIRECTOR_DEPT_SECURITY = 4, DIRECTOR_DEPT_ENGINEERING = 1,
+		DIRECTOR_DEPT_MEDICAL = 1, DIRECTOR_DEPT_SCIENCE = 0, DIRECTOR_DEPT_SUPPLY = 0, DIRECTOR_DEPT_COMMAND = 1)
+
+	// Базовый контроль без typepath: preRunEvent честно возвращает EVENT_CANT_RUN (тот же путь,
+	// что у корабельных событий на карте без космоса), а в реестр директора он не попадает.
+	var/datum/round_event_control/control = allocate(/datum/round_event_control)
+	control.earliest_start = 0
+	TEST_ASSERT(control.can_fire(signals), "Контроль: до провала событие обязано проходить can_fire")
+	TEST_ASSERT(!control.execute_action(), "Событие без typepath обязано провалить запуск")
+	TEST_ASSERT(!control.can_fire(signals), "Незапускаемое событие обязано выключиться, а не остаться кандидатом на весь раунд")
+
+/// Живые жёсткие антаги, которых директор не создавал (выданные админом/жетоном, спавнеры карт,
+/// обращённые), обязаны попадать в antag_load - иначе клапан давления считает раунд недогруженным
+/// и льёт ещё антагов поверх реальных (прод-жалоба "еретик не учитывался директором"). Разум,
+/// уже посчитанный рулсетом, не должен задваиваться третьим источником.
+/datum/unit_test/director_untracked_antag_load
+
+/// Минимальный жёсткий (не soft_antag) антаг-датум-маркер: "разум всё ещё антагонист".
+/datum/unit_test/director_untracked_antag_load/proc/grant_hard_antag(datum/mind/target_mind)
+	var/datum/antagonist/marker = new
+	marker.silent = TRUE
+	target_mind.add_antag_datum(marker)
+
+/datum/unit_test/director_untracked_antag_load/Run()
+	// Мутирует живой SSdirector - capture/restore c try/catch (см. director_beat_logic).
+	var/list/saved = SSdirector.capture_simulation_state()
+	var/mob/living/carbon/human/admin_antag
+	var/mob/living/carbon/human/soft_holder
+	try
+		SSdirector.profile = new /datum/director_profile/medium
+		SSdirector.actions = list()
+		SSdirector.intensity_ledger = list()
+		SSdirector.live_ghost_role_spawns = list()
+		var/mult_min = DIRECTOR_ACTIVITY_MULT_MIN
+		// Дельты от базовой линии: тест устойчив к любым живым антагам самого раунда CI.
+		var/baseline = SSdirector.antag_load()
+
+		// Живой жёсткий антаг без рулсета/гост-роли - аналог выданного админом/жетоном еретика.
+		admin_antag = allocate(/mob/living/carbon/human)
+		admin_antag.mind_initialize()
+		grant_hard_antag(admin_antag.mind)
+		TEST_ASSERT_EQUAL(SSdirector.antag_load() - baseline, DIRECTOR_UNTRACKED_ANTAG_INTENSITY * mult_min, "Антаг без рулсета (админ/жетон) обязан давать нагрузку через untracked-источник")
+
+		// Тот же разум в assigned рулсета - считается рулсетом; untracked дедупит, не задваивает
+		// (задвоение дало бы 15 * mult_min + 15 * mult_min). time_override держит свежий раунд без затухания.
+		SSdirector.time_override = SSticker.round_start_time + 1 MINUTES
+		var/datum/dynamic_ruleset/midround/test_pool_isolation/rule = new
+		rule.intensity = 15
+		rule.occurrences = 1
+		rule.assigned = list(admin_antag.mind)
+		SSdirector.actions = list(rule)
+		TEST_ASSERT_EQUAL(SSdirector.antag_load() - baseline, 15 * mult_min, "Разум в assigned рулсета не должен считаться повторно как untracked")
+		SSdirector.actions = list()
+		SSdirector.time_override = 0
+		qdel(rule)
+
+		// Мёртвый untracked-антаг не считается.
+		admin_antag.death()
+		TEST_ASSERT_EQUAL(SSdirector.antag_load() - baseline, 0, "Мёртвый untracked-антаг не даёт нагрузки")
+
+		// Soft-антаг (мирная гост-роль) не считается даже живым.
+		soft_holder = allocate(/mob/living/carbon/human)
+		soft_holder.mind_initialize()
+		var/datum/antagonist/soft = new
+		soft.silent = TRUE
+		soft.soft_antag = TRUE
+		soft_holder.mind.add_antag_datum(soft)
+		TEST_ASSERT_EQUAL(SSdirector.antag_load() - baseline, 0, "Soft-антаг не должен давать антаг-нагрузки")
+		soft_holder.mind.remove_antag_datum(/datum/antagonist)
+	catch(var/exception/e)
+		admin_antag?.mind?.remove_antag_datum(/datum/antagonist)
+		soft_holder?.mind?.remove_antag_datum(/datum/antagonist)
+		SSdirector.time_override = 0
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	admin_antag?.mind?.remove_antag_datum(/datum/antagonist)
+	soft_holder?.mind?.remove_antag_datum(/datum/antagonist)
+	SSdirector.restore_simulation_state(saved)
+
+/// Регрессия прод-раунда: визард-рулсеты не были persistent -> mode.process() не звал их
+/// rule_process() -> снятие Summon Events (wizardmode) со смертью мага не срабатывало -> директор
+/// глох на весь остаток раунда (все обычные события валили can_fire по wizardevent != wizardmode).
+/datum/unit_test/director_wizard_summon_events_clears
+
+/datum/unit_test/director_wizard_summon_events_clears/Run()
+	var/datum/dynamic_ruleset/midround/wizard/crew_wizard = new
+	var/datum/dynamic_ruleset/midround/from_ghosts/wizard/ghost_wizard = new
+	TEST_ASSERT(crew_wizard.persistent, "Crew-визард обязан быть persistent, иначе rule_process не снимет wizardmode")
+	TEST_ASSERT(ghost_wizard.persistent, "Гост-визард обязан быть persistent, иначе rule_process не снимет wizardmode")
+
+	var/saved_wizardmode = SSdirector.wizardmode
+	var/mob/living/carbon/human/mage = allocate(/mob/living/carbon/human)
+	mage.mind_initialize()
+	ghost_wizard.wizard = mage.mind
+	try
+		// Волшебник жив: режим не снимается, рулсет продолжает обрабатываться.
+		SSdirector.wizardmode = TRUE
+		TEST_ASSERT_EQUAL(ghost_wizard.rule_process(), FALSE, "Пока волшебник жив, rule_process не должен останавливаться")
+		TEST_ASSERT(SSdirector.wizardmode, "Пока волшебник жив, Summon Events не снимается")
+		// Волшебник мёртв: rule_process снимает wizardmode и останавливает обработку.
+		mage.death()
+		TEST_ASSERT_EQUAL(ghost_wizard.rule_process(), RULESET_STOP_PROCESSING, "Смерть волшебника обязана остановить обработку рулсета")
+		TEST_ASSERT(!SSdirector.wizardmode, "Смерть волшебника обязана снять Summon Events")
+	catch(var/exception/e)
+		SSdirector.wizardmode = saved_wizardmode
+		qdel(crew_wizard)
+		qdel(ghost_wizard)
+		throw e
+	SSdirector.wizardmode = saved_wizardmode
+	qdel(crew_wizard)
+	qdel(ghost_wizard)
+
+/// Во время Summon Events обычные события валят can_fire по wizardevent != wizardmode. diagnose
+/// обязан назвать причину явно (wizardmode), а не сваливать весь пул в невнятное special.
+/datum/unit_test/director_wizardmode_verdict
+
+/datum/unit_test/director_wizardmode_verdict/Run()
+	var/saved_wizardmode = SSdirector.wizardmode
+	var/datum/director_signals/signals = new
+	signals.effective_crew = 30
+	signals.staffing = list(DIRECTOR_DEPT_SECURITY = 0, DIRECTOR_DEPT_ENGINEERING = 0,
+		DIRECTOR_DEPT_MEDICAL = 0, DIRECTOR_DEPT_SCIENCE = 0, DIRECTOR_DEPT_SUPPLY = 0, DIRECTOR_DEPT_COMMAND = 0)
+	var/datum/round_event_control/nothing/probe = new
+	try
+		SSdirector.wizardmode = FALSE
+		TEST_ASSERT(probe.can_fire(signals), "Обычное событие вне Summon Events должно проходить can_fire")
+		SSdirector.wizardmode = TRUE
+		TEST_ASSERT(!probe.can_fire(signals), "Во время Summon Events обычное событие не должно проходить can_fire")
+		var/list/diag = SSdirector.diagnose_can_fire(probe, signals)
+		TEST_ASSERT_EQUAL(diag["reason"], DIRECTOR_CANTFIRE_WIZARDMODE, "Отказ во время Summon Events обязан диагностироваться как wizardmode, а не special")
+	catch(var/exception/e)
+		SSdirector.wizardmode = saved_wizardmode
+		qdel(probe)
+		throw e
+	SSdirector.wizardmode = saved_wizardmode
+	qdel(probe)

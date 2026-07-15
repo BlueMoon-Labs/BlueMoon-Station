@@ -1,7 +1,7 @@
 /datum/round_event_control/pirates
 	name = "Space Pirates"
 	typepath = /datum/round_event/pirates
-	weight = 20
+	weight = 6
 	max_occurrences = 1
 	min_players = 30
 	earliest_start = 45 MINUTES
@@ -65,13 +65,13 @@
 		return
 	if(threat_msg && threat_msg.answered == 1)
 		var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
-		if(D)
-			if(D.adjust_money(-payoff))
-				priority_announce("Спасибо за кредиты, сухопутные крысы!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_yespeacedecision.ogg', "Priority")
-			else
-				priority_announce("Пытаешься нас обмануть? Ты пожалеешь об этом!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
-				spawn_pirates(threat_msg, ship_template, TRUE)
-				return
+		if(D && D.adjust_money(-payoff))
+			priority_announce("Спасибо за кредиты, сухопутные крысы!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_yespeacedecision.ogg', "Priority")
+			SSdirector.complete_deferred_action_without_roles(control, "угроза снята выкупом; назначено ролей: 0")
+			return
+		priority_announce("Пытаешься нас обмануть? Ты пожалеешь об этом!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
+		spawn_pirates(threat_msg, ship_template, TRUE)
+		return
 	else
 		priority_announce("Пытаешься нас обмануть? Ты пожалеешь об этом!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
 		spawn_pirates(threat_msg, ship_template, TRUE)
@@ -84,20 +84,38 @@
 		return pick(space_zlevels)
 	return SSmapping.station_start
 
+/// Спавн не состоялся: возвращаем директору бюджет и паузы, чтобы он подобрал замену.
+/// Провал терминален - иначе оставшийся таймер или ответ станции зашли бы сюда второй раз
+/// и вернули бы бюджет дважды.
+/datum/round_event/pirates/proc/fail_spawn(reason)
+	pirates_spawned = TRUE
+	if(spawn_timer_id)
+		deltimer(spawn_timer_id)
+		spawn_timer_id = null
+	message_admins("Space Pirates event failed: [reason]")
+	if(!control)
+		return
+	// Бюджет тратился только на естественный запуск через бит (админ-форс идёт мимо кошельков).
+	SSdirector.note_failed_action(control, refund_budget = triggered_randomly, retry_replacement = triggered_randomly)
+	SSdirector.director_log_beat(SSdirector.collect_signals(), control, DIRECTOR_BEAT_FAILED,
+		detail = "[reason]; [triggered_randomly ? "бюджет и паузы возвращены, запрошена замена" : "ручной запуск, бюджет не списывался; паузы возвращены"]")
+
 /datum/round_event/pirates/proc/spawn_pirates(datum/comm_message/threat_msg, ship_template, skip_answer_check)
 	if(pirates_spawned)
 		return
 	if(!skip_answer_check && threat_msg?.answered == 1)
 		return
 	if(!ship_template)
-		message_admins("Space Pirates event failed: no ship template configured.")
+		fail_spawn("не задан шаблон корабля")
 		return
 
 	var/z = get_spawn_z()
 	if(!z)
-		message_admins("Space Pirates event failed: no valid Z-level for ship spawn.")
+		fail_spawn("нет подходящего Z-уровня для корабля")
 		return
 
+	// Флаг ставится до загрузки: ship.load() спит (CHECK_TICK в парсере карты), и без него
+	// сработавший за это время таймер или ответ станции загрузили бы второй корабль.
 	pirates_spawned = TRUE
 	if(spawn_timer_id)
 		deltimer(spawn_timer_id)
@@ -107,11 +125,9 @@
 	var/x = rand(TRANSITIONEDGE, world.maxx - TRANSITIONEDGE - ship.width)
 	var/y = rand(TRANSITIONEDGE, world.maxy - TRANSITIONEDGE - ship.height)
 	var/turf/T = locate(x,y,z)
-	if(!T)
-		CRASH("Pirate event found no turf to load in")
-
-	if(!ship.load(T))
-		CRASH("Loading pirate ship failed!")
+	if(!T || !ship.load(T))
+		fail_spawn("корабль не удалось загрузить на карту")
+		return
 
 	var/list/spawners_list = list()
 	for(var/turf/A in ship.get_affected_turfs(T))
@@ -119,14 +135,35 @@
 			spawners_list += spawner
 
 	var/list/candidates = pollGhostCandidates("Вы желаете стать пиратом?", ROLE_TRAITOR, minimum_required = spawners_list.len)
+	var/list/spawned_pirates = list()
+	var/spawner_count = length(spawners_list)
+	var/intensity_share = spawner_count ? control.intensity / spawner_count : 0
+	var/refund_share = triggered_randomly && spawner_count ? control.cost / spawner_count : 0
 
 	for(var/obj/effect/mob_spawn/human/spawner in spawners_list)
 		if(LAZYLEN(candidates))
 			var/mob/our_candidate = pick_n_take(candidates)
-			spawner.create(our_candidate.ckey)
+			var/mob/living/spawned_pirate = spawner.create(our_candidate.ckey)
+			if(spawned_pirate)
+				spawned_pirates += spawned_pirate
 			notify_ghosts("The pirate ship has an object of interest: [our_candidate]!", source=our_candidate, action=NOTIFY_ORBIT, header="Something's Interesting!")
 		else
+			spawner.director_source_action = control
+			spawner.director_intensity = intensity_share
+			spawner.director_refund_cost = refund_share
 			notify_ghosts("The pirate ship has an object of interest: [spawner]!", source=spawner, action=NOTIFY_ORBIT, header="Something's Interesting!")
+	if(length(spawned_pirates))
+		var/spawned_fraction = length(spawned_pirates) / max(1, spawner_count)
+		SSdirector.track_ghost_role_spawn(
+			control,
+			spawned_pirates,
+			budget_backed = triggered_randomly,
+			intensity_override = control.intensity * spawned_fraction,
+			refund_cost_override = triggered_randomly ? control.cost * spawned_fraction : 0,
+		)
+	else
+		SSdirector.director_log_beat(SSdirector.collect_signals(), control, DIRECTOR_BEAT_EXECUTED,
+			detail = "корабль создан; сразу назначено ролей: 0, свободные спавнеры оставлены призракам")
 
 	priority_announce("В секторе обнаружен вооруженный корабль.", "Отдел ССО ПАКТа Синих Лун", 'modular_bluemoon/phenyamomota/sound/announcer/pirate_incoming.ogg')
 

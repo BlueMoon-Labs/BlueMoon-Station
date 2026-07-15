@@ -75,6 +75,7 @@
 	weight = 6  //BLUEMOON CHANGES
 	cost = 6 //BLUEMOON CHANGES
 	intensity = 15
+	family = "traitor"
 	requirements = list(101,40,25,20,15,10,10,10,10,10)
 	repeatable = TRUE
 
@@ -198,6 +199,7 @@
 	weight = 4
 	cost = 10
 	intensity = 15
+	family = "changeling"
 	requirements = list(101,101,60,50,40,30,20,15,10,10)
 	antag_cap = list("denominator" = 24)
 	repeatable = TRUE
@@ -216,6 +218,9 @@
 
 /datum/dynamic_ruleset/latejoin/bloodsuckers
 	name = "Bloodsucker Guest"
+	// Кровососы сломаны и ждут починки/упрощения: естественно не выдаются ни в одном типе раунда.
+	// Прежний хак (только team-based) заменён честным выключателем - ручной форс админом работает.
+	admin_only = TRUE
 	antag_flag = "bloodsucker late"
 	antag_flag_override = ROLE_BLOODSUCKER
 	antag_datum = /datum/antagonist/bloodsucker
@@ -224,10 +229,11 @@
 	enemy_roles = list("Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain") //BLUEMOON CHANGES
 	required_enemies = list(2,2,1,1,1,1,1,0,0,0)
 	required_candidates = 1
-	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED) // BLUEMOON ADD
+	required_round_type = list(ROUNDTYPE_DYNAMIC_LIGHT, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_TEAMBASED)
 	weight = 4
-	cost = 5
+	cost = 8
 	intensity = 15
+	family = "bloodsuckers"
 	scaling_cost = 10
 	requirements = list(101,101,60,50,40,30,20,15,10,10)
 	antag_cap = list("denominator" = 39, "offset" = 1)

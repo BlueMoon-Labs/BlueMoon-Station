@@ -1,5 +1,8 @@
 /// TGUI-обёртка панели директора; создаётся на клик, живёт на клиенте
 /datum/director_panel
+	/// Структурный каталог рулсетов для предпросмотра профилей до выбора игрового режима.
+	/// В SSdirector.actions живые экземпляры появляются только в Dynamic.pre_setup().
+	var/list/profile_ruleset_catalog
 
 /datum/director_panel/ui_state(mob/user)
 	return GLOB.admin_state
@@ -10,10 +13,66 @@
 		ui = new(user, src, "DirectorPanel")
 		ui.open()
 
-/// Справочник профилей для вкладки "Профили": меняется только на перезагрузке конфига,
-/// поэтому static. Активный профиль отдаётся живым объектом (видны VV-правки и применённый
-/// конфиг), остальные - свежими экземплярами с наложенной их секцией director.json:
-/// "каким профиль станет, если выбрать его тип раунда".
+/// Общий сериализатор живого действия и временного экземпляра из структурного каталога.
+/datum/director_panel/proc/profile_action_data(datum/director_action/action)
+	return list(
+			"name" = action.action_name(),
+			"kind" = action.director_kind,
+			"severity" = action.severity,
+			"weight" = action.weight,
+			"weightCanChange" = action.weight_can_change,
+			"enabled" = action.enabled,
+			"adminOnly" = action.admin_only,
+			"antagHeavy" = action.antag_heavy,
+			"disruption" = action.get_disruption(),
+			"requiredRoundTypes" = islist(action.required_round_type) ? action.required_round_type.Copy() : null,
+			"linkedRoundTypes" = islist(action.director_linked_round_types) ? action.director_linked_round_types.Copy() : null,
+			"linkedDetail" = action.director_linked_detail,
+		)
+
+/// До Dynamic.pre_setup() живых рулсетов ещё нет, но вкладка профилей описывает структурную,
+/// а не текущую боевую доступность. Один раз строим безопасный каталог тех же midround/latejoin
+/// типов, которые init_rulesets() создаст для раунда. Нулевой вес отсекает абстрактные типы и
+/// тестовые фикстуры ровно так же, как игровой режим.
+/datum/director_panel/proc/profile_ruleset_catalog_data()
+	if(!isnull(profile_ruleset_catalog))
+		return profile_ruleset_catalog
+	profile_ruleset_catalog = list()
+	var/list/ruleset_types = subtypesof(/datum/dynamic_ruleset/midround) + subtypesof(/datum/dynamic_ruleset/latejoin)
+	var/list/actions_conf = islist(SSdirector.cached_config) ? SSdirector.cached_config["actions"] : null
+	for(var/datum/dynamic_ruleset/ruleset_type as anything in ruleset_types)
+		if(initial(ruleset_type.name) == "" || initial(ruleset_type.weight) == 0)
+			continue
+		var/datum/dynamic_ruleset/preview = new ruleset_type
+		var/list/action_conf = islist(actions_conf) ? actions_conf[preview.action_name()] : null
+		if(islist(action_conf))
+			SSdirector.apply_action_config(preview, action_conf)
+		profile_ruleset_catalog += list(list(
+			"type" = ruleset_type,
+			"row" = profile_action_data(preview),
+		))
+		qdel(preview)
+	return profile_ruleset_catalog
+
+/// Каталог остаётся в ui_data(): после pre_setup() реальные рулсеты должны заменить превью,
+/// даже если администратор открыл панель ещё в лобби. Не зарегистрированные пока типы берутся
+/// из структурного каталога, поэтому предпросмотр больше не показывает "Рулсеты: 0 / 0".
+/datum/director_panel/proc/profile_actions_data()
+	var/list/profile_actions_out = list()
+	var/list/registered_ruleset_types = list()
+	for(var/datum/director_action/action as anything in SSdirector.actions)
+		profile_actions_out += list(profile_action_data(action))
+		if(action.director_kind == DIRECTOR_KIND_RULESET)
+			registered_ruleset_types[action.type] = TRUE
+	for(var/list/catalog_entry as anything in profile_ruleset_catalog_data())
+		if(registered_ruleset_types[catalog_entry["type"]])
+			continue
+		profile_actions_out += list(catalog_entry["row"])
+	return profile_actions_out
+
+/// Справочник профилей для вкладки "Профили" меняется только на перезагрузке конфига,
+/// поэтому остаётся static. Активный профиль отдаётся живым объектом (видны VV-правки и
+/// применённый конфиг), остальные - свежими экземплярами с их секцией director.json.
 /datum/director_panel/ui_static_data(mob/user)
 	var/datum/controller/subsystem/director/D = SSdirector
 	var/list/profiles_conf = islist(D.cached_config) ? D.cached_config["profiles"] : null
@@ -32,7 +91,9 @@
 			qdel(preview)
 		row["active"] = is_active
 		profiles_out += list(row)
-	return list("profiles" = profiles_out)
+	return list(
+		"profiles" = profiles_out,
+	)
 
 /datum/director_panel/ui_data(mob/user)
 	var/datum/controller/subsystem/director/D = SSdirector
@@ -91,6 +152,8 @@
 		antag_target_now = D.antag_target(D.last_signals ? D.last_signals.effective_crew : 0)
 	return list(
 		"paused" = D.paused,
+		"wizardmode" = D.wizardmode,
+		"randomEventsEnabled" = CONFIG_GET(flag/allow_random_events),
 		"budget" = round(D.total_budget(), 0.1),
 		"profileName" = D.profile ? GLOB.round_type : null,
 		"intensity" = active_intensity,
@@ -120,6 +183,7 @@
 		"quietThreshold" = D.profile ? D.profile.quiet_intensity_threshold : 0,
 		"maxActiveMajor" = D.profile ? D.profile.max_active_major : 0,
 		"pool" = D.evaluate_pool(),
+		"profileActions" = profile_actions_data(),
 	)
 
 /datum/director_panel/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)

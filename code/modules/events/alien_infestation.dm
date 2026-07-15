@@ -1,13 +1,15 @@
 /datum/round_event_control/alien_infestation
 	name = "Alien Infestation"
 	typepath = /datum/round_event/ghost_role/alien_infestation
-	weight = 20
+	weight = 4
 	min_players = 40
 	max_occurrences = 1
 	category = EVENT_CATEGORY_ENTITIES
 	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
 	cost = 15
 	intensity = 45
+	director_ghost_jobban = ROLE_ALIEN
+	director_ghost_preference = ROLE_ALIEN
 	intensity_linger = 45 MINUTES // улей растёт заметно дольше спавнера
 	antag_heavy = TRUE // угроза всей станции: мягкие профили такое выключают
 	family = "xenomorph" // с рулсетом-двойником динамика: не подряд

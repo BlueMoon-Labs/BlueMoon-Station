@@ -756,6 +756,9 @@ BLUEMOON REMOVAL END*/
 
 /datum/dynamic_ruleset/roundstart/bloodsuckers
 	name = "Bloodsuckers"
+	// Кровососы сломаны и ждут починки/упрощения: естественно не выдаются ни в одном типе раунда.
+	// Прежний хак (только team-based) заменён честным выключателем - ручной форс админом работает.
+	admin_only = TRUE
 	antag_flag = "shiftstart bloodsucker"
 	antag_flag_override = ROLE_BLOODSUCKER
 	antag_datum = /datum/antagonist/bloodsucker
