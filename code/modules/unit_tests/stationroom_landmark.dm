@@ -18,7 +18,7 @@
 /// GLOB.stationroom_landmarks, параллельный seedStation() (таймер тикера, +60с после
 /// раундстарта) подхватывает тот же лендмарк и грузит шаблон второй раз в ту же точку:
 /// каждая атмос-машина дублируется, у устройства один слот nodes на две копии трубы,
-/// и вторая копия уходит в setPipenet с nodes.Find() == 0 (сотни рантаймов).
+/// и вторая копия передаёт в setPipenet отсутствующий в nodes объект (сотни рантаймов).
 /datum/unit_test/stationroom_landmark_reentrancy/Run()
 	var/datum/map_template/stationroom_reentrancy_probe/template = new
 	SSmapping.station_room_templates[template.name] = template

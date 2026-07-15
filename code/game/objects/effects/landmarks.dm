@@ -549,7 +549,7 @@ INITIALIZE_IMMEDIATE(/obj/effect/landmark/start/new_player)
 	// параллельный seedStation() (таймер тикера, +60с после раундстарта) подхватывал
 	// тот же лендмарк и грузил шаблон второй раз в ту же точку. Дубль накладывал
 	// вторую копию каждой атмос-машины на те же тайлы, у устройств один слот nodes
-	// на копию - вторая уходила в setPipenet с nodes.Find() == 0.
+	// на копию - вторая передавала в setPipenet отсутствующий в nodes объект.
 	GLOB.stationroom_landmarks -= src
 	template.load(T, centered = FALSE)
 	template.loaded++

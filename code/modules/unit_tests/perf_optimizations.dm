@@ -306,7 +306,7 @@
 
 /// Malformed or overlapping map loads can ask a component about a pipeline or
 /// connector it does not actually contain. The lookup must fail softly instead
-/// of using Find() == 0 as a list index and raising a runtime.
+/// of using a failed lookup result as a list index and raising a runtime.
 /datum/unit_test/atmos_component_pipenet_lookup_guards/Run()
 	var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/connected_pipe = allocate(/obj/machinery/atmospherics/pipe/build_pipeline_test_node)
 	var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/unknown_pipe = allocate(/obj/machinery/atmospherics/pipe/build_pipeline_test_node)
