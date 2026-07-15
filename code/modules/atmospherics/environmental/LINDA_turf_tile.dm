@@ -495,6 +495,14 @@
 			else if(vented_moles > MINIMUM_MOLES_DELTA_TO_MOVE)
 				our_excited_group.dismantle_cooldown = 0
 				cached_atmos_cooldown = 0
+			else if(pressure_before >= SPACE_DRAIN_FINISH_PRESSURE)
+				// Vacuum exception (Baystation lesson): a superheated near-vacuum
+				// tile (>=~10000K) holds survivable pressure on sub-0.1 mol content,
+				// so both mole-gated resets above miss it and the tile would go to
+				// sleep visibly pressurized against space. Pressure decays toward
+				// the vent_everything threshold every cycle, so this cannot pin the
+				// tile awake forever.
+				cached_atmos_cooldown = 0
 			if(volume_cache > 0)
 				var/pressure_after = vent_everything ? 0 : (moles_before * (1 - our_share_coeff) * R_IDEAL_GAS_EQUATION * our_air.temperature / volume_cache)
 				var/pressure_delta_space = pressure_before - pressure_after
