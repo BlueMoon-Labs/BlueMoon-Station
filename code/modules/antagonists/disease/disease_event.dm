@@ -4,6 +4,10 @@
 	typepath = /datum/round_event/ghost_role/sentient_disease
 	weight = 10
 	max_occurrences = 1
+	// Лёгкая фоновая гост-угроза для раннего разнообразия: чтобы первые полчаса гост-пул не сводился
+	// к одному Devil (единственный лёгкий гост-рулсет без earliest_start), пара дешёвых гост-событий
+	// доступна с 20-й минуты наравне с ним.
+	earliest_start = 20 MINUTES
 	min_players = 5
 	category = EVENT_CATEGORY_HEALTH
 	severity = DIRECTOR_SEVERITY_GHOST // антаг из призраков - гост-пул, а не MODERATE от категории

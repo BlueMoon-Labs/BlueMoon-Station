@@ -10,6 +10,9 @@
 	typepath = /datum/round_event/ghost_role/changeling
 	weight = 8
 	max_occurrences = 3
+	// Раннее разнообразие гост-пула (см. Spawn Sentient Disease): доступен с 20-й минуты,
+	// чтобы Devil не был единственным гост-антагом первые полчаса.
+	earliest_start = 20 MINUTES
 	min_players = 20
 	category = EVENT_CATEGORY_ENTITIES
 	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR

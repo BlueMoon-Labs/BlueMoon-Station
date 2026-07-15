@@ -8,7 +8,9 @@
 	weight = 2
 	max_occurrences = 1
 	min_players = 40
-	earliest_start = 90 MINUTES
+	// Было 90 мин - паучье гнездо почти не успевало в обычный раунд. 55 мин даёт окно; всё ещё
+	// поздняя тяжёлая угроза (min_players 40, вес 2, нужно 2-3 призрака-паука).
+	earliest_start = 55 MINUTES
 	category = EVENT_CATEGORY_ENTITIES
 	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
 	cost = 20

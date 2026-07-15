@@ -3,7 +3,9 @@
 	typepath = /datum/round_event/ghost_role/space_ninja
 	max_occurrences = 1
 	weight = 8
-	earliest_start = 45 MINUTES
+	// Было 45 мин: соло-ниндзя как ранний вариант гост-пула (раньше первые полчаса был только Devil).
+	// 25 мин - раньше основной волны событий (30 мин), но чуть позже дешёвых лёгких гостов (20 мин).
+	earliest_start = 25 MINUTES
 	min_players = 35
 	category = EVENT_CATEGORY_INVASION
 	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR

@@ -4,7 +4,9 @@
 	weight = 3
 	max_occurrences = 1
 
-	earliest_start = 90 MINUTES
+	// Было 90 мин - блоб почти не успевал в обычный раунд. 55 мин даёт тяжёлой гост-угрозе окно,
+	// оставаясь поздней (min_players 40, нужен призрак с ролью блоба).
+	earliest_start = 55 MINUTES
 	min_players = 40
 	category = EVENT_CATEGORY_ENTITIES
 	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
