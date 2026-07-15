@@ -227,6 +227,9 @@
 #define FIRE_PRIORITY_TIMER			700
 #define FIRE_PRIORITY_SOUND_LOOPS 800
 #define FIRE_PRIORITY_TICK_SPIKES	900 // Замер дрифта тика должен идти до тяжёлых тикеров (таймеры и т.д.), чтобы читать usage до основной работы МК
+#define FIRE_PRIORITY_MOUSE_ENTERED	996 // Схлопнутые ховеры мыши: после отложенных вербов, до остального
+#define FIRE_PRIORITY_SPEECH_CONTROLLER	998 // Отложенная речь исполняется раньше остальных отложенных вербов
+#define FIRE_PRIORITY_DELAYED_VERBS	997 // Очередь SSverb_manager: отложенные при перегрузе тика вербы
 #define FIRE_PRIORITY_INPUT			1000 // This must always always be the max highest priority. Player input must never be lost.
 
 // SS runlevels

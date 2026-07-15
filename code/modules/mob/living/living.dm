@@ -856,6 +856,10 @@
 	set name = "Resist"
 	set category = "IC"
 
+	DEFAULT_QUEUE_OR_CALL_VERB(VERB_CALLBACK(src, PROC_REF(execute_resist)))
+
+///Proc version of the resist verb so SSverb_manager can defer it under load.
+/mob/living/proc/execute_resist()
 	if(!can_resist())
 		return
 

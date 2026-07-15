@@ -16,4 +16,4 @@
 	clear_typing_indicator()
 	if(!length(message))
 		return
-	whisper(message)
+	QUEUE_OR_CALL_VERB_FOR(VERB_CALLBACK(src, TYPE_PROC_REF(/mob, whisper), message), SSspeech_controller)
