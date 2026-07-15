@@ -1622,14 +1622,21 @@
 ///Called when something resists while this atom is its loc
 /atom/proc/container_resist_act(mob/living/user)
 
-//Update the screentip to reflect what we're hoverin over
+//Record the hover; SSmouse_entered runs the screentip update for the LAST
+//hovered atom once per tick instead of on every input event (tg port).
 /atom/MouseEntered(location, control, params)
 	. = ..()
-
-	var/mob/user = usr
-	if(isnull(user))
+	if(isnull(usr) || !usr.client)
 		return
-	if(!GET_CLIENT(user))
+	SSmouse_entered.hovers[usr.client] = src
+
+///Deferred hover handler: called by SSmouse_entered at most once per tick per
+///client, with the most recently hovered atom. Updates the screentip.
+/atom/proc/on_mouse_enter(client/hovering_client)
+	SHOULD_NOT_SLEEP(TRUE)
+
+	var/mob/user = hovering_client?.mob
+	if(isnull(user) || user.client != hovering_client)
 		return
 
 	// Screentips
