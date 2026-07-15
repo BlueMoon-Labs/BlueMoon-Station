@@ -89,7 +89,7 @@
 			return
 	return ..()
 
-var/list/aventail_detail_colors = list(
+GLOBAL_LIST_INIT(aventail_detail_colors, list(
 	"Red" = "#8b2323",
 	"Purple" = "#8747b1",
 	"Black" = "#2b292e",
@@ -104,11 +104,13 @@ var/list/aventail_detail_colors = list(
 	"Magenta" = "#962e5c",
 	"Gold" = "#f9a602",
 	"Scarlet" = "#cc0000",
-)
+))
+GLOBAL_PROTECT(aventail_detail_colors)
 
-var/list/aventail_pride_colors = list(
+GLOBAL_LIST_INIT(aventail_pride_colors, list(
 	"Rainbow" = "#fcfcfc",
-)
+))
+GLOBAL_PROTECT(aventail_pride_colors)
 
 /obj/item/clothing/head/helmet/military
 	name = "Hounskull With Aventail"
@@ -160,10 +162,10 @@ var/list/aventail_pride_colors = list(
 /obj/item/clothing/head/helmet/military/attackby(obj/item/W, mob/living/user, params)
 	. = ..()
 	if(istype(W, /obj/item/feather) && !detail_tag)
-		var/choice = input(user, "Choose a color.", "Plume") as anything in aventail_detail_colors + aventail_pride_colors
+		var/choice = input(user, "Choose a color.", "Plume") as anything in GLOB.aventail_detail_colors + GLOB.aventail_pride_colors
 		if(!choice)
 			return
-		detail_color = (choice in aventail_pride_colors) ? aventail_pride_colors[choice] : aventail_detail_colors[choice]
+		detail_color = (choice in GLOB.aventail_pride_colors) ? GLOB.aventail_pride_colors[choice] : GLOB.aventail_detail_colors[choice]
 		detail_tag = "_detail"
 		user.visible_message(span_warning("[user] adds [W] to [src]."))
 		user.transferItemToLoc(W, src, FALSE, FALSE)
@@ -176,14 +178,14 @@ var/list/aventail_pride_colors = list(
 		var/obj/item/stack/sheet/cloth/C = W
 		if(C.amount < 1)
 			return
-		var/choicealt = input(user, "Choose a color.", "Orle") as anything in aventail_detail_colors + aventail_pride_colors
+		var/choicealt = input(user, "Choose a color.", "Orle") as anything in GLOB.aventail_detail_colors + GLOB.aventail_pride_colors
 		if(!choicealt)
 			return
 		user.visible_message(span_warning("[user] adds [W] to [src]."))
-		altdetail_color = (choicealt in aventail_pride_colors) ? aventail_pride_colors[choicealt] : aventail_detail_colors[choicealt]
+		altdetail_color = (choicealt in GLOB.aventail_pride_colors) ? GLOB.aventail_pride_colors[choicealt] : GLOB.aventail_detail_colors[choicealt]
+		// Орле не имеет права трогать detail_tag: это слот плюмажа, и запись в него блокировала
+		// добавление пера, а уже вставленное перо подменяла спрайтом, которого в dmi нет вовсе.
 		altdetail_tag = "_detailalt"
-		if(choicealt in aventail_pride_colors)
-			detail_tag = "_detailp"
 		C.use(1)
 		update_icon()
 		if(loc == user && ishuman(user))

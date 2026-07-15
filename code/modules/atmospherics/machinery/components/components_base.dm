@@ -160,11 +160,21 @@
 
 /obj/machinery/atmospherics/components/pipeline_expansion(datum/pipeline/reference)
 	if(reference)
-		return list(nodes[parents.Find(reference)])
+		if(!parents?.len || !nodes?.len)
+			return list()
+		var/index = parents.Find(reference)
+		if(!index || index > nodes.len)
+			return list()
+		return list(nodes[index])
 	return ..()
 
 /obj/machinery/atmospherics/components/setPipenet(datum/pipeline/reference, obj/machinery/atmospherics/A)
-	parents[nodes.Find(A)] = reference
+	if(!parents?.len || !nodes?.len)
+		return
+	var/index = nodes.Find(A)
+	if(!index || index > parents.len)
+		return
+	parents[index] = reference
 
 /obj/machinery/atmospherics/components/returnPipenet(obj/machinery/atmospherics/A = nodes[1]) //returns parents[1] if called without argument
 	if(!parents?.len || !nodes?.len)
@@ -175,7 +185,12 @@
 	return parents[index]
 
 /obj/machinery/atmospherics/components/replacePipenet(datum/pipeline/Old, datum/pipeline/New)
-	parents[parents.Find(Old)] = New
+	if(!parents?.len)
+		return
+	var/index = parents.Find(Old)
+	if(!index)
+		return
+	parents[index] = New
 
 /obj/machinery/atmospherics/components/unsafe_pressure_release(var/mob/user, var/pressures)
 	..()

@@ -236,16 +236,11 @@
 	desc = "Светящийся оранжевый сигил. Воздух вокруг него наполнен статическим электричеством."
 	clockwork_desc = "Сигил, служащий источником энергии и аккумулятором для механических конструкций, связанный со всеми другими сигилами этого типа."
 	icon_state = "sigiltransmission"
-	alpha = 50
+	alpha = TRANSMISSION_SIGIL_BASE_ALPHA
 	color = "#EC8A2D"
 	light_color = "#EC8A2D"
-	resist_string = "glows faintly"
+	resist_string = "слабо светится оранжевым светом"
 	sigil_name = "Sigil of Transmission"
-	affects_servants = TRUE
-
-/obj/effect/clockwork/sigil/transmission/Initialize(mapload)
-	. = ..()
-	update_icon()
 
 /obj/effect/clockwork/sigil/transmission/ex_act(severity, target, origin)
 	if(severity == 3)
@@ -275,6 +270,7 @@
 /obj/effect/clockwork/sigil/transmission/Initialize(mapload)
 	. = ..()
 	START_PROCESSING(SSobj, src)
+	update_icon()
 
 /obj/effect/clockwork/sigil/transmission/Destroy()
 	STOP_PROCESSING(SSobj, src)
@@ -338,11 +334,12 @@
 	if(GLOB.ratvar_awakens)
 		alpha = 255
 	else
-		alpha = min(CEILING(initial(alpha) + power_charge * 0.02, 35), 255)
+		alpha = get_transmission_sigil_alpha(power_charge)
 	var/r = alpha * 0.02
 	var/p = max(alpha * 0.01, 0.1)
-	if(!power_charge && light_range != 0)
-		set_light(0)
+	if(!power_charge)
+		if(light_range != 0)
+			set_light(0)
 	else if(r != light_range || p != light_power)
 		set_light(r, p)
 

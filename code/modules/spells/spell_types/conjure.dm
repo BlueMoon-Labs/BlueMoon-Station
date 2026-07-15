@@ -95,5 +95,19 @@
 	return ..()
 
 /obj/effect/proc_holder/spell/targeted/conjure_item/proc/make_item()
-	item = new item_type
+	set_item(new item_type)
 	return item
+
+/obj/effect/proc_holder/spell/targeted/conjure_item/proc/set_item(obj/item/new_item)
+	if(item == new_item)
+		return
+	if(item)
+		UnregisterSignal(item, COMSIG_PARENT_QDELETING)
+	item = new_item
+	if(item)
+		RegisterSignal(item, COMSIG_PARENT_QDELETING, PROC_REF(on_item_qdeleting))
+
+/obj/effect/proc_holder/spell/targeted/conjure_item/proc/on_item_qdeleting(obj/item/deleted_item)
+	SIGNAL_HANDLER
+	if(item == deleted_item)
+		set_item(null)

@@ -2,17 +2,23 @@
 /datum/round_event_control/sentient_disease
 	name = "Spawn Sentient Disease"
 	typepath = /datum/round_event/ghost_role/sentient_disease
-	weight = 7
+	weight = 10
 	max_occurrences = 1
+	// Лёгкая фоновая гост-угроза для раннего разнообразия: чтобы первые полчаса гост-пул не сводился
+	// к одному Devil (единственный лёгкий гост-рулсет без earliest_start), пара дешёвых гост-событий
+	// доступна с 20-й минуты наравне с ним.
+	earliest_start = 20 MINUTES
 	min_players = 5
 	category = EVENT_CATEGORY_HEALTH
 	severity = DIRECTOR_SEVERITY_GHOST // антаг из призраков - гост-пул, а не MODERATE от категории
 	cost = 8
 	intensity = 10 // медленная фоновая угроза, лечится вирусологией
+	director_ghost_jobban = ROLE_ALIEN
+	director_ghost_preference = ROLE_ALIEN
 	family = "sentient_disease" // с рулсетом-двойником динамика: не подряд
-	// Не экста: цель болезни - заражать экипаж, а правила эксты разрешают только мирных
+	// Не экста и не Light: цель болезни - заражать экипаж, а мягкие профили оставляем
 	// к экипажу антагов (враждебное - по запросу через OPFOR/администрацию).
-	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // как у рулсета-двойника: не экста и не лайт
+	required_round_type = list(ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_TEAMBASED)
 	description = "Spawns a sentient disease, who wants to infect as many people as possible."
 
 /datum/round_event/ghost_role/sentient_disease

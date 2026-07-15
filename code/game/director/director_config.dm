@@ -1,5 +1,5 @@
 /// Поля профиля, задаваемые в минутах в конфиге и конвертируемые в децисекунды при применении.
-#define DIRECTOR_CONFIG_MINUTE_FIELDS list("max_quiet_time", "antag_light_spacing", "antag_heavy_spacing", "ghost_light_spacing", "ghost_heavy_spacing", "latejoin_spacing", "admin_cancel_time", "global_spacing", "family_spacing")
+#define DIRECTOR_CONFIG_MINUTE_FIELDS list("max_quiet_time", "antag_light_spacing", "antag_heavy_spacing", "ghost_light_spacing", "ghost_heavy_spacing", "latejoin_spacing", "antag_loss_refund_window", "admin_cancel_time", "global_spacing", "family_spacing")
 /// То же для полей действий: в коде они в децисекундах, оператору - в минутах.
 #define DIRECTOR_CONFIG_ACTION_MINUTE_FIELDS list("earliest_start", "intensity_linger")
 
