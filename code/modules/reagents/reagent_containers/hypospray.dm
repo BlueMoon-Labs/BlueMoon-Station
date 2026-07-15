@@ -318,6 +318,8 @@
 
 /obj/item/reagent_containers/hypospray/medipen/nanite_protector/attack(mob/living/M, mob/user)
 	if(M != user)
+		if(INTERACTING_WITH(user, M))
+			return
 		to_chat(M, span_userdanger("Пытается ввести вам Nanite Protector, навсегда лишив вас нанитов!"))
 		if(!do_after_mob(user, M, 5 SECONDS))
 			return
