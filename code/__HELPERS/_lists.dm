@@ -48,6 +48,21 @@
 #define SANITIZE_LIST(L) ( islist(L) ? L : list() )
 #define reverseList(L) reverseRange(L.Copy())
 
+// In-place list resize macros (Baystation port). L.len changes never reallocate,
+// unlike Cut(1,2) which shifts every remaining element - use the tail-pop pattern
+// for queue drain loops where processing order does not matter:
+//   while(length(queue))
+//       var/thing = queue[queue.len]
+//       LIST_DEC(queue)
+/// Increase the size of L by 1 at the end. Evaluates to the old last entry index.
+#define LIST_INC(L) ((L).len++)
+/// Increase the size of L by 1 at the end. Evaluates to the new last entry index.
+#define LIST_PRE_INC(L) (++(L).len)
+/// Decrease the size of L by 1 from the end. Evaluates to the old last entry index.
+#define LIST_DEC(L) ((L).len--)
+/// Decrease the size of L by 1 from the end. Evaluates to the new last entry index.
+#define LIST_PRE_DEC(L) (--(L).len)
+
 /// Performs an insertion on the given lazy list with the given key and value. If the value already exists, a new one will not be made.
 #define LAZYORASSOCLIST(lazy_list, key, value) \
 	LAZYINITLIST(lazy_list); \
