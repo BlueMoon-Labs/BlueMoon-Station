@@ -231,6 +231,15 @@
 	TEST_ASSERT(QDELETED(owned), "Удаление mind не удалило принадлежащее ему заклинание")
 	TEST_ASSERT(!length(mind.spell_list), "Удалённый mind сохранил spell_list")
 
+/// Внешний qdel призванного предмета должен очистить ссылку в живом заклинании.
+/datum/unit_test/conjure_item_qdel_cleanup/Run()
+	var/obj/effect/proc_holder/spell/targeted/conjure_item/summon_cumburger/spell = allocate(/obj/effect/proc_holder/spell/targeted/conjure_item/summon_cumburger)
+	var/obj/item/reagent_containers/food/snacks/burger/cumburger/item = spell.make_item()
+	TEST_ASSERT_EQUAL(spell.item, item, "Заклинание не сохранило созданный предмет")
+
+	qdel(item)
+	TEST_ASSERT_NULL(spell.item, "Заклинание оставило ссылку на удалённый cumburger")
+
 /// RemoveSource может синхронно удалить последний neural_interface: holder очищается до вызова.
 /datum/unit_test/hud_neural_interface_qdel_cleanup/Run()
 	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human)
@@ -315,6 +324,15 @@
 	TEST_ASSERT(!(spell in mind.spell_list), "Mind оставил удалённый lewd_chems в spell_list")
 	return record
 
+/datum/unit_test/harddel_cleanup_soft_gc/proc/qdel_conjured_item()
+	var/obj/effect/proc_holder/spell/targeted/conjure_item/summon_cumburger/spell = allocate(/obj/effect/proc_holder/spell/targeted/conjure_item/summon_cumburger)
+	var/obj/item/reagent_containers/food/snacks/burger/cumburger/item = spell.make_item()
+	var/list/record = target_record(item, "conjure_item item: /obj/item/reagent_containers/food/snacks/burger/cumburger")
+
+	qdel(item)
+	TEST_ASSERT_NULL(spell.item, "Заклинание оставило удалённый cumburger в item")
+	return record
+
 /datum/unit_test/harddel_cleanup_soft_gc/proc/qdel_neural_interface()
 	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human)
 	var/obj/item/clothing/glasses/hud/health/glasses = allocate(/obj/item/clothing/glasses/hud/health)
@@ -347,6 +365,7 @@
 	targets += list(qdel_active_parry_item())
 	targets += list(qdel_card_deck())
 	targets += list(qdel_mind_spell())
+	targets += list(qdel_conjured_item())
 	targets += list(qdel_neural_interface())
 
 	for(var/list/target in targets)
