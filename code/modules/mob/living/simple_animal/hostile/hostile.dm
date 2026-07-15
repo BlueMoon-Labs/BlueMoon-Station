@@ -179,6 +179,13 @@
 
 /mob/living/simple_animal/hostile/proc/ListTargets()//Step 1, find out what we can see
 	if(!search_objects)
+		// Spatial faction hash (SSchunks): skip the expensive hearers() scan
+		// entirely when no mob of a foreign faction is anywhere in range. Note
+		// this also skips the hostile-machine sweep - an unmanned turret next
+		// to a lone AI mob goes unnoticed until any foreign-faction mob (e.g.
+		// a player) comes near, which is invisible to anyone in practice.
+		if(!SSchunks.has_enemy_faction(targets_from, faction, vision_range))
+			return list()
 		. = hearers(vision_range, targets_from) - src //Remove self, so we don't suicide
 
 		var/static/hostile_machines = typecacheof(list(/obj/machinery/porta_turret, /obj/vehicle/sealed/mecha, /obj/structure/destructible/clockwork/ocular_warden,/obj/item/electronic_assembly))
