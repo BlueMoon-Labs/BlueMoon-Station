@@ -2348,3 +2348,129 @@
 	TEST_ASSERT(control.can_fire(signals), "Контроль: до провала событие обязано проходить can_fire")
 	TEST_ASSERT(!control.execute_action(), "Событие без typepath обязано провалить запуск")
 	TEST_ASSERT(!control.can_fire(signals), "Незапускаемое событие обязано выключиться, а не остаться кандидатом на весь раунд")
+
+/// Живые жёсткие антаги, которых директор не создавал (выданные админом/жетоном, спавнеры карт,
+/// обращённые), обязаны попадать в antag_load - иначе клапан давления считает раунд недогруженным
+/// и льёт ещё антагов поверх реальных (прод-жалоба "еретик не учитывался директором"). Разум,
+/// уже посчитанный рулсетом, не должен задваиваться третьим источником.
+/datum/unit_test/director_untracked_antag_load
+
+/// Минимальный жёсткий (не soft_antag) антаг-датум-маркер: "разум всё ещё антагонист".
+/datum/unit_test/director_untracked_antag_load/proc/grant_hard_antag(datum/mind/target_mind)
+	var/datum/antagonist/marker = new
+	marker.silent = TRUE
+	target_mind.add_antag_datum(marker)
+
+/datum/unit_test/director_untracked_antag_load/Run()
+	// Мутирует живой SSdirector - capture/restore c try/catch (см. director_beat_logic).
+	var/list/saved = SSdirector.capture_simulation_state()
+	var/mob/living/carbon/human/admin_antag
+	var/mob/living/carbon/human/soft_holder
+	try
+		SSdirector.profile = new /datum/director_profile/medium
+		SSdirector.actions = list()
+		SSdirector.intensity_ledger = list()
+		SSdirector.live_ghost_role_spawns = list()
+		var/mult_min = DIRECTOR_ACTIVITY_MULT_MIN
+		// Дельты от базовой линии: тест устойчив к любым живым антагам самого раунда CI.
+		var/baseline = SSdirector.antag_load()
+
+		// Живой жёсткий антаг без рулсета/гост-роли - аналог выданного админом/жетоном еретика.
+		admin_antag = allocate(/mob/living/carbon/human)
+		admin_antag.mind_initialize()
+		grant_hard_antag(admin_antag.mind)
+		TEST_ASSERT_EQUAL(SSdirector.antag_load() - baseline, DIRECTOR_UNTRACKED_ANTAG_INTENSITY * mult_min, "Антаг без рулсета (админ/жетон) обязан давать нагрузку через untracked-источник")
+
+		// Тот же разум в assigned рулсета - считается рулсетом; untracked дедупит, не задваивает
+		// (задвоение дало бы 15 * mult_min + 15 * mult_min). time_override держит свежий раунд без затухания.
+		SSdirector.time_override = SSticker.round_start_time + 1 MINUTES
+		var/datum/dynamic_ruleset/midround/test_pool_isolation/rule = new
+		rule.intensity = 15
+		rule.occurrences = 1
+		rule.assigned = list(admin_antag.mind)
+		SSdirector.actions = list(rule)
+		TEST_ASSERT_EQUAL(SSdirector.antag_load() - baseline, 15 * mult_min, "Разум в assigned рулсета не должен считаться повторно как untracked")
+		SSdirector.actions = list()
+		SSdirector.time_override = 0
+		qdel(rule)
+
+		// Мёртвый untracked-антаг не считается.
+		admin_antag.death()
+		TEST_ASSERT_EQUAL(SSdirector.antag_load() - baseline, 0, "Мёртвый untracked-антаг не даёт нагрузки")
+
+		// Soft-антаг (мирная гост-роль) не считается даже живым.
+		soft_holder = allocate(/mob/living/carbon/human)
+		soft_holder.mind_initialize()
+		var/datum/antagonist/soft = new
+		soft.silent = TRUE
+		soft.soft_antag = TRUE
+		soft_holder.mind.add_antag_datum(soft)
+		TEST_ASSERT_EQUAL(SSdirector.antag_load() - baseline, 0, "Soft-антаг не должен давать антаг-нагрузки")
+		soft_holder.mind.remove_antag_datum(/datum/antagonist)
+	catch(var/exception/e)
+		admin_antag?.mind?.remove_antag_datum(/datum/antagonist)
+		soft_holder?.mind?.remove_antag_datum(/datum/antagonist)
+		SSdirector.time_override = 0
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	admin_antag?.mind?.remove_antag_datum(/datum/antagonist)
+	soft_holder?.mind?.remove_antag_datum(/datum/antagonist)
+	SSdirector.restore_simulation_state(saved)
+
+/// Регрессия прод-раунда: визард-рулсеты не были persistent -> mode.process() не звал их
+/// rule_process() -> снятие Summon Events (wizardmode) со смертью мага не срабатывало -> директор
+/// глох на весь остаток раунда (все обычные события валили can_fire по wizardevent != wizardmode).
+/datum/unit_test/director_wizard_summon_events_clears
+
+/datum/unit_test/director_wizard_summon_events_clears/Run()
+	var/datum/dynamic_ruleset/midround/wizard/crew_wizard = new
+	var/datum/dynamic_ruleset/midround/from_ghosts/wizard/ghost_wizard = new
+	TEST_ASSERT(crew_wizard.persistent, "Crew-визард обязан быть persistent, иначе rule_process не снимет wizardmode")
+	TEST_ASSERT(ghost_wizard.persistent, "Гост-визард обязан быть persistent, иначе rule_process не снимет wizardmode")
+
+	var/saved_wizardmode = SSdirector.wizardmode
+	var/mob/living/carbon/human/mage = allocate(/mob/living/carbon/human)
+	mage.mind_initialize()
+	ghost_wizard.wizard = mage.mind
+	try
+		// Волшебник жив: режим не снимается, рулсет продолжает обрабатываться.
+		SSdirector.wizardmode = TRUE
+		TEST_ASSERT_EQUAL(ghost_wizard.rule_process(), FALSE, "Пока волшебник жив, rule_process не должен останавливаться")
+		TEST_ASSERT(SSdirector.wizardmode, "Пока волшебник жив, Summon Events не снимается")
+		// Волшебник мёртв: rule_process снимает wizardmode и останавливает обработку.
+		mage.death()
+		TEST_ASSERT_EQUAL(ghost_wizard.rule_process(), RULESET_STOP_PROCESSING, "Смерть волшебника обязана остановить обработку рулсета")
+		TEST_ASSERT(!SSdirector.wizardmode, "Смерть волшебника обязана снять Summon Events")
+	catch(var/exception/e)
+		SSdirector.wizardmode = saved_wizardmode
+		qdel(crew_wizard)
+		qdel(ghost_wizard)
+		throw e
+	SSdirector.wizardmode = saved_wizardmode
+	qdel(crew_wizard)
+	qdel(ghost_wizard)
+
+/// Во время Summon Events обычные события валят can_fire по wizardevent != wizardmode. diagnose
+/// обязан назвать причину явно (wizardmode), а не сваливать весь пул в невнятное special.
+/datum/unit_test/director_wizardmode_verdict
+
+/datum/unit_test/director_wizardmode_verdict/Run()
+	var/saved_wizardmode = SSdirector.wizardmode
+	var/datum/director_signals/signals = new
+	signals.effective_crew = 30
+	signals.staffing = list(DIRECTOR_DEPT_SECURITY = 0, DIRECTOR_DEPT_ENGINEERING = 0,
+		DIRECTOR_DEPT_MEDICAL = 0, DIRECTOR_DEPT_SCIENCE = 0, DIRECTOR_DEPT_SUPPLY = 0, DIRECTOR_DEPT_COMMAND = 0)
+	var/datum/round_event_control/nothing/probe = new
+	try
+		SSdirector.wizardmode = FALSE
+		TEST_ASSERT(probe.can_fire(signals), "Обычное событие вне Summon Events должно проходить can_fire")
+		SSdirector.wizardmode = TRUE
+		TEST_ASSERT(!probe.can_fire(signals), "Во время Summon Events обычное событие не должно проходить can_fire")
+		var/list/diag = SSdirector.diagnose_can_fire(probe, signals)
+		TEST_ASSERT_EQUAL(diag["reason"], DIRECTOR_CANTFIRE_WIZARDMODE, "Отказ во время Summon Events обязан диагностироваться как wizardmode, а не special")
+	catch(var/exception/e)
+		SSdirector.wizardmode = saved_wizardmode
+		qdel(probe)
+		throw e
+	SSdirector.wizardmode = saved_wizardmode
+	qdel(probe)

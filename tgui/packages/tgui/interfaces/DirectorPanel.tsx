@@ -124,6 +124,7 @@ type WalletEntry = {
 
 type DirectorPanelData = {
   paused: BooleanLike;
+  wizardmode: BooleanLike;
   randomEventsEnabled: BooleanLike;
   budget: number;
   profileName: string | null;
@@ -238,6 +239,8 @@ const VERDICT_LABELS: Record<string, string> = {
   min_players: 'мало экипажа',
   round_type: 'не тот тип раунда',
   staffing: 'не хватает штата отдела',
+  summon_events: 'режим Summon Events (маг)',
+  holiday: 'только в праздник',
   special: 'специфичное условие действия',
   readiness: 'не готов к фактическому исполнению',
   latejoin: 'только при латеджойне',
@@ -1472,7 +1475,14 @@ const HelpTab = (props) => {
 
 export const DirectorPanel = (props) => {
   const { data, act } = useBackend<DirectorPanelData>();
-  const { paused, configError, pending, pendingSeverity, pendingLeft } = data;
+  const {
+    paused,
+    wizardmode,
+    configError,
+    pending,
+    pendingSeverity,
+    pendingLeft,
+  } = data;
   const [tab, setTab] = useState('overview');
 
   return (
@@ -1487,6 +1497,14 @@ export const DirectorPanel = (props) => {
           {!!paused && (
             <Stack.Item>
               <NoticeBox danger>Директор на паузе</NoticeBox>
+            </Stack.Item>
+          )}
+          {!!wizardmode && (
+            <Stack.Item>
+              <NoticeBox warning>
+                Активен режим Summon Events (маг): обычные события заглушены, пока
+                жив волшебник. Снимется автоматически при его гибели.
+              </NoticeBox>
             </Stack.Item>
           )}
           {!!pending && (

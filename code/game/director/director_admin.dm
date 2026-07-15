@@ -152,6 +152,7 @@
 		antag_target_now = D.antag_target(D.last_signals ? D.last_signals.effective_crew : 0)
 	return list(
 		"paused" = D.paused,
+		"wizardmode" = D.wizardmode,
 		"randomEventsEnabled" = CONFIG_GET(flag/allow_random_events),
 		"budget" = round(D.total_budget(), 0.1),
 		"profileName" = D.profile ? GLOB.round_type : null,

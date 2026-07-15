@@ -379,6 +379,9 @@
 
 /datum/dynamic_ruleset/midround/wizard
 	name = "Wizard"
+	// persistent: rule_process() снимает Summon Events (wizardmode), когда волшебник погиб.
+	// Без него wizardmode залипал на весь раунд, глуша обычные события директора навсегда.
+	persistent = TRUE
 	antag_datum = /datum/antagonist/wizard
 	antag_flag = "wizard mid crew"
 	antag_flag_override = ROLE_WIZARD
@@ -447,6 +450,9 @@
 
 /datum/dynamic_ruleset/midround/from_ghosts/wizard
 	name = "Wizard"
+	// persistent: rule_process() снимает Summon Events (wizardmode), когда волшебник погиб.
+	// Без него wizardmode залипал на весь раунд, глуша обычные события директора навсегда.
+	persistent = TRUE
 	antag_datum = /datum/antagonist/wizard
 	antag_flag = "wizard mid"
 	antag_flag_override = ROLE_WIZARD
@@ -454,7 +460,12 @@
 	required_enemies = list(0,0,0,0,0,0,0,0,0,0)
 	required_candidates = 1
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
-	weight = 4
+	// Маг - единственный тяжёлый гост-рулсет без условий (1 гост + точки wizardstart есть везде),
+	// поэтому раньше выпадал "около первым" и перебивал шанс другим гост-антагам. earliest_start
+	// уводит его из первого получаса (лёгкие Devil/спавнеры играют раньше), вес снижен 4 -> 3,
+	// чтобы среди поздних тяжёлых он не доминировал. Раунд-дефайнеры не открывают смену.
+	earliest_start = 35 MINUTES
+	weight = 3
 	cost = 15 //BLUEMOON CHANGES
 	intensity = 45
 	antag_heavy = TRUE
@@ -509,6 +520,9 @@
 	required_enemies = list(0,0,0,0,0,0,5,5,4,0) //BLUEMOON CHANGES
 	required_candidates = 5
 	weight = 2
+	// Тяжёлый раунд-дефайнер не открывает смену: earliest_start уводит его из первого получаса
+	// (как и мага). Дальше и так гейтится 5 гостами + cost 30.
+	earliest_start = 35 MINUTES
 	cost = 30 //BLUEMOON CHANGES
 	antag_heavy = TRUE
 	intensity = 45

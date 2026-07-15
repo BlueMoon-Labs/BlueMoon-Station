@@ -258,11 +258,36 @@ SUBSYSTEM_DEF(director)
 /// гост-антаг события). Общая валюта клапана давления, гейта латеджойна и гейта насыщения в битах.
 /datum/controller/subsystem/director/proc/antag_load()
 	var/list/live_names = list()
-	. = get_ruleset_intensity(live_names)
-	. += get_ghost_role_intensity(live_names, only_antag = TRUE)
+	var/list/counted_minds = list()
+	. = get_ruleset_intensity(live_names, counted_minds = counted_minds)
+	. += get_ghost_role_intensity(live_names, only_antag = TRUE, counted_minds = counted_minds)
 	for(var/list/entry in intensity_ledger)
 		if(DIRECTOR_IS_ANTAG_POOL(entry[4]) && !live_names[entry[1]] && (!entry[3] || entry[3] > now()))
 			. += entry[2]
+	// Третий источник нагрузки: живые антаги без рулсета/гост-ролью (админ/жетон, спавнеры карт,
+	// обращённые). Дедуп против counted_minds, чтобы не задвоить уже посчитанных рулсетами.
+	. += get_untracked_antag_intensity(counted_minds)
+
+/// Живые жёсткие антаги, которых директор не создавал и не отслеживает: выданные админом или
+/// жетоном (как еретик из прод-раунда), спавнеры карт, обращённые культом/ревами. Клапан
+/// антаг-давления обязан их видеть - иначе директор считает раунд недогруженным и льёт ещё
+/// антагов поверх реальных. counted_minds - разумы, уже учтённые рулсетами и гост-ролями (дедуп).
+/// is_active_antag_mind уже отсекает soft_antag, мёртвых и пойманных (перма/гулаг).
+/datum/controller/subsystem/director/proc/get_untracked_antag_intensity(list/counted_minds)
+	var/total = 0
+	var/list/seen = list()
+	for(var/datum/antagonist/antag as anything in GLOB.antagonists)
+		var/datum/mind/antag_mind = antag.owner
+		// Один разум может держать несколько антаг-датумов - считаем его один раз.
+		if(!istype(antag_mind) || seen[antag_mind])
+			continue
+		if(counted_minds && counted_minds[antag_mind])
+			continue
+		if(!is_active_antag_mind(antag_mind))
+			continue
+		seen[antag_mind] = TRUE
+		total += DIRECTOR_UNTRACKED_ANTAG_INTENSITY * antag_activity_mult(antag_mind)
+	return total
 
 /// Целевая антаг-нагрузка раунда: масштабируется от живого экипажа, а не от фиксированного
 /// потолка intensity. 3 стелс-антага - норма на 20 экипажа и голод на 60 телах.
@@ -444,7 +469,7 @@ SUBSYSTEM_DEF(director)
 /// не должны глушить директора до конца раунда. Опционально помечает имена живых рулсетов в
 /// live_names - их временные мосты в ledger вытесняются этим расчётом. В breakdown (если передан)
 /// складываются строки list(имя, вклад, живых, назначено) - панель показывает их рядом с ledger.
-/datum/controller/subsystem/director/proc/get_ruleset_intensity(list/live_names = null, list/breakdown = null)
+/datum/controller/subsystem/director/proc/get_ruleset_intensity(list/live_names = null, list/breakdown = null, list/counted_minds = null)
 	var/total = 0
 	for(var/datum/director_action/action as anything in actions)
 		if(action.director_kind != DIRECTOR_KIND_RULESET)
@@ -452,7 +477,7 @@ SUBSYSTEM_DEF(director)
 		var/datum/dynamic_ruleset/rule = action
 		if(rule.occurrences <= 0 || !length(rule.assigned))
 			continue
-		total += tally_ruleset_intensity(rule, live_names, breakdown)
+		total += tally_ruleset_intensity(rule, live_names, breakdown, counted_minds)
 	// Раундстартовые рулсеты в actions не регистрируются (их пул кандидатов держит ссылки на
 	// new_player и должен освободиться после старта), но исполненные живут в executed_rules
 	// динамика весь раунд. Их живые антаги нагружают intensity наравне с мидраундами.
@@ -463,7 +488,7 @@ SUBSYSTEM_DEF(director)
 		for(var/datum/dynamic_ruleset/roundstart/rule in mode.executed_rules)
 			if(!length(rule.assigned))
 				continue
-			total += tally_ruleset_intensity(rule, live_names, breakdown)
+			total += tally_ruleset_intensity(rule, live_names, breakdown, counted_minds)
 	return total
 
 /// Множитель затухания вклада рулсета по возрасту его исполнения: полный до
@@ -484,7 +509,7 @@ SUBSYSTEM_DEF(director)
 /// а стелсер, за час никак не проявившийся, оставляет директору место. Возраст раундстартов
 /// (executed_at = 0) считается от старта раунда, инжекций - от их запуска (штамп в note_fired).
 /// Заодно добавляет строку разбивки для панели и помечает имя в live_names (см. get_ruleset_intensity).
-/datum/controller/subsystem/director/proc/tally_ruleset_intensity(datum/dynamic_ruleset/rule, list/live_names, list/breakdown)
+/datum/controller/subsystem/director/proc/tally_ruleset_intensity(datum/dynamic_ruleset/rule, list/live_names, list/breakdown, list/counted_minds = null)
 	. = 0
 	refund_lost_ruleset_antags(rule)
 	var/living = 0
@@ -493,6 +518,8 @@ SUBSYSTEM_DEF(director)
 		if(istype(assigned_mind) && is_active_antag_mind(assigned_mind))
 			living++
 			activity_sum += antag_activity_mult(assigned_mind)
+			if(!isnull(counted_minds))
+				counted_minds[assigned_mind] = TRUE
 	if(living)
 		var/decay = ruleset_intensity_decay(rule.executed_at || SSticker.round_start_time)
 		. = rule.intensity * decay * activity_sum / length(rule.assigned)
@@ -716,7 +743,7 @@ SUBSYSTEM_DEF(director)
 
 /// Живая нагрузка ghost-role событий. only_antag: null = все для общего intensity,
 /// TRUE = только ANTAG/GHOST для клапана антагов, FALSE = только видимые не-антаг события.
-/datum/controller/subsystem/director/proc/get_ghost_role_intensity(list/live_names = null, list/breakdown = null, only_antag = null)
+/datum/controller/subsystem/director/proc/get_ghost_role_intensity(list/live_names = null, list/breakdown = null, only_antag = null, list/counted_minds = null)
 	var/total = 0
 	for(var/i = length(live_ghost_role_spawns), i >= 1, i--)
 		var/list/entry = live_ghost_role_spawns[i]
@@ -739,6 +766,10 @@ SUBSYSTEM_DEF(director)
 					refund += antag_loss_refund_value(policy, assigned_mind.director_activity_total)
 				continue
 			living++
+			// Дедуп для get_untracked_antag_intensity: разум, уже посчитанный как живая гост-роль,
+			// не должен всплыть повторно третьим источником через GLOB.antagonists.
+			if(!isnull(counted_minds))
+				counted_minds[assigned_mind] = TRUE
 		for(var/datum/weakref/mob_ref as anything in mob_refs)
 			var/mob/current = mob_ref.resolve()
 			if(current && current.stat != DEAD)
@@ -1058,6 +1089,15 @@ SUBSYSTEM_DEF(director)
 		for(var/dept in action.min_staffing)
 			if(signals.staffing[dept] < action.min_staffing[dept])
 				return list("reason" = DIRECTOR_CANTFIRE_STAFFING, "detail" = "[dept]: [signals.staffing[dept]] из [action.min_staffing[dept]]")
+	// Гейты round_event_control поверх базового контракта: во время Summon Events (wizardmode)
+	// обычные события заглушены, а wizard-события доступны только в нём - без явной причины
+	// весь пул событий читался бы как невнятное "специфичное условие".
+	if(istype(action, /datum/round_event_control))
+		var/datum/round_event_control/event_control = action
+		if(event_control.wizardevent != wizardmode)
+			return list("reason" = DIRECTOR_CANTFIRE_WIZARDMODE, "detail" = null)
+		if(event_control.holidayID && (!SSholidays.holidays || !SSholidays.holidays[event_control.holidayID]))
+			return list("reason" = DIRECTOR_CANTFIRE_HOLIDAY, "detail" = null)
 	return list("reason" = DIRECTOR_CANTFIRE_SPECIAL, "detail" = null)
 
 /// "ещё N мин" для деталей вердиктов панели

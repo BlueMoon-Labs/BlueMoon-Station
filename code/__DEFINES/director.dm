@@ -90,6 +90,11 @@
 /// Делитель score при переводе в множитель: при капе 60 множитель ровно 0.5 + 60/40 = 2
 #define DIRECTOR_ACTIVITY_MULT_SCALE 40
 
+/// Базовый вклад в antag_load живого жёсткого антага, не отслеживаемого рулсетом или гост-ролью
+/// (выдан админом/жетоном, спавнер карты, обращённый культом/ревами). Тир лёгкого соло-антага;
+/// домножается на antag_activity_mult, поэтому тихий = 0.5x, буйный = до 2x.
+#define DIRECTOR_UNTRACKED_ANTAG_INTENSITY 15
+
 /// Псевдо-ступень в reject_stats бита, отсечённого глобальной паузой: гейт бьёт по всем ступеням сразу
 #define DIRECTOR_REJECT_SEV_ALL "all"
 
@@ -105,4 +110,9 @@
 #define DIRECTOR_CANTFIRE_MIN_PLAYERS "min_players"
 #define DIRECTOR_CANTFIRE_ROUND_TYPE "round_type"
 #define DIRECTOR_CANTFIRE_STAFFING "staffing"
+/// Событие недоступно из-за режима Summon Events (wizardmode): обычные события заглушены,
+/// пока активен маг, и наоборот - wizard-события доступны только в этом режиме.
+#define DIRECTOR_CANTFIRE_WIZARDMODE "summon_events"
+/// Событие привязано к празднику, которого сейчас нет (holidayID)
+#define DIRECTOR_CANTFIRE_HOLIDAY "holiday"
 #define DIRECTOR_CANTFIRE_SPECIAL "special"
