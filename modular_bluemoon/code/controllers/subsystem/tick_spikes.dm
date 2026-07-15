@@ -152,6 +152,14 @@ SUBSYSTEM_DEF(tick_spikes)
 
 /datum/controller/subsystem/tick_spikes/PreInit()
 	reset_state()
+#if DM_VERSION >= 515
+	// Always-on SendMaps profiling: the proc profiler can't see render/maptick
+	// cost at all, and SendMaps spikes used to be diagnosable only during an
+	// admin-started capture session. The sendmaps profile is a small aggregate
+	// table (negligible overhead), so keep it running from boot and auto-dump
+	// it whenever a spike classifies as SendMaps (see try_dump_profile).
+	world.Profile(PROFILE_START, type = "sendmaps")
+#endif
 
 /// Полный сброс колец и статистики. Не трогает настройки порогов.
 /datum/controller/subsystem/tick_spikes/proc/reset_state()
@@ -381,8 +389,21 @@ SUBSYSTEM_DEF(tick_spikes)
 			message_admins("Тик-спайк: [round(drift)]мс, источник: [spike_class]. Подробности: Debug -> Tick Spikes Report.")
 
 /// Дамп окна профайлера на спайке (только при активном захвате). Возвращает строку для события или null.
+/// Исключение: sendmaps-профиль работает всегда (см. PreInit), поэтому SendMaps-спайки
+/// дампят его и БЕЗ сессии захвата - проковский профайлер их всё равно не объясняет.
 /datum/controller/subsystem/tick_spikes/proc/try_dump_profile(drift, now_ms, spike_class)
-	if(suppress_side_effects || !capture_until || world.time > capture_until)
+	if(suppress_side_effects)
+		return null
+	if(!capture_until || world.time > capture_until)
+#if DM_VERSION >= 515
+		if(spike_class == TICK_SPIKE_CLASS_SENDMAPS && (now_ms - last_profile_dump_ms >= profile_dump_cooldown_ms))
+			last_profile_dump_ms = now_ms
+			profile_dumps_done++
+			self_inflicted_until = world.time + (TICK_SPIKES_SELF_INFLICTED_TICKS * world.tick_lag)
+			var/auto_sendmaps_name = "tick_spike_sendmaps_[profile_dumps_done].json"
+			WRITE_FILE(file("[GLOB.log_directory]/[auto_sendmaps_name]"), world.Profile(PROFILE_REFRESH, type = "sendmaps", format = "json"))
+			return "sendmaps-профайл (авто, без захвата) записан в [auto_sendmaps_name]"
+#endif
 		return null
 	if(spike_class == TICK_SPIKE_CLASS_SELF)
 		return "дамп профайлера пропущен: спайк вызван предыдущим дампом"
@@ -432,9 +453,8 @@ SUBSYSTEM_DEF(tick_spikes)
 	if(started_profiler && !CONFIG_GET(flag/auto_profile))
 		SSprofiler.StopProfiling()
 #endif
-#if DM_VERSION >= 515
-	world.Profile(PROFILE_STOP, type = "sendmaps")
-#endif
+	// sendmaps-профиль НЕ останавливаем: он always-on с PreInit (нужен для
+	// авто-дампов SendMaps-спайков вне сессий захвата)
 	started_profiler = FALSE
 	var/summary = "=== ЗАХВАТ ВЫКЛЮЧЕН [automatic ? "(по таймеру)" : "([stopper_key])"]: спайков за сессию [session_spike_count], дампов профайлера [profile_dumps_done] ==="
 	write_to_log(summary)

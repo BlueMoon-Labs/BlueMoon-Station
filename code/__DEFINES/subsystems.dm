@@ -179,6 +179,7 @@
 #define INIT_ORDER_STATPANELS		-98
 #define INIT_ORDER_HILBERTSHOTEL	-99
 #define INIT_ORDER_CHAT				-100 //Should be last to ensure chat remains smooth during init.
+#define INIT_ORDER_INIT_PROFILER	-101 //Truly last: dumps the init-time profile and clears it from the round profile.
 
 
 // Subsystem fire priority, from lowest to highest priority
