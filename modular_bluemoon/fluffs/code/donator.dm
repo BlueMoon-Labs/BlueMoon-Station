@@ -2507,5 +2507,5 @@
 /datum/gear/donator/bm/stupid_cap
 	name = "Propeller beanie"
 	slot = ITEM_SLOT_HEAD
-	path = /obj/item/clothing/head/donator/bm/krieg_helmet
+	path = /obj/item/clothing/head/donator/bm/stupid_cap
 	ckeywhitelist = list("angelnedemon")
