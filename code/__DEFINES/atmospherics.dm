@@ -78,6 +78,21 @@
 #define NO_REACTION		0
 #define REACTING		1
 #define STOP_REACTIONS 	2
+/// The tile hosts a volatile reaction (a live fire/hotspot): excited group
+/// breakdown must not average the burn away mid-reaction (tg port).
+#define VOLATILE_REACTION	4
+/// Hard ceiling on how long a volatile reaction may defer group breakdown.
+/// Our breakdown also evicts settled members (giant-group churn control), so
+/// a long fire is not allowed to suppress it indefinitely.
+#define EXCITED_GROUP_VOLATILE_BREAKDOWN_CEILING	(EXCITED_GROUP_BREAKDOWN_CYCLES * 4)
+
+// Exact pressure solver for pumps (tg port, see gas_pressure_calculate)
+/// Molar accuracy target of the Newton-Raphson fallback solver.
+#define MOLAR_ACCURACY 1e-4
+/// Iteration cap of the Newton-Raphson fallback solver.
+#define ATMOS_PRESSURE_APPROXIMATION_ITERATIONS 20
+/// Float slack added to the solver's analytic mole bounds.
+#define ATMOS_PRESSURE_ERROR_TOLERANCE 0.01
 
 // Pressure limits.
 #define HAZARD_HIGH_PRESSURE				550		//This determins at what pressure the ultra-high pressure red icon is displayed. (This one is set as a constant)

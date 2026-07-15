@@ -573,6 +573,14 @@
 
 	var/reaction_result = our_air.react(src)
 
+	// Feed the group lifecycle: a member with a live reaction or hotspot marks
+	// the whole group so tick_lifecycle can hold off breakdown/dismantle
+	// (averaging mid-burn smears the fire's heat across the group).
+	if(our_excited_group)
+		our_excited_group.turf_reactions |= reaction_result
+		if(active_hotspot)
+			our_excited_group.turf_reactions |= VOLATILE_REACTION
+
 	update_visuals()
 
 	if(!active_hotspot && !(reaction_result & (REACTING | STOP_REACTIONS)))
@@ -652,6 +660,9 @@
 	var/list/turf_list = list()
 	var/breakdown_cooldown = 0
 	var/dismantle_cooldown = 0
+	/// Reaction flags OR-ed in by members during process_cell this air pass;
+	/// consumed and reset by tick_lifecycle (tg turf_reactions port).
+	var/turf_reactions = NO_REACTION
 	/// Members currently excited. Maintained incrementally on every excited-flag
 	/// transition and recounted exactly by self_breakdown, so the dismantle
 	/// decision does not scan the whole turf_list every group-stage tick.
@@ -687,6 +698,7 @@
 			turf_list |= T
 		awake_members += E.awake_members
 		E.awake_members = 0
+		turf_reactions |= E.turf_reactions // a burning group keeps its volatile gate through merges
 		E.turf_list.Cut()
 		reset_cooldowns()
 	else
@@ -698,6 +710,7 @@
 		E.awake_members += awake_members
 		awake_members = 0
 		turf_list.Cut()
+		E.turf_reactions |= turf_reactions // a burning group keeps its volatile gate through merges
 		E.reset_cooldowns()
 
 /datum/excited_group/proc/reset_cooldowns()
@@ -719,12 +732,20 @@
 	if(awake_members <= 0)
 		dismantle()
 		return
+	// A live fire on a member defers averaging (tg VOLATILE_REACTION gate):
+	// breakdown mid-burn smears the hotspot's heat across the whole group and
+	// can snuff or teleport the fire. Deferral is capped - our breakdown also
+	// evicts settled members (giant-group churn control), so a long fire must
+	// not suppress it forever. Any reaction at all blocks dismantle.
+	var/volatile_reaction = turf_reactions & VOLATILE_REACTION
 	breakdown_cooldown++
-	dismantle_cooldown++
-	if(breakdown_cooldown >= EXCITED_GROUP_BREAKDOWN_CYCLES)
+	if(!volatile_reaction)
+		dismantle_cooldown++
+	if(breakdown_cooldown >= EXCITED_GROUP_BREAKDOWN_CYCLES && (!volatile_reaction || breakdown_cooldown >= EXCITED_GROUP_VOLATILE_BREAKDOWN_CEILING))
 		self_breakdown(poke_resting = TRUE)
-	else if(dismantle_cooldown >= EXCITED_GROUP_DISMANTLE_CYCLES)
+	else if(dismantle_cooldown >= EXCITED_GROUP_DISMANTLE_CYCLES && !(turf_reactions & (REACTING | STOP_REACTIONS)))
 		dismantle()
+	turf_reactions = NO_REACTION
 
 /datum/excited_group/proc/self_breakdown(space_is_all_consuming = FALSE, poke_resting = FALSE)
 	if(!length(turf_list))
