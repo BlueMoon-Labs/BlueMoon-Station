@@ -81,6 +81,7 @@
 // #include "breath.dm"
 // #include "card_mismatch.dm"
 #include "chain_pull_through_space.dm"
+#include "chunks_faction_hash.dm"
 // #include "combat.dm"
 #include "component_tests.dm"
 // #include "connect_loc.dm"
@@ -158,6 +159,7 @@
 #include "timer_sanity.dm"
 #include "unit_test.dm"
 #include "vending_stock_keys.dm"
+#include "verb_manager.dm"
 // #include "wizard.dm"
 
 /// CIT TESTS
@@ -172,6 +174,8 @@
 
 /// BLUEMOON TESTS
 #include "atom_hud_perf.dm"
+#include "atmos_excited_group_lifecycle.dm"
+#include "atmos_pump_solver.dm"
 #include "atmos_vacuum_exception.dm"
 
 #include "auto_cryo.dm"
