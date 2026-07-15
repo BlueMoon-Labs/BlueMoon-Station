@@ -24,14 +24,14 @@
 		smallsprite_WR = WEAKREF(smallsprite)
 	else
 		owner.remove_alt_appearance(SIZECODE_ALTAPP_KEY)
-		qdel(smallsprite_WR)
+		smallsprite_WR = null
 
 	small = !small
 	return TRUE
 
 /datum/action/sizecode_smallsprite/Remove(mob/remove_from)
 	owner?.remove_alt_appearance(SIZECODE_ALTAPP_KEY)
-	qdel(smallsprite_WR)
+	smallsprite_WR = null
 	small = FALSE
 	return ..()
 

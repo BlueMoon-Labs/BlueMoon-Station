@@ -200,7 +200,7 @@ GLOBAL_LIST_EMPTY(active_alternate_appearances)
 	theImage.pixel_x = target.pixel_x
 	theImage.pixel_y = target.pixel_y
 	theImage.appearance_flags = target.appearance_flags
-	theImage.overlays = target.overlays.Copy(target.transform)
+	theImage.overlays = target.overlays.Copy()
 	
 	if(!ismob(target))
 		return
