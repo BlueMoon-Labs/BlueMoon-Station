@@ -177,6 +177,21 @@
 /atom/movable/proc/Moved(atom/OldLoc, Dir, Forced = FALSE)
 	SHOULD_CALL_PARENT(TRUE)
 	SEND_SIGNAL(src, COMSIG_MOVABLE_MOVED, OldLoc, Dir, Forced)
+
+	//спатиал-грид: перекладываем содержимое наших каналов при пересечении
+	//границы ячеек (для большинства movables это одна null-проверка ключа)
+	if(HAS_SPATIAL_GRID_CONTENTS(src))
+		var/turf/old_turf = get_turf(OldLoc)
+		var/turf/new_turf = get_turf(src)
+		if(old_turf && new_turf && (old_turf.z != new_turf.z \
+			|| GET_SPATIAL_INDEX(old_turf.x) != GET_SPATIAL_INDEX(new_turf.x) \
+			|| GET_SPATIAL_INDEX(old_turf.y) != GET_SPATIAL_INDEX(new_turf.y)))
+			SSspatial_grid.exit_cell(src, old_turf)
+			SSspatial_grid.enter_cell(src, new_turf)
+		else if(old_turf && !new_turf)
+			SSspatial_grid.exit_cell(src, old_turf)
+		else if(new_turf && !old_turf)
+			SSspatial_grid.enter_cell(src, new_turf)
 	// Diagonal intents are split into two cardinals inside Move(); defer newtonian to one call at split end (see above).
 	if (!inertia_moving && !HAS_TRAIT(src, TRAIT_HYPERSPACED) && !moving_diagonally)
 		inertia_next_move = world.time + inertia_move_delay
@@ -291,6 +306,13 @@
 		if (loc)
 			var/atom/oldloc = loc
 			var/area/old_area = get_area(oldloc)
+			//эта ветка не зовёт Moved(), поэтому спатиал-грид чистим сами:
+			//иначе уход в nullspace оставит вечную ссылку в старой ячейке,
+			//а возврат зарегистрирует вторую (см. Moved в этом файле)
+			if(HAS_SPATIAL_GRID_CONTENTS(src))
+				var/turf/old_grid_turf = get_turf(oldloc)
+				if(old_grid_turf)
+					SSspatial_grid.exit_cell(src, old_grid_turf)
 			oldloc.Exited(src, null)
 			if(old_area)
 				old_area.Exited(src, null)

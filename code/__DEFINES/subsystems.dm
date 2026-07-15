@@ -148,6 +148,7 @@
 // #define INIT_ORDER_TCG				55
 #define INIT_ORDER_MAPPING			50
 #define INIT_ORDER_TIMETRACK		47
+#define INIT_ORDER_SPATIAL_GRID		46 // после маппинга (нужны z-уровни), до инита атомов (они регистрируются в гриде)
 #define INIT_ORDER_NETWORKS			45
 #define INIT_ORDER_ECONOMY			40
 #define INIT_ORDER_HOLODECK			35

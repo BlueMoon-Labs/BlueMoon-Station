@@ -25,6 +25,8 @@
 	// TODO: sleep here if the Z level needs to be cleared
 	var/datum/space_level/S = new z_type(new_z, name, traits)
 	z_list += S
+	//z-уровни, созданные до инита грида, разложит SSspatial_grid/Initialize сам
+	SSspatial_grid.propogate_spatial_grid_to_new_z(S)
 	return S
 
 /datum/controller/subsystem/mapping/proc/get_level(z) as /datum/space_level

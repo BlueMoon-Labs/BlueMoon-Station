@@ -52,6 +52,9 @@
 	if (key != client.key)
 		key = client.key
 
+	//спатиал-грид: моб с клиентом попадает в CLIENTS-канал своей ячейки
+	enable_client_mobs_in_contents()
+
 	reset_perspective(loc)
 
 	if(loc)
