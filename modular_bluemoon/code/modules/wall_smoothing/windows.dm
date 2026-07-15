@@ -113,6 +113,11 @@
 	smoothing_groups = SMOOTH_GROUP_WINDOW_FULLTILE
 	canSmoothWith = SMOOTH_GROUP_AIRLOCK + SMOOTH_GROUP_WINDOW_FULLTILE + SMOOTH_GROUP_WALLS
 
+/obj/structure/window/fulltile/CheckExit(atom/movable/O, turf/target)
+	if(O?.loc == loc)
+		return TRUE
+	return ..()
+
 /obj/structure/window/update_icon_state()
 	if(smoothing_flags & USES_SMOOTHING)
 		icon_state = "[base_icon_state]-[smoothing_junction]"

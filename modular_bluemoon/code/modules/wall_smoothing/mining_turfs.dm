@@ -2,11 +2,31 @@
 	icon = 'modular_bluemoon/icons/turf/walls/smoothrocks.dmi'
 	icon_state = "smoothrocks-0"
 	luminosity = 0
+	plane = GAME_PLANE
 	smooth = SMOOTH_FALSE
 	smoothing_flags = SMOOTH_BITMASK | SMOOTH_BORDER
-	smoothing_groups = SMOOTH_GROUP_CLOSED_TURFS + SMOOTH_GROUP_MINERAL_WALLS
+	smoothing_groups = SMOOTH_GROUP_MINERAL_WALLS
 	canSmoothWith = SMOOTH_GROUP_MINERAL_WALLS
 	base_icon_state = "smoothrocks"
+	// smoothrocks sprites are 40x40; offset so the visible rock aligns to the turf grid
+	transform = matrix(1, 0, -4, 0, 1, -4)
+	var/wall_icon_state = "rock"
+
+/turf/closed/mineral/update_icon_state()
+	if(smoothing_flags & USES_SMOOTHING)
+		set_smoothed_icon_state(smoothing_junction)
+	return ..()
+
+/turf/closed/mineral/mesarock
+	icon = 'icons/turf/mining.dmi'
+	smooth_icon = 'icons/turf/walls/rock_wall.dmi'
+	icon_state = "rockyash"
+	smooth = SMOOTH_MORE|SMOOTH_BORDER
+	smoothing_flags = NONE
+	smoothing_groups = NONE
+	base_icon_state = null
+	canSmoothWith = list(/turf/closed)
+	transform = null
 
 /turf/closed/mineral/random/high_chance
 
@@ -102,8 +122,9 @@
 	base_icon_state = "smoothrocks"
 	smooth = SMOOTH_FALSE
 	smoothing_flags = SMOOTH_BITMASK | SMOOTH_BORDER
-	smoothing_groups = SMOOTH_GROUP_CLOSED_TURFS + SMOOTH_GROUP_MINERAL_WALLS
+	smoothing_groups = SMOOTH_GROUP_MINERAL_WALLS
 	canSmoothWith = SMOOTH_GROUP_MINERAL_WALLS
+	transform = matrix(1, 0, -4, 0, 1, -4)
 
 /turf/closed/indestructible/rock/snow
 	icon = 'modular_bluemoon/icons/turf/walls/mountain_wall.dmi'

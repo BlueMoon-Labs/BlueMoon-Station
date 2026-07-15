@@ -61,14 +61,6 @@
 	smoothing_groups = SMOOTH_GROUP_CLOCKWORK_WALLS + SMOOTH_GROUP_WALLS
 	canSmoothWith = SMOOTH_GROUP_CLOCKWORK_WALLS + SMOOTH_GROUP_WALLS
 
-/obj/structure/falsewall/wood/shadow
-	fake_icon = 'modular_splurt/icons/turf/walls/wall_shadow.dmi'
-	canSmoothWith = SMOOTH_GROUP_WOOD_WALLS + SMOOTH_GROUP_WALLS
-
-/obj/structure/falsewall/wood/mushroom
-	fake_icon = 'modular_splurt/icons/turf/walls/wall_shadow.dmi'
-	canSmoothWith = SMOOTH_GROUP_WOOD_WALLS + SMOOTH_GROUP_WALLS
-
 /obj/structure/girder
 	icon = 'modular_bluemoon/icons/obj/smooth_structures/girder.dmi'
 	base_icon_state = "girder"
@@ -83,11 +75,6 @@
 		icon_state = "[base_icon_state]-[smoothing_junction]"
 		return ..()
 	return ..()
-
-/obj/structure/girder/update_overlays(updates = ALL)
-	. = ..()
-	if(smoothing_flags & USES_SMOOTHING)
-		QUEUE_SMOOTH(src)
 
 /obj/structure/girder/reinforced
 	icon = 'icons/obj/smooth_structures/reinforced_girder.dmi'

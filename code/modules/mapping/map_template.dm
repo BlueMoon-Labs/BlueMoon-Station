@@ -203,6 +203,9 @@
 	//initialize things that are normally initialized after map load
 	parsed.initTemplateBounds()
 
+	for(var/curz = bounds[MAP_MINZ] to bounds[MAP_MAXZ])
+		smooth_zlevel(curz, TRUE)
+
 	log_game("[name] loaded at [T.x],[T.y],[T.z]")
 	on_map_loaded(T.z, parsed.bounds)
 
