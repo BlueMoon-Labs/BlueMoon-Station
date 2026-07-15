@@ -529,6 +529,11 @@
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	requirements = list(101,101,101,101,101,101,60,40,30,10) //BLUEMOON CHANGES
 	var/list/operative_cap = list(5,5,5,5,5,5,5,5,5,5)
+	/// Минимум оперативников, с которого рейд уже стартует: полная команда из 5 гостов
+	/// одновременно почти никогда не набиралась, и мидраунд-нюки не появлялись авто вовсе.
+	/// Меньший отряд (3-5) - диверсионный удар вместо полной команды; poll всё равно берёт
+	/// до operative_cap, сколько откликнулось.
+	var/minimum_operatives = 3
 	var/datum/team/nuclear/nuke_team
 	flags = HIGH_IMPACT_RULESET
 
@@ -537,12 +542,13 @@
 		return FALSE // Unavailable if nuke ops were already sent at roundstart
 	indice_pop = min(operative_cap.len, round(living_players.len/5)+1)
 	required_candidates = operative_cap[indice_pop]
-	required_applicants = required_candidates
+	// Цель - required_candidates (до 5), гейт опроса/готовности - минимум отряда.
+	required_applicants = min(required_candidates, minimum_operatives)
 	return ..()
 
 /datum/dynamic_ruleset/midround/from_ghosts/nuclear/ready(forced = FALSE)
-	if (required_candidates > (dead_players.len + list_observers.len))
-		ready_failure_reason = "подходящих гостов [dead_players.len + list_observers.len] из [required_candidates]"
+	if (required_applicants > (dead_players.len + list_observers.len))
+		ready_failure_reason = "подходящих гостов [dead_players.len + list_observers.len] из [required_applicants]"
 		return FALSE
 	return ..()
 
@@ -581,13 +587,21 @@
 	intensity = 45
 	requirements = list(101,101,101,101,50,40,30,20,10,10)
 	var/list/clock_cap = list(1,1,1,2,3,4,5,5,5,5)
+	/// Минимум обращаемых, с которого культ уже стартует: культ - снежный ком, малый посев
+	/// вербует остальных в игре. Полная цель clock_cap 5-6 подходящих на среднем онлайне почти
+	/// не набиралась, и мидраунд-культ не появлялся вовсе. Гейт = min(цель, этот минимум).
+	var/minimum_candidates = 3
+	/// Сколько обращаемых культ пытается взять при достатке (цель clock_cap); execute берёт
+	/// столько, сколько есть, но не меньше required_candidates и не больше цели.
+	var/target_candidates = 0
 	flags = HIGH_IMPACT_RULESET
 
 /datum/dynamic_ruleset/midround/ratvar_awakening/acceptable(population=0, threat=0)
 	if (locate(/datum/dynamic_ruleset/roundstart/clockcult) in mode.executed_rules)
 		return FALSE // Unavailable if clockies exist at round start
 	indice_pop = min(clock_cap.len, round(population/5)+1)
-	required_candidates = clock_cap[indice_pop]
+	target_candidates = clock_cap[indice_pop]
+	required_candidates = min(target_candidates, minimum_candidates)
 	return ..()
 
 /datum/dynamic_ruleset/midround/ratvar_awakening/director_preflight()
@@ -621,7 +635,9 @@
 		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
 		return FALSE
 	// BLUEMOON ADD END
-	for(var/i = 0; i < required_candidates; i++)
+	// Цель - target_candidates (полный clock_cap), но берём сколько есть сверх минимума.
+	var/to_convert = max(target_candidates, required_candidates)
+	for(var/i = 0; i < to_convert; i++)
 		if(!candidates.len)
 			break
 		var/mob/living/clock_antag = pick_n_take(candidates)
@@ -660,6 +676,11 @@
 	intensity = 45
 	requirements = list(101,101,101,101,50,40,30,20,10,10)
 	var/list/blood_cap = list(1,1,2,3,4,5,6,6,6,6)
+	/// Минимум обращаемых, с которого культ уже стартует (см. Ratvar Awakening): кровавый культ
+	/// снежным комом вербует остальных, полная цель blood_cap 6 почти не набиралась на среднем онлайне.
+	var/minimum_candidates = 3
+	/// Цель обращения (полный blood_cap); execute берёт сколько есть сверх минимума.
+	var/target_candidates = 0
 	var/datum/team/cult/main_cult
 	flags = HIGH_IMPACT_RULESET
 
@@ -667,7 +688,8 @@
 	if (locate(/datum/dynamic_ruleset/roundstart/bloodcult) in mode.executed_rules)
 		return FALSE
 	indice_pop = min(blood_cap.len, round(population/5)+1)
-	required_candidates = blood_cap[indice_pop]
+	target_candidates = blood_cap[indice_pop]
+	required_candidates = min(target_candidates, minimum_candidates)
 	return ..()
 
 /datum/dynamic_ruleset/midround/narsie_awakening/director_preflight()
@@ -701,7 +723,9 @@
 		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
 		return FALSE
 	// BLUEMOON ADD END
-	for(var/i = 0; i < required_candidates; i++)
+	// Цель - target_candidates (полный blood_cap), но берём сколько есть сверх минимума.
+	var/to_convert = max(target_candidates, required_candidates)
+	for(var/i = 0; i < to_convert; i++)
 		if(!candidates.len)
 			break
 		var/mob/living/blood_antag = pick_n_take(candidates)

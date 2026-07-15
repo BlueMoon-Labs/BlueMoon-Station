@@ -3,7 +3,10 @@
 	typepath = /datum/round_event/ghost_role/slaughter
 	weight = 1 //Very rare
 	max_occurrences = 1
-	earliest_start = 2 HOURS
+	// Было 2 часа - механика "кровавая станция -> демон" (вес от числа декалей крови ниже)
+	// не успевала сработать, раунды кончались раньше. 60 мин даёт ей окно; сам вес крови
+	// оставляет демона редким и завязанным на насильственные раунды.
+	earliest_start = 60 MINUTES
 	min_players = 30
 	category = EVENT_CATEGORY_ENTITIES
 	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
@@ -48,7 +51,7 @@
 			continue
 		if(!SSpersistence.IsValidDebrisLocation(C.loc, allowed_turf_typecache, allowed_z_cache, C.type, FALSE))
 			continue
-		weight += 0.03
+		weight += 0.04
 
 /datum/round_event/ghost_role/slaughter
 	minimum_required = 1
