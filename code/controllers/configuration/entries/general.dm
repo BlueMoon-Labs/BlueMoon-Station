@@ -448,3 +448,9 @@
  */
 /datum/config_entry/number/tgui_max_chunk_count
 	default = 2048
+
+/// Онлайн, при котором SSlag_switch автоматически включает меры снижения
+/// нагрузки (с 20-секундным окном вето для админов). 0 = автовключение выключено.
+/datum/config_entry/number/auto_lag_switch_pop
+	default = 0
+	min_val = 0

@@ -430,6 +430,8 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	if(byond_version >= 516)
 		winset(src, null, "browser-options=+find,+byondstorage")
 
+	SEND_GLOBAL_SIGNAL(COMSIG_GLOB_CLIENT_CONNECT, src)
+
 	//Admin Authorisation
 	var/connecting_admin = FALSE //because de-admined admins connecting should be treated like admins.
 	holder = GLOB.admin_datums[ckey]

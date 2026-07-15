@@ -177,6 +177,13 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 
 	var/static/list/one_character_prefix = list(MODE_HEADSET = TRUE, MODE_ROBOT = TRUE, MODE_WHISPER = TRUE, MODE_SING = TRUE)
 
+	// Lag switch: per-client slowmode for IC chat (tg SLOWMODE_SAY)
+	if(client && SSlag_switch.measures[SLOWMODE_SAY] && !forced && src == usr && !HAS_TRAIT(src, TRAIT_BYPASS_MEASURES))
+		if(!COOLDOWN_FINISHED(client, say_slowmode))
+			to_chat(src, "<span class='warning'>Включён слоумод чата: подождите [COOLDOWN_TIMELEFT(client, say_slowmode) / 10] сек перед следующим сообщением.</span>")
+			return
+		COOLDOWN_START(client, say_slowmode, SSlag_switch.slowmode_cooldown)
+
 	var/ic_blocked = FALSE
 
 	if(!isclownjob(src))
