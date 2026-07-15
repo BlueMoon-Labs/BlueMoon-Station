@@ -172,6 +172,7 @@
 
 /// BLUEMOON TESTS
 #include "atom_hud_perf.dm"
+#include "atmos_vacuum_exception.dm"
 
 #include "auto_cryo.dm"
 #include "bad_defines_defined.dm"
@@ -208,6 +209,7 @@
 #include "tattoo_system.dm"
 #include "techweb_copy.dm"
 #include "tick_spike_recorder.dm"
+#include "update_icon_short_circuit.dm"
 
 #undef TEST_ASSERT
 #undef TEST_ASSERT_EQUAL

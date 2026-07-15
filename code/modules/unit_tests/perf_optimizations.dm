@@ -652,3 +652,161 @@
 	critter.add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/simplemob_varspeed, multiplicative_slowdown = 5)
 	TEST_ASSERT_EQUAL(critter.movespeed_updates, updates_before + 2, "Changing the slowdown again must rebuild movespeed")
 	TEST_ASSERT_EQUAL(critter.cached_multiplicative_slowdown, cache_at_two + 3, "Cached slowdown must reflect the new value")
+
+
+// ===== Ventcrawl pipe vision: collect_pipes_in_view hoists the bounds check =====
+//
+// Profile snapshot (perf.log 2026-07): /proc/in_view_range - 749294 calls / 1.16s
+// self + /proc/getviewsize - 753355 calls / 0.55s self, nearly all from
+// add_ventcrawl() iterating EVERY member of the pipenet (a station distro loop is
+// thousands of pipes) and paying a proc call + a list allocation per pipe, on
+// every ventcrawl step. collect_pipes_in_view() computes the view box once and
+// does inline comparisons per pipe.
+
+/// Simulates the retired per-pipe path (in_view_range body: getviewsize list
+/// allocation + turf lookup + inclusive range check) for an honest A/B timing.
+/datum/unit_test/ventcrawl_pipe_collection/proc/legacy_in_view_range_sim(turf/source, atom/candidate, view)
+	var/list/view_range = getviewsize(view)
+	var/turf/target = get_turf(candidate)
+	if(isnull(target))
+		return FALSE
+	return ISINRANGE(target.x, source.x - view_range[1], source.x + view_range[1]) && ISINRANGE(target.y, source.y - view_range[1], source.y + view_range[1])
+
+#define VENTCRAWL_BENCH_PIPES 2000
+#define VENTCRAWL_BENCH_PASSES 20
+
+/datum/unit_test/ventcrawl_pipe_collection/Run()
+	var/turf/source_turf = run_loc_floor_bottom_left
+
+	// --- Correctness ---
+	var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/near_pipe = allocate(/obj/machinery/atmospherics/pipe/build_pipeline_test_node)
+	near_pipe.forceMove(source_turf)
+	var/turf/far_turf = get_step(get_step(get_step(source_turf, EAST), EAST), EAST)
+	TEST_ASSERT_NOTNULL(far_turf, "Test reservation must have three EAST neighbours")
+	var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/far_pipe = allocate(/obj/machinery/atmospherics/pipe/build_pipeline_test_node)
+	far_pipe.forceMove(far_turf)
+	var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/nowhere_pipe = allocate(/obj/machinery/atmospherics/pipe/build_pipeline_test_node)
+	nowhere_pipe.moveToNullspace()
+
+	var/list/members = list(near_pipe, far_pipe, nowhere_pipe)
+
+	var/list/tight = list()
+	collect_pipes_in_view(source_turf, 2, members, tight)
+	TEST_ASSERT(near_pipe in tight, "Pipe on the source turf must be collected")
+	TEST_ASSERT(!(far_pipe in tight), "Pipe outside the view box must not be collected")
+	TEST_ASSERT(!(nowhere_pipe in tight), "Nullspace pipe must be skipped")
+
+	var/list/wide = list()
+	collect_pipes_in_view(source_turf, 7, members, wide)
+	TEST_ASSERT(near_pipe in wide, "Near pipe must be collected with a wide box")
+	TEST_ASSERT(far_pipe in wide, "Pipe three tiles away must be collected with view_half 7")
+	TEST_ASSERT(!(nowhere_pipe in wide), "Nullspace pipe must be skipped regardless of box size")
+
+	// Both paths must agree on visibility for every member
+	for(var/obj/machinery/atmospherics/member as anything in members)
+		var/legacy_visible = legacy_in_view_range_sim(source_turf, member, "15x15") // 15x15 -> half-width 15... legacy used raw width
+		var/list/single = list()
+		collect_pipes_in_view(source_turf, 15, list(member), single)
+		TEST_ASSERT_EQUAL(!!(member in single), !!legacy_visible, "New and legacy visibility must agree for [member] ([member.loc])")
+
+	// --- Benchmark ---
+	var/list/bench_members = list()
+	for(var/i in 1 to VENTCRAWL_BENCH_PIPES)
+		var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/bench_pipe = new(source_turf)
+		allocated += bench_pipe
+		bench_members += bench_pipe
+
+	var/start = REALTIMEOFDAY
+	for(var/pass in 1 to VENTCRAWL_BENCH_PASSES)
+		var/list/sink = list()
+		collect_pipes_in_view(source_turf, 7, bench_members, sink)
+	var/new_ds = REALTIMEOFDAY - start
+
+	start = REALTIMEOFDAY
+	for(var/pass in 1 to VENTCRAWL_BENCH_PASSES)
+		var/list/sink = list()
+		for(var/obj/machinery/atmospherics/member as anything in bench_members)
+			if(legacy_in_view_range_sim(source_turf, member, "15x15"))
+				sink += member
+	var/legacy_ds = REALTIMEOFDAY - start
+
+	log_world("### VENTCRAWL BENCH: [VENTCRAWL_BENCH_PASSES]x[VENTCRAWL_BENCH_PIPES] pipes: new = [new_ds] ds; legacy-style = [legacy_ds] ds")
+
+#undef VENTCRAWL_BENCH_PIPES
+#undef VENTCRAWL_BENCH_PASSES
+
+
+// ===== Throw impact sound cap (Paradise port) =====
+//
+// SSthrowing.playsound_capped() drops throw-impact sounds past
+// impact_sounds_cap per tick: a grenade dump or an explosion throwing a room's
+// contents produces hundreds of playsound() bursts in one tick, each one
+// fanning out to every listener in range.
+
+/datum/unit_test/throw_impact_sound_cap/Run()
+	var/old_impact = SSthrowing.impact_sounds
+	var/old_skipped = SSthrowing.skipped_sounds
+	var/old_last = SSthrowing.last_impact_sounds
+	SSthrowing.impact_sounds = 0
+	SSthrowing.skipped_sounds = 0
+
+	var/cap = SSthrowing.impact_sounds_cap
+	TEST_ASSERT(cap > 0, "impact_sounds_cap must be positive (got [cap])")
+
+	var/played = 0
+	for(var/i in 1 to cap + 5)
+		if(SSthrowing.playsound_capped(run_loc_floor_bottom_left, 'sound/weapons/genhit.ogg', 30, TRUE, -1))
+			played++
+
+	TEST_ASSERT_EQUAL(played, cap, "Exactly impact_sounds_cap sounds must play in one tick window")
+	TEST_ASSERT_EQUAL(SSthrowing.impact_sounds, cap, "impact_sounds counter must stop at the cap")
+	TEST_ASSERT_EQUAL(SSthrowing.skipped_sounds, 5, "Sounds past the cap must be counted as skipped")
+
+	// fire() opens a new tick window: counter resets, last tick's total is kept
+	SSthrowing.fire(resumed = FALSE)
+	TEST_ASSERT_EQUAL(SSthrowing.impact_sounds, 0, "fire() must reset the per-tick sound counter")
+	TEST_ASSERT_EQUAL(SSthrowing.last_impact_sounds, cap, "fire() must record last tick's sound total")
+	TEST_ASSERT(SSthrowing.playsound_capped(run_loc_floor_bottom_left, 'sound/weapons/genhit.ogg', 30, TRUE, -1), "First sound of a fresh window must play")
+
+	SSthrowing.impact_sounds = old_impact
+	SSthrowing.skipped_sounds = old_skipped
+	SSthrowing.last_impact_sounds = old_last
+
+
+// ===== Storage typecache statics =====
+//
+// Profile snapshot (perf.log 2026-07): /proc/typecacheof - 1445 calls per
+// round, all of its 0.16s self time counted as tick OVERTIME (it runs in spawn
+// bursts), plus per-type hotspots like wallet/tailbag ComponentInitialize.
+// Storage whitelists are compile-time constants, so they are now built once
+// into proc statics and shared. Two invariants matter:
+//   1. instances of the same type share one list (the point of the change);
+//   2. subtypes must not mutate the shared parent list (the old tailbag
+//      `can_hold |=` would now poison every wallet - it builds its own merged
+//      static instead).
+
+/datum/unit_test/storage_typecache_statics/Run()
+	var/obj/item/storage/wallet/wallet_one = allocate(/obj/item/storage/wallet)
+	var/obj/item/storage/wallet/wallet_two = allocate(/obj/item/storage/wallet)
+	var/obj/item/storage/wallet/tailbag/tail_one = allocate(/obj/item/storage/wallet/tailbag)
+	var/obj/item/storage/wallet/tailbag/tail_two = allocate(/obj/item/storage/wallet/tailbag)
+
+	var/datum/component/storage/wallet_store_one = wallet_one.GetComponent(/datum/component/storage)
+	var/datum/component/storage/wallet_store_two = wallet_two.GetComponent(/datum/component/storage)
+	var/datum/component/storage/tail_store_one = tail_one.GetComponent(/datum/component/storage)
+	var/datum/component/storage/tail_store_two = tail_two.GetComponent(/datum/component/storage)
+	TEST_ASSERT_NOTNULL(wallet_store_one, "wallet must have a storage component")
+	TEST_ASSERT_NOTNULL(tail_store_one, "tailbag must have a storage component")
+
+	// Same type -> same shared list instance (no per-spawn typecacheof rebuild)
+	TEST_ASSERT_EQUAL("\ref[wallet_store_one.can_hold]", "\ref[wallet_store_two.can_hold]", "Two wallets must share one static can_hold list")
+	TEST_ASSERT_EQUAL("\ref[tail_store_one.can_hold]", "\ref[tail_store_two.can_hold]", "Two tailbags must share one static can_hold list")
+
+	// Tailbag whitelist = wallet whitelist + extras
+	TEST_ASSERT(tail_store_one.can_hold[/obj/item/restraints/handcuffs], "Tailbag must accept its extra types (handcuffs)")
+	TEST_ASSERT(tail_store_one.can_hold[/obj/item/pen], "Tailbag must keep the common wallet types (pen)")
+	TEST_ASSERT(wallet_store_one.can_hold[/obj/item/pen], "Wallet must accept its own whitelist (pen)")
+
+	// The merged tailbag list must NOT leak back into the shared wallet list
+	TEST_ASSERT(!wallet_store_one.can_hold[/obj/item/restraints/handcuffs], "Wallet whitelist must not be poisoned by tailbag extras (handcuffs)")
+	TEST_ASSERT_NOTEQUAL("\ref[wallet_store_one.can_hold]", "\ref[tail_store_one.can_hold]", "Wallet and tailbag must use different list instances")
