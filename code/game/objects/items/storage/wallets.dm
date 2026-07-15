@@ -13,8 +13,12 @@
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
 	STR.max_items = 4
-	STR.cant_hold = typecacheof(list(/obj/item/screwdriver/power))
-	STR.can_hold = typecacheof(list(
+	// Statics: typecacheof() walks typesof() per entry, and rebuilding this
+	// whitelist on EVERY wallet spawn showed up in round profiles as overtime.
+	// Subtypes must not mutate these shared lists in place (tailbags build
+	// their own merged static instead).
+	var/static/list/wallet_cant_hold = typecacheof(list(/obj/item/screwdriver/power))
+	var/static/list/wallet_can_hold = typecacheof(list(
 		/obj/item/stack/spacecash,
 		/obj/item/holochip,
 		/obj/item/card,
@@ -59,6 +63,8 @@
 		/obj/item/clothing/accessory/SATTdogtag,
 		/obj/item/clothing/accessory/indiv_number,
 		))
+	STR.cant_hold = wallet_cant_hold
+	STR.can_hold = wallet_can_hold
 
 /obj/item/storage/wallet/get_examine_string(mob/user, thats)
 	. = ..()
