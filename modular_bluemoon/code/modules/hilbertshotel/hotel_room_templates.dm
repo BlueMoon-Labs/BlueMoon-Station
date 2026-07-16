@@ -15,10 +15,6 @@
 	var/donator_tier = DONATOR_GROUP_NONE //For donator rooms // WIP content
 	var/list/ckeywhitelist = list() //For ckey locked donator rooms // WIP content
 
-/datum/map_template/hilbertshotel/on_map_loaded(z, list/bounds)
-	. = ..()
-	smooth_template_bounds(bounds)
-
 /datum/map_template/hilbertshotel/lore
 	name = "Doctor Hilbert's Deathbed"
 	mappath = '_maps/templates/hilbertshotel/hilbertshotellore.dmm'

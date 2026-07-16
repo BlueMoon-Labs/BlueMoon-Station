@@ -73,23 +73,8 @@ GLOBAL_LIST_EMPTY(station_turfs)
 	assemble_baseturfs()
 
 	levelupdate()
-
-	if (canSmoothWith && islist(canSmoothWith) && !(smoothing_flags & USES_SMOOTHING))
-		canSmoothWith = typelist("canSmoothWith", canSmoothWith)
-
-	if (smoothing_flags & USES_SMOOTHING)
-		if(islist(canSmoothWith) && istext(initial(canSmoothWith)))
-			canSmoothWith = initial(canSmoothWith)
-		if(islist(smoothing_groups) && istext(initial(smoothing_groups)))
-			smoothing_groups = initial(smoothing_groups)
-
-	SETUP_SMOOTHING()
-
 	if(smooth)
 		queue_smooth(src)
-	if(smoothing_flags & USES_SMOOTHING)
-		QUEUE_SMOOTH(src)
-		QUEUE_SMOOTH_NEIGHBORS(src)
 
 	visibilityChanged()
 

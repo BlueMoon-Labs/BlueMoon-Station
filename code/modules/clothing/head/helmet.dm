@@ -105,10 +105,12 @@ GLOBAL_LIST_INIT(aventail_detail_colors, list(
 	"Gold" = "#f9a602",
 	"Scarlet" = "#cc0000",
 ))
+GLOBAL_PROTECT(aventail_detail_colors)
 
 GLOBAL_LIST_INIT(aventail_pride_colors, list(
 	"Rainbow" = "#fcfcfc",
 ))
+GLOBAL_PROTECT(aventail_pride_colors)
 
 /obj/item/clothing/head/helmet/military
 	name = "Hounskull With Aventail"
@@ -181,9 +183,9 @@ GLOBAL_LIST_INIT(aventail_pride_colors, list(
 			return
 		user.visible_message(span_warning("[user] adds [W] to [src]."))
 		altdetail_color = (choicealt in GLOB.aventail_pride_colors) ? GLOB.aventail_pride_colors[choicealt] : GLOB.aventail_detail_colors[choicealt]
+		// Орле не имеет права трогать detail_tag: это слот плюмажа, и запись в него блокировала
+		// добавление пера, а уже вставленное перо подменяла спрайтом, которого в dmi нет вовсе.
 		altdetail_tag = "_detailalt"
-		if(choicealt in GLOB.aventail_pride_colors)
-			detail_tag = "_detailp"
 		C.use(1)
 		update_icon()
 		if(loc == user && ishuman(user))

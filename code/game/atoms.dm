@@ -253,19 +253,8 @@
 		var/turf/T = loc
 		T.has_opaque_atom = TRUE // No need to recalculate it in this case, it's guaranteed to be on afterwards anyways.
 
-	if (canSmoothWith && islist(canSmoothWith) && !(smoothing_flags & USES_SMOOTHING))
+	if (canSmoothWith)
 		canSmoothWith = typelist("canSmoothWith", canSmoothWith)
-
-	if (smoothing_flags & USES_SMOOTHING)
-		if(islist(canSmoothWith) && istext(initial(canSmoothWith)))
-			canSmoothWith = initial(canSmoothWith)
-		if(islist(smoothing_groups) && istext(initial(smoothing_groups)))
-			smoothing_groups = initial(smoothing_groups)
-
-	SETUP_SMOOTHING()
-
-	if (smoothing_flags & USES_SMOOTHING)
-		QUEUE_SMOOTH(src)
 
 	// apply materials properly from the default custom_materials value
 	set_custom_materials(custom_materials)
@@ -334,9 +323,6 @@
 		QDEL_NULL(light)
 	if(proximity_monitor)
 		QDEL_NULL(proximity_monitor)
-
-	if(smoothing_flags & SMOOTH_QUEUED || smooth & SMOOTH_QUEUED)
-		SSicon_smooth.remove_from_queues(src)
 
 	return ..()
 

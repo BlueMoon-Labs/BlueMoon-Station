@@ -79,13 +79,6 @@
 /obj/effect/decal/cleanable/dirt/Initialize(mapload)
 	. = ..()
 	alpha = CONFIG_GET(number/dirt_alpha_starting)
-	var/turf/T = get_turf(src)
-	if(T?.tiled_dirt)
-		smooth = SMOOTH_MORE
-		icon = 'icons/effects/dirt.dmi'
-		icon_state = ""
-		queue_smooth(src)
-	queue_smooth_neighbors(src)
 
 /obj/effect/decal/cleanable/dirt/proc/dirty(strength = 1)
 	if(alpha < 255)
@@ -101,6 +94,16 @@
 	. = ..()
 	if(data["alpha"])
 		alpha = text2num(data["alpha"])
+
+/obj/effect/decal/cleanable/dirt/Initialize(mapload)
+	. = ..()
+	var/turf/T = get_turf(src)
+	if(T.tiled_dirt)
+		smooth = SMOOTH_MORE
+		icon = 'icons/effects/dirt.dmi'
+		icon_state = ""
+		queue_smooth(src)
+	queue_smooth_neighbors(src)
 
 /obj/effect/decal/cleanable/dirt/Destroy()
 	queue_smooth_neighbors(src)

@@ -347,9 +347,6 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 			FD.CalculateAffectingAreas()
 
 	queue_smooth_neighbors(src)
-	QUEUE_SMOOTH_NEIGHBORS(src)
-	if(smoothing_flags & USES_SMOOTHING)
-		QUEUE_SMOOTH(src)
 
 	HandleTurfChange(src)
 

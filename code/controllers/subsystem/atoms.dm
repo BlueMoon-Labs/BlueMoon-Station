@@ -77,9 +77,6 @@ SUBSYSTEM_DEF(atoms)
 	testing("[queued_deletions.len] atoms were queued for deletion.")
 	queued_deletions.Cut()
 
-	for(var/zlevel in 1 to world.maxz)
-		smooth_zlevel_bitmask(zlevel, TRUE)
-
 /// Init this specific atom
 /datum/controller/subsystem/atoms/proc/InitAtom(atom/A, list/arguments)
 	var/the_type = A.type

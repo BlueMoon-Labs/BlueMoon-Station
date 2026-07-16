@@ -126,7 +126,6 @@
 	//initialize things that are normally initialized after map load
 	parsed.initTemplateBounds()
 	smooth_zlevel(world.maxz)
-	smooth_zlevel_bitmask(world.maxz)
 	log_game("Z-level [name] loaded at [x],[y],[world.maxz]")
 	on_map_loaded(world.maxz, parsed.bounds)
 
@@ -135,29 +134,6 @@
 //Override for custom behavior
 /datum/map_template/proc/on_map_loaded(z, list/bounds)
 	loaded++
-
-/// Re-smooths all smoothable atoms in a loaded template region. Required for dynamically loaded maps
-/// (e.g. Hilbert's Hotel rooms) where per-atom init smoothing runs before neighbors exist.
-/datum/map_template/proc/smooth_template_bounds(list/bounds)
-	if(!bounds)
-		return
-	var/list/region = block(
-		locate(max(bounds[MAP_MINX] - 1, 1), max(bounds[MAP_MINY] - 1, 1), bounds[MAP_MINZ]),
-		locate(min(bounds[MAP_MAXX] + 1, world.maxx), min(bounds[MAP_MAXY] + 1, world.maxy), bounds[MAP_MAXZ]))
-	for(var/turf/T as anything in region)
-		if(!(T.flags_1 & INITIALIZED_1))
-			continue
-		if(T.smooth)
-			smooth_icon(T)
-		else if(T.smoothing_flags & USES_SMOOTHING)
-			T.smooth_icon_bitmask()
-		for(var/atom/movable/movable as anything in T)
-			if(QDELETED(movable) || !(movable.flags_1 & INITIALIZED_1))
-				continue
-			if(movable.smooth)
-				smooth_icon(movable)
-			else if(movable.smoothing_flags & USES_SMOOTHING)
-				movable.smooth_icon_bitmask()
 
 /**
   * Proc to trigger a load at a specific area. Calls on_map_loaded(T.z, loaded_bounds) afterwards.
@@ -225,9 +201,6 @@
 
 	//initialize things that are normally initialized after map load
 	parsed.initTemplateBounds()
-
-	for(var/curz = bounds[MAP_MINZ] to bounds[MAP_MAXZ])
-		smooth_zlevel(curz, TRUE)
 
 	log_game("[name] loaded at [T.x],[T.y],[T.z]")
 	on_map_loaded(T.z, parsed.bounds)
