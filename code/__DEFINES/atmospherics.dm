@@ -426,6 +426,9 @@ GLOBAL_LIST_INIT(atmos_adjacent_savings, list(0,0))
 /// Pure-telemetry devices (meters, air sensors) only report once per this many
 /// SSair fires; their power draw is compensated by the same constant.
 #define ATMOS_TELEMETRY_INTERVAL 4
+/// Air sensors with unchanged readings still rebroadcast at least this often,
+/// so consoles built mid-round and timestamp displays stay fresh.
+#define ATMOS_TELEMETRY_HEARTBEAT (30 SECONDS)
 
 //Unomos - So for whatever reason, garbage collection actually drastically decreases the cost of atmos later in the round. Turning this into a define yields massively improved performance.
 #define GAS_GARBAGE_COLLECT(GASGASGAS)\
