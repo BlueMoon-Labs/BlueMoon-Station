@@ -104,6 +104,16 @@ All ShuttleMove procs go here
 
 	loc = newT
 
+	//прямое присваивание loc обходит Moved(), поэтому ячейки спатиал-грида
+	//переключаем сами: иначе слышащие и клиент-мобы навсегда остаются
+	//прописаны в ячейках старого дока (глухота на новом месте + вечные
+	//ссылки в hearing_contents/client_contents по старому адресу)
+	if(HAS_SPATIAL_GRID_CONTENTS(src) && (oldT.z != newT.z \
+		|| GET_SPATIAL_INDEX(oldT.x) != GET_SPATIAL_INDEX(newT.x) \
+		|| GET_SPATIAL_INDEX(oldT.y) != GET_SPATIAL_INDEX(newT.y)))
+		SSspatial_grid.exit_cell(src, oldT)
+		SSspatial_grid.enter_cell(src, newT)
+
 	return TRUE
 
 // Called on atoms after everything has been moved

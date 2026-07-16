@@ -53,6 +53,33 @@
 	TEST_ASSERT(!listener.spatial_grid_key, "lose_hearing_sensitivity must clear the spatial_grid_key")
 	TEST_ASSERT(!container.spatial_grid_key, "The container must lose grid awareness when its contents stop hearing")
 
+// Регресс: onShuttleMove двигает атомы голым присваиванием loc мимо Moved(),
+// и без явного переключения ячеек слышащие оставались прописаны в ячейках
+// старого дока (глухота после перелёта + вечная ссылка в hearing_contents)
+/datum/unit_test/spatial_grid_shuttle_move/Run()
+	var/obj/item/listener = allocate(/obj/item)
+	listener.become_hearing_sensitive()
+
+	var/datum/spatial_grid_cell/home_cell = SSspatial_grid.get_cell_of(listener)
+	TEST_ASSERT_NOTNULL(home_cell, "The test z-level must be covered by the spatial grid")
+	TEST_ASSERT(listener in home_cell.hearing_contents, "premise: a hearing item must be in its cell's hearing_contents")
+
+	//(the reserved test zone can land near the map edge, so step whichever way fits)
+	var/far_x = run_loc_floor_bottom_left.x + SPATIAL_GRID_CELLSIZE * 2
+	if(far_x > world.maxx)
+		far_x = run_loc_floor_bottom_left.x - SPATIAL_GRID_CELLSIZE * 2
+	var/turf/far_turf = locate(far_x, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
+	TEST_ASSERT_NOTNULL(far_turf, "test premise: a turf two grid cells away must exist")
+
+	listener.onShuttleMove(far_turf, get_turf(listener), null, NORTH, null, null)
+
+	var/datum/spatial_grid_cell/far_cell = SSspatial_grid.get_cell_of(listener)
+	TEST_ASSERT(far_cell != home_cell, "test premise: the far turf must belong to a different grid cell")
+	TEST_ASSERT(!(listener in home_cell.hearing_contents), "A shuttle move must remove the item from the old cell")
+	TEST_ASSERT(listener in far_cell.hearing_contents, "A shuttle move must register the item in the new cell")
+
+	listener.lose_hearing_sensitivity()
+
 /datum/unit_test/spatial_grid_clients/Run()
 	var/mob/living/simple_animal/npc = allocate(/mob/living/simple_animal)
 	var/mob/living/carbon/human/fake_player = allocate(/mob/living/carbon/human, get_step(run_loc_floor_bottom_left, EAST))
