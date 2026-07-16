@@ -184,6 +184,25 @@
 	for(var/mob/oranges_ear/ear as anything in SSspatial_grid.pregenerated_oranges_ears)
 		TEST_ASSERT_NULL(ear.loc, "All oranges_ears must be unassigned (in nullspace) after queries")
 
+// Регресс: оверрайд Exited без ..() (слипер, харвестер и ко) глотал чистку
+// important_recursive_contents - машина вечно держала каждого посетителя
+// (прод-сканы: слиперы с удалёнными мобами в hearing/client каналах)
+
+/datum/unit_test/sleeper_exit_recursive_contents/Run()
+	var/obj/machinery/sleeper/bed = allocate(/obj/machinery/sleeper, run_loc_floor_bottom_left)
+	var/obj/item/listener = allocate(/obj/item)
+	listener.become_hearing_sensitive()
+
+	listener.forceMove(bed)
+	TEST_ASSERT(listener in bed.important_recursive_contents?[RECURSIVE_CONTENTS_HEARING_SENSITIVE], \
+		"premise: a hearing item inside a sleeper must appear in its recursive contents")
+
+	listener.forceMove(run_loc_floor_bottom_left)
+	TEST_ASSERT(!LAZYLEN(bed.important_recursive_contents), \
+		"leaving a sleeper must clean its important_recursive_contents (Exited must call parent)")
+
+	listener.lose_hearing_sensitivity()
+
 // ===== Регресс: выпуск жертвы из головокраба при его смерти =====
 //
 // headcrab/Destroy() выпускал человека голым присваиванием loc: без
