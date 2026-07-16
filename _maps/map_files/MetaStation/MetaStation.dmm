@@ -44261,13 +44261,10 @@
 /obj/effect/turf_decal/tile/yellow{
 	dir = 4
 	},
-<<<<<<< Updated upstream
 /obj/machinery/atmospherics/pipe/simple/scrubbers/visible{
 	dir = 4
 	},
-=======
 /obj/structure/closet/crate/engineering/hfr,
->>>>>>> Stashed changes
 /turf/open/floor/plasteel/dark/corner{
 	dir = 1
 	},
@@ -68469,7 +68466,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-<<<<<<< Updated upstream
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/effect/turf_decal/stripes/line{
 	dir = 1
@@ -68498,9 +68494,6 @@
 /obj/effect/turf_decal/delivery,
 /turf/open/floor/plasteel,
 /area/command/gateway)
-=======
-/turf/closed/wall,
-/area/service/sauna)
 "oNa" = (
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
@@ -68508,7 +68501,6 @@
 /obj/machinery/atmospherics/components/binary/crystallizer,
 /turf/open/floor/plating,
 /area/engineering/atmos)
->>>>>>> Stashed changes
 "oNf" = (
 /obj/machinery/door/window/northright{
 	base_state = "left";
