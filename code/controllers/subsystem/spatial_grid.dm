@@ -182,7 +182,7 @@ SUBSYSTEM_DEF(spatial_grid)
 	return .
 
 ///ячейка, накрывающая координаты target (null, если target вне мира/грида)
-/datum/controller/subsystem/spatial_grid/proc/get_cell_of(atom/target)
+/datum/controller/subsystem/spatial_grid/proc/get_cell_of(atom/target) as /datum/spatial_grid_cell
 	var/turf/target_turf = get_turf(target)
 	if(!target_turf || target_turf.z > length(grids_by_z_level))
 		return
