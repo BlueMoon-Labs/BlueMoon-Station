@@ -502,6 +502,10 @@
 				// sleep visibly pressurized against space. Pressure decays toward
 				// the vent_everything threshold every cycle, so this cannot pin the
 				// tile awake forever.
+				// The GROUP lifecycle must be held off too: without this the
+				// group's dismantle_cooldown keeps ticking and dismantle() pulls
+				// the still-draining tile out of the active list mid-leak.
+				our_excited_group.dismantle_cooldown = 0
 				cached_atmos_cooldown = 0
 			if(volume_cache > 0)
 				var/pressure_after = vent_everything ? 0 : (moles_before * (1 - our_share_coeff) * R_IDEAL_GAS_EQUATION * our_air.temperature / volume_cache)
@@ -578,7 +582,10 @@
 	// (averaging mid-burn smears the fire's heat across the group).
 	if(our_excited_group)
 		our_excited_group.turf_reactions |= reaction_result
-		if(active_hotspot)
+		// Волатильным считается и generic combustion без хотспота (genericfire
+		// пишет reaction_results["fire"], но hotspot не создаёт) - иначе
+		// брейкдаун усреднит группу посреди такого горения.
+		if(active_hotspot || (reaction_result == REACTING && our_air.reaction_results["fire"]))
 			our_excited_group.turf_reactions |= VOLATILE_REACTION
 
 	update_visuals()

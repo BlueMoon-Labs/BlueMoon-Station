@@ -76,3 +76,51 @@
 	if(subject.excited_group)
 		subject.excited_group.dismantle()
 	SSair.remove_from_active(subject)
+
+// ===== VOLATILE через реальную реакцию: generic combustion без хотспота =====
+//
+// genericfire пишет reaction_results["fire"] и возвращает REACTING, но hotspot
+// не создаёт - гейт только по active_hotspot пропускал такое горение, и
+// брейкдаун усреднял группу посреди пожара. Тест жжёт настоящую смесь.
+
+/datum/unit_test/excited_group_volatile_generic_fire
+	priority = TEST_LONGER
+
+/datum/unit_test/excited_group_volatile_generic_fire/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+
+	// Walled 1x1 pocket like the volatile gate test
+	var/turf/base = run_loc_floor_bottom_left
+	for(var/dx in 0 to 2)
+		for(var/dy in 0 to 2)
+			if(dx == 1 && dy == 1)
+				continue
+			var/turf/T = locate(base.x + dx, base.y + dy, base.z)
+			TEST_ASSERT_NOTNULL(T, "test zone turf missing at offset [dx],[dy]")
+			T.ChangeTurf(/turf/closed/wall)
+	var/turf/open/subject = locate(base.x + 1, base.y + 1, base.z)
+	TEST_ASSERT(istype(subject), "pocket center must be an open turf")
+
+	// Метан горит ТОЛЬКО через genericfire: у плазмы/трития есть легаси-реакции
+	// с hotspot_expose, а нам нужен именно пожар без хотспота
+	var/datum/gas_mixture/saved_air = subject.air.copy()
+	subject.air.clear()
+	subject.air.set_moles(GAS_METHANE, 5)
+	subject.air.set_moles(GAS_O2, 5)
+	subject.air.set_temperature(1500)
+
+	var/datum/excited_group/group = new
+	group.add_turf(subject)
+	SSair.add_to_active(subject, FALSE)
+
+	subject.process_cell(SSair.times_fired + 3000)
+
+	TEST_ASSERT(subject.air.reaction_results["fire"], "fixture must actually combust (no reaction_results fire recorded)")
+	TEST_ASSERT_NULL(subject.active_hotspot, "premise: generic combustion must not create a hotspot")
+	TEST_ASSERT(group.turf_reactions & VOLATILE_REACTION, "generic combustion without a hotspot must mark the group volatile")
+
+	// Cleanup
+	subject.air.copy_from(saved_air)
+	if(subject.excited_group)
+		subject.excited_group.dismantle()
+	SSair.remove_from_active(subject)

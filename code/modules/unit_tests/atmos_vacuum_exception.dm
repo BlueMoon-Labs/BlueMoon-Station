@@ -46,7 +46,9 @@
 	// Superheated near-vacuum: 0.19 mol at 45000K in a 2500L cell reads ~28 kPa,
 	// above SPACE_DRAIN_FINISH_PRESSURE, while the per-cycle vented amount
 	// (share_coeff fraction of 0.19 mol) stays under MINIMUM_MOLES_DELTA_TO_MOVE:
-	// both mole-gated cooldown resets miss -> only the pressure-gated reset fires.
+	// both mole-gated resets miss -> only the pressure-gated reset fires. Venting
+	// cools the tile as well, so only cycle 1 is guaranteed inside the window -
+	// all window asserts happen on that cycle.
 	var/datum/gas_mixture/saved_air = subject.air.copy()
 	subject.air.clear()
 	subject.air.set_moles(GAS_O2, 0.19)
@@ -61,12 +63,21 @@
 	SSair.add_to_active(subject, FALSE)
 	TEST_ASSERT(subject.excited, "subject must start excited")
 
+	// Pre-build the excited group with a nearly-expired dismantle countdown:
+	// pre-fix only the tile cooldown was reset by the pressure guard, the
+	// group's dismantle_cooldown kept climbing and dismantle() pulled the
+	// still-draining tile out of the active list on its 16th pass.
+	var/datum/excited_group/drain_group = new
+	drain_group.add_turf(subject) // resets cooldowns
+	drain_group.dismantle_cooldown = EXCITED_GROUP_DISMANTLE_CYCLES - 1
+
 	// Cycle 1 lands in the guarded window: pressure above the threshold, vented
 	// moles below both mole gates. Pre-fix the stall counter advanced to 1 here;
-	// the pressure-gated reset must hold it at 0.
+	// the pressure-gated reset must hold it at 0 and zero the group countdown.
 	var/fire_base = SSair.times_fired + 2000
 	subject.process_cell(fire_base + 1)
 	TEST_ASSERT_EQUAL(subject.atmos_cooldown, 0, "vacuum exception: stall cooldown must reset while the tile holds [subject.air.return_pressure()] kPa against space")
+	TEST_ASSERT_EQUAL(drain_group.dismantle_cooldown, 0, "vacuum exception must also reset the group's dismantle countdown")
 
 	// Drive the drain to completion: never asleep while pressurized, and the
 	// pressure guard must not stall the drain itself.
