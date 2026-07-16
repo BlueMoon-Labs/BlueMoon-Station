@@ -91,3 +91,43 @@
 		source.copy_research_to(receiver)
 	var/elapsed_ds = REALTIMEOFDAY - start
 	log_world("PERF: techweb copy_research_to repeat sync x20 with [researched] researched nodes: [elapsed_ds * 100]ms")
+
+/// Инкрементальный синк дизайнов production-машины: волна исследований на проде гоняла
+/// полный пересбор cached_designs (весь researched_designs через techweb_design_by_id,
+/// ~75k вызовов за 18 секунд на 57 машин). После снапшота "что уже знали" доклеиваются
+/// только новые дизайны, старые не теряются.
+/datum/unit_test/production_incremental_design_sync/Run()
+	var/obj/machinery/rnd/production/protolathe/lathe = allocate(/obj/machinery/rnd/production/protolathe)
+	// Initialize запускает асинхронный первый update_research() - даём ему дойти,
+	// затем забираем стейт стенда под контроль теста.
+	sleep(1 SECONDS)
+	lathe.allowed_department_flags = ALL
+	lathe.stored_research.researched_designs = list()
+
+	var/datum/design/first_design
+	var/datum/design/second_design
+	for(var/design_id in SSresearch.techweb_designs)
+		var/datum/design/candidate = SSresearch.techweb_designs[design_id]
+		// Кандидаты обязаны проходить оба фильтра update_designs (build_type + отдел),
+		// иначе тест меряет фильтрацию, а не инкрементальность.
+		if(!(candidate.build_type & lathe.allowed_buildtypes))
+			continue
+		if(!isnull(lathe.allowed_department_flags) && !(candidate.departmental_flags & lathe.allowed_department_flags))
+			continue
+		if(!first_design)
+			first_design = candidate
+			continue
+		second_design = candidate
+		break
+	TEST_ASSERT_NOTNULL(second_design, "в реестре должны найтись два дизайна, проходящие фильтр протолата")
+
+	lathe.stored_research.researched_designs[first_design.id] = TRUE
+	lathe.update_designs()
+	TEST_ASSERT(lathe.cached_designs.Find(first_design), "полный пересбор должен закэшировать изученный дизайн")
+	TEST_ASSERT(!lathe.cached_designs.Find(second_design), "прекондиция: второй дизайн ещё не изучен")
+
+	var/list/known_designs = lathe.stored_research.researched_designs.Copy()
+	lathe.stored_research.researched_designs[second_design.id] = TRUE
+	lathe.update_designs_incremental(known_designs)
+	TEST_ASSERT(lathe.cached_designs.Find(second_design), "инкрементальный синк обязан доложить новый дизайн")
+	TEST_ASSERT(lathe.cached_designs.Find(first_design), "инкрементальный синк не должен терять уже закэшированные дизайны")
