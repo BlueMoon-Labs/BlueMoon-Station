@@ -493,8 +493,7 @@ GENETICS SCANNER
 	if(M.tod && (M.stat == DEAD || ((HAS_TRAIT(M, TRAIT_FAKEDEATH)) && !advanced)))
 		var/zdelta = round(rand(-world.time, world.time) - M.timeofdeath)
 		if(iszombie(M))
-			msg += "<span class='danger'>Субъект умер [DisplayTimeText(zdelta)] назад, дефибрилляция ещё возможна!</span>"
-			msg += "<span class='danger'> Онаружена аномалия.</span>\n"
+			msg += "<span class='danger'>Онаружена аномалия, неточные данные. Субъект умер [DisplayTimeText(zdelta)] назад, дефибрилляция ещё возможна!</span>\n"
 		else
 			msg += "<span class='info'>Время смерти:</span> [M.tod]\n"
 			var/tdelta = round(world.time - M.timeofdeath)
