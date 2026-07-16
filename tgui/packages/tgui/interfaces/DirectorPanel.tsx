@@ -25,9 +25,12 @@ type LedgerEntry = {
 };
 
 // Динамическая строка рулсета живёт, пока живы его антаги; записи ledger - по таймеру или до конца события.
+// У строки untracked-источника (антаги вне рулсетов) нет assigned - только счётчик живых голов.
 const ledgerExpiryText = (entry: LedgerEntry) => {
   if (entry.living) {
-    return `пока живы антаги (${entry.living} из ${entry.assigned})`;
+    return entry.assigned
+      ? `пока живы антаги (${entry.living} из ${entry.assigned})`
+      : `пока живы антаги (${entry.living})`;
   }
   return entry.expires_in
     ? `истекает через ${entry.expires_in} мин`

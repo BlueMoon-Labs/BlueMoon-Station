@@ -360,7 +360,12 @@
 	return handler.pre_setup_analogue()
 
 /datum/dynamic_ruleset/midround/families/execute()
-	return handler.post_setup_analogue(TRUE)
+	. = handler.post_setup_analogue(TRUE)
+	if(!.)
+		return
+	// Директор считает вклад рулсета по assigned, а хендлер держит гангстеров только в командах:
+	// без этого стартовые гангстеры давили antag_load как untracked-антаги (15/голова без затухания).
+	assigned |= handler.collect_member_minds()
 
 /datum/dynamic_ruleset/midround/families/clean_up()
 	QDEL_NULL(handler)

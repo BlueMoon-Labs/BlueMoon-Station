@@ -148,7 +148,13 @@
 		dead_halved = D.last_signals && (D.last_signals.dead_fraction > D.profile.dead_fraction_threshold)
 		drip_rate = D.profile.base_drip * time_mult * pop_mult * (dead_halved ? 0.5 : 1)
 		antag_drip_rate = D.profile.antag_drip * D.last_antag_deficit * (dead_halved ? 0.5 : 1)
-		antag_load_now = D.antag_load()
+		// Разбивка antag_load: строка untracked-источника (вербовка/админ-выдачи) уходит в ту же
+		// таблицу вкладов - прод-раунд Families показывал 70+ нагрузки при пустой таблице.
+		var/list/antag_rows = list()
+		antag_load_now = D.antag_load(antag_rows)
+		for(var/list/antag_row in antag_rows)
+			ledger_out += list(list("name" = antag_row[1], "intensity" = round(antag_row[2], 0.1),
+				"living" = antag_row[3]))
 		antag_target_now = D.antag_target(D.last_signals ? D.last_signals.effective_crew : 0)
 	return list(
 		"paused" = D.paused,

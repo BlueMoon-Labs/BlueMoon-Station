@@ -2455,6 +2455,63 @@
 	soft_holder?.mind?.remove_antag_datum(/datum/antagonist)
 	SSdirector.restore_simulation_state(saved)
 
+/// Разбивка antag_load обязана отдавать строку untracked-источника (админ/жетон/вербовка):
+/// без неё панель показывает нагрузку одним числом, и админ не видит, от кого она
+/// (прод-раунд Families: 70+ нагрузки от завербованных гангстеров при пустых "Активных вкладах").
+/datum/unit_test/director_untracked_antag_breakdown
+
+/// Минимальный жёсткий (не soft_antag) антаг-датум-маркер: "разум всё ещё антагонист".
+/datum/unit_test/director_untracked_antag_breakdown/proc/grant_hard_antag(datum/mind/target_mind)
+	var/datum/antagonist/marker = new
+	marker.silent = TRUE
+	target_mind.add_antag_datum(marker)
+
+/// Строка untracked-источника в разбивке: list(имя, вклад, голов). null, если строки нет.
+/datum/unit_test/director_untracked_antag_breakdown/proc/untracked_row(list/breakdown)
+	for(var/list/row in breakdown)
+		if(row[1] == DIRECTOR_UNTRACKED_SOURCE_NAME)
+			return row
+	return null
+
+/datum/unit_test/director_untracked_antag_breakdown/Run()
+	// Мутирует живой SSdirector - capture/restore c try/catch (см. director_untracked_antag_load).
+	var/list/saved = SSdirector.capture_simulation_state()
+	var/mob/living/carbon/human/admin_antag
+	try
+		SSdirector.profile = new /datum/director_profile/medium
+		SSdirector.actions = list()
+		SSdirector.intensity_ledger = list()
+		SSdirector.live_ghost_role_spawns = list()
+		// Дельты от базовой линии: тест устойчив к любым живым антагам самого раунда CI.
+		var/list/baseline_rows = list()
+		SSdirector.antag_load(baseline_rows)
+		var/list/base_row = untracked_row(baseline_rows)
+		var/base_value = base_row ? base_row[2] : 0
+		var/base_heads = base_row ? base_row[3] : 0
+
+		admin_antag = allocate(/mob/living/carbon/human)
+		admin_antag.mind_initialize()
+		grant_hard_antag(admin_antag.mind)
+		var/list/rows = list()
+		SSdirector.antag_load(rows)
+		var/list/row = untracked_row(rows)
+		TEST_ASSERT_NOTNULL(row, "Разбивка antag_load обязана содержать строку untracked-источника")
+		TEST_ASSERT_EQUAL(row[2] - base_value, DIRECTOR_UNTRACKED_ANTAG_INTENSITY * DIRECTOR_ACTIVITY_MULT_MIN, "Строка untracked обязана прибавить вклад нового антага")
+		TEST_ASSERT_EQUAL(row[3] - base_heads, 1, "Строка untracked обязана считать головы")
+
+		// Мёртвый антаг уходит из строки: при нулевом остатке строки может не быть вовсе.
+		admin_antag.death()
+		var/list/after_death_rows = list()
+		SSdirector.antag_load(after_death_rows)
+		var/list/dead_row = untracked_row(after_death_rows)
+		TEST_ASSERT_EQUAL(dead_row ? dead_row[2] : 0, base_value, "Мёртвый антаг не должен оставаться в строке untracked")
+	catch(var/exception/e)
+		admin_antag?.mind?.remove_antag_datum(/datum/antagonist)
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	admin_antag?.mind?.remove_antag_datum(/datum/antagonist)
+	SSdirector.restore_simulation_state(saved)
+
 /// Регрессия прод-раунда: визард-рулсеты не были persistent -> mode.process() не звал их
 /// rule_process() -> снятие Summon Events (wizardmode) со смертью мага не срабатывало -> директор
 /// глох на весь остаток раунда (все обычные события валили can_fire по wizardevent != wizardmode).

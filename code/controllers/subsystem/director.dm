@@ -256,7 +256,8 @@ SUBSYSTEM_DEF(director)
 /// Суммарная живая антаг-нагрузка: динамический вклад рулсетов (мидраунд + раундстарт с затуханием)
 /// плюс не вытесненные ими записи антаг-пулов в ledger (мосты запланированных инжекций,
 /// гост-антаг события). Общая валюта клапана давления, гейта латеджойна и гейта насыщения в битах.
-/datum/controller/subsystem/director/proc/antag_load()
+/// В breakdown (если передан) untracked-источник добавляет свою строку для панели.
+/datum/controller/subsystem/director/proc/antag_load(list/breakdown = null)
 	var/list/live_names = list()
 	var/list/counted_minds = list()
 	. = get_ruleset_intensity(live_names, counted_minds = counted_minds)
@@ -266,14 +267,16 @@ SUBSYSTEM_DEF(director)
 			. += entry[2]
 	// Третий источник нагрузки: живые антаги без рулсета/гост-ролью (админ/жетон, спавнеры карт,
 	// обращённые). Дедуп против counted_minds, чтобы не задвоить уже посчитанных рулсетами.
-	. += get_untracked_antag_intensity(counted_minds)
+	. += get_untracked_antag_intensity(counted_minds, breakdown)
 
 /// Живые жёсткие антаги, которых директор не создавал и не отслеживает: выданные админом или
 /// жетоном (как еретик из прод-раунда), спавнеры карт, обращённые культом/ревами. Клапан
 /// антаг-давления обязан их видеть - иначе директор считает раунд недогруженным и льёт ещё
 /// антагов поверх реальных. counted_minds - разумы, уже учтённые рулсетами и гост-ролями (дедуп).
 /// is_active_antag_mind уже отсекает soft_antag, мёртвых и пойманных (перма/гулаг).
-/datum/controller/subsystem/director/proc/get_untracked_antag_intensity(list/counted_minds)
+/// В breakdown (если передан) добавляется строка list(имя, вклад, голов) - без неё панель
+/// показывала прод-раунду Families 70+ нагрузки от вербовки при пустых "Активных вкладах".
+/datum/controller/subsystem/director/proc/get_untracked_antag_intensity(list/counted_minds, list/breakdown = null)
 	var/total = 0
 	var/list/seen = list()
 	for(var/datum/antagonist/antag as anything in GLOB.antagonists)
@@ -287,6 +290,8 @@ SUBSYSTEM_DEF(director)
 			continue
 		seen[antag_mind] = TRUE
 		total += DIRECTOR_UNTRACKED_ANTAG_INTENSITY * antag_activity_mult(antag_mind)
+	if(total && !isnull(breakdown))
+		breakdown += list(list(DIRECTOR_UNTRACKED_SOURCE_NAME, total, length(seen)))
 	return total
 
 /// Целевая антаг-нагрузка раунда: масштабируется от живого экипажа, а не от фиксированного
