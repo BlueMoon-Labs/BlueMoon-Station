@@ -136,6 +136,12 @@ GLOBAL_DATUM_INIT(crewmonitor_command, /datum/crewmonitor/command, new)
 /datum/crewmonitor/ui_host(mob/user)
 	return ui_sources[user]
 
+/datum/crewmonitor/ui_close(mob/user)
+	//запись живёт с show() до закрытия UI; без чистки глобальный синглтон
+	//вечно держит и юзера, и источник (ИИ открывает консоль сам на себя)
+	ui_sources -= user
+	return ..()
+
 /datum/crewmonitor/ui_data(mob/user)
 	var/z = user.z
 	if(!z)

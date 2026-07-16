@@ -56,6 +56,9 @@
 	cleanse_trait_datums()
 	GLOB.mob_living_list -= src
 	GLOB.ssd_mob_list -= src
+	//лейтджойнером может быть не только человек (ИИ, борг) - выписываем здесь,
+	//а не в human/Destroy, иначе список вечно держит удалённого моба
+	GLOB.latejoiners -= src
 	SSmobs.currentrun -= src
 	QDEL_LIST(diseases)
 	return ..()
