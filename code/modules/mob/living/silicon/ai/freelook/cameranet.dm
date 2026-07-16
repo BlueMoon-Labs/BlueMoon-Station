@@ -187,6 +187,11 @@ GLOBAL_DATUM_INIT(cameranet, /datum/cameranet, new)
 
 	var/turf/T = get_turf(c)
 	if(T)
+		//камера добавилась/убралась/переключилась - её собственный кэш видимости протух
+		if(choice != 2 && istype(c, /obj/machinery/camera))
+			var/obj/machinery/camera/changed_camera = c
+			changed_camera.mark_visibility_dirty()
+
 		var/x1 = max(0, T.x - (CHUNK_SIZE / 2)) & ~(CHUNK_SIZE - 1)
 		var/y1 = max(0, T.y - (CHUNK_SIZE / 2)) & ~(CHUNK_SIZE - 1)
 		var/x2 = min(world.maxx, T.x + (CHUNK_SIZE / 2)) & ~(CHUNK_SIZE - 1)
@@ -201,6 +206,13 @@ GLOBAL_DATUM_INIT(cameranet, /datum/cameranet, new)
 					else if(choice == 1)
 						// You can't have the same camera in the list twice.
 						chunk.cameras |= c
+					else
+						//изменение видимости в точке T (дверь/стена/непрозрачный объект):
+						//протухают только камеры, чью зону оно могло задеть - остальные
+						//переживут апдейт чанка на кэше
+						for(var/obj/machinery/camera/chunk_camera as anything in chunk.cameras)
+							if(chunk_camera && get_dist(chunk_camera, T) <= chunk_camera.view_range)
+								chunk_camera.mark_visibility_dirty()
 					chunk.hasChanged()
 
 // Will check if a mob is on a viewable turf. Returns 1 if it is, otherwise returns 0.
