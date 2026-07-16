@@ -135,6 +135,19 @@ SUBSYSTEM_DEF(director)
 	var/sim_last_antag_heavy = FALSE
 	/// Троттлинг лога тяжёлых тиков: имя события -> world.time, с которого можно писать снова
 	var/list/heavy_tick_log_at = list()
+	/// Кэш get_all_ghost_role_eligible на один тик: бит зовёт гост-прифлайты на десятки
+	/// действий подряд, каждый пересобирал список заново (O(гостов^2) внутри) - 250-500мс на бит.
+	var/list/eligible_ghosts_cache
+	var/eligible_ghosts_cache_at = -1
+
+/// Список гост-элиджиблов, пересобираемый не чаще раза в тик: внутри одного бита
+/// (или одной перерисовки панели) все потребители работают по одному инстансу.
+/datum/controller/subsystem/director/proc/get_eligible_ghosts_cached()
+	if(eligible_ghosts_cache_at == world.time && islist(eligible_ghosts_cache))
+		return eligible_ghosts_cache
+	eligible_ghosts_cache = get_all_ghost_role_eligible(priority_only = FALSE)
+	eligible_ghosts_cache_at = world.time
+	return eligible_ghosts_cache
 
 /datum/controller/subsystem/director/Initialize(start_timeofday)
 	register_event_actions()
@@ -346,7 +359,9 @@ SUBSYSTEM_DEF(director)
 /// подключён, включил нужную роль и не имеет соответствующего/InteQ-бана.
 /datum/controller/subsystem/director/proc/count_eligible_ghosts(jobban_type = null, preference_flag = null)
 	var/count = 0
-	for(var/mob/candidate as anything in get_all_ghost_role_eligible(priority_only = FALSE))
+	// Кэш на тик: бит зовёт этот прок на каждое гост-действие (~пара десятков),
+	// каждый пересбор get_all_ghost_role_eligible был O(гостов^2).
+	for(var/mob/candidate as anything in get_eligible_ghosts_cached())
 		if(!candidate.key || !candidate.client)
 			continue
 		if(preference_flag && (!(candidate.client.prefs) || !(preference_flag in candidate.client.prefs.be_special)))
