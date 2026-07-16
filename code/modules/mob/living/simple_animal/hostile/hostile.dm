@@ -80,6 +80,8 @@
 	targets_from = null
 	target = null
 	friends = null
+	for(var/atom/movable/the_foe in foes)
+		UnregisterSignal(the_foe, COMSIG_PARENT_QDELETING)
 	foes = null
 	for(var/atom/movable/the_enemy in enemies)
 		UnregisterSignal(the_enemy, COMSIG_PARENT_QDELETING)
@@ -94,11 +96,16 @@
 
 /mob/living/simple_animal/hostile/proc/remove_enemy(atom/movable/the_enemy)
 	enemies -= the_enemy
-	UnregisterSignal(the_enemy, COMSIG_PARENT_QDELETING)
+	//сигнал держим, пока цель числится хотя бы в одном списке обид:
+	//foes живёт дольше enemies (тот чистится по stat в Found)
+	if(!foes || !foes[the_enemy])
+		UnregisterSignal(the_enemy, COMSIG_PARENT_QDELETING)
 
 /mob/living/simple_animal/hostile/proc/on_enemy_qdeleting(datum/source)
 	SIGNAL_HANDLER
 	enemies -= source
+	if(foes)
+		foes -= source
 
 /mob/living/simple_animal/hostile/BiologicalLife(delta_time, times_fired)
 	if(!(. = ..()))
