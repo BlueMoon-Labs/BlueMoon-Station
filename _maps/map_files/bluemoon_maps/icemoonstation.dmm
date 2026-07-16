@@ -6878,8 +6878,7 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/trimline/blue/mid_joiner,
-/obj/item/radio/intercom{
-	freerange = 1;
+/obj/item/radio/intercom/command{
 	name = "common channel";
 	pixel_y = 23
 	},
@@ -29323,11 +29322,9 @@
 /turf/open/floor/plating,
 /area/cargo/sorting)
 "foD" = (
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
-	prison_radio = 1
 	},
 /obj/machinery/light/small{
 	dir = 1
@@ -37406,11 +37403,9 @@
 /obj/effect/turf_decal/trimline/purple/filled/line{
 	dir = 1
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
-	prison_radio = 1
 	},
 /obj/machinery/light{
 	dir = 1
@@ -42320,8 +42315,7 @@
 /obj/machinery/light{
 	dir = 1
 	},
-/obj/item/radio/intercom{
-	freerange = 1;
+/obj/item/radio/intercom/command{
 	name = "common channel";
 	pixel_y = 23
 	},
@@ -54730,8 +54724,7 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/bot/yellow,
-/obj/item/radio/intercom{
-	freerange = 1;
+/obj/item/radio/intercom/command{
 	name = "common channel";
 	pixel_y = 23
 	},
@@ -76492,8 +76485,7 @@
 /obj/item/mmi,
 /obj/item/assembly/prox_sensor,
 /obj/effect/decal/cleanable/dirt,
-/obj/item/radio/intercom{
-	freerange = 1;
+/obj/item/radio/intercom/command{
 	name = "common channel";
 	pixel_y = 22;
 	pixel_x = 1
@@ -118764,11 +118756,9 @@
 /obj/effect/turf_decal/trimline/purple/filled/line{
 	dir = 1
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
-	prison_radio = 1
 	},
 /turf/open/floor/plasteel/smooth/edge,
 /area/science)
@@ -122646,11 +122636,9 @@
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 1
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
-	prison_radio = 1
 	},
 /obj/structure/disposalpipe/segment{
 	dir = 4
@@ -124999,11 +124987,9 @@
 	},
 /area/mine/living_quarters)
 "wES" = (
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
-	prison_radio = 1
 	},
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer1,
 /obj/structure/bed,

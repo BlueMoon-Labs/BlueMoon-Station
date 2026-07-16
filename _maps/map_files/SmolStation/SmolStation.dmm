@@ -11154,9 +11154,8 @@
 	},
 /area/commons/dorms)
 "ifE" = (
-/obj/item/radio/intercom{
+/obj/item/radio/intercom/command{
 	dir = 8;
-	freerange = 1;
 	name = "Captain's Intercom";
 	pixel_x = 26
 	},
@@ -18860,12 +18859,10 @@
 /obj/machinery/light{
 	dir = 8
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -26;
 	pixel_y = -26;
-	prison_radio = 1
 	},
 /turf/open/floor/plasteel/freezer,
 /area/security/prison)
@@ -21191,12 +21188,10 @@
 /obj/machinery/light{
 	dir = 4
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = 26;
 	pixel_y = -26;
-	prison_radio = 1
 	},
 /turf/open/floor/plasteel/dark,
 /area/security/prison)

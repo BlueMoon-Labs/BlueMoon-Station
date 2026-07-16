@@ -437,6 +437,40 @@
 			stop_sending()
 			. = TRUE
 
+/obj/machinery/computer/piratepad_control/AltClick(mob/user)
+	. = ..()
+	withdraw_points(user)
+
+/obj/machinery/computer/piratepad_control/proc/withdraw_points(mob/living/user)
+	if(!isliving(user))
+		return
+	if(!user.canUseTopic(src, BE_CLOSE))
+		return
+	if(machine_stat & (NOPOWER|BROKEN))
+		return
+	if(sending)
+		to_chat(user, span_warning("[src] занят отправкой груза!"))
+		return
+	if(!points)
+		to_chat(user, span_notice("На счету нет кредитов для снятия."))
+		return
+	to_chat(user, span_notice("Вы начинаете вывод средств с [src]..."))
+	user.visible_message(span_notice("[user] подключается к [src] для снятия кредитов..."), span_notice("Вы подключаетесь к [src] для снятия кредитов..."))
+	if(!do_after(user, 30 SECONDS, target = src))
+		return
+	if(QDELETED(src) || QDELETED(user))
+		return
+	if(!user.canUseTopic(src, BE_CLOSE) || (machine_stat & (NOPOWER|BROKEN)))
+		return
+	if(sending || !points)
+		to_chat(user, span_warning("Снятие средств прервано."))
+		return
+	var/withdraw_amount = points
+	points = 0
+	new /obj/item/holochip(drop_location(), withdraw_amount)
+	to_chat(user, span_notice("Вы сняли [withdraw_amount] кредитов с терминала."))
+	playsound(src, 'sound/effects/cashregister.ogg', 50, TRUE)
+
 /obj/machinery/computer/piratepad_control/proc/recalc()
 	if(sending)
 		return

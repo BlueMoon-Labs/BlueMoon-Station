@@ -172,7 +172,7 @@
 	icon_state = "bodybag"
 	mob_name = "a medieval warmonger"
 	job_description = "Medieval Warmonger"
-	mob_species = /datum/species/human
+	mob_species = /datum/species/skeleton/space
 	outfit = /datum/outfit/medieval
 	roundstart = FALSE
 	death = FALSE
@@ -190,7 +190,6 @@
 	. = ..()
 	if(ishuman(new_spawn))
 		var/mob/living/carbon/human/H = new_spawn
-		ADD_TRAIT(H, TRAIT_NOGUNS, INNATE_TRAIT)
 		to_chat(H, "<span class='notice'>You feel robust.</span>")
 		var/datum/species/S = H.dna.species
 		S.brutemod *= 0.5
@@ -219,7 +218,6 @@
 	. = ..()
 	if(ishuman(new_spawn))
 		var/mob/living/carbon/human/H = new_spawn
-		REMOVE_TRAIT(H, TRAIT_NOGUNS, INNATE_TRAIT)
 		H.dna.add_mutation(/datum/mutation/human/hulk/superhuman)
 		H.dna.add_mutation(/datum/mutation/human/gigantism)
 	new_spawn.mind.add_antag_datum(/datum/antagonist/warmonger)
@@ -247,13 +245,16 @@
 
 // Medieval Outfits
 
+/obj/item/flashlight/flare/torch/pocket
+	w_class = WEIGHT_CLASS_SMALL
+
 /datum/outfit/medieval
 	name = "Medieval Warmonger"
 	id = null
 	glasses = null
 
 	uniform = /obj/item/clothing/under/costume/gamberson/military
-	suit = /obj/item/clothing/suit/armor/vest/military
+	suit = /obj/item/clothing/suit/armor/vest/knight/military
 	suit_store = /obj/item/spear/military
 	back = /obj/item/storage/backpack/satchel/leather
 	gloves = /obj/item/clothing/gloves/color/brown
@@ -262,7 +263,7 @@
 	shoes = /obj/item/clothing/shoes/workboots/mining
 	belt = /obj/item/storage/belt/iron_tasset
 	l_hand = /obj/item/claymore/cerberus
-	l_pocket = /obj/item/flashlight/flare/torch
+	l_pocket = /obj/item/flashlight/flare/torch/pocket
 	r_pocket = /obj/item/gun/energy/taser/bolestrel/censor
 	backpack_contents = list(/obj/item/stack/sheet/cloth, /obj/item/feather)
 
@@ -278,7 +279,7 @@
 	mask = /obj/item/clothing/mask/breath
 	shoes = /obj/item/clothing/shoes/bronze
 	belt = /obj/item/storage/belt/gold_tasset
-	l_pocket = /obj/item/flashlight/flare/torch
+	l_pocket = /obj/item/flashlight/flare/torch/pocket
 	r_pocket = /obj/item/gun/energy/taser/bolestrel/censor
 
 // Medieval Belts
@@ -294,9 +295,10 @@
 /obj/item/storage/belt/iron_tasset/ComponentInitialize()
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.storage_flags = STORAGE_FLAGS_LEGACY
 	STR.max_items = 5
 	STR.max_w_class = WEIGHT_CLASS_NORMAL
-	STR.can_hold = typecacheof(list(/obj/item/restraints/legcuffs))
+	STR.can_hold = typecacheof(list(/obj/item/restraints/legcuffs/bola))
 
 /obj/item/storage/belt/iron_tasset/PopulateContents()
 	for(var/i in 1 to 5)
@@ -313,9 +315,10 @@
 /obj/item/storage/belt/gold_tasset/ComponentInitialize()
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.storage_flags = STORAGE_FLAGS_LEGACY
 	STR.max_items = 5
 	STR.max_w_class = WEIGHT_CLASS_NORMAL
-	STR.can_hold = typecacheof(list(/obj/item/restraints/legcuffs))
+	STR.can_hold = typecacheof(list(/obj/item/restraints/legcuffs/bola))
 
 /obj/item/storage/belt/gold_tasset/PopulateContents()
 	for(var/i in 1 to 5)

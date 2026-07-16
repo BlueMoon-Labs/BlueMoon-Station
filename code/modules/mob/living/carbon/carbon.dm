@@ -560,10 +560,12 @@
 			break
 	return TRUE
 
-/mob/living/carbon/proc/spew_organ(power = 5, amt = 1)
+/mob/living/carbon/proc/spew_organ(power = 5, amt = 1, exclude_brain = FALSE)
 	var/list/spillable_organs = list()
 	for(var/A in internal_organs)
 		var/obj/item/organ/O = A
+		if(exclude_brain && istype(O, /obj/item/organ/brain))
+			continue
 		if(!(O.organ_flags & ORGAN_NO_DISMEMBERMENT))
 			spillable_organs += O
 	for(var/i in 1 to amt)

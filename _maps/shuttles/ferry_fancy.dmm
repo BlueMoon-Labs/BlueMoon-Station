@@ -3,11 +3,10 @@
 /turf/template_noop,
 /area/template_noop)
 "b" = (
-/turf/closed/wall/mineral/plastitanium,
+/turf/closed/wall/mineral/titanium,
 /area/shuttle/transport)
 "c" = (
-/obj/structure/grille,
-/obj/structure/window/plastitanium,
+/obj/effect/spawner/structure/window/shuttle,
 /turf/open/floor/plating,
 /area/shuttle/transport)
 "d" = (
@@ -64,11 +63,11 @@
 "m" = (
 /obj/machinery/computer/shuttle/ferry/request{
 	dir = 8;
-	pixel_x = -9
+	pixel_x = -12
 	},
 /obj/machinery/computer/camera_advanced{
 	dir = 4;
-	pixel_x = 8
+	pixel_x = 12
 	},
 /turf/open/floor/pod/dark,
 /area/shuttle/transport)
@@ -119,13 +118,13 @@
 /obj/machinery/porta_turret/centcom_shuttle{
 	dir = 5
 	},
-/turf/closed/wall/mineral/plastitanium,
+/turf/closed/wall/mineral/titanium,
 /area/shuttle/transport)
 "K" = (
 /obj/machinery/porta_turret/centcom_shuttle{
 	dir = 10
 	},
-/turf/closed/wall/mineral/plastitanium,
+/turf/closed/wall/mineral/titanium,
 /area/shuttle/transport)
 "M" = (
 /obj/structure/closet/crate/internals{
@@ -169,13 +168,13 @@
 /obj/machinery/porta_turret/centcom_shuttle{
 	dir = 6
 	},
-/turf/closed/wall/mineral/plastitanium,
+/turf/closed/wall/mineral/titanium,
 /area/shuttle/transport)
 "U" = (
 /obj/machinery/porta_turret/centcom_shuttle{
 	dir = 9
 	},
-/turf/closed/wall/mineral/plastitanium,
+/turf/closed/wall/mineral/titanium,
 /area/shuttle/transport)
 
 (1,1,1) = {"

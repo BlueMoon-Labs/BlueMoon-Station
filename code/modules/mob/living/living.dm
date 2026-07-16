@@ -679,6 +679,7 @@
 	if(full_heal)
 		fully_heal(admin_revive)
 	if(stat == DEAD && can_be_revived()) //in some cases you can't revive (e.g. no brain)
+		REMOVE_TRAIT(src, TRAIT_VITALITY_MATRIX_CONSUMED, "vitality_matrix")
 		remove_from_dead_mob_list()
 		add_to_alive_mob_list()
 		suiciding = 0

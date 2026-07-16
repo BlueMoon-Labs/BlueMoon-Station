@@ -10,6 +10,7 @@
 	allow_objects = TRUE
 	allow_dense = TRUE
 	dense_when_open = TRUE
+	pass_flags_self = PASSTABLE
 	climbable = TRUE
 	climb_time = 10 //real fast, because let's be honest stepping into or onto a crate is easy
 	climb_stun = 0 //climbing onto crates isn't hard, guys

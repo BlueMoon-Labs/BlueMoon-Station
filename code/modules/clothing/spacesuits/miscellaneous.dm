@@ -71,6 +71,7 @@ Contains:
 	item_state = "armor"
 	slowdown = 0
 	flags_inv = HIDEGLOVES|HIDESHOES|HIDETAUR
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
 
 //Security
 /obj/item/clothing/suit/space/swat/security
@@ -79,6 +80,7 @@ Contains:
 	icon_state = "ertarmor_sec"
 	slowdown = 0
 	flags_inv = HIDEGLOVES|HIDESHOES|HIDETAUR
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
 
 //Engineer
 /obj/item/clothing/suit/space/swat/engineer
@@ -87,6 +89,7 @@ Contains:
 	icon_state = "ertarmor_eng"
 	slowdown = 0
 	flags_inv = HIDEGLOVES|HIDESHOES|HIDETAUR
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
 
 //Medical
 /obj/item/clothing/suit/space/swat/medical
@@ -95,6 +98,7 @@ Contains:
 	icon_state = "ertarmor_med"
 	slowdown = 0
 	flags_inv = HIDEGLOVES|HIDESHOES|HIDETAUR
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
 	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/tank/internals, /obj/item/kitchen/knife/combat, /obj/item/gun/medbeam, /obj/item/healthanalyzer, /obj/item/stack/medical, /obj/item/storage/firstaid)
 
 //Janitorial
@@ -104,6 +108,7 @@ Contains:
 	icon_state = "ertarmor_jan"
 	slowdown = 0
 	flags_inv = HIDEGLOVES|HIDESHOES|HIDETAUR
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/head/helmet/space/beret
 	name = "officer's beret"

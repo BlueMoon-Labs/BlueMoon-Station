@@ -61,7 +61,10 @@
 	RegisterSignal(empty_pod, COMSIG_ATOM_ENTERED, PROC_REF(enter_extraction_pod))
 	new /obj/effect/pod_landingzone(empty_pod_turf, empty_pod)
 	if(force_victim_into_pod)
-		addtimer(CALLBACK(src, PROC_REF(force_pirate_victim), expected_victim, empty_pod), 1.5 SECONDS, TIMER_DELETE_ME)
+		// Wait for the pod to land and open on the pad before stuffing the victim in.
+		// Forcing too early races the station landing zone and sends the pod back to podStorage.
+		var/landing_delay = (empty_pod.delays[POD_TRANSIT] + empty_pod.delays[POD_FALLING] + empty_pod.delays[POD_OPENING] + 5) * 0.1 SECONDS
+		addtimer(CALLBACK(src, PROC_REF(force_pirate_victim), expected_victim, empty_pod), landing_delay, TIMER_DELETE_ME)
 
 /datum/ransom_extraction/proc/force_pirate_victim(mob/living/carbon/human/human_victim, obj/structure/closet/supplypod/extractionpod/extraction)
 	if(QDELETED(human_victim) || QDELETED(extraction) || human_victim.stat == DEAD)
@@ -122,7 +125,7 @@
 	INVOKE_ASYNC(src, PROC_REF(aftermath_capture), entered, sc, contractor_success)
 
 /datum/ransom_extraction/proc/aftermath_capture(mob/living/mob_captured, datum/syndicate_contract/contract, contractor_success)
-	addtimer(CALLBACK(src, PROC_REF(return_ransom_victim), mob_captured), 4 MINUTES)
+	addtimer(CALLBACK(src, PROC_REF(return_ransom_victim), mob_captured), 10 MINUTES)
 	if(mob_captured.stat != DEAD)
 		mob_captured.reagents.add_reagent(/datum/reagent/medicine/regen_jelly, 20)
 		mob_captured.flash_act()

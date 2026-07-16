@@ -11327,7 +11327,7 @@
 /turf/open/floor/engine,
 /area/awaymission/InteQ/lvl2)
 "lSh" = (
-/obj/item/radio/intercom{
+/obj/item/radio/intercom/inteq{
 	name = "Station Intercom (General)";
 	pixel_y = -35
 	},
@@ -14954,7 +14954,7 @@
 /turf/open/floor/wood/wood_parquet,
 /area/awaymission/InteQ/lvl2)
 "pAN" = (
-/obj/item/radio/intercom{
+/obj/item/radio/intercom/inteq{
 	pixel_x = 27
 	},
 /obj/machinery/shower{
@@ -16973,7 +16973,7 @@
 	},
 /area/awaymission/InteQ/lvl3)
 "rqM" = (
-/obj/item/radio/intercom{
+/obj/item/radio/intercom/inteq{
 	pixel_x = 26
 	},
 /obj/structure/cable/yellow{

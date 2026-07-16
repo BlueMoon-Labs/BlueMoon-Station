@@ -2326,11 +2326,9 @@
 /area/science/xenobiology)
 "aQa" = (
 /obj/structure/bed,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = -30;
-	prison_radio = 1
 	},
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
 	dir = 1
@@ -3863,11 +3861,9 @@
 /turf/open/floor/plasteel/white,
 /area/science/hall/mid)
 "brX" = (
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = 30;
-	prison_radio = 1
 	},
 /obj/structure/table/wood,
 /turf/open/floor/plasteel/dark,
@@ -4760,12 +4756,10 @@
 /turf/open/floor/plasteel/textured,
 /area/hallway/primary/fore)
 "bGf" = (
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -27;
 	pixel_y = -27;
-	prison_radio = 1
 	},
 /obj/machinery/flasher{
 	id = "Cell 2";
@@ -5195,9 +5189,8 @@
 /turf/open/floor/glass,
 /area/maintenance/disposal/incinerator)
 "bMJ" = (
-/obj/item/radio/intercom{
+/obj/item/radio/intercom/command{
 	dir = 8;
-	freerange = 1;
 	name = "Station Intercom (Command)";
 	pixel_x = -28
 	},
@@ -6219,12 +6212,10 @@
 	pixel_x = -24;
 	pixel_y = -36
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -27;
 	pixel_y = -27;
-	prison_radio = 1
 	},
 /turf/open/floor/plasteel,
 /area/security/brig)
@@ -9001,11 +8992,9 @@
 /obj/effect/turf_decal/stripes/white{
 	dir = 6
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -30;
-	prison_radio = 1
 	},
 /obj/machinery/light{
 	dir = 8
@@ -15175,11 +15164,9 @@
 /area/science/mixing)
 "eIL" = (
 /obj/structure/bed,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
-	prison_radio = 1
 	},
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer1,
 /obj/item/bedsheet/ian,
@@ -25842,11 +25829,9 @@
 /area/science/explab)
 "ibu" = (
 /obj/structure/bed,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
-	prison_radio = 1
 	},
 /obj/structure/sign/poster/official/random{
 	pixel_x = 32
@@ -34773,11 +34758,9 @@
 /area/cargo/office)
 "kSt" = (
 /obj/structure/bed,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = -30;
-	prison_radio = 1
 	},
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
 	dir = 1
@@ -54826,9 +54809,8 @@
 /area/ai_monitored/turret_protected/aisat/atmos)
 "rks" = (
 /obj/structure/table/wood,
-/obj/item/radio/intercom{
+/obj/item/radio/intercom/command{
 	dir = 8;
-	freerange = 1;
 	name = "Station Intercom (Command)"
 	},
 /turf/open/floor/carpet,
@@ -58356,12 +58338,10 @@
 /turf/open/floor/plating,
 /area/maintenance/starboard/upper)
 "snV" = (
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -27;
 	pixel_y = -27;
-	prison_radio = 1
 	},
 /obj/machinery/flasher{
 	id = "Cell 3";
