@@ -67,26 +67,52 @@ falloff_distance - Distance at which falloff begins. Sound is at peak volume (in
 	// Extra listener lists to iterate separately when we can avoid Copy()
 	var/list/extra_listeners_1
 	var/list/extra_listeners_2
+	// Наблюдатели слышат сквозь стены даже у не проникающих звуков: в view-пути
+	// их добирает отдельный проход (в грид-пути они уже в канале CLIENTS)
+	var/list/extra_dead_listeners
 
-	if(!ignore_walls) //these sounds don't carry through walls
-		listeners = SSmobs.clients_by_zlevel[source_z].Copy()
-		listeners = listeners & hearers(maxdistance,turf_source)
+	if(SSspatial_grid.initialized)
+		// Канал CLIENTS спатиал-грида вместо обхода всех клиентов z-уровня:
+		// платим за ячейки вокруг источника, а не за онлайн. Мобов в контейнерах
+		// канал тоже знает (important_recursive_contents).
+		if(!ignore_walls) //these sounds don't carry through walls
+			listeners = get_hearers_in_view(maxdistance, turf_source, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS)
 
-		if(above_turf && istransparentturf(above_turf))
-			listeners += hearers(maxdistance,above_turf)
+			if(above_turf && istransparentturf(above_turf))
+				listeners += get_hearers_in_view(maxdistance, above_turf, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS)
 
-		if(below_turf && istransparentturf(turf_source))
-			listeners += hearers(maxdistance,below_turf)
+			if(below_turf && istransparentturf(turf_source))
+				listeners += get_hearers_in_view(maxdistance, below_turf, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS)
 
-	else
-		// No Copy needed — iterate the original list plus extras separately
-		listeners = SSmobs.clients_by_zlevel[source_z]
+			extra_dead_listeners = SSmobs.dead_players_by_zlevel[source_z]
+		else
+			listeners = SSspatial_grid.orthogonal_range_search(turf_source, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS, maxdistance)
 
-		if(above_turf && istransparentturf(above_turf))
-			extra_listeners_1 = SSmobs.clients_by_zlevel[above_turf.z]
+			if(above_turf && istransparentturf(above_turf))
+				extra_listeners_1 = SSspatial_grid.orthogonal_range_search(above_turf, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS, maxdistance)
 
-		if(below_turf && istransparentturf(turf_source))
-			extra_listeners_2 = SSmobs.clients_by_zlevel[below_turf.z]
+			if(below_turf && istransparentturf(turf_source))
+				extra_listeners_2 = SSspatial_grid.orthogonal_range_search(below_turf, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS, maxdistance)
+	else //фолбэк до инита грида: старый обход клиентов z-уровня
+		if(!ignore_walls)
+			listeners = SSmobs.clients_by_zlevel[source_z].Copy()
+			listeners = listeners & hearers(maxdistance,turf_source)
+
+			if(above_turf && istransparentturf(above_turf))
+				listeners += hearers(maxdistance,above_turf)
+
+			if(below_turf && istransparentturf(turf_source))
+				listeners += hearers(maxdistance,below_turf)
+		else
+			listeners = SSmobs.clients_by_zlevel[source_z]
+
+			if(above_turf && istransparentturf(above_turf))
+				extra_listeners_1 = SSmobs.clients_by_zlevel[above_turf.z]
+
+			if(below_turf && istransparentturf(turf_source))
+				extra_listeners_2 = SSmobs.clients_by_zlevel[below_turf.z]
+
+		extra_dead_listeners = SSmobs.dead_players_by_zlevel[source_z]
 
 	for(var/mob/M as anything in listeners)
 		var/dist = get_dist(M, turf_source)
@@ -100,7 +126,9 @@ falloff_distance - Distance at which falloff begins. Sound is at peak volume (in
 		var/dist = get_dist(M, turf_source)
 		if(dist <= maxdistance)
 			M.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, maxdistance, falloff_distance, dist <= distance_multiplier_min_range? 1 : distance_multiplier, envwet, envdry)
-	for(var/mob/M as anything in SSmobs.dead_players_by_zlevel[source_z])
+	for(var/mob/M as anything in extra_dead_listeners)
+		if(M in listeners) //уже получил звук из канала CLIENTS (был в поле зрения)
+			continue
 		var/dist = get_dist(M, turf_source)
 		if(dist <= maxdistance)
 			M.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, maxdistance, falloff_distance, dist <= distance_multiplier_min_range? 1 : distance_multiplier, envwet, envdry)
