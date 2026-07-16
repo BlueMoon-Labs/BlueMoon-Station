@@ -104,7 +104,13 @@ SUBSYSTEM_DEF(verb_manager)
 		if(!istype(queued_callback))
 			stack_trace("non /datum/callback/verb_callback inside [name]'s verb_queue!")
 			continue
+		// Замер синхронной части верба: дорогой верб раньше был неотличим
+		// от анонимного "DM вне МК" в логе тик-спайков
+		var/invoke_started = TICK_USAGE
 		queued_callback.InvokeAsync()
+		var/invoke_cost_ms = TICK_DELTA_TO_MS(TICK_USAGE - invoke_started)
+		if(SStick_spikes && invoke_cost_ms >= SStick_spikes.slow_work_threshold_ms)
+			SStick_spikes.record_slow_work("верб", SStick_spikes.callback_desc(queued_callback), invoke_cost_ms)
 		executed_verbs++
 	verb_queue.Cut()
 	verbs_executed_per_second = MC_AVERAGE(verbs_executed_per_second, executed_verbs / (wait * world.tick_lag / 10))

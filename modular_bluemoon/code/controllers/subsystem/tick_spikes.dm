@@ -30,6 +30,8 @@
 #define TICK_SPIKES_HISTORY 600
 /// Размер кольца сырых тяжёлых прогонов подсистем МК
 #define TICK_SPIKES_HEAVY_HISTORY 128
+/// Размер кольца медленных единиц работы вне МК (таймер-колбеки, отложенные вербы, Topic)
+#define TICK_SPIKES_SLOW_WORK_HISTORY 64
 /// Сколько последних тиков печатать в отчёте о событии
 #define TICK_SPIKES_REPORT_WINDOW 20
 /// За какое окно (в игровом времени) собирать тяжёлые прогоны в отчёт о событии
@@ -100,6 +102,18 @@ SUBSYSTEM_DEF(tick_spikes)
 	// Master.last_type_processed в момент нашего fire() - всегда мы сами, поэтому свой учёт ---
 	var/last_run_subsystem_name
 	var/last_run_subsystem_time = 0
+
+	// --- Кольцо медленных единиц работы вне слотов подсистем: таймер-колбеки (SStimer),
+	// отложенные вербы (SSverb_manager), client/Topic. Раньше весь этот DM был анонимным -
+	// спайк классифицировался как "DM вне МК" без имени виновника ---
+	var/list/slow_work_time
+	var/list/slow_work_kind
+	var/list/slow_work_desc
+	var/list/slow_work_cost
+	var/slow_work_pos = 0
+	/// Порог стоимости (мс синхронной части, до первого сна), с которого единица работы
+	/// попадает в кольцо. Общий для всех точек замера, крутится через VV.
+	var/slow_work_threshold_ms = 30
 
 	// --- Состояние часов ---
 	var/has_baseline = FALSE
@@ -186,6 +200,7 @@ SUBSYSTEM_DEF(tick_spikes)
 	log_path = SStick_spikes.log_path
 	suppress_side_effects = SStick_spikes.suppress_side_effects
 	ignore_empty_server = SStick_spikes.ignore_empty_server
+	slow_work_threshold_ms = SStick_spikes.slow_work_threshold_ms
 
 /// Полный сброс колец и статистики. Не трогает настройки порогов.
 /datum/controller/subsystem/tick_spikes/proc/reset_state()
@@ -200,6 +215,11 @@ SUBSYSTEM_DEF(tick_spikes)
 	heavy_name = new /list(TICK_SPIKES_HEAVY_HISTORY)
 	heavy_usage = new /list(TICK_SPIKES_HEAVY_HISTORY)
 	heavy_pos = 0
+	slow_work_time = new /list(TICK_SPIKES_SLOW_WORK_HISTORY)
+	slow_work_kind = new /list(TICK_SPIKES_SLOW_WORK_HISTORY)
+	slow_work_desc = new /list(TICK_SPIKES_SLOW_WORK_HISTORY)
+	slow_work_cost = new /list(TICK_SPIKES_SLOW_WORK_HISTORY)
+	slow_work_pos = 0
 	has_baseline = FALSE
 	last_ms = 0
 	last_world = 0
@@ -309,6 +329,47 @@ SUBSYSTEM_DEF(tick_spikes)
 		order += i
 	return order
 
+/**
+ * Запись медленной единицы работы вне слотов подсистем (пишут SStimer,
+ * SSverb_manager и client/Topic при стоимости >= slow_work_threshold_ms).
+ * kind - короткий тип ("таймер"/"верб"/"Topic"), desc - что именно исполнялось.
+ */
+/datum/controller/subsystem/tick_spikes/proc/record_slow_work(kind, desc, cost_ms)
+	slow_work_pos = (slow_work_pos % TICK_SPIKES_SLOW_WORK_HISTORY) + 1
+	slow_work_time[slow_work_pos] = world.time
+	slow_work_kind[slow_work_pos] = kind
+	slow_work_desc[slow_work_pos] = desc
+	slow_work_cost[slow_work_pos] = cost_ms
+
+/// Описание колбека для кольца медленной работы: тип объекта + прок.
+/// Зовётся только для уже пойманных медленных вызовов - стоимость строк не важна.
+/datum/controller/subsystem/tick_spikes/proc/callback_desc(datum/callback/callback)
+	if(!istype(callback))
+		return "не-колбек"
+	var/object_part
+	if(istext(callback.object)) //GLOBAL_PROC - магическая строка
+		object_part = "GLOBAL_PROC"
+	else if(isnull(callback.object))
+		object_part = "null"
+	else
+		object_part = "[callback.object.type]"
+	return "[object_part] -> [callback.delegate]"
+
+/// Медленные единицы работы за окно [since_world, сейчас] в текстовые строки (хронологически)
+/datum/controller/subsystem/tick_spikes/proc/collect_slow_work(since_world)
+	var/list/lines = list()
+	var/list/order = list()
+	for(var/i in slow_work_pos + 1 to TICK_SPIKES_SLOW_WORK_HISTORY)
+		order += i
+	for(var/i in 1 to slow_work_pos)
+		order += i
+	for(var/i in order)
+		var/work_time = slow_work_time[i]
+		if(isnull(work_time) || work_time < since_world)
+			continue
+		lines += "  [time_stamp_from_world(work_time)] (wt [work_time]) [slow_work_kind[i]]: [slow_work_desc[i]] - [round(slow_work_cost[i], 0.1)]мс"
+	return lines
+
 /// Форматирует world.time в человекочитаемое станционное время
 /datum/controller/subsystem/tick_spikes/proc/time_stamp_from_world(world_ds)
 	return gameTimestamp("hh:mm:ss", world_ds)
@@ -390,6 +451,11 @@ SUBSYSTEM_DEF(tick_spikes)
 	if(length(harddel_lines))
 		event += "хардделы за последние [TICK_SPIKES_HEAVY_WINDOW / 10] сек (одиночный дорогой del() - типовой виновник спайков в слоте Garbage):"
 		event += harddel_lines
+
+	var/list/slow_work_lines = collect_slow_work(now_world - TICK_SPIKES_HEAVY_WINDOW)
+	if(length(slow_work_lines))
+		event += "медленные таймер-колбеки/вербы/Topic за последние [TICK_SPIKES_HEAVY_WINDOW / 10] сек (>=[slow_work_threshold_ms]мс синхронной части - именует DM вне МК):"
+		event += slow_work_lines
 
 	event += "последние тики (время | дрифт мс | usage% до МК | cpu% | map_cpu%):"
 	var/window = min(TICK_SPIKES_REPORT_WINDOW, samples_collected)
@@ -520,6 +586,7 @@ SUBSYSTEM_DEF(tick_spikes)
 
 #undef TICK_SPIKES_HISTORY
 #undef TICK_SPIKES_HEAVY_HISTORY
+#undef TICK_SPIKES_SLOW_WORK_HISTORY
 #undef TICK_SPIKES_REPORT_WINDOW
 #undef TICK_SPIKES_HEAVY_WINDOW
 #undef TICK_SPIKES_CLOCK
