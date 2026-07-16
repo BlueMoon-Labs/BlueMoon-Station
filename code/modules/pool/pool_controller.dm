@@ -405,7 +405,7 @@
 			visible_message("<span class='warning'>[usr] presses a button on [src].</span>")
 			mist_off()
 			interact_delay = world.time + 60
-			linked_drain.active = TRUE
+			linked_drain.set_active(TRUE)
 			linked_drain.cycles_left = 75
 			if(!linked_drain.filling)
 				new /obj/effect/whirlpool(linked_drain.loc)

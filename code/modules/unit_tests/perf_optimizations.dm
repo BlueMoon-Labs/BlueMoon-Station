@@ -810,3 +810,65 @@
 	// The merged tailbag list must NOT leak back into the shared wallet list
 	TEST_ASSERT(!wallet_store_one.can_hold[/obj/item/restraints/handcuffs], "Wallet whitelist must not be poisoned by tailbag extras (handcuffs)")
 	TEST_ASSERT_NOTEQUAL("\ref[wallet_store_one.can_hold]", "\ref[tail_store_one.can_hold]", "Wallet and tailbag must use different list instances")
+
+// ===== Status effects: passive permanents stay out of processing =====
+//
+// perf2.log (4h, 1 player): 5.19M /datum/status_effect/process calls - wound
+// family effects live forever on NPC corpses and burned a slot in every
+// SSstatus_effects fire while their tick() is a no-op. Effects with
+// duration -1 AND tick_interval -1 now never enter processing.
+
+/datum/status_effect/unit_test_passive
+	id = "unit_test_passive"
+	duration = -1
+	tick_interval = -1
+	alert_type = null
+
+/datum/status_effect/unit_test_finite
+	id = "unit_test_finite"
+	duration = 30 SECONDS
+	tick_interval = -1
+	alert_type = null
+
+/datum/unit_test/status_effect_processing_gate/Run()
+	var/mob/living/carbon/human/human = allocate(/mob/living/carbon/human)
+
+	var/datum/status_effect/passive_effect = human.apply_status_effect(/datum/status_effect/unit_test_passive)
+	TEST_ASSERT_NOTNULL(passive_effect, "the passive test effect must apply")
+	TEST_ASSERT(!(passive_effect in SSstatus_effects.processing), "A permanent no-tick effect must not enter SSstatus_effects processing")
+
+	var/datum/status_effect/finite_effect = human.apply_status_effect(/datum/status_effect/unit_test_finite)
+	TEST_ASSERT_NOTNULL(finite_effect, "the finite test effect must apply")
+	TEST_ASSERT(finite_effect in SSstatus_effects.processing, "A finite effect must keep processing (it has to expire)")
+
+	// the perf.log offenders are pinned as passive: signal-driven, no tick()
+	// (vars hold the TYPEPATH: initial() on a null-valued var reads nothing)
+	var/datum/status_effect/wound/wound_type = /datum/status_effect/wound
+	var/datum/status_effect/limp/limp_type = /datum/status_effect/limp
+	var/datum/status_effect/determined/determined_type = /datum/status_effect/determined
+	TEST_ASSERT_EQUAL(initial(wound_type.tick_interval), -1, "wound status effects must stay passive (tick_interval -1)")
+	TEST_ASSERT_EQUAL(initial(limp_type.tick_interval), -1, "limp must stay passive (tick_interval -1)")
+	TEST_ASSERT_EQUAL(initial(determined_type.tick_interval), -1, "determined must stay passive (tick_interval -1)")
+
+	human.remove_status_effect(/datum/status_effect/unit_test_passive)
+	human.remove_status_effect(/datum/status_effect/unit_test_finite)
+
+// ===== Pool drain: fastprocess only while a fill/drain cycle runs =====
+//
+// perf2.log: /obj/machinery/pool/drain/process = 45k calls / 12s total on an
+// idle server - the item-suction range() scan ran 10 times a second forever.
+// Idle drains now sit on slow SSobj and only join SSfastprocess for
+// the duration of an active cycle.
+
+/datum/unit_test/pool_drain_idle_cadence/Run()
+	var/obj/machinery/pool/drain/drain = allocate(/obj/machinery/pool/drain)
+	TEST_ASSERT(drain in SSobj.processing, "An idle pool drain must sit on slow processing")
+	TEST_ASSERT(!(drain in SSfastprocess.processing), "An idle pool drain must not be on fastprocess")
+
+	drain.set_active(TRUE)
+	TEST_ASSERT(drain in SSfastprocess.processing, "An active pool drain must move to fastprocess")
+	TEST_ASSERT(!(drain in SSobj.processing), "An active pool drain must leave slow processing")
+
+	drain.set_active(FALSE)
+	TEST_ASSERT(drain in SSobj.processing, "A deactivated pool drain must return to slow processing")
+	TEST_ASSERT(!(drain in SSfastprocess.processing), "A deactivated pool drain must leave fastprocess")
