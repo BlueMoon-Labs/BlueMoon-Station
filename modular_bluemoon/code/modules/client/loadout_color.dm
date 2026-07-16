@@ -37,19 +37,19 @@
 
 /datum/loadout_color_handler/proc/get_preview_base64()
 	if(!gear?.path)
-		return gear?.base64icon
+		return gear?.get_base64icon()
 
 	var/init_icon = gear.item_icon ? gear.item_icon : initial(gear.path.icon)
 	var/init_icon_state = gear.item_icon_state ? gear.item_icon_state : initial(gear.path.icon_state)
 
 	if(!init_icon || !init_icon_state)
-		return gear?.base64icon
+		return gear?.get_base64icon()
 
 	var/icon/preview
 	try
 		preview = icon(init_icon, init_icon_state, SOUTH, 1, FALSE)
 	catch
-		return gear?.base64icon
+		return gear?.get_base64icon()
 
 	switch(active_mode)
 		if(COLORMATE_TINT)
@@ -74,7 +74,7 @@
 	. = list()
 	.["activemode"] = active_mode
 	.["gear_name"] = gear_name
-	.["sprite"] = gear?.base64icon
+	.["sprite"] = gear?.get_base64icon()
 	.["preview"] = get_preview_base64()
 	.["matrixcolors"] = list(
 		"rr" = color_matrix_last[1],
