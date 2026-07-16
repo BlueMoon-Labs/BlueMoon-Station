@@ -1459,6 +1459,44 @@
 	qdel(rule)
 	qdel(test_mode)
 
+/// Регресс рантайма "list index out of bounds" в ready(): хард-профиль давал витринную угрозу
+/// 110.5 (бюджет 43 + оценка капли 67.5), band-индекс required_enemies выходил за 10 и ронял
+/// каждый преflight антаг-пула. Угроза ниже 10 даёт band 0 - тоже мимо списка (экста/форс).
+/// ready() обязан клампить band в границы списка, а оценка угрозы - держать шкалу 0-100.
+/datum/unit_test/dynamic_threat_scale_bounds
+
+/datum/unit_test/dynamic_threat_scale_bounds/Run()
+	var/datum/game_mode/dynamic/test_mode = new
+	var/datum/dynamic_ruleset/midround/test_pool_isolation/midround_rule = new
+	var/datum/dynamic_ruleset/latejoin/test_pool_isolation/latejoin_rule = new
+	try
+		test_mode.current_players[CURRENT_LIVING_PLAYERS] = list()
+		midround_rule.mode = test_mode
+		latejoin_rule.mode = test_mode
+		midround_rule.required_enemies = list(0,0,0,0,0,0,0,0,0,0)
+		latejoin_rule.required_enemies = list(0,0,0,0,0,0,0,0,0,0)
+
+		test_mode.threat_level = 110.5
+		TEST_ASSERT(midround_rule.ready(FALSE), "midround ready() должен переживать угрозу выше 100 (band клампится в границы required_enemies)")
+		TEST_ASSERT(latejoin_rule.ready(FALSE), "latejoin ready() должен переживать угрозу выше 100 (band клампится в границы required_enemies)")
+
+		test_mode.threat_level = 5
+		TEST_ASSERT(midround_rule.ready(FALSE), "midround ready() должен переживать угрозу ниже 10 (band клампится в 1)")
+		TEST_ASSERT(latejoin_rule.ready(FALSE), "latejoin ready() должен переживать угрозу ниже 10 (band клампится в 1)")
+
+		TEST_ASSERT_EQUAL(test_mode.estimate_display_threat(43, 1.5), 100, "витринная оценка угрозы обязана капаться шкалой 0-100 (прод-репро: 43 + 1.5 * 45 = 110.5)")
+		// Допуск: round(x, 0.1) во float32 может дать 65.000001
+		var/in_scale = test_mode.estimate_display_threat(20, 1)
+		TEST_ASSERT(abs(in_scale - 65) < 0.01, "оценка в пределах шкалы не должна искажаться капом (ожидали ~65, получили [in_scale])")
+	catch(var/exception/e)
+		qdel(midround_rule)
+		qdel(latejoin_rule)
+		qdel(test_mode)
+		throw e
+	qdel(midround_rule)
+	qdel(latejoin_rule)
+	qdel(test_mode)
+
 /// Проверяет копилку антаг-пула: цель роллится по весам без оглядки на кошелёк (латеджойны
 /// целью не становятся), дешёвые соседи по пулу блокируются причиной saving и не выжигают
 /// кошелёк. Временно закрытый второй трек может тратить только излишек сверх полного резерва.
