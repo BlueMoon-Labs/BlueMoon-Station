@@ -647,6 +647,9 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	get_message_output("watchlist entry", ckey)
 	check_ip_intel()
 	validate_key_in_db()
+	// Прогрев jobban-кэша: без него ленивый билд (синхронный SQL) случается в самый
+	// неудачный момент - внутри бита директора или гост-полла, посреди игрового тика.
+	INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(jobban_buildcache), src)
 
 	send_resources()
 
@@ -1173,11 +1176,13 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	. = player_age
 
 /client/proc/findJoinDate()
-	var/list/http = world.Export("http://byond.com/members/[ckey]?format=text")
-	if(!http)
+	// Спит (вызывающий set_client_age_from_db и так спит на SQL), но мир не держит:
+	// медленный byond.com на роундстартовой волне коннектов морозил весь сервер на 10+с.
+	var/datum/http_response/response = world_safe_http_get("http://byond.com/members/[ckey]?format=text")
+	if(!response || response.errored || response.status_code != 200)
 		log_world("Failed to connect to byond member page to age check [ckey]")
 		return
-	var/F = file2text(http["CONTENT"])
+	var/F = response.body
 	if(F)
 		var/regex/R = regex("joined = \"(\\d{4}-\\d{2}-\\d{2})\"")
 		if(R.Find(F))
@@ -1186,8 +1191,8 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 			CRASH("Age check regex failed for [src.ckey]")
 
 /client/proc/validate_key_in_db()
-	// Slow path does world.Export("http://byond.com/members/...") — must not block /client/New().
-	// Return value is unused at the only callsite (client_procs.dm), so fire-and-forget is safe.
+	// Slow path fetches byond.com — must not block /client/New(). Return value is
+	// unused at the only callsite (client_procs.dm), so fire-and-forget is safe.
 	set waitfor = FALSE
 	var/sql_key
 	var/datum/db_query/query_check_byond_key = SSdbcore.NewQuery(
@@ -1201,11 +1206,11 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 		sql_key = query_check_byond_key.item[1]
 	qdel(query_check_byond_key)
 	if(key != sql_key)
-		var/list/http = world.Export("http://byond.com/members/[ckey]?format=text")
-		if(!http)
+		var/datum/http_response/response = world_safe_http_get("http://byond.com/members/[ckey]?format=text")
+		if(!response || response.errored || response.status_code != 200)
 			log_world("Failed to connect to byond member page to get changed key for [ckey]")
 			return
-		var/F = file2text(http["CONTENT"])
+		var/F = response.body
 		if(F)
 			var/regex/R = regex("\\tkey = \"(.+)\"")
 			if(R.Find(F))
