@@ -142,7 +142,10 @@
 		volume_bucket += listener
 	for(var/volume_key in listeners_by_volume)
 		announcement_sound.volume = text2num(volume_key)
-		SEND_SOUND(listeners_by_volume[volume_key], announcement_sound)
+		// Список-адресат обязан лежать в локальной переменной: для LHS-индексации
+		// "a[b] << x" компилятор эмитит стрим-опкод и это рантаймит "bad savefile or list".
+		var/list/send_bucket = listeners_by_volume[volume_key]
+		SEND_SOUND(send_bucket, announcement_sound)
 
 /**
  * Summon the crew for an emergency meeting
