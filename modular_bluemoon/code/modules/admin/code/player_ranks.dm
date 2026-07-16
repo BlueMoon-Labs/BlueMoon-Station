@@ -1,5 +1,6 @@
-/// The list of the available special player ranks
-#define BLUEMOON_PLAYER_RANKS list("Mentor")
+/// Maps admin UI labels to database rank titles.
+#define BLUEMOON_PLAYER_RANKS list("Super Mentor")
+#define BLUEMOON_PLAYER_RANK_DB_TITLES list("mentor")
 
 /client/proc/manage_player_ranks()
 	set category = "Admin.Player Interaction"
@@ -23,15 +24,18 @@
 	if(!choice || !(choice in BLUEMOON_PLAYER_RANKS))
 		return
 
-	manage_player_rank_in_group(choice)
+	var/list/rank_labels = BLUEMOON_PLAYER_RANKS
+	var/rank_index = rank_labels.Find(choice)
+	manage_player_rank_in_group(choice, BLUEMOON_PLAYER_RANK_DB_TITLES[rank_index])
 
 /**
  * Handles managing player ranks based on the name of the group that was chosen.
  *
  * Arguments:
- * * group - The title of the player rank that was chosen to be managed.
+ * * group - The display name of the player rank that was chosen to be managed.
+ * * group_title - The database / legacy rank title.
  */
-/datum/admins/proc/manage_player_rank_in_group(group)
+/datum/admins/proc/manage_player_rank_in_group(group, group_title)
 	PROTECTED_PROC(TRUE)
 
 	if(IsAdminAdvancedProcCall())
@@ -40,12 +44,13 @@
 	if(!(group in BLUEMOON_PLAYER_RANKS))
 		CRASH("[key_name(usr)] attempted to add someone to an invalid \"[group]\" group.")
 
-	var/group_title = lowertext(group)
+	if(!group_title)
+		group_title = lowertext(group)
 
 	var/list/choices = list("Add", "Remove")
 	switch(tgui_alert(usr, "What would you like to do?", "Manage [group]s", choices))
 		if("Add")
-			var/name = input(usr, "Please enter the CKEY (case-insensitive) of the person you would like to make a [group_title]:", "Add a [group_title]") as null|text
+			var/name = input(usr, "Please enter the CKEY (case-insensitive) of the person you would like to make a [group]:", "Add a [group]") as null|text
 			if(!name)
 				return
 
@@ -59,12 +64,12 @@
 			if(!success)
 				return
 
-			message_admins("[key_name(usr)] has granted [group_title] status to [player_to_be].")
-			log_admin_private("[key_name(usr)] has granted [group_title] status to [player_to_be].")
+			message_admins("[key_name(usr)] has granted [group] status to [player_to_be].")
+			log_admin_private("[key_name(usr)] has granted [group] status to [player_to_be].")
 
 
 		if("Remove")
-			var/name = input(usr, "Please enter the CKEY (case-insensitive) of the person you would like to no longer be a [group_title]:", "Remove a [group_title]") as null|text
+			var/name = input(usr, "Please enter the CKEY (case-insensitive) of the person you would like to no longer be a [group]:", "Remove a [group]") as null|text
 			if(!name)
 				return
 
@@ -78,8 +83,8 @@
 			if(!success)
 				return
 
-			message_admins("[key_name(usr)] has revoked [group_title] status from [player_that_was].")
-			log_admin_private("[key_name(usr)] has revoked [group_title] status from [player_that_was].")
+			message_admins("[key_name(usr)] has revoked [group] status from [player_that_was].")
+			log_admin_private("[key_name(usr)] has revoked [group] status from [player_that_was].")
 
 		else
 			return
@@ -114,8 +119,11 @@
 	if(tgui_alert(usr, "Are you sure that you would like to migrate [choice]s to the SQL-based system?", "Migrate Player Ranks", list("Yes", "No")) != "Yes")
 		return
 
+	var/list/rank_labels = BLUEMOON_PLAYER_RANKS
+	var/rank_index = rank_labels.Find(choice)
 	log_admin("[key_name(usr)] is migrating the [choice] player rank from its legacy system to the SQL-based one.")
-	SSplayer_ranks.migrate_player_rank_to_sql(usr.client, choice)
+	SSplayer_ranks.migrate_player_rank_to_sql(usr.client, BLUEMOON_PLAYER_RANK_DB_TITLES[rank_index])
 
 
 #undef BLUEMOON_PLAYER_RANKS
+#undef BLUEMOON_PLAYER_RANK_DB_TITLES

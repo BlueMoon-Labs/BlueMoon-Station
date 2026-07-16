@@ -5,16 +5,18 @@
 	set name = "Mentor Spawn"
 	set category = "Mentor"
 
+	if(!is_super_mentor())
+		to_chat(src, span_warning("Only super mentors can spawn as a mentor mob."))
+		return
+
 	var/mob/living/mentor
 	var/turf/current_turf = get_turf(mob)
 
 	if(isobserver(mob) && COOLDOWN_FINISHED(src, mentor_mouse_spawn))
-		var/type = tgui_alert(src, "Which character you want to spawn?","Mentor Spawn",list("Mouse","Drone", "Cancel"))
-		if(type == "Cancel")
+		var/list/spawn_options = list("Drone", "Cancel")
+		var/type = tgui_alert(src, "Which character you want to spawn?","Mentor Spawn", spawn_options)
+		if(type == "Cancel" || !type)
 			return
-		if(type == "Mouse")
-			mentor = /mob/living/simple_animal/hostile/syndimouse
-
 		if(type == "Drone")
 			mentor = /mob/living/simple_animal/drone/mentordrone
 

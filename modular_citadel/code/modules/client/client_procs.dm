@@ -24,6 +24,9 @@
 
 	//Mentor Follow
 	if(href_list["mentor_follow"])
+		if(!is_super_mentor())
+			to_chat(src, span_warning("Only super mentors can follow players."))
+			return TRUE
 		var/mob/living/M = locate(href_list["mentor_follow"])
 
 		if(istype(M))
@@ -37,20 +40,25 @@
 		return TRUE
 
 /client/proc/mentor_datum_set(admin) //BLUEMOON EDIT: PLAYER RANKS
-	mentor_datum = GLOB.mentor_datums[ckey]
-	if(!mentor_datum && is_admin(src)) // admin with no mentor datum? let's fix that //BLUEMOON EDIT: PLAYER RANKS
-		new /datum/mentors(ckey)
-
-	if(mentor_datum)
-		if(!check_rights_for(src, R_ADMIN,0) && !admin)
-			GLOB.mentors |= src // don't add admins to this list too.
-		mentor_datum.owner = src
+	if(!ensure_mentor_datum())
+		return
+	if(/client/proc/cmd_mentor_become in verbs)
+		add_become_mentor_verb()
+	else
 		add_mentor_verbs()
+		if(mentor_datum.is_super && !check_rights_for(src, R_ADMIN, 0))
+			GLOB.mentors |= src
+
+	if(mentor_datum?.is_super)
 		mentor_memo_output("Show")
 
-/client/proc/is_mentor() // admins are mentors too.
-	if(mentor_datum || check_rights_for(src, R_ADMIN)) //BLUEMOON EDIT: PLAYER RANKS
+/client/proc/is_mentor(admin_bypass = TRUE)
+	return is_active_mentor() || (admin_bypass && check_rights_for(src, R_ADMIN))
+
+/client/proc/is_super_mentor()
+	if(check_rights_for(src, R_ADMIN))
 		return TRUE
+	return mentor_datum?.is_super
 
 /client/verb/togglerightclickstuff()
 	set category = "OOC"

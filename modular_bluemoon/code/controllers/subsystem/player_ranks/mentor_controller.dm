@@ -1,6 +1,5 @@
-// The mentor system is a bit more complex than the other player ranks, so it's
-// got its own handling and global lists declarations in the `mentor` module.
-
+/// Super mentor rank (stored as "mentor" in the database / mentors.txt).
+/// Every player is a regular mentor on connect; this controller manages the elevated super mentor group.
 /datum/player_rank_controller/mentor
 	rank_title = "mentor"
 
@@ -16,7 +15,11 @@
 
 	ckey = ckey(ckey)
 
-	new /datum/mentors(ckey)
+	var/datum/mentors/mentor_datum = GLOB.mentor_datums[ckey]
+	if(mentor_datum)
+		mentor_datum.promote_super_mentor()
+	else
+		new /datum/mentors(ckey, TRUE)
 
 
 /datum/player_rank_controller/mentor/remove_player(ckey)
@@ -24,7 +27,7 @@
 		return
 
 	var/datum/mentors/mentor_datum = GLOB.mentor_datums[ckey]
-	mentor_datum?.remove_mentor()
+	mentor_datum?.demote_super_mentor()
 
 
 /datum/player_rank_controller/mentor/get_ckeys_for_legacy_save()
@@ -49,8 +52,9 @@
 		if(!existing_mentor)
 			continue
 
-		// Only save them if they're still in the mentor datums list in-game.
-		if(!GLOB.mentor_datums[existing_mentor])
+		// Only save them if they're still a super mentor in-game.
+		var/datum/mentors/existing_datum = GLOB.mentor_datums[existing_mentor]
+		if(!existing_datum?.is_super)
 			continue
 
 		// Associative list for extra SPEED!
@@ -67,10 +71,8 @@
 	if(IsAdminAdvancedProcCall())
 		return
 
-	GLOB.mentor_datums.Cut()
-
-	for(var/client/ex_mentor as anything in GLOB.mentors)
-		ex_mentor.remove_mentor_verbs()
-		ex_mentor.mentor_datum = null
+	for(var/ckey_key in GLOB.mentor_datums)
+		var/datum/mentors/mentor_datum = GLOB.mentor_datums[ckey_key]
+		mentor_datum?.demote_super_mentor()
 
 	GLOB.mentors.Cut()

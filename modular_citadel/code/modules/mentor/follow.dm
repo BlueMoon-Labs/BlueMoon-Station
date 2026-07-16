@@ -1,6 +1,9 @@
 /client/proc/mentor_follow(mob/living/M)
 	if(!is_mentor())
 		return
+	if(!is_super_mentor())
+		to_chat(src, span_warning("Only super mentors can follow players."))
+		return
 	var/orbiting = TRUE
 	if(!isobserver(usr))
 		mentor_datum.following = M
