@@ -210,7 +210,9 @@ GLOBAL_LIST_INIT(spells, typesof(/obj/effect/proc_holder/spell)) //needed for th
 
 /obj/effect/proc_holder/spell/Initialize(mapload)
 	. = ..()
-	START_PROCESSING(SSfastprocess, src)
+	//заряженный спелл не сидит в SSfastprocess: его будят start_recharge()
+	//и perform() на время отката (иначе каждый спелл на сервере молотит
+	//10 раз в секунду всю жизнь владельца)
 
 	still_recharging_msg = "<span class='notice'>[name] is still recharging.</span>"
 	charge_counter = charge_max
@@ -240,14 +242,16 @@ GLOBAL_LIST_INIT(spells, typesof(/obj/effect/proc_holder/spell)) //needed for th
 
 /obj/effect/proc_holder/spell/proc/start_recharge()
 	recharging = TRUE
+	START_PROCESSING(SSfastprocess, src)
 
 /obj/effect/proc_holder/spell/process(delta_time)
-	if(recharging && charge_type == "recharge" && (charge_counter < charge_max))
-		charge_counter += 2	//processes 5 times per second instead of 10.
-		if(charge_counter >= charge_max)
-			action.UpdateButtons()
-			charge_counter = charge_max
-			recharging = FALSE
+	if(!recharging || charge_type != "recharge" || charge_counter >= charge_max)
+		return PROCESS_KILL //откатывать нечего: start_recharge()/perform() разбудят
+	charge_counter += 2	//processes 5 times per second instead of 10.
+	if(charge_counter >= charge_max)
+		action.UpdateButtons()
+		charge_counter = charge_max
+		recharging = FALSE
 
 /obj/effect/proc_holder/spell/proc/perform(list/targets, recharge = TRUE, mob/user = usr) //if recharge is started is important for the trigger spells
 	before_cast(targets)
