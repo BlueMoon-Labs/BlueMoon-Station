@@ -12,6 +12,8 @@
 	var/allowed_buildtypes = NONE
 	var/list/cached_designs = list()
 	var/list/_ui_cached_designs = list()
+	/// Кэш дизайнов уже строился полным пересбором хотя бы раз - можно доклеивать инкрементально
+	var/designs_cache_built = FALSE
 	var/department_tag = "Unidentified"			//used for material distribution among other things.
 	var/datum/techweb/stored_research
 	var/datum/techweb/host_research
@@ -96,9 +98,12 @@
 	// Снапшот "что уже знали" ДО синка: после него доклеиваем только новые дизайны.
 	// Полный пересбор (весь researched_designs через techweb_design_by_id) гонялся
 	// каждой машиной раз в 1.5с на волне исследований - 75k вызовов за 18с на проде.
-	var/list/previously_known = stored_research.researched_designs.Copy()
+	// Судить о "первом ли это синке" по снапшоту нельзя: свежий /datum/techweb
+	// исследует стартовые ноды прямо в New(), так что researched_designs непуст уже
+	// до первого пересбора - и инкрементальный путь навсегда терял базовые рецепты.
+	var/list/previously_known = designs_cache_built ? stored_research.researched_designs.Copy() : null
 	host_research.copy_research_to(stored_research, TRUE)
-	if(length(previously_known))
+	if(previously_known)
 		update_designs_incremental(previously_known)
 	else
 		update_designs()
@@ -112,6 +117,7 @@
 		if((isnull(allowed_department_flags) || (d.departmental_flags & allowed_department_flags)) && (d.build_type & allowed_buildtypes))
 			cached_designs |= d
 
+	designs_cache_built = TRUE
 	update_designs_ui()
 
 /// Доклейка только новых (после снапшота previously_known) дизайнов в cached_designs.
