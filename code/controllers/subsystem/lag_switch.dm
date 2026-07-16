@@ -35,14 +35,27 @@ SUBSYSTEM_DEF(lag_switch)
 
 /datum/controller/subsystem/lag_switch/proc/client_connected(datum/source, client/connected)
 	SIGNAL_HANDLER
+	if(veto_timer_id) //окно вето уже идёт - второй таймер перезаписал бы ссылку и стал неотменяемым
+		return
 	if(length(GLOB.clients) < trigger_pop)
 		return
 
 	auto_switch = FALSE
 	UnregisterSignal(SSdcs, COMSIG_GLOB_CLIENT_CONNECT)
-	veto_timer_id = addtimer(CALLBACK(src, PROC_REF(set_all_measures), TRUE, TRUE), 20 SECONDS, TIMER_STOPPABLE)
+	veto_timer_id = addtimer(CALLBACK(src, PROC_REF(auto_activate)), 20 SECONDS, TIMER_STOPPABLE)
 	message_admins("Lag Switch: порог онлайна ([trigger_pop]) достигнут. Автовключение мер снижения нагрузки через 20 секунд. Отменить: верб Lag Switch -> \"Отменить автовключение\".")
 	log_admin("Lag Switch population threshold reached. Automatic activation of lag mitigation measures in 20 seconds.")
+
+/// Срабатывание таймера автовключения: онлайн мог упасть за окно вето
+/// (клиент отвалился сам), тогда меры не включаем и перевзводим автотриггер.
+/datum/controller/subsystem/lag_switch/proc/auto_activate()
+	veto_timer_id = null
+	if(length(GLOB.clients) < trigger_pop)
+		auto_switch = TRUE
+		RegisterSignal(SSdcs, COMSIG_GLOB_CLIENT_CONNECT, PROC_REF(client_connected), override = TRUE)
+		message_admins("Lag Switch: онлайн упал ниже порога за окно вето, автовключение отменено и перевзведено.")
+		return
+	set_all_measures(TRUE, TRUE)
 
 /// (En/Dis)able automatic triggering of switches based on client count
 /datum/controller/subsystem/lag_switch/proc/toggle_auto_enable()
