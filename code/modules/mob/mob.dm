@@ -70,7 +70,10 @@
 	// if(mock_client)
 	// 	mock_client.mob = null
 
-	return ..()
+	. = ..()
+	//предметы в руках удалены contents-циклом выше по цепочке, но unequip при
+	//QDELING(моб) пропускается - отпускаем ссылки, чтобы зависший моб не пиннил их
+	held_items = null
 
 /mob/GenerateTag()
 	tag = "mob_[next_mob_id++]"

@@ -52,8 +52,26 @@
 	QDEL_NULL_LIST(vore_organs) // CITADEL EDIT belly stuff
 	GLOB.human_list -= src
 	GLOB.suit_sensors_list -= src
-	GLOB.latejoiners -= src
-	return ..()
+	. = ..()
+	//экипировка удалена contents-циклом atom/movable/Destroy, но unequip при
+	//QDELING(моб) пропускается (см. /obj/item/Destroy) - обнуляем слот-вары
+	//сами, иначе зависший в GC моб тянет за собой весь свой инвентарь
+	wear_suit = null
+	w_uniform = null
+	w_underwear = null
+	w_socks = null
+	w_shirt = null
+	wrists = null
+	gloves = null
+	glasses = null
+	ears = null
+	ears_extra = null
+	shoes = null
+	belt = null
+	wear_id = null
+	r_store = null
+	l_store = null
+	s_store = null
 
 /mob/living/carbon/human/prepare_data_huds()
 	//Update med hud images...
