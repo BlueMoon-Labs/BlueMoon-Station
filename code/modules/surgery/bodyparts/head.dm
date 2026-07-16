@@ -47,8 +47,8 @@
 	wound_resistance = 10
 	scars_covered_by_clothes = FALSE
 
-/obj/item/bodypart/head/can_dismember(obj/item/I)
-	if(owner && !((owner.stat == DEAD) || owner.InFullCritical()))
+/obj/item/bodypart/head/can_dismembered()
+	if(owner && (iszombie_infectious(owner) || !((owner.stat == DEAD) || owner.InFullCritical())))
 		return FALSE
 	return ..()
 

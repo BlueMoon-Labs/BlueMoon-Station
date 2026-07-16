@@ -15,7 +15,7 @@
 	max_stamina_damage = 200
 	var/obj/item/cavity_item
 
-/obj/item/bodypart/chest/can_dismember(obj/item/I)
+/obj/item/bodypart/chest/can_dismembered()
 	if(!((owner.stat == DEAD) || owner.InFullCritical()) || !get_organs())
 		return FALSE
 	return ..()

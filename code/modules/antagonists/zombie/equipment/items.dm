@@ -23,6 +23,9 @@
 	. = ..()
 	ADD_TRAIT(src, TRAIT_NODROP, HAND_REPLACEMENT_TRAIT)
 
+/obj/item/zombie_hand/can_dismember()
+	return FALSE
+
 /obj/item/zombie_hand/equipped(mob/user, slot)
 	. = ..()
 	//these are intentionally inverted
