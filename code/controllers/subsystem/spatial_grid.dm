@@ -1,3 +1,6 @@
+///сколько /mob/oranges_ear прогенерировать на ините (аллокации сверх этого создают новые)
+#define NUMBER_OF_PREGENERATED_ORANGES_EARS 2500
+
 /**
  * # Spatial Grid Cell
  *
@@ -69,6 +72,11 @@ SUBSYSTEM_DEF(spatial_grid)
 	///общий пустой список, на который ссылаются пустые списки ячеек
 	var/list/dummy_list = list()
 
+	///пул прогенерированных /mob/oranges_ear для ускорения view()-фильтрации
+	var/list/mob/oranges_ear/pregenerated_oranges_ears = list()
+	///размер пула ушей; в норме никогда не растёт после инита
+	var/number_of_oranges_ears = NUMBER_OF_PREGENERATED_ORANGES_EARS
+
 /datum/controller/subsystem/spatial_grid/Initialize(start_timeofday)
 	cells_on_x_axis = SPATIAL_GRID_CELLS_PER_SIDE(world.maxx)
 	cells_on_y_axis = SPATIAL_GRID_CELLS_PER_SIDE(world.maxy)
@@ -90,6 +98,8 @@ SUBSYSTEM_DEF(spatial_grid)
 				enter_cell(movable, movable_turf)
 			UnregisterSignal(movable, COMSIG_PARENT_QDELETING)
 		waiting_to_add_by_type[channel_type] = list()
+
+	pregenerate_more_oranges_ears(NUMBER_OF_PREGENERATED_ORANGES_EARS)
 
 	return ..()
 
@@ -407,6 +417,58 @@ SUBSYSTEM_DEF(spatial_grid)
 						force_remove_from_cell(to_remove, cell)
 
 	return containing_cells
+
+///пополнить пул ушей; после инита звать не должно быть нужды
+/datum/controller/subsystem/spatial_grid/proc/pregenerate_more_oranges_ears(number_to_generate)
+	for(var/new_ear in 1 to number_to_generate)
+		pregenerated_oranges_ears += new /mob/oranges_ear(null)
+
+	number_of_oranges_ears = length(pregenerated_oranges_ears)
+
+/**
+ * Расставить по одному /mob/oranges_ear на каждый турф, содержащий атомы из
+ * atoms_that_need_ears, и раздать ушам ссылки на их атомы. Если на турфе уже
+ * стоит ухо этого запроса - атом просто дописывается к нему.
+ *
+ * Вызывающий обязан после view()-фильтрации снять все уши через unassign()
+ * (см. get_hearers_in_view).
+ */
+/datum/controller/subsystem/spatial_grid/proc/assign_oranges_ears(list/atoms_that_need_ears)
+	var/input_length = length(atoms_that_need_ears)
+
+	if(input_length > number_of_oranges_ears)
+		stack_trace("assign_oranges_ears() got [input_length] atoms with only [number_of_oranges_ears] pregenerated ears! Growing the pool.")
+		pregenerate_more_oranges_ears(input_length - number_of_oranges_ears)
+
+	. = list()
+
+	var/mob/oranges_ear/current_ear
+	var/atom/assigned_atom
+	var/turf/turf_loc
+
+	for(var/current_ear_index in 1 to input_length)
+		assigned_atom = atoms_that_need_ears[current_ear_index]
+
+		turf_loc = get_turf(assigned_atom)
+		if(!turf_loc)
+			continue
+
+		current_ear = pregenerated_oranges_ears[current_ear_index]
+
+		if(turf_loc.assigned_oranges_ear)
+			turf_loc.assigned_oranges_ear.references += assigned_atom
+			continue //на этом турфе уже стоит ухо - второе аллоцировать незачем
+
+		current_ear.references += assigned_atom
+
+		//прямое присваивание loc вместо forceMove: ухо должно только числиться
+		//в contents турфа для view(), вся движковая обвязка перемещений не нужна
+		current_ear.loc = turf_loc
+		turf_loc.assigned_oranges_ear = current_ear
+
+		. += current_ear
+
+#undef NUMBER_OF_PREGENERATED_ORANGES_EARS
 
 #undef BOUNDING_BOX_MAX
 #undef BOUNDING_BOX_MIN

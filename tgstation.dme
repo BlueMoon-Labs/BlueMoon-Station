@@ -3048,6 +3048,7 @@
 #include "code\modules\mob\mob_movement.dm"
 #include "code\modules\mob\mob_transformation_simple.dm"
 #include "code\modules\mob\mob_update_icons.dm"
+#include "code\modules\mob\oranges_ear.dm"
 #include "code\modules\mob\say.dm"
 #include "code\modules\mob\say_vr.dm"
 #include "code\modules\mob\status_procs.dm"

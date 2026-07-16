@@ -86,3 +86,73 @@
 	fake_player.clear_important_client_contents()
 	TEST_ASSERT(!npc.has_nearby_player(10), "After clearing the clients channel has_nearby_player must be FALSE")
 	TEST_ASSERT(!(fake_player in SSspatial_grid.get_cell_of(box)?.client_contents), "Clearing the channel must empty the cell")
+
+// ===== get_hearers_in_view / get_hearers_in_range on the grid =====
+
+///opaque blocker for the line-of-sight assertion
+/obj/effect/spatial_grid_test_wall
+	opacity = TRUE
+
+/datum/unit_test/spatial_grid_hearers
+	var/hearer_signal_fired = FALSE
+
+/datum/unit_test/spatial_grid_hearers/proc/on_hearer_signal(datum/source, list/candidates, list/hearers)
+	SIGNAL_HANDLER
+	hearer_signal_fired = TRUE
+
+///the grid path must return exactly the same set of hearers as the legacy walk
+/datum/unit_test/spatial_grid_hearers/proc/assert_hearers_equivalence(turf/center, scenario)
+	var/list/via_legacy = legacy_get_hearers_in_view(7, center)
+	var/list/via_grid = get_hearers_in_view(7, center)
+	TEST_ASSERT_EQUAL(length(via_grid), length(via_legacy), "[scenario]: the grid path found [length(via_grid)] hearers, the legacy walk [length(via_legacy)]")
+	for(var/hearer in via_legacy)
+		TEST_ASSERT(hearer in via_grid, "[scenario]: the grid path is missing a hearer the legacy walk found")
+
+/datum/unit_test/spatial_grid_hearers/Run()
+	var/turf/center = run_loc_floor_bottom_left
+	//the reserved test zone can land near the map edge: step whichever way has room
+	var/step_dir = (center.x + 12 <= world.maxx) ? 1 : -1
+
+	var/obj/effect/hearer_contents_test_listener/near_hearer = allocate(/obj/effect/hearer_contents_test_listener, locate(center.x + step_dir * 3, center.y, center.z))
+	var/obj/structure/closet/box = allocate(/obj/structure/closet, locate(center.x + step_dir * 2, center.y + 1, center.z))
+	var/obj/effect/hearer_contents_test_listener/boxed_hearer = allocate(/obj/effect/hearer_contents_test_listener)
+	boxed_hearer.forceMove(box)
+	var/obj/effect/hearer_contents_test_listener/far_hearer = allocate(/obj/effect/hearer_contents_test_listener, locate(center.x + step_dir * 12, center.y, center.z))
+	var/obj/effect/hearer_contents_test_listener/center_hearer = allocate(/obj/effect/hearer_contents_test_listener, center)
+
+	RegisterSignal(near_hearer, COMSIG_ATOM_HEARER_IN_VIEW, PROC_REF(on_hearer_signal))
+
+	var/list/heard = get_hearers_in_view(7, center)
+	TEST_ASSERT(near_hearer in heard, "get_hearers_in_view must find a hearer standing 3 tiles away")
+	TEST_ASSERT(boxed_hearer in heard, "get_hearers_in_view must find a hearer inside a closet in view")
+	TEST_ASSERT(center_hearer in heard, "get_hearers_in_view must find a hearer on the center turf")
+	TEST_ASSERT(!(far_hearer in heard), "get_hearers_in_view must not find a hearer 12 tiles away with radius 7")
+	TEST_ASSERT(hearer_signal_fired, "COMSIG_ATOM_HEARER_IN_VIEW must still fire for found hearers")
+	UnregisterSignal(near_hearer, COMSIG_ATOM_HEARER_IN_VIEW)
+
+	//the true correctness bar for the port: same output as the legacy BFS walk
+	//over view(), with and without an opaque blocker in the line of sight
+	//(whether that blocker stops hearing is engine LOS semantics, not ours -
+	//we only guarantee the port does not CHANGE the answer)
+	assert_hearers_equivalence(center, "open field")
+	var/obj/effect/spatial_grid_test_wall/wall = allocate(/obj/effect/spatial_grid_test_wall, locate(center.x + step_dir, center.y, center.z))
+	TEST_ASSERT_NOTNULL(wall, "test premise: the opaque wall must exist")
+	assert_hearers_equivalence(center, "opaque blocker")
+	qdel(wall)
+
+	//radius 0: only the center turf's own hearers
+	var/list/local_only = get_hearers_in_view(0, center)
+	TEST_ASSERT(center_hearer in local_only, "Radius 0 must include hearers on the center turf")
+	TEST_ASSERT(!(near_hearer in local_only), "Radius 0 must not include hearers on other turfs")
+
+	//pure range variant ignores walls and filters by distance
+	var/obj/effect/spatial_grid_test_wall/range_wall = allocate(/obj/effect/spatial_grid_test_wall, locate(center.x + step_dir, center.y, center.z))
+	var/list/ranged = get_hearers_in_range(5, center)
+	TEST_ASSERT_NOTNULL(range_wall, "test premise: the opaque wall must exist")
+	TEST_ASSERT(near_hearer in ranged, "get_hearers_in_range must ignore opacity")
+	TEST_ASSERT(boxed_hearer in ranged, "get_hearers_in_range must find hearers inside containers")
+	TEST_ASSERT(!(far_hearer in ranged), "get_hearers_in_range must filter by distance")
+
+	//no ears may remain assigned after the queries
+	for(var/mob/oranges_ear/ear as anything in SSspatial_grid.pregenerated_oranges_ears)
+		TEST_ASSERT_NULL(ear.loc, "All oranges_ears must be unassigned (in nullspace) after queries")

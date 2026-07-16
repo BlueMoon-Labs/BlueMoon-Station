@@ -251,11 +251,56 @@
 
 	return found_mobs
 
+/**
+ * Все слышащие movables в видимости от турфа source (без учёта освещения).
+ *
+ * Кандидаты берутся из HEARING-канала спатиал-грида, затем на их турфы
+ * расставляются /mob/oranges_ear и один hearers() фильтрует по линии
+ * видимости только мобов-ушей вместо перебора всего содержимого view():
+ * см. комментарий в oranges_ear.dm.
+ */
 /proc/get_hearers_in_view(R, atom/source)
 	var/turf/T = get_turf(source)
 	. = list()
 	if(!T)
 		return
+
+	if(!SSspatial_grid.initialized) //речь до инита грида (лобби и т.п.)
+		return legacy_get_hearers_in_view(R, T)
+
+	if(R <= 0) //только турф источника
+		for(var/atom/movable/target as anything in T)
+			var/list/hearables_from_this_atom = target.important_recursive_contents?[RECURSIVE_CONTENTS_HEARING_SENSITIVE]
+			if(hearables_from_this_atom)
+				. += hearables_from_this_atom
+	else
+		var/list/hearables_from_grid = SSspatial_grid.orthogonal_range_search(T, SPATIAL_GRID_CONTENTS_TYPE_HEARING, R)
+		if(!length(hearables_from_grid))
+			return
+
+		var/list/assigned_oranges_ears = SSspatial_grid.assign_oranges_ears(hearables_from_grid)
+
+		//тот же примитив видимости, что у старого пути (view + подсветка):
+		//типизация по /mob заставляет view() обходить только мобовый связный
+		//список контентов турфов - в этом и есть выигрыш ушей
+		var/lum = T.luminosity
+		T.luminosity = 6
+		for(var/mob/oranges_ear/ear in view(R, T))
+			. += ear.references
+		T.luminosity = lum
+
+		for(var/mob/oranges_ear/remaining_ear as anything in assigned_oranges_ears)
+			remaining_ear.unassign()
+
+	//сигнал сохраняем: дуллахан слышит телом через голову и т.п.
+	//итерируем снапшот - обработчики дописывают слушателей в выходной список
+	var/list/found_hearers = .
+	for(var/atom/movable/hearer as anything in found_hearers.Copy())
+		SEND_SIGNAL(hearer, COMSIG_ATOM_HEARER_IN_VIEW, null, found_hearers)
+
+///старый BFS-обход view(); нужен только до инициализации спатиал-грида
+/proc/legacy_get_hearers_in_view(R, turf/T)
+	. = list()
 	var/list/processing = list()
 	if(R == 0)
 		processing += T.contents
@@ -276,11 +321,33 @@
 			processing += A.contents
 			lim = length(processing)
 
+/**
+ * То же, что get_hearers_in_view, но без учёта видимости: чистый радиус.
+ * С гридом это выборка ячеек плюс фильтр дистанции, без view() вообще.
+ */
 /proc/get_hearers_in_range(R, atom/source)
 	var/turf/T = get_turf(source)
 	. = list()
 	if(!T)
 		return
+
+	if(SSspatial_grid.initialized)
+		if(R <= 0) //только турф источника
+			for(var/atom/movable/target as anything in T)
+				var/list/hearables_from_this_atom = target.important_recursive_contents?[RECURSIVE_CONTENTS_HEARING_SENSITIVE]
+				if(hearables_from_this_atom)
+					. += hearables_from_this_atom
+		else
+			for(var/atom/movable/hearable as anything in SSspatial_grid.orthogonal_range_search(T, SPATIAL_GRID_CONTENTS_TYPE_HEARING, R))
+				if(get_dist(T, hearable) <= R)
+					. += hearable
+
+		var/list/found_hearers = .
+		for(var/atom/movable/hearer as anything in found_hearers.Copy())
+			SEND_SIGNAL(hearer, COMSIG_ATOM_HEARER_IN_VIEW, null, found_hearers)
+		return
+
+	//фолбэк до инита грида
 	var/list/processing = range(R, source)
 	var/i = 0
 	while(i < length(processing))
