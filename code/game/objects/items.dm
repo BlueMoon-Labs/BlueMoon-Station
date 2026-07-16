@@ -136,6 +136,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 	var/heat = 0
 	///All items with sharpness of SHARP_EDGED or higher will automatically get the butchering component.
 	var/sharpness = SHARP_NONE
+	var/can_dismember = TRUE
 
 	var/tool_behaviour = NONE
 	var/toolspeed = 1
@@ -885,7 +886,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 	return sharpness
 
 /obj/item/proc/can_dismember()
-	return TRUE
+	return can_dismember
 
 /obj/item/proc/get_dismember_sound()
 	if(damtype == BURN)

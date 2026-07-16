@@ -18,13 +18,11 @@
 	sharpness = SHARP_EDGED
 	wound_bonus = 10
 	bare_wound_bonus = 15
+	can_dismember = FALSE
 
 /obj/item/zombie_hand/Initialize(mapload)
 	. = ..()
 	ADD_TRAIT(src, TRAIT_NODROP, HAND_REPLACEMENT_TRAIT)
-
-/obj/item/zombie_hand/can_dismember()
-	return FALSE
 
 /obj/item/zombie_hand/equipped(mob/user, slot)
 	. = ..()
