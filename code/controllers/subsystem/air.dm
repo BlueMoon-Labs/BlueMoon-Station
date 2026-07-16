@@ -376,8 +376,8 @@ SUBSYSTEM_DEF(air)
 			cached_cost = 0
 		if(process_turf_heat(TICK_REMAINING_MS))
 			pause()
-		// accumulate across resumes: the old code overwrote the average with the
-		// final (usually tiny) slice of a multi-tick conduction pass
+		// accumulate across resumes: a multi-tick conduction pass must average
+		// its full cost, not just the final (usually tiny) slice
 		cached_cost += TICK_USAGE_REAL - timer
 		cost_full.record_progress(TICK_DELTA_TO_MS(TICK_USAGE_REAL - timer), FALSE)
 		if(state != SS_RUNNING)

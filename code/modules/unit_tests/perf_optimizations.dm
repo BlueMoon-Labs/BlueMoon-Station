@@ -704,7 +704,7 @@
 
 	// Both paths must agree on visibility for every member
 	for(var/obj/machinery/atmospherics/member as anything in members)
-		var/legacy_visible = legacy_in_view_range_sim(source_turf, member, "15x15") // 15x15 -> half-width 15... legacy used raw width
+		var/legacy_visible = legacy_in_view_range_sim(source_turf, member, "15x15") // legacy used the raw width (15) as the box half-size
 		var/list/single = list()
 		collect_pipes_in_view(source_turf, 15, list(member), single)
 		TEST_ASSERT_EQUAL(!!(member in single), !!legacy_visible, "New and legacy visibility must agree for [member] ([member.loc])")

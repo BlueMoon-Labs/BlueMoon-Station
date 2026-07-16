@@ -29,8 +29,6 @@ SUBSYSTEM_DEF(mobs)
 	if (!resumed)
 		src.currentrun.len = 0
 		src.currentrun += GLOB.mob_living_list
-		// Спатиал-хэш фракций (SSchunks) перестраивается лениво по первому
-		// запросу hostile AI (ensure_fresh), здесь его больше не строим.
 
 	//cache for sanic speed (lists are references anyways)
 	var/list/currentrun = src.currentrun

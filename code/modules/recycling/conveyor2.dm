@@ -238,7 +238,7 @@ GLOBAL_LIST_EMPTY(conveyors_by_id)
 
 /obj/machinery/conveyor_switch/LateInitialize()
 	. = ..()
-	do_process() //синхронизация лент с позицией свитча на старте (раньше - первый фаер process)
+	do_process() //синхронизация лент с позицией свитча на старте
 
 /obj/machinery/conveyor_switch/Destroy()
 	LAZYREMOVE(GLOB.conveyors_by_id[id], src)

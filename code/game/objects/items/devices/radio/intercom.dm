@@ -140,7 +140,7 @@
 	if(!current_area || emped)
 		on = FALSE
 	else
-		on = current_area.powered(EQUIP) // set "on" to the power status
+		on = current_area.powered(EQUIP)
 	icon_state = on ? initial(icon_state) : "intercom-p"
 
 /obj/item/radio/intercom/emp_act(severity)
