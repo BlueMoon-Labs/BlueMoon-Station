@@ -704,6 +704,11 @@
 		// equal instance. Strings/icons are normalized here too (tg leaves them
 		// raw and never short-circuits string overlays).
 		var/list/new_overlays = update_overlays(updates)
+		// Some legacy overrides call ..() without `. = ..()` and return a bare
+		// string/appearance instead of a list; the old code fed that straight to
+		// add_overlay(), so wrap it to keep the same result instead of indexing it.
+		if(!islist(new_overlays))
+			new_overlays = new_overlays ? list(new_overlays) : list()
 		var/nulls = 0
 		for(var/i in 1 to length(new_overlays))
 			var/atom/entry = new_overlays[i]

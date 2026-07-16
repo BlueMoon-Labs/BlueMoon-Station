@@ -79,6 +79,28 @@
 	fixture.update_appearance(UPDATE_OVERLAYS)
 	TEST_ASSERT_EQUAL(length(fixture.overlays), 2, "Null entries must be dropped from the rebuilt set")
 
+/// Fixture: mimics legacy update_overlays() overrides that call ..() bare (no
+/// `. = ..()`) and then `. += "state"`, returning a bare string instead of a list.
+/obj/update_icon_short_circuit_fixture/legacy_string_return
+
+/obj/update_icon_short_circuit_fixture/legacy_string_return/update_overlays()
+	..()
+	. += "light_on"
+
+// Regression: the normalization pre-pass used to index-write into the returned
+// value, which runtimes on a non-list ("cannot write to indexed value in this
+// type of list") - seen live on every pumpaction/decloner energy gun.
+/datum/unit_test/update_icon_nonlist_overlays/Run()
+	var/obj/update_icon_short_circuit_fixture/legacy_string_return/fixture = allocate(/obj/update_icon_short_circuit_fixture/legacy_string_return)
+	fixture.update_appearance(UPDATE_OVERLAYS)
+	TEST_ASSERT_EQUAL(length(fixture.overlays), 1, "A bare string return from update_overlays() must still apply as one overlay")
+	TEST_ASSERT_NOTNULL(fixture.managed_overlays, "managed_overlays must be tracked for a bare string return")
+	TEST_ASSERT(!islist(fixture.managed_overlays), "A single overlay from a bare string return must be stored bare, not in a list")
+
+	// Second identical rebuild must stay stable (and short-circuit like any other single overlay)
+	fixture.update_appearance(UPDATE_OVERLAYS)
+	TEST_ASSERT_EQUAL(length(fixture.overlays), 1, "Repeat rebuild from a bare string return must not duplicate or drop the overlay")
+
 #define SHORT_CIRCUIT_BENCH_ITERATIONS 20000
 
 /datum/unit_test/update_icon_short_circuit/Run()
