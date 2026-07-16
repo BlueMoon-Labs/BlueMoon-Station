@@ -25,9 +25,37 @@
 	SSchunks.rebuild()
 	TEST_ASSERT(!(SSchunks.has_enemy_faction(alpha, list("chunktest_alpha", "neutral"), 9)), "Mobs of only our own factions must not read as enemies")
 
-	// Dead mobs drop out of the hash
+	// Dead mobs drop out of the hash: valid ONLY because consumers that target
+	// the dead (stat_attack) bypass the gate via can_use_faction_hash()
 	beta.faction = list("chunktest_beta")
 	beta.stat = DEAD
 	SSchunks.rebuild()
 	TEST_ASSERT(!(SSchunks.has_enemy_faction(alpha, list("chunktest_alpha", "neutral"), 9)), "Dead mobs must not be hashed as enemies")
 	beta.stat = CONSCIOUS
+
+	// A factionless mob must read as an enemy to everyone (sentinel key)
+	beta.faction = list()
+	SSchunks.rebuild()
+	TEST_ASSERT(SSchunks.has_enemy_faction(alpha, alpha.faction, 9), "A factionless mob must read as an enemy")
+	beta.faction = list("chunktest_beta")
+
+	// Gate applicability: non-standard targeting must bypass the hash entirely
+	var/mob/living/simple_animal/hostile/hunter = allocate(/mob/living/simple_animal/hostile)
+	TEST_ASSERT(hunter.can_use_faction_hash(), "A plain faction hunter must be allowed to use the hash")
+	hunter.stat_attack = UNCONSCIOUS
+	TEST_ASSERT(!hunter.can_use_faction_hash(), "Corpse/unconscious hunters (stat_attack) must bypass the hash")
+	hunter.stat_attack = CONSCIOUS
+	hunter.attack_same = 1
+	TEST_ASSERT(!hunter.can_use_faction_hash(), "attack_same hunters must bypass the hash")
+	hunter.attack_same = 0
+	hunter.enemies = list(beta)
+	TEST_ASSERT(!hunter.can_use_faction_hash(), "Hunters with personal grudges (retaliate) must bypass the hash")
+	hunter.enemies = list()
+	TEST_ASSERT(hunter.can_use_faction_hash(), "Restored plain hunter must use the hash again")
+
+	// Laziness: a second ensure_fresh inside the freshness window must not rebuild
+	SSchunks.next_rebuild_time = 0
+	SSchunks.ensure_fresh()
+	var/tick_after_first = SSchunks.tick
+	SSchunks.ensure_fresh()
+	TEST_ASSERT_EQUAL(SSchunks.tick, tick_after_first, "ensure_fresh inside the freshness window must not rebuild the hash")

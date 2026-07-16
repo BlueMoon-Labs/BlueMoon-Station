@@ -2,6 +2,11 @@
 #define CHUNK_GRID_STEP 10
 /// Индекс чанковой ячейки для координаты
 #define CHUNK_GRID_ELEM(value) CEILING((value) / CHUNK_GRID_STEP, 1)
+/// Свежесть хэша: перестраиваем не чаще раза в это окно (шаг паса Life)
+#define CHUNK_HASH_TTL (2 SECONDS)
+/// Ключ-часовой для мобов без фракций: он не входит ни в один список фракций,
+/// поэтому такие мобы читаются как "чужие" для любого охотника
+#define CHUNK_FACTION_NONE "\[no_faction]"
 
 /**
  * SSchunks (порт TauCetiClassic): дешёвый спатиал-хэш фракций живых мобов.
@@ -18,15 +23,26 @@
  */
 SUBSYSTEM_DEF(chunks)
 	name = "Chunks"
-	flags = SS_NO_INIT | SS_NO_FIRE // перестраивается вручную из SSmobs.fire
+	flags = SS_NO_INIT | SS_NO_FIRE // перестраивается лениво из ensure_fresh()
 	var/tick = 0
 	var/list/grid = list()
+	///world.time, до которого текущий хэш считается свежим
+	var/next_rebuild_time = 0
 
 /datum/controller/subsystem/chunks/stat_entry(msg)
 	msg = "Z:[length(grid)] t:[tick]"
 	return ..()
 
-/// Полная перестройка хэша: вызывается из SSmobs в начале каждого паса Life.
+/// Ленивая актуализация: хэш строится не чаще раза в CHUNK_HASH_TTL и только
+/// когда его действительно кто-то спрашивает. На сервере без охотящихся
+/// hostile-мобов перестроек нет вообще.
+/datum/controller/subsystem/chunks/proc/ensure_fresh()
+	if(world.time < next_rebuild_time)
+		return
+	next_rebuild_time = world.time + CHUNK_HASH_TTL
+	rebuild()
+
+/// Полная перестройка хэша (обход living_list, O(мобов)).
 /// Ленивая инвалидация: сами ячейки чистятся при первом касании нового tick.
 /datum/controller/subsystem/chunks/proc/rebuild()
 	while(grid.len < world.maxz)
@@ -73,7 +89,8 @@ SUBSYSTEM_DEF(chunks)
 /// (наши фракции - списки, в отличие от строк TauCeti). Ложные срабатывания
 /// допустимы (дальше всё равно идёт честный hearers()), ложные пропуски - нет.
 /datum/controller/subsystem/chunks/proc/has_enemy_faction(atom/center, list/faction_list, range)
-	if(!tick) // хэш ещё ни разу не строился (ранний раунд) - не гейтим
+	ensure_fresh()
+	if(!tick) // хэш ещё ни разу не строился - не гейтим
 		return TRUE
 	for(var/datum/mob_chunk/chunk as anything in get_chunks_in_range(center, range))
 		if(chunk.has_faction_outside(faction_list))
@@ -82,6 +99,7 @@ SUBSYSTEM_DEF(chunks)
 
 /// TRUE если в радиусе есть хоть одна фракция из faction_list
 /datum/controller/subsystem/chunks/proc/has_ally_faction(atom/center, list/faction_list, range)
+	ensure_fresh()
 	if(!tick)
 		return TRUE
 	for(var/datum/mob_chunk/chunk as anything in get_chunks_in_range(center, range))
@@ -102,6 +120,9 @@ SUBSYSTEM_DEF(chunks)
 
 /datum/mob_chunk/proc/add_factions(list/mob_factions)
 	update()
+	if(!length(mob_factions)) //бесфракционный моб обязан читаться как чужой для всех
+		LAZYSET(factions, CHUNK_FACTION_NONE, TRUE)
+		return
 	for(var/faction_entry in mob_factions)
 		LAZYSET(factions, faction_entry, TRUE)
 
@@ -119,5 +140,7 @@ SUBSYSTEM_DEF(chunks)
 			return TRUE
 	return FALSE
 
+#undef CHUNK_FACTION_NONE
+#undef CHUNK_HASH_TTL
 #undef CHUNK_GRID_ELEM
 #undef CHUNK_GRID_STEP

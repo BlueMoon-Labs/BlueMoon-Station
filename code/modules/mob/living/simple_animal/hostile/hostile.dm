@@ -177,6 +177,19 @@
 
 //////////////HOSTILE MOB TARGETTING AND AGGRESSION////////////
 
+/// Гейт по спатиал-хэшу фракций (SSchunks) применим только к обычному
+/// фракционному охотнику: хэш не хранит мёртвых, свою фракцию и персональные
+/// обиды, поэтому охотники на трупы (headslug, гриб), attack_same-мобы (гусь)
+/// и retaliate с накопленными врагами обязаны идти мимо него.
+/mob/living/simple_animal/hostile/proc/can_use_faction_hash()
+	if(stat_attack != CONSCIOUS) //ищет бессознательных/мёртвых - их в хэше нет
+		return FALSE
+	if(attack_same) //бьёт свою фракцию - хэш видит только чужие
+		return FALSE
+	if(length(enemies) || length(foes)) //персональные цели могут быть своей фракции
+		return FALSE
+	return TRUE
+
 /mob/living/simple_animal/hostile/proc/ListTargets()//Step 1, find out what we can see
 	if(!search_objects)
 		// Spatial faction hash (SSchunks): skip the expensive hearers() scan
@@ -184,7 +197,7 @@
 		// this also skips the hostile-machine sweep - an unmanned turret next
 		// to a lone AI mob goes unnoticed until any foreign-faction mob (e.g.
 		// a player) comes near, which is invisible to anyone in practice.
-		if(!SSchunks.has_enemy_faction(targets_from, faction, vision_range))
+		if(can_use_faction_hash() && !SSchunks.has_enemy_faction(targets_from, faction, vision_range))
 			return list()
 		. = hearers(vision_range, targets_from) - src //Remove self, so we don't suicide
 
