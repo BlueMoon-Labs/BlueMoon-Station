@@ -124,6 +124,9 @@ SUBSYSTEM_DEF(tick_spikes)
 	var/started_profiler = FALSE
 	var/profile_dumps_done = 0
 	var/last_profile_dump_ms = 0
+	///монотонный номер для имён файлов дампов: НЕ сбрасывается на start_capture,
+	///иначе авто-дамп и дамп новой сессии склеили бы два JSON в один файл
+	var/profile_dump_seq = 0
 	/// Минимум мс между дампами профайлера
 	var/profile_dump_cooldown_ms = 15000
 	/// world.time, до которого спайки считаются самонаведёнными (после нашего же дампа)
@@ -399,8 +402,9 @@ SUBSYSTEM_DEF(tick_spikes)
 		if(spike_class == TICK_SPIKE_CLASS_SENDMAPS && (now_ms - last_profile_dump_ms >= profile_dump_cooldown_ms))
 			last_profile_dump_ms = now_ms
 			profile_dumps_done++
+			profile_dump_seq++
 			self_inflicted_until = world.time + (TICK_SPIKES_SELF_INFLICTED_TICKS * world.tick_lag)
-			var/auto_sendmaps_name = "tick_spike_sendmaps_[profile_dumps_done].json"
+			var/auto_sendmaps_name = "tick_spike_sendmaps_[profile_dump_seq].json"
 			WRITE_FILE(file("[GLOB.log_directory]/[auto_sendmaps_name]"), world.Profile(PROFILE_REFRESH, type = "sendmaps", format = "json"))
 			return "sendmaps-профайл (авто, без захвата) записан в [auto_sendmaps_name]"
 #endif
@@ -414,16 +418,17 @@ SUBSYSTEM_DEF(tick_spikes)
 #else
 	last_profile_dump_ms = now_ms
 	profile_dumps_done++
+	profile_dump_seq++
 	// Наш собственный дамп растянет следующий тик - не считать его новым спайком
 	self_inflicted_until = world.time + (TICK_SPIKES_SELF_INFLICTED_TICKS * world.tick_lag)
-	var/file_name = "tick_spike_profile_[profile_dumps_done].json"
+	var/file_name = "tick_spike_profile_[profile_dump_seq].json"
 	// PROFILE_REFRESH возвращает данные, но НЕ обнуляет их: снапшот кумулятивный с момента
 	// старта профайлера. Окно между спайками = дифф соседних дампов (числа монотонные).
 	WRITE_FILE(file("[GLOB.log_directory]/[file_name]"), world.Profile(PROFILE_REFRESH, format = "json"))
 	. = "профайлер: кумулятивный снапшот записан в [file_name] (окно = дифф с предыдущим дампом)"
 #if DM_VERSION >= 515
 	if(spike_class == TICK_SPIKE_CLASS_SENDMAPS)
-		var/sendmaps_name = "tick_spike_sendmaps_[profile_dumps_done].json"
+		var/sendmaps_name = "tick_spike_sendmaps_[profile_dump_seq].json"
 		WRITE_FILE(file("[GLOB.log_directory]/[sendmaps_name]"), world.Profile(PROFILE_REFRESH, type = "sendmaps", format = "json"))
 		. += "; sendmaps-профайл в [sendmaps_name]"
 #endif

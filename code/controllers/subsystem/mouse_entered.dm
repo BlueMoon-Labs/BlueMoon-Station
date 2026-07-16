@@ -20,6 +20,9 @@ SUBSYSTEM_DEF(mouse_entered)
 		var/atom/hovering_atom = hovers[hovering_client]
 		if(isnull(hovering_atom))
 			continue
+		if(QDELETED(hovering_atom)) //атом удалён между вводом и fire: обработчик подписался бы на уже прошедший QDELETING
+			hovers[hovering_client] = null
+			continue
 		hovering_atom.on_mouse_enter(hovering_client)
 		// Intentionally `= null` and not `-= hovering_client`: no list shrink
 		// in a hot path, the key set stays stable per connected client.
