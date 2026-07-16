@@ -31,6 +31,13 @@ SUBSYSTEM_DEF(verb_manager)
 	///TRUE = always queue regardless of tick usage (unless the bypass is on). Used by subtypes and tests.
 	var/always_queue = FALSE
 
+///wrapper for the QUEUE_OR_CALL_VERB macros: queue on an overloaded tick,
+///otherwise execute immediately. Exists so the macro evaluates the callback
+///expression exactly once.
+/proc/_queue_or_call_verb(datum/callback/verb_callback/incoming_callback, ...)
+	if(!_queue_verb(arglist(args)))
+		incoming_callback.InvokeAsync()
+
 /**
  * Global entry point (called through the TRY_QUEUE_VERB family of macros).
  * Returns TRUE if the callback was queued, FALSE if the caller should just

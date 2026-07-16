@@ -49,3 +49,33 @@
 	TEST_ASSERT(speech_accepted, "SSspeech_controller must accept queued speech verbs")
 	SSspeech_controller.run_verb_queue()
 	TEST_ASSERT_EQUAL(dummy.bumps, 3, "SSspeech_controller must run its queue")
+
+// ===== mode(): the activated item is captured at press time =====
+//
+// The verb can sit in the queue for a tick; if the player swaps hands in that
+// window, execute_mode must not activate the unexpected item.
+
+/obj/item/unit_test_mode_item
+	var/activations = 0
+
+/obj/item/unit_test_mode_item/attack_self(mob/user)
+	activations++
+
+/datum/unit_test/verb_mode_hand_capture/Run()
+	var/mob/living/carbon/human/human = allocate(/mob/living/carbon/human)
+	var/obj/item/unit_test_mode_item/held = allocate(/obj/item/unit_test_mode_item)
+	var/obj/item/unit_test_mode_item/other = allocate(/obj/item/unit_test_mode_item)
+	TEST_ASSERT(human.put_in_active_hand(held), "test premise: the item must fit the active hand")
+
+	// captured item still held: activates
+	human.execute_mode(held)
+	TEST_ASSERT_EQUAL(held.activations, 1, "execute_mode with the captured item still held must activate it")
+
+	// hand changed while queued: neither item activates
+	human.execute_mode(other)
+	TEST_ASSERT_EQUAL(held.activations, 1, "execute_mode must not activate the currently held item when it differs from the captured one")
+	TEST_ASSERT_EQUAL(other.activations, 0, "execute_mode must not activate the stale captured item either")
+
+	// pressed with an empty hand, item picked up while queued: no activation
+	human.execute_mode(null)
+	TEST_ASSERT_EQUAL(held.activations, 1, "execute_mode captured on an empty hand must not activate a later item")
