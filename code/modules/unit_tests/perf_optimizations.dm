@@ -872,3 +872,89 @@
 	drain.set_active(FALSE)
 	TEST_ASSERT(drain in SSobj.processing, "A deactivated pool drain must return to slow processing")
 	TEST_ASSERT(!(drain in SSfastprocess.processing), "A deactivated pool drain must leave fastprocess")
+
+// ===== Plumbing: демандер без подключений паркуется, add_plumber будит =====
+//
+// perf3.log: 276k send_request/process_request за холостой раунд - каждый
+// роундстартовый хим-агрегат без единого дакта гонял пустой request-цикл
+// каждый фаер SSfluids.
+
+/datum/unit_test/plumbing_idle_park/Run()
+	var/obj/item/holder = allocate(/obj/item)
+	holder.create_reagents(100)
+	var/datum/component/plumbing/simple_demand/demander = holder.AddComponent(/datum/component/plumbing/simple_demand)
+	TEST_ASSERT_NOTNULL(demander, "the demand component must attach to an obj with reagents")
+	TEST_ASSERT(demander.active, "the component must enable on creation")
+	TEST_ASSERT(demander.datum_flags & DF_ISPROCESSING, "a fresh demander starts on SSfluids")
+
+	// Без дактов первый же фаер паркует компонент.
+	demander.process()
+	TEST_ASSERT(!(demander.datum_flags & DF_ISPROCESSING), "a demander with no duct connections must park itself")
+
+	// Подключение через ductnet будит.
+	var/datum/ductnet/net = new
+	TEST_ASSERT(net.add_plumber(demander, NORTH), "add_plumber must accept the active demander on its demand side")
+	TEST_ASSERT(demander.datum_flags & DF_ISPROCESSING, "connecting a duct network must wake the parked demander")
+	TEST_ASSERT_EQUAL(length(demander.ducts), 1, "the demander must track its new connection")
+
+	// Отключение: следующий фаер снова паркует.
+	net.remove_plumber(demander) // с пустым списком дактов сеть самоуничтожается
+	TEST_ASSERT_EQUAL(length(demander.ducts), 0, "remove_plumber must clear the tracked connection")
+	demander.process()
+	TEST_ASSERT(!(demander.datum_flags & DF_ISPROCESSING), "a disconnected demander must park itself again")
+
+// ===== alarm_handler: clear_alarm без своих тревог - дешёвый ранний выход =====
+//
+// perf3.log: 56k clear_alarm за раунд (здоровые APC зовут его каждый фаер),
+// каждый вызов ходил в get_area. Теперь пустой sent_alarms отсекает сразу.
+
+/datum/unit_test/alarm_handler_clear_fastpath/Run()
+	var/obj/machinery/source = allocate(/obj/machinery)
+	var/datum/alarm_handler/handler = new(source)
+
+	TEST_ASSERT_EQUAL(handler.clear_alarm(ALARM_POWER), FALSE, "clear_alarm with nothing sent must return FALSE via the early exit")
+
+	// Тревога должна по-прежнему ставиться и сниматься. Резервация лежит в
+	// /area/space - подсовываем синтетическую область без NO_ALERTS.
+	var/turf/floor = run_loc_floor_bottom_left
+	var/area/original_area = get_area(floor)
+	var/area/test_area = new /area
+	allocated += test_area
+	test_area.contents.Add(floor)
+	source.forceMove(floor)
+
+	handler.send_alarm(ALARM_POWER)
+	TEST_ASSERT(handler.sent_alarms[ALARM_POWER], "send_alarm must record the alarm on the handler")
+	TEST_ASSERT_EQUAL(handler.clear_alarm(ALARM_POWER), TRUE, "clear_alarm must still clear a real alarm")
+	TEST_ASSERT(!handler.sent_alarms[ALARM_POWER], "the cleared alarm must leave the handler's ledger")
+
+	qdel(handler)
+	original_area.contents.Add(floor)
+
+// ===== Статус-эффекты: вечные без tick() не встают в SSstatus_effects =====
+//
+// perf3.log: 2.15M status_effect/process за раунд - ~187 вечных эффектов с
+// дефолтным tick_interval. Главный виновник - crusher_damage на каждом
+// майнинг-мобе и мегафауне.
+
+/datum/unit_test/status_effect_passive_optouts/Run()
+	// Пины на initial() (переменные держат ТАЙППУТЬ - initial() на null не работает).
+	var/datum/status_effect/crusher_damage/crusher_type = /datum/status_effect/crusher_damage
+	var/datum/status_effect/in_love/love_type = /datum/status_effect/in_love
+	var/datum/status_effect/vtec_disabled/vtec_type = /datum/status_effect/vtec_disabled
+	var/datum/status_effect/pregnancy/pregnancy_type = /datum/status_effect/pregnancy
+	var/datum/status_effect/lactation/lactation_type = /datum/status_effect/lactation
+	var/datum/status_effect/frenzy/frenzy_type = /datum/status_effect/frenzy
+	TEST_ASSERT_EQUAL(initial(crusher_type.tick_interval), -1, "crusher_damage is a pure data holder - it must not tick")
+	TEST_ASSERT_EQUAL(initial(love_type.tick_interval), -1, "in_love only shows an alert - it must not tick")
+	TEST_ASSERT_EQUAL(initial(vtec_type.tick_interval), -1, "vtec_disabled expires via duration - it must not tick")
+	TEST_ASSERT_EQUAL(initial(pregnancy_type.tick_interval), -1, "pregnancy must not tick")
+	TEST_ASSERT_EQUAL(initial(lactation_type.tick_interval), -1, "lactation must not tick")
+	TEST_ASSERT_NOTEQUAL(initial(frenzy_type.tick_interval), -1, "frenzy DOES tick (burn damage) and must keep its interval")
+
+	// Живой crusher_damage на мобе существует, но не процессится.
+	var/mob/living/carbon/human/human = allocate(/mob/living/carbon/human)
+	var/datum/status_effect/crusher_damage/tracker = human.apply_status_effect(STATUS_EFFECT_CRUSHERDAMAGETRACKING)
+	TEST_ASSERT_NOTNULL(tracker, "the crusher tracker must apply")
+	TEST_ASSERT(!(tracker.datum_flags & DF_ISPROCESSING), "a permanent tickless effect must stay out of SSstatus_effects")
+	human.remove_status_effect(STATUS_EFFECT_CRUSHERDAMAGETRACKING)
