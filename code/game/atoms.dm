@@ -1575,29 +1575,31 @@
 	if(!T)
 		return FALSE
 
-	var/list/forced_gravity = list()
-	SEND_SIGNAL(src, COMSIG_ATOM_HAS_GRAVITY, T, forced_gravity)
-	if(!forced_gravity.len)
-		SEND_SIGNAL(T, COMSIG_TURF_HAS_GRAVITY, src, forced_gravity)
-	if(forced_gravity.len)
-		var/max_grav
-		for(var/i in forced_gravity)
-			max_grav = max(max_grav, i)
-		return max_grav
+	// Проверяется на каждый шаг каждого моба: аллокация списка и сигналы -
+	// только когда на src или турфе действительно есть подписчик forced gravity
+	if(comp_lookup?[COMSIG_ATOM_HAS_GRAVITY] || T.comp_lookup?[COMSIG_TURF_HAS_GRAVITY])
+		var/list/forced_gravity = list()
+		SEND_SIGNAL(src, COMSIG_ATOM_HAS_GRAVITY, T, forced_gravity)
+		if(!forced_gravity.len)
+			SEND_SIGNAL(T, COMSIG_TURF_HAS_GRAVITY, src, forced_gravity)
+		if(forced_gravity.len)
+			var/max_grav
+			for(var/i in forced_gravity)
+				max_grav = max(max_grav, i)
+			return max_grav
 
 	if(isspaceturf(T)) // Turf never has gravity
 		return FALSE
 
-	var/area/A = get_area(T)
+	var/area/A = T.loc
 	if(A.has_gravity) // Areas which always has gravity
 		return A.has_gravity
-	else
-		// There's a gravity generator on our z level
-		if(GLOB.gravity_generators["[T.z]"])
-			var/max_grav = 0
-			for(var/obj/machinery/gravity_generator/main/G in GLOB.gravity_generators["[T.z]"])
-				max_grav = max(G.setting,max_grav)
-			return max_grav
+
+	// Кэш по z вместо обхода генераторов и цепочки level_trait->get_level;
+	// уровень новее кэша (окно инита нового z) - читаем трейт напрямую
+	var/list/gravity_cache = SSmapping.gravity_by_z_level
+	if(T.z <= length(gravity_cache))
+		return gravity_cache[T.z]
 	return SSmapping.level_trait(T.z, ZTRAIT_GRAVITY)
 
 /**
