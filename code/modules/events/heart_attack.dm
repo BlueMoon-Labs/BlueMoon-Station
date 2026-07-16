@@ -1,3 +1,4 @@
+/* Никто не хочет умирать из-за рандома
 /datum/round_event_control/heart_attack
 	name = "Random Heart Attack"
 	typepath = /datum/round_event/heart_attack
@@ -28,3 +29,4 @@
 		var/datum/disease/D = new /datum/disease/heart_failure()
 		winner.ForceContractDisease(D, FALSE, TRUE)
 		announce_to_ghosts(winner)
+*/
