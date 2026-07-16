@@ -91,6 +91,62 @@
 	TEST_ASSERT(third != first, "A different source turf must rebuild the cache")
 	TEST_ASSERT(third[other], "The new source turf must see itself")
 
+// --- Кэш видимых турфов камеры (get_visible_turfs) ---
+//
+// Апдейт камера-чанка гонял can_see() (view-хак) на каждую камеру чанка;
+// теперь пересчитываются только камеры, помеченные dirty (двери/стены рядом,
+// вкл/выкл), остальные отдают кэш. Портативные (loc не турф) не кэшируются.
+
+/datum/unit_test/camera_visibility_cache/Run()
+	var/turf/T = run_loc_floor_bottom_left
+	var/obj/machinery/camera/cam = allocate(/obj/machinery/camera, T)
+
+	var/list/first = cam.get_visible_turfs()
+	TEST_ASSERT(T in first, "A camera must see its own turf")
+	var/list/second = cam.get_visible_turfs()
+	TEST_ASSERT(first == second, "A clean camera must return the cached list instance")
+
+	//инвалидация через majorChunkChange choice 2 требует сгенерированного чанка
+	GLOB.cameranet.getCameraChunk(T.x, T.y, T.z)
+	GLOB.cameranet.updateVisibility(cam, opacity_check = 0)
+	TEST_ASSERT(cam.visibility_cache_dirty, "A visibility change on the camera's turf must dirty its cache")
+	var/list/third = cam.get_visible_turfs()
+	TEST_ASSERT(third != second, "A dirty camera must recompute into a new list")
+	TEST_ASSERT(!cam.visibility_cache_dirty, "The recompute must clear the dirty flag")
+
+	//портативный путь: loc не турф - без кэша, каждый запрос свежий
+	var/obj/structure/closet/box = allocate(/obj/structure/closet, T)
+	cam.forceMove(box)
+	var/list/portable_first = cam.get_visible_turfs()
+	var/list/portable_second = cam.get_visible_turfs()
+	TEST_ASSERT(portable_first != portable_second, "A portable camera (non-turf loc) must not cache")
+
+// --- propagate_network на ассоц-списках + дедуп отложенной пересборки ---
+//
+// Взрыв с резкой магистрали давал серию полных BFS по уже перестроенному
+// фрагменту в одном тике SStimer; см. auto_propogate_cut_cable и power.dm.
+
+/datum/unit_test/propagate_network_dedup/Run()
+	var/turf/T0 = run_loc_floor_bottom_left
+	var/turf/T1 = get_step(T0, NORTH)
+	var/obj/structure/cable/cable_south = allocate(/obj/structure/cable, T0, null, 0, NORTH)
+	var/obj/structure/cable/cable_north = allocate(/obj/structure/cable, T1, null, 0, SOUTH)
+
+	var/datum/powernet/PN = new()
+	propagate_network(cable_south, PN)
+	TEST_ASSERT_EQUAL(cable_south.powernet, PN, "propagate_network must assign the seed cable")
+	TEST_ASSERT_EQUAL(cable_north.powernet, PN, "propagate_network must reach the adjacent connected cable")
+
+	//фрагмент, перестроенный в этом же тике, второй отложенный колбек не трогает
+	cable_south.auto_propogate_cut_cable(cable_north)
+	TEST_ASSERT_EQUAL(cable_north.powernet, PN, "A fragment rebuilt this tick must not be rebuilt again")
+
+	//устаревший фрагмент пересобирается в новый повернет целиком
+	PN.created_at = world.time - 10
+	cable_south.auto_propogate_cut_cable(cable_north)
+	TEST_ASSERT(cable_north.powernet != PN, "A stale fragment must be rebuilt into a new powernet")
+	TEST_ASSERT_EQUAL(cable_south.powernet, cable_north.powernet, "Both cables must land in the same new powernet")
+
 // --- Кольцо медленной работы SStick_spikes ---
 //
 // SStimer/SSverb_manager/client/Topic пишут сюда медленные вызовы, чтобы
