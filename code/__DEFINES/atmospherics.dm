@@ -81,9 +81,11 @@
 /// The tile hosts a volatile reaction (a live fire/hotspot): excited group
 /// breakdown must not average the burn away mid-reaction (tg port).
 #define VOLATILE_REACTION	4
-/// Hard ceiling on how long a volatile reaction may defer group breakdown.
-/// Our breakdown also evicts settled members (giant-group churn control), so
-/// a long fire is not allowed to suppress it indefinitely.
+/// How long a volatile reaction may defer settled-member bookkeeping. At the
+/// ceiling a volatile group runs evict_settled_members() - NOT the averaging
+/// self_breakdown (which would smear fuel and heat of a long burn across the
+/// whole group) - so perpetual fires keep the giant-group churn control the
+/// ordinary breakdown provides without the fire being touched.
 #define EXCITED_GROUP_VOLATILE_BREAKDOWN_CEILING	(EXCITED_GROUP_BREAKDOWN_CYCLES * 4)
 
 // Exact pressure solver for pumps (tg port, see gas_pressure_calculate)

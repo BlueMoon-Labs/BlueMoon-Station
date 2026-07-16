@@ -164,6 +164,29 @@ SUBSYSTEM_DEF(tick_spikes)
 	world.Profile(PROFILE_START, type = "sendmaps")
 #endif
 
+/// Пересоздание МК (NEW_SS_GLOBAL): PreInit() нового инстанса всё равно
+/// обнулит кольца и статистику, поэтому переносим только то, что он не трогает -
+/// админские настройки, активную сессию захвата и монотонный номер дампов
+/// (без него следующий дамп доклеился бы WRITE_FILE'ом в старый JSON-файл).
+/datum/controller/subsystem/tick_spikes/Recover()
+	spike_threshold_ms = SStick_spikes.spike_threshold_ms
+	heavy_run_threshold = SStick_spikes.heavy_run_threshold
+	announce_threshold_ms = SStick_spikes.announce_threshold_ms
+	announce_to_admins = SStick_spikes.announce_to_admins
+	announce_cooldown_ms = SStick_spikes.announce_cooldown_ms
+	last_announce_ms = SStick_spikes.last_announce_ms
+	capture_until = SStick_spikes.capture_until
+	started_profiler = SStick_spikes.started_profiler
+	profile_dumps_done = SStick_spikes.profile_dumps_done
+	last_profile_dump_ms = SStick_spikes.last_profile_dump_ms
+	profile_dump_seq = SStick_spikes.profile_dump_seq
+	profile_dump_cooldown_ms = SStick_spikes.profile_dump_cooldown_ms
+	self_inflicted_until = SStick_spikes.self_inflicted_until
+	full_event_min_interval_ms = SStick_spikes.full_event_min_interval_ms
+	log_path = SStick_spikes.log_path
+	suppress_side_effects = SStick_spikes.suppress_side_effects
+	ignore_empty_server = SStick_spikes.ignore_empty_server
+
 /// Полный сброс колец и статистики. Не трогает настройки порогов.
 /datum/controller/subsystem/tick_spikes/proc/reset_state()
 	ring_world_time = new /list(TICK_SPIKES_HISTORY)

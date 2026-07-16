@@ -156,3 +156,30 @@
 	//no ears may remain assigned after the queries
 	for(var/mob/oranges_ear/ear as anything in SSspatial_grid.pregenerated_oranges_ears)
 		TEST_ASSERT_NULL(ear.loc, "All oranges_ears must be unassigned (in nullspace) after queries")
+
+// ===== Регресс: выпуск жертвы из головокраба при его смерти =====
+//
+// headcrab/Destroy() выпускал человека голым присваиванием loc: без
+// Exited/Moved жертва оставалась в important_recursive_contents умирающего
+// краба, и его force_remove_from_grid снимал её из ячеек HEARING/CLIENTS до
+// пересечения границы ячейки 17x17 (пропавший слух/радио, ложный
+// has_nearby_player). Теперь Destroy() делает forceMove.
+
+/datum/unit_test/headcrab_release_keeps_spatial_grid/Run()
+	TEST_ASSERT(SSspatial_grid.initialized, "test premise: SSspatial_grid must be initialized in CI")
+
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	victim.enable_client_mobs_in_contents() // канал CLIENTS обычно кормит Login
+	TEST_ASSERT(victim in SSspatial_grid.get_cell_of(victim)?.hearing_contents, "premise: the victim must sit in the HEARING channel")
+	TEST_ASSERT(victim in SSspatial_grid.get_cell_of(victim)?.client_contents, "premise: the victim must sit in the CLIENTS channel")
+
+	var/mob/living/simple_animal/hostile/headcrab/crab = allocate(/mob/living/simple_animal/hostile/headcrab, run_loc_floor_bottom_left)
+	victim.forceMove(crab)
+	qdel(crab)
+
+	TEST_ASSERT_EQUAL(victim.loc, run_loc_floor_bottom_left, "headcrab Destroy must dump the victim onto its turf")
+	var/datum/spatial_grid_cell/cell = SSspatial_grid.get_cell_of(victim)
+	TEST_ASSERT(victim in cell?.hearing_contents, "the victim must stay in the HEARING channel after the headcrab dies")
+	TEST_ASSERT(victim in cell?.client_contents, "the victim must stay in the CLIENTS channel after the headcrab dies")
+
+	victim.clear_important_client_contents() // cleanup канала CLIENTS

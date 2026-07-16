@@ -53,6 +53,13 @@
 	hunter.enemies = list()
 	TEST_ASSERT(hunter.can_use_faction_hash(), "Restored plain hunter must use the hash again")
 
+	// Кастомное таргетирование по СВОЕЙ фракции обязано обходить гейт целиком:
+	// хэш видит только чужие фракции, а этим типам нужны цели своей
+	var/mob/living/simple_animal/hostile/construct/builder/artificer = allocate(/mob/living/simple_animal/hostile/construct/builder)
+	TEST_ASSERT(!artificer.can_use_faction_hash(), "Artificer (Found() heals own-faction constructs) must bypass the hash")
+	var/mob/living/simple_animal/hostile/regalrat/rat_king = allocate(/mob/living/simple_animal/hostile/regalrat)
+	TEST_ASSERT(!rat_king.can_use_faction_hash(), "Regal rat (unconditionally hostile to rival kings of the same faction) must bypass the hash")
+
 	// Laziness: a second ensure_fresh inside the freshness window must not rebuild
 	SSchunks.next_rebuild_time = 0
 	SSchunks.ensure_fresh()

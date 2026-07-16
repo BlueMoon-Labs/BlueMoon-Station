@@ -33,6 +33,19 @@ SUBSYSTEM_DEF(lag_switch)
 		RegisterSignal(SSdcs, COMSIG_GLOB_CLIENT_CONNECT, PROC_REF(client_connected))
 	return ..()
 
+/// Пересоздание МК (NEW_SS_GLOBAL): measures - static и переживает замену
+/// инстанса сам, а админские настройки и взведённое окно вето - нет.
+/// Таймер вето держит колбэк на старый инстанс - перевзводим на новый.
+/// Регистрацию сигнала подключения не трогаем: в пути полной переинициализации
+/// её сделает Initialize() по конфигу.
+/datum/controller/subsystem/lag_switch/Recover()
+	auto_switch = SSlag_switch.auto_switch
+	trigger_pop = SSlag_switch.trigger_pop
+	slowmode_cooldown = SSlag_switch.slowmode_cooldown
+	if(SSlag_switch.veto_timer_id)
+		deltimer(SSlag_switch.veto_timer_id)
+		veto_timer_id = addtimer(CALLBACK(src, PROC_REF(auto_activate)), 20 SECONDS, TIMER_STOPPABLE)
+
 /datum/controller/subsystem/lag_switch/proc/client_connected(datum/source, client/connected)
 	SIGNAL_HANDLER
 	if(veto_timer_id) //окно вето уже идёт - второй таймер перезаписал бы ссылку и стал неотменяемым

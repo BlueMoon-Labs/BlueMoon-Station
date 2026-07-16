@@ -1011,3 +1011,48 @@
 	sensor.next_forced_report = 0
 	TEST_ASSERT(sensor.try_report(), "an expired heartbeat must force a broadcast")
 	TEST_ASSERT(sensor.next_forced_report > world.time, "the forced broadcast must re-arm the heartbeat")
+
+// ===== Спеллы вне SSfastprocess: perform() обязан будить откат =====
+//
+// Пас 24fcd1779e снял вечный START_PROCESSING из Initialize: заряженный спелл
+// не молотит в SSfastprocess всю жизнь владельца. Регресс первой версии:
+// perform() выставлял recharging = TRUE голым флагом, спелл не вставал в
+// очередь и после первого каста не откатывался никогда (тот же баг в
+// on_hand_destroy тач-спеллов). Тест гоняет реальный путь каста и полный
+// цикл отката.
+
+/datum/unit_test/spell_recharge_after_cast/Run()
+	var/obj/effect/proc_holder/spell/spell = allocate(/obj/effect/proc_holder/spell)
+	spell.charge_max = 10
+	spell.charge_counter = 10
+	spell.recharging = FALSE
+
+	// Реальный путь каста: cast_check() роняет счётчик, perform() стартует откат
+	TEST_ASSERT(spell.cast_check(FALSE, null, TRUE), "premise: cast_check must pass for a fully charged spell")
+	TEST_ASSERT_EQUAL(spell.charge_counter, 0, "cast_check must zero the charge counter")
+	spell.perform(list(), TRUE, null)
+	TEST_ASSERT(spell.recharging, "perform() must mark the spell as recharging")
+	TEST_ASSERT(spell in SSfastprocess.processing, "perform() must return the spell to SSfastprocess")
+
+	// Полный откат: process() докручивает счётчик (+2 за фаер) и гасит флаг
+	for(var/i in 1 to 5)
+		spell.process()
+	TEST_ASSERT_EQUAL(spell.charge_counter, spell.charge_max, "five processes at +2 must fully recharge charge_max = 10")
+	TEST_ASSERT(!spell.recharging, "a recharged spell must clear the recharging flag")
+	TEST_ASSERT_EQUAL(spell.process(), PROCESS_KILL, "a fully recharged spell must PROCESS_KILL out of SSfastprocess")
+
+/datum/unit_test/touch_spell_recharge_on_hand_destroy/Run()
+	var/obj/effect/proc_holder/spell/targeted/touch/touch_spell = allocate(/obj/effect/proc_holder/spell/targeted/touch)
+	touch_spell.charge_max = 10
+	touch_spell.charge_counter = 0
+	touch_spell.recharging = FALSE
+	var/obj/item/melee/touch_attack/hand = new(touch_spell)
+	allocated += hand
+	touch_spell.attached_hand = hand
+	hand.attached_spell = touch_spell
+
+	// Рука истратилась (charges_check) - спелл обязан проснуться на откат
+	touch_spell.on_hand_destroy(hand)
+	TEST_ASSERT_NULL(touch_spell.attached_hand, "on_hand_destroy must detach the hand")
+	TEST_ASSERT(touch_spell.recharging, "on_hand_destroy must mark the touch spell as recharging")
+	TEST_ASSERT(touch_spell in SSfastprocess.processing, "on_hand_destroy must return the touch spell to SSfastprocess")

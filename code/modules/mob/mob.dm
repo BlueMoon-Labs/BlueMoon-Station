@@ -373,6 +373,9 @@
 	DEFAULT_QUEUE_OR_CALL_VERB(VERB_CALLBACK(src, PROC_REF(run_examinate), A))
 
 /mob/proc/run_examinate(atom/A)
+	if(QDELETED(A)) //верб мог отлежаться в очереди SSverb_manager, а цель - удалиться за это время
+		return
+
 	if(isturf(A) && !(sight & SEE_TURFS) && !(A in view(client ? client.view : world.view, src)))
 		// shift-click catcher may issue examinate() calls for out-of-sight turfs
 		return
