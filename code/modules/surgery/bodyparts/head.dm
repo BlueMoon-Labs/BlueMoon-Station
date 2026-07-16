@@ -48,7 +48,7 @@
 	scars_covered_by_clothes = FALSE
 
 /obj/item/bodypart/head/can_dismembered()
-	if(owner && (iszombie_infectious(owner) || !((owner.stat == DEAD) || owner.InFullCritical())))
+	if(owner && !((owner.stat == DEAD) || owner.InFullCritical()))
 		return FALSE
 	return ..()
 
