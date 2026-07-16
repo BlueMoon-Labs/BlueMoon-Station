@@ -958,3 +958,56 @@
 	TEST_ASSERT_NOTNULL(tracker, "the crusher tracker must apply")
 	TEST_ASSERT(!(tracker.datum_flags & DF_ISPROCESSING), "a permanent tickless effect must stay out of SSstatus_effects")
 	human.remove_status_effect(STATUS_EFFECT_CRUSHERDAMAGETRACKING)
+
+// ===== Лодаут: превью генерятся лениво, а не на старте сервера =====
+//
+// perf3/perf4: ровно 1559 icon2base64 (~1.3с CPU) на каждом раундстарте -
+// /datum/gear/New энкодил превью всего каталога. Теперь энкод по первому
+// запросу UI, меню рендерит одну подкатегорию за раз.
+
+/datum/unit_test/loadout_preview_lazy/Run()
+	TEST_ASSERT(length(GLOB.loadout_items), "loadout catalog must be populated")
+	var/datum/gear/probe
+	var/eager = 0
+	for(var/category in GLOB.loadout_items)
+		var/list/subcategories = GLOB.loadout_items[category]
+		for(var/subcategory in subcategories)
+			var/list/items = subcategories[subcategory]
+			for(var/gear_name in items)
+				var/datum/gear/gear = items[gear_name]
+				if(!gear)
+					continue
+				if(gear.base64icon)
+					eager++
+				if(!probe && gear.path)
+					var/preview = gear.get_base64icon()
+					if(preview)
+						probe = gear
+						TEST_ASSERT_EQUAL(gear.get_base64icon(), preview, "repeated preview requests must return the cached encode")
+	TEST_ASSERT_EQUAL(eager, 0, "no gear preview may be encoded before the first UI request ([eager] already were)")
+	TEST_ASSERT_NOTNULL(probe, "at least one gear item must produce a preview on demand")
+
+// ===== Air sensor: бродкаст только при изменении показаний или heartbeat =====
+//
+// perf4.log: 79k receive_signal у атмос-консолей за 6-минутный холостой раунд -
+// каждый сенсор рассылал отчёт всем консолям частоты, даже когда танк осел.
+
+/datum/unit_test/air_sensor_report_gate/Run()
+	var/obj/machinery/air_sensor/sensor = allocate(/obj/machinery/air_sensor)
+
+	// Первый отчёт всегда уходит и взводит heartbeat.
+	TEST_ASSERT(sensor.try_report(), "the first report must always broadcast")
+	TEST_ASSERT(sensor.next_forced_report > world.time, "the first report must arm the heartbeat deadline")
+	TEST_ASSERT_NOTNULL(sensor.last_report_pressure, "the report must record the broadcast readings")
+
+	// Осевшие показания внутри heartbeat-окна - тишина в эфире.
+	TEST_ASSERT(!sensor.try_report(), "unchanged readings inside the heartbeat window must not broadcast")
+
+	// Изменение показаний пробивает гейт.
+	sensor.last_report_pressure += 10
+	TEST_ASSERT(sensor.try_report(), "a pressure delta must broadcast")
+
+	// Истёкший heartbeat пробивает гейт даже без изменений.
+	sensor.next_forced_report = 0
+	TEST_ASSERT(sensor.try_report(), "an expired heartbeat must force a broadcast")
+	TEST_ASSERT(sensor.next_forced_report > world.time, "the forced broadcast must re-arm the heartbeat")
