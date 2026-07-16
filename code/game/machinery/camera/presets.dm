@@ -72,6 +72,7 @@
 				if(C.number)
 					number = max(number, C.number+1)
 		c_tag = "[A.name] #[number]"
+		GLOB.cameranet.invalidate_camera_cache() //c_tag присвоен после Initialize (LateInitialize)
 
 // CHECKS
 

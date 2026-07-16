@@ -15,6 +15,15 @@ GLOBAL_DATUM_INIT(cameranet, /datum/cameranet, new)
 	var/list/chunks = list()
 	var/ready = 0
 
+	/// Ленивый кэш "имя сети -> ассоц c_tag -> камера": консоли/баг/SecurEye
+	/// раньше пересобирали и перефильтровывали ВЕСЬ cameras на каждый
+	/// ui_static_data и каждый клик переключения камеры. null = кэш сброшен,
+	/// пересоберётся при следующем запросе (см. invalidate_camera_cache).
+	var/list/camera_lookup_by_network
+	/// world.time сборки кэша: c_tag/network мутируют в десятках мест
+	/// (переименование боргов и т.п.), все не перехватить - TTL страхует
+	var/camera_lookup_built_at = -1
+
 	// The object used for the clickable stat() button.
 	var/obj/effect/statclick/statclick
 
@@ -36,6 +45,36 @@ GLOBAL_DATUM_INIT(cameranet, /datum/cameranet, new)
 
 	obscured_transparent = new('icons/effects/cameravis.dmi', vis_contents_transparent, null, CAMERA_STATIC_LAYER)
 	obscured_transparent.plane = CAMERA_STATIC_PLANE
+
+/// Сбросить кэш сетей камер. Зовётся из хуков жизненного цикла камеры:
+/// Initialize/Destroy, EMP (сеть обнуляется и восстанавливается),
+/// connect_to_shuttle (переименование сети), сборка камеры (network+c_tag).
+/datum/cameranet/proc/invalidate_camera_cache()
+	camera_lookup_by_network = null
+
+/// Ассоц-список "c_tag -> камера" для сети network_name (null, если сеть пуста).
+/// Списки в кэше общие - вызывающим их мутировать нельзя.
+/datum/cameranet/proc/get_cameras_by_network(network_name)
+	if(isnull(camera_lookup_by_network) || world.time - camera_lookup_built_at > 30 SECONDS)
+		build_camera_lookup()
+	return camera_lookup_by_network[network_name]
+
+/datum/cameranet/proc/build_camera_lookup()
+	camera_lookup_by_network = list()
+	camera_lookup_built_at = world.time
+	for(var/obj/machinery/camera/C as anything in cameras)
+		if(!C.network)
+			stack_trace("Camera in a cameranet has no camera network")
+			continue
+		if(!islist(C.network))
+			stack_trace("Camera in a cameranet has a non-list camera network")
+			continue
+		for(var/network_name in C.network)
+			var/list/network_cameras = camera_lookup_by_network[network_name]
+			if(!network_cameras)
+				network_cameras = list()
+				camera_lookup_by_network[network_name] = network_cameras
+			network_cameras["[C.c_tag]"] = C
 
 // Checks if a chunk has been Generated in x, y, z.
 /datum/cameranet/proc/chunkGenerated(x, y, z)

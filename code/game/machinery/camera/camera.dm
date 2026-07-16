@@ -66,6 +66,7 @@
 		assembly = new(src)
 		assembly.state = 4
 	GLOB.cameranet.cameras += src
+	GLOB.cameranet.invalidate_camera_cache()
 	GLOB.cameranet.addCamera(src)
 	if (isturf(loc))
 		myarea = get_area(src)
@@ -81,11 +82,13 @@
 	for(var/i in network)
 		network -= i
 		network += "[idnum][i]"
+	GLOB.cameranet.invalidate_camera_cache()
 
 /obj/machinery/camera/Destroy()
 	if(can_use())
 		toggle_cam(null, 0) //kick anyone viewing out and remove from the camera chunks
 	GLOB.cameranet.cameras -= src
+	GLOB.cameranet.invalidate_camera_cache()
 	// toggle_cam не зовётся для выключенных/EMP-нутых камер, а радиус удаления в
 	// majorChunkChange (8) уже скана при создании чанка (16 от центра) - добираем
 	// все чанки вручную, иначе chunk.cameras держит удалённую камеру
@@ -113,6 +116,7 @@
 			update_icon()
 			var/list/previous_network = network
 			network = list()
+			GLOB.cameranet.invalidate_camera_cache()
 			GLOB.cameranet.removeCamera(src)
 			set_machine_stat(machine_stat | EMPED)
 			set_light(0)
@@ -124,6 +128,7 @@
 					triggerCameraAlarm() //camera alarm triggers even if multiple EMPs are in effect.
 					if(emped == thisemp) //Only fix it if the camera hasn't been EMP'd again
 						network = previous_network
+						GLOB.cameranet.invalidate_camera_cache()
 						set_machine_stat(machine_stat & ~EMPED)
 						update_icon()
 						if(can_use())
