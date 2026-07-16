@@ -33,7 +33,8 @@
 	id = "Frenzy"
 	status_type = STATUS_EFFECT_UNIQUE
 	duration = -1
-	tick = FALSE
+	//tick() у френзи ЖИВОЙ (bloodsucker_frenzy.dm жжёт владельца каждую
+	//секунду) - дефолтный tick_interval оставлен намеренно
 	alert_type = /atom/movable/screen/alert/status_effect/frenzy
 	///Boolean on whether they were an AdvancedToolUser, to give the trait back upon exiting.
 	var/was_tooluser = FALSE

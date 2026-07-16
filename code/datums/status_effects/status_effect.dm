@@ -5,8 +5,6 @@
 /datum/status_effect
 	var/id = "effect" //Used for screen alerts.
 	var/duration = -1 //How long the status effect lasts in DECISECONDS. Enter -1 for an effect that never ends unless removed through some means.
-	/// do we tick()?
-	var/tick = TRUE
 	/// Как часто тикать, в децисекундах. -1 = эффект не тикает вовсе: вместе с
 	/// duration -1 такой эффект вообще не встаёт в SSstatus_effects (чисто
 	/// сигнальные постоянные эффекты - раны, limp - иначе крутятся в
