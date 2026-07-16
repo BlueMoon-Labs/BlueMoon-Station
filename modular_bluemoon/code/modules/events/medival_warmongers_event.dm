@@ -172,7 +172,7 @@
 	icon_state = "bodybag"
 	mob_name = "a medieval warmonger"
 	job_description = "Medieval Warmonger"
-	mob_species = /datum/species/human
+	mob_species = /datum/species/skeleton/space
 	outfit = /datum/outfit/medieval
 	roundstart = FALSE
 	death = FALSE
@@ -190,7 +190,6 @@
 	. = ..()
 	if(ishuman(new_spawn))
 		var/mob/living/carbon/human/H = new_spawn
-		ADD_TRAIT(H, TRAIT_NOGUNS, INNATE_TRAIT)
 		to_chat(H, "<span class='notice'>You feel robust.</span>")
 		var/datum/species/S = H.dna.species
 		S.brutemod *= 0.5
@@ -219,7 +218,6 @@
 	. = ..()
 	if(ishuman(new_spawn))
 		var/mob/living/carbon/human/H = new_spawn
-		REMOVE_TRAIT(H, TRAIT_NOGUNS, INNATE_TRAIT)
 		H.dna.add_mutation(/datum/mutation/human/hulk/superhuman)
 		H.dna.add_mutation(/datum/mutation/human/gigantism)
 	new_spawn.mind.add_antag_datum(/datum/antagonist/warmonger)

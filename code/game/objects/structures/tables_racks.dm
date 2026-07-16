@@ -580,14 +580,12 @@
 	var/smooth_icon = 'icons/obj/smooth_structures/fancy_table.dmi' // see Initialize()
 
 /obj/structure/table/wood/fancy/Initialize(mapload)
+	. = ..()
 	// Needs to be set dynamically because table smooth sprites are 32x34,
 	// which the editor treats as a two-tile-tall object. The sprites are that
 	// size so that the north/south corners look nice - examine the detail on
 	// the sprites in the editor to see why.
 	icon = smooth_icon
-	. = ..()
-	if(smooth)
-		smooth_icon(src)
 
 	if (!(flags_1 & NODECONSTRUCT_1))
 		var/static/list/tool_behaviors = list(

@@ -21,6 +21,9 @@ SUBSYSTEM_DEF(decay)
 	var/list/possible_areas = list()
 	var/severity_modifier = 1
 
+	/// Activation chance (%) per ssdecay_intensity config value (index 1-5).
+	var/static/list/activation_chances = list(10, 32, 53, 75, 50)
+
 /datum/controller/subsystem/decay/Initialize()
 	. = ..()
 	if(CONFIG_GET(flag/ssdecay_disabled))
@@ -31,6 +34,15 @@ SUBSYSTEM_DEF(decay)
 	if(SSmapping.config.map_name in station_filter)
 		message_admins("SSDecay was disabled due to map filter.")
 		log_world("SSDecay was disabled due to map filter.")
+		return SS_INIT_NO_NEED
+
+	var/configured_intensity = CONFIG_GET(number/ssdecay_intensity)
+	configured_intensity = clamp(configured_intensity || 5, 1, 5)
+
+	var/activation_chance = activation_chances[configured_intensity]
+	if(!prob(activation_chance))
+		message_admins("SSDecay did not activate this round (rolled against [activation_chance]% chance for intensity [configured_intensity]).")
+		log_world("SSDecay did not activate this round (rolled against [activation_chance]% chance for intensity [configured_intensity]).")
 		return SS_INIT_NO_NEED
 
 	for(var/area/iterating_area as anything in GLOB.all_areas)
@@ -49,12 +61,12 @@ SUBSYSTEM_DEF(decay)
 		log_world("SSDecay had no possible turfs to use.")
 		return SS_INIT_NO_NEED
 
-	severity_modifier = CONFIG_GET(number/ssdecay_intensity)
-	if(!severity_modifier || severity_modifier == 5)
+	severity_modifier = configured_intensity
+	if(severity_modifier == 5)
 		severity_modifier = rand(1, 4)
 
-	message_admins("SSDecay severity modifier set to [severity_modifier]")
-	log_world("SSDecay severity modifier set to [severity_modifier]")
+	message_admins("SSDecay activated with severity modifier [severity_modifier] (config intensity [configured_intensity], activation roll [activation_chance]%).")
+	log_world("SSDecay activated with severity modifier [severity_modifier] (config intensity [configured_intensity], activation roll [activation_chance]%).")
 
 	do_common()
 	do_maintenance()

@@ -1,6 +1,6 @@
 /datum/config_entry/flag/ssdecay_disabled
 
-/// Intensity of roundstart decay (1-4). A value of 5 picks a random intensity from 1 to 4.
+/// Roundstart decay: activation chance by config value (1=10%, 2=32%, 3=53%, 4=75%, 5=50% + random intensity 1-4).
 /datum/config_entry/number/ssdecay_intensity
 	default = 5
 	max_val = 5

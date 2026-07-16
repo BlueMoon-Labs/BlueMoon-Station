@@ -122,7 +122,7 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
 	strip_delay = 80
 	dog_fashion = null
-	armor = list(MELEE = 40, BULLET = 80, LASER = 80, ENERGY = 40, BOMB = 25, BIO = 0, RAD = 0, FIRE = 10, ACID = 50, WOUND = 50)
+	armor = list(MELEE = 20, BULLET = 40, LASER = 40, ENERGY = 40, BOMB = 25, BIO = 0, RAD = 0, FIRE = 10, ACID = 50, WOUND = 50)
 	can_toggle = TRUE
 	toggle_message = "You pull the visor down on"
 	alt_toggle_message = "You push the visor up on"
@@ -232,7 +232,7 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	name = "golden barbute helmet"
 	desc = "There is no man behind the helmet, only a terrible thought."
 	icon_state = "warlord"
-	armor = list(MELEE = 80, BULLET = 80, LASER = 80, ENERGY = 80, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 50)
+	armor = list(MELEE = 40, BULLET = 40, LASER = 40, ENERGY = 40, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 50)
 	flags_inv = HIDEEARS|HIDEEYES|HIDEFACE|HIDEMASK|HIDEHAIR|HIDEFACIALHAIR|HIDESNOUT
 	flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
 	slowdown = 0.2

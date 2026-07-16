@@ -88,7 +88,7 @@
 	councilmen that wish to flaunt their opulence towards the unwashed masses."
 	icon_state = "military"
 	dog_fashion = null
-	armor = list(MELEE = 40, BULLET = 80, LASER = 80, ENERGY = 40, BOMB = 25, BIO = 0, RAD = 0, FIRE = 10, ACID = 50, WOUND = 50)
+	armor = list(MELEE = 20, BULLET = 40, LASER = 40, ENERGY = 40, BOMB = 25, BIO = 0, RAD = 0, FIRE = 10, ACID = 50, WOUND = 50)
 	allowed = list(
 		/obj/item/banner,
 		/obj/item/claymore/shortsword,
@@ -102,7 +102,7 @@
 	name = "Golden Plate Armor"
 	desc = "This bulky set of armor is coated with a shiny layer of gold. It seems to almost reflect all light sources."
 	icon_state = "warlord"
-	armor = list(MELEE = 80, BULLET = 80, LASER = 80, ENERGY = 80, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 50)
+	armor = list(MELEE = 40, BULLET = 40, LASER = 40, ENERGY = 40, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 50)
 	w_class = WEIGHT_CLASS_BULKY
 	clothing_flags = THICKMATERIAL
 	slowdown = 0.5
