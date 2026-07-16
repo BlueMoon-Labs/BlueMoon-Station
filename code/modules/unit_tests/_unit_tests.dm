@@ -197,6 +197,7 @@
 #include "stationroom_landmark.dm"
 #include "latex_lockable.dm"
 #include "parallax_position.dm"
+#include "perf_cross_ports.dm"
 #include "perf_optimizations.dm"
 #include "psychosis_pools.dm"
 #include "preload_size_budgets.dm"
