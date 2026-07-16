@@ -503,6 +503,7 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 
 /area/proc/power_change()
 	SHOULD_NOT_SLEEP(TRUE)
+	SEND_SIGNAL(src, COMSIG_AREA_POWER_CHANGE) //событийные потребители (интеркомы) вместо поллинга
 	if(contents.len < GLOB.machines.len) // it would be faster to loop over contents
 		for(var/obj/machinery/M in src) // for each machine in the area
 			M.power_change() // reverify power status (to update icons etc.)
