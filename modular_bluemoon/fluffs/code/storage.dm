@@ -277,7 +277,8 @@
 	new /obj/item/modkit/neutron_kit(src)
 	new /obj/item/modkit/spectral_kit(src)
 	new /obj/item/modkit/pulsar_kit(src)
-
+	new /obj/item/modkit/lapkee_arm_shield_kit(src)
+	new /obj/item/modkit/white_belt_kit(src)
 //////////////////////////////////////////////////
 
 /obj/item/storage/backpack/satchel/sport_abibas_bag
@@ -289,13 +290,13 @@
 	item_state = "abibas_back"
 
 /obj/item/modkit/white_belt_kit
-	DONATE_ITEM_TOOLTIP_PARENT
 	name = "White security belt Kit"
 	desc = "A modkit for making a brig officer webbing into a White security belt."
 	product = /obj/item/storage/belt/security/webbing/ds/lapkee_belt
 	fromitem = list(/obj/item/storage/belt/security/webbing/ds)
 
 /obj/item/storage/belt/security/webbing/ds/lapkee_belt
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "White security belt"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/belts.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/belt.dmi'
