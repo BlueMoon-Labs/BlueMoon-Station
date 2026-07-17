@@ -399,7 +399,8 @@ const Viewer = (props) => {
               'AdminLogViewer__content' + (wrap ? '' : ' AdminLogViewer__content--nowrap')
             }>
             {parseCsv(file.content).map((row, i) => (
-              <Table.Row header={i === 0} key={i}>
+              // Заголовок CSV есть только в начале файла - на следующих страницах первая строка это данные
+              <Table.Row header={i === 0 && file.pageStart === 0} key={i}>
                 {row.map((cell, j) => (
                   <Table.Cell key={j}>{cell}</Table.Cell>
                 ))}

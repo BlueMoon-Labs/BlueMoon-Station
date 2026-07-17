@@ -42,14 +42,14 @@
 	return list(copytext(chunk, first_nl + 1), start_offset + first_nl)
 
 /// Размер файла в байтах, -1 при ошибке. Нативный length(file()) без чтения содержимого в DM;
-/// на Unix при нуле перепроверяем шеллом (нулевой размер неотличим от ошибки чтения).
+/// при нуле перепроверяем шеллом (нулевой размер неотличим от ошибки чтения).
 /proc/admin_log_file_size(path)
 	if(!fexists(path))
 		return -1
 	var/native = length(file(path))
 	if(isnum(native) && native > 0)
 		return native
-	if(world.system_type == UNIX && is_safe_path_for_admin_shell(path))
+	if(is_safe_path_for_admin_shell(path))
 		return get_admin_log_file_size_bytes(path)
 	return isnum(native) ? native : -1
 
