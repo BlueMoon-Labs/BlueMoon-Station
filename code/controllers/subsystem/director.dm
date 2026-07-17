@@ -337,14 +337,18 @@ SUBSYSTEM_DEF(director)
 	return crew * profile.antag_intensity_per_crew
 
 /// Актуализация копилок антаг-пулов: у пула без цели (или с протухшей - can_fire отвалился,
-/// например кончились кандидаты-призраки) роллится новая. Валидная цель не перевыбирается -
-/// пул последовательно копит и исполняет план.
+/// например кончились кандидаты-призраки, либо живой вес затух до нуля) роллится новая.
+/// Валидная цель не перевыбирается - пул последовательно копит и исполняет план.
 /datum/controller/subsystem/director/proc/ensure_pool_targets(datum/director_signals/signals)
 	// Контент-код (can_fire) не должен логировать отказы при проверке плана - это не решение о запуске.
 	quiet_eval = TRUE
 	for(var/sev in list(DIRECTOR_SEVERITY_ANTAG, DIRECTOR_SEVERITY_GHOST))
 		var/datum/director_action/target = pool_saving[sev]
-		if(QDELETED(target) || action_recently_failed(target) || !target.can_fire(signals) || !action_preflight(target))
+		// Живой вес - часть валидности плана: у действий с изменяемым весом условие может
+		// пропасть уже после выбора цели (вес Lone Operative затухает, когда диск снова
+		// носят - nuclearbomb.dm). План с нулевым весом висел бы до исполнения, и оперативник
+		// приходил бы спустя полчаса после того, как диск унесли, - "спавн без причины".
+		if(QDELETED(target) || action_recently_failed(target) || !target.can_fire(signals) || !action_preflight(target) || target.get_weight(signals) <= 0)
 			roll_pool_target(sev, signals)
 			continue
 		// Цель валидна, но пул мог вырасти: план, взятый из одного-двух ранних вариантов

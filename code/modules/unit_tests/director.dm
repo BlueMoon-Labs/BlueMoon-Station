@@ -2640,13 +2640,57 @@
 		SSdirector.ensure_pool_targets(signals)
 		TEST_ASSERT_EQUAL(SSdirector.pool_saving[DIRECTOR_SEVERITY_GHOST], lone, "Без роста пула валидная цель не должна перевыбираться")
 
-		// Пул вырос (newcomer открылся), а старая цель потеряла вес: weight 0 исключает её из
-		// опций, но не рушит валидность (can_fire вес не проверяет) - без детекта роста цель
-		// висела бы до исполнения. Перевыбор обязан уйти в новый вариант.
+		// Пул вырос: newcomer открылся по онлайну. Детектор роста ассертим прямо: реролл в
+		// ensure_pool_targets срабатывает и по затуханию веса старой цели (см.
+		// director_pool_target_weight_staleness), интеграционный ассерт ниже их не различает.
 		newcomer.min_players = 0
-		lone.weight = 0
+		var/list/grown = SSdirector.collect_pool_options(DIRECTOR_SEVERITY_GHOST, signals)
+		TEST_ASSERT(SSdirector.pool_options_grew(DIRECTOR_SEVERITY_GHOST, grown), "Открывшееся действие обязано детектиться как рост пула")
+		lone.weight = 0 // делает перевыбор детерминированным: единственная опция - newcomer
 		SSdirector.ensure_pool_targets(signals)
 		TEST_ASSERT_EQUAL(SSdirector.pool_saving[DIRECTOR_SEVERITY_GHOST], newcomer, "Рост пула обязан перевыбирать цель, зафиксированную в бедном наборе")
+	catch(var/exception/e)
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	SSdirector.restore_simulation_state(saved)
+
+/// Копилка обязана отражать живое условие веса. Вес Lone Operative растёт, пока диск лежит
+/// без движения, и затухает при переноске (nuclearbomb.dm): план, нацеленный при лежащем
+/// диске, обязан сниматься, как только вес затух до нуля, - иначе оперативник приходит
+/// спустя полчаса после того, как диск давно носят (жалоба прода "спавнится рандомно").
+/datum/unit_test/director_pool_target_weight_staleness
+
+/datum/unit_test/director_pool_target_weight_staleness/Run()
+	// Мутирует живой SSdirector - capture/restore c try/catch (см. director_beat_logic).
+	var/list/saved = SSdirector.capture_simulation_state()
+	try
+		SSdirector.profile = new /datum/director_profile/medium
+		SSdirector.pool_saving = list()
+		SSdirector.pool_target_options = list()
+		SSdirector.action_failure_cooldowns = list()
+
+		var/datum/director_signals/signals = new
+		signals.effective_crew = 30
+		signals.staffing = list(DIRECTOR_DEPT_SECURITY = 2, DIRECTOR_DEPT_ENGINEERING = 1,
+			DIRECTOR_DEPT_MEDICAL = 1, DIRECTOR_DEPT_SCIENCE = 0, DIRECTOR_DEPT_SUPPLY = 0, DIRECTOR_DEPT_COMMAND = 1)
+
+		var/datum/director_action/test_stub/lone = new
+		lone.severity = DIRECTOR_SEVERITY_GHOST
+		lone.weight = 1 // диск полежал: событие едва открылось
+		SSdirector.actions = list(lone)
+
+		SSdirector.ensure_pool_targets(signals)
+		TEST_ASSERT_EQUAL(SSdirector.pool_saving[DIRECTOR_SEVERITY_GHOST], lone, "Действие с живым весом обязано становиться целью копилки")
+
+		// Диск унесли: вес затух до нуля. План обязан сняться, а не висеть до исполнения.
+		lone.weight = 0
+		SSdirector.ensure_pool_targets(signals)
+		TEST_ASSERT_NULL(SSdirector.pool_saving[DIRECTOR_SEVERITY_GHOST], "Цель с затухшим до нуля весом обязана сниматься с копилки")
+
+		// Диск снова лежит: вес вернулся - действие снова может стать планом.
+		lone.weight = 1
+		SSdirector.ensure_pool_targets(signals)
+		TEST_ASSERT_EQUAL(SSdirector.pool_saving[DIRECTOR_SEVERITY_GHOST], lone, "Вернувшийся вес обязан возвращать действие в план копилки")
 	catch(var/exception/e)
 		SSdirector.restore_simulation_state(saved)
 		throw e
