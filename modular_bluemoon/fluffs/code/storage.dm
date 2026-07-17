@@ -287,3 +287,42 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/storage.dmi'
 	icon_state = "abibas_back"
 	item_state = "abibas_back"
+
+/obj/item/modkit/white_belt_kit
+	name = "White security belt Kit"
+	desc = "A modkit for making a brig officer webbing into a White security belt."
+	product = /obj/item/storage/belt/security/webbing/ds/lapkee_belt
+	fromitem = list(/obj/item/storage/belt/security/webbing/ds)
+
+/obj/item/storage/belt/security/webbing/ds/lapkee_belt
+	name = "White security belt"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/belts.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/belt.dmi'
+	icon_state = "lapkee_belt"
+	item_state = "lapkee_belt"
+
+/obj/item/storage/belt/security/webbing/ds/lapkee_belt/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.max_items = 7
+	STR.max_w_class = WEIGHT_CLASS_NORMAL
+	STR.can_hold = typecacheof(list(
+		/obj/item/melee/baton,
+		/obj/item/melee/classic_baton,
+		/obj/item/grenade,
+		/obj/item/reagent_containers/spray/pepper,
+		/obj/item/restraints/handcuffs,
+		/obj/item/assembly/flash/handheld,
+		/obj/item/clothing/glasses,
+		/obj/item/ammo_casing/shotgun,
+		/obj/item/ammo_box,
+		/obj/item/reagent_containers/food/snacks/donut,
+		/obj/item/kitchen/knife/combat,
+		/obj/item/flashlight/seclite,
+		/obj/item/melee/classic_baton/telescopic,
+		/obj/item/radio,
+		/obj/item/clothing/gloves,
+		/obj/item/restraints/legcuffs/bola,
+		/obj/item/holosign_creator/security
+		))
+// На всякий случай копируем логику с родителя
