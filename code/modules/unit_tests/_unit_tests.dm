@@ -194,6 +194,7 @@
 #include "newscaster_alert_gate.dm"
 #include "harddel_cleanup.dm"
 #include "hallucination_stationmessage.dm"
+#include "hilbert_hotel.dm"
 #include "memory_leak_limits.dm"
 #include "human_mob_gc.dm"
 #include "observer_reenter_race.dm"
