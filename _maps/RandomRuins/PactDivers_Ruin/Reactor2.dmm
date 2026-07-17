@@ -1,0 +1,2978 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 4
+	},
+/turf/closed/indestructible/syndicate,
+/area/awaymission/PactDaivers)
+"aQ" = (
+/obj/structure/lattice,
+/turf/closed/indestructible/syndicate,
+/area/awaymission/PactDaivers)
+"aV" = (
+/obj/structure/lattice,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"aY" = (
+/obj/machinery/airalarm{
+	pixel_y = 22
+	},
+/obj/structure/table,
+/obj/machinery/computer/reactor/fuel_rods,
+/obj/machinery/camera/autoname,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/purple/visible,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"bc" = (
+/obj/structure/hellgate_power_transformer,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"bn" = (
+/obj/machinery/door/poddoor{
+	id = "au_nuclear_vent"
+	},
+/turf/open/space/basic,
+/area/awaymission/PactDaivers)
+"bA" = (
+/obj/machinery/atmospherics/components/binary/pump{
+	name = "Coolent to Reactor"
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"ce" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible,
+/obj/structure/cable/white{
+	icon_state = "1-2"
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"cn" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+	dir = 8
+	},
+/obj/structure/table,
+/obj/machinery/button/door{
+	id = "au_nuclear_vent";
+	name = "RBMK Compartment Flush"
+	},
+/obj/effect/turf_decal/stripes/yellow/line,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"cx" = (
+/obj/structure/fence,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"db" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 10
+	},
+/turf/open/pool,
+/area/awaymission/PactDaivers)
+"dx" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"dE" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"ev" = (
+/obj/effect/turf_decal/tile/brown/fourcorners,
+/obj/machinery/computer/security,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"fa" = (
+/obj/structure/cable/yellow,
+/obj/machinery/atmospherics/components/trinary/nuclear_reactor/preset,
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"fl" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"fF" = (
+/obj/structure/cable/yellow,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 6
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"go" = (
+/obj/machinery/atmospherics/components/binary/pump{
+	dir = 1;
+	name = "Cooling Loop to Reactor"
+	},
+/obj/effect/turf_decal/stripes/yellow/line,
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"gp" = (
+/obj/effect/spawner/structure/window/plasma/reinforced,
+/obj/machinery/atmospherics/pipe/layer_manifold,
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"gI" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 10
+	},
+/obj/structure/table,
+/obj/machinery/computer/reactor/stats,
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"ho" = (
+/obj/structure/urbanismpower,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"ht" = (
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
+	dir = 1
+	},
+/obj/machinery/firealarm{
+	pixel_y = 24
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/structure/table,
+/obj/item/paper_bin,
+/obj/item/pen,
+/obj/machinery/atmospherics/pipe/simple/purple/visible{
+	layer = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"iw" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 5
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"iG" = (
+/obj/effect/turf_decal/tile/brown/fourcorners,
+/obj/machinery/button/door{
+	id = "teleportcommand";
+	pixel_y = 22
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"jo" = (
+/obj/machinery/meter,
+/obj/machinery/atmospherics/pipe/simple/brown/visible,
+/turf/closed/indestructible/syndicate,
+/area/awaymission/PactDaivers)
+"jG" = (
+/obj/item/fuel_rod,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 6
+	},
+/turf/open/pool,
+/area/awaymission/PactDaivers)
+"kK" = (
+/obj/machinery/shower{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 10
+	},
+/turf/open/floor/noslip,
+/area/awaymission/PactDaivers)
+"kO" = (
+/obj/effect/spawner/structure/window/plasma/reinforced,
+/obj/machinery/atmospherics/pipe/simple/brown/visible{
+	dir = 8
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"kX" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible{
+	dir = 4
+	},
+/obj/effect/spawner/structure/window/plasma/reinforced,
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"lg" = (
+/obj/structure/fence/corner{
+	dir = 9
+	},
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"lj" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+	dir = 4
+	},
+/obj/machinery/light/small,
+/obj/effect/turf_decal/stripes/yellow/line,
+/turf/open/floor/noslip,
+/area/awaymission/PactDaivers)
+"lw" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-4"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible,
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"lP" = (
+/obj/machinery/computer/atmos_alert{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/brown/fourcorners,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"mc" = (
+/obj/structure/cable/white,
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 9
+	},
+/obj/machinery/power/smes/engineering,
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"mE" = (
+/obj/structure/closet/firecloset,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 9
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"mG" = (
+/obj/machinery/door/poddoor,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"mT" = (
+/obj/machinery/pool/drain,
+/obj/item/fuel_rod,
+/turf/open/pool,
+/area/awaymission/PactDaivers)
+"mV" = (
+/obj/machinery/atmospherics/pipe/heat_exchanging/simple{
+	dir = 5
+	},
+/obj/machinery/atmospherics/pipe/heat_exchanging/simple/layer1{
+	dir = 5
+	},
+/obj/structure/lattice/catwalk,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"nf" = (
+/obj/item/fuel_rod,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/turf/open/pool,
+/area/awaymission/PactDaivers)
+"nh" = (
+/obj/effect/turf_decal/stripes/yellow/corner{
+	dir = 8
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"nw" = (
+/obj/structure/fence{
+	dir = 4
+	},
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"nx" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/cyan/visible{
+	dir = 6
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"nG" = (
+/obj/machinery/atmospherics/pipe/simple/purple/visible,
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"nX" = (
+/obj/effect/spawner/structure/window/plasma/reinforced,
+/obj/machinery/door/poddoor/shuttledock,
+/turf/open/floor/plating,
+/area/awaymission/PactDaivers)
+"oZ" = (
+/obj/machinery/door/airlock/engineering{
+	name = "Reactor Control";
+	req_one_access_txt = "10;24"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"pj" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible,
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"pZ" = (
+/obj/machinery/power/terminal{
+	dir = 1
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/binary/valve/digital{
+	dir = 4;
+	name = "Emergency Coolant Purge"
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"qd" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/yellow/line,
+/obj/structure/cable/white{
+	icon_state = "1-2"
+	},
+/obj/machinery/atmospherics/components/binary/pump{
+	name = "Atmospherics to Reactor"
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"qX" = (
+/obj/structure/fence/corner{
+	dir = 8
+	},
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"rn" = (
+/obj/structure/closet/radiation,
+/obj/effect/turf_decal/delivery,
+/obj/item/clothing/glasses/meson/engine,
+/obj/machinery/light/small{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 4
+	},
+/obj/machinery/firealarm{
+	pixel_y = 24
+	},
+/obj/machinery/camera/autoname,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"rp" = (
+/obj/machinery/door/airlock/engineering{
+	name = "Reactor Core";
+	req_one_access_txt = "10;24"
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/yellow/line,
+/obj/machinery/door/firedoor/border_only,
+/obj/machinery/door/firedoor/border_only{
+	dir = 1
+	},
+/obj/structure/cable/white{
+	icon_state = "1-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible,
+/obj/structure/cable/white{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"rL" = (
+/obj/effect/turf_decal/stripes/yellow/line,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"rQ" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+	dir = 4
+	},
+/obj/machinery/door/airlock/engineering{
+	name = "Reactor Control";
+	req_one_access_txt = "10;24"
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"rR" = (
+/obj/machinery/pool/filter{
+	pixel_y = -18
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-4"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"rX" = (
+/obj/effect/turf_decal/stripes/yellow/corner{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible,
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"sg" = (
+/obj/effect/turf_decal/stripes/yellow/corner{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/cyan/visible{
+	dir = 9
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"sn" = (
+/obj/effect/spawner/structure/window/plasma/reinforced,
+/turf/open/floor/plating,
+/area/awaymission/PactDaivers)
+"sC" = (
+/obj/machinery/atmospherics/pipe/simple/cyan/visible{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"tn" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 10
+	},
+/obj/structure/extinguisher_cabinet{
+	pixel_x = -25
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"tK" = (
+/obj/machinery/power/terminal{
+	dir = 1
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"uX" = (
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"vH" = (
+/obj/machinery/portable_atmospherics/canister/oxygen,
+/obj/machinery/camera/autoname{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"xa" = (
+/obj/effect/spawner/structure/window/plasma/reinforced,
+/obj/structure/cable/white{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plating,
+/area/awaymission/PactDaivers)
+"xb" = (
+/obj/machinery/door/airlock/centcom,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"xN" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 9
+	},
+/turf/open/pool,
+/area/awaymission/PactDaivers)
+"xU" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 10
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/portables_connector{
+	dir = 8
+	},
+/obj/machinery/portable_atmospherics/canister/toxins,
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"xV" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 5
+	},
+/obj/structure/table,
+/obj/item/toy/figure/ce,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"xY" = (
+/obj/effect/spawner/structure/window/plastitanium,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"yh" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/obj/machinery/light,
+/obj/effect/turf_decal/stripes/yellow/line,
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"yr" = (
+/obj/machinery/pool/controller,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"yw" = (
+/obj/structure/cable/white{
+	icon_state = "2-4"
+	},
+/obj/structure/cable/white{
+	icon_state = "4-8"
+	},
+/turf/closed/indestructible/syndicate,
+/area/awaymission/PactDaivers)
+"yE" = (
+/obj/effect/spawner/structure/window/plasma/reinforced,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/awaymission/PactDaivers)
+"zw" = (
+/obj/item/radio/intercom{
+	pixel_x = 26
+	},
+/obj/structure/cable/yellow{
+	icon_state = "2-8"
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"zP" = (
+/obj/machinery/door/poddoor,
+/turf/open/floor/plating,
+/area/awaymission/PactDaivers)
+"Ab" = (
+/turf/closed/indestructible/syndicate,
+/area/awaymission/PactDaivers)
+"Bl" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
+	dir = 1
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"Bm" = (
+/obj/machinery/atmospherics/pipe/simple/brown/visible{
+	dir = 8
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"Bq" = (
+/obj/effect/turf_decal/tile/brown/fourcorners,
+/obj/structure/chair/office/dark{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"By" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 1
+	},
+/obj/structure/chair/office/light{
+	dir = 1
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/carpet/royalblack,
+/area/awaymission/PactDaivers)
+"BF" = (
+/obj/machinery/atmospherics/pipe/simple/purple/visible,
+/turf/closed/indestructible/syndicate,
+/area/awaymission/PactDaivers)
+"BH" = (
+/obj/machinery/power/terminal{
+	dir = 1
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
+	},
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/visible{
+	dir = 1
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"BS" = (
+/obj/structure/closet/radiation,
+/obj/effect/turf_decal/delivery,
+/obj/item/clothing/glasses/meson/engine,
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 9
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"BU" = (
+/obj/structure/fence/door{
+	dir = 4
+	},
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"CH" = (
+/obj/structure/cable/white{
+	icon_state = "2-4"
+	},
+/turf/closed/indestructible/syndicate,
+/area/awaymission/PactDaivers)
+"CM" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/manifold/cyan/visible{
+	dir = 1
+	},
+/obj/machinery/meter,
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"CN" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/simple/cyan/visible,
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"CP" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible{
+	dir = 9
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"Dk" = (
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"Dn" = (
+/obj/item/radio/intercom{
+	pixel_x = 27
+	},
+/obj/machinery/shower{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer1,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 6
+	},
+/turf/open/floor/noslip,
+/area/awaymission/PactDaivers)
+"DH" = (
+/obj/effect/spawner/structure/window/plasma/reinforced,
+/obj/structure/lattice,
+/obj/machinery/door/poddoor/shuttledock,
+/turf/open/space/basic,
+/area/awaymission/PactDaivers)
+"Ef" = (
+/obj/structure/closet/emcloset/anchored,
+/turf/open/floor/plating,
+/area/awaymission/PactDaivers)
+"Eh" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/yellow/line,
+/obj/machinery/atmospherics/components/binary/pump{
+	name = "Atmospherics to Moderator"
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Ej" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/yellow/line,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Eu" = (
+/obj/machinery/power/smes/engineering,
+/obj/structure/cable/white,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"EC" = (
+/obj/structure/closet/emcloset,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 4
+	},
+/obj/structure/sign/warning/radiation{
+	pixel_y = 32
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 5
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"EW" = (
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer1{
+	dir = 1
+	},
+/turf/closed/wall/r_wall,
+/area/awaymission/PactDaivers)
+"Fc" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"Fg" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 4
+	},
+/obj/machinery/camera/autoname,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/manifold/brown/visible{
+	dir = 8
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"Fx" = (
+/obj/structure/closet/crate/science,
+/turf/open/floor/plating,
+/area/awaymission/PactDaivers)
+"Fy" = (
+/obj/machinery/light,
+/obj/machinery/portable_atmospherics/canister/carbon_dioxide,
+/obj/effect/turf_decal/box,
+/obj/effect/turf_decal/stripes/yellow/line,
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"GD" = (
+/obj/machinery/door/poddoor/preopen,
+/obj/effect/spawner/structure/window/plastitanium,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"He" = (
+/obj/structure/table,
+/obj/machinery/recharger,
+/obj/effect/turf_decal/tile/brown/fourcorners,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Hn" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Hv" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+	dir = 1
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Hz" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/structure/chair/office/light,
+/turf/open/floor/carpet/royalblack,
+/area/awaymission/PactDaivers)
+"HL" = (
+/obj/effect/turf_decal/tile/brown/fourcorners,
+/obj/machinery/button/door{
+	pixel_x = 2;
+	id = 1;
+	pixel_y = -14
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Id" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+	dir = 4
+	},
+/obj/machinery/light,
+/obj/machinery/computer/station_alert{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/yellow/line,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Im" = (
+/obj/machinery/portable_atmospherics/canister/toxins,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 10
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"IE" = (
+/obj/effect/spawner/structure/window/plasma/reinforced,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"IO" = (
+/obj/machinery/door/airlock/engineering{
+	name = "Reactor Control";
+	req_one_access_txt = "10;24"
+	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 8
+	},
+/obj/machinery/door/firedoor/border_only{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Jz" = (
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/visible{
+	dir = 4
+	},
+/obj/structure/cable/white{
+	icon_state = "1-4"
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"JI" = (
+/obj/structure/table,
+/obj/item/paper_bin,
+/obj/item/pen/fountain,
+/obj/effect/turf_decal/tile/brown/fourcorners,
+/obj/item/syndicatedetonator{
+	desc = "This gaudy button can be used to instantly detonate syndicate bombs that have been activated on the station. It is also fun to press."
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Kd" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/purple/visible,
+/turf/open/floor/carpet/royalblack,
+/area/awaymission/PactDaivers)
+"Km" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/visible{
+	dir = 8
+	},
+/obj/machinery/meter,
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"Kr" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
+/obj/structure/cable/white{
+	icon_state = "4-8"
+	},
+/turf/closed/indestructible/syndicate,
+/area/awaymission/PactDaivers)
+"Kt" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+	dir = 1
+	},
+/obj/structure/cable/yellow{
+	icon_state = "2-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/purple/visible,
+/turf/open/floor/carpet/royalblack,
+/area/awaymission/PactDaivers)
+"KA" = (
+/obj/machinery/meter,
+/obj/machinery/atmospherics/pipe/manifold/brown/visible{
+	dir = 8
+	},
+/obj/structure/cable/white{
+	icon_state = "4-8"
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"KG" = (
+/obj/structure/cable/white{
+	icon_state = "4-8"
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"KX" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/carpet/royalblack,
+/area/awaymission/PactDaivers)
+"Lh" = (
+/obj/structure/table/reinforced,
+/obj/machinery/door/window/westright{
+	dir = 1;
+	name = "Security Checkpoint";
+	req_access_txt = "63"
+	},
+/obj/item/paper_bin{
+	pixel_x = 1;
+	pixel_y = 9
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"LL" = (
+/obj/structure/table,
+/obj/machinery/computer/reactor/control_rods,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Mb" = (
+/obj/machinery/atmospherics/components/binary/pump{
+	name = "Moderators to Reactor"
+	},
+/obj/effect/turf_decal/stripes/yellow/line,
+/obj/structure/cable/yellow{
+	icon_state = "2-8"
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"Mk" = (
+/obj/effect/spawner/structure/window/plasma/reinforced,
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"Mv" = (
+/obj/effect/turf_decal/stripes/yellow/corner,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"MD" = (
+/obj/machinery/porta_turret/inteq/energy,
+/turf/open/floor/plating{
+	heat_capacity = 1e+006
+	},
+/area/awaymission/PactDaivers)
+"MY" = (
+/obj/machinery/atmospherics/pipe/heat_exchanging/simple{
+	dir = 9
+	},
+/obj/machinery/atmospherics/pipe/heat_exchanging/simple/layer1{
+	dir = 9
+	},
+/obj/structure/lattice/catwalk,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"ND" = (
+/obj/effect/turf_decal/tile/brown/fourcorners,
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"NJ" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/cyan/visible{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"NK" = (
+/obj/machinery/modular_computer/console/preset/engineering,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"NR" = (
+/obj/structure/lattice,
+/obj/structure/lattice,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"OE" = (
+/obj/effect/turf_decal/stripes/yellow/line,
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"OR" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/brown/visible{
+	dir = 8
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"Pp" = (
+/obj/machinery/atmospherics/components/binary/valve/digital{
+	dir = 4;
+	name = "Moderator Purge"
+	},
+/obj/structure/cable/white{
+	icon_state = "1-8"
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"PI" = (
+/obj/machinery/atmospherics/pipe/heat_exchanging/junction,
+/obj/machinery/atmospherics/pipe/heat_exchanging/junction/layer1,
+/obj/structure/lattice,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"Qr" = (
+/obj/machinery/atmospherics/pipe/simple/cyan/visible{
+	dir = 9
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"Qw" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-4"
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"QK" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/binary/pump{
+	dir = 8;
+	name = "Moderator to Reactor"
+	},
+/obj/structure/cable/white{
+	icon_state = "0-2"
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"Rn" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
+/obj/structure/closet/secure_closet/engineering_welding,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/machinery/airalarm{
+	pixel_y = 22
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"Sd" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"SV" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/turf/open/pool,
+/area/awaymission/PactDaivers)
+"SX" = (
+/obj/machinery/atmospherics/pipe/heat_exchanging/simple{
+	dir = 6
+	},
+/obj/machinery/atmospherics/pipe/heat_exchanging/simple/layer1{
+	dir = 6
+	},
+/obj/structure/lattice/catwalk,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"TF" = (
+/obj/item/fuel_rod,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 5
+	},
+/turf/open/pool,
+/area/awaymission/PactDaivers)
+"TP" = (
+/obj/structure/table/reinforced,
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/item/sealant,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 5
+	},
+/obj/item/sealant{
+	pixel_x = 4
+	},
+/obj/item/reagent_containers/food/snacks/pizzaslice/meat{
+	pixel_x = -1;
+	pixel_y = 12
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"Uf" = (
+/turf/open/floor/plasteel/dark,
+/area/awaymission/PactDaivers)
+"Ul" = (
+/turf/open/floor/plating,
+/area/awaymission/PactDaivers)
+"Up" = (
+/obj/machinery/atmospherics/components/binary/pump{
+	name = "Reactor to Cooling Loop"
+	},
+/obj/effect/turf_decal/stripes/yellow/line,
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"VC" = (
+/obj/machinery/door/poddoor/shutters{
+	id = "teleportcommand";
+	name = "Teleport Access"
+	},
+/turf/open/floor/plating,
+/area/awaymission/PactDaivers)
+"WD" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"XI" = (
+/obj/machinery/atmospherics/pipe/heat_exchanging/simple{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/heat_exchanging/simple/layer1{
+	dir = 4
+	},
+/obj/structure/lattice/catwalk,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+"XP" = (
+/obj/item/fuel_rod,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/structure/pool/ladder{
+	dir = 2;
+	pixel_y = 17
+	},
+/turf/open/pool,
+/area/awaymission/PactDaivers)
+"Ya" = (
+/obj/effect/turf_decal/stripes/yellow/line,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"Ys" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"Za" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/yellow/corner{
+	dir = 8
+	},
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"Zl" = (
+/obj/machinery/atmospherics/components/unary/portables_connector,
+/obj/machinery/portable_atmospherics/canister/nitrogen,
+/turf/open/floor/engine,
+/area/awaymission/PactDaivers)
+"Zm" = (
+/obj/item/fuel_rod,
+/obj/effect/turf_decal/stripes/yellow/line,
+/turf/open/pool,
+/area/awaymission/PactDaivers)
+"ZM" = (
+/obj/machinery/atmospherics/pipe/heat_exchanging/simple{
+	dir = 10
+	},
+/obj/machinery/atmospherics/pipe/heat_exchanging/simple/layer1{
+	dir = 10
+	},
+/obj/structure/lattice/catwalk,
+/turf/open/indestructible/ironsand,
+/area/awaymission/PactDaivers)
+
+(1,1,1) = {"
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+"}
+(2,1,1) = {"
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+Ab
+Ab
+xY
+xY
+Ab
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+"}
+(3,1,1) = {"
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+xY
+He
+iG
+JI
+Ab
+uX
+ho
+uX
+uX
+uX
+uX
+uX
+uX
+ho
+uX
+uX
+uX
+uX
+uX
+ho
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+"}
+(4,1,1) = {"
+uX
+uX
+uX
+aV
+aV
+aV
+uX
+uX
+uX
+uX
+uX
+uX
+xY
+Bq
+ND
+HL
+Ab
+qX
+cx
+cx
+cx
+cx
+BU
+cx
+cx
+cx
+lg
+uX
+uX
+uX
+uX
+uX
+uX
+aV
+aV
+aV
+uX
+uX
+uX
+uX
+"}
+(5,1,1) = {"
+uX
+uX
+aV
+MD
+Ab
+MD
+aV
+uX
+uX
+uX
+uX
+uX
+xY
+ev
+ND
+lP
+Ab
+nw
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+nw
+uX
+uX
+uX
+uX
+uX
+aV
+MD
+Ab
+MD
+aV
+uX
+uX
+uX
+"}
+(6,1,1) = {"
+uX
+uX
+aV
+Ab
+Ab
+Ab
+aV
+uX
+uX
+uX
+uX
+uX
+Ab
+Ab
+xb
+Ab
+Ab
+nw
+uX
+bc
+uX
+uX
+bc
+uX
+uX
+bc
+nw
+uX
+uX
+uX
+uX
+uX
+aV
+Ab
+Ab
+Ab
+aV
+uX
+uX
+uX
+"}
+(7,1,1) = {"
+uX
+uX
+aV
+MD
+Ab
+MD
+aV
+uX
+uX
+uX
+uX
+uX
+Lh
+Uf
+Uf
+Ab
+uX
+nw
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+nw
+uX
+uX
+uX
+uX
+uX
+aV
+MD
+Ab
+MD
+aV
+uX
+uX
+uX
+"}
+(8,1,1) = {"
+uX
+uX
+uX
+aV
+aV
+aV
+uX
+uX
+uX
+uX
+uX
+uX
+xb
+Uf
+Uf
+Ab
+uX
+nw
+uX
+bc
+uX
+uX
+bc
+uX
+uX
+bc
+nw
+uX
+uX
+uX
+uX
+uX
+uX
+aV
+aV
+aV
+uX
+uX
+uX
+uX
+"}
+(9,1,1) = {"
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+Ab
+VC
+VC
+Ab
+uX
+nw
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+nw
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+"}
+(10,1,1) = {"
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+Ab
+Ab
+mG
+mG
+Ab
+GD
+GD
+GD
+GD
+GD
+GD
+Ab
+Ab
+Ab
+Ab
+Ab
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+"}
+(11,1,1) = {"
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+Ab
+Fx
+Ul
+Ul
+Ab
+uX
+uX
+uX
+uX
+uX
+uX
+Ab
+uX
+Ab
+aV
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+"}
+(12,1,1) = {"
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+Ab
+Ab
+zP
+zP
+Ab
+nX
+nX
+nX
+nX
+nX
+nX
+Ab
+uX
+Ab
+aV
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+"}
+(13,1,1) = {"
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+Ab
+Ef
+Ul
+Ul
+Ab
+uX
+uX
+uX
+uX
+uX
+uX
+Ab
+uX
+aQ
+NR
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+"}
+(14,1,1) = {"
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+Ab
+Ab
+zP
+zP
+Ab
+DH
+DH
+DH
+DH
+DH
+DH
+Ab
+Ab
+Ab
+aV
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+"}
+(15,1,1) = {"
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+Ab
+aa
+oZ
+rQ
+Ab
+Ab
+kX
+Ab
+IE
+Mk
+Ab
+Ab
+Ab
+Ab
+aV
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+"}
+(16,1,1) = {"
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+Ab
+BS
+Hv
+kK
+CH
+mc
+pZ
+Qw
+Fc
+Ys
+Ya
+vH
+Im
+Ab
+aV
+SX
+mV
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+"}
+(17,1,1) = {"
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+Ab
+rn
+Hn
+lj
+yw
+Eu
+BH
+lw
+CP
+Dk
+nh
+Ys
+yh
+Ab
+aV
+XI
+XI
+uX
+uX
+uX
+ho
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+"}
+(18,1,1) = {"
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+Ab
+EC
+fl
+Dn
+yw
+Eu
+tK
+rR
+xN
+SV
+db
+Dk
+OE
+Mk
+aV
+XI
+XI
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+"}
+(19,1,1) = {"
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+Ab
+aa
+IO
+EW
+Kr
+Rn
+Sd
+Bl
+XP
+mT
+Zm
+Dk
+OE
+Mk
+NR
+XI
+XI
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+"}
+(20,1,1) = {"
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+Ab
+mE
+dx
+tn
+xa
+dE
+WD
+yr
+TF
+nf
+jG
+Dk
+OE
+Mk
+aV
+XI
+XI
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+"}
+(21,1,1) = {"
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+BF
+ht
+Kt
+qd
+rp
+ce
+Jz
+Mv
+pj
+Km
+pj
+rX
+Up
+gp
+PI
+MY
+XI
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+"}
+(22,1,1) = {"
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+Ab
+gI
+By
+Ej
+yE
+iw
+KG
+rL
+Dk
+WD
+Dk
+nx
+go
+gp
+PI
+mV
+XI
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+"}
+(23,1,1) = {"
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+BF
+aY
+Kd
+Eh
+jo
+Fg
+KA
+Mb
+nG
+fa
+Dk
+NJ
+OE
+Mk
+aV
+XI
+XI
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+"}
+(24,1,1) = {"
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+Ab
+LL
+Hz
+Id
+Ab
+QK
+Pp
+OE
+Dk
+sC
+Dk
+NJ
+OE
+Mk
+aV
+XI
+XI
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+"}
+(25,1,1) = {"
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+Ab
+NK
+KX
+cn
+sn
+xU
+OR
+Za
+Ys
+CM
+CN
+sg
+Fy
+Ab
+aV
+XI
+XI
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+"}
+(26,1,1) = {"
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+Ab
+xV
+zw
+fF
+Ab
+TP
+Bm
+Zl
+bA
+Qr
+Dk
+Dk
+OE
+Ab
+aV
+ZM
+MY
+uX
+uX
+uX
+ho
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+"}
+(27,1,1) = {"
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+Ab
+Ab
+Ab
+Ab
+Ab
+Ab
+kO
+Ab
+Mk
+Mk
+bn
+bn
+bn
+Ab
+uX
+uX
+uX
+aV
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+"}
+(28,1,1) = {"
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+aV
+uX
+uX
+NR
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+"}
+(29,1,1) = {"
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+"}
+(30,1,1) = {"
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+"}
+(31,1,1) = {"
+uX
+uX
+uX
+aV
+aV
+aV
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+"}
+(32,1,1) = {"
+uX
+uX
+aV
+MD
+Ab
+MD
+aV
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+aV
+aV
+aV
+uX
+uX
+uX
+uX
+"}
+(33,1,1) = {"
+uX
+uX
+aV
+Ab
+Ab
+Ab
+aV
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+aV
+MD
+Ab
+MD
+aV
+uX
+uX
+uX
+"}
+(34,1,1) = {"
+uX
+uX
+aV
+MD
+Ab
+MD
+aV
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+aV
+Ab
+Ab
+Ab
+aV
+uX
+uX
+uX
+"}
+(35,1,1) = {"
+uX
+uX
+uX
+aV
+aV
+aV
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+aV
+MD
+Ab
+MD
+aV
+uX
+uX
+uX
+"}
+(36,1,1) = {"
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+ho
+uX
+aV
+aV
+aV
+uX
+uX
+uX
+uX
+"}
+(37,1,1) = {"
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+"}
+(38,1,1) = {"
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+"}
+(39,1,1) = {"
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+"}
+(40,1,1) = {"
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+uX
+"}

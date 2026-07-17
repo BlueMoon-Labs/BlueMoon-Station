@@ -53,3 +53,11 @@ CHAOS_FOR_A_HARD_DYNAMIC 100
 
 # Минимальное количество Очков, которое потребуется для выбора Медиум-Динамика.
 CHAOS_FOR_A_MEDIUM_DYNAMIC 50
+
+## Спавн локаций (как в инженерке). Для landmark/stationroom/bluemoon/configurable.
+## Формат: DEPARTMENT_SPAWN_LOCATIONS "Имя шаблона",вес
+## Имена из datum/map_template/ruin/station (Maint X, Box SM, Shutters good integrity и т.д.)
+#DEPARTMENT_SPAWN_LOCATIONS Maint 2storage,3
+#DEPARTMENT_SPAWN_LOCATIONS Maint boxbedroom,2
+#DEPARTMENT_SPAWN_LOCATIONS Maint medicloset,2
+#DEPARTMENT_SPAWN_LOCATIONS Shutters good integrity,1

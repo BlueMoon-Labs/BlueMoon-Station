@@ -82,3 +82,13 @@ Unused icons for new areas are "awaycontent1" ~ "awaycontent30"
 	// ambience_index = AMBIENCE_AWAY
 	ambientsounds = AWAY_MISSION
 	sound_environment = SOUND_ENVIRONMENT_ROOM
+
+/area/awaymission/PactDaivers
+    name = "PactDaivers"
+    icon_state = "away"
+    has_gravity = STANDARD_GRAVITY
+    // ambience_index = AMBIENCE_AWAY
+    ambientsounds = AWAY_MISSION
+    sound_environment = SOUND_ENVIRONMENT_ROOM
+
+

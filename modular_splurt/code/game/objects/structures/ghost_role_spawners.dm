@@ -274,6 +274,7 @@
 
 	var/obj/item/implant/anchor/ghost_anchor = new
 	ghost_anchor.implant(new_spawn, null, TRUE)
+	GLOB.inteq_pact_siege.register_defender(new_spawn)
 
 /obj/effect/mob_spawn/human/inteqspace/hostage
 	name = "InteQ Hostage"
@@ -439,3 +440,14 @@
 	H.internal = H.get_item_for_held_index(1)
 	H.update_action_buttons_icon(1)
 
+/obj/effect/mob_spawn/human/inteqspace/captain/PactDaivers
+	name = "InteQ 1 arm Captain"
+	short_desc = "Вы -Глава Первой наступательной армии,что разворачивает авангард на одной из производственных плане."
+	flavour_text = "Большая часть сил Пакта на планете уже были подавлены,но вы видели летящие в небе шатлы."
+	important_info = "Не занимайтесь кемпингом точки спавна Экспедиторов и не пылесосьте карту.Да будет с вами генерал Браун."
+
+/obj/effect/mob_spawn/human/inteqspace/PactDaivers
+	name = "InteQ 1 arm Crew Member"
+	short_desc = "Вы - Оперативник  InteQ в составе первой наступательной армии."
+	flavour_text = "Вы член первой экспедеционной армии Интекью. Вы уже подавили большую часть местных войс и развенули часть своих баз,но в небе зияют двигатели челноков.Нужно быть на готове"
+	important_info = "Не занимайтесь кемпингом точки спавна Экспедиторов и не пылесосьте карту.Да будет с вами генерал Браун."
