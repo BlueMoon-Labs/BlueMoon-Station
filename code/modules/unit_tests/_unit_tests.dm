@@ -171,6 +171,7 @@
 #endif
 
 /// BLUEMOON TESTS
+#include "admin_log_viewer.dm"
 #include "atom_hud_perf.dm"
 
 #include "auto_cryo.dm"

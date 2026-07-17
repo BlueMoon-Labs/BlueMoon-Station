@@ -4594,6 +4594,8 @@
 #include "modular_bluemoon\code\modules\admin\admin_ticket_stats_panel.dm"
 #include "modular_bluemoon\code\modules\admin\tetris_records.dm"
 #include "modular_bluemoon\code\modules\admin\tgs_metadollars.dm"
+#include "modular_bluemoon\code\modules\admin\log_viewer\log_viewer_io.dm"
+#include "modular_bluemoon\code\modules\admin\log_viewer\log_viewer_panel.dm"
 #include "modular_bluemoon\code\modules\admin\code\player_ranks.dm"
 #include "modular_bluemoon\code\modules\admin\verbs\loud_say.dm"
 #include "modular_bluemoon\code\modules\admin\verbs\one_click_antag.dm"
