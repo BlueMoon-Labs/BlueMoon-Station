@@ -289,6 +289,7 @@
 	item_state = "abibas_back"
 
 /obj/item/modkit/white_belt_kit
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "White security belt Kit"
 	desc = "A modkit for making a brig officer webbing into a White security belt."
 	product = /obj/item/storage/belt/security/webbing/ds/lapkee_belt
@@ -311,9 +312,6 @@
 /obj/item/melee/baton/stunsword/get_belt_overlay()
 	if(istype(loc, /obj/item/storage/belt/security/webbing/ds/lapkee_belt))
 		return mutable_appearance('modular_bluemoon/fluffs/icons/obj/clothing/belts.dmi',"lapkee_stunsword")
-
-	if(istype(loc, /obj/item/storage/belt/sabre))
-		return mutable_appearance('icons/obj/clothing/belt_overlays.dmi', "stunsword")
 
 	return ..()
 
