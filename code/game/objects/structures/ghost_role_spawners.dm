@@ -515,6 +515,7 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 	head = /obj/item/clothing/head/helmet/blueshirt
 	back = /obj/item/storage/backpack/security
 	belt = /obj/item/storage/belt/security/full
+	id = /obj/item/card/id/away/hotel/securty
 	backpack_contents = list(/obj/item/storage/ifak, /obj/item/storage/box/sec_kit,
 						/obj/item/gun/ballistic/automatic/pistol/enforcer/nomag,
 						/obj/item/ammo_box/magazine/e45/taser=3
