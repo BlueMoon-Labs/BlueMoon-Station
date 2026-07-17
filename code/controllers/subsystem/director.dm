@@ -191,6 +191,10 @@ SUBSYSTEM_DEF(director)
 	// к ~25 минуте, а тяжёлые ступени голодали часами. Аванс раскладывается по долям профиля
 	// ПОСЛЕ конфига (доли могли быть переопределены) и просто сдвигает первую половину часа.
 	distribute_to_budgets(profile.initial_grant)
+	// Аванс антаг-кошельков поверх общей доли: дефицит-капля при живых, но тихих
+	// раундстартерах набирала первую гост-роль только к ~25-й минуте (прод-раунд) -
+	// аванс сдвигает первый гост-контент к открытию его earliest_start.
+	feed_antag_pools(profile.antag_initial_grant)
 
 /datum/controller/subsystem/director/fire(resumed = FALSE)
 	if(!resumed)
@@ -303,10 +307,12 @@ SUBSYSTEM_DEF(director)
 			continue
 		// Затухание по возрасту, как у рулсетов: часовой токен-антаг оседает к полу так же,
 		// как старый раундстарт. Точка отсчёта штампуется при первой встрече (с точностью
-		// до бита совпадает с выдачей роли).
-		if(!antag_mind.director_untracked_since)
-			antag_mind.director_untracked_since = now()
-		var/decay = ruleset_intensity_decay(antag_mind.director_untracked_since)
+		// до бита совпадает с выдачей роли); симулятор (time_override) живой mind не трогает -
+		// оффлайн-прогон записывал бы в раунд будущие таймштампы.
+		var/untracked_since = antag_mind.director_untracked_since || now()
+		if(!antag_mind.director_untracked_since && !time_override)
+			antag_mind.director_untracked_since = untracked_since
+		var/decay = ruleset_intensity_decay(untracked_since)
 		total += DIRECTOR_UNTRACKED_ANTAG_INTENSITY * decay * antag_activity_mult(antag_mind)
 		names += antag_mind.current.real_name || antag_mind.name
 	if(total && !isnull(breakdown))
@@ -793,6 +799,9 @@ SUBSYSTEM_DEF(director)
 		"hard_minds" = hard_minds,
 		"mobs" = mob_refs,
 		"refund_values" = refund_values,
+		// Точка отсчёта возрастного затухания вклада (см. get_ghost_role_intensity):
+		// гост-команда оседает к полу так же, как старый рулсет или токен-антаг.
+		"at" = now(),
 	))
 	confirm_action_success(action)
 	pool_cache = null
@@ -816,6 +825,10 @@ SUBSYSTEM_DEF(director)
 
 /// Живая нагрузка ghost-role событий. only_antag: null = все для общего intensity,
 /// TRUE = только ANTAG/GHOST для клапана антагов, FALSE = только видимые не-антаг события.
+/// Антаг-команды считаются как рулсеты: возрастное затухание, множитель активности и
+/// скидка за отсутствие на станции - улетевшие с лутом рейдеры не держат полные 45
+/// нагрузки до конца смены (прод-раунд: 30 минут запертых антаг-каналов). Не-антаг
+/// гост-роли (мирные спавнеры) считаются по-старому: живые головы без модификаторов.
 /datum/controller/subsystem/director/proc/get_ghost_role_intensity(list/live_names = null, list/breakdown = null, only_antag = null, list/counted_minds = null)
 	var/total = 0
 	for(var/i = length(live_ghost_role_spawns), i >= 1, i--)
@@ -824,8 +837,10 @@ SUBSYSTEM_DEF(director)
 		var/list/hard_minds = entry["hard_minds"]
 		var/list/mob_refs = entry["mobs"]
 		var/list/refund_values = entry["refund_values"]
+		var/is_antag = DIRECTOR_IS_ANTAG_POOL(entry["severity"])
 		var/assigned = length(minds) + length(mob_refs)
 		var/living = 0
+		var/presence_sum = 0
 		var/refund = 0
 		var/lost_count = 0
 		for(var/datum/mind/assigned_mind as anything in minds)
@@ -839,6 +854,8 @@ SUBSYSTEM_DEF(director)
 					refund += antag_loss_refund_value(policy, assigned_mind.director_activity_total)
 				continue
 			living++
+			if(is_antag)
+				presence_sum += ghost_member_presence(current) * antag_activity_mult(assigned_mind)
 			// Дедуп для get_untracked_antag_intensity: разум, уже посчитанный как живая гост-роль,
 			// не должен всплыть повторно третьим источником через GLOB.antagonists.
 			if(!isnull(counted_minds))
@@ -847,6 +864,8 @@ SUBSYSTEM_DEF(director)
 			var/mob/current = mob_ref.resolve()
 			if(current && current.stat != DEAD)
 				living++
+				if(is_antag)
+					presence_sum += ghost_member_presence(current)
 				continue
 			var/list/policy = refund_values?[mob_ref]
 			if(islist(policy))
@@ -857,16 +876,44 @@ SUBSYSTEM_DEF(director)
 		if(!assigned || !living)
 			live_ghost_role_spawns.Cut(i, i + 1)
 			continue
-		var/is_antag = DIRECTOR_IS_ANTAG_POOL(entry["severity"])
 		if(!isnull(only_antag) && is_antag != only_antag)
 			continue
-		var/amount = entry["intensity"] * living / assigned
+		var/amount
+		if(is_antag)
+			var/decay = ruleset_intensity_decay(entry["at"] || SSticker.round_start_time)
+			amount = entry["intensity"] * decay * presence_sum / assigned
+		else
+			amount = entry["intensity"] * living / assigned
 		total += amount
 		if(!isnull(breakdown))
 			breakdown += list(list(entry["name"], amount, living, assigned))
 		if(!isnull(live_names))
 			live_names[entry["name"]] = TRUE
 	return total
+
+/// Вес присутствия члена гост-команды: на станции - полный, вне её - половина.
+/// Симметрия с untracked-антагами: команда, улетевшая с лутом, давит на клапан
+/// вполсилы, а не наравне с живыми на станции угрозами.
+/datum/controller/subsystem/director/proc/ghost_member_presence(mob/member)
+	var/turf/location = get_turf(member)
+	if(location && is_station_level(location.z))
+		return 1
+	return DIRECTOR_OFFSTATION_ANTAG_MULT
+
+/// Тяжёлые антаг-команды (antag_heavy) покупаются только в достаточно пустой раунд:
+/// живая нагрузка не выше antag_heavy_load_fraction цели профиля.
+/datum/controller/subsystem/director/proc/antag_heavy_load_blocked(load, target)
+	return target > 0 && load > target * profile.antag_heavy_load_fraction
+
+/// Реальный контент для таймера тишины: то, что игроки замечают как "что-то происходит".
+/// Флейвор и филлер не считались и раньше; MINOR без intensity (лотерея, бумажные события)
+/// тоже не повод молчать гарантии - прод-раунд забивал таймер тишины Money Lottery.
+/datum/controller/subsystem/director/proc/is_real_content(datum/director_action/action)
+	if(action.filler || action.severity == DIRECTOR_SEVERITY_FLAVOR)
+		return FALSE
+	if(action.severity == DIRECTOR_SEVERITY_MINOR)
+		return action.intensity > 0
+	return TRUE
 
 /// Регистрация вклада intensity. expires_at = 0 означает "снимется вручную по завершении".
 /datum/controller/subsystem/director/proc/add_intensity(source_name, amount, duration = 0)
@@ -905,11 +952,16 @@ SUBSYSTEM_DEF(director)
 	// filter_candidates: фильтр зовётся и оценкой пула для панели, план - только боевым битом.
 	ensure_pool_targets(signals)
 	var/guaranteed = FALSE
+	var/guaranteed_ghost = FALSE
 	// Тишина меряется по РЕАЛЬНОМУ контенту (не флейвор и не филлер: капающая раз в 5 минут
 	// аврора или "Nothing" не должны бесконечно откладывать гарантию) и по ВИДИМОЙ нагрузке
 	// (event_intensity: живые стелс-антаги дают intensity, но игрокам ничего не видно).
 	if(!forced && (now() - last_real_fired_at) > profile.max_quiet_time && signals.event_intensity < profile.quiet_intensity_threshold)
 		guaranteed = TRUE
+		// Затянувшаяся тишина при пустых антаг-каналах: одними MINOR/MODERATE раунд не оживить,
+		// если антагов почти нет. После двойного порога тишины и при дефиците нагрузки >= 50%
+		// гарантированный бит может купить и гост-роль (бюджет для неё честный, см. filter).
+		guaranteed_ghost = (now() - last_real_fired_at) > profile.max_quiet_time * 2 && last_antag_deficit >= 0.5
 	// Глобальная пауза: что-то только что стреляло - бит простаивает целиком, чтобы легальные по
 	// ступенчатым паузам очереди "moderate + minor + flavor за четыре минуты" не собирались.
 	// Гарантированный бит по определению после долгого затишья, форс админа - осознанное решение.
@@ -920,7 +972,7 @@ SUBSYSTEM_DEF(director)
 		director_log_beat(signals, null, DIRECTOR_BEAT_IDLE, global_stats)
 		return DIRECTOR_BEAT_IDLE
 	var/list/reject_stats = list()
-	var/list/candidates = filter_candidates(signals, guaranteed, reject_stats)
+	var/list/candidates = filter_candidates(signals, guaranteed, reject_stats, allow_ghost_guarantee = guaranteed_ghost)
 	if(!dry_run)
 		last_reject_stats = reject_stats
 	if(!length(candidates))
@@ -948,12 +1000,13 @@ SUBSYSTEM_DEF(director)
 		announce_pick(picked, candidates, guaranteed, signals)
 	return guaranteed ? DIRECTOR_BEAT_GUARANTEED : DIRECTOR_BEAT_FIRED
 
-/// Отбор кандидатов с фильтрами темпа. guaranteed: только MINOR/MODERATE, бюджет игнорируется.
+/// Отбор кандидатов с фильтрами темпа. guaranteed: только MINOR/MODERATE, бюджет игнорируется
+/// (allow_ghost_guarantee дополнительно открывает GHOST - с честным гейтом кошелька).
 /// reject_stats (опционально): сюда считается отсев severity -> (DIRECTOR_REJECT_* -> число действий),
 /// структурные пропуски (латеджойн-рулсеты, чужие ступени guaranteed-бита) не считаются.
 /// verdicts (опционально, для панели): по-действийный вердикт на КАЖДОЕ действие, включая
 /// структурные пропуски; у прошедших эффективный вес лежит в "eff_weight".
-/datum/controller/subsystem/director/proc/filter_candidates(datum/director_signals/signals, guaranteed = FALSE, list/reject_stats = null, list/verdicts = null)
+/datum/controller/subsystem/director/proc/filter_candidates(datum/director_signals/signals, guaranteed = FALSE, list/reject_stats = null, list/verdicts = null, allow_ghost_guarantee = FALSE)
 	var/list/result = list()
 	var/intensity_full = signals.active_intensity >= profile.intensity_cap
 	var/active_majors = count_active_majors()
@@ -983,7 +1036,7 @@ SUBSYSTEM_DEF(director)
 		if(istype(action, /datum/dynamic_ruleset/latejoin))
 			note_reject(null, verdicts, action, DIRECTOR_VERDICT_LATEJOIN)
 			continue
-		if(guaranteed && !(sev in list(DIRECTOR_SEVERITY_MINOR, DIRECTOR_SEVERITY_MODERATE)))
+		if(guaranteed && !(sev in list(DIRECTOR_SEVERITY_MINOR, DIRECTOR_SEVERITY_MODERATE)) && !(allow_ghost_guarantee && sev == DIRECTOR_SEVERITY_GHOST))
 			continue
 		// Гарантированный бит случается после долгой тишины - филлер-пустышка там не ответ.
 		// Структурный пропуск без учёта в reject_stats: панель оценивает пул не-гарантированным путём.
@@ -1008,6 +1061,13 @@ SUBSYSTEM_DEF(director)
 		if(action.antag_heavy && !profile.antag_heavy_enabled)
 			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_ANTAG_HEAVY,
 				detail = isnull(verdicts) ? null : "профиль без тяжёлых антагов")
+			continue
+		// Тяжёлая команда - главное блюдо пустого раунда, а не довесок к заполненному:
+		// рейдеры с intensity 45, купленные в запас 9.8 (прод-раунд), пробили цель почти
+		// вдвое и заперли антаг-каналы гейтом насыщения до конца смены.
+		if(action.antag_heavy && DIRECTOR_IS_ANTAG_POOL(sev) && antag_heavy_load_blocked(antag_load_now, antag_target_now))
+			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_ANTAG_HEADROOM,
+				detail = isnull(verdicts) ? null : "нагрузка [round(antag_load_now)] при пороге [round(antag_target_now * profile.antag_heavy_load_fraction)]")
 			continue
 		if(sev == DIRECTOR_SEVERITY_MAJOR && active_majors >= profile.max_active_major)
 			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_MAJOR_CAP,
@@ -1041,8 +1101,9 @@ SUBSYSTEM_DEF(director)
 				detail = action.director_preflight_failure || "внутренняя проверка ready() не пройдена")
 			continue
 		// Гейт по кошельку своей ступени, а не по общему бюджету: MAJOR/ANTAG больше не голодают
-		// из-за трат дешёвых MINOR/MODERATE.
-		if(!guaranteed && budgets[action.severity] < action.cost)
+		// из-за трат дешёвых MINOR/MODERATE. Гарантия игнорирует кошелёк только для событийных
+		// ступеней: гост-роль из гарантии тишины всё равно оплачивается честно.
+		if((!guaranteed || DIRECTOR_IS_ANTAG_POOL(sev)) && budgets[action.severity] < action.cost)
 			note_reject(reject_stats, verdicts, action, DIRECTOR_REJECT_BUDGET,
 				detail = isnull(verdicts) ? null : "[round(budgets[sev], 0.1)] из [action.cost]")
 			continue
@@ -1053,7 +1114,8 @@ SUBSYSTEM_DEF(director)
 		if(!guaranteed && DIRECTOR_IS_ANTAG_POOL(sev))
 			var/datum/director_action/saving_for = pool_saving[sev]
 			if(saving_for && saving_for != action)
-				var/target_waiting = !spacing_allows(saving_for) || family_spacing_remaining(saving_for) > 0 || (dead_crisis && saving_for.antag_heavy)
+				var/target_waiting = !spacing_allows(saving_for) || family_spacing_remaining(saving_for) > 0 || (dead_crisis && saving_for.antag_heavy) \
+					|| (saving_for.antag_heavy && antag_heavy_load_blocked(antag_load_now, antag_target_now))
 				var/other_track = saving_for.antag_heavy != action.antag_heavy
 				var/free_budget = max(0, budgets[sev] - saving_for.cost)
 				if(!target_waiting || !other_track || free_budget < action.cost)
@@ -1077,6 +1139,11 @@ SUBSYSTEM_DEF(director)
 		action_weight *= share_correction(sev)
 		action_weight *= repeat_falloff(action)
 		action_weight *= disruption_mult
+		// Запас цели: лёгкая антаг-покупка, не влезающая в остаток (headroom / intensity),
+		// сильно уступает влезающим - директор докупает по размеру свободного места,
+		// а не по каталогу, и не перепрыгивает цель одним махом.
+		if(DIRECTOR_IS_ANTAG_POOL(sev) && !action.antag_heavy && action.intensity > 0 && antag_target_now > 0)
+			action_weight *= clamp((antag_target_now - antag_load_now) / action.intensity, DIRECTOR_HEADROOM_WEIGHT_FLOOR, 1)
 		if(action_weight > 0)
 			var/weighted = max(1, round(action_weight * 100))
 			result[action] = weighted
@@ -1459,9 +1526,9 @@ SUBSYSTEM_DEF(director)
 		last_latejoin_at = now()
 	else
 		last_any_fired_at = now()
-		// Таймер тишины гарантированного бита двигает только реальный контент: флейвор и филлер
-		// не считаются "чем-то происходящим" (см. run_beat).
-		if(action.severity != DIRECTOR_SEVERITY_FLAVOR && !action.filler)
+		// Таймер тишины гарантированного бита двигает только реальный контент (см. is_real_content):
+		// флейвор, филлер и MINOR без intensity не считаются "чем-то происходящим".
+		if(is_real_content(action))
 			last_real_fired_at = now()
 		// Доли ступеней (share_correction) считаются по решениям битов: латеджойн-канал не должен
 		// "перегонять" ступень ANTAG в счётчике и штрафовать её вес в самих битах.
@@ -1530,7 +1597,9 @@ SUBSYSTEM_DEF(director)
 	// Хотим ли тратиться на антага: живая антаг-нагрузка ниже цели профиля (crew * per_crew,
 	// та же валюта, что дефицит-капля и гейт насыщения в битах). Нагрузка считается по ОБЕИМ
 	// антаг-ступеням: латеджойн-инжекция отвечает на общий дефицит антагонистов.
-	if(antag_load() >= antag_target(signals.effective_crew))
+	var/antag_load_now = antag_load()
+	var/antag_target_now = antag_target(signals.effective_crew)
+	if(antag_load_now >= antag_target_now)
 		return
 	// Защита копилки: латеджойн живёт из того же кошелька ANTAG, что и биты, но не должен
 	// перебивать выбранный план. Полная стоимость цели неприкосновенна; латеджойн тратит
@@ -1546,12 +1615,19 @@ SUBSYSTEM_DEF(director)
 			continue
 		if(rule.antag_heavy && !profile.antag_heavy_enabled)
 			continue
+		// Тяжёлый латеджойн ждёт пустой раунд так же, как тяжёлая покупка в бите.
+		if(rule.antag_heavy && antag_heavy_load_blocked(antag_load_now, antag_target_now))
+			continue
 		if(budgets[rule.severity] - rule.cost < reserve || !rule.can_fire(signals))
 			continue
 		rule.candidates = list(newPlayer)
 		rule.trim_candidates()
 		if(rule.ready())
-			candidates[rule] = max(1, round(rule.get_weight(signals) * repeat_falloff(rule) * 100))
+			var/rule_weight = rule.get_weight(signals) * repeat_falloff(rule)
+			// Тот же headroom-вес, что в битах: инжекция по размеру свободного места.
+			if(!rule.antag_heavy && rule.intensity > 0 && antag_target_now > 0)
+				rule_weight *= clamp((antag_target_now - antag_load_now) / rule.intensity, DIRECTOR_HEADROOM_WEIGHT_FLOOR, 1)
+			candidates[rule] = max(1, round(rule_weight * 100))
 	if(!length(candidates))
 		return
 	var/datum/dynamic_ruleset/latejoin/picked = pickweight(candidates)

@@ -1273,6 +1273,9 @@
 
 		var/datum/director_action/test_stub/real_action = new
 		real_action.cost = 5
+		// "Реальный" для таймера тишины MINOR обязан нести intensity: лотереи и бумажные
+		// события с нулевым вкладом больше не маскируют мёртвый эфир (см. is_real_content).
+		real_action.intensity = 5
 		SSdirector.actions = list(real_action)
 
 		var/datum/director_signals/signals = new
@@ -2258,7 +2261,9 @@
 	SSdirector.restore_simulation_state(saved)
 
 /// Статический linger Spawn Slaughter Demon раньше держал 30 intensity ещё десятки минут после
-/// смерти. Живая группа должна дать полный вклад при жизни и исчезнуть сразу после смерти моба.
+/// смерти. Живая группа должна дать вклад при жизни и исчезнуть сразу после смерти моба.
+/// Свежая тихая роль на станции весит intensity * DIRECTOR_ACTIVITY_MULT_MIN: гост-команды
+/// считаются как рулсеты (активность/присутствие/затухание), тест-зона живёт на reserved z.
 /datum/unit_test/director_ghost_role_intensity_tracks_life
 
 /datum/unit_test/director_ghost_role_intensity_tracks_life/Run()
@@ -2268,14 +2273,18 @@
 		SSdirector.reset_budgets(0)
 		var/datum/round_event_control/slaughter/control = locate() in SSdirector.actions
 		TEST_ASSERT_NOTNULL(control, "Spawn Slaughter Demon должен быть зарегистрирован у директора")
+		var/list/station_levels = SSmapping.levels_by_trait(ZTRAIT_STATION)
+		TEST_ASSERT(length(station_levels), "В тестовом мире нет станционного z-уровня")
+		var/turf/station_turf = locate(round(world.maxx / 2), round(world.maxy / 2), station_levels[1])
 		var/mob/living/carbon/human/spawned = allocate(/mob/living/carbon/human)
 		spawned.mind_initialize()
+		spawned.forceMove(station_turf)
 		SSdirector.actions = list(control)
 		SSdirector.intensity_ledger = list(list(control.action_name(), control.intensity, 0, control.severity))
 		SSdirector.live_ghost_role_spawns = list()
 		TEST_ASSERT(SSdirector.track_ghost_role_spawn(control, list(spawned), budget_backed = TRUE, log_execution = FALSE), "Успешный гост-спаун должен перейти на живой трекинг")
 		TEST_ASSERT_EQUAL(length(SSdirector.intensity_ledger), 0, "Статический мост должен сниматься после реального спауна")
-		TEST_ASSERT_EQUAL(SSdirector.get_active_intensity(), control.intensity, "Живой демон должен давать полный настроенный вклад")
+		TEST_ASSERT_EQUAL(SSdirector.get_active_intensity(), control.intensity * DIRECTOR_ACTIVITY_MULT_MIN, "Живой тихий демон на станции должен давать вклад с множителем тихони")
 		spawned.stat = DEAD
 		TEST_ASSERT_EQUAL(SSdirector.get_active_intensity(), 0, "Мёртвый демон не должен занимать intensity")
 		TEST_ASSERT_EQUAL(length(SSdirector.live_ghost_role_spawns), 0, "Пустая живая группа должна удаляться")
@@ -2288,12 +2297,13 @@
 		// освободить intensity; budget_backed = FALSE не должен удерживать живого бывшего антага.
 		var/mob/living/carbon/human/unbacked = allocate(/mob/living/carbon/human)
 		unbacked.mind_initialize()
+		unbacked.forceMove(station_turf)
 		var/datum/antagonist/unbacked_marker = new
 		unbacked_marker.silent = TRUE
 		unbacked.mind.add_antag_datum(unbacked_marker)
 		SSdirector.intensity_ledger = list(list(control.action_name(), control.intensity, 0, control.severity))
 		TEST_ASSERT(SSdirector.track_ghost_role_spawn(control, list(unbacked), budget_backed = FALSE, log_execution = FALSE), "Незастрахованный гост-спаун тоже должен перейти на живой трекинг")
-		TEST_ASSERT_EQUAL(SSdirector.get_active_intensity(), control.intensity, "Живая незастрахованная роль должна давать intensity")
+		TEST_ASSERT_EQUAL(SSdirector.get_active_intensity(), control.intensity * DIRECTOR_ACTIVITY_MULT_MIN, "Живая незастрахованная роль должна давать intensity с множителем тихони")
 		unbacked.mind.remove_antag_datum(unbacked_marker.type)
 		TEST_ASSERT_EQUAL(SSdirector.get_active_intensity(), 0, "Снятая незастрахованная роль не должна продолжать давать intensity")
 		TEST_ASSERT_EQUAL(length(SSdirector.live_ghost_role_spawns), 0, "Группа без оставшихся hard-antag ролей должна удаляться")
@@ -2305,6 +2315,7 @@
 
 /// Swarmers и командные события завершают первичное действие до фактического занятия роли.
 /// Поздний spawn обязан убрать даже уже истекающий статический мост рулсета и жить по мобу.
+/// Тихая роль на станции весит intensity * DIRECTOR_ACTIVITY_MULT_MIN (см. tracks_life выше).
 /datum/unit_test/director_deferred_ruleset_spawn_tracks_life
 
 /datum/unit_test/director_deferred_ruleset_spawn_tracks_life/Run()
@@ -2313,14 +2324,17 @@
 		SSdirector.profile = new /datum/director_profile/medium
 		SSdirector.reset_budgets(0)
 		var/datum/dynamic_ruleset/midround/swarmers/rule = new
+		var/list/station_levels = SSmapping.levels_by_trait(ZTRAIT_STATION)
+		TEST_ASSERT(length(station_levels), "В тестовом мире нет станционного z-уровня")
 		var/mob/living/carbon/human/spawned = allocate(/mob/living/carbon/human)
 		spawned.mind_initialize()
+		spawned.forceMove(locate(round(world.maxx / 2), round(world.maxy / 2), station_levels[1]))
 		SSdirector.actions = list(rule)
 		SSdirector.intensity_ledger = list(list(rule.action_name(), rule.intensity, world.time + 10 MINUTES, rule.severity))
 		SSdirector.live_ghost_role_spawns = list()
 		TEST_ASSERT(SSdirector.track_ghost_role_spawn(rule, list(spawned), budget_backed = TRUE, log_execution = FALSE), "Поздняя роль рулсета должна перейти на живой трекинг")
 		TEST_ASSERT_EQUAL(length(SSdirector.intensity_ledger), 0, "Живой spawn должен снять истекающий прогнозный мост рулсета")
-		TEST_ASSERT_EQUAL(SSdirector.get_active_intensity(), rule.intensity, "Живая поздняя роль должна давать полную intensity действия")
+		TEST_ASSERT_EQUAL(SSdirector.get_active_intensity(), rule.intensity * DIRECTOR_ACTIVITY_MULT_MIN, "Живая тихая поздняя роль должна давать intensity с множителем тихони")
 		spawned.stat = DEAD
 		TEST_ASSERT_EQUAL(SSdirector.get_active_intensity(), 0, "После смерти поздняя роль не должна занимать intensity")
 		var/antag_wallets = SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG] + SSdirector.budgets[DIRECTOR_SEVERITY_GHOST]
@@ -2773,3 +2787,227 @@
 		throw e
 	qdel(heretic_rule)
 	qdel(changeling_rule)
+
+/// Гост-команды затухают по возрасту, а вне станции давят вполсилы: улетевшие с лутом
+/// рейдеры (прод-раунд: 45 нагрузки до конца смены) больше не запирают антаг-каналы
+/// навсегда. Слежение через weakref-моба - без множителя активности, детерминированно.
+/datum/unit_test/director_ghost_spawn_decay
+
+/datum/unit_test/director_ghost_spawn_decay/Run()
+	// Мутирует живой SSdirector - capture/restore c try/catch (см. director_beat_logic).
+	var/list/saved = SSdirector.capture_simulation_state()
+	try
+		SSdirector.profile = new /datum/director_profile/medium
+		SSdirector.actions = list()
+		SSdirector.intensity_ledger = list()
+		SSdirector.live_ghost_role_spawns = list()
+		var/list/station_levels = SSmapping.levels_by_trait(ZTRAIT_STATION)
+		TEST_ASSERT(length(station_levels), "В тестовом мире нет станционного z-уровня")
+		var/turf/station_turf = locate(round(world.maxx / 2), round(world.maxy / 2), station_levels[1])
+		var/mob/living/carbon/human/raider = allocate(/mob/living/carbon/human)
+		// Тест-зона живёт на reserved z (не станция): прямая проверка веса присутствия.
+		TEST_ASSERT_EQUAL(SSdirector.ghost_member_presence(raider), DIRECTOR_OFFSTATION_ANTAG_MULT,
+			"Вне станции член гост-команды должен давить вполсилы")
+		raider.forceMove(station_turf)
+		TEST_ASSERT_EQUAL(SSdirector.ghost_member_presence(raider), 1, "На станции член гост-команды даёт полный вес")
+
+		SSdirector.live_ghost_role_spawns = list(list(
+			"name" = "Test Ghost Team",
+			"intensity" = 40,
+			"severity" = DIRECTOR_SEVERITY_GHOST,
+			"minds" = list(),
+			"hard_minds" = list(),
+			"mobs" = list(WEAKREF(raider)),
+			"refund_values" = list(),
+			"at" = SSticker.round_start_time,
+		))
+		// Свежая команда на станции - полный вклад.
+		SSdirector.time_override = SSticker.round_start_time + 1 MINUTES
+		TEST_ASSERT_EQUAL(SSdirector.get_ghost_role_intensity(only_antag = TRUE), 40,
+			"Свежая гост-команда на станции обязана давать полную intensity")
+		// Старая команда оседает к полу затухания, как рулсет.
+		SSdirector.time_override = SSticker.round_start_time + 150 MINUTES
+		TEST_ASSERT_EQUAL(SSdirector.get_ghost_role_intensity(only_antag = TRUE), 40 * DIRECTOR_RULESET_DECAY_FLOOR,
+			"Старая гост-команда обязана затухать к полу, как рулсет")
+		// Команда улетела со станции - вклад вполсилы.
+		SSdirector.time_override = SSticker.round_start_time + 1 MINUTES
+		raider.forceMove(run_loc_floor_bottom_left)
+		TEST_ASSERT_EQUAL(SSdirector.get_ghost_role_intensity(only_antag = TRUE), 40 * DIRECTOR_OFFSTATION_ANTAG_MULT,
+			"Улетевшая гост-команда обязана давить вполсилы")
+	catch(var/exception/e)
+		SSdirector.time_override = 0
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	SSdirector.time_override = 0
+	SSdirector.restore_simulation_state(saved)
+
+/// Гейты запаса цели: тяжёлая команда покупается только в достаточно пустой раунд,
+/// а лёгкая роль теряет вес пропорционально нехватке места (прод-раунд: рейдеры 45
+/// в запас 9.8 пробили цель почти вдвое и заперли антаг-каналы до конца смены).
+/datum/unit_test/director_antag_headroom
+
+/datum/unit_test/director_antag_headroom/Run()
+	// Мутирует живой SSdirector - capture/restore c try/catch (см. director_beat_logic).
+	var/list/saved = SSdirector.capture_simulation_state()
+	try
+		var/datum/director_profile/medium/profile = new
+		SSdirector.profile = profile
+		SSdirector.reset_budgets(100)
+		SSdirector.intensity_ledger = list()
+		SSdirector.live_ghost_role_spawns = list()
+		SSdirector.fired_counts = list()
+		SSdirector.pool_saving = list()
+		SSdirector.last_fired_at = list(
+			DIRECTOR_SEVERITY_GHOST = world.time - profile.ghost_light_spacing - 1,
+		)
+		SSdirector.last_ghost_heavy_at = world.time - profile.ghost_heavy_spacing - 1
+
+		var/datum/director_action/test_stub/heavy_team = new
+		heavy_team.severity = DIRECTOR_SEVERITY_GHOST
+		heavy_team.antag_heavy = TRUE
+		heavy_team.intensity = 45
+		var/datum/director_action/test_stub/light_control = new
+		light_control.severity = DIRECTOR_SEVERITY_GHOST
+		light_control.intensity = 0 // без intensity headroom-вес не применяется - контроль
+		var/datum/director_action/test_stub/light_big = new
+		light_big.severity = DIRECTOR_SEVERITY_GHOST
+		light_big.intensity = 40 // не влезает в остаток цели - вес у пола
+		SSdirector.actions = list(heavy_team, light_control, light_big)
+
+		var/datum/director_signals/signals = new
+		signals.effective_crew = 40 // цель Medium = 60, порог heavy = 30
+		signals.staffing = list(DIRECTOR_DEPT_SECURITY = 4, DIRECTOR_DEPT_ENGINEERING = 1,
+			DIRECTOR_DEPT_MEDICAL = 1, DIRECTOR_DEPT_SCIENCE = 0, DIRECTOR_DEPT_SUPPLY = 0, DIRECTOR_DEPT_COMMAND = 1)
+
+		// Дельта от живой базы CI-раунда: нужную нагрузку доводим мостом в ledger.
+		var/base_load = SSdirector.antag_load()
+		TEST_ASSERT(base_load < 20, "База CI-раунда неожиданно нагружена ([base_load]) - тест недостоверен")
+		// Нагрузка 40: выше порога heavy (30), ниже цели (60) - heavy отсечён, лёгкие живы.
+		SSdirector.intensity_ledger = list(list("Тестовый мост нагрузки", 40 - base_load, 0, DIRECTOR_SEVERITY_GHOST))
+		var/list/reject_stats = list()
+		var/list/candidates = SSdirector.filter_candidates(signals, FALSE, reject_stats)
+		TEST_ASSERT(!(heavy_team in candidates), "Тяжёлая команда при нагрузке выше порога не должна быть кандидатом")
+		var/list/ghost_rejects = reject_stats[DIRECTOR_SEVERITY_GHOST]
+		TEST_ASSERT(islist(ghost_rejects) && ghost_rejects[DIRECTOR_REJECT_ANTAG_HEADROOM],
+			"Отсев тяжёлой команды обязан значиться причиной antag_headroom")
+		TEST_ASSERT(light_control in candidates, "Лёгкая роль без intensity обязана остаться кандидатом")
+		TEST_ASSERT(light_big in candidates, "Лёгкая роль с большой intensity остаётся кандидатом (вес у пола, не отсев)")
+		TEST_ASSERT(candidates[light_big] < candidates[light_control],
+			"Не влезающая в запас роль обязана весить меньше контрольной")
+		// Пустой раунд: heavy возвращается в кандидаты.
+		SSdirector.intensity_ledger = list()
+		candidates = SSdirector.filter_candidates(signals)
+		TEST_ASSERT(heavy_team in candidates, "В пустом раунде тяжёлая команда обязана вернуться в кандидаты")
+	catch(var/exception/e)
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	SSdirector.restore_simulation_state(saved)
+
+/// Гарантия после двойной тишины при дефиците антагов может купить гост-роль,
+/// но только за честную цену из кошелька GHOST - бесплатных антагов гарантия не раздаёт.
+/datum/unit_test/director_guaranteed_ghost
+
+/datum/unit_test/director_guaranteed_ghost/Run()
+	// Мутирует живой SSdirector - capture/restore c try/catch (см. director_beat_logic).
+	var/list/saved = SSdirector.capture_simulation_state()
+	try
+		var/datum/director_profile/medium/profile = new
+		SSdirector.profile = profile
+		SSdirector.reset_budgets(100)
+		SSdirector.intensity_ledger = list()
+		SSdirector.live_ghost_role_spawns = list()
+		SSdirector.fired_counts = list()
+		SSdirector.pool_saving = list()
+		SSdirector.pending_action = null
+		SSdirector.last_fired_at = list(
+			DIRECTOR_SEVERITY_GHOST = world.time - profile.ghost_light_spacing - 1,
+		)
+		var/datum/director_action/test_stub/ghost_role = new
+		ghost_role.severity = DIRECTOR_SEVERITY_GHOST
+		ghost_role.cost = 10
+		ghost_role.intensity = 15
+		SSdirector.actions = list(ghost_role)
+
+		var/datum/director_signals/signals = new
+		signals.effective_crew = 40
+		signals.staffing = list(DIRECTOR_DEPT_SECURITY = 4, DIRECTOR_DEPT_ENGINEERING = 1,
+			DIRECTOR_DEPT_MEDICAL = 1, DIRECTOR_DEPT_SCIENCE = 0, DIRECTOR_DEPT_SUPPLY = 0, DIRECTOR_DEPT_COMMAND = 1)
+
+		var/list/candidates = SSdirector.filter_candidates(signals, TRUE)
+		TEST_ASSERT(!(ghost_role in candidates), "Обычная гарантия не должна видеть GHOST")
+		candidates = SSdirector.filter_candidates(signals, TRUE, allow_ghost_guarantee = TRUE)
+		TEST_ASSERT(ghost_role in candidates, "Расширенная гарантия обязана видеть GHOST при полном кошельке")
+		SSdirector.budgets[DIRECTOR_SEVERITY_GHOST] = 0
+		candidates = SSdirector.filter_candidates(signals, TRUE, allow_ghost_guarantee = TRUE)
+		TEST_ASSERT(!(ghost_role in candidates), "Гарантия не должна выдавать гост-роль бесплатно")
+
+		// Проводка run_beat: двойная тишина + полный дефицит открывают GHOST гарантии.
+		SSdirector.budgets[DIRECTOR_SEVERITY_GHOST] = 100
+		SSdirector.dry_run = TRUE
+		SSdirector.last_any_fired_at = world.time - 30 SECONDS
+		SSdirector.last_real_fired_at = world.time - profile.max_quiet_time * 2 - 1
+		SSdirector.last_antag_deficit = 1
+		signals.event_intensity = 0
+		TEST_ASSERT_EQUAL(SSdirector.run_beat(signals), DIRECTOR_BEAT_GUARANTEED,
+			"Гарантия двойной тишины обязана исполнить гост-роль")
+		TEST_ASSERT_EQUAL(SSdirector.fired_counts[DIRECTOR_SEVERITY_GHOST], 1,
+			"Гарантированный бит обязан реально запустить гост-роль")
+	catch(var/exception/e)
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	SSdirector.restore_simulation_state(saved)
+
+/// Аванс антаг-кошельков на setup_profile: первая гост-роль больше не ждёт ~25 минут
+/// дефицит-капли - GHOST стартует с долей аванса поверх общего initial_grant.
+/datum/unit_test/director_antag_initial_grant
+
+/datum/unit_test/director_antag_initial_grant/Run()
+	// Мутирует живой SSdirector и GLOB.round_type - восстанавливаем оба даже при падении.
+	var/list/saved = SSdirector.capture_simulation_state()
+	var/saved_round_type = GLOB.round_type
+	try
+		GLOB.round_type = ROUNDTYPE_DYNAMIC_MEDIUM
+		SSdirector.reset_budgets(0)
+		SSdirector.setup_profile()
+		var/datum/director_profile/profile = SSdirector.profile
+		TEST_ASSERT_EQUAL(profile.round_type, ROUNDTYPE_DYNAMIC_MEDIUM, "setup_profile обязан выбрать Medium по типу раунда")
+		var/ghost_after = SSdirector.budgets[DIRECTOR_SEVERITY_GHOST]
+		var/antag_after = SSdirector.budgets[DIRECTOR_SEVERITY_ANTAG]
+		// Контроль: раздача только общего аванса тем же профилем - разница и есть антаг-аванс.
+		SSdirector.reset_budgets(0)
+		SSdirector.distribute_to_budgets(profile.initial_grant)
+		var/ghost_base = SSdirector.budgets[DIRECTOR_SEVERITY_GHOST]
+		var/ghost_share = profile.pool_shares[DIRECTOR_SEVERITY_GHOST] || 0
+		var/antag_share = profile.pool_shares[DIRECTOR_SEVERITY_ANTAG] || 0
+		TEST_ASSERT(ghost_share + antag_share > 0, "У Medium должны быть антаг-доли")
+		var/expected_bonus = profile.antag_initial_grant * ghost_share / (ghost_share + antag_share)
+		TEST_ASSERT(abs((ghost_after - ghost_base) - expected_bonus) < 0.01,
+			"GHOST-кошелёк обязан получить аванс [expected_bonus] поверх общей доли (получил [ghost_after - ghost_base])")
+		TEST_ASSERT(antag_after > 0, "ANTAG-кошелёк обязан получить свою долю аванса")
+	catch(var/exception/e)
+		GLOB.round_type = saved_round_type
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	GLOB.round_type = saved_round_type
+	SSdirector.restore_simulation_state(saved)
+
+/// Критерий реального контента для таймера тишины: MINOR без intensity (лотереи,
+/// бумажные события) не считается происходящим, MODERATE и MINOR с вкладом - считаются.
+/datum/unit_test/director_real_content
+
+/datum/unit_test/director_real_content/Run()
+	var/datum/director_action/test_stub/probe = new
+	probe.severity = DIRECTOR_SEVERITY_MINOR
+	probe.intensity = 0
+	TEST_ASSERT(!SSdirector.is_real_content(probe), "MINOR без intensity не должен считаться реальным контентом")
+	probe.intensity = 5
+	TEST_ASSERT(SSdirector.is_real_content(probe), "MINOR с intensity обязан считаться реальным контентом")
+	probe.severity = DIRECTOR_SEVERITY_FLAVOR
+	probe.intensity = 10
+	TEST_ASSERT(!SSdirector.is_real_content(probe), "Флейвор не считается реальным контентом даже с intensity")
+	probe.severity = DIRECTOR_SEVERITY_MODERATE
+	probe.intensity = 0
+	TEST_ASSERT(SSdirector.is_real_content(probe), "MODERATE считается реальным контентом независимо от intensity")
+	probe.filler = TRUE
+	TEST_ASSERT(!SSdirector.is_real_content(probe), "Филлер не считается реальным контентом на любой ступени")
+	qdel(probe)

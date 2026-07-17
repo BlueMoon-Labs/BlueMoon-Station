@@ -33,6 +33,18 @@
 /datum/dynamic_ruleset/midround/director_preflight()
 	return null
 
+/// Повторная фильтрация живых кандидатов непосредственно перед выдачей роли: между отбором
+/// (trim на бите) и отложенным исполнением игрок мог умереть, отключиться, улететь на ЦК
+/// или уже стать антагом другой инжекцией - протухший кандидат ронял бы execute() рантаймом.
+/datum/dynamic_ruleset/midround/proc/prune_stale_living_players()
+	for(var/mob/living/player in living_players.Copy())
+		if(QDELETED(player) || player.stat == DEAD || !player.client || !player.mind)
+			living_players -= player
+		else if(is_centcom_level(player.z))
+			living_players -= player
+		else if(player.mind.special_role || player.mind.antag_datums?.len > 0)
+			living_players -= player
+
 /// Общий безопасный preflight для рулсетов, которые после trim_candidates() кладут всех
 /// потенциальных получателей роли в candidates. В отличие от crew-wizard этот путь не поллит.
 /datum/dynamic_ruleset/midround/proc/director_preflight_candidates()
@@ -291,8 +303,10 @@
 
 /datum/dynamic_ruleset/midround/autotraitor/execute()
 	// BLUEMOON ADD START - если нет кандидатов и не выданы все роли, иначе выдаст рантайм
+	prune_stale_living_players()
 	if(living_players.len <= 0)
 		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
+		log_game("DYNAMIC: [name] не активирован: кандидаты выбыли между отбором и исполнением.")
 		return FALSE
 	// BLUEMOON ADD END
 	var/mob/M = pick_n_take(living_players)
@@ -345,8 +359,10 @@
 	director_preflight_failure = . ? null : ready_failure_reason
 
 /datum/dynamic_ruleset/midround/crew_conversion/execute()
+	prune_stale_living_players()
 	if(living_players.len <= 0)
 		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
+		log_game("DYNAMIC: [name] не активирован: кандидаты выбыли между отбором и исполнением.")
 		return FALSE
 	var/mob/picked = pick_n_take(living_players)
 	assigned += picked.mind // mind, не моб: по assigned директор считает вклад в intensity

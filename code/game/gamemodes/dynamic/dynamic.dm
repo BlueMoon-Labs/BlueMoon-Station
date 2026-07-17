@@ -164,6 +164,10 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 		var/added_rule = input(usr,"What ruleset do you want to force right now? This will bypass threat level and population restrictions.", "Execute Ruleset", null) as null|anything in sortNames(init_rulesets(/datum/dynamic_ruleset/midround))
 		if (!added_rule)
 			return
+		// То же предупреждение о насыщении, что и у форса событий: рулсет поверх
+		// заполненной антаг-цели - осознанное решение, а не случайный стак.
+		if(!SSdirector.confirm_antag_force(usr, added_rule))
+			return
 		log_admin("[key_name(usr)] executed the [added_rule] ruleset.")
 		message_admins("[key_name(usr)] executed the [added_rule] ruleset.")
 		picking_specific_rule(added_rule, TRUE)
@@ -422,7 +426,7 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 	while (round_start_budget_left > 0)
 		var/datum/dynamic_ruleset/roundstart/ruleset = pickweight(drafted_rules)
 		if (isnull(ruleset))
-			log_game("DYNAMIC: No more rules can be applied, stopping with [round_start_budget] left.")
+			log_game("DYNAMIC: No more rules can be applied, stopping with [round_start_budget_left] left.")
 			break
 
 		var/cost = (ruleset in rulesets_picked) ? ruleset.scaling_cost : ruleset.cost
