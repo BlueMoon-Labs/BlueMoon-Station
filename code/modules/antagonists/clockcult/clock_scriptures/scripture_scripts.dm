@@ -16,7 +16,7 @@
 	creator_message = "<span class='brass'>Вы создаете фабрикатор реплик.</span>"
 	usage_tip = "Часовые стены заставляют расположенные поблизости тайники мастера пассивно генерировать компоненты, что делает их незаменимым инструментом. Часовые полы восстанавливают урон от токсинов у слуг, стоящих на них."
 	tier = SCRIPTURE_SCRIPT
-	category = SCRIPTURE_CATEGORY_STRUCTURE
+	category = SCRIPTURE_CATEGORY_EQUIPMENT
 	space_allowed = TRUE
 	primary_component = HIEROPHANT_ANSIBLE
 	sort_priority = 1
@@ -294,7 +294,7 @@
 	quickbind = TRUE
 	quickbind_desc = "Восстанавливает близлежащие строения и конструкциии. Слуги, одетые в часовую броню, также будут исцелены.<br><b>Максимум 10 заклинаний."
 	var/heal_attempts = 4
-	var/heal_amount = 2.5
+	var/heal_amount = 5
 	var/static/list/damage_heal_order = list(BRUTE, BURN, OXY)
 	var/static/list/heal_finish_messages = list("Ну вот, все починено!", "Старайтесь не слишком сильно пострадать.", "У вас больше не будет ран и царапин!", "Чемпионы никогда не умирают.", "Все подлатано.", \
 	"Ах, дитя мое, теперь все в порядке.", "Боль временно.", "То, что вы делаете для Юстициара, вечно.", "Потерпи это ради меня.", "Будь сильным, дитя.", "Пожалуйста, будьте осторожны!", \
@@ -383,6 +383,23 @@
 						else
 							to_chat(H, "<span class='inathneq'>\"[text2ratvar(pick(heal_finish_messages))]\"</span>")
 							break
+		else if(istype(M, /obj/vehicle/sealed/mecha/combat/neovgre))
+			var/obj/vehicle/sealed/mecha/combat/neovgre/N = M
+			if(N.obj_integrity >= N.max_integrity && (!N.cell || N.cell.charge >= N.cell.maxcharge))
+				continue
+			T = get_turf(M)
+			for(var/i in 1 to heal_attempts)
+				var/needs_more = FALSE
+				if(N.obj_integrity < N.max_integrity)
+					N.obj_integrity = min(N.obj_integrity + heal_amount, N.max_integrity)
+					needs_more = TRUE
+				if(N.cell && N.cell.charge < N.cell.maxcharge)
+					N.cell.charge = min(N.cell.charge + heal_amount * 10, N.cell.maxcharge)
+					needs_more = TRUE
+				if(needs_more)
+					new /obj/effect/temp_visual/heal(T, "#1E8CE1")
+				else
+					break
 		else if(is_type_in_typecache(M, heal_target_typecache))
 			var/obj/structure/destructible/clockwork/C = M
 			if(C.obj_integrity == C.max_integrity || (istype(C) && !C.can_be_repaired))

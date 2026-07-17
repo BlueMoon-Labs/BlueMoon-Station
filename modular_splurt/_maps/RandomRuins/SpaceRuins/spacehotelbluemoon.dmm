@@ -973,10 +973,10 @@
 /turf/open/floor/plasteel/showroomfloor,
 /area/ruin/space/has_grav/bluemoon/hotel/workroom)
 "eC" = (
-/obj/effect/mob_spawn/human/hotel_staff/splurt/security,
 /obj/effect/turf_decal/tile/red/half{
 	dir = 1
 	},
+/obj/effect/mob_spawn/human/hotel_staff/security,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/hotel/security)
 "eE" = (
@@ -2982,13 +2982,13 @@
 /turf/open/floor/carpet/blue,
 /area/ruin/space/has_grav/bluemoon/hotel/guestroom)
 "qd" = (
-/obj/effect/mob_spawn/human/hotel_staff/splurt/security,
 /obj/effect/turf_decal/tile/red/anticorner{
 	dir = 1
 	},
 /obj/structure/cable{
 	icon_state = "2-8"
 	},
+/obj/effect/mob_spawn/human/hotel_staff/security,
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/hotel/security)
 "qf" = (

@@ -7163,9 +7163,8 @@
 /obj/structure/table,
 /obj/item/folder/red,
 /obj/item/taperecorder,
-/obj/item/radio/intercom{
+/obj/item/radio/intercom/command{
 	broadcasting = 1;
-	freerange = 1;
 	frequency = 1424;
 	listening = 0;
 	name = "Interrogation Intercom";
@@ -14660,9 +14659,8 @@
 /turf/open/floor/plasteel,
 /area/hallway/primary/starboard)
 "bjv" = (
-/obj/item/radio/intercom{
+/obj/item/radio/intercom/command{
 	dir = 8;
-	freerange = 1;
 	name = "Station Intercom (Captain)";
 	pixel_y = -25
 	},
@@ -43353,8 +43351,7 @@
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden{
 	dir = 8
 	},
-/obj/item/radio/intercom{
-	freerange = 1;
+/obj/item/radio/intercom/command{
 	name = "Station Intercom (General)";
 	pixel_x = -30
 	},
@@ -64221,8 +64218,7 @@
 	pixel_y = 7
 	},
 /obj/structure/table/wood,
-/obj/item/radio/intercom{
-	freerange = 1;
+/obj/item/radio/intercom/command{
 	frequency = 1424;
 	name = "Interrogation Intercom";
 	pixel_y = -31
@@ -80664,9 +80660,8 @@
 /obj/machinery/computer/communications{
 	dir = 8
 	},
-/obj/item/radio/intercom{
+/obj/item/radio/intercom/command{
 	dir = 8;
-	freerange = 1;
 	name = "Station Intercom (Captain)";
 	pixel_x = 28
 	},
@@ -89251,12 +89246,10 @@
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -27;
 	pixel_y = -27;
-	prison_radio = 1
 	},
 /turf/open/floor/plasteel,
 /area/security/prison/upper)

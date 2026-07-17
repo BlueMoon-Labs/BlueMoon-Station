@@ -159,6 +159,225 @@
 	TEST_ASSERT_NULL(mind.assigned_heirloom, "Mind оставил ссылку на удалённую assigned_heirloom")
 	qdel(mind)
 
+/// APC обязан немедленно отпустить удаляемый светильник из долгоживущего кэша.
+/datum/unit_test/apc_light_cache_qdel_cleanup/Run()
+	var/obj/machinery/power/apc/apc = allocate(/obj/machinery/power/apc)
+	var/obj/machinery/light/light = allocate(/obj/machinery/light)
+	apc.cached_area_lights = list(light)
+	apc.light_cache_dirty = FALSE
+
+	apc.mark_light_cache_dirty()
+	TEST_ASSERT(apc.light_cache_dirty, "APC не пометил кэш светильников грязным")
+	TEST_ASSERT_NULL(apc.cached_area_lights, "APC сохранил ссылку на светильник после инвалидации кэша")
+
+/// Virtualspeaker переживает исходный объект несколько секунд и должен отпустить его по qdel.
+/datum/unit_test/virtualspeaker_source_qdel_cleanup/Run()
+	var/obj/item/source = allocate(/obj/item)
+	var/obj/item/radio/radio = allocate(/obj/item/radio)
+	var/atom/movable/virtualspeaker/speaker = new(null, source, radio)
+	TEST_ASSERT_EQUAL(speaker.GetSource(), source, "Virtualspeaker не сохранил источник")
+	TEST_ASSERT_EQUAL(speaker.GetRadio(), radio, "Virtualspeaker не сохранил радио")
+
+	qdel(source)
+	TEST_ASSERT_NULL(speaker.GetSource(), "Virtualspeaker оставил ссылку на удалённый источник")
+	qdel(radio)
+	TEST_ASSERT_NULL(speaker.GetRadio(), "Virtualspeaker оставил ссылку на удалённое радио")
+	qdel(speaker)
+
+/// Завершённое парирование не должно удерживать использованный предмет.
+/datum/unit_test/active_parry_item_qdel_cleanup/Run()
+	var/mob/living/user = allocate(/mob/living)
+	var/obj/item/item = allocate(/obj/item)
+	user.set_active_parry_item(item)
+	TEST_ASSERT_EQUAL(user.active_parry_item, item, "Тест не назначил предмет парирования")
+
+	qdel(item)
+	TEST_ASSERT_NULL(user.active_parry_item, "Моб оставил ссылку на удалённый предмет парирования")
+
+/// Колода задаёт parentdeck на себя и обязана разорвать этот цикл в Destroy().
+/datum/unit_test/card_deck_parent_qdel_cleanup/Run()
+	var/obj/item/toy/cards/deck/deck = allocate(/obj/item/toy/cards/deck)
+	TEST_ASSERT_EQUAL(deck.parentdeck, deck, "Тестовая колода не создала self-reference parentdeck")
+
+	qdel(deck)
+	TEST_ASSERT_NULL(deck.parentdeck, "Удалённая колода оставила self-reference parentdeck")
+
+/// RemoveSpell должен удалить все совпадения, а внешний qdel — инвалидировать spell_list.
+/datum/unit_test/mind_spell_list_qdel_cleanup/Run()
+	var/datum/mind/mind = new
+	var/obj/effect/proc_holder/spell/first = new
+	var/obj/effect/proc_holder/spell/second = new
+
+	// `in` связывает слабее `||`: без скобок проверка вырождается в `(!S || S) in spell_list`.
+	mind.AddSpell(null)
+	TEST_ASSERT(!length(mind.spell_list), "AddSpell записал null в spell_list")
+	mind.AddSpell(first)
+	mind.AddSpell(first)
+	TEST_ASSERT_EQUAL(length(mind.spell_list), 1, "AddSpell продублировал заклинание в spell_list")
+	mind.AddSpell(second)
+
+	mind.RemoveSpell(/obj/effect/proc_holder/spell)
+	TEST_ASSERT(!length(mind.spell_list), "RemoveSpell пропустил заклинание при изменении spell_list во время обхода")
+	TEST_ASSERT(QDELETED(first) && QDELETED(second), "RemoveSpell не удалил все совпавшие заклинания")
+
+	var/obj/effect/proc_holder/spell/external = new
+	mind.AddSpell(external)
+	qdel(external)
+	TEST_ASSERT(!(external in mind.spell_list), "Mind оставил внешне удалённое заклинание в spell_list")
+
+	var/obj/effect/proc_holder/spell/owned = new
+	mind.AddSpell(owned)
+	qdel(mind)
+	TEST_ASSERT(QDELETED(owned), "Удаление mind не удалило принадлежащее ему заклинание")
+	TEST_ASSERT(!length(mind.spell_list), "Удалённый mind сохранил spell_list")
+
+/// Внешний qdel призванного предмета должен очистить ссылку в живом заклинании.
+/datum/unit_test/conjure_item_qdel_cleanup/Run()
+	var/obj/effect/proc_holder/spell/targeted/conjure_item/summon_cumburger/spell = allocate(/obj/effect/proc_holder/spell/targeted/conjure_item/summon_cumburger)
+	var/obj/item/reagent_containers/food/snacks/burger/cumburger/item = spell.make_item()
+	TEST_ASSERT_EQUAL(spell.item, item, "Заклинание не сохранило созданный предмет")
+
+	qdel(item)
+	TEST_ASSERT_NULL(spell.item, "Заклинание оставило ссылку на удалённый cumburger")
+
+/// RemoveSource может синхронно удалить последний neural_interface: holder очищается до вызова.
+/datum/unit_test/hud_neural_interface_qdel_cleanup/Run()
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human)
+	var/obj/item/clothing/glasses/hud/health/glasses = allocate(/obj/item/clothing/glasses/hud/health)
+	var/datum/component/neural_interface/interface = user.LoadComponent(/datum/component/neural_interface)
+	interface.AddSource(glasses.interface_source)
+	glasses.interface = interface
+
+	glasses.clear_neural_interface()
+	TEST_ASSERT_NULL(glasses.interface, "HUD-очки оставили ссылку на удалённый neural_interface")
+	TEST_ASSERT(QDELETED(interface), "Последний neural_interface не удалился после RemoveSource")
+
+/// Точные типы из harddel-лога должны пройти softcheck после освобождения исправленных ссылок.
+/datum/unit_test/harddel_cleanup_soft_gc
+	parent_type = /datum/unit_test/gc_rewrite_base
+
+/datum/unit_test/harddel_cleanup_soft_gc/proc/target_record(datum/target, label)
+	return list(
+		"ref" = REF(target),
+		"type_path" = target.type,
+		"label" = label,
+	)
+
+/datum/unit_test/harddel_cleanup_soft_gc/proc/qdel_mapped_light(type_path, label)
+	var/list/candidates = SSmachines.get_machines_by_type(type_path)
+	var/obj/machinery/light/target
+	var/obj/machinery/power/apc/target_apc
+	for(var/obj/machinery/light/candidate as anything in candidates)
+		var/obj/machinery/power/apc/candidate_apc = candidate.get_area_apc()
+		if(!candidate_apc)
+			continue
+		if(!(candidate in candidate_apc.get_cached_area_lights()))
+			continue
+		target = candidate
+		target_apc = candidate_apc
+		break
+	TEST_ASSERT_NOTNULL(target, "Не найден уже инициализированный [type_path] с APC-кэшем")
+	var/list/record = target_record(target, label)
+
+	qdel(target)
+	TEST_ASSERT_NULL(target_apc.cached_area_lights, "Удаление [type_path] не очистило кэш APC")
+	candidates.Cut()
+	target = null
+	target_apc = null
+	return record
+
+/datum/unit_test/harddel_cleanup_soft_gc/proc/qdel_virtualspeaker_source()
+	var/obj/item/warp_machine_beacon/source = new(run_loc_floor_bottom_left)
+	var/obj/item/radio/radio = allocate(/obj/item/radio)
+	var/atom/movable/virtualspeaker/speaker = allocate(/atom/movable/virtualspeaker, run_loc_floor_bottom_left, source, radio)
+	var/list/record = target_record(source, "virtualspeaker source: /obj/item/warp_machine_beacon")
+
+	qdel(source)
+	TEST_ASSERT_NULL(speaker.GetSource(), "Virtualspeaker оставил ссылку на удалённый warp beacon")
+	return record
+
+/datum/unit_test/harddel_cleanup_soft_gc/proc/qdel_active_parry_item()
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human)
+	var/obj/item/chair/stool/bar/stool = new(run_loc_floor_bottom_left)
+	var/list/record = target_record(stool, "active_parry_item: /obj/item/chair/stool/bar")
+	user.set_active_parry_item(stool)
+
+	qdel(stool)
+	TEST_ASSERT_NULL(user.active_parry_item, "Моб оставил ссылку на удалённый bar stool")
+	return record
+
+/datum/unit_test/harddel_cleanup_soft_gc/proc/qdel_card_deck()
+	var/obj/item/toy/cards/deck/deck = new(run_loc_floor_bottom_left)
+	var/list/record = target_record(deck, "parentdeck: /obj/item/toy/cards/deck")
+	qdel(deck)
+	TEST_ASSERT_NULL(deck.parentdeck, "Удалённая колода оставила self-reference parentdeck")
+	return record
+
+/datum/unit_test/harddel_cleanup_soft_gc/proc/qdel_mind_spell()
+	var/datum/mind/mind = new
+	allocated += mind
+	var/obj/effect/proc_holder/spell/targeted/lewd_chems/spell = new
+	var/list/record = target_record(spell, "mind spell_list: /obj/effect/proc_holder/spell/targeted/lewd_chems")
+	mind.AddSpell(spell)
+
+	qdel(spell)
+	TEST_ASSERT(!(spell in mind.spell_list), "Mind оставил удалённый lewd_chems в spell_list")
+	return record
+
+/datum/unit_test/harddel_cleanup_soft_gc/proc/qdel_conjured_item()
+	var/obj/effect/proc_holder/spell/targeted/conjure_item/summon_cumburger/spell = allocate(/obj/effect/proc_holder/spell/targeted/conjure_item/summon_cumburger)
+	var/obj/item/reagent_containers/food/snacks/burger/cumburger/item = spell.make_item()
+	var/list/record = target_record(item, "conjure_item item: /obj/item/reagent_containers/food/snacks/burger/cumburger")
+
+	qdel(item)
+	TEST_ASSERT_NULL(spell.item, "Заклинание оставило удалённый cumburger в item")
+	return record
+
+/datum/unit_test/harddel_cleanup_soft_gc/proc/qdel_neural_interface()
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human)
+	var/obj/item/clothing/glasses/hud/health/glasses = allocate(/obj/item/clothing/glasses/hud/health)
+	var/datum/component/neural_interface/interface = user.LoadComponent(/datum/component/neural_interface)
+	interface.AddSource(glasses.interface_source)
+	glasses.interface = interface
+	var/list/record = target_record(interface, "HUD interface: /datum/component/neural_interface")
+
+	glasses.clear_neural_interface()
+	TEST_ASSERT_NULL(glasses.interface, "HUD-очки оставили ссылку на удалённый neural_interface")
+	TEST_ASSERT(QDELETED(interface), "Последний neural_interface не удалился после RemoveSource")
+	return record
+
+/datum/unit_test/harddel_cleanup_soft_gc/proc/assert_soft_collected(list/target)
+	var/type_path = target["type_path"]
+	var/label = target["label"]
+	var/datum/qdel_item/item = SSgarbage.GetOrCreateItem(type_path)
+	TEST_ASSERT(item.qdels > 0, "[label] не попал в qdel")
+	TEST_ASSERT_EQUAL(item.failures, 0, "[label] не прошёл softcheck")
+	TEST_ASSERT_EQUAL(item.warnfail_count, 0, "[label] дошёл до warnfail")
+	TEST_ASSERT_EQUAL(item.hard_deletes, 0, "[label] ушёл в hard delete")
+	TEST_ASSERT(!(target["ref"] in SSgarbage.queue_refs[GC_QUEUE_SOFTCHECK]), "[label] остался в очереди softcheck")
+
+/datum/unit_test/harddel_cleanup_soft_gc/Run()
+	configure_immediate_gc()
+	var/list/targets = list()
+	targets += list(qdel_mapped_light(/obj/machinery/light, "APC cached_area_lights: /obj/machinery/light"))
+	targets += list(qdel_mapped_light(/obj/machinery/light/small, "APC cached_area_lights: /obj/machinery/light/small"))
+	targets += list(qdel_virtualspeaker_source())
+	targets += list(qdel_active_parry_item())
+	targets += list(qdel_card_deck())
+	targets += list(qdel_mind_spell())
+	targets += list(qdel_conjured_item())
+	targets += list(qdel_neural_interface())
+
+	for(var/list/target in targets)
+		var/label = target["label"]
+		TEST_ASSERT(target["ref"] in SSgarbage.queue_refs[GC_QUEUE_SOFTCHECK], "[label] не был поставлен в очередь softcheck")
+	var/start_soft_passes = SSgarbage.pass_counts[GC_QUEUE_SOFTCHECK]
+	run_gc_fire_cycles(2, yield_for_gc = TRUE)
+	TEST_ASSERT(SSgarbage.pass_counts[GC_QUEUE_SOFTCHECK] >= start_soft_passes + length(targets), "SSgarbage не обработал все проверяемые softcheck-записи")
+
+	for(var/list/target in targets)
+		assert_soft_collected(target)
+
 /// Обезьяна должна удалять qdeleted предметы из blacklistItems.
 /datum/unit_test/monkey_blacklist_item_qdel_cleanup/Run()
 	var/mob/living/carbon/monkey/monkey = allocate(/mob/living/carbon/monkey)

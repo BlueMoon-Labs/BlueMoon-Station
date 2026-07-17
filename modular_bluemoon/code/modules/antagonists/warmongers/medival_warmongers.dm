@@ -15,20 +15,18 @@
 
 /obj/docking_port/mobile/medieval/initiate_docking(obj/docking_port/stationary/S1)
 	if(S1 && !istype(S1, /obj/docking_port/stationary/transit))
-		var/list/turfs = list()
-		var/start_x = S1.x - dwidth
-		var/start_y = S1.y - dheight
-		for(var/i = 0, i < width, i++)
-			for(var/j = 0, j < height, j++)
-				var/turf/T = locate(start_x + i, start_y + j, S1.z)
-				if(T)
-					turfs += T
-		for(var/turf/T in turfs)
-			// Удаляем все объекты на турфе
-			for(var/obj/O in T)
+		var/list/old_turfs = return_ordered_turfs(x, y, z, dir)
+		var/list/new_turfs = return_ordered_turfs(S1.x, S1.y, S1.z, S1.dir)
+		for(var/i in 1 to old_turfs.len)
+			var/turf/old_turf = old_turfs[i]
+			if(!isshuttleturf(old_turf))
+				continue
+			var/turf/impact_turf = new_turfs[i]
+			if(!impact_turf)
+				continue
+			for(var/obj/O in impact_turf)
 				qdel(O)
-			// Заменяем турф на платинг (безопасно)
-			T.ChangeTurf(/turf/open/floor/plating)
+			impact_turf.ChangeTurf(/turf/open/floor/plating)
 
 	. = ..()
 	if(!istype(S1, /obj/docking_port/stationary/transit))

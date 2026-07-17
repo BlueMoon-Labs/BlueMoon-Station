@@ -26,7 +26,7 @@
 	if((status == WAITING_FOR_SOMETHING))
 		if(retry >= MAX_SPAWN_ATTEMPT)
 			message_admins("[role_name] event has exceeded maximum spawn attempts. Aborting and refunding.")
-			refund_failed_spawn()
+			refund_failed_spawn("превышено число отложенных попыток спауна")
 			return
 		var/waittime = 600 * (2^retry)
 		message_admins("The event will not spawn a [role_name] until certain \
@@ -36,19 +36,19 @@
 
 	if(status == MAP_ERROR)
 		message_admins("[role_name] cannot be spawned due to a map error.")
-		refund_failed_spawn()
+		refund_failed_spawn("ошибка карты или отсутствует точка спауна")
 	else if(status == NOT_ENOUGH_PLAYERS)
 		message_admins("[role_name] cannot be spawned due to lack of players \
 			signing up.")
-		refund_failed_spawn()
+		refund_failed_spawn("гост-опрос завершился без достаточного числа желающих")
 	else if(status == SUCCESSFUL_SPAWN)
-		message_admins("[role_name] spawned successfully.")
-		if(spawned_mobs.len)
+		if(spawned_mobs.len && SSdirector.track_ghost_role_spawn(control, spawned_mobs, triggered_randomly))
+			message_admins("[role_name] spawned successfully.")
 			for(var/mob/M in spawned_mobs)
 				announce_to_ghosts(M)
 		else
-			message_admins("No mobs found in the `spawned_mobs` list, this is \
-				a bug.")
+			message_admins("[role_name] reported a successful spawn without any live spawned mobs. Aborting and refunding; this is a bug.")
+			refund_failed_spawn("spawn_role() сообщил успех, но не создал отслеживаемую роль")
 	else
 		message_admins("An attempt to spawn [role_name] returned [status], \
 			this is a bug.")
@@ -58,15 +58,13 @@
 /// Никто не заспаунился - события не случилось: вернуть попытку, кошелёк ступени и снять
 /// вклад intensity сразу (без linger). Иначе провальный ролл гост-антага висел бы 30 минут
 /// фантомной нагрузкой в antag_load и глушил клапан давления директора.
-/datum/round_event/ghost_role/proc/refund_failed_spawn()
+/datum/round_event/ghost_role/proc/refund_failed_spawn(reason = "гост-роль не была создана")
 	if(!control)
 		return
-	if(control.occurrences > 0)
-		control.occurrences--
-	SSdirector.remove_intensity(control.action_name())
 	// Бюджет тратился только на естественный запуск через бит (админ-форс идёт мимо кошельков).
-	if(triggered_randomly)
-		SSdirector.refund_to_budget(control.severity, control.cost)
+	SSdirector.note_failed_action(control, refund_budget = triggered_randomly, retry_replacement = triggered_randomly)
+	SSdirector.director_log_beat(SSdirector.collect_signals(), control, DIRECTOR_BEAT_FAILED,
+		detail = "[reason]; [triggered_randomly ? "бюджет и паузы возвращены, запрошена замена" : "ручной запуск, бюджет не списывался; паузы возвращены"]")
 
 /datum/round_event/ghost_role/proc/spawn_role()
 	// Return true if role was successfully spawned, false if insufficent

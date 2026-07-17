@@ -166236,12 +166236,10 @@
 /turf/closed/wall,
 /area/service/hydroponics)
 "yiL" = (
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -25;
 	pixel_y = -2;
-	prison_radio = 1
 	},
 /turf/open/floor/plasteel{
 	icon_state = "floor_trim"

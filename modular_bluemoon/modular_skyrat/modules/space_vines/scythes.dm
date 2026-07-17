@@ -56,9 +56,9 @@
 		var/dir_to_target = get_dir(user_turf, get_turf(A))
 		var/stam_gain = 0
 		swiping = TRUE
-		if(istype(A, /obj/structure/spacevine) && hit_range >= 1)
-		for(var/obj/structure/spacevine/choose_vine in view(hit_range, A))
-			melee_attack_chain(user, choose_vine)
+		if(hit_range >= 1)
+			for(var/obj/structure/spacevine/choose_vine in view(hit_range, A))
+				melee_attack_chain(user, choose_vine)
 		var/static/list/scythe_slash_angles = list(0, 45, 90, -45, -90)
 		for(var/i in scythe_slash_angles)
 			var/turf/T = get_step(user_turf, turn(dir_to_target, i))

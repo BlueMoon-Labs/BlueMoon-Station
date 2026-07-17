@@ -711,9 +711,8 @@
 	pixel_y = 6
 	},
 /obj/item/pen/fountain/captain,
-/obj/item/radio/intercom{
+/obj/item/radio/intercom/command{
 	dir = 8;
-	freerange = 1;
 	name = "Station Intercom (Command)";
 	pixel_y = -28
 	},
@@ -9340,9 +9339,8 @@
 /obj/effect/turf_decal/tile/neutral{
 	dir = 1
 	},
-/obj/item/radio/intercom{
+/obj/item/radio/intercom/command{
 	dir = 8;
-	freerange = 1;
 	name = "Station Intercom (Command)";
 	pixel_x = 1
 	},
@@ -54004,11 +54002,9 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 6
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 22;
-	prison_radio = 1
 	},
 /turf/open/floor/plasteel/showroomfloor,
 /area/security/prison)
@@ -83186,11 +83182,9 @@
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = -28;
-	prison_radio = 1
 	},
 /obj/structure/cable{
 	icon_state = "1-4"

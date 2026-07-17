@@ -391,8 +391,7 @@
 /area/shuttle/pirate)
 "aQ" = (
 /obj/machinery/shuttle_scrambler,
-/obj/item/radio/intercom{
-	freerange = 1;
+/obj/item/radio/intercom/command{
 	name = "Station Intercom (General)";
 	pixel_x = -26
 	},

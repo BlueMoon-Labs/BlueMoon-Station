@@ -291,11 +291,9 @@
 /turf/open/floor/plating,
 /area/mine/production)
 "fs" = (
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
-	prison_radio = 1
 	},
 /turf/open/floor/plasteel,
 /area/mine/laborcamp)

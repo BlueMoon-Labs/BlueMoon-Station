@@ -6,6 +6,7 @@
 	state["budgets"] = budgets.Copy()
 	state["actions"] = actions.Copy()
 	state["intensity_ledger"] = intensity_ledger.Copy()
+	state["live_ghost_role_spawns"] = live_ghost_role_spawns.Copy()
 	state["fired_counts"] = fired_counts.Copy()
 	state["last_fired_at"] = last_fired_at.Copy()
 	state["family_fired_counts"] = family_fired_counts.Copy()
@@ -13,6 +14,9 @@
 	state["last_any_fired_at"] = last_any_fired_at
 	state["last_real_fired_at"] = last_real_fired_at
 	state["pool_saving"] = pool_saving.Copy()
+	state["action_failure_cooldowns"] = action_failure_cooldowns.Copy()
+	state["action_attempt_rollbacks"] = action_attempt_rollbacks.Copy()
+	state["last_antag_deficit"] = last_antag_deficit
 	state["last_antag_heavy_at"] = last_antag_heavy_at
 	state["last_ghost_heavy_at"] = last_ghost_heavy_at
 	state["last_latejoin_at"] = last_latejoin_at
@@ -63,6 +67,7 @@
 	budgets = state["budgets"]
 	actions = state["actions"]
 	intensity_ledger = state["intensity_ledger"]
+	live_ghost_role_spawns = state["live_ghost_role_spawns"]
 	fired_counts = state["fired_counts"]
 	last_fired_at = state["last_fired_at"]
 	family_fired_counts = state["family_fired_counts"]
@@ -70,6 +75,9 @@
 	last_any_fired_at = state["last_any_fired_at"]
 	last_real_fired_at = state["last_real_fired_at"]
 	pool_saving = state["pool_saving"]
+	action_failure_cooldowns = state["action_failure_cooldowns"]
+	action_attempt_rollbacks = state["action_attempt_rollbacks"]
+	last_antag_deficit = state["last_antag_deficit"]
 	last_antag_heavy_at = state["last_antag_heavy_at"]
 	last_ghost_heavy_at = state["last_ghost_heavy_at"]
 	dry_run = state["dry_run"]
@@ -112,11 +120,14 @@
 	// реальную экономику первой половины часа.
 	D.distribute_to_budgets(D.profile.initial_grant)
 	D.intensity_ledger = list()
+	D.live_ghost_role_spawns = list()
 	D.fired_counts = list()
 	D.last_fired_at = list()
 	D.family_fired_counts = list()
 	D.family_last_fired_at = list()
 	D.pool_saving = list()
+	D.action_failure_cooldowns = list()
+	D.action_attempt_rollbacks = list()
 	D.last_antag_heavy_at = 0
 	D.last_ghost_heavy_at = 0
 	D.last_latejoin_at = 0

@@ -45,8 +45,15 @@
 	var/scaling_cost = 0
 	/// How many times a rule has scaled up upon getting picked.
 	var/scaled_times = 0
-	/// Used for the roundend report
+	/// Подтверждённая фактически потраченная стоимость запусков. Помимо roundend-отчёта служит
+	/// бухгалтерией страховки рано потерянных антаг-ролей директора.
 	var/total_cost = 0
+	/// Стоимость уже списана, но асинхронный execute ещё не подтвердил выдачу ролей.
+	var/director_pending_cost = 0
+	/// mind -> list(amount, at, activity): индивидуальная страховая доля подтверждённой роли.
+	var/list/director_loss_refund_values = list()
+	/// mind -> TRUE: роль уже была застрахована и не может получить покрытие повторно.
+	var/list/director_loss_accounted = list()
 	/// A flag that determines how the ruleset is handled. Check __DEFINES/dynamic.dm for an explanation of the accepted values.
 	var/flags = NONE
 	/// Pop range per requirement. If zero defaults to mode's pop_per_requirement.
@@ -70,6 +77,8 @@
 	/// Delay for when execute will get called from the time of post_setup (roundstart) or process (midround/latejoin).
 	/// Make sure your ruleset works with execute being called during the game when using this, and that the clean_up proc reverts it properly in case of faliure.
 	var/delay = 0
+	/// Человекочитаемая причина последнего провала execute(); попадает в историю директора.
+	var/execution_failure_reason = null
 	/// world.time запуска рулсета директором (штамп в SSdirector.note_fired): возраст исполнения
 	/// для затухания вклада в intensity. 0 у раундстартов - их возраст считается от старта раунда.
 	var/executed_at = 0
@@ -191,6 +200,11 @@
 	for(var/datum/mind/M in assigned)
 		M.add_antag_datum(antag_datum)
 	return TRUE
+
+/// Текст подтверждения для истории директора. assigned_this_attempt, а не длина assigned:
+/// повторяемые рулсеты хранят предыдущие назначения для живого учёта intensity.
+/datum/dynamic_ruleset/proc/director_execution_detail(assigned_this_attempt)
+	return "исполнение подтверждено; назначено ролей: [assigned_this_attempt]"
 
 /// Here you can perform any additional checks you want. (such as checking the map etc)
 /// Remember that on roundstart no one knows what their job is at this point.

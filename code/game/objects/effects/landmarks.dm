@@ -544,9 +544,15 @@ INITIALIZE_IMMEDIATE(/obj/effect/landmark/start/new_player)
 	if(!template)
 		return FALSE
 	testing("Ruin \"[template_name]\" placed at ([T.x], [T.y], [T.z])")
+	// Снимаемся с учёта ДО загрузки, а не после. template.load() спит (маплоадер
+	// уступает тик), и всё это время лендмарк оставался в GLOB.stationroom_landmarks:
+	// параллельный seedStation() (таймер тикера, +60с после раундстарта) подхватывал
+	// тот же лендмарк и грузил шаблон второй раз в ту же точку. Дубль накладывал
+	// вторую копию каждой атмос-машины на те же тайлы, у устройств один слот nodes
+	// на копию - вторая передавала в setPipenet отсутствующий в nodes объект.
+	GLOB.stationroom_landmarks -= src
 	template.load(T, centered = FALSE)
 	template.loaded++
-	GLOB.stationroom_landmarks -= src
 	qdel(src)
 	return TRUE
 

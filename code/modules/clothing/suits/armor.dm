@@ -81,14 +81,14 @@
 	item_state = "blueshift"
 	custom_premium_price = PRICE_ABOVE_EXPENSIVE
 
-/obj/item/clothing/suit/armor/vest/military
+/obj/item/clothing/suit/armor/vest/knight/military
 	name = "Fluted Plate Armor"
 	desc = "A suit of ornate plate armor, noble in both presentation and protection. Such resplendent maille is \
 	traditionally reserved for the higher echelons of nobility; seasoned knights, venerated kings, and pot-bellied \
 	councilmen that wish to flaunt their opulence towards the unwashed masses."
 	icon_state = "military"
 	dog_fashion = null
-	armor = list(MELEE = 40, BULLET = 80, LASER = 80, ENERGY = 40, BOMB = 25, BIO = 0, RAD = 0, FIRE = 10, ACID = 50, WOUND = 50)
+	armor = list(MELEE = 20, BULLET = 40, LASER = 40, ENERGY = 40, BOMB = 25, BIO = 0, RAD = 0, FIRE = 10, ACID = 50, WOUND = 50)
 	allowed = list(
 		/obj/item/banner,
 		/obj/item/claymore/shortsword,
@@ -96,15 +96,17 @@
 		/obj/item/spear,
 		/obj/item/gun/ballistic/bow
 	)
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/suit/armor/riot/knight/warlord
 	name = "Golden Plate Armor"
 	desc = "This bulky set of armor is coated with a shiny layer of gold. It seems to almost reflect all light sources."
 	icon_state = "warlord"
-	armor = list(MELEE = 80, BULLET = 80, LASER = 80, ENERGY = 80, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 50)
+	armor = list(MELEE = 40, BULLET = 40, LASER = 40, ENERGY = 40, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 50)
 	w_class = WEIGHT_CLASS_BULKY
 	clothing_flags = THICKMATERIAL
 	slowdown = 0.5
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/suit/armor/hos
 	name = "armored greatcoat"
@@ -397,7 +399,7 @@
 	item_state = "knight_green"
 	armor = list(MELEE = 80, BULLET = 40, LASER = 10, ENERGY = 10, BOMB = 10, BIO = 0, RAD = 0, FIRE = 80, ACID = 80, WOUND = 30)
 	slowdown = 0.5
-	flags_inv = HIDEGLOVES|HIDESHOES|HIDEJUMPSUIT
+	flags_inv = HIDEGLOVES|HIDESHOES
 	allowed = list(
 		/obj/item/banner,
 		/obj/item/claymore/shortsword,

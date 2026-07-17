@@ -468,6 +468,11 @@ Turf and target are separate in case you want to teleport some distance from a t
 */
 
 /atom/proc/GetAllContents(var/T)
+	if(!length(contents))
+		if(!T || istype(src, T))
+			return list(src)
+		return list()
+
 	var/list/processing_list = list(src)
 	var/i = 0
 	var/lim = 1
@@ -477,15 +482,17 @@ Turf and target are separate in case you want to teleport some distance from a t
 			var/atom/A = processing_list[++i]
 			//Byond does not allow things to be in multiple contents, or double parent-child hierarchies, so only += is needed
 			//This is also why we don't need to check against assembled as we go along
-			processing_list += A.contents
-			lim = processing_list.len
+			if(length(A.contents))
+				processing_list += A.contents
+				lim = processing_list.len
 			if(istype(A,T))
 				. += A
 	else
 		while(i < lim)
 			var/atom/A = processing_list[++i]
-			processing_list += A.contents
-			lim = processing_list.len
+			if(length(A.contents))
+				processing_list += A.contents
+				lim = processing_list.len
 		return processing_list
 
 /atom/proc/GetAllContentsIgnoring(list/ignore_typecache)

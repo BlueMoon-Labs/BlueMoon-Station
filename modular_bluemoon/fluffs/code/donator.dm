@@ -2503,3 +2503,9 @@
 	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/suit/donator/bm/torn_veil
 	ckeywhitelist = list("hateredsoul")
+
+/datum/gear/donator/bm/stupid_cap
+	name = "Propeller beanie"
+	slot = ITEM_SLOT_HEAD
+	path = /obj/item/clothing/head/donator/bm/stupid_cap
+	ckeywhitelist = list("angelnedemon")

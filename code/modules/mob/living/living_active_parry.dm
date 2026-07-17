@@ -45,9 +45,10 @@
 		return FALSE
 	// Point of no return, make sure everything is set.
 	parrying = method
-	if(method == ITEM_PARRY)
-		active_parry_item = tool
+	set_active_parry_item(method == ITEM_PARRY ? tool : null)
 	if(!UseStaminaBuffer(data.parry_stamina_cost, TRUE))
+		parrying = NOT_PARRYING
+		set_active_parry_item(null)
 		return FALSE
 	parry_start_time = world.time
 	successful_parries = list()
@@ -141,6 +142,7 @@
   */
 /mob/living/proc/end_parry_sequence()
 	if(!parrying)
+		set_active_parry_item(null)
 		return
 	REMOVE_TRAIT(src, TRAIT_MOBILITY_NOUSE, ACTIVE_PARRY_TRAIT)
 	REMOVE_TRAIT(src, TRAIT_SPRINT_LOCKED, ACTIVE_PARRY_TRAIT)
@@ -166,6 +168,25 @@
 	parry_end_time_last = world.time + (successful? 0 : data.parry_failed_cooldown_duration)
 	successful_parries = null
 	successful_parry_counterattacks = null
+	set_active_parry_item(null)
+
+/mob/living/proc/set_active_parry_item(obj/item/new_item)
+	if(active_parry_item == new_item)
+		return
+	if(active_parry_item)
+		UnregisterSignal(active_parry_item, COMSIG_PARENT_QDELETING)
+	active_parry_item = new_item
+	if(active_parry_item)
+		RegisterSignal(active_parry_item, COMSIG_PARENT_QDELETING, PROC_REF(on_active_parry_item_qdeleting))
+
+/mob/living/proc/on_active_parry_item_qdeleting(obj/item/deleted_item)
+	SIGNAL_HANDLER
+	if(active_parry_item != deleted_item)
+		return
+	if(parrying == ITEM_PARRY)
+		end_parry_sequence()
+	else
+		set_active_parry_item(null)
 
 /**
   * Handles starting effects for parrying.
