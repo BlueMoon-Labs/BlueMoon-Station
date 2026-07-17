@@ -42,7 +42,10 @@
 	if(hud_type)
 		var/datum/atom_hud/hud = GLOB.huds[hud_type]
 		hud.remove_hud_from(mod.wearer)
-		interface?.RemoveSource(interface_source)
+		var/datum/component/neural_interface/old_interface = interface
+		interface = null
+		if(!QDELETED(old_interface))
+			old_interface.RemoveSource(interface_source)
 	for(var/trait in visor_traits)
 		REMOVE_TRAIT(mod.wearer, trait, MOD_TRAIT)
 	mod.wearer.update_sight()

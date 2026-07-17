@@ -36,7 +36,7 @@
 	loot = list(/obj/effect/decal/cleanable/robot_debris)
 	del_on_death = TRUE
 	var/mode = MINEDRONE_COLLECT
-	var/light_on = 0
+	light_on = FALSE
 	var/obj/item/gun/energy/kinetic_accelerator/minebot/stored_gun
 
 /mob/living/simple_animal/hostile/mining_drone/Initialize(mapload)
@@ -235,11 +235,12 @@
 /datum/action/innate/minedrone/toggle_light/Activate()
 	var/mob/living/simple_animal/hostile/mining_drone/user = owner
 
+	// set_light_on вместо сырой записи: сеттер шлёт сигналы и не зависит от порядка со set_light
+	user.set_light_on(!user.light_on)
 	if(user.light_on)
-		user.set_light(0)
-	else
 		user.set_light(6)
-	user.light_on = !user.light_on
+	else
+		user.set_light(0)
 	to_chat(user, "<span class='notice'>You toggle your light [user.light_on ? "on" : "off"].</span>")
 
 /datum/action/innate/minedrone/toggle_mode

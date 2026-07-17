@@ -155,6 +155,15 @@ Class Procs:
 	///Machinery error message cooldown
 	COOLDOWN_DECLARE(error_message_cooldown)
 
+	///TRUE while the machine deliberately sleeps off SSmachines with its draw converted to a static area load. See machine_sleep().
+	var/machine_sleeping = FALSE
+	///Watts billed to the area as a static load while we sleep, so APC readouts stay honest without per-tick auto_use_power().
+	var/sleep_static_power = 0
+	///The area currently holding our sleep_static_power contribution; tracked so we can pull it back out even after moving.
+	var/area/sleep_static_power_area
+	///The STATIC_* channel our sleep_static_power was billed to; tracked so a later power_channel change still removes from the right channel.
+	var/sleep_static_power_channel
+
 /obj/machinery/Initialize(mapload)
 	if(!armor)
 		armor = list(MELEE = 25, BULLET = 10, LASER = 10, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 50, ACID = 70)
@@ -187,6 +196,10 @@ Class Procs:
 /obj/machinery/Destroy()
 	SSmachines.unregister_machine(src)
 	GLOB.machines.Remove(src)
+	if(machine_sleeping)
+		machine_sleeping = FALSE
+		SSmachines.sleeping_machines--
+		set_sleep_static_power(0)
 	if(!speed_process)
 		STOP_PROCESSING(SSmachines, src)
 	else
@@ -220,6 +233,75 @@ Class Procs:
 ///Called when the value of `stat` changes, so we can react to it.
 /obj/machinery/proc/on_stat_update(old_value)
 	set_is_operational(!(machine_stat & (NOPOWER|BROKEN|MAINT)))
+	if(machine_sleeping)
+		update_sleep_static_power()
+
+/**
+ * Parks the machine off the SSmachines processing list while nothing about its state can change,
+ * converting its idle/active draw into a static load on the area so the power grid stays honest.
+ *
+ * Callers inside process() should `return machine_sleep()` (it returns PROCESS_KILL). Every code
+ * path that can make the machine need processing again MUST call machine_wake().
+ */
+/obj/machinery/proc/machine_sleep()
+	if(machine_sleeping || speed_process) // SSfastprocess machines are not ours to park
+		return PROCESS_KILL
+	machine_sleeping = TRUE
+	SSmachines.sleeping_machines++
+	update_sleep_static_power()
+	STOP_PROCESSING(SSmachines, src)
+	return PROCESS_KILL
+
+///Wakes the machine from machine_sleep(): drops the static stand-in draw and resumes processing.
+/obj/machinery/proc/machine_wake()
+	if(!machine_sleeping)
+		return
+	machine_sleeping = FALSE
+	SSmachines.sleeping_machines--
+	set_sleep_static_power(0)
+	if(!QDELETED(src))
+		START_PROCESSING(SSmachines, src)
+
+/**
+ * Recomputes the static stand-in draw of a sleeping machine. Funnels every change through one
+ * place: sleep entry, NOPOWER flips (via on_stat_update/power_change) and area moves (via
+ * power_change from COMSIG_ENTER_AREA). Mirrors what auto_use_power() would bill dynamically.
+ */
+/obj/machinery/proc/update_sleep_static_power()
+	var/watts = 0
+	if(machine_sleeping && !(machine_stat & NOPOWER))
+		if(use_power == IDLE_POWER_USE)
+			watts = idle_power_usage
+		else if(use_power >= ACTIVE_POWER_USE)
+			watts = active_power_usage
+	set_sleep_static_power(watts)
+
+///Moves our static stand-in draw from wherever it is registered onto the current area at the new wattage.
+///Always removes the old contribution from the channel it was actually billed to, not the live power_channel,
+///so a power_channel change while asleep cannot strand load on the wrong channel.
+/obj/machinery/proc/set_sleep_static_power(new_watts)
+	var/area/new_area = new_watts ? get_area(src) : null
+	if(!new_area)
+		new_watts = 0
+	var/new_channel = DYNAMIC_TO_STATIC_CHANNEL(power_channel)
+	if(new_watts == sleep_static_power && new_area == sleep_static_power_area && new_channel == sleep_static_power_channel)
+		return
+	if(sleep_static_power_area)
+		sleep_static_power_area.addStaticPower(-sleep_static_power, sleep_static_power_channel)
+	if(new_area)
+		new_area.addStaticPower(new_watts, new_channel)
+	sleep_static_power = new_watts
+	sleep_static_power_area = new_area
+	sleep_static_power_channel = new_channel
+
+/obj/machinery/vv_edit_var(var_name, var_value)
+	. = ..()
+	// A sleeping machine's static stand-in is only re-derived on power/area hooks, never on a bare
+	// var write. Re-home it when an admin live-edits what it should bill (channel or wattage).
+	if(machine_sleeping)
+		switch(var_name)
+			if(NAMEOF(src, power_channel), NAMEOF(src, use_power), NAMEOF(src, idle_power_usage), NAMEOF(src, active_power_usage))
+				update_sleep_static_power()
 
 /obj/machinery/emp_act(severity)
 	. = ..()
@@ -282,6 +364,8 @@ Class Procs:
 	occupant = new_occupant
 
 /obj/machinery/proc/auto_use_power()
+	if(machine_sleeping) // someone re-added us to processing behind machine_wake()'s back; drop the static stand-in so we do not double-bill
+		machine_wake()
 	var/area/our_area = get_area(src)
 	if(!our_area?.powered(power_channel))
 		return FALSE

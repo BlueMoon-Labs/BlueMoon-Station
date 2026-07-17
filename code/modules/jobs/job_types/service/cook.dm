@@ -89,7 +89,8 @@
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
-	backpack_contents = list(/obj/item/sharpener = 1, /obj/item/choice_beacon/ingredients = 1, /obj/item/syndicate_uplink=1)
+	accessory = list(/obj/item/clothing/accessory/permit/special/syndie_station)
+	backpack_contents = list(/obj/item/sharpener = 1, /obj/item/choice_beacon/ingredients = 1,/obj/item/syndicate_uplink/station=1)
 
 /datum/outfit/job/cook/pre_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
 	..()

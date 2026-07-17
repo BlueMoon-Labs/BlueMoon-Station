@@ -81,7 +81,7 @@
 
 /datum/wound/slash/receive_damage(wounding_type, wounding_dmg, wound_bonus)
 	if(victim.stat != DEAD && wounding_type == WOUND_SLASH) // can't stab dead bodies to make it bleed faster this way
-		blood_flow += 0.05 * wounding_dmg
+		blood_flow += 0.08 * wounding_dmg
 
 /datum/wound/slash/drag_bleed_amount()
 	// say we have 3 severe cuts with 3 blood flow each, pretty reasonable
@@ -123,10 +123,14 @@
 	if(blood_flow < minimum_flow)
 		if(demotes_to)
 			replace_wound(demotes_to)
+			return
 		else
 			to_chat(victim, "<span class='green'>Ваша [limb.ru_name] перестала истекать [HAS_TRAIT(victim, TRAIT_ROBOTIC_ORGANISM) ? "гидравлической жидкость" : "кровью"] из-за порезов!</span>") // BLUEMOON EDIT - добавлена проверка для роботов
 			qdel(src)
+			return
 
+	if(limb)
+		limb.update_part_wound_overlay()
 
 /datum/wound/slash/on_stasis()
 	if(blood_flow >= minimum_flow)
@@ -283,11 +287,11 @@
 	occur_text = "разрезается, что приводит к кровотечению"
 	sound_effect = 'sound/effects/wounds/blood1.ogg'
 	severity = WOUND_SEVERITY_MODERATE
-	initial_flow = 1.4
+	initial_flow = 1.75
 	minimum_flow = 0.375
 	max_per_type = 3
-	clot_rate = 0.12
-	threshold_minimum = 40
+	clot_rate = 0.1
+	threshold_minimum = 32
 	threshold_penalty = 8
 	status_effect_type = /datum/status_effect/wound/slash/moderate
 	scar_keyword = "slashmoderate"
@@ -318,11 +322,11 @@
 	occur_text = "широко раскрывается, что приводит к венозному кровотечению"
 	sound_effect = 'sound/effects/wounds/blood2.ogg'
 	severity = WOUND_SEVERITY_SEVERE
-	initial_flow = 1.8
+	initial_flow = 2.25
 	minimum_flow = 1.75
-	clot_rate = 0.07
+	clot_rate = 0.05
 	max_per_type = 4
-	threshold_minimum = 65
+	threshold_minimum = 55
 	threshold_penalty = 15
 	demotes_to = /datum/wound/slash/moderate
 	status_effect_type = /datum/status_effect/wound/slash/severe
@@ -355,11 +359,11 @@
 	occur_text = "разрывается, разбрызгивая кровь"
 	sound_effect = 'sound/effects/wounds/blood3.ogg'
 	severity = WOUND_SEVERITY_CRITICAL
-	initial_flow = 2.85
+	initial_flow = 3.35
 	minimum_flow = 2.5
 	clot_rate = -0.05 // critical cuts actively get worse instead of better
 	max_per_type = 5
-	threshold_minimum = 100
+	threshold_minimum = 85
 	threshold_penalty = 25
 	demotes_to = /datum/wound/slash/severe
 	status_effect_type = /datum/status_effect/wound/slash/critical

@@ -89,13 +89,14 @@
 	box = /obj/item/storage/box/debugtools
 	suit_store = /obj/item/gun/energy/pulse
 	backpack_contents = list(
-		/obj/item/melee/transforming/energy/axe=1,\
-		/obj/item/storage/part_replacer/bluespace/tier5=1,\
-		/obj/item/debug/human_spawner=1,\
-		/obj/item/gun/energy/taser/debug=1,\
-		/obj/item/clothing/glasses/debug,\
-		/obj/item/clothing/mask/gas/welding/up,\
-		/obj/item/tank/internals/oxygen,\
+		/obj/item/melee/transforming/energy/axe,
+		/obj/item/storage/part_replacer/bluespace/tier5,
+		/obj/item/debug/human_spawner,
+		/obj/item/gun/energy/taser/debug,
+		/obj/item/gun/magic/wand/dust/debug,
+		/obj/item/clothing/glasses/debug,
+		/obj/item/clothing/mask/gas/welding/up,
+		/obj/item/tank/internals/oxygen,
 		)
 	implants = list(/obj/item/implant/mindshield, /obj/item/implant/deathrattle/centcom, /obj/item/implant/weapons_auth, /obj/item/implant/radio/centcom)
 
@@ -115,12 +116,13 @@
 	suit_store = /obj/item/tank/internals/oxygen
 	internals_slot = ITEM_SLOT_SUITSTORE
 	backpack_contents = list(
-		/obj/item/melee/transforming/energy/axe=1,\
-		/obj/item/storage/part_replacer/bluespace/tier5=1,\
-		/obj/item/debug/human_spawner=1,\
-		/obj/item/gun/energy/pulse=1,\
-		/obj/item/storage/lockbox/anti_singulo=1,\
-		/obj/item/gun/energy/taser/debug,\
+		/obj/item/melee/transforming/energy/axe,
+		/obj/item/storage/part_replacer/bluespace/tier5,
+		/obj/item/debug/human_spawner,
+		/obj/item/gun/energy/pulse,
+		/obj/item/storage/lockbox/anti_singulo,
+		/obj/item/gun/energy/taser/debug,
+		/obj/item/gun/magic/wand/dust/debug,
 		)
 	implants = list(/obj/item/implant/mindshield, /obj/item/implant/deathrattle/centcom, /obj/item/implant/weapons_auth, /obj/item/implant/radio/centcom)
 

@@ -1142,12 +1142,44 @@ GLOBAL_LIST_EMPTY(humanoid_icon_cache)
 		else if (outfit_override)
 			body.equipOutfit(outfit_override,visualsOnly = TRUE)
 
+		// Синхронизация превью моба, без этого именно эти части почему-то ломает. Костыль.
+		body.update_body(update_genitals = TRUE)
+		body.update_hair()
+		body.update_mutations_overlay()
 
-		var/icon/out_icon = icon('icons/effects/effects.dmi', "nothing")
+		var/icon/out_icon
+		var/list/good_partials = list()
+		var/list/good_dirs = list()
+		var/max_w = 0
+		var/max_h = 0
 		for(var/D in showDirs)
 			var/icon/partial = getFlatIcon(body, defdir = D, no_anim = no_anim)
 			if(istype(partial, /icon) && partial.Width() && partial.Height())
-				out_icon.Insert(partial, dir = D)
+				good_partials += partial
+				good_dirs += D
+				var/pw = partial.Width()
+				var/ph = partial.Height()
+				if(pw > max_w)
+					max_w = pw
+				if(ph > max_h)
+					max_h = ph
+
+		if(length(good_dirs))
+			// Чиню за собой партиклы моба, на некоторых персах с специфическими данными превью ломалось.
+			out_icon = new /icon()
+			for(var/i = 1 to length(good_dirs))
+				var/D = good_dirs[i]
+				var/icon/slot = good_partials[i]
+				if(slot.Width() != max_w || slot.Height() != max_h)
+					var/icon/padded = new /icon(slot)
+					padded.Crop(1, 1, max_w, max_h)
+					slot = padded
+				try
+					out_icon.Insert(slot, dir = D, frame = 1, delay = 0)
+				catch(var/exception/e)
+					stack_trace("get_flat_human_icon: Insert failed for dir=[D] ([e])")
+		if(!out_icon || !out_icon.Width())
+			out_icon = icon('icons/effects/effects.dmi', "nothing")
 
 		GLOB.humanoid_icon_cache[icon_id] = out_icon
 		if(length(GLOB.humanoid_icon_cache) > HUMANOID_ICON_CACHE_MAX)

@@ -25,6 +25,7 @@
 #define TRAIT_TK_POTENTIAL					"TK_potential"
 #define TRAIT_RETRACTABLE_CLAWS				"claws"
 #define TRAIT_CHAMELEON_QUIRK				"chameleon_quirk"
+#define BLUEMOON_TRAIT_NAME_PHOBIA			"Фобия"
 
 // Отдельные наименования для квирков, чтобы не повторять их в настройках
 #define BLUEMOON_TRAIT_NAME_SHRIEK				"Крикун"

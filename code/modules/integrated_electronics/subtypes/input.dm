@@ -608,30 +608,36 @@
 	var/datum/integrated_io/I = inputs[1]
 	var/datum/integrated_io/O = outputs[1]
 	O.data = null
-	var/turf/T = get_turf(src)
-	var/list/nearby_things =  view(radius,T)
-	var/list/valid_things = list()
+	var/desired_type
+	var/search_text
 	if(isweakref(I.data))
-		var/atom/A = I.data.resolve()
+		var/atom/A = astype(I.data.resolve(), /atom)
 		if(!A)
 			O.push_data()
 			activate_pin(3)
 			return
-		var/desired_type = A.type
-		if(desired_type)
-			for(var/i in nearby_things)
-				var/atom/thing = i
-				if(ismob(thing) && !isliving(thing))
-					continue
-				if(thing.type == desired_type)
-					valid_things.Add(thing)
+		desired_type = A.type
 	else if(istext(I.data))
-		var/DT = I.data
-		for(var/i in nearby_things)
-			var/atom/thing = i
+		search_text = I.data
+	else
+		O.push_data()
+		activate_pin(3)
+		return
+
+	var/turf/T = get_turf(src)
+	var/list/nearby_things = view(radius, T)
+	var/list/valid_things = list()
+	if(desired_type)
+		for(var/atom/thing as anything in nearby_things)
 			if(ismob(thing) && !isliving(thing))
 				continue
-			if(findtext(addtext(thing.name," ",thing.desc), DT, 1, 0) )
+			if(thing.type == desired_type)
+				valid_things.Add(thing)
+	else
+		for(var/atom/thing as anything in nearby_things)
+			if(ismob(thing) && !isliving(thing))
+				continue
+			if(findtext(addtext(thing.name, " ", thing.desc), search_text, 1, 0))
 				valid_things.Add(thing)
 	if(valid_things.len)
 		O.data = WEAKREF(pick(valid_things))

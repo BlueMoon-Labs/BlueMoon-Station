@@ -83,17 +83,23 @@
 		icon_state = "vent_in"
 
 /obj/machinery/atmospherics/components/unary/vent_pump/process_atmos()
-	..()
+	if(atmos_idle_until > world.time)
+		return
 	if(!is_operational)
+		// Woken by power_change(); no point polling an unpowered vent.
+		atmos_consider_idle()
 		return
 	if(!nodes[1])
 		on = FALSE
 	if(!on || welded)
+		// Woken by receive_signal()/welder_act().
+		atmos_consider_idle()
 		return
 
 	var/datum/gas_mixture/air_contents = airs[1]
 	var/datum/gas_mixture/environment = loc.return_air()
 	if (!environment)
+		atmos_consider_idle()
 		return
 
 	var/environment_pressure = environment.return_pressure()
@@ -107,10 +113,13 @@
 		if(pressure_checks&INT_BOUND)
 			pressure_delta = min(pressure_delta, (air_contents.return_pressure() - internal_pressure_bound))
 
-		if(pressure_delta > 0 && air_contents.return_temperature() > 0)
+		// Sub-epsilon imbalances are invisible to players but a transfer would
+		// re-excite the room's turfs every fire, forever.
+		if(pressure_delta > ATMOS_VENT_PRESSURE_EPSILON && air_contents.return_temperature() > 0)
 			var/transfer_moles = pressure_delta*environment.return_volume()/(air_contents.return_temperature() * R_IDEAL_GAS_EQUATION)
+			// assume_air_moles already reactivates the turf on success, no
+			// air_update_turf() needed on top.
 			if(loc.assume_air_moles(air_contents, transfer_moles))
-				air_update_turf()
 				did_transfer = TRUE
 
 	else // external -> internal
@@ -122,12 +131,19 @@
 			if(pressure_checks&INT_BOUND)
 				moles_delta = min(moles_delta, (internal_pressure_bound - air_contents.return_pressure()) * our_multiplier)
 
-			if(moles_delta > 0)
+			// Same epsilon as above, expressed in moles of environment air.
+			var/epsilon_moles = ATMOS_VENT_PRESSURE_EPSILON * environment.return_volume() / (environment.return_temperature() * R_IDEAL_GAS_EQUATION)
+			if(moles_delta > epsilon_moles)
+				// transfer_air already reactivates the turf on success.
 				if(loc.transfer_air(air_contents, moles_delta))
-					air_update_turf()
 					did_transfer = TRUE
 	if(did_transfer)
 		update_parents()
+		atmos_idle_streak = 0
+	else
+		// At equilibrium: recheck on the heartbeat, or instantly when the turf
+		// activates, the pipenet pressure jumps, or a signal arrives.
+		atmos_consider_idle()
 
 //Radio remote control
 
@@ -170,6 +186,8 @@
 	if(frequency)
 		set_frequency(frequency)
 	broadcast_status()
+	register_turf_wake()
+	atmos_wake()
 	..()
 
 /obj/machinery/atmospherics/components/unary/vent_pump/receive_signal(datum/signal/signal)
@@ -178,6 +196,10 @@
 	// log_admin("DEBUG \[[world.timeofday]\]: /obj/machinery/atmospherics/components/unary/vent_pump/receive_signal([signal.debug_print()])")
 	if(!signal.data["tag"] || (signal.data["tag"] != id_tag) || (signal.data["sigtype"]!="command"))
 		return
+	// init (rename) and status polls are read-only telemetry; only real commands
+	// may reset the idle heartbeat.
+	if(!("status" in signal.data) && !("init" in signal.data))
+		atmos_wake()
 
 	var/mob/signal_sender = signal.data["user"]
 
@@ -257,6 +279,7 @@
 		else
 			user.visible_message("[user] unwelded the vent.", "<span class='notice'>You unweld the vent.</span>", "<span class='italics'>You hear welding.</span>")
 			welded = FALSE
+		atmos_wake()
 		update_icon()
 		pipe_vision_img = image(src, loc, layer = ABOVE_HUD_LAYER, dir = dir)
 		pipe_vision_img.plane = ABOVE_HUD_PLANE
@@ -274,7 +297,7 @@
 		. += "It seems welded shut."
 
 /obj/machinery/atmospherics/components/unary/vent_pump/power_change()
-	..()
+	..() // the base override already calls atmos_wake()
 	update_icon_nopipes()
 
 /obj/machinery/atmospherics/components/unary/vent_pump/can_crawl_through()
@@ -285,6 +308,7 @@
 		return
 	user.visible_message("[user] furiously claws at [src]!", "You manage to clear away the stuff blocking the vent", "You hear loud scraping noises.")
 	welded = FALSE
+	atmos_wake()
 	update_icon()
 	pipe_vision_img = image(src, loc, layer = ABOVE_HUD_LAYER, dir = dir)
 	pipe_vision_img.plane = ABOVE_HUD_PLANE

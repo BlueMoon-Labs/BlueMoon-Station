@@ -18,6 +18,7 @@
 	//This must be done first, so the mob ghosts correctly before DNA etc is nulled
 	. =  ..()
 
+	QDEL_NULL(small_sprite)
 	QDEL_LIST(internal_organs)
 	QDEL_LIST(stomach_contents)
 	QDEL_LAZYLIST(all_wounds)
@@ -283,6 +284,19 @@
 		SEND_SIGNAL(src, COMSIG_CARBON_EMBED_RIP, I, L)
 		return
 
+	if(href_list["remove_gauze"] && usr == src && usr.canUseTopic(src, BE_CLOSE))
+		var/obj/item/bodypart/L = locate(href_list["gauze_limb"]) in bodyparts
+		if(!L?.current_gauze)
+			return
+		var/obj/item/stack/medical/gauze/g = L.current_gauze
+		var/time_taken = g.self_delay
+		visible_message("<span class='notice'>[usr] начинает снимать [g] с [L.ru_name_v].</span>", "<span class='notice'>Вы начинаете снимать [g] с вашей [L.ru_name_v]...</span>")
+		if(do_after(usr, time_taken, target = src))
+			if(L.current_gauze == g)
+				L.remove_gauze(usr)
+				visible_message("<span class='notice'>[usr] снимает [g] с [L.ru_name_v].</span>", "<span class='notice'>Вы снимаете [g] с вашей [L.ru_name_v].</span>")
+		return
+
 /mob/living/carbon/fall(forced)
 	loc.handle_fall(src, forced)//it's loc so it doesn't call the mob's handle_fall which does nothing
 
@@ -546,10 +560,12 @@
 			break
 	return TRUE
 
-/mob/living/carbon/proc/spew_organ(power = 5, amt = 1)
+/mob/living/carbon/proc/spew_organ(power = 5, amt = 1, exclude_brain = FALSE)
 	var/list/spillable_organs = list()
 	for(var/A in internal_organs)
 		var/obj/item/organ/O = A
+		if(exclude_brain && istype(O, /obj/item/organ/brain))
+			continue
 		if(!(O.organ_flags & ORGAN_NO_DISMEMBERMENT))
 			spillable_organs += O
 	for(var/i in 1 to amt)

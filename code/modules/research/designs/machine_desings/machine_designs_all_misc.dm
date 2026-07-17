@@ -83,7 +83,7 @@
 	id = "electrolyzer"
 	build_path = /obj/item/circuitboard/machine/electrolyzer
 	category = list ("Engineering Machinery")
-	departmental_flags = DEPARTMENTAL_FLAG_ALL
+	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING
 
 /datum/design/board/reagentgrinder
 	name = "Machine Design (All-In-One Grinder)"

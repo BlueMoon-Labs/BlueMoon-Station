@@ -89,6 +89,154 @@
 			return
 	return ..()
 
+GLOBAL_LIST_INIT(aventail_detail_colors, list(
+	"Red" = "#8b2323",
+	"Purple" = "#8747b1",
+	"Black" = "#2b292e",
+	"Brown" = "#61462c",
+	"Green" = "#428138",
+	"Blue" = "#173266",
+	"Yellow" = "#ffcd43",
+	"Teal" = "#249589",
+	"Azure" = "#007fff",
+	"White" = "#ffffff",
+	"Orange" = "#df8405",
+	"Magenta" = "#962e5c",
+	"Gold" = "#f9a602",
+	"Scarlet" = "#cc0000",
+))
+GLOBAL_PROTECT(aventail_detail_colors)
+
+GLOBAL_LIST_INIT(aventail_pride_colors, list(
+	"Rainbow" = "#fcfcfc",
+))
+GLOBAL_PROTECT(aventail_pride_colors)
+
+/obj/item/clothing/head/helmet/military
+	name = "Hounskull With Aventail"
+	desc = "A steel hounskull bascinet with a thick maille aventail secured to the inside. Just as a froggemund befits a knight in the tournaments, an \
+	aventailed bascinet befits a knight on the battlefield; unmatched in coverage, durability, and weight."
+	icon_state = "visaventail"
+	item_state = "visaventail"
+	flags_inv = HIDEEARS|HIDEEYES|HIDEFACE|HIDESNOUT
+	flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
+	strip_delay = 80
+	dog_fashion = null
+	armor = list(MELEE = 20, BULLET = 40, LASER = 40, ENERGY = 40, BOMB = 25, BIO = 0, RAD = 0, FIRE = 10, ACID = 50, WOUND = 50)
+	can_toggle = TRUE
+	toggle_message = "You pull the visor down on"
+	alt_toggle_message = "You push the visor up on"
+	actions_types = list(/datum/action/item_action/toggle)
+	visor_flags_inv = HIDEEYES|HIDEFACE|HIDESNOUT
+	visor_flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
+	toggle_cooldown = 0
+	active_sound = 'sound/machines/closet_open.ogg'
+	dynamic_hair_suffix = ""
+	dynamic_fhair_suffix = ""
+	var/detail_tag
+	var/detail_color
+	var/altdetail_tag
+	var/altdetail_color
+
+/obj/item/clothing/head/helmet/military/examine(mob/user)
+	. = ..()
+	. += span_notice("You can add a <b>feather</b> for a colored plume, or a sheet of <b>cloth</b> for an orle.")
+
+/obj/item/clothing/head/helmet/military/attack_self(mob/user)
+	if(can_toggle && !user.incapacitated())
+		if(world.time > cooldown + toggle_cooldown)
+			cooldown = world.time
+			up = !up
+			flags_inv ^= visor_flags_inv
+			flags_cover ^= visor_flags_cover
+			icon_state = "[initial(icon_state)][up ? "_t" : ""]"
+			to_chat(user, "[up ? alt_toggle_message : toggle_message] \the [src]")
+			update_icon()
+			user.update_inv_head()
+			if(iscarbon(user))
+				var/mob/living/carbon/C = user
+				C.head_update(src, forced = 1)
+			if(active_sound && up)
+				playsound(src.loc, active_sound, 100, 0, 4)
+
+/obj/item/clothing/head/helmet/military/attackby(obj/item/W, mob/living/user, params)
+	. = ..()
+	if(istype(W, /obj/item/feather) && !detail_tag)
+		var/choice = input(user, "Choose a color.", "Plume") as anything in GLOB.aventail_detail_colors + GLOB.aventail_pride_colors
+		if(!choice)
+			return
+		detail_color = (choice in GLOB.aventail_pride_colors) ? GLOB.aventail_pride_colors[choice] : GLOB.aventail_detail_colors[choice]
+		detail_tag = "_detail"
+		user.visible_message(span_warning("[user] adds [W] to [src]."))
+		user.transferItemToLoc(W, src, FALSE, FALSE)
+		qdel(W)
+		update_icon()
+		if(loc == user && ishuman(user))
+			var/mob/living/carbon/H = user
+			H.update_inv_head()
+	if(istype(W, /obj/item/stack/sheet/cloth) && !altdetail_tag)
+		var/obj/item/stack/sheet/cloth/C = W
+		if(C.amount < 1)
+			return
+		var/choicealt = input(user, "Choose a color.", "Orle") as anything in GLOB.aventail_detail_colors + GLOB.aventail_pride_colors
+		if(!choicealt)
+			return
+		user.visible_message(span_warning("[user] adds [W] to [src]."))
+		altdetail_color = (choicealt in GLOB.aventail_pride_colors) ? GLOB.aventail_pride_colors[choicealt] : GLOB.aventail_detail_colors[choicealt]
+		// Орле не имеет права трогать detail_tag: это слот плюмажа, и запись в него блокировала
+		// добавление пера, а уже вставленное перо подменяла спрайтом, которого в dmi нет вовсе.
+		altdetail_tag = "_detailalt"
+		C.use(1)
+		update_icon()
+		if(loc == user && ishuman(user))
+			var/mob/living/carbon/H = user
+			H.update_inv_head()
+
+/obj/item/clothing/head/helmet/military/update_icon_state()
+	icon_state = "[initial(icon_state)][up ? "_t" : ""]"
+
+/obj/item/clothing/head/helmet/military/update_icon()
+	cut_overlays()
+	update_icon_state()
+	if(detail_tag)
+		var/mutable_appearance/pic = mutable_appearance(icon(icon, "[icon_state][detail_tag]"))
+		pic.appearance_flags = RESET_COLOR
+		if(detail_color)
+			pic.color = detail_color
+		add_overlay(pic)
+	if(altdetail_tag)
+		var/mutable_appearance/pic2 = mutable_appearance(icon(icon, "[icon_state][altdetail_tag]"))
+		pic2.appearance_flags = RESET_COLOR
+		if(altdetail_color)
+			pic2.color = altdetail_color
+		add_overlay(pic2)
+
+/obj/item/clothing/head/helmet/military/worn_overlays(isinhands = FALSE, icon_file, used_state, style_flags = NONE)
+	. = ..()
+	if(isinhands)
+		return
+	if(detail_tag)
+		var/mutable_appearance/pic = mutable_appearance(icon(icon_file, "[used_state][detail_tag]"))
+		pic.appearance_flags = RESET_COLOR
+		if(detail_color)
+			pic.color = detail_color
+		. += pic
+	if(altdetail_tag)
+		var/mutable_appearance/pic2 = mutable_appearance(icon(icon_file, "[used_state][altdetail_tag]"))
+		pic2.appearance_flags = RESET_COLOR
+		if(altdetail_color)
+			pic2.color = altdetail_color
+		. += pic2
+
+/obj/item/clothing/head/helmet/knight/warlord
+	name = "golden barbute helmet"
+	desc = "There is no man behind the helmet, only a terrible thought."
+	icon_state = "warlord"
+	armor = list(MELEE = 40, BULLET = 40, LASER = 40, ENERGY = 40, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 50)
+	flags_inv = HIDEEARS|HIDEEYES|HIDEFACE|HIDEMASK|HIDEHAIR|HIDEFACIALHAIR|HIDESNOUT
+	flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
+	slowdown = 0.2
+
 /obj/item/clothing/head/helmet/nvg
 	name = "NVG Helmet"
 	desc = "Standard Security gear. Protects the head from impacts. Equipped with a night vision apparatus on the front edge."

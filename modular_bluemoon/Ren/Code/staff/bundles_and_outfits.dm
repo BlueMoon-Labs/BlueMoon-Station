@@ -106,7 +106,8 @@
 	new /obj/item/storage/box/survival/security/radio(src)
 	new /obj/item/gun/ballistic/automatic/shotgun/aa12(src)
 	for(var/i in 1 to 3)
-		new /obj/item/ammo_box/magazine/aa12/small(src)
+		new /obj/item/ammo_box/magazine/aa12(src)
+	new /obj/item/ammo_box/magazine/aa12/drum(src)
 	new /obj/item/storage/belt/utility/syndicate(src)
 	new /obj/item/clothing/gloves/tackler/combat/insulated(src)
 

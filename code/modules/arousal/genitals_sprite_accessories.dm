@@ -5,6 +5,7 @@
 	var/feat_taur //the text string of the dna feature to check for those who want to opt out.
 	var/taur_dimension_y = 32
 	var/taur_dimension_x = 32
+	var/use_custom_mod_icon = FALSE
 
 /*
  * This is an example of a penis object in the code.

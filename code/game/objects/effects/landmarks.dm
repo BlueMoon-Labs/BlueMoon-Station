@@ -544,9 +544,15 @@ INITIALIZE_IMMEDIATE(/obj/effect/landmark/start/new_player)
 	if(!template)
 		return FALSE
 	testing("Ruin \"[template_name]\" placed at ([T.x], [T.y], [T.z])")
+	// Снимаемся с учёта ДО загрузки, а не после. template.load() спит (маплоадер
+	// уступает тик), и всё это время лендмарк оставался в GLOB.stationroom_landmarks:
+	// параллельный seedStation() (таймер тикера, +60с после раундстарта) подхватывал
+	// тот же лендмарк и грузил шаблон второй раз в ту же точку. Дубль накладывал
+	// вторую копию каждой атмос-машины на те же тайлы, у устройств один слот nodes
+	// на копию - вторая передавала в setPipenet отсутствующий в nodes объект.
+	GLOB.stationroom_landmarks -= src
 	template.load(T, centered = FALSE)
 	template.loaded++
-	GLOB.stationroom_landmarks -= src
 	qdel(src)
 	return TRUE
 
@@ -678,7 +684,7 @@ INITIALIZE_IMMEDIATE(/obj/effect/landmark/start/new_player)
 
 /obj/effect/landmark/stationroom/maint/tenxten
 	template_names = list("Maint aquarium", "Maint bigconstruction", "Maint bigtheatre", "Maint deltalibrary", "Maint graffitiroom", "Maint junction", "Maint podrepairbay", "Maint pubbybar", "Maint roosterdome", "Maint sanitarium", "Maint snakefighter", "Maint vault", "Maint ward", "Maint assaultpod", "Maint maze", "Maint maze2", "Maint boxfactory",
-	"Maint sixsectorsdown", "Maint advbotany", "Maint beach", "Maint botany_apiary", "Maint gamercave", "Maint ladytesla_altar", "Maint olddiner", "Maint smallmagician", "Maint fourshops", "Maint fishinghole", "Maint fakewalls", "Maint wizard", "Maint halloween")
+	"Maint sixsectorsdown", "Maint advbotany", "Maint beach", "Maint botany_apiary", "Maint gamercave", "Maint ladytesla_altar", "Maint olddiner", "Maint smallmagician", "Maint fourshops", "Maint fishinghole", "Maint fakewalls", "Maint wizard", "Maint halloween", "Vulpix Fastfood")
 
 // Landmark for this gostrole station
 /obj/effect/landmark/stationroom/space/forgottenship

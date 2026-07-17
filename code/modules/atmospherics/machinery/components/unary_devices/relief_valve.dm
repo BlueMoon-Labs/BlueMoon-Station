@@ -59,12 +59,9 @@
 			if(environment.gc_share)
 				if(our_pressure > environment.return_pressure())
 					var/total_volume = air_contents.return_volume() + environment.return_volume()
-					var/vent_ratio = total_volume > 0 ? clamp(environment.return_volume() / total_volume, 0, 1) : 0
-					if(vent_ratio > 0)
-						var/datum/gas_mixture/vented = air_contents.remove_ratio(vent_ratio)
-						if(vented)
-							active = vented.total_moles() > 0
-							qdel(vented)
+					var/vent_fraction = total_volume > 0 ? clamp(environment.return_volume() / total_volume, 0, 1) : 0
+					if(vent_fraction > 0)
+						active = air_contents.vent_ratio(vent_fraction)
 			else
 				equalize_all_gases_in_list(list(air_contents,environment))
 				active = TRUE

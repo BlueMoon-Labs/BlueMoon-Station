@@ -5,7 +5,7 @@
 //	You do not need to raise this if you are adding new values that have sane defaults.
 //	Only raise this value when changing the meaning/format/name/layout of an existing value
 //	where you would want the updater procs below to run
-#define SAVEFILE_VERSION_MAX	73
+#define SAVEFILE_VERSION_MAX	75
 
 /// Upper bound for character slot indices during savefile migration (loop over S.dir).
 /// Prevents corrupted or garbage directory names (e.g. huge slot numbers) from inflating max_save_slots
@@ -114,6 +114,13 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	if(current_version < 70) // Bitflag toggles don't set their defaults when they're added, always defaulting to off instead.
 		toggles |= SOUND_PERSONAL_JUKEBOXES
+
+	if(current_version < 74)
+		new_character_creator = TRUE
+		charcreation_theme = "modern"
+
+	if(current_version < 75)
+		toggles |= SOUND_EMOTE
 
 /datum/preferences/proc/update_character(current_version, savefile/S)
 	if(current_version < 19)
@@ -521,7 +528,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["tgui_panel_state"]		>> tgui_panel_state
 	S["ui_zoom_preferences"]	>> ui_zoom_preferences
 	S["windowflash"] 			>> windowflashing
+	S["adminhelp_windowflash"]	>> adminhelp_windowflash
 	S["windownoise"] 			>> windownoise
+	S["mood_vignette"] 			>> mood_vignette
 	S["action_buttons_hide_on_spawn"] 			>> action_buttons_hide_on_spawn
 	S["be_special"] 			>> be_special
 
@@ -564,6 +573,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["sound_volume_adminhelp"] >> sound_volume_adminhelp
 	S["sound_volume_instruments"] >> sound_volume_instruments
 	S["sound_volume_jukeboxes"] >> sound_volume_jukeboxes
+	S["sound_volume_personal_jukeboxes"] >> sound_volume_personal_jukeboxes
+	S["sound_volume_emote"] >> sound_volume_emote
 	S["parallax"] >> parallax
 	S["ambientocclusion"] >> ambientocclusion
 	S["lighting_blur"] >> lighting_blur
@@ -596,12 +607,29 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["recoil_screenshake"] >> recoil_screenshake
 
 	// Splurt
-	S["be_victim"]				>> be_victim
 	S["disable_combat_cursor"]	>> disable_combat_cursor
 	S["disable_combat_mouse_lock"]	>> disable_combat_mouse_lock
 	S["gfluid_blacklist"]		>> gfluid_blacklist
 
 	S["collapse_empty_character_slots"] >> collapse_empty_character_slots
+	S["charcreation_theme"]		>> charcreation_theme
+	S["modern_button_shape"]	>> modern_button_shape
+	S["modern_custom_enabled"]	>> modern_custom_enabled
+	S["modern_custom_bg_primary"]	>> modern_custom_bg_primary
+	S["modern_custom_bg_secondary"]	>> modern_custom_bg_secondary
+	S["modern_custom_text_primary"]	>> modern_custom_text_primary
+	S["modern_custom_text_secondary"]	>> modern_custom_text_secondary
+	S["modern_custom_button_bg"]	>> modern_custom_button_bg
+	S["modern_custom_button_hover"]	>> modern_custom_button_hover
+	S["modern_custom_button_active"]	>> modern_custom_button_active
+	S["modern_custom_button_text"]	>> modern_custom_button_text
+	S["modern_custom_border_color"]	>> modern_custom_border_color
+	S["modern_custom_accent_color"]	>> modern_custom_accent_color
+	S["modern_custom_bg_pattern"]	>> modern_custom_bg_pattern
+	S["ui_decoration_level"]	>> ui_decoration_level
+	S["modern_ui_language"]		>> modern_ui_language
+	S["use_modern_translations"]	>> use_modern_translations
+	S["new_character_creator"]	>> new_character_creator
 	S["view_pixelshift"]		>> view_pixelshift
 
 	//favorite outfits
@@ -664,7 +692,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 				ui_zoom_count++
 		ui_zoom_preferences = sanitized_ui_zoom_preferences
 	windowflashing = sanitize_integer(windowflashing, 0, 1, initial(windowflashing))
+	adminhelp_windowflash = sanitize_integer(adminhelp_windowflash, 0, 1, initial(adminhelp_windowflash))
 	windownoise = sanitize_integer(windownoise, 0, 1, initial(windownoise))
+	mood_vignette = sanitize_integer(mood_vignette, 0, 1, initial(mood_vignette))
 	action_buttons_hide_on_spawn = sanitize_integer(action_buttons_hide_on_spawn, 0, 1, initial(action_buttons_hide_on_spawn))
 	default_slot = sanitize_integer(default_slot, 1, max_save_slots, initial(default_slot))
 	toggles = sanitize_integer(toggles, 0, 16777215, initial(toggles))
@@ -680,6 +710,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	sound_volume_adminhelp = sanitize_integer(sound_volume_adminhelp, 0, 100, initial(sound_volume_adminhelp))
 	sound_volume_instruments = sanitize_integer(sound_volume_instruments, 0, 100, initial(sound_volume_instruments))
 	sound_volume_jukeboxes = sanitize_integer(sound_volume_jukeboxes, 0, 100, initial(sound_volume_jukeboxes))
+	sound_volume_personal_jukeboxes = sanitize_integer(sound_volume_personal_jukeboxes, 0, 100, initial(sound_volume_personal_jukeboxes))
+	sound_volume_emote = sanitize_integer(sound_volume_emote, 0, 100, initial(sound_volume_emote))
 	preferred_chaos_level = sanitize_integer(preferred_chaos_level, 0, 3, 2)
 	parallax = sanitize_integer(parallax, PARALLAX_DISABLE, PARALLAX_INSANE, null)
 	ambientocclusion = sanitize_integer(ambientocclusion, 0, 1, initial(ambientocclusion))
@@ -723,6 +755,24 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	gfluid_blacklist = sanitize_islist(gfluid_blacklist, list())
 
 	collapse_empty_character_slots = sanitize_integer(collapse_empty_character_slots, 0, 1, initial(collapse_empty_character_slots))
+	charcreation_theme = sanitize_inlist(charcreation_theme, list("classic", "modern", "modern_classic", "modern_purple", "modern_green", "modern_neutral", "modern_custom"), initial(charcreation_theme))
+	modern_button_shape = sanitize_inlist(modern_button_shape, list("rect", "soft", "round"), initial(modern_button_shape))
+	modern_custom_enabled = sanitize_integer(modern_custom_enabled, 0, 1, initial(modern_custom_enabled))
+	modern_custom_bg_primary = sanitize_hexcolor(modern_custom_bg_primary, 6, 0, initial(modern_custom_bg_primary))
+	modern_custom_bg_secondary = sanitize_hexcolor(modern_custom_bg_secondary, 6, 0, initial(modern_custom_bg_secondary))
+	modern_custom_text_primary = sanitize_hexcolor(modern_custom_text_primary, 6, 0, initial(modern_custom_text_primary))
+	modern_custom_text_secondary = sanitize_hexcolor(modern_custom_text_secondary, 6, 0, initial(modern_custom_text_secondary))
+	modern_custom_button_bg = sanitize_hexcolor(modern_custom_button_bg, 6, 0, initial(modern_custom_button_bg))
+	modern_custom_button_hover = sanitize_hexcolor(modern_custom_button_hover, 6, 0, initial(modern_custom_button_hover))
+	modern_custom_button_active = sanitize_hexcolor(modern_custom_button_active, 6, 0, initial(modern_custom_button_active))
+	modern_custom_button_text = sanitize_hexcolor(modern_custom_button_text, 6, 0, initial(modern_custom_button_text))
+	modern_custom_border_color = sanitize_hexcolor(modern_custom_border_color, 6, 0, initial(modern_custom_border_color))
+	modern_custom_accent_color = sanitize_hexcolor(modern_custom_accent_color, 6, 0, initial(modern_custom_accent_color))
+	modern_custom_bg_pattern = sanitize_integer(modern_custom_bg_pattern, 0, 1, initial(modern_custom_bg_pattern))
+	ui_decoration_level = sanitize_inlist(ui_decoration_level, list("minimal", "standard", "enhanced"), initial(ui_decoration_level))
+	modern_ui_language = sanitize_integer(modern_ui_language, 0, 1, initial(modern_ui_language))
+	use_modern_translations = sanitize_integer(use_modern_translations, 0, 1, initial(use_modern_translations))
+	new_character_creator = sanitize_integer(new_character_creator, 0, 1, initial(new_character_creator))
 	//SPLURT CHANGES END
 
 	verify_keybindings_valid()		// one of these days this will runtime and you'll be glad that i put it in a different proc so no one gets their saves wiped
@@ -853,7 +903,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["tgui_panel_state"], tgui_panel_state)
 	WRITE_FILE(S["ui_zoom_preferences"], ui_zoom_preferences)
 	WRITE_FILE(S["windowflash"], windowflashing)
+	WRITE_FILE(S["adminhelp_windowflash"], adminhelp_windowflash)
 	WRITE_FILE(S["windownoise"], windownoise)
+	WRITE_FILE(S["mood_vignette"], mood_vignette)
 	WRITE_FILE(S["action_buttons_hide_on_spawn"], action_buttons_hide_on_spawn)
 	WRITE_FILE(S["be_special"], be_special)
 	WRITE_FILE(S["default_slot"], default_slot)
@@ -891,6 +943,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["sound_volume_adminhelp"], sound_volume_adminhelp)
 	WRITE_FILE(S["sound_volume_instruments"], sound_volume_instruments)
 	WRITE_FILE(S["sound_volume_jukeboxes"], sound_volume_jukeboxes)
+	WRITE_FILE(S["sound_volume_personal_jukeboxes"], sound_volume_personal_jukeboxes)
+	WRITE_FILE(S["sound_volume_emote"], sound_volume_emote)
 	WRITE_FILE(S["parallax"], parallax)
 	WRITE_FILE(S["ambientocclusion"], ambientocclusion)
 	WRITE_FILE(S["lighting_blur"], lighting_blur)
@@ -921,14 +975,30 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["recoil_screenshake"], recoil_screenshake)
 
 	// Splurt
-	WRITE_FILE(S["be_victim"], be_victim)
 	WRITE_FILE(S["disable_combat_cursor"], disable_combat_cursor)
 	WRITE_FILE(S["disable_combat_mouse_lock"], disable_combat_mouse_lock)
 	WRITE_FILE(S["gfluid_blacklist"], gfluid_blacklist)
 
 	WRITE_FILE(S["collapse_empty_character_slots"], collapse_empty_character_slots)
+	WRITE_FILE(S["charcreation_theme"], charcreation_theme)
+	WRITE_FILE(S["modern_button_shape"], modern_button_shape)
+	WRITE_FILE(S["modern_custom_enabled"], modern_custom_enabled)
+	WRITE_FILE(S["modern_custom_bg_primary"], modern_custom_bg_primary)
+	WRITE_FILE(S["modern_custom_bg_secondary"], modern_custom_bg_secondary)
+	WRITE_FILE(S["modern_custom_text_primary"], modern_custom_text_primary)
+	WRITE_FILE(S["modern_custom_text_secondary"], modern_custom_text_secondary)
+	WRITE_FILE(S["modern_custom_button_bg"], modern_custom_button_bg)
+	WRITE_FILE(S["modern_custom_button_hover"], modern_custom_button_hover)
+	WRITE_FILE(S["modern_custom_button_active"], modern_custom_button_active)
+	WRITE_FILE(S["modern_custom_button_text"], modern_custom_button_text)
+	WRITE_FILE(S["modern_custom_border_color"], modern_custom_border_color)
+	WRITE_FILE(S["modern_custom_accent_color"], modern_custom_accent_color)
+	WRITE_FILE(S["modern_custom_bg_pattern"], modern_custom_bg_pattern)
+	WRITE_FILE(S["ui_decoration_level"], ui_decoration_level)
+	WRITE_FILE(S["modern_ui_language"], modern_ui_language)
+	WRITE_FILE(S["use_modern_translations"], use_modern_translations)
+	WRITE_FILE(S["new_character_creator"], new_character_creator)
 	WRITE_FILE(S["view_pixelshift"], view_pixelshift)
-	WRITE_FILE(S["eorg_enabled"], eorg_enabled)
 
 	//SKYRAT CHANGES BEGIN
 	WRITE_FILE(S["see_chat_emotes"], see_chat_emotes)
@@ -1170,6 +1240,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["feature_color_scheme"] 				>> features["color_scheme"]
 	S["shriek_type"] 						>> shriek_type // BLUEMOON ADD - выбор вида крика для квирка
 	S["summon_nickname"] 					>> summon_nickname // BLUEMOON ADD - выбор прозвища для призываемого
+	S["phobia_type"] 						>> phobia_type // BLUEMOON ADD - выбор фобии для квирка
 	S["feature_hardsuit_with_tail"] 		>> features["hardsuit_with_tail"]
 	S["persistent_scars"] 					>> persistent_scars
 	S["scars1"] 							>> scars_list["1"]
@@ -1514,6 +1585,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	grad_color = sanitize_hexcolor(grad_color, 6, FALSE)
 	eye_type = sanitize_inlist(eye_type, GLOB.eye_types, DEFAULT_EYES_TYPE)
 	shriek_type = sanitize_inlist(shriek_type, GLOB.shriek_types, SHRIEK_TYPE_GENERIC) // BLUEMOON ADD
+	if(phobia_type && SStraumas && !(phobia_type in SStraumas.phobia_types))
+		phobia_type = null // BLUEMOON ADD - проверка валидности выбранной фобии
 	left_eye_color = sanitize_hexcolor(left_eye_color, 6, FALSE)
 	right_eye_color = sanitize_hexcolor(right_eye_color, 6, FALSE)
 
@@ -1839,6 +1912,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["eye_type"]							, eye_type)
 	WRITE_FILE(S["shriek_type"]							, shriek_type) // BLUEMOON ADD
 	WRITE_FILE(S["summon_nickname"]						, summon_nickname) // BLUEMOON ADD
+	WRITE_FILE(S["phobia_type"]							, phobia_type) // BLUEMOON ADD
 	WRITE_FILE(S["feature_hardsuit_with_tail"]			, features["hardsuit_with_tail"])
 	WRITE_FILE(S["left_eye_color"]						, left_eye_color)
 	WRITE_FILE(S["right_eye_color"]						, right_eye_color)

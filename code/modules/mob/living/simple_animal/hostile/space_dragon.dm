@@ -608,6 +608,7 @@
 	icon_state = "carp_rift_carpspawn"
 	light_color = LIGHT_COLOR_PURPLE
 	light_range = 10
+	light_flags = LIGHT_NO_RANGE_CAP // статичный заякоренный рифт: свечение выше базового капа
 	anchored = TRUE
 	density = FALSE
 	layer = MASSIVE_OBJ_LAYER

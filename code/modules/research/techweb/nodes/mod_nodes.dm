@@ -32,6 +32,8 @@
 		"mod_clamp",
 		"mod_drill",
 		"mod_orebag",
+		"mod_storage_extended",
+		"pai_module",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
 
@@ -143,6 +145,7 @@
 	design_ids = list(
 		"mod_springlock_advanced",
 		"mod_emp_shield_advanced",
+		"mod_harness_system",
 	)
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 7500)
 // BLUEMOON ADD END

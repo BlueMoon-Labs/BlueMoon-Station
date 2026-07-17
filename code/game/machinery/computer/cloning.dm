@@ -2,6 +2,7 @@
 
 /obj/machinery/computer/cloning
 	name = "cloning console"
+	idle_sleeps = FALSE // own periodic work in process(); must not doze off via the parent typing-indicator path
 	desc = "Используется для клонирования людей и работы с ДНК."
 	icon_screen = "dna"
 	icon_keyboard = "med_key"

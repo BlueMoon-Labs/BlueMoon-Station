@@ -35,6 +35,7 @@
 /obj/machinery/atmospherics/components/binary/pump/CtrlClick(mob/user)
 	if(can_interact(user))
 		on = !on
+		atmos_wake()
 		investigate_log("was turned [on ? "on" : "off"] by [key_name(user)]", INVESTIGATE_ATMOS)
 		update_appearance()
 	return ..()
@@ -42,6 +43,7 @@
 /obj/machinery/atmospherics/components/binary/pump/AltClick(mob/user)
 	if(can_interact(user))
 		target_pressure = MAX_OUTPUT_PRESSURE
+		atmos_wake()
 		investigate_log("was set to [target_pressure] kPa by [key_name(user)]", INVESTIGATE_ATMOS)
 		balloon_alert(user, "pressure output set to [target_pressure] kPa")
 		update_appearance()
@@ -58,7 +60,11 @@
 
 /obj/machinery/atmospherics/components/binary/pump/process_atmos()
 //	..()
+	if(atmos_idle_until > world.time)
+		return
 	if(!on || !is_operational)
+		// Woken by ui_act()/receive_signal()/power_change().
+		atmos_consider_idle()
 		return
 
 	var/datum/gas_mixture/air1 = airs[1]
@@ -68,6 +74,8 @@
 
 	if((target_pressure - output_starting_pressure) < 0.01)
 		//No need to pump gas if target is already reached!
+		//Woken by the pipenet pressure-jump broadcast when the output drains.
+		atmos_consider_idle()
 		return
 
 	//Calculate necessary moles to transfer using PV=nRT
@@ -76,14 +84,20 @@
 		var/transfer_moles = pressure_delta*air2.return_volume()/(air1.return_temperature() * R_IDEAL_GAS_EQUATION)
 
 		if(air2.gc_share)
-			var/datum/gas_mixture/vented = air1.remove(transfer_moles)
-			if(vented)
-				var/had_moles = vented.total_moles() > 0
-				qdel(vented)
-				if(had_moles)
-					update_parents()
+			if(air1.vent_moles(transfer_moles))
+				update_parents()
+				atmos_idle_streak = 0
+			else
+				atmos_consider_idle()
 		else if(air1.transfer_to(air2,transfer_moles))
 			update_parents()
+			atmos_idle_streak = 0
+		else
+			// No-op transfer (nothing actually moved): same idle path as venting.
+			atmos_consider_idle()
+	else
+		// Empty input: woken by the pipenet broadcast when gas arrives.
+		atmos_consider_idle()
 
 //Radio remote control
 /obj/machinery/atmospherics/components/binary/pump/proc/set_frequency(new_frequency)
@@ -121,6 +135,7 @@
 /obj/machinery/atmospherics/components/binary/pump/ui_act(action, params)
 	if(..())
 		return
+	atmos_wake()
 	var/turf/T = get_turf(src)
 	var/area/A = get_area(src)
 	switch(action)
@@ -155,6 +170,9 @@
 	if(!signal.data["tag"] || (signal.data["tag"] != id) || (signal.data["sigtype"]!="command"))
 		return
 
+	// Pure status polls are read-only telemetry and must not reset the idle heartbeat.
+	if(!("status" in signal.data))
+		atmos_wake()
 	var/old_on = on //for logging
 
 	if("power" in signal.data)

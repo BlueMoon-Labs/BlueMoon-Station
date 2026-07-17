@@ -12,12 +12,17 @@
 	slot_flags = ITEM_SLOT_BELT
 	custom_materials = list(/datum/material/iron=50, /datum/material/glass=20)
 	actions_types = list(/datum/action/item_action/toggle_light)
+	// Оверлейный свет: движение с фонарём не гоняет корнер-систему (текстурный конус в underlays держателя)
+	light_system = OVERLAY_LIGHT_DIRECTIONAL
+	light_range = 4
+	light_power = 0.8
+	light_on = FALSE
 	var/on = FALSE
 	var/brightness_on = 4 //range of light when on
 	var/flashlight_power = 0.8 //strength of the light when on
-	var/cone_angle = LIGHTING_FLASHLIGHT_CONE_ANGLE // Full cone width in degrees. 0 = omnidirectional.
-	var/soundon = 'sound/weapons/magin.ogg' //BM Changes
-	var/soundoff = 'sound/weapons/magout.ogg' //BM Changes
+	var/cone_angle = LIGHTING_FLASHLIGHT_CONE_ANGLE // Ширина корнер-конуса; используется только сабтайпами на COMPLEX_LIGHT
+	var/soundon = 'sound/weapons/magin.ogg'
+	var/soundoff = 'sound/weapons/magout.ogg'
 	var/electronic = TRUE // EMP sensetive 		// BLUEMOON ADD
 	light_color = "#ffeecb"
 
@@ -34,16 +39,29 @@
 /obj/item/flashlight/proc/update_brightness(mob/user = null)
 	if(on)
 		icon_state = "[initial(icon_state)]-on"
-		var/use_cone = 0
-		if(ismob(loc) && cone_angle > 0)
-			use_cone = cone_angle
-		if(flashlight_power)
-			set_light(l_range = brightness_on, l_power = flashlight_power, l_cone_angle = use_cone)
-		else
-			set_light(brightness_on, l_cone_angle = use_cone)
 	else
 		icon_state = initial(icon_state)
-		set_light(0, l_cone_angle = 0)
+	if(light_system == COMPLEX_LIGHT)
+		// Несконвертированные сабтайпы (eyelight, spotlight, flashdark): корнер-система с конусами.
+		// l_on обязателен: update_light() культит источник при light_on=FALSE, а база фонарика
+		// стартует с выключенным тумблером - без явного включения эти типы не светят вообще.
+		if(on)
+			var/use_cone = 0
+			if(ismob(loc) && cone_angle > 0)
+				use_cone = cone_angle
+			if(flashlight_power)
+				set_light(l_range = brightness_on, l_power = flashlight_power, l_cone_angle = use_cone, l_on = TRUE)
+			else
+				set_light(brightness_on, l_cone_angle = use_cone, l_on = TRUE)
+		else
+			set_light(0, l_cone_angle = 0, l_on = FALSE)
+		return
+	// Оверлейный путь: синкаем легаси-вары яркости в гранулярные сеттеры
+	if(brightness_on != light_range)
+		set_light_range(brightness_on)
+	if(flashlight_power && flashlight_power != light_power)
+		set_light_power(flashlight_power)
+	set_light_on(on)
 
 // BLUEMOON ADD START
 /obj/item/flashlight/emp_act(severity)
@@ -192,8 +210,10 @@
 	icon_state = "penlight"
 	item_state = ""
 	brightness_on = 2
+	light_range = 2
 	light_color = "#FFDDCC"
 	flashlight_power = 0.5
+	light_power = 0.5
 	cone_angle = LIGHTING_PENLIGHT_CONE_ANGLE
 	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_EARS
 	var/holo_cooldown = 0
@@ -246,8 +266,10 @@
 	righthand_file = 'icons/mob/inhands/equipment/security_righthand.dmi'
 	force = 9 // Not as good as a stun baton.
 	brightness_on = 5 // A little better than the standard flashlight.
+	light_range = 5
 	light_color = "#CDDDFF"
 	flashlight_power = 0.9
+	light_power = 0.9
 	cone_angle = LIGHTING_SECLITE_CONE_ANGLE
 	hitsound = 'sound/weapons/genhit1.ogg'
 	custom_price = PRICE_ALMOST_CHEAP
@@ -267,6 +289,9 @@
 	custom_materials = null
 	on = TRUE
 	cone_angle = 0
+	light_system = OVERLAY_LIGHT // настольная лампа светит во все стороны
+	light_range = 5
+	light_on = TRUE
 
 // green-shaded desk lamp
 /obj/item/flashlight/lamp/green
@@ -300,8 +325,12 @@
 	light_color = "#FA421A"
 	icon_state = "flare"
 	item_state = "flare"
+	soundon = 'sound/weapons/firelight.ogg'
+	soundoff = 'sound/weapons/firesnuff.ogg'
 	actions_types = list()
 	cone_angle = 0
+	light_system = OVERLAY_LIGHT // фаера бросают - всенаправленный оверлейный свет
+	light_range = 7
 	var/fuel = 0
 	var/on_damage = 9
 	var/produce_heat = 1500
@@ -374,6 +403,7 @@
 	desc = "A torch fashioned from some leaves and a log."
 	w_class = WEIGHT_CLASS_BULKY
 	brightness_on = 6 //When on were like a lantern
+	light_range = 6
 	light_color = "#FAA44B"
 	icon_state = "torch"
 	item_state = "torch"
@@ -395,6 +425,8 @@
 	light_color = "#FFAA44"
 	flashlight_power = 0.8
 	cone_angle = 0
+	light_system = OVERLAY_LIGHT // фонарь-лампа, света конусом нет
+	light_range = 6
 	custom_price = PRICE_CHEAP
 	electronic = FALSE // BLUEMOON ADD
 
@@ -421,8 +453,11 @@
 	slot_flags = ITEM_SLOT_BELT
 	custom_materials = null
 	brightness_on = 6 //luminosity when on
+	light_system = OVERLAY_LIGHT // светящийся экстракт, без конуса
+	light_range = 6
 	light_color = "#FFEEAA"
 	flashlight_power = 0.6
+	light_power = 0.6
 	electronic = FALSE // BLUEMOON ADD
 	flags_1 = NONE // BLUEMOON ADD
 
@@ -490,6 +525,8 @@
 	icon_state = "glowstick"
 	item_state = "glowstick"
 	cone_angle = 0
+	light_system = OVERLAY_LIGHT // глоустики бросают - всенаправленный оверлейный свет
+	light_range = 4
 	grind_results = list(/datum/reagent/phenol = 15, /datum/reagent/hydrogen = 10, /datum/reagent/oxygen = 5, /datum/reagent/luminescent_fluid = 15) //Meth-in-a-stick
 	rad_flags = RAD_NO_CONTAMINATE
 	electronic = FALSE // BLUEMOON ADD
@@ -522,16 +559,18 @@
 	if(!fuel)
 		icon_state = "glowstick-empty"
 		cut_overlays()
-		set_light(0)
+		set_light_on(FALSE)
 	else if(on)
 		var/mutable_appearance/glowstick_overlay = mutable_appearance(icon, "glowstick-glow")
 		glowstick_overlay.color = color
 		add_overlay(glowstick_overlay)
 		item_state = "glowstick-on"
-		set_light(brightness_on)
+		set_light_range(brightness_on)
+		set_light_on(TRUE)
 	else
 		icon_state = "glowstick"
 		cut_overlays()
+		set_light_on(FALSE)
 
 /obj/item/flashlight/glowstick/attack_self(mob/user)
 	if(!fuel)
@@ -585,6 +624,7 @@
 	name = "disco light"
 	desc = "Groovy..."
 	icon_state = null
+	light_system = COMPLEX_LIGHT // невидимый статический излучатель дискотеки, светом рулит джукбокс
 	light_color = null
 	brightness_on = 0
 	flashlight_power = 1
@@ -605,12 +645,14 @@
 	desc = "A strange device manufactured with mysterious elements that somehow emits darkness. Or maybe it just sucks in light? Nobody knows for sure."
 	icon_state = "flashdark"
 	item_state = "flashdark"
+	light_system = COMPLEX_LIGHT // негативный свет остаётся на корнер-системе (честное затемнение)
 	brightness_on = 1
 	flashlight_power = -2
 
 /obj/item/flashlight/eyelight
 	name = "eyelight"
 	desc = "This shouldn't exist outside of someone's head, how are you seeing this?"
+	light_system = COMPLEX_LIGHT // свет глаз: вторая волна конвертации, пока корнер-система
 	brightness_on = 10
 	item_flags = DROPDEL
 	actions_types = list()

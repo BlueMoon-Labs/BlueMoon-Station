@@ -1,8 +1,8 @@
 //Spatial gateway: A usually one-way rift to another location.
 /obj/effect/clockwork/spatial_gateway
 	name = "spatial gateway"
-	desc = "A gently thrumming tear in reality."
-	clockwork_desc = "A gateway in reality."
+	desc = "Легко вибрирующий разрыв в реальности."
+	clockwork_desc = "Пространственный разлом."
 	icon_state = "spatial_gateway"
 	density = TRUE
 	light_range = 2
@@ -30,9 +30,9 @@
 		qdel(src)
 		return
 	if(both_ways)
-		clockwork_desc = "A gateway in reality. It can both send and receive objects."
+		clockwork_desc = "Пространственный разлом. Он может как отправлять, так и принимать объекты."
 	else
-		clockwork_desc = "A gateway in reality. It can only [sender ? "send" : "receive"] objects."
+		clockwork_desc = "Пространственный разлом. Он может только [sender ? "отправлять" : "принимать"] объекты."
 	if(is_stable)
 		return
 	timerid = QDEL_IN_STOPPABLE(src, lifetime) //We only need this if the gateway is not stable
@@ -62,7 +62,7 @@
 /obj/effect/clockwork/spatial_gateway/examine(mob/user)
 	. = ..()
 	if(is_servant_of_ratvar(user) || isobserver(user))
-		. += "<span class='brass'> [is_stable ? "It is stabilised and can be used as much as is neccessary." : "It has [uses] use\s remaining."]</span>"
+		. += "<span class='brass'> [is_stable ? "Он стабилизирован и может использоваться столько, сколько понадобится." : "Он имеет ещё [uses] использовани[uses % 10 == 1 && uses % 100 != 11 ? "е" : (uses % 10 >= 2 && uses % 10 <= 4 && !(uses % 100 >= 12 && uses % 100 <= 14) ? "я" : "й")]."]</span>"
 
 //ATTACK GHOST IGNORING PARENT RETURN VALUE
 /obj/effect/clockwork/spatial_gateway/attack_ghost(mob/user)
@@ -77,27 +77,27 @@
 		var/mob/living/L = user.pulling
 		if(L.buckled || L.anchored || L.has_buckled_mobs())
 			return FALSE
-		user.visible_message("<span class='warning'>[user] shoves [L] into [src]!</span>", "<span class='danger'>You shove [L] into [src]!</span>")
+		user.visible_message("<span class='warning'>[user] толкает [L] в [src]!</span>", "<span class='danger'>Вы толкаете [L] в [src]!</span>")
 		user.stop_pulling()
 		pass_through_gateway(L)
 		return TRUE
 	if(!user.canUseTopic(src))
 		return FALSE
-	user.visible_message("<span class='warning'>[user] climbs through [src]!</span>", "<span class='danger'>You brace yourself and step through [src]...</span>")
+	user.visible_message("<span class='warning'>[user] пробирается через [src]!</span>", "<span class='danger'>Собравшись с духом, вы проходите через [src]...</span>")
 	pass_through_gateway(user)
 	return TRUE
 
 /obj/effect/clockwork/spatial_gateway/attackby(obj/item/I, mob/living/user, params)
 	if(istype(I, /obj/item/nullrod))
-		user.visible_message("<span class='warning'>[user] dispels [src] with [I]!</span>", "<span class='danger'>You close [src] with [I]!</span>")
+		user.visible_message("<span class='warning'>[user] развеивает [src] с помощью [I]!</span>", "<span class='danger'>Вы закрываете [src] с помощью [I]!</span>")
 		qdel(linked_gateway)
 		qdel(src)
 		return TRUE
 	if(istype(I, /obj/item/clockwork/slab))
-		to_chat(user, "<span class='heavy_brass'>\"I don't think you want to drop your slab into that.\"\n\"If you really want to, try throwing it.\"</span>")
+		to_chat(user, "<span class='heavy_brass'>\"Не думаю, что ты захочешь уронить туда свою плиту.\"\n\"Если уж так хочется, попробуй бросить её.\"</span>")
 		return TRUE
 	if(uses && user.dropItemToGround(I))
-		user.visible_message("<span class='warning'>[user] drops [I] into [src]!</span>", "<span class='danger'>You drop [I] into [src]!</span>")
+		user.visible_message("<span class='warning'>[user] бросает [I] в [src]!</span>", "<span class='danger'>Вы бросаете [I] в [src]!</span>")
 		pass_through_gateway(I, TRUE)
 		return TRUE
 	return ..()
@@ -105,12 +105,12 @@
 /obj/effect/clockwork/spatial_gateway/ex_act(severity, target, origin)
 	if(severity == 1 && uses)
 		uses = 0
-		visible_message("<span class='warning'>[src] is disrupted!</span>")
+		visible_message("<span class='warning'>[src] разрушен!</span>")
 		animate(src, alpha = 0, transform = matrix()*2, time = 10, flags = ANIMATION_END_NOW)
 		deltimer(timerid)
 		timerid = QDEL_IN_STOPPABLE(src, 10)
 		linked_gateway.uses = 0
-		linked_gateway.visible_message("<span class='warning'>[linked_gateway] is disrupted!</span>")
+		linked_gateway.visible_message("<span class='warning'>[linked_gateway] разрушен!</span>")
 		animate(linked_gateway, alpha = 0, transform = matrix()*2, time = 10, flags = ANIMATION_END_NOW)
 		deltimer(linked_gateway.timerid)
 		linked_gateway.timerid = QDEL_IN_STOPPABLE(linked_gateway, 10)
@@ -135,17 +135,17 @@
 		qdel(src)
 		return FALSE
 	if(!sender)
-		visible_message("<span class='warning'>[A] bounces off [src]!</span>")
+		visible_message("<span class='warning'>[A] отскакивает от [src]!</span>")
 		return FALSE
 	if(!uses)
 		return FALSE
 	if(!do_teleport(A, get_turf(linked_gateway), channel = TELEPORT_CHANNEL_CULT, forced = TRUE))
-		visible_message("<span class='warning'>[A] bounces off [src]!</span>")
+		visible_message("<span class='warning'>[A] отскакивает от [src]!</span>")
 		return FALSE
 	if(isliving(A))
 		var/mob/living/user = A
-		to_chat(user, "<span class='warning'><b>You pass through [src] and appear elsewhere!</b></span>")
-	linked_gateway.visible_message("<span class='warning'>A shape appears in [linked_gateway] before emerging!</span>")
+		to_chat(user, "<span class='warning'><b>Вы проходите через [src] и появляетесь в другом месте!</b></span>")
+	linked_gateway.visible_message("<span class='warning'>Фигура появляется в [linked_gateway], прежде чем выйти!</span>")
 	playsound(src, 'sound/effects/empulse.ogg', 50, 1)
 	playsound(linked_gateway, 'sound/effects/empulse.ogg', 50, 1)
 	transform = matrix() * 1.5
@@ -185,65 +185,65 @@
 			possible_targets[avoid_assoc_duplicate_keys("[L.name] ([L.real_name])", teleportnames)] = L
 
 	if(!possible_targets.len)
-		to_chat(invoker, "<span class='warning'>There are no other eligible targets for a Spatial Gateway!</span>")
+		to_chat(invoker, "<span class='warning'>Нет других подходящих целей для пространственного портала!</span>")
 		return FALSE
-	var/input_target_key = input(invoker, "Choose a target to form a rift to.", "Spatial Gateway") as null|anything in possible_targets
+	var/input_target_key = input(invoker, "Выберите цель, с которой нужно создать разлом.", "Пространственный портал") as null|anything in possible_targets
 	var/atom/movable/target = possible_targets[input_target_key]
 	if(!src || !input_target_key || !invoker || !invoker.canUseTopic(src, !issilicon(invoker)) || !is_servant_of_ratvar(invoker) || (isitem(src) && invoker.get_active_held_item() != src) || !invoker.can_speak_vocal())
 		return FALSE //if any of the involved things no longer exist, the invoker is stunned, too far away to use the object, or does not serve ratvar, or if the object is an item and not in the mob's active hand, fail
 	if(!target) //if we have no target, but did have a key, let them retry
-		to_chat(invoker, "<span class='warning'>That target no longer exists!</span>")
+		to_chat(invoker, "<span class='warning'>Эта цель больше не существует!</span>")
 		return procure_gateway(invoker, time_duration, gateway_uses, two_way)
 	if(isliving(target))
 		var/mob/living/L = target
 		if(!is_servant_of_ratvar(L))
-			to_chat(invoker, "<span class='warning'>That target is no longer a Servant!</span>")
+			to_chat(invoker, "<span class='warning'>Эта цель больше не является Слугой!</span>")
 			return procure_gateway(invoker, time_duration, gateway_uses, two_way)
 		if(L.stat != CONSCIOUS)
-			to_chat(invoker, "<span class='warning'>That Servant is no longer conscious!</span>")
+			to_chat(invoker, "<span class='warning'>Этот слуга потерял сознание!</span>")
 			return procure_gateway(invoker, time_duration, gateway_uses, two_way)
 	var/istargetobelisk = istype(target, /obj/structure/destructible/clockwork/powered/clockwork_obelisk)
 	var/issrcobelisk = istype(src, /obj/structure/destructible/clockwork/powered/clockwork_obelisk)
 	if(!issrcobelisk && target.z != invoker.z && (is_reebe(invoker.z) || is_reebe(target.z)) && !GLOB.ratvar_awakens) //You need obilisks to get from and to reebe. Costs alot of power, unless you use stable gateways.
-		to_chat(invoker, "<span class='heavy brass'>The distance between reebe and the mortal realm is far too vast to bridge with a gateway your slab can create, my child. \
-		Use an obilisk instead!</span>")
+		to_chat(invoker, "<span class='heavy brass'>Расстояние между Рибом и миром смертных слишком велико для создания разлома с помощью твоей плиты, дитя.\
+		Используй обелиск!</span>")
 		return procure_gateway(invoker, time_duration, gateway_uses, two_way)
 	if(issrcobelisk)
 		if(!anchored)
-			to_chat(invoker, "<span class='warning'>[src] is no longer secured!</span>")
+			to_chat(invoker, "<span class='warning'>[src] больше не закреплён!</span>")
 			return FALSE
 		var/obj/structure/destructible/clockwork/powered/clockwork_obelisk/CO = src //foolish as I am, how I set this proc up makes substypes unfeasible
 		if(CO.active)
-			to_chat(invoker, "<span class='warning'>[src] is now sustaining a gateway!</span>")
+			to_chat(invoker, "<span class='warning'>[src] уже поддерживает пространственный разлом!</span>")
 			return FALSE
 	if(istargetobelisk)
 		if(!target.anchored)
-			to_chat(invoker, "<span class='warning'>That [target.name] is no longer secured!</span>")
+			to_chat(invoker, "<span class='warning'>[target.name] больше не закреплён!</span>")
 			return procure_gateway(invoker, time_duration, gateway_uses, two_way)
 		var/obj/structure/destructible/clockwork/powered/clockwork_obelisk/CO = target
 		if(CO.active)
-			to_chat(invoker, "<span class='warning'>That [target.name] is sustaining a gateway, and cannot receive another!</span>")
+			to_chat(invoker, "<span class='warning'>[target.name] уже поддерживает пространственный разлом и не может принять другой!</span>")
 			return procure_gateway(invoker, time_duration, gateway_uses, two_way)
 		var/efficiency = CO.get_efficiency_mod()
 		gateway_uses = round(gateway_uses * (2 * efficiency), 1)
 		time_duration = round(time_duration * (2 * efficiency), 1)
 		CO.active = TRUE //you'd be active in a second but you should update immediately
 	if(issrcobelisk && istargetobelisk && src.z != target.z && (is_reebe(src.z) || is_reebe(target.z)))
-		invoker.visible_message("<span class='warning'>The air in front of [invoker] ripples before suddenly tearing open!</span>", \
-		"<span class='brass'>With a word, you rip open a stable two-way rift between reebe and the mortal realm.</span>")
+		invoker.visible_message("<span class='warning'>Воздух перед [invoker] дрожит и внезапно разрывается!</span>", \
+		"<span class='brass'>Словом ты разрываешь реальность, создавая стабильный двусторонний разлом между Рибом и миром смертных.</span>")
 		var/obj/effect/clockwork/spatial_gateway/stable/stable_S1 = new(get_turf(src))
 		var/obj/effect/clockwork/spatial_gateway/stable/stable_S2 = new(get_turf(target))
 		stable_S1.setup_gateway(stable_S2)
-		stable_S2.visible_message("<span class='warning'>The air in front of [target] ripples before suddenly tearing open!</span>")
+		stable_S2.visible_message("<span class='warning'>Воздух перед [target] дрожит и внезапно разрывается!</span>")
 	else
-		invoker.visible_message("<span class='warning'>The air in front of [invoker] ripples before suddenly tearing open!</span>", \
-		"<span class='brass'>With a word, you rip open a [two_way ? "two-way":"one-way"] rift to [input_target_key]. It will last for [DisplayTimeText(time_duration)] and has [gateway_uses] use[gateway_uses > 1 ? "s" : ""].</span>")
+		invoker.visible_message("<span class='warning'>Воздух перед [invoker] дрожит и внезапно разрывается!</span>", \
+		"<span class='brass'>Словом ты разрываешь [two_way ? "двусторонний" : "односторонний"] разлом к [input_target_key]. Он просуществует [DisplayTimeText(time_duration)] и имеет [gateway_uses] использовани[gateway_uses % 10 == 1 && gateway_uses % 100 != 11 ? "е" : (gateway_uses % 10 >= 2 && gateway_uses % 10 <= 4 && !(gateway_uses % 100 >= 12 && gateway_uses % 100 <= 14) ? "я" : "й")].</span>")
 		var/obj/effect/clockwork/spatial_gateway/S1 = new(issrcobelisk ? get_turf(src) : get_step(get_turf(invoker), invoker.dir))
 		var/obj/effect/clockwork/spatial_gateway/S2 = new(istargetobelisk ? get_turf(target) : get_step(get_turf(target), target.dir))
 
 		//Set up the portals now that they've spawned
 		S1.setup_gateway(S2, time_duration, gateway_uses, two_way)
-		S2.visible_message("<span class='warning'>The air in front of [target] ripples before suddenly tearing open!</span>")
+		S2.visible_message("<span class='warning'>Воздух перед [target] дрожит и внезапно разрывается!</span>")
 	return TRUE
 
 //Stable Gateway: Used to travel to and from reebe without any further powercost. Needs a clockwork obilisk to keep active, but stays active as long as it is not deactivated via an null rod or a slab, or the obilisk is destroyed
@@ -265,11 +265,11 @@
 		return ..()
 	busy = TRUE
 	linked_gateway.busy = TRUE
-	user.visible_message("<span class='warning'>The rift begins to ripple as [user] points [user.ru_ego()] slab at it!</span>", "<span class='brass'> You begin to shutdown the stabilised gateway with your slab.</span>")
-	linked_gateway.visible_message("<span class='warning'[linked_gateway] begins to ripple, but nothing comes through...</span>")
+	user.visible_message("<span class='warning'>Разлом начинает дрожать, когда [user] направляет [user.ru_ego()] на него!</span>", "<span class='brass'> Вы начинаете отключать стабилизированный разлом с помощью своей плиты.</span>")
+	linked_gateway.visible_message("<span class='warning'>[linked_gateway] начинает дрожать, но через него ничего не проходит.</span>")
 	var/datum/beam/B = user.Beam(src, icon_state = "nzcrentrs_power", maxdistance = 50, time = 80) 	//Not too fancy, but this'll do.. for now.
 	if(do_after(user, 80, target = src)) //Eight seconds to initiate the closing, then another two before is closes.
-		to_chat(user, "<span class='brass'>You successfully set the gateway to shutdown in another two seconds.</span>")
+		to_chat(user, "<span class='brass'>Вы успешно настроили отключение разлома через две секунды.</span>")
 		start_shutdown()
 	qdel(B)
 	busy = FALSE
@@ -283,8 +283,8 @@
 		linked_gateway.timerid = QDEL_IN_STOPPABLE(linked_gateway, 20)
 		animate(src, alpha = 0, transform = matrix()*2, time = 20, flags = ANIMATION_END_NOW)
 		animate(linked_gateway, alpha = 0, transform = matrix()*2, time = 20, flags = ANIMATION_END_NOW)
-		src.visible_message("<span class='warning'>[src] begins to destabilise!</span>")
-		linked_gateway.visible_message("<span class='warning'>[linked_gateway] begins to destabilise!</span>")
+		src.visible_message("<span class='warning'>[src] начинает дестабилизироваться!</span>")
+		linked_gateway.visible_message("<span class='warning'>[linked_gateway] начинает дестабилизироваться!</span>")
 
 /obj/effect/clockwork/spatial_gateway/stable/pass_through_gateway(atom/movable/A, no_cost = TRUE)
 	return ..()

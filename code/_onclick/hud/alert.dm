@@ -55,6 +55,8 @@
 		new_master.plane = old_plane
 		thealert.icon_state = "template" // We'll set the icon to the client's ui pref in reorganize_alerts()
 		thealert.master_ref = WEAKREF(new_master) // weakref — не держим прямой ref, чтобы не блокировать GC
+		if(!thealert.name)
+			thealert.name = capitalize(new_master.name)
 	else
 		thealert.icon_state = "[initial(thealert.icon_state)][severity]"
 		thealert.severity = severity
@@ -114,6 +116,10 @@
 	/// Boolean. If TRUE, the Click() proc will attempt to Click() on the master first if there is a master.
 	var/click_master = TRUE
 	var/datum/weakref/master_ref = null
+	/// If set, this overlay will be added on top of the alert icon (typically used with icon_state = "template").
+	var/overlay_state
+	/// The file to fetch the overlay from
+	var/overlay_icon = 'icons/mob/screen_alert.dmi'
 
 /atom/movable/screen/alert/proc/detach_from_owner(remove_from_alerts = FALSE)
 	var/mob/alert_owner = owner
@@ -140,6 +146,13 @@
 	if(clickable_glow)
 		add_filter("clickglow", 2, outline_filter(color = COLOR_GOLD, size = 1))
 		mouse_over_pointer = MOUSE_HAND_POINTER
+	if(overlay_state)
+		update_appearance(UPDATE_OVERLAYS)
+
+/atom/movable/screen/alert/update_overlays()
+	. = ..()
+	if(overlay_state)
+		. += mutable_appearance(overlay_icon, overlay_state)
 
 /atom/movable/screen/alert/MouseEntered(location,control,params)
 	if(!QDELETED(src))
@@ -350,17 +363,20 @@ If you're feeling frisky, examine yourself and click the underlined item to pull
 wall or lattice, to push yourself off if you want to move. A jetpack would enable free range of motion. A pair of \
 magboots would let you walk around normally on the floor. Barring those, you can throw things, use a fire extinguisher, \
 or shoot a gun to move around via Newton's 3rd Law of Motion."
-	icon_state = "weightless"
+	icon_state = "template"
+	overlay_state = "weightless"
 
 /atom/movable/screen/alert/highgravity
 	name = "High Gravity"
 	desc = "You're getting crushed by high gravity, picking up items and movement will be slowed."
-	icon_state = "paralysis"
+	icon_state = "template"
+	overlay_state = "paralysis"
 
 /atom/movable/screen/alert/veryhighgravity
 	name = "Crushing Gravity"
 	desc = "You're getting crushed by high gravity, picking up items and movement will be slowed. You'll also accumulate brute damage!"
-	icon_state = "paralysis"
+	icon_state = "template"
+	overlay_state = "paralysis"
 
 /atom/movable/screen/alert/fire
 	name = "On Fire"
@@ -688,22 +704,22 @@ or shoot a gun to move around via Newton's 3rd Law of Motion."
 				servants++
 		var/datum/antagonist/clockcult/C = owner.mind.has_antag_datum(/datum/antagonist/clockcult,TRUE)
 		if(C && C.clock_team)
-			textlist += "[C.clock_team.eminence ? "There is an Eminence." : "<b>There is no Eminence! Get one ASAP!</b>"]<br>"
-		textlist += "There are currently <b>[servants]</b> servant[servants > 1 ? "s" : ""] of Ratvar.<br>"
+			textlist += "[C.clock_team.eminence ? "Епископ присутствует." : "<b>Епископ отсутствует! Изберите его как можно скорее!</b>"]<br>"
+		textlist += "Сейчас у Ратвара <b>[servants]</b> слуг[servants % 10 == 1 && servants % 100 != 11 ? "а" : (servants % 10 >= 2 && servants % 10 <= 4 && (servants % 100 < 10 || servants % 100 >= 20) ? "и" : "")].<br>"
 		for(var/i in SSticker.scripture_states)
 			if(i != SCRIPTURE_DRIVER) //ignore the always-unlocked stuff
-				textlist += "[i] Scripture: <b>[SSticker.scripture_states[i] ? "UNLOCKED":"LOCKED"]</b><br>"
+				textlist += "Писания [i]: <b>[SSticker.scripture_states[i] ? "РАЗБЛОКИРОВАНЫ":"ЗАБЛОКИРОВАНЫ"]</b><br>"
 		var/obj/structure/destructible/clockwork/massive/celestial_gateway/G = GLOB.ark_of_the_clockwork_justiciar
 		if(G)
 			var/time_info = G.get_arrival_time(FALSE)
 			var/time_name
 			if(G.seconds_until_activation)
-				time_name = "until the Ark activates"
+				time_name = "до активации Ковчега"
 			else if(G.progress_in_seconds)
-				time_name = "until the Ark finishes summoning"
+				time_name = "до завершения призыва Ковчега"
 			if(time_info)
-				textlist += "<b>[time_info / 60] minutes</b> [time_name].<br>"
-		textlist += "<b>[DisplayPower(get_clockwork_power())] / [DisplayPower(MAX_CLOCKWORK_POWER)]</b> power available for use."
+				textlist += "<b>[time_info / 60] минут</b> [time_name].<br>"
+		textlist += "<b>Доступно [DisplayPower(get_clockwork_power())] / [DisplayPower(MAX_CLOCKWORK_POWER)]</b> энергии для использования."
 		desc = textlist.Join()
 	..()
 
@@ -1029,6 +1045,13 @@ so as to remain in compliance with the most up-to-date laws."
 
 //OBJECT-BASED
 
+// Берет имя и иконку из переданного объекта. При клике, воспроизводится клик по объекту
+/atom/movable/screen/alert/object_master
+	name = ""
+	desc = ""
+	clickable_glow = TRUE
+	click_master = TRUE
+
 /atom/movable/screen/alert/buckled
 	name = "Buckled"
 	desc = "You've been buckled to something. Click the alert to unbuckle unless you're handcuffed."
@@ -1047,6 +1070,12 @@ so as to remain in compliance with the most up-to-date laws."
 	name = "Legcuffed"
 	desc = "You're legcuffed, which slows you down considerably. Click the alert to free yourself."
 	click_master = FALSE
+
+/atom/movable/screen/alert/restrained/legcuffed/beartrap
+	name = "Caught in a Bear Trap"
+	desc = "A bear trap has clamped onto your legs! Click the alert to free yourself."
+	icon_state = "template"
+	overlay_state = "hooked_jaws"
 
 /atom/movable/screen/alert/restrained/Click()
 	. = ..()
@@ -1151,12 +1180,17 @@ so as to remain in compliance with the most up-to-date laws."
 		return FALSE
 	var/modifiers = params2list(params)
 	if(LAZYACCESS(modifiers, SHIFT_CLICK)) // screen objects don't do the normal Click() stuff so we'll cheat
-		to_chat(usr, examine_block("[jointext(examine(usr), "\n")]"))
+		if(master_ref && click_master)
+			var/atom/resolved = master_ref.resolve()
+			resolved?.attempt_examinate(usr)
+		else
+			to_chat(usr, examine_block("[jointext(examine(usr), "\n")]"))
 		return FALSE
+
 	if(master_ref && click_master)
 		var/atom/resolved = master_ref.resolve()
-		if(resolved && !QDELETED(resolved))
-			return usr.client.Click(resolved, location, control, params)
+		if(resolved)
+			return usr.client.Click(resolved, location, control, params, ignore_spam = TRUE, ignore_last_click = TRUE)
 
 	return TRUE
 
@@ -1165,7 +1199,6 @@ so as to remain in compliance with the most up-to-date laws."
 		deltimer(timeout_id)
 		timeout_id = null
 	detach_from_owner(TRUE)
-	animate(src)
 	transform = null
 	severity = 0
 	if(clickable_glow)

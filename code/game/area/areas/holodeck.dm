@@ -109,6 +109,9 @@
 /area/holodeck/rec_center/spacechess
 	name = "Holodeck - Space Chess"
 
+/area/holodeck/rec_center/spacecheckers
+	name = "Holodeck - Space Checkers"
+
 /area/holodeck/rec_center/kobayashi
 	name = "Holodeck - Kobayashi Maru"
 
@@ -118,6 +121,11 @@
 /area/holodeck/rec_center/wrestlingarena
 	name = "Holodeck - Wrestling Arena"
 
+/area/holodeck/rec_center/photobooth
+	name = "Holodeck - Photobooth"
+
+/area/holodeck/rec_center/skatepark
+	name = "Holodeck - Skate Park"
 // Bad programs
 
 /area/holodeck/rec_center/burn

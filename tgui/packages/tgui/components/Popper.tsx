@@ -1,22 +1,37 @@
 import { createPopper, OptionsGeneric } from "@popperjs/core";
-import { Component, findDOMFromVNode, InfernoNode, render } from "inferno";
+import { canDirectlyRef } from 'common/react';
+import { cloneElement, Component, ReactNode } from "react";
+import { createPortal } from "react-dom";
 
 type PopperProps = {
-  readonly popperContent: InfernoNode;
+  readonly popperContent: ReactNode;
   readonly options?: Partial<OptionsGeneric<unknown>>;
   readonly additionalStyles?: Record<string, string>,
+  readonly children?: ReactNode;
 };
 
 export class Popper extends Component<PopperProps> {
   static id: number = 0;
 
-  renderedContent: HTMLDivElement;
-  popperInstance: ReturnType<typeof createPopper>;
+  renderedContent: HTMLDivElement | null = null;
+  popperInstance: ReturnType<typeof createPopper> | null = null;
+  domNode: Element | null = null;
 
-  constructor() {
-    super();
+  constructor(props: PopperProps) {
+    super(props);
 
     Popper.id += 1;
+  }
+
+  handleRef = (node: unknown) => {
+    this.domNode = node instanceof Element ? node : null;
+  };
+
+  getContainer(): HTMLDivElement {
+    if (!this.renderedContent) {
+      this.renderedContent = document.createElement("div");
+    }
+    return this.renderedContent;
   }
 
   componentDidMount() {
@@ -25,56 +40,65 @@ export class Popper extends Component<PopperProps> {
       options,
     } = this.props;
 
-    this.renderedContent = document.createElement("div");
+    const renderedContent = this.getContainer();
     if (additionalStyles) {
       for (const [attribute, value] of Object.entries(additionalStyles)) {
-        this.renderedContent.style[attribute] = value;
+        renderedContent.style[attribute] = value;
       }
     }
 
-    this.renderPopperContent(() => {
-      // DPI fix: append to <html> instead of <body> to escape body zoom.
-      // Popper.js then works in viewport coords for both positioning and
-      // overflow detection, fixing tooltip shift near screen edges.
-      document.documentElement.appendChild(this.renderedContent);
+    // DPI fix: append to <html> instead of <body> to escape body zoom.
+    // Popper.js then works in viewport coords for both positioning and
+    // overflow detection, fixing tooltip shift near screen edges.
+    document.documentElement.appendChild(renderedContent);
 
-      // HACK: We don't want to create a wrapper, as it could break the layout
-      // of consumers, so we do the inferno equivalent of `findDOMNode(this)`.
-      // This code is copied from `findDOMNode` in inferno-extras.
-      // Because this component is written in TypeScript, we will know
-      // immediately if this internal variable is removed.
-      const domNode = findDOMFromVNode(this.$LI, true);
-
+    if (this.domNode) {
       this.popperInstance = createPopper(
-        domNode,
-        this.renderedContent,
+        this.domNode,
+        renderedContent,
         options,
       );
-    });
+    }
   }
 
   componentDidUpdate() {
-    this.renderPopperContent(() => this.popperInstance?.update());
+    this.popperInstance?.update();
   }
 
   componentWillUnmount() {
     this.popperInstance?.destroy();
-    this.renderedContent.remove();
+    this.popperInstance = null;
+    this.renderedContent?.remove();
     this.renderedContent = null;
   }
 
-  renderPopperContent(callback: () => void) {
+  render() {
+    const { children, popperContent } = this.props;
+
+    let target: ReactNode;
+    if (canDirectlyRef(children)) {
+      target = cloneElement(children as any, { ref: this.handleRef });
+    } else {
+      target = (
+        <span ref={this.handleRef} style={{ display: 'contents' }}>
+          {children}
+        </span>
+      );
+    }
+
     // DPI fix: apply body zoom to content so it matches the rest of the UI,
     // since the container is outside body zoom (appended to <html>).
     const zoom = document.body.style.zoom || '100%';
-    render(
-      <div style={{ zoom }}>{this.props.popperContent}</div>,
-      this.renderedContent,
-      callback,
+    const portal = createPortal(
+      <div style={{ zoom }}>{popperContent}</div>,
+      this.getContainer(),
     );
-  }
 
-  render() {
-    return this.props.children;
+    return (
+      <>
+        {target}
+        {portal}
+      </>
+    );
   }
 }

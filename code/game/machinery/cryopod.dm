@@ -197,6 +197,7 @@ GLOBAL_LIST_EMPTY(ghost_records)
 	if(!control_computer_weakref)
 		control_computer_weakref = cryo_find_control_computer(src, TRUE)
 	if((isnull(target) || isliving(target)) && state_open && !panel_open)
+		machine_wake() // the despawn countdown runs in process()
 		..(target)
 		var/mob/living/mob_occupant = occupant
 		investigate_log("\The [src] closed with occupant [key_name(occupant)] by user [key_name(target)].", INVESTIGATE_CRYOGENICS)
@@ -225,7 +226,7 @@ GLOBAL_LIST_EMPTY(ghost_records)
 
 /obj/machinery/cryopod/process()
 	if(!occupant)
-		return
+		return machine_sleep() // empty pod: close_machine() wakes it when someone climbs in
 
 	var/mob/living/mob_occupant = occupant
 	if(mob_occupant.stat == DEAD)
@@ -536,10 +537,17 @@ GLOBAL_LIST_EMPTY(ghost_records)
 	else
 		mob_occupant.ghostize(FALSE, penalize = TRUE, voluntary = TRUE, cryo = TRUE)
 
-	QDEL_LIST(destroying)
 	cryo_handle_objectives(mob_occupant)
-	QDEL_NULL(mob_occupant)
-	QDEL_LIST(destroy_later)
+	// Hand the whole despawn cascade to SSauto_cryo: qdel'ing a geared player mob in one
+	// go eats an entire tick. The mob leaves gameplay right here (nullspace + off the SSD
+	// list so the cryo scan cannot pick it a second time); the deletions are staggered.
+	// FIFO order matters: gear before the mob still wearing part of it, the mob before
+	// destroy_later (borg MMIs must outlive their shell).
+	GLOB.ssd_mob_list -= mob_occupant
+	mob_occupant.moveToNullspace()
+	SSauto_cryo.queue_deletion_list(destroying)
+	SSauto_cryo.queue_deletion(mob_occupant)
+	SSauto_cryo.queue_deletion_list(destroy_later)
 
 	if (pod)
 		pod.open_machine()

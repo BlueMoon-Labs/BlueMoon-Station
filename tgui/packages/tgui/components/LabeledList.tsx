@@ -4,8 +4,8 @@
  * @license MIT
  */
 
-import { BooleanLike, classes, pureComponentHooks } from 'common/react';
-import { InfernoNode } from 'inferno';
+import { BooleanLike, classes } from 'common/react';
+import { ReactNode } from 'react';
 
 import { Box, unit } from './Box';
 import { Divider } from './Divider';
@@ -18,23 +18,23 @@ export const LabeledList = (props: LabeledListProps) => {
   const { children } = props;
   return (
     <table className="LabeledList">
-      {children}
+      <tbody>
+        {children}
+      </tbody>
     </table>
   );
 };
 
-LabeledList.defaultHooks = pureComponentHooks;
-
 type LabeledListItemProps = {
   readonly className?: string | BooleanLike;
-  readonly label?: InfernoNode;
+  readonly label?: ReactNode;
   readonly labelColor?: string | BooleanLike;
   readonly color?: string | BooleanLike;
   readonly textAlign?: string | BooleanLike;
-  readonly buttons?: InfernoNode,
+  readonly buttons?: ReactNode,
   /** @deprecated */
   readonly content?: any,
-  readonly children?: InfernoNode;
+  readonly children?: ReactNode;
 };
 
 const LabeledListItem = (props: LabeledListItemProps) => {
@@ -84,8 +84,6 @@ const LabeledListItem = (props: LabeledListItemProps) => {
   );
 };
 
-LabeledListItem.defaultHooks = pureComponentHooks;
-
 type LabeledListDividerProps = {
   readonly size?: number;
 };
@@ -99,16 +97,14 @@ const LabeledListDivider = (props: LabeledListDividerProps) => {
       <td
         colSpan={3}
         style={{
-          'padding-top': padding,
-          'padding-bottom': padding,
+          paddingTop: padding,
+          paddingBottom: padding,
         }}>
         <Divider />
       </td>
     </tr>
   );
 };
-
-LabeledListDivider.defaultHooks = pureComponentHooks;
 
 LabeledList.Item = LabeledListItem;
 LabeledList.Divider = LabeledListDivider;

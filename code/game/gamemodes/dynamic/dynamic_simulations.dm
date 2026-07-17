@@ -13,7 +13,6 @@
 		gamemode.generate_threat()
 
 	gamemode.generate_budgets()
-	gamemode.set_cooldowns()
 
 /datum/dynamic_simulation/proc/create_candidates(players)
 	GLOB.new_player_list.Cut()

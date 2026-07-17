@@ -9,7 +9,7 @@
 
 /datum/round_event_control/wizard/summonguns/New()
 	if(CONFIG_GET(flag/no_summon_guns))
-		weight = 0
+		admin_only = TRUE
 	..()
 
 /datum/round_event/wizard/summonguns/start()
@@ -26,7 +26,7 @@
 
 /datum/round_event_control/wizard/summonmagic/New()
 	if(CONFIG_GET(flag/no_summon_magic))
-		weight = 0
+		admin_only = TRUE
 	..()
 
 /datum/round_event/wizard/summonmagic/start()

@@ -227,7 +227,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 
 	soundloop = new(src, TRUE)
 
-	if((NEW_YEAR in SSevents.holidays) || (CHRISTMAS in SSevents.holidays))
+	if((NEW_YEAR in SSholidays.holidays) || (CHRISTMAS in SSholidays.holidays))
 		holiday_lights()
 
 /obj/machinery/power/supermatter_crystal/Destroy()
@@ -952,7 +952,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 			playsound(src, 'sound/effects/supermatter.ogg', 50, TRUE)
 			radiation_pulse(src, 50, 3)
 			return
-	if((NEW_YEAR in SSevents.holidays) || (CHRISTMAS in SSevents.holidays))
+	if((NEW_YEAR in SSholidays.holidays) || (CHRISTMAS in SSholidays.holidays))
 		if(istype(W, /obj/item/clothing/head/christmashat) || istype(W, /obj/item/clothing/head/christmashatg))
 			QDEL_NULL(W)
 			RegisterSignal(src, COMSIG_PARENT_EXAMINE, PROC_REF(holiday_hat_examine))

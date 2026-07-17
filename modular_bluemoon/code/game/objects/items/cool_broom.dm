@@ -139,7 +139,7 @@
 	*/
 
 /obj/item/projectile/broom/proc/can_push(atom/movable/AM)
-	if(!ismovable(AM))
+	if(!ismovable(AM) || isdead(AM))
 		return FALSE
 	if(AM.anchored)
 		return FALSE

@@ -40,6 +40,7 @@
 	layer = 4
 	light_range = 15
 	light_color = "#ffffdd"
+	light_flags = LIGHT_NO_RANGE_CAP // статичный наружный прожектор: дальность выше базового капа
 	max_integrity = 9999999
 
 

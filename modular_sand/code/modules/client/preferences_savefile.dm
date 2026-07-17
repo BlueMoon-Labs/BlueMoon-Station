@@ -70,13 +70,11 @@
 	use_moaning_multiplier = sanitize_integer(use_moaning_multiplier, 0, 1, initial(use_moaning_multiplier))
 	moaning_multiplier = sanitize_integer(moaning_multiplier, 0, 100, initial(moaning_multiplier))
 	.["favorite_tracks"] >> favorite_tracks
-	favorite_tracks = SANITIZE_LIST(favorite_tracks)
+	favorite_tracks = sanitize_jukebox_track_list(favorite_tracks)
 	.["favorite_paintings_md5"] >> favorite_paintings_md5
 	favorite_paintings_md5 = SANITIZE_LIST(favorite_paintings_md5)
 	.["playlists"] >> playlists
-	// Strip control chars from playlist-name keys so a broken name can't make a
-	// playlist permanently unselectable/undeletable through the jukebox UI.
-	playlists = sanitize_assoc_keys(playlists)
+	playlists = sanitize_jukebox_playlists(playlists)
 	.["metadollar_minute_pool"] >> metadollar_minute_pool
 	metadollar_minute_pool = isnum(metadollar_minute_pool) ? clamp(round(metadollar_minute_pool), 0, 500) : 0
 	.["metadollar_pending_items"] >> metadollar_pending_items

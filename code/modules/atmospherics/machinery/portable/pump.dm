@@ -40,12 +40,14 @@
 		. += "siphon-connector"
 
 /obj/machinery/portable_atmospherics/pump/process_atmos()
-	..()
 	if(!on)
 		pump?.airs[1] = null
 		pump?.airs[2] = null
-		return
+		return ..()
 
+	// A working pump watches turf/tank air that changes without wake events,
+	// so it never sleeps while switched on.
+	excited = TRUE
 	var/turf/T = get_turf(src)
 	if(direction == PUMP_OUT) // Hook up the internal pump.
 		pump.airs[1] = holding ? holding.air_contents : air_contents
@@ -57,6 +59,7 @@
 	pump.process_atmos() // Pump gas.
 	if(!holding)
 		air_update_turf() // Update the environment if needed.
+	return ..()
 
 /obj/machinery/portable_atmospherics/pump/emp_act(severity)
 	. = ..()
@@ -68,6 +71,7 @@
 		if(prob(severity))
 			direction = PUMP_OUT
 		pump.target_pressure = rand(0, 100 * ONE_ATMOSPHERE)
+		excite()
 		update_icon()
 
 /obj/machinery/portable_atmospherics/pump/replace_tank(mob/living/user, close_valve)
@@ -149,4 +153,6 @@
 			if(holding)
 				replace_tank(usr, FALSE)
 				. = TRUE
+	// Power/direction/pressure changes must pull a sleeping pump back in.
+	excite()
 	update_icon()

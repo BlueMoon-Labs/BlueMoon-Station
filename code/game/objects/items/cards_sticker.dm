@@ -174,17 +174,6 @@
 /obj/item/card_sticker/agony/loadout
 	auto_equip = TRUE
 
-/obj/item/card_sticker/muck
-	name = "Muck sticker"
-	desc = "Sticker for employees with dirty thoughts and such more..."
-	icon_state = "muck_id"
-	prefix = "Mucker"
-	special_assignment = "muck"
-	permit = /obj/item/clothing/accessory/permit/special/deviant/muck
-
-/obj/item/card_sticker/muck/loadout
-	auto_equip = TRUE
-
 /obj/item/card_sticker/vampire
 	name = "Bloodfledge sticker"
 	desc = "An sticker made to easily recognize bloodsucker fledglings without requiring medical scans."

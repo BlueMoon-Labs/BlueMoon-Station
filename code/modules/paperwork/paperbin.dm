@@ -86,7 +86,7 @@
 			papers.Remove(P)
 		else
 			P = new papertype(src)
-			if(SSevents.holidays && SSevents.holidays[APRIL_FOOLS])
+			if(SSholidays.holidays && SSholidays.holidays[APRIL_FOOLS])
 				if(prob(30))
 					P.default_raw_text = "<font face=\"[CRAYON_FONT]\" color=\"red\"><b>HONK HONK HONK HONK HONK HONK HONK<br>HOOOOOOOOOOOOOOOOOOOOOONK<br>APRIL FOOLS</b></font>"
 					P.AddComponent(/datum/component/honkspam)

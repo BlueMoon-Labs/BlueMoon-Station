@@ -58,19 +58,13 @@
 	girder_type = /obj/structure/destructible/clockwork/wall_gear
 	baseturfs = /turf/open/floor/clockwork/reebe
 	var/heated
-	var/obj/effect/clockwork/overlay/wall/realappearance
 
 /turf/closed/wall/clockwork/Initialize(mapload)
 	. = ..()
 	new /obj/effect/temp_visual/ratvar/wall(src)
 	new /obj/effect/temp_visual/ratvar/beam(src)
-	realappearance = new /obj/effect/clockwork/overlay/wall(src)
-	realappearance.linked = src
 
 /turf/closed/wall/clockwork/Destroy()
-	if(realappearance)
-		qdel(realappearance)
-		realappearance = null
 	if(heated)
 		var/mob/camera/eminence/E = get_eminence()
 		if(E)
@@ -113,7 +107,7 @@
 		addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_atom_colour)), 8)
 
 /turf/closed/wall/clockwork/dismantle_wall(devastated=0, explode=0)
-	if(devastated)
+	if(devastated || explode)
 		devastate_wall()
 		ScrapeAway()
 	else
@@ -160,14 +154,14 @@
 		heated = TRUE
 		hardness = -100 //Lower numbers are tougher, so this makes the wall essentially impervious to smashing
 		slicing_duration = 150
-		animate(realappearance, color = "#FFC3C3", time = 5)
+		animate(src, color = "#FFC3C3", time = 5)
 	else
 		name = initial(name)
 		visible_message("<span class='notice'>[src] cools down.</span>")
 		heated = FALSE
 		hardness = initial(hardness)
 		slicing_duration = initial(slicing_duration)
-		animate(realappearance, color = initial(realappearance.color), time = 25)
+		animate(src, color = initial(color), time = 25)
 
 
 /turf/closed/wall/vault

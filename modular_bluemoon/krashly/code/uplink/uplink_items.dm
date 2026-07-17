@@ -1,6 +1,7 @@
 /datum/uplink_item/inteq
 	category = "InteQ Technologies"
 	surplus = 0
+	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/inteq/poster
 	name = "Propaganda poster"
@@ -69,7 +70,7 @@
 			Экипаж Nanotrasen при виде этих костюмов впадает в панику."
 	item = /obj/item/clothing/suit/space/hardsuit/syndi/inteq
 	cost = 6
-	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE) //you can't buy it in nuke, because the elite hardsuit costs the same while being better
+	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW) //you can't buy it in nuke, because the elite hardsuit costs the same while being better
 
 /datum/uplink_item/suits/hardsuit/elite
 	name = "Elite InteQ Hardsuit"

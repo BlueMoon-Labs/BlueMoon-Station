@@ -675,7 +675,7 @@
 
 /obj/item/clothing/glasses/ar_interface/dropped(mob/user)
 	. = ..()
-	neural_interface?.RemoveSource("AR glasses")
+	clear_neural_interface()
 	UnregisterSignal(user, COMSIG_MOB_EXAMINATE)
 
 /obj/item/clothing/glasses/ar_interface/attackby(obj/item/I, mob/living/user)
@@ -704,10 +704,14 @@
 	adresses = null
 	if(net)
 		QDEL_NULL(net)
-	if(neural_interface)
-		neural_interface.RemoveSource("AR glasses")
-		QDEL_NULL(neural_interface)
+	clear_neural_interface()
 	. = ..()
+
+/obj/item/clothing/glasses/ar_interface/proc/clear_neural_interface()
+	var/datum/component/neural_interface/old_interface = neural_interface
+	neural_interface = null
+	if(!QDELETED(old_interface))
+		old_interface.RemoveSource("AR glasses")
 
 /obj/item/clothing/glasses/ar_interface/proc/on_examine_target(datum/source, atom/target)
 	if(get_dist(get_turf(source), get_turf(target)) > 8)

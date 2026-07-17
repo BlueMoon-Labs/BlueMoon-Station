@@ -905,6 +905,11 @@
 /obj/item/modular_computer/pda/ui_state(mob/user)
 	return GLOB.human_adjacent_state_no_view
 
+/mob/living/Adjacent(atom/neighbor)
+	if(istype(neighbor, /obj/item/modular_computer) && src.contains(neighbor))
+		return TRUE
+	return ..()
+
 /**
  * Silicon PDA — built-in to Silicons.
  */

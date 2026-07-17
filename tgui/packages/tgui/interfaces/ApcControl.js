@@ -1,14 +1,14 @@
 import { map, sortBy } from 'common/collections';
 import { flow } from 'common/fp';
-import { pureComponentHooks } from 'common/react';
+import { useState } from 'react';
 
 import { useBackend, useLocalState } from '../backend';
 import { Box, Button, Dimmer, Icon, Section, Stack, Table, Tabs } from '../components';
 import { Window } from '../layouts';
 import { AreaCharge, powerRank } from './PowerMonitor';
 
-export const ApcControl = (props, context) => {
-  const { data } = useBackend(context);
+export const ApcControl = (props) => {
+  const { data } = useBackend();
   return (
     <Window title="APC Controller" width={550} height={500}>
       <Window.Content>
@@ -19,8 +19,8 @@ export const ApcControl = (props, context) => {
   );
 };
 
-const ApcLoggedOut = (props, context) => {
-  const { act, data } = useBackend(context);
+const ApcLoggedOut = (props) => {
+  const { act, data } = useBackend();
   const { emagged } = data;
   const text = emagged === 1 ? 'Open' : 'Log In';
   return (
@@ -36,10 +36,10 @@ const ApcLoggedOut = (props, context) => {
   );
 };
 
-const ApcLoggedIn = (props, context) => {
-  const { act, data } = useBackend(context);
+const ApcLoggedIn = (props) => {
+  const { act, data } = useBackend();
   const { restoring } = data;
-  const [tabIndex, setTabIndex] = useLocalState(context, 'tab-index', 1);
+  const [tabIndex, setTabIndex] = useState(1);
   return (
     <Box>
       <Tabs>
@@ -91,12 +91,10 @@ const ApcLoggedIn = (props, context) => {
   );
 };
 
-const ControlPanel = (props, context) => {
-  const { act, data } = useBackend(context);
+const ControlPanel = (props) => {
+  const { act, data } = useBackend();
   const { emagged, logging } = data;
-  const [sortByField, setSortByField] = useLocalState(
-    context,
-    'sortByField',
+  const [sortByField, setSortByField] = useLocalState('sortByField',
     'name'
   );
   return (
@@ -147,10 +145,10 @@ const ControlPanel = (props, context) => {
   );
 };
 
-const ApcControlScene = (props, context) => {
-  const { data, act } = useBackend(context);
+const ApcControlScene = (props) => {
+  const { data, act } = useBackend();
 
-  const [sortByField] = useLocalState(context, 'sortByField', 'name');
+  const [sortByField] = useLocalState('sortByField', 'name');
 
   const apcs = flow([
     map((apc, i) => ({
@@ -242,8 +240,8 @@ const ApcControlScene = (props, context) => {
   );
 };
 
-const LogPanel = (props, context) => {
-  const { data } = useBackend(context);
+const LogPanel = (props) => {
+  const { data } = useBackend();
 
   const logs = flow([
     map((line, i) => ({
@@ -288,4 +286,3 @@ const statusChange = (status) => {
   return status === 0 ? 2 : status === 2 ? 3 : 0;
 };
 
-AreaStatusColorButton.defaultHooks = pureComponentHooks;

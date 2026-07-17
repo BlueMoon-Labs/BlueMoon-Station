@@ -109,20 +109,33 @@
 	if(myseed && (myseed.loc != src))
 		myseed.forceMove(src)
 
-	if(!powered() && self_sustaining)
-		visible_message("<span class='warning'>[name]'s auto-grow functionality shuts off!</span>")
-		idle_power_usage = 0
-		self_sustaining = FALSE
-		update_icon()
+	// Growth is gated on absolute time (lastcycle + cycledelay, ~20s) but SSmachines fires every 2s, so a
+	// live hand-tended tray does real work only ~1 fire in 10. Skip the intervening fires - autogrow trays
+	// keep their per-fire upkeep, empty/dead trays keep their sleep path, and the outcome is unchanged.
+	if(myseed && !dead && !self_sustaining && world.time <= lastcycle + cycledelay)
+		return
 
-	else if(self_sustaining)
-		adjustWater(rand(1,2))
-		adjustWeeds(-1)
-		adjustPests(-1)
+	// Only autogrow trays care about the power/upkeep block, so gate the whole thing on self_sustaining and
+	// spare every hand-tended tray a powered() (get_area) call per fire.
+	if(self_sustaining)
+		if(!powered())
+			visible_message("<span class='warning'>[name]'s auto-grow functionality shuts off!</span>")
+			idle_power_usage = 0
+			self_sustaining = FALSE
+			update_icon()
+		else
+			adjustWater(rand(1,2))
+			adjustWeeds(-1)
+			adjustPests(-1)
 
 	if(world.time > (lastcycle + cycledelay))
 		lastcycle = world.time
 		if(myseed && !dead)
+			// Cache the plant-type gene lookups reused across this growth pass (each get_gene is a list
+			// scan). Only read before the mutation block below can swap myseed - nothing past it uses these.
+			var/is_weed_hardy = myseed.get_gene(/datum/plant_gene/trait/plant_type/weed_hardy)
+			var/is_fungal = myseed.get_gene(/datum/plant_gene/trait/plant_type/fungal_metabolism)
+			var/is_carnivore = myseed.get_gene(/datum/plant_gene/trait/plant_type/carnivory)
 			// Advance age
 			age++
 			if(age < myseed.maturation)
@@ -140,7 +153,7 @@
 				reagents.remove_any(nutridrain)
 
 			// Lack of nutrients hurts non-weeds
-			if(reagents.total_volume <= 0 && !myseed.get_gene(/datum/plant_gene/trait/plant_type/weed_hardy))
+			if(reagents.total_volume <= 0 && !is_weed_hardy)
 				adjustHealth(-rand(1,3))
 
 //Photosynthesis/////////////////////////////////////////////////////////
@@ -148,7 +161,7 @@
 			if(isturf(loc))
 				var/turf/currentTurf = loc
 				var/lightAmt = currentTurf.get_lumcount()
-				if(myseed.get_gene(/datum/plant_gene/trait/plant_type/fungal_metabolism))
+				if(is_fungal)
 					if(lightAmt < 0.2)
 						adjustHealth(-1 / rating)
 				else // Non-mushroom
@@ -160,7 +173,7 @@
 			adjustWater(-rand(1,6) / rating)
 
 			// If the plant is dry, it loses health pretty fast, unless mushroom
-			if(waterlevel <= 10 && !myseed.get_gene(/datum/plant_gene/trait/plant_type/fungal_metabolism))
+			if(waterlevel <= 10 && !is_fungal)
 				adjustHealth(-rand(0,1) / rating)
 				if(waterlevel <= 0)
 					adjustHealth(-rand(0,2) / rating)
@@ -186,7 +199,7 @@
 //Pests & Weeds//////////////////////////////////////////////////////////
 
 			if(pestlevel >= 8)
-				if(!myseed.get_gene(/datum/plant_gene/trait/plant_type/carnivory))
+				if(!is_carnivore)
 					adjustHealth(-2 / rating)
 
 				else
@@ -194,7 +207,7 @@
 					adjustPests(-1 / rating)
 
 			else if(pestlevel >= 4)
-				if(!myseed.get_gene(/datum/plant_gene/trait/plant_type/carnivory))
+				if(!is_carnivore)
 					adjustHealth(-1 / rating)
 
 				else
@@ -202,13 +215,13 @@
 					if(prob(50))
 						adjustPests(-1 / rating)
 
-			else if(pestlevel < 4 && myseed.get_gene(/datum/plant_gene/trait/plant_type/carnivory))
+			else if(pestlevel < 4 && is_carnivore)
 				adjustHealth(-2 / rating)
 				if(prob(5))
 					adjustPests(-1 / rating)
 
 			// If it's a weed, it doesn't stunt the growth
-			if(weedlevel >= 5 && !myseed.get_gene(/datum/plant_gene/trait/plant_type/weed_hardy))
+			if(weedlevel >= 5 && !is_weed_hardy)
 				adjustHealth(-1 / rating)
 
 //This is where stability mutations exist now.
@@ -265,7 +278,22 @@
 				if(istype(g, /datum/plant_gene/trait))
 					var/datum/plant_gene/trait/selectedtrait = g
 					selectedtrait.on_grow(src)
+
+	// A tray that can no longer change on its own leaves SSmachines: nothing alive growing,
+	// no autogrow upkeep, weeds below invasion level and no watered-and-fertilized empty
+	// or dead soil for weeds to sprout in. Interactions wake it via attackby()/the adjust* mutators.
+	var/live_plant = myseed && !dead
+	var/weeds_can_sprout = !live_plant && waterlevel > 10 && reagents.total_volume > 0
+	if(!live_plant && !self_sustaining && !weeds_can_sprout && weedlevel < 10)
+		return machine_sleep()
 	return
+
+/obj/machinery/hydroponics/on_reagent_change(changetype)
+	. = ..()
+	// Nutrients arriving via plumbing/foam/smoke (anything but the hand-tended attackby path) can flip an
+	// empty tray into "weeds can sprout" - wake it so the empty-tray weed roll actually runs.
+	if(changetype == ADD_REAGENT)
+		machine_wake()
 
 /obj/machinery/hydroponics/update_icon()
 	//Refreshes the icon and sets the luminosity
@@ -463,6 +491,7 @@
 
 /obj/machinery/hydroponics/attackby(obj/item/O, mob/user, params)
 	//Called when mob user "attacks" it with object O
+	machine_wake() // seeds, water, chems, shovels: any of these can restart tray life
 	if(istype(O, /obj/item/reagent_containers) )  // Syringe stuff (and other reagent containers now too)
 		var/obj/item/reagent_containers/reagent_source = O
 
@@ -649,6 +678,7 @@
 		return
 	if(issilicon(user)) //How does AI know what plant is?
 		return
+	machine_wake() // harvesting/clearing can leave watered soil for weeds to sprout in
 	if(harvest)
 		myseed.harvest(user)
 		return
@@ -670,6 +700,7 @@
 		return
 	self_sustaining = !self_sustaining
 	idle_power_usage = self_sustaining ? 2500 : 0
+	machine_wake() // autogrow upkeep runs in process()
 	to_chat(user, "<span class='notice'>You [self_sustaining ? "activate" : "deactivated"] [src]'s autogrow function[self_sustaining ? ", maintaining the tray's health while using high amounts of power" : ""].")
 	update_icon()
 
@@ -705,6 +736,7 @@
 /obj/machinery/hydroponics/proc/adjustWater(adjustamt)
 	waterlevel = clamp(waterlevel + adjustamt, 0, maxwater)
 
+	machine_wake() // fresh water can let weeds sprout in a parked tray
 	if(adjustamt>0)
 		adjustToxic(-round(adjustamt/4))//Toxicity dilutation code. The more water you put in, the lesser the toxin concentration.
 
@@ -717,9 +749,11 @@
 
 /obj/machinery/hydroponics/proc/adjustPests(adjustamt)
 	pestlevel = clamp(pestlevel + adjustamt, 0, 10)
+	machine_wake()
 
 /obj/machinery/hydroponics/proc/adjustWeeds(adjustamt)
 	weedlevel = clamp(weedlevel + adjustamt, 0, 10)
+	machine_wake() // weeds at invasion level need the process() rolls
 
 /obj/machinery/hydroponics/proc/spawnplant() // why would you put strange reagent in a hydro tray you monster I bet you also feed them blood
 	var/list/livingplants = list(/mob/living/simple_animal/hostile/tree, /mob/living/simple_animal/hostile/killertomato)

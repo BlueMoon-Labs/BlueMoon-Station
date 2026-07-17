@@ -61,6 +61,14 @@
 	var/static/default_martial_art = new/datum/martial_art
 	var/miming = 0 // Mime's vow of silence
 	var/list/antag_datums
+	/// Активность антага для директора: score шума (атаки/убийства/розыск), затухает с полураспадом
+	/// DIRECTOR_ACTIVITY_HALF_LIFE. Читать через SSdirector.antag_activity() - он применяет затухание.
+	var/director_activity = 0
+	/// world.time последнего изменения director_activity (точка отсчёта затухания)
+	var/director_activity_at = 0
+	/// Накопленная за жизнь антага активность без затухания. Директор запоминает значение в момент
+	/// выдачи каждой роли и по дельте решает, заслуживает ли её ранняя потеря возврата бюджета.
+	var/director_activity_total = 0
 	var/antag_hud_icon_state = null //this mind's ANTAG_HUD should have this icon_state
 	var/datum/atom_hud/antag/antag_hud = null //this mind's antag HUD
 	var/datum/traitor_panel_tgui/tgui_panel // cached TGUI traitor panel
@@ -75,7 +83,7 @@
 	///has this mind ever been an AI
 	var/has_ever_been_ai = FALSE
 
-	var/assigned_heirloom = null // BLUEMOON EDIT - лодаутные реликвии. Дерьмовейшее решение, но по-другому не знаю, как сделать, чтобы спавнящиеся под ногами лодаутные предметы мог обрабатывать квирк
+	var/obj/item/assigned_heirloom = null // BLUEMOON EDIT - лодаутные реликвии. Дерьмовейшее решение, но по-другому не знаю, как сделать, чтобы спавнящиеся под ногами лодаутные предметы мог обрабатывать квирк
 	var/force_escaped = FALSE  // Set by Into The Sunset command of the shuttle manipulator
 	var/list/learned_recipes //List of learned recipe TYPES.
 
@@ -129,9 +137,25 @@
 	QDEL_NULL(tgui_panel)
 	QDEL_LIST(antag_datums)
 	QDEL_NULL(skill_holder)
+	RemoveAllSpells()
+	set_assigned_heirloom(null)
 	set_current(null)
 	soulOwner = null
 	return ..()
+
+/datum/mind/proc/set_assigned_heirloom(obj/item/new_heirloom)
+	if(assigned_heirloom == new_heirloom)
+		return
+	if(assigned_heirloom)
+		UnregisterSignal(assigned_heirloom, COMSIG_PARENT_QDELETING)
+	assigned_heirloom = new_heirloom
+	if(assigned_heirloom)
+		RegisterSignal(assigned_heirloom, COMSIG_PARENT_QDELETING, PROC_REF(on_assigned_heirloom_qdeleting))
+
+/datum/mind/proc/on_assigned_heirloom_qdeleting(obj/item/source)
+	SIGNAL_HANDLER
+	if(source == assigned_heirloom)
+		set_assigned_heirloom(null)
 
 /datum/mind/proc/set_current(mob/new_current)
 	if(new_current && QDELETED(new_current))
@@ -1782,8 +1806,16 @@ GLOBAL_LIST(objective_choices)
 	special_role = ROLE_REV_HEAD
 
 /datum/mind/proc/AddSpell(obj/effect/proc_holder/spell/S)
+	if(!S || (S in spell_list))
+		return
 	spell_list += S
+	RegisterSignal(S, COMSIG_PARENT_QDELETING, PROC_REF(on_spell_qdeleting))
 	S.action.Grant(current)
+
+/datum/mind/proc/on_spell_qdeleting(obj/effect/proc_holder/spell/spell)
+	SIGNAL_HANDLER
+	UnregisterSignal(spell, COMSIG_PARENT_QDELETING)
+	spell_list -= spell
 
 /datum/mind/proc/owns_soul()
 	return soulOwner == src
@@ -1792,16 +1824,19 @@ GLOBAL_LIST(objective_choices)
 /datum/mind/proc/RemoveSpell(obj/effect/proc_holder/spell/spell)
 	if(!spell)
 		return
-	for(var/X in spell_list)
-		var/obj/effect/proc_holder/spell/S = X
+	for(var/obj/effect/proc_holder/spell/S in spell_list.Copy())
 		if(istype(S, spell))
 			spell_list -= S
+			UnregisterSignal(S, COMSIG_PARENT_QDELETING)
 			qdel(S)
 	current?.client << output(null, "statbrowser:check_spells")
 
 /datum/mind/proc/RemoveAllSpells()
-	for(var/obj/effect/proc_holder/S in spell_list)
-		RemoveSpell(S)
+	for(var/obj/effect/proc_holder/S in spell_list.Copy())
+		spell_list -= S
+		UnregisterSignal(S, COMSIG_PARENT_QDELETING)
+		qdel(S)
+	current?.client << output(null, "statbrowser:check_spells")
 
 /datum/mind/proc/transfer_martial_arts(mob/living/new_character)
 	if(!ishuman(new_character))

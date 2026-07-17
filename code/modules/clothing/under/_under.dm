@@ -26,7 +26,9 @@
 	var/max_accessories = 7 // BLUEMOON EDIT - расширено возможное количество аксессуаров с 3 до 7
 	var/max_restricted_accessories = 3 // BLUEMOON ADD - максимальное количество особых (боевых) аксессуаров
 	var/list/obj/item/clothing/accessory/attached_accessories = list()
-	var/list/mutable_appearance/accessory_overlays = list()
+	// Отдельно 2 типа оверлея: один применяется на униформу, второй - на спрайт моба. Хранить нужно оба и отдельно.
+	var/list/mutable_appearance/accessory_uniform_overlays = list()
+	var/list/mutable_appearance/accessory_mob_overlays = list()
 	//SANDSTORM EDIT END
 
 /obj/item/clothing/under/worn_overlays(isinhands = FALSE, icon_file, used_state, style_flags = NONE)
@@ -37,8 +39,8 @@
 		. += mutable_appearance('icons/effects/item_damage.dmi', "damageduniform")
 	if(blood_DNA)
 		. += mutable_appearance('icons/effects/blood.dmi', "uniformblood", color = blood_DNA_to_color(), blend_mode = blood_DNA_to_blend())
-	if(length(accessory_overlays))
-		. += accessory_overlays
+	if(length(accessory_mob_overlays))
+		. += accessory_mob_overlays
 
 /obj/item/clothing/under/attackby(obj/item/I, mob/user, params)
 	if((sensordamage || (has_sensor < HAS_SENSORS && has_sensor != NO_SENSORS)) && istype(I, /obj/item/stack/cable_coil))
@@ -210,29 +212,17 @@
 				to_chat(user, "<span class='warning'>[src] слишком громоздкое, к нему нельзя крепить аксессуары!</span>")
 			return
 		else
-			if(user && !user.temporarilyRemoveItemFromInventory(I))
+			if(user && !user.temporarilyRemoveItemFromInventory(A))
 				return
 			if(!A.attach(src, user))
+				A.forceMove(drop_location()) // user.put_in_hands() вызывает где-то у себя в глубине stoplag(), что не нравится Initialize()
 				return
 
 			if(user && notifyAttach)
-				to_chat(user, "<span class='notice'>Вы прикрепили [I] к [src].</span>")
+				to_chat(user, "<span class='notice'>Вы прикрепили [A] к [src].</span>")
 
 			if((flags_inv & HIDEACCESSORY) || (A.flags_inv & HIDEACCESSORY))
 				return TRUE
-
-			//SANDSTORM EDIT
-			accessory_overlays = list(mutable_appearance('icons/mob/clothing/accessories.dmi', "blank"))
-			for(var/obj/item/clothing/accessory/attached_accessory in attached_accessories)
-				var/datum/element/polychromic/polychromic = LAZYACCESS(attached_accessory.comp_lookup, "item_worn_overlays")
-				if(!polychromic)
-					var/mutable_appearance/accessory_overlay = mutable_appearance(attached_accessory.mob_overlay_icon, attached_accessory.item_state || attached_accessory.icon_state, -UNIFORM_LAYER)
-					accessory_overlay.alpha = attached_accessory.alpha
-					accessory_overlay.color = attached_accessory.color
-					accessory_overlays += accessory_overlay
-				else
-					polychromic.apply_worn_overlays(attached_accessory, FALSE, attached_accessory.mob_overlay_icon, attached_accessory.item_state || attached_accessory.icon_state, NONE, accessory_overlays)
-			//SANDSTORM EDIT END
 
 			if(ishuman(loc))
 				var/mob/living/carbon/human/H = loc
@@ -390,7 +380,7 @@
 
 /obj/item/clothing/under/AltClick(mob/user)
 	. = ..()
-	if(!istype(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user), TRUE, FALSE))
+	if(. || !istype(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user), TRUE, FALSE))
 		return
 	if(length(attached_accessories)) //SKYRAT EDIT
 		remove_accessory(user)

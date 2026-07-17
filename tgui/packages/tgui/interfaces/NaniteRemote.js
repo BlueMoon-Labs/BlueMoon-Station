@@ -1,10 +1,10 @@
-import { Fragment } from 'inferno';
+import { Fragment } from 'react';
 
 import { useBackend } from '../backend';
 import { Button, Input, LabeledList, NoticeBox, NumberInput, Section, Table } from '../components';
 import { Window } from '../layouts';
 
-export const NaniteRemote = (props, context) => {
+export const NaniteRemote = (props) => {
   return (
     <Window
       width={420}
@@ -17,8 +17,8 @@ export const NaniteRemote = (props, context) => {
   );
 };
 
-export const NaniteRemoteContent = (props, context) => {
-  const { act, data } = useBackend(context);
+export const NaniteRemoteContent = (props) => {
+  const { act, data } = useBackend();
   const {
     code,
     locked,
@@ -47,7 +47,7 @@ export const NaniteRemoteContent = (props, context) => {
   }
 
   return (
-    <Fragment>
+    <>
       <Section
         title="Nanite Control"
         buttons={(
@@ -175,6 +175,6 @@ export const NaniteRemoteContent = (props, context) => {
           </NoticeBox>
         )}
       </Section>
-    </Fragment>
+    </>
   );
 };

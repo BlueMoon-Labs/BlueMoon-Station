@@ -17,6 +17,7 @@ const mockChatRenderer = {
   setBgAnimation: jest.fn(),
   setCustomColors: jest.fn(),
   setCustomProperties: jest.fn(),
+  setStyleOverrides: jest.fn(),
   setTimestamps: jest.fn(),
   setTimeDividers: jest.fn(),
   changePage: jest.fn(),
@@ -109,6 +110,7 @@ describe('chatMiddleware applySettings diffing', () => {
     expect(mockChatRenderer.setBgAnimation).toHaveBeenCalledTimes(1);
     expect(mockChatRenderer.setCustomColors).toHaveBeenCalledTimes(1);
     expect(mockChatRenderer.setCustomProperties).toHaveBeenCalledTimes(1);
+    expect(mockChatRenderer.setStyleOverrides).toHaveBeenCalledTimes(1);
     expect(mockChatRenderer.setTimestamps).toHaveBeenCalledTimes(1);
     expect(mockChatRenderer.setTimeDividers).toHaveBeenCalledTimes(1);
   });
@@ -134,6 +136,7 @@ describe('chatMiddleware applySettings diffing', () => {
     expect(mockChatRenderer.setBgAnimation).not.toHaveBeenCalled();
     expect(mockChatRenderer.setCustomColors).not.toHaveBeenCalled();
     expect(mockChatRenderer.setCustomProperties).not.toHaveBeenCalled();
+    expect(mockChatRenderer.setStyleOverrides).not.toHaveBeenCalled();
     expect(mockChatRenderer.setTimestamps).not.toHaveBeenCalled();
     expect(mockChatRenderer.setTimeDividers).not.toHaveBeenCalled();
   });
@@ -249,6 +252,45 @@ describe('chatMiddleware applySettings diffing', () => {
     expect(mockChatRenderer.setTimestamps).not.toHaveBeenCalled();
   });
 
+  test('styleOverrides change triggers setStyleOverrides only', async () => {
+    const store = createTestStore();
+    store.dispatch(updateSettings({ highlightText: '' }));
+    await flushPromises();
+    clearRendererSpies();
+
+    store.dispatch(updateSettings({
+      styleOverrides: {
+        emote: { color: '#ff0000', disabled: false },
+      },
+    }));
+    await flushPromises();
+
+    expect(mockChatRenderer.setStyleOverrides).toHaveBeenCalledTimes(1);
+    const [overrides, spanAnimations]
+      = mockChatRenderer.setStyleOverrides.mock.calls[0];
+    // Normalized map always contains every known style id
+    expect(overrides.emote).toEqual({ color: '#ff0000', disabled: false });
+    expect(overrides.whisper).toEqual({});
+    expect(spanAnimations).toBe(true);
+    expect(mockChatRenderer.setHighlight).not.toHaveBeenCalled();
+    expect(mockChatRenderer.setCustomProperties).not.toHaveBeenCalled();
+  });
+
+  test('spanAnimations toggle propagates to setStyleOverrides', async () => {
+    const store = createTestStore();
+    store.dispatch(updateSettings({ highlightText: '' }));
+    await flushPromises();
+    clearRendererSpies();
+
+    store.dispatch(updateSettings({ spanAnimations: false }));
+    await flushPromises();
+
+    expect(mockChatRenderer.setStyleOverrides).toHaveBeenCalledTimes(1);
+    const [, spanAnimations]
+      = mockChatRenderer.setStyleOverrides.mock.calls[0];
+    expect(spanAnimations).toBe(false);
+  });
+
   test('matchWord toggle re-runs setHighlight', async () => {
     const store = createTestStore();
     store.dispatch(updateSettings({ highlightText: 'foo' }));
@@ -280,6 +322,7 @@ describe('chatMiddleware applySettings diffing', () => {
     expect(mockChatRenderer.setBgAnimation).not.toHaveBeenCalled();
     expect(mockChatRenderer.setCustomColors).not.toHaveBeenCalled();
     expect(mockChatRenderer.setCustomProperties).not.toHaveBeenCalled();
+    expect(mockChatRenderer.setStyleOverrides).not.toHaveBeenCalled();
     expect(mockChatRenderer.setTimestamps).not.toHaveBeenCalled();
     expect(mockChatRenderer.setTimeDividers).not.toHaveBeenCalled();
   });

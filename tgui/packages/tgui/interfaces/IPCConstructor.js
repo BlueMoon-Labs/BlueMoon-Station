@@ -112,8 +112,8 @@ const StatusCard = ({ label, value, accent = '#7fdcff' }) => (
   </Box>
 );
 
-const SlotListItem = (props, context) => {
-  const { act } = useBackend(context);
+const SlotListItem = (props) => {
+  const { act } = useBackend();
   const { slot, busy, limbStyles } = props;
   const styleOptions = slot.styles || limbStyles;
 
@@ -153,8 +153,8 @@ const SlotListItem = (props, context) => {
   );
 };
 
-const ImplantListItem = (props, context) => {
-  const { act } = useBackend(context);
+const ImplantListItem = (props) => {
+  const { act } = useBackend();
   const { implant, busy } = props;
 
   return (
@@ -179,8 +179,8 @@ const ImplantListItem = (props, context) => {
   );
 };
 
-const GenitalOptionItem = (props, context) => {
-  const { act } = useBackend(context);
+const GenitalOptionItem = (props) => {
+  const { act } = useBackend();
   const { option, busy } = props;
 
   return (
@@ -199,8 +199,8 @@ const GenitalOptionItem = (props, context) => {
   );
 };
 
-const GenitalSizeItem = (props, context) => {
-  const { act } = useBackend(context);
+const GenitalSizeItem = (props) => {
+  const { act } = useBackend();
   const { option, busy } = props;
 
   return (
@@ -237,8 +237,8 @@ const GenitalSizeItem = (props, context) => {
   );
 };
 
-const GenitalColorItem = (props, context) => {
-  const { act } = useBackend(context);
+const GenitalColorItem = (props) => {
+  const { act } = useBackend();
   const { option, busy } = props;
 
   return (
@@ -265,8 +265,8 @@ const GenitalColorItem = (props, context) => {
   );
 };
 
-const ConstructorTab = (props, context) => {
-  const { act, data } = useBackend(context);
+const ConstructorTab = (props) => {
+  const { act, data } = useBackend();
   const {
     busy,
     suggested_name,
@@ -297,7 +297,7 @@ const ConstructorTab = (props, context) => {
     implants = [],
   } = data;
 
-  const [designation, setDesignation] = useSharedState(context, 'designation', '');
+  const [designation, setDesignation] = useSharedState('designation', '');
   const optionalPartLabels = {
     l_arm: 'левая рука',
     r_arm: 'правая рука',
@@ -437,7 +437,7 @@ const ConstructorTab = (props, context) => {
                         {busy
                           ? `Сборка идет: осталось ${assembly_remaining_seconds} сек.`
                           : `Время сборки: ${estimated_time_seconds} сек.`}
-                      </Box>
+                    </Box>
                     </Stack.Item>
                     <Stack.Item>
                       {missing_optional_parts.length ? (
@@ -590,8 +590,8 @@ const ConstructorTab = (props, context) => {
   );
 };
 
-const GenitalsTab = (props, context) => {
-  const { act, data } = useBackend(context);
+const GenitalsTab = (props) => {
+  const { act, data } = useBackend();
   const {
     busy,
     genital_options = [],
@@ -667,8 +667,8 @@ const GenitalsTab = (props, context) => {
   );
 };
 
-export const IPCConstructor = (props, context) => {
-  const [activeTab, setActiveTab] = useSharedState(context, 'activeTab', 'constructor');
+export const IPCConstructor = (props) => {
+  const [activeTab, setActiveTab] = useSharedState('activeTab', 'constructor');
 
   const shownTab = activeTab === 'genitals'
     ? 'genitals'
@@ -811,7 +811,8 @@ export const IPCConstructor = (props, context) => {
             0% { left: -30%; }
             100% { left: 110%; }
           }
-        `}</style>
+        `}
+        </style>
       </Window.Content>
     </Window>
   );

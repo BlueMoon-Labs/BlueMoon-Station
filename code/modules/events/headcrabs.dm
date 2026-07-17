@@ -11,6 +11,7 @@
 	weight = 10
 	max_occurrences = 1
 	category = EVENT_CATEGORY_ENTITIES
+	severity = DIRECTOR_SEVERITY_MODERATE
 	description = "Насылает кучу Мозгососов на Космическую Станцию."
 
 /datum/round_event/headcrabs

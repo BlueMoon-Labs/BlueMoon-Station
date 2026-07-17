@@ -28,6 +28,8 @@
 	var/min_distance
 	///The throwdatum we're currently dealing with, if we need it
 	var/datum/thrownthing/tackle
+	///Таймер resetTackle: без deltimer в Destroy его CALLBACK держал бы компонент в SStimer
+	var/reset_timer_id
 
 /datum/component/tackler/Initialize(stamina_cost = 25, base_knockdown = 1 SECONDS, range = 4, speed = 1, skill_mod = 0, min_distance = min_distance)
 	if(!iscarbon(parent))
@@ -43,12 +45,14 @@
 	var/mob/living/carbon/P = parent
 	to_chat(P, "<span class='notice'>You are now able to launch tackles! You can do so by activating throw intent, and clicking on your target with an empty hand.</span>")
 	P.tackling = TRUE
-	addtimer(CALLBACK(src, PROC_REF(resetTackle)), base_knockdown, TIMER_STOPPABLE)
+	reset_timer_id = addtimer(CALLBACK(src, PROC_REF(resetTackle)), base_knockdown, TIMER_STOPPABLE)
 
 /datum/component/tackler/Destroy()
 	var/mob/living/carbon/P = parent
 	to_chat(P, "<span class='notice'>You can no longer tackle.</span>")
 	P.tackling = FALSE
+	deltimer(reset_timer_id)
+	tackle = null // thrownthing живёт в SSthrowing, компоненту его не qdel-ить
 	return ..()
 
 /datum/component/tackler/RegisterWithParent()
@@ -63,6 +67,15 @@
 /datum/component/tackler/proc/registerTackle(mob/living/carbon/user, datum/thrownthing/TT)
 	tackle = TT
 	tackle.thrower = user
+	// POST_THROW прилетает на ЛЮБОЙ бросок носителя (взрыв, чужой швырок), а resetTackle
+	// ставится только на настоящий такл - без этого сигнала завершённый SSthrowing'ом
+	// thrownthing зомби-ссылкой висел бы в tackle до следующего броска
+	RegisterSignal(TT, COMSIG_PARENT_QDELETING, PROC_REF(on_tackle_thrownthing_qdeleting))
+
+/datum/component/tackler/proc/on_tackle_thrownthing_qdeleting(datum/source)
+	SIGNAL_HANDLER
+	if(tackle == source)
+		tackle = null
 
 ///See if we can tackle or not. If we can, leap!
 /datum/component/tackler/proc/checkTackle(mob/living/carbon/user, atom/A, params)
@@ -121,7 +134,7 @@
 	user.adjustStaminaLoss(stamina_cost)
 	user.throw_at(A, range, speed, user, FALSE)
 	user.toggle_throw_mode()
-	addtimer(CALLBACK(src, PROC_REF(resetTackle)), base_knockdown, TIMER_STOPPABLE)
+	reset_timer_id = addtimer(CALLBACK(src, PROC_REF(resetTackle)), base_knockdown, TIMER_STOPPABLE)
 	return(COMSIG_MOB_CANCEL_CLICKON)
 
 /**

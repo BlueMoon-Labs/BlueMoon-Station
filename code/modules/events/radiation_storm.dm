@@ -3,6 +3,7 @@
 	typepath = /datum/round_event/radiation_storm
 	max_occurrences = 1
 	category = EVENT_CATEGORY_SPACE
+	severity = DIRECTOR_SEVERITY_MODERATE
 	description = "Radiation storm affects the station, forcing the crew to escape to maintenance."
 
 /datum/round_event/radiation_storm

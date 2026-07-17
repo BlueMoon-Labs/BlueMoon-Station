@@ -523,7 +523,7 @@
 		return FALSE
 
 	var/image/overlay = image(icon = overlay_borg)
-	owner.write_image_data("CYBORG_SCAN", overlay, borg_target, get_data(), 1 SECONDS, -32, -5)
+	owner.write_image_data("CYBORG_SCAN", overlay, borg_target, get_data(), 1 SECONDS, 32, -5)
 
 	return TRUE
 

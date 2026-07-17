@@ -193,6 +193,7 @@
 	max_occurrences = 2
 	weight = 10
 	category = EVENT_CATEGORY_ENTITIES
+	severity = DIRECTOR_SEVERITY_MODERATE // одиночный сбежавший стрелок, не станционная угроза
 
 /datum/round_event/sniper
 	announce_when = 1

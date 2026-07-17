@@ -621,6 +621,7 @@
 	var/static/list/vending_names_paths = list(
 		/obj/machinery/vending/boozeomat = "Booze-O-Mat",
 		/obj/machinery/vending/coffee = "Solar's Best Hot Drinks",
+		/obj/machinery/vending/snack/max_vulpix = "MacVulpix Deluxe Food",
 		/obj/machinery/vending/snack = "Getmore Chocolate Corp",
 		/obj/machinery/vending/cola = "Robust Softdrinks",
 		/obj/machinery/vending/cigarette = "ShadyCigs Deluxe",

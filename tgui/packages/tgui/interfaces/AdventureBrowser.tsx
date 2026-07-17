@@ -1,4 +1,6 @@
-import { useBackend, useLocalState } from '../backend';
+import { useState } from 'react';
+
+import { useBackend } from '../backend';
 import { Box, Button, LabeledList, NoticeBox, Section, Table } from '../components';
 import { formatTime } from '../format';
 import { Window } from '../layouts';
@@ -24,8 +26,8 @@ type AdventureBrowserData = AdventureDataProvider & {
   delay_message: string;
 };
 
-const AdventureEntry = (props, context) => {
-  const { data, act } = useBackend<AdventureBrowserData>(context);
+const AdventureEntry = (props) => {
+  const { data, act } = useBackend<AdventureBrowserData>();
   const { entry_ref, close }: { entry_ref: string, close: () => void } = props;
   const entry = data.adventures.find(x => x.ref === entry_ref);
   return (
@@ -57,12 +59,12 @@ const AdventureEntry = (props, context) => {
   );
 };
 
-const AdventureList = (props, context) => {
-  const { data, act } = useBackend<AdventureBrowserData>(context);
+const AdventureList = (props) => {
+  const { data, act } = useBackend<AdventureBrowserData>();
   const [
     openAdventure,
     setOpenAdventure,
-  ] = useLocalState(context, 'openAdventure', null);
+  ] = useState(null);
 
   return (
     <>
@@ -96,8 +98,8 @@ const AdventureList = (props, context) => {
   );
 };
 
-const DebugPlayer = (props, context) => {
-  const { data, act } = useBackend<AdventureBrowserData>(context);
+const DebugPlayer = (props) => {
+  const { data, act } = useBackend<AdventureBrowserData>();
   return (
     <Section
       title="Playtest"
@@ -108,8 +110,8 @@ const DebugPlayer = (props, context) => {
     </Section>);
 };
 
-export const AdventureBrowser = (props, context) => {
-  const { data } = useBackend<AdventureBrowserData>(context);
+export const AdventureBrowser = (props) => {
+  const { data } = useBackend<AdventureBrowserData>();
 
   return (
     <Window width={650} height={500} title="Adventure Manager">

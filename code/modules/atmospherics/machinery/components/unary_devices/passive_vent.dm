@@ -37,12 +37,9 @@
 		if(external.gc_share)
 			if(internal_pressure > external_pressure)
 				var/total_volume = internal.return_volume() + external.return_volume()
-				var/vent_ratio = total_volume > 0 ? clamp(external.return_volume() / total_volume, 0, 1) : 0
-				if(vent_ratio > 0)
-					var/datum/gas_mixture/vented = internal.remove_ratio(vent_ratio)
-					if(vented)
-						active = vented.total_moles() > 0
-						qdel(vented)
+				var/vent_fraction = total_volume > 0 ? clamp(external.return_volume() / total_volume, 0, 1) : 0
+				if(vent_fraction > 0)
+					active = internal.vent_ratio(vent_fraction)
 		else
 			equalize_all_gases_in_list(list(internal, external))
 			active = TRUE

@@ -2,8 +2,8 @@ import { useBackend } from '../backend';
 import { Box, Button, Section, Stack } from '../components';
 import { Window } from '../layouts';
 
-export const MetadollarShop = (props, context) => {
-  const { act, data } = useBackend(context);
+export const MetadollarShop = (props) => {
+  const { act, data } = useBackend();
   const {
     balance = 0,
     inteqMode = false,
