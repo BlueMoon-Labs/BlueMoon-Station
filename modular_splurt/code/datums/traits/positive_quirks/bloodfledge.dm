@@ -363,7 +363,7 @@
 	// Define if zone should be checked
 	// Uses dismember check to determine if it can be missing
 	// Missing limbs are assumed to be dismembered
-	var/target_zone_check = bite_bodypart?.can_dismember() || TRUE
+	var/target_zone_check = bite_bodypart?.can_dismembered() || TRUE
 
 	// Set zone name based on region
 	// Also checks for some protections

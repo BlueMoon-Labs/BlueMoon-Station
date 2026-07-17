@@ -490,6 +490,9 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 	r_pocket = /obj/item/radio/off
 	back = /obj/item/storage/backpack
 	implants = list(/obj/item/implant/mindshield)
+	id = /obj/item/card/id/away/hotel/splurt
+	ears = /obj/item/radio/headset/headset_srv/hotel
+	l_pocket = /obj/item/modular_computer/pda/hotelstaff
 
 /obj/effect/mob_spawn/human/hotel_staff/security
 	name = "hotel security sleeper"
@@ -502,6 +505,7 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 	important_info = "Персоналу отеля запрещается покидать его (кроме неординарных случаев или для установки телепада). Вы можете вести себя как СБ со станции и \
 	полностью подчиняетесь КЗ и НРП СБ. Любых преступников, или нарушителей порядка вам следует передавать на станцию для вынесения и исполнения приговора. Вам нужно помнить, \
 	что отель не защищен от нападения агентов вражеских организаций."
+	make_bank_account = TRUE
 
 /datum/outfit/hotelstaff/security
 	name = "Hotel Secuirty"

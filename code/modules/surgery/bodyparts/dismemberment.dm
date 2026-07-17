@@ -1,5 +1,5 @@
 
-/obj/item/bodypart/proc/can_dismember(obj/item/I)
+/obj/item/bodypart/proc/can_dismembered()
 	if(dismemberable)
 		return TRUE
 

@@ -252,7 +252,7 @@
 
 ///All of our pellets are accounted for, time to go target by target and tell them how many things they got hit by.
 /datum/component/pellet_cloud/proc/finalize()
-	var/obj/item/projectile/P = projectile_type
+	var/obj/item/projectile/P = projectile_type // istype
 	var/proj_name = initial(P.name)
 
 	for(var/atom/target in targets_hit)
@@ -267,7 +267,7 @@
 			var/bw_bonus = wound_info_by_part[hit_part][CLOUD_POSITION_BW_BONUS]
 			var/wound_type = (initial(P.damage_type) == BRUTE) ? WOUND_BLUNT : WOUND_BURN // sharpness is handled in the wound rolling
 			wound_info_by_part -= hit_part
-			hit_part.painless_wound_roll(wound_type, damage_dealt, w_bonus, bw_bonus, initial(P.sharpness))
+			hit_part.painless_wound_roll(wound_type, damage_dealt, w_bonus, bw_bonus, initial(P.sharpness), initial(P.can_dismember))
 
 		if(num_hits > 1)
 			target.visible_message("<span class='danger'>[target] is hit by [num_hits] [proj_name]s[hit_part ? " in the [hit_part.name]" : ""]!</span>", null, null, COMBAT_MESSAGE_RANGE, target)
