@@ -178,6 +178,7 @@
 	weight = 4 //BLUEMOON CHANGES
 	cost = 10
 	intensity = 15
+	family = "heretic" // с мидраунд-пробуждением: не подряд
 	requirements = list(101,101,101,50,40,20,20,15,10,10)
 	repeatable = TRUE
 

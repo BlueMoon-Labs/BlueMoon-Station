@@ -101,6 +101,11 @@ SUBSYSTEM_DEF(director)
 	/// выжигали бы кошелёк раньше, чем дорогие вообще становились доступны, и нюк-асолт за 20
 	/// не случался бы никогда при живом автотрейторе за 8.
 	var/list/pool_saving = list()
+	/// Копилка: severity -> ассоц-список имён действий, доступных на момент выбора цели.
+	/// Рост набора (появился новый валидный вариант) перевыбирает цель: план, зафиксированный
+	/// в бедном пуле первых минут (один Devil без earliest_start), не должен доживать до
+	/// исполнения со 100%-роллом, когда к 20-й минуте открылась дюжина альтернатив.
+	var/list/pool_target_options = list()
 	/// Действие -> world.time конца короткого карантина после фактического провала.
 	var/list/action_failure_cooldowns = list()
 	/// Действие -> снимок пейсинга до note_fired(). Нужен, пока асинхронный рулсет/ghost poll
@@ -279,6 +284,7 @@ SUBSYSTEM_DEF(director)
 /datum/controller/subsystem/director/proc/get_untracked_antag_intensity(list/counted_minds, list/breakdown = null)
 	var/total = 0
 	var/list/seen = list()
+	var/list/names = list()
 	for(var/datum/antagonist/antag as anything in GLOB.antagonists)
 		var/datum/mind/antag_mind = antag.owner
 		// Один разум может держать несколько антаг-датумов - считаем его один раз.
@@ -289,10 +295,35 @@ SUBSYSTEM_DEF(director)
 		if(!is_active_antag_mind(antag_mind))
 			continue
 		seen[antag_mind] = TRUE
-		total += DIRECTOR_UNTRACKED_ANTAG_INTENSITY * antag_activity_mult(antag_mind)
+		// Не на станции - не давит на раунд: токен-антаг, засевший на шахтёрском уровне,
+		// или улетевшая команда не должны глушить клапан (прод-жалоба "нагрузка есть,
+		// антагов не видно"). Вернётся на станцию - вклад вернётся тем же битом.
+		var/turf/location = get_turf(antag_mind.current)
+		if(!location || !is_station_level(location.z))
+			continue
+		// Затухание по возрасту, как у рулсетов: часовой токен-антаг оседает к полу так же,
+		// как старый раундстарт. Точка отсчёта штампуется при первой встрече (с точностью
+		// до бита совпадает с выдачей роли).
+		if(!antag_mind.director_untracked_since)
+			antag_mind.director_untracked_since = now()
+		var/decay = ruleset_intensity_decay(antag_mind.director_untracked_since)
+		total += DIRECTOR_UNTRACKED_ANTAG_INTENSITY * decay * antag_activity_mult(antag_mind)
+		names += antag_mind.current.real_name || antag_mind.name
 	if(total && !isnull(breakdown))
-		breakdown += list(list(DIRECTOR_UNTRACKED_SOURCE_NAME, total, length(seen)))
+		breakdown += list(list(untracked_source_label(names), total, length(names)))
 	return total
+
+/// Подпись строки untracked-вкладов: до четырёх имён прямо в панели ("от кого нагрузка"),
+/// дальше свёртка. Безымянная строка заставляла админов гадать, кто держит клапан.
+/datum/controller/subsystem/director/proc/untracked_source_label(list/names)
+	if(!length(names))
+		return DIRECTOR_UNTRACKED_SOURCE_NAME
+	var/shown_count = min(length(names), 4)
+	var/list/shown = names.Copy(1, shown_count + 1)
+	var/label = "[DIRECTOR_UNTRACKED_SOURCE_NAME]: [jointext(shown, ", ")]"
+	if(length(names) > shown_count)
+		label += " и ещё [length(names) - shown_count]"
+	return label
 
 /// Целевая антаг-нагрузка раунда: масштабируется от живого экипажа, а не от фиксированного
 /// потолка intensity. 3 стелс-антага - норма на 20 экипажа и голод на 60 телах.
@@ -307,15 +338,21 @@ SUBSYSTEM_DEF(director)
 	quiet_eval = TRUE
 	for(var/sev in list(DIRECTOR_SEVERITY_ANTAG, DIRECTOR_SEVERITY_GHOST))
 		var/datum/director_action/target = pool_saving[sev]
-		if(!QDELETED(target) && !action_recently_failed(target) && target.can_fire(signals) && action_preflight(target))
+		if(QDELETED(target) || action_recently_failed(target) || !target.can_fire(signals) || !action_preflight(target))
+			roll_pool_target(sev, signals)
 			continue
-		roll_pool_target(sev, signals)
+		// Цель валидна, но пул мог вырасти: план, взятый из одного-двух ранних вариантов
+		// (прод-жалоба "в харду каждый раунд дьявол"), перевыбирается честным роллом,
+		// как только появляется вариант, которого не было на момент выбора.
+		var/list/options = collect_pool_options(sev, signals)
+		if(pool_options_grew(sev, options))
+			roll_pool_target(sev, signals, precollected_options = options)
 	quiet_eval = FALSE
 
-/// Взвешенный ролл цели накопления пула по всем валидным действиям, БЕЗ гейта бюджета.
+/// Валидные цели накопления пула с весами (без гейта бюджета - см. roll_pool_target).
 /// Латеджойн-рулсеты целью не становятся: они стреляют только в окно захода игрока,
 /// такая цель заморозила бы пул до случайного латеджойна.
-/datum/controller/subsystem/director/proc/roll_pool_target(sev, datum/director_signals/signals)
+/datum/controller/subsystem/director/proc/collect_pool_options(sev, datum/director_signals/signals)
 	var/list/options = list()
 	for(var/datum/director_action/action as anything in actions)
 		if(action.severity != sev)
@@ -338,6 +375,37 @@ SUBSYSTEM_DEF(director)
 		var/action_weight = action.get_weight(signals) * repeat_falloff(action) * profile.disruption_mult(action)
 		if(action_weight > 0)
 			options[action] = max(1, round(action_weight * 100))
+	return options
+
+/// TRUE, если среди options есть действие, которого не было в наборе на момент выбора цели.
+/// Набор без записи (цель ставилась до включения механизма/руками) считается не выросшим.
+/datum/controller/subsystem/director/proc/pool_options_grew(sev, list/options)
+	var/list/known = pool_target_options[sev]
+	if(!islist(known))
+		return FALSE
+	for(var/datum/director_action/action as anything in options)
+		if(!known[action.action_name()])
+			return TRUE
+	return FALSE
+
+/// Взвешенный ролл цели накопления пула по всем валидным действиям, БЕЗ гейта бюджета.
+/// max_cost (замена после провала/отказа админа): цель только по средствам - обещанная замена
+/// должна случиться сейчас, а не "когда докапает"; при пустом отборе цель НЕ перезаписывается,
+/// вызывающий решает, откатываться ли на неограниченный ролл.
+/datum/controller/subsystem/director/proc/roll_pool_target(sev, datum/director_signals/signals, max_cost = null, list/precollected_options = null)
+	var/list/options = precollected_options || collect_pool_options(sev, signals)
+	if(!isnull(max_cost))
+		var/list/affordable = list()
+		for(var/datum/director_action/option as anything in options)
+			if(option.cost <= max_cost)
+				affordable[option] = options[option]
+		if(!length(affordable))
+			return null
+		options = affordable
+	var/list/known = list()
+	for(var/datum/director_action/option as anything in options)
+		known[option.action_name()] = TRUE
+	pool_target_options[sev] = known
 	pool_saving[sev] = length(options) ? pickweight(options) : null
 	return pool_saving[sev]
 
@@ -1349,6 +1417,7 @@ SUBSYSTEM_DEF(director)
 	if(signals.evac_state == DIRECTOR_EVAC_GONE || signals.effective_crew <= 0)
 		return
 	ensure_pool_targets(signals)
+	reroll_pool_target_affordable(severity, signals)
 	var/list/reject_stats = list()
 	var/list/candidates = filter_candidates(signals, FALSE, reject_stats)
 	for(var/datum/director_action/candidate as anything in candidates.Copy())
@@ -1360,6 +1429,19 @@ SUBSYSTEM_DEF(director)
 	var/datum/director_action/replacement = pickweight(candidates)
 	message_admins("DIRECTOR: [failed_action.action_name()] не породил антагониста; паузы и бюджет возвращены, предлагаю замену [replacement.action_name()].")
 	announce_pick(replacement, candidates, FALSE, signals)
+
+/// Замена обязана быть исполнимой сейчас: если перевыбранная цель копилки дороже остатка
+/// кошелька (прод-раунд: после провала генлинг-метеора цель ушла в рейдеров за 15 при 12.5),
+/// пробуем цель по средствам. Вариантов по средствам нет - оставляем дорогой план копиться.
+/datum/controller/subsystem/director/proc/reroll_pool_target_affordable(severity, datum/director_signals/signals)
+	if(!DIRECTOR_IS_ANTAG_POOL(severity))
+		return
+	var/datum/director_action/planned = pool_saving[severity]
+	if(QDELETED(planned) || planned.cost <= budgets[severity])
+		return
+	quiet_eval = TRUE
+	roll_pool_target(severity, signals, max_cost = budgets[severity])
+	quiet_eval = FALSE
 
 /// Общий учёт запуска (и естественного, и форса админом). from_latejoin: инжекция из окна захода
 /// игрока - у неё собственный трек спейсинга (last_latejoin_at), и она не трогает паузы битов:
@@ -1576,17 +1658,50 @@ SUBSYSTEM_DEF(director)
 		pending_action = null
 		pending_candidates = null
 		pending_signals = null
+		pending_timer_id = null
 	if(href_list["reroll_pending"] && pending_action)
 		deltimer(pending_timer_id)
-		pending_candidates -= pending_action
 		message_admins("[key_name_admin(usr)] заменил действие директора: [pending_action.action_name()].")
 		log_admin("[key_name(usr)] заменил действие директора: [pending_action.action_name()].")
-		if(length(pending_candidates))
-			var/datum/director_action/next_pick = pickweight(pending_candidates)
-			announce_pick(next_pick, pending_candidates, pending_guaranteed, pending_signals)
-		else
-			pending_action = null
-			pending_signals = null
+		replace_pending_action()
+
+/// Реальная замена отклонённого админом выбора. Штатный путь - другой кандидат из того же
+/// списка, но у ANTAG/GHOST-пиков список почти всегда из одного действия (гейт копилки),
+/// и раньше кнопка замены молча очищала pending, ничего не предлагая взамен.
+/// Отклонённое действие получает тот же карантин, что и провалившееся, копилка перецеливается
+/// по средствам, и замена ищется свежим отбором той же ступени.
+/// override_signals - подмена живого снимка мира для юнит-тестов.
+/datum/controller/subsystem/director/proc/replace_pending_action(datum/director_signals/override_signals = null)
+	var/datum/director_action/rejected = pending_action
+	var/was_guaranteed = pending_guaranteed
+	var/list/stale_candidates = pending_candidates
+	var/datum/director_signals/rejected_signals = pending_signals
+	pending_action = null
+	pending_candidates = null
+	pending_signals = null
+	pending_timer_id = null
+	// Карантин отклонённому: без него свежий отбор (и перевыбор цели копилки) тут же
+	// предложат то же самое действие обратно.
+	action_failure_cooldowns[rejected] = now() + DIRECTOR_FAILED_ACTION_COOLDOWN
+	if(pool_saving[rejected.severity] == rejected)
+		pool_saving[rejected.severity] = null
+	if(islist(stale_candidates))
+		stale_candidates -= rejected
+		if(length(stale_candidates))
+			announce_pick(pickweight(stale_candidates), stale_candidates, was_guaranteed, rejected_signals)
+			return
+	// Список исчерпан: собираем замену заново из той же ступени свежим отбором.
+	var/datum/director_signals/signals = override_signals || collect_signals()
+	ensure_pool_targets(signals)
+	reroll_pool_target_affordable(rejected.severity, signals)
+	var/list/candidates = filter_candidates(signals, was_guaranteed)
+	for(var/datum/director_action/candidate as anything in candidates.Copy())
+		if(candidate.severity != rejected.severity)
+			candidates -= candidate
+	if(!length(candidates))
+		message_admins("DIRECTOR: замену для [rejected.action_name()] подобрать не удалось - в ступени [rejected.severity] сейчас нет готовых кандидатов.")
+		return
+	announce_pick(pickweight(candidates), candidates, was_guaranteed, signals)
 
 #undef DIRECTOR_WAIT
 #undef DIRECTOR_BEAT_EVERY

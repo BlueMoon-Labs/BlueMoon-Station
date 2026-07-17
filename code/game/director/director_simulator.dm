@@ -14,6 +14,7 @@
 	state["last_any_fired_at"] = last_any_fired_at
 	state["last_real_fired_at"] = last_real_fired_at
 	state["pool_saving"] = pool_saving.Copy()
+	state["pool_target_options"] = pool_target_options.Copy()
 	state["action_failure_cooldowns"] = action_failure_cooldowns.Copy()
 	state["action_attempt_rollbacks"] = action_attempt_rollbacks.Copy()
 	state["last_antag_deficit"] = last_antag_deficit
@@ -75,6 +76,7 @@
 	last_any_fired_at = state["last_any_fired_at"]
 	last_real_fired_at = state["last_real_fired_at"]
 	pool_saving = state["pool_saving"]
+	pool_target_options = state["pool_target_options"]
 	action_failure_cooldowns = state["action_failure_cooldowns"]
 	action_attempt_rollbacks = state["action_attempt_rollbacks"]
 	last_antag_deficit = state["last_antag_deficit"]
@@ -126,6 +128,7 @@
 	D.family_fired_counts = list()
 	D.family_last_fired_at = list()
 	D.pool_saving = list()
+	D.pool_target_options = list()
 	D.action_failure_cooldowns = list()
 	D.action_attempt_rollbacks = list()
 	D.last_antag_heavy_at = 0

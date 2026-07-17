@@ -305,6 +305,89 @@
 
 //////////////////////////////////////////////
 //                                          //
+//        CREW CONVERSION VARIANTS          //
+//                                          //
+//////////////////////////////////////////////
+
+/// Общий каркас лёгкой экипажной конверсии (зеркало InteQ Sleeper Agent): ANTAG-пул состоял
+/// из одного лёгкого рулсета, и каждая экипажная инжекция была трейтором. Наследники задают
+/// антаг-датум и роли; отбор/готовность/выдача общие. weight = 0 - каркас сам не выбирается.
+/datum/dynamic_ruleset/midround/crew_conversion
+	name = ""
+	weight = 0
+	restricted_roles = list("Cyborg", "AI", "Positronic Brain")
+	required_candidates = 1
+	cost = 10
+	intensity = 15
+	repeatable = TRUE
+
+/datum/dynamic_ruleset/midround/crew_conversion/trim_candidates()
+	. = ..()
+	for(var/mob/living/player in living_players)
+		if(issilicon(player))
+			living_players -= player
+		else if(is_centcom_level(player.z))
+			living_players -= player
+		else if(player.mind && (player.mind.special_role || player.mind.antag_datums?.len > 0))
+			living_players -= player
+
+/datum/dynamic_ruleset/midround/crew_conversion/ready(forced = FALSE)
+	if(required_candidates > living_players.len)
+		ready_failure_reason = "подходящих членов экипажа [living_players.len] из [required_candidates] (преференс midround, роль, бан и возраст)"
+		return FALSE
+	. = ..()
+	if(.)
+		director_preflight_detail = "подходящих членов экипажа: [living_players.len], требуется: [required_candidates]"
+
+/datum/dynamic_ruleset/midround/crew_conversion/director_preflight()
+	trim_candidates()
+	. = ready()
+	director_preflight_failure = . ? null : ready_failure_reason
+
+/datum/dynamic_ruleset/midround/crew_conversion/execute()
+	if(living_players.len <= 0)
+		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
+		return FALSE
+	var/mob/picked = pick_n_take(living_players)
+	assigned += picked.mind // mind, не моб: по assigned директор считает вклад в intensity
+	picked.mind.special_role = antag_flag
+	picked.mind.add_antag_datum(antag_datum)
+	message_admins("[ADMIN_LOOKUPFLW(picked)] was selected by the [name] ruleset.")
+	log_game("DYNAMIC: [key_name(picked)] was selected by the [name] ruleset.")
+	return TRUE
+
+/// Ересь среди экипажа: мидраунд-зеркало латеджойн-контрабандиста для уже играющих.
+/datum/dynamic_ruleset/midround/crew_conversion/heretic
+	name = "Heretic Awakening"
+	antag_datum = /datum/antagonist/heretic
+	antag_flag = "heretic mid"
+	antag_flag_override = ROLE_HERETIC
+	protected_roles = list("NanoTrasen Representative", "Internal Affairs Agent", "Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Prisoner", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director")
+	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM)
+	weight = 4
+	family = "heretic" // с латеджойн-контрабандистом: не подряд
+	requirements = list(101,101,101,50,40,20,20,15,10,10)
+
+/// Тихий генлинг среди экипажа: мидраунд-зеркало латеджойн-варианта.
+/datum/dynamic_ruleset/midround/crew_conversion/changeling
+	name = "Latent Changeling"
+	antag_datum = /datum/antagonist/changeling
+	antag_flag = "changeling mid crew"
+	antag_flag_override = ROLE_CHANGELING
+	protected_roles = list("Expeditor", "Prisoner", "NanoTrasen Representative", "Internal Affairs Agent", "Security Officer", "Blueshield", "Peacekeeper", "Brig Physician", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director")
+	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM)
+	weight = 4
+	family = "changeling" // с метеором и латеджойн-генлингом: не подряд
+	requirements = list(101,101,60,50,40,30,20,15,10,10)
+
+/datum/dynamic_ruleset/midround/crew_conversion/changeling/trim_candidates()
+	. = ..()
+	for(var/mob/living/player in living_players)
+		if(HAS_TRAIT(player, TRAIT_ROBOTIC_ORGANISM)) // никаких роботов-генлингов
+			living_players -= player
+
+//////////////////////////////////////////////
+//                                          //
 //                 FAMILIES                 //
 //                                          //
 //////////////////////////////////////////////
@@ -1121,6 +1204,10 @@
 	cost = 10
 	intensity = 15
 	family = "devil" // с событием-двойником: не подряд
+	// Единственный гост-антаг без ограничений выпадал целью копилки в первые минуты, когда
+	// альтернатив ещё нет, и в Hard стрелял к 10-й минуте каждый раунд ("постоянно дьявол").
+	// Ранняя волна гост-пула открывается с 20-й минуты вместе с генлингом/болезнью/морфом.
+	earliest_start = 20 MINUTES
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM)
 	requirements = list(101,101,101,50,40,30,20,10,10,10)
 	repeatable = FALSE

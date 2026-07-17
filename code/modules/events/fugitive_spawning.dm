@@ -3,7 +3,7 @@
 	typepath = /datum/round_event/ghost_role/fugitives
 	max_occurrences = 1
 	min_players = 15
-	weight = 10
+	weight = 7 // прижат к середине пула: веса 10 у дешёвых гост-ролей делали их дефолтом раунда
 	earliest_start = 30 MINUTES //deadchat sink, lets not even consider it early on.
 	category = EVENT_CATEGORY_INVASION
 	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR

@@ -2414,10 +2414,24 @@
 		var/baseline = SSdirector.antag_load()
 
 		// Живой жёсткий антаг без рулсета/гост-роли - аналог выданного админом/жетоном еретика.
+		// Тестовая зона живёт на reserved z: свежесозданный антаг НЕ на станции и давить
+		// на клапан не должен (прод-жалоба "нагрузка есть, антагов не видно").
 		admin_antag = allocate(/mob/living/carbon/human)
 		admin_antag.mind_initialize()
 		grant_hard_antag(admin_antag.mind)
+		TEST_ASSERT_EQUAL(SSdirector.antag_load() - baseline, 0, "Untracked-антаг вне станционного z не должен давать нагрузки")
+
+		// На станции - полноценный вклад лёгкого соло-тира. Гейт смотрит только на z-трейт,
+		// поэтому годится любой турф станционного уровня (latejoin_trackers в CI-мире пуст).
+		var/list/station_levels = SSmapping.levels_by_trait(ZTRAIT_STATION)
+		TEST_ASSERT(length(station_levels), "В тестовом мире нет станционного z-уровня")
+		admin_antag.forceMove(locate(round(world.maxx / 2), round(world.maxy / 2), station_levels[1]))
 		TEST_ASSERT_EQUAL(SSdirector.antag_load() - baseline, DIRECTOR_UNTRACKED_ANTAG_INTENSITY * mult_min, "Антаг без рулсета (админ/жетон) обязан давать нагрузку через untracked-источник")
+
+		// Затухание по возрасту, как у рулсетов: старый untracked-антаг оседает к полу 0.25.
+		admin_antag.mind.director_untracked_since = SSdirector.now() - 150 MINUTES
+		TEST_ASSERT_EQUAL(SSdirector.antag_load() - baseline, DIRECTOR_UNTRACKED_ANTAG_INTENSITY * mult_min * 0.25, "Часовой untracked-антаг обязан затухать к полу, как старый рулсет")
+		admin_antag.mind.director_untracked_since = SSdirector.now()
 
 		// Тот же разум в assigned рулсета - считается рулсетом; untracked дедупит, не задваивает
 		// (задвоение дало бы 15 * mult_min + 15 * mult_min). time_override держит свежий раунд без затухания.
@@ -2467,9 +2481,10 @@
 	target_mind.add_antag_datum(marker)
 
 /// Строка untracked-источника в разбивке: list(имя, вклад, голов). null, если строки нет.
+/// Имя строки теперь несёт список имён антагов после двоеточия - матчим по префиксу.
 /datum/unit_test/director_untracked_antag_breakdown/proc/untracked_row(list/breakdown)
 	for(var/list/row in breakdown)
-		if(row[1] == DIRECTOR_UNTRACKED_SOURCE_NAME)
+		if(findtext(row[1], DIRECTOR_UNTRACKED_SOURCE_NAME) == 1)
 			return row
 	return null
 
@@ -2492,12 +2507,18 @@
 		admin_antag = allocate(/mob/living/carbon/human)
 		admin_antag.mind_initialize()
 		grant_hard_antag(admin_antag.mind)
+		// Тестовая зона живёт на reserved z - для учёта антаг должен стоять на станции.
+		// Гейт смотрит только на z-трейт (latejoin_trackers в CI-мире пуст).
+		var/list/station_levels = SSmapping.levels_by_trait(ZTRAIT_STATION)
+		TEST_ASSERT(length(station_levels), "В тестовом мире нет станционного z-уровня")
+		admin_antag.forceMove(locate(round(world.maxx / 2), round(world.maxy / 2), station_levels[1]))
 		var/list/rows = list()
 		SSdirector.antag_load(rows)
 		var/list/row = untracked_row(rows)
 		TEST_ASSERT_NOTNULL(row, "Разбивка antag_load обязана содержать строку untracked-источника")
 		TEST_ASSERT_EQUAL(row[2] - base_value, DIRECTOR_UNTRACKED_ANTAG_INTENSITY * DIRECTOR_ACTIVITY_MULT_MIN, "Строка untracked обязана прибавить вклад нового антага")
 		TEST_ASSERT_EQUAL(row[3] - base_heads, 1, "Строка untracked обязана считать головы")
+		TEST_ASSERT(findtext(row[1], admin_antag.real_name), "Строка untracked обязана называть антагов по именам - безымянная строка заставляла админов гадать, от кого нагрузка")
 
 		// Мёртвый антаг уходит из строки: при нулевом остатке строки может не быть вовсе.
 		admin_antag.death()
@@ -2569,3 +2590,186 @@
 		throw e
 	SSdirector.wizardmode = saved_wizardmode
 	qdel(probe)
+
+/// Регрессия "в харду каждый раунд дьявол": цель копилки, зафиксированная в бедном пуле
+/// первых минут (единственный доступный вариант), обязана перевыбираться, когда в пуле
+/// появляются действия, которых на момент выбора не было.
+/datum/unit_test/director_pool_target_growth_reroll
+
+/datum/unit_test/director_pool_target_growth_reroll/Run()
+	// Мутирует живой SSdirector - capture/restore c try/catch (см. director_beat_logic).
+	var/list/saved = SSdirector.capture_simulation_state()
+	try
+		SSdirector.profile = new /datum/director_profile/medium
+		SSdirector.pool_saving = list()
+		SSdirector.pool_target_options = list()
+		SSdirector.action_failure_cooldowns = list()
+
+		var/datum/director_signals/signals = new
+		signals.effective_crew = 30
+		signals.staffing = list(DIRECTOR_DEPT_SECURITY = 2, DIRECTOR_DEPT_ENGINEERING = 1,
+			DIRECTOR_DEPT_MEDICAL = 1, DIRECTOR_DEPT_SCIENCE = 0, DIRECTOR_DEPT_SUPPLY = 0, DIRECTOR_DEPT_COMMAND = 1)
+
+		var/datum/director_action/test_stub/lone = new
+		lone.severity = DIRECTOR_SEVERITY_GHOST
+		// Другой подтип стаба: детект роста ключуется по action_name() (уникально у реального
+		// контента - см. director_action_tagging), одинаковый тип сделал бы тест вакуумным.
+		var/datum/director_action/test_stub/fails/newcomer = new
+		newcomer.severity = DIRECTOR_SEVERITY_GHOST
+		newcomer.min_players = 50 // пока закрыт по онлайну - "ранний пул из одного дьявола"
+		SSdirector.actions = list(lone, newcomer)
+
+		SSdirector.ensure_pool_targets(signals)
+		TEST_ASSERT_EQUAL(SSdirector.pool_saving[DIRECTOR_SEVERITY_GHOST], lone, "Единственный доступный вариант обязан стать целью копилки")
+
+		// Пул не изменился - валидная цель стабильна (план не дёргается каждый бит).
+		SSdirector.ensure_pool_targets(signals)
+		TEST_ASSERT_EQUAL(SSdirector.pool_saving[DIRECTOR_SEVERITY_GHOST], lone, "Без роста пула валидная цель не должна перевыбираться")
+
+		// Пул вырос (newcomer открылся), а старая цель потеряла вес: weight 0 исключает её из
+		// опций, но не рушит валидность (can_fire вес не проверяет) - без детекта роста цель
+		// висела бы до исполнения. Перевыбор обязан уйти в новый вариант.
+		newcomer.min_players = 0
+		lone.weight = 0
+		SSdirector.ensure_pool_targets(signals)
+		TEST_ASSERT_EQUAL(SSdirector.pool_saving[DIRECTOR_SEVERITY_GHOST], newcomer, "Рост пула обязан перевыбирать цель, зафиксированную в бедном наборе")
+	catch(var/exception/e)
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	SSdirector.restore_simulation_state(saved)
+
+/// Замена после провала гост-опроса обязана быть по средствам: перевыбранная цель дороже
+/// кошелька уступает исполнимому сейчас варианту (прод-раунд: после провала метеора копилка
+/// целилась в рейдеров за 15 при 12.5 в кошельке - "запрошена замена" без замены).
+/datum/unit_test/director_pool_affordable_replacement
+
+/datum/unit_test/director_pool_affordable_replacement/Run()
+	// Мутирует живой SSdirector - capture/restore c try/catch (см. director_beat_logic).
+	var/list/saved = SSdirector.capture_simulation_state()
+	try
+		SSdirector.profile = new /datum/director_profile/medium
+		SSdirector.pool_target_options = list()
+		SSdirector.action_failure_cooldowns = list()
+
+		var/datum/director_signals/signals = new
+		signals.effective_crew = 30
+		signals.staffing = list(DIRECTOR_DEPT_SECURITY = 2, DIRECTOR_DEPT_ENGINEERING = 1,
+			DIRECTOR_DEPT_MEDICAL = 1, DIRECTOR_DEPT_SCIENCE = 0, DIRECTOR_DEPT_SUPPLY = 0, DIRECTOR_DEPT_COMMAND = 1)
+
+		var/datum/director_action/test_stub/expensive = new
+		expensive.severity = DIRECTOR_SEVERITY_GHOST
+		expensive.cost = 15
+		var/datum/director_action/test_stub/cheap = new
+		cheap.severity = DIRECTOR_SEVERITY_GHOST
+		cheap.cost = 8
+		SSdirector.actions = list(expensive, cheap)
+
+		SSdirector.budgets[DIRECTOR_SEVERITY_GHOST] = 10
+		SSdirector.pool_saving = list(DIRECTOR_SEVERITY_GHOST = expensive)
+		SSdirector.reroll_pool_target_affordable(DIRECTOR_SEVERITY_GHOST, signals)
+		TEST_ASSERT_EQUAL(SSdirector.pool_saving[DIRECTOR_SEVERITY_GHOST], cheap, "Цель дороже кошелька обязана уступить варианту по средствам")
+
+		// Вариантов по средствам нет - дорогой план остаётся копиться, а не обнуляется.
+		SSdirector.pool_saving[DIRECTOR_SEVERITY_GHOST] = expensive
+		SSdirector.budgets[DIRECTOR_SEVERITY_GHOST] = 5
+		SSdirector.reroll_pool_target_affordable(DIRECTOR_SEVERITY_GHOST, signals)
+		TEST_ASSERT_EQUAL(SSdirector.pool_saving[DIRECTOR_SEVERITY_GHOST], expensive, "Без вариантов по средствам дорогой план должен сохраниться")
+
+		// Цель уже по средствам - план стабилен, даже если рядом жирная альтернатива.
+		SSdirector.budgets[DIRECTOR_SEVERITY_GHOST] = 20
+		cheap.weight = 100
+		SSdirector.reroll_pool_target_affordable(DIRECTOR_SEVERITY_GHOST, signals)
+		TEST_ASSERT_EQUAL(SSdirector.pool_saving[DIRECTOR_SEVERITY_GHOST], expensive, "Цель по средствам не должна перевыбираться")
+	catch(var/exception/e)
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	SSdirector.restore_simulation_state(saved)
+
+/// Кнопка "замены" обязана реально предлагать замену: у ANTAG/GHOST-пиков список кандидатов
+/// почти всегда из одного действия (гейт копилки), и раньше реролл молча очищал pending,
+/// ничего не предлагая взамен.
+/datum/unit_test/director_admin_reroll_replaces
+
+/datum/unit_test/director_admin_reroll_replaces/Run()
+	// Мутирует живой SSdirector - capture/restore c try/catch (см. director_beat_logic).
+	var/list/saved = SSdirector.capture_simulation_state()
+	try
+		var/datum/director_profile/profile = new /datum/director_profile/medium
+		SSdirector.profile = profile
+		SSdirector.reset_budgets(100)
+		SSdirector.intensity_ledger = list()
+		SSdirector.live_ghost_role_spawns = list()
+		SSdirector.fired_counts = list()
+		SSdirector.pool_saving = list()
+		SSdirector.pool_target_options = list()
+		SSdirector.action_failure_cooldowns = list()
+		SSdirector.last_fired_at = list(
+			DIRECTOR_SEVERITY_GHOST = world.time - profile.ghost_light_spacing - 1,
+		)
+		SSdirector.last_ghost_heavy_at = world.time - profile.ghost_heavy_spacing - 1
+		SSdirector.last_any_fired_at = world.time - profile.global_spacing - 1
+
+		var/datum/director_signals/signals = new
+		signals.effective_crew = 30
+		signals.staffing = list(DIRECTOR_DEPT_SECURITY = 2, DIRECTOR_DEPT_ENGINEERING = 1,
+			DIRECTOR_DEPT_MEDICAL = 1, DIRECTOR_DEPT_SCIENCE = 0, DIRECTOR_DEPT_SUPPLY = 0, DIRECTOR_DEPT_COMMAND = 1)
+
+		var/datum/director_action/test_stub/picked = new
+		picked.severity = DIRECTOR_SEVERITY_GHOST
+		picked.cost = 5
+		var/datum/director_action/test_stub/alternative = new
+		alternative.severity = DIRECTOR_SEVERITY_GHOST
+		alternative.cost = 5
+		SSdirector.actions = list(picked, alternative)
+
+		// Типичный антаг-пик: единственный кандидат (гейт копилки оставил только цель).
+		SSdirector.pending_action = picked
+		SSdirector.pending_candidates = list()
+		SSdirector.pending_candidates[picked] = 100
+		SSdirector.pending_guaranteed = FALSE
+		SSdirector.pending_signals = signals
+		SSdirector.replace_pending_action(signals)
+		TEST_ASSERT_EQUAL(SSdirector.pending_action, alternative, "Реролл единственного кандидата обязан предложить замену свежим отбором той же ступени")
+		TEST_ASSERT(SSdirector.action_recently_failed(picked), "Отклонённое действие обязано получить карантин, иначе отбор предложит его же")
+		deltimer(SSdirector.pending_timer_id)
+		SSdirector.pending_action = null
+		SSdirector.pending_candidates = null
+		SSdirector.pending_signals = null
+		SSdirector.pending_timer_id = null
+
+		// Замены нет вовсе (второе действие в карантине с прошлого реролла): pending чисто
+		// снимается без рантайма и без зависшего таймера.
+		SSdirector.pending_action = alternative
+		SSdirector.pending_candidates = list()
+		SSdirector.pending_candidates[alternative] = 100
+		SSdirector.pending_signals = signals
+		SSdirector.replace_pending_action(signals)
+		TEST_ASSERT_NULL(SSdirector.pending_action, "Без готовой замены pending обязан сняться, а не зависнуть")
+	catch(var/exception/e)
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	SSdirector.restore_simulation_state(saved)
+
+/// Новые экипажные конверсии обязаны жить в ANTAG-пуле рядом со слипером: пул из одного
+/// лёгкого рулсета делал каждую экипажную инжекцию трейтором ("никакого разнообразия").
+/datum/unit_test/director_crew_conversion_variants
+
+/datum/unit_test/director_crew_conversion_variants/Run()
+	var/datum/dynamic_ruleset/midround/crew_conversion/base_path = /datum/dynamic_ruleset/midround/crew_conversion
+	TEST_ASSERT_EQUAL(initial(base_path.name), "", "Каркас crew_conversion не должен регистрироваться сам (init_rulesets отсекает пустые имена)")
+	var/datum/dynamic_ruleset/midround/crew_conversion/heretic/heretic_rule = new
+	var/datum/dynamic_ruleset/midround/crew_conversion/changeling/changeling_rule = new
+	try
+		for(var/datum/dynamic_ruleset/midround/crew_conversion/rule as anything in list(heretic_rule, changeling_rule))
+			TEST_ASSERT_EQUAL(rule.severity, DIRECTOR_SEVERITY_ANTAG, "[rule.name]: экипажная конверсия обязана жить в ANTAG-пуле")
+			TEST_ASSERT(rule.weight > 0, "[rule.name]: конверсия обязана участвовать в естественном выборе")
+			TEST_ASSERT(!rule.admin_only, "[rule.name]: конверсия не должна быть admin_only")
+			TEST_ASSERT(rule.intensity > 0, "[rule.name]: конверсия обязана давать вклад в intensity")
+			TEST_ASSERT(ROUNDTYPE_DYNAMIC_MEDIUM in rule.required_round_type, "[rule.name]: конверсия обязана быть доступна в Medium")
+			TEST_ASSERT_NOTNULL(rule.antag_datum, "[rule.name]: конверсия обязана нести антаг-датум")
+	catch(var/exception/e)
+		qdel(heretic_rule)
+		qdel(changeling_rule)
+		throw e
+	qdel(heretic_rule)
+	qdel(changeling_rule)
