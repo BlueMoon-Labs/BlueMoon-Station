@@ -3,7 +3,7 @@
 /datum/round_event_control/revenant
 	name = "Spawn Revenant" // Did you mean 'griefghost'?
 	typepath = /datum/round_event/ghost_role/revenant
-	weight = 10
+	weight = 7 // прижат к середине пула: веса 10 у ранних дешёвых гост-ролей делали их дефолтом раунда
 	max_occurrences = 1
 	min_players = 5
 	category = EVENT_CATEGORY_ENTITIES

@@ -2,7 +2,9 @@
 	name = "Alien Infestation"
 	typepath = /datum/round_event/ghost_role/alien_infestation
 	weight = 4
-	min_players = 40
+	// На типичных 30-40 тяжёлый трек гост-пула состоял из одного мага: порог 40 открывал
+	// улей только на пиковом онлайне. 35 добавляет второй heavy-вариант в обычный вечер.
+	min_players = 35
 	max_occurrences = 1
 	category = EVENT_CATEGORY_ENTITIES
 	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR

@@ -3079,6 +3079,22 @@
 			return
 	..()
 
+/datum/reagent/nanite_protector
+	name = "Nanite Protector"
+	description = "Серая масса непонятного происхождения. При попадании в организм она необратимо меняет клетки и перестраивает структуры, не давая им взаимодействовать с нанитами."
+	color = "#666666"
+	can_synth = FALSE
+	metabolization_rate = REAGENTS_METABOLISM * 5
+	chemical_flags = REAGENT_ALL_PROCESS
+
+/datum/reagent/nanite_protector/on_mob_add(mob/living/L, amount)
+	. = ..()
+	if(HAS_TRAIT_FROM(L, TRAIT_NANITES_IMMUNITY, NANITES_IMMUNITY_FROM_REAGENT))
+		return
+	ADD_TRAIT(L, TRAIT_NANITES_IMMUNITY, NANITES_IMMUNITY_FROM_REAGENT)
+	SEND_SIGNAL(L, COMSIG_NANITE_DELETE)
+	to_chat(L, "<b>[/datum/quirk/nanites_immunity::gain_text]</b>")
+
 /datum/reagent/red_ichor
 	name = "Red Ichor"
 	can_synth = FALSE

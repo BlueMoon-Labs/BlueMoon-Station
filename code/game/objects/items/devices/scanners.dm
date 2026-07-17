@@ -493,8 +493,7 @@ GENETICS SCANNER
 	if(M.tod && (M.stat == DEAD || ((HAS_TRAIT(M, TRAIT_FAKEDEATH)) && !advanced)))
 		var/zdelta = round(rand(-world.time, world.time) - M.timeofdeath)
 		if(iszombie(M))
-			msg += "<span class='danger'>Субъект умер [DisplayTimeText(zdelta)] назад, дефибрилляция ещё возможна!</span>"
-			msg += "<span class='danger'> Онаружена аномалия.</span>\n"
+			msg += "<span class='danger'>Онаружена аномалия, неточные данные. Субъект умер [DisplayTimeText(zdelta)] назад, дефибрилляция ещё возможна!</span>\n"
 		else
 			msg += "<span class='info'>Время смерти:</span> [M.tod]\n"
 			var/tdelta = round(world.time - M.timeofdeath)
@@ -566,6 +565,10 @@ GENETICS SCANNER
 			msg += "<span class='notice'>Обнаружены кибернетические модификации:</span>\n"
 			msg += "<span class='notice'>[cyberimp_detect]</span>\n"
 
+	if(SEND_SIGNAL(M, COMSIG_NANITE_SCAN, null, FALSE))
+		msg += span_info("<b>Обнаружены наниты</b>")
+	else if(HAS_TRAIT_FROM(M, TRAIT_NANITES_IMMUNITY, NANITES_IMMUNITY_FROM_REAGENT))
+		msg += span_info("<b>Обнаружено действие Nanite Protector.</b>\n")
 	// BLUEMOON EDIT START - изменение анализаторов здоровья; to_chat_msg - чтобы на распечатанном листочке не было "распечатать"
 	var/to_chat_msg = msg
 	if(connected_analyzer && advanced)
@@ -573,7 +576,6 @@ GENETICS SCANNER
 	to_chat_msg += "</body></html>"
 
 	SEND_SIGNAL(M, COMSIG_HEALTH_SCAN, user)//SPLURT EDIT ADD - gregnancy
-	SEND_SIGNAL(M, COMSIG_NANITE_SCAN, user, FALSE)
 	if(connected_analyzer)
 		connected_analyzer.last_msg = msg
 		connected_analyzer.last_recipient_name = M.get_visible_name()

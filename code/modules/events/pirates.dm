@@ -3,7 +3,7 @@
 	typepath = /datum/round_event/pirates
 	weight = 6
 	max_occurrences = 1
-	min_players = 30
+	min_players = 25 // порог от больших серверов резал разнообразие на типичных 25-35: гост-пул сужался до метеора
 	earliest_start = 45 MINUTES
 	category = EVENT_CATEGORY_INVASION
 	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR

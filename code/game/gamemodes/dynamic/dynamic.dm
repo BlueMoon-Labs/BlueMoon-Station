@@ -164,6 +164,10 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 		var/added_rule = input(usr,"What ruleset do you want to force right now? This will bypass threat level and population restrictions.", "Execute Ruleset", null) as null|anything in sortNames(init_rulesets(/datum/dynamic_ruleset/midround))
 		if (!added_rule)
 			return
+		// То же предупреждение о насыщении, что и у форса событий: рулсет поверх
+		// заполненной антаг-цели - осознанное решение, а не случайный стак.
+		if(!SSdirector.confirm_antag_force(usr, added_rule))
+			return
 		log_admin("[key_name(usr)] executed the [added_rule] ruleset.")
 		message_admins("[key_name(usr)] executed the [added_rule] ruleset.")
 		picking_specific_rule(added_rule, TRUE)
@@ -263,9 +267,14 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 	if(GLOB.round_type == ROUNDTYPE_EXTENDED)
 		threat_level = 0 // экста репортит нулевую угрозу, без оценки flavor-капли
 	else
-		// Отображаемая угроза: roundstart-бюджет + оценка капли за типовые 90 минут
-		threat_level = round(round_start_budget + profile.base_drip * 90 * 0.5, 0.1)
+		threat_level = estimate_display_threat(round_start_budget, profile.base_drip)
 	SSblackbox.record_feedback("tally", "director_threat", threat_level)
+
+/// Отображаемая угроза: roundstart-бюджет + оценка капли за типовые 90 минут. Все потребители
+/// threat_level (band required_enemies, сентинель 101 в requirements, стакинг-лимит) считают
+/// шкалу 0-100, поэтому оценка обязана капаться: хард-профиль без капа давал до 112.5.
+/datum/game_mode/dynamic/proc/estimate_display_threat(budget, drip)
+	return clamp(round(budget + drip * 90 * 0.5, 0.1), 0, 100)
 
 /// Roundstart-бюджет уже выбран в generate_threat; мидраунд-пул теперь у SSdirector.
 /datum/game_mode/dynamic/proc/generate_budgets()
@@ -277,7 +286,8 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 	log_game("DYNAMIC: No stacking is [GLOB.dynamic_no_stacking ? "Enabled" : "Disabled"].")
 	log_game("DYNAMIC: Stacking limit is [GLOB.dynamic_stacking_limit].")
 	if(GLOB.dynamic_forced_threat_level >= 0)
-		threat_level = round(GLOB.dynamic_forced_threat_level, 0.1)
+		// Кошельки ниже получают форс без капа; витринная шкала для гейтов - 0-100.
+		threat_level = clamp(round(GLOB.dynamic_forced_threat_level, 0.1), 0, 100)
 		round_start_budget = min(GLOB.dynamic_forced_threat_level / 2, 30)
 		SSdirector.setup_profile() // профиль нужен даже при форсе, иначе директор не запустится
 		SSdirector.distribute_to_budgets(GLOB.dynamic_forced_threat_level / 2) // совместимость админ-привычки
@@ -416,7 +426,7 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 	while (round_start_budget_left > 0)
 		var/datum/dynamic_ruleset/roundstart/ruleset = pickweight(drafted_rules)
 		if (isnull(ruleset))
-			log_game("DYNAMIC: No more rules can be applied, stopping with [round_start_budget] left.")
+			log_game("DYNAMIC: No more rules can be applied, stopping with [round_start_budget_left] left.")
 			break
 
 		var/cost = (ruleset in rulesets_picked) ? ruleset.scaling_cost : ruleset.cost

@@ -317,6 +317,15 @@
 ////////////Janitor Designs//////////////
 /////////////////////////////////////////
 
+/datum/design/bucket
+	name = "Bucket"
+	id = "bucket"
+	build_type = AUTOLATHE | PROTOLATHE
+	materials = list(/datum/material/iron = 200)
+	build_path = /obj/item/reagent_containers/glass/bucket
+	category = list("initial", "Tools", "Tool Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_SERVICE
+
 /datum/design/broom
 	name = "Broom"
 	desc = "Just your everyday standard broom."
@@ -324,7 +333,7 @@
 	build_type = PROTOLATHE | AUTOLATHE
 	materials = list(/datum/material/iron = 1000, /datum/material/glass = 600)
 	build_path = /obj/item/broom
-	category = list("initial", "Equipment", "Misc")
+	category = list("initial", "Tool Designs", "Misc")
 	departmental_flags = DEPARTMENTAL_FLAG_SERVICE
 
 /datum/design/mop
@@ -334,7 +343,7 @@
 	build_type = PROTOLATHE | AUTOLATHE
 	materials = list(/datum/material/iron = 1200, /datum/material/glass = 100)
 	build_path = /obj/item/mop
-	category = list("initial", "Equipment", "Misc")
+	category = list("initial", "Tool Designs", "Misc")
 	departmental_flags = DEPARTMENTAL_FLAG_SERVICE
 
 /datum/design/advmop
@@ -344,7 +353,7 @@
 	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 2500, /datum/material/glass = 200)
 	build_path = /obj/item/mop/advanced
-	category = list("Equipment")
+	category = list("Tool Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_SERVICE
 
 /datum/design/Dirtscanner
@@ -353,7 +362,7 @@
 	build_type = AUTOLATHE | PROTOLATHE
 	materials = list(/datum/material/iron = 150)
 	build_path = /obj/item/t_scanner/dirt_scanner
-	category = list("initial", "Equipment", "Misc")
+	category = list("initial", "Tool Designs", "Misc")
 	departmental_flags = DEPARTMENTAL_FLAG_SERVICE
 
 /datum/design/advbroom
@@ -363,7 +372,7 @@
 	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 2500, /datum/material/glass = 200)
 	build_path = /obj/item/gun/energy/broom
-	category = list("Equipment")
+	category = list("Tool Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_SERVICE
 
 /datum/design/light_replacer
@@ -373,7 +382,7 @@
 	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 1500, /datum/material/silver = 150, /datum/material/glass = 3000)
 	build_path = /obj/item/lightreplacer
-	category = list("Equipment")
+	category = list("Tool Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_SERVICE | DEPARTMENTAL_FLAG_ENGINEERING
 
 /datum/design/light_replacer_blue
@@ -383,7 +392,7 @@
 	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 1500, /datum/material/silver = 150, /datum/material/glass = 3000, /datum/material/bluespace = 300)
 	build_path = /obj/item/lightreplacer/blue
-	category = list("Equipment")
+	category = list("Tool Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_SERVICE | DEPARTMENTAL_FLAG_ENGINEERING
 
 /datum/design/normtrash

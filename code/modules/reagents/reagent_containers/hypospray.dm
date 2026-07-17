@@ -125,7 +125,7 @@
 	user.visible_message("<span class='suicide'>[user] начинает давиться [src]! Похоже, [user.ru_who()] пытаются совершить суицид!</span>")
 	return OXYLOSS//ironic. he could save others from oxyloss, but not himself.
 
-/obj/item/reagent_containers/hypospray/medipen/attack(mob/M, mob/user)
+/obj/item/reagent_containers/hypospray/medipen/attack(mob/living/M, mob/user)
 	if(!reagents.total_volume)
 		to_chat(user, "<span class='warning'>[src] пуст!</span>")
 		return
@@ -136,8 +136,8 @@
 	update_icon()
 	addtimer(CALLBACK(src, PROC_REF(cyborg_recharge), user), 80)
 
-/obj/item/reagent_containers/hypospray/medipen/attack_self()
-	attack(usr, usr)
+/obj/item/reagent_containers/hypospray/medipen/attack_self(mob/user)
+	attack(user, user)
 
 /obj/item/reagent_containers/hypospray/medipen/proc/cyborg_recharge(mob/living/silicon/robot/user)
 	if(!reagents.total_volume && iscyborg(user))
@@ -306,6 +306,24 @@
 	ignore_flags = 0
 	reagent_flags = NONE
 	list_reagents = list(/datum/reagent/magillitis = 5)
+
+/obj/item/reagent_containers/hypospray/medipen/nanite_protector
+	name = "Nanite Protector autoinjector"
+	desc = "Экспериментальный инжектор, содержащий серую массу непонятного происхождения. При попадании в организм она необратимо меняет клетки и перестраивает структуры, не давая им взаимодействовать с нанитами.\nИспользование более одного раза не несет эффекта."
+	icon_state = "purple_pen"
+	item_state = "purple_pen"
+	amount_per_transfer_from_this = 3
+	volume = 3
+	list_reagents = list(/datum/reagent/nanite_protector = 3)
+
+/obj/item/reagent_containers/hypospray/medipen/nanite_protector/attack(mob/living/M, mob/user)
+	if(M != user)
+		if(INTERACTING_WITH(user, M))
+			return
+		to_chat(M, span_userdanger("Пытается ввести вам Nanite Protector, навсегда лишив вас нанитов!"))
+		if(!do_after_mob(user, M, 6 SECONDS))
+			return
+	return ..()
 
 #define HYPO_SPRAY 0
 #define HYPO_INJECT 1

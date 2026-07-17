@@ -252,7 +252,7 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 	if(!display_hud_version)	//If 0 or blank, display the next hud version
 		display_hud_version = hud_version + 1
 	if(display_hud_version > HUD_VERSIONS)	//If the requested version number is greater than the available versions, reset back to the first version
-		display_hud_version = 1
+		display_hud_version = HUD_STYLE_STANDARD
 
 	switch(display_hud_version)
 		if(HUD_STYLE_STANDARD)	//Default HUD
@@ -316,7 +316,7 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 
 	hud_version = display_hud_version
 	persistent_inventory_update(screenmob)
-	screenmob.update_action_buttons(1)
+	screenmob.update_action_buttons(TRUE)
 	reorganize_alerts()
 
 	// ensure observers get an accurate and up-to-date view

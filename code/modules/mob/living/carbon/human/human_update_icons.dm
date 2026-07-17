@@ -116,6 +116,7 @@ There are several things that need to be remembered:
 				var/obj/item/clothing/suit/armor/abductor/vest/V = wear_suit
 				if(V.stealth_active && V.disguise)
 					V.ReapplyDisguise()
+			update_small_sprite()
 
 /* --------------------------------------- */
 //vvvvvv UPDATE_INV PROCS vvvvvv
