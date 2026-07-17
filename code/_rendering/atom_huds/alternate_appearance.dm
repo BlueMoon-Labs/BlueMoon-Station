@@ -202,7 +202,7 @@ GLOBAL_LIST_EMPTY(active_alternate_appearances)
 	theImage.appearance_flags = target.appearance_flags
 	theImage.overlays = target.overlays.Copy()
 	
-	if(!ismob(target))
+	if(!isliving(target))
 		return
 	
 	var/mob/living/M = target
