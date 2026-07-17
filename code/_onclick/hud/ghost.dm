@@ -91,10 +91,7 @@
 	if(!. || !hud_shown)
 		return
 	var/mob/screenmob = viewmob || mymob
-	if(screenmob.client.prefs.ghost_hud)
-		screenmob.client.screen += static_inventory
-	else
-		screenmob.client.screen -= static_inventory
+	screenmob.client.screen += static_inventory
 
 //We should only see observed mob alerts.
 /datum/hud/ghost/reorganize_alerts(mob/viewmob)
