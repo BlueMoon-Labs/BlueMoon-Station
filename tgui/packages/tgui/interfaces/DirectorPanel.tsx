@@ -163,6 +163,7 @@ type DirectorPanelData = {
   antagLoad: number;
   antagTarget: number;
   statusLine: string | null;
+  eventIntensity: number;
   quietFor: number;
   maxQuiet: number;
   quietThreshold: number;
@@ -411,6 +412,7 @@ const OverviewTab = (props) => {
     antagLoad,
     antagTarget,
     statusLine,
+    eventIntensity,
     quietFor,
     maxQuiet,
     quietThreshold,
@@ -428,7 +430,10 @@ const OverviewTab = (props) => {
   const beatEntries = chartBeats.slice(-20).reverse();
   const rejectEntries = Object.entries(lastRejects || {});
   const walletRows = wallets || [];
-  const quietReady = maxQuiet > 0 && quietFor >= maxQuiet;
+  // Зеркало гарантии run_beat(): таймер тишины по реальному контенту плюс
+  // видимая нагрузка (event_intensity) ниже порога профиля.
+  const quietTimeReached = maxQuiet > 0 && quietFor >= maxQuiet;
+  const quietReady = quietTimeReached && eventIntensity < quietThreshold;
 
   return (
     <>
@@ -515,9 +520,11 @@ const OverviewTab = (props) => {
               value={`${quietFor} / ${maxQuiet} мин`}
               color={quietReady ? 'average' : undefined}
               detail={
-                quietReady && intensity < quietThreshold
+                quietReady
                   ? 'следующий бит гарантирован'
-                  : `гарантия при intensity < ${quietThreshold}`
+                  : quietTimeReached
+                    ? `видимая нагрузка ${eventIntensity} не ниже ${quietThreshold} - гарантия ждёт затишья`
+                    : `гарантия при видимой нагрузке < ${quietThreshold}`
               }
             />
             <MetricCard

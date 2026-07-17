@@ -861,8 +861,10 @@ SUBSYSTEM_DEF(director)
 			if(is_antag)
 				presence_sum += ghost_member_presence(current) * antag_activity_mult(assigned_mind)
 			// Дедуп для get_untracked_antag_intensity: разум, уже посчитанный как живая гост-роль,
-			// не должен всплыть повторно третьим источником через GLOB.antagonists.
-			if(!isnull(counted_minds))
+			// не должен всплыть повторно третьим источником через GLOB.antagonists. Помечаем только
+			// разумы записей, вошедших в текущий подсчёт: при only_antag = TRUE мирная гост-роль
+			// не считается, и её разум, ставший жёстким антагом, обязан остаться видимым untracked-скану.
+			if(!isnull(counted_minds) && (isnull(only_antag) || is_antag == only_antag))
 				counted_minds[assigned_mind] = TRUE
 		for(var/datum/weakref/mob_ref as anything in mob_refs)
 			var/mob/current = mob_ref.resolve()
@@ -1715,7 +1717,9 @@ SUBSYSTEM_DEF(director)
 		retry_candidates -= fired_action
 		var/datum/director_signals/retry_signals = collect_signals()
 		ensure_pool_targets(retry_signals)
-		var/list/current_candidates = filter_candidates(retry_signals, was_guaranteed)
+		// Гарантия могла прийти с открытым GHOST (guaranteed_ghost в run_beat) - повторный отбор
+		// не должен резать гост-кандидатов; пересечение с retry_candidates не даст ему расшириться.
+		var/list/current_candidates = filter_candidates(retry_signals, was_guaranteed, allow_ghost_guarantee = was_guaranteed)
 		for(var/datum/director_action/retry as anything in retry_candidates.Copy())
 			if(!(retry in current_candidates))
 				retry_candidates -= retry
@@ -1774,7 +1778,9 @@ SUBSYSTEM_DEF(director)
 	var/datum/director_signals/signals = override_signals || collect_signals()
 	ensure_pool_targets(signals)
 	reroll_pool_target_affordable(rejected.severity, signals)
-	var/list/candidates = filter_candidates(signals, was_guaranteed)
+	// Гарантированный GHOST-пик без allow_ghost_guarantee не нашёл бы замену вовсе: фильтр
+	// гарантии резал бы всю ступень. Для прочих ступеней флаг гасится сужением по severity ниже.
+	var/list/candidates = filter_candidates(signals, was_guaranteed, allow_ghost_guarantee = was_guaranteed)
 	for(var/datum/director_action/candidate as anything in candidates.Copy())
 		if(candidate.severity != rejected.severity)
 			candidates -= candidate

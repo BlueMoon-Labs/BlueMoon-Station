@@ -24,15 +24,21 @@
 		parts += plan
 	if(!length(parts))
 		var/quiet_minutes = round((now() - last_real_fired_at) / (1 MINUTES))
-		if(quiet_minutes >= round(profile.max_quiet_time / (1 MINUTES)))
-			parts += "тихо уже [quiet_minutes] мин - ближайший бит гарантирует реальный контент"
-		else
+		if(quiet_minutes < round(profile.max_quiet_time / (1 MINUTES)))
 			parts += "штатный темп: гейтов нет, решения раз в минуту"
+		// Зеркало гарантии run_beat(): кроме таймера тишины нужна видимая нагрузка ниже порога.
+		else if(signals && signals.event_intensity >= profile.quiet_intensity_threshold)
+			parts += "тихо уже [quiet_minutes] мин, но видимая нагрузка [round(signals.event_intensity)] не ниже порога [profile.quiet_intensity_threshold] - гарантия ждёт затишья"
+		else
+			parts += "тихо уже [quiet_minutes] мин - ближайший бит гарантирует реальный контент"
 	return "[jointext(parts, "; ")]."
 
 /// Короткий план копилок антаг-пулов: на что копим и когда докопим при текущей капле.
 /datum/controller/subsystem/director/proc/pool_plan_text()
 	var/list/plans = list()
+	// ETA честен с accumulate_drip(): кризис смертности режет антаг-каплю вдвое.
+	var/datum/director_signals/plan_signals = last_signals
+	var/drip_mult = (plan_signals && plan_signals.dead_fraction > profile.dead_fraction_threshold) ? 0.5 : 1
 	var/antag_share = profile.pool_shares[DIRECTOR_SEVERITY_ANTAG] || 0
 	var/ghost_share = profile.pool_shares[DIRECTOR_SEVERITY_GHOST] || 0
 	var/total_share = antag_share + ghost_share
@@ -46,7 +52,7 @@
 			plans += "[pool_name] готов запустить [target.action_name()] - ждёт паузу или окно"
 			continue
 		var/share = (sev == DIRECTOR_SEVERITY_GHOST) ? ghost_share : antag_share
-		var/rate = total_share > 0 ? profile.antag_drip * last_antag_deficit * share / total_share : 0
+		var/rate = total_share > 0 ? profile.antag_drip * last_antag_deficit * drip_mult * share / total_share : 0
 		if(rate > 0.01)
 			plans += "[pool_name] копит на [target.action_name()]: [round(budgets[sev], 0.1)] из [target.cost] (~[CEILING(missing / rate, 1)] мин)"
 		else
@@ -66,9 +72,12 @@
 	if(target <= 0 || load < target)
 		return TRUE
 	var/list/breakdown = list()
-	get_ruleset_intensity(list(), breakdown)
-	get_ghost_role_intensity(breakdown = breakdown, only_antag = TRUE)
-	get_untracked_antag_intensity(list(), breakdown)
+	// Общий дедуп-список, как в antag_load(): без него разум, уже посчитанный рулсетом
+	// или гост-ролью, всплыл бы в untracked-строке второй раз.
+	var/list/counted_minds = list()
+	get_ruleset_intensity(list(), breakdown, counted_minds)
+	get_ghost_role_intensity(breakdown = breakdown, only_antag = TRUE, counted_minds = counted_minds)
+	get_untracked_antag_intensity(counted_minds, breakdown)
 	// Два крупнейших держателя нагрузки - чтобы предупреждение называло виновников.
 	var/list/holder_names = list()
 	var/list/remaining = breakdown.Copy()
@@ -273,7 +282,8 @@
 		"antagLoad" = round(antag_load_now, 0.1),
 		"antagTarget" = round(antag_target_now, 0.1),
 		"statusLine" = D.panel_status_line(antag_load_now, antag_target_now),
-		"quietFor" = SSticker.HasRoundStarted() ? round((D.now() - D.last_any_fired_at) / (1 MINUTES)) : 0,
+		"quietFor" = SSticker.HasRoundStarted() ? round((D.now() - D.last_real_fired_at) / (1 MINUTES)) : 0,
+		"eventIntensity" = D.last_signals ? round(D.last_signals.event_intensity, 0.1) : 0,
 		"maxQuiet" = D.profile ? D.profile.max_quiet_time / (1 MINUTES) : 0,
 		"quietThreshold" = D.profile ? D.profile.quiet_intensity_threshold : 0,
 		"maxActiveMajor" = D.profile ? D.profile.max_active_major : 0,

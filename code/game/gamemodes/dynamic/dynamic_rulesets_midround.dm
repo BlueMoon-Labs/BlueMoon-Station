@@ -337,7 +337,7 @@
 
 /datum/dynamic_ruleset/midround/crew_conversion/trim_candidates()
 	. = ..()
-	for(var/mob/living/player in living_players)
+	for(var/mob/living/player in living_players.Copy())
 		if(issilicon(player))
 			living_players -= player
 		else if(is_centcom_level(player.z))
@@ -398,7 +398,7 @@
 
 /datum/dynamic_ruleset/midround/crew_conversion/changeling/trim_candidates()
 	. = ..()
-	for(var/mob/living/player in living_players)
+	for(var/mob/living/player in living_players.Copy())
 		if(HAS_TRAIT(player, TRAIT_ROBOTIC_ORGANISM)) // никаких роботов-генлингов
 			living_players -= player
 
@@ -736,6 +736,8 @@
 
 /datum/dynamic_ruleset/midround/ratvar_awakening/execute()
 	// BLUEMOON ADD START - если нет кандидатов и не выданы все роли, иначе выдаст рантайм
+	// candidates ссылается на living_players (trim_candidates) - прунинг чистит оба списка.
+	prune_stale_living_players()
 	if(candidates.len <= 0)
 		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
 		return FALSE
@@ -824,6 +826,8 @@
 
 /datum/dynamic_ruleset/midround/narsie_awakening/execute()
 	// BLUEMOON ADD START - если нет кандидатов и не выданы все роли, иначе выдаст рантайм
+	// candidates ссылается на living_players (trim_candidates) - прунинг чистит оба списка.
+	prune_stale_living_players()
 	if(candidates.len <= 0)
 		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
 		return FALSE
@@ -926,6 +930,8 @@
 
 /datum/dynamic_ruleset/midround/blob_infection/execute()
 	// BLUEMOON ADD START - если нет кандидатов и не выданы все роли, иначе выдаст рантайм
+	// candidates ссылается на living_players (trim_candidates) - прунинг чистит оба списка.
+	prune_stale_living_players()
 	if(candidates.len <= 0)
 		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
 		return FALSE
@@ -1614,7 +1620,7 @@
 /datum/dynamic_ruleset/midround/bloodsuckers/trim_candidates()
 	. = ..()
 	candidates = living_players
-	for(var/mob/living/player in candidates)
+	for(var/mob/living/player in candidates.Copy())
 		if(issilicon(player)) // никаких боргов
 			candidates -= player
 		else if(is_centcom_level(player.z))  // никаких ЦКшников
@@ -1644,12 +1650,16 @@
 /datum/dynamic_ruleset/midround/bloodsuckers/pre_execute(population)
 	. = ..()
 	// BLUEMOON ADD START - если нет кандидатов и не выданы все роли, иначе выдаст рантайм
+	// candidates ссылается на living_players (trim_candidates) - прунинг чистит оба списка.
+	prune_stale_living_players()
 	if(candidates.len <= 0)
 		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
 		return FALSE
 	// BLUEMOON ADD END
 	var/num_bloodsuckers = get_antag_cap(population) * (scaled_times + 1)
 	for (var/i = 1 to num_bloodsuckers)
+		if(!candidates.len)
+			break
 		var/mob/M = pick_n_take(candidates)
 		assigned += M.mind
 		M.mind.restricted_roles = restricted_roles
