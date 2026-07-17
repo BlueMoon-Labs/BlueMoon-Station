@@ -300,6 +300,7 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/belt.dmi'
 	icon_state = "lapkee_belt"
 	item_state = "lapkee_belt"
+	content_overlays = TRUE
 
 /obj/item/storage/belt/security/webbing/ds/lapkee_belt/ComponentInitialize()
 	. = ..()
@@ -326,3 +327,24 @@
 		/obj/item/holosign_creator/security
 		))
 // На всякий случай копируем логику с родителя
+
+/obj/item/melee/baton/get_belt_overlay()
+	if(istype(loc, /obj/item/storage/belt/security/webbing/ds/lapkee_belt))
+		return mutable_appearance('modular_bluemoon/fluffs/icons/obj/clothing/belts.dmi', "lapkee_baton")
+
+	return ..()
+
+/obj/item/melee/baton/stunsword/get_belt_overlay()
+	if(istype(loc, /obj/item/storage/belt/security/webbing/ds/lapkee_belt))
+		return mutable_appearance('modular_bluemoon/fluffs/icons/obj/clothing/belts.dmi',"lapkee_stunsword")
+
+	if(istype(loc, /obj/item/storage/belt/sabre))
+		return mutable_appearance('icons/obj/clothing/belt_overlays.dmi', "stunsword")
+
+	return ..()
+
+/obj/item/melee/baton/stunsword/stunkatana/get_belt_overlay()
+	if(istype(loc, /obj/item/storage/belt/security/webbing/ds/lapkee_belt))
+		return mutable_appearance('modular_bluemoon/fluffs/icons/obj/clothing/belts.dmi',"lapkee_stunsword")
+
+	return ..()
