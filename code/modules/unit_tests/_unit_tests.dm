@@ -138,6 +138,7 @@
 #include "reagent_recipe_collisions.dm"
 #include "recursive_hotpaths.dm"
 #include "resist.dm"
+#include "runtime_null_guards.dm"
 // #include "say.dm"
 // #include "security_officer_distribution.dm"
 // #include "serving_tray.dm"

@@ -147,6 +147,10 @@
 	QDEL_LAZYLIST(scars)
 	if(owner)
 		owner.bodyparts -= src
+		//qdel присоединённой руки мимо drop_limb оставлял протухшую ссылку:
+		//put_in_hand дальше рантаймил на is_disabled с owner=null
+		if(held_index && length(owner.hand_bodyparts) >= held_index && owner.hand_bodyparts[held_index] == src)
+			owner.hand_bodyparts[held_index] = null
 		owner = null
 	return ..()
 
