@@ -3,8 +3,8 @@ import { useBackend } from '../backend';
 import { Box, Button, Section } from '../components';
 import { Window } from '../layouts';
 
-export const BattleArcade = (props, context) => {
-  const { act, data } = useBackend(context);
+export const BattleArcade = (props) => {
+  const { act, data } = useBackend();
   const {
     ui_panel,
     player_current_hp,
@@ -59,8 +59,8 @@ export const BattleArcade = (props, context) => {
   );
 };
 
-const ShopPanel = (props, context) => {
-  const { act, data } = useBackend(context);
+const ShopPanel = (props) => {
+  const { act, data } = useBackend();
   const { shop_items, cost_of_items, unlocked_world_modifier } = data;
   return (
     <Section textAlign="center">
@@ -94,8 +94,8 @@ const ShopPanel = (props, context) => {
   );
 };
 
-const WorldMapPanel = (props, context) => {
-  const { act, data } = useBackend(context);
+const WorldMapPanel = (props) => {
+  const { act, data } = useBackend();
   const { all_worlds, latest_unlocked_world_position } = data;
   return (
     <Section textAlign="center">
@@ -124,8 +124,8 @@ const WorldMapPanel = (props, context) => {
   );
 };
 
-const BattlePanel = (props, context) => {
-  const { act, data } = useBackend(context);
+const BattlePanel = (props) => {
+  const { act, data } = useBackend();
   const {
     attack_types,
     enemy_icon_id,
@@ -175,8 +175,8 @@ const BattlePanel = (props, context) => {
   );
 };
 
-const BetweenBattlePanel = (props, context) => {
-  const { act, data } = useBackend(context);
+const BetweenBattlePanel = (props) => {
+  const { act, data } = useBackend();
   return (
     <Section textAlign="center">
       <Box my={1}>
@@ -209,8 +209,8 @@ const BetweenBattlePanel = (props, context) => {
   );
 };
 
-const GameOverPanel = (props, context) => {
-  const { act, data } = useBackend(context);
+const GameOverPanel = (props) => {
+  const { act, data } = useBackend();
   return (
     <Section textAlign="center">
       <Box color="red" fontSize="32px" m={1} bold>

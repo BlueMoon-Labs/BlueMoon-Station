@@ -636,6 +636,9 @@
 					else
 						to_send += "\n\t<a href='?src=[REF(src)];embedded_object=[REF(I)];embedded_limb=[REF(LB)]' class='warning'>В вашей [LB.ru_name_v] застрял \a [I]!</a>"
 
+				if(LB.current_gauze)
+					to_send += "\n\t<a href='?src=[REF(src)];remove_gauze=1;gauze_limb=[REF(LB)]' class='notice'>На вашей [LB.ru_name_v] наложен \a [LB.current_gauze].</a>"
+
 			for(var/t in missing)
 				to_send += "<span class='boldannounce'>Ваша [ru_parse_zone(t)] отсутствует!</span>\n"
 
@@ -876,6 +879,9 @@
 				output += "\n\t <a href='?src=[REF(src)];embedded_object=[REF(I)];embedded_limb=[REF(LB)]' class='warning'>В вашей [LB.ru_name_v] прорезался \a [I]!</a>"
 			else
 				output += "\n\t <a href='?src=[REF(src)];embedded_object=[REF(I)];embedded_limb=[REF(LB)]' class='warning'>В вашей [LB.ru_name_v] застрял \a [I]!</a>"
+
+		if(LB.current_gauze)
+			output += "\n\t <a href='?src=[REF(src)];remove_gauze=1;gauze_limb=[REF(LB)]' class='notice'>На вашей [LB.ru_name_v] наложен \a [LB.current_gauze].</a>"
 	to_chat(src, examine_block(output))
 
 /mob/living/carbon/human/damage_clothes(damage_amount, damage_type = BRUTE, damage_flag = 0, def_zone)

@@ -5,7 +5,6 @@
  */
 
 const path = require('path');
-const babel = require('@babel/core');
 
 const workspaceRoot = __dirname;
 const resolvePackage = (name) => path.resolve(workspaceRoot, 'packages', name);
@@ -18,32 +17,26 @@ const aliases = [
   { find: /^tgui-dev-server\//, replacement: `${resolvePackage('tgui-dev-server')}/` },
 ];
 
-const createBabelTransformPlugin = (mode) => ({
-  name: 'tgui-babel-inferno',
+// Legacy interface files use JSX inside plain .js files, which esbuild
+// does not parse by default. Transform them with the jsx loader.
+// Uses esbuild directly: requiring 'vite' from CJS breaks on Node 20
+// (ESM facade fails to resolve rollup under PnP).
+const esbuild = require('esbuild');
+
+const createJsxInJsPlugin = () => ({
+  name: 'tgui-jsx-in-js',
   enforce: 'pre',
   async transform(code, id) {
     const normalizedId = id.replace(/\\/g, '/');
-    if (!/\/packages\/.*\.(js|ts|tsx)$/.test(normalizedId)) {
+    if (!/\/packages\/.*\.js$/.test(normalizedId)) {
       return null;
     }
-    const result = await babel.transformAsync(code, {
-      filename: id,
-      babelrc: false,
-      configFile: false,
-      sourceMaps: true,
-      compact: false,
-      presets: [
-        [require.resolve('@babel/preset-typescript'), {
-          allowDeclareFields: true,
-          allExtensions: true,
-          isTSX: true,
-        }],
-      ],
-      plugins: [
-        require.resolve('babel-plugin-inferno'),
-        mode === 'production' && require.resolve('babel-plugin-transform-remove-console'),
-        require.resolve('common/string.babel-plugin.cjs'),
-      ].filter(Boolean),
+    const result = await esbuild.transform(code, {
+      loader: 'jsx',
+      jsx: 'automatic',
+      jsxImportSource: 'react',
+      sourcefile: id,
+      sourcemap: true,
     });
     return {
       code: result.code,
@@ -57,7 +50,7 @@ const createViteConfig = ({ entry, bundleName, globalName }) => {
     root: workspaceRoot,
     publicDir: false,
     base: '',
-    plugins: [createBabelTransformPlugin(mode)],
+    plugins: [createJsxInJsPlugin()],
     css: {
       preprocessorOptions: {
         scss: {
@@ -80,16 +73,23 @@ const createViteConfig = ({ entry, bundleName, globalName }) => {
     },
     esbuild: {
       target: 'es2020',
+      jsx: 'automatic',
+      jsxImportSource: 'react',
+      drop: mode === 'production' ? ['console'] : [],
     },
     build: {
       target: 'es2020',
       outDir: path.resolve(workspaceRoot, 'public'),
       emptyOutDir: false,
-      chunkSizeWarningLimit: 2000,
+      // Single-file IIFE by design (BYOND cannot fetch split chunks),
+      // so the code-splitting advice in the size warning is not actionable.
+      chunkSizeWarningLimit: 3000,
       minify: mode === 'production' ? 'terser' : false,
       terserOptions: {
         format: {
-          ascii_only: true,
+          // No ascii_only: the bundle is loaded by tgui.html which declares
+          // <meta charset="utf-8">, and escaping Cyrillic UI text would
+          // inflate the bundle by ~225 kB.
           comments: false,
         },
       },

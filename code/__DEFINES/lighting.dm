@@ -3,6 +3,7 @@
 
 #define MINIMUM_USEFUL_LIGHT_RANGE 1.4
 #define LIGHTING_MAX_RANGE 8 // Performance cap: range 9+ costs 4.2x more per source (quadratic view). Objects with higher range will be clamped here.
+#define LIGHTING_MAX_RANGE_STATIC 32 // Расширенный потолок для статики с флагом LIGHT_NO_RANGE_CAP. Её view() считается один раз при инициализации, поэтому квадратичная стоимость окупается; на движущихся источниках флаг НЕ ставить.
 
 #define LIGHTING_HEIGHT_SPACE  -0.5 // light UNDER the floor, primarily used for starlight
 #define LIGHTING_HEIGHT_FLOOR   0   // light ON the floor
@@ -19,6 +20,41 @@ GLOBAL_VAR_INIT(lighting_falloff_mode, LIGHTING_FALLOFF_MODE) // Runtime falloff
 #define LIGHTING_SOFT_EDGE 0.8            // Normalized distance where soft falloff begins (linear mode) — smooths visible "ring" at light boundary
 #define LIGHTING_FALLOFF_CULL_THRESHOLD 0.005 // Skip storing corners with falloff below this (invisible, saves memory on large-range lights)
 #define LIGHTING_ROUND_VALUE    (1 / 32) //Value used to round lumcounts, values smaller than 1/129 don't matter (if they do, thanks sinking points), greater values will make lighting less precise, but in turn increase performance, VERY SLIGHTLY.
+
+// Системы света атома (var/light_system). COMPLEX_LIGHT = корнер-система (статика, тени, конусы).
+// OVERLAY_* = компонент /datum/component/overlay_lighting: текстурная маска в underlays держателя,
+// нулевая стоимость движения - для носимых/бросаемых источников. Менять только до Initialize.
+#define COMPLEX_LIGHT 1
+#define OVERLAY_LIGHT 2
+#define OVERLAY_LIGHT_DIRECTIONAL 3
+#define OVERLAY_LIGHT_BEAM 4
+#define IS_OVERLAY_LIGHT_SYSTEM(system) (system == OVERLAY_LIGHT || system == OVERLAY_LIGHT_DIRECTIONAL || system == OVERLAY_LIGHT_BEAM)
+#define IS_OVERLAY_CONE_LIGHT_SYSTEM(system) (system == OVERLAY_LIGHT_DIRECTIONAL || system == OVERLAY_LIGHT_BEAM)
+
+// Потолок дальности оверлейного света: таблица заготовленных масок кончается на light_352.dmi
+// (range 6). Атомный сеттер и компонент режут до одного значения, чтобы light_range атома
+// не расходился с реально рисуемой маской и lumcount_range.
+#define OVERLAY_LIGHT_RANGE_CAP 6
+
+// Альфа маски/конуса оверлейного света из light_power (формулы tg)
+#define OVERLAY_LIGHT_MASK_ALPHA_CAP 230 // потолок непрозрачности маски
+#define OVERLAY_LIGHT_MASK_ALPHA_MULT 120 // вклад |light_power| в альфу маски
+#define OVERLAY_LIGHT_MASK_ALPHA_BASE 30 // базовая альфа маски при почти нулевой мощности
+#define OVERLAY_LIGHT_CONE_ALPHA_CAP 120 // потолок непрозрачности конуса
+#define OVERLAY_LIGHT_CONE_ALPHA_MULT 60 // вклад |light_power| в альфу конуса
+#define OVERLAY_LIGHT_CONE_ALPHA_BASE 15 // базовая альфа конуса
+
+// Битфлаги var/light_flags
+#define LIGHT_ATTACHED (1<<0) // свет следует за loc родителя (фонарь, вставленный в каску/борга)
+#define LIGHT_NO_RANGE_CAP (1<<1) // статике можно превышать LIGHTING_MAX_RANGE (до LIGHTING_MAX_RANGE_STATIC). Только корнер-система (COMPLEX_LIGHT). НЕ вешать на движущиеся источники - их view() гоняется каждый шаг.
+
+// Эффективный потолок дальности для атома: оверлейный свет режется до потолка таблицы масок
+// (OVERLAY_LIGHT_RANGE_CAP, иначе light_range атома врёт про реальный свет), статика с
+// LIGHT_NO_RANGE_CAP на корнер-системе получает расширенный LIGHTING_MAX_RANGE_STATIC,
+// всё остальное - базовый LIGHTING_MAX_RANGE.
+#define LIGHT_RANGE_CAP_FOR(atom_thing) ( \
+	IS_OVERLAY_LIGHT_SYSTEM(atom_thing.light_system) ? OVERLAY_LIGHT_RANGE_CAP : \
+	((atom_thing.light_flags & LIGHT_NO_RANGE_CAP) ? LIGHTING_MAX_RANGE_STATIC : LIGHTING_MAX_RANGE))
 
 #define LIGHTING_ANIMATE_TIME 3       // Default animate() duration in deciseconds (0.3s) for smooth lighting transitions
 #define LIGHTING_ANIMATE_TIME_FAST 1  // Instant events (EMP, explosion, power cut) — 0.1s
@@ -48,6 +84,8 @@ GLOBAL_VAR_INIT(lighting_falloff_mode, LIGHTING_FALLOFF_MODE) // Runtime falloff
 #define LIGHTING_BACKLOG_DRAIN_DIVISOR 3   // Drain rate: (queue - cap) / this
 #define LIGHTING_IDLE_WAIT_THRESHOLD 20    // Below this pending count, subsystem relaxes to wait=2
 #define LIGHTING_BG_INIT_PENDING_THRESHOLD 100 // Background z-level init only runs when normal queue < this
+#define LIGHTING_STUCK_SCAN_INTERVAL 50    // Fires between safety-net scans for stuck deferred z-levels (~5-10s)
+#define LIGHTING_STUCK_SCAN_LEASE (1 MINUTES) // Лиза занятости сейфнет-скана: рантайм внутри спасательного вызова не латчит скан навечно - лиза протухает сама
 #define LIGHTING_DILATION_HIGH 40          // Time dilation threshold for minimum cap
 #define LIGHTING_DILATION_MEDIUM 20        // Time dilation threshold for reduced cap
 

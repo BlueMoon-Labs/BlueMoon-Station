@@ -1,11 +1,12 @@
 import { map } from 'common/collections';
+import { useState } from 'react';
 
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import { Box, Button, Dropdown, Flex, LabeledList, Section, Table, Tabs } from '../components';
 import { Window } from '../layouts';
 
-export const ShuttleManipulator = (props, context) => {
-  const [tab, setTab] = useLocalState(context, 'tab', 1);
+export const ShuttleManipulator = (props) => {
+  const [tab, setTab] = useState(1);
   return (
     <Window
       title="Shuttle Manipulator"
@@ -51,8 +52,8 @@ export const ShuttleManipulator = (props, context) => {
   );
 };
 
-export const ShuttleManipulatorStatus = (props, context) => {
-  const { act, data } = useBackend(context);
+export const ShuttleManipulatorStatus = (props) => {
+  const { act, data } = useBackend();
   const shuttles = data.shuttles || [];
   return (
     <Section>
@@ -113,8 +114,8 @@ export const ShuttleManipulatorStatus = (props, context) => {
   );
 };
 
-export const ShuttleManipulatorHyperspace = (props, context) => {
-  const { act, data } = useBackend(context);
+export const ShuttleManipulatorHyperspace = (props) => {
+  const { act, data } = useBackend();
   const shuttles = (data.shuttles || []).filter(
     s => s.can_queue_hyperspace_event,
   );
@@ -212,14 +213,14 @@ export const ShuttleManipulatorHyperspace = (props, context) => {
   );
 };
 
-export const ShuttleManipulatorTemplates = (props, context) => {
-  const { act, data } = useBackend(context);
+export const ShuttleManipulatorTemplates = (props) => {
+  const { act, data } = useBackend();
   const templateObject = data.templates || {};
   const selected = data.selected || {};
   const [
     selectedTemplateId,
     setSelectedTemplateId,
-  ] = useLocalState(context, 'templateId', Object.keys(templateObject)[0]);
+  ] = useState(Object.keys(templateObject)[0]);
   const actualTemplates = templateObject[selectedTemplateId]?.templates || [];
   return (
     <Section>
@@ -280,8 +281,8 @@ export const ShuttleManipulatorTemplates = (props, context) => {
   );
 };
 
-export const ShuttleManipulatorModification = (props, context) => {
-  const { act, data } = useBackend(context);
+export const ShuttleManipulatorModification = (props) => {
+  const { act, data } = useBackend();
   const selected = data.selected || {};
   const existingShuttle = data.existing_shuttle || {};
   return (

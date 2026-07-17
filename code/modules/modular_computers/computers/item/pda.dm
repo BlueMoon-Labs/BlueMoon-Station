@@ -742,8 +742,7 @@
 		var/list/skin_data = GLOB.pda_reskins[new_skin]
 		if(skin_data && skin_data["icon"])
 			icon = skin_data["icon"]
-			if(skin_data["overlays_icon"])
-				overlays_icon = skin_data["overlays_icon"]
+			overlays_icon = skin_data["icon"]
 			icon_state = base_icon_state
 			if(job_icon_state)
 				icon_state = job_icon_state
@@ -818,8 +817,7 @@
 	if(!skin_data || !skin_data["icon"])
 		return
 	icon = skin_data["icon"]
-	if(skin_data["overlays_icon"])
-		overlays_icon = skin_data["overlays_icon"]
+	overlays_icon = skin_data["icon"]
 	icon_state = base_icon_state
 	if(job_icon_state)
 		icon_state = job_icon_state
@@ -906,6 +904,11 @@
 
 /obj/item/modular_computer/pda/ui_state(mob/user)
 	return GLOB.human_adjacent_state_no_view
+
+/mob/living/Adjacent(atom/neighbor)
+	if(istype(neighbor, /obj/item/modular_computer) && src.contains(neighbor))
+		return TRUE
+	return ..()
 
 /**
  * Silicon PDA — built-in to Silicons.

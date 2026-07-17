@@ -4,8 +4,8 @@ import { useBackend } from '../backend';
 import { Box, Button, Dimmer, Icon, Section, Slider, Table } from '../components';
 import { Window } from '../layouts';
 
-export const MassSpec = (props, context) => {
-  const { act, data } = useBackend(context);
+export const MassSpec = (props) => {
+  const { act, data } = useBackend();
   const {
     processing,
     lowerRange,
@@ -181,8 +181,8 @@ const BeakerMassProfile = props => {
   );
 };
 
-const MassSpectroscopy = (props, context) => {
-  const { act, data } = useBackend(context);
+const MassSpectroscopy = (props) => {
+  const { act, data } = useBackend();
   const {
     lowerRange,
     centerValue,
@@ -201,9 +201,9 @@ const MassSpectroscopy = (props, context) => {
     <>
       <Box position="absolute" x="200" transform="translate(30,30)">
         <svg background-size="200px" width="200" height="400">
-          <text x="0" y="250" text-anchor="middle" fill="white" font-size="16" transform="translate(0,0) scale(0.8 0.8)">
+          <text x="0" y="250" textAnchor="middle" fill="white" fontSize="16" transform="translate(0,0) scale(0.8 0.8)">
             {/* x axis*/}
-            <tspan x="250" y="318" font-weight="bold" font-size="1.4em">Mass (g)</tspan>
+            <tspan x="250" y="318" fontWeight="bold" fontSize="1.4em">Mass (g)</tspan>
             <tspan x="0" y="283">{graphLowerRange}</tspan>
             <tspan x="100" y="283">{round(graphLowerRange + (graphIncrement), 1)}</tspan>
             <tspan x="200" y="283">{round(graphLowerRange + (graphIncrement * 2), 1)}</tspan>
@@ -218,17 +218,17 @@ const MassSpectroscopy = (props, context) => {
             <tspan x="520" y="200" dy="6">{round(maxAbsorbance * 0.2, 1)}</tspan>
             <tspan x="520" y="250" dy="6">0</tspan>
           </text>
-          <text text-anchor="middle" transform="translate(430,100) rotate(90) scale(0.8 0.8)" fill="white" font-size="16">
-            <tspan font-weight="bold" font-size="1.4em">Absorbance (AU)</tspan>
+          <text textAnchor="middle" transform="translate(430,100) rotate(90) scale(0.8 0.8)" fill="white" fontSize="16">
+            <tspan fontWeight="bold" fontSize="1.4em">Absorbance (AU)</tspan>
           </text>
           <g transform="translate(0, 0) scale(0.8 0.8)">
             {reagentPeaks.map(peak => (
               // Triangle peak
-              <polygon key={peak.name} points={`${((peak.mass - 10) / graphUpperRange) * 500},265 ${((peak.mass) / graphUpperRange) * 500},${250 - ((peak.volume / maxAbsorbance) * 250)} ${((peak.mass + 10) / graphUpperRange) * 500},265 `} opacity="0.6" style={`fill:${peak.color}`} />
+              <polygon key={peak.name} points={`${((peak.mass - 10) / graphUpperRange) * 500},265 ${((peak.mass) / graphUpperRange) * 500},${250 - ((peak.volume / maxAbsorbance) * 250)} ${((peak.mass + 10) / graphUpperRange) * 500},265 `} opacity="0.6" style={{ fill: peak.color }} />
             ))}
-            <polygon points={`${(lowerRange/deltaRange)*500},265 ${(lowerRange/deltaRange)*500},0 ${(upperRange/deltaRange)*500},0 ${(upperRange/deltaRange)*500},265`} opacity="0.2" style={`fill:blue`} />
-            <line x1={0} y1={265} x2={502} y2={264} stroke={"white"} stroke-width={3} />
-            <line x1={501} y1={264} x2={501} y2={0} stroke={"white"} stroke-width={3} />
+            <polygon points={`${(lowerRange/deltaRange)*500},265 ${(lowerRange/deltaRange)*500},0 ${(upperRange/deltaRange)*500},0 ${(upperRange/deltaRange)*500},265`} opacity="0.2" style={{ fill: 'blue' }} />
+            <line x1={0} y1={265} x2={502} y2={264} stroke={"white"} strokeWidth={3} />
+            <line x1={501} y1={264} x2={501} y2={0} stroke={"white"} strokeWidth={3} />
           </g>
         </svg>
       </Box>

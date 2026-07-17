@@ -304,6 +304,41 @@
 	TEST_ASSERT(comp.airs[1] in P.other_airs, "Component's gas_mixture must be merged into other_airs")
 
 
+/// Malformed or overlapping map loads can ask a component about a pipeline or
+/// connector it does not actually contain. The lookup must fail softly instead
+/// of using a failed lookup result as a list index and raising a runtime.
+/datum/unit_test/atmos_component_pipenet_lookup_guards/Run()
+	var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/connected_pipe = allocate(/obj/machinery/atmospherics/pipe/build_pipeline_test_node)
+	var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/unknown_pipe = allocate(/obj/machinery/atmospherics/pipe/build_pipeline_test_node)
+	var/obj/machinery/atmospherics/components/build_pipeline_test_component/component = allocate(/obj/machinery/atmospherics/components/build_pipeline_test_component)
+	var/datum/pipeline/connected_pipeline = new
+	var/datum/pipeline/unknown_pipeline = new
+	var/datum/pipeline/replacement_pipeline = new
+	allocated += connected_pipeline
+	allocated += unknown_pipeline
+	allocated += replacement_pipeline
+
+	component.nodes[1] = connected_pipe
+	component.setPipenet(connected_pipeline, connected_pipe)
+	TEST_ASSERT_EQUAL(component.returnPipenet(connected_pipe), connected_pipeline, "Valid connector must be assigned its pipeline")
+
+	var/runtimes_before = GLOB.total_runtimes
+	var/list/missing_expansion = component.pipeline_expansion(unknown_pipeline)
+	component.setPipenet(replacement_pipeline, unknown_pipe)
+	component.replacePipenet(unknown_pipeline, replacement_pipeline)
+	var/runtimes_added = GLOB.total_runtimes - runtimes_before
+
+	TEST_ASSERT_EQUAL(runtimes_added, 0, "Missing pipenet lookups must not raise runtimes (got [runtimes_added])")
+	TEST_ASSERT_EQUAL(length(missing_expansion), 0, "Unknown pipeline must have no expansion")
+	TEST_ASSERT_EQUAL(component.returnPipenet(connected_pipe), connected_pipeline, "Failed lookups must not change the valid pipeline")
+
+	var/list/known_expansion = component.pipeline_expansion(connected_pipeline)
+	TEST_ASSERT_EQUAL(length(known_expansion), 1, "Known pipeline must return one connected node")
+	TEST_ASSERT_EQUAL(known_expansion[1], connected_pipe, "Known pipeline must expand to its connected pipe")
+	component.replacePipenet(connected_pipeline, replacement_pipeline)
+	TEST_ASSERT_EQUAL(component.returnPipenet(connected_pipe), replacement_pipeline, "Valid pipeline replacement must still succeed")
+
+
 #define BUILD_PIPELINE_PERF_N 3000
 /// Synthetic chain of [BUILD_PIPELINE_PERF_N] pipes. The pre-fix
 /// build_pipeline does ~N²/2 list scans through `members` (one per discovered
@@ -584,3 +619,36 @@
 	TEST_ASSERT(GLOB.cached_icon_states_by_file != null, "GLOB.cached_icon_states_by_file must be a list")
 	TEST_ASSERT(GLOB.cached_icon_state_directional != null, "GLOB.cached_icon_state_directional must be a list")
 	TEST_ASSERT(GLOB.icon_dmi_path_cache != null, "GLOB.icon_dmi_path_cache must be a list")
+
+
+// ===== Slime/mob Life-tick movespeed churn: add_or_update short-circuits unchanged values =====
+
+/// Test subtype: counts update_movespeed() rebuilds so the test can assert that
+/// re-applying an unchanged variable slowdown (the every-Life-tick pattern used by
+/// slime updatehealth, human hunger, etc.) no longer rebuilds the modifier cache.
+/mob/living/simple_animal/unit_test_movespeed_counter
+	var/movespeed_updates = 0
+
+/mob/living/simple_animal/unit_test_movespeed_counter/update_movespeed()
+	movespeed_updates++
+	return ..()
+
+/datum/unit_test/movespeed_variable_update_short_circuit/Run()
+	var/mob/living/simple_animal/unit_test_movespeed_counter/critter = allocate(/mob/living/simple_animal/unit_test_movespeed_counter)
+
+	// Initialize() already registered simplemob_varspeed (slowdown = speed, default 0).
+	// Applying a new value must rebuild the movespeed cache and land in it.
+	var/updates_before = critter.movespeed_updates
+	critter.add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/simplemob_varspeed, multiplicative_slowdown = 2)
+	TEST_ASSERT_EQUAL(critter.movespeed_updates, updates_before + 1, "Changing a variable slowdown must rebuild movespeed")
+	var/cache_at_two = critter.cached_multiplicative_slowdown
+
+	// Re-applying the same value must be a no-op: no rebuild, cache untouched.
+	critter.add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/simplemob_varspeed, multiplicative_slowdown = 2)
+	TEST_ASSERT_EQUAL(critter.movespeed_updates, updates_before + 1, "Re-applying an unchanged variable slowdown must not rebuild movespeed")
+	TEST_ASSERT_EQUAL(critter.cached_multiplicative_slowdown, cache_at_two, "Cached slowdown must be unchanged after a same-value re-apply")
+
+	// A different value must still propagate (positive slowdowns are additive).
+	critter.add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/simplemob_varspeed, multiplicative_slowdown = 5)
+	TEST_ASSERT_EQUAL(critter.movespeed_updates, updates_before + 2, "Changing the slowdown again must rebuild movespeed")
+	TEST_ASSERT_EQUAL(critter.cached_multiplicative_slowdown, cache_at_two + 3, "Cached slowdown must reflect the new value")

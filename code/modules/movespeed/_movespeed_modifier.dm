@@ -159,8 +159,13 @@ GLOBAL_LIST_EMPTY(movespeed_modification_cache)
 			inject = TRUE
 			modified = TRUE
 	if(!isnull(multiplicative_slowdown))
-		final.multiplicative_slowdown = multiplicative_slowdown
-		modified = TRUE
+		// Only flag for a movespeed rebuild when the value actually changed: variable
+		// modifiers (hunger, health, temperature) are re-set every Life tick with the
+		// same value, and an unconditional update_movespeed() here made every such
+		// tick rebuild the whole modifier cache for nothing.
+		if(final.multiplicative_slowdown != multiplicative_slowdown)
+			final.multiplicative_slowdown = multiplicative_slowdown
+			modified = TRUE
 	if(inject)
 		add_movespeed_modifier(final, FALSE)
 	if(update && modified)

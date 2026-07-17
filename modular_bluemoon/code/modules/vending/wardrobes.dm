@@ -482,9 +482,6 @@
 		/obj/item/book/granter/crafting_recipe/coldcooking = 2,
 		/obj/item/clothing/gloves/color/white = 3,
 	)
-	contraband = list(
-		/obj/item/card_sticker/muck = 2,
-	)
 	refill_canister = /obj/item/vending_refill/wardrobe/chef_wardrobe
 	payment_department = ACCOUNT_SRV
 
@@ -505,6 +502,7 @@
 		/obj/item/clothing/gloves/color/black = 2,
 		/obj/item/clothing/head/soft/purple = 2,
 		/obj/item/broom = 2,
+		/obj/item/wirebrush = 2,
 		/obj/item/paint/paint_remover = 2,
 		/obj/item/melee/flyswatter = 2,
 		/obj/item/flashlight = 2,

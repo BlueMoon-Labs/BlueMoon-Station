@@ -28,6 +28,7 @@
 		cached_item = user.pulling
 		if(istype(cached_item, /obj/item/reagent_containers))
 			liquid_container = cached_item
+	var/dirty = user.wants_dirty_text()
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 	var/const/volume = 70
@@ -36,15 +37,23 @@
 	var/picked_hidden = pick(hidden_additional)
 	if(user.is_fucking(user, CUM_TARGET_HAND, user.getorganslot(ORGAN_SLOT_PENIS)))
 		//BLUEMOON EDIT START
-		message = pick("хватается за свой [has_penis ? "член" : "дилдо"] и начинает его наяривать",
-			"с усердием вздрачивает свой [has_penis ? "пенис" : "дилдо"]",
-			"дёргает сво[has_penis ? "ё мясо" : "й дилдо"]",
-			"наяривает",
-			"активно теребит свой [has_penis ? "орган" : "дилдо"] не без помощи своих ладоней")
+		if(dirty)
+			var/penis_word = has_penis ? "член" : "дилдо"
+			message = replacetext(pick(GLOB.dirty_self_jack_cont_messages), "$PENIS", penis_word)
+		else
+			message = pick("хватается за свой [has_penis ? "член" : "дилдо"] и начинает его наяривать",
+				"с усердием вздрачивает свой [has_penis ? "пенис" : "дилдо"]",
+				"дёргает сво[has_penis ? "ё мясо" : "й дилдо"]",
+				"наяривает",
+				"активно теребит свой [has_penis ? "орган" : "дилдо"] не без помощи своих ладоней")
 	else
-		message = pick("хватается за свой [has_penis ? "член" : "дилдо"] и начинает его наяривать",
-			"активно теребит свой [has_penis ? "орган" : "дилдо"] не без помощи своих ладоней",
-			"с усердием вздрачивает свой [has_penis ? "пенис" : "дилдо"]")
+		if(dirty)
+			var/penis_word = has_penis ? "член" : "дилдо"
+			message = replacetext(pick(GLOB.dirty_self_jack_first_messages), "$PENIS", penis_word)
+		else
+			message = pick("хватается за свой [has_penis ? "член" : "дилдо"] и начинает его наяривать",
+				"активно теребит свой [has_penis ? "орган" : "дилдо"] не без помощи своих ладоней",
+				"с усердием вздрачивает свой [has_penis ? "пенис" : "дилдо"]")
 		//BLUEMOON EDIT END
 		user.set_is_fucking(user, CUM_TARGET_HAND, user.getorganslot(ORGAN_SLOT_PENIS))
 	if(liquid_container)

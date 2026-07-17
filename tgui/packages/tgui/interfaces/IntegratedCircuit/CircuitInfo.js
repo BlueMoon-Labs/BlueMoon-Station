@@ -1,7 +1,7 @@
 import { Box, Button, Stack } from '../../components';
 import { byondListToArray } from './byondPayload';
 
-export const CircuitInfo = (props, context) => {
+export const CircuitInfo = (props) => {
   const {
     name,
     desc,
@@ -26,7 +26,7 @@ export const CircuitInfo = (props, context) => {
         <Stack.Item maxWidth="240px">
           <Box
             className="CircuitInfo__desc"
-            style={{ 'white-space': 'pre-wrap' }}>
+            style={{ whiteSpace: 'pre-wrap' }}>
             {descText}
           </Box>
         </Stack.Item>

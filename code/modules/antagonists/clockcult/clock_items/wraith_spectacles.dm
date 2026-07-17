@@ -1,7 +1,7 @@
 //Wraith spectacles: Grants X-ray and night vision at the eventual cost of the wearer's sight if worn too long. Nar'Sian cultists are instantly blinded.
 /obj/item/clothing/glasses/wraith_spectacles
 	name = "antique spectacles"
-	desc = "Unnerving glasses with opaque yellow lenses."
+	desc = "Пугающие очки с непрозрачными желтыми стеклами."
 	icon = 'icons/obj/clothing/clockwork_garb.dmi'
 	icon_state = "wraith_specs"
 	item_state = "glasses"
@@ -33,24 +33,24 @@
 		var/mob/living/carbon/human/H = loc
 		if(src == H.glasses && !up)
 			if(HAS_TRAIT(H, TRAIT_BLIND))
-				to_chat(H, "<span class='heavy_brass'>\"You're blind, idiot. Stop embarrassing yourself.\"</span>")
+				to_chat(H, "<span class='heavy_brass'>\"Ты слепой, идиот. Хватит позориться.\"</span>")
 				return
 			if(blind_cultist(H))
 				return
 			if(is_servant_of_ratvar(H))
-				to_chat(H, "<span class='heavy_brass'>You push the spectacles down, and all is revealed to you.[GLOB.ratvar_awakens ? "" : " Your eyes begin to itch - you cannot do this for long."]</span>")
+				to_chat(H, "<span class='heavy_brass'>Ты сдвигаешь очки на глаза и всё становится ясно.[GLOB.ratvar_awakens ? "" : " Глаза начинают чесаться, так долго не продержишься."]</span>")
 				var/datum/status_effect/wraith_spectacles/WS = H.has_status_effect(STATUS_EFFECT_WRAITHSPECS)
 				if(WS)
 					WS.apply_eye_damage(H)
 				H.apply_status_effect(STATUS_EFFECT_WRAITHSPECS)
 			else
-				to_chat(H, "<span class='heavy_brass'>You push the spectacles down, but you can't see through the glass.</span>")
+				to_chat(H, "<span class='heavy_brass'>Ты сдвигаешь очки на глаза, но ничего не видишь сквозь стекла.</span>")
 
 /obj/item/clothing/glasses/wraith_spectacles/proc/blind_cultist(mob/living/victim)
 	if(iscultist(victim))
 		var/obj/item/organ/eyes/eyes = victim.getorganslot(ORGAN_SLOT_EYES)
-		to_chat(victim, "<span class='heavy_brass'>\"It looks like Nar'Sie's dogs really don't value their eyes.\"</span>")
-		to_chat(victim, "<span class='userdanger'>Your eyes explode with horrific pain!</span>")
+		to_chat(victim, "<span class='heavy_brass'>\"Похоже, собачки Нар'Си действительно не ценят свои глаза.\"</span>")
+		to_chat(victim, "<span class='userdanger'>Ваши глаза разрываются с ужасающей болью!</span>")
 		if(!HAS_TRAIT(victim, TRAIT_ROBOTIC_ORGANISM)) // BLUEMOON ADD - роботы не кричат от боли
 			victim.emote("scream")
 		eyes?.applyOrganDamage(eyes.maxHealth)
@@ -83,19 +83,19 @@
 	if(slot != ITEM_SLOT_EYES || up)
 		return
 	if(HAS_TRAIT(user, TRAIT_BLIND))
-		to_chat(user, "<span class='heavy_brass'>\"You're blind, idiot. Stop embarrassing yourself.\"</span>" )
+		to_chat(user, "<span class='heavy_brass'>\"Ты слепой, идиот. Хватит позориться.\"</span>" )
 		return
 	if(blind_cultist(user)) //Cultists instantly go blind
 		return
 	set_vision_vars(TRUE)
 	if(is_servant_of_ratvar(user))
-		to_chat(user, "<span class='heavy_brass'>As you put on the spectacles, all is revealed to you.[GLOB.ratvar_awakens || GLOB.ratvar_approaches ? "" : " Your eyes begin to itch - you cannot do this for long."]</span>")
+		to_chat(user, "<span class='heavy_brass'>Ты сдвигаешь очки на глаза и всё становится ясно.[GLOB.ratvar_awakens || GLOB.ratvar_approaches ? "" : " Глаза начинают чесаться, так долго не продержишься."]</span>")
 		var/datum/status_effect/wraith_spectacles/WS = user.has_status_effect(STATUS_EFFECT_WRAITHSPECS)
 		if(WS)
 			WS.apply_eye_damage(user)
 		user.apply_status_effect(STATUS_EFFECT_WRAITHSPECS)
 	else
-		to_chat(user, "<span class='heavy_brass'>You put on the spectacles, but you can't see through the glass.</span>")
+		to_chat(user, "<span class='heavy_brass'>Ты сдвигаешь очки на глаза, но ничего не видишь сквозь стекла.</span>")
 
 //The effect that causes/repairs the damage the spectacles cause.
 /datum/status_effect/wraith_spectacles
@@ -109,7 +109,7 @@
 
 /atom/movable/screen/alert/status_effect/wraith_spectacles
 	name = "Wraith Spectacles"
-	desc = "You shouldn't actually see this, as it should be procedurally generated."
+	desc = "На самом деле вы не должны это видеть, так как это должно генерироваться программно."
 	icon_state = "wraithspecs"
 	alerttooltipstyle = "clockcult"
 
@@ -119,16 +119,16 @@
 		var/datum/status_effect/wraith_spectacles/W = attached_effect
 		var/glasses_right = istype(L.glasses, /obj/item/clothing/glasses/wraith_spectacles)
 		var/obj/item/clothing/glasses/wraith_spectacles/WS = L.glasses
-		desc = "[glasses_right && !WS.up ? "<font color=#DAAA18><b>":""]You are [glasses_right ? "":"not "]wearing wraith spectacles[glasses_right && !WS.up ? "!</b></font>":"."]<br>\
-		You have taken <font color=#DAAA18><b>[W.eye_damage_done]</b></font> eye damage from them.<br>"
+		desc = "[glasses_right && !WS.up ? "<font color=#DAAA18><b>":""]Вы [glasses_right ? "":"не "]носите призрачные очки[glasses_right && !WS.up ? "!</b></font>":"."]<br>\
+		Вы получили от них <font color=#DAAA18><b>[W.eye_damage_done]</b></font> повреждений глаз.<br>"
 		if(HAS_TRAIT(L, TRAIT_NEARSIGHT))
-			desc += "<font color=#DAAA18><b>You are nearsighted!</b></font><br>"
+			desc += "<font color=#DAAA18><b>У вас близорукость!</b></font><br>"
 		else if(glasses_right && !WS.up)
-			desc += "You will become nearsighted at <font color=#DAAA18><b>[W.nearsight_breakpoint]</b></font> eye damage.<br>"
+			desc += "Вы станете близоруким, когда достигнете <font color=#DAAA18><b>[W.nearsight_breakpoint]</b></font> повреждений глаз.<br>"
 		if(HAS_TRAIT(L, TRAIT_BLIND))
-			desc += "<font color=#DAAA18><b>You are blind!</b></font>"
+			desc += "<font color=#DAAA18><b>Вы слепой!</b></font>"
 		else if(glasses_right && !WS.up)
-			desc += "You will become blind at <font color=#DAAA18><b>[W.blind_breakpoint]</b></font> eye damage."
+			desc += "Вы станете слепым, когда достигнете <font color=#DAAA18><b>[W.blind_breakpoint]</b></font> повреждений глаз."
 	..()
 
 /datum/status_effect/wraith_spectacles/on_apply()
@@ -169,12 +169,12 @@
 		H.adjust_blurriness(2)
 	if(eye_damage_done >= nearsight_breakpoint)
 		if(!HAS_TRAIT(H, TRAIT_NEARSIGHT))
-			to_chat(H, "<span class='nzcrentr'>Your vision doubles, then trembles. Darkness begins to close in. You can't keep this up!</span>")
+			to_chat(H, "<span class='nzcrentr'>Зрение у вас затуманивается, а затем все вокруг начинает мерцать. Вокруг сгущается тьма. Так больше не пойдет!</span>")
 		H.become_nearsighted(EYE_DAMAGE)
 	if(eye_damage_done >= blind_breakpoint)
 		if(!HAS_TRAIT(H, TRAIT_BLIND))
-			to_chat(H, "<span class='nzcrentr_large'>A piercing white light floods your vision. Suddenly, all goes dark!</span>")
+			to_chat(H, "<span class='nzcrentr_large'>Ослепительный белый свет заполняет поле зрения. И вдруг, полная темнота!</span>")
 		eyes.applyOrganDamage(eyes.maxHealth)
 
 	if(prob(min(20, 5 + eye_damage_done)))
-		to_chat(H, "<span class='nzcrentr_small'><i>Your eyes continue to burn.</i></span>")
+		to_chat(H, "<span class='nzcrentr_small'><i>Глаза продолжают гореть.</i></span>")

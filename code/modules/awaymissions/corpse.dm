@@ -37,6 +37,13 @@
 	var/make_bank_account = FALSE // BLUEMOON ADD
 	var/starting_money = 0 // BLUEMOON ADD работает только при make_bank_account = TRUE
 	var/category = "misc" // BLUEMOON ADD - категоризация для отображения по спискам
+	/// Отложенное действие директора, создавшее этот гост-спавнер. Если первичный poll никого
+	/// не назначил, позднее занятие спавнера всё равно переводит прогноз в живой учёт.
+	var/datum/director_action/director_source_action
+	/// Доля общей intensity командного действия, принадлежащая этому спавнеру; null = вся.
+	var/director_intensity
+	/// Страховая доля цены этого спавнера; 0 у форса админа и незастрахованных ролей.
+	var/director_refund_cost = 0
 
 ///override this to add special spawn conditions to a ghost role
 /obj/effect/mob_spawn/proc/allow_spawn(mob/user, silent = FALSE)
@@ -57,15 +64,17 @@
 		var/mob/dead/observer/O = user
 		if(!O.can_reenter_round())
 			return FALSE
-	var/ghost_role = alert(latejoinercalling ? "Latejoin as [mob_name]? (This is a ghost role, and as such, it's very likely to be off-station.)" : "Become [mob_name]? (Warning, You can no longer be cloned!)",,"Да","Нет")
-	if(ghost_role == "Нет" || !loc)
+	// tgui вместо нативного alert: BYOND держит нативный промпт (и фрейм с ним) до
+	// ответа даже после дисконнекта - брошенный диалог "Become X?" вечно пинит призрака
+	var/ghost_role = tgui_alert(user, latejoinercalling ? "Latejoin as [mob_name]? (This is a ghost role, and as such, it's very likely to be off-station.)" : "Become [mob_name]? (Warning, You can no longer be cloned!)", "Ghost role", list("Да", "Нет"))
+	if(ghost_role != "Да" || !loc)
 		return
 	var/requested_char = FALSE
 	if(can_load_appearance == TRUE && ispath(mob_type, /mob/living/carbon/human)) // Can't just use if(can_load_appearance), 2 has a different behavior
-		switch(alert(user, "Желаете загрузить текущего своего выбранного персонажа?", "Play as your character!", "Yes", "No", "Actually nevermind"))
+		switch(tgui_alert(user, "Желаете загрузить текущего своего выбранного персонажа?", "Play as your character!", list("Yes", "No", "Actually nevermind")))
 			if("Yes")
 				requested_char = TRUE
-			if("Actually nevermind")
+			if("Actually nevermind", null)
 				return
 	if(!uses)
 		to_chat(user, "<span class='warning'>This spawner is out of charges!</span>")
@@ -187,10 +196,19 @@
 		if(M.client && ishuman(M) && load_character)
 			SSlanguage.AssignLanguage(M, M.client)
 		special(M, name)
+		if(director_source_action)
+			SSdirector.track_ghost_role_spawn(
+				director_source_action,
+				list(M),
+				budget_backed = director_refund_cost > 0,
+				intensity_override = director_intensity,
+				refund_cost_override = director_refund_cost,
+			)
 	if(uses > 0)
 		uses--
 	if(!permanent && !uses)
 		qdel(src)
+	return M
 
 // Base version - place these on maps/templates.
 /obj/effect/mob_spawn/human

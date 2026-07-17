@@ -20,7 +20,7 @@
 
 	return preview
 
-/datum/borg_donator_skin
+/datum/borg_donator_skin	
 	var/name = ""
 	var/module_type = /obj/item/robot_module
 
@@ -44,6 +44,7 @@
 	var/drakerest = null
 	var/has_snowflake_deadsprite = null
 	var/cyborg_pixel_offset = null
+	var/sit_lamp_has_state = null
 
 /datum/borg_donator_skin/proc/can_use(client/C)
 	if(!C)
@@ -94,6 +95,8 @@
 		module.has_snowflake_deadsprite = has_snowflake_deadsprite
 	if(!isnull(cyborg_pixel_offset))
 		module.cyborg_pixel_offset = cyborg_pixel_offset
+	//Учитесь сосунки
+	module.sit_lamp_has_state =  module.sit_lamp_has_state || sit_lamp_has_state
 
 /obj/item/robot_module/proc/get_selectable_borg_icons(list/base_icons, client/C)
 	var/list/selectable_icons = base_icons.Copy()
@@ -108,6 +111,7 @@
 /obj/item/robot_module
 	var/use_private_skin_optional_menu = FALSE
 	var/private_skin_optional_menu_used = FALSE
+	var/sit_lamp_has_state = FALSE
 
 /obj/item/robot_module/proc/get_available_donator_borg_icons(client/C)
 	var/list/donor_icons = list()
@@ -296,14 +300,24 @@
 	hat_offset = TALL_HAT_OFFSET
 	hasrest = TRUE
 
-GLOBAL_LIST_INIT_TYPED(borg_donator_skins, /datum/borg_donator_skin, list(
-	// new /datum/borg_donator_skin/example/pe4henika
-	new /datum/borg_donator_skin/syndicate/inteq/mekafl,
-	new /datum/borg_donator_skin/syndicate_medical/inteq/mekafl,
-	new /datum/borg_donator_skin/saboteur/inteq/mekafl,
-	new /datum/borg_donator_skin/inteq_builder/mekafl,
-	new /datum/borg_donator_skin/security/swatmeka,
-	new /datum/borg_donator_skin/medical/epmeka,
-	new /datum/borg_donator_skin/engineering/ratvarmeka,
-	new /datum/borg_donator_skin/syndicatejack/ratvarmeka
-))
+/datum/borg_donator_skin/peacemaker/moth_meka
+	name = "Moth Meka"
+	module_type = /obj/item/robot_module/peacekeeper
+	preview_icon = 'modular_splurt/icons/mob/robots_32x64.dmi'
+	preview_icon_state = "mekamoth"
+	ckey_whitelist = list("techgrid", "mrpelmenik007")
+	cyborg_base_icon = "mekamoth"
+	cyborg_icon_override = 'modular_splurt/icons/mob/robots_32x64.dmi'
+	hat_offset = TALL_HAT_OFFSET
+	hasrest = TRUE
+	sit_lamp_has_state = TRUE
+
+/proc/smart_init_borgs_skin()
+	. = list()
+	for(var/datum/borg_donator_skin/donor_skin_type as anything in subtypesof(/datum/borg_donator_skin))
+		var/datum/borg_donator_skin/donor_skin = new donor_skin_type
+		if(length(donor_skin.ckey_whitelist) || donor_skin.donator_group != DONATOR_GROUP_NONE)
+			. += donor_skin
+
+GLOBAL_LIST_INIT(borg_donator_skins, smart_init_borgs_skin())
+

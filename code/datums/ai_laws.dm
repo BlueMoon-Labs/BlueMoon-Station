@@ -282,7 +282,7 @@
 
 /datum/ai_laws/pai
 	name = "pAI Directives"
-	zeroth = ("Serve your master.")
+	zeroth = ("Служи своему мастеру.")
 	supplied = list("None.")
 
 /* Initializers */

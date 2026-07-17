@@ -551,6 +551,13 @@
 			else
 				output += "\n\t <a href='?src=[REF(src)];embedded_object=[REF(I)];embedded_limb=[REF(LB)]' class='warning'>[I] застрял в вашей конечности - [LB.ru_name]!</a>"
 
+		if(LB.current_gauze)
+			if(!embeds)
+				embeds = TRUE
+				visible_message("<span class='notice'><b>[src]</b> осматривает себя.</span>", "")
+				output = "<span class='notice'>Ты осматриваешь себя.</span><hr>"
+			output += "\n\t <a href='?src=[REF(src)];remove_gauze=1;gauze_limb=[REF(LB)]' class='notice'>На вашей [LB.ru_name_v] наложен \a [LB.current_gauze].</a>"
+
 	if(output)
 		to_chat(src, examine_block(output))
 

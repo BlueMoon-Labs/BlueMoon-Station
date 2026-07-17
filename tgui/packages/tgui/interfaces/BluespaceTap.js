@@ -4,8 +4,8 @@ import { formatPower } from '../format';
 import { Window } from '../layouts';
 
 
-export const BluespaceTap = (props, context) => {
-  const { act, data } = useBackend(context);
+export const BluespaceTap = (props) => {
+  const { act, data } = useBackend();
   const product = data.product || [];
   const {
     desiredLevel,

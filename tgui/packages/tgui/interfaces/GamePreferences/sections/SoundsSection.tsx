@@ -12,6 +12,7 @@ type SoundsData = {
   sound_ship_ambience: boolean;
   sound_announcements: boolean;
   sound_bark: boolean;
+  sound_emote: boolean;
   sound_volume_midi: number;
   sound_volume_ambience: number;
   sound_volume_ship_ambience: number;
@@ -19,6 +20,8 @@ type SoundsData = {
   sound_volume_bark: number;
   sound_volume_instruments: number;
   sound_volume_jukeboxes: number;
+  sound_volume_emote: number;
+  sound_volume_personal_jukeboxes: number;
 };
 
 const SOUND_WITH_VOL: { key: string; label: string; volKey: string; tooltip?: string }[] = [
@@ -27,9 +30,10 @@ const SOUND_WITH_VOL: { key: string; label: string; volKey: string; tooltip?: st
   { key: 'sound_ship_ambience', label: 'Фоновый гул станции', volKey: 'sound_volume_ship_ambience', tooltip: 'Низкочастотный гул, доносящийся от двигателей и энергосистем станции или шаттла' },
   { key: 'sound_announcements', label: 'Звуки объявлений', volKey: 'sound_volume_announcements', tooltip: 'Звуки, сопровождающие объявления командования, ИИ и приоритетные общестанционные оповещения' },
   { key: 'sound_bark', label: 'Голосовые барки (вокал)', volKey: 'sound_volume_bark', tooltip: 'Звуки вокализации персонажа: рычание, мурлыканье, вой и прочие эмоциональные возгласы' },
+  { key: 'sound_emote', label: 'Звуки эмоутов (*emote)', volKey: 'sound_volume_emote', tooltip: 'Громкость звуков, воспроизводимых через эмоуты (вздохи, смех, кашель и т.д.)' },
   { key: 'sound_instruments', label: 'Музыкальные инструменты', volKey: 'sound_volume_instruments', tooltip: 'Громкость звуков музыкальных инструментов в игре (синтезированные и обычные)' },
   { key: 'sound_jukeboxes', label: 'Джукбоксы', volKey: 'sound_volume_jukeboxes', tooltip: 'Громкость музыки, проигрываемой на джукбоксах в игре' },
-  { key: 'sound_personal_jukeboxes', label: 'Персональные музыкальные шкатулки', volKey: 'sound_volume_jukeboxes', tooltip: 'Громкость музыки из персональных музыкальных шкатулок' },
+  { key: 'sound_personal_jukeboxes', label: 'Персональные музыкальные шкатулки', volKey: 'sound_volume_personal_jukeboxes', tooltip: 'Громкость музыки из персональных музыкальных шкатулок' },
 ];
 
 const SoundToggleButton = (props: { enabled: boolean; onClick: () => void }) => {
@@ -46,8 +50,8 @@ const SoundToggleButton = (props: { enabled: boolean; onClick: () => void }) => 
   );
 };
 
-export const SoundsSection = (props, context) => {
-  const { act, data } = useBackend<SoundsData>(context);
+export const SoundsSection = (props) => {
+  const { act, data } = useBackend<SoundsData>();
 
   return (
     <Stack vertical>

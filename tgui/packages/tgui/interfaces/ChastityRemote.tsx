@@ -10,8 +10,8 @@ type Chastity = {
 	mode: string;
 }
 
-export const ChastityRemote = (_: any, context: any) => {
-	const { act, data } = useBackend<Chastity>(context);
+export const ChastityRemote = (_: any) => {
+	const { act, data } = useBackend<Chastity>();
 	const { power, minPower, maxPower, mode } = data;
 
 	return (

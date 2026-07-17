@@ -109,9 +109,9 @@
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
-	backpack_contents = list(/obj/item/storage/box/ids=1, /obj/item/syndicate_uplink_high=1,\
+	backpack_contents = list(/obj/item/storage/box/ids=1,/obj/item/syndicate_uplink/station=1,\
 		/obj/item/melee/classic_baton/telescopic=1, /obj/item/modular_computer/tablet/preset/advanced/command = 1)
-	accessory = list(/obj/item/clothing/accessory/permit/special/head_of_personnel)
+	accessory = list(/obj/item/clothing/accessory/permit/special/head_of_personnel, /obj/item/clothing/accessory/permit/special/syndie_station)
 
 //only pet worth reviving
 /datum/job/hop/get_mail_goodies(mob/recipient)

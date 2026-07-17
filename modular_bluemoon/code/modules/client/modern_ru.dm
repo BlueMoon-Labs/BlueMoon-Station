@@ -377,7 +377,6 @@ var/list/ru_strings = list(
 	"noncon_pref" = "Несогласие",
 	"vore_pref" = "Вор",
 	"mobsex_pref" = "Мобовый секс",
-	"hornyantags_pref" = "Похотливые антаги",
 
 	// Lewd preferences
 	"lewd_preferences" = "Похотливые предпочтения",
@@ -691,7 +690,6 @@ var/list/ru_strings = list(
 	"only_when_down" = "Только в лёжа",
 
 	"splurt_prefs" = "Настройки S.P.L.U.R.T.",
-	"be_victim" = "Быть жертвой антагониста",
 	"disable_combat_cursor" = "Отключить курсор боя",
 	"disable_combat_mouse_lock" = "Отключить следование за мышкой в бою",
 	"playerpanel_style" = "Стиль панели игрока",
@@ -873,7 +871,6 @@ var/list/ru_strings = list(
 	"noncon_pref" = "Несогласие",
 	"vore_pref" = "Вор",
 	"mobsex_pref" = "Мобовый секс",
-	"hornyantags_pref" = "Похотливые антаги",
 	"lewd_preferences" = "Похотливые предпочтения",
 	"lust_tolerance" = "Толерантность похоти",
 	"sexual_potency" = "Сексуальная мощность",
@@ -1227,7 +1224,6 @@ var/list/en_strings = list(
 	"noncon_pref" = "Non-Con",
 	"vore_pref" = "Vore",
 	"mobsex_pref" = "Mob Non-Con Sex",
-	"hornyantags_pref" = "Horny Antags",
 
 	// Lewd preferences
 	"lewd_preferences" = "Lewd preferences",
@@ -1543,7 +1539,6 @@ var/list/en_strings = list(
 	"only_when_down" = "Only when down",
 
 	"splurt_prefs" = "S.P.L.U.R.T. Preferences",
-	"be_victim" = "Be Antagonist Victim",
 	"disable_combat_cursor" = "Disable combat mode cursor",
 	"disable_combat_mouse_lock" = "Disable combat mouse lock",
 	"playerpanel_style" = "Splashscreen Player Panel Style",

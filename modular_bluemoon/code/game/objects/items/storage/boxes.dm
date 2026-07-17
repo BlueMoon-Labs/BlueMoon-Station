@@ -25,14 +25,6 @@
 	new /obj/item/card_sticker/agony(src)
 	new /obj/item/clothing/accessory/permit/special/deviant/agony(src)
 
-/obj/item/storage/box/deviant_kit/muck
-	name = "Muck activity kit"
-	desc = "Жрать гавно."
-	illustration = "id"
-
-/obj/item/storage/box/deviant_kit/muck/PopulateContents()
-	new /obj/item/card_sticker/muck(src)
-	new /obj/item/clothing/accessory/permit/special/deviant/muck(src)
 
 /obj/item/storage/box/raven_box
 	name = "dark red box"
@@ -66,7 +58,7 @@
 	new	/obj/item/clothing/accessory/permit/deviant/lust(src)
 	new	/obj/item/clothing/accessory/permit/deviant/agony(src)
 	new	/obj/item/clothing/accessory/permit/deviant/agony(src)
-	new	/obj/item/clothing/accessory/permit/deviant/muck(src)
+	new	/obj/item/clothing/accessory/permit/deviant/lust(src)
 
 /obj/item/storage/box/service_permits
 	name = "box of service permits"
@@ -81,3 +73,12 @@
 	new	/obj/item/clothing/accessory/permit/special/bouncer(src)
 	new	/obj/item/clothing/accessory/permit/special/bouncer(src)
 	new	/obj/item/clothing/accessory/permit/special/bouncer(src)
+
+/obj/item/storage/box/metashop/holoparasite_kit
+	name = "holoparasite kit"
+	desc = "Коробка с инжектором голопаразита и разрешением на его ношение."
+	illustration = "syringe"
+
+/obj/item/storage/box/metashop/holoparasite_kit/PopulateContents()
+	new /obj/item/guardiancreator/tech/choose/traitor(src)
+	new /obj/item/clothing/accessory/permit/special/holoparasite(src)

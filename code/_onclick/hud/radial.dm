@@ -320,7 +320,7 @@ GLOBAL_LIST_EMPTY(radial_menus)
 	current_user = null
 	anchor = null
 	menu_holder = null
-	QDEL_NULL(custom_check_callback)
+	custom_check_callback = null //Колбек принадлежит вызывающему: show_radial_menu инвокает его после qdel(menu)
 	. = ..()
 
 /*

@@ -12,8 +12,8 @@ const commandJobs = [
   "Chief Medical Officer",
 ];
 
-export const SplurtCrewManifest = (props, context) => {
-  const { data: { manifest } } = useBackend(context);
+export const SplurtCrewManifest = (props) => {
+  const { data: { manifest } } = useBackend();
 
   return (
     <Window title="Crew Manifest" width={350} height={500}>

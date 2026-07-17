@@ -112,11 +112,9 @@
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/red,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = 30;
-	prison_radio = 1
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/mineral/plastitanium,
@@ -5400,12 +5398,10 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/tile/blue,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -27;
 	pixel_y = -27;
-	prison_radio = 1
 	},
 /obj/machinery/flasher{
 	id = "Cell 3";
@@ -5676,12 +5672,10 @@
 	pixel_x = -24;
 	pixel_y = -36
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -27;
 	pixel_y = -27;
-	prison_radio = 1
 	},
 /obj/machinery/light/small{
 	dir = 8
@@ -17059,17 +17053,6 @@
 /obj/effect/spawner/structure/window/plastitanium,
 /turf/open/floor/plating,
 /area/service/library)
-"bbF" = (
-/obj/effect/turf_decal/tile/brown/opposingcorners,
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3,
-/turf/open/floor/mineral/plastitanium,
-/area/commons/fitness)
 "bbJ" = (
 /obj/structure/disposalpipe/segment,
 /obj/structure/cable{
@@ -17443,9 +17426,8 @@
 /area/command/meeting_room)
 "bcZ" = (
 /obj/structure/table/wood,
-/obj/item/radio/intercom{
+/obj/item/radio/intercom/command{
 	dir = 8;
-	freerange = 1;
 	name = "Station Intercom (Command)"
 	},
 /turf/open/floor/carpet,
@@ -19266,9 +19248,8 @@
 /turf/open/floor/mineral/plastitanium,
 /area/engineering/gravity_generator)
 "bik" = (
-/obj/item/radio/intercom{
+/obj/item/radio/intercom/command{
 	dir = 8;
-	freerange = 1;
 	name = "Station Intercom (Command)";
 	pixel_x = -28
 	},
@@ -29066,7 +29047,6 @@
 	},
 /obj/machinery/door/window/northleft{
 	name = "First-Aid Supplies";
-
 	req_access_txt = "5"
 	},
 /obj/effect/turf_decal/tile/blue/fourcorners,
@@ -32425,10 +32405,11 @@
 /turf/open/floor/mineral/plastitanium,
 /area/engineering/atmos)
 "bRy" = (
-/obj/machinery/portable_atmospherics/pump,
+/obj/machinery/atmospherics/pipe/simple/cyan/visible,
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 6
 	},
+/obj/machinery/electrolyzer,
 /turf/open/floor/mineral/plastitanium,
 /area/engineering/atmos)
 "bRA" = (
@@ -44381,12 +44362,6 @@
 /obj/effect/turf_decal/tile/blue/fourcorners,
 /turf/open/floor/mineral/plastitanium,
 /area/medical/medbay/central)
-"cEU" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
-	dir = 4
-	},
-/turf/open/floor/mineral/plastitanium,
-/area/commons/fitness)
 "cFi" = (
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer1{
 	dir = 1
@@ -45159,7 +45134,9 @@
 /turf/open/floor/mineral/plastitanium,
 /area/hallway/primary/central)
 "cRQ" = (
-/obj/item/kirbyplants/random,
+/obj/structure/chair{
+	dir = 4
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/commons/fitness)
 "cSb" = (
@@ -45735,11 +45712,11 @@
 	network = list("ss13","prison")
 	},
 /obj/machinery/power/apc/auto_name/north,
-/obj/structure/cable{
-	icon_state = "0-4"
-	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "0-2"
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/commons/fitness)
@@ -45821,6 +45798,13 @@
 	},
 /turf/open/floor/grass,
 /area/service/park)
+"ded" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/components/binary/crystallizer,
+/turf/open/floor/plating,
+/area/engineering/atmos)
 "dev" = (
 /obj/structure/disposalpipe/segment{
 	dir = 9
@@ -47056,11 +47040,9 @@
 	dir = 8;
 	network = list("ss13","prison")
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = 30;
-	prison_radio = 1
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /turf/open/floor/mineral/plastitanium,
@@ -47414,10 +47396,13 @@
 /turf/open/floor/mineral/plastitanium,
 /area/hallway/primary/port)
 "eus" = (
-/obj/machinery/portable_atmospherics/scrubber,
+/obj/machinery/atmospherics/pipe/simple/cyan/visible{
+	dir = 6
+	},
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 5
 	},
+/obj/machinery/electrolyzer,
 /turf/open/floor/mineral/plastitanium,
 /area/engineering/atmos)
 "euy" = (
@@ -48172,19 +48157,14 @@
 /turf/open/floor/engine,
 /area/maintenance/port/aft)
 "fdq" = (
-/obj/structure/cable{
-	icon_state = "1-2"
+/obj/machinery/airalarm{
+	dir = 4;
+	pixel_x = -23
 	},
-/obj/machinery/newscaster{
-	pixel_x = 32
+/obj/effect/turf_decal/tile/brown/opposingcorners,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+	dir = 6
 	},
-/obj/machinery/camera{
-	c_tag = "Holopad";
-	dir = 8;
-	network = list("ss13","prison")
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /turf/open/floor/mineral/plastitanium,
 /area/commons/fitness)
 "fdu" = (
@@ -48683,6 +48663,9 @@
 	pixel_x = 6;
 	pixel_y = 4
 	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+	dir = 4
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/commons/fitness)
 "fsa" = (
@@ -48880,14 +48863,15 @@
 /turf/open/floor/plating,
 /area/maintenance/department/medical/morgue)
 "fwO" = (
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
 /obj/machinery/light{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+	dir = 10
+	},
+/obj/structure/chair{
+	dir = 8
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/commons/fitness)
 "fxa" = (
@@ -49096,8 +49080,11 @@
 /area/commons/dorms)
 "fDa" = (
 /obj/effect/turf_decal/tile/brown/opposingcorners,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
-	dir = 4
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 8
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/commons/fitness)
@@ -49144,12 +49131,10 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -1;
 	pixel_y = 30;
-	prison_radio = 1
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/security/prison/upper)
@@ -49161,9 +49146,11 @@
 /area/maintenance/disposal)
 "fDO" = (
 /obj/effect/turf_decal/tile/brown/opposingcorners,
-/obj/machinery/airalarm{
-	dir = 4;
-	pixel_x = -23
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+	dir = 4
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/commons/fitness)
@@ -49258,9 +49245,6 @@
 /obj/effect/turf_decal/tile/brown/opposingcorners,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
-	},
-/obj/structure/cable{
-	icon_state = "4-8"
 	},
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer1{
 	dir = 1
@@ -49607,14 +49591,6 @@
 /obj/machinery/atmospherics/pipe/manifold/yellow/visible,
 /turf/open/floor/mineral/plastitanium,
 /area/engineering/atmos)
-"fPs" = (
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
-/turf/open/floor/mineral/plastitanium,
-/area/commons/fitness)
 "fPw" = (
 /obj/structure/closet/toolcloset,
 /obj/effect/turf_decal/tile/yellow{
@@ -49704,15 +49680,6 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/engineering/atmos)
-"fTe" = (
-/obj/machinery/camera{
-	c_tag = "Holodeck"
-	},
-/obj/machinery/light{
-	dir = 1
-	},
-/turf/open/floor/mineral/plastitanium,
-/area/commons/fitness)
 "fTg" = (
 /obj/machinery/holopad,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
@@ -49815,11 +49782,6 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/service/park)
-"fXr" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
-/turf/open/floor/mineral/plastitanium,
-/area/commons/fitness)
 "fZj" = (
 /obj/machinery/requests_console{
 	department = "Kitchen";
@@ -50349,11 +50311,19 @@
 /turf/open/floor/mineral/plastitanium,
 /area/medical/medbay/factory)
 "gvu" = (
-/obj/effect/turf_decal/siding/wood/corner{
+/obj/effect/turf_decal/tile/brown/opposingcorners,
+/obj/structure/cable{
+	icon_state = "2-4";
+	color = "#ff1616"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 1
 	},
-/turf/open/floor/grass,
-/area/service/park)
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 6
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/commons/fitness)
 "gvM" = (
 /turf/open/floor/plating{
 	icon_state = "platingdmg3"
@@ -52044,9 +52014,7 @@
 "hEV" = (
 /obj/effect/turf_decal/tile/brown/opposingcorners,
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
-	dir = 5
-	},
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer1,
 /turf/open/floor/mineral/plastitanium,
 /area/commons/fitness)
 "hFP" = (
@@ -52487,10 +52455,14 @@
 /turf/open/floor/mineral/plastitanium,
 /area/hallway/secondary/service)
 "hSQ" = (
-/obj/structure/closet/boxinggloves,
-/obj/effect/landmark/event_spawn,
-/turf/open/floor/mineral/plastitanium,
-/area/commons/fitness)
+/obj/structure/flora/ausbushes/ywflowers,
+/obj/machinery/firealarm{
+	dir = 1;
+	pixel_y = 0;
+	pixel_x = 32
+	},
+/turf/open/floor/grass,
+/area/service/park)
 "hSZ" = (
 /obj/item/kirbyplants/hedge,
 /obj/structure/window/reinforced{
@@ -52498,16 +52470,6 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/service/bar)
-"hTa" = (
-/obj/structure/table,
-/obj/machinery/button/door{
-	id = "holoprivacy";
-	name = "Holodeck Privacy";
-	pixel_y = 8
-	},
-/obj/item/paper/fluff/holodeck/disclaimer,
-/turf/open/floor/mineral/plastitanium,
-/area/commons/fitness)
 "hTi" = (
 /obj/effect/turf_decal/tile/red{
 	dir = 4
@@ -53270,17 +53232,10 @@
 /turf/open/floor/plating,
 /area/maintenance/fore/secondary)
 "iAp" = (
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/obj/machinery/light{
-	dir = 4;
-	light_color = "#c1caff"
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer1{
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
 	dir = 4
 	},
+/obj/structure/table,
 /turf/open/floor/mineral/plastitanium,
 /area/commons/fitness)
 "iBh" = (
@@ -53751,6 +53706,15 @@
 /obj/machinery/light{
 	dir = 8;
 	light_color = "#e8eaff"
+	},
+/obj/machinery/computer/holodeck{
+	dir = 4
+	},
+/obj/machinery/button/door{
+	id = "holoprivacy";
+	name = "Holodeck Privacy";
+	pixel_y = -8;
+	pixel_x = -4
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/commons/fitness)
@@ -54725,8 +54689,11 @@
 /area/engineering/gravity_generator)
 "jFM" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
-	dir = 10
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer1{
+	dir = 4
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/commons/fitness)
@@ -56841,18 +56808,11 @@
 /area/cargo/storage)
 "lgk" = (
 /obj/effect/turf_decal/tile/brown/opposingcorners,
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer1,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
-/turf/open/floor/mineral/plastitanium,
-/area/commons/fitness)
-"lgt" = (
-/obj/structure/chair{
-	dir = 1
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+	dir = 9
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/commons/fitness)
@@ -58491,12 +58451,10 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/tile/yellow,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -27;
 	pixel_y = -27;
-	prison_radio = 1
 	},
 /obj/machinery/flasher{
 	id = "Cell 4";
@@ -59039,10 +58997,6 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ai_monitored/security/armory)
-"mGL" = (
-/obj/structure/table,
-/turf/open/floor/mineral/plastitanium,
-/area/commons/fitness)
 "mHc" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 9
@@ -59124,9 +59078,6 @@
 /turf/open/floor/mineral/plastitanium,
 /area/tcommsat/computer)
 "mIX" = (
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
 /obj/machinery/light{
 	light_color = "#c9d3e8"
 	},
@@ -59174,12 +59125,6 @@
 /obj/machinery/airalarm{
 	dir = 1;
 	pixel_y = -24
-	},
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
-	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 4
@@ -59673,15 +59618,12 @@
 /turf/open/floor/carpet/black,
 /area/commons/vacant_room/office)
 "nei" = (
-/obj/structure/flora/grass/jungle/b,
-/obj/effect/turf_decal/siding/wood{
-	dir = 8
+/obj/effect/turf_decal/tile/brown/opposingcorners,
+/obj/structure/cable{
+	icon_state = "1-8"
 	},
-/obj/structure/disposalpipe/segment{
-	dir = 9
-	},
-/turf/open/floor/grass,
-/area/service/park)
+/turf/open/floor/mineral/plastitanium,
+/area/commons/fitness)
 "nez" = (
 /obj/structure/cable{
 	icon_state = "4-8"
@@ -60460,12 +60402,10 @@
 /obj/machinery/shower{
 	dir = 8
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -1;
 	pixel_y = 30;
-	prison_radio = 1
 	},
 /turf/open/floor/plasteel/freezer,
 /area/security/prison/cells)
@@ -61324,12 +61264,10 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/tile/green,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -27;
 	pixel_y = -27;
-	prison_radio = 1
 	},
 /obj/machinery/flasher{
 	id = "Cell 2";
@@ -61909,11 +61847,9 @@
 	pixel_y = 8
 	},
 /obj/item/clothing/under/rank/prisoner/skirt,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = 30;
-	prison_radio = 1
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/security/prison/upper)
@@ -62400,11 +62336,12 @@
 /area/hallway/primary/starboard)
 "pds" = (
 /obj/effect/turf_decal/tile/brown/opposingcorners,
-/obj/structure/cable{
-	icon_state = "1-2"
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 9
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/commons/fitness)
 "pdK" = (
@@ -62493,12 +62430,10 @@
 /area/maintenance/starboard/aft)
 "pgY" = (
 /obj/machinery/hydroponics/soil,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -1;
 	pixel_y = 30;
-	prison_radio = 1
 	},
 /turf/open/floor/grass/grass0,
 /area/security/prison/upper)
@@ -62583,15 +62518,10 @@
 /turf/open/floor/plating,
 /area/maintenance/fore)
 "pjj" = (
-/obj/structure/cable{
-	icon_state = "1-8"
-	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 9
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
-	dir = 9
-	},
+/obj/effect/landmark/event_spawn,
 /turf/open/floor/mineral/plastitanium,
 /area/commons/fitness)
 "pkb" = (
@@ -63306,11 +63236,9 @@
 /obj/structure/cable{
 	icon_state = "1-4"
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -30;
-	prison_radio = 1
 	},
 /turf/open/floor/wood/wood_diagonal,
 /area/security/prison/upper)
@@ -63329,11 +63257,9 @@
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
 	dir = 4
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = 30;
-	prison_radio = 1
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /turf/open/floor/mineral/plastitanium,
@@ -63498,8 +63424,12 @@
 /turf/open/floor/mineral/plastitanium,
 /area/hallway/primary/central)
 "pQX" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
-	dir = 4
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+	dir = 1
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/commons/fitness)
@@ -63853,7 +63783,16 @@
 /turf/open/floor/mineral/plastitanium,
 /area/service/library)
 "qfV" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
+	dir = 4;
+	name = "scrubbers"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+	dir = 1
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/commons/fitness)
 "qgC" = (
@@ -64083,11 +64022,9 @@
 /turf/open/floor/wood/wood_large,
 /area/service/chapel/main)
 "qoA" = (
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -30;
-	prison_radio = 1
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/security/prison/upper)
@@ -64131,11 +64068,13 @@
 /turf/open/floor/grass,
 /area/service/park)
 "qpK" = (
-/obj/structure/cable{
-	icon_state = "1-2"
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
+/obj/machinery/camera{
+	c_tag = "Holodeck";
+	dir = 1
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/commons/fitness)
 "qql" = (
@@ -64284,14 +64223,8 @@
 /turf/open/floor/mineral/plastitanium,
 /area/security/prison/cells)
 "qym" = (
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
 /obj/machinery/light{
 	light_color = "#c9d3e8"
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
-	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 4
@@ -65242,7 +65175,6 @@
 	},
 /obj/machinery/door/window/northright{
 	name = "First-Aid Supplies";
-
 	req_access_txt = "5"
 	},
 /obj/effect/turf_decal/tile/blue/fourcorners,
@@ -66328,11 +66260,9 @@
 	dir = 4;
 	network = list("ss13","prison")
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -30;
-	prison_radio = 1
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /turf/open/floor/mineral/plastitanium,
@@ -66441,11 +66371,9 @@
 /obj/machinery/light{
 	dir = 8
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -30;
-	prison_radio = 1
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 5
@@ -67642,11 +67570,9 @@
 /area/engineering/atmos)
 "sYD" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = 30;
-	prison_radio = 1
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /turf/open/floor/mineral/plastitanium,
@@ -68298,11 +68224,9 @@
 /area/commons/fitness)
 "tAn" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -30;
-	prison_radio = 1
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /turf/open/floor/mineral/plastitanium,
@@ -68446,14 +68370,14 @@
 /turf/open/floor/mineral/plastitanium,
 /area/medical/chemistry)
 "tGi" = (
-/obj/structure/flora/rock/pile,
-/obj/machinery/firealarm{
-	dir = 1;
-	pixel_y = 0;
-	pixel_x = 32
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+	dir = 4
 	},
-/turf/open/floor/grass,
-/area/service/park)
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 9
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/commons/fitness)
 "tGM" = (
 /obj/item/kirbyplants/hedge,
 /obj/structure/window/reinforced{
@@ -69134,14 +69058,15 @@
 /turf/open/floor/mineral/plastitanium,
 /area/service/bar)
 "ueU" = (
-/obj/structure/cable{
-	icon_state = "2-4"
-	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
+	},
+/obj/structure/cable{
+	icon_state = "2-8";
+	cable_color = "yellow"
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/commons/fitness)
@@ -69411,11 +69336,14 @@
 /area/service/theater)
 "upa" = (
 /obj/effect/turf_decal/tile/brown/opposingcorners,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
-	dir = 6
-	},
 /obj/machinery/light{
 	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+	dir = 4
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/commons/fitness)
@@ -69695,6 +69623,9 @@
 "uCA" = (
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer1,
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/commons/fitness)
 "uCM" = (
@@ -70146,11 +70077,9 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = 30;
-	prison_radio = 1
 	},
 /turf/open/floor/wood/wood_diagonal,
 /area/security/prison/upper)
@@ -70617,6 +70546,12 @@
 /area/hallway/secondary/exit)
 "vhC" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+	dir = 1
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/commons/fitness)
 "vhY" = (
@@ -70747,8 +70682,9 @@
 /turf/open/floor/mineral/plastitanium,
 /area/engineering/atmos)
 "vok" = (
-/obj/machinery/computer/holodeck{
-	dir = 4
+/obj/effect/turf_decal/tile/brown/opposingcorners,
+/obj/structure/cable{
+	icon_state = "4-8"
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/commons/fitness)
@@ -71008,13 +70944,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/commons/fitness/recreation)
 "vtp" = (
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
 /turf/open/floor/mineral/plastitanium,
@@ -71266,19 +71196,6 @@
 /obj/item/reagent_containers/blood/random,
 /turf/open/floor/plating,
 /area/maintenance/port/fore)
-"vDM" = (
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/obj/machinery/light{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
-	dir = 4
-	},
-/turf/open/floor/mineral/plastitanium,
-/area/commons/fitness)
 "vEi" = (
 /obj/structure/cable{
 	icon_state = "4-8"
@@ -71816,22 +71733,6 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/mineral/plastitanium,
 /area/ai_monitored/turret_protected/ai)
-"waG" = (
-/obj/effect/turf_decal/tile/brown/opposingcorners,
-/obj/structure/cable{
-	icon_state = "2-8"
-	},
-/obj/machinery/light{
-	dir = 1
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
-	dir = 10
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
-	dir = 10
-	},
-/turf/open/floor/mineral/plastitanium,
-/area/commons/fitness)
 "waJ" = (
 /obj/structure/cable{
 	icon_state = "4-8"
@@ -73602,11 +73503,9 @@
 /area/hallway/primary/central)
 "xnl" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = 30;
-	prison_radio = 1
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/security/prison/upper)
@@ -73735,6 +73634,10 @@
 	},
 /turf/open/floor/engine,
 /area/maintenance/port/aft)
+"xuY" = (
+/obj/structure/closet/crate/engineering/hfr,
+/turf/open/floor/mineral/plastitanium,
+/area/engineering/atmos)
 "xuZ" = (
 /obj/structure/window/reinforced{
 	dir = 8
@@ -74469,9 +74372,8 @@
 /turf/open/floor/mineral/plastitanium,
 /area/security/brig)
 "xVa" = (
-/obj/structure/chair{
-	pixel_y = -2
-	},
+/obj/structure/table,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3,
 /turf/open/floor/mineral/plastitanium,
 /area/commons/fitness)
 "xVW" = (
@@ -106653,7 +106555,7 @@ bBR
 bLK
 bMN
 bNV
-bOd
+xuY
 giT
 bRw
 bSF
@@ -108204,14 +108106,14 @@ bUN
 bOd
 bOd
 bOd
-bYQ
+ded
 bOd
 bOd
 bOd
 cBJ
 bOd
-eus
-bRy
+rmQ
+lzt
 bTP
 cha
 civ
@@ -108467,8 +108369,8 @@ bOd
 bOd
 bOd
 bOd
-bTO
-cez
+eus
+bRy
 bUL
 cgZ
 rdl
@@ -114285,9 +114187,9 @@ fnc
 udh
 kbV
 xeo
-nei
-gvu
-ilr
+qHa
+kaB
+hSQ
 fnc
 wlt
 iDa
@@ -114542,10 +114444,10 @@ mXG
 pRJ
 dyg
 qns
-qHa
-kaB
-tGi
 fnc
+jhe
+jhe
+jhe
 ftM
 rGW
 jss
@@ -114800,21 +114702,21 @@ pFK
 tZn
 rwn
 fnc
-fnc
-fnc
-fnc
-oih
-oih
-oih
-oih
+fdq
+gvu
+tyL
+pQX
+pQX
+pQX
+pQX
 qfV
 vhC
 vhC
 vhC
 vhC
 jFM
-fXr
-fXr
+aqs
+aqs
 uCA
 jhe
 ctq
@@ -115059,7 +114961,7 @@ kiT
 fnc
 fDO
 fDa
-oQC
+jhe
 qiH
 qiH
 oQC
@@ -115070,7 +114972,7 @@ fyv
 oQC
 oQC
 oQC
-oQC
+jhe
 oih
 ueU
 cyG
@@ -115315,7 +115217,7 @@ hhS
 hhS
 hhS
 upa
-rHP
+pds
 oQC
 aro
 aro
@@ -115572,7 +115474,7 @@ ihI
 pIT
 hhS
 juO
-pTS
+vok
 qiH
 aro
 aro
@@ -115586,7 +115488,7 @@ aro
 aro
 qiH
 oih
-vtp
+jcd
 jhe
 apC
 apC
@@ -115829,7 +115731,7 @@ kfb
 uJj
 cYt
 hEV
-pTS
+vok
 qiH
 aro
 aro
@@ -115842,8 +115744,8 @@ aro
 aro
 aro
 qiH
-oih
-vtp
+cRQ
+jcd
 oDF
 apC
 arq
@@ -116086,7 +115988,7 @@ fWg
 qln
 hhS
 aRw
-pTS
+vok
 qiH
 aro
 aro
@@ -116099,8 +116001,8 @@ aro
 aro
 aro
 qiH
-oih
-vtp
+xVa
+tGi
 eal
 apC
 anf
@@ -116343,7 +116245,7 @@ hhS
 hhS
 hhS
 daQ
-pTS
+nei
 qiH
 aro
 aro
@@ -116356,7 +116258,7 @@ aro
 aro
 aro
 qiH
-oih
+dqy
 vtp
 qqB
 apC
@@ -116602,19 +116504,19 @@ jhe
 fFS
 uXe
 qiH
-qiH
-qiH
-qiH
-fyv
-qiH
-qiH
-fyv
-qiH
-qiH
-qiH
+aro
+aro
+aro
+aro
+aro
+aro
+aro
+aro
+aro
+aro
 qiH
 oih
-vtp
+qpK
 jhe
 apC
 anf
@@ -116858,19 +116760,19 @@ yaA
 nbB
 lgk
 pTS
-jhe
-hSQ
-hTa
-vok
-oih
+qiH
+aro
+aro
+aro
+aro
+aro
+aro
+aro
+aro
+aro
+aro
+qiH
 cRQ
-cRQ
-oih
-xVa
-mGL
-lgt
-oih
-oih
 mJh
 jhe
 aqy
@@ -117113,21 +117015,21 @@ nMX
 pTS
 gKx
 onS
-bbF
+rHP
 pTS
-jhe
-fTe
-dqy
-oih
-pQX
-oih
-oih
-cEU
-oih
-oih
-oih
-oih
-oih
+qiH
+aro
+aro
+aro
+aro
+aro
+aro
+aro
+aro
+aro
+aro
+qiH
+iAp
 qym
 jhe
 anf
@@ -117370,20 +117272,20 @@ oFM
 oFM
 unY
 jhe
-waG
-pds
-tyL
-fPs
-fPs
-fPs
-vDM
-fdq
-qpK
-iAp
-qpK
-qpK
-qpK
-qpK
+pec
+pTS
+qiH
+aro
+aro
+aro
+aro
+aro
+aro
+aro
+aro
+aro
+aro
+qiH
 fwO
 pjj
 jhe
@@ -117630,17 +117532,17 @@ jhe
 jhe
 jhe
 jhe
-qql
-qql
-qql
+qiH
+qiH
+qiH
+qiH
+qiH
+qiH
+qiH
+qiH
+qiH
+qiH
 jhe
-jhe
-jhe
-jhe
-qql
-qql
-qql
-qql
 jhe
 jhe
 apC

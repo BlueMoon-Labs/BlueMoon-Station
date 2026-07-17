@@ -1,11 +1,12 @@
 import { capitalize } from "common/string";
+import { useState } from 'react';
 
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import { Box, Button, Collapsible, Dimmer, Flex, Icon, Input, LabeledList, ProgressBar, Section, Table } from '../components';
 import { Window } from '../layouts';
 
-export const Autolathe = (props, context) => {
-  const { act, data } = useBackend(context);
+export const Autolathe = (props) => {
+  const { act, data } = useBackend();
   // Extract `health` and `color` variables from the `data` object.
   const {
     materialtotal,
@@ -18,7 +19,7 @@ export const Autolathe = (props, context) => {
   const [
     current_category,
     setCategory,
-  ] = useLocalState(context, 'current_category', "None");
+  ] = useState("None");
   const filteredmaterials = materials.filter(material =>
     material.mineral_amount > 0);
   return (

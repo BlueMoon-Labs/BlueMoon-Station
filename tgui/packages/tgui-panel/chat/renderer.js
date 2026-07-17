@@ -10,6 +10,7 @@ import { classes } from 'common/react';
 import { createLogger } from 'tgui/logging';
 
 import highlightSoundUrl from '../assets/chat_notify.ogg';
+import { MESSAGE_STYLE_ANIMATIONS, MESSAGE_STYLES } from '../settings/constants';
 import { COMBINE_MAX_MESSAGES, COMBINE_MAX_TIME_WINDOW, IMAGE_RETRY_DELAY, IMAGE_RETRY_LIMIT, IMAGE_RETRY_MESSAGE_AGE, MAX_PERSISTED_MESSAGES, MAX_VISIBLE_MESSAGES, MESSAGE_PRUNE_INTERVAL, MESSAGE_TYPE_INTERNAL, MESSAGE_TYPE_UNKNOWN, MESSAGE_TYPES } from './constants';
 import { canPageAcceptType, createMessage, isSameMessage } from './model';
 import { highlightNode, linkifyNode } from './replaceInTextNode';
@@ -57,6 +58,70 @@ const getDistanceFromBottom = node => (
 const isScrollTracked = node => (
   getDistanceFromBottom(node) <= SCROLL_TRACKING_TOLERANCE
 );
+
+const STYLE_OVERRIDE_SHEET_ID = 'cs-style-overrides';
+
+const FONT_OVERRIDE_CSS = {
+  normal: 'font-weight: normal; font-style: normal;',
+  italic: 'font-weight: normal; font-style: italic;',
+  bold: 'font-weight: bold; font-style: normal;',
+  bolditalic: 'font-weight: bold; font-style: italic;',
+};
+
+/**
+ * Builds CSS text for font/size/animation overrides of message styles.
+ * Colors go through CSS custom properties instead (see setStyleOverrides),
+ * because their theme defaults differ between dark and light.
+ */
+const buildStyleOverrideCss = (overrides) => {
+  let css = '';
+  for (const style of MESSAGE_STYLES) {
+    const override = overrides[style.id];
+    if (!override || override.disabled) {
+      continue;
+    }
+    const classNames = [style.id, ...(style.extraClasses || [])];
+    const decls = [];
+    if (FONT_OVERRIDE_CSS[override.font]) {
+      decls.push(FONT_OVERRIDE_CSS[override.font]);
+    }
+    const size = parseFloat(override.size);
+    if (size && size !== 100) {
+      const clamped = Math.min(200, Math.max(50, size));
+      decls.push('font-size: ' + clamped + '%;');
+    }
+    if (decls.length > 0) {
+      css += classNames.map(cls => '.Chat .' + cls).join(', ')
+        + ' { ' + decls.join(' ') + ' }\n';
+    }
+    const anim = MESSAGE_STYLE_ANIMATIONS.find(a => a.id === override.anim);
+    if (anim?.css) {
+      // :not() держит специфичность выше темы, но уступает глобальному
+      // тумблеру Chat--fxAnimOff.
+      css += classNames
+        .map(cls => '.Chat:not(.Chat--fxAnimOff) .' + cls)
+        .join(', ')
+        + ' { animation: ' + anim.css + '; }\n';
+    }
+  }
+  return css;
+};
+
+const updateStyleOverrideSheet = (cssText) => {
+  let node = document.getElementById(STYLE_OVERRIDE_SHEET_ID);
+  if (!cssText) {
+    node?.remove();
+    return;
+  }
+  if (!node) {
+    node = document.createElement('style');
+    node.id = STYLE_OVERRIDE_SHEET_ID;
+    document.head.appendChild(node);
+  }
+  if (node.textContent !== cssText) {
+    node.textContent = cssText;
+  }
+};
 
 const createHighlightNode = (text, color) => {
   const node = document.createElement('span');
@@ -699,6 +764,56 @@ export class ChatRenderer {
     }
   }
 
+  /**
+   * Applies per-style customization: color overrides via CSS custom
+   * properties (--cs-<id>-color), "plain look" via Chat--plain-<id>
+   * classes, font/size/animation via a dynamic stylesheet, plus the
+   * global span animation toggle (Chat--fxAnimOff).
+   * @param {Object} overrides map of styleId ->
+   *   { color, disabled, font, size, anim }
+   * @param {boolean} spanAnimations
+   */
+  setStyleOverrides(overrides = {}, spanAnimations = true) {
+    this._pendingAppearance = {
+      ...this._pendingAppearance,
+      styleOverrides: overrides,
+      spanAnimations,
+    };
+    if (!this.rootNode) {
+      return;
+    }
+    const root = this.rootNode;
+    const toRemove = [];
+    for (const cls of root.classList) {
+      if (cls.startsWith('Chat--plain-') || cls === 'Chat--fxAnimOff') {
+        toRemove.push(cls);
+      }
+    }
+    for (const cls of toRemove) {
+      root.classList.remove(cls);
+    }
+    if (!spanAnimations) {
+      root.classList.add('Chat--fxAnimOff');
+    }
+    // Iterate the full known style list rather than the passed map,
+    // so a partial or empty overrides object still clears every stale
+    // --cs-* variable from previous calls.
+    for (const style of MESSAGE_STYLES) {
+      const override = overrides[style.id];
+      const prop = '--cs-' + style.id + '-color';
+      if (override?.color) {
+        root.style.setProperty(prop, override.color);
+      }
+      else {
+        root.style.removeProperty(prop);
+      }
+      if (override?.disabled) {
+        root.classList.add('Chat--plain-' + style.id);
+      }
+    }
+    updateStyleOverrideSheet(buildStyleOverrideCss(overrides));
+  }
+
   setCustomProperties(props) {
     this._pendingAppearance = {
       ...this._pendingAppearance,
@@ -739,6 +854,9 @@ export class ChatRenderer {
     }
     if (p._customProps) {
       this.setCustomProperties(p._customProps);
+    }
+    if (p.styleOverrides !== undefined) {
+      this.setStyleOverrides(p.styleOverrides, p.spanAnimations);
     }
     this._pendingAppearance = null;
   }

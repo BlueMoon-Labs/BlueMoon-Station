@@ -4,10 +4,10 @@ GLOBAL_LIST_INIT(nonreactive_gases, typecacheof(list(GAS_O2, GAS_N2, GAS_CO2, GA
 // Auxgm
 // It's a send-up of XGM, like what baystation got.
 // It's got the same architecture as XGM, but it's structured
-// differently to make it more convenient for auxmos.
+// cached for gas mixture and reactions.
 
 // Most important compared to TG is that it does away with hardcoded typepaths,
-// which lead to problems on the auxmos end anyway. We cache the string value
+// We cache the string value
 // references on the Rust end, so no performance is lost here.
 
 // Also allows you to add new gases at runtime

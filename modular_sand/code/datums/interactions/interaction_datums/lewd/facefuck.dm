@@ -1,3 +1,11 @@
+var/static/list/snaped = list(
+	/obj/item/clothing/neck/petcollar/choker,
+	/obj/item/clothing/neck/petcollar/locked/choker,
+	/obj/item/clothing/neck/petcollar/donorchoker,
+	/obj/item/clothing/neck/syntech/choker,
+	/obj/item/clothing/neck/undertale
+	)
+
 /datum/interaction/lewd/facefuck
 	description = "Член. Вытрахать в рот."
 	interaction_sound = null
@@ -49,7 +57,8 @@
 			if("penis")
 				// BLUEMOON EDIT START
 				if(has_penis || user.has_strapon())
-					partner.snap_choker(partner, ITEM_SLOT_NECK)	//Snap my choker!~ - Gardelin0
+					if(user.a_intent == INTENT_HARM && prob(15))
+						partner.snap_choker(partner, ITEM_SLOT_NECK)	//Snap my choker!~ - Gardelin0
 					message = pick(
 						"грубо трахает \the <b>[partner]</b> в рот с громким чавкающим звуком.",
 						"с силой загоняет сво[has_penis ? "и гениталии" : "й дилдо"] в самую глотку \the <b>[partner]</b>.",
@@ -92,7 +101,8 @@
 					improv = TRUE
 			if("penis")
 				if(has_penis || user.has_strapon())
-					partner.snap_choker(partner, ITEM_SLOT_NECK)	//Snap my choker!~ - Gardelin0
+					if(user.a_intent == INTENT_HARM && prob(15))
+						partner.snap_choker(partner, ITEM_SLOT_NECK)	//Snap my choker!~ - Gardelin0
 					if(user.is_fucking(partner, CUM_TARGET_THROAT))
 					// BLUEMOON EDIT START
 						message = "вытягивает свой [has_penis ? "орган" : "дилдо"] из горла \the <b>[partner]</b>."
@@ -196,7 +206,8 @@
 		user.set_is_fucking(partner, CUM_TARGET_THROAT, genital)
 		try_apply_knot(user, partner, CUM_TARGET_THROAT) // Проверка на узлирование.
 
-	partner.snap_choker(partner, ITEM_SLOT_NECK)	//Snap my choker!~ - Gardelin0
+	if(user.a_intent == INTENT_HARM && prob(15))
+		partner.snap_choker(partner, ITEM_SLOT_NECK)	//Snap my choker!~ - Gardelin0
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/oral1.ogg',
 						'modular_sand/sound/interactions/oral2.ogg'), volume, 1, extrarange)
 	user.visible_message(message = span_lewd("[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)

@@ -224,3 +224,37 @@
 	name = "Kathari"
 	icon_state = "kathari"
 	matrixed_sections = MATRIX_RED_GREEN
+
+//Kathari alt
+/datum/sprite_accessory/tails/human/bm_tails/kathari_alt
+	name = "Kathari alt"
+	icon_state = "kathari_alt"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails_animated/human/bm_tails/kathari_alt
+	name = "Kathari alt"
+	icon_state = "kathari_alt"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails/mam_tails/bm_tails/kathari_alt
+	name = "Kathari alt"
+	icon_state = "kathari_alt"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails_animated/mam_tails_animated/bm_tails_animated/kathari_alt
+	name = "Kathari alt"
+	icon_state = "kathari_alt"
+	matrixed_sections = MATRIX_RED_GREEN
+
+
+// vulp straitgh
+
+/datum/sprite_accessory/tails/mam_tails/bm_tails/australianshepherd
+	name = "Australian shepherd"
+	icon_state = "australianshepherd"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails_animated/mam_tails_animated/bm_tails_animated/australianshepherd
+	name = "Australian shepherd"
+	icon_state = "australianshepherd"
+	matrixed_sections = MATRIX_RED_GREEN

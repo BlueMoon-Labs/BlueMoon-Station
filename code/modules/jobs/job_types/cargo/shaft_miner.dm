@@ -98,13 +98,14 @@
 		/obj/item/mining_voucher=1,\
 		/obj/item/suit_voucher=1,\
 		/obj/item/stack/marker_beacon/ten=1,\
-		/obj/item/syndicate_uplink=1)
+		/obj/item/syndicate_uplink/station=1)
 
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
+	accessory = list(/obj/item/clothing/accessory/permit/special/syndie_station)
 
 /datum/outfit/job/miner/asteroid
 	name = "Shaft Miner (Asteroid)"

@@ -1,17 +1,17 @@
 import { useBackend, useLocalState } from '../../backend';
 import { Button, Stack } from '../../components';
 import { Window } from '../../layouts';
-import { SettingsTab } from './SettingsTab';
 import { AntagsSection } from './AntagsSection';
 import { KeybindingsTab } from './KeybindingsTab';
+import { SettingsTab } from './SettingsTab';
 
 type GamePrefData = {
   has_admin: boolean;
 };
 
-export const GamePreferences = (props, context) => {
-  const { data } = useBackend<GamePrefData>(context);
-  const [currentPage, setCurrentPage] = useLocalState(context, 'currentPage', 0);
+export const GamePreferences = () => {
+  const { data } = useBackend<GamePrefData>();
+  const [currentPage, setCurrentPage] = useLocalState('currentPage', 0);
 
   const pages = [
     { label: 'Настройки', component: SettingsTab },

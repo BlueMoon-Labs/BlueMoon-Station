@@ -60,7 +60,7 @@
 		if(L.key)
 			L.ghostize(0)
 		if(!QDELETED(L))
-			L.dust()
+			L.dust(TRUE)
 
 /datum/antagonist/cult/get_team()
 	return cult_team

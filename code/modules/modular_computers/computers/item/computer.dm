@@ -6,7 +6,8 @@
 	desc = "A small portable microcomputer."
 	icon = 'icons/obj/computer.dmi'
 	icon_state = "laptop-open"
-	var/light_on = FALSE
+	light_system = OVERLAY_LIGHT // фонарик ПДА/планшета: носимый источник, оверлейный свет
+	light_on = FALSE
 	integrity_failure = 0.5
 	max_integrity = 100
 	rad_flags = RAD_PROTECT_CONTENTS
@@ -477,11 +478,8 @@
 /obj/item/modular_computer/proc/toggle_flashlight()
 	if(!has_light)
 		return FALSE
-	light_on = !light_on
-	if(light_on)
-		set_light(comp_light_luminosity, 1, comp_light_color)
-	else
-		set_light(0)
+	set_light_range_power_color(comp_light_luminosity, 1, comp_light_color)
+	set_light_on(!light_on)
 	return TRUE
 
 /**

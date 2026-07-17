@@ -315,6 +315,16 @@
 		rgb_add[1], rgb_add[2], rgb_add[3], 0
 	)))
 
+///Оверлейный свет (/datum/component/overlay_lighting): BLEND_ADD-маски источников собираются здесь.
+///Плоскость тонирует игру цветом света (BLEND_MULTIPLY), а её рендер-таргет прорезает тьму
+///lighting plane через фильтр "object_lighting" (см. Initialize lighting plane master выше).
+/atom/movable/screen/plane_master/o_light_visual
+	name = "overlight light visual plane master"
+	plane = O_LIGHTING_VISUAL_PLANE
+	render_target = O_LIGHTING_VISUAL_RENDER_TARGET
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	blend_mode = BLEND_MULTIPLY
+
 /**
  * Handles emissive overlays and emissive blockers.
  */

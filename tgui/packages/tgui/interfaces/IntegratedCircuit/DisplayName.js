@@ -1,12 +1,13 @@
 import { classes } from 'common/react';
+
 import { useBackend } from '../../backend';
 import { Box, Button, Flex, Stack } from '../../components';
 import { connectedToRefList } from './byondPayload';
 import { DATATYPE_DISPLAY_HANDLERS, FUNDAMENTAL_DATA_TYPES } from './FundamentalTypes';
 import { formatPortLiveValue } from './portValueFormat';
 
-export const DisplayName = (props, context) => {
-  const { act, data } = useBackend(context);
+export const DisplayName = (props) => {
+  const { act, data } = useBackend();
   const { port, isOutput, componentId, portIndex, className, ...rest } = props;
   const isIeCircuit = !!data.ie_circuit;
 

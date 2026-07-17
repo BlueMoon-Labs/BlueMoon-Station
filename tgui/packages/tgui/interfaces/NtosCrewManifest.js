@@ -4,8 +4,8 @@ import { useBackend } from '../backend';
 import { Button, Section, Table } from '../components';
 import { NtosWindow } from '../layouts';
 
-export const NtosCrewManifest = (props, context) => {
-  const { act, data } = useBackend(context);
+export const NtosCrewManifest = (props) => {
+  const { act, data } = useBackend();
   const {
     have_printer,
     manifest = {},

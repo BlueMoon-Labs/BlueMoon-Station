@@ -12,17 +12,19 @@
 	righthand_file = 'icons/mob/inhands/antag/abductor_righthand.dmi'
 	slot_flags = ITEM_SLOT_BELT
 	custom_premium_price = 2000
+	w_class = WEIGHT_CLASS_SMALL
 
 	var/obj/item/stock_parts/cell/cell
 	var/in_use = FALSE
 	var/size_set_to = 1
 	var/charge_modif = 1
 	var/time_modif = 1
-	var/min_size = RESIZE_MICRO
+	var/min_size = 0.25
 	var/max_size = RESIZE_BIG
 
 /obj/item/melee/sizetool/Initialize(mapload)
 	. = ..()
+	min_size = RESIZE_MICRO
 	cell = new /obj/item/stock_parts/cell/high(src)
 	register_item_context()
 
@@ -92,7 +94,7 @@
 				HC.body_size_max = max_size
 				to_chat(user, span_warning("You feel more freedom and can change body size to [HC.body_size_max * 100]%"))
 				qdel(src)
-				return
+			return
 
 	var/ghostcafe = check_for_ghostcafe()
 	var/target_size = get_size(target)
@@ -143,4 +145,4 @@
 	name = "upgraded size tool"
 	max_size = RESIZE_MACRO
 	charge_modif = 0
-	time_modif = 2
+	time_modif = 0.1

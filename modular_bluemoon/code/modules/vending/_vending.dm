@@ -137,6 +137,8 @@ GLOBAL_LIST_EMPTY(vending_machines_to_restock)
 	var/last_slogan = 0
 	///How many ticks until we can send another
 	var/slogan_delay = 6000
+	///Timer for the next slogan attempt; slogans run on their own timer instead of per-tick dice so idle vendors can machine_sleep()
+	var/slogan_timer_id
 	///Icon when vending an item to the user
 	var/icon_vend
 	///Icon to flash when user is denied a vend
@@ -222,10 +224,12 @@ GLOBAL_LIST_EMPTY(vending_machines_to_restock)
 		build_inventories()
 
 	slogan_list = splittext(product_slogans, ";")
+	slogan_list -= "" // vendors without slogans must not arm a pointless slogan timer
 	// So not all machines speak at the exact same time.
 	// The first time this machine says something will be at slogantime + this random value,
 	// so if slogantime is 10 minutes, it will say it at somewhere between 10 and 20 minutes after the machine is crated.
 	last_slogan = world.time + rand(0, slogan_delay)
+	schedule_slogan()
 	power_change()
 
 	if(onstation_override) //overrides the checks if true.
@@ -245,6 +249,8 @@ GLOBAL_LIST_EMPTY(vending_machines_to_restock)
 	Radio.listening = 0
 
 /obj/machinery/vending/Destroy()
+	deltimer(slogan_timer_id)
+	slogan_timer_id = null
 	QDEL_NULL(wires)
 	QDEL_NULL(coin)
 	QDEL_NULL(bill)
@@ -951,6 +957,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 			name = record.name,
 			price = premium ? (record.custom_premium_price || extra_price) : (record.custom_price || default_price),
 			max_amount = record.max_amount,
+			colorable = record.colorable,
 			ref = REF(record),
 		)
 
@@ -969,6 +976,24 @@ GLOBAL_LIST_EMPTY(vending_products)
 		out_records += list(static_record)
 
 	return out_records
+
+/obj/machinery/vending/proc/append_stock_data(list/stock, list/free_stock, list/records)
+	for(var/datum/data/vending_product/product_record as anything in records)
+		var/record_ref = REF(product_record)
+		stock[record_ref] = product_record.amount
+		if(product_record.returned_products)
+			free_stock[record_ref] = TRUE
+
+/obj/machinery/vending/proc/collect_stock_data()
+	var/list/stock = list()
+	var/list/free_stock = list()
+	append_stock_data(stock, free_stock, product_records)
+	append_stock_data(stock, free_stock, coin_records)
+	append_stock_data(stock, free_stock, hidden_records)
+	return list(
+		"stock" = stock,
+		"free_stock" = free_stock,
+	)
 
 /obj/machinery/vending/ui_data(mob/user)
 	. = list()
@@ -993,17 +1018,11 @@ GLOBAL_LIST_EMPTY(vending_products)
 		else
 			.["user"]["job"] = "No Job"
 			.["user"]["department"] = DEPARTMENT_UNASSIGNED
-	.["stock"] = list()
-
-	for (var/datum/data/vending_product/product_record in product_records + coin_records + hidden_records)
-		var/list/product_data = list(
-			name = product_record.name,
-			amount = product_record.amount,
-			colorable = product_record.colorable,
-			free = !!product_record.returned_products,
-		)
-
-		.["stock"][product_record.name] = product_data
+	// Ключ - REF записи (он же ref в статик-данных): имена товаров не уникальны,
+	// и запись с совпадающим именем перекрывала чужой остаток - цифра в UI замирала.
+	var/list/stock_data = collect_stock_data()
+	.["stock"] = stock_data["stock"]
+	.["free_stock"] = stock_data["free_stock"]
 
 	.["extended_inventory"] = extended_inventory
 
@@ -1188,14 +1207,30 @@ GLOBAL_LIST_EMPTY(vending_products)
 	if(seconds_electrified > MACHINE_NOT_ELECTRIFIED)
 		seconds_electrified--
 
-	//Pitch to the people!  Really sell it!
-	if(last_slogan + slogan_delay <= world.time && slogan_list.len > 0 && !shut_up && DT_PROB(2.5, delta_time))
-		var/slogan = pick(slogan_list)
-		speak(slogan)
-		last_slogan = world.time
-
 	if(shoot_inventory && DT_PROB(shoot_inventory_chance, delta_time))
 		throw_item()
+
+	// slogans run on their own timer (schedule_slogan()); with no countdown and no item-flinging
+	// left there is nothing per-tick to do until the wires get pulsed again
+	if(seconds_electrified <= MACHINE_NOT_ELECTRIFIED && !shoot_inventory)
+		return machine_sleep()
+
+///Arms the timer for the next slogan attempt. Replaces the old per-fire dice roll: waits out the
+///slogan cooldown, then a random tail that mimics the old 2.5%-per-fire geometric wait.
+/obj/machinery/vending/proc/schedule_slogan()
+	if(slogan_timer_id || shut_up || !length(slogan_list))
+		return
+	var/delay = max(last_slogan + slogan_delay - world.time, 0) + rand(2 SECONDS, 80 SECONDS)
+	slogan_timer_id = addtimer(CALLBACK(src, PROC_REF(slogan_tick)), delay, TIMER_STOPPABLE)
+
+/obj/machinery/vending/proc/slogan_tick()
+	slogan_timer_id = null
+	if(shut_up || !length(slogan_list))
+		return
+	if(active && !(machine_stat & (BROKEN|NOPOWER)))
+		speak(pick(slogan_list))
+		last_slogan = world.time
+	schedule_slogan()
 /**
  * Speak the given message verbally
  *
@@ -1215,7 +1250,10 @@ GLOBAL_LIST_EMPTY(vending_products)
 /obj/machinery/vending/power_change()
 	. = ..()
 	if(powered())
-		START_PROCESSING(SSmachines, src)
+		if(machine_sleeping)
+			machine_wake()
+		else // revive vendors process() killed outright on power loss
+			START_PROCESSING(SSmachines, src)
 
 //Somebody cut an important wire and now we're following a new definition of "pitch."
 /**
@@ -1446,6 +1484,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 								if(!some_input)
 									continue
 								slogan_list += capitalize(some_input)
+								schedule_slogan()
 							if("Удалить")
 								if(!LAZYLEN(slogan_list))
 									to_chat(user, span_warning("Нет слоганов для удаления"))
@@ -1590,6 +1629,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 	name = "[GLOB.deity]'s Consecrated Vendor"
 	desc = "A vending machine created by [GLOB.deity]."
 	slogan_list = list("[GLOB.deity] says: It's your divine right to buy!")
+	schedule_slogan() // parent Initialize ran with an empty slogan_list and armed nothing
 	add_filter("vending_outline", 9, list("type" = "outline", "color" = COLOR_VERY_SOFT_YELLOW))
 	add_filter("vending_rays", 10, list("type" = "rays", "size" = 35, "color" = COLOR_VIVID_YELLOW))
 

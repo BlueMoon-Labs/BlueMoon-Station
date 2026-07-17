@@ -1,3 +1,7 @@
+#define METASHOP_TRAITOR_TOKEN_ROUND_LIMIT 3
+#define METASHOP_TRAITOR_TOKEN_REFUND_COST 250
+#define METASHOP_ANTAG_TOKEN_TRAITOR_LIMIT_KEY "traitor_token"
+
 SUBSYSTEM_DEF(metadollars)
 	name = "Metadollars"
 	flags = SS_NO_FIRE
@@ -6,6 +10,7 @@ SUBSYSTEM_DEF(metadollars)
 	var/list/metadollar_amount_cache = list()
 	var/list/metadollar_leaderboard = list()
 	var/metadollar_leaderboard_positions_tracked = 5
+	var/list/metashop_round_limited_purchases = list()
 
 /proc/bm_metadollar_json_path(target_ckey)
 	return "data/player_saves/[target_ckey[1]]/[target_ckey]/metadollars.json"
@@ -31,6 +36,40 @@ SUBSYSTEM_DEF(metadollars)
 	SIGNAL_HANDLER
 	round_earnings = list()
 	metadollar_burn_round_notice = null
+	metashop_round_limited_purchases = list()
+	refresh_metadollar_leaderboard_from_saves()
+
+/datum/controller/subsystem/metadollars/proc/get_round_limited_purchase_count(limit_key)
+	if(!limit_key)
+		return 0
+	return metashop_round_limited_purchases[limit_key] || 0
+
+/datum/controller/subsystem/metadollars/proc/get_round_limited_purchase_remaining(limit_key, limit_amount)
+	if(!limit_key || limit_amount <= 0)
+		return 0
+	return max(0, limit_amount - get_round_limited_purchase_count(limit_key))
+
+/datum/controller/subsystem/metadollars/proc/can_purchase_round_limited_item(limit_key, limit_amount)
+	if(!limit_key || limit_amount <= 0)
+		return TRUE
+	return get_round_limited_purchase_count(limit_key) < limit_amount
+
+/datum/controller/subsystem/metadollars/proc/register_round_limited_purchase(limit_key)
+	if(!limit_key)
+		return
+	metashop_round_limited_purchases[limit_key] = get_round_limited_purchase_count(limit_key) + 1
+
+/datum/controller/subsystem/metadollars/proc/unregister_round_limited_purchase(limit_key)
+	if(!limit_key)
+		return
+	var/current_count = get_round_limited_purchase_count(limit_key)
+	if(current_count <= 0)
+		return
+	current_count--
+	if(current_count)
+		metashop_round_limited_purchases[limit_key] = current_count
+	else
+		metashop_round_limited_purchases -= limit_key
 
 /datum/controller/subsystem/metadollars/proc/metadollar_save(target_ckey)
 	if(!target_ckey || !(target_ckey in metadollar_amount_cache))
@@ -63,6 +102,10 @@ SUBSYSTEM_DEF(metadollars)
 
 /datum/controller/subsystem/metadollars/proc/reconcile_legacy_balance(target_ckey, legacy_hint = null)
 	if(!target_ckey)
+		return FALSE
+	// metadollars.json — единственный источник правды после миграции; TGS set/add/remove пишет сюда.
+	// Иначе старый ключ metadollars в preferences.sav перезаписывает админские правки.
+	if(fexists(bm_metadollar_json_path(target_ckey)))
 		return FALSE
 	var/legacy = legacy_hint
 	if(!isnum(legacy) || legacy < 0)
@@ -115,15 +158,14 @@ SUBSYSTEM_DEF(metadollars)
 		var/list/loaded = json_decode(file2text(target_file))
 		if(islist(loaded) && isnum(loaded["metadollar_count"]))
 			amount = max(0, round(loaded["metadollar_count"]))
-	else
-		amount = bm_read_legacy_metadollars_from_prefs_sav(target_ckey)
 		metadollar_amount_cache[target_ckey] = amount
-		metadollar_save(target_ckey)
 		return amount
-	reconcile_legacy_balance(target_ckey)
+	amount = bm_read_legacy_metadollars_from_prefs_sav(target_ckey)
+	reconcile_legacy_balance(target_ckey, amount)
 	if(target_ckey in metadollar_amount_cache)
 		return metadollar_amount_cache[target_ckey]
 	metadollar_amount_cache[target_ckey] = amount
+	metadollar_save(target_ckey)
 	return amount
 
 /datum/controller/subsystem/metadollars/proc/set_metadollars(target_ckey, amount, client_key = null)
@@ -157,6 +199,53 @@ SUBSYSTEM_DEF(metadollars)
 		return
 	metadollar_leaderboard = json_decode(file2text(json_file))
 	sort_metadollar_leaderboard()
+
+/datum/controller/subsystem/metadollars/proc/resolve_leaderboard_display_key(target_ckey, save_dir_name)
+	if(!target_ckey)
+		return null
+	var/client/C = GLOB.directory[target_ckey]
+	if(C?.key)
+		return C.key
+	for(var/display_key in metadollar_leaderboard)
+		if(ckey(display_key) == target_ckey)
+			return display_key
+	return save_dir_name || target_ckey
+
+/datum/controller/subsystem/metadollars/proc/read_metadollar_balance_from_save(target_ckey)
+	if(!target_ckey)
+		return 0
+	if(target_ckey in metadollar_amount_cache)
+		return metadollar_amount_cache[target_ckey]
+	var/json_path = bm_metadollar_json_path(target_ckey)
+	if(fexists(json_path))
+		var/list/loaded = json_decode(file2text(file(json_path)))
+		if(islist(loaded) && isnum(loaded["metadollar_count"]))
+			return max(0, round(loaded["metadollar_count"]))
+	return max(0, round(bm_read_legacy_metadollars_from_prefs_sav(target_ckey)))
+
+/datum/controller/subsystem/metadollars/proc/refresh_metadollar_leaderboard_from_saves()
+	var/list/rebuilt = list()
+	if(fexists("data/player_saves"))
+		for(var/letterdir in flist("data/player_saves/"))
+			var/prefix = "data/player_saves/[letterdir]"
+			if(!fexists(prefix))
+				continue
+			for(var/save_dir_name in flist(prefix))
+				var/target_ckey = ckey(save_dir_name)
+				if(!target_ckey)
+					continue
+				var/amount = read_metadollar_balance_from_save(target_ckey)
+				if(amount < 1)
+					continue
+				var/display_key = resolve_leaderboard_display_key(target_ckey, save_dir_name)
+				if(!display_key)
+					continue
+				rebuilt[display_key] = amount
+	metadollar_leaderboard = rebuilt
+	sort_metadollar_leaderboard()
+	while(metadollar_leaderboard.len > metadollar_leaderboard_positions_tracked)
+		metadollar_leaderboard.Cut(metadollar_leaderboard.len)
+	save_metadollar_leaderboard()
 
 /datum/controller/subsystem/metadollars/proc/save_metadollar_leaderboard()
 	var/leaderboard_file = file("data/metadollar_leaderboard.json")
@@ -265,7 +354,10 @@ SUBSYSTEM_DEF(metadollars)
 	round_earnings[ck][category] += amount
 	round_earnings[ck]["total"] = (round_earnings[ck]["total"] || 0) + amount
 	if(category == "living")
-		C.prefs.save_preferences()
+		// Тут сохраняется только metadollar_minute_pool (баланс уже лёг в metadollars.json).
+		// Полный сейв префов дорогой, а начисления у игроков приходят пачками в один фаер
+		// SSblackbox - откладываем через таймер, чтобы не собирать все записи в один тик.
+		C.prefs.queue_save_pref(PREF_SAVE_COOLDOWN, TRUE)
 	if(category == "living" && isliving(C.mob))
 		to_chat(C.mob, span_purple("Вы получили [amount] М$ за работу."))
 		SEND_SOUND(C.mob, sound('sound/machines/terminal_success.ogg', volume = 35))
@@ -434,6 +526,9 @@ SUBSYSTEM_DEF(metadollars)
 				break
 		if(QDELETED(I) || !istype(I, /obj/item))
 			continue
+		if(istype(I, /obj/item/coin/antagtoken/metashop))
+			var/obj/item/coin/antagtoken/metashop/MS = I
+			MS.metashop_purchaser_ckey = C.ckey
 		did_any = TRUE
 		if(istype(backpack))
 			if(!SEND_SIGNAL(backpack, COMSIG_TRY_STORAGE_INSERT, I, null, TRUE, TRUE))

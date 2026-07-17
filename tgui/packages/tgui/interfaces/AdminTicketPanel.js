@@ -1,4 +1,5 @@
-import { Component, createRef } from 'inferno';
+import { Component, createRef, useState } from 'react';
+
 import { useBackend, useLocalState } from '../backend';
 import {
   Box,
@@ -32,8 +33,8 @@ const STATE_ICONS = {
   3: 'check-circle',
 };
 
-export const AdminTicketPanel = (props, context) => {
-  const { act, data } = useBackend(context);
+export const AdminTicketPanel = (props) => {
+  const { act, data } = useBackend();
   const {
     tickets = [],
     selected_ticket_ref,
@@ -45,8 +46,8 @@ export const AdminTicketPanel = (props, context) => {
     communications_unhandled = 0,
   } = data;
 
-  const [tab, setTab] = useLocalState(context, 'tab', selected_state);
-  const [selectedCommId, setSelectedCommId] = useLocalState(context, 'selectedCommId', null);
+  const [tab, setTab] = useState(selected_state);
+  const [selectedCommId, setSelectedCommId] = useState(null);
   const selectedComm =
     selectedCommId !== null
       ? communications.find((c) => c.id === selectedCommId) ?? null
@@ -231,6 +232,7 @@ export const AdminTicketPanel = (props, context) => {
                       <TicketListItem
                         key={ticket.ref}
                         ticket={ticket}
+                        ckey={data.ckey}
                         selected={ticket.ref === selected_ticket_ref}
                         onSelect={() => {
                           setTab(ticket.state);
@@ -288,8 +290,10 @@ export const AdminTicketPanel = (props, context) => {
 };
 
 const TicketListItem = (props) => {
-  const { ticket, selected, onSelect } = props;
+  const { ticket, selected, onSelect, ckey } = props;
   const color = STATE_COLORS[ticket.state] || '#94a3b8';
+  const listTypingAdmins = (ticket.typing_admins || []).filter(Boolean);
+  const hasListInitiatorTyping = !!ticket.initiator_typing;
 
   return (
     <Box
@@ -329,45 +333,91 @@ const TicketListItem = (props) => {
           >
             {ticket.name}
           </Box>
+            {(listTypingAdmins.length > 0 || !!hasListInitiatorTyping) && (
+            <Box
+              fontSize="10px"
+              color="#ffcc00"
+              style={{
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              ✎ {listTypingAdmins.concat(
+                hasListInitiatorTyping
+                  ? [ticket.initiator_ckey || 'игрок']
+                  : []
+              ).join(', ')} {(listTypingAdmins.length + (hasListInitiatorTyping ? 1 : 0)) === 1 ? 'печатает' : 'печатают'}...
+            </Box>
+          )}
         </Flex.Item>
         <Flex.Item shrink={0}>
-          <Box
-            fontSize="9px"
-            px={0.8}
-            py={0.2}
-            style={{
-              backgroundColor: color,
-              color: '#fff',
-              borderRadius: '3px',
-              fontWeight: 'bold',
-            }}
-          >
-            {STATE_LABELS[ticket.state]}
-          </Box>
+          <Flex align="center">
+            <Box
+              fontSize="9px"
+              px={0.8}
+              py={0.2}
+              style={{
+                backgroundColor: color,
+                color: '#fff',
+                borderRadius: '3px',
+                fontWeight: 'bold',
+              }}
+            >
+              {STATE_LABELS[ticket.state]}
+            </Box>
+          </Flex>
         </Flex.Item>
       </Flex>
     </Box>
   );
 };
 
-const TicketDetailPanel = (props, context) => {
+const TicketDetailPanel = (props) => {
   const { ticket, act, data } = props;
-  const [replyMessage, setReplyMessage] = useLocalState(
-    context,
-    'replyMessage',
+  const [replyMessage, setReplyMessage] = useLocalState('replyMessage',
     ''
+  );
+  const [lastTypingPing, setLastTypingPing] = useLocalState(
+    'lastTypingPing_' + ticket.ref,
+    0
   );
   const isActive = ticket.state === 1;
   const color = STATE_COLORS[ticket.state] || '#94a3b8';
   const canReply = isActive && ticket.has_initiator;
+
+  const typingAdmins = (ticket.typing_admins || []).filter(Boolean);
+
+  const pingTyping = () => {
+    const now = Date.now();
+    if (now - lastTypingPing > 2000) {
+      act('typing_start');
+      setLastTypingPing(now);
+    }
+  };
+
+  const stopTyping = () => {
+    act('typing_stop');
+    setLastTypingPing(0);
+  };
 
   const sendReply = () => {
     const message = replyMessage.trim();
     if (!message || !canReply) {
       return;
     }
+    stopTyping();
     act('send_reply', { message });
     setReplyMessage('');
+  };
+
+  const handleTypingInput = (e, value) => {
+    setReplyMessage(value);
+    if (value) {
+      pingTyping();
+    } else {
+      stopTyping();
+    }
   };
 
   return (
@@ -450,11 +500,18 @@ const TicketDetailPanel = (props, context) => {
                 </Box>
               )}
             </Flex.Item>
-            {ticket.handler && (
-              <Flex.Item mr={3}>
-                <b>Взят:</b> {ticket.handler}
-              </Flex.Item>
-            )}
+            <Flex.Item mr={3}>
+              <b>Взят:</b>{' '}
+              {ticket.handler ? (
+                <Box as="span" color="#ffcc00" fontWeight="bold">
+                  {ticket.handler}
+                </Box>
+              ) : (
+                <Box as="span" color="#666">
+                  Не взят
+                </Box>
+              )}
+            </Flex.Item>
             <Flex.Item mr={3}>
               <b>Открыт:</b> {ticket.opened_at_text || '—'}{' '}
               <Box as="span" color="label">
@@ -648,6 +705,19 @@ const TicketDetailPanel = (props, context) => {
       </Stack.Item>
       {isActive && (
         <Stack.Item>
+          {(typingAdmins.length > 0 || !!ticket.initiator_typing) && (
+            <Box fontSize="11px" color="#ffcc00" textAlign="left" py={0.5} style={{ fontWeight: 'bold' }}>
+              <Icon name="pencil-alt" mr={0.5} />
+              {typingAdmins.concat(
+                ticket.initiator_typing
+                  ? [ticket.initiator_ckey || 'игрок']
+                  : []
+              ).join(', ')}{' '}
+              {(typingAdmins.length + (ticket.initiator_typing ? 1 : 0)) === 1
+                ? 'печатает'
+                : 'печатают'}...
+            </Box>
+          )}
           <Section title={'Ответить ' + (ticket.initiator_ckey || 'ckey')}>
             <Flex>
               <Flex.Item grow>
@@ -660,7 +730,7 @@ const TicketDetailPanel = (props, context) => {
                       : 'Игрок отключён, ответ невозможен'
                   }
                   value={replyMessage}
-                  onInput={(e, value) => setReplyMessage(value)}
+                  onInput={handleTypingInput}
                   onEnter={sendReply}
                 />
               </Flex.Item>

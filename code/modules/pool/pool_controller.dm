@@ -267,6 +267,10 @@
 	if(drained)
 		return
 	for(var/mob/living/M in mobs_in_pool)
+		// Если персонаж не на водном тайле — удаляем и пропускаем
+		if(!istype(M.loc, /turf/open/pool))
+			mobs_in_pool -= M
+			continue
 		switch(temperature) //Apply different effects based on what the temperature is set to.
 			if(POOL_SCALDING) //Scalding
 				M.adjust_bodytemperature(50,0,500)
@@ -313,7 +317,7 @@
 				else
 					drownee.adjustOxyLoss(4)
 					if(prob(35))
-						to_chat(drownee, "<span class='danger'>You're drowning!</span>")
+						to_chat(drownee, "<span class='danger'>Вы тонете!!</span>")
 
 /obj/machinery/pool/controller/proc/set_bloody(state)
 	if(bloody == state)

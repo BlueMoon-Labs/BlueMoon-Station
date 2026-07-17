@@ -2,6 +2,7 @@
 	name = "station intercom"
 	desc = "Talk through this."
 	icon_state = "intercom"
+	var/icon_off = "intercom-p"
 	plane = ABOVE_WALL_PLANE
 	anchored = TRUE
 	w_class = WEIGHT_CLASS_BULKY
@@ -20,6 +21,39 @@
 
 /obj/item/radio/intercom/unscrewed
 	unfastened = TRUE
+
+/obj/item/radio/intercom/command
+	name = "command intercom"
+	desc = "The command's special free-frequency intercom."
+	icon_state = "intercom_command"
+	icon_off = "intercom_command-p"
+	freerange = TRUE
+	command = TRUE
+
+/obj/item/radio/intercom/prison
+	name = "receive-only intercom"
+	desc = "A station intercom. It looks like it has been modified to not broadcast."
+	icon_state = "intercom_prison"
+	icon_off = "intercom_prison-p"
+	prison_radio = TRUE
+
+/obj/item/radio/intercom/syndicate
+	name = "syndicate intercom"
+	desc = "Talk smack through this."
+	icon_state = "intercom_syndicate"
+	icon_off = "intercom_syndicate-p"
+	syndie = TRUE
+	command = TRUE
+
+/obj/item/radio/intercom/inteq
+	name = "inteq intercom"
+	desc = "A hardened intercom tuned for InteQ frequencies."
+	icon_state = "intercom_inteq"
+	icon_off = "intercom_inteq-p"
+
+/obj/item/radio/intercom/inteq/Initialize(mapload)
+	. = ..()
+	make_inteq()
 
 /obj/item/radio/intercom/ratvar
 	name = "hierophant intercom"
@@ -135,7 +169,7 @@
 			on = A.powered(EQUIP) // set "on" to the power status
 
 		if(!on)
-			icon_state = "intercom-p"
+			icon_state = icon_off
 		else
 			icon_state = initial(icon_state)
 

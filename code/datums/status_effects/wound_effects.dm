@@ -3,7 +3,8 @@
 /atom/movable/screen/alert/status_effect/determined
 	name = "Решительность"
 	desc = "Тяжелые раны заставляют ваш организм переполняться адреналином! Пора делать ноги!"
-	icon_state = "regenerative_core"
+	icon_state = "template"
+	overlay_state = "wounded"
 
 /datum/status_effect/determined
 	id = "determined"
@@ -102,6 +103,8 @@
 /atom/movable/screen/alert/status_effect/wound
 	name = "Ранен"
 	desc = "Ваше тело серьезно пострадало. Нажмите сюда, чтобы осмотреть себя."
+	icon_state = "template"
+	overlay_state = "wounded"
 	clickable_glow = TRUE
 
 /atom/movable/screen/alert/status_effect/wound/Click()

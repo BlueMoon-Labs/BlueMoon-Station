@@ -1,5 +1,5 @@
 import { useBackend } from '../../backend';
-import { Button, Dropdown, NumberInput, Section, Stack } from '../../components';
+import { Button, Dropdown, NumberInput, Section, Stack, Tooltip } from '../../components';
 
 type AntagRole = {
   name: string;
@@ -16,8 +16,8 @@ type AntagData = {
 const capitalize = (str: string) =>
   str.charAt(0).toUpperCase() + str.slice(1);
 
-export const AntagsSection = (props, context) => {
-  const { act, data } = useBackend<AntagData>(context);
+export const AntagsSection = (props) => {
+  const { act, data } = useBackend<AntagData>();
   const { antag_roles, no_antag, midround_antag } = data;
 
   if (!antag_roles) {
@@ -77,14 +77,13 @@ export const AntagsSection = (props, context) => {
         </Section>
       </Stack.Item>
       <Stack.Item>
-        <Stack align="center" className="GamePreferences__row" px={1} py={1}>
-          <Stack.Item grow basis={0}>
-            <div className="GamePreferences__label">
-              Разрешить роли антагонистов
-            </div>
-            <div className="GamePreferences__hint">
-              Полностью отключает выдачу любых антаг-ролей
-            </div>
+        <Stack align="center" fill className="GamePreferences__row" px={1} py={1}>
+          <Stack.Item>
+            <Tooltip content="Если включено — вы можете получать любые роли антагонистов. Если выключено — выдача полностью заблокирована">
+              <div className="GamePreferences__label">
+                Разрешить роли антагонистов
+              </div>
+            </Tooltip>
           </Stack.Item>
           <Stack.Item>
             <Button
@@ -96,13 +95,12 @@ export const AntagsSection = (props, context) => {
               {!no_antag ? 'Включено' : 'Отключено'}
             </Button>
           </Stack.Item>
-          <Stack.Item pl={1}>
-            <div className="GamePreferences__label">
-              Midround антаги
-            </div>
-            <div className="GamePreferences__hint">
-              Выдача антага после начала раунда
-            </div>
+          <Stack.Item pl={2}>
+            <Tooltip content="Выдача антага после начала раунда">
+              <div className="GamePreferences__label">
+                Midround антаги
+              </div>
+            </Tooltip>
           </Stack.Item>
           <Stack.Item>
             <Button

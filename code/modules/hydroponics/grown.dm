@@ -90,6 +90,8 @@
 // Various gene procs
 /obj/item/reagent_containers/food/snacks/grown/attack_self(mob/user)
 	if(seed && seed.get_gene(/datum/plant_gene/trait/squash))
+		if(!do_after(user, 0.9 SECONDS, src, timed_action_flags = IGNORE_USER_LOC_CHANGE, progress_loc = user))
+			return
 		squash(user)
 	..()
 

@@ -31426,11 +31426,9 @@
 /area/maintenance/department/electrical)
 "cQs" = (
 /obj/structure/table/wood,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -30;
-	prison_radio = 1
 	},
 /turf/open/floor/plasteel/dark/textured,
 /area/security/prison/upper)
@@ -64998,10 +64996,8 @@
 	name = "Privacy Shutters";
 	pixel_x = 25
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	prison_radio = 1;
 	pixel_y = -30
 	},
 /turf/open/floor/plasteel/dark/textured,
@@ -65322,11 +65318,9 @@
 	network = list("ss13","prison");
 	dir = 4
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -30;
-	prison_radio = 1
 	},
 /turf/open/floor/plasteel/dark/textured,
 /area/security/prison/upper)
@@ -87647,9 +87641,8 @@
 /area/service/chapel/main)
 "mfB" = (
 /obj/structure/table/wood,
-/obj/item/radio/intercom{
+/obj/item/radio/intercom/command{
 	dir = 8;
-	freerange = 1;
 	name = "Captain's Intercom";
 	pixel_x = -26
 	},
@@ -93322,6 +93315,10 @@
 /obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /turf/open/floor/plasteel,
 /area/security/prison/upper)
+"nEI" = (
+/obj/machinery/atmospherics/components/binary/crystallizer,
+/turf/open/floor/plasteel,
+/area/engineering/atmos)
 "nEK" = (
 /obj/structure/table/reinforced,
 /obj/structure/cable/white{
@@ -95870,7 +95867,6 @@
 /turf/open/floor/plasteel/grimy,
 /area/service/chapel/office)
 "oor" = (
-/obj/item/kirbyplants/random,
 /obj/machinery/status_display/evac{
 	pixel_y = -32
 	},
@@ -98880,11 +98876,9 @@
 /obj/effect/turf_decal/tile/red{
 	dir = 4
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = 30;
-	prison_radio = 1
 	},
 /turf/open/floor/plasteel,
 /area/security/prison/upper)
@@ -100317,6 +100311,7 @@
 /obj/effect/turf_decal/tile/dark{
 	dir = 1
 	},
+/obj/machinery/electrolyzer,
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
 "pCY" = (
@@ -104963,6 +104958,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 10
 	},
+/obj/machinery/electrolyzer,
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
 "qWK" = (
@@ -122909,6 +122905,7 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/visible{
 	dir = 4
 	},
+/obj/structure/closet/crate/engineering/hfr,
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
 "vVy" = (
@@ -126529,11 +126526,9 @@
 /turf/open/floor/plasteel,
 /area/security/prison/upper)
 "wWP" = (
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -30;
-	prison_radio = 1
 	},
 /turf/open/floor/plasteel/dark/textured,
 /area/security/prison/upper)
@@ -154822,7 +154817,7 @@ oUP
 izE
 lXg
 lXg
-lXg
+nEI
 lXg
 gJo
 lXg
@@ -188033,7 +188028,7 @@ cFF
 cFF
 cFF
 cFF
-cTi
+cFF
 xVe
 aad
 rNM
@@ -188277,7 +188272,7 @@ aaa
 aaa
 aaa
 aaa
-aad
+aaa
 rNM
 aaa
 jxN
@@ -188294,8 +188289,8 @@ cFF
 ygz
 aaa
 rNM
-aad
-ajr
+aaa
+aaa
 aaa
 aaa
 aaa
@@ -188533,8 +188528,8 @@ aaa
 aaa
 aaa
 aaa
-ajr
-aad
+aaa
+aaa
 rNM
 aaa
 jxN
@@ -188551,8 +188546,8 @@ cFF
 ygz
 aaa
 rNM
-aad
-ajr
+aaa
+aaa
 aaa
 aaa
 aaa
@@ -188790,26 +188785,26 @@ aaa
 aaa
 aaa
 aaa
-ajr
-aad
-oza
-aad
-tUf
-pAV
-pAV
-pAV
-wVB
+aaa
+aaa
 rNM
+aaa
+jxN
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+ygz
+aaa
 rNM
-wGr
-vXw
-vXw
-vXw
-mns
-aad
-oza
-aad
-ajr
+aaa
+aaa
 aaa
 aaa
 aaa
@@ -189048,24 +189043,24 @@ aaa
 aaa
 aaa
 aaa
-aad
-rNM
-aaa
-aaa
-aad
-aaa
-rNM
-iYk
-lSP
-oza
-gRF
-rNM
-aaa
-aad
-aaa
 aaa
 rNM
 aad
+eVu
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+cTi
+xVe
+aad
+rNM
+aaa
 aaa
 aaa
 aaa
@@ -189307,20 +189302,20 @@ aaa
 aaa
 aad
 rNM
-rNM
-rNM
-rNM
-rNM
-rNM
-jgV
-rNM
-rNM
-hRS
-rNM
-rNM
-rNM
-rNM
-rNM
+aaa
+jxN
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+ygz
+aaa
 rNM
 aad
 ajr
@@ -189561,26 +189556,26 @@ aaa
 aaa
 aaa
 aaa
-aaa
-aad
-aad
-aad
-aad
-aad
+ajr
 aad
 rNM
-huN
-qca
-nxh
-kat
+aaa
+jxN
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+ygz
+aaa
 rNM
 aad
-aad
-aad
-aad
-aad
-aad
-aaa
+ajr
 aaa
 aaa
 aaa
@@ -189818,26 +189813,26 @@ aaa
 aaa
 aaa
 aaa
-aaa
-aaa
-ajr
-ajr
-aaa
 ajr
 aad
-gRc
-jxy
-eKf
-oFX
-yle
-gRc
+oza
 aad
-aaa
+tUf
+pAV
+pAV
+pAV
+wVB
+rNM
+rNM
+wGr
+vXw
+vXw
+vXw
+mns
+aad
+oza
+aad
 ajr
-ajr
-aaa
-aaa
-aaa
 aaa
 aaa
 aaa
@@ -190076,24 +190071,24 @@ aaa
 aaa
 aaa
 aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-rNM
-rsY
-rfT
-kjz
-eMk
+aad
 rNM
 aaa
 aaa
+aad
+aaa
+rNM
+iYk
+lSP
+oza
+gRF
+rNM
+aaa
+aad
 aaa
 aaa
-aaa
-aaa
+rNM
+aad
 aaa
 aaa
 aaa
@@ -190333,25 +190328,25 @@ aaa
 aaa
 aaa
 aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
+aad
 rNM
 rNM
 rNM
 rNM
 rNM
 rNM
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
+jgV
+rNM
+rNM
+hRS
+rNM
+rNM
+rNM
+rNM
+rNM
+rNM
+aad
+ajr
 aaa
 aaa
 aaa
@@ -190590,24 +190585,24 @@ aaa
 aaa
 aaa
 aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
+aad
+aad
+aad
+aad
+aad
+aad
+rNM
+huN
+qca
+nxh
+kat
+rNM
+aad
+aad
+aad
+aad
+aad
+aad
 aaa
 aaa
 hZh
@@ -190848,21 +190843,21 @@ aaa
 aaa
 aaa
 aaa
+ajr
+ajr
 aaa
+ajr
+aad
+gRc
+jxy
+eKf
+oFX
+yle
+gRc
+aad
 aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
+ajr
+ajr
 aaa
 aaa
 aaa
@@ -191110,12 +191105,12 @@ aaa
 aaa
 aaa
 aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
+rNM
+rsY
+rfT
+kjz
+eMk
+rNM
 aaa
 aaa
 aaa
@@ -191367,12 +191362,12 @@ aaa
 aaa
 aaa
 aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
+rNM
+rNM
+rNM
+rNM
+rNM
+rNM
 aaa
 aaa
 aaa

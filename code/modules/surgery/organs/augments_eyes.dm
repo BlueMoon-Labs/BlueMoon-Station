@@ -30,7 +30,10 @@
 	if(active)
 		var/datum/atom_hud/H = GLOB.huds[HUD_type]
 		H.remove_hud_from(owner)
-		interface?.RemoveSource(interface_source)
+		var/datum/component/neural_interface/old_interface = interface
+		interface = null
+		if(!QDELETED(old_interface))
+			old_interface.RemoveSource(interface_source)
 	else
 		var/datum/atom_hud/H = GLOB.huds[HUD_type]
 		H.add_hud_to(owner)

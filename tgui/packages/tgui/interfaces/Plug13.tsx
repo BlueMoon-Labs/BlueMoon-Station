@@ -1,5 +1,7 @@
 
-import { useBackend, useLocalState } from '../backend';
+import { useState } from 'react';
+
+import { useBackend } from '../backend';
 import { Box, Button, Input, NoticeBox, Section, Stack } from '../components';
 import { Window } from '../layouts';
 
@@ -14,10 +16,10 @@ type Plug13State = {
 
 const codeRegex = /^([A-Za-z0-9]{10}|([A-Za-z0-9]{5}-[A-Za-z0-9]{5}))$/;
 
-export const Plug13 = (props, context) => {
-  const { act, data } = useBackend<Plug13State>(context);
+export const Plug13 = (props) => {
+  const { act, data } = useBackend<Plug13State>();
 
-  const [code, setCode] = useLocalState(context, 'code', '');
+  const [code, setCode] = useState('');
 
   const validateCode = (code: string) => {
     if (code.length < 10) return false;
@@ -35,7 +37,7 @@ export const Plug13 = (props, context) => {
             <Stack direction="column" justify="center" align="center" fill>
               { data.error ? (
                 <Stack.Item mb={1}>
-                  <NoticeBox danger style={{ 'max-width': '300px' }}>{ data.error }</NoticeBox>
+                  <NoticeBox danger style={{ maxWidth: '300px' }}>{ data.error }</NoticeBox>
                 </Stack.Item>
               ) : (<Box />)}
               <Stack.Item>
@@ -43,7 +45,7 @@ export const Plug13 = (props, context) => {
                   monospace
                   maxLength="11"
                   placeholder="ABCDE-FGHIJ"
-                  style={{ 'font-size': '14px', 'text-transform': 'uppercase' }}
+                  style={{ fontSize: '14px', textTransform: 'uppercase' }}
                   disabled={data.pending}
                   value={data.code}
                   onInput={(_, value) => setCode(value.toUpperCase())} />
@@ -65,7 +67,7 @@ export const Plug13 = (props, context) => {
                 <span>Подключен к аккаунту </span>
                 <b>{ data.username }</b>
               </Stack.Item>
-              <Stack.Item mt={1} fontSize={0.9} style={{ 'font-style': 'italic' }}>(Это окошко можно закрыть)</Stack.Item>
+              <Stack.Item mt={1} fontSize={0.9} style={{ fontStyle: 'italic' }}>(Это окошко можно закрыть)</Stack.Item>
             </Stack>
           </Section>
         ) }

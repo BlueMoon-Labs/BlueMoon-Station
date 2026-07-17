@@ -66,6 +66,7 @@
 #define SPAN_CLOWN "clown"
 #define SPAN_SINGING "singing" // Skyrat edit
 #define SPAN_TAPE_RECORDER "tape_recorder"
+#define SPAN_SMALL_VOICE "small"
 //BlueMoon add - дополнительные стили речи для чата
 #define SPAN_WHISPER "whisper"
 #define SPAN_LAST_BREATH "last_breath"

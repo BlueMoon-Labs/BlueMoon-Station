@@ -137,7 +137,8 @@ proc/string_repeat(string, count)
 		RegisterSignal(host_mob, COMSIG_MOB_GHOSTIZE, PROC_REF(on_mob_ghostize))
 		RegisterSignal(host_mob, COMSIG_MOB_KEY_CHANGE, PROC_REF(on_mob_key_change))
 		RegisterSignal(host_mob, COMSIG_MOB_PRE_PLAYER_CHANGE, PROC_REF(on_mob_key_change))
-		RegisterSignal(host_mob, COMSIG_CLIENT_MOB_LOGIN, PROC_REF(on_client_reconnect))
+		// Реконнект клиента к телу: мобовый сигнал, клиентский COMSIG_CLIENT_MOB_LOGIN на мобе не приходит
+		RegisterSignal(host_mob, COMSIG_MOB_CLIENT_LOGIN, PROC_REF(on_client_reconnect))
 
 		RegisterSignal(host_mob, COMSIG_NEURAL_INTERFACE_ADD_SOURCE, PROC_REF(on_add_source))
 		RegisterSignal(host_mob, COMSIG_NEURAL_INTERFACE_REMOVE_SOURCE, PROC_REF(on_remove_source))
@@ -155,7 +156,7 @@ proc/string_repeat(string, count)
 			COMSIG_MOB_GHOSTIZE,
 			COMSIG_MOB_KEY_CHANGE,
 			COMSIG_MOB_PRE_PLAYER_CHANGE,
-			COMSIG_CLIENT_MOB_LOGIN,
+			COMSIG_MOB_CLIENT_LOGIN,
 			COMSIG_NEURAL_INTERFACE_ADD_SOURCE,
 			COMSIG_NEURAL_INTERFACE_REMOVE_SOURCE,
 			COMSIG_NEURAL_INTERFACE_WRITE_LOG,
@@ -190,7 +191,7 @@ proc/string_repeat(string, count)
 // ---------------------------------------------------------------------------
 // Client Reconnect - Re-attach display
 // ---------------------------------------------------------------------------
-/datum/component/neural_interface/proc/on_client_reconnect(client/C)
+/datum/component/neural_interface/proc/on_client_reconnect(mob/source, client/connected_client)
 	SIGNAL_HANDLER
 
 	if(!host_mob)

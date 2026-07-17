@@ -97,13 +97,13 @@
 							/obj/item/melee/classic_baton/telescopic,
 							/obj/item/sensor_device_security,
 							/obj/item/choice_beacon/copgun,
-							/obj/item/syndicate_uplink_high=1
+							/obj/item/syndicate_uplink/station=1
 							)
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/med
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/med
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/med
 	box = /obj/item/storage/box/survival/syndie
-	accessory = list(/obj/item/clothing/accessory/permit/special/security)
+	accessory = list(/obj/item/clothing/accessory/permit/special/security, /obj/item/clothing/accessory/permit/special/syndie_station)
 	pda_slot = ITEM_SLOT_BELT
 
 /datum/outfit/plasmaman/brigdoc

@@ -135,12 +135,6 @@ GLOBAL_PROTECT(exp_to_update)
 	else
 		return "0h"
 
-/datum/controller/subsystem/blackbox/proc/update_exp(mins, ann = FALSE)
-	for(var/client/L in GLOB.clients)
-		if(L.is_afk())
-			continue
-		L.update_exp_list(mins,ann)
-
 /datum/controller/subsystem/blackbox/proc/update_exp_db()
 	set waitfor = FALSE
 	var/list/old_minutes = GLOB.exp_to_update

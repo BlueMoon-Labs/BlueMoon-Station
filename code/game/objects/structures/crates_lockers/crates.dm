@@ -10,6 +10,7 @@
 	allow_objects = TRUE
 	allow_dense = TRUE
 	dense_when_open = TRUE
+	pass_flags_self = PASSTABLE
 	climbable = TRUE
 	climb_time = 10 //real fast, because let's be honest stepping into or onto a crate is easy
 	climb_stun = 0 //climbing onto crates isn't hard, guys
@@ -168,7 +169,7 @@
 //Snowflake organ freezer code
 //Order is important, since we check source, we need to do the check whenever we have all the organs in the crate
 
-/obj/structure/closet/crate/freezer/open()
+/obj/structure/closet/crate/freezer/open(mob/living/user, force = FALSE)
 	recursive_organ_check(src)
 	..()
 

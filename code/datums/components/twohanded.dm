@@ -99,11 +99,22 @@
 		UnregisterSignal(wield_user, COMSIG_MOB_SWAP_HANDS)
 		wield_user = null
 	if(offhand_item)
-		UnregisterSignal(offhand_item, COMSIG_ITEM_DROPPED)
+		UnregisterSignal(offhand_item, list(COMSIG_ITEM_DROPPED, COMSIG_PARENT_QDELETING))
 		if(!QDELETED(offhand_item))
 			qdel(offhand_item)
 		offhand_item = null
 	return ..()
+
+/// Оффхенд удаляется в обход unwield (self-qdel в equipped) - отпускаем ссылку.
+/datum/component/two_handed/proc/on_offhand_deleted(datum/source)
+	SIGNAL_HANDLER
+	if(source != offhand_item)
+		return
+	offhand_item = null
+	// Самопроизвольное удаление оффхенда должно восстановить силу, имя, трейт
+	// и сигнал владельца так же, как обычный unwield().
+	if(wielded && wield_user)
+		unwield(wield_user)
 
 /// Triggered on attack self of the item containing the component
 /datum/component/two_handed/proc/on_attack_self(datum/source, mob/user)
@@ -173,6 +184,9 @@
 	offhand_item.desc = "Your second grip on [parent_item]."
 	offhand_item.wielded = TRUE
 	RegisterSignal(offhand_item, COMSIG_ITEM_DROPPED, PROC_REF(on_drop))
+	// Оффхенд умеет самоудаляться (equipped в не-руку) - без сигнала компонент
+	// оставался с висящей ссылкой на удалённый оффхенд.
+	RegisterSignal(offhand_item, COMSIG_PARENT_QDELETING, PROC_REF(on_offhand_deleted))
 	user.put_in_inactive_hand(offhand_item)
 
 /**
@@ -243,7 +257,7 @@
 
 	// Remove the object in the offhand
 	if(offhand_item)
-		UnregisterSignal(offhand_item, COMSIG_ITEM_DROPPED)
+		UnregisterSignal(offhand_item, list(COMSIG_ITEM_DROPPED, COMSIG_PARENT_QDELETING))
 		if(!QDELETED(offhand_item))
 			qdel(offhand_item)
 	// Clear any old refrence to an item that should be gone now

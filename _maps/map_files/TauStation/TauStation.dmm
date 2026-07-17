@@ -7865,10 +7865,6 @@
 	},
 /turf/open/floor/carpet/royalblack,
 /area/commons/dorms)
-"cJD" = (
-/obj/machinery/atmospherics/components/unary/outlet_injector/on,
-/turf/open/floor/plating,
-/area/maintenance/fore)
 "cJG" = (
 /obj/structure/rack,
 /obj/item/clothing/mask/gas,
@@ -8353,7 +8349,6 @@
 /obj/machinery/door/window/northright{
 	dir = 4;
 	name = "First-Aid Supplies";
-
 	req_access_txt = "5"
 	},
 /obj/structure/window/reinforced{
@@ -10202,6 +10197,11 @@
 	},
 /obj/structure/closet/emcloset,
 /obj/effect/turf_decal/tile/neutral,
+/obj/machinery/light,
+/obj/machinery/airalarm{
+	dir = 1;
+	pixel_y = -22
+	},
 /turf/open/floor/plasteel,
 /area/commons/fitness/recreation)
 "dyb" = (
@@ -12450,11 +12450,9 @@
 "ejH" = (
 /obj/structure/table,
 /obj/item/book/manual/wiki/security_space_law,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
-	prison_radio = 1
 	},
 /obj/machinery/button/door{
 	id = "permacells2";
@@ -13860,11 +13858,9 @@
 	},
 /obj/structure/table,
 /obj/item/book/manual/wiki/security_space_law,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
-	prison_radio = 1
 	},
 /obj/item/pen{
 	pixel_x = 4;
@@ -15205,11 +15201,9 @@
 "fhI" = (
 /obj/structure/table,
 /obj/item/book/manual/wiki/security_space_law,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
-	prison_radio = 1
 	},
 /obj/machinery/light/small{
 	dir = 8
@@ -17792,22 +17786,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/service/hydroponics/enclosure)
-"gcg" = (
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
-	dir = 1
-	},
-/obj/machinery/light{
-	dir = 1
-	},
-/obj/item/radio/intercom{
-	name = "Station Intercom (General)";
-	pixel_y = 20
-	},
-/obj/effect/turf_decal/tile/neutral{
-	dir = 4
-	},
-/turf/open/floor/plasteel,
-/area/commons/fitness/recreation)
 "gch" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/machinery/door/poddoor/preopen{
@@ -17844,6 +17822,13 @@
 /obj/structure/disposalpipe/trunk,
 /obj/effect/turf_decal/tile/neutral{
 	dir = 4
+	},
+/obj/item/radio/intercom{
+	name = "Station Intercom (General)";
+	pixel_y = 20
+	},
+/obj/machinery/light{
+	dir = 1
 	},
 /turf/open/floor/plasteel,
 /area/commons/fitness/recreation)
@@ -19218,14 +19203,14 @@
 /turf/open/floor/carpet/black,
 /area/service/chapel/main)
 "gEx" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
-	dir = 5
-	},
 /obj/structure/disposalpipe/segment{
 	dir = 5
 	},
 /obj/effect/turf_decal/tile/neutral{
 	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+	dir = 8
 	},
 /turf/open/floor/plasteel,
 /area/commons/fitness/recreation)
@@ -21687,8 +21672,8 @@
 /turf/open/floor/plasteel,
 /area/hallway/secondary/civilian)
 "hvG" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/visible{
-	dir = 9
+/obj/machinery/atmospherics/components/unary/outlet_injector/on{
+	dir = 8
 	},
 /turf/open/floor/plating,
 /area/maintenance/fore)
@@ -22570,10 +22555,10 @@
 /turf/open/space/basic,
 /area/space/nearstation)
 "hIv" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
-	dir = 6
-	},
 /obj/effect/turf_decal/tile/neutral,
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
+	dir = 8
+	},
 /turf/open/floor/plasteel,
 /area/commons/fitness/recreation)
 "hIz" = (
@@ -22840,6 +22825,7 @@
 /obj/effect/turf_decal/tile/yellow{
 	dir = 4
 	},
+/obj/machinery/electrolyzer,
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
 "hNp" = (
@@ -24669,9 +24655,8 @@
 	name = "Captain's Desk";
 	req_one_access_txt = "20;72"
 	},
-/obj/item/radio/intercom{
+/obj/item/radio/intercom/command{
 	dir = 8;
-	freerange = 1;
 	name = "Station Intercom (Captain)";
 	pixel_x = 28
 	},
@@ -24896,16 +24881,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/hallway/secondary/civilian)
-"iyQ" = (
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden,
-/obj/machinery/light,
-/obj/effect/turf_decal/tile/neutral,
-/obj/machinery/airalarm{
-	dir = 1;
-	pixel_y = -22
-	},
-/turf/open/floor/plasteel,
-/area/commons/fitness/recreation)
 "iyR" = (
 /obj/machinery/light,
 /obj/effect/turf_decal/tile/neutral{
@@ -34186,6 +34161,13 @@
 /obj/machinery/vending/sovietsoda,
 /turf/open/floor/plasteel/dark,
 /area/hallway/primary/port)
+"lPb" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/machinery/atmospherics/components/binary/crystallizer,
+/turf/open/floor/plating,
+/area/engineering/atmos)
 "lPf" = (
 /obj/structure/loot_pile/maint,
 /turf/open/floor/plating,
@@ -41181,6 +41163,10 @@
 	icon_state = "wood-broken2"
 	},
 /area/maintenance/bar)
+"ohw" = (
+/obj/structure/closet/crate/engineering/hfr,
+/turf/open/floor/plasteel,
+/area/engineering/atmos)
 "ohz" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/structure/disposalpipe/segment,
@@ -43556,10 +43542,6 @@
 "pdt" = (
 /turf/open/floor/plasteel/white,
 /area/science/explab)
-"pdA" = (
-/obj/item/banner/science/mundane,
-/turf/open/floor/plating,
-/area/maintenance/fore)
 "pdD" = (
 /obj/structure/cable{
 	icon_state = "4-8"
@@ -43572,18 +43554,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/security/brig)
-"pdH" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
-	dir = 4
-	},
-/obj/structure/sign/warning/nosmoking{
-	pixel_y = 32
-	},
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
-/turf/open/floor/plating,
-/area/maintenance/fore)
 "pdK" = (
 /obj/structure/closet,
 /obj/effect/spawner/lootdrop/maintenance{
@@ -58236,11 +58206,9 @@
 "uce" = (
 /obj/structure/table,
 /obj/item/book/manual/wiki/security_space_law,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
-	prison_radio = 1
 	},
 /obj/machinery/button/door{
 	id = "permacells3";
@@ -61148,7 +61116,6 @@
 	},
 /obj/machinery/door/window/northright{
 	name = "First-Aid Supplies";
-
 	req_access_txt = "5"
 	},
 /obj/machinery/camera{
@@ -70819,6 +70786,10 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /turf/open/floor/plasteel/white/side,
 /area/science/robotics/lab)
+"ybl" = (
+/obj/machinery/electrolyzer,
+/turf/open/floor/plasteel,
+/area/engineering/atmos)
 "ybH" = (
 /obj/machinery/ai_slipper{
 	uses = 10
@@ -88931,7 +88902,7 @@ yiM
 yiM
 yiM
 pCx
-nni
+lPb
 nni
 nni
 nni
@@ -92795,8 +92766,8 @@ moy
 fza
 xUL
 hNh
-yiM
-yiM
+ybl
+ohw
 osG
 osG
 yiM
@@ -110418,12 +110389,12 @@ fza
 fza
 fza
 roA
-fza
 roA
-kwf
-fza
+roA
 eBz
-sIP
+thT
+thT
+aUI
 bOy
 thT
 fhF
@@ -110675,14 +110646,14 @@ fza
 fza
 fza
 fza
-fza
-roA
 roA
 fza
 eBz
-pdH
+bfP
+uKn
+fgv
 eBz
-pdA
+thT
 mOk
 thT
 jCB
@@ -110932,14 +110903,14 @@ fza
 fza
 fza
 fza
-roA
-roA
-eBz
-eBz
-eBz
-aUI
-eBz
-eBz
+wKE
+wKE
+wKE
+gTu
+wKE
+wKE
+wKE
+wKE
 rPd
 oFV
 uTS
@@ -111189,14 +111160,14 @@ fza
 fza
 fza
 roA
-roA
-fza
-eBz
-bfP
-uKn
-fgv
-eBz
-cJD
+wKE
+vzD
+sjE
+gTw
+mRq
+hHX
+ixB
+wKE
 hvG
 fza
 nMh
@@ -111446,14 +111417,14 @@ fza
 fza
 kwf
 roA
-fza
-roA
-eBz
-sIP
-eBz
-eBz
-eBz
-roA
+wKE
+gav
+kDY
+gUe
+htl
+eoT
+ixQ
+wKE
 roA
 roA
 aWA
@@ -111701,18 +111672,18 @@ fza
 fza
 fza
 fza
-roA
-roA
-wKE
-wKE
-wKE
-gTu
-wKE
-wKE
-wKE
-wKE
-roA
-fza
+qAK
+uFY
+uFY
+gaS
+wbe
+kqB
+kqB
+wbe
+ugp
+iRT
+iRT
+jCn
 roA
 eBz
 eBz
@@ -111958,18 +111929,18 @@ fza
 fza
 fza
 fza
-roA
-fza
-wKE
-vzD
-sjE
-gTw
-mRq
-hHX
-ixB
-wKE
-fza
-roA
+oCd
+xRg
+xRg
+xRg
+xRg
+xRg
+xRg
+xRg
+xRg
+xRg
+xRg
+jCS
 fza
 eBz
 kBT
@@ -112215,18 +112186,18 @@ fza
 fza
 roA
 roA
-roA
-fza
-wKE
-gav
-kDY
-gUe
-htl
-eoT
-ixQ
-wKE
-roA
-roA
+oCd
+xRg
+xRg
+xRg
+xRg
+xRg
+xRg
+xRg
+xRg
+xRg
+xRg
+jCS
 roA
 eBz
 vmU
@@ -112472,18 +112443,18 @@ fza
 fza
 roA
 fza
-qAK
-uFY
-uFY
-gaS
-wbe
-kqB
-kqB
-wbe
-ugp
-iRT
-iRT
-jCn
+oCd
+xRg
+xRg
+xRg
+xRg
+xRg
+xRg
+xRg
+xRg
+xRg
+xRg
+jCS
 roA
 eBz
 kCe
@@ -114014,18 +113985,18 @@ fza
 fza
 roA
 fza
-bao
-uFY
-uFY
-gaY
-wbe
-kqB
-kqB
-wbe
-iyh
-iRT
-iRT
-jDd
+oCd
+xRg
+xRg
+xRg
+xRg
+xRg
+xRg
+xRg
+xRg
+xRg
+xRg
+jCS
 roA
 wDA
 kDA
@@ -114271,18 +114242,18 @@ roA
 roA
 kwf
 fza
-roA
-fza
-wKE
-gcg
-kDY
-tGo
-tGo
-xdZ
-iyQ
-wKE
-roA
-roA
+bao
+uFY
+uFY
+gaY
+wbe
+kqB
+kqB
+wbe
+iyh
+iRT
+iRT
+jDd
 roA
 wDA
 kDT
@@ -114533,8 +114504,8 @@ svh
 svh
 gcE
 gEx
-tGo
-tGo
+kDY
+xdZ
 hIv
 dxX
 wKE

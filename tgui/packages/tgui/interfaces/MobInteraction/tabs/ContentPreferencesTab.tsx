@@ -32,8 +32,8 @@ type ContentPrefsInfo = {
   sex_jitter: boolean,
 }
 
-export const ContentPreferencesTab = (props, context) => {
-  const { act, data } = useBackend<ContentPrefsInfo>(context);
+export const ContentPreferencesTab = (props) => {
+  const { act, data } = useBackend<ContentPrefsInfo>();
   const {
     verb_consent,
     ranged_verb_pref,

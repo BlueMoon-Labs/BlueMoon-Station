@@ -92,6 +92,24 @@
 	on_paper_icon_state = "stamp-clown"
 	dye_color = DYE_CLOWN
 
+/obj/item/stamp/horny
+	name = "horny active rubber stamp"
+	icon_state = "stamp-horny"
+	on_paper_icon_state = "stamp-horny"
+	dye_color = DYE_PURPLE
+
+/obj/item/stamp/cat
+	name = "cat approved rubber stamp"
+	icon_state = "stamp-cat"
+	on_paper_icon_state = "stamp-cat"
+	dye_color = DYE_PURPLE
+
+/obj/item/stamp/pepe
+	name = "Pepe rubber stamp"
+	icon_state = "stamp-pepe"
+	on_paper_icon_state = "stamp-pepe"
+	dye_color = DYE_GREEN
+
 /obj/item/stamp/mime
 	name = "mime's rubber stamp"
 	icon_state = "stamp-mime"

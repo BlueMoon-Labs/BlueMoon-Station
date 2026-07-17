@@ -13,9 +13,6 @@
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/escape)
 "ae" = (
-/obj/effect/fun_balloon/sentience/emergency_shuttle{
-	group_name = "science crew on the Emergency Cere Shuttle"
-	},
 /obj/structure/table,
 /obj/item/storage/toolbox/emergency,
 /obj/item/crowbar,
@@ -303,6 +300,7 @@
 	dir = 8
 	},
 /obj/structure/window/reinforced,
+/mob/living/simple_animal/hostile/retaliate/nanotrasenpeace/ranged,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/escape)
 "aC" = (
@@ -313,6 +311,7 @@
 	dir = 4
 	},
 /obj/structure/window/reinforced,
+/mob/living/simple_animal/hostile/retaliate/nanotrasenpeace/ranged,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/escape)
 "aE" = (
@@ -612,6 +611,7 @@
 /area/shuttle/escape)
 "bj" = (
 /obj/effect/turf_decal/misc/recharge,
+/obj/vehicle/sealed/mecha/combat/durand/loaded,
 /turf/open/floor/plasteel,
 /area/shuttle/escape)
 "bk" = (
@@ -1745,6 +1745,19 @@
 	},
 /turf/open/floor/plasteel,
 /area/shuttle/escape)
+"mb" = (
+/obj/structure/chair/office/light{
+	dir = 1
+	},
+/obj/effect/fun_balloon/sentience/emergency_shuttle{
+	group_name = "science crew on the Emergency Cere Shuttle"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/escape)
+"nc" = (
+/mob/living/simple_animal/hostile/retaliate/nanotrasenpeace/ranged,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/escape)
 
 (1,1,1) = {"
 aa
@@ -2148,7 +2161,7 @@ aa
 ac
 ai
 at
-aC
+nc
 aC
 aC
 ab
@@ -2191,8 +2204,8 @@ aa
 aa
 ac
 aj
-at
-aC
+mb
+nc
 aC
 aO
 ab

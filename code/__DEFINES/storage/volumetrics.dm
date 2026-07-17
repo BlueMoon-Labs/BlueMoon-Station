@@ -1,7 +1,7 @@
 // PLEASE KEEP ALL VOLUME DEFINES IN THIS FILE, it's going to be hell to keep track of them later.
 
-#define DEFAULT_VOLUME_TINY				2
-#define DEFAULT_VOLUME_SMALL			3
+#define DEFAULT_VOLUME_TINY				1
+#define DEFAULT_VOLUME_SMALL			2
 #define DEFAULT_VOLUME_NORMAL			4
 #define DEFAULT_VOLUME_BULKY			8
 #define DEFAULT_VOLUME_HUGE				16

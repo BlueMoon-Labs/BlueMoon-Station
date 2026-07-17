@@ -421,18 +421,33 @@
 	desc = "Моток эластичной ткани, идеальной для стабилизации любых видов ранений, от порезов до ожогов и переломов костей."
 	gender = PLURAL
 	singular_name = "medical gauze"
-	icon_state = "gauze"
+	icon = 'icons/obj/medical/stack_medical.dmi'
+	icon_state = "gauze_imp"
 	heal_brute = 5
 	heal_burn = 5
 	self_delay = 50
 	other_delay = 20
 	amount = 15
 	max_amount = 15
-	absorption_rate = 0.25
+	absorption_rate = 0.125
 	absorption_capacity = 5
-	splint_factor = 0.35
+	sanitization = 3
+	flesh_regeneration = 5
+	splint_factor = 0.7
 	custom_price = PRICE_REALLY_CHEAP
 	grind_results = list(/datum/reagent/cellulose = 2)
+	/// Множитель скорости заживления ожогов при перевязке
+	var/burn_cleanliness_bonus = 0.35
+	/// Звук начала перевязки
+	var/heal_begin_sound = SFX_BANDAGE_BEGIN
+	/// Звук окончания перевязки
+	var/heal_end_sound = SFX_BANDAGE_END
+	/// Prefix for bandage overlays on limbs
+	var/gauze_prefix = "gauze"
+	/// Prefix for splint overlays on limbs with bone wounds
+	var/splint_prefix = "splint"
+	/// Whether this gauze can show splint overlays
+	var/can_splint = TRUE
 
 /obj/item/stack/medical/gauze/has_healable_damage(mob/living/carbon/patient)
 	if(..())
@@ -485,19 +500,58 @@
 	if(!gauzeable_wound)
 		return ..()
 
-	if(limb.current_gauze && (limb.current_gauze.absorption_capacity * 0.8 > absorption_capacity)) // игнорируем если новая повязка меньше чем на 20% лучше текущей, чтобы кто-то не перевязывал её 5 раз подряд
-		to_chat(user, "<span class='warning'>Повязка, что наложена на [user==M ? "вашей [limb.ru_name_v]" : "[limb.ru_name_v] персонажа[M]"], пока ещё хорошем состоянии!</span>")
+	if(limb.current_gauze && (limb.current_gauze.absorption_capacity * 1.2 > absorption_capacity))
+		to_chat(user, "<span class='warning'>Повязка, что наложена на [user==M ? "вашей [limb.ru_name_v]" : "[limb.ru_name_v] персонажа [M]"], пока ещё в хорошем состоянии!</span>")
+		M.balloon_alert(user, pick("уже перевязано!", "повязка чистая!"))
 		return
 
-	user.visible_message("<span class='warning'>[user] пытается перевязать рану на [limb.ru_name_v] персонажа [M] с помощью [src]...</span>", "<span class='warning'>Вы пытаетесь перевязать раны на [user == M ? "вашей [limb.ru_name_v]" : "[limb.ru_name_v] персонажа [M]"] с помощью [src]...</span>")
+	var/treatment_delay = (user == M ? self_delay : other_delay)
+	user.visible_message(
+		"<span class='warning'>[user] пытается перевязать рану на [limb.ru_name_v] персонажа [M] с помощью [src]...</span>",
+		"<span class='warning'>Вы пытаетесь перевязать раны на [user == M ? "вашей [limb.ru_name_v]" : "[limb.ru_name_v] персонажа [M]"] с помощью [src]...</span>",
+	)
 
-	if(!do_after(user, (user == M ? self_delay : other_delay), target=M))
+	if(heal_begin_sound)
+		playsound(M, heal_begin_sound, 75, TRUE)
+
+	if(!do_after(user, treatment_delay, target = M))
 		return
 
-	user.visible_message("<span class='green'>[user] наносит [src] на конечность персонажа [M]</span>", "<span class='green'>Вы пытаетесь перевязать раны на [user == M ? "своей конечности" : "конечности персонажа [M]"].</span>")
+	if(heal_end_sound)
+		playsound(M, heal_end_sound, 75, TRUE)
+
+	user.visible_message(
+		"<span class='green'>[user] наносит [src] на конечность персонажа [M]</span>",
+		"<span class='green'>Вы перевязали раны на [user == M ? "своей конечности" : "конечности персонажа [M]"].</span>",
+	)
 	limb.apply_gauze(src)
+	on_gauze_applied(M, user, limb)
 	if((heal_brute && limb.brute_dam > 0) || (heal_burn && limb.burn_dam > 0))
 		heal_carbon_new(M, user, healed_zone)
+
+/obj/item/stack/medical/gauze/proc/on_gauze_applied(mob/living/patient, mob/living/user, obj/item/bodypart/limb)
+	if(limb.get_bleed_rate())
+		user.add_mob_blood(patient)
+	for(var/datum/wound/burn/wound in limb.wounds)
+		wound.sanitization += sanitization * (wound.infestation > 0.1 ? 0.2 : 1)
+		wound.flesh_healing += flesh_regeneration * (wound.infestation > 0.1 ? 0 : 1)
+	limb.update_wounds(TRUE)
+	if(iscarbon(patient))
+		var/mob/living/carbon/carbon_patient = patient
+		carbon_patient.update_bandage_overlays()
+
+/// Returns either [splint_prefix] or [gauze_prefix] depending on whether we're splinting a bone wound.
+/obj/item/stack/medical/gauze/proc/get_overlay_prefix(obj/item/bodypart/gauzed_bodypart)
+	var/prefix = is_splinting(gauzed_bodypart) ? splint_prefix : gauze_prefix
+	return "[prefix]_[gauzed_bodypart.body_zone]"
+
+/obj/item/stack/medical/gauze/proc/is_splinting(obj/item/bodypart/gauzed_bodypart)
+	if(!can_splint)
+		return FALSE
+	for(var/datum/wound/iterated_wound as anything in gauzed_bodypart.wounds)
+		if(iterated_wound.wound_flags & BONE_WOUND)
+			return TRUE
+	return FALSE
 
 /obj/item/stack/medical/gauze/attackby(obj/item/I, mob/user, params)
 	if(I.tool_behaviour == TOOL_WIRECUTTER || I.get_sharpness())
@@ -530,24 +584,35 @@
 /obj/item/stack/medical/gauze/improvised
 	name = "improvised gauze"
 	singular_name = "improvised gauze"
+	icon = 'icons/obj/stack_objects.dmi'
+	icon_state = "gauze"
 	heal_brute = 0
-	desc = "Моток грубо обрезанной ткани от чего-то делавшего хорошую работу в стабилизации ран. Делает это не так хорошо, чем полноценная повязка."
+	desc = "Моток грубо обрезанной ткани для стабилизации ран. Делает это хуже, чем полноценная повязка."
 	self_delay = 60
 	other_delay = 30
-	absorption_rate = 0.15
+	absorption_rate = 0.075
 	absorption_capacity = 4
-	splint_factor = 0.15
+	sanitization = 1
+	flesh_regeneration = 3
+	splint_factor = 0.85
+	burn_cleanliness_bonus = 0.7
+	splint_prefix = "splint_improv"
 
 /obj/item/stack/medical/gauze/adv
 	name = "sterilized medical gauze"
 	singular_name = "sterilized medical gauze"
 	desc = "Моток эластичной стерилизованной ткани. Экстремально эффективна для остановки кровотечений и стабилизации ожогов."
+	icon = 'icons/obj/medical/stack_medical.dmi'
+	icon_state = "gauze"
 	heal_brute = 7
 	self_delay = 45
 	other_delay = 15
-	absorption_rate = 0.5
-	absorption_capacity = 12
+	absorption_rate = 0.175
+	absorption_capacity = 10
+	sanitization = 5
+	flesh_regeneration = 7
 	splint_factor = 0.5
+	burn_cleanliness_bonus = 0.25
 
 /obj/item/stack/medical/gauze/adv/one
 	amount = 1

@@ -178,19 +178,20 @@ GLOBAL_VAR(families_override_theme)
 		if(return_if_no_gangs)
 			return FALSE // ending early is bad if we're not in dynamic
 
-	var/list/gangs_to_use = current_theme.involved_gangs
-	var/amount_of_gangs = gangs_to_use.len
+	var/list/gangs_to_use = shuffle(current_theme.involved_gangs)
+	var/amount_of_gangs = length(gangs_to_use)
+	var/gangsters_to_assign = length(gangbangers)
 
-	for(var/_ in 1 to amount_of_gangs)
-		var/gang_to_use = pick_n_take(gangs_to_use)
-		for(var/__ in 1 to current_theme.starting_gangsters)
-			if(!gangbangers.len)
-				break
-			var/datum/mind/gangster_mind = pick_n_take(gangbangers)
-			var/datum/antagonist/gang/new_gangster = new gang_to_use()
-			new_gangster.handler = src
-			new_gangster.starter_gangster = TRUE
-			gangster_mind.add_antag_datum(new_gangster)
+	// Fill the families in rounds instead of exhausting one family before starting the next.
+	// The ruleset accepts three candidates, and every theme has two or three competing families.
+	// Assigning a full starting roster at once could therefore start the mode with only one family.
+	for(var/index in 1 to gangsters_to_assign)
+		var/gang_to_use = gangs_to_use[((index - 1) % amount_of_gangs) + 1]
+		var/datum/mind/gangster_mind = pick_n_take(gangbangers)
+		var/datum/antagonist/gang/new_gangster = new gang_to_use()
+		new_gangster.handler = src
+		new_gangster.starter_gangster = TRUE
+		gangster_mind.add_antag_datum(new_gangster)
 
 		// see /datum/antagonist/gang/create_team() for how the gang team datum gets instantiated and added to our gangs list
 

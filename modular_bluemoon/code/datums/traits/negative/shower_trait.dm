@@ -1,5 +1,3 @@
-#define STATUS_EFFECT_STINK /datum/status_effect/stink // оверлей вони
-
 #define FINE_CLEAN 50 // ресет предупреждений о необходимости сходить в душ
 #define FIRST_WARNING 750 // предупреждение, что пора сходить в душ
 #define DIRTY 900 // негативное настроение
@@ -84,6 +82,8 @@
 		if(HAS_TRAIT(quirk_holder, TRAIT_SWIMMING) || G.get_moles(GAS_H2O) > 0) // персонаж находится в бассейне или сауне, происходит мытьё
 			cleaning(10) // при вызове сигнала COMSIG_COMPONENT_CLEAN_ACT этой функции в аргументы присваивается персонаж, что делает невозможным применение TRUE
 
+	var/unholy_likes_it = human_owner.client?.prefs?.unholyhardpref == "Yes"
+
 	switch(cleanse_level)
 		if(-INFINITY to FINE_CLEAN)
 			if(warning_level > 0)
@@ -97,19 +97,25 @@
 				to_chat(quirk_holder, span_notice("Мне не помешает сходить в душ..."))
 				warning_level = 1
 		if(DIRTY to VERY_DIRTY)
-			SEND_SIGNAL(quirk_holder, COMSIG_ADD_MOOD_EVENT, "need_shower", /datum/mood_event/need_shower/dirty)
-			if(warning_level < 2)
+			if(unholy_likes_it)
+				SEND_SIGNAL(quirk_holder, COMSIG_ADD_MOOD_EVENT, "need_shower", /datum/mood_event/need_shower/like_it)
+			else
+				SEND_SIGNAL(quirk_holder, COMSIG_ADD_MOOD_EVENT, "need_shower", /datum/mood_event/need_shower/dirty)
+			if(warning_level < 2 && !unholy_likes_it)
 				to_chat(quirk_holder, span_phobia("Мне нужно сходить в душ."))
 				warning_level = 2
 		if(VERY_DIRTY to INFINITY)
-			if(hide_visual_effect)
+			if(unholy_likes_it)
+				SEND_SIGNAL(quirk_holder, COMSIG_ADD_MOOD_EVENT, "need_shower", /datum/mood_event/need_shower/like_it)
+			else if(hide_visual_effect)
 				SEND_SIGNAL(quirk_holder, COMSIG_ADD_MOOD_EVENT, "need_shower", /datum/mood_event/need_shower/very_dirty_catastrophic)
 			else
 				SEND_SIGNAL(quirk_holder, COMSIG_ADD_MOOD_EVENT, "need_shower", /datum/mood_event/need_shower/very_dirty)
 			if(warning_level < 3)
 				if(!hide_visual_effect)
 					human_owner.add_overlay(stink_overlay)
-				to_chat(quirk_holder, span_phobia("Мне ОЧЕНЬ нужно сходить в душ!"))
+				if(!unholy_likes_it)
+					to_chat(quirk_holder, span_phobia("Мне ОЧЕНЬ нужно сходить в душ!"))
 				warning_level = 3
 
 /datum/quirk/bluemoon_shower_need/proc/examine(atom/examine_target, mob/examiner, list/examine_list)
@@ -246,7 +252,27 @@
 	description = span_phobia("МНЕ КРИТИЧЕСКИ НУЖНО СХОДИТЬ В ДУШ!\n")
 	mood_change = -16 // игрок скрывает визуальный негативный эффект, но от этого персонаж сильно страдает
 
-#undef STATUS_EFFECT_STINK
+/datum/mood_event/need_shower/like_it
+	description = span_nicegreen("Моё тело грязное, но кажется мне это нравится...\n")
+	mood_change = 2 // бафф вместо дебаффа если включен особо грязный секс
+	timeout = 10 SECONDS
+
+// Хелперы для секса (😳)
+/mob/living/proc/is_dirty()
+	if(!HAS_TRAIT(src, TRAIT_BLUEMOON_SHOWER_NEED))
+		return FALSE
+	for(var/datum/quirk/bluemoon_shower_need/quirk in src.roundstart_quirks)
+		if(quirk.cleanse_level >= DIRTY)
+			return TRUE
+	return FALSE
+
+/mob/living/proc/apply_external_stink()
+	if(!HAS_TRAIT(src, TRAIT_BLUEMOON_SHOWER_NEED))
+		return
+	for(var/datum/quirk/bluemoon_shower_need/quirk in src.roundstart_quirks)
+		if(quirk.cleanse_level >= DIRTY)
+			return
+		quirk.cleanse_level = min(quirk.cleanse_level + 300, DIRTY - 1)
 
 #undef FINE_CLEAN
 #undef FIRST_WARNING
