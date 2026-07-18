@@ -46,7 +46,10 @@
 
 	var/msg = "cast the spell «[name]»"
 	if(LAZYLEN(targets))
-		msg += " on targets: [english_list(targets, and_text = ", ")]"
+		var/list/to_log = list()
+		for(var/t in targets)
+			to_log += key_name(t)
+		msg += " on targets: [english_list(to_log, and_text = ", ")]"
 	msg += " and add [chem == LEWD_BOOK_ALL_REAG_ADD ? "all lewd reagents" : "[initial(used_reagent.name)]"], volume: [add_volume]"
 	user.log_message("[msg].", LOG_ATTACK)
 
