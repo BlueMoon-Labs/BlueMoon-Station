@@ -491,6 +491,9 @@ const Viewer = (props) => {
 
 export const AdminLogViewer = (props) => {
   const { act, data } = useBackend<LogViewerData>();
+  const isRoundDir = (data.crumbs[data.crumbs.length - 1] ?? '').startsWith(
+    'round-',
+  );
   return (
     <Window height={700} theme="admin" title="Журнал сервера" width={1150}>
       <Window.Content>
@@ -512,9 +515,13 @@ export const AdminLogViewer = (props) => {
                   fluid
                   icon="file-zipper"
                   mb={1}
-                  tooltip="Скачать все логи этого раунда одним архивом"
+                  tooltip={
+                    isRoundDir
+                      ? 'Скачать все логи этого раунда одним архивом'
+                      : 'Скачать этот каталог со всеми подпапками одним архивом - например, логи за день или месяц'
+                  }
                   onClick={() => act('download_archive')}>
-                  Скачать раунд архивом
+                  {isRoundDir ? 'Скачать раунд архивом' : 'Скачать каталог архивом'}
                 </Button>
               )}
               <Crumbs />

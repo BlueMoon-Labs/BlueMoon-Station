@@ -4,16 +4,16 @@
 #define ADMIN_LOG_EXT_REGEX @{"\.(txt|log|htm|html|md|json|csv)$"}
 /// Период проверки роста файла в режиме tail.
 #define ADMIN_LOG_TAIL_PERIOD (3 SECONDS)
-/// Куда складываются собранные архивы раундов.
+/// Куда складываются собранные архивы логов.
 #define ADMIN_LOG_ARCHIVE_DIR "data/log_archives/"
-/// Минимальный интервал пересборки архива текущего (растущего) раунда.
+/// Минимальный интервал пересборки архива живого каталога (содержащего текущий раунд).
 #define ADMIN_LOG_ARCHIVE_REBUILD_COOLDOWN (1 MINUTES)
 /// Через сколько удалять собранный архив (ftp к этому моменту давно ушёл).
 #define ADMIN_LOG_ARCHIVE_TTL (10 MINUTES)
 /// Кап длины команды tar при архивации выбранных файлов (лимит cmd на Windows ~8К).
 #define ADMIN_LOG_MULTI_CMD_MAX 6000
 
-/// Относительный путь раунда -> world.time последней сборки архива.
+/// Относительный путь каталога -> world.time последней сборки архива.
 GLOBAL_LIST_EMPTY(admin_log_archive_builds)
 /// Пути архивов, сборка которых идёт прямо сейчас (shelleo спит) - защита от параллельных tar по одному файлу.
 GLOBAL_LIST_EMPTY(admin_log_archive_building)
@@ -279,9 +279,9 @@ GLOBAL_LIST_EMPTY(admin_log_archive_building)
 		search_results = results
 	log_admin("[key_name(owner)] searched log [path] for: [query]")
 
+/// Скачать текущий каталог одним архивом (рекурсивно): раунд, день или месяц целиком.
 /datum/admin_log_viewer/proc/download_archive()
-	var/last_segment = length(path_segments) ? path_segments[length(path_segments)] : null
-	if(isnull(last_segment) || findtext(last_segment, "round-", 1, 8) != 1)
+	if(!length(path_segments)) // корень - это все логи сервера разом, такое не архивируем
 		return
 	var/dir_path = current_dir_path()
 	if(!is_safe_path_for_admin_shell(dir_path))
@@ -291,16 +291,17 @@ GLOBAL_LIST_EMPTY(admin_log_archive_building)
 		return
 	cleanup_archive_dir()
 	var/rel = copytext(dir_path, length(ADMIN_LOG_ROOT) + 1)
-	var/flat = pathflatten(rel)
+	// Без хвостового "/" - иначе имя архива кончается подчёркиванием.
+	var/flat = pathflatten(copytext(rel, 1, length(rel)))
 	var/ext = (world.system_type == MS_WINDOWS) ? "zip" : "tar.gz"
 	var/out = "[ADMIN_LOG_ARCHIVE_DIR][flat].[ext]"
-	var/is_current = (dir_path == "[GLOB.log_directory]/")
+	var/is_live = istext(GLOB.log_directory) && admin_log_dir_is_live(dir_path, GLOB.log_directory)
 	if(GLOB.admin_log_archive_building[out])
-		to_chat(owner, span_warning("Архив этого раунда уже собирается - попробуйте через минуту."), confidential = TRUE)
+		to_chat(owner, span_warning("Архив этого каталога уже собирается - попробуйте через минуту."), confidential = TRUE)
 		return
 	var/last_build = GLOB.admin_log_archive_builds[rel] || 0
-	if(!fexists(out) || (is_current && world.time > last_build + ADMIN_LOG_ARCHIVE_REBUILD_COOLDOWN))
-		to_chat(owner, "Собираю архив раунда - на больших логах это может занять время...", confidential = TRUE)
+	if(!fexists(out) || (is_live && world.time > last_build + ADMIN_LOG_ARCHIVE_REBUILD_COOLDOWN))
+		to_chat(owner, "Собираю архив [rel] - на больших каталогах (день, месяц) это может занять заметное время...", confidential = TRUE)
 		// rust-g создаёт недостающие каталоги; tar - нет.
 		rustg_file_write("", "[ADMIN_LOG_ARCHIVE_DIR].keep")
 		var/cmd
@@ -325,8 +326,8 @@ GLOBAL_LIST_EMPTY(admin_log_archive_building)
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(admin_log_delete_archive), out), ADMIN_LOG_ARCHIVE_TTL, TIMER_UNIQUE | TIMER_OVERRIDE)
 	if(QDELETED(src) || isnull(owner)) // админ мог уйти, пока tar работал - архив собран и закэширован, но слать некому
 		return
-	message_admins("[key_name_admin(owner)] downloaded round log archive: [rel]")
-	log_admin("[key_name(owner)] downloaded round log archive [rel]")
+	message_admins("[key_name_admin(owner)] downloaded log archive: [rel]")
+	log_admin("[key_name(owner)] downloaded log archive [rel]")
 	owner << ftp(file(out), "[flat].[ext]")
 
 /proc/admin_log_delete_archive(path)
@@ -346,7 +347,7 @@ GLOBAL_LIST_EMPTY(admin_log_archive_building)
 	if(!islist(names) || !length(names))
 		return
 	if(length(names) > ADMIN_LOG_MULTI_SELECT_MAX)
-		to_chat(owner, span_warning("За раз можно скачать не больше [ADMIN_LOG_MULTI_SELECT_MAX] файлов - для целого каталога есть архив раунда."), confidential = TRUE)
+		to_chat(owner, span_warning("За раз можно скачать не больше [ADMIN_LOG_MULTI_SELECT_MAX] файлов - целый каталог удобнее скачать архивом."), confidential = TRUE)
 		return
 	var/dir_path = current_dir_path()
 	var/list/picked = admin_log_filter_selection(names, flist(dir_path))
@@ -425,8 +426,7 @@ GLOBAL_LIST_EMPTY(admin_log_archive_building)
 	var/list/data = list()
 	data["crumbs"] = path_segments
 	data["osUnix"] = (world.system_type == UNIX)
-	var/last_segment = length(path_segments) ? path_segments[length(path_segments)] : null
-	data["canArchive"] = !isnull(last_segment) && findtext(last_segment, "round-", 1, 7) == 1
+	data["canArchive"] = length(path_segments) > 0
 	data["entries"] = listing || list()
 	data["searchResults"] = search_results
 	data["searchQuery"] = search_query

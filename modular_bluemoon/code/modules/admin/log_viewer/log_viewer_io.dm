@@ -8,7 +8,7 @@
 #define ADMIN_LOG_SEARCH_MAX_MATCHES 500
 /// Кап длины превью совпадения (в символах, не байтах).
 #define ADMIN_LOG_SEARCH_PREVIEW_CHARS 300
-/// Кап числа файлов в множественном скачивании (для полного каталога есть архив раунда).
+/// Кап числа файлов в множественном скачивании (полный каталог скачивается архивом).
 #define ADMIN_LOG_MULTI_SELECT_MAX 50
 
 /// Валиден ли один сегмент пути (имя файла или каталога, без разделителей).
@@ -39,6 +39,17 @@
 			continue
 		picked += name
 	return picked
+
+/// Живой ли каталог для архивации: его содержимое ещё может расти, потому что он
+/// содержит каталог текущего раунда (предок или сам раунд) либо лежит внутри него.
+/// dir_path - с завершающим "/", round_dir - без (как GLOB.log_directory).
+/proc/admin_log_dir_is_live(dir_path, round_dir)
+	if(!istext(dir_path) || !istext(round_dir) || !length(dir_path) || !length(round_dir))
+		return FALSE
+	var/round_slash = "[round_dir]/"
+	if(findtext(round_slash, dir_path, 1, length(dir_path) + 1) == 1)
+		return TRUE
+	return findtext(dir_path, round_slash, 1, length(round_slash) + 1) == 1
 
 /// Обрезает страницу по последнему переводу строки, если это не конец файла.
 /// Возвращает list(текст, конечное_смещение) - смещение первого НЕ включённого байта.

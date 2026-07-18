@@ -1,5 +1,6 @@
 /// Тесты чистых хелперов просмотрщика логов: валидация сегментов пути,
-/// обрезка страниц по границе строки, размер файла, поиск по содержимому.
+/// обрезка страниц по границе строки, размер файла, поиск по содержимому,
+/// живость каталога для пересборки архива.
 /datum/unit_test/admin_log_viewer_helpers
 
 /datum/unit_test/admin_log_viewer_helpers/Run()
@@ -90,6 +91,20 @@
 	fdel("[sel_dir]sub/c.log")
 	fdel("[sel_dir]sub/")
 	fdel(sel_dir)
+
+	// Живость каталога для архивации: живой = содержит каталог текущего раунда
+	var/round_dir = "data/logs/2026/07/17/round-9876"
+	TEST_ASSERT(admin_log_dir_is_live("data/logs/2026/07/17/round-9876/", round_dir), "каталог текущего раунда должен быть живым")
+	TEST_ASSERT(admin_log_dir_is_live("data/logs/2026/07/17/", round_dir), "каталог дня с текущим раундом должен быть живым")
+	TEST_ASSERT(admin_log_dir_is_live("data/logs/2026/07/", round_dir), "каталог месяца с текущим раундом должен быть живым")
+	TEST_ASSERT(admin_log_dir_is_live("data/logs/", round_dir), "корень логов содержит текущий раунд и потому живой")
+	TEST_ASSERT(!admin_log_dir_is_live("data/logs/2026/07/16/", round_dir), "каталог другого дня не должен быть живым")
+	TEST_ASSERT(!admin_log_dir_is_live("data/logs/2026/07/17/round-9875/", round_dir), "каталог другого раунда не должен быть живым")
+	TEST_ASSERT(!admin_log_dir_is_live("data/logs/2026/07/17/round-987/", round_dir), "частичное совпадение имени раунда должно отклоняться")
+	TEST_ASSERT(admin_log_dir_is_live("data/logs/2026/07/17/round-9876/subdir/", round_dir), "подкаталог внутри текущего раунда растёт вместе с ним - живой")
+	TEST_ASSERT(!admin_log_dir_is_live("data/logs/2026/07/17/round-98765/", round_dir), "раунд с именем-надстройкой не должен ложно совпадать")
+	TEST_ASSERT(!admin_log_dir_is_live("data/logs/", null), "null вместо каталога раунда должен давать FALSE")
+	TEST_ASSERT(!admin_log_dir_is_live(null, round_dir), "null вместо каталога должен давать FALSE")
 
 	// Поиск по содержимому
 	var/list/results = admin_log_search_content("alpha\nbeta ALPHA\ngamma", "alpha")
