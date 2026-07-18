@@ -9,14 +9,17 @@
 	TEST_ASSERT_NOTNULL(T, "Target mob has no turf")
 
 	// Simulate player presence by adding player_mob to clients_by_zlevel
+	// and to the spatial grid CLIENTS channel (has_nearby_player queries the grid)
 	if(!islist(SSmobs.clients_by_zlevel) || T.z > SSmobs.clients_by_zlevel.len)
 		SSmobs.MaxZChanged()
 	SSmobs.clients_by_zlevel[T.z] += player_mob
+	player_mob.enable_client_mobs_in_contents()
 
 	var/result = target.has_nearby_player()
 
 	// Cleanup before assert
 	SSmobs.clients_by_zlevel[T.z] -= player_mob
+	player_mob.clear_important_client_contents()
 
 	TEST_ASSERT(result, "has_nearby_player() should return TRUE when player is on the same turf")
 
@@ -57,6 +60,7 @@
 	if(!islist(SSmobs.clients_by_zlevel) || target_turf.z > SSmobs.clients_by_zlevel.len)
 		SSmobs.MaxZChanged()
 	SSmobs.clients_by_zlevel[target_turf.z] += player_mob
+	player_mob.enable_client_mobs_in_contents() // has_nearby_player queries the spatial grid
 
 	var/dist = get_dist(target_turf, far_turf)
 
@@ -67,6 +71,7 @@
 
 	// Cleanup before asserts
 	SSmobs.clients_by_zlevel[target_turf.z] -= player_mob
+	player_mob.clear_important_client_contents()
 
 	if(dist > 1)
 		TEST_ASSERT(!result_outside, "has_nearby_player() should return FALSE when player is outside range (dist=[dist])")
@@ -91,12 +96,14 @@
 	// Add player on same turf
 	var/mob/living/carbon/human/player_mob = allocate(/mob/living/carbon/human, T)
 	SSmobs.clients_by_zlevel[T.z] += player_mob
+	player_mob.enable_client_mobs_in_contents() // has_nearby_player queries the spatial grid
 
 	var/result_with_player = carp.has_nearby_player()
 
 	// Cleanup before asserts
 	SSmobs.clients_by_zlevel[T.z].Cut()
 	SSmobs.clients_by_zlevel[T.z] += saved_clients
+	player_mob.clear_important_client_contents()
 
 	TEST_ASSERT(!result_no_player, "Simple animal has_nearby_player() should return FALSE with no players")
 	TEST_ASSERT(result_with_player, "Simple animal has_nearby_player() should return TRUE with player on same turf")
@@ -228,6 +235,7 @@
 	// Place player on the same turf (nearby)
 	var/mob/living/carbon/human/player_mob = allocate(/mob/living/carbon/human, T)
 	SSmobs.clients_by_zlevel[T.z] += player_mob
+	player_mob.enable_client_mobs_in_contents() // has_nearby_player queries the spatial grid
 
 	// Should always process regardless of times_fired
 	// Give the mob some fire to track processing
@@ -241,6 +249,7 @@
 
 	// Cleanup before assert
 	SSmobs.clients_by_zlevel[T.z] -= player_mob
+	player_mob.clear_important_client_contents()
 
 	// Fire stacks should decrease since handle_fire runs during full Life() processing
 	TEST_ASSERT(stacks_after < initial_stacks, "Mob near player should have full Life() processing (fire stacks should decrease)")

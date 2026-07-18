@@ -466,3 +466,167 @@
 	TEST_ASSERT_EQUAL(test_area.used_equip - before, 0, "an unpowered scrubber draws no power")
 
 	original_area.contents.Add(floor) // restore the floor before test_area is qdel'd by teardown
+
+// ---------------------------------------------------------------------------
+// Пас по perf3.log: событийные интеркомы/свитчи, сон SSU/секвея/гейгера, APC
+// ---------------------------------------------------------------------------
+
+/// D1: интерком не поллит SSobj - он событийный: сигнал области меняет on,
+/// ЭМИ гасит сразу, окончание ЭМИ сверяется с питанием, переезд перевешивает
+/// подписку на новую область.
+/datum/unit_test/intercom_event_driven/Run()
+	var/turf/floor = run_loc_floor_bottom_left
+	// Резервация лежит в /area/space (powered() всегда FALSE) - подсовываем
+	// синтетическую базовую область, как в machinery_auto_use_power.
+	var/area/original_area = get_area(floor)
+	var/area/test_area = new /area
+	allocated += test_area
+	test_area.contents.Add(floor)
+
+	var/obj/item/radio/intercom/intercom = allocate(/obj/item/radio/intercom)
+	TEST_ASSERT(!(intercom.datum_flags & DF_ISPROCESSING), "intercom must not poll any processing subsystem")
+	TEST_ASSERT(intercom.on, "intercom in a powered synthetic area must start on")
+
+	// Смена питания области доезжает сигналом, без поллинга.
+	test_area.power_equip = FALSE
+	test_area.power_change()
+	TEST_ASSERT(!intercom.on, "area power loss must switch the intercom off via the signal")
+	TEST_ASSERT_EQUAL(intercom.icon_state, "intercom-p", "powerless intercom must show the off icon")
+	test_area.power_equip = TRUE
+	test_area.power_change()
+	TEST_ASSERT(intercom.on, "area power restore must switch the intercom back on via the signal")
+
+	// ЭМИ: гаснет сразу, по окончании сверяется с питанием области.
+	intercom.emp_act(1) // severity 1 = тяжёлый ЭМИ в этом форке
+	TEST_ASSERT(!intercom.on, "an EMPed intercom must be off")
+	TEST_ASSERT_EQUAL(intercom.icon_state, "intercom-p", "an EMPed intercom must show the off icon immediately, not on the next poll")
+	intercom.end_emp_effect(intercom.emped)
+	TEST_ASSERT_EQUAL(intercom.emped, 0, "end_emp_effect must clear the EMP counter")
+	TEST_ASSERT(intercom.on, "after the EMP ends the intercom must re-check area power and come back on")
+
+	// Переезд: подписка следует за областью (старая область больше не влияет).
+	var/turf/second_floor = get_step(floor, EAST) || get_step(floor, WEST)
+	TEST_ASSERT_NOTNULL(second_floor, "test zone must have a neighbouring turf")
+	var/area/second_area = new /area
+	allocated += second_area
+	second_area.contents.Add(second_floor)
+	intercom.forceMove(second_floor)
+	second_area.power_equip = FALSE
+	second_area.power_change()
+	TEST_ASSERT(!intercom.on, "after moving, the NEW area's power change must drive the intercom")
+	test_area.power_equip = FALSE
+	test_area.power_change()
+	second_area.power_equip = TRUE
+	second_area.power_change()
+	TEST_ASSERT(intercom.on, "the OLD area's state must no longer matter after the move")
+
+	intercom.forceMove(floor)
+	original_area.contents.Add(floor)
+	original_area.contents.Add(second_floor)
+
+/// D2: конвейерный свитч событийный - не сидит в процессинге, interact()
+/// сразу гоняет ленты, LateInitialize синхронизирует их на старте.
+/datum/unit_test/conveyor_switch_event_driven/Run()
+	var/turf/floor = run_loc_floor_bottom_left
+	var/obj/machinery/conveyor_switch/toggle = allocate(/obj/machinery/conveyor_switch, null, "unit_test_conv")
+	TEST_ASSERT(!(toggle.datum_flags & DF_ISPROCESSING), "conveyor switch must not process at all")
+
+	var/turf/belt_turf = get_step(floor, NORTH) || get_step(floor, SOUTH)
+	TEST_ASSERT_NOTNULL(belt_turf, "test zone must have a neighbouring turf for the belt")
+	var/obj/machinery/conveyor/belt = allocate(/obj/machinery/conveyor, belt_turf, EAST, "unit_test_conv")
+	belt.set_machine_stat(0) // резервация без питания - update() лент сбрасывает operating под NOPOWER
+	TEST_ASSERT_EQUAL(belt.operating, 0, "the belt must start idle")
+
+	// interact() без очереди: ленты приходят в движение сразу.
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human)
+	toggle.interact(user)
+	TEST_ASSERT(toggle.position != 0, "interact() must flip the switch position")
+	TEST_ASSERT_EQUAL(belt.operating, toggle.position, "interact() must drive the linked belts immediately")
+	TEST_ASSERT(belt.datum_flags & DF_ISPROCESSING, "a running belt must be processing")
+
+	// Выключение тем же путём.
+	toggle.interact(user)
+	TEST_ASSERT_EQUAL(toggle.position, 0, "the second interact() must switch the belts off")
+	TEST_ASSERT_EQUAL(belt.operating, 0, "the belts must stop when the switch goes off")
+	// Лента сама уйдёт из процессинга через PROCESS_KILL; погасим для детерминизма.
+	STOP_PROCESSING(SSfastprocess, belt)
+
+/// D3: SSU спит без МОДа и с полной ячейкой, заряжает только разряженную.
+/datum/unit_test/suit_storage_charge_gate/Run()
+	var/obj/machinery/suit_storage_unit/unit = allocate(/obj/machinery/suit_storage_unit)
+	unit.set_machine_stat(0)
+
+	// Пустой SSU паркуется первым же фаером.
+	unit.process(2)
+	TEST_ASSERT(unit.machine_sleeping, "an SSU with no MOD inside must park itself")
+	TEST_ASSERT(!(unit.datum_flags & DF_ISPROCESSING), "a parked SSU must leave the processing list")
+
+	// Вставленный МОД с разряженной ячейкой заряжается.
+	var/obj/item/mod/control/suit = allocate(/obj/item/mod/control)
+	suit.forceMove(unit)
+	unit.mod = suit
+	if(!suit.cell)
+		suit.cell = new /obj/item/stock_parts/cell(suit)
+	suit.cell.maxcharge = 1000
+	suit.cell.charge = 100
+	unit.machine_wake()
+	TEST_ASSERT(!unit.machine_sleeping, "machine_wake() must resume the SSU")
+	var/charge_before = suit.cell.charge
+	unit.process(2)
+	TEST_ASSERT(suit.cell.charge > charge_before, "an awake SSU must charge the docked MOD cell")
+	TEST_ASSERT(!unit.machine_sleeping, "the SSU must keep processing while the cell is below max")
+
+	// Полная ячейка - снова сон.
+	suit.cell.charge = suit.cell.maxcharge
+	unit.process(2)
+	TEST_ASSERT(unit.machine_sleeping, "an SSU with a full MOD cell must park itself")
+	unit.mod = null
+	suit.forceMove(run_loc_floor_bottom_left)
+
+/// D4: секвей с полным зарядом уходит из SSfastprocess, регэн дельта-таймовый.
+/datum/unit_test/secway_charge_park/Run()
+	var/obj/vehicle/ridden/secway/bike = allocate(/obj/vehicle/ridden/secway)
+
+	bike.charge = bike.chargemax
+	TEST_ASSERT_EQUAL(bike.process(1), PROCESS_KILL, "a fully charged secway's process() must return PROCESS_KILL")
+
+	bike.charge = bike.chargemax - 10
+	bike.last_tick = world.time
+	TEST_ASSERT_NOTEQUAL(bike.process(1), PROCESS_KILL, "a discharged secway must keep processing")
+
+	// Дельта-регэн: прошедшее время конвертируется в заряд с клампом в максимум.
+	bike.charge = 0
+	bike.last_tick = world.time - 10
+	bike.process(1)
+	TEST_ASSERT_EQUAL(bike.charge, min(bike.chargerate * 10, bike.chargemax), "regen must scale with elapsed world.time")
+	STOP_PROCESSING(SSfastprocess, bike)
+
+/// D5: гейгер хардсьюта спит вне радиации и просыпается от rad_act().
+/datum/unit_test/hardsuit_geiger_park/Run()
+	var/obj/item/clothing/head/helmet/space/hardsuit/helmet = allocate(/obj/item/clothing/head/helmet/space/hardsuit)
+
+	// Две пустые итерации - и в сон с погашенным звуком.
+	TEST_ASSERT_NOTEQUAL(helmet.process(2), PROCESS_KILL, "the first quiet fire is a grace period")
+	TEST_ASSERT_EQUAL(helmet.process(2), PROCESS_KILL, "the second quiet fire must park the geiger")
+	TEST_ASSERT_EQUAL(helmet.soundloop.last_radiation, 0, "the parked geiger must silence its soundloop")
+	STOP_PROCESSING(SSobj, helmet) // как поступает сабсистема с PROCESS_KILL
+
+	// Радиация будит и снова считается.
+	helmet.rad_act(50)
+	TEST_ASSERT(helmet.datum_flags & DF_ISPROCESSING, "rad_act() must wake the geiger")
+	TEST_ASSERT_NOTEQUAL(helmet.process(2), PROCESS_KILL, "a fire with counts pending must keep processing")
+	TEST_ASSERT(helmet.soundloop.last_radiation > 0, "the woken geiger must report radiation to its soundloop")
+
+/// D6: ячейка стартового APC живёт внутри APC - гейт блэкбокса cell_used по
+/// loc снова работает (ячейка в нуллспейсе тэллила каждый чардж, 67k+/раунд).
+/datum/unit_test/apc_cell_containment/Run()
+	TEST_ASSERT(length(GLOB.apcs_list), "the CI map must have roundstart APCs")
+	var/checked = 0
+	for(var/obj/machinery/power/apc/area_apc as anything in GLOB.apcs_list)
+		if(!area_apc.cell)
+			continue
+		checked++
+		TEST_ASSERT_EQUAL(area_apc.cell.loc, area_apc, "roundstart APC cell must be inside its APC ([area_apc] at [AREACOORD(area_apc)])")
+		if(checked >= 25) // выборки хватает: все идут одним путём Initialize
+			break
+	TEST_ASSERT(checked, "at least one roundstart APC must have a cell")

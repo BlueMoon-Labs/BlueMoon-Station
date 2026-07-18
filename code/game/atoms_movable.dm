@@ -54,6 +54,10 @@
 	/// acts as a key to the list of spatial grid contents types we exist in via SSspatial_grid.spatial_grid_categories.
 	/// We do it like this to prevent people trying to mutate them and to save memory on holding the lists ourselves
 	var/spatial_grid_key
+	///каналы важного рекурсивного содержимого: канал -> список movables.
+	///мы числимся в своих каналах сами и в каналах каждого вложенного loc,
+	///поэтому шкаф со слышащим мобом внутри двигает моба по ячейкам грида
+	var/list/important_recursive_contents
 	var/list/acted_explosions	//for explosion dodging
 	var/datum/forced_movement/force_moving = null	//handled soley by forced_movement.dm
 
@@ -124,8 +128,20 @@
 		if(OVERLAY_LIGHT_BEAM)
 			AddComponent(/datum/component/overlay_lighting, is_directional = TRUE, is_beam = TRUE)
 
+	//центральная регистрация слышащих в спатиал-гриде: у нас слышимость
+	//задаётся флагом HEAR_1, а не вызовами become_hearing_sensitive по месту.
+	//если тип выставляет флаг динамически после Initialize - он обязан сам
+	//позвать become_hearing_sensitive() (см. passworddoor, cellphone)
+	if(flags_1 & HEAR_1)
+		become_hearing_sensitive(INNATE_TRAIT)
+
 
 /atom/movable/Destroy(force)
+	//вычищаем свои ссылки из ячеек грида; записи в important_recursive_contents
+	//вложенных locs вычистит Exited при moveToNullspace ниже
+	if(spatial_grid_key)
+		SSspatial_grid.force_remove_from_grid(src)
+
 	QDEL_NULL(proximity_monitor)
 	QDEL_NULL(language_holder)
 	QDEL_NULL(em_block)
@@ -174,6 +190,10 @@
 		qdel(movable_content)
 
 	moveToNullspace()
+
+	//только после moveToNullspace: Exited чистил записи о нас в контейнерах
+	//по этому списку
+	LAZYNULL(important_recursive_contents)
 
 	vis_locs = null //clears this atom out of all viscontents
 	vis_contents.Cut()
@@ -926,3 +946,123 @@
 */
 /atom/movable/proc/keybind_face_direction(direction)
 	setDir(direction)
+
+// ===== Спатиал-грид: важное рекурсивное содержимое (порт tg) =====
+//
+// movable из грид-канала (слышащий атом, моб с клиентом) числится в
+// important_recursive_contents у себя и у каждого вложенного loc. Когда
+// контейнер пересекает границу ячеек грида, он перекладывает содержимое
+// своих каналов между ячейками (см. Moved в atoms_movement.dm).
+
+/atom/movable/Exited(atom/movable/gone, atom/newLoc)
+	. = ..()
+
+	if(!LAZYLEN(gone.important_recursive_contents))
+		return
+	var/list/nested_locs = get_nested_locs(src) + src
+	for(var/channel in gone.important_recursive_contents)
+		for(var/atom/movable/location as anything in nested_locs)
+			LAZYINITLIST(location.important_recursive_contents)
+			var/list/recursive_contents = location.important_recursive_contents
+			LAZYINITLIST(recursive_contents[channel])
+			recursive_contents[channel] -= gone.important_recursive_contents[channel]
+			//оба наших канала - грид-каналы (строки совпадают), поэтому
+			//опустевший канал сразу снимает и грид-осведомлённость
+			if(!length(recursive_contents[channel]))
+				SSspatial_grid.remove_grid_awareness(location, channel)
+			ASSOC_UNSETEMPTY(recursive_contents, channel)
+			UNSETEMPTY(location.important_recursive_contents)
+
+/atom/movable/Entered(atom/movable/arrived, atom/oldLoc)
+	. = ..()
+
+	if(!LAZYLEN(arrived.important_recursive_contents))
+		return
+	var/list/nested_locs = get_nested_locs(src) + src
+	for(var/channel in arrived.important_recursive_contents)
+		for(var/atom/movable/location as anything in nested_locs)
+			LAZYINITLIST(location.important_recursive_contents)
+			var/list/recursive_contents = location.important_recursive_contents
+			LAZYINITLIST(recursive_contents[channel])
+			if(!length(recursive_contents[channel]))
+				SSspatial_grid.add_grid_awareness(location, channel)
+			recursive_contents[channel] |= arrived.important_recursive_contents[channel]
+
+///стать слышащим: попасть в HEARING-канал ячейки грида и в
+///important_recursive_contents всех вложенных locs
+/atom/movable/proc/become_hearing_sensitive(trait_source = TRAIT_GENERIC)
+	var/already_hearing_sensitive = HAS_TRAIT(src, TRAIT_HEARING_SENSITIVE)
+	ADD_TRAIT(src, TRAIT_HEARING_SENSITIVE, trait_source)
+	if(already_hearing_sensitive) //повторная регистрация продублирует нас в каналах
+		return
+
+	for(var/atom/movable/location as anything in get_nested_locs(src) + src)
+		LAZYINITLIST(location.important_recursive_contents)
+		var/list/recursive_contents = location.important_recursive_contents
+		if(!length(recursive_contents[RECURSIVE_CONTENTS_HEARING_SENSITIVE]))
+			SSspatial_grid.add_grid_awareness(location, SPATIAL_GRID_CONTENTS_TYPE_HEARING)
+		recursive_contents[RECURSIVE_CONTENTS_HEARING_SENSITIVE] += list(src)
+
+	var/turf/our_turf = get_turf(src)
+	SSspatial_grid.add_grid_membership(src, our_turf, SPATIAL_GRID_CONTENTS_TYPE_HEARING)
+
+/**
+ * Перестать быть слышащим, если не осталось других источников трейта.
+ *
+ * * trait_source - источник трейта или ALL для принудительного снятия
+ */
+/atom/movable/proc/lose_hearing_sensitivity(trait_source = TRAIT_GENERIC)
+	if(!HAS_TRAIT(src, TRAIT_HEARING_SENSITIVE))
+		return
+	REMOVE_TRAIT(src, TRAIT_HEARING_SENSITIVE, trait_source)
+	if(HAS_TRAIT(src, TRAIT_HEARING_SENSITIVE))
+		return
+
+	var/turf/our_turf = get_turf(src)
+	SSspatial_grid.remove_grid_membership(src, our_turf, SPATIAL_GRID_CONTENTS_TYPE_HEARING)
+
+	for(var/atom/movable/location as anything in get_nested_locs(src) + src)
+		var/list/recursive_contents = location.important_recursive_contents
+		if(!recursive_contents)
+			continue
+		recursive_contents[RECURSIVE_CONTENTS_HEARING_SENSITIVE] -= src
+		if(!length(recursive_contents[RECURSIVE_CONTENTS_HEARING_SENSITIVE]))
+			SSspatial_grid.remove_grid_awareness(location, SPATIAL_GRID_CONTENTS_TYPE_HEARING)
+		ASSOC_UNSETEMPTY(recursive_contents, RECURSIVE_CONTENTS_HEARING_SENSITIVE)
+		UNSETEMPTY(location.important_recursive_contents)
+
+///при логине: прописать моба в CLIENTS-канал грида и вложенных locs
+/mob/proc/enable_client_mobs_in_contents()
+	//идемпотентно: повторный Login на том же мобе не должен дублировать записи
+	if(important_recursive_contents && (src in important_recursive_contents[RECURSIVE_CONTENTS_CLIENT_MOBS]))
+		return
+
+	for(var/atom/movable/movable_loc as anything in get_nested_locs(src) + src)
+		LAZYINITLIST(movable_loc.important_recursive_contents)
+		var/list/recursive_contents = movable_loc.important_recursive_contents
+		if(!length(recursive_contents[RECURSIVE_CONTENTS_CLIENT_MOBS]))
+			SSspatial_grid.add_grid_awareness(movable_loc, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS)
+		LAZYINITLIST(recursive_contents[RECURSIVE_CONTENTS_CLIENT_MOBS])
+		recursive_contents[RECURSIVE_CONTENTS_CLIENT_MOBS] |= src
+
+	var/turf/our_turf = get_turf(src)
+	SSspatial_grid.add_grid_membership(src, our_turf, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS)
+
+///при логауте: убрать моба из CLIENTS-канала грида и вложенных locs
+/mob/proc/clear_important_client_contents()
+	//Logout бывает и у мобов, которые в канал не попадали
+	if(!important_recursive_contents || !(src in important_recursive_contents[RECURSIVE_CONTENTS_CLIENT_MOBS]))
+		return
+
+	var/turf/our_turf = get_turf(src)
+	SSspatial_grid.remove_grid_membership(src, our_turf, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS)
+
+	for(var/atom/movable/movable_loc as anything in get_nested_locs(src) + src)
+		LAZYINITLIST(movable_loc.important_recursive_contents)
+		var/list/recursive_contents = movable_loc.important_recursive_contents
+		LAZYINITLIST(recursive_contents[RECURSIVE_CONTENTS_CLIENT_MOBS])
+		recursive_contents[RECURSIVE_CONTENTS_CLIENT_MOBS] -= src
+		if(!length(recursive_contents[RECURSIVE_CONTENTS_CLIENT_MOBS]))
+			SSspatial_grid.remove_grid_awareness(movable_loc, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS)
+		ASSOC_UNSETEMPTY(recursive_contents, RECURSIVE_CONTENTS_CLIENT_MOBS)
+		UNSETEMPTY(movable_loc.important_recursive_contents)

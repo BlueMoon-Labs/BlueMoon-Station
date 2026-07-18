@@ -19,6 +19,9 @@
 	var/repeatable_weight_decrease = 2
 	/// List of players that are being drafted for this rule
 	var/list/mob/candidates = list()
+	/// Исполнение уже запланировано (execute_action -> addtimer(execute_scheduled_ruleset)):
+	/// снапшоты кандидатов нужны отложенному execute(), отпускать их сейчас нельзя.
+	var/execution_pending = FALSE
 	/// List of players that were selected for this rule
 	var/list/datum/mind/assigned = list()
 	/// Preferences flag such as ROLE_WIZARD that need to be turned on for players to be antag
@@ -116,6 +119,7 @@
 /// Кандидат уже установлен, trim/ready вызваны в SSdirector.on_latejoin; бюджет списан директором.
 /// Остаётся отложенно исполнить рулсет с учётом его delay.
 /datum/dynamic_ruleset/latejoin/execute_action()
+	execution_pending = TRUE
 	addtimer(CALLBACK(mode, TYPE_PROC_REF(/datum/game_mode/dynamic, execute_scheduled_ruleset), src), delay)
 	return TRUE
 
@@ -220,6 +224,13 @@
 /datum/dynamic_ruleset/proc/clean_up()
 	mode.refund_threat(src, cost + (scaled_times * scaling_cost))
 	mode.threat_log += "[worldtime2text()]: [ruletype] [name] refunded [cost + (scaled_times * scaling_cost)]. Failed to execute."
+
+/// Отпустить снапшоты кандидатов. Датумы рулсетов живут до конца раунда, а trim_candidates()
+/// зовётся из preflight каждые несколько секунд - без отпускания последняя пачка ссылок
+/// на мобов висит на датуме вечно (прод-harddel обсервера в list_observers у nuclear).
+/// Звать после того, как потребитель снапшота (preflight/execute) закончил.
+/datum/dynamic_ruleset/proc/release_candidate_snapshots()
+	candidates.Cut()
 
 /// Gets weight of the ruleset
 /// Note that this decreases weight if repeatable is TRUE and repeatable_weight_decrease is higher than 0

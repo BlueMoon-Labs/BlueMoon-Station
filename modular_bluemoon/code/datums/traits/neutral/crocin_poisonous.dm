@@ -25,4 +25,9 @@
 		return
 	var/reagent_amount = target.reagents.get_reagent_amount(used_reagent)
 	if(reagent_amount < 2)
-		target.reagents.add_reagent(used_reagent, 2 - reagent_amount)
+		var/add_volume = 2 - reagent_amount
+		target.reagents.add_reagent(used_reagent, add_volume)
+
+		var/reagent_name = initial(used_reagent.name)
+		user.log_message("add reagent [reagent_name] ([add_volume]u) in [key_name(target)] by quirk «[name]».", LOG_ATTACK)
+		target.log_message("received reagent [reagent_name] ([add_volume]u) from [key_name(user)] by quirk «[name]».", LOG_VICTIM, log_globally=FALSE)

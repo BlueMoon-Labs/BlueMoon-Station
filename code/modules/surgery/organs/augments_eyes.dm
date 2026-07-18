@@ -32,17 +32,26 @@
 		H.remove_hud_from(owner)
 		var/datum/component/neural_interface/old_interface = interface
 		interface = null
-		if(!QDELETED(old_interface))
-			old_interface.RemoveSource(interface_source)
+		if(old_interface)
+			UnregisterSignal(old_interface, COMSIG_PARENT_QDELETING)
+			if(!QDELETED(old_interface))
+				old_interface.RemoveSource(interface_source)
 	else
 		var/datum/atom_hud/H = GLOB.huds[HUD_type]
 		H.add_hud_to(owner)
 		interface = owner.LoadComponent(/datum/component/neural_interface)
+		//компонент общий на моба и самоудаляется, когда пустеет его список
+		//источников - без сигнала вар вечно держал бы мёртвый компонент
+		RegisterSignal(interface, COMSIG_PARENT_QDELETING, PROC_REF(on_interface_qdel), override = TRUE)
 		interface.AddSource(interface_source)
 		if(monitors?.len)
 			interface.add_monitors_by_types(interface_source, monitors)
 
 	active = !active
+
+/obj/item/organ/cyberimp/eyes/hud/proc/on_interface_qdel(datum/source)
+	SIGNAL_HANDLER
+	interface = null
 
 /obj/item/organ/cyberimp/eyes/hud/code_activate()
 	. = ..()

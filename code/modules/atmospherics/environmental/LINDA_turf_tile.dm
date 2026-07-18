@@ -495,6 +495,18 @@
 			else if(vented_moles > MINIMUM_MOLES_DELTA_TO_MOVE)
 				our_excited_group.dismantle_cooldown = 0
 				cached_atmos_cooldown = 0
+			else if(pressure_before >= SPACE_DRAIN_FINISH_PRESSURE)
+				// Vacuum exception (Baystation lesson): a superheated near-vacuum
+				// tile (>=~10000K) holds survivable pressure on sub-0.1 mol content,
+				// so both mole-gated resets above miss it and the tile would go to
+				// sleep visibly pressurized against space. Pressure decays toward
+				// the vent_everything threshold every cycle, so this cannot pin the
+				// tile awake forever.
+				// The GROUP lifecycle must be held off too: without this the
+				// group's dismantle_cooldown keeps ticking and dismantle() pulls
+				// the still-draining tile out of the active list mid-leak.
+				our_excited_group.dismantle_cooldown = 0
+				cached_atmos_cooldown = 0
 			if(volume_cache > 0)
 				var/pressure_after = vent_everything ? 0 : (moles_before * (1 - our_share_coeff) * R_IDEAL_GAS_EQUATION * our_air.temperature / volume_cache)
 				var/pressure_delta_space = pressure_before - pressure_after
@@ -564,6 +576,19 @@
 			PLANET_SHARE_CHECK
 
 	var/reaction_result = our_air.react(src)
+
+	// Feed the group lifecycle: a member with a live reaction or hotspot marks
+	// the whole group so tick_lifecycle can hold off breakdown/dismantle
+	// (averaging mid-burn smears the fire's heat across the group).
+	if(our_excited_group)
+		// Реакции сами возвращают VOLATILE_REACTION (нобиум, антинобиум,
+		// фреоновое пламя) - бит доезжает сюда через OR в react().
+		our_excited_group.turf_reactions |= reaction_result
+		// Волатильным считается и generic combustion без хотспота (genericfire
+		// пишет reaction_results["fire"], но hotspot не создаёт) - иначе
+		// брейкдаун усреднит группу посреди такого горения.
+		if(active_hotspot || ((reaction_result & REACTING) && our_air.reaction_results["fire"]))
+			our_excited_group.turf_reactions |= VOLATILE_REACTION
 
 	update_visuals()
 
@@ -644,6 +669,9 @@
 	var/list/turf_list = list()
 	var/breakdown_cooldown = 0
 	var/dismantle_cooldown = 0
+	/// Reaction flags OR-ed in by members during process_cell this air pass;
+	/// consumed and reset by tick_lifecycle (tg turf_reactions port).
+	var/turf_reactions = NO_REACTION
 	/// Members currently excited. Maintained incrementally on every excited-flag
 	/// transition and recounted exactly by self_breakdown, so the dismantle
 	/// decision does not scan the whole turf_list every group-stage tick.
@@ -679,6 +707,7 @@
 			turf_list |= T
 		awake_members += E.awake_members
 		E.awake_members = 0
+		turf_reactions |= E.turf_reactions // a burning group keeps its volatile gate through merges
 		E.turf_list.Cut()
 		reset_cooldowns()
 	else
@@ -690,6 +719,7 @@
 		E.awake_members += awake_members
 		awake_members = 0
 		turf_list.Cut()
+		E.turf_reactions |= turf_reactions // a burning group keeps its volatile gate through merges
 		E.reset_cooldowns()
 
 /datum/excited_group/proc/reset_cooldowns()
@@ -711,12 +741,49 @@
 	if(awake_members <= 0)
 		dismantle()
 		return
+	// A live fire on a member defers averaging (tg VOLATILE_REACTION gate):
+	// breakdown mid-burn smears the hotspot's heat across the whole group and
+	// can snuff or teleport the fire. A long burn still needs the settled-member
+	// bookkeeping breakdown provides (giant-group churn control), so at the
+	// ceiling we evict resting members WITHOUT averaging - the fire itself is
+	// never touched (tg defers indefinitely; we only add the eviction).
+	// Any reaction at all blocks dismantle.
+	var/volatile_reaction = turf_reactions & VOLATILE_REACTION
 	breakdown_cooldown++
-	dismantle_cooldown++
+	if(!volatile_reaction)
+		dismantle_cooldown++
 	if(breakdown_cooldown >= EXCITED_GROUP_BREAKDOWN_CYCLES)
-		self_breakdown(poke_resting = TRUE)
-	else if(dismantle_cooldown >= EXCITED_GROUP_DISMANTLE_CYCLES)
+		if(!volatile_reaction)
+			self_breakdown(poke_resting = TRUE)
+		else if(breakdown_cooldown >= EXCITED_GROUP_VOLATILE_BREAKDOWN_CEILING)
+			evict_settled_members()
+	else if(dismantle_cooldown >= EXCITED_GROUP_DISMANTLE_CYCLES && !(turf_reactions & (REACTING | STOP_REACTIONS)))
 		dismantle()
+	turf_reactions = NO_REACTION
+
+/// Волатильный потолок: контроль роста turf_list без усреднения газа.
+/// Вечное горение (горелка ТЭГ, плазменный пожар в коридоре) держит группу
+/// живой бесконечно, а единственный штатный выход осевших членов из turf_list -
+/// self_breakdown, который размазал бы топливо и жар по группе. Здесь осевшие
+/// просто выселяются с их текущим газом: любой реальный будущий дельта-обмен
+/// вернёт их через обычные share-пути. Заодно точный пересчёт awake_members
+/// (самолечение дрейфа инкрементального счётчика, как в self_breakdown).
+/datum/excited_group/proc/evict_settled_members()
+	var/awake_recount = 0
+	var/list/to_evict = list()
+	for(var/turf/open/T as anything in turf_list)
+		if(!istype(T))
+			continue
+		if(T.excited)
+			awake_recount++
+			continue
+		to_evict += T
+	awake_members = awake_recount
+	for(var/turf/open/T as anything in to_evict)
+		turf_list -= T
+		if(T.excited_group == src)
+			T.excited_group = null
+	breakdown_cooldown = 0
 
 /datum/excited_group/proc/self_breakdown(space_is_all_consuming = FALSE, poke_resting = FALSE)
 	if(!length(turf_list))

@@ -686,12 +686,30 @@ GLOBAL_LIST_EMPTY(allCasters)
 	update_icon()
 
 /obj/machinery/newscaster/proc/newsAlert(channel)
+	// Озвучка только при аудитории рядом: публикация новости дёргает этот прок на
+	// КАЖДОМ ньюскастере станции, и say+playsound по пустым коридорам складывались
+	// в ~300мс на новость. Лампочка и таймер сброса работают всегда.
+	var/has_audience = has_nearby_audience()
 	if(channel)
-		say("<b>Свежие новости от [channel]</b>!")
+		if(has_audience)
+			say("<b>Свежие новости от [channel]</b>!")
 		alert = TRUE
 		update_icon()
 		addtimer(CALLBACK(src,PROC_REF(remove_alert)),alert_delay,TIMER_UNIQUE|TIMER_OVERRIDE)
-		playsound(loc, 'sound/machines/twobeep.ogg', 75, 1)
-	else
+		if(has_audience)
+			playsound(loc, 'sound/machines/twobeep.ogg', 75, 1)
+	else if(has_audience)
 		say("Attention! Wanted issue distributed!")
 		playsound(loc, 'sound/machines/warning-buzzer.ogg', 75, 1)
+
+/// Есть ли рядом клиент-моб (включая гхостов), ради которого стоит говорить и пищать.
+/obj/machinery/newscaster/proc/has_nearby_audience(distance = 9)
+	var/turf/our_turf = get_turf(src)
+	if(!our_turf)
+		return FALSE
+	if(!SSspatial_grid.initialized)
+		return TRUE // до инициализации грида не гейтим - поведение как раньше
+	for(var/mob/player as anything in SSspatial_grid.orthogonal_range_search(our_turf, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS, distance))
+		if(get_dist(our_turf, player) <= distance)
+			return TRUE
+	return FALSE

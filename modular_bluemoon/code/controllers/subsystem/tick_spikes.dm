@@ -30,6 +30,8 @@
 #define TICK_SPIKES_HISTORY 600
 /// Размер кольца сырых тяжёлых прогонов подсистем МК
 #define TICK_SPIKES_HEAVY_HISTORY 128
+/// Размер кольца медленных единиц работы вне МК (таймер-колбеки, отложенные вербы, Topic)
+#define TICK_SPIKES_SLOW_WORK_HISTORY 64
 /// Сколько последних тиков печатать в отчёте о событии
 #define TICK_SPIKES_REPORT_WINDOW 20
 /// За какое окно (в игровом времени) собирать тяжёлые прогоны в отчёт о событии
@@ -101,6 +103,18 @@ SUBSYSTEM_DEF(tick_spikes)
 	var/last_run_subsystem_name
 	var/last_run_subsystem_time = 0
 
+	// --- Кольцо медленных единиц работы вне слотов подсистем: таймер-колбеки (SStimer),
+	// отложенные вербы (SSverb_manager), client/Topic. Раньше весь этот DM был анонимным -
+	// спайк классифицировался как "DM вне МК" без имени виновника ---
+	var/list/slow_work_time
+	var/list/slow_work_kind
+	var/list/slow_work_desc
+	var/list/slow_work_cost
+	var/slow_work_pos = 0
+	/// Порог стоимости (мс синхронной части, до первого сна), с которого единица работы
+	/// попадает в кольцо. Общий для всех точек замера, крутится через VV.
+	var/slow_work_threshold_ms = 30
+
 	// --- Состояние часов ---
 	var/has_baseline = FALSE
 	var/last_ms = 0
@@ -124,6 +138,9 @@ SUBSYSTEM_DEF(tick_spikes)
 	var/started_profiler = FALSE
 	var/profile_dumps_done = 0
 	var/last_profile_dump_ms = 0
+	///монотонный номер для имён файлов дампов: НЕ сбрасывается на start_capture,
+	///иначе авто-дамп и дамп новой сессии склеили бы два JSON в один файл
+	var/profile_dump_seq = 0
 	/// Минимум мс между дампами профайлера
 	var/profile_dump_cooldown_ms = 15000
 	/// world.time, до которого спайки считаются самонаведёнными (после нашего же дампа)
@@ -152,6 +169,38 @@ SUBSYSTEM_DEF(tick_spikes)
 
 /datum/controller/subsystem/tick_spikes/PreInit()
 	reset_state()
+#if DM_VERSION >= 515
+	// Always-on SendMaps profiling: the proc profiler can't see render/maptick
+	// cost at all, and SendMaps spikes used to be diagnosable only during an
+	// admin-started capture session. The sendmaps profile is a small aggregate
+	// table (negligible overhead), so keep it running from boot and auto-dump
+	// it whenever a spike classifies as SendMaps (see try_dump_profile).
+	world.Profile(PROFILE_START, type = "sendmaps")
+#endif
+
+/// Пересоздание МК (NEW_SS_GLOBAL): PreInit() нового инстанса всё равно
+/// обнулит кольца и статистику, поэтому переносим только то, что он не трогает -
+/// админские настройки, активную сессию захвата и монотонный номер дампов
+/// (без него следующий дамп доклеился бы WRITE_FILE'ом в старый JSON-файл).
+/datum/controller/subsystem/tick_spikes/Recover()
+	spike_threshold_ms = SStick_spikes.spike_threshold_ms
+	heavy_run_threshold = SStick_spikes.heavy_run_threshold
+	announce_threshold_ms = SStick_spikes.announce_threshold_ms
+	announce_to_admins = SStick_spikes.announce_to_admins
+	announce_cooldown_ms = SStick_spikes.announce_cooldown_ms
+	last_announce_ms = SStick_spikes.last_announce_ms
+	capture_until = SStick_spikes.capture_until
+	started_profiler = SStick_spikes.started_profiler
+	profile_dumps_done = SStick_spikes.profile_dumps_done
+	last_profile_dump_ms = SStick_spikes.last_profile_dump_ms
+	profile_dump_seq = SStick_spikes.profile_dump_seq
+	profile_dump_cooldown_ms = SStick_spikes.profile_dump_cooldown_ms
+	self_inflicted_until = SStick_spikes.self_inflicted_until
+	full_event_min_interval_ms = SStick_spikes.full_event_min_interval_ms
+	log_path = SStick_spikes.log_path
+	suppress_side_effects = SStick_spikes.suppress_side_effects
+	ignore_empty_server = SStick_spikes.ignore_empty_server
+	slow_work_threshold_ms = SStick_spikes.slow_work_threshold_ms
 
 /// Полный сброс колец и статистики. Не трогает настройки порогов.
 /datum/controller/subsystem/tick_spikes/proc/reset_state()
@@ -166,6 +215,11 @@ SUBSYSTEM_DEF(tick_spikes)
 	heavy_name = new /list(TICK_SPIKES_HEAVY_HISTORY)
 	heavy_usage = new /list(TICK_SPIKES_HEAVY_HISTORY)
 	heavy_pos = 0
+	slow_work_time = new /list(TICK_SPIKES_SLOW_WORK_HISTORY)
+	slow_work_kind = new /list(TICK_SPIKES_SLOW_WORK_HISTORY)
+	slow_work_desc = new /list(TICK_SPIKES_SLOW_WORK_HISTORY)
+	slow_work_cost = new /list(TICK_SPIKES_SLOW_WORK_HISTORY)
+	slow_work_pos = 0
 	has_baseline = FALSE
 	last_ms = 0
 	last_world = 0
@@ -275,6 +329,47 @@ SUBSYSTEM_DEF(tick_spikes)
 		order += i
 	return order
 
+/**
+ * Запись медленной единицы работы вне слотов подсистем (пишут SStimer,
+ * SSverb_manager и client/Topic при стоимости >= slow_work_threshold_ms).
+ * kind - короткий тип ("таймер"/"верб"/"Topic"), desc - что именно исполнялось.
+ */
+/datum/controller/subsystem/tick_spikes/proc/record_slow_work(kind, desc, cost_ms)
+	slow_work_pos = (slow_work_pos % TICK_SPIKES_SLOW_WORK_HISTORY) + 1
+	slow_work_time[slow_work_pos] = world.time
+	slow_work_kind[slow_work_pos] = kind
+	slow_work_desc[slow_work_pos] = desc
+	slow_work_cost[slow_work_pos] = cost_ms
+
+/// Описание колбека для кольца медленной работы: тип объекта + прок.
+/// Зовётся только для уже пойманных медленных вызовов - стоимость строк не важна.
+/datum/controller/subsystem/tick_spikes/proc/callback_desc(datum/callback/callback)
+	if(!istype(callback))
+		return "не-колбек"
+	var/object_part
+	if(istext(callback.object)) //GLOBAL_PROC - магическая строка
+		object_part = "GLOBAL_PROC"
+	else if(isnull(callback.object))
+		object_part = "null"
+	else
+		object_part = "[callback.object.type]"
+	return "[object_part] -> [callback.delegate]"
+
+/// Медленные единицы работы за окно [since_world, сейчас] в текстовые строки (хронологически)
+/datum/controller/subsystem/tick_spikes/proc/collect_slow_work(since_world)
+	var/list/lines = list()
+	var/list/order = list()
+	for(var/i in slow_work_pos + 1 to TICK_SPIKES_SLOW_WORK_HISTORY)
+		order += i
+	for(var/i in 1 to slow_work_pos)
+		order += i
+	for(var/i in order)
+		var/work_time = slow_work_time[i]
+		if(isnull(work_time) || work_time < since_world)
+			continue
+		lines += "  [time_stamp_from_world(work_time)] (wt [work_time]) [slow_work_kind[i]]: [slow_work_desc[i]] - [round(slow_work_cost[i], 0.1)]мс"
+	return lines
+
 /// Форматирует world.time в человекочитаемое станционное время
 /datum/controller/subsystem/tick_spikes/proc/time_stamp_from_world(world_ds)
 	return gameTimestamp("hh:mm:ss", world_ds)
@@ -357,6 +452,11 @@ SUBSYSTEM_DEF(tick_spikes)
 		event += "хардделы за последние [TICK_SPIKES_HEAVY_WINDOW / 10] сек (одиночный дорогой del() - типовой виновник спайков в слоте Garbage):"
 		event += harddel_lines
 
+	var/list/slow_work_lines = collect_slow_work(now_world - TICK_SPIKES_HEAVY_WINDOW)
+	if(length(slow_work_lines))
+		event += "медленные таймер-колбеки/вербы/Topic за последние [TICK_SPIKES_HEAVY_WINDOW / 10] сек (>=[slow_work_threshold_ms]мс синхронной части - именует DM вне МК):"
+		event += slow_work_lines
+
 	event += "последние тики (время | дрифт мс | usage% до МК | cpu% | map_cpu%):"
 	var/window = min(TICK_SPIKES_REPORT_WINDOW, samples_collected)
 	for(var/offset = window - 1, offset >= 0, offset--)
@@ -381,8 +481,22 @@ SUBSYSTEM_DEF(tick_spikes)
 			message_admins("Тик-спайк: [round(drift)]мс, источник: [spike_class]. Подробности: Debug -> Tick Spikes Report.")
 
 /// Дамп окна профайлера на спайке (только при активном захвате). Возвращает строку для события или null.
+/// Исключение: sendmaps-профиль работает всегда (см. PreInit), поэтому SendMaps-спайки
+/// дампят его и БЕЗ сессии захвата - проковский профайлер их всё равно не объясняет.
 /datum/controller/subsystem/tick_spikes/proc/try_dump_profile(drift, now_ms, spike_class)
-	if(suppress_side_effects || !capture_until || world.time > capture_until)
+	if(suppress_side_effects)
+		return null
+	if(!capture_until || world.time > capture_until)
+#if DM_VERSION >= 515
+		if(spike_class == TICK_SPIKE_CLASS_SENDMAPS && (now_ms - last_profile_dump_ms >= profile_dump_cooldown_ms))
+			last_profile_dump_ms = now_ms
+			profile_dumps_done++
+			profile_dump_seq++
+			self_inflicted_until = world.time + (TICK_SPIKES_SELF_INFLICTED_TICKS * world.tick_lag)
+			var/auto_sendmaps_name = "tick_spike_sendmaps_[profile_dump_seq].json"
+			WRITE_FILE(file("[GLOB.log_directory]/[auto_sendmaps_name]"), world.Profile(PROFILE_REFRESH, type = "sendmaps", format = "json"))
+			return "sendmaps-профайл (авто, без захвата) записан в [auto_sendmaps_name]"
+#endif
 		return null
 	if(spike_class == TICK_SPIKE_CLASS_SELF)
 		return "дамп профайлера пропущен: спайк вызван предыдущим дампом"
@@ -393,16 +507,17 @@ SUBSYSTEM_DEF(tick_spikes)
 #else
 	last_profile_dump_ms = now_ms
 	profile_dumps_done++
+	profile_dump_seq++
 	// Наш собственный дамп растянет следующий тик - не считать его новым спайком
 	self_inflicted_until = world.time + (TICK_SPIKES_SELF_INFLICTED_TICKS * world.tick_lag)
-	var/file_name = "tick_spike_profile_[profile_dumps_done].json"
+	var/file_name = "tick_spike_profile_[profile_dump_seq].json"
 	// PROFILE_REFRESH возвращает данные, но НЕ обнуляет их: снапшот кумулятивный с момента
 	// старта профайлера. Окно между спайками = дифф соседних дампов (числа монотонные).
 	WRITE_FILE(file("[GLOB.log_directory]/[file_name]"), world.Profile(PROFILE_REFRESH, format = "json"))
 	. = "профайлер: кумулятивный снапшот записан в [file_name] (окно = дифф с предыдущим дампом)"
 #if DM_VERSION >= 515
 	if(spike_class == TICK_SPIKE_CLASS_SENDMAPS)
-		var/sendmaps_name = "tick_spike_sendmaps_[profile_dumps_done].json"
+		var/sendmaps_name = "tick_spike_sendmaps_[profile_dump_seq].json"
 		WRITE_FILE(file("[GLOB.log_directory]/[sendmaps_name]"), world.Profile(PROFILE_REFRESH, type = "sendmaps", format = "json"))
 		. += "; sendmaps-профайл в [sendmaps_name]"
 #endif
@@ -432,9 +547,8 @@ SUBSYSTEM_DEF(tick_spikes)
 	if(started_profiler && !CONFIG_GET(flag/auto_profile))
 		SSprofiler.StopProfiling()
 #endif
-#if DM_VERSION >= 515
-	world.Profile(PROFILE_STOP, type = "sendmaps")
-#endif
+	// sendmaps-профиль НЕ останавливаем: он always-on с PreInit (нужен для
+	// авто-дампов SendMaps-спайков вне сессий захвата)
 	started_profiler = FALSE
 	var/summary = "=== ЗАХВАТ ВЫКЛЮЧЕН [automatic ? "(по таймеру)" : "([stopper_key])"]: спайков за сессию [session_spike_count], дампов профайлера [profile_dumps_done] ==="
 	write_to_log(summary)
@@ -472,6 +586,7 @@ SUBSYSTEM_DEF(tick_spikes)
 
 #undef TICK_SPIKES_HISTORY
 #undef TICK_SPIKES_HEAVY_HISTORY
+#undef TICK_SPIKES_SLOW_WORK_HISTORY
 #undef TICK_SPIKES_REPORT_WINDOW
 #undef TICK_SPIKES_HEAVY_WINDOW
 #undef TICK_SPIKES_CLOCK

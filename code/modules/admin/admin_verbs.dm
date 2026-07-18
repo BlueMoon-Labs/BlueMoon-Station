@@ -219,6 +219,7 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	/client/proc/tick_spikes_report,
 	/client/proc/tick_spikes_capture,
 	/client/proc/tick_spikes_simulate,
+	/client/proc/lag_switch_panel,
 	/client/proc/cmd_display_init_log,
 	/client/proc/cmd_display_overlay_log,
 	/client/proc/reload_configuration,

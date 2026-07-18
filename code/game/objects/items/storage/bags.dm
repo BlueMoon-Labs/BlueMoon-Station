@@ -48,8 +48,10 @@
 	STR.max_w_class = WEIGHT_CLASS_SMALL
 	STR.max_combined_w_class = 30
 	STR.max_items = 30
-	STR.can_hold_extra = typecacheof(list(/obj/item/organ/lungs, /obj/item/organ/liver, /obj/item/organ/stomach, /obj/item/clothing/shoes)) - typesof(/obj/item/clothing/shoes/magboots, /obj/item/clothing/shoes/clown_shoes, /obj/item/clothing/shoes/jackboots, /obj/item/clothing/shoes/workboots)
-	STR.cant_hold = typecacheof(list(/obj/item/disk/nuclear, /obj/item/storage/wallet, /obj/item/organ/brain))
+	var/static/list/trash_can_hold_extra = typecacheof(list(/obj/item/organ/lungs, /obj/item/organ/liver, /obj/item/organ/stomach, /obj/item/clothing/shoes)) - typesof(/obj/item/clothing/shoes/magboots, /obj/item/clothing/shoes/clown_shoes, /obj/item/clothing/shoes/jackboots, /obj/item/clothing/shoes/workboots)
+	var/static/list/trash_cant_hold = typecacheof(list(/obj/item/disk/nuclear, /obj/item/storage/wallet, /obj/item/organ/brain))
+	STR.can_hold_extra = trash_can_hold_extra
+	STR.cant_hold = trash_cant_hold
 	// BLUEMOON EDIT START || commented
 	//STR.limited_random_access = TRUE
 	//STR.limited_random_access_stack_position = 3
@@ -124,7 +126,8 @@
 	AddComponent(/datum/component/rad_insulation, 0.01) //please datum mats no more cancer
 	var/datum/component/storage/concrete/stack/STR = GetComponent(/datum/component/storage/concrete/stack)
 	STR.allow_quick_empty = TRUE
-	STR.can_hold = typecacheof(list(/obj/item/stack/ore))
+	var/static/list/ore_can_hold = typecacheof(list(/obj/item/stack/ore))
+	STR.can_hold = ore_can_hold
 	STR.max_w_class = WEIGHT_CLASS_HUGE
 	STR.max_combined_stack_amount = 50
 
@@ -202,7 +205,8 @@
 	. = ..()
 	var/datum/component/storage/concrete/stack/STR = GetComponent(/datum/component/storage/concrete/stack)
 	STR.allow_quick_empty = TRUE
-	STR.can_hold = typecacheof(list(/obj/item/stack/ore))
+	var/static/list/cyborg_ore_can_hold = typecacheof(list(/obj/item/stack/ore))
+	STR.can_hold = cyborg_ore_can_hold
 	STR.max_w_class = WEIGHT_CLASS_HUGE
 	STR.max_combined_stack_amount = 150
 
@@ -214,7 +218,8 @@
 	. = ..()
 	var/datum/component/storage/concrete/stack/STR = GetComponent(/datum/component/storage/concrete/stack)
 	STR.allow_quick_empty = TRUE
-	STR.can_hold = typecacheof(list(/obj/item/stack/ore))
+	var/static/list/large_ore_can_hold = typecacheof(list(/obj/item/stack/ore))
+	STR.can_hold = large_ore_can_hold
 	STR.max_w_class = WEIGHT_CLASS_HUGE
 	STR.max_combined_stack_amount = 150
 
@@ -248,7 +253,8 @@
 	STR.max_w_class = WEIGHT_CLASS_NORMAL
 	STR.max_combined_w_class = 100
 	STR.max_items = 100
-	STR.can_hold = typecacheof(list(/obj/item/reagent_containers/food/snacks/grown, /obj/item/seeds, /obj/item/grown, /obj/item/reagent_containers/honeycomb, /obj/item/disk/plantgene))
+	var/static/list/plants_can_hold = typecacheof(list(/obj/item/reagent_containers/food/snacks/grown, /obj/item/seeds, /obj/item/grown, /obj/item/reagent_containers/honeycomb, /obj/item/disk/plantgene))
+	STR.can_hold = plants_can_hold
 
 ////////
 
@@ -287,8 +293,10 @@
 	. = ..()
 	var/datum/component/storage/concrete/stack/STR = GetComponent(/datum/component/storage/concrete/stack)
 	STR.allow_quick_empty = TRUE
-	STR.can_hold = typecacheof(list(/obj/item/stack/sheet))
-	STR.cant_hold = typecacheof(list(/obj/item/stack/sheet/mineral/sandstone, /obj/item/stack/sheet/mineral/wood))
+	var/static/list/snatcher_can_hold = typecacheof(list(/obj/item/stack/sheet))
+	var/static/list/snatcher_cant_hold = typecacheof(list(/obj/item/stack/sheet/mineral/sandstone, /obj/item/stack/sheet/mineral/wood))
+	STR.can_hold = snatcher_can_hold
+	STR.cant_hold = snatcher_cant_hold
 	STR.max_combined_stack_amount = 300
 
 // -----------------------------

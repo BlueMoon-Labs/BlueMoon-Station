@@ -260,7 +260,10 @@
 		has_electronics = APC_ELECTRONICS_SECURED
 		// is starting with a power cell installed, create it and set its charge level
 		if(cell_type)
-			cell = new cell_type
+			//ячейка обязана лежать внутри APC: гейт блэкбокса в cell.use()
+			//отличает питание APC от ручного использования по loc, а ячейка в
+			//нуллспейсе писала cell_used-тэлли на каждый чардж (67k+ за раунд)
+			cell = new cell_type(src)
 			cell.charge = start_charge * cell.maxcharge / 100 		// (convert percentage to actual value)
 
 		//if area isn't specified use current

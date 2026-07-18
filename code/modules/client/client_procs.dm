@@ -34,6 +34,15 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	If you have any  questions about this stuff feel free to ask. ~Carn
 	*/
 
+///Дорогой Topic раньше был неотличим от анонимного "DM вне МК" в логе тик-спайков:
+///замеряет синхронную часть (до первого сна) и пишет медленные в кольцо SStick_spikes
+/client/proc/record_slow_topic(topic_started, href, context)
+	var/cost_ms = TICK_DELTA_TO_MS(TICK_USAGE - topic_started)
+	if(!SStick_spikes || cost_ms < SStick_spikes.slow_work_threshold_ms)
+		return
+	var/href_preview = length(href) > 200 ? "[copytext(href, 1, 201)]..." : href
+	SStick_spikes.record_slow_work("Topic ([context])", "[ckey]: [href_preview]", cost_ms)
+
 /client/Topic(href, href_list, hsrc)
 	// BYOND 516 can invoke browser/topic callbacks with a null usr.
 	// Normalize to this client's mob so tgui callbacks are not dropped.
@@ -41,6 +50,8 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 		usr = mob
 	if(!usr || usr != mob)	//stops us calling Topic for somebody else's client. Also helps prevent usr=null
 		return
+
+	var/topic_started = TICK_USAGE
 
 	// asset_cache
 	var/asset_cache_job
@@ -64,6 +75,7 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 			"ingress usr=[usr] usr_eq_mob=[usr == mob] type=[topic_type] window_id=[window_id] payload_len=[payload_len] href=[href_preview]",
 			context = "client/Topic")
 	if(tgui_Topic(href_list))
+		record_slow_topic(topic_started, href, "tgui")
 		return
 
 	if(href_list["legacy_zoom_set"])
@@ -168,9 +180,12 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 			inprefs = TRUE
 			. = prefs.process_link(usr,href_list)
 			inprefs = FALSE
+			record_slow_topic(topic_started, href, "prefs")
 			return
 		if("vars")
-			return view_var_Topic(href,href_list,hsrc)
+			. = view_var_Topic(href,href_list,hsrc)
+			record_slow_topic(topic_started, href, "vars")
+			return .
 
 	switch(href_list["action"])
 		if("openLink")
@@ -181,6 +196,7 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 			return
 
 	..()	//redirect to hsrc.Topic()
+	record_slow_topic(topic_started, href, hsrc ? "hsrc [hsrc]" : "base")
 
 /client/proc/handle_statpanel_click(list/href_list)
 	var/atom/target = locate(href_list["statpanel_item_target"])
@@ -594,6 +610,11 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 			qdel(src)
 			return FALSE
 
+	// Клиент прошёл все отсеивания (spoofed/blacklist/устаревший/webclient) и
+	// точно остаётся: только теперь о нём можно сообщать подписчикам
+	// (SSlag_switch считает по этому сигналу порог автовключения мер).
+	SEND_GLOBAL_SIGNAL(COMSIG_GLOB_CLIENT_CONNECT, src)
+
 	if( (world.address == address || !address) && !GLOB.host )
 		GLOB.host = key
 		world.update_status()
@@ -626,6 +647,9 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	get_message_output("watchlist entry", ckey)
 	check_ip_intel()
 	validate_key_in_db()
+	// Прогрев jobban-кэша: без него ленивый билд (синхронный SQL) случается в самый
+	// неудачный момент - внутри бита директора или гост-полла, посреди игрового тика.
+	INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(jobban_buildcache), src)
 
 	send_resources()
 
@@ -1152,11 +1176,13 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	. = player_age
 
 /client/proc/findJoinDate()
-	var/list/http = world.Export("http://byond.com/members/[ckey]?format=text")
-	if(!http)
+	// Спит (вызывающий set_client_age_from_db и так спит на SQL), но мир не держит:
+	// медленный byond.com на роундстартовой волне коннектов морозил весь сервер на 10+с.
+	var/datum/http_response/response = world_safe_http_get("http://byond.com/members/[ckey]?format=text")
+	if(!response || response.errored || response.status_code != 200)
 		log_world("Failed to connect to byond member page to age check [ckey]")
 		return
-	var/F = file2text(http["CONTENT"])
+	var/F = response.body
 	if(F)
 		var/regex/R = regex("joined = \"(\\d{4}-\\d{2}-\\d{2})\"")
 		if(R.Find(F))
@@ -1165,8 +1191,8 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 			CRASH("Age check regex failed for [src.ckey]")
 
 /client/proc/validate_key_in_db()
-	// Slow path does world.Export("http://byond.com/members/...") — must not block /client/New().
-	// Return value is unused at the only callsite (client_procs.dm), so fire-and-forget is safe.
+	// Slow path fetches byond.com — must not block /client/New(). Return value is
+	// unused at the only callsite (client_procs.dm), so fire-and-forget is safe.
 	set waitfor = FALSE
 	var/sql_key
 	var/datum/db_query/query_check_byond_key = SSdbcore.NewQuery(
@@ -1180,11 +1206,11 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 		sql_key = query_check_byond_key.item[1]
 	qdel(query_check_byond_key)
 	if(key != sql_key)
-		var/list/http = world.Export("http://byond.com/members/[ckey]?format=text")
-		if(!http)
+		var/datum/http_response/response = world_safe_http_get("http://byond.com/members/[ckey]?format=text")
+		if(!response || response.errored || response.status_code != 200)
 			log_world("Failed to connect to byond member page to get changed key for [ckey]")
 			return
-		var/F = file2text(http["CONTENT"])
+		var/F = response.body
 		if(F)
 			var/regex/R = regex("\\tkey = \"(.+)\"")
 			if(R.Find(F))

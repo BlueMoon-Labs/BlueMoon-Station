@@ -404,3 +404,33 @@
 	closet.trapped = SPOOKY_SKELETON
 	closet.trigger_spooky_trap()
 	TEST_ASSERT_NULL(closet.trapped_mob, "Шкаф удерживает trapped_mob во время delayed qdel")
+
+/// Возврат удаляемого предмета в contents стораджа = вечный harddel (прод: магазин e45
+/// в сатчеле). Оба пути вставки (проверочный и force) обязаны отбрасывать QDELETED-ссылки.
+/datum/unit_test/storage_rejects_qdeleted_item/Run()
+	var/obj/item/storage/backpack/satchel/bag = allocate(/obj/item/storage/backpack/satchel)
+	var/obj/item/ammo_box/magazine/e45/magazine = allocate(/obj/item/ammo_box/magazine/e45)
+	var/datum/component/storage/storage_comp = bag.GetComponent(/datum/component/storage)
+	TEST_ASSERT_NOTNULL(storage_comp, "У сатчела нет компонента стораджа")
+
+	qdel(magazine)
+	TEST_ASSERT(!storage_comp.can_be_inserted(magazine, TRUE), "can_be_inserted пропустил QDELETED-предмет")
+	TEST_ASSERT(!storage_comp.handle_item_insertion(magazine, TRUE), "handle_item_insertion вставил QDELETED-предмет")
+	TEST_ASSERT_NOTEQUAL(magazine.loc, bag, "QDELETED-предмет оказался в contents сатчела")
+
+/// Броня зомби-генлинга уничтожается и внешними путями (integrity) - компонент обязан
+/// отпустить ссылку по сигналу, а не держать её до конца раунда (прод-harddel шлема).
+/datum/unit_test/changeling_zombie_armor_qdel_cleanup/Run()
+	var/mob/living/carbon/human/host = allocate(/mob/living/carbon/human)
+	host.AddComponent(/datum/component/changeling_zombie_infection)
+	var/datum/component/changeling_zombie_infection/infection = host.GetComponent(/datum/component/changeling_zombie_infection)
+	TEST_ASSERT_NOTNULL(infection, "Компонент заражения не установился на тестового человека")
+
+	infection.make_zombie()
+	TEST_ASSERT_NOTNULL(infection.armor, "make_zombie() не выдал броню")
+	TEST_ASSERT_NOTNULL(infection.armor_head, "make_zombie() не выдал шлем")
+
+	qdel(infection.armor_head)
+	TEST_ASSERT_NULL(infection.armor_head, "Компонент оставил ссылку на удалённый шлем")
+	qdel(infection.armor)
+	TEST_ASSERT_NULL(infection.armor, "Компонент оставил ссылку на удалённую броню")

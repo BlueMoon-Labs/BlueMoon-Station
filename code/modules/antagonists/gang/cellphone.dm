@@ -13,6 +13,7 @@ GLOBAL_LIST_EMPTY(gangster_cell_phones)
 	. = ..()
 	GLOB.gangster_cell_phones += src
 	flags_1 |= HEAR_1
+	become_hearing_sensitive(INNATE_TRAIT) //флаг ставится после общего хука в /atom/movable/Initialize
 
 /obj/item/gangster_cellphone/Destroy()
 	GLOB.gangster_cell_phones -= src

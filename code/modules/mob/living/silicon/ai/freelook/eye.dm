@@ -258,7 +258,7 @@
     for(var/obj/machinery/camera/cam in active_cameras)
         if(!cam.can_use())
             continue
-        if(speaker_turf in cam.can_see())
+        if(speaker_turf in cam.get_visible_turfs())
             ai.relay_emote(speaker, emote_message)
             return
 // --

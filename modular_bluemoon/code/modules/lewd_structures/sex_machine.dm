@@ -10,6 +10,8 @@
 
 /obj/machinery/vending/sexmachine/_try_interact(mob/living/user)
 	playsound(src, 'sound/weapons/chainsawhit.ogg', 50, TRUE)
-	user.spawn_gibs()
-	user.adjustBruteLoss(1000)
-	user.forceMove(src)
+	// Раньше труп навсегда прятался в contents автомата (forceMove(src)): вечная ссылка
+	// на моба игрока без пути наружу, в проде ловилась харддел-сканером. Обычный gib
+	// делает то же самое зрелищнее и не оставляет автомату ничего держать.
+	user.gib()
+	return TRUE

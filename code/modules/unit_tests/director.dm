@@ -2605,6 +2605,70 @@
 	SSdirector.wizardmode = saved_wizardmode
 	qdel(probe)
 
+/// Датумы рулсетов живут до конца раунда, а preflight снапшотит мобов в их списки каждые
+/// несколько секунд. Без отпускания последний снапшот вечно держал удалённых мобов
+/// (прод-harddel обсервера в list_observers у nuclear). Контракт: release_candidate_snapshots()
+/// чистит все снапшоты, action_preflight отпускает их всегда, кроме запланированного исполнения.
+/datum/unit_test/director_preflight_releases_candidate_snapshots
+
+/datum/unit_test/director_preflight_releases_candidate_snapshots/Run()
+	var/mob/dead/observer/ghost = allocate(/mob/dead/observer)
+	var/datum/dynamic_ruleset/midround/rule = new
+	rule.candidates = list(ghost)
+	rule.living_players = list(ghost)
+	rule.living_antags = list(ghost)
+	rule.dead_players = list(ghost)
+	rule.list_observers = list(ghost)
+	rule.release_candidate_snapshots()
+	TEST_ASSERT_EQUAL(length(rule.candidates), 0, "release_candidate_snapshots() обязан чистить candidates")
+	TEST_ASSERT_EQUAL(length(rule.living_players), 0, "release_candidate_snapshots() обязан чистить living_players")
+	TEST_ASSERT_EQUAL(length(rule.living_antags), 0, "release_candidate_snapshots() обязан чистить living_antags")
+	TEST_ASSERT_EQUAL(length(rule.dead_players), 0, "release_candidate_snapshots() обязан чистить dead_players")
+	TEST_ASSERT_EQUAL(length(rule.list_observers), 0, "release_candidate_snapshots() обязан чистить list_observers")
+
+	// Базовый midround preflight не трогает списки (возвращает null) - ручное наполнение
+	// проверяет именно точку отпускания в action_preflight.
+	rule.list_observers = list(ghost)
+	SSdirector.action_preflight(rule)
+	TEST_ASSERT_EQUAL(length(rule.list_observers), 0, "action_preflight обязан отпускать снапшоты рулсета без запланированного исполнения")
+
+	rule.execution_pending = TRUE
+	rule.list_observers = list(ghost)
+	SSdirector.action_preflight(rule)
+	TEST_ASSERT_EQUAL(length(rule.list_observers), 1, "action_preflight не должен отпускать снапшоты под запланированным исполнением - их ждёт execute()")
+	qdel(rule)
+
+/// Отложенное исполнение обязано отпускать снапшоты кандидатов по завершении: рулсет
+/// остаётся в пуле директора до конца раунда, и последняя пачка ссылок (раньше резался
+/// только candidates) иначе висит на нём вечно.
+/datum/unit_test/director_scheduled_execution_releases_candidate_snapshots
+
+/datum/unit_test/director_scheduled_execution_releases_candidate_snapshots/Run()
+	var/datum/game_mode/dynamic/mode = SSticker.mode
+	if(!istype(mode))
+		return
+	var/list/saved = SSdirector.capture_simulation_state()
+	try
+		SSdirector.profile = new /datum/director_profile/medium
+		SSdirector.reset_budgets(0)
+		var/mob/dead/observer/ghost = allocate(/mob/dead/observer)
+		// Фикстура с базовым execute() (assigned пуст - вернёт TRUE без побочных эффектов).
+		var/datum/dynamic_ruleset/midround/test_pool_isolation/rule = new
+		rule.mode = mode
+		rule.execution_pending = TRUE
+		rule.candidates = list(ghost)
+		rule.list_observers = list(ghost)
+		mode.execute_scheduled_ruleset(rule)
+		TEST_ASSERT(!rule.execution_pending, "execute_scheduled_ruleset обязан снимать флаг запланированного исполнения")
+		TEST_ASSERT_EQUAL(length(rule.candidates), 0, "Исполнение обязано отпускать candidates рулсета")
+		TEST_ASSERT_EQUAL(length(rule.list_observers), 0, "Исполнение обязано отпускать снапшот list_observers рулсета")
+		mode.executed_rules -= rule // не оставляем фикстуру в бухгалтерии живого тест-раунда
+		qdel(rule)
+	catch(var/exception/e)
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	SSdirector.restore_simulation_state(saved)
+
 /// Регрессия "в харду каждый раунд дьявол": цель копилки, зафиксированная в бедном пуле
 /// первых минут (единственный доступный вариант), обязана перевыбираться, когда в пуле
 /// появляются действия, которых на момент выбора не было.

@@ -148,6 +148,7 @@
 // #define INIT_ORDER_TCG				55
 #define INIT_ORDER_MAPPING			50
 #define INIT_ORDER_TIMETRACK		47
+#define INIT_ORDER_SPATIAL_GRID		46 // после маппинга (нужны z-уровни), до инита атомов (они регистрируются в гриде)
 #define INIT_ORDER_NETWORKS			45
 #define INIT_ORDER_ECONOMY			40
 #define INIT_ORDER_HOLODECK			35
@@ -179,6 +180,7 @@
 #define INIT_ORDER_STATPANELS		-98
 #define INIT_ORDER_HILBERTSHOTEL	-99
 #define INIT_ORDER_CHAT				-100 //Should be last to ensure chat remains smooth during init.
+#define INIT_ORDER_INIT_PROFILER	-101 //Truly last: dumps the init-time profile and clears it from the round profile.
 
 
 // Subsystem fire priority, from lowest to highest priority
@@ -226,6 +228,9 @@
 #define FIRE_PRIORITY_TIMER			700
 #define FIRE_PRIORITY_SOUND_LOOPS 800
 #define FIRE_PRIORITY_TICK_SPIKES	900 // Замер дрифта тика должен идти до тяжёлых тикеров (таймеры и т.д.), чтобы читать usage до основной работы МК
+#define FIRE_PRIORITY_MOUSE_ENTERED	996 // Схлопнутые ховеры мыши: после отложенных вербов, до остального
+#define FIRE_PRIORITY_SPEECH_CONTROLLER	998 // Отложенная речь исполняется раньше остальных отложенных вербов
+#define FIRE_PRIORITY_DELAYED_VERBS	997 // Очередь SSverb_manager: отложенные при перегрузе тика вербы
 #define FIRE_PRIORITY_INPUT			1000 // This must always always be the max highest priority. Player input must never be lost.
 
 // SS runlevels

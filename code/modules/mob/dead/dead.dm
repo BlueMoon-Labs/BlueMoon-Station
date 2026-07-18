@@ -9,6 +9,10 @@ INITIALIZE_IMMEDIATE(/mob/dead)
 
 /mob/dead/Initialize(mapload)
 	SHOULD_CALL_PARENT(FALSE)
+	//пропуск родителей сознательно оставляет мёртвых мобов ВНЕ HEARING-канала
+	//спатиал-грида: их слух ведёт отдельный dead-chat путь say() с префами
+	//(старый view()-обход их тоже не видел из-за invisibility), а в CLIENTS-канал
+	//обсерверов с клиентом кладёт Login
 	if(flags_1 & INITIALIZED_1)
 		stack_trace("Warning: [src]([type]) initialized multiple times!")
 	flags_1 |= INITIALIZED_1

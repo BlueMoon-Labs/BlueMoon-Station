@@ -97,7 +97,10 @@
 /mob/living/simple_animal/hostile/headcrab/Destroy()
 	if(contents)
 		for(var/mob/M in contents)
-			M.loc = get_turf(src)
+			//именно forceMove: голое присваивание loc не зовёт Exited/Moved,
+			//и наш же force_remove_from_grid ниже по ..() снёс бы жертву из
+			//ячеек спатиал-грида (слух/радио) до пересечения границы 17х17
+			M.forceMove(get_turf(src))
 	return ..()
 
 /mob/living/simple_animal/hostile/headcrab/update_icons()

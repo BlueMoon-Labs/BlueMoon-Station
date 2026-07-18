@@ -81,6 +81,7 @@
 // #include "breath.dm"
 // #include "card_mismatch.dm"
 #include "chain_pull_through_space.dm"
+#include "chunks_faction_hash.dm"
 // #include "combat.dm"
 #include "component_tests.dm"
 // #include "connect_loc.dm"
@@ -137,12 +138,14 @@
 #include "reagent_recipe_collisions.dm"
 #include "recursive_hotpaths.dm"
 #include "resist.dm"
+#include "runtime_null_guards.dm"
 // #include "say.dm"
 // #include "security_officer_distribution.dm"
 // #include "serving_tray.dm"
 // #include "siunit.dm"
 #include "sort_tim.dm"
 #include "space_cleaner_gentle.dm"
+#include "spatial_grid.dm"
 #include "spawn_humans.dm"
 #include "spawn_mobs.dm"
 // #include "species_whitelists.dm"
@@ -158,6 +161,7 @@
 #include "timer_sanity.dm"
 #include "unit_test.dm"
 #include "vending_stock_keys.dm"
+#include "verb_manager.dm"
 // #include "wizard.dm"
 
 /// CIT TESTS
@@ -172,18 +176,26 @@
 
 /// BLUEMOON TESTS
 #include "atom_hud_perf.dm"
+#include "atmos_excited_group_lifecycle.dm"
+#include "atmos_pump_solver.dm"
+#include "atmos_vacuum_exception.dm"
 
 #include "auto_cryo.dm"
 #include "bad_defines_defined.dm"
 #include "bugfix_coverage.dm"
 #include "camera_photo_probe.dm"
 #include "can_inject_clothing.dm"
+#include "director_beat_cost.dm"
 #include "disposal_holder.dm"
 #include "fov_hearers.dm"
 #include "gc_refcount.dm"
 #include "ghost_role_limbs.dm"
+#include "gravity_deferred_update.dm"
+#include "manifest_photo_deferred.dm"
+#include "newscaster_alert_gate.dm"
 #include "harddel_cleanup.dm"
 #include "hallucination_stationmessage.dm"
+#include "hilbert_hotel.dm"
 #include "memory_leak_limits.dm"
 #include "human_mob_gc.dm"
 #include "observer_reenter_race.dm"
@@ -191,6 +203,7 @@
 #include "stationroom_landmark.dm"
 #include "latex_lockable.dm"
 #include "parallax_position.dm"
+#include "perf_cross_ports.dm"
 #include "perf_optimizations.dm"
 #include "psychosis_pools.dm"
 #include "preload_size_budgets.dm"
@@ -208,6 +221,7 @@
 #include "tattoo_system.dm"
 #include "techweb_copy.dm"
 #include "tick_spike_recorder.dm"
+#include "update_icon_short_circuit.dm"
 
 #undef TEST_ASSERT
 #undef TEST_ASSERT_EQUAL

@@ -27,6 +27,9 @@
 	..()
 	if(hud_type && slot == ITEM_SLOT_EYES)
 		interface = user.LoadComponent(/datum/component/neural_interface)
+		//компонент общий на моба и самоудаляется, когда пустеет его список
+		//источников - без сигнала вар вечно держал бы мёртвый компонент
+		RegisterSignal(interface, COMSIG_PARENT_QDELETING, PROC_REF(on_interface_qdel), override = TRUE)
 		interface.AddSource(interface_source)
 		if(monitors?.len)
 			interface.add_monitors_by_types(interface_source, monitors)
@@ -49,8 +52,15 @@
 /obj/item/clothing/glasses/hud/proc/clear_neural_interface()
 	var/datum/component/neural_interface/old_interface = interface
 	interface = null
+	if(!old_interface)
+		return
+	UnregisterSignal(old_interface, COMSIG_PARENT_QDELETING)
 	if(!QDELETED(old_interface))
 		old_interface.RemoveSource(interface_source)
+
+/obj/item/clothing/glasses/hud/proc/on_interface_qdel(datum/source)
+	SIGNAL_HANDLER
+	interface = null
 
 /obj/item/clothing/glasses/hud/emp_act(severity)
 	. = ..()

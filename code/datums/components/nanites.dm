@@ -60,7 +60,7 @@
 	var/last_nanite_percent_bar = 0
 
 /datum/component/nanites/Initialize(amount = 100, cloud = 0)
-	if(!isliving(parent) && !istype(parent, /datum/nanite_cloud_backup))
+	if(!isliving(parent) && !istype(parent, /datum/nanite_cloud_backup) && !istype(parent, /obj/item/implant/nanite_pump))
 		return COMPONENT_INCOMPATIBLE
 
 	nanite_volume = amount
@@ -114,6 +114,9 @@
 		RegisterSignal(parent, COMSIG_NANITE_SIGNAL, PROC_REF(receive_signal))
 		RegisterSignal(parent, COMSIG_NANITE_COMM_SIGNAL, PROC_REF(receive_comm_signal))
 
+	if(istype(parent, /obj/item/implant/nanite_pump))
+		RegisterSignal(parent, COMSIG_ATOM_EMP_ACT, PROC_REF(on_emp))
+
 /datum/component/nanites/UnregisterFromParent()
 	UnregisterSignal(parent, list(COMSIG_HAS_NANITES,
 								COMSIG_NANITE_IS_STEALTHY,
@@ -161,6 +164,8 @@
 
 /datum/component/nanites/process()
 	adjust_nanites(null, regen_rate)
+	if(!host_mob)
+		return
 	add_research()
 	for(var/X in programs)
 		var/datum/nanite_program/NP = X
@@ -585,3 +590,10 @@
 /datum/component/nanites/permanent
 	qdel_self_on_depletion = FALSE
 	can_be_deleted = FALSE
+
+/datum/component/nanites/nanite_pump
+	qdel_self_on_depletion = FALSE
+	cloud_active = FALSE
+	requires_cloud_sync = FALSE
+	regen_rate = 2
+	safety_threshold = 0

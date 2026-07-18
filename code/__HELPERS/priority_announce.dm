@@ -118,16 +118,34 @@
 
 	announcement = build_priority_announcement(text, title, type, sender_override, has_important_message)
 
-	var/sound/s = sound(sound)
-	for(var/mob/M in GLOB.player_list)
-		if(!isnewplayer(M) && M.can_hear())
-			to_chat(M, announcement)
-			if(M.client?.prefs?.toggles & SOUND_ANNOUNCEMENTS)
-				var/pref_vol = M.client?.prefs?.get_sound_volume(sound_id)
-				if(isnull(pref_vol))
-					pref_vol = 100
-				s.volume = pref_vol
-				SEND_SOUND(M, s)
+	// Батч-рассылка звука: to_chat асинхронный (очередь SSchat), а вот SEND_SOUND
+	// поштучно на ~100 клиентов держал тик на 400+мс на каждое объявление. Группируем
+	// слушателей по итоговой громкости и шлём звук каждой группе одним нативным выводом.
+	var/sound/announcement_sound = sound(sound)
+	var/list/listeners_by_volume = list()
+	for(var/mob/listener in GLOB.player_list)
+		if(isnewplayer(listener) || !listener.can_hear())
+			continue
+		to_chat(listener, announcement)
+		if(!(listener.client?.prefs?.toggles & SOUND_ANNOUNCEMENTS))
+			continue
+		var/pref_vol = listener.client?.prefs?.get_sound_volume(sound_id)
+		if(isnull(pref_vol))
+			pref_vol = 100
+		if(pref_vol <= 0)
+			continue
+		var/volume_key = "[pref_vol]"
+		var/list/volume_bucket = listeners_by_volume[volume_key]
+		if(!volume_bucket)
+			volume_bucket = list()
+			listeners_by_volume[volume_key] = volume_bucket
+		volume_bucket += listener
+	for(var/volume_key in listeners_by_volume)
+		announcement_sound.volume = text2num(volume_key)
+		// Список-адресат обязан лежать в локальной переменной: для LHS-индексации
+		// "a[b] << x" компилятор эмитит стрим-опкод и это рантаймит "bad savefile or list".
+		var/list/send_bucket = listeners_by_volume[volume_key]
+		SEND_SOUND(send_bucket, announcement_sound)
 
 /**
  * Summon the crew for an emergency meeting

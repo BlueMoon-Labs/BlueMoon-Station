@@ -80,6 +80,7 @@
 				/obj/item/reagent_containers/food/drinks/bottle/blank/small = 10,
 				/obj/item/reagent_containers/food/drinks/bottle/blank/pitcher = 2,
 				/obj/item/reagent_containers/food/drinks/shaker = 2,
+				/obj/item/reagent_containers/food/snacks/customizable/pet_bowl = 5,
 			),
 		),
 	)

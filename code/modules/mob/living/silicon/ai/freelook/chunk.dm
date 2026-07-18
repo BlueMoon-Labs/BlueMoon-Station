@@ -72,7 +72,7 @@
 		if(get_dist(point, c) > CHUNK_SIZE + (CHUNK_SIZE / 2))
 			continue
 
-		for(var/turf/t in c.can_see())
+		for(var/turf/t as anything in c.get_visible_turfs())
 			// Possible optimization: if(turfs[t]) here, rather than &= turfs afterwards.
 			// List associations use a tree or hashmap of some sort (alongside the list itself)
 			//  so are surprisingly fast. (significantly faster than var/thingy/x in list, in testing)
@@ -123,7 +123,7 @@
 		if(!c.can_use())
 			continue
 
-		for(var/turf/t in c.can_see())
+		for(var/turf/t as anything in c.get_visible_turfs())
 			// Possible optimization: if(turfs[t]) here, rather than &= turfs afterwards.
 			// List associations use a tree or hashmap of some sort (alongside the list itself)
 			//  so are surprisingly fast. (significantly faster than var/thingy/x in list, in testing)

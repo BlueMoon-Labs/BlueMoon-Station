@@ -29,6 +29,17 @@
 	QDEL_NULL(dna)
 	last_mind = null
 	GLOB.carbon_list -= src
+	//unequip при QDELING(моб) пропускается (см. /obj/item/Destroy), поэтому
+	//слот-вары отпускаем вручную - иначе зависший в GC моб пиннит экипировку
+	back = null
+	wear_mask = null
+	wear_neck = null
+	internal = null
+	head = null
+	handcuffed = null
+	legcuffed = null
+	//фантом items-галлюцинации живёт в nullspace и без qdel утёк бы насовсем
+	QDEL_NULL(halitem)
 
 /mob/living/carbon/proc/get_breath_buffer()
 	if(!breath_buffer)

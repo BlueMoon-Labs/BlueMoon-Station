@@ -2346,8 +2346,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 									var/class_link = ""
 									var/list/loadout_item = has_loadout_gear(loadout_slot, "[gear.type]")
 									var/extra_loadout_data = ""
-									if(gear.base64icon)
-										extra_loadout_data += "<center><img src='data:image/png;base64,[gear.base64icon]'></center>"
+									var/gear_preview = gear.get_base64icon()
+									if(gear_preview)
+										extra_loadout_data += "<center><img src='data:image/png;base64,[gear_preview]'></center>"
 									if(loadout_item)
 										var/loadout_color_display = "#FFFFFF"
 										var/loadout_color_label = "#FFFFFF"

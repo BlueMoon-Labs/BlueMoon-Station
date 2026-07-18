@@ -518,6 +518,7 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 	new_rule.trim_candidates()
 	if(!new_rule.ready(forced))
 		log_game("DYNAMIC: The ruleset [new_rule.name] couldn't be executed due to lack of elligible players.")
+		new_rule.release_candidate_snapshots()
 		return FALSE
 
 	threat_log += "[worldtime2text()]: Forced rule [new_rule.name]"
@@ -532,16 +533,19 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 		if (new_rule.persistent)
 			current_rules += new_rule
 		SSdirector.note_forced_run(new_rule) // регистрируем запуск в директоре, не трогая бюджет
+		new_rule.release_candidate_snapshots()
 		return TRUE
 	// clean_up() тут не зовём: форс-путь бюджета не списывал, а рефанд clean_up
 	// теперь уходит в кошельки SSdirector - была бы бесплатная накачка бюджета.
 	// Это совпадает со старой семантикой picking_specific_rule (без clean_up на провале).
+	new_rule.release_candidate_snapshots()
 	return FALSE
 
 /// Отложенное исполнение midround/latejoin рулсета, выбранного директором.
 /// Бюджет уже списан в SSdirector.spend_and_execute; здесь - собственно запуск и бухгалтерия.
 /datum/game_mode/dynamic/proc/execute_scheduled_ruleset(datum/dynamic_ruleset/rule)
 	threat_log += "[worldtime2text()]: [rule.ruletype] [rule.name] spent [rule.cost]"
+	rule.execution_pending = FALSE
 	rule.execution_failure_reason = null
 	var/assigned_before = length(rule.assigned)
 	var/prepared = rule.pre_execute(current_players[CURRENT_LIVING_PLAYERS].len)
@@ -558,7 +562,7 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 			message_admins("[key_name(M)] joined the station, and was selected by the [rule.name] ruleset.")
 			log_game("DYNAMIC: [key_name(M)] joined the station, and was selected by the [rule.name] ruleset.")
 		executed_rules += rule
-		rule.candidates.Cut()
+		rule.release_candidate_snapshots()
 		if (rule.persistent)
 			current_rules += rule
 		new_snapshot(rule)
@@ -568,6 +572,7 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 			detail = rule.director_execution_detail(assigned_this_attempt))
 		return TRUE
 	rule.clean_up()
+	rule.release_candidate_snapshots()
 	SSdirector.note_failed_action(rule, retry_replacement = istype(rule, /datum/dynamic_ruleset/midround))
 	var/failure_detail = rule.execution_failure_reason || "execute() вернул FALSE; бюджет возвращён"
 	SSdirector.director_log_beat(SSdirector.collect_signals(), rule, DIRECTOR_BEAT_FAILED, detail = failure_detail)
@@ -626,8 +631,12 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 		if (forced_latejoin_rule.ready(TRUE))
 			if (!forced_latejoin_rule.repeatable)
 				latejoin_rules = remove_from_list(latejoin_rules, forced_latejoin_rule.type)
+			forced_latejoin_rule.execution_pending = TRUE
 			addtimer(CALLBACK(src, TYPE_PROC_REF(/datum/game_mode/dynamic, execute_scheduled_ruleset), forced_latejoin_rule), forced_latejoin_rule.delay)
 			SSdirector.note_forced_run(forced_latejoin_rule) // учёт форса в темпе директора, бюджет не трогаем
+		else
+			// Провал ready: снапшот с латейджойнером иначе висит на рулсете до следующей попытки.
+			forced_latejoin_rule.release_candidate_snapshots()
 		forced_latejoin_rule = null
 		return
 

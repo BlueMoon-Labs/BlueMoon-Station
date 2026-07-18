@@ -140,6 +140,19 @@ SUBSYSTEM_DEF(director)
 	var/sim_last_antag_heavy = FALSE
 	/// Троттлинг лога тяжёлых тиков: имя события -> world.time, с которого можно писать снова
 	var/list/heavy_tick_log_at = list()
+	/// Кэш get_all_ghost_role_eligible на один тик: бит зовёт гост-прифлайты на десятки
+	/// действий подряд, каждый пересобирал список заново (O(гостов^2) внутри) - 250-500мс на бит.
+	var/list/eligible_ghosts_cache
+	var/eligible_ghosts_cache_at = -1
+
+/// Список гост-элиджиблов, пересобираемый не чаще раза в тик: внутри одного бита
+/// (или одной перерисовки панели) все потребители работают по одному инстансу.
+/datum/controller/subsystem/director/proc/get_eligible_ghosts_cached()
+	if(eligible_ghosts_cache_at == world.time && islist(eligible_ghosts_cache))
+		return eligible_ghosts_cache
+	eligible_ghosts_cache = get_all_ghost_role_eligible(priority_only = FALSE)
+	eligible_ghosts_cache_at = world.time
+	return eligible_ghosts_cache
 
 /datum/controller/subsystem/director/Initialize(start_timeofday)
 	register_event_actions()
@@ -423,13 +436,22 @@ SUBSYSTEM_DEF(director)
 /// null от действия означает, что отдельной проверки у него нет.
 /datum/controller/subsystem/director/proc/action_preflight(datum/director_action/action)
 	var/result = action.director_preflight()
+	// Preflight-трим наполняет списки мобов на вечно живом датуме рулсета; без отпускания
+	// последний снапшот держал бы удалённых мобов до конца раунда (прод-harddel обсервера
+	// в list_observers). Под запланированным исполнением снапшот ждёт execute() - не трогаем.
+	if(istype(action, /datum/dynamic_ruleset))
+		var/datum/dynamic_ruleset/rule = action
+		if(!rule.execution_pending)
+			rule.release_candidate_snapshots()
 	return isnull(result) ? TRUE : result
 
 /// Точный неинтерактивный аналог фильтра до ghost poll: способен вернуться в раунд,
 /// подключён, включил нужную роль и не имеет соответствующего/InteQ-бана.
 /datum/controller/subsystem/director/proc/count_eligible_ghosts(jobban_type = null, preference_flag = null)
 	var/count = 0
-	for(var/mob/candidate as anything in get_all_ghost_role_eligible(priority_only = FALSE))
+	// Кэш на тик: бит зовёт этот прок на каждое гост-действие (~пара десятков),
+	// каждый пересбор get_all_ghost_role_eligible был O(гостов^2).
+	for(var/mob/candidate as anything in get_eligible_ghosts_cached())
 		if(!candidate.key || !candidate.client)
 			continue
 		if(preference_flag && (!(candidate.client.prefs) || !(preference_flag in candidate.client.prefs.be_special)))
@@ -1613,6 +1635,7 @@ SUBSYSTEM_DEF(director)
 	var/datum/director_action/saving_for = pool_saving[DIRECTOR_SEVERITY_ANTAG]
 	var/reserve = QDELETED(saving_for) ? 0 : saving_for.cost
 	var/list/candidates = list()
+	var/list/evaluated_rules = list()
 	for(var/datum/director_action/action as anything in actions)
 		if(action.director_kind != DIRECTOR_KIND_RULESET)
 			continue
@@ -1628,6 +1651,7 @@ SUBSYSTEM_DEF(director)
 			continue
 		rule.candidates = list(newPlayer)
 		rule.trim_candidates()
+		evaluated_rules += rule
 		if(rule.ready())
 			var/rule_weight = rule.get_weight(signals) * repeat_falloff(rule)
 			// Тот же headroom-вес, что в битах: инжекция по размеру свободного места.
@@ -1635,14 +1659,26 @@ SUBSYSTEM_DEF(director)
 				rule_weight *= clamp((antag_target_now - antag_load_now) / rule.intensity, DIRECTOR_HEADROOM_WEIGHT_FLOOR, 1)
 			candidates[rule] = max(1, round(rule_weight * 100))
 	if(!length(candidates))
+		release_latejoin_snapshots(evaluated_rules)
 		return
 	var/datum/dynamic_ruleset/latejoin/picked = pickweight(candidates)
 	var/executed = spend_and_execute(picked, "latejoin")
+	// Не выбранные (и выбранный при провале запуска) рулсеты иначе держат латейджойнера
+	// в candidates до следующего латеджойна, а в конце раунда - навсегда.
+	release_latejoin_snapshots(evaluated_rules, executed ? picked : null)
 	var/result = executed ? DIRECTOR_BEAT_SCHEDULED : DIRECTOR_BEAT_FAILED
 	var/detail = selection_detail(picked, candidates)
 	if(!executed)
 		detail = "[execution_failure_detail(picked)]; [detail]"
 	director_log_beat(signals, picked, result, null, detail)
+
+/// Отпустить снапшоты кандидатов у оценённых латейджойн-рулсетов, кроме запланированного
+/// (его снапшот ждёт отложенный execute_scheduled_ruleset и отпускается там).
+/datum/controller/subsystem/director/proc/release_latejoin_snapshots(list/evaluated_rules, datum/dynamic_ruleset/latejoin/keep)
+	for(var/datum/dynamic_ruleset/latejoin/rule as anything in evaluated_rules)
+		if(rule == keep)
+			continue
+		rule.release_candidate_snapshots()
 
 /// Форс-события (weight < 0, например Halloween): разово в начале раунда, мимо бюджета и спейсинга -
 /// безусловный запуск для всех прошедших can_fire.

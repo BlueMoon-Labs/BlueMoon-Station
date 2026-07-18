@@ -38,6 +38,12 @@
 	if(!demand_connects || !reagents)
 		STOP_PROCESSING(SSfluids, src)
 		return
+	//без единого подключения запрашивать не у кого: паркуемся, пока
+	//ductnet.add_plumber не разбудит (роундстартовые хим-машины без дактов
+	//иначе гоняют пустой request-цикл каждый фаер SSfluids весь раунд)
+	if(!length(ducts))
+		STOP_PROCESSING(SSfluids, src)
+		return
 	if(reagents.total_volume < reagents.maximum_volume)
 		for(var/D in GLOB.cardinals)
 			if(D & demand_connects)

@@ -88,3 +88,9 @@
 	icon = 'modular_bluemoon/icons/mob/mam_snouts.dmi'
 	icon_state = "kathari"
 	matrixed_sections = MATRIX_ALL
+
+/datum/sprite_accessory/snouts/mam_snouts/kathari/alt
+	name = "Kathari alt"
+	icon = 'modular_bluemoon/icons/mob/mam_snouts.dmi'
+	icon_state = "kathari_alt"
+	matrixed_sections = MATRIX_ALL

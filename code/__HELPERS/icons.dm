@@ -1400,6 +1400,9 @@ GLOBAL_LIST_EMPTY(icon2html_result_cache)
 /proc/icon2html(atom/thing, client/target, icon_state, dir = SOUTH, frame = 1, moving = FALSE, sourceonly = FALSE)
 	if (!thing)
 		return
+	// Lag switch: icon2html from verbs (examine etc.) does icon work + asset push per call
+	if(SSlag_switch.measures[DISABLE_USR_ICON2HTML] && usr && !HAS_TRAIT(usr, TRAIT_BYPASS_MEASURES))
+		return
 
 	if (!target)
 		return
