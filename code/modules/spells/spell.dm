@@ -254,10 +254,10 @@ GLOBAL_LIST_INIT(spells, typesof(/obj/effect/proc_holder/spell)) //needed for th
 	before_cast(targets)
 	invocation(user)
 	if(do_log && user?.ckey)
-		var/msg = "cast the spell [name]"
+		var/msg = "cast the spell «[name]»"
 		if(LAZYLEN(targets))
 			msg += " on targets: [english_list(targets, and_text = ", ")]"
-		user.log_message(span_danger("[msg]."), LOG_ATTACK)
+		user.log_message("[msg].", LOG_ATTACK)
 	if(recharge)
 		recharging = TRUE
 	if(sound)

@@ -1,4 +1,6 @@
-#define ALL_LEWD_REAG_ADD "All of the above"
+#define LEWD_BOOK_ALL_REAG_ADD "All of the above"
+#define LEWD_BOOK_REAG_VOLUME 30
+#define LEWD_BOOK_ALL_REAG_VOLUME 10
 
 /obj/effect/proc_holder/spell/targeted/lewd_chems
 	name = "Cast Lewd Chems"
@@ -26,7 +28,7 @@
 		"Belladine nectar" = /datum/reagent/fermi/belly_inflator,
 		"Prospacillin" = /datum/reagent/growthchem
 	)
-	var/datum/reagent/chem = input(user, "What chemical do you want to use?", "Lewd Chems") as null|anything in choices + ALL_LEWD_REAG_ADD
+	var/datum/reagent/chem = input(user, "What chemical do you want to use?", "Lewd Chems") as null|anything in choices + LEWD_BOOK_ALL_REAG_ADD
 	if(!chem)
 		return
 
@@ -34,18 +36,20 @@
 	var/add_volume = 0
 	for(var/mob/living/carbon/C in targets)
 		if(choices.Find(chem))
-			C.reagents.add_reagent(choices[chem], 30)
+			C.reagents.add_reagent(choices[chem], LEWD_BOOK_REAG_VOLUME)
 			used_reagent = choices[chem]
-			add_volume = 30
+			add_volume = LEWD_BOOK_REAG_VOLUME
 		else
 			for(var/reagent in choices - "Hexacrocin")
-				C.reagents.add_reagent(choices[reagent], 10)
-				add_volume += 10
+				C.reagents.add_reagent(choices[reagent], LEWD_BOOK_ALL_REAG_VOLUME)
+				add_volume = LEWD_BOOK_ALL_REAG_VOLUME
 
-	var/msg = "cast the spell [name]"
+	var/msg = "cast the spell «[name]»"
 	if(LAZYLEN(targets))
 		msg += " on targets: [english_list(targets, and_text = ", ")]"
-	msg += " and add [chem == ALL_LEWD_REAG_ADD ? "all lewd reagents" : "[initial(used_reagent.name)]"], volume: [add_volume]"
-	user.log_message(span_danger("[msg]."), LOG_ATTACK)
+	msg += " and add [chem == LEWD_BOOK_ALL_REAG_ADD ? "all lewd reagents" : "[initial(used_reagent.name)]"], volume: [add_volume]"
+	user.log_message("[msg].", LOG_ATTACK)
 
-#undef ALL_LEWD_REAG_ADD
+#undef LEWD_BOOK_ALL_REAG_ADD
+#undef LEWD_BOOK_REAG_VOLUME
+#undef LEWD_BOOK_ALL_REAG_VOLUME
