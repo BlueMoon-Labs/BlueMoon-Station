@@ -90,6 +90,10 @@
 			var/datum/round_event_control/event = locate(event_to_run_type) in SSdirector.event_controls()
 			if(!event)
 				return
+			// Форс антаг-события поверх заполненной цели стакает угрозы (прод-кейс: Nightmare
+			// поверх ещё не отыгравших рейдеров) - админ подтверждает осознанно.
+			if(!SSdirector.confirm_antag_force(usr, event))
+				return
 			if(length(event.admin_setup))
 				for(var/datum/event_admin_setup/admin_setup_datum in event.admin_setup)
 					if(admin_setup_datum.prompt_admins() == ADMIN_CANCEL_EVENT)

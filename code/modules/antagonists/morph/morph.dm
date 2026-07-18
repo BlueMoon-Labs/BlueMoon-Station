@@ -356,6 +356,9 @@
 	weight = 8
 	max_occurrences = 1
 	min_players = 20
+	// Ранняя волна гост-пула стартует с 20-й минуты вместе с генлингом/болезнью: без порога
+	// морф (единственный без earliest_start) становился залоченной целью копилки первых минут.
+	earliest_start = 20 MINUTES
 	category = EVENT_CATEGORY_ENTITIES
 	severity = DIRECTOR_SEVERITY_GHOST // форс-запуск обязан считаться антаг-нагрузкой
 	cost = 10

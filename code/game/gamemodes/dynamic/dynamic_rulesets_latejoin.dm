@@ -43,7 +43,8 @@
 				if (M.mind && (M.mind.assigned_role in enemy_roles) && (!(M in candidates) || (M.mind.assigned_role in restricted_roles)))
 					job_check++ // Checking for "enemies" (such as sec officers). To be counters, they must either not be candidates to that rule, or have a job that restricts them from it
 
-		var/threat = round(mode.threat_level/10)
+		// Кламп band'а: угроза ниже 10 даёт индекс 0, выше 100 (форс/оценка) - за границу списка
+		var/threat = clamp(round(mode.threat_level/10), 1, length(required_enemies))
 		if (job_check < required_enemies[threat])
 			SSblackbox.record_feedback("tally","dynamic",1,"Times rulesets rejected due to not enough enemy roles")
 			return FALSE
@@ -177,6 +178,7 @@
 	weight = 4 //BLUEMOON CHANGES
 	cost = 10
 	intensity = 15
+	family = "heretic" // с мидраунд-пробуждением: не подряд
 	requirements = list(101,101,101,50,40,20,20,15,10,10)
 	repeatable = TRUE
 

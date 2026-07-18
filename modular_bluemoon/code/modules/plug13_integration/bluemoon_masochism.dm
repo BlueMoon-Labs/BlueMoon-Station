@@ -91,7 +91,7 @@
 	plug13_damage_vibration(damage, damagetype)
 
 
-/obj/item/bodypart/receive_damage(brute, burn, stamina, blocked, updating_health, required_status, wound_bonus, bare_wound_bonus, sharpness)
+/obj/item/bodypart/receive_damage(brute, burn, stamina, blocked, updating_health, required_status, wound_bonus, bare_wound_bonus, sharpness, can_dismember)
 	var/brute_diff = brute_dam
 	var/burn_diff = burn_dam
 	var/stamina_diff = stamina_dam

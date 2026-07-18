@@ -8,8 +8,11 @@
 /datum/round_event_control/changeling
 	name = "Changeling Meteor"
 	typepath = /datum/round_event/ghost_role/changeling
-	weight = 8
-	max_occurrences = 3
+	// Вес прижат к середине пула (прод-жалоба "в медиуме постоянно Changeling Meteor"):
+	// на 24-30 экипажа большинство конкурентов отрезано min_players, и вес 8 при трёх
+	// запусках делал метеор дефолтным гост-антагом раунда.
+	weight = 6
+	max_occurrences = 2
 	// Раннее разнообразие гост-пула (см. Spawn Sentient Disease): доступен с 20-й минуты,
 	// чтобы Devil не был единственным гост-антагом первые полчаса.
 	earliest_start = 20 MINUTES

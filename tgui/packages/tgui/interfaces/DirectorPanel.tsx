@@ -5,6 +5,7 @@ import { useBackend } from '../backend';
 import {
   Box,
   Button,
+  Chart,
   Input,
   LabeledList,
   NoticeBox,
@@ -25,9 +26,12 @@ type LedgerEntry = {
 };
 
 // Динамическая строка рулсета живёт, пока живы его антаги; записи ledger - по таймеру или до конца события.
+// У строки untracked-источника (антаги вне рулсетов) нет assigned - только счётчик живых голов.
 const ledgerExpiryText = (entry: LedgerEntry) => {
   if (entry.living) {
-    return `пока живы антаги (${entry.living} из ${entry.assigned})`;
+    return entry.assigned
+      ? `пока живы антаги (${entry.living} из ${entry.assigned})`
+      : `пока живы антаги (${entry.living})`;
   }
   return entry.expires_in
     ? `истекает через ${entry.expires_in} мин`
@@ -38,6 +42,12 @@ type BeatEntry = {
   time: number;
   result: string;
   budget: number;
+  // Поля для графиков динамики: бит-лог пишет их всегда, но старые записи могли
+  // прийти без них - графики подставляют 0.
+  intensity?: number;
+  crew?: number;
+  antag_load?: number;
+  antag_target?: number;
   action: string | null;
   severity: string | null;
   cost: number;
@@ -84,6 +94,8 @@ type ProfileEntry = {
   disruptionMults: Record<string, number>;
   antagPerCrew: number;
   antagHeavyEnabled: BooleanLike;
+  antagHeavyLoadFraction: number;
+  antagInitialGrant: number;
   antagLossRefundWindow: number;
   antagLossActivityThreshold: number;
   maxQuiet: number;
@@ -150,6 +162,8 @@ type DirectorPanelData = {
   antagDeficit: number;
   antagLoad: number;
   antagTarget: number;
+  statusLine: string | null;
+  eventIntensity: number;
   quietFor: number;
   maxQuiet: number;
   quietThreshold: number;
@@ -206,13 +220,14 @@ const REJECT_LABELS: Record<string, string> = {
   global_spacing: 'глобальная пауза',
   disruption: 'приглушено профилем',
   budget: 'нет бюджета',
-  can_fire: 'не готово (can_fire)',
+  can_fire: 'условия действия не выполнены',
   readiness: 'не готов рулсет (кандидаты/контрроли/карта)',
   recent_failure: 'недавно не исполнилось — пробуем другой вариант',
   no_weight: 'нулевой вес',
   antag_saturated: 'антагов достаточно',
   saving: 'пул копит на цель',
   antag_heavy_off: 'тяжёлые антаги выключены',
+  antag_headroom: 'тяжёлая команда ждёт пустой раунд',
 };
 
 // Вердикты пула: причины отсева бита + расшифровка can_fire + структурные пропуски
@@ -232,6 +247,7 @@ const VERDICT_LABELS: Record<string, string> = {
   antag_saturated: 'живых антагов достаточно',
   saving: 'пул копит на другую цель',
   antag_heavy_off: 'тяжёлые антаги выключены профилем',
+  antag_headroom: 'тяжёлая команда ждёт пустой раунд (нагрузка выше порога)',
   disabled: 'выключено',
   admin_only: 'только ручной запуск',
   max_occurrences: 'лимит запусков исчерпан',
@@ -298,6 +314,79 @@ const MetricCard = (props: {
   );
 };
 
+// Палитра графиков динамики (тёмная поверхность панели): линии данных - синяя и
+// оранжевая (межпарная различимость и CVD-разделение проверены валидатором),
+// референсы (цель/потолок) - нейтральный светлый пунктир, а не цветная серия.
+const CHART_COLOR_LOAD = '#4fa8e0';
+const CHART_COLOR_INTENSITY = '#f2a53a';
+const CHART_COLOR_REFERENCE = '#dfe5ea';
+
+type BeatChartSeries = {
+  label: string;
+  color: string;
+  dashed?: boolean;
+  value: (beat: BeatEntry) => number;
+};
+
+// График по бит-логу: несколько линий в общей шкале (одна ось, единицы intensity).
+// Легенда - текст в цвете label со свотчем линии; таблица решений ниже служит
+// табличным представлением тех же данных.
+const BeatChart = (props: { beats: BeatEntry[]; series: BeatChartSeries[] }) => {
+  const { beats, series } = props;
+  if (beats.length < 2) {
+    return (
+      <Box color="label">
+        мало данных — график появится через пару минут раунда
+      </Box>
+    );
+  }
+  const firstTime = beats[0].time;
+  const lastTime = beats[beats.length - 1].time;
+  const maxValue = Math.max(
+    1,
+    ...series.map((line) =>
+      Math.max(...beats.map((beat) => line.value(beat) || 0)),
+    ),
+  );
+  return (
+    <Box>
+      <Box mb={0.5}>
+        {series.map((line) => (
+          <Box inline mr={1.5} key={line.label} color="label">
+            <Box
+              inline
+              width="0.9em"
+              height={line.dashed ? '0.15em' : '0.35em'}
+              mr={0.5}
+              verticalAlign="middle"
+              style={{ backgroundColor: line.color }}
+            />
+            {line.label}
+          </Box>
+        ))}
+        <Box inline color="label">
+          · {Math.round(firstTime / 600)}—{Math.round(lastTime / 600)} мин
+        </Box>
+      </Box>
+      <Box position="relative" height="4em">
+        {series.map((line) => (
+          <Chart.Line
+            key={line.label}
+            fillPositionedParent
+            data={beats.map((beat) => [beat.time, line.value(beat) || 0])}
+            rangeX={[firstTime, lastTime]}
+            rangeY={[0, maxValue]}
+            strokeColor={line.color}
+            strokeWidth={2}
+            strokeDasharray={line.dashed ? '4 3' : undefined}
+            fillColor="none"
+          />
+        ))}
+      </Box>
+    </Box>
+  );
+};
+
 const OverviewTab = (props) => {
   const { data, act } = useBackend<DirectorPanelData>();
   const {
@@ -322,6 +411,8 @@ const OverviewTab = (props) => {
     antagDeficit,
     antagLoad,
     antagTarget,
+    statusLine,
+    eventIntensity,
     quietFor,
     maxQuiet,
     quietThreshold,
@@ -334,20 +425,72 @@ const OverviewTab = (props) => {
     .join(', ');
   const activeBlocked = blockedSeverities || [];
   const ledgerEntries = ledger || [];
-  const beatEntries = (beats || []).slice().reverse();
+  // Бэкенд шлёт до 60 битов: полный хвост кормит графики, таблица решений - последние 20.
+  const chartBeats = beats || [];
+  const beatEntries = chartBeats.slice(-20).reverse();
   const rejectEntries = Object.entries(lastRejects || {});
   const walletRows = wallets || [];
-  const quietReady = maxQuiet > 0 && quietFor >= maxQuiet;
+  // Зеркало гарантии run_beat(): таймер тишины по реальному контенту плюс
+  // видимая нагрузка (event_intensity) ниже порога профиля.
+  const quietTimeReached = maxQuiet > 0 && quietFor >= maxQuiet;
+  const quietReady = quietTimeReached && eventIntensity < quietThreshold;
 
   return (
     <>
+      <Stack.Item>
+        <Section title="Почему сейчас так">
+          <Box bold>{statusLine || 'нет данных'}</Box>
+        </Section>
+      </Stack.Item>
+      <Stack.Item>
+        <Section title="Динамика раунда">
+          <Stack wrap>
+            <Stack.Item grow basis="22rem">
+              <BeatChart
+                beats={chartBeats}
+                series={[
+                  {
+                    label: 'антаг-нагрузка',
+                    color: CHART_COLOR_LOAD,
+                    value: (beat) => beat.antag_load ?? 0,
+                  },
+                  {
+                    label: 'цель',
+                    color: CHART_COLOR_REFERENCE,
+                    dashed: true,
+                    value: (beat) => beat.antag_target ?? 0,
+                  },
+                ]}
+              />
+            </Stack.Item>
+            <Stack.Item grow basis="22rem">
+              <BeatChart
+                beats={chartBeats}
+                series={[
+                  {
+                    label: 'нагрузка событий',
+                    color: CHART_COLOR_INTENSITY,
+                    value: (beat) => beat.intensity ?? 0,
+                  },
+                  {
+                    label: 'потолок',
+                    color: CHART_COLOR_REFERENCE,
+                    dashed: true,
+                    value: () => intensityCap || 0,
+                  },
+                ]}
+              />
+            </Stack.Item>
+          </Stack>
+        </Section>
+      </Stack.Item>
       <Stack.Item>
         <Section title="Статус">
           <Stack wrap className="DirectorPanel__Metrics">
             <MetricCard label="Профиль" value={profileName || 'не выбран'} />
             <MetricCard
               label="Бюджет"
-              value={budget}
+              value={`${budget} очков`}
               color={budget > 0 ? 'good' : 'average'}
               detail={
                 <>
@@ -357,7 +500,9 @@ const OverviewTab = (props) => {
                 </>
               }
             />
-            <MetricCard label="Intensity" value={`${intensity} / ${intensityCap}`}>
+            <MetricCard
+              label="Нагрузка событий (intensity)"
+              value={`${intensity} / ${intensityCap}`}>
               <ProgressBar
                 className="DirectorPanel__MetricBar"
                 value={intensity}
@@ -375,9 +520,11 @@ const OverviewTab = (props) => {
               value={`${quietFor} / ${maxQuiet} мин`}
               color={quietReady ? 'average' : undefined}
               detail={
-                quietReady && intensity < quietThreshold
+                quietReady
                   ? 'следующий бит гарантирован'
-                  : `гарантия при intensity < ${quietThreshold}`
+                  : quietTimeReached
+                    ? `видимая нагрузка ${eventIntensity} не ниже ${quietThreshold} - гарантия ждёт затишья`
+                    : `гарантия при видимой нагрузке < ${quietThreshold}`
               }
             />
             <MetricCard
@@ -463,7 +610,7 @@ const OverviewTab = (props) => {
           <Table className="DirectorPanel__Table">
             <Table.Row header>
               <Table.Cell width="16%">Ступень</Table.Cell>
-              <Table.Cell width="24%">Кошелёк</Table.Cell>
+              <Table.Cell width="24%">Кошелёк, очков</Table.Cell>
               <Table.Cell width="38%">Готовность</Table.Cell>
               <Table.Cell width="22%">Запуски / вес</Table.Cell>
             </Table.Row>
@@ -485,7 +632,7 @@ const OverviewTab = (props) => {
                     <Box color="label">
                       копит на {wallet.savingFor}
                       {wallet.savingCost !== undefined
-                        ? `, cost ${wallet.savingCost}`
+                        ? ` (нужно ${wallet.savingCost})`
                         : ''}
                     </Box>
                   )}
@@ -532,7 +679,7 @@ const OverviewTab = (props) => {
             <Table className="DirectorPanel__Table">
               <Table.Row header>
                 <Table.Cell width="34%">Источник</Table.Cell>
-                <Table.Cell width="20%">Intensity</Table.Cell>
+                <Table.Cell width="20%">Вклад</Table.Cell>
                 <Table.Cell width="46%">Истекает</Table.Cell>
               </Table.Row>
               {ledgerEntries.map((entry, index) => (
@@ -562,7 +709,7 @@ const OverviewTab = (props) => {
                   {Object.entries(reasons)
                     .map(
                       ([reason, count]) =>
-                        `${REJECT_LABELS[reason] || reason}: ${count}`,
+                        `${REJECT_LABELS[reason] || reason}: ${count} действ.`,
                     )
                     .join(', ')}
                 </LabeledList.Item>
@@ -601,7 +748,7 @@ const OverviewTab = (props) => {
                   </Box>
                 </Table.Cell>
                 <Table.Cell>
-                  cost {entry.cost}
+                  цена {entry.cost}
                   <Box color="label">бюджет {entry.budget}</Box>
                 </Table.Cell>
                 <Table.Cell>{entry.detail || '-'}</Table.Cell>
@@ -726,8 +873,8 @@ const PoolTab = (props) => {
               <Table className="DirectorPanel__Table">
                 <Table.Row header>
                   <Table.Cell width="22%">Действие</Table.Cell>
-                  <Table.Cell width="16%">Цена / intensity</Table.Cell>
-                  <Table.Cell width="16%">Вес / запуски</Table.Cell>
+                  <Table.Cell width="16%">Цена / нагрузка</Table.Cell>
+                  <Table.Cell width="16%">Вес: база → итог</Table.Cell>
                   <Table.Cell width="46%">Статус</Table.Cell>
                 </Table.Row>
                 {shown.map((entry) => (
@@ -739,8 +886,8 @@ const PoolTab = (props) => {
                       </Box>
                     </Table.Cell>
                     <Table.Cell>
-                      cost {entry.cost}
-                      <Box color="label">intensity {entry.intensity}</Box>
+                      цена {entry.cost}
+                      <Box color="label">нагрузка {entry.intensity}</Box>
                     </Table.Cell>
                     <Table.Cell>
                       {entry.weight} → {entry.effectiveWeight ?? '-'}
@@ -797,6 +944,10 @@ const TEMPO_ROWS: ProfileRowSpec[] = [
     render: (profile) => profile.antagDrip,
   },
   { label: 'Стартовый аванс', render: (profile) => profile.initialGrant },
+  {
+    label: 'Аванс антаг-кошельков',
+    render: (profile) => profile.antagInitialGrant,
+  },
   {
     label: 'Roundstart-бюджет',
     render: (profile) =>
@@ -929,6 +1080,11 @@ const ANTAG_ROWS: ProfileRowSpec[] = [
           нет
         </Box>
       ),
+  },
+  {
+    label: 'Тяжёлая команда: покупка при нагрузке до',
+    render: (profile) =>
+      `${Math.round((profile.antagHeavyLoadFraction ?? 0.5) * 100)}% цели`,
   },
   {
     label: 'Страховка ранней потери роли',
@@ -1421,7 +1577,11 @@ const HelpTab = (props) => {
           действия теряют вес с каждым запуском (затухание повторов), чтобы
           директор не крутил одно и то же. Если тишина тянется дольше
           порога профиля при низкой intensity, бит гарантированно запускает
-          Малое/Среднее, игнорируя бюджет.
+          Малое/Среднее, игнорируя бюджет; тишиной считается отсутствие
+          именно ощутимого контента - флейвор, филлер и Малое без вклада в
+          нагрузку (лотереи, бумажные события) таймер не сбрасывают. После
+          двойного порога тишины при дефиците антагов от 50% гарантия может
+          купить и гост-роль - уже за честную цену из её кошелька.
         </Box>
         <Box mb={1}>
           <b>Пул действий.</b> Вкладка со всеми зарегистрированными
@@ -1458,6 +1618,17 @@ const HelpTab = (props) => {
           простаивают и капля не копится (форс-бит работает).
           Латеджойн-антаги идут отдельным путём: кандидатом ставится только
           сам зашедший игрок.
+        </Box>
+        <Box mb={1}>
+          <b>Запас цели.</b> Антаг-покупки соизмеряются со свободным местом
+          до цели нагрузки: лёгкая роль, не влезающая в остаток, сильно
+          теряет вес, а тяжёлая команда (рейдеры, нюк-асолт) покупается
+          только пока раунд достаточно пуст - нагрузка ниже порога профиля
+          (обычно половина цели). Улетевшая со станции гост-команда давит
+          на клапан вполсилы, а со временем её вклад затухает как у любого
+          старого антага. Форс антаг-контента админом поверх заполненной
+          цели переспросит подтверждение и назовёт нынешних держателей
+          нагрузки.
         </Box>
         <Box>
           <b>Управление.</b> Пауза останавливает каплю и биты (уже

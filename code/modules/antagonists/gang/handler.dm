@@ -198,6 +198,18 @@ GLOBAL_VAR(families_override_theme)
 	addtimer(CALLBACK(src, PROC_REF(announce_gang_locations)), 5 MINUTES)
 	return TRUE
 
+/// Разумы всех текущих членов семей. Рулсеты-владельцы наполняют этим списком свой assigned:
+/// директор считает вклад рулсета в antag_load по assigned (tally_ruleset_intensity), и без
+/// него каждый стартовый гангстер падал в untracked-источник (15/голова без затухания),
+/// раздувая нагрузку и пряча рулсет из панели.
+/datum/gang_handler/proc/collect_member_minds()
+	var/list/minds = list()
+	for(var/datum/team/gang/family as anything in gangs)
+		for(var/datum/mind/member as anything in family.members)
+			if(istype(member))
+				minds |= member
+	return minds
+
 /**
  * process() or rule_process() equivalent.
  *

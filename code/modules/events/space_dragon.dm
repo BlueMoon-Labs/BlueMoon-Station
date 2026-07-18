@@ -4,7 +4,7 @@
 	weight = 7
 	max_occurrences = 1
 	earliest_start = 30 MINUTES
-	min_players = 30
+	min_players = 25 // порог от больших серверов резал разнообразие на типичных 25-35: гост-пул сужался до метеора
 	category = EVENT_CATEGORY_ENTITIES
 	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
 	cost = 10

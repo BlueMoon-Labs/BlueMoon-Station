@@ -69,6 +69,9 @@
 	/// Накопленная за жизнь антага активность без затухания. Директор запоминает значение в момент
 	/// выдачи каждой роли и по дельте решает, заслуживает ли её ранняя потеря возврата бюджета.
 	var/director_activity_total = 0
+	/// world.time первой встречи директором этого разума живым антагом вне рулсетов/гост-ролей
+	/// (жетон, админ, вербовка). Точка отсчёта затухания untracked-вклада в antag_load.
+	var/director_untracked_since = 0
 	var/antag_hud_icon_state = null //this mind's ANTAG_HUD should have this icon_state
 	var/datum/atom_hud/antag/antag_hud = null //this mind's antag HUD
 	var/datum/traitor_panel_tgui/tgui_panel // cached TGUI traitor panel

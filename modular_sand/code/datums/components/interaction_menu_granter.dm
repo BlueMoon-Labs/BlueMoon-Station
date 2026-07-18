@@ -885,7 +885,9 @@
 				var/mob/living/carbon/human/H = parent_mob
 				H.force_naked_flavor = !H.force_naked_flavor
 				if(H.force_naked_flavor)
-					H.balloon_alert_to_viewers("Доступно описание голого тела")
+					H.balloon_alert_to_viewers("Доступны картинки и описание голого тела")
+					// относительно тихий ненавязчивый звук стабильной громкости в пределах 5 тайлов
+					playsound(H, 'sound/magic/staff_healing.ogg', 10, FALSE, falloff_exponent = 1, ignore_walls = FALSE, distance_multiplier_min_range = 5)
 				return TRUE
 			else
 				to_chat(parent_mob, span_warning("Unavailable for non-humanoid mob."))

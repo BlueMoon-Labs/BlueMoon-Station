@@ -310,7 +310,9 @@
 
 #define TRAIT_AKIMBO	"akimbo"
 
-#define TRAIT_COMPATIBLE_WITH_NANOMACHINES "compatible_with_nanomachines"
+#define TRAIT_COMPATIBLE_WITH_NANITES "compatible_with_nanites"
+#define TRAIT_NANITES_IMMUNITY "nanites_immunity"
+#define NANITES_IMMUNITY_FROM_REAGENT "nanite_protector"
 
 
 // mobility flag traits

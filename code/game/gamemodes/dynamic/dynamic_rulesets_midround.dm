@@ -33,6 +33,18 @@
 /datum/dynamic_ruleset/midround/director_preflight()
 	return null
 
+/// Повторная фильтрация живых кандидатов непосредственно перед выдачей роли: между отбором
+/// (trim на бите) и отложенным исполнением игрок мог умереть, отключиться, улететь на ЦК
+/// или уже стать антагом другой инжекцией - протухший кандидат ронял бы execute() рантаймом.
+/datum/dynamic_ruleset/midround/proc/prune_stale_living_players()
+	for(var/mob/living/player in living_players.Copy())
+		if(QDELETED(player) || player.stat == DEAD || !player.client || !player.mind)
+			living_players -= player
+		else if(is_centcom_level(player.z))
+			living_players -= player
+		else if(player.mind.special_role || player.mind.antag_datums?.len > 0)
+			living_players -= player
+
 /// Общий безопасный preflight для рулсетов, которые после trim_candidates() кладут всех
 /// потенциальных получателей роли в candidates. В отличие от crew-wizard этот путь не поллит.
 /datum/dynamic_ruleset/midround/proc/director_preflight_candidates()
@@ -129,7 +141,8 @@
 				if (M.mind && (M.mind.assigned_role in enemy_roles) && (!(M in candidates) || (M.mind.assigned_role in restricted_roles)))
 					job_check++ // Checking for "enemies" (such as sec officers). To be counters, they must either not be candidates to that rule, or have a job that restricts them from it
 
-		var/threat = round(mode.threat_level/10)
+		// Кламп band'а: угроза ниже 10 даёт индекс 0, выше 100 (форс/оценка) - за границу списка
+		var/threat = clamp(round(mode.threat_level/10), 1, length(required_enemies))
 		if (job_check < required_enemies[threat])
 			ready_failure_reason = "контрролей [job_check] из [required_enemies[threat]] (уровень угрозы [mode.threat_level])"
 			return FALSE
@@ -290,8 +303,10 @@
 
 /datum/dynamic_ruleset/midround/autotraitor/execute()
 	// BLUEMOON ADD START - если нет кандидатов и не выданы все роли, иначе выдаст рантайм
+	prune_stale_living_players()
 	if(living_players.len <= 0)
 		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
+		log_game("DYNAMIC: [name] не активирован: кандидаты выбыли между отбором и исполнением.")
 		return FALSE
 	// BLUEMOON ADD END
 	var/mob/M = pick_n_take(living_players)
@@ -301,6 +316,91 @@
 	message_admins("[ADMIN_LOOKUPFLW(M)] was selected by the [name] ruleset and has been made into a midround traitor.")
 	log_game("DYNAMIC: [key_name(M)] was selected by the [name] ruleset and has been made into a midround traitor.")
 	return TRUE
+
+//////////////////////////////////////////////
+//                                          //
+//        CREW CONVERSION VARIANTS          //
+//                                          //
+//////////////////////////////////////////////
+
+/// Общий каркас лёгкой экипажной конверсии (зеркало InteQ Sleeper Agent): ANTAG-пул состоял
+/// из одного лёгкого рулсета, и каждая экипажная инжекция была трейтором. Наследники задают
+/// антаг-датум и роли; отбор/готовность/выдача общие. weight = 0 - каркас сам не выбирается.
+/datum/dynamic_ruleset/midround/crew_conversion
+	name = ""
+	weight = 0
+	restricted_roles = list("Cyborg", "AI", "Positronic Brain")
+	required_candidates = 1
+	cost = 10
+	intensity = 15
+	repeatable = TRUE
+
+/datum/dynamic_ruleset/midround/crew_conversion/trim_candidates()
+	. = ..()
+	for(var/mob/living/player in living_players.Copy())
+		if(issilicon(player))
+			living_players -= player
+		else if(is_centcom_level(player.z))
+			living_players -= player
+		else if(player.mind && (player.mind.special_role || player.mind.antag_datums?.len > 0))
+			living_players -= player
+
+/datum/dynamic_ruleset/midround/crew_conversion/ready(forced = FALSE)
+	if(required_candidates > living_players.len)
+		ready_failure_reason = "подходящих членов экипажа [living_players.len] из [required_candidates] (преференс midround, роль, бан и возраст)"
+		return FALSE
+	. = ..()
+	if(.)
+		director_preflight_detail = "подходящих членов экипажа: [living_players.len], требуется: [required_candidates]"
+
+/datum/dynamic_ruleset/midround/crew_conversion/director_preflight()
+	trim_candidates()
+	. = ready()
+	director_preflight_failure = . ? null : ready_failure_reason
+
+/datum/dynamic_ruleset/midround/crew_conversion/execute()
+	prune_stale_living_players()
+	if(living_players.len <= 0)
+		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
+		log_game("DYNAMIC: [name] не активирован: кандидаты выбыли между отбором и исполнением.")
+		return FALSE
+	var/mob/picked = pick_n_take(living_players)
+	assigned += picked.mind // mind, не моб: по assigned директор считает вклад в intensity
+	picked.mind.special_role = antag_flag
+	picked.mind.add_antag_datum(antag_datum)
+	message_admins("[ADMIN_LOOKUPFLW(picked)] was selected by the [name] ruleset.")
+	log_game("DYNAMIC: [key_name(picked)] was selected by the [name] ruleset.")
+	return TRUE
+
+/// Ересь среди экипажа: мидраунд-зеркало латеджойн-контрабандиста для уже играющих.
+/datum/dynamic_ruleset/midround/crew_conversion/heretic
+	name = "Heretic Awakening"
+	antag_datum = /datum/antagonist/heretic
+	antag_flag = "heretic mid"
+	antag_flag_override = ROLE_HERETIC
+	protected_roles = list("NanoTrasen Representative", "Internal Affairs Agent", "Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Prisoner", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director")
+	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM)
+	weight = 4
+	family = "heretic" // с латеджойн-контрабандистом: не подряд
+	requirements = list(101,101,101,50,40,20,20,15,10,10)
+
+/// Тихий генлинг среди экипажа: мидраунд-зеркало латеджойн-варианта.
+/datum/dynamic_ruleset/midround/crew_conversion/changeling
+	name = "Latent Changeling"
+	antag_datum = /datum/antagonist/changeling
+	antag_flag = "changeling mid crew"
+	antag_flag_override = ROLE_CHANGELING
+	protected_roles = list("Expeditor", "Prisoner", "NanoTrasen Representative", "Internal Affairs Agent", "Security Officer", "Blueshield", "Peacekeeper", "Brig Physician", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director")
+	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM)
+	weight = 4
+	family = "changeling" // с метеором и латеджойн-генлингом: не подряд
+	requirements = list(101,101,60,50,40,30,20,15,10,10)
+
+/datum/dynamic_ruleset/midround/crew_conversion/changeling/trim_candidates()
+	. = ..()
+	for(var/mob/living/player in living_players.Copy())
+		if(HAS_TRAIT(player, TRAIT_ROBOTIC_ORGANISM)) // никаких роботов-генлингов
+			living_players -= player
 
 //////////////////////////////////////////////
 //                                          //
@@ -359,7 +459,12 @@
 	return handler.pre_setup_analogue()
 
 /datum/dynamic_ruleset/midround/families/execute()
-	return handler.post_setup_analogue(TRUE)
+	. = handler.post_setup_analogue(TRUE)
+	if(!.)
+		return
+	// Директор считает вклад рулсета по assigned, а хендлер держит гангстеров только в командах:
+	// без этого стартовые гангстеры давили antag_load как untracked-антаги (15/голова без затухания).
+	assigned |= handler.collect_member_minds()
 
 /datum/dynamic_ruleset/midround/families/clean_up()
 	QDEL_NULL(handler)
@@ -631,6 +736,8 @@
 
 /datum/dynamic_ruleset/midround/ratvar_awakening/execute()
 	// BLUEMOON ADD START - если нет кандидатов и не выданы все роли, иначе выдаст рантайм
+	// candidates ссылается на living_players (trim_candidates) - прунинг чистит оба списка.
+	prune_stale_living_players()
 	if(candidates.len <= 0)
 		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
 		return FALSE
@@ -719,6 +826,8 @@
 
 /datum/dynamic_ruleset/midround/narsie_awakening/execute()
 	// BLUEMOON ADD START - если нет кандидатов и не выданы все роли, иначе выдаст рантайм
+	// candidates ссылается на living_players (trim_candidates) - прунинг чистит оба списка.
+	prune_stale_living_players()
 	if(candidates.len <= 0)
 		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
 		return FALSE
@@ -821,6 +930,8 @@
 
 /datum/dynamic_ruleset/midround/blob_infection/execute()
 	// BLUEMOON ADD START - если нет кандидатов и не выданы все роли, иначе выдаст рантайм
+	// candidates ссылается на living_players (trim_candidates) - прунинг чистит оба списка.
+	prune_stale_living_players()
 	if(candidates.len <= 0)
 		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
 		return FALSE
@@ -1115,6 +1226,10 @@
 	cost = 10
 	intensity = 15
 	family = "devil" // с событием-двойником: не подряд
+	// Единственный гост-антаг без ограничений выпадал целью копилки в первые минуты, когда
+	// альтернатив ещё нет, и в Hard стрелял к 10-й минуте каждый раунд ("постоянно дьявол").
+	// Ранняя волна гост-пула открывается с 20-й минуты вместе с генлингом/болезнью/морфом.
+	earliest_start = 20 MINUTES
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM)
 	requirements = list(101,101,101,50,40,30,20,10,10,10)
 	repeatable = FALSE
@@ -1505,7 +1620,7 @@
 /datum/dynamic_ruleset/midround/bloodsuckers/trim_candidates()
 	. = ..()
 	candidates = living_players
-	for(var/mob/living/player in candidates)
+	for(var/mob/living/player in candidates.Copy())
 		if(issilicon(player)) // никаких боргов
 			candidates -= player
 		else if(is_centcom_level(player.z))  // никаких ЦКшников
@@ -1535,12 +1650,16 @@
 /datum/dynamic_ruleset/midround/bloodsuckers/pre_execute(population)
 	. = ..()
 	// BLUEMOON ADD START - если нет кандидатов и не выданы все роли, иначе выдаст рантайм
+	// candidates ссылается на living_players (trim_candidates) - прунинг чистит оба списка.
+	prune_stale_living_players()
 	if(candidates.len <= 0)
 		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
 		return FALSE
 	// BLUEMOON ADD END
 	var/num_bloodsuckers = get_antag_cap(population) * (scaled_times + 1)
 	for (var/i = 1 to num_bloodsuckers)
+		if(!candidates.len)
+			break
 		var/mob/M = pick_n_take(candidates)
 		assigned += M.mind
 		M.mind.restricted_roles = restricted_roles

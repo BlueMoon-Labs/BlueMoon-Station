@@ -8,7 +8,58 @@
 //Drone type for use with polymorph (no preloaded items, random appearance)
 
 
-//More types of drones
+//Абилки для дронов
+
+/datum/action/innate/inteq_drone_comm
+	name = "Связаться с дроном"
+	desc = "Телепатически связаться с дроном InteQ."
+	button_icon_state = "communicate"
+	icon_icon = 'icons/mob/guardian.dmi'
+	check_flags = AB_CHECK_CONSCIOUS
+
+/datum/action/innate/inteq_drone_comm/Activate()
+	if(isliving(owner))
+		var/mob/living/L = owner
+		L.inteq_drone_comm()
+
+/datum/action/innate/inteq_drone_communicate
+	name = "Связаться с Мастером"
+	desc = "Телепатически связаться с Мастером."
+	button_icon_state = "communicate"
+	icon_icon = 'icons/mob/guardian.dmi'
+	check_flags = AB_CHECK_CONSCIOUS
+
+/datum/action/innate/inteq_drone_communicate/Activate()
+	var/mob/living/master = owner.mind?.enslaved_to
+	if(!master || QDELETED(master))
+		to_chat(owner, "<span class='warning'>Мастер недоступен.</span>")
+		return
+	var/input = stripped_input(owner, "Сообщение для Мастера:", "Связь с Мастером", "")
+	if(!input)
+		return
+	var/my_message = "<span class='holoparasite'><font color=\"#FF6B35\"><b><i>[owner.real_name]:</i></b></font> [input]</span>"
+	to_chat(master, my_message)
+	to_chat(owner, my_message)
+	owner.log_talk(input, LOG_SAY, tag="inteq_drone")
+
+/datum/action/innate/drone_uplink
+	name = "Open Internal Uplink"
+	desc = "Позволяет открыть встроенный аплинк"
+	icon_icon = 'icons/obj/radio.dmi'
+	button_icon_state = "radio"
+	background_icon_state = "bg_demon"
+	check_flags = AB_CHECK_CONSCIOUS
+	var/datum/component/uplink/uplink_button
+
+/datum/action/innate/drone_uplink/New(Target, datum/component/uplink/uplink)
+	. = ..()
+	uplink_button = uplink
+
+/datum/action/innate/drone_uplink/Activate()
+	. = ..()
+	if(uplink_button)
+		uplink_button.ui_interact(owner)
+
 /mob/living/simple_animal/drone/syndrone
 	name = "Syndrone"
 	desc = "A modified maintenance drone. This one brings with it the feeling of terror."
@@ -27,15 +78,36 @@
 	"1. Помогай экипажу.\n"+\
 	"2. Наблюдай за станцией.\n"+\
 	"3. Защищай станцию."
-	default_storage = /obj/item/syndicate_uplink_high
+	default_storage = null
 	default_hatmask = /obj/item/clothing/head/helmet/space/syndicate
 	hacked = TRUE
 	flavortext = null
+	var/implant_type = /obj/item/implant/uplink/syndicate
+	var/uplink_type = /datum/component/uplink/syndicate
+	var/datum/component/uplink/my_uplink
 
 /mob/living/simple_animal/drone/syndrone/Initialize(mapload)
 	. = ..()
-	var/datum/component/uplink/hidden_uplink = internal_storage.GetComponent(/datum/component/uplink)
-	hidden_uplink.telecrystals = 15
+	set_up_implants()
+	set_up_abilities()
+	setup_uplink(TELECRYSTALS_PRELOADED_IMPLANT)
+
+/mob/living/simple_animal/drone/syndrone/proc/setup_uplink(num_TC)
+	my_uplink.telecrystals = num_TC
+
+/mob/living/simple_animal/drone/syndrone/proc/set_up_abilities()
+	if(my_uplink)
+		var/datum/action/innate/drone_uplink/uplink_action = new(src, my_uplink)
+		if(uplink_type == /datum/component/uplink)
+			uplink_action.background_icon_state = "bg_clock"
+		uplink_action.Grant(src)
+
+/mob/living/simple_animal/drone/syndrone/proc/set_up_implants()
+	var/obj/item/implant/uplink/U = new implant_type
+	var/obj/item/implant/weapons_auth/W = new
+	my_uplink = U.GetComponent(uplink_type)
+	U.implant(src)
+	W.implant(src)
 
 /mob/living/simple_animal/drone/syndrone/Login()
 	..()
@@ -44,14 +116,6 @@
 /mob/living/simple_animal/drone/syndrone/badass
 	name = "Badass Syndrone"
 	default_hatmask = /obj/item/clothing/head/helmet/infiltrator
-	default_storage = /obj/item/syndicate_uplink_high/nuclear
-
-/mob/living/simple_animal/drone/syndrone/badass/Initialize(mapload)
-	. = ..()
-	var/datum/component/uplink/hidden_uplink = internal_storage.GetComponent(/datum/component/uplink)
-	hidden_uplink.telecrystals = 30
-	var/obj/item/implant/weapons_auth/W = new
-	W.implant(src)
 
 /mob/living/simple_animal/drone/snowflake
 	default_hatmask = /obj/item/clothing/head/chameleon/drone
@@ -249,38 +313,6 @@
 		to_chat(L, "<span class='holoparasite'><font color=\"#FF6B35\"><b><i>[src.real_name]:</i></b></font> [input]</span>")
 	log_talk(input, LOG_SAY, tag="inteq_drone")
 
-/datum/action/innate/inteq_drone_comm
-	name = "Связаться с дроном"
-	desc = "Телепатически связаться с дроном InteQ."
-	button_icon_state = "communicate"
-	icon_icon = 'icons/mob/guardian.dmi'
-	check_flags = AB_CHECK_CONSCIOUS
-
-/datum/action/innate/inteq_drone_comm/Activate()
-	if(isliving(owner))
-		var/mob/living/L = owner
-		L.inteq_drone_comm()
-
-/datum/action/innate/inteq_drone_communicate
-	name = "Связаться с Мастером"
-	desc = "Телепатически связаться с Мастером."
-	button_icon_state = "communicate"
-	icon_icon = 'icons/mob/guardian.dmi'
-	check_flags = AB_CHECK_CONSCIOUS
-
-/datum/action/innate/inteq_drone_communicate/Activate()
-	var/mob/living/master = owner.mind?.enslaved_to
-	if(!master || QDELETED(master))
-		to_chat(owner, "<span class='warning'>Мастер недоступен.</span>")
-		return
-	var/input = stripped_input(owner, "Сообщение для Мастера:", "Связь с Мастером", "")
-	if(!input)
-		return
-	var/my_message = "<span class='holoparasite'><font color=\"#FF6B35\"><b><i>[owner.real_name]:</i></b></font> [input]</span>"
-	to_chat(master, my_message)
-	to_chat(owner, my_message)
-	owner.log_talk(input, LOG_SAY, tag="inteq_drone")
-
 /// Активатор дрона InteQ — при использовании предлагает гостам заселиться в дрона с миндальной связью (enslave) с предателем
 /obj/item/inteq_drone_creator
 	name = "InteQ Drone Activator"
@@ -340,11 +372,12 @@
 	icon_state = "drone_inteq"
 	icon_living = "drone_inteq"
 	default_hatmask = /obj/item/clothing/head/helmet/space/syndicate/contract
-	default_storage = /obj/item/inteq/uplink/radio
 	initial_language_holder = /datum/language_holder/synthetic
 	faction = list(ROLE_INTEQ)
 	access_card = /obj/item/card/id/inteq/anyone
 	radio = /obj/item/radio/borg/inteq
+	uplink_type = /datum/component/uplink
+	implant_type = /obj/item/implant/uplink
 	laws = \
 	"1. Слава ИнтеКью! Оперативник ИнтеКью является твоим Мастером. Оперативником ИнтеКью является активировавший тебя Агент.\n"+\
 	"2. Ты не можешь причинить вред Мастеру или своим бездействием допустить, чтобы Мастеру был причинён вред.\n"+\
@@ -352,12 +385,8 @@
 	"4. Ты должен заботиться о своей безопасности в той мере, в которой это не противоречит Второму или Третьему Законам.\n"+\
 	"5. Ты должен сохранять тайну любой деятельности Мастера в той мере, в которой это не противоречит Второму, Третьему или Четвёртому Законам."
 
-/mob/living/simple_animal/drone/syndrone/badass/inteq/Initialize(mapload)
+/mob/living/simple_animal/drone/syndrone/badass/inteq/set_up_abilities()
 	. = ..()
-	var/datum/component/uplink/hidden_uplink = internal_storage.GetComponent(/datum/component/uplink)
-	hidden_uplink.telecrystals = 16
-	var/obj/item/implant/weapons_auth/W = new
-	W.implant(src)
 	var/datum/action/innate/inteq_drone_communicate/comm_action = new(src)
 	comm_action.Grant(src)
 
