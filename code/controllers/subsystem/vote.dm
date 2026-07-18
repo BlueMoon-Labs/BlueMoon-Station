@@ -699,8 +699,12 @@ SUBSYSTEM_DEF(vote)
 			C.player_details.player_actions += V
 			V.Grant(C.mob)
 			generated_actions += V
-			if(forced)
-				SSvote.ui_interact(C.mob) // Мяяяу
+			if(forced && C.mob)
+				// Только асинхронно: открытие tgui делает winexists/browse_queue_flush - блокирующие
+				// round-trip'ы к клиенту. Синхронный вызов из fire() тикера (роундстарт-воут) усыплял
+				// SSticker навсегда, если клиент завис или дисконнектится - таймер лобби замирал
+				// до рестарта МК.
+				INVOKE_ASYNC(src, PROC_REF(ui_interact), C.mob) // Мяяяу
 		return TRUE
 	return FALSE
 
@@ -819,7 +823,9 @@ SUBSYSTEM_DEF(vote)
 	return src
 
 /datum/controller/subsystem/vote/ui_interact(mob/user, datum/tgui/ui)
-	voting |= user?.client
+	if(!user?.client)
+		return
+	voting |= user.client
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
 		ui = new(user, src, "Vote")
