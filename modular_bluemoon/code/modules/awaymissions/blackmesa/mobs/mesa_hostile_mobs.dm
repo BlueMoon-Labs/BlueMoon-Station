@@ -8,6 +8,11 @@
 	minbodytemp = 0
 	maxbodytemp = 1500
 
+/mob/living/simple_animal/hostile/blackmesa/xen/death(gibbed)
+	. = ..(gibbed)
+	if(!ckey)
+		toggle_ai(AI_OFF)
+
 /mob/living/simple_animal/hostile/blackmesa/Aggro()
 	if(alert_sounds)
 		if(!(world.time <= alert_cooldown_time))
@@ -236,7 +241,7 @@
 	ranged_message = "leaps"
 	ranged_cooldown_time = 30
 	taunt_chance = 100
-	turns_per_move = 20
+	turns_per_move = 1
 	maxHealth = 50
 	del_on_death = 1
 	health = 40
@@ -303,7 +308,7 @@
 	ranged_cooldown_time = 5 SECONDS
 	ranged_message = "fires"
 	taunt_chance = 100
-	turns_per_move = 7
+	turns_per_move = 1
 	maxHealth = 130
 	health = 130
 	speed = 3

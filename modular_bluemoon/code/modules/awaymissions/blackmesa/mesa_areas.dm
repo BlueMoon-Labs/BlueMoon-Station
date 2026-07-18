@@ -1,7 +1,7 @@
 /area/awaymission/ihategordon
 	name = "Main sector H complex"
-	shipambience ='modular_bluemoon/sound/ambience/mesa/mesaxenlab.ogg'
-	ambientsounds = list('modular_bluemoon/sound/ambience/mesa/mesainsideambience.ogg' , 'modular_bluemoon/sound/ambience/mesa/mesaamb1.ogg' , 'modular_bluemoon/sound/ambience/mesa/bmas1.ogg' , 'modular_bluemoon/sound/ambience/mesa/bmas2.ogg' , 'modular_bluemoon/sound/ambience/mesa/bmas3.ogg' )
+	shipambience ='modular_bluemoon/sound/ambience/mesa/ambinside.ogg'
+	ambientsounds = list('modular_bluemoon/sound/ambience/mesa/metal1.ogg' , 'modular_bluemoon/sound/ambience/mesa/metal2.ogg' , 'modular_bluemoon/sound/ambience/mesa/metal3.ogg' , 'modular_bluemoon/sound/ambience/mesa/metal5.ogg' , 'modular_bluemoon/sound/ambience/mesa/metal6.ogg' , 'modular_bluemoon/sound/ambience/mesa/metal7.ogg' )
 
 /area/awaymission/ihategordon/entrance
 	name = "Facility entrance"
@@ -126,8 +126,14 @@
 /area/awaymission/ihategordon/outsideofmesa
 	name = "Outside of facility"
 	icon_state = "awaycontent6"
+<<<<<<< HEAD
 	shipambience ='modular_bluemoon/sound/ambience/mesa/mesaoutsideambient.ogg'
 	ambientsounds = list('modular_bluemoon/sound/ambience/mesa/mesaoutsideambient.ogg','modular_bluemoon/sound/ambience/mesa/outsideofcomplex.ogg')
+=======
+	outdoors = TRUE
+	shipambience ='modular_bluemoon/sound/ambience/mesa/outside.ogg'
+	ambientsounds = list( 'modular_bluemoon/sound/ambience/mesa/battle1.ogg' , 'modular_bluemoon/sound/ambience/mesa/battle2.ogg' , 'modular_bluemoon/sound/ambience/mesa/battle3.ogg' , 'modular_bluemoon/sound/ambience/mesa/battle4.ogg' , 'modular_bluemoon/sound/ambience/mesa/battle5.ogg' , 'modular_bluemoon/sound/ambience/mesa/battle6.ogg' , 'modular_bluemoon/sound/ambience/mesa/battle7.ogg' )
+>>>>>>> b3f0beda03 (вытягиваем из говна стафф)
 
 /area/awaymission/ihategordon/outsideofmesa/hecu_camp
 	name = "Facility hecu main camp"
