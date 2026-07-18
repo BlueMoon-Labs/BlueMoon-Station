@@ -77,6 +77,11 @@ const FileList = (props) => {
   const { act, data } = useBackend<LogViewerData>();
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortAsc, setSortAsc] = useState(true);
+  const [selected, setSelected] = useState<string[]>([]);
+
+  // Смена каталога обнуляет выбор - имена другого каталога не имеют смысла.
+  const crumbsKey = data.crumbs.join('/');
+  useEffect(() => setSelected([]), [crumbsKey]);
 
   const sorted = useMemo(() => {
     const factor = sortAsc ? 1 : -1;
@@ -92,12 +97,42 @@ const FileList = (props) => {
     return [...data.entries].sort(compare);
   }, [data.entries, sortKey, sortAsc]);
 
+  // Листинг мог обновиться под выбором - серверу шлём только всё ещё существующие имена.
+  const fileNames = data.entries
+    .filter((entry) => !entry.isDir)
+    .map((entry) => entry.name);
+  const validSelected = selected.filter((name) => fileNames.includes(name));
+  const totalSize = data.entries
+    .filter((entry) => validSelected.includes(entry.name))
+    .reduce((sum, entry) => sum + Math.max(entry.size, 0), 0);
+  const allSelected =
+    fileNames.length > 0 && validSelected.length === fileNames.length;
+
+  const toggleName = (name: string) =>
+    setSelected((prev) =>
+      prev.includes(name) ? prev.filter((n) => n !== name) : [...prev, name],
+    );
+
   if (!data.entries.length) {
     return <NoticeBox info>Каталог пуст</NoticeBox>;
   }
   return (
     <>
       <Box mb={0.5}>
+        {fileNames.length > 0 && (
+          <Button
+            compact
+            icon={
+              allSelected
+                ? 'square-check'
+                : validSelected.length
+                  ? 'square-minus'
+                  : 'square'
+            }
+            tooltip={allSelected ? 'Снять выбор' : 'Выбрать все файлы'}
+            onClick={() => setSelected(allSelected ? [] : fileNames)}
+          />
+        )}
         {(
           [
             ['name', 'Имя'],
@@ -122,6 +157,17 @@ const FileList = (props) => {
           </Button>
         ))}
       </Box>
+      {validSelected.length > 0 && (
+        <Button
+          color="good"
+          fluid
+          icon="download"
+          mb={0.5}
+          tooltip="Один файл придёт как есть, несколько - одним архивом"
+          onClick={() => act('download_selected', { names: validSelected })}>
+          Скачать выбранные ({validSelected.length}, {formatBytes(totalSize)})
+        </Button>
+      )}
       {sorted.map((entry) => (
         <Box
           key={entry.name}
@@ -134,6 +180,19 @@ const FileList = (props) => {
               ? act('navigate', { name: entry.name })
               : act('open_file', { name: entry.name })
           }>
+          {!entry.isDir && (
+            <Button
+              compact
+              icon={
+                validSelected.includes(entry.name) ? 'square-check' : 'square'
+              }
+              mr={0.5}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleName(entry.name);
+              }}
+            />
+          )}
           <Icon mr={1} name={entryIcon(entry)} color={entry.isDir ? 'yellow' : 'label'} />
           {entry.name}
           {!entry.isDir && (

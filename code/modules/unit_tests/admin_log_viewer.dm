@@ -69,6 +69,28 @@
 	TEST_ASSERT_EQUAL(read_admin_log_chunk(big_path, 1000000, 11), "123456789\n0", "чанк со смещения 1000000 должен читаться побайтово точно")
 	fdel(big_path)
 
+	// Фильтрация выбора для множественного скачивания
+	var/sel_dir = "data/unit_test_admin_log_sel/"
+	rustg_file_write("a", "[sel_dir]a.log")
+	rustg_file_write("b", "[sel_dir]b.txt")
+	rustg_file_write("c", "[sel_dir]sub/c.log")
+	var/list/sel_raw = flist(sel_dir)
+	var/list/picked = admin_log_filter_selection(list("a.log", "b.txt", "a.log", "missing.log", "sub", "../a.log", 42), sel_raw)
+	TEST_ASSERT_EQUAL(length(picked), 2, "должны уцелеть только существующие файлы без дублей")
+	TEST_ASSERT_EQUAL(picked[1], "a.log", "первый уцелевший - a.log")
+	TEST_ASSERT_EQUAL(picked[2], "b.txt", "второй уцелевший - b.txt")
+	TEST_ASSERT_NULL(admin_log_filter_selection(null, sel_raw), "не-список должен давать null")
+	TEST_ASSERT_NULL(admin_log_filter_selection(list(), sel_raw), "пустой список должен давать null")
+	var/list/too_many = list()
+	for(var/i in 1 to 51)
+		too_many += "f[i].log"
+	TEST_ASSERT_NULL(admin_log_filter_selection(too_many, sel_raw), "список сверх капа должен давать null")
+	fdel("[sel_dir]a.log")
+	fdel("[sel_dir]b.txt")
+	fdel("[sel_dir]sub/c.log")
+	fdel("[sel_dir]sub/")
+	fdel(sel_dir)
+
 	// Поиск по содержимому
 	var/list/results = admin_log_search_content("alpha\nbeta ALPHA\ngamma", "alpha")
 	TEST_ASSERT_EQUAL(length(results), 2, "поиск должен быть регистронезависимым и найти 2 совпадения")

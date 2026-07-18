@@ -62,7 +62,8 @@
 /proc/is_safe_path_for_admin_shell(path)
 	if(!path || length(path) > 1024 || findtext(path, ".."))
 		return FALSE
-	var/static/list/bad_substrings = list(";", "&", "|", "`", "\n", "<", ">", "\"", "*")
+	// "%" - от разворачивания %VAR% в cmd.exe: на Windows оно работает даже внутри кавычек.
+	var/static/list/bad_substrings = list(";", "&", "|", "`", "\n", "<", ">", "\"", "*", "%")
 	for(var/bad in bad_substrings)
 		if(findtext(path, bad))
 			return FALSE

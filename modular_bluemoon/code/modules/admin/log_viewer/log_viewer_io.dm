@@ -8,6 +8,8 @@
 #define ADMIN_LOG_SEARCH_MAX_MATCHES 500
 /// Кап длины превью совпадения (в символах, не байтах).
 #define ADMIN_LOG_SEARCH_PREVIEW_CHARS 300
+/// Кап числа файлов в множественном скачивании (для полного каталога есть архив раунда).
+#define ADMIN_LOG_MULTI_SELECT_MAX 50
 
 /// Валиден ли один сегмент пути (имя файла или каталога, без разделителей).
 /proc/admin_log_valid_segment(segment)
@@ -18,6 +20,25 @@
 	if(findtext(segment, "\n") || findtext(segment, ascii2text(13)))
 		return FALSE
 	return TRUE
+
+/// Фильтрует клиентский список имён для множественного скачивания: без дублей, только
+/// валидные сегменты, существующие в raw_listing как файлы (каталоги там с завершающим "/").
+/// null - вход не список, пустой или длиннее капа; иначе список уцелевших имён (может быть пуст).
+/proc/admin_log_filter_selection(list/names, list/raw_listing)
+	if(!islist(names) || !islist(raw_listing))
+		return null
+	if(!length(names) || length(names) > ADMIN_LOG_MULTI_SELECT_MAX)
+		return null
+	var/list/picked = list()
+	for(var/name in names)
+		if(!istext(name) || !admin_log_valid_segment(name))
+			continue
+		if(!(name in raw_listing))
+			continue
+		if(name in picked)
+			continue
+		picked += name
+	return picked
 
 /// Обрезает страницу по последнему переводу строки, если это не конец файла.
 /// Возвращает list(текст, конечное_смещение) - смещение первого НЕ включённого байта.

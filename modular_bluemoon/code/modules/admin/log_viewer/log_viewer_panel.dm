@@ -10,6 +10,8 @@
 #define ADMIN_LOG_ARCHIVE_REBUILD_COOLDOWN (1 MINUTES)
 /// Через сколько удалять собранный архив (ftp к этому моменту давно ушёл).
 #define ADMIN_LOG_ARCHIVE_TTL (10 MINUTES)
+/// Кап длины команды tar при архивации выбранных файлов (лимит cmd на Windows ~8К).
+#define ADMIN_LOG_MULTI_CMD_MAX 6000
 
 /// Относительный путь раунда -> world.time последней сборки архива.
 GLOBAL_LIST_EMPTY(admin_log_archive_builds)
@@ -312,7 +314,7 @@ GLOBAL_LIST_EMPTY(admin_log_archive_building)
 		GLOB.admin_log_archive_building -= out
 		// Итог сборки (чистка битого файла, кэш) обрабатываем до бейла по ушедшему админу,
 		// чтобы недособранный архив не оставался в кэше
-		if(so[SHELLEO_ERRORLEVEL] != 0 || !fexists(out))
+		if(!admin_log_tar_exit_ok(so[SHELLEO_ERRORLEVEL]) || !fexists(out))
 			if(fexists(out))
 				fdel(out) // недособранный файл не должен закэшироваться как валидный архив
 			if(!QDELETED(src) && !isnull(owner))
@@ -330,6 +332,82 @@ GLOBAL_LIST_EMPTY(admin_log_archive_building)
 /proc/admin_log_delete_archive(path)
 	if(fexists(path))
 		fdel(path)
+
+/// GNU tar возвращает 1, если файл менялся во время чтения (живой лог текущего раунда) -
+/// архив при этом валиден и выбрасывать его нельзя. На Windows у bsdtar код 1 = настоящая ошибка.
+/proc/admin_log_tar_exit_ok(errorlevel)
+	if(errorlevel == 0)
+		return TRUE
+	return world.system_type == UNIX && errorlevel == 1
+
+/// Скачать несколько выбранных файлов текущего каталога: один - напрямую через ftp,
+/// несколько - одноразовым архивом (уникальное имя, без кэша и лока сборки).
+/datum/admin_log_viewer/proc/download_selected(list/names)
+	if(!islist(names) || !length(names))
+		return
+	if(length(names) > ADMIN_LOG_MULTI_SELECT_MAX)
+		to_chat(owner, span_warning("За раз можно скачать не больше [ADMIN_LOG_MULTI_SELECT_MAX] файлов - для целого каталога есть архив раунда."), confidential = TRUE)
+		return
+	var/dir_path = current_dir_path()
+	var/list/picked = admin_log_filter_selection(names, flist(dir_path))
+	if(!length(picked))
+		to_chat(owner, span_warning("Выбранные файлы не найдены - обновите список."), confidential = TRUE)
+		return
+	if(length(picked) == 1)
+		var/single = picked[1]
+		if(owner.file_spam_check())
+			return
+		var/single_path = dir_path + single
+		message_admins("[key_name_admin(owner)] downloaded file: [single_path]")
+		log_admin("[key_name(owner)] downloaded log file [single_path]")
+		to_chat(owner, "Отправляю [single] - большой файл может идти несколько минут.", confidential = TRUE)
+		owner << ftp(file(single_path), single)
+		return
+	if(!is_safe_path_for_admin_shell(dir_path))
+		to_chat(owner, span_warning("Путь каталога содержит небезопасные символы - архивация недоступна."), confidential = TRUE)
+		return
+	for(var/name in picked)
+		if(!is_safe_path_for_admin_shell(dir_path + name))
+			to_chat(owner, span_warning("Имя файла [name] содержит небезопасные символы - уберите его из выбора."), confidential = TRUE)
+			return
+	var/rel = copytext(dir_path, length(ADMIN_LOG_ROOT) + 1)
+	var/flat = pathflatten(rel)
+	var/ext = (world.system_type == MS_WINDOWS) ? "zip" : "tar.gz"
+	var/out = "[ADMIN_LOG_ARCHIVE_DIR]selected_[flat][world.realtime]_[rand(1, 999999)].[ext]"
+	var/list/quoted = list()
+	for(var/name in picked)
+		// Префикс "./" защищает имена, начинающиеся с дефиса, от разбора как опций tar.
+		if(world.system_type == MS_WINDOWS)
+			quoted += "\"./[name]\""
+		else
+			quoted += shell_single_quote_path("./[name]")
+	var/cmd
+	if(world.system_type == MS_WINDOWS)
+		cmd = "tar -a -c -f \"[out]\" -C \"[dir_path]\" [jointext(quoted, " ")]"
+	else
+		cmd = "tar -czf [shell_single_quote_path(out)] -C [shell_single_quote_path(dir_path)] [jointext(quoted, " ")]"
+	if(length(cmd) > ADMIN_LOG_MULTI_CMD_MAX)
+		to_chat(owner, span_warning("Слишком длинный список файлов - выберите меньше за раз."), confidential = TRUE)
+		return
+	if(owner.file_spam_check())
+		return
+	cleanup_archive_dir()
+	// rust-g создаёт недостающие каталоги; tar - нет.
+	rustg_file_write("", "[ADMIN_LOG_ARCHIVE_DIR].keep")
+	to_chat(owner, "Собираю архив из [length(picked)] файлов...", confidential = TRUE)
+	var/list/so = world.shelleo(cmd) // спит; повторный вход придушен file_spam_check выше
+	if(!admin_log_tar_exit_ok(so[SHELLEO_ERRORLEVEL]) || !fexists(out))
+		if(fexists(out))
+			fdel(out)
+		if(!QDELETED(src) && !isnull(owner))
+			to_chat(owner, span_warning("Не удалось собрать архив (код [so[SHELLEO_ERRORLEVEL]])."), confidential = TRUE)
+		return
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(admin_log_delete_archive), out), ADMIN_LOG_ARCHIVE_TTL, TIMER_UNIQUE | TIMER_OVERRIDE)
+	if(QDELETED(src) || isnull(owner)) // админ мог уйти, пока tar работал
+		return
+	message_admins("[key_name_admin(owner)] downloaded [length(picked)] selected log files from [rel]")
+	log_admin("[key_name(owner)] downloaded selected log files from [rel]: [jointext(picked, ", ")]")
+	owner << ftp(file(out), "selected_[flat][length(picked)]files.[ext]")
 
 /// Одноразовая чистка остатков архивов с прошлого запуска сервера.
 /// Зовётся до первой сборки этого запуска, так что удалять можно всё подряд.
@@ -461,6 +539,9 @@ GLOBAL_LIST_EMPTY(admin_log_archive_building)
 			return TRUE
 		if("download_archive")
 			download_archive()
+			return TRUE
+		if("download_selected")
+			download_selected(params["names"])
 			return TRUE
 
 /// Сегменты пути каталога текущего раунда, list() при любой странности.
