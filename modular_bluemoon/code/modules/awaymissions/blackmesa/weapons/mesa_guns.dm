@@ -27,8 +27,6 @@
 /obj/item/gun/ballistic/automatic/pistol/hl9mm/update_icon_state()
 	icon_state = "[initial(icon_state)][chambered ? "" : "-e"]"
 
-<<<<<<< HEAD
-=======
 /obj/item/gun/ballistic/automatic/pistol/hl9mm/shoot_live_shot(mob/living/user, pointblank = FALSE, mob/pbtarget, message = 1, stam_cost = 0)
 	..()
 	playsound(user, fire_sound, 80, 0, 0)
@@ -96,7 +94,6 @@
 // TIER 4 - Elite Weapons (Highest Power)
 // ============================================================================
 
->>>>>>> b3f0beda03 (вытягиваем из говна стафф)
 /obj/item/gun/ballistic/automatic/sniper_rifle/m4oa1
 	name = "m40a1 sniper rifle"
 	desc = "Довольно старая, но верная и мощная снайперская винтовка прямиком из далёкого прошлого"
@@ -160,11 +157,7 @@
 	spread = 9
 	burst_size = 3
 	burst_shot_delay = 2
-<<<<<<< HEAD
-	fire_delay = 2.5 ///Это пиздец!
-=======
 	fire_delay = 1 ///Это пиздец!
->>>>>>> b3f0beda03 (вытягиваем из говна стафф)
 	can_bayonet = FALSE
 	automatic_burst_overlay = FALSE
 
@@ -306,11 +299,7 @@
 	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi'
 	icon_state = "m16hl"
 	burst_size = 1
-<<<<<<< HEAD
-	fire_delay = 3
-=======
 	fire_delay = 1 //ATATATATATATATATA!!!
->>>>>>> b3f0beda03 (вытягиваем из говна стафф)
 	spread = 11
 	fire_sound = 'modular_bluemoon/sound/weapons/mesa/m16.ogg'
 	mag_type = /obj/item/ammo_box/magazine/m16/mesa
@@ -324,8 +313,7 @@
 	gun_light = new /obj/item/flashlight/seclite(src)
 	return ..()
 
-<<<<<<< HEAD
-=======
+
 /obj/item/gun/ballistic/automatic/m16a4/mesa/shoot_live_shot(mob/living/user, pointblank = FALSE, mob/pbtarget, message = 1, stam_cost = 0)
 	if(!user)
 		return
@@ -378,7 +366,7 @@
 		icon_state = "[initial(icon_state)][magazine ? "" : "-e"]"
 
 // TIER 1
->>>>>>> b3f0beda03 (вытягиваем из говна стафф)
+
 /obj/item/gun/ballistic/automatic/mp7
 	name = "\improper mp7"
 	desc = "Heckler & Koch MP7 A1 PDW — пистолет-пулемёт, разработанный в начале 2000-х годов немецкой фирмой Heckler & Koch. Отлично подойдёт, если вместо лечения союзников медик вашего отряда HECU хочет устроить бойню"
@@ -400,8 +388,6 @@
 	else
 		icon_state = "mp7nomag"
 
-<<<<<<< HEAD
-=======
 /obj/item/gun/ballistic/automatic/mp7/shoot_live_shot(mob/living/user, pointblank = FALSE, mob/pbtarget, message = 1, stam_cost = 0)
 	..()
 	playsound(user, fire_sound, 80, 0, 0)
@@ -409,7 +395,6 @@
 
 // тоже пули
 
->>>>>>> b3f0beda03 (вытягиваем из говна стафф)
 /obj/item/ammo_box/magazine/mp7
 	name = "MP7 magazine"
 	desc = "A standart magazine for mp7"
@@ -770,8 +755,6 @@
 /obj/item/storage/box/basedmedic/medbeam/PopulateContents()
 	new /obj/item/gun/medbeam(src)
 	new /obj/item/storage/firstaid/tactical(src)
-<<<<<<< HEAD
-=======
 
 //leader
 
@@ -1341,4 +1324,3 @@
 	icon = 'modular_bluemoon/icons/obj/clothing/skihellclothes.dmi'
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/hats.dmi'
 	alternate_worn_layer = null
->>>>>>> b3f0beda03 (вытягиваем из говна стафф)

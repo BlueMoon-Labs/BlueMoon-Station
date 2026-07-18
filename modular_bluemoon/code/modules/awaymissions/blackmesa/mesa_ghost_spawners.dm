@@ -278,13 +278,10 @@
 		/obj/item/storage/firstaid/emergency,
 		/obj/item/kitchen/knife/combat,
 		/obj/item/book/granter/martial/cqc,
-<<<<<<< HEAD
 		/obj/item/gun/ballistic/automatic/pistol/deagle,
 		/obj/item/ammo_box/magazine/m50,
-=======
 		/obj/item/ammo_box/magazine/m16/mesa,
 		/obj/item/ammo_box/magazine/m16/mesa,
->>>>>>> b3f0beda03 (вытягиваем из говна стафф)
 	)
 
 

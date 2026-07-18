@@ -5,12 +5,10 @@
 	icon_state = "rockyash"
 	smooth = SMOOTH_MORE|SMOOTH_BORDER
 	canSmoothWith = list (/turf/closed)
-<<<<<<< HEAD
-=======
 	var/resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF | FREEZE_PROOF
 	explosion_block = INFINITY
 	wave_explosion_block = INFINITY
->>>>>>> b3f0beda03 (вытягиваем из говна стафф)
+
 
 /turf/closed/mineral/mesarock/rust_heretic_act()
 	return
@@ -342,8 +340,6 @@
 	name = "Призрак лидера отряда HECU"
 	desc = "Он точно потерялся... И он точно перепутал гейт Blackmesa с ihategordon. Появится ли blackmesa и тут? Что значит призрак этого парня? Зачем вы читаете его описание?"
 	icon_state = "Hecughost"
-<<<<<<< HEAD
-=======
 
 
 /obj/structure/urbanismeffect
@@ -1143,4 +1139,3 @@
 	desc = "Average road sign... Anyway! You have no car"
 	icon = 'modular_bluemoon/icons/obj/urbanism/roadsign.dmi'
 	icon_state = "roadsign1"
->>>>>>> b3f0beda03 (вытягиваем из говна стафф)

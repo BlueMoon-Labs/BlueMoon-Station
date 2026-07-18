@@ -82,6 +82,7 @@
 /area/awaymission/ihategordon/rocks
 	name = "Facility rocks"
 	icon_state = "awaycontent20"
+	outdoors = TRUE
 
 /area/awaymission/ihategordon/dining_room
 	name = "main dining room"
@@ -126,15 +127,21 @@
 /area/awaymission/ihategordon/outsideofmesa
 	name = "Outside of facility"
 	icon_state = "awaycontent6"
-<<<<<<< HEAD
-	shipambience ='modular_bluemoon/sound/ambience/mesa/mesaoutsideambient.ogg'
-	ambientsounds = list('modular_bluemoon/sound/ambience/mesa/mesaoutsideambient.ogg','modular_bluemoon/sound/ambience/mesa/outsideofcomplex.ogg')
-=======
 	outdoors = TRUE
 	shipambience ='modular_bluemoon/sound/ambience/mesa/outside.ogg'
 	ambientsounds = list( 'modular_bluemoon/sound/ambience/mesa/battle1.ogg' , 'modular_bluemoon/sound/ambience/mesa/battle2.ogg' , 'modular_bluemoon/sound/ambience/mesa/battle3.ogg' , 'modular_bluemoon/sound/ambience/mesa/battle4.ogg' , 'modular_bluemoon/sound/ambience/mesa/battle5.ogg' , 'modular_bluemoon/sound/ambience/mesa/battle6.ogg' , 'modular_bluemoon/sound/ambience/mesa/battle7.ogg' )
->>>>>>> b3f0beda03 (вытягиваем из говна стафф)
 
 /area/awaymission/ihategordon/outsideofmesa/hecu_camp
 	name = "Facility hecu main camp"
 	icon_state = "awaycontent15"
+	outdoors = TRUE
+
+/area/awaymission/ihategordon/outsideofmesa/restricted_zone
+	name = "Facility restricted zone"
+	icon_state = "awaycontent25"
+	outdoors = TRUE
+
+
+/area/awaymission/ihategordon/hecuannouce
+	name = "hecu warning announcement area"
+	icon_state = "3"
