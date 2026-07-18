@@ -20,7 +20,6 @@
 		"Brig Chief",
 		"Brig Governor",
 		"Brig Overwatch",
-		"Brig Overwatch",
 		"Brig Sentry",
 		"Brig Sergeant",
 		"Brig Superintendent",
@@ -35,6 +34,7 @@
 		"SAARE Supervisor",
 		"Safeguard Sergeant",
 		"Slutcurity Captain",
+		"Undersheriff",
 		"Voreden"
 		)
 

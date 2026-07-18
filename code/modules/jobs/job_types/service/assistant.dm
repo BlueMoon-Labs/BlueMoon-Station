@@ -37,6 +37,7 @@ Assistant
 		"Crewmate",
 		"Cumdump",
 		"Diplomat",
+		"Defense Attorney",
 		"Freelancer",
 		"Freeloader",
 		"Greytider",

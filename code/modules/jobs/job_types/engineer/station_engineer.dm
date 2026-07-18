@@ -15,6 +15,7 @@
 	plasma_outfit = /datum/outfit/plasmaman/engineering
 	alt_titles = list(
 		"Apprentice Engineer", //Стажер выше, для удобства
+		"Junior Engineer", //Стажер выше, для удобства
 		"Azik Interstellar Engineer", //Триглав выше, для удобства
 		"Astromechanic",
 		"Damage Control Technician",
@@ -33,7 +34,6 @@
 		"Structural Engineer",
 		"Mechanic",
 		"GEC Engineer",
-		"Junior Engineer",
 		)
 
 	access = list(ACCESS_ENGINE, ACCESS_ENGINE_EQUIP, ACCESS_TECH_STORAGE, ACCESS_MAINT_TUNNELS,
