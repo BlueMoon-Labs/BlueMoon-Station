@@ -142,6 +142,7 @@ GLOBAL_LIST_INIT(spells, typesof(/obj/effect/proc_holder/spell)) //needed for th
 
 	/// Whether an ability should start cooldown after cast or not.
 	var/should_recharge_after_cast = TRUE
+	var/do_log = TRUE
 
 	action_icon = 'icons/mob/actions/actions_spells.dmi'
 	action_icon_state = "spell_default"
@@ -252,8 +253,11 @@ GLOBAL_LIST_INIT(spells, typesof(/obj/effect/proc_holder/spell)) //needed for th
 /obj/effect/proc_holder/spell/proc/perform(list/targets, recharge = TRUE, mob/user = usr) //if recharge is started is important for the trigger spells
 	before_cast(targets)
 	invocation(user)
-	if(user && user.ckey)
-		user.log_message("<span class='danger'>cast the spell [name].</span>", LOG_ATTACK)
+	if(do_log && user?.ckey)
+		var/msg = "cast the spell [name]"
+		if(LAZYLEN(targets))
+			msg += " on targets: [english_list(targets, and_text = ", ")]"
+		user.log_message(span_danger("[msg]."), LOG_ATTACK)
 	if(recharge)
 		recharging = TRUE
 	if(sound)

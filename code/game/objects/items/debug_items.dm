@@ -154,20 +154,14 @@
 
 	var/atom/A = target
 	var/coords = ""
-	var/jmp_coords = ""
 	if(istype(A))
 		var/turf/T = get_turf(A)
 		if(T)
 			coords = "at [COORD(T)]"
-			jmp_coords = "at [ADMIN_COORDJMP(T)]"
-		else
-			jmp_coords = coords = "in nullspace"
 
 	playsound(user, 'sound/magic/wandodeath.ogg', 50, 1)
 
 	log_admin("[key_name(user)] deleted [target] [coords] with [src]")
-	message_admins("[key_name_admin(user)] deleted [target] [jmp_coords] with [src]")
-	SSblackbox.record_feedback("tally", "eraser", 1, "Delete")  //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 	if(isturf(target))
 		var/turf/T = target
 		T.ScrapeAway()
