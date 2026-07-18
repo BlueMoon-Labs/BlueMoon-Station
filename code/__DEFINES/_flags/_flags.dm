@@ -132,6 +132,7 @@ GLOBAL_LIST_INIT(bitflags, list(
 #define	PASSMACHINE		(1<<7)
 #define PASSSTRUCTURE	(1<<8)
 #define PASSCRAWL		(1<<9) //SPLURT edit
+#define PASSFENCE		(1<<10) // Allow passing through fences
 
 //Movement Types
 #define GROUND				(1<<0)
