@@ -193,6 +193,7 @@
 	desc = "A tank full of industrial welding fuel. Do not consume."
 	icon_state = "fuel"
 	reagent_id = /datum/reagent/fuel
+	var/mob/living/last_attacker
 
 /obj/structure/reagent_dispensers/fueltank/high
 	name = "high-capacity fuel tank"
@@ -207,15 +208,15 @@
 	tank_volume = 100000
 
 /obj/structure/reagent_dispensers/fueltank/limitka/explode()
-	explosion(src, heavy_impact_range = 7, light_impact_range = 14, flame_range = 21, flash_range = 34)
+	explosion(src, heavy_impact_range = 7, light_impact_range = 14, flame_range = 21, flash_range = 34, attacker = last_attacker)
 	qdel(src)
 
 /obj/structure/reagent_dispensers/fueltank/proc/explode()
-	explosion(get_turf(src), 0, 1, 5, flame_range = 5)
+	explosion(get_turf(src), 0, 1, 5, flame_range = 5, attacker = last_attacker)
 	qdel(src)
 
 /obj/structure/reagent_dispensers/fueltank/high/explode()
-	explosion(get_turf(src), 0, 2, 5, flame_range = 12)
+	explosion(get_turf(src), 0, 2, 5, flame_range = 12, attacker = last_attacker)
 	qdel(src)
 
 
@@ -239,6 +240,8 @@
 		add_bomber_message(boom_message)
 		message_admins(boom_message)
 		hitting_projectile.firer.log_message("triggered a fueltank explosion via projectile.", LOG_ATTACK)
+		if(isliving(hitting_projectile.firer))
+			last_attacker = hitting_projectile.firer
 		explode() //Bluemoon change
 
 /obj/structure/reagent_dispensers/fueltank/attackby(obj/item/I, mob/living/user, params)
@@ -267,6 +270,7 @@
 			message_admins(message_admins)
 
 			user.log_message("triggered a fueltank explosion via welding tool.", LOG_ATTACK)
+			last_attacker = user
 			explode() //Bluemoon change
 		return
 	return ..()

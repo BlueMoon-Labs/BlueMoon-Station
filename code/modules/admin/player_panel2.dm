@@ -462,11 +462,8 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 				browse_messages(target_ckey = note_ckey)
 
 		if ("logs")
-			var/source = LOGSRC_MOB
-			if (targetMob.client)
-				source = LOGSRC_CLIENT
-
-			show_individual_logging_panel(targetMob, source)
+			var/datum/log_viewer/LV = new(targetMob)
+			LV.ui_interact(admin.mob)
 
 		if ("job_ban")
 			if(resolve_mob_ban_ckey(targetMob))

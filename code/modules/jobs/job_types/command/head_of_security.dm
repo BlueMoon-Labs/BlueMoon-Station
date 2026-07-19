@@ -27,6 +27,7 @@
 		"Chief of Security",
 		"Chief Security Officer",
 		"Commander of the Guard",
+		"Commissioner of Security",
 		"Division Leader",
 		"Head of Slutcurity",
 		"Head of Studcurity",

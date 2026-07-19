@@ -94,11 +94,4 @@
 /obj/item/clothing/underwear/briefs/strapon/mob_can_equip(M, equipper, slot, disable_warning, bypass_equip_delay_self)
 	if(!..())
 		return FALSE
-
-	if(istype(M, /mob/living))
-		var/mob/living/living = M
-		if(living.has_penis(REQUIRE_ANY))
-			to_chat(living, span_notice("\The [living] doesn't seem to need a strapon!"))
-			return FALSE
-
 	return TRUE

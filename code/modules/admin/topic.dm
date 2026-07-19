@@ -40,6 +40,14 @@
 		else
 			to_chat(usr, "Ticket [ahelp_ref] has been deleted!")
 
+	else if(href_list["mentorticket"])
+		var/mentorticket_ref = href_list["mentorticket"]
+		var/datum/mentor_ticket/MT = locate(mentorticket_ref)
+		if(MT)
+			MT.Action(href_list["mentorticket_action"])
+		else
+			to_chat(usr, "Mentor ticket [mentorticket_ref] has been deleted!")
+
 	else if(href_list["ahelp_tickets"])
 		GLOB.ahelp_tickets.BrowseTickets(text2num(href_list["ahelp_tickets"]))
 
@@ -2285,7 +2293,8 @@
 			to_chat(usr, "This can only be used on instances of type /mob.")
 			return
 
-		show_individual_logging_panel(M, href_list["log_src"], href_list["log_type"])
+		var/datum/log_viewer/LV = new(M)
+		LV.ui_interact(usr)
 	else if(href_list["languagemenu"])
 		if(!check_rights(R_ADMIN))
 			return

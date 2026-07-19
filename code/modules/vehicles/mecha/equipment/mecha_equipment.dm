@@ -138,11 +138,11 @@
 	if(href_list["detach"])
 		detach()
 
-/obj/item/mecha_parts/mecha_equipment/log_message(message, message_type=LOG_GAME, color=null, log_globally)
+/obj/item/mecha_parts/mecha_equipment/log_message(message, message_type=LOG_GAME, color=null, log_globally, atom/target = null)
 	if(chassis)
-		chassis.log_message("ATTACHMENT: [src] [message]", message_type, color)
+		chassis.log_message("ATTACHMENT: [src] [message]", message_type, color, log_globally, target = target)
 	else
-		..()
+		..(message, message_type, color, log_globally, target)
 
 
 //Used for reloading weapons/tools etc. that use some form of resource

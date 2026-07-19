@@ -13,9 +13,11 @@
 	exp_type = EXP_TYPE_SECURITY
 	alt_titles = list(
 		"MI13 Agent", //Триглав выше, для удобства
+		"Assistant Attorney", //Помощник выше, для удобства
+		"Assistant Sectorial Attorney", //Помощник выше, для удобства
 		"Attorney",
+		"Sectorial Attorney",
 		"Barrister",
-		"Defese Attorney",
 		"Human Resources Agent",
 		"Jurist",
 		"Law-Slut",

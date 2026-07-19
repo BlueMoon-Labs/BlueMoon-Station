@@ -150,7 +150,7 @@
 	.["max_distance"] = 0
 	.["user_is_blacklisted"] = SSinteractions.is_blacklisted(self)
 	var/required_from_user = NONE
-	var/user_has_penis = self.has_penis()
+	var/user_has_penis = self.has_penis(TRUE)
 	if(self.has_mouth())
 		required_from_user |= INTERACTION_REQUIRE_MOUTH
 	if(self.has_hands())
@@ -313,7 +313,7 @@
 		.["max_distance"] = get_dist(self, target)
 		.["target_is_blacklisted"] = SSinteractions.is_blacklisted(target)
 		var/required_from_target = NONE
-		var/target_has_penis = target.has_penis()
+		var/target_has_penis = target.has_penis(TRUE)
 		if(target.has_mouth())
 			required_from_target |= INTERACTION_REQUIRE_MOUTH
 		if(target.has_hands())

@@ -187,9 +187,9 @@
 
 	// BLUEMOON EDIT START
 	var/genital_data = list(
-		"M_has_penis" = M.has_penis(),
+		"M_has_penis" = M.has_penis(TRUE),
 		"M_penis_desc" = "какой-то",
-		"target_has_penis" = portal_target.has_penis(),
+		"target_has_penis" = portal_target.has_penis(TRUE),
 		"target_penis_desc" = "какой-то"
 	)
 

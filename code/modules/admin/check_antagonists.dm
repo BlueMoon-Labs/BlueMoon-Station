@@ -155,7 +155,7 @@
 		dat += "Current Game Mode: <B>[SSticker.mode.name]</B><BR>"
 	dat += "Round Duration: <B>[DisplayTimeText(world.time - SSticker.round_start_time)]</B><BR>"
 	dat += "<B>Emergency shuttle</B><BR>"
-	if(EMERGENCY_IDLE_OR_RECALLED)
+	if(EMERGENCY_IDLE_OR_RECALLED || !SSshuttle.emergency)
 		dat += "<a href='?_src_=holder;[HrefToken()];call_shuttle=1'>Call Shuttle</a><br>"
 	else
 		var/timeleft = SSshuttle.emergency.timeLeft()

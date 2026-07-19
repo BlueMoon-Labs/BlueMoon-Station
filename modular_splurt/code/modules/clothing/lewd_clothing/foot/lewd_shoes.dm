@@ -18,9 +18,9 @@
 	var/mob/living/carbon/C = user
 	if(iscarbon(user) && (user.get_item_by_slot(ITEM_SLOT_FEET) == src))
 		if(HAS_TRAIT(src, TRAIT_NODROP))
-			to_chat(C, span_purple(pick("You slide your heels against each other in a failed attempt at kicking them off.",
-										"The heels refuse to budge no matter how much you tug.",
-										"The heels are tight around your ankles and the laces refuse to loosen.")))
+			to_chat(C, span_purple(pick("Вы протираете каблуки друг об друга в неудачной попытке скинуть их с ног.",
+										"Каблуки ни в какую не слезают, не важно как сильно вы тянете.",
+										"Каблуки туго обтягивают ваши лодыжки, а шнурки, кажется, невозможно развязать.")))
 			return
 		else
 			if(!do_after(C, 40, target = src))

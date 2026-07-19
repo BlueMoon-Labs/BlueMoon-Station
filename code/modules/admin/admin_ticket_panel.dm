@@ -230,7 +230,8 @@
 			var/mob/initiator_mob = selected_ticket.initiator.mob
 			if(!initiator_mob)
 				return TRUE
-			show_individual_logging_panel(initiator_mob)
+			var/datum/log_viewer/LV = new(initiator_mob)
+			LV.ui_interact(usr)
 			. = TRUE
 
 		if("ban_panel")
