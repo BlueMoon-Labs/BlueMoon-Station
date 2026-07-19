@@ -28,3 +28,8 @@
 	var/datum/D = locate(reference)
 	return (!QDELETED(D) && D.weak_reference == src) ? D : null
 
+/// Как resolve(), но возвращает и qdel-нутую (ещё не собранную GC) цель.
+/// Для диагностики: именование того, что как раз сейчас удаляется.
+/datum/weakref/proc/hard_resolve()
+	return locate(reference)
+

@@ -194,6 +194,8 @@
 #include "manifest_photo_deferred.dm"
 #include "newscaster_alert_gate.dm"
 #include "harddel_cleanup.dm"
+#include "warnfail_context.dm"
+#include "runtime_guards.dm"
 #include "hallucination_stationmessage.dm"
 #include "hilbert_hotel.dm"
 #include "memory_leak_limits.dm"
