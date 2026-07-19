@@ -115,3 +115,18 @@
 	var/list/second = results[2]
 	TEST_ASSERT_EQUAL(second["line"], 2, "второе совпадение - строка 2")
 	TEST_ASSERT_EQUAL(second["offset"], 6, "смещение второй строки - 6")
+
+	// Фактический размер страницы: фиксированные размеры как есть,
+	// "весь файл" (0) упирается в кап и не проседает ниже минимума
+	var/datum/admin_log_viewer/viewer = new(null)
+	viewer.page_bytes = 256 * 1024
+	viewer.file_size = 50 * 1024 * 1024
+	TEST_ASSERT_EQUAL(viewer.effective_page_bytes(), 256 * 1024, "фиксированный размер страницы не зависит от размера файла")
+	viewer.page_bytes = 0
+	viewer.file_size = 5 * 1024 * 1024
+	TEST_ASSERT_EQUAL(viewer.effective_page_bytes(), 5 * 1024 * 1024, "режим всего файла должен покрывать файл целиком")
+	viewer.file_size = 50 * 1024 * 1024
+	TEST_ASSERT_EQUAL(viewer.effective_page_bytes(), 8 * 1024 * 1024, "режим всего файла должен упираться в кап 8 МиБ")
+	viewer.file_size = 0
+	TEST_ASSERT_EQUAL(viewer.effective_page_bytes(), 256 * 1024, "пустой файл не должен давать нулевую страницу")
+	qdel(viewer)

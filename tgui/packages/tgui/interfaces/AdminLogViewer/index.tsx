@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useBackend } from '../../backend';
-import { Box, Button, Icon, Input, NoticeBox, Section, Stack, Table } from '../../components';
+import { Box, Button, Dropdown, Icon, Input, NoticeBox, Section, Stack, Table } from '../../components';
 import { Window } from '../../layouts';
 import { formatBytes, parseCsv, splitByMatches } from './helpers';
 
@@ -21,10 +21,19 @@ export type LogFileState = {
   pageEnd: number;
   pageNum: number;
   pageCount: number;
+  pageBytes: number;
   content: string;
   tailAvailable: boolean;
   tailActive: boolean;
 };
+
+// Согласован с белым списком set_page_size на сервере; 0 = весь файл.
+const PAGE_SIZE_OPTIONS: { label: string; value: number }[] = [
+  { label: '256 КиБ', value: 256 * 1024 },
+  { label: '1 МиБ', value: 1024 * 1024 },
+  { label: '4 МиБ', value: 4 * 1024 * 1024 },
+  { label: 'Весь файл', value: 0 },
+];
 
 export type LogViewerData = {
   crumbs: string[];
@@ -386,6 +395,20 @@ const Viewer = (props) => {
               />
             </>
           )}
+          <Dropdown
+            displayText={
+              (PAGE_SIZE_OPTIONS.find((o) => o.value === file.pageBytes) ?? PAGE_SIZE_OPTIONS[0])
+                .label
+            }
+            options={PAGE_SIZE_OPTIONS.map((o) => o.label)}
+            width="8em"
+            onSelected={(label) => {
+              const option = PAGE_SIZE_OPTIONS.find((o) => o.label === label);
+              if (option) {
+                act('set_page_size', { size: option.value });
+              }
+            }}
+          />
           <Pager />
           {file.tailAvailable && (
             <Button
@@ -418,13 +441,8 @@ const Viewer = (props) => {
             onClick={() => setWrap(!wrap)}
           />
           <Button
-            icon="up-right-from-square"
-            ml={1}
-            tooltip="Открыть весь файл одним окном"
-            onClick={() => act('open_whole_file')}
-          />
-          <Button
             icon="download"
+            ml={1}
             tooltip="Скачать файл"
             onClick={() => act('download_file')}
           />

@@ -12,8 +12,8 @@
 #define ADMIN_LOG_ARCHIVE_TTL (10 MINUTES)
 /// Кап длины команды tar при архивации выбранных файлов (лимит cmd на Windows ~8К).
 #define ADMIN_LOG_MULTI_CMD_MAX 6000
-/// Кап размера файла для показа целиком одним окном (html_encode + рендер у клиента).
-#define ADMIN_LOG_OPEN_WHOLE_MAX (8 * 1024 * 1024)
+/// Кап страницы в режиме "весь файл" (json-пересылка в tgui + рендер у клиента).
+#define ADMIN_LOG_WHOLE_PAGE_MAX (8 * 1024 * 1024)
 
 /// Относительный путь каталога -> world.time последней сборки архива.
 GLOBAL_LIST_EMPTY(admin_log_archive_builds)
@@ -48,6 +48,8 @@ GLOBAL_LIST_EMPTY(admin_log_archive_building)
 	var/search_query = ""
 	/// Троттлинг страничных чтений (спам кнопками пейджера не должен дёргать диск чаще ~2 раз/сек).
 	var/last_page_act = 0
+	/// Выбранный размер страницы в байтах; 0 - режим "весь файл" (кап ADMIN_LOG_WHOLE_PAGE_MAX).
+	var/page_bytes = ADMIN_LOG_PAGE_BYTES
 	/// Режим live-tail: активен ли и id зацикленного таймера.
 	var/tail_active = FALSE
 	var/tail_timer
@@ -186,6 +188,12 @@ GLOBAL_LIST_EMPTY(admin_log_archive_building)
 	log_admin("[key_name(owner)] accessed log file [path]")
 	load_page(0, already_aligned = TRUE)
 
+/// Фактический размер страницы с учётом режима "весь файл".
+/datum/admin_log_viewer/proc/effective_page_bytes()
+	if(page_bytes > 0)
+		return page_bytes
+	return clamp(file_size, ADMIN_LOG_PAGE_BYTES, ADMIN_LOG_WHOLE_PAGE_MAX)
+
 /// Загрузить страницу с байтового смещения. already_aligned - смещение уже указывает
 /// на начало строки (начало файла, page_end предыдущей страницы, результат поиска).
 /datum/admin_log_viewer/proc/load_page(offset, already_aligned = FALSE)
@@ -193,19 +201,22 @@ GLOBAL_LIST_EMPTY(admin_log_archive_building)
 	if(isnull(path))
 		return FALSE
 	offset = clamp(offset, 0, max(file_size - 1, 0))
+	var/page_size = effective_page_bytes()
 	var/chunk
-	if(file_size <= ADMIN_LOG_WHOLE_READ_MAX)
+	//крупная страница поднимает и порог чтения целиком: файл в пределах страницы
+	//читается rust-g без shell на любой ОС и кэшируется
+	if(file_size <= max(ADMIN_LOG_WHOLE_READ_MAX, page_size))
 		if(cached_path != path || isnull(cached_content))
 			cached_content = rustg_file_read(path)
 			cached_path = path
 			file_size = length(cached_content)
 			offset = clamp(offset, 0, max(file_size - 1, 0))
-		chunk = copytext(cached_content, offset + 1, min(offset + ADMIN_LOG_PAGE_BYTES, file_size) + 1)
+		chunk = copytext(cached_content, offset + 1, min(offset + page_size, file_size) + 1)
 	else
 		if(!is_safe_path_for_admin_shell(path))
 			to_chat(owner, span_warning("Файл слишком большой, а путь содержит небезопасные символы - доступно только скачивание."), confidential = TRUE)
 			return FALSE
-		chunk = read_admin_log_chunk(path, offset, ADMIN_LOG_PAGE_BYTES)
+		chunk = read_admin_log_chunk(path, offset, page_size)
 		if(isnull(chunk))
 			to_chat(owner, span_warning("Ошибка чтения файла."), confidential = TRUE)
 			return FALSE
@@ -249,6 +260,8 @@ GLOBAL_LIST_EMPTY(admin_log_archive_building)
 	if(new_size > file_size)
 		file_size = new_size
 		cached_content = null
+		//хвост всегда минимальным окном: перечитывать и переслать мегабайтную
+		//"весь файл"-страницу раз в 3 секунды - самоубийство для клиента
 		if(!load_page(max(new_size - ADMIN_LOG_PAGE_BYTES, 0), already_aligned = (new_size <= ADMIN_LOG_PAGE_BYTES)))
 			tail_active = FALSE
 			return
@@ -268,7 +281,8 @@ GLOBAL_LIST_EMPTY(admin_log_archive_building)
 		to_chat(owner, span_warning("Запрос поиска: от 2 до 256 символов."), confidential = TRUE)
 		return
 	search_query = query
-	if(file_size <= ADMIN_LOG_WHOLE_READ_MAX)
+	//порог тот же, что у load_page: файл в пределах страницы ищем в памяти на любой ОС
+	if(file_size <= max(ADMIN_LOG_WHOLE_READ_MAX, effective_page_bytes()))
 		if(cached_path != path || isnull(cached_content))
 			cached_content = rustg_file_read(path)
 			cached_path = path
@@ -412,30 +426,6 @@ GLOBAL_LIST_EMPTY(admin_log_archive_building)
 	log_admin("[key_name(owner)] downloaded selected log files from [rel]: [jointext(picked, ", ")]")
 	owner << ftp(file(out), "selected_[flat][length(picked)]files.[ext]")
 
-/// Показ файла целиком одним окном внутриигрового браузера - замена Open из
-/// старого Get Current Logs. Прежний run(file) не годится: открытие документов
-/// он выполняет только при trusted-режиме клиента и настроенной ассоциации
-/// расширения, иначе молча ничего не делает.
-/datum/admin_log_viewer/proc/open_whole_file()
-	var/path = current_file_path()
-	if(isnull(path))
-		return
-	var/actual_size = admin_log_file_size(path)
-	if(actual_size < 0)
-		to_chat(owner, span_warning("Не удалось получить размер файла."), confidential = TRUE)
-		return
-	if(actual_size > ADMIN_LOG_OPEN_WHOLE_MAX)
-		to_chat(owner, span_warning("Файл крупнее [ADMIN_LOG_OPEN_WHOLE_MAX / (1024 * 1024)] МиБ - целиком его не показать, скачайте файл."), confidential = TRUE)
-		return
-	if(owner.file_spam_check())
-		return
-	var/content = rustg_file_read(path)
-	message_admins("[key_name_admin(owner)] opened file: [path]")
-	log_admin("[key_name(owner)] opened log file [path]")
-	var/datum/browser/popup = new(owner, "viewfile_[ckey(path)]", "File: [path]", 900, 700)
-	popup.set_content("<pre style='word-wrap: break-word; white-space: pre-wrap;'>[html_encode(content)]</pre>")
-	popup.open(FALSE)
-
 /// Одноразовая чистка остатков архивов с прошлого запуска сервера.
 /// Зовётся до первой сборки этого запуска, так что удалять можно всё подряд.
 /datum/admin_log_viewer/proc/cleanup_archive_dir()
@@ -459,13 +449,15 @@ GLOBAL_LIST_EMPTY(admin_log_archive_building)
 	if(isnull(current_file))
 		data["file"] = null
 	else
+		var/page_size = effective_page_bytes()
 		data["file"] = list(
 			"name" = current_file,
 			"size" = file_size,
 			"pageStart" = page_start,
 			"pageEnd" = page_end,
-			"pageNum" = min(max(1, CEILING(file_size / ADMIN_LOG_PAGE_BYTES, 1)), round(page_start / ADMIN_LOG_PAGE_BYTES) + 1),
-			"pageCount" = max(1, CEILING(file_size / ADMIN_LOG_PAGE_BYTES, 1)),
+			"pageNum" = min(max(1, CEILING(file_size / page_size, 1)), round(page_start / page_size) + 1),
+			"pageCount" = max(1, CEILING(file_size / page_size, 1)),
+			"pageBytes" = page_bytes,
 			"content" = page_content,
 			"tailAvailable" = tail_available(),
 			"tailActive" = tail_active,
@@ -527,11 +519,23 @@ GLOBAL_LIST_EMPTY(admin_log_archive_building)
 					if(page_end < file_size)
 						load_page(page_end, already_aligned = TRUE)
 				if("prev")
-					var/target = max(page_start - ADMIN_LOG_PAGE_BYTES, 0)
+					var/target = max(page_start - effective_page_bytes(), 0)
 					load_page(target, already_aligned = (target == 0))
 				if("last")
-					var/target = max(file_size - ADMIN_LOG_PAGE_BYTES, 0)
+					var/target = max(file_size - effective_page_bytes(), 0)
 					load_page(target, already_aligned = (target == 0))
+			return TRUE
+		if("set_page_size")
+			var/new_size = text2num(params["size"])
+			//белый список: 256 КиБ / 1 МиБ / 4 МиБ / 0 = весь файл
+			if(isnull(new_size) || !(new_size in list(0, ADMIN_LOG_PAGE_BYTES, ADMIN_LOG_PAGE_BYTES * 4, ADMIN_LOG_PAGE_BYTES * 16)))
+				return TRUE
+			if(new_size == page_bytes)
+				return TRUE
+			page_bytes = new_size
+			if(!isnull(current_file))
+				//"весь файл" показываем с начала; при смене размера остаёмся на текущем смещении
+				load_page(page_bytes ? page_start : 0, already_aligned = TRUE)
 			return TRUE
 		if("download_file")
 			var/path = current_file_path()
@@ -543,9 +547,6 @@ GLOBAL_LIST_EMPTY(admin_log_archive_building)
 			log_admin("[key_name(owner)] downloaded log file [path]")
 			to_chat(owner, "Отправляю [current_file] - большой файл может идти несколько минут.", confidential = TRUE)
 			owner << ftp(file(path), current_file)
-			return TRUE
-		if("open_whole_file")
-			open_whole_file()
 			return TRUE
 		if("search_file")
 			do_search(params["query"])
