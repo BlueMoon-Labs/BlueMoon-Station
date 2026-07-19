@@ -17,7 +17,7 @@
 	var/mentor_msg = "<span class='mentornotice'><b><font color='purple'>MENTORHELP:</b> <b>[key_name_mentor(src, TRUE, FALSE, TRUE)]</b>: [msg]</font></span>"
 	log_mentor("MENTORHELP: [key_name_mentor(src, FALSE, FALSE, FALSE)]: [msg]")
 
-	for(var/client/X in GLOB.mentors | GLOB.admins)
+	for(var/client/X in mentor_traffic_recipients())
 		SEND_SOUND(X, 'sound/items/bikehorn.ogg')
 		to_chat(X, mentor_msg)
 

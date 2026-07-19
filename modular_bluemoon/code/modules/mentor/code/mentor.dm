@@ -70,3 +70,18 @@ GLOBAL_PROTECT(mentor_href_token)
 /client
 	/// Acts the same way holder does towards admin: it holds the mentor datum. if set, the guy's a mentor.
 	var/datum/mentors/mentor_datum
+	/// Нажал Dementor и не хочет получать менторский трафик (mhelp, msay, ментор-PM).
+	/// Для менторов дублирует выход из GLOB.mentors, для админов - единственный механизм:
+	/// рассылки идут и по GLOB.admins, откуда Dementor убрать не может.
+	var/dementored = FALSE
+
+/// Получатели менторского трафика: менторы и админы, кроме нажавших Dementor.
+/// Все рассылки mhelp/msay/ментор-PM обязаны идти через этот прок, а не по
+/// GLOB.mentors | GLOB.admins напрямую - иначе Dementor не работает для админов.
+/proc/mentor_traffic_recipients()
+	var/list/recipients = list()
+	for(var/client/staff in GLOB.mentors | GLOB.admins)
+		if(staff.dementored)
+			continue
+		recipients += staff
+	return recipients
