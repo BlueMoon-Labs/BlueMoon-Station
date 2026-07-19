@@ -9,15 +9,20 @@ INITIALIZE_IMMEDIATE(/mob/dead)
 
 /mob/dead/Initialize(mapload)
 	SHOULD_CALL_PARENT(FALSE)
-	//пропуск родителей сознательно оставляет мёртвых мобов ВНЕ HEARING-канала
-	//спатиал-грида: их слух ведёт отдельный dead-chat путь say() с префами
-	//(старый view()-обход их тоже не видел из-за invisibility), а в CLIENTS-канал
-	//обсерверов с клиентом кладёт Login
 	if(flags_1 & INITIALIZED_1)
 		stack_trace("Warning: [src]([type]) initialized multiple times!")
 	flags_1 |= INITIALIZED_1
 	tag = "mob_[next_mob_id++]"
 	add_to_mob_list()
+
+	//дальний слух мёртвых ведёт dead-chat путь say() с префами, но потребители
+	//get_hearers_in_view (LOOC, его рунчат) находят слушателей только через грид,
+	//а до порта грида view() с турфа-источника видел призраков несмотря на
+	//invisibility. Пропуск родителя теряет общий хук - регистрируем слух сами;
+	//в CLIENTS-канал обсерверов с клиентом кладёт Login. new_player (flags_1 =
+	//NONE) сюда не попадает
+	if(flags_1 & HEAR_1)
+		become_hearing_sensitive(INNATE_TRAIT)
 
 	prepare_huds()
 

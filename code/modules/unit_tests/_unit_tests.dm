@@ -215,6 +215,7 @@
 #include "shapeshift_gc.dm"
 #include "simple_animal_buckets.dm"
 #include "space_drift.dm"
+#include "spirit_regressions.dm"
 #include "statpanel_listedturf.dm"
 #include "ssmobs_optimization.dm"
 #include "ssobj_idle_processing.dm"
