@@ -34,15 +34,21 @@ GLOBAL_DATUM_INIT(news_network, /datum/news_network, new)
 		if(FC.channel_name == channel_name)
 			FC.messages += newMsg
 			break
-	// Копия списка: CHECK_TICK может уснуть, а снесённый за это время аппарат
-	// сломал бы итерацию по живому GLOB.allCasters.
-	for(var/obj/machinery/newscaster/NEWSCASTER as anything in GLOB.allCasters.Copy())
+	newscaster_alert_wave(GLOB.allCasters.Copy(), channel_name)
+	lastAction ++
+	newMsg.creationTime = lastAction
+
+/// Волна оповещений ньюскастеров о новой статье. Отдельный прок с waitfor = FALSE:
+/// SubmitArticle зовётся синхронно из неспящих контекстов (priority_announce из
+/// Initialize/Life), а CHECK_TICK спит. Копия списка снаружи: снесённый во время
+/// сна аппарат сломал бы итерацию по живому GLOB.allCasters.
+/proc/newscaster_alert_wave(list/casters, channel_name)
+	set waitfor = FALSE
+	for(var/obj/machinery/newscaster/NEWSCASTER as anything in casters)
 		if(QDELETED(NEWSCASTER))
 			continue
 		INVOKE_ASYNC(NEWSCASTER, TYPE_PROC_REF(/obj/machinery/newscaster, newsAlert), channel_name)
 		CHECK_TICK // say+барки сотен аппаратов одним тиком = таймер-залп (TIMER BURST 9748)
-	lastAction ++
-	newMsg.creationTime = lastAction
 
 /datum/news_network/proc/submitWanted(criminal, body, scanned_user, datum/picture/picture, adminMsg = 0, newMessage = 0)
 	wanted_issue.active = 1
