@@ -19,6 +19,18 @@
 	door_runtime_set_lockdown(doors, FALSE)
 	TEST_ASSERT(!door.locked, "Удалённая дверь не должна была получить локдаун")
 
+/// qdel-нутый мувер не должен возвращаться в мир: гард в doMove отказывает
+/// и трассирует виновника (класс "post-qdel forceMove" из улик раунда 9746).
+/datum/unit_test/no_post_qdel_move
+	allowed_runtime_patterns = list("doMove qdel-нутого")
+
+/datum/unit_test/no_post_qdel_move/Run()
+	var/obj/item/thing = allocate(/obj/item)
+	qdel(thing)
+	TEST_ASSERT_NULL(thing.loc, "qdel не увёл предмет в nullspace")
+	thing.forceMove(run_loc_floor_bottom_left)
+	TEST_ASSERT_NULL(thing.loc, "qdel-нутый предмет вернулся в мир через forceMove")
+
 /// Клик по пустому клоункару не должен рантаймить на LAZY-списке пассажиров.
 /datum/unit_test/car_attacked_by_empty/Run()
 	var/obj/vehicle/sealed/car/clowncar/car = allocate(/obj/vehicle/sealed/car/clowncar)

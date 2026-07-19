@@ -1002,6 +1002,12 @@ SUBSYSTEM_DEF(garbage)
 		notes += "таймеров на датуме: [length(D.active_timers)] (первый: [timer_desc])"
 	if (D.datum_flags & DF_ISPROCESSING)
 		notes += "DF_ISPROCESSING всё ещё стоит"
+	// datum/Destroy сам снимает все подписки - непустой signal_procs ПОСЛЕ Destroy
+	// означает регистрацию после qdel; цели этих подписок держат датум в comp_lookup.
+	// Гейт по gc_destroyed: у живого датума подписки штатны и уликой не являются.
+	if (D.gc_destroyed && length(D.signal_procs))
+		var/datum/first_signal_target = D.signal_procs[1]
+		notes += "сигналы не сняты с [length(D.signal_procs)] целей (первая: [istype(first_signal_target) ? "[first_signal_target.type]" : "?"])"
 	if (ismovable(D))
 		var/atom/movable/movable = D
 		if (movable.loc)
@@ -1013,6 +1019,9 @@ SUBSYSTEM_DEF(garbage)
 		if (length(movable.vis_locs))
 			var/atom/vis_holder = movable.vis_locs[1]
 			notes += "в vis_contents у [vis_holder.type] ([length(movable.vis_locs)] держателей)"
+		if (movable.orbiting)
+			var/atom/orbit_parent = movable.orbiting.parent
+			notes += "орбитит [orbit_parent ? "[orbit_parent.type]" : "?"]"
 		if (istype(movable, /atom/movable/screen))
 			for (var/client/candidate in GLOB.clients)
 				if (movable in candidate.screen)
@@ -1022,8 +1031,10 @@ SUBSYSTEM_DEF(garbage)
 		var/mob/leaked_mob = D
 		if (leaked_mob.client)
 			notes += "клиент ещё привязан: [leaked_mob.client.ckey]"
-		if (leaked_mob.mind)
-			notes += "mind не отвязан"
+		// Именно mind.current -> моб: обратная ссылка пинит. Сам mob.mind после
+		// Destroy штатно не чистится и держателем не является (ложная улика 9746).
+		if (leaked_mob.mind?.current == leaked_mob)
+			notes += "mind.current всё ещё указывает на моба"
 		if (leaked_mob.buckled)
 			notes += "бакнут к [leaked_mob.buckled.type]"
 		if (length(leaked_mob.buckled_mobs))
