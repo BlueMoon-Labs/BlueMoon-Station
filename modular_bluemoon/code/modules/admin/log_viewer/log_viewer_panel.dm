@@ -12,6 +12,8 @@
 #define ADMIN_LOG_ARCHIVE_TTL (10 MINUTES)
 /// Кап длины команды tar при архивации выбранных файлов (лимит cmd на Windows ~8К).
 #define ADMIN_LOG_MULTI_CMD_MAX 6000
+/// Кап размера файла для показа целиком одним окном (html_encode + рендер у клиента).
+#define ADMIN_LOG_OPEN_WHOLE_MAX (8 * 1024 * 1024)
 
 /// Относительный путь каталога -> world.time последней сборки архива.
 GLOBAL_LIST_EMPTY(admin_log_archive_builds)
@@ -410,6 +412,30 @@ GLOBAL_LIST_EMPTY(admin_log_archive_building)
 	log_admin("[key_name(owner)] downloaded selected log files from [rel]: [jointext(picked, ", ")]")
 	owner << ftp(file(out), "selected_[flat][length(picked)]files.[ext]")
 
+/// Показ файла целиком одним окном внутриигрового браузера - замена Open из
+/// старого Get Current Logs. Прежний run(file) не годится: открытие документов
+/// он выполняет только при trusted-режиме клиента и настроенной ассоциации
+/// расширения, иначе молча ничего не делает.
+/datum/admin_log_viewer/proc/open_whole_file()
+	var/path = current_file_path()
+	if(isnull(path))
+		return
+	var/actual_size = admin_log_file_size(path)
+	if(actual_size < 0)
+		to_chat(owner, span_warning("Не удалось получить размер файла."), confidential = TRUE)
+		return
+	if(actual_size > ADMIN_LOG_OPEN_WHOLE_MAX)
+		to_chat(owner, span_warning("Файл крупнее [ADMIN_LOG_OPEN_WHOLE_MAX / (1024 * 1024)] МиБ - целиком его не показать, скачайте файл."), confidential = TRUE)
+		return
+	if(owner.file_spam_check())
+		return
+	var/content = rustg_file_read(path)
+	message_admins("[key_name_admin(owner)] opened file: [path]")
+	log_admin("[key_name(owner)] opened log file [path]")
+	var/datum/browser/popup = new(owner, "viewfile_[ckey(path)]", "File: [path]", 900, 700)
+	popup.set_content("<pre style='word-wrap: break-word; white-space: pre-wrap;'>[html_encode(content)]</pre>")
+	popup.open(FALSE)
+
 /// Одноразовая чистка остатков архивов с прошлого запуска сервера.
 /// Зовётся до первой сборки этого запуска, так что удалять можно всё подряд.
 /datum/admin_log_viewer/proc/cleanup_archive_dir()
@@ -518,18 +544,8 @@ GLOBAL_LIST_EMPTY(admin_log_archive_building)
 			to_chat(owner, "Отправляю [current_file] - большой файл может идти несколько минут.", confidential = TRUE)
 			owner << ftp(file(path), current_file)
 			return TRUE
-		if("open_file_external")
-			// Аналог кнопки Open старого Get Current Logs: run() отдаёт файл клиенту
-			// и открывает его системным приложением - весь лог одним документом
-			var/path = current_file_path()
-			if(isnull(path))
-				return TRUE
-			if(owner.file_spam_check())
-				return TRUE
-			message_admins("[key_name_admin(owner)] opened file: [path]")
-			log_admin("[key_name(owner)] opened log file [path]")
-			to_chat(owner, "Открываю [current_file] во внешнем приложении - большой файл может идти несколько минут.", confidential = TRUE)
-			owner << run(file(path))
+		if("open_whole_file")
+			open_whole_file()
 			return TRUE
 		if("search_file")
 			do_search(params["query"])

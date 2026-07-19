@@ -420,8 +420,8 @@ const Viewer = (props) => {
           <Button
             icon="up-right-from-square"
             ml={1}
-            tooltip="Открыть весь файл во внешнем приложении"
-            onClick={() => act('open_file_external')}
+            tooltip="Открыть весь файл одним окном"
+            onClick={() => act('open_whole_file')}
           />
           <Button
             icon="download"
