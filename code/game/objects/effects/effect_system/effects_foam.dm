@@ -105,8 +105,15 @@
 /obj/effect/particle_effect/foam/long_life
 	lifetime = 30 SECONDS
 
+/// Мягкий потолок одновременной пены: Scrubber Overflow пенит каждый скраббер станции,
+/// и в раунде 9746 профилировщик поймал 5127 пен = 228мс на проход SSfastprocess.
+/// Кап режет только дальнейший спред - существующая пена доживает своё.
+#define FOAM_ACTIVE_CAP 1500
+GLOBAL_VAR_INIT(foam_active_count, 0)
+
 /obj/effect/particle_effect/foam/Initialize(mapload)
 	. = ..()
+	GLOB.foam_active_count++
 	MakeSlippery()
 	create_reagents(1000, NONE, NO_REAGENTS_VALUE) //limited by the size of the reagent holder anyway.
 	START_PROCESSING(SSfastprocess, src)
@@ -116,6 +123,7 @@
 	AddComponent(/datum/component/slippery, 100)
 
 /obj/effect/particle_effect/foam/Destroy()
+	GLOB.foam_active_count--
 	STOP_PROCESSING(SSfastprocess, src)
 	return ..()
 
@@ -189,6 +197,8 @@
 /obj/effect/particle_effect/foam/proc/spread_foam()
 	var/turf/t_loc = get_turf(src)
 	if(!t_loc) // пену могли убрать из мира (kill_foam/подбор) между постановкой в очередь и спредом
+		return
+	if(GLOB.foam_active_count >= FOAM_ACTIVE_CAP)
 		return
 	for(var/turf/T in t_loc.GetAtmosAdjacentTurfs())
 		var/obj/effect/particle_effect/foam/foundfoam = locate() in T //Don't spread foam where there's already foam!
@@ -358,3 +368,4 @@
 #undef ALUMINUM_FOAM
 #undef IRON_FOAM
 #undef RESIN_FOAM
+#undef FOAM_ACTIVE_CAP

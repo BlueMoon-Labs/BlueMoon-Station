@@ -31,6 +31,33 @@
 	thing.forceMove(run_loc_floor_bottom_left)
 	TEST_ASSERT_NULL(thing.loc, "qdel-нутый предмет вернулся в мир через forceMove")
 
+/// Кап активной пены глушит спред, а без капа спред работает.
+/datum/unit_test/foam_active_cap/Run()
+	var/obj/effect/particle_effect/foam/foam = allocate(/obj/effect/particle_effect/foam)
+	foam.amount = 5
+	var/turf/foam_turf = get_turf(foam)
+	var/saved_count = GLOB.foam_active_count
+
+	GLOB.foam_active_count = 99999
+	foam.spread_foam()
+	var/spread_over_cap = FALSE
+	for(var/turf/adjacent in foam_turf.GetAtmosAdjacentTurfs())
+		if(locate(/obj/effect/particle_effect/foam) in adjacent)
+			spread_over_cap = TRUE
+			break
+	TEST_ASSERT(!spread_over_cap, "Спред пены прошёл сквозь кап FOAM_ACTIVE_CAP")
+
+	GLOB.foam_active_count = saved_count
+	foam.spread_foam()
+	var/spread_normally = FALSE
+	for(var/turf/adjacent in foam_turf.GetAtmosAdjacentTurfs())
+		var/obj/effect/particle_effect/foam/new_foam = locate() in adjacent
+		if(new_foam)
+			spread_normally = TRUE
+			break
+	// Расползшуюся пену подчистит Destroy() базового теста - он qdel-ит содержимое зоны.
+	TEST_ASSERT(spread_normally, "Обычный спред пены перестал работать")
+
 /// Клик по пустому клоункару не должен рантаймить на LAZY-списке пассажиров.
 /datum/unit_test/car_attacked_by_empty/Run()
 	var/obj/vehicle/sealed/car/clowncar/car = allocate(/obj/vehicle/sealed/car/clowncar)
