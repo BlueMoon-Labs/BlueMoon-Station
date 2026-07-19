@@ -188,6 +188,8 @@
 
 /obj/effect/particle_effect/foam/proc/spread_foam()
 	var/turf/t_loc = get_turf(src)
+	if(!t_loc) // пену могли убрать из мира (kill_foam/подбор) между постановкой в очередь и спредом
+		return
 	for(var/turf/T in t_loc.GetAtmosAdjacentTurfs())
 		var/obj/effect/particle_effect/foam/foundfoam = locate() in T //Don't spread foam where there's already foam!
 		if(foundfoam)

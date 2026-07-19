@@ -813,11 +813,17 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 					grad_color = H.grad_color
 					if(grad_style)
 						var/datum/sprite_accessory/gradient = GLOB.hair_gradients_list[grad_style]
-						var/icon/temp = icon(gradient.icon, gradient.icon_state)
-						var/icon/temp_hair = icon(hair_file, hair_state)
-						temp.Blend(temp_hair, ICON_ADD)
-						gradient_overlay.icon = temp
-						gradient_overlay.color = "#" + grad_color
+						// Битый преф (стиль, которого больше нет в списке) без гарда
+						// роняет весь handle_hair на каждом апдейте иконки моба.
+						if(gradient)
+							var/icon/temp = icon(gradient.icon, gradient.icon_state)
+							var/icon/temp_hair = icon(hair_file, hair_state)
+							temp.Blend(temp_hair, ICON_ADD)
+							gradient_overlay.icon = temp
+							gradient_overlay.color = "#" + grad_color
+						else
+							grad_style = null
+							H.grad_style = null
 
 				else
 					hair_overlay.color = forced_colour
