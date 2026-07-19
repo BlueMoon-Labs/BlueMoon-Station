@@ -1363,7 +1363,6 @@
 	icon = 'modular_splurt/icons/turf/layenia.dmi';
 	icon_state = "concrete2";
 	opacity = 1;
-	color = ыыы
 	},
 /area/space)
 "aGi" = (
