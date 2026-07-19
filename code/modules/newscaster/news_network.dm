@@ -34,8 +34,13 @@ GLOBAL_DATUM_INIT(news_network, /datum/news_network, new)
 		if(FC.channel_name == channel_name)
 			FC.messages += newMsg
 			break
-	for(var/obj/machinery/newscaster/NEWSCASTER in GLOB.allCasters)
+	// Копия списка: CHECK_TICK может уснуть, а снесённый за это время аппарат
+	// сломал бы итерацию по живому GLOB.allCasters.
+	for(var/obj/machinery/newscaster/NEWSCASTER as anything in GLOB.allCasters.Copy())
+		if(QDELETED(NEWSCASTER))
+			continue
 		INVOKE_ASYNC(NEWSCASTER, TYPE_PROC_REF(/obj/machinery/newscaster, newsAlert), channel_name)
+		CHECK_TICK // say+барки сотен аппаратов одним тиком = таймер-залп (TIMER BURST 9748)
 	lastAction ++
 	newMsg.creationTime = lastAction
 
@@ -49,9 +54,12 @@ GLOBAL_DATUM_INIT(news_network, /datum/news_network, new)
 		wanted_issue.img = picture.picture_image
 		wanted_issue.photo_file = save_photo(picture.picture_image)
 	if(newMessage)
-		for(var/obj/machinery/newscaster/N in GLOB.allCasters)
+		for(var/obj/machinery/newscaster/N as anything in GLOB.allCasters.Copy())
+			if(QDELETED(N))
+				continue
 			N.newsAlert()
 			N.update_icon()
+			CHECK_TICK
 
 /datum/news_network/proc/deleteWanted()
 	wanted_issue.active = 0

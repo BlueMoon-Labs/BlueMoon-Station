@@ -31,32 +31,34 @@
 	thing.forceMove(run_loc_floor_bottom_left)
 	TEST_ASSERT_NULL(thing.loc, "qdel-нутый предмет вернулся в мир через forceMove")
 
-/// Кап активной пены глушит спред, а без капа спред работает.
-/datum/unit_test/foam_active_cap/Run()
+/// Пена после разлива мигрирует на медленный процессинг, спред при этом работает как раньше.
+/datum/unit_test/foam_slow_phase/Run()
 	var/obj/effect/particle_effect/foam/foam = allocate(/obj/effect/particle_effect/foam)
-	foam.amount = 5
 	var/turf/foam_turf = get_turf(foam)
-	var/saved_count = GLOB.foam_active_count
 
-	GLOB.foam_active_count = 99999
-	foam.spread_foam()
-	var/spread_over_cap = FALSE
-	for(var/turf/adjacent in foam_turf.GetAtmosAdjacentTurfs())
-		if(locate(/obj/effect/particle_effect/foam) in adjacent)
-			spread_over_cap = TRUE
-			break
-	TEST_ASSERT(!spread_over_cap, "Спред пены прошёл сквозь кап FOAM_ACTIVE_CAP")
-
-	GLOB.foam_active_count = saved_count
-	foam.spread_foam()
+	foam.amount = 1
+	foam.process() // разлив: должен создать соседнюю пену и остаться на быстром тике
 	var/spread_normally = FALSE
 	for(var/turf/adjacent in foam_turf.GetAtmosAdjacentTurfs())
-		var/obj/effect/particle_effect/foam/new_foam = locate() in adjacent
-		if(new_foam)
+		if(locate(/obj/effect/particle_effect/foam) in adjacent)
 			spread_normally = TRUE
 			break
 	// Расползшуюся пену подчистит Destroy() базового теста - он qdel-ит содержимое зоны.
-	TEST_ASSERT(spread_normally, "Обычный спред пены перестал работать")
+	TEST_ASSERT(spread_normally, "Спред пены перестал работать")
+	TEST_ASSERT(!foam.slow_processing, "Пена ушла в медленную фазу до конца разлива")
+
+	foam.process() // amount уходит ниже нуля - конец разлива
+	TEST_ASSERT(foam.slow_processing, "Пена не перешла в медленную фазу после разлива")
+	TEST_ASSERT(!(foam in SSfastprocess.processing), "Пена осталась в SSfastprocess после миграции")
+	TEST_ASSERT(foam in SSprocessing.processing, "Пена не встала в SSprocessing после миграции")
+
+	var/lifetime_before = foam.lifetime
+	foam.process() // медленная фаза списывает жизнь с множителем
+	TEST_ASSERT_EQUAL(lifetime_before - foam.lifetime, 5, "Медленная фаза должна списывать жизнь с множителем 5")
+
+	var/obj/effect/particle_effect/foam/firefighting/extinguisher_foam = allocate(/obj/effect/particle_effect/foam/firefighting)
+	extinguisher_foam.process()
+	TEST_ASSERT(!extinguisher_foam.slow_processing, "Пожарная пена не должна уходить с быстрого тика")
 
 /// Клик по пустому клоункару не должен рантаймить на LAZY-списке пассажиров.
 /datum/unit_test/car_attacked_by_empty/Run()
