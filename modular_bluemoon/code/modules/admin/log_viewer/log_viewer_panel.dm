@@ -518,6 +518,19 @@ GLOBAL_LIST_EMPTY(admin_log_archive_building)
 			to_chat(owner, "Отправляю [current_file] - большой файл может идти несколько минут.", confidential = TRUE)
 			owner << ftp(file(path), current_file)
 			return TRUE
+		if("open_file_external")
+			// Аналог кнопки Open старого Get Current Logs: run() отдаёт файл клиенту
+			// и открывает его системным приложением - весь лог одним документом
+			var/path = current_file_path()
+			if(isnull(path))
+				return TRUE
+			if(owner.file_spam_check())
+				return TRUE
+			message_admins("[key_name_admin(owner)] opened file: [path]")
+			log_admin("[key_name(owner)] opened log file [path]")
+			to_chat(owner, "Открываю [current_file] во внешнем приложении - большой файл может идти несколько минут.", confidential = TRUE)
+			owner << run(file(path))
+			return TRUE
 		if("search_file")
 			do_search(params["query"])
 			return TRUE

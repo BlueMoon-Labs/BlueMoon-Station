@@ -418,8 +418,13 @@ const Viewer = (props) => {
             onClick={() => setWrap(!wrap)}
           />
           <Button
-            icon="download"
+            icon="up-right-from-square"
             ml={1}
+            tooltip="Открыть весь файл во внешнем приложении"
+            onClick={() => act('open_file_external')}
+          />
+          <Button
+            icon="download"
             tooltip="Скачать файл"
             onClick={() => act('download_file')}
           />
