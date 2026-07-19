@@ -360,15 +360,28 @@ const Viewer = (props) => {
   const searchUsable = renderMode === 'text' || (renderMode === 'json' && renderedJson === null);
 
   return (
-    <Section
-      buttons={
-        <>
+    <Stack fill vertical>
+      <Stack.Item>
+        <Section
+          buttons={
+            <>
+              <Button
+                icon="download"
+                tooltip="Скачать файл"
+                onClick={() => act('download_file')}
+              />
+              <Button icon="xmark" tooltip="Закрыть файл" onClick={() => act('close_file')} />
+            </>
+          }
+          title={`${file.name} (${formatBytes(file.size)})`}>
+          {/* контролы отдельной строкой: панель кнопок секции не умеет переноситься,
+              а блочный Dropdown в ней ломает строку и наезжает на содержимое */}
           {searchUsable && (
             <>
               <Input
                 placeholder="Поиск на странице..."
                 value={clientQuery}
-                width="16em"
+                width="14em"
                 onChange={(e, value) => {
                   setClientQuery(value);
                   setActiveMatch(0);
@@ -390,25 +403,28 @@ const Viewer = (props) => {
               <Button
                 disabled={!clientQuery || clientQuery.length < 2}
                 icon="magnifying-glass"
+                mr={1}
                 tooltip="Искать по всему файлу (на сервере)"
                 onClick={() => act('search_file', { query: clientQuery })}
               />
             </>
           )}
-          <Dropdown
-            displayText={
-              (PAGE_SIZE_OPTIONS.find((o) => o.value === file.pageBytes) ?? PAGE_SIZE_OPTIONS[0])
-                .label
-            }
-            options={PAGE_SIZE_OPTIONS.map((o) => o.label)}
-            width="8em"
-            onSelected={(label) => {
-              const option = PAGE_SIZE_OPTIONS.find((o) => o.label === label);
-              if (option) {
-                act('set_page_size', { size: option.value });
+          <Box inline mr={1}>
+            <Dropdown
+              displayText={
+                (PAGE_SIZE_OPTIONS.find((o) => o.value === file.pageBytes) ??
+                  PAGE_SIZE_OPTIONS[0]).label
               }
-            }}
-          />
+              options={PAGE_SIZE_OPTIONS.map((o) => o.label)}
+              width="8em"
+              onSelected={(label) => {
+                const option = PAGE_SIZE_OPTIONS.find((o) => o.label === label);
+                if (option) {
+                  act('set_page_size', { size: option.value });
+                }
+              }}
+            />
+          </Box>
           <Pager />
           {file.tailAvailable && (
             <Button
@@ -440,75 +456,70 @@ const Viewer = (props) => {
             tooltip="Перенос строк"
             onClick={() => setWrap(!wrap)}
           />
-          <Button
-            icon="download"
-            ml={1}
-            tooltip="Скачать файл"
-            onClick={() => act('download_file')}
-          />
-          <Button icon="xmark" tooltip="Закрыть файл" onClick={() => act('close_file')} />
-        </>
-      }
-      fill
-      scrollable
-      title={`${file.name} (${formatBytes(file.size)})`}>
-      {data.searchResults && (
-        <Section
-          buttons={<Button icon="xmark" onClick={() => act('clear_search')} />}
-          mb={1}
-          title={`Совпадений по файлу: ${data.searchResults.length}${
-            data.searchResults.length >= 500 ? ' (обрезано)' : ''
-          }`}>
-          <Box maxHeight="150px" overflowY="auto">
-            {data.searchResults.map((result, i) => (
-              <Box
-                className="AdminLogViewer__entry"
-                key={i}
-                onClick={() => act('goto_offset', { offset: result.offset })}>
-                <Box as="span" color="label" mr={1}>
-                  {result.line}:
-                </Box>
-                {result.preview}
-              </Box>
-            ))}
-          </Box>
         </Section>
+      </Stack.Item>
+      {data.searchResults && (
+        <Stack.Item>
+          <Section
+            buttons={<Button icon="xmark" onClick={() => act('clear_search')} />}
+            title={`Совпадений по файлу: ${data.searchResults.length}${
+              data.searchResults.length >= 500 ? ' (обрезано)' : ''
+            }`}>
+            <Box maxHeight="150px" overflowY="auto">
+              {data.searchResults.map((result, i) => (
+                <Box
+                  className="AdminLogViewer__entry"
+                  key={i}
+                  onClick={() => act('goto_offset', { offset: result.offset })}>
+                  <Box as="span" color="label" mr={1}>
+                    {result.line}:
+                  </Box>
+                  {result.preview}
+                </Box>
+              ))}
+            </Box>
+          </Section>
+        </Stack.Item>
       )}
-      <div ref={contentRef}>
-        {renderMode === 'csv' ? (
-          <Table
-            className={
-              'AdminLogViewer__content' + (wrap ? '' : ' AdminLogViewer__content--nowrap')
-            }>
-            {parseCsv(file.content).map((row, i) => (
-              // Заголовок CSV есть только в начале файла - на следующих страницах первая строка это данные
-              <Table.Row header={i === 0 && file.pageStart === 0} key={i}>
-                {row.map((cell, j) => (
-                  <Table.Cell key={j}>{cell}</Table.Cell>
+      <Stack.Item grow>
+        <Section fill scrollable>
+          <div ref={contentRef}>
+            {renderMode === 'csv' ? (
+              <Table
+                className={
+                  'AdminLogViewer__content' + (wrap ? '' : ' AdminLogViewer__content--nowrap')
+                }>
+                {parseCsv(file.content).map((row, i) => (
+                  // Заголовок CSV есть только в начале файла - на следующих страницах первая строка это данные
+                  <Table.Row header={i === 0 && file.pageStart === 0} key={i}>
+                    {row.map((cell, j) => (
+                      <Table.Cell key={j}>{cell}</Table.Cell>
+                    ))}
+                  </Table.Row>
                 ))}
-              </Table.Row>
-            ))}
-          </Table>
-        ) : renderMode === 'json' && renderedJson !== null ? (
-          <Box
-            className={
-              'AdminLogViewer__content' + (wrap ? '' : ' AdminLogViewer__content--nowrap')
-            }>
-            {renderedJson}
-          </Box>
-        ) : (
-          <ViewerContent
-            activeMatch={activeMatch}
-            clientQuery={clientQuery}
-            content={file.content}
-            wrap={wrap}
-          />
-        )}
-        {renderMode === 'json' && renderedJson === null && (
-          <NoticeBox danger>Не удалось разобрать JSON (файл обрезан страницей?)</NoticeBox>
-        )}
-      </div>
-    </Section>
+              </Table>
+            ) : renderMode === 'json' && renderedJson !== null ? (
+              <Box
+                className={
+                  'AdminLogViewer__content' + (wrap ? '' : ' AdminLogViewer__content--nowrap')
+                }>
+                {renderedJson}
+              </Box>
+            ) : (
+              <ViewerContent
+                activeMatch={activeMatch}
+                clientQuery={clientQuery}
+                content={file.content}
+                wrap={wrap}
+              />
+            )}
+            {renderMode === 'json' && renderedJson === null && (
+              <NoticeBox danger>Не удалось разобрать JSON (файл обрезан страницей?)</NoticeBox>
+            )}
+          </div>
+        </Section>
+      </Stack.Item>
+    </Stack>
   );
 };
 
