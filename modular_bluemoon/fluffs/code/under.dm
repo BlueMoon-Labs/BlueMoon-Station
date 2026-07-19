@@ -373,8 +373,11 @@
 	QDEL_NULL(filter_on_user)
 	QDEL_NULL(particle_effect_holder)
 	QDEL_NULL(net)
-	neural_interface?.RemoveSource("ROSELIA_DRESS")
-	neural_interface = null
+	if(neural_interface)
+		UnregisterSignal(neural_interface, COMSIG_PARENT_QDELETING)
+		if(!QDELETED(neural_interface))
+			neural_interface.RemoveSource("ROSELIA_DRESS")
+		neural_interface = null
 
 	. = ..()
 
@@ -420,6 +423,9 @@
 
 	var/interface_source = "ROSELIA_DRESS"
 	neural_interface = user.LoadComponent(/datum/component/neural_interface)
+	//компонент общий на моба и самоудаляется, когда пустеет его список
+	//источников - без сигнала вар вечно держал бы мёртвый компонент
+	RegisterSignal(neural_interface, COMSIG_PARENT_QDELETING, PROC_REF(on_interface_qdel), override = TRUE)
 	neural_interface.add_monitors_by_types(interface_source, monitors)
 
 /obj/item/clothing/under/donator/bm/inlaid_data_dress/dropped(mob/user)
@@ -435,8 +441,16 @@
 	echo?.render_source = null
 
 	if(neural_interface)
-		SEND_SIGNAL(neural_interface, COMSIG_NEURAL_INTERFACE_REMOVE_SOURCE, "ROSELIA_DRESS")
+		var/datum/component/neural_interface/old_interface = neural_interface
+		neural_interface = null
+		UnregisterSignal(old_interface, COMSIG_PARENT_QDELETING)
+		//сигнал может удалить компонент (последний источник) - вар уже отпущен
+		SEND_SIGNAL(old_interface, COMSIG_NEURAL_INTERFACE_REMOVE_SOURCE, "ROSELIA_DRESS")
 	. = ..()
+
+/obj/item/clothing/under/donator/bm/inlaid_data_dress/proc/on_interface_qdel(datum/source)
+	SIGNAL_HANDLER
+	neural_interface = null
 
 /obj/item/clothing/under/donator/bm/inlaid_data_dress/toggle_jumpsuit_adjust()
 	toggle_open_body(body_parts_covered)

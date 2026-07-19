@@ -42,6 +42,10 @@ GLOBAL_LIST_EMPTY(station_turfs)
 	/// If there's a tile over a basic floor that can be ripped out
 	var/overfloor_placed = FALSE
 
+	///ухо спатиал-грида, назначенное на этот турф текущим запросом
+	///get_hearers_in_view(); живёт только внутри одного вызова
+	var/mob/oranges_ear/assigned_oranges_ear
+
 /turf/vv_edit_var(var_name, new_value)
 	var/static/list/banned_edits = list("x", "y", "z")
 	if(var_name in banned_edits)

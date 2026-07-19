@@ -23,7 +23,9 @@
 /datum/dynamic_ruleset/midround/execute_action()
 	trim_candidates()
 	if(!ready())
+		release_candidate_snapshots()
 		return FALSE
+	execution_pending = TRUE
 	addtimer(CALLBACK(mode, TYPE_PROC_REF(/datum/game_mode/dynamic, execute_scheduled_ruleset), src), delay)
 	return TRUE
 
@@ -77,6 +79,15 @@
 	living_antags = trim_list(mode.current_players[CURRENT_LIVING_ANTAGS])
 	dead_players = trim_list(mode.current_players[CURRENT_DEAD_PLAYERS])
 	list_observers = trim_list(mode.current_players[CURRENT_OBSERVERS])
+
+/datum/dynamic_ruleset/midround/release_candidate_snapshots()
+	..()
+	// trim_candidates() переприсваивает списки, но наследники алиасят candidates на
+	// living_players (families/ratvar/blob) - Cut() чистит обе стороны алиаса разом.
+	living_players.Cut()
+	living_antags.Cut()
+	dead_players.Cut()
+	list_observers.Cut()
 
 /datum/dynamic_ruleset/midround/proc/trim_list(list/L = list())
 	var/list/trimmed_list = L.Copy()

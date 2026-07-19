@@ -19,8 +19,12 @@
 	var/standby_load = 0
 	/// APCs currently parked on this powernet; unparked in reset() the moment the grid stops covering them.
 	var/list/standby_apcs
+	/// world.time создания: отложенные auto_propogate_cut_cable по нему понимают,
+	/// что их фрагмент уже перестроил другой колбек этого же тика (см. cable.dm)
+	var/created_at = 0
 
 /datum/powernet/New()
+	created_at = world.time
 	SSmachines.powernets += src
 
 /datum/powernet/Destroy()

@@ -659,7 +659,8 @@
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
 	STR.max_items = 7
-	STR.can_hold = typecacheof(list(/obj/item/toy/crayon))
+	var/static/list/crayons_can_hold = typecacheof(list(/obj/item/toy/crayon))
+	STR.can_hold = crayons_can_hold
 
 /obj/item/storage/crayons/PopulateContents()
 	new /obj/item/toy/crayon/red(src)

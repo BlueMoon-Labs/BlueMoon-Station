@@ -1207,7 +1207,7 @@
 /obj/machinery/door/poddoor{
 	id = "au_nuclear_vent"
 	},
-/turf/open/space/basic,
+/turf/open/floor/plating/airless,
 /area/engineering/main/reactor_core)
 "aeH" = (
 /obj/machinery/portable_atmospherics/canister/oxygen,

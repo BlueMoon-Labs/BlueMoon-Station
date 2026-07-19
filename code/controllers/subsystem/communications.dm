@@ -64,7 +64,9 @@ SUBSYSTEM_DEF(communications)
 	message_admins("[ADMIN_LOOKUPFLW(user)] has called an emergency meeting.")
 
 /datum/controller/subsystem/communications/proc/send_message(datum/comm_message/sending, print = FALSE, unique = FALSE)
-	for(var/obj/machinery/computer/communications/C in GLOB.machines)
+	// Типизированный реестр вместо istype-обхода ВСЕХ машин станции (тысячи объектов
+	// ради пары комм-консолей - заметный кусок 404мс send_intercept на проде).
+	for(var/obj/machinery/computer/communications/C as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/computer/communications))
 		if(!(C.machine_stat & (BROKEN|NOPOWER)) && is_station_level(C.z))
 			if(unique)
 				C.add_message(sending)

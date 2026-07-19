@@ -26,6 +26,9 @@
 		var/datum/atom_hud/hud = GLOB.huds[hud_type]
 		hud.add_hud_to(mod.wearer)
 		interface = mod.wearer.LoadComponent(/datum/component/neural_interface)
+		//компонент общий на моба и самоудаляется, когда пустеет его список
+		//источников - без сигнала вар вечно держал бы мёртвый компонент
+		RegisterSignal(interface, COMSIG_PARENT_QDELETING, PROC_REF(on_interface_qdel), override = TRUE)
 		interface_source = "MOD HUD[hud_type]"
 		interface.AddSource(interface_source)
 		if(monitors?.len)
@@ -44,11 +47,17 @@
 		hud.remove_hud_from(mod.wearer)
 		var/datum/component/neural_interface/old_interface = interface
 		interface = null
-		if(!QDELETED(old_interface))
-			old_interface.RemoveSource(interface_source)
+		if(old_interface)
+			UnregisterSignal(old_interface, COMSIG_PARENT_QDELETING)
+			if(!QDELETED(old_interface))
+				old_interface.RemoveSource(interface_source)
 	for(var/trait in visor_traits)
 		REMOVE_TRAIT(mod.wearer, trait, MOD_TRAIT)
 	mod.wearer.update_sight()
+
+/obj/item/mod/module/visor/proc/on_interface_qdel(datum/source)
+	SIGNAL_HANDLER
+	interface = null
 
 //Medical Visor - Gives you a medical HUD.
 /obj/item/mod/module/visor/medhud

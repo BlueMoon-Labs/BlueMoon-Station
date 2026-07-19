@@ -17,6 +17,66 @@
 	var/list/security_by_id = list()
 	var/list/general_by_id = list()
 	var/list/locked_by_id = list()
+	/// Очередь отложенной генерации фото манифеста: list(weakref моба, prefs, роль, general-запись, locked-запись).
+	/// Фото - второй полный билд персонажа + два getFlatIcon, ему не место в синхронном тике латеджойна.
+	var/list/pending_photo_jobs = list()
+	/// TRUE, пока дренаж очереди фото уже запущен (один воркер, дренаж с CHECK_TICK)
+	var/photo_queue_running = FALSE
+
+/// Ставит генерацию фото манифеста в очередь и будит воркера. Сама генерация - это
+/// второй полный билд персонажа (copy_to + экипировка джоба на манекене + два
+/// getFlatIcon), ей не место в синхронном тике латеджойна.
+/datum/datacore/proc/enqueue_manifest_photo(mob/living/carbon/human/H, datum/preferences/prefs, assigned_role, datum/data/record/general_record, datum/data/record/locked_record)
+	pending_photo_jobs += list(list(WEAKREF(H), prefs, assigned_role, general_record, locked_record))
+	if(photo_queue_running)
+		return
+	photo_queue_running = TRUE
+	addtimer(CALLBACK(src, PROC_REF(process_manifest_photo_queue)), 0)
+
+/// Дренаж очереди фото: по одной работе с CHECK_TICK между ними. Воркер один -
+/// манекен манифеста общий, параллельные генерации всё равно сериализовались бы на in_use.
+/datum/datacore/proc/process_manifest_photo_queue()
+	photo_queue_running = TRUE
+	while(length(pending_photo_jobs))
+		var/list/job = pending_photo_jobs[1]
+		pending_photo_jobs.Cut(1, 2)
+		var/datum/weakref/mob_ref = job[1]
+		var/mob/living/carbon/human/H = mob_ref?.resolve()
+		if(QDELETED(H))
+			continue
+		generate_manifest_photo(H, job[2], job[3], job[4], job[5])
+		CHECK_TICK
+	photo_queue_running = FALSE
+
+/// Собственно генерация фото: рендер манекена по префам и джобе с подменой
+/// плейсхолдеров в записях (general: два /obj/item/photo, locked: сырая иконка).
+/datum/datacore/proc/generate_manifest_photo(mob/living/carbon/human/H, datum/preferences/prefs, assigned_role, datum/data/record/general_record, datum/data/record/locked_record)
+	var/static/list/show_directions = list(SOUTH, WEST)
+	var/datum/job/photo_job = assigned_role ? SSjob.GetJob(assigned_role) : null
+	var/icon/photo_icon = get_flat_human_icon(null, photo_job, prefs, DUMMY_HUMAN_SLOT_MANIFEST, show_directions)
+	if(!photo_icon)
+		return
+	if(!QDELETED(general_record))
+		var/datum/picture/picture_front = new
+		picture_front.picture_name = "[H]"
+		picture_front.picture_desc = "This is [H]."
+		picture_front.picture_image = icon(photo_icon, dir = SOUTH)
+		var/datum/picture/picture_side = new
+		picture_side.picture_name = "[H]"
+		picture_side.picture_desc = "This is [H]."
+		picture_side.picture_image = icon(photo_icon, dir = WEST)
+		var/obj/item/photo/photo_front = general_record.fields["photo_front"]
+		if(istype(photo_front))
+			photo_front.set_picture(picture_front, TRUE, TRUE)
+		else
+			general_record.fields["photo_front"] = new /obj/item/photo(null, picture_front)
+		var/obj/item/photo/photo_side = general_record.fields["photo_side"]
+		if(istype(photo_side))
+			photo_side.set_picture(picture_side, TRUE, TRUE)
+		else
+			general_record.fields["photo_side"] = new /obj/item/photo(null, picture_side)
+	if(!QDELETED(locked_record))
+		locked_record.fields["image"] = photo_icon
 
 /// Registers a record in the appropriate index lists. Call after adding to medical/security/general lists.
 /datum/datacore/proc/register_record(datum/data/record/R, record_type)
@@ -429,7 +489,6 @@
 
 /datum/datacore/proc/manifest_inject(mob/living/carbon/human/H, client/C, datum/preferences/prefs)
 	set waitfor = FALSE
-	var/static/list/show_directions = list(SOUTH, WEST)
 	if(H.mind && (H.mind.assigned_role != H.mind.special_role)  && (H.mind.assigned_role != "Stowaway"))
 		var/assignment
 		var/real_rank
@@ -457,15 +516,19 @@
 		var/id = num2hex(record_id_num++,6)
 		if(!C)
 			C = H.client
-		var/image = get_id_photo(H, C, show_directions)
+		// Фото - самая дорогая часть латеджойна (второй полный билд персонажа + два
+		// getFlatIcon, 100-200мс синхронно): записи создаются сразу с плейсхолдером,
+		// настоящие фото доклеит отложенная очередь (enqueue в конце прока).
+		var/icon/placeholder_icon = icon('icons/effects/effects.dmi', "nothing")
+		var/image = placeholder_icon
 		var/datum/picture/pf = new
 		var/datum/picture/ps = new
 		pf.picture_name = "[H]"
 		ps.picture_name = "[H]"
 		pf.picture_desc = "This is [H]."
 		ps.picture_desc = "This is [H]."
-		pf.picture_image = icon(image, dir = SOUTH)
-		ps.picture_image = icon(image, dir = WEST)
+		pf.picture_image = icon(placeholder_icon, dir = SOUTH)
+		ps.picture_image = icon(placeholder_icon, dir = WEST)
 		var/obj/item/photo/photo_front = new(null, pf)
 		var/obj/item/photo/photo_side = new(null, ps)
 
@@ -563,6 +626,7 @@
 		L.fields["mindref"]		= H.mind
 		locked += L
 		locked_by_id[L.fields["id"]] = L
+		enqueue_manifest_photo(H, C?.prefs || prefs, H.mind.assigned_role, G, L)
 	return
 
 /datum/datacore/proc/get_id_photo(mob/living/carbon/human/H, client/C, show_directions = list(SOUTH))

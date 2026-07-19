@@ -89,6 +89,8 @@
 		var/mob/living/carbon/human/target = A
 		if(iscatperson(target))
 			target.emote("hiss")
+			step(target, get_dir(loc, target.loc))
+			target.face_atom(loc)
 	last_spray = world.time
 	INVOKE_ASYNC(D, TYPE_PROC_REF(/obj/effect/decal/chempuff, run_puff), A)
 

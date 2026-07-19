@@ -160,6 +160,124 @@ What are the archived variables for?
 	//Creates new, identical gas mixture
 	//Returns: duplicate gas mixture
 
+// ===== Exact pressure solver for pumps (tg port) =====
+//
+// The legacy pump formula (pressure_delta * V_out / (T_in * R)) ignores that
+// incoming gas changes the OUTPUT's temperature: with a hot input and a cold
+// output (or vice versa) it over/undershoots the target pressure and the pump
+// keeps rewaking itself and its pipenet for many extra cycles. The solver
+// treats both n and T of the merged output as unknowns, which folds into a
+// quadratic in transferred moles; a Newton-Raphson pass and finally the legacy
+// formula act as fallbacks.
+
+/// Smallest pressure the output would read after receiving MOLAR_ACCURACY moles
+/// from us; transfers below that are pointless churn.
+/datum/gas_mixture/proc/gas_pressure_minimum_transfer(datum/gas_mixture/output_air)
+	var/our_moles = total_moles()
+	if(our_moles <= 0)
+		return INFINITY
+	var/resulting_energy = output_air.thermal_energy() + (MOLAR_ACCURACY / our_moles * thermal_energy())
+	var/resulting_capacity = output_air.heat_capacity() + (MOLAR_ACCURACY / our_moles * heat_capacity())
+	if(resulting_capacity <= 0 || output_air.return_volume() <= 0)
+		return INFINITY
+	return (output_air.total_moles() + MOLAR_ACCURACY) * R_IDEAL_GAS_EQUATION * (resulting_energy / resulting_capacity) / output_air.return_volume()
+
+/// Actually tries to solve the quadratic equation. Mind BYOND's single
+/// precision floats: coefficients can overflow, hence the finite checks.
+/datum/gas_mixture/proc/gas_pressure_quadratic(a, b, c, lower_limit, upper_limit)
+	var/solution
+	if(IS_FINITE(a) && IS_FINITE(b) && IS_FINITE(c))
+		solution = max(SolveQuadratic(a, b, c))
+		if(solution > lower_limit && solution < upper_limit) //SolveQuadratic can return empty lists so be careful here
+			return solution
+	return FALSE
+
+/// Newton-Raphson approximation of the same quadratic, used when the analytic
+/// solve fails (usually float overflow in the discriminant).
+/datum/gas_mixture/proc/gas_pressure_approximate(a, b, c, lower_limit, upper_limit)
+	var/solution
+	if(IS_FINITE(a) && IS_FINITE(b) && IS_FINITE(c))
+		// Start at the extremum plus an offset: converges toward the positive root.
+		solution = (-b / (2 * a)) + 200
+		for(var/iteration in 1 to ATMOS_PRESSURE_APPROXIMATION_ITERATIONS)
+			var/denominator = 2 * a * solution + b
+			if(!denominator)
+				return FALSE
+			var/diff = (a * solution ** 2 + b * solution + c) / denominator // f(sol) / f'(sol)
+			solution -= diff // xn+1 = xn - f(sol) / f'(sol)
+			if(abs(diff) < MOLAR_ACCURACY && (solution > lower_limit) && (solution < upper_limit))
+				return solution
+	return FALSE
+
+/**
+ * Returns the amount of our moles to transfer into output_air to bring it to
+ * target_pressure IN ONE STEP, accounting for the temperature change the
+ * transferred gas causes. FALSE when no transfer is warranted.
+ * ignore_temperature uses the cheap legacy formula (valid when both mixes are
+ * within ~5K of each other, or the output is empty).
+ */
+/datum/gas_mixture/proc/gas_pressure_calculate(datum/gas_mixture/output_air, target_pressure, ignore_temperature = FALSE)
+	var/our_moles = total_moles()
+	var/our_temperature = return_temperature()
+	var/output_moles = output_air.total_moles()
+	var/output_pressure = output_air.return_pressure()
+	var/output_volume = output_air.return_volume()
+
+	if(our_moles <= 0 || our_temperature <= 0)
+		return FALSE
+
+	var/pressure_delta = 0
+	if(output_air.return_temperature() <= 0 || output_moles <= 0)
+		ignore_temperature = TRUE
+		pressure_delta = target_pressure
+	else
+		pressure_delta = target_pressure - output_pressure
+
+	if(pressure_delta < 0.01 || gas_pressure_minimum_transfer(output_air) > target_pressure)
+		return FALSE
+
+	if(ignore_temperature)
+		return (pressure_delta * output_volume) / (our_temperature * R_IDEAL_GAS_EQUATION)
+
+	// Analytic mole bounds, assuming the merged mix lands on either input
+	// temperature extreme. The real answer must lie between them.
+	var/pv = target_pressure * output_volume
+	var/pvr = pv / R_IDEAL_GAS_EQUATION
+
+	var/lower_limit = max((pvr / max(our_temperature, output_air.return_temperature())) - output_moles, 0)
+	var/upper_limit = (pvr / min(our_temperature, output_air.return_temperature())) - output_moles
+
+	lower_limit = max(lower_limit - ATMOS_PRESSURE_ERROR_TOLERANCE, 0)
+	upper_limit += ATMOS_PRESSURE_ERROR_TOLERANCE
+
+	// PV=nRT with both n and T of the merged output unknown:
+	// T = (W1 + n/N2 * W2) / (C1 + n/N2 * C2), W thermal energy, C heat
+	// capacity, N2/W2/C2 ours, N1/W1/C1 the output's. Substituting into
+	// (N1 + n) * T = PV/R yields a quadratic in n.
+	var/w2 = thermal_energy()
+	var/n2 = our_moles
+	var/c2 = heat_capacity()
+
+	var/w1 = output_air.thermal_energy()
+	var/n1 = output_moles
+	var/c1 = output_air.heat_capacity()
+
+	if(n2 <= 0 || c2 <= 0)
+		return (pressure_delta * output_volume) / (our_temperature * R_IDEAL_GAS_EQUATION)
+
+	var/a_value = w2 / n2
+	var/b_value = ((n1 * w2) / n2) + w1 - (pvr * c2 / n2)
+	var/c_value = (-1 * pvr * c1) + n1 * w1
+
+	. = gas_pressure_quadratic(a_value, b_value, c_value, lower_limit, upper_limit)
+	if(.)
+		return
+	. = gas_pressure_approximate(a_value, b_value, c_value, lower_limit, upper_limit)
+	if(.)
+		return
+	// Both solvers failed (degenerate inputs): legacy formula as the last resort.
+	return (pressure_delta * output_volume) / (our_temperature * R_IDEAL_GAS_EQUATION)
+
 /datum/gas_mixture/proc/copy_from_turf(turf/model)
 	//Copies all gas info from the turf into the gas list along with temperature
 	//Returns: 1 if we are mutable, 0 otherwise

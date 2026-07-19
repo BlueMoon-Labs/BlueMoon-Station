@@ -789,16 +789,16 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 			var/volume = get_volume_by_throwforce_and_or_w_class()
 			if (throwforce > 0 || HAS_TRAIT(src, TRAIT_CUSTOM_TAP_SOUND))
 				if (mob_throw_hit_sound)
-					playsound(hit_atom, mob_throw_hit_sound, volume, TRUE, -1)
+					SSthrowing.playsound_capped(hit_atom, mob_throw_hit_sound, volume, TRUE, -1)
 				else if(hitsound)
-					playsound(hit_atom, hitsound, volume, TRUE, -1)
+					SSthrowing.playsound_capped(hit_atom, hitsound, volume, TRUE, -1)
 				else
-					playsound(hit_atom, 'sound/weapons/genhit.ogg',volume, TRUE, -1)
+					SSthrowing.playsound_capped(hit_atom, 'sound/weapons/genhit.ogg',volume, TRUE, -1)
 			else
-				playsound(hit_atom, 'sound/weapons/throwtap.ogg', 1, volume, -1)
+				SSthrowing.playsound_capped(hit_atom, 'sound/weapons/throwtap.ogg', 1, volume, -1)
 
 		else if (drop_sound)
-			playsound(src, drop_sound, YEET_SOUND_VOLUME, ignore_walls = FALSE)
+			SSthrowing.playsound_capped(src, drop_sound, YEET_SOUND_VOLUME, ignore_walls = FALSE)
 		return hit_atom.hitby(src, 0, itempush, throwingdatum=throwingdatum)
 
 /obj/item/throw_at(atom/target, range, speed, mob/thrower, spin=1, diagonals_first = 0, datum/callback/callback, force, messy_throw = TRUE, quickstart = TRUE)

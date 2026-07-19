@@ -72,12 +72,14 @@
 /obj/item/clothing/head/helmet/space/hardsuit/rad_act(severity)
 	. = ..()
 	rad_count += severity
+	START_PROCESSING(SSobj, src) //гейгер спит вне радиации - будим на счёт
 
 /obj/item/clothing/head/helmet/space/hardsuit/process()
 	if(!rad_count)
 		grace_count++
-		if(grace_count == 2)
+		if(grace_count >= 2)
 			soundloop.last_radiation = 0
+			return PROCESS_KILL //декэить нечего: спим до следующего rad_act
 		return
 
 	grace_count = 0

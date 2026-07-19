@@ -308,6 +308,9 @@ SUBSYSTEM_DEF(tgui)
  * required ui datum/tgui The UI to be added.
  */
 /datum/controller/subsystem/tgui/proc/on_open(datum/tgui/ui)
+	//open() спит на ассетах: qdel датума за это время обнуляет user через Destroy
+	if(QDELETED(ui) || isnull(ui.user))
+		return
 	var/key = "[REF(ui.src_object)]"
 	if(isnull(open_uis_by_src[key]) || !istype(open_uis_by_src[key], /list))
 		open_uis_by_src[key] = list()

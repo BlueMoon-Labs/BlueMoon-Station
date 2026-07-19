@@ -80,6 +80,8 @@
 	targets_from = null
 	target = null
 	friends = null
+	for(var/atom/movable/the_foe in foes)
+		UnregisterSignal(the_foe, COMSIG_PARENT_QDELETING)
 	foes = null
 	for(var/atom/movable/the_enemy in enemies)
 		UnregisterSignal(the_enemy, COMSIG_PARENT_QDELETING)
@@ -94,11 +96,16 @@
 
 /mob/living/simple_animal/hostile/proc/remove_enemy(atom/movable/the_enemy)
 	enemies -= the_enemy
-	UnregisterSignal(the_enemy, COMSIG_PARENT_QDELETING)
+	//сигнал держим, пока цель числится хотя бы в одном списке обид:
+	//foes живёт дольше enemies (тот чистится по stat в Found)
+	if(!foes || !foes[the_enemy])
+		UnregisterSignal(the_enemy, COMSIG_PARENT_QDELETING)
 
 /mob/living/simple_animal/hostile/proc/on_enemy_qdeleting(datum/source)
 	SIGNAL_HANDLER
 	enemies -= source
+	if(foes)
+		foes -= source
 
 /mob/living/simple_animal/hostile/BiologicalLife(delta_time, times_fired)
 	if(!(. = ..()))
@@ -177,8 +184,31 @@
 
 //////////////HOSTILE MOB TARGETTING AND AGGRESSION////////////
 
+/// Гейт по спатиал-хэшу фракций (SSchunks) применим только к обычному
+/// фракционному охотнику: хэш не хранит мёртвых, свою фракцию и персональные
+/// обиды, поэтому охотники на трупы (headslug, гриб), attack_same-мобы (гусь)
+/// и retaliate с накопленными врагами обязаны идти мимо него.
+/// ВАЖНО: сабтип, чьи Found()/CanAttack() целятся в мобов СВОЕЙ фракции
+/// (artificer лечит союзных конструктов, короли крыс враждебны друг другу)
+/// или только в машины, обязан переопределить этот прок в FALSE - иначе гейт
+/// вернёт пустой ListTargets() до появления чужой фракции в радиусе.
+/mob/living/simple_animal/hostile/proc/can_use_faction_hash()
+	if(stat_attack != CONSCIOUS) //ищет бессознательных/мёртвых - их в хэше нет
+		return FALSE
+	if(attack_same) //бьёт свою фракцию - хэш видит только чужие
+		return FALSE
+	if(length(enemies) || length(foes)) //персональные цели могут быть своей фракции
+		return FALSE
+	return TRUE
+
 /mob/living/simple_animal/hostile/proc/ListTargets()//Step 1, find out what we can see
 	if(!search_objects)
+		// Spatial faction hash (SSchunks): skip the expensive hearers() scan
+		// entirely when no mob of a foreign faction is anywhere in range.
+		// This also skips the hostile-machine sweep: an unmanned turret near
+		// a lone AI mob goes unnoticed until any foreign-faction mob comes near.
+		if(can_use_faction_hash() && !SSchunks.has_enemy_faction(targets_from, faction, vision_range))
+			return list()
 		. = hearers(vision_range, targets_from) - src //Remove self, so we don't suicide
 
 		var/static/hostile_machines = typecacheof(list(/obj/machinery/porta_turret, /obj/vehicle/sealed/mecha, /obj/structure/destructible/clockwork/ocular_warden,/obj/item/electronic_assembly))

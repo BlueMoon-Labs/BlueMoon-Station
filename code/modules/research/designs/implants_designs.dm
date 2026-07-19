@@ -476,6 +476,22 @@
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_ALL
 
+/datum/design/nanite_pump_implant
+	name = "Nanite Pump Implant Case"
+	desc = "A glass case containing an nanite pump implant"
+	id = "implant_nanite_pump"
+	build_type = PROTOLATHE
+	materials = list(
+		/datum/material/iron = 500,
+		/datum/material/glass = 500,
+		/datum/material/silver = 200,
+		/datum/material/plastic = 300,
+		/datum/material/diamond = 100
+	)
+	category = list("Implants")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
+	build_path = /obj/item/implantcase/nanite_pump
+
 /////////////////////
 /////Synth Organs////
 /////////////////////

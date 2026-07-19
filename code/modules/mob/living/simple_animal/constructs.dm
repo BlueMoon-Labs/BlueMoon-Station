@@ -284,6 +284,12 @@
 	can_repair_constructs = TRUE
 	can_repair_self = TRUE
 
+//Found() ниже целится в раненых конструктов СВОЕЙ фракции ("cult") - хэш
+//SSchunks видит только чужие фракции, и гейт оставил бы AI-артифисера без
+//целей лечения ровно тогда, когда враги ушли и пора чинить армию
+/mob/living/simple_animal/hostile/construct/builder/can_use_faction_hash()
+	return FALSE
+
 /mob/living/simple_animal/hostile/construct/builder/Found(atom/A) //what have we found here?
 	if(isconstruct(A)) //is it a construct?
 		var/mob/living/simple_animal/hostile/construct/C = A

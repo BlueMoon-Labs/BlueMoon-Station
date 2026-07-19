@@ -5,9 +5,11 @@
 /datum/status_effect
 	var/id = "effect" //Used for screen alerts.
 	var/duration = -1 //How long the status effect lasts in DECISECONDS. Enter -1 for an effect that never ends unless removed through some means.
-	/// do we tick()?
-	var/tick = TRUE
-	var/tick_interval = 10 //How many deciseconds between ticks, approximately. Leave at 10 for every second.
+	/// Как часто тикать, в децисекундах. -1 = эффект не тикает вовсе: вместе с
+	/// duration -1 такой эффект вообще не встаёт в SSstatus_effects (чисто
+	/// сигнальные постоянные эффекты - раны, limp - иначе крутятся в
+	/// processing-листе всю жизнь владельца, впустую съедая каждый его fire).
+	var/tick_interval = 10
 	var/next_tick //The scheduled time for the next tick.
 	var/mob/living/owner //The mob affected by the status effect.
 	var/on_remove_on_mob_delete = FALSE //if we call on_remove() when the mob is deleted
@@ -40,7 +42,9 @@
 		if(istype(A))
 			A?.attached_effect = src //so the alert can reference us, if it needs to
 			linked_alert = A //so we can reference the alert, if we need to
-	START_PROCESSING(SSstatus_effects, src)
+	//вечному эффекту без tick() процессинг не нужен: ему нечего делать в fire
+	if(duration != -1 || tick_interval != -1)
+		START_PROCESSING(SSstatus_effects, src)
 	return TRUE
 
 /datum/status_effect/Destroy()
@@ -60,7 +64,7 @@
 	if(!owner)
 		qdel(src)
 		return
-	if(next_tick < world.time)
+	if(tick_interval != -1 && next_tick < world.time)
 		tick()
 		next_tick = world.time + tick_interval
 	if(duration != -1 && duration < world.time)

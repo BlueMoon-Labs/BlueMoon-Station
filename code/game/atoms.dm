@@ -701,16 +701,64 @@
 		if(LAZYLEN(managed_vis_overlays))
 			SSvis_overlays.remove_vis_overlay(src, managed_vis_overlays)
 
+		// Normalize everything to interned appearances up front so the identity
+		// compare below works: BYOND interns appearances, so equal content means
+		// equal instance. Strings/icons are normalized here too (tg leaves them
+		// raw and never short-circuits string overlays).
 		var/list/new_overlays = update_overlays(updates)
-		if(managed_overlays)
-			cut_overlay(managed_overlays)
-			managed_overlays = null
-		if(length(new_overlays))
-			if (length(new_overlays) == 1)
-				managed_overlays = new_overlays[1]
+		// Some legacy overrides call ..() without `. = ..()` and return a bare
+		// string/appearance instead of a list; the old code fed that straight to
+		// add_overlay(), so wrap it to keep the same result instead of indexing it.
+		if(!islist(new_overlays))
+			new_overlays = new_overlays ? list(new_overlays) : list()
+		var/nulls = 0
+		for(var/i in 1 to length(new_overlays))
+			var/atom/entry = new_overlays[i]
+			if(isnull(entry))
+				nulls++
+				continue
+			if(istext(entry))
+				new_overlays[i] = iconstate2appearance(icon, entry)
+			else if(isicon(entry))
+				new_overlays[i] = icon2appearance(entry)
 			else
-				managed_overlays = new_overlays
-			add_overlay(new_overlays)
+				new_overlays[i] = entry.appearance
+		if(nulls)
+			for(var/i in 1 to nulls)
+				new_overlays -= null
+
+		var/identical = FALSE
+		var/new_length = length(new_overlays)
+		if(!managed_overlays && !new_length)
+			identical = TRUE
+		else if(!islist(managed_overlays))
+			if(new_length == 1 && managed_overlays == new_overlays[1])
+				identical = TRUE
+		else if(length(managed_overlays) == new_length)
+			identical = TRUE
+			for(var/i in 1 to new_length)
+				if(managed_overlays[i] != new_overlays[i])
+					identical = FALSE
+					break
+
+		if(!identical)
+			var/full_control = FALSE
+			if(managed_overlays)
+				full_control = length(overlays) == (islist(managed_overlays) ? length(managed_overlays) : 1)
+				if(full_control)
+					overlays = null
+				else
+					cut_overlay(managed_overlays)
+
+			switch(new_length)
+				if(0)
+					managed_overlays = null
+				if(1)
+					add_overlay(new_overlays)
+					managed_overlays = new_overlays[1]
+				else
+					add_overlay(new_overlays)
+					managed_overlays = new_overlays
 		. |= UPDATE_OVERLAYS
 
 	. |= SEND_SIGNAL(src, COMSIG_ATOM_UPDATED_ICON, updates, .)
@@ -1529,29 +1577,31 @@
 	if(!T)
 		return FALSE
 
-	var/list/forced_gravity = list()
-	SEND_SIGNAL(src, COMSIG_ATOM_HAS_GRAVITY, T, forced_gravity)
-	if(!forced_gravity.len)
-		SEND_SIGNAL(T, COMSIG_TURF_HAS_GRAVITY, src, forced_gravity)
-	if(forced_gravity.len)
-		var/max_grav
-		for(var/i in forced_gravity)
-			max_grav = max(max_grav, i)
-		return max_grav
+	// Проверяется на каждый шаг каждого моба: аллокация списка и сигналы -
+	// только когда на src или турфе действительно есть подписчик forced gravity
+	if(comp_lookup?[COMSIG_ATOM_HAS_GRAVITY] || T.comp_lookup?[COMSIG_TURF_HAS_GRAVITY])
+		var/list/forced_gravity = list()
+		SEND_SIGNAL(src, COMSIG_ATOM_HAS_GRAVITY, T, forced_gravity)
+		if(!forced_gravity.len)
+			SEND_SIGNAL(T, COMSIG_TURF_HAS_GRAVITY, src, forced_gravity)
+		if(forced_gravity.len)
+			var/max_grav
+			for(var/i in forced_gravity)
+				max_grav = max(max_grav, i)
+			return max_grav
 
 	if(isspaceturf(T)) // Turf never has gravity
 		return FALSE
 
-	var/area/A = get_area(T)
+	var/area/A = T.loc
 	if(A.has_gravity) // Areas which always has gravity
 		return A.has_gravity
-	else
-		// There's a gravity generator on our z level
-		if(GLOB.gravity_generators["[T.z]"])
-			var/max_grav = 0
-			for(var/obj/machinery/gravity_generator/main/G in GLOB.gravity_generators["[T.z]"])
-				max_grav = max(G.setting,max_grav)
-			return max_grav
+
+	// Кэш по z вместо обхода генераторов и цепочки level_trait->get_level;
+	// уровень новее кэша (окно инита нового z) - читаем трейт напрямую
+	var/list/gravity_cache = SSmapping.gravity_by_z_level
+	if(T.z <= length(gravity_cache))
+		return gravity_cache[T.z]
 	return SSmapping.level_trait(T.z, ZTRAIT_GRAVITY)
 
 /**
@@ -1581,14 +1631,21 @@
 ///Called when something resists while this atom is its loc
 /atom/proc/container_resist_act(mob/living/user)
 
-//Update the screentip to reflect what we're hoverin over
+//Record the hover; SSmouse_entered runs the screentip update for the LAST
+//hovered atom once per tick instead of on every input event (tg port).
 /atom/MouseEntered(location, control, params)
 	. = ..()
-
-	var/mob/user = usr
-	if(isnull(user))
+	if(isnull(usr) || !usr.client)
 		return
-	if(!GET_CLIENT(user))
+	SSmouse_entered.hovers[usr.client] = src
+
+///Deferred hover handler: called by SSmouse_entered at most once per tick per
+///client, with the most recently hovered atom. Updates the screentip.
+/atom/proc/on_mouse_enter(client/hovering_client)
+	SHOULD_NOT_SLEEP(TRUE)
+
+	var/mob/user = hovering_client?.mob
+	if(isnull(user) || user.client != hovering_client)
 		return
 
 	// Screentips

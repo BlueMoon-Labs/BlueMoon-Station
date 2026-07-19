@@ -652,3 +652,407 @@
 	critter.add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/simplemob_varspeed, multiplicative_slowdown = 5)
 	TEST_ASSERT_EQUAL(critter.movespeed_updates, updates_before + 2, "Changing the slowdown again must rebuild movespeed")
 	TEST_ASSERT_EQUAL(critter.cached_multiplicative_slowdown, cache_at_two + 3, "Cached slowdown must reflect the new value")
+
+
+// ===== Ventcrawl pipe vision: collect_pipes_in_view hoists the bounds check =====
+//
+// Profile snapshot (perf.log 2026-07): /proc/in_view_range - 749294 calls / 1.16s
+// self + /proc/getviewsize - 753355 calls / 0.55s self, nearly all from
+// add_ventcrawl() iterating EVERY member of the pipenet (a station distro loop is
+// thousands of pipes) and paying a proc call + a list allocation per pipe, on
+// every ventcrawl step. collect_pipes_in_view() computes the view box once and
+// does inline comparisons per pipe.
+
+/// Simulates the retired per-pipe path (in_view_range body: getviewsize list
+/// allocation + turf lookup + inclusive range check) for an honest A/B timing.
+/datum/unit_test/ventcrawl_pipe_collection/proc/legacy_in_view_range_sim(turf/source, atom/candidate, view)
+	var/list/view_range = getviewsize(view)
+	var/turf/target = get_turf(candidate)
+	if(isnull(target))
+		return FALSE
+	return ISINRANGE(target.x, source.x - view_range[1], source.x + view_range[1]) && ISINRANGE(target.y, source.y - view_range[1], source.y + view_range[1])
+
+#define VENTCRAWL_BENCH_PIPES 2000
+#define VENTCRAWL_BENCH_PASSES 20
+
+/datum/unit_test/ventcrawl_pipe_collection/Run()
+	var/turf/source_turf = run_loc_floor_bottom_left
+
+	// --- Correctness ---
+	var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/near_pipe = allocate(/obj/machinery/atmospherics/pipe/build_pipeline_test_node)
+	near_pipe.forceMove(source_turf)
+	var/turf/far_turf = get_step(get_step(get_step(source_turf, EAST), EAST), EAST)
+	TEST_ASSERT_NOTNULL(far_turf, "Test reservation must have three EAST neighbours")
+	var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/far_pipe = allocate(/obj/machinery/atmospherics/pipe/build_pipeline_test_node)
+	far_pipe.forceMove(far_turf)
+	var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/nowhere_pipe = allocate(/obj/machinery/atmospherics/pipe/build_pipeline_test_node)
+	nowhere_pipe.moveToNullspace()
+
+	var/list/members = list(near_pipe, far_pipe, nowhere_pipe)
+
+	var/list/tight = list()
+	collect_pipes_in_view(source_turf, 2, members, tight)
+	TEST_ASSERT(near_pipe in tight, "Pipe on the source turf must be collected")
+	TEST_ASSERT(!(far_pipe in tight), "Pipe outside the view box must not be collected")
+	TEST_ASSERT(!(nowhere_pipe in tight), "Nullspace pipe must be skipped")
+
+	var/list/wide = list()
+	collect_pipes_in_view(source_turf, 7, members, wide)
+	TEST_ASSERT(near_pipe in wide, "Near pipe must be collected with a wide box")
+	TEST_ASSERT(far_pipe in wide, "Pipe three tiles away must be collected with view_half 7")
+	TEST_ASSERT(!(nowhere_pipe in wide), "Nullspace pipe must be skipped regardless of box size")
+
+	// Both paths must agree on visibility for every member
+	for(var/obj/machinery/atmospherics/member as anything in members)
+		var/legacy_visible = legacy_in_view_range_sim(source_turf, member, "15x15") // legacy used the raw width (15) as the box half-size
+		var/list/single = list()
+		collect_pipes_in_view(source_turf, 15, list(member), single)
+		TEST_ASSERT_EQUAL(!!(member in single), !!legacy_visible, "New and legacy visibility must agree for [member] ([member.loc])")
+
+	// --- Benchmark ---
+	var/list/bench_members = list()
+	for(var/i in 1 to VENTCRAWL_BENCH_PIPES)
+		var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/bench_pipe = new(source_turf)
+		allocated += bench_pipe
+		bench_members += bench_pipe
+
+	var/start = REALTIMEOFDAY
+	for(var/pass in 1 to VENTCRAWL_BENCH_PASSES)
+		var/list/sink = list()
+		collect_pipes_in_view(source_turf, 7, bench_members, sink)
+	var/new_ds = REALTIMEOFDAY - start
+
+	start = REALTIMEOFDAY
+	for(var/pass in 1 to VENTCRAWL_BENCH_PASSES)
+		var/list/sink = list()
+		for(var/obj/machinery/atmospherics/member as anything in bench_members)
+			if(legacy_in_view_range_sim(source_turf, member, "15x15"))
+				sink += member
+	var/legacy_ds = REALTIMEOFDAY - start
+
+	log_world("### VENTCRAWL BENCH: [VENTCRAWL_BENCH_PASSES]x[VENTCRAWL_BENCH_PIPES] pipes: new = [new_ds] ds; legacy-style = [legacy_ds] ds")
+
+#undef VENTCRAWL_BENCH_PIPES
+#undef VENTCRAWL_BENCH_PASSES
+
+
+// ===== Throw impact sound cap (Paradise port) =====
+//
+// SSthrowing.playsound_capped() drops throw-impact sounds past
+// impact_sounds_cap per tick: a grenade dump or an explosion throwing a room's
+// contents produces hundreds of playsound() bursts in one tick, each one
+// fanning out to every listener in range.
+
+/datum/unit_test/throw_impact_sound_cap/Run()
+	var/old_impact = SSthrowing.impact_sounds
+	var/old_skipped = SSthrowing.skipped_sounds
+	var/old_last = SSthrowing.last_impact_sounds
+	SSthrowing.impact_sounds = 0
+	SSthrowing.skipped_sounds = 0
+
+	var/cap = SSthrowing.impact_sounds_cap
+	TEST_ASSERT(cap > 0, "impact_sounds_cap must be positive (got [cap])")
+
+	var/played = 0
+	for(var/i in 1 to cap + 5)
+		if(SSthrowing.playsound_capped(run_loc_floor_bottom_left, 'sound/weapons/genhit.ogg', 30, TRUE, -1))
+			played++
+
+	TEST_ASSERT_EQUAL(played, cap, "Exactly impact_sounds_cap sounds must play in one tick window")
+	TEST_ASSERT_EQUAL(SSthrowing.impact_sounds, cap, "impact_sounds counter must stop at the cap")
+	TEST_ASSERT_EQUAL(SSthrowing.skipped_sounds, 5, "Sounds past the cap must be counted as skipped")
+
+	// fire() opens a new tick window: counter resets, last tick's total is kept
+	SSthrowing.fire(resumed = FALSE)
+	TEST_ASSERT_EQUAL(SSthrowing.impact_sounds, 0, "fire() must reset the per-tick sound counter")
+	TEST_ASSERT_EQUAL(SSthrowing.last_impact_sounds, cap, "fire() must record last tick's sound total")
+	TEST_ASSERT(SSthrowing.playsound_capped(run_loc_floor_bottom_left, 'sound/weapons/genhit.ogg', 30, TRUE, -1), "First sound of a fresh window must play")
+
+	SSthrowing.impact_sounds = old_impact
+	SSthrowing.skipped_sounds = old_skipped
+	SSthrowing.last_impact_sounds = old_last
+
+
+// ===== Storage typecache statics =====
+//
+// Profile snapshot (perf.log 2026-07): /proc/typecacheof - 1445 calls per
+// round, all of its 0.16s self time counted as tick OVERTIME (it runs in spawn
+// bursts), plus per-type hotspots like wallet/tailbag ComponentInitialize.
+// Storage whitelists are compile-time constants, so they are now built once
+// into proc statics and shared. Two invariants matter:
+//   1. instances of the same type share one list (the point of the change);
+//   2. subtypes must not mutate the shared parent list (the old tailbag
+//      `can_hold |=` would now poison every wallet - it builds its own merged
+//      static instead).
+
+/datum/unit_test/storage_typecache_statics/Run()
+	var/obj/item/storage/wallet/wallet_one = allocate(/obj/item/storage/wallet)
+	var/obj/item/storage/wallet/wallet_two = allocate(/obj/item/storage/wallet)
+	var/obj/item/storage/wallet/tailbag/tail_one = allocate(/obj/item/storage/wallet/tailbag)
+	var/obj/item/storage/wallet/tailbag/tail_two = allocate(/obj/item/storage/wallet/tailbag)
+
+	var/datum/component/storage/wallet_store_one = wallet_one.GetComponent(/datum/component/storage)
+	var/datum/component/storage/wallet_store_two = wallet_two.GetComponent(/datum/component/storage)
+	var/datum/component/storage/tail_store_one = tail_one.GetComponent(/datum/component/storage)
+	var/datum/component/storage/tail_store_two = tail_two.GetComponent(/datum/component/storage)
+	TEST_ASSERT_NOTNULL(wallet_store_one, "wallet must have a storage component")
+	TEST_ASSERT_NOTNULL(tail_store_one, "tailbag must have a storage component")
+
+	// Same type -> same shared list instance (no per-spawn typecacheof rebuild)
+	TEST_ASSERT_EQUAL("\ref[wallet_store_one.can_hold]", "\ref[wallet_store_two.can_hold]", "Two wallets must share one static can_hold list")
+	TEST_ASSERT_EQUAL("\ref[tail_store_one.can_hold]", "\ref[tail_store_two.can_hold]", "Two tailbags must share one static can_hold list")
+
+	// Tailbag whitelist = wallet whitelist + extras
+	TEST_ASSERT(tail_store_one.can_hold[/obj/item/restraints/handcuffs], "Tailbag must accept its extra types (handcuffs)")
+	TEST_ASSERT(tail_store_one.can_hold[/obj/item/pen], "Tailbag must keep the common wallet types (pen)")
+	TEST_ASSERT(wallet_store_one.can_hold[/obj/item/pen], "Wallet must accept its own whitelist (pen)")
+
+	// The merged tailbag list must NOT leak back into the shared wallet list
+	TEST_ASSERT(!wallet_store_one.can_hold[/obj/item/restraints/handcuffs], "Wallet whitelist must not be poisoned by tailbag extras (handcuffs)")
+	TEST_ASSERT_NOTEQUAL("\ref[wallet_store_one.can_hold]", "\ref[tail_store_one.can_hold]", "Wallet and tailbag must use different list instances")
+
+// ===== Status effects: passive permanents stay out of processing =====
+//
+// perf2.log (4h, 1 player): 5.19M /datum/status_effect/process calls - wound
+// family effects live forever on NPC corpses and burned a slot in every
+// SSstatus_effects fire while their tick() is a no-op. Effects with
+// duration -1 AND tick_interval -1 now never enter processing.
+
+/datum/status_effect/unit_test_passive
+	id = "unit_test_passive"
+	duration = -1
+	tick_interval = -1
+	alert_type = null
+
+/datum/status_effect/unit_test_finite
+	id = "unit_test_finite"
+	duration = 30 SECONDS
+	tick_interval = -1
+	alert_type = null
+
+/datum/unit_test/status_effect_processing_gate/Run()
+	var/mob/living/carbon/human/human = allocate(/mob/living/carbon/human)
+
+	var/datum/status_effect/passive_effect = human.apply_status_effect(/datum/status_effect/unit_test_passive)
+	TEST_ASSERT_NOTNULL(passive_effect, "the passive test effect must apply")
+	TEST_ASSERT(!(passive_effect in SSstatus_effects.processing), "A permanent no-tick effect must not enter SSstatus_effects processing")
+
+	var/datum/status_effect/finite_effect = human.apply_status_effect(/datum/status_effect/unit_test_finite)
+	TEST_ASSERT_NOTNULL(finite_effect, "the finite test effect must apply")
+	TEST_ASSERT(finite_effect in SSstatus_effects.processing, "A finite effect must keep processing (it has to expire)")
+
+	// the perf.log offenders are pinned as passive: signal-driven, no tick()
+	// (vars hold the TYPEPATH: initial() on a null-valued var reads nothing)
+	var/datum/status_effect/wound/wound_type = /datum/status_effect/wound
+	var/datum/status_effect/limp/limp_type = /datum/status_effect/limp
+	var/datum/status_effect/determined/determined_type = /datum/status_effect/determined
+	TEST_ASSERT_EQUAL(initial(wound_type.tick_interval), -1, "wound status effects must stay passive (tick_interval -1)")
+	TEST_ASSERT_EQUAL(initial(limp_type.tick_interval), -1, "limp must stay passive (tick_interval -1)")
+	TEST_ASSERT_EQUAL(initial(determined_type.tick_interval), -1, "determined must stay passive (tick_interval -1)")
+
+	human.remove_status_effect(/datum/status_effect/unit_test_passive)
+	human.remove_status_effect(/datum/status_effect/unit_test_finite)
+
+// ===== Pool drain: fastprocess only while a fill/drain cycle runs =====
+//
+// perf2.log: /obj/machinery/pool/drain/process = 45k calls / 12s total on an
+// idle server - the item-suction range() scan ran 10 times a second forever.
+// Idle drains now sit on slow SSobj and only join SSfastprocess for
+// the duration of an active cycle.
+
+/datum/unit_test/pool_drain_idle_cadence/Run()
+	var/obj/machinery/pool/drain/drain = allocate(/obj/machinery/pool/drain)
+	TEST_ASSERT(drain in SSobj.processing, "An idle pool drain must sit on slow processing")
+	TEST_ASSERT(!(drain in SSfastprocess.processing), "An idle pool drain must not be on fastprocess")
+
+	drain.set_active(TRUE)
+	TEST_ASSERT(drain in SSfastprocess.processing, "An active pool drain must move to fastprocess")
+	TEST_ASSERT(!(drain in SSobj.processing), "An active pool drain must leave slow processing")
+
+	drain.set_active(FALSE)
+	TEST_ASSERT(drain in SSobj.processing, "A deactivated pool drain must return to slow processing")
+	TEST_ASSERT(!(drain in SSfastprocess.processing), "A deactivated pool drain must leave fastprocess")
+
+// ===== Plumbing: демандер без подключений паркуется, add_plumber будит =====
+//
+// perf3.log: 276k send_request/process_request за холостой раунд - каждый
+// роундстартовый хим-агрегат без единого дакта гонял пустой request-цикл
+// каждый фаер SSfluids.
+
+/datum/unit_test/plumbing_idle_park/Run()
+	var/obj/item/holder = allocate(/obj/item)
+	holder.create_reagents(100)
+	var/datum/component/plumbing/simple_demand/demander = holder.AddComponent(/datum/component/plumbing/simple_demand)
+	TEST_ASSERT_NOTNULL(demander, "the demand component must attach to an obj with reagents")
+	TEST_ASSERT(demander.active, "the component must enable on creation")
+	TEST_ASSERT(demander.datum_flags & DF_ISPROCESSING, "a fresh demander starts on SSfluids")
+
+	// Без дактов первый же фаер паркует компонент.
+	demander.process()
+	TEST_ASSERT(!(demander.datum_flags & DF_ISPROCESSING), "a demander with no duct connections must park itself")
+
+	// Подключение через ductnet будит.
+	var/datum/ductnet/net = new
+	TEST_ASSERT(net.add_plumber(demander, NORTH), "add_plumber must accept the active demander on its demand side")
+	TEST_ASSERT(demander.datum_flags & DF_ISPROCESSING, "connecting a duct network must wake the parked demander")
+	TEST_ASSERT_EQUAL(length(demander.ducts), 1, "the demander must track its new connection")
+
+	// Отключение: следующий фаер снова паркует.
+	net.remove_plumber(demander) // с пустым списком дактов сеть самоуничтожается
+	TEST_ASSERT_EQUAL(length(demander.ducts), 0, "remove_plumber must clear the tracked connection")
+	demander.process()
+	TEST_ASSERT(!(demander.datum_flags & DF_ISPROCESSING), "a disconnected demander must park itself again")
+
+// ===== alarm_handler: clear_alarm без своих тревог - дешёвый ранний выход =====
+//
+// perf3.log: 56k clear_alarm за раунд (здоровые APC зовут его каждый фаер),
+// каждый вызов ходил в get_area. Теперь пустой sent_alarms отсекает сразу.
+
+/datum/unit_test/alarm_handler_clear_fastpath/Run()
+	var/obj/machinery/source = allocate(/obj/machinery)
+	var/datum/alarm_handler/handler = new(source)
+
+	TEST_ASSERT_EQUAL(handler.clear_alarm(ALARM_POWER), FALSE, "clear_alarm with nothing sent must return FALSE via the early exit")
+
+	// Тревога должна по-прежнему ставиться и сниматься. Резервация лежит в
+	// /area/space - подсовываем синтетическую область без NO_ALERTS.
+	var/turf/floor = run_loc_floor_bottom_left
+	var/area/original_area = get_area(floor)
+	var/area/test_area = new /area
+	allocated += test_area
+	test_area.contents.Add(floor)
+	source.forceMove(floor)
+
+	handler.send_alarm(ALARM_POWER)
+	TEST_ASSERT(handler.sent_alarms[ALARM_POWER], "send_alarm must record the alarm on the handler")
+	TEST_ASSERT_EQUAL(handler.clear_alarm(ALARM_POWER), TRUE, "clear_alarm must still clear a real alarm")
+	TEST_ASSERT(!handler.sent_alarms[ALARM_POWER], "the cleared alarm must leave the handler's ledger")
+
+	qdel(handler)
+	original_area.contents.Add(floor)
+
+// ===== Статус-эффекты: вечные без tick() не встают в SSstatus_effects =====
+//
+// perf3.log: 2.15M status_effect/process за раунд - ~187 вечных эффектов с
+// дефолтным tick_interval. Главный виновник - crusher_damage на каждом
+// майнинг-мобе и мегафауне.
+
+/datum/unit_test/status_effect_passive_optouts/Run()
+	// Пины на initial() (переменные держат ТАЙППУТЬ - initial() на null не работает).
+	var/datum/status_effect/crusher_damage/crusher_type = /datum/status_effect/crusher_damage
+	var/datum/status_effect/in_love/love_type = /datum/status_effect/in_love
+	var/datum/status_effect/vtec_disabled/vtec_type = /datum/status_effect/vtec_disabled
+	var/datum/status_effect/pregnancy/pregnancy_type = /datum/status_effect/pregnancy
+	var/datum/status_effect/lactation/lactation_type = /datum/status_effect/lactation
+	var/datum/status_effect/frenzy/frenzy_type = /datum/status_effect/frenzy
+	TEST_ASSERT_EQUAL(initial(crusher_type.tick_interval), -1, "crusher_damage is a pure data holder - it must not tick")
+	TEST_ASSERT_EQUAL(initial(love_type.tick_interval), -1, "in_love only shows an alert - it must not tick")
+	TEST_ASSERT_EQUAL(initial(vtec_type.tick_interval), -1, "vtec_disabled expires via duration - it must not tick")
+	TEST_ASSERT_EQUAL(initial(pregnancy_type.tick_interval), -1, "pregnancy must not tick")
+	TEST_ASSERT_EQUAL(initial(lactation_type.tick_interval), -1, "lactation must not tick")
+	TEST_ASSERT_NOTEQUAL(initial(frenzy_type.tick_interval), -1, "frenzy DOES tick (burn damage) and must keep its interval")
+
+	// Живой crusher_damage на мобе существует, но не процессится.
+	var/mob/living/carbon/human/human = allocate(/mob/living/carbon/human)
+	var/datum/status_effect/crusher_damage/tracker = human.apply_status_effect(STATUS_EFFECT_CRUSHERDAMAGETRACKING)
+	TEST_ASSERT_NOTNULL(tracker, "the crusher tracker must apply")
+	TEST_ASSERT(!(tracker.datum_flags & DF_ISPROCESSING), "a permanent tickless effect must stay out of SSstatus_effects")
+	human.remove_status_effect(STATUS_EFFECT_CRUSHERDAMAGETRACKING)
+
+// ===== Лодаут: превью генерятся лениво, а не на старте сервера =====
+//
+// perf3/perf4: ровно 1559 icon2base64 (~1.3с CPU) на каждом раундстарте -
+// /datum/gear/New энкодил превью всего каталога. Теперь энкод по первому
+// запросу UI, меню рендерит одну подкатегорию за раз.
+
+/datum/unit_test/loadout_preview_lazy/Run()
+	TEST_ASSERT(length(GLOB.loadout_items), "loadout catalog must be populated")
+	var/datum/gear/probe
+	var/eager = 0
+	for(var/category in GLOB.loadout_items)
+		var/list/subcategories = GLOB.loadout_items[category]
+		for(var/subcategory in subcategories)
+			var/list/items = subcategories[subcategory]
+			for(var/gear_name in items)
+				var/datum/gear/gear = items[gear_name]
+				if(!gear)
+					continue
+				if(gear.base64icon)
+					eager++
+				if(!probe && gear.path)
+					var/preview = gear.get_base64icon()
+					if(preview)
+						probe = gear
+						TEST_ASSERT_EQUAL(gear.get_base64icon(), preview, "repeated preview requests must return the cached encode")
+	TEST_ASSERT_EQUAL(eager, 0, "no gear preview may be encoded before the first UI request ([eager] already were)")
+	TEST_ASSERT_NOTNULL(probe, "at least one gear item must produce a preview on demand")
+
+// ===== Air sensor: бродкаст только при изменении показаний или heartbeat =====
+//
+// perf4.log: 79k receive_signal у атмос-консолей за 6-минутный холостой раунд -
+// каждый сенсор рассылал отчёт всем консолям частоты, даже когда танк осел.
+
+/datum/unit_test/air_sensor_report_gate/Run()
+	var/obj/machinery/air_sensor/sensor = allocate(/obj/machinery/air_sensor)
+
+	// Первый отчёт всегда уходит и взводит heartbeat.
+	TEST_ASSERT(sensor.try_report(), "the first report must always broadcast")
+	TEST_ASSERT(sensor.next_forced_report > world.time, "the first report must arm the heartbeat deadline")
+	TEST_ASSERT_NOTNULL(sensor.last_report_pressure, "the report must record the broadcast readings")
+
+	// Осевшие показания внутри heartbeat-окна - тишина в эфире.
+	TEST_ASSERT(!sensor.try_report(), "unchanged readings inside the heartbeat window must not broadcast")
+
+	// Изменение показаний пробивает гейт.
+	sensor.last_report_pressure += 10
+	TEST_ASSERT(sensor.try_report(), "a pressure delta must broadcast")
+
+	// Истёкший heartbeat пробивает гейт даже без изменений.
+	sensor.next_forced_report = 0
+	TEST_ASSERT(sensor.try_report(), "an expired heartbeat must force a broadcast")
+	TEST_ASSERT(sensor.next_forced_report > world.time, "the forced broadcast must re-arm the heartbeat")
+
+// ===== Спеллы вне SSfastprocess: perform() обязан будить откат =====
+//
+// Пас 24fcd1779e снял вечный START_PROCESSING из Initialize: заряженный спелл
+// не молотит в SSfastprocess всю жизнь владельца. Регресс первой версии:
+// perform() выставлял recharging = TRUE голым флагом, спелл не вставал в
+// очередь и после первого каста не откатывался никогда (тот же баг в
+// on_hand_destroy тач-спеллов). Тест гоняет реальный путь каста и полный
+// цикл отката.
+
+/datum/unit_test/spell_recharge_after_cast/Run()
+	var/obj/effect/proc_holder/spell/spell = allocate(/obj/effect/proc_holder/spell)
+	spell.charge_max = 10
+	spell.charge_counter = 10
+	spell.recharging = FALSE
+
+	// Реальный путь каста: cast_check() роняет счётчик, perform() стартует откат
+	TEST_ASSERT(spell.cast_check(FALSE, null, TRUE), "premise: cast_check must pass for a fully charged spell")
+	TEST_ASSERT_EQUAL(spell.charge_counter, 0, "cast_check must zero the charge counter")
+	spell.perform(list(), TRUE, null)
+	TEST_ASSERT(spell.recharging, "perform() must mark the spell as recharging")
+	TEST_ASSERT(spell in SSfastprocess.processing, "perform() must return the spell to SSfastprocess")
+
+	// Полный откат: process() докручивает счётчик (+2 за фаер) и гасит флаг
+	for(var/i in 1 to 5)
+		spell.process()
+	TEST_ASSERT_EQUAL(spell.charge_counter, spell.charge_max, "five processes at +2 must fully recharge charge_max = 10")
+	TEST_ASSERT(!spell.recharging, "a recharged spell must clear the recharging flag")
+	TEST_ASSERT_EQUAL(spell.process(), PROCESS_KILL, "a fully recharged spell must PROCESS_KILL out of SSfastprocess")
+
+/datum/unit_test/touch_spell_recharge_on_hand_destroy/Run()
+	var/obj/effect/proc_holder/spell/targeted/touch/touch_spell = allocate(/obj/effect/proc_holder/spell/targeted/touch)
+	touch_spell.charge_max = 10
+	touch_spell.charge_counter = 0
+	touch_spell.recharging = FALSE
+	var/obj/item/melee/touch_attack/hand = new(touch_spell)
+	allocated += hand
+	touch_spell.attached_hand = hand
+	hand.attached_spell = touch_spell
+
+	// Рука истратилась (charges_check) - спелл обязан проснуться на откат
+	touch_spell.on_hand_destroy(hand)
+	TEST_ASSERT_NULL(touch_spell.attached_hand, "on_hand_destroy must detach the hand")
+	TEST_ASSERT(touch_spell.recharging, "on_hand_destroy must mark the touch spell as recharging")
+	TEST_ASSERT(touch_spell in SSfastprocess.processing, "on_hand_destroy must return the touch spell to SSfastprocess")

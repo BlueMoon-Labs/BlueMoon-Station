@@ -510,6 +510,11 @@
 /datum/component/storage/proc/can_be_inserted(obj/item/I, stop_messages = FALSE, mob/M)
 	if(!istype(I) || (I.item_flags & ABSTRACT))
 		return FALSE //Not an item
+	// Протухшая ссылка из уснувшего вызова (do_after/опрос) не должна возвращать
+	// удаляемый предмет в contents: Destroy уже вынес его в nullspace, повторная
+	// вставка = гарантированный вечный harddel (прод: магазин e45 в сатчеле).
+	if(QDELETED(I))
+		return FALSE
 	if(I == parent)
 		return FALSE	//no paradoxes for you
 	var/atom/real_location = real_location()

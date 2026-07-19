@@ -133,6 +133,7 @@
 		restore()
 
 /obj/shapeshift_holder/Exited(atom/movable/AM)
+	. = ..() //без родителя холдер вечно держал кастера в important_recursive_contents
 	if(AM == stored && !restoring)
 		restore()
 

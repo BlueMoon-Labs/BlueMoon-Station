@@ -251,3 +251,6 @@
 	/// The next point in time at which the client is allowed to send a mousemove() or mousedrag()
 	COOLDOWN_DECLARE(next_mousemove)
 	COOLDOWN_DECLARE(next_mousedrag)
+
+	/// Cooldown for IC chat messages while SSlag_switch SLOWMODE_SAY is active
+	COOLDOWN_DECLARE(say_slowmode)

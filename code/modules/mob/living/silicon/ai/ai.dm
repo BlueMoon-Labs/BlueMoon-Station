@@ -201,6 +201,11 @@
 /mob/living/silicon/ai/Destroy()
 	GLOB.ai_list -= src
 	GLOB.shuttle_caller_list -= src
+	//боты держат ссылку на вызвавший их ИИ до прибытия к вейпоинту - при
+	//удалении ИИ отвязываемся, иначе calling_ai вечно пиннит удалённого моба
+	for(var/mob/living/simple_animal/bot/called_bot as anything in GLOB.bots_list)
+		if(called_bot.calling_ai == src)
+			called_bot.calling_ai = null
 	SSshuttle.autoEvac()
 	stop_controlling_display()
 	QDEL_NULL(eyeobj) // No AI, no Eye

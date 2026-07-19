@@ -130,7 +130,11 @@ SUBSYSTEM_DEF(timer)
 				head_offset: [head_offset], practical_offset: [practical_offset], REALTIMEOFDAY: [REALTIMEOFDAY]")
 
 		ctime_timer.spent = REALTIMEOFDAY
+		var/invoke_started = TICK_USAGE
 		callBack.InvokeAsync()
+		var/invoke_cost_ms = TICK_DELTA_TO_MS(TICK_USAGE - invoke_started)
+		if(SStick_spikes && invoke_cost_ms >= SStick_spikes.slow_work_threshold_ms)
+			SStick_spikes.record_slow_work("таймер (clienttime)", SStick_spikes.callback_desc(callBack), invoke_cost_ms)
 
 		var/pre_len = length(clienttime_timers)
 		if(ctime_timer.flags & TIMER_LOOP)
@@ -180,7 +184,13 @@ SUBSYSTEM_DEF(timer)
 			// Invoke callback if possible
 			if (!timer.spent)
 				timer.spent = world.time
+				// Замер синхронной части колбека (до первого сна): дорогой таймер-колбек
+				// раньше был неотличим от анонимного "DM вне МК" в логе тик-спайков
+				var/invoke_started = TICK_USAGE
 				callBack.InvokeAsync()
+				var/invoke_cost_ms = TICK_DELTA_TO_MS(TICK_USAGE - invoke_started)
+				if(SStick_spikes && invoke_cost_ms >= SStick_spikes.slow_work_threshold_ms)
+					SStick_spikes.record_slow_work("таймер", SStick_spikes.callback_desc(callBack), invoke_cost_ms)
 				last_invoke_tick = world.time
 
 			if (timer.flags & TIMER_LOOP) // Prepare looping timers to re-enter the queue

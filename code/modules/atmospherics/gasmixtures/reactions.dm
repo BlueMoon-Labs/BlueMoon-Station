@@ -698,7 +698,9 @@
 	var/new_heat_capacity = air.heat_capacity()
 	if(new_heat_capacity > MINIMUM_HEAT_CAPACITY)
 		air.set_temperature(max((temperature * old_heat_capacity + energy_released) / new_heat_capacity, TCMB))
-	return REACTING
+	//tg parity: активная конденсация не должна размазываться брейкдауном
+	//excited group - усреднение с тёплыми соседями глушит реакцию (<15 К)
+	return REACTING | VOLATILE_REACTION
 
 /datum/gas_reaction/nobliumformation/test()
 	var/datum/gas_mixture/G = new
@@ -707,7 +709,7 @@
 	G.set_volume(1000)
 	G.set_temperature(10) // below 15 K
 	var/result = G.react()
-	if(result != REACTING)
+	if(!(result & REACTING)) //возвращает ещё и VOLATILE_REACTION - сверяем битом
 		return list("success" = FALSE, "message" = "Reaction didn't go at all!")
 	if(abs(G.thermal_energy() - 23000000000) > 1000000) // god i hate floating points
 		return list("success" = FALSE, "message" = "Hyper-nob formation isn't removing the right amount of heat! Should be 23,000,000,000, is instead [G.thermal_energy()]")
@@ -911,7 +913,9 @@
 		air.set_temperature(max((temperature * old_heat_capacity - energy_consumed) / new_heat_capacity, TCMB))
 	if(isopenturf(holder) && temperature >= FREON_HOT_ICE_MIN_TEMP && temperature <= FREON_HOT_ICE_MAX_TEMP && prob(5))
 		new /obj/item/stack/sheet/hot_ice(get_turf(holder), 1)
-	return REACTING
+	//tg parity: фреоновое пламя не пишет reaction_results["fire"] и не создаёт
+	//hotspot, поэтому синтез волатильности в process_cell его не видит
+	return REACTING | VOLATILE_REACTION
 
 /datum/gas_reaction/freonformation
 	priority = 33
@@ -1315,4 +1319,5 @@
 	var/new_heat_capacity = air.heat_capacity()
 	if(new_heat_capacity > MINIMUM_HEAT_CAPACITY)
 		air.set_temperature(max(air.return_temperature() * old_heat_capacity / new_heat_capacity, TCMB))
-	return REACTING
+	//tg parity: активная репликация не должна размазываться брейкдауном группы
+	return REACTING | VOLATILE_REACTION

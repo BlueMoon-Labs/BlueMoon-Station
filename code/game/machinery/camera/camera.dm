@@ -44,6 +44,12 @@
 	///Represents a signel source of camera alarms about movement or camera tampering
 	var/datum/alarm_handler/alarm_manager
 
+	///кэш get_visible_turfs(): турфы в зоне видимости; переживает апдейты
+	///нескольких чанков (камера у границы состоит в 2-4 чанках)
+	var/list/cached_visible_turfs
+	///TRUE = зона видимости могла измениться, кэш пересчитается при следующем запросе
+	var/visibility_cache_dirty = TRUE
+
 /obj/machinery/camera/preset/toxins //Bomb test site in space
 	name = "Hardened Bomb-Test Camera"
 	desc = "A specially-reinforced camera with a long lasting battery, used to monitor the bomb testing site. An external light is attached to the top."
@@ -66,6 +72,7 @@
 		assembly = new(src)
 		assembly.state = 4
 	GLOB.cameranet.cameras += src
+	GLOB.cameranet.invalidate_camera_cache()
 	GLOB.cameranet.addCamera(src)
 	if (isturf(loc))
 		myarea = get_area(src)
@@ -81,11 +88,13 @@
 	for(var/i in network)
 		network -= i
 		network += "[idnum][i]"
+	GLOB.cameranet.invalidate_camera_cache()
 
 /obj/machinery/camera/Destroy()
 	if(can_use())
 		toggle_cam(null, 0) //kick anyone viewing out and remove from the camera chunks
 	GLOB.cameranet.cameras -= src
+	GLOB.cameranet.invalidate_camera_cache()
 	// toggle_cam не зовётся для выключенных/EMP-нутых камер, а радиус удаления в
 	// majorChunkChange (8) уже скана при создании чанка (16 от центра) - добираем
 	// все чанки вручную, иначе chunk.cameras держит удалённую камеру
@@ -113,6 +122,7 @@
 			update_icon()
 			var/list/previous_network = network
 			network = list()
+			GLOB.cameranet.invalidate_camera_cache()
 			GLOB.cameranet.removeCamera(src)
 			set_machine_stat(machine_stat | EMPED)
 			set_light(0)
@@ -124,6 +134,7 @@
 					triggerCameraAlarm() //camera alarm triggers even if multiple EMPs are in effect.
 					if(emped == thisemp) //Only fix it if the camera hasn't been EMP'd again
 						network = previous_network
+						GLOB.cameranet.invalidate_camera_cache()
 						set_machine_stat(machine_stat & ~EMPED)
 						update_icon()
 						if(can_use())
@@ -366,6 +377,38 @@
 	else
 		see = get_hear(view_range, pos)
 	return see
+
+/**
+ * Видимые турфы камеры с кэшем. can_see() (view-хак) на каждую камеру чанка
+ * при каждом апдейте был главным потребителем get_hear на проде: пролёт
+ * AI-глаза пересчитывал ~18 камер на чанк, хотя менялась в лучшем случае одна.
+ * Инвалидация - mark_visibility_dirty() из majorChunkChange (двери/стены
+ * рядом, вкл/выкл камеры), апгрейда XRay и Moved.
+ *
+ * Портативные камеры (борг/мех/бодикам - loc не турф) не кэшируются:
+ * их зона меняется каждым шагом носителя.
+ */
+/obj/machinery/camera/proc/get_visible_turfs()
+	if(!isturf(loc))
+		return compute_visible_turfs()
+	if(visibility_cache_dirty || isnull(cached_visible_turfs))
+		cached_visible_turfs = compute_visible_turfs()
+		visibility_cache_dirty = FALSE
+	return cached_visible_turfs
+
+///пересчёт без кэша: только турфы из can_see()
+/obj/machinery/camera/proc/compute_visible_turfs()
+	var/list/visible_turfs = list()
+	for(var/turf/visible_turf in can_see())
+		visible_turfs += visible_turf
+	return visible_turfs
+
+/obj/machinery/camera/proc/mark_visibility_dirty()
+	visibility_cache_dirty = TRUE
+
+/obj/machinery/camera/Moved(atom/OldLoc, Dir)
+	. = ..()
+	visibility_cache_dirty = TRUE
 
 /atom/proc/auto_turn()
 	//Automatically turns based on nearby walls.
