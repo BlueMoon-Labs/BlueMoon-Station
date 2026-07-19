@@ -104,9 +104,9 @@ SUBSYSTEM_DEF(processing)
 	if(profile_strikes < PROCESSING_PROFILE_STRIKES_TO_ARM)
 		return
 	profile_armed = TRUE
-	profile_cost_by_type = list()
-	profile_count_by_type = list()
-	profile_max_by_type = list()
+	profile_cost_by_type = alist()
+	profile_count_by_type = alist()
+	profile_max_by_type = alist()
 
 /// Дамп профиля дорогого прохода: топ типов по суммарной стоимости.
 /datum/controller/subsystem/processing/proc/dump_expensive_pass_profile(pass_cost)

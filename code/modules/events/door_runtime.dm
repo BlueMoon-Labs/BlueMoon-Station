@@ -33,7 +33,7 @@
 		if(!is_station_level(door.z))
 			continue
 		station_doors += door
-	INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(door_runtime_set_lockdown), station_doors, TRUE)
+	door_runtime_set_lockdown(station_doors, TRUE)
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(door_runtime_set_lockdown), station_doors, FALSE), 90 SECONDS)
 	addtimer(CALLBACK(src, PROC_REF(reboot)), 90 SECONDS)
 	var/obj/machinery/computer/communications/C = locate() in GLOB.machines
@@ -43,6 +43,7 @@
 /// Волна (раз)блокировки шлюзов события Door Runtime. Каждой двери свой INVOKE_ASYNC,
 /// потому что close()/open() спят; CHECK_TICK между запусками размазывает волну по тикам.
 /proc/door_runtime_set_lockdown(list/doors, lock)
+	set waitfor = FALSE
 	for(var/obj/machinery/door/door as anything in doors)
 		if(QDELETED(door))
 			continue

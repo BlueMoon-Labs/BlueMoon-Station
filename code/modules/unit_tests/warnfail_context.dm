@@ -22,10 +22,15 @@
 	TEST_ASSERT_EQUAL(SSgarbage.build_warnfail_context(loose), "", "Чистый предмет в nullspace дал ложные улики")
 
 /// hard_resolve обязан возвращать qdel-нутую, но ещё не собранную цель; resolve() - null.
+/// Живой объект в переиспользованном ref-слоте (weak_reference не наш) - null.
 /datum/unit_test/weakref_hard_resolve/Run()
 	var/obj/item/thing = new(run_loc_floor_bottom_left)
 	var/datum/weakref/ref = WEAKREF(thing)
 	var/obj/item/holder = thing
+	// Симуляция переиспользованного слота: по ref живой датум, но он не наша цель.
+	thing.weak_reference = null
+	TEST_ASSERT_NULL(ref.hard_resolve(), "hard_resolve() вернул чужой живой объект из переиспользованного ref-слота")
+	thing.weak_reference = ref
 	qdel(thing)
 	TEST_ASSERT_NULL(ref.resolve(), "resolve() вернул qdel-нутую цель")
 	TEST_ASSERT_EQUAL(ref.hard_resolve(), holder, "hard_resolve() не вернул qdel-нутую, но живую цель")
