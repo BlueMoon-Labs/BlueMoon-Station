@@ -1,13 +1,6 @@
 //Used to process objects.
-
-/// Проход подсистемы дороже этого (мс синхронной работы за цикл) = страйк перерасхода.
-#define PROCESSING_PROFILE_STRIKE_MS 50
-/// Столько страйков подряд включают профилирование следующего прохода.
-#define PROCESSING_PROFILE_STRIKES_TO_ARM 3
-/// Пауза между профилированными проходами, чтобы замер сам не стал нагрузкой.
-#define PROCESSING_PROFILE_COOLDOWN (5 MINUTES)
-/// Сколько самых дорогих типов попадает в дамп.
-#define PROCESSING_PROFILE_TOP_N 8
+// Адаптивный профиль перерасхода живёт в базовом /datum/controller/subsystem
+// (code/controllers/subsystem.dm) - здесь только инструментация fire().
 
 SUBSYSTEM_DEF(processing)
 	name = "Processing"
@@ -18,19 +11,6 @@ SUBSYSTEM_DEF(processing)
 	var/stat_tag = "P" //Used for logging
 	var/list/processing = list()
 	var/list/currentrun = list()
-
-	/// Адаптивный профиль перерасхода: страйки дорогих проходов подряд.
-	var/profile_strikes = 0
-	/// TRUE = следующий полный проход замеряет стоимость каждого process() по типам.
-	var/profile_armed = FALSE
-	/// world.time, до которого профилирование не перевзводится.
-	var/profile_cooldown_until = 0
-	/// Синхронная стоимость текущего прохода (копится через yield'ы MC_TICK_CHECK).
-	var/current_pass_cost_ms = 0
-	/// Аккумуляторы профилированного прохода: тип -> суммарно мс / число вызовов / максимум мс.
-	var/list/profile_cost_by_type
-	var/list/profile_count_by_type
-	var/list/profile_max_by_type
 
 /datum/controller/subsystem/processing/stat_entry(msg)
 	msg = "[stat_tag]:[length(processing)]"
@@ -66,81 +46,7 @@ SUBSYSTEM_DEF(processing)
 			return
 
 	current_pass_cost_ms += max(0, TICK_DELTA_TO_MS(TICK_USAGE - slice_start_usage))
-	on_pass_finished()
-
-/// Учёт одного замера профилированного прохода.
-/datum/controller/subsystem/processing/proc/profile_note(item_type, cost_ms)
-	profile_cost_by_type[item_type] += cost_ms
-	profile_count_by_type[item_type] += 1
-	if(cost_ms > profile_max_by_type[item_type])
-		profile_max_by_type[item_type] = cost_ms
-
-/**
- * Конец полного прохода: решаем, взводить ли профилирование, или дампить готовый профиль.
- * Логика самонаводящаяся: PROCESSING_PROFILE_STRIKES_TO_ARM дорогих проходов подряд ->
- * один проход с позамерным учётом по типам -> дамп топа в tick_spikes.log + game.log ->
- * кулдаун. В спокойном состоянии стоит ровно одно сравнение на проход.
- */
-/datum/controller/subsystem/processing/proc/on_pass_finished()
-	var/pass_cost = current_pass_cost_ms
-	current_pass_cost_ms = 0
-
-	if(profile_armed)
-		profile_armed = FALSE
-		dump_expensive_pass_profile(pass_cost)
-		profile_cost_by_type = null
-		profile_count_by_type = null
-		profile_max_by_type = null
-		profile_cooldown_until = world.time + PROCESSING_PROFILE_COOLDOWN
-		profile_strikes = 0
-		return
-
-	if(pass_cost < PROCESSING_PROFILE_STRIKE_MS)
-		profile_strikes = 0
-		return
-	if(world.time < profile_cooldown_until)
-		return
-	profile_strikes++
-	if(profile_strikes < PROCESSING_PROFILE_STRIKES_TO_ARM)
-		return
-	profile_armed = TRUE
-	profile_cost_by_type = alist()
-	profile_count_by_type = alist()
-	profile_max_by_type = alist()
-
-/// Дамп профиля дорогого прохода: топ типов по суммарной стоимости.
-/datum/controller/subsystem/processing/proc/dump_expensive_pass_profile(pass_cost)
-	var/list/types_by_cost = list()
-	for(var/item_type in profile_cost_by_type)
-		types_by_cost[item_type] = profile_cost_by_type[item_type]
-	sortTim(types_by_cost, GLOBAL_PROC_REF(cmp_numeric_dsc), associative = TRUE)
-
-	var/list/out = list()
-	out += "=== SS[name]: профиль дорогого прохода - [round(pass_cost, 0.1)]мс, [length(processing)] объектов ([time_stamp_from_world_safe(world.time)], wt [world.time]) ==="
-	var/shown = 0
-	var/shown_cost = 0
-	for(var/item_type in types_by_cost)
-		if(shown >= PROCESSING_PROFILE_TOP_N)
-			break
-		shown++
-		var/type_cost = profile_cost_by_type[item_type]
-		shown_cost += type_cost
-		out += "  [item_type] - [round(type_cost, 0.1)]мс суммарно, [profile_count_by_type[item_type]] вызовов, макс [round(profile_max_by_type[item_type], 0.1)]мс"
-	var/rest = length(types_by_cost) - shown
-	if(rest > 0)
-		out += "  (ещё [rest] типов, суммарно [round(pass_cost - shown_cost, 0.1)]мс с учётом накладных)"
-
-	var/digest = out.Join("\n")
-	if(SStick_spikes)
-		SStick_spikes.write_to_log(digest)
-	// Однострочник в game.log, чтобы виновник был виден прямо в архиве раунда.
-	if(length(types_by_cost))
-		var/top_type = types_by_cost[1]
-		log_game("PROCESSING HEAVY: SS[name] проход [round(pass_cost, 0.1)]мс, топ: [top_type] ([round(types_by_cost[top_type], 0.1)]мс). Полный профиль в tick_spikes.log")
-
-/// gameTimestamp, но безопасный до старта тикера.
-/proc/time_stamp_from_world_safe(world_ds)
-	return SSticker ? gameTimestamp("hh:mm:ss", world_ds) : "wt [world_ds]"
+	on_pass_finished(length(processing))
 
 /**
  * This proc is called on a datum on every "cycle" if it is being processed by a subsystem. The time between each cycle is determined by the subsystem's "wait" setting.
@@ -159,7 +65,3 @@ SUBSYSTEM_DEF(processing)
 	set waitfor = FALSE
 	return PROCESS_KILL
 
-#undef PROCESSING_PROFILE_STRIKE_MS
-#undef PROCESSING_PROFILE_STRIKES_TO_ARM
-#undef PROCESSING_PROFILE_COOLDOWN
-#undef PROCESSING_PROFILE_TOP_N
