@@ -194,6 +194,7 @@
 #include "manifest_photo_deferred.dm"
 #include "newscaster_alert_gate.dm"
 #include "harddel_cleanup.dm"
+#include "round_9752_regressions.dm"
 #include "warnfail_context.dm"
 #include "runtime_guards.dm"
 #include "hallucination_stationmessage.dm"

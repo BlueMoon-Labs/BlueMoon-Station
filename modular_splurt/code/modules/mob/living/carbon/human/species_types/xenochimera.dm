@@ -37,6 +37,10 @@
 	//if(!H.stat || !(H.revive_ready == REVIVING_NOW || H.revive_ready == REVIVING_DONE))
 	//	handle_feralness(H)
 
+	// A medical revival must immediately release a corpse that was regenerating.
+	if(H.revive_started_dead && H.stat != DEAD && (H.revive_ready == REVIVING_NOW || H.revive_ready == REVIVING_DONE))
+		H.cancel_chimera_regeneration()
+
 	//While regenerating
 	if(H.revive_ready == REVIVING_NOW || H.revive_ready == REVIVING_DONE)
 		H.Paralyze(1000)
@@ -115,6 +119,20 @@
 /mob/living/carbon/human
 	var/revive_ready = REVIVING_READY	// Only used for creatures that have the xenochimera regen ability, so far.
 	var/revive_finished = 0				// Only used for xenochimera regen, allows us to find out when the regen will finish.
+	var/revive_started_dead = FALSE
+
+/mob/living/carbon/human/proc/cancel_chimera_regeneration()
+	if(!revive_started_dead || !(revive_ready == REVIVING_NOW || revive_ready == REVIVING_DONE))
+		return FALSE
+	revive_started_dead = FALSE
+	revive_ready = REVIVING_READY
+	revive_finished = 0
+	verbs -= /mob/living/carbon/human/proc/hatch
+	clear_alert("regen")
+	clear_alert("hatch")
+	SetParalyzed(0)
+	to_chat(src, "<span class='notice'>Medical treatment interrupts your reconstruction and frees your recovered body.</span>")
+	return TRUE
 
 /mob/living/carbon/human/proc/chimera_regenerate()
 	//If they're already regenerating
@@ -144,15 +162,16 @@
 
 		//Scary spawnerization.
 		revive_ready = REVIVING_NOW
+		revive_started_dead = TRUE
 		revive_finished = (world.time + time SECONDS) // When do we finish reviving? Allows us to find out when we're done, called by the alert currently.
+		var/expected_finish = revive_finished
 		throw_alert("regen", /atom/movable/screen/alert/xenochimera/reconstitution)
 		spawn(time SECONDS)
+			if(QDELETED(src) || revive_ready != REVIVING_NOW || revive_finished != expected_finish || !revive_started_dead)
+				return
 			// check to see if they've been fixed by outside forces in the meantime such as defibbing
 			if(stat != DEAD)
-				to_chat(src, "<span class='notice'>Your body has recovered from its ordeal, ready to regenerate itself again.</span>")
-				revive_ready = REVIVING_READY //reset their cooldown
-				clear_alert("regen")
-				throw_alert("hatch", /atom/movable/screen/alert/xenochimera/readytohatch)
+				cancel_chimera_regeneration()
 
 			// Was dead, still dead.
 			else
@@ -169,9 +188,13 @@
 
 		//Waiting for regen after being alive
 		revive_ready = REVIVING_NOW
+		revive_started_dead = FALSE
 		revive_finished = (world.time + time SECONDS) // When do we finish reviving? Allows us to find out when we're done, called by the alert currently.
+		var/expected_finish = revive_finished
 		throw_alert("regen", /atom/movable/screen/alert/xenochimera/reconstitution)
 		spawn(time SECONDS)
+			if(QDELETED(src) || revive_ready != REVIVING_NOW || revive_finished != expected_finish)
+				return
 
 			//Slightly different flavour messages
 			if(stat != DEAD || nutrition > 0)
@@ -245,6 +268,7 @@
 	//update_canmove()
 	//weakened = 2
 	SetParalyzed(0)
+	revive_started_dead = FALSE
 	revive_ready = world.time + 10 MINUTES //set the cooldown CHOMPEdit: Reduced this to 10 minutes, you're playing with fire if you're reviving that often.
 
 

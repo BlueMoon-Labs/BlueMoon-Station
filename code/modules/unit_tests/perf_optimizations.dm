@@ -338,6 +338,12 @@
 	component.replacePipenet(connected_pipeline, replacement_pipeline)
 	TEST_ASSERT_EQUAL(component.returnPipenet(connected_pipe), replacement_pipeline, "Valid pipeline replacement must still succeed")
 
+	component.parents = list(connected_pipeline, connected_pipeline, unknown_pipeline)
+	component.replacePipenet(connected_pipeline, replacement_pipeline)
+	TEST_ASSERT_EQUAL(component.parents[1], replacement_pipeline, "Pipeline replacement missed the first duplicate parent")
+	TEST_ASSERT_EQUAL(component.parents[2], replacement_pipeline, "Pipeline replacement missed the second duplicate parent")
+	component.parents = list(replacement_pipeline)
+
 
 #define BUILD_PIPELINE_PERF_N 3000
 /// Synthetic chain of [BUILD_PIPELINE_PERF_N] pipes. The pre-fix

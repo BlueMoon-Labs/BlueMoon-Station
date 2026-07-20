@@ -187,10 +187,9 @@
 /obj/machinery/atmospherics/components/replacePipenet(datum/pipeline/Old, datum/pipeline/New)
 	if(!parents?.len)
 		return
-	var/index = parents.Find(Old)
-	if(!index)
-		return
-	parents[index] = New
+	for(var/index in 1 to parents.len)
+		if(parents[index] == Old)
+			parents[index] = New
 
 /obj/machinery/atmospherics/components/unsafe_pressure_release(var/mob/user, var/pressures)
 	..()

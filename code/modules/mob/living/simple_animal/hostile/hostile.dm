@@ -107,6 +107,15 @@
 	if(foes)
 		foes -= source
 
+/// Clears remembered targets and grudges without changing the mob's faction behavior.
+/mob/living/simple_animal/hostile/proc/clear_hostile_aggro()
+	LoseTarget()
+	for(var/atom/movable/old_target as anything in (foes | enemies))
+		UnregisterSignal(old_target, COMSIG_PARENT_QDELETING)
+	friends.Cut()
+	foes.Cut()
+	enemies.Cut()
+
 /mob/living/simple_animal/hostile/BiologicalLife(delta_time, times_fired)
 	if(!(. = ..()))
 		walk(src, 0) //stops walking

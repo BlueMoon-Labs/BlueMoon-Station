@@ -274,7 +274,7 @@ SUBSYSTEM_DEF(tgui)
 	var/count = 0
 	if(length(user?.tgui_open_uis) == 0)
 		return count
-	for(var/datum/tgui/ui in user.tgui_open_uis)
+	for(var/datum/tgui/ui in user.tgui_open_uis.Copy())
 		if(isnull(src_object) || ui.src_object == src_object)
 			ui.process(wait * 0.1, force = 1)
 			count++
@@ -294,7 +294,7 @@ SUBSYSTEM_DEF(tgui)
 	var/count = 0
 	if(length(user?.tgui_open_uis) == 0)
 		return count
-	for(var/datum/tgui/ui in user.tgui_open_uis)
+	for(var/datum/tgui/ui in user.tgui_open_uis.Copy())
 		if(isnull(src_object) || ui.src_object == src_object)
 			ui.close(logout = logout)
 			count++
