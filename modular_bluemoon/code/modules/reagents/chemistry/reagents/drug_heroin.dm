@@ -15,6 +15,7 @@
 	id = /datum/reagent/drug/heroinhydrochloride
 	results = list(/datum/reagent/drug/heroinhydrochloride = 1)
 	required_reagents = list(/datum/reagent/medicine/morphine = 2, /datum/reagent/medicine/sal_acid = 2, /datum/reagent/acetone = 2, /datum/reagent/toxin/acid/fluacid = 0.6)
+	required_catalysts = list(/datum/reagent/consumable/ethanol = 1)
 	mix_message = "Смесь бурно реагирует, оставляя после себя мутноватый раствор молочного цвета."
 	//FermiChem vars:
 	OptimalTempMin 	= 500
