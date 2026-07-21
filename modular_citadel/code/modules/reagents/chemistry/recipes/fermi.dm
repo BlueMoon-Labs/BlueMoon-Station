@@ -252,6 +252,7 @@
 		holder.remove_reagent(type, cached_volume)
 		holder.add_reagent(/datum/reagent/fermi/PEsmaller, cached_volume)
 
+/*
 /datum/chemical_reaction/fermi/astral
 	name = "Astrogen"
 	id = /datum/reagent/fermi/astral
@@ -273,6 +274,7 @@
 	FermiChem				= TRUE
 	FermiExplode 			= TRUE
 	PurityMin 				= 0.25
+*/
 
 /datum/chemical_reaction/fermi/enthrall //check this
 	name = "MKUltra"
@@ -617,3 +619,24 @@
 	RateUpLim 		= 4
 	PurityMin 		= 0.5 //Good luck!
 	FermiChem 		= TRUE
+
+/datum/chemical_reaction/fermi/fentanyl
+	name = "fentanyl"
+	id = /datum/reagent/toxin/fentanyl
+	results = list(/datum/reagent/toxin/fentanyl = 1)
+	required_reagents = list(
+		/datum/reagent/medicine/morphine = 2,
+		/datum/reagent/medicine/sal_acid = 1,
+		/datum/reagent/phenol = 1,
+		/datum/reagent/diethylamine = 1,
+		/datum/reagent/acetone = 1,
+		/datum/reagent/toxin/acid/fluacid = 0.5,
+	)
+	mix_message = "<span class='danger'>The beaker froths violently as the opioid base cyclizes.</span>"
+	OptimalTempMin = 620
+	OptimalTempMax = 680
+	ExplodeTemp = 750
+	OptimalpHMin = 2
+	OptimalpHMax = 5
+	FermiChem = TRUE
+	PurityMin = 0.35

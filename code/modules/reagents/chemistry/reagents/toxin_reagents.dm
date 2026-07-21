@@ -531,18 +531,51 @@
 
 /datum/reagent/toxin/fentanyl
 	name = "Fentanyl"
-	description = "Fentanyl will inhibit brain function and cause toxin damage before eventually knocking out its victim."
+	description = "A potent synthetic opioid. Sedates and damages the brain at low doses; overdoses above 5u cause respiratory failure, delirium, and incoherent speech."
 	reagent_state = LIQUID
 	color = "#64916E"
 	metabolization_rate = 0.5 * REAGENTS_METABOLISM
 	toxpwr = 0
+	overdose_threshold = 5
+	var/static/list/overdose_phrases = list(
+		"Я не могу дышать",
+		"Они убьют меня. Они убьют меня",
+		"Мама! С меня хватит",
+		"Пожалуйста, пожалуйста, пожалуйста",
+		"У меня болит живот. У меня болит шея. Все болит",
+	)
 
 /datum/reagent/toxin/fentanyl/on_mob_life(mob/living/carbon/M)
-	M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 3*REM, 150)
-	if(M.toxloss <= 60)
-		M.adjustToxLoss(1*REM, 0)
+	M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 2 * REM, 150)
+	if(M.toxloss <= 40)
+		M.adjustToxLoss(0.5 * REM, 0)
+	if(current_cycle >= 12)
+		M.drowsyness += 1
 	if(current_cycle >= 18)
-		M.Sleeping(40, 0)
+		M.Sleeping(20, 0)
+	..()
+	return TRUE
+
+/datum/reagent/toxin/fentanyl/overdose_start(mob/living/M)
+	to_chat(M, "<span class='userdanger'>Грудь сжимается — воздуха не хватает, тело онемело...</span>")
+	..()
+
+/datum/reagent/toxin/fentanyl/overdose_process(mob/living/M)
+	if(prob(22))
+		M.say(pick(overdose_phrases), forced = "fentanyl overdose")
+	M.adjustOrganLoss(ORGAN_SLOT_BRAIN, 4 * REM, 150)
+	M.adjustToxLoss(1.5 * REM, 0)
+	M.losebreath += 1
+	M.drowsyness += 2
+	if(prob(25))
+		M.drop_all_held_items()
+	if(prob(20))
+		M.Jitter(3)
+		M.Dizzy(2)
+	if(current_cycle >= 6)
+		M.Sleeping(60, 0)
+	if(prob(8))
+		M.adjustOrganLoss(ORGAN_SLOT_HEART, 5, 100)
 	..()
 	return TRUE
 
