@@ -119,6 +119,7 @@ SUBSYSTEM_DEF(atoms)
 			atom_types[the_type] = TRUE
 			type_counts[the_type] = 1
 			type_times[the_type] = logged_times[I]
+		CHECK_TICK
 	#endif								// --- END ATOM STATISTICS LOGGING ---
 
 	initialized = old_initialized
@@ -246,6 +247,7 @@ SUBSYSTEM_DEF(atoms)
 			log += "    Count: [num]\n"
 			log += "    Duration: [duration / 10] seconds\n"
 			log += "    Avg per atom: [(duration / num) / 10] seconds\n"
+			CHECK_TICK
 
 	else
 		for(var/path in atom_types)
@@ -255,6 +257,7 @@ SUBSYSTEM_DEF(atoms)
 			log += "    Count: [num]\n"
 			log += "    Duration: [duration / 10] seconds\n"
 			log += "    Avg per atom: [(duration / num) / 10] seconds\n"
+			CHECK_TICK
 
 	return log
 #endif								// --- END ATOM STATISTICS LOGGING ---
