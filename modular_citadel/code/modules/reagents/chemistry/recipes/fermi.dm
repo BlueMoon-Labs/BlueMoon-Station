@@ -628,8 +628,8 @@
 		/datum/reagent/phenol = 1,
 		/datum/reagent/diethylamine = 1,
 		/datum/reagent/acetone = 1,
-		/datum/reagent/toxin/acid/fluacid = 0.5,
 	)
+	required_catalysts = list(/datum/reagent/toxin/acid/fluacid = 0.5)
 	mix_message = "<span class='danger'>The beaker froths violently as the opioid base cyclizes.</span>"
 	OptimalTempMin = 620
 	OptimalTempMax = 680
