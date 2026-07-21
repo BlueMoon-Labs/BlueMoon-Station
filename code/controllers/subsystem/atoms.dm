@@ -19,13 +19,13 @@ SUBSYSTEM_DEF(atoms)
 
 	initialized = INITIALIZATION_INSSATOMS
 
-	// --- ATOM LOADING TIMER & GROUPING ---
+	#ifdef ATOM_STATISTICS_LOGGING		// --- ATOM STATISTICS LOGGING ---
 	var/atoms_count = 0
 	var/total_duration
 	var/atom_types = list()
 	var/type_counts = list()
 	var/type_times = list()
-	// --- END ATOM LOADING TIMER & GROUPING ---
+	#endif								// --- END ATOM STATISTICS LOGGING ---
 
 /datum/controller/subsystem/atoms/Initialize(timeofday)
 	GLOB.fire_overlay.appearance_flags = RESET_COLOR
@@ -34,6 +34,11 @@ SUBSYSTEM_DEF(atoms)
 	initialized = INITIALIZATION_INNEW_MAPLOAD
 	InitializeAtoms()
 	initialized = INITIALIZATION_INNEW_REGULAR
+
+	#ifdef ATOM_STATISTICS_LOGGING		// --- ATOM STATISTICS LOGGING ---
+	Savelog(short = FALSE)
+	#endif								// --- END ATOM STATISTICS LOGGING ---
+
 	return ..()
 
 /datum/controller/subsystem/atoms/proc/InitializeAtoms(list/atoms)
@@ -46,6 +51,7 @@ SUBSYSTEM_DEF(atoms)
 	var/count
 	var/list/mapload_arg = list(TRUE)
 
+	#ifdef ATOM_STATISTICS_LOGGING			// --- ATOM STATISTICS LOGGING ---
 	var/list/logged_atoms = list()
 	var/list/logged_times = list()
 
@@ -55,6 +61,7 @@ SUBSYSTEM_DEF(atoms)
 	var/total_start_time
 
 	total_start_time = world.timeofday
+	#endif									// --- END ATOM STATISTICS LOGGING ---
 
 	if(atoms)
 		count = atoms.len
@@ -65,27 +72,36 @@ SUBSYSTEM_DEF(atoms)
 			if(isnull(A))
 				continue
 			if(!(A.flags_1 & INITIALIZED_1))
+				#ifdef ATOM_STATISTICS_LOGGING		// --- ATOM STATISTICS LOGGING ---
 				start_time = world.timeofday
 				InitAtom(A, mapload_arg)
 				end_time = world.timeofday
 				LAZYADD(logged_atoms,A)
 				LAZYADD(logged_times, end_time - start_time)
+				#else								// --- END ATOM STATISTICS LOGGING ---
+				InitAtom(A, mapload_arg)
+				#endif
 				CHECK_TICK
 	else
 		count = 0
 		for(var/atom/A in world)
 			if(!(A.flags_1 & INITIALIZED_1))
+				#ifdef ATOM_STATISTICS_LOGGING		// --- ATOM STATISTICS LOGGING ---
 				start_time = world.timeofday
 				InitAtom(A, mapload_arg)
 				end_time = world.timeofday
 				LAZYADD(logged_atoms,A)
 				LAZYADD(logged_times, end_time - start_time)
+				#else								// --- END ATOM STATISTICS LOGGING ---
+				InitAtom(A, mapload_arg)
+				#endif
 				++count
 				CHECK_TICK
 
 	testing("Initialized [count] atoms")
 	pass(count)
 
+	#ifdef ATOM_STATISTICS_LOGGING		// --- ATOM STATISTICS LOGGING ---
 	// --- ATOM LOADING TIMER & GROUPING ---
 	total_end_time = world.timeofday
 	total_duration = total_duration + (total_end_time - total_start_time)
@@ -103,6 +119,7 @@ SUBSYSTEM_DEF(atoms)
 			atom_types[the_type] = TRUE
 			type_counts[the_type] = 1
 			type_times[the_type] = logged_times[I]
+	#endif								// --- END ATOM STATISTICS LOGGING ---
 
 	initialized = old_initialized
 
@@ -213,6 +230,7 @@ SUBSYSTEM_DEF(atoms)
 		if(fails & BAD_INIT_SLEPT)
 			. += "- Slept during Initialize()\n"
 
+#ifdef ATOM_STATISTICS_LOGGING		// --- ATOM STATISTICS LOGGING ---
 /datum/controller/subsystem/atoms/proc/atom_load_log(short = FALSE)
 	var/log = ""
 	log += "=== ATOM LOADING STATISTICS ===\n"
@@ -239,6 +257,7 @@ SUBSYSTEM_DEF(atoms)
 			log += "    Avg per atom: [(duration / num) / 10] seconds\n"
 
 	return log
+#endif								// --- END ATOM STATISTICS LOGGING ---
 
 /// Prepares an atom to be deleted once the atoms SS is initialized.
 /datum/controller/subsystem/atoms/proc/prepare_deletion(atom/target)
@@ -255,7 +274,9 @@ SUBSYSTEM_DEF(atoms)
 	var/initlog = InitLog()
 	if(initlog)
 		text2file(initlog, "[GLOB.log_directory]/initialize.log")
-	// --- ATOM LOADING STATISTICS LOGGING ---
+
+	#ifdef ATOM_STATISTICS_LOGGING		// --- ATOM STATISTICS LOGGING ---
 	var/atom_log = atom_load_log(short)
 	if(atom_log)
 		text2file(atom_log, "[GLOB.log_directory]/atom_loading_stats.log")
+	#endif								// --- END ATOM STATISTICS LOGGING ---
