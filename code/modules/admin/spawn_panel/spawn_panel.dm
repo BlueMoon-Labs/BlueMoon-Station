@@ -55,9 +55,13 @@
 	return GLOB.admin_state
 
 /datum/spawnpanel/ui_assets(mob/user)
+	// The spritesheet populates spawnpanel_icon_map consumed by the JSON asset,
+	// so materialize them explicitly in that order on the first panel open.
+	var/datum/asset/spritesheet/spawnpanel/icons = get_asset_datum(/datum/asset/spritesheet/spawnpanel)
+	var/datum/asset/json/spawnpanel/atom_data = get_asset_datum(/datum/asset/json/spawnpanel)
 	return list(
-		get_asset_datum(/datum/asset/spritesheet/spawnpanel),
-		get_asset_datum(/datum/asset/json/spawnpanel),
+		icons,
+		atom_data,
 	)
 
 /datum/spawnpanel/ui_data(mob/user)

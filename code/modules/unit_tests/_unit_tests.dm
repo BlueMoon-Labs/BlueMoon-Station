@@ -148,6 +148,7 @@
 #include "spatial_grid.dm"
 #include "spawn_humans.dm"
 #include "spawn_mobs.dm"
+#include "startup_bootstrap.dm"
 // #include "species_whitelists.dm"
 // #include "stomach.dm"
 // #include "strippable.dm"
