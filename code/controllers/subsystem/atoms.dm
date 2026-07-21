@@ -19,6 +19,14 @@ SUBSYSTEM_DEF(atoms)
 
 	initialized = INITIALIZATION_INSSATOMS
 
+	// --- ATOM LOADING TIMER & GROUPING ---
+	var/atoms_count = 0
+	var/total_duration
+	var/atom_types = list()
+	var/type_counts = list()
+	var/type_times = list()
+	// --- END ATOM LOADING TIMER & GROUPING ---
+
 /datum/controller/subsystem/atoms/Initialize(timeofday)
 	GLOB.fire_overlay.appearance_flags = RESET_COLOR
 	setupGenetics() //to set the mutations' sequence
@@ -38,6 +46,16 @@ SUBSYSTEM_DEF(atoms)
 	var/count
 	var/list/mapload_arg = list(TRUE)
 
+	var/list/logged_atoms = list()
+	var/list/logged_times = list()
+
+	var/start_time
+	var/end_time
+	var/total_end_time
+	var/total_start_time
+
+	total_start_time = world.timeofday
+
 	if(atoms)
 		count = atoms.len
 		for(var/I in 1 to count)
@@ -47,18 +65,44 @@ SUBSYSTEM_DEF(atoms)
 			if(isnull(A))
 				continue
 			if(!(A.flags_1 & INITIALIZED_1))
+				start_time = world.timeofday
 				InitAtom(A, mapload_arg)
+				end_time = world.timeofday
+				LAZYADD(logged_atoms,A)
+				LAZYADD(logged_times, end_time - start_time)
 				CHECK_TICK
 	else
 		count = 0
 		for(var/atom/A in world)
 			if(!(A.flags_1 & INITIALIZED_1))
+				start_time = world.timeofday
 				InitAtom(A, mapload_arg)
+				end_time = world.timeofday
+				LAZYADD(logged_atoms,A)
+				LAZYADD(logged_times, end_time - start_time)
 				++count
 				CHECK_TICK
 
 	testing("Initialized [count] atoms")
 	pass(count)
+
+	// --- ATOM LOADING TIMER & GROUPING ---
+	total_end_time = world.timeofday
+	total_duration = total_duration + (total_end_time - total_start_time)
+
+	atoms_count = atoms_count + logged_atoms.len
+
+	for(var/I in 1 to logged_atoms.len)
+		var/atom/A = logged_atoms[I]
+		if(isnull(A)) continue
+		var/the_type = A.type
+		if(the_type in atom_types)
+			type_counts[the_type] += 1
+			type_times[the_type] += logged_times[I]
+		else
+			atom_types[the_type] = TRUE
+			type_counts[the_type] = 1
+			type_times[the_type] = logged_times[I]
 
 	initialized = old_initialized
 
@@ -169,6 +213,33 @@ SUBSYSTEM_DEF(atoms)
 		if(fails & BAD_INIT_SLEPT)
 			. += "- Slept during Initialize()\n"
 
+/datum/controller/subsystem/atoms/proc/atom_load_log(short = FALSE)
+	var/log = ""
+	log += "=== ATOM LOADING STATISTICS ===\n"
+	log += "Total atoms initialized: [atoms_count]\n"
+	log += "Total duration: [total_duration / 10] seconds\n"
+
+	if(short) //список из тысяч типов атомов, избавляемся от лишней проверки в цикле для скорости
+		for(var/path in atom_types)
+			var/num = type_counts[path]
+			var/duration = type_times[path]
+			if(duration == 0) continue
+			log += "  [path]:\n"
+			log += "    Count: [num]\n"
+			log += "    Duration: [duration / 10] seconds\n"
+			log += "    Avg per atom: [(duration / num) / 10] seconds\n"
+
+	else
+		for(var/path in atom_types)
+			var/num = type_counts[path]
+			var/duration = type_times[path]
+			log += "  [path]:\n"
+			log += "    Count: [num]\n"
+			log += "    Duration: [duration / 10] seconds\n"
+			log += "    Avg per atom: [(duration / num) / 10] seconds\n"
+
+	return log
+
 /// Prepares an atom to be deleted once the atoms SS is initialized.
 /datum/controller/subsystem/atoms/proc/prepare_deletion(atom/target)
 	if (initialized == INITIALIZATION_INNEW_REGULAR)
@@ -178,6 +249,13 @@ SUBSYSTEM_DEF(atoms)
 		queued_deletions += WEAKREF(target)
 
 /datum/controller/subsystem/atoms/Shutdown()
+	Savelog()
+
+/datum/controller/subsystem/atoms/proc/Savelog(short = FALSE)
 	var/initlog = InitLog()
 	if(initlog)
 		text2file(initlog, "[GLOB.log_directory]/initialize.log")
+	// --- ATOM LOADING STATISTICS LOGGING ---
+	var/atom_log = atom_load_log(short)
+	if(atom_log)
+		text2file(atom_log, "[GLOB.log_directory]/atom_loading_stats.log")
