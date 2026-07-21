@@ -21,7 +21,7 @@ SUBSYSTEM_DEF(atoms)
 
 	#ifdef ATOM_STATISTICS_LOGGING		// --- ATOM STATISTICS LOGGING ---
 	var/atoms_count = 0
-	var/total_duration
+	var/total_duration = 0
 	var/atom_types = list()
 	var/type_counts = list()
 	var/type_times = list()
@@ -36,7 +36,7 @@ SUBSYSTEM_DEF(atoms)
 	initialized = INITIALIZATION_INNEW_REGULAR
 
 	#ifdef ATOM_STATISTICS_LOGGING		// --- ATOM STATISTICS LOGGING ---
-	Savelog(short = FALSE)
+	Savelog()
 	#endif								// --- END ATOM STATISTICS LOGGING ---
 
 	return ..()
@@ -56,8 +56,6 @@ SUBSYSTEM_DEF(atoms)
 	var/list/logged_times = list()
 
 	var/start_time
-	var/end_time
-	var/total_end_time
 	var/total_start_time
 
 	total_start_time = world.timeofday
@@ -73,11 +71,10 @@ SUBSYSTEM_DEF(atoms)
 				continue
 			if(!(A.flags_1 & INITIALIZED_1))
 				#ifdef ATOM_STATISTICS_LOGGING		// --- ATOM STATISTICS LOGGING ---
-				start_time = world.timeofday
+				start_time = TICK_USAGE
 				InitAtom(A, mapload_arg)
-				end_time = world.timeofday
-				LAZYADD(logged_atoms,A)
-				LAZYADD(logged_times, end_time - start_time)
+				LAZYADD(logged_atoms,A.type)
+				LAZYADD(logged_times, TICK_USAGE_TO_MS(start_time))
 				#else								// --- END ATOM STATISTICS LOGGING ---
 				InitAtom(A, mapload_arg)
 				#endif
@@ -87,11 +84,10 @@ SUBSYSTEM_DEF(atoms)
 		for(var/atom/A in world)
 			if(!(A.flags_1 & INITIALIZED_1))
 				#ifdef ATOM_STATISTICS_LOGGING		// --- ATOM STATISTICS LOGGING ---
-				start_time = world.timeofday
+				start_time = TICK_USAGE
 				InitAtom(A, mapload_arg)
-				end_time = world.timeofday
-				LAZYADD(logged_atoms,A)
-				LAZYADD(logged_times, end_time - start_time)
+				LAZYADD(logged_atoms,A.type)
+				LAZYADD(logged_times, TICK_USAGE_TO_MS(start_time))
 				#else								// --- END ATOM STATISTICS LOGGING ---
 				InitAtom(A, mapload_arg)
 				#endif
@@ -103,15 +99,13 @@ SUBSYSTEM_DEF(atoms)
 
 	#ifdef ATOM_STATISTICS_LOGGING		// --- ATOM STATISTICS LOGGING ---
 	// --- ATOM LOADING TIMER & GROUPING ---
-	total_end_time = world.timeofday
-	total_duration = total_duration + (total_end_time - total_start_time)
+	total_duration += (world.timeofday - total_start_time) / 10
 
 	atoms_count = atoms_count + logged_atoms.len
 
 	for(var/I in 1 to logged_atoms.len)
-		var/atom/A = logged_atoms[I]
-		if(isnull(A)) continue
-		var/the_type = A.type
+		var/the_type = logged_atoms[I]
+		if(isnull(the_type)) continue
 		if(the_type in atom_types)
 			type_counts[the_type] += 1
 			type_times[the_type] += logged_times[I]
@@ -232,34 +226,17 @@ SUBSYSTEM_DEF(atoms)
 			. += "- Slept during Initialize()\n"
 
 #ifdef ATOM_STATISTICS_LOGGING		// --- ATOM STATISTICS LOGGING ---
-/datum/controller/subsystem/atoms/proc/atom_load_log(short = FALSE)
-	var/log = ""
-	log += "=== ATOM LOADING STATISTICS ===\n"
-	log += "Total atoms initialized: [atoms_count]\n"
-	log += "Total duration: [total_duration / 10] seconds\n"
+/datum/controller/subsystem/atoms/proc/atom_load_log()
+	var/msg = list()
+	msg += "=== ATOM LOADING STATISTICS ===\nTotal atoms initialized: [atoms_count]\nTotal duration: [total_duration] seconds\n"
 
-	if(short) //список из тысяч типов атомов, избавляемся от лишней проверки в цикле для скорости
-		for(var/path in atom_types)
-			var/num = type_counts[path]
-			var/duration = type_times[path]
-			if(duration == 0) continue
-			log += "  [path]:\n"
-			log += "    Count: [num]\n"
-			log += "    Duration: [duration / 10] seconds\n"
-			log += "    Avg per atom: [(duration / num) / 10] seconds\n"
-			CHECK_TICK
+	for(var/path in atom_types)
+		var/num = type_counts[path]
+		var/duration = type_times[path]
+		msg += "[path]:\n  Count: [num]\n  Duration: [duration] ms\n  Avg per atom: [duration / num] ms\n"
+		CHECK_TICK
 
-	else
-		for(var/path in atom_types)
-			var/num = type_counts[path]
-			var/duration = type_times[path]
-			log += "  [path]:\n"
-			log += "    Count: [num]\n"
-			log += "    Duration: [duration / 10] seconds\n"
-			log += "    Avg per atom: [(duration / num) / 10] seconds\n"
-			CHECK_TICK
-
-	return log
+	return jointext(msg, "\n")
 #endif								// --- END ATOM STATISTICS LOGGING ---
 
 /// Prepares an atom to be deleted once the atoms SS is initialized.
@@ -273,13 +250,15 @@ SUBSYSTEM_DEF(atoms)
 /datum/controller/subsystem/atoms/Shutdown()
 	Savelog()
 
-/datum/controller/subsystem/atoms/proc/Savelog(short = FALSE)
+/datum/controller/subsystem/atoms/proc/Savelog()
 	var/initlog = InitLog()
 	if(initlog)
+		fdel("[GLOB.log_directory]/initialize.log")
 		text2file(initlog, "[GLOB.log_directory]/initialize.log")
 
 	#ifdef ATOM_STATISTICS_LOGGING		// --- ATOM STATISTICS LOGGING ---
-	var/atom_log = atom_load_log(short)
+	var/atom_log = atom_load_log()
 	if(atom_log)
+		fdel("[GLOB.log_directory]/atom_loading_stats.log")
 		text2file(atom_log, "[GLOB.log_directory]/atom_loading_stats.log")
 	#endif								// --- END ATOM STATISTICS LOGGING ---
