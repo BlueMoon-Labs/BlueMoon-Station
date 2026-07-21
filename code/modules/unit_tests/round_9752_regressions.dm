@@ -58,14 +58,30 @@
 	var/mob/living/carbon/human/chimera = allocate(/mob/living/carbon/human)
 	var/ready_state = initial(chimera.revive_ready)
 	chimera.revive_ready = -1
-	chimera.revive_started_dead = TRUE
+	chimera.revive_started_stat = DEAD
 	chimera.revive_finished = world.time + 5 MINUTES
 	chimera.SetParalyzed(5 MINUTES)
+	chimera.set_stat(UNCONSCIOUS)
 
 	TEST_ASSERT(chimera.cancel_chimera_regeneration(), "Регенерация трупа не отменилась после лечения")
 	TEST_ASSERT_EQUAL(chimera.revive_ready, ready_state, "Способность не вернулась в готовое состояние")
-	TEST_ASSERT(!chimera.revive_started_dead, "Остался флаг регенерации трупа")
+	TEST_ASSERT_NULL(chimera.revive_started_stat, "Осталось исходное состояние регенерации трупа")
 	TEST_ASSERT(!chimera.IsParalyzed(), "Медицински оживлённая химера осталась парализована")
+
+/// A xenochimera that naturally heals out of critical condition should also be released.
+/datum/unit_test/xenochimera_critical_recovery_cancels_regeneration/Run()
+	var/mob/living/carbon/human/chimera = allocate(/mob/living/carbon/human)
+	var/ready_state = initial(chimera.revive_ready)
+	chimera.revive_ready = -1
+	chimera.revive_started_stat = SOFT_CRIT
+	chimera.revive_finished = world.time + 5 MINUTES
+	chimera.SetParalyzed(5 MINUTES)
+	chimera.set_stat(CONSCIOUS)
+
+	TEST_ASSERT(chimera.cancel_chimera_regeneration(), "Выход из критического состояния не отменил регенерацию")
+	TEST_ASSERT_EQUAL(chimera.revive_ready, ready_state, "После выхода из крита способность не вернулась в готовое состояние")
+	TEST_ASSERT_NULL(chimera.revive_started_stat, "После выхода из крита осталось исходное состояние регенерации")
+	TEST_ASSERT(!chimera.IsParalyzed(), "Вышедшая из крита химера осталась парализована")
 
 /// Stone form is a restraint, and breaking the statue must reset both quirk/action state.
 /datum/unit_test/gargoyle_statue_releases_all_state/Run()
