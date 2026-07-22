@@ -2390,9 +2390,9 @@
 	ckeywhitelist = list("liesbee")
 
 /datum/gear/donator/bm/cz_75_kit
-	name = "CZ-75 kit"
+	name = "CZ-75 Kits Box"
 	slot = ITEM_SLOT_BACKPACK
-	path = /obj/item/modkit/cz_75
+	path = /obj/item/storage/box/donator/bm/cz_75_box
 	ckeywhitelist = list("shizalrp", "krasler101", "kingdeaths", "vlonger")
 
 /datum/gear/donator/bm/kila_mask

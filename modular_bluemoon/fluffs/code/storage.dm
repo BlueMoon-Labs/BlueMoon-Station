@@ -321,3 +321,16 @@
 		return mutable_appearance('modular_bluemoon/fluffs/icons/obj/clothing/belts.dmi',"lapkee_stunsword")
 
 	return ..()
+
+//////////////////////////////////////////////////
+/obj/item/storage/box/donator/bm/cz_75_box
+	name = "CZ-75 Kits Box"
+	desc = "Коробка с наборами для Mk. 58 Enforcer."
+	icon_state = "secbox_xl"
+
+/obj/item/storage/box/donator/bm/cz_75_box/PopulateContents()
+	var/static/items_inside = list(
+		/obj/item/modkit/cz_75,
+		/obj/item/modkit/cz_75_auto,
+	)
+	generate_items_inside(items_inside, src)
