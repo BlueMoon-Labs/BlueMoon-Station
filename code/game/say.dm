@@ -65,18 +65,25 @@ GLOBAL_LIST_INIT(freqtospan, list(
 		var/atom/movable/AM = _AM
 		AM.Hear(rendered, src, message_language, message, , spans, message_mode, source)
 	if(SEND_SIGNAL(src, COMSIG_MOVABLE_QUEUE_BARK, hearers, args) || vocal_bark || vocal_bark_id)
+		// Барк-таймеры ставим только ради слушателей с клиентом и включённым SOUND_BARK:
+		// анонс по всем ньюскастерам станции ставил 500+ таймеров одним тиком в пустые
+		// комнаты (TIMER BURST раунда 9746), а bark() всё равно играет звук только клиентам.
+		var/list/bark_hearers = list()
 		for(var/mob/M in hearers)
 			if(!M.client)
 				continue
 			if(!(M.client.prefs.toggles & SOUND_BARK))
-				hearers -= M
+				continue
+			bark_hearers += M
+		if(!length(bark_hearers))
+			return
 		var/barks = min(round((LAZYLEN(message) / vocal_speed)) + 1, BARK_MAX_BARKS)
 		var/total_delay
 		vocal_current_bark = world.time //this is juuuuust random enough to reliably be unique every time send_speech() is called, in most scenarios
 		for(var/i in 1 to barks)
 			if(total_delay > BARK_MAX_TIME)
 				break
-			addtimer(CALLBACK(src, PROC_REF(bark), hearers, range, vocal_volume, BARK_DO_VARY(vocal_pitch, vocal_pitch_range), vocal_current_bark), total_delay)
+			addtimer(CALLBACK(src, PROC_REF(bark), bark_hearers, range, vocal_volume, BARK_DO_VARY(vocal_pitch, vocal_pitch_range), vocal_current_bark), total_delay)
 			total_delay += rand(DS2TICKS(vocal_speed / BARK_SPEED_BASELINE), DS2TICKS(vocal_speed / BARK_SPEED_BASELINE) + DS2TICKS(vocal_speed / BARK_SPEED_BASELINE)) TICKS
 
 /atom/movable/proc/compose_message(atom/movable/speaker, datum/language/message_language, raw_message, radio_freq, list/spans, message_mode, face_name = FALSE, atom/movable/source)

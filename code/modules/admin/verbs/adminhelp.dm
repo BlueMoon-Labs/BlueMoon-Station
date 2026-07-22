@@ -243,6 +243,8 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 /datum/admin_help/proc/FullMonty(ref_src)
 	if(!ref_src)
 		ref_src = "[REF(src)]"
+	if(!initiator?.mob) // тикет переживает дисконнект автора
+		return ""
 	. = ADMIN_FULLMONTY_NONAME(initiator.mob)
 
 /datum/admin_help/proc/TicketVerbs(ref_src)
@@ -300,7 +302,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 
 	//show it to the person adminhelping too
 	to_chat(initiator, "<span class='adminnotice'>PM to-<b>Admins</b>: <span class='linkify'>[encoded_msg]</span></span>")
-	SSblackbox.LogAhelp(id, "Ticket Opened", msg, null, initiator.ckey) //BLUEMOON EDIT, enable ticket logging
+	SSblackbox.LogAhelp(id, "Ticket Opened", msg, null, initiator_ckey) //BLUEMOON EDIT, enable ticket logging; initiator_ckey - клиент мог отвалиться
 
 //Reopen a closed ticket
 /datum/admin_help/proc/Reopen()

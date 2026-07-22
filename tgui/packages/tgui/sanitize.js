@@ -75,6 +75,7 @@ export const sanitizeText = (
   // kill href links or such
   if (advHtml) {
     tags = tags.concat(advTags);
+    forbidAttr = [];
   }
 
   return DOMPurify.sanitize(input, {

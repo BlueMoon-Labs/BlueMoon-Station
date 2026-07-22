@@ -6,7 +6,7 @@
 "cupteazee", "nopeingeneer", "silyamg", "lomodno", "valsons", "nyctealust", "abrikos", \
 "spoopyman228", "stasdvrz", "shizalrp", "tblkba", "dragon9090", "avtobuspng", "ninjapikachushka", \
 "ailhate", "kingdeaths", "mentaleater", "lindaastereih", "gevaitrouble", "angelnedemon", "fryktik", "ivanokio", \
-"blatoff", "regiska" \
+"blatoff", "regiska", "lander231" \
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////Слот головы.
@@ -715,19 +715,19 @@
 	name = "First Catcrin's tactical gasmask"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/mask/gas/syndicate/cool_version/catcrin_combatmask_one
-	ckeywhitelist = list(CATCRIN_GANG)
+	ckeywhitelist = list(CATCRIN_GANG, "borisovych")
 
 /datum/gear/donator/bm/catcrin_combatmask_two
 	name = "Second Catcrin's tactical gasmask"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/mask/gas/syndicate/cool_version/catcrin_combatmask_two
-	ckeywhitelist = list(CATCRIN_GANG, "ghos7ik")
+	ckeywhitelist = list(CATCRIN_GANG, "ghos7ik", "borisovych")
 
 /datum/gear/donator/bm/catcrin_combatmask_tree
 	name = "Thrid Catcrin's tactical gasmask"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/mask/gas/syndicate/cool_version/catcrin_combatmask_three
-	ckeywhitelist = list(CATCRIN_GANG)
+	ckeywhitelist = list(CATCRIN_GANG, "borisovych")
 
 /datum/gear/donator/bm/catcrin_kit
 	name = "Catcrin kit"

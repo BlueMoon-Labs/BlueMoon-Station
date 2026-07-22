@@ -54,6 +54,9 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 	/// This test validates production-map content and is excluded from the
 	/// LOWMEMORYMODE hermetic profile. The full-map profile runs only these tests.
 	var/requires_full_map = FALSE
+	/// Подстроки рантаймов, которые тест ОЖИДАЕТ (канарейки-гварды со stack_trace):
+	/// совпавший рантайм не проваливает тест. Матч по findtext с текстом ошибки.
+	var/list/allowed_runtime_patterns
 
 	var/static/datum/turf_reservation/reservation
 
@@ -101,6 +104,13 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 
 /datum/unit_test/proc/Run()
 	TEST_FAIL("Run() called parent or not implemented")
+
+/// TRUE = этот рантайм ожидаем тестом (проверка канарейки) и не должен его валить.
+/datum/unit_test/proc/runtime_allowed(exception/E)
+	for(var/pattern in allowed_runtime_patterns)
+		if(findtext("[E]", pattern))
+			return TRUE
+	return FALSE
 
 /datum/unit_test/proc/Fail(reason = "No reason", file = "OUTDATED_TEST", line = 1)
 	succeeded = FALSE

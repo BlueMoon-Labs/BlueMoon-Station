@@ -28,6 +28,8 @@
 	// else if(ckey)
 	// 	stack_trace("Mob without client but with associated ckey, [ckey], has been deleted.")
 	unset_machine()
+	SStgui.close_user_uis(src)
+	remove_from_all_current_player_lists()
 	remove_from_mob_list()
 	remove_from_dead_mob_list()
 	remove_from_alive_mob_list()

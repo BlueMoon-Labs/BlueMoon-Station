@@ -64,6 +64,15 @@ other types of metals and chemistry for reagents).
 			temp_list[i] = amount
 	materials = temp_list
 
+/// Whether a design disk can expose this design to an autolathe.
+/datum/design/proc/is_autolathe_compatible()
+	if(length(reagents_list))
+		return FALSE
+	for(var/material in materials)
+		if(!istype(material, /datum/material/iron) && !istype(material, /datum/material/glass))
+			return FALSE
+	return TRUE
+
 /datum/design/proc/icon_html(client/user)
 	var/datum/asset/spritesheet/sheet = get_asset_datum(/datum/asset/spritesheet/research_designs)
 	if(!sheet)

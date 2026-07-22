@@ -23,16 +23,16 @@ GLOBAL_DATUM_INIT(mentor_tickets, /datum/mentor_ticket_manager, new)
 
 /datum/mentor_ticket_manager/proc/TicketsByCKey(ckey)
 	. = list()
-	for(var/I in active_tickets + closed_tickets + resolved_tickets)
-		var/datum/mentor_ticket/MT = I
-		if(MT.initiator_ckey == ckey)
-			. += MT
+	for(var/list/ticket_list as anything in list(active_tickets, closed_tickets, resolved_tickets))
+		for(var/datum/mentor_ticket/ticket as anything in ticket_list)
+			if(ticket.initiator_ckey == ckey)
+				. += ticket
 
 /datum/mentor_ticket_manager/proc/TicketByID(id)
-	for(var/I in active_tickets + closed_tickets + resolved_tickets)
-		var/datum/mentor_ticket/MT = I
-		if(MT.id == id)
-			return MT
+	for(var/list/ticket_list as anything in list(active_tickets, closed_tickets, resolved_tickets))
+		for(var/datum/mentor_ticket/ticket as anything in ticket_list)
+			if(ticket.id == id)
+				return ticket
 
 /datum/mentor_ticket_manager/proc/ListInsert(datum/mentor_ticket/new_ticket)
 	var/list/ticket_list
@@ -88,7 +88,7 @@ GLOBAL_DATUM_INIT(mentor_tickets, /datum/mentor_ticket_manager, new)
 	id = ++ticket_counter
 	opened_at = world.time
 
-	name = length_char(msg) > 27 ? copytext_char(html_encode(msg), 1, 28) + "..." : html_encode(msg)
+	name = length_char(msg) > 27 ? html_encode(copytext_char(msg, 1, 28)) + "..." : html_encode(msg)
 
 	initiator = C
 	initiator_ckey = initiator.ckey
@@ -105,11 +105,8 @@ GLOBAL_DATUM_INIT(mentor_tickets, /datum/mentor_ticket_manager, new)
 		MessageNoRecipient(msg)
 		log_admin_private("Mentor Ticket #[id]: [key_name(initiator)]: [name]")
 
-	var/list/mentors_online = list()
-	for(var/client/X in GLOB.mentors | GLOB.admins)
-		mentors_online += X
-	if(mentors_online.len <= 0)
-		to_chat(C, "<span class='notice'>Менторов онлайн нет, ваш вопрос отправлен администраторам.</span>")
+	if(!length(mentor_traffic_recipients()))
+		to_chat(C, "<span class='notice'>Сейчас нет менторов и администраторов онлайн. Ваш вопрос сохранён и будет рассмотрен, как только кто-то из них появится.</span>")
 
 	GLOB.mentor_tickets.active_tickets += src
 
@@ -145,7 +142,9 @@ GLOBAL_DATUM_INIT(mentor_tickets, /datum/mentor_ticket_manager, new)
 	mentor_msg += "[LinkedReplyName(ref_src)]:</b> <span class='linkify'>[keywords_lookup(msg)]</span><br></span>"
 	AddInteraction("<font color='#a855f7'>[LinkedReplyName(ref_src)]: [encoded_msg]</font>")
 
-	for(var/client/X in GLOB.mentors | GLOB.admins)
+	// mentor_traffic_recipients(), а не GLOB.mentors | GLOB.admins: нажавшие
+	// Dementor не должны получать ментор-тикеты (для админов список не фильтр).
+	for(var/client/X in mentor_traffic_recipients())
 		if(X.prefs.toggles & SOUND_ADMINHELP)
 			SEND_SOUND(X, sound('sound/effects/adminhelp.ogg'))
 		to_chat(X, examine_block(mentor_msg))

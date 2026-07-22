@@ -263,6 +263,12 @@
 /atom/movable/proc/doMove(atom/destination)
 	. = FALSE
 	if(destination)
+		// Возврат qdel-нутого мувера в мир = вечный пин ссылкой из contents турфа
+		// (класс "post-qdel forceMove" по уликам warnfail раунда 9746: обсерверы,
+		// оффхенды). Отказываем и именуем виновника - стек тут синхронный.
+		if(QDELETED(src))
+			stack_trace("doMove qdel-нутого [type] в [destination] ([destination.type])")
+			return
 		if(pulledby)
 			pulledby.stop_pulling()
 		var/atom/oldloc = loc

@@ -3081,7 +3081,7 @@
 		var/datum/db_query/query_remove_mentor = SSdbcore.NewQuery("DELETE FROM [format_table_name("mentor")] WHERE ckey = '[ckey]'")
 		if(!query_remove_mentor.warn_execute())
 			return
-		var/datum/db_query/query_add_admin_log = SSdbcore.NewQuery("INSERT INTO `[format_table_name("admin_log")]` (`id` ,`datetime` ,`adminckey` ,`adminip` ,`log` ) VALUES (NULL , NOW( ) , '[usr.ckey]', '[usr.client.address]', 'Removed mentor [ckey]');")
+		var/datum/db_query/query_add_admin_log = SSdbcore.NewQuery("INSERT INTO [format_table_name("admin_log")] (`id` ,`datetime` ,`adminckey` ,`adminip` ,`log` ) VALUES (NULL , NOW( ) , '[usr.ckey]', '[usr.client.address]', 'Removed mentor [ckey]');")
 		if(!query_add_admin_log.warn_execute())
 			return
 	else
