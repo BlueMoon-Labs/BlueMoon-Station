@@ -176,8 +176,11 @@
 	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD; Существовал в тимбазе до удаления.
 	required_candidates = 1
 	weight = 4 //BLUEMOON CHANGES
-	cost = 10
-	intensity = 15
+	// Тот же медленный еретик, что и мидраунд-пробуждение (см. crew_conversion/heretic),
+	// только с латеджойна: до первых жертв полчаса-час тихого фарма влияний,
+	// поэтому цена и вес в нагрузке директора ниже агента.
+	cost = 6
+	intensity = 8
 	family = "heretic" // с мидраунд-пробуждением: не подряд
 	requirements = list(101,101,101,50,40,20,20,15,10,10)
 	repeatable = TRUE
