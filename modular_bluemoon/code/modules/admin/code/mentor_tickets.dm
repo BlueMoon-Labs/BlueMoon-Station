@@ -1,9 +1,5 @@
 GLOBAL_DATUM_INIT(mentor_tickets, /datum/mentor_ticket_manager, new)
 
-#define MENTOR_TICKET_ACTIVE 1
-#define MENTOR_TICKET_CLOSED 2
-#define MENTOR_TICKET_RESOLVED 3
-
 /datum/mentor_ticket_manager
 	var/list/active_tickets = list()
 	var/list/closed_tickets = list()
