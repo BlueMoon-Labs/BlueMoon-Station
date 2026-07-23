@@ -58,6 +58,7 @@
 
 // Прок для корректной замены деталей у оружия, не перезаписывайте его
 /obj/item/modkit/proc/gun_to_gun_replace(obj/item/gun/target, obj/item/gun/result)
+	SHOULD_CALL_PARENT
 	if(!istype(target) || !istype(result))
 		return
 
@@ -1478,7 +1479,7 @@
 	DONATE_ITEM_TOOLTIP_PARENT
 	CZ75_COMMON
 	name = "\improper CZ-75"
-	
+
 /obj/item/gun/ballistic/automatic/pistol/enforcerred/cz_75_auto
 	DONATE_ITEM_TOOLTIP_PARENT
 	CZ75_COMMON
