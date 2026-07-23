@@ -209,12 +209,36 @@
 
 /datum/unit_test/gc_rewrite_base/proc/run_gc_fire_cycles(cycles = 1, yield_for_gc = FALSE)
 	if(yield_for_gc)
-		SSgarbage.state = SS_IDLE // Prevent MC from firing SSgarbage during sleep
-		sleep(20) // Let BYOND process pending refcount deletions
+		SSgarbage.state = SS_IDLE // Prevent MC from racing the test barrier
+		wait_for_pending_refcount_deletes()
 	for (var/i in 1 to cycles)
 		SSgarbage.state = SS_RUNNING
 		SSgarbage.fire()
 	SSgarbage.state = SS_IDLE
+
+/// Wait until BYOND has released every datum currently queued by the isolated
+/// GC test. Clean objects normally disappear after one scheduler tick; a real
+/// holder is allowed the same two-second ceiling as the old unconditional
+/// sleep and is then passed to SSgarbage so the test still records the failure.
+/datum/unit_test/gc_rewrite_base/proc/wait_for_pending_refcount_deletes(max_wait = 20)
+	var/tick_delay = max(world.tick_lag, 1)
+	var/max_attempts = CEILING(max_wait / tick_delay, 1)
+	for(var/attempt in 1 to max_attempts)
+		sleep(tick_delay)
+		if(!has_live_softcheck_entries())
+			return
+
+/// Uses the same queued REF strings SSgarbage itself resolves. Kept in a
+/// separate proc so the temporary locate() reference is released before the
+/// barrier yields again.
+/datum/unit_test/gc_rewrite_base/proc/has_live_softcheck_entries()
+	var/list/refs = SSgarbage.queue_refs[GC_QUEUE_SOFTCHECK]
+	var/head = SSgarbage.queue_heads[GC_QUEUE_SOFTCHECK]
+	for(var/index in head to length(refs))
+		var/ref_id = refs[index]
+		if(ref_id && locate(ref_id))
+			return TRUE
+	return FALSE
 
 /// ВНИМАНИЕ, фантомные держатели: BYOND VM пинит объекты во временных слотах фрейма
 /// прока (возврат allocate(), чтение var через объект, инлайновый list(obj)). Пока жив

@@ -4775,15 +4775,24 @@
 "aDH" = (
 /obj/structure/table,
 /obj/item/paper_bin{
-	pixel_x = 1;
-	pixel_y = 9
+	pixel_x = 5;
+	pixel_y = 10
 	},
 /obj/item/pen,
-/obj/item/folder/white,
-/obj/item/pen/fountain,
+/obj/item/folder/white{
+	pixel_x = -10;
+	pixel_y = 12
+	},
+/obj/item/pen/fountain{
+	pixel_x = -4
+	},
 /obj/item/stamp/rd{
-	pixel_x = 3;
+	pixel_x = -12;
 	pixel_y = -2
+	},
+/obj/structure/transmitter/command{
+	pixel_x = 8;
+	pixel_y = -3
 	},
 /turf/open/floor/carpet/purple,
 /area/command/heads_quarters/rd)
@@ -10911,7 +10920,7 @@
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -27;
-	pixel_y = -27;
+	pixel_y = -27
 	},
 /obj/machinery/light/small{
 	dir = 8
@@ -11065,6 +11074,7 @@
 	pixel_x = -6;
 	pixel_y = 8
 	},
+/obj/machinery/recharger,
 /turf/open/floor/carpet/royalblue,
 /area/command/heads_quarters/captain)
 "bdk" = (
@@ -11391,9 +11401,12 @@
 /area/command/heads_quarters/captain)
 "bek" = (
 /obj/structure/table/wood,
-/obj/machinery/recharger,
 /obj/machinery/light{
 	dir = 8
+	},
+/obj/machinery/fax{
+	fax_name = "Captain's office";
+	name = "Captain's fax"
 	},
 /turf/open/floor/wood/wood_parquet,
 /area/command/heads_quarters/captain)
@@ -17088,6 +17101,10 @@
 	pixel_y = 5;
 	req_access_txt = "47"
 	},
+/obj/structure/transmitter/command{
+	pixel_x = 8;
+	pixel_y = -3
+	},
 /turf/open/floor/carpet/purple,
 /area/command/heads_quarters/rd)
 "byp" = (
@@ -18106,7 +18123,11 @@
 /area/command/heads_quarters/rd)
 "bCk" = (
 /obj/structure/table,
-/obj/structure/transmitter/command,
+/obj/machinery/fax{
+	fax_name = "Office of the Director of Research";
+	name = "Fax machine of the Director of Research";
+	pixel_y = -4
+	},
 /turf/open/floor/carpet/purple,
 /area/command/heads_quarters/rd)
 "bCl" = (
@@ -25863,6 +25884,22 @@
 /obj/structure/transmitter/command{
 	pixel_x = -8
 	},
+/obj/item/cartridge/atmos{
+	pixel_x = -3;
+	pixel_y = 12
+	},
+/obj/item/cartridge/engineering{
+	pixel_x = 13;
+	pixel_y = 12
+	},
+/obj/item/cartridge/engineering{
+	pixel_y = 12;
+	pixel_x = 6
+	},
+/obj/item/cartridge/engineering{
+	pixel_x = -12;
+	pixel_y = 12
+	},
 /turf/open/floor/carpet/orange,
 /area/command/heads_quarters/ce)
 "cdo" = (
@@ -28206,23 +28243,16 @@
 /area/command/heads_quarters/ce)
 "cjY" = (
 /obj/structure/table/reinforced,
-/obj/item/cartridge/engineering{
-	pixel_x = 4;
-	pixel_y = 5
-	},
-/obj/item/cartridge/engineering{
-	pixel_x = -3;
-	pixel_y = 2
-	},
-/obj/item/cartridge/engineering{
-	pixel_x = 3
-	},
-/obj/item/cartridge/atmos,
 /obj/structure/disposalpipe/segment{
 	dir = 9
 	},
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
 	dir = 4
+	},
+/obj/machinery/fax{
+	fax_name = "Chief Engineer office";
+	name = "Chief Engineer Fax Machine";
+	pixel_y = 6
 	},
 /turf/open/floor/carpet/orange,
 /area/command/heads_quarters/ce)
@@ -32705,7 +32735,6 @@
 /area/maintenance/disposal)
 "cAJ" = (
 /obj/structure/grille,
-/obj/structure/grille,
 /turf/open/floor/plating,
 /area/maintenance/port/aft)
 "cAK" = (
@@ -36466,6 +36495,11 @@
 /obj/structure/cable{
 	icon_state = "0-8"
 	},
+/obj/structure/table/wood,
+/obj/machinery/fax{
+	fax_name = "NTR Fax";
+	name = "NTR Fax"
+	},
 /turf/open/floor/wood/wood_tiled,
 /area/command/heads_quarters/ntr)
 "dDF" = (
@@ -39442,9 +39476,12 @@
 /area/maintenance/aft)
 "eRl" = (
 /obj/structure/table/wood,
-/obj/item/taperecorder,
 /obj/effect/turf_decal/siding/dark_red{
 	dir = 1
+	},
+/obj/machinery/fax{
+	fax_name = "Head of Security office";
+	name = "Head of Security Fax Machine"
 	},
 /turf/open/floor/wood/wood_parquet,
 /area/command/heads_quarters/hos)
@@ -46434,7 +46471,7 @@
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -27;
-	pixel_y = -27;
+	pixel_y = -27
 	},
 /obj/machinery/flasher{
 	id = "Cell 2";
@@ -49326,7 +49363,7 @@
 	},
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_x = 30;
+	pixel_x = 30
 	},
 /turf/open/floor/plasteel/cafeteria,
 /area/security/prison/rec)
@@ -55376,6 +55413,7 @@
 /obj/effect/turf_decal/siding/thinplating_new/dark{
 	dir = 4
 	},
+/obj/item/taperecorder,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/command/heads_quarters/hos)
 "lmU" = (
@@ -66785,7 +66823,7 @@
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -27;
-	pixel_y = -27;
+	pixel_y = -27
 	},
 /obj/machinery/flasher{
 	id = "Cell 3";
@@ -80419,9 +80457,10 @@
 /obj/effect/turf_decal/siding/thinplating/dark{
 	dir = 1
 	},
-/obj/structure/transmitter/mounted{
-	dir = 8;
-	pixel_x = 15
+/obj/structure/table/wood,
+/obj/machinery/fax{
+	fax_name = "Head of Personal office";
+	name = "Head of Personal fax"
 	},
 /turf/open/floor/carpet/blue,
 /area/command/heads_quarters/hop)
@@ -85629,7 +85668,7 @@
 	},
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_x = 30;
+	pixel_x = 30
 	},
 /turf/open/floor/wood/wood_large,
 /area/security/prison/rec)

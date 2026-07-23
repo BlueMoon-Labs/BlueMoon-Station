@@ -38,6 +38,7 @@
 
 	START_PROCESSING(SSobj, src)
 	next_sync = world.time + NANITE_PUMP_SYNC_DELAY
+	sync_nanites()
 	return TRUE
 
 /obj/item/implant/nanite_pump/removed(mob/living/source, silent, special)
@@ -51,10 +52,7 @@
 
 /obj/item/implant/nanite_pump/activate()
 	. = ..()
-	if(set_program_cloud)
-		to_chat(imp_in, "<span class='warning'>Невозможно установить новое программное обеспечение</span>")
-		return
-	var/cloud_id = tgui_input_number(imp_in, "Установите облако с которого будут скачены программы в имплант. Это можно сделать ОДИН РАЗ", "ID облака", 0, 100, 0)
+	var/cloud_id = tgui_input_number(imp_in, "Установите облако с которого будут скачены программы в имплант. Это можно сделать ОДИН РАЗ", "ID облака", set_program_cloud, 100, 0)
 	if(!isnum(cloud_id))
 		return
 	set_programs_pump(cloud_id, imp_in)
@@ -110,7 +108,7 @@
         return TRUE
     return imp_in.AddComponent(/datum/component/nanites/nanite_pump, 1) != COMPONENT_INCOMPATIBLE
 
-/obj/item/implant/nanite_pump/proc/set_programs_pump(cloud_id, mob/user)
+/obj/item/implant/nanite_pump/proc/set_programs_pump(cloud_id, mob/user, force = FALSE)
 	if(cloud_id)
 		var/datum/nanite_cloud_backup/backup = SSnanites.get_cloud_backup(cloud_id)
 		if(!backup)
@@ -124,17 +122,20 @@
 				var/datum/action/A = X
 				A.Remove(imp_in)
 
-		activated = FALSE
+		if(!force)
+			activated = FALSE
 
 #undef NANITE_PUMP_SYNC_DELAY
 
-// /obj/item/implant/nanite_pump/attack_self(mob/user)
-// 	. = ..()
-// 	if(set_program_cloud)
-// 		to_chat(user, "<span class='warning'>Невозможно установить новое программное обеспечение</span>")
+/obj/item/implant/nanite_pump/attack_self(mob/user)
+	. = ..()
+	if(set_program_cloud)
+		to_chat(user, "<span class='warning'>Невозможно установить новое программное обеспечение</span>")
 
-// 	var/cloud_id = input(user, "Установите облако с которого будут скачены программы в имплант. Это можно сделать ОДИН РАЗ", "ID облака") as num|null
-// 	set_programs_pump(cloud_id, user)
+	var/cloud_id = tgui_input_number(user, "Установите облако с которого будут скачены программы в имплант. Это можно сделать ОДИН РАЗ (При внедрении в тело при таком раскладе остается возможность перевыбора)", "ID облака", 0, 100, 0)
+	if(!isnum(cloud_id))
+		return
+	set_programs_pump(cloud_id, user, TRUE)
 
 /obj/item/implantcase/nanite_pump
 	name = "implant case - 'Nanite Pump'"

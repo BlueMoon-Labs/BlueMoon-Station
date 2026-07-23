@@ -49710,7 +49710,6 @@
 /area/maintenance/port/fore)
 "fTY" = (
 /obj/structure/grille,
-/obj/structure/grille,
 /obj/structure/disposalpipe/segment{
 	dir = 4
 	},
@@ -57650,7 +57649,6 @@
 /area/commons/dorms)
 "lKl" = (
 /obj/structure/lattice,
-/obj/structure/grille,
 /obj/structure/grille,
 /turf/open/space/basic,
 /area/space/nearstation)

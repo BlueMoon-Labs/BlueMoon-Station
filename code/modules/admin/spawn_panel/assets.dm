@@ -2,6 +2,7 @@ GLOBAL_LIST_EMPTY(spawnpanel_icon_map) // "[typepath]" → spritesheet imgid str
 
 /datum/asset/spritesheet/spawnpanel
 	name = "spawnpanel"
+	load_on_startup = FALSE
 
 /datum/asset/spritesheet/spawnpanel/ModifyInserted(icon/pre_asset)
 	if(pre_asset.Width() != 32 || pre_asset.Height() != 32)
@@ -102,6 +103,7 @@ GLOBAL_LIST_EMPTY(spawnpanel_icon_map) // "[typepath]" → spritesheet imgid str
 
 /datum/asset/json/spawnpanel
 	name = "spawnpanel_atom_data"
+	load_on_startup = FALSE
 
 /datum/asset/json/spawnpanel/generate()
 	var/list/data = list()

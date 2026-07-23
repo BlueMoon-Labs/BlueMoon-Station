@@ -51,6 +51,9 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 	/// cleaned up with qdel(force = TRUE) so they don't leak into subsequent tests
 	var/list/allocated_force_qdel
 	var/list/fail_reasons
+	/// This test validates production-map content and is excluded from the
+	/// LOWMEMORYMODE hermetic profile. The full-map profile runs only these tests.
+	var/requires_full_map = FALSE
 	/// Подстроки рантаймов, которые тест ОЖИДАЕТ (канарейки-гварды со stack_trace):
 	/// совпавший рантайм не проваливает тест. Матч по findtext с текстом ошибки.
 	var/list/allowed_runtime_patterns
@@ -253,16 +256,35 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 
 	var/list/tests_to_run = subtypesof(/datum/unit_test)
 	var/list/focused_tests = list()
+	var/list/test_results = list()
 	for (var/_test_to_run in tests_to_run)
 		var/datum/unit_test/test_to_run = _test_to_run
 		if (initial(test_to_run.focus))
 			focused_tests += test_to_run
 	if(length(focused_tests))
 		tests_to_run = focused_tests
+	else
+		var/list/profile_tests = list()
+		for(var/_test_to_run in tests_to_run)
+			var/datum/unit_test/test_to_run = _test_to_run
+			var/include_test = TRUE
+			#ifdef UNIT_TEST_PROFILE_HERMETIC
+			include_test = !initial(test_to_run.requires_full_map)
+			#endif
+			#ifdef UNIT_TEST_PROFILE_FULL_MAP
+			include_test = initial(test_to_run.requires_full_map)
+			#endif
+			if(include_test)
+				profile_tests += test_to_run
+			else
+				test_results[test_to_run] = list(
+					"status" = UNIT_TEST_SKIPPED,
+					"message" = "Skipped by unit test profile",
+					"name" = test_to_run,
+				)
+		tests_to_run = profile_tests
 
 	tests_to_run = sortTim(tests_to_run, GLOBAL_PROC_REF(cmp_unit_test_priority))
-
-	var/list/test_results = list()
 
 	for(var/unit_path in tests_to_run)
 		CHECK_TICK //We check tick first because the unit test we run last may be so expensive that checking tick will lock up this loop forever
@@ -283,6 +305,19 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 	//We have to call this manually because del_text can preceed us, and SSticker doesn't fire in the post game
 	SSticker.ready_for_reboot = TRUE
 	SSticker.standard_reboot()
+
+/// Roundstart callbacks run before ticker flips to PLAYING and PostSetup is
+/// asynchronous. Poll those explicit readiness conditions instead of sleeping
+/// an arbitrary ten seconds before every test run.
+/proc/RunUnitTestsWhenReady(deadline)
+	if(isnull(deadline))
+		deadline = world.time + 2 MINUTES
+	if(world.time > deadline)
+		CRASH("Unit test round bootstrap did not finish ticker PostSetup within two minutes")
+	if(!SSticker.HasRoundStarted() || !SSticker.setup_done)
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(RunUnitTestsWhenReady), deadline), world.tick_lag)
+		return
+	RunUnitTests()
 
 // /datum/map_template/unit_tests
 // 	name = "Unit Tests Zone"
