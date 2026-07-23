@@ -6,6 +6,7 @@
 	weight = 10
 	category = EVENT_CATEGORY_ANOMALIES
 	severity = DIRECTOR_SEVERITY_MODERATE // одиночный мирный моб, не тянет на MAJOR из категории
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_LIGHT) // только динамик: в Extended охотник за экипажем неуместен
 
 /datum/round_event/floor_cluwne/start()
 	var/list/spawn_locs = list()
