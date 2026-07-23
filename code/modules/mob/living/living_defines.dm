@@ -11,6 +11,7 @@
 	tooltips = TRUE
 
 	var/last_click_move = 0 // Stores the previous next_move value.
+	var/shotgun_pellet_impact = 0 // BLUEMOON ADD - накопленный кинетический удар пеллетов по броне для Daze-эффекта
 
 	var/resize = 1 //Badminnery resize
 	var/lastattacker = null

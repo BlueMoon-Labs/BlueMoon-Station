@@ -108,7 +108,7 @@
 		// Bucket 2: BRC% — мультипликативная защита, только для BULLET
 		var/armor_roll = armor * rand(70, 130) * 0.01
 
-		// Минимальный урон 15 для расчёта — защита от слишком лёгкого поглощения дроби
+		// Минимальный урон 15 для расчёта — защита от слишком лёгкого поглощения
 		var/effective_damage_for_calc = max(P.damage, 15.0)
 
 		// Шанс полного поглощения пули бронёй
@@ -116,9 +116,7 @@
 		if(P.flag == BULLET)
 			absorption_chance = (armor_roll / effective_damage_for_calc) * 30
 			absorption_chance = clamp(absorption_chance, 0, 85)
-			// AP снижает шанс поглощения
 			absorption_chance *= (1 - min(P.armour_penetration * 0.01, 0.9))
-			// HP увеличивает шанс поглощения — броня лучше держит экспансивные пули
 			if(P.armour_penetration < 0)
 				absorption_chance *= (1 + min(abs(P.armour_penetration) * 0.005, 0.3))
 
@@ -134,17 +132,17 @@
 		totaldamage = totaldamage * armor_factor * brc_factor
 		var/absorbed_damage = P.damage - totaldamage
 
-		// Проверка полного поглощения — либо математически либо через шанс
+		// Проверка полного поглощения
 		var/fully_absorbed = (totaldamage < 1.0)
 		if(!fully_absorbed && P.flag == BULLET && prob(absorption_chance))
 			fully_absorbed = TRUE
 			absorbed_damage = P.damage
 
-		// BLUEMOON ADD START - overkill_ratio используется и для proc-шанса стамины, и для масштабирования заброневой травмы
-		// Насколько броня "с запасом" гасит этот конкретный выстрел. 1.0 = впритык, выше = с запасом
+		// overkill_ratio — насколько броня "с запасом" погасила выстрел
+		// 1.0 = впритык, выше = с запасом. Используется в обоих ветках.
 		var/overkill_ratio = armor_roll / effective_damage_for_calc
 
-		// Получаем bodypart для оценки текущего состояния зоны (заброневая травма масштабируется от него)
+		// Получаем bodypart для zone_damage_fraction
 		var/obj/item/bodypart/hit_bodypart = null
 		var/zone_damage_fraction = 0
 		if(ishuman(src))
@@ -152,12 +150,10 @@
 			hit_bodypart = H.get_bodypart(check_zone(def_zone))
 			if(hit_bodypart && hit_bodypart.max_damage > 0)
 				zone_damage_fraction = clamp(hit_bodypart.get_damage() / hit_bodypart.max_damage, 0, 1)
-		// BLUEMOON ADD END
 
 		if(fully_absorbed && P.flag == BULLET)
-			// BLUEMOON EDIT START - фикс "парадокса тяжёлой брони": двойное демпфирование.
-			// И ШАНС stamina-тика, И его СИЛА падают с overkill_ratio — тяжёлая броня с запасом не просто реже
-			// толкает носителя, но и толкает слабее, когда всё-таки срабатывает (энергия гасится в материале, а не в теле)
+			// BLUEMOON EDIT START - фикс парадокса тяжёлой брони: двойное демпфирование.
+			// Шанс И сила stamina-тика падают с overkill_ratio.
 			var/stamina_proc_chance = clamp(95 - (overkill_ratio * 35), 15, 95)
 			var/stamina_kinetic_mult = clamp(0.30 - (overkill_ratio * 0.05), 0.08, 0.30)
 			if(prob(stamina_proc_chance))
@@ -166,57 +162,79 @@
 					apply_damage(kinetic_stam, STAMINA, def_zone, 0)
 			// BLUEMOON EDIT END
 
-			// BLUEMOON EDIT START - заброневая травма: расширенный порог + шанс растёт от уже накопленного урона зоны
-			// Базовый шанс травмы при поглощении, до этого было жёстко absorbed_damage >= 15 без вариативности
+			// BLUEMOON EDIT START - заброневая травма (перелом) при полном поглощении.
+			// БЫЛО: apply_damage(1, BRUTE, ..., wound_bonus=kinetic_wound)
+			//   → damage=1 в check_wounding → hi=1 < lo=25 → ролл ~1-25
+			//   → никогда не давало SEV/CRIT независимо от wound_bonus
+			// СТАЛО: painless_wound_roll с phantom_dmg = absorbed / overkill_ratio
+			//   → чем увереннее броня поглотила, тем меньше фантомный урон по кости
+			//   → при absorbed=30, overkill=3.5 (Джаггернаут) → phantom≈8 → только MOD
+			//   → при absorbed=20, overkill=1.2 (Жилет СБ) → phantom≈17 → SEV 22%+
 			var/wound_proc_chance = 0
 			if(absorbed_damage >= 15)
-				// Крупное поглощение — травма почти гарантирована, но не абсолютна
 				wound_proc_chance = 75 + (zone_damage_fraction * 25)
 			else if(absorbed_damage >= 1)
-				// Лёгкое поглощение — раньше травмы не было вообще. Теперь есть шанс,
-				// растущий линейно с тем, насколько уже избита эта зона тела (chance = base + frac * mult)
 				wound_proc_chance = 10 + (zone_damage_fraction * 50)
 
-			if(wound_proc_chance > 0 && prob(wound_proc_chance))
-				var/kinetic_wound = round(max(absorbed_damage, 5) * 0.12)
-				apply_damage(1, BRUTE, def_zone, 0, wound_bonus = kinetic_wound)
+			if(wound_proc_chance > 0 && prob(wound_proc_chance) && hit_bodypart)
+				// phantom_dmg масштабируется обратно к overkill — мощная броня
+				// гасит кинетику глубже, кость получает меньше удара
+				var/phantom_dmg = absorbed_damage / max(overkill_ratio, 1.0)
+				phantom_dmg = clamp(phantom_dmg, 0, WOUND_SEVERITY_CRITICAL)
+				if(phantom_dmg >= WOUND_MINIMUM_DAMAGE)
+					hit_bodypart.painless_wound_roll(WOUND_BLUNT, phantom_dmg, 0, 0)
 			// BLUEMOON EDIT END
 
+			// BLUEMOON ADD START - Daze от накопленного удара пеллетов по броне
+			if(istype(P, /obj/item/projectile/bullet/pellet))
+				var/pellet_weight = 1.0 - min(P.armour_penetration * 0.01, 0.9)
+				pellet_weight = max(pellet_weight, 0.1)
+				src.shotgun_pellet_impact += pellet_weight
+				if(src.shotgun_pellet_impact >= 4)
+					src.shotgun_pellet_impact = 0
+					if(isliving(src))
+						var/mob/living/L = src
+						L.Daze(40)
+						L.visible_message(
+							span_danger("[L] шатается от удара дроби!"),
+							span_userdanger("Удар дроби по броне оглушает вас!"),
+							vision_distance = COMBAT_MESSAGE_RANGE,
+						)
+				else
+					addtimer(CALLBACK(src, TYPE_PROC_REF(/mob/living, reset_pellet_impact)), 10, TIMER_OVERRIDE|TIMER_STOPPABLE)
+			// BLUEMOON ADD END
+
 		else
-			// Частичное пробитие — остаточная кинетика от поглощённой части
+			// Частичное пробитие
 			if(P.flag == BULLET && absorbed_damage >= 1.0)
-				var/kinetic_stam = absorbed_damage * 0.15
+				// BLUEMOON EDIT - stamina при частичном пробитии x0.40 (было x0.15)
+				var/kinetic_stam = absorbed_damage * 0.40
 				if(kinetic_stam >= 1.0)
 					apply_damage(kinetic_stam, STAMINA, def_zone, 0)
 
-				// BLUEMOON ADD START - заброневая травма при частичном пробитии.
-				// Шанс растёт линейно с долей уже накопленного урона зоны — побитая конечность легче травмируется снова
+				// BLUEMOON ADD START - бонус wound_bonus от поглощённой части
 				var/partial_wound_chance = 5 + (zone_damage_fraction * 35)
 				if(prob(partial_wound_chance))
 					var/partial_wound_bonus = round(absorbed_damage * 0.08)
 					if(partial_wound_bonus > 0)
 						P.wound_bonus += partial_wound_bonus
-				// BLUEMOON ADD END
 
-				// BLUEMOON ADD START - дополнительный НЕЗАВИСИМЫЙ шанс на перелом (WOUND_BLUNT) при частичном пробитии.
-				// Пуля прошла навылет (PIERCE), но по касательной задела кость - оба ранения могут сосуществовать.
-				// Используем painless_wound_roll т.к. урон по кости уже учтён через totaldamage ниже, нам нужен только сам ролл.
-				if(hit_bodypart && absorbed_damage >= 1.0)
+				// BLUEMOON ADD START - независимый шанс на перелом (WOUND_BLUNT)
+				// при частичном пробитии — пуля прошла но задела кость по касательной
+				if(hit_bodypart)
 					var/bone_chip_chance = 8 + (zone_damage_fraction * 30) + (absorbed_damage * 0.4)
 					bone_chip_chance = clamp(bone_chip_chance, 0, 60)
 					if(prob(bone_chip_chance))
-						// псевдо-урон для ролла масштабируем от поглощённой части - чем сильнее зацепило кость, тем выше шанс на тяжёлый перелом
 						hit_bodypart.painless_wound_roll(WOUND_BLUNT, max(absorbed_damage, WOUND_MINIMUM_DAMAGE), 0, 0)
 				// BLUEMOON ADD END
 
 			if(totaldamage >= 1.0)
-				// BLUEMOON ADD START - частичное пробитие пулей оставляет пулевую дырку (WOUND_PIERCE), а не перелом,
-				// если патрон сам не задавал sharpness явно (не перетираем дробь/спецбоеприпасы с осознанным SHARP_EDGED и т.п.)
+				// BLUEMOON ADD - частичное пробитие даёт WOUND_PIERCE (пулевая дырка),
+				// а не WOUND_BLUNT (перелом) — если патрон не задал sharpness явно
 				var/applied_sharpness = P.sharpness
 				if(P.flag == BULLET && applied_sharpness == SHARP_NONE)
 					applied_sharpness = SHARP_POINTY
 				apply_damage(totaldamage, P.damage_type, def_zone, 0, wound_bonus = P.wound_bonus, bare_wound_bonus = P.bare_wound_bonus, sharpness = applied_sharpness)
-				// BLUEMOON ADD END
 				if(P.dismemberment)
 					var/original_damage = P.damage
 					P.damage = totaldamage
@@ -224,10 +242,10 @@
 					P.damage = original_damage
 		// BLUEMOON ADD END
 
-	// Пересчёт final_percent с учётом обоих бакетов для on_hit отображения
+	// Пересчёт final_percent с учётом обоих бакетов для on_hit
 	var/missing = 100 - final_percent
 	if(missing > 0)
-		// BLUEMOON EDIT START - учитываем оба бакета в отображении блока
+		// BLUEMOON EDIT START
 		var/armor_block_portion = missing * min(armor * 0.01, 0.9)
 		var/after_armor = missing - armor_block_portion
 		var/brc_block_portion = 0
@@ -238,6 +256,11 @@
 		// BLUEMOON EDIT END
 
 	return P.on_hit(src, final_percent, def_zone) ? BULLET_ACT_HIT : BULLET_ACT_BLOCK
+
+
+// BLUEMOON ADD - сброс счётчика пеллетов (вызывается через addtimer)
+/mob/living/proc/reset_pellet_impact()
+	shotgun_pellet_impact = 0
 
 /mob/living/proc/check_projectile_dismemberment(obj/item/projectile/P, def_zone)
 	return FALSE
