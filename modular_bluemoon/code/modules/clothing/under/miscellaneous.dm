@@ -332,6 +332,13 @@
 	fitted = FEMALE_UNIFORM_TOP
 	can_adjust = FALSE
 
+/obj/item/clothing/under/bm/hunterhide
+	name = "Hunter's drips"
+	desc = "Дряхлые обноски"
+	icon_state = "hunterhide_uniform"
+	body_parts_covered = CHEST|GROIN|LEGS|ARMS
+	alt_covers_chest = TRUE
+
 /obj/item/clothing/under/poly_sweater/verb/worn_layer()
 	set name = "Change worn layer"
 	set category = "Object"

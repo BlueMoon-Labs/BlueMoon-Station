@@ -23,6 +23,7 @@
 		"Recruit",
 		"Rookie",
 		"Russian Officer",
+		"SAARE Recruit",
 		"Slutcurity"
 		)
 

@@ -5,6 +5,9 @@ GLOBAL_LIST_EMPTY(asset_datums)
 
 /datum/asset
 	var/_abstract = /datum/asset
+	/// Instantiate and register this asset during SSassets.Initialize. Heavy,
+	/// rarely used UI assets may opt out and be created by get_asset_datum().
+	var/load_on_startup = TRUE
 	var/cached_url_mappings
 
 /datum/asset/New()

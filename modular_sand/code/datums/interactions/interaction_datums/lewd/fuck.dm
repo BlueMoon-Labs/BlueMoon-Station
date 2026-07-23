@@ -85,7 +85,7 @@
 	//var/t_His = partner.ru_ego()
 	//BLUEMOON ADD START
 	//var/genital_name = user.get_penetrating_genital_name() - Стал не нужным.
-	var/has_penis = user.has_penis()
+	var/has_penis = user.has_penis(TRUE)
 	var/has_balls = user.has_balls()
 	var/shape_desc = get_penis_shape_desc(user) //  Описания каким органом ты трахаешь // BlueMoon Add
 	//BLUEMOON ADD END
@@ -157,7 +157,7 @@
 	var/message
 	var/genital_name = user.get_penetrating_genital_name()
 	//BLUEMOON ADD START
-	var/has_penis = user.has_penis()
+	var/has_penis = user.has_penis(TRUE)
 	var/has_balls = user.has_balls()
 	var/shape_desc = get_penis_shape_desc(user) //  Описания каким органом ты трахаешь // BlueMoon Add
 	//BLUEMOON ADD END
@@ -205,7 +205,7 @@
 	var/picked_hidden = pick(hidden_additional)
 	var/message
 	//var/genital_name = user.get_penetrating_genital_name() - Стал не нужным.
-	var/has_penis = user.has_penis() // BLUEMOON ADD
+	var/has_penis = user.has_penis(TRUE) // BLUEMOON ADD
 	var/shape_desc = get_penis_shape_desc(user) //  Описания каким органом ты трахаешь // BlueMoon Add
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
@@ -240,7 +240,7 @@
 	var/message
 	//var/u_His = user.ru_ego()
 	//var/genital_name = user.get_penetrating_genital_name() - Стал не нужным.
-	var/has_penis = user.has_penis() // BLUEMOON ADD
+	var/has_penis = user.has_penis(TRUE) // BLUEMOON ADD
 	var/shape_desc = get_penis_shape_desc(user) // BlueMoon Add
 
 	var/shoes = partner.get_shoes()

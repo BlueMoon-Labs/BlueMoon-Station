@@ -29,6 +29,7 @@ const baseStaticData = {
   default_pen_font: 'Verdana',
   default_pen_color: '#000000',
   signature_font: 'Times New Roman',
+  can_use_advanced_html: false,
 };
 
 const setupStore = (data = {}) => {
@@ -73,6 +74,38 @@ describe('PaperSheet PrimaryView', () => {
     });
     const { container } = render(<PrimaryView />);
     expect(container.innerHTML).toContain('<strong>bold</strong>');
+  });
+
+  test('strips inline styles from regular paper input', () => {
+    setupStore({
+      raw_text_input: [
+        { raw_text: '<div style="color: red">regular text</div>' },
+      ],
+    });
+    const { container } = render(<PrimaryView />);
+    const styledText = container.querySelector(
+      '.paper-text div'
+    ) as HTMLDivElement;
+    expect(styledText).toBeTruthy();
+    expect(styledText?.getAttribute('style')).toBeNull();
+  });
+
+  test('preserves inline styles from trusted paper input', () => {
+    setupStore({
+      raw_text_input: [
+        {
+          raw_text: '<div style="color: red; width: 100px">trusted text</div>',
+          advanced_html: true,
+        },
+      ],
+    });
+    const { container } = render(<PrimaryView />);
+    const styledText = container.querySelector(
+      '.paper-text div'
+    ) as HTMLDivElement;
+    expect(styledText).toBeTruthy();
+    expect(styledText?.style.color).toBe('red');
+    expect(styledText?.style.width).toBe('100px');
   });
 
   test('renders [____] as a disabled input field when reading', () => {
@@ -138,6 +171,24 @@ describe('PaperSheet PrimaryView', () => {
     rerender(<PrimaryView />);
     const preview = container.querySelector('.Paper__Page') as HTMLElement;
     expect(preview.innerHTML).toContain('live preview text');
+  });
+
+  test('preserves inline styles in the live preview for trusted writers', () => {
+    setupStore({
+      held_item_details: heldPen,
+      can_use_advanced_html: true,
+    });
+    const { container, rerender } = render(<PrimaryView />);
+    const textarea = container.querySelector('textarea') as HTMLTextAreaElement;
+    fireEvent.focus(textarea);
+    fireEvent.input(textarea, {
+      target: { value: '<div style="color: red; width: 100px">preview</div>' },
+    });
+    rerender(<PrimaryView />);
+    const styledText = container.querySelectorAll('.paper-text')[1]
+      .querySelector('div') as HTMLDivElement;
+    expect(styledText?.style.color).toBe('red');
+    expect(styledText?.style.width).toBe('100px');
   });
 
   test('save button sends the save act with typed text', () => {

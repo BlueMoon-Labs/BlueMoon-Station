@@ -39,7 +39,7 @@
 
 /obj/item/paper/bfl
 	name = "Методичка - 'BFL Mining laser'"
-	default_raw_text = "<h1>Потезисная методичка по установке и настройке добывающей конструкции.</h1><br>\
+	default_raw_text = "<h1>Методичка по установке и настройке добывающей конструкции.</h1><br>\
 	Конструкция состоит из трёх компонентов: Излучателя, Приемника и Линзы. <br>\
 	Излучатель устанавливается на станции и требует прямого подключения к энергосети, Приемник сооружается прямо \
 	над центром жилы, а Линза устанавливается на Приемник. Шахта Приемника должна быть открыта для лазера. <br>\
@@ -78,12 +78,14 @@
 /obj/machinery/power/bfl_emitter
 	name = "BFL Emitter"
 	icon = 'modular_bluemoon/icons/obj/machines/BFL_mission/Emitter.dmi'
+	desc = "Внушительная машинерия, потребляющая значительные объемы электроэнергии для излучения не менее внушительного лазера в другой сектор, \
+			а также для её массивной и шумной охлаждающей установки."
 	icon_state = "Emitter_Off"
 	anchored = TRUE
 	density = TRUE
 	use_power = NO_POWER_USE
-	idle_power_usage = 100000
-	active_power_usage = 400000 // в сумме будет 500kW, так как idle присутствует всегда
+	idle_power_usage = 0
+	active_power_usage = 250000 // х2 при запуске
 	var/state = FALSE
 	var/first_connection = TRUE // for goal crate unlocking
 	var/obj/singularity/bfl_red/laser = null
@@ -153,7 +155,7 @@
 			if(!powernet)
 				to_chat(user, span_warning("Энергосеть не обнаружена."))
 				return
-			if(surplus() < active_power_usage)
+			if(surplus() < 2*active_power_usage)
 				to_chat(user, span_warning("Недостаточно напряжения в подключенном проводе."))
 				return
 			if(world.time - deactivate_time > 30 SECONDS)
@@ -172,7 +174,6 @@
 
 /obj/machinery/power/bfl_emitter/process()
 	if(!state)
-		add_load(idle_power_usage)
 		return
 	if(surplus() < active_power_usage)
 		emitter_deactivate()
@@ -207,6 +208,7 @@
 
 /obj/machinery/power/bfl_emitter/proc/emitter_activate()
 	state = TRUE
+	add_load(active_power_usage) // в момент запуска х2 потребления
 	log_admin("[key_name(usr)] activated BFL at [AREACOORD(src)]")
 	update_icon(UPDATE_ICON_STATE)
 	var/turf/location = get_step(src, NORTH)
@@ -270,7 +272,8 @@
 
 /obj/machinery/bfl_receiver
 	name = "BFL Receiver"
-	desc = "Кнопка активации тускло мерцает."
+	desc = "Надежная многофункциональная конструкция для установки линзы, калибровки лазера и сбора добытой руды. Не требует внешнего источника питания. \
+			Кнопка активации тускло мерцает."
 	icon = 'modular_bluemoon/icons/obj/machines/BFL_mission/Hole.dmi'
 	icon_state = "Receiver_Off"
 	anchored = TRUE
@@ -334,17 +337,19 @@
 	var/response
 	src.add_fingerprint(user)
 	if(state)
-		response = tgui_alert(user, "Вы пытаетесь деактивировать приёмник BFL. Уверены?", "Приёмник BFL", list("Деактивировать", "Очистить хранилище руды", "Отмена"))
+		response = tgui_alert(user, "Вы пытаетесь деактивировать приёмник BFL. Уверены?", "Приёмник BFL", list("Деактивировать", "Разгрузить хранилище руды", "Отмена"))
 	else
-		response = tgui_alert(user, "Вы пытаетесь активировать приёмник BFL. Уверены?", "Приёмник BFL", list("Активировать", "Очистить хранилище руды", "Отмена"))
+		response = tgui_alert(user, "Вы пытаетесь активировать приёмник BFL. Уверены?", "Приёмник BFL", list("Активировать", "Разгрузить хранилище руды", "Отмена"))
 	switch(response)
 		if("Деактивировать")
+			// я честно не знаю зачем парадизовские разработчики сделали подобный "функционал", и сколько бы я не думал над этим, я так и не осознал смысла всего этого.
+			// оставляю как есть.
 			to_chat(user, span_warning("Потускневшая кнопка звонко кликает. Ничего не происходит.<br>Попробуйте закрыть шахту вручную с помощью лома."))
 		if("Активировать")
 			to_chat(user, span_warning("Потускневшая кнопка звонко кликает. Ничего не происходит.<br>Попробуйте открыть шахту вручную с помощью лома."))
-		if("Очистить хранилище руды")
+		if("Разгрузить хранилище руды")
 			if(lens)
-				to_chat(user, span_warning("Линза создаёт помехи - невозможно получить руду из хранилища."))
+				to_chat(user, span_warning("Линза мешает разгрузке руды из хранилища."))
 				return
 			if(state)
 				to_chat(user, span_warning("Сначала нужно закрыть шахту."))
@@ -378,13 +383,15 @@
 	receiver_light.update_icon(UPDATE_ICON_STATE)
 
 
-/obj/machinery/bfl_receiver/process()
+/obj/machinery/bfl_receiver/process(delta_time)
 	if(!(mining && state) || isnull(ore_type_mining))
 		return
 	if(ore_count >= max_ore_storage_capacity)
 		return
-	ore_type_contained[ore_type_mining]++
-	ore_count++
+	var/ore_tick = delta_time * (max_ore_storage_capacity/600) // полное заполнение буфера за 10 минут = 100 руды в минуту = 1.67 руды в секунду
+	ore_tick = ROUND_UP(ore_tick)
+	ore_type_contained[ore_type_mining] += ore_tick
+	ore_count += ore_tick
 	update_state()
 
 
@@ -570,7 +577,7 @@
 
 /obj/singularity/bfl_red
 	name = "BFL"
-	desc = "Гигантский лазер, предназначенный для добычи руды."
+	desc = "Гигантский лазер, предназначенный для добычи руды, теперь добывает всё, что встретится на его пути по всему сектору."
 	icon = 'modular_bluemoon/icons/obj/machines/BFL_Mission/Laser.dmi'
 	icon_state = "Laser_Red"
 	pixel_x = -32

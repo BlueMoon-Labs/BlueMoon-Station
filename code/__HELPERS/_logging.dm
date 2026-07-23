@@ -399,3 +399,51 @@
 		return "[a.loc] ([t.x],[t.y],[t.z]) ([a.loc.type])"
 	else if(a.loc)
 		return "[a.loc] (0,0,0) ([a.loc.type])"
+
+/proc/log_type_to_name(message_type)
+	switch(message_type)
+		if(LOG_ATTACK)
+			return "Attack"
+		if(LOG_SAY)
+			return "Say"
+		if(LOG_WHISPER)
+			return "Whisper"
+		if(LOG_EMOTE)
+			return "Emote"
+		if(LOG_SUBTLER)
+			return "Subtler"
+		if(LOG_DSAY)
+			return "Deadchat"
+		if(LOG_PDA)
+			return "PDA"
+		if(LOG_CHAT)
+			return "Chat"
+		if(LOG_COMMENT)
+			return "Comment"
+		if(LOG_TELECOMMS)
+			return "Telecomms"
+		if(LOG_OOC)
+			return "OOC"
+		if(LOG_ADMIN)
+			return "Admin"
+		if(LOG_ADMIN_PRIVATE)
+			return "Admin"
+		if(LOG_ASAY)
+			return "ASAY"
+		if(LOG_OWNERSHIP)
+			return "Ownership"
+		if(LOG_GAME)
+			return "Game"
+		if(LOG_VIRUS)
+			return "Virus"
+		if(LOG_MECHA)
+			return "Mecha"
+		if(LOG_SHUTTLE)
+			return "Shuttle"
+		if(LOG_VICTIM)
+			return "Victim"
+		if(LOG_ECON)
+			return "Economy"
+		if(LOG_UPLINK)
+			return "Uplink"
+	return "Misc"

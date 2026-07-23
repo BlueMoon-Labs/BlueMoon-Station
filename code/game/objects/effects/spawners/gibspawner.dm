@@ -39,9 +39,9 @@
 			dna_to_add = blood_dna || source_mob.get_blood_dna_list() //ez pz
 		if(ishuman(source_mob))
 			var/mob/living/carbon/human/H = source_mob
-			if(H.dna.species.use_skintones)
+			if(H.dna?.species?.use_skintones)
 				body_coloring = SKINTONE2HEX(H.skin_tone)
-			else
+			else if(H.dna?.features)
 				body_coloring = "#[H.dna.features["mcolor"]]"
 
 	else if(gib_mob_type)

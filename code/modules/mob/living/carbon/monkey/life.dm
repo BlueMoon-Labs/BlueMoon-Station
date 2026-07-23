@@ -18,7 +18,7 @@
 			if(!resisting && prob(MONKEY_RESIST_PROB))
 				resisting = TRUE
 				walk_to(src,0)
-				resist()
+				execute_resist() // прок-версия: верб resist() очередится в SSverb_manager и ждёт usr
 		else if(resisting)
 			resisting = FALSE
 		else if((mode == MONKEY_IDLE && !pickupTarget && !prob(MONKEY_SHENANIGAN_PROB)) || !handle_combat())

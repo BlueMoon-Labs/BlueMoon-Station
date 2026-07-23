@@ -19,27 +19,29 @@
 	var/size_set_to = 1
 	var/charge_modif = 1
 	var/time_modif = 1
-	var/min_size = RESIZE_MICRO
+	var/min_size = 0.25
 	var/max_size = RESIZE_BIG
 
 /obj/item/melee/sizetool/Initialize(mapload)
 	. = ..()
+	min_size = RESIZE_MICRO
 	cell = new /obj/item/stock_parts/cell/high(src)
 	register_item_context()
 
 /obj/item/melee/sizetool/attack_self(mob/user)
 	. = ..()
+	var/is_ghostcafe = check_for_ghostcafe()
 	var/size_select
-
-	if(check_for_ghostcafe())
-		size_select = tgui_input_number(usr, "Set prefered size ([RESIZE_MICRO * 100]-[RESIZE_MACRO * 100]%).", "Set Size", size_set_to * 100, RESIZE_MACRO * 100, RESIZE_MICRO * 100)
-		size_set_to = clamp((size_select/100), min_size, RESIZE_MACRO) //не будем делать переменную для гост кафе размера
+	if(is_ghostcafe)
+		size_select = tgui_input_number(user, "Set prefered size ([RESIZE_MICRO * 100]-[RESIZE_MACRO * 100]%).", "Set Size", size_set_to * 100, RESIZE_MACRO * 100, RESIZE_MICRO * 100)
 	else
-		size_select = tgui_input_number(usr, "Set prefered size ([min_size * 100]-[max_size * 100]%).", "Set Size", size_set_to * 100, max_size * 100, min_size * 100)
-		size_set_to = clamp((size_select/100), min_size, max_size)
-	if(!size_select) return
+		size_select = tgui_input_number(user, "Set prefered size ([min_size * 100]-[max_size * 100]%).", "Set Size", size_set_to * 100, max_size * 100, min_size * 100)
 
-	to_chat(usr, "<span class='notice'>You set the size to [size_set_to * 100]%</span>")
+	if(!size_select)
+		return
+	size_set_to = clamp((size_select/100), min_size, is_ghostcafe ? RESIZE_MACRO : max_size)
+
+	to_chat(user, span_notice("You set the size to [size_set_to * 100]%"))
 
 /obj/item/melee/sizetool/attackby(obj/item/new_item, mob/user, params)
 	if(istype(new_item, /obj/item/stock_parts/cell)) // замена батарейки

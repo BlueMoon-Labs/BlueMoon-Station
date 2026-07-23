@@ -50,6 +50,8 @@ SUBSYSTEM_DEF(hilbertshotel)
 		return
 	var/datum/map_template/hilbertshotelstorage/storageTemp = new()
 	var/datum/turf_reservation/storageReservation = SSmapping.RequestBlockReservation(3, 3)
+	if(!storageReservation)
+		CRASH("Hilbert's Hotel: не удалось зарезервировать блок под сток комнат")
 	var/turf/bottom_left = get_turf(locate(storageReservation.bottom_left_coords[1], storageReservation.bottom_left_coords[2], storageReservation.bottom_left_coords[3]))
 	storageTemp.load(bottom_left)
 	storageTurf = locate(bottom_left.x + 1, bottom_left.y + 1, bottom_left.z)

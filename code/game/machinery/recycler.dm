@@ -135,7 +135,9 @@
 		else // Stop processing right now without eating anything.
 			emergency_stop(living_detected)
 			return
-	for(var/nommed in nom)
+	for(var/obj/item/nommed as anything in nom)
+		if(QDELETED(nommed)) // qdel контейнера раньше по списку удаляет и вложения (почта с письмами)
+			continue
 		recycle_item(nommed)
 	if(nom.len && sound)
 		playsound(src, item_recycle_sound, (50 + nom.len*5), TRUE, nom.len, ignore_walls = (nom.len - 10)) // As a substitute for playing 50 sounds at once.
@@ -155,6 +157,8 @@
 	. = list()
 	for(var/A in I)
 		var/atom/movable/AM = A
+		if(QDELETED(AM))
+			continue
 		AM.forceMove(loc)
 		if(AM.loc == loc)
 			. += AM

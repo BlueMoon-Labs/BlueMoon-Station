@@ -16,15 +16,20 @@
 	alt_titles = list(
 		"Gorlex Marauders Trainee", //Триглав выше, для удобства
 		"Combatant", //Синди выше, для удобства
+		"Training Officer", //Инструктор выше, для удобства
+		"Security Training Officer", //Инструктор выше, для удобства
+		"Field Training Officer", //Инструктор выше, для удобства
 		"AC Specialist",
 		"Cerberus",
 		"Civil Protection",
 		"Defense Contractor",
+		"Deputy Sheriff",
 		"Explosives Specialist",
 		"Guard",
 		"Guardsman",
 		"Police Officer",
 		"Probation Officer",
+		"Parole Officer",
 		"Riot Control Officer",
 		"SAARE Operator",
 		"Safeguard Agent",

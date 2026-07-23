@@ -272,12 +272,16 @@
 	. = ..()
 	var/mob/living/carbon/C = .
 	update()
+	if(!C)
+		return
+	//чистим список и на удаляющемся владельце (QDEL_LIST органов в carbon/Destroy):
+	//иначе зависший в GC моб вечно держит удалённый орган в exposed_genitals
+	C.exposed_genitals -= src
+	UnregisterSignal(C, COMSIG_MOB_DEATH)
 	if(!QDELETED(C))
 		if(genital_flags & UPDATE_OWNER_APPEARANCE && ishuman(C))
 			var/mob/living/carbon/human/H = .
 			H.update_genitals()
-		C.exposed_genitals -= src
-		UnregisterSignal(C, COMSIG_MOB_DEATH)
 
 //proc to give a player their genitals and stuff when they log in
 /mob/living/carbon/human/proc/give_genitals(clean = FALSE)//clean will remove all pre-existing genitals. proc will then give them any genitals that are enabled in their DNA

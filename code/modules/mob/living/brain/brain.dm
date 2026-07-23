@@ -37,6 +37,10 @@
 			mind.set_current(null)
 			mind.active = FALSE		//No one's using it anymore.
 		ghostize()		//Ghostize checks for key so nothing else is necessary.
+	//MMI/позибрейн держит нас в brainmob - без отвязки удалённый мозг
+	//висит в GC, пока жив сам контейнер
+	if(container?.brainmob == src)
+		container.brainmob = null
 	container = null
 	QDEL_NULL(stored_dna)
 	return ..()

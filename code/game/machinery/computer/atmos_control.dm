@@ -13,6 +13,13 @@
 	var/id_tag
 	var/frequency = FREQ_ATMOS_STORAGE
 	var/datum/radio_frequency/radio_connection
+	///Показания последнего бродкаста: без изменений эфир не засоряем,
+	///фан-аут receive_signal по всем консолям не бесплатный
+	var/last_report_pressure
+	var/last_report_temperature
+	var/last_report_moles
+	///Крайний срок следующего обязательного бродкаста (heartbeat)
+	var/next_forced_report = 0
 
 /obj/machinery/air_sensor/atmos/toxin_tank
 	name = "plasma tank gas sensor"
@@ -51,23 +58,43 @@
 	if(SSair.times_fired % ATMOS_TELEMETRY_INTERVAL)
 		return
 	if(on)
-		var/datum/gas_mixture/air_sample = return_air()
+		try_report()
 
-		var/datum/signal/signal = new(list(
-			"sigtype" = "status",
-			"id_tag" = id_tag,
-			"timestamp" = world.time,
-			"pressure" = air_sample.return_pressure(),
-			"temperature" = air_sample.return_temperature(),
-			"gases" = list()
-		))
-		var/total_moles = air_sample.total_moles()
-		if(total_moles)
-			for(var/gas_id in air_sample.get_gases())
-				var/gas_name = GLOB.gas_data.names[gas_id]
-				signal.data["gases"][gas_name] = air_sample.get_moles(gas_id) / total_moles * 100
+///Бродкаст показаний, если они изменились с прошлого отчёта или настал
+///heartbeat: у осевшего танка показания стоят на месте, и сигнал зря
+///разбегался по receive_signal всех консолей частоты.
+/obj/machinery/air_sensor/proc/try_report()
+	var/datum/gas_mixture/air_sample = return_air()
 
-		radio_connection.post_signal(src, signal, filter = RADIO_ATMOSIA)
+	var/pressure = air_sample.return_pressure()
+	var/temperature = air_sample.return_temperature()
+	var/total_moles = air_sample.total_moles()
+	if(world.time < next_forced_report \
+		&& !isnull(last_report_pressure) \
+		&& abs(pressure - last_report_pressure) < 0.1 \
+		&& abs(temperature - last_report_temperature) < 0.1 \
+		&& abs(total_moles - last_report_moles) < 0.05)
+		return FALSE
+	last_report_pressure = pressure
+	last_report_temperature = temperature
+	last_report_moles = total_moles
+	next_forced_report = world.time + ATMOS_TELEMETRY_HEARTBEAT
+
+	var/datum/signal/signal = new(list(
+		"sigtype" = "status",
+		"id_tag" = id_tag,
+		"timestamp" = world.time,
+		"pressure" = pressure,
+		"temperature" = temperature,
+		"gases" = list()
+	))
+	if(total_moles)
+		for(var/gas_id in air_sample.get_gases())
+			var/gas_name = GLOB.gas_data.names[gas_id]
+			signal.data["gases"][gas_name] = air_sample.get_moles(gas_id) / total_moles * 100
+
+	radio_connection?.post_signal(src, signal, filter = RADIO_ATMOSIA)
+	return TRUE
 
 
 /obj/machinery/air_sensor/proc/set_frequency(new_frequency)

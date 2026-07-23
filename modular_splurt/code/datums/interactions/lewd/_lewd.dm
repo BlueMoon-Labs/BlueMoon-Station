@@ -70,7 +70,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	if(src != partner)
 		if(!last_genital)
 			if(has_penis())
-				if(!istype(partner))
+				if(!istype(partner) || has_strapon())
 					target_orifice = null
 				switch(target_orifice)
 					if(CUM_TARGET_NIPPLE)
@@ -278,7 +278,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	var/message
 	var/obj/item/organ/genital/peepee = null
 	var/lust_increase = NORMAL_LUST
-	var/has_penis = user.has_penis() // BLUEMOON ADD
+	var/has_penis = user.has_penis(TRUE) // BLUEMOON ADD
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 	var/const/volume = 50
@@ -407,7 +407,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	var/message
 	//var/t_His = ru_ego() //BLUEMOON EDIT commented
 	//var/genital_name = get_penetrating_genital_name()
-	var/has_penis = user.has_penis() // BLUEMOON ADD
+	var/has_penis = user.has_penis(TRUE) // BLUEMOON ADD
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 	var/const/volume = 70
@@ -456,7 +456,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 /mob/living/proc/do_bellyfuck(mob/living/partner, is_hidden)
 	var/message
 	var/genital_name = get_penetrating_genital_name()
-	var/has_penis = has_penis() // BLUEMOON ADD
+	var/has_penis = has_penis(TRUE) // BLUEMOON ADD
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 	var/const/volume = 50
@@ -573,7 +573,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	//var/genital_name = get_penetrating_genital_name()
 	//var/t_His = target.ru_ego()
 	//var/list/musk = list("musky ", "sweaty ", "damp ", "smelly ", "")
-	var/has_penis = has_penis() // BLUEMOON ADD
+	var/has_penis = has_penis(TRUE) // BLUEMOON ADD
 	var/list/lines
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
@@ -620,7 +620,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	//var/u_His = ru_ego()
 	//var/genital_name = target.get_penetrating_genital_name()
 	//var/t_His = target.ru_ego()
-	var/has_penis = target.has_penis() // BLUEMOON ADD
+	var/has_penis = target.has_penis(TRUE) // BLUEMOON ADD
 	var/list/lines
 
 	if(is_fucking(target, CUM_TARGET_ARMPIT))
@@ -654,7 +654,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	var/message
 	//var/u_His = ru_ego()
 	//var/genital_name = target.get_penetrating_genital_name()
-	var/has_penis = target.has_penis() // BLUEMOON ADD
+	var/has_penis = target.has_penis(TRUE) // BLUEMOON ADD
 	var/list/lines
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
@@ -730,9 +730,9 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	//var/t_genital_name = target.get_penetrating_genital_name()
 	var/list/lines
 	// BLUEMOON ADD START
-	var/user_has_penis = has_penis()
+	var/user_has_penis = has_penis(TRUE)
 	var/user_has_balls = has_balls()
-	var/target_has_penis = target.has_penis()
+	var/target_has_penis = target.has_penis(TRUE)
 	var/target_has_balls = target.has_balls()
 	// BLUEMOON ADD END
 	var/distance = 7
@@ -782,7 +782,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	var/list/lines
 	var/genital_name = get_penetrating_genital_name()
 	// BLUEMOON ADD START
-	var/has_penis = has_penis()
+	var/has_penis = has_penis(TRUE)
 	var/has_balls = has_balls()
 	// BLUEMOON ADD END
 	var/distance = 7
@@ -832,7 +832,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 /mob/living/proc/do_thighfuck(mob/living/target, spillage = TRUE, is_hidden)
 	var/message
 	var/list/lines
-	var/has_penis = has_penis() // BLUEMOON ADD
+	var/has_penis = has_penis(TRUE) // BLUEMOON ADD
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 	var/const/volume = 70
@@ -867,7 +867,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 /mob/living/proc/do_thighjob(mob/living/target, is_hidden)
 	var/message
 	var/list/lines
-	var/has_penis = target.has_penis() // BLUEMOON ADD
+	var/has_penis = target.has_penis(TRUE) // BLUEMOON ADD
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 	var/const/volume = 70
@@ -974,7 +974,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	var/message
 	var/list/hell
 	// BLUEMOON ADD START
-	var/has_penis = has_penis()
+	var/has_penis = has_penis(TRUE)
 	var/has_balls = has_balls()
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
@@ -1132,7 +1132,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 /mob/living/proc/do_shitfuck(mob/living/carbon/target, is_hidden)
 	var/message
 	// BLUEMOON ADD START
-	var/has_penis = has_penis()
+	var/has_penis = has_penis(TRUE)
 	var/has_balls = has_balls()
 	// BLUEMOON ADD END
 	//var/t_He = target.ru_who()

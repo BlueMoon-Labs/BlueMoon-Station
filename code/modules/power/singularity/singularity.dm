@@ -243,7 +243,7 @@
 	last_warning = world.time
 	var/count = locate(/obj/machinery/field/containment) in urange(30, src, 1)
 	if(!count)
-		message_admins(span_big_warning("A singulo has been created without containment fields active at [ADMIN_VERBOSEJMP(T)]."))
+		message_antigrif(span_big_warning("A singulo has been created without containment fields active at [ADMIN_VERBOSEJMP(T)]."))
 	investigate_log("was created at [AREACOORD(T)]. [count?"":"<font color='red'>No containment fields were active</font>"]", INVESTIGATE_SINGULO)
 
 /obj/singularity/proc/dissipate()
@@ -485,6 +485,8 @@
 			weight = 1
 		if(weight)
 			var/direction = get_dir(src, T)
+			if(!direction)
+				continue
 			dir_weights[direction] += weight
 	var/best_dir = 0
 	var/best_weight = 0

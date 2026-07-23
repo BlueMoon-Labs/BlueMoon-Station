@@ -957,6 +957,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 			name = record.name,
 			price = premium ? (record.custom_premium_price || extra_price) : (record.custom_price || default_price),
 			max_amount = record.max_amount,
+			colorable = record.colorable,
 			ref = REF(record),
 		)
 
@@ -975,6 +976,24 @@ GLOBAL_LIST_EMPTY(vending_products)
 		out_records += list(static_record)
 
 	return out_records
+
+/obj/machinery/vending/proc/append_stock_data(list/stock, list/free_stock, list/records)
+	for(var/datum/data/vending_product/product_record as anything in records)
+		var/record_ref = REF(product_record)
+		stock[record_ref] = product_record.amount
+		if(product_record.returned_products)
+			free_stock[record_ref] = TRUE
+
+/obj/machinery/vending/proc/collect_stock_data()
+	var/list/stock = list()
+	var/list/free_stock = list()
+	append_stock_data(stock, free_stock, product_records)
+	append_stock_data(stock, free_stock, coin_records)
+	append_stock_data(stock, free_stock, hidden_records)
+	return list(
+		"stock" = stock,
+		"free_stock" = free_stock,
+	)
 
 /obj/machinery/vending/ui_data(mob/user)
 	. = list()
@@ -999,19 +1018,11 @@ GLOBAL_LIST_EMPTY(vending_products)
 		else
 			.["user"]["job"] = "No Job"
 			.["user"]["department"] = DEPARTMENT_UNASSIGNED
-	.["stock"] = list()
-
-	for (var/datum/data/vending_product/product_record in product_records + coin_records + hidden_records)
-		var/list/product_data = list(
-			name = product_record.name,
-			amount = product_record.amount,
-			colorable = product_record.colorable,
-			free = !!product_record.returned_products,
-		)
-
-		// Ключ - REF записи (он же ref в статик-данных): имена товаров не уникальны,
-		// и запись с совпадающим именем перекрывала чужой остаток - цифра в UI замирала.
-		.["stock"][REF(product_record)] = product_data
+	// Ключ - REF записи (он же ref в статик-данных): имена товаров не уникальны,
+	// и запись с совпадающим именем перекрывала чужой остаток - цифра в UI замирала.
+	var/list/stock_data = collect_stock_data()
+	.["stock"] = stock_data["stock"]
+	.["free_stock"] = stock_data["free_stock"]
 
 	.["extended_inventory"] = extended_inventory
 

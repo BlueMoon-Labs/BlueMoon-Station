@@ -43,6 +43,9 @@ GLOBAL_LIST_EMPTY(all_clockwork_rites) //a list containing all clockwork rites. 
 
 //Various costs related to power.
 #define MAX_CLOCKWORK_POWER 80000 //The max power in W that the cult can stockpile
+#define TRANSMISSION_SIGIL_BASE_ALPHA 50
+#define TRANSMISSION_SIGIL_ALPHA_STEP 35
+#define TRANSMISSION_SIGIL_POWER_ALPHA_SCALE 0.02
 #define SCRIPT_UNLOCK_THRESHOLD 35000 //Scripts will unlock if the total power reaches this amount
 #define APPLICATION_UNLOCK_THRESHOLD 50000 //Applications will unlock if the total power reaches this amount
 #define JUDGEMENT_UNLOCK_THRESHOLD 80000 //might as well have this unlock at a power amount like the other scriptures, Judgement unlocks at this amount.

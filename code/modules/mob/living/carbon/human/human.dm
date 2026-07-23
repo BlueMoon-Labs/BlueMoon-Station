@@ -52,8 +52,26 @@
 	QDEL_NULL_LIST(vore_organs) // CITADEL EDIT belly stuff
 	GLOB.human_list -= src
 	GLOB.suit_sensors_list -= src
-	GLOB.latejoiners -= src
-	return ..()
+	. = ..()
+	//экипировка удалена contents-циклом atom/movable/Destroy, но unequip при
+	//QDELING(моб) пропускается (см. /obj/item/Destroy) - обнуляем слот-вары
+	//сами, иначе зависший в GC моб тянет за собой весь свой инвентарь
+	wear_suit = null
+	w_uniform = null
+	w_underwear = null
+	w_socks = null
+	w_shirt = null
+	wrists = null
+	gloves = null
+	glasses = null
+	ears = null
+	ears_extra = null
+	shoes = null
+	belt = null
+	wear_id = null
+	r_store = null
+	l_store = null
+	s_store = null
 
 /mob/living/carbon/human/prepare_data_huds()
 	//Update med hud images...
@@ -116,6 +134,20 @@
 			if(!I || I.loc != src) //no item, no limb, or item is not in limb or in the person anymore
 				return
 			SEND_SIGNAL(src, COMSIG_CARBON_EMBED_RIP, I, L)
+			return
+
+	if(href_list["remove_gauze"])
+		if(usr == src && usr.canUseTopic(src, BE_CLOSE, NO_DEXTERY, check_resting = FALSE))
+			var/obj/item/bodypart/L = locate(href_list["gauze_limb"]) in bodyparts
+			if(!L?.current_gauze)
+				return
+			var/obj/item/stack/medical/gauze/g = L.current_gauze
+			var/time_taken = g.self_delay
+			visible_message("<span class='notice'>[usr] начинает снимать [g] с [L.ru_name_v].</span>", "<span class='notice'>Вы начинаете снимать [g] с вашей [L.ru_name_v]...</span>")
+			if(do_after(usr, time_taken, target = src))
+				if(L.current_gauze == g)
+					L.remove_gauze(usr)
+					visible_message("<span class='notice'>[usr] снимает [g] с [L.ru_name_v].</span>", "<span class='notice'>Вы снимаете [g] с вашей [L.ru_name_v].</span>")
 			return
 
 	else if(href_list["character_profile"])

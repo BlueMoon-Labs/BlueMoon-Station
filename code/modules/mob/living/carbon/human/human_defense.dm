@@ -282,6 +282,9 @@
 	switch (severity)
 		if (EXPLODE_DEVASTATE)
 			if(bomb_armor < EXPLODE_GIB_THRESHOLD) //gibs the mob if their bomb armor is lower than EXPLODE_GIB_THRESHOLD
+				var/datum/explosion/exp_gib = origin
+				if(istype(exp_gib) && exp_gib.explosion_attacker && exp_gib.explosion_attacker != src)
+					log_combat(exp_gib.explosion_attacker, src, "gibbed with explosion", exp_gib.explosion_source)
 				for(var/I in contents)
 					var/atom/A = I
 					if(!QDELETED(A))
@@ -321,6 +324,10 @@
 			adjustStaminaLoss(brute_loss)
 
 	take_overall_damage(brute_loss,burn_loss)
+
+	var/datum/explosion/exp = origin
+	if(istype(exp) && exp.explosion_attacker && exp.explosion_attacker != src)
+		log_combat(exp.explosion_attacker, src, "exploded", exp.explosion_source, "наносит [brute_loss + burn_loss] урона")
 
 	//attempt to dismember bodyparts
 	if(severity <= 2 || !bomb_armor)
@@ -636,6 +643,9 @@
 					else
 						to_send += "\n\t<a href='?src=[REF(src)];embedded_object=[REF(I)];embedded_limb=[REF(LB)]' class='warning'>В вашей [LB.ru_name_v] застрял \a [I]!</a>"
 
+				if(LB.current_gauze)
+					to_send += "\n\t<a href='?src=[REF(src)];remove_gauze=1;gauze_limb=[REF(LB)]' class='notice'>На вашей [LB.ru_name_v] наложен \a [LB.current_gauze].</a>"
+
 			for(var/t in missing)
 				to_send += "<span class='boldannounce'>Ваша [ru_parse_zone(t)] отсутствует!</span>\n"
 
@@ -876,6 +886,9 @@
 				output += "\n\t <a href='?src=[REF(src)];embedded_object=[REF(I)];embedded_limb=[REF(LB)]' class='warning'>В вашей [LB.ru_name_v] прорезался \a [I]!</a>"
 			else
 				output += "\n\t <a href='?src=[REF(src)];embedded_object=[REF(I)];embedded_limb=[REF(LB)]' class='warning'>В вашей [LB.ru_name_v] застрял \a [I]!</a>"
+
+		if(LB.current_gauze)
+			output += "\n\t <a href='?src=[REF(src)];remove_gauze=1;gauze_limb=[REF(LB)]' class='notice'>На вашей [LB.ru_name_v] наложен \a [LB.current_gauze].</a>"
 	to_chat(src, examine_block(output))
 
 /mob/living/carbon/human/damage_clothes(damage_amount, damage_type = BRUTE, damage_flag = 0, def_zone)

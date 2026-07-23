@@ -353,14 +353,27 @@
 /datum/round_event_control/morph
 	name = "Spawn Morph"
 	typepath = /datum/round_event/ghost_role/morph
-	weight = 0 // Admin only; morph spawns via dynamic ruleset (not in extended)
+	weight = 8
 	max_occurrences = 1
+	min_players = 20
+	// Ранняя волна гост-пула стартует с 20-й минуты вместе с генлингом/болезнью: без порога
+	// морф (единственный без earliest_start) становился залоченной целью копилки первых минут.
+	earliest_start = 20 MINUTES
 	category = EVENT_CATEGORY_ENTITIES
 	severity = DIRECTOR_SEVERITY_GHOST // форс-запуск обязан считаться антаг-нагрузкой
 	cost = 10
 	intensity = 15
+	director_ghost_jobban = ROLE_ALIEN
+	director_ghost_preference = ROLE_ALIEN
 	family = "morph" // с рулсетом-двойником динамика: не подряд
+	required_round_type = list(ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_TEAMBASED)
 	description = "Spawns a hungry shapeshifting blobby creature."
+
+/datum/round_event_control/morph/director_preflight()
+	if(!length(GLOB.xeno_spawn))
+		director_preflight_failure = "на карте нет точек xeno_spawn для морфа"
+		return FALSE
+	return ..()
 
 /datum/round_event/ghost_role/morph
 	minimum_required = 1

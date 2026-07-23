@@ -520,15 +520,20 @@
 			dump_contents()
 
 /obj/machinery/suit_storage_unit/process(delta_time)
+	//процессинг нужен только чтобы заряжать ячейку вставленного МОДа: без МОДа,
+	//без ячейки или с полной ячейкой спим; будит вставка МОДа в attackby
 	var/obj/item/stock_parts/cell/cell
 	if(mod)
 		if(!istype(mod))
-			return
+			return machine_sleep()
 		if(!mod.cell)
-			return
+			return machine_sleep()
 		cell = mod.cell
 	else
-		return
+		return machine_sleep()
+
+	if(cell.charge >= cell.maxcharge)
+		return machine_sleep()
 
 	use_power(charge_rate * delta_time)
 	cell.give(charge_rate * delta_time)
@@ -620,6 +625,7 @@
 			if(!user.transferItemToLoc(I, src))
 				return
 			mod = I
+			machine_wake() //появилось что заряжать
 		else
 			if(storage)
 				to_chat(user, span_warning("The auxiliary storage compartment is full!"))

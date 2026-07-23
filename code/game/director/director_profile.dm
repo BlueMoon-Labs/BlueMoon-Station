@@ -28,8 +28,9 @@
 	/// Очков в минуту в антаг-кошельки (ANTAG + GHOST, делится по pool_shares) при ПОЛНОМ
 	/// дефиците антаг-нагрузки; реальная скорость = antag_drip * (1 - load/target).
 	/// Раунд без живых антагов наполняется полным ходом, насыщенный не копит вовсе.
-	/// Калибровка Medium: при типичном дефиците ~0.5 кошелёк ANTAG собирает лёгкую
-	/// инжекцию (6-8) за 20-30 минут - раньше на долях от общей капли выходило 40-80.
+	/// Калибровка Medium: при полном дефиците GHOST получает 0.6/мин, ANTAG 0.3/мин;
+	/// лёгкая гост-роль собирается примерно за 13-20 минут, экипажная конверсия за 25-30.
+	/// По мере заполнения antag_target оба потока замедляются вплоть до полной остановки.
 	var/antag_drip = 0.9
 	/// Стартовый аванс кошельков: раскладывается по pool_shares при setup_profile(). С нулевого
 	/// старта первое MODERATE набиралось только к ~25 минуте - аванс оживляет первые полчаса,
@@ -70,27 +71,27 @@
 		DIRECTOR_DISRUPTION_DISRUPTIVE = 1,
 	)
 	/// Паузы пула ANTAG (антаги из живого экипажа): лёгкие и тяжёлые отдельно
-	var/antag_light_spacing = 12 MINUTES
-	var/antag_heavy_spacing = 30 MINUTES
+	var/antag_light_spacing = 14 MINUTES
+	var/antag_heavy_spacing = 35 MINUTES
 	/// Паузы пула GHOST (антаги из призраков): свой трек, полностью независимый от ANTAG
-	var/ghost_light_spacing = 12 MINUTES
-	var/ghost_heavy_spacing = 30 MINUTES
+	var/ghost_light_spacing = 8 MINUTES
+	var/ghost_heavy_spacing = 24 MINUTES
 	/// Пауза латеджойн-канала (инжекция в окно захода игрока): трек независим от полосы битов -
 	/// латеджойн не запирает биты и наоборот, темп канала держит только эта пауза и дефицит.
 	var/latejoin_spacing = 8 MINUTES
 	/// Целевые доли ступеней при выборе: severity -> доля (сумма ~1).
-	/// Сумма ANTAG + GHOST - общая доля антагонистов раунда; баланс между экипажными
-	/// и гост-инжекциями тюнится их соотношением.
+	/// Сумма ANTAG + GHOST - общая доля антагонистов раунда. GHOST выше ANTAG намеренно:
+	/// гост-каталог заметно разнообразнее и не отнимает роли у уже играющего экипажа.
 	/// FLAVOR стоит 0, его доля размазывается поровну по остальным (distribute_to_budgets) -
 	/// большая доля флейвора кормила дешёвый MINOR, пока MAJOR (cost 20) копил на запуск
 	/// три часа и "не имел шансов появиться". Крен в тяжёлые ступени, суммарная капля та же.
 	var/list/pool_shares = list(
-		DIRECTOR_SEVERITY_FLAVOR = 0.15,
-		DIRECTOR_SEVERITY_MINOR = 0.25,
-		DIRECTOR_SEVERITY_MODERATE = 0.25,
+		DIRECTOR_SEVERITY_FLAVOR = 0.12,
+		DIRECTOR_SEVERITY_MINOR = 0.21,
+		DIRECTOR_SEVERITY_MODERATE = 0.22,
 		DIRECTOR_SEVERITY_MAJOR = 0.15,
-		DIRECTOR_SEVERITY_ANTAG = 0.12,
-		DIRECTOR_SEVERITY_GHOST = 0.08,
+		DIRECTOR_SEVERITY_ANTAG = 0.1,
+		DIRECTOR_SEVERITY_GHOST = 0.2,
 	)
 	/// Затишье: если дольше этого не было запусков и intensity ниже порога - гарантированный бит
 	var/max_quiet_time = 12 MINUTES
@@ -101,9 +102,25 @@
 	/// накопление и блокирует антаг-действия в битах/латеджойне. Живой лёгкий антаг = 15:
 	/// при 1.5 цель на 40 экипажа = 60 = ~4 живых лёгких антага.
 	var/antag_intensity_per_crew = 1.5
+	/// Порог тяжёлых антаг-покупок: команда (antag_heavy) покупается только пока живая
+	/// нагрузка не выше этой доли цели. Тяжёлая команда - главное блюдо пустого раунда:
+	/// рейдеры с intensity 45, купленные в запас 9.8 (прод-раунд), пробили цель почти вдвое
+	/// и заперли антаг-каналы гейтом насыщения до конца смены.
+	var/antag_heavy_load_fraction = 0.5
+	/// Стартовый аванс антаг-кошельков (делится ANTAG/GHOST по pool_shares) поверх общего
+	/// initial_grant: дефицит-капля при живых, но тихих раундстартерах набирала первую
+	/// гост-роль только к ~25-й минуте - аванс сдвигает первый гост-контент к открытию
+	/// его earliest_start, не меняя крейсерский темп (капля та же).
+	var/antag_initial_grant = 8
 	/// Доступны ли профилю тяжёлые антаг-действия (antag_heavy: нюк-асолт, блоб, ксено, терор).
 	/// FALSE у фоновых профилей (Light/Extended): там командный асолт не "редкий", а неуместный.
 	var/antag_heavy_enabled = TRUE
+	/// Окно страховки антаг-роли: если за это время роль окончательно потеряна (смерть, крио,
+	/// деконверсия), неотработанная доля её цены возвращается в ANTAG/GHOST-кошельки.
+	var/antag_loss_refund_window = 40 MINUTES
+	/// Сколько накопленных очков активности полностью "отрабатывают" цену роли. Возврат линейный:
+	/// 0 активности = вся доля цены, половина порога = половина, порог и выше = ничего.
+	var/antag_loss_activity_threshold = 10
 	/// Недоукомплектованная СБ: если офицеров < ceil(экипаж / per_players), веса MAJOR и тяжёлого ANTAG *= penalty
 	var/security_per_players = 12
 	var/security_penalty_mult = 0.5
@@ -152,6 +169,10 @@
 		"disruptionMults" = disruption_weight_mults,
 		"antagPerCrew" = antag_intensity_per_crew,
 		"antagHeavyEnabled" = antag_heavy_enabled,
+		"antagHeavyLoadFraction" = antag_heavy_load_fraction,
+		"antagInitialGrant" = antag_initial_grant,
+		"antagLossRefundWindow" = round(antag_loss_refund_window / (1 MINUTES), 0.1),
+		"antagLossActivityThreshold" = antag_loss_activity_threshold,
 		"maxQuiet" = round(max_quiet_time / (1 MINUTES), 0.1),
 		"quietThreshold" = quiet_intensity_threshold,
 		"securityPerPlayers" = security_per_players,
@@ -175,6 +196,8 @@
 	antag_heavy_enabled = FALSE
 	// Цель нагрузки ниже медиумных 1.5: на 40 экипажа = 36 = 2-3 лёгких антага, не 4.
 	antag_intensity_per_crew = 0.9
+	// Аванс скромнее медиумного: фоновому профилю ранний гост нужен, но не к 15-й минуте.
+	antag_initial_grant = 5
 	family_spacing = 12 MINUTES
 	disruption_weight_mults = list(
 		DIRECTOR_DISRUPTION_AMBIENT = 1,
@@ -187,19 +210,19 @@
 		DIRECTOR_SEVERITY_MODERATE = 10 MINUTES,
 		DIRECTOR_SEVERITY_MAJOR = 60 MINUTES,
 	)
-	antag_light_spacing = 18 MINUTES
+	antag_light_spacing = 20 MINUTES
 	antag_heavy_spacing = 60 MINUTES
-	ghost_light_spacing = 18 MINUTES
+	ghost_light_spacing = 14 MINUTES
 	ghost_heavy_spacing = 60 MINUTES
-	// Доли антаг-пулов подняты с 0.06/0.04: при капле 0.6/мин те копили cost 8-10 по полтора часа,
-	// то есть антагов на Light не существовало вовсе. Light - это "редко и мягко", а не "никогда".
+	// Light держит не больше двух лёгких угроз по antag_target, но чаще берёт госта, чем
+	// конвертирует уже играющего члена экипажа.
 	pool_shares = list(
-		DIRECTOR_SEVERITY_FLAVOR = 0.3,
-		DIRECTOR_SEVERITY_MINOR = 0.3,
-		DIRECTOR_SEVERITY_MODERATE = 0.22,
+		DIRECTOR_SEVERITY_FLAVOR = 0.26,
+		DIRECTOR_SEVERITY_MINOR = 0.27,
+		DIRECTOR_SEVERITY_MODERATE = 0.23,
 		DIRECTOR_SEVERITY_MAJOR = 0,
-		DIRECTOR_SEVERITY_ANTAG = 0.1,
-		DIRECTOR_SEVERITY_GHOST = 0.08,
+		DIRECTOR_SEVERITY_ANTAG = 0.08,
+		DIRECTOR_SEVERITY_GHOST = 0.16,
 	)
 	max_quiet_time = 15 MINUTES
 	quiet_intensity_threshold = 20
@@ -226,6 +249,8 @@
 	// (2.2 на голову: на 40 экипажа цель 88 = ~6 лёгких или 2 тяжёлые команды со свитой),
 	// разгон с первых минут (колено кривой на 10-й) и без спада до второго часа.
 	antag_intensity_per_crew = 2.2
+	// Разгон с первых минут касается и антаг-кошельков: первый гост не позже колена кривой.
+	antag_initial_grant = 12
 	time_curve = list(list(0, 0.7), list(10, 1), list(100, 1), list(130, 0.7))
 	severity_spacing = list(
 		DIRECTOR_SEVERITY_FLAVOR = 4 MINUTES,
@@ -233,19 +258,19 @@
 		DIRECTOR_SEVERITY_MODERATE = 6 MINUTES,
 		DIRECTOR_SEVERITY_MAJOR = 18 MINUTES,
 	)
-	antag_light_spacing = 8 MINUTES
-	antag_heavy_spacing = 20 MINUTES
-	ghost_light_spacing = 8 MINUTES
-	ghost_heavy_spacing = 20 MINUTES
-	// Крен из флейвора в антаг-пулы и мажоры: хардовый час должен состоять из угроз,
-	// фоновый шум пусть занимает паузы, а не долю кошелька.
+	antag_light_spacing = 10 MINUTES
+	antag_heavy_spacing = 22 MINUTES
+	ghost_light_spacing = 6 MINUTES
+	ghost_heavy_spacing = 16 MINUTES
+	// Крен из флейвора в угрозы: GHOST получает вдвое больше ANTAG, потому что большой
+	// каталог гост-ролей задаёт разнообразие, не конвертируя половину экипажа.
 	pool_shares = list(
-		DIRECTOR_SEVERITY_FLAVOR = 0.1,
-		DIRECTOR_SEVERITY_MINOR = 0.18,
-		DIRECTOR_SEVERITY_MODERATE = 0.27,
-		DIRECTOR_SEVERITY_MAJOR = 0.17,
-		DIRECTOR_SEVERITY_ANTAG = 0.15,
-		DIRECTOR_SEVERITY_GHOST = 0.13,
+		DIRECTOR_SEVERITY_FLAVOR = 0.08,
+		DIRECTOR_SEVERITY_MINOR = 0.16,
+		DIRECTOR_SEVERITY_MODERATE = 0.24,
+		DIRECTOR_SEVERITY_MAJOR = 0.16,
+		DIRECTOR_SEVERITY_ANTAG = 0.12,
+		DIRECTOR_SEVERITY_GHOST = 0.24,
 	)
 	max_quiet_time = 8 MINUTES
 	quiet_intensity_threshold = 30
@@ -263,20 +288,23 @@
 	max_active_major = 2
 	// Идентичность Teambased - одна большая война, а не парад одиночек: цель нагрузки 2.0
 	// вмещает тяжёлую роундстарт-команду (45) со свитой, но не две команды разом; события
-	// уступают долю антаг-пулам (0.4 на двоих) и служат фоном конфликта.
+	// уступают долю антаг-пулам (0.45 на двоих) и служат фоном конфликта.
 	antag_intensity_per_crew = 2
+	// Команда - смысл профиля: порог тяжёлых покупок мягче дефолтного, аванс крупнее.
+	antag_heavy_load_fraction = 0.6
+	antag_initial_grant = 10
 	// Антаг-доли профиля не прожать через дефолтные паузы 12/30 - антаг-треки чаще
-	antag_light_spacing = 10 MINUTES
-	antag_heavy_spacing = 25 MINUTES
-	ghost_light_spacing = 10 MINUTES
-	ghost_heavy_spacing = 25 MINUTES
+	antag_light_spacing = 12 MINUTES
+	antag_heavy_spacing = 28 MINUTES
+	ghost_light_spacing = 8 MINUTES
+	ghost_heavy_spacing = 18 MINUTES
 	pool_shares = list(
-		DIRECTOR_SEVERITY_FLAVOR = 0.1,
-		DIRECTOR_SEVERITY_MINOR = 0.15,
-		DIRECTOR_SEVERITY_MODERATE = 0.22,
-		DIRECTOR_SEVERITY_MAJOR = 0.13,
-		DIRECTOR_SEVERITY_ANTAG = 0.22,
-		DIRECTOR_SEVERITY_GHOST = 0.18,
+		DIRECTOR_SEVERITY_FLAVOR = 0.08,
+		DIRECTOR_SEVERITY_MINOR = 0.13,
+		DIRECTOR_SEVERITY_MODERATE = 0.2,
+		DIRECTOR_SEVERITY_MAJOR = 0.14,
+		DIRECTOR_SEVERITY_ANTAG = 0.17,
+		DIRECTOR_SEVERITY_GHOST = 0.28,
 	)
 	max_quiet_time = 10 MINUTES
 	quiet_intensity_threshold = 30
@@ -288,9 +316,9 @@
 	round_type = ROUNDTYPE_EXTENDED
 	desc = "Фоновый профиль: события разбавляют игру, а не ведут её; из антагов - только штучные гост-спавнеры."
 	base_drip = 0.4
-	// Вся антаг-капля уходит в GHOST (доля ANTAG = 0): один мирный гост-спавнер (10) за ~час
+	// Вся антаг-капля уходит в GHOST (доля ANTAG = 0): один мирный гост-спавнер (8-10) за 45-60 минут
 	// хронического дефицита, что и есть штучный темп эксты.
-	antag_drip = 0.15
+	antag_drip = 0.18
 	intensity_cap = 40
 	max_active_major = 0
 	// Самый мягкий профиль: экста - фоновые раунды, события должны разбавлять, а не вести игру.
@@ -309,7 +337,7 @@
 	)
 	global_spacing = 3 MINUTES
 	family_spacing = 15 MINUTES
-	ghost_light_spacing = 25 MINUTES
+	ghost_light_spacing = 20 MINUTES
 	disruption_weight_mults = list(
 		DIRECTOR_DISRUPTION_AMBIENT = 1,
 		DIRECTOR_DISRUPTION_MILD = 0.4,
@@ -318,16 +346,17 @@
 	// ANTAG (экипажные инжекции) на эксте нет вовсе - динамик не регистрирует рулсеты.
 	// GHOST - события-спавнеры из призраков, единственный антаг-канал эксты.
 	pool_shares = list(
-		DIRECTOR_SEVERITY_FLAVOR = 0.45,
+		DIRECTOR_SEVERITY_FLAVOR = 0.43,
 		DIRECTOR_SEVERITY_MINOR = 0.35,
 		DIRECTOR_SEVERITY_MODERATE = 0.12,
 		DIRECTOR_SEVERITY_MAJOR = 0,
 		DIRECTOR_SEVERITY_ANTAG = 0,
-		DIRECTOR_SEVERITY_GHOST = 0.08,
+		DIRECTOR_SEVERITY_GHOST = 0.1,
 	)
 	max_quiet_time = 20 MINUTES
 	quiet_intensity_threshold = 15
 	initial_grant = 0 // экста фоновая: первые полчаса без событий - это нормально
+	antag_initial_grant = 0 // штучный темп гост-спавнеров эксты аванс не ускоряет
 	roundstart_budget_min = 0
 	roundstart_budget_max = 0
 

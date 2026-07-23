@@ -36,3 +36,12 @@
 			transform = ntransform
 			pixel_y = final_pixel_y
 		floating_need_update = TRUE
+
+	update_small_sprite()
+
+/mob/living
+	var/datum/action/sizecode_smallsprite/small_sprite
+
+/mob/living/proc/update_small_sprite()
+	var/datum/atom_hud/alternate_appearance/basic/small_sprite/smallsprite = small_sprite?.smallsprite_WR?.resolve()
+	smallsprite?.update_appearance()

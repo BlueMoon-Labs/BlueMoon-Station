@@ -2560,7 +2560,6 @@
 /area/ruin/space/has_grav/bluemoon/hotel)
 "mF" = (
 /obj/structure/grille,
-/obj/structure/grille,
 /obj/structure/lattice,
 /turf/template_noop,
 /area/space/nearstation)
@@ -10911,7 +10910,6 @@
 /turf/open/floor/plasteel/cafeteria,
 /area/ruin/space/has_grav/bluemoon/hotel/bar)
 "Zy" = (
-/obj/structure/grille,
 /obj/structure/grille,
 /turf/closed/wall/r_wall,
 /area/ruin/space/has_grav/bluemoon/hotel/power)

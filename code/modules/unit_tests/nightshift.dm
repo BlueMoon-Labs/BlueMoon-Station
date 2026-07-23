@@ -175,6 +175,7 @@
 	test_apc.light_cache_dirty = FALSE
 	qdel(test_light, force = TRUE)
 	TEST_ASSERT(test_apc.light_cache_dirty, "Deleting a light in the APC area should dirty the APC light cache.")
+	TEST_ASSERT_NULL(test_apc.cached_area_lights, "Deleting a light should immediately release the APC's cached reference.")
 	qdel(test_apc, force = TRUE)
 	test_area.power_apc = original_area_apc
 

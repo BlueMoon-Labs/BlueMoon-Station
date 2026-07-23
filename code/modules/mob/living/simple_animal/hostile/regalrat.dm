@@ -52,6 +52,12 @@
 		coffer.Trigger()
 	return ..()
 
+//короли-крысы безусловно враждебны друг другу (CanAttack ниже), но делят одну
+//фракцию "rat" - для хэша SSchunks соперник-король не "чужая фракция",
+//и гейт спрятал бы его от AI-короля
+/mob/living/simple_animal/hostile/regalrat/can_use_faction_hash()
+	return FALSE
+
 /mob/living/simple_animal/hostile/regalrat/CanAttack(atom/the_target)
 	if(istype(the_target,/mob/living/simple_animal))
 		var/mob/living/A = the_target

@@ -101,7 +101,7 @@
 
 	if(limb.current_gauze)
 		blood_flow -= limb.current_gauze.absorption_rate * gauzed_clot_rate
-		limb.current_gauze.absorption_capacity -= limb.current_gauze.absorption_rate
+		limb.seep_gauze(limb.current_gauze.absorption_rate)
 
 	if(blood_flow <= 0)
 		qdel(src)

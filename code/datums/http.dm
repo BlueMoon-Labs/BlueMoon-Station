@@ -80,3 +80,25 @@
 
 	var/errored = FALSE
 	var/error
+
+/// Замена world.Export("http://...") для GET-запросов: world.Export исполняет запрос
+/// на главном потоке и держит ВЕСЬ мир до ответа удалённого сервера или таймаута
+/// (waitfor = FALSE не спасает - блок происходит внутри нативного вызова, до всякого
+/// сна). Здесь запрос уходит в rustg, вызывающий прок спит на поллинге, мир тикает.
+/// Возвращает /datum/http_response или null, если ответ не пришёл за timeout.
+/proc/world_safe_http_get(url, timeout = 30 SECONDS)
+	var/datum/http_request/request = new()
+	request.prepare(RUSTG_HTTP_METHOD_GET, url)
+	request.begin_async()
+	var/deadline = world.time + timeout
+	while(!request.is_complete())
+		if(world.time > deadline)
+			return null
+		stoplag()
+	return request.into_response()
+
+/// Fire-and-forget вариант: вызывающий не ждёт (отцепляемся на первом сне), а ответ
+/// всё равно добирается поллингом, чтобы rustg не копил завершённые джобы вечно.
+/proc/world_safe_http_get_async(url)
+	set waitfor = FALSE
+	world_safe_http_get(url)

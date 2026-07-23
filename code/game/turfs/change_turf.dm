@@ -81,6 +81,11 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 		// dynamic_lumcount переносим и здесь: оверлейные источники держат ссылку на турф в
 		// affected_turfs, и обнулённый счётчик позже уходит в постоянный минус при
 		// clean_old_turfs() (свет ушёл - вычли из нуля).
+		// Оверлей света гасим явно: SKIP идёт мимо qdel/Destroy, замена турфа лишь обнуляет
+		// переменную, а сам мувабл остаётся в contents призраком с протухшей матрицей и
+		// рендерит её следующему жильцу блока (освобождение/выдача резерваций).
+		if(lighting_object)
+			lighting_clear_overlay()
 		var/skip_dynamic_lumcount = dynamic_lumcount
 		var/turf/skipped_turf = new path(src)
 		skipped_turf.dynamic_lumcount = skip_dynamic_lumcount

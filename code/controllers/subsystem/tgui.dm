@@ -274,7 +274,7 @@ SUBSYSTEM_DEF(tgui)
 	var/count = 0
 	if(length(user?.tgui_open_uis) == 0)
 		return count
-	for(var/datum/tgui/ui in user.tgui_open_uis)
+	for(var/datum/tgui/ui in user.tgui_open_uis.Copy())
 		if(isnull(src_object) || ui.src_object == src_object)
 			ui.process(wait * 0.1, force = 1)
 			count++
@@ -294,7 +294,7 @@ SUBSYSTEM_DEF(tgui)
 	var/count = 0
 	if(length(user?.tgui_open_uis) == 0)
 		return count
-	for(var/datum/tgui/ui in user.tgui_open_uis)
+	for(var/datum/tgui/ui in user.tgui_open_uis.Copy())
 		if(isnull(src_object) || ui.src_object == src_object)
 			ui.close(logout = logout)
 			count++
@@ -308,6 +308,9 @@ SUBSYSTEM_DEF(tgui)
  * required ui datum/tgui The UI to be added.
  */
 /datum/controller/subsystem/tgui/proc/on_open(datum/tgui/ui)
+	//open() спит на ассетах: qdel датума за это время обнуляет user через Destroy
+	if(QDELETED(ui) || isnull(ui.user))
+		return
 	var/key = "[REF(ui.src_object)]"
 	if(isnull(open_uis_by_src[key]) || !istype(open_uis_by_src[key], /list))
 		open_uis_by_src[key] = list()

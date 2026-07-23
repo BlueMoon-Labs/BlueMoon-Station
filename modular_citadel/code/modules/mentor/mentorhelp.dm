@@ -1,28 +1,34 @@
-/client/verb/mentorhelp(msg as text)
+/client/var/mentorhelptimerid = 0
+
+/client/proc/give_mentorhelp_verb()
+	add_verb(src, /client/verb/mentorhelp)
+	deltimer(mentorhelptimerid)
+	mentorhelptimerid = 0
+
+/client/verb/mentorhelp(msg as text|null)
 	set category = "Mentor"
 	set name = "Mentorhelp"
 
-	//clean the input msg
-	if(!msg)
+	if(GLOB.say_disabled)
+		to_chat(usr, "<span class='danger'>Речь отключена администратором.</span>")
 		return
 
-	//remove out mentorhelp verb temporarily to prevent spamming of mentors.
-	remove_verb(src, /client/verb/mentorhelp)
-	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(add_verb), src, /client/verb/mentorhelp), 30 SECONDS)
-
-	msg = sanitize(copytext_char(msg, 1, MAX_MESSAGE_LEN))
-	if(!msg || !mob)
+	if(msg)
+		msg = sanitize(copytext_char(msg, 1, MAX_MESSAGE_LEN))
+		if(!msg || !mob)
+			return
+		if(GLOB.mentor_tickets?.CKey2Ticket(ckey))
+			to_chat(src, "<span class='warning'>У вас уже есть открытый ментор-тикет.</span>")
+			return
+		new /datum/mentor_ticket(msg, src, FALSE)
 		return
 
-	var/mentor_msg = "<span class='mentornotice'><b><font color='purple'>MENTORHELP:</b> <b>[key_name_mentor(src, TRUE, FALSE, TRUE)]</b>: [msg]</font></span>"
-	log_mentor("MENTORHELP: [key_name_mentor(src, FALSE, FALSE, FALSE)]: [msg]")
+	if(prefs.muted & MUTE_ADMINHELP)
+		to_chat(src, "<span class='danger'>Вы не можете отправлять менторхелпы (Мут).</span>")
+		return
 
-	for(var/client/X in GLOB.mentors | GLOB.admins)
-		SEND_SOUND(X, 'sound/items/bikehorn.ogg')
-		to_chat(X, mentor_msg)
-
-	to_chat(src, "<span class='mentornotice'><font color='purple'>PM to-<b>Mentors</b>: [msg]</font></span>")
-	return
+	var/datum/player_ticket_panel/panel = new(src)
+	panel.ui_interact(usr)
 
 /proc/get_mentor_counts()
 	. = list("total" = 0, "afk" = 0, "present" = 0)

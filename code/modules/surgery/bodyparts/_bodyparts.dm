@@ -147,6 +147,10 @@
 	QDEL_LAZYLIST(scars)
 	if(owner)
 		owner.bodyparts -= src
+		//qdel присоединённой руки мимо drop_limb оставлял протухшую ссылку:
+		//put_in_hand дальше рантаймил на is_disabled с owner=null
+		if(held_index && length(owner.hand_bodyparts) >= held_index && owner.hand_bodyparts[held_index] == src)
+			owner.hand_bodyparts[held_index] = null
 		owner = null
 	return ..()
 
@@ -194,6 +198,8 @@
 		playsound(T, 'sound/misc/splort.ogg', 50, 1, -1)
 	if(current_gauze)
 		QDEL_NULL(current_gauze)
+		if(owner)
+			owner.update_bandage_overlays()
 	for(var/obj/item/organ/drop_organ in get_organs())
 		drop_organ.transfer_to_limb(src, owner)
 
@@ -224,7 +230,7 @@
 //Applies brute and burn damage to the organ. Returns 1 if the damage-icon states changed at all.
 //Damage will not exceed max_damage using this proc
 //Cannot apply negative damage
-/obj/item/bodypart/proc/receive_damage(brute = 0, burn = 0, stamina = 0, blocked = 0, updating_health = TRUE, required_status = null, wound_bonus = 0, bare_wound_bonus = 0, sharpness = SHARP_NONE) // maybe separate BRUTE_SHARP and BRUTE_OTHER eventually somehow hmm
+/obj/item/bodypart/proc/receive_damage(brute = 0, burn = 0, stamina = 0, blocked = 0, updating_health = TRUE, required_status = null, wound_bonus = 0, bare_wound_bonus = 0, sharpness = SHARP_NONE, can_dismember = TRUE) // maybe separate BRUTE_SHARP and BRUTE_OTHER eventually somehow hmm
 	if(owner && (owner.status_flags & GODMODE))
 		return FALSE	//godmode
 	var/dmg_mlt = CONFIG_GET(number/damage_multiplier)
@@ -277,7 +283,7 @@
 				wounding_type = WOUND_BLUNT
 				wounding_dmg *= (easy_dismember ? 3 : 1.5)
 				wounding_dmg *= (glass_bones ? 3 : 1.5)
-			if((mangled_state & BODYPART_MANGLED_BONE) && try_dismember(wounding_type, wounding_dmg, wound_bonus, bare_wound_bonus))
+			if(can_dismember && (mangled_state & BODYPART_MANGLED_BONE) && try_dismember(wounding_type, wounding_dmg, wound_bonus, bare_wound_bonus))
 				return
 		// if we're flesh only, all blunt attacks become weakened slashes in terms of wound damage
 		if(BIO_JUST_FLESH)
@@ -285,7 +291,7 @@
 				wounding_type = WOUND_SLASH
 				wounding_dmg *= (easy_dismember ? 3 : 1.5)
 				wounding_dmg *= (paper_skin ? 3 : 1.5)
-			if((mangled_state & BODYPART_MANGLED_FLESH) && try_dismember(wounding_type, wounding_dmg, wound_bonus, bare_wound_bonus))
+			if(can_dismember && (mangled_state & BODYPART_MANGLED_FLESH) && try_dismember(wounding_type, wounding_dmg, wound_bonus, bare_wound_bonus))
 				return
 		// standard humanoids
 		if(BIO_FLESH_BONE)
@@ -302,7 +308,7 @@
 				if(wounding_type == WOUND_PIERCE && !easy_dismember)
 					wounding_dmg *= 0.75 // piercing weapons pass along 75% of their wounding damage to the bone since it's more concentrated
 				wounding_type = WOUND_BLUNT
-			else if(mangled_state == BODYPART_MANGLED_BOTH && try_dismember(wounding_type, wounding_dmg, wound_bonus, bare_wound_bonus))
+			else if(can_dismember && mangled_state == BODYPART_MANGLED_BOTH && try_dismember(wounding_type, wounding_dmg, wound_bonus, bare_wound_bonus))
 				return
 
 	// now we have our wounding_type and are ready to carry on with wounds and dealing the actual damage
@@ -357,7 +363,7 @@
 	return update_bodypart_damage_state()
 
 /// Allows us to roll for and apply a wound without actually dealing damage. Used for aggregate wounding power with pellet clouds
-/obj/item/bodypart/proc/painless_wound_roll(wounding_type, phantom_wounding_dmg, wound_bonus, bare_wound_bonus, sharpness=SHARP_NONE)
+/obj/item/bodypart/proc/painless_wound_roll(wounding_type, phantom_wounding_dmg, wound_bonus, bare_wound_bonus, sharpness=SHARP_NONE, can_dismember = TRUE)
 	if(!owner || phantom_wounding_dmg <= WOUND_MINIMUM_DAMAGE || wound_bonus == CANT_WOUND)
 		return
 
@@ -381,7 +387,7 @@
 			else if(wounding_type == WOUND_PIERCE)
 				wounding_type = WOUND_BLUNT
 				phantom_wounding_dmg *= (easy_dismember ? 1 : 0.75)
-			if((mangled_state & BODYPART_MANGLED_BONE) && try_dismember(wounding_type, phantom_wounding_dmg, wound_bonus, bare_wound_bonus))
+			if(can_dismember && (mangled_state & BODYPART_MANGLED_BONE) && try_dismember(wounding_type, phantom_wounding_dmg, wound_bonus, bare_wound_bonus))
 				return
 		// note that there's no handling for BIO_JUST_FLESH since we don't have any that are that right now (slimepeople maybe someday)
 		// standard humanoids
@@ -395,7 +401,7 @@
 				if(wounding_type == WOUND_PIERCE && !easy_dismember)
 					phantom_wounding_dmg *= 0.75 // piercing weapons pass along 75% of their wounding damage to the bone since it's more concentrated
 				wounding_type = WOUND_BLUNT
-			else if(mangled_state == BODYPART_MANGLED_BOTH && try_dismember(wounding_type, phantom_wounding_dmg, wound_bonus, bare_wound_bonus))
+			else if(can_dismember && mangled_state == BODYPART_MANGLED_BOTH && try_dismember(wounding_type, phantom_wounding_dmg, wound_bonus, bare_wound_bonus))
 				return
 
 	check_wounding(wounding_type, phantom_wounding_dmg, wound_bonus, bare_wound_bonus)
@@ -1080,7 +1086,7 @@
 /**
   * update_wounds() is called whenever a wound is gained or lost on this bodypart, as well as if there's a change of some kind on a bone wound possibly changing disabled status
   *
-  * Covers tabulating the damage multipliers we have from wounds (burn specifically), as well as deleting our gauze wrapping if we don't have any wounds that can use bandaging
+  * Covers tabulating the damage multipliers we have from wounds (burn specifically)
   *
   * Arguments:
   * * replaced- If true, this is being called from the remove_wound() of a wound that's being replaced, so the bandage that already existed is still relevant, but the new wound hasn't been added yet
@@ -1093,10 +1099,6 @@
 		var/datum/wound/iter_wound = i
 		dam_mul *= iter_wound.damage_mulitplier_penalty
 
-	if(!LAZYLEN(wounds) && current_gauze && !replaced)
-		owner.visible_message("<span class='notice'>\The [current_gauze] on [owner]'s [name] fall away.</span>", "<span class='notice'>The [current_gauze] on your [name] fall away.</span>")
-		QDEL_NULL(current_gauze)
-		owner.update_bandage_overlays()
 	wound_damage_multiplier = dam_mul
 	update_disabled()
 	update_part_wound_overlay()
@@ -1178,8 +1180,7 @@
   *
   * As of the Wounds 2 PR, all bleeding is now bodypart based rather than the old bleedstacks system, and 90% of standard bleeding comes from flesh wounds (the exception is embedded weapons).
   * The same way bleeding is totaled up by bodyparts, gauze now applies to all wounds on the same part. Thus, having a slash wound, a pierce wound, and a broken bone wound would have the gauze
-  * applying blood staunching to the first two wounds, while also acting as a sling for the third one. Once enough blood has been absorbed or all wounds with the ACCEPTS_GAUZE flag have been cleared,
-  * the gauze falls off.
+  * applying blood staunching to the first two wounds, while also acting as a sling for the third one. Gauze must be removed manually via self-examination.
   *
   * Arguments:
   * * gauze- Just the gauze stack we're taking a sheet from to apply here
@@ -1196,7 +1197,7 @@
 /**
   * seep_gauze() is for when a gauze wrapping absorbs blood or pus from wounds, lowering its absorption capacity.
   *
-  * The passed amount of seepage is deducted from the bandage's absorption capacity, and if we reach a negative absorption capacity, the bandages fall off and we're left with nothing.
+  * The passed amount of seepage is deducted from the bandage's absorption capacity, clamped at zero.
   *
   * Arguments:
   * * seep_amt - How much absorption capacity we're removing from our current bandages (think, how much blood or pus are we soaking up this tick?)
@@ -1204,8 +1205,26 @@
 /obj/item/bodypart/proc/seep_gauze(seep_amt = 0)
 	if(!current_gauze)
 		return
-	current_gauze.absorption_capacity -= seep_amt
-	if(current_gauze.absorption_capacity < 0)
-		owner.visible_message("<span class='danger'>\The [current_gauze] on [owner]'s [name] fall away in rags.</span>", "<span class='warning'>\The [current_gauze] on your [name] fall away in rags.</span>", vision_distance=COMBAT_MESSAGE_RANGE)
-		QDEL_NULL(current_gauze)
-		owner.update_bandage_overlays()
+	var/old_capacity = current_gauze.absorption_capacity
+	current_gauze.absorption_capacity = max(0, current_gauze.absorption_capacity - seep_amt)
+	if(old_capacity > 0 && !current_gauze.absorption_capacity && owner)
+		owner.balloon_alert(owner, "[current_gauze] пропитался кровью, его пора снимать")
+
+/**
+  * remove_gauze() removes the gauze wrapping from this bodypart and returns it to the user.
+  *
+  * Arguments:
+  * * user - The mob removing the gauze
+  * * to_hands - If TRUE, attempt to place the gauze in the user's hands
+  */
+/obj/item/bodypart/proc/remove_gauze(mob/user, to_hands = TRUE)
+	if(!current_gauze || !owner)
+		return FALSE
+	var/obj/item/stack/medical/gauze/removed = current_gauze
+	var/mob/living/carbon/gauze_owner = owner
+	current_gauze = null
+	removed.forceMove(user || gauze_owner)
+	if(to_hands && user)
+		user.put_in_hands(removed)
+	gauze_owner.update_bandage_overlays()
+	return TRUE

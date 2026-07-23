@@ -91,7 +91,9 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 		return FALSE
 	var/mob/current = M.current
 	if(!current)
-		return FALSE
+		// A gibbed/dusted target no longer has a body by round end. Cryo targets are
+		// rerolled by cryo_handle_objectives() before their body is deleted.
+		return TRUE
 	if(isobserver(current))
 		return TRUE
 	if(isliving(current))

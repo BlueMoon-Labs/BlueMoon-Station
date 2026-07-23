@@ -70,11 +70,36 @@
 	to_chat(user, "<span class='warning'>You irradiate yourself with pure energy! \
 	[pick("Do not pass go. Do not collect 200 zorkmids.","You feel more confident in your spell casting skills.","You Die...","Do you want your possessions identified?")]\
 	</span>")
-	user.adjustOxyLoss(500)
+	user.death(FALSE)
 	charges--
 
 /obj/item/gun/magic/wand/death/debug
 	desc = "In some obscure circles, this is known as the 'cloning tester's friend'."
+	max_charges = 500
+	variable_charges = FALSE
+	can_charge = TRUE
+	recharge_rate = 1
+
+/////////////////////////////////////
+//WAND OF DUST
+/////////////////////////////////////
+
+/obj/item/gun/magic/wand/dust
+	name = "wand of dust"
+	desc = "Erases creatures from reality."
+	fire_sound = 'sound/magic/wandodeath.ogg'
+	ammo_type = /obj/item/ammo_casing/magic/dust
+	icon_state = "deathwand"
+	max_charges = 3
+
+/obj/item/gun/magic/wand/dust/zap_self(mob/living/user)
+	. = ..()
+	charges--
+	to_chat(user, span_warning("You irradiate yourself with pure energy! You just disappeared, and that's the end of your story."))
+	user.dust(TRUE, FALSE)
+
+/obj/item/gun/magic/wand/dust/debug
+	name = "debug wand of dust"
 	max_charges = 500
 	variable_charges = FALSE
 	can_charge = TRUE

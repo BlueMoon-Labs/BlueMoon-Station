@@ -253,32 +253,36 @@
 
 //remove the old powernet and replace it with a new one throughout the network.
 /proc/propagate_network(obj/O, datum/powernet/PN)
+	//ассоц-списки вместо `|=` (tg-схема): `|=` сканирует весь worklist на каждую
+	//вставку - O(n^2) на станционной сетке, ассоц-проверка ключа за O(1).
+	//Взрыв с резкой магистрали давал >1с одного propagate именно на этом.
 	var/list/worklist = list()
 	var/list/found_machines = list()
 	var/index = 1
 	var/obj/P = null
 
-	worklist+=O //start propagating from the passed object
+	worklist[O] = TRUE //start propagating from the passed object
 
-	while(index<=worklist.len) //until we've exhausted all power objects
+	while(index <= length(worklist)) //until we've exhausted all power objects
 		P = worklist[index] //get the next power object found
 		index++
 
-		if( istype(P, /obj/structure/cable))
+		if(istype(P, /obj/structure/cable))
 			var/obj/structure/cable/C = P
 			if(C.powernet != PN) //add it to the powernet, if it isn't already there
 				PN.add_cable(C)
-			worklist |= C.get_connections() //get adjacents power objects, with or without a powernet
+			for(var/obj/connection as anything in C.get_connections()) //get adjacents power objects, with or without a powernet
+				if(!worklist[connection])
+					worklist[connection] = TRUE
 
 		else if(P.anchored && istype(P, /obj/machinery/power))
-			var/obj/machinery/power/M = P
-			found_machines |= M //we wait until the powernet is fully propagates to connect the machines
+			found_machines[P] = TRUE //we wait until the powernet is fully propagates to connect the machines
 
 		else
 			continue
 
 	//now that the powernet is set, connect found machines to it
-	for(var/obj/machinery/power/PM in found_machines)
+	for(var/obj/machinery/power/PM as anything in found_machines)
 		if(!PM.connect_to_network()) //couldn't find a node on its turf...
 			PM.disconnect_from_network() //... so disconnect if already on a powernet
 

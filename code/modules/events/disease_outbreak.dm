@@ -15,7 +15,9 @@
 	var/max_severity = 3
 
 /datum/round_event_control/disease_outbreak/can_fire(datum/director_signals/signals)
-	if(!..()) return FALSE
+	. = ..()
+	if(!.)
+		return
 	return director_has_living_role(list("Medical Doctor","Chief Medical Officer","Paramedic","AI","Chemist","Virologist","Captain","Head of Personnel", "Geneticist"))
 
 /datum/round_event/disease_outbreak/announce(fake)

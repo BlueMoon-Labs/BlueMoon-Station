@@ -184,13 +184,13 @@
 			prey_braindead = TRUE
 	if (pred == user)
 		message_admins("[ADMIN_LOOKUPFLW(pred)] ate [ADMIN_LOOKUPFLW(prey)][!prey_braindead ? "" : " (BRAINDEAD)"][prey_stat ? " (DEAD/UNCONSCIOUS)" : ""].")
-		pred.log_message("[key_name(pred)] ate [key_name(prey)].", LOG_ATTACK)
-		prey.log_message("[key_name(prey)] was eaten by [key_name(pred)].", LOG_ATTACK)
+		pred.log_message("[key_name(pred)] ate [key_name(prey)].", LOG_ATTACK, target = prey)
+		prey.log_message("[key_name(prey)] was eaten by [key_name(pred)].", LOG_ATTACK, target = pred)
 	else
 		message_admins("[ADMIN_LOOKUPFLW(user)] forced [ADMIN_LOOKUPFLW(pred)] to eat [ADMIN_LOOKUPFLW(prey)].")
-		user.log_message("[key_name(user)] forced [key_name(pred)] to eat [key_name(prey)].", LOG_ATTACK)
-		pred.log_message("[key_name(user)] forced [key_name(pred)] to eat [key_name(prey)].", LOG_ATTACK)
-		prey.log_message("[key_name(user)] forced [key_name(pred)] to eat [key_name(prey)].", LOG_ATTACK)
+		user.log_message("[key_name(user)] forced [key_name(pred)] to eat [key_name(prey)].", LOG_ATTACK, target = pred)
+		pred.log_message("[key_name(user)] forced [key_name(pred)] to eat [key_name(prey)].", LOG_ATTACK, target = prey)
+		prey.log_message("[key_name(user)] forced [key_name(pred)] to eat [key_name(prey)].", LOG_ATTACK, target = pred)
 	return TRUE
 
 //

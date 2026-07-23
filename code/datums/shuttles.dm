@@ -176,6 +176,13 @@
 	port_id = "pirate"
 	can_be_bought = FALSE
 
+/datum/map_template/shuttle/medieval
+	prefix = "_maps/shuttles/bluemoon/"
+	port_id = "medieval"
+	suffix = "default"
+	name = "Flying scrap"
+	can_be_bought = FALSE
+
 /datum/map_template/shuttle/hunter
 	port_id = "hunter"
 	can_be_bought = FALSE

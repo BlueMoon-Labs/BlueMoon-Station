@@ -31,7 +31,7 @@
 
 /datum/sprite_accessory/penis/teshari
 	icon_state = "taperedteshari"
-	name = "Teshari(For Teshari Only)"
+	name = "Teshari (For Teshari Only)"
 	ru_name = "тешарьский"
 	icon = 'modular_splurt/icons/obj/genitals/teshari_penis.dmi'
 

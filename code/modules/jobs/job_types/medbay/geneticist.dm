@@ -11,7 +11,7 @@
 	exp_type = EXP_TYPE_CREW
 	exp_requirements = 60
 	alt_titles = list(
-		"Genetist Intern", //Стажер выше, для удобства
+		"Geneticist Intern", //Стажер выше, для удобства
 		"Bioengineer",
 		"Gene Tailor",
 		"Gene Therapist",

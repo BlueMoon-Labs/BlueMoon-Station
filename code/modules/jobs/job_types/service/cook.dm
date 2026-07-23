@@ -10,6 +10,7 @@
 	selection_color = "#bbe291"
 	var/cooks = 0 //Counts cooks amount
 	alt_titles = list(
+		"Junior Cook", //Стажер выше, для удобства
 		"Waffle Co. Specialist", //Триглав выше, для удобства
 		"All-American Diner Employee",
 		"Baker",

@@ -332,12 +332,12 @@
 /obj/item/mod/module/anomaly_locked/attackby(obj/item/item, mob/living/user, params)
 	if(item.type in accepted_anomalies)
 		if(core)
-			mod.balloon_alert(user, "ядро уже внутри!")
+			mod?.balloon_alert(user, "ядро уже внутри!")
 			return
 		if(!user.transferItemToLoc(item, src))
 			return
 		core = item
-		mod.balloon_alert(user, "ядро установлено")
+		mod?.balloon_alert(user, "ядро установлено")
 		playsound(src, 'sound/machines/click.ogg', 30, TRUE)
 		update_icon_state()
 	else
@@ -346,13 +346,13 @@
 /obj/item/mod/module/anomaly_locked/screwdriver_act(mob/living/user, obj/item/tool)
 	. = ..()
 	if(!core)
-		mod.balloon_alert(user, "нет ядра!")
+		mod?.balloon_alert(user, "нет ядра!")
 		return
-	mod.balloon_alert(user, "изъятие ядра...")
+	mod?.balloon_alert(user, "изъятие ядра...")
 	if(!do_after(user, 3 SECONDS, target = src))
-		mod.balloon_alert(user, "прервано!")
+		mod?.balloon_alert(user, "прервано!")
 		return
-	mod.balloon_alert(user, "ядро изъято")
+	mod?.balloon_alert(user, "ядро изъято")
 	core.forceMove(drop_location())
 	if(Adjacent(user) && !issilicon(user))
 		user.put_in_hands(core)
