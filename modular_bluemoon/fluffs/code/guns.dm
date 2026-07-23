@@ -58,7 +58,7 @@
 
 // Прок для корректной замены деталей у оружия, не перезаписывайте его
 /obj/item/modkit/proc/gun_to_gun_replace(obj/item/gun/target, obj/item/gun/result)
-	SHOULD_CALL_PARENT
+	SHOULD_CALL_PARENT(TRUE)
 	if(!istype(target) || !istype(result))
 		return
 
@@ -71,6 +71,10 @@
 
 		TRANSFER_ATOM_VAR(target_b, result_b, chambered)
 		TRANSFER_ATOM_VAR(target_b, result_b, magazine)
+		if(result_b.can_bayonet)
+			TRANSFER_ATOM_VAR(target_b, result_b, bayonet)
+		if(result_b.can_flashlight)
+			TRANSFER_ATOM_VAR(target_b, result_b, gun_light)
 
 	result.update_appearance()
 
@@ -1662,3 +1666,45 @@
 	var/fill_level = round(magazine.stored_ammo.len / magazine.max_ammo * 6)
 	if(fill_level < 6)
 		. += "pulsar-[fill_level]"
+
+///////////////////////////////////////////////
+/obj/item/modkit/warder_9r
+	name = "9R Warder kit"
+	desc = "A modkit for making an WT-550 PDW into a 9R Warder."
+	icon = 'modular_bluemoon/icons/obj/guns/gunkit.dmi'
+	icon_state = "kitsuitcase"
+	product = /obj/item/gun/ballistic/automatic/wt550/warder_9r
+	fromitem = list(/obj/item/gun/ballistic/automatic/wt550, /obj/item/gun/ballistic/automatic/wt550/standart)
+
+/obj/item/gun/ballistic/automatic/wt550/warder_9r
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "\improper 9R Warder"
+	desc = "The 9R Warder pistol was developed as an improved version of the civilian HK MP5K submachine gun. It fires 4.6x30mm bullets and features attachments for a bayonet and a silencer. It boasts good accuracy at medium and close ranges. It is often used by mercenaries in certain sectors of the frontier. The model has been repainted to match the owner's style."
+	icon = 'modular_bluemoon/fluffs/icons/obj/64x32.dmi'
+	icon_state = "warder_9r"
+	item_state = "warder_9r"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/warder_r9_shoot.ogg'
+	base_pixel_x = -10
+	unique_reskin = list(
+		"Default" = list(),
+		"Alt" = list(
+			RESKIN_ICON_STATE = "warder_9r-alt"
+		)
+	)
+
+/obj/item/gun/ballistic/automatic/wt550/warder_9r/update_icon_state()
+	icon_state = current_skin ? unique_reskin[current_skin]["icon_state"] : initial(icon_state)
+	if(!magazine)
+		icon_state += "-e"
+
+/obj/item/gun/ballistic/automatic/wt550/warder_9r/get_bayonet_overlay()
+	if(!bayonet)
+		return
+	return mutable_appearance(icon, "[initial(icon_state)]-bayonet")
+
+/obj/item/gun/ballistic/automatic/wt550/warder_9r/update_overlays()
+	. = ..()
+	if(suppressed)
+		. += "[initial(icon_state)]-suppressor"

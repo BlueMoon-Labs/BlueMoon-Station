@@ -323,14 +323,16 @@
 	return ..()
 
 //////////////////////////////////////////////////
-/obj/item/storage/box/donator/bm/cz_75_box
-	name = "CZ-75 Kits Box"
-	desc = "Коробка с наборами для Mk. 58 Enforcer."
+// Принадлежит shizalrp
+/obj/item/storage/box/donator/bm/personal_ward
+	name = "Personal Ward Box"
+	desc = "Коробка с модификациями оружия."
 	icon_state = "secbox_xl"
 
-/obj/item/storage/box/donator/bm/cz_75_box/PopulateContents()
+/obj/item/storage/box/donator/bm/personal_ward/PopulateContents()
 	var/static/items_inside = list(
 		/obj/item/modkit/cz_75,
 		/obj/item/modkit/cz_75_auto,
+		/obj/item/modkit/warder_9r,
 	)
 	generate_items_inside(items_inside, src)
