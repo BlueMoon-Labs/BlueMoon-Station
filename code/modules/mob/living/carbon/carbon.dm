@@ -41,6 +41,17 @@
 	//фантом items-галлюцинации живёт в nullspace и без qdel утёк бы насовсем
 	QDEL_NULL(halitem)
 
+/mob/living/carbon/execute_mode(obj/item/expected_item)
+	. = ..()
+	if(!isnull(.))
+		return
+
+	// Активация имплантов в руке
+	var/obj/item/organ/cyberimp/arm/implant = getorganslot((active_hand_index % 2 == 0) ? ORGAN_SLOT_RIGHT_ARM_AUG : ORGAN_SLOT_LEFT_ARM_AUG)
+	if(!implant?.activate_allowed(user = src, silent = FALSE))
+		return
+	implant.ui_action_click(src)
+
 /mob/living/carbon/proc/get_breath_buffer()
 	if(!breath_buffer)
 		breath_buffer = new
