@@ -1239,7 +1239,9 @@
 	enemy_roles = list("Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security", "Bridge Officer", "Captain")
 	required_enemies = list(0,0,0,0,0,5,4,3,3,0)
 	required_candidates = 1
-	weight = 6
+	// Выпадал в 3 из 5 динамик-раундов логов 9766-9775, а удешевление ниже сделает его
+	// ещё более частой целью копилки - вес вниз, чтобы не вернулась монополия дьявола.
+	weight = 4
 	// Контрактно-соушл антаг: за раунды 9767/9771 ни строчки в attack.log, но по цене 10
 	// осушал гост-кошелёк, а intensity 15 вместе с тихим еретиком держала пул в
 	// antag_saturated почти полчаса. Редкий разгон до истинного дьявола докрутит
