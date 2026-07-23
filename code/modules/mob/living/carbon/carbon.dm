@@ -53,6 +53,7 @@
 	if(!implant.activate_allowed(user = src, silent = FALSE))
 		return FALSE
 	implant.ui_action_click(src)
+	return TRUE
 
 /mob/living/carbon/proc/get_breath_buffer()
 	if(!breath_buffer)
