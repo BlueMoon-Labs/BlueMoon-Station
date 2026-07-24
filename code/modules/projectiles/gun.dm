@@ -771,6 +771,8 @@
 	return flashlight_overlay
 
 /obj/item/gun/proc/get_bayonet_overlay()
+	if(!bayonet)
+		return
 	var/mutable_appearance/knife_overlay
 	var/state = "bayonet"							//Generic state.
 	if(bayonet.icon_state in icon_states('icons/obj/guns/bayonets.dmi'))		//Snowflake state?
