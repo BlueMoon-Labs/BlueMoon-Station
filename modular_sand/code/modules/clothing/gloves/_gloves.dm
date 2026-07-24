@@ -46,7 +46,7 @@
 		if(user && !silent)
 			to_chat(user, "<span class='warning'>[src] is too bulky and cannot have accessories attached to it!</span>")
 		return
-	if(user && !user.temporarilyRemoveItemFromInventory(accessory))
+	if(user && !user.dropItemToGround(accessory, silent = silent))
 		return
 	if(!accessory.attach(src, user))
 		return

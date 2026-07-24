@@ -202,7 +202,7 @@
 			to_chat(user, "<span class='warning'>[src] слишком громоздкое, к нему нельзя крепить аксессуары!</span>")
 		return
 	else
-		if(user && !user.temporarilyRemoveItemFromInventory(accessory))
+		if(user && !user.dropItemToGround(accessory, silent = silent))
 			return
 		if(!accessory.attach(src, user))
 			accessory.forceMove(drop_location()) // user.put_in_hands() вызывает где-то у себя в глубине stoplag(), что не нравится Initialize()
