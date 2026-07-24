@@ -1451,8 +1451,6 @@
 	base_pixel_y = -4; \
 \
 	get_gunlight_overlay() { \
-		if(!gun_light) \
-			return; \
 		var/mutable_appearance/flashlight_overlay = mutable_appearance(icon, "[initial(icon_state)]-flashlight[gun_light.on ? "-on" : ""]"); \
 		if(!chambered) \
 			flashlight_overlay.pixel_x++; \
@@ -1700,8 +1698,6 @@
 		icon_state += "-e"
 
 /obj/item/gun/ballistic/automatic/wt550/warder_9r/get_bayonet_overlay()
-	if(!bayonet)
-		return
 	return mutable_appearance(icon, "[initial(icon_state)]-bayonet")
 
 /obj/item/gun/ballistic/automatic/wt550/warder_9r/update_overlays()
