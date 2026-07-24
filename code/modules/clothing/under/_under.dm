@@ -157,91 +157,92 @@
 	..()
 
 
-/obj/item/clothing/under/attach_accessory(obj/item/I, mob/user, notifyAttach = TRUE)
+/obj/item/clothing/under/attach_accessory(obj/item/clothing/accessory/accessory, mob/user, silent = FALSE)
 	. = FALSE
-	if(istype(I, /obj/item/clothing/accessory) && !istype(I, /obj/item/clothing/accessory/ring))
-		var/obj/item/clothing/accessory/A = I
-		// BLUEMOON EDIT START - изменение аксессуаров
-		// Проверка на общее количество
-		if(length(accessories_attached) >= max_accessories)
-			if(user)
-				to_chat(user, "<span class='warning'>[src] уже имеет [length(accessories_attached)] аксессуаров.</span>")
+	if(istype(accessory, /obj/item/clothing/accessory/ring))
+		return
+	// BLUEMOON EDIT START - изменение аксессуаров
+	// Проверка на общее количество
+	if(length(accessories_attached) >= max_accessories)
+		if(user && !silent)
+			to_chat(user, "<span class='warning'>[src] уже имеет [length(accessories_attached)] аксессуаров.</span>")
+		return
+	// Проверка на количество особых / боевых
+	if(accessory.restricted_accessory && length(accessories_attached))
+		var/restricted_accesories_count = 0
+		for(var/obj/item/clothing/accessory/already_attached in accessories_attached)
+			if(already_attached.restricted_accessory)
+				restricted_accesories_count++
+		if(restricted_accesories_count >= max_restricted_accessories)
+			if(user && !silent)
+				to_chat(user, "<span class='warning'> К [src] некуда прикреплять очередной боевой аксессуар, на ней их уже [restricted_accesories_count]</span>")
 			return
-		// Проверка на количество особых / боевых
-		if(A.restricted_accessory && length(accessories_attached))
-			var/restricted_accesories_count = 0
-			for(var/obj/item/clothing/accessory/already_attached in accessories_attached)
-				if(already_attached.restricted_accessory)
-					restricted_accesories_count++
-			if(restricted_accesories_count >= max_restricted_accessories)
-				if(user)
-					to_chat(user, "<span class='warning'> К [src] некуда прикреплять очередной боевой аксессуар, на ней их уже [restricted_accesories_count]</span>")
-				return
-		// Проверка на максимальное количество аксессуаров одного вида
-		if(A.max_stack != -1 && length(accessories_attached))
-			var/similar_accessory_count = 0
-			for(var/obj/item/clothing/accessory/already_attached in accessories_attached)
-				if(already_attached.max_stack == -1)
-					continue
-				// У обоих аксессуаров может быть указан родительский класс, все дочерние классы которого не могут стакаться
-				// друг с другом без ограничений
-				if(already_attached.max_stack_path && A.max_stack_path)
-					if(already_attached.max_stack_path == A.max_stack_path)
-						similar_accessory_count++
-				// Если не указан, проверяем, чтобы оба предмета не были дочерними классами друг друга
-				else if(istype(A, already_attached.type) || istype(already_attached.type, A))
+	// Проверка на максимальное количество аксессуаров одного вида
+	if(accessory.max_stack != -1 && length(accessories_attached))
+		var/similar_accessory_count = 0
+		for(var/obj/item/clothing/accessory/already_attached in accessories_attached)
+			if(already_attached.max_stack == -1)
+				continue
+			// У обоих аксессуаров может быть указан родительский класс, все дочерние классы которого не могут стакаться
+			// друг с другом без ограничений
+			if(already_attached.max_stack_path && accessory.max_stack_path)
+				if(already_attached.max_stack_path == accessory.max_stack_path)
 					similar_accessory_count++
-			if(similar_accessory_count >= A.max_stack)
-				if(user)
-					to_chat(user, "<span class='warning'> На [src] уже слишком много похожих на [A] аксессуаров!</span>")
-				return
-		// BLUEMOON EDIT END
-
-		if(dummy_thick)
-			if(user)
-				to_chat(user, "<span class='warning'>[src] слишком громоздкое, к нему нельзя крепить аксессуары!</span>")
+			// Если не указан, проверяем, чтобы оба предмета не были дочерними классами друг друга
+			else if(istype(accessory, already_attached.type) || istype(already_attached.type, accessory))
+				similar_accessory_count++
+		if(similar_accessory_count >= accessory.max_stack)
+			if(user && !silent)
+				to_chat(user, "<span class='warning'> На [src] уже слишком много похожих на [accessory] аксессуаров!</span>")
 			return
-		else
-			if(user && !user.temporarilyRemoveItemFromInventory(A))
-				return
-			if(!A.attach(src, user))
-				A.forceMove(drop_location()) // user.put_in_hands() вызывает где-то у себя в глубине stoplag(), что не нравится Initialize()
-				return
+	// BLUEMOON EDIT END
 
-			if(user && notifyAttach)
-				to_chat(user, "<span class='notice'>Вы прикрепили [A] к [src].</span>")
+	if(dummy_thick)
+		if(user && !silent)
+			to_chat(user, "<span class='warning'>[src] слишком громоздкое, к нему нельзя крепить аксессуары!</span>")
+		return
+	else
+		if(user && !user.temporarilyRemoveItemFromInventory(accessory))
+			return
+		if(!accessory.attach(src, user))
+			accessory.forceMove(drop_location()) // user.put_in_hands() вызывает где-то у себя в глубине stoplag(), что не нравится Initialize()
+			return
 
-			if((flags_inv & HIDEACCESSORY) || (A.flags_inv & HIDEACCESSORY))
-				return TRUE
+		if(user && !silent)
+			to_chat(user, "<span class='notice'>Вы прикрепили [accessory] к [src].</span>")
 
-			if(ishuman(loc))
-				var/mob/living/carbon/human/H = loc
-				H.update_inv_w_uniform()
-				H.update_inv_wear_suit()
-
+		if((flags_inv & HIDEACCESSORY) || (accessory.flags_inv & HIDEACCESSORY))
 			return TRUE
-
-/obj/item/clothing/under/proc/remove_accessory(mob/user)
-	if(!isliving(user))
-		return
-	if(!can_use(user))
-		return
-
-	//SKYRAT EDIT
-	if(length(accessories_attached))
-		var/obj/item/clothing/accessory/A = accessories_attached[length(accessories_attached)]
-	//SKYRAT EDIT END
-		A.detach(src, user)
-		if(user.put_in_hands(A))
-			to_chat(user, "<span class='notice'>Вы открепили [A] от [src].</span>")
-		else
-			to_chat(user, "<span class='notice'>Вы открепили [A] от [src] с падением предмета на пол.</span>")
 
 		if(ishuman(loc))
 			var/mob/living/carbon/human/H = loc
 			H.update_inv_w_uniform()
 			H.update_inv_wear_suit()
 
+		return TRUE
+
+/obj/item/clothing/under/remove_accessory(obj/item/clothing/accessory/accessory, mob/user, silent = FALSE)
+	. = FALSE
+	if(!isliving(user))
+		return
+	if(!accessory && !can_use(user))
+		return
+
+	if(!LAZYLEN(accessories_attached))
+		return
+	accessory = (accessories_attached.Find(accessory) && accessory) || accessories_attached[length(accessories_attached)]
+	if(!istype(accessory))
+		return
+	accessory.detach(src, user)
+	var/in_hand = user.put_in_hands(accessory, FALSE)
+	if(!silent)
+		to_chat(user, span_notice("Вы открепили [accessory] от [src][in_hand ? null : " с падением предмета на пол"]."))
+
+	if(ishuman(loc))
+		var/mob/living/carbon/human/H = loc
+		H.update_inv_w_uniform()
+		H.update_inv_wear_suit()
+	return TRUE
 
 /obj/item/clothing/under/examine(mob/user)
 	. = ..()
@@ -373,7 +374,7 @@
 	if(. || !istype(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user), TRUE, FALSE))
 		return
 	if(length(accessories_attached)) //SKYRAT EDIT
-		remove_accessory(user)
+		remove_accessory(user = user)
 	else
 		rolldown()
 

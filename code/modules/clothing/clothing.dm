@@ -610,7 +610,10 @@ BLIND     // can't see anything
 /obj/item/clothing/proc/attack_reaction(mob/living/L, reaction_type, mob/living/carbon/human/T = null)
 	return
 
-/obj/item/clothing/proc/attach_accessory(obj/item/I, mob/user, notifyAttach = TRUE)
+/obj/item/clothing/proc/attach_accessory(obj/item/clothing/accessory/accessory, mob/user, silent = FALSE)
+	return FALSE
+
+/obj/item/clothing/proc/remove_accessory(obj/item/clothing/accessory/accessory, mob/user, silent = FALSE)
 	return FALSE
 
 /obj/item/clothing/proc/on_reinforcement(kit_flag, reinforced_to)

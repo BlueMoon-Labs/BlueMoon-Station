@@ -20,7 +20,7 @@
 	if(!istype(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user), TRUE, FALSE))
 		return
 	if(length(accessories_attached))
-		remove_accessory(user)
+		remove_accessory(user = user)
 
 /obj/item/clothing/gloves/equipped(mob/user, slot)
 	..()
@@ -34,16 +34,16 @@
 		attached_accessory.on_uniform_dropped(src, user)
 	..()
 
-/obj/item/clothing/gloves/attach_accessory(obj/item/clothing/accessory/ring/accessory, mob/user, notifyAttach = TRUE)
+/obj/item/clothing/gloves/attach_accessory(obj/item/clothing/accessory/accessory, mob/user, silent = FALSE)
 	. = FALSE
 	if(!istype(accessory))
 		return
 	if(length(accessories_attached) >= max_accessories)
-		if(user)
+		if(user && !silent)
 			to_chat(user, "<span class='warning'>[src] already has [length(accessories_attached)] accessories.</span>")
 		return
 	if(dummy_thick)
-		if(user)
+		if(user && !silent)
 			to_chat(user, "<span class='warning'>[src] is too bulky and cannot have accessories attached to it!</span>")
 		return
 	if(user && !user.temporarilyRemoveItemFromInventory(accessory))
@@ -51,7 +51,7 @@
 	if(!accessory.attach(src, user))
 		return
 
-	if(user && notifyAttach)
+	if(user && !silent)
 		to_chat(user, "<span class='notice'>You attach [accessory] to [src].</span>")
 
 	if((flags_inv & HIDEACCESSORY) || (accessory.flags_inv & HIDEACCESSORY))
@@ -63,24 +63,27 @@
 
 	return TRUE
 
-/obj/item/clothing/gloves/proc/remove_accessory(mob/user)
+/obj/item/clothing/gloves/remove_accessory(obj/item/clothing/accessory/accessory, mob/user, silent = FALSE)
+	. = FALSE
 	if(!isliving(user))
 		return
-	if(!can_use(user))
+	if(!accessory && !can_use(user))
 		return
 
 	if(!LAZYLEN(accessories_attached))
 		return
-	var/obj/item/clothing/accessory/ring/accessory = accessories_attached[length(accessories_attached)]
+	accessory = (accessories_attached.Find(accessory) && accessory) || accessories_attached[length(accessories_attached)]
+	if(!istype(accessory))
+		return
 	accessory.detach(src, user)
-	if(user.put_in_hands(accessory))
-		to_chat(user, span_notice("You detach [accessory] from [src]."))
-	else
-		to_chat(user, span_notice("You detach [accessory] from [src] and it falls on the floor."))
+	var/in_hand = user.put_in_hands(accessory, FALSE)
+	if(!silent)
+		to_chat(user, span_notice("Вы открепили [accessory] от [src][in_hand ? null : " с падением предмета на пол"]."))
 
 	if(ishuman(loc))
 		var/mob/living/carbon/human/H = loc
 		H.update_inv_gloves()
+	return TRUE
 
 /obj/item/clothing/gloves/examine(mob/user)
 	. = ..()

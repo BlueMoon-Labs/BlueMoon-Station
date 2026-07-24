@@ -652,6 +652,7 @@
 	var/effectduration = 10 SECONDS
 	var/timer
 	max_stack = 1 // BLUEMOON EDIT - изменение аксессуаров
+	max_stack_path = /obj/item/clothing/accessory/lavawalk
 
 /obj/item/clothing/accessory/lavawalk/ComponentInitialize()
 	. = ..()

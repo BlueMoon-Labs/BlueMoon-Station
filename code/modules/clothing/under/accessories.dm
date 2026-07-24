@@ -594,6 +594,7 @@
 	icon_state = "pocketprotector"
 	pocket_storage_component_path = /datum/component/storage/concrete/pockets/pocketprotector
 	max_stack = 3 // BLUEMOON EDIT - изменение аксессуаров
+	max_stack_path = /obj/item/clothing/accessory/pocketprotector
 
 /obj/item/clothing/accessory/pocketprotector/full/Initialize(mapload)
 	. = ..()
