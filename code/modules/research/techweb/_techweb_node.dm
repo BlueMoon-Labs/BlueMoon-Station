@@ -111,5 +111,3 @@
 	"cooler_mining", "cooler", "infiltrator_case", "infiltrator_case_security", "ammoworkbench_disk_lethal", "infiltrator_case_command", "infiltrator_case_medical", "infiltrator_case_engineering", "infiltrator_case_mining", "infiltrator_case_science",
 	)
 	// BLUEMOON ADD ^ - добавлены "cooler_mining", "cooler" //ещё один add- ammoworkbench staff
-	"cooler_mining", "cooler", "infiltrator_case", "infiltrator_case_security", "infiltrator_case_command", "infiltrator_case_medical", "infiltrator_case_engineering", "infiltrator_case_mining", "infiltrator_case_science",
-	"heavy_roller_bed", "normal_roller_bed")
