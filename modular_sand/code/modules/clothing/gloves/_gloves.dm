@@ -1,19 +1,12 @@
 /obj/item/clothing/gloves
 	var/dummy_thick = FALSE // is able to hold accessories on its item
-	var/max_accessories = 1
-	var/list/obj/item/clothing/accessory/ring/attached_accessories = list() //BLUEMOON FIX не трогаем листы, без них потом на перчатки ничего не нацепить
-	var/list/mutable_appearance/accessory_uniform_overlays = list() //BLUEMOON FIX без этого рантаймит при попытке снять кольцо (юзаем систему униформы для перчаток)
-	var/list/mutable_appearance/accessory_mob_overlays = list() // за подробностями в _under.dm
-
-/obj/item/clothing/gloves/Destroy()
-	QDEL_LIST(attached_accessories)
-	return ..()
+	max_accessories = 1
 
 /obj/item/clothing/gloves/worn_overlays(isinhands = FALSE, icon_file, used_state, style_flags = NONE)
 	. = ..()
 	if(CHECK_BITFIELD(flags_inv, HIDEACCESSORY))
 		return
-	for(var/obj/item/clothing/accessory/ring/attached_accessory as anything in attached_accessories)
+	for(var/obj/item/clothing/accessory/ring/attached_accessory as anything in accessories_attached)
 		if(CHECK_BITFIELD(attached_accessory.flags_inv, HIDEACCESSORY))
 			continue
 		. += attached_accessory.build_worn_icon()
@@ -26,18 +19,18 @@
 	. = ..()
 	if(!istype(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user), TRUE, FALSE))
 		return
-	if(length(attached_accessories))
+	if(length(accessories_attached))
 		remove_accessory(user)
 
 /obj/item/clothing/gloves/equipped(mob/user, slot)
 	..()
 
-	for(var/obj/item/clothing/accessory/ring/attached_accessory as anything in attached_accessories)
+	for(var/obj/item/clothing/accessory/ring/attached_accessory as anything in accessories_attached)
 		if(attached_accessory && slot == ITEM_SLOT_HANDS && ishuman(user))
 			attached_accessory.on_uniform_equip(src, user)
 
 /obj/item/clothing/gloves/dropped(mob/user)
-	for(var/obj/item/clothing/accessory/ring/attached_accessory as anything in attached_accessories)
+	for(var/obj/item/clothing/accessory/ring/attached_accessory as anything in accessories_attached)
 		attached_accessory.on_uniform_dropped(src, user)
 	..()
 
@@ -45,9 +38,9 @@
 	. = FALSE
 	if(!istype(accessory))
 		return
-	if(length(attached_accessories) >= max_accessories)
+	if(length(accessories_attached) >= max_accessories)
 		if(user)
-			to_chat(user, "<span class='warning'>[src] already has [length(attached_accessories)] accessories.</span>")
+			to_chat(user, "<span class='warning'>[src] already has [length(accessories_attached)] accessories.</span>")
 		return
 	if(dummy_thick)
 		if(user)
@@ -76,9 +69,9 @@
 	if(!can_use(user))
 		return
 
-	if(!LAZYLEN(attached_accessories))
+	if(!LAZYLEN(accessories_attached))
 		return
-	var/obj/item/clothing/accessory/ring/accessory = attached_accessories[length(attached_accessories)]
+	var/obj/item/clothing/accessory/ring/accessory = accessories_attached[length(accessories_attached)]
 	accessory.detach(src, user)
 	if(user.put_in_hands(accessory))
 		to_chat(user, span_notice("You detach [accessory] from [src]."))
@@ -91,5 +84,5 @@
 
 /obj/item/clothing/gloves/examine(mob/user)
 	. = ..()
-	for(var/obj/item/clothing/accessory/ring/attached_accessory as anything in attached_accessories)
+	for(var/obj/item/clothing/accessory/ring/attached_accessory as anything in accessories_attached)
 		. += "\A [attached_accessory] is attached to one of its fingers."

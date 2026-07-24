@@ -4,5 +4,5 @@
 		LAZYSET(GLOB.skirt_peekable, type, TRUE)
 
 /obj/item/clothing/under/Destroy()
-	QDEL_LIST(attached_accessories)
+	QDEL_LIST(accessories_attached)
 	return ..()

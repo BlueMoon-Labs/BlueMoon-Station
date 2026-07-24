@@ -493,8 +493,8 @@
 		if(idcard)
 			accesses += idcard.access
 		var/obj/item/clothing/under/U = w_uniform
-		if(U && U.attached_accessories)
-			for(var/obj/item/clothing/accessory/accs in U.attached_accessories)
+		if(U && U.accessories_attached)
+			for(var/obj/item/clothing/accessory/accs in U.accessories_attached)
 				accesses += accs.access
 	// BLUEMOON EDIT END
 		if(!(ACCESS_WEAPONS in accesses))

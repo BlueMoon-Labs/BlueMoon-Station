@@ -31,8 +31,8 @@
 		if(J.damaged_clothes)
 			to_chat(user,"<span class='warning'>Для укрепления сначала необходимо починить [C].</span>")
 			return
-		if(LAZYLEN(J.attached_accessories))
-			to_chat(user,"<span class='warning'>У вас не получается укрепить [C], пока к нему прикреплены посторонние элементы:[J.attached_accessories.Join(", ")].</span>")
+		if(LAZYLEN(J.accessories_attached))
+			to_chat(user,"<span class='warning'>У вас не получается укрепить [C], пока к нему прикреплены посторонние элементы:[J.accessories_attached.Join(", ")].</span>")
 			return
 
 	if(C.reinforced)
