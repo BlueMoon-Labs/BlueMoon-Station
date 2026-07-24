@@ -133,7 +133,7 @@
 /datum/barsign
 	var/name = "Name"
 	var/icon = "Icon"
-	var/desc = "desc"
+	var/desc = ""
 	var/hidden = FALSE
 
 /* Переписано в modular_bluemoon\code\game\objects\structures\barsigns.dm
