@@ -100,6 +100,7 @@
 		/obj/item/stack/marker_beacon/ten=1,\
 		/obj/item/syndicate_uplink/station=1)
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/ammo

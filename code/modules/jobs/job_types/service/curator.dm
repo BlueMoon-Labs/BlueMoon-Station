@@ -83,6 +83,7 @@
 	l_pocket = /obj/item/laser_pointer
 	accessory = list(/obj/item/clothing/accessory/pocketprotector/full, /obj/item/clothing/accessory/permit/special/syndie_station)
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie
 	satchel = /obj/item/storage/backpack/duffelbag/syndie
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie
