@@ -2524,7 +2524,14 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			modless_key_bindings -= old_key
 		else if(key_bindings[old_key])
 			key_bindings[old_key] -= kb_name
-			LAZYADD(key_bindings["Unbound"], kb_name)
+			var/has_buttons = FALSE
+			for(var/key in key_bindings)
+				var/list/temp = key_bindings[key]
+				if(temp.Find(kb_name))
+					has_buttons = TRUE
+					break
+			if(!has_buttons)
+				LAZYADD(key_bindings["Unbound"], kb_name)
 			if(!length(key_bindings[old_key]))
 				key_bindings -= old_key
 		if(special && user?.client)
