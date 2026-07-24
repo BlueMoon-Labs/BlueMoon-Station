@@ -158,6 +158,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	var/client/initiator	//semi-misnomer, it's the person who ahelped/was bwoinked
 	var/initiator_ckey
 	var/initiator_key_name
+	var/initiator_mob_name
 
 	var/list/_interactions	//use AddInteraction() or, preferably, admin_ticket_log()
 
@@ -174,6 +175,8 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	/// Who is handling this admin help?
 	var/handler
 	var/suppress_ticket_panel = FALSE
+	/// Иницианализация админ хуйни
+	var/initial_notification_sent = FALSE
 	/// Admin-shnir typing in ticket
 	var/list/typing_admins
 	/// ticket initiator
@@ -197,6 +200,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	initiator = C
 	initiator_ckey = initiator.ckey
 	initiator_key_name = key_name(initiator, FALSE, TRUE)
+	initiator_mob_name = initiator.mob.name
 	if(initiator.current_ticket)	//This is a bug
 		stack_trace("Multiple ahelp current_tickets")
 		initiator.current_ticket.AddInteraction("Ticket erroneously left open by code")
@@ -210,7 +214,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	addtimer(CALLBACK(src, PROC_REF(add_to_ping_ss), 2 MINUTES)) // Ticket Ping | this is not responsible for the notification itself, but only for adding the ticket to the list of those to notify.
 
 	if(is_bwoink)
-		AddInteraction("<font color='#60a5fa'>[key_name_admin(usr)] PM'd [LinkedReplyName()]</font>")
+		AddInteraction("<font color='#60a5fa'>Администратор PM'd [LinkedReplyName()]</font>")
 		message_admins("<font color='#60a5fa'>Ticket [TicketHref("#[id]")] created</font>")
 		handle_issue()
 		//SSredbot.send_discord_message("admin", "Ticket #[id] created by [usr.ckey] ([usr.real_name]): [name]", "ticket")
@@ -239,6 +243,11 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 		answered = TRUE
 		send2adminchat(initiator_ckey, "[key_name(initiator)] | Ticket #[id]: Answered by [key_name(usr)]")
 	_interactions += "[TIME_STAMP("hh:mm:ss", FALSE)]: [formatted_message]"
+	for(var/datum/tgui/ui in SStgui.open_uis)
+		if(istype(ui.src_object, /datum/admin_ticket_panel))
+			SStgui.update_uis(ui.src_object)
+		else if(istype(ui.src_object, /datum/player_ticket_panel))
+			SStgui.update_uis(ui.src_object)
 //private
 /datum/admin_help/proc/FullMonty(ref_src)
 	if(!ref_src)
@@ -285,20 +294,36 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	msg = copytext_char(sanitize(msg), 1, MAX_MESSAGE_LEN)
 	var/encoded_msg = html_encode(msg)
 	var/ref_src = "[REF(src)]"
-	//Message to be sent to all admins
-	var/admin_msg = "<span class='adminnotice'><span class='adminhelp'>Тикет [TicketHref("#[id]", ref_src)]</span><b>: \
-	[LinkedReplyName(ref_src)]:</b> <span class='linkify'>[keywords_lookup(msg)]</span><br>\
-	<hr><span style='font-size: 0.85em;'><center>[FullMonty(ref_src)]<br>[TicketVerbs(ref_src)]</center></span></font>"
 	AddInteraction("<font color='#f87171'>[LinkedReplyName(ref_src)]: [encoded_msg]</font>")
 
-	//send this msg to all admins
-	for(var/client/X in GLOB.admins)
-		if(X.prefs.toggles & SOUND_ADMINHELP)
-			var/ah_vol = X.prefs?.get_sound_volume("adminhelp") || 100
-			SEND_SOUND(X, sound('sound/effects/adminhelp.ogg', volume = ah_vol))
-		if(X.prefs.adminhelp_windowflash)
-			window_flash(X, ignorepref = TRUE)
-		to_chat(X, examine_block(admin_msg))
+	if(!initial_notification_sent)
+		initial_notification_sent = TRUE
+		// Долбоебский формат с гиганскими кнопками как у доярки сиськи
+		var/admin_msg = "<span class='adminnotice'><span class='adminhelp'>Тикет [TicketHref("#[id]", ref_src)]</span><b>: \
+		[LinkedReplyName(ref_src)]:</b> <span class='linkify'>[keywords_lookup(msg)]</span><br>\
+		<hr><span style='font-size: 0.85em;'><center>[FullMonty(ref_src)]<br>[TicketVerbs(ref_src)]</center></span></font>"
+
+		for(var/client/X in GLOB.admins)
+			if(!handler || X.ckey == handler)
+				if(X.prefs.toggles & SOUND_ADMINHELP)
+					var/ah_vol = X.prefs?.get_sound_volume("adminhelp")
+					SEND_SOUND(X, sound('sound/effects/adminhelp.ogg', volume = ah_vol))
+				if(X.prefs.adminhelp_windowflash)
+					window_flash(X, ignorepref = TRUE)
+			to_chat(X, examine_block(admin_msg))
+	else
+		// последующие утонченные сообщения
+		var/followup_msg = "<span class='adminnotice'><span class='adminhelp'>Тикет #[id]</span><b>: \
+		[LinkedReplyName(ref_src)]:</b> <span class='linkify'>[keywords_lookup(msg)]</span></span>"
+
+		for(var/client/X in GLOB.admins)
+			if(!handler || X.ckey == handler)
+				if(X.prefs.toggles & SOUND_ADMINHELP)
+					var/ah_vol = X.prefs?.get_sound_volume("adminhelp")
+					SEND_SOUND(X, sound('sound/effects/adminhelp.ogg', volume = ah_vol))
+				if(X.prefs.adminhelp_windowflash)
+					window_flash(X, ignorepref = TRUE)
+			to_chat(X, followup_msg)
 
 	//show it to the person adminhelping too
 	to_chat(initiator, "<span class='adminnotice'>PM to-<b>Admins</b>: <span class='linkify'>[encoded_msg]</span></span>")
@@ -329,7 +354,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	if(initiator)
 		initiator.current_ticket = src
 
-	AddInteraction("<font color='#c084fc'><u>Переоткрыто админом</u> [key_name_admin(usr)]</font>")
+	AddInteraction("<font color='#c084fc'><u>Переоткрыто админом</u> Администратор</font>")
 	var/msg = "<span class='adminhelp'>Тикет [TicketHref("#[id]")] был переоткрыт админом [key_name_admin(usr)].</span>"
 	message_admins(msg, islog = FALSE, prefix = "AHELP")
 	log_admin_private(msg)
@@ -359,7 +384,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 		close_reason = "Закрыто"
 	GLOB.ahelp_tickets.ListInsert(src)
 	to_chat(initiator, examine_block("<center><span class='adminhelp'>Ваш тикет был закрыт со стороны [usr?.client?.holder?.fakekey? usr.client.holder.fakekey : "администратора"].</span></center>"))
-	AddInteraction("<font color='#f87171'><u>Закрыто админом</u> [key_name].</font>")
+	AddInteraction("<font color='#f87171'><u>Закрыто админом</u> Администратор.</font>")
 	if(!silent)
 		SSblackbox.record_feedback("tally", "ahelp_stats", 1, "closed")
 		var/msg = "Тикет [TicketHref("#[id]")] закрыт админом [key_name]."
@@ -380,7 +405,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 
 	addtimer(CALLBACK(initiator, TYPE_PROC_REF(/client, giveadminhelpverb)), 50)
 
-	AddInteraction("<font color='#4ade80'><u>Решено админом</u> [key_name].</font>")
+	AddInteraction("<font color='#4ade80'><u>Решено админом</u> Администратор.</font>")
 	to_chat(initiator, examine_block("<center><span class='adminhelp'>Ваш тикет был решен со стороны [usr?.client?.holder?.fakekey? usr.client.holder.fakekey : "администратора"]. Опция Adminhelp вскоре будет возвращена вам.</span></center>"))
 	if(!silent)
 		SSblackbox.record_feedback("tally", "ahelp_stats", 1, "resolved")
@@ -412,7 +437,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	var/msg = "Тикет [TicketHref("#[id]")] отклонён админом [key_name]"
 	message_admins(msg, islog = FALSE, prefix = "AHELP")
 	log_admin_private(msg)
-	AddInteraction("<u>Отклонено админом</u> [key_name].")
+	AddInteraction("<u>Отклонено админом</u> Администратор.")
 	SSblackbox.LogAhelp(id, "Rejected", "Rejected by [usr.key]", null, usr.ckey) //BLUEMOON EDIT, enable ticket logging
 	if(was_suppressing_ticket_panel)
 		suppress_ticket_panel = TRUE
@@ -439,7 +464,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	msg = "Тикет [TicketHref("#[id]")] отмечен как IC админом [key_name]"
 	message_admins(msg, islog = FALSE, prefix = "AHELP")
 	log_admin_private(msg)
-	AddInteraction("<u>Помечено как IC issue админом</u> [key_name]")
+	AddInteraction("<u>Помечено как IC issue админом</u> Администратор")
 	SSblackbox.LogAhelp(id, "IC Issue", "Marked as IC issue by [usr.key]", null,  usr.ckey) //BLUEMOON EDIT, enable ticket logging
 	if(was_suppressing_ticket_panel)
 		suppress_ticket_panel = TRUE
@@ -466,7 +491,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	msg = "Тикет [TicketHref("#[id]")] был отмечен как Skill Issue админом [key_name]"
 	message_admins(msg, islog = FALSE, prefix = "AHELP")
 	log_admin_private(msg)
-	AddInteraction("<u>Помечено как Skill issue админом</u> [key_name]")
+	AddInteraction("<u>Помечено как Skill issue админом</u> Администратор")
 	if(was_suppressing_ticket_panel)
 		suppress_ticket_panel = TRUE
 	Resolve(silent = TRUE)
@@ -496,7 +521,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	msg = "Тикет [TicketHref("#[id]")] был взят админом [key_name]"
 	message_admins(msg, islog = FALSE, prefix = "AHELP")
 	log_admin_private(msg)
-	AddInteraction("<u>Было взято админом</u> [key_name]")
+	AddInteraction("<u>Было взято админом</u> Администратор")
 
 	handler = "[usr.ckey]"
 	return TRUE

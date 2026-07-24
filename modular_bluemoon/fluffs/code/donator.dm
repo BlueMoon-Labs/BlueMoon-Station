@@ -2389,10 +2389,10 @@
 	path = /obj/item/lipstick/heartboom
 	ckeywhitelist = list("liesbee")
 
-/datum/gear/donator/bm/cz_75_kit
-	name = "CZ-75 kit"
+/datum/gear/donator/bm/personal_ward
+	name = "Personal Ward Box"
 	slot = ITEM_SLOT_BACKPACK
-	path = /obj/item/modkit/cz_75
+	path = /obj/item/storage/box/donator/bm/personal_ward
 	ckeywhitelist = list("shizalrp", "krasler101", "kingdeaths", "vlonger")
 
 /datum/gear/donator/bm/kila_mask

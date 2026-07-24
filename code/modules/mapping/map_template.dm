@@ -67,10 +67,17 @@
 							locate(bounds[MAP_MAXX], bounds[MAP_MAXY], bounds[MAP_MAXZ]))
 	var/list/border = block(locate(max(bounds[MAP_MINX]-1, 1),			max(bounds[MAP_MINY]-1, 1),			 bounds[MAP_MINZ]),
 							locate(min(bounds[MAP_MAXX]+1, world.maxx),	min(bounds[MAP_MAXY]+1, world.maxy), bounds[MAP_MAXZ])) - turfs
+	// Дедуп зон через ассоциативный список: `areas |= B.loc` это линейный поиск
+	// по списку зон на каждый турф шаблона, и на полноразмерном z-уровне он
+	// съедает секунды загрузки.
+	var/list/seen_areas = list()
 	for(var/L in turfs)
 		var/turf/B = L
 		atoms += B
-		areas |= B.loc
+		var/area/turf_area = B.loc
+		if(turf_area && !seen_areas[turf_area])
+			seen_areas[turf_area] = TRUE
+			areas += turf_area
 		for(var/A in B)
 			atoms += A
 			if(istype(A, /obj/structure/cable))

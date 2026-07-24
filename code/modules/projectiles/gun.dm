@@ -770,6 +770,22 @@
 	flashlight_overlay.pixel_y = flight_y_offset
 	return flashlight_overlay
 
+/obj/item/gun/proc/get_bayonet_overlay()
+	if(!bayonet)
+		return
+	var/mutable_appearance/knife_overlay
+	var/state = "bayonet"							//Generic state.
+	if(bayonet.icon_state in icon_states('icons/obj/guns/bayonets.dmi'))		//Snowflake state?
+		state = bayonet.icon_state
+	var/icon/bayonet_icons = 'icons/obj/guns/bayonets.dmi'
+	if(bayonet_diagonal == TRUE )
+		state = "bayonet_diagonal"
+		bayonet_icons = 'modular_splurt/icons/obj/guns/bayonets.dmi'
+	knife_overlay = mutable_appearance(bayonet_icons, state)
+	knife_overlay.pixel_x = knife_x_offset
+	knife_overlay.pixel_y = knife_y_offset
+	return knife_overlay
+
 /obj/item/gun/update_overlays()
 	. = ..()
 	if(gun_light)
@@ -778,20 +794,9 @@
 			. += flashlight_overlay
 
 	if(bayonet)
-		var/mutable_appearance/knife_overlay
-		var/state = "bayonet"							//Generic state.
-		if(bayonet.icon_state in icon_states('icons/obj/guns/bayonets.dmi'))		//Snowflake state?
-			state = bayonet.icon_state
-		var/icon/bayonet_icons = 'icons/obj/guns/bayonets.dmi'
-		//SPLURT EDIT ADD
-		if(bayonet_diagonal == TRUE )
-			state = "bayonet_diagonal"
-			bayonet_icons = 'modular_splurt/icons/obj/guns/bayonets.dmi'
-		//SPLURT EDIT ADD END
-		knife_overlay = mutable_appearance(bayonet_icons, state)
-		knife_overlay.pixel_x = knife_x_offset
-		knife_overlay.pixel_y = knife_y_offset
-		. += knife_overlay
+		var/mutable_appearance/knife_overlay = get_bayonet_overlay()
+		if(istype(knife_overlay))
+			. += knife_overlay
 
 /obj/item/gun/item_action_slot_check(slot, mob/user, datum/action/A)
 	if(istype(A, /datum/action/item_action/toggle_scope_zoom) && slot != ITEM_SLOT_HANDS)

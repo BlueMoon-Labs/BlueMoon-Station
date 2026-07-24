@@ -5,9 +5,6 @@ GLOBAL_LIST_EMPTY(asset_datums)
 
 /datum/asset
 	var/_abstract = /datum/asset
-	/// Instantiate and register this asset during SSassets.Initialize. Heavy,
-	/// rarely used UI assets may opt out and be created by get_asset_datum().
-	var/load_on_startup = TRUE
 	var/cached_url_mappings
 
 /datum/asset/New()
@@ -271,10 +268,12 @@ GLOBAL_LIST_EMPTY(asset_datums)
 
 	return out.Join("\n")
 
+/// Возвращает TRUE, если спрайт реально попал в шит. Вызывающий может передать
+/// сюда сам файл иконки со стейтом и не резать icon() у себя заранее.
 /datum/asset/spritesheet/proc/Insert(sprite_name, icon/I, icon_state="", dir=SOUTH, frame=1, moving=FALSE)
 	I = icon(I, icon_state=icon_state, dir=dir, frame=frame, moving=moving)
 	if (!I || !length(icon_states(I)))  // that direction or state doesn't exist
-		return
+		return FALSE
 	//any sprite modifications we want to do (aka, coloring a greyscaled asset)
 	I = ModifyInserted(I)
 	var/size_id = "[I.Width()]x[I.Height()]"
@@ -292,6 +291,7 @@ GLOBAL_LIST_EMPTY(asset_datums)
 	else
 		sizes[size_id] = size = list(1, I, null)
 		sprites[sprite_name] = list(size_id, 0)
+	return TRUE
 
 /**
  * A simple proc handing the Icon for you to modify before it gets turned into an asset.

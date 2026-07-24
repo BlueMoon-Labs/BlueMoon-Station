@@ -7,6 +7,7 @@ import { SettingsTab } from './SettingsTab';
 
 type GamePrefData = {
   has_admin: boolean;
+  has_mentor: boolean;
 };
 
 export const GamePreferences = () => {
@@ -24,7 +25,7 @@ export const GamePreferences = () => {
   let pageContents;
   if (safePage < pages.length) {
     const PageComponent = pages[safePage].component;
-    pageContents = <PageComponent has_admin={data.has_admin} />;
+    pageContents = <PageComponent has_admin={data.has_admin} has_mentor={data.has_mentor} />;
   }
 
   return (

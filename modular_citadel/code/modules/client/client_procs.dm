@@ -47,6 +47,16 @@
 		mentor_datum.owner = src
 		add_mentor_verbs()
 		mentor_memo_output("Show")
+		// Дементор логин
+		if(prefs?.mentor_toggles & DEMENTOR_ON_LOGIN)
+			auto_dementor_on_login()
+
+/client/proc/auto_dementor_on_login()
+	remove_mentor_verbs()
+	if (/client/proc/mentor_unfollow in verbs)
+		mentor_unfollow()
+	GLOB.mentors -= src
+	add_verb(src, /client/proc/cmd_mentor_rementor)
 
 /client/proc/is_mentor() // admins are mentors too.
 	if(mentor_datum || check_rights_for(src, R_ADMIN)) //BLUEMOON EDIT: PLAYER RANKS

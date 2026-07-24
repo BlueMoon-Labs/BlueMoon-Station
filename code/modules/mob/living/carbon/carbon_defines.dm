@@ -18,6 +18,7 @@
 
 //inventory slots
 	var/obj/item/back = null
+	var/obj/item/belt = null
 	var/obj/item/clothing/mask/wear_mask = null
 	var/obj/item/clothing/neck/wear_neck = null
 	var/obj/item/tank/internal = null
