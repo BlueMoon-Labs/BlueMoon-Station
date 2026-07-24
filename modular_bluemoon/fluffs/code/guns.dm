@@ -1700,7 +1700,7 @@
 /obj/item/gun/ballistic/automatic/wt550/warder_9r/get_bayonet_overlay()
 	if(!bayonet)
 		return
-	return mutable_appearance('modular_bluemoon/fluffs/icons/obj/64x32_misc.dmi', "[initial(icon_state)]-bayonet")
+	return mutable_appearance(icon, "[initial(icon_state)]-bayonet", pixel_x = 3)
 
 /obj/item/gun/ballistic/automatic/wt550/warder_9r/update_overlays()
 	. = ..()
@@ -1708,4 +1708,4 @@
 	if(magazine)
 		. += "[base_state]-mag"
 	if(suppressed)
-		. += mutable_appearance('modular_bluemoon/fluffs/icons/obj/64x32_misc.dmi', "[base_state]-suppressor")
+		. += mutable_appearance(icon, "[base_state]-suppressor", pixel_x = 11)
