@@ -246,15 +246,17 @@
 						to_chat(usr, "<span class='notice'>Your [inactive_stack.name] stack now contains [inactive_stack.get_amount()] [inactive_stack.singular_name]\s.</span>")
 						return TRUE
 
-	if(put_in_active_hand(I, forced))
+	if(put_in_active_hand(I)) // Пробуем поместить без forced
 		return TRUE
 
 	var/hand = get_empty_held_index_for_side("l")
 	if(!hand)
 		hand =  get_empty_held_index_for_side("r")
-	if(hand)
-		if(put_in_hand(I, hand, forced))
-			return TRUE
+	if(hand && put_in_hand(I, hand, forced))
+		return TRUE
+	else if(forced && put_in_active_hand(I, forced))
+		return TRUE
+
 	if(del_on_fail)
 		qdel(I)
 		return FALSE
