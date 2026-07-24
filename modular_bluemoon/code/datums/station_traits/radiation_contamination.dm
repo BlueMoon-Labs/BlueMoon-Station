@@ -163,7 +163,14 @@
 		var/obj/item/storage/backpack/storage = H.get_item_by_slot(ITEM_SLOT_BACK)
 		if(!istype(storage)) // В теории такого быть не должно
 			storage = new
-			H.equip_to_slot_if_possible(storage, ITEM_SLOT_BACK, disable_warning = TRUE, bypass_equip_delay_self = TRUE)
+			if(!H.equip_to_slot_if_possible(storage, ITEM_SLOT_BACK, disable_warning = TRUE, bypass_equip_delay_self = TRUE))
+				if(!H.put_in_hands(storage, FALSE))
+					// Если не смогли, помещаем все предметы в руках в сумку, т.к. выкидывать на пол нельзя, ибо персонаж спавниться в ЦК зоне
+					var/list/temp_items = LAZYCOPY(H.held_items)
+					for(var/obj/item/item_in_hand in temp_items)
+						if(H.temporarilyRemoveItemFromInventory(item_in_hand))
+							SEND_SIGNAL(storage, COMSIG_TRY_STORAGE_INSERT, item_in_hand, null, TRUE, TRUE)
+				H.put_in_hands(storage, FALSE, forced = TRUE)
 		SEND_SIGNAL(storage, COMSIG_TRY_STORAGE_INSERT, I, null, TRUE, TRUE)
 
 /// Returns suit, head, mask, gloves, shoes, tank types for new().
