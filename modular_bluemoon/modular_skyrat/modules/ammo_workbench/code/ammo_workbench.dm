@@ -326,7 +326,7 @@
 		error_message = ""
 		error_type = ""
 
-	if(!(casing_type in possible_ammo_types))
+	if(!(casing_type in valid_casings))
 		error_message = "AMMUNITION MISMATCH"
 		error_type = "bad"
 		return
@@ -435,7 +435,7 @@
 	if(!loaded_datadisk)
 		return FALSE
 	if(loaded_datadisk.type in loaded_datadisks)
-		disk_error = "ERROR: DISK DATA ALREADY IN SYSTEM MEMEORY"
+		disk_error = "ERROR: DISK DATA ALREADY IN SYSTEM MEMORY"
 		return FALSE
 
 	disk_error = "DISK LOADED SUCCESSFULLY"
@@ -450,14 +450,6 @@
 		loaded_datadisk = null
 		disk_error = ""
 		disk_error_type = ""
-
-/datum/design/board/ammo_workbench
-	name = "Machine Design (Ammunitions Workbench)"
-	desc = "A machine, somewhat akin to a lathe, made specifically for manufacturing ammunition. It has a slot for ammunition containers, like magazines or stripper clips."
-	id = "ammo_workbench"
-	build_path = /obj/item/circuitboard/machine/ammo_workbench
-	category = list("Misc")
-	departmental_flags = DEPARTMENT_BITFLAG_SECURITY
 
 
 //MISC MACHINE PROCS
@@ -501,6 +493,9 @@
 	if(loaded_magazine)
 		loaded_magazine.forceMove(loc)
 		loaded_magazine = null
+	if(loaded_datadisk)
+		loaded_datadisk.forceMove(loc)
+		loaded_datadisk = null
 
 	return ..()
 
