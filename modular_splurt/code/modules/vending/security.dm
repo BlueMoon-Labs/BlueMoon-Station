@@ -237,6 +237,7 @@
 	new /obj/item/mod/module/jetpack(src)
 	new /obj/item/mod/module/holster(src)
 	new /obj/item/choice_beacon/box/desk(src) //BLUEMOON ADD
+	new /obj/item/circuitboard/machine/ammo_workbench //BLUEMOON ADD
 
 /obj/structure/closet/secure_closet/ntr
 	name = "representative's locker"

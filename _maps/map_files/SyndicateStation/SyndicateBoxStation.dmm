@@ -56213,12 +56213,10 @@
 	dir = 4
 	},
 /obj/effect/turf_decal/bot/yellow,
-/obj/structure/closet/secure_closet/security/sec{
-	anchored = 1
-	},
 /obj/machinery/light{
 	dir = 8
 	},
+/obj/machinery/ammo_workbench,
 /turf/open/floor/mineral/plastitanium,
 /area/security/office)
 "kMI" = (
