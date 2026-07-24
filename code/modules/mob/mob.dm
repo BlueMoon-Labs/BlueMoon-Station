@@ -548,22 +548,24 @@
 
 	//предмет фиксируем в момент нажатия: верб может отлежаться в очереди,
 	//а игрок за это время сменить руку - активировать чужой предмет нельзя
-	DEFAULT_QUEUE_OR_CALL_VERB(VERB_CALLBACK(src, PROC_REF(execute_mode), active_hand_index))
+	DEFAULT_QUEUE_OR_CALL_VERB(VERB_CALLBACK(src, PROC_REF(execute_mode), get_active_held_item(), active_hand_index))
 
 /**
  * Логика для переопределений:
  * FALSE - Действия запрещены, TRUE - Успешное действие, NULL - Можно выполнить действие
  */
-/mob/proc/execute_mode(expected_active_hand_index)
+/mob/proc/execute_mode(obj/item/expected_item, expected_active_hand_index, force = FALSE)
 	if(ismecha(loc))
 		return FALSE
 	if(incapacitated())
 		return FALSE
-	if(expected_active_hand_index != active_hand_index) //рука сменилась, пока верб ждал в очереди
+	if(!force && expected_active_hand_index != active_hand_index) // рука сменилась, пока верб ждал в очереди
 		return FALSE
 
-	var/obj/item/I = get_item_for_held_index(expected_active_hand_index)
+	var/obj/item/I = get_active_held_item()
 	if(I)
+		if(!force && I != expected_item) // предмет сменился, пока верб ждал в очереди
+			return FALSE
 		I.attack_self(src)
 		update_inv_hands()
 		return TRUE
