@@ -1680,7 +1680,7 @@
 	DONATE_ITEM_TOOLTIP_PARENT
 	name = "\improper 9R Warder"
 	desc = "The 9R Warder pistol was developed as an improved version of the civilian HK MP5K submachine gun. It fires 4.6x30mm bullets and features attachments for a bayonet and a silencer. It boasts good accuracy at medium and close ranges. It is often used by mercenaries in certain sectors of the frontier. The model has been repainted to match the owner's style."
-	icon = 'modular_bluemoon/fluffs/icons/obj/64x32.dmi'
+	icon = 'modular_bluemoon/fluffs/icons/obj/48x32.dmi'
 	icon_state = "warder_9r"
 	item_state = "warder_9r"
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
@@ -1696,15 +1696,16 @@
 
 /obj/item/gun/ballistic/automatic/wt550/warder_9r/update_icon_state()
 	icon_state = current_skin ? unique_reskin[current_skin]["icon_state"] : initial(icon_state)
-	if(!magazine)
-		icon_state += "-e"
 
 /obj/item/gun/ballistic/automatic/wt550/warder_9r/get_bayonet_overlay()
 	if(!bayonet)
 		return
-	return mutable_appearance(icon, "[initial(icon_state)]-bayonet")
+	return mutable_appearance('modular_bluemoon/fluffs/icons/obj/64x32_misc.dmi', "[initial(icon_state)]-bayonet")
 
 /obj/item/gun/ballistic/automatic/wt550/warder_9r/update_overlays()
 	. = ..()
+	var/base_state = initial(icon_state)
+	if(magazine)
+		. += "[base_state]-mag"
 	if(suppressed)
-		. += "[initial(icon_state)]-suppressor"
+		. += mutable_appearance('modular_bluemoon/fluffs/icons/obj/64x32_misc.dmi', "[base_state]-suppressor")
