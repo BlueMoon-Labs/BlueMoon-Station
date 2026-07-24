@@ -100,9 +100,6 @@
 
 	user.visible_message(span_lewd("[is_hidden ? picked_hidden : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 
-	// Похотливый эффект
-	var/lust_amount = HAS_TRAIT(user, TRAIT_NYMPHO) ? NORMAL_LUST : LOW_LUST
-	user.handle_post_sex(lust_amount, NUTS_MASSAGE, partner)
-	if(HAS_TRAIT(partner, TRAIT_NYMPHO))
-		partner.handle_post_sex(LOW_LUST, partner = user)
-
+	if(HAS_TRAIT(user, TRAIT_NYMPHO))
+		user.handle_post_sex(LOW_LUST, NUTS_MASSAGE, partner)
+	partner.handle_post_sex(HAS_TRAIT(partner, TRAIT_NYMPHO) ? NORMAL_LUST : LOW_LUST, partner = user)

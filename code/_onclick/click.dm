@@ -77,7 +77,8 @@
 	if(incapacitated(ignore_restraints = 1))
 		return
 
-	face_atom(A)
+	if(A != src)
+		face_atom(A)
 
 	if(!CheckActionCooldown(immediate = TRUE))
 		return
