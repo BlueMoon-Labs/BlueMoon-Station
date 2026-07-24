@@ -6045,7 +6045,6 @@
 #include "modular_splurt\code\modules\clothing\suits\miscellaneous.dm"
 #include "modular_splurt\code\modules\clothing\suits\utility.dm"
 #include "modular_splurt\code\modules\clothing\suits\vest.dm"
-#include "modular_splurt\code\modules\clothing\under\_under.dm"
 #include "modular_splurt\code\modules\clothing\under\accessories.dm"
 #include "modular_splurt\code\modules\clothing\under\miscellaneous.dm"
 #include "modular_splurt\code\modules\clothing\under\shorts.dm"
