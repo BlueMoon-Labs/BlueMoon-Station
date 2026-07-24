@@ -101,5 +101,12 @@
 	user.visible_message(span_lewd("[is_hidden ? picked_hidden : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 
 	if(HAS_TRAIT(user, TRAIT_NYMPHO))
-		user.handle_post_sex(LOW_LUST, NUTS_MASSAGE, partner)
-	partner.handle_post_sex(HAS_TRAIT(partner, TRAIT_NYMPHO) ? NORMAL_LUST : LOW_LUST, partner = user)
+		user.handle_post_sex(LOW_LUST, null, partner)
+
+	var/lust_level = HAS_TRAIT(partner, TRAIT_NYMPHO) ? NORMAL_LUST : LOW_LUST
+	var/target_cum_organ
+	if(partner.has_penis(FALSE))
+		target_cum_organ = ORGAN_SLOT_PENIS
+	else if(partner.has_vagina())
+		target_cum_organ = ORGAN_SLOT_VAGINA
+	partner.handle_post_sex(lust_level, CUM_TARGET_HAND, user, target_cum_organ)
