@@ -46,6 +46,9 @@ describe('setupOrphanedKeyUpForwarding', () => {
     ['Shift', 'Shift', 'ShiftLeft', 'KeyUp "Shift"'],
     ['Control', 'Control', 'ControlLeft', 'KeyUp "Ctrl"'],
     ['Alt', 'Alt', 'AltLeft', 'KeyUp "Alt"'],
+    ['Backspace', 'Backspace', 'Backspace', 'Back'],
+    ['Slash', 'Slash', 'Slash', '/'],
+    ['Space', 'Space', 'Space', 'Space'],
   ])('forwards orphaned %s keyup', (_name, key, code, expectedCommand) => {
     setup();
 
