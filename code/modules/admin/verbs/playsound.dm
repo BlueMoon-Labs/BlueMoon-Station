@@ -32,7 +32,7 @@
 
 	for(var/mob/M in GLOB.player_list)
 		if(M.client.prefs.toggles & SOUND_MIDI)
-			var/listener_vol = round(vol * (M.client?.prefs?.get_sound_volume("midi") || 100) / 100)
+			var/listener_vol = round(vol * (M.client?.prefs?.get_sound_volume("midi")) / 100)
 			admin_sound.volume = listener_vol
 			SEND_SOUND(M, admin_sound)
 			admin_sound.volume = vol

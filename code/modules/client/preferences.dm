@@ -95,6 +95,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/toggles = TOGGLES_DEFAULT
 	/// A separate variable for deadmin toggles, only deals with those.
 	var/deadmin = NONE
+	var/mentor_toggles = SOUND_MENTORHELP
 	var/db_flags
 	var/chat_toggles = TOGGLES_DEFAULT_CHAT
 	/// Bitfield for chat mutes (MUTE_* flags).
@@ -361,6 +362,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/sound_volume_jukeboxes = 100
 	var/sound_volume_personal_jukeboxes = 100
 	var/sound_volume_emote = 100
+	var/sound_volume_mentorhelp = 100
+	var/sound_volume_fax = 100
 
 	var/parallax = PARALLAX_INSANE
 

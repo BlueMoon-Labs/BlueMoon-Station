@@ -67,7 +67,7 @@
 	.["opened_ago_text"] = DisplayTimeText(world.time - MT.opened_at)
 	.["close_reason"] = MT.close_reason
 	.["initiator_ckey"] = MT.initiator_ckey
-	.["handler"] = MT.handler
+	.["handler"] = MT.handler ? "Ментор" : null
 	.["initiator_typing"] = (MT.initiator_typing_time != null && world.time - MT.initiator_typing_time < 5 SECONDS)
 	if(!.["initiator_typing"] && MT.initiator_ckey)
 		var/client/C = GLOB.directory[MT.initiator_ckey]
@@ -76,11 +76,11 @@
 	var/list/typing = list()
 	for(var/typing_ckey in MT.typing_mentors)
 		if(world.time - MT.typing_mentors[typing_ckey] < 5 SECONDS)
-			typing += typing_ckey
+			typing += "Ментор"
 		else
 			var/client/C = GLOB.directory[typing_ckey]
 			if(C?.reply_modal_open)
-				typing += typing_ckey
+				typing += "Ментор"
 			else
 				MT.typing_mentors -= typing_ckey
 	.["typing_admins"] = typing

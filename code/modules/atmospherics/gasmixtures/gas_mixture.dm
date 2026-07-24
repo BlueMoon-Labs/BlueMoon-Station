@@ -548,17 +548,16 @@ What are the archived variables for?
 /datum/gas_mixture/parse_gas_string(gas_string)
 	if(gc_share)
 		return FALSE
-	gas_string = SSair.preprocess_gas_string(gas_string)
-	var/list/gas = params2list(gas_string)
-	if(gas["TEMP"])
-		var/temp = text2num(gas["TEMP"])
-		gas -= "TEMP"
-		if(!isnum(temp) || temp < 2.7)
-			temp = 2.7
-		set_temperature(temp)
+	// Разбор строки кэшируется в SSair: строк на карте пара десятков, а вызовов
+	// сотни тысяч. Списки из кэша только читаем.
+	var/list/parsed = SSair.get_parsed_gas_string(gas_string)
+	var/temperature = parsed[GAS_STRING_TEMP]
+	if(!isnull(temperature))
+		set_temperature(temperature)
 	clear()
-	for(var/id in gas)
-		set_moles(id, text2num(gas[id]))
+	var/list/moles = parsed[GAS_STRING_MOLES]
+	for(var/id in moles)
+		set_moles(id, moles[id])
 	archive()
 	return TRUE
 

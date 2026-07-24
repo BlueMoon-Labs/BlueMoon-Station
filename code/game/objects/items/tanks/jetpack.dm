@@ -148,6 +148,7 @@
 	volume = 50
 	throw_range = 7
 	w_class = WEIGHT_CLASS_NORMAL
+	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_BACK
 
 /obj/item/tank/jetpack/oxygen/captain
 	name = "\improper Captain's jetpack"
@@ -248,6 +249,9 @@
 
 /mob/living/carbon/get_jetpack()
 	var/obj/item/I = back
+	var/obj/item/B = belt
+	if(istype(B, /obj/item/tank/jetpack/oxygen/harness))
+		return B
 	if(istype(I, /obj/item/tank/jetpack))
 		return I
 	else if(istype(I, /obj/item/mod/control))

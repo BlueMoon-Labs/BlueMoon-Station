@@ -15,6 +15,14 @@
 #define MOLES_N2STANDARD		(MOLES_CELLSTANDARD*N2STANDARD)	// N2 standard value (79%)
 #define CELL_VOLUME				2500	//liters in a cell
 #define BREATH_VOLUME			0.5		//liters in a normal breath
+
+//Ключи разобранной строки газа, см. SSair.get_parsed_gas_string()
+#define GAS_STRING_TEMP			"temp"
+#define GAS_STRING_MOLES		"moles"
+///Потолок кэша разобранных строк. Карта укладывается в пару десятков ключей и
+///разбирается на старте, а atmos_spawn_air() лепит строки на лету ("o2=[N];...") -
+///их кэшировать бессмысленно, поэтому после потолка просто перестаём запоминать.
+#define GAS_STRING_CACHE_LIMIT	512
 #define BREATH_PERCENTAGE		(BREATH_VOLUME/CELL_VOLUME)					//Amount of air to take a from a tile
 
 //EXCITED GROUPS

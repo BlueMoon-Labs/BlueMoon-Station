@@ -51,7 +51,7 @@
 		if(C.prefs.chat_toggles & CHAT_PRAYER)
 			to_chat(C, message, confidential = TRUE)
 			if(C.prefs.toggles & SOUND_PRAYERS)
-				var/pray_vol = C.prefs?.get_sound_volume("prayers") || 100
+				var/pray_vol = C.prefs?.get_sound_volume("prayers")
 				if(usr.job == "Chaplain")
 					SEND_SOUND(C, sound('sound/effects/pray.ogg', volume = pray_vol))
 				else

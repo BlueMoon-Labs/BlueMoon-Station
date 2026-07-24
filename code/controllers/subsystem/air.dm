@@ -83,6 +83,9 @@ SUBSYSTEM_DEF(air)
 	var/list/gas_reactions = list()
 	var/list/atmos_gen
 	var/list/planetary = list()
+	/// Разобранные строки газа: сырая строка -> list(температура, list(газ -> моли)).
+	/// См. [/datum/controller/subsystem/air/proc/get_parsed_gas_string].
+	var/list/parsed_gas_strings = list()
 	//Special functions lists
 	var/list/turf/open/high_pressure_delta = list()
 
@@ -638,9 +641,46 @@ SUBSYSTEM_DEF(air)
 
 /datum/controller/subsystem/air/proc/generate_atmos()
 	atmos_gen = list()
+	// Строки генераторов теперь другие, разобранные значения протухли.
+	parsed_gas_strings = list()
 	for(var/T in subtypesof(/datum/atmosphere))
 		var/datum/atmosphere/atmostype = T
 		atmos_gen[initial(atmostype.id)] = new atmostype
+
+/**
+ * Разбор строки газа с кэшем по самой строке.
+ *
+ * Карта раздаёт всего пару десятков уникальных initial_gas_mix, а
+ * parse_gas_string зовётся один раз на каждый открытый турф - это сотни тысяч
+ * прогонов params2list/text2num за старт мира на одних и тех же строках.
+ * Строки генераторов (atmos_gen) фиксируются один раз за раунд в
+ * /datum/atmosphere/New, так что соответствие "строка -> смесь" стабильно.
+ *
+ * Возвращает list(GAS_STRING_TEMP = температура или null, GAS_STRING_MOLES = list(газ -> моли)).
+ * Список общий на всех вызывающих - менять его нельзя, только читать.
+ */
+/datum/controller/subsystem/air/proc/get_parsed_gas_string(gas_string)
+	if(!gas_string)
+		gas_string = "" // пустая смесь, заодно не индексируем список по null
+	var/list/cached = parsed_gas_strings[gas_string]
+	if(cached)
+		return cached
+
+	var/list/gas = params2list(preprocess_gas_string(gas_string))
+	var/temperature = null
+	if(gas["TEMP"])
+		temperature = text2num(gas["TEMP"])
+		gas -= "TEMP"
+		if(!isnum(temperature) || temperature < TCMB)
+			temperature = TCMB
+	var/list/moles = list()
+	for(var/id in gas)
+		moles[id] = text2num(gas[id])
+
+	cached = list(GAS_STRING_TEMP = temperature, GAS_STRING_MOLES = moles)
+	if(length(parsed_gas_strings) < GAS_STRING_CACHE_LIMIT)
+		parsed_gas_strings[gas_string] = cached
+	return cached
 
 /datum/controller/subsystem/air/proc/preprocess_gas_string(gas_string)
 	if(!atmos_gen)
