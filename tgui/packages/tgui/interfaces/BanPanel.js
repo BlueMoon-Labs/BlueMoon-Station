@@ -30,6 +30,12 @@ const BAN_TYPES = [
 
 const SEVERITY_OPTIONS = ['High', 'Medium', 'Minor', 'None'];
 
+const formatHours = (minutes) => {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return `${h}ч ${m}мин`;
+};
+
 const BANTYPE_LABELS = {
   'PERMABAN': { color: 'red', icon: 'ban' },
   'TEMPBAN': { color: 'orange', icon: 'clock' },
@@ -54,6 +60,8 @@ export const BanPanel = (props) => {
     job_list = [],
     search_results = [],
     total_count = 0,
+    player_exp = 0,
+    player_notes = [],
   } = data;
 
   const [tab, setTab] = useState(0);
@@ -93,6 +101,7 @@ export const BanPanel = (props) => {
               adminckey={adminckey}
               ip={ip}
               cid={cid}
+              player_exp={player_exp}
               onSearch={(fields) => act('search', fields)}
             />
           </Stack.Item>
@@ -111,6 +120,15 @@ export const BanPanel = (props) => {
                 Search Results
                 {total_count > 0 && (
                   <Box as="span" ml={1} opacity={0.6}>({total_count})</Box>
+                )}
+              </Tabs.Tab>
+              <Tabs.Tab
+                selected={tab === 2}
+                icon="sticky-note"
+                onClick={() => setTab(2)}>
+                Notes
+                {player_notes.length > 0 && (
+                  <Box as="span" ml={1} opacity={0.6}>({player_notes.length})</Box>
                 )}
               </Tabs.Tab>
             </Tabs>
@@ -137,6 +155,16 @@ export const BanPanel = (props) => {
                 onUnban={(banid) => act('unban', { banid })}
               />
             )}
+            {tab === 2 && (
+              <NotesPanel
+                playerckey={playerckey}
+                player_exp={player_exp}
+                player_notes={player_notes}
+                onAddNote={(fields) => act('add_note', fields)}
+                onEditNote={(noteId, text) => act('edit_note', { note_id: noteId, note_text: text })}
+                onDeleteNote={(noteId) => act('delete_note', { note_id: noteId })}
+              />
+            )}
           </Stack.Item>
         </Stack>
       </Window.Content>
@@ -145,7 +173,7 @@ export const BanPanel = (props) => {
 };
 
 const SearchBar = (props) => {
-  const { playerckey, adminckey, ip, cid, onSearch } = props;
+  const { playerckey, adminckey, ip, cid, player_exp, onSearch } = props;
   const [localPlayer, setLocalPlayer] = useState(playerckey || '');
   const [localAdmin, setLocalAdmin] = useState(adminckey || '');
   const [localIp, setLocalIp] = useState(ip || '');
@@ -203,6 +231,14 @@ const SearchBar = (props) => {
             Search
           </Button>
         </Flex.Item>
+        {playerckey && player_exp > 0 && (
+          <Flex.Item mb={0.5} ml={1}>
+            <Icon name="clock" mr={0.5} color="#ffd54f" />
+            <Box inline color="#ffd54f" bold fontSize="13px">
+              {formatHours(player_exp)}
+            </Box>
+          </Flex.Item>
+        )}
       </Flex>
     </Section>
   );
@@ -585,6 +621,215 @@ const SearchResults = (props) => {
             <BanEntry ban={ban} onEditBan={onEditBan} onUnban={onUnban} />
           </Stack.Item>
         ))}
+      </Stack>
+    </Section>
+  );
+};
+
+const SEVERITY_COLORS = {
+  'High': '#ef5350',
+  'Medium': '#ff9800',
+  'Minor': '#ffd740',
+  'None': '#9e9e9e',
+};
+
+const NotesPanel = (props) => {
+  const { playerckey, player_exp, player_notes, onAddNote, onEditNote, onDeleteNote } = props;
+
+  const [newNoteText, setNewNoteText] = useLocalState('newNoteText', '');
+  const [newNoteSeverity, setNewNoteSeverity] = useLocalState('newNoteSeverity', 'Medium');
+  const [newNoteSecret, setNewNoteSecret] = useLocalState('newNoteSecret', false);
+  const [editingId, setEditingId] = useState(null);
+  const [editingText, setEditingText] = useState('');
+
+  const handleAdd = () => {
+    if (!newNoteText.trim()) return;
+    onAddNote({
+      note_text: newNoteText,
+      note_severity: newNoteSeverity,
+      secret: newNoteSecret ? 1 : 0,
+    });
+    setNewNoteText('');
+  };
+
+  const handleEdit = (id) => {
+    if (!editingText.trim()) return;
+    onEditNote(id, editingText);
+    setEditingId(null);
+    setEditingText('');
+  };
+
+  if (!playerckey) {
+    return (
+      <Section title="Notes" fill>
+        <Flex height="100%" align="center" justify="center">
+          <Box color="gray">
+            <Icon name="search" mr={1} />
+            Введите ckey в поиске, чтобы увидеть заметки.
+          </Box>
+        </Flex>
+      </Section>
+    );
+  }
+
+  return (
+    <Section title={"Notes — " + playerckey} fill scrollable
+      buttons={
+        <Box>
+          <Icon name="clock" mr={0.5} color="#ffd54f" />
+          <Box inline color="#ffd54f" bold fontSize="13px">
+            {formatHours(player_exp)}
+          </Box>
+        </Box>
+      }
+    >
+      <Box mb={1}>
+        <Box bold mb={0.3} color="label" fontSize="11px">Добавить заметку</Box>
+        <Flex wrap="wrap" mb={0.5}>
+          <Flex.Item mr={1} mb={0.5}>
+            <Dropdown
+              width="100px"
+              selected={newNoteSeverity}
+              options={['High', 'Medium', 'Minor', 'None']}
+              onSelected={(v) => setNewNoteSeverity(v)}
+            />
+          </Flex.Item>
+          <Flex.Item mb={0.5}>
+            <Button.Checkbox
+              checked={newNoteSecret}
+              content="Secret"
+              onClick={() => setNewNoteSecret(!newNoteSecret)}
+            />
+          </Flex.Item>
+        </Flex>
+        <TextArea
+          width="100%"
+          height="40px"
+          mb={0.5}
+          value={newNoteText}
+          placeholder="Текст заметки..."
+          onChange={(e, v) => setNewNoteText(v)}
+        />
+        <Button icon="plus" color="blue" onClick={handleAdd}>
+          Добавить
+        </Button>
+      </Box>
+
+      {player_notes.length === 0 && (
+        <Box color="gray" fontSize="12px" textAlign="center" py={2}>
+          <Icon name="info-circle" mr={0.5} />
+          Нет заметок для этого игрока.
+        </Box>
+      )}
+
+      <Stack vertical>
+        {player_notes.map((note) => {
+          const isEditing = editingId === note.id;
+          const sevColor = SEVERITY_COLORS[note.severity] || '#9e9e9e';
+          return (
+            <Stack.Item key={note.id}>
+              <Box
+                style={{
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  borderRadius: '4px',
+                  overflow: 'hidden',
+                  opacity: note.secret ? 0.75 : 1,
+                }}
+              >
+                <Box px={1} py={0.4}
+                  style={{
+                    background: 'rgba(255,255,255,0.04)',
+                    borderBottom: '1px solid rgba(255,255,255,0.05)',
+                  }}
+                >
+                  <Flex align="center" wrap="wrap">
+                    <Flex.Item mr={1}>
+                      <Box
+                        as="span"
+                        px={0.6}
+                        py={0.1}
+                        fontSize="10px"
+                        bold
+                        style={{
+                          color: '#fff',
+                          backgroundColor: sevColor,
+                          borderRadius: '2px',
+                        }}
+                      >
+                        {note.severity || 'None'}
+                      </Box>
+                    </Flex.Item>
+                    <Flex.Item mr={1}>
+                      <Box color="label" fontSize="11px">
+                        <Icon name="user-shield" mr={0.3} />
+                        {note.admin}
+                      </Box>
+                    </Flex.Item>
+                    <Flex.Item mr={1}>
+                      <Box color="gray" fontSize="11px">{note.timestamp}</Box>
+                    </Flex.Item>
+                    {note.secret && (
+                      <Flex.Item mr={1}>
+                        <Box as="span" fontSize="10px" color="#ffd54f">Secret</Box>
+                      </Flex.Item>
+                    )}
+                    {note.server && (
+                      <Flex.Item>
+                        <Box color="gray" fontSize="10px">{note.server}</Box>
+                      </Flex.Item>
+                    )}
+                    <Flex.Item grow />
+                    <Flex.Item>
+                      {!isEditing && (
+                        <>
+                          <Button icon="pen" compact color="transparent"
+                            style={{ color: '#aaa', minWidth: '20px', padding: '1px 4px' }}
+                            onClick={() => {
+                              setEditingId(note.id);
+                              setEditingText(note.text);
+                            }}
+                          />
+                          <Button icon="trash" compact color="transparent"
+                            style={{ color: '#ef5350', minWidth: '20px', padding: '1px 4px' }}
+                            onClick={() => {
+                              if (confirm('Удалить заметку?')) onDeleteNote(note.id);
+                            }}
+                          />
+                        </>
+                      )}
+                    </Flex.Item>
+                  </Flex>
+                </Box>
+                <Box px={1} py={0.5}>
+                  {isEditing ? (
+                    <Flex direction="column" gap={0.3}>
+                      <TextArea
+                        width="100%"
+                        height="40px"
+                        value={editingText}
+                        onChange={(e, v) => setEditingText(v)}
+                      />
+                      <Flex gap={0.5}>
+                        <Button icon="check" color="green" onClick={() => handleEdit(note.id)}>
+                          Save
+                        </Button>
+                        <Button color="gray" onClick={() => setEditingId(null)}>
+                          Cancel
+                        </Button>
+                      </Flex>
+                    </Flex>
+                  ) : (
+                    <Box fontSize="12px" color="#e2e8f0"
+                      style={{ wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}
+                    >
+                      {note.text}
+                    </Box>
+                  )}
+                </Box>
+              </Box>
+            </Stack.Item>
+          );
+        })}
       </Stack>
     </Section>
   );

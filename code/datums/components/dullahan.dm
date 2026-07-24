@@ -57,6 +57,8 @@
 		qdel(head)
 
 	H.flags_1 &= ~(HEAR_1)
+	//и из HEARING-канала спатиал-грида: тело слышит только через голову
+	H.lose_hearing_sensitivity(INNATE_TRAIT)
 
 	RegisterSignal(dullahan_head, COMSIG_ATOM_HEARER_IN_VIEW, PROC_REF(include_owner))
 

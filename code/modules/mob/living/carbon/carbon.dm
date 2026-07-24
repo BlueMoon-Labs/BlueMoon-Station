@@ -29,6 +29,17 @@
 	QDEL_NULL(dna)
 	last_mind = null
 	GLOB.carbon_list -= src
+	//unequip при QDELING(моб) пропускается (см. /obj/item/Destroy), поэтому
+	//слот-вары отпускаем вручную - иначе зависший в GC моб пиннит экипировку
+	back = null
+	wear_mask = null
+	wear_neck = null
+	internal = null
+	head = null
+	handcuffed = null
+	legcuffed = null
+	//фантом items-галлюцинации живёт в nullspace и без qdel утёк бы насовсем
+	QDEL_NULL(halitem)
 
 /mob/living/carbon/proc/get_breath_buffer()
 	if(!breath_buffer)
@@ -258,7 +269,7 @@
 			verb_text = thrown_item.throw_verb
 	visible_message(span_danger("[src] [verb_text][plural_s(verb_text)] [thrown_thing][power_throw ? " really hard!" : "."]"), \
 					span_danger("You [verb_text] [thrown_thing][power_throw ? " really hard!" : "."]"))
-	log_message("has thrown [thrown_thing] [power_throw > 0 ? "really hard" : ""]", LOG_ATTACK)
+	log_message("has thrown [thrown_thing] [power_throw > 0 ? "really hard" : ""]", LOG_ATTACK, target = thrown_thing)
 	do_attack_animation(target, no_effect = 1)
 	var/extra_throw_range = 0 // HAS_TRAIT(src, TRAIT_THROWINGARM) ? 2 : 0
 	playsound(loc, 'sound/weapons/punchmiss.ogg', 50, 1, -1)
@@ -267,7 +278,7 @@
 	DelayNextAction(CLICK_CD_THROW)
 
 /mob/living/carbon/restrained(ignore_grab)
-	. = (handcuffed || (!ignore_grab && pulledby && pulledby.grab_state >= GRAB_AGGRESSIVE))
+	. = (HAS_TRAIT(src, TRAIT_RESTRAINED) || handcuffed || (!ignore_grab && pulledby && pulledby.grab_state >= GRAB_AGGRESSIVE))
 
 /mob/living/carbon/proc/canBeHandcuffed()
 	return FALSE
@@ -560,10 +571,12 @@
 			break
 	return TRUE
 
-/mob/living/carbon/proc/spew_organ(power = 5, amt = 1)
+/mob/living/carbon/proc/spew_organ(power = 5, amt = 1, exclude_brain = FALSE)
 	var/list/spillable_organs = list()
 	for(var/A in internal_organs)
 		var/obj/item/organ/O = A
+		if(exclude_brain && istype(O, /obj/item/organ/brain))
+			continue
 		if(!(O.organ_flags & ORGAN_NO_DISMEMBERMENT))
 			spillable_organs += O
 	for(var/i in 1 to amt)

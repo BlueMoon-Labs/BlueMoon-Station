@@ -197,6 +197,7 @@ SUBSYSTEM_DEF(ticker)
 			// BLUEMOON ADD START - воут за карту и перезагрузка сервера, если прошлый раунд окончился крашем
 			if(mapvote_restarter_in_progress)
 				return
+			#ifndef UNIT_TESTS
 			#ifndef LOWMEMORYMODE
 			if(!SSpersistence.CheckGracefulEnding())
 				SetTimeLeft(-1)
@@ -206,6 +207,7 @@ SUBSYSTEM_DEF(ticker)
 				SSvote.initiate_vote("map","server", display = SHOW_RESULTS|SHOW_WINNER, votesystem = vote_type, forced = TRUE)
 				to_chat(world, span_boldwarning("Активировано голосование за смену карты из-за неудачного завершения прошлого раунда. После его окончания сервер будет перезапущен."))
 				return
+			#endif
 			#endif
 			// BLUEMOON ADD END
 
@@ -400,11 +402,16 @@ SUBSYSTEM_DEF(ticker)
 	var/list/allmins = adm["present"]
 	send2adminchat("Server", "Round [GLOB.round_id ? "#[GLOB.round_id]:" : "of"] [hide_mode ? "secret":"[GLOB.master_mode]"] has started[allmins.len ? ".":" with no active admins online!"]")
 	if(CONFIG_GET(string/new_round_ping))
-		send2chat(new /datum/tgs_message_content("<@&[CONFIG_GET(string/new_round_ping)]> | Новый раунд стартует на [SSmapping.config.map_name]!"), CONFIG_GET(string/chat_announce_new_game))
+		// Один запрос TGS-моста вместо залпа: каждый send2chat - синхронный round-trip
+		// до хоста TGS (world.Export в его хендлере), и пачка пингов ровно в момент
+		// роундстарта складывала эти блоки мира в один общий фриз.
+		var/role_pings
 		if(GLOB.master_mode == "Extended")
-			send2chat(new /datum/tgs_message_content("<@&[CONFIG_GET(string/passive_round_ping)]> <@&[CONFIG_GET(string/agressive_round_ping)]> | Раунд [GLOB.round_id ? "#[GLOB.round_id]:" : "в режиме"] [hide_mode ? "секретном":"[GLOB.master_mode]"] стартует[allmins.len ? "!":" без администрации!!"]"), CONFIG_GET(string/chat_announce_new_game))
+			role_pings = "<@&[CONFIG_GET(string/passive_round_ping)]> <@&[CONFIG_GET(string/agressive_round_ping)]>"
 		else
-			send2chat(new /datum/tgs_message_content("<@&[CONFIG_GET(string/active_round_ping)]> <@&[CONFIG_GET(string/agressive_round_ping)]> | Раунд [GLOB.round_id ? "#[GLOB.round_id]:" : "в режиме"] [hide_mode ? "секретном":"[GLOB.master_mode]"] стартует[allmins.len ? "!":" без администрации!!"]"), CONFIG_GET(string/chat_announce_new_game))
+			role_pings = "<@&[CONFIG_GET(string/active_round_ping)]> <@&[CONFIG_GET(string/agressive_round_ping)]>"
+		var/round_ping_message = "<@&[CONFIG_GET(string/new_round_ping)]> | Новый раунд стартует на [SSmapping.config.map_name]!\n[role_pings] | Раунд [GLOB.round_id ? "#[GLOB.round_id]:" : "в режиме"] [hide_mode ? "секретном":"[GLOB.master_mode]"] стартует[allmins.len ? "!":" без администрации!!"]"
+		send2chat(new /datum/tgs_message_content(round_ping_message), CONFIG_GET(string/chat_announce_new_game))
 	setup_done = TRUE
 
 	for(var/i in GLOB.start_landmarks_list)

@@ -103,7 +103,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/ghost_orbit = GHOST_ORBIT_CIRCLE
 	var/ghost_accs = GHOST_ACCS_DEFAULT_OPTION
 	var/ghost_others = GHOST_OTHERS_DEFAULT_OPTION
-	var/ghost_hud = 1
 	var/inquisitive_ghost = 1
 	var/allow_midround_antag = 1
 	var/preferred_map = null
@@ -1625,7 +1624,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						dat += "<b>[body_size_label]:</b> <a href='?_src_=prefs;preference=body_size;task=input'>[features["body_size"]*100]%</a><br>"
 						dat += "<b>[normalized_size_label]:</b> <a href='?_src_=prefs;preference=normalized_size;task=input'>[features["normalized_size"]*100]%</a><br>"
 						dat += "<b>[scaled_appearance_label]:</b> <a href='?_src_=prefs;preference=toggle_fuzzy;task=input'>[fuzzy ? fuzzy_label : sharp_label]</a><br>"
-						dat += "<b>[weight_label]:</b> <a href='?_src_=prefs;preference=body_weight;task=input'>[all_quirks.Find("Пожиратель") ? NAME_WEIGHT_NORMAL : body_weight]</a><br>" //BLUEMOON ADD вес персонажей
+						dat += "<b>[weight_label]:</b> <a href='?_src_=prefs;preference=body_weight;task=input'>[all_quirks.Find(/datum/quirk/bluemoon_devourer::name) ? NAME_WEIGHT_NORMAL : body_weight]</a><br>" //BLUEMOON ADD вес персонажей
 
 					if(!(NOEYES in pref_species.species_traits))
 						dat += "<h3>[eye_type_label]</h3>"
@@ -2053,7 +2052,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							dat += "<b>[belly_stuffing_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=belly_stuffing'>[features["belly_stuffing"] == TRUE ? "Yes" : "No"]</a>"
 							dat += "<b>[belly_accessible_label]:</b><a style='display:block;width:100px' href='?_src_=prefs;preference=belly_accessible'>[features["belly_accessible"] ? "Yes" : "No"]</a>"
 						dat += "</td>"
-						if(all_quirks.Find("Дуллахан"))
+						if(all_quirks.Find(/datum/quirk/dullahan::name))
 							dat += APPEARANCE_CATEGORY_COLUMN
 							dat += "<h3>Neckfire</h3>"
 							dat += "<a style='display:block;width:50px' href='?_src_=prefs;preference=has_neckfire;task=input'>[features["neckfire"] ? "Yes" : "No"]</a>"
@@ -2347,8 +2346,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 									var/class_link = ""
 									var/list/loadout_item = has_loadout_gear(loadout_slot, "[gear.type]")
 									var/extra_loadout_data = ""
-									if(gear.base64icon)
-										extra_loadout_data += "<center><img src='data:image/png;base64,[gear.base64icon]'></center>"
+									var/gear_preview = gear.get_base64icon()
+									if(gear_preview)
+										extra_loadout_data += "<center><img src='data:image/png;base64,[gear_preview]'></center>"
 									if(loadout_item)
 										var/loadout_color_display = "#FFFFFF"
 										var/loadout_color_label = "#FFFFFF"
@@ -2803,7 +2803,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		dat += "<center><b>Choose quirk setup</b></center><br>"
 		// BLUEMOON ADD START - настройки для отдельных квирков
 		dat += "Настройки для отдельных квирков. Если нужный квирк не будет выставлен, то они работать не будут.<br>"
-		dat += "<a href='?_src_=prefs;preference=traits_setup;task=change_shriek_option'>([BLUEMOON_TRAIT_NAME_SHRIEK]) Тип Крика: [shriek_type]</a>"
+		dat += "<a href='?_src_=prefs;preference=traits_setup;task=change_shriek_option'>([/datum/quirk/shriek::name]) Тип Крика: [shriek_type]</a>"
 		dat += "<a href='?_src_=prefs;preference=traits_setup;task=lewd_summon_nickname'>([TRAIT_LEWD_SUMMON]) Прозвище для призываемого[summon_nickname ? ": ": ""][summon_nickname]</a>"
 		var/phobia_text = phobia_type ? phobia_type : "Случайная"
 		dat += "<a href='?_src_=prefs;preference=traits_setup;task=change_phobia_option'>([BLUEMOON_TRAIT_NAME_PHOBIA]) Тип фобии: [phobia_text]</a><br>"
@@ -4825,7 +4825,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				//BLUEMOON ADD выбор веса персонажа, замена квирков на вес
 				if("body_weight")
-					if(all_quirks.Find("Пожиратель"))
+					if(all_quirks.Find(/datum/quirk/bluemoon_devourer::name))
 						tgui_alert(user, "Квирк Пожиратель несовместим с любым весом кроме стандартного", "Ugh, you cant", list("Ok", "Understood"))
 					else
 						var/new_body_weight = tgui_input_list(user, "Выберите вес персонажа!", "Character Preference", GLOB.mob_sizes)

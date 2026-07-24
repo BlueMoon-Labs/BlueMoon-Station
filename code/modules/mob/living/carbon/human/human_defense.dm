@@ -282,6 +282,9 @@
 	switch (severity)
 		if (EXPLODE_DEVASTATE)
 			if(bomb_armor < EXPLODE_GIB_THRESHOLD) //gibs the mob if their bomb armor is lower than EXPLODE_GIB_THRESHOLD
+				var/datum/explosion/exp_gib = origin
+				if(istype(exp_gib) && exp_gib.explosion_attacker && exp_gib.explosion_attacker != src)
+					log_combat(exp_gib.explosion_attacker, src, "gibbed with explosion", exp_gib.explosion_source)
 				for(var/I in contents)
 					var/atom/A = I
 					if(!QDELETED(A))
@@ -321,6 +324,10 @@
 			adjustStaminaLoss(brute_loss)
 
 	take_overall_damage(brute_loss,burn_loss)
+
+	var/datum/explosion/exp = origin
+	if(istype(exp) && exp.explosion_attacker && exp.explosion_attacker != src)
+		log_combat(exp.explosion_attacker, src, "exploded", exp.explosion_source, "наносит [brute_loss + burn_loss] урона")
 
 	//attempt to dismember bodyparts
 	if(severity <= 2 || !bomb_armor)

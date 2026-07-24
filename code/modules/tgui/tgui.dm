@@ -116,12 +116,24 @@
 		/datum/asset/simple/namespaced/fontawesome))
 	flush_queue |= window.send_asset(get_asset_datum(
 		/datum/asset/simple/namespaced/tgfont))
-	for(var/datum/asset/asset in src_object.ui_assets(user))
+	for(var/datum/asset/asset in src_object?.ui_assets(user))
 		if(!asset)
 			continue
 		flush_queue |= window.send_asset(asset)
+	//initialize/send_asset спят на отправке ресурсов: за это время датум могли
+	//qdel-нуть (логаут, удаление src_object) - Destroy() обнуляет user
+	if(QDELETED(src))
+		return FALSE
+	if(!user?.client)
+		close(can_be_suspended = FALSE)
+		return FALSE
 	if (flush_queue)
 		user.client.browse_queue_flush()
+	if(QDELETED(src))
+		return FALSE
+	if(!user?.client)
+		close(can_be_suspended = FALSE)
+		return FALSE
 	window.send_message("update", get_payload(
 		with_data = TRUE,
 		with_static_data = TRUE))
@@ -152,7 +164,7 @@
 		window.close(can_be_suspended, logout)
 		src_object.ui_close(user)
 		SStgui.on_close(src)
-		if(user.client)
+		if(user?.client)
 			terminate_byondui_elements()
 	state = null
 	if(parent_ui && parent_ui != 500)
@@ -220,7 +232,7 @@
  * optional force bool Send an update even if UI is not interactive.
  */
 /datum/tgui/proc/send_full_update(custom_data, force, ignore_cooldown = FALSE)
-	if(!user.client || !initialized || closing)
+	if(!user?.client || !initialized || closing)
 		return
 	if(!ignore_cooldown && !COOLDOWN_FINISHED(src, refresh_cooldown))
 		refreshing = TRUE
@@ -243,7 +255,7 @@
  * optional force bool Send an update even if UI is not interactive.
  */
 /datum/tgui/proc/send_update(custom_data, force)
-	if(!user.client || !initialized || closing)
+	if(!user?.client || !initialized || closing)
 		return
 	var/should_update_data = force || status >= UI_UPDATE
 	window.send_message("update", get_payload(
@@ -258,7 +270,7 @@
  * return list
  */
 /datum/tgui/proc/get_payload(custom_data, with_data, with_static_data)
-	if (!user.client)
+	if (!user?.client)
 		return
 	var/list/json_data = list()
 	json_data["config"] = list(

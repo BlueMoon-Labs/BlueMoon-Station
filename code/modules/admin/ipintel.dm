@@ -84,25 +84,25 @@
 	if (!SSipintel.enabled)
 		return
 
-	var/list/http[] = world.Export("http://[CONFIG_GET(string/ipintel_domain)]/check.php?ip=[ip]&contact=[CONFIG_GET(string/ipintel_email)]&format=json&flags=f")
+	var/datum/http_response/response = world_safe_http_get("http://[CONFIG_GET(string/ipintel_domain)]/check.php?ip=[ip]&contact=[CONFIG_GET(string/ipintel_email)]&format=json&flags=f")
 
-	if (http)
-		var/status = text2num(http["STATUS"])
+	if (response && !response.errored)
+		var/status = response.status_code
 
 		if (status == 200)
-			var/response = json_decode(file2text(http["CONTENT"]))
-			if (response)
-				if (response["status"] == "success")
-					var/intelnum = text2num(response["result"])
+			var/list/parsed = json_decode(response.body)
+			if (parsed)
+				if (parsed["status"] == "success")
+					var/intelnum = text2num(parsed["result"])
 					if (isnum(intelnum))
-						return text2num(response["result"])
+						return text2num(parsed["result"])
 					else
-						ipintel_handle_error("Bad intel from server: [response["result"]].", ip, retryed)
+						ipintel_handle_error("Bad intel from server: [parsed["result"]].", ip, retryed)
 						if (!retryed)
 							sleep(25)
 							return .(ip, 1)
 				else
-					ipintel_handle_error("Bad response from server: [response["status"]].", ip, retryed)
+					ipintel_handle_error("Bad response from server: [parsed["status"]].", ip, retryed)
 					if (!retryed)
 						sleep(25)
 						return .(ip, 1)

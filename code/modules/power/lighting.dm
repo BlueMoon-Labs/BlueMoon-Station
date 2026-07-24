@@ -1321,12 +1321,13 @@
 		return
 	emergency_mode = TRUE
 	set_light(6, 3, bulb_emergency_colour, l_cone_angle = cone_angle, l_cone_dir = turn(dir, 180))
-	RegisterSignal(current_area, COMSIG_AREA_POWER_CHANGE, PROC_REF(update), override = TRUE)
+	//смена питания области доезжает до ламп штатным machinery power_change();
+	//прежняя регистрация на COMSIG_AREA_POWER_CHANGE (сигнал тогда никем не
+	//слался) подставляла бы область в аргумент trigger и крутила счётчик
+	//перегорания - не возвращать её
 
 /obj/machinery/light/proc/emergency_lights_off(area/current_area, obj/machinery/power/apc/current_apc)
 	set_light(0, 0, 0, l_cone_angle = 0) //you, sir, are off!
-	if(current_apc)
-		RegisterSignal(current_area, COMSIG_AREA_POWER_CHANGE, PROC_REF(update), override = TRUE)
 
 /obj/machinery/light/broken
 	status = LIGHT_BROKEN

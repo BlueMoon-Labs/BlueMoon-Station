@@ -19,6 +19,8 @@
 
 #define LAZYINITLIST(L) if (!L) { L = list(); }
 #define UNSETEMPTY(L) if (L && !length(L)) L = null
+///удалить ключ из ассоц-списка, если его значение-список опустело
+#define ASSOC_UNSETEMPTY(L, K) if (!length(L[K])) L -= K;
 ///Like LAZYCOPY - copies an input list if the list has entries, If it doesn't the assigned list is nulled
 #define LAZYLISTDUPLICATE(L) (L ? L.Copy() : null )
 #define LAZYREMOVE(L, I) if(L) { L -= I; if(!length(L)) { L = null; } }
@@ -47,6 +49,21 @@
 #define LAZYCLEARLIST(L) if(L) L.Cut() // Consider LAZYNULL instead
 #define SANITIZE_LIST(L) ( islist(L) ? L : list() )
 #define reverseList(L) reverseRange(L.Copy())
+
+// In-place list resize macros (Baystation port). L.len changes never reallocate,
+// unlike Cut(1,2) which shifts every remaining element - use the tail-pop pattern
+// for queue drain loops where processing order does not matter:
+//   while(length(queue))
+//       var/thing = queue[queue.len]
+//       LIST_DEC(queue)
+/// Increase the size of L by 1 at the end. Evaluates to the old last entry index.
+#define LIST_INC(L) ((L).len++)
+/// Increase the size of L by 1 at the end. Evaluates to the new last entry index.
+#define LIST_PRE_INC(L) (++(L).len)
+/// Decrease the size of L by 1 from the end. Evaluates to the old last entry index.
+#define LIST_DEC(L) ((L).len--)
+/// Decrease the size of L by 1 from the end. Evaluates to the new last entry index.
+#define LIST_PRE_DEC(L) (--(L).len)
 
 /// Performs an insertion on the given lazy list with the given key and value. If the value already exists, a new one will not be made.
 #define LAZYORASSOCLIST(lazy_list, key, value) \

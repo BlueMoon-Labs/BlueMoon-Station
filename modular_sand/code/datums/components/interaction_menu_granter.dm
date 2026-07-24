@@ -150,7 +150,7 @@
 	.["max_distance"] = 0
 	.["user_is_blacklisted"] = SSinteractions.is_blacklisted(self)
 	var/required_from_user = NONE
-	var/user_has_penis = self.has_penis()
+	var/user_has_penis = self.has_penis(TRUE)
 	if(self.has_mouth())
 		required_from_user |= INTERACTION_REQUIRE_MOUTH
 	if(self.has_hands())
@@ -313,7 +313,7 @@
 		.["max_distance"] = get_dist(self, target)
 		.["target_is_blacklisted"] = SSinteractions.is_blacklisted(target)
 		var/required_from_target = NONE
-		var/target_has_penis = target.has_penis()
+		var/target_has_penis = target.has_penis(TRUE)
 		if(target.has_mouth())
 			required_from_target |= INTERACTION_REQUIRE_MOUTH
 		if(target.has_hands())
@@ -885,7 +885,9 @@
 				var/mob/living/carbon/human/H = parent_mob
 				H.force_naked_flavor = !H.force_naked_flavor
 				if(H.force_naked_flavor)
-					H.balloon_alert_to_viewers("Доступно описание голого тела")
+					H.balloon_alert_to_viewers("Доступны картинки и описание голого тела")
+					// относительно тихий ненавязчивый звук стабильной громкости в пределах 5 тайлов
+					playsound(H, 'sound/magic/staff_healing.ogg', 10, FALSE, falloff_exponent = 1, ignore_walls = FALSE, distance_multiplier_min_range = 5)
 				return TRUE
 			else
 				to_chat(parent_mob, span_warning("Unavailable for non-humanoid mob."))

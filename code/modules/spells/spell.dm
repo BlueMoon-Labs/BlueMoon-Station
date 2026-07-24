@@ -142,6 +142,7 @@ GLOBAL_LIST_INIT(spells, typesof(/obj/effect/proc_holder/spell)) //needed for th
 
 	/// Whether an ability should start cooldown after cast or not.
 	var/should_recharge_after_cast = TRUE
+	var/do_log = TRUE
 
 	action_icon = 'icons/mob/actions/actions_spells.dmi'
 	action_icon_state = "spell_default"
@@ -210,7 +211,9 @@ GLOBAL_LIST_INIT(spells, typesof(/obj/effect/proc_holder/spell)) //needed for th
 
 /obj/effect/proc_holder/spell/Initialize(mapload)
 	. = ..()
-	START_PROCESSING(SSfastprocess, src)
+	//заряженный спелл не сидит в SSfastprocess: его будят start_recharge()
+	//и perform() на время отката (иначе каждый спелл на сервере молотит
+	//10 раз в секунду всю жизнь владельца)
 
 	still_recharging_msg = "<span class='notice'>[name] is still recharging.</span>"
 	charge_counter = charge_max
@@ -240,22 +243,30 @@ GLOBAL_LIST_INIT(spells, typesof(/obj/effect/proc_holder/spell)) //needed for th
 
 /obj/effect/proc_holder/spell/proc/start_recharge()
 	recharging = TRUE
+	START_PROCESSING(SSfastprocess, src)
 
 /obj/effect/proc_holder/spell/process(delta_time)
-	if(recharging && charge_type == "recharge" && (charge_counter < charge_max))
-		charge_counter += 2	//processes 5 times per second instead of 10.
-		if(charge_counter >= charge_max)
-			action.UpdateButtons()
-			charge_counter = charge_max
-			recharging = FALSE
+	if(!recharging || charge_type != "recharge" || charge_counter >= charge_max)
+		return PROCESS_KILL //откатывать нечего: start_recharge()/perform() разбудят
+	charge_counter += 2	//processes 5 times per second instead of 10.
+	if(charge_counter >= charge_max)
+		action.UpdateButtons()
+		charge_counter = charge_max
+		recharging = FALSE
 
 /obj/effect/proc_holder/spell/proc/perform(list/targets, recharge = TRUE, mob/user = usr) //if recharge is started is important for the trigger spells
 	before_cast(targets)
 	invocation(user)
-	if(user && user.ckey)
-		user.log_message("<span class='danger'>cast the spell [name].</span>", LOG_ATTACK)
+	if(do_log && user?.ckey)
+		var/msg = "cast the spell «[name]»"
+		if(LAZYLEN(targets))
+			var/list/to_log = list()
+			for(var/t in targets)
+				to_log += key_name(t)
+			msg += " on targets: [english_list(to_log, and_text = ", ")]"
+		user.log_message("[msg].", LOG_ATTACK)
 	if(recharge)
-		recharging = TRUE
+		start_recharge() //не просто флаг: спелл должен встать в SSfastprocess, иначе откат никогда не завершится
 	if(sound)
 		playMagSound()
 	cast(targets,user=user)

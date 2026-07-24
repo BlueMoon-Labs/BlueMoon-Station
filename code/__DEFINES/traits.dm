@@ -310,7 +310,9 @@
 
 #define TRAIT_AKIMBO	"akimbo"
 
-#define TRAIT_COMPATIBLE_WITH_NANOMACHINES "compatible_with_nanomachines"
+#define TRAIT_COMPATIBLE_WITH_NANITES "compatible_with_nanites"
+#define TRAIT_NANITES_IMMUNITY "nanites_immunity"
+#define NANITES_IMMUNITY_FROM_REAGENT "nanite_protector"
 
 
 // mobility flag traits
@@ -445,6 +447,7 @@
 #define ACTIVE_PARRY_TRAIT				"active_parry"
 #define STICKY_NODROP "sticky-nodrop" //sticky nodrop sounds like a bad soundcloud rapper's name
 #define TRAIT_SACRIFICED "sacrificed" //Makes sure that people cant be cult sacrificed twice.
+#define TRAIT_VITALITY_MATRIX_CONSUMED "vitality_matrix_consumed" //Prevents farming clockwork vitality from the same corpse.
 #define TRAIT_SPACEWALK "spacewalk"
 #define TRAIT_SALT_SENSITIVE "salt_sensitive"
 

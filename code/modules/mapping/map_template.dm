@@ -91,8 +91,32 @@
 	var/x = centered? max(round((world.maxx - width) / 2), 1) : 1
 	var/y = centered? max(round((world.maxy - height) / 2), 1) : 1
 
-	var/datum/space_level/level = SSmapping.add_new_zlevel(name, ztraits)
-	var/datum/parsed_map/parsed = load_map(file(mappath), x, y, level.z_value, no_changeturf=(SSatoms.initialized == INITIALIZATION_INSSATOMS), placeOnTop = TRUE, orientation = orientation)
+	if(!width || !height || !zdepth)
+		preload_size(mappath)
+
+	var/datum/space_level/first_level
+	if(zdepth == 1)
+		first_level = SSmapping.add_new_zlevel(name, ztraits)
+	else
+		var/list/trait_sets = list()
+		if(!length(ztraits))
+			for(var/i in 1 to zdepth)
+				trait_sets += list(list(ZTRAIT_AWAY = TRUE))
+		else if(zdepth != ztraits.len)
+			for(var/i in 1 to min(zdepth, ztraits.len))
+				trait_sets += list(ztraits[i])
+			while(trait_sets.len < zdepth)
+				trait_sets += list(trait_sets.len ? trait_sets[trait_sets.len] : ztraits)
+		else
+			for(var/i in 1 to zdepth)
+				trait_sets += list(ztraits[i])
+		for(var/i in 1 to zdepth)
+			var/level_name = (i == 1) ? name : "[name] [i]"
+			var/datum/space_level/level = SSmapping.add_new_zlevel(level_name, trait_sets[i])
+			if(i == 1)
+				first_level = level
+
+	var/datum/parsed_map/parsed = load_map(file(mappath), x, y, first_level.z_value, no_changeturf=(SSatoms.initialized == INITIALIZATION_INSSATOMS), placeOnTop = TRUE, orientation = orientation)
 	var/list/bounds = parsed.bounds
 	if(!bounds)
 		return FALSE
@@ -105,7 +129,7 @@
 	log_game("Z-level [name] loaded at [x],[y],[world.maxz]")
 	on_map_loaded(world.maxz, parsed.bounds)
 
-	return level
+	return first_level
 
 //Override for custom behavior
 /datum/map_template/proc/on_map_loaded(z, list/bounds)

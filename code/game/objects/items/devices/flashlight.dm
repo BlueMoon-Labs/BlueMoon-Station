@@ -21,8 +21,8 @@
 	var/brightness_on = 4 //range of light when on
 	var/flashlight_power = 0.8 //strength of the light when on
 	var/cone_angle = LIGHTING_FLASHLIGHT_CONE_ANGLE // Ширина корнер-конуса; используется только сабтайпами на COMPLEX_LIGHT
-	var/soundon = 'sound/weapons/magin.ogg' //BM Changes
-	var/soundoff = 'sound/weapons/magout.ogg' //BM Changes
+	var/soundon = 'sound/weapons/magin.ogg'
+	var/soundoff = 'sound/weapons/magout.ogg'
 	var/electronic = TRUE // EMP sensetive 		// BLUEMOON ADD
 	light_color = "#ffeecb"
 
@@ -325,6 +325,8 @@
 	light_color = "#FA421A"
 	icon_state = "flare"
 	item_state = "flare"
+	soundon = 'sound/weapons/firelight.ogg'
+	soundoff = 'sound/weapons/firesnuff.ogg'
 	actions_types = list()
 	cone_angle = 0
 	light_system = OVERLAY_LIGHT // фаера бросают - всенаправленный оверлейный свет

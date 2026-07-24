@@ -299,6 +299,13 @@
 	// Ignore virtual speaker (most often radio messages) from ourself
 	if (originalSpeaker != src && speaker == src)
 		return
+
+	// Lag switch: runechat is pure cosmetics and every viewer generates its own
+	// message image, so it is the first thing to go when the server is dying
+	if(SSlag_switch.measures[DISABLE_RUNECHAT] && !HAS_TRAIT(speaker, TRAIT_BYPASS_MEASURES))
+		return
+	if(SSlag_switch.measures[DISABLE_DEAD_RUNECHAT] && stat == DEAD && !client?.holder)
+		return
 	//Skyrat changes
 	if(!message_language && (lang_treat(speaker, message_language, raw_message, spans, null, TRUE) == "makes a strange sound.") && !("emote" in spans))
 		var/nospeak = "makes a strange sound."

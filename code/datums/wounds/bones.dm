@@ -189,7 +189,7 @@
 		if(NOBLOOD in human_victim.dna?.species.species_traits)
 			return
 
-	if(limb.body_zone == BODY_ZONE_CHEST && victim.blood_volume && prob(internal_bleeding_chance + wounding_dmg))
+	if(victim.stat != DEAD && limb.body_zone == BODY_ZONE_CHEST && victim.blood_volume && prob(internal_bleeding_chance + wounding_dmg))
 		var/blood_bled = rand(1, wounding_dmg * (severity == WOUND_SEVERITY_CRITICAL ? 2 : 1.5)) // 12 brute toolbox can cause up to 18/24 bleeding with a severe/critical chest wound
 		switch(blood_bled)
 			if(1 to 6)

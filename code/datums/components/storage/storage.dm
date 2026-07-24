@@ -510,6 +510,11 @@
 /datum/component/storage/proc/can_be_inserted(obj/item/I, stop_messages = FALSE, mob/M)
 	if(!istype(I) || (I.item_flags & ABSTRACT))
 		return FALSE //Not an item
+	// Протухшая ссылка из уснувшего вызова (do_after/опрос) не должна возвращать
+	// удаляемый предмет в contents: Destroy уже вынес его в nullspace, повторная
+	// вставка = гарантированный вечный harddel (прод: магазин e45 в сатчеле).
+	if(QDELETED(I))
+		return FALSE
 	if(I == parent)
 		return FALSE	//no paradoxes for you
 	var/atom/real_location = real_location()
@@ -598,7 +603,12 @@
 	if(rustle_sound)
 		playsound(parent, "rustle", 50, 1, -5)
 	to_chat(user, "<span class='notice'>You put [I] [insert_preposition]to [parent].</span>")
-	for(var/mob/viewing in fov_viewers(world.view, user)-M)
+	// user может быть null (вставка сигналом без юзера) - fov_viewers(null) вернёт 0,
+	// и "0 - M" рантаймил type mismatch. Центр обзора тогда сам M.
+	var/mob/feedback_center = user || M
+	if(!feedback_center)
+		return
+	for(var/mob/viewing in fov_viewers(world.view, feedback_center)-M)
 		if(in_range(M, viewing)) //If someone is standing close enough, they can tell what it is...
 			viewing.show_message("<span class='notice'>[M] puts [I] [insert_preposition]to [parent].</span>", MSG_VISUAL)
 		else if(I && I.w_class >= 3) //Otherwise they can only see large or normal items from a distance...

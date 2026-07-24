@@ -12,6 +12,8 @@
 	var/allowed_buildtypes = NONE
 	var/list/cached_designs = list()
 	var/list/_ui_cached_designs = list()
+	/// Кэш дизайнов уже строился полным пересбором хотя бы раз - можно доклеивать инкрементально
+	var/designs_cache_built = FALSE
 	var/department_tag = "Unidentified"			//used for material distribution among other things.
 	var/datum/techweb/stored_research
 	var/datum/techweb/host_research
@@ -93,8 +95,18 @@
 		obj_flags |= EMAGGED
 
 /obj/machinery/rnd/production/proc/update_research()
+	// Снапшот "что уже знали" ДО синка: после него доклеиваем только новые дизайны.
+	// Полный пересбор (весь researched_designs через techweb_design_by_id) гонялся
+	// каждой машиной раз в 1.5с на волне исследований - 75k вызовов за 18с на проде.
+	// Судить о "первом ли это синке" по снапшоту нельзя: свежий /datum/techweb
+	// исследует стартовые ноды прямо в New(), так что researched_designs непуст уже
+	// до первого пересбора - и инкрементальный путь навсегда терял базовые рецепты.
+	var/list/previously_known = designs_cache_built ? stored_research.researched_designs.Copy() : null
 	host_research.copy_research_to(stored_research, TRUE)
-	update_designs()
+	if(previously_known)
+		update_designs_incremental(previously_known)
+	else
+		update_designs()
 	if(last_design_count == 0)
 		last_design_count = length(cached_designs)
 
@@ -105,7 +117,23 @@
 		if((isnull(allowed_department_flags) || (d.departmental_flags & allowed_department_flags)) && (d.build_type & allowed_buildtypes))
 			cached_designs |= d
 
+	designs_cache_built = TRUE
 	update_designs_ui()
+
+/// Доклейка только новых (после снапшота previously_known) дизайнов в cached_designs.
+/// Синк только добавляет дизайны (copy_research_to), удаление - редкий путь полного
+/// пересбора (on_design_deletion -> recalculate_nodes -> update_designs).
+/obj/machinery/rnd/production/proc/update_designs_incremental(list/previously_known)
+	var/added = FALSE
+	for(var/design_id in stored_research.researched_designs)
+		if(previously_known[design_id])
+			continue
+		var/datum/design/new_design = SSresearch.techweb_design_by_id(design_id)
+		if((isnull(allowed_department_flags) || (new_design.departmental_flags & allowed_department_flags)) && (new_design.build_type & allowed_buildtypes))
+			cached_designs |= new_design
+			added = TRUE
+	if(added)
+		update_designs_ui()
 
 /obj/machinery/rnd/production/proc/update_designs_ui()
 	_ui_cached_designs.Cut()

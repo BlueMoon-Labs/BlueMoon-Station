@@ -43,7 +43,7 @@
 		return
 	client?.last_activity = world.time
 
-	say(message)
+	QUEUE_OR_CALL_VERB_FOR(VERB_CALLBACK(src, TYPE_PROC_REF(/atom/movable, say), message), SSspeech_controller)
 
 /mob/verb/say_verb()
 	set name = "Say"
@@ -63,7 +63,7 @@
 		return
 	client?.last_activity = world.time
 
-	say(message)
+	QUEUE_OR_CALL_VERB_FOR(VERB_CALLBACK(src, TYPE_PROC_REF(/atom/movable, say), message), SSspeech_controller)
 
 /mob/verb/speak_verb(message as text) // Специально для "saybutton"
 	set name = "Speak"
@@ -75,7 +75,7 @@
 	clear_typing_indicator()		// clear it immediately!
 	client?.last_activity = world.time
 
-	say(message)
+	QUEUE_OR_CALL_VERB_FOR(VERB_CALLBACK(src, TYPE_PROC_REF(/atom/movable, say), message), SSspeech_controller)
 
 /mob/verb/me_typing_indicator()
 	set name = "Me (Indicator)"
@@ -99,7 +99,7 @@
 
 	client?.last_activity = world.time
 
-	usr.emote("me",1,message,TRUE)
+	QUEUE_OR_CALL_VERB_FOR(VERB_CALLBACK(usr, TYPE_PROC_REF(/mob, emote), "me", 1, message, TRUE), SSspeech_controller)
 
 /mob/verb/me_verb()
 	set name = "Me"
@@ -121,7 +121,7 @@
 
 	client?.last_activity = world.time
 
-	usr.emote("me",1,message,TRUE)
+	QUEUE_OR_CALL_VERB_FOR(VERB_CALLBACK(usr, TYPE_PROC_REF(/mob, emote), "me", 1, message, TRUE), SSspeech_controller)
 
 /mob/verb/emote_verb(message as text) // Специально для "mebutton"
 	set name = "Emote"
@@ -133,7 +133,7 @@
 	clear_typing_indicator()		// clear it immediately!
 	client?.last_activity = world.time
 
-	usr.emote("me",1,message,TRUE)
+	QUEUE_OR_CALL_VERB_FOR(VERB_CALLBACK(usr, TYPE_PROC_REF(/mob, emote), "me", 1, message, TRUE), SSspeech_controller)
 
 // ═══════════════════════════════════════════════════════════════════════
 //  say_mod() - определяет глагол для речи
@@ -190,7 +190,7 @@
 
 	if(!length(message))
 		return
-	whisper(message)
+	QUEUE_OR_CALL_VERB_FOR(VERB_CALLBACK(src, TYPE_PROC_REF(/mob, whisper), message), SSspeech_controller)
 
 /mob/proc/whisper(message, datum/language/language=null)
 	client?.last_activity = world.time

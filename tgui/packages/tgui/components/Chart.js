@@ -77,6 +77,7 @@ class LineChart extends Component {
       fillColor = 'none',
       strokeColor = '#ffffff',
       strokeWidth = 2,
+      strokeDasharray,
       ...rest
     } = this.props;
     const { viewBox } = this.state;
@@ -111,6 +112,7 @@ class LineChart extends Component {
                 fill={fillColor}
                 stroke={strokeColor}
                 strokeWidth={strokeWidth}
+                strokeDasharray={strokeDasharray}
                 points={points} />
             </svg>
           </div>

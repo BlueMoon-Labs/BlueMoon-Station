@@ -203,8 +203,6 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 		initiator.current_ticket.Close()
 	initiator.current_ticket = src
 
-	TimeoutVerb()
-
 	statclick = new(null, src)
 	_interactions = list()
 	typing_admins = list()
@@ -241,16 +239,12 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 		answered = TRUE
 		send2adminchat(initiator_ckey, "[key_name(initiator)] | Ticket #[id]: Answered by [key_name(usr)]")
 	_interactions += "[TIME_STAMP("hh:mm:ss", FALSE)]: [formatted_message]"
-
-//Removes the ahelp verb and returns it after 2 minutes
-/datum/admin_help/proc/TimeoutVerb()
-	remove_verb(initiator, /client/verb/adminhelp)
-	initiator.adminhelptimerid = addtimer(CALLBACK(initiator, TYPE_PROC_REF(/client, giveadminhelpverb)), 1200, TIMER_STOPPABLE) //2 minute cooldown of admin helps
-
 //private
 /datum/admin_help/proc/FullMonty(ref_src)
 	if(!ref_src)
 		ref_src = "[REF(src)]"
+	if(!initiator?.mob) // тикет переживает дисконнект автора
+		return ""
 	. = ADMIN_FULLMONTY_NONAME(initiator.mob)
 
 /datum/admin_help/proc/TicketVerbs(ref_src)
@@ -308,7 +302,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 
 	//show it to the person adminhelping too
 	to_chat(initiator, "<span class='adminnotice'>PM to-<b>Admins</b>: <span class='linkify'>[encoded_msg]</span></span>")
-	SSblackbox.LogAhelp(id, "Ticket Opened", msg, null, initiator.ckey) //BLUEMOON EDIT, enable ticket logging
+	SSblackbox.LogAhelp(id, "Ticket Opened", msg, null, initiator_ckey) //BLUEMOON EDIT, enable ticket logging; initiator_ckey - клиент мог отвалиться
 
 //Reopen a closed ticket
 /datum/admin_help/proc/Reopen()
@@ -595,15 +589,18 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 	deltimer(adminhelptimerid)
 	adminhelptimerid = 0
 
+/client/proc/open_ticket_panel()
+	var/datum/player_ticket_panel/panel = new(src)
+	panel.ui_interact(usr)
+
 /client/verb/adminhelp()
 	set category = "Admin"
 	set name = "Adminhelp"
 
-	if(GLOB.say_disabled)	//This is here to try to identify lag problems
-		to_chat(usr, "<span class='danger'>Speech is currently admin-disabled.</span>")
+	if(GLOB.say_disabled)
+		to_chat(usr, "<span class='danger'>Речь отключена администратором.</span>")
 		return
 
-	//handle muting and automuting
 	if(prefs.muted & MUTE_ADMINHELP)
 		to_chat(src, "<span class='danger'>Ошибка: Admin-PM: Вы не можете отправлять админхелпы (Мут).</span>")
 		return
@@ -611,33 +608,7 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 		to_chat(src, "<span class='danger'>Вам запрещено использовать ахелп.</span>")
 		return
 
-	var/message = ""
-	if(prefs.tgui_input_verbs)
-		message = tgui_input_text(src, "Пожалуйста, опишите вашу проблему внятным образом и администратор поможет вам как можно скорее.", "Содержимое Adminhelp", "", MAX_MESSAGE_LEN, TRUE, TRUE)
-	else
-		message = stripped_multiline_input_or_reflect(mob, "Пожалуйста, опишите вашу проблему внятным образом и администратор поможет вам как можно скорее.", "Содержимое Adminhelp")
-
-	if(!holder)
-		if(handle_spam_prevention(message,MUTE_ADMINHELP))
-			return
-
-	if(!message)
-		return
-
-	SSblackbox.record_feedback("tally", "admin_verb", 1, "Adminhelp") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
-	if(current_ticket)
-		if(tgui_alert(usr, "У вас уже есть открытый тикет. Относится ли новый к той же проблеме?", "Adminhelp", list("Да", "Нет")) != "Нет")
-			if(current_ticket)
-				current_ticket.MessageNoRecipient(message)
-				current_ticket.TimeoutVerb()
-				return
-			else
-				to_chat(usr, "<span class='warning'>Тикет не найден, создаём новый...</span>")
-		else
-			current_ticket.AddInteraction("Открыт новый тикет админом [key_name_admin(usr)].")
-			current_ticket.Close()
-
-	new /datum/admin_help(message, src, FALSE)
+	open_ticket_panel()
 
 //
 // LOGGING

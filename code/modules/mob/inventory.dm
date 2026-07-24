@@ -23,7 +23,7 @@
 	return other_hand
 
 /mob/proc/get_item_for_held_index(i)
-	if(i > 0 && i <= held_items.len)
+	if(i > 0 && i <= length(held_items)) // у удалённого моба held_items уже null
 		return held_items[i]
 
 //Odd = left. Even = right

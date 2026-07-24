@@ -15,6 +15,15 @@ INITIALIZE_IMMEDIATE(/mob/dead)
 	tag = "mob_[next_mob_id++]"
 	add_to_mob_list()
 
+	//дальний слух мёртвых ведёт dead-chat путь say() с префами, но потребители
+	//get_hearers_in_view (LOOC, его рунчат) находят слушателей только через грид,
+	//а до порта грида view() с турфа-источника видел призраков несмотря на
+	//invisibility. Пропуск родителя теряет общий хук - регистрируем слух сами;
+	//в CLIENTS-канал обсерверов с клиентом кладёт Login. new_player (flags_1 =
+	//NONE) сюда не попадает
+	if(flags_1 & HEAR_1)
+		become_hearing_sensitive(INNATE_TRAIT)
+
 	prepare_huds()
 
 	if(length(CONFIG_GET(keyed_list/cross_server)))

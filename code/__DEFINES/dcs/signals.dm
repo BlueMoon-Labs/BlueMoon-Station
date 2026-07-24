@@ -678,6 +678,7 @@
 #define COMSIG_NANITE_SET_MAX_VOLUME "nanite_set_max_volume"	//(amount) Sets maximum nanite volume to the given amount
 #define COMSIG_NANITE_SET_CLOUD "nanite_set_cloud"				//(amount(0-100)) Sets cloud ID to the given amount
 #define COMSIG_NANITE_SET_CLOUD_SYNC "nanite_set_cloud_sync"	//(method) Modify cloud sync status. Method can be toggle, enable or disable
+#define COMSIG_NANITE_GET_CLOUD "nanite_get_cloud"	            //(int) Return cloud_id
 #define COMSIG_NANITE_SET_SAFETY "nanite_set_safety"			//(amount) Sets safety threshold to the given amount
 #define COMSIG_NANITE_SET_REGEN "nanite_set_regen"				//(amount) Sets regeneration rate to the given amount
 #define COMSIG_NANITE_SIGNAL "nanite_signal"					//(code(1-9999)) Called when sending a nanite signal to a mob.
@@ -688,6 +689,7 @@
 #define COMPONENT_PROGRAM_INSTALLED		1					//Installation successful
 #define COMPONENT_PROGRAM_NOT_INSTALLED		2				//Installation failed, but there are still nanites
 #define COMSIG_NANITE_SYNC "nanite_sync"						//(datum/component/nanites, full_overwrite, copy_activation) Called to sync the target's nanites to a given nanite component
+#define COMSIG_NANITE_SET_NEED_SYNC "nanite_set_need_sync"      // (method) Sets Needs Sync Next Cycle
 /// Checks if a nanite component is able to be controlled by console
 #define COMSIG_NANITE_CHECK_CONSOLE_LOCK "is_console_locked"
 /// Checks if a nanite component is able to be interfaced with by a host with innate nanite control

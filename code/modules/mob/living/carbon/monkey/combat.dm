@@ -49,6 +49,18 @@
 		pickupTarget = null
 		pickupTimer = 0
 
+/mob/living/carbon/monkey/proc/blacklist_item(obj/item/item)
+	if(!item)
+		return
+	if(!blacklistItems[item])
+		RegisterSignal(item, COMSIG_PARENT_QDELETING, PROC_REF(on_blacklisted_item_qdeleting))
+	blacklistItems[item]++
+
+/mob/living/carbon/monkey/proc/on_blacklisted_item_qdeleting(obj/item/item)
+	SIGNAL_HANDLER
+	UnregisterSignal(item, COMSIG_PARENT_QDELETING)
+	blacklistItems -= item
+
 /mob/living/carbon/monkey/proc/on_enemy_qdeleting(mob/living/enemy)
 	SIGNAL_HANDLER
 
@@ -106,7 +118,9 @@
 		return TRUE
 
 	if(I.anchored || !put_in_hands(I))
-		blacklistItems[I] ++
+		if(pickupTarget == I)
+			set_pickup_target(null)
+		blacklist_item(I)
 		return FALSE
 
 	if(I.force >= best_force)
@@ -157,8 +171,9 @@
 		else if(!isobj(loc) || istype(loc, /obj/item/clothing/head/mob_holder))
 			pickupTimer++
 			if(pickupTimer >= 4)
-				blacklistItems[pickupTarget] ++
+				var/obj/item/timed_out_item = pickupTarget
 				set_pickup_target(null)
+				blacklist_item(timed_out_item)
 			else
 				INVOKE_ASYNC(src, PROC_REF(walk2derpless), pickupTarget.loc)
 				if(Adjacent(pickupTarget) || Adjacent(pickupTarget.loc)) // next to target

@@ -30,6 +30,7 @@
 				M.revive(full_heal = 1, admin_revive = 1)
 				if(ishostile(target))
 					var/mob/living/simple_animal/hostile/H = M
+					H.clear_hostile_aggro()
 					if(malfunctioning)
 						H.faction |= list("lazarus", "[REF(user)]")
 						H.robust_searching = 1

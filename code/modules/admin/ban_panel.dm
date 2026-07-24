@@ -4,6 +4,8 @@
 	var/ip
 	var/cid
 	var/page = 0
+	var/player_exp = 0
+	var/list/player_notes = list()
 
 /datum/ban_panel/New(playerckey, adminckey, ip, cid, page)
 	src.playerckey = playerckey
@@ -66,6 +68,59 @@
 	if(adminckey || playerckey || ip || cid)
 		.["search_results"] = get_search_results()
 		.["total_count"] = get_ban_count()
+
+	if(playerckey)
+		.["player_exp"] = get_player_exp(playerckey)
+		.["player_notes"] = get_notes(playerckey)
+
+/datum/ban_panel/proc/get_player_exp(target_ckey)
+	var/clean_ckey = ckey(target_ckey)
+	for(var/client/C in GLOB.clients)
+		if(C.ckey == clean_ckey)
+			return C.get_exp_living(TRUE)
+	if(!SSdbcore.Connect())
+		return 0
+	var/datum/db_query/query = SSdbcore.NewQuery(
+		"SELECT COALESCE(SUM(minutes), 0) FROM [format_table_name("role_time")] WHERE ckey = :ckey",
+		list("ckey" = clean_ckey)
+	)
+	if(!query.warn_execute())
+		qdel(query)
+		return 0
+	var/total = 0
+	if(query.NextRow())
+		total = text2num(query.item[1])
+	qdel(query)
+	return total
+
+/datum/ban_panel/proc/get_notes(target_ckey)
+	. = list()
+	if(!SSdbcore.Connect())
+		return
+	var/clean_ckey = ckey(target_ckey)
+	var/datum/db_query/query = SSdbcore.NewQuery({"
+		SELECT id, IFNULL((SELECT byond_key FROM [format_table_name("player")] WHERE ckey = adminckey), adminckey),
+			text, timestamp, server, secret, severity, lasteditor, expire_timestamp
+		FROM [format_table_name("messages")]
+		WHERE type = 'note' AND targetckey = :targetckey AND deleted = 0 AND (expire_timestamp > NOW() OR expire_timestamp IS NULL)
+		ORDER BY timestamp DESC
+	"}, list("targetckey" = clean_ckey))
+	if(!query.warn_execute())
+		qdel(query)
+		return
+	while(query.NextRow())
+		var/list/note = list()
+		note["id"] = query.item[1]
+		note["admin"] = query.item[2]
+		note["text"] = query.item[3]
+		note["timestamp"] = query.item[4]
+		note["server"] = query.item[5]
+		note["secret"] = text2num(query.item[6])
+		note["severity"] = query.item[7]
+		note["lasteditor"] = query.item[8]
+		note["expire_timestamp"] = query.item[9]
+		. += list(note)
+	qdel(query)
 
 /datum/ban_panel/proc/get_ban_count()
 	var/list/searchlist = list()
@@ -174,6 +229,55 @@
 
 		if("unban")
 			. = handle_unban(params)
+
+		if("add_note")
+			if(!check_rights(R_ADMIN))
+				return
+			if(!SSdbcore.Connect())
+				to_chat(usr, "<span class='danger'>Failed to establish database connection.</span>")
+				return
+			var/note_text = params["note_text"]
+			var/note_severity = params["note_severity"]
+			var/secret = text2num(params["secret"])
+			if(!note_text || !playerckey)
+				return
+			create_message("note", playerckey, usr.ckey, note_text, null, null, secret, 0, null, 0, note_severity, dont_announce_to_events = TRUE)
+			. = TRUE
+
+		if("edit_note")
+			if(!check_rights(R_ADMIN))
+				return
+			var/note_id = text2num(params["note_id"])
+			var/new_text = params["note_text"]
+			if(!note_id || !new_text)
+				return
+			var/datum/db_query/edit_q = SSdbcore.NewQuery({"
+				UPDATE [format_table_name("messages")]
+				SET text = :text, lasteditor = :editor
+				WHERE id = :id
+			"}, list("text" = new_text, "editor" = usr.ckey, "id" = note_id))
+			if(!edit_q.warn_execute())
+				qdel(edit_q)
+				return
+			qdel(edit_q)
+			. = TRUE
+
+		if("delete_note")
+			if(!check_rights(R_ADMIN))
+				return
+			var/note_id = text2num(params["note_id"])
+			if(!note_id)
+				return
+			var/datum/db_query/del_q = SSdbcore.NewQuery({"
+				UPDATE [format_table_name("messages")]
+				SET deleted = 1
+				WHERE id = :id
+			"}, list("id" = note_id))
+			if(!del_q.warn_execute())
+				qdel(del_q)
+				return
+			qdel(del_q)
+			. = TRUE
 
 	SStgui.update_uis(src)
 

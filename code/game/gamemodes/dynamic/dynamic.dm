@@ -164,6 +164,10 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 		var/added_rule = input(usr,"What ruleset do you want to force right now? This will bypass threat level and population restrictions.", "Execute Ruleset", null) as null|anything in sortNames(init_rulesets(/datum/dynamic_ruleset/midround))
 		if (!added_rule)
 			return
+		// То же предупреждение о насыщении, что и у форса событий: рулсет поверх
+		// заполненной антаг-цели - осознанное решение, а не случайный стак.
+		if(!SSdirector.confirm_antag_force(usr, added_rule))
+			return
 		log_admin("[key_name(usr)] executed the [added_rule] ruleset.")
 		message_admins("[key_name(usr)] executed the [added_rule] ruleset.")
 		picking_specific_rule(added_rule, TRUE)
@@ -263,9 +267,14 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 	if(GLOB.round_type == ROUNDTYPE_EXTENDED)
 		threat_level = 0 // экста репортит нулевую угрозу, без оценки flavor-капли
 	else
-		// Отображаемая угроза: roundstart-бюджет + оценка капли за типовые 90 минут
-		threat_level = round(round_start_budget + profile.base_drip * 90 * 0.5, 0.1)
+		threat_level = estimate_display_threat(round_start_budget, profile.base_drip)
 	SSblackbox.record_feedback("tally", "director_threat", threat_level)
+
+/// Отображаемая угроза: roundstart-бюджет + оценка капли за типовые 90 минут. Все потребители
+/// threat_level (band required_enemies, сентинель 101 в requirements, стакинг-лимит) считают
+/// шкалу 0-100, поэтому оценка обязана капаться: хард-профиль без капа давал до 112.5.
+/datum/game_mode/dynamic/proc/estimate_display_threat(budget, drip)
+	return clamp(round(budget + drip * 90 * 0.5, 0.1), 0, 100)
 
 /// Roundstart-бюджет уже выбран в generate_threat; мидраунд-пул теперь у SSdirector.
 /datum/game_mode/dynamic/proc/generate_budgets()
@@ -277,7 +286,8 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 	log_game("DYNAMIC: No stacking is [GLOB.dynamic_no_stacking ? "Enabled" : "Disabled"].")
 	log_game("DYNAMIC: Stacking limit is [GLOB.dynamic_stacking_limit].")
 	if(GLOB.dynamic_forced_threat_level >= 0)
-		threat_level = round(GLOB.dynamic_forced_threat_level, 0.1)
+		// Кошельки ниже получают форс без капа; витринная шкала для гейтов - 0-100.
+		threat_level = clamp(round(GLOB.dynamic_forced_threat_level, 0.1), 0, 100)
 		round_start_budget = min(GLOB.dynamic_forced_threat_level / 2, 30)
 		SSdirector.setup_profile() // профиль нужен даже при форсе, иначе директор не запустится
 		SSdirector.distribute_to_budgets(GLOB.dynamic_forced_threat_level / 2) // совместимость админ-привычки
@@ -398,6 +408,10 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 	for (var/datum/dynamic_ruleset/roundstart/rule in roundstart_rules)
 		if (!rule.weight)
 			continue
+		// Естественная жеребьёвка обязана уважать те же выключатели, что и биты директора.
+		// Ручной форс идёт мимо этого цикла через GLOB.dynamic_forced_roundstart_ruleset.
+		if (!rule.enabled || rule.admin_only)
+			continue
 		if (rule.acceptable(roundstart_pop_ready, threat_level) && round_start_budget >= rule.cost) // If we got the population and threat required
 			rule.candidates = candidates.Copy()
 			rule.trim_candidates()
@@ -412,7 +426,7 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 	while (round_start_budget_left > 0)
 		var/datum/dynamic_ruleset/roundstart/ruleset = pickweight(drafted_rules)
 		if (isnull(ruleset))
-			log_game("DYNAMIC: No more rules can be applied, stopping with [round_start_budget] left.")
+			log_game("DYNAMIC: No more rules can be applied, stopping with [round_start_budget_left] left.")
 			break
 
 		var/cost = (ruleset in rulesets_picked) ? ruleset.scaling_cost : ruleset.cost
@@ -459,6 +473,7 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 	var/added_threat = ruleset.scale_up(roundstart_pop_ready, scaled_times)
 
 	if(ruleset.pre_execute(roundstart_pop_ready))
+		ruleset.director_pending_cost += ruleset.cost + added_threat
 		threat_log += "[worldtime2text()]: Roundstart [ruleset.name] spent [ruleset.cost + added_threat]. [ruleset.scaling_cost ? "Scaled up [ruleset.scaled_times]/[scaled_times] times." : ""]"
 		if(ruleset.flags & ONLY_RULESET)
 			only_ruleset_executed = TRUE
@@ -476,9 +491,11 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 	if(rule.execute())
 		if(rule.persistent)
 			current_rules += rule
+		SSdirector.confirm_action_success(rule)
 		new_snapshot(rule)
 		return TRUE
 	rule.clean_up() // Refund threat, delete teams and so on.
+	rule.director_pending_cost = 0
 	executed_rules -= rule
 	stack_trace("The starting rule \"[rule.name]\" failed to execute.")
 	return FALSE
@@ -501,6 +518,7 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 	new_rule.trim_candidates()
 	if(!new_rule.ready(forced))
 		log_game("DYNAMIC: The ruleset [new_rule.name] couldn't be executed due to lack of elligible players.")
+		new_rule.release_candidate_snapshots()
 		return FALSE
 
 	threat_log += "[worldtime2text()]: Forced rule [new_rule.name]"
@@ -515,18 +533,25 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 		if (new_rule.persistent)
 			current_rules += new_rule
 		SSdirector.note_forced_run(new_rule) // регистрируем запуск в директоре, не трогая бюджет
+		new_rule.release_candidate_snapshots()
 		return TRUE
 	// clean_up() тут не зовём: форс-путь бюджета не списывал, а рефанд clean_up
 	// теперь уходит в кошельки SSdirector - была бы бесплатная накачка бюджета.
 	// Это совпадает со старой семантикой picking_specific_rule (без clean_up на провале).
+	new_rule.release_candidate_snapshots()
 	return FALSE
 
 /// Отложенное исполнение midround/latejoin рулсета, выбранного директором.
 /// Бюджет уже списан в SSdirector.spend_and_execute; здесь - собственно запуск и бухгалтерия.
 /datum/game_mode/dynamic/proc/execute_scheduled_ruleset(datum/dynamic_ruleset/rule)
 	threat_log += "[worldtime2text()]: [rule.ruletype] [rule.name] spent [rule.cost]"
-	rule.pre_execute(current_players[CURRENT_LIVING_PLAYERS].len)
-	if (rule.execute())
+	rule.execution_pending = FALSE
+	rule.execution_failure_reason = null
+	var/assigned_before = length(rule.assigned)
+	var/prepared = rule.pre_execute(current_players[CURRENT_LIVING_PLAYERS].len)
+	if(!prepared && !rule.execution_failure_reason)
+		rule.execution_failure_reason = "pre_execute() не нашёл достаточно кандидатов"
+	if (prepared && rule.execute())
 		log_game("DYNAMIC: Injected a [rule.ruletype] ruleset [rule.name].")
 		if(rule.flags & HIGH_IMPACT_RULESET)
 			high_impact_ruleset_executed = TRUE
@@ -537,13 +562,24 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 			message_admins("[key_name(M)] joined the station, and was selected by the [rule.name] ruleset.")
 			log_game("DYNAMIC: [key_name(M)] joined the station, and was selected by the [rule.name] ruleset.")
 		executed_rules += rule
-		rule.candidates.Cut()
+		rule.release_candidate_snapshots()
 		if (rule.persistent)
 			current_rules += rule
 		new_snapshot(rule)
+		SSdirector.confirm_action_success(rule)
+		var/assigned_this_attempt = max(0, length(rule.assigned) - assigned_before)
+		SSdirector.director_log_beat(SSdirector.collect_signals(), rule, DIRECTOR_BEAT_EXECUTED,
+			detail = rule.director_execution_detail(assigned_this_attempt))
 		return TRUE
 	rule.clean_up()
-	stack_trace("The [rule.ruletype] rule \"[rule.name]\" failed to execute.")
+	rule.release_candidate_snapshots()
+	SSdirector.note_failed_action(rule, retry_replacement = istype(rule, /datum/dynamic_ruleset/midround))
+	var/failure_detail = rule.execution_failure_reason || "execute() вернул FALSE; бюджет возвращён"
+	SSdirector.director_log_beat(SSdirector.collect_signals(), rule, DIRECTOR_BEAT_FAILED, detail = failure_detail)
+	if(rule.execution_failure_reason)
+		log_game("DYNAMIC: [rule.ruletype] ruleset [rule.name] failed: [failure_detail]")
+	else
+		stack_trace("The [rule.ruletype] rule \"[rule.name]\" failed to execute.")
 	return FALSE
 
 /datum/game_mode/dynamic/process()
@@ -595,8 +631,12 @@ GLOBAL_VAR_INIT(round_type, ROUNDTYPE_DYNAMIC_MEDIUM)
 		if (forced_latejoin_rule.ready(TRUE))
 			if (!forced_latejoin_rule.repeatable)
 				latejoin_rules = remove_from_list(latejoin_rules, forced_latejoin_rule.type)
+			forced_latejoin_rule.execution_pending = TRUE
 			addtimer(CALLBACK(src, TYPE_PROC_REF(/datum/game_mode/dynamic, execute_scheduled_ruleset), forced_latejoin_rule), forced_latejoin_rule.delay)
 			SSdirector.note_forced_run(forced_latejoin_rule) // учёт форса в темпе директора, бюджет не трогаем
+		else
+			// Провал ready: снапшот с латейджойнером иначе висит на рулсете до следующей попытки.
+			forced_latejoin_rule.release_candidate_snapshots()
 		forced_latejoin_rule = null
 		return
 

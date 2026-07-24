@@ -157,6 +157,11 @@
 	// по истечении emp_timer, а удалённый вместе с вещью экшен висел в processing вечно
 	STOP_PROCESSING(SSprocessing, src)
 	QDEL_NULL(on_change)
+	//вещь может пережить свой экшен: если она покинула инвентарь мимо dropped(),
+	//грант остаётся в mob.actions, и QDEL_LAZYLIST(actions) в mob/Destroy убивает
+	//экшен - отвязываемся, иначе вещь вечно держит удалённый датум
+	if(target && ("chameleon_action" in target.vars) && target.vars["chameleon_action"] == src)
+		target.vars["chameleon_action"] = null
 	return ..()
 
 /datum/action/item_action/chameleon/change/Grant(mob/M)

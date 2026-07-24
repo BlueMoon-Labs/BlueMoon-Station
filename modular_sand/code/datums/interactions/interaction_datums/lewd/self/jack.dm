@@ -17,7 +17,7 @@
 	var/message
 	//var/t_His = user.ru_ego()
 	//var/genital_name = user.get_penetrating_genital_name()
-	var/has_penis = user.has_penis() // BLUEMOON ADD
+	var/has_penis = user.has_penis(TRUE) // BLUEMOON ADD
 
 	var/obj/item/reagent_containers/liquid_container
 

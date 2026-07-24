@@ -158,6 +158,10 @@
 	armor_head = new(host.loc)
 	ADD_TRAIT(armor, TRAIT_NODROP, TRAIT_CHANGELING_ZOMBIE)
 	ADD_TRAIT(armor_head, TRAIT_NODROP, TRAIT_CHANGELING_ZOMBIE)
+	// The armor can be destroyed externally (integrity damage), leaving a dangling ref
+	// on the component for the rest of the round - same wiring as arm_blades above.
+	RegisterSignal(armor, COMSIG_PARENT_QDELETING, PROC_REF(on_armor_delete))
+	RegisterSignal(armor_head, COMSIG_PARENT_QDELETING, PROC_REF(on_armor_delete))
 	host.equip_to_slot_if_possible(armor, ITEM_SLOT_OCLOTHING, TRUE, TRUE, TRUE)
 	host.equip_to_slot_if_possible(armor_head, ITEM_SLOT_HEAD, TRUE, TRUE, TRUE)
 	host.SetKnockdown(0)
@@ -198,6 +202,13 @@
 /datum/component/changeling_zombie_infection/proc/on_armblade_delete(datum/source)
 	SIGNAL_HANDLER
 	arm_blades -= source
+
+/datum/component/changeling_zombie_infection/proc/on_armor_delete(datum/source)
+	SIGNAL_HANDLER
+	if(source == armor)
+		armor = null
+	if(source == armor_head)
+		armor_head = null
 
 /datum/component/changeling_zombie_infection/proc/on_gain_limb(datum/source, obj/item/bodypart/gained, special)
 	SIGNAL_HANDLER

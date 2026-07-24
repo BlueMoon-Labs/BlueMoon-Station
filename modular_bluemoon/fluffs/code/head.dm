@@ -576,3 +576,11 @@
 	icon_state = "renory_helmet"
 	item_state = "ygloves"
 	flags_inv = HIDEFACIALHAIR|HIDEEARS|HIDEHAIR
+
+/obj/item/clothing/head/donator/bm/stupid_cap
+	name = "Propeller beanie"
+	desc = "У нее есть мотоhчик! Она крутится... вж-ж-ж..."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	icon_state = "stupid_cap"
+	item_state = "stupid_cap"

@@ -143,6 +143,59 @@
 	icon_state = "knight_ancient"
 	item_state = "knight_ancient"
 
+/obj/item/storage/box/holy/omnissiah
+	name = "Omnissiah Follower"
+
+/obj/item/storage/box/holy/omnissiah/PopulateContents()
+	new /obj/item/clothing/suit/hooded/adept_mech(src)
+	new /obj/item/clothing/suit/hooded/adept_mech_follower(src)
+	new /obj/item/clothing/suit/hooded/adept_mech_follower(src)
+	new /obj/item/clothing/suit/hooded/adept_mech_follower(src)
+
+/obj/item/clothing/suit/hooded/adept_mech
+	name = "Adeptus Mechanicus fancy robe"
+	desc = "Bless Omnissiah!"
+	icon = 'modular_bluemoon/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/suit.dmi'
+	icon_state = "genetor"
+	armor = list(MELEE = 41, BULLET = 15, LASER = 5, ENERGY = 5, BOMB = 5, BIO = 2, RAD = 0, FIRE = 0, ACID = 50)
+	item_state = "genetor"
+	blood_overlay_type = "coat"
+	no_t = TRUE
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	hoodtype = /obj/item/clothing/head/hooded/chaplain/adept_mech_hood
+
+/obj/item/clothing/suit/hooded/adept_mech_follower
+	name = "Adeptus Mechanicus follower robe"
+	desc = "Bless Omnissiah!"
+	icon = 'modular_bluemoon/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/suit.dmi'
+	icon_state = "genetor"
+	item_state = "genetor"
+	armor = list(MELEE = 41, BULLET = 15, LASER = 5, ENERGY = 5, BOMB = 5, BIO = 2, RAD = 0, FIRE = 0, ACID = 50)
+	no_t = TRUE
+	blood_overlay_type = "coat"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	hoodtype = /obj/item/clothing/head/hooded/chaplain/adept_mech_follower_hood
+
+/obj/item/clothing/head/hooded/chaplain/adept_mech_hood
+	name = "Adeptus Mechanicus Hood"
+	desc = "Bless Omnissiah in my head."
+	icon = 'modular_bluemoon/icons/obj/clothing/hats.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/hats.dmi'
+	icon_state = "techpriestnew"
+	body_parts_covered = HEAD
+	flags_inv = HIDEHAIR|HIDEFACE|HIDEEARS
+
+/obj/item/clothing/head/hooded/chaplain/adept_mech_follower_hood
+	name = "Adeptus Mechanicus Follower Hood"
+	desc = "Bless Omnissiah in my head."
+	icon = 'modular_bluemoon/icons/obj/clothing/hats.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/hats.dmi'
+	icon_state = "genetor"
+	body_parts_covered = HEAD
+	flags_inv = HIDEHAIR|HIDEFACE|HIDEEARS
+
 /obj/item/storage/box/holy/witchhunter
 	name = "Witchhunter Kit"
 

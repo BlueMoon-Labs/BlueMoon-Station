@@ -36,7 +36,7 @@
 	)
 	var/use_message = replacetext(pick(possible_messages), "USER", "\the [user]")
 	use_message = replacetext(use_message, "TARGET", "\the [target]")
-	user.visible_message("<span class='[simple_style]'>[is_hidden ? pick(hidden_additional) : null] [capitalize(use_message)]</span>", vision_distance = distance)
+	user.visible_message("<span class='[simple_style]'>[is_hidden ? pick(hidden_additional) : null][capitalize(use_message)]</span>", vision_distance = distance)
 
 	playlewdinteractionsound(get_turf(target), pick(
 		'modular_splurt/sound/interactions/kiss/kiss1.ogg',

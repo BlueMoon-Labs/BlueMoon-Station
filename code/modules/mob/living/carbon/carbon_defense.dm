@@ -721,7 +721,7 @@
 		return
 
 	var/extra_wound_details = ""
-	if(I.damtype == BRUTE && istype(hit_bodypart, /obj/item/bodypart) && hit_bodypart.can_dismember())
+	if(I.damtype == BRUTE && istype(hit_bodypart, /obj/item/bodypart) && hit_bodypart.can_dismembered())
 		var/mangled_state = hit_bodypart.get_mangled_state()
 		var/bio_state = get_biological_state()
 		if(mangled_state == BODYPART_MANGLED_BOTH)

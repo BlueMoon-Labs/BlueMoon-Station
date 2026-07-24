@@ -7,7 +7,7 @@
 #define RESIZE_NORMAL 1
 #define RESIZE_SMALL 0.75
 #define RESIZE_TINY 0.50
-#define RESIZE_MICRO 0.25
+#define RESIZE_MICRO CONFIG_GET(number/body_size_min)
 
 //averages
 #define RESIZE_A_MACROHUGE (RESIZE_MACRO + RESIZE_HUGE) / 2

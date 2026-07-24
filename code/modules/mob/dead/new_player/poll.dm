@@ -428,7 +428,7 @@
 		return
 	var/datum/db_query/query_hasvoted = SSdbcore.NewQuery({"
 		SELECT id
-		FROM `[format_table_name(table)]`
+		FROM [format_table_name(table)]
 		WHERE pollid = :id AND ckey = :ckey
 		"}, list(
 			"id" = pollid,

@@ -12450,11 +12450,9 @@
 "ejH" = (
 /obj/structure/table,
 /obj/item/book/manual/wiki/security_space_law,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
-	prison_radio = 1
 	},
 /obj/machinery/button/door{
 	id = "permacells2";
@@ -13860,11 +13858,9 @@
 	},
 /obj/structure/table,
 /obj/item/book/manual/wiki/security_space_law,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
-	prison_radio = 1
 	},
 /obj/item/pen{
 	pixel_x = 4;
@@ -15205,11 +15201,9 @@
 "fhI" = (
 /obj/structure/table,
 /obj/item/book/manual/wiki/security_space_law,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
-	prison_radio = 1
 	},
 /obj/machinery/light/small{
 	dir = 8
@@ -24661,9 +24655,8 @@
 	name = "Captain's Desk";
 	req_one_access_txt = "20;72"
 	},
-/obj/item/radio/intercom{
+/obj/item/radio/intercom/command{
 	dir = 8;
-	freerange = 1;
 	name = "Station Intercom (Captain)";
 	pixel_x = 28
 	},
@@ -58213,11 +58206,9 @@
 "uce" = (
 /obj/structure/table,
 /obj/item/book/manual/wiki/security_space_law,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
-	prison_radio = 1
 	},
 /obj/machinery/button/door{
 	id = "permacells3";

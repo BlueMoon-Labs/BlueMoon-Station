@@ -28,6 +28,8 @@
 	// else if(ckey)
 	// 	stack_trace("Mob without client but with associated ckey, [ckey], has been deleted.")
 	unset_machine()
+	SStgui.close_user_uis(src)
+	remove_from_all_current_player_lists()
 	remove_from_mob_list()
 	remove_from_dead_mob_list()
 	remove_from_alive_mob_list()
@@ -41,8 +43,9 @@
 	if(length(progressbars))
 		stack_trace("[src] destroyed with elements in its progressbars list.")
 		progressbars = null
-	for (var/alert in alerts.Copy())
-		clear_alert(alert, TRUE)
+	if(alerts) //у /mob/oranges_ear списки алертов обнулены на уровне типа
+		for (var/alert in alerts.Copy())
+			clear_alert(alert, TRUE)
 	if(observers?.len)
 		// reset_perspective() выпиливает наблюдателя из observers - итерируем копию,
 		// иначе каждый второй пропускается и его client.eye/observetarget навсегда
@@ -69,7 +72,10 @@
 	// if(mock_client)
 	// 	mock_client.mob = null
 
-	return ..()
+	. = ..()
+	//предметы в руках удалены contents-циклом выше по цепочке, но unequip при
+	//QDELING(моб) пропускается - отпускаем ссылки, чтобы зависший моб не пиннил их
+	held_items = null
 
 /mob/GenerateTag()
 	tag = "mob_[next_mob_id++]"
@@ -367,6 +373,14 @@
 	set name = "Examine"
 	set category = "IC"
 
+	// Examine builds big text blobs and fires context signals: when the tick
+	// is already overloaded, run it at the start of the next one instead.
+	DEFAULT_QUEUE_OR_CALL_VERB(VERB_CALLBACK(src, PROC_REF(run_examinate), A))
+
+/mob/proc/run_examinate(atom/A)
+	if(QDELETED(A)) //верб мог отлежаться в очереди SSverb_manager, а цель - удалиться за это время
+		return
+
 	if(isturf(A) && !(sight & SEE_TURFS) && !(A in view(client ? client.view : world.view, src)))
 		// shift-click catcher may issue examinate() calls for out-of-sight turfs
 		return
@@ -532,6 +546,11 @@
 	set category = "Object"
 	set src = usr
 
+	//предмет фиксируем в момент нажатия: верб может отлежаться в очереди,
+	//а игрок за это время сменить руку - активировать чужой предмет нельзя
+	DEFAULT_QUEUE_OR_CALL_VERB(VERB_CALLBACK(src, PROC_REF(execute_mode), get_active_held_item()))
+
+/mob/proc/execute_mode(obj/item/expected_item)
 	if(ismecha(loc))
 		return
 
@@ -539,6 +558,8 @@
 		return
 
 	var/obj/item/I = get_active_held_item()
+	if(I != expected_item) //рука сменилась, пока верб ждал в очереди
+		return
 	if(I)
 		I.attack_self(src)
 		update_inv_hands()

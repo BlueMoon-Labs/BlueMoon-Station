@@ -68,9 +68,14 @@
 		"<span class='notice'>Вы выбираетесь из [src]!</span>")
 	open_machine()
 
-/obj/machinery/sleeper/Exited(atom/movable/user)
+/obj/machinery/sleeper/Exited(atom/movable/user, atom/newloc)
+	//резист до родителя: machinery/Exited обнуляет occupant, по которому мы
+	//понимаем, что из закрытой машины кто-то исчез (телепорт и т.п.)
 	if (!state_open && user == occupant)
 		container_resist(user)
+	//..() обязателен: без него atom/movable/Exited не вычищал ушедшего из
+	//important_recursive_contents, и слипер вечно держал каждого посетителя
+	return ..()
 
 /obj/machinery/sleeper/relaymove(mob/user)
 	if (!state_open)

@@ -1,15 +1,19 @@
 /datum/round_event_control/blob
 	name = "Blob"
 	typepath = /datum/round_event/ghost_role/blob
-	weight = 5
+	weight = 3
 	max_occurrences = 1
 
-	earliest_start = 90 MINUTES
+	// Было 90 мин - блоб почти не успевал в обычный раунд. 55 мин даёт тяжёлой гост-угрозе окно,
+	// оставаясь поздней (min_players 40, нужен призрак с ролью блоба).
+	earliest_start = 55 MINUTES
 	min_players = 40
 	category = EVENT_CATEGORY_ENTITIES
 	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
 	cost = 15
 	intensity = 30
+	director_ghost_jobban = ROLE_BLOB
+	director_ghost_preference = ROLE_BLOB
 	intensity_linger = 45 MINUTES // блоб-осада живёт заметно дольше спавнера
 	antag_heavy = TRUE // угроза всей станции: мягкие профили такое выключают
 	family = "blob" // с рулсетами-двойниками динамика (гост-блоб, заражение): не подряд

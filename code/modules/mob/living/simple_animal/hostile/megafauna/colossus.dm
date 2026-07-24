@@ -735,6 +735,7 @@ GLOBAL_VAR(blackbox_smartfridge)
 	START_PROCESSING(SSobj, src)
 
 /obj/structure/closet/stasis/Entered(atom/A)
+	. = ..() //родитель ведёт important_recursive_contents (слух/клиент внутри шкафа)
 	if(isliving(A) && holder_animal)
 		var/mob/living/L = A
 		L.mob_transforming = 1

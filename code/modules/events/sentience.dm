@@ -4,6 +4,8 @@
 	weight = 50
 	max_occurrences = 2
 	category = EVENT_CATEGORY_FRIENDLY
+	director_ghost_jobban = ROLE_SENTIENCE
+	director_ghost_preference = ROLE_SENTIENCE
 
 /datum/round_event/ghost_role/sentience
 	minimum_required = 1

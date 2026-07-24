@@ -268,7 +268,8 @@
 	if(slot & (ITEM_SLOT_BELT|ITEM_SLOT_BACK|ITEM_SLOT_SUITSTORE))
 		speak_up("worn")
 	else if(slot & ITEM_SLOT_HANDS)
-		RegisterSignal(user, COMSIG_LIVING_COMBAT_ENABLED, PROC_REF(on_combat_enabled))
+		// override: перекладывание между руками зовёт equipped повторно без dropped
+		RegisterSignal(user, COMSIG_LIVING_COMBAT_ENABLED, PROC_REF(on_combat_enabled), override = TRUE)
 		speak_up("pickup")
 		return
 	UnregisterSignal(user, COMSIG_LIVING_COMBAT_ENABLED)

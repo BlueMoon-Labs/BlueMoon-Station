@@ -2403,10 +2403,7 @@
 	},
 /area/centcom/holding)
 "agN" = (
-/obj/item/radio/intercom{
-	desc = "Talk smack through this.";
-	syndie = 1
-	},
+/obj/item/radio/intercom/syndicate,
 /turf/closed/indestructible/riveted,
 /area/centcom/evac)
 "agO" = (
@@ -4213,10 +4210,7 @@
 /area/wizard_station)
 "auD" = (
 /obj/structure/table/wood/fancy,
-/obj/item/radio/intercom{
-	desc = "Talk smack through this.";
-	syndie = 1
-	},
+/obj/item/radio/intercom/syndicate,
 /turf/open/floor/wood,
 /area/wizard_station)
 "auE" = (
@@ -6561,9 +6555,7 @@
 /turf/closed/indestructible/riveted,
 /area/centcom/evac)
 "aKM" = (
-/obj/item/radio/intercom{
-	desc = "Talk smack through this.";
-	syndie = 1;
+/obj/item/radio/intercom/syndicate{
 	pixel_y = -30
 	},
 /obj/structure/table/plasmaglass,
@@ -10999,9 +10991,7 @@
 /obj/effect/turf_decal/tile/dark_blue/half{
 	dir = 1
 	},
-/obj/item/radio/intercom{
-	desc = "Talk smack through this.";
-	syndie = 1;
+/obj/item/radio/intercom/syndicate{
 	pixel_y = 30;
 	pixel_x = -1
 	},
@@ -11304,7 +11294,7 @@
 	light_color = "#c1caff";
 	pixel_x = 3
 	},
-/turf/closed/wall/r_wall/syndicate,
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/centcom/holding)
 "cBJ" = (
 /obj/effect/turf_decal/tile/brown,
@@ -11369,9 +11359,7 @@
 /turf/open/floor/plating,
 /area/syndicate_mothership/control)
 "cFv" = (
-/obj/item/radio/intercom{
-	desc = "Talk smack through this.";
-	syndie = 1;
+/obj/item/radio/intercom/syndicate{
 	pixel_y = -30
 	},
 /turf/open/floor/plasteel/white/textured/large,
@@ -16153,7 +16141,7 @@
 	dir = 1;
 	pixel_y = 3
 	},
-/turf/closed/wall/r_wall/syndicate,
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/centcom/holding)
 "hur" = (
 /obj/structure/window/reinforced,
@@ -16749,9 +16737,7 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 1
 	},
-/obj/item/radio/intercom{
-	desc = "Talk smack through this.";
-	syndie = 1;
+/obj/item/radio/intercom/syndicate{
 	pixel_y = 30;
 	pixel_x = -1
 	},
@@ -16950,9 +16936,7 @@
 "ijQ" = (
 /obj/structure/window/reinforced,
 /obj/structure/table/wood,
-/obj/item/radio/intercom{
-	desc = "Talk smack through this.";
-	syndie = 1;
+/obj/item/radio/intercom/syndicate{
 	pixel_x = 28;
 	pixel_y = -2;
 	frequency = 1917;
@@ -18732,7 +18716,7 @@
 /turf/open/floor/mineral/plastitanium/red,
 /area/centcom/holding)
 "jVl" = (
-/turf/closed/wall/r_wall/syndicate,
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/centcom/holding)
 "jVB" = (
 /obj/structure/bed/double/pod,
@@ -19435,9 +19419,7 @@
 	dir = 1;
 	armor = list("melee" = 100, "bullet" = 100, "laser" = 100, "energy" = 100, "bomb" = 100, "bio" = 100, "rad" = 100, "fire" = 100, "acid" = 100)
 	},
-/obj/item/radio/intercom{
-	desc = "Talk smack through this.";
-	syndie = 1;
+/obj/item/radio/intercom/syndicate{
 	pixel_y = -13;
 	broadcasting = 1;
 	frequency = 1917
@@ -23234,9 +23216,7 @@
 	dir = 1;
 	armor = list("melee" = 100, "bullet" = 100, "laser" = 100, "energy" = 100, "bomb" = 100, "bio" = 100, "rad" = 100, "fire" = 100, "acid" = 100)
 	},
-/obj/item/radio/intercom{
-	desc = "Talk smack through this.";
-	syndie = 1;
+/obj/item/radio/intercom/syndicate{
 	pixel_y = -13;
 	frequency = 1917;
 	broadcasting = 1
@@ -23443,9 +23423,7 @@
 /obj/machinery/computer/security/telescreen/entertainment{
 	pixel_x = 31
 	},
-/obj/item/radio/intercom{
-	desc = "Talk smack through this.";
-	syndie = 1;
+/obj/item/radio/intercom/syndicate{
 	pixel_y = -30;
 	pixel_x = 27
 	},
@@ -23815,9 +23793,7 @@
 /area/centcom/holding)
 "pej" = (
 /obj/effect/turf_decal/siding/wood,
-/obj/item/radio/intercom{
-	desc = "Talk smack through this.";
-	syndie = 1;
+/obj/item/radio/intercom/syndicate{
 	pixel_y = -30;
 	pixel_x = 27
 	},
@@ -24484,9 +24460,7 @@
 	dir = 8
 	},
 /obj/structure/table/wood,
-/obj/item/radio/intercom{
-	desc = "Talk smack through this.";
-	syndie = 1;
+/obj/item/radio/intercom/syndicate{
 	pixel_x = 28;
 	pixel_y = -2;
 	frequency = 1917;
@@ -25325,9 +25299,7 @@
 /area/syndicate_mothership/control)
 "qCk" = (
 /obj/structure/table/wood,
-/obj/item/radio/intercom{
-	desc = "Talk smack through this.";
-	syndie = 1;
+/obj/item/radio/intercom/syndicate{
 	pixel_x = 28;
 	pixel_y = -2;
 	frequency = 1917;
@@ -27092,9 +27064,7 @@
 /obj/machinery/light{
 	light_color = "#c9d3e8"
 	},
-/obj/item/radio/intercom{
-	desc = "Talk smack through this.";
-	syndie = 1;
+/obj/item/radio/intercom/syndicate{
 	pixel_y = -32
 	},
 /obj/structure/table/plasmaglass,
@@ -28659,9 +28629,7 @@
 /turf/open/floor/grass,
 /area/centcom/control)
 "tIZ" = (
-/obj/item/radio/intercom{
-	desc = "Talk smack through this.";
-	syndie = 1;
+/obj/item/radio/intercom/syndicate{
 	pixel_y = 32
 	},
 /turf/open/floor/plasteel/dark,
@@ -28736,7 +28704,7 @@
 	light_color = "#e8eaff";
 	pixel_x = -3
 	},
-/turf/closed/wall/r_wall/syndicate,
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/centcom/holding)
 "tPf" = (
 /obj/structure/table/wood,
@@ -29055,10 +29023,7 @@
 /turf/open/indestructible/hotelwood,
 /area/centcom/holding)
 "ubk" = (
-/obj/item/radio/intercom{
-	desc = "Talk smack through this.";
-	syndie = 1
-	},
+/obj/item/radio/intercom/syndicate,
 /obj/structure/lattice,
 /turf/closed/indestructible/riveted,
 /area/centcom/evac)
@@ -30989,9 +30954,7 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/siding/wood,
-/obj/item/radio/intercom{
-	desc = "Talk smack through this.";
-	syndie = 1;
+/obj/item/radio/intercom/syndicate{
 	pixel_y = 30;
 	pixel_x = -1
 	},
@@ -32074,10 +32037,7 @@
 /turf/open/floor/plasteel/dark,
 /area/syndicate_mothership/control)
 "wYW" = (
-/obj/item/radio/intercom{
-	desc = "Talk smack through this.";
-	syndie = 1
-	},
+/obj/item/radio/intercom/syndicate,
 /turf/closed/indestructible/riveted,
 /area/centcom/control)
 "wZg" = (

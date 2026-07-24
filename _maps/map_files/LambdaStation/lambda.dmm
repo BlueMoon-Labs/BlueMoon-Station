@@ -1059,11 +1059,10 @@
 "acQ" = (
 /obj/item/storage/crayons,
 /obj/structure/table,
-/obj/item/radio/intercom{
+/obj/item/radio/intercom/prison{
 	desc = "In Space, no one can hear you scream, especially if the microphone has been disabled.";
 	name = "Prison Intercom";
 	pixel_x = 32;
-	prison_radio = 1
 	},
 /turf/open/floor/plasteel/dark,
 /area/security/prison)
@@ -3384,11 +3383,10 @@
 /turf/open/floor/plasteel/cafeteria,
 /area/security/prison)
 "ahB" = (
-/obj/item/radio/intercom{
+/obj/item/radio/intercom/prison{
 	desc = "In Space, no one can hear you scream, especially if the  microphone has been disabled.";
 	name = "Prison Intercom";
 	pixel_y = -32;
-	prison_radio = 1
 	},
 /turf/open/floor/plasteel,
 /area/security/prison)
@@ -4499,11 +4497,9 @@
 	c_tag = "Solitary Cell";
 	network = list("ss13","prison")
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
-	prison_radio = 1
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel,
@@ -4528,11 +4524,9 @@
 	c_tag = "Permabrig Cell 2";
 	network = list("ss13","prison")
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
-	prison_radio = 1
 	},
 /obj/machinery/light/small{
 	dir = 1
@@ -4583,11 +4577,9 @@
 	c_tag = "Permabrig Cell 1";
 	network = list("ss13","prison")
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
-	prison_radio = 1
 	},
 /obj/machinery/light/small{
 	dir = 1
@@ -21405,12 +21397,10 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -25;
 	pixel_y = -2;
-	prison_radio = 1
 	},
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
 	dir = 4
@@ -21431,12 +21421,10 @@
 /turf/open/floor/plasteel,
 /area/security/brig)
 "aMx" = (
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -25;
 	pixel_y = -2;
-	prison_radio = 1
 	},
 /obj/structure/cable{
 	icon_state = "1-2"
@@ -33072,9 +33060,8 @@
 /obj/structure/table/wood,
 /obj/structure/window/reinforced,
 /obj/item/stamp/captain,
-/obj/item/radio/intercom{
+/obj/item/radio/intercom/command{
 	dir = 8;
-	freerange = 1;
 	name = "Station Intercom (Captain)";
 	pixel_x = 28
 	},
@@ -59409,9 +59396,8 @@
 /area/command/bridge)
 "cIV" = (
 /obj/structure/table/wood,
-/obj/item/radio/intercom{
+/obj/item/radio/intercom/command{
 	dir = 8;
-	freerange = 1;
 	name = "Station Intercom (Command)";
 	pixel_y = 21
 	},

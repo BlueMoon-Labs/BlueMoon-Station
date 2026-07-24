@@ -1168,8 +1168,23 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 			feedback_details += "Type: [target.halitem.name]"
 			if(target.client)
 				target.client.screen += target.halitem
-			QDEL_IN(target.halitem, rand(150, 350))
+			//не QDEL_IN: голый /obj не умеет снимать себя с client.screen и не
+			//обнуляет halitem, из-за чего удалённый предмет вечно висел в screen
+			//и в варе (а новые items-галлюцинации переставали срабатывать)
+			addtimer(CALLBACK(target, TYPE_PROC_REF(/mob/living/carbon, clear_hallucination_item)), rand(150, 350))
+		else
+			//без свободного слота предмет некуда показать - не оставляем его
+			//вечно висеть в варе (блокировал бы все будущие items-галлюцинации)
+			QDEL_NULL(target.halitem)
 	qdel(src)
+
+///подчистить фантомный предмет items-галлюцинации: экран, вар, сам объект
+/mob/living/carbon/proc/clear_hallucination_item()
+	if(!halitem)
+		return
+	if(client)
+		client.screen -= halitem
+	QDEL_NULL(halitem)
 
 /datum/hallucination/dangerflash
 

@@ -355,18 +355,32 @@ GLOBAL_LIST_EMPTY(gravity_generators) // We will keep track of this by adding ne
 /obj/machinery/gravity_generator/main/proc/shake_everyone()
 	var/turf/T = get_turf(src)
 	var/sound/alert_sound = sound('sound/misc/alerts/alert.ogg')
-	for(var/i in GLOB.mob_list)
-		var/mob/M = i
+	// Синхронно - только игроки (им нужен мгновенный отклик: гравитация, тряска, звук).
+	// Остальной GLOB.mob_list (тысячи NPC) доезжает отложенным проходом с CHECK_TICK -
+	// раньше весь обход исполнялся одним куском в слоте SSmachines (326мс на проде).
+	for(var/mob/M in GLOB.player_list)
 		if(M.z != z && !(SSmapping.level_trait(z, ZTRAITS_STATION) && SSmapping.level_trait(M.z, ZTRAITS_STATION)))
 			continue
 		M.update_gravity(M.mob_has_gravity())
 		if(M.client)
 			shake_camera(M, 15, 1)
 			M.playsound_local(T, null, 100, 1, 0.5, S = alert_sound)
+	INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(update_nonclient_mob_gravity), z)
 	if(on)
 		priority_announce("Гравитационный Генератор успешно перезапустил гравитационное поле Космической Станции, искусственная гравитация возвращена в номинальное состояние.", "Гравитационный Генератор", 'sound/announcer/classic/gravityon.ogg')
 	else
 		priority_announce("Гравитационный Генератор потерял номинальную подачу энергии в Гравитационное Поле Космической Станции, искусственная гравитация отключена.", "Гравитационный Генератор", 'sound/announcer/classic/gravityoff.ogg')
+
+/// Отложенный проход смены гравитации по NPC-мобам уровня (клиентские мобы обновляет
+/// shake_everyone синхронно). CHECK_TICK размазывает тысячи update_gravity по тикам.
+/proc/update_nonclient_mob_gravity(z)
+	for(var/mob/M as anything in GLOB.mob_list.Copy())
+		if(QDELETED(M) || M.client)
+			continue
+		if(M.z != z && !(SSmapping.level_trait(z, ZTRAITS_STATION) && SSmapping.level_trait(M.z, ZTRAITS_STATION)))
+			continue
+		M.update_gravity(M.mob_has_gravity())
+		CHECK_TICK
 
 /obj/machinery/gravity_generator/main/proc/gravity_in_level()
 	var/turf/T = get_turf(src)
@@ -393,10 +407,12 @@ GLOBAL_LIST_EMPTY(gravity_generators) // We will keep track of this by adding ne
 				GLOB.gravity_generators["[z]"] |= src
 			else
 				GLOB.gravity_generators["[z]"] -= src
+			SSmapping.calculate_z_level_gravity(z)
 
 /obj/machinery/gravity_generator/main/proc/change_setting(value)
 	if(value != setting)
 		setting = value
+		update_list() //setting входит в кэш гравитации по z
 		shake_everyone()
 
 // Misc

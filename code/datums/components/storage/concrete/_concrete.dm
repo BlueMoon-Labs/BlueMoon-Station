@@ -169,6 +169,10 @@
 	var/moved = FALSE
 	if(!istype(I))
 		return FALSE
+	// Дублирует гейт can_be_inserted: force-пути (signal_insertion_attempt) идут мимо
+	// проверок, а удаляемый предмет нельзя возвращать в contents ни по какому пути.
+	if(QDELETED(I))
+		return FALSE
 	if(M)
 		if(!M.temporarilyRemoveItemFromInventory(I))
 			return FALSE

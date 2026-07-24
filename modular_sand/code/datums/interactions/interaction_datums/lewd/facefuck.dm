@@ -31,7 +31,7 @@ var/static/list/snaped = list(
 	var/message
 	var/obj/item/organ/genital/genital = null
 	var/retaliation_message = FALSE
-	var/has_penis = user.has_penis() //BLUEMOON ADD
+	var/has_penis = user.has_penis(TRUE) //BLUEMOON ADD
 
 	if(user.is_fucking(partner, CUM_TARGET_MOUTH))
 		var/improv = FALSE
@@ -171,7 +171,7 @@ var/static/list/snaped = list(
 	var/obj/item/organ/genital/genital = null
 	var/retaliation_message = FALSE
 	//BLUEMOON ADD START
-	var/has_penis = user.has_penis()
+	var/has_penis = user.has_penis(TRUE)
 	var/has_balls = user.has_balls()
 	//BLUEMOON ADD END
 

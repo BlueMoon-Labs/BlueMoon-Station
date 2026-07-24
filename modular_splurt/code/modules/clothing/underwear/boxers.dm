@@ -14,10 +14,6 @@
 	mob_overlay_icon = 'modular_splurt/icons/mob/clothing/underwear.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
-/obj/item/clothing/underwear/briefs/panties/maebari/ComponentInitialize()
-	. = ..()
-	AddElement(/datum/element/polychromic, list("#e5b380"), 1)
-
 /obj/item/clothing/underwear/briefs/panties/maebari/maebari_heart
 	name = "Heart-shaped Maebari"
 	desc = "A thin adhesive cloth pasted onto genitals. This one is heart shaped! How cute~!"

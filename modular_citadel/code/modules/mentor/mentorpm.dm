@@ -32,7 +32,7 @@
 		return
 
 	if(is_mentor(whom))
-		to_chat(GLOB.admins | GLOB.mentors, "<span class='mentornotice'><font color='purple'>[src] has started replying to [whom]'s mhelp.</font></span>")
+		to_chat(mentor_traffic_recipients(), "<span class='mentornotice'><font color='purple'>[src] has started replying to [whom]'s mhelp.</font></span>")
 
 	//get message text, limit it's length.and clean/escape html
 	if(!msg)
@@ -40,7 +40,7 @@
 
 		if(!msg)
 			if (is_mentor(whom))
-				to_chat(GLOB.admins | GLOB.mentors, "<span class='mentornotice'><span class='purple'>[src] has stopped their reply to [whom]'s mhelp.</span></span>")
+				to_chat(mentor_traffic_recipients(), "<span class='mentornotice'><span class='purple'>[src] has stopped their reply to [whom]'s mhelp.</span></span>")
 			return
 
 		if(!C)
@@ -57,7 +57,7 @@
 	msg = sanitize(copytext_char(msg, 1, MAX_MESSAGE_LEN))
 	if(!msg)
 		if (is_mentor(whom))
-			to_chat(GLOB.admins | GLOB.mentors, "<span class='mentornotice'><span class='purple'>[src] has stopped their reply to [whom]'s mhelp.</span></span>")
+			to_chat(mentor_traffic_recipients(), "<span class='mentornotice'><span class='purple'>[src] has stopped their reply to [whom]'s mhelp.</span></span>")
 		return
 	log_mentor("Mentor PM: [key_name(src)]->[key_name(C)]: [msg]")
 
@@ -78,7 +78,7 @@
 			to_chat(src, "<span class='mentornotice'><span class='pink'>Mentor PM to-<b>[key_name_mentor(C, C, TRUE, TRUE)]</b>: [msg]</span></span>")
 
 	//we don't use message_Mentors here because the sender/receiver might get it too
-	for(var/client/X in GLOB.mentors | GLOB.admins)
+	for(var/client/X in mentor_traffic_recipients())
 		if(X.key!=key && X.key!=C.key)	//check client/X is an Mentor and isn't the sender or recipient
 			var/show_char = !X.holder
 			to_chat(X, "<span class='mentornotice'><B><span class='pink'>Mentor PM: [key_name_mentor(src, X, FALSE, show_char)]-&gt;[key_name_mentor(C, X, FALSE, show_char)]:</span></B> <span class='blue'>[msg]</span></span>") //inform X

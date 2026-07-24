@@ -31,7 +31,7 @@
 
 
 
-	var/has_penis = user.has_penis() || user.has_strapon()
+	var/has_penis = user.has_penis(TRUE) || user.has_strapon()
 	var/penis_is_exposed = has_penis == TRUE || has_penis == HAS_EXPOSED_GENITAL
 
 	var/has_vagina = user.has_vagina()
@@ -272,7 +272,7 @@
 			to_chat(user, span_warning("Their clothes are in the way."))
 		return FALSE
 
-	var/has_penis = target.has_penis() || target.has_strapon()
+	var/has_penis = target.has_penis(TRUE) || target.has_strapon()
 	var/penis_is_exposed = has_penis == TRUE || has_penis == HAS_EXPOSED_GENITAL
 
 	var/has_vagina = target.has_vagina()

@@ -2557,11 +2557,9 @@
 	c_tag = "Permabrig Cell 1";
 	network = list("ss13","prison")
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
-	prison_radio = 1
 	},
 /obj/machinery/light/small{
 	dir = 1
@@ -3903,11 +3901,9 @@
 	c_tag = "Permabrig Cell 2";
 	network = list("ss13","prison")
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
-	prison_radio = 1
 	},
 /obj/machinery/light/small{
 	dir = 1
@@ -51429,12 +51425,10 @@
 /turf/open/floor/plating,
 /area/engineering/main)
 "eyu" = (
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -25;
 	pixel_y = -2;
-	prison_radio = 1
 	},
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 1

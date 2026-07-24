@@ -325,9 +325,13 @@
 		pressure = air_contents.return_pressure()
 		var/range = (pressure-TANK_FRAGMENT_PRESSURE)/TANK_FRAGMENT_SCALE
 		var/turf/epicenter = get_turf(loc)
+		var/mob/living/tank_attacker
+		if(fingerprintslast)
+			var/mob/M = get_mob_by_ckey(fingerprintslast)
+			if(isliving(M))
+				tank_attacker = M
 
-
-		explosion(epicenter, round(range*0.25), round(range*0.5), round(range), round(range*1.5))
+		explosion(epicenter, round(range*0.25), round(range*0.5), round(range), round(range*1.5), attacker = tank_attacker)
 		if(istype(src.loc, /obj/item/transfer_valve))
 			qdel(src.loc)
 		else

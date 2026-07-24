@@ -126,12 +126,13 @@
 /obj/effect/particle_effect/smoke/bad
 	lifetime = 8
 
-/obj/effect/particle_effect/smoke/bad/smoke_mob(mob/living/carbon/M)
-	if(..())
-		M.drop_all_held_items()
-		M.adjustOxyLoss(1)
-		M.emote("cough")
-		return TRUE
+/obj/effect/particle_effect/smoke/bad/smoke_mob(mob/living/carbon/C)
+	. = ..()
+	if(!.)
+		return
+	C.drop_all_held_items()
+	C.adjustOxyLoss(1)
+	C.emote("cough")
 
 /obj/effect/particle_effect/smoke/bad/Crossed(atom/movable/AM, oldloc)
 	. = ..()
@@ -206,11 +207,12 @@
 	color = "#9C3636"
 	lifetime = 10
 
-/obj/effect/particle_effect/smoke/sleeping/smoke_mob(mob/living/carbon/M)
-	if(..())
-		M.Sleeping(200)
-		M.emote("cough")
-		return TRUE
+/obj/effect/particle_effect/smoke/sleeping/smoke_mob(mob/living/carbon/C)
+	. = ..()
+	if(!.)
+		return
+	C.Sleeping(200)
+	C.emote("cough")
 
 /datum/effect_system/smoke_spread/sleeping
 	effect_type = /obj/effect/particle_effect/smoke/sleeping
@@ -224,33 +226,27 @@
 
 
 /obj/effect/particle_effect/smoke/chem/process()
-	if(..())
-		var/turf/T = get_turf(src)
-		var/fraction = 1/initial(lifetime)
-		for(var/atom/movable/AM in T)
-			if(AM.type == src.type)
-				continue
-			if(T.intact && AM.level == 1) //hidden under the floor
-				continue
-			reagents.reaction(AM, TOUCH, fraction)
+	. = ..()
+	if(!.)
+		return
+	var/turf/T = get_turf(src)
+	var/fraction = 1/initial(lifetime)
+	for(var/atom/movable/AM in T)
+		if(AM.type == src.type)
+			continue
+		if(T.intact && AM.level == 1) //hidden under the floor
+			continue
+		reagents.reaction(AM, TOUCH, fraction)
 
-		reagents.reaction(T, TOUCH, fraction)
-		return TRUE
+	reagents.reaction(T, TOUCH, fraction)
 
-/obj/effect/particle_effect/smoke/chem/smoke_mob(mob/living/carbon/M)
-	if(lifetime<1)
-		return FALSE
-	if(!istype(M))
-		return FALSE
-	var/mob/living/carbon/C = M
-	if(C.internal != null || C.has_smoke_protection())
-		return FALSE
+/obj/effect/particle_effect/smoke/chem/smoke_mob(mob/living/carbon/C)
+	. = ..()
+	if(!.)
+		return
 	var/fraction = 1/initial(lifetime)
 	reagents.copy_to(C, fraction*reagents.total_volume)
-	reagents.reaction(M, INGEST, fraction)
-	return TRUE
-
-
+	reagents.reaction(C, INGEST, fraction)
 
 /datum/effect_system/smoke_spread/chem
 	var/obj/chemholder

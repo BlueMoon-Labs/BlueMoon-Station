@@ -24,15 +24,34 @@
 
 /datum/round_event/door_runtime/start()
 	secret_mode = force_secret_mode || (triggered_randomly && prob(10))
-	for(var/obj/machinery/door/D in GLOB.airlocks)
-		if(!is_station_level(D.z))
+	// Станционных шлюзов тысячи: локдаун всех одним тиком - это секундный фриз,
+	// а по персональному таймеру на дверь - залп из тысяч колбеков в один тик через 90с.
+	// Поэтому обе волны идут одним списком через чанкованные глобальные проки,
+	// не привязанные к времени жизни события.
+	var/list/station_doors = list()
+	for(var/obj/machinery/door/door in GLOB.airlocks)
+		if(!is_station_level(door.z))
 			continue
-		INVOKE_ASYNC(D, TYPE_PROC_REF(/obj/machinery/door, hostile_lockdown))
-		addtimer(CALLBACK(D, TYPE_PROC_REF(/obj/machinery/door, disable_lockdown)), 90 SECONDS)
+		station_doors += door
+	door_runtime_set_lockdown(station_doors, TRUE)
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(door_runtime_set_lockdown), station_doors, FALSE), 90 SECONDS)
 	addtimer(CALLBACK(src, PROC_REF(reboot)), 90 SECONDS)
 	var/obj/machinery/computer/communications/C = locate() in GLOB.machines
 	if(C)
 		C.post_status("alert", "lockdown")
+
+/// Волна (раз)блокировки шлюзов события Door Runtime. Каждой двери свой INVOKE_ASYNC,
+/// потому что close()/open() спят; CHECK_TICK между запусками размазывает волну по тикам.
+/proc/door_runtime_set_lockdown(list/doors, lock)
+	set waitfor = FALSE
+	for(var/obj/machinery/door/door as anything in doors)
+		if(QDELETED(door))
+			continue
+		if(lock)
+			INVOKE_ASYNC(door, TYPE_PROC_REF(/obj/machinery/door, hostile_lockdown))
+		else
+			INVOKE_ASYNC(door, TYPE_PROC_REF(/obj/machinery/door, disable_lockdown))
+		CHECK_TICK
 
 /datum/round_event/door_runtime/proc/reboot()
 	priority_announce("Автоматическая перезагрузка системы завершена. Хорошего вам дня.","ПЕРЕЗАГРУЗКА СЕТИ:")

@@ -119,7 +119,7 @@
 /obj/machinery/door/poddoor{
 	id = "TEG_Vent"
 	},
-/turf/open/space,
+/turf/open/floor/plating/airless,
 /area/engineering/main)
 "en" = (
 /obj/machinery/button/ignition/incinerator{
@@ -1158,7 +1158,7 @@
 	dir = 1
 	},
 /obj/structure/lattice/catwalk,
-/turf/open/space/basic,
+/turf/open/floor/plating/airless,
 /area/engineering/main)
 "Hp" = (
 /obj/machinery/atmospherics/components/binary/pump{
@@ -1307,7 +1307,7 @@
 "LS" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/visible,
 /obj/structure/lattice/catwalk,
-/turf/open/space/basic,
+/turf/open/floor/plating/airless,
 /area/engineering/main)
 "Mf" = (
 /obj/structure/closet/secure_closet/engineering_personal,
@@ -1875,7 +1875,7 @@
 /area/engineering/main)
 "ZC" = (
 /obj/machinery/atmospherics/pipe/simple/dark/visible,
-/turf/open/space/basic,
+/turf/open/floor/plating/airless,
 /area/engineering/main)
 "ZT" = (
 /turf/template_noop,

@@ -78,6 +78,23 @@
 #define NO_REACTION		0
 #define REACTING		1
 #define STOP_REACTIONS 	2
+/// The tile hosts a volatile reaction (a live fire/hotspot): excited group
+/// breakdown must not average the burn away mid-reaction (tg port).
+#define VOLATILE_REACTION	4
+/// How long a volatile reaction may defer settled-member bookkeeping. At the
+/// ceiling a volatile group runs evict_settled_members() - NOT the averaging
+/// self_breakdown (which would smear fuel and heat of a long burn across the
+/// whole group) - so perpetual fires keep the giant-group churn control the
+/// ordinary breakdown provides without the fire being touched.
+#define EXCITED_GROUP_VOLATILE_BREAKDOWN_CEILING	(EXCITED_GROUP_BREAKDOWN_CYCLES * 4)
+
+// Exact pressure solver for pumps (tg port, see gas_pressure_calculate)
+/// Molar accuracy target of the Newton-Raphson fallback solver.
+#define MOLAR_ACCURACY 1e-4
+/// Iteration cap of the Newton-Raphson fallback solver.
+#define ATMOS_PRESSURE_APPROXIMATION_ITERATIONS 20
+/// Float slack added to the solver's analytic mole bounds.
+#define ATMOS_PRESSURE_ERROR_TOLERANCE 0.01
 
 // Pressure limits.
 #define HAZARD_HIGH_PRESSURE				550		//This determins at what pressure the ultra-high pressure red icon is displayed. (This one is set as a constant)
@@ -411,6 +428,9 @@ GLOBAL_LIST_INIT(atmos_adjacent_savings, list(0,0))
 /// Pure-telemetry devices (meters, air sensors) only report once per this many
 /// SSair fires; their power draw is compensated by the same constant.
 #define ATMOS_TELEMETRY_INTERVAL 4
+/// Air sensors with unchanged readings still rebroadcast at least this often,
+/// so consoles built mid-round and timestamp displays stay fresh.
+#define ATMOS_TELEMETRY_HEARTBEAT (30 SECONDS)
 
 //Unomos - So for whatever reason, garbage collection actually drastically decreases the cost of atmos later in the round. Turning this into a define yields massively improved performance.
 #define GAS_GARBAGE_COLLECT(GASGASGAS)\

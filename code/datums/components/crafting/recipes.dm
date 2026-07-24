@@ -1,5 +1,6 @@
 /datum/crafting_recipe
 	var/name = "" //in-game display name
+	var/desc = "" //flavour description
 	var/list/reqs = list() //type paths of items consumed associated with how many are needed
 	var/list/blacklist = list() //type paths of items explicitly not allowed as an ingredient
 	var/result //type path of item resulting from this craft
@@ -9,6 +10,9 @@
 	var/list/chem_catalysts = list() //like tools but for reagents
 	var/category = CAT_NONE //where it shows up in the crafting UI
 	var/subcategory = CAT_NONE
+	var/complexity = 0 //craft difficulty rating
+	var/list/foodtypes = list() //food type tags for dietary filtering
+	var/mass_craftable = FALSE //if TRUE, can repeat until ingredients run out
 	var/always_availible = TRUE //Set to FALSE if it needs to be learned first.
 
 /datum/crafting_recipe/New()

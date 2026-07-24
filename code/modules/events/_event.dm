@@ -11,6 +11,11 @@
 	var/category					//The category of the event
 	var/description					//The description of the event
 	var/typepath					//The typepath of the event datum /datum/round_event
+	/// Метаданные неинтерактивного preflight для /ghost_role. Если конкретная роль не указана,
+	/// директор всё равно проверяет общий пул способных вернуться в раунд призраков.
+	var/director_ghost_jobban = null
+	var/director_ghost_preference = null
+	var/director_ghost_minimum = 1
 
 	var/holidayID = ""				//string which should be in the SSholidays.holidays list if you wish this event to be holiday-specific
 									//anything with a (non-null) holidayID which does not match holiday, cannot run.
@@ -78,10 +83,9 @@
 				// и порог тишины не видел только что случившийся контент.
 				intensity_linger = 8 MINUTES
 			if(DIRECTOR_SEVERITY_ANTAG, DIRECTOR_SEVERITY_GHOST)
-				// Антаг-события - спавнеры: событие гаснет за тик, а кошмар/дракон живут дальше.
-				// Долгий linger держит их вклад в antag_load (клапан давления) без трекинга моба;
-				// провал спавна снимает вклад сразу (см. refund_failed_spawn в ghost_role.dm).
-				intensity_linger = 30 MINUTES
+				// Успешные /ghost_role переводятся на живой трекинг созданных мобов. Linger остаётся
+				// страховкой для нестандартных антаг-событий без spawned_mobs.
+				intensity_linger = 10 MINUTES
 	if(!length(admin_setup))
 		return
 	var/list/admin_setup_types = admin_setup.Copy()
@@ -183,10 +187,18 @@ Runs the event
 /datum/round_event_control/action_name()
 	return name
 
+/datum/round_event_control/director_preflight()
+	if(!ispath(typepath, /datum/round_event/ghost_role))
+		return null
+	return SSdirector.ghost_event_preflight(src)
+
 /datum/round_event_control/execute_action()
 	var/result = preRunEvent(admin_window = FALSE)
 	if(result == EVENT_CANT_RUN)
-		max_occurrences = 0
+		// Событие невозможно в этом раунде (нет космоса под корабль и т.п.) - убираем из пула на весь
+		// раунд. Именно enabled: max_occurrences = 0 у директора читается как "без лимита"
+		// (can_fire: if(max_occurrences && ...)), то есть гасило бы ровно наоборот.
+		enabled = FALSE
 		return FALSE
 	if(result != EVENT_READY)
 		return FALSE

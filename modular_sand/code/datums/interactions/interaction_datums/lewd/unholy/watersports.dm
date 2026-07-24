@@ -255,7 +255,7 @@
 
 /datum/interaction/lewd/unholy/piss/vagina/on_mouth
 	description = "Вагина. Нассать на рот и лицо."
-	required_from_target_exposed = INTERACTION_REQUIRE_MOUTH
+	required_from_target = INTERACTION_REQUIRE_MOUTH
 	target_organ = CUM_TARGET_MOUTH
 	p13target_emote = PLUG13_EMOTE_MOUTH
 	p13target_strength = PLUG13_STRENGTH_LOW
@@ -284,7 +284,7 @@
 
 /datum/interaction/lewd/unholy/piss/penis/on_mouth
 	description = "Член. Нассать на рот и лицо."
-	required_from_target_exposed = INTERACTION_REQUIRE_MOUTH
+	required_from_target = INTERACTION_REQUIRE_MOUTH
 	target_organ = CUM_TARGET_MOUTH
 	p13target_emote = PLUG13_EMOTE_MOUTH
 	p13target_strength = PLUG13_STRENGTH_LOW
@@ -341,7 +341,7 @@
 
 /datum/interaction/lewd/unholy/piss/vagina/in_mouth
 	description = "Вагина. Прижать ко рту и помочиться."
-	required_from_target_exposed = INTERACTION_REQUIRE_MOUTH
+	required_from_target = INTERACTION_REQUIRE_MOUTH
 	target_organ = CUM_TARGET_MOUTH
 	user_cum_in = CUM_TARGET_MOUTH
 	p13target_emote = PLUG13_EMOTE_MOUTH
@@ -435,7 +435,7 @@
 	return is_fucking ? NORMAL_LUST : HIGH_LUST
 
 /datum/interaction/lewd/unholy/piss/penis/inside/get_user_lust_level(mob/living/user, mob/living/partner, is_fucking)
-	if(user.has_penis())
+	if(user.has_penis(TRUE))
 		return is_fucking ? NORMAL_LUST : HIGH_LUST
 	else // Если у user страпон, он получает только эстетическое удовлетворение
 		return ..()
@@ -452,7 +452,7 @@
 
 /datum/interaction/lewd/unholy/piss/penis/inside/mouth
 	description = "Член. Протолкнуть в горло и мочиться."
-	required_from_target_exposed = INTERACTION_REQUIRE_MOUTH
+	required_from_target = INTERACTION_REQUIRE_MOUTH
 	target_organ = CUM_TARGET_THROAT
 	user_cum_in = CUM_TARGET_THROAT
 	p13target_emote = PLUG13_EMOTE_MOUTH

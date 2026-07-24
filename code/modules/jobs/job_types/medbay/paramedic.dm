@@ -22,7 +22,7 @@
 		"Field Surgeon",
 		"Para-Slut",
 		"Para-Stud",
-		"Searh and Rescue Technician",
+		"Search and Rescue Technician",
 		)
 
 	outfit = /datum/outfit/job/paramedic

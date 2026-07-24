@@ -123,11 +123,14 @@
 	if(blood_flow < minimum_flow)
 		if(demotes_to)
 			replace_wound(demotes_to)
+			return
 		else
 			to_chat(victim, "<span class='green'>Ваша [limb.ru_name] перестала истекать [HAS_TRAIT(victim, TRAIT_ROBOTIC_ORGANISM) ? "гидравлической жидкость" : "кровью"] из-за порезов!</span>") // BLUEMOON EDIT - добавлена проверка для роботов
 			qdel(src)
+			return
 
-	limb.update_part_wound_overlay()
+	if(limb)
+		limb.update_part_wound_overlay()
 
 /datum/wound/slash/on_stasis()
 	if(blood_flow >= minimum_flow)
