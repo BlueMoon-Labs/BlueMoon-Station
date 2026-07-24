@@ -2538,11 +2538,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			user.client.ensure_keys_set(src)
 		return TRUE
 
-	var/new_key = uppertext(input["key"])
+	var/new_key = input["key"]
 	var/AltMod = text2num(input["alt"]) ? "Alt" : ""
 	var/CtrlMod = text2num(input["ctrl"]) ? "Ctrl" : ""
 	var/ShiftMod = text2num(input["shift"]) ? "Shift" : ""
-	var/numpad = text2num(input["numpad"]) ? "Numpad" : ""
 
 	if(GLOB._kbMap[new_key])
 		new_key = GLOB._kbMap[new_key]
@@ -2556,7 +2555,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		if("Shift")
 			full_key = "[AltMod][CtrlMod][new_key]"
 		else
-			full_key = "[AltMod][CtrlMod][ShiftMod][numpad][new_key]"
+			full_key = "[AltMod][CtrlMod][ShiftMod][new_key]"
 
 	if(independent)
 		modless_key_bindings -= old_key
@@ -2566,7 +2565,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			key_bindings[old_key] -= kb_name
 			if(!length(key_bindings[old_key]))
 				key_bindings -= old_key
-		key_bindings[full_key] += list(kb_name)
+		key_bindings[full_key] |= list(kb_name)
 		key_bindings[full_key] = sort_list(key_bindings[full_key])
 
 	if(special && user?.client)
