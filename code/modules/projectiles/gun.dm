@@ -759,6 +759,8 @@
 		A.UpdateButtons()
 
 /obj/item/gun/proc/get_gunlight_overlay()
+	if(!gun_light)
+		return
 	var/mutable_appearance/flashlight_overlay
 	var/state = "[gunlight_state][gun_light.on? "_on":""]"	//Generic state.
 	if(gun_light.icon_state in icon_states('icons/obj/guns/flashlights.dmi'))	//Snowflake state?
