@@ -745,16 +745,15 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 
 // facing verbs
 /mob/proc/canface()
+	. = FALSE
 	if(world.time < client?.last_turn)
-		return FALSE
+		return
 	if(stat == DEAD || stat == UNCONSCIOUS)
-		return FALSE
+		return
 	if(anchored)
-		return FALSE
+		return
 	if(mob_transforming)
-		return FALSE
-	if(restrained())
-		return FALSE
+		return
 	return TRUE
 
 /mob/proc/fall(forced)
