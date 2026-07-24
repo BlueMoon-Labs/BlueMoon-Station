@@ -159,7 +159,7 @@
 
 /obj/item/clothing/under/attach_accessory(obj/item/clothing/accessory/accessory, mob/user, silent = FALSE)
 	. = FALSE
-	if(istype(accessory, /obj/item/clothing/accessory/ring))
+	if(!istype(accessory) || istype(accessory, /obj/item/clothing/accessory/ring))
 		return
 	// BLUEMOON EDIT START - изменение аксессуаров
 	// Проверка на общее количество

@@ -34,7 +34,7 @@
 		attached_accessory.on_uniform_dropped(src, user)
 	..()
 
-/obj/item/clothing/gloves/attach_accessory(obj/item/clothing/accessory/accessory, mob/user, silent = FALSE)
+/obj/item/clothing/gloves/attach_accessory(obj/item/clothing/accessory/ring/accessory, mob/user, silent = FALSE)
 	. = FALSE
 	if(!istype(accessory))
 		return
