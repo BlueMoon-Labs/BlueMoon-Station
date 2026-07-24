@@ -846,7 +846,8 @@ SUBSYSTEM_DEF(job)
 				if(istype(I, /obj/item/clothing) && istype(existing, /obj/item/clothing))
 					var/obj/item/clothing/new_cloth = I
 					var/obj/item/clothing/old_cloth = existing
-					for(var/obj/item/clothing/accessory/AC as anything in old_cloth.accessories_attached)
+					var/list/temp = LAZYCOPY(old_cloth.accessories_attached)
+					for(var/obj/item/clothing/accessory/AC as anything in temp)
 						if(old_cloth.remove_accessory(AC, M, TRUE))
 							if(!new_cloth.attach_accessory(AC, M, TRUE))
 								LAZYADD(bag_contents, AC)
@@ -995,7 +996,8 @@ SUBSYSTEM_DEF(job)
 				if(istype(I, /obj/item/clothing) && istype(existing, /obj/item/clothing))
 					var/obj/item/clothing/new_cloth = I
 					var/obj/item/clothing/old_cloth = existing
-					for(var/obj/item/clothing/accessory/AC as anything in old_cloth.accessories_attached)
+					var/list/temp = LAZYCOPY(old_cloth.accessories_attached)
+					for(var/obj/item/clothing/accessory/AC as anything in temp)
 						if(old_cloth.remove_accessory(AC, M, TRUE))
 							if(!new_cloth.attach_accessory(AC, M, TRUE))
 								old_cloth.attach_accessory(AC, M, TRUE)
