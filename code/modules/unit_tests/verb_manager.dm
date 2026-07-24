@@ -86,4 +86,4 @@
 
 	// force must ignore item and index
 	human.execute_mode(force = TRUE)
-	TEST_ASSERT_EQUAL(held.activations, 2, "execute_mode with force = TRUE must ignore hand checks")
+	TEST_ASSERT_EQUAL(held.activations, 2, "execute_mode with force = TRUE must ignore hand checks and activate item")
