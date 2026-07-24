@@ -410,28 +410,19 @@ GLOBAL_VAR_INIT(floor_cluwnes, 0)
 		H.unequip_everything()//more runtime prevention
 		if(prob(50))
 			H.death()
-			qdel(src)
 		else
 			H.cluwneify()
 			H.adjustBruteLoss(30)
 			H.adjustOrganLoss(ORGAN_SLOT_BRAIN, 100, 100)
-			H.cure_blind()
-			H.layer = initial(H.layer)
-			H.invisibility = initial(H.invisibility)
-			H.density = initial(H.density)
-			H.anchored = initial(H.anchored)
 			H.blur_eyes(10)
-			animate(H.client,color = old_color, time = 20)
-			qdel(src)
 
-	eating = FALSE
-	switch_stage = switch_stage * 0.75 //he gets faster after each feast
-	for(var/mob/M in GLOB.player_list)
-		M.playsound_local(get_turf(M), 'sound/misc/honk_echo_distant.ogg', 50, 1, pressure_affected = FALSE)
-
-	interest = 0
-	stage = STAGE_HAUNT
-	Acquire_Victim()
+	H.cure_blind()
+	H.layer = initial(H.layer)
+	H.invisibility = initial(H.invisibility)
+	H.density = initial(H.density)
+	H.anchored = initial(H.anchored)
+	animate(H.client,color = old_color, time = 20)
+	qdel(src)
 
 //manifestation animation
 /obj/effect/temp_visual/fcluwne_manifest

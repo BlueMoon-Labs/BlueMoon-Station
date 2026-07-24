@@ -120,7 +120,12 @@ INITIALIZE_IMMEDIATE(/turf/closed/indestructible/splashscreen)
 /turf/closed/indestructible/riveted
 	icon = 'icons/turf/walls/riveted.dmi'
 	icon_state = "riveted"
-	smooth = SMOOTH_TRUE
+	smooth = SMOOTH_MORE|SMOOTH_TRUE
+	canSmoothWith = list(
+		/turf/closed/indestructible/riveted,
+		/turf/closed/indestructible/fakeglass,
+		/obj/structure/window,
+	)
 	explosion_block = INFINITY
 
 /turf/closed/indestructible/syndicate
@@ -133,7 +138,10 @@ INITIALIZE_IMMEDIATE(/turf/closed/indestructible/splashscreen)
 	icon_state = "uranium"
 
 /turf/closed/indestructible/abductor
-	icon_state = "alien1"
+	icon = 'icons/turf/walls/abductor_wall.dmi'
+	icon_state = "abductor"
+	smooth = SMOOTH_TRUE|SMOOTH_DIAGONAL
+	canSmoothWith = list(/turf/closed/indestructible/abductor, /obj/structure/falsewall/abductor)
 
 /turf/closed/indestructible/opshuttle
 	icon_state = "wall3"
@@ -144,7 +152,8 @@ INITIALIZE_IMMEDIATE(/turf/closed/indestructible/splashscreen)
 	opacity = 0
 	/// Lets lasers with PASSGLASS pass like normal windows; still blocks mobs (they do not use PASSGLASS for movement).
 	pass_flags_self = PASSCLOSEDTURF | PASSGLASS
-	smooth = SMOOTH_TRUE
+	smooth = SMOOTH_MORE|SMOOTH_TRUE
+	canSmoothWith = list(/turf/closed/indestructible/fakeglass, /turf/closed/indestructible/riveted)
 	icon = 'icons/obj/smooth_structures/reinforced_window.dmi'
 
 /turf/closed/indestructible/fakeglass/Initialize(mapload)

@@ -40,7 +40,10 @@
 		if(LAZYLEN(diseases_to_add))
 			AddComponent(/datum/component/infective, diseases_to_add)
 
-	addtimer(CALLBACK(src, TYPE_PROC_REF(/datum, _AddElement), list(/datum/element/beauty, beauty)), 0)
+	// Прямое добавление как у tg: нулевой таймер на каждую декаль давал залп из
+	// 2000+ addtimer одним тиком при загрузке дебриса персистенса (TIMER BURST 9746).
+	if(beauty)
+		AddElement(/datum/element/beauty, beauty)
 
 /**
  * A data list is passed into this.

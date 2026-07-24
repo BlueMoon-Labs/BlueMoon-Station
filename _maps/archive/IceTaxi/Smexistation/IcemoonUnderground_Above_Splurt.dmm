@@ -7869,7 +7869,6 @@
 "Iy" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/grille,
-/obj/structure/grille,
 /turf/open/floor/plating,
 /area/icemoon/surface/outdoors)
 "IA" = (

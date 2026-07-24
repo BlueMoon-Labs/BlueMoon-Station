@@ -24,7 +24,15 @@ export const SPAWN_LOCATION_ICONS: Record<string, string> = {
   'В сумке выбранного существа': 'backpack',
 };
 
+// Значения приходят из spawnpanel_atom_data.json и используются как ключи
+// фильтрации, поэтому на экран идут через отдельные подписи.
 export const TAB_TYPES = ['Objects', 'Turfs', 'Mobs'] as const;
+
+export const TAB_TYPE_LABELS: Record<string, string> = {
+  Objects: 'Объекты',
+  Turfs: 'Турфы',
+  Mobs: 'Мобы',
+};
 
 export const TAB_TYPE_COLORS: Record<string, string> = {
   Objects: '#4a9fd4',

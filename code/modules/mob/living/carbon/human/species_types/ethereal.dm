@@ -45,7 +45,9 @@
 	.=..()
 	if(ishuman(C))
 		var/mob/living/carbon/human/H = C
-		default_color = "#" + H.dna.features["mcolor"]
+		// Преф может прийти битым (с лишним "#" или обрезанным) - GETREDPART тогда
+		// роняет hex2num("Malformed hex number") на каждом превью персонажа.
+		default_color = "#" + sanitize_hexcolor(H.dna.features["mcolor"], 6, FALSE)
 		r1 = GETREDPART(default_color)
 		g1 = GETGREENPART(default_color)
 		b1 = GETBLUEPART(default_color)

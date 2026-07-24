@@ -353,7 +353,19 @@ SUBSYSTEM_DEF(tick_spikes)
 		object_part = "null"
 	else
 		object_part = "[callback.object.type]"
-	return "[object_part] -> [callback.delegate]"
+	// Для обёрток вроде qdel_weakref_resolve сам прок ни о чём не говорит -
+	// реальный виновник это первый аргумент. Именуем его тип, если он датум/викреф.
+	var/target_part = ""
+	if(length(callback.arguments))
+		var/first_arg = callback.arguments[1]
+		if(isweakref(first_arg))
+			var/datum/weakref/target_ref = first_arg
+			var/datum/target = target_ref.hard_resolve()
+			target_part = target ? " ([target.type])" : " (протухший weakref)"
+		else if(isdatum(first_arg))
+			var/datum/target = first_arg
+			target_part = " ([target.type])"
+	return "[object_part] -> [callback.delegate][target_part]"
 
 /// Медленные единицы работы за окно [since_world, сейчас] в текстовые строки (хронологически)
 /datum/controller/subsystem/tick_spikes/proc/collect_slow_work(since_world)

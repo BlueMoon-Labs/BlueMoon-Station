@@ -754,6 +754,12 @@
 	icon_state = "vox"
 	squeak_override = list('modular_splurt/sound/voice/shriek1.ogg' = 1)
 
+/obj/item/toy/plush/bm/expie
+	name = "Expie plushie"
+	desc = "Бедняга, все время получающий по морде, ломающий кости, взрывающийся на мине."
+	icon_state = "expie"
+	squeak_override = list('modular_bluemoon/sound/voice/expiebark2.ogg' = 1)
+
 /obj/item/toy/plush/bm/oldman
 	name = "Old Man plushie"
 	desc = "Вам хочется врезать ему."

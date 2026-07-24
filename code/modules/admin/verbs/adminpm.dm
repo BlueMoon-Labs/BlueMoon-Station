@@ -221,7 +221,7 @@
 				to_chat(src, "<span class='notice'>Админ PM к <b>[key_name(recipient, src, 1)] [ADMIN_FLW(recipient.mob)]</b>: <span class='linkify'>[keywordparsedmsg]</span></span>", confidential = TRUE)
 
 				//omg this is dumb, just fill in both their tickets
-				var/interaction_message = "<font color='#c084fc'>PM от <b>[key_name(src, recipient, 1)]</b> к <b>[key_name(recipient, src, 1)]</b>: [keywordparsedmsg]</font>"
+				var/interaction_message = "<font color='#c084fc'>PM от <b>[src.ckey]</b>: [keywordparsedmsg]</font>"
 				admin_ticket_log(src, interaction_message)
 				if(recipient != src)	//reeee
 					admin_ticket_log(recipient, interaction_message)
@@ -239,7 +239,9 @@
 				if(current_ticket)
 					SSblackbox.LogAhelp(current_ticket.id, "Reply", msg, recipient.ckey, src.ckey)
 
-			SEND_SOUND(recipient, sound('sound/effects/adminhelp.ogg'))
+			if(recipient?.prefs?.toggles & SOUND_ADMINHELP)
+				var/ah_vol = recipient.prefs?.get_sound_volume("adminhelp")
+				SEND_SOUND(recipient, sound('sound/effects/adminhelp.ogg', volume = ah_vol))
 
 		else
 			if(holder)	//sender is an admin but recipient is not. Do BIG RED TEXT
@@ -259,20 +261,22 @@
 
 				var/recipient_message = ""
 				recipient_message += "<br><center><font color='red' size='4'><b>-- Administrator private message --</b></font></center>"
-				recipient_message += "<span class='adminsay'>Админ PM от <b>[key_name(src, recipient, 0)]</b>: <span class='linkify'>[msg]</span></span>"
+				recipient_message += "<span class='adminsay'>Админ PM от <b>[key_name(src, recipient, 1)]</b>: <span class='linkify'>[msg]</span></span>"
 				recipient_message += "<br><span class='adminsay'><i>Нажмите на имя администратора для ответа</i></span>"
 				recipient_message += "<br><br>"
 				to_chat(recipient, recipient_message, confidential = TRUE)
 				to_chat(src, "<span class='notice'>Админ PM к <b>[key_name(recipient, src, 1)] [ADMIN_FLW(recipient.mob)]</b>: <span class='linkify'>[msg]</span></span>", confidential = TRUE)
 
-				admin_ticket_log(recipient, "<font color='#c084fc'>PM от [key_name_admin(src)]: [keywordparsedmsg]</font>")
+				admin_ticket_log(recipient, "<font color='#c084fc'>PM от <b>[src.ckey]</b>: [keywordparsedmsg]</font>")
 
 				if(!already_logged) //Reply to an existing ticket   //BLUEMOON EDIT, enable ticket logging
 					SSblackbox.LogAhelp(recipient.current_ticket.id, "Reply", msg, recipient.ckey, src.ckey) //BLUEMOON EDIT, enable ticket logging
 
 
 				//always play non-admin recipients the adminhelp sound
-				SEND_SOUND(recipient, sound('sound/effects/adminhelp.ogg'))
+				if(recipient?.prefs?.toggles & SOUND_ADMINHELP)
+					var/ah_vol = recipient.prefs?.get_sound_volume("adminhelp")
+					SEND_SOUND(recipient, sound('sound/effects/adminhelp.ogg', volume = ah_vol))
 
 
 			else		//neither are admins

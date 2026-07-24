@@ -67,7 +67,10 @@
 		if(reskin_icon || reskin_icon_state)
 			item_image = image(
 				icon = reskin_icon ? reskin_icon : to_reskin.icon,
-				icon_state = reskin_icon_state ? reskin_icon_state : to_reskin.icon_state)
+				icon_state = reskin_icon_state ? reskin_icon_state : to_reskin.icon_state,
+				pixel_x = to_reskin.base_pixel_x,
+				pixel_y = to_reskin.base_pixel_y,
+			)
 		else
 			item_image = new /mutable_appearance(to_reskin)
 		items += list("[reskin_option]" = item_image)

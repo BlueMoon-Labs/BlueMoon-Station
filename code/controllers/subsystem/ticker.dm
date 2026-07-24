@@ -197,6 +197,7 @@ SUBSYSTEM_DEF(ticker)
 			// BLUEMOON ADD START - воут за карту и перезагрузка сервера, если прошлый раунд окончился крашем
 			if(mapvote_restarter_in_progress)
 				return
+			#ifndef UNIT_TESTS
 			#ifndef LOWMEMORYMODE
 			if(!SSpersistence.CheckGracefulEnding())
 				SetTimeLeft(-1)
@@ -206,6 +207,7 @@ SUBSYSTEM_DEF(ticker)
 				SSvote.initiate_vote("map","server", display = SHOW_RESULTS|SHOW_WINNER, votesystem = vote_type, forced = TRUE)
 				to_chat(world, span_boldwarning("Активировано голосование за смену карты из-за неудачного завершения прошлого раунда. После его окончания сервер будет перезапущен."))
 				return
+			#endif
 			#endif
 			// BLUEMOON ADD END
 

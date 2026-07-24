@@ -8,6 +8,15 @@
 	GLOB.mob_list -= src
 	GLOB.mob_directory -= tag
 
+/// Removes a mob from every mode-owned player cache, even after its client or mind moved away.
+/mob/proc/remove_from_all_current_player_lists()
+	if(!SSticker?.mode)
+		return
+	SSticker.mode.current_players[CURRENT_LIVING_PLAYERS] -= src
+	SSticker.mode.current_players[CURRENT_LIVING_ANTAGS] -= src
+	SSticker.mode.current_players[CURRENT_DEAD_PLAYERS] -= src
+	SSticker.mode.current_players[CURRENT_OBSERVERS] -= src
+
 ///Adds the mob reference to the list of all mobs alive. If mob is cliented, it adds it to the list of all living player-mobs.
 /mob/proc/add_to_alive_mob_list()
 	if(QDELETED(src))

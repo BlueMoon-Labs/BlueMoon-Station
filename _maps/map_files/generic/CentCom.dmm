@@ -2403,8 +2403,7 @@
 	},
 /area/centcom/holding)
 "agN" = (
-/obj/item/radio/intercom/syndicate{
-	},
+/obj/item/radio/intercom/syndicate,
 /turf/closed/indestructible/riveted,
 /area/centcom/evac)
 "agO" = (
@@ -4211,8 +4210,7 @@
 /area/wizard_station)
 "auD" = (
 /obj/structure/table/wood/fancy,
-/obj/item/radio/intercom/syndicate{
-	},
+/obj/item/radio/intercom/syndicate,
 /turf/open/floor/wood,
 /area/wizard_station)
 "auE" = (
@@ -11296,7 +11294,7 @@
 	light_color = "#c1caff";
 	pixel_x = 3
 	},
-/turf/closed/wall/r_wall/syndicate,
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/centcom/holding)
 "cBJ" = (
 /obj/effect/turf_decal/tile/brown,
@@ -16143,7 +16141,7 @@
 	dir = 1;
 	pixel_y = 3
 	},
-/turf/closed/wall/r_wall/syndicate,
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/centcom/holding)
 "hur" = (
 /obj/structure/window/reinforced,
@@ -18718,7 +18716,7 @@
 /turf/open/floor/mineral/plastitanium/red,
 /area/centcom/holding)
 "jVl" = (
-/turf/closed/wall/r_wall/syndicate,
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/centcom/holding)
 "jVB" = (
 /obj/structure/bed/double/pod,
@@ -28706,7 +28704,7 @@
 	light_color = "#e8eaff";
 	pixel_x = -3
 	},
-/turf/closed/wall/r_wall/syndicate,
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/centcom/holding)
 "tPf" = (
 /obj/structure/table/wood,
@@ -29025,8 +29023,7 @@
 /turf/open/indestructible/hotelwood,
 /area/centcom/holding)
 "ubk" = (
-/obj/item/radio/intercom/syndicate{
-	},
+/obj/item/radio/intercom/syndicate,
 /obj/structure/lattice,
 /turf/closed/indestructible/riveted,
 /area/centcom/evac)
@@ -32040,8 +32037,7 @@
 /turf/open/floor/plasteel/dark,
 /area/syndicate_mothership/control)
 "wYW" = (
-/obj/item/radio/intercom/syndicate{
-	},
+/obj/item/radio/intercom/syndicate,
 /turf/closed/indestructible/riveted,
 /area/centcom/control)
 "wZg" = (

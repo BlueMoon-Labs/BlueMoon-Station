@@ -3769,7 +3769,6 @@
 	})
 "uy" = (
 /obj/structure/grille,
-/obj/structure/grille,
 /turf/closed/wall/r_wall,
 /area/ruin/space/has_grav/bluemoon/hotel/power)
 "uz" = (

@@ -1,9 +1,5 @@
 GLOBAL_DATUM_INIT(mentor_tickets, /datum/mentor_ticket_manager, new)
 
-#define MENTOR_TICKET_ACTIVE 1
-#define MENTOR_TICKET_CLOSED 2
-#define MENTOR_TICKET_RESOLVED 3
-
 /datum/mentor_ticket_manager
 	var/list/active_tickets = list()
 	var/list/closed_tickets = list()
@@ -23,16 +19,16 @@ GLOBAL_DATUM_INIT(mentor_tickets, /datum/mentor_ticket_manager, new)
 
 /datum/mentor_ticket_manager/proc/TicketsByCKey(ckey)
 	. = list()
-	for(var/I in active_tickets + closed_tickets + resolved_tickets)
-		var/datum/mentor_ticket/MT = I
-		if(MT.initiator_ckey == ckey)
-			. += MT
+	for(var/list/ticket_list as anything in list(active_tickets, closed_tickets, resolved_tickets))
+		for(var/datum/mentor_ticket/ticket as anything in ticket_list)
+			if(ticket.initiator_ckey == ckey)
+				. += ticket
 
 /datum/mentor_ticket_manager/proc/TicketByID(id)
-	for(var/I in active_tickets + closed_tickets + resolved_tickets)
-		var/datum/mentor_ticket/MT = I
-		if(MT.id == id)
-			return MT
+	for(var/list/ticket_list as anything in list(active_tickets, closed_tickets, resolved_tickets))
+		for(var/datum/mentor_ticket/ticket as anything in ticket_list)
+			if(ticket.id == id)
+				return ticket
 
 /datum/mentor_ticket_manager/proc/ListInsert(datum/mentor_ticket/new_ticket)
 	var/list/ticket_list
@@ -88,7 +84,7 @@ GLOBAL_DATUM_INIT(mentor_tickets, /datum/mentor_ticket_manager, new)
 	id = ++ticket_counter
 	opened_at = world.time
 
-	name = length_char(msg) > 27 ? copytext_char(html_encode(msg), 1, 28) + "..." : html_encode(msg)
+	name = length_char(msg) > 27 ? html_encode(copytext_char(msg, 1, 28)) + "..." : html_encode(msg)
 
 	initiator = C
 	initiator_ckey = initiator.ckey
@@ -98,18 +94,15 @@ GLOBAL_DATUM_INIT(mentor_tickets, /datum/mentor_ticket_manager, new)
 	typing_mentors = list()
 
 	if(is_bwoink)
-		AddInteraction("<font color='#a855f7'>[key_name_admin(usr)] PM'd [LinkedReplyName()]</font>")
+		AddInteraction("<font color='#a855f7'>Ментор PM'd [LinkedReplyName()]</font>")
 		message_admins("<font color='#a855f7'>Mentor ticket [TicketHref("#[id]")] created</font>")
 		handle_issue()
 	else
 		MessageNoRecipient(msg)
 		log_admin_private("Mentor Ticket #[id]: [key_name(initiator)]: [name]")
 
-	var/list/mentors_online = list()
-	for(var/client/X in GLOB.mentors | GLOB.admins)
-		mentors_online += X
-	if(mentors_online.len <= 0)
-		to_chat(C, "<span class='notice'>Менторов онлайн нет, ваш вопрос отправлен администраторам.</span>")
+	if(!length(mentor_traffic_recipients()))
+		to_chat(C, "<span class='notice'>Сейчас нет менторов и администраторов онлайн. Ваш вопрос сохранён и будет рассмотрен, как только кто-то из них появится.</span>")
 
 	GLOB.mentor_tickets.active_tickets += src
 
@@ -124,6 +117,9 @@ GLOBAL_DATUM_INIT(mentor_tickets, /datum/mentor_ticket_manager, new)
 		answered = TRUE
 		send2adminchat(initiator_ckey, "[key_name(initiator)] | Mentor Ticket #[id]: Answered by [key_name(usr)]")
 	_interactions += "[TIME_STAMP("hh:mm:ss", FALSE)]: [formatted_message]"
+	for(var/datum/tgui/ui in SStgui.open_uis)
+		if(istype(ui.src_object, /datum/mentor_ticket_panel) || istype(ui.src_object, /datum/player_ticket_panel))
+			SStgui.update_uis(ui.src_object)
 
 /datum/mentor_ticket/proc/LinkedReplyName(ref_src)
 	if(!ref_src)
@@ -145,11 +141,12 @@ GLOBAL_DATUM_INIT(mentor_tickets, /datum/mentor_ticket_manager, new)
 	mentor_msg += "[LinkedReplyName(ref_src)]:</b> <span class='linkify'>[keywords_lookup(msg)]</span><br></span>"
 	AddInteraction("<font color='#a855f7'>[LinkedReplyName(ref_src)]: [encoded_msg]</font>")
 
-	for(var/client/X in GLOB.mentors | GLOB.admins)
-		if(X.prefs.toggles & SOUND_ADMINHELP)
-			SEND_SOUND(X, sound('sound/effects/adminhelp.ogg'))
+	for(var/client/X in mentor_traffic_recipients())
+		if(!handler || X.ckey == handler)
+			if(X.prefs.mentor_toggles & SOUND_MENTORHELP)
+				var/mentor_vol = X.prefs?.get_sound_volume("mentorhelp")
+				SEND_SOUND(X, sound('sound/effects/mentorhelp.ogg', volume = mentor_vol))
 		to_chat(X, examine_block(mentor_msg))
-
 	to_chat(initiator, "<span class='mentornotice'>PM для-<b>Менторов</b>: <span class='linkify'>[encoded_msg]</span></span>")
 
 /datum/mentor_ticket/proc/Close()
@@ -161,7 +158,7 @@ GLOBAL_DATUM_INIT(mentor_tickets, /datum/mentor_ticket_manager, new)
 		close_reason = "Закрыт"
 	GLOB.mentor_tickets.ListInsert(src)
 	to_chat(initiator, examine_block("<center><span class='mentornotice'>Ваш ментор-тикет был закрыт.</span></center>"))
-	AddInteraction("<font color='#a855f7'><u>Закрыт</u> [key_name_admin(usr)].</font>")
+	AddInteraction("<font color='#a855f7'><u>Закрыт</u> Ментор.</font>")
 	var/msg = "Mentor ticket [TicketHref("#[id]")] closed by [key_name_admin(usr)]."
 	message_admins(msg, islog = FALSE, prefix = "MENTOR")
 	log_admin_private(msg)
@@ -175,7 +172,7 @@ GLOBAL_DATUM_INIT(mentor_tickets, /datum/mentor_ticket_manager, new)
 		close_reason = "Решён"
 	GLOB.mentor_tickets.ListInsert(src)
 
-	AddInteraction("<font color='#4ade80'><u>Решён</u> [key_name_admin(usr)].</font>")
+	AddInteraction("<font color='#4ade80'><u>Решён</u> Ментор.</font>")
 	to_chat(initiator, examine_block("<center><span class='mentornotice'>Ваш ментор-тикет был решён.</span></center>"))
 	var/msg = "Mentor ticket [TicketHref("#[id]")] resolved by [key_name_admin(usr)]."
 	message_admins(msg, islog = FALSE, prefix = "MENTOR")
@@ -193,7 +190,7 @@ GLOBAL_DATUM_INIT(mentor_tickets, /datum/mentor_ticket_manager, new)
 	if(initiator)
 		to_chat(initiator, "<span class='mentornotice'>Ваш ментор-тикет был взят. Пожалуйста, подождите.</span>")
 	handler = "[usr.ckey]"
-	AddInteraction("<u>Взят ментором</u> [key_name_admin(usr)]")
+	AddInteraction("<u>Взят ментором</u>")
 	var/msg = "Mentor ticket [TicketHref("#[id]")] taken by [key_name_admin(usr)]."
 	message_admins(msg, islog = FALSE, prefix = "MENTOR")
 	log_admin_private(msg)
@@ -201,7 +198,7 @@ GLOBAL_DATUM_INIT(mentor_tickets, /datum/mentor_ticket_manager, new)
 
 /datum/mentor_ticket/proc/Action(action)
 	switch(action)
-		if("reply")
+		if("reply", "mentorticket")
 			usr.client.cmd_mentor_pm(initiator)
 		if("close")
 			Close()
@@ -231,7 +228,7 @@ GLOBAL_DATUM_INIT(mentor_tickets, /datum/mentor_ticket_manager, new)
 	state = MENTOR_TICKET_ACTIVE
 	closed_at = null
 	close_reason = null
-	AddInteraction("<font color='#c084fc'><u>Переоткрыт</u> [key_name_admin(usr)]</font>")
+	AddInteraction("<font color='#c084fc'><u>Переоткрыт ментором</u></font>")
 	var/msg = "Mentor ticket [TicketHref("#[id]")] was reopened by [key_name_admin(usr)]."
 	message_admins(msg, islog = FALSE, prefix = "MENTOR")
 	log_admin_private(msg)

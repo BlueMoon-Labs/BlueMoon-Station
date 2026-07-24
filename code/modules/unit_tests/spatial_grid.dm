@@ -30,7 +30,11 @@
 	TEST_ASSERT(listener in far_cell.hearing_contents, "After moving the new cell must hold the item")
 
 	// a container carries its hearing contents between cells
-	var/obj/structure/closet/container = allocate(/obj/structure/closet, far_turf)
+	// Generic closets have a 1% chance to spawn a hearing-sensitive Halloween
+	// skeleton during Initialize(), which makes this fixture nondeterministic.
+	// Crates explicitly disable spooky traps and start empty.
+	var/obj/structure/closet/crate/container = allocate(/obj/structure/closet/crate, far_turf)
+	TEST_ASSERT(!container.spatial_grid_key, "The test container must start without grid-aware contents")
 	listener.forceMove(container)
 	TEST_ASSERT(container.spatial_grid_key, "A container holding a hearing item must gain grid awareness")
 

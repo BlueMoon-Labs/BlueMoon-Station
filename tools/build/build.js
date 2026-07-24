@@ -12,7 +12,8 @@
 
 import fs from 'fs';
 import path from 'path';
-import { DreamDaemon, DreamMaker } from './lib/byond.js';
+import crypto from 'crypto';
+import { DreamDaemon, DreamMaker, getDmPath } from './lib/byond.js';
 import { yarn } from './lib/yarn.js';
 import Juke from './juke/index.js';
 
@@ -33,6 +34,10 @@ export const PortParameter = new Juke.Parameter({
 
 export const CiParameter = new Juke.Parameter({
   type: 'boolean',
+});
+
+export const UnitTestProfileParameter = new Juke.Parameter({
+  type: 'string',
 });
 
 export const DmMapsIncludeTarget = new Juke.Target({
@@ -100,28 +105,111 @@ export const DmTarget = new Juke.Target({
   },
 });
 
-export const DmTestTarget = new Juke.Target({
+const UNIT_TEST_PROFILES = new Set(['all', 'hermetic', 'full-map']);
+
+const getUnitTestProfile = (get) => {
+  const profile = get(UnitTestProfileParameter) || 'all';
+  if (!UNIT_TEST_PROFILES.has(profile)) {
+    Juke.logger.error(`Unknown unit test profile '${profile}'. Expected all, hermetic, or full-map.`);
+    throw new Juke.ExitCode(1);
+  }
+  return profile;
+};
+
+const getUnitTestDefines = (get) => {
+  const profile = getUnitTestProfile(get);
+  const profileDefines = [];
+  if (profile === 'hermetic') {
+    profileDefines.push('LOWMEMORYMODE', 'UNIT_TEST_PROFILE_HERMETIC');
+  }
+  else if (profile === 'full-map') {
+    profileDefines.push('UNIT_TEST_PROFILE_FULL_MAP');
+  }
+  return [...new Set(['CBT', 'CIBUILDING', ...profileDefines, ...get(DefineParameter)])];
+};
+
+const getUnitTestArtifactBase = (get) => {
+  const profile = getUnitTestProfile(get);
+  const userDefines = get(DefineParameter);
+  if (profile === 'all' && userDefines.length === 0) {
+    return `${DME_NAME}.test`;
+  }
+  const signature = crypto
+    .createHash('sha256')
+    .update(JSON.stringify(getUnitTestDefines(get).slice().sort()))
+    .digest('hex')
+    .slice(0, 12);
+  return `${DME_NAME}.test.${profile}.${signature}`;
+};
+
+const getUnitTestLogDirectory = (get) => {
+  const profile = getUnitTestProfile(get);
+  return profile === 'all' ? 'ci' : `ci-${profile}`;
+};
+
+const dmTestInputs = [
+  '_maps/map_files/generic/**',
+  'code/**',
+  'goon/**',
+  'html/**',
+  'icons/**',
+  'interface/**',
+  'tgui/public/tgui.html',
+  'modular_*/**',
+  `${DME_NAME}.dme`,
+  'modular_citadel/**',
+  'modular_sand/**',
+  'tools/build/build.js',
+  'tools/build/lib/byond.js',
+];
+
+/** Compile a reusable unit-test DMB. The artifact name includes the profile
+ * and define set, while the compiler executable is an input so a BYOND update
+ * invalidates the cached output. */
+export const DmTestBuildTarget = new Juke.Target({
+  parameters: [DefineParameter, UnitTestProfileParameter],
   dependsOn: ({ get }) => [
     get(DefineParameter).includes('ALL_MAPS') && DmMapsIncludeTarget,
   ],
+  inputs: async () => [
+    ...dmTestInputs,
+    await getDmPath(),
+  ],
+  outputs: ({ get }) => {
+    const artifactBase = getUnitTestArtifactBase(get);
+    return [
+      `${artifactBase}.dme`,
+      `${artifactBase}.dmb`,
+      `${artifactBase}.rsc`,
+    ];
+  },
   executes: async ({ get }) => {
-    const defines = get(DefineParameter);
-    if (defines.length > 0) {
-      Juke.logger.info('Using defines:', defines.join(', '));
-    }
-    fs.copyFileSync(`${DME_NAME}.dme`, `${DME_NAME}.test.dme`);
-    await DreamMaker(`${DME_NAME}.test.dme`, {
-      defines: ['CBT', 'CIBUILDING', ...defines],
+    const artifactBase = getUnitTestArtifactBase(get);
+    const defines = getUnitTestDefines(get);
+    Juke.logger.info('Using unit test defines:', defines.join(', '));
+    fs.copyFileSync(`${DME_NAME}.dme`, `${artifactBase}.dme`);
+    await DreamMaker(`${artifactBase}.dme`, {
+      defines,
     });
-    Juke.rm('data/logs/ci', { recursive: true });
+  },
+});
+
+/** Run an already up-to-date unit-test DMB. This target intentionally has no
+ * outputs so each invocation runs the world, while dm-test-build is cached. */
+export const DmTestRunTarget = new Juke.Target({
+  parameters: [DefineParameter, UnitTestProfileParameter],
+  dependsOn: [DmTestBuildTarget],
+  executes: async ({ get }) => {
+    const artifactBase = getUnitTestArtifactBase(get);
+    const logDirectory = getUnitTestLogDirectory(get);
+    Juke.rm(`data/logs/${logDirectory}`, { recursive: true });
     await DreamDaemon(
-      `${DME_NAME}.test.dmb`,
+      `${artifactBase}.dmb`,
       '-close', '-trusted', '-verbose',
-      '-params', 'log-directory=ci'
+      '-params', `log-directory=${logDirectory}`
     );
-    Juke.rm('*.test.*');
     try {
-      const cleanRun = fs.readFileSync('data/logs/ci/clean_run.lk', 'utf-8');
+      const cleanRun = fs.readFileSync(`data/logs/${logDirectory}/clean_run.lk`, 'utf-8');
       console.log(cleanRun);
     }
     catch (err) {
@@ -129,6 +217,12 @@ export const DmTestTarget = new Juke.Target({
       throw new Juke.ExitCode(1);
     }
   },
+});
+
+/** Backwards-compatible compile-and-run entrypoint. */
+export const DmTestTarget = new Juke.Target({
+  parameters: [DefineParameter, UnitTestProfileParameter],
+  dependsOn: [DmTestRunTarget],
 });
 
 export const YarnTarget = new Juke.Target({

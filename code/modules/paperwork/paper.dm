@@ -560,6 +560,7 @@
 			holding = clipboard.pen
 
 	data["held_item_details"] = holding?.get_writing_implement_details()
+	data["can_use_advanced_html"] = check_rights_for(user?.client, R_FUN)
 
 	// If the paper is on an unwritable noticeboard, clear the held item details so it's read-only.
 	if(istype(loc, /obj/structure/noticeboard))

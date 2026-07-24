@@ -353,7 +353,9 @@
 /datum/round_event_control/morph
 	name = "Spawn Morph"
 	typepath = /datum/round_event/ghost_role/morph
-	weight = 8
+	// Топ-вес пула вместе с ранним окном делал морфа завсегдатаем: 3 выпадения за день
+	// логов 9766-9775, пока дракон/ниндзя/пираты не выпали ни разу.
+	weight = 5
 	max_occurrences = 1
 	min_players = 20
 	// Ранняя волна гост-пула стартует с 20-й минуты вместе с генлингом/болезнью: без порога

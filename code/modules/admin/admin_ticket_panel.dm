@@ -70,6 +70,7 @@
 	.["close_reason"] = AH.close_reason
 	.["initiator_ckey"] = AH.initiator_ckey
 	.["initiator_key_name"] = AH.initiator_key_name
+	.["initiator_mob_name"] = AH.initiator_mob_name
 	.["has_initiator"] = !isnull(AH.initiator)
 	.["handler"] = AH.handler
 	.["ticket_ping_stop"] = AH.ticket_ping_stop
