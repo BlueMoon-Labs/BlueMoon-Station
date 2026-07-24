@@ -35,7 +35,8 @@
 			. += "[initial(icon_state)]burst"
 
 /obj/item/gun/ballistic/automatic/update_icon_state()
-	icon_state = "[initial(icon_state)][magazine ? "-[magazine.max_ammo]" : ""][chambered ? "" : "-e"][suppressed ? "-suppressed" : ""]"
+	var/cur_state = current_skin ? unique_reskin[current_skin]["icon_state"] : initial(icon_state)
+	icon_state = "[cur_state][magazine ? "-[magazine.max_ammo]" : ""][chambered ? "" : "-e"][suppressed ? "-suppressed" : ""]"
 
 /obj/item/gun/ballistic/automatic/can_shoot()
 	return get_ammo()
@@ -109,8 +110,9 @@
 // BLUEMOON ADD END
 
 /obj/item/gun/ballistic/automatic/wt550/update_icon_state()
-	icon_state = "wt550[magazine ? "-[CEILING(((get_ammo(FALSE) / magazine.max_ammo) * 20) /4, 1)*4]" : "-0"]" //Sprites only support up to 20.
-	item_state = "wt550[magazine ? "" : "e"]" // BLUEMOON ADD enabling unused nomag sprite
+	var/cur_state = current_skin ? unique_reskin[current_skin]["icon_state"] : initial(icon_state)
+	icon_state = "[cur_state][magazine ? "-[CEILING(((get_ammo(FALSE) / magazine.max_ammo) * 20) /4, 1)*4]" : null]" //Sprites only support up to 20.
+	item_state = "[initial(item_state)][magazine ? "" : "e"]" // BLUEMOON ADD enabling unused nomag sprite
 
 /obj/item/gun/ballistic/automatic/mini_uzi
 	name = "\improper Type U3 Uzi"

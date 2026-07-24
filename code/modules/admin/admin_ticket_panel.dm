@@ -70,6 +70,7 @@
 	.["close_reason"] = AH.close_reason
 	.["initiator_ckey"] = AH.initiator_ckey
 	.["initiator_key_name"] = AH.initiator_key_name
+	.["initiator_mob_name"] = AH.initiator_mob_name
 	.["has_initiator"] = !isnull(AH.initiator)
 	.["handler"] = AH.handler
 	.["ticket_ping_stop"] = AH.ticket_ping_stop
@@ -230,7 +231,8 @@
 			var/mob/initiator_mob = selected_ticket.initiator.mob
 			if(!initiator_mob)
 				return TRUE
-			show_individual_logging_panel(initiator_mob)
+			var/datum/log_viewer/LV = new(initiator_mob)
+			LV.ui_interact(usr)
 			. = TRUE
 
 		if("ban_panel")

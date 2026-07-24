@@ -6,7 +6,9 @@
 		if (z > z_list.len)
 			stack_trace("Unmanaged z-level [z]! maxz = [world.maxz], z_list.len = [z_list.len]")
 			return list()
-		var/datum/space_level/S = get_level(z)
+		// Индексируем z_list напрямую: границы уже проверены выше, а прок
+		// зовётся сотнями тысяч раз за инициализацию.
+		var/datum/space_level/S = z_list[z]
 		return S.traits[trait]
 	else
 		var/list/default = DEFAULT_MAP_TRAITS
@@ -61,23 +63,46 @@
 				. -= S.z_value
 				break
 
-/// Attempt to get the turf below the provided one according to Z traits
+/**
+ * Мультиз-связки читает каждый /turf/Initialize и /turf/Destroy, то есть больше
+ * миллиона раз за старт мира. Поэтому трейт тут берётся прямым индексом в
+ * z_list, а не через level_trait() + get_level(): это те же данные, но без двух
+ * вызовов проков на каждый турф. Нештатный z и ещё не поднятый z_list уходят на
+ * общий путь level_trait() со всеми его проверками и stack_trace.
+ *
+ * Attempt to get the turf below the provided one according to Z traits
+ */
 /datum/controller/subsystem/mapping/proc/get_turf_below(turf/T)
 	if (!T)
 		return
-	var/offset = level_trait(T.z, ZTRAIT_DOWN)
+	var/turf_z = T.z
+	var/list/levels = z_list
+	var/offset
+	if(levels && turf_z >= 1 && turf_z <= levels.len)
+		var/datum/space_level/level = levels[turf_z]
+		offset = level.traits[ZTRAIT_DOWN]
+	else
+		offset = level_trait(turf_z, ZTRAIT_DOWN)
 	if (!isnum(offset) || !offset)
 		return
-	return locate(T.x, T.y, T.z + offset)
+	return locate(T.x, T.y, turf_z + offset)
 
-/// Attempt to get the turf above the provided one according to Z traits
+/// Attempt to get the turf above the provided one according to Z traits.
+/// Быстрый путь такой же, как в [/datum/controller/subsystem/mapping/proc/get_turf_below].
 /datum/controller/subsystem/mapping/proc/get_turf_above(turf/T)
 	if (!T)
 		return
-	var/offset = level_trait(T.z, ZTRAIT_UP)
+	var/turf_z = T.z
+	var/list/levels = z_list
+	var/offset
+	if(levels && turf_z >= 1 && turf_z <= levels.len)
+		var/datum/space_level/level = levels[turf_z]
+		offset = level.traits[ZTRAIT_UP]
+	else
+		offset = level_trait(turf_z, ZTRAIT_UP)
 	if (!isnum(offset) || !offset)
 		return
-	return locate(T.x, T.y, T.z + offset)
+	return locate(T.x, T.y, turf_z + offset)
 
 /// Prefer not to use this one too often
 /datum/controller/subsystem/mapping/proc/get_station_center()

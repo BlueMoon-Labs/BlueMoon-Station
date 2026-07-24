@@ -695,7 +695,9 @@ GLOBAL_LIST_EMPTY(allCasters)
 			say("<b>Свежие новости от [channel]</b>!")
 		alert = TRUE
 		update_icon()
-		addtimer(CALLBACK(src,PROC_REF(remove_alert)),alert_delay,TIMER_UNIQUE|TIMER_OVERRIDE)
+		// Джиттер: одинаковый alert_delay у всех ньюскастеров станции разряжал
+		// 500+ таймеров remove_alert одним тиком (TIMER BURST раунда 9746).
+		addtimer(CALLBACK(src,PROC_REF(remove_alert)),alert_delay + rand(0, 5 SECONDS),TIMER_UNIQUE|TIMER_OVERRIDE)
 		if(has_audience)
 			playsound(loc, 'sound/machines/twobeep.ogg', 75, 1)
 	else if(has_audience)

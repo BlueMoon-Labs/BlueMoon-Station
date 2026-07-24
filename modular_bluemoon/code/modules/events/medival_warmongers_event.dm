@@ -309,8 +309,8 @@
 /obj/item/storage/belt/gold_tasset
 	name = "tasseted gold belt"
 	desc = "A fine leather belt that's been sleeved within many segments of steel, and further reinforced with the tassets of a fluted cuirass."
-	icon_state = "steeltasset"
-	item_state = "steeltasset"
+	icon_state = "goldtasset"
+	item_state = "goldtasset"
 	mob_overlay_icon = 'icons/mob/clothing/belt.dmi'
 	w_class = WEIGHT_CLASS_NORMAL
 

@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 import { useBackend } from '../../backend';
 import { Box, Button, Icon, Input, Stack } from '../../components';
-import { LOCATIONS_NEEDING_CLICK, MAX_ATOM_DISPLAY, PRECISE_MODE_OFF, PRECISE_MODE_TARGET, TAB_TYPE_COLORS, TAB_TYPE_LETTERS, TAB_TYPES } from './constants';
+import { LOCATIONS_NEEDING_CLICK, MAX_ATOM_DISPLAY, PRECISE_MODE_OFF, PRECISE_MODE_TARGET, TAB_TYPE_COLORS, TAB_TYPE_LABELS, TAB_TYPE_LETTERS, TAB_TYPES } from './constants';
 import { AtomData, SpawnPanelData } from './types';
 
 type CreateObjectProps = {
@@ -95,7 +95,7 @@ export const CreateObject = (props: CreateObjectProps) => {
                       >
                         {TAB_TYPE_LETTERS[tab]}
                       </Box>
-                      {tab}
+                      {TAB_TYPE_LABELS[tab] ?? tab}
                     </Box>
                   </Stack.Item>
                 );

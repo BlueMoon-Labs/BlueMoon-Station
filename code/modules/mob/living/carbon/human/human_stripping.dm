@@ -203,8 +203,8 @@ GLOBAL_LIST_INIT(strippable_human_items, create_strippable_list(list(
 	to_chat(user, span_notice("Вы пробуете обчистить [pocket_side] карман [source]."))
 
 	var/log_message = "[key_name(user)] обчистил [pocket_side] карман [key_name(source)]. Наградой стал следующий предмет - [item]."
-	user.log_message(log_message, LOG_ATTACK, color="red")
-	source.log_message(log_message, LOG_VICTIM, color="red", log_globally=FALSE)
+	user.log_message(log_message, LOG_ATTACK, color="red", target = source)
+	source.log_message(log_message, LOG_VICTIM, color="red", log_globally=FALSE, target = user)
 	item.add_fingerprint(source)
 
 	var/strip_silence

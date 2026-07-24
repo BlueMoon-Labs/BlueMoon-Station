@@ -28656,7 +28656,6 @@
 /area/ruin/lavaland/powered)
 "knX" = (
 /obj/structure/grille,
-/obj/structure/grille,
 /turf/open/misc/grass,
 /area/security/prison/workout)
 "kox" = (
@@ -54456,7 +54455,6 @@
 /area/ruin/lavaland/powered)
 "tqX" = (
 /obj/structure/window/plastitanium,
-/obj/structure/grille,
 /obj/structure/grille,
 /obj/structure/cable{
 	icon_state = "0-4"

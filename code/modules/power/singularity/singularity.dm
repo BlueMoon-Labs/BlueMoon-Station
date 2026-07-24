@@ -485,6 +485,8 @@
 			weight = 1
 		if(weight)
 			var/direction = get_dir(src, T)
+			if(!direction)
+				continue
 			dir_weights[direction] += weight
 	var/best_dir = 0
 	var/best_weight = 0

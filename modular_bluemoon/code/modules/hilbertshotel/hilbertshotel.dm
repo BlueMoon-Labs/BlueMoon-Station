@@ -321,6 +321,8 @@
 			for(var/atom/movable/A in T)
 				if(istype(A, /obj/effect/overlay/water) || istype(A, /obj/effect/overlay/water/top) || istype(A, /obj/machinery/atmospherics/components)) // Skip pool water and effects, and atmos components
 					continue
+				if(istype(A, /atom/movable/lighting_object)) // Оверлей света принадлежит турфу: из стока он вернётся на тайл вторым слоем и зарендерит протухшую тьму
+					continue
 				if(ismob(A) && !isliving(A) || !isturf(A.loc)) // Turf check for items that are inside containers
 					continue // Don't want to store ghosts
 				turfContents += A
@@ -409,6 +411,9 @@
 		for(var/j in 0 to mapTemplate.height - 1)
 			if(turfNumber <= stored_size)
 				for(var/atom/movable/A in stored_data[turfNumber])
+					if(istype(A, /atom/movable/lighting_object)) // Сток, отравленный до фикса storeRoom: призрак прошлой эпохи не должен лечь на тайл поверх живого оверлея
+						qdel(A, force = TRUE)
+						continue
 					if(A.loc == storageObj) // Don't want to recall something that's been moved
 						A.forceMove(locate(roomReservation.bottom_left_coords[1] + i, roomReservation.bottom_left_coords[2] + j, roomReservation.bottom_left_coords[3]))
 			turfNumber++

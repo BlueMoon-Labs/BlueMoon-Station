@@ -28,6 +28,12 @@
 /datum/cellular_emporium/ui_data(mob/user)
 	var/list/data = list()
 
+	// Антаг-датум мог исчезнуть (снятие генлинга), пока окно открыто:
+	// без гарда SStgui спамит рантаймом каждый апдейт, а окно висит мёртвым.
+	if(!changeling)
+		SStgui.close_uis(src)
+		return data
+
 	var/can_readapt = changeling.can_respec
 	var/genetic_points_remaining = changeling.geneticpoints
 	var/absorbed_dna_count = changeling.absorbedcount
@@ -67,6 +73,8 @@
 
 /datum/cellular_emporium/ui_act(action, params)
 	if(..())
+		return
+	if(!changeling)
 		return
 
 	switch(action)

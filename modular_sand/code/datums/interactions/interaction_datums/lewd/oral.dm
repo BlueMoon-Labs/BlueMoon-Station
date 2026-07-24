@@ -23,7 +23,7 @@
 	var/message
 	var/obj/item/organ/genital/genital = null
 	var/lust_increase = NORMAL_LUST
-	var/has_penis = partner.has_penis() // BLUEMOON ADD
+	var/has_penis = partner.has_penis(TRUE) // BLUEMOON ADD
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 	var/const/volume = 50

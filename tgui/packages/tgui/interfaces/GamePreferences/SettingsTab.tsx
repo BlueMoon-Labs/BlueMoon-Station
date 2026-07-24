@@ -4,6 +4,7 @@ import { ChatSection } from './sections/ChatSection';
 import { ContentSection } from './sections/ContentSection';
 import { GameplaySection } from './sections/GameplaySection';
 import { GraphicsSection } from './sections/GraphicsSection';
+import { MentorSection } from './MentorSection';
 import { SoundsSection } from './sections/SoundsSection';
 
 const BASE_CATEGORIES = [
@@ -22,18 +23,22 @@ const scrollToCategory = (key: string) => {
 };
 
 export const SettingsTab = (props) => {
-  const { has_admin } = props;
+  const { has_admin, has_mentor } = props;
 
   const categories = has_admin
     ? [...BASE_CATEGORIES, { key: 'admin', label: 'Админ', section: AdminSection }]
     : BASE_CATEGORIES;
+
+  const effectiveCategories = has_mentor
+    ? [...categories, { key: 'mentor', label: 'Ментор', section: MentorSection }]
+    : categories;
 
   return (
     <Stack vertical fill className="GamePreferences__settings">
       <Stack.Item>
         <Section fitted className="GamePreferences__nav">
           <Stack fill px={1}>
-            {categories.map(({ key, label }) => (
+            {effectiveCategories.map(({ key, label }) => (
               <Stack.Item key={key} grow basis="content">
                 <Button
                   align="center"
@@ -52,7 +57,7 @@ export const SettingsTab = (props) => {
       <Stack.Item grow basis={0}>
         <Section fill scrollable className="GamePreferences__scroll">
           <Stack vertical px={1} py={1}>
-            {categories.map(({ key, label, section: SectionComponent }) => (
+            {effectiveCategories.map(({ key, label, section: SectionComponent }) => (
               <div
                 key={key}
                 id={`prefs-${key}`}

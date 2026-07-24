@@ -28,6 +28,8 @@
 	// else if(ckey)
 	// 	stack_trace("Mob without client but with associated ckey, [ckey], has been deleted.")
 	unset_machine()
+	SStgui.close_user_uis(src)
+	remove_from_all_current_player_lists()
 	remove_from_mob_list()
 	remove_from_dead_mob_list()
 	remove_from_alive_mob_list()
@@ -546,29 +548,27 @@
 
 	//предмет фиксируем в момент нажатия: верб может отлежаться в очереди,
 	//а игрок за это время сменить руку - активировать чужой предмет нельзя
-	DEFAULT_QUEUE_OR_CALL_VERB(VERB_CALLBACK(src, PROC_REF(execute_mode), get_active_held_item()))
+	DEFAULT_QUEUE_OR_CALL_VERB(VERB_CALLBACK(src, PROC_REF(execute_mode), get_active_held_item(), active_hand_index))
 
-/mob/proc/execute_mode(obj/item/expected_item)
+/**
+ * Логика для переопределений:
+ * FALSE - Действия запрещены, TRUE - Успешное действие, NULL - Можно выполнить действие
+ */
+/mob/proc/execute_mode(obj/item/expected_item, expected_active_hand_index, force = FALSE)
 	if(ismecha(loc))
-		return
-
+		return FALSE
 	if(incapacitated())
-		return
+		return FALSE
+	if(!force && expected_active_hand_index != active_hand_index) // рука сменилась, пока верб ждал в очереди
+		return FALSE
 
 	var/obj/item/I = get_active_held_item()
-	if(I != expected_item) //рука сменилась, пока верб ждал в очереди
-		return
 	if(I)
+		if(!force && I != expected_item) // предмет сменился, пока верб ждал в очереди
+			return FALSE
 		I.attack_self(src)
 		update_inv_hands()
-		return
-
-	// Активация имплантов в руке
-	if(!istype(src, /mob/living/carbon))
-		return
-	var/mob/living/carbon/C = src
-	I = C.getorganslot((C.active_hand_index % 2 == 0) ? ORGAN_SLOT_RIGHT_ARM_AUG : ORGAN_SLOT_LEFT_ARM_AUG)
-	I?.ui_action_click(src)
+		return TRUE
 
 /**
  * Get the notes of this mob

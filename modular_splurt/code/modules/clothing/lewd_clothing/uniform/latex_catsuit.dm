@@ -19,9 +19,9 @@
 /obj/item/clothing/under/misc/latex_catsuit/attack_hand(mob/living/carbon/human/user)
 	var/mob/living/carbon/human/C = user
 	if(iscarbon(user) && HAS_TRAIT(src, TRAIT_NODROP) && (src == C.w_uniform))
-		to_chat(C, span_purple(pick("Your hands uselessly roam across your rubber predicament and you fail to find a seam",
-									"You find it impossible to leverage your fingers beneath the suit.",
-									"The suit almost seems to be tightening away from your pointless clawing")))
+		to_chat(C, span_purple(pick("Ваши руки бесполезно скользят по вашей резиновой проблеме в тщетных попытках найти стык или шов.",
+									"У вас не получается просунуть пальцы под латекс и стянуть его, и наврядли получится.",
+									"Латекс, кажется, только стягивается сильнее от вашего бесполезного царапанья.")))
 		return
 
 	else

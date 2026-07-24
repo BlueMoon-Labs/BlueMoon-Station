@@ -1,0 +1,43 @@
+.AdminLogViewer__entry {
+  padding: 2px 4px;
+  cursor: pointer;
+  border-radius: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  &--active {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+}
+
+.AdminLogViewer__entry-size {
+  float: right;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 11px;
+  padding-left: 6px;
+}
+
+.AdminLogViewer__content {
+  font-family: Consolas, monospace;
+  font-size: 12px;
+  white-space: pre-wrap;
+  word-break: break-all;
+
+  &--nowrap {
+    white-space: pre;
+  }
+
+  mark {
+    background-color: #fd4;
+    color: #000;
+
+    &.AdminLogViewer__match--active {
+      background-color: #f80;
+    }
+  }
+}

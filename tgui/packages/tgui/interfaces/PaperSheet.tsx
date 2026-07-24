@@ -30,10 +30,10 @@ type PaperContext = {
   default_pen_font: string;
   default_pen_color: string;
   signature_font: string;
-  sanitize_text: boolean;
 
   // ui_data
   held_item_details?: WritingImplement;
+  can_use_advanced_html: boolean;
 };
 
 type PaperInput = {
@@ -699,6 +699,7 @@ export class PreviewView extends Component<PreviewViewProps> {
       default_pen_color,
       paper_color,
       held_item_details,
+      can_use_advanced_html,
     } = data;
     const { textArea } = this.props;
 
@@ -720,7 +721,8 @@ export class PreviewView extends Component<PreviewViewProps> {
       paper_color,
       fontBold,
       fieldCount,
-      readOnly
+      readOnly,
+      can_use_advanced_html
     );
 
     this.parsedTextBoxCache = processingOutput.text;

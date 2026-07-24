@@ -356,11 +356,11 @@
 
 /obj/machinery/camera/proc/triggerCameraAlarm()
 	alarm_on = TRUE
-	alarm_manager.send_alarm(ALARM_CAMERA, src, src)
+	alarm_manager?.send_alarm(ALARM_CAMERA, src, src) // свормер зовёт тревогу на уже разобранной камере
 
 /obj/machinery/camera/proc/cancelCameraAlarm()
 	alarm_on = FALSE
-	alarm_manager.clear_alarm(ALARM_CAMERA)
+	alarm_manager?.clear_alarm(ALARM_CAMERA)
 
 /obj/machinery/camera/proc/can_use()
 	if(!status)

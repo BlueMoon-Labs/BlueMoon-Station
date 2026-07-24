@@ -321,3 +321,18 @@
 		return mutable_appearance('modular_bluemoon/fluffs/icons/obj/clothing/belts.dmi',"lapkee_stunsword")
 
 	return ..()
+
+//////////////////////////////////////////////////
+// Принадлежит shizalrp
+/obj/item/storage/box/donator/bm/personal_ward
+	name = "Personal Ward Box"
+	desc = "Коробка с модификациями оружия."
+	icon_state = "secbox_xl"
+
+/obj/item/storage/box/donator/bm/personal_ward/PopulateContents()
+	var/static/items_inside = list(
+		/obj/item/modkit/cz_75,
+		/obj/item/modkit/cz_75_auto,
+		/obj/item/modkit/warder_9r,
+	)
+	generate_items_inside(items_inside, src)

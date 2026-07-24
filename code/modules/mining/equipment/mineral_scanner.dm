@@ -123,8 +123,8 @@
 		if(!L.client || !can_see_buried_ore(L))
 			continue
 		var/image/I = image(icon, ore_turf, icon_state)
-		I.pixel_x = -224
-		I.pixel_y = -224
+		I.pixel_x = -220
+		I.pixel_y = -220
 		I.appearance_flags = appearance_flags
 		I.layer = layer
 		I.plane = plane

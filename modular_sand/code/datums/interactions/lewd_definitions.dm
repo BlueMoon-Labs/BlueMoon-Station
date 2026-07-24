@@ -117,7 +117,10 @@
 				return HAS_UNEXPOSED_GENITAL
 	return FALSE
 
-/mob/living/proc/has_penis()
+/mob/living/proc/has_penis(strapon_over_penis = FALSE)
+	// нужно для тех ситуаций/механик/интеракций, когда при наличии страпона мы игнорируем наличие пениса.
+	if(strapon_over_penis && (has_strapon() == HAS_EXPOSED_GENITAL))
+		return FALSE
 	var/mob/living/carbon/C = src
 	if(has_penis && !istype(C))
 		return TRUE
@@ -142,10 +145,10 @@
 	return null
 
 /mob/living/proc/can_penetrating_genital_cum()
-	return has_penis()
+	return has_penis(TRUE)
 
 /mob/living/proc/get_penetrating_genital_name(long = FALSE)
-	return has_penis() ? (long ? pick(GLOB.dick_nouns) : pick("член", "пенис")) : "страпон"
+	return has_penis(TRUE) ? (long ? pick(GLOB.dick_nouns) : pick("член", "пенис")) : "страпон"
 
 /mob/living/proc/has_balls()
 	var/mob/living/carbon/C = src
@@ -370,7 +373,7 @@
 			// BLUEMOON ADD END
 			if(!last_genital)
 				if(has_penis())
-					if(!istype(partner))
+					if(!istype(partner) || has_strapon())
 						target_orifice = null
 					switch(target_orifice)
 						if(CUM_TARGET_MOUTH)
@@ -600,7 +603,7 @@
 			else
 				switch(last_genital.type)
 					if(/obj/item/organ/genital/penis)
-						if(!istype(partner))
+						if(!istype(partner) || has_strapon())
 							target_orifice = null
 
 						switch(target_orifice)

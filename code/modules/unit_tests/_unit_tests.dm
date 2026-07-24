@@ -148,6 +148,7 @@
 #include "spatial_grid.dm"
 #include "spawn_humans.dm"
 #include "spawn_mobs.dm"
+#include "startup_bootstrap.dm"
 // #include "species_whitelists.dm"
 // #include "stomach.dm"
 // #include "strippable.dm"
@@ -175,6 +176,7 @@
 #endif
 
 /// BLUEMOON TESTS
+#include "admin_log_viewer.dm"
 #include "atom_hud_perf.dm"
 #include "atmos_excited_group_lifecycle.dm"
 #include "atmos_pump_solver.dm"
@@ -194,8 +196,13 @@
 #include "manifest_photo_deferred.dm"
 #include "newscaster_alert_gate.dm"
 #include "harddel_cleanup.dm"
+#include "objective_completion.dm"
+#include "round_9752_regressions.dm"
+#include "warnfail_context.dm"
+#include "runtime_guards.dm"
 #include "hallucination_stationmessage.dm"
 #include "hilbert_hotel.dm"
+#include "hilbert_hotel_lighting.dm"
 #include "memory_leak_limits.dm"
 #include "human_mob_gc.dm"
 #include "observer_reenter_race.dm"
@@ -214,6 +221,7 @@
 #include "shapeshift_gc.dm"
 #include "simple_animal_buckets.dm"
 #include "space_drift.dm"
+#include "spirit_regressions.dm"
 #include "statpanel_listedturf.dm"
 #include "ssmobs_optimization.dm"
 #include "ssobj_idle_processing.dm"

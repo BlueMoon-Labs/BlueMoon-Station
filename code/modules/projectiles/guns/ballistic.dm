@@ -31,10 +31,8 @@
 	update_icon()
 
 /obj/item/gun/ballistic/update_icon_state()
-	if(current_skin)
-		icon_state = "[unique_reskin[current_skin]["icon_state"]][suppressed ? "-suppressed" : ""][sawn_off ? "-sawn" : ""]"
-	else
-		icon_state = "[initial(icon_state)][suppressed ? "-suppressed" : ""][sawn_off ? "-sawn" : ""]"
+	var/cur_state = current_skin ? unique_reskin[current_skin]["icon_state"] : initial(icon_state)
+	icon_state = "[cur_state][suppressed ? "-suppressed" : ""][sawn_off ? "-sawn" : ""]"
 
 /obj/item/gun/ballistic/process_chamber(mob/living/user, empty_chamber = 1)
 	var/obj/item/ammo_casing/AC = chambered //Find chambered round

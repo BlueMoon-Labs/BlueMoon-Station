@@ -209,13 +209,18 @@
 
 /mob/camera/imaginary_friend/forceMove(atom/destination)
 	dir = get_dir(get_turf(src), destination)
-	loc = destination
+	//голое loc= не звало Moved(): ячейка спатиал-грида слуха оставалась на месте
+	//спавна, и друг перманентно глох - база /mob/camera двигает через Moved
+	..()
 	Show()
 
 /mob/camera/imaginary_friend/proc/recall()
-	if(!owner || loc == owner)
+	//на турф владельца, не в contents: внутри владельца без Entered-пропагации
+	//грид не узнаёт, что владелец носит слушателя, и друг снова глохнет
+	var/turf/owner_turf = get_turf(owner)
+	if(!owner_turf || loc == owner_turf)
 		return FALSE
-	forceMove(owner)
+	forceMove(owner_turf)
 
 /datum/action/innate/imaginary_join
 	name = "Join"

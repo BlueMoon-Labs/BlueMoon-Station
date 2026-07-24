@@ -17,6 +17,7 @@
 *.rsc
 *.m.dme
 *.test.dme
+*.test.*.dme
 *.lk
 *.int
 *.backup

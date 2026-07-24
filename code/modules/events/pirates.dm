@@ -4,7 +4,9 @@
 	weight = 6
 	max_occurrences = 1
 	min_players = 25 // порог от больших серверов резал разнообразие на типичных 25-35: гост-пул сужался до метеора
-	earliest_start = 45 MINUTES
+	// Было 45 мин: к этому времени кошелёк уже 2-3 раза выжжен ранней волной, и за день
+	// логов 9766-9775 пираты не выпали ни разу. 30 мин - конкуренция с основной волной.
+	earliest_start = 30 MINUTES
 	category = EVENT_CATEGORY_INVASION
 	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
 	cost = 10

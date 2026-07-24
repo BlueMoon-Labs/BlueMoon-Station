@@ -525,14 +525,14 @@ It's fairly easy to fix if dealing with single letters but not so much with comp
 		ClickOn(T)
 
 // Logs a message in a mob's individual log, and in the global logs as well if log_globally is true
-/mob/log_message(message, message_type, color=null, log_globally = TRUE)
+// target — optional atom (mob/obj) that is the target of this action, stored for LogViewer filtering
+/mob/log_message(message, message_type, color=null, log_globally = TRUE, atom/target = null)
 	if(QDELETED(src))
 		return
 	if(!LAZYLEN(message))
 		stack_trace("Empty message")
 		return
 
-	// Cannot use the list as a map if the key is a number, so we stringify it (thank you BYOND)
 	var/smessage_type = num2text(message_type)
 
 	if(client)
@@ -542,6 +542,15 @@ It's fairly easy to fix if dealing with single letters but not so much with comp
 	if(!islist(logging[smessage_type]))
 		logging[smessage_type] = list()
 
+	var/log_time = TIME_STAMP("hh:mm:ss", FALSE)
+	var/log_who = key_name_mentor(src, FALSE, FALSE, TRUE)
+	var/log_where = loc_name(src)
+	var/log_type_name = log_type_to_name(message_type)
+	var/mob/living/L = src
+	var/log_health = null
+	if(istype(L) && (message_type == LOG_ATTACK || message_type == LOG_VICTIM))
+		log_health = "[L.health]"
+
 	var/colored_message = message
 	if(color)
 		if(color[1] == "#")
@@ -549,7 +558,6 @@ It's fairly easy to fix if dealing with single letters but not so much with comp
 		else
 			colored_message = "<font color='[color]'>[message]</font>"
 
-	//This makes readability a bit better for admins.
 	switch(message_type)
 		if(LOG_WHISPER)
 			colored_message = "(WHISPER) [colored_message]"
@@ -560,14 +568,28 @@ It's fairly easy to fix if dealing with single letters but not so much with comp
 		if(LOG_EMOTE)
 			colored_message = "(EMOTE) [colored_message]"
 
-	var/list/timestamped_message = list("\[[TIME_STAMP("hh:mm:ss", FALSE)]\] [key_name(src)] [loc_name(src)] (Event #[LAZYLEN(logging[smessage_type])])" = colored_message)
+	var/list/entry = list(
+		"time" = log_time,
+		"timestamp" = world.time,
+		"who" = log_who,
+		"what" = colored_message,
+		"where" = log_where,
+		"type" = log_type_name,
+		"type_flag" = message_type,
+		"ckey" = ckey,
+		"color" = color,
+		"health" = log_health,
+		"target_name" = target?.name,
+		"target_key" = ismob(target) ? target:ckey : null,
+		"target_ref" = target ? REF(target) : null,
+	)
 
-	logging[smessage_type] += timestamped_message
+	logging[smessage_type] += list(entry)
 
 	if(client)
-		client.player_details.logging[smessage_type] += timestamped_message
+		client.player_details.logging[smessage_type] += list(entry)
 
-	..()
+	..(message, message_type, color, log_globally)
 
 /mob/proc/can_hear()
 	. = TRUE

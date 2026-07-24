@@ -7,7 +7,6 @@
 		C.mentor_datum_set(TRUE)
 
 /datum/admins/disassociate()
-	if(owner)
-		owner.remove_mentor_verbs()
-		owner.mentor_datum = null
+	if(owner && owner.mentor_datum)
+		owner.mentor_datum.remove_mentor()
 	..()

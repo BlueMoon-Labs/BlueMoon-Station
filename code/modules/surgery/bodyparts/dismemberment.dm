@@ -22,7 +22,8 @@
 	if(!harmless)
 		C.emote("realagony")
 		SEND_SIGNAL(C, COMSIG_ADD_MOOD_EVENT, "dismembered", /datum/mood_event/dismembered)
-	else C.emote("pain")
+	else
+		C.emote("pain")
 	drop_limb()
 	C.update_equipment_speed_mods() // Update in case speed affecting item unequipped by dismemberment
 
@@ -192,6 +193,7 @@
   * * bare_wound_bonus: ditto above
   */
 /obj/item/bodypart/proc/try_dismember(wounding_type, wounding_dmg, wound_bonus, bare_wound_bonus)
+	. = FALSE
 	if(wounding_dmg < DISMEMBER_MINIMUM_DAMAGE)
 		return
 
@@ -203,9 +205,7 @@
 		return
 
 	var/datum/wound/loss/dismembering = new
-	dismembering.apply_dismember(src, wounding_type)
-
-	return TRUE
+	return dismembering.apply_dismember(src, wounding_type)
 
 //when a limb is dropped, the internal organs are removed from the mob and put into the limb
 /obj/item/organ/proc/transfer_to_limb(obj/item/bodypart/LB, mob/living/carbon/C)

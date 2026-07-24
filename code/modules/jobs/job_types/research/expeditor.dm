@@ -25,6 +25,8 @@
 	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/prosopagnosia, /datum/quirk/insanity)
 	threat = 2
 	alt_titles = list(
+		"Junior Expeditor", //Стажер выше, для удобства
+		"Expeditor Trainee", //Стажер выше, для удобства
 		"Space Explorer",
 		"Space Expeditor",
 		"Sexplorer",

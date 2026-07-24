@@ -122,11 +122,17 @@
 		flush_queue |= window.send_asset(asset)
 	//initialize/send_asset спят на отправке ресурсов: за это время датум могли
 	//qdel-нуть (логаут, удаление src_object) - Destroy() обнуляет user
-	if(QDELETED(src) || !user?.client)
+	if(QDELETED(src))
+		return FALSE
+	if(!user?.client)
+		close(can_be_suspended = FALSE)
 		return FALSE
 	if (flush_queue)
 		user.client.browse_queue_flush()
-	if(QDELETED(src) || !user?.client)
+	if(QDELETED(src))
+		return FALSE
+	if(!user?.client)
+		close(can_be_suspended = FALSE)
 		return FALSE
 	window.send_message("update", get_payload(
 		with_data = TRUE,

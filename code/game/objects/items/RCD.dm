@@ -560,8 +560,7 @@ RLD
 	if(has_ammobar)
 		var/ratio = CEILING((matter / max_matter) * ammo_sections, 1)
 		if(ratio)
-			cut_overlays()	//To prevent infinite stacking of overlays
-			add_overlay("[icon_state]_charge[ratio]")
+			. += "[icon_state]_charge[ratio]"
 
 /obj/item/construction/rcd/Initialize(mapload)
 	. = ..()

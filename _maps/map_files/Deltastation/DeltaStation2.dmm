@@ -31428,7 +31428,7 @@
 /obj/structure/table/wood,
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_x = -30;
+	pixel_x = -30
 	},
 /turf/open/floor/plasteel/dark/textured,
 /area/security/prison/upper)
@@ -64257,6 +64257,7 @@
 /obj/effect/turf_decal/bot/yellow,
 /obj/item/paper_bin,
 /obj/item/pen,
+/obj/item/paicard,
 /turf/open/floor/plasteel,
 /area/command/heads_quarters/rd)
 "fHs" = (
@@ -65320,7 +65321,7 @@
 	},
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_x = -30;
+	pixel_x = -30
 	},
 /turf/open/floor/plasteel/dark/textured,
 /area/security/prison/upper)
@@ -80940,6 +80941,8 @@
 /obj/effect/turf_decal/tile/brown{
 	dir = 4
 	},
+/obj/item/clipboard,
+/obj/item/toy/figure/qm,
 /turf/open/floor/plasteel,
 /area/cargo/qm)
 "kfk" = (
@@ -85097,6 +85100,17 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/science/mixing)
+"ltj" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 4
+	},
+/obj/structure/table/wood,
+/obj/machinery/fax{
+	fax_name = "Head of Security office";
+	name = "Head of Security Fax Machine"
+	},
+/turf/open/floor/wood,
+/area/command/heads_quarters/hos)
 "ltK" = (
 /obj/structure/cable/white{
 	icon_state = "4-8"
@@ -87401,6 +87415,10 @@
 	},
 /obj/structure/cable/white{
 	icon_state = "0-2"
+	},
+/obj/machinery/fax{
+	fax_name = "Chief Engineer office";
+	name = "Chief Engineer Fax Machine"
 	},
 /turf/open/floor/plasteel/dark,
 /area/command/heads_quarters/ce)
@@ -94303,6 +94321,7 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
+/obj/item/paper_bin,
 /turf/open/floor/plasteel/white,
 /area/command/heads_quarters/cmo)
 "nRr" = (
@@ -98878,7 +98897,7 @@
 	},
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_x = 30;
+	pixel_x = 30
 	},
 /turf/open/floor/plasteel,
 /area/security/prison/upper)
@@ -103184,6 +103203,18 @@
 	},
 /turf/open/floor/plasteel,
 /area/medical/medbay/central)
+"qsb" = (
+/obj/structure/cable/white{
+	icon_state = "4-8"
+	},
+/obj/structure/disposalpipe/segment,
+/obj/structure/table/wood,
+/obj/machinery/fax{
+	fax_name = "Head of Personal office";
+	name = "Head of Personal fax"
+	},
+/turf/open/floor/plasteel/grimy,
+/area/command/heads_quarters/hop)
 "qsc" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/closet/secure_closet/atmospherics,
@@ -103563,13 +103594,15 @@
 /area/security/brig_briefing)
 "qxj" = (
 /obj/structure/table,
-/obj/item/clipboard,
-/obj/item/toy/figure/qm,
 /obj/effect/turf_decal/tile/brown{
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/brown{
 	dir = 4
+	},
+/obj/machinery/fax{
+	fax_name = "Quartermaster Office";
+	name = "Quartermaster Office"
 	},
 /turf/open/floor/plasteel,
 /area/cargo/qm)
@@ -117304,7 +117337,6 @@
 /obj/structure/cable/white{
 	icon_state = "4-8"
 	},
-/obj/item/paper_bin,
 /obj/effect/turf_decal/tile/blue{
 	dir = 4
 	},
@@ -117313,6 +117345,11 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/fax{
+	fax_name = "Chief Medical Officer's Office";
+	name = "Chief Medical Officer's Fax Machine";
+	pixel_y = 4
+	},
 /turf/open/floor/plasteel/white,
 /area/command/heads_quarters/cmo)
 "urG" = (
@@ -122582,8 +122619,6 @@
 /area/security/prison/cells)
 "vRk" = (
 /obj/structure/table/reinforced,
-/obj/item/folder/white,
-/obj/item/paicard,
 /obj/machinery/airalarm{
 	dir = 4;
 	pixel_x = -23
@@ -122592,6 +122627,10 @@
 	pixel_y = 32
 	},
 /obj/effect/turf_decal/bot/yellow,
+/obj/machinery/fax{
+	fax_name = "Office of the Director of Research";
+	name = "Fax machine of the Director of Research"
+	},
 /turf/open/floor/plasteel,
 /area/command/heads_quarters/rd)
 "vRl" = (
@@ -126528,7 +126567,7 @@
 "wWP" = (
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_x = -30;
+	pixel_x = -30
 	},
 /turf/open/floor/plasteel/dark/textured,
 /area/security/prison/upper)
@@ -129881,7 +129920,9 @@
 "xUP" = (
 /obj/structure/table/wood,
 /obj/item/storage/photo_album,
+/obj/item/clipboard,
 /obj/item/camera,
+/obj/item/toy/figure/captain,
 /turf/open/floor/wood,
 /area/command/heads_quarters/captain)
 "xUS" = (
@@ -130968,8 +131009,10 @@
 /area/command/corporate_showroom)
 "ykR" = (
 /obj/structure/table/wood,
-/obj/item/clipboard,
-/obj/item/toy/figure/captain,
+/obj/machinery/fax{
+	fax_name = "Captain's office";
+	name = "Captain's fax"
+	},
 /turf/open/floor/wood,
 /area/command/heads_quarters/captain)
 "yle" = (
@@ -167187,7 +167230,7 @@ xmR
 qTU
 xmR
 wGq
-xmR
+qsb
 kxP
 pnQ
 gEc
@@ -189029,7 +189072,7 @@ dbJ
 nDr
 dSu
 mhP
-kjo
+ltj
 nBQ
 byj
 gCu

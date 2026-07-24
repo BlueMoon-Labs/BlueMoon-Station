@@ -332,7 +332,7 @@
 	if(ismob(firer))
 		log_combat(firer, L, "shot", src, reagent_note)
 	else
-		L.log_message("has been shot by [firer] with [src]", LOG_ATTACK, color="orange")
+		L.log_message("has been shot by [firer] with [src]", LOG_ATTACK, color="orange", target = firer)
 
 	return L.apply_effects(stun, knockdown, unconscious, irradiate, slur, stutter, eyeblur, drowsy, blocked, stamina, jitter, knockdown_stamoverride, knockdown_stam_max)
 
