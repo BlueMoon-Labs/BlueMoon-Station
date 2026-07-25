@@ -362,8 +362,11 @@
 	//SHOULD_CALL_PARENT(TRUE)
 	if(mover.pass_flags & pass_flags_self)
 		return TRUE
-	if(mover.throwing && (pass_flags_self & LETPASSTHROW))
-		return TRUE
+	if(mover.throwing)
+		if(pass_flags_self & LETPASSTHROW)
+			return TRUE
+		if(mover.throwing.thrower == src)
+			return TRUE
 	return !density
 
 /**
