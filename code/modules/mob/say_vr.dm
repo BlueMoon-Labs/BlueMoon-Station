@@ -252,10 +252,18 @@
 		for(var/mob/living/L in oview(work_distance, user))
 			LAZYADD(possible_target, L)
 
+		if(isliving(user.loc))
+			LAZYADD(possible_target, user.loc)
+		else if(isliving(user.loc?.loc))
+			LAZYADD(possible_target, user.loc.loc)
+		else if(istype(user.loc, /obj/belly))
+			var/obj/belly/belly = user.loc
+			LAZYADD(possible_target, belly.owner || (isliving(belly.loc) && belly.loc))
+
 		if(possible_target.len > 13) // Много целей, TGUI с поиском
 			target = tgui_input_list(user, "Выберете персонажа, который увидит ваши действия", "Выбор персонажа", possible_target)
 		else // Радиальное меню
-			for(var/mob/living/listed in possible_target)
+			for(var/mob/living/listed as anything in possible_target)
 				possible_target[listed] = new /mutable_appearance(listed)
 
 			if(!possible_target || !possible_target.len)
