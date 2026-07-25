@@ -44,11 +44,13 @@
 	nonlethal_headshot_brain_damage = KS23_RUBBER_HEAD_BRAIN_DAMAGE
 	nonlethal_headshot_chance = KS23_RUBBER_HEAD_EFFECT_CHANCE
 
-/obj/item/projectile/bullet/pellet/buckshot23 // КС-23 боевая дробь — BR1, дробь не пробивает броню хорошо но хоть что-то
+// Стартовые AP для пеллетов — высокие, но быстро падают через Range()
+// КС-23 боевая дробь — BR3 в упор (шьёт бронежилет), BR0 на 4+ тайлах
+/obj/item/projectile/bullet/pellet/buckshot23
 	name = "23 buckshot pellet"
 	damage = 12
 	stamina = 8
-	armour_penetration = BULLET_BR1   // BLUEMOON ADD: явно BR1(10)
+	armour_penetration = 35    // BLUEMOON EDIT: было BR1(10) → 35 (BR3 в упор, падает быстро)
 	wound_bonus = 5
 	bare_wound_bonus = 5
 	wound_falloff_tile = -2.5

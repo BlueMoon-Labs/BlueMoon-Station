@@ -11,11 +11,10 @@
 /obj/item/projectile/bullet/c45/lethal
 	name = ".45 bullet"
 	damage = 25
-	armour_penetration = BULLET_BR1   // BLUEMOON ADD: боевой .45 = BR1
-	wound_bonus = 6
-	stamina = 0
+	armour_penetration = BULLET_BR1
+	wound_bonus = 15
+	bare_wound_bonus = 20 // Пуля тяжелая, должна делать бо-бо
 	wound_falloff_tile = -10
-	sharpness = SHARP_NONE
 
 
 /obj/item/projectile/bullet/c45/hydra

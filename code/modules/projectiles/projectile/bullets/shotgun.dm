@@ -104,6 +104,7 @@
 /obj/item/projectile/bullet/pellet
 	var/tile_dropoff = 0.45
 	var/tile_dropoff_s = 1.25
+	var/tile_dropoff_ap = 8    // BLUEMOON ADD
 
 // Стандартная дробь 12g — BR1
 /obj/item/projectile/bullet/pellet/shotgun_buckshot
@@ -129,6 +130,10 @@
 		damage -= tile_dropoff
 	if(stamina > 0)
 		stamina -= tile_dropoff_s
+	// BLUEMOON ADD START - AP дропофф: высокое пробитие в упор, падает до нуля на дистанции
+	if(armour_penetration > 0)
+		armour_penetration = max(0, armour_penetration - tile_dropoff_ap)
+	// BLUEMOON ADD END
 	if(damage < 0 && stamina < 0)
 		qdel(src)
 

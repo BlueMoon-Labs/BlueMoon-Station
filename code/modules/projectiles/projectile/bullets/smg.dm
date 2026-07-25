@@ -73,9 +73,9 @@
 	name = "4.6x30mm bullet"
 	damage = 19
 	armour_penetration = BULLET_BR2   // BLUEMOON EDIT: было 0 → BR2(20)
-	wound_bonus = 10                    // BLUEMOON EDIT: было -5 → 10
-	bare_wound_bonus = 5
-	embed_falloff_tile = -4
+	wound_bonus = 15                    // BLUEMOON EDIT: было -5 → 15
+	bare_wound_bonus = 10
+	embed_falloff_tile = -1
 
 /obj/item/projectile/bullet/c46x30mm_ap
 	name = "4.6x30mm armor-piercing bullet"

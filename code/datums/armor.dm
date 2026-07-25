@@ -32,7 +32,7 @@
 #define BULLET_BR3  35   // 7.62x39 FMJ, SAW, AP для PDW
 #define BULLET_BR4  50   // AP патроны штурмовок, .50 базовый
 #define BULLET_BR5  65   // .50 снайпер, тяжёлые AP
-#define BULLET_BR6  80   // противоматериальный (зарезервировано)
+#define BULLET_BR6  100   // противоматериальный
 
 /proc/getArmor(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0, rad = 0, fire = 0, acid = 0, magic = 0, wound = 0)
 	. = locate(ARMORID)
