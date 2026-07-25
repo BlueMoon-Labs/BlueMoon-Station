@@ -3370,8 +3370,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						phobia_type = null
 					else
 						phobia_type = new_choice
-					save_preferences(silent = TRUE)
-					save_character(silent = TRUE)
 				if(is_inline_quirks)
 					ShowChoices(user)
 				else
