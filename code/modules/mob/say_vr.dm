@@ -90,7 +90,7 @@
 		to_chat(user, "You cannot send IC messages (muted).")
 		return FALSE
 	else if(!params)
-		var/subtle_emote = "" 
+		var/subtle_emote = ""
 		if(user.client?.prefs.tgui_input_verbs)
 			subtle_emote = tgui_input_text(user, "Введите сообщение, которое увидят персонажи в упор к вам. Призраки его не увидят.", "Введите скрытое сообщение", null, MAX_MESSAGE_LEN, TRUE, TRUE)
 		else
@@ -254,11 +254,11 @@
 
 		if(isliving(user.loc))
 			LAZYADD(possible_target, user.loc)
-		else if(isliving(user.loc?.loc))
+		if(isliving(user.loc?.loc))
 			LAZYADD(possible_target, user.loc.loc)
-		else if(istype(user.loc, /obj/belly))
+		if(istype(user.loc, /obj/belly))
 			var/obj/belly/belly = user.loc
-			LAZYADD(possible_target, belly.owner || (isliving(belly.loc) && belly.loc))
+			LAZYOR(possible_target, belly.owner || (isliving(belly.loc) && belly.loc))
 
 		if(possible_target.len > 13) // Много целей, TGUI с поиском
 			target = tgui_input_list(user, "Выберете персонажа, который увидит ваши действия", "Выбор персонажа", possible_target)
