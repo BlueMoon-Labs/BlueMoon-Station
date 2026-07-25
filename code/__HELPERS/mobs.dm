@@ -562,6 +562,9 @@ GLOBAL_LIST_EMPTY(species_datums)
 
 #define IS_IN_STASIS(mob) (mob.has_status_effect(/datum/status_effect/grouped/stasis))
 
+#define IS_BOLA_ENSNARED(mob) (mob.has_status_effect(/datum/status_effect/bola_snared))
+#define IS_BEARTRAP_ENSNARED(mob) (mob.has_status_effect(/datum/status_effect/beartrap_ensnared))
+
 /proc/set_criminal_status(mob/living/user, datum/data/record/target_records , criminal_status, comment, user_rank, list/authcard_access = list(), user_name)
 	var/status = criminal_status
 	var/old_status = target_records.fields["criminal"] // BLUEMOON ADD - логгирование
