@@ -208,6 +208,9 @@
 	if(isliving(AM))
 		set_bling(AM, TRUE)
 
+/obj/belly/get_remote_view_fullscreens(mob/user)
+	user.overlay_fullscreen("remote_view", /atom/movable/screen/fullscreen/scaled/impaired, 1)
+
 /obj/belly/proc/set_bling(mob/living/target, clear)
 	if(!istype(target))
 		return
