@@ -127,7 +127,3 @@
 	user.handle_post_sex(LOW_LUST, null, user, ORGAN_SLOT_BREASTS)
 	playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/oral1.ogg',
 						'modular_sand/sound/interactions/oral2.ogg'), volume, 1, extrarange)
-
-
-
-
