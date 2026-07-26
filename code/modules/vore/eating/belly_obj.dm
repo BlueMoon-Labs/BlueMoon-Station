@@ -175,7 +175,7 @@
 	var/mob/living/L //for chat messages and blindness
 	if(isliving(thing))
 		L = thing
-		set_bling(L)
+		set_blinding(L)
 	if(OldLoc in contents)
 		return //Someone dropping something (or being stripdigested)
 
@@ -206,12 +206,12 @@
 /obj/belly/Exited(atom/movable/AM, atom/newloc)
 	. = ..()
 	if(isliving(AM))
-		set_bling(AM, TRUE)
+		set_blinding(AM, TRUE)
 
 /obj/belly/get_remote_view_fullscreens(mob/user)
 	user.overlay_fullscreen("remote_view", /atom/movable/screen/fullscreen/scaled/impaired, 1)
 
-/obj/belly/proc/set_bling(mob/living/target, clear)
+/obj/belly/proc/set_blinding(mob/living/target, clear)
 	if(!istype(target))
 		return
 	if(isnull(clear))

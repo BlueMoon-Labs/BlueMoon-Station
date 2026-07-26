@@ -526,7 +526,7 @@
 			var/obj/belly/belly = host.vore_selected
 			belly.can_victim_see = !belly.can_victim_see
 			for(var/mob/living/L in belly.contents)
-				belly.set_bling(L)
+				belly.set_blinding(L)
 			. = TRUE
 		if("b_mode")
 			var/list/menu_list = host.vore_selected.digest_modes.Copy()
