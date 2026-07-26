@@ -521,33 +521,32 @@
 	if(is_refillable() && O.is_drainable())
 		return FALSE
 
-	// Ручная обработка стэков материалов
+	if(O.force > 0)
+		user.visible_message(span_danger("[user] hits [src] with [O]!"), span_danger("You hit [src] with [O]!"))
+		take_damage(O.force, BRUTE, MELEE, 1)
+		return TRUE
+
 	if(istype(O, /obj/item/stack))
 		var/obj/item/stack/S = O
 		var/datum/component/material_container/materials = GetComponent(/datum/component/material_container)
 		if(!materials)
 			to_chat(user, span_warning("No material storage component!"))
 			return TRUE
-
 		if(!S.custom_materials || !length(S.custom_materials))
 			to_chat(user, span_warning("This stack has no defined materials!"))
 			return TRUE
-
 		var/list/mats_to_add = list()
 		var/total_to_add = 0
 		for(var/mat_type in S.custom_materials)
 			var/total_amount = S.custom_materials[mat_type]
 			mats_to_add[mat_type] = total_amount
 			total_to_add += total_amount
-
 		if(materials.total_amount + total_to_add > materials.max_amount)
 			to_chat(user, span_warning("Not enough space in [src]!"))
 			return TRUE
-
 		for(var/mat_type in mats_to_add)
 			materials.materials[mat_type] += mats_to_add[mat_type]
 			materials.total_amount += mats_to_add[mat_type]
-
 		qdel(S)
 		to_chat(user, span_notice("You insert [O] into [src]."))
 		SStgui.update_uis(src)
@@ -556,7 +555,7 @@
 	if(Insert_Item(O, user))
 		return TRUE
 
-	return ..()
+	return TRUE
 
 /obj/machinery/ammo_workbench/proc/Insert_Item(obj/item/O, mob/living/user)
 	if(user.combat_mode)
