@@ -268,13 +268,13 @@
 			for(var/mob/living/listed as anything in possible_target)
 				possible_target[listed] = new /mutable_appearance(listed)
 
-			if(!possible_target || !possible_target.len)
+			if(!LAZYLEN(possible_target))
 				to_chat(user, span_warning("No target around."))
 				return FALSE
 
 			target = possible_target.len == 1 ? possible_target[1] : show_radial_menu(user, user, possible_target, radius = 40)
 
-		if(!target)
+		if(QDELETED(target))
 			return FALSE
 
 	var/target_name = target.get_visible_name()
@@ -303,7 +303,7 @@
 	message = "<span class='emote'><b>[user]</b> <i>[user.say_emphasis(message)]</i></span>"
 
 	// Отправка сообщений
-	if(target in view(work_distance, user))
+	if(!QDELETED(target) && get_dist(user, target) <= work_distance)
 		to_chat(target, "[span_nicegreen("Ты замечаешь, как")] [message]")
 		// Логи
 		user.log_message("[message] (SUBTLER-TARGET to [target.name])", LOG_SUBTLER)
