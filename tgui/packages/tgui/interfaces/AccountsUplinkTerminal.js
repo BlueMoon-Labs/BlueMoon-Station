@@ -324,9 +324,9 @@ const CreateAccount = (_props) => {
         <LabeledList.Item label="Account Holder">
           <Input placeholder="Name Here" onChange={(e, v) => setAccName(v)} />
         </LabeledList.Item>
-        <LabeledList.Item label="Initial Deposit">
+        {/* <LabeledList.Item label="Initial Deposit">
           <Input placeholder="0" onChange={(e, v) => setAccDeposit(v)} />
-        </LabeledList.Item>
+        </LabeledList.Item> */}
       </LabeledList>
       <Button
         mt={1}

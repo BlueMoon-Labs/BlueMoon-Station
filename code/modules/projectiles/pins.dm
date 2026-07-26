@@ -324,7 +324,7 @@
 	. += overlay
 
 /obj/item/firing_pin/security_level/pin_auth(mob/living/user)
-	return (only_lethals && !(gun.chambered?.harmful)) || ISINRANGE(GLOB.security_level, min_sec_level, max_sec_level)
+	return !gun.chambered || (only_lethals && !(gun.chambered.harmful)) || ISINRANGE(GLOB.security_level, min_sec_level, max_sec_level)
 
 // Explorer Firing Pin- Prevents use on station Z-Level, so it's justifiable to give Explorers guns that don't suck.
 /obj/item/firing_pin/explorer

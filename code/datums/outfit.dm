@@ -284,7 +284,7 @@
 		// Активируем пермиты
 		if(istype(H.w_uniform, /obj/item/clothing/under))
 			var/obj/item/clothing/under/U = H.w_uniform
-			for(var/obj/item/clothing/accessory/permit/special/permit in U.attached_accessories)
+			for(var/obj/item/clothing/accessory/permit/special/permit in U.accessories_attached)
 				if(permit.first_inited)
 					continue
 				permit.bind_to_user(H, TRUE)

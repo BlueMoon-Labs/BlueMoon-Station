@@ -42,11 +42,11 @@
 	uniform.armor = getArmor(10)
 	accessory.armor = getArmor(5)
 	TEST_ASSERT(accessory.attach(uniform, null), "Не удалось прикрепить тестовый аксессуар")
-	TEST_ASSERT(accessory in uniform.attached_accessories, "Прикреплённый аксессуар не попал в список униформы")
+	TEST_ASSERT(accessory in uniform.accessories_attached, "Прикреплённый аксессуар не попал в список униформы")
 	TEST_ASSERT_EQUAL(uniform.armor.get_rating(MELEE), 15, "Аксессуар не добавил броню униформе")
 
 	qdel(accessory)
-	TEST_ASSERT(!(accessory in uniform.attached_accessories), "Удалённый аксессуар остался в списке униформы")
+	TEST_ASSERT(!(accessory in uniform.accessories_attached), "Удалённый аксессуар остался в списке униформы")
 	TEST_ASSERT_EQUAL(uniform.armor.get_rating(MELEE), 10, "Удалённый аксессуар оставил бонус брони на униформе")
 
 /// Security-запись может заимствовать фото general-записи и не владеет им.

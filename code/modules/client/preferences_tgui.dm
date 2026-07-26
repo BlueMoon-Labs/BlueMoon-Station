@@ -28,6 +28,8 @@
 	.["sound_emote"] = !!(toggles & SOUND_EMOTE)
 	.["sound_prayers"] = !!(toggles & SOUND_PRAYERS)
 	.["sound_adminhelp"] = !!(toggles & SOUND_ADMINHELP)
+	.["sound_mentorhelp"] = !!(mentor_toggles & SOUND_MENTORHELP)
+	.["sound_fax"] = !!(toggles & SOUND_FAX)
 
 	// Sound volumes
 	.["sound_volume_midi"] = sound_volume_midi
@@ -37,6 +39,8 @@
 	.["sound_volume_bark"] = sound_volume_bark
 	.["sound_volume_prayers"] = sound_volume_prayers
 	.["sound_volume_adminhelp"] = sound_volume_adminhelp
+	.["sound_volume_mentorhelp"] = sound_volume_mentorhelp
+	.["sound_volume_fax"] = sound_volume_fax
 	.["sound_volume_instruments"] = sound_volume_instruments
 	.["sound_volume_jukeboxes"] = sound_volume_jukeboxes
 	.["sound_volume_emote"] = sound_volume_emote
@@ -101,6 +105,11 @@
 	.["has_admin"] = !!check_rights_for(user?.client, R_ADMIN)
 	if(.["has_admin"])
 		.["deadmin"] = deadmin
+
+	// Mentor
+	.["has_mentor"] = !!user?.client?.is_mentor()
+	if(.["has_mentor"])
+		.["dementor_on_login"] = !!(mentor_toggles & DEMENTOR_ON_LOGIN)
 
 	// Antag roles
 	var/list/antag_roles = list()
@@ -258,7 +267,13 @@
 					toggles ^= SOUND_PRAYERS
 				if("sound_adminhelp")
 					toggles ^= SOUND_ADMINHELP
+				if("sound_mentorhelp")
+					mentor_toggles ^= SOUND_MENTORHELP
+				if("sound_fax")
+					toggles ^= SOUND_FAX
 			save_preferences()
+			tgui_or_html_refresh(user)
+			return TRUE
 
 		// Sound volumes
 		if("set_volume")
@@ -267,6 +282,8 @@
 			if(copytext(flag, 1, 14) == "sound_volume_" && (flag in vars))
 				vars[flag] = value
 				save_preferences()
+			tgui_or_html_refresh(user)
+			return TRUE
 
 		// Graphics toggles
 		if("toggle_gfx")
@@ -359,6 +376,7 @@
 				if("auto_capitalize_enabled")
 					auto_capitalize_enabled = !auto_capitalize_enabled
 			save_preferences()
+			return TRUE
 
 		// Gameplay toggles
 		if("toggle_gameplay")
@@ -389,6 +407,7 @@
 				if("disable_combat_mouse_lock")
 					disable_combat_mouse_lock = !disable_combat_mouse_lock
 			save_preferences()
+			return TRUE
 
 		// Antag role toggles
 		if("toggle_antag")
@@ -423,6 +442,17 @@
 				if("deadmin_silicon")
 					deadmin ^= DEADMIN_POSITION_SILICON
 			save_preferences()
+			return TRUE
+
+		if("toggle_mentor")
+			if(!usr.client?.is_mentor())
+				return TRUE
+			var/flag = params["flag"]
+			switch(flag)
+				if("dementor_on_login")
+					mentor_toggles ^= DEMENTOR_ON_LOGIN
+			save_preferences()
+			return TRUE
 
 		if("set_screenshake")
 			var/flag = params["flag"]

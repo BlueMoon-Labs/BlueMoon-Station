@@ -12,7 +12,6 @@
 /datum/station_trait/radiation_contamination/New()
 	. = ..()
 	RegisterSignal(SSdcs, COMSIG_GLOB_JOB_AFTER_SPAWN, PROC_REF(on_job_roundstart_spawn))
-	RegisterSignal(SSdcs, COMSIG_GLOB_JOB_AFTER_LATEJOIN_SPAWN, PROC_REF(on_job_latejoin_spawn))
 
 /datum/station_trait/radiation_contamination/revert()
 	for(var/atom/A as anything in contamination_atoms)
@@ -119,10 +118,6 @@
 	SIGNAL_HANDLER
 	INVOKE_ASYNC(src, PROC_REF(apply_response_gear), job, spawned)
 
-/datum/station_trait/radiation_contamination/proc/on_job_latejoin_spawn(datum/source, datum/job/job, mob/living/spawned)
-	SIGNAL_HANDLER
-	INVOKE_ASYNC(src, PROC_REF(apply_response_gear), job, spawned)
-
 /datum/station_trait/radiation_contamination/proc/apply_response_gear(datum/job/job, mob/living/L)
 	if(!job || !L || QDELETED(L))
 		return
@@ -158,10 +153,25 @@
 	to_chat(H, span_warning("Из-за радиационной аномалии вам выдано защитное снаряжение и метла ликвидатора."))
 
 /datum/station_trait/radiation_contamination/proc/strip_rad_response_slots(mob/living/carbon/human/H)
+	if(!istype(H))
+		return
 	for(var/slot in list(ITEM_SLOT_OCLOTHING, ITEM_SLOT_HEAD, ITEM_SLOT_MASK, ITEM_SLOT_GLOVES, ITEM_SLOT_FEET, ITEM_SLOT_SUITSTORE))
 		var/obj/item/I = H.get_item_by_slot(slot)
-		if(I)
-			H.dropItemToGround(I, force = TRUE)
+		if(!I)
+			continue
+		H.dropItemToGround(I, TRUE, TRUE, FALSE)
+		var/obj/item/storage/backpack/storage = H.get_item_by_slot(ITEM_SLOT_BACK)
+		if(!istype(storage)) // В теории такого быть не должно
+			storage = new
+			if(!H.equip_to_slot_if_possible(storage, ITEM_SLOT_BACK, disable_warning = TRUE, bypass_equip_delay_self = TRUE))
+				if(!H.put_in_hands(storage, FALSE))
+					// Если не смогли, помещаем все предметы в руках в сумку, т.к. выкидывать на пол нельзя, ибо персонаж спавниться в ЦК зоне
+					var/list/temp_items = LAZYCOPY(H.held_items)
+					for(var/obj/item/item_in_hand in temp_items)
+						if(H.temporarilyRemoveItemFromInventory(item_in_hand))
+							SEND_SIGNAL(storage, COMSIG_TRY_STORAGE_INSERT, item_in_hand, null, TRUE, TRUE)
+				H.put_in_hands(storage, FALSE, forced = TRUE)
+		SEND_SIGNAL(storage, COMSIG_TRY_STORAGE_INSERT, I, null, TRUE, TRUE)
 
 /// Returns suit, head, mask, gloves, shoes, tank types for new().
 /datum/station_trait/radiation_contamination/proc/get_response_outfit_slots(datum/job/job, mob/living/carbon/human/H)
@@ -189,18 +199,18 @@
 				command_advance = TRUE
 
 		if(command_advance)
-			.["suit"] = new suit_path(H)
-			.["head"] = new /obj/item/clothing/head/helmet/cbrn/mopp/advance(H)
-			.["mask"] = new /obj/item/clothing/mask/gas/sechailer/mopp/advance(H)
-			.["gloves"] = new /obj/item/clothing/gloves/cbrn/mopp/advance(H)
-			.["shoes"] = new /obj/item/clothing/shoes/jackboots/cbrn/mopp/advance(H)
+			.["suit"] = new suit_path
+			.["head"] = new /obj/item/clothing/head/helmet/cbrn/mopp/advance
+			.["mask"] = new /obj/item/clothing/mask/gas/sechailer/mopp/advance
+			.["gloves"] = new /obj/item/clothing/gloves/cbrn/mopp/advance
+			.["shoes"] = new /obj/item/clothing/shoes/jackboots/cbrn/mopp/advance
 		else
-			.["suit"] = new suit_path(H)
-			.["head"] = new /obj/item/clothing/head/helmet/cbrn/mopp(H)
-			.["mask"] = new /obj/item/clothing/mask/gas/sechailer/mopp(H)
-			.["gloves"] = new /obj/item/clothing/gloves/cbrn/mopp(H)
-			.["shoes"] = new /obj/item/clothing/shoes/jackboots/cbrn/mopp(H)
-		.["tank"] = new chosen_tank_path(H)
+			.["suit"] = new suit_path
+			.["head"] = new /obj/item/clothing/head/helmet/cbrn/mopp
+			.["mask"] = new /obj/item/clothing/mask/gas/sechailer/mopp
+			.["gloves"] = new /obj/item/clothing/gloves/cbrn/mopp
+			.["shoes"] = new /obj/item/clothing/shoes/jackboots/cbrn/mopp
+		.["tank"] = new chosen_tank_path
 		return
 
 	var/suit_type = /obj/item/clothing/suit/cbrn
@@ -229,12 +239,12 @@
 		suit_type = /obj/item/clothing/suit/cbrn/service
 		hood_type = /obj/item/clothing/head/helmet/cbrn/serv
 
-	.["suit"] = new suit_type(H)
-	.["head"] = new hood_type(H)
-	.["mask"] = new /obj/item/clothing/mask/gas/cbrn(H)
-	.["gloves"] = new gloves_type(H)
-	.["shoes"] = new /obj/item/clothing/shoes/jackboots/cbrn(H)
-	.["tank"] = new chosen_tank_path(H)
+	.["suit"] = new suit_type
+	.["head"] = new hood_type
+	.["mask"] = new /obj/item/clothing/mask/gas/cbrn
+	.["gloves"] = new gloves_type
+	.["shoes"] = new /obj/item/clothing/shoes/jackboots/cbrn
+	.["tank"] = new chosen_tank_path
 
 /datum/station_trait/radiation_contamination/proc/pick_internals_tank(mob/living/carbon/human/H)
 	if(is_species(H, /datum/species/plasmaman))

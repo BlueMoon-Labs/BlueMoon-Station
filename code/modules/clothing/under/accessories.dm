@@ -37,59 +37,59 @@
 	detached_pockets = null
 	return ..()
 
-/obj/item/clothing/accessory/proc/attach(obj/item/clothing/under/U, user)
+/obj/item/clothing/accessory/proc/attach(obj/item/clothing/cloth, user)
 	var/datum/component/storage/storage = GetComponent(/datum/component/storage)
 	if(storage)
-		// if(SEND_SIGNAL(U, COMSIG_CONTAINS_STORAGE)) - не работает. Parent меняется, но сигналы не реагируют.
-		if(U.GetComponent(/datum/component/storage))
+		// if(SEND_SIGNAL(cloth, COMSIG_CONTAINS_STORAGE)) - не работает. Parent меняется, но сигналы не реагируют.
+		if(cloth.GetComponent(/datum/component/storage))
 			return FALSE
-		U.TakeComponent(storage)
+		cloth.TakeComponent(storage)
 		detached_pockets = storage
 	//SKYRAT EDIT
-	U.attached_accessories |= src
-	force_unto(U)
-	current_uniform = U
+	cloth.accessories_attached |= src
+	force_unto(cloth)
+	current_uniform = cloth
 	//SKYRAT EDIT END
-	forceMove(U)
+	forceMove(cloth)
 
 	layer = NECK_LAYER
 	plane = FLOAT_PLANE
 
-	if (islist(U.armor) || isnull(U.armor)) 										// This proc can run before /obj/Initialize has run for U and src,
-		U.armor = getArmor(arglist(U.armor))	// we have to check that the armor list has been transformed into a datum before we try to call a proc on it
+	if (islist(cloth.armor) || isnull(cloth.armor)) 										// This proc can run before /obj/Initialize has run for cloth and src,
+		cloth.armor = getArmor(arglist(cloth.armor))	// we have to check that the armor list has been transformed into a datum before we try to call a proc on it
 																					// This is safe to do as /obj/Initialize only handles setting up the datum if actually needed.
 	if (islist(armor) || isnull(armor))
 		armor = getArmor(arglist(armor))
 
-	U.armor = U.armor.attachArmor(armor)
+	cloth.armor = cloth.armor.attachArmor(armor)
 
 	if(isliving(user))
-		on_uniform_equip(U, user)
+		on_uniform_equip(cloth, user)
 
 	return TRUE
 
-/obj/item/clothing/accessory/proc/detach(obj/item/clothing/under/U, user)
-	if(detached_pockets && detached_pockets.parent == U)
+/obj/item/clothing/accessory/proc/detach(obj/item/clothing/cloth, user)
+	if(detached_pockets && detached_pockets.parent == cloth)
 		TakeComponent(detached_pockets)
 
-	if(U.armor && armor)
-		U.armor = U.armor.detachArmor(armor)
+	if(cloth.armor && armor)
+		cloth.armor = cloth.armor.detachArmor(armor)
 	//SANDSTORM EDIT
 	current_uniform = null
 	//SANDSTORM EDIT END
 
 	if(isliving(user))
-		on_uniform_dropped(U, user)
+		on_uniform_dropped(cloth, user)
 
-	U.cut_overlay(U.accessory_uniform_overlays)
-	U.accessory_uniform_overlays = list()
-	U.accessory_mob_overlays = list()
-	U.attached_accessories -= src
-	for(var/obj/item/clothing/accessory/attached_accessory in U.attached_accessories)
-		attached_accessory.force_unto(U)
+	cloth.cut_overlay(cloth.accessory_item_overlays)
+	cloth.accessory_item_overlays = list()
+	cloth.accessory_mob_overlays = list()
+	cloth.accessories_attached -= src
+	for(var/obj/item/clothing/accessory/attached_accessory in cloth.accessories_attached)
+		attached_accessory.force_unto(cloth)
 
 /// Обработка наложений для униформы и для спрайта моба
-/obj/item/clothing/accessory/proc/force_unto(obj/item/clothing/under/U)
+/obj/item/clothing/accessory/proc/force_unto(obj/item/clothing/cloth)
 	// Для униформы
 	var/mutable_appearance/accessory_overlay = new /mutable_appearance(src)
 	accessory_overlay.layer = FLOAT_LAYER
@@ -98,35 +98,35 @@
 		accessory_overlay.transform *= 0.5	//halve the size so it doesn't overpower the under
 		accessory_overlay.pixel_x += 8
 		accessory_overlay.pixel_y -= 8
-		if(length(U.attached_accessories) > 1)
-			if(length(U.attached_accessories) <= 3 && !current_uniform)
-				accessory_overlay.pixel_y += 8 * (length(U.attached_accessories) - 1)
-			else if((length(U.attached_accessories) > 3) && (length(U.attached_accessories) <= 6) && !current_uniform)
+		if(length(cloth.accessories_attached) > 1)
+			if(length(cloth.accessories_attached) <= 3 && !current_uniform)
+				accessory_overlay.pixel_y += 8 * (length(cloth.accessories_attached) - 1)
+			else if((length(cloth.accessories_attached) > 3) && (length(cloth.accessories_attached) <= 6) && !current_uniform)
 				accessory_overlay.pixel_x -= 8
-				accessory_overlay.pixel_y += 8 * (length(U.attached_accessories) - 4)
-			else if((length(U.attached_accessories) > 6) && (length(U.attached_accessories) <= 9) && !current_uniform)
+				accessory_overlay.pixel_y += 8 * (length(cloth.accessories_attached) - 4)
+			else if((length(cloth.accessories_attached) > 6) && (length(cloth.accessories_attached) <= 9) && !current_uniform)
 				accessory_overlay.pixel_x -= 16
-				accessory_overlay.pixel_y += 8 * (length(U.attached_accessories) - 7)
+				accessory_overlay.pixel_y += 8 * (length(cloth.accessories_attached) - 7)
 			else
-				if(current_uniform != U)
+				if(current_uniform != cloth)
 					//we ran out of space for accessories, so we just throw shit at the wall
 					accessory_overlay.pixel_x = 0
 					accessory_overlay.pixel_y = 0
 					accessory_overlay.pixel_x += rand(-16, 16)
 					accessory_overlay.pixel_y += rand(-16, 16)
-	U.accessory_uniform_overlays += accessory_overlay
-	U.add_overlay(accessory_overlay)
+	cloth.accessory_item_overlays += accessory_overlay
+	cloth.add_overlay(accessory_overlay)
 	// Для спрайта моба
-	if(isemptylist(U.accessory_mob_overlays)) // без понятия зачем конретно это надо, такой алгоритм был до меня.
-		U.accessory_mob_overlays = list(mutable_appearance('icons/mob/clothing/accessories.dmi', "blank"))
+	if(isemptylist(cloth.accessory_mob_overlays)) // без понятия зачем конретно это надо, такой алгоритм был до меня.
+		cloth.accessory_mob_overlays = list(mutable_appearance('icons/mob/clothing/accessories.dmi', "blank"))
 	var/datum/element/polychromic/polychromic = LAZYACCESS(comp_lookup, "item_worn_overlays")
-	polychromic?.apply_worn_overlays(src, FALSE, mob_overlay_icon, item_state || icon_state, NONE, U.accessory_mob_overlays)
-	U.accessory_mob_overlays += mutable_appearance(mob_overlay_icon, item_state || icon_state, -UNIFORM_LAYER, alpha = src.alpha, color = src.color)
+	polychromic?.apply_worn_overlays(src, FALSE, mob_overlay_icon, item_state || icon_state, NONE, cloth.accessory_mob_overlays)
+	cloth.accessory_mob_overlays += mutable_appearance(mob_overlay_icon, item_state || icon_state, -UNIFORM_LAYER, alpha = src.alpha, color = src.color)
 
-/obj/item/clothing/accessory/proc/on_uniform_equip(obj/item/clothing/under/U, user)
+/obj/item/clothing/accessory/proc/on_uniform_equip(obj/item/clothing/cloth, user)
 	return
 
-/obj/item/clothing/accessory/proc/on_uniform_dropped(obj/item/clothing/under/U, user)
+/obj/item/clothing/accessory/proc/on_uniform_dropped(obj/item/clothing/cloth, user)
 	return
 
 /obj/item/clothing/accessory/CtrlClick(mob/user)
@@ -574,12 +574,12 @@
 		user.say("The testimony contradicts the evidence!", forced = "attorney's badge")
 	user.visible_message("[user] shows [user.p_their()] attorney's badge.", "<span class='notice'>You show your attorney's badge.</span>")
 
-/obj/item/clothing/accessory/lawyers_badge/on_uniform_equip(obj/item/clothing/under/U, user)
+/obj/item/clothing/accessory/lawyers_badge/on_uniform_equip(obj/item/clothing/cloth, user)
 	var/mob/living/L = user
 	if(L)
 		L.bubble_icon = "lawyer"
 
-/obj/item/clothing/accessory/lawyers_badge/on_uniform_dropped(obj/item/clothing/under/U, user)
+/obj/item/clothing/accessory/lawyers_badge/on_uniform_dropped(obj/item/clothing/cloth, user)
 	var/mob/living/L = user
 	if(L)
 		L.bubble_icon = initial(L.bubble_icon)
@@ -594,6 +594,7 @@
 	icon_state = "pocketprotector"
 	pocket_storage_component_path = /datum/component/storage/concrete/pockets/pocketprotector
 	max_stack = 3 // BLUEMOON EDIT - изменение аксессуаров
+	max_stack_path = /obj/item/clothing/accessory/pocketprotector
 
 /obj/item/clothing/accessory/pocketprotector/full/Initialize(mapload)
 	. = ..()

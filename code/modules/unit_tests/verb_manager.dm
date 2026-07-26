@@ -68,14 +68,22 @@
 	TEST_ASSERT(human.put_in_active_hand(held), "test premise: the item must fit the active hand")
 
 	// captured item still held: activates
-	human.execute_mode(held)
+	human.execute_mode(held, human.active_hand_index)
 	TEST_ASSERT_EQUAL(held.activations, 1, "execute_mode with the captured item still held must activate it")
 
-	// hand changed while queued: neither item activates
-	human.execute_mode(other)
+	// hand changed while queued
+	human.execute_mode(held, human.active_hand_index+1)
+	TEST_ASSERT_EQUAL(held.activations, 1, "execute_mode must not activate item while hand is changed")
+
+	// item changed while queued: neither item activates
+	human.execute_mode(other, human.active_hand_index)
 	TEST_ASSERT_EQUAL(held.activations, 1, "execute_mode must not activate the currently held item when it differs from the captured one")
 	TEST_ASSERT_EQUAL(other.activations, 0, "execute_mode must not activate the stale captured item either")
 
 	// pressed with an empty hand, item picked up while queued: no activation
-	human.execute_mode(null)
+	human.execute_mode(null, human.active_hand_index)
 	TEST_ASSERT_EQUAL(held.activations, 1, "execute_mode captured on an empty hand must not activate a later item")
+
+	// force must ignore item and index
+	human.execute_mode(force = TRUE)
+	TEST_ASSERT_EQUAL(held.activations, 2, "execute_mode with force = TRUE must ignore hand checks and activate item")

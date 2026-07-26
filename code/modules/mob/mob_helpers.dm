@@ -679,7 +679,7 @@ It's fairly easy to fix if dealing with single letters but not so much with comp
 	// Переоформление пермитов, если у нас была загрузка из префов
 	if(istype(w_uniform, /obj/item/clothing/under))
 		var/obj/item/clothing/under/U = w_uniform
-		for(var/obj/item/clothing/accessory/permit/special/permit in U.attached_accessories)
+		for(var/obj/item/clothing/accessory/permit/special/permit in U.accessories_attached)
 			if(permit.first_inited && permit.owner_name == real_name)
 				continue
 			permit.bind_to_user(src, TRUE)

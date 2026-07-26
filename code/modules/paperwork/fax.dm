@@ -316,7 +316,9 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
 			LAZYADD(GLOB.centcom_communications_messages, list(message_log))
 			to_chat(GLOB.admins, span_adminnotice("[icon2html(src.icon, GLOB.admins)]<b><font color=green>FAX REQUEST: </font>[ADMIN_FULLMONTY(usr)]:</b> [span_linkify("sent a fax message from [fax_name]/[fax_id][ADMIN_FLW(src)] to [html_encode(params["name"])]")] [ADMIN_SHOW_PAPER(fax_paper)]"), confidential = TRUE)
 			for(var/client/staff as anything in GLOB.admins)
-				SEND_SOUND(staff, sound('sound/misc/server-ready.ogg'))
+				if(staff.prefs?.toggles & SOUND_FAX)
+					var/fax_vol = staff.prefs?.get_sound_volume("fax")
+					SEND_SOUND(staff, sound('sound/misc/server-ready.ogg', volume = fax_vol))
 			log_fax(fax_paper, params["id"], params["name"])
 			loaded_item_ref = null
 			update_appearance()
@@ -403,7 +405,9 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
 	// Уведомление администрации
 	to_chat(GLOB.admins, span_adminnotice("<b><font color=green>ПОЛУЧЕН ФАКС: </font>[sender_name]</b>: [loaded.name]"))
 	for(var/client/staff as anything in GLOB.admins)
-		SEND_SOUND(staff, sound('sound/machines/twobeep_high.ogg'))
+		if(staff.prefs?.toggles & SOUND_FAX)
+			var/fax_vol = staff.prefs?.get_sound_volume("fax")
+			SEND_SOUND(staff, sound('sound/machines/twobeep_high.ogg', volume = fax_vol))
 		if(staff.prefs?.adminhelp_windowflash)
 			window_flash(staff, ignorepref = TRUE)
 
@@ -600,8 +604,30 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
 	if(!istype(paper))
 		return ""
 	var/html = "<div style='padding:8px; font-family:\"Times New Roman\",serif; font-size:14px; line-height:1.5; color:#000; background:#fff;'>"
+	var/list/field_data_map = list()
+	var/list/sorted_field_indices = list()
+	if(LAZYLEN(paper.raw_field_input_data))
+		for(var/datum/paper_field/field in paper.raw_field_input_data)
+			field_data_map["[field.field_index]"] = field.field_data?.raw_text || ""
+			sorted_field_indices += field.field_index
+		sorted_field_indices = sortTim(sorted_field_indices, GLOBAL_PROC_REF(cmp_numeric_asc))
+	var/field_data_pos = 1
 	for(var/datum/paper_input/input as anything in paper.raw_text_inputs)
 		var/text = input.raw_text
+		// Заполнение документов между []
+		if(LAZYLEN(field_data_map))
+			var/search_pos = 1
+			var/start
+			var/end
+			while(search_pos && field_data_pos <= sorted_field_indices.len)
+				start = findtext(text, "\[", search_pos)
+				end = findtext(text, "\]", start)
+				if(!start || !end || end <= start + 1)
+					break
+				var/replacement = field_data_map["[sorted_field_indices[field_data_pos]]"]
+				text = copytext(text, 1, start) + replacement + copytext(text, end + 1)
+				search_pos = start + length(replacement)
+				field_data_pos++
 		if(!input.advanced_html)
 			text = html_encode(text)
 			text = replacetext(text, "\n", "<br>")

@@ -99,6 +99,8 @@
 							/obj/item/choice_beacon/copgun,
 							/obj/item/syndicate_uplink/station=1
 							)
+
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/med
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/med
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/med
