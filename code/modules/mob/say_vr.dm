@@ -308,7 +308,7 @@
 		// Логи
 		user.log_message("[message] (SUBTLER-TARGET to [target.name])", LOG_SUBTLER)
 	else
-		to_chat(user, span_alert("[target_name] удалился слишком далеко и не увидел твои действия."))
+		to_chat(user, span_alert("[target_name] удали[target.ru_sya()] слишком далеко и не увидел[target.ru_a()] твои действия."))
 		// Логи
 		user.log_message("[message] (SUBTLER-TARGET to [target.name] (unheard))", LOG_SUBTLER)
 	to_chat(user, message)

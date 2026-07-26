@@ -41,7 +41,7 @@
 	var/vore_capacity = 1					// simple animal nom capacity
 	var/is_wet = TRUE						// Is this belly inside slimy parts?
 	var/wet_loop = TRUE						// Does this belly have a slimy internal loop?
-	var/can_victim_see = FALSE				// Should the victim be blinded?
+	var/can_victim_see = FALSE				// Can victim see from inside
 
 	//I don't think we've ever altered these lists. making them static until someone actually overrides them somewhere.
 	var/tmp/static/list/digest_modes = list(DM_HOLD,DM_DIGEST,DM_HEAL,DM_NOISY,DM_ABSORB,DM_UNABSORB)	// Possible digest modes
@@ -716,6 +716,7 @@
 	dupe.vore_capacity = vore_capacity
 	dupe.is_wet = is_wet
 	dupe.wet_loop = wet_loop
+	dupe.can_victim_see = can_victim_see
 
 	//// Object-holding variables
 	//struggle_messages_outside - strings
