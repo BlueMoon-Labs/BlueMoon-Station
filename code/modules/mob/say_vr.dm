@@ -253,9 +253,9 @@
 			LAZYADD(possible_target, L)
 
 		if(isliving(user.loc))
-			LAZYADD(possible_target, user.loc)
+			LAZYOR(possible_target, user.loc)
 		if(isliving(user.loc?.loc))
-			LAZYADD(possible_target, user.loc.loc)
+			LAZYOR(possible_target, user.loc.loc)
 		if(istype(user.loc, /obj/belly))
 			var/obj/belly/belly = user.loc
 			var/mob/living/L = belly.owner || belly.loc
