@@ -470,10 +470,8 @@ Turf and target are separate in case you want to teleport some distance from a t
 		if(location == src)
 			return TRUE
 
-/*
-	Gets all contents of contents and returns them all in a list.
-*/
 
+/// Gets all contents of contents and returns them all in a list.
 /atom/proc/GetAllContents(T)
 	if(!length(contents))
 		if(!T || istype(src, T))
@@ -515,6 +513,32 @@ Turf and target are separate in case you want to teleport some distance from a t
 			processing += A.contents
 			lim = processing.len
 			. += A
+
+/// Возвращает список всех объектов указанного типа в цепочке loc
+/atom/proc/get_all_recursive_loc(T)
+	var/list/founds = list()
+	var/atom/A = src.loc
+
+	while(A)
+		if(istype(A, T))
+			founds += A
+
+		A = A.loc
+
+	return founds
+
+//Recursively checks if an item is inside a given type, even through layers of storage. Returns the atom if it finds it.
+/proc/recursive_loc_check(atom/movable/target, type)
+	var/atom/A = target
+	if(istype(A, type))
+		return A
+
+	while(!istype(A.loc, type))
+		if(!A.loc)
+			return
+		A = A.loc
+
+	return A.loc
 
 //Step-towards method of determining whether one atom can see another. Similar to viewers()
 /proc/can_see(atom/source, atom/target, length=5) // I couldnt be arsed to do actual raycasting :I This is horribly inaccurate.

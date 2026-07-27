@@ -695,19 +695,6 @@
 		return
 	winset(C, "mainwindow", "flash=5")
 
-//Recursively checks if an item is inside a given type, even through layers of storage. Returns the atom if it finds it.
-/proc/recursive_loc_check(atom/movable/target, type)
-	var/atom/A = target
-	if(istype(A, type))
-		return A
-
-	while(!istype(A.loc, type))
-		if(!A.loc)
-			return
-		A = A.loc
-
-	return A.loc
-
 ///Send a message in common radio when a player arrives
 /proc/announce_arrival(mob/living/carbon/human/character, rank)
 	if(!SSticker.IsRoundInProgress() || QDELETED(character))
