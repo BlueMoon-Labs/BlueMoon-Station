@@ -500,14 +500,15 @@
 	set waitfor = 0
 	if(!length(stomach_contents))
 		return
-	for(var/mob/living/M in stomach_contents)
+	prune_stomach_contents()
+	for(var/mob/living/M in stomach_contents.Copy())
 		if(M.loc != src)
-			stomach_contents.Remove(M)
+			remove_from_stomach(M)
 			continue
 		if(iscarbon(M) && stat != DEAD)
 			if(M.stat == DEAD)
 				M.death(1)
-				stomach_contents.Remove(M)
+				remove_from_stomach(M)
 				qdel(M)
 				continue
 			var/digestion_phase = client ? SSmobs.times_fired : SSmobs.times_fired + life_periodic_phase

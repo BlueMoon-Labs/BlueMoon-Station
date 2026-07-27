@@ -218,6 +218,12 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 
 	QDEL_NULL(orbit_menu)
 	QDEL_NULL(spawners_menu)
+	// Обнуление mind ДО ..() съедало проверку `if(mind?.current == src)` в /mob/Destroy:
+	// родитель видел уже пустой mind и не звал set_current(null), так что mind.current
+	// навсегда указывал на удалённого обсервера. Разумы живут в SSticker.minds весь
+	// раунд - это ровно те хардделы гостов с одной ссылкой (раунд 9813, 10 штук).
+	if(mind?.current == src)
+		mind.set_current(null)
 	mind = null
 	return ..()
 
