@@ -62,7 +62,7 @@
 	//fire, however, a cached target must still be visible at that exact moment.
 	if(istype(hostile_pawn) && hostile_pawn.ranged_cooldown > world.time)
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
-	if(!targeting_strategy?.ignores_sight(controller.pawn))
+	if(!can_fire_without_sight(controller, targeting_strategy))
 		AI_METRIC_INC(los_checks)
 		if(!can_see(controller.pawn, target, max_range))
 			return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
@@ -70,6 +70,22 @@
 	if(!fire_at(controller, target))
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
 	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+
+///Право стрелять вслепую - НЕ то же самое, что право преследовать вслепую.
+///Легаси-MoveToTarget держал их раздельно: ветка environment_smash вела цель
+///сквозь стену через Goto + FindHidden, а OpenFire в ней звался только под
+///гейтом ranged_ignores_vision. Стратегия таргетирования отвечает за первое
+///(ignore_sight выдаётся и смэшерам стен), поэтому гейт выстрела спрашивает
+///самого моба. Иначе голиаф - SMASH_WALLS без ranged_ignores_vision - кладёт
+///щупальца сквозь стену, а геометрический гейт линии огня его не ловит:
+///способности без projectiletype он пропускает как CLEAR.
+///Не-hostile пауны (порты basic-мобов) своего флага не имеют - им остаётся
+///стратегия.
+/datum/ai_behavior/ranged_skirmish/proc/can_fire_without_sight(datum/ai_controller/controller, datum/targeting_strategy/targeting_strategy)
+	var/mob/living/simple_animal/hostile/hostile_pawn = controller.pawn
+	if(istype(hostile_pawn))
+		return hostile_pawn.ranged_ignores_vision
+	return targeting_strategy?.ignores_sight(controller.pawn)
 
 ///Собственно выстрел; hostile-пауны сохраняют всю свою OpenFire-логику.
 ///Легаси-переопределения OpenFire свободно спят в телеграфах (иерофант:

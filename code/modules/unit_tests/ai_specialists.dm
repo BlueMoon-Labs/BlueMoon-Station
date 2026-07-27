@@ -25,6 +25,21 @@
 	vision_range = 2
 	aggro_vision_range = 9
 
+///Пробник роющего СТРЕЛКА (голиаф): ENVIRONMENT_SMASH_WALLS без
+///ranged_ignores_vision и с кастомным OpenFire без снаряда - ровно тот набор
+///флагов, на котором геометрический гейт линии огня бессилен (он пропускает
+///способности без projectiletype), так что единственной защитой остаётся LOS.
+/mob/living/simple_animal/hostile/asteroid/unit_test_smasher/ranged
+	ranged = TRUE
+	var/open_fire_calls = 0
+
+/mob/living/simple_animal/hostile/asteroid/unit_test_smasher/ranged/OpenFire(atom/shot_target)
+	open_fire_calls++
+
+///Тот же стрелок, но с легаси-правом бить вслепую (мегафауна, лавалендские элитки)
+/mob/living/simple_animal/hostile/asteroid/unit_test_smasher/ranged/blind
+	ranged_ignores_vision = TRUE
+
 /mob/living/simple_animal/hostile/unit_test_rapid_melee
 	rapid_melee = 16
 	var/unit_test_attacks = 0
@@ -253,6 +268,84 @@
 	TEST_ASSERT_EQUAL(engaged_pick, prey, "An already-engaged smasher must pursue its target through the wall")
 
 	qdel(controller)
+
+///Стрелок-ломатель стен обязан ВИДЕТЬ цель, чтобы выстрелить по ней. Легаси
+///разделял два разных разрешения: environment_smash давал право ПРЕСЛЕДОВАТЬ
+///цель без прямой видимости (MoveToTarget: Goto + FindHidden, стрельбы в той
+///ветке не было), и только ranged_ignores_vision давал право СТРЕЛЯТЬ вслепую.
+///Контроллер склеил их в один ignores_sight, и голиаф (SMASH_WALLS, но не
+///ranged_ignores_vision) начал класть щупальца сквозь стену, держа жертву
+///в стан-локе до смерти.
+/datum/unit_test/ai_ranged_smasher_wall_gate/Run()
+	var/mob/living/simple_animal/hostile/asteroid/unit_test_smasher/ranged/beast = allocate(/mob/living/simple_animal/hostile/asteroid/unit_test_smasher/ranged, run_loc_floor_bottom_left)
+	var/turf/prey_turf = locate(run_loc_floor_bottom_left.x + 4, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, prey_turf)
+	var/turf/wall_turf = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
+	var/saved_turf_type = wall_turf.type
+	wall_turf.ChangeTurf(/turf/closed/wall)
+	beast.vision_range = 6 //дальности хватает - барьером остаётся только стена
+
+	var/datum/ai_controller/hostile_adapter/controller = beast.ai_controller
+	TEST_ASSERT_NOTNULL(controller, "Sanity: the ranged smasher must possess a hostile adapter")
+	controller.set_ai_status(AI_STATUS_OFF) //стреляем только руками теста, без гонки с планировщиком
+	var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(controller.blackboard[BB_AI_TARGETING_STRATEGY])
+	TEST_ASSERT(istype(strategy, /datum/targeting_strategy/hostile_legacy/ignore_sight), "Sanity: a wall-smasher must keep the ignore_sight pursuit strategy")
+
+	//цель уже приобретена: смэшер ведёт её сквозь стену, но стрелять не должен
+	beast.GiveTarget(prey)
+	TEST_ASSERT(strategy.ignores_sight(beast), "Sanity: an engaged smasher must still pursue without line of sight")
+
+	var/datum/ai_behavior/ranged_skirmish/gun = GET_AI_BEHAVIOR(/datum/ai_behavior/ranged_skirmish)
+	gun.perform(0.5, controller, BB_AI_CURRENT_TARGET, BB_AI_TARGETING_STRATEGY, BB_AI_TARGET_HIDING_LOCATION, AI_RANGED_MAX_FIRE_RANGE, 2)
+	var/shots_through_wall = beast.open_fire_calls
+
+	wall_turf.ChangeTurf(saved_turf_type)
+	beast.ranged_cooldown = 0
+	gun.perform(0.5, controller, BB_AI_CURRENT_TARGET, BB_AI_TARGETING_STRATEGY, BB_AI_TARGET_HIDING_LOCATION, AI_RANGED_MAX_FIRE_RANGE, 2)
+	var/shots_in_the_open = beast.open_fire_calls
+
+	TEST_ASSERT_EQUAL(shots_through_wall, 0, "A wall-smasher without ranged_ignores_vision must not fire at a target behind a wall")
+	TEST_ASSERT_EQUAL(shots_in_the_open, 1, "The same smasher must fire once the wall is gone")
+
+///Легаси-паритет обратной стороны: ranged_ignores_vision (мегафауна, элитки)
+///обязан продолжать добивать цель сквозь стену - гейт выше не должен их задеть.
+/datum/unit_test/ai_ranged_blind_fire_preserved/Run()
+	var/mob/living/simple_animal/hostile/asteroid/unit_test_smasher/ranged/blind/beast = allocate(/mob/living/simple_animal/hostile/asteroid/unit_test_smasher/ranged/blind, run_loc_floor_bottom_left)
+	var/turf/prey_turf = locate(run_loc_floor_bottom_left.x + 4, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, prey_turf)
+	var/turf/wall_turf = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
+	var/saved_turf_type = wall_turf.type
+	wall_turf.ChangeTurf(/turf/closed/wall)
+	beast.vision_range = 6
+
+	var/datum/ai_controller/hostile_adapter/controller = beast.ai_controller
+	TEST_ASSERT_NOTNULL(controller, "Sanity: the blind-firing smasher must possess a hostile adapter")
+	controller.set_ai_status(AI_STATUS_OFF)
+	beast.GiveTarget(prey)
+
+	var/datum/ai_behavior/ranged_skirmish/gun = GET_AI_BEHAVIOR(/datum/ai_behavior/ranged_skirmish)
+	gun.perform(0.5, controller, BB_AI_CURRENT_TARGET, BB_AI_TARGETING_STRATEGY, BB_AI_TARGET_HIDING_LOCATION, AI_RANGED_MAX_FIRE_RANGE, 2)
+	var/blind_shots = beast.open_fire_calls
+
+	wall_turf.ChangeTurf(saved_turf_type)
+	TEST_ASSERT_EQUAL(blind_shots, 1, "ranged_ignores_vision must keep firing through the wall, as the legacy loop did")
+
+///Инвариант щупалец голиафа: кулдаун между щупальцами обязан быть строго
+///длиннее самого долгого стана захвата. Задержка всплытия одинакова у обоих
+///щупалец и из неравенства сокращается, поэтому окно на действие = кулдаун
+///минус стан. При кулдауне <= стана следующее щупальце приземляется, пока
+///жертва ещё лежит, Stun() обновляется на полную длительность - и цепочка
+///держит жертву до смерти без единого тика на ответ.
+/datum/unit_test/goliath_tentacle_leaves_action_window/Run()
+	var/longest_stun = max(\
+		(/obj/effect/temp_visual/goliath_tentacle)::grab_stun,\
+		(/obj/effect/temp_visual/goliath_tentacle)::grab_stun_armored,\
+		(/obj/effect/temp_visual/goliath_tentacle)::grab_stun_vulnerable)
+	TEST_ASSERT(longest_stun > 0, "Sanity: the tentacle must actually stun its victim")
+
+	for(var/mob/living/simple_animal/hostile/asteroid/goliath/breed as anything in typesof(/mob/living/simple_animal/hostile/asteroid/goliath))
+		var/cooldown = initial(breed.ranged_cooldown_time)
+		TEST_ASSERT(cooldown > longest_stun, "[breed] plants a tentacle every [cooldown] ds but holds its victim for up to [longest_stun] ds - the chain never releases")
 
 ///Peaceful-мегафауна (гладиатор) без записанных обидчиков не трогает никого
 /datum/unit_test/ai_megafauna_peaceful_gate/Run()
