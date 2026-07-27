@@ -347,6 +347,72 @@
 		var/cooldown = initial(breed.ranged_cooldown_time)
 		TEST_ASSERT(cooldown > longest_stun, "[breed] plants a tentacle every [cooldown] ds but holds its victim for up to [longest_stun] ds - the chain never releases")
 
+///Права на снос турфов обязаны проверяться в самом CanSmashTurfs: легаси-путь
+///DestroyObjectsInDirection бьёт по его ответу, а attack_animal стены играет
+///анимацию удара ДО проверки прав. Без гейта моб со SMASH_STRUCTURES бесконечно
+///молотил стену без единицы урона.
+/datum/unit_test/mob_smash_rights_gate_turfs/Run()
+	var/mob/living/simple_animal/hostile/structures_only = allocate(/mob/living/simple_animal/hostile, run_loc_floor_bottom_left)
+	var/mob/living/simple_animal/hostile/asteroid/unit_test_smasher/wall_breaker = allocate(/mob/living/simple_animal/hostile/asteroid/unit_test_smasher, run_loc_floor_bottom_left)
+	var/wall_x = run_loc_floor_bottom_left.x + 2
+	var/wall_y = run_loc_floor_bottom_left.y
+	var/wall_z = run_loc_floor_bottom_left.z
+	var/turf/wall_loc = locate(wall_x, wall_y, wall_z)
+	var/saved_turf_type = wall_loc.type
+
+	TEST_ASSERT(structures_only.environment_smash & ENVIRONMENT_SMASH_STRUCTURES, "Sanity: the plain hostile must smash structures")
+	TEST_ASSERT(!(structures_only.environment_smash & (ENVIRONMENT_SMASH_WALLS|ENVIRONMENT_SMASH_RWALLS)), "Sanity: the plain hostile must have no wall rights")
+	TEST_ASSERT(wall_breaker.environment_smash & ENVIRONMENT_SMASH_WALLS, "Sanity: the asteroid smasher must have wall rights")
+
+	wall_loc.ChangeTurf(/turf/closed/wall)
+	var/turf/plain_wall = locate(wall_x, wall_y, wall_z)
+	var/structures_only_verdict = structures_only.CanSmashTurfs(plain_wall)
+	var/wall_breaker_verdict = wall_breaker.CanSmashTurfs(plain_wall)
+
+	plain_wall.ChangeTurf(/turf/closed/wall/r_wall)
+	var/turf/reinforced_wall = locate(wall_x, wall_y, wall_z)
+	var/wall_breaker_rwall_verdict = wall_breaker.CanSmashTurfs(reinforced_wall)
+
+	reinforced_wall.ChangeTurf(saved_turf_type)
+
+	TEST_ASSERT(!structures_only_verdict, "A structures-only smasher must not report a wall as breakable")
+	TEST_ASSERT(wall_breaker_verdict, "A wall smasher must still report a plain wall as breakable")
+	TEST_ASSERT(!wall_breaker_rwall_verdict, "ENVIRONMENT_SMASH_WALLS must not cover reinforced walls")
+
+///Стена обязана пережить первый удар ломателя. Мгновенный dismantle_wall(1)
+///читался игроками как "голиаф сносит стену касанием" и обесценивал любой
+///построенный загон; теперь стена копит урон и рушится, исчерпав запас.
+/datum/unit_test/wall_takes_several_mob_hits/Run()
+	var/mob/living/simple_animal/hostile/asteroid/goliath/breaker = allocate(/mob/living/simple_animal/hostile/asteroid/goliath, run_loc_floor_bottom_left)
+	var/wall_x = run_loc_floor_bottom_left.x + 2
+	var/wall_y = run_loc_floor_bottom_left.y
+	var/wall_z = run_loc_floor_bottom_left.z
+	var/turf/wall_loc = locate(wall_x, wall_y, wall_z)
+	var/saved_turf_type = wall_loc.type
+	wall_loc.ChangeTurf(/turf/closed/wall)
+
+	var/turf/closed/wall/standing = locate(wall_x, wall_y, wall_z)
+	TEST_ASSERT(istype(standing), "Sanity: the test turf must have become a wall")
+	TEST_ASSERT(breaker.obj_damage > 0, "Sanity: a goliath must deal object damage")
+	TEST_ASSERT(breaker.obj_damage < standing.mob_damage_cap, "One smasher hit must not cover the whole reserve of a wall")
+
+	//бьём, пока стена не рухнет; потолок цикла - страховка от бесконечности
+	var/hits_taken = 0
+	while(hits_taken < 20)
+		var/turf/current_turf = locate(wall_x, wall_y, wall_z)
+		if(!iswallturf(current_turf))
+			break
+		var/turf/closed/wall/target_wall = current_turf
+		target_wall.take_mob_smash_damage(breaker)
+		hits_taken++
+
+	var/turf/aftermath = locate(wall_x, wall_y, wall_z)
+	var/wall_still_standing = iswallturf(aftermath)
+	aftermath.ChangeTurf(saved_turf_type)
+
+	TEST_ASSERT(!wall_still_standing, "Sustained smasher hits must still bring the wall down")
+	TEST_ASSERT(hits_taken > 1, "A wall must survive the first smasher hit; it fell after [hits_taken]")
+
 ///Peaceful-мегафауна (гладиатор) без записанных обидчиков не трогает никого
 /datum/unit_test/ai_megafauna_peaceful_gate/Run()
 	var/mob/living/simple_animal/hostile/megafauna/unit_test_perception/boss_mob = allocate(/mob/living/simple_animal/hostile/megafauna/unit_test_perception, run_loc_floor_bottom_left)

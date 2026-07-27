@@ -749,8 +749,17 @@
 		return P
 
 
+///Может ли моб реально проломить этот турф. Права на снос проверяются ИМЕННО
+///здесь, а не только у вызывающего: легаси-путь DestroyObjectsInDirection бьёт
+///по ответу этого прока, а attack_animal турфа играет анимацию удара ДО проверки
+///прав. Без гейта моб со SMASH_STRUCTURES бесконечно молотил стену без урона
+///(жалоба "анимация удара играет постоянно, стене ничего").
 /mob/living/simple_animal/hostile/proc/CanSmashTurfs(turf/T)
-	return iswallturf(T) || ismineralturf(T)
+	if(!iswallturf(T) && !ismineralturf(T))
+		return FALSE
+	if(istype(T, /turf/closed/wall/r_wall))
+		return environment_smash & ENVIRONMENT_SMASH_RWALLS
+	return environment_smash & (ENVIRONMENT_SMASH_WALLS|ENVIRONMENT_SMASH_RWALLS)
 
 
 /mob/living/simple_animal/hostile/proc/dodge(moving_to,move_direction)
