@@ -358,6 +358,8 @@
 	var/skip_first
 	///A list for the path we're currently following
 	var/list/movement_path
+	///Only one asynchronous route search may own this loop at a time.
+	var/repath_in_progress = FALSE
 	///Cooldown for repathing, prevents spam
 	COOLDOWN_DECLARE(repath_cooldown)
 
@@ -387,6 +389,8 @@
 /datum/move_loop/has_target/jps/Destroy()
 	id = null //Kill me
 	avoid = null
+	movement_path = null
+	repath_in_progress = FALSE
 	return ..()
 
 /datum/move_loop/has_target/jps/proc/handle_no_id()
@@ -395,15 +399,35 @@
 
 //Returns FALSE if the recalculation failed, TRUE otherwise
 /datum/move_loop/has_target/jps/proc/recalculate_path()
-	if(!COOLDOWN_FINISHED(src, repath_cooldown))
+	if(repath_in_progress || !COOLDOWN_FINISHED(src, repath_cooldown))
 		return
+	repath_in_progress = TRUE
 	COOLDOWN_START(src, repath_cooldown, repath_delay)
+	AI_METRIC_INC(jps_repaths)
 	SEND_SIGNAL(src, COMSIG_MOVELOOP_JPS_REPATH)
-	movement_path = get_path_to(moving, target, max_path_length, minimum_distance, id, simulated_only, avoid, skip_first)
+	var/datum/ai_controller/controller = extra_info
+	// AI chases bound the search to distance + detour slack so a walled-off close target
+	// costs a small diamond, not the whole max_path_length one. Bots keep the full radius.
+	var/effective_max = istype(controller) ? ai_effective_path_radius(moving, target, max_path_length) : max_path_length
+	var/list/new_path = get_path_to(moving, target, effective_max, minimum_distance, id, simulated_only, avoid, skip_first, src)
+	if(QDELETED(src))
+		return
+	if(!length(new_path))
+		// A target beyond the full budget is unreachable by either pathfinder, so
+		// skip the breach fallback entirely instead of blocking on a pathfinder slot
+		// for a search that can only fail. Gate on the real budget, search the bounded
+		// radius. The cheap direct loop keeps closing the gap.
+		if(istype(controller) && (!max_path_length || get_dist(moving, target) <= max_path_length))
+			new_path = controller.get_path_through_obstacles(target, effective_max, minimum_distance, id, simulated_only, avoid, skip_first, src)
+	if(QDELETED(src))
+		return
+	movement_path = new_path
+	repath_in_progress = FALSE
 
 /datum/move_loop/has_target/jps/move()
 	if(!length(movement_path))
-		INVOKE_ASYNC(src, PROC_REF(recalculate_path))
+		if(!repath_in_progress)
+			INVOKE_ASYNC(src, PROC_REF(recalculate_path))
 		if(!length(movement_path))
 			return FALSE
 

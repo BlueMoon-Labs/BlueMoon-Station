@@ -42,11 +42,11 @@
 	uniform.armor = getArmor(10)
 	accessory.armor = getArmor(5)
 	TEST_ASSERT(accessory.attach(uniform, null), "Не удалось прикрепить тестовый аксессуар")
-	TEST_ASSERT(accessory in uniform.accessories_attached, "Прикреплённый аксессуар не попал в список униформы")
+	TEST_ASSERT(accessory in uniform.attached_accessories, "Прикреплённый аксессуар не попал в список униформы")
 	TEST_ASSERT_EQUAL(uniform.armor.get_rating(MELEE), 15, "Аксессуар не добавил броню униформе")
 
 	qdel(accessory)
-	TEST_ASSERT(!(accessory in uniform.accessories_attached), "Удалённый аксессуар остался в списке униформы")
+	TEST_ASSERT(!(accessory in uniform.attached_accessories), "Удалённый аксессуар остался в списке униформы")
 	TEST_ASSERT_EQUAL(uniform.armor.get_rating(MELEE), 10, "Удалённый аксессуар оставил бонус брони на униформе")
 
 /// Security-запись может заимствовать фото general-записи и не владеет им.
@@ -98,6 +98,115 @@
 
 /datum/unit_test/remote_materials_callback_cleanup/proc/after_insert_stub()
 	return
+
+/// Preinstalled borg upgrades must be real owned objects. A type path in this
+/// list reaches qdel(typepath) during teardown and raises `bad del`.
+/datum/unit_test/inteq_borg_preinstalled_upgrade_cleanup/Run()
+	var/mob/living/silicon/robot/modules/inteq/saboteur/borg = allocate(/mob/living/silicon/robot/modules/inteq/saboteur)
+	TEST_ASSERT_EQUAL(length(borg.upgrades), 1, "InteQ borg must own exactly one preinstalled upgrade")
+	TEST_ASSERT(istype(borg.upgrades[1], /obj/item/borg/upgrade/vtec), "InteQ borg stored a type path instead of an installed VTEC object")
+
+	qdel(borg)
+	TEST_ASSERT(QDELETED(borg), "InteQ borg teardown did not enter qdel")
+	// Let the asynchronous module transformation reach its first post-sleep
+	// validity check. Any post-qdel access is reported as a test runtime.
+	sleep(2)
+
+/// With no valid human victim, initialization qdels the cluwne. It must not
+/// create its orbit helper afterwards with loc pointing back to the deleted mob.
+/datum/unit_test/floor_cluwne_no_post_qdel_orbit/Run()
+	var/mob/living/simple_animal/hostile/floor_cluwne/cluwne = new(run_loc_floor_bottom_left)
+	TEST_ASSERT(QDELETED(cluwne), "Floor cluwne without a valid victim must delete itself during initialization")
+	TEST_ASSERT_NULL(cluwne.poi, "Floor cluwne created an owned orbit helper after qdel")
+
+/// The gladiator can meet hundreds of mobs in a benchmark round. Its greeting
+/// cache must not keep strong references to every mob it has seen.
+/datum/unit_test/gladiator_introduced_uses_reference_keys/Run()
+	var/mob/living/simple_animal/hostile/megafauna/gladiator/gladiator = allocate(/mob/living/simple_animal/hostile/megafauna/gladiator)
+	var/mob/living/simple_animal/hostile/prey = allocate(/mob/living/simple_animal/hostile)
+	gladiator.introduction(prey)
+
+	TEST_ASSERT(!(prey in gladiator.introduced), "Gladiator greeting cache kept a strong reference to its target")
+	var/datum/weakref/introduced_ref = gladiator.introduced[REF(prey)]
+	TEST_ASSERT(istype(introduced_ref), "Gladiator greeting cache did not store a weakref for its target")
+	TEST_ASSERT_EQUAL(introduced_ref.resolve(), prey, "Gladiator greeting weakref did not resolve to its target")
+
+	qdel(gladiator)
+	TEST_ASSERT_NULL(gladiator.introduced, "Gladiator retained its greeting cache during teardown")
+
+///Broodmother and children hold bidirectional family references during combat.
+///Either side must detach cleanly when an arena teardown deletes it directly.
+/datum/unit_test/broodmother_children_release_family_refs/Run()
+	var/mob/living/simple_animal/hostile/asteroid/elite/broodmother/mother = allocate(/mob/living/simple_animal/hostile/asteroid/elite/broodmother, run_loc_floor_bottom_left)
+	var/mob/living/simple_animal/hostile/asteroid/elite/broodmother_child/orphan = allocate(/mob/living/simple_animal/hostile/asteroid/elite/broodmother_child, get_step(run_loc_floor_bottom_left, EAST))
+	mother.children_list += orphan
+	orphan.mother = mother
+
+	qdel(mother)
+	TEST_ASSERT_NULL(orphan.mother, "A surviving child retained its qdeleted broodmother")
+	TEST_ASSERT_NULL(mother.children_list, "A qdeleted broodmother retained its child list")
+
+	var/mob/living/simple_animal/hostile/asteroid/elite/broodmother/second_mother = allocate(/mob/living/simple_animal/hostile/asteroid/elite/broodmother, run_loc_floor_bottom_left)
+	var/mob/living/simple_animal/hostile/asteroid/elite/broodmother_child/deleted_child = new(get_step(run_loc_floor_bottom_left, WEST))
+	second_mother.children_list += deleted_child
+	deleted_child.mother = second_mother
+
+	qdel(deleted_child)
+	TEST_ASSERT(!(deleted_child in second_mother.children_list), "A qdeleted child remained in its broodmother's child list")
+	TEST_ASSERT_NULL(deleted_child.mother, "A qdeleted child retained its broodmother")
+
+///Paper Wizard mimics are owned helpers and must neither outlive nor retain
+///their original when the arena deletes the boss directly.
+/datum/unit_test/paper_wizard_copies_release_owner_refs/Run()
+	var/mob/living/simple_animal/hostile/boss/paper_wizard/wizard = allocate(/mob/living/simple_animal/hostile/boss/paper_wizard, run_loc_floor_bottom_left)
+	var/mob/living/simple_animal/hostile/boss/paper_wizard/copy/first_copy = new(get_step(run_loc_floor_bottom_left, EAST))
+	var/mob/living/simple_animal/hostile/boss/paper_wizard/copy/second_copy = new(get_step(run_loc_floor_bottom_left, WEST))
+	wizard.copies = list(first_copy, second_copy)
+	first_copy.original = wizard
+	second_copy.original = wizard
+
+	qdel(wizard)
+	TEST_ASSERT_NULL(wizard.copies, "A qdeleted Paper Wizard retained its copy list")
+	TEST_ASSERT(QDELETED(first_copy) && QDELETED(second_copy), "Paper Wizard copies survived direct owner teardown")
+	TEST_ASSERT_NULL(first_copy.original, "A deleted Paper Wizard copy retained its original")
+	TEST_ASSERT_NULL(second_copy.original, "A deleted Paper Wizard copy retained its original")
+
+///Legionnaire's detachable head and bonfire are owned helpers with backrefs.
+/datum/unit_test/legionnaire_helpers_release_owner_refs/Run()
+	var/mob/living/simple_animal/hostile/asteroid/elite/legionnaire/body = allocate(/mob/living/simple_animal/hostile/asteroid/elite/legionnaire, run_loc_floor_bottom_left)
+	var/mob/living/simple_animal/hostile/asteroid/elite/legionnairehead/head = new(get_step(run_loc_floor_bottom_left, EAST))
+	var/obj/structure/legionnaire_bonfire/pile = new(get_step(run_loc_floor_bottom_left, WEST))
+	body.myhead = head
+	body.mypile = pile
+	head.body = body
+	pile.myowner = body
+
+	qdel(body)
+	TEST_ASSERT_NULL(body.myhead, "A qdeleted Legionnaire retained its head")
+	TEST_ASSERT_NULL(body.mypile, "A qdeleted Legionnaire retained its bonfire")
+	TEST_ASSERT(QDELETED(head) && QDELETED(pile), "Legionnaire helpers survived direct owner teardown")
+	TEST_ASSERT_NULL(head.body, "A deleted Legionnaire head retained its body")
+	TEST_ASSERT_NULL(pile.myowner, "A deleted Legionnaire bonfire retained its owner")
+
+/// Terror queens use themselves as the root of their brood hierarchy. The
+/// shared teardown must break that self-cycle as well as ordinary brood links.
+/datum/unit_test/terror_spider_teardown_clears_lineage/Run()
+	var/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/queen/queen = allocate(/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/queen)
+	TEST_ASSERT_EQUAL(queen.spider_myqueen, queen, "Terror queen test fixture did not create its expected self-reference")
+	queen.spider_mymother = queen
+	var/obj/structure/spider/spiderling/terror_spiderling/spiderling = allocate(/obj/structure/spider/spiderling/terror_spiderling)
+	spiderling.spider_myqueen = queen
+	spiderling.spider_mymother = queen
+	spiderling.enemies += queen
+
+	qdel(spiderling)
+	TEST_ASSERT(!(spiderling in GLOB.ts_spiderling_list), "Deleted terror spiderling remained in the global processing list")
+	TEST_ASSERT_NULL(spiderling.spider_myqueen, "Terror spiderling retained its queen during teardown")
+	TEST_ASSERT_NULL(spiderling.spider_mymother, "Terror spiderling retained its mother during teardown")
+	TEST_ASSERT_NULL(spiderling.enemies, "Terror spiderling retained its enemies during teardown")
+	qdel(queen)
+	TEST_ASSERT_NULL(queen.spider_myqueen, "Terror queen retained its self-reference during teardown")
+	TEST_ASSERT_NULL(queen.spider_mymother, "Terror spider retained its mother reference during teardown")
 
 /// Conjure spell владеет последним созданным предметом и обязан обнулить ссылку после qdel.
 /datum/unit_test/conjure_item_destroy_clears_item/Run()

@@ -31,6 +31,37 @@
 	thing.forceMove(run_loc_floor_bottom_left)
 	TEST_ASSERT_NULL(thing.loc, "qdel-нутый предмет вернулся в мир через forceMove")
 
+/// Повторное заражение яйцами террора заменяет старый одноразовый орган.
+/// Его Remove() сам вызывает qdel(), поэтому общий Insert() не должен затем
+/// пытаться выложить удалённый орган на пол.
+/datum/unit_test/terror_egg_replacement_skips_deleted_organ/Run()
+	var/mob/living/carbon/human/host = allocate(/mob/living/carbon/human)
+	var/obj/item/organ/body_egg/terror_eggs/first_egg = new(host)
+	var/obj/item/organ/body_egg/terror_eggs/replacement_egg = new(host)
+
+	TEST_ASSERT(QDELETED(first_egg), "Заменённые яйца террора не удалились")
+	TEST_ASSERT_EQUAL(replacement_egg.owner, host, "Новые яйца террора не установились после замены")
+	TEST_ASSERT_EQUAL(host.getorganslot(replacement_egg.slot), replacement_egg, "Слот паразита не указывает на новые яйца")
+
+/// Снаряд, удалённый в Bump(), не должен продолжать Move() даже если успел включить PHASING.
+/obj/structure/unit_test_projectile_bump_blocker
+	density = TRUE
+
+/obj/item/projectile/unit_test_qdel_phasing_bump/Bump(atom/bumped_atom)
+	movement_type |= PHASING
+	qdel(src)
+
+/datum/unit_test/projectile_qdeleted_phasing_bump_stops_move/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	var/turf/destination = get_step(start, EAST)
+	allocate(/obj/structure/unit_test_projectile_bump_blocker, destination)
+	var/obj/item/projectile/unit_test_qdel_phasing_bump/projectile = allocate(/obj/item/projectile/unit_test_qdel_phasing_bump, start)
+
+	projectile.Move(destination, EAST)
+
+	TEST_ASSERT(QDELETED(projectile), "Тестовый снаряд не удалился в Bump()")
+	TEST_ASSERT_NULL(projectile.loc, "Удалённый снаряд завершил Move() после Bump()")
+
 /// Пена после разлива мигрирует на медленный процессинг, спред при этом работает как раньше.
 /datum/unit_test/foam_slow_phase/Run()
 	var/obj/effect/particle_effect/foam/foam = allocate(/obj/effect/particle_effect/foam)

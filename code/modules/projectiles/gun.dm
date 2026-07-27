@@ -285,6 +285,10 @@
 		playsound(user, fire_sound, 10, TRUE, ignore_walls = FALSE, extrarange = SILENCED_SOUND_EXTRARANGE, falloff_distance = 0)
 	else
 		playsound(user, fire_sound, 50, 1)
+		//громкий выстрел игрока поднимает AI-мобов поблизости на разведку точки;
+		//глушитель честно скрывает, пальба самих мобов шум не рассылает
+		if(user?.client)
+			ai_broadcast_noise(get_turf(user), AI_NOISE_GUNSHOT_RANGE, user)
 		if(message)
 			if(pointblank)
 				user.visible_message("<span class='danger'>[user] стреляет из [src] в упор по [pbtarget]!</span>", null, null, COMBAT_MESSAGE_RANGE)

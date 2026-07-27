@@ -238,6 +238,12 @@
 	for (var/atom/movable/AM as anything in src) // Notify contents of Z-transition. This can be overridden IF we know the items contents do not care.
 		AM.onTransitZ(old_z,new_z)
 
+///Separate from COMSIG_MOVABLE_Z_CHANGED: its older listeners do not all accept a null destination.
+/atom/movable/proc/onEnteredNullspace(old_z)
+	SEND_SIGNAL(src, COMSIG_MOVABLE_ENTERED_NULLSPACE, old_z, null)
+	for(var/atom/movable/movable_content as anything in src)
+		movable_content.onEnteredNullspace(old_z)
+
 ///Proc to modify the movement_type and hook behavior associated with it changing.
 /atom/movable/proc/setMovetype(newval)
 	if(movement_type == newval)
@@ -311,6 +317,7 @@
 		. = TRUE
 		if (loc)
 			var/atom/oldloc = loc
+			var/turf/old_turf = get_turf(oldloc)
 			var/area/old_area = get_area(oldloc)
 			//эта ветка не зовёт Moved(), поэтому спатиал-грид чистим сами:
 			//иначе уход в nullspace оставит вечную ссылку в старой ячейке,
@@ -322,7 +329,9 @@
 			oldloc.Exited(src, null)
 			if(old_area)
 				old_area.Exited(src, null)
-		loc = null
+			loc = null
+			if(old_turf)
+				onEnteredNullspace(old_turf.z)
 
 /**
  * Called whenever an object moves and by mobs when they attempt to move themselves through space

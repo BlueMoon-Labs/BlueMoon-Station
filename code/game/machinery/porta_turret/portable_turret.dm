@@ -119,6 +119,7 @@ DEFINE_BITFIELD(turret_flags, list(
 
 /obj/machinery/porta_turret/Initialize(mapload)
 	. = ..()
+	AddComponent(/datum/component/hostile_machine_registry)
 	if(!base)
 		base = src
 	update_icon()

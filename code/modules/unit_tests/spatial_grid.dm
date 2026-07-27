@@ -233,3 +233,11 @@
 	TEST_ASSERT(victim in cell?.client_contents, "the victim must stay in the CLIENTS channel after the headcrab dies")
 
 	victim.clear_important_client_contents() // cleanup канала CLIENTS
+
+/// A move queued before qdelete may arrive after Destroy removed grid state.
+/// Re-entry is then stale work, not a new registration or a fatal invariant.
+/datum/unit_test/spatial_grid_rejects_qdeleted_reentry/Run()
+	var/obj/item/stale_target = new(run_loc_floor_bottom_left)
+	qdel(stale_target)
+	SSspatial_grid.enter_cell(stale_target, run_loc_floor_bottom_left)
+	TEST_ASSERT(QDELETED(stale_target), "The stale spatial-grid target must remain deleted")

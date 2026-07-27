@@ -38,6 +38,9 @@
 	update_icon()
 
 /obj/item/ammo_casing/Destroy()
+	// Ejected casings use SpinAnimation(). Stop the native animation before the
+	// casing and its pellet-cloud component enter the garbage queue.
+	animate(src, alpha = 0, time = 0, flags = ANIMATION_END_NOW)
 	if(BB)
 		QDEL_NULL(BB)
 	return ..()

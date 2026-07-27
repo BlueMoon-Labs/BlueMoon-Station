@@ -320,5 +320,56 @@
 		if(M.stored_gun)
 			M.stored_gun.overheat_time += base_cooldown_add
 
+// ===== Адаптер-профиль майнбота =====
+// Оба режима исполняются легаси-процами через делегацию: сбор руды -
+// AttackingTarget/CollectOre (search_objects-путь finder'а), бой - OpenFire
+// со stored_gun и CheckFriendlyFire. Легаси-переключатели режимов
+// (AttackingTarget по живой цели, adjustHealth при уроне,
+// on_attack_hand/toggle_mode) продолжают менять переменные моба; сабтри
+// minebot_mode_sync замечает смену режима и пересчитывает контроллер.
+
+///Профиль майнбота: режимный синк + сбор и бой на общих сабтри
+///(maintain_distance/ranged_skirmish сами гейтятся живым ranged-флагом)
+/datum/ai_controller/hostile_adapter/minebot
+	planning_subtrees = list(
+		/datum/ai_planning_subtree/minebot_mode_sync,
+		/datum/ai_planning_subtree/find_hostile_targets,
+		/datum/ai_planning_subtree/hostile_fsm,
+		/datum/ai_planning_subtree/maintain_distance,
+		/datum/ai_planning_subtree/ranged_skirmish,
+		/datum/ai_planning_subtree/attack_obstacle_in_path,
+		/datum/ai_planning_subtree/hostile_melee,
+	)
+	idle_behavior = /datum/idle_behavior/idle_random_walk/hostile_ambience/minebot
+
+///Легаси-режимы дёргают wander: в боевом режиме майнбот стоит на месте
+/datum/idle_behavior/idle_random_walk/hostile_ambience/minebot
+
+/datum/idle_behavior/idle_random_walk/hostile_ambience/minebot/perform_idle_behavior(delta_time, datum/ai_controller/controller)
+	var/mob/living/simple_animal/hostile/mining_drone/bot = controller.pawn
+	if(istype(bot) && !bot.wander)
+		return
+	return ..()
+
+///Синк режима: легаси-переключатели уже поменяли переменные моба - контроллер
+///перечитывает их (band/агро/поиск объектов) и сбрасывает несовместимую цель
+/datum/ai_planning_subtree/minebot_mode_sync
+
+/datum/ai_planning_subtree/minebot_mode_sync/SelectBehaviors(datum/ai_controller/controller, delta_time)
+	. = ..()
+	var/mob/living/simple_animal/hostile/mining_drone/bot = controller.pawn
+	if(!istype(bot))
+		return
+	if(controller.blackboard[BB_AI_MINEBOT_MODE] == bot.mode)
+		return
+	controller.blackboard[BB_AI_MINEBOT_MODE] = bot.mode
+	var/datum/ai_controller/hostile_adapter/adapter = controller
+	if(!istype(adapter))
+		return
+	//перечитать легаси-переменные (vision/search_objects/ranged/retreat)
+	adapter.setup_from_pawn(bot)
+	//смена режима - смена задачи: руда не преследуется в бою, живые - в сборе
+	controller.clear_engagement_memory()
+
 #undef MINEDRONE_COLLECT
 #undef MINEDRONE_ATTACK

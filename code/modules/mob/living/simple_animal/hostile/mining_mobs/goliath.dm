@@ -23,6 +23,7 @@
 	obj_damage = 100
 	melee_damage_lower = 18
 	melee_damage_upper = 18
+	melee_telegraph_duration = 0.4 SECONDS
 	attack_verb_continuous = "pulverizes"
 	attack_verb_simple = "pulverize"
 	attack_sound = 'sound/weapons/punch1.ogg'
@@ -46,7 +47,7 @@
 /mob/living/simple_animal/hostile/asteroid/goliath/proc/handle_preattack()
 	if(ranged_cooldown <= world.time + ranged_cooldown_time*0.25 && !pre_attack)
 		pre_attack++
-	if(!pre_attack || stat || AIStatus == AI_IDLE)
+	if(!pre_attack || stat || get_effective_ai_status() == AI_IDLE)
 		return
 	icon_state = pre_attack_icon
 

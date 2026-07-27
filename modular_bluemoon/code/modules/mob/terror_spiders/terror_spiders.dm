@@ -318,6 +318,10 @@ GLOBAL_LIST_EMPTY(ts_spiderling_list)
 
 /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/Destroy()
 	GLOB.ts_spiderlist -= src
+	// Queens point spider_myqueen at themselves; brood members also keep strong
+	// lineage links. None of those relationships may survive mob teardown.
+	spider_myqueen = null
+	spider_mymother = null
 	handle_dying()
 	return ..()
 

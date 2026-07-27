@@ -211,3 +211,32 @@
 	pod.set_machine_stat(0)
 	TEST_ASSERT_EQUAL(pod.process(), PROCESS_KILL, "an empty cryopod must park itself")
 	TEST_ASSERT(pod.machine_sleeping, "...and be machine_sleeping")
+
+/// D8: empty patient-care machines park themselves, while their real patient-entry paths wake
+/// them so nap/stasis validation continues without a permanent SSmachines poll.
+/datum/unit_test/patient_machine_idle_sleep/Run()
+	var/mob/living/carbon/human/patient = allocate(/mob/living/carbon/human)
+	patient.forceMove(run_loc_floor_bottom_left)
+
+	var/obj/machinery/stasis/bed = allocate(/obj/machinery/stasis)
+	bed.forceMove(run_loc_floor_bottom_left)
+	bed.set_machine_stat(0)
+	TEST_ASSERT_EQUAL(bed.process(), PROCESS_KILL, "an empty stasis bed must park itself")
+	TEST_ASSERT(bed.machine_sleeping, "...and be machine_sleeping")
+	TEST_ASSERT(bed.buckle_mob(patient, force = TRUE, check_loc = FALSE), "the patient must buckle into the stasis bed")
+	TEST_ASSERT(!bed.machine_sleeping, "buckling a patient must wake the stasis bed")
+	bed.unbuckle_mob(patient, force = TRUE)
+
+	var/obj/machinery/sleeper/sleeper = allocate(/obj/machinery/sleeper)
+	sleeper.forceMove(run_loc_floor_bottom_left)
+	sleeper.set_machine_stat(0)
+	TEST_ASSERT_EQUAL(sleeper.process(), PROCESS_KILL, "an empty sleeper must park itself")
+	TEST_ASSERT(sleeper.machine_sleeping, "...and be machine_sleeping")
+	sleeper.close_machine(patient)
+	TEST_ASSERT_EQUAL(sleeper.occupant, patient, "close_machine() must accept the test patient")
+	TEST_ASSERT(!sleeper.machine_sleeping, "closing a sleeper on a patient must wake it")
+
+	var/obj/machinery/sleeper/clockwork/clockwork_sleeper = allocate(/obj/machinery/sleeper/clockwork)
+	clockwork_sleeper.set_machine_stat(0)
+	TEST_ASSERT_EQUAL(clockwork_sleeper.process(), PROCESS_KILL, "an empty clockwork sleeper must propagate the sleep result")
+	TEST_ASSERT(clockwork_sleeper.machine_sleeping, "...and be machine_sleeping")

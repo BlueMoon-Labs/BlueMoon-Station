@@ -931,15 +931,22 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 	return faction_check(faction, target.faction, FALSE)
 
 /proc/faction_check(list/faction_A, list/faction_B, exact_match)
-	var/list/match_list
 	if(exact_match)
-		match_list = faction_A&faction_B //only items in both lists
+		var/list/match_list = faction_A&faction_B //only items in both lists
 		var/length = LAZYLEN(match_list)
 		if(length)
 			return (length == LAZYLEN(faction_A)) //if they're not the same len(gth) or we don't have a len, then this isn't an exact match.
-	else
-		match_list = faction_A&faction_B
-		return LAZYLEN(match_list)
+		return FALSE
+
+	//The overwhelmingly common query only needs to know whether one value
+	//matches. Avoid allocating an intersection list for every AI candidate.
+	if(!LAZYLEN(faction_A) || !LAZYLEN(faction_B))
+		return FALSE
+	var/list/smaller = LAZYLEN(faction_A) <= LAZYLEN(faction_B) ? faction_A : faction_B
+	var/list/larger = smaller == faction_A ? faction_B : faction_A
+	for(var/faction_name in smaller)
+		if(faction_name in larger)
+			return TRUE
 	return FALSE
 
 

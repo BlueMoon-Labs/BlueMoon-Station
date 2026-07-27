@@ -566,6 +566,7 @@
 
 	var/datum/gc_failure_viewer/gc_failure_entry/entry = GLOB.gc_failure_cache.failures[1]
 	TEST_ASSERT_EQUAL(entry.origin_time, origin_time, "Warnfail entry lost the original qdel timestamp")
+	TEST_ASSERT_EQUAL(entry.resolve_target(), leaker, "Warnfail viewer lost the live datum when it advanced to the harddelete queue")
 
 	var/hd_head = SSgarbage.queue_heads[GC_QUEUE_HARDDELETE]
 	TEST_ASSERT_EQUAL(SSgarbage.GetQueueDepth(GC_QUEUE_HARDDELETE), 1, "The object was not promoted into the harddelete queue")

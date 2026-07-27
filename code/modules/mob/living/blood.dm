@@ -12,6 +12,8 @@
 	var/temp_bleed = 0
 	for(var/X in bodyparts)
 		var/obj/item/bodypart/BP = X
+		if(!BP.generic_bleedstacks && !length(BP.embedded_objects) && !length(BP.wounds) && !BP.bleed_overlay_icon)
+			continue
 		temp_bleed += BP.get_bleed_rate()
 		BP.generic_bleedstacks = max(0, BP.generic_bleedstacks - 1)
 		BP.update_part_wound_overlay()
@@ -116,6 +118,11 @@
 		//Bleeding out
 		for(var/X in bodyparts)
 			var/obj/item/bodypart/BP = X
+			//Healthy limbs have neither blood to integrate nor an overlay to clear.
+			//Avoid two bleed-rate walks plus a component signal for every limb on
+			//every human Life tick; any real source immediately leaves this path.
+			if(!BP.generic_bleedstacks && !length(BP.embedded_objects) && !length(BP.wounds) && !BP.bleed_overlay_icon)
+				continue
 			if(blood_volume > 0) // BLUEMOON ADD - если в теле есть кровь, то она будет вытекать
 				temp_bleed += BP.get_bleed_rate()
 				BP.generic_bleedstacks = max(0, BP.generic_bleedstacks - 1)

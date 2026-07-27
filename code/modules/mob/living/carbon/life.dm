@@ -1,7 +1,7 @@
 /mob/living/carbon/BiologicalLife(delta_time, times_fired)
 	//Reagent processing needs to come before breathing, to prevent edge cases.
 	// BLUEMOON OPTIMIZATION: stagger organ processing for clientless mobs (every other fire)
-	if(client || (times_fired % 2 == 0))
+	if(client || ((times_fired + life_periodic_phase) % 2 == 0))
 		handle_organs(client ? delta_time : delta_time * 2, times_fired)
 	. = ..()		// if . is false, we are dead.
 	if(stat == DEAD)
@@ -61,7 +61,8 @@
 		if(H.damage > H.high_threshold)
 			next_breath--
 
-	if((times_fired % next_breath) == 0 || failed_last_breath)
+	var/breath_phase = client ? times_fired : times_fired + life_periodic_phase
+	if((breath_phase % next_breath) == 0 || failed_last_breath)
 		breathe() //Breathe per 4 ticks if healthy, down to 2 if our lungs or heart are damaged, unless suffocating
 		if(failed_last_breath)
 			//SEND_SIGNAL(src, COMSIG_ADD_MOOD_EVENT, "suffocation", /datum/mood_event/suffocation)
@@ -478,7 +479,8 @@
 				stomach_contents.Remove(M)
 				qdel(M)
 				continue
-			if(SSmobs.times_fired%3==1)
+			var/digestion_phase = client ? SSmobs.times_fired : SSmobs.times_fired + life_periodic_phase
+			if(digestion_phase % 3 == 1)
 				if(!(M.status_flags & GODMODE))
 					M.adjustBruteLoss(5)
 				adjust_nutrition(10)

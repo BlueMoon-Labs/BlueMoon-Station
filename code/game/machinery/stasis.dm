@@ -120,6 +120,7 @@
 	if(!can_be_occupant(L))
 		return
 	occupant = L
+	machine_wake() // an occupied bed must resume nap/stasis validation
 	if(stasis_running() && check_nap_violations())
 		chill_out(L)
 	update_appearance()
@@ -133,6 +134,8 @@
 /obj/machinery/stasis/process()
 	if(!(occupant && isliving(occupant) && check_nap_violations()))
 		use_power = IDLE_POWER_USE
+		if(!occupant)
+			return machine_sleep()
 		return
 	var/mob/living/L_occupant = occupant
 	if(stasis_running())

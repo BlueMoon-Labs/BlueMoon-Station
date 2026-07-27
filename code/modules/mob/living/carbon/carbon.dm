@@ -6,6 +6,11 @@
 
 /mob/living/carbon/Initialize(mapload)
 	. = ..()
+	var/static/next_carbon_life_periodic_phase = 0
+	// Carbon initialization may create other living mobs, so use a carbon-only
+	// sequence to keep breathing and organ work evenly distributed.
+	life_periodic_phase = next_carbon_life_periodic_phase ^ 1
+	next_carbon_life_periodic_phase++
 	create_reagents(1000, NONE, NO_REAGENTS_VALUE)
 	update_body_parts() //to update the carbon's new bodyparts appearance
 	GLOB.carbon_list += src

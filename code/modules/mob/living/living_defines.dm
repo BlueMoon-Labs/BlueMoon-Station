@@ -20,6 +20,16 @@
 	var/maxHealth = 100 //Maximum health that should be possible.
 	var/health = 100 	//A mob's health
 
+	///Фазовый бакет троттла Life дальних мобов: размазывает их обработку по
+	///тикам SSmobs вместо синхронного залпа каждый N-й фаер.
+	var/life_stagger_phase
+	///Отдельный бакет дыхания/органов/прочей внутренней периодики. Не должен
+	///коррелировать с life_stagger_phase внешнего far-throttle.
+	var/life_periodic_phase
+	///Накопленные троттлом секунды Life: доезжают следующим обработанным тиком,
+	///чтобы метаболизм/дыхание/статусы шли в игровом времени, а не в тиках
+	var/life_time_debt = 0
+
 	//Damage related vars, NOTE: THESE SHOULD ONLY BE MODIFIED BY PROCS
 	var/bruteloss = 0	//Brutal damage caused by brute force (punching, being clubbed by a toolbox ect... this also accounts for pressure damage)
 	var/oxyloss = 0		//Oxygen depravation damage (no air in lungs)
@@ -91,6 +101,10 @@
 	var/fire_stacks = 0 //Tracks how many stacks of fire we have on, max is usually 20
 
 	var/cached_gravity_value = -1 //Cached gravity for handle_gravity() optimization — only calls update_gravity() when changed
+
+	///Средa не может повлиять на моба: PhysicalLife не читает атмосферу вовсе.
+	///Прекомпьютится у simple_animal в refresh_atmos_pathing_sensitivity().
+	var/environment_processing_immune = FALSE
 
 	var/bloodcrawl = 0 //0 No blood crawling, BLOODCRAWL for bloodcrawling, BLOODCRAWL_EAT for crawling+mob devour
 	var/holder = null //The holder for blood crawling

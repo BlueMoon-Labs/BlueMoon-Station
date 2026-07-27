@@ -61,8 +61,18 @@
 		wander = FALSE
 		do_sparks(rand(min_sparks,max_sparks), FALSE, src)
 
+/mob/living/simple_animal/hostile/megafauna/rogueprocess/proc/can_continue_attack(atom/target)
+	return !QDELETED(src) && loc && target && !QDELETED(target) && get_turf(target)
+
+/mob/living/simple_animal/hostile/megafauna/rogueprocess/proc/can_continue_open_fire(atom/target)
+	if(can_continue_attack(target))
+		return TRUE
+	if(!QDELETED(src))
+		special = FALSE
+	return FALSE
+
 /mob/living/simple_animal/hostile/megafauna/rogueprocess/OpenFire(target)
-	if(special)
+	if(special || !can_continue_open_fire(target))
 		return FALSE
 	ranged_cooldown = world.time + max((ranged_cooldown_time - anger_modifier), 30)
 	switch(anger_modifier)
@@ -71,34 +81,50 @@
 				INVOKE_ASYNC(src, PROC_REF(plasmashot), target)
 				if(prob(80))
 					sleep(6)
+					if(!can_continue_open_fire(target))
+						return FALSE
 					INVOKE_ASYNC(src, PROC_REF(plasmashot), target)
 					if(prob(50))
 						sleep(6)
+						if(!can_continue_open_fire(target))
+							return FALSE
 						INVOKE_ASYNC(src, PROC_REF(plasmashot), target)
 			else
 				animate(src, color = "#ff0000", time = 3)
 				sleep(4)
+				if(!can_continue_open_fire(target))
+					return FALSE
 				INVOKE_ASYNC(src, PROC_REF(shockwave), src.dir, 7, 2.5)
 		if(25 to 50)
 			if(prob(60))
 				special = TRUE
 				INVOKE_ASYNC(src, PROC_REF(plasmaburst), target, FALSE)
 				sleep(6)
+				if(!can_continue_open_fire(target))
+					return FALSE
 				INVOKE_ASYNC(src, PROC_REF(plasmaburst), target, TRUE)
 				if(prob(50))
 					sleep(6)
+					if(!can_continue_open_fire(target))
+						return FALSE
 					INVOKE_ASYNC(src, PROC_REF(plasmashot), target, FALSE)
 					if(prob(50))
 						sleep(6)
+						if(!can_continue_open_fire(target))
+							return FALSE
 						INVOKE_ASYNC(src, PROC_REF(plasmashot), target, FALSE)
 				special = FALSE
 			else
 				special = TRUE
 				animate(src, color = "#ff0000", time = 3)
 				sleep(4)
+				if(!can_continue_open_fire(target))
+					return FALSE
 				INVOKE_ASYNC(src, PROC_REF(shockwave), WEST, 10, TRUE)
 				INVOKE_ASYNC(src, PROC_REF(shockwave), EAST, 10, TRUE)
 				sleep(7)
+				if(!can_continue_open_fire(target))
+					return FALSE
 				INVOKE_ASYNC(src, PROC_REF(shockwave), NORTH, 10, TRUE)
 				INVOKE_ASYNC(src, PROC_REF(shockwave), SOUTH, 10, TRUE)
 				animate(src, color = initial(color), time = 5)
@@ -110,14 +136,22 @@
 					special = TRUE
 					animate(src, color = "#ff0000", time = 3)
 					sleep(5)
+					if(!can_continue_open_fire(target))
+						return FALSE
 					INVOKE_ASYNC(src, PROC_REF(shockwave), src.dir, 15)
 					if(prob(60))
 						sleep(5)
+						if(!can_continue_open_fire(target))
+							return FALSE
 						INVOKE_ASYNC(src, PROC_REF(plasmaburst), target)
 						sleep(5)
+						if(!can_continue_open_fire(target))
+							return FALSE
 						INVOKE_ASYNC(src, PROC_REF(plasmaburst), target)
 						if(prob(50))
 							sleep(5)
+							if(!can_continue_open_fire(target))
+								return FALSE
 							INVOKE_ASYNC(src, PROC_REF(plasmaburst), target)
 					animate(src, color = initial(color), time = 3)
 					special = FALSE
@@ -129,27 +163,39 @@
 					animate(src, color = "#ff0000", time = 3)
 					special = TRUE
 					sleep(3)
+					if(!can_continue_open_fire(target))
+						return FALSE
 					INVOKE_ASYNC(src, PROC_REF(plasmaburst), left, TRUE)
 					INVOKE_ASYNC(src, PROC_REF(plasmaburst), right, FALSE)
 					sleep(3)
+					if(!can_continue_open_fire(target))
+						return FALSE
 					INVOKE_ASYNC(src, PROC_REF(plasmashot), up, FALSE)
 					INVOKE_ASYNC(src, PROC_REF(plasmashot), down, FALSE)
 					sleep(10)
+					if(!can_continue_open_fire(target))
+						return FALSE
 					animate(src, color = initial(color), time = 3)
 					special = FALSE
 					if(prob(35))
 						animate(src, color = "#ff0000", time = 3)
 						sleep(3)
+						if(!can_continue_open_fire(target))
+							return FALSE
 						special = TRUE
 						for(var/dire in GLOB.cardinals)
 							INVOKE_ASYNC(src, PROC_REF(shockwave), dire, 7, TRUE, 3)
 							sleep(6)
+							if(!can_continue_open_fire(target))
+								return FALSE
 						animate(src, color = initial(color), time = 3)
 						special = FALSE
 			else
 				special = TRUE
 				INVOKE_ASYNC(src, PROC_REF(ultishockwave), 7, 5)
 				sleep(10)
+				if(!can_continue_open_fire(target))
+					return FALSE
 				special = FALSE
 
 /mob/living/simple_animal/hostile/megafauna/rogueprocess/Move()
@@ -165,59 +211,61 @@
 		DestroySurroundings()
 
 /mob/living/simple_animal/hostile/megafauna/rogueprocess/proc/plasmashot(atom/target)
-	var/path = get_dist(src, target)
-	if(path > 2)
-		if(!target)
-			return
-		visible_message("<span class='boldwarning'>[src] raises it's plasma cutter!</span>")
-		sleep(3)
-		var/turf/startloc = get_turf(src)
-		var/obj/item/projectile/P = new /obj/item/projectile/plasma/rogue(startloc)
-		playsound(src, 'sound/weapons/laser.ogg', 100, TRUE)
-		P.preparePixelProjectile(target, startloc)
-		P.firer = src
-		P.original = target
-		var/set_angle = Get_Angle(src, target)
-		P.fire(set_angle)
+	if(!can_continue_attack(target) || get_dist(src, target) <= 2)
+		return FALSE
+	visible_message("<span class='boldwarning'>[src] raises it's plasma cutter!</span>")
+	sleep(3)
+	if(!can_continue_attack(target))
+		return FALSE
+	var/turf/startloc = get_turf(src)
+	var/obj/item/projectile/P = new /obj/item/projectile/plasma/rogue(startloc)
+	playsound(src, 'sound/weapons/laser.ogg', 100, TRUE)
+	P.preparePixelProjectile(target, startloc)
+	P.firer = src
+	P.original = target
+	var/set_angle = Get_Angle(src, target)
+	P.fire(set_angle)
+	return TRUE
 
 /mob/living/simple_animal/hostile/megafauna/rogueprocess/proc/plasmaburst(atom/target)
-	var/list/theline = get_dist(src, target)
-	if(theline > 2)
-		if(!target)
-			return
-		visible_message("<span class='boldwarning'>[src] raises it's tri-shot plasma cutter!</span>")
-		var/ogangle = Get_Angle(src, target)
-		sleep(7)
-		var/turf/startloc = get_turf(src)
-		var/obj/item/projectile/P = new /obj/item/projectile/plasma/rogue(startloc)
-		var/turf/otherangle = (ogangle + 45)
-		var/turf/otherangle2 = (ogangle - 45)
-		playsound(src, 'sound/weapons/laser.ogg', 100, TRUE)
-		P.preparePixelProjectile(target, startloc)
-		P.firer = src
-		P.original = target
-		P.fire(ogangle)
-		var/obj/item/projectile/X = new /obj/item/projectile/plasma/rogue(startloc)
-		playsound(src, 'sound/weapons/laser.ogg', 100, TRUE)
-		X.preparePixelProjectile(target, startloc)
-		X.firer = src
-		X.original = target
-		X.fire(otherangle)
-		var/obj/item/projectile/Y = new /obj/item/projectile/plasma/rogue(startloc)
-		playsound(src, 'sound/weapons/laser.ogg', 100, TRUE)
-		Y.preparePixelProjectile(target, startloc)
-		Y.firer = src
-		Y.original = target
-		Y.fire(otherangle2)
+	if(!can_continue_attack(target) || get_dist(src, target) <= 2)
+		return FALSE
+	visible_message("<span class='boldwarning'>[src] raises it's tri-shot plasma cutter!</span>")
+	var/ogangle = Get_Angle(src, target)
+	sleep(7)
+	if(!can_continue_attack(target))
+		return FALSE
+	var/turf/startloc = get_turf(src)
+	var/obj/item/projectile/P = new /obj/item/projectile/plasma/rogue(startloc)
+	var/otherangle = ogangle + 45
+	var/otherangle2 = ogangle - 45
+	playsound(src, 'sound/weapons/laser.ogg', 100, TRUE)
+	P.preparePixelProjectile(target, startloc)
+	P.firer = src
+	P.original = target
+	P.fire(ogangle)
+	var/obj/item/projectile/X = new /obj/item/projectile/plasma/rogue(startloc)
+	playsound(src, 'sound/weapons/laser.ogg', 100, TRUE)
+	X.preparePixelProjectile(target, startloc)
+	X.firer = src
+	X.original = target
+	X.fire(otherangle)
+	var/obj/item/projectile/Y = new /obj/item/projectile/plasma/rogue(startloc)
+	playsound(src, 'sound/weapons/laser.ogg', 100, TRUE)
+	Y.preparePixelProjectile(target, startloc)
+	Y.firer = src
+	Y.original = target
+	Y.fire(otherangle2)
+	return TRUE
 
 /mob/living/simple_animal/hostile/megafauna/rogueprocess/proc/knockdown(range = 2)
 	visible_message("<span class='boldwarning'>[src] smashes into the ground!</span>")
 	playsound(src,'sound/misc/crunch.ogg', 200, 1)
 	var/list/hit_things = list()
 	sleep(7)
+	if(QDELETED(src) || !loc)
+		return
 	for(var/turf/T in oview(range, src))
-		if(!T)
-			return
 		new /obj/effect/temp_visual/small_smoke/halfsecond(T)
 		for(var/mob/living/L in T.contents)
 			if(L != src && !(L in hit_things))
@@ -233,14 +281,18 @@
 	visible_message("<span class='boldwarning'>[src] smashes the ground in a general direction!!</span>")
 	playsound(src,'sound/misc/crunch.ogg', 200, 1)
 	sleep(7)
+	if(QDELETED(src) || !loc)
+		return
 	var/list/hit_things = list()
 	var/turf/T = get_turf(src)
+	if(!T)
+		return
 	var/ogdir = direction
 	var/turf/otherT = get_step(T, turn(ogdir, 90))
 	var/turf/otherT2 = get_step(T, turn(ogdir, -90))
-	if(!T)
-		return
 	for(var/i in 1 to range)
+		if(!T || !otherT || !otherT2)
+			return
 		new /obj/effect/temp_visual/small_smoke/halfsecond(T)
 		new /obj/effect/temp_visual/small_smoke/halfsecond(otherT)
 		new /obj/effect/temp_visual/small_smoke/halfsecond(otherT2)
@@ -269,11 +321,15 @@
 		otherT = get_step(otherT, ogdir)
 		otherT2 = get_step(otherT2, ogdir)
 		sleep(wave_duration)
+		if(QDELETED(src) || !loc)
+			return
 
 /mob/living/simple_animal/hostile/megafauna/rogueprocess/proc/ultishockwave(range, iteration_duration = 5)
 	visible_message("<span class='boldwarning'>[src] smashes the ground around them!!</span>")
 	playsound(src,'sound/misc/crunch.ogg', 200, 1)
 	sleep(10)
+	if(QDELETED(src) || !loc)
+		return
 	var/list/hit_things = list()
 	for(var/i in 1 to range)
 		for(var/turf/T in (view(i, src) - view(i - 1, src)))
@@ -288,3 +344,5 @@
 					L.apply_damage_type(25, BRUTE)
 					hit_things += L
 		sleep(iteration_duration)
+		if(QDELETED(src) || !loc)
+			return

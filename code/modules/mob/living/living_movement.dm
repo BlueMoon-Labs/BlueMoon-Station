@@ -158,9 +158,19 @@
 	if (registered_z != new_z)
 		if (registered_z)
 			SSmobs.clients_by_zlevel[registered_z] -= src
+			//последний клиент ушёл с уровня - гасим контроллеры этого z
+			if(!length(SSmobs.clients_by_zlevel[registered_z]) && GLOB.ai_controllers_by_zlevel.len >= registered_z)
+				for(var/datum/ai_controller/controller as anything in GLOB.ai_controllers_by_zlevel[registered_z])
+					controller.set_ai_status(AI_STATUS_OFF)
 		if (client || audiovisual_redirect)
 			if (new_z)
+				var/first_client_on_z = !length(SSmobs.clients_by_zlevel[new_z])
 				SSmobs.clients_by_zlevel[new_z] += src
+				//на уровне не было клиентов - будим его контроллеры (не напрямую в ON:
+				//get_expected_ai_status сам решит, спать ли дальше по окну ячеек)
+				if(first_client_on_z && GLOB.ai_controllers_by_zlevel.len >= new_z)
+					for(var/datum/ai_controller/controller as anything in GLOB.ai_controllers_by_zlevel[new_z])
+						controller.set_ai_status(controller.get_expected_ai_status())
 				// Initialize deferred lighting when first client enters a z-level
 				// Skip during bulk operations (shuttle docking) — docking creates lighting for shuttle turfs,
 				// and remaining turfs will be initialized when the deferred batch completes

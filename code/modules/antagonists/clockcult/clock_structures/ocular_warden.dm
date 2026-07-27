@@ -27,6 +27,7 @@
 
 /obj/structure/destructible/clockwork/ocular_warden/Initialize(mapload)
 	. = ..()
+	AddComponent(/datum/component/hostile_machine_registry)
 	START_PROCESSING(SSfastprocess, src)
 
 /obj/structure/destructible/clockwork/ocular_warden/Destroy()
@@ -135,7 +136,7 @@
 			var/mob/living/simple_animal/hostile/H = L
 			if(("ratvar" in H.faction) || (!H.mind && ("neutral" in H.faction)) || (!H.mind && ("skeleton" in H.faction)))
 				continue
-			if(ismegafauna(H) || (!H.mind && H.AIStatus == AI_OFF))
+			if(ismegafauna(H) || (!H.mind && H.get_effective_ai_status() == AI_OFF))
 				continue
 		else if(isrevenant(L))
 			var/mob/living/simple_animal/revenant/R = L

@@ -6,16 +6,7 @@
 		return FALSE
 
 	if(SSspatial_grid.initialized)
-		// Спатиал-грид: перебираем клиент-мобов из ячеек вокруг нас вместо
-		// всех игроков z-уровня. В CLIENTS-канале есть и обсерверы - для
-		// паритета со старой семантикой (clients_by_zlevel хранил только
-		// живых) фильтруем по isliving.
-		for(var/mob/player as anything in SSspatial_grid.orthogonal_range_search(our_turf, SPATIAL_GRID_CONTENTS_TYPE_CLIENTS, distance))
-			if(!isliving(player))
-				continue
-			if(get_dist(our_turf, player) <= distance)
-				return TRUE
-		return FALSE
+		return SSspatial_grid.has_living_client_in_range(our_turf, distance)
 
 	// Фолбэк до инициализации грида: старый обход игроков z-уровня
 	var/our_z = our_turf.z

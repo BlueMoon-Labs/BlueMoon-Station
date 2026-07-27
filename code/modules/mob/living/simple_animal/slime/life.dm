@@ -1,6 +1,5 @@
 
 /mob/living/simple_animal/slime
-	var/AIproc = 0 // determines if the AI loop is activated
 	var/Atkcool = 0 // attack cooldown
 	var/atkcool_timer_id
 	var/Tempstun = 0 // temporary temperature stuns
@@ -37,80 +36,19 @@
 		return
 	..()
 
-/mob/living/simple_animal/slime/proc/AIprocess()  // the master AI process
-
-	if(AIproc || stat || client)
+///Нудж событийной погони (замена INVOKE_ASYNC(AIprocess) старого мозга):
+///зеркалим Target в blackboard контроллера и пересчитываем его статус.
+///Сама погоня и решающее дерево кормёжки живут в /datum/ai_controller/slime.
+/mob/living/simple_animal/slime/proc/slime_wake_pursuit()
+	if(QDELETED(src) || isnull(ai_controller))
 		return
-
-	var/hungry = 0
-	if (nutrition < get_starve_nutrition())
-		hungry = 2
-	else if (nutrition < get_grow_nutrition() && prob(25) || nutrition < get_hunger_nutrition())
-		hungry = 1
-
-	AIproc = 1
-
-	while(AIproc && !QDELETED(src) && stat != DEAD && (attacked || hungry || rabid || buckled))
-		if(!CHECK_MOBILITY(src, MOBILITY_MOVE)) //also covers buckling. Not sure why buckled is in the while condition if we're going to immediately break, honestly
-			break
-
-		if(!Target || client)
-			break
-
-		if(Target.health <= -70 || Target.stat == DEAD)
-			Target = null
-			AIproc = 0
-			break
-
-		if(Target)
-			if(locate(/mob/living/simple_animal/slime) in Target.buckled_mobs)
-				Target = null
-				AIproc = 0
-				break
-			if(!AIproc)
-				break
-
-			if(Target in view(1,src))
-				if(!CanFeedon(Target)) //If they're not able to be fed upon, ignore them.
-					if(!Atkcool)
-						Atkcool = 1
-						atkcool_timer_id = addtimer(CALLBACK(src, PROC_REF(reset_atkcool)), 45, TIMER_STOPPABLE | TIMER_DELETE_ME)
-						if(Target.Adjacent(src))
-							Target.attack_slime(src)
-					break
-				if(!Target.lying && prob(80))
-
-					if(Target.client && Target.health >= 20)
-						if(!Atkcool)
-							Atkcool = 1
-							atkcool_timer_id = addtimer(CALLBACK(src, PROC_REF(reset_atkcool)), 45, TIMER_STOPPABLE | TIMER_DELETE_ME)
-							if(Target.Adjacent(src))
-								Target.attack_slime(src)
-
-					else
-						if(!Atkcool && Target.Adjacent(src))
-							Feedon(Target)
-
-				else
-					if(!Atkcool && Target.Adjacent(src))
-						Feedon(Target)
-
-			else if(Target in view(7, src))
-				if(!Target.Adjacent(src))
-				// Bug of the month candidate: slimes were attempting to move to target only if it was directly next to them, which caused them to target things, but not approach them
-					step_to(src, Target)
-			else
-				Target = null
-				AIproc = 0
-				break
-
-		var/sleeptime = movement_delay()
-		if(sleeptime <= 0)
-			sleeptime = 1
-
-		sleep(sleeptime + 2) // this is about as fast as a player slime can go
-
-	AIproc = 0
+	if(QDELETED(Target))
+		ai_controller.clear_blackboard_key(BB_SLIME_TARGET)
+	else
+		ai_controller.set_blackboard_key(BB_SLIME_TARGET, Target)
+		if(ai_controller.on_failed_planning_timeout) //свежая цель не ждёт конца таймаута пустого планирования
+			ai_controller.resume_planning()
+	ai_controller.reset_ai_status()
 
 /mob/living/simple_animal/slime/proc/reset_atkcool()
 	Atkcool = 0
@@ -318,15 +256,10 @@
 				target_patience = 0
 				Target = null
 
-		if(AIproc && SStun > world.time)
-			return
+		//Стан-фриз погони (легаси "if(AIproc && SStun ...)") переехал в гейт
+		//исполнения /datum/ai_planning_subtree/slime_pursuit: стоим, цель не бросаем
 
-		var/hungry = 0 // determines if the slime is hungry
-
-		if (nutrition < get_starve_nutrition())
-			hungry = 2
-		else if (nutrition < get_grow_nutrition() && prob(25) || nutrition < get_hunger_nutrition())
-			hungry = 1
+		var/hungry = get_hunger_drive() // determines if the slime is hungry
 
 		if(hungry == 2 && !client) // if a slime is starving, it starts losing its friends
 			if(Friends.len > 0 && prob(1))
@@ -410,8 +343,8 @@
 					holding_still = 10
 				else if(CHECK_MOBILITY(src, MOBILITY_MOVE) && isturf(loc) && prob(33))
 					step(src, pick(GLOB.cardinals))
-		else if(!AIproc)
-			INVOKE_ASYNC(src, PROC_REF(AIprocess))
+		else
+			slime_wake_pursuit()
 
 /mob/living/simple_animal/slime/handle_automated_movement()
 	return //slime random movement is currently handled in handle_targets()
@@ -513,7 +446,7 @@
 			else if (findtext(phrase, "attack"))
 				if (rabid && prob(20))
 					Target = who
-					AIprocess() //Wake up the slime's Target AI, needed otherwise this doesn't work
+					slime_wake_pursuit() //Wake up the slime's Target AI, needed otherwise this doesn't work
 					to_say = "ATTACK!?!?"
 				else if (Friends[who] >= SLIME_FRIENDSHIP_ATTACK)
 					for (var/mob/living/L in view(7,src)-list(src,who))
@@ -523,7 +456,7 @@
 								--Friends[who] //Don't ask a slime to attack its friend
 							else if(!Friends[L] || Friends[L] < 1)
 								Target = L
-								AIprocess()//Wake up the slime's Target AI, needed otherwise this doesn't work
+								slime_wake_pursuit()//Wake up the slime's Target AI, needed otherwise this doesn't work
 								to_say = "Ok... I attack [Target]"
 							else
 								to_say = "No... like [L] ..."
@@ -639,6 +572,15 @@
 		return 300
 	else
 		return 200
+
+///Легаси-оценка голода (общая для handle_targets и драйва погони контроллера):
+///2 - голодает и ест всё подряд, 1 - проголодался (средний диапазон с шансом 25%), 0 - сыт
+/mob/living/simple_animal/slime/proc/get_hunger_drive()
+	if(nutrition < get_starve_nutrition())
+		return 2
+	if((nutrition < get_grow_nutrition() && prob(25)) || nutrition < get_hunger_nutrition())
+		return 1
+	return 0
 
 /mob/living/simple_animal/slime/proc/will_hunt(hunger = -1) // Check for being stopped from feeding and chasing
 	if (docile)

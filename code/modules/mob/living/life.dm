@@ -9,7 +9,11 @@
 	if(mob_transforming)
 		return
 
-	// BLUEMOON OPTIMIZATION: throttle clientless mobs far from players
+	// BLUEMOON OPTIMIZATION: throttle clientless mobs far from players.
+	// Троттл СОХРАНЯЕТ игровое время: пропущенные секунды копятся в
+	// life_time_debt и доезжают следующим обработанным тиком, а ленивые фазовые
+	// бакеты размазывают дальних мобов по тикам вместо синхронного залпа
+	// каждый N-й фаер (залп давал p95 ~50мс при медиане ~4мс).
 	if(!client)
 		var/turf/our_turf = get_turf(src)
 		if(our_turf)
@@ -21,16 +25,26 @@
 						handle_fire()
 					return
 				// Players on Z-level but none nearby: stagger processing
-				if(!has_nearby_player())
+				if(!has_nearby_player() && !should_bypass_life_throttle())
 					if(stat == DEAD)
 						// Dead far from players: process once per 30 sec
-						if(times_fired % 15 == 0)
-							BiologicalLife(seconds * 15, times_fired)
+						if((times_fired + life_stagger_phase) % 15 != 0)
+							life_time_debt += seconds
+							return
+						var/dead_seconds = seconds + life_time_debt
+						life_time_debt = 0
+						BiologicalLife(dead_seconds, times_fired)
 						return
 					// Alive far from players: process once per 8 sec
-					if(times_fired % 4 != 0)
+					if((times_fired + life_stagger_phase) % 4 != 0)
+						life_time_debt += seconds
 						return
 	// END BLUEMOON OPTIMIZATION
+
+	// накопленный долг времени доезжает первым же полноценным тиком
+	if(life_time_debt)
+		seconds += life_time_debt
+		life_time_debt = 0
 
 	. = SEND_SIGNAL(src, COMSIG_LIVING_LIFE, seconds, times_fired)
 	// Dead clientless mobs: only need BiologicalLife for rot/disease/organ decay, skip expensive PhysicalLife and status effects
@@ -68,6 +82,18 @@
 	else if (registered_z)
 		log_game("Z-TRACKING: [src] of type [src.type] has a Z-registration despite not having a client.")
 		update_z(null)
+
+///Дальний моб, которому нельзя резать каденс Life: горит, не в сознании
+///(крит/агония) или ведёт активный бой - его состояние меняется прямо сейчас,
+///и восьмисекундная дискретизация была бы заметна снаружи.
+/mob/living/proc/should_bypass_life_throttle()
+	if(on_fire)
+		return TRUE
+	if(stat != CONSCIOUS && stat != DEAD)
+		return TRUE
+	if(ai_controller && ai_controller.ai_status == AI_STATUS_ON && !isnull(ai_controller.blackboard[BB_AI_CURRENT_TARGET]))
+		return TRUE
+	return FALSE
 
 /**
   * Handles biological life processes like chemical metabolism, breathing, etc
@@ -129,11 +155,11 @@
 					handle_fire()
 				return TRUE
 
-	var/datum/gas_mixture/environment = loc.return_air()
-
 	//Handle temperature/pressure differences between body and environment
-	if(environment)
-		handle_environment(environment)
+	if(!environment_processing_immune)
+		var/datum/gas_mixture/environment = loc.return_air()
+		if(environment)
+			handle_environment(environment)
 
 	handle_fire()
 

@@ -1,6 +1,8 @@
 
 /obj
 	var/crit_fail = FALSE
+	/// Whether pathfinding must call CanAStarPass() while this object is non-dense.
+	var/can_astar_pass = CANASTARPASS_DENSITY
 	animate_movement = 2
 	speech_span = SPAN_ROBOT
 	vis_flags = VIS_INHERIT_PLANE //when this be added to vis_contents of something it inherit something.plane, important for visualisation of obj in openspace.
@@ -314,6 +316,8 @@
  * * ID- An ID card representing what access we have (and thus if we can open things like airlocks or windows to pass through them). The ID card's physical location does not matter, just the reference
  * * to_dir- What direction we're trying to move in, relevant for things like directional windows that only block movement in certain directions
  * * caller- The movable we're checking pass flags for, if we're making any such checks
+ * Overrides which can return FALSE while density is FALSE must set
+ * can_astar_pass to CANASTARPASS_ALWAYS_PROC.
  **/
 /obj/proc/CanAStarPass(obj/item/card/id/ID, to_dir, atom/movable/caller)
 	if(ismovable(caller))

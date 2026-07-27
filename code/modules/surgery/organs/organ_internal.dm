@@ -54,10 +54,13 @@
 	var/obj/item/organ/replaced = M.getorganslot(slot)
 	if(replaced)
 		replaced.Remove(TRUE)
-		if(drop_if_replaced)
-			replaced.forceMove(get_turf(M))
-		else
-			qdel(replaced)
+		// Some single-use parasites qdel themselves from Remove(). Do not try
+		// to drop an already deleted replacement back into the world.
+		if(!QDELETED(replaced))
+			if(drop_if_replaced)
+				replaced.forceMove(get_turf(M))
+			else
+				qdel(replaced)
 
 	//Hopefully this doesn't cause problems
 	organ_flags &= ~ORGAN_FROZEN

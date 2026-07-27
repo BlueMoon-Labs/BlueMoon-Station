@@ -140,6 +140,8 @@
 /// Test that Life() throttle applies stagger for alive clientless mobs far from players
 /datum/unit_test/life_throttle_alive_far/Run()
 	var/mob/living/carbon/human/human = allocate(/mob/living/carbon/human)
+	human.life_stagger_phase = 0
+	human.life_periodic_phase = 0
 
 	var/turf/T = get_turf(human)
 	TEST_ASSERT_NOTNULL(T, "Human has no turf")
@@ -183,6 +185,8 @@
 /// Test that Life() throttle applies heavier stagger for dead clientless mobs far from players
 /datum/unit_test/life_throttle_dead_far/Run()
 	var/mob/living/carbon/human/human = allocate(/mob/living/carbon/human)
+	human.life_stagger_phase = 0
+	human.life_periodic_phase = 0
 	human.death()
 
 	TEST_ASSERT_EQUAL(human.stat, DEAD, "Human should be dead")
@@ -289,6 +293,8 @@
 /// Test that monkey AI is skipped when no player is nearby
 /datum/unit_test/monkey_ai_skip_no_player/Run()
 	var/mob/living/carbon/monkey/monkey = allocate(/mob/living/carbon/monkey)
+	monkey.life_stagger_phase = 0
+	monkey.life_periodic_phase = 0
 	TEST_ASSERT_EQUAL(monkey.stat, CONSCIOUS, "Monkey should be conscious")
 
 	var/turf/T = get_turf(monkey)
@@ -320,6 +326,8 @@
 /// Test that carbon organ stagger works for clientless mobs
 /datum/unit_test/carbon_organ_stagger/Run()
 	var/mob/living/carbon/human/human = allocate(/mob/living/carbon/human)
+	human.life_stagger_phase = 0
+	human.life_periodic_phase = 0
 
 	var/turf/T = get_turf(human)
 	TEST_ASSERT_NOTNULL(T, "Human has no turf")
@@ -352,6 +360,31 @@
 	TEST_ASSERT(has_ethanol, "Human should have ethanol")
 	TEST_ASSERT_NOTEQUAL(mob_stat, DEAD, "Human should survive Life() processing with organ stagger")
 
+///Periodic carbon work keeps its cadence but distributes clientless mobs across
+///four SSmobs fires instead of making every mob breathe on the same fire.
+/datum/unit_test/carbon_life_periodic_work_is_staggered/Run()
+	var/list/test_mobs = list()
+	var/list/phase_counts = list(0, 0, 0, 0)
+	for(var/i in 1 to 8)
+		var/mob/living/carbon/human/human = allocate(/mob/living/carbon/human)
+		test_mobs += human
+		phase_counts[(human.life_periodic_phase % 4) + 1]++
+
+	for(var/phase_count in phase_counts)
+		TEST_ASSERT_EQUAL(phase_count, 2, "Eight sequential clientless mobs must split evenly between four Life phases")
+
+	for(var/times_fired in 1 to 4)
+		var/due_breaths = 0
+		var/due_organs = 0
+		for(var/mob/living/carbon/human/human as anything in test_mobs)
+			var/life_phase = times_fired + human.life_periodic_phase
+			if(life_phase % 4 == 0)
+				due_breaths++
+			if(life_phase % 2 == 0)
+				due_organs++
+		TEST_ASSERT_EQUAL(due_breaths, 2, "Healthy breathing cadence must distribute eight mobs as two per fire")
+		TEST_ASSERT_EQUAL(due_organs, 4, "Organ cadence must distribute eight mobs as four per fire")
+
 /// Test that handle_diseases guard clause skips processing when diseases list is empty
 /datum/unit_test/guard_clause_empty_diseases/Run()
 	var/mob/living/carbon/human/human = allocate(/mob/living/carbon/human)
@@ -373,27 +406,19 @@
 	// Calling handle_stomach with empty list should return immediately without error
 	human.handle_stomach()
 
-/// Test that SSai_controllers proximity skip works — AI controller skips planning when pawn has no player nearby
-/datum/unit_test/ai_controller_proximity_skip/Run()
-	var/mob/living/carbon/human/human = allocate(/mob/living/carbon/human)
+// Тест ai_controller_proximity_skip удалён: он очищал список контроллеров и
+// стрелял пустой подсистемой, ничего не проверяя. Настоящие тесты планировщика
+// контроллеров - в ai_controller_scheduler.dm (событийный wake/sleep).
 
-	var/turf/T = get_turf(human)
-	TEST_ASSERT_NOTNULL(T, "Human has no turf")
+///Healthy-limb fast path must preserve real bleeding and stack decay.
+/datum/unit_test/human_blood_life_fast_path/Run()
+	var/mob/living/carbon/human/human = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/blood_before = human.blood_volume
+	human.handle_blood(2, 1)
+	TEST_ASSERT_EQUAL(human.blood_volume, blood_before, "Healthy limbs must not lose blood")
 
-	if(!islist(SSmobs.clients_by_zlevel) || T.z > SSmobs.clients_by_zlevel.len)
-		SSmobs.MaxZChanged()
-
-	// Ensure no players on z-level
-	var/list/saved_clients = SSmobs.clients_by_zlevel[T.z].Copy()
-	SSmobs.clients_by_zlevel[T.z].Cut()
-
-	// Save active controllers and temporarily clear them
-	var/list/saved_controllers = SSai_controllers.active_ai_controllers.Copy()
-	SSai_controllers.active_ai_controllers.Cut()
-
-	// Fire the subsystem — should complete without error even with no controllers
-	SSai_controllers.fire(FALSE)
-
-	// Restore
-	SSai_controllers.active_ai_controllers += saved_controllers
-	SSmobs.clients_by_zlevel[T.z] += saved_clients
+	var/obj/item/bodypart/bleeding_limb = human.bodyparts[1]
+	bleeding_limb.generic_bleedstacks = 2
+	human.handle_blood(2, 2)
+	TEST_ASSERT_EQUAL(bleeding_limb.generic_bleedstacks, 1, "A real generic bleed stack must still decay every blood tick")
+	TEST_ASSERT(human.blood_volume < blood_before, "A real bleeding limb must still reduce blood volume")

@@ -50,6 +50,19 @@
 	var/obj/structure/legionnaire_bonfire/mypile = null
 	var/has_head = TRUE
 
+/mob/living/simple_animal/hostile/asteroid/elite/legionnaire/Destroy(force, ...)
+	var/mob/living/simple_animal/hostile/asteroid/elite/legionnairehead/head_to_delete = myhead
+	myhead = null
+	if(head_to_delete)
+		head_to_delete.body = null
+		qdel(head_to_delete)
+	var/obj/structure/legionnaire_bonfire/pile_to_delete = mypile
+	mypile = null
+	if(pile_to_delete)
+		pile_to_delete.myowner = null
+		qdel(pile_to_delete)
+	return ..()
+
 /datum/action/innate/elite_attack/legionnaire_charge
 	name = "Legionnaire Charge"
 	button_icon_state = "legionnaire_charge"
@@ -163,6 +176,8 @@
 
 /mob/living/simple_animal/hostile/asteroid/elite/legionnaire/proc/onHeadDeath()
 	myhead = null
+	if(QDELETED(src))
+		return
 	addtimer(CALLBACK(src, PROC_REF(regain_head)), 50)
 
 /mob/living/simple_animal/hostile/asteroid/elite/legionnaire/proc/regain_head()
@@ -239,6 +254,12 @@
 	ranged = FALSE
 	var/mob/living/simple_animal/hostile/asteroid/elite/legionnaire/body = null
 
+/mob/living/simple_animal/hostile/asteroid/elite/legionnairehead/Destroy(force, ...)
+	if(body?.myhead == src)
+		body.myhead = null
+	body = null
+	return ..()
+
 /mob/living/simple_animal/hostile/asteroid/elite/legionnairehead/death()
 	. = ..()
 	if(body)
@@ -267,9 +288,10 @@
 	. = ..()
 
 /obj/structure/legionnaire_bonfire/Destroy()
-	if(myowner != null)
+	if(myowner?.mypile == src)
 		myowner.mypile = null
-	. = ..()
+	myowner = null
+	return ..()
 
 //The visual effect which appears in front of legionnaire when he goes to charge.
 /obj/effect/temp_visual/dragon_swoop/legionnaire

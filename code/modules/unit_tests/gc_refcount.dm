@@ -1,6 +1,17 @@
 /// Пустой датум для замеров refcount - никто на него не ссылается.
 /datum/gc_refcount_probe
 
+/datum/gc_refcount_probe/self_reference
+	var/datum/self_reference
+
+/datum/gc_refcount_probe/self_reference/New()
+	. = ..()
+	self_reference = src
+
+/datum/gc_refcount_probe/self_reference/Destroy()
+	self_reference = null
+	return ..()
+
 /// Имитирует рантайм внутри полного обхода, не сканируя весь мир.
 /datum/gc_refcount_probe/reftracker_runtime
 
@@ -120,8 +131,20 @@
 	probe.gc_destroyed = world.time || 1
 	var/datum/gc_failure_viewer/gc_failure_entry/entry = new(null, probe.type, REF(probe), world.time, QDEL_HINT_QUEUE)
 	TEST_ASSERT(entry.can_scan_target(probe), "World scan ошибочно считает QDELING-цель уже удалённой")
+	TEST_ASSERT(islist(entry.found_references), "GC failure entry обязан всегда хранить найденные ссылки списком")
 	qdel(entry)
 	qdel(probe, force = TRUE)
+
+/// Быстрый GC-скан должен показывать самоссылки: полный world scan пропускает
+/// саму цель и без этого возвращает ложное "owner не найден".
+/datum/unit_test/gc_failure_viewer_reports_self_reference/Run()
+	var/datum/gc_refcount_probe/self_reference/probe = new
+	var/datum/gc_failure_viewer/gc_failure_entry/entry = new(probe, probe.type, REF(probe), world.time, QDEL_HINT_QUEUE, 1)
+	entry.found_references = list()
+	entry.build_self_reference_info(probe)
+	TEST_ASSERT("SELF.self_reference = [probe.type]" in entry.found_references, "GC viewer did not report a direct self-reference: [json_encode(entry.found_references)]")
+	qdel(entry)
+	qdel(probe)
 
 /// resolve_target обязан отвергать чужой объект того же типа в переиспользованном ref-слоте.
 /datum/unit_test/gc_entry_resolve_recycled_ref/Run()

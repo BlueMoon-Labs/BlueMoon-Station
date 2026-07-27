@@ -1,5 +1,11 @@
 /mob/living/Initialize(mapload)
 	. = ..()
+	var/static/next_life_stagger_phase = 0
+	life_stagger_phase = next_life_stagger_phase
+	// Mix higher bits into the default periodic bucket so work selected by the
+	// outer far-Life throttle does not stay permanently synchronized with it.
+	life_periodic_phase = next_life_stagger_phase ^ (next_life_stagger_phase >> 2)
+	next_life_stagger_phase++
 	if(unique_name)
 		name = "[name] ([rand(1, 1000)])"
 		real_name = name
@@ -11,6 +17,8 @@
 	stamina_buffer = INFINITY
 	UpdateStaminaBuffer()
 	GLOB.mob_living_list += src
+	if(stat != DEAD)
+		become_ai_targetable()
 
 /mob/living/prepare_huds()
 	..()
@@ -54,6 +62,7 @@
 	QDEL_LIST(implants)
 	remove_from_all_data_huds()
 	cleanse_trait_datums()
+	QDEL_NULL(ai_controller)
 	GLOB.mob_living_list -= src
 	GLOB.ssd_mob_list -= src
 	//лейтджойнером может быть не только человек (ИИ, борг) - выписываем здесь,

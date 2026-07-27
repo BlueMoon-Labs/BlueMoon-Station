@@ -32,6 +32,17 @@
 /turf/proc/hotspot_expose(exposed_temperature, exposed_volume, soh = 0)
 	return
 
+///Create the visual hotspot only when this turf does not already own one.
+///Fire attacks often call this immediately before hotspot_expose(); blindly
+///constructing another hotspot orphaned the previous one in SSair.hotspots.
+/turf/proc/ensure_hotspot()
+	return new /obj/effect/hotspot(src)
+
+/turf/open/ensure_hotspot()
+	if(active_hotspot && !QDELETED(active_hotspot))
+		return active_hotspot
+	return new /obj/effect/hotspot(src)
+
 /turf/open/hotspot_expose(exposed_temperature, exposed_volume, soh)
 	//If the air doesn't exist we just return false
 	var/list/air_gases = air?.get_gases()

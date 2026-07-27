@@ -159,10 +159,10 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 	source.failures += entry
 	if(length(source.failures) > GC_FAILURE_SOURCE_ENTRY_LIMIT)
 		source.failures.Cut(1, 2)
-	// In TESTING mode, auto-launch world scan while D is still guaranteed alive
-	#ifdef TESTING
-	INVOKE_ASYNC(entry, TYPE_PROC_REF(/datum/gc_failure_viewer/gc_failure_entry, trigger_world_scan), null, D)
-	#endif
+	// Full world scans are intentionally on-demand. Starting one suspended scan
+	// per warnfail retains every failed datum in a proc frame and turns a burst
+	// of real failures into minutes of reftracker CPU and manufactured refs.
+	return entry
 
 /// Окно, в котором фейлы считаются одним каскадом (деспавн моба тянет инвентарь тем же тиком).
 #define GC_CASCADE_WINDOW (2 MINUTES)
@@ -305,7 +305,7 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 	/// String: aggregate qdel_item statistics for this type
 	var/qdel_stats_info
 	/// Found references: locations in GLOB where references to the failed datum were found
-	var/list/found_references
+	var/list/found_references = list()
 	/// Whether the full world scan has been performed for this entry
 	var/world_scan_done = FALSE
 	/// Whether the world scan is currently running
@@ -349,7 +349,11 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 		extra_info = build_extra_info(D)
 		build_extended_info(D)
 		#ifdef TESTING
-		build_reference_info(D)
+		// Warnfail handling runs inside SSgarbage and must stay bounded. Direct
+		// self-cycles are cheap to inspect; global/subsystem/world ownership is
+		// available through the explicit scan link for a selected failure.
+		found_references = list()
+		build_self_reference_info(D)
 		build_testing_info(D)
 		#endif
 	name = "<b>\[[TIME_STAMP("hh:mm:ss", FALSE)]]</b> GC failure: <b>[type_path]</b>[obj_name ? " \"[html_encode(obj_name)]\"" : ""] ([ref_id])"
@@ -599,9 +603,24 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 
 /// Targeted reference search. Scans GLOB vars and reverse-checks neighbors for back-references.
 /// Much faster than full find_references() — milliseconds instead of minutes. Safe for production.
+/datum/gc_failure_viewer/gc_failure_entry/proc/build_self_reference_info(datum/D)
+	for (var/varname in D.vars)
+		if (varname == "vars" || varname == "vis_locs")
+			continue
+		var/self_value = D.vars[varname]
+		if (self_value == D)
+			found_references += "SELF.[varname] = [type_path]"
+			continue
+		if (islist(self_value))
+			scan_list_for_ref(D, self_value, "SELF.[varname]")
+
 /datum/gc_failure_viewer/gc_failure_entry/proc/build_reference_info(datum/D)
 	found_references = list()
-	// 1. Scan all GLOB vars (includes all global lists like mob_list, machines, etc.)
+	// 1. Inspect the failed datum itself. A self-reference is enough to prevent
+	// collection, but a world scan skips the target and cannot otherwise see it.
+	build_self_reference_info(D)
+
+	// 2. Scan all GLOB vars (includes all global lists like mob_list, machines, etc.)
 	for (var/varname in GLOB.vars)
 		if (varname == "vars")
 			continue
@@ -612,7 +631,7 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 		if (islist(value))
 			scan_list_for_ref(D, value, "GLOB.[varname]")
 
-	// 2. Scan all subsystem controllers (SSair, SSmachines, etc.)
+	// 3. Scan all subsystem controllers (SSair, SSmachines, etc.)
 	if (Master?.subsystems)
 		for (var/datum/controller/subsystem/SS in Master.subsystems)
 			for (var/ssvar in SS.vars)
@@ -625,7 +644,7 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 				if (islist(ssval))
 					scan_list_for_ref(D, ssval, "[SS.type].[ssvar]")
 
-	// 3. Reverse neighbor scan: for each datum that D references,
+	// 4. Reverse neighbor scan: for each datum that D references,
 	//    check if that datum holds a reference BACK to D.
 	//    Catches circular references (A->B, B->A where B.Destroy() didn't clean up).
 	for (var/varname in D.vars)
@@ -646,7 +665,7 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 					continue
 				check_neighbor_for_backref(D, neighbor, "self.[varname]")
 
-	// 4. Scan SSgarbage queues — maybe queued multiple times?
+	// 5. Scan SSgarbage queues — maybe queued multiple times?
 	for (var/queue_idx in 1 to GC_QUEUE_COUNT)
 		var/list/refs = SSgarbage.queue_refs[queue_idx]
 		var/head = SSgarbage.queue_heads[queue_idx]
@@ -724,9 +743,13 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 /// Scans all atoms in world and (in TESTING) all datums. Uses CHECK_TICK to yield.
 /// Can be called automatically (D passed directly) or on-demand via button (D = null, located by ref).
 /// user can be null for automatic calls (no chat feedback).
-/datum/gc_failure_viewer/gc_failure_entry/proc/trigger_world_scan(client/user, datum/D)
+/datum/gc_failure_viewer/gc_failure_entry/proc/trigger_world_scan(client/user, datum/D, references_to_find = INFINITY)
 	if (world_scan_done || world_scan_in_progress)
 		return
+	// Older/debug entries may predate the typed initialization. Keep the scan
+	// result shape stable for the viewer and machine-readable benchmark export.
+	if (!islist(found_references))
+		found_references = found_references ? list("[found_references]") : list()
 	// If D not passed directly, try to locate by saved ref (on-demand button click)
 	if (!D)
 		if (!datum_ref)
@@ -740,6 +763,7 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 			world_scan_done = TRUE
 			return
 	world_scan_in_progress = TRUE
+	var/found_reference_count_at_start = length(found_references)
 	if (user)
 		to_chat(user, span_boldnotice("Запуск полного сканирования мира... Это может занять 10-60 секунд."))
 	// Scan ALL atoms (objs, turfs, mobs, areas).
@@ -766,9 +790,13 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 				continue
 			if (islist(tval))
 				scan_list_for_ref(D, tval, "WORLD: [thing.type]([REF(thing)]).[tvar]", 1)
+		if (length(found_references) - found_reference_count_at_start >= references_to_find)
+			break
 		CHECK_TICK
 	// Also scan pure datums (not atoms). CHECK_TICK keeps this production-safe.
 	for (var/datum/thing)
+		if (length(found_references) - found_reference_count_at_start >= references_to_find)
+			break
 		if (!can_scan_target(D))
 			break // D was hard-deleted during scan, stop
 		if (thing == D)
@@ -899,7 +927,7 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 		html += "<div class='gc_failure'>[html_encode(qdel_stats_info)]</div>"
 		html += "</details>"
 
-	// Found references — on-demand in production, auto-collected in TESTING
+	// Direct self-references are collected at warnfail; expensive ownership scans are on-demand.
 	if (length(found_references))
 		html += "<details open><summary><b style='color:#FF6666'>Найденные ссылки ([length(found_references)])</b></summary>"
 		html += "<div class='gc_failure'>"
@@ -907,10 +935,12 @@ GLOBAL_DATUM_INIT(gc_failure_cache, /datum/gc_failure_viewer/gc_failure_cache, n
 			html += "[html_encode(line)]<br>"
 		html += "</div></details>"
 	else if (islist(found_references))
-		html += "<span class='gc_failure_line'><b>Найденные ссылки:</b> не найдено быстрым сканированием (GLOB, подсистемы, соседи)</span><br>"
+		html += "<span class='gc_failure_line'><b>Найденные ссылки:</b> самоссылок не найдено; глобальный поиск запускается вручную</span><br>"
 	else
+		html += "<span class='gc_failure_line'><b>Найденные ссылки:</b> сканирование ещё не запускалось</span><br>"
+	if (!length(found_references))
 		html += "<br><a href='?_src_=holder;[HrefToken()];viewgcfailure_refscan=[REF(src)]' style='background:#333;color:#88AAFF;padding:4px 12px;border:1px solid #555;border-radius:4px;text-decoration:none;font-family:Courier New'>"
-		html += "Сканировать ссылки (GLOB, подсистемы, соседи) — может вызвать лаг!</a><br>"
+		html += "Сканировать GLOB, подсистемы и соседей — может вызвать лаг!</a><br>"
 
 	// World scan button / status
 	if (world_scan_done)
