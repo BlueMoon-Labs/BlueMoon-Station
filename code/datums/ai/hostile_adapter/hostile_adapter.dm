@@ -32,7 +32,7 @@
 
 ///Считать легаси-переменные моба в блэкборд и настройки контроллера
 /datum/ai_controller/hostile_adapter/proc/setup_from_pawn(mob/living/simple_animal/hostile/hostile_pawn)
-	movement_delay = AI_LEGACY_MOVE_DELAY_DS(hostile_pawn.move_to_delay)
+	movement_delay = hostile_pawn.ai_movement_delay()
 	blackboard[BB_AI_PACK_ROLE] = ai_pack_role
 	var/detect_range = max(hostile_pawn.vision_range, hostile_pawn.aggro_vision_range)
 	interesting_dist = max(detect_range, AI_DEFAULT_INTERESTING_DIST)

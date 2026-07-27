@@ -55,7 +55,7 @@
 	var/mob/living/simple_animal/hostile/hostile_pawn = pawn
 	if(istype(hostile_pawn))
 		//Some hostiles change their legacy movement delay at runtime for combat phases.
-		controller.movement_delay = AI_LEGACY_MOVE_DELAY_DS(hostile_pawn.move_to_delay)
+		controller.movement_delay = hostile_pawn.ai_movement_delay()
 	source.set_delay(controller.movement_delay)
 
 	if(!controller.able_to_run)

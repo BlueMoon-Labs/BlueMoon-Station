@@ -140,6 +140,21 @@
 	qdel(controller)
 	qdel(ambush_controller)
 
+///Слух выстрела не через всю карту: моб дальше радиуса слышимости не срывается
+///на разведку (иначе стрельба в одного собирала мобов со всего уровня сквозь стены).
+/datum/unit_test/ai_distant_gunshot_ignored/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/listener = allocate(/mob/living/simple_animal/hostile, start)
+	var/datum/ai_controller/hostile_adapter/melee_chaser/controller = new(listener)
+	var/turf/epicenter = locate(start.x + 7, start.y, start.z)
+
+	GLOB.ai_recent_noise.Cut() //изоляция от коалесцирования прошлых тестов
+	ai_broadcast_noise(epicenter, AI_NOISE_GUNSHOT_RANGE)
+	TEST_ASSERT_NOTEQUAL(controller.blackboard[BB_AI_STATE], AI_STATE_SEARCH, "A gunshot beyond the AI hearing radius must not rouse a distant mob")
+	TEST_ASSERT_NULL(controller.blackboard[BB_AI_LAST_KNOWN_POS], "A distant gunshot must not seed an investigation point")
+
+	qdel(controller)
+
 ///Зажатый под огнём моб без достижимой цели уходит за укрытие от стрелка.
 /datum/unit_test/ai_pinned_mob_takes_cover/Run()
 	var/turf/start = run_loc_floor_bottom_left

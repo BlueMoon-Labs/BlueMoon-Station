@@ -14,6 +14,13 @@
 /atom/movable/proc/is_ranged_ai_penetrable_cover()
 	return FALSE
 
+///Hostile ranged AI: TRUE when this dense blocker does NOT dead-end the shooter's
+///projectile of type projectile_path (it passes through or reflects it), so the
+///fire-lane must not read it as a hard wall. Default FALSE; reflectors opt in for
+///the beam types they mirror.
+/atom/movable/proc/ranged_ai_lane_passable(obj/item/projectile/projectile_path)
+	return FALSE
+
 /obj/structure/barricade
 	name = "chest high wall"
 	desc = "Похоже, из этого выйдет отличное укрытие"

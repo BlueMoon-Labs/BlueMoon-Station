@@ -5,15 +5,32 @@
 // Исполнение удара - через obstacle policy (двери открываются, объекты
 // ломаются по разрешениям профиля).
 
+///Следующий шаг пауна к цели, либо null, если его ещё не на чем основать.
+///Прямой (bee-line) режим лупа честно ходит по get_step_towards, поэтому там
+///направляющая догадка И ЕСТЬ маршрут. А вот у JPS-лупа с пустым кэшем маршрут
+///только считается: поиск асинхронный и умеет спать в очереди за слотом
+///SSpathfinder. Догадка в этом окне уводила моба вскрывать дверь/стену по прямой
+///к цели, хотя настоящий путь вёл совсем в другую сторону (репорт плейтеста про
+///выломанную дверь). Ждём реальный шаг вместо того, чтобы ломать что попало.
+///
+///Но ЗАВЕРШИВШИЙСЯ поиск с пустым результатом - это не "подожди", это "маршрута
+///нет вообще": цель за стеной/рудой, и пробить её - единственный способ дойти.
+///Без догадки в этом случае моб просто вставал перед преградой и не делал ничего
+///(плейтест: "стоял перед толпой карпов, они мне ничего не делали", "отойти за
+///экранчик - и они тупят"). Ждём только пока поиск реально в работе.
+/proc/ai_next_path_step(mob/living/pawn, atom/target)
+	var/datum/move_loop/has_target/jps/jps_loop = SSmove_manager.processing_on(pawn, SSai_movement)
+	if(istype(jps_loop))
+		if(length(jps_loop.movement_path))
+			return jps_loop.movement_path[1]
+		if(jps_loop.repath_in_progress)
+			return null
+	return get_step_towards(pawn, target)
+
 ///Реальный заблокированный следующий турф маршрута к цели, либо null
 /proc/ai_get_blocked_path_turf(mob/living/pawn, atom/target)
 	var/turf/current_turf = get_turf(pawn)
-	var/turf/next_step
-	var/datum/move_loop/has_target/jps/jps_loop = SSmove_manager.processing_on(pawn, SSai_movement)
-	if(istype(jps_loop) && length(jps_loop.movement_path))
-		next_step = jps_loop.movement_path[1]
-	else
-		next_step = get_step_towards(pawn, target)
+	var/turf/next_step = ai_next_path_step(pawn, target)
 	if(current_turf && next_step && (next_step.is_blocked_turf(exclude_mobs = TRUE, source_atom = pawn) || current_turf.LinkBlockedWithAccess(next_step, pawn, pawn.get_idcard(), FALSE)))
 		return next_step
 	return null
@@ -25,12 +42,7 @@
 	var/mob/living/simple_animal/hostile/hostile_pawn = pawn
 	if(!istype(hostile_pawn) || QDELETED(target))
 		return null
-	var/turf/next_step
-	var/datum/move_loop/has_target/jps/jps_loop = SSmove_manager.processing_on(pawn, SSai_movement)
-	if(istype(jps_loop) && length(jps_loop.movement_path))
-		next_step = jps_loop.movement_path[1]
-	else
-		next_step = get_step_towards(pawn, target)
+	var/turf/next_step = ai_next_path_step(pawn, target)
 	if(!next_step || !next_step.Adjacent(pawn))
 		return null
 	for(var/mob/living/blocker in next_step)

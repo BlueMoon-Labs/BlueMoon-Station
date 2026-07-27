@@ -29,6 +29,7 @@
 	layer = LARGE_MOB_LAYER //Looks weird with them slipping under mineral walls and cameras and shit otherwise
 	flags_1 = PREVENT_CONTENTS_EXPLOSION_1 | HEAR_1
 	has_field_of_vision = FALSE //You are a frikkin boss
+	ai_pursuit_speed_capped = FALSE //Boss movement speed is deliberate, exempt from the pursuit cap
 	/// Crusher loot dropped when the megafauna is killed with a crusher
 	var/list/crusher_loot
 	/// Achievement given to surrounding players when the megafauna is killed
