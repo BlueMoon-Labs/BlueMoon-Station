@@ -43,6 +43,21 @@
 	TEST_ASSERT_EQUAL(replacement_egg.owner, host, "Новые яйца террора не установились после замены")
 	TEST_ASSERT_EQUAL(host.getorganslot(replacement_egg.slot), replacement_egg, "Слот паразита не указывает на новые яйца")
 
+/// Деталь модульного компьютера удаляют прямо в собранном устройстве - так делает
+/// QDEL_LIST(contents) при разборке комнаты отеля Гильберта. Её Destroy() зовёт
+/// uninstall_component(), и выкладывать удаляемую деталь на пол тот не имеет права:
+/// forceMove qdel-нутого атома пинит её ссылкой из contents турфа (гвард в doMove).
+/datum/unit_test/computer_component_qdel_stays_out_of_world/Run()
+	var/obj/item/modular_computer/pda/pda = allocate(/obj/item/modular_computer/pda)
+	var/obj/item/computer_hardware/hard_drive/drive = pda.all_components[MC_HDD]
+	TEST_ASSERT_NOTNULL(drive, "Санити: у PDA нет установленного диска")
+
+	qdel(drive)
+
+	TEST_ASSERT_NULL(drive.loc, "Удаляемую деталь выложили в мир из uninstall_component")
+	TEST_ASSERT_NULL(pda.all_components[MC_HDD], "PDA не отпустил удалённый диск")
+	TEST_ASSERT_NULL(drive.holder, "У удалённой детали остался holder")
+
 /// Снаряд, удалённый в Bump(), не должен продолжать Move() даже если успел включить PHASING.
 /obj/structure/unit_test_projectile_bump_blocker
 	density = TRUE

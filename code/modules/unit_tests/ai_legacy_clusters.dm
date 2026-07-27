@@ -890,13 +890,15 @@
 	var/datum/ai_behavior/insane_clown_stalk/stalk = GET_AI_BEHAVIOR(/datum/ai_behavior/insane_clown_stalk)
 	stalk.perform(0.5, controller)
 	TEST_ASSERT(stalker.timer >= 5 && stalker.timer <= 15, "The legacy stalk() must rewind its own timer")
-	sleep(14) //легаси spawn(12) перед forceMove
+	//легаси spawn(12) перед forceMove: ждём сам переезд, а не отмеренные 14 деци -
+	//под нагрузкой раннера отложенный spawn в это окно не укладывался
+	wait_for_var(stalker, NAMEOF(stalker, loc), far_turf)
 	TEST_ASSERT_EQUAL(get_turf(stalker), far_turf, "The legacy stalk() must teleport the clown onto its victim")
 
 	//смерть жертвы: смех и растворение легаси-проком, отложенно от планировщика
 	victim.death()
 	stalk.perform(0.5, controller)
-	sleep(2)
+	wait_for_qdeleted(stalker)
 	TEST_ASSERT(QDELETED(stalker), "A dead victim must dissolve the clown through the legacy stalk()")
 // ===== Floor cluwne: сценарный сталкер с закреплённой жертвой =====
 
@@ -1244,7 +1246,9 @@
 	worker.adjustBruteLoss(1)
 	TEST_ASSERT_EQUAL(worker.search_objects, 0, "Damage must trigger the legacy LoseSearchObjects")
 	TEST_ASSERT(!strategy.can_attack(worker, tray), "An angry bee must sting, not pollinate")
-	sleep(worker.search_objects_regain_time + 1)
+	//возврат поиска висит на addtimer: одного деци запаса поверх задержки под
+	//нагрузкой раннера не хватало, ждём фактического снятия гейта
+	wait_for_var(worker, NAMEOF(worker, search_objects), 1, worker.search_objects_regain_time + 2 SECONDS)
 	TEST_ASSERT_EQUAL(worker.search_objects, 1, "The bee must regain plant search after the legacy delay")
 	TEST_ASSERT(strategy.can_attack(worker, tray), "A calmed bee must go back to work")
 	controller.CancelActions()

@@ -37,7 +37,9 @@
 
 	petter.a_intent = INTENT_HELP
 	pet.attack_hand(petter)
-	sleep(2) // эффекты поглаживания отложены элементом на тик
+	// эффекты поглаживания отложены элементом на addtimer: ждём проход SStimer,
+	// а не фиксированные два деци - под нагрузкой раннера колбэк в них не влезал
+	wait_for_var(src, NAMEOF(src, pets_seen), 1)
 	TEST_ASSERT_EQUAL(pets_seen, 1, "pet_bonus не отправил COMSIG_ANIMAL_PET при help-клике")
 	TEST_ASSERT_EQUAL(emotes_seen, 1, "pet_bonus не заставил питомца сделать счастливую эмоцию")
 	TEST_ASSERT_EQUAL(moodlets_seen, 1, "pet_bonus не выдал мудлет гладящему")

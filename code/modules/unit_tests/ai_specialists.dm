@@ -719,7 +719,8 @@
 	var/verdict = pursuit.perform(0.5, controller)
 	TEST_ASSERT(verdict & AI_BEHAVIOR_FAILED, "Pursuit of an unconscious victim must fail")
 	TEST_ASSERT(!QDELETED(blob), "The pawn must not be deleted synchronously from its own perform")
-	sleep(1)
+	//растворение висит на addtimer: ждём проход SStimer, а не один деци
+	wait_for_qdeleted(blob)
 	TEST_ASSERT(QDELETED(blob), "Losing the victim must dissolve the curseblob via the legacy check")
 
 // ===== Goldgrub: трусливый рудоед =====
