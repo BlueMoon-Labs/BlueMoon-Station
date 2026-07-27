@@ -1596,7 +1596,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	grad_color = sanitize_hexcolor(grad_color, 6, FALSE)
 	eye_type = sanitize_inlist(eye_type, GLOB.eye_types, DEFAULT_EYES_TYPE)
 	shriek_type = sanitize_inlist(shriek_type, GLOB.shriek_types, SHRIEK_TYPE_GENERIC) // BLUEMOON ADD
+	//у if-а не было тела, и санитайзер молча ничего не делал: фобия из старого
+	//сейва, которой больше нет в списке SStraumas, доезжала до раунда как есть
 	if(phobia_type && SStraumas && !(phobia_type in SStraumas.phobia_types))
+		phobia_type = null //null = "случайная", ровно как в меню выбора
 	left_eye_color = sanitize_hexcolor(left_eye_color, 6, FALSE)
 	right_eye_color = sanitize_hexcolor(right_eye_color, 6, FALSE)
 

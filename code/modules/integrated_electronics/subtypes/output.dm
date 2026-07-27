@@ -323,8 +323,15 @@
 		var/list/new_network = get_pin_data(IC_INPUT, 4)
 		if(!isnull(cam_name))
 			camera.c_tag = cam_name
-		if(!isnull(new_network))
-			camera.network = new_network
+		//Пин объявлен списком, но в схему можно подать в него что угодно. Число
+		//в camera.network валило "type mismatch: 4 & /list" в КАЖДОЙ камерной
+		//консоли станции (networks & C.network) - принимаем только список,
+		//приводя элементы к строкам в нижнем регистре, как везде у камер.
+		if(islist(new_network))
+			var/list/sanitized_network = list()
+			for(var/network_entry in new_network)
+				sanitized_network += lowertext("[network_entry]")
+			camera.network = sanitized_network
 		set_camera_status(cam_active)
 
 /obj/item/integrated_circuit/output/video_camera/power_fail()

@@ -645,7 +645,7 @@
 /obj/machinery/computer/camera_advanced/xenobio{
 	dir = 1;
 	name = "xenobiology management console";
-	networks = 4
+	networks = list("ds1xenobio")
 	},
 /obj/structure/window/reinforced/survival_pod,
 /turf/open/floor/plasteel/dark/side,
