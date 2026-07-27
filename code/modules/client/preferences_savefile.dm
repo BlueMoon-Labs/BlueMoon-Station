@@ -5,7 +5,7 @@
 //	You do not need to raise this if you are adding new values that have sane defaults.
 //	Only raise this value when changing the meaning/format/name/layout of an existing value
 //	where you would want the updater procs below to run
-#define SAVEFILE_VERSION_MAX	77
+#define SAVEFILE_VERSION_MAX	78
 
 /// Upper bound for character slot indices during savefile migration (loop over S.dir).
 /// Prevents corrupted or garbage directory names (e.g. huge slot numbers) from inflating max_save_slots
@@ -125,6 +125,20 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	if(current_version < 76) // BLUEMOON ADD - новые звуковые тогглы
 		mentor_toggles |= SOUND_MENTORHELP
 		toggles |= SOUND_FAX
+
+	// BLUEMOON ADD - чиним сейвы, испорченные `be_special += role` в окне антаг-префов:
+	// каждый клик дописывал ещё одну строку с тем же ключом и значением null, а
+	// выключение убирало только одну из них - роль так и оставалась включённой
+	if(current_version < 78)
+		var/list/deduped_be_special = list()
+		for(var/role in be_special)
+			if(role in deduped_be_special)
+				continue
+			// индексация по ключу всегда попадает в ПЕРВОЕ вхождение, а его-то
+			// старый код и держал в актуальном состоянии
+			var/priority = be_special[role]
+			deduped_be_special[role] = isnull(priority) ? ANTAG_PRIORITY_LOW : priority
+		be_special = deduped_be_special
 
 /datum/preferences/proc/update_character(current_version, savefile/S)
 	if(current_version < 19)

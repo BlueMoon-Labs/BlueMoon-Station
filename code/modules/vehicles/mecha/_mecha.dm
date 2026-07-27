@@ -659,9 +659,6 @@
 /obj/vehicle/sealed/mecha/proc/has_functional_thrusters()
 	return active_thrusters && !equipment_disabled && has_charge(step_energy_drain)
 
-/obj/vehicle/sealed/mecha/proc/can_cancel_space_drift()
-	return stabilizers && has_functional_thrusters()
-
 /obj/vehicle/sealed/mecha/Process_Spacemove(movement_dir = 0, continuous_move = FALSE)
 	. = ..(movement_dir, continuous_move)
 	if(.)
@@ -695,11 +692,12 @@
 
 	return FALSE
 
-/obj/vehicle/sealed/mecha/Moved(atom/OldLoc, Dir, Forced = FALSE)
-	if(can_cancel_space_drift())
-		SEND_SIGNAL(src, COMSIG_MOVABLE_MOVED, OldLoc, Dir, Forced)
-		return TRUE
-	return ..()
+// Мех НЕ переопределяет Moved(). Раньше стабилизаторы с рабочими двигателями
+// уводили нас в обход /atom/movable/Moved() ради отмены дрейфа, а вместе с
+// дрейфом терялась и перекладка спатиал-грида: пилот навсегда оставался
+// прописан в ячейке, где сел в меха, и переставал слышать всё за её пределами.
+// Отменять дрейф здесь и не нужно - newtonian_move() сам зовёт
+// Process_Spacemove(dir, TRUE), а тот при стабилизаторах возвращает TRUE.
 
 /obj/vehicle/sealed/mecha/relaymove(mob/living/user, direction)
 	. = TRUE
