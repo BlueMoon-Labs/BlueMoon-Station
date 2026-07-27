@@ -54,6 +54,11 @@
 	/// Ignored when set to 0 - to avoid shifting directional wall-mounted objects above tables
 	var/anchored_tabletop_offset = 0
 
+	/// Мобы, у которых mob.machine == src (см. set_machine/unset_machine).
+	/// Обратный индекс нужен ровно для Destroy(): без него удалённая машина
+	/// висит хардрефом в mob.machine до тех пор, пока игрок не откроет другую.
+	var/tmp/list/machine_users
+
 /obj/vv_edit_var(vname, vval)
 	switch(vname)
 		if("anchored")
@@ -100,6 +105,8 @@
 		STOP_PROCESSING(SSobj, src)
 	if(datum_flags & DF_HAS_OPEN_UI)
 		SStgui.close_uis(src)
+	if(machine_users)
+		release_machine_users()
 	armor = null
 	. = ..()
 
@@ -276,8 +283,11 @@
 
 /mob/proc/unset_machine()
 	if(machine)
+		var/obj/previous = machine
 		machine.on_unset_machine(src)
 		machine = null
+		if(istype(previous))
+			LAZYREMOVE(previous.machine_users, src)
 
 //called when the user unsets the machine.
 /atom/proc/on_unset_machine(mob/user)
@@ -289,6 +299,19 @@
 	src.machine = O
 	if(istype(O))
 		O.obj_flags |= IN_USE
+		LAZYOR(O.machine_users, src)
+
+///Снимает src со всех mob.machine, которые на него смотрят. Иначе игрок,
+///открывавший машину/сборку, держит её хардрефом до следующего взаимодействия -
+///в проде это был стабильный источник харддела телекомов, консолей, насосов и
+///сигналер-игнитер-сборок (всегда ровно "внешних ссылок: 1").
+/obj/proc/release_machine_users()
+	//Типизированный (не `as anything`) обход: хардделнутый моб оставляет в списке
+	//null, и на нём `as anything` словил бы рантайм прямо в Destroy.
+	for(var/mob/user in machine_users)
+		if(user.machine == src)
+			user.machine = null
+	machine_users = null
 
 /obj/item/proc/updateSelfDialog()
 	var/mob/M = src.loc

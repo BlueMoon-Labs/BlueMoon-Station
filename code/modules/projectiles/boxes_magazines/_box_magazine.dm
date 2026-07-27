@@ -39,6 +39,18 @@
 			stored_ammo += new ammo_type(src)
 	update_icon()
 
+/// Casings live inside us, so every remaining round is a hard reference back to
+/// the box. Leaving them behind means a qdeleted magazine can never soft-GC and
+/// always costs a hard delete - which internal magazines pay on every gun death.
+/obj/item/ammo_box/Destroy()
+	for(var/obj/item/ammo_casing/casing as anything in stored_ammo)
+		if(QDELETED(casing))
+			continue
+		if(casing.loc == src)
+			qdel(casing)
+	stored_ammo.Cut()
+	return ..()
+
 /obj/item/ammo_box/examine(mob/user)
 	. = ..()
 	. += span_notice("There [stored_ammo.len == 1 ? "is" : "are"] [stored_ammo.len] shell\s left!")

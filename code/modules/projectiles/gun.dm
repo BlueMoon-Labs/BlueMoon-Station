@@ -526,6 +526,11 @@
 					shoot_live_shot(user, 1, target, message, stam_cost)
 				else
 					shoot_live_shot(user, 0, target, message, stam_cost)
+				//Self-consuming guns (DROPDEL enchanted rifles) delete themselves
+				//inside shoot_live_shot. Re-chambering afterwards force-moves a
+				//fresh casing into a qdeleted gun, which then can never soft-GC.
+				if(QDELETED(src))
+					return TRUE
 		else
 			shoot_with_empty_chamber(user)
 			return
@@ -564,6 +569,9 @@
 				shoot_live_shot(user, 0, target, message, stam_cost)
 			if (iteration >= burst_size)
 				firing = FALSE
+			//см. do_fire: самоуничтожающееся оружие не дочамберивает патрон
+			if(QDELETED(src))
+				return TRUE
 	else
 		shoot_with_empty_chamber(user)
 		firing = FALSE

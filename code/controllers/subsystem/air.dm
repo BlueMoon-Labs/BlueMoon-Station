@@ -719,8 +719,10 @@ SUBSYSTEM_DEF(air)
 
 ///Removes a machine from the heartbeat queue (Destroy: the queue holds a strong ref).
 /datum/controller/subsystem/air/proc/dequeue_idle_machine(obj/machinery/atmospherics/machine)
-	if(!machine.atmos_idle_queued)
-		return
+	//Безусловно: флаг и очередь умеют расходиться (atmos_wake() возвращает машину
+	//в обработку, не трогая её запись), а ранний выход по флагу оставлял бы
+	//хардреф на удалённую машину. Проц зовётся только из Destroy - O(n) снятие
+	//ключа тут не в горячем пути.
 	machine.atmos_idle_queued = FALSE
 	atmos_idle_queue -= machine
 

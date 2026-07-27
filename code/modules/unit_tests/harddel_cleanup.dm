@@ -42,11 +42,11 @@
 	uniform.armor = getArmor(10)
 	accessory.armor = getArmor(5)
 	TEST_ASSERT(accessory.attach(uniform, null), "Не удалось прикрепить тестовый аксессуар")
-	TEST_ASSERT(accessory in uniform.attached_accessories, "Прикреплённый аксессуар не попал в список униформы")
+	TEST_ASSERT(accessory in uniform.accessories_attached, "Прикреплённый аксессуар не попал в список униформы")
 	TEST_ASSERT_EQUAL(uniform.armor.get_rating(MELEE), 15, "Аксессуар не добавил броню униформе")
 
 	qdel(accessory)
-	TEST_ASSERT(!(accessory in uniform.attached_accessories), "Удалённый аксессуар остался в списке униформы")
+	TEST_ASSERT(!(accessory in uniform.accessories_attached), "Удалённый аксессуар остался в списке униформы")
 	TEST_ASSERT_EQUAL(uniform.armor.get_rating(MELEE), 10, "Удалённый аксессуар оставил бонус брони на униформе")
 
 /// Security-запись может заимствовать фото general-записи и не владеет им.
@@ -543,3 +543,211 @@
 	TEST_ASSERT_NULL(infection.armor_head, "Компонент оставил ссылку на удалённый шлем")
 	qdel(infection.armor)
 	TEST_ASSERT_NULL(infection.armor, "Компонент оставил ссылку на удалённую броню")
+
+/// Магазин и патрон в патроннике лежат в contents ствола, то есть их loc - это
+/// жёсткая ссылка обратно на ствол. Без чистки в Destroy ни один удалённый
+/// баллистический ствол не собирается мягко и уходит в hard delete; для оружия,
+/// которое удаляет себя на каждый выстрел (DROPDEL зачарованные винтовки, залп
+/// Arcane Barrage), это был топ-1 источник хардделов в прод-логах.
+/datum/unit_test/ballistic_gun_destroy_releases_ammo/Run()
+	var/obj/item/gun/ballistic/automatic/pistol/gun = allocate(/obj/item/gun/ballistic/automatic/pistol)
+	var/obj/item/ammo_box/magazine/loaded_magazine = gun.magazine
+	var/obj/item/ammo_casing/loaded_round = gun.chambered
+	TEST_ASSERT_NOTNULL(loaded_magazine, "Санити: тестовый пистолет обязан заспавниться с магазином")
+	TEST_ASSERT_NOTNULL(loaded_round, "Санити: тестовый пистолет обязан заспавниться с патроном в патроннике")
+	TEST_ASSERT_EQUAL(loaded_magazine.loc, gun, "Санити: магазин обязан лежать в стволе")
+
+	qdel(gun)
+
+	TEST_ASSERT(QDELETED(loaded_magazine), "Удалённый ствол оставил живой магазин у себя в contents - это внешняя ссылка и гарантированный harddel")
+	TEST_ASSERT(QDELETED(loaded_round), "Удалённый ствол оставил живой патрон в патроннике - это внешняя ссылка и гарантированный harddel")
+	TEST_ASSERT_NULL(gun.magazine, "Destroy не обнулил ссылку на магазин")
+	TEST_ASSERT_NULL(gun.chambered, "Destroy не обнулил ссылку на патронник")
+
+/// Зачарованная винтовка удаляет себя внутри shoot_live_shot. Продолжать цикл
+/// выстрела на удалённом стволе нельзя: process_chamber -> chamber_round
+/// заталкивает свежий патрон forceMove'ом в qdel-нутый ствол, и тот больше
+/// никогда не соберётся.
+/datum/unit_test/self_consuming_gun_stops_after_shot/Run()
+	var/obj/item/gun/ballistic/shotgun/boltaction/enchanted/arcane_barrage/rifle = allocate(/obj/item/gun/ballistic/shotgun/boltaction/enchanted/arcane_barrage)
+	TEST_ASSERT(rifle.item_flags & DROPDEL, "Санити: зачарованная винтовка обязана быть DROPDEL")
+
+	qdel(rifle)
+
+	TEST_ASSERT_NULL(rifle.chambered, "Удалённый самоуничтожающийся ствол оставил патрон в патроннике")
+	TEST_ASSERT_NULL(rifle.magazine, "Удалённый самоуничтожающийся ствол оставил магазин")
+	for(var/atom/movable/leftover in rifle)
+		TEST_FAIL("В contents удалённого ствола остался живой [leftover.type] - он держит ствол от сборки")
+
+/// client.moused_over_objects (память автопарри) обязана хранить текстовые ref'ы,
+/// а не сами атомы: жёсткая ссылка здесь переживает qdel цели и невидима
+/// ref-сканеру - /client не датум, а клиентский проб читает только
+/// mob/eye/statobj/screen/images.
+/datum/unit_test/moused_over_tracker_holds_no_hard_refs/Run()
+	var/list/tracker = list()
+	var/obj/effect/hovered = allocate(/obj/effect)
+
+	register_moused_over(tracker, hovered)
+
+	TEST_ASSERT_EQUAL(length(tracker), 1, "Наведение курсора не попало в память автопарри")
+	for(var/key in tracker)
+		TEST_ASSERT(istext(key), "Память автопарри держит [key] жёсткой ссылкой вместо текстового ref - это гарантированный harddel цели")
+
+/// Ради автопарри lookup обязан находить именно тот атом, на который наводились.
+/datum/unit_test/moused_over_tracker_lookup/Run()
+	var/list/tracker = list()
+	var/obj/effect/hovered = allocate(/obj/effect)
+	var/obj/effect/untouched = allocate(/obj/effect)
+
+	register_moused_over(tracker, hovered)
+
+	TEST_ASSERT_EQUAL(moused_over_time(tracker, hovered), world.time, "Lookup не нашёл наведённый атом - автопарри перестанет срабатывать")
+	TEST_ASSERT_NULL(moused_over_time(tracker, untouched), "Lookup нашёл атом, на который не наводились")
+
+/// Память ограничена MOUSED_OVER_MEMORY_MAX и вытесняет самые старые наведения.
+/datum/unit_test/moused_over_tracker_evicts_oldest/Run()
+	var/list/tracker = list()
+	var/list/hovered = list()
+	for(var/i in 1 to MOUSED_OVER_MEMORY_MAX + 2)
+		var/obj/effect/target = allocate(/obj/effect)
+		hovered += target
+		register_moused_over(tracker, target)
+
+	TEST_ASSERT(length(tracker) <= MOUSED_OVER_MEMORY_MAX, "Память автопарри разрослась выше капа: [length(tracker)]")
+	TEST_ASSERT_NULL(moused_over_time(tracker, hovered[1]), "Самое старое наведение не вытеснилось из памяти")
+	TEST_ASSERT_NOTNULL(moused_over_time(tracker, hovered[length(hovered)]), "Самое свежее наведение потерялось при вытеснении")
+
+/// has_status_effect обязан возвращать null, а не 0: DM не считает 0 и null одним
+/// и тем же, и QDELETED(0) роняет прок рантаймом "Cannot read 0.gc_destroyed".
+/datum/unit_test/absent_status_effect_returns_null/Run()
+	var/mob/living/carbon/human/subject = allocate(/mob/living/carbon/human)
+
+	TEST_ASSERT_NULL(subject.has_status_effect(STATUS_EFFECT_NECROPOLIS_CURSE), "Отсутствующий статус-эффект вернул не null - каждый QDELETED() на результате упадёт рантаймом")
+
+/// Проклятие некрополиса на чистом мобе не должно спотыкаться о QDELETED(0).
+/datum/unit_test/necropolis_curse_applies_to_uncursed/Run()
+	var/mob/living/carbon/human/subject = allocate(/mob/living/carbon/human)
+
+	subject.apply_necropolis_curse(CURSE_BLINDING, 1 MINUTES)
+
+	TEST_ASSERT_NOTNULL(subject.has_status_effect(STATUS_EFFECT_NECROPOLIS_CURSE), "Проклятие не наложилось на моба без проклятия")
+
+/// clear_map снимал экраны прямо в цикле по тому же списку: DM сдвигал список и
+/// пропускал каждый второй экран, тот оставался в client.screen. Съём карты
+/// обязан отдавать ВСЕ её экраны.
+/datum/unit_test/screen_map_takeover_returns_every_screen/Run()
+	var/list/screen_maps = list()
+	var/list/registered = list()
+	for(var/i in 1 to 4)
+		var/atom/movable/screen/entry = allocate(/atom/movable/screen)
+		entry.assigned_map = "test_map"
+		registered += entry
+	screen_maps["test_map"] = registered.Copy()
+
+	var/list/taken = take_screen_map(screen_maps, "test_map")
+
+	TEST_ASSERT_EQUAL(length(taken), 4, "Съём карты вернул не все экраны - пропущенные останутся в client.screen")
+	for(var/atom/movable/screen/entry as anything in registered)
+		TEST_ASSERT(entry in taken, "Экран [entry.type] пропущен при съёме карты")
+	TEST_ASSERT(!("test_map" in screen_maps), "Съём карты не удалил запись карты у клиента")
+
+/// У экранов с assigned_map нет hud'а, поэтому из чужого client.screen они сами
+/// себя не снимают: консоль камер, уничтоженная при открытом UI, оставляла весь
+/// набор плейн-мастеров жить в клиенте смотрящего.
+/datum/unit_test/screen_detaches_from_client_maps/Run()
+	var/list/screen_maps = list()
+	var/atom/movable/screen/first = allocate(/atom/movable/screen)
+	var/atom/movable/screen/second = allocate(/atom/movable/screen)
+	var/atom/movable/screen/stranger = allocate(/atom/movable/screen)
+	first.assigned_map = "test_map"
+	second.assigned_map = "test_map"
+	screen_maps["test_map"] = list(first, second)
+
+	TEST_ASSERT(detach_screen_from_client_maps(screen_maps, first), "Экран не нашёлся в картах клиента")
+	var/list/remaining = screen_maps["test_map"]
+	TEST_ASSERT_EQUAL(length(remaining), 1, "Отвязка сняла не тот набор экранов")
+	TEST_ASSERT(second in remaining, "Отвязка сняла лишний экран")
+	TEST_ASSERT(!detach_screen_from_client_maps(screen_maps, stranger), "Отвязка отчиталась об экране, которого в картах нет")
+
+	TEST_ASSERT(detach_screen_from_client_maps(screen_maps, second), "Последний экран карты не нашёлся")
+	TEST_ASSERT(!("test_map" in screen_maps), "Опустевшая карта осталась записью у клиента")
+
+/// mob.machine - хардреф на объект, который игрок "использует". Ставит его
+/// /obj/machinery/interact() для почти всякой машины (INTERACT_MACHINE_SET_MACHINE
+/// включён по умолчанию) и сборки/консоли через set_machine() напрямую, а снимался
+/// он только при открытии следующей машины. Удалённая машина оставалась висеть в
+/// mob.machine - стабильный "внешних ссылок: 1" в прод-логах на телекомах,
+/// протолейтах, насосах и сигналер-игнитер-сборках.
+/datum/unit_test/destroyed_machine_releases_its_users/Run()
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human)
+	var/obj/machinery/first = allocate(/obj/machinery, run_loc_floor_bottom_left)
+	var/obj/machinery/second = allocate(/obj/machinery, get_step(run_loc_floor_bottom_left, EAST))
+
+	user.set_machine(first)
+	TEST_ASSERT_EQUAL(user.machine, first, "set_machine() обязан записать машину пользователю")
+	TEST_ASSERT(user in first.machine_users, "set_machine() обязан завести обратный индекс на машине")
+
+	// Переключение на другую машину снимает пользователя с прежней.
+	user.set_machine(second)
+	TEST_ASSERT(!(user in first.machine_users), "Переключение машины обязано снять пользователя с прежней")
+	TEST_ASSERT(user in second.machine_users, "Переключение машины обязано записать пользователя новой")
+
+	// Явный unset тоже чистит индекс - иначе объект держал бы моба.
+	user.unset_machine()
+	TEST_ASSERT_NULL(user.machine, "unset_machine() обязан снять машину с пользователя")
+	TEST_ASSERT(!LAZYLEN(second.machine_users), "unset_machine() обязан очистить обратный индекс")
+
+	// Главное: удаление машины обязано снять её со всех, кто её использовал.
+	user.set_machine(second)
+	qdel(second)
+	TEST_ASSERT_NULL(user.machine, "Удаление машины обязано снять её с mob.machine у всех пользователей")
+
+	qdel(first)
+
+/// Обратная сторона: индекс на машине держит мобов, поэтому смерть моба обязана
+/// вычищать его оттуда, иначе машина пинит труп.
+/datum/unit_test/destroyed_machine_user_leaves_the_index/Run()
+	var/obj/machinery/machine = allocate(/obj/machinery, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human)
+
+	user.set_machine(machine)
+	TEST_ASSERT(user in machine.machine_users, "Sanity: пользователь обязан попасть в индекс")
+
+	qdel(user)
+	TEST_ASSERT(!LAZYLEN(machine.machine_users), "Удаление моба обязано убрать его из machine_users - иначе машина держит труп")
+
+	qdel(machine)
+
+/// Сборка отдаёт электронику готовой двери, после чего сама уходит в qdel.
+/// Если сборка не обнулит свою переменную, её QDEL_NULL(electronics) убьёт
+/// электронику уже живой двери: дверь остаётся с висячей ссылкой, а electronics
+/// не собирается GC (прод-раунд 9807 - найдена в вар electronics живого шлюза).
+/datum/unit_test/door_assembly_hands_off_electronics/Run()
+	var/obj/structure/door_assembly/assembly = allocate(/obj/structure/door_assembly, run_loc_floor_bottom_left)
+	var/obj/item/electronics/airlock/brain = allocate(/obj/item/electronics/airlock)
+	assembly.electronics = brain
+	brain.forceMove(assembly)
+
+	var/obj/machinery/door/airlock/door = assembly.finish_door()
+
+	TEST_ASSERT_NOTNULL(door, "finish_door() не вернул дверь")
+	TEST_ASSERT(QDELETED(assembly), "Сборка обязана удалиться после сборки двери")
+	TEST_ASSERT(!QDELETED(brain), "Destroy сборки удалил электронику, уже отданную двери")
+	TEST_ASSERT_EQUAL(door.electronics, brain, "Дверь не получила электронику сборки")
+
+	qdel(door)
+
+/// Тот же контракт для промежуточной пересборки (смена материала/типа сборки):
+/// электроника переезжает в target, source уходит в qdel и не должен её утащить.
+/datum/unit_test/door_assembly_transfer_keeps_electronics/Run()
+	var/obj/structure/door_assembly/source = allocate(/obj/structure/door_assembly, run_loc_floor_bottom_left)
+	var/obj/structure/door_assembly/target = allocate(/obj/structure/door_assembly, run_loc_floor_bottom_left)
+	var/obj/item/electronics/airlock/brain = allocate(/obj/item/electronics/airlock)
+	source.electronics = brain
+	brain.forceMove(source)
+
+	source.transfer_assembly_vars(source, target)
+
+	TEST_ASSERT(QDELETED(source), "Исходная сборка обязана удалиться после переноса")
+	TEST_ASSERT(!QDELETED(brain), "Destroy исходной сборки удалил перенесённую электронику")
+	TEST_ASSERT_EQUAL(target.electronics, brain, "Целевая сборка не получила электронику")

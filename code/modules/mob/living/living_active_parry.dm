@@ -264,11 +264,9 @@
 		return BLOCK_NONE
 	var/found = attacker == client.mouse_object_ref?.resolve()
 	if(!found)
-		for(var/i in client.moused_over_objects)
-			if(i == object)
-				if((client.moused_over_objects[i] + (data.autoparry_mouse_delay_maximum)) >= world.time)
-					found = TRUE
-				break
+		var/hovered_at = moused_over_time(client.moused_over_objects, object)
+		if(hovered_at && (hovered_at + data.autoparry_mouse_delay_maximum) >= world.time)
+			found = TRUE
 	if(!found)
 		return BLOCK_NONE
 

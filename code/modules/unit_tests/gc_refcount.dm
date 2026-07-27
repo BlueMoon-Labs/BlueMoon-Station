@@ -191,3 +191,51 @@
 	GLOB.reftracker_found_identities = saved_identities
 
 #undef REFTRACKER_TEST_SEARCH_MARK
+
+/// Прямая переменная клиента (selected_target, active_mousedown_item и прочие,
+/// которых раньше не было в пробе) обязана попадать в отчёт: /client не датум,
+/// и полный скан мира эти ссылки не видит в принципе.
+/datum/unit_test/client_ref_probe_finds_direct_var/Run()
+	var/datum/gc_refcount_probe/probe = new
+	var/list/hits = collect_client_ref_hits(probe, "tester", list("selected_target" = probe), null)
+	TEST_ASSERT_EQUAL(length(hits), 1, "Проб не увидел цель в прямой переменной клиента")
+	TEST_ASSERT(findtext(hits[1], "selected_target"), "В отчёте нет имени переменной-держателя: [hits[1]]")
+	qdel(probe)
+
+/// Цель ключом ассоц-списка клиента (recent_examines) - тот же класс держателя.
+/datum/unit_test/client_ref_probe_finds_container_entry/Run()
+	var/datum/gc_refcount_probe/probe = new
+	var/list/examines = list()
+	examines[probe] = world.time
+	var/list/hits = collect_client_ref_hits(probe, "tester", null, list("recent_examines" = examines))
+	TEST_ASSERT_EQUAL(length(hits), 1, "Проб не увидел цель ключом ассоц-списка клиента")
+	TEST_ASSERT(findtext(hits[1], "recent_examines"), "В отчёте нет имени списка-держателя: [hits[1]]")
+	examines.Cut()
+	qdel(probe)
+
+/// Чужие ссылки проб не должен приписывать цели.
+/datum/unit_test/client_ref_probe_ignores_unrelated/Run()
+	var/datum/gc_refcount_probe/probe = new
+	var/datum/gc_refcount_probe/bystander = new
+	var/list/hits = collect_client_ref_hits(probe, "tester", list("mob" = bystander), list("screen" = list(bystander)))
+	TEST_ASSERT_EQUAL(length(hits), 0, "Проб нашёл держателя там, где цели нет: [hits.Join(", ")]")
+	qdel(bystander)
+	qdel(probe)
+
+/// Цель ЗНАЧЕНИЕМ ассоц-списка клиента (char_render_holders, screen_maps) - тоже
+/// держатель, и вложенный список значений тоже нужно раскрывать.
+/datum/unit_test/client_ref_probe_finds_assoc_value/Run()
+	var/datum/gc_refcount_probe/probe = new
+	var/list/render_holders = list("preview-1" = probe)
+	var/list/screen_maps = list("popup" = list(probe))
+
+	var/list/direct_hits = collect_client_ref_hits(probe, "tester", null, null, list("char_render_holders" = render_holders))
+	TEST_ASSERT_EQUAL(length(direct_hits), 1, "Проб не увидел цель значением ассоц-списка клиента")
+	TEST_ASSERT(findtext(direct_hits[1], "char_render_holders"), "В отчёте нет имени ассоц-списка: [direct_hits[1]]")
+
+	var/list/nested_hits = collect_client_ref_hits(probe, "tester", null, null, list("screen_maps" = screen_maps))
+	TEST_ASSERT_EQUAL(length(nested_hits), 1, "Проб не раскрыл вложенный список значений")
+
+	render_holders.Cut()
+	screen_maps.Cut()
+	qdel(probe)
