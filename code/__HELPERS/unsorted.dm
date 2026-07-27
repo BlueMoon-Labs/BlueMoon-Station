@@ -516,16 +516,14 @@ Turf and target are separate in case you want to teleport some distance from a t
 
 /// Возвращает список всех объектов указанного типа в цепочке loc
 /atom/proc/get_all_recursive_loc(T)
-	var/list/founds = list()
+	. = list()
 	var/atom/A = src.loc
 
 	while(A)
 		if(istype(A, T))
-			founds += A
+			. += A
 
 		A = A.loc
-
-	return founds
 
 //Recursively checks if an item is inside a given type, even through layers of storage. Returns the atom if it finds it.
 /proc/recursive_loc_check(atom/movable/target, type)
