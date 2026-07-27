@@ -250,17 +250,17 @@
 	else
 		var/list/possible_target = list()
 		for(var/mob/living/L in oview(work_distance, user))
-			LAZYADD(possible_target, L)
+			possible_target += L
 
 		if(isliving(user.loc))
-			LAZYOR(possible_target, user.loc)
+			possible_target |= user.loc
 		if(isliving(user.loc?.loc))
-			LAZYOR(possible_target, user.loc.loc)
+			possible_target |= user.loc.loc
 		if(istype(user.loc, /obj/belly))
 			var/obj/belly/belly = user.loc
 			var/mob/living/L = belly.owner || belly.loc
 			if(istype(L))
-				LAZYOR(possible_target, L)
+				possible_target |= L
 
 		if(possible_target.len > 13) // Много целей, TGUI с поиском
 			target = tgui_input_list(user, "Выберете персонажа, который увидит ваши действия", "Выбор персонажа", possible_target)
