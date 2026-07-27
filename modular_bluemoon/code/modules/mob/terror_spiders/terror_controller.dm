@@ -11,6 +11,7 @@
 /datum/ai_controller/hostile_adapter/terror_spider
 	planning_subtrees = list(
 		/datum/ai_planning_subtree/find_hostile_targets,
+		/datum/ai_planning_subtree/chokepoint_ambush,
 		/datum/ai_planning_subtree/hostile_fsm,
 		/datum/ai_planning_subtree/terror_vent_path,
 		/datum/ai_planning_subtree/terror_break_lights,

@@ -18,15 +18,20 @@
 			. = distance
 
 ///Тактическая ценность огневого тайла: чистая линия огня доминирует, дальше -
-///держим боевую дистанцию, дальше от ближайшей угрозы и под прикрытием стен.
-/proc/ai_score_fire_tile(mob/living/simple_animal/hostile/shooter, turf/tile, atom/target, list/threats, ideal_min, ideal_max)
+///держим боевую дистанцию, дальше от ближайшей угрозы, под прикрытием стен и не
+///толкаясь со своими стрелками. allies - свои AI-мобы для разноса позиций.
+/proc/ai_score_fire_tile(mob/living/simple_animal/hostile/shooter, turf/tile, atom/target, list/threats, ideal_min, ideal_max, list/allies)
 	if(!tile)
 		return -INFINITY
 	. = 0
-	//линия огня по реальной трассе снаряда из гипотетического тайла
+	//линия огня по реальной трассе снаряда из гипотетического тайла: чистая линия
+	//доминирует, стрельба через дальнее пробиваемое укрытие ценится, но меньше
 	if(istype(shooter) && target)
-		if(!shooter.CheckRangedFireLaneFrom(target, tile))
-			. += AI_FIRE_TILE_LANE_BONUS
+		switch(shooter.CheckRangedFireLaneStateFrom(target, tile))
+			if(AI_FIRE_LANE_CLEAR)
+				. += AI_FIRE_TILE_LANE_BONUS
+			if(AI_FIRE_LANE_COVER)
+				. += AI_FIRE_TILE_COVER_LANE_BONUS
 	//боевая дистанция: штраф за выход из band [ideal_min, ideal_max]
 	if(target && (ideal_min || ideal_max))
 		var/target_distance = get_dist(tile, target)
@@ -44,6 +49,12 @@
 			continue
 		if(get_dist(tile, threat) <= 1)
 			. -= AI_FIRE_TILE_ADJACENT_THREAT_PENALTY
+	//разнос: свой стрелок вплотную к тайлу штрафуется, чтобы не толкаться за один
+	for(var/mob/living/ally as anything in allies)
+		if(QDELETED(ally))
+			continue
+		if(get_dist(tile, ally) <= 1)
+			. -= AI_FIRE_TILE_ALLY_CROWD_PENALTY
 	//укрытие: плотные соседи мешают окружить (стены коридора)
 	for(var/direction in GLOB.alldirs)
 		var/turf/neighbor = get_step(tile, direction)
@@ -76,6 +87,27 @@
 	blackboard[BB_AI_THREAT_CACHE_AT] = world.time
 	return threats
 
+///Ближние союзники (свои AI-мобы одной фракции) для разноса огневых позиций:
+///два стрелка не должны драться за один тайл. Радиус мал (спейсинг локальный),
+///кэшируется на тик планирования, как и угрозы.
+/datum/ai_controller/proc/get_nearby_allies(radius = AI_ALLY_SPACING_RANGE)
+	if(blackboard[BB_AI_ALLY_CACHE_AT] == world.time && islist(blackboard[BB_AI_ALLY_CACHE]))
+		return blackboard[BB_AI_ALLY_CACHE]
+	var/list/allies = list()
+	var/mob/living/living_pawn = pawn
+	if(isliving(living_pawn))
+		for(var/mob/living/candidate in range(radius, living_pawn))
+			if(candidate == living_pawn || QDELETED(candidate))
+				continue
+			if(!candidate.ai_controller || candidate.client)
+				continue
+			if(!living_pawn.faction_check_mob(candidate))
+				continue
+			allies += candidate
+	blackboard[BB_AI_ALLY_CACHE] = allies
+	blackboard[BB_AI_ALLY_CACHE_AT] = world.time
+	return allies
+
 ///Лучший огневой тайл среди 8 соседей плюс текущий; текущий держится, если
 ///проигрывает лидеру меньше AI_HOLD_TOLERANCE (анти-джиттер / удержание позиции).
 ///Результат кэшируется: пока паун и цель стоят на месте, девять трасс линии
@@ -88,20 +120,21 @@
 	if(!current_turf)
 		return null
 	var/turf/target_turf = get_turf(target)
-	var/cache_key = "[REF(current_turf)]|[target_turf ? REF(target_turf) : "-"]|[want_lane]|[ideal_min]|[ideal_max]|[length(threats)]"
+	var/list/allies = get_nearby_allies()
+	var/cache_key = "[REF(current_turf)]|[target_turf ? REF(target_turf) : "-"]|[want_lane]|[ideal_min]|[ideal_max]|[length(threats)]|[length(allies)]"
 	if(blackboard[BB_AI_COVER_CACHE_KEY] == cache_key && world.time - (blackboard[BB_AI_COVER_CACHE_AT] || -INFINITY) < AI_COVER_CACHE_TIME)
 		var/turf/cached = blackboard[BB_AI_COVER_CACHE]
 		if(cached && (cached == current_turf || (can_enter_turf(cached) && !cached.is_blocked_turf(source_atom = pawn))))
 			return cached
 	var/turf/best = current_turf
-	var/best_score = ai_score_fire_tile(shooter, current_turf, target, threats, ideal_min, ideal_max)
+	var/best_score = ai_score_fire_tile(shooter, current_turf, target, threats, ideal_min, ideal_max, allies)
 	for(var/direction in GLOB.alldirs)
 		var/turf/candidate = get_step(current_turf, direction)
 		if(!candidate || !can_enter_turf(candidate) || candidate.is_blocked_turf(source_atom = pawn))
 			continue
 		if(want_lane && istype(shooter) && target && shooter.CheckRangedFireLaneFrom(target, candidate))
 			continue
-		var/candidate_score = ai_score_fire_tile(shooter, candidate, target, threats, ideal_min, ideal_max)
+		var/candidate_score = ai_score_fire_tile(shooter, candidate, target, threats, ideal_min, ideal_max, allies)
 		if(candidate_score > best_score + AI_HOLD_TOLERANCE)
 			best = candidate
 			best_score = candidate_score

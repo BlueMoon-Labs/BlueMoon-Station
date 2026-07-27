@@ -62,12 +62,21 @@
 ///Доложить союзникам о контакте (pack-канал): передаётся ТОЧКА и приметы, не
 ///GPS-маячок. Получатель идёт проверять точку через SEARCH и захватывает цель
 ///только собственным восприятием.
-/datum/ai_controller/proc/report_contact_to_allies(atom/target, share_range = 7, source = AI_CONTACT_ALLY)
+///
+///Паритет с легаси: summon_backup обходил oview(distance) - союзник обязан
+///РЕАЛЬНО ВИДЕТЬ зовущего. Грид-обход стен не знает, поэтому LOS-гейт стоит
+///здесь явно, а радиус дополнительно клампится потолком AI_ALLY_ALERT_RANGE.
+///Моб, который сам поднят чужим зовом, эстафету не продолжает - иначе один
+///выстрел разгонял волну агра по всему аванпосту.
+/datum/ai_controller/proc/report_contact_to_allies(atom/target, share_range = AI_ALLY_ALERT_RANGE, source = AI_CONTACT_ALLY)
 	if(QDELETED(target) || !isliving(pawn))
 		return
+	if(world.time < (blackboard[BB_AI_ALLY_RELAY_MUTED_UNTIL] || 0))
+		return 0
 	var/turf/reported_turf = get_turf(target)
 	if(!reported_turf)
 		return
+	share_range = min(share_range, AI_ALLY_ALERT_RANGE)
 	var/mob/living/living_pawn = pawn
 	var/shared_count = 0
 	for(var/mob/living/ally as anything in SSspatial_grid.orthogonal_range_search(living_pawn, SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS, share_range))
@@ -76,6 +85,9 @@
 		if(get_dist(living_pawn, ally) > share_range)
 			continue
 		if(!living_pawn.faction_check_mob(ally))
+			continue
+		//стена гасит зов: сосед по комнате слышит, сосед за шлюзом - нет
+		if(!can_see(living_pawn, ally, share_range))
 			continue
 		if(ally.ai_controller.receive_combat_contact(target, reported_turf, source))
 			shared_count++
@@ -88,6 +100,10 @@
 		return FALSE
 	if(blackboard_key_exists(BB_AI_CURRENT_TARGET))
 		return FALSE
+	//поднятый чужим зовом сам зов дальше не рассылает: иначе прибежавший
+	//союзник открывает новый пузырь оповещения и волна идёт эстафетой
+	if(source == AI_CONTACT_ALLY)
+		blackboard[BB_AI_ALLY_RELAY_MUTED_UNTIL] = world.time + AI_ALLY_RELAY_MUTE_TIME
 	if(!isnull(reported_target) && !QDELETED(reported_target))
 		set_blackboard_key(BB_AI_CONTACT_TARGET, reported_target)
 	set_blackboard_key(BB_AI_LAST_KNOWN_POS, reported_turf)

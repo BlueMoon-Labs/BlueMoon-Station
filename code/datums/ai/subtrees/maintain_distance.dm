@@ -48,7 +48,8 @@
 /datum/ai_behavior/step_away
 	behavior_flags = AI_BEHAVIOR_REQUIRE_MOVEMENT | AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION
 	required_distance = 0
-	action_cooldown = 0.4 SECONDS
+	///Держится в паре с глайдом backstep-мувмента (см. AI_KITE_STEP_CADENCE)
+	action_cooldown = AI_KITE_STEP_CADENCE
 
 /datum/ai_behavior/step_away/setup(datum/ai_controller/controller, target_key)
 	. = ..()

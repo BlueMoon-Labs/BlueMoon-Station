@@ -10,7 +10,7 @@
 	/// What AI behaviour do we actually run?
 	var/attack_behavior = /datum/ai_behavior/ranged_skirmish
 	/// If target is further away than this we don't fire
-	var/max_range = 9
+	var/max_range = AI_RANGED_MAX_FIRE_RANGE
 	/// If target is closer than this we don't fire
 	var/min_range = 2
 

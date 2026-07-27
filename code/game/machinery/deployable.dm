@@ -8,6 +8,12 @@
 
 //Barricades/cover
 
+///Hostile ranged AI: TRUE when a bullet can get through this dense object, so its
+///fire-lane planning treats it as cover to shoot over/through instead of a wall.
+///Default is FALSE (opaque hard blocker); cover structures opt in.
+/atom/movable/proc/is_ranged_ai_penetrable_cover()
+	return FALSE
+
 /obj/structure/barricade
 	name = "chest high wall"
 	desc = "Похоже, из этого выйдет отличное укрытие"
@@ -16,6 +22,12 @@
 	max_integrity = 100
 	var/proj_pass_rate = 50 //How many projectiles will pass the cover. Lower means stronger cover
 	var/bar_material = METAL
+
+///Chest-high cover: CanAllowThrough gives every projectile a proj_pass_rate chance
+///(and an adjacent firer a guaranteed shot over the top), so the AI must not read it
+///as a solid wall that needs to be walked around.
+/obj/structure/barricade/is_ranged_ai_penetrable_cover()
+	return TRUE
 
 /obj/structure/barricade/deconstruct(disassembled = TRUE)
 	if(!(flags_1 & NODECONSTRUCT_1))

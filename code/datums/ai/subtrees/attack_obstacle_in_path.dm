@@ -18,6 +18,41 @@
 		return next_step
 	return null
 
+///Живой АТАКУЕМЫЙ моб, перегородивший телом следующий шаг пути к цели (body-block),
+///либо null. Союзники/нейтралы (CanAttack=FALSE) сюда не попадают - их мовер обходит,
+///а вот врага (игрока) моб обязан пробивать, а не обтекать (fairness-паритет с PvP).
+/proc/ai_path_blocker_mob(mob/living/pawn, atom/target)
+	var/mob/living/simple_animal/hostile/hostile_pawn = pawn
+	if(!istype(hostile_pawn) || QDELETED(target))
+		return null
+	var/turf/next_step
+	var/datum/move_loop/has_target/jps/jps_loop = SSmove_manager.processing_on(pawn, SSai_movement)
+	if(istype(jps_loop) && length(jps_loop.movement_path))
+		next_step = jps_loop.movement_path[1]
+	else
+		next_step = get_step_towards(pawn, target)
+	if(!next_step || !next_step.Adjacent(pawn))
+		return null
+	for(var/mob/living/blocker in next_step)
+		if(blocker == pawn || blocker == target || !blocker.density)
+			continue
+		if(hostile_pawn.CanAttack(blocker))
+			return blocker
+	return null
+
+///TRUE если на этом шаге стоит живой моб, которого паун может атаковать (враг-body-block).
+///Мовер по этому флагу НЕ обходит блокера, а держит позицию под удар attack_obstacle.
+/proc/ai_step_blocker_attackable(mob/living/pawn, turf/step)
+	var/mob/living/simple_animal/hostile/hostile_pawn = pawn
+	if(!istype(hostile_pawn) || !step)
+		return FALSE
+	for(var/mob/living/blocker in step)
+		if(blocker == pawn || !blocker.density)
+			continue
+		if(hostile_pawn.CanAttack(blocker))
+			return TRUE
+	return FALSE
+
 /// If there's something between us and our target then we need to queue a behaviour to make it not be there
 /datum/ai_planning_subtree/attack_obstacle_in_path
 	/// Blackboard key containing current target
@@ -29,6 +64,12 @@
 	. = ..()
 	var/atom/target = controller.blackboard[target_key]
 	if(QDELETED(target))
+		return
+
+	//живой атакуемый блокер (враг, перегородивший телом путь) важнее стены: моб
+	//пробивает его, а не обходит - иначе body-block против мобов не работает.
+	if(ai_path_blocker_mob(controller.pawn, target))
+		controller.queue_behavior(/datum/ai_behavior/attack_path_blocker, target_key)
 		return
 
 	if(!ai_get_blocked_path_turf(controller.pawn, target))
@@ -88,3 +129,22 @@
 	if(!next_step.is_blocked_turf(exclude_mobs = TRUE, source_atom = living_pawn) && !current_turf.LinkBlockedWithAccess(next_step, living_pawn, controller.get_access(), FALSE))
 		return FALSE
 	return policy.try_step(living_pawn, controller, current_turf, next_step)
+
+///Пробить живого блокера на пути: моб бьёт врага, перегородившего телом дорогу к
+///цели, обычным милишным ударом (attack_animal уважает КД, урон, пацифизм). КД
+///поведения короткое - реальную каденцию всё равно гейтит CLICK_CD_MELEE моба.
+/datum/ai_behavior/attack_path_blocker
+	action_cooldown = 1 SECONDS
+	behavior_flags = AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION
+
+/datum/ai_behavior/attack_path_blocker/perform(delta_time, datum/ai_controller/controller, target_key)
+	var/mob/living/living_pawn = controller.pawn
+	var/atom/target = controller.blackboard[target_key]
+	if(!isliving(living_pawn) || QDELETED(target))
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	var/mob/living/blocker = ai_path_blocker_mob(living_pawn, target)
+	if(QDELETED(blocker))
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED //путь чист - блокера больше нет
+	living_pawn.setDir(get_dir(living_pawn, blocker))
+	INVOKE_ASYNC(blocker, TYPE_PROC_REF(/atom, attack_animal), living_pawn)
+	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED

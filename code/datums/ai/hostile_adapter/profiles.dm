@@ -12,6 +12,7 @@
 		/datum/ai_planning_subtree/hostile_dodge,
 		/datum/ai_planning_subtree/attack_obstacle_in_path,
 		/datum/ai_planning_subtree/take_cover_when_pinned,
+		/datum/ai_planning_subtree/pack_encircle,
 		/datum/ai_planning_subtree/tactical_approach,
 		/datum/ai_planning_subtree/hostile_melee,
 	)
@@ -88,6 +89,7 @@
 		/datum/ai_planning_subtree/hostile_fsm,
 		/datum/ai_planning_subtree/attack_obstacle_in_path,
 		/datum/ai_planning_subtree/take_cover_when_pinned,
+		/datum/ai_planning_subtree/pack_encircle,
 		/datum/ai_planning_subtree/tactical_approach,
 		/datum/ai_planning_subtree/hostile_melee,
 	)
@@ -137,6 +139,7 @@
 		/datum/ai_planning_subtree/hostile_fsm,
 		/datum/ai_planning_subtree/attack_obstacle_in_path,
 		/datum/ai_planning_subtree/take_cover_when_pinned,
+		/datum/ai_planning_subtree/pack_encircle,
 		/datum/ai_planning_subtree/tactical_approach,
 		/datum/ai_planning_subtree/hostile_melee,
 	)
@@ -160,6 +163,7 @@
 		/datum/ai_planning_subtree/hostile_fsm,
 		/datum/ai_planning_subtree/attack_obstacle_in_path,
 		/datum/ai_planning_subtree/take_cover_when_pinned,
+		/datum/ai_planning_subtree/pack_encircle,
 		/datum/ai_planning_subtree/tactical_approach,
 		/datum/ai_planning_subtree/hostile_melee,
 	)
@@ -182,6 +186,7 @@
 		/datum/ai_planning_subtree/hostile_fsm,
 		/datum/ai_planning_subtree/attack_obstacle_in_path,
 		/datum/ai_planning_subtree/take_cover_when_pinned,
+		/datum/ai_planning_subtree/pack_encircle,
 		/datum/ai_planning_subtree/tactical_approach,
 		/datum/ai_planning_subtree/hostile_melee,
 	)
@@ -210,6 +215,7 @@
 		/datum/ai_planning_subtree/targeted_mob_ability,
 		/datum/ai_planning_subtree/attack_obstacle_in_path,
 		/datum/ai_planning_subtree/take_cover_when_pinned,
+		/datum/ai_planning_subtree/pack_encircle,
 		/datum/ai_planning_subtree/tactical_approach,
 		/datum/ai_planning_subtree/hostile_melee,
 	)
@@ -223,6 +229,7 @@
 		/datum/ai_planning_subtree/hostile_fsm,
 		/datum/ai_planning_subtree/attack_obstacle_in_path,
 		/datum/ai_planning_subtree/take_cover_when_pinned,
+		/datum/ai_planning_subtree/pack_encircle,
 		/datum/ai_planning_subtree/tactical_approach,
 		/datum/ai_planning_subtree/hostile_melee,
 	)
@@ -307,6 +314,7 @@
 		/datum/ai_planning_subtree/hostile_fsm,
 		/datum/ai_planning_subtree/attack_obstacle_in_path,
 		/datum/ai_planning_subtree/take_cover_when_pinned,
+		/datum/ai_planning_subtree/pack_encircle,
 		/datum/ai_planning_subtree/tactical_approach,
 		/datum/ai_planning_subtree/hostile_melee,
 	)
@@ -346,6 +354,7 @@
 		/datum/ai_planning_subtree/hostile_fsm,
 		/datum/ai_planning_subtree/attack_obstacle_in_path,
 		/datum/ai_planning_subtree/take_cover_when_pinned,
+		/datum/ai_planning_subtree/pack_encircle,
 		/datum/ai_planning_subtree/tactical_approach,
 		/datum/ai_planning_subtree/hostile_melee,
 	)

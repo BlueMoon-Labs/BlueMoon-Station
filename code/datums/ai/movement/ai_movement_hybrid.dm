@@ -170,6 +170,11 @@
 		return
 	AI_METRIC_INC(failed_moves)
 	controller.note_mob_congestion(source.target)
+	//атакуемого блокера (враг, перегородивший телом путь) НЕ обходим: держим
+	//позицию, пусть attack_obstacle_in_path его пробьёт - иначе мобы бесплатно
+	//обтекают body-block игрока. Обход остаётся для союзников/нейтралов.
+	if(ai_step_blocker_attackable(source.moving, blocked_step))
+		return
 	//JPS не учитывает динамических мобов. Исключаем занятый тайл из следующего
 	//маршрута вместо бесконечного пересчёта того же пути через блокера.
 	source.avoid = blocked_step

@@ -27,3 +27,5 @@ GLOBAL_LIST_EMPTY(hostile_machines_by_zlevel)
 ///Цель -> /datum/ai_target_reservation. Не даёт нескольким support AI
 ///одновременно чинить/обслуживать одну и ту же цель.
 GLOBAL_LIST_EMPTY(ai_target_reservations)
+///Координаторы окружения стаи, ключ - цель
+GLOBAL_LIST_EMPTY(ai_pack_focuses)

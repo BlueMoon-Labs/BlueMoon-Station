@@ -100,6 +100,7 @@ multiple modular subtrees with behaviors
 
 /datum/ai_controller/Destroy(force)
 	release_ai_target_reservation()
+	release_pack_focus()
 	UnpossessPawn(FALSE)
 	if(ai_status)
 		GLOB.ai_controllers_by_status[ai_status] -= src
@@ -407,6 +408,7 @@ multiple modular subtrees with behaviors
 	if(isnull(pawn))
 		return //instantiated without an applicable pawn, fine
 	release_ai_target_reservation()
+	release_pack_focus()
 
 	set_ai_status(AI_STATUS_OFF)
 	UnregisterSignal(pawn, list(COMSIG_MOVABLE_Z_CHANGED, COMSIG_MOVABLE_ENTERED_NULLSPACE, COMSIG_MOB_CLIENT_LOGIN, COMSIG_MOB_CLIENT_LOGOUT, COMSIG_MOB_STATCHANGE, COMSIG_PARENT_QDELETING, COMSIG_MOVABLE_MOVED))
@@ -684,6 +686,7 @@ multiple modular subtrees with behaviors
 /datum/ai_controller/proc/on_pawn_qdeleted()
 	SIGNAL_HANDLER
 	release_ai_target_reservation()
+	release_pack_focus()
 	set_ai_status(AI_STATUS_OFF)
 	set_movement_target(type, null)
 	if(ai_movement.moving_controllers[src])

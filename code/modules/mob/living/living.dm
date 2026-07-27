@@ -119,6 +119,15 @@
 	if(now_pushing)
 		return TRUE
 
+	//Two AI mobs of the same faction must not shove or swap through each other.
+	//The push made a mob-blocked step "succeed", hiding it from the movement
+	//layer's is_mob_only_blocked_step queue and leaving two shooters endlessly
+	//trading the same tile. A cleanly failed step lets that queue handle them.
+	if(ai_controller && !client && isliving(M))
+		var/mob/living/allied_ai = M
+		if(allied_ai.ai_controller && !allied_ai.client && faction_check_mob(allied_ai))
+			return TRUE
+
 	var/they_can_move = TRUE
 
 	if(isliving(M))
