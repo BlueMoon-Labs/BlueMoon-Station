@@ -463,11 +463,18 @@ Turf and target are separate in case you want to teleport some distance from a t
 	var/y = min(world.maxy, max(1, A.y + dy))
 	return locate(x,y,A.z)
 
+/atom/proc/contains(var/atom/A)
+	if(!A)
+		return FALSE
+	for(var/atom/location = A.loc, location, location = location.loc)
+		if(location == src)
+			return TRUE
+
 /*
 	Gets all contents of contents and returns them all in a list.
 */
 
-/atom/proc/GetAllContents(var/T)
+/atom/proc/GetAllContents(T)
 	if(!length(contents))
 		if(!T || istype(src, T))
 			return list(src)
@@ -508,7 +515,6 @@ Turf and target are separate in case you want to teleport some distance from a t
 			processing += A.contents
 			lim = processing.len
 			. += A
-
 
 //Step-towards method of determining whether one atom can see another. Similar to viewers()
 /proc/can_see(atom/source, atom/target, length=5) // I couldnt be arsed to do actual raycasting :I This is horribly inaccurate.
@@ -1030,13 +1036,6 @@ B --><-- A
 			CHECK_TICK
 
 	return L
-
-/atom/proc/contains(var/atom/A)
-	if(!A)
-		return FALSE
-	for(var/atom/location = A.loc, location, location = location.loc)
-		if(location == src)
-			return TRUE
 
 /proc/flick_overlay_static(O, atom/A, duration)
 	set waitfor = 0
