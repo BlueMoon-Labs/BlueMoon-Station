@@ -6,6 +6,19 @@
 	var/Discipline = 0 // if a slime has been hit with a freeze gun, or wrestled/attacked off a human, they become disciplined and don't attack anymore for a while
 	var/SStun = 0 // stun variable
 	var/next_hunt_scan = 0 // world.time gate for the prey view() scan in handle_targets(); set only after a scan that found nothing
+	var/next_wander = 0 // world.time gate for aimless wandering in handle_targets()
+
+/// TRUE when this slime is allowed to take an aimless wander step this tick.
+/// Aimless wandering was the single biggest slime cost on a packed xenobio farm:
+/// one step out of a crowded turf costs hundreds of microseconds, and every slime
+/// was rolling for one on every Life tick. Hunting and following a leader are
+/// deliberately NOT gated by this.
+/mob/living/simple_animal/slime/proc/can_wander_now()
+	return world.time >= next_wander
+
+/// Records that a wander step was taken, starting the cooldown.
+/mob/living/simple_animal/slime/proc/note_wander()
+	next_wander = world.time + SLIME_WANDER_COOLDOWN
 
 	typing_indicator_state = /obj/effect/overlay/typing_indicator/slime
 
@@ -77,8 +90,14 @@
 		Tempstun = 0
 
 	if(stat != DEAD)
-		var/bz_percentage = environment.total_moles() ? (environment.get_moles(GAS_BZ) / environment.total_moles()) : 0
-		var/stasis = (bz_percentage >= 0.05 && bodytemperature < (T0C + 100)) || force_stasis
+		// Нервный газ - редкость, а total_moles() платился каждый тик каждым
+		// слаймом фермы. Считаем долю только когда BZ вообще есть в смеси.
+		var/stasis = force_stasis
+		if(!stasis && bodytemperature < (T0C + 100))
+			var/bz_moles = environment.get_moles(GAS_BZ)
+			if(bz_moles)
+				var/total_moles = environment.total_moles()
+				stasis = total_moles && (bz_moles / total_moles) >= 0.05
 
 		if(stat == CONSCIOUS && stasis)
 			to_chat(src, "<span class='danger'>Nerve gas in the air has put you in stasis!</span>")
@@ -93,9 +112,10 @@
 			update_mobility()
 			regenerate_icons()
 
-	updatehealth()
-
-
+	// Безусловного updatehealth() здесь больше нет: он тянул полный каскад
+	// (5 геттеров урона + update_stat + два med-HUD + healthdoll) на каждого
+	// слайма каждый тик, а урон/лечение слайма и так идёт через adjust*Loss,
+	// который сам зовёт updatehealth. На ферме это было ~13% стоимости SSmobs.
 	return //TODO: DEFERRED
 
 /mob/living/simple_animal/slime/proc/adjust_body_temperature(current, loc_temp, boost)
@@ -270,9 +290,20 @@
 			if(world.time >= next_hunt_scan && (will_hunt() && hungry || attacked || rabid)) // Only add to the list if we need to
 				var/list/targets = list()
 
-				for(var/mob/living/L in view(7,src))
+				// Lever 3: AI_TARGETS grid channel instead of view(7) - a per-cell
+				// index of live mobs, no viewport build (~2x cheaper here). We do
+				// NOT re-add a per-candidate can_see() LOS check: benchmarking a
+				// dense pen showed the raytraces cost 2.2x more than view() saved,
+				// so the deliberate tradeoff is that a slime now senses prey through
+				// walls (irrelevant in an open pen; slimes are weak and can't reach
+				// through anyway). get_dist clamps the grid's whole-cell over-return.
+				var/list/scan_candidates = SSspatial_grid.initialized ? SSspatial_grid.orthogonal_range_search(src, SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS, 7) : view(7, src)
+				for(var/mob/living/L as anything in scan_candidates)
 
-					if(isslime(L) || L.stat == DEAD) // Ignore other slimes and dead mobs
+					if(isslime(L) || L.stat == DEAD) // grid excludes DEAD; src is a slime so this also skips self
+						continue
+
+					if(get_dist(src, L) > 7) // grid returns whole cells - clamp to the real scan range
 						continue
 
 					if(L in Friends) // No eating friends!
@@ -333,7 +364,8 @@
 			else if(hungry)
 				if (holding_still)
 					holding_still = max(holding_still - hungry, 0)
-				else if(CHECK_MOBILITY(src, MOBILITY_MOVE) && isturf(loc) && prob(50))
+				else if(can_wander_now() && CHECK_MOBILITY(src, MOBILITY_MOVE) && isturf(loc) && prob(50))
+					note_wander()
 					step(src, pick(GLOB.cardinals))
 
 			else
@@ -341,7 +373,8 @@
 					holding_still = max(holding_still - 1, 0)
 				else if (docile && pulledby)
 					holding_still = 10
-				else if(CHECK_MOBILITY(src, MOBILITY_MOVE) && isturf(loc) && prob(33))
+				else if(can_wander_now() && CHECK_MOBILITY(src, MOBILITY_MOVE) && isturf(loc) && prob(33))
+					note_wander()
 					step(src, pick(GLOB.cardinals))
 		else
 			slime_wake_pursuit()

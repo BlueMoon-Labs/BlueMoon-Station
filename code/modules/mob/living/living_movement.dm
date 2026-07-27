@@ -2,6 +2,9 @@
 	update_pixel_shifting(TRUE)
 	. = ..()
 	update_turf_movespeed(loc)
+	//новое место - гравитация могла измениться; сам опрос делает handle_gravity()
+	//в Life, здесь только помечаем кэш протухшим
+	gravity_cache_dirty = TRUE
 
 /mob/living/setDir(newdir, ismousemovement)
 	. = ..()

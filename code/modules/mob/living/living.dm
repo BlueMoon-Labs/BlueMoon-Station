@@ -1285,6 +1285,7 @@
 /mob/living/proc/IgniteMob()
 	if(fire_stacks > 0 && !on_fire)
 		on_fire = 1
+		wake_life() //горящему мобу handle_fire нужен каждый фаер, бакет снимаем
 		visible_message("<span class='warning'>[src] catches fire!</span>", \
 						"<span class='userdanger'>Вы горите!</span>")
 		new/obj/effect/dummy/lighting_obj/moblight/fire(src)

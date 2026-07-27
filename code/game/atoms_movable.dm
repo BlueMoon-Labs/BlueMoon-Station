@@ -5,6 +5,11 @@
 	var/last_move = null
 	var/last_move_time = 0
 	var/anchored = FALSE
+	/// Must /turf/Exit() consult this atom when something tries to leave its turf?
+	/// Only border structures can actually refuse an exit, by overriding CheckExit()
+	/// or Uncross(). Anything that gains such an override, or a component listening
+	/// on COMSIG_MOVABLE_UNCROSS, has to set this - see /turf/Exit().
+	var/blocks_exit_checks = TRUE
 	var/move_resist = MOVE_RESIST_DEFAULT
 	var/move_force = MOVE_FORCE_DEFAULT
 	var/pull_force = PULL_FORCE_DEFAULT

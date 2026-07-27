@@ -1164,6 +1164,13 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 
 /mob/setMovetype(newval)
 	. = ..()
+	// Родитель выходит ДО присваивания, если movement_type не изменился, и тогда
+	// возвращает null (а изменившись - старое значение, которое вполне может быть
+	// нулём: null != 0 в DM, поэтому проверка именно isnull). update_mobility()
+	// зовёт setMovetype(movement_type | CRAWLING) каждый Life-тик, то есть
+	// пересчёт скорости шёл на каждого игрока каждые 2 секунды впустую.
+	if(isnull(.))
+		return
 	// BLUEMOON ADD START - для корректного обновления скорости у парящих сверхтяжёлых персонажей
 	if(src.mob_weight > MOB_WEIGHT_HEAVY)
 		update_config_movespeed()

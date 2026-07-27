@@ -764,14 +764,87 @@
 	if(glasses)
 		. += glasses.tint
 
+/// Returns a cached appearance for one healthdoll overlay. The doll only ever
+/// draws from a fixed set (six zones x eight states x ui_style), so building a
+/// fresh mutable_appearance per limb per health change was pure waste — it made
+/// /proc/mutable_appearance the third most expensive proc on the whole server.
+/// The cached appearances are never mutated; add_overlay() copies them.
+/proc/get_healthdoll_appearance(doll_icons, icon_state)
+	var/static/list/appearance_cache = list()
+	var/cache_key = "[doll_icons]-[icon_state]"
+	. = appearance_cache[cache_key]
+	if(.)
+		return
+	. = mutable_appearance(doll_icons, icon_state)
+	appearance_cache[cache_key] = .
+
+/// Which of the doll's six damage states this limb is drawn in. Shared by the
+/// renderer and the cache key so the two can never drift apart.
+/obj/item/bodypart/proc/get_healthdoll_state()
+	var/damage = burn_dam + brute_dam
+	if(!damage)
+		return 0
+	var/comparison = max_damage / 5
+	if(damage > (comparison*4))
+		return 5
+	if(damage > (comparison*3))
+		return 4
+	if(damage > (comparison*2))
+		return 3
+	if(damage > comparison)
+		return 2
+	return 1
+
+/// Compact description of everything the healthdoll renderer reads. Equal keys
+/// must imply an identical overlay set — see healthdoll_memo.dm.
+///
+/// Missing limbs and disabled limbs are both pure functions of the (zone,
+/// disabled) pairs over `bodyparts`, so one walk covers all three of the
+/// renderer's loops without paying for get_missing_limbs()/get_disabled_limbs()
+/// and their twelve get_bodypart() scans.
+/mob/living/carbon/human/proc/get_healthdoll_cache_key(ui_style)
+	if(stat == DEAD)
+		return "dead"
+	var/hide_damage = (hal_screwyhud == SCREWYHUD_HEALTHY)
+	var/list/limb_states = list()
+	for(var/obj/item/bodypart/limb as anything in bodyparts)
+		limb_states += "[limb.body_zone][hide_damage ? 0 : limb.get_healthdoll_state()][limb.disabled ? "!" : ""]"
+	return "[ui_style]|[jointext(limb_states, "/")]"
+
+/// Builds the doll's overlay list for the given HUD style.
+/mob/living/carbon/human/proc/build_healthdoll_overlays(ui_style)
+	. = list()
+	var/doll_icons = ui_style_modular(ui_style, "health")
+	var/hide_damage = (hal_screwyhud == SCREWYHUD_HEALTHY)
+	for(var/obj/item/bodypart/limb as anything in bodyparts)
+		var/icon_num = hide_damage ? 0 : limb.get_healthdoll_state()
+		if(icon_num)
+			. += get_healthdoll_appearance(doll_icons, "[limb.body_zone][icon_num]")
+	for(var/zone in get_missing_limbs())
+		. += get_healthdoll_appearance(doll_icons, "[zone]6")
+	for(var/zone in get_disabled_limbs())
+		. += get_healthdoll_appearance(doll_icons, "[zone]7")
+
 /mob/living/carbon/human/update_health_hud()
 	if(!client || !hud_used)
 		return
+	// Один Life-тик приносит несколько updatehealth() подряд (урон, стамина,
+	// каскад органов), и каждый гнал сюда полный ключ хелсдолла - обход всех
+	// конечностей с jointext. Если ни одна цифра, из которой строится HUD, не
+	// сдвинулась с прошлого вызова, перерисовывать нечего.
+	var/stamina_amount = getStaminaLoss()
+	var/hud_signature = "[health];[maxHealth];[stamina_amount];[stat];[hal_screwyhud];[hud_used.ui_style]"
+	//пустой doll_cache_key = хелсдолл только что создан (пересборка HUD) и обязан
+	//быть отрисован, даже если цифры не менялись
+	var/atom/movable/screen/healthdoll/existing_doll = hud_used.healthdoll
+	if(hud_signature == cached_health_hud_signature && (isnull(existing_doll) || existing_doll.doll_cache_key))
+		return
+	cached_health_hud_signature = hud_signature
 	if(dna.species.update_health_hud())
 		return
 	else
 		if(hud_used.healths)
-			var/health_amount = min(health, maxHealth - clamp(getStaminaLoss()-50, 0, 80))//CIT CHANGE - makes staminaloss have less of an impact on the health hud
+			var/health_amount = min(health, maxHealth - clamp(stamina_amount-50, 0, 80))//CIT CHANGE - makes staminaloss have less of an impact on the health hud
 			if(..(health_amount)) //not dead
 				switch(hal_screwyhud)
 					if(SCREWYHUD_CRIT)
@@ -781,34 +854,20 @@
 					if(SCREWYHUD_HEALTHY)
 						hud_used.healths.icon_state = "health0"
 		if(hud_used.healthdoll)
-			hud_used.healthdoll.cut_overlays()
-			if(stat != DEAD)
-				hud_used.healthdoll.icon_state = "healthdoll_OVERLAY"
-				for(var/X in bodyparts)
-					var/obj/item/bodypart/BP = X
-					var/damage = BP.burn_dam + BP.brute_dam
-					var/comparison = (BP.max_damage/5)
-					var/icon_num = 0
-					if(damage)
-						icon_num = 1
-					if(damage > (comparison))
-						icon_num = 2
-					if(damage > (comparison*2))
-						icon_num = 3
-					if(damage > (comparison*3))
-						icon_num = 4
-					if(damage > (comparison*4))
-						icon_num = 5
-					if(hal_screwyhud == SCREWYHUD_HEALTHY)
-						icon_num = 0
-					if(icon_num)
-						hud_used.healthdoll.add_overlay(mutable_appearance(ui_style_modular(hud_used.ui_style, "health"), "[BP.body_zone][icon_num]"))
-				for(var/t in get_missing_limbs()) //Missing limbs
-					hud_used.healthdoll.add_overlay(mutable_appearance(ui_style_modular(hud_used.ui_style, "health"), "[t]6"))
-				for(var/t in get_disabled_limbs()) //Disabled limbs
-					hud_used.healthdoll.add_overlay(mutable_appearance(ui_style_modular(hud_used.ui_style, "health"), "[t]7"))
-			else
-				hud_used.healthdoll.icon_state = "healthdoll_DEAD"
+			// The doll has six states per limb, so almost every health change
+			// leaves it looking exactly the same. Only redraw when it wouldn't.
+			var/atom/movable/screen/healthdoll/doll = hud_used.healthdoll
+			var/doll_key = get_healthdoll_cache_key(hud_used.ui_style)
+			if(doll.doll_cache_key != doll_key)
+				doll.doll_cache_key = doll_key
+				doll.cut_overlays()
+				if(stat != DEAD)
+					doll.icon_state = "healthdoll_OVERLAY"
+					var/list/doll_overlays = build_healthdoll_overlays(hud_used.ui_style)
+					if(length(doll_overlays))
+						doll.add_overlay(doll_overlays)
+				else
+					doll.icon_state = "healthdoll_DEAD"
 
 		hud_used.staminas?.update_icon_state()
 		hud_used.staminabuffer?.mark_dirty()

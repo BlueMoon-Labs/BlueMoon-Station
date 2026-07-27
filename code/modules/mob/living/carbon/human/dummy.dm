@@ -61,7 +61,15 @@ INITIALIZE_IMMEDIATE(/mob/living/carbon/human/dummy)
 GLOBAL_LIST_EMPTY(human_dummy_list)
 GLOBAL_LIST_EMPTY(dummy_mob_list)
 
-/proc/generate_or_wait_for_human_dummy(slotkey)
+/**
+  * Выдаёт манекен из слота, дожидаясь освобождения.
+  *
+  * regenerate - восстанавливать ли иконки, срезанные в wipe_state(). Вызывающий,
+  * который сразу же одевает манекен и сам зовёт regenerate_icons()/updateappearance,
+  * должен передать FALSE: иначе манекен рендерится дважды подряд, а полная
+  * перерисовка гуманоида стоит ~3мс.
+  */
+/proc/generate_or_wait_for_human_dummy(slotkey, regenerate = TRUE)
 	if(!slotkey)
 		return new /mob/living/carbon/human/dummy
 	var/mob/living/carbon/human/dummy/D = GLOB.human_dummy_list[slotkey]
@@ -73,7 +81,7 @@ GLOBAL_LIST_EMPTY(dummy_mob_list)
 		D = new
 		GLOB.human_dummy_list[slotkey] = D
 		GLOB.dummy_mob_list += D
-	else
+	else if(regenerate)
 		D.regenerate_icons() //they were cut in wipe_state()
 	D.in_use = TRUE
 	return D

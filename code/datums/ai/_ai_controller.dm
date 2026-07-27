@@ -527,6 +527,11 @@ multiple modular subtrees with behaviors
 	stop_previous_processing()
 	ai_status = new_ai_status
 	GLOB.ai_controllers_by_status[new_ai_status] += src
+	//проснувшийся с целью моб перестаёт быть "спокойным дальним" для троттла
+	//Life - снимаем бронь бакета SSmobs
+	if(new_ai_status == AI_STATUS_ON && isliving(pawn) && !isnull(blackboard[BB_AI_CURRENT_TARGET]))
+		var/mob/living/living_pawn = pawn
+		living_pawn.wake_life()
 	switch(ai_status)
 		if(AI_STATUS_OFF)
 			if(!(additional_flags & AI_PREVENT_CANCEL_ACTIONS))
@@ -844,6 +849,11 @@ multiple modular subtrees with behaviors
 /datum/ai_controller/proc/post_blackboard_key_set(key)
 	if (isnull(pawn))
 		return
+	//появление цели снимает бронь бакета SSmobs: should_bypass_life_throttle()
+	//обязан увидеть её на ближайшем проходе, а не через 4 фаера
+	if(key == BB_AI_CURRENT_TARGET && ai_status == AI_STATUS_ON && isliving(pawn))
+		var/mob/living/living_pawn = pawn
+		living_pawn.wake_life()
 	SEND_SIGNAL(pawn, COMSIG_AI_BLACKBOARD_KEY_SET(key))
 
 /**

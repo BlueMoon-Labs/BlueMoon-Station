@@ -237,6 +237,12 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 	hud_used = new_hud
 	new_hud.build_action_groups()
 
+/mob/living/set_hud_used(datum/hud/new_hud)
+	. = ..()
+	//новый HUD - пустые элементы здоровья, дедуп в update_health_hud() обязан
+	//пропустить первую отрисовку
+	cached_health_hud_signature = ""
+
 //Version denotes which style should be displayed. blank or 0 means "next version"
 /datum/hud/proc/show_hud(version = 0, mob/viewmob)
 	if(!ismob(mymob))

@@ -174,7 +174,11 @@
 	lying_prev = lying
 
 	//Handle citadel autoresist
-	if(CHECK_MOBILITY(src, MOBILITY_MOVE) && !(combat_flags & COMBAT_FLAG_INTENTIONALLY_RESTING) && canstand_involuntary && iscarbon(src) && client?.prefs?.autostand)//CIT CHANGE - adds autostanding as a preference
+	//`resting` в гейте обязателен: resist_a_rest() первым делом возвращает FALSE,
+	//если моб и так стоит, а BiologicalLife зовёт update_mobility() каждый тик -
+	//то есть на каждого стоящего игрока с автовставанием ставился таймер-пустышка
+	//(в проде ~70 аллокаций каждые 2с, чистый налог на SStimer).
+	if(resting && CHECK_MOBILITY(src, MOBILITY_MOVE) && !(combat_flags & COMBAT_FLAG_INTENTIONALLY_RESTING) && canstand_involuntary && iscarbon(src) && client?.prefs?.autostand)//CIT CHANGE - adds autostanding as a preference
 		addtimer(CALLBACK(src, PROC_REF(resist_a_rest), TRUE), 0, TIMER_DELETE_ME) //CIT CHANGE - ditto
 
 	// Movespeed mods based on arms/legs quantity
@@ -190,6 +194,10 @@
 		else
 			remove_movespeed_modifier(/datum/movespeed_modifier/limbless)
 
-	update_movespeed()
-
+	//Безусловного update_movespeed() здесь больше нет. Всё, что этот проц может
+	//поменять в скорости, обновляет её само и только при реальном изменении:
+	//setMovetype() (CRAWLING) выходит по isnull(.), add_or_update_variable_...
+	//сравнивает значение, remove_movespeed_modifier - наличие ключа. Снятые с рук
+	//предметы проходят через update_equipment_speed_mods(). Полный пересчёт кэша
+	//модификаторов на каждого карбона каждый Life-тик был чистым налогом.
 	return mobility_flags

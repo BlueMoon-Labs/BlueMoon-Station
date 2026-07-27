@@ -91,6 +91,8 @@
 	scenario_mobs_life_far_alive()
 	scenario_mobs_life_near_alive()
 	scenario_mobs_life_far_dead()
+	scenario_mobs_life_near_dead()
+	scenario_slime_hunt()
 	scenario_cleanbot_idle_scan()
 	scenario_controllers_planning_only()
 	scenario_controllers_dense_acquisition()
@@ -436,6 +438,53 @@
 	end_measurement("mobs_life_far_dead", costs, list("mob_count" = 100, "full_life_passes" = FLOOR(AI_BENCH_PASSES / 15, 1)))
 	teardown_scenario()
 
+///100 мёртвых clientless humans РЯДОМ с игроком. До рычага 1: полный
+///BiologicalLife каждый fire (труп в медбэе жуёт органы/гниение каждые 2с). После:
+///decay cadence раз в 4 fire (8с). Прямое доказательство рычага 1.
+/datum/unit_test/ai_benchmark_baseline/proc/scenario_mobs_life_near_dead()
+	rand_seed(AI_BENCH_SEED)
+	place_player(12, 12)
+	spawn_humans(100, 8, 16, 9, TRUE)
+	begin_measurement("mobs_life_near_dead")
+	//within-run A/B (устраняет межпрогонный шум): A = throttle как в проде,
+	//B = полный BiologicalLife на каждом трупе каждый пасс (цена ДО рычага 1).
+	var/list/throttled = measure_mob_life_passes(AI_BENCH_PASSES)
+	var/list/full_samples = list()
+	var/dead_seconds = SSmobs.wait * 0.1
+	for(var/pass in 1 to AI_BENCH_PASSES)
+		var/cpu_start = TICK_USAGE_REAL
+		for(var/mob/living/carbon/human/corpse as anything in scenario_humans)
+			corpse.BiologicalLife(dead_seconds, pass)
+		full_samples += TICK_USAGE_TO_MS(cpu_start)
+	var/list/full = summarize_samples(full_samples, 0)
+	end_measurement("mobs_life_near_dead", throttled, list(
+		"mob_count" = 100,
+		"throttled_median_ms" = throttled["median_ms"],
+		"unthrottled_median_ms" = full["median_ms"],
+	))
+	teardown_scenario()
+
+///20 слаймов сканируют добычу среди 40 живых мобов в открытом загоне. Изолирует
+///handle_targets() (view(7) до рычага 3, spatial-grid после): дельта baseline/
+///optimized и есть цена перцепционного скана.
+/datum/unit_test/ai_benchmark_baseline/proc/scenario_slime_hunt()
+	rand_seed(AI_BENCH_SEED)
+	place_player(1, 1)
+	spawn_slimes(20, 6, 18, 7)
+	spawn_humans(40, 5, 19, 8) //живая добыча в радиусе скана
+	begin_measurement("slime_hunt")
+	var/list/variants = measure_slime_scan_variants(AI_BENCH_PASSES)
+	//primary cost = grid_only (как в проде после рычага 3); within-run view и
+	//grid_cansee рядом для сравнения (can_see оказался в 2.2x дороже view).
+	end_measurement("slime_hunt", variants["grid_only"], list(
+		"slime_count" = 20,
+		"prey_count" = 40,
+		"view_median_ms" = variants["view"]["median_ms"],
+		"grid_cansee_median_ms" = variants["grid_cansee"]["median_ms"],
+		"grid_only_median_ms" = variants["grid_only"]["median_ms"],
+	))
+	teardown_scenario()
+
 ///20 idle cleanbots with every optional target class enabled and no valid
 ///targets. This reproduces the live-round worst case: four full scans over the
 ///same cached view on every NPC-pool action.
@@ -524,6 +573,18 @@
 		if(dead)
 			subject.death()
 		scenario_humans += subject
+		index++
+
+///Разложить count слаймов по сетке; кладём в scenario_mobs (simple_animals-путь teardown).
+/datum/unit_test/ai_benchmark_baseline/proc/spawn_slimes(count, min_coord, max_coord, row_length)
+	var/index = 0
+	while(index < count)
+		var/spawn_x = min_coord + (index % row_length)
+		var/spawn_y = min_coord + round(index / row_length)
+		if(spawn_y > max_coord)
+			spawn_y = max_coord
+		var/mob/living/simple_animal/slime/subject = new(arena_turf(spawn_x, spawn_y))
+		scenario_mobs += subject
 		index++
 
 ///Разложить cleanbot по сетке без соседних клеток: они видят друг друга, но
@@ -668,6 +729,50 @@
 		cpu_samples += TICK_USAGE_TO_MS(cpu_start)
 	SSmobs.state = saved_state
 	return summarize_samples(cpu_samples, REALTIMEOFDAY - wall_start)
+
+///Within-run 3-полосный A/B цены перцепционного скана слайма на ОДНИХ И ТЕХ ЖЕ
+///мобах (устраняет межпрогонный шум окружения). Полосы:
+/// view        - легаси for(L in view(7)) + isslime/dead фильтр (LOS от view);
+/// grid_cansee - grid AI_TARGETS + get_dist + can_see (как в проде после рычага 3);
+/// grid_only   - grid + get_dist без can_see (что стоит без восстановления LOS).
+///Возвращает list("view"=summary, "grid_cansee"=summary, "grid_only"=summary).
+/datum/unit_test/ai_benchmark_baseline/proc/measure_slime_scan_variants(pass_count)
+	var/list/view_samples = list()
+	var/list/grid_cansee_samples = list()
+	var/list/grid_only_samples = list()
+	for(var/pass in 1 to pass_count)
+		var/cpu_view = TICK_USAGE_REAL
+		for(var/mob/living/simple_animal/slime/subject as anything in scenario_mobs)
+			for(var/mob/living/candidate in view(7, subject))
+				if(isslime(candidate) || candidate.stat == DEAD)
+					continue
+		view_samples += TICK_USAGE_TO_MS(cpu_view)
+
+		var/cpu_grid_cansee = TICK_USAGE_REAL
+		for(var/mob/living/simple_animal/slime/subject as anything in scenario_mobs)
+			for(var/mob/living/candidate as anything in SSspatial_grid.orthogonal_range_search(subject, SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS, 7))
+				if(isslime(candidate) || candidate.stat == DEAD)
+					continue
+				if(get_dist(subject, candidate) > 7)
+					continue
+				if(!can_see(subject, candidate, 7))
+					continue
+		grid_cansee_samples += TICK_USAGE_TO_MS(cpu_grid_cansee)
+
+		var/cpu_grid_only = TICK_USAGE_REAL
+		for(var/mob/living/simple_animal/slime/subject as anything in scenario_mobs)
+			for(var/mob/living/candidate as anything in SSspatial_grid.orthogonal_range_search(subject, SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS, 7))
+				if(isslime(candidate) || candidate.stat == DEAD)
+					continue
+				if(get_dist(subject, candidate) > 7)
+					continue
+		grid_only_samples += TICK_USAGE_TO_MS(cpu_grid_only)
+
+	return list(
+		"view" = summarize_samples(view_samples, 0),
+		"grid_cansee" = summarize_samples(grid_cansee_samples, 0),
+		"grid_only" = summarize_samples(grid_only_samples, 0),
+	)
 
 ///Изолировать target scan cleanbot от cadence и очереди SSnpcpool: один sample
 ///равен одному синхронному action каждого бота с пустой целью.

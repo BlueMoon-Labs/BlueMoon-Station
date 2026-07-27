@@ -495,6 +495,26 @@ Turf and target are separate in case you want to teleport some distance from a t
 				lim = processing_list.len
 		return processing_list
 
+/**
+ * TRUE если target - это мы сами или что-то вложенное в нас на любой глубине.
+ *
+ * Строго эквивалентно `target in GetAllContents()`, но идёт ВВЕРХ по loc от
+ * target (contents и loc - взаимно обратны в BYOND), поэтому стоит O(глубины
+ * вложенности), а не O(всего дерева). Для проверки "лежит ли предмет у моба"
+ * разница принципиальна: GetAllContents на игроке собирает список из рюкзака,
+ * ящиков в рюкзаке и всего их содержимого - десятки-сотни элементов на каждый
+ * вызов. Инвариант "contains_atom == in GetAllContents" закреплён юнит-тестом.
+ */
+/atom/proc/contains_atom(atom/target)
+	if(isnull(target) || target == src)
+		return !isnull(target)
+	var/atom/probe = target.loc
+	while(probe)
+		if(probe == src)
+			return TRUE
+		probe = probe.loc
+	return FALSE
+
 /atom/proc/GetAllContentsIgnoring(list/ignore_typecache)
 	if(!length(ignore_typecache))
 		return GetAllContents()

@@ -29,6 +29,20 @@
 	///Накопленные троттлом секунды Life: доезжают следующим обработанным тиком,
 	///чтобы метаболизм/дыхание/статусы шли в игровом времени, а не в тиках
 	var/life_time_debt = 0
+	///SSmobs.times_fired, раньше которого Life() гарантированно был бы no-op:
+	///подсистема пропускает такого моба, вообще не вызывая Life(). Бронируется
+	///самим троттлом в Life(), сбрасывается в 0 через wake_life() на переходах,
+	///которые делают моба срочным (stat, поджиг, цель ИИ).
+	var/life_next_fire = 0
+	///times_fired последнего ВХОДА в Life(). Нужен, чтобы троттл начислял долг
+	///времени и за те фаеры, которые бакет пропустил мимо Life() целиком.
+	var/life_last_fire = 0
+	///Подпись входов update_mobility() на момент прошлого кэтч-олла в Life.
+	///Пустая строка = пересчитать (см. update_mobility_if_dirty).
+	var/cached_mobility_signature = ""
+	///Подпись цифр, из которых строится HUD здоровья, на момент прошлой отрисовки.
+	///Пустая строка = перерисовать (сбрасывается при пересборке HUD).
+	var/cached_health_hud_signature = ""
 
 	//Damage related vars, NOTE: THESE SHOULD ONLY BE MODIFIED BY PROCS
 	var/bruteloss = 0	//Brutal damage caused by brute force (punching, being clubbed by a toolbox ect... this also accounts for pressure damage)
@@ -101,6 +115,10 @@
 	var/fire_stacks = 0 //Tracks how many stacks of fire we have on, max is usually 20
 
 	var/cached_gravity_value = -1 //Cached gravity for handle_gravity() optimization — only calls update_gravity() when changed
+	///TRUE, когда cached_gravity_value мог протухнуть (моб переместился). Пока
+	///флаг снят, handle_gravity() не опрашивает has_gravity заново: всё, что
+	///меняет гравитацию без перемещения, зовёт refresh_gravity() само.
+	var/gravity_cache_dirty = TRUE
 
 	///Средa не может повлиять на моба: PhysicalLife не читает атмосферу вовсе.
 	///Прекомпьютится у simple_animal в refresh_atmos_pathing_sensitivity().
