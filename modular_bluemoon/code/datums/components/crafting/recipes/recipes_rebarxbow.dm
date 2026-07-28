@@ -108,6 +108,7 @@
 	category = CAT_WEAPONRY
 	subcategory = CAT_AMMO
 
+/*
 /datum/crafting_recipe/rebar_supermatter
 	name = "Supermatter crossbow bolt"
 	result = /obj/item/ammo_casing/rebar/supermatter
@@ -119,3 +120,4 @@
 	time = 30
 	category = CAT_ATMOSPHERIC
 	subcategory = CAT_ATMOSPHERICS
+*/
