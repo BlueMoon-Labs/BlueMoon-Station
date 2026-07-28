@@ -2509,3 +2509,9 @@
 	slot = ITEM_SLOT_HEAD
 	path = /obj/item/clothing/head/donator/bm/stupid_cap
 	ckeywhitelist = list("angelnedemon")
+
+/datum/gear/donator/bm/infovisor
+	name = "Infovisor"
+	slot = ITEM_SLOT_EYES
+	path = /obj/item/clothing/glasses/cover/infovisor
+	ckeywhitelist = list("lindaastereih")
