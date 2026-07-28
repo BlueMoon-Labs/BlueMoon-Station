@@ -500,6 +500,7 @@
 /obj/item/clothing/glasses/cover/infovisor
 	name = "infovisor"
 	desc = "A standard old-generation visor that allows you to quickly survey the area."
+	can_switch_eye = FALSE
 	icon_state = "visor"
 	item_state = "visor"
 	base_icon_state = "visor"
