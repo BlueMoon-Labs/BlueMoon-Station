@@ -126,52 +126,52 @@
 	icon_state = "contrabandist_v1_MAC15"
 	icon_living = "contrabandist_v1_MAC15"
 	icon_dead = "pirateranged_dead"
-	projectilesound = 'sound/weapons/Gunshot_smg'
+	projectilesound = 'sound/weapons/Gunshot_smg.ogg'
 	ranged = 1
 	rapid = 3
 	rapid_fire_delay = 4
 	retreat_distance = 3
 	minimum_distance = 2
-	projectiletype = /obj/item/projectiles/bullet
+	casingtype = /obj/item/ammo_casing/c45/lethal,
 
 /mob/living/simple_animal/hostile/pirate/contrabandist/ranger2
 	name = "A gun Contrabandist"
 	icon_state = "contrabandist_v2shotgun"
 	icon_living = "contrabandist_v2shotgun"
 	icon_dead = "pirateranged_dead"
-	projectilesound = 'sound/weapons/gunshotshotgunshot'
+	projectilesound = 'sound/weapons/gunshotshotgunshot.ogg'
 	ranged = 1
-	rapid = 9
+	rapid = 2
 	rapid_fire_delay = 7
 	retreat_distance = 2
 	minimum_distance = 1
-	projectiletype = /obj/item/projectiles/bullet
+	/obj/item/ammo_casing/shotgun/buckshot,
 
 /mob/living/simple_animal/hostile/pirate/contrabandist/ranger3
 	name = "A gun Contrabandist"
 	icon_state = "contrabandist_v1FP5000"
 	icon_living = "contrabandist_v1FP5000"
 	icon_dead = "pirateranged_dead"
-	projectilesound = 'sound/weapons/Gunshot_smg'
+	projectilesound = 'sound/weapons/Gunshot_smg.ogg'
 	ranged = 3
 	rapid = 5
 	rapid_fire_delay = 8
 	retreat_distance = 3
 	minimum_distance = 2
-	projectiletype = /obj/item/projectiles/bullet
+	casingtype = /obj/item/ammo_casing/c45/lethal,
 
 /mob/living/simple_animal/hostile/pirate/contrabandist/ranger4
 	name = "A gun Contrabandist"
 	icon_state = "contrabandist_v2vintovka"
 	icon_living = "contrabandist_v2vintovka"
 	icon_dead = "pirateranged_dead"
-	projectilesound = 'sound/weapons/Gunshot2'
+	projectilesound = 'sound/weapons/Gunshot2.ogg'
 	ranged = 12
 	rapid = 1
 	rapid_fire_delay = 12
 	retreat_distance = 3
 	minimum_distance = 6
-	projectiletype = /obj/item/projectiles/bullet
+	/obj/item/ammo_casing/a308,
 
 /mob/living/simple_animal/hostile/pirate/contrabandist/leader
 	name = "Contrabandist leader"
@@ -186,7 +186,7 @@
 	response_help_continuous = "pushes"
 	response_help_simple = "push"
 	speed = 1
-	maxHealth = 180
+	maxHealth = 300
 	health = 300
 	spacewalk = TRUE
 	harm_intent_damage = 35
@@ -196,13 +196,13 @@
 	attack_verb_simple = "punch"
 	attack_sound = 'sound/weapons/punch1.ogg'
 	a_intent = INTENT_HARM
-	projectilesound = 'sound/weapons/rifleshot'
+	projectilesound = 'sound/weapons/rifleshot.ogg'
 	ranged = 7
 	rapid = 9
 	rapid_fire_delay = 5
 	retreat_distance = 2
 	minimum_distance = 2
-	projectiletype = /obj/item/projectiles/bullet
+	casingtype = /obj/item/ammo_casing/762,
 	atmos_requirements = list("min_oxy" = 5, "max_oxy" = 0, "min_tox" = 0, "max_tox" = 1, "min_co2" = 0, "max_co2" = 5, "min_n2" = 0, "max_n2" = 0)
 	unsuitable_atmos_damage = 15
 	speak_emote = list("yarrs")
