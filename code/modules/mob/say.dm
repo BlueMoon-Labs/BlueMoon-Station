@@ -36,7 +36,7 @@
 	if(client?.prefs.tgui_input_verbs)
 		message = tgui_input_text(src, "", "Say (Indicator)", null, MAX_MESSAGE_LEN, encode = FALSE)
 	else
-		message = input(src, "", "Say (Indicator)") as text|null
+		message = stripped_input_or_reflect(src, "", "Say (Indicator)")
 
 	clear_typing_indicator()		// clear it immediately!
 	if(!length(message))
@@ -45,18 +45,28 @@
 
 	QUEUE_OR_CALL_VERB_FOR(VERB_CALLBACK(src, TYPE_PROC_REF(/atom/movable, say), message), SSspeech_controller)
 
-/mob/verb/say_verb()
+/mob/verb/say_verb_byond(message as text)
+	set name = "Say "
+	set hidden = TRUE
+	if(!message)
+		return
+	say_verb(message)
+
+/mob/verb/say_verb(message = "" as text)
 	set name = "Say"
 	set category = "Say"
 	if(GLOB.say_disabled)	//This is here to try to identify lag problems
-		to_chat(usr, "<span class='danger'>Speech is currently admin-disabled.</span>")
+		to_chat(usr, message)
+		to_chat(usr, span_danger("^^^----- Speech is currently admin-disabled. -----^^^"))
 		return
 
-	var/message = ""
-	if(client?.prefs.tgui_input_verbs)
-		message = tgui_input_text(usr, "", "Say", null, MAX_MESSAGE_LEN, encode = FALSE)
+	if(message)
+		message = stripped_text_or_reflect(usr, message)
 	else
-		message = input(usr, "", "Say") as text|null
+		if(client?.prefs.tgui_input_verbs)
+			message = tgui_input_text(usr, "", "Say", null, MAX_MESSAGE_LEN, encode = FALSE)
+		else
+			message = stripped_input_or_reflect(usr, "", "Say")
 
 	clear_typing_indicator()		// clear it immediately!
 	if(!length(message))
@@ -67,6 +77,7 @@
 
 /mob/verb/speak_verb(message as text) // Специально для "saybutton"
 	set name = "Speak"
+	message = stripped_text_or_reflect(usr, message)
 	if(!length(message))
 		return
 	if(GLOB.say_disabled)	//This is here to try to identify lag problems
@@ -101,18 +112,28 @@
 
 	QUEUE_OR_CALL_VERB_FOR(VERB_CALLBACK(usr, TYPE_PROC_REF(/mob, emote), "me", 1, message, TRUE), SSspeech_controller)
 
-/mob/verb/me_verb()
+/mob/verb/me_verb_byond(message as message)
+	set name = "Me "
+	set hidden = TRUE
+	if(!message)
+		return
+	me_verb(message)
+
+/mob/verb/me_verb(message = "" as message)
 	set name = "Me"
 	set category = "Say"
 	if(GLOB.say_disabled)	//This is here to try to identify lag problems
-		to_chat(usr, "<span class='danger'>Speech is currently admin-disabled.</span>")
+		to_chat(usr, message)
+		to_chat(usr, span_danger("^^^----- Speech is currently admin-disabled. -----^^^"))
 		return
 
-	var/message = ""
-	if(client?.prefs.tgui_input_verbs)
-		message = tgui_input_text(usr, "", "Me", null, MAX_MESSAGE_LEN, TRUE, TRUE)
+	if(message)
+		message = stripped_text_or_reflect(usr, message)
 	else
-		message = stripped_multiline_input_or_reflect(usr, "", "Me")
+		if(client?.prefs.tgui_input_verbs)
+			message = tgui_input_text(usr, "", "Me", null, MAX_MESSAGE_LEN, TRUE, TRUE)
+		else
+			message = stripped_multiline_input_or_reflect(usr, "", "Me")
 
 	clear_typing_indicator()		// clear it immediately!
 
@@ -174,19 +195,29 @@
 		var/customsayverb = findtext_char(input, "*")
 		return lowertext(copytext_char(input, 1, customsayverb))
 
-/mob/verb/whisper_verb()
+/mob/verb/whisper_verb_byond(message as text)
+	set name = "Whisper "
+	set hidden = TRUE
+	if(!message)
+		return
+	me_verb(message)
+
+/mob/verb/whisper_verb(message = "" as text)
 	set name = "Whisper"
 	set category = "Say"
 	if(GLOB.say_disabled)	//This is here to try to identify lag problems
-		to_chat(usr, "<span class='danger'>Speech is currently admin-disabled.</span>")
+		to_chat(usr, message)
+		to_chat(usr, span_danger("^^^----- Speech is currently admin-disabled. -----^^^"))
 		return
 
 	// whisper() уходит в say(), который санитизит сам — отдаём сырой текст
-	var/message = ""
-	if(client?.prefs.tgui_input_verbs)
-		message = tgui_input_text(usr, "", "Whisper", null, MAX_MESSAGE_LEN, encode = FALSE)
+	if(message)
+		message = stripped_text_or_reflect(usr, message)
 	else
-		message = input(usr, "", "Whisper") as text|null
+		if(client?.prefs.tgui_input_verbs)
+			message = tgui_input_text(usr, "", "Whisper", null, MAX_MESSAGE_LEN, encode = FALSE)
+		else
+			message = input(usr, "", "Whisper") as text|null
 
 	if(!length(message))
 		return
@@ -196,7 +227,7 @@
 	client?.last_activity = world.time
 	say(message, language) //only living mobs actually whisper, everything else just talks
 
-/mob/proc/say_dead(var/message)
+/mob/proc/say_dead(message)
 	var/name = real_name
 	var/alt_name = ""
 

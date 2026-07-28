@@ -503,8 +503,10 @@
 			switch(flag)
 				if("tgui_input_mode")
 					tgui_input_mode = (value == "TGUI" ? TRUE : FALSE)
+					user.client.ensure_keys_set(src)
 				if("tgui_input_verbs")
 					tgui_input_verbs = (value == "TGUI" ? TRUE : FALSE)
+					user.client.ensure_keys_set(src)
 				if("UI_style")
 					UI_style = value
 					if(user?.hud_used)

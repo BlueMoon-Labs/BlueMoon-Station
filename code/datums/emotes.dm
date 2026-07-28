@@ -215,11 +215,12 @@
 
 /datum/emote/sound/can_run_emote(mob/living/user, status_check, intentional = FALSE)
 	. = ..()
-
 	// Check parent return
 	if(!.)
 		return FALSE
 
+	if(!emote_cooldown)
+		user?.nextsoundemote = initial(user?.nextsoundemote)
 	// Check cooldown
 	if(user?.nextsoundemote >= world.time)
 		return FALSE

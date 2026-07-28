@@ -194,9 +194,11 @@
 					movement_keys[key] = SOUTH
 				else
 					var/datum/keybinding/KB = GLOB.keybindings_by_name[kb_name]
-					if(!KB.clientside)
+					var/clientside_verb = (!(prefs.tgui_input_mode && prefs.tgui_input_verbs) && KB.clientside_byond) || KB.clientside
+					if(!clientside_verb)
 						continue
-					.[key] = KB.clientside
+					clientside_verb = replacetext_char(clientside_verb, " ", "-")
+					.[key] = clientside_verb
 
 /// Manually clears any held keys, in case due to lag or other undefined behavior a key gets stuck.
 /client/proc/reset_held_keys()
