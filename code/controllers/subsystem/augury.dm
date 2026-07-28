@@ -23,7 +23,7 @@ SUBSYSTEM_DEF(augury)
 	var/biggest_threat = null
 
 	// Снимок: снятие ключа прямо в цикле сдвигает индекс и пропускает следующую запись.
-	for(var/datum/d as anything in doombringers.Copy())
+	for(var/atom/d as anything in doombringers.Copy())
 		if(!d || QDELETED(d))
 			doombringers -= d
 			continue

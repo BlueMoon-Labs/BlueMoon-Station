@@ -380,9 +380,14 @@
 
 	SSaugury.fire()
 
-	TEST_ASSERT(!length(SSaugury.observers_given_action), "SSaugury удержал удалённых гостов в observers_given_action")
-	TEST_ASSERT(!length(SSaugury.watchers), "SSaugury удержал удалённых гостов в watchers")
+	// Результат снимаем до восстановления: провал TEST_ASSERT выходит из Run() и
+	// оставил бы подсистему с временными пустыми списками на весь прогон.
+	var/given_pruned = !length(SSaugury.observers_given_action)
+	var/watchers_pruned = !length(SSaugury.watchers)
 
 	SSaugury.observers_given_action = saved_given
 	SSaugury.watchers = saved_watchers
 	SSaugury.doombringers = saved_doom
+
+	TEST_ASSERT(given_pruned, "SSaugury удержал удалённых гостов в observers_given_action")
+	TEST_ASSERT(watchers_pruned, "SSaugury удержал удалённых гостов в watchers")
