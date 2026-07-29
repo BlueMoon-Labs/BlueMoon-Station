@@ -10,6 +10,8 @@
 //  - self_thrust_cap:       voluntary steps can't accelerate past the thruster's own ceiling
 //  - thrust_source_registry: several engines on one carrier compose by the best of them
 //  - drift_handoff_on_release: letting go of a tow hands the cargo the tow's vector
+//  - space_z_transition_no_inertia_latch: пересечение края уровня не запирает движок инерции
+//  - space_z_transition_keeps_drift: дрейф переживает смену z-уровня
 
 /// A multi-ton exosuit must resist nudges and have a capped top drift speed, unlike a human (defaults 1/1).
 /datum/unit_test/mecha_inertia_mass/Run()
@@ -232,3 +234,64 @@
 	var/obj/item/pen/idle_cargo = allocate(/obj/item/pen, get_step(center, WEST))
 	TEST_ASSERT(!parked.hand_off_drift(idle_cargo), "неподвижный буксир не передаёт импульс")
 	TEST_ASSERT_NULL(idle_cargo.drift_handler, "груз неподвижного буксира не должен получить дрейф")
+
+/// Ставит на полигоне турф-переход на соседний z-уровень и возвращает его. Вернуть тип обратно - на вызывающем.
+/datum/unit_test/proc/make_space_transition(turf/edge, turf/landing)
+	var/turf/open/space/transit = edge.ChangeTurf(/turf/open/space)
+	transit.destination_x = landing.x
+	transit.destination_y = landing.y
+	transit.destination_z = landing.z
+	return transit
+
+/**
+ * Переход через край космического z-уровня взводил `inertia_moving` и не снимал его никогда.
+ *
+ * Дальше `Moved()` навсегда переставал звать `newtonian_move`, дрейф не набирался ни от одного
+ * шага, и полёт выглядел ровно так, будто стабилизация включена намертво - а её переключатель
+ * при этом ничего не менял, потому что гасить было нечего (баг-репорт 29.07.2026).
+ */
+/datum/unit_test/space_z_transition_no_inertia_latch/Run()
+	var/turf/landing = locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y + 1, run_loc_floor_bottom_left.z)
+	var/turf/edge = locate(run_loc_floor_bottom_left.x + 3, run_loc_floor_bottom_left.y + 3, run_loc_floor_bottom_left.z)
+	var/edge_type = edge.type
+	var/turf/open/space/transit = make_space_transition(edge, landing)
+
+	// Стабилизированный полёт: обработчика дрейфа нет, моб просто шагает по курсу.
+	var/obj/item/pen/traveller = allocate(/obj/item/pen, get_step(transit, SOUTH))
+	traveller.AddElement(/datum/element/forced_gravity, 0) // невесомость, иначе дрейфа не будет вовсе
+	TEST_ASSERT_NULL(traveller.drift_handler, "до перехода дрейфа быть не должно")
+
+	traveller.Move(transit, NORTH)
+
+	var/latched = traveller.inertia_moving
+	// Свободный полёт после перехода: шаг обязан снова набирать дрейф.
+	traveller.Moved(traveller.loc, NORTH)
+	var/rebuilt_drift = !isnull(traveller.drift_handler)
+	transit.ChangeTurf(edge_type)
+
+	TEST_ASSERT(!latched, "переход через край z-уровня не должен оставлять inertia_moving взведённым")
+	TEST_ASSERT(rebuilt_drift, "после смены уровня шаг обязан снова набирать дрейф")
+
+/// Перенос через край - часть того же полёта: обработчик дрейфа обязан пережить смену z-уровня, а не глохнуть.
+/datum/unit_test/space_z_transition_keeps_drift/Run()
+	var/turf/landing = locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y + 1, run_loc_floor_bottom_left.z)
+	var/turf/edge = locate(run_loc_floor_bottom_left.x + 3, run_loc_floor_bottom_left.y + 3, run_loc_floor_bottom_left.z)
+	var/edge_type = edge.type
+	var/turf/open/space/transit = make_space_transition(edge, landing)
+
+	var/obj/item/pen/traveller = allocate(/obj/item/pen, get_step(transit, SOUTH))
+	traveller.AddElement(/datum/element/forced_gravity, 0)
+	traveller.newtonian_move(NORTH, drift_force = 3, force_loop = FALSE)
+	TEST_ASSERT_NOTNULL(traveller.drift_handler, "до перехода дрейф должен идти")
+	traveller.drift_handler.drifting_loop.pause_for(10 SECONDS) // проверяем сам переход, а не полёт по полигону
+	var/force_before = traveller.drift_handler.drift_force
+
+	traveller.Move(transit, NORTH)
+
+	var/kept_drift = !isnull(traveller.drift_handler)
+	var/force_after = kept_drift ? traveller.drift_handler.drift_force : 0
+	transit.ChangeTurf(edge_type)
+
+	TEST_ASSERT(kept_drift, "смена z-уровня не должна глушить дрейф")
+	TEST_ASSERT(force_after >= force_before - 0.01, "переход не должен срезать набранную силу дрейфа ([force_after] < [force_before])")
+	TEST_ASSERT(force_after <= force_before + 0.01, "переход не должен доливать силу дрейфа ([force_after] > [force_before])")
