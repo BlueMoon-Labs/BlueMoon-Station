@@ -76,9 +76,17 @@
 /obj/item/clothing/mask/hardspace_mask/Destroy()
 	STOP_PROCESSING(SSobj,src)
 	if(owner)
+		UnregisterSignal(owner, COMSIG_PARENT_QDELETING)
 		REMOVE_TRAIT(owner, TRAIT_TONGUELESS_SPEECH, src)
 		owner = null
 	. = ..()
+
+/// Крио уносит надетые вещи forceMove'ом, минуя dropped(): без подписки на смерть
+/// носителя маска держала тело до конца смены и продолжала тикать на трупе.
+/obj/item/clothing/mask/hardspace_mask/proc/on_owner_deleted(datum/source)
+	SIGNAL_HANDLER
+	STOP_PROCESSING(SSobj,src)
+	owner = null
 
 /obj/item/clothing/mask/hardspace_mask/equipped(mob/living/carbon/human/M, slot)
 	.=..()
@@ -98,7 +106,10 @@
 	var/mob/living/carbon/human/M = astype(user, /mob/living/carbon/human)
 	if(!M)
 		return
+	if(owner && owner != M)
+		UnregisterSignal(owner, COMSIG_PARENT_QDELETING)
 	owner = M
+	RegisterSignal(owner, COMSIG_PARENT_QDELETING, PROC_REF(on_owner_deleted), override = TRUE)
 	if(intence == HS_INTENCE_HIG)
 		ADD_TRAIT(owner, TRAIT_TONGUELESS_SPEECH, src)
 	START_PROCESSING(SSobj,src)
@@ -112,6 +123,7 @@
 
 	if(!owner)
 		return
+	UnregisterSignal(owner, COMSIG_PARENT_QDELETING)
 	REMOVE_TRAIT(owner, TRAIT_TONGUELESS_SPEECH, src)
 	owner = null
 

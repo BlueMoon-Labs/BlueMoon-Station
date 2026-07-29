@@ -97,6 +97,10 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 
 /datum/antagonist/Destroy()
 	GLOB.antagonists -= src
+	//кнопка живёт на теле и убивает себя сама при его удалении, но датуму об этом
+	//не сообщает: обнуление было только в on_removal, поэтому снятый мимо него
+	//антаг оставался единственным держателем уже мёртвой кнопки
+	QDEL_NULL(info_button)
 	if(!owner)
 		if(!discarded_before_gain)
 			stack_trace("Destroy()ing antagonist datum when it has no owner.")
@@ -567,6 +571,10 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 	name += " [antag_datum.name]"
 
 /datum/action/antag_info/Destroy()
+	//кнопка сносит себя сама по clear_ref, когда удаляют тело; без обратной
+	//отвязки антаг-датум оставался с мёртвой кнопкой в поле
+	if(antag_datum?.info_button == src)
+		antag_datum.info_button = null
 	antag_datum = null
 	return ..()
 

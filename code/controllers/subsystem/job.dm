@@ -342,7 +342,11 @@ SUBSYSTEM_DEF(job)
 		CheckHeadPositions(level)
 
 		// Loop through all unassigned players
-		for(var/mob/dead/new_player/player in unassigned)
+		//обходим копию: AssignRole/RejectPlayer правят unassigned прямо в теле цикла,
+		//а на живом списке индекс сдвигался и каждый второй игрок пропускался
+		for(var/mob/dead/new_player/player in unassigned.Copy())
+			if(QDELETED(player) || !(player in unassigned))
+				continue
 			if(PopcapReached())
 				RejectPlayer(player)
 
@@ -392,12 +396,16 @@ SUBSYSTEM_DEF(job)
 	JobDebug("DO, Handling unassigned.")
 	// Hand out random jobs to the people who didn't get any in the last check
 	// Also makes sure that they got their preference correct
-	for(var/mob/dead/new_player/player in unassigned)
+	for(var/mob/dead/new_player/player in unassigned.Copy())
+		if(QDELETED(player) || !(player in unassigned))
+			continue
 		HandleUnassigned(player)
 
 	JobDebug("DO, Handling unrejectable unassigned")
 	//Mop up people who can't leave.
-	for(var/mob/dead/new_player/player in unassigned) //Players that wanted to back out but couldn't because they're antags (can you feel the edge case?)
+	for(var/mob/dead/new_player/player in unassigned.Copy()) //Players that wanted to back out but couldn't because they're antags (can you feel the edge case?)
+		if(QDELETED(player) || !(player in unassigned))
+			continue
 /* BLUEMOON REMOVAL START - убираем вариант получения рандомной роли при получении антажки, оставляя только ассистента
 		if(player.client.prefs.joblessrole == BERANDOMJOB) //Gives the player a random role if their preferences are set to it
 			if(!GiveRandomJob(player))

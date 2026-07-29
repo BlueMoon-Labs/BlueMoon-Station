@@ -210,3 +210,321 @@
 	orphan.discarded_before_gain = TRUE
 	qdel(orphan)
 	TEST_ASSERT(QDELETED(orphan), "Заготовка антага пережила qdel")
+
+/// Отрезанная голова хранит мозг, мозгомоба и глаза жёсткими ссылками, а своего
+/// Destroy у /obj/item/bodypart/head не было вовсе: qdel уводил содержимое головы
+/// в qdel штатным contents-циклом /atom/movable/Destroy, но три поля оставались
+/// забиты покойниками. Раунд 9827: одна голова тянула цепочку из трёх хардделов.
+/datum/unit_test/severed_head_releases_brain_chain
+	parent_type = /datum/unit_test/harddel_9827_base
+
+/datum/unit_test/severed_head_releases_brain_chain/Run()
+	begin_isolated_gc()
+	var/turf/floor = run_loc_floor_bottom_left
+	//mind обязателен: без него transfer_identity не заводит мозгомоба
+	var/mob/living/carbon/human/patient = allocate(/mob/living/carbon/human, floor)
+	patient.mind_initialize()
+
+	var/obj/item/bodypart/head/head = patient.get_bodypart(BODY_ZONE_HEAD)
+	TEST_ASSERT_NOTNULL(head, "У человека нет головы")
+	head.drop_limb()
+
+	TEST_ASSERT_NOTNULL(head.brain, "Отрезанная голова осталась без мозга")
+	TEST_ASSERT_NOTNULL(head.eyes, "Отрезанная голова осталась без глаз")
+	TEST_ASSERT_NOTNULL(head.brainmob, "Отрезанная голова осталась без мозгомоба")
+
+	//mind держит мозгомоба своим current, а мозгомоб держит mind - это отдельная
+	//двусторонняя связь, к утечке головы отношения не имеющая
+	var/mob/living/brain/brainmob = head.brainmob
+	var/datum/mind/stored_mind = brainmob.mind
+	if(stored_mind)
+		stored_mind.set_current(null)
+		brainmob.mind = null
+
+	var/list/brain_record = target_record(head.brain, "мозг из отрезанной головы")
+	var/list/eyes_record = target_record(head.eyes, "глаза из отрезанной головы")
+	var/list/brainmob_record = target_record(brainmob, "мозгомоб из отрезанной головы")
+	brainmob = null
+	stored_mind = null
+
+	qdel(head)
+	TEST_ASSERT_NULL(head.brain, "Голова удержала удалённый мозг")
+	TEST_ASSERT_NULL(head.eyes, "Голова удержала удалённые глаза")
+	TEST_ASSERT_NULL(head.brainmob, "Голова удержала удалённого мозгомоба")
+
+	run_gc_fire_cycles(2, yield_for_gc = TRUE)
+	assert_soft_collected(brain_record)
+	assert_soft_collected(eyes_record)
+	assert_soft_collected(brainmob_record)
+
+/// Консоль голодека дерезит убежавшего питомца сама и спавнеру об этом не
+/// сообщает, а спавнер живёт до смены программы. Раунд 9827: REF SEARCH назвал
+/// держателя прямо - /obj/effect/holodeck_effect/mobspawner/pet, вар mob (6 хардделов).
+/datum/unit_test/holodeck_spawner_releases_derezzed_pet
+	parent_type = /datum/unit_test/harddel_9827_base
+
+/datum/unit_test/holodeck_spawner_releases_derezzed_pet/Run()
+	begin_isolated_gc()
+	var/turf/floor = run_loc_floor_bottom_left
+	var/obj/effect/holodeck_effect/mobspawner/pet/spawner = allocate(/obj/effect/holodeck_effect/mobspawner/pet, floor)
+	//список из одного типа: ветка с pick() отрабатывает, но питомец детерминирован
+	spawner.mobtype = list(/mob/living/simple_animal/butterfly)
+
+	//activate() аргумент консоли не использует, поэтому реальный голодек не нужен
+	var/mob/pet = spawner.activate(null)
+	TEST_ASSERT_NOTNULL(pet, "Спавнер голодека не создал питомца")
+	TEST_ASSERT_NOTNULL(spawner.mob_ref, "Спавнер не запомнил созданного питомца")
+	TEST_ASSERT_EQUAL(spawner.mob_ref.resolve(), pet, "Слабая ссылка спавнера разрешается не в питомца")
+
+	var/list/record = target_record(pet, "питомец голодека, дерезнутый консолью")
+	qdel(pet)
+	pet = null
+	TEST_ASSERT_NULL(spawner.mob_ref.resolve(), "Спавнер всё ещё разрешает ссылку на удалённого питомца")
+
+	run_gc_fire_cycles(2, yield_for_gc = TRUE)
+	assert_soft_collected(record)
+
+/// Кнопка антаг-инфо висит на теле и по clear_ref сносит себя сама, но
+/// антаг-датуму об этом не сообщала, а его Destroy кнопку не трогал (обнуление
+/// было только в on_removal). Раунд 9827: 3 харддела /datum/action/antag_info.
+/datum/unit_test/antag_info_button_two_way_release
+	parent_type = /datum/unit_test/harddel_9827_base
+
+/// Тело первым: кнопка сносит себя по clear_ref и обязана отвязаться от датума.
+/datum/unit_test/antag_info_button_two_way_release/proc/body_first()
+	var/mob/living/carbon/human/body = new(run_loc_floor_bottom_left)
+	var/datum/antagonist/orphan = new /datum/antagonist/clockcult
+	orphan.discarded_before_gain = TRUE
+	orphan.info_button = new(body, orphan)
+
+	var/datum/action/antag_info/button = orphan.info_button
+	TEST_ASSERT_EQUAL(button.target, body, "Кнопка не привязалась к телу")
+	TEST_ASSERT_EQUAL(button.antag_datum, orphan, "Кнопка не запомнила свой антаг-датум")
+
+	var/list/record = target_record(button, "кнопка антаг-инфо после удаления тела")
+	qdel(body)
+	TEST_ASSERT(QDELETED(button), "Удаление тела не снесло кнопку антаг-инфо")
+	TEST_ASSERT_NULL(orphan.info_button, "Антаг-датум удержал удалённую кнопку")
+
+	button = null
+	qdel(orphan)
+	return record
+
+/// Датум первым: его Destroy обязан унести кнопку с собой.
+/datum/unit_test/antag_info_button_two_way_release/proc/datum_first()
+	var/mob/living/carbon/human/body = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/datum/antagonist/orphan = new /datum/antagonist/clockcult
+	orphan.discarded_before_gain = TRUE
+	orphan.info_button = new(body, orphan)
+
+	var/datum/action/antag_info/button = orphan.info_button
+	var/list/record = target_record(button, "кнопка антаг-инфо после удаления датума")
+	qdel(orphan)
+	TEST_ASSERT(QDELETED(button), "Удаление антаг-датума не снесло кнопку")
+	TEST_ASSERT_NULL(button.antag_datum, "Кнопка удержала удалённый антаг-датум")
+
+	button = null
+	return record
+
+/datum/unit_test/antag_info_button_two_way_release/Run()
+	begin_isolated_gc()
+	var/list/from_body = body_first()
+	var/list/from_datum = datum_first()
+	run_gc_fire_cycles(2, yield_for_gc = TRUE)
+	assert_soft_collected(from_body)
+	assert_soft_collected(from_datum)
+
+/// Крио-путь: /obj/item/doMove зовёт dropped() только когда предмет был В РУКАХ,
+/// а cryoMob уносит НАДЕТЫЕ вещи forceMove'ом в под, потом в коробку, а коробка
+/// живёт в control_computer.stored_packages до конца смены. Значит любая вещь,
+/// которая пишет носителя в equipped() и отпускает только в dropped(), держит
+/// тело весь раунд. Раунд 9827: все 18 несобранных /mob/living/carbon/human
+/// прошли через cryoMob(), ни одного гиба.
+/datum/unit_test/cryo_path_releases_wearer
+	parent_type = /datum/unit_test/harddel_9827_base
+
+/// МОД: unset_wearer звали только из equipped/dropped, в Destroy его не было вовсе.
+/datum/unit_test/cryo_path_releases_wearer/proc/modsuit()
+	var/turf/floor = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/wearer = new(floor)
+	var/obj/item/mod/control/suit = new /obj/item/mod/control/pre_equipped/standard(floor)
+	var/obj/item/storage/box/package = new(floor)
+
+	suit.forceMove(wearer)
+	suit.equipped(wearer, ITEM_SLOT_BACK)
+	TEST_ASSERT_EQUAL(suit.wearer, wearer, "МОД не запомнил носителя при надевании")
+
+	//ровно то, что делает cryoMob: перенос без dropped()
+	suit.forceMove(package)
+	TEST_ASSERT_EQUAL(suit.wearer, wearer, "forceMove неожиданно позвал dropped() - сценарий крио не воспроизведён")
+
+	var/list/record = target_record(wearer, "носитель МОДа, ушедший в крио")
+	qdel(wearer)
+	wearer = null
+	TEST_ASSERT_NULL(suit.wearer, "МОД удержал удалённого носителя")
+	return record
+
+/// ХардСпейс-трусики: owner отпускался только через on_unequip из dropped().
+/datum/unit_test/cryo_path_releases_wearer/proc/hardspace_panties()
+	var/turf/floor = run_loc_floor_bottom_left
+	var/obj/item/clothing/underwear/briefs/hardspace_panties/panties = new(floor)
+	var/mob/living/carbon/human/wearer = new(floor)
+	var/obj/item/storage/box/package = new(floor)
+
+	panties.forceMove(wearer)
+	panties.equipped(wearer, ITEM_SLOT_UNDERWEAR)
+	TEST_ASSERT_EQUAL(panties.owner, wearer, "Трусики не запомнили носителя")
+
+	panties.forceMove(package)
+	var/list/record = target_record(wearer, "носитель ХардСпейс-трусиков, ушедший в крио")
+	qdel(wearer)
+	wearer = null
+	TEST_ASSERT_NULL(panties.owner, "Трусики удержали удалённого носителя")
+	return record
+
+/// ХардСпейс-бра: тот же паттерн, слот рубашки.
+/datum/unit_test/cryo_path_releases_wearer/proc/hardspace_bra()
+	var/turf/floor = run_loc_floor_bottom_left
+	var/obj/item/clothing/underwear/shirt/bra/bra_adjustable/hardspace_bra/bra = new(floor)
+	var/mob/living/carbon/human/wearer = new(floor)
+	var/obj/item/storage/box/package = new(floor)
+
+	bra.forceMove(wearer)
+	bra.equipped(wearer, ITEM_SLOT_SHIRT)
+	TEST_ASSERT_EQUAL(bra.owner, wearer, "Бра не запомнило носителя")
+
+	bra.forceMove(package)
+	var/list/record = target_record(wearer, "носитель ХардСпейс-бра, ушедший в крио")
+	qdel(wearer)
+	wearer = null
+	TEST_ASSERT_NULL(bra.owner, "Бра удержало удалённого носителя")
+	return record
+
+/// ХардСпейс-маска: тот же паттерн, слот маски.
+/datum/unit_test/cryo_path_releases_wearer/proc/hardspace_mask()
+	var/turf/floor = run_loc_floor_bottom_left
+	var/obj/item/clothing/mask/hardspace_mask/mask = new(floor)
+	var/mob/living/carbon/human/wearer = new(floor)
+	var/obj/item/storage/box/package = new(floor)
+
+	mask.forceMove(wearer)
+	mask.equipped(wearer, ITEM_SLOT_MASK)
+	TEST_ASSERT_EQUAL(mask.owner, wearer, "Маска не запомнила носителя")
+
+	mask.forceMove(package)
+	var/list/record = target_record(wearer, "носитель ХардСпейс-маски, ушедший в крио")
+	qdel(wearer)
+	wearer = null
+	TEST_ASSERT_NULL(mask.owner, "Маска удержала удалённого носителя")
+	return record
+
+/// Гипно-очки: victim не обнулялся даже в Destroy.
+/datum/unit_test/cryo_path_releases_wearer/proc/hypnogoggles()
+	var/turf/floor = run_loc_floor_bottom_left
+	var/obj/item/clothing/glasses/hypno/goggles = new(floor)
+	var/mob/living/carbon/human/wearer = new(floor)
+	var/obj/item/storage/box/package = new(floor)
+
+	goggles.forceMove(wearer)
+	goggles.equipped(wearer, ITEM_SLOT_EYES)
+	TEST_ASSERT_EQUAL(goggles.victim, wearer, "Очки не запомнили носителя")
+
+	goggles.forceMove(package)
+	var/list/record = target_record(wearer, "носитель гипно-очков, ушедший в крио")
+	qdel(wearer)
+	wearer = null
+	TEST_ASSERT_NULL(goggles.victim, "Очки удержали удалённого носителя")
+	return record
+
+/datum/unit_test/cryo_path_releases_wearer/Run()
+	begin_isolated_gc()
+	var/list/records = list(
+		modsuit(),
+		hardspace_panties(),
+		hardspace_bra(),
+		hardspace_mask(),
+		hypnogoggles(),
+	)
+	run_gc_fire_cycles(2, yield_for_gc = TRUE)
+	for(var/list/record as anything in records)
+		assert_soft_collected(record)
+
+/// Кастомизируемая еда удаляла ингредиенты циклом, но сам список не чистила:
+/// ingredients оставался единственным держателем уже удалённых кусков.
+/datum/unit_test/customizable_food_releases_ingredients
+	parent_type = /datum/unit_test/harddel_9827_base
+
+/datum/unit_test/customizable_food_releases_ingredients/Run()
+	begin_isolated_gc()
+	var/obj/item/reagent_containers/food/snacks/customizable/burger/burger = new(run_loc_floor_bottom_left)
+	var/obj/item/reagent_containers/food/snacks/cheesewedge/filling = new(burger)
+	burger.ingredients += filling
+	TEST_ASSERT(filling in burger.ingredients, "Ингредиент не попал в список бургера")
+
+	var/list/record = target_record(filling, "ингредиент кастомизируемой еды")
+	filling = null
+	qdel(burger)
+	TEST_ASSERT(!length(burger.ingredients), "Список ингредиентов остался с трупами внутри")
+
+	run_gc_fire_cycles(2, yield_for_gc = TRUE)
+	assert_soft_collected(record)
+
+/// SStgui.on_close считал ключ как "[REF(ui.src_object)]" и при промахе выходил
+/// return FALSE ДО чистки, а close() сразу делал qdel(src). Оставались три
+/// висячие ссылки, две из них во вложенных списках - поэтому реф-сканер молчал.
+/datum/unit_test/sstgui_unregisters_closed_interface
+	parent_type = /datum/unit_test/harddel_9827_base
+
+/// Штатное закрытие: запись обязана уйти из всех трёх списков.
+/datum/unit_test/sstgui_unregisters_closed_interface/proc/normal_close()
+	var/mob/user = new
+	var/obj/item/source = allocate(/obj/item)
+	var/datum/tgui/ui = new(user, source, "UnitTest")
+	SStgui.on_open(ui)
+	TEST_ASSERT(ui in SStgui.open_uis, "Интерфейс не встал в open_uis")
+	TEST_ASSERT(ui in user.tgui_open_uis, "Интерфейс не встал в user.tgui_open_uis")
+	TEST_ASSERT_NOTNULL(SStgui.open_uis_by_src["[REF(source)]"], "Интерфейс не встал в open_uis_by_src")
+
+	SStgui.on_close(ui)
+	TEST_ASSERT(!(ui in SStgui.open_uis), "open_uis удержал закрытый интерфейс")
+	TEST_ASSERT(!(ui in user.tgui_open_uis), "user.tgui_open_uis удержал закрытый интерфейс")
+	TEST_ASSERT_NULL(SStgui.open_uis_by_src["[REF(source)]"], "open_uis_by_src удержал закрытый интерфейс")
+
+	qdel(ui)
+	qdel(user)
+
+/// Тот же путь, но src_object уже обнулён - ровно то состояние, в котором
+/// интерфейс приходил в on_close из fire() и из /datum/tgui/Destroy.
+/datum/unit_test/sstgui_unregisters_closed_interface/proc/close_without_src_object()
+	var/mob/user = new
+	var/obj/item/source = allocate(/obj/item)
+	var/datum/tgui/ui = new(user, source, "UnitTest")
+	SStgui.on_open(ui)
+	ui.src_object = null
+
+	SStgui.on_close(ui)
+	TEST_ASSERT(!(ui in SStgui.open_uis), "open_uis удержал интерфейс без src_object")
+	TEST_ASSERT(!(ui in user.tgui_open_uis), "user.tgui_open_uis удержал интерфейс без src_object")
+	TEST_ASSERT_NULL(SStgui.open_uis_by_src["[REF(source)]"], "open_uis_by_src удержал интерфейс без src_object")
+
+	qdel(ui)
+	qdel(user)
+
+/// qdel интерфейса мимо close(): Destroy обязан снять его с учёта сам.
+/datum/unit_test/sstgui_unregisters_closed_interface/proc/destroy_without_close()
+	var/mob/user = new
+	var/obj/item/source = allocate(/obj/item)
+	var/datum/tgui/ui = new(user, source, "UnitTest")
+	SStgui.on_open(ui)
+
+	qdel(ui)
+	TEST_ASSERT(!(ui in SStgui.open_uis), "open_uis удержал удалённый интерфейс")
+	TEST_ASSERT(!(ui in user.tgui_open_uis), "user.tgui_open_uis удержал удалённый интерфейс")
+	TEST_ASSERT_NULL(SStgui.open_uis_by_src["[REF(source)]"], "open_uis_by_src удержал удалённый интерфейс")
+
+	qdel(user)
+
+/datum/unit_test/sstgui_unregisters_closed_interface/Run()
+	normal_close()
+	close_without_src_object()
+	destroy_without_close()

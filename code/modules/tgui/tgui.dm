@@ -47,6 +47,9 @@
 	var/list/open_byondui_elements
 	/// Sequence number of the last processed act (dedup guard for WebView2 double-delivery)
 	var/last_act_seq = 0
+	/// Ключ, под которым SStgui записал интерфейс в open_uis_by_src. Пересчитывать
+	/// его из src_object на снятии с учёта нельзя: к тому моменту поле уже пусто.
+	var/registered_src_key
 
 /**
  * public
@@ -78,8 +81,23 @@
 		src.window_size = list(ui_x, ui_y)
 
 /datum/tgui/Destroy()
+	//close() снимал интерфейс с учёта только когда окно уже было выдано, а
+	//любой другой путь к qdel оставлял мертвеца в трёх списках подсистемы
+	SStgui.unregister_ui(src)
+	if(window?.locked_by == src)
+		window.release_lock()
+	window = null
+	if(parent_ui && parent_ui != 500)
+		parent_ui.children -= src
+	parent_ui = null
+	//дети переживают родителя (их закрывает close, а не Destroy) - иначе каждый
+	//остаётся с parent_ui на покойнике
+	for(var/datum/tgui/child as anything in children)
+		child.parent_ui = null
+	children.Cut()
 	user = null
 	src_object = null
+	state = null
 	return ..()
 
 /**

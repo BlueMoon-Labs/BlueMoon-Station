@@ -35,6 +35,13 @@
 
 /mob/dead/new_player/Destroy()
 	GLOB.new_player_list -= src
+	//очередь распределения ролей сбрасывается только в ResetOccupations, которого
+	//в нормальном раунде не бывает: ушедший из лобби игрок оставался в ней до конца
+	if(SSjob)
+		SSjob.unassigned -= src
+	//очередь ожидания на вход при переполнении - тот же случай
+	if(SSticker)
+		SSticker.queued_players -= src
 
 	return ..()
 
