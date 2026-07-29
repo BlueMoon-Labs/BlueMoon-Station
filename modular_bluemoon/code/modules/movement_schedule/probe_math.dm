@@ -7,11 +7,20 @@
 		return 0
 	return round(((now - previous) / tick_lag) + 0.5)
 
+/// За сколько тиков атом пересечёт тайл с данным glide_size.
+///
+/// Живёт здесь, а не в математике расписания: боевой код glide только
+/// выставляет, обращать его назад нужно одному замеру.
+/proc/movement_probe_ticks_to_cross(glide_size, icon_size)
+	if(glide_size <= 0)
+		return INFINITY
+	return icon_size / glide_size
+
 /// Сколько тиков атом простоял, доехав до тайла раньше следующего шага.
 /// Отрицательное значение означает обратное - его двинули, пока он ещё ехал.
 /// Знак сохраняем: это два разных диагноза, и путать их нельзя.
 /proc/movement_probe_idle_ticks(glide_size, icon_size, actual_ticks)
-	return actual_ticks - movement_ticks_to_cross(glide_size, icon_size)
+	return actual_ticks - movement_probe_ticks_to_cross(glide_size, icon_size)
 
 /// На сколько пикселей спрайт не доехал до тайла к моменту следующего шага.
 ///

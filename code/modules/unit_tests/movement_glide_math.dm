@@ -52,14 +52,6 @@
 		TEST_ASSERT_EQUAL(interval, 3, "Кратная задержка [run_delay]ds обязана давать три тика каждый шаг, а шаг [index] занял [interval]")
 		now += interval * tick_lag
 
-	// --- glide и обратный к нему пересчёт ---
-
-	for(var/interval in list(1, 3, 4, 6))
-		var/glide = movement_glide_for_ticks(interval, icon_size)
-		TEST_ASSERT(abs(movement_ticks_to_cross(glide, icon_size) - interval) < 0.001, "glide на [interval] тика обязан пересекать тайл ровно за [interval] тика")
-
-	TEST_ASSERT_EQUAL(movement_ticks_to_cross(0, icon_size), INFINITY, "Нулевой glide не пересекает тайл никогда и не имеет права делить на ноль")
-
 	// --- Квантование задержки ---
 
 	// База, уже кратная тику, обязана остаться собой.
@@ -144,7 +136,7 @@
 
 	// Спрайт проехал два тика по 32/3 пикселя, осталось два тика до нового
 	// срока: остаток пути делится на остаток тиков.
-	var/step_glide = movement_glide_for_ticks(3, icon_size)
+	var/step_glide = icon_size / 3
 	var/catchup = movement_catchup_glide(step_glide, 2, 2, icon_size)
 	TEST_ASSERT(abs(catchup - (icon_size - step_glide * 2) / 2) < 0.001, "glide на догон обязан делить остаток пути на остаток тиков, а вышло [catchup]")
 
@@ -158,17 +150,6 @@
 	// Спрайт уже на месте - догонять нечего, и уводить glide в минус нельзя.
 	TEST_ASSERT_EQUAL(movement_catchup_glide(icon_size, 2, 2, icon_size), 0, "Доехавшему спрайту догонять нечего")
 	TEST_ASSERT_EQUAL(movement_catchup_glide(step_glide, 0, 0, icon_size), icon_size, "Без остатка тиков шаг обязан быть мгновенным, а не делить на ноль")
-
-	// --- Ритмы для полигона ---
-	//
-	// Чтобы отделить рваность от скорости, дорожки обязаны идти с одинаковой
-	// средней скоростью и различаться только ритмом. Если хоть один ритм
-	// уедет по среднему, эксперимент снова окажется про скорость, а не про
-	// плавность - поэтому равенство средних проверяется тестом, а не глазом.
-	for(var/list/pattern as anything in movement_polygon_patterns())
-		TEST_ASSERT_EQUAL(movement_pattern_average(pattern), MOVEMENT_POLYGON_PATTERN_TICKS, "Ритм [pattern.Join(",")] обязан давать в среднем [MOVEMENT_POLYGON_PATTERN_TICKS] тика на шаг, а даёт [movement_pattern_average(pattern)]")
-
-	TEST_ASSERT_EQUAL(movement_pattern_average(list()), 0, "Пустой ритм не имеет среднего и не должен делить на ноль")
 
 	// --- Множитель дилатации: снап на выходе сглаживания ---
 	//

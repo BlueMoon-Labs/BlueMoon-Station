@@ -4989,7 +4989,6 @@
 #include "modular_bluemoon\code\modules\modular_laser_rifle\projectiles.dm"
 #include "modular_bluemoon\code\modules\modular_laser_rifle\zealstar\zealstar.dm"
 #include "modular_bluemoon\code\modules\movement_schedule\glide_math.dm"
-#include "modular_bluemoon\code\modules\movement_schedule\glide_polygon.dm"
 #include "modular_bluemoon\code\modules\movement_schedule\probe_math.dm"
 #include "modular_bluemoon\code\modules\movement_schedule\probe_recorder.dm"
 #include "modular_bluemoon\code\modules\movespeed\_movespeed_modifier.dm"

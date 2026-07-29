@@ -198,7 +198,6 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	/client/proc/test_snap_UI,
 	/client/proc/debugNatureMapGenerator,
 	/client/proc/movement_probe_toggle,
-	/client/proc/movement_glide_polygon,
 	/client/proc/check_bomb_impacts,
 	/proc/machine_upgrade,
 	/client/proc/populate_world,

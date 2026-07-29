@@ -22,6 +22,16 @@
 	// Первый шаг в серии сравнивать не с чем.
 	TEST_ASSERT_EQUAL(movement_probe_tick_delta(1000, null, tick_lag), 0, "Без предыдущего шага интервала нет")
 
+	// --- Обратный пересчёт glide ---
+	//
+	// Простой считается через него, поэтому обращение обязано быть точным: glide,
+	// рассчитанный на N тиков, обязан пересекать тайл ровно за N тиков.
+
+	for(var/interval in list(1, 3, 4, 6))
+		TEST_ASSERT(abs(movement_probe_ticks_to_cross(icon_size / interval, icon_size) - interval) < 0.001, "glide на [interval] тика обязан пересекать тайл ровно за [interval] тика")
+
+	TEST_ASSERT_EQUAL(movement_probe_ticks_to_cross(0, icon_size), INFINITY, "Нулевой glide не пересекает тайл никогда и не имеет права делить на ноль")
+
 	// --- Простой: сколько атом стоял, доехав раньше следующего шага ---
 
 	// Ровный случай: glide рассчитан на те же пять тиков, что и ожидание.
