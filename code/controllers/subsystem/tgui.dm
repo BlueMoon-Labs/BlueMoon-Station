@@ -43,20 +43,40 @@ SUBSYSTEM_DEF(tgui)
 	return ..()
 
 /datum/controller/subsystem/tgui/fire(resumed = FALSE)
+	// Инструментация адаптивного профиля (см. базовый subsystem.dm): прогон SStgui
+	// в проде стабильно занимал 20-26мс, а разбить его по конкретным окнам было
+	// нечем - ui_data одного интерфейса может рисовать флэт-икону человека, и в
+	// общем времени подсистемы это никак не видно.
+	var/slice_start_usage = TICK_USAGE
 	if(!resumed)
 		src.current_run = open_uis.Copy()
+		current_pass_cost_ms = 0
 	// Cache for sanic speed (lists are references anyways)
 	var/list/current_run = src.current_run
+	var/profiling = profile_armed
 	while(current_run.len)
 		var/datum/tgui/ui = current_run[current_run.len]
 		current_run.len--
 		// TODO: Move user/src_object check to process()
 		if(ui?.user && ui.src_object)
-			ui.process(wait * 0.1)
+			if(profiling)
+				var/item_start_usage = TICK_USAGE
+				//тип интерфейса, а не датума tgui: все окна - один /datum/tgui.
+				//Держателя запоминаем до process(): он умеет закрыть окно и обнулить src_object.
+				var/datum/profiled_object = ui.src_object
+				var/item_type = profiled_object.type
+				ui.process(wait * 0.1)
+				profile_note(item_type, max(0, TICK_DELTA_TO_MS(TICK_USAGE - item_start_usage)), profiled_object)
+			else
+				ui.process(wait * 0.1)
 		else
 			open_uis.Remove(ui)
 		if(MC_TICK_CHECK)
+			current_pass_cost_ms += max(0, TICK_DELTA_TO_MS(TICK_USAGE - slice_start_usage))
 			return
+
+	current_pass_cost_ms += max(0, TICK_DELTA_TO_MS(TICK_USAGE - slice_start_usage))
+	on_pass_finished(length(open_uis))
 
 /**
  * public

@@ -1,6 +1,9 @@
 SUBSYSTEM_DEF(mail)
 	name = "Mail"
-	flags = SS_BACKGROUND | SS_NO_TICK_CHECK
+	// SS_NO_TICK_CHECK тут означал "выдай весь тик": раз в пять минут подсистема
+	// разом создавала пачку писем со всем их содержимым и стоила до 24мс одним
+	// куском (раунд 9827, спайк #47). Генерация теперь уступает тик по ходу дела.
+	flags = SS_BACKGROUND
 	priority = FIRE_PRIORITY_MAIL
 	runlevels = RUNLEVEL_GAME
 	init_order = INIT_ORDER_MAIL
@@ -199,6 +202,10 @@ SUBSYSTEM_DEF(mail)
 		if(main_storage.contents.len >= main_storage.storage_capacity)
 			break
 		create_mail_for_recipient(recipient, main_storage)
+		//письмо со всем содержимым - не бесплатная операция, а их тут пачка
+		CHECK_TICK
+		if(QDELETED(main_storage))
+			return
 
 	main_storage.update_icon()
 
