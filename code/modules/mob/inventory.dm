@@ -344,7 +344,10 @@
 		I.layer = initial(I.layer)
 		I.plane = initial(I.plane)
 		I.appearance_flags &= ~NO_CLIENT_COLOR
-		if(!no_move && !(I.item_flags & DROPDEL))	//item may be moved/qdel'd immedietely, don't bother moving it
+		//QDELETED сюда доезжает через оффхенд двуручника: /obj/item/Destroy
+		//снимает DROPDEL "чтобы не было реqdel'ов", и следующий сброс из рук
+		//честно тащит труп на пол - "doMove qdel-нутого /obj/item/offhand"
+		if(!no_move && !(I.item_flags & DROPDEL) && !QDELETED(I))	//item may be moved/qdel'd immedietely, don't bother moving it
 			if (isnull(newloc))
 				I.moveToNullspace()
 			else

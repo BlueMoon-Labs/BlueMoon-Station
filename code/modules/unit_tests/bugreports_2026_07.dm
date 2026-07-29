@@ -269,3 +269,51 @@
 			found_martyr = TRUE
 			break
 	TEST_ASSERT(found_martyr, "Оперативник с разумом остался без цели martyr")
+
+// "Нанитная помпа сыпет в логи Incompatible ... assigned to a ... каждые 15 секунд"
+//
+// check_nanites() безусловно пытался повесить компонент нанитов на носителя,
+// а на несовместимом теле AddComponent пишет stack_trace и возвращает
+// COMPONENT_INCOMPATIBLE. Раунд 9827: 25 рантаймов подряд.
+/datum/unit_test/nanite_pump_asks_before_adding_nanites/Run()
+	var/mob/living/carbon/human/host = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/obj/item/implant/nanite_pump/pump = allocate(/obj/item/implant/nanite_pump, run_loc_floor_bottom_left)
+	pump.imp_in = host
+
+	TEST_ASSERT(pump.can_be_implanted_in(host), "test premise: обычный человек совместим с нанитами")
+	TEST_ASSERT(pump.check_nanites(), "Помпа не смогла завести наниты совместимому носителю")
+	TEST_ASSERT(SEND_SIGNAL(host, COMSIG_HAS_NANITES), "Наниты не появились у носителя")
+
+	// несовместимому носителю помпа обязана сдаться молча
+	var/mob/living/carbon/human/immune = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	ADD_TRAIT(immune, TRAIT_NANITES_IMMUNITY, "unit test")
+	var/obj/item/implant/nanite_pump/immune_pump = allocate(/obj/item/implant/nanite_pump, run_loc_floor_bottom_left)
+	immune_pump.imp_in = immune
+
+	TEST_ASSERT(!immune_pump.can_be_implanted_in(immune), "test premise: носитель с иммунитетом несовместим")
+	TEST_ASSERT(!immune_pump.check_nanites(), "Помпа отчиталась об успехе на несовместимом носителе")
+	TEST_ASSERT(!SEND_SIGNAL(immune, COMSIG_HAS_NANITES), "На несовместимом носителе всё-таки завелись наниты")
+
+	// imp_in мы проставили руками, минуя implant(): разбор теста иначе полезет
+	// в removed() и будет вычитать имплант из несуществующего списка носителя
+	pump.imp_in = null
+	immune_pump.imp_in = null
+
+// "После сброса двуручника на пол падал ещё и его оффхенд - qdel-нутым"
+//
+// /obj/item/Destroy снимает DROPDEL "чтобы не было реqdel'ов", так что следующий
+// doUnEquip честно тащил труп оффхенда на пол: "doMove qdel-нутого /obj/item/offhand".
+/datum/unit_test/dropping_never_moves_a_deleted_item/Run()
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/obj/item/dummy = new /obj/item/stack/rods(run_loc_floor_bottom_left)
+	TEST_ASSERT(user.put_in_hands(dummy), "test premise: предмет должен взяться в руки")
+
+	// Ровно состояние оффхенда после qdel: DROPDEL уже снят в Destroy, а слот
+	// руки ещё занят. Штатным qdel такое не собрать - Destroy тут же вычищает
+	// предмет из инвентаря, поэтому метку удаления ставим руками.
+	dummy.item_flags &= ~DROPDEL
+	dummy.gc_destroyed = world.time
+	user.dropItemToGround(dummy, force = TRUE)
+	TEST_ASSERT(!isturf(dummy.loc), "Сброс из рук перетащил удалённый предмет на пол")
+	dummy.gc_destroyed = null
+	qdel(dummy)

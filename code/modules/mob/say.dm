@@ -39,6 +39,8 @@
 		message = input(src, "", "Say (Indicator)") as text|null
 
 	clear_typing_indicator()		// clear it immediately!
+	if(QDELETED(src))	//окно ввода переживает своего моба: гост-кафе успевает его удалить
+		return
 	if(!length(message))
 		return
 	client?.last_activity = world.time
@@ -59,6 +61,8 @@
 		message = input(usr, "", "Say") as text|null
 
 	clear_typing_indicator()		// clear it immediately!
+	if(QDELETED(src))	//окно ввода переживает своего моба: гост-кафе успевает его удалить
+		return
 	if(!length(message))
 		return
 	client?.last_activity = world.time
@@ -94,6 +98,8 @@
 
 	clear_typing_indicator()		// clear it immediately!
 
+	if(QDELETED(src))	//окно ввода переживает своего моба: гост-кафе успевает его удалить
+		return
 	if(!length(message))
 		return
 
@@ -116,6 +122,8 @@
 
 	clear_typing_indicator()		// clear it immediately!
 
+	if(QDELETED(src))	//окно ввода переживает своего моба: гост-кафе успевает его удалить
+		return
 	if(!length(message))
 		return
 

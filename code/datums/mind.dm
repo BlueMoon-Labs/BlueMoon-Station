@@ -589,6 +589,9 @@
 		if(is_admin)
 			output += " <a href='?src=[REF(antag_datum.owner)];obj_add=[REF(antag_datum)];ambition_panel=1'>Add Objective</a>"
 		output += "<ul>"
+		//дыры в списке целей вычищаем прямо тут: панель на них падала
+		//("Cannot read null.explanation_text", раунд 9827)
+		listclearnulls(antag_datum.objectives)
 		if(!length(antag_datum.objectives))
 			output += "<li><i><b>NONE</b></i>"
 		else
