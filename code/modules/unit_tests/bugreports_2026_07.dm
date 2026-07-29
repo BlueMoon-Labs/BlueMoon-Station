@@ -186,3 +186,86 @@
 	for(var/pose_name in poses)
 		TEST_ASSERT("[borg.module.cyborg_base_icon]-[poses[pose_name]]" in available_states, \
 			"Offered pose '[pose_name]' points at a missing icon_state: the cyborg would turn invisible")
+
+// "Перетащил призрака в тело - в логи посыпался CRASH про безмозглый разум"
+//
+// mind_initialize() отправлял COMSIG_MOB_ON_NEW_MIND до mind.set_current(src),
+// а подписчики сигнала (body-bound скилл-модификаторы настроения) сразу же лезут
+// в mind.current. На пустом current add_skill_modifier честно валился в CRASH
+// "Body-bound skill modifier Mood (Elated) was tried to be added to a mob-less mind".
+/datum/unit_test/new_mind_signal_fires_with_body/Run()
+	var/mob/living/carbon/human/body = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	QDEL_NULL(body.mind)
+	TEST_ASSERT_NULL(body.mind, "test premise: тело должно остаться без разума")
+
+	var/datum/new_mind_signal_probe/probe = new
+	probe.RegisterSignal(body, COMSIG_MOB_ON_NEW_MIND, TYPE_PROC_REF(/datum/new_mind_signal_probe, on_new_mind))
+
+	body.mind_initialize()
+	TEST_ASSERT(probe.fired, "test premise: сигнал о новом разуме обязан прийти")
+	TEST_ASSERT_EQUAL(probe.seen_current, body, "Подписчик COMSIG_MOB_ON_NEW_MIND получил разум без тела")
+
+	// живой путь, который падал в проде
+	var/datum/skill_modifier/prototype = GLOB.skill_modifiers[GET_SKILL_MOD_ID(/datum/skill_modifier/great_mood, null)] || new /datum/skill_modifier/great_mood(null, TRUE)
+	body.mind.add_skill_modifier(prototype.identifier)
+	TEST_ASSERT(LAZYACCESS(body.mind.skill_holder.all_current_skill_modifiers, prototype.identifier), \
+		"Body-bound модификатор не выдался разуму со свежим телом")
+
+/datum/new_mind_signal_probe
+	var/fired = FALSE
+	var/mob/seen_current
+
+/datum/new_mind_signal_probe/proc/on_new_mind(mob/source)
+	SIGNAL_HANDLER
+	fired = TRUE
+	seen_current = source.mind?.current
+
+// "Плеснул сульфадиазином из стакана - в логи улетели два рантайма"
+//
+// Переопределение reaction_mob у сульфадиазина потеряло параметр touch_protection,
+// а дефолтом стояла ЗОНА строкой (BODY_ZONE_CHEST) там, где код ждёт /obj/item/bodypart.
+// Итог: "Cannot read "chest".body_zone" и "Cannot read "chest".burn_dam".
+/datum/unit_test/splashed_medicine_targets_a_bodypart/Run()
+	var/mob/living/carbon/human/patient = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/obj/item/bodypart/chest = patient.get_bodypart(BODY_ZONE_CHEST)
+	TEST_ASSERT_NOTNULL(chest, "test premise: у пациента должна быть грудь")
+	chest.receive_damage(burn = 20)
+	chest.receive_damage(brute = 20)
+	var/burn_before = chest.burn_dam
+	var/brute_before = chest.brute_dam
+
+	// ровно тот вызов, что делает /datum/reagents/reaction для облитого моба
+	var/datum/reagent/medicine/silver_sulfadiazine/burn_cure = new
+	burn_cure.reaction_mob(patient, TOUCH, 20, FALSE, 0, null)
+	TEST_ASSERT(chest.burn_dam < burn_before, "Облитый сульфадиазин не вылечил ожоги на груди")
+
+	var/datum/reagent/medicine/styptic_powder/brute_cure = new
+	brute_cure.reaction_mob(patient, TOUCH, 20, FALSE, 0, null)
+	TEST_ASSERT(chest.brute_dam < brute_before, "Облитый стиптик не вылечил ушибы на груди")
+
+	// зона строкой больше не должна доходить до разыменования
+	TEST_ASSERT(!get_bodypart_protecting_clothing_by_coverage(patient, BODY_ZONE_CHEST), \
+		"Хелпер покрытия принял строку зоны вместо части тела")
+
+// "Открыл превью снаряжения в панели спавна - рантайм про null.get_all_objectives"
+//
+// post_equip у InteQ-комплекта выдаёт цель martyr прямо на mind, а превью одевает
+// безмозглого дамми: получался "Cannot execute null.get all objectives()".
+/datum/unit_test/outfit_preview_skips_mindless_dummy/Run()
+	var/mob/living/carbon/human/dummy/dummy = allocate(/mob/living/carbon/human/dummy, run_loc_floor_bottom_left)
+	TEST_ASSERT_NULL(dummy.mind, "test premise: дамми для превью должен быть без разума")
+
+	var/datum/outfit/inteq/full/outfit = new
+	outfit.post_equip(dummy, TRUE, null)
+	TEST_ASSERT_NULL(dummy.mind, "Превью аутфита завело дамми разум")
+
+	// а живому оперативнику цель по-прежнему выдаётся
+	var/mob/living/carbon/human/operative = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	operative.mind_initialize()
+	outfit.post_equip(operative, FALSE, null)
+	var/found_martyr = FALSE
+	for(var/datum/objective/objective in operative.mind.get_all_objectives())
+		if(istype(objective, /datum/objective/martyr))
+			found_martyr = TRUE
+			break
+	TEST_ASSERT(found_martyr, "Оперативник с разумом остался без цели martyr")
