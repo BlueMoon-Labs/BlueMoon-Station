@@ -262,9 +262,12 @@
 	//Choose snowflake variation if antagonist handles it
 	var/datum/antagonist/S = A.specialization(src)
 	if(S && S != A)
+		//заготовку, которую подменила специализация, тоже сносим штатно
+		A.discarded_before_gain = TRUE
 		qdel(A)
 		A = S
 	if(!A.can_be_owned(src))
+		A.discarded_before_gain = TRUE
 		qdel(A)
 		return
 	A.owner = src

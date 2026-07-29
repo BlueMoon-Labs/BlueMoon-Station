@@ -44,6 +44,11 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 	var/preview_outfit
 	/// If set to true, the antag will not be added to the living antag list.
 	var/soft_antag = FALSE
+	/// Взводится add_antag_wrapper перед штатной уборкой заготовки, которую
+	/// admin_add не забрал себе (clockcult и подобные заводят собственный датум
+	/// через add_servant_of_ratvar). Такой сироте владелец не положен, и ругаться
+	/// на него в Destroy незачем.
+	var/discarded_before_gain = FALSE
 
 	//Antag panel properties
 	///This will hide adding this antag type in antag panel, use only for internal subtypes that shouldn't be added directly but still show if possessed by mind
@@ -93,7 +98,8 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 /datum/antagonist/Destroy()
 	GLOB.antagonists -= src
 	if(!owner)
-		stack_trace("Destroy()ing antagonist datum when it has no owner.")
+		if(!discarded_before_gain)
+			stack_trace("Destroy()ing antagonist datum when it has no owner.")
 	else
 //ambition start
 		owner?.do_remove_antag_datum(src)
