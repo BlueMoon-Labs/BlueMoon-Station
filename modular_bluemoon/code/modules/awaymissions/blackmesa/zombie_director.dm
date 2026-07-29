@@ -4,8 +4,8 @@
 // =============================================================================
 
 /datum/ai_director/zombie_mission
-	var/wave_timer = 300 // Reduced from 600 to 300 (30 seconds instead of 1 minute)
-	var/max_wave_interval = 1500 // Reduced from 3000 to 1500 (2.5 minutes instead of 5 minutes)
+	var/wave_timer = 600 // 1 minute between waves
+	var/max_wave_interval = 3000 // 5 minutes max between waves
 	var/last_wave_time = 0
 	var/current_wave_number = 0
 	var/list/active_zombies = list()
@@ -17,14 +17,14 @@
 	var/zombie_hp_multiplier = 1.0 // HP multiplier for spawned zombies
 	var/initialized = FALSE // Track if director has been initialized
 	var/wave_timer_paused = FALSE // Track if wave timer is paused (safe zone)
-	var/paused_time_accumulated = 0 // Track accumulated paused time
+	var/pause_start_time = 0 // Track when pause started for accurate timer adjustment
 	var/horde_music_channel = 991 // Unique channel for horde music
+	var/spawning_wave = FALSE // Prevent multiple simultaneous wave spawns
 
 	// Whitelist and blacklist areas
 	var/list/excluded_areas = list(
 		/area/awaymission/ihategordon/hecu_abandoned_camp,
 		/area/awaymission/ihategordon/rocks,
-		/area/awaymission/ihategordon/outsideofmesa,
 		/area/awaymission/ihategordon/outsideofmesa/hecu_camp,
 		/area/awaymission/ihategordon/secret_rooms,
 		/area/awaymission/ihategordon/underground_tunnels,
@@ -41,7 +41,9 @@
 		/area/awaymission/ihategordon/dorm_rooms,
 		/area/awaymission/ihategordon/hecu_camp_hall,
 		/area/awaymission/ihategordon/hecu_camp_medbay,
-		/area/awaymission/ihategordon/sci_medbay
+		/area/awaymission/ihategordon/sci_medbay,
+		/area/awaymission/ihategordon/custom_space,
+		/area/awaymission/ihategordon/custom_walking
 	)
 
 /datum/ai_director/zombie_mission/New()
@@ -70,8 +72,7 @@
 		// No players in mission - pause the wave timer
 		if(!wave_timer_paused)
 			wave_timer_paused = TRUE
-			paused_time_accumulated = 0
-		paused_time_accumulated += 1 // Track how long we've been paused
+			pause_start_time = world.time
 		if(horde_music_playing)
 			manage_horde_music()
 		return
@@ -79,8 +80,9 @@
 		// Players returned - unpause and adjust timer
 		if(wave_timer_paused)
 			wave_timer_paused = FALSE
-			last_wave_time += paused_time_accumulated // Adjust last_wave_time to account for paused time
-			paused_time_accumulated = 0
+			var/pause_duration = world.time - pause_start_time
+			last_wave_time += pause_duration // Adjust last_wave_time to account for paused time
+			pause_start_time = 0
 
 	if(world.time - last_wave_time >= wave_timer)
 		attempt_spawn_wave()
@@ -91,6 +93,9 @@
 /datum/ai_director/zombie_mission/proc/attempt_spawn_wave()
 	if(!src)
 		return
+	if(spawning_wave)
+		log_world("[src] Already spawning a wave, skipping duplicate spawn")
+		return
 	var/time_since_last = world.time - last_wave_time
 	if(time_since_last < wave_timer)
 		return
@@ -99,7 +104,7 @@
 	if(!alive_players || !alive_players.len)
 		log_world("[src] No alive players in mission, pausing wave timer")
 		wave_timer_paused = TRUE
-		paused_time_accumulated = 0
+		pause_start_time = world.time
 		return
 
 	var/threat_level = calculate_threat_level(alive_players.len)
@@ -111,7 +116,9 @@
 	wave_timer = rand(300, max_wave_interval)
 
 	log_world("[src] Attempting to spawn wave with threat=[threat_level]")
+	spawning_wave = TRUE
 	spawn_zombie_wave(threat_level, alive_players)
+	spawning_wave = FALSE
 
 	last_wave_time = world.time
 	current_wave_number++
@@ -190,8 +197,8 @@
 			base_threat = rand(3, 4)
 
 	// Scale with player count (add 1 zombie per additional player beyond first, reduced scaling)
-	var/player_multiplier = 1 + ((player_count - 1) * 0.3)
-	var/threat = ceil(base_threat * player_multiplier)
+	var/player_multiplier = 1 + ((player_count - 1) * 0.1)
+	var/threat = round(base_threat * player_multiplier)
 	return threat
 
 /datum/ai_director/zombie_mission/proc/spawn_zombie_wave(threat_level, list/players)
@@ -208,7 +215,6 @@
 	var/list/spawned_zombies = list()
 
 	log_world("[src] Starting zombie wave: threat=[threat_level], players=[players.len], zombies_to_spawn=[zombies_to_spawn]")
-	announce_wave(zombies_to_spawn)
 
 	// OPTIMIZATION: Pre-build spawn turfs once per wave instead of per zombie
 	var/list/cached_spawn_turfs = get_cached_spawn_turfs(players)
@@ -271,6 +277,8 @@
 			sleep(20) // Wait 2 seconds between batches
 
 	log_world("[src] Wave complete: intended=[zombies_to_spawn], spawned=[spawned_zombies.len], failed=[failed_spawns]")
+	// Announce wave with actual spawned count
+	announce_wave(spawned_zombies.len)
 
 	if(spawned_zombies.len > 0)
 		// Only play horde music if difficulty level > 0
@@ -495,7 +503,11 @@
 			continue
 		if(A in valid_areas)
 			if(M.client && M.client.prefs && (M.client.prefs.toggles & SOUND_AMBIENCE))
-				SEND_SOUND(M, sound('modular_bluemoon/sound/ambience/mesa/horde_music.ogg', repeat = FALSE, volume = 50, channel = horde_music_channel))
+				// Проверяем зону - если ивентовая зона, кастомная музыка
+				var/music_file = 'modular_bluemoon/sound/ambience/mesa/horde_music.ogg'
+				if(istype(A, /area/awaymission/ihategordon/custom_event))
+					music_file = 'modular_bluemoon/sound/ambience/mesa/xenhorde.ogg'
+				SEND_SOUND(M, sound(music_file, repeat = FALSE, volume = 50, channel = horde_music_channel))
 
 /datum/ai_director/zombie_mission/proc/stop_horde_music()
 	if(!src)

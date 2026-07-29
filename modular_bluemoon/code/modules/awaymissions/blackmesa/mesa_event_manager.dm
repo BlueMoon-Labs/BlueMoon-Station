@@ -34,7 +34,7 @@ SUBSYSTEM_DEF(blackmesa_events)
 /datum/controller/subsystem/blackmesa_events/fire(resumed = FALSE)
 	// Mission load check
 	var/list/mission_areas = get_areas(/area/awaymission/ihategordon, TRUE)
-	if(!mission_areas.len)
+	if(!mission_areas || !mission_areas.len)
 		return
 
 	// Day/Night Cycle
@@ -55,12 +55,14 @@ SUBSYSTEM_DEF(blackmesa_events)
 
 	var/list/possible_events = list()
 	for(var/datum/round_event_control/E in event_controls)
+		if(!E)
+			continue
 		if(E.max_occurrences > 0 && E.occurrences >= E.max_occurrences)
 			continue
 		// Check if event meets difficulty requirement
 		if(istype(E, /datum/round_event_control/blackmesa))
 			var/datum/round_event_control/blackmesa/BE = E
-			if(BE.min_difficulty_level > current_difficulty)
+			if(BE && BE.min_difficulty_level > current_difficulty)
 				continue
 		possible_events += E
 
@@ -69,6 +71,8 @@ SUBSYSTEM_DEF(blackmesa_events)
 
 	var/list/event_weights = list()
 	for(var/datum/round_event_control/E in possible_events)
+		if(!E)
+			continue
 		event_weights[E] = E.weight
 
 	var/datum/round_event_control/selected = pickweight(event_weights)
@@ -109,15 +113,25 @@ SUBSYSTEM_DEF(blackmesa_events)
 
 /datum/controller/subsystem/blackmesa_events/proc/update_mesa_lights(color, light_power)
 	// Update floodlights
+	if(!GLOB.machines)
+		return
 	for(var/obj/machinery/power/floodlight/urbanismlight/mesaoutside/L in GLOB.machines)
 		if(!L)
 			continue
 		L.light_color = color
 		L.set_light(L.light_range, light_power, color)
 
-	// Update area lighting for all ihategordon areas
+	// Update area lighting for all ihategordon areas (except those with ignore_mesa_events)
 	for(var/area/awaymission/ihategordon/A in get_areas(/area/awaymission/ihategordon, TRUE))
 		if(!A)
+			continue
+		// Skip areas that ignore mesa events - safely check if var exists
+		var/skip_area = FALSE
+		if("ignore_mesa_events" in A.vars)
+			var/var_value = A.vars["ignore_mesa_events"]
+			if(var_value)
+				skip_area = TRUE
+		if(skip_area)
 			continue
 		// Set gloomy ambient lighting
 		A.dynamic_lighting = DYNAMIC_LIGHTING_IFSTARLIGHT
@@ -133,13 +147,17 @@ SUBSYSTEM_DEF(blackmesa_events)
 	var/s = sound ? sound(sound) : null
 	var/players_notified = 0
 	for(var/mob/M in GLOB.player_list)
+		if(!M)
+			continue
 		if(isnewplayer(M))
 			continue
 		var/area/A = get_area(M)
+		if(!A)
+			continue
 		if(istype(A, /area/awaymission/ihategordon) || istype(A, /area/command/gateway))
 			to_chat(M, announcement)
 			players_notified++
-			if(s && M.client && (M.client.prefs.toggles & SOUND_ANNOUNCEMENTS))
+			if(s && M.client && M.client.prefs && (M.client.prefs.toggles & SOUND_ANNOUNCEMENTS))
 				SEND_SOUND(M, s)
 
 	log_world("mesa_announce: '[title]' - notified [players_notified] players in Black Mesa area")

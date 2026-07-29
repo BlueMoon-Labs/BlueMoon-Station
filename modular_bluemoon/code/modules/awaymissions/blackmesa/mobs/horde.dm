@@ -6,13 +6,13 @@
 // Move speed modifier for infected slow effect
 /datum/movespeed_modifier/infected_slow
 	id = MOVESPEED_ID_INFECTED_SLOW
-	multiplicative_slowdown = 8.0
+	multiplicative_slowdown = 15.0
 	blacklisted_movetypes = FLOATING
 
 // Move speed modifier for bruiser slow effect (stronger)
 /datum/movespeed_modifier/bruiser_slow
 	id = MOVESPEED_ID_BRUISER_SLOW
-	multiplicative_slowdown = 10.0
+	multiplicative_slowdown = 20.0
 	blacklisted_movetypes = FLOATING
 
 // Move speed modifier for infected damage slow (when hit)
@@ -47,7 +47,7 @@
 	robust_searching = 1
 	search_objects = 1
 	wanted_objects = list(/obj/structure/urbanism_generator)
-	environment_smash = ENVIRONMENT_SMASH_STRUCTURES
+	environment_smash = ENVIRONMENT_SMASH_NONE // Disable structure smashing to prevent attacking fences
 	gold_core_spawnable = NO_SPAWN
 	density = TRUE
 	mouse_opacity = MOUSE_OPACITY_OPAQUE
@@ -60,12 +60,25 @@
 	sight = 20 // High sight range to detect players from far away
 	move_on_shuttle = TRUE // Allow movement during shuttle transit (helps with pathfinding)
 	stop_automated_movement = 0 // Don't stop automated movement
+	// Disable fractures and dislocations completely
+	wound_bonus = 0
+	bare_wound_bonus = 0
+	sharpness = SHARP_NONE // Prevent cutting wounds
 
 /mob/living/simple_animal/hostile/infected/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/swarming)
 	// Initialize wanted_objects typecache at runtime to avoid constant-expression compile errors
 	wanted_objects = typecacheof(wanted_objects, TRUE)
+
+/mob/living/simple_animal/hostile/infected/Move(atom/newloc, dir, step_x, step_y)
+	// Check if we're trying to move through a nocut fence
+	if(newloc)
+		for(var/obj/structure/fence/nocut/F in newloc)
+			if(F.Adjacent(src))
+				// Allow movement through nocut fence
+				return forceMove(newloc)
+	. = ..()
 
 /mob/living/simple_animal/hostile/infected/adjustHealth(amount, updating_health = TRUE, forced = FALSE)
 	. = ..()
@@ -105,16 +118,6 @@
 		playsound(src, pick(speak), 70, TRUE)
 
 /mob/living/simple_animal/hostile/infected/AttackingTarget(atom/target)
-	// Crutch method: if attacking a fence, teleport to the fence tile
-	if(istype(target, /obj/structure/fence))
-		var/obj/structure/fence/F = target
-		if(!F || !F.density)
-			return
-		if(!stat)
-			var/turf/fence_turf = get_turf(F)
-			if(fence_turf)
-				forceMove(fence_turf)
-				return
 	. = ..()
 	if(!target)
 		return
@@ -167,21 +170,15 @@
 	melee_damage_upper = 25
 	sight = 20 // High sight range to detect players from far away
 	robust_searching = 1
-	environment_smash = ENVIRONMENT_SMASH_WALLS
+	environment_smash = ENVIRONMENT_SMASH_NONE // Disable structure smashing to prevent attacking fences
 	harm_intent_damage = 20
 	obj_damage = 40
+	// Disable fractures and dislocations completely
+	wound_bonus = 0
+	bare_wound_bonus = 0
+	sharpness = SHARP_NONE // Prevent cutting wounds
 
 /mob/living/simple_animal/hostile/infected/bruiser/AttackingTarget(atom/target)
-	// Crutch method: if attacking a fence, teleport to the fence tile
-	if(istype(target, /obj/structure/fence))
-		var/obj/structure/fence/F = target
-		if(!F || !F.density)
-			return
-		if(!stat)
-			var/turf/fence_turf = get_turf(F)
-			if(fence_turf)
-				forceMove(fence_turf)
-				return
 	. = ..()
 	if(!target)
 		return
@@ -195,6 +192,15 @@
 			L.add_movespeed_modifier(/datum/movespeed_modifier/bruiser_slow, TRUE)
 			addtimer(CALLBACK(L, TYPE_PROC_REF(/mob, remove_movespeed_modifier), /datum/movespeed_modifier/bruiser_slow), 6 SECONDS)
 			to_chat(L, span_warning("Вас сильно замедлил бруiser!"))
+
+/mob/living/simple_animal/hostile/infected/bruiser/Move(atom/newloc, dir, step_x, step_y)
+	// Check if we're trying to move through a nocut fence
+	if(newloc)
+		for(var/obj/structure/fence/nocut/F in newloc)
+			if(F.Adjacent(src))
+				// Allow movement through nocut fence
+				return forceMove(newloc)
+	. = ..()
 
 /mob/living/simple_animal/hostile/infected/bruiser/Aggro()
 	. = ..()

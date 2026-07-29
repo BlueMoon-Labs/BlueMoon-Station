@@ -62,6 +62,28 @@
 	bypass_armor = TRUE // Лечит сквозь броню
 
 	var/healing_solution_amount = 20
+	var/used = FALSE
+
+/obj/item/stack/medical/mesa_tactical/Initialize(mapload, new_amount, merge = TRUE)
+	. = ..()
+	update_icon()
+
+/obj/item/stack/medical/mesa_tactical/update_icon_state()
+	if(used)
+		icon_state = "basicmed-empty"
+		item_state = "basicmed-empty"
+	else
+		icon_state = "basicmed"
+		item_state = "basicmed"
+
+/obj/item/stack/medical/mesa_tactical/has_healable_damage(mob/living/carbon/patient)
+	// Переопределяем базовую проверку, так как мы лечим раны и переломы, а не brute/burn напрямую
+	if(patient.getBruteLoss() > 0 || patient.getFireLoss() > 0 || patient.getToxLoss() > 0)
+		return TRUE
+	for(var/datum/wound/W as anything in patient.all_wounds)
+		if(istype(W, /datum/wound/blunt) || istype(W, /datum/wound/slash) || istype(W, /datum/wound/pierce))
+			return TRUE
+	return FALSE
 
 /obj/item/stack/medical/mesa_tactical/try_heal_checks(mob/living/patient, mob/living/user, healed_zone, silent = FALSE)
 	if(!patient)
@@ -142,6 +164,9 @@
 
 	if(healed_something)
 		user.visible_message("<span class='green'>[user] наносит \the [src] на [ru_kogo_zone(affecting.name)] [C].</span>", "<span class='green'>Вы наносите \the [src] на [ru_kogo_zone(affecting.name)] [C].</span>")
+		// Помечаем как использованный и меняем иконку
+		used = TRUE
+		update_icon()
 
 	return healed_something
 

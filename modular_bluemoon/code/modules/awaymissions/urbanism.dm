@@ -9,6 +9,15 @@
 	explosion_block = INFINITY
 	wave_explosion_block = INFINITY
 
+/turf/closed/mineral/mesarock/Initialize(mapload)
+	. = ..()
+	// Блокируем телепортацию в зону ihategordon
+	RegisterSignal(src, COMSIG_ATOM_INTERCEPT_TELEPORT, PROC_REF(block_teleport))
+
+/turf/closed/mineral/mesarock/proc/block_teleport(datum/source, channel, turf/origin, turf/destination)
+	SIGNAL_HANDLER
+	return COMPONENT_BLOCK_TELEPORT
+
 
 /turf/closed/mineral/mesarock/rust_heretic_act()
 	return
@@ -30,6 +39,21 @@
 	return
 
 /turf/closed/mineral/mesarock/attack_hand(mob/user)
+	return
+
+/turf/closed/mineral/mesarock/attack_animal(mob/living/simple_animal/user, list/modifiers)
+	return
+
+/turf/closed/mineral/mesarock/attack_alien(mob/living/carbon/alien/user, list/modifiers)
+	return
+
+/turf/closed/mineral/mesarock/attack_hulk(mob/living/carbon/human/H)
+	return
+
+/turf/closed/mineral/mesarock/ex_act(severity, target, origin)
+	return
+
+/turf/closed/mineral/mesarock/gets_drilled(user, give_exp = FALSE)
 	return
 
 /obj/machinery/power/floodlight/urbanismlight
@@ -83,14 +107,6 @@
 	icon_state = "redbarrel"
 	reagent_id = /datum/reagent/fuel
 	tank_volume = 300
-
-/obj/structure/reagent_dispensers/urbanismbarrel/radium
-	name = "Radium barrel"
-	desc = "Barrel filled with radium. Very dangerous."
-	icon_state = "radiumbarrel"
-	reagent_id = /datum/reagent/radium
-	tank_volume = 300
-	var/rad_strength = 1000
 
 /obj/structure/reagent_dispensers/urbanismbarrel/radium/Initialize(mapload)
 	. = ..()
@@ -429,44 +445,6 @@
 	max_integrity = FALSE
 	layer = SPACEVINE_LAYER
 
-/obj/machinery/negotiations_radio
-	name = "negotiations radio"
-	desc = "An old radio."
-	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism.dmi'
-	icon_state = "radiohecu"
-	anchored = TRUE
-	density = TRUE
-	var/list/negotiation_sounds = list(
-		'modular_bluemoon/sound/creatures/mesa/hecuchatter/chatter1.ogg',
-		'modular_bluemoon/sound/creatures/mesa/hecuchatter/chatter2.ogg',
-		'modular_bluemoon/sound/creatures/mesa/hecuchatter/chatter3.ogg',
-		'modular_bluemoon/sound/creatures/mesa/hecuchatter/chatter4.ogg',
-		'modular_bluemoon/sound/creatures/mesa/hecuchatter/chatter6.ogg',
-		'modular_bluemoon/sound/creatures/mesa/hecuchatter/chatter7.ogg',
-		'modular_bluemoon/sound/creatures/mesa/hecuchatter/chatter8.ogg',
-		'modular_bluemoon/sound/creatures/mesa/hecuchatter/chatter9.ogg'
-	)
-	var/next_play_time = 0
-
-/obj/machinery/negotiations_radio/Initialize()
-	. = ..()
-	START_PROCESSING(SSobj, src)
-
-/obj/machinery/negotiations_radio/process()
-	if(world.time >= next_play_time)
-		icon_state = "radiohecu_talking"
-		var/sound_to_play = pick(negotiation_sounds)
-		playsound(src, sound_to_play, 70, FALSE, 7, 3)
-		addtimer(CALLBACK(src, .proc/reset_icon), 2 SECONDS)
-		next_play_time = world.time + rand(10 SECONDS, 25 SECONDS)
-
-/obj/machinery/negotiations_radio/proc/reset_icon()
-	icon_state = initial(icon_state)
-
-/obj/machinery/negotiations_radio/Destroy()
-	STOP_PROCESSING(SSobj, src)
-	return ..()
-
 /obj/structure/microwaveexplosive
 	name = "suspicious microwave"
 	desc = "This microwave looks... off. Better not touch it."
@@ -479,6 +457,65 @@
 	. = ..()
 
 	playsound(src, 'modular_bluemoon/sound/creatures/mesa/madsci/microwaveboom.ogg', 100, FALSE)
+
+// =============================================================================
+// REINFORCED BARRICADES
+// Barricades that can only be destroyed by bombardment
+// =============================================================================
+
+/obj/structure/barricade/wooden/reinforced
+	name = "reinforced wooden barricade"
+	desc = "A heavily reinforced wooden barricade. It seems impervious to conventional damage."
+	icon = 'modular_bluemoon/icons/obj/barricade.dmi'
+	icon_state = "wooden"
+	max_integrity = 500
+	armor = list(MELEE = 100, BULLET = 100, LASER = 100, ENERGY = 100, BOMB = 0, BIO = 100, RAD = 100, FIRE = 100, ACID = 100)
+	resistance_flags = FIRE_PROOF | ACID_PROOF | UNACIDABLE
+
+/obj/structure/barricade/wooden/reinforced/attackby(obj/item/I, mob/user, params)
+	if(istype(I, /obj/item/stack/sheet/mineral/wood))
+		to_chat(user, span_warning("This barricade cannot be repaired."))
+		return
+	..()
+
+/obj/structure/barricade/wooden/reinforced/crowbar_act(mob/living/user, obj/item/I)
+	to_chat(user, span_warning("This barricade is too reinforced to be disassembled with a crowbar."))
+	return TRUE
+
+/obj/structure/barricade/wooden/reinforced/ex_act(severity)
+	return
+
+/obj/structure/barricade/wooden/reinforced/take_damage(damage_amount, damage_type, damage_flag, sound_effect, attack_dir, armor_penetration)
+	if(damage_amount >= 1000)
+		..()
+	else
+		return 0
+
+/obj/structure/barricade/wooden/crude/reinforced
+	name = "reinforced crude wooden barricade"
+	desc = "A heavily reinforced crude wooden barricade. It seems impervious to conventional damage."
+	max_integrity = 400
+	armor = list(MELEE = 100, BULLET = 100, LASER = 100, ENERGY = 100, BOMB = 0, BIO = 100, RAD = 100, FIRE = 100, ACID = 100)
+	resistance_flags = FIRE_PROOF | ACID_PROOF | UNACIDABLE
+
+/obj/structure/barricade/wooden/crude/reinforced/attackby(obj/item/I, mob/user, params)
+	if(istype(I, /obj/item/stack/sheet/mineral/wood))
+		to_chat(user, span_warning("This barricade cannot be repaired."))
+		return
+	..()
+
+/obj/structure/barricade/wooden/crude/reinforced/crowbar_act(mob/living/user, obj/item/I)
+	to_chat(user, span_warning("This barricade is too reinforced to be disassembled with a crowbar."))
+	return TRUE
+
+/obj/structure/barricade/wooden/crude/reinforced/ex_act(severity)
+	return
+
+/obj/structure/barricade/wooden/crude/reinforced/take_damage(damage_amount, damage_type, damage_flag, sound_effect, attack_dir, armor_penetration)
+	if(damage_amount >= 1000)
+		..()
+	else
+		return 0
 
 
 	for(var/obj/structure/mad_scientist/scientist in range(5, src))
@@ -514,6 +551,7 @@
 	name = "reinforced fence"
 	desc = "A chain link fence reinforced to prevent cutting."
 	cuttable = FALSE
+	pass_flags_self = PASSFENCE // Allow mobs with PASSFENCE to pass through
 
 
 /obj/structure/reagent_dispensers/urbanismbarrel/radium
@@ -589,13 +627,13 @@
 		if(world.time >= next_mob_spawn_time)
 			spawn_mob_wave()
 
-	// Trigger zombie director horde events every 25 seconds during activation (reduced frequency to prevent lag)
+	// Trigger zombie director horde events every 60 seconds during activation (increased to prevent too many hordes)
 	if(activating && GLOB.zombie_director)
 		if(world.time >= next_director_horde_time)
 			var/datum/ai_director/zombie_mission/D = GLOB.zombie_director
 			if(D)
 				D.trigger_horde()
-			next_director_horde_time = world.time + 25 SECONDS
+			next_director_horde_time = world.time + 60 SECONDS
 
 	if(!active)
 		return
@@ -761,8 +799,6 @@
 	var/mobs_to_spawn = get_spawn_count_for_difficulty()
 	if(mobs_to_spawn < 1)
 		mobs_to_spawn = 1
-	// Increase spawn count from generator for more challenge
-	mobs_to_spawn = round(mobs_to_spawn * 1.5)
 
 	for(var/i = 1; i <= mobs_to_spawn; i++)
 		var/mob_type = pick(mob_types)

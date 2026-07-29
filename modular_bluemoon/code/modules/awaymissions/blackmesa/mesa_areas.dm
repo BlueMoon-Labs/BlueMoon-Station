@@ -2,6 +2,7 @@
 	name = "Main sector H complex"
 	shipambience ='modular_bluemoon/sound/ambience/mesa/ambinside.ogg'
 	ambientsounds = list('modular_bluemoon/sound/ambience/mesa/metal1.ogg' , 'modular_bluemoon/sound/ambience/mesa/metal2.ogg' , 'modular_bluemoon/sound/ambience/mesa/metal3.ogg' , 'modular_bluemoon/sound/ambience/mesa/metal5.ogg' , 'modular_bluemoon/sound/ambience/mesa/metal6.ogg' , 'modular_bluemoon/sound/ambience/mesa/metal7.ogg' )
+	area_flags = NOTELEPORT
 
 /area/awaymission/ihategordon/entrance
 	name = "Facility entrance"
@@ -141,7 +142,45 @@
 	icon_state = "awaycontent25"
 	outdoors = TRUE
 
+/area/awaymission/ihategordon/outsideofmesa/bombardment
+	name = "Bombardment Zone"
+	icon_state = "awaycontent26"
+	outdoors = TRUE
+
 
 /area/awaymission/ihategordon/hecuannouce
 	name = "hecu warning announcement area"
 	icon_state = "3"
+
+// =============================================================================
+// IHATEGORDON CUSTOM ZONES
+// Специальные зоны для кастомного космоса и ивентов
+// =============================================================================
+
+/area/awaymission/ihategordon/custom_space
+	name = "Ihategordon Void"
+	icon_state = "space"
+	always_unpowered = TRUE
+	power_environ = FALSE
+	power_light = FALSE
+	power_equip = FALSE
+	requires_power = FALSE
+	shipambience = 'modular_bluemoon/sound/ambience/mesa/xenambience.ogg'
+	ambientsounds = 'modular_bluemoon/sound/ambience/mesa/xenambience.ogg'
+	has_gravity = FALSE
+	var/ignore_mesa_events = TRUE
+
+/area/awaymission/ihategordon/custom_walking
+	name = "Ihategordon Walking Zone"
+	icon_state = "awaycontent1"
+	shipambience = 'modular_bluemoon/sound/ambience/mesa/xenambience.ogg'
+	ambientsounds = 'modular_bluemoon/sound/ambience/mesa/xenambience.ogg'
+	has_gravity = TRUE
+	var/ignore_mesa_events = TRUE
+
+/area/awaymission/ihategordon/custom_event
+	name = "Ihategordon Event Zone"
+	icon_state = "awaycontent2"
+	shipambience = 'modular_bluemoon/sound/ambience/mesa/xenambience.ogg'
+	ambientsounds = 'modular_bluemoon/sound/ambience/mesa/xenambience.ogg'
+	has_gravity = TRUE

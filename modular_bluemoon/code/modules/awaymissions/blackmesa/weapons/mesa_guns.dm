@@ -459,7 +459,7 @@
 	if(magazine)
 		icon_state = "scarh"
 	else
-		icon_state = "scarh_e"
+		icon_state = "scar-e"
 
 /obj/item/ammo_box/magazine/scar
 	name = " HC SCAR magazine"
@@ -546,6 +546,17 @@
 	wound_bonus = 2
 	bare_wound_bonus = 2
 
+//tier 2
+/obj/item/gun/ballistic/revolver/hltaurus
+	name = "\improper taurus revolver"
+	desc = "Тaurus Model 85 является компактным револьвером, который был разработан бразильской компанией Taurus International. Он предназначен для скрытого ношения и самообороны, и является популярным выбором среди гражданских лиц и правоохранительных органов. Данный экземпляр может похвастаться модифицированным барабаном на 4 выстрела калибром .357"
+	icon = 'modular_bluemoon/icons/obj/guns/projectile.dmi'
+	icon_state = "taurus"
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/rev357/taurus
+	fire_delay = 3
+
+/obj/item/ammo_box/magazine/internal/cylinder/rev357/taurus
+	max_ammo = 4
 
 /obj/item/uber_teleporter
 	name = "\improper Nihilanth's Divinity"
@@ -596,48 +607,6 @@
 		do_teleport(user, possible_turfs, channel = TELEPORT_CHANNEL_FREE)
 		playsound(get_turf(user), 'sound/magic/LightningShock.ogg', 50, TRUE)
 
-
-
-//SPECGUNS
-//В РАЗРАБОТКЕ
-
-//obj/item/gun/energy/beam_rifle/mesa
-//	name = "CARGO HELPER 1998"
-//	desc = "Критично ПРОВАЛЬНЫЙ прототип который должен был помогать работникам чёрной мезы перетаскивать предметы при помощи антигравитационного луча. К превиликому сожалению или счастью, этот монстр вместо того, что-бы поднимать предметы буквально ПРОШИВАЕТ их смертоносной энергией зена. На корпусе видно куча торчащих проводков и надписей с предупреждениями"
-//	icon = 'icons/obj/guns/energy.dmi'
-//	icon_state = "esniper"
-//	item_state = "esniper"
-//	fire_sound = 'sound/weapons/beam_sniper.ogg'
-//	slot_flags = FALSE
-//	force = 20
-//	recoil = 6
-//	ammo_x_offset = 0
-//	ammo_y_offset = 0
-//	ammo_type = list(/obj/item/projectile/beam/emitter/hitscan)
-//	cell_type = /obj/item/stock_parts/cell/beam_rifle
-//	canMouseDown = TRUE
-//	can_turret = FALSE
-//	can_circuit = FALSE
-//	//Cit changes: beam rifle stats.
-//	slowdown = 1
-//	item_flags = NO_MAT_REDEMPTION | SLOWS_WHILE_IN_HAND
-//	pin = /obj/item/firing_pin
-//	aiming_time = 6
-//	aiming_time_fire_threshold = 4
-//	aiming_time_left = 5
-//	aiming_time_increase_user_movement = 10
-//	structure_piercing = 1
-//	wall_pierce_amount = 1
-//	projectile_damage = 40
-//	projectile_stun = 1
-//	delay = 25
-
-//	var/static/image/charged_overlay = image(icon = 'icons/obj/guns/energy.dmi', icon_state = "esniper_charged")
-//	var/static/image/drained_overlay = image(icon = 'icons/obj/guns/energy.dmi', icon_state = "esniper_empty")
-
-
-
-//ПРИЗЫВ ПУШЕК??!??!?!?7
 //Grunt
 /obj/item/choice_beacon/mesagrunt
 	name = "Grunt type choice beacon"
