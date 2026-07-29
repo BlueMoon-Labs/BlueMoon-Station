@@ -31,6 +31,7 @@
 	usr.emote("subtle", message = message)
 */
 
+//////////////////// SUBTLER ANTI-GHOST ////////////////////
 /mob/living/verb/subtler_byond(message as message)
 	set name = "Subtler Anti-Ghost "
 	set hidden = TRUE
@@ -42,7 +43,8 @@
 	set name = "Subtler Anti-Ghost"
 	set category = "Say"
 	if(GLOB.say_disabled)	//This is here to try to identify lag problems
-		to_chat(usr, "<span class='danger'>Speech is currently admin-disabled.</span>")
+		to_chat(usr, message)
+		to_chat(usr, span_danger("Speech is currently admin-disabled."))
 		return
 	usr.emote("subtler")
 
@@ -50,11 +52,11 @@
 	set name = "Subtler Anti-Ghost (Indicator)"
 	set category = "Say"
 	if(GLOB.say_disabled)
-		to_chat(usr, message)
 		to_chat(usr, span_danger("Speech is currently admin-disabled."))
 		return
 	display_typing_indicator(isMe = TRUE)
 
+	var/message = ""
 	if(client?.prefs.tgui_input_verbs)
 		message = tgui_input_text(src, "Введите сообщение, которое увидят персонажи в упор к вам. Призраки его не увидят.", "Введите скрытое сообщение", null, MAX_MESSAGE_LEN, TRUE, TRUE)
 	else
@@ -65,6 +67,7 @@
 		return
 	usr.emote("subtler", message = message)
 
+//////////////////// SUBTLER TABLE ////////////////////
 /mob/living/verb/subtler_table()
 	set name = "Subtler Around Table"
 	set category = "Say"
@@ -73,14 +76,21 @@
 		return
 	usr.emote("subtler_table")
 
-/mob/living/verb/subtler_target()
+//////////////////// SUBTLER TARGET ////////////////////
+/mob/living/verb/subtler_target_byond(message as message)
+	set name = "Subtler Target "
+	set hidden = TRUE
+	if(!message)
+		return
+	subtler_target(message)
+
+/mob/living/verb/subtler_target(message = "" as message)
 	set name = "Subtler Target"
 	set category = "Say"
 	if(GLOB.say_disabled)	//This is dumb but it's here because heehoo copypaste, who the FUCK uses this to identify lag?
 		to_chat(usr, span_danger("Speech is currently admin-disabled."))
 		return
-
-	usr.emote("subtler_target", message = list("indicator" = FALSE))
+	usr.emote("subtler_target", message = list("text" = message, "indicator" = FALSE))
 
 /mob/living/verb/subtler_target_indicatored()
 	set name = "Subtler Target (Indicator)"
@@ -299,7 +309,7 @@
 		to_chat(user, span_boldwarning("You cannot send IC messages (muted)."))
 		return FALSE
 
-	if(istext(params))
+	if(istext(params) && length(params))
 		message = stripped_text_or_reflect(user, params)
 	else
 		if(user.client?.prefs.tgui_input_verbs)
@@ -313,7 +323,6 @@
 		emote_type = type_override
 	if(!check_invalid(user, message))
 		to_chat(user, message)
-		to_chat(user, "You cannot do it now.")
 		return FALSE
 	if(!can_run_emote(user))
 		to_chat(user, message)
@@ -373,34 +382,40 @@
 /datum/emote/sound/human/subtler_table/run_emote(mob/user, params, type_override = null)
 	message = null
 	if(!locate(/obj/structure/table) in range(user, 1))
+		if(istext(params))
+			to_chat(user, params)
 		to_chat(user, "There are no tables around you.")
 		return FALSE
 	if(jobban_isbanned(user, "emote"))
+		if(istext(params))
+			to_chat(user, params)
 		to_chat(user, "You cannot send subtle emotes (banned).")
 		return FALSE
 	else if(user.client && user.client.prefs.muted & MUTE_IC)
+		if(istext(params))
+			to_chat(user, params)
 		to_chat(user, "You cannot send IC messages (muted).")
 		return FALSE
 
-	if(istext(params))
-		message = params
-		if(type_override)
-			emote_type = type_override
+	if(istext(params) && length(params))
+		message = stripped_text_or_reflect(user, params)
 	else
-		var/subtle_emote = ""
 		if(user.client?.prefs.tgui_input_verbs)
-			subtle_emote = tgui_input_text(user, "Choose an emote to display.", "Subtler Around Table", null, MAX_MESSAGE_LEN, TRUE, TRUE)
+			message = tgui_input_text(user, "Choose an emote to display.", "Subtler Around Table", null, MAX_MESSAGE_LEN, TRUE, TRUE)
 		else
-			subtle_emote = stripped_multiline_input_or_reflect(user, "Choose an emote to display.", "Subtler Around Table")
+			message = stripped_multiline_input_or_reflect(user, "Choose an emote to display.", "Subtler Around Table")
 
-		if(subtle_emote && !check_invalid(user, subtle_emote))
-			message = subtle_emote
-		else
-			return FALSE
+	if(!message)
+		return FALSE
+	if(!check_invalid(user, message))
+		to_chat(user, message)
+		return FALSE
 
-	. = TRUE
+	if(type_override)
+		emote_type = type_override
 	if(!can_run_emote(user))
 		return FALSE
+	. = TRUE
 
 	user.log_message("[message] (TABLE-WRAPPING)", LOG_SUBTLER)
 	message = "<span class='emote'><b>[user]</b> <i>[user.say_emphasis(message)]</i></span>"
@@ -445,7 +460,7 @@
 			for(var/list_key in parameters)
 				if(params[list_key] != null)
 					parameters[list_key] = params[list_key]
-		else if(istext(params))
+		else if(istext(params) && length(params))
 			parameters["text"] = params
 
 	if(jobban_isbanned(user, "emote"))
@@ -519,7 +534,6 @@
 		return FALSE
 	if(!check_invalid(user, message))
 		to_chat(user, message)
-		to_chat(user, "You cannot do it now.")
 		return FALSE
 
 	message = "<span class='emote'><b>[user]</b> <i>[user.say_emphasis(message)]</i></span>"
@@ -567,9 +581,12 @@
 		return FALSE
 	if(type_override)
 		emote_type = type_override
-	if(!can_run_emote(user) || check_invalid(user, message))
+	if(!can_run_emote(user))
 		to_chat(user, message)
 		to_chat(user, "You cannot do it now.")
+		return FALSE
+	if(check_invalid(user, message))
+		to_chat(user, message)
 		return FALSE
 
 	user.log_message(message, LOG_EMOTE)

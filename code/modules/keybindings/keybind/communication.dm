@@ -13,11 +13,7 @@
 	hotkey_keys = list("T")
 	name = "say_with_indicator"
 	full_name = "Say with Typing Indicator"
-
-/datum/keybinding/client/communication/say_with_indicator/down(client/user)
-	var/mob/M = user.mob
-	M.say_typing_indicator()
-	return TRUE
+	clientside = "Say (Indicator)"
 
 /datum/keybinding/client/communication/whisper
 	hotkey_keys = list("CtrlY")
@@ -26,6 +22,12 @@
 	full_name = "Whisper"
 	clientside = "Whisper"
 	clientside_byond = "Whisper "
+
+/datum/keybinding/client/communication/whisper_with_indicator
+	hotkey_keys = list("Y")
+	name = "whisper_with_indicator"
+	full_name = "Whisper with Typing Indicator"
+	clientside = "Whisper (Indicator)"
 
 /datum/keybinding/client/communication/looc
 	hotkey_keys = list("L")
@@ -58,6 +60,17 @@
 	M.me_typing_indicator()
 	return TRUE
 
+////////////////////////// ACTIVITY //////////////////////////
+/datum/keybinding/client/communication/set_activity
+	hotkey_keys = list("ShiftM")
+	name = "set_activity"
+	full_name = "Set Activity"
+
+/datum/keybinding/client/communication/set_activity/down(client/user)
+	var/mob/living/L = user.mob
+	L.set_activity()
+	return TRUE
+
 ////////////////////////// NARRATE //////////////////////////
 //А тут ничего нету ¯\_(ツ)_/¯
 
@@ -83,37 +96,30 @@
 
 /datum/keybinding/client/communication/subtler
 	hotkey_keys = list("Ctrl5")
-	name = "Subtler"
+	classic_keys = list("Unbound")
+	name = "subtler"
 	full_name = "Subtler Anti-Ghost Emote"
 	clientside = "Subtler Anti-Ghost"
 	clientside_byond = "Subtler Anti-Ghost "
 
 /datum/keybinding/client/communication/subtler_indicatored
 	hotkey_keys = list("Unbound")
-	name = "Subtler (Indicatored)"
+	classic_keys = list("Unbound")
+	name = "subtler_indicatored"
 	full_name = "Subtler Anti-Ghost Emote (with indicator)"
-	clientside = "subtler-anti-ghost-indicatored"
-
-/datum/keybinding/client/communication/subtler_indicatored/down(client/user)
-	var/mob/living/L = user.mob
-	if(istype(L))
-		L.subtler_indicatored()
-	return TRUE
+	clientside = "Subtler Anti-Ghost (Indicator)"
 
 /datum/keybinding/client/communication/subtler_target
 	hotkey_keys = list("Unbound")
-	name = "Subtler Target"
+	classic_keys = list("Unbound")
+	name = "subtler_target"
 	full_name = "Subtler Target Emote"
-	clientside = "subtler-target"
+	clientside = "Subtler Target"
+	clientside_byond = "Subtler Target "
 
 /datum/keybinding/client/communication/subtler_target_indicatored
 	hotkey_keys = list("Unbound")
-	name = "Subtler Target (Indicator)"
+	classic_keys = list("Unbound")
+	name = "subtler_target_indicatored"
 	full_name = "Subtler Target Emote (with indicator)"
-	clientside = "subtler-target-indicatored"
-
-/datum/keybinding/client/communication/subtler_target_indicatored/down(client/user)
-	if(isliving(user.mob))
-		var/mob/living/L = user.mob
-		L.subtler_target_indicatored()
-	return TRUE
+	clientside = "Subtler Target (Indicator)"
