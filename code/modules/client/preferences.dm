@@ -2568,7 +2568,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			key_bindings[old_key] -= kb_name
 			if(!length(key_bindings[old_key]))
 				key_bindings -= old_key
-		key_bindings[full_key] |= list(kb_name)
+		LAZYOR(key_bindings[full_key], list(kb_name))
 		key_bindings[full_key] = sort_list(key_bindings[full_key])
 
 	if(special && user?.client)
