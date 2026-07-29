@@ -1007,7 +1007,7 @@
 			else
 				throw_alert("gravity", /atom/movable/screen/alert/highgravity)
 	else
-		throw_alert("gravity", /atom/movable/screen/alert/weightless)
+		update_flight_alert()
 	if(!override && !is_flying())
 		float(!has_gravity)
 

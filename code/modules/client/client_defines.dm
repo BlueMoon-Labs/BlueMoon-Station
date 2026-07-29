@@ -52,6 +52,16 @@
 	var/last_turn = 0
 	var/move_delay = 0
 	var/last_move = 0
+	/// Расписание, каким его оставил последний шаг. Если move_delay уехал от
+	/// этого значения - его переставил кто-то ещё (захват, отдача, админ), и
+	/// перебазировать его на смене скорости нельзя. См. movement_reschedule_step().
+	var/last_step_target = 0
+	/// Цена последнего шага, уже кратная тику. Нужна, чтобы на смене скорости
+	/// сдвинуть расписание ровно на разницу цен.
+	var/last_step_cost = 0
+	/// Был ли последний шаг диагональным. Диагональ стоит SQRT_2, и пересчёт
+	/// цены обязан знать, по какой ставке шаг оплачивали.
+	var/last_step_diagonal = FALSE
 	var/area			= null
 
 	/// Timers are now handled by clients, not by doing a mess on the item and multiple people overwriting a single timer on the object, have fun.

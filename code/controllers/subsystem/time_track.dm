@@ -36,6 +36,10 @@ SUBSYSTEM_DEF(time_track)
 	var/raw_multiplier_jitter_abs_avg = 0
 	var/raw_multiplier_jitter_abs_max_window = 0
 	var/glide_size_multiplier_current = 1
+	/// Сглаженное состояние множителя glide, до снапа к единице. Хранится
+	/// отдельно от опубликованного: снап в обратной связи съел бы любую
+	/// просадку мельче десяти процентов. См. movement_glide_publish().
+	var/glide_size_multiplier_smoothed = 1
 
 	var/ping_samples = 0
 	var/ping_rtt_last_avg = 0
@@ -186,12 +190,21 @@ SUBSYSTEM_DEF(time_track)
 	raw_multiplier_jitter_abs_max_window = max(raw_multiplier_jitter_abs_max_window, raw_multiplier_jitter_abs_last)
 
 	var/candidate = clamp(raw_multiplier, 0.75, 1.25)
-	if(abs(candidate - 1) < 0.01)
+	// Серверное время может только отставать от настоящего, никогда не
+	// опережать, поэтому raw_multiplier систематически сидит чуть ниже единицы.
+	// Без достаточно широкой мёртвой зоны множитель никогда не становится ровно
+	// единицей, и выровненный по тику glide превращается обратно в дробный.
+	if(abs(candidate - 1) < MOVEMENT_GLIDE_DILATION_DEADBAND)
 		candidate = 1
 	if(time_dilation_avg_fast < 3)
 		candidate = clamp(candidate, 0.9, 1.1)
 	// Smooth the multiplier to prevent jerky visual glide transitions during load spikes.
-	GLOB.glide_size_multiplier = MC_AVERAGE(GLOB.glide_size_multiplier, candidate)
+	//
+	// Сглаживается сырое состояние, а наружу уходит снапнутое: подмешивать
+	// снапнутое обратно нельзя, иначе просадка мельче десяти процентов никогда
+	// не накопится. См. movement_glide_publish().
+	glide_size_multiplier_smoothed = MC_AVERAGE(glide_size_multiplier_smoothed, candidate)
+	GLOB.glide_size_multiplier = movement_glide_publish(glide_size_multiplier_smoothed)
 	glide_size_multiplier_current = GLOB.glide_size_multiplier
 
 	if(times_fired % 20)	// everything else is once every 10 seconds (wait=5 * 20 = 100ds)

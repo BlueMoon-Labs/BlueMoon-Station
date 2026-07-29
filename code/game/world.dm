@@ -433,6 +433,9 @@ GLOBAL_LIST(topic_status_cache)
 
 /world/proc/on_tickrate_change()
 	SStimer?.reset_buckets()
+	// Цена шага выравнивается по тику, а тик только что сменился - самое время
+	// сказать, если конфиг движения с новой сеткой не согласуется.
+	movement_audit_config_delays()
 
 /world/proc/init_byond_tracy()
 	var/library

@@ -100,6 +100,12 @@ SUBSYSTEM_DEF(input)
 		if(C)
 			C.keyLoop()
 
+	// Глайд-полигон обязан шагать в том же кадре, что и настоящий ввод, иначе
+	// сравнивать анимацию нечестно - отсюда и место в самом горячем цикле.
+	// Ценой этого остаётся одно чтение глобали за тик, когда полигона нет.
+	if(GLOB.glide_polygon)
+		GLOB.glide_polygon.tick()
+
 #define NONSENSICAL_VERB "NONSENSICAL_VERB_THAT_DOES_NOTHING"
 /// *sigh
 /client/verb/NONSENSICAL_VERB_THAT_DOES_NOTHING()
