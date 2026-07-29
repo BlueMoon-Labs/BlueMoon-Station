@@ -1,6 +1,17 @@
 /// Пустой датум для замеров refcount - никто на него не ссылается.
 /datum/gc_refcount_probe
 
+/datum/gc_refcount_probe/self_reference
+	var/datum/self_reference
+
+/datum/gc_refcount_probe/self_reference/New()
+	. = ..()
+	self_reference = src
+
+/datum/gc_refcount_probe/self_reference/Destroy()
+	self_reference = null
+	return ..()
+
 /// Имитирует рантайм внутри полного обхода, не сканируя весь мир.
 /datum/gc_refcount_probe/reftracker_runtime
 
@@ -120,8 +131,20 @@
 	probe.gc_destroyed = world.time || 1
 	var/datum/gc_failure_viewer/gc_failure_entry/entry = new(null, probe.type, REF(probe), world.time, QDEL_HINT_QUEUE)
 	TEST_ASSERT(entry.can_scan_target(probe), "World scan ошибочно считает QDELING-цель уже удалённой")
+	TEST_ASSERT(islist(entry.found_references), "GC failure entry обязан всегда хранить найденные ссылки списком")
 	qdel(entry)
 	qdel(probe, force = TRUE)
+
+/// Быстрый GC-скан должен показывать самоссылки: полный world scan пропускает
+/// саму цель и без этого возвращает ложное "owner не найден".
+/datum/unit_test/gc_failure_viewer_reports_self_reference/Run()
+	var/datum/gc_refcount_probe/self_reference/probe = new
+	var/datum/gc_failure_viewer/gc_failure_entry/entry = new(probe, probe.type, REF(probe), world.time, QDEL_HINT_QUEUE, 1)
+	entry.found_references = list()
+	entry.build_self_reference_info(probe)
+	TEST_ASSERT("SELF.self_reference = [probe.type]" in entry.found_references, "GC viewer did not report a direct self-reference: [json_encode(entry.found_references)]")
+	qdel(entry)
+	qdel(probe)
 
 /// resolve_target обязан отвергать чужой объект того же типа в переиспользованном ref-слоте.
 /datum/unit_test/gc_entry_resolve_recycled_ref/Run()
@@ -168,3 +191,51 @@
 	GLOB.reftracker_found_identities = saved_identities
 
 #undef REFTRACKER_TEST_SEARCH_MARK
+
+/// Прямая переменная клиента (selected_target, active_mousedown_item и прочие,
+/// которых раньше не было в пробе) обязана попадать в отчёт: /client не датум,
+/// и полный скан мира эти ссылки не видит в принципе.
+/datum/unit_test/client_ref_probe_finds_direct_var/Run()
+	var/datum/gc_refcount_probe/probe = new
+	var/list/hits = collect_client_ref_hits(probe, "tester", list("selected_target" = probe), null)
+	TEST_ASSERT_EQUAL(length(hits), 1, "Проб не увидел цель в прямой переменной клиента")
+	TEST_ASSERT(findtext(hits[1], "selected_target"), "В отчёте нет имени переменной-держателя: [hits[1]]")
+	qdel(probe)
+
+/// Цель ключом ассоц-списка клиента (recent_examines) - тот же класс держателя.
+/datum/unit_test/client_ref_probe_finds_container_entry/Run()
+	var/datum/gc_refcount_probe/probe = new
+	var/list/examines = list()
+	examines[probe] = world.time
+	var/list/hits = collect_client_ref_hits(probe, "tester", null, list("recent_examines" = examines))
+	TEST_ASSERT_EQUAL(length(hits), 1, "Проб не увидел цель ключом ассоц-списка клиента")
+	TEST_ASSERT(findtext(hits[1], "recent_examines"), "В отчёте нет имени списка-держателя: [hits[1]]")
+	examines.Cut()
+	qdel(probe)
+
+/// Чужие ссылки проб не должен приписывать цели.
+/datum/unit_test/client_ref_probe_ignores_unrelated/Run()
+	var/datum/gc_refcount_probe/probe = new
+	var/datum/gc_refcount_probe/bystander = new
+	var/list/hits = collect_client_ref_hits(probe, "tester", list("mob" = bystander), list("screen" = list(bystander)))
+	TEST_ASSERT_EQUAL(length(hits), 0, "Проб нашёл держателя там, где цели нет: [hits.Join(", ")]")
+	qdel(bystander)
+	qdel(probe)
+
+/// Цель ЗНАЧЕНИЕМ ассоц-списка клиента (char_render_holders, screen_maps) - тоже
+/// держатель, и вложенный список значений тоже нужно раскрывать.
+/datum/unit_test/client_ref_probe_finds_assoc_value/Run()
+	var/datum/gc_refcount_probe/probe = new
+	var/list/render_holders = list("preview-1" = probe)
+	var/list/screen_maps = list("popup" = list(probe))
+
+	var/list/direct_hits = collect_client_ref_hits(probe, "tester", null, null, list("char_render_holders" = render_holders))
+	TEST_ASSERT_EQUAL(length(direct_hits), 1, "Проб не увидел цель значением ассоц-списка клиента")
+	TEST_ASSERT(findtext(direct_hits[1], "char_render_holders"), "В отчёте нет имени ассоц-списка: [direct_hits[1]]")
+
+	var/list/nested_hits = collect_client_ref_hits(probe, "tester", null, null, list("screen_maps" = screen_maps))
+	TEST_ASSERT_EQUAL(length(nested_hits), 1, "Проб не раскрыл вложенный список значений")
+
+	render_holders.Cut()
+	screen_maps.Cut()
+	qdel(probe)

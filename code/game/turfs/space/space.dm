@@ -228,7 +228,7 @@
 	var/turf/old = get_turf(OldLoc)
 	if(!isspaceturf(old) && ismob(AM))
 		var/mob/M = AM
-		M.update_gravity(M.mob_has_gravity())
+		M.refresh_gravity()
 
 /turf/open/space/MakeSlippery(wet_setting, min_wet_time, wet_time_to_add, max_wet_time, permanent)
 	return

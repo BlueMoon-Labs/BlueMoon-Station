@@ -1,9 +1,10 @@
 import { useBackend } from '../../backend';
-import { Button, Dropdown, Slider, Stack, Tooltip } from '../../components';
+import { Button, Dropdown, Input, Slider, Stack, Tooltip } from '../../components';
 
 type AdminData = {
   has_admin: boolean;
   deadmin: number;
+  ticket_nickname: string;
   sound_adminhelp: boolean;
   sound_prayers: boolean;
   sound_fax: boolean;
@@ -47,7 +48,7 @@ const SoundToggleButton = (props: { enabled: boolean; onClick: () => void }) => 
 
 export const AdminSection = (props) => {
   const { act, data } = useBackend<AdminData>();
-  const { has_admin, deadmin, sound_adminhelp, sound_prayers, sound_fax, sound_volume_adminhelp, sound_volume_prayers, sound_volume_fax, adminhelp_windowflash } = data;
+  const { has_admin, deadmin, ticket_nickname, sound_adminhelp, sound_prayers, sound_fax, sound_volume_adminhelp, sound_volume_prayers, sound_volume_fax, adminhelp_windowflash } = data;
 
   if (!has_admin) {
     return null;
@@ -123,6 +124,24 @@ export const AdminSection = (props) => {
           </Stack.Item>
         );
       })}
+      <Stack.Divider />
+      <Stack.Item>
+        <Stack align="center" fill className="GamePreferences__row">
+          <Stack.Item grow basis={0}>
+            <div className="GamePreferences__label">Никнейм в тикетах</div>
+            <div className="GamePreferences__hint">Отображается игрокам вместо сикея. Оставьте пустым для авто-нумерации (админ_1, админ_2)</div>
+          </Stack.Item>
+          <Stack.Item>
+            <Input
+              width="180px"
+              value={ticket_nickname}
+              maxLength={32}
+              placeholder="админ_N"
+              onInput={(e, value) => act('ticket_nickname', { nickname: value })}
+            />
+          </Stack.Item>
+        </Stack>
+      </Stack.Item>
       <Stack.Divider />
       {renderSoundRow('sound_adminhelp', 'Adminhelp', 'sound_volume_adminhelp', 'Звук, уведомляющий о новом обращении в adminhelp')}
       {renderSoundRow('sound_prayers', 'Звуки молитв', 'sound_volume_prayers', 'Воспроизводится при молитве божеству или при получении ответа')}

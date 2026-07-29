@@ -118,6 +118,7 @@
 /obj/item/electronic_assembly/Initialize(mapload)
 	LAZYSET(custom_materials, /datum/material/iron, round((max_complexity + max_components) * 0.25) * SScircuit.cost_multiplier)
 	.=..()
+	AddComponent(/datum/component/hostile_machine_registry)
 	START_PROCESSING(SScircuit, src)
 
 	//sets up diagnostic hud view

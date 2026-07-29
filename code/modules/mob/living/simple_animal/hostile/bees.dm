@@ -118,18 +118,6 @@
 		return !H.bee_friendly()
 
 
-/mob/living/simple_animal/hostile/poison/bees/Found(atom/A)
-	if(isliving(A))
-		var/mob/living/H = A
-		return !H.bee_friendly()
-	if(istype(A, /obj/machinery/hydroponics))
-		var/obj/machinery/hydroponics/Hydro = A
-		if(Hydro.myseed && !Hydro.dead && !Hydro.recent_bee_visit)
-			wanted_objects |= hydroponicstypecache //so we only hunt them while they're alive/seeded/not visisted
-			return TRUE
-	return FALSE
-
-
 /mob/living/simple_animal/hostile/poison/bees/AttackingTarget()
  	//Pollinate
 	if(istype(target, /obj/machinery/hydroponics))
@@ -164,7 +152,7 @@
 		target = null
 		return
 
-	target = null //so we pick a new hydro tray next FindTarget(), instead of loving the same plant for eternity
+	target = null //so we pick a new hydro tray on the next target scan, instead of loving the same plant for eternity
 	wanted_objects -= hydroponicstypecache //so we only hunt them while they're alive/seeded/not visisted
 	Hydro.recent_bee_visit = TRUE
 	spawn(BEE_TRAY_RECENT_VISIT)
@@ -186,31 +174,6 @@
 		beehome.bee_resources = min(beehome.bee_resources + growth, 100)
 
 
-/mob/living/simple_animal/hostile/poison/bees/handle_automated_action()
-	. = ..()
-	if(!.)
-		return
-
-	if(!isqueen)
-		if(loc == beehome)
-			idle = min(100, ++idle)
-			if(idle >= BEE_IDLE_ROAMING && prob(BEE_PROB_GOROAM))
-				toggle_ai(AI_ON)
-				forceMove(beehome.drop_location())
-		else
-			idle = max(0, --idle)
-			if(idle <= BEE_IDLE_GOHOME && prob(BEE_PROB_GOHOME))
-				if(!FindTarget())
-					wanted_objects |= beehometypecache //so we don't attack beeboxes when not going home
-					target = beehome
-	if(!beehome) //add outselves to a beebox (of the same reagent) if we have no home
-		for(var/obj/structure/beebox/BB in view(vision_range, src))
-			if(reagent_incompatible(BB.queen_bee) || BB.bees.len >= BB.get_max_bees())
-				continue
-			BB.bees |= src
-			beehome = BB
-			break // End loop after the first compatible find.
-
 /mob/living/simple_animal/hostile/poison/bees/toxin/Initialize(mapload)
 	. = ..()
 	var/datum/reagent/R = pick(typesof(/datum/reagent/toxin))
@@ -221,11 +184,6 @@
 	desc = "She's the queen of bees, BZZ BZZ!"
 	icon_base = "queen"
 	isqueen = TRUE
-
-
-//the Queen doesn't leave the box on her own, and she CERTAINLY doesn't pollinate by herself
-/mob/living/simple_animal/hostile/poison/bees/queen/Found(atom/A)
-	return FALSE
 
 
 //leave pollination for the peasent bees
@@ -298,15 +256,6 @@
 	QDEL_NULL(queen)
 	return ..()
 
-/mob/living/simple_animal/hostile/poison/bees/consider_wakeup()
-	if (beehome && loc == beehome) // If bees are chilling in their nest, they're not actively looking for targets
-		idle = min(100, ++idle)
-		if(idle >= BEE_IDLE_ROAMING && prob(BEE_PROB_GOROAM))
-			toggle_ai(AI_ON)
-			forceMove(beehome.drop_location())
-	else
-		..()
-
 /mob/living/simple_animal/hostile/poison/bees/short
 	desc = "These bees seem unstable and won't survive for long."
 
@@ -320,3 +269,190 @@
 	atmos_requirements = list("min_oxy" = 0, "max_oxy" = 0, "min_tox" = 0, "max_tox" = 0, "min_co2" = 0, "max_co2" = 0, "min_n2" = 0, "max_n2" = 0)
 	minbodytemp = 0
 	maxbodytemp = 1500
+
+// ===== Адаптер-профиль =====
+// Легаси-цикл пчелы декомпозирован: грядки идут штатным search_objects-путём
+// find_potential_targets (валидность из Found() проверяет стратегия
+// hostile_legacy/bee, приоритет работы над жертвами - скорер bee_work_first,
+// как легаси Found() лочил грядку до перебора мобов), а улей (счётчик отдыха,
+// возврат домой, сон в коробке, вылет, усыновление бездомных) - сабтри
+// bee_hive_cycle с каденсом NPC-пула. Вход в улей и опыление - делегацией
+// легаси AttackingTarget; укусы обидчиков - штатная машина обид.
+
+///world.time следующего 2-секундного тика цикла улья (легаси-каденс NPC-пула)
+#define BB_BEE_NEXT_HIVE_TICK "BB_bee_next_hive_tick"
+///Флаг "летим домой" (легаси target = beehome)
+#define BB_BEE_GOING_HOME "BB_bee_going_home"
+///Работа важнее жертв: бонус перекрывает сумму бонусов обидчика/текущей цели/контакта
+#define BEE_WORK_SCORE_BONUS 100
+
+///Профиль пчелы: цикл улья -> поиск целей -> бой
+/datum/ai_controller/hostile_adapter/bee
+	planning_subtrees = list(
+		/datum/ai_planning_subtree/bee_hive_cycle,
+		/datum/ai_planning_subtree/find_hostile_targets,
+		/datum/ai_planning_subtree/hostile_fsm,
+		/datum/ai_planning_subtree/attack_obstacle_in_path,
+		/datum/ai_planning_subtree/hostile_melee,
+	)
+	idle_behavior = /datum/idle_behavior/idle_random_walk/hostile_ambience
+
+/datum/ai_controller/hostile_adapter/bee/TryPossessPawn(atom/new_pawn)
+	. = ..()
+	if(.)
+		return
+	blackboard[BB_AI_TARGETING_STRATEGY] = /datum/targeting_strategy/hostile_legacy/bee
+	blackboard[BB_AI_TARGET_SCORER] = /datum/target_scorer/bee_work_first
+
+///Гейт валидной грядки из легаси Found(): опыляем только живую засеянную и
+///непосещённую; королева не опыляет; после удара (LoseSearchObjects) пчела
+///временно жалит, а не работает. Всё остальное - делегацией CanAttack
+///(bee_friendly-гейт жертв, объекты через wanted_objects).
+/datum/targeting_strategy/hostile_legacy/bee
+
+/datum/targeting_strategy/hostile_legacy/bee/can_attack(mob/living/living_mob, atom/target, vision_range)
+	if(istype(target, /obj/machinery/hydroponics))
+		var/mob/living/simple_animal/hostile/poison/bees/bee = living_mob
+		if(!istype(bee) || bee.isqueen || !bee.search_objects)
+			return FALSE
+		var/obj/machinery/hydroponics/tray = target
+		return !isnull(tray.myseed) && !tray.dead && !tray.recent_bee_visit
+	return ..()
+
+///Работа важнее жертв: легаси Found() лочил валидную грядку до перебора мобов
+/datum/target_scorer/bee_work_first
+
+/datum/target_scorer/bee_work_first/score(datum/ai_controller/controller, atom/candidate, atom/current_target, candidate_distance)
+	. = ..()
+	if(istype(candidate, /obj/machinery/hydroponics))
+		. += BEE_WORK_SCORE_BONUS
+
+///Цикл улья. Стоит ПЕРВЫМ: пчела в коробке не охотится и не бродит вовсе
+///(легаси-парность consider_wakeup), а начатый возврат домой не отменяется
+///патруль-возвратом FSM.
+/datum/ai_planning_subtree/bee_hive_cycle
+
+/datum/ai_planning_subtree/bee_hive_cycle/SelectBehaviors(datum/ai_controller/controller, delta_time)
+	. = ..()
+	var/mob/living/simple_animal/hostile/poison/bees/bee = controller.pawn
+	if(!istype(bee))
+		return
+	//дома: отдых. Никакой охоты и брождения; счётчик растёт, изредка вылетаем
+	if(bee.beehome && bee.loc == bee.beehome)
+		controller.blackboard[BB_BEE_GOING_HOME] = null
+		if(controller.blackboard_key_exists(BB_AI_CURRENT_TARGET))
+			controller.clear_blackboard_key(BB_AI_CURRENT_TARGET)
+		if(hive_tick_due(controller))
+			bee.idle = min(100, ++bee.idle)
+			if(!bee.isqueen && bee.idle >= BEE_IDLE_ROAMING && prob(BEE_PROB_GOROAM))
+				controller.queue_behavior(/datum/ai_behavior/bee_emerge)
+		return SUBTREE_RETURN_FINISH_PLANNING
+	//снаружи: между тиками только доигрываем начатый возврат домой
+	if(!hive_tick_due(controller))
+		if(controller.blackboard[BB_BEE_GOING_HOME])
+			return plan_return_home(controller, bee)
+		return
+	//усыновление: бездомная пчела вступает в совместимый улей рядом (легаси-скан)
+	if(!bee.beehome)
+		for(var/obj/structure/beebox/BB in view(bee.vision_range, bee))
+			if(bee.reagent_incompatible(BB.queen_bee) || BB.bees.len >= BB.get_max_bees())
+				continue
+			BB.bees |= bee
+			bee.beehome = BB
+			break // End loop after the first compatible find.
+	//the Queen doesn't leave the box on her own, and she CERTAINLY doesn't pollinate
+	if(bee.isqueen)
+		return
+	//поддержка охоты на грядки: легаси Found() держал typecache в wanted_objects,
+	//пока рядом есть живая грядка (pollinate его снимает); валидность - в стратегии
+	if(bee.search_objects)
+		bee.wanted_objects |= bee.hydroponicstypecache
+	bee.idle = max(0, --bee.idle)
+	if(controller.blackboard[BB_BEE_GOING_HOME])
+		return plan_return_home(controller, bee)
+	//домой только без добычи (легаси-гейт if(!FindTarget()))
+	if(controller.blackboard_key_exists(BB_AI_CURRENT_TARGET))
+		return
+	if(bee.beehome && bee.idle <= BEE_IDLE_GOHOME && prob(BEE_PROB_GOHOME))
+		controller.blackboard[BB_BEE_GOING_HOME] = TRUE
+		return plan_return_home(controller, bee)
+
+///Каденс NPC-пула: счётчик отдыха легаси тикал раз в 2 секунды
+/datum/ai_planning_subtree/bee_hive_cycle/proc/hive_tick_due(datum/ai_controller/controller)
+	if(world.time < (controller.blackboard[BB_BEE_NEXT_HIVE_TICK] || 0))
+		return FALSE
+	controller.blackboard[BB_BEE_NEXT_HIVE_TICK] = world.time + SSnpcpool.wait
+	return TRUE
+
+///Спланировать перелёт домой; жертва/грядка перебивает возврат, как легаси
+/datum/ai_planning_subtree/bee_hive_cycle/proc/plan_return_home(datum/ai_controller/controller, mob/living/simple_animal/hostile/poison/bees/bee)
+	if(QDELETED(bee.beehome) || controller.blackboard_key_exists(BB_AI_CURRENT_TARGET))
+		controller.blackboard[BB_BEE_GOING_HOME] = null
+		return
+	controller.queue_behavior(/datum/ai_behavior/bee_return_home)
+	return SUBTREE_RETURN_FINISH_PLANNING
+
+///Вылет из улья (легаси toggle_ai(AI_ON) + drop_location)
+/datum/ai_behavior/bee_emerge
+	action_cooldown = 2 SECONDS
+
+/datum/ai_behavior/bee_emerge/perform(delta_time, datum/ai_controller/controller)
+	var/mob/living/simple_animal/hostile/poison/bees/bee = controller.pawn
+	if(!istype(bee) || QDELETED(bee.beehome) || bee.loc != bee.beehome)
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	bee.forceMove(bee.beehome.drop_location())
+	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+
+///Возврат в улей: подлёт вплотную и легаси-вход. AttackingTarget дергает
+///toggle_ai(AI_IDLE) -> CancelActions, но это безопасно: повторный
+///finish_action идемпотентен, а сам легаси-путь входа не спит.
+/datum/ai_behavior/bee_return_home
+	behavior_flags = AI_BEHAVIOR_REQUIRE_MOVEMENT | AI_BEHAVIOR_MOVE_AND_PERFORM | AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION
+	required_distance = 1
+	action_cooldown = 1 SECONDS
+
+/datum/ai_behavior/bee_return_home/setup(datum/ai_controller/controller)
+	. = ..()
+	var/mob/living/simple_animal/hostile/poison/bees/bee = controller.pawn
+	if(!istype(bee) || QDELETED(bee.beehome))
+		return FALSE
+	set_movement_target(controller, bee.beehome)
+
+/datum/ai_behavior/bee_return_home/perform(delta_time, datum/ai_controller/controller)
+	var/mob/living/simple_animal/hostile/poison/bees/bee = controller.pawn
+	if(!istype(bee) || QDELETED(bee.beehome))
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	if(bee.loc == bee.beehome) //уже внутри
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+	var/atom/reach_origin = bee.targets_from || bee
+	if(!bee.beehome.Adjacent(reach_origin))
+		return AI_BEHAVIOR_INSTANT //ещё летим
+	bee.ai_enter_home()
+	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+
+/datum/ai_behavior/bee_return_home/finish_action(datum/ai_controller/controller, succeeded)
+	. = ..()
+	controller.blackboard[BB_BEE_GOING_HOME] = null
+
+///Вход контроллерной пчелы в улей: легаси-процедура AttackingTarget (forceMove
+///внутрь, снятие цели, чистка wanted_objects) + возврат контроллера из
+///легаси-IDLE: сном пчелы в улье управляет штатное окно интересности (клиенты
+///рядом), а не легаси-пул consider_wakeup.
+/mob/living/simple_animal/hostile/poison/bees/proc/ai_enter_home()
+	if(QDELETED(src) || QDELETED(beehome) || stat == DEAD)
+		return
+	target = beehome
+	AttackingTarget()
+	if(loc == beehome && ai_controller && ai_controller.ai_status == AI_STATUS_IDLE)
+		ai_controller.set_ai_status(ai_controller.get_expected_ai_status())
+
+///Легаси fight-or-flight: удар по пчеле временно выключает поиск растений
+///(search_objects = 0 на search_objects_regain_time). Контроллерный путь
+///adjustHealth минует легаси-ветку hostile.dm, поэтому повторяем её здесь;
+///цель на обидчика наводит штатный RetaliateAgainst.
+/mob/living/simple_animal/hostile/poison/bees/adjustHealth(amount, updating_health = TRUE, forced = FALSE)
+	. = ..()
+	if(ai_controller && . > 0 && !ckey && !stat && search_objects)
+		LoseSearchObjects()
+
+#undef BEE_WORK_SCORE_BONUS

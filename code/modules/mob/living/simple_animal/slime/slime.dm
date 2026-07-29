@@ -5,6 +5,7 @@
 	pass_flags = PASSTABLE
 	mob_size = MOB_SIZE_SMALL
 	gender = NEUTER
+	uses_custom_environment_handling = TRUE //свой handle_environment() (стазис от BZ, температурные стан/урон)
 	var/is_adult = 0
 	var/docile = 0
 	faction = list("slime","neutral")
@@ -107,11 +108,14 @@
 	AddComponent(/datum/component/footstep, FOOTSTEP_MOB_SLIME, 7.5)
 	set_nutrition(rand(650, 800))
 
+	//Событийная погоня/кормёжка вместо блокирующего AIprocess-цикла;
+	//мозг приобретения целей остаётся в handle_targets (Life)
+	new /datum/ai_controller/slime(src)
+
 	AddElement(/datum/element/ventcrawling, given_tier = VENTCRAWLER_ALWAYS)
 
 /mob/living/simple_animal/slime/Destroy()
 	deltimer(atkcool_timer_id)
-	AIproc = 0
 	Target = null
 	Leader = null
 	for(var/friend in Friends)

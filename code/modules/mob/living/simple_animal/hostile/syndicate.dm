@@ -282,9 +282,14 @@
 	retreat_distance = 10
 	obj_damage = 0
 	environment_smash = ENVIRONMENT_SMASH_NONE
+	var/next_guard_call = 0
+	var/guard_call_cooldown = 30 SECONDS
 
 /mob/living/simple_animal/hostile/syndicate/civilian/Aggro()
 	..()
+	if(world.time < next_guard_call)
+		return
+	next_guard_call = world.time + guard_call_cooldown
 	summon_backup(15)
 	say("GUARDS!!")
 

@@ -19,6 +19,9 @@
 	melee_damage_lower = 0
 	melee_damage_upper = 0
 	stop_automated_movement_when_pulled = 1
+	//капсульный профиль: живой vision 0 держит радиус в нуле - декоративный
+	//пет без механики приказов никогда не целится, как в легаси
+	ai_profile_type = /datum/ai_controller/hostile_adapter/melee_chaser/capsule_pet
 
 /mob/living/simple_animal/hostile/werewolf/funwolf/abomination
 	name = "Exiled Werewolf"

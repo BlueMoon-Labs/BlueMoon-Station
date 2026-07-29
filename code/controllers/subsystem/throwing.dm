@@ -166,7 +166,7 @@ SUBSYSTEM_DEF(throwing)
 
 	if(dist_travelled) //to catch sneaky things moving on our tile while we slept
 		for(var/atom/movable/obstacle as anything in get_turf(thrownthing))
-			if (obstacle == thrownthing || (obstacle == thrower && !ismob(thrownthing)))
+			if (obstacle == thrownthing || obstacle == thrower)
 				continue
 			if(obstacle.pass_flags_self & LETPASSTHROW)
 				continue

@@ -83,33 +83,42 @@
 		return
 
 	if(HAS_TRAIT(user, TRAIT_HULK))
-		to_chat(user, "<span class='warning'>You're too angry to remember how to tackle!</span>")
+		to_chat(user, "<span class='warning'>Вы слишком злые, чтобы вспомнить, как выполнять захват!</span>")
+		return
+
+	if(IS_BOLA_ENSNARED(user))
+		to_chat(user, "<span class='warning'>Вы не можете хватать, если ваши ноги связаны!</span>")
+		return
+
+	if(IS_BEARTRAP_ENSNARED(user))
+		to_chat(user, "<span class='warning'>Вы не можете хватать, на вашей ноге капкан!</span>")
 		return
 
 	if(user.restrained())
-		to_chat(user, "<span class='warning'>You need free use of your hands to tackle!</span>")
+		to_chat(user, "<span class='warning'>Вам нужны свободные руки, чтобы выполнить захват!</span>")
 		return
 
 	if(!(user.mobility_flags & MOBILITY_STAND))
-		to_chat(user, "<span class='warning'>You must be standing to tackle!</span>")
+		to_chat(user, "<span class='warning'>Вы должны стоять, чтобы выполнить захват!</span>")
 		return
 
-	if(user.tackling)
-		to_chat(user, "<span class='warning'>You're not ready to tackle!</span>")
+	if(user.tackling || user.IsStun())
+		to_chat(user, "<span class='warning'>Вы ещё не готовы к захвату!</span>")
 		return
 
-	if(!user.mob_has_gravity() ||!user.loc.has_gravity() || isspaceturf(user.loc))
-		to_chat(user, "<span class='warning'>You can't find your footing without gravity!</span>")
+	if(!user.mob_has_gravity() || !user.loc.has_gravity() || isspaceturf(user.loc))
+		to_chat(user, "<span class='warning'>Вы не можете как следует устоять на ногах без гравитации!</span>")
 		return
 
 	if(user.has_status_effect(STATUS_EFFECT_TASED)) // can't tackle if you just got tased
-		to_chat(user, "<span class='warning'>You can't tackle while tased!</span>")
+		to_chat(user, "<span class='warning'>Вы не можете выполнять захват, пока вас шокируют!</span>")
 		return
+
 
 	var/left_paralysis = HAS_TRAIT(user, TRAIT_PARALYSIS_L_ARM)
 	var/right_paralysis = HAS_TRAIT(user, TRAIT_PARALYSIS_R_ARM)
 	if(left_paralysis && right_paralysis)
-		to_chat(user, "<span class='warning'>You can't tackle without the use of your arms!</span>")
+		to_chat(user, "<span class='warning'>Вы не можете выполнить захват без использования рук!</span>")
 
 	user.face_atom(A)
 

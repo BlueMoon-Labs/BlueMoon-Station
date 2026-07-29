@@ -211,6 +211,21 @@
 	. = ..()
 	SEND_SIGNAL(src, COMSIG_MOVABLE_CROSSED, AM)
 
+/**
+ * Спрашивают, когда что-то СОБИРАЕТСЯ покинуть турф, на котором мы стоим -
+ * вернуть FALSE значит не пустить. Так работают бордюрные объекты: боковое окно
+ * или перила пропускают во все стороны, кроме своей.
+ *
+ * Зовётся только из [/turf/Exit] и только для атомов с `blocks_exit_checks`.
+ * Нативный проход BYOND по contents отключён (см. [/atom/Exit]), потому что он
+ * дёргал этот прок на КАЖДОМ атоме в турфе при каждом шаге - 553k вызовов за 78
+ * секунд раунда 9800, притом что запретить выход не могло почти ничто.
+ *
+ * Поэтому переопределение Uncross() на типе, у которого `blocks_exit_checks`
+ * выключен (любой /mob, любой /obj/item), НЕ РАБОТАЕТ - оно просто не будет
+ * вызвано. Нужен запрет выхода на таком типе - вешай COMSIG_ATOM_EXIT через
+ * /datum/element/connect_loc, это дешевле и не требует обхода contents.
+ */
 /atom/movable/Uncross(atom/movable/AM, atom/newloc)
 	. = ..()
 	if(SEND_SIGNAL(src, COMSIG_MOVABLE_UNCROSS, AM) & COMPONENT_MOVABLE_BLOCK_UNCROSS)
@@ -237,6 +252,12 @@
 	SEND_SIGNAL(src, COMSIG_MOVABLE_Z_CHANGED, old_z, new_z)
 	for (var/atom/movable/AM as anything in src) // Notify contents of Z-transition. This can be overridden IF we know the items contents do not care.
 		AM.onTransitZ(old_z,new_z)
+
+///Separate from COMSIG_MOVABLE_Z_CHANGED: its older listeners do not all accept a null destination.
+/atom/movable/proc/onEnteredNullspace(old_z)
+	SEND_SIGNAL(src, COMSIG_MOVABLE_ENTERED_NULLSPACE, old_z, null)
+	for(var/atom/movable/movable_content as anything in src)
+		movable_content.onEnteredNullspace(old_z)
 
 ///Proc to modify the movement_type and hook behavior associated with it changing.
 /atom/movable/proc/setMovetype(newval)
@@ -311,6 +332,7 @@
 		. = TRUE
 		if (loc)
 			var/atom/oldloc = loc
+			var/turf/old_turf = get_turf(oldloc)
 			var/area/old_area = get_area(oldloc)
 			//эта ветка не зовёт Moved(), поэтому спатиал-грид чистим сами:
 			//иначе уход в nullspace оставит вечную ссылку в старой ячейке,
@@ -322,7 +344,9 @@
 			oldloc.Exited(src, null)
 			if(old_area)
 				old_area.Exited(src, null)
-		loc = null
+			loc = null
+			if(old_turf)
+				onEnteredNullspace(old_turf.z)
 
 /**
  * Called whenever an object moves and by mobs when they attempt to move themselves through space

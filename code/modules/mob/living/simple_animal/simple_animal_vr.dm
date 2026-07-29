@@ -26,31 +26,12 @@
 	var/vore_fullness = 0					// How "full" the belly is (controls icons)
 
 // Release belly contents before being gc'd!
+// Чистку легаси-бакетов/пулов НЕ дублируем: `..()` чейнится на базовый
+// Destroy (simple_animal.dm), который выписывает моба из всех списков сам.
 /mob/living/simple_animal/Destroy()
 	release_vore_contents(include_absorbed = TRUE, silent = TRUE)
 	prey_excludes.Cut()
 	QDEL_NULL_LIST(vore_organs)
-
-	GLOB.simple_animals[AIStatus] -= src
-	if (LAZYLEN(SSnpcpool.currentrun))
-		SSnpcpool.currentrun -= src
-
-	if(nest)
-		nest.spawned_mobs -= src
-		nest = null
-
-	var/turf/T = get_turf(src)
-	if (AIStatus == AI_Z_OFF && islist(SSidlenpcpool.idle_mobs_by_zlevel))
-		if (T)
-			var/list/idle_z_list = SSidlenpcpool.idle_mobs_by_zlevel[T.z]
-			if(islist(idle_z_list))
-				idle_z_list -= src
-		else
-			for (var/i in 1 to SSidlenpcpool.idle_mobs_by_zlevel.len)
-				var/list/idle_z_list = SSidlenpcpool.idle_mobs_by_zlevel[i]
-				if(islist(idle_z_list))
-					idle_z_list -= src
-
 	. = ..()
 
 // Update fullness based on size & quantity of belly contents

@@ -249,10 +249,15 @@
 /mob/living/simple_animal/hostile/malf_drone/experimental/Initialize(mapload)
 	. = ..()
 	update_icon(UPDATE_OVERLAYS)
+	// Уникальный лут смерти декларативно через элемент; общий скраповый дроп остался в drop_loot() родителя
+	AddElement(/datum/element/death_drops, list(
+		/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/missile_rack,
+		/obj/item/robot_module/syndicate/inteq,
+	))
 
 /mob/living/simple_animal/hostile/malf_drone/experimental/update_overlays()
 	. = ..()
-	if(stat != CONSCIOUS || AIStatus == AI_OFF)
+	if(stat != CONSCIOUS || get_effective_ai_status() == AI_OFF)
 		return
 	. += mutable_appearance(icon, "scan")
 
@@ -316,12 +321,6 @@
 	icon_state = "all"
 	anchored = TRUE
 	duration = 10
-
-/mob/living/simple_animal/hostile/malf_drone/experimental/drop_loot()
-	. = ..()
-	var/turf/T = get_turf(src)
-	new /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/missile_rack(T)
-	new /obj/item/robot_module/syndicate/inteq(T)
 
 /mob/living/simple_animal/hostile/alien/queen/king
 	icon = 'modular_bluemoon/icons/mob/king.dmi'

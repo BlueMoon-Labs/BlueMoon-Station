@@ -6,6 +6,11 @@
 
 /mob/living/carbon/Initialize(mapload)
 	. = ..()
+	var/static/next_carbon_life_periodic_phase = 0
+	// Carbon initialization may create other living mobs, so use a carbon-only
+	// sequence to keep breathing and organ work evenly distributed.
+	life_periodic_phase = next_carbon_life_periodic_phase ^ 1
+	next_carbon_life_periodic_phase++
 	create_reagents(1000, NONE, NO_REAGENTS_VALUE)
 	update_body_parts() //to update the carbon's new bodyparts appearance
 	GLOB.carbon_list += src
@@ -922,6 +927,7 @@
 		if(health <= HEALTH_THRESHOLD_DEAD && !HAS_TRAIT(src, TRAIT_NODEATH))
 			death()
 			return
+		var/previous_stat = stat
 		if(IsUnconscious() || IsSleeping() || getOxyLoss() > 50 || (HAS_TRAIT(src, TRAIT_DEATHCOMA)) || (health <= HEALTH_THRESHOLD_FULLCRIT && !HAS_TRAIT(src, TRAIT_NOHARDCRIT)))
 			set_stat(UNCONSCIOUS)
 			SEND_SIGNAL(src, COMSIG_DISABLE_COMBAT_MODE)
@@ -935,7 +941,12 @@
 				set_stat(CONSCIOUS)
 			if(eye_blind <= 1)
 				adjust_blindness(-1)
-		update_mobility()
+		// The only mobility input this proc can have touched is `stat`. Stuns,
+		// grabs, resting, limbs and traits all refresh mobility from their own
+		// setters, and BiologicalLife keeps a once-per-tick catch-all — so a
+		// health change that left `stat` alone has nothing to recompute.
+		if(stat != previous_stat)
+			update_mobility()
 	update_crit_status()
 	update_damage_hud()
 	update_health_hud()
@@ -944,9 +955,15 @@
 	..()
 
 /mob/living/carbon/proc/update_crit_status()
-	remove_filter("hardcrit")
-	if(health <= crit_threshold)
+	// Adding or removing a filter rebuilds the atom's entire filter list, so only
+	// touch it when the crit state actually flipped.
+	var/in_crit = (health <= crit_threshold)
+	if(in_crit == !!get_filter_index("hardcrit"))
+		return
+	if(in_crit)
 		add_filter("hardcrit", 2, BM_FILTER_HARDCRIT)
+	else
+		remove_filter("hardcrit")
 
 //called when we get cuffed/uncuffed
 /mob/living/carbon/proc/update_handcuffed()

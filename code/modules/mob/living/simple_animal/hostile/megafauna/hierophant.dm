@@ -184,11 +184,6 @@ Difficulty: Normal
 		if(target)
 			arena_trap(target)
 
-/mob/living/simple_animal/hostile/megafauna/hierophant/Goto(target, delay, minimum_distance)
-	wander = TRUE
-	if(!blinking)
-		..()
-
 /mob/living/simple_animal/hostile/megafauna/hierophant/proc/calculate_rage() //how angry we are overall
 	did_reset = FALSE //oh hey we're doing SOMETHING, clearly we might need to heal if we recall
 	anger_modifier = clamp(((maxHealth - health) / 42),0,50)
@@ -196,6 +191,8 @@ Difficulty: Normal
 	beam_range = initial(beam_range) + round(anger_modifier * 0.12)
 
 /mob/living/simple_animal/hostile/megafauna/hierophant/OpenFire()
+	if(QDELETED(src) || !loc || QDELETED(target))
+		return
 	calculate_rage()
 	if(blinking)
 		return
@@ -235,7 +232,9 @@ Difficulty: Normal
 						var/oldcolor = color
 						animate(src, color = "#660099", time = 6)
 						sleep(6)
-						while(health && !QDELETED(target) && blink_counter)
+						if(QDELETED(src) || !loc)
+							return
+						while(!QDELETED(src) && loc && health && !QDELETED(target) && blink_counter)
 							if(loc == target.loc || loc == target) //we're on the same tile as them after about a second we can stop now
 								break
 							blink_counter--
@@ -243,9 +242,13 @@ Difficulty: Normal
 							blink(target)
 							blinking = TRUE
 							sleep(4 + target_slowness)
+						if(QDELETED(src) || !loc)
+							return
 						animate(src, color = oldcolor, time = 8)
-						addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_atom_colour)), 8)
+						addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_atom_colour)), 8, TIMER_DELETE_ME)
 						sleep(8)
+						if(QDELETED(src))
+							return
 						blinking = FALSE
 					else
 						blink(target)
@@ -255,16 +258,22 @@ Difficulty: Normal
 					var/oldcolor = color
 					animate(src, color = "#660099", time = 6)
 					sleep(6)
-					while(health && !QDELETED(target) && cross_counter)
+					if(QDELETED(src) || !loc)
+						return
+					while(!QDELETED(src) && loc && health && !QDELETED(target) && cross_counter)
 						cross_counter--
 						if(prob(60))
 							INVOKE_ASYNC(src, PROC_REF(cardinal_blasts), target)
 						else
 							INVOKE_ASYNC(src, PROC_REF(diagonal_blasts), target)
 						sleep(6 + target_slowness)
+					if(QDELETED(src) || !loc)
+						return
 					animate(src, color = oldcolor, time = 8)
-					addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_atom_colour)), 8)
+					addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_atom_colour)), 8, TIMER_DELETE_ME)
 					sleep(8)
+					if(QDELETED(src))
+						return
 					blinking = FALSE
 				if("chaser_swarm") //fire four fucking chasers at a target and their friends.
 					visible_message("<span class='hierophant'>\"Mx gerrsx lmhi.\"</span>")
@@ -272,9 +281,19 @@ Difficulty: Normal
 					var/oldcolor = color
 					animate(src, color = "#660099", time = 6)
 					sleep(6)
-					var/list/targets = ListTargets()
+					if(QDELETED(src) || !loc)
+						return
+					//видимые жертвы для веера чейзеров через грид (без hearers);
+					//накопленные обиды сужают выбор
+					var/list/targets = list()
+					for(var/mob/living/victim as anything in SSspatial_grid.orthogonal_range_search(targets_from, SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS, vision_range))
+						if(victim == src || QDELETED(victim) || get_dist(targets_from, victim) > vision_range || !can_see(targets_from, victim, vision_range))
+							continue
+						targets += victim
+					if(length(enemies))
+						targets &= enemies
 					var/list/cardinal_copy = GLOB.cardinals.Copy()
-					while(health && targets.len && cardinal_copy.len)
+					while(!QDELETED(src) && loc && health && targets.len && cardinal_copy.len)
 						var/mob/living/pickedtarget = pick(targets)
 						if(targets.len >= cardinal_copy.len)
 							pickedtarget = pick_n_take(targets)
@@ -286,10 +305,14 @@ Difficulty: Normal
 						C.moving = 3
 						C.moving_dir = pick_n_take(cardinal_copy)
 						sleep(8 + target_slowness)
+					if(QDELETED(src) || !loc)
+						return
 					chaser_cooldown = world.time + initial(chaser_cooldown)
 					animate(src, color = oldcolor, time = 8)
-					addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_atom_colour)), 8)
+					addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_atom_colour)), 8, TIMER_DELETE_ME)
 					sleep(8)
+					if(QDELETED(src))
+						return
 					blinking = FALSE
 			return
 
@@ -315,43 +338,59 @@ Difficulty: Normal
 		INVOKE_ASYNC(src, PROC_REF(burst), get_turf(src))
 
 /mob/living/simple_animal/hostile/megafauna/hierophant/proc/diagonal_blasts(mob/victim) //fire diagonal cross blasts with a delay
+	if(QDELETED(src) || !loc)
+		return
 	var/turf/T = get_turf(victim)
 	if(!T)
 		return
 	new /obj/effect/temp_visual/hierophant/telegraph/diagonal(T, src)
 	playsound(T,'sound/effects/bin_close.ogg', 200, 1)
 	sleep(2)
+	if(QDELETED(src) || !loc)
+		return
 	new /obj/effect/temp_visual/hierophant/blast(T, src, FALSE)
 	for(var/d in GLOB.diagonals)
 		INVOKE_ASYNC(src, PROC_REF(blast_wall), T, d)
 
 /mob/living/simple_animal/hostile/megafauna/hierophant/proc/cardinal_blasts(mob/victim) //fire cardinal cross blasts with a delay
+	if(QDELETED(src) || !loc)
+		return
 	var/turf/T = get_turf(victim)
 	if(!T)
 		return
 	new /obj/effect/temp_visual/hierophant/telegraph/cardinal(T, src)
 	playsound(T,'sound/effects/bin_close.ogg', 200, 1)
 	sleep(2)
+	if(QDELETED(src) || !loc)
+		return
 	new /obj/effect/temp_visual/hierophant/blast(T, src, FALSE)
 	for(var/d in GLOB.cardinals)
 		INVOKE_ASYNC(src, PROC_REF(blast_wall), T, d)
 
 /mob/living/simple_animal/hostile/megafauna/hierophant/proc/alldir_blasts(mob/victim) //fire alldir cross blasts with a delay
+	if(QDELETED(src) || !loc)
+		return
 	var/turf/T = get_turf(victim)
 	if(!T)
 		return
 	new /obj/effect/temp_visual/hierophant/telegraph(T, src)
 	playsound(T,'sound/effects/bin_close.ogg', 200, 1)
 	sleep(2)
+	if(QDELETED(src) || !loc)
+		return
 	new /obj/effect/temp_visual/hierophant/blast(T, src, FALSE)
 	for(var/d in GLOB.alldirs)
 		INVOKE_ASYNC(src, PROC_REF(blast_wall), T, d)
 
 /mob/living/simple_animal/hostile/megafauna/hierophant/proc/blast_wall(turf/T, set_dir) //make a wall of blasts beam_range tiles long
+	if(QDELETED(src) || !loc)
+		return
 	var/range = beam_range
 	var/turf/previousturf = T
 	var/turf/J = get_step(previousturf, set_dir)
 	for(var/i in 1 to range)
+		if(QDELETED(src) || !loc || !J)
+			return
 		new /obj/effect/temp_visual/hierophant/blast(J, src, FALSE)
 		previousturf = J
 		J = get_step(previousturf, set_dir)
@@ -373,9 +412,13 @@ Difficulty: Normal
 		INVOKE_ASYNC(src, PROC_REF(blink), T)
 
 /mob/living/simple_animal/hostile/megafauna/hierophant/proc/arena_squares(turf/T, set_dir) //make a fancy effect extending from the arena target
+	if(QDELETED(src) || !loc)
+		return
 	var/turf/previousturf = T
 	var/turf/J = get_step(previousturf, set_dir)
 	for(var/i in 1 to 10)
+		if(QDELETED(src) || !loc || !J)
+			return
 		var/obj/effect/temp_visual/hierophant/squares/HS = new(J)
 		HS.setDir(set_dir)
 		previousturf = J
@@ -383,16 +426,20 @@ Difficulty: Normal
 		sleep(0.5)
 
 /mob/living/simple_animal/hostile/megafauna/hierophant/proc/blink(mob/victim) //blink to a target
-	if(blinking || !victim)
+	if(QDELETED(src) || !loc || blinking || QDELETED(victim))
 		return
 	var/turf/T = get_turf(victim)
 	var/turf/source = get_turf(src)
+	if(!T || !source)
+		return
 	new /obj/effect/temp_visual/hierophant/telegraph(T, src)
 	new /obj/effect/temp_visual/hierophant/telegraph(source, src)
 	playsound(T,'sound/magic/wand_teleport.ogg', 200, 1)
 	playsound(source,'sound/machines/airlockopen.ogg', 200, 1)
 	blinking = TRUE
 	sleep(2) //short delay before we start...
+	if(QDELETED(src) || !loc)
+		return
 	new /obj/effect/temp_visual/hierophant/telegraph/teleport(T, src)
 	new /obj/effect/temp_visual/hierophant/telegraph/teleport(source, src)
 	for(var/t in RANGE_TURFS(1, T))
@@ -403,20 +450,28 @@ Difficulty: Normal
 		B.damage = 40
 	animate(src, alpha = 0, time = 2, easing = EASE_OUT) //fade out
 	sleep(1)
+	if(QDELETED(src) || !loc)
+		return
 	visible_message("<span class='hierophant_warning'>[src] fades out!</span>")
 	density = FALSE
 	sleep(2)
+	if(QDELETED(src) || !loc)
+		return
 	forceMove(T)
 	sleep(1)
+	if(QDELETED(src) || !loc)
+		return
 	animate(src, alpha = 255, time = 2, easing = EASE_IN) //fade IN
 	sleep(1)
+	if(QDELETED(src) || !loc)
+		return
 	density = TRUE
 	visible_message("<span class='hierophant_warning'>[src] fades in!</span>")
 	sleep(1) //at this point the blasts we made detonate
 	blinking = FALSE
 
 /mob/living/simple_animal/hostile/megafauna/hierophant/proc/melee_blast(mob/victim) //make a 3x3 blast around a target
-	if(!victim)
+	if(QDELETED(src) || !loc || QDELETED(victim))
 		return
 	var/turf/T = get_turf(victim)
 	if(!T)
@@ -424,10 +479,14 @@ Difficulty: Normal
 	new /obj/effect/temp_visual/hierophant/telegraph(T, src)
 	playsound(T,'sound/effects/bin_close.ogg', 200, 1)
 	sleep(2)
+	if(QDELETED(src) || !loc)
+		return
 	for(var/t in RANGE_TURFS(1, T))
 		new /obj/effect/temp_visual/hierophant/blast(t, src, FALSE)
 
 /mob/living/simple_animal/hostile/megafauna/hierophant/proc/burst(turf/original, spread_speed = 0.5) //release a wave of blasts
+	if(QDELETED(src) || !loc || !original)
+		return
 	playsound(original,'sound/machines/airlockopen.ogg', 200, 1)
 	var/last_dist = 0
 	var/list/hit_mobs = list()		//don't hit people multiple times.
@@ -439,6 +498,8 @@ Difficulty: Normal
 		if(dist > last_dist)
 			last_dist = dist
 			sleep(1 + min(burst_range - last_dist, 12) * spread_speed) //gets faster as it gets further out
+			if(QDELETED(src) || !loc)
+				return
 		new /obj/effect/temp_visual/hierophant/blast(T, src, FALSE, hit_mobs)
 
 /mob/living/simple_animal/hostile/megafauna/hierophant/AltClickOn(atom/A) //player control handler(don't give this to a player holy fuck)
@@ -456,6 +517,10 @@ Difficulty: Normal
 	. = ..()
 	if(new_caster)
 		caster = new_caster
+
+/obj/effect/temp_visual/hierophant/Destroy()
+	caster = null
+	return ..()
 
 /obj/effect/temp_visual/hierophant/squares
 	icon_state = "hierophant_squares"
@@ -524,6 +589,11 @@ Difficulty: Normal
 	if(new_speed)
 		speed = new_speed
 	addtimer(CALLBACK(src, PROC_REF(seek_target)), 1)
+
+/obj/effect/temp_visual/hierophant/chaser/Destroy()
+	target = null
+	targetturf = null
+	return ..()
 
 /obj/effect/temp_visual/hierophant/chaser/proc/get_target_dir()
 	. = get_cardinal_dir(src, targetturf)
@@ -613,15 +683,24 @@ Difficulty: Normal
 		M.gets_drilled(caster)
 	INVOKE_ASYNC(src, PROC_REF(blast))
 
+/obj/effect/temp_visual/hierophant/blast/Destroy()
+	hit_things = null
+	nohurt = null
+	return ..()
+
 /obj/effect/temp_visual/hierophant/blast/proc/blast()
 	var/turf/T = get_turf(src)
 	if(!T)
 		return
 	playsound(T,'sound/magic/blind.ogg', 125, 1, -5) //make a sound
 	sleep(6) //wait a little
+	if(QDELETED(src) || !loc)
+		return
 	bursting = TRUE
 	do_damage(T) //do damage and mark us as bursting
 	sleep(1.3) //slightly forgiving; the burst animation is 1.5 deciseconds
+	if(QDELETED(src))
+		return
 	bursting = FALSE //we no longer damage crossers
 
 /obj/effect/temp_visual/hierophant/blast/Crossed(atom/movable/AM)
@@ -645,12 +724,9 @@ Difficulty: Normal
 		L.apply_damage(damage, BURN, limb_to_hit, armor, wound_bonus=15) //skyrat edit
 		if(ishostile(L))
 			var/mob/living/simple_animal/hostile/H = L //mobs find and damage you...
-			if(H.stat == CONSCIOUS && !H.target && H.AIStatus != AI_OFF && !H.client)
+			if(H.stat == CONSCIOUS && !H.target && H.get_effective_ai_status() != AI_OFF && !H.client)
 				if(!QDELETED(caster))
-					if(get_dist(H, caster) <= H.aggro_vision_range)
-						H.FindTarget(list(caster), 1)
-					else
-						H.Goto(get_turf(caster), H.move_to_delay, 3)
+					H.RetaliateAgainst(caster)
 		if(monster_damage_boost && (ismegafauna(L) || istype(L, /mob/living/simple_animal/hostile/asteroid)))
 			L.adjustBruteLoss(damage)
 		log_combat(caster, L, "struck with a [name]")

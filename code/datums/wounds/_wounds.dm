@@ -97,7 +97,11 @@
 	var/ru_name_r = ""
 
 /datum/wound/Destroy()
-	remove_wound()
+	// A carbon destroys its wounds after the parent mob Destroy() has already
+	// cleared hands/HUD state. Gameplay removal side effects at that point both
+	// waste work and can runtime while trying to update the deleted victim.
+	if(!QDELETED(victim))
+		remove_wound(QDELETED(limb))
 	limb = null
 	victim = null
 	return ..()

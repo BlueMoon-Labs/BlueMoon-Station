@@ -178,6 +178,11 @@
 
 	jumper.DefaultCombatKnockdown(1.5 SECONDS)
 
+///Deployable cover: CanPass lets projectiles through (adjacent firer always, else a
+///flat chance), so hostile ranged AI treats it as shoot-over cover, not a wall.
+/obj/structure/deployable_barricade/is_ranged_ai_penetrable_cover()
+	return TRUE
+
 /obj/structure/deployable_barricade/CanPass(atom/movable/mover, turf/target)
 	. = ..()
 

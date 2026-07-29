@@ -234,12 +234,6 @@
 /mob/living/simple_animal/hostile/retaliate/clown/insane/wave_ex_act(power, datum/wave_explosion/explosion, dir)
 	return power
 
-/mob/living/simple_animal/hostile/retaliate/clown/insane/FindTarget()
-	. = ..()
-	timer--
-	if(target)
-		stalk()
-
 /mob/living/simple_animal/hostile/retaliate/clown/insane/proc/stalk()
 	var/mob/living/M = target
 	if(!M)
@@ -253,11 +247,8 @@
 		spawn(12)
 			forceMove(M.loc)
 
-/mob/living/simple_animal/hostile/retaliate/clown/insane/MoveToTarget()
-	stalk(target)
-
+///Клоун никогда не бьёт: его "атака" - телепорт-сталкинг сабтри insane_clown_stalk
 /mob/living/simple_animal/hostile/retaliate/clown/insane/AttackingTarget()
-	FindTarget()
 	return
 
 /mob/living/simple_animal/hostile/retaliate/clown/insane/adjustHealth()
@@ -278,6 +269,74 @@
 
 /mob/living/simple_animal/hostile/retaliate/clown/insane/handle_temperature_damage()
 	return
+
+// ===== Адаптер-профиль =====
+// Сценарный телепорт-сталкер (curseblob-паттерн): целей сам не ищет, пока не
+// ударят (Retaliate() пуст, обиды копит только RetaliateAgainst - гейт закрывает
+// базовая retaliate-стратегия), НИКОГДА не ходит и не бьёт - его "движение" =
+// телепорт из легаси stalk(). Профиль закрепляет жертву в BB_AI_STALK_VICTIM
+// (закрепление переживает потерю LOS и смерть жертвы: труп клоун обязан
+// "оплакать" смехом и раствориться) и гоняет stalk() делегатом с легаси-каденсом
+// NPC-пула; растворение над трупом уходит на таймер - qdel пауна из
+// собственного perform рвёт цикл контроллера.
+
+///Клоун не ходит: перемещение - только телепорт из легаси stalk()
+/mob/living/simple_animal/hostile/retaliate/clown/insane/can_ai_controller_move()
+	return FALSE
+
+///Профиль безумного клоуна: retaliate-гейт целей + сабтри-делегат сталкинга
+/datum/ai_controller/hostile_adapter/insane_clown
+	can_idle = FALSE //жертва может уйти за окно интересности - сталкинг не спит
+	planning_subtrees = list(
+		/datum/ai_planning_subtree/find_hostile_targets,
+		/datum/ai_planning_subtree/insane_clown_stalk,
+	)
+	idle_behavior = /datum/idle_behavior/idle_random_walk/hostile_ambience
+
+///Закрепление жертвы + делегат легаси-цикла сталкинга
+/datum/ai_planning_subtree/insane_clown_stalk
+
+/datum/ai_planning_subtree/insane_clown_stalk/SelectBehaviors(datum/ai_controller/controller, delta_time)
+	. = ..()
+	var/mob/living/simple_animal/hostile/retaliate/clown/insane/stalker = controller.pawn
+	if(!istype(stalker))
+		return
+	//свежий обидчик (машина обид retaliate) перебивает закрепление, как легаси
+	//GiveTarget из RetaliateAgainst; смерть жертвы закрепление НЕ снимает
+	var/atom/current_target = controller.blackboard[BB_AI_CURRENT_TARGET]
+	if(isliving(current_target) && current_target != controller.blackboard[BB_AI_STALK_VICTIM])
+		controller.set_blackboard_key(BB_AI_STALK_VICTIM, current_target)
+	var/mob/living/victim = controller.blackboard[BB_AI_STALK_VICTIM]
+	if(QDELETED(victim))
+		return
+	controller.queue_behavior(/datum/ai_behavior/insane_clown_stalk)
+	return SUBTREE_RETURN_FINISH_PLANNING
+
+///Шаг сталкинга: тикает легаси-таймер и гоняет легаси stalk() (хонк-телепорт,
+///смех над трупом). Контроллерное движение не используется вовсе.
+/datum/ai_behavior/insane_clown_stalk
+	behavior_flags = AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION
+
+///Каденс легаси-цикла: декремент таймера жил в FindTarget раз в тик NPC-пула
+/datum/ai_behavior/insane_clown_stalk/get_cooldown(datum/ai_controller/cooldown_for)
+	return SSnpcpool.wait
+
+/datum/ai_behavior/insane_clown_stalk/perform(delta_time, datum/ai_controller/controller)
+	var/mob/living/simple_animal/hostile/retaliate/clown/insane/stalker = controller.pawn
+	if(!istype(stalker))
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	var/mob/living/victim = controller.blackboard[BB_AI_STALK_VICTIM]
+	if(QDELETED(victim))
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	stalker.target = victim //легаси stalk() читает src.target
+	stalker.timer-- //легаси-каденс: декремент жил в FindTarget
+	if(victim.stat == DEAD)
+		//смех и растворение легаси-проком, но отложенно: qdel пауна из
+		//perform небезопасен (curseblob-паттерн)
+		addtimer(CALLBACK(stalker, TYPE_PROC_REF(/mob/living/simple_animal/hostile/retaliate/clown/insane, stalk)), 0)
+		return AI_BEHAVIOR_DELAY
+	stalker.stalk()
+	return AI_BEHAVIOR_DELAY
 
 /////////////////////////
 // Spooky Uplink Items //

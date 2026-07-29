@@ -54,6 +54,25 @@
 	p13user_emote = PLUG13_EMOTE_GROIN
 	p13user_strength = PLUG13_STRENGTH_NORMAL
 
+#define GET_MN_LUST_LEVEL(has_trait_maso, has_trait_nympho) \
+	((has_trait_maso) && (has_trait_nympho) ? NORMAL_LUST : \
+	((has_trait_maso) || (has_trait_nympho) ? LOW_LUST : 0))
+
+/datum/interaction/lewd/nut_smack/display_interaction(mob/living/user, mob/living/partner, is_hidden)
+	. = ..()
+	if(HAS_TRAIT(user, TRAIT_MASO) || HAS_TRAIT(user, TRAIT_NYMPHO))
+		user.handle_post_sex(LOW_LUST, null, partner)
+
+	var/lust_level = GET_MN_LUST_LEVEL(HAS_TRAIT(partner, TRAIT_MASO), HAS_TRAIT(partner, TRAIT_NYMPHO))
+	if(lust_level)
+		var/cum_organ
+		if(partner.has_penis(FALSE))
+			cum_organ = ORGAN_SLOT_PENIS
+		else if(partner.has_vagina())
+			cum_organ = ORGAN_SLOT_VAGINA
+		partner.handle_post_sex(lust_level, CUM_TARGET_HAND, user, cum_organ)
+
+#undef GET_MN_LUST_LEVEL
 
 /datum/interaction/lewd/massage_nuts
 	description = "Яйца. Массировать яйца."
@@ -100,9 +119,13 @@
 
 	user.visible_message(span_lewd("[is_hidden ? picked_hidden : null]<b>\The [user]</b> [message]"), ignored_mobs = user.get_unconsenting(), vision_distance = distance)
 
-	// Похотливый эффект
-	var/lust_amount = HAS_TRAIT(user, TRAIT_NYMPHO) ? NORMAL_LUST : LOW_LUST
-	user.handle_post_sex(lust_amount, NUTS_MASSAGE, partner)
-	if(HAS_TRAIT(partner, TRAIT_NYMPHO))
-		partner.handle_post_sex(LOW_LUST, partner = user)
+	if(HAS_TRAIT(user, TRAIT_NYMPHO))
+		user.handle_post_sex(LOW_LUST, null, partner)
 
+	var/lust_level = HAS_TRAIT(partner, TRAIT_NYMPHO) ? NORMAL_LUST : LOW_LUST
+	var/cum_organ
+	if(partner.has_penis(FALSE))
+		cum_organ = ORGAN_SLOT_PENIS
+	else if(partner.has_vagina())
+		cum_organ = ORGAN_SLOT_VAGINA
+	partner.handle_post_sex(lust_level, CUM_TARGET_HAND, user, cum_organ)

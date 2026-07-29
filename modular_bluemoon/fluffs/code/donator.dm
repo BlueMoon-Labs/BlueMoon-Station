@@ -159,7 +159,7 @@
 	name = "Tactical Gasmask"
 	slot = ITEM_SLOT_MASK
 	path = /obj/item/clothing/mask/gas/syndicate/cool_version
-	ckeywhitelist = list("oni3288", "smileycom", "shizalrp")
+	ckeywhitelist = list("oni3288", "smileycom", "shizalrp", "lindaastereih")
 
 /datum/gear/donator/bm/blackcool_mask
 	name = "CFIS Gasmask"

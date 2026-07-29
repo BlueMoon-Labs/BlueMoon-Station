@@ -51,6 +51,14 @@
 
 	var/list/dent_decals
 
+	///Урон, накопленный от мобов-ломателей. Сбрасывается вместе с турфом, то есть
+	///восстановленная стена снова целая.
+	var/mob_damage_taken = 0
+	///Сколько урона от мобов стена держит, прежде чем рухнуть. Голиафу (obj_damage
+	///100) нужно три удара: мгновенный снос читался игроками как "стена от касания"
+	///и делал любой построенный загон бессмысленным.
+	var/mob_damage_cap = 250
+
 /turf/closed/wall/examine(mob/user)
 	. = ..()
 	deconstruction_hints(user)
@@ -125,14 +133,25 @@
 /turf/closed/wall/attack_paw(mob/living/user)
 	return attack_hand(user)
 
+///Удар моба-ломателя: стена копит урон и рушится, только когда исчерпан запас.
+///Возвращает TRUE, если стена этот удар не пережила.
+/turf/closed/wall/proc/take_mob_smash_damage(mob/living/simple_animal/smasher)
+	mob_damage_taken += max(smasher.obj_damage, smasher.melee_damage_upper, 1)
+	if(mob_damage_taken < mob_damage_cap)
+		add_dent(WALL_DENT_HIT)
+		playsound(src, 'sound/effects/bang.ogg', 50, TRUE)
+		return FALSE
+	playsound(src, 'sound/effects/meteorimpact.ogg', 100, TRUE)
+	dismantle_wall(1)
+	return TRUE
+
 /turf/closed/wall/attack_animal(mob/living/simple_animal/M)
 	if(!M.CheckActionCooldown(CLICK_CD_MELEE))
 		return
 	M.DelayNextAction()
 	M.do_attack_animation(src)
 	if((M.environment_smash & ENVIRONMENT_SMASH_WALLS) || (M.environment_smash & ENVIRONMENT_SMASH_RWALLS))
-		playsound(src, 'sound/effects/meteorimpact.ogg', 100, 1)
-		dismantle_wall(1)
+		take_mob_smash_damage(M)
 		return
 
 /turf/closed/wall/attack_hulk(mob/living/carbon/user)

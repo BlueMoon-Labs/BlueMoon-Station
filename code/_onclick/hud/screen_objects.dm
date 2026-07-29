@@ -51,8 +51,16 @@
 /atom/movable/screen/Destroy()
 	if(istype(hud) && hud.mymob?.client)
 		hud.mymob.client.screen -= src
-	for(var/client/C as anything in GLOB.clients)
-		C.moused_over_objects -= src
+	// Подметать moused_over_objects больше не нужно: память автопарри держит
+	// текстовые ref'ы (см. register_moused_over), а не сами экраны.
+	// Экраны карт (консоль камер, secureye, под-лаунчер, попапы) регистрируются
+	// в чужих client.screen напрямую и hud'а не имеют - выписываем их сами,
+	// иначе удаление владельца при открытом UI оставляет весь набор
+	// плейн-мастеров жить в клиенте смотрящего.
+	if(assigned_map)
+		for(var/client/viewer as anything in GLOB.clients)
+			if(detach_screen_from_client_maps(viewer.screen_maps, src))
+				viewer.screen -= src
 	set_new_hud(null)
 	master = null
 	vis_contents.Cut()
@@ -655,6 +663,9 @@
 	name = "health doll"
 	screen_loc = ui_healthdoll
 	mouse_over_pointer = MOUSE_HAND_POINTER
+	/// Last state the overlays were drawn for, see /mob/living/carbon/human/proc/get_healthdoll_cache_key.
+	/// Lives on the doll rather than the mob so rebuilding the HUD invalidates it for free.
+	var/doll_cache_key
 
 /atom/movable/screen/healthdoll/Click()
 	if (iscarbon(usr))

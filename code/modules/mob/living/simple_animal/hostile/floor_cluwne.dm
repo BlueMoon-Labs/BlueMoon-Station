@@ -58,6 +58,8 @@ GLOBAL_VAR_INIT(floor_cluwnes, 0)
 	Manifest()
 	if(!current_victim)
 		Acquire_Victim()
+		if(QDELETED(src))
+			return INITIALIZE_HINT_QDEL
 	poi = new(src)
 
 /mob/living/simple_animal/hostile/floor_cluwne/med_hud_set_health()
@@ -68,6 +70,8 @@ GLOBAL_VAR_INIT(floor_cluwnes, 0)
 
 /mob/living/simple_animal/hostile/floor_cluwne/Destroy()
 	QDEL_NULL(poi)
+	QDEL_NULL(cluwnehole)
+	current_victim = null
 	return ..()
 
 
@@ -127,26 +131,17 @@ GLOBAL_VAR_INIT(floor_cluwnes, 0)
 
 	..()
 
-/mob/living/simple_animal/hostile/floor_cluwne/Goto(target, delay, minimum_distance)
-	var/area/A = get_area(current_victim.loc)
-	if(!manifested && !is_type_in_typecache(A, invalid_area_typecache) && is_station_level(current_victim.z))
-		walk_to(src, target, minimum_distance, delay)
-	else
-		walk_to(src,0)
-
-
-/mob/living/simple_animal/hostile/floor_cluwne/FindTarget()
-	return current_victim
-
-
 /mob/living/simple_animal/hostile/floor_cluwne/CanAttack(atom/the_target)//you will not escape
 	return TRUE
 
 
+//Атаки нет и на адаптере: убийство ведёт сценарий Life()/On_Stage().
 /mob/living/simple_animal/hostile/floor_cluwne/AttackingTarget()
 	return
 
 
+//Жертва неотменяема: пустой LoseTarget гасит и зеркалирование очистки цели
+//адаптером - контроллер не может "потерять" жертву сценария.
 /mob/living/simple_animal/hostile/floor_cluwne/LoseTarget()
 	return
 

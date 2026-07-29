@@ -285,7 +285,7 @@
 		var/mob/living/simple_animal/hostile/S = k
 		if(!S.mind && isturf(S.loc) && get_dist(S, T) <= 10)
 			S.LoseTarget()
-			S.Goto(pick(surrounding_turfs), S.move_to_delay)
+			S.ai_controller?.receive_combat_contact(null, pick(surrounding_turfs), AI_CONTACT_ALLY)
 
 /datum/action/item_action/stickmen/proc/clear_grudge(mob/living/L)
 	if(!QDELETED(L))

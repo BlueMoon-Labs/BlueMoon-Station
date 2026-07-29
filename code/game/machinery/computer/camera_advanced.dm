@@ -23,9 +23,19 @@
 
 /obj/machinery/computer/camera_advanced/Initialize(mapload)
 	. = ..()
-	for(var/i in networks)
-		networks -= i
-		networks += lowertext(i)
+	//networks приезжал не списком (варедит или правка на карте), и тогда
+	//пересечение networks & C.network валило рантайм при каждом открытии консоли
+	if(!islist(networks))
+		stack_trace("[type]: networks не список ([networks]) - нормализуем")
+		networks = isnull(networks) ? list() : list("[networks]")
+	//правка списка прямо в цикле по нему пропускала элементы: удаление сдвигает
+	//хвост, а добавление кладёт новый элемент под ещё не пройденный индекс, так
+	//что у консоли с двумя и более сетями часть имён оставалась в исходном
+	//регистре. Собираем новый список.
+	var/list/lowercase_networks = list()
+	for(var/network in networks)
+		lowercase_networks += lowertext(network)
+	networks = lowercase_networks
 	if(lock_override)
 		if(lock_override & CAMERA_LOCK_STATION)
 			z_lock |= SSmapping.levels_by_trait(ZTRAIT_STATION)
@@ -42,9 +52,11 @@
 		actions += new jump_action(src)
 
 /obj/machinery/computer/camera_advanced/connect_to_shuttle(obj/docking_port/mobile/port, obj/docking_port/stationary/dock, idnum, override=FALSE)
-	for(var/i in networks)
-		networks -= i
-		networks += "[idnum][i]"
+	//см. Initialize: правка списка внутри цикла по нему пропускает элементы
+	var/list/shuttle_networks = list()
+	for(var/network in networks)
+		shuttle_networks += "[idnum][network]"
+	networks = shuttle_networks
 
 /obj/machinery/computer/camera_advanced/syndie
 	icon_keyboard = "syndie_key"

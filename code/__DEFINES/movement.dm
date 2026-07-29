@@ -54,6 +54,12 @@ GLOBAL_VAR_INIT(glide_size_multiplier, 1.0)
 /// Return from [/datum/move_loop/proc/move] when the step succeeded
 #define MOVELOOP_SUCCESS TRUE
 
+/// CanAStarPass() may only reject this object while it is dense. This lets the
+/// pathfinder skip a proc call for the overwhelmingly common non-dense object.
+#define CANASTARPASS_DENSITY 0
+/// CanAStarPass() has meaningful behavior even while the object is non-dense.
+#define CANASTARPASS_ALWAYS_PROC 1
+
 // Space drift / newtonian tuning (WhiteMoon-style)
 #define DEFAULT_INERTIA_SPEED 4
 #define INERTIA_SPEED_COEF 0.4

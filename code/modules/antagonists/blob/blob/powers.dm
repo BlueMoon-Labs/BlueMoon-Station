@@ -318,8 +318,7 @@
 		return
 	for(var/mob/living/simple_animal/hostile/blob/blobspore/BS in blob_mobs)
 		if(isturf(BS.loc) && get_dist(BS, T) <= 35)
-			BS.LoseTarget()
-			BS.Goto(pick(surrounding_turfs), BS.move_to_delay)
+			BS.receive_rally_order(pick(surrounding_turfs))
 
 /mob/camera/blob/verb/blob_broadcast()
 	set category = "Blob"

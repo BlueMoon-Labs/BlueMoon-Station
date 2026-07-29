@@ -53,6 +53,13 @@
 	var/cannot_be_seen = 1
 	var/mob/living/creator = null
 
+	///Скорость атак 1:1 - фишка ангела: ровно легаси-каденс NPC-пула,
+	///без компромиссного ускорения адаптера
+	ai_melee_cadence_scale = 1
+	///Молниеносный рывок в слепой момент - designed-фишка ужаса, а не фауна из
+	///жалоб на скорость: ангел отписан от пола скорости AI-погони, как боссы
+	ai_pursuit_speed_capped = FALSE
+
 
 
 // No movement while seen code.
@@ -153,11 +160,7 @@
 			return FALSE
 	return ..()
 
-// Don't attack your creator if there is one
-
-/mob/living/simple_animal/hostile/statue/ListTargets()
-	. = ..()
-	return . - creator
+// Don't attack your creator if there is one: стратегия hostile_legacy/statue
 
 // Statue powers
 
@@ -253,3 +256,48 @@
 	. = ..()
 	if(can_be_seen(loc))
 		return TRUE
+
+// ===== Адаптер-профиль =====
+// Плачущий ангел: восприятие и цели - штатной машиной (рентген-стратегия
+// hostile_legacy/statue воспроизводит легаси search_objects=1 + SEE_MOBS
+// "видит сквозь стены"), а фишка "замри, пока смотрят" остаётся в легаси-гейтах
+// can_be_seen(): Move()/AttackingTarget()/face_atom() работают через делегацию,
+// сабтри statue_freeze_when_watched обрывает боевой план под взглядом, а
+// can_ai_controller_move() глушит мувер контроллера без черна failed-moves/JPS.
+// Ретаргет на более близкого наблюдателя остаётся в легаси BiologicalLife:
+// его GiveTarget/LoseTarget зеркалируются в блэкборд штатным мостом.
+
+///Хук мувера: под взглядом контроллер даже не пытается шагать; точный гейт
+///по турфу назначения остаётся в легаси Move()
+/mob/living/simple_animal/hostile/statue/can_ai_controller_move()
+	return !can_be_seen(get_turf(loc))
+
+///Профиль ангела: обычная милишная погоня, замирающая под взглядами
+/datum/ai_controller/hostile_adapter/melee_chaser/statue
+	planning_subtrees = list(
+		/datum/ai_planning_subtree/find_hostile_targets,
+		/datum/ai_planning_subtree/statue_freeze_when_watched,
+		/datum/ai_planning_subtree/hostile_fsm,
+		/datum/ai_planning_subtree/attack_obstacle_in_path,
+		/datum/ai_planning_subtree/hostile_melee,
+	)
+
+/datum/ai_controller/hostile_adapter/melee_chaser/statue/TryPossessPawn(atom/new_pawn)
+	. = ..()
+	if(.)
+		return
+	//рентген-приобретение: легаси-статуя брала цели сквозь стены
+	blackboard[BB_AI_TARGETING_STRATEGY] = /datum/targeting_strategy/hostile_legacy/statue
+
+///Под взглядом статуя не делает НИЧЕГО: ни милишки, ни сноса препятствий,
+///ни FSM-переходов. Восприятие (find_hostile_targets выше) остаётся живым -
+///как легаси FindTarget, который работал и под взглядом.
+/datum/ai_planning_subtree/statue_freeze_when_watched
+
+/datum/ai_planning_subtree/statue_freeze_when_watched/SelectBehaviors(datum/ai_controller/controller, delta_time)
+	. = ..()
+	var/mob/living/simple_animal/hostile/statue/angel = controller.pawn
+	if(!istype(angel))
+		return
+	if(angel.can_be_seen(get_turf(angel)))
+		return SUBTREE_RETURN_FINISH_PLANNING

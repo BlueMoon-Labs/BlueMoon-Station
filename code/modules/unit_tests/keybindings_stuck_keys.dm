@@ -58,6 +58,19 @@
 	stuck_key -= "W"
 	TEST_ASSERT_EQUAL(keybindings_calculate_movement_dir(stuck_key, wasd), NONE, "removing W should stop movement")
 
+/// SSinput drives keyLoop for every client on every tick — 425k calls in six
+/// minutes of round 9800, of which only 15k produced an actual mob move. The
+/// loop now skips the whole Move() chain when there is nothing to act on, which
+/// is only correct if the pending-direction buffers are still counted as input:
+/// a pending sub can cancel the held keys down to NONE and would otherwise never
+/// be flushed.
+/datum/unit_test/keybindings_movement_input_gate/Run()
+	TEST_ASSERT(!keybindings_has_movement_input(NONE, NONE, NONE), "An idle client with no held keys has nothing to do")
+	TEST_ASSERT(keybindings_has_movement_input(NORTH, NONE, NONE), "A held direction is movement input")
+	TEST_ASSERT(keybindings_has_movement_input(NONE, EAST, NONE), "A pending add must still be flushed")
+	TEST_ASSERT(keybindings_has_movement_input(NONE, NONE, NORTH), "A pending sub must still be flushed even though it resolves to NONE")
+	TEST_ASSERT(keybindings_has_movement_input(NORTH, EAST, WEST), "Held keys plus pending buffers is movement input")
+
 /datum/unit_test/keybindings_stuck_keys/proc/assert_direction(test_name, expected_direction, list/pressed_keys, list/movement_keys, next_move_dir_add = NONE, next_move_dir_sub = NONE)
 	var/actual_direction = keybindings_calculate_movement_dir(held_keys_from(pressed_keys), movement_keys, next_move_dir_add, next_move_dir_sub)
 	TEST_ASSERT_EQUAL(actual_direction, expected_direction, test_name)

@@ -1,4 +1,5 @@
 /obj/effect/decal/cleanable/Destroy()
+	lose_cleanbot_targetable()
 	blood_DNA = null
 	GLOB.cleanable_decals -= src
 	return ..()
@@ -44,6 +45,8 @@
 	// 2000+ addtimer одним тиком при загрузке дебриса персистенса (TIMER BURST 9746).
 	if(beauty)
 		AddElement(/datum/element/beauty, beauty)
+	if(isturf(loc))
+		become_cleanbot_targetable()
 
 /**
  * A data list is passed into this.

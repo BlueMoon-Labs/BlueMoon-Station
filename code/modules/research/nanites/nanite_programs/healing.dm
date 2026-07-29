@@ -22,9 +22,15 @@
 		var/list/parts = C.get_damaged_bodyparts(TRUE,TRUE, status = list(BODYPART_ORGANIC, BODYPART_NANITES))
 		if(!parts.len)
 			return
+		// Heal every limb first and recompute health once — letting each limb run
+		// its own updatehealth() made this program cost milliseconds per tick.
+		var/update = FALSE
 		for(var/obj/item/bodypart/L in parts)
-			if(L.heal_damage(0.5/parts.len, 0.5/parts.len))
-				host_mob.update_damage_overlays()
+			if(L.heal_damage(0.5/parts.len, 0.5/parts.len, updating_health = FALSE))
+				update = TRUE
+		host_mob.updatehealth()
+		if(update)
+			host_mob.update_damage_overlays()
 	else
 		host_mob.adjustBruteLoss(-0.5, TRUE)
 		host_mob.adjustFireLoss(-0.5, TRUE)
@@ -153,8 +159,9 @@
 			return
 		var/update = FALSE
 		for(var/obj/item/bodypart/L in parts)
-			if(L.heal_damage(1.5/parts.len, 1.5/parts.len, null, TRUE, FALSE)) //much faster than organic healing
+			if(L.heal_damage(1.5/parts.len, 1.5/parts.len, null, TRUE, FALSE, updating_health = FALSE)) //much faster than organic healing
 				update = TRUE
+		host_mob.updatehealth()
 		if(update)
 			host_mob.update_damage_overlays()
 	else
@@ -199,8 +206,9 @@
 			return
 		var/update = FALSE
 		for(var/obj/item/bodypart/L in parts)
-			if(L.heal_damage(3/parts.len, 3/parts.len, 0))
+			if(L.heal_damage(3/parts.len, 3/parts.len, 0, updating_health = FALSE))
 				update = TRUE
+		host_mob.updatehealth()
 		if(update)
 			host_mob.update_damage_overlays()
 	else
