@@ -139,15 +139,15 @@
 		return FALSE
 	if (flush_queue)
 		user.client.browse_queue_flush()
+	// Отсчёт зомби-таймаута начинаем отсюда, а не с начала open(): выше окно ждало
+	// initialize() и доставку ассетов, и на медленном канале весь бюджет уходил на
+	// байты, которые ещё едут. Судить окно надо с момента, когда ресурсы уехали.
+	opened_at = world.time
 	if(QDELETED(src))
 		return FALSE
 	if(!user?.client)
 		close(can_be_suspended = FALSE)
 		return FALSE
-	// Отсчёт зомби-таймаута начинаем отсюда, а не с начала open(): выше окно ждало
-	// initialize() и доставку ассетов, и на медленном канале весь бюджет уходил на
-	// байты, которые ещё едут. Судить окно надо с момента, когда всё отправлено.
-	opened_at = world.time
 	window.send_message("update", get_payload(
 		with_data = TRUE,
 		with_static_data = TRUE))
