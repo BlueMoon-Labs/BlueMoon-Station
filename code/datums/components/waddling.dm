@@ -6,9 +6,13 @@
 		return COMPONENT_INCOMPATIBLE
 	RegisterSignal(parent, list(COMSIG_MOVABLE_MOVED), PROC_REF(Waddle))
 
+/datum/component/waddling/UnregisterFromParent()
+	. = ..()
+	UnregisterSignal(parent, COMSIG_MOVABLE_MOVED)
+
 /datum/component/waddling/proc/Waddle()
 	var/mob/living/L = parent
-	if(L.incapacitated() || L.lying)
+	if(!L || L.incapacitated() || L.lying)
 		return
 	var/prev_pixel_z = L.pixel_z
 	var/matrix/otransform = matrix(L.transform) //make a copy of the current transform

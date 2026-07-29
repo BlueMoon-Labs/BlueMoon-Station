@@ -4613,6 +4613,7 @@
 	dir = 4;
 	pixel_x = -23
 	},
+/obj/machinery/ammo_workbench,
 /turf/open/floor/plasteel,
 /area/security/office)
 "ahZ" = (

@@ -111,7 +111,8 @@
 				var/list/the_set = macrosets[macroset]
 				the_set[actual] = command
 				for(var/i in overriding)
-					the_set[i] = NONSENSICAL_VERB
+					if(!the_set[i])
+						the_set[i] = NONSENSICAL_VERB
 	else
 		// For classic mode, we just directly set things because BYOND is so jank why do we even bother?
 		// What we want is to force Ctrl on for all keybinds without Ctrl or Alt set, to preserve old behavior
@@ -194,9 +195,11 @@
 					movement_keys[key] = SOUTH
 				else
 					var/datum/keybinding/KB = GLOB.keybindings_by_name[kb_name]
-					if(!KB.clientside)
+					var/clientside_verb = (prefs && !(prefs.tgui_input_mode && prefs.tgui_input_verbs) && KB.clientside_byond) || KB.clientside
+					if(!clientside_verb)
 						continue
-					.[key] = KB.clientside
+					clientside_verb = replacetext_char(clientside_verb, " ", "-")
+					.[key] = clientside_verb
 
 /// Manually clears any held keys, in case due to lag or other undefined behavior a key gets stuck.
 /client/proc/reset_held_keys()

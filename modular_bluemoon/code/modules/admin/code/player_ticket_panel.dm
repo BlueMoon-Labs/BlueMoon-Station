@@ -47,15 +47,53 @@
 	var/list/typing = list()
 	for(var/typing_ckey in AH.typing_admins)
 		if(world.time - AH.typing_admins[typing_ckey] < 5 SECONDS)
-			typing += typing_ckey
+			typing += get_admin_nickname(typing_ckey)
 		else
 			var/client/C = GLOB.directory[typing_ckey]
 			if(C?.reply_modal_open)
-				typing += typing_ckey
+				typing += get_admin_nickname(typing_ckey)
 			else
 				AH.typing_admins -= typing_ckey
 	.["typing_admins"] = typing
-	.["interactions"] = AH._interactions.Copy()
+	.["interactions"] = anonymize_interactions(AH._interactions)
+
+/datum/player_ticket_panel/proc/anonymize_interactions(list/interactions)
+	var/list/ckey_map = list()
+	var/next_id = 0
+	. = list()
+
+	for(var/text in interactions)
+		// Процедура замены сикея на так называемого админ_1
+		var/regex/bold_rgx = regex("<b>(\\w+)</b>", "g")
+		while(bold_rgx.Find(text))
+			var/content = bold_rgx.group[1]
+			if(!findtext(content, " ") && !findtext(content, "(") && !findtext(content, "&"))
+				if(!ckey_map[content])
+					var/nickname
+					var/client/C = GLOB.directory[content]
+					if(C?.prefs?.ticket_nickname)
+						nickname = C.prefs.ticket_nickname
+					if(nickname)
+						ckey_map[content] = nickname
+					else
+						next_id++
+						ckey_map[content] = "админ_[next_id]"
+
+		// Реплейс
+		for(var/ckey in ckey_map)
+			text = replacetext(text, "<b>[ckey]</b>", "<b>[ckey_map[ckey]]</b>")
+
+		// Убираем
+		var/regex/end_u_rgx = regex("(&lt;/u&gt;|</u>) \\w+", "g")
+		text = end_u_rgx.Replace(text, "$1")
+
+		. += text
+
+/datum/player_ticket_panel/proc/get_admin_nickname(ckey) // Так называемая система ников Педаль с огромными сиськами
+	var/client/C = GLOB.directory[ckey]
+	if(C?.prefs?.ticket_nickname && length(C.prefs.ticket_nickname))
+		return C.prefs.ticket_nickname
+	return "админ"
 
 /datum/player_ticket_panel/proc/serialize_mentor_ticket(datum/mentor_ticket/MT, mob/user)
 	. = list()
@@ -84,7 +122,7 @@
 			else
 				MT.typing_mentors -= typing_ckey
 	.["typing_admins"] = typing
-	.["interactions"] = MT._interactions.Copy()
+	.["interactions"] = anonymize_interactions(MT._interactions)
 
 /datum/player_ticket_panel/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()

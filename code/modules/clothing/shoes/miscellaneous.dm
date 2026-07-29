@@ -131,8 +131,9 @@
 
 /obj/item/clothing/shoes/clown_shoes/dropped(mob/user)
 	. = ..()
+	REMOVE_TRAIT(user, TRAIT_WADDLING, CLOTHING_TRAIT)
 	if(!HAS_TRAIT(user, TRAIT_WADDLING))
-		var/datum/component/waddling = GetComponent(/datum/component/waddling)
+		var/datum/component/waddling = user.GetComponent(/datum/component/waddling)
 		waddling?.RemoveComponent()
 	if(user.mind && HAS_TRAIT(user.mind, TRAIT_CLOWN_MENTALITY))
 		SEND_SIGNAL(user, COMSIG_ADD_MOOD_EVENT, "noshoes", /datum/mood_event/noshoes)
