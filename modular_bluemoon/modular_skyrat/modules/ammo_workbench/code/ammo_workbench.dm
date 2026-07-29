@@ -521,11 +521,7 @@
 	if(is_refillable() && O.is_drainable())
 		return FALSE
 
-	if(O.force > 0)
-		user.visible_message(span_danger("[user] hits [src] with [O]!"), span_danger("You hit [src] with [O]!"))
-		take_damage(O.force, BRUTE, MELEE, 1)
-		return TRUE
-
+	// Обработка стэков материалов (всегда ДО оружия)
 	if(istype(O, /obj/item/stack))
 		var/obj/item/stack/S = O
 		var/datum/component/material_container/materials = GetComponent(/datum/component/material_container)
@@ -553,6 +549,11 @@
 		return TRUE
 
 	if(Insert_Item(O, user))
+		return TRUE
+
+	if(O.force > 0)
+		user.visible_message(span_danger("[user] hits [src] with [O]!"), span_danger("You hit [src] with [O]!"))
+		take_damage(O.force, BRUTE, MELEE, 1)
 		return TRUE
 
 	return TRUE
