@@ -87,7 +87,7 @@
 */
 
 /datum/keybinding/client/communication/subtler
-	hotkey_keys = list("Ctrl5")
+	hotkey_keys = list("Ctrl6")
 	classic_keys = list("Unbound")
 	name = "subtler"
 	full_name = "Subtler Anti-Ghost Emote"
@@ -95,14 +95,14 @@
 	clientside_byond = "Subtler Anti-Ghost "
 
 /datum/keybinding/client/communication/subtler_indicatored
-	hotkey_keys = list("Unbound")
+	hotkey_keys = list("6")
 	classic_keys = list("Unbound")
 	name = "subtler_indicatored"
 	full_name = "Subtler Anti-Ghost Emote (with indicator)"
 	clientside = "Subtler Anti-Ghost (Indicator)"
 
 /datum/keybinding/client/communication/subtler_target
-	hotkey_keys = list("Unbound")
+	hotkey_keys = list("Ctrl5")
 	classic_keys = list("Unbound")
 	name = "subtler_target"
 	full_name = "Subtler Target Emote"
@@ -110,7 +110,7 @@
 	clientside_byond = "Subtler Target "
 
 /datum/keybinding/client/communication/subtler_target_indicatored
-	hotkey_keys = list("Unbound")
+	hotkey_keys = list("5")
 	classic_keys = list("Unbound")
 	name = "subtler_target_indicatored"
 	full_name = "Subtler Target Emote (with indicator)"

@@ -5,7 +5,7 @@
 //	You do not need to raise this if you are adding new values that have sane defaults.
 //	Only raise this value when changing the meaning/format/name/layout of an existing value
 //	where you would want the updater procs below to run
-#define SAVEFILE_VERSION_MAX	77
+#define SAVEFILE_VERSION_MAX	78
 
 /// Upper bound for character slot indices during savefile migration (loop over S.dir).
 /// Prevents corrupted or garbage directory names (e.g. huge slot numbers) from inflating max_save_slots
@@ -125,6 +125,31 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	if(current_version < 76) // BLUEMOON ADD - новые звуковые тогглы
 		mentor_toggles |= SOUND_MENTORHELP
 		toggles |= SOUND_FAX
+
+	if(current_version < 78) // Удаление Subtle и замена клавиш
+		var/static/list/commands_to_clear = list(
+			"Subtle",
+			"Subtle_Indicator",
+			"Subtler",
+			"Subtler (Indicatored)",
+			"subtler_indicatored",
+			"Subtler Target",
+			"subtler_target",
+			"Subtler Target (Indicator)",
+			"subtler_target_indicatored",
+		)
+		// Чистим старые привязки клавиш
+		for(var/key in key_bindings)
+			var/list/commands = key_bindings[key]
+			for(var/command_to_clear in commands_to_clear)
+				commands -= command_to_clear
+		// Находим и устанавливаем новые
+		for(var/command_to_set in commands_to_clear)
+			var/datum/keybinding/KB = GLOB.keybindings_by_name[command_to_set]
+			if(!KB)
+				continue
+			for(var/HK in KB.hotkey_keys)
+				LAZYADD(key_bindings[HK], KB.name)
 
 /datum/preferences/proc/update_character(current_version, savefile/S)
 	if(current_version < 19)
