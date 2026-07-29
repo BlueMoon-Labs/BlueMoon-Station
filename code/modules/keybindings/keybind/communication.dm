@@ -54,22 +54,14 @@
 	hotkey_keys = list("M")
 	name = "me_with_indicator"
 	full_name = "Me (emote) with Typing Indicator"
-
-/datum/keybinding/client/communication/me_with_indicator/down(client/user)
-	var/mob/M = user.mob
-	M.me_typing_indicator()
-	return TRUE
+	clientside = "Me (Indicator)"
 
 ////////////////////////// ACTIVITY //////////////////////////
 /datum/keybinding/client/communication/set_activity
 	hotkey_keys = list("ShiftM")
 	name = "set_activity"
 	full_name = "Set Activity"
-
-/datum/keybinding/client/communication/set_activity/down(client/user)
-	var/mob/living/L = user.mob
-	L.set_activity()
-	return TRUE
+	clientside = "Деятельность"
 
 ////////////////////////// NARRATE //////////////////////////
 //А тут ничего нету ¯\_(ツ)_/¯

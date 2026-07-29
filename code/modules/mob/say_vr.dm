@@ -34,6 +34,7 @@
 //////////////////// SUBTLER ANTI-GHOST ////////////////////
 /mob/living/verb/subtler_byond(message as message)
 	set name = "Subtler Anti-Ghost "
+	set desc = "Введите сообщение, которое увидят персонажи в упор к вам. Призраки его не увидят."
 	set hidden = TRUE
 	if(!message)
 		return
@@ -79,6 +80,7 @@
 //////////////////// SUBTLER TARGET ////////////////////
 /mob/living/verb/subtler_target_byond(message as message)
 	set name = "Subtler Target "
+	set desc = "Введите сообщение, которое увидит, ТОЛЬКО выбранный персонаж."
 	set hidden = TRUE
 	if(!message)
 		return
@@ -321,7 +323,7 @@
 		return FALSE
 	if(type_override)
 		emote_type = type_override
-	if(!check_invalid(user, message))
+	if(check_invalid(user, message))
 		to_chat(user, message)
 		return FALSE
 	if(!can_run_emote(user))
@@ -407,7 +409,7 @@
 
 	if(!message)
 		return FALSE
-	if(!check_invalid(user, message))
+	if(check_invalid(user, message))
 		to_chat(user, message)
 		return FALSE
 
@@ -490,7 +492,7 @@
 		// Все мобы в loc цепочке
 		possible_target |= user.get_all_recursive_loc(/mob/living)
 		// Все мобы внутри нас
-		possible_target |= user.GetAllContents(/mob/living)
+		possible_target |= user.GetAllContents(/mob/living) - user
 
 		if(possible_target.len > 13) // Много целей, TGUI с поиском
 			target = tgui_input_list(user, "Выберете персонажа, который увидит ваши действия", "Выбор персонажа", possible_target)
@@ -532,7 +534,7 @@
 
 	if(!message)
 		return FALSE
-	if(!check_invalid(user, message))
+	if(check_invalid(user, message))
 		to_chat(user, message)
 		return FALSE
 
