@@ -130,6 +130,7 @@
 	.["has_admin"] = !!check_rights_for(user?.client, R_ADMIN)
 	if(.["has_admin"])
 		.["deadmin"] = deadmin
+		.["ticket_nickname"] = ticket_nickname
 
 	// Mentor
 	.["has_mentor"] = !!user?.client?.is_mentor()
@@ -441,6 +442,13 @@
 			save_preferences()
 			return TRUE
 
+		if("ticket_nickname")
+			var/nickname = params["nickname"]
+			if(istext(nickname))
+				ticket_nickname = copytext_char(nickname, 1, 32)
+			save_preferences()
+			return TRUE
+
 		if("toggle_admin")
 			var/flag = params["flag"]
 			switch(flag)
@@ -522,8 +530,10 @@
 			switch(flag)
 				if("tgui_input_mode")
 					tgui_input_mode = (value == "TGUI" ? TRUE : FALSE)
+					user.client.ensure_keys_set(src)
 				if("tgui_input_verbs")
 					tgui_input_verbs = (value == "TGUI" ? TRUE : FALSE)
+					user.client.ensure_keys_set(src)
 				if("UI_style")
 					UI_style = value
 					if(user?.hud_used)

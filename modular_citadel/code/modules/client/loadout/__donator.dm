@@ -33,7 +33,7 @@
 
 /datum/gear/donator/t2/summon_pie
 	name = "Syndicate Duffel Bag"
-	slot = ITEM_SLOT_BACKPACK
+	slot = ITEM_SLOT_BACK
 	path = /obj/item/storage/backpack/duffelbag/syndie
 	cost = 6
 

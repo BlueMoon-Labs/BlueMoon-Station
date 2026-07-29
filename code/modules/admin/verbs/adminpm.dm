@@ -261,7 +261,8 @@
 
 				var/recipient_message = ""
 				recipient_message += "<br><center><font color='red' size='4'><b>-- Administrator private message --</b></font></center>"
-				recipient_message += "<span class='adminsay'>Админ PM от <b>[key_name(src, recipient, 1)]</b>: <span class='linkify'>[msg]</span></span>"
+				var/admin_nickname = src.prefs?.ticket_nickname ? src.prefs.ticket_nickname : "Админ"
+				recipient_message += "<span class='adminsay'>Админ PM от <b><a href='?priv_msg=[src.ckey]'>[admin_nickname]</a></b>: <span class='linkify'>[msg]</span></span>"
 				recipient_message += "<br><span class='adminsay'><i>Нажмите на имя администратора для ответа</i></span>"
 				recipient_message += "<br><br>"
 				to_chat(recipient, recipient_message, confidential = TRUE)

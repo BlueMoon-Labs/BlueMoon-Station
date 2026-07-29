@@ -126,10 +126,12 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		mentor_toggles |= SOUND_MENTORHELP
 		toggles |= SOUND_FAX
 
-	// BLUEMOON ADD - чиним сейвы, испорченные `be_special += role` в окне антаг-префов:
-	// каждый клик дописывал ещё одну строку с тем же ключом и значением null, а
-	// выключение убирало только одну из них - роль так и оставалась включённой
+	// На версию 78 пришлись две независимые миграции - дедуп антаг-префов и чистка
+	// привязок Subtle. Поля разные, порядок между ними не важен.
 	if(current_version < 78)
+		// чиним сейвы, испорченные `be_special += role` в окне антаг-префов: каждый
+		// клик дописывал ещё одну строку с тем же ключом и значением null, а
+		// выключение убирало только одну из них - роль так и оставалась включённой
 		var/list/deduped_be_special = list()
 		for(var/role in be_special)
 			if(role in deduped_be_special)
@@ -139,6 +141,31 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 			var/priority = be_special[role]
 			deduped_be_special[role] = isnull(priority) ? ANTAG_PRIORITY_LOW : priority
 		be_special = deduped_be_special
+
+	if(current_version < 78) // Удаление Subtle и замена клавиш
+		var/static/list/commands_to_clear = list(
+			"Subtle",
+			"Subtle_Indicator",
+			"Subtler",
+			"Subtler (Indicatored)",
+			"subtler_indicatored",
+			"Subtler Target",
+			"subtler_target",
+			"Subtler Target (Indicator)",
+			"subtler_target_indicatored",
+		)
+		// Чистим старые привязки клавиш
+		for(var/key in key_bindings)
+			var/list/commands = key_bindings[key]
+			for(var/command_to_clear in commands_to_clear)
+				commands -= command_to_clear
+		// Находим и устанавливаем новые
+		for(var/command_to_set in commands_to_clear)
+			var/datum/keybinding/KB = GLOB.keybindings_by_name[command_to_set]
+			if(!KB)
+				continue
+			for(var/HK in KB.hotkey_keys)
+				LAZYADD(key_bindings[HK], KB.name)
 
 /datum/preferences/proc/update_character(current_version, savefile/S)
 	if(current_version < 19)
@@ -561,6 +588,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["toggles"] >> toggles
 	S["custom_colors"] >> custom_colors
 	S["deadmin"] >> deadmin
+	S["ticket_nickname"] >> ticket_nickname
 	S["ghost_form"] >> ghost_form
 	S["ghost_orbit"] >> ghost_orbit
 	S["ghost_accs"] >> ghost_accs
@@ -1033,6 +1061,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		WRITE_FILE(S["unlockable_loadout"], safe_json_encode(unlockable_loadout_data))
 	else
 		WRITE_FILE(S["unlockable_loadout"], safe_json_encode(list()))
+
+	WRITE_FILE(S["ticket_nickname"], ticket_nickname)
 
 	if(parent)
 		if(ishuman(parent?.mob))
