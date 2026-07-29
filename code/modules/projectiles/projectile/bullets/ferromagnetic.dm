@@ -36,7 +36,7 @@
 	icon_state = "magjectile-large"
 	damage = 10
 	armour_penetration = BULLET_BR2   // BLUEMOON EDIT: было 20 → BR2
-	movement_type = FLYING | PHASING
+	projectile_piercing = TRUE
 	range = 20
 
 /obj/item/projectile/bullet/magnetic/hyper/prehit_pierce(atom/target)
