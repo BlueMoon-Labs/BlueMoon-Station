@@ -90,6 +90,7 @@
 	dir = 4
 	},
 /obj/effect/spawner/structure/window/plastitanium,
+/obj/structure/fans/tiny/invisible,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "aw" = (
@@ -2041,7 +2042,9 @@
 /area/ruin/space)
 "lQ" = (
 /obj/effect/decal/cleanable/cobweb/cobweb2,
-/obj/structure/closet/secure_closet/ds2atmos,
+/obj/structure/closet/secure_closet/ds2atmos{
+	req_access = list(152)
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "lV" = (
@@ -2938,12 +2941,6 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/solfed_ship)
-"qK" = (
-/obj/machinery/fax{
-	name = "SolarFederation37"
-	},
-/turf/closed/wall/r_wall/syndicate/nodiagonal,
-/area/ruin/space/has_grav/bluemoon/solfed_ship/bridge)
 "qM" = (
 /obj/machinery/rnd/destructive_analyzer,
 /turf/open/floor/plasteel/dark,
@@ -2964,6 +2961,11 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
+"qT" = (
+/obj/effect/spawner/structure/window/plastitanium,
+/obj/structure/fans/tiny/invisible,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "qW" = (
 /obj/machinery/door/airlock/grunge{
 	name = "Recreation";
@@ -3199,8 +3201,6 @@
 	},
 /obj/item/clothing/shoes/combat,
 /obj/item/clothing/glasses/sunglasses,
-/obj/item/storage/backpack,
-/obj/item/storage/backpack/satchel,
 /obj/item/binoculars,
 /obj/item/door_remote/captain{
 	access_list = list(152);
@@ -4924,6 +4924,7 @@
 	dir = 8
 	},
 /obj/effect/spawner/structure/window/plastitanium,
+/obj/structure/fans/tiny/invisible,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "Co" = (
@@ -6240,7 +6241,9 @@
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "JZ" = (
-/obj/structure/closet/secure_closet/ds2atmos,
+/obj/structure/closet/secure_closet/ds2atmos{
+	req_access = list(152)
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "Kb" = (
@@ -7984,6 +7987,7 @@
 	dir = 8
 	},
 /obj/effect/spawner/structure/window/plastitanium,
+/obj/structure/fans/tiny/invisible,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "UD" = (
@@ -8305,6 +8309,7 @@
 	dir = 10
 	},
 /obj/effect/spawner/structure/window/plastitanium,
+/obj/structure/fans/tiny/invisible,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "Wm" = (
@@ -12291,7 +12296,7 @@ gB
 iX
 Hu
 iX
-qK
+gB
 gB
 gB
 lO
@@ -12806,13 +12811,13 @@ bj
 Xw
 lK
 lK
-zk
+qT
 Cl
 JQ
 Wl
 au
 Tg
-zk
+qT
 Uz
 JQ
 JQ
