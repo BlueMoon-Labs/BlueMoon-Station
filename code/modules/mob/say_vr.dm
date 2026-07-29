@@ -1,35 +1,6 @@
+/////////////////////////////////////////
 ///////////////// VERBS /////////////////
-
-/* Вырезан за ненадобностью
-/mob/living/verb/subtle()
-	set name = "Subtle"
-	set category = "Say"
-	if(GLOB.say_disabled)	//This is here to try to identify lag problems
-		to_chat(usr, "<span class='danger'>Speech is currently admin-disabled.</span>")
-		return
-	usr.emote("subtle")
-
-/mob/living/verb/subtle_indicator()
-	// Set data
-	set name = "Subtle (Indicator)"
-	set category = "Say"
-	if(GLOB.say_disabled)
-		// Warn user and return
-		to_chat(usr, span_danger("Speech is currently admin-disabled."))
-		return
-	display_typing_indicator(isMe = TRUE)
-
-	var/message = ""
-	if(client?.prefs.tgui_input_verbs)
-		message = tgui_input_text(src, "Введите сообщение, которое увидят персонажи в упор к вам и призраки.", "Subtle (Indicator)", null, MAX_MESSAGE_LEN, TRUE, TRUE)
-	else
-		message = stripped_multiline_input_or_reflect(src, "Введите сообщение, которое увидят персонажи в упор к вам и призраки.", "Subtle (Indicator)")
-
-	clear_typing_indicator()
-	if(!length(message))
-		return
-	usr.emote("subtle", message = message)
-*/
+/////////////////////////////////////////
 
 //////////////////// SUBTLER ANTI-GHOST ////////////////////
 /mob/living/verb/subtler_byond(message as message)
@@ -225,63 +196,7 @@
 //////////////////////////////////////////////
 ///////////////// EMOTE CODE /////////////////
 //////////////////////////////////////////////
-/* Вырезан за ненадобностью
-///////////////// SUBTLE 1 /////////////////
-/datum/emote/sound/human/subtle
-	key = "subtle"
-	key_third_person = "subtle"
-	emote_cooldown = 0
-	message = null
-	mob_type_blacklist_typecache = list(/mob/living/brain)
 
-/datum/emote/sound/human/subtle/proc/check_invalid(mob/user, input)
-	if(stop_bad_mime.Find(input, 1, 1))
-		to_chat(user, "<span class='danger'>Invalid emote.</span>")
-		return TRUE
-	return FALSE
-
-/datum/emote/sound/human/subtle/run_emote(mob/user, params, type_override = null)
-	if(jobban_isbanned(user, "emote"))
-		to_chat(user, "You cannot send subtle emotes (banned).")
-		return FALSE
-	else if(user.client && user.client.prefs.muted & MUTE_IC)
-		to_chat(user, "You cannot send IC messages (muted).")
-		return FALSE
-	else if(!params)
-		var/subtle_emote = ""
-		if(user.client?.prefs.tgui_input_verbs)
-			subtle_emote = tgui_input_text(user, "Введите сообщение, которое увидят персонажи в упор к вам и призраки.", "Subtle", null, MAX_MESSAGE_LEN, TRUE, TRUE)
-		else
-			subtle_emote = stripped_multiline_input_or_reflect(user, "Введите сообщение, которое увидят персонажи в упор к вам и призраки.", "Subtle")
-
-		if(subtle_emote && !check_invalid(user, subtle_emote))
-			message = subtle_emote
-		else
-			return FALSE
-	else
-		message = params
-		if(type_override)
-			emote_type = type_override
-	. = TRUE
-	if(!can_run_emote(user))
-		return FALSE
-
-	user.log_message(message, LOG_EMOTE)
-	message = "<span class='emote'><b>[user]</b> <i>[user.say_emphasis(message)]</i></span>"
-
-	for(var/mob/M in GLOB.dead_mob_list)
-		if(!M.client || isnewplayer(M))
-			continue
-		var/T = get_turf(src)
-		if(M.stat == DEAD && M.client && (M.client.prefs.chat_toggles & CHAT_GHOSTSIGHT) && !(M in viewers(T, null)) && (user.client)) //SKYRAT CHANGE - only user controlled mobs show their emotes to all-seeing ghosts, to reduce chat spam
-			M.show_message(message)
-
-	user.visible_message(message = message, self_message = message, vision_distance = 1, omni = TRUE)
-
-/datum/emote/sound/human/subtle/subtle_indicator
-	key = "subtle-indicator"
-	key_third_person = "subtle-indicator"
-*/
 ///////////////// SUBTLE 2: NO GHOST BOOGALOO /////////////////
 
 /datum/emote/sound/human/subtler

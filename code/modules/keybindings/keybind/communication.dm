@@ -67,25 +67,6 @@
 //А тут ничего нету ¯\_(ツ)_/¯
 
 ////////////////////////// SUBTLERS //////////////////////////
-/* Вырезан за ненадобностью
-/datum/keybinding/client/communication/subtle
-	hotkey_keys = list("5")
-	name = "Subtle"
-	full_name = "Subtle Emote"
-	clientside = "subtle"
-
-/datum/keybinding/client/communication/subtle_indicator
-	hotkey_keys = list("5")
-	name = "Subtle_Indicator"
-	full_name = "Subtle Emote (with indicator)"
-	clientside = "subtle-indicator"
-
-/datum/keybinding/client/communication/subtle_indicator/down(client/user)
-	var/mob/living/mob_keybound = user.mob
-	mob_keybound.subtle_indicator()
-	return TRUE
-*/
-
 /datum/keybinding/client/communication/subtler
 	hotkey_keys = list("Ctrl6")
 	classic_keys = list("Unbound")
