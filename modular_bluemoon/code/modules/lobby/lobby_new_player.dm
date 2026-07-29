@@ -234,7 +234,9 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 	var/list/parts = list()
 	var/R = REF(src)
 
-	if(!SSticker || SSticker.current_state <= GAME_STATE_PREGAME)
+	// Не <= GAME_STATE_PREGAME: SETTING_UP лежит МЕЖДУ пригеймом и игрой, и на этой фазе
+	// меню показывало "ВОЙТИ В ИГРУ", тогда как ядро вход ещё отбивало (IsRoundInProgress).
+	if(!SSticker || SSticker.current_state < GAME_STATE_PLAYING)
 		parts += {"<a id='bm-btn-ready' class='bm-btn' href='?src=[R];bm_lobby_action=toggle_ready'>"}
 		parts += ready ? {"<span class='bm-checked'>☑</span> ГОТОВНОСТЬ"} : {"<span class='bm-unchecked'>☒</span> ГОТОВНОСТЬ"}
 		parts += "</a>"
@@ -370,6 +372,11 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 
 		if("late_join")
 			_bm_play_click_sound()
+			// Кнопка могла остаться на экране с предыдущей отрисовки меню - сверяемся с
+			// тикером сами, иначе игрок получает пустой список работ и отказ по href.
+			if(!SSticker?.IsRoundInProgress())
+				to_chat(src, "<span class='warning'>Раунд ещё не начался.</span>")
+				return
 			LateChoices()
 			return
 

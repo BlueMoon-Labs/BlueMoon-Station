@@ -1356,6 +1356,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	//Load prefs
 	S["job_preferences"] >> job_preferences
+	// Отсутствующее поле сейва затирает дефолт list() нулём, а компенсирующие присвоения
+	// заперты за current_version < 23 - современный сейв их проходит мимо. Дальше любой
+	// .len по этому списку рантаймит, и лобби перестаёт пускать игрока в раунд.
+	job_preferences = SANITIZE_LIST(job_preferences)
 	S["pda_theme"] >> pda_theme
 
 	//Custom emote panel

@@ -251,6 +251,7 @@
 	if(href_list["JoinAsGhostRole"])
 		if(!GLOB.enter_allowed)
 			to_chat(usr, "<span class='notice'> There is an administrative lock on entering the game!</span>")
+			return
 
 		//Determines Relevent Population Cap
 		var/relevant_cap
@@ -268,9 +269,13 @@
 
 		var/list/spawner_list = GLOB.mob_spawners[href_list["JoinAsGhostRole"]]
 		if(!length(spawner_list))
+			// Молчаливый выход отсюда выглядел как "кнопка не работает": игрок кликал по
+			// живой роли, а ключ до сервера не доезжал (см. url_encode в LateChoices()).
+			to_chat(usr, "<span class='warning'>Эта роль больше недоступна.</span>")
 			return
 		var/obj/effect/mob_spawn/MS = pick(spawner_list)
 		if(!MS || !istype(MS, /obj/effect/mob_spawn))
+			to_chat(usr, "<span class='warning'>Эта роль больше недоступна.</span>")
 			return
 		if(MS.attack_ghost(src, latejoinercalling = TRUE))
 			SSticker.queued_players -= src
@@ -655,7 +660,11 @@
 			dat += "<fieldset style='border: 2px solid [color]; display: inline'>"
 			dat += "<legend align='center' style='color: [color]'>[jobcat]</legend>"
 			for(var/spawner in categorizedJobs[jobcat]["jobs"])
-				dat += "<a class='otherPosition' style='display:block;width:170px' href='byond://?src=[REF(src)];JoinAsGhostRole=[spawner]'>[spawner]</a>"
+				// url_encode обязателен: ключ спавнера - это его job_description, и апостроф
+				// внутри него закрывал одинарную кавычку атрибута href. Браузер обрезал ссылку
+				// по апострофу, сервер получал усечённый ключ, GLOB.mob_spawners[...] давал null,
+				// и роль была недоступна из лобби весь раунд.
+				dat += "<a class='otherPosition' style='display:block;width:170px' href='byond://?src=[REF(src)];JoinAsGhostRole=[url_encode(spawner)]'>[spawner]</a>"
 
 			dat += "</fieldset><br>"
 		dat += "</td></tr></table></center>"
