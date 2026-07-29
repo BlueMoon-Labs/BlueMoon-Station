@@ -301,7 +301,7 @@
 // полного прохода; при profile_armed замеряет каждый элемент через profile_note().
 
 /// Проход подсистемы дороже этого (мс синхронной работы за цикл) = страйк перерасхода.
-#define SUBSYSTEM_PROFILE_STRIKE_MS 50
+#define SUBSYSTEM_PROFILE_STRIKE_MS 20
 /// Столько страйков подряд включают профилирование следующего прохода.
 #define SUBSYSTEM_PROFILE_STRIKES_TO_ARM 3
 /// Пауза между профилированными проходами, чтобы замер сам не стал нагрузкой.
@@ -322,13 +322,32 @@
 	var/list/profile_cost_by_type
 	var/list/profile_count_by_type
 	var/list/profile_max_by_type
+	/// тип -> описание самого дорогого элемента, чтобы максимум не был анонимным.
+	var/list/profile_worst_by_type
+	/// тип -> сколько замеров испортил сон (замер тогда включает чужую работу).
+	var/list/profile_sleepers_by_type
 
 /// Учёт одного замера профилированного прохода.
-/datum/controller/subsystem/proc/profile_note(item_type, cost_ms)
+/datum/controller/subsystem/proc/profile_note(item_type, cost_ms, datum/item, slept = FALSE)
 	profile_cost_by_type[item_type] += cost_ms
 	profile_count_by_type[item_type] += 1
+	if(slept)
+		profile_sleepers_by_type[item_type] += 1
 	if(cost_ms > profile_max_by_type[item_type])
 		profile_max_by_type[item_type] = cost_ms
+		if(item)
+			profile_worst_by_type[item_type] = describe_profiled_item(item)
+
+/// Кто именно оказался самым дорогим. Зовётся только на новом максимуме, поэтому
+/// может позволить себе строку - иначе "макс 26мс" остаётся анонимным навсегда.
+/datum/controller/subsystem/proc/describe_profiled_item(datum/item)
+	if(!isatom(item))
+		return "[item] [REF(item)]"
+	var/atom/target = item
+	var/turf/where = get_turf(target)
+	if(!where)
+		return "[target] [REF(target)] (вне мира)"
+	return "[target] [REF(target)] @ [AREACOORD(where)]"
 
 /// Конец полного прохода: решаем, взводить ли профилирование, или дампить готовый профиль.
 /// item_count - размер обрабатываемого списка, только для строки дампа.
@@ -342,6 +361,8 @@
 		profile_cost_by_type = null
 		profile_count_by_type = null
 		profile_max_by_type = null
+		profile_worst_by_type = null
+		profile_sleepers_by_type = null
 		profile_cooldown_until = world.time + SUBSYSTEM_PROFILE_COOLDOWN
 		profile_strikes = 0
 		return
@@ -358,6 +379,8 @@
 	profile_cost_by_type = alist()
 	profile_count_by_type = alist()
 	profile_max_by_type = alist()
+	profile_worst_by_type = alist()
+	profile_sleepers_by_type = alist()
 
 /// Дамп профиля дорогого прохода: топ типов по суммарной стоимости.
 /datum/controller/subsystem/proc/dump_expensive_pass_profile(pass_cost, item_count)
@@ -376,7 +399,11 @@
 		shown++
 		var/type_cost = profile_cost_by_type[item_type]
 		shown_cost += type_cost
-		out += "  [item_type] - [round(type_cost, 0.1)]мс суммарно, [profile_count_by_type[item_type]] вызовов, макс [round(profile_max_by_type[item_type], 0.1)]мс"
+		var/sleepers = profile_sleepers_by_type?[item_type]
+		out += "  [item_type] - [round(type_cost, 0.1)]мс суммарно, [profile_count_by_type[item_type]] вызовов, макс [round(profile_max_by_type[item_type], 0.1)]мс[sleepers ? ", замеров испорчено сном: [sleepers]" : ""]"
+		var/worst = profile_worst_by_type?[item_type]
+		if(worst)
+			out += "      дороже всех: [worst]"
 	var/rest = length(types_by_cost) - shown
 	if(rest > 0)
 		out += "  (ещё [rest] типов, суммарно [round(pass_cost - shown_cost, 0.1)]мс с учётом накладных)"

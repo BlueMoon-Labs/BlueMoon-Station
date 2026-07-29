@@ -1,4 +1,6 @@
 #define GOOSE_SATIATED 50
+///Легаси-каденс ярости: prob(5) на 2-секундный тик NPC-пула = 2.5%/с планировщика
+#define GOOSE_RAGE_PROB_PER_SECOND 2.5
 
 /mob/living/simple_animal/hostile/retaliate/goose
 	name = "goose"
@@ -33,7 +35,49 @@
 	gold_core_spawnable = HOSTILE_SPAWN
 	var/random_retaliate = TRUE
 
-/mob/living/simple_animal/hostile/retaliate/goose/handle_automated_movement()
+// ===== Адаптер-профиль =====
+// Retaliate-семейство целиком закрывает базовая стратегия (enemies-гейт из
+// setup_from_pawn); единственная особость гуся - случайный запуск Retaliate()
+// из движения ("гусь на взводе"). Звуки и эмоуты агра не трогаем: их играет
+// легаси Aggro() при зеркалировании цели в pawn.target.
+
+///Профиль гуся: обычный мили-ретал + случайная ярость
+/datum/ai_controller/hostile_adapter/melee_chaser/goose
+	planning_subtrees = list(
+		/datum/ai_planning_subtree/find_hostile_targets,
+		/datum/ai_planning_subtree/goose_random_rage,
+		/datum/ai_planning_subtree/hostile_fsm,
+		/datum/ai_planning_subtree/hostile_dodge,
+		/datum/ai_planning_subtree/attack_obstacle_in_path,
+		/datum/ai_planning_subtree/take_cover_when_pinned,
+		/datum/ai_planning_subtree/tactical_approach,
+		/datum/ai_planning_subtree/hostile_melee,
+	)
+
+///Случайная ярость: как в легаси, ролл не гейтится наличием цели - уже
+///разъярённый гусь продолжает набирать обидчиков (сам Retaliate() и так
+///троттлит групповой скан пятисекундным кулдауном)
+/datum/ai_planning_subtree/goose_random_rage
+
+/datum/ai_planning_subtree/goose_random_rage/SelectBehaviors(datum/ai_controller/controller, delta_time)
 	. = ..()
-	if(prob(5) && random_retaliate == TRUE)
-		Retaliate()
+	var/mob/living/simple_animal/hostile/retaliate/goose/angry_bird = controller.pawn
+	if(!istype(angry_bird) || !angry_bird.random_retaliate)
+		return
+	if(!SPT_PROB(GOOSE_RAGE_PROB_PER_SECOND, delta_time))
+		return
+	controller.queue_behavior(/datum/ai_behavior/goose_random_rage)
+
+///Взбеситься: записать видимых соседей в обиды штатным Retaliate() -
+///дальше цель берёт обычный retaliate-поиск по машине обид
+/datum/ai_behavior/goose_random_rage
+	action_cooldown = 2 SECONDS
+
+/datum/ai_behavior/goose_random_rage/perform(delta_time, datum/ai_controller/controller)
+	var/mob/living/simple_animal/hostile/retaliate/goose/angry_bird = controller.pawn
+	if(!istype(angry_bird))
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	angry_bird.Retaliate()
+	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+
+#undef GOOSE_RAGE_PROB_PER_SECOND

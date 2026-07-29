@@ -1,8 +1,11 @@
 /datum/round_event_control/nightmare
 	name = "Spawn Nightmare"
 	typepath = /datum/round_event/ghost_role/nightmare
-	max_occurrences = 2
+	max_occurrences = 1 // двойной кошмар за раунд (9771) - одного достаточно, повтор только руками админа
 	min_players = 25 // порог от больших серверов резал разнообразие на типичных 25-35: гост-пул сужался до метеора
+	// Ранняя волна гост-пула - с 20-й минуты (см. Spawn Morph): без порога кошмар оставался
+	// единственной целью копилки первых минут в хард-раундах после гейта ревенанта.
+	earliest_start = 20 MINUTES
 	weight = 8
 	category = EVENT_CATEGORY_ENTITIES
 	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR

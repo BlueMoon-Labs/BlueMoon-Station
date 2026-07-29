@@ -144,6 +144,7 @@ const VoreSelectedBelly = (props) => {
     belly_name,
     is_wet,
     wet_loop,
+    can_victim_see,
     mode,
     verb,
     desc,
@@ -258,6 +259,13 @@ const VoreSelectedBelly = (props) => {
                   icon={wet_loop ? "toggle-on" : "toggle-off"}
                   selected={wet_loop}
                   content={wet_loop ? "Yes" : "No"} />
+              </LabeledList.Item>
+              <LabeledList.Item label="Victim can see from inside">
+                <Button
+                  onClick={() => act("set_attribute", { attribute: "b_can_victim_see" })}
+                  icon={can_victim_see ? "toggle-on" : "toggle-off"}
+                  selected={can_victim_see}
+                  content={can_victim_see ? "Yes" : "No"} />
               </LabeledList.Item>
             </LabeledList>
           </Flex.Item>

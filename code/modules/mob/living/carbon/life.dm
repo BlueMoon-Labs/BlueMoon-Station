@@ -1,7 +1,7 @@
 /mob/living/carbon/BiologicalLife(delta_time, times_fired)
 	//Reagent processing needs to come before breathing, to prevent edge cases.
 	// BLUEMOON OPTIMIZATION: stagger organ processing for clientless mobs (every other fire)
-	if(client || (times_fired % 2 == 0))
+	if(client || ((times_fired + life_periodic_phase) % 2 == 0))
 		handle_organs(client ? delta_time : delta_time * 2, times_fired)
 	. = ..()		// if . is false, we are dead.
 	if(stat == DEAD)
@@ -19,6 +19,12 @@
 		if(bprv & BODYPART_LIFE_UPDATE_HEALTH)
 			updatehealth()
 	update_stamina()
+	// Catch-all: update_stat() only refreshes mobility on a stat transition, so
+	// anything that changes a mobility input without calling update_mobility
+	// itself gets picked up here. Полный пересчёт (~70мкс: incapacitated,
+	// restrained, шесть Is*-процов, счёт конечностей) идёт только когда подпись
+	// входов изменилась - плюс принудительно раз в 4 тика на всякий случай.
+	update_mobility_if_dirty(times_fired)
 	doSprintBufferRegen()
 
 	if(stat != DEAD)
@@ -61,7 +67,15 @@
 		if(H.damage > H.high_threshold)
 			next_breath--
 
-	if((times_fired % next_breath) == 0 || failed_last_breath)
+	// Lever 2: a healthy clientless mob breathes half as often - its air is
+	// stable and no client is there to notice, while real distress still forces a
+	// breath via failed_last_breath. Failing organs (next_breath < 4) keep their
+	// faster cadence.
+	if(!client && next_breath >= 4)
+		next_breath *= 2
+
+	var/breath_phase = client ? times_fired : times_fired + life_periodic_phase
+	if((breath_phase % next_breath) == 0 || failed_last_breath)
 		breathe() //Breathe per 4 ticks if healthy, down to 2 if our lungs or heart are damaged, unless suffocating
 		if(failed_last_breath)
 			//SEND_SIGNAL(src, COMSIG_ADD_MOOD_EVENT, "suffocation", /datum/mood_event/suffocation)
@@ -394,12 +408,30 @@
 		if(BP.needs_processing)
 			. |= BP.on_life(seconds, times_fired)
 
+///Пересобирает кэш органов, которым нужен on_life. processes_on_life - свойство
+///типа, а не состояния, поэтому кэш живёт до ближайшей смены состава органов.
+/mob/living/carbon/proc/rebuild_life_processing_organs()
+	var/list/processing = list()
+	for(var/obj/item/organ/organ as anything in internal_organs)
+		if(organ?.processes_on_life)
+			processing += organ
+	life_processing_organs = processing
+	life_processing_organs_source_count = length(internal_organs)
+	return processing
+
+///Сбрасывает кэш процессящихся органов. Зовётся из Insert()/Remove() органа.
+/mob/living/carbon/proc/invalidate_life_processing_organs()
+	life_processing_organs = null
+
 /mob/living/carbon/proc/handle_organs(seconds, times_fired)
 	if(stat != DEAD)
-		for(var/V in internal_organs)
-			var/obj/item/organ/O = V
-			if(O)
-				O.on_life(seconds, times_fired)
+		//сверка длины ловит прямые правки internal_organs мимо Insert()/Remove()
+		var/list/processing = life_processing_organs
+		if(isnull(processing) || life_processing_organs_source_count != length(internal_organs))
+			processing = rebuild_life_processing_organs()
+		for(var/obj/item/organ/organ as anything in processing)
+			if(organ)
+				organ.on_life(seconds, times_fired)
 	else if(!QDELETED(src))
 		if(reagents?.has_reagent(/datum/reagent/toxin/formaldehyde, 1) || reagents?.has_reagent(/datum/reagent/preservahyde, 1)) // No organ decay if the body contains formaldehyde. Or preservahyde.
 			return
@@ -478,7 +510,8 @@
 				stomach_contents.Remove(M)
 				qdel(M)
 				continue
-			if(SSmobs.times_fired%3==1)
+			var/digestion_phase = client ? SSmobs.times_fired : SSmobs.times_fired + life_periodic_phase
+			if(digestion_phase % 3 == 1)
 				if(!(M.status_flags & GODMODE))
 					M.adjustBruteLoss(5)
 				adjust_nutrition(10)

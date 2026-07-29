@@ -23,6 +23,14 @@
 
 		// It may not be a default on cit, but this is meant to be default here at least.
 		long_strip_menu = TRUE
+
+	if(current_version < 75)
+		toggles |= SOUND_EMOTE
+
+	if(current_version < 76)
+		mentor_toggles |= SOUND_MENTORHELP
+		toggles |= SOUND_FAX
+
 	. = ..()
 
 /datum/preferences/save_preferences(bypass_cooldown, silent)

@@ -285,6 +285,10 @@
 		playsound(user, fire_sound, 10, TRUE, ignore_walls = FALSE, extrarange = SILENCED_SOUND_EXTRARANGE, falloff_distance = 0)
 	else
 		playsound(user, fire_sound, 50, 1)
+		//громкий выстрел игрока поднимает AI-мобов поблизости на разведку точки;
+		//глушитель честно скрывает, пальба самих мобов шум не рассылает
+		if(user?.client)
+			ai_broadcast_noise(get_turf(user), AI_NOISE_GUNSHOT_RANGE, user)
 		if(message)
 			if(pointblank)
 				user.visible_message("<span class='danger'>[user] стреляет из [src] в упор по [pbtarget]!</span>", null, null, COMBAT_MESSAGE_RANGE)
@@ -522,6 +526,11 @@
 					shoot_live_shot(user, 1, target, message, stam_cost)
 				else
 					shoot_live_shot(user, 0, target, message, stam_cost)
+				//Self-consuming guns (DROPDEL enchanted rifles) delete themselves
+				//inside shoot_live_shot. Re-chambering afterwards force-moves a
+				//fresh casing into a qdeleted gun, which then can never soft-GC.
+				if(QDELETED(src))
+					return TRUE
 		else
 			shoot_with_empty_chamber(user)
 			return
@@ -560,6 +569,9 @@
 				shoot_live_shot(user, 0, target, message, stam_cost)
 			if (iteration >= burst_size)
 				firing = FALSE
+			//см. do_fire: самоуничтожающееся оружие не дочамберивает патрон
+			if(QDELETED(src))
+				return TRUE
 	else
 		shoot_with_empty_chamber(user)
 		firing = FALSE
@@ -770,6 +782,22 @@
 	flashlight_overlay.pixel_y = flight_y_offset
 	return flashlight_overlay
 
+/obj/item/gun/proc/get_bayonet_overlay()
+	if(!bayonet)
+		return
+	var/mutable_appearance/knife_overlay
+	var/state = "bayonet"							//Generic state.
+	if(bayonet.icon_state in icon_states('icons/obj/guns/bayonets.dmi'))		//Snowflake state?
+		state = bayonet.icon_state
+	var/icon/bayonet_icons = 'icons/obj/guns/bayonets.dmi'
+	if(bayonet_diagonal == TRUE )
+		state = "bayonet_diagonal"
+		bayonet_icons = 'modular_splurt/icons/obj/guns/bayonets.dmi'
+	knife_overlay = mutable_appearance(bayonet_icons, state)
+	knife_overlay.pixel_x = knife_x_offset
+	knife_overlay.pixel_y = knife_y_offset
+	return knife_overlay
+
 /obj/item/gun/update_overlays()
 	. = ..()
 	if(gun_light)
@@ -778,20 +806,9 @@
 			. += flashlight_overlay
 
 	if(bayonet)
-		var/mutable_appearance/knife_overlay
-		var/state = "bayonet"							//Generic state.
-		if(bayonet.icon_state in icon_states('icons/obj/guns/bayonets.dmi'))		//Snowflake state?
-			state = bayonet.icon_state
-		var/icon/bayonet_icons = 'icons/obj/guns/bayonets.dmi'
-		//SPLURT EDIT ADD
-		if(bayonet_diagonal == TRUE )
-			state = "bayonet_diagonal"
-			bayonet_icons = 'modular_splurt/icons/obj/guns/bayonets.dmi'
-		//SPLURT EDIT ADD END
-		knife_overlay = mutable_appearance(bayonet_icons, state)
-		knife_overlay.pixel_x = knife_x_offset
-		knife_overlay.pixel_y = knife_y_offset
-		. += knife_overlay
+		var/mutable_appearance/knife_overlay = get_bayonet_overlay()
+		if(istype(knife_overlay))
+			. += knife_overlay
 
 /obj/item/gun/item_action_slot_check(slot, mob/user, datum/action/A)
 	if(istype(A, /datum/action/item_action/toggle_scope_zoom) && slot != ITEM_SLOT_HANDS)

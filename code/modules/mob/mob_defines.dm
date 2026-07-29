@@ -1,4 +1,5 @@
 /mob
+	blocks_exit_checks = FALSE // no mob type overrides CheckExit() or Uncross()
 	datum_flags = DF_USE_TAG
 	density = TRUE
 	layer = MOB_LAYER

@@ -110,15 +110,9 @@
 			if(M.pulledby && !tired)
 				do_lewd_action(M)
 
-/mob/living/simple_animal/hostile/tentacles/MoveToTarget()
-	stop_automated_movement = 1
-	if(!target || !CanAttack(target))
-		LoseTarget()
-		return 0
-	if(targets_from && isturf(targets_from.loc) && target.Adjacent(targets_from)) //If they're next to us, attack
-		MeleeAction()
-	else
-		return 1
+///Тентакли вкопаны: адаптер-контроллер не имеет права их двигать
+/mob/living/simple_animal/hostile/tentacles/can_ai_controller_move()
+	return FALSE
 
 //BLUEMOON ADD START || The sex mob will no longer even try to attack targets that are not suitable for prefs.
 /mob/living/simple_animal/hostile/tentacles/CanAttack(atom/the_target)

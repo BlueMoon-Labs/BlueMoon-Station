@@ -489,8 +489,13 @@
 	desc = "У вас есть острые когти, они втягиваются и вытягиваются на ваших кончиках пальцев с помощью ваших же мышц."
 	icon = 'modular_bluemoon/icons/mob/actions/razorclaws.dmi'
 	icon_state = "claw"
+	status = ORGAN_ORGANIC
+	organ_flags = NONE
 	zone = BODY_ZONE_R_ARM
 	holder = /obj/item/kitchen/knife/claws/natural
+
+/obj/item/organ/cyberimp/arm/claws/emp_act(severity)
+	return
 
 // Тихий органический звук вместо механического
 /obj/item/organ/cyberimp/arm/claws/ExtendPlaySound(obj/item/I)

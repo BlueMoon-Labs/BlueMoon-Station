@@ -78,6 +78,7 @@
 	gloves = /obj/item/clothing/gloves/combat
 	head = /obj/item/clothing/head/hardhat/red/upgraded
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/atmospheric
 	satchel = /obj/item/storage/backpack/satchel/atmospheric
 	duffelbag = /obj/item/storage/backpack/duffelbag/atmospheric

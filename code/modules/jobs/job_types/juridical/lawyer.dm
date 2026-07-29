@@ -91,6 +91,7 @@
 	l_pocket = /obj/item/laser_pointer
 	r_pocket = /obj/item/syndicate_uplink/station
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie
 	satchel = /obj/item/storage/backpack/duffelbag/syndie
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie

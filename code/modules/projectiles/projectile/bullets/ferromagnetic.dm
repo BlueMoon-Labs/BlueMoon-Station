@@ -30,7 +30,6 @@
 	damage = 10
 	armour_penetration = BULLET_BR2   // BLUEMOON EDIT: было 20 → BR2
 	stamina = 10
-	movement_type = FLYING | PHASING
 	range = 6
 
 /obj/item/projectile/bullet/incendiary/mag_inferno
@@ -40,15 +39,20 @@
 	movement_type = FLYING | PHASING
 	range = 20
 
+/obj/item/projectile/bullet/magnetic/hyper/prehit_pierce(atom/target)
+	return PROJECTILE_PIERCE_HIT
+
 /obj/item/projectile/bullet/incendiary/mag_inferno
 	icon_state = "magjectile-large"
 	damage = 10
 	armour_penetration = 20
-	movement_type = FLYING | PHASING
 	range = 20
 	pixels_per_second = TILES_TO_PIXELS(12.5)
 	fired_light_range = 4
 	fired_light_color = LIGHT_COLOR_RED
+
+/obj/item/projectile/bullet/incendiary/mag_inferno/prehit_pierce(atom/target)
+	return PROJECTILE_PIERCE_HIT
 
 /obj/item/projectile/bullet/incendiary/mag_inferno/on_hit(atom/target, blocked = FALSE)
 	..()

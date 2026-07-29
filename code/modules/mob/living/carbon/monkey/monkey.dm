@@ -46,7 +46,7 @@ GLOBAL_LIST_INIT(strippable_monkey_items, create_strippable_list(list(
 	ADD_TRAIT(src, TRAIT_PRIMITIVE, ROUNDSTART_TRAIT)
 	if (cubespawned)
 		var/cap = CONFIG_GET(number/monkeycap)
-		if (LAZYLEN(SSmobs.cubemonkeys) > cap)
+		if (LAZYLEN(SSmobs.cubemonkeys) >= cap) // >= so the cap means the cap, matching the rat caps
 			if (spawner)
 				to_chat(spawner, "<span class='warning'>Bluespace harmonics prevent the spawning of more than [cap] monkeys on the station at one time!</span>")
 			return INITIALIZE_HINT_QDEL

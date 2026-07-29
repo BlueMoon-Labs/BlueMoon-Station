@@ -22,14 +22,6 @@
 	var/adjusted = NORMAL_STYLE
 	var/alt_covers_chest = FALSE // for adjusted/rolled-down jumpsuits, FALSE = exposes chest and arms, TRUE = exposes arms only
 	var/dummy_thick = FALSE // is able to hold accessories on its item
-	//SANDSTORM EDIT - Removed the old attached accessory system. We use a list of accessories instead.
-	var/max_accessories = 7 // BLUEMOON EDIT - расширено возможное количество аксессуаров с 3 до 7
-	var/max_restricted_accessories = 3 // BLUEMOON ADD - максимальное количество особых (боевых) аксессуаров
-	var/list/obj/item/clothing/accessory/attached_accessories = list()
-	// Отдельно 2 типа оверлея: один применяется на униформу, второй - на спрайт моба. Хранить нужно оба и отдельно.
-	var/list/mutable_appearance/accessory_uniform_overlays = list()
-	var/list/mutable_appearance/accessory_mob_overlays = list()
-	//SANDSTORM EDIT END
 
 /obj/item/clothing/under/worn_overlays(isinhands = FALSE, icon_file, used_state, style_flags = NONE)
 	. = ..()
@@ -39,8 +31,6 @@
 		. += mutable_appearance('icons/effects/item_damage.dmi', "damageduniform")
 	if(blood_DNA)
 		. += mutable_appearance('icons/effects/blood.dmi', "uniformblood", color = blood_DNA_to_color(), blend_mode = blood_DNA_to_blend())
-	if(length(accessory_mob_overlays))
-		. += accessory_mob_overlays
 
 /obj/item/clothing/under/attackby(obj/item/I, mob/user, params)
 	if((sensordamage || (has_sensor < HAS_SENSORS && has_sensor != NO_SENSORS)) && istype(I, /obj/item/stack/cable_coil))
@@ -147,7 +137,7 @@
 			body_parts_covered |= CHEST
 
 	// Sandstorm edit
-	for(var/obj/item/clothing/accessory/attached_accessory in attached_accessories)
+	for(var/obj/item/clothing/accessory/attached_accessory in accessories_attached)
 		if(attached_accessory && slot != ITEM_SLOT_HANDS && ishuman(user))
 			var/mob/living/carbon/human/H = user
 			attached_accessory.on_uniform_equip(src, user)
@@ -157,7 +147,7 @@
 
 /obj/item/clothing/under/dropped(mob/user)
 	// Sandstorm edit
-	for(var/obj/item/clothing/accessory/attached_accessory in attached_accessories)
+	for(var/obj/item/clothing/accessory/attached_accessory in accessories_attached)
 		attached_accessory.on_uniform_dropped(src, user)
 		if(ishuman(user))
 			var/mob/living/carbon/human/H = user
@@ -167,91 +157,92 @@
 	..()
 
 
-/obj/item/clothing/under/attach_accessory(obj/item/I, mob/user, notifyAttach = TRUE)
+/obj/item/clothing/under/attach_accessory(obj/item/clothing/accessory/accessory, mob/user, silent = FALSE)
 	. = FALSE
-	if(istype(I, /obj/item/clothing/accessory) && !istype(I, /obj/item/clothing/accessory/ring))
-		var/obj/item/clothing/accessory/A = I
-		// BLUEMOON EDIT START - изменение аксессуаров
-		// Проверка на общее количество
-		if(length(attached_accessories) >= max_accessories)
-			if(user)
-				to_chat(user, "<span class='warning'>[src] уже имеет [length(attached_accessories)] аксессуаров.</span>")
+	if(!istype(accessory) || istype(accessory, /obj/item/clothing/accessory/ring))
+		return
+	// BLUEMOON EDIT START - изменение аксессуаров
+	// Проверка на общее количество
+	if(length(accessories_attached) >= max_accessories)
+		if(user && !silent)
+			to_chat(user, "<span class='warning'>[src] уже имеет [length(accessories_attached)] аксессуаров.</span>")
+		return
+	// Проверка на количество особых / боевых
+	if(accessory.restricted_accessory && length(accessories_attached))
+		var/restricted_accesories_count = 0
+		for(var/obj/item/clothing/accessory/already_attached in accessories_attached)
+			if(already_attached.restricted_accessory)
+				restricted_accesories_count++
+		if(restricted_accesories_count >= max_restricted_accessories)
+			if(user && !silent)
+				to_chat(user, "<span class='warning'> К [src] некуда прикреплять очередной боевой аксессуар, на ней их уже [restricted_accesories_count]</span>")
 			return
-		// Проверка на количество особых / боевых
-		if(A.restricted_accessory && length(attached_accessories))
-			var/restricted_accesories_count = 0
-			for(var/obj/item/clothing/accessory/already_attached in attached_accessories)
-				if(already_attached.restricted_accessory)
-					restricted_accesories_count++
-			if(restricted_accesories_count >= max_restricted_accessories)
-				if(user)
-					to_chat(user, "<span class='warning'> К [src] некуда прикреплять очередной боевой аксессуар, на ней их уже [restricted_accesories_count]</span>")
-				return
-		// Проверка на максимальное количество аксессуаров одного вида
-		if(A.max_stack != -1 && length(attached_accessories))
-			var/similar_accessory_count = 0
-			for(var/obj/item/clothing/accessory/already_attached in attached_accessories)
-				if(already_attached.max_stack == -1)
-					continue
-				// У обоих аксессуаров может быть указан родительский класс, все дочерние классы которого не могут стакаться
-				// друг с другом без ограничений
-				if(already_attached.max_stack_path && A.max_stack_path)
-					if(already_attached.max_stack_path == A.max_stack_path)
-						similar_accessory_count++
-				// Если не указан, проверяем, чтобы оба предмета не были дочерними классами друг друга
-				else if(istype(A, already_attached.type) || istype(already_attached.type, A))
+	// Проверка на максимальное количество аксессуаров одного вида
+	if(accessory.max_stack != -1 && length(accessories_attached))
+		var/similar_accessory_count = 0
+		for(var/obj/item/clothing/accessory/already_attached in accessories_attached)
+			if(already_attached.max_stack == -1)
+				continue
+			// У обоих аксессуаров может быть указан родительский класс, все дочерние классы которого не могут стакаться
+			// друг с другом без ограничений
+			if(already_attached.max_stack_path && accessory.max_stack_path)
+				if(already_attached.max_stack_path == accessory.max_stack_path)
 					similar_accessory_count++
-			if(similar_accessory_count >= A.max_stack)
-				if(user)
-					to_chat(user, "<span class='warning'> На [src] уже слишком много похожих на [A] аксессуаров!</span>")
-				return
-		// BLUEMOON EDIT END
-
-		if(dummy_thick)
-			if(user)
-				to_chat(user, "<span class='warning'>[src] слишком громоздкое, к нему нельзя крепить аксессуары!</span>")
+			// Если не указан, проверяем, чтобы оба предмета не были дочерними классами друг друга
+			else if(istype(accessory, already_attached.type) || istype(already_attached.type, accessory))
+				similar_accessory_count++
+		if(similar_accessory_count >= accessory.max_stack)
+			if(user && !silent)
+				to_chat(user, "<span class='warning'> На [src] уже слишком много похожих на [accessory] аксессуаров!</span>")
 			return
-		else
-			if(user && !user.temporarilyRemoveItemFromInventory(A))
-				return
-			if(!A.attach(src, user))
-				A.forceMove(drop_location()) // user.put_in_hands() вызывает где-то у себя в глубине stoplag(), что не нравится Initialize()
-				return
+	// BLUEMOON EDIT END
 
-			if(user && notifyAttach)
-				to_chat(user, "<span class='notice'>Вы прикрепили [A] к [src].</span>")
+	if(dummy_thick)
+		if(user && !silent)
+			to_chat(user, "<span class='warning'>[src] слишком громоздкое, к нему нельзя крепить аксессуары!</span>")
+		return
+	else
+		if(user && !user.dropItemToGround(accessory, silent = silent))
+			return
+		if(!accessory.attach(src, user))
+			accessory.forceMove(drop_location()) // user.put_in_hands() вызывает где-то у себя в глубине stoplag(), что не нравится Initialize()
+			return
 
-			if((flags_inv & HIDEACCESSORY) || (A.flags_inv & HIDEACCESSORY))
-				return TRUE
+		if(user && !silent)
+			to_chat(user, "<span class='notice'>Вы прикрепили [accessory] к [src].</span>")
 
-			if(ishuman(loc))
-				var/mob/living/carbon/human/H = loc
-				H.update_inv_w_uniform()
-				H.update_inv_wear_suit()
-
+		if((flags_inv & HIDEACCESSORY) || (accessory.flags_inv & HIDEACCESSORY))
 			return TRUE
-
-/obj/item/clothing/under/proc/remove_accessory(mob/user)
-	if(!isliving(user))
-		return
-	if(!can_use(user))
-		return
-
-	//SKYRAT EDIT
-	if(length(attached_accessories))
-		var/obj/item/clothing/accessory/A = attached_accessories[length(attached_accessories)]
-	//SKYRAT EDIT END
-		A.detach(src, user)
-		if(user.put_in_hands(A))
-			to_chat(user, "<span class='notice'>Вы открепили [A] от [src].</span>")
-		else
-			to_chat(user, "<span class='notice'>Вы открепили [A] от [src] с падением предмета на пол.</span>")
 
 		if(ishuman(loc))
 			var/mob/living/carbon/human/H = loc
 			H.update_inv_w_uniform()
 			H.update_inv_wear_suit()
 
+		return TRUE
+
+/obj/item/clothing/under/remove_accessory(obj/item/clothing/accessory/accessory, mob/user, silent = FALSE)
+	. = FALSE
+	if(!isliving(user))
+		return
+	if(!accessory && !can_use(user))
+		return
+
+	if(!LAZYLEN(accessories_attached))
+		return
+	accessory = (accessories_attached.Find(accessory) && accessory) || accessories_attached[length(accessories_attached)]
+	if(!istype(accessory))
+		return
+	accessory.detach(src, user)
+	var/in_hand = user.put_in_hands(accessory, FALSE)
+	if(!silent)
+		to_chat(user, span_notice("Вы открепили [accessory] от [src][in_hand ? null : " с падением предмета на пол"]."))
+
+	if(ishuman(loc))
+		var/mob/living/carbon/human/H = loc
+		H.update_inv_w_uniform()
+		H.update_inv_wear_suit()
+	return TRUE
 
 /obj/item/clothing/under/examine(mob/user)
 	. = ..()
@@ -277,8 +268,8 @@
 				. += "Сенсоры жизненных показателей выключены."
 			if(SENSOR_COORDS)
 				. += "Сенсоры жизненных показателей и маячок местонахождения включены."
-	if(length(attached_accessories))
-		for(var/obj/item/clothing/accessory/attached_accessory in attached_accessories)
+	if(length(accessories_attached))
+		for(var/obj/item/clothing/accessory/attached_accessory in accessories_attached)
 			. += "\A [attached_accessory] находится на униформе."
 	//SKYRAT EDIT END
 
@@ -382,8 +373,8 @@
 	. = ..()
 	if(. || !istype(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user), TRUE, FALSE))
 		return
-	if(length(attached_accessories)) //SKYRAT EDIT
-		remove_accessory(user)
+	if(length(accessories_attached)) //SKYRAT EDIT
+		remove_accessory(user = user)
 	else
 		rolldown()
 
@@ -433,8 +424,8 @@
 		return
 
 	LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Set to highest sensor")
-	if(length(attached_accessories))
-		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Remove [attached_accessories[length(attached_accessories)]]")
+	if(length(accessories_attached))
+		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Remove [accessories_attached[length(accessories_attached)]]")
 	else
 		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Adjust [src]")
 	return CONTEXTUAL_SCREENTIP_SET

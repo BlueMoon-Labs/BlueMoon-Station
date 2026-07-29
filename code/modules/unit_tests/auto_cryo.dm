@@ -473,3 +473,39 @@
 
 	// Cleanup
 	GLOB.data_core.remove_records_by_name(new_name)
+
+// ===== Test 10: yield не должен терять уже снятого со снапшота кандидата =====
+
+/// MC_TICK_CHECK срабатывал ПОСЛЕ снятия моба со снапшота: кандидат просто
+/// исчезал из currentrun и не обрабатывался до следующего рескана (5 минут).
+/datum/unit_test/auto_cryo_yield_keeps_pending_ghost
+
+/datum/unit_test/auto_cryo_yield_keeps_pending_ghost/Run()
+	var/list/prev_config = auto_cryo_test_enable_config()
+	var/prev_state = SSauto_cryo.state
+	var/prev_next_scan = SSauto_cryo.next_scan
+
+	var/mob/dead/observer/first = new(run_loc_floor_bottom_left)
+	var/mob/dead/observer/second = new(run_loc_floor_bottom_left)
+	first.lastclienttime = world.time - CONFIG_GET(number/ghost_check_time) - 100
+	second.lastclienttime = first.lastclienttime
+
+	SSauto_cryo.delete_queue = list()
+	SSauto_cryo.currentrun_cryo = list()
+	// Порядок важен: цикл снимает с конца, поэтому second обработается первым.
+	SSauto_cryo.currentrun_ghosts = list(first, second)
+	SSauto_cryo.next_scan = world.time + 1 HOURS
+	SSauto_cryo.state = SS_PAUSED // MC_TICK_CHECK всегда TRUE
+
+	SSauto_cryo.fire()
+
+	SSauto_cryo.state = prev_state
+
+	TEST_ASSERT(QDELETED(second), "Санити: первый кандидат обязан быть удалён до yield'а")
+	TEST_ASSERT(first in SSauto_cryo.currentrun_ghosts, "Yield потерял госта, уже снятого со снапшота - он не удалится до следующего рескана")
+
+	// Cleanup
+	qdel(first)
+	SSauto_cryo.currentrun_ghosts = list()
+	SSauto_cryo.next_scan = prev_next_scan
+	auto_cryo_test_restore_config(prev_config)

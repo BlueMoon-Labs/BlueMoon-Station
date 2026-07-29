@@ -27,7 +27,7 @@
 	for(var/client/admin_client as anything in GLOB.admins)
 		if(!admin_client)
 			continue
-		var/ah_vol = admin_client.prefs?.get_sound_volume("adminhelp") || 100
+		var/ah_vol = admin_client.prefs?.get_sound_volume("adminhelp")
 		SEND_SOUND(admin_client, sound(alert, volume = ah_vol))
 		window_flash(admin_client, ignorepref = TRUE)
 

@@ -89,6 +89,12 @@
 /obj/item/clothing/shoes/equipped(mob/user, slot)
 	. = ..()
 
+	//магботы/клокворк/боты МОДа отменяют гравитацию, а кэш гравитации в Life
+	//пересчитывается только при перемещении - обуться, не сходя с места, должно
+	//быть замечено сразу
+	if(negates_gravity())
+		user.refresh_gravity()
+
 	if(offset && (slot_flags & slot))
 		user.pixel_y += offset
 		worn_y_dimension -= (offset * 2)
@@ -111,6 +117,8 @@
 	if(offset && equipped_before_drop)
 		restore_offsets(user)
 	. = ..()
+	if(negates_gravity())
+		user.refresh_gravity()
 
 /obj/item/clothing/shoes/update_clothes_damaged_state()
 	..()

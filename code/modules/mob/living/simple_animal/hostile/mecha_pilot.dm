@@ -80,7 +80,10 @@
 /mob/living/simple_animal/hostile/syndicate/mecha_pilot/proc/enter_mecha(obj/vehicle/sealed/mecha/M)
 	if(!M)
 		return FALSE
-	target = null //Target was our mecha, so null it out
+	if(ai_controller)
+		LoseTarget() //зеркало контроллера тоже должно забыть меху-цель
+	else
+		target = null //Target was our mecha, so null it out
 	M.aimob_enter_mech(src)
 	targets_from = M
 	allow_movement_on_non_turfs = TRUE //duh
@@ -115,7 +118,10 @@
 	var/search_aggressiveness = 2
 	for(var/obj/vehicle/sealed/mecha/combat/C in range(vision_range,src))
 		if(is_valid_mecha(C))
-			target = C
+			if(ai_controller)
+				GiveTarget(C) //зеркалирование меха-цели в блэкборд контроллера
+			else
+				target = C
 			search_aggressiveness = 3 //We can see a mech? RUN FOR IT, IGNORE MOBS!
 			break
 	search_objects = search_aggressiveness
@@ -205,57 +211,69 @@
 		return target.attack_animal(src)
 
 
-/mob/living/simple_animal/hostile/syndicate/mecha_pilot/handle_automated_action()
-	. = ..()
-	if(!.)
-		return
-	if(!mecha)
-		for(var/obj/vehicle/sealed/mecha/combat/mecha_in_range in range(src,vision_range))
-			if(is_valid_mecha(mecha_in_range))
-				target = mecha_in_range //Let's nab it!
-				minimum_distance = 1
-				ranged = 0
-				break
+///Пеший скан на угон: свободный валидный мех перебивает мобов. Общий для
+///контроллера (поведение mecha_pilot_seek_mecha) и легаси-пути; сам по
+///себе от легаси-планировщика не зависит. Возвращает найденный мех.
+/mob/living/simple_animal/hostile/syndicate/mecha_pilot/proc/ai_seek_stolen_mecha()
 	if(mecha)
-		var/list/L = PossibleThreats()
-		var/threat_count = L.len
+		return null
+	for(var/obj/vehicle/sealed/mecha/combat/mecha_in_range in range(src,vision_range))
+		if(!is_valid_mecha(mecha_in_range))
+			continue
+		minimum_distance = 1
+		ranged = 0
+		if(ai_controller)
+			GiveTarget(mecha_in_range) //зеркалирование в блэкборд контроллера
+		else
+			target = mecha_in_range //Let's nab it!
+		return mecha_in_range
+	return null
 
-		//Low Charge - Eject
-		if(!mecha.has_charge(mecha_charge_evacuate))
-			exit_mecha(mecha)
-			return
+///Фазовая логика пилотирования одним NPC-тиком: дым при толпе, щит или
+///отступление при тяжёлом уроне, эвакуация при разряде/крите. Общая для
+///контроллера (поведение mecha_pilot_operate) и легаси-пути; сама по себе
+///от легаси-планировщика не зависит. TRUE - пилот остался в мехе.
+/mob/living/simple_animal/hostile/syndicate/mecha_pilot/proc/ai_operate_mecha_phase()
+	if(!mecha)
+		return FALSE
+	var/list/L = PossibleThreats()
+	var/threat_count = L.len
 
-			//Too Much Damage - Eject
-		if(mecha.obj_integrity < mecha.max_integrity*0.1)
-			exit_mecha(mecha)
-			return
+	//Low Charge - Eject
+	if(!mecha.has_charge(mecha_charge_evacuate))
+		exit_mecha(mecha)
+		return FALSE
 
-		//Smoke if there's too many targets	- Smoke Power
-		if(threat_count >= threat_use_mecha_smoke && prob(smoke_chance))
-			if(LAZYACCESSASSOC(mecha.occupant_actions, src, /datum/action/vehicle/sealed/mecha/mech_smoke) && !mecha.smoke_charges)
-				var/datum/action/action = mecha.occupant_actions[src][/datum/action/vehicle/sealed/mecha/mech_smoke]
-				action.Trigger()
+		//Too Much Damage - Eject
+	if(mecha.obj_integrity < mecha.max_integrity*0.1)
+		exit_mecha(mecha)
+		return FALSE
 
-		//Heavy damage - Defense Power or Retreat
-		if(mecha.obj_integrity < mecha.max_integrity*0.25)
-			if(prob(defense_mode_chance))
-				if(LAZYACCESSASSOC(mecha.occupant_actions, src, /datum/action/vehicle/sealed/mecha/mech_defense_mode) && !mecha.defense_mode)
-					var/datum/action/action = mecha.occupant_actions[src][/datum/action/vehicle/sealed/mecha/mech_defense_mode]
-					action.Trigger(TRUE)
-					addtimer(CALLBACK(action, TYPE_PROC_REF(/datum/action/vehicle/sealed/mecha/mech_defense_mode, Trigger), FALSE), 100) //10 seconds of defense, then toggle off
+	//Smoke if there's too many targets	- Smoke Power
+	if(threat_count >= threat_use_mecha_smoke && prob(smoke_chance))
+		if(LAZYACCESSASSOC(mecha.occupant_actions, src, /datum/action/vehicle/sealed/mecha/mech_smoke) && !mecha.smoke_charges)
+			var/datum/action/action = mecha.occupant_actions[src][/datum/action/vehicle/sealed/mecha/mech_smoke]
+			action.Trigger()
 
-			else if(prob(retreat_chance))
-				//Speed boost if possible
-				if(LAZYACCESSASSOC(mecha.occupant_actions, src, /datum/action/vehicle/sealed/mecha/mech_overload_mode) && !mecha.leg_overload_mode)
-					var/datum/action/action = mecha.occupant_actions[src][/datum/action/vehicle/sealed/mecha/mech_overload_mode]
-					mecha.leg_overload_mode = FALSE
-					action.Trigger(TRUE)
-					addtimer(CALLBACK(action, TYPE_PROC_REF(/datum/action/vehicle/sealed/mecha/mech_overload_mode, Trigger), FALSE), 100) //10 seconds of speeeeed, then toggle off
+	//Heavy damage - Defense Power or Retreat
+	if(mecha.obj_integrity < mecha.max_integrity*0.25)
+		if(prob(defense_mode_chance))
+			if(LAZYACCESSASSOC(mecha.occupant_actions, src, /datum/action/vehicle/sealed/mecha/mech_defense_mode) && !mecha.defense_mode)
+				var/datum/action/action = mecha.occupant_actions[src][/datum/action/vehicle/sealed/mecha/mech_defense_mode]
+				action.Trigger(TRUE)
+				addtimer(CALLBACK(action, TYPE_PROC_REF(/datum/action/vehicle/sealed/mecha/mech_defense_mode, Trigger), FALSE), 100) //10 seconds of defense, then toggle off
 
-				retreat_distance = 50
-				addtimer(VARSET_CALLBACK(src, retreat_distance, 0), 10 SECONDS)
+		else if(prob(retreat_chance))
+			//Speed boost if possible
+			if(LAZYACCESSASSOC(mecha.occupant_actions, src, /datum/action/vehicle/sealed/mecha/mech_overload_mode) && !mecha.leg_overload_mode)
+				var/datum/action/action = mecha.occupant_actions[src][/datum/action/vehicle/sealed/mecha/mech_overload_mode]
+				mecha.leg_overload_mode = FALSE
+				action.Trigger(TRUE)
+				addtimer(CALLBACK(action, TYPE_PROC_REF(/datum/action/vehicle/sealed/mecha/mech_overload_mode, Trigger), FALSE), 100) //10 seconds of speeeeed, then toggle off
 
-
+			retreat_distance = 50
+			addtimer(VARSET_CALLBACK(src, retreat_distance, 0), 10 SECONDS)
+	return TRUE
 
 /mob/living/simple_animal/hostile/syndicate/mecha_pilot/death(gibbed)
 	if(mecha)
@@ -297,11 +315,4 @@
 	if(mecha && loc == mecha)
 		return mecha.relaymove(src, Dir)
 	return ..()
-
-
-/mob/living/simple_animal/hostile/syndicate/mecha_pilot/Goto(target, delay, minimum_distance)
-	if(mecha)
-		walk_to(mecha, target, minimum_distance, mecha.movedelay)
-	else
-		..()
 

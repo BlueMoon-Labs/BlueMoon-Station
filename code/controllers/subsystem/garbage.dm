@@ -142,9 +142,10 @@ SUBSYSTEM_DEF(garbage)
 	var/reftrack_autoscans_this_round = 0
 	/// Авто-сканов по типам за раунд: type string -> count.
 	var/list/reftrack_autoscan_type_counts = list()
-	// Тесты компилируются и под SPACEMAN_DMM — гард обязан совпадать с _unit_tests.dm.
-	#if defined(UNIT_TESTS) || defined(SPACEMAN_DMM)
-	/// Test hook: skip async ref scans while still exercising GC control flow.
+	// TESTING builds compile the GC failure viewer branch that reads this hook;
+	// unit tests and Spaceman also need the field even when their define sets differ.
+	#if defined(TESTING) || defined(UNIT_TESTS) || defined(SPACEMAN_DMM)
+	/// Diagnostic/test hook: skip async ref scans while still exercising GC control flow.
 	var/test_ref_scan_skip_async = FALSE
 	#endif
 	#ifdef REFERENCE_TRACKING_DEBUG
@@ -816,12 +817,17 @@ SUBSYSTEM_DEF(garbage)
 					prompt_note = ", висящих нативных промптов: [leaked_mob.pending_native_prompts]"
 			log_world("## GC: -- \ref[D] | [type][extra_name] не собрался (warnfail, ~[round((GC_SOFTCHECK_TIMEOUT + GC_WARNFAIL_TIMEOUT) / 10)]с, внешних ссылок: [external_refs][prompt_note][build_warnfail_context(D)]) --")
 			gc_notify_opted_admins("GC утечка: [type][extra_name] - [refID] не собрался за ~[round((GC_SOFTCHECK_TIMEOUT + GC_WARNFAIL_TIMEOUT) / 10)]с, внешних ссылок: [external_refs]")
-			GLOB.gc_failure_cache.log_gc_failure(D, type, refID, origin_time, hint, external_refs)
+			var/datum/gc_failure_viewer/gc_failure_entry/logged_failure = GLOB.gc_failure_cache.log_gc_failure(D, type, refID, origin_time, hint, external_refs)
 			// Подтверждённая утечка - момент для авто-скана держателей (гейт рантайм-режимом).
 			var/reftrack_mode_now = GetReftrackMode()
 			if (!(I.qdel_flags & QDEL_ITEM_SKIP_REFSCAN) && (reftrack_mode_now == GC_REFTRACK_ALL || (reftrack_mode_now == GC_REFTRACK_FLAGGED && (I.qdel_flags & QDEL_ITEM_FAST_REFTRACK))))
 				TryAutoScan(D, external_refs)
 			Queue(D, GC_QUEUE_HARDDELETE, hint, origin_time)
+			// Queue() advances gc_destroyed to the harddelete-stage timestamp.
+			// Keep the viewer's identity marker in sync so its on-demand refscan
+			// can still resolve this exact datum without accepting a reused ref.
+			if(logged_failure)
+				logged_failure.target_gc_destroyed = D.gc_destroyed
 
 		if (GC_QUEUE_HARDDELETE)
 			if (I.qdel_flags & QDEL_ITEM_SUSPENDED_FOR_LAG)

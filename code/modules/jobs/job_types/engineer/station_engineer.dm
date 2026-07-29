@@ -101,6 +101,7 @@
 	gloves = /obj/item/clothing/gloves/combat
 	r_pocket = /obj/item/t_scanner
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/ammo

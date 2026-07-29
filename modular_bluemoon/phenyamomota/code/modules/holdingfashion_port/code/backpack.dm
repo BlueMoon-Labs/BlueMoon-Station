@@ -8,6 +8,9 @@
 /obj/item/BoH_inert/attackby(obj/item/I, mob/living/user, params)
 	. = ..()
 	if(I.type == /obj/item/assembly/signaler/anomaly/bluespace && !(user.a_intent == INTENT_HARM))
+		if(item_flags & IN_STORAGE)
+			to_chat(user, span_danger("Я не смогу вставить ядро, пока [src.name] лежит внутри чего-то!"))
+			return
 		if(INTERACTING_WITH(user, src))
 			return
 		to_chat(user, span_notice("Вы начинаете вставлять [I] в [src]."))

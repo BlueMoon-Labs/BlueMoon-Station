@@ -351,6 +351,8 @@ GLOBAL_LIST_EMPTY(station_turfs)
 		firstbump = src
 	if(firstbump)
 		mover.Bump(firstbump)
+		if(QDELETED(mover) || mover.loc != oldloc)
+			return FALSE
 		return (mover.movement_type & PHASING)
 	return TRUE
 
@@ -358,10 +360,12 @@ GLOBAL_LIST_EMPTY(station_turfs)
 	. = ..()
 	if(!. || QDELETED(mover))
 		return FALSE
-	for(var/i in contents)
-		if(i == mover)
+	// Only atoms that declare blocks_exit_checks can refuse an exit. Skipping the
+	// rest matters because this loop used to run Uncross() on every single thing
+	// standing in the turf - 553k calls in 78 seconds of a crowded round.
+	for(var/atom/movable/thing as anything in contents)
+		if(thing == mover || !thing.blocks_exit_checks)
 			continue
-		var/atom/movable/thing = i
 		if(!thing.Uncross(mover, newloc))
 			if(thing.flags_1 & ON_BORDER_1)
 				mover.Bump(thing)

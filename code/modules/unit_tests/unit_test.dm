@@ -137,6 +137,32 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 	allocated += instance
 	return instance
 
+/// Крутит мир, пока target.var_name не станет expected или не выйдет max_wait.
+/// Отложенную работу (addtimer, spawn) исполняет SStimer/планировщик, а sleep(N)
+/// отмеряет только мировое время: на загруженном раннере колбэк не успевает за
+/// фиксированные 1-2 деци, и тест падает на медленной машине, а не на баге.
+/// TRUE = дождались.
+/datum/unit_test/proc/wait_for_var(datum/target, var_name, expected, max_wait = 2 SECONDS)
+	var/deadline = world.time + max_wait
+	while(world.time < deadline)
+		if(QDELETED(target))
+			return FALSE
+		if(target.vars[var_name] == expected)
+			return TRUE
+		sleep(world.tick_lag)
+	return !QDELETED(target) && target.vars[var_name] == expected
+
+/// Крутит мир, пока target не уйдёт в qdel или не выйдет max_wait. Отложенный
+/// qdel живёт на SStimer, поэтому фиксированный sleep его не гарантирует -
+/// см. wait_for_var. TRUE = дождались.
+/datum/unit_test/proc/wait_for_qdeleted(datum/target, max_wait = 2 SECONDS)
+	var/deadline = world.time + max_wait
+	while(world.time < deadline)
+		if(QDELETED(target))
+			return TRUE
+		sleep(world.tick_lag)
+	return QDELETED(target)
+
 /// Reads repository source files for structural audit tests.
 /// Integration CI runs DreamDaemon from `ci_test/`, while source stays in the parent checkout.
 /datum/unit_test/proc/read_source_file(source_path)

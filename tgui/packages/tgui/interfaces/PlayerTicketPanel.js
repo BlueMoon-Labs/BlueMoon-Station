@@ -245,18 +245,6 @@ const TicketChatPanel = (props) => {
           </Flex>
           <Flex fontSize="12px" color="gray" wrap="wrap">
             <Flex.Item mr={3}>
-              <b>Взял:</b>{' '}
-              {ticket.handler ? (
-                <Box as="span" color="#ffcc00" fontWeight="bold">
-                  {ticket.handler}
-                </Box>
-              ) : (
-                <Box as="span" color="#666">
-                  Ожидание
-                </Box>
-              )}
-            </Flex.Item>
-            <Flex.Item mr={3}>
               <b>Открыт:</b> {ticket.opened_at_text || '—'}
             </Flex.Item>
             {ticket.close_reason && (

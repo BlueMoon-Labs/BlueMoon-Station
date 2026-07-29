@@ -531,9 +531,19 @@
 	if(only_organic && !is_organic_limb(FALSE)) //This makes robolimbs and hybridlimbs not healable by chems.
 		return
 
+	var/brute_was = brute_dam
+	var/burn_was = burn_dam
+	var/stamina_was = stamina_dam
+
 	brute_dam	= round(max(brute_dam - brute, 0), DAMAGE_PRECISION)
 	burn_dam	= round(max(burn_dam - burn, 0), DAMAGE_PRECISION)
 	stamina_dam = round(max(stamina_dam - stamina, 0), DAMAGE_PRECISION)
+
+	// Healing an already-whole limb is the common case for regeneration effects
+	// and used to drag the entire owner.updatehealth() cascade along with it.
+	if(brute_dam == brute_was && burn_dam == burn_was && stamina_dam == stamina_was)
+		return FALSE
+
 	if(owner && updating_health)
 		owner.updatehealth()
 	consider_processing()

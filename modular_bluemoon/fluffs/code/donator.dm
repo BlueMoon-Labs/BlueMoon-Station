@@ -159,7 +159,7 @@
 	name = "Tactical Gasmask"
 	slot = ITEM_SLOT_MASK
 	path = /obj/item/clothing/mask/gas/syndicate/cool_version
-	ckeywhitelist = list("oni3288", "smileycom", "shizalrp")
+	ckeywhitelist = list("oni3288", "smileycom", "shizalrp", "lindaastereih")
 
 /datum/gear/donator/bm/blackcool_mask
 	name = "CFIS Gasmask"
@@ -2389,10 +2389,10 @@
 	path = /obj/item/lipstick/heartboom
 	ckeywhitelist = list("liesbee")
 
-/datum/gear/donator/bm/cz_75_kit
-	name = "CZ-75 kit"
+/datum/gear/donator/bm/personal_ward
+	name = "Personal Ward Box"
 	slot = ITEM_SLOT_BACKPACK
-	path = /obj/item/modkit/cz_75
+	path = /obj/item/storage/box/donator/bm/personal_ward
 	ckeywhitelist = list("shizalrp", "krasler101", "kingdeaths", "vlonger")
 
 /datum/gear/donator/bm/kila_mask
@@ -2509,3 +2509,9 @@
 	slot = ITEM_SLOT_HEAD
 	path = /obj/item/clothing/head/donator/bm/stupid_cap
 	ckeywhitelist = list("angelnedemon")
+
+/datum/gear/donator/bm/infovisor
+	name = "Infovisor"
+	slot = ITEM_SLOT_EYES
+	path = /obj/item/clothing/glasses/cover/infovisor
+	ckeywhitelist = list("lindaastereih")

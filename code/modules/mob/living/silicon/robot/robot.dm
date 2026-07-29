@@ -753,12 +753,19 @@
 	set_module = /obj/item/robot_module/syndicate/inteq
 	cell = /obj/item/stock_parts/cell/hyper
 	typing_indicator_state = /obj/effect/overlay/typing_indicator/additional/syndbot
-	upgrades = list(/obj/item/borg/upgrade/vtec)
 
 /mob/living/silicon/robot/modules/inteq/Initialize(mapload)
 	. = ..()
 	radio = new /obj/item/radio/borg/inteq(src)
 	laws = new /datum/ai_laws/inteq_override()
+	// upgrades stores installed objects, never type paths. A type path here used
+	// to reach qdel() during robot teardown and also meant the advertised VTEC
+	// was never activated.
+	var/obj/item/borg/upgrade/vtec/preinstalled_vtec = new(src)
+	if(!preinstalled_vtec.activate(src, src))
+		qdel(preinstalled_vtec)
+	else
+		add_to_upgrades(preinstalled_vtec)
 	addtimer(CALLBACK(src, PROC_REF(show_playstyle)), 5, TIMER_DELETE_ME)
 
 /mob/living/silicon/robot/modules/inteq/create_modularInterface()

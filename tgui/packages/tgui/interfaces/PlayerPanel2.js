@@ -262,6 +262,14 @@ const PhysicalActions = (props) => {
             tooltip={!has_loadout ? "Player has no loadout data" : "Apply player's loadout"}
             onClick={() => act("apply_loadout")}
           />
+          <Button
+            width="100%"
+            icon="user-cog"
+            content="Appearance"
+            disabled={!mob_type.includes("/mob/living/carbon/human")}
+            tooltip="Apply saved character appearance"
+            onClick={() => act("update_appearance")}
+          />
         </Flex>
       </Section>
 
@@ -539,7 +547,7 @@ const QuirkCategory = (props) => {
               checked={active_quirks && active_quirks.includes(quirk.name)}
               content={quirk.name}
               tooltip={quirk.desc}
-              color={color}
+              color={active_quirks?.includes(quirk.name) ? color : null}
               disabled={!mob_type.includes("/mob/living/carbon/human")}
               onClick={() => act("toggle_quirk_direct", { quirk_name: quirk.name })}
             />

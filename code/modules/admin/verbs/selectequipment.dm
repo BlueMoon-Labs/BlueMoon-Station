@@ -134,13 +134,18 @@
 	if(!cached_outfits)
 		cached_outfits = list()
 		cached_outfits += list(outfit_entry("General", /datum/outfit, "Naked", priority=TRUE))
-		cached_outfits += make_outfit_entries("General", subtypesof(/datum/outfit) - typesof(/datum/outfit/job) - typesof(/datum/outfit/plasmaman))
+		cached_outfits += list(outfit_entry("General", /datum/outfit/admin_loadout, "Loadout", priority=TRUE))
+		cached_outfits += make_outfit_entries("General", subtypesof(/datum/outfit) - typesof(/datum/outfit/job) - typesof(/datum/outfit/plasmaman) - typesof(/datum/outfit/admin_loadout))
 		cached_outfits += make_outfit_entries("Jobs", typesof(/datum/outfit/job))
 		cached_outfits += make_outfit_entries("Plasmamen Outfits", typesof(/datum/outfit/plasmaman))
 
 	data["outfits"] = cached_outfits
 	return data
 
+
+/// Кукла в первью показывается голой, не баг и не фича, просто вид всегда будет изменчив. Человек появляется сразу с квирками.
+/datum/outfit/admin_loadout
+	name = "Loadout"
 
 /datum/select_equipment/proc/resolve_outfit(text)
 
@@ -221,7 +226,13 @@
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Select Equipment") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 	for(var/obj/item/item in human_target.get_equipped_items(delete_pocket))
 		qdel(item)
-	if(dresscode != "Naked")
+	if(istype(dresscode, /datum/outfit/admin_loadout))
+		if(human_target.client?.prefs)
+			human_target.client.prefs.copy_to(human_target, icon_updates = TRUE, roundstart_checks = FALSE)
+		SSjob.equip_loadout(null, human_target, bypass_prereqs = TRUE)
+		if(human_target.client)
+			SSquirks.AssignQuirks(human_target, human_target.client, TRUE, TRUE, null, FALSE)
+	else if(dresscode != "Naked")
 		human_target.equipOutfit(dresscode)
 
 	human_target.regenerate_icons()

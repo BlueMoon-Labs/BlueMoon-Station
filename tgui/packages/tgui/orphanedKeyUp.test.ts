@@ -46,6 +46,9 @@ describe('setupOrphanedKeyUpForwarding', () => {
     ['Shift', 'Shift', 'ShiftLeft', 'KeyUp "Shift"'],
     ['Control', 'Control', 'ControlLeft', 'KeyUp "Ctrl"'],
     ['Alt', 'Alt', 'AltLeft', 'KeyUp "Alt"'],
+    ['Backspace', 'Backspace', 'Backspace', 'KeyUp "Back"'],
+    ['Slash', 'Slash', 'Slash', 'KeyUp "/"'],
+    ['Space', 'Space', 'Space', 'KeyUp "Space"'],
   ])('forwards orphaned %s keyup', (_name, key, code, expectedCommand) => {
     setup();
 
@@ -58,7 +61,7 @@ describe('setupOrphanedKeyUpForwarding', () => {
   test('does not forward an unmapped orphaned keyup', () => {
     setup();
 
-    document.dispatchEvent(keyEvent('keyup', 'Backspace', 'Backspace'));
+    document.dispatchEvent(keyEvent('keyup', 'CapsLock', 'CapsLock'));
 
     expect(command).not.toHaveBeenCalled();
   });

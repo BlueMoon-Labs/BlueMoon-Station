@@ -101,6 +101,7 @@
 	l_hand = /obj/item/clipboard
 	neck = /obj/item/clothing/neck/cloak/syndiecap
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie
 	satchel = /obj/item/storage/backpack/duffelbag/syndie
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie

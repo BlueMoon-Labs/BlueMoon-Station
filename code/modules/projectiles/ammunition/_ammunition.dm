@@ -7,7 +7,6 @@
 	slot_flags = ITEM_SLOT_BELT
 	throwforce = 0
 	w_class = WEIGHT_CLASS_TINY
-	custom_materials = list(/datum/material/iron = 500)
 	var/fire_sound = null						//What sound should play when this ammo is fired
 	var/caliber = list()							//Which kind of guns it can be loaded into
 	var/projectile_type = null					//The bullet type to create when New() is called
@@ -42,6 +41,13 @@
 /obj/item/ammo_casing/examine(mob/user)
 	. = ..()
 	. += "<span class='notice'>Пробитие: BR[get_br_level()] ([BB.armour_penetration]% AP)</span>"
+	var/can_be_printed = TRUE
+	/// If it can be printed, does this casing require an advanced ammunition datadisk? Mainly for specialized ammo.
+	/// Rubbers aren't advanced. Standard ammo (or FMJ if you're particularly pedantic) isn't advanced.
+	/// Think more specialized or weird, niche ammo, like armor-piercing, incendiary, hollowpoint, or God forbid, phasic.
+	var/advanced_print_req = FALSE
+
+// whatever goblin decided to spread out bullets over like 3 files and god knows however many overrides i wish you a very stubbed toe
 
 /obj/item/ammo_casing/spent
 	name = "spent bullet casing"
@@ -57,6 +63,9 @@
 	update_icon()
 
 /obj/item/ammo_casing/Destroy()
+	// Ejected casings use SpinAnimation(). Stop the native animation before the
+	// casing and its pellet-cloud component enter the garbage queue.
+	animate(src, alpha = 0, time = 0, flags = ANIMATION_END_NOW)
 	if(BB)
 		QDEL_NULL(BB)
 	return ..()

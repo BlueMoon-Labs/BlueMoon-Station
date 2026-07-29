@@ -147,3 +147,48 @@
 	var/optimized_ms = TICK_USAGE_TO_MS(start_time)
 	TEST_ASSERT_EQUAL(length(sink), reference_count, "Optimized hearer benchmark changed the number of listeners")
 	log_test("GET HEARERS BENCH: recursive leaf walk old [round(reference_ms, 0.01)]ms/new [round(optimized_ms, 0.01)]ms for [iterations] calls ([round(reference_ms / max(optimized_ms, 0.01), 0.1)]x)")
+
+/// contains_atom() и in_direct_access() отвечают на вопрос членства, который раньше
+/// задавали через `in GetAllContents()` / `in DirectAccess()` - то есть собирая всё
+/// дерево содержимого игрока на каждый клик, MouseDrop и тик квирка-реликвии. Тест
+/// закрепляет, что быстрый ответ совпадает с медленным на всех интересных случаях:
+/// иначе оптимизация тихо разойдётся со своим определением.
+/datum/unit_test/direct_access_membership_matches_contents_walk/Run()
+	var/turf/test_turf = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human, test_turf)
+
+	// Три уровня вложенности - ровно та форма, из-за которой GetAllContents на
+	// игроке разворачивается в десятки элементов: сумка в мобе, коробка в сумке,
+	// предмет в коробке.
+	var/obj/item/held_bag = allocate(/obj/item, test_turf)
+	held_bag.forceMove(user)
+	var/obj/item/inner_box = allocate(/obj/item, test_turf)
+	inner_box.forceMove(held_bag)
+	var/obj/item/nested_item = allocate(/obj/item, test_turf)
+	nested_item.forceMove(inner_box)
+
+	var/obj/item/loose_item = allocate(/obj/item, test_turf)
+
+	TEST_ASSERT(nested_item in user.GetAllContents(), "Sanity: вложенный предмет должен попадать в GetAllContents игрока")
+	TEST_ASSERT(!(loose_item in user.GetAllContents()), "Sanity: предмет на полу не должен попадать в GetAllContents игрока")
+
+	var/list/subjects = list(user, held_bag, inner_box, nested_item, loose_item, test_turf)
+
+	// contains_atom == `in GetAllContents()` на каждом уровне вложенности и вне его.
+	for(var/atom/subject as anything in subjects)
+		var/expected = (subject in user.GetAllContents())
+		TEST_ASSERT_EQUAL(!!user.contains_atom(subject), !!expected, "contains_atom() разошёлся с GetAllContents() на [subject.type]")
+
+	TEST_ASSERT(!user.contains_atom(null), "contains_atom(null) обязан быть FALSE")
+
+	// in_direct_access == `in DirectAccess()`, включая loc (турф) и внешний предмет.
+	var/list/direct_access = user.DirectAccess()
+	for(var/atom/subject as anything in subjects)
+		var/expected = (subject in direct_access)
+		TEST_ASSERT_EQUAL(!!user.in_direct_access(subject), !!expected, "in_direct_access() разошёлся с DirectAccess() на [subject.type]")
+
+	// Тот же инвариант для не-моба: там DirectAccess это ровно list(src, loc).
+	var/list/item_access = loose_item.DirectAccess()
+	for(var/atom/subject as anything in subjects + list(loose_item))
+		var/expected = (subject in item_access)
+		TEST_ASSERT_EQUAL(!!loose_item.in_direct_access(subject), !!expected, "in_direct_access() у /obj/item разошёлся с DirectAccess() на [subject.type]")

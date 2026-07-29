@@ -630,3 +630,13 @@
 		if(checked >= 25) // выборки хватает: все идут одним путём Initialize
 			break
 	TEST_ASSERT(checked, "at least one roundstart APC must have a cell")
+
+///Experimentors must not own the station pets they only occasionally target.
+/datum/unit_test/experimentor_pet_tracking_is_weak/Run()
+	var/obj/machinery/rnd/experimentor/experimentor = allocate(/obj/machinery/rnd/experimentor)
+	var/mob/living/simple_animal/pet/cat/Runtime/runtime_cat = new(run_loc_floor_bottom_left)
+	experimentor.trackedRuntime = WEAKREF(runtime_cat)
+	TEST_ASSERT_EQUAL(experimentor.trackedRuntime.resolve(), runtime_cat, "The live Runtime weakref must resolve")
+
+	qdel(runtime_cat)
+	TEST_ASSERT_NULL(experimentor.trackedRuntime.resolve(), "A qdeleted Runtime must not be retained by the experimentor")

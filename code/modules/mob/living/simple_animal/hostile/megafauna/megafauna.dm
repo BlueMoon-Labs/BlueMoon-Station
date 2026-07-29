@@ -29,6 +29,7 @@
 	layer = LARGE_MOB_LAYER //Looks weird with them slipping under mineral walls and cameras and shit otherwise
 	flags_1 = PREVENT_CONTENTS_EXPLOSION_1 | HEAR_1
 	has_field_of_vision = FALSE //You are a frikkin boss
+	ai_pursuit_speed_capped = FALSE //Boss movement speed is deliberate, exempt from the pursuit cap
 	/// Crusher loot dropped when the megafauna is killed with a crusher
 	var/list/crusher_loot
 	/// Achievement given to surrounding players when the megafauna is killed
@@ -78,7 +79,7 @@
 			closest = get_step(closest, get_dir(closest, src))
 		forceMove(closest) // someone teleported out probably and the megafauna kept chasing them
 		if(target && !CanAttack(target))
-			target = null
+			LoseTarget()
 		return
 	return ..()
 
@@ -121,7 +122,9 @@
 	if(. && isliving(target))
 		var/mob/living/L = target
 		if(L.stat != DEAD)
-			if(!client && ranged && ranged_cooldown <= world.time)
+			//при активной таблице способностей залпы ставит селектор контроллера,
+			//иначе был бы двойной огонь с легаси-автозалпом
+			if(!client && ranged && ranged_cooldown <= world.time && !ai_attack_tables_active)
 				OpenFire()
 			if(L.Adjacent(src) && (L.stat != CONSCIOUS))
 				if(vore_active && (L.vore_flags & DEVOURABLE))

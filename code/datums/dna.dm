@@ -454,6 +454,11 @@ GLOBAL_DATUM(dna_for_copying, /datum/dna)
 
 /mob/living/carbon/human/set_species(datum/species/mrace, icon_update = TRUE, pref_load = FALSE)
 	..()
+	//вид может отменять гравитацию (species.negates_gravity), но применять её
+	//прямо здесь нельзя: set_species идёт и при создании моба, а update_gravity
+	//там навешивает FLOATING ещё до того, как моб вообще где-то оказался.
+	//Помечаем кэш - ближайший тик Life пересчитает.
+	gravity_cache_dirty = TRUE
 	if(icon_update)
 		update_body()
 		update_hair()

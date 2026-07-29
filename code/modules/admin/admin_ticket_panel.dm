@@ -70,6 +70,7 @@
 	.["close_reason"] = AH.close_reason
 	.["initiator_ckey"] = AH.initiator_ckey
 	.["initiator_key_name"] = AH.initiator_key_name
+	.["initiator_mob_name"] = AH.initiator_mob_name
 	.["has_initiator"] = !isnull(AH.initiator)
 	.["handler"] = AH.handler
 	.["ticket_ping_stop"] = AH.ticket_ping_stop
@@ -213,15 +214,7 @@
 			var/mob/initiator_mob = selected_ticket.initiator.mob
 			if(!initiator_mob)
 				return TRUE
-			var/client/C = usr.client
-			if(!C)
-				return TRUE
-			if(!isobserver(usr) && !C.admin_ghost())
-				return TRUE
-			var/mob/dead/observer/observer = C.mob
-			if(!istype(observer))
-				return TRUE
-			observer.ManualFollow(initiator_mob)
+			usr << link("byond://?_src_=holder;[HrefToken(TRUE)];adminplayerobservefollow=[REF(initiator_mob)]")
 			. = TRUE
 
 		if("logs")

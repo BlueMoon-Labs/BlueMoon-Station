@@ -15,11 +15,17 @@
 	RegisterSignal(target, COMSIG_ATOM_HAS_GRAVITY, PROC_REF(gravity_check), override = TRUE)
 	if(isturf(target))
 		RegisterSignal(target, COMSIG_TURF_HAS_GRAVITY, PROC_REF(turf_gravity_check), override = TRUE)
+	else if(isliving(target))
+		var/mob/living/living_target = target
+		living_target.refresh_gravity() //кэш гравитации в Life обязан узнать о принуждении сразу
 
 /datum/element/forced_gravity/Detach(datum/source, force)
 	. = ..()
 	var/static/list/signals_b_gone = list(COMSIG_ATOM_HAS_GRAVITY, COMSIG_TURF_HAS_GRAVITY)
 	UnregisterSignal(source, signals_b_gone)
+	if(isliving(source))
+		var/mob/living/living_source = source
+		living_source.refresh_gravity()
 
 /datum/element/forced_gravity/proc/gravity_check(datum/source, turf/location, list/gravs)
 	if(!ignore_space && isspaceturf(location))

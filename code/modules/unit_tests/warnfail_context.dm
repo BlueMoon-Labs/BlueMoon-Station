@@ -35,3 +35,22 @@
 	TEST_ASSERT_NULL(ref.resolve(), "resolve() вернул qdel-нутую цель")
 	TEST_ASSERT_EQUAL(ref.hard_resolve(), holder, "hard_resolve() не вернул qdel-нутую, но живую цель")
 	holder = null
+
+/// Упавший за время скана refcount = держатель отпустил по ходу поиска.
+/// Вердикт обязан развести этот случай с недостижимым VM-пином, иначе лог снова
+/// будет читаться как "держателя нет" на реально находимой ссылке.
+/datum/unit_test/refsearch_verdict_transient_holder/Run()
+	var/verdict = build_refsearch_verdict(-1)
+	TEST_ASSERT(findtext(verdict, "ОТПУСТИЛ"), "Транзитный держатель не назван отпустившим: [verdict]")
+	TEST_ASSERT(!findtext(verdict, "VM-пин живого фрейма"), "Транзитный держатель ошибочно объявлен VM-пином: [verdict]")
+
+/// refcount не изменился - держатель дожил до конца скана и всё равно не найден.
+/datum/unit_test/refsearch_verdict_live_holder/Run()
+	var/verdict = build_refsearch_verdict(0)
+	TEST_ASSERT(findtext(verdict, "ЖИВ"), "Недостижимый держатель не назван живым: [verdict]")
+	TEST_ASSERT(!findtext(verdict, "ОТПУСТИЛ"), "Недостижимый держатель ошибочно объявлен отпустившим: [verdict]")
+
+/// Ранний выход по счётчику ссылок вердикта не даёт - дельта не снималась.
+/datum/unit_test/refsearch_verdict_no_delta/Run()
+	var/verdict = build_refsearch_verdict(null)
+	TEST_ASSERT(findtext(verdict, "вердикт по держателю не снят"), "Ранний выход дал вердикт о держателе: [verdict]")

@@ -5,26 +5,37 @@
 	desc = "A 10mm bullet casing."
 	caliber = "10mm"
 	projectile_type = /obj/item/projectile/bullet/c10mm
+	can_be_printed = TRUE
 
 /obj/item/ammo_casing/c10mm/ap
 	name = "10mm armor-piercing bullet casing"
 	desc = "A 10mm armor-piercing bullet casing."
 	projectile_type = /obj/item/projectile/bullet/c10mm_ap
+	can_be_printed = TRUE
+	advanced_print_req = TRUE
+	custom_materials = list(/datum/material/iron = 400, /datum/material/titanium = 200)
 
 /obj/item/ammo_casing/c10mm/hp
 	name = "10mm hollow-point bullet casing"
 	desc = "A 10mm hollow-point bullet casing."
 	projectile_type = /obj/item/projectile/bullet/c10mm_hp
+	can_be_printed = TRUE
+	advanced_print_req = TRUE
+	custom_materials = list(/datum/material/iron = 800)
 
 /obj/item/ammo_casing/c10mm/fire
 	name = "10mm incendiary bullet casing"
 	desc = "A 10mm incendiary bullet casing."
 	projectile_type = /obj/item/projectile/bullet/incendiary/c10mm
+	can_be_printed = TRUE
+	advanced_print_req = TRUE
+	custom_materials = list(/datum/material/iron = 400, /datum/material/plasma = 200)
 
 /obj/item/ammo_casing/c10mm/soporific
 	name = "10mm soporific bullet casing"
 	desc = "A 10mm soporific bullet casing."
 	projectile_type = /obj/item/projectile/bullet/c10mm/soporific
+	can_be_printed = FALSE
 
 // 9mm (Stechkin APS)
 
@@ -33,16 +44,23 @@
 	desc = "A 9mm bullet casing."
 	caliber = "9mm"
 	projectile_type = /obj/item/projectile/bullet/c9mm
+	can_be_printed = TRUE
 
 /obj/item/ammo_casing/c9mm/ap
 	name = "9mm armor-piercing bullet casing"
 	desc = "A 9mm armor-piercing bullet casing."
-	projectile_type =/obj/item/projectile/bullet/c9mm_ap
+	projectile_type = /obj/item/projectile/bullet/c9mm_ap
+	can_be_printed = TRUE
+	advanced_print_req = TRUE
+	custom_materials = list(/datum/material/iron = 400, /datum/material/titanium = 100)
 
 /obj/item/ammo_casing/c9mm/inc
 	name = "9mm incendiary bullet casing"
 	desc = "A 9mm incendiary bullet casing."
 	projectile_type = /obj/item/projectile/bullet/incendiary/c9mm
+	can_be_printed = TRUE
+	advanced_print_req = TRUE
+	custom_materials = list(/datum/material/iron = 400, /datum/material/plasma = 100)
 
 // .50AE (Desert Eagle)
 
@@ -51,3 +69,4 @@
 	desc = "A .50AE bullet casing."
 	caliber = ".50"
 	projectile_type = /obj/item/projectile/bullet/a50AE
+	can_be_printed = FALSE

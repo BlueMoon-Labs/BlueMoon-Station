@@ -496,3 +496,13 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/accessories_right.dmi'
 
 ////////////////////////
+
+/obj/item/clothing/glasses/cover/infovisor
+	name = "infovisor"
+	desc = "A standard old-generation visor that allows you to quickly survey the area."
+	can_switch_eye = FALSE
+	icon_state = "visor"
+	item_state = "visor"
+	base_icon_state = "visor"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/accessories.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/accessories.dmi'

@@ -180,6 +180,15 @@
 	end_native_prompt(prompt_mob)
 	return finalize_stripped_input(user_input, max_length, no_trim)
 
+/**
+  * stripped_input but reflects to the user instead if it's too big and returns null.
+  */
+/proc/stripped_input_or_reflect(mob/user, message = "", title = "", default = "", max_length=MAX_MESSAGE_LEN, no_trim=FALSE)
+	var/mob/prompt_mob = begin_native_prompt(user)
+	var/user_input = input(user, message, title, default) as text|null
+	end_native_prompt(prompt_mob)
+	return stripped_text_or_reflect(user, user_input, max_length, no_trim)
+
 // Used to get a properly sanitized multiline input, of max_length
 /proc/stripped_multiline_input(mob/user, message = "", title = "", default = "", max_length=MAX_MESSAGE_LEN, no_trim=FALSE)
 	var/mob/prompt_mob = begin_native_prompt(user)
@@ -196,13 +205,16 @@
 	var/mob/prompt_mob = begin_native_prompt(user)
 	var/name = input(user, message, title, default) as message|null
 	end_native_prompt(prompt_mob)
-	if(isnull(name)) // Return null if canceled.
+	return stripped_text_or_reflect(user, name, max_length, no_trim)
+
+/proc/stripped_text_or_reflect(mob/user, message = "", max_length=MAX_MESSAGE_LEN, no_trim=FALSE)
+	if(!length(message)) // Return null if canceled.
 		return null
-	if(length(name) > max_length)
-		to_chat(user, name)
-		to_chat(user, "<span class='danger'>^^^----- The preceeding message has been DISCARDED for being over the maximum length of [max_length]. It has NOT been sent! -----^^^</span>")
+	if(length(message) > max_length)
+		to_chat(user, message)
+		to_chat(user, span_danger("^^^----- The preceding message has been DISCARDED for being over the maximum length of [max_length]. It has NOT been sent! -----^^^"))
 		return null
-	return finalize_stripped_input(name, max_length, no_trim)
+	return finalize_stripped_input(message, max_length, no_trim)
 
 #define NO_CHARS_DETECTED 0
 #define SPACES_DETECTED 1

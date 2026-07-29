@@ -21,11 +21,17 @@
 #define RECURSIVE_CONTENTS_HEARING_SENSITIVE "recursive_contents_hearing_sensitive"
 /// Канал мобов с клиентом
 #define RECURSIVE_CONTENTS_CLIENT_MOBS "recursive_contents_client_mobs"
+/// Канал живых мобов-целей для hostile AI (become_ai_targetable)
+#define RECURSIVE_CONTENTS_AI_TARGETS "recursive_contents_ai_targets"
+/// Канал пятен, останков и лежащего на турфе мусора для service bots
+#define RECURSIVE_CONTENTS_CLEANBOT_TARGETS "recursive_contents_cleanbot_targets"
 
 // Типы содержимого ячеек грида. Строки совпадают с recursive-каналами выше:
 // на этом совпадении завязана синхронизация awareness в Entered/Exited.
 #define SPATIAL_GRID_CONTENTS_TYPE_HEARING RECURSIVE_CONTENTS_HEARING_SENSITIVE
 #define SPATIAL_GRID_CONTENTS_TYPE_CLIENTS RECURSIVE_CONTENTS_CLIENT_MOBS
+#define SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS RECURSIVE_CONTENTS_AI_TARGETS
+#define SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS RECURSIVE_CONTENTS_CLEANBOT_TARGETS
 
 /// Есть ли у movable хоть один грид-канал (свой или от содержимого)
 #define HAS_SPATIAL_GRID_CONTENTS(movable) (movable.spatial_grid_key)
@@ -63,4 +69,6 @@
 /// Убрать movable из всех списков ячейки
 #define GRID_CELL_REMOVE_ALL(cell, movable) \
 	GRID_CELL_REMOVE(cell.hearing_contents, movable) \
-	GRID_CELL_REMOVE(cell.client_contents, movable)
+	GRID_CELL_REMOVE(cell.client_contents, movable) \
+	GRID_CELL_REMOVE(cell.ai_target_contents, movable) \
+	GRID_CELL_REMOVE(cell.cleanbot_target_contents, movable)

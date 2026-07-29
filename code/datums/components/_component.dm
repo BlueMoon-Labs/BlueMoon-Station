@@ -321,8 +321,14 @@
 		if(!proctype)
 			stack_trace("Signal [sigtype] has null proc registered on [C.type] (listener). Emitter=[src.type].")
 			return NONE
-		return NONE | CallAsync(C, proctype, arguments)
+		// Signals are synchronous: return flags and lifecycle cleanup must be
+		// observable before the emitter continues or finishes Destroy().
+		return NONE | call(C, proctype)(arglist(arguments))
 	. = NONE
+	// Snapshot both receiver and proc before invoking anything. A receiver may
+	// unregister itself or another receiver; mutating comp_lookup mid-iteration
+	// must not make the remaining cleanup handlers miss this final signal.
+	var/list/queued_calls = list()
 	for(var/I in target)
 		var/datum/C = I
 		if(!istype(C) || !C.signal_enabled)
@@ -334,7 +340,9 @@
 		if(!proctype)
 			stack_trace("Signal [sigtype] has null proc registered on [C.type] (listener). Emitter=[src.type].")
 			continue
-		. |= CallAsync(C, proctype, arguments)
+		queued_calls.Add(C, proctype)
+	for(var/i in 1 to length(queued_calls) step 2)
+		. |= call(queued_calls[i], queued_calls[i + 1])(arglist(arguments))
 
 // The type arg is casted so initial works, you shouldn't be passing a real instance into this
 /**

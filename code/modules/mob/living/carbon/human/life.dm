@@ -35,7 +35,8 @@
 	if(HAS_TRAIT(src, TRAIT_ROBOTIC_ORGANISM) && hud_used)
 		hud_used.coolant_display.update_counter(src)
 	//Update our name based on whether our face is obscured/disfigured (throttled to every 4th fire for performance)
-	if(times_fired % 4 == 0)
+	var/name_phase = client ? times_fired : times_fired + life_periodic_phase
+	if(name_phase % 4 == 0)
 		name = get_visible_name()
 
 /mob/living/carbon/human/calculate_affecting_pressure(pressure)

@@ -37,7 +37,9 @@
 	//Fired processing vars
 	var/fired = FALSE	//Have we been fired yet
 	var/paused = FALSE	//for suspending the projectile midair
-	var/time_offset = 0
+	/// Wall-clock deciseconds of the last movement simulation. world.time falls
+	/// behind during tick lag, so it cannot be used to recover a real-time shot.
+	var/last_process_realtime = 0
 	var/datum/point/vector/trajectory
 	var/trajectory_ignore_forcemove = FALSE	//instructs forceMove to NOT reset our trajectory to the new location!
 	/// We already impacted these things, do not impact them again. Used to make sure we can pierce things we want to pierce. Lazylist, typecache style (object = TRUE) for performance.
@@ -73,7 +75,8 @@
 	var/hit_threshhold = PROJECTILE_HIT_THRESHHOLD_LAYER
 	/// "leftover" pixels for Range() calculation as pixel_move() was moved to simulated semi-pixel movement and Range() is in tiles.
 	var/pixels_range_leftover = 0
-	/// "leftover" tick pixels and stuff yeah, so we don't round off things and introducing tracing inaccuracy.
+	/// Fractional pixels left after converting elapsed real time to trace steps.
+	/// This never stores a multi-tick movement backlog.
 	var/pixels_tick_leftover = 0
 	/// Used to detect jumps in the middle of a pixel_move. Yes, this is ugly as sin code-wise but it works.
 	var/pixel_move_interrupted = FALSE
@@ -389,7 +392,6 @@
 		return FALSE
 	if(impacted[A]) // NEVER doublehit - Silly-Cons
 		return FALSE
-	var/datum/point/pcache = trajectory.copy_to()
 	var/turf/T = get_turf(A)
 	if(check_ricochet_flag(A) && check_ricochet(A)) //if you can ricochet, attempt to ricochet off the object
 		ricochets++
@@ -402,7 +404,7 @@
 			damage *= ricochet_decay_damage
 			range = decayedRange
 			if(hitscan)
-				store_hitscan_collision(pcache)
+				store_hitscan_collision(trajectory.copy_to())
 			return TRUE
 
 	var/distance = get_dist(T, starting) // Get the distance between the turf shot from and the mob we hit and use that for the calculations.
@@ -688,20 +690,47 @@
 /obj/item/projectile/Process_Spacemove(movement_dir = 0, continuous_move = FALSE)
 	return TRUE	//Bullets don't drift in space
 
-/obj/item/projectile/process(wait)
-	set waitfor = FALSE
+/obj/item/projectile/process(elapsed_seconds_override)
+	var/current_realtime = REALTIMEOFDAY
+	var/elapsed_seconds
+	if(isnum(elapsed_seconds_override))
+		elapsed_seconds = max(0, elapsed_seconds_override)
+	else if(last_process_realtime)
+		elapsed_seconds = max(0, (current_realtime - last_process_realtime) * 0.1)
+	else
+		elapsed_seconds = world.tick_lag * SSprojectiles.wait * 0.1
+	last_process_realtime = current_realtime
+
 	if(!loc || !fired || !trajectory)
 		fired = FALSE
 		return PROCESS_KILL
 	if(paused || !isturf(loc))
 		return
+	if((elapsed_seconds <= 0 && pixels_tick_leftover <= 0) || pixels_per_second <= 0 || pixel_increment_amount <= 0)
+		return
 
-	var/required_pixels = (pixels_per_second * wait) + pixels_tick_leftover
-	if(required_pixels >= pixel_increment_amount)
-		pixels_tick_leftover = MODULUS(required_pixels, pixel_increment_amount)
-		pixel_move(FLOOR(required_pixels / pixel_increment_amount, 1), FALSE, wait, SSprojectiles.global_projectile_speed_multiplier)
-	else
-		pixels_tick_leftover = required_pixels
+	// Preserve every elapsed pixel as collision-traced work, but bound one
+	// synchronous pass. SSprojectiles interleaves new shots between old ones, so
+	// carrying this debt no longer strands fresh fire behind a stale snapshot.
+	var/required_pixels = (pixels_per_second * elapsed_seconds) + pixels_tick_leftover
+	var/pixels_this_process = min(required_pixels, SSprojectiles.max_pixels_per_process)
+	var/steps_this_process = FLOOR(pixels_this_process / pixel_increment_amount, 1)
+	pixels_tick_leftover = required_pixels - (steps_this_process * pixel_increment_amount)
+	if(!steps_this_process)
+		return
+
+	var/seconds_per_step = pixel_increment_amount / pixels_per_second
+	var/allow_animation = elapsed_seconds <= (world.tick_lag * SSprojectiles.wait * 0.2)
+	var/steps_remaining = steps_this_process
+	while(steps_remaining > 0 && !QDELETED(src) && loc && trajectory)
+		var/steps_moved = pixel_move(steps_remaining, FALSE, seconds_per_step, SSprojectiles.global_projectile_speed_multiplier, allow_animation)
+		if(!isnum(steps_moved) || steps_moved <= 0)
+			break
+		steps_remaining -= steps_moved
+	// A forceMove/override may deliberately interrupt the trace. Preserve only
+	// that unconsumed path; ordinary lag never becomes deferred movement debt.
+	if(steps_remaining > 0 && !QDELETED(src))
+		pixels_tick_leftover += steps_remaining * pixel_increment_amount
 
 /obj/item/projectile/proc/fire(angle, atom/direct_target)
 	LAZYINITLIST(impacted)
@@ -741,19 +770,47 @@
 	if(isnull(pixel_increment_amount))
 		pixel_increment_amount = SSprojectiles.global_pixel_increment_amount
 	trajectory = new(starting.x, starting.y, starting.z, pixel_x, pixel_y, Angle, pixel_increment_amount)
+	last_process_realtime = REALTIMEOFDAY
 	fired = TRUE
+	register_combat_reference_signals()
 	play_fov_effect(starting, 6, "gunfire", angle = Angle - 180)
 	if(hitscan)
 		INVOKE_ASYNC(src, PROC_REF(process_hitscan))
 		return
-	if(!(datum_flags & DF_ISPROCESSING))
-		START_PROCESSING(SSprojectiles, src)
+	SSprojectiles.start_projectile(src)
 	pixel_move(round(PROJECTILE_FIRING_INSTANT_TRAVEL_AMOUNT / pixel_increment_amount), FALSE, allow_animation = FALSE)	//move it now!
 
-/obj/item/projectile/proc/setAngle(new_angle, hitscan_store_segment = TRUE)	//wrapper for overrides.
+/// A projectile may remain alive while its collision work is being serviced.
+/// Do not let that temporary backlog retain a qdeleted shooter or target until
+/// the projectile itself reaches Destroy(). One handler clears every role when
+/// the same datum is used as firer, weapon, original and/or homing target.
+/obj/item/projectile/proc/register_combat_reference_signals()
+	if(firer)
+		RegisterSignal(firer, COMSIG_PARENT_QDELETING, PROC_REF(clear_deleted_combat_reference))
+	if(fired_from && fired_from != firer)
+		RegisterSignal(fired_from, COMSIG_PARENT_QDELETING, PROC_REF(clear_deleted_combat_reference))
+	if(original && original != firer && original != fired_from)
+		RegisterSignal(original, COMSIG_PARENT_QDELETING, PROC_REF(clear_deleted_combat_reference))
+	if(homing_target && homing_target != firer && homing_target != fired_from && homing_target != original)
+		RegisterSignal(homing_target, COMSIG_PARENT_QDELETING, PROC_REF(clear_deleted_combat_reference))
+
+/obj/item/projectile/proc/clear_deleted_combat_reference(datum/source)
+	SIGNAL_HANDLER
+	UnregisterSignal(source, COMSIG_PARENT_QDELETING)
+	if(firer == source)
+		firer = null
+	if(fired_from == source)
+		fired_from = null
+	if(original == source)
+		original = null
+	if(homing_target == source)
+		homing_target = null
+
+/obj/item/projectile/proc/setAngle(new_angle, hitscan_store_segment = TRUE, interrupt_movement = TRUE)	//wrapper for overrides.
 	new_angle = sanitize_angle(new_angle, Angle)
 	Angle = new_angle
-	pixel_move_interrupted = TRUE
+	if(interrupt_movement)
+		pixel_move_interrupted = TRUE
 	if(!nondirectional_sprite)
 		var/matrix/M = new
 		M.Turn(Angle)
@@ -826,6 +883,10 @@
 				qdel(src)
 			return	//Kill!
 		pixel_move(ttm, TRUE, hitscan_movement_decisecond_equivalency)
+		// Hitscans still resolve asynchronously in one logical shot, but yield
+		// instead of monopolizing a lagged world tick across their full range.
+		if(TICK_CHECK)
+			stoplag(1)
 
 /**
   * The proc to make the projectile go, using a simulated pixel movement line trace.
@@ -834,12 +895,9 @@
   * It's complicated, so probably just don't mess with this unless you know what you're doing.
   */
 /obj/item/projectile/proc/pixel_move(times, hitscanning = FALSE, seconds_equivalent = world.tick_lag * 0.1, trajectory_multiplier = 1, allow_animation = TRUE)
+	. = 0
 	if(!loc || !trajectory)
 		return
-	if(!nondirectional_sprite && !hitscanning)
-		var/matrix/M = new
-		M.Turn(Angle)
-		transform = M
 	var/forcemoved = FALSE
 	pixel_move_interrupted = FALSE		// reset that
 	var/turf/oldloc = loc
@@ -851,9 +909,10 @@
 			// No datum/points, too expensive.
 			var/angle = closer_angle_difference(Angle, get_projectile_angle(src, homing_target))
 			var/max_turn = homing_turn_speed * seconds_equivalent
-			setAngle(Angle + clamp(angle, -max_turn, max_turn))
+			setAngle(Angle + clamp(angle, -max_turn, max_turn), interrupt_movement = FALSE)
 		// HOMING END
 		trajectory.increment(trajectory_multiplier)
+		.++
 		var/turf/T = trajectory.return_turf()
 		if(!istype(T))
 			qdel(src)
@@ -882,8 +941,8 @@
 				// the reason is the entire point of moving to pixel speed rather than tile speed is smoothness, which will be crucial when pixel movement is done in the future
 				// reverting back to tile is more or less the only way of fixing this issue.
 					return
-		pixels_range_leftover += pixel_increment_amount
-		if(pixels_range_leftover > world.icon_size)
+		pixels_range_leftover += pixel_increment_amount * trajectory_multiplier
+		while(pixels_range_leftover >= world.icon_size)
 			Range()
 			if(QDELETED(src))
 				return
@@ -894,7 +953,10 @@
 		if(allow_animation && (pixel_increment_amount * times > MINIMUM_PIXELS_TO_ANIMATE))
 			pixel_x = ((oldloc.x - x) * world.icon_size) + old_px
 			pixel_y = ((oldloc.y - y) * world.icon_size) + old_py
-			animate(src, pixel_x = traj_px, pixel_y = traj_py, time = 1, flags = ANIMATION_END_NOW)
+			// REALTIMEOFDAY has decisecond resolution. Cover that whole visual
+			// interval even on 20+ FPS worlds so the client never sees a half-tick
+			// stop between two authoritative traces.
+			animate(src, pixel_x = traj_px, pixel_y = traj_py, time = max(world.tick_lag, 1), flags = ANIMATION_END_NOW)
 		else
 			pixel_x = traj_px
 			pixel_y = traj_py
@@ -973,11 +1035,34 @@
 	return list(angle, p_x, p_y)
 
 /obj/item/projectile/Destroy()
-	STOP_PROCESSING(SSprojectiles, src)
+	SSprojectiles.stop_projectile(src)
+	// pixel_move() animates every live projectile. Queue a real zero-time
+	// animation so ANIMATION_END_NOW releases BYOND's internal animation ref
+	// instead of leaving the deleted projectile in GC until that ref expires.
+	animate(src, alpha = 0, time = 0, flags = ANIMATION_END_NOW)
 	if(hitscan)
 		finalize_hitscan_and_generate_tracers()
 	cleanup_beam_segments()
 	QDEL_NULL(trajectory)
+	if(firer)
+		UnregisterSignal(firer, COMSIG_PARENT_QDELETING)
+	if(fired_from && fired_from != firer)
+		UnregisterSignal(fired_from, COMSIG_PARENT_QDELETING)
+	if(original && original != firer && original != fired_from)
+		UnregisterSignal(original, COMSIG_PARENT_QDELETING)
+	if(homing_target && homing_target != firer && homing_target != fired_from && homing_target != original)
+		UnregisterSignal(homing_target, COMSIG_PARENT_QDELETING)
+	// A projectile may temporarily survive soft GC because BYOND is still
+	// finishing an animation/callback. It must not turn that one engine ref into
+	// a cascade which retains its shooter, target, weapon, and every impact.
+	firer = null
+	fired_from = null
+	original = null
+	homing_target = null
+	starting = null
+	last_angle_set_hitscan_store = null
+	impacted = null
+	chain = null
 	return ..()
 
 /obj/item/projectile/proc/cleanup_beam_segments()

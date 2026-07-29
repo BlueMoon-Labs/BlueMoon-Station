@@ -170,3 +170,75 @@
 					span_lewd("[is_hidden ? (picked_hidden) : null]\The <b>[target]</b> яростно борется с <b>[user]</b>."),
 					span_lewd("[is_hidden ? (picked_hidden) : null]\The <b>[target]</b> впивается в предплечье <b>[user]</b> роговыми пластинками."),
 					span_lewd("[is_hidden ? (picked_hidden) : null]\The <b>[target]</b> шлёпает <b>[user]</b> по руке.")), vision_distance = distance)
+
+/datum/interaction/lewd/kiss_breasts
+	description = "Грудь. Целовать грудь."
+	required_from_user = INTERACTION_REQUIRE_MOUTH
+	required_from_target_exposed = INTERACTION_REQUIRE_BREASTS
+	required_from_target_unexposed = INTERACTION_REQUIRE_BREASTS
+	write_log_user = "kissed breasts of"
+	write_log_target = "had their breasts kissed by"
+	interaction_sound = null
+	p13target_emote = PLUG13_EMOTE_BREASTS
+	p13target_strength = PLUG13_STRENGTH_LOW
+
+	additional_details = list(
+		list(
+			"info" = "Нежно целовать грудь партнёра.",
+			"icon" = "kiss",
+			"color" = "pink"
+		)
+	)
+
+/datum/interaction/lewd/kiss_breasts/display_interaction(mob/living/carbon/human/user, mob/living/carbon/human/target, is_hidden)
+	var/distance = 7
+	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
+	var/volume = 40
+	if(is_hidden)
+		distance = 1
+	var/picked_hidden = pick(hidden_additional)
+
+	var/message
+	var/list/lines
+
+	if(user.a_intent == INTENT_HARM)
+		lines = list(
+			"жадно впивается губами в грудь <b>[target]</b>, оставляя на коже красные следы.",
+			"грубо прикусывает сосок <b>[target]</b>, заставляя [target.ru_ego()] вздрогнуть.",
+			"настойчиво целует грудь <b>[target]</b>, покусывая чувствительную кожу.",
+			"страстно всасывает сосок <b>[target]</b>, слегка прикусывая его."
+		)
+	else
+		lines = list(
+			"нежно целует грудь <b>[target]</b>, касаясь губами нежной кожи.",
+			"мягко проводит губами по груди <b>[target]</b>, оставляя лёгкие поцелуи.",
+			"с трепетом прикасается губами к соску <b>[target]</b>, вызывая дрожь.",
+			"ласково целует грудь <b>[target]</b>, даря тепло и нежность.",
+			"медленно покрывает поцелуями грудь <b>[target]</b>, наслаждаясь моментом."
+		)
+
+	message = "<span class='lewd'>[is_hidden ? (picked_hidden) : null]\The <b>[user]</b> [pick(lines)]</span>"
+	user.visible_message(message, ignored_mobs = user.get_unconsenting(), vision_distance = distance)
+
+	// Звуки поцелуев
+	playlewdinteractionsound(get_turf(user), pick('modular_splurt/sound/interactions/kiss/kiss1.ogg',
+						'modular_splurt/sound/interactions/kiss/kiss2.ogg',
+						'modular_splurt/sound/interactions/kiss/kiss3.ogg',
+						'modular_splurt/sound/interactions/kiss/kiss4.ogg',
+						'modular_splurt/sound/interactions/kiss/kiss5.ogg'), volume, 1, extrarange)
+
+	// Обработка возбуждения
+	var/lust_amount = LOW_LUST
+	if(user.a_intent == INTENT_HARM)
+		lust_amount = NORMAL_LUST
+	target.handle_post_sex(lust_amount, null, user, ORGAN_SLOT_BREASTS)
+
+	// Реакция цели (стоны/вздохи)
+	var/threshold = target.get_climax_threshold()
+	if(threshold && prob(target.get_lust() / threshold * 40)) // 40% шанс
+		if(target.a_intent == INTENT_HELP)
+			target.visible_message(
+				pick(span_lewd("[is_hidden ? (picked_hidden) : null]\The <b>[target]</b> тихо постанывает от нежных поцелуев."),
+					span_lewd("[is_hidden ? (picked_hidden) : null]\The <b>[target]</b> выдыхает довольный вздох."),
+					span_lewd("[is_hidden ? (picked_hidden) : null]\The <b>[target]</b> мурлычет от удовольствия.")),
+				vision_distance = distance)

@@ -487,7 +487,11 @@
 		return
 	switch(action)
 		if("relabel")
-			var/label = input("New canister label:", name) as null|anything in sort_list(label2types)
+			// Сырой input() усыпляет ЭТОТ фрейм ui_act вместе с src, а BYOND держит
+			// нативный диалог до ответа даже после дисконнекта игрока - брошенное окно
+			// пинило канистру навсегда и уводило её в hard delete. tgui-модалка
+			// разматывается на логауте (SStgui.on_logout -> ui_close -> wait() выходит).
+			var/label = tgui_input_list(usr, "New canister label:", name, sort_list(label2types))
 			if(label && !..())
 				var/newtype = label2types[label]
 				if(newtype)
@@ -515,7 +519,8 @@
 				pressure = can_max_release_pressure
 				. = TRUE
 			else if(pressure == "input")
-				pressure = input("New release pressure ([can_min_release_pressure]-[can_max_release_pressure] kPa):", name, release_pressure) as num|null
+				// Тот же класс утечки, что и в "relabel" - см. комментарий выше.
+				pressure = tgui_input_number(usr, "New release pressure ([can_min_release_pressure]-[can_max_release_pressure] kPa):", name, release_pressure, can_max_release_pressure, can_min_release_pressure)
 				if(!isnull(pressure) && !..())
 					. = TRUE
 			else if(text2num(pressure) != null)
@@ -560,7 +565,8 @@
 				if("increase")
 					timer_set = min(maximum_timer_set, timer_set + 10)
 				if("input")
-					var/user_input = input(usr, "Set time to valve toggle.", name) as null|num
+					// Тот же класс утечки, что и в "relabel" - см. комментарий выше.
+					var/user_input = tgui_input_number(usr, "Set time to valve toggle.", name, timer_set, maximum_timer_set, minimum_timer_set)
 					if(!user_input)
 						return
 					var/N = text2num(user_input)

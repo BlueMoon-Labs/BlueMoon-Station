@@ -95,10 +95,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/toggles = TOGGLES_DEFAULT
 	/// A separate variable for deadmin toggles, only deals with those.
 	var/deadmin = NONE
+	var/mentor_toggles = SOUND_MENTORHELP
 	var/db_flags
 	var/chat_toggles = TOGGLES_DEFAULT_CHAT
 	/// Bitfield for chat mutes (MUTE_* flags).
 	var/muted = NONE
+	var/ticket_nickname = ""
 	var/ghost_form = "ghost"
 	var/ghost_orbit = GHOST_ORBIT_CIRCLE
 	var/ghost_accs = GHOST_ACCS_DEFAULT_OPTION
@@ -361,6 +363,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/sound_volume_jukeboxes = 100
 	var/sound_volume_personal_jukeboxes = 100
 	var/sound_volume_emote = 100
+	var/sound_volume_mentorhelp = 100
+	var/sound_volume_fax = 100
 
 	var/parallax = PARALLAX_INSANE
 
@@ -2524,18 +2528,24 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			modless_key_bindings -= old_key
 		else if(key_bindings[old_key])
 			key_bindings[old_key] -= kb_name
-			LAZYADD(key_bindings["Unbound"], kb_name)
+			var/has_buttons = FALSE
+			for(var/key in key_bindings)
+				var/list/temp = key_bindings[key]
+				if(temp.Find(kb_name))
+					has_buttons = TRUE
+					break
+			if(!has_buttons)
+				LAZYADD(key_bindings["Unbound"], kb_name)
 			if(!length(key_bindings[old_key]))
 				key_bindings -= old_key
 		if(special && user?.client)
 			user.client.ensure_keys_set(src)
 		return TRUE
 
-	var/new_key = uppertext(input["key"])
+	var/new_key = input["key"]
 	var/AltMod = text2num(input["alt"]) ? "Alt" : ""
 	var/CtrlMod = text2num(input["ctrl"]) ? "Ctrl" : ""
 	var/ShiftMod = text2num(input["shift"]) ? "Shift" : ""
-	var/numpad = text2num(input["numpad"]) ? "Numpad" : ""
 
 	if(GLOB._kbMap[new_key])
 		new_key = GLOB._kbMap[new_key]
@@ -2549,7 +2559,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		if("Shift")
 			full_key = "[AltMod][CtrlMod][new_key]"
 		else
-			full_key = "[AltMod][CtrlMod][ShiftMod][numpad][new_key]"
+			full_key = "[AltMod][CtrlMod][ShiftMod][new_key]"
 
 	if(independent)
 		modless_key_bindings -= old_key
@@ -2559,7 +2569,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			key_bindings[old_key] -= kb_name
 			if(!length(key_bindings[old_key]))
 				key_bindings -= old_key
-		key_bindings[full_key] += list(kb_name)
+		LAZYOR(key_bindings[full_key], list(kb_name))
 		key_bindings[full_key] = sort_list(key_bindings[full_key])
 
 	if(special && user?.client)

@@ -604,7 +604,7 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 		return
 
 	if(A && (A.has_gravity != has_gravity))
-		L.update_gravity(L.mob_has_gravity())
+		L.refresh_gravity()
 
 	if(!L.ckey)
 		return

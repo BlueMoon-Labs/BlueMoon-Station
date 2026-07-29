@@ -59,14 +59,9 @@
 	else
 		icon_state = initial(icon_state)
 
-/mob/living/simple_animal/hostile/mimic/crate/ListTargets()
-	if(attempt_open)
-		return ..()
-	return ..(1)
-
-/mob/living/simple_animal/hostile/mimic/crate/FindTarget()
+/mob/living/simple_animal/hostile/mimic/crate/GiveTarget(new_target)
 	. = ..()
-	if(.)
+	if(new_target)
 		trigger()
 
 /mob/living/simple_animal/hostile/mimic/crate/AttackingTarget()
@@ -83,6 +78,9 @@
 	if(!attempt_open)
 		visible_message("<b>[src]</b> starts to move!")
 		attempt_open = TRUE
+		var/datum/ai_controller/hostile_adapter/adapter = ai_controller
+		if(istype(adapter))
+			adapter.blackboard[BB_AI_AGGRO_RANGE] = max(vision_range, aggro_vision_range)
 
 /mob/living/simple_animal/hostile/mimic/crate/adjustHealth(amount, updating_health = TRUE, forced = FALSE)
 	trigger()
@@ -131,9 +129,10 @@ GLOBAL_LIST_INIT(protected_objects, list(/obj/structure/table, /obj/structure/ca
 		M.forceMove(get_turf(src))
 	..()
 
-/mob/living/simple_animal/hostile/mimic/copy/ListTargets()
-	. = ..()
-	return . - creator
+/mob/living/simple_animal/hostile/mimic/copy/CanAttack(atom/the_target)
+	if(the_target == creator)
+		return FALSE
+	return ..()
 
 /mob/living/simple_animal/hostile/mimic/copy/proc/ChangeOwner(mob/owner)
 	if(owner != creator)
@@ -243,6 +242,9 @@ GLOBAL_LIST_INIT(protected_objects, list(/obj/structure/table, /obj/structure/ca
 			Zapgun = G
 			var/obj/item/ammo_casing/energy/E = Zapgun.ammo_type[Zapgun.current_firemode_index]
 			projectiletype = initial(E.projectile_type)
+		var/datum/ai_controller/hostile_adapter/adapter = ai_controller
+		if(istype(adapter))
+			adapter.setup_from_pawn(src)
 
 /mob/living/simple_animal/hostile/mimic/copy/ranged/OpenFire(the_target)
 	if(Zapgun)

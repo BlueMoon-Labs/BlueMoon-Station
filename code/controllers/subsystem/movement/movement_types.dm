@@ -358,6 +358,8 @@
 	var/skip_first
 	///A list for the path we're currently following
 	var/list/movement_path
+	///Only one asynchronous route search may own this loop at a time.
+	var/repath_in_progress = FALSE
 	///Cooldown for repathing, prevents spam
 	COOLDOWN_DECLARE(repath_cooldown)
 
@@ -387,6 +389,8 @@
 /datum/move_loop/has_target/jps/Destroy()
 	id = null //Kill me
 	avoid = null
+	movement_path = null
+	repath_in_progress = FALSE
 	return ..()
 
 /datum/move_loop/has_target/jps/proc/handle_no_id()
@@ -395,17 +399,63 @@
 
 //Returns FALSE if the recalculation failed, TRUE otherwise
 /datum/move_loop/has_target/jps/proc/recalculate_path()
-	if(!COOLDOWN_FINISHED(src, repath_cooldown))
+	if(repath_in_progress || !COOLDOWN_FINISHED(src, repath_cooldown))
 		return
+	repath_in_progress = TRUE
 	COOLDOWN_START(src, repath_cooldown, repath_delay)
+	AI_METRIC_INC(jps_repaths)
 	SEND_SIGNAL(src, COMSIG_MOVELOOP_JPS_REPATH)
-	movement_path = get_path_to(moving, target, max_path_length, minimum_distance, id, simulated_only, avoid, skip_first)
+	var/datum/ai_controller/controller = extra_info
+	// AI chases bound the search to distance + detour slack so a walled-off close target
+	// costs a small diamond, not the whole max_path_length one. Bots keep the full radius.
+	var/effective_max = istype(controller) ? ai_effective_path_radius(moving, target, max_path_length) : max_path_length
+	var/list/new_path = get_path_to(moving, target, effective_max, minimum_distance, id, simulated_only, avoid, skip_first, src)
+	if(QDELETED(src))
+		return
+	if(!length(new_path))
+		// A target beyond the full budget is unreachable by either pathfinder, so
+		// skip the breach fallback entirely instead of blocking on a pathfinder slot
+		// for a search that can only fail. Gate on the real budget, search the bounded
+		// radius. The cheap direct loop keeps closing the gap.
+		if(istype(controller) && (!max_path_length || get_dist(moving, target) <= max_path_length))
+			new_path = controller.get_path_through_obstacles(target, effective_max, minimum_distance, id, simulated_only, avoid, skip_first, src)
+	if(QDELETED(src))
+		return
+	// An empty result while a route is still live means the rebuild failed on the move
+	// (the target ducked behind a wall). Wiping the working path over that leaves the
+	// mover standing in the middle of a corridor; let it walk the route out and repath
+	// honestly at the end instead.
+	if(length(new_path) || !length(movement_path))
+		movement_path = new_path
+	repath_in_progress = FALSE
+
+/// TRUE when the cached route no longer ends anywhere near the target. The path is
+/// planned once for wherever the target stood, and the loop only rebuilds it when the
+/// cache runs out - so the longer the route, the longer the mover chases a stale
+/// destination (a door the target left seconds ago). repath_cooldown keeps the rate
+/// bounded, so a moving target costs at most one extra search per repath_delay.
+/datum/move_loop/has_target/jps/proc/target_drifted_from_path()
+	if(repath_in_progress || !COOLDOWN_FINISHED(src, repath_cooldown))
+		return FALSE
+	var/turf/destination = movement_path[length(movement_path)]
+	var/turf/target_turf = get_turf(target)
+	if(!destination || !target_turf)
+		return FALSE
+	if(destination.z != target_turf.z)
+		return TRUE
+	return get_dist(destination, target_turf) > max(minimum_distance || 0, 1)
 
 /datum/move_loop/has_target/jps/move()
 	if(!length(movement_path))
-		INVOKE_ASYNC(src, PROC_REF(recalculate_path))
+		if(!repath_in_progress)
+			INVOKE_ASYNC(src, PROC_REF(recalculate_path))
 		if(!length(movement_path))
 			return FALSE
+
+	//Заказываем перепрокладку на ходу, не теряя текущий шаг: пока новый маршрут
+	//считается, моб продолжает идти по старому.
+	if(target_drifted_from_path())
+		INVOKE_ASYNC(src, PROC_REF(recalculate_path))
 
 	var/turf/next_step = movement_path[1]
 	var/atom/old_loc = moving.loc

@@ -846,6 +846,10 @@
 	else
 		B.add_stacks(bleed_stacks_per_hit)
 
+///Whether an occupant of the cleave arc is a valid secondary target.
+/obj/item/melee/transforming/cleaving_saw/proc/can_cleave_target(mob/living/user, mob/living/target)
+	return !QDELETED(user) && !QDELETED(target)
+
 /obj/item/melee/transforming/cleaving_saw/AltClick(mob/user)
 	. = ..()
 	roll_orientation = !roll_orientation
@@ -866,7 +870,7 @@
 		for(var/i in cleaving_saw_cleave_angles)
 			var/turf/T = get_step(user_turf, turn(dir_to_target, i))
 			for(var/mob/living/L in T)
-				if(user.Adjacent(L) && L.density)
+				if(user.Adjacent(L) && L.density && can_cleave_target(user, L))
 					melee_attack_chain(user, L)
 		swiping = FALSE
 
