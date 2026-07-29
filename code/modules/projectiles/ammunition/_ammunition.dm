@@ -22,6 +22,14 @@
 	var/harmful = TRUE //pacifism check for boolet, set to FALSE if bullet is non-lethal
 	/// Zero-G recoil strength (added to existing drift via newtonian_impulse)
 	var/newtonian_force = 1
+	var/can_be_printed = TRUE
+	/// If it can be printed, does this casing require an advanced ammunition datadisk? Mainly for specialized ammo.
+	/// Rubbers aren't advanced. Standard ammo (or FMJ if you're particularly pedantic) isn't advanced.
+	/// Think more specialized or weird, niche ammo, like armor-piercing, incendiary, hollowpoint, or God forbid, phasic.
+	var/advanced_print_req = FALSE
+
+// whatever goblin decided to spread out bullets over like 3 files and god knows however many overrides i wish you a very stubbed toe
+
 
 /obj/item/ammo_casing/proc/get_br_level()
 	var/obj/item/projectile/P = BB
@@ -41,13 +49,6 @@
 /obj/item/ammo_casing/examine(mob/user)
 	. = ..()
 	. += "<span class='notice'>Пробитие: BR[get_br_level()] ([BB.armour_penetration]% AP)</span>"
-	var/can_be_printed = TRUE
-	/// If it can be printed, does this casing require an advanced ammunition datadisk? Mainly for specialized ammo.
-	/// Rubbers aren't advanced. Standard ammo (or FMJ if you're particularly pedantic) isn't advanced.
-	/// Think more specialized or weird, niche ammo, like armor-piercing, incendiary, hollowpoint, or God forbid, phasic.
-	var/advanced_print_req = FALSE
-
-// whatever goblin decided to spread out bullets over like 3 files and god knows however many overrides i wish you a very stubbed toe
 
 /obj/item/ammo_casing/spent
 	name = "spent bullet casing"
