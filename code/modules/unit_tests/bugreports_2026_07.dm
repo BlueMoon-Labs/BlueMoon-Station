@@ -317,3 +317,73 @@
 	TEST_ASSERT(!isturf(dummy.loc), "Сброс из рук перетащил удалённый предмет на пол")
 	dummy.gc_destroyed = null
 	qdel(dummy)
+
+// "parent_qdeleting overridden" от обезьяны
+//
+// Чёрный список и цель подбора вешали на один и тот же предмет свой
+// COMSIG_PARENT_QDELETING от одного и того же регистранта, а вторая регистрация
+// перебивает первую. Побеждал обработчик подбора, и мёртвый ключ навсегда оставался
+// в blacklistItems - другой уборки у этого списка нет.
+/datum/unit_test/monkey_shares_one_item_qdel_watch/Run()
+	var/mob/living/carbon/monkey/monkey = allocate(/mob/living/carbon/monkey, run_loc_floor_bottom_left)
+	var/obj/item/rejected = allocate(/obj/item, run_loc_floor_bottom_left)
+
+	// порядок из handle_combat: предмет уже отвергнут, но снова попадает в цели подбора
+	monkey.blacklist_item(rejected)
+	TEST_ASSERT(monkey.blacklistItems[rejected], "test premise: предмет должен попасть в чёрный список")
+	monkey.set_pickup_target(rejected)
+	TEST_ASSERT_EQUAL(monkey.pickupTarget, rejected, "test premise: предмет должен стать целью подбора")
+	TEST_ASSERT(monkey.watched_qdel_items[rejected], "Обе причины обязаны делить одну подписку на удаление")
+
+	qdel(rejected)
+	TEST_ASSERT_NULL(monkey.pickupTarget, "Удалённый предмет остался целью подбора")
+	TEST_ASSERT_NULL(monkey.pickupTargetSignalTarget, "Обезьяна не отпустила подписку на удалённую цель подбора")
+	TEST_ASSERT(!(rejected in monkey.blacklistItems), "Мёртвый ключ остался в blacklistItems: чистить его больше некому")
+	TEST_ASSERT(!(rejected in monkey.watched_qdel_items), "Обезьяна не сняла подписку с удалённого предмета")
+
+	// обратный порядок: смена цели подбора не должна ронять подписку,
+	// которая всё ещё нужна чёрному списку
+	var/obj/item/dropped = allocate(/obj/item, run_loc_floor_bottom_left)
+	monkey.set_pickup_target(dropped)
+	monkey.blacklist_item(dropped)
+	monkey.set_pickup_target(null)
+	TEST_ASSERT(monkey.watched_qdel_items[dropped], "Смена цели подбора сняла подписку, нужную чёрному списку")
+
+	qdel(dropped)
+	TEST_ASSERT(!(dropped in monkey.blacklistItems), "Отпущенный, но всё ещё отвергнутый предмет остался в blacklistItems")
+	TEST_ASSERT(!(dropped in monkey.watched_qdel_items), "Обезьяна не сняла подписку с удалённого предмета из чёрного списка")
+
+	// а предмет, за которым больше некому следить, подписку обязан потерять
+	var/obj/item/forgotten = allocate(/obj/item, run_loc_floor_bottom_left)
+	monkey.set_pickup_target(forgotten)
+	TEST_ASSERT(monkey.watched_qdel_items[forgotten], "test premise: цель подбора обязана заводить подписку")
+	monkey.set_pickup_target(null)
+	TEST_ASSERT(!(forgotten in monkey.watched_qdel_items), "Подписка пережила предмет, за которым больше нет причин следить")
+
+// "mob_death overridden" от верба навигации
+//
+// cut_navigation() читала client.navigation_images до UnregisterSignal и без проверки
+// клиента: у разлогиненного моба прок падал на первой же строке, а подписка на
+// COMSIG_MOB_DEATH оставалась висеть - следующий маршрут её перебивал.
+/datum/unit_test/navigation_cut_survives_a_clientless_mob/Run()
+	var/mob/living/carbon/human/walker = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	TEST_ASSERT_NULL(walker.client, "test premise: тестовый моб должен быть без клиента")
+	TEST_ASSERT(!watches_own_death(walker), "test premise: моб не должен быть подписан на собственную смерть заранее")
+
+	// ровно то, что делает create_navigation() в конце
+	walker.RegisterSignal(walker, COMSIG_MOB_DEATH, TYPE_PROC_REF(/mob/living, cut_navigation))
+	TEST_ASSERT(watches_own_death(walker), "test premise: подписка навигации должна завестись")
+
+	walker.cut_navigation()
+	TEST_ASSERT(!watches_own_death(walker), \
+		"cut_navigation() у моба без клиента не сняла подписку на COMSIG_MOB_DEATH")
+
+/// Подписан ли моб сам на свою смерть: маршрут навигации заводит эту подписку и обязан снимать её сам.
+/datum/unit_test/navigation_cut_survives_a_clientless_mob/proc/watches_own_death(mob/living/walker)
+	var/list/all_registrations = walker.signal_procs
+	if(!all_registrations)
+		return FALSE
+	var/list/own_registrations = all_registrations[walker]
+	if(!own_registrations)
+		return FALSE
+	return !isnull(own_registrations[COMSIG_MOB_DEATH])

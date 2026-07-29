@@ -196,6 +196,8 @@
 	else
 		message = input(usr, "", "Whisper") as text|null
 
+	if(QDELETED(src))	//окно ввода переживает своего моба: гост-кафе успевает его удалить
+		return
 	if(!length(message))
 		return
 	QUEUE_OR_CALL_VERB_FOR(VERB_CALLBACK(src, TYPE_PROC_REF(/mob, whisper), message), SSspeech_controller)

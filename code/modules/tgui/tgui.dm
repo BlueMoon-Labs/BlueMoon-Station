@@ -134,9 +134,17 @@
 	if(!user?.client)
 		close(can_be_suspended = FALSE)
 		return FALSE
-	window.send_message("update", get_payload(
+	var/list/payload = get_payload(
 		with_data = TRUE,
-		with_static_data = TRUE))
+		with_static_data = TRUE)
+	//сбор нагрузки тоже спит: если за это время окно закрыли, открывать нечего.
+	//закрываемся честно, иначе окно останется залоченным за брошенным датумом и
+	//пул не отдаст его следующему интерфейсу
+	if(!payload || !can_send_update())
+		if(!QDELETED(src))
+			close(can_be_suspended = FALSE)
+		return FALSE
+	window.send_message("update", payload)
 	SStgui.on_open(src)
 
 	return TRUE
@@ -240,10 +248,16 @@
 		return
 	refreshing = FALSE
 	var/should_update_data = force || status >= UI_UPDATE
-	window.send_message("update", get_payload(
+	var/list/payload = get_payload(
 		custom_data,
 		with_data = should_update_data,
-		with_static_data = TRUE))
+		with_static_data = TRUE)
+	//get_payload() спит внутри ui_data()/ui_static_data(): за это время окно успевают
+	//закрыть, а close() отдаёт его обратно в пул через release_lock() - пустая
+	//нагрузка приехала бы уже чужому интерфейсу
+	if(!payload || !can_send_update())
+		return
+	window.send_message("update", payload)
 	COOLDOWN_START(src, refresh_cooldown, TGUI_REFRESH_FULL_UPDATE_COOLDOWN)
 
 /**
@@ -258,9 +272,27 @@
 	if(!user?.client || !initialized || closing)
 		return
 	var/should_update_data = force || status >= UI_UPDATE
-	window.send_message("update", get_payload(
+	var/list/payload = get_payload(
 		custom_data,
-		with_data = should_update_data))
+		with_data = should_update_data)
+	//см. send_full_update(): собирать нагрузку можно долго, а окно за это время
+	//могло уйти в пул к другому интерфейсу
+	if(!payload || !can_send_update())
+		return
+	window.send_message("update", payload)
+
+/**
+ * private
+ *
+ * Окно ещё наше и его есть кому показать: проверка обязана стоять после каждого
+ * потенциально спящего вызова, а не только перед ним.
+ */
+/datum/tgui/proc/can_send_update()
+	if(QDELETED(src) || closing || !window)
+		return FALSE
+	if(window.locked_by != src)
+		return FALSE
+	return !isnull(user?.client) && !isnull(src_object)
 
 /**
  * private
@@ -270,7 +302,7 @@
  * return list
  */
 /datum/tgui/proc/get_payload(custom_data, with_data, with_static_data)
-	if (!user?.client)
+	if(!user?.client || !src_object)
 		return
 	var/list/json_data = list()
 	json_data["config"] = list(
@@ -296,10 +328,22 @@
 			"observer" = isobserver(user),
 		),
 	)
-	var/data = custom_data || with_data && src_object.ui_data(user)
+	var/data = custom_data
+	if(!data && with_data)
+		data = src_object.ui_data(user)
+		//ui_data() имеет полное право уснуть - панель антагов, например, уходит в
+		//jobban_isbanned() и ждёт ответа базы. Пока прок спит, окно успевают закрыть,
+		//а Destroy() обнуляет и user, и src_object: собирать нагрузку больше не для кого
+		if(QDELETED(src) || !user?.client || !src_object)
+			return
 	if(data)
 		json_data["data"] = data
-	var/static_data = with_static_data && src_object.ui_static_data(user)
+	var/static_data
+	if(with_static_data)
+		static_data = src_object.ui_static_data(user)
+		//ui_static_data() спит по тем же причинам, что и ui_data()
+		if(QDELETED(src) || !user?.client || !src_object)
+			return
 	if(static_data)
 		json_data["static_data"] = static_data
 	if(src_object.tgui_shared_states)
@@ -315,9 +359,15 @@
 /datum/tgui/process(delta_time, force = FALSE)
 	if(closing)
 		return
+	// Порядок важен: src_object мог быть обнулён в Destroy() или хардделнут, и
+	// разыменование до проверки давало бы ровно тот же класс рантайма, что мы тут
+	// и чиним. Проверка окна включает потерю лока: окно, уехавшее в пул, нам уже
+	// не принадлежит - такой интерфейс надо закрыть, а не молча перестать обновлять.
+	if(!src_object || !user || !window || window.locked_by != src)
+		close(can_be_suspended = FALSE)
+		return
 	var/datum/host = src_object.ui_host(user)
-	// If the object or user died (or something else), abort.
-	if(!src_object || !host || !user || !window)
+	if(!host)
 		close(can_be_suspended = FALSE)
 		return
 	// Validate ping
@@ -339,7 +389,10 @@
 		close()
 		return
 	if(needs_update)
-		window.send_message("update", get_payload())
+		var/list/payload = get_payload()
+		if(!payload || !can_send_update())
+			return
+		window.send_message("update", payload)
 
 /**
  * private
