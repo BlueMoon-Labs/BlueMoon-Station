@@ -679,9 +679,11 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	if(!winexists(src, "asset_cache_browser")) // The client is using a custom skin, tell them.
 		to_chat(src, "<span class='warning'>Unable to access asset cache browser, if you are using a custom skin file, please allow DS to download the updated version, if you are not, then make a bug report. This is not a critical issue but can cause issues with resource downloading, as it is impossible to know when extra resources arrived to you.</span>")
 
-	//This is down here because of the browse() calls in tooltip/New()
-	if(!tooltips)
-		tooltips = new /datum/tooltip(src)
+	// Тултип больше не заводится на логине: его New() шлёт клиенту jquery (95 КБ),
+	// и это единственный ассет, который межсессионный кэш пропустить не может -
+	// клиентский список намеренно выбрасывает всё с расширением js. За прод-раунд
+	// набегало 300+ отправок, почти 30 МБ, из них треть в первые пять минут, ровно
+	// когда у всех грузятся окна. Датум создаётся при первом наведении, см. openToolTip().
 
 	var/list/topmenus = GLOB.menulist[/datum/verbs/menu]
 	for (var/thing in topmenus)
@@ -983,7 +985,18 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 /client/Del()
 	if(!gc_destroyed)
 		Destroy() //Clean up signals and timers.
-	return ..()
+	// ..() здесь - это встроенное удаление, внутри которого BYOND и обходит мир,
+	// вычищая уцелевшие ссылки. Меряем именно его: половина дисконнектов прошлого
+	// раунда стоила около полусекунды заморозки, и без этой отметки детектор
+	// спайков валит их в общую кучу "внешний столл", где они выглядят как проблема
+	// хоста, а не наша. Порог тот же, что у остальной медленной работы.
+	var/deletion_started = TICK_USAGE
+	. = ..()
+	if(!SStick_spikes)
+		return
+	var/deletion_cost_ms = TICK_DELTA_TO_MS(TICK_USAGE - deletion_started)
+	if(deletion_cost_ms >= SStick_spikes.slow_work_threshold_ms)
+		SStick_spikes.record_slow_work("del", "/client (логаут)", deletion_cost_ms)
 
 /client/Destroy()
 	GLOB.clients -= src
@@ -1027,8 +1040,34 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	// seen_messages = null
 	Master.UpdateTickRate()
 	. = ..() //Even though we're going to be hard deleted there are still some things that want to know the destroy is happening
-	screen.Cut()
+	//Строго после ..(): обработчики COMSIG_PARENT_QDELETING имеют право читать
+	//client.prefs и экран, а до реального del() мы всё равно успеваем - хинт ниже
+	//отдаёт удаление SSgarbage, то есть оно случится уже после выхода отсюда.
+	release_owned_references()
 	return QDEL_HINT_HARDDEL_NOW
+
+/**
+ * Рвёт ссылки, которые пережили бы Destroy и заставили BYOND искать нас по всему миру.
+ *
+ * del() освобождает объект бесплатно только при нулевом refcount. Стоит остаться одной
+ * живой ссылке - и BYOND идёт полным обходом мира, обнуляя её; на населённой станции
+ * это сотни миллисекунд заморозки на КАЖДЫЙ дисконнект, и цена растёт вместе с миром.
+ *
+ * Держатели, которые Destroy раньше не снимал вовсе: датум преференсов живёт в GLOB
+ * вечно и пишет нас в parent на каждом логине, тултип, ловцы кликов и держатель
+ * параллакса ссылаются на нас напрямую, а client.images не резался никогда.
+ */
+/client/proc/release_owned_references()
+	if(prefs?.parent == src)
+		prefs.parent = null
+	prefs = null
+	QDEL_NULL(tooltips)
+	QDEL_NULL(parallax_holder)
+	QDEL_NULL(void)
+	QDEL_NULL(void_right)
+	QDEL_NULL(void_bottom)
+	screen.Cut()
+	images.Cut()
 
 /client/proc/set_client_age_from_db(connectiontopic)
 	if (IsGuestKey(src.key))

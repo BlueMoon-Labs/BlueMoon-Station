@@ -179,6 +179,10 @@ export const getWindowSize = () => {
 // 516 migration: BYOND IPC (winget + winset→resize) can exceed 250ms under load.
 // Increase to 1500ms to prevent premature reveal at wrong window size.
 const SIZE_APPLY_TIMEOUT_MS = 1500;
+// Опрос идёт таймером, а не requestAnimationFrame: окна пула открываются скрытыми
+// (is-visible=0), а в скрытом WebView2 rAF не тикает и resize не приходит - оба
+// канала детекции были мертвы, и гейт всегда доезжал до таймаута.
+const SIZE_APPLY_POLL_MS = 50;
 
 const isWindowSizeApplied = targetSize => {
   const pr = getBrowserPixelRatio();
@@ -203,7 +207,7 @@ const waitForWindowSizeApplied = targetSize => {
     let done = false;
     let resizeEvents = 0;
     let timeoutId = null;
-    let rafId = null;
+    let pollId = null;
     let onResize;
     const finish = (reason, matched) => {
       if (done) {
@@ -213,8 +217,8 @@ const waitForWindowSizeApplied = targetSize => {
       if (timeoutId) {
         clearTimeout(timeoutId);
       }
-      if (rafId) {
-        cancelAnimationFrame(rafId);
+      if (pollId) {
+        clearTimeout(pollId);
       }
       window.removeEventListener('resize', onResize);
       resolve({
@@ -236,13 +240,28 @@ const waitForWindowSizeApplied = targetSize => {
       resizeEvents += 1;
       maybeFinish('resize');
     };
-    const onFrame = () => {
+    const onPoll = () => {
       if (done) {
         return;
       }
-      maybeFinish('animationFrame');
+      maybeFinish('poll');
+      if (done) {
+        return;
+      }
+      // Спрашиваем сам BYOND: winset шлёт ВНЕШНИЙ размер окна, а getWindowSize()
+      // отдаёт клиентскую область, и у окон с заголовком они не совпадут никогда -
+      // сверка с innerWidth не сходилась ровно на высоту заголовка.
+      Byond.winget(window.__windowId__, 'size').then(size => {
+        if (done || !size) {
+          return;
+        }
+        const applied = String(size).split(/[x,]/).map(Number);
+        if (applied.length === 2 && applied[0] === targetSize[0] && applied[1] === targetSize[1]) {
+          finish('winget', true);
+        }
+      });
       if (!done) {
-        rafId = requestAnimationFrame(onFrame);
+        pollId = setTimeout(onPoll, SIZE_APPLY_POLL_MS);
       }
     };
     window.addEventListener('resize', onResize);
@@ -250,7 +269,7 @@ const waitForWindowSizeApplied = targetSize => {
     if (done) {
       return;
     }
-    rafId = requestAnimationFrame(onFrame);
+    pollId = setTimeout(onPoll, SIZE_APPLY_POLL_MS);
     timeoutId = setTimeout(() => {
       finish('timeout', false);
     }, SIZE_APPLY_TIMEOUT_MS);

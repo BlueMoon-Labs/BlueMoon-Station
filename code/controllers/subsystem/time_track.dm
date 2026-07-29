@@ -44,6 +44,11 @@ SUBSYSTEM_DEF(time_track)
 	var/ping_samples = 0
 	var/ping_rtt_last_avg = 0
 	var/ping_rtt_last_max = 0
+	/// Максимум серверной доли пинга, накопленный между строками CSV.
+	/// rtt_last_max читают как задержку сервера, а это максимум по худшему клиенту
+	/// мира: на проде rtt_last_max/tick_last_max = 1.005, то есть многосекундные
+	/// хвосты там целиком чужая сеть. Эта колонка - про нас и только про нас.
+	var/ping_server_max_window = 0
 	var/ping_rtt_avg_avg = 0
 	var/ping_tick_last_avg = 0
 	var/ping_tick_last_max = 0
@@ -104,6 +109,7 @@ SUBSYSTEM_DEF(time_track)
 			"raw_jitter_abs_last",
 			"raw_jitter_abs_avg",
 			"raw_jitter_abs_max_window",
+			"server_max_window",
 			"glide_size_multiplier_current",
 		)
 	)
@@ -160,6 +166,9 @@ SUBSYSTEM_DEF(time_track)
 		ping_rtt_last_max = max(ping_rtt_last_max, rtt_last)
 		ping_tick_last_max = max(ping_tick_last_max, tick_last)
 		ping_server_last_max = max(ping_server_last_max, server_last)
+		// Копится через окно, а не сбрасывается каждый вызов: сэмплы приходят чаще,
+		// чем пишется CSV, и мгновенный срез терял большую часть значений.
+		ping_server_max_window = max(ping_server_max_window, server_last)
 
 	if(!ping_samples)
 		return
@@ -282,10 +291,12 @@ SUBSYSTEM_DEF(time_track)
 				raw_multiplier_jitter_abs_last,
 				raw_multiplier_jitter_abs_avg,
 				raw_multiplier_jitter_abs_max_window,
+				ping_server_max_window,
 				glide_size_multiplier_current,
 			)
 		)
 		raw_multiplier_jitter_abs_max_window = 0
+		ping_server_max_window = 0
 
 #undef PING_PERF_LOG_EVERY_TICKS
 #undef PING_PERF_SPIKE_RTT_MS

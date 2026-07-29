@@ -53,7 +53,9 @@
 /datum/datacore/proc/generate_manifest_photo(mob/living/carbon/human/H, datum/preferences/prefs, assigned_role, datum/data/record/general_record, datum/data/record/locked_record)
 	var/static/list/show_directions = list(SOUTH, WEST)
 	var/datum/job/photo_job = assigned_role ? SSjob.GetJob(assigned_role) : null
-	var/icon/photo_icon = get_flat_human_icon(null, photo_job, prefs, DUMMY_HUMAN_SLOT_MANIFEST, show_directions)
+	// no_anim: фотография в записи статична, а без флага getFlatIcon тянет все кадры
+	// анимации каждого оверлея - это самая дорогая часть очереди фото манифеста.
+	var/icon/photo_icon = get_flat_human_icon(null, photo_job, prefs, DUMMY_HUMAN_SLOT_MANIFEST, show_directions, no_anim = TRUE)
 	if(!photo_icon)
 		return
 	if(!QDELETED(general_record))
@@ -638,4 +640,4 @@
 		C = H.client
 	if(C)
 		P = C.prefs
-	return get_flat_human_icon(null, J, P, DUMMY_HUMAN_SLOT_MANIFEST, show_directions)
+	return get_flat_human_icon(null, J, P, DUMMY_HUMAN_SLOT_MANIFEST, show_directions, no_anim = TRUE)

@@ -1133,7 +1133,10 @@ GLOBAL_LIST_EMPTY(humanoid_icon_cache)
 //For creating consistent icons for human looking simple animals
 /proc/get_flat_human_icon(icon_id, datum/job/J, datum/preferences/prefs, dummy_key, showDirs = GLOB.cardinals, outfit_override = null, no_anim = FALSE)
 	if(!icon_id || !GLOB.humanoid_icon_cache[icon_id])
-		var/mob/living/carbon/human/dummy/body = generate_or_wait_for_human_dummy(dummy_key)
+		// regenerate = FALSE: манекен всё равно переодевается прямо ниже и трижды
+		// перерисовывается перед getFlatIcon, так что штатный regenerate_icons()
+		// на входе - выброшенная работа на каждом вызове.
+		var/mob/living/carbon/human/dummy/body = generate_or_wait_for_human_dummy(dummy_key, regenerate = FALSE)
 
 		if(prefs)
 			prefs.copy_to(body,TRUE,FALSE)
@@ -1181,9 +1184,12 @@ GLOBAL_LIST_EMPTY(humanoid_icon_cache)
 		if(!out_icon || !out_icon.Width())
 			out_icon = icon('icons/effects/effects.dmi', "nothing")
 
-		GLOB.humanoid_icon_cache[icon_id] = out_icon
-		if(length(GLOB.humanoid_icon_cache) > HUMANOID_ICON_CACHE_MAX)
-			GLOB.humanoid_icon_cache.Cut(1, (HUMANOID_ICON_CACHE_MAX / 4) + 1) // Evict oldest 25%
+		// Без ключа кэшировать нечего: запись легла бы под индекс null, куда ни один
+		// lookup не придёт, зато вытесняла бы настоящие записи при переполнении.
+		if(icon_id)
+			GLOB.humanoid_icon_cache[icon_id] = out_icon
+			if(length(GLOB.humanoid_icon_cache) > HUMANOID_ICON_CACHE_MAX)
+				GLOB.humanoid_icon_cache.Cut(1, (HUMANOID_ICON_CACHE_MAX / 4) + 1) // Evict oldest 25%
 		dummy_key? unset_busy_human_dummy(dummy_key) : qdel(body)
 		return out_icon
 	else
@@ -1470,7 +1476,10 @@ GLOBAL_LIST_EMPTY(icon2html_result_cache)
 		icon2collapse = A.icon
 		if (isnull(icon_state))
 			icon_state = A.icon_state
-			if (!(icon_state in icon_states(icon2collapse, 1)))
+			// Через мемоизированный список: сырой icon_states() заново разбирает весь
+			// лист, а у крупных (борговский widerobot.dmi - мегабайт на 364 стейта)
+			// это и есть основная цена холодного промаха кэша icon2html.
+			if (!(icon_state in cached_icon_states(icon2collapse, 1)))
 				icon_state = initial(A.icon_state)
 				if (isnull(dir))
 					dir = initial(A.dir)

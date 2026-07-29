@@ -140,11 +140,17 @@ SUBSYSTEM_DEF(tgui)
  * required window_id string
  */
 /datum/controller/subsystem/tgui/proc/force_close_window(mob/user, window_id)
-	log_tgui(user, context = "SStgui/force_close_window")
+	var/closed_uis = 0
 	// Close all tgui datums based on window_id.
 	for(var/datum/tgui/ui in user.tgui_open_uis)
 		if(ui.window && ui.window.id == window_id)
 			ui.close(can_be_suspended = FALSE)
+			closed_uis++
+	// Игрок закрыл окно крестиком - это штатное событие, а не происшествие: за
+	// прод-раунд сюда приходило 500 строк, и ни одна ничего не диагностировала.
+	// Интересен только случай, когда окно закрылось, а датума под него не нашлось.
+	if(!closed_uis)
+		log_tgui(user, "no matching tgui datum for window_id=[window_id]", context = "SStgui/force_close_window")
 	// Unset machine just to be sure.
 	user.unset_machine()
 	// Close window directly just to be sure.

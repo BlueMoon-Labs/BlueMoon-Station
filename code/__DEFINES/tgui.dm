@@ -13,7 +13,11 @@
 #define TGUI_WINDOW_HARD_LIMIT 9
 
 /// Maximum ping timeout allowed to detect zombie windows
-#define TGUI_PING_TIMEOUT 4 SECONDS
+/// Сколько ждём от клиента ready/pingReply, прежде чем счесть окно зомби и убить.
+/// Клиент ретраит ready 30 секунд (tgui/public/tgui.html), а измеренный на проде
+/// худший round-trip доходил до 10 секунд - с прежними 4 секундами сервер убивал
+/// окна, которые просто не успели догрузить бандл.
+#define TGUI_PING_TIMEOUT 20 SECONDS
 /// Used for rate-limiting to prevent DoS by excessively refreshing a TGUI window
 #define TGUI_REFRESH_FULL_UPDATE_COOLDOWN 5 SECONDS
 

@@ -113,6 +113,12 @@ Notes:
 //Includes sanity.checks
 /proc/openToolTip(mob/user = null, atom/movable/tip_src = null, params = null,title = "",content = "",theme = "")
 	if(istype(user))
+		// Ленивое создание: датум тянет за собой jquery и html, и платить за это
+		// на каждом логине незачем - подавляющее большинство сессий тултипов не
+		// открывает вовсе. Цена - первое наведение за сессию может не показать
+		// подсказку, пока ресурсы едут.
+		if(user.client && !user.client.tooltips)
+			user.client.tooltips = new /datum/tooltip(user.client)
 		if(user.client && user.client.tooltips)
 			if(!theme && user.client.prefs && user.client.prefs.UI_style)
 				theme = lowertext(user.client.prefs.UI_style)

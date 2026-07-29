@@ -33,6 +33,14 @@
 	//serializable string for the UI to keep track of which outfit is selected
 	var/selected_identifier = "/datum/outfit"
 
+	/// Готовые base64-превью по selected_identifier.
+	/// Манекен собирается один раз в init_dummy() и до закрытия окна не меняется,
+	/// поэтому повторный показ того же аутфита рендерить незачем: полный проход
+	/// getFlatIcon по четырём направлениям плюс icon2base64_scaled стоил около
+	/// полусекунды серверного времени на каждый клик по списку.
+	/// Кастомные аутфиты правятся на ходу, их не кэшируем.
+	var/list/preview_cache = list()
+
 /datum/select_equipment/New(_user, mob/target)
 	user = CLIENT_FROM_VAR(_user)
 
@@ -109,11 +117,17 @@
 	if(!dummy_key)
 		init_dummy()
 
-	var/icon/dummysprite = get_flat_human_icon(null,
-		dummy_key = dummy_key,
-		outfit_override = selected_outfit,
-		no_anim = TRUE)
-	data["icon64"] = icon2base64_scaled(dummysprite, 2)
+	var/cacheable_preview = ispath(selected_outfit)
+	var/preview = cacheable_preview ? preview_cache[selected_identifier] : null
+	if(!preview)
+		var/icon/dummysprite = get_flat_human_icon(null,
+			dummy_key = dummy_key,
+			outfit_override = selected_outfit,
+			no_anim = TRUE)
+		preview = icon2base64_scaled(dummysprite, 2)
+		if(cacheable_preview)
+			preview_cache[selected_identifier] = preview
+	data["icon64"] = preview
 	data["name"] = target_mob
 
 	var/datum/preferences/prefs = user?.client?.prefs

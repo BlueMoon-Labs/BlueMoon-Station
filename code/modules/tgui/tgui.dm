@@ -102,7 +102,6 @@
 	window = SStgui.request_pooled_window(user)
 	if(!window)
 		return FALSE
-	opened_at = world.time
 	// Окно забирает фокус у карты, и отпускание зажатой клавиши уходит уже в
 	// него. До BYOND оно не доходит, keys_held остаётся с клавишей внутри, и
 	// keyLoop() шагает дальше - персонаж уходит сам, пока клавишу не нажмут
@@ -145,6 +144,10 @@
 	if(!user?.client)
 		close(can_be_suspended = FALSE)
 		return FALSE
+	// Отсчёт зомби-таймаута начинаем отсюда, а не с начала open(): выше окно ждало
+	// initialize() и доставку ассетов, и на медленном канале весь бюджет уходил на
+	// байты, которые ещё едут. Судить окно надо с момента, когда всё отправлено.
+	opened_at = world.time
 	window.send_message("update", get_payload(
 		with_data = TRUE,
 		with_static_data = TRUE))
@@ -331,8 +334,10 @@
 	if(!src_object || !host || !user || !window)
 		close(can_be_suspended = FALSE)
 		return
-	// Validate ping
-	if(!initialized && world.time - opened_at > TGUI_PING_TIMEOUT)
+	// Validate ping. opened_at взводится в самом конце open(), уже после доставки
+	// ассетов; пока он пуст, судить окно не по чему - null в арифметике DM это ноль,
+	// и без проверки любое такое окно мгновенно считалось бы просроченным.
+	if(!initialized && opened_at && world.time - opened_at > TGUI_PING_TIMEOUT)
 		log_tgui(user, \
 			"Error: Zombie window detected, killing it with fire.\n" \
 			+ "window_id: [window.id]\n" \
