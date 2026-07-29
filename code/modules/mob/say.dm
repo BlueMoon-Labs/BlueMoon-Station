@@ -68,7 +68,6 @@
 		else
 			message = stripped_input_or_reflect(usr, "", "Say")
 
-	clear_typing_indicator()		// clear it immediately!
 	if(!length(message))
 		return
 	client?.last_activity = world.time
@@ -135,8 +134,6 @@
 		else
 			message = stripped_multiline_input_or_reflect(usr, "", "Me")
 
-	clear_typing_indicator()		// clear it immediately!
-
 	if(!length(message))
 		return
 
@@ -200,7 +197,7 @@
 	set hidden = TRUE
 	if(!message)
 		return
-	me_verb(message)
+	whisper_verb(message)
 
 /mob/verb/whisper_verb(message = "" as text)
 	set name = "Whisper"

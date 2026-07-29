@@ -118,7 +118,7 @@
 //ambition start
 #define MAX_AMBITION_LEN		1024
 //ambition end
-#define MAX_MESSAGE_LEN			4096
+#define MAX_MESSAGE_LEN			8192
 #define MAX_FLAVOR_LEN			4096
 #define MAX_FLAVOR_PREVIEW_LEN	40
 #define MAX_TASTE_LEN			400 //lick... vore... ew... //BLUEMOON EDIT
