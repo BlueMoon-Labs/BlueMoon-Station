@@ -111,7 +111,8 @@
 				var/list/the_set = macrosets[macroset]
 				the_set[actual] = command
 				for(var/i in overriding)
-					the_set[i] = NONSENSICAL_VERB
+					if(!the_set[i])
+						the_set[i] = NONSENSICAL_VERB
 	else
 		// For classic mode, we just directly set things because BYOND is so jank why do we even bother?
 		// What we want is to force Ctrl on for all keybinds without Ctrl or Alt set, to preserve old behavior
