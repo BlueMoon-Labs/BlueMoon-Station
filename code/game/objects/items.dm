@@ -233,8 +233,11 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 	if(ismob(loc) && !QDELING(loc))
 		var/mob/m = loc
 		m.temporarilyRemoveItemFromInventory(src, TRUE)
-	for(var/X in actions)
-		qdel(X)
+	// QDEL_LIST, а не ручной цикл: /datum/action/Destroy() вычёркивает себя из actions, и
+	// обход живого списка пропускал каждое второе действие. Плюс сам список обязан
+	// обнулиться - иначе предмет держит ссылки на уже удалённые датумы действий.
+	QDEL_LIST(actions)
+	actions = null
 	return ..()
 
 /obj/item/ComponentInitialize()

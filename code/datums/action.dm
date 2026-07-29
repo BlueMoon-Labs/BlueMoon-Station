@@ -58,6 +58,12 @@
 /datum/action/Destroy()
 	if(owner)
 		Remove(owner)
+	// Обнулить свой target было мало: сам предмет продолжал держать нас в actions, а его
+	// собственный Destroy() до нас мог и не дойти (действие переживало предмет, если
+	// удалялось отдельно). Вычёркиваемся сами.
+	if(isitem(target))
+		var/obj/item/item_target = target
+		LAZYREMOVE(item_target.actions, src)
 	target = null
 	QDEL_LIST_ASSOC_VAL(viewers) // Qdel the buttons in the viewers list **NOT THE HUDS**
 	return ..()

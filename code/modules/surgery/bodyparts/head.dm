@@ -83,6 +83,10 @@
 			if(istype(I, /obj/item/reagent_containers/pill))
 				for(var/datum/action/item_action/hands_free/activate_pill/AP in I.actions)
 					qdel(AP)
+			// Глаза уезжают из головы наравне с остальным содержимым, но поле eyes
+			// оставалось на них ссылкой: голова жила дальше и держала орган.
+			if(I == eyes)
+				eyes = null
 			I.forceMove(T)
 
 /obj/item/bodypart/head/update_limb(dropping_limb, mob/living/carbon/source)
