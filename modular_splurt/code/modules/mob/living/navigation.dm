@@ -19,7 +19,7 @@
 	if(incapacitated())
 		return
 	if(navigate_choosing_destination)
-		balloon_alert(src, "already picking a destination!")
+		balloon_alert(src, "точка уже выбирается!")
 		return
 	if(length(client?.navigation_images))
 		addtimer(CALLBACK(src, PROC_REF(cut_navigation)), world.tick_lag)

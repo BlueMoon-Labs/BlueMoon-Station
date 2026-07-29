@@ -43,20 +43,20 @@
 	prefs.be_special = list()
 
 	for(var/i in 1 to 4)
-		TEST_ASSERT(prefs.set_antag_preference(role, 0), "Setting an antag preference must report a change")
+		TEST_ASSERT(prefs.set_antag_preference(role, ANTAG_PRIORITY_HIGH), "Setting an antag preference must report a change")
 	TEST_ASSERT_EQUAL(length(prefs.be_special), 1, "Re-picking the same priority must not append duplicate rows")
-	TEST_ASSERT_EQUAL(prefs.be_special[role], 0, "The stored priority must be the one that was picked")
+	TEST_ASSERT_EQUAL(prefs.be_special[role], ANTAG_PRIORITY_HIGH, "The stored priority must be the one that was picked")
 
-	prefs.set_antag_preference(role, 1)
+	prefs.set_antag_preference(role, ANTAG_PRIORITY_LOW)
 	TEST_ASSERT_EQUAL(length(prefs.be_special), 1, "Switching priority must not append a duplicate row")
-	TEST_ASSERT_EQUAL(prefs.be_special[role], 1, "Switching priority must overwrite the stored value")
+	TEST_ASSERT_EQUAL(prefs.be_special[role], ANTAG_PRIORITY_LOW, "Switching priority must overwrite the stored value")
 
-	prefs.set_antag_preference(role, -1)
+	prefs.set_antag_preference(role, ANTAG_PRIORITY_DISABLED)
 	TEST_ASSERT(!(role in prefs.be_special), "Disabling an antag preference must actually remove the role")
 	TEST_ASSERT_EQUAL(length(prefs.be_special), 0, "Disabling must not leave a leftover row behind")
 
 	// незнакомые роли не должны попадать в сейв
-	TEST_ASSERT(!prefs.set_antag_preference("definitely not a real antag role", 0), "An unknown role must be rejected")
+	TEST_ASSERT(!prefs.set_antag_preference("definitely not a real antag role", ANTAG_PRIORITY_HIGH), "An unknown role must be rejected")
 	TEST_ASSERT_EQUAL(length(prefs.be_special), 0, "An unknown role must not be written into be_special")
 
 	qdel(prefs)
@@ -68,13 +68,13 @@
 
 	// ровно то, что накапливалось у игроков: значение только у первого вхождения
 	prefs.be_special = list(role, role, role)
-	prefs.be_special[role] = 1
+	prefs.be_special[role] = ANTAG_PRIORITY_LOW
 
 	prefs.update_preferences(77, null)
 
 	TEST_ASSERT_EQUAL(length(prefs.be_special), 1, "The savefile migration must collapse duplicated antag rows")
-	TEST_ASSERT_EQUAL(prefs.be_special[role], 1, "The migration must keep the priority the player had picked")
-	TEST_ASSERT(prefs.set_antag_preference(role, -1), "A repaired preference must be switchable off")
+	TEST_ASSERT_EQUAL(prefs.be_special[role], ANTAG_PRIORITY_LOW, "The migration must keep the priority the player had picked")
+	TEST_ASSERT(prefs.set_antag_preference(role, ANTAG_PRIORITY_DISABLED), "A repaired preference must be switchable off")
 	TEST_ASSERT(!(role in prefs.be_special), "A repaired preference must actually switch off")
 
 	qdel(prefs)

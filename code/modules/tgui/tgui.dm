@@ -168,9 +168,15 @@
 		// Windows you want to keep are usually blue screens of death
 		// and we want to keep them around, to allow user to read
 		// the error message properly.
-		window.release_lock()
-		window.close(can_be_suspended, logout)
-		src_object.ui_close(user)
+		//окно могло уехать в пул и достаться другому интерфейсу, пока мы спали в
+		//get_payload(): чужой лок снимать нельзя, иначе мы закроем чужое окно
+		if(window.locked_by == src)
+			window.release_lock()
+			window.close(can_be_suspended, logout)
+		//src_object мог быть qdel-нут - именно по этому пути сюда и приходят из
+		//process(), заметив пропажу владельца. Звать проки трупу нечего
+		if(!QDELETED(src_object))
+			src_object.ui_close(user)
 		SStgui.on_close(src)
 		if(user?.client)
 			terminate_byondui_elements()
@@ -292,7 +298,9 @@
 		return FALSE
 	if(window.locked_by != src)
 		return FALSE
-	return !isnull(user?.client) && !isnull(src_object)
+	//именно QDELETED, а не проверка на null: qdel-нутый датум читается как живой,
+	//пока его не соберёт GC, но Destroy у него уже отработал и звать ему проки нельзя
+	return !isnull(user?.client) && !QDELETED(src_object)
 
 /**
  * private
@@ -302,7 +310,7 @@
  * return list
  */
 /datum/tgui/proc/get_payload(custom_data, with_data, with_static_data)
-	if(!user?.client || !src_object)
+	if(!user?.client || QDELETED(src_object))
 		return
 	var/list/json_data = list()
 	json_data["config"] = list(
@@ -334,7 +342,7 @@
 		//ui_data() имеет полное право уснуть - панель антагов, например, уходит в
 		//jobban_isbanned() и ждёт ответа базы. Пока прок спит, окно успевают закрыть,
 		//а Destroy() обнуляет и user, и src_object: собирать нагрузку больше не для кого
-		if(QDELETED(src) || !user?.client || !src_object)
+		if(QDELETED(src) || !user?.client || QDELETED(src_object))
 			return
 	if(data)
 		json_data["data"] = data
@@ -342,7 +350,7 @@
 	if(with_static_data)
 		static_data = src_object.ui_static_data(user)
 		//ui_static_data() спит по тем же причинам, что и ui_data()
-		if(QDELETED(src) || !user?.client || !src_object)
+		if(QDELETED(src) || !user?.client || QDELETED(src_object))
 			return
 	if(static_data)
 		json_data["static_data"] = static_data
@@ -363,7 +371,7 @@
 	// разыменование до проверки давало бы ровно тот же класс рантайма, что мы тут
 	// и чиним. Проверка окна включает потерю лока: окно, уехавшее в пул, нам уже
 	// не принадлежит - такой интерфейс надо закрыть, а не молча перестать обновлять.
-	if(!src_object || !user || !window || window.locked_by != src)
+	if(QDELETED(src_object) || !user || !window || window.locked_by != src)
 		close(can_be_suspended = FALSE)
 		return
 	var/datum/host = src_object.ui_host(user)
