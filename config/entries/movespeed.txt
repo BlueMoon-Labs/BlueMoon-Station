@@ -35,6 +35,8 @@ WALK_DELAY 3
 ##MULTIPLICATIVE_MOVESPEED_FLOATING /mob/living 0
 
 ## Whether or not sprint is enabled
+## Выключен намеренно. Значения в этом файле - боевые, с прода; master отстаёт,
+## так что сверять их диффом с master и "восстанавливать" оттуда нельзя.
 SPRINT_ENABLED 0
 
 ## When sprint is off, how much does getting staggered slow you
@@ -58,6 +60,9 @@ SPRINT_MAX_TILES_INCREASE 5
 
 ## Absolute max speed sprint can make someone go (tiles/second)
 SPRINT_ABSOLUTE_MAX_TILES 13
+
+## Экономика спринта. Пока SPRINT_ENABLED выключен, эти три числа ни на что не влияют -
+## они лежат наготове и вступят в силу, если спринт снова включат.
 
 ## Max sprint buffer
 SPRINT_BUFFER_MAX 36

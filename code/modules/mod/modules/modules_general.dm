@@ -171,6 +171,8 @@
 
 /obj/item/mod/module/jetpack/on_deactivation(display_message = TRUE, deleting = FALSE)
 	. = ..()
+	if(!.)
+		return
 	ion_trail.stop()
 	if(!mod?.wearer)
 		return
@@ -179,6 +181,15 @@
 	mod.wearer.remove_movespeed_modifier(/datum/movespeed_modifier/jetpack/fullspeed)
 	mod.wearer.remove_movespeed_modifier(/datum/movespeed_modifier/jetpack)
 	mod.wearer.update_flight_alert()
+
+/**
+ * Костюм снимают раньше, чем обнуляют носителя: `unset_wearer()` сначала обходит модули, и только
+ * потом чистит `wearer`. Гасим двигатель здесь, пока ещё известно, с кого снимать тягу и модификатор
+ * скорости - иначе они остались бы висеть на бывшем носителе навсегда.
+ */
+/obj/item/mod/module/jetpack/on_unequip()
+	if(active)
+		on_deactivation()
 
 /// Мёртвый не тянет рычаги. Дрейф остаётся - тело летит по инерции.
 /obj/item/mod/module/jetpack/proc/on_wearer_death(mob/living/source)
@@ -203,7 +214,9 @@
 	stabilizers = new_state
 	if(user)
 		to_chat(user, "<span class='notice'>Стабилизация [stabilizers ? "включена - дрейф гасится" : "выключена - свободный полёт"].</span>")
-		user.update_flight_alert()
+	// Алерт висит на носителе, а не на том, кто щёлкнул тумблером: режим мог поменять кто угодно
+	// через конфиг-меню костюма, и надпись обязана догнать состояние в любом случае.
+	mod?.wearer?.update_flight_alert()
 	return TRUE
 
 /**

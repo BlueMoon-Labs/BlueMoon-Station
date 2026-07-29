@@ -221,6 +221,11 @@
 	if(!ionpulse_on)
 		return
 
+	// Ячейку у борга вынимают на ходу, а сюда заходят с каждой проверки Process_Spacemove -
+	// без этого дальше был бы рантайм на каждом тике.
+	if(!cell)
+		return
+
 	if(cell.charge <= 10)
 		toggle_ionpulse()
 		return

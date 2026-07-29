@@ -235,18 +235,21 @@ Class Procs:
 ///Re-homes the subscription on an area move and resyncs: the new area's channels can differ from the old one's.
 /obj/machinery/proc/on_enter_area(datum/source, area/new_area)
 	SIGNAL_HANDLER
+	SHOULD_CALL_PARENT(TRUE)
 	register_power_change_area(new_area)
 	power_change()
 
 ///Drops the subscription on the way out, so a machine parked in nullspace stops following its old area.
 /obj/machinery/proc/on_exit_area(datum/source, area/old_area)
 	SIGNAL_HANDLER
+	SHOULD_CALL_PARENT(TRUE)
 	if(power_change_area == old_area)
 		register_power_change_area(null)
 
 ///Signal wrapper: power_change() returns TRUE on a state flip, which must not leak into the signal's return bitfield.
 /obj/machinery/proc/on_area_power_change(datum/source)
 	SIGNAL_HANDLER
+	SHOULD_CALL_PARENT(TRUE)
 	power_change()
 
 /obj/machinery/proc/locate_machinery()

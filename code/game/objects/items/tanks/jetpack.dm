@@ -73,6 +73,8 @@
 	return full_speed ? INERTIA_THRUST_CAP_JETPACK_FULL : INERTIA_THRUST_CAP_JETPACK
 
 /obj/item/tank/jetpack/proc/turn_on(mob/user)
+	if(!user)
+		return
 	on = TRUE
 	icon_state = "[initial(icon_state)]-on"
 	ion_trail.start()

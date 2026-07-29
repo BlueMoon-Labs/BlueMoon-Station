@@ -73,7 +73,9 @@
 	var/sprite_dir = move_dir_for_riding_sprite(dir)
 	if(!sprite_dir)
 		sprite_dir = AM.dir
-	AM.set_glide_size(DELAY_TO_GLIDE_SIZE(get_step_cost(FALSE)), FALSE)
+	// Диагональ у транспорта стоит вдвое. Ход не от handle_ride() - буксировка, толчок, бросок -
+	// приходит только сюда, и glide по прямой цене оставлял бы спрайт стоять полпути.
+	AM.set_glide_size(DELAY_TO_GLIDE_SIZE(get_step_cost(ISDIAGONALDIR(dir))), FALSE)
 	for(var/i in AM.buckled_mobs)
 		ride_check(i)
 	handle_vehicle_offsets(sprite_dir)

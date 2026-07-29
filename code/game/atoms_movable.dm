@@ -373,8 +373,8 @@
 	// Отпущенный в невесомости уносит наш вектор, а не тормозит до своего потолка тяги.
 	// Иначе разжатая рука читается как рывок: буксир идёт на крейсерской, буксируемый
 	// мгновенно проседает до скорости голого толчка.
-	hand_off_drift(pulling)
 	pulling = null
+	hand_off_drift(ex_pulled)
 	if(isliving(ex_pulled))
 		var/mob/living/L = ex_pulled
 		L.update_mobility()// mob gets up if it was lyng down in a chokehold

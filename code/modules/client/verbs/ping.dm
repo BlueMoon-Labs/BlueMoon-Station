@@ -7,8 +7,10 @@
 /// alone from 02:47 GMT until midnight - that rounded every send stamp to a whole
 /// decisecond and put up to 50ms of noise into every sample. world.time hits the same
 /// wall three hours into a round. Twelve digits round-trip a 32-bit float exactly.
+#define PING_WIRE_PRECISION 12
+
 /proc/ping_wire_num(value)
-	return num2text(value, 12)
+	return num2text(value, PING_WIRE_PRECISION)
 
 /// Server-side share of a round trip, in ms: the wall clock always covers at least as
 /// much ground as the game clock, and the gap is time the server spent stalled rather
@@ -133,3 +135,4 @@
 	winset(src, null, "command=.display_ping+[ping_wire_num(current_ping_tickstamp())]+[ping_wire_num(REALTIMEOFDAY)]")
 
 #undef PING_RTT_WINDOW_SIZE
+#undef PING_WIRE_PRECISION

@@ -23,6 +23,9 @@
 #define MOB_WEIGHT_HEAVY_CANCEL_SIZE 1.2
 #define MOB_WEIGHT_HEAVY_SUPER_CANCEL_SIZE 1.7
 
+/// Ниже этого роста сверхтяжёлому не ужаться: необъятный вес некуда девать.
+#define MOB_WEIGHT_HEAVY_SUPER_MIN_SIZE 0.8
+
 /// Нижняя граница цены шага для сверхтяжёлых, в децисекундах.
 ///
 /// Само значение по тику не выравнивается - его и не надо: это пол для

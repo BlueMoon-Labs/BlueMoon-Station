@@ -175,7 +175,13 @@
 				to_chat(owner, "<span class='warning'>Your thrusters set seems to be broken!</span>")
 			return FALSE
 		on = TRUE
-		if(allow_thrust(0.01, consume = FALSE))
+		// Вопрос "потянем ли" задаётся уже поднятому флагу - иначе allow_thrust() отвечает "нет"
+		// просто потому, что двигатели выключены. Не потянули - откатываем флаг здесь; раньше это
+		// делал рекурсивный вызов toggle() из самой allow_thrust(), и по дороге он снимал подписки
+		// и модификаторы, которых ещё не успели навесить.
+		if(!allow_thrust(0.01, consume = FALSE))
+			on = FALSE
+		else
 			ion_trail.start()
 			RegisterSignal(owner, COMSIG_LIVING_DEATH, PROC_REF(on_owner_death), override = TRUE)
 			owner.register_thrust_source(src, cap = INERTIA_THRUST_CAP_JETPACK)
@@ -246,7 +252,11 @@
 			last_thrust_time = world.time
 		return TRUE
 
-	toggle(silent = TRUE)
+	// Гасим двигатели только тогда, когда за шаг реально надо было платить. Проверка без списания
+	// приходит и с наката по курсу, и с самого включения - выключаться по ней значило бы душить
+	// двигатели за то, что их спросили.
+	if(consume)
+		toggle(silent = TRUE)
 
 	return FALSE
 

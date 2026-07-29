@@ -160,6 +160,9 @@
 	if(old_area != new_area)
 		for(var/obj/machinery/machine in contents)
 			machine.register_power_change_area(new_area)
+			// Каналы новой области отличаются от старой, а сигнала о смене питания по ней уже не будет -
+			// синхронизируем machine_stat сразу, как это делает on_enter_area().
+			machine.power_change()
 	if(SSlighting.initialized)
 		if (new_area.dynamic_lighting != old_area.dynamic_lighting)
 			if (new_area.dynamic_lighting)

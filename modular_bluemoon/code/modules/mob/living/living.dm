@@ -8,9 +8,12 @@
 			cancel_deviation = MOB_WEIGHT_HEAVY_SUPER_CANCEL_SIZE - 1 // штраф сходит на нет при росте 170%
 			throw_range = 1
 			throw_speed = 0.5
-			if(current_size < 0.8) // Самый маленький размер для сверхтяжёлых - 80%
+			if(current_size < MOB_WEIGHT_HEAVY_SUPER_MIN_SIZE)
 				to_chat(src, "Вы поняли, что ваш необъятный вес делает невозможным становление слишком маленьким.")
-				update_size(0.8)
+				update_size(MOB_WEIGHT_HEAVY_SUPER_MIN_SIZE)
+				// Штраф считается ниже по current_size, а рост мы только что подняли принудительно -
+				// без этого он считался бы по размеру, которого у мобы уже нет.
+				current_size = MOB_WEIGHT_HEAVY_SUPER_MIN_SIZE
 		if(MOB_WEIGHT_HEAVY)
 			anchor_ticks = MOB_WEIGHT_HEAVY_SLOWDOWN_TICKS
 			cancel_deviation = MOB_WEIGHT_HEAVY_CANCEL_SIZE - 1 // штраф сходит на нет при росте 120%

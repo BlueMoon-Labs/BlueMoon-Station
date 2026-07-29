@@ -31,11 +31,17 @@
 		fdel(path)
 		text2file("clobbered by [type]", path)
 
-		TEST_ASSERT_EQUAL(md5asfile(item.resource), item.hash, \
-			"содержимое ассета [asset_name] поехало вслед за файлом на диске - клиент получит чужие байты под именем asset.[item.hash]")
+		// Вердикт снимаем до уборки, а объявляем после: провалиться прямо здесь значило бы бросить
+		// испорченный файл в data/ до конца прогона - следующие тесты и следующий мир прочитали бы мусор.
+		var/snapshot_hash = md5asfile(item.resource)
 
 		// Возвращаем файл из слепка: заодно проверяем, что в слепке лежат исходные байты.
 		fdel(path)
 		fcopy(item.resource, path)
+
+		if(snapshot_hash != item.hash)
+			TEST_FAIL("содержимое ассета [asset_name] поехало вслед за файлом на диске - клиент получит чужие байты под именем asset.[item.hash]")
+			return
+
 		TEST_ASSERT_EQUAL(md5asfile(fcopy_rsc(file(path))), item.hash, \
 			"восстановленный из слепка [path] не совпал с исходным содержимым ассета [asset_name]")
