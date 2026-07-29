@@ -74,7 +74,14 @@
 	if(!I)
 		to_chat(user, "<span class='warning'>You have nothing to drop in your hand!</span>")
 	else
-		user.mob.dropItemToGround(I)
+		// Мы делаем именно тут, т.к. dropItemToGround от дизарма и по кнопке, ничем не отличаются
+		if(iscarbon(M))
+			var/mob/living/carbon/C = M
+			var/obj/item/organ/cyberimp/arm/implant = C.getorganslot((C.active_hand_index % 2 == 0) ? ORGAN_SLOT_RIGHT_ARM_AUG : ORGAN_SLOT_LEFT_ARM_AUG)
+			if(implant?.holder == I)
+				implant.Retract()
+				return TRUE
+		M.dropItemToGround(I)
 	return TRUE
 
 /datum/keybinding/mob/examine_immediate
