@@ -300,6 +300,21 @@
 /mob/proc/slip(s_amount, w_amount, obj/O, lube)
 	return
 
+/**
+  * Единая точка пересчёта гравитации. Все событийные источники (вход в зону,
+  * космический турф, генератор, магботы, модули МОДа, смена обуви и вида)
+  * обязаны звать её вместо update_gravity(mob_has_gravity()): у /mob/living она
+  * ещё и обновляет кэш, на который опирается handle_gravity() в Life.
+  *
+  * skip_if_unchanged - не трогать update_gravity(), если значение не изменилось.
+  * Так ходит только Life: событийные источники обязаны применять состояние
+  * безусловно, иначе снятый кем-то алерт невесомости уже не вернётся.
+  */
+/mob/proc/refresh_gravity(skip_if_unchanged = FALSE)
+	var/gravity = mob_has_gravity()
+	update_gravity(gravity)
+	return gravity
+
 /mob/proc/update_gravity(has_gravity, override=FALSE)
 	var/speed_change = max(0, has_gravity - STANDARD_GRAVITY)
 	if(!speed_change)

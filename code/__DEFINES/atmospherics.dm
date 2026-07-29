@@ -137,6 +137,7 @@
 
 #define BODYTEMP_HEAT_DAMAGE_LIMIT			(BODYTEMP_NORMAL + 20) // The limit the human body can take before it starts taking damage from heat. //CITADEL EDIT to 20
 #define BODYTEMP_COLD_DAMAGE_LIMIT			(BODYTEMP_NORMAL - 50) // The limit the human body can take before it starts taking damage from coldness.
+#define BODYTEMP_FROZEN_THRESHOLD		154		//Below this temperature, dead body tissue stops taking cold damage (effectively frozen/preserved)
 
 /// Passive heat exchange / temp HUD: standing under freezing spray behaves like icy water, not like the hallway's air temperature.
 #define SHOWER_FREEZING_LOCAL_TEMP (T0C - 10)

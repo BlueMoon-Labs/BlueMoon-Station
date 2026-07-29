@@ -57,13 +57,16 @@
 
 	//Cold/pressure effects when not regenerating
 	else
-		var/datum/gas_mixture/environment = H.loc.return_air()
-		var/pressure2 = environment.return_pressure()
-		var/adjusted_pressure2 = H.calculate_affecting_pressure(pressure2)
+		//loc бывает null (моб в нульспейсе посреди трансформации/телепорта), а
+		//return_air() на null валил Life ксенохимеры каждые 2 секунды
+		var/datum/gas_mixture/environment = H.loc?.return_air()
+		if(environment)
+			var/pressure2 = environment.return_pressure()
+			var/adjusted_pressure2 = H.calculate_affecting_pressure(pressure2)
 
-		//Very low pressure damage
-		if(adjusted_pressure2 <= 20)
-			H.take_overall_damage(LOW_PRESSURE_DAMAGE, 0)
+			//Very low pressure damage
+			if(adjusted_pressure2 <= 20)
+				H.take_overall_damage(LOW_PRESSURE_DAMAGE, 0)
 
 
 		//Cold hurts and gives them pain messages, eventually weakening and paralysing, but doesn't damage or trigger feral.

@@ -1262,6 +1262,10 @@
 			src.closeOther.close()
 	else
 		playsound(src.loc, 'sound/machines/airlockforced.ogg', 30, 1)
+	//шлюз, открытый игроком вплотную, слышен AI-мобам совсем рядом; автоматика,
+	//циклы и удалённые открытия (стоящий вдали usr) шум не рассылают
+	if(isliving(usr) && usr.client && usr.z == z && get_dist(usr, src) <= 1)
+		ai_broadcast_noise(get_turf(src), AI_NOISE_DOOR_RANGE, usr)
 
 	if(autoclose)
 		autoclose_in(normalspeed ? 15 SECONDS : 15 DECISECONDS)
@@ -1392,8 +1396,9 @@
 	update_icon()
 
 /obj/machinery/door/airlock/CanAStarPass(obj/item/card/id/ID, to_dir, atom/movable/caller)
-	//Airlock is passable if it is open (!density), bot has access, and is not bolted shut or powered off)
-	return !density || (check_access(ID) && !locked && hasPower())
+	//Match the non-human parts of allowed(): emergency access and an unrestricted
+	//exit side are just as usable by a pathing mob as an ID card.
+	return !density || (!locked && !welded && hasPower() && (emergency || (unres_sides & to_dir) || check_access(ID)))
 
 /obj/machinery/door/airlock/emag_act(mob/user)
 	. = ..()

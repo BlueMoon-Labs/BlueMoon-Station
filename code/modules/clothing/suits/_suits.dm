@@ -33,7 +33,7 @@
 		var/obj/item/clothing/under/U = M.w_uniform
 		//SANDSTORM EDIT
 		if(istype(U) && !CHECK_BITFIELD(U.flags_inv, HIDEACCESSORY))
-			for(var/obj/item/clothing/accessory/attached as anything in U.attached_accessories)
+			for(var/obj/item/clothing/accessory/attached as anything in U.accessories_attached)
 				if(CHECK_BITFIELD(attached.flags_inv, HIDEACCESSORY) || !attached.above_suit)
 					continue
 				. += attached.build_worn_icon()

@@ -2,6 +2,7 @@
 	color = "#fcccb3"
 	w_class = WEIGHT_CLASS_SMALL
 	organ_flags = ORGAN_NO_DISMEMBERMENT|ORGAN_EDIBLE|HAS_EQUIPMENT //Maay edit it for other genitals later
+	processes_on_life = FALSE //on_life() ниже - пустой return
 	var/shape
 	var/sensitivity = 1 // wow if this were ever used that'd be cool but it's not but i'm keeping it for my unshit code
 	var/genital_flags //see citadel_defines.dm
@@ -284,28 +285,64 @@
 			H.update_genitals()
 
 //proc to give a player their genitals and stuff when they log in
+///Тип генитального органа -> признак ДНК, который его включает. Порядок важен:
+///парные органы (вагина/матка, член/яйца, попа/анус) связываются через
+///update_link() и рассчитывают на эту последовательность создания.
+GLOBAL_LIST_INIT(genital_type_dna_features, list(
+	/obj/item/organ/genital/vagina = "has_vag",
+	/obj/item/organ/genital/womb = "has_womb",
+	/obj/item/organ/genital/testicles = "has_balls",
+	/obj/item/organ/genital/breasts = "has_breasts",
+	/obj/item/organ/genital/penis = "has_cock",
+	/obj/item/organ/genital/butt = "has_butt",
+	/obj/item/organ/genital/belly = "has_belly",
+	/obj/item/organ/genital/anus = "has_anus",
+))
+
+///То же соответствие, но по слоту органа - выводится из genital_type_dna_features.
+GLOBAL_LIST_EMPTY(genital_slot_dna_features)
+
+/proc/get_genital_slot_dna_features()
+	if(!length(GLOB.genital_slot_dna_features))
+		for(var/obj/item/organ/genital/genital_type as anything in GLOB.genital_type_dna_features)
+			GLOB.genital_slot_dna_features[initial(genital_type.slot)] = GLOB.genital_type_dna_features[genital_type]
+	return GLOB.genital_slot_dna_features
+
 /mob/living/carbon/human/proc/give_genitals(clean = FALSE)//clean will remove all pre-existing genitals. proc will then give them any genitals that are enabled in their DNA
+	var/no_genitals = (NOGENITALS in dna.species.species_traits)
+	var/list/kept_genitals
 	if(clean)
-		for(var/obj/item/organ/genital/G in internal_organs)
-			qdel(G)
-	if (NOGENITALS in dna.species.species_traits)
+		// Раньше комплект безусловно сносился и создавался заново. Каждый Remove
+		// и каждый Insert тянет за собой полный update_genitals(), то есть один
+		// clean = до десяти перерисовок гениталий; на превью персонажа это
+		// повторялось на КАЖДЫЙ клик в меню настройки (251 вызов за 10 минут =
+		// 1261 создание и 1254 удаления органов). Сносим только то, чего по ДНК
+		// быть не должно, уцелевшим подтягиваем признаки, а перерисовку делаем
+		// один раз в конце.
+		var/list/slot_features = get_genital_slot_dna_features()
+		//обход по копии: qdel органа вычищает его из internal_organs, а правка
+		//списка прямо в цикле по нему сдвигает хвост и пропускает следующий
+		//элемент - и старый безусловный снос комплекта страдал тем же
+		for(var/obj/item/organ/genital/genital in internal_organs.Copy())
+			var/feature_key = slot_features[genital.slot]
+			if(no_genitals || !feature_key || !dna.features[feature_key])
+				qdel(genital)
+				continue
+			LAZYADD(kept_genitals, genital)
+	if(no_genitals)
 		return
-	if(dna.features["has_vag"])
-		give_genital(/obj/item/organ/genital/vagina)
-	if(dna.features["has_womb"])
-		give_genital(/obj/item/organ/genital/womb)
-	if(dna.features["has_balls"])
-		give_genital(/obj/item/organ/genital/testicles)
-	if(dna.features["has_breasts"])
-		give_genital(/obj/item/organ/genital/breasts)
-	if(dna.features["has_cock"])
-		give_genital(/obj/item/organ/genital/penis)
-	if(dna.features["has_butt"])
-		give_genital(/obj/item/organ/genital/butt)
-	if(dna.features["has_belly"])
-		give_genital(/obj/item/organ/genital/belly)
-	if(dna.features["has_anus"])
-		give_genital(/obj/item/organ/genital/anus)
+	for(var/genital_type in GLOB.genital_type_dna_features)
+		if(dna.features[GLOB.genital_type_dna_features[genital_type]])
+			give_genital(genital_type)
+	if(!LAZYLEN(kept_genitals))
+		return
+	for(var/obj/item/organ/genital/genital as anything in kept_genitals)
+		genital.get_features(src)
+		genital.update_size()
+		genital.update_appearance()
+		if(genital.linked_organ_slot)
+			genital.update_link()
+	update_genitals()
 
 /mob/living/carbon/human/proc/give_genital(obj/item/organ/genital/G)
 	if(!dna || (NOGENITALS in dna.species.species_traits) || getorganslot(initial(G.slot)))

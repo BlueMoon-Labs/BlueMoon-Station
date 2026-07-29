@@ -31,6 +31,12 @@
 	path = /obj/item/book/granter/spell/summon_pie
 	cost = 6
 
+/datum/gear/donator/t2/summon_pie
+	name = "Syndicate Duffel Bag"
+	slot = ITEM_SLOT_BACK
+	path = /obj/item/storage/backpack/duffelbag/syndie
+	cost = 6
+
 /datum/gear/donator/t2/foam_lmg
 	name = "Foam LMG"
 	slot = ITEM_SLOT_BACKPACK

@@ -17,6 +17,8 @@
   * attack_direction - Direction of the attack. It is highly recommended to put this in, as the automatic guesswork that's done otherwise is quite inaccurate at times.
   */
 /mob/living/proc/do_run_block(real_attack = TRUE, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, list/return_list = list(), attack_direction)
+	if(QDELETED(src))
+		return BLOCK_NONE
 	// Callers may pass null when they only care about BLOCK_SUCCESS; we need a valid list for internal use
 	if(!return_list)
 		return_list = list()

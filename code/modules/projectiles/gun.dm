@@ -285,6 +285,10 @@
 		playsound(user, fire_sound, 10, TRUE, ignore_walls = FALSE, extrarange = SILENCED_SOUND_EXTRARANGE, falloff_distance = 0)
 	else
 		playsound(user, fire_sound, 50, 1)
+		//громкий выстрел игрока поднимает AI-мобов поблизости на разведку точки;
+		//глушитель честно скрывает, пальба самих мобов шум не рассылает
+		if(user?.client)
+			ai_broadcast_noise(get_turf(user), AI_NOISE_GUNSHOT_RANGE, user)
 		if(message)
 			if(pointblank)
 				user.visible_message("<span class='danger'>[user] стреляет из [src] в упор по [pbtarget]!</span>", null, null, COMBAT_MESSAGE_RANGE)
@@ -522,6 +526,11 @@
 					shoot_live_shot(user, 1, target, message, stam_cost)
 				else
 					shoot_live_shot(user, 0, target, message, stam_cost)
+				//Self-consuming guns (DROPDEL enchanted rifles) delete themselves
+				//inside shoot_live_shot. Re-chambering afterwards force-moves a
+				//fresh casing into a qdeleted gun, which then can never soft-GC.
+				if(QDELETED(src))
+					return TRUE
 		else
 			shoot_with_empty_chamber(user)
 			return
@@ -560,6 +569,9 @@
 				shoot_live_shot(user, 0, target, message, stam_cost)
 			if (iteration >= burst_size)
 				firing = FALSE
+			//см. do_fire: самоуничтожающееся оружие не дочамберивает патрон
+			if(QDELETED(src))
+				return TRUE
 	else
 		shoot_with_empty_chamber(user)
 		firing = FALSE

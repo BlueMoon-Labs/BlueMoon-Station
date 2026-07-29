@@ -1,3 +1,5 @@
+#define INDUCER_SHIELD_VAL 0.75 // Степень экранирования радиации индусером: 25%
+
 /obj/item/inducer
 	name = "Engineer inducer"
 	desc = "Инструмент для индуктивного заряжания внешних аккумуляторов."
@@ -16,11 +18,17 @@
 	var/obj/item/stock_parts/cell/cell
 	var/recharging = FALSE
 	var/gun_charger = FALSE
+	// Значение радиации батарейки
+	var/cell_rad_str = 0
 
 /obj/item/inducer/Initialize(mapload)
 	. = ..()
 	if(!cell && cell_type)
 		cell = new cell_type
+	if(cell && cell.cell_is_radioactive)
+		cell_rad_str = cell.rad_strength
+		if(!opened)
+			cell.rad_strength = cell_rad_str * INDUCER_SHIELD_VAL
 
 /obj/item/inducer/proc/induce(obj/item/stock_parts/cell/target, coefficient)
 	var/totransfer = min(cell.charge,(powertransfer * coefficient))
@@ -107,11 +115,15 @@
 		if(!opened)
 			to_chat(user, span_notice("Вы отвинтили батарейный слот."))
 			opened = TRUE
+			if(cell && cell_rad_str)
+				cell.rad_strength = cell_rad_str
 			update_icon()
 			return
 		else
 			to_chat(user, span_notice("Вы закрыли батарейный слот."))
 			opened = FALSE
+			if(cell && cell_rad_str)
+				cell.rad_strength = cell.rad_strength * INDUCER_SHIELD_VAL
 			update_icon()
 			return
 	if(istype(W, /obj/item/stock_parts/cell))
@@ -121,6 +133,10 @@
 					return
 				to_chat(user, span_notice("Вы вставили [W] внутрь [src]."))
 				cell = W
+				if(cell.cell_is_radioactive)
+					cell_rad_str = cell.rad_strength
+				else
+					cell_rad_str = 0
 				update_icon()
 				return
 			else
@@ -141,6 +157,9 @@
 		user.visible_message("[user] извлекает [cell] из [src]!", span_notice("Вы извлекли [cell]."))
 		cell.update_icon()
 		user.put_in_hands(cell)
+		if(cell.cell_is_radioactive)
+			cell.rad_strength = cell_rad_str
+		cell_rad_str = 0
 		cell = null
 		update_icon()
 
@@ -262,3 +281,5 @@
 /obj/item/inducer/syndicate/dry/Initialize(mapload)
 	. = ..()
 	update_icon()
+
+#undef INDUCER_SHIELD_VAL

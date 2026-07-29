@@ -46115,6 +46115,7 @@
 	pixel_x = -3;
 	pixel_y = 7
 	},
+/obj/item/clipboard,
 /obj/item/pen,
 /obj/effect/turf_decal/tile/neutral{
 	dir = 1
@@ -46550,8 +46551,6 @@
 /obj/machinery/newscaster/security_unit{
 	pixel_y = 32
 	},
-/obj/item/folder/red,
-/obj/item/folder/red,
 /obj/machinery/keycard_auth{
 	pixel_x = -26;
 	pixel_y = 23
@@ -46561,6 +46560,10 @@
 	name = "Space Shutters Control";
 	pixel_x = -26;
 	pixel_y = 34
+	},
+/obj/machinery/fax{
+	fax_name = "Head of Security office";
+	name = "Head of Security Fax Machine"
 	},
 /turf/open/floor/plasteel/dark,
 /area/command/heads_quarters/hos)
@@ -48500,6 +48503,7 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/visible{
 	dir = 6
 	},
+/obj/structure/closet/crate/engineering/hfr,
 /turf/open/floor/plasteel/dark/corner{
 	dir = 1
 	},
@@ -50164,6 +50168,11 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
+/obj/structure/table/wood,
+/obj/machinery/fax{
+	fax_name = "Head of Personal office";
+	name = "Head of Personal fax"
+	},
 /turf/open/floor/wood,
 /area/command/heads_quarters/hop)
 "eKY" = (
@@ -50743,8 +50752,10 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /obj/structure/table/wood,
-/obj/item/pinpointer/nuke,
-/obj/item/disk/nuclear,
+/obj/machinery/fax{
+	fax_name = "Captain's office";
+	name = "Captain's fax"
+	},
 /turf/open/floor/carpet,
 /area/command/heads_quarters/captain/private)
 "eXX" = (
@@ -52650,6 +52661,11 @@
 	},
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
+	},
+/obj/structure/table/reinforced,
+/obj/machinery/fax{
+	fax_name = "Office of the Director of Research";
+	name = "Fax machine of the Director of Research"
 	},
 /turf/open/floor/plasteel/white,
 /area/command/heads_quarters/rd)
@@ -54741,6 +54757,11 @@
 	dir = 4;
 	name = "Station Intercom (General)";
 	pixel_x = -31
+	},
+/obj/structure/table/wood,
+/obj/machinery/fax{
+	fax_name = "NTR Fax";
+	name = "NTR Fax"
 	},
 /turf/open/floor/carpet,
 /area/command/heads_quarters/ntr)
@@ -61569,6 +61590,12 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
+/obj/structure/table/glass,
+/obj/machinery/fax{
+	fax_name = "Chief Medical Officer's Office";
+	name = "Chief Medical Officer's Fax Machine";
+	pixel_y = 4
+	},
 /turf/open/floor/plasteel/cafeteria,
 /area/command/heads_quarters/cmo)
 "kdi" = (
@@ -66582,6 +66609,13 @@
 /obj/machinery/holopad/secure,
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/turret_protected/aisat_interior)
+"mnY" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/components/binary/crystallizer,
+/turf/open/floor/plating,
+/area/engineering/atmos)
 "moO" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
@@ -67933,11 +67967,13 @@
 /area/security/prison/upper)
 "mUZ" = (
 /obj/structure/table/reinforced,
-/obj/item/clipboard,
-/obj/item/paper/monitorkey,
 /obj/effect/turf_decal/tile/neutral,
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
+	},
+/obj/machinery/fax{
+	fax_name = "Chief Engineer office";
+	name = "Chief Engineer Fax Machine"
 	},
 /turf/open/floor/plasteel,
 /area/command/heads_quarters/ce)
@@ -70758,6 +70794,8 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-4"
 	},
+/obj/item/pinpointer/nuke,
+/obj/item/disk/nuclear,
 /turf/open/floor/carpet,
 /area/command/heads_quarters/captain/private)
 "ojC" = (
@@ -72781,16 +72819,16 @@
 /turf/open/space,
 /area/solars/starboard/fore)
 "pfU" = (
-/obj/item/storage/firstaid/regular{
-	pixel_x = 3;
-	pixel_y = 3
-	},
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
 /obj/structure/table/glass,
 /obj/effect/turf_decal/tile/green{
 	dir = 1
+	},
+/obj/machinery/fax{
+	fax_name = "Bridge Fax";
+	name = "Bridge Fax"
 	},
 /turf/open/floor/plasteel/dark,
 /area/command/bridge)
@@ -83692,6 +83730,11 @@
 /obj/structure/disposalpipe/segment{
 	dir = 6
 	},
+/obj/structure/table,
+/obj/machinery/fax{
+	fax_name = "Quartermaster Office";
+	name = "Quartermaster Office"
+	},
 /turf/open/floor/plasteel,
 /area/cargo/qm)
 "tXR" = (
@@ -89249,7 +89292,7 @@
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -27;
-	pixel_y = -27;
+	pixel_y = -27
 	},
 /turf/open/floor/plasteel,
 /area/security/prison/upper)
@@ -92219,6 +92262,7 @@
 /turf/open/floor/plasteel,
 /area/commons/dorms)
 "xQv" = (
+/obj/item/folder/red,
 /obj/structure/table/wood,
 /obj/item/paper_bin{
 	pixel_x = -3;
@@ -92227,6 +92271,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
+/obj/item/folder/red,
 /obj/item/toy/figure/hos,
 /turf/open/floor/plasteel/dark,
 /area/command/heads_quarters/hos)
@@ -92760,9 +92805,9 @@
 	dir = 8
 	},
 /obj/structure/table/glass,
-/obj/machinery/fax{
-	fax_name = "Bridge Fax";
-	name = "Bridge Fax"
+/obj/item/storage/firstaid/regular{
+	pixel_x = 3;
+	pixel_y = 3
 	},
 /turf/open/floor/plasteel/dark,
 /area/command/bridge)
@@ -135800,7 +135845,7 @@ mMn
 mMn
 mMn
 mMn
-fYL
+mnY
 mMn
 mMn
 mMn

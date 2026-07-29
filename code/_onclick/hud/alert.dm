@@ -1088,6 +1088,11 @@ so as to remain in compliance with the most up-to-date laws."
 	L.MarkResistTime()
 	return L.resist_restraints()
 
+/atom/movable/screen/alert/restrained/legcuffed/beartrap/Click()
+	. = ..()
+	var/mob/living/L = usr
+	L.remove_status_effect(/datum/status_effect/beartrap_ensnared)
+
 /atom/movable/screen/alert/buckled/Click()
 	. = ..()
 	if(!.)

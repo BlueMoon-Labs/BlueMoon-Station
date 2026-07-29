@@ -32,7 +32,8 @@
 					H.death(FALSE)
 					Zombify(H)
 					break
-		if(times_fired % 4 == 0)
+		var/feeding_phase = client ? times_fired : times_fired + life_periodic_phase
+		if(feeding_phase % 4 == 0)
 			for(var/mob/living/simple_animal/K in oview(src, 1)) //Only for corpse right next to/on same tile
 				if(K.stat == DEAD)
 					visible_message("<span class='danger'>[src] пожирает [K]!</span>")

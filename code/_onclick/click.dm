@@ -77,7 +77,8 @@
 	if(incapacitated(ignore_restraints = 1))
 		return
 
-	face_atom(A)
+	if(A != src)
+		face_atom(A)
 
 	if(!CheckActionCooldown(immediate = TRUE))
 		return
@@ -102,7 +103,7 @@
 
 	//These are always reachable.
 	//User itself, current loc, and user inventory
-	if(A in DirectAccess())
+	if(in_direct_access(A))
 		if(W)
 			return W.melee_attack_chain(src, A, params)
 		else
@@ -151,7 +152,6 @@
 /atom/movable/proc/CanReach(atom/ultimate_target, obj/item/tool, view_only = FALSE)
 	// A backwards depth-limited breadth-first-search to see if the target is
 	// logically "in" anything adjacent to us.
-	var/list/direct_access = DirectAccess()
 	var/depth = 1 + (view_only ? STORAGE_VIEW_DEPTH : INVENTORY_DEPTH)
 
 	var/list/closed = list()
@@ -167,7 +167,7 @@
 
 			closed[target] = TRUE
 
-			if(isturf(target) || isturf(target.loc) || (target in direct_access)) // Directly accessible atoms
+			if(isturf(target) || isturf(target.loc) || in_direct_access(target)) // Directly accessible atoms
 				// Adjacent or reaching attacks
 				if(target.Adjacent(src) || (tool && CheckToolReach(src, target, tool.reach))) // BLUEMOON EDIT - ModernTG Wide Airlocks.
 					return TRUE
@@ -190,6 +190,27 @@
 
 /mob/living/DirectAccess(atom/target)
 	return ..() + GetAllContents()
+
+/**
+ * Тот же вопрос, что `target in DirectAccess()`, но без сборки списка.
+ *
+ * У /mob/living DirectAccess() разворачивает всё дерево содержимого (рюкзак,
+ * ящики в рюкзаке, всё внутри них), а спрашивают у него РОВНО членство - на
+ * каждый клик и каждый MouseDrop. В проде это 12k полных обходов инвентаря за
+ * 2.6 минуты, 1.2с чистого времени на построение списков под немедленный выброс.
+ * Переопределения обязаны отвечать так же, как `in DirectAccess()`; это
+ * закреплено юнит-тестом.
+ */
+/atom/movable/proc/in_direct_access(atom/target)
+	return target == src || target == loc
+
+/mob/in_direct_access(atom/target)
+	return ..() || (target in contents)
+
+/mob/living/in_direct_access(atom/target)
+	// list(src, loc) + contents + GetAllContents() сводится к "это наш loc, мы
+	// сами, или что-то вложенное в нас на любой глубине".
+	return target == loc || contains_atom(target)
 
 //This is called reach into but it's called on the deepest things first so uh, make sure to account for that!
 /atom/proc/canReachInto(atom/user, atom/target, list/next, view_only, obj/item/tool)

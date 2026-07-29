@@ -78,6 +78,7 @@ GLOBAL_LIST_EMPTY(roundstart_stowaway)
 	r_pocket = /obj/item/radio
 	l_pocket = /obj/item/flashlight
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie
 	satchel = /obj/item/storage/backpack/duffelbag/syndie
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie

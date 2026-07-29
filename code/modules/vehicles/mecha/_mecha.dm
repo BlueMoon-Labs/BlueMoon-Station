@@ -202,6 +202,7 @@
 	add_capacitor()
 	START_PROCESSING(SSobj, src)
 	GLOB.poi_list |= src
+	AddComponent(/datum/component/hostile_machine_registry)
 	log_message("[src.name] created.", LOG_MECHA)
 	GLOB.mechas_list += src //global mech list
 	prepare_huds()
@@ -1002,6 +1003,9 @@
 	LAZYREMOVE(occupants, pilot_mob)
 	if(pilot_mob.mecha == src)
 		pilot_mob.mecha = null
+	//пилот-контроллер водил мех мув-лупами SSai_movement: без пилота лупы
+	//не нужны на любом пути выхода (эвакуация, смерть, гиб)
+	SSmove_manager.stop_looping(src, SSai_movement)
 	pilot_mob.forceMove(get_turf(src))
 	update_icon()
 

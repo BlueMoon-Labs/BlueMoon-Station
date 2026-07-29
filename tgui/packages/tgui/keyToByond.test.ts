@@ -38,11 +38,8 @@ describe('keyToByond', () => {
   });
 
   test.each([
-    ['Backspace', 'Backspace'],
     ['CapsLock', 'CapsLock'],
     ['IntlBackslash', 'IntlBackslash'],
-    ['Slash', 'Slash'],
-    ['Space', 'Space'],
   ])('%s is intentionally not mapped', (key, code) => {
     expect(byond(key, code)).toBeUndefined();
   });

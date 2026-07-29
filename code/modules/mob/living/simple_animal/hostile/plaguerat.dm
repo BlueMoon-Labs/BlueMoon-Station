@@ -54,37 +54,9 @@ GLOBAL_LIST_EMPTY(plague_rats)
 	GLOB.plague_rats -= src
 	return ..()
 
-/mob/living/simple_animal/hostile/plaguerat/Life(seconds, times_fired)
-	. = ..()
-	//Don't try to path to one target for too long. If it takes longer than a certain amount of time, assume it can't be reached and find a new one
-	//Literally only here to prevent farming and that's it.
-	if(!client) //don't do this shit if there's a client, they're capable of ventcrawling manually
-		if(in_vent)
-			target = null
-		if(entry_vent && get_dist(src, entry_vent) <= 1)
-			var/list/vents = list()
-			var/datum/pipeline/entry_vent_parent = entry_vent.parents[1]
-			for(var/obj/machinery/atmospherics/components/unary/temp_vent in entry_vent_parent.other_atmosmch)
-				vents += temp_vent
-			if(!vents.len)
-				entry_vent = null
-				in_vent = FALSE
-				return
-			exit_vent = pick(vents)
-			visible_message("<span class='notice'>[src] crawls into the ventilation ducts!</span>")
-
-			loc = exit_vent
-			var/travel_time = round(get_dist(loc, exit_vent.loc) / 2)
-			addtimer(CALLBACK(src, PROC_REF(exit_vents)), travel_time) //come out at exit vent in 2 to 20 seconds
-
-
-		if(world.time > min_next_vent && !entry_vent && !in_vent && prob(RAT_VENT_CHANCE)) //small chance to go into a vent
-			for(var/obj/machinery/atmospherics/components/unary/v in view(7,src))
-				if(!v.welded)
-					entry_vent = v
-					in_vent = TRUE
-					walk_to(src, entry_vent)
-					break
+// Легаси-вент-краул из Life() снесён: plaguerat назначен профиль vent_hunter,
+// вентит контроллер (opportunistic_ventcrawler). Блок стоял за if(ai_controller)
+// return и был недостижим у любого нормального plaguerat.
 
 /mob/living/simple_animal/hostile/plaguerat/BiologicalLife(delta_time, times_fired)
 	if(!(. = ..()))

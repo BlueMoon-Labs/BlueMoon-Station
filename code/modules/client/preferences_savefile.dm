@@ -547,6 +547,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["toggles"] >> toggles
 	S["custom_colors"] >> custom_colors
 	S["deadmin"] >> deadmin
+	S["ticket_nickname"] >> ticket_nickname
 	S["ghost_form"] >> ghost_form
 	S["ghost_orbit"] >> ghost_orbit
 	S["ghost_accs"] >> ghost_accs
@@ -1019,6 +1020,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		WRITE_FILE(S["unlockable_loadout"], safe_json_encode(unlockable_loadout_data))
 	else
 		WRITE_FILE(S["unlockable_loadout"], safe_json_encode(list()))
+
+	WRITE_FILE(S["ticket_nickname"], ticket_nickname)
 
 	if(parent)
 		if(ishuman(parent?.mob))
@@ -1596,8 +1599,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	grad_color = sanitize_hexcolor(grad_color, 6, FALSE)
 	eye_type = sanitize_inlist(eye_type, GLOB.eye_types, DEFAULT_EYES_TYPE)
 	shriek_type = sanitize_inlist(shriek_type, GLOB.shriek_types, SHRIEK_TYPE_GENERIC) // BLUEMOON ADD
+	//у if-а не было тела, и санитайзер молча ничего не делал: фобия из старого
+	//сейва, которой больше нет в списке SStraumas, доезжала до раунда как есть
 	if(phobia_type && SStraumas && !(phobia_type in SStraumas.phobia_types))
-		phobia_type = null // BLUEMOON ADD - проверка валидности выбранной фобии
+		phobia_type = null //null = "случайная", ровно как в меню выбора
 	left_eye_color = sanitize_hexcolor(left_eye_color, 6, FALSE)
 	right_eye_color = sanitize_hexcolor(right_eye_color, 6, FALSE)
 

@@ -743,16 +743,15 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 
 // facing verbs
 /mob/proc/canface()
+	. = FALSE
 	if(world.time < client?.last_turn)
-		return FALSE
+		return
 	if(stat == DEAD || stat == UNCONSCIOUS)
-		return FALSE
+		return
 	if(anchored)
-		return FALSE
+		return
 	if(mob_transforming)
-		return FALSE
-	if(restrained())
-		return FALSE
+		return
 	return TRUE
 
 /mob/proc/fall(forced)
@@ -792,18 +791,26 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 
 /mob/verb/northshift()
 	set hidden = TRUE
+	if(!canface())
+		return FALSE
 	pixel_shift(NORTH)
 
 /mob/verb/southshift()
 	set hidden = TRUE
+	if(!canface())
+		return FALSE
 	pixel_shift(SOUTH)
 
 /mob/verb/eastshift()
 	set hidden = TRUE
+	if(!canface())
+		return FALSE
 	pixel_shift(EAST)
 
 /mob/verb/westshift()
 	set hidden = TRUE
+	if(!canface())
+		return FALSE
 	pixel_shift(WEST)
 
 /mob/proc/IsAdvancedToolUser()//This might need a rename but it should replace the can this mob use things check
@@ -931,15 +938,22 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 	return faction_check(faction, target.faction, FALSE)
 
 /proc/faction_check(list/faction_A, list/faction_B, exact_match)
-	var/list/match_list
 	if(exact_match)
-		match_list = faction_A&faction_B //only items in both lists
+		var/list/match_list = faction_A&faction_B //only items in both lists
 		var/length = LAZYLEN(match_list)
 		if(length)
 			return (length == LAZYLEN(faction_A)) //if they're not the same len(gth) or we don't have a len, then this isn't an exact match.
-	else
-		match_list = faction_A&faction_B
-		return LAZYLEN(match_list)
+		return FALSE
+
+	//The overwhelmingly common query only needs to know whether one value
+	//matches. Avoid allocating an intersection list for every AI candidate.
+	if(!LAZYLEN(faction_A) || !LAZYLEN(faction_B))
+		return FALSE
+	var/list/smaller = LAZYLEN(faction_A) <= LAZYLEN(faction_B) ? faction_A : faction_B
+	var/list/larger = smaller == faction_A ? faction_B : faction_A
+	for(var/faction_name in smaller)
+		if(faction_name in larger)
+			return TRUE
 	return FALSE
 
 
@@ -1157,6 +1171,13 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 
 /mob/setMovetype(newval)
 	. = ..()
+	// Родитель выходит ДО присваивания, если movement_type не изменился, и тогда
+	// возвращает null (а изменившись - старое значение, которое вполне может быть
+	// нулём: null != 0 в DM, поэтому проверка именно isnull). update_mobility()
+	// зовёт setMovetype(movement_type | CRAWLING) каждый Life-тик, то есть
+	// пересчёт скорости шёл на каждого игрока каждые 2 секунды впустую.
+	if(isnull(.))
+		return
 	// BLUEMOON ADD START - для корректного обновления скорости у парящих сверхтяжёлых персонажей
 	if(src.mob_weight > MOB_WEIGHT_HEAVY)
 		update_config_movespeed()

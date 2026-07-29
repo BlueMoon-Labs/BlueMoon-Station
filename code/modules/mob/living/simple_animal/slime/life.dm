@@ -1,12 +1,24 @@
 
 /mob/living/simple_animal/slime
-	var/AIproc = 0 // determines if the AI loop is activated
 	var/Atkcool = 0 // attack cooldown
 	var/atkcool_timer_id
 	var/Tempstun = 0 // temporary temperature stuns
 	var/Discipline = 0 // if a slime has been hit with a freeze gun, or wrestled/attacked off a human, they become disciplined and don't attack anymore for a while
 	var/SStun = 0 // stun variable
 	var/next_hunt_scan = 0 // world.time gate for the prey view() scan in handle_targets(); set only after a scan that found nothing
+	var/next_wander = 0 // world.time gate for aimless wandering in handle_targets()
+
+/// TRUE when this slime is allowed to take an aimless wander step this tick.
+/// Aimless wandering was the single biggest slime cost on a packed xenobio farm:
+/// one step out of a crowded turf costs hundreds of microseconds, and every slime
+/// was rolling for one on every Life tick. Hunting and following a leader are
+/// deliberately NOT gated by this.
+/mob/living/simple_animal/slime/proc/can_wander_now()
+	return world.time >= next_wander
+
+/// Records that a wander step was taken, starting the cooldown.
+/mob/living/simple_animal/slime/proc/note_wander()
+	next_wander = world.time + SLIME_WANDER_COOLDOWN
 
 	typing_indicator_state = /obj/effect/overlay/typing_indicator/slime
 
@@ -37,80 +49,19 @@
 		return
 	..()
 
-/mob/living/simple_animal/slime/proc/AIprocess()  // the master AI process
-
-	if(AIproc || stat || client)
+///Нудж событийной погони (замена INVOKE_ASYNC(AIprocess) старого мозга):
+///зеркалим Target в blackboard контроллера и пересчитываем его статус.
+///Сама погоня и решающее дерево кормёжки живут в /datum/ai_controller/slime.
+/mob/living/simple_animal/slime/proc/slime_wake_pursuit()
+	if(QDELETED(src) || isnull(ai_controller))
 		return
-
-	var/hungry = 0
-	if (nutrition < get_starve_nutrition())
-		hungry = 2
-	else if (nutrition < get_grow_nutrition() && prob(25) || nutrition < get_hunger_nutrition())
-		hungry = 1
-
-	AIproc = 1
-
-	while(AIproc && !QDELETED(src) && stat != DEAD && (attacked || hungry || rabid || buckled))
-		if(!CHECK_MOBILITY(src, MOBILITY_MOVE)) //also covers buckling. Not sure why buckled is in the while condition if we're going to immediately break, honestly
-			break
-
-		if(!Target || client)
-			break
-
-		if(Target.health <= -70 || Target.stat == DEAD)
-			Target = null
-			AIproc = 0
-			break
-
-		if(Target)
-			if(locate(/mob/living/simple_animal/slime) in Target.buckled_mobs)
-				Target = null
-				AIproc = 0
-				break
-			if(!AIproc)
-				break
-
-			if(Target in view(1,src))
-				if(!CanFeedon(Target)) //If they're not able to be fed upon, ignore them.
-					if(!Atkcool)
-						Atkcool = 1
-						atkcool_timer_id = addtimer(CALLBACK(src, PROC_REF(reset_atkcool)), 45, TIMER_STOPPABLE | TIMER_DELETE_ME)
-						if(Target.Adjacent(src))
-							Target.attack_slime(src)
-					break
-				if(!Target.lying && prob(80))
-
-					if(Target.client && Target.health >= 20)
-						if(!Atkcool)
-							Atkcool = 1
-							atkcool_timer_id = addtimer(CALLBACK(src, PROC_REF(reset_atkcool)), 45, TIMER_STOPPABLE | TIMER_DELETE_ME)
-							if(Target.Adjacent(src))
-								Target.attack_slime(src)
-
-					else
-						if(!Atkcool && Target.Adjacent(src))
-							Feedon(Target)
-
-				else
-					if(!Atkcool && Target.Adjacent(src))
-						Feedon(Target)
-
-			else if(Target in view(7, src))
-				if(!Target.Adjacent(src))
-				// Bug of the month candidate: slimes were attempting to move to target only if it was directly next to them, which caused them to target things, but not approach them
-					step_to(src, Target)
-			else
-				Target = null
-				AIproc = 0
-				break
-
-		var/sleeptime = movement_delay()
-		if(sleeptime <= 0)
-			sleeptime = 1
-
-		sleep(sleeptime + 2) // this is about as fast as a player slime can go
-
-	AIproc = 0
+	if(QDELETED(Target))
+		ai_controller.clear_blackboard_key(BB_SLIME_TARGET)
+	else
+		ai_controller.set_blackboard_key(BB_SLIME_TARGET, Target)
+		if(ai_controller.on_failed_planning_timeout) //свежая цель не ждёт конца таймаута пустого планирования
+			ai_controller.resume_planning()
+	ai_controller.reset_ai_status()
 
 /mob/living/simple_animal/slime/proc/reset_atkcool()
 	Atkcool = 0
@@ -139,8 +90,14 @@
 		Tempstun = 0
 
 	if(stat != DEAD)
-		var/bz_percentage = environment.total_moles() ? (environment.get_moles(GAS_BZ) / environment.total_moles()) : 0
-		var/stasis = (bz_percentage >= 0.05 && bodytemperature < (T0C + 100)) || force_stasis
+		// Нервный газ - редкость, а total_moles() платился каждый тик каждым
+		// слаймом фермы. Считаем долю только когда BZ вообще есть в смеси.
+		var/stasis = force_stasis
+		if(!stasis && bodytemperature < (T0C + 100))
+			var/bz_moles = environment.get_moles(GAS_BZ)
+			if(bz_moles)
+				var/total_moles = environment.total_moles()
+				stasis = total_moles && (bz_moles / total_moles) >= 0.05
 
 		if(stat == CONSCIOUS && stasis)
 			to_chat(src, "<span class='danger'>Nerve gas in the air has put you in stasis!</span>")
@@ -155,9 +112,10 @@
 			update_mobility()
 			regenerate_icons()
 
-	updatehealth()
-
-
+	// Безусловного updatehealth() здесь больше нет: он тянул полный каскад
+	// (5 геттеров урона + update_stat + два med-HUD + healthdoll) на каждого
+	// слайма каждый тик, а урон/лечение слайма и так идёт через adjust*Loss,
+	// который сам зовёт updatehealth. На ферме это было ~13% стоимости SSmobs.
 	return //TODO: DEFERRED
 
 /mob/living/simple_animal/slime/proc/adjust_body_temperature(current, loc_temp, boost)
@@ -318,15 +276,10 @@
 				target_patience = 0
 				Target = null
 
-		if(AIproc && SStun > world.time)
-			return
+		//Стан-фриз погони (легаси "if(AIproc && SStun ...)") переехал в гейт
+		//исполнения /datum/ai_planning_subtree/slime_pursuit: стоим, цель не бросаем
 
-		var/hungry = 0 // determines if the slime is hungry
-
-		if (nutrition < get_starve_nutrition())
-			hungry = 2
-		else if (nutrition < get_grow_nutrition() && prob(25) || nutrition < get_hunger_nutrition())
-			hungry = 1
+		var/hungry = get_hunger_drive() // determines if the slime is hungry
 
 		if(hungry == 2 && !client) // if a slime is starving, it starts losing its friends
 			if(Friends.len > 0 && prob(1))
@@ -337,9 +290,20 @@
 			if(world.time >= next_hunt_scan && (will_hunt() && hungry || attacked || rabid)) // Only add to the list if we need to
 				var/list/targets = list()
 
-				for(var/mob/living/L in view(7,src))
+				// Lever 3: AI_TARGETS grid channel instead of view(7) - a per-cell
+				// index of live mobs, no viewport build (~2x cheaper here). We do
+				// NOT re-add a per-candidate can_see() LOS check: benchmarking a
+				// dense pen showed the raytraces cost 2.2x more than view() saved,
+				// so the deliberate tradeoff is that a slime now senses prey through
+				// walls (irrelevant in an open pen; slimes are weak and can't reach
+				// through anyway). get_dist clamps the grid's whole-cell over-return.
+				var/list/scan_candidates = SSspatial_grid.initialized ? SSspatial_grid.orthogonal_range_search(src, SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS, 7) : view(7, src)
+				for(var/mob/living/L as anything in scan_candidates)
 
-					if(isslime(L) || L.stat == DEAD) // Ignore other slimes and dead mobs
+					if(isslime(L) || L.stat == DEAD) // grid excludes DEAD; src is a slime so this also skips self
+						continue
+
+					if(get_dist(src, L) > 7) // grid returns whole cells - clamp to the real scan range
 						continue
 
 					if(L in Friends) // No eating friends!
@@ -400,7 +364,8 @@
 			else if(hungry)
 				if (holding_still)
 					holding_still = max(holding_still - hungry, 0)
-				else if(CHECK_MOBILITY(src, MOBILITY_MOVE) && isturf(loc) && prob(50))
+				else if(can_wander_now() && CHECK_MOBILITY(src, MOBILITY_MOVE) && isturf(loc) && prob(50))
+					note_wander()
 					step(src, pick(GLOB.cardinals))
 
 			else
@@ -408,10 +373,11 @@
 					holding_still = max(holding_still - 1, 0)
 				else if (docile && pulledby)
 					holding_still = 10
-				else if(CHECK_MOBILITY(src, MOBILITY_MOVE) && isturf(loc) && prob(33))
+				else if(can_wander_now() && CHECK_MOBILITY(src, MOBILITY_MOVE) && isturf(loc) && prob(33))
+					note_wander()
 					step(src, pick(GLOB.cardinals))
-		else if(!AIproc)
-			INVOKE_ASYNC(src, PROC_REF(AIprocess))
+		else
+			slime_wake_pursuit()
 
 /mob/living/simple_animal/slime/handle_automated_movement()
 	return //slime random movement is currently handled in handle_targets()
@@ -513,7 +479,7 @@
 			else if (findtext(phrase, "attack"))
 				if (rabid && prob(20))
 					Target = who
-					AIprocess() //Wake up the slime's Target AI, needed otherwise this doesn't work
+					slime_wake_pursuit() //Wake up the slime's Target AI, needed otherwise this doesn't work
 					to_say = "ATTACK!?!?"
 				else if (Friends[who] >= SLIME_FRIENDSHIP_ATTACK)
 					for (var/mob/living/L in view(7,src)-list(src,who))
@@ -523,7 +489,7 @@
 								--Friends[who] //Don't ask a slime to attack its friend
 							else if(!Friends[L] || Friends[L] < 1)
 								Target = L
-								AIprocess()//Wake up the slime's Target AI, needed otherwise this doesn't work
+								slime_wake_pursuit()//Wake up the slime's Target AI, needed otherwise this doesn't work
 								to_say = "Ok... I attack [Target]"
 							else
 								to_say = "No... like [L] ..."
@@ -639,6 +605,15 @@
 		return 300
 	else
 		return 200
+
+///Легаси-оценка голода (общая для handle_targets и драйва погони контроллера):
+///2 - голодает и ест всё подряд, 1 - проголодался (средний диапазон с шансом 25%), 0 - сыт
+/mob/living/simple_animal/slime/proc/get_hunger_drive()
+	if(nutrition < get_starve_nutrition())
+		return 2
+	if((nutrition < get_grow_nutrition() && prob(25)) || nutrition < get_hunger_nutrition())
+		return 1
+	return 0
 
 /mob/living/simple_animal/slime/proc/will_hunt(hunger = -1) // Check for being stopped from feeding and chasing
 	if (docile)

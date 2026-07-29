@@ -246,15 +246,17 @@
 						to_chat(usr, "<span class='notice'>Your [inactive_stack.name] stack now contains [inactive_stack.get_amount()] [inactive_stack.singular_name]\s.</span>")
 						return TRUE
 
-	if(put_in_active_hand(I, forced))
+	if(put_in_active_hand(I)) // Пробуем поместить без forced
 		return TRUE
 
 	var/hand = get_empty_held_index_for_side("l")
 	if(!hand)
 		hand =  get_empty_held_index_for_side("r")
-	if(hand)
-		if(put_in_hand(I, hand, forced))
-			return TRUE
+	if(hand && put_in_hand(I, hand, forced))
+		return TRUE
+	else if(forced && put_in_active_hand(I, forced))
+		return TRUE
+
 	if(del_on_fail)
 		qdel(I)
 		return FALSE
@@ -323,6 +325,9 @@
 	if(!I) //If there's nothing to drop, the drop is automatically succesfull. If(unEquip) should generally be used to check for TRAIT_NODROP.
 		return TRUE
 
+	if(SEND_SIGNAL(I, COMSIG_MOB_ITEM_DROPPING, force, newloc, no_move, invdrop, silent)) //this can return null
+		return FALSE
+
 	if(HAS_TRAIT(I, TRAIT_NODROP) && !force)
 		return FALSE
 
@@ -365,6 +370,7 @@
 			to_chat(src, warning[1])
 		return FALSE
 	equip_to_slot(W, slot, redraw_mob) //This proc should not ever fail.
+	SEND_SIGNAL(src, COMSIG_MOB_ITEM_EQUIPPED, W, slot)
 	return TRUE
 
 //This is an UNSAFE proc. It merely handles the actual job of equipping. All the checks on whether you can or can't equip need to be done before! Use mob_can_equip() for that task.

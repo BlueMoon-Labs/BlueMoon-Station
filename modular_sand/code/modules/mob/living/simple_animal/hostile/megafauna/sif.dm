@@ -67,7 +67,6 @@ Difficulty: Medium
 	pixel_y = -16
 	move_to_delay = 3
 	rapid_melee = 2
-	melee_queue_distance = 10
 	ranged = FALSE
 	del_on_death = 1
 	loot = list(/obj/structure/closet/crate/necropolis/sif)
@@ -293,14 +292,6 @@ Difficulty: Medium
 		. = ..()
 		if(.)
 			recovery_time = world.time + 10
-
-/mob/living/simple_animal/hostile/megafauna/sif/Goto(target, delay, minimum_distance)
-	if(charging == FALSE)
-		..()
-
-/mob/living/simple_animal/hostile/megafauna/sif/MoveToTarget(list/possible_targets)
-	if(charging == FALSE)
-		..()
 
 //Immune to explosions when spinning or charging
 /mob/living/simple_animal/hostile/megafauna/sif/ex_act(severity, target, origin)

@@ -214,15 +214,7 @@
 			var/mob/initiator_mob = selected_ticket.initiator.mob
 			if(!initiator_mob)
 				return TRUE
-			var/client/C = usr.client
-			if(!C)
-				return TRUE
-			if(!isobserver(usr) && !C.admin_ghost())
-				return TRUE
-			var/mob/dead/observer/observer = C.mob
-			if(!istype(observer))
-				return TRUE
-			observer.ManualFollow(initiator_mob)
+			usr << link("byond://?_src_=holder;[HrefToken(TRUE)];adminplayerobservefollow=[REF(initiator_mob)]")
 			. = TRUE
 
 		if("logs")

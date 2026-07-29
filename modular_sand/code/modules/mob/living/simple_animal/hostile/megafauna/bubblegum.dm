@@ -58,8 +58,7 @@ Removes slaughterlings (because they are bullshit), instead replacing them with 
 	animate(D, alpha = 0, color = "#FF0000", transform = matrix()*2, time = 5)
 	sleep(5)
 	throw_at(T, get_dist(src, T), 1, src, 0)
-	charging = 0
-	Goto(target, move_to_delay, minimum_distance)
+	charging = 0 //преследование возобновляет штатный мувер контроллера
 	bloodsmacks()
 
 /mob/living/simple_animal/hostile/megafauna/bubblegum/proc/bloodsmacks()

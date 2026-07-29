@@ -102,11 +102,31 @@
 	mouse_control_object = control
 	if(mob)
 		SEND_SIGNAL(mob, COMSIG_MOB_CLIENT_MOUSEMOVE, object, location, control, params)
-		// god forgive me for i have sinned - used for autoparry. currently at 5 objects.
-		moused_over_objects[object] = world.time
-		if(moused_over_objects.len > 7)
-			moused_over_objects.Cut(1, 2)
+		// god forgive me for i have sinned - used for autoparry.
+		register_moused_over(moused_over_objects, object)
 	..()
+
+/**
+ * Запоминает наведение курсора в памяти автопарри клиента.
+ *
+ * Запись обязана быть текстовым ref'ом, а не самим атомом: жёсткая ссылка здесь
+ * переживает qdel цели (запись вытесняется только MOUSED_OVER_MEMORY_MAX новыми
+ * наведениями, а MouseMove вообще не приходит, пока курсор не над картой - чат,
+ * tgui-окно, альт-таб, AFK) и при этом невидима ref-сканеру: /client не датум,
+ * а клиентский проб читает только mob/eye/statobj/screen/images.
+ */
+/proc/register_moused_over(list/tracker, datum/target)
+	if(!islist(tracker) || isnull(target))
+		return
+	tracker[REF(target)] = world.time
+	if(length(tracker) > MOUSED_OVER_MEMORY_MAX)
+		tracker.Cut(1, 2)
+
+/// world.time последнего наведения курсора на target, или null, если такого не помним.
+/proc/moused_over_time(list/tracker, datum/target)
+	if(!islist(tracker) || isnull(target))
+		return null
+	return tracker[REF(target)]
 
 /client/MouseDrag(src_object,atom/over_object,src_location,over_location,src_control,over_control,params)
 	if(!COOLDOWN_FINISHED(src, next_mousedrag))

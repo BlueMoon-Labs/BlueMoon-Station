@@ -51,34 +51,34 @@
 	clothing_size_un_normalize(user)
 	..()
 
-/obj/item/clothing/accessory/ring/syntech/attach(obj/item/clothing/under/U, mob/living/carbon/human/user)
-	if(istype(user) && user.gloves == U)
+/obj/item/clothing/accessory/ring/syntech/attach(obj/item/clothing/cloth, mob/living/carbon/human/user)
+	if(istype(user) && user.gloves == cloth)
 		if(!user.dna.species.equip_delay_self_check(src, user))
 			if(!user.put_in_hands(src)) // Из-за специфики работы прока attach_accessory следует проследить, чтобы кольцо не осталось внутри без локации на теле
 				to_chat(user, "<span class='warning'>[src] just slip off your hands!</span>")
 			return FALSE
 
 
-	previous_gloves_data[1] = U.strip_delay
-	U.strip_delay = max(U.strip_delay, strip_delay)
-	previous_gloves_data[2] = U.equip_delay_self
-	U.equip_delay_self = max(U.equip_delay_self, equip_delay_self)
-	previous_gloves_data[3] = U.unequip_delay_self
-	U.unequip_delay_self = max(U.unequip_delay_self, unequip_delay_self)
+	previous_gloves_data[1] = cloth.strip_delay
+	cloth.strip_delay = max(cloth.strip_delay, strip_delay)
+	previous_gloves_data[2] = cloth.equip_delay_self
+	cloth.equip_delay_self = max(cloth.equip_delay_self, equip_delay_self)
+	previous_gloves_data[3] = cloth.unequip_delay_self
+	cloth.unequip_delay_self = max(cloth.unequip_delay_self, unequip_delay_self)
 	..()
 
-/obj/item/clothing/accessory/ring/syntech/detach(obj/item/clothing/under/U, user)
+/obj/item/clothing/accessory/ring/syntech/detach(obj/item/clothing/cloth, user)
 	clothing_size_un_normalize(user)
-	U.strip_delay = previous_gloves_data[1]
-	U.equip_delay_self = previous_gloves_data[2]
-	U.unequip_delay_self = previous_gloves_data[3]
+	cloth.strip_delay = previous_gloves_data[1]
+	cloth.equip_delay_self = previous_gloves_data[2]
+	cloth.unequip_delay_self = previous_gloves_data[3]
 	..()
 
-/obj/item/clothing/accessory/ring/syntech/on_uniform_equip(obj/item/clothing/under/U, mob/living/carbon/human/user)
-	if(istype(user) && user.gloves == U)
+/obj/item/clothing/accessory/ring/syntech/on_uniform_equip(obj/item/clothing/cloth, mob/living/carbon/human/user)
+	if(istype(user) && user.gloves == cloth)
 		clothing_size_normalize(user, owner = src.owner)
 
-/obj/item/clothing/accessory/ring/syntech/on_uniform_dropped(obj/item/clothing/under/U, mob/living/user)
+/obj/item/clothing/accessory/ring/syntech/on_uniform_dropped(obj/item/clothing/cloth, mob/living/user)
 	clothing_size_un_normalize(user)
 
 //SynTech Wristband

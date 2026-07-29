@@ -22,6 +22,10 @@
 	var/list/hearing_contents
 	///все мобы с клиентом в ячейке
 	var/list/client_contents
+	///все живые мобы-цели hostile AI в ячейке
+	var/list/ai_target_contents
+	///все доступные service-bot уборочные цели в ячейке
+	var/list/cleanbot_target_contents
 
 /datum/spatial_grid_cell/New(cell_x, cell_y, cell_z)
 	. = ..()
@@ -35,6 +39,8 @@
 		stack_trace("SSspatial_grid.dummy_list was polluted! It must always stay empty.")
 	hearing_contents = dummy_list
 	client_contents = dummy_list
+	ai_target_contents = dummy_list
+	cleanbot_target_contents = dummy_list
 
 /datum/spatial_grid_cell/Destroy(force)
 	if(!force) //ячейки живут вечно вместе со своим z-уровнем
@@ -62,9 +68,17 @@ SUBSYSTEM_DEF(spatial_grid)
 	///гриды ячеек по z-уровню; внутри - строки по y, в строках ячейки по x
 	var/list/grids_by_z_level = list()
 	///очередь movables, созданных до инициализации подсистемы
-	var/list/waiting_to_add_by_type = list(SPATIAL_GRID_CONTENTS_TYPE_HEARING = list(), SPATIAL_GRID_CONTENTS_TYPE_CLIENTS = list())
+	var/list/waiting_to_add_by_type = list(
+		SPATIAL_GRID_CONTENTS_TYPE_HEARING = list(),
+		SPATIAL_GRID_CONTENTS_TYPE_CLIENTS = list(),
+		SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS = list(),
+		SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS = list(),
+	)
 	///кэш категорий: movable.spatial_grid_key (строка) -> отсортированный список каналов
 	var/list/spatial_grid_categories = list()
+	/// Only channel-aware movables are indexed here. The recorded cell is the
+	/// source of truth when legacy direct loc writes bypass Moved().
+	var/list/registered_cells = list()
 
 	var/cells_on_x_axis = 0
 	var/cells_on_y_axis = 0
@@ -179,7 +193,37 @@ SUBSYSTEM_DEF(spatial_grid)
 				for(var/x_index in BOUNDING_BOX_MIN(center_x) to BOUNDING_BOX_MAX(center_x, cells_on_x_axis))
 					. += grid_level[row][x_index].hearing_contents
 
+		if(SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS)
+			for(var/row in BOUNDING_BOX_MIN(center_y) to BOUNDING_BOX_MAX(center_y, cells_on_y_axis))
+				for(var/x_index in BOUNDING_BOX_MIN(center_x) to BOUNDING_BOX_MAX(center_x, cells_on_x_axis))
+					. += grid_level[row][x_index].ai_target_contents
+
+		if(SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS)
+			for(var/row in BOUNDING_BOX_MIN(center_y) to BOUNDING_BOX_MAX(center_y, cells_on_y_axis))
+				for(var/x_index in BOUNDING_BOX_MIN(center_x) to BOUNDING_BOX_MAX(center_x, cells_on_x_axis))
+					. += grid_level[row][x_index].cleanbot_target_contents
+
 	return .
+
+/// TRUE as soon as a living client mob is found inside the exact range.
+/// Unlike orthogonal_range_search(), this does not build and concatenate a
+/// temporary result list for every clientless mob processed by SSmobs.
+/datum/controller/subsystem/spatial_grid/proc/has_living_client_in_range(atom/center, range)
+	var/turf/center_turf = get_turf(center)
+	if(!center_turf || center_turf.z > length(grids_by_z_level))
+		return FALSE
+
+	var/center_x = center_turf.x //used by the bounding-box macros
+	var/center_y = center_turf.y
+	var/list/list/datum/spatial_grid_cell/grid_level = grids_by_z_level[center_turf.z]
+
+	for(var/row in BOUNDING_BOX_MIN(center_y) to BOUNDING_BOX_MAX(center_y, cells_on_y_axis))
+		for(var/x_index in BOUNDING_BOX_MIN(center_x) to BOUNDING_BOX_MAX(center_x, cells_on_x_axis))
+			var/datum/spatial_grid_cell/cell = grid_level[row][x_index]
+			for(var/mob/player as anything in cell.client_contents)
+				if(isliving(player) && get_dist(center_turf, player) <= range)
+					return TRUE
+	return FALSE
 
 ///ячейка, накрывающая координаты target (null, если target вне мира/грида)
 /datum/controller/subsystem/spatial_grid/proc/get_cell_of(atom/target) as /datum/spatial_grid_cell
@@ -210,6 +254,28 @@ SUBSYSTEM_DEF(spatial_grid)
 
 	return intersecting_grid_cells
 
+///Как get_cells_in_range, но с независимыми радиусами по осям (окна cell_tracker).
+///Порт tg 14140a6355d1 code/controllers/subsystem/spatial_gridmap.dm get_cells_in_bounds
+/datum/controller/subsystem/spatial_grid/proc/get_cells_in_bounds(atom/center, range_x, range_y)
+	var/turf/center_turf = get_turf(center)
+	if(!center_turf || center_turf.z > length(grids_by_z_level))
+		return list()
+
+	var/list/intersecting_grid_cells = list()
+
+	var/min_x = max(GET_SPATIAL_INDEX(center_turf.x - range_x), 1)
+	var/min_y = max(GET_SPATIAL_INDEX(center_turf.y - range_y), 1)
+	var/max_x = min(GET_SPATIAL_INDEX(center_turf.x + range_x), cells_on_x_axis)
+	var/max_y = min(GET_SPATIAL_INDEX(center_turf.y + range_y), cells_on_y_axis)
+
+	var/list/grid_level = grids_by_z_level[center_turf.z]
+	for(var/row in min_y to max_y)
+		var/list/grid_row = grid_level[row]
+		for(var/x_index in min_x to max_x)
+			intersecting_grid_cells += grid_row[x_index]
+
+	return intersecting_grid_cells
+
 /// Добавить movable "осведомлённость" о канале: при пересечении границы
 /// ячеек он будет вызывать exit_cell/enter_cell (см. Moved)
 /datum/controller/subsystem/spatial_grid/proc/add_grid_awareness(atom/movable/add_to, type)
@@ -221,7 +287,7 @@ SUBSYSTEM_DEF(spatial_grid)
 		current_list = list()
 
 	//вставка с сохранением сортировки, чтобы не плодить эквивалентные ключи
-	//вида "A-B" и "B-A" (каналов всего два, цикл тривиален)
+	//вида "A-B" и "B-A" (каналов мало, цикл тривиален)
 	var/insert_at = length(current_list) + 1
 	for(var/i in 1 to length(current_list))
 		if(current_list[i] == type)
@@ -266,13 +332,46 @@ SUBSYSTEM_DEF(spatial_grid)
 	update.spatial_grid_key = new_list.Join("-")
 	if(!spatial_grid_categories[update.spatial_grid_key])
 		spatial_grid_categories[update.spatial_grid_key] = new_list
+	// A holder may lose its last recursive channel without moving. Actual
+	// channel members have already been removed by remove_grid_membership().
+	if(!length(new_list))
+		registered_cells -= update
+
+///Return the recorded cell of a holder or any actual channel member it moves.
+/datum/controller/subsystem/spatial_grid/proc/get_registered_cell(atom/movable/holder)
+	var/datum/spatial_grid_cell/direct_cell = registered_cells[holder]
+	if(direct_cell)
+		return direct_cell
+	for(var/type in spatial_grid_categories[holder.spatial_grid_key])
+		for(var/atom/movable/member as anything in holder.important_recursive_contents?[type])
+			var/datum/spatial_grid_cell/member_cell = registered_cells[member]
+			if(member_cell)
+				return member_cell
+
+///Record actual members, repairing all of their channels after a missed move.
+/datum/controller/subsystem/spatial_grid/proc/register_grid_members(list/members, datum/spatial_grid_cell/new_cell)
+	. = FALSE
+	for(var/atom/movable/member as anything in members)
+		var/datum/spatial_grid_cell/old_cell = registered_cells[member]
+		if(old_cell && old_cell != new_cell)
+			GRID_CELL_REMOVE_ALL(old_cell, member)
+			. = TRUE
+		registered_cells[member] = new_cell
+
+///Forget members only if this is still the cell being exited.
+/datum/controller/subsystem/spatial_grid/proc/unregister_grid_members(list/members, datum/spatial_grid_cell/old_cell)
+	for(var/atom/movable/member as anything in members)
+		if(registered_cells[member] == old_cell)
+			registered_cells -= member
 
 ///положить new_target во все каналы его ключа в ячейке турфа target_turf
 /datum/controller/subsystem/spatial_grid/proc/enter_cell(atom/movable/new_target, turf/target_turf)
 	if(!initialized)
 		return
+	if(!new_target)
+		CRASH("null target trying to enter the spatial grid!")
 	if(QDELETED(new_target))
-		CRASH("qdeleted or null target trying to enter the spatial grid!")
+		return
 	if(!target_turf || !new_target.spatial_grid_key)
 		CRASH("null turf loc or a new_target without a spatial_grid_key trying to enter the spatial grid!")
 	if(target_turf.z > length(grids_by_z_level))
@@ -284,13 +383,27 @@ SUBSYSTEM_DEF(spatial_grid)
 		switch(type)
 			if(SPATIAL_GRID_CONTENTS_TYPE_CLIENTS)
 				var/list/new_target_contents = new_target.important_recursive_contents
+				register_grid_members(new_target_contents[SPATIAL_GRID_CONTENTS_TYPE_CLIENTS], intersecting_cell)
 				GRID_CELL_SET(intersecting_cell.client_contents, new_target_contents[SPATIAL_GRID_CONTENTS_TYPE_CLIENTS])
 				SEND_SIGNAL(intersecting_cell, SPATIAL_GRID_CELL_ENTERED(SPATIAL_GRID_CONTENTS_TYPE_CLIENTS), new_target_contents[SPATIAL_GRID_CONTENTS_TYPE_CLIENTS])
 
 			if(SPATIAL_GRID_CONTENTS_TYPE_HEARING)
 				var/list/new_target_contents = new_target.important_recursive_contents
+				register_grid_members(new_target_contents[SPATIAL_GRID_CONTENTS_TYPE_HEARING], intersecting_cell)
 				GRID_CELL_SET(intersecting_cell.hearing_contents, new_target_contents[SPATIAL_GRID_CONTENTS_TYPE_HEARING])
 				SEND_SIGNAL(intersecting_cell, SPATIAL_GRID_CELL_ENTERED(SPATIAL_GRID_CONTENTS_TYPE_HEARING), new_target_contents[SPATIAL_GRID_CONTENTS_TYPE_HEARING])
+
+			if(SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS)
+				var/list/new_target_contents = new_target.important_recursive_contents
+				register_grid_members(new_target_contents[SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS], intersecting_cell)
+				GRID_CELL_SET(intersecting_cell.ai_target_contents, new_target_contents[SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS])
+				SEND_SIGNAL(intersecting_cell, SPATIAL_GRID_CELL_ENTERED(SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS), new_target_contents[SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS])
+
+			if(SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS)
+				var/list/new_target_contents = new_target.important_recursive_contents
+				register_grid_members(new_target_contents[SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS], intersecting_cell)
+				GRID_CELL_SET(intersecting_cell.cleanbot_target_contents, new_target_contents[SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS])
+				SEND_SIGNAL(intersecting_cell, SPATIAL_GRID_CELL_ENTERED(SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS), new_target_contents[SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS])
 
 ///как enter_cell, но только для одного канала
 /datum/controller/subsystem/spatial_grid/proc/add_single_type(atom/movable/new_target, turf/target_turf, exclusive_type)
@@ -308,13 +421,35 @@ SUBSYSTEM_DEF(spatial_grid)
 	switch(exclusive_type)
 		if(SPATIAL_GRID_CONTENTS_TYPE_CLIENTS)
 			var/list/new_target_contents = new_target.important_recursive_contents
+			if(register_grid_members(new_target_contents[SPATIAL_GRID_CONTENTS_TYPE_CLIENTS], intersecting_cell))
+				enter_cell(new_target, target_turf)
+				return intersecting_cell
 			GRID_CELL_SET(intersecting_cell.client_contents, new_target_contents[SPATIAL_GRID_CONTENTS_TYPE_CLIENTS])
 			SEND_SIGNAL(intersecting_cell, SPATIAL_GRID_CELL_ENTERED(SPATIAL_GRID_CONTENTS_TYPE_CLIENTS), new_target_contents[SPATIAL_GRID_CONTENTS_TYPE_CLIENTS])
 
 		if(SPATIAL_GRID_CONTENTS_TYPE_HEARING)
 			var/list/new_target_contents = new_target.important_recursive_contents
+			if(register_grid_members(new_target_contents[SPATIAL_GRID_CONTENTS_TYPE_HEARING], intersecting_cell))
+				enter_cell(new_target, target_turf)
+				return intersecting_cell
 			GRID_CELL_SET(intersecting_cell.hearing_contents, new_target_contents[SPATIAL_GRID_CONTENTS_TYPE_HEARING])
 			SEND_SIGNAL(intersecting_cell, SPATIAL_GRID_CELL_ENTERED(SPATIAL_GRID_CONTENTS_TYPE_HEARING), new_target_contents[SPATIAL_GRID_CONTENTS_TYPE_HEARING])
+
+		if(SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS)
+			var/list/new_target_contents = new_target.important_recursive_contents
+			if(register_grid_members(new_target_contents[SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS], intersecting_cell))
+				enter_cell(new_target, target_turf)
+				return intersecting_cell
+			GRID_CELL_SET(intersecting_cell.ai_target_contents, new_target_contents[SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS])
+			SEND_SIGNAL(intersecting_cell, SPATIAL_GRID_CELL_ENTERED(SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS), new_target_contents[SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS])
+
+		if(SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS)
+			var/list/new_target_contents = new_target.important_recursive_contents
+			if(register_grid_members(new_target_contents[SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS], intersecting_cell))
+				enter_cell(new_target, target_turf)
+				return intersecting_cell
+			GRID_CELL_SET(intersecting_cell.cleanbot_target_contents, new_target_contents[SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS])
+			SEND_SIGNAL(intersecting_cell, SPATIAL_GRID_CELL_ENTERED(SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS), new_target_contents[SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS])
 
 	return intersecting_cell
 
@@ -328,20 +463,35 @@ SUBSYSTEM_DEF(spatial_grid)
 	if(target_turf.z > length(grids_by_z_level))
 		return FALSE
 
-	var/datum/spatial_grid_cell/intersecting_cell = grids_by_z_level[target_turf.z][GET_SPATIAL_INDEX(target_turf.y)][GET_SPATIAL_INDEX(target_turf.x)]
+	var/datum/spatial_grid_cell/intersecting_cell = get_registered_cell(old_target)
+	if(!intersecting_cell)
+		intersecting_cell = grids_by_z_level[target_turf.z][GET_SPATIAL_INDEX(target_turf.y)][GET_SPATIAL_INDEX(target_turf.x)]
 
 	for(var/type in spatial_grid_categories[old_target.spatial_grid_key])
 		switch(type)
 			if(SPATIAL_GRID_CONTENTS_TYPE_CLIENTS)
 				var/list/old_target_contents = old_target.important_recursive_contents?[type] || old_target
 				GRID_CELL_REMOVE(intersecting_cell.client_contents, old_target_contents)
+				unregister_grid_members(old_target_contents, intersecting_cell)
 				SEND_SIGNAL(intersecting_cell, SPATIAL_GRID_CELL_EXITED(type), old_target_contents)
 
 			if(SPATIAL_GRID_CONTENTS_TYPE_HEARING)
 				var/list/old_target_contents = old_target.important_recursive_contents?[type] || old_target
 				GRID_CELL_REMOVE(intersecting_cell.hearing_contents, old_target_contents)
+				unregister_grid_members(old_target_contents, intersecting_cell)
 				SEND_SIGNAL(intersecting_cell, SPATIAL_GRID_CELL_EXITED(type), old_target_contents)
 
+			if(SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS)
+				var/list/old_target_contents = old_target.important_recursive_contents?[type] || old_target
+				GRID_CELL_REMOVE(intersecting_cell.ai_target_contents, old_target_contents)
+				unregister_grid_members(old_target_contents, intersecting_cell)
+				SEND_SIGNAL(intersecting_cell, SPATIAL_GRID_CELL_EXITED(type), old_target_contents)
+
+			if(SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS)
+				var/list/old_target_contents = old_target.important_recursive_contents?[type] || old_target
+				GRID_CELL_REMOVE(intersecting_cell.cleanbot_target_contents, old_target_contents)
+				unregister_grid_members(old_target_contents, intersecting_cell)
+				SEND_SIGNAL(intersecting_cell, SPATIAL_GRID_CELL_EXITED(type), old_target_contents)
 	return TRUE
 
 ///как exit_cell, но только для одного канала
@@ -354,7 +504,9 @@ SUBSYSTEM_DEF(spatial_grid)
 	if(target_turf.z > length(grids_by_z_level))
 		return FALSE
 
-	var/datum/spatial_grid_cell/intersecting_cell = grids_by_z_level[target_turf.z][GET_SPATIAL_INDEX(target_turf.y)][GET_SPATIAL_INDEX(target_turf.x)]
+	var/datum/spatial_grid_cell/intersecting_cell = get_registered_cell(old_target)
+	if(!intersecting_cell)
+		intersecting_cell = grids_by_z_level[target_turf.z][GET_SPATIAL_INDEX(target_turf.y)][GET_SPATIAL_INDEX(target_turf.x)]
 
 	switch(exclusive_type)
 		if(SPATIAL_GRID_CONTENTS_TYPE_CLIENTS)
@@ -367,6 +519,16 @@ SUBSYSTEM_DEF(spatial_grid)
 			GRID_CELL_REMOVE(intersecting_cell.hearing_contents, old_target_contents)
 			SEND_SIGNAL(intersecting_cell, SPATIAL_GRID_CELL_EXITED(exclusive_type), old_target_contents)
 
+		if(SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS)
+			var/list/old_target_contents = old_target.important_recursive_contents?[exclusive_type] || old_target
+			GRID_CELL_REMOVE(intersecting_cell.ai_target_contents, old_target_contents)
+			SEND_SIGNAL(intersecting_cell, SPATIAL_GRID_CELL_EXITED(exclusive_type), old_target_contents)
+
+		if(SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS)
+			var/list/old_target_contents = old_target.important_recursive_contents?[exclusive_type] || old_target
+			GRID_CELL_REMOVE(intersecting_cell.cleanbot_target_contents, old_target_contents)
+			SEND_SIGNAL(intersecting_cell, SPATIAL_GRID_CELL_EXITED(exclusive_type), old_target_contents)
+
 	return TRUE
 
 /**
@@ -375,18 +537,24 @@ SUBSYSTEM_DEF(spatial_grid)
  * просканировать все ячейки, это страховка от висящих ссылок.
  */
 /datum/controller/subsystem/spatial_grid/proc/force_remove_from_grid(atom/movable/to_remove)
-	if(!to_remove?.spatial_grid_key)
+	if(!to_remove)
+		return
+	if(!to_remove.spatial_grid_key && !registered_cells[to_remove])
 		return
 
 	if(!initialized)
 		remove_from_pre_init_queue(to_remove, null)
 		return
 
-	var/datum/spatial_grid_cell/loc_cell = get_cell_of(to_remove)
-	if(loc_cell)
-		GRID_CELL_REMOVE_ALL(loc_cell, to_remove)
-	else
-		find_hanging_cell_refs_for_movable(to_remove, remove_from_cells = TRUE)
+	var/datum/spatial_grid_cell/registered_cell = registered_cells[to_remove]
+	if(registered_cell)
+		GRID_CELL_REMOVE_ALL(registered_cell, to_remove)
+		registered_cells -= to_remove
+		return
+
+	// Pre-bookkeeping or corrupt entries have no O(1) owner. This path is
+	// exceptional; scan once to prevent a permanent reverse reference.
+	find_hanging_cell_refs_for_movable(to_remove, remove_from_cells = TRUE)
 
 ///убрать movable из конкретной ячейки
 /datum/controller/subsystem/spatial_grid/proc/force_remove_from_cell(atom/movable/to_remove, datum/spatial_grid_cell/input_cell)
@@ -411,10 +579,15 @@ SUBSYSTEM_DEF(spatial_grid)
 	for(var/list/z_level_grid as anything in grids_by_z_level)
 		for(var/list/cell_row as anything in z_level_grid)
 			for(var/datum/spatial_grid_cell/cell as anything in cell_row)
-				if((to_remove in cell.hearing_contents) || (to_remove in cell.client_contents))
+				if((to_remove in cell.hearing_contents) \
+					|| (to_remove in cell.client_contents) \
+					|| (to_remove in cell.ai_target_contents) \
+					|| (to_remove in cell.cleanbot_target_contents))
 					containing_cells += cell
 					if(remove_from_cells)
 						force_remove_from_cell(to_remove, cell)
+	if(remove_from_cells)
+		registered_cells -= to_remove
 
 	return containing_cells
 

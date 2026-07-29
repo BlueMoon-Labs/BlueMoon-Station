@@ -1574,7 +1574,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 			if(istype(I, /obj/item/clothing/accessory/ring))
 				if(istype(H.gloves))
 					var/obj/item/clothing/gloves/attaching_target = H.gloves
-					if(length(attaching_target.attached_accessories) > attaching_target.max_accessories)
+					if(length(attaching_target.accessories_attached) > attaching_target.max_accessories)
 						if(return_warning)
 							return_warning[1] = "\The [attaching_target] is at maximum capacity!"
 						return FALSE
@@ -1590,7 +1590,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 			else
 				if(istype(H.w_uniform, /obj/item/clothing/under))
 					var/obj/item/clothing/under/attaching_target = H.w_uniform
-					if(length(attaching_target.attached_accessories) > attaching_target.max_accessories)
+					if(length(attaching_target.accessories_attached) > attaching_target.max_accessories)
 						if(return_warning)
 							return_warning[1] = "\The [attaching_target] is at maximum capacity!"
 						return FALSE
@@ -2664,16 +2664,23 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 		SEND_SIGNAL(H, COMSIG_ADD_MOOD_EVENT, "cold", /datum/mood_event/cold)
 		//Apply cold slowdown
 		H.add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/cold, multiplicative_slowdown = (((BODYTEMP_COLD_DAMAGE_LIMIT + cold_offset) - H.bodytemperature) / COLD_SLOWDOWN_FACTOR))
-		switch(H.bodytemperature)
-			if(200 to BODYTEMP_COLD_DAMAGE_LIMIT)
-				H.throw_alert("temp", /atom/movable/screen/alert/shiver, 1)
-				H.apply_damage(COLD_DAMAGE_LEVEL_1*coldmod*H.physiology.cold_mod, BURN)
-			if(120 to 200)
-				H.throw_alert("temp", /atom/movable/screen/alert/shiver, 2)
-				H.apply_damage(COLD_DAMAGE_LEVEL_2*coldmod*H.physiology.cold_mod, BURN)
-			else
-				H.throw_alert("temp", /atom/movable/screen/alert/shiver, 3)
-				H.apply_damage(COLD_DAMAGE_LEVEL_3*coldmod*H.physiology.cold_mod, BURN)
+		// For dead mobs, stop cold damage once body is frozen
+		if(H.stat != DEAD || H.bodytemperature > BODYTEMP_FROZEN_THRESHOLD)
+			var/cold_damage = 0
+			var/shiver_level = 0
+			switch(H.bodytemperature)
+				if(200 to BODYTEMP_COLD_DAMAGE_LIMIT)
+					shiver_level = 1
+					cold_damage = COLD_DAMAGE_LEVEL_1*coldmod*H.physiology.cold_mod
+				if(120 to 200)
+					shiver_level = 2
+					cold_damage = COLD_DAMAGE_LEVEL_2*coldmod*H.physiology.cold_mod
+				else
+					shiver_level = 3
+					cold_damage = COLD_DAMAGE_LEVEL_3*coldmod*H.physiology.cold_mod
+			if(shiver_level)
+				H.throw_alert("temp", /atom/movable/screen/alert/shiver, shiver_level)
+				H.apply_damage(cold_damage, BURN)
 
 	else
 		H.remove_movespeed_modifier(/datum/movespeed_modifier/cold)

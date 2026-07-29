@@ -204,6 +204,12 @@
 	if(!(mob_turf.z in impacted_z_levels))
 		return
 
+	// get_turf() already resolved containment. Reading its area directly avoids
+	// a second loc-chain traversal for every mob in every weather cycle, and the
+	// area rejection belongs before the more expensive trait walk.
+	if(!(mob_turf.loc in impacted_areas))
+		return
+
 	if((immunity_type && HAS_TRAIT(mob_to_check, immunity_type)) || HAS_TRAIT(mob_to_check, TRAIT_WEATHER_IMMUNE))
 		return
 
@@ -212,9 +218,6 @@
 		if((immunity_type && HAS_TRAIT(loc_to_check, immunity_type)) || HAS_TRAIT(loc_to_check, TRAIT_WEATHER_IMMUNE))
 			return
 		loc_to_check = loc_to_check.loc
-
-	if(!(get_area(mob_to_check) in impacted_areas))
-		return
 
 	return TRUE
 

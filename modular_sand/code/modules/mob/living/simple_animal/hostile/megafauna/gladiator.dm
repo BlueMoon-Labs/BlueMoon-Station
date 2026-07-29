@@ -24,7 +24,6 @@ They deal 35 brute (armor is considered).
 	death_sound = 'modular_sand/sound/effects/gladiatordeathsound.ogg'
 	deathmessage = "gets discombobulated and fucking dies."
 	rapid_melee = 1
-	melee_queue_distance = 2
 	melee_damage_lower = 45
 	melee_damage_upper = 45
 	speed = 1
@@ -40,7 +39,10 @@ They deal 35 brute (armor is considered).
 	weather_immunities = list(TRAIT_LAVA_IMMUNE,TRAIT_ASHSTORM_IMMUNE)
 	peaceful = TRUE
 	var/phase = 1
-	var/list/introduced = list() //Basically all the mobs which the gladiator has already introduced himself to.
+	/// REF-keyed weakrefs to mobs already greeted. Keeping the mobs themselves
+	/// here pins every nearby combatant; checking resolve() also handles BYOND
+	/// reusing a deleted mob's REF for a new datum.
+	var/list/introduced = list()
 	var/speen = FALSE
 	var/speenrange = 4
 	var/obj/savedloot = null
@@ -85,11 +87,16 @@ They deal 35 brute (armor is considered).
 	. = ..()
 	internal = new /obj/item/gps/internal/gladiator(src)
 
+/mob/living/simple_animal/hostile/megafauna/gladiator/Destroy()
+	introduced = null
+	return ..()
+
 /mob/living/simple_animal/hostile/megafauna/gladiator/Life()
 	. = ..()
 	if(!wander)
 		for(var/mob/living/M in view(4, src))
-			if(!(M in introduced) && (stat != DEAD))
+			var/datum/weakref/known_mob = introduced[REF(M)]
+			if(known_mob?.resolve() != M && (stat != DEAD))
 				introduction(M)
 
 /mob/living/simple_animal/hostile/megafauna/gladiator/apply_damage(damage = 0,damagetype = BRUTE, def_zone = null, blocked = FALSE, forced = FALSE, spread_damage = FALSE, wound_bonus = 0, bare_wound_bonus = 0, sharpness = SHARP_NONE) //skyrat edit
@@ -112,7 +119,7 @@ They deal 35 brute (armor is considered).
 
 /mob/living/simple_animal/hostile/megafauna/gladiator/proc/introduction(mob/living/target)
 	if(src == target)
-		introduced += src
+		introduced[REF(src)] = WEAKREF(src)
 		return
 	if(ishuman(target))
 		var/mob/living/carbon/human/H = target
@@ -148,12 +155,12 @@ They deal 35 brute (armor is considered).
 									"You're not invited. Get out.")
 			message = pick(messages)
 
-		introduced |= H
+		introduced[REF(H)] = WEAKREF(H)
 		say(message, language = language)
 
 	else
 		say("You are not welcome into the necropolisss.")
-		introduced |= target
+		introduced[REF(target)] = WEAKREF(target)
 
 /mob/living/simple_animal/hostile/megafauna/gladiator/Move(atom/newloc, dir, step_x, step_y)
 	if(speen || stunned)
@@ -324,12 +331,17 @@ They deal 35 brute (armor is considered).
 	stunned = FALSE
 
 /mob/living/simple_animal/hostile/megafauna/gladiator/proc/teleport(atom/target)
+	if(QDELETED(src) || !isturf(loc) || QDELETED(target) || !get_turf(target))
+		return FALSE
 	var/turf/T = get_step(target, -target.dir)
 	new /obj/effect/temp_visual/small_smoke/halfsecond(get_turf(src))
 	sleep(4)
+	if(QDELETED(src) || !isturf(loc) || QDELETED(target) || !get_turf(target))
+		return FALSE
 	if(!ischasm(T) && !(/mob/living in T))
 		new /obj/effect/temp_visual/small_smoke/halfsecond(T)
 		forceMove(T)
+		return TRUE
 	else
 		var/list/possiblelocs = (view(3, target) - view(1, target))
 		for(var/atom/A in possiblelocs)
@@ -342,14 +354,16 @@ They deal 35 brute (armor is considered).
 			T = pick(possiblelocs)
 			new /obj/effect/temp_visual/small_smoke/halfsecond(T)
 			forceMove(T)
+			return TRUE
+	return FALSE
 
 /mob/living/simple_animal/hostile/megafauna/gladiator/AttackingTarget()
 	. = ..()
 	if(speen || stunned)
 		return FALSE
-	if(charging)
+	if(charging && target)
 		Bump(target)
-	if(. && prob(5 * phase))
+	if(. && target && prob(5 * phase))
 		teleport(target)
 
 /mob/living/simple_animal/hostile/megafauna/gladiator/proc/boneappletea(atom/target)
@@ -363,6 +377,8 @@ They deal 35 brute (armor is considered).
 	if(world.time < ranged_cooldown)
 		return FALSE
 	if(speen || stunned || charging)
+		return FALSE
+	if(QDELETED(target) || !get_turf(target))
 		return FALSE
 	ranged_cooldown = world.time
 	switch(phase)
