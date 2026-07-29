@@ -195,7 +195,7 @@
 					movement_keys[key] = SOUTH
 				else
 					var/datum/keybinding/KB = GLOB.keybindings_by_name[kb_name]
-					var/clientside_verb = (!(prefs.tgui_input_mode && prefs.tgui_input_verbs) && KB.clientside_byond) || KB.clientside
+					var/clientside_verb = (prefs && !(prefs.tgui_input_mode && prefs.tgui_input_verbs) && KB.clientside_byond) || KB.clientside
 					if(!clientside_verb)
 						continue
 					clientside_verb = replacetext_char(clientside_verb, " ", "-")

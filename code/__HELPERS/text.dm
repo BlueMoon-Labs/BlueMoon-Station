@@ -208,11 +208,11 @@
 	return stripped_text_or_reflect(user, name, max_length, no_trim)
 
 /proc/stripped_text_or_reflect(mob/user, message = "", max_length=MAX_MESSAGE_LEN, no_trim=FALSE)
-	if(isnull(message)) // Return null if canceled.
+	if(!length(message)) // Return null if canceled.
 		return null
 	if(length(message) > max_length)
 		to_chat(user, message)
-		to_chat(user, span_danger("^^^----- The preceeding message has been DISCARDED for being over the maximum length of [max_length]. It has NOT been sent! -----^^^"))
+		to_chat(user, span_danger("^^^----- The preceding message has been DISCARDED for being over the maximum length of [max_length]. It has NOT been sent! -----^^^"))
 		return null
 	return finalize_stripped_input(message, max_length, no_trim)
 

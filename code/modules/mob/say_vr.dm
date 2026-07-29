@@ -18,7 +18,7 @@
 		to_chat(usr, message)
 		to_chat(usr, span_danger("Speech is currently admin-disabled."))
 		return
-	usr.emote("subtler")
+	usr.emote("subtler", message = message)
 
 /mob/living/verb/subtler_indicatored()
 	set name = "Subtler Anti-Ghost (Indicator)"

@@ -214,7 +214,7 @@
 		if(client?.prefs.tgui_input_verbs)
 			message = tgui_input_text(usr, "", "Whisper", null, MAX_MESSAGE_LEN, encode = FALSE)
 		else
-			message = input(usr, "", "Whisper") as text|null
+			message = stripped_input_or_reflect(usr, "", "Whisper")
 
 	if(!length(message))
 		return
@@ -231,7 +231,7 @@
 	
 	var/message = ""
 	if(client?.prefs.tgui_input_verbs)
-		message = tgui_input_text(src, "", "Whisper (Indicator)", null, MAX_MESSAGE_LEN, encode = TRUE)
+		message = tgui_input_text(src, "", "Whisper (Indicator)", null, MAX_MESSAGE_LEN, encode = FALSE)
 	else
 		message = stripped_input(src, "", "Whisper (Indicator)")
 
