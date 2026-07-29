@@ -109,6 +109,8 @@
 #include "lighting.dm"
 #include "lighting_deferred_init.dm"
 #include "light_range_cap.dm"
+#include "airalarm_danger_read.dm"
+#include "area_power_signal.dm"
 #include "area_tracking.dm"
 #include "cleanable_decals_tracking.dm"
 #include "clockwork_power.dm"

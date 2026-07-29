@@ -154,6 +154,12 @@
 			adjust_shadow_weight(-Obj.shadow_weight)
 
 /turf/proc/change_area(var/area/old_area, var/area/new_area, skip_blend = FALSE)
+	// Handing a turf between areas (shuttle moves, admin area editing) never fires area
+	// Entered/Exited for what is standing on it, so machinery would go on listening to the area it
+	// left. Re-point it here - this is the only moment the swap is observable.
+	if(old_area != new_area)
+		for(var/obj/machinery/machine in contents)
+			machine.register_power_change_area(new_area)
 	if(SSlighting.initialized)
 		if (new_area.dynamic_lighting != old_area.dynamic_lighting)
 			if (new_area.dynamic_lighting)
