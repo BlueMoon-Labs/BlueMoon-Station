@@ -17,6 +17,17 @@
 /// Used for rate-limiting to prevent DoS by excessively refreshing a TGUI window
 #define TGUI_REFRESH_FULL_UPDATE_COOLDOWN 5 SECONDS
 
+/**
+ * Message types worth writing to tgui.log under EMERGENCY_TGUI_LOGGING: the window handshake and
+ * client-side error reports, which is what the flag exists to diagnose.
+ *
+ * The ping/pingReply heartbeat is deliberately excluded. At one beat per client every couple of
+ * seconds, times six log lines per beat, it buries the handshake lines it is supposed to surface -
+ * in round 22.10.05 a single client produced 3838 of the log's 3844 lines that way, and a full
+ * server would be writing hundreds of lines a second.
+ */
+#define TGUI_LOGGED_MESSAGE_TYPE(message_type) ((message_type) == "ready" || (message_type) == "log")
+
 /// Window does not exist
 #define TGUI_WINDOW_CLOSED 0
 /// Window was just opened, but is still not ready to be sent data

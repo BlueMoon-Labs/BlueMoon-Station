@@ -368,8 +368,7 @@
  * Callback for handling incoming tgui messages.
  */
 /datum/tgui_window/proc/on_message(type, payload, href_list)
-	var/log_handshake = CONFIG_GET(flag/emergency_tgui_logging) \
-		&& (type == "ready" || type == "ping" || type == "pingReply" || type == "log")
+	var/log_handshake = CONFIG_GET(flag/emergency_tgui_logging) && TGUI_LOGGED_MESSAGE_TYPE(type)
 	if(log_handshake)
 		log_tgui(client,
 			"[id]/on_message type=[type], status_before=[status], queue_len=[length(message_queue)]",

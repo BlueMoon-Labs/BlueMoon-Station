@@ -63,7 +63,8 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 	// Tgui Topic middleware — exempt from rate limiting.
 	// tgui messages (ready, ping, UI interactions) must not be dropped
 	// during connection burst when many asset/stat topics fire at once.
-	var/log_tgui_ingress = href_list["tgui"] && CONFIG_GET(flag/emergency_tgui_logging)
+	var/log_tgui_ingress = href_list["tgui"] && CONFIG_GET(flag/emergency_tgui_logging) \
+		&& TGUI_LOGGED_MESSAGE_TYPE(href_list["type"])
 	if(log_tgui_ingress)
 		var/topic_type = href_list["type"]
 		var/window_id = href_list["window_id"]
