@@ -88,11 +88,14 @@
 	var/turf/T = get_turf(src)
 	if(!T)
 		return FALSE
-	log_reagent("SPRAY: [key_name(actor)] fired [src] ([REF(src)]) [COORD(T)] at [A] ([REF(A)]) [COORD(A)] (chempuff: [D.reagents.log_list()])")
 	if(stream_mode)
 		reagents.trans_to(D, amount_per_transfer_from_this)
 	else
 		reagents.trans_to(D, amount_per_transfer_from_this, 1/range)
+	// Лог после переливания: раньше он шёл до trans_to, и облако в нём всегда было пустым -
+	// в прод-раундах все 231 и 132 записи подряд ушли с "(chempuff: no reagents)", то есть
+	// пшики кислотой или лубрикантом были неатрибутируемы.
+	log_reagent("SPRAY: [key_name(actor)] fired [src] ([REF(src)]) [COORD(T)] at [A] ([REF(A)]) [COORD(A)] (chempuff: [D.reagents.log_list()])")
 	D.add_atom_colour(mix_color_from_reagents(D.reagents.reagent_list), TEMPORARY_COLOUR_PRIORITY)
 	playsound(src.loc, 'sound/effects/spray2.ogg', 50, 1, -6)
 	if(iscarbon(A) && (get_dist(src, A) <= range))

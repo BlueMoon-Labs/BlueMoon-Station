@@ -286,6 +286,13 @@ var _i=0;setInterval(function(){var s=_i%4;document.getElementById('d').textCont
 	if(!href_list["bm_lobby_action"])
 		return ..()
 
+	// Собственные действия лобби перехватываются до ..(), а возрастной гейт живёт там -
+	// без этого вызова всё меню (вход, наблюдение, магазин, готовность) обходило проверку.
+	// Сейчас AGE_VERIFICATION в конфиге выключен, поэтому дыра латентная, но чинить её надо
+	// здесь, а не когда её включат.
+	if(!age_verify())
+		return FALSE
+
 	var/action = href_list["bm_lobby_action"]
 
 	switch(action)

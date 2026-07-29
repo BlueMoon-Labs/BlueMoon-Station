@@ -947,9 +947,15 @@
 			var/turf/T = get_turf(my_atom)
 			var/datum/reagents/R = new/datum/reagents(3000)
 			R.add_reagent(/datum/reagent/fermi/fermiAcid, amount)
-			for (var/datum/reagent/reagentgas in reagent_list)
-				R.add_reagent(reagentgas, amount/5)
-				remove_reagent(reagentgas, amount/5)
+			// .type, а не сам датум: add_reagent/remove_reagent ищут по тип-пути в
+			// GLOB.chemical_reagents_list, а экземпляр туда не попадает никогда. В прод-логе
+			// это выглядело как "attempted to add a reagent called 'Hydrogen' which doesn't
+			// exist" - в сообщение уезжало name датума. По факту дым получал только кислоту,
+			// а содержимое ёмкости не расходовалось вовсе.
+			// Снапшот: remove_reagent правит reagent_list, по которому мы идём.
+			for (var/datum/reagent/reagentgas as anything in reagent_list.Copy())
+				R.add_reagent(reagentgas.type, amount/5)
+				remove_reagent(reagentgas.type, amount/5)
 			s.set_up(R, clamp(amount/10, 0, 2), T)
 			s.start()
 			return FALSE
