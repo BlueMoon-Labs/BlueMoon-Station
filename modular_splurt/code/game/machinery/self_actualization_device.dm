@@ -171,10 +171,7 @@
 	var/eye_damage = check_organ(patient, /obj/item/organ/eyes)
 	var/ear_damage = check_organ(patient, /obj/item/organ/ears)
 
-	var/list/trauma_list = list()
-	if(patient.get_traumas())
-		for(var/datum/brain_trauma/trauma as anything in patient.get_traumas())
-			trauma_list += trauma
+	var/list/trauma_list = detach_traumas(patient)
 
 	var/brute_damage = patient.getBruteLoss()
 	var/burn_damage = patient.getFireLoss()
@@ -201,11 +198,11 @@
 	patient.setOrganLoss(ORGAN_SLOT_EARS, ear_damage)
 	patient.setOrganLoss(ORGAN_SLOT_BRAIN, brain_damage)
 
-	//Re-Applies Trauma
-	var/obj/item/organ/brain/patient_brain = patient.getorgan(/obj/item/organ/brain)
-
-	if(length(trauma_list))
-		patient_brain.traumas = trauma_list
+	//Re-Applies Trauma. Строго ДО разбора квирков ниже: квирковая траума вернётся
+	//на своё место, снимется вместе со старым квирком и будет заведена заново
+	//в AssignQuirks - дубля не возникает. Класть её после переназначения нельзя:
+	//post_add у квирка отложен таймером, дедуп по типу его ещё не увидит.
+	restore_traumas(patient, trauma_list)
 
 	//Re-Applies Damage
 	patient.getBruteLoss(brute_damage)
@@ -231,6 +228,48 @@
 
 	open_machine()
 	playsound(src, 'sound/machines/microwave/microwave-end.ogg', 100, FALSE)
+
+/// Снимает траумы со старого мозга, чтобы они пережили пересборку тела.
+///
+/// Просто запомнить ссылки нельзя: copy_to меняет вид, regenerate_organs удаляет
+/// прежний мозг, а /obj/item/organ/brain/Destroy() делает QDEL_LIST(traumas).
+/// Прежний код клал этот же список в новый мозг уже qdel-нутым: траумы с owner == null
+/// рантаймили в on_life каждые 2 секунды до конца раунда (Cannot read null.status_traits,
+/// раунд 9824 - 104 рантайма) и висели hard delete'ом с ровно одной внешней ссылкой.
+/obj/machinery/self_actualization_device/proc/detach_traumas(mob/living/carbon/human/patient)
+	. = list()
+	var/obj/item/organ/brain/old_brain = patient.getorganslot(ORGAN_SLOT_BRAIN)
+	if(!old_brain)
+		return
+	for(var/datum/brain_trauma/trauma as anything in old_brain.traumas)
+		if(QDELETED(trauma))
+			continue
+		//owner ещё жив - снимаем подписки штатно, иначе on_gain при возврате
+		//зарегистрирует COMSIG_MOB_SAY/HEAR поверх существующих
+		if(trauma.owner)
+			trauma.on_lose(TRUE)
+		trauma.owner = null
+		trauma.brain = null
+		. += trauma
+	old_brain.traumas = list()
+
+/// Возвращает снятые траумы на новый мозг. Тип, который уже завели заново квирки,
+/// не дублируем - лишний экземпляр просто удаляем.
+/obj/machinery/self_actualization_device/proc/restore_traumas(mob/living/carbon/human/patient, list/saved_traumas)
+	if(!length(saved_traumas))
+		return
+	var/obj/item/organ/brain/new_brain = patient.getorganslot(ORGAN_SLOT_BRAIN)
+	for(var/datum/brain_trauma/trauma as anything in saved_traumas)
+		if(QDELETED(trauma))
+			continue
+		if(!new_brain || new_brain.has_trauma_type(trauma.type, trauma.resilience))
+			qdel(trauma)
+			continue
+		new_brain.traumas += trauma
+		trauma.brain = new_brain
+		if(new_brain.owner)
+			trauma.owner = new_brain.owner
+			trauma.on_gain()
 
 /// Checks the damage on the inputed organ and stores it.
 /obj/machinery/self_actualization_device/proc/check_organ(mob/living/carbon/human/patient, obj/item/organ/organ_to_check)

@@ -99,6 +99,7 @@
 // #include "food_edibility_check.dm"
 #include "gc_rewrite.dm"
 #include "harddel_round_9813.dm"
+#include "harddel_round_9824.dm"
 // #include "greyscale_config.dm"
 // #include "heretic_knowledge.dm"
 // #include "holidays.dm"

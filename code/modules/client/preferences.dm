@@ -2530,6 +2530,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			var/has_buttons = FALSE
 			for(var/key in key_bindings)
 				var/list/temp = key_bindings[key]
+				if(!islist(temp))
+					continue
 				if(temp.Find(kb_name))
 					has_buttons = TRUE
 					break
@@ -2568,6 +2570,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			key_bindings[old_key] -= kb_name
 			if(!length(key_bindings[old_key]))
 				key_bindings -= old_key
+		//Из savefile прилетает 0 вместо пустого списка: "type mismatch: 0 |= /list"
+		if(!islist(key_bindings[full_key]))
+			key_bindings[full_key] = list()
 		key_bindings[full_key] |= list(kb_name)
 		key_bindings[full_key] = sort_list(key_bindings[full_key])
 

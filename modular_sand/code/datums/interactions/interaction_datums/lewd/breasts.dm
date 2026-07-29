@@ -47,7 +47,8 @@
 		playlewdinteractionsound(get_turf(user), pick('modular_sand/sound/interactions/oral1.ogg',
 							'modular_sand/sound/interactions/oral2.ogg'), volume, 1, extrarange)
 
-		target.reagents.add_reagent(milktype, rand(1,3 * milkers.get_lactation_amount_modifier()))
+		//у цели без химического холдера (симпл-мобы, силиконы) глотать нечем
+		target.reagents?.add_reagent(milktype, rand(1,3 * milkers.get_lactation_amount_modifier()))
 	else
 		lines = list(
 			"прижимает свою грудь ко рту <b>[target]</b>, позволяя пососать свой сосок",
