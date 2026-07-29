@@ -99,7 +99,8 @@ SUBSYSTEM_DEF(auto_cryo)
 /// и обход с начала пропускал бы каждую вторую запись.
 /datum/controller/subsystem/auto_cryo/proc/prune_dead_entries(list/snapshot)
 	for(var/index in length(snapshot) to 1 step -1)
-		if(QDELETED(snapshot[index]))
+		var/datum/entry = snapshot[index]
+		if(QDELETED(entry))
 			snapshot.Cut(index, index + 1)
 
 /// Queues an atom for staggered deletion in fire(). Callers must have already detached it
