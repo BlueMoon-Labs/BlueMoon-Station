@@ -362,8 +362,11 @@
 	//SHOULD_CALL_PARENT(TRUE)
 	if(mover.pass_flags & pass_flags_self)
 		return TRUE
-	if(mover.throwing && (pass_flags_self & LETPASSTHROW))
-		return TRUE
+	if(mover.throwing)
+		if(pass_flags_self & LETPASSTHROW)
+			return TRUE
+		if(mover.throwing.thrower == src)
+			return TRUE
 	return !density
 
 /**
@@ -842,6 +845,8 @@
  */
 /atom/proc/hitby(atom/movable/hitting_atom, skipcatch, hitpush, blocked, datum/thrownthing/throwingdatum)
 	SEND_SIGNAL(src, COMSIG_ATOM_HITBY, hitting_atom, skipcatch, hitpush, blocked, throwingdatum)
+	if(QDELETED(src))
+		return FALSE
 	if(density && !has_gravity(hitting_atom)) //thrown stuff bounces off dense stuff in no grav, unless the thrown stuff ends up inside what it hit(embedding, bola, etc...).
 		addtimer(CALLBACK(src, PROC_REF(hitby_react), hitting_atom), 0.2 SECONDS)
 	return FALSE
@@ -1275,9 +1280,16 @@
 	SEND_SIGNAL(AM, COMSIG_ATOM_ENTERING, src, oldLoc)
 
 /atom/Exit(atom/movable/AM, atom/newLoc)
-	. = ..()
+	// Намеренно НЕ зовём ..(): нативный Exit() обходит contents и дёргает
+	// Uncross() на каждом атоме в турфе. /turf/Exit ниже делает ровно этот обход
+	// сам - с гейтом blocks_exit_checks и с обработкой Bump/PHASING, - так что
+	// нативный проход был вторым, негейтящимся и полностью дублирующим: 553k
+	// вызовов Uncross() за 78 секунд раунда 9800. Апстрим tg выпилил его по той
+	// же причине. Чтобы что-то могло запретить выход, есть COMSIG_ATOM_EXIT
+	// (через /datum/element/connect_loc) либо blocks_exit_checks + Uncross().
 	if(SEND_SIGNAL(src, COMSIG_ATOM_EXIT, AM, newLoc) & COMPONENT_ATOM_BLOCK_EXIT)
 		return FALSE
+	return TRUE
 
 /atom/Exited(atom/movable/AM, atom/newLoc)
 	SEND_SIGNAL(src, COMSIG_ATOM_EXITED, AM, newLoc)
@@ -1507,10 +1519,15 @@
 
 	var/list/names = islist(name_or_names) ? name_or_names : list(name_or_names)
 
+	var/removed_any = FALSE
 	for(var/name in names)
 		if(filter_data[name])
 			filter_data -= name
-	update_filters()
+			removed_any = TRUE
+	// update_filters() sorts and rebuilds the whole list — pointless if we
+	// removed nothing, which is the common case for speculative removals.
+	if(removed_any)
+		update_filters()
 
 /atom/proc/clear_filters()
 	filter_data = null

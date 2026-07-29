@@ -7,24 +7,37 @@
 	var/ranged = FALSE
 	var/rapid = 0 //How many shots per volley.
 	var/rapid_fire_delay = 2 //Time between rapid fire shots
+	/// A rapid volley owns at most one outstanding timer and one target ref.
+	var/rapid_fire_timer_id
+	var/rapid_fire_shots_left = 0
+	var/atom/rapid_fire_target
 
 	var/dodging = FALSE
-	var/approaching_target = FALSE //We should dodge now
 	var/in_melee = FALSE	//We should sidestep now
 	var/dodge_prob = 30
-	var/sidestep_per_cycle = 1 //How many sidesteps per npcpool cycle when in melee
 
 	var/projectiletype	//set ONLY it and NULLIFY casingtype var, if we have ONLY projectile
 	var/projectilesound
 	var/casingtype		//set ONLY it and NULLIFY projectiletype, if we have projectile IN CASING
 	var/move_to_delay = 3 //delay for the automated movement.
+	///Пол скорости AI-погони (AI_PURSUIT_MIN_MOVE_DELAY) применяется, пока TRUE.
+	///Боссы (megafauna) ставят FALSE - их высокая скорость намеренная.
+	var/ai_pursuit_speed_capped = TRUE
 	var/list/friends = list()
 	var/list/foes = list()
+	///Троттл группового оповещения союзников об обидчике (см. RetaliateAgainst)
+	var/next_ally_alert = 0
 	var/list/emote_taunt = list()
 	var/taunt_chance = 0
 
 	var/rapid_melee = 1			 //Number of melee attacks between each npc pool tick. Spread evenly.
-	var/melee_queue_distance = 4 //If target is close enough start preparing to hit them if we have rapid_melee enabled
+	///Профильный темп мили контроллерного AI: доля от легаси-каденса NPC-пула.
+	///Сабтип/профиль может замедлить тяжёлого (телеграф) или ускорить роя.
+	var/ai_melee_cadence_scale = AI_MELEE_CADENCE_SCALE
+	/// Legacy rapid-melee is a chained burst with at most one outstanding timer.
+	/// Controller AI uses its behavior cooldown instead and never creates these timers.
+	var/rapid_melee_timer_id
+	var/rapid_melee_attacks_left = 0
 
 	var/ranged_message = "fires" //Fluff text for ranged mobs
 	var/ranged_cooldown = 0 //What the current cooldown on ranged attacks is, generally world.time + ranged_cooldown_time
@@ -51,9 +64,14 @@
 
 	var/lose_patience_timer_id //id for a timer to call LoseTarget(), used to stop mobs fixating on a target they can't reach
 	var/lose_patience_timeout = 1200 //120 seconds by default, so there's no major changes to AI behaviour, beyond actually bailing if stuck forever
+	/// Repeated hits/attacks refresh patience, but recreating the same long timer
+	/// dozens of times per tick only churns SStimer buckets.
+	var/next_patience_timer_refresh = 0
 
 	///When a target is found, will the mob attempt to charge at it's target?
 	var/charger = FALSE
+	///Таймер прелюдии чарджа: пока взведён, повторный enter_charge запрещён
+	var/charge_windup_timer
 	///Tracks if the target is actively charging.
 	var/charge_state = FALSE
 	///In a charge, how many tiles will the charger travel?
@@ -66,6 +84,13 @@
 	COOLDOWN_DECLARE(charge_cooldown)
 	var/list/enemies = list()
 
+	///Профиль AI-контроллера (оверхол): типпас адаптера либо null для
+	///задокументированных AI_OFF-исключений (см. hostile_adapter/permanent_exceptions.dm).
+	///Сабтипы ставят свой профиль явно; база выбирает по флагам в select_ai_profile()
+	var/ai_profile_type = /datum/ai_controller/hostile_adapter/melee_chaser
+	///Пауза перед мили-ударом AI; 0 сохраняет мгновенную легаси-атаку.
+	var/melee_telegraph_duration = 0
+
 /mob/living/simple_animal/hostile/Initialize(mapload)
 	. = ..()
 
@@ -73,18 +98,46 @@
 		targets_from = src
 	wanted_objects = typecacheof(wanted_objects)
 
+	var/chosen_profile = select_ai_profile()
+	//Явно выключенные типы (AI_OFF на типе) - игровые оболочки и постоянные
+	//исключения: контроллер им не положен, см. MIGRATION_EXCEPTIONS.md.
+	if(chosen_profile && AIStatus != AI_OFF)
+		new chosen_profile(src) //PossessPawn сам вынимает моба из легаси-бакетов
+	if(melee_telegraph_duration > 0)
+		AddComponent(/datum/component/hostile_attack_telegraph, melee_telegraph_duration)
+
+///Авто-подбор профиля по легаси-флагам; явный сабтиповый ai_profile_type важнее
+/mob/living/simple_animal/hostile/proc/select_ai_profile()
+	if(isnull(ai_profile_type))
+		return null //задокументированное AI_OFF-исключение: контроллер не создаётся
+	if(ai_profile_type != /datum/ai_controller/hostile_adapter/melee_chaser)
+		return ai_profile_type //сабтип выбрал профиль сам
+	if(charger)
+		return /datum/ai_controller/hostile_adapter/brute_charger
+	if(ranged)
+		if(isnull(retreat_distance))
+			return /datum/ai_controller/hostile_adapter/ranged_chaser
+		return /datum/ai_controller/hostile_adapter/ranged_skirmisher
+	return ai_profile_type
+
 
 /mob/living/simple_animal/hostile/Destroy()
 	deltimer(lose_patience_timer_id)
 	deltimer(search_objects_timer_id)
+	deltimer(charge_windup_timer)
+	charge_windup_timer = null
+	cancel_rapid_melee_sequence()
+	cancel_rapid_fire_sequence()
 	targets_from = null
 	target = null
 	friends = null
 	for(var/atom/movable/the_foe in foes)
 		UnregisterSignal(the_foe, COMSIG_PARENT_QDELETING)
+		untrack_enemy_mind(the_foe)
 	foes = null
 	for(var/atom/movable/the_enemy in enemies)
 		UnregisterSignal(the_enemy, COMSIG_PARENT_QDELETING)
+		untrack_enemy_mind(the_enemy)
 	enemies = null
 	return ..()
 
@@ -92,26 +145,98 @@
 	if(the_enemy in enemies)
 		return
 	enemies += the_enemy
-	RegisterSignal(the_enemy, COMSIG_PARENT_QDELETING, PROC_REF(on_enemy_qdeleting), override = TRUE)
+	track_enemy_lifecycle(the_enemy)
+	//новая обида перепроверяет даже OFF-контроллер: OFF мог остаться от пустого z-level
+	if(ai_controller && ai_controller.ai_status != AI_STATUS_ON)
+		ai_controller.set_ai_status(ai_controller.get_expected_ai_status())
+
+/// Add a batch of grudges without paying one proc/list-membership check for
+/// every enemy shared between every member of a hostile group.
+/mob/living/simple_animal/hostile/proc/add_enemies(list/candidates)
+	if(!length(candidates))
+		return
+	var/list/new_enemies = candidates - enemies
+	if(!length(new_enemies))
+		return
+	var/list/invalid_enemies
+	for(var/atom/movable/new_enemy as anything in new_enemies)
+		if(QDELETED(new_enemy))
+			LAZYADD(invalid_enemies, new_enemy)
+			continue
+		track_enemy_lifecycle(new_enemy)
+	if(length(invalid_enemies))
+		new_enemies -= invalid_enemies
+	if(!length(new_enemies))
+		return
+	enemies |= new_enemies
+	if(ai_controller && ai_controller.ai_status != AI_STATUS_ON)
+		ai_controller.set_ai_status(ai_controller.get_expected_ai_status())
+	return new_enemies
 
 /mob/living/simple_animal/hostile/proc/remove_enemy(atom/movable/the_enemy)
 	enemies -= the_enemy
 	//сигнал держим, пока цель числится хотя бы в одном списке обид:
 	//foes живёт дольше enemies (тот чистится по stat в Found)
-	if(!foes || !foes[the_enemy])
-		UnregisterSignal(the_enemy, COMSIG_PARENT_QDELETING)
+	if(foes && foes[the_enemy])
+		return
+	UnregisterSignal(the_enemy, COMSIG_PARENT_QDELETING)
+	untrack_enemy_mind(the_enemy)
+
+///Track both the body lifetime and player-mind transfers for a personal enemy.
+/mob/living/simple_animal/hostile/proc/track_enemy_lifecycle(atom/movable/the_enemy)
+	RegisterSignal(the_enemy, COMSIG_PARENT_QDELETING, PROC_REF(on_enemy_qdeleting), override = TRUE)
+	var/mob/enemy_mob = the_enemy
+	if(istype(enemy_mob) && enemy_mob.mind)
+		RegisterSignal(enemy_mob.mind, COMSIG_MIND_TRANSFER, PROC_REF(on_enemy_mind_transfer), override = TRUE)
+
+/mob/living/simple_animal/hostile/proc/untrack_enemy_mind(atom/movable/the_enemy)
+	var/mob/enemy_mob = the_enemy
+	if(istype(enemy_mob) && enemy_mob.mind)
+		UnregisterSignal(enemy_mob.mind, COMSIG_MIND_TRANSFER)
 
 /mob/living/simple_animal/hostile/proc/on_enemy_qdeleting(datum/source)
 	SIGNAL_HANDLER
+	untrack_enemy_mind(source)
 	enemies -= source
 	if(foes)
 		foes -= source
+
+///Admin respawn, cloning and body swaps keep the same player mind but create a
+///new mob datum. Move personal aggro to that body instead of leaving a boss
+///permanently focused on the old corpse.
+/mob/living/simple_animal/hostile/proc/on_enemy_mind_transfer(datum/mind/source, mob/new_character, mob/old_character)
+	SIGNAL_HANDLER
+	var/was_enemy = (old_character in enemies)
+	var/was_foe = foes && foes[old_character]
+	if(!was_enemy && !was_foe)
+		UnregisterSignal(source, COMSIG_MIND_TRANSFER)
+		return
+
+	var/was_current_target = target == old_character || (ai_controller && ai_controller.blackboard[BB_AI_CURRENT_TARGET] == old_character)
+	UnregisterSignal(old_character, COMSIG_PARENT_QDELETING)
+	UnregisterSignal(source, COMSIG_MIND_TRANSFER)
+	enemies -= old_character
+	if(foes)
+		foes -= old_character
+
+	if(QDELETED(new_character))
+		if(was_current_target)
+			LoseTarget()
+		return
+	if(was_enemy)
+		enemies += new_character
+	if(was_foe)
+		foes[new_character] = 1
+	track_enemy_lifecycle(new_character)
+	if(was_current_target && CanAttack(new_character))
+		GiveTarget(new_character)
 
 /// Clears remembered targets and grudges without changing the mob's faction behavior.
 /mob/living/simple_animal/hostile/proc/clear_hostile_aggro()
 	LoseTarget()
 	for(var/atom/movable/old_target as anything in (foes | enemies))
 		UnregisterSignal(old_target, COMSIG_PARENT_QDELETING)
+		untrack_enemy_mind(old_target)
 	friends.Cut()
 	foes.Cut()
 	enemies.Cut()
@@ -120,33 +245,6 @@
 	if(!(. = ..()))
 		walk(src, 0) //stops walking
 		return
-
-/mob/living/simple_animal/hostile/handle_automated_action()
-	if(AIStatus == AI_OFF)
-		return FALSE
-	var/list/possible_targets = ListTargets() //we look around for potential targets and make it a list for later use.
-
-	if(environment_smash)
-		EscapeConfinement()
-
-	if(AICanContinue(possible_targets))
-		if(!QDELETED(target) && !targets_from.Adjacent(target))
-			DestroyPathToTarget()
-		if(!MoveToTarget(possible_targets))     //if we lose our target
-			if(AIShouldSleep(possible_targets))	// we try to acquire a new one
-				toggle_ai(AI_IDLE)			// otherwise we go idle
-	return TRUE
-
-/mob/living/simple_animal/hostile/handle_automated_movement()
-	. = ..()
-	if(dodging && target && in_melee && isturf(loc) && isturf(target.loc))
-		var/datum/cb = CALLBACK(src,PROC_REF(sidestep))
-		if(sidestep_per_cycle > 1) //For more than one just spread them equally - this could changed to some sensible distribution later
-			var/sidestep_delay = SSnpcpool.wait / sidestep_per_cycle
-			for(var/i in 1 to sidestep_per_cycle)
-				addtimer(cb, (i - 1)*sidestep_delay)
-		else //Otherwise randomize it to make the players guessing.
-			addtimer(cb,rand(1,SSnpcpool.wait))
 
 /mob/living/simple_animal/hostile/proc/sidestep()
 	if(!target || !isturf(target.loc) || !isturf(loc) || stat == DEAD)
@@ -166,15 +264,18 @@
 		face_atom(target) //Looks better if they keep looking at you when dodging
 
 /mob/living/simple_animal/hostile/attacked_by(obj/item/I, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
-	if(stat == CONSCIOUS && user && AIStatus != AI_OFF && !client)
+	if(stat == CONSCIOUS && user && has_active_ai() && !client)
 		RetaliateAgainst(user)
 	return ..()
 
 /mob/living/simple_animal/hostile/bullet_act(obj/item/projectile/P)
-	if(stat == CONSCIOUS && AIStatus != AI_OFF && !client && P.firer)
+	if(stat == CONSCIOUS && has_active_ai() && !client && P.firer)
 		if(get_dist(src, P.firer) <= aggro_vision_range)
-			RetaliateAgainst(P.firer)
-		Goto(P.starting, move_to_delay, 3)
+			//A stray allied projectile must not turn an entire squad against itself.
+			//Direct melee attacks still use RetaliateAgainst() and preserve grudges.
+			var/friendly_fire = isliving(P.firer) && faction_check_mob(P.firer) && !attack_same && (!foes || !foes[P.firer])
+			if(!friendly_fire)
+				RetaliateAgainst(P.firer)
 	return ..()
 
 /// Focus aggro on whoever just hurt us, even if we already had another target.
@@ -184,102 +285,53 @@
 	if(isliving(the_attacker))
 		add_enemy(the_attacker)
 		foes[the_attacker] = 1
-	if(CanAttack(the_attacker))
-		GiveTarget(the_attacker)
-	else if(!target)
-		FindTarget(list(the_attacker), 1)
-	if(AIStatus != AI_ON && AIStatus != AI_OFF)
-		toggle_ai(AI_ON)
+	//Обида будит AI и немедленно перебивает текущую цель: иначе валидная
+	//старая цель блокирует перевыбор. Мобы без контроллера - AI_OFF-исключения,
+	//им боевой перевыбор не нужен, достаточно учёта обиды выше.
+	if(ai_controller)
+		ai_controller.note_attacker(the_attacker)
+		if(CanAttack(the_attacker))
+			ai_controller.set_blackboard_key(BB_AI_CURRENT_TARGET, the_attacker)
+			//Групповой агр: retaliate-семейство делится обидчиками через свой
+			//Retaliate(), а обычные отряды (лутеры, синдикат, фауна) без этого
+			//стояли и смотрели, как их сокомандника расстреливают. Aggro() выше
+			//уже поднял vision_range до боевого - им и ограничиваем круг оповещения.
+			//Союзники получают ТОЧКУ и приметы (combat contact), не сам атом:
+			//захватят цель только собственным восприятием.
+			if(!istype(src, /mob/living/simple_animal/hostile/retaliate) && world.time >= next_ally_alert)
+				next_ally_alert = world.time + AI_ALLY_ALERT_COOLDOWN
+				//AoE по стае: N раненых в одной ячейке = один грид-скан, не N
+				var/turf/victim_turf = get_turf(src)
+				if(victim_turf)
+					var/alert_key = "[REF(the_attacker)]:[victim_turf.x >> 3]:[victim_turf.y >> 3]:[victim_turf.z]:[faction.Join(",")]"
+					if(world.time - (GLOB.ai_recent_herd_alerts[alert_key] || -INFINITY) >= AI_ALLY_ALERT_COALESCE_WINDOW)
+						if(length(GLOB.ai_recent_herd_alerts) > 64) //ленивая чистка
+							GLOB.ai_recent_herd_alerts.Cut()
+						GLOB.ai_recent_herd_alerts[alert_key] = world.time
+						ai_controller.report_contact_to_allies(the_attacker, vision_range)
 
 //////////////HOSTILE MOB TARGETTING AND AGGRESSION////////////
 
-/// Гейт по спатиал-хэшу фракций (SSchunks) применим только к обычному
-/// фракционному охотнику: хэш не хранит мёртвых, свою фракцию и персональные
-/// обиды, поэтому охотники на трупы (headslug, гриб), attack_same-мобы (гусь)
-/// и retaliate с накопленными врагами обязаны идти мимо него.
-/// ВАЖНО: сабтип, чьи Found()/CanAttack() целятся в мобов СВОЕЙ фракции
-/// (artificer лечит союзных конструктов, короли крыс враждебны друг другу)
-/// или только в машины, обязан переопределить этот прок в FALSE - иначе гейт
-/// вернёт пустой ListTargets() до появления чужой фракции в радиусе.
-/mob/living/simple_animal/hostile/proc/can_use_faction_hash()
-	if(stat_attack != CONSCIOUS) //ищет бессознательных/мёртвых - их в хэше нет
-		return FALSE
-	if(attack_same) //бьёт свою фракцию - хэш видит только чужие
-		return FALSE
-	if(length(enemies) || length(foes)) //персональные цели могут быть своей фракции
-		return FALSE
-	return TRUE
-
-/mob/living/simple_animal/hostile/proc/ListTargets()//Step 1, find out what we can see
-	if(!search_objects)
-		// Spatial faction hash (SSchunks): skip the expensive hearers() scan
-		// entirely when no mob of a foreign faction is anywhere in range.
-		// This also skips the hostile-machine sweep: an unmanned turret near
-		// a lone AI mob goes unnoticed until any foreign-faction mob comes near.
-		if(can_use_faction_hash() && !SSchunks.has_enemy_faction(targets_from, faction, vision_range))
-			return list()
-		. = hearers(vision_range, targets_from) - src //Remove self, so we don't suicide
-
-		var/static/hostile_machines = typecacheof(list(/obj/machinery/porta_turret, /obj/vehicle/sealed/mecha, /obj/structure/destructible/clockwork/ocular_warden,/obj/item/electronic_assembly))
-
-		for(var/HM in typecache_filter_list(range(vision_range, targets_from), hostile_machines))
-			if(can_see(targets_from, HM, vision_range))
-				. += HM
-	else
-		. = list() // The following code is only very slightly slower than just returning oview(vision_range, targets_from), but it saves us much more work down the line, particularly when bees are involved
-		for (var/obj/A in oview(vision_range, targets_from))
-			. += A
-		for (var/mob/A in oview(vision_range, targets_from))
-			. += A
-
-/mob/living/simple_animal/hostile/proc/FindTarget(var/list/possible_targets, var/HasTargetsList = 0)//Step 2, filter down possible targets to things we actually care about
-	. = list()
-	if(!HasTargetsList)
-		possible_targets = ListTargets()
-	for(var/pos_targ in possible_targets)
-		var/atom/A = pos_targ
-		if(Found(A))//Just in case people want to override targetting
-			. = list(A)
-			break
-		if(CanAttack(A))//Can we attack it?
-			. += A
-			continue
-	var/Target = PickTarget(.)
-	GiveTarget(Target)
-	return Target //We now have a target
-
-
-
+///Живой список угроз в радиусе зрения для фазовой логики (мех-пилот, бумажный
+///визард): видимые мобы + реестр враждебных машин, фильтр CanAttack.
 /mob/living/simple_animal/hostile/proc/PossibleThreats()
 	. = list()
-	for(var/pos_targ in ListTargets())
-		var/atom/A = pos_targ
-		if(Found(A))
-			. = list(A)
-			break
-		if(CanAttack(A))
-			. += A
+	// Грид AI_TARGETS + can_see() вместо hearers(): живые кандидаты из ближних
+	// ячеек, LOS-гейт сохраняет прежнюю границу видимости без нативного скана.
+	for(var/mob/living/candidate as anything in SSspatial_grid.orthogonal_range_search(targets_from, SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS, vision_range))
+		if(candidate == src || QDELETED(candidate) || get_dist(targets_from, candidate) > vision_range)
 			continue
-
-
-
-/mob/living/simple_animal/hostile/proc/Found(atom/A)//This is here as a potential override to pick a specific target if available
-	return
-
-/mob/living/simple_animal/hostile/proc/PickTarget(list/Targets)//Step 3, pick amongst the possible, attackable targets
-	if(target != null && (target in Targets) && CanAttack(target))
-		return target
-	if(target != null)//If we already have a target, but are told to pick again, calculate the lowest distance between all possible, and pick from the lowest distance targets
-		for(var/pos_targ in Targets)
-			var/atom/A = pos_targ
-			var/target_dist = get_dist(targets_from, target)
-			var/possible_target_distance = get_dist(targets_from, A)
-			if(target_dist < possible_target_distance)
-				Targets -= A
-	if(!Targets.len)//We didnt find nothin!
-		return
-	var/chosen_target = pick(Targets)//Pick the remaining targets (if any) at random
-	return chosen_target
+		AI_METRIC_INC(los_checks)
+		if(can_see(targets_from, candidate, vision_range) && CanAttack(candidate))
+			. += candidate
+	var/turf/search_origin = get_turf(targets_from)
+	if(search_origin && search_origin.z <= length(GLOB.hostile_machines_by_zlevel))
+		for(var/atom/hostile_machine as anything in GLOB.hostile_machines_by_zlevel[search_origin.z])
+			if(get_dist(targets_from, hostile_machine) > vision_range)
+				continue
+			AI_METRIC_INC(los_checks)
+			if(can_see(targets_from, hostile_machine, vision_range) && CanAttack(hostile_machine))
+				. += hostile_machine
 
 // Please do not add one-off mob AIs here, but override this function for your mob
 /mob/living/simple_animal/hostile/CanAttack(atom/the_target)//Can we actually attack a possible target?
@@ -346,6 +398,11 @@
 	return FALSE
 
 /mob/living/simple_animal/hostile/proc/GiveTarget(new_target)//Step 4, give us our selected target
+	var/datum/ai_controller/hostile_adapter/adapter = ai_controller
+	if(istype(adapter) && !adapter.syncing_target_to_pawn && adapter.blackboard[BB_AI_CURRENT_TARGET] != new_target)
+		adapter.syncing_target_from_legacy = TRUE
+		adapter.set_blackboard_key(BB_AI_CURRENT_TARGET, new_target)
+		adapter.syncing_target_from_legacy = FALSE
 	target = new_target
 	LosePatience()
 	if(target != null)
@@ -353,104 +410,48 @@
 		Aggro()
 		return TRUE
 
-//What we do after closing in
+//What we do after closing in. Controller behaviors pace the cadence themselves:
+//rapid_melee is represented by the behavior cooldown, so one action = one attack.
 /mob/living/simple_animal/hostile/proc/MeleeAction(patience = TRUE)
-	if(rapid_melee > 1)
-		var/datum/callback/cb = CALLBACK(src, PROC_REF(CheckAndAttack))
-		var/delay = SSnpcpool.wait / rapid_melee
-		for(var/i in 1 to rapid_melee)
-			addtimer(cb, (i - 1)*delay)
-	else
-		AttackingTarget()
+	AttackingTarget()
 	if(patience)
 		GainPatience()
 
-/mob/living/simple_animal/hostile/proc/CheckAndAttack()
-	if(target && targets_from && isturf(targets_from.loc) && target.Adjacent(targets_from) && !incapacitated())
-		AttackingTarget()
+///Задержка шага AI-погони (дс) из легаси move_to_delay. Небоссовые мобы
+///клампятся снизу к AI_PURSUIT_MIN_MOVE_DELAY, чтобы не обгонять игрока больше
+///чем на ~1.25x (жалоба "двигаются в x2 / телепортируются"). Боссы отписаны.
+/mob/living/simple_animal/hostile/proc/ai_movement_delay()
+	var/delay = AI_LEGACY_MOVE_DELAY_DS(move_to_delay)
+	if(ai_pursuit_speed_capped)
+		return max(delay, AI_PURSUIT_MIN_MOVE_DELAY)
+	return delay
 
-/mob/living/simple_animal/hostile/proc/MoveToTarget(list/possible_targets)//Step 5, handle movement between us and our target
-	stop_automated_movement = 1
-	if(!target || !CanAttack(target))
-		LoseTarget()
-		return FALSE
-	if(!(target in possible_targets))
-		var/turf/mob_turf = get_turf(src)
-		if(mob_turf && target.z == mob_turf.z && get_dist(targets_from, target) <= aggro_vision_range)
-			possible_targets += target
-	if(target in possible_targets)
-		var/turf/T = get_turf(src)
-		if(target.z != T.z)
-			LoseTarget()
-			return FALSE
-		var/target_distance = get_dist(targets_from,target)
-		if(ranged) //We ranged? Shoot at em
-			if(!target.Adjacent(targets_from) && ranged_cooldown <= world.time) //But make sure they're not in range for a melee attack and our range attack is off cooldown
-				OpenFire(target)
-		if(charger && (target_distance > minimum_distance) && (target_distance <= charge_distance))//Attempt to close the distance with a charge.
-			enter_charge(target)
-			return TRUE
-		if(!Process_Spacemove()) //Drifting
-			walk(src,0)
-			return TRUE
-		if(retreat_distance != null) //If we have a retreat distance, check if we need to run from our target
-			if(target_distance <= retreat_distance) //If target's closer than our retreat distance, run
-				walk_away(src,target,retreat_distance,move_to_delay)
-			else
-				Goto(target,move_to_delay,minimum_distance) //Otherwise, get to our minimum distance so we chase them
-		else
-			Goto(target,move_to_delay,minimum_distance)
-		if(target)
-			if(targets_from && isturf(targets_from.loc) && target.Adjacent(targets_from)) //If they're next to us, attack
-				MeleeAction()
-			else
-				if(rapid_melee > 1 && target_distance <= melee_queue_distance)
-					MeleeAction(FALSE)
-				in_melee = FALSE //If we're just preparing to strike do not enter sidestep mode
-			return TRUE
-		return FALSE
-	if(environment_smash)
-		if(target.loc != null && get_dist(targets_from, target.loc) <= vision_range) //We can't see our target, but he's in our vision range still
-			if(ranged_ignores_vision && ranged_cooldown <= world.time) //we can't see our target... but we can fire at them!
-				OpenFire(target)
-			if((environment_smash & ENVIRONMENT_SMASH_WALLS) || (environment_smash & ENVIRONMENT_SMASH_RWALLS)) //If we're capable of smashing through walls, forget about vision completely after finding our target
-				Goto(target,move_to_delay,minimum_distance)
-				FindHidden()
-				return TRUE
-			else
-				if(FindHidden())
-					return TRUE
-	LoseTarget()
-	return FALSE
-
-/mob/living/simple_animal/hostile/proc/Goto(target, delay, minimum_distance)
-	if(target == src.target)
-		approaching_target = TRUE
-	else
-		approaching_target = FALSE
-	walk_to(src, target, minimum_distance, delay)
+/mob/living/simple_animal/hostile/proc/cancel_rapid_melee_sequence()
+	if(rapid_melee_timer_id)
+		deltimer(rapid_melee_timer_id)
+	rapid_melee_timer_id = null
+	rapid_melee_attacks_left = 0
 
 /mob/living/simple_animal/hostile/adjustHealth(amount, updating_health = TRUE, forced = FALSE)
 	. = ..()
-	if(!ckey && !stat && search_objects < 3 && . > 0)//Not unconscious, and we don't ignore mobs
-		if(search_objects)//Turn off item searching and ignore whatever item we were looking at, we're more concerned with fight or flight
-			target = null
-			LoseSearchObjects()
-		if(AIStatus != AI_ON && AIStatus != AI_OFF)
-			toggle_ai(AI_ON)
-			FindTarget()
-		else if(!target || !CanAttack(target))
-			FindTarget()
-		else if(. > 0)
-			GainPatience()
+	//урон только будит контроллер: цель выберет скорер по обиде из note_attacker
+	if(ai_controller && . > 0 && ai_controller.ai_status == AI_STATUS_IDLE)
+		ai_controller.set_ai_status(AI_STATUS_ON)
 
 
 /mob/living/simple_animal/hostile/proc/AttackingTarget()
-	SEND_SIGNAL(src, COMSIG_HOSTILE_ATTACKINGTARGET, target)
+	if(QDELETED(src) || !target || QDELETED(target))
+		return
+	var/atom/attack_target = target
+	if(SEND_SIGNAL(src, COMSIG_HOSTILE_ATTACKINGTARGET, attack_target) & COMPONENT_HOSTILE_NO_ATTACK)
+		return
+	// Signal handlers may clear or qdel the current target.
+	if(QDELETED(src) || QDELETED(attack_target))
+		return
 	in_melee = TRUE
 	if(vore_active)
-		if(isliving(target))
-			var/mob/living/L = target
+		if(isliving(attack_target))
+			var/mob/living/L = attack_target
 			if(!client && L.Adjacent(src) && (L.vore_flags & DEVOURABLE) && (L.vore_flags & MOBVORE)) // aggressive check to ensure vore attacks can be made
 				if(prob(voracious_chance))
 					vore_attack(src,L,src)
@@ -459,10 +460,12 @@
 			else
 				return L.attack_animal(src) //literally every single fucking one of these need this I guess.
 		else
-			return target.attack_animal(src)
+			return attack_target.attack_animal(src)
 	else
-		return target.attack_animal(src)
-	return target.attack_animal(src)
+		return attack_target.attack_animal(src)
+	if(QDELETED(src) || QDELETED(attack_target))
+		return
+	return attack_target.attack_animal(src)
 
 /mob/living/simple_animal/hostile/proc/Aggro()
 	vision_range = aggro_vision_range
@@ -477,8 +480,15 @@
 	taunt_chance = initial(taunt_chance)
 
 /mob/living/simple_animal/hostile/proc/LoseTarget()
+	LosePatience()
+	cancel_rapid_melee_sequence()
+	cancel_rapid_fire_sequence()
+	var/datum/ai_controller/hostile_adapter/adapter = ai_controller
+	if(istype(adapter) && !adapter.syncing_target_to_pawn && adapter.blackboard_key_exists(BB_AI_CURRENT_TARGET))
+		adapter.syncing_target_from_legacy = TRUE
+		adapter.clear_blackboard_key(BB_AI_CURRENT_TARGET)
+		adapter.syncing_target_from_legacy = FALSE
 	target = null
-	approaching_target = FALSE
 	in_melee = FALSE
 	walk(src, 0)
 	LoseAggro()
@@ -492,44 +502,231 @@
 /mob/living/simple_animal/hostile/proc/summon_backup(distance, exact_faction_match)
 	do_alert_animation(src)
 	playsound(loc, 'sound/machines/chime.ogg', 50, 1, -1)
-	// Avoid passing a mob as a walk_to target; allied AI can otherwise keep a hard ref
-	// to a soon-to-be-qdel'd caller inside movement/pathing state.
+	//с контроллером зов - это pack-канал: союзникам уходит точка контакта,
+	//цель они захватывают собственным восприятием
+	if(ai_controller)
+		var/atom/shared_target = ai_controller.blackboard[BB_AI_CURRENT_TARGET] || target
+		if(shared_target)
+			ai_controller.report_contact_to_allies(shared_target, distance)
+		return
 	var/turf/rally_point = get_turf(targets_from || src)
 	if(!rally_point)
 		return
 	for(var/mob/living/simple_animal/hostile/M in oview(distance, targets_from))
-		if(faction_check_mob(M, TRUE))
-			if(M.AIStatus == AI_OFF)
-				return
-			else
-				M.Goto(rally_point, M.move_to_delay, M.minimum_distance)
+		if(!faction_check_mob(M, TRUE))
+			continue
+		//союзник получает точку контакта в свою память, а не walk-приказ;
+		//мобы без контроллера - AI_OFF-исключения, им зов не нужен
+		if(M.ai_controller)
+			var/turf/contact_turf = target ? get_turf(target) : null
+			M.ai_controller.receive_combat_contact(target, contact_turf || rally_point, AI_CONTACT_ALLY)
 
 /mob/living/simple_animal/hostile/proc/CheckFriendlyFire(atom/A)
-	if(check_friendly_fire)
-		for(var/turf/T in getline(src,A)) // Not 100% reliable but this is faster than simulating actual trajectory
-			for(var/mob/living/L in T)
-				if(L == src || L == A)
-					continue
-				if(faction_check_mob(L) && !attack_same)
-					return TRUE
+	return CheckFriendlyFireFrom(A, targets_from || src)
+
+///Legacy opt-in friendly-fire check. Use the projectile-aligned trace so a
+///diagonal lane and its real cardinal split inspect the same allied turfs.
+/mob/living/simple_animal/hostile/proc/CheckFriendlyFireFrom(atom/A, atom/origin)
+	if(!check_friendly_fire)
+		return FALSE
+	return ranged_fire_lane_is_unsafe(A, origin, FALSE, !attack_same)
+
+///Controller ranged combat always protects allies and rejects static blockers.
+///This is intentionally separate from the legacy check_friendly_fire opt-in.
+/mob/living/simple_animal/hostile/proc/CheckRangedFireLane(atom/A)
+	return CheckRangedFireLaneFrom(A, targets_from || src)
+
+///Check a hypothetical firing origin for tactical repositioning.
+/mob/living/simple_animal/hostile/proc/CheckRangedFireLaneFrom(atom/A, atom/origin)
+	return ranged_fire_lane_is_unsafe(A, origin, !ranged_ignores_vision, !attack_same)
+
+///Three-valued lane classification (CLEAR/COVER/BLOCKED) from a hypothetical
+///firing origin. Used by tactical positioning to prefer a truly clean tile over
+///one that only shoots through penetrable cover, and both over a hard block.
+/mob/living/simple_animal/hostile/proc/CheckRangedFireLaneStateFrom(atom/A, atom/origin)
+	return ranged_fire_lane_state(A, origin, !ranged_ignores_vision, !attack_same)
+
+///A blocked lane is one whose real projectile route ends on static geometry or a
+///protected ally. Penetrable cover (sandbags, barricades) does NOT block: the mob
+///fires over/through it just like a real bullet would.
+/mob/living/simple_animal/hostile/proc/ranged_fire_lane_is_unsafe(atom/A, atom/origin, check_obstacles, protect_allies)
+	return ranged_fire_lane_state(A, origin, check_obstacles, protect_allies) == AI_FIRE_LANE_BLOCKED
+
+///Trace the same centre-aimed, pixel-stepped route used by projectile.fire() and
+///classify it. When one pixel step enters a diagonal turf, movable.Move() visits
+///the vertical cardinal turf first and the horizontal turf second; inspecting both
+///fixes the corner-wall and diagonal-friendly gaps left by getline()/can_see().
+/mob/living/simple_animal/hostile/proc/ranged_fire_lane_state(atom/A, atom/origin, check_obstacles, protect_allies)
+	var/turf/start_turf = get_turf(origin)
+	var/turf/target_turf = get_turf(A)
+	if(!start_turf || !target_turf || start_turf.z != target_turf.z)
+		return AI_FIRE_LANE_BLOCKED
+	if(start_turf == target_turf)
+		return AI_FIRE_LANE_CLEAR
+
+	var/obj/item/projectile/projectile_path = projectiletype
+	if(!projectile_path && casingtype)
+		var/obj/item/ammo_casing/casing_path = casingtype
+		projectile_path = initial(casing_path.projectile_type)
+	//Custom OpenFire abilities without an actual projectile keep their subtype
+	//semantics; a geometric bullet lane is not meaningful for summons or AoE.
+	if(!ispath(projectile_path, /obj/item/projectile))
+		return AI_FIRE_LANE_CLEAR
+	var/projectile_pass_flags = projectile_path ? initial(projectile_path.pass_flags) : NONE
+	var/projectile_phasing = projectile_path ? initial(projectile_path.projectile_phasing) : NONE
+	var/projectile_piercing = projectile_path ? initial(projectile_path.projectile_piercing) : NONE
+	var/traversal_flags = projectile_pass_flags | projectile_phasing | projectile_piercing
+	var/no_hit_flags = projectile_pass_flags | projectile_phasing
+
+	var/pixel_step = max(1, SSprojectiles.global_pixel_increment_amount)
+	var/delta_x = target_turf.x - start_turf.x
+	var/delta_y = target_turf.y - start_turf.y
+	var/cache_key = "[pixel_step]:[delta_x]:[delta_y]"
+	var/static/list/offset_cache = list()
+	var/list/trace_offsets = offset_cache[cache_key]
+	if(isnull(trace_offsets))
+		trace_offsets = list()
+		var/current_x = start_turf.x
+		var/current_y = start_turf.y
+		var/precise_x = ((current_x - 1) * world.icon_size) + (world.icon_size / 2) + 1
+		var/precise_y = ((current_y - 1) * world.icon_size) + (world.icon_size / 2) + 1
+		var/angle = get_projectile_angle(start_turf, target_turf)
+		var/pixel_dx = sin(angle) * pixel_step
+		var/pixel_dy = cos(angle) * pixel_step
+		var/safety = (abs(delta_x) + abs(delta_y) + 2) * CEILING(world.icon_size / pixel_step, 1)
+
+		while((current_x != target_turf.x || current_y != target_turf.y) && safety-- > 0)
+			precise_x += pixel_dx
+			precise_y += pixel_dy
+			var/next_x = CEILING(precise_x / world.icon_size, 1)
+			var/next_y = CEILING(precise_y / world.icon_size, 1)
+			while(current_x != next_x || current_y != next_y)
+				var/x_step = SIGN(next_x - current_x)
+				var/y_step = SIGN(next_y - current_y)
+				// Movable.Move() splits every diagonal vertically first.
+				if(y_step)
+					current_y += y_step
+					if(current_x == target_turf.x && current_y == target_turf.y)
+						break
+					trace_offsets += list(list(current_x - start_turf.x, current_y - start_turf.y))
+				if(x_step && (current_x != target_turf.x || current_y != target_turf.y))
+					current_x += x_step
+					if(current_x == target_turf.x && current_y == target_turf.y)
+						break
+					trace_offsets += list(list(current_x - start_turf.x, current_y - start_turf.y))
+		if(current_x != target_turf.x || current_y != target_turf.y)
+			return AI_FIRE_LANE_BLOCKED
+		offset_cache[cache_key] = trace_offsets
+
+	. = AI_FIRE_LANE_CLEAR
+	for(var/list/offset as anything in trace_offsets)
+		var/turf/lane_turf = locate(start_turf.x + offset[1], start_turf.y + offset[2], start_turf.z)
+		var/turf_state = ranged_fire_turf_state(lane_turf, A, start_turf, traversal_flags, no_hit_flags, projectile_path, check_obstacles, protect_allies)
+		if(turf_state == AI_FIRE_LANE_BLOCKED)
+			return AI_FIRE_LANE_BLOCKED
+		if(turf_state == AI_FIRE_LANE_COVER)
+			. = AI_FIRE_LANE_COVER
+
+///Classify one lane turf: BLOCKED (static geometry or a protected ally would stop
+///the shot), COVER (only penetrable cover the bullet gets through from range), or
+///CLEAR (nothing, or cover the shooter stands right behind - guaranteed pass).
+/mob/living/simple_animal/hostile/proc/ranged_fire_turf_state(turf/lane_turf, atom/A, turf/origin_turf, traversal_flags, no_hit_flags, obj/item/projectile/projectile_path, check_obstacles, protect_allies)
+	if(!lane_turf)
+		return AI_FIRE_LANE_BLOCKED
+	if(check_obstacles && lane_turf.density && !(traversal_flags & lane_turf.pass_flags_self))
+		return AI_FIRE_LANE_BLOCKED
+	. = AI_FIRE_LANE_CLEAR
+	for(var/atom/movable/blocker as anything in lane_turf)
+		if(blocker == src || blocker == A)
+			continue
+		if(isliving(blocker))
+			var/mob/living/living_blocker = blocker
+			if(protect_allies && living_blocker.stat != DEAD && faction_check_mob(living_blocker) && !(no_hit_flags & living_blocker.pass_flags_self))
+				return AI_FIRE_LANE_BLOCKED
+			continue
+		if(!check_obstacles || !blocker.density || (traversal_flags & blocker.pass_flags_self))
+			continue
+		//Penetrable cover (sandbags/barricades) is not a wall: a real bullet has a
+		//pass chance, and standing right behind your own cover it passes 100% (the
+		//structure's CanAllowThrough exempts an adjacent firer). So near cover is a
+		//CLEAR lane; only far cover downgrades the lane to COVER.
+		if(blocker.is_ranged_ai_penetrable_cover())
+			if(origin_turf && get_dist(origin_turf, lane_turf) <= 1)
+				continue
+			if(. == AI_FIRE_LANE_CLEAR)
+				. = AI_FIRE_LANE_COVER
+			continue
+		//Рефлектор для отражаемого снаряда - не тупик: луч зеркалится и летит
+		//дальше. Легаси-дрон стрелял в рефлектор (луч возвращался); геометрический
+		//гейт не должен запрещать это (репорт "дроны не стреляют в рефлекторы").
+		if(blocker.ranged_ai_lane_passable(projectile_path))
+			continue
+		return AI_FIRE_LANE_BLOCKED
 
 /mob/living/simple_animal/hostile/proc/OpenFire(atom/A)
-	if(CheckFriendlyFire(A))
-		return
+	if(ai_controller && !client)
+		if(CheckRangedFireLane(A))
+			return FALSE
+	else if(CheckFriendlyFire(A))
+		return FALSE
 	visible_message("<span class='danger'><b>[src]</b> [ranged_message] at [A]!</span>")
 
 
 	if(rapid > 1)
-		var/datum/callback/cb = CALLBACK(src, PROC_REF(Shoot), A)
-		for(var/i in 1 to rapid)
-			addtimer(cb, (i - 1)*rapid_fire_delay)
+		start_rapid_fire_sequence(A)
 	else
 		Shoot(A)
 	ranged_cooldown = world.time + ranged_cooldown_time
+	return TRUE
+
+/// Queue one shot at a time. The previous fan-out created N timer datums and
+/// shared one callback datum between them for every ranged mob in a volley.
+/mob/living/simple_animal/hostile/proc/start_rapid_fire_sequence(atom/volley_target)
+	if(rapid_fire_timer_id || rapid_fire_shots_left > 0 || QDELETED(volley_target))
+		return
+	rapid_fire_target = volley_target
+	rapid_fire_shots_left = rapid
+	queue_next_rapid_fire_shot(world.tick_lag)
+
+/mob/living/simple_animal/hostile/proc/queue_next_rapid_fire_shot(delay)
+	rapid_fire_timer_id = addtimer(CALLBACK(src, PROC_REF(run_rapid_fire_shot)), delay, TIMER_STOPPABLE)
+
+/mob/living/simple_animal/hostile/proc/run_rapid_fire_shot()
+	rapid_fire_timer_id = null
+	if(rapid_fire_shots_left <= 0 || QDELETED(rapid_fire_target))
+		cancel_rapid_fire_sequence()
+		return
+
+	Shoot(rapid_fire_target)
+	if(QDELETED(src))
+		return
+	rapid_fire_shots_left--
+	if(rapid_fire_shots_left > 0 && !QDELETED(rapid_fire_target))
+		queue_next_rapid_fire_shot(rapid_fire_delay)
+	else
+		rapid_fire_target = null
+
+/mob/living/simple_animal/hostile/proc/cancel_rapid_fire_sequence()
+	if(rapid_fire_timer_id)
+		deltimer(rapid_fire_timer_id)
+	rapid_fire_timer_id = null
+	rapid_fire_shots_left = 0
+	rapid_fire_target = null
 
 
 /mob/living/simple_animal/hostile/proc/Shoot(atom/targeted_atom)
 	if(QDELETED(src) || QDELETED(targeted_atom) || targeted_atom == targets_from?.loc || targeted_atom == targets_from)
+		return
+	//Rapid volleys are queued with timers. Recheck every projectile because an
+	//ally can enter the lane after OpenFire() approved the first shot.
+	if(ai_controller && !client)
+		if(CheckRangedFireLane(targeted_atom))
+			return
+	else if(CheckFriendlyFire(targeted_atom))
+		return
+	//Targets are cached between expensive scans and rapid shots use timers. Do
+	//not keep firing at their old coordinates after they move behind opacity.
+	if(!ranged_ignores_vision && !can_see(targets_from || src, targeted_atom, vision_range))
 		return
 	var/turf/startloc = get_turf(targets_from)
 	if(casingtype)
@@ -544,7 +741,7 @@
 		P.fired_from = src
 		P.yo = targeted_atom.y - startloc.y
 		P.xo = targeted_atom.x - startloc.x
-		if(AIStatus != AI_ON)//Don't want mindless mobs to have their movement screwed up firing in space
+		if(get_effective_ai_status() != AI_ON)//Don't want mindless mobs to have their movement screwed up firing in space
 			newtonian_move(get_dir(targeted_atom, targets_from))
 		P.original = targeted_atom
 		P.preparePixelProjectile(targeted_atom, src)
@@ -552,15 +749,18 @@
 		return P
 
 
+///Может ли моб реально проломить этот турф. Права на снос проверяются ИМЕННО
+///здесь, а не только у вызывающего: легаси-путь DestroyObjectsInDirection бьёт
+///по ответу этого прока, а attack_animal турфа играет анимацию удара ДО проверки
+///прав. Без гейта моб со SMASH_STRUCTURES бесконечно молотил стену без урона
+///(жалоба "анимация удара играет постоянно, стене ничего").
 /mob/living/simple_animal/hostile/proc/CanSmashTurfs(turf/T)
-	return iswallturf(T) || ismineralturf(T)
+	if(!iswallturf(T) && !ismineralturf(T))
+		return FALSE
+	if(istype(T, /turf/closed/wall/r_wall))
+		return environment_smash & ENVIRONMENT_SMASH_RWALLS
+	return environment_smash & (ENVIRONMENT_SMASH_WALLS|ENVIRONMENT_SMASH_RWALLS)
 
-
-/mob/living/simple_animal/hostile/Move(atom/newloc, dir , step_x , step_y)
-	if(dodging && approaching_target && prob(dodge_prob) && moving_diagonally == 0 && isturf(loc) && isturf(newloc))
-		return dodge(newloc,dir)
-	else
-		return ..()
 
 /mob/living/simple_animal/hostile/proc/dodge(moving_to,move_direction)
 	//Assuming we move towards the target we want to swerve toward them to get closer
@@ -615,14 +815,6 @@
 		A.attack_animal(src)//Bang on it till we get out
 
 
-/mob/living/simple_animal/hostile/proc/FindHidden()
-	if(istype(target.loc, /obj/structure/closet) || istype(target.loc, /obj/machinery/disposal) || istype(target.loc, /obj/machinery/sleeper))
-		var/atom/A = target.loc
-		Goto(A,move_to_delay,minimum_distance)
-		if(A.Adjacent(targets_from))
-			A.attack_animal(src)
-		return TRUE
-
 /mob/living/simple_animal/hostile/RangedAttack(atom/A, params) //Player firing
 	if(ranged && ranged_cooldown <= world.time)
 		target = A
@@ -631,34 +823,23 @@
 	. = ..()
 	return TRUE
 
-////// AI Status ///////
-/mob/living/simple_animal/hostile/proc/AICanContinue(var/list/possible_targets)
-	switch(AIStatus)
-		if(AI_ON)
-			. = 1
-		if(AI_IDLE)
-			if(FindTarget(possible_targets, 1))
-				. = 1
-				toggle_ai(AI_ON) //Wake up for more than one Life() cycle.
-			else
-				. = 0
-
-/mob/living/simple_animal/hostile/proc/AIShouldSleep(var/list/possible_targets)
-	return !FindTarget(possible_targets, 1)
-
-
 //These two procs handle losing our target if we've failed to attack them for
 //more than lose_patience_timeout deciseconds, which probably means we're stuck
 /mob/living/simple_animal/hostile/proc/GainPatience()
 	if(QDELETED(src))
 		return
 	if(lose_patience_timeout)
+		if(lose_patience_timer_id && world.time < next_patience_timer_refresh)
+			return
 		LosePatience()
 		lose_patience_timer_id = addtimer(CALLBACK(src, PROC_REF(LoseTarget)), lose_patience_timeout, TIMER_STOPPABLE)
+		next_patience_timer_refresh = world.time + min(1 SECONDS, lose_patience_timeout / 4)
 
 
 /mob/living/simple_animal/hostile/proc/LosePatience()
 	deltimer(lose_patience_timer_id)
+	lose_patience_timer_id = null
+	next_patience_timer_refresh = 0
 
 
 //These two procs handle losing and regaining search_objects when attacked by a mob
@@ -675,63 +856,36 @@
 		value = initial(search_objects)
 	search_objects = value
 
-/mob/living/simple_animal/hostile/consider_wakeup()
-	..()
-	var/list/tlist
-	var/turf/T = get_turf(src)
-
-	if (!T)
-		return
-
-	if (!length(SSmobs.clients_by_zlevel[T.z])) // It's fine to use .len here but doesn't compile on 511
-		toggle_ai(AI_Z_OFF)
-		return
-
-	if(!has_nearby_player())
-		return
-
-	var/cheap_search = isturf(T) && !is_station_level(T.z)
-	if (cheap_search)
-		tlist = ListTargetsLazy(T.z)
-	else
-		tlist = ListTargets()
-
-	if(AIStatus == AI_IDLE && FindTarget(tlist, 1))
-		if(cheap_search) //Try again with full effort
-			FindTarget()
-		toggle_ai(AI_ON)
-
-/mob/living/simple_animal/hostile/proc/ListTargetsLazy(var/_Z)//Step 1, find out what we can see
-	var/static/hostile_machines = typecacheof(list(/obj/machinery/porta_turret, /obj/vehicle/sealed/mecha, /obj/structure/destructible/clockwork/ocular_warden))
-	. = list()
-	for (var/I in SSmobs.clients_by_zlevel[_Z])
-		var/mob/M = I
-		if (get_dist(M, src) < vision_range)
-			if (isturf(M.loc))
-				. += M
-			else if (M.loc.type in hostile_machines)
-				. += M.loc
-
-
 /**
   * Proc that handles a charge attack windup for a mob.
   */
 /mob/living/simple_animal/hostile/proc/enter_charge(var/atom/target)
-	if((mobility_flags & (MOBILITY_MOVE | MOBILITY_STAND)) != (MOBILITY_MOVE | MOBILITY_STAND) || charge_state)
+	if((mobility_flags & (MOBILITY_MOVE | MOBILITY_STAND)) != (MOBILITY_MOVE | MOBILITY_STAND) || charge_state || charge_windup_timer)
 		return FALSE
 
 	if(!(COOLDOWN_FINISHED(src, charge_cooldown)) || !has_gravity() || !target.has_gravity())
 		return FALSE
+	//кулдаун взводится с началом прелюдии: она длиннее каденса планировщика, и
+	//без этого AI успевал поставить второй таймер и получить двойной бросок
+	COOLDOWN_START(src, charge_cooldown, charge_frequency)
 	Shake(15, 15, 1 SECONDS)
-	addtimer(CALLBACK(src, PROC_REF(handle_charge_target), target), 1.5 SECONDS, TIMER_STOPPABLE)
+	charge_windup_timer = addtimer(CALLBACK(src, PROC_REF(handle_charge_target), target), 1.5 SECONDS, TIMER_STOPPABLE)
+	return TRUE
 
 /**
   * Proc that throws the mob at the target after the windup.
   */
 /mob/living/simple_animal/hostile/proc/handle_charge_target(var/atom/target)
+	charge_windup_timer = null
+	if(charge_state || stat == DEAD || (mobility_flags & (MOBILITY_MOVE | MOBILITY_STAND)) != (MOBILITY_MOVE | MOBILITY_STAND))
+		return FALSE
+	//за прелюдию цель могла умереть, исчезнуть, сменить z или выйти из броска -
+	//сорванный замах не бросает моба в пустоту и не сжигает полный каденс
+	if(QDELETED(target) || target.z != z || get_dist(src, target) > charge_distance + 2 || !has_gravity() || !target.has_gravity())
+		COOLDOWN_START(src, charge_cooldown, 1 SECONDS)
+		return FALSE
 	charge_state = TRUE
 	throw_at(target, charge_distance, 1, src, FALSE, TRUE, callback = CALLBACK(src, PROC_REF(charge_end)))
-	COOLDOWN_START(src, charge_cooldown, charge_frequency)
 	return TRUE
 
 /**

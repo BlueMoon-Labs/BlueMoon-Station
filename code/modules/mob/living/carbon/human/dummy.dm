@@ -61,7 +61,15 @@ INITIALIZE_IMMEDIATE(/mob/living/carbon/human/dummy)
 GLOBAL_LIST_EMPTY(human_dummy_list)
 GLOBAL_LIST_EMPTY(dummy_mob_list)
 
-/proc/generate_or_wait_for_human_dummy(slotkey)
+/**
+  * Выдаёт манекен из слота, дожидаясь освобождения.
+  *
+  * regenerate - восстанавливать ли иконки, срезанные в wipe_state(). Вызывающий,
+  * который сразу же одевает манекен и сам зовёт regenerate_icons()/updateappearance,
+  * должен передать FALSE: иначе манекен рендерится дважды подряд, а полная
+  * перерисовка гуманоида стоит ~3мс.
+  */
+/proc/generate_or_wait_for_human_dummy(slotkey, regenerate = TRUE)
 	if(!slotkey)
 		return new /mob/living/carbon/human/dummy
 	var/mob/living/carbon/human/dummy/D = GLOB.human_dummy_list[slotkey]
@@ -73,7 +81,7 @@ GLOBAL_LIST_EMPTY(dummy_mob_list)
 		D = new
 		GLOB.human_dummy_list[slotkey] = D
 		GLOB.dummy_mob_list += D
-	else
+	else if(regenerate)
 		D.regenerate_icons() //they were cut in wipe_state()
 	D.in_use = TRUE
 	return D
@@ -94,15 +102,21 @@ GLOBAL_LIST_EMPTY(dummy_mob_list)
 				SSquirks.AssignQuirks(human_target, human_target.client, TRUE, TRUE, null, FALSE, human_target)
 			human_target.copy_clothing_prefs(copycat)
 
-			// Синхронизируем ДНА к мобам не на Z-левеле. Т.е. для тех, кто не на уровне map. Чиним превью в тгуи.
-			copycat.hair_style = human_target.hair_style
-			copycat.facial_hair_style = human_target.facial_hair_style
-			copycat.grad_style = human_target.grad_style
-			copycat.grad_color = human_target.grad_color
-			copycat.left_eye_color = human_target.left_eye_color
-			copycat.right_eye_color = human_target.right_eye_color
-
-		copycat.updateappearance(icon_update=TRUE, mutcolor_update=TRUE, mutations_overlay_update=TRUE)
+			if(human_target.client?.prefs)
+				// Прописываю правильно для подключенных киентов.
+				human_target.client.prefs.copy_to(copycat, icon_updates = TRUE, roundstart_checks = FALSE)
+			else
+				// Синхронизируем ДНА к мобам не на Z-левеле. Т.е. для тех, кто не на уровне map. Чиним превью в тгуи.
+				// На всякий случай оставлю else как заглушку, по идее она должна отрабатываться когда моб без клиента, либо он отключен.
+				copycat.hair_style = human_target.hair_style
+				copycat.facial_hair_style = human_target.facial_hair_style
+				copycat.grad_style = human_target.grad_style
+				copycat.grad_color = human_target.grad_color
+				copycat.left_eye_color = human_target.left_eye_color
+				copycat.right_eye_color = human_target.right_eye_color
+				copycat.updateappearance(icon_update=TRUE, mutcolor_update=TRUE, mutations_overlay_update=TRUE)
+		else
+			copycat.updateappearance(icon_update=TRUE, mutcolor_update=TRUE, mutations_overlay_update=TRUE)
 	else
 		//even if target isn't a carbon, if they have a client we can make the
 		//dummy look like what their human would look like based on their prefs

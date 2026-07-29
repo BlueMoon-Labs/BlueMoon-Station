@@ -1,4 +1,8 @@
-/// The subsystem used to tick [/datum/ai_controllers] instances. Handling the re-checking of plans.
+// PORT: tgstation@14140a6355d1 code/controllers/subsystem/ai_controllers.dm
+// Планировщик активных контроллеров: обходит ТОЛЬКО бакет AI_STATUS_ON.
+// Спящие (IDLE) и выключенные (OFF) контроллеры не трогаются вообще -
+// пробуждение событийное (см. on_client_enter / update_z / adjustHealth).
+/// The subsystem used to tick [/datum/ai_controller] instances. Handling the re-checking of plans.
 SUBSYSTEM_DEF(ai_controllers)
 	name = "AI Controller Ticker"
 	flags = SS_POST_FIRE_TIMING|SS_BACKGROUND
@@ -7,31 +11,42 @@ SUBSYSTEM_DEF(ai_controllers)
 	init_order = INIT_ORDER_AI_CONTROLLERS
 	wait = 0.5 SECONDS //Plan every half second if required, not great not terrible.
 
-	///List of all ai_subtree singletons, key is the typepath while assigned value is a newly created instance of the typepath. See setup_subtrees()
-	var/list/ai_subtrees = list()
-	///List of all ai controllers currently running
-	var/list/active_ai_controllers = list()
+	///Планируемый в этом фире срез активных контроллеров
+	var/list/currentrun = list()
 
 /datum/controller/subsystem/ai_controllers/Initialize()
 	. = ..()
 	setup_subtrees()
 
+/datum/controller/subsystem/ai_controllers/stat_entry(msg)
+	msg = "ON:[length(GLOB.ai_controllers_by_status[AI_STATUS_ON])]|IDLE:[length(GLOB.ai_controllers_by_status[AI_STATUS_IDLE])]|OFF:[length(GLOB.ai_controllers_by_status[AI_STATUS_OFF])]"
+	return ..()
+
 /datum/controller/subsystem/ai_controllers/proc/setup_subtrees()
-	ai_subtrees = list()
 	for(var/subtree_type in subtypesof(/datum/ai_planning_subtree))
 		var/datum/ai_planning_subtree/subtree = new subtree_type
-		ai_subtrees[subtree_type] = subtree
+		GLOB.ai_subtrees[subtree_type] = subtree
 
 /datum/controller/subsystem/ai_controllers/fire(resumed)
-	for(var/datum/ai_controller/ai_controller as anything in active_ai_controllers)
-		if(!COOLDOWN_FINISHED(ai_controller, failed_planning_cooldown))
+	if(!resumed)
+		var/list/active_controllers = GLOB.ai_controllers_by_status[AI_STATUS_ON]
+		src.currentrun = active_controllers.Copy()
+
+	//cache for sanic speed (lists are references anyways)
+	var/list/currentrun = src.currentrun
+	while(length(currentrun))
+		var/datum/ai_controller/ai_controller = currentrun[currentrun.len]
+		currentrun.len--
+
+		if(QDELETED(ai_controller) || isnull(ai_controller.pawn))
+			continue
+		if(!ai_controller.able_to_plan)
 			continue
 
-		// BLUEMOON OPTIMIZATION: skip planning for AI controllers whose pawn has no player nearby
-		if(!LAZYLEN(ai_controller.current_behaviors))
-			var/mob/living/pawn_mob = ai_controller.pawn
-			if(istype(pawn_mob) && !pawn_mob.client && !pawn_mob.has_nearby_player())
-				continue
-			ai_controller.SelectBehaviors(wait * 0.1)
-			if(!LAZYLEN(ai_controller.current_behaviors)) //Still no plan
-				COOLDOWN_START(ai_controller, failed_planning_cooldown, AI_FAILED_PLANNING_COOLDOWN)
+		AI_METRIC_INC(planning_cycles)
+		ai_controller.SelectBehaviors(wait * 0.1)
+		if(!LAZYLEN(ai_controller.current_behaviors)) //Still no plan
+			ai_controller.planning_failed()
+
+		if(MC_TICK_CHECK)
+			return

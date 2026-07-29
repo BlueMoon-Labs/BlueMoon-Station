@@ -25,7 +25,7 @@
 
 /mob/living/simple_animal/pet/dog/ComponentInitialize()
 	. = ..()
-	AddElement(/datum/element/wuv, "yaps happily!", EMOTE_AUDIBLE, /datum/mood_event/pet_animal, "growls!", EMOTE_AUDIBLE)
+	AddElement(/datum/element/pet_bonus, "yaps happily!", EMOTE_AUDIBLE)
 	AddElement(/datum/element/mob_holder, held_icon)
 	AddElement(/datum/element/strippable, GLOB.strippable_corgi_items)
 

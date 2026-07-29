@@ -754,6 +754,14 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 			log_admin("[key_name(admin)] applied loadout to [key_name(targetMob)].")
 			message_admins("<span class='notice'>[key_name_admin(admin)] applied loadout to [key_name_admin(targetMob)].</span>")
 
+		if ("update_appearance")
+			if(!ishuman(targetMob) || !targetMob.client?.prefs)
+				return
+			targetMob.client.prefs.copy_to(targetMob, icon_updates = TRUE, roundstart_checks = FALSE)
+			targetMob.regenerate_icons()
+			log_admin("[key_name(admin)] актуализировал внешность [key_name(targetMob)].")
+			message_admins("<span class='notice'>[key_name_admin(admin)] актуализировал внешность [key_name_admin(targetMob)].</span>")
+
 		if ("set_organ")
 			if(!iscarbon(targetMob))
 				return

@@ -42,11 +42,11 @@
 	uniform.armor = getArmor(10)
 	accessory.armor = getArmor(5)
 	TEST_ASSERT(accessory.attach(uniform, null), "Не удалось прикрепить тестовый аксессуар")
-	TEST_ASSERT(accessory in uniform.attached_accessories, "Прикреплённый аксессуар не попал в список униформы")
+	TEST_ASSERT(accessory in uniform.accessories_attached, "Прикреплённый аксессуар не попал в список униформы")
 	TEST_ASSERT_EQUAL(uniform.armor.get_rating(MELEE), 15, "Аксессуар не добавил броню униформе")
 
 	qdel(accessory)
-	TEST_ASSERT(!(accessory in uniform.attached_accessories), "Удалённый аксессуар остался в списке униформы")
+	TEST_ASSERT(!(accessory in uniform.accessories_attached), "Удалённый аксессуар остался в списке униформы")
 	TEST_ASSERT_EQUAL(uniform.armor.get_rating(MELEE), 10, "Удалённый аксессуар оставил бонус брони на униформе")
 
 /// Security-запись может заимствовать фото general-записи и не владеет им.
@@ -98,6 +98,115 @@
 
 /datum/unit_test/remote_materials_callback_cleanup/proc/after_insert_stub()
 	return
+
+/// Preinstalled borg upgrades must be real owned objects. A type path in this
+/// list reaches qdel(typepath) during teardown and raises `bad del`.
+/datum/unit_test/inteq_borg_preinstalled_upgrade_cleanup/Run()
+	var/mob/living/silicon/robot/modules/inteq/saboteur/borg = allocate(/mob/living/silicon/robot/modules/inteq/saboteur)
+	TEST_ASSERT_EQUAL(length(borg.upgrades), 1, "InteQ borg must own exactly one preinstalled upgrade")
+	TEST_ASSERT(istype(borg.upgrades[1], /obj/item/borg/upgrade/vtec), "InteQ borg stored a type path instead of an installed VTEC object")
+
+	qdel(borg)
+	TEST_ASSERT(QDELETED(borg), "InteQ borg teardown did not enter qdel")
+	// Let the asynchronous module transformation reach its first post-sleep
+	// validity check. Any post-qdel access is reported as a test runtime.
+	sleep(2)
+
+/// With no valid human victim, initialization qdels the cluwne. It must not
+/// create its orbit helper afterwards with loc pointing back to the deleted mob.
+/datum/unit_test/floor_cluwne_no_post_qdel_orbit/Run()
+	var/mob/living/simple_animal/hostile/floor_cluwne/cluwne = new(run_loc_floor_bottom_left)
+	TEST_ASSERT(QDELETED(cluwne), "Floor cluwne without a valid victim must delete itself during initialization")
+	TEST_ASSERT_NULL(cluwne.poi, "Floor cluwne created an owned orbit helper after qdel")
+
+/// The gladiator can meet hundreds of mobs in a benchmark round. Its greeting
+/// cache must not keep strong references to every mob it has seen.
+/datum/unit_test/gladiator_introduced_uses_reference_keys/Run()
+	var/mob/living/simple_animal/hostile/megafauna/gladiator/gladiator = allocate(/mob/living/simple_animal/hostile/megafauna/gladiator)
+	var/mob/living/simple_animal/hostile/prey = allocate(/mob/living/simple_animal/hostile)
+	gladiator.introduction(prey)
+
+	TEST_ASSERT(!(prey in gladiator.introduced), "Gladiator greeting cache kept a strong reference to its target")
+	var/datum/weakref/introduced_ref = gladiator.introduced[REF(prey)]
+	TEST_ASSERT(istype(introduced_ref), "Gladiator greeting cache did not store a weakref for its target")
+	TEST_ASSERT_EQUAL(introduced_ref.resolve(), prey, "Gladiator greeting weakref did not resolve to its target")
+
+	qdel(gladiator)
+	TEST_ASSERT_NULL(gladiator.introduced, "Gladiator retained its greeting cache during teardown")
+
+///Broodmother and children hold bidirectional family references during combat.
+///Either side must detach cleanly when an arena teardown deletes it directly.
+/datum/unit_test/broodmother_children_release_family_refs/Run()
+	var/mob/living/simple_animal/hostile/asteroid/elite/broodmother/mother = allocate(/mob/living/simple_animal/hostile/asteroid/elite/broodmother, run_loc_floor_bottom_left)
+	var/mob/living/simple_animal/hostile/asteroid/elite/broodmother_child/orphan = allocate(/mob/living/simple_animal/hostile/asteroid/elite/broodmother_child, get_step(run_loc_floor_bottom_left, EAST))
+	mother.children_list += orphan
+	orphan.mother = mother
+
+	qdel(mother)
+	TEST_ASSERT_NULL(orphan.mother, "A surviving child retained its qdeleted broodmother")
+	TEST_ASSERT_NULL(mother.children_list, "A qdeleted broodmother retained its child list")
+
+	var/mob/living/simple_animal/hostile/asteroid/elite/broodmother/second_mother = allocate(/mob/living/simple_animal/hostile/asteroid/elite/broodmother, run_loc_floor_bottom_left)
+	var/mob/living/simple_animal/hostile/asteroid/elite/broodmother_child/deleted_child = new(get_step(run_loc_floor_bottom_left, WEST))
+	second_mother.children_list += deleted_child
+	deleted_child.mother = second_mother
+
+	qdel(deleted_child)
+	TEST_ASSERT(!(deleted_child in second_mother.children_list), "A qdeleted child remained in its broodmother's child list")
+	TEST_ASSERT_NULL(deleted_child.mother, "A qdeleted child retained its broodmother")
+
+///Paper Wizard mimics are owned helpers and must neither outlive nor retain
+///their original when the arena deletes the boss directly.
+/datum/unit_test/paper_wizard_copies_release_owner_refs/Run()
+	var/mob/living/simple_animal/hostile/boss/paper_wizard/wizard = allocate(/mob/living/simple_animal/hostile/boss/paper_wizard, run_loc_floor_bottom_left)
+	var/mob/living/simple_animal/hostile/boss/paper_wizard/copy/first_copy = new(get_step(run_loc_floor_bottom_left, EAST))
+	var/mob/living/simple_animal/hostile/boss/paper_wizard/copy/second_copy = new(get_step(run_loc_floor_bottom_left, WEST))
+	wizard.copies = list(first_copy, second_copy)
+	first_copy.original = wizard
+	second_copy.original = wizard
+
+	qdel(wizard)
+	TEST_ASSERT_NULL(wizard.copies, "A qdeleted Paper Wizard retained its copy list")
+	TEST_ASSERT(QDELETED(first_copy) && QDELETED(second_copy), "Paper Wizard copies survived direct owner teardown")
+	TEST_ASSERT_NULL(first_copy.original, "A deleted Paper Wizard copy retained its original")
+	TEST_ASSERT_NULL(second_copy.original, "A deleted Paper Wizard copy retained its original")
+
+///Legionnaire's detachable head and bonfire are owned helpers with backrefs.
+/datum/unit_test/legionnaire_helpers_release_owner_refs/Run()
+	var/mob/living/simple_animal/hostile/asteroid/elite/legionnaire/body = allocate(/mob/living/simple_animal/hostile/asteroid/elite/legionnaire, run_loc_floor_bottom_left)
+	var/mob/living/simple_animal/hostile/asteroid/elite/legionnairehead/head = new(get_step(run_loc_floor_bottom_left, EAST))
+	var/obj/structure/legionnaire_bonfire/pile = new(get_step(run_loc_floor_bottom_left, WEST))
+	body.myhead = head
+	body.mypile = pile
+	head.body = body
+	pile.myowner = body
+
+	qdel(body)
+	TEST_ASSERT_NULL(body.myhead, "A qdeleted Legionnaire retained its head")
+	TEST_ASSERT_NULL(body.mypile, "A qdeleted Legionnaire retained its bonfire")
+	TEST_ASSERT(QDELETED(head) && QDELETED(pile), "Legionnaire helpers survived direct owner teardown")
+	TEST_ASSERT_NULL(head.body, "A deleted Legionnaire head retained its body")
+	TEST_ASSERT_NULL(pile.myowner, "A deleted Legionnaire bonfire retained its owner")
+
+/// Terror queens use themselves as the root of their brood hierarchy. The
+/// shared teardown must break that self-cycle as well as ordinary brood links.
+/datum/unit_test/terror_spider_teardown_clears_lineage/Run()
+	var/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/queen/queen = allocate(/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/queen)
+	TEST_ASSERT_EQUAL(queen.spider_myqueen, queen, "Terror queen test fixture did not create its expected self-reference")
+	queen.spider_mymother = queen
+	var/obj/structure/spider/spiderling/terror_spiderling/spiderling = allocate(/obj/structure/spider/spiderling/terror_spiderling)
+	spiderling.spider_myqueen = queen
+	spiderling.spider_mymother = queen
+	spiderling.enemies += queen
+
+	qdel(spiderling)
+	TEST_ASSERT(!(spiderling in GLOB.ts_spiderling_list), "Deleted terror spiderling remained in the global processing list")
+	TEST_ASSERT_NULL(spiderling.spider_myqueen, "Terror spiderling retained its queen during teardown")
+	TEST_ASSERT_NULL(spiderling.spider_mymother, "Terror spiderling retained its mother during teardown")
+	TEST_ASSERT_NULL(spiderling.enemies, "Terror spiderling retained its enemies during teardown")
+	qdel(queen)
+	TEST_ASSERT_NULL(queen.spider_myqueen, "Terror queen retained its self-reference during teardown")
+	TEST_ASSERT_NULL(queen.spider_mymother, "Terror spider retained its mother reference during teardown")
 
 /// Conjure spell владеет последним созданным предметом и обязан обнулить ссылку после qdel.
 /datum/unit_test/conjure_item_destroy_clears_item/Run()
@@ -434,3 +543,211 @@
 	TEST_ASSERT_NULL(infection.armor_head, "Компонент оставил ссылку на удалённый шлем")
 	qdel(infection.armor)
 	TEST_ASSERT_NULL(infection.armor, "Компонент оставил ссылку на удалённую броню")
+
+/// Магазин и патрон в патроннике лежат в contents ствола, то есть их loc - это
+/// жёсткая ссылка обратно на ствол. Без чистки в Destroy ни один удалённый
+/// баллистический ствол не собирается мягко и уходит в hard delete; для оружия,
+/// которое удаляет себя на каждый выстрел (DROPDEL зачарованные винтовки, залп
+/// Arcane Barrage), это был топ-1 источник хардделов в прод-логах.
+/datum/unit_test/ballistic_gun_destroy_releases_ammo/Run()
+	var/obj/item/gun/ballistic/automatic/pistol/gun = allocate(/obj/item/gun/ballistic/automatic/pistol)
+	var/obj/item/ammo_box/magazine/loaded_magazine = gun.magazine
+	var/obj/item/ammo_casing/loaded_round = gun.chambered
+	TEST_ASSERT_NOTNULL(loaded_magazine, "Санити: тестовый пистолет обязан заспавниться с магазином")
+	TEST_ASSERT_NOTNULL(loaded_round, "Санити: тестовый пистолет обязан заспавниться с патроном в патроннике")
+	TEST_ASSERT_EQUAL(loaded_magazine.loc, gun, "Санити: магазин обязан лежать в стволе")
+
+	qdel(gun)
+
+	TEST_ASSERT(QDELETED(loaded_magazine), "Удалённый ствол оставил живой магазин у себя в contents - это внешняя ссылка и гарантированный harddel")
+	TEST_ASSERT(QDELETED(loaded_round), "Удалённый ствол оставил живой патрон в патроннике - это внешняя ссылка и гарантированный harddel")
+	TEST_ASSERT_NULL(gun.magazine, "Destroy не обнулил ссылку на магазин")
+	TEST_ASSERT_NULL(gun.chambered, "Destroy не обнулил ссылку на патронник")
+
+/// Зачарованная винтовка удаляет себя внутри shoot_live_shot. Продолжать цикл
+/// выстрела на удалённом стволе нельзя: process_chamber -> chamber_round
+/// заталкивает свежий патрон forceMove'ом в qdel-нутый ствол, и тот больше
+/// никогда не соберётся.
+/datum/unit_test/self_consuming_gun_stops_after_shot/Run()
+	var/obj/item/gun/ballistic/shotgun/boltaction/enchanted/arcane_barrage/rifle = allocate(/obj/item/gun/ballistic/shotgun/boltaction/enchanted/arcane_barrage)
+	TEST_ASSERT(rifle.item_flags & DROPDEL, "Санити: зачарованная винтовка обязана быть DROPDEL")
+
+	qdel(rifle)
+
+	TEST_ASSERT_NULL(rifle.chambered, "Удалённый самоуничтожающийся ствол оставил патрон в патроннике")
+	TEST_ASSERT_NULL(rifle.magazine, "Удалённый самоуничтожающийся ствол оставил магазин")
+	for(var/atom/movable/leftover in rifle)
+		TEST_FAIL("В contents удалённого ствола остался живой [leftover.type] - он держит ствол от сборки")
+
+/// client.moused_over_objects (память автопарри) обязана хранить текстовые ref'ы,
+/// а не сами атомы: жёсткая ссылка здесь переживает qdel цели и невидима
+/// ref-сканеру - /client не датум, а клиентский проб читает только
+/// mob/eye/statobj/screen/images.
+/datum/unit_test/moused_over_tracker_holds_no_hard_refs/Run()
+	var/list/tracker = list()
+	var/obj/effect/hovered = allocate(/obj/effect)
+
+	register_moused_over(tracker, hovered)
+
+	TEST_ASSERT_EQUAL(length(tracker), 1, "Наведение курсора не попало в память автопарри")
+	for(var/key in tracker)
+		TEST_ASSERT(istext(key), "Память автопарри держит [key] жёсткой ссылкой вместо текстового ref - это гарантированный harddel цели")
+
+/// Ради автопарри lookup обязан находить именно тот атом, на который наводились.
+/datum/unit_test/moused_over_tracker_lookup/Run()
+	var/list/tracker = list()
+	var/obj/effect/hovered = allocate(/obj/effect)
+	var/obj/effect/untouched = allocate(/obj/effect)
+
+	register_moused_over(tracker, hovered)
+
+	TEST_ASSERT_EQUAL(moused_over_time(tracker, hovered), world.time, "Lookup не нашёл наведённый атом - автопарри перестанет срабатывать")
+	TEST_ASSERT_NULL(moused_over_time(tracker, untouched), "Lookup нашёл атом, на который не наводились")
+
+/// Память ограничена MOUSED_OVER_MEMORY_MAX и вытесняет самые старые наведения.
+/datum/unit_test/moused_over_tracker_evicts_oldest/Run()
+	var/list/tracker = list()
+	var/list/hovered = list()
+	for(var/i in 1 to MOUSED_OVER_MEMORY_MAX + 2)
+		var/obj/effect/target = allocate(/obj/effect)
+		hovered += target
+		register_moused_over(tracker, target)
+
+	TEST_ASSERT(length(tracker) <= MOUSED_OVER_MEMORY_MAX, "Память автопарри разрослась выше капа: [length(tracker)]")
+	TEST_ASSERT_NULL(moused_over_time(tracker, hovered[1]), "Самое старое наведение не вытеснилось из памяти")
+	TEST_ASSERT_NOTNULL(moused_over_time(tracker, hovered[length(hovered)]), "Самое свежее наведение потерялось при вытеснении")
+
+/// has_status_effect обязан возвращать null, а не 0: DM не считает 0 и null одним
+/// и тем же, и QDELETED(0) роняет прок рантаймом "Cannot read 0.gc_destroyed".
+/datum/unit_test/absent_status_effect_returns_null/Run()
+	var/mob/living/carbon/human/subject = allocate(/mob/living/carbon/human)
+
+	TEST_ASSERT_NULL(subject.has_status_effect(STATUS_EFFECT_NECROPOLIS_CURSE), "Отсутствующий статус-эффект вернул не null - каждый QDELETED() на результате упадёт рантаймом")
+
+/// Проклятие некрополиса на чистом мобе не должно спотыкаться о QDELETED(0).
+/datum/unit_test/necropolis_curse_applies_to_uncursed/Run()
+	var/mob/living/carbon/human/subject = allocate(/mob/living/carbon/human)
+
+	subject.apply_necropolis_curse(CURSE_BLINDING, 1 MINUTES)
+
+	TEST_ASSERT_NOTNULL(subject.has_status_effect(STATUS_EFFECT_NECROPOLIS_CURSE), "Проклятие не наложилось на моба без проклятия")
+
+/// clear_map снимал экраны прямо в цикле по тому же списку: DM сдвигал список и
+/// пропускал каждый второй экран, тот оставался в client.screen. Съём карты
+/// обязан отдавать ВСЕ её экраны.
+/datum/unit_test/screen_map_takeover_returns_every_screen/Run()
+	var/list/screen_maps = list()
+	var/list/registered = list()
+	for(var/i in 1 to 4)
+		var/atom/movable/screen/entry = allocate(/atom/movable/screen)
+		entry.assigned_map = "test_map"
+		registered += entry
+	screen_maps["test_map"] = registered.Copy()
+
+	var/list/taken = take_screen_map(screen_maps, "test_map")
+
+	TEST_ASSERT_EQUAL(length(taken), 4, "Съём карты вернул не все экраны - пропущенные останутся в client.screen")
+	for(var/atom/movable/screen/entry as anything in registered)
+		TEST_ASSERT(entry in taken, "Экран [entry.type] пропущен при съёме карты")
+	TEST_ASSERT(!("test_map" in screen_maps), "Съём карты не удалил запись карты у клиента")
+
+/// У экранов с assigned_map нет hud'а, поэтому из чужого client.screen они сами
+/// себя не снимают: консоль камер, уничтоженная при открытом UI, оставляла весь
+/// набор плейн-мастеров жить в клиенте смотрящего.
+/datum/unit_test/screen_detaches_from_client_maps/Run()
+	var/list/screen_maps = list()
+	var/atom/movable/screen/first = allocate(/atom/movable/screen)
+	var/atom/movable/screen/second = allocate(/atom/movable/screen)
+	var/atom/movable/screen/stranger = allocate(/atom/movable/screen)
+	first.assigned_map = "test_map"
+	second.assigned_map = "test_map"
+	screen_maps["test_map"] = list(first, second)
+
+	TEST_ASSERT(detach_screen_from_client_maps(screen_maps, first), "Экран не нашёлся в картах клиента")
+	var/list/remaining = screen_maps["test_map"]
+	TEST_ASSERT_EQUAL(length(remaining), 1, "Отвязка сняла не тот набор экранов")
+	TEST_ASSERT(second in remaining, "Отвязка сняла лишний экран")
+	TEST_ASSERT(!detach_screen_from_client_maps(screen_maps, stranger), "Отвязка отчиталась об экране, которого в картах нет")
+
+	TEST_ASSERT(detach_screen_from_client_maps(screen_maps, second), "Последний экран карты не нашёлся")
+	TEST_ASSERT(!("test_map" in screen_maps), "Опустевшая карта осталась записью у клиента")
+
+/// mob.machine - хардреф на объект, который игрок "использует". Ставит его
+/// /obj/machinery/interact() для почти всякой машины (INTERACT_MACHINE_SET_MACHINE
+/// включён по умолчанию) и сборки/консоли через set_machine() напрямую, а снимался
+/// он только при открытии следующей машины. Удалённая машина оставалась висеть в
+/// mob.machine - стабильный "внешних ссылок: 1" в прод-логах на телекомах,
+/// протолейтах, насосах и сигналер-игнитер-сборках.
+/datum/unit_test/destroyed_machine_releases_its_users/Run()
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human)
+	var/obj/machinery/first = allocate(/obj/machinery, run_loc_floor_bottom_left)
+	var/obj/machinery/second = allocate(/obj/machinery, get_step(run_loc_floor_bottom_left, EAST))
+
+	user.set_machine(first)
+	TEST_ASSERT_EQUAL(user.machine, first, "set_machine() обязан записать машину пользователю")
+	TEST_ASSERT(user in first.machine_users, "set_machine() обязан завести обратный индекс на машине")
+
+	// Переключение на другую машину снимает пользователя с прежней.
+	user.set_machine(second)
+	TEST_ASSERT(!(user in first.machine_users), "Переключение машины обязано снять пользователя с прежней")
+	TEST_ASSERT(user in second.machine_users, "Переключение машины обязано записать пользователя новой")
+
+	// Явный unset тоже чистит индекс - иначе объект держал бы моба.
+	user.unset_machine()
+	TEST_ASSERT_NULL(user.machine, "unset_machine() обязан снять машину с пользователя")
+	TEST_ASSERT(!LAZYLEN(second.machine_users), "unset_machine() обязан очистить обратный индекс")
+
+	// Главное: удаление машины обязано снять её со всех, кто её использовал.
+	user.set_machine(second)
+	qdel(second)
+	TEST_ASSERT_NULL(user.machine, "Удаление машины обязано снять её с mob.machine у всех пользователей")
+
+	qdel(first)
+
+/// Обратная сторона: индекс на машине держит мобов, поэтому смерть моба обязана
+/// вычищать его оттуда, иначе машина пинит труп.
+/datum/unit_test/destroyed_machine_user_leaves_the_index/Run()
+	var/obj/machinery/machine = allocate(/obj/machinery, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human)
+
+	user.set_machine(machine)
+	TEST_ASSERT(user in machine.machine_users, "Sanity: пользователь обязан попасть в индекс")
+
+	qdel(user)
+	TEST_ASSERT(!LAZYLEN(machine.machine_users), "Удаление моба обязано убрать его из machine_users - иначе машина держит труп")
+
+	qdel(machine)
+
+/// Сборка отдаёт электронику готовой двери, после чего сама уходит в qdel.
+/// Если сборка не обнулит свою переменную, её QDEL_NULL(electronics) убьёт
+/// электронику уже живой двери: дверь остаётся с висячей ссылкой, а electronics
+/// не собирается GC (прод-раунд 9807 - найдена в вар electronics живого шлюза).
+/datum/unit_test/door_assembly_hands_off_electronics/Run()
+	var/obj/structure/door_assembly/assembly = allocate(/obj/structure/door_assembly, run_loc_floor_bottom_left)
+	var/obj/item/electronics/airlock/brain = allocate(/obj/item/electronics/airlock)
+	assembly.electronics = brain
+	brain.forceMove(assembly)
+
+	var/obj/machinery/door/airlock/door = assembly.finish_door()
+
+	TEST_ASSERT_NOTNULL(door, "finish_door() не вернул дверь")
+	TEST_ASSERT(QDELETED(assembly), "Сборка обязана удалиться после сборки двери")
+	TEST_ASSERT(!QDELETED(brain), "Destroy сборки удалил электронику, уже отданную двери")
+	TEST_ASSERT_EQUAL(door.electronics, brain, "Дверь не получила электронику сборки")
+
+	qdel(door)
+
+/// Тот же контракт для промежуточной пересборки (смена материала/типа сборки):
+/// электроника переезжает в target, source уходит в qdel и не должен её утащить.
+/datum/unit_test/door_assembly_transfer_keeps_electronics/Run()
+	var/obj/structure/door_assembly/source = allocate(/obj/structure/door_assembly, run_loc_floor_bottom_left)
+	var/obj/structure/door_assembly/target = allocate(/obj/structure/door_assembly, run_loc_floor_bottom_left)
+	var/obj/item/electronics/airlock/brain = allocate(/obj/item/electronics/airlock)
+	source.electronics = brain
+	brain.forceMove(source)
+
+	source.transfer_assembly_vars(source, target)
+
+	TEST_ASSERT(QDELETED(source), "Исходная сборка обязана удалиться после переноса")
+	TEST_ASSERT(!QDELETED(brain), "Destroy исходной сборки удалил перенесённую электронику")
+	TEST_ASSERT_EQUAL(target.electronics, brain, "Целевая сборка не получила электронику")

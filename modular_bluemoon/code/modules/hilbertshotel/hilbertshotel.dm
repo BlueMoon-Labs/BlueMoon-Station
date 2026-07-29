@@ -228,6 +228,8 @@
 		return TRUE
 	if(mind.has_antag_datum(/datum/antagonist/ashwalker))
 		return TRUE
+	if(mind.has_antag_datum(/datum/antagonist/gang))
+		return TRUE
 
 	to_chat(user, span_warning("Your special role doesn't allow you to enter infinity dormitory."))
 

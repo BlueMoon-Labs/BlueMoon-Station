@@ -33,6 +33,7 @@ Difficulty: Medium
 	projectilesound = 'sound/weapons/kenetic_accel.ogg'
 	ranged = TRUE
 	ranged_cooldown_time = 16
+	check_friendly_fire = TRUE
 	pixel_x = -16
 	crusher_loot = list(/obj/item/melee/transforming/cleaving_saw, /obj/item/gun/energy/kinetic_accelerator/premiumka, /obj/item/crusher_trophy/miner_eye, /obj/item/disk/design_disk/modkit_disc/mob_and_turf_aoe,
 	/obj/item/disk/design_disk/modkit_disc/bounty,/obj/item/disk/design_disk/modkit_disc/resonator_blast,/obj/item/disk/design_disk/modkit_disc/rapid_repeater)
@@ -99,7 +100,6 @@ Difficulty: Medium
 				transform_weapon()
 		return
 
-	Goto(target, move_to_delay, minimum_distance)
 	if(get_dist(src, target) > MINER_DASH_RANGE && dash_cooldown <= world.time)
 		dash_attack()
 	else
@@ -114,6 +114,13 @@ Difficulty: Medium
 	target.add_stun_absorption("miner", 10, INFINITY)
 	..()
 	target.stun_absorption -= "miner"
+
+/obj/item/melee/transforming/cleaving_saw/miner/can_cleave_target(mob/living/user, mob/living/target)
+	. = ..()
+	if(!. || !istype(user, /mob/living/simple_animal/hostile))
+		return .
+	var/mob/living/simple_animal/hostile/hostile_user = user
+	return hostile_user.CanAttack(target)
 
 /obj/item/projectile/kinetic/miner
 	damage = 50
@@ -186,7 +193,7 @@ Difficulty: Medium
 	shoot_ka()
 
 /mob/living/simple_animal/hostile/megafauna/blood_drunk_miner/proc/shoot_ka()
-	if(ranged_cooldown <= world.time && get_dist(src, target) <= MINER_DASH_RANGE && !Adjacent(target))
+	if(ranged_cooldown <= world.time && get_dist(src, target) <= MINER_DASH_RANGE && !Adjacent(target) && !CheckFriendlyFire(target))
 		ranged_cooldown = world.time + ranged_cooldown_time
 		visible_message("<span class='danger'>[src] fires the proto-kinetic accelerator!</span>")
 		face_atom(target)

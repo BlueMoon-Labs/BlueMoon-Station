@@ -159,6 +159,9 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 	addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_atom_colour)), 10, TIMER_DELETE_ME)
 
 /mob/dead/observer/Destroy()
+	// Initialize() starts an infinite floating animation. End it with a real
+	// zero-time animation so BYOND releases its internal reference on qdel.
+	animate(src, alpha = 0, time = 0, flags = ANIMATION_END_NOW)
 	//BLUEMOON ADD проверяем клиента на все болячки и ссылаем его в лобби при наличии его в госте или удаляем сикей, чтобы при заходе его отправило в лобби (fix undeleting ghosts)
 	if(client)
 		transfer_to_lobby()

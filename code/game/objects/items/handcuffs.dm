@@ -273,6 +273,13 @@
 /obj/item/restraints/legcuffs/proc/on_removed()
 	return
 
+/datum/status_effect/beartrap_ensnared
+	id = "bola_snared"
+	status_type = STATUS_EFFECT_UNIQUE
+	alert_type = null
+	var/was_teleported = FALSE // для проверки на факт телепортации
+	var/obj/item/restraints/legcuffs/beartrap/beartrap
+
 /obj/item/restraints/legcuffs/beartrap
 	name = "bear trap"
 	throw_speed = 1
@@ -332,6 +339,7 @@
 				L.visible_message("<span class='danger'>[L] активирует \the [src].</span>", \
 						"<span class='userdanger'>Вы активируете \the [src]!</span>")
 				L.apply_damage(trap_damage, BRUTE, def_zone)
+				L.apply_status_effect(/datum/status_effect/beartrap_ensnared)
 	..()
 
 /obj/item/restraints/legcuffs/beartrap/energy

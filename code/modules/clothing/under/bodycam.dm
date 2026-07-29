@@ -13,7 +13,7 @@
 	QDEL_NULL(builtInCamera)
 	return ..()
 
-/obj/item/clothing/accessory/bodycamera/attach(obj/item/clothing/under/U, user)
+/obj/item/clothing/accessory/bodycamera/attach(obj/item/clothing/cloth, user)
 	. = ..()
 	if(!.)
 		return .
@@ -27,24 +27,24 @@
 		builtInCamera.invisibility = INVISIBILITY_ABSTRACT
 		builtInCamera.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	update_camera_name(user)
-	register_wearer(U.loc)
+	register_wearer(cloth.loc)
 	GLOB.cameranet.updatePortableCamera(builtInCamera)
 	return .
 
-/obj/item/clothing/accessory/bodycamera/detach(obj/item/clothing/under/U, user)
+/obj/item/clothing/accessory/bodycamera/detach(obj/item/clothing/cloth, user)
 	unregister_wearer()
 	if(builtInCamera)
 		QDEL_NULL(builtInCamera)
 	return ..()
 
-/obj/item/clothing/accessory/bodycamera/on_uniform_equip(obj/item/clothing/under/U, user)
+/obj/item/clothing/accessory/bodycamera/on_uniform_equip(obj/item/clothing/cloth, user)
 	. = ..()
 	update_camera_name(user)
 	register_wearer(user)
 	if(builtInCamera)
 		GLOB.cameranet.updatePortableCamera(builtInCamera)
 
-/obj/item/clothing/accessory/bodycamera/on_uniform_dropped(obj/item/clothing/under/U, user)
+/obj/item/clothing/accessory/bodycamera/on_uniform_dropped(obj/item/clothing/cloth, user)
 	. = ..()
 	unregister_wearer()
 	if(builtInCamera)

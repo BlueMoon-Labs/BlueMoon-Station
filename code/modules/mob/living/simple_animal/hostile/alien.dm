@@ -55,15 +55,6 @@
 	var/plant_cooldown = 30
 	var/plants_off = 0
 
-/mob/living/simple_animal/hostile/alien/drone/handle_automated_action()
-	if(!..()) //AIStatus is off
-		return
-	plant_cooldown--
-	if(AIStatus == AI_IDLE)
-		if(!plants_off && prob(10) && plant_cooldown<=0)
-			plant_cooldown = initial(plant_cooldown)
-			SpreadPlants()
-
 /mob/living/simple_animal/hostile/alien/sentinel
 	name = "alien sentinel"
 	icon = 'icons/Xeno/castes/sentinel.dmi'
@@ -125,18 +116,6 @@
 		if(istype(src, /mob/living/simple_animal/hostile/alien/queen/large))
 			health_doll_icon = "Queen rouny Walking"
 
-/mob/living/simple_animal/hostile/alien/queen/handle_automated_action()
-	if(!..()) //AIStatus is off
-		return
-	egg_cooldown--
-	plant_cooldown--
-	if(AIStatus == AI_IDLE)
-		if(!plants_off && prob(10) && plant_cooldown<=0)
-			plant_cooldown = initial(plant_cooldown)
-			SpreadPlants()
-		if(!sterile && prob(10) && egg_cooldown<=0)
-			egg_cooldown = initial(egg_cooldown)
-			LayEggs()
 
 /mob/living/simple_animal/hostile/alien/proc/SpreadPlants()
 	if(!isturf(loc) || isspaceturf(loc))
@@ -212,3 +191,114 @@
 		M.clean_blood()
 		visible_message("[src] polishes \the [target].")
 		return TRUE
+
+// ===== Адаптер-профили улья =====
+// Охотник и горничная - обычные милишники (кастомная уборка горничной живёт в
+// её AttackingTarget и работает через делегацию), сентинел - авто-скирмишер по
+// легаси-флагам ranged/retreat_distance. Особость кластера - "дела улья" дрона
+// и королевы: легаси handle_automated_action сажал сорняки и откладывал яйца
+// только в AI_IDLE; здесь тот же цикл декомпозирован в сабтри с гейтом
+// "нет цели" (образец - терроры) и легаси-каденсом через дедлайны блэкборда.
+
+///Легаси-каденс дел улья: prob(10) на 6-секундный тик idle-пула = ~1.7%/с планировщика
+#define ALIEN_HIVE_DUTY_PROB_PER_SECOND 1.7
+///Легаси-счётчик plant_cooldown/egg_cooldown: 30 тиков idle-пула (60 ds) = 3 минуты
+#define ALIEN_HIVE_DUTY_COOLDOWN (3 MINUTES)
+
+///Дрон: обычный милишник + сорняки в тихую минуту
+/datum/ai_controller/hostile_adapter/melee_chaser/alien_drone
+	planning_subtrees = list(
+		/datum/ai_planning_subtree/find_hostile_targets,
+		/datum/ai_planning_subtree/hostile_fsm,
+		/datum/ai_planning_subtree/alien_hive_duties/drone,
+		/datum/ai_planning_subtree/hostile_dodge,
+		/datum/ai_planning_subtree/attack_obstacle_in_path,
+		/datum/ai_planning_subtree/take_cover_when_pinned,
+		/datum/ai_planning_subtree/tactical_approach,
+		/datum/ai_planning_subtree/hostile_melee,
+	)
+
+///Королева: кайт-плевки скирмишера + сорняки и кладка яиц
+/datum/ai_controller/hostile_adapter/ranged_skirmisher/alien_queen
+	planning_subtrees = list(
+		/datum/ai_planning_subtree/find_hostile_targets,
+		/datum/ai_planning_subtree/hostile_fsm,
+		/datum/ai_planning_subtree/alien_hive_duties/queen,
+		/datum/ai_planning_subtree/maintain_distance,
+		/datum/ai_planning_subtree/ranged_skirmish,
+		/datum/ai_planning_subtree/attack_obstacle_in_path,
+		/datum/ai_planning_subtree/hostile_break_away,
+	)
+
+///База дел улья: помощники гейта "нет цели" и легаси-каденса
+/datum/ai_planning_subtree/alien_hive_duties
+
+///Улейные дела только у живого ксена без боевой цели (легаси-гейт AI_IDLE)
+/datum/ai_planning_subtree/alien_hive_duties/proc/get_idle_hive_worker(datum/ai_controller/controller)
+	if(controller.blackboard_key_exists(BB_AI_CURRENT_TARGET))
+		return null
+	var/mob/living/simple_animal/hostile/alien/xeno = controller.pawn
+	if(!istype(xeno) || xeno.stat)
+		return null
+	return xeno
+
+///Ролл посадки: дедлайн каденса + легаси-вероятность
+/datum/ai_planning_subtree/alien_hive_duties/proc/plant_roll_passes(datum/ai_controller/controller, delta_time)
+	if(world.time < controller.blackboard[BB_AI_NEXT_PLANT_AT])
+		return FALSE
+	return SPT_PROB(ALIEN_HIVE_DUTY_PROB_PER_SECOND, delta_time)
+
+///Дрон: только сорняки (легаси plant_cooldown/plants_off)
+/datum/ai_planning_subtree/alien_hive_duties/drone/SelectBehaviors(datum/ai_controller/controller, delta_time)
+	. = ..()
+	var/mob/living/simple_animal/hostile/alien/drone/worker = get_idle_hive_worker(controller)
+	if(!istype(worker) || worker.plants_off)
+		return
+	if(!plant_roll_passes(controller, delta_time))
+		return
+	controller.queue_behavior(/datum/ai_behavior/alien_spread_plants)
+
+///Королева: сорняки + яйца (легаси sterile/egg_cooldown); роллы независимы,
+///как независимы были два prob(10) одного легаси-тика
+/datum/ai_planning_subtree/alien_hive_duties/queen/SelectBehaviors(datum/ai_controller/controller, delta_time)
+	. = ..()
+	var/mob/living/simple_animal/hostile/alien/queen/matriarch = get_idle_hive_worker(controller)
+	if(!istype(matriarch))
+		return
+	if(!matriarch.plants_off && plant_roll_passes(controller, delta_time))
+		controller.queue_behavior(/datum/ai_behavior/alien_spread_plants)
+	if(matriarch.sterile)
+		return
+	if(world.time < controller.blackboard[BB_AI_NEXT_EGG_AT])
+		return
+	if(!SPT_PROB(ALIEN_HIVE_DUTY_PROB_PER_SECOND, delta_time))
+		return
+	controller.queue_behavior(/datum/ai_behavior/alien_lay_eggs)
+
+///Посадка сорняков легаси-процем SpreadPlants (проверки турфа/узла внутри него)
+/datum/ai_behavior/alien_spread_plants
+	action_cooldown = 2 SECONDS
+
+/datum/ai_behavior/alien_spread_plants/perform(delta_time, datum/ai_controller/controller)
+	var/mob/living/simple_animal/hostile/alien/xeno = controller.pawn
+	if(!istype(xeno))
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	//легаси-паритет: каденс взводится по факту ролла, даже если тайл занят
+	controller.blackboard[BB_AI_NEXT_PLANT_AT] = world.time + ALIEN_HIVE_DUTY_COOLDOWN
+	xeno.SpreadPlants()
+	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+
+///Кладка яйца легаси-процем LayEggs (проверки турфа/яйца внутри него)
+/datum/ai_behavior/alien_lay_eggs
+	action_cooldown = 2 SECONDS
+
+/datum/ai_behavior/alien_lay_eggs/perform(delta_time, datum/ai_controller/controller)
+	var/mob/living/simple_animal/hostile/alien/queen/matriarch = controller.pawn
+	if(!istype(matriarch))
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	controller.blackboard[BB_AI_NEXT_EGG_AT] = world.time + ALIEN_HIVE_DUTY_COOLDOWN
+	matriarch.LayEggs()
+	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+
+#undef ALIEN_HIVE_DUTY_PROB_PER_SECOND
+#undef ALIEN_HIVE_DUTY_COOLDOWN

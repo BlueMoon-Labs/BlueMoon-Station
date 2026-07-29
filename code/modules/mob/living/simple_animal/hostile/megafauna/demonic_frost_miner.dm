@@ -26,9 +26,9 @@ Difficulty: Extremely Hard
 	speed = 20
 	move_to_delay = 20
 	ranged = TRUE
-	crusher_loot = list(/obj/effect/decal/remains/plasma, /obj/item/crusher_trophy/ice_block_talisman, ,/obj/item/disk/design_disk/modkit_disc/mob_and_turf_aoe,
+	crusher_loot = list(/obj/effect/decal/remains/plasma, /obj/item/crusher_trophy/ice_block_talisman, /obj/item/disk/design_disk/modkit_disc/mob_and_turf_aoe,
 	/obj/item/disk/design_disk/modkit_disc/bounty,/obj/item/disk/design_disk/modkit_disc/resonator_blast,/obj/item/disk/design_disk/modkit_disc/rapid_repeater)
-	loot = list(/obj/effect/decal/remains/plasma, ,/obj/item/disk/design_disk/modkit_disc/mob_and_turf_aoe,
+	loot = list(/obj/effect/decal/remains/plasma, /obj/item/disk/design_disk/modkit_disc/mob_and_turf_aoe,
 	/obj/item/disk/design_disk/modkit_disc/bounty,/obj/item/disk/design_disk/modkit_disc/resonator_blast,/obj/item/disk/design_disk/modkit_disc/rapid_repeater)
 	wander = FALSE
 	del_on_death = TRUE
@@ -75,7 +75,11 @@ Difficulty: Extremely Hard
 	chosen_attack_num = 3
 
 /mob/living/simple_animal/hostile/megafauna/demonic_frost_miner/OpenFire()
+	if(QDELETED(src) || stat == DEAD || QDELETED(target))
+		return
 	check_enraged()
+	if(QDELETED(src) || stat == DEAD)
+		return
 	if(enraged)
 		projectile_speed_multiplier = 1.33
 	else
@@ -151,27 +155,27 @@ Difficulty: Extremely Hard
 	adjustBruteLoss(30 * severity - 120)
 	visible_message("<span class='danger'>[src] absorbs the explosion!</span>", "<span class='userdanger'>You absorb the explosion!</span>")
 
-/mob/living/simple_animal/hostile/megafauna/demonic_frost_miner/Goto(target, delay, minimum_distance)
-	if(enraging)
-		return
-	return ..()
-
-/mob/living/simple_animal/hostile/megafauna/demonic_frost_miner/MoveToTarget(list/possible_targets)
-	if(enraging)
-		return
-	return ..()
-
 /mob/living/simple_animal/hostile/megafauna/demonic_frost_miner/Move()
 	if(enraging)
 		return
 	return ..()
 
+/// Mass boss patterns shed the rest of a burst when their shared projectile
+/// queue is already full. Sleeping here would retain both the qdeleted attacker
+/// and target in suspended DM frames during GC.
+/mob/living/simple_animal/hostile/megafauna/demonic_frost_miner/proc/projectile_pattern_capacity_available()
+	return !SSprojectiles.pattern_at_capacity() && !QDELETED(src) && stat != DEAD && !QDELETED(target)
+
 /// Shoots out homing frost orbs that explode into ice blast projectiles after a couple seconds
 /mob/living/simple_animal/hostile/megafauna/demonic_frost_miner/proc/frost_orbs(added_delay = 10, shoot_times = 8)
+	if(QDELETED(src) || stat == DEAD || QDELETED(target))
+		return
 	for(var/i in 1 to shoot_times)
+		if(!projectile_pattern_capacity_available())
+			break
 		var/turf/startloc = get_turf(src)
 		var/turf/endloc = get_turf(target)
-		if(!endloc)
+		if(!startloc || !endloc || QDELETED(src) || QDELETED(target))
 			break
 		var/obj/item/projectile/frost_orb/P = new(startloc)
 		P.preparePixelProjectile(endloc, startloc)
@@ -180,13 +184,19 @@ Difficulty: Extremely Hard
 			P.original = target
 		P.set_homing_target(target)
 		P.fire(rand(0, 360))
-		addtimer(CALLBACK(P, TYPE_PROC_REF(/obj/item/projectile/frost_orb, orb_explosion), projectile_speed_multiplier), 20) // make the orbs home in after a second
-		SLEEP_CHECK_DEATH(added_delay)
+		if(!QDELETED(P))
+			addtimer(CALLBACK(P, TYPE_PROC_REF(/obj/item/projectile/frost_orb, orb_explosion), projectile_speed_multiplier), 20) // make the orbs home in after a second
+		P = null
+		SLEEP_CHECK_DEATH(SSprojectiles.recommended_pattern_delay(added_delay))
 	SetRecoveryTime(40, 60)
 
 /// Called when the orb is exploding, shoots out projectiles
 /obj/item/projectile/frost_orb/proc/orb_explosion(projectile_speed_multiplier)
+	if(QDELETED(src))
+		return
 	for(var/i in 0 to 5)
+		if(SSprojectiles.pattern_at_capacity())
+			break
 		var/angle = i * 60
 		var/turf/startloc = get_turf(src)
 		var/turf/endloc = get_turf(original)
@@ -194,52 +204,75 @@ Difficulty: Extremely Hard
 			break
 		var/obj/item/projectile/ice_blast/P = new(startloc)
 		P.pixels_per_second *= projectile_speed_multiplier
+		// One record identifies the orb burst; the other five children would
+		// only repeat the same firer, target and position in the combat log.
+		P.log_override = i > 0
 		P.preparePixelProjectile(endloc, startloc, null, angle + rand(-10, 10))
 		P.firer = firer
 		if(original)
 			P.original = original
 		P.fire()
+		P = null
 	qdel(src)
 
 /// Shoots out snowballs with a random spread
 /mob/living/simple_animal/hostile/megafauna/demonic_frost_miner/proc/snowball_machine_gun(shots = 60, spread = 45)
+	if(QDELETED(src) || stat == DEAD || QDELETED(target))
+		return
+	var/attack_logged = FALSE
 	for(var/i in 1 to shots)
+		if(!projectile_pattern_capacity_available())
+			break
 		var/turf/startloc = get_turf(src)
 		var/turf/endloc = get_turf(target)
-		if(!endloc)
+		if(!startloc || !endloc || QDELETED(src) || QDELETED(target))
 			break
 		var/obj/item/projectile/P = new /obj/item/projectile/snowball(startloc)
 		P.pixels_per_second *= projectile_speed_multiplier
+		P.log_override = attack_logged
 		P.preparePixelProjectile(endloc, startloc, null, rand(-spread, spread))
 		P.firer = src
 		if(target)
 			P.original = target
 		P.fire()
-		SLEEP_CHECK_DEATH(1)
+		attack_logged = TRUE
+		P = null
+		// A room full of miners can otherwise create projectiles faster than
+		// collision tracing can retire them. Space the pattern in the soft zone;
+		// the admission check above sheds its remainder only at the hard limit.
+		SLEEP_CHECK_DEATH(SSprojectiles.recommended_pattern_delay(1))
 	SetRecoveryTime(15, 15)
 
 /// Shoots out ice blasts in a shotgun like pattern
 /mob/living/simple_animal/hostile/megafauna/demonic_frost_miner/proc/ice_shotgun(shots = 5, list/patterns = list(list(-40, -20, 0, 20, 40), list(-30, -10, 10, 30)))
+	if(QDELETED(src) || stat == DEAD || QDELETED(target))
+		return
+	var/attack_logged = FALSE
 	for(var/i in 1 to shots)
 		var/list/pattern = patterns[i % length(patterns) + 1] // alternating patterns
 		for(var/spread in pattern)
+			if(!projectile_pattern_capacity_available())
+				return
 			var/turf/startloc = get_turf(src)
 			var/turf/endloc = get_turf(target)
-			if(!endloc)
-				break
+			if(!startloc || !endloc || QDELETED(src) || QDELETED(target))
+				return
 			var/obj/item/projectile/P = new /obj/item/projectile/ice_blast(startloc)
 			P.pixels_per_second *= projectile_speed_multiplier
+			P.log_override = attack_logged
 			P.preparePixelProjectile(endloc, startloc, null, spread)
 			P.firer = src
 			if(target)
 				P.original = target
 			P.fire()
-		SLEEP_CHECK_DEATH(8)
+			attack_logged = TRUE
+			P = null
+		SLEEP_CHECK_DEATH(SSprojectiles.recommended_pattern_delay(8))
 	SetRecoveryTime(15, 20)
 
 /// Checks if the demonic frost miner is ready to be enraged
 /mob/living/simple_animal/hostile/megafauna/demonic_frost_miner/proc/check_enraged()
-	if(enraged)
+	if(QDELETED(src) || stat == DEAD || enraged)
 		return
 	if(health > maxHealth*0.25)
 		return

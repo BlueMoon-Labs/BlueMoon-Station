@@ -114,7 +114,7 @@
 /obj/effect/turf_decal/tile/red,
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_x = 30;
+	pixel_x = 30
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /turf/open/floor/mineral/plastitanium,
@@ -624,6 +624,15 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 5
+	},
+/obj/structure/table/wood,
+/obj/item/reagent_containers/food/drinks/bottle/vodka/badminka,
+/obj/item/reagent_containers/food/drinks/drinkingglass/shotglass{
+	pixel_x = -5
+	},
+/obj/item/reagent_containers/food/drinks/drinkingglass/shotglass{
+	pixel_x = -5;
+	pixel_y = 5
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/command/heads_quarters/hos)
@@ -1349,13 +1358,9 @@
 	pixel_x = 30
 	},
 /obj/structure/table/wood,
-/obj/item/reagent_containers/food/drinks/bottle/vodka/badminka,
-/obj/item/reagent_containers/food/drinks/drinkingglass/shotglass{
-	pixel_x = -5;
-	pixel_y = 5
-	},
-/obj/item/reagent_containers/food/drinks/drinkingglass/shotglass{
-	pixel_x = -5
+/obj/machinery/fax{
+	fax_name = "Head of Security office";
+	name = "Head of Security Fax Machine"
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/command/heads_quarters/hos)
@@ -5401,7 +5406,7 @@
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -27;
-	pixel_y = -27;
+	pixel_y = -27
 	},
 /obj/machinery/flasher{
 	id = "Cell 3";
@@ -5675,7 +5680,7 @@
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -27;
-	pixel_y = -27;
+	pixel_y = -27
 	},
 /obj/machinery/light/small{
 	dir = 8
@@ -23352,6 +23357,11 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
+/obj/structure/table,
+/obj/machinery/fax{
+	fax_name = "Head of Personal office";
+	name = "Head of Personal fax"
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/command/heads_quarters/hop)
 "btC" = (
@@ -26853,6 +26863,10 @@
 /area/command/heads_quarters/rd)
 "bCk" = (
 /obj/structure/table,
+/obj/machinery/fax{
+	fax_name = "Office of the Director of Research";
+	name = "Fax machine of the Director of Research"
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/command/heads_quarters/rd)
 "bCl" = (
@@ -36688,6 +36702,22 @@
 /obj/item/paper/monitorkey,
 /obj/structure/disposalpipe/segment,
 /obj/item/pen/fountain,
+/obj/item/cartridge/engineering{
+	pixel_x = 4;
+	pixel_y = 5
+	},
+/obj/item/cartridge/engineering{
+	pixel_x = 10;
+	pixel_y = 5
+	},
+/obj/item/cartridge/engineering{
+	pixel_x = 7;
+	pixel_y = 5
+	},
+/obj/item/cartridge/atmos{
+	pixel_x = 6;
+	pixel_y = 10
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/command/heads_quarters/ce)
 "cdn" = (
@@ -39138,23 +39168,15 @@
 /area/command/heads_quarters/ce)
 "cjY" = (
 /obj/structure/table/reinforced/plastitanium,
-/obj/item/cartridge/engineering{
-	pixel_x = 4;
-	pixel_y = 5
-	},
-/obj/item/cartridge/engineering{
-	pixel_x = -3;
-	pixel_y = 2
-	},
-/obj/item/cartridge/engineering{
-	pixel_x = 3
-	},
-/obj/item/cartridge/atmos,
 /obj/structure/disposalpipe/segment{
 	dir = 9
 	},
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
 	dir = 4
+	},
+/obj/machinery/fax{
+	fax_name = "Chief Engineer office";
+	name = "Chief Engineer Fax Machine"
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/command/heads_quarters/ce)
@@ -47042,7 +47064,7 @@
 	},
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_x = 30;
+	pixel_x = 30
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /turf/open/floor/mineral/plastitanium,
@@ -48745,6 +48767,11 @@
 	name = "Nanotrasen Representative APC";
 	pixel_y = 23
 	},
+/obj/structure/table/wood,
+/obj/machinery/fax{
+	fax_name = "NTR Fax";
+	name = "NTR Fax"
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/command/heads_quarters/ntr)
 "fuc" = (
@@ -49134,7 +49161,7 @@
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -1;
-	pixel_y = 30;
+	pixel_y = 30
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/security/prison/upper)
@@ -58452,7 +58479,7 @@
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -27;
-	pixel_y = -27;
+	pixel_y = -27
 	},
 /obj/machinery/flasher{
 	id = "Cell 4";
@@ -60403,7 +60430,7 @@
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -1;
-	pixel_y = 30;
+	pixel_y = 30
 	},
 /turf/open/floor/plasteel/freezer,
 /area/security/prison/cells)
@@ -61265,7 +61292,7 @@
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -27;
-	pixel_y = -27;
+	pixel_y = -27
 	},
 /obj/machinery/flasher{
 	id = "Cell 2";
@@ -61847,7 +61874,7 @@
 /obj/item/clothing/under/rank/prisoner/skirt,
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_x = 30;
+	pixel_x = 30
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/security/prison/upper)
@@ -62431,7 +62458,7 @@
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_x = -1;
-	pixel_y = 30;
+	pixel_y = 30
 	},
 /turf/open/floor/grass/grass0,
 /area/security/prison/upper)
@@ -63236,7 +63263,7 @@
 	},
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_x = -30;
+	pixel_x = -30
 	},
 /turf/open/floor/wood/wood_diagonal,
 /area/security/prison/upper)
@@ -63257,7 +63284,7 @@
 	},
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_x = 30;
+	pixel_x = 30
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /turf/open/floor/mineral/plastitanium,
@@ -64022,7 +64049,7 @@
 "qoA" = (
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_x = -30;
+	pixel_x = -30
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/security/prison/upper)
@@ -66260,7 +66287,7 @@
 	},
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_x = -30;
+	pixel_x = -30
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /turf/open/floor/mineral/plastitanium,
@@ -66371,7 +66398,7 @@
 	},
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_x = -30;
+	pixel_x = -30
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 5
@@ -67570,7 +67597,7 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_x = 30;
+	pixel_x = 30
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /turf/open/floor/mineral/plastitanium,
@@ -68224,7 +68251,7 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_x = -30;
+	pixel_x = -30
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /turf/open/floor/mineral/plastitanium,
@@ -69495,6 +69522,14 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/security/prison/cells)
+"uwh" = (
+/obj/structure/table/wood,
+/obj/machinery/fax{
+	fax_name = "Captain's office";
+	name = "Captain's fax"
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/command/heads_quarters/captain)
 "uwm" = (
 /obj/machinery/computer/security/telescreen/interrogation{
 	dir = 4;
@@ -70077,7 +70112,7 @@
 	},
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_x = 30;
+	pixel_x = 30
 	},
 /turf/open/floor/wood/wood_diagonal,
 /area/security/prison/upper)
@@ -73503,7 +73538,7 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_x = 30;
+	pixel_x = 30
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/security/prison/upper)
@@ -107042,7 +107077,7 @@ tgH
 ben
 bfE
 bgX
-bbw
+uwh
 bjJ
 bld
 bmD

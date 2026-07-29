@@ -106,6 +106,10 @@
 
 	for(var/i in 1 to num_pellets)
 		shell.ready_proj(target, user, SUPPRESSED_VERY, zone_override, fired_from)
+		// The first pellet keeps the shell's combat-log record. Logging every
+		// child turns one buckshot attack into six synchronous file writes.
+		if(i > 1)
+			shell.BB.log_override = TRUE
 		if(distro)
 			if(randomspread)
 				spread = round((rand() - 0.5) * distro)

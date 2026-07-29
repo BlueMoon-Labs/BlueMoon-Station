@@ -24,12 +24,6 @@
 	deathclaw_mode = "abomination"
 
 //BLUEMOON ADD START || The sex mob will no longer even try to attack targets that are not suitable for prefs.
-/mob/living/simple_animal/hostile/deathclaw/funclaw/ListTargets()
-	. = ..()
-	for(var/E in enemies) // Ебашим врагов до смерти
-		if(!(E in .) && can_see(src, E, vision_range))
-			. += E
-
 /mob/living/simple_animal/hostile/deathclaw/funclaw/CanAttack(atom/the_target)
 	. = ..()
 	if(!.)
@@ -144,6 +138,9 @@
 		else
 			RegisterSignal(A, COMSIG_PARENT_QDELETING, PROC_REF(on_enemy_qdeleting))
 		enemies.Insert(1, A) // Условно первый в агролисте личных врагов
+		//обида в память контроллера: скорер предпочтёт свежего личного врага,
+		//как легаси PickTarget ниже ставил его первым в списке
+		ai_controller?.note_attacker(A)
 
 /mob/living/simple_animal/hostile/deathclaw/funclaw/moan()
 	var/message_to_display = pick("рычит%S%", "рычит%S% от удовольствия")
@@ -169,49 +166,6 @@
 	playlewdinteractionsound(get_turf(src), sound, 80, 1, -1)
 	lastmoan = sound
 
-/mob/living/simple_animal/hostile/deathclaw/funclaw/PickTarget(list/Targets)
-	//. = ..() Не требуется
-
-	// targets_from — точка, от которой считаем дистанцию
-	// Targets — список возможных целей
-	// enemies — список личных врагов
-
-	var/list/cands = list()
-	var/min_d = vision_range * 5 // Большая мин дист, что бы перебить при проверке
-
-	// 1) последний ЛИЧНЫЙ враг, что нанес урон
-	for(var/atom/A in enemies)
-		if(A in Targets)
-			return A
-	/*
-	// 1) ближайший ЛИЧНЫЙ враг
-	for(var/atom/A in Targets)
-		if(!(A in enemies))
-			continue
-		var/d = get_dist(targets_from, A)
-		if(d < min_d)
-			min_d = d
-			cands = list(A)
-		else if(d == min_d)
-			cands += A
-	*/
-
-	if(cands.len)
-		return pick(cands)
-
-	// 2) ближайшая ОБЫЧНАЯ цель
-	cands.Cut()
-	min_d = vision_range * 5 // Большая мин дист, что бы перебить при проверке
-
-	for(var/atom/B in Targets)
-		var/d2 = get_dist(targets_from, B)
-		if(d2 < min_d)
-			min_d = d2
-			cands = list(B)
-		else if(d2 == min_d)
-			cands += B
-
-	return cands.len ? pick(cands) : null
 //BLUEMOON ADD END
 
 /mob/living/simple_animal/hostile/deathclaw/funclaw/AttackingTarget()

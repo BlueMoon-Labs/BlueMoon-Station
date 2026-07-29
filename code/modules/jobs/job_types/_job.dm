@@ -272,6 +272,7 @@
 	var/backpack = /obj/item/storage/backpack
 	var/satchel  = /obj/item/storage/backpack/satchel
 	var/duffelbag = /obj/item/storage/backpack/duffelbag
+	var/no_custom_backpack = FALSE
 
 	var/pda_slot = ITEM_SLOT_BELT
 
@@ -286,6 +287,8 @@
 				back = satchel //Department satchel
 			if(DDUFFELBAG)
 				back = duffelbag //Department duffel bag
+			else if(no_custom_backpack)
+				back = backpack
 			else
 				var/find_preference_backpack = GLOB.backbaglist[preference_backpack] //attempt to find non-department backpack
 				if(find_preference_backpack)

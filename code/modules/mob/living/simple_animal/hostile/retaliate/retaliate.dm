@@ -1,51 +1,50 @@
 /mob/living/simple_animal/hostile/retaliate
 	name = "НЕ БЕЙ МЕНЯ"
-
-/mob/living/simple_animal/hostile/retaliate/Found(atom/A)
-	if(isliving(A))
-		var/mob/living/L = A
-		if((L in enemies) && !L.stat)
-			return L
-		if(L.stat)
-			remove_enemy(L)
-	else if(ismecha(A))
-		var/obj/vehicle/sealed/mecha/M = A
-		if((A in enemies) && LAZYLEN(M.occupants))
-			return A
-
-/mob/living/simple_animal/hostile/retaliate/ListTargets()
-	if(!length(enemies))
-		return list()
-	var/list/see = ..()
-	see &= enemies
-	return see
-
-/mob/living/simple_animal/hostile/retaliate/PickTarget(list/Targets)
-	if(target && (target in Targets) && CanAttack(target))
-		return target
-	return ..()
+	/// Broad ally/enemy discovery is supplementary to RetaliateAgainst(), which
+	/// records the actual attacker on every direct hit. Coalesce sustained damage
+	/// so it cannot raycast the entire nearby AI_TARGETS bucket every second.
+	var/next_retaliation_scan = 0
 
 /mob/living/simple_animal/hostile/retaliate/proc/Retaliate()
-	var/list/around = oview(src, vision_range)
+	if(world.time < next_retaliation_scan)
+		return FALSE
+	next_retaliation_scan = world.time + 5 SECONDS
 
-	for(var/atom/movable/A in around)
-		if(A == src)
+	var/list/atom/movable/discovered_enemies = list()
+	var/list/mob/living/simple_animal/hostile/retaliate/nearby_allies = list()
+	// oview() materializes every visible atom, including thousands of unrelated
+	// objects. AI_TARGETS gives us living candidates from nearby grid cells;
+	// distance and LOS below preserve the old oview boundary.
+	for(var/mob/living/nearby_mob as anything in SSspatial_grid.orthogonal_range_search(src, SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS, vision_range))
+		if(nearby_mob == src || QDELETED(nearby_mob) || get_dist(src, nearby_mob) > vision_range)
 			continue
-		if(isliving(A))
-			var/mob/living/M = A
-			if((faction_check_mob(M) && attack_same) || !faction_check_mob(M))
-				add_enemy(M)
-		else if(ismecha(A))
-			var/obj/vehicle/sealed/mecha/M = A
-			if(LAZYLEN(M.occupants))
-				add_enemy(M)
-				for(var/mob/living/occupant as anything in M.occupants)
-					add_enemy(occupant)
+		AI_METRIC_INC(los_checks)
+		if(!can_see(src, nearby_mob, vision_range))
+			continue
+		var/same_faction = faction_check_mob(nearby_mob)
+		if((same_faction && attack_same) || !same_faction)
+			discovered_enemies += nearby_mob
+		if(same_faction && !attack_same && istype(nearby_mob, /mob/living/simple_animal/hostile/retaliate))
+			var/mob/living/simple_animal/hostile/retaliate/retaliate_ally = nearby_mob
+			if(!retaliate_ally.attack_same)
+				nearby_allies += retaliate_ally
 
-	for(var/mob/living/simple_animal/hostile/retaliate/H in around)
-		if(faction_check_mob(H) && !attack_same && !H.attack_same)
-			for(var/atom/movable/the_enemy in enemies)
-				H.add_enemy(the_enemy)
+	// Mechas are not living AI_TARGETS, but they already have a maintained
+	// global registry. Usually this loop is empty or only a handful of entries.
+	for(var/obj/vehicle/sealed/mecha/nearby_mecha as anything in GLOB.mechas_list)
+		if(QDELETED(nearby_mecha) || nearby_mecha.z != z || !LAZYLEN(nearby_mecha.occupants) || get_dist(src, nearby_mecha) > vision_range)
+			continue
+		AI_METRIC_INC(los_checks)
+		if(!can_see(src, nearby_mecha, vision_range))
+			continue
+		discovered_enemies += nearby_mecha
+		discovered_enemies |= nearby_mecha.occupants
+
+	add_enemies(discovered_enemies)
+	for(var/mob/living/simple_animal/hostile/retaliate/retaliate_ally as anything in nearby_allies)
+		retaliate_ally.add_enemies(enemies)
+		// One member already performed the group scan for this damage burst.
+		retaliate_ally.next_retaliation_scan = max(retaliate_ally.next_retaliation_scan, next_retaliation_scan)
 	return FALSE
 
 /mob/living/simple_animal/hostile/retaliate/adjustHealth(amount, updating_health = TRUE, forced = FALSE)

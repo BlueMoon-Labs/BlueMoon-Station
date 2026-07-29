@@ -16,6 +16,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 	name = "item"
 	icon = 'icons/obj/items_and_weapons.dmi'
 	blocks_emissive = EMISSIVE_BLOCK_GENERIC
+	blocks_exit_checks = FALSE // no item type overrides CheckExit() or Uncross()
 
 	attack_hand_speed = 0
 	attack_hand_is_action = FALSE
@@ -568,9 +569,10 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 		return
 	if(over == src)
 		return usr.client.Click(src, src_location, src_control, params)
-	var/list/directaccess = usr.DirectAccess()	//This, specifically, is what requires the copypaste. If this were after the adjacency check, then it'd be impossible to use items in your inventory, among other things.
-												//If this were before the above checks, then trying to click on items would act a little funky and signal overrides wouldn't work.
-	if(SEND_SIGNAL(usr, COMSIG_COMBAT_MODE_CHECK, COMBAT_MODE_ACTIVE) && ((usr.CanReach(src) || (src in directaccess)) && (usr.CanReach(over) || (over in directaccess))))
+	//The direct-access check is what requires the copypaste. If it were after the adjacency check, then it'd be impossible
+	//to use items in your inventory, among other things. If it were before the above checks, then trying to click on items
+	//would act a little funky and signal overrides wouldn't work.
+	if(SEND_SIGNAL(usr, COMSIG_COMBAT_MODE_CHECK, COMBAT_MODE_ACTIVE) && ((usr.CanReach(src) || usr.in_direct_access(src)) && (usr.CanReach(over) || usr.in_direct_access(over))))
 		if(!usr.get_active_held_item())
 			usr.UnarmedAttack(src, TRUE)
 			if(usr.get_active_held_item() == src)

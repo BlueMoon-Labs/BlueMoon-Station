@@ -206,6 +206,8 @@
 // How long a slime waits before re-scanning view() for prey after a scan that found no targets.
 // Keeps idle pens from paying a full view(7) scan every Life tick.
 #define SLIME_HUNT_SCAN_COOLDOWN (4 SECONDS)
+/// world.time gate between aimless wander steps of a slime with no target and no leader.
+#define SLIME_WANDER_COOLDOWN (4 SECONDS)
 
 // Slime commands defines
 #define SLIME_FRIENDSHIP_FOLLOW 			3 // Min friendship to order it to follow

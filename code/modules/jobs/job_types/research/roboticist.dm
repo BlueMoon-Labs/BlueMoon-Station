@@ -86,6 +86,7 @@
 	uniform = /obj/item/clothing/under/rank/rnd/scientist/util
 	suit = /obj/item/clothing/suit/toggle/labcoat/roboticist
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie
 	satchel = /obj/item/storage/backpack/duffelbag/syndie
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie

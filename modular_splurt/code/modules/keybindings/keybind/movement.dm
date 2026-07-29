@@ -39,3 +39,43 @@
 	var/mob/M = user.mob
 	M.tilting = FALSE
 	return TRUE
+
+//////////////////// Shifting Layer ////////////////////
+/datum/keybinding/mob/layershift_up
+	name = "layershift_up"
+	full_name = "Shift Layer Upwards"
+	hotkey_keys = list("Add", "=")
+	category = CATEGORY_MOVEMENT
+
+/datum/keybinding/mob/layershift_up/down(client/user)
+	var/mob/living/M = user.mob
+	if(!istype(M))
+		return
+	M.layershift_up()
+	return TRUE
+
+/datum/keybinding/mob/layershift_down
+	name = "layershift_down"
+	full_name = "Shift Layer Downwards"
+	hotkey_keys = list("Subtract", "-")
+	category = CATEGORY_MOVEMENT
+
+/datum/keybinding/mob/layershift_down/down(client/user)
+	var/mob/living/M = user.mob
+	if(!istype(M))
+		return
+	M.layershift_down()
+	return TRUE
+
+/datum/keybinding/mob/layershift_reset
+	name = "layershift_reset"
+	full_name = "Reset Layer Priority"
+	hotkey_keys = list("Multiply", "0")
+	category = CATEGORY_MOVEMENT
+
+/datum/keybinding/mob/layershift_reset/down(client/user)
+	var/mob/living/M = user.mob
+	if(!istype(M))
+		return
+	M.layershift_reset()
+	return TRUE

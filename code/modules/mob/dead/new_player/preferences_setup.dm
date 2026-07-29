@@ -42,8 +42,10 @@
 			parent.show_character_previews(image('icons/mob/robots.dmi', icon_state = "robot", dir = SOUTH))
 			return
 
-	// Set up the dummy for its photoshoot
-	var/mob/living/carbon/human/dummy/mannequin = generate_or_wait_for_human_dummy(DUMMY_HUMAN_SLOT_PREFERENCES)
+	// Set up the dummy for its photoshoot. regenerate = FALSE: манекен всё равно
+	// сразу переодевается и в конце проходит regenerate_icons() - восстанавливать
+	// срезанные wipe_state() иконки на входе значит рендерить его дважды.
+	var/mob/living/carbon/human/dummy/mannequin = generate_or_wait_for_human_dummy(DUMMY_HUMAN_SLOT_PREFERENCES, regenerate = FALSE)
 	// Apply the Dummy's preview background first so we properly layer everything else on top of it.
 	mannequin.add_overlay(mutable_appearance('modular_citadel/icons/ui/backgrounds.dmi', bgstate, layer = SPACE_LAYER))
 	copy_to(mannequin, initial_spawn = TRUE)

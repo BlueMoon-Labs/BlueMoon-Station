@@ -5,6 +5,11 @@
 	var/last_move = null
 	var/last_move_time = 0
 	var/anchored = FALSE
+	/// Must /turf/Exit() consult this atom when something tries to leave its turf?
+	/// Only border structures can actually refuse an exit, by overriding CheckExit()
+	/// or Uncross(). Anything that gains such an override, or a component listening
+	/// on COMSIG_MOVABLE_UNCROSS, has to set this - see /turf/Exit().
+	var/blocks_exit_checks = TRUE
 	var/move_resist = MOVE_RESIST_DEFAULT
 	var/move_force = MOVE_FORCE_DEFAULT
 	var/pull_force = PULL_FORCE_DEFAULT
@@ -966,7 +971,8 @@
 			var/list/recursive_contents = location.important_recursive_contents
 			LAZYINITLIST(recursive_contents[channel])
 			recursive_contents[channel] -= gone.important_recursive_contents[channel]
-			//оба наших канала - грид-каналы (строки совпадают), поэтому
+			//все важные recursive-каналы здесь также являются грид-каналами
+			//с совпадающими строковыми ключами, поэтому
 			//опустевший канал сразу снимает и грид-осведомлённость
 			if(!length(recursive_contents[channel]))
 				SSspatial_grid.remove_grid_awareness(location, channel)
@@ -1030,6 +1036,38 @@
 			SSspatial_grid.remove_grid_awareness(location, SPATIAL_GRID_CONTENTS_TYPE_HEARING)
 		ASSOC_UNSETEMPTY(recursive_contents, RECURSIVE_CONTENTS_HEARING_SENSITIVE)
 		UNSETEMPTY(location.important_recursive_contents)
+
+///Register a cleanable/remains/ground-trash atom in the service-bot grid.
+/atom/movable/proc/become_cleanbot_targetable()
+	if(important_recursive_contents && (src in important_recursive_contents[RECURSIVE_CONTENTS_CLEANBOT_TARGETS]))
+		return
+
+	for(var/atom/movable/movable_loc as anything in get_nested_locs(src) + src)
+		LAZYINITLIST(movable_loc.important_recursive_contents)
+		var/list/recursive_contents = movable_loc.important_recursive_contents
+		if(!length(recursive_contents[RECURSIVE_CONTENTS_CLEANBOT_TARGETS]))
+			SSspatial_grid.add_grid_awareness(movable_loc, SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS)
+		LAZYINITLIST(recursive_contents[RECURSIVE_CONTENTS_CLEANBOT_TARGETS])
+		recursive_contents[RECURSIVE_CONTENTS_CLEANBOT_TARGETS] |= src
+
+	SSspatial_grid.add_grid_membership(src, get_turf(src), SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS)
+
+///Remove a service-bot target from both its cell and nested-loc bookkeeping.
+/atom/movable/proc/lose_cleanbot_targetable()
+	if(!important_recursive_contents || !(src in important_recursive_contents[RECURSIVE_CONTENTS_CLEANBOT_TARGETS]))
+		return
+
+	SSspatial_grid.remove_grid_membership(src, get_turf(src), SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS)
+
+	for(var/atom/movable/movable_loc as anything in get_nested_locs(src) + src)
+		var/list/recursive_contents = movable_loc.important_recursive_contents
+		if(!recursive_contents)
+			continue
+		recursive_contents[RECURSIVE_CONTENTS_CLEANBOT_TARGETS] -= src
+		if(!length(recursive_contents[RECURSIVE_CONTENTS_CLEANBOT_TARGETS]))
+			SSspatial_grid.remove_grid_awareness(movable_loc, SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS)
+		ASSOC_UNSETEMPTY(recursive_contents, RECURSIVE_CONTENTS_CLEANBOT_TARGETS)
+		UNSETEMPTY(movable_loc.important_recursive_contents)
 
 ///при логине: прописать моба в CLIENTS-канал грида и вложенных locs
 /mob/proc/enable_client_mobs_in_contents()

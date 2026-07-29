@@ -843,14 +843,33 @@ SUBSYSTEM_DEF(job)
 				if(G.slot == ITEM_SLOT_BACK)
 					bag_contents = list()
 					SEND_SIGNAL(existing, COMSIG_TRY_STORAGE_RETURN_INVENTORY, bag_contents, FALSE)
+				if(istype(I, /obj/item/clothing) && istype(existing, /obj/item/clothing))
+					var/obj/item/clothing/new_cloth = I
+					var/obj/item/clothing/old_cloth = existing
+					var/list/temp_accessories = LAZYCOPY(old_cloth.accessories_attached)
+					for(var/obj/item/clothing/accessory/AC as anything in temp_accessories)
+						if(old_cloth.remove_accessory(AC, M, TRUE))
+							if(!new_cloth.attach_accessory(AC, M, TRUE))
+								LAZYADD(bag_contents, AC)
+
 				// BLUEMOON FIX — при замене униформы/костюма не выбрасываем зависимые предметы (ID, ремень, карманы, кобуру) каскадом
 				var/should_invdrop = !(G.slot == ITEM_SLOT_ICLOTHING || G.slot == ITEM_SLOT_OCLOTHING)
-				M.dropItemToGround(existing, TRUE, FALSE, should_invdrop)
+				M.dropItemToGround(existing, TRUE, FALSE, should_invdrop) // Warning: При спавне это тайл лобби, так что все предметы остануться недоступными игрокам, если их не переместить
 				if(iscarbon(M))
 					var/mob/living/carbon/RC = M
-					var/obj/item/storage/backpack/RB = RC.back
+					var/obj/item/storage/backpack/RB = RC.back || astype(I)
 					if(RB)
-						SEND_SIGNAL(RB, COMSIG_TRY_STORAGE_INSERT, existing, null, TRUE, TRUE)
+						// Если это сумка, пробуем положить ее в руки
+						if(istype(existing, /obj/item/storage/backpack) && !M.put_in_hands(existing, FALSE))
+							// Если не смогли, помещаем все предметы в руках в сумку, т.к. выкидывать на пол нельзя, ибо персонаж спавниться в ЦК зоне
+							for(var/obj/item/item_in_hand in M.held_items)
+								LAZYADD(bag_contents, item_in_hand)
+							M.drop_all_held_items()
+							// Пробуем еще раз, но уже с принудительным флагом
+							if(!M.put_in_hands(existing, FALSE, forced = TRUE) && !can_drop)
+								qdel(existing)
+						else if(!SEND_SIGNAL(RB, COMSIG_TRY_STORAGE_INSERT, existing, null, TRUE, TRUE) && !can_drop)
+							qdel(existing)
 					else if(!can_drop)
 						qdel(existing)
 				else if(!can_drop)
@@ -870,7 +889,7 @@ SUBSYSTEM_DEF(job)
 					I.forceMove(get_turf(M)) // If everything fails, just put it on the floor under the mob.
 				else
 					qdel(I)
-		if(bag_contents?.len && !QDELETED(I) && iscarbon(M))
+		if(LAZYLEN(bag_contents) && !QDELETED(I) && iscarbon(M))
 			var/mob/living/carbon/CB = M
 			if(CB.back == I)
 				for(var/obj/item/stored_item in bag_contents)
@@ -981,14 +1000,33 @@ SUBSYSTEM_DEF(job)
 		if(!already_equiped && replace_clothing && G.slot)
 			var/obj/item/existing = M.get_item_by_slot(G.slot)
 			if(existing)
+				if(istype(I, /obj/item/clothing) && istype(existing, /obj/item/clothing))
+					var/obj/item/clothing/new_cloth = I
+					var/obj/item/clothing/old_cloth = existing
+					var/list/temp_accessories = LAZYCOPY(old_cloth.accessories_attached)
+					for(var/obj/item/clothing/accessory/AC as anything in temp_accessories)
+						if(old_cloth.remove_accessory(AC, M, TRUE))
+							if(!new_cloth.attach_accessory(AC, M, TRUE))
+								old_cloth.attach_accessory(AC, M, TRUE)
 				// BLUEMOON FIX — при замене униформы/костюма не выбрасываем зависимые предметы (ID, ремень, карманы, кобуру) каскадом
 				var/should_invdrop = !(G.slot == ITEM_SLOT_ICLOTHING || G.slot == ITEM_SLOT_OCLOTHING)
-				M.dropItemToGround(existing, TRUE, FALSE, should_invdrop)
+				M.dropItemToGround(existing, TRUE, FALSE, should_invdrop) // Warning: При спавне это тайл лобби, так что все предметы остануться недоступными игрокам, если их не переместить
 				if(iscarbon(M))
 					var/mob/living/carbon/RC = M
-					var/obj/item/storage/backpack/RB = RC.back
+					var/obj/item/storage/backpack/RB = RC.back || astype(I)
 					if(RB)
-						SEND_SIGNAL(RB, COMSIG_TRY_STORAGE_INSERT, existing, null, TRUE, TRUE)
+						// Если это сумка, пробуем положить ее в руки
+						if(istype(existing, /obj/item/storage/backpack) && !M.put_in_hands(existing, FALSE))
+							// Если не смогли, помещаем все предметы в руках в сумку, т.к. выкидывать на пол нельзя, ибо персонаж спавниться в ЦК зоне
+							var/list/temp_items = LAZYCOPY(M.held_items)
+							for(var/obj/item/item_in_hand in temp_items)
+								if(M.temporarilyRemoveItemFromInventory(item_in_hand))
+									SEND_SIGNAL(RB, COMSIG_TRY_STORAGE_INSERT, item_in_hand, null, TRUE, TRUE)
+							// Пробуем еще раз, но уже с принудительным флагом
+							if(!M.put_in_hands(existing, FALSE, forced = TRUE) && !can_drop)
+								qdel(existing)
+						else if(!SEND_SIGNAL(RB, COMSIG_TRY_STORAGE_INSERT, existing, null, TRUE, TRUE) && !can_drop)
+							qdel(existing)
 					else if(!can_drop)
 						qdel(existing)
 				else if(!can_drop)
@@ -1027,7 +1065,7 @@ SUBSYSTEM_DEF(job)
 	// Переоформление пермитов, если у нас была загрузка из префов
 	var/obj/item/clothing/under/U = M.get_item_by_slot(ITEM_SLOT_ICLOTHING)
 	if(istype(U))
-		for(var/obj/item/clothing/accessory/permit/special/permit in U.attached_accessories)
+		for(var/obj/item/clothing/accessory/permit/special/permit in U.accessories_attached)
 			if(permit.first_inited && permit.owner_name == M.real_name)
 				continue
 			permit.bind_to_user(M, TRUE)

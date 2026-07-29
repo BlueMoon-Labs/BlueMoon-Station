@@ -3,31 +3,11 @@
 	var/retaliated = FALSE
 	var/retaliatedcooldowntime = 1 SECONDS
 	var/retaliatedcooldown
-
-/mob/living/simple_animal/hostile/megafauna/Found(atom/A)
-	if(!peaceful)
-		return
-	if(isliving(A))
-		var/mob/living/L = A
-		if((L in enemies) && !L.stat)
-			return L
-		if(L.stat)
-			remove_enemy(L)
-	else if(ismecha(A))
-		var/obj/vehicle/sealed/mecha/M = A
-		if((A in enemies) && LAZYLEN(M.occupants))
-			return A
-
-/mob/living/simple_animal/hostile/megafauna/ListTargets()
-	var/list/see = ..()
-	if(length(enemies))
-		see &= enemies
-	return see
-
-/mob/living/simple_animal/hostile/megafauna/PickTarget(list/Targets)
-	if(target && (target in Targets) && CanAttack(target))
-		return target
-	return ..()
+	/// Broad discovery is supplementary to the direct attacker grudge. Damage
+	/// bursts and allied bosses share one spatial scan. Direct attackers are
+	/// recorded immediately, so rescanning every nearby mob once per second only
+	/// amplifies sustained-AOE load without improving reaction time.
+	var/next_retaliation_scan = 0
 
 /mob/living/simple_animal/hostile/megafauna/attacked_by(obj/item/I, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
 	if(user)
@@ -40,34 +20,61 @@
 	. = ..()
 
 /mob/living/simple_animal/hostile/megafauna/proc/Retaliate()
-	var/list/around = oview(src, vision_range)
-	for(var/atom/movable/A in around)
-		if(isliving(A))
-			var/mob/living/M = A
-			if((faction_check_mob(M) && attack_same) || (!faction_check_mob(M)) || (!ismegafauna(M)))
-				add_enemy(M)
-				if(!retaliated)
-					src.visible_message("<span class='userdanger'>[src] seems pretty pissed off at [M]!</span>")
-					retaliated = TRUE
-					retaliatedcooldown = world.time + retaliatedcooldowntime
-		else if(ismecha(A))
-			var/obj/vehicle/sealed/mecha/M = A
-			var/list/occupants = LAZYCOPY(M.occupants)
-			if(occupants.len)
-				add_enemy(M)
-				for(var/mob/living/living in occupants)
-					if(!living.client)
-						continue
-					add_enemy(living)
-					if(!retaliated)
-						visible_message("<span class='userdanger'>[src] seems pretty pissed off at [M]!</span>")
-						retaliated = TRUE
-						retaliatedcooldown = world.time + retaliatedcooldowntime
+	if(world.time < next_retaliation_scan)
+		return FALSE
+	next_retaliation_scan = world.time + 5 SECONDS
 
-	for(var/mob/living/simple_animal/hostile/megafauna/H in around)
-		if(faction_check_mob(H) && !attack_same && !H.attack_same)
-			for(var/atom/movable/the_enemy in enemies)
-				H.add_enemy(the_enemy)
+	var/list/atom/movable/discovered_enemies = list()
+	var/list/mob/living/simple_animal/hostile/megafauna/nearby_allies = list()
+	var/atom/movable/retaliation_target
+	// Sweep at the base perception radius, not the combat-inflated vision_range:
+	// Aggro() widens vision to 40 tiles, and recruiting every visible mob from
+	// three screens away turned bystanders into permanent enemies. Direct
+	// attackers are flagged at any distance by attacked_by()/bullet_act().
+	var/retaliation_range = initial(vision_range)
+	// oview() materialized every visible object. The AI target channel limits
+	// this to living candidates; exact distance and LOS retain its boundary.
+	for(var/mob/living/nearby_mob as anything in SSspatial_grid.orthogonal_range_search(src, SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS, retaliation_range))
+		if(nearby_mob == src || QDELETED(nearby_mob) || get_dist(src, nearby_mob) > retaliation_range)
+			continue
+		AI_METRIC_INC(los_checks)
+		if(!can_see(src, nearby_mob, retaliation_range))
+			continue
+		var/same_faction = faction_check_mob(nearby_mob)
+		if(!same_faction || attack_same)
+			discovered_enemies += nearby_mob
+			if(!retaliation_target)
+				retaliation_target = nearby_mob
+		if(same_faction && !attack_same && ismegafauna(nearby_mob))
+			var/mob/living/simple_animal/hostile/megafauna/megafauna_ally = nearby_mob
+			if(!megafauna_ally.attack_same)
+				nearby_allies += megafauna_ally
+
+	// Mechas are not living AI targets, but their global registry is normally
+	// empty or tiny. Only client occupants retain the old personal grudge.
+	for(var/obj/vehicle/sealed/mecha/nearby_mecha as anything in GLOB.mechas_list)
+		if(QDELETED(nearby_mecha) || nearby_mecha.z != z || !LAZYLEN(nearby_mecha.occupants) || get_dist(src, nearby_mecha) > retaliation_range)
+			continue
+		AI_METRIC_INC(los_checks)
+		if(!can_see(src, nearby_mecha, retaliation_range))
+			continue
+		discovered_enemies += nearby_mecha
+		for(var/mob/living/occupant as anything in nearby_mecha.occupants)
+			if(!occupant.client)
+				continue
+			discovered_enemies |= occupant
+			if(!retaliation_target)
+				retaliation_target = nearby_mecha
+
+	add_enemies(discovered_enemies)
+	if(retaliation_target && !retaliated)
+		visible_message("<span class='userdanger'>[src] seems pretty pissed off at [retaliation_target]!</span>")
+		retaliated = TRUE
+		retaliatedcooldown = world.time + retaliatedcooldowntime
+
+	for(var/mob/living/simple_animal/hostile/megafauna/megafauna_ally as anything in nearby_allies)
+		megafauna_ally.add_enemies(enemies)
+		megafauna_ally.next_retaliation_scan = max(megafauna_ally.next_retaliation_scan, next_retaliation_scan)
 	return FALSE
 
 /mob/living/simple_animal/hostile/megafauna/adjustHealth(amount, updating_health = TRUE, forced = FALSE)

@@ -52,6 +52,11 @@ SUBSYSTEM_DEF(auto_cryo)
 		var/datum/weakref/cached_computer = cryo_find_control_computer(urgent = TRUE)
 		var/processed_cryo = FALSE
 		while(currentrun_cryo.len)
+			// Гарантируем минимум 1 обработку за fire(), yield перед последующими.
+			// Проверка обязана быть ДО снятия со снапшота: снятый и не обработанный
+			// моб выпадал из currentrun и ждал следующего рескана (5 минут).
+			if(processed_cryo && MC_TICK_CHECK)
+				return
 			var/mob/living/cryo_mob = currentrun_cryo[currentrun_cryo.len]
 			currentrun_cryo.len--
 			if(QDELETED(cryo_mob) || !isliving(cryo_mob) || !(cryo_mob in GLOB.ssd_mob_list))
@@ -59,9 +64,6 @@ SUBSYSTEM_DEF(auto_cryo)
 			var/afk_time = world.time - cryo_mob.lastclienttime
 			if(afk_time < SUBSYSTEM_CRYO_TIME)
 				continue
-			// Гарантируем минимум 1 обработку за fire(), yield перед последующими
-			if(processed_cryo && MC_TICK_CHECK)
-				return
 			processed_cryo = TRUE
 			cryoMob(cryo_mob, cached_computer, is_teleporter = TRUE, effects = TRUE) //BLUEMOON CHANGE было is_teleporter = FALSE (нужно для правильного описания коробки в некоторых ситуациях)
 			log_game("[cryo_mob] was sent to cryo after being SSD for [afk_time] ticks.")
@@ -70,6 +72,9 @@ SUBSYSTEM_DEF(auto_cryo)
 	if(SUBSYSTEM_CRYO_CHECK_GHOSTS && length(currentrun_ghosts))
 		var/processed_ghosts = FALSE
 		while(currentrun_ghosts.len)
+			// Проверка обязана быть ДО снятия со снапшота - см. цикл крио выше.
+			if(processed_ghosts && MC_TICK_CHECK)
+				return
 			var/mob/dead/observer/ghost_mob = currentrun_ghosts[currentrun_ghosts.len]
 			currentrun_ghosts.len--
 			if(QDELETED(ghost_mob) || !istype(ghost_mob) || ghost_mob.client)
@@ -77,9 +82,6 @@ SUBSYSTEM_DEF(auto_cryo)
 			var/afk_time = world.time - ghost_mob.lastclienttime
 			if(afk_time < SUBSYSTEM_CRYO_GHOST_PERIOD)
 				continue
-			// Гарантируем минимум 1 обработку за fire(), yield перед последующими
-			if(processed_ghosts && MC_TICK_CHECK)
-				return
 			processed_ghosts = TRUE
 			log_game("[ghost_mob] was deleted after being SSD for [afk_time] ticks.")
 			qdel(ghost_mob)

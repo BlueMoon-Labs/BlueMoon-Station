@@ -127,7 +127,10 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 		return
 
 	// When held: Positive mood
-	if(heirloom && (heirloom in quirk_holder.GetAllContents()))
+	// contains_atom() вместо `in GetAllContents()`: реликвию искали, собирая всё
+	// содержимое игрока рекурсивно, каждый тик SSquirks на каждого носителя квирка
+	// (в проде ~8k полных обходов инвентаря за 2.6 минуты).
+	if(heirloom && quirk_holder.contains_atom(heirloom))
 		SEND_SIGNAL(quirk_holder, COMSIG_CLEAR_MOOD_EVENT, "family_heirloom_missing")
 		SEND_SIGNAL(quirk_holder, COMSIG_ADD_MOOD_EVENT, "family_heirloom", /datum/mood_event/family_heirloom)
 

@@ -30,6 +30,24 @@
 	chamber_round()
 	update_icon()
 
+/// The magazine and the chambered casing live in our contents, so their `loc`
+/// is a hard reference back to us. Without clearing them a qdeleted gun never
+/// soft-GCs and every single one ends up hard-deleted. Cheap normally, brutal
+/// for guns that delete themselves per shot (DROPDEL enchanted rifles - the
+/// Arcane Barrage volley was the top hard-delete source in round logs).
+/obj/item/gun/ballistic/Destroy()
+	if(magazine)
+		if(QDELING(magazine))
+			magazine = null
+		else
+			QDEL_NULL(magazine)
+	if(chambered)
+		if(QDELING(chambered))
+			chambered = null
+		else
+			QDEL_NULL(chambered)
+	return ..()
+
 /obj/item/gun/ballistic/update_icon_state()
 	var/cur_state = current_skin ? unique_reskin[current_skin]["icon_state"] : initial(icon_state)
 	icon_state = "[cur_state][suppressed ? "-suppressed" : ""][sawn_off ? "-sawn" : ""]"

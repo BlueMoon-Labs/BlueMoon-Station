@@ -247,6 +247,50 @@
 /mob/living/simple_animal/hostile/construct/wraith/hostile //actually hostile, will move around, hit things
 	AIStatus = AI_ON
 
+// ===== Адаптер-профиль рейта =====
+// Обычные конструкты - оболочки игроков (AIStatus = AI_OFF: контроллер не
+// создаётся вовсе, профиль остаётся незадействованным дефолтом); воюют только
+// hostile-варианты. Джаггернаут закрыт базовым мили-профилем по авто-таблице,
+// артифисер-хилер давно живёт на support/artificer. Рейту нужен танец
+// "ужалил-отскочил": легаси MoveToTarget с retreat_distance 2 отбегал при
+// сближении, но бил при контакте - иначе melee_chaser прилипал бы к жертве.
+
+///Рейт: скиттиш-милишник - жалит вплотную и тут же отскакивает
+/datum/ai_controller/hostile_adapter/melee_chaser/construct_wraith
+	planning_subtrees = list(
+		/datum/ai_planning_subtree/find_hostile_targets,
+		/datum/ai_planning_subtree/hostile_fsm,
+		/datum/ai_planning_subtree/melee_hit_and_run,
+		/datum/ai_planning_subtree/attack_obstacle_in_path,
+		/datum/ai_planning_subtree/take_cover_when_pinned,
+		/datum/ai_planning_subtree/tactical_approach,
+		/datum/ai_planning_subtree/hostile_melee,
+	)
+
+///Танец "в мили и назад" немилишного ретрита: цель внутри легаси
+///retreat_distance - жалим на месте (если вплотную) и отскакиваем; дальше
+///поводка - обычная погоня hostile_melee ниже по списку. Паритет легаси
+///MoveToTarget: walk_away при target_distance <= retreat_distance, удар при
+///контакте. Отход не нашёлся (зажаты) - stationary-милишка дерётся на месте.
+/datum/ai_planning_subtree/melee_hit_and_run
+	var/target_key = BB_AI_CURRENT_TARGET
+
+/datum/ai_planning_subtree/melee_hit_and_run/SelectBehaviors(datum/ai_controller/controller, delta_time)
+	. = ..()
+	var/mob/living/simple_animal/hostile/skittish = controller.pawn
+	if(!istype(skittish) || isnull(skittish.retreat_distance))
+		return
+	var/atom/target = controller.blackboard[target_key]
+	if(QDELETED(target))
+		return
+	var/target_distance = get_dist(skittish, target)
+	if(target_distance > skittish.retreat_distance)
+		return
+	if(target_distance <= 1)
+		controller.queue_behavior(/datum/ai_behavior/hostile_melee_attack/stationary, target_key)
+	controller.queue_behavior(/datum/ai_behavior/step_away, target_key)
+	return SUBTREE_RETURN_FINISH_PLANNING
+
 
 
 /////////////////////////////Artificer/////////////////////////
@@ -284,38 +328,15 @@
 	can_repair_constructs = TRUE
 	can_repair_self = TRUE
 
-//Found() ниже целится в раненых конструктов СВОЕЙ фракции ("cult") - хэш
-//SSchunks видит только чужие фракции, и гейт оставил бы AI-артифисера без
-//целей лечения ровно тогда, когда враги ушли и пора чинить армию
-/mob/living/simple_animal/hostile/construct/builder/can_use_faction_hash()
-	return FALSE
-
-/mob/living/simple_animal/hostile/construct/builder/Found(atom/A) //what have we found here?
-	if(isconstruct(A)) //is it a construct?
-		var/mob/living/simple_animal/hostile/construct/C = A
-		if(C.health < C.maxHealth) //is it hurt? let's go heal it if it is
-			return TRUE
-		else
-			return FALSE
-	else
-		return FALSE
-
 /mob/living/simple_animal/hostile/construct/builder/CanAttack(atom/the_target)
 	if(see_invisible < the_target.invisibility)//Target's invisible to us, forget it
 		return FALSE
-	if(Found(the_target) || ..()) //If we Found it or Can_Attack it normally, we Can_Attack it as long as it wasn't invisible
+	if(isconstruct(the_target)) //a hurt construct is a valid heal target
+		var/mob/living/simple_animal/hostile/construct/C = the_target
+		if(C.health < C.maxHealth)
+			return TRUE
+	if(..()) //otherwise, Can_Attack it normally as long as it wasn't invisible
 		return TRUE //as a note this shouldn't be added to base hostile mobs because it'll mess up retaliate hostile mobs
-
-/mob/living/simple_animal/hostile/construct/builder/MoveToTarget(var/list/possible_targets)
-	..()
-	if(isliving(target))
-		var/mob/living/L = target
-		if(isconstruct(L) && L.health >= L.maxHealth) //is this target an unhurt construct? stop trying to heal it
-			LoseTarget()
-			return FALSE
-		if(L.health <= melee_damage_lower+melee_damage_upper) //ey bucko you're hurt as fuck let's go hit you
-			retreat_distance = null
-			minimum_distance = 1
 
 /mob/living/simple_animal/hostile/construct/builder/Aggro()
 	..()
