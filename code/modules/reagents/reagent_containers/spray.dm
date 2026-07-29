@@ -79,6 +79,11 @@
 	var/range = clamp(get_dist(src, A), 1, current_range)
 	var/wait_step = CEILING(spray_delay * INVERSE(range), world.tick_lag)
 	var/obj/effect/decal/chempuff/D = new /obj/effect/decal/chempuff(get_turf(src), stream_mode, wait_step, range, stream_mode? 1 : range, amount_per_transfer_from_this)
+	//Пшик из nullspace или в турф, на котором /obj/effect/decal/Initialize отвечает
+	//INITIALIZE_HINT_QDEL: new() вернул уже удалённое облако без reagents, и следом
+	//падал log_list() (раунд 9824 - 6 рантаймов "Cannot execute null.log list()").
+	if(QDELETED(D))
+		return FALSE
 	D.sprayer = actor //облако само отчитается в лог о том, в кого попало
 	var/turf/T = get_turf(src)
 	if(!T)
