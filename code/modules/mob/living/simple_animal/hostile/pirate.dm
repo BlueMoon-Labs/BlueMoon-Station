@@ -132,7 +132,7 @@
 	rapid_fire_delay = 4
 	retreat_distance = 3
 	minimum_distance = 2
-	casingtype = /obj/item/ammo_casing/c45/lethal,
+	casingtype = /obj/item/ammo_casing/c45/lethal
 
 /mob/living/simple_animal/hostile/pirate/contrabandist/ranger2
 	name = "A gun Contrabandist"
@@ -145,7 +145,7 @@
 	rapid_fire_delay = 7
 	retreat_distance = 2
 	minimum_distance = 1
-	/obj/item/ammo_casing/shotgun/buckshot,
+	casingtype = /obj/item/ammo_casing/shotgun/buckshot
 
 /mob/living/simple_animal/hostile/pirate/contrabandist/ranger3
 	name = "A gun Contrabandist"
@@ -158,7 +158,7 @@
 	rapid_fire_delay = 8
 	retreat_distance = 3
 	minimum_distance = 2
-	casingtype = /obj/item/ammo_casing/c45/lethal,
+	casingtype = /obj/item/ammo_casing/c45/lethal
 
 /mob/living/simple_animal/hostile/pirate/contrabandist/ranger4
 	name = "A gun Contrabandist"
@@ -171,7 +171,7 @@
 	rapid_fire_delay = 12
 	retreat_distance = 3
 	minimum_distance = 6
-	/obj/item/ammo_casing/a308,
+	casingtype = /obj/item/ammo_casing/a308
 
 /mob/living/simple_animal/hostile/pirate/contrabandist/leader
 	name = "Contrabandist leader"
@@ -202,7 +202,7 @@
 	rapid_fire_delay = 5
 	retreat_distance = 2
 	minimum_distance = 2
-	casingtype = /obj/item/ammo_casing/762,
+	casingtype = /obj/item/ammo_casing/a762
 	atmos_requirements = list("min_oxy" = 5, "max_oxy" = 0, "min_tox" = 0, "max_tox" = 1, "min_co2" = 0, "max_co2" = 5, "min_n2" = 0, "max_n2" = 0)
 	unsuitable_atmos_damage = 15
 	speak_emote = list("yarrs")
