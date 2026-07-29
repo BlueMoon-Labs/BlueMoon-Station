@@ -43,6 +43,9 @@ SUBSYSTEM_DEF(time_track)
 
 	var/ping_samples = 0
 	var/ping_rtt_last_avg = 0
+	/// Медиана последних RTT по миру. Среднее тянет вверх любой одиночный клиент с плохим
+	/// каналом, поэтому "типичный пинг" читать надо отсюда.
+	var/ping_rtt_last_median = 0
 	var/ping_rtt_last_max = 0
 	/// Максимум серверной доли пинга, накопленный между строками CSV.
 	/// rtt_last_max читают как задержку сервера, а это максимум по худшему клиенту
@@ -93,6 +96,7 @@ SUBSYSTEM_DEF(time_track)
 			"players",
 			"ping_samples",
 			"rtt_last_avg",
+			"rtt_last_median",
 			"rtt_last_max",
 			"rtt_avg_avg",
 			"tick_last_avg",
@@ -114,9 +118,13 @@ SUBSYSTEM_DEF(time_track)
 		)
 	)
 
+/// Сэмпл старше этого считается протухшим и в сводку по миру не идёт.
+#define PING_SAMPLE_STALE_AFTER (90 SECONDS)
+
 /datum/controller/subsystem/time_track/proc/update_ping_metrics()
 	ping_samples = 0
 	ping_rtt_last_avg = 0
+	ping_rtt_last_median = 0
 	ping_rtt_last_max = 0
 	ping_rtt_avg_avg = 0
 	ping_tick_last_avg = 0
@@ -130,9 +138,15 @@ SUBSYSTEM_DEF(time_track)
 	var/tick_last_total = 0
 	var/server_last_total = 0
 	var/server_avg_total = 0
+	var/list/rtt_last_samples = list()
 
 	for(var/client/C as anything in GLOB.clients)
 		if(!C || !C.connection_time || (world.time - C.connection_time < 25))
+			continue
+		// У подвисшего клиента ping-значения остаются последними навсегда, а max() по всем
+		// клиентам залипал на них до конца раунда: в прод-логах rtt_last_max держался
+		// десятками секунд и повторял одно и то же число в подряд идущих сэмплах.
+		if(C.lastping_at && (world.time - C.lastping_at > PING_SAMPLE_STALE_AFTER))
 			continue
 
 		var/rtt_last = C.lastping_rtt_raw
@@ -157,6 +171,7 @@ SUBSYSTEM_DEF(time_track)
 			continue
 
 		ping_samples++
+		rtt_last_samples += rtt_last
 		rtt_last_total += rtt_last
 		rtt_avg_total += rtt_avg
 		tick_last_total += tick_last
@@ -174,6 +189,11 @@ SUBSYSTEM_DEF(time_track)
 		return
 
 	ping_rtt_last_avg = rtt_last_total / ping_samples
+	// Медиана рядом со средним: один клиент на спутниковом канале сдвигает арифметическое
+	// среднее по миру на десятки миллисекунд, и именно это читалось как "у сервера пинг 50мс".
+	sortTim(rtt_last_samples, GLOBAL_PROC_REF(cmp_numeric_asc))
+	var/median_index = round((length(rtt_last_samples) + 1) * 0.5)
+	ping_rtt_last_median = rtt_last_samples[clamp(median_index, 1, length(rtt_last_samples))]
 	ping_rtt_avg_avg = rtt_avg_total / ping_samples
 	ping_tick_last_avg = tick_last_total / ping_samples
 	ping_server_last_avg = server_last_total / ping_samples
@@ -275,6 +295,7 @@ SUBSYSTEM_DEF(time_track)
 				length(GLOB.clients),
 				ping_samples,
 				ping_rtt_last_avg,
+				ping_rtt_last_median,
 				ping_rtt_last_max,
 				ping_rtt_avg_avg,
 				ping_tick_last_avg,

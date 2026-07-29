@@ -1156,6 +1156,12 @@ GLOBAL_LIST_EMPTY(humanoid_icon_cache)
 		var/max_w = 0
 		var/max_h = 0
 		for(var/D in showDirs)
+			// Один getFlatIcon гуманоида со всеми оверлеями стоит десятки миллисекунд, а
+			// дирекций тут до четырёх - без выхода наружу вся генерация уходила одним
+			// неразрывным куском. В прод-раунде очередь фото манифеста давала 27 блоков
+			// по 130-450 мс, то есть рвала тик в три-девять раз. Манекен на это время
+			// остаётся занятым, но остальные вызывающие и так ждут его на in_use.
+			CHECK_TICK
 			var/icon/partial = getFlatIcon(body, defdir = D, no_anim = no_anim)
 			if(istype(partial, /icon) && partial.Width() && partial.Height())
 				good_partials += partial

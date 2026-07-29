@@ -116,6 +116,9 @@
 	var/avgping_rtt_raw
 	var/lastping_tick = 0
 	var/lastping_server = 0
+	/// world.time последнего обновления ping-значений. Сводка по миру обязана отсеивать
+	/// протухшие сэмплы, иначе один подвисший клиент навсегда задирает max и среднее.
+	var/lastping_at = 0
 	var/avgping_server
 	var/avgping_jitter
 	var/ping_updated = FALSE

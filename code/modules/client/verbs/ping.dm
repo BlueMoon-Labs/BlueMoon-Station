@@ -95,6 +95,9 @@
 	lastping_rtt_raw = best_ping
 	lastping_server = server_ping
 	lastping = rtt_ping
+	// Отметка свежести: у подвисшего клиента значения остаются на месте навсегда, и сводка
+	// по миру (SStime_track) залипала на его максимуме до конца раунда.
+	lastping_at = world.time
 	ping_updated = TRUE
 
 	if(isnull(avgping_rtt))

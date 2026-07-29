@@ -7,7 +7,7 @@
 import { storage } from 'common/storage';
 import { vecAdd, vecScale } from 'common/vector';
 
-import { constraintPosition, isWindowSizeApplied as isWindowSizeAppliedUtil, touchRecents } from './drag.utils';
+import { constraintPosition, isWindowSizeApplied as isWindowSizeAppliedUtil, parseWingetSize, touchRecents } from './drag.utils';
 import { createLogger } from './logging';
 
 const logger = createLogger('drag');
@@ -182,7 +182,10 @@ const SIZE_APPLY_TIMEOUT_MS = 1500;
 // Опрос идёт таймером, а не requestAnimationFrame: окна пула открываются скрытыми
 // (is-visible=0), а в скрытом WebView2 rAF не тикает и resize не приходит - оба
 // канала детекции были мертвы, и гейт всегда доезжал до таймаута.
-const SIZE_APPLY_POLL_MS = 50;
+// 250, а не 50: каждый Byond.winget - это навигация WebView2 на byond://winget плюс инъекция
+// колбека обратно, и на скрытом окне гейт всегда выбирал весь бюджет. Двадцать опросов в
+// секунду на каждое открывающееся окно давали заметный IPC-шторм ни за что.
+const SIZE_APPLY_POLL_MS = 250;
 
 const isWindowSizeApplied = targetSize => {
   const pr = getBrowserPixelRatio();
@@ -255,8 +258,14 @@ const waitForWindowSizeApplied = targetSize => {
         if (done || !size) {
           return;
         }
-        const applied = String(size).split(/[x,]/).map(Number);
-        if (applied.length === 2 && applied[0] === targetSize[0] && applied[1] === targetSize[1]) {
+        // Разбор вынесен в parseWingetSize: BYOND отдаёт координатные параметры объектом
+        // {x, y}, а прежний String(size).split(/[x,]/) превращал его в "[object Object]" и
+        // не находил ни 'x', ни запятой - единственный канал, способный работать на скрытом
+        // окне, был мёртвым кодом.
+        const applied = parseWingetSize(size);
+        if (applied
+            && applied[0] === targetSize[0]
+            && applied[1] === targetSize[1]) {
           finish('winget', true);
         }
       });
@@ -408,8 +417,15 @@ export const recallWindowGeometry = async (options = {}) => {
       ];
       setWindowSize(size);
       const sizeApplyResult = await waitForWindowSizeApplied(size);
-      geometryReadyForReveal = sizeApplyResult.matched;
-      if (!sizeApplyResult.matched) {
+      // Окна пула создаются скрытыми (is-visible=0 в tgui_window.dm), а в скрытом WebView2
+      // нет лэйаута: rAF не тикает, resize не приходит, innerWidth/innerHeight не меняются.
+      // Наблюдать применение размера в этом состоянии просто нечем, поэтому ждать дальше
+      // бессмысленно - в проде 100% записей уходили в timeout при resizeEvents = 0, и каждое
+      // переиспользование окна стоило лишних двух секунд пустого экрана. Отсутствие событий
+      // ресайза считаем "наблюдать нечем", а не "размер не применился".
+      geometryReadyForReveal =
+        sizeApplyResult.matched || sizeApplyResult.resizeEvents === 0;
+      if (!sizeApplyResult.matched && sizeApplyResult.resizeEvents > 0) {
         logger.warn('window size was not applied before reveal gate timeout', sizeApplyResult);
       }
     }

@@ -194,6 +194,9 @@
 	var/on = FALSE					// 1 if on, 0 if off
 	var/on_gs = FALSE
 	var/static_power_used = 0
+	/// Область, которой сейчас записан static_power_used. Снимать вклад обязательно с неё:
+	/// get_area(src) в момент снятия может быть уже другой (перелёт шаттла, смена области турфа).
+	var/area/static_power_area
 	var/brightness = 8			// luminosity when on, also used in power calculation
 	var/bulb_power = 0.79			// basically the alpha of the emitted light source
 	var/bulb_colour = "#cae2fa"	// befault colour of the light.
@@ -365,6 +368,11 @@
 	var/area/A = get_area(src)
 	if(A)
 		on = FALSE
+	// on = FALSE выше идёт мимо update(), поэтому on_gs оставался TRUE и вклад лампы в
+	// static_light области не снимался никогда - область платила за снесённый плафон до
+	// конца раунда. Снимаем явно.
+	on_gs = FALSE
+	bill_static_power(0)
 	mark_apc_light_cache_dirty(A)
 	nightshift_update_queued = FALSE
 	GLOB.nightshift_light_queue -= src
@@ -584,10 +592,35 @@
 	if(on != on_gs)
 		on_gs = on
 		if(on)
-			static_power_used = brightness * 20 * (hijacked ? 2 : 1) //20W per unit luminosity
-			addStaticPower(static_power_used, STATIC_LIGHT)
+			bill_static_power(brightness * 20 * (hijacked ? 2 : 1)) //20W per unit luminosity
 		else
-			removeStaticPower(static_power_used, STATIC_LIGHT)
+			bill_static_power(0)
+
+/**
+ * Переносит вклад лампы в static_light на ТЕКУЩУЮ область, сняв его с той, куда он был записан.
+ *
+ * addStaticPower/removeStaticPower (power.dm) резолвят область через get_area(src) на момент
+ * вызова, а лампа помнила только число и флаг on_gs - без области. Пары "начислили/сняли" в
+ * разных областях достаточно, чтобы область осталась с вечным фантомным потреблением, а APC
+ * платит за него из ячейки напрямую (lastused_light -> cell.use). На шаттле с маленькой
+ * батареей это и выглядело как "шаттлы разряжаются": пока турф отдан подстилающему космосу,
+ * гашение лампы списывало ватты с /area/space, а область шаттла оставалась с +160 Вт на каждый
+ * погасший плафон. Плюс Destroy() статику не снимал вовсе - снесённый горящий плафон оставлял
+ * своё потребление области навсегда.
+ */
+/obj/machinery/light/proc/bill_static_power(watts)
+	if(static_power_area)
+		static_power_area.addStaticPower(-static_power_used, STATIC_LIGHT)
+		static_power_area = null
+	static_power_used = 0
+	if(!watts)
+		return
+	var/area/current_area = get_area(src)
+	if(!current_area)
+		return
+	static_power_used = watts
+	static_power_area = current_area
+	current_area.addStaticPower(watts, STATIC_LIGHT)
 
 /obj/machinery/light/update_atom_colour()
 	. = ..()
@@ -1130,7 +1163,7 @@
 		// Handle static power accounting since we bypass update()
 		if(on_gs)
 			on_gs = FALSE
-			removeStaticPower(static_power_used, STATIC_LIGHT)
+			bill_static_power(0)
 		update_icon()
 		// Schedule emergency activation after a random delay
 		var/delay = rand(LIGHT_EMERGENCY_DELAY_MIN, LIGHT_EMERGENCY_DELAY_MAX)
