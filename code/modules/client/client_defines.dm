@@ -128,6 +128,11 @@
 	var/connection_time //world.time they connected
 	var/connection_realtime //world.realtime they connected
 	var/connection_timeofday //world.timeofday they connected
+	/// Почему соединение закрыл САМ сервер. null = рвал клиент или сеть между нами.
+	/// Уходит в строку Logout: без неё в логах наш кик неотличим от обрыва канала.
+	var/disconnect_reason
+	/// Какой это по счёту вход этого ckey за раунд. Циклический реконнект видно сразу.
+	var/round_login_index = 1
 
 	var/inprefs = FALSE
 	var/list/topiclimiter

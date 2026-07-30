@@ -51,8 +51,12 @@
 #define TICK_SPIKES_CLASSIFY_WINDOW_TICKS 3
 /// Порог cpu (%) в тиках спайка, с которого источник классифицируется как DM вне МК
 #define TICK_SPIKES_CLASSIFY_CPU_THRESHOLD 70
-/// Порог map_cpu (%) в тиках спайка, с которого источник классифицируется как SendMaps
-#define TICK_SPIKES_CLASSIFY_MAP_CPU_THRESHOLD 50
+/// Порог map_cpu (%) в тиках спайка, с которого источник классифицируется как SendMaps.
+/// world.map_cpu - СГЛАЖЕННОЕ среднее, а не мгновенная доля тика, поэтому порог 50 был
+/// практически недостижим: в прод-раунде 9835 (125 клиентов, map_cpu фоном 13-22%) его
+/// перешли 4 тика из 758 спайков, и вся стоимость рассылки карты утекала в "внешний столл".
+/// 30% отделяет всплески от фона: в 9835 таких тиков 27, в спокойном 9834 - ни одного.
+#define TICK_SPIKES_CLASSIFY_MAP_CPU_THRESHOLD 30
 /// На сколько тиков после нашего дампа профайлера спайки считаются самонаведёнными
 #define TICK_SPIKES_SELF_INFLICTED_TICKS 2
 /// Бюджет авто-дампов sendmaps-профиля за раунд (вне сессии захвата)
@@ -144,6 +148,9 @@ SUBSYSTEM_DEF(tick_spikes)
 	var/started_profiler = FALSE
 	var/profile_dumps_done = 0
 	var/last_profile_dump_ms = 0
+	/// Числовой хвост к последней классификации (cpu/map_cpu). Живёт отдельно от строки
+	/// класса, потому что класс сравнивается на точное равенство при решении об авто-дампе.
+	var/last_classify_detail = ""
 	///монотонный номер для имён файлов дампов: НЕ сбрасывается на start_capture,
 	///иначе авто-дамп и дамп новой сессии склеили бы два JSON в один файл
 	var/profile_dump_seq = 0
@@ -400,6 +407,7 @@ SUBSYSTEM_DEF(tick_spikes)
 /// Подсистему МК виним только если её тяжёлый прогон был прямо в тиках спайка:
 /// фоновые прогоны (атмос и т.п.) из широкого 5-секундного окна - это контекст, а не виновник.
 /datum/controller/subsystem/tick_spikes/proc/classify_spike(now_world, drift)
+	last_classify_detail = ""
 	if(world.time < self_inflicted_until)
 		return TICK_SPIKE_CLASS_SELF
 	var/tight_window_start = now_world - (TICK_SPIKES_CLASSIFY_WINDOW_TICKS * world.tick_lag)
@@ -428,8 +436,12 @@ SUBSYSTEM_DEF(tick_spikes)
 		max_map_cpu = max(max_map_cpu, ring_map_cpu[idx] || 0)
 	if(max_cpu >= TICK_SPIKES_CLASSIFY_CPU_THRESHOLD)
 		return TICK_SPIKE_CLASS_DM
+	// Цифры кладём в last_classify_detail, а не в саму строку класса: класс сравнивается
+	// на точное равенство (решение об авто-дампе профайлера), и суффикс сломал бы это.
 	if(max_map_cpu >= TICK_SPIKES_CLASSIFY_MAP_CPU_THRESHOLD)
+		last_classify_detail = " (map_cpu до [round(max_map_cpu, 0.1)]%)"
 		return TICK_SPIKE_CLASS_SENDMAPS
+	last_classify_detail = " (cpu до [round(max_cpu, 0.1)]%, map_cpu до [round(max_map_cpu, 0.1)]%)"
 	return TICK_SPIKE_CLASS_EXTERNAL
 
 /// Фиксация события спайка: контекст, классификация, запись в лог, опциональный дамп профайлера
@@ -449,7 +461,8 @@ SUBSYSTEM_DEF(tick_spikes)
 	// пишется не чаще full_event_min_interval_ms, промежуточные - одной строкой
 	if(last_full_event_ms && (now_ms - last_full_event_ms) < full_event_min_interval_ms)
 		suppressed_event_count++
-		write_to_log("СПАЙК #[session_spike_count][tag_line] (кратко) [time_stamp_from_world(now_world)] (wt [now_world]): дрифт [round(drift)]мс, [classify_spike(now_world, drift)]")
+		var/brief_class = classify_spike(now_world, drift)
+		write_to_log("СПАЙК #[session_spike_count][tag_line] (кратко) [time_stamp_from_world(now_world)] (wt [now_world]): дрифт [round(drift)]мс, [brief_class][last_classify_detail]")
 		return
 	last_full_event_ms = now_ms
 
@@ -459,7 +472,7 @@ SUBSYSTEM_DEF(tick_spikes)
 	var/list/event = list()
 	event += "=== СПАЙК #[session_spike_count][tag_line] [time_stamp_from_world(now_world)] (wt [now_world]) ==="
 	event += "дрифт: [round(drift)]мс (порог [spike_threshold_ms]мс), тик [world.tick_lag * 100]мс"
-	event += "вероятный источник: [spike_class]"
+	event += "вероятный источник: [spike_class][last_classify_detail]"
 	event += "клиентов: [length(GLOB.clients)], TD тек/быстр/сред: [round(SStime_track.time_dilation_current, 0.1)]% / [round(SStime_track.time_dilation_avg_fast, 0.1)]% / [round(SStime_track.time_dilation_avg, 0.1)]%"
 	event += "МК: итерация [Master.iteration], sleep_delta [round(Master.sleep_delta, 0.01)], ticklimit [round(Master.current_ticklimit, 0.1)], самый тяжёлый прогон тика: [heaviest_run_subsystem_name ? "[heaviest_run_subsystem_name] ([round(heaviest_run_subsystem_usage, 0.1)]% тика, wt [heaviest_run_tick])" : "нет"]"
 

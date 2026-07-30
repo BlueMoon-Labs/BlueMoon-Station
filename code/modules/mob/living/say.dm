@@ -481,7 +481,7 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	//speech bubble
 	var/list/speech_bubble_recipients = list()
 	for(var/mob/M in listening)
-		if(M.client && !M.client.prefs.chat_on_map)
+		if(M.client?.prefs && !M.client.prefs.chat_on_map)
 			speech_bubble_recipients.Add(M.client)
 	var/image/I = image('icons/mob/talk.dmi', src, "[bubble_type][say_test(message)]", FLY_LAYER)
 	I.appearance_flags = APPEARANCE_UI_IGNORE_ALPHA

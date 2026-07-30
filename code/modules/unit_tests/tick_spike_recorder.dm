@@ -51,6 +51,16 @@
 	TEST_ASSERT_EQUAL(recorder.session_spike_count, 1, "Спайк-столл не зафиксирован")
 	TEST_ASSERT(findtext(recorder.spike_events[1], "внешний столл"), "Столл без DM-нагрузки классифицирован неверно")
 
+	// 5a. Рассылка карты: cpu низкий, map_cpu выше порога - "SendMaps".
+	// Класс существовал, но не проверялся, и порог был выставлен так, что в проде он
+	// почти не достигался: вся стоимость SendMaps утекала в "внешний столл".
+	recorder.reset_state()
+	recorder.sample_tick(1000, 400, 2, 5, 35)
+	recorder.sample_tick(1050, 400.5, 2, 5, 35)
+	recorder.sample_tick(1600, 401, 2, 5, 35)
+	TEST_ASSERT_EQUAL(recorder.session_spike_count, 1, "Спайк с высоким map_cpu не зафиксирован")
+	TEST_ASSERT(findtext(recorder.spike_events[1], "SendMaps"), "Спайк с map_cpu выше порога не классифицирован как SendMaps")
+
 	// 6. Метка синтетики цепляется к следующему событию и очищается
 	recorder.reset_state()
 	recorder.next_spike_tag = "ТЕСТОВАЯ МЕТКА"
