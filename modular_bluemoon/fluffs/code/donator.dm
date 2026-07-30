@@ -2520,4 +2520,5 @@
 	name = "Pilots Federation Badge"
 	slot = ITEM_SLOT_ACCESSORY
 	path = /obj/item/clothing/accessory/medal/vulpix_pilot_badge
+	cost = 0
 	ckeywhitelist = list("alexhosted", "gsvden")
