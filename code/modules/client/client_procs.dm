@@ -659,6 +659,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 
 	connection_time = world.time
 	connection_realtime = world.realtime
+	connection_realtimeofday = REALTIMEOFDAY
 	connection_timeofday = world.timeofday
 	GLOB.round_connection_counts[ckey] = (GLOB.round_connection_counts[ckey] || 0) + 1
 	round_login_index = GLOB.round_connection_counts[ckey]
@@ -1104,7 +1105,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	GLOB.clients -= src
 	GLOB.directory -= ckey
 	log_access("Logout: [key_name(src)] | [connection_forensics()]")
-	var/lifetime_seconds = connection_realtime ? (world.realtime - connection_realtime) / 10 : 0
+	var/lifetime_seconds = connection_lifetime_seconds()
 	var/list/churn_record = GLOB.round_connection_lifetimes[ckey]
 	if(churn_record)
 		churn_record[1] += 1
@@ -1199,10 +1200,17 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
  *    не шлём, что сразу снимает подозрение с объёма данных клиенту;
  *  - "инициатор" отделяет наши собственные кики от обрыва канала.
  */
+/// Сколько секунд по стенным часам прожило соединение. MIDNIGHT_ROLLOVER_CHECK внутри
+/// REALTIMEOFDAY уже переносит счётчик через полночь, так что разность остаётся честной.
+/client/proc/connection_lifetime_seconds()
+	if(!connection_realtimeofday)
+		return 0
+	return max(REALTIMEOFDAY - connection_realtimeofday, 0) / 10
+
 /client/proc/connection_forensics()
 	var/list/parts = list("вход №[round_login_index]")
-	if(connection_realtime)
-		parts += "жил [round((world.realtime - connection_realtime) / 10, 0.1)]с"
+	if(connection_realtimeofday)
+		parts += "жил [round(connection_lifetime_seconds(), 0.1)]с"
 	if(connection_time)
 		parts += "по игровым часам [round((world.time - connection_time) / 10, 0.1)]с"
 	if(lastping_at)

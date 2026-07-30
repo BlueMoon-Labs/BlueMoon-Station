@@ -128,6 +128,12 @@
 	var/connection_time //world.time they connected
 	var/connection_realtime //world.realtime they connected
 	var/connection_timeofday //world.timeofday they connected
+	/// REALTIMEOFDAY подключения. Именно он, а не connection_realtime: world.realtime это
+	/// децисекунды с 2000 года, к 2026-му уже ~8.3e9, и шаг 32-битного float на этой величине
+	/// равен 512 дс. Разность двух world.realtime поэтому квантуется по 51.2 СЕКУНДЫ - в
+	/// раунде 9837 поле "жил" выдало ровно 0 / 51.2 / 102.4 / 153.6 и не несло информации.
+	/// REALTIMEOFDAY не превышает 1.73e6, шаг там ~12 мс, и он же переживает полночь.
+	var/connection_realtimeofday
 	/// Почему соединение закрыл САМ сервер. null = рвал клиент или сеть между нами.
 	/// Уходит в строку Logout: без неё в логах наш кик неотличим от обрыва канала.
 	var/disconnect_reason
