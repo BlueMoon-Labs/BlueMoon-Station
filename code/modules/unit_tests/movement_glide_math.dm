@@ -209,27 +209,52 @@
 
 /// Квирк "Быстрый Шаг" обязан давать при ходьбе ровно скорость бега.
 ///
-/// Раньше он вычитал константу 1.25, и совпадение с бегом держалось на том, что при
-/// прод-конфиге (ходьба 3, бег 1.5) итог 1.75 округляется вниз до ступени тика. При тике
-/// 1 вместо 0.5 те же 1.75 уходят ВВЕРХ до 2.0 - ходьба становится вдвое медленнее бега,
-/// и игроки видят "быстрый шаг сломали". Теперь вычитается разница из конфига, кратная
-/// ступени по построению, и от направления округления результат не зависит.
+/// Раньше он вычитал константу 1.25, не кратную ступени тика. На проде (ходьба 3, бег 1.5,
+/// тик 0.5) итог 1.75 садился ровно на половину ступени: у голого персонажа уходил вниз до
+/// беговых 1.5, и проблемы не было видно. Любое дробное замедление сверху перекидывало сумму
+/// через границу - ходьба платила лишний тик, бег нет, и квирк давал 25-33% медленнее бега.
+/// Теперь вычитается разница ходьба-минус-бег: она кратна ступени, поэтому базы совпадают,
+/// и дальше общее замедление квантуется для ходьбы и бега одинаково.
+/// Проверяется сама скидка, а не мобы: задержки ходьбы и бега приходят из конфига, а он в
+/// CI не загружается (у walk_delay/run_delay нет дефолтов, и там обе величины совпадают) -
+/// мобный тест был бы вакуумным на одной машине и падал на другой.
 /datum/unit_test/quick_step_walks_at_run_speed
 
 /datum/unit_test/quick_step_walks_at_run_speed/Run()
-	var/mob/living/carbon/human/walker = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
-	var/mob/living/carbon/human/runner = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	// Пары "ходьба / бег": прод, апстрим, вырожденная (равные) и перевёрнутая (ходьба быстрее).
+	var/list/pairs = list(
+		list(3, 1.5),
+		list(5, 2.5),
+		list(2, 2),
+		list(1.5, 3),
+	)
+	for(var/list/pair as anything in pairs)
+		var/walk_delay = pair[1]
+		var/run_delay = pair[2]
+		var/discounted = walk_delay - quick_step_walk_discount(walk_delay, run_delay)
+		TEST_ASSERT_EQUAL(discounted, min(walk_delay, run_delay), "Быстрый шаг обязан сводить ходьбу [walk_delay] ровно к бегу [run_delay], а получилось [discounted]")
 
-	ADD_TRAIT(walker, TRAIT_SPEEDY_STEP, "unit_test")
-	walker.m_intent = MOVE_INTENT_WALK
-	walker.update_move_intent_slowdown()
-	runner.m_intent = MOVE_INTENT_RUN
-	runner.update_move_intent_slowdown()
+	TEST_ASSERT_EQUAL(quick_step_walk_discount(1.5, 3), 0, "Ходьба быстрее бега: скидка обязана быть нулевой, а не отрицательной")
+	TEST_ASSERT_EQUAL(quick_step_walk_discount(null, 1.5), 0, "Незагруженный конфиг обязан давать нулевую скидку, а не рантайм")
+	TEST_ASSERT_EQUAL(quick_step_walk_discount(3, null), 0, "Незагруженный конфиг обязан давать нулевую скидку, а не рантайм")
 
-	TEST_ASSERT_EQUAL(walker.movement_step_cost(FALSE), runner.movement_step_cost(FALSE), "Ходьба с быстрым шагом обязана стоить столько же, сколько бег")
+	// Главное свойство правки: цена совпадает с беговой при любой ступени тика.
+	for(var/tick_lag in list(0.25, 0.5, 1))
+		var/quick_walk = movement_step_delay(3 - quick_step_walk_discount(3, 1.5), FALSE, tick_lag)
+		var/run = movement_step_delay(1.5, FALSE, tick_lag)
+		TEST_ASSERT_EQUAL(quick_walk, run, "При тике [tick_lag] ходьба с быстрым шагом ([quick_walk]) обязана стоить как бег ([run])")
 
-	// Без квирка ходьба обязана остаться медленнее бега, иначе правка съела сам смысл интента.
-	var/mob/living/carbon/human/plain = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
-	plain.m_intent = MOVE_INTENT_WALK
-	plain.update_move_intent_slowdown()
-	TEST_ASSERT(plain.movement_step_cost(FALSE) > runner.movement_step_cost(FALSE), "Обычная ходьба обязана быть медленнее бега")
+	// Тот самый дефект. На проде (тик 0.5) у ГОЛОГО персонажа прежние 1.25 давали ровно
+	// беговые 1.5 - поэтому часть игроков проблемы не видела. Ломалось на дробном замедлении
+	// сверху: шлем 0.2, хардсьют 0.55, протаскивание тела 0.6. Проверяем оба конца, иначе тест
+	// прошёл бы и на прежней константе.
+	for(var/extra in list(0.2, 0.55, 0.6))
+		var/run_cost = movement_step_delay(1.5 + extra, FALSE, 0.5)
+		var/fixed_cost = movement_step_delay(3 - quick_step_walk_discount(3, 1.5) + extra, FALSE, 0.5)
+		TEST_ASSERT_EQUAL(fixed_cost, run_cost, "С замедлением [extra] ходьба с быстрым шагом ([fixed_cost]) обязана стоить как бег ([run_cost])")
+
+		var/legacy_cost = movement_step_delay(3 - 1.25 + extra, FALSE, 0.5)
+		TEST_ASSERT(legacy_cost > run_cost, "Контроль: прежняя константа при замедлении [extra] обязана давать ходьбу дороже бега ([legacy_cost] против [run_cost]) - иначе тест не сторожит тот дефект")
+
+	// Обычная ходьба обязана остаться медленнее бега, иначе правка съела смысл интента.
+	TEST_ASSERT(movement_step_delay(3, FALSE, 0.5) > movement_step_delay(1.5, FALSE, 0.5), "Ходьба без квирка обязана быть медленнее бега")
