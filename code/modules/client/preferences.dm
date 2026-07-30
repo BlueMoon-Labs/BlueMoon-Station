@@ -100,6 +100,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/chat_toggles = TOGGLES_DEFAULT_CHAT
 	/// Bitfield for chat mutes (MUTE_* flags).
 	var/muted = NONE
+	var/ticket_nickname = ""
 	var/ghost_form = "ghost"
 	var/ghost_orbit = GHOST_ORBIT_CIRCLE
 	var/ghost_accs = GHOST_ACCS_DEFAULT_OPTION
@@ -2530,6 +2531,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			var/has_buttons = FALSE
 			for(var/key in key_bindings)
 				var/list/temp = key_bindings[key]
+				if(!islist(temp))
+					continue
 				if(temp.Find(kb_name))
 					has_buttons = TRUE
 					break
@@ -2568,6 +2571,11 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			key_bindings[old_key] -= kb_name
 			if(!length(key_bindings[old_key]))
 				key_bindings -= old_key
+		//Из savefile прилетает 0 вместо пустого списка: "type mismatch: 0 |= /list".
+		//Апстрим закрывает это через LAZYOR, но тот проверяет только !L и пропустил
+		//бы ненулевой мусор в записи - здесь нужен именно islist().
+		if(!islist(key_bindings[full_key]))
+			key_bindings[full_key] = list()
 		key_bindings[full_key] |= list(kb_name)
 		key_bindings[full_key] = sort_list(key_bindings[full_key])
 

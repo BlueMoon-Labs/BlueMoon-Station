@@ -54,6 +54,9 @@
 			B.screen_loc = initial(B.screen_loc)
 			B.set_new_hud(null)
 			if(B.holder)
+				//у центральной коробки своё содержимое лежит ещё и во вложенном
+				//holder'е: без сброса он уносил предмет в пул до конца раунда
+				B.holder.set_item(null)
 				B.holder.set_new_hud(null)
 			pooled_volumetric_boxes += B
 			continue

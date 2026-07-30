@@ -140,9 +140,6 @@
 		P.update_appearance()
 
 		playsound(C.loc, "sound/goonstation/machines/printer_dotmatrix.ogg", 50, 1)
-		GLOB.cell_logs += P
-		if(length(GLOB.cell_logs) > 500)
-			GLOB.cell_logs.Cut(1, length(GLOB.cell_logs) - 300)
 	return
 
 /obj/structure/closet/secure_closet/genpop/proc/generate_report()
@@ -153,7 +150,8 @@
 	report_text +=	"<b>Detainee:</b>		[prisoner_name]<br>"
 	report_text +=	"<b>Duration:</b>		[filteredsentlength ? "[filteredsentlength] minutes" : "Permanent"]<br>"
 	report_text +=	"<b>Charge(s):</b>		[crimes]<br>"
-	report_text +=	"<b>Arresting Officer:</b>		[usr.name]<br></small><hr><br>"
+	//печать может уйти и без клика, usr тогда пуст
+	report_text +=	"<b>Arresting Officer:</b>		[usr ? usr.name : "unknown"]<br></small><hr><br>"
 	report_text +=	"<small>This log file was generated automatically upon activation of the term of imprisonment.</small>"
 	return
 

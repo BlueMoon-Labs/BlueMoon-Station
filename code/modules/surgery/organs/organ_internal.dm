@@ -166,7 +166,7 @@
 
 	if(!local_temp)//Shouldn't happen but in case
 		return
-	if(local_temp < 154)//I have a pretty shaky citation that states -120 allows indefinite cyrostorage
+	if(local_temp < BODYTEMP_FROZEN_THRESHOLD)//I have a pretty shaky citation that states -120 allows indefinite cyrostorage
 		organ_flags |= ORGAN_FROZEN
 		return TRUE
 	organ_flags &= ~ORGAN_FROZEN

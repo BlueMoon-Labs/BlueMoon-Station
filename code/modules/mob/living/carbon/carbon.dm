@@ -100,9 +100,9 @@
 				playsound(user.loc, 'sound/effects/attackblob.ogg', 50, 1)
 
 				if(prob(src.getBruteLoss() - 50))
-					for(var/atom/movable/A in stomach_contents)
+					for(var/atom/movable/A in stomach_contents.Copy())
 						A.forceMove(drop_location())
-						stomach_contents.Remove(A)
+						remove_from_stomach(A)
 					src.gib()
 
 
@@ -431,8 +431,7 @@
 		if (buckled && buckled.buckle_requires_restraints)
 			buckled.unbuckle_mob(src)
 		update_handcuffed()
-		if (client)
-			client.screen -= W
+		remove_from_hud_screens(W)
 		if (W)
 			W.forceMove(drop_location())
 			W.dropped(src)
@@ -444,8 +443,7 @@
 		var/obj/item/W = legcuffed
 		legcuffed = null
 		update_inv_legcuffed()
-		if (client)
-			client.screen -= W
+		remove_from_hud_screens(W)
 		if (W)
 			W.forceMove(drop_location())
 			W.dropped(src)
@@ -1080,8 +1078,40 @@
 		C.visible_message("<span class='danger'>[src] devours [C]!</span>", \
 						"<span class='userdanger'>[src] devours you!</span>")
 		C.forceMove(src)
-		stomach_contents.Add(C)
+		add_to_stomach(C)
 		log_combat(src, C, "devoured")
+
+/**
+ * Кладёт объект в stomach_contents.
+ *
+ * Главная задача - не пускать в список уже мёртвых: /obj/effect/decal/Initialize
+ * отвечает INITIALIZE_HINT_QDEL на любой не-турф, поэтому декаль, созданная
+ * внутри моба (партийная граната сработала в руках, гибспаунер внутри карбона),
+ * возвращается из конструктора уже qdel-нутой. Вычищать её было некому:
+ * handle_stomach() перебирал только /mob/living. Раунд 9813 - 20 конфетти
+ * одним тиком, каждое с одной внешней ссылкой.
+ *
+ * Подписки на COMSIG_PARENT_QDELETING тут быть не может: ключ (цель, сигнал,
+ * слушатель) уже занят clear_from_recent_examines, и override молча выбил бы
+ * чужой обработчик у только что осмотренного и съеденного моба.
+ */
+/mob/living/carbon/proc/add_to_stomach(atom/movable/swallowed)
+	if(QDELETED(swallowed) || (swallowed in stomach_contents))
+		return
+	stomach_contents += swallowed
+
+/// Снимает объект с желудка вручную (вытащили, срыгнули, передали другому мобу).
+/mob/living/carbon/proc/remove_from_stomach(atom/movable/swallowed)
+	if(!swallowed)
+		return
+	stomach_contents -= swallowed
+
+/// Догоняет содержимое, удалённое кем-то со стороны. Зовётся из handle_stomach(),
+/// то есть только для мобов, у которых в желудке реально что-то лежит.
+/mob/living/carbon/proc/prune_stomach_contents()
+	for(var/atom/movable/content as anything in stomach_contents.Copy())
+		if(QDELETED(content))
+			stomach_contents -= content
 
 /mob/living/carbon/proc/create_bodyparts()
 	var/l_arm_index_next = -1

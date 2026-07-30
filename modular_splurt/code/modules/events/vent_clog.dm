@@ -115,7 +115,14 @@
 			R.add_reagent(reagent, reagents_amount)
 
 			var/datum/effect_system/smoke_spread/chem/smoke = new
-			smoke.set_up(R, 10, get_turf(vent), FALSE)
+			// Радиус здесь - это бюджет шагов флуд-филла spread_smoke(), а не круг: на десятке
+			// одно облако разливалось примерно на 220 турфов, и таких облаков событие делает
+			// половину вентиляции станции. Прод-раунд 9832: 270 облаков за секунду, проход
+			// SSObjects 106мс (79.9 из них - сам дым), 13 спайков подряд по 230-270мс и
+			// единственные два замера серверной части телеметрии в 230 и 416мс за весь раунд.
+			// silent = TRUE по образцу соседнего cope_and_seethe: иначе каждое облако пишет
+			// log_game и message_admins, и админам приходит 270 сообщений за секунду.
+			smoke.set_up(R, 5, get_turf(vent), TRUE)
 			smoke.start()
 		CHECK_TICK
 

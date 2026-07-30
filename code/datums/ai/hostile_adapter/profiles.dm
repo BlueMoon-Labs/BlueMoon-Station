@@ -64,7 +64,12 @@
 	)
 	idle_behavior = /datum/idle_behavior/idle_random_walk/hostile_ambience
 
-///Стайный охотник: делится агро с сородичами
+///Стайный охотник: делится агро с сородичами.
+///
+///Мили-хвост обязателен: цель движения мили-пауну ставит только hostile_melee, а без него
+///стая агрилась, звала сородичей и стояла на месте, кусая лишь того, кто сам подошёл вплотную.
+///Прод-раунд 9832: миграция из ~38 карпов дала 7 атак за смену против 79 у одного кота-хирурга,
+///а мегакарп 54 минуты эмоутил "gnashes at" с одной клетки рядом с членом экипажа.
 /datum/ai_controller/hostile_adapter/pack_hunter
 	ai_pack_role = AI_ROLE_HUNTER
 	planning_subtrees = list(
@@ -75,6 +80,10 @@
 		/datum/ai_planning_subtree/ranged_skirmish,
 		/datum/ai_planning_subtree/attack_obstacle_in_path,
 		/datum/ai_planning_subtree/hostile_break_away/adaptive,
+		/datum/ai_planning_subtree/take_cover_when_pinned,
+		/datum/ai_planning_subtree/pack_encircle,
+		/datum/ai_planning_subtree/tactical_approach,
+		/datum/ai_planning_subtree/hostile_melee/melee_only,
 	)
 	idle_behavior = /datum/idle_behavior/idle_random_walk/hostile_ambience
 
@@ -127,6 +136,13 @@
 		/datum/ai_planning_subtree/ranged_skirmish,
 		/datum/ai_planning_subtree/attack_obstacle_in_path,
 		/datum/ai_planning_subtree/hostile_break_away/adaptive,
+		// Тот же мили-хвост, что у pack_hunter: комментарий выше обещает "простого мили-охотника"
+		// для обычных копий, но без этих сабтри цель движения им не ставилась вовсе, и
+		// анимированные предметы не преследовали жертву. Гейт melee_only оставляет
+		// скопировавшим дальнобойность мимикам их ranged-ветку.
+		/datum/ai_planning_subtree/take_cover_when_pinned,
+		/datum/ai_planning_subtree/tactical_approach,
+		/datum/ai_planning_subtree/hostile_melee/melee_only,
 	)
 	idle_behavior = /datum/idle_behavior/idle_random_walk/hostile_ambience
 

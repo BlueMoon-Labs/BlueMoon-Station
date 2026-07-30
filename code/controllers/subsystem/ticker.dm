@@ -358,12 +358,15 @@ SUBSYSTEM_DEF(ticker)
 
 	log_world("Game start took [(world.timeofday - init_start)/10]s")
 	round_start_time = world.time
+	// Состояние переводим ДО блокирующей записи в базу и рассылки на весь мир: пока оно
+	// оставалось SETTING_UP, лобби уже показывало кнопку входа, а ядро вход отбивало -
+	// каждый клик уходил в message_admins. Окно было около двенадцати секунд.
+	current_state = GAME_STATE_PLAYING
 	SSdbcore.SetRoundStart()
 
 	to_chat(world, "<span class='notice'><B>Welcome to [station_name()], enjoy your stay!</B></span>")
 	SEND_SOUND(world, sound(SSstation.announcer.get_rand_welcome_sound()))
 
-	current_state = GAME_STATE_PLAYING
 	Master.SetRunLevel(RUNLEVEL_GAME)
 
 	if(SSholidays.holidays)

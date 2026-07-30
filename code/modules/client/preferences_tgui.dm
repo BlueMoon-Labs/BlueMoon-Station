@@ -1,3 +1,28 @@
+/**
+ * Выставить приоритет роли антагониста в be_special. Возвращает TRUE, если преф изменился.
+ *
+ * be_special ассоциативен, поэтому запись обязана идти по ключу - `be_special[role] = priority`.
+ * Так было не всегда: старый код писал через `be_special += role`, а это на ассоциативном
+ * списке дописывает НОВЫЙ элемент с тем же ключом и значением null. Значение получало
+ * только первое вхождение, а выключение через `-=` снимало лишь одно из дублей, так что
+ * роль оставалась включённой. Испорченные этим сейвы чинит миграция 78.
+ *
+ * * role - строка из GLOB.special_roles
+ * * priority - отрицательное значение выключает роль, иначе это приоритет выдачи
+ */
+/datum/preferences/proc/set_antag_preference(role, priority)
+	if(!(role in GLOB.special_roles))
+		return FALSE
+	if(priority < 0)
+		if(!(role in be_special))
+			return FALSE
+		//чистим до конца: старые сейвы могли накопить дубли ключа
+		while(role in be_special)
+			be_special -= role
+		return TRUE
+	be_special[role] = priority
+	return TRUE
+
 /datum/preferences/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
@@ -105,6 +130,7 @@
 	.["has_admin"] = !!check_rights_for(user?.client, R_ADMIN)
 	if(.["has_admin"])
 		.["deadmin"] = deadmin
+		.["ticket_nickname"] = ticket_nickname
 
 	// Mentor
 	.["has_mentor"] = !!user?.client?.is_mentor()
@@ -116,7 +142,7 @@
 	for(var/role in GLOB.special_roles)
 		antag_roles += list(list(
 			"name" = role,
-			"status" = (role in be_special) ? be_special[role] : -1
+			"status" = (role in be_special) ? be_special[role] : ANTAG_PRIORITY_DISABLED
 		))
 	.["antag_roles"] = antag_roles
 
@@ -411,16 +437,17 @@
 
 		// Antag role toggles
 		if("toggle_antag")
-			var/role = params["role"]
-			var/value = text2num(params["value"])
-			if(!(role in GLOB.special_roles))
+			if(!set_antag_preference(params["role"], text2num(params["value"])))
 				return
-			if(value < 0)
-				be_special -= role
-			else
-				be_special += role
-				be_special[role] = value
 			save_preferences()
+			return TRUE
+
+		if("ticket_nickname")
+			var/nickname = params["nickname"]
+			if(istext(nickname))
+				ticket_nickname = copytext_char(nickname, 1, 32)
+			save_preferences()
+			return TRUE
 
 		if("toggle_admin")
 			var/flag = params["flag"]
@@ -503,8 +530,10 @@
 			switch(flag)
 				if("tgui_input_mode")
 					tgui_input_mode = (value == "TGUI" ? TRUE : FALSE)
+					user.client.ensure_keys_set(src)
 				if("tgui_input_verbs")
 					tgui_input_verbs = (value == "TGUI" ? TRUE : FALSE)
+					user.client.ensure_keys_set(src)
 				if("UI_style")
 					UI_style = value
 					if(user?.hud_used)

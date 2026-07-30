@@ -984,6 +984,11 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 
 /client/Del()
 	if(!gc_destroyed)
+		// Клиента удаляет сам BYOND, минуя qdel() - а COMSIG_PARENT_QDELETING рассылает
+		// именно qdel(). Без этой рассылки при обычном дисконнекте не срабатывала ни одна
+		// подписка на удаление клиента: эскейп-меню оставалось в GLOB.escape_menus с мёртвым
+		// клиентом, а держатели экранных объектов не успевали снять их до screen.Cut().
+		SEND_SIGNAL(src, COMSIG_PARENT_QDELETING, FALSE)
 		Destroy() //Clean up signals and timers.
 	// ..() здесь - это встроенное удаление, внутри которого BYOND и обходит мир,
 	// вычищая уцелевшие ссылки. Меряем именно его: половина дисконнектов прошлого
@@ -1756,7 +1761,9 @@ GLOBAL_LIST_INIT(blacklisted_builds, list(
 
 /// Clears the client's screen, aside from ones that opt out
 /client/proc/clear_screen()
-	for (var/object in screen)
+	// По снапшоту: вычитание из screen прямо в обходе по нему сдвигает индексы и
+	// пропускает каждый второй объект.
+	for (var/object in screen.Copy())
 		if (istype(object, /atom/movable/screen))
 			var/atom/movable/screen/screen_object = object
 			if (!screen_object.clear_with_screen)

@@ -217,10 +217,15 @@
 /obj/item/paper/proc/add_field_input(user, field_id, text, font, color, bold, signature_name, overwrite = FALSE)
 	var/datum/paper_field/field_data_datum = null
 
-	var/is_signature = ((text == "%sign") || (text == "%Sign") || (text == "%s") || (text == "%S"))
-	var/is_time = ((text == "%time") || (text == "%Time") || (text == "%t") || (text == "%T"))
-	var/is_date = ((text == "%data") || (text == "%Data") || (text == "%d") || (text == "%D"))
-	var/is_job = ((text == "%job") || (text == "%Job") || (text == "%j") || (text == "%J"))
+	// Регистронезависимо: раньше сравнение шло по точному равенству, и "%SIGN" уже не работал.
+	// В прод-раунде 9832 игрок так и не смог поставить подпись ("sign не сработал"), и никто
+	// вокруг не знал верного написания. У даты исторически принимается опечатка "%data" -
+	// оставлена ради старых бумаг, но рядом теперь понимается и "%date".
+	var/macro = lowertext(trim(text))
+	var/is_signature = ((macro == "%sign") || (macro == "%s"))
+	var/is_time = ((macro == "%time") || (macro == "%t"))
+	var/is_date = ((macro == "%date") || (macro == "%data") || (macro == "%d"))
+	var/is_job = ((macro == "%job") || (macro == "%j"))
 
 
 	var/field_text = text
@@ -230,13 +235,16 @@
 	field_text = is_time ? STATION_TIME_TIMESTAMP("hh:mm:ss", world.time) : field_text
 	field_text = is_date ? "[time2text(world.timeofday, "DD Month")] [GLOB.year_integer]" : field_text
 
-	var/mob/living/carbon/human/H = user
-	var/obj/item/card/id/id_card = H.wear_id?.GetID()
-	if(!id_card)
-		id_card = H.wear_neck?.GetID()
+	// istype обязателен: слоты wear_id/wear_neck есть только у человека, а писать на бумаге
+	// может кто угодно (борг, ксено, обезьяна) - на них голый каст давал рантайм.
+	if(ishuman(user))
+		var/mob/living/carbon/human/H = user
+		var/obj/item/card/id/id_card = H.wear_id?.GetID()
+		if(!id_card)
+			id_card = H.wear_neck?.GetID()
 
-	if(istype(id_card))
-		field_text = is_job ? id_card.get_assignment_name() : field_text
+		if(istype(id_card))
+			field_text = is_job ? id_card.get_assignment_name() : field_text
 
 	for(var/datum/paper_field/field_input in raw_field_input_data)
 		if(field_input.field_index == field_id)

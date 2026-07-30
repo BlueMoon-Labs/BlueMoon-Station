@@ -9,14 +9,6 @@
 
 	mutantlungs = /obj/item/organ/lungs/vox
 
-	species_traits = list(MUTCOLORS,
-		EYECOLOR,
-		NO_UNDERWEAR,
-		HAIR,
-		FACEHAIR,
-		MARKINGS
-		)
-
 	exotic_blood_color = "#9066BD"
 	//flesh_color = "#808D11"
 

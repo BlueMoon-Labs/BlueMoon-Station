@@ -346,7 +346,9 @@ GLOBAL_LIST_INIT(palette_removed_matrix, list(1.4,0,0,0, 0.7,0.4,0,0, 0.4,0,0.6,
 	our_group.refresh_actions()
 	update_appearance()
 
-	if(!usr.client)
+	// usr тут может не быть вовсе: сюда приходят и через удаление моба (qdel -> HideFrom ->
+	// hide_action -> remove_action), а не только по клику игрока.
+	if(!usr?.client)
 		return
 
 	if(expanded)

@@ -234,6 +234,57 @@
 
 	victim.clear_important_client_contents() // cleanup канала CLIENTS
 
+// Регресс: /obj/vehicle/sealed/mecha/Moved() при включённых стабилизаторах
+// возвращался до вызова родителя (ради отмены дрейфа) и вместе с дрейфом
+// глотал перекладку спатиал-грида. Пилот навсегда оставался в ячейке, где сел
+// в меха: слышал только там и глох во всей остальной части станции.
+
+/datum/unit_test/mecha_carries_pilot_across_grid_cells/Run()
+	TEST_ASSERT(SSspatial_grid.initialized, "test premise: SSspatial_grid must be initialized in CI")
+
+	var/obj/vehicle/sealed/mecha/working/ripley/mech = allocate(/obj/vehicle/sealed/mecha/working/ripley, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/pilot = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	pilot.enable_client_mobs_in_contents() // канал CLIENTS обычно кормит Login
+
+	// стабилизаторы с рабочими двигателями - то самое состояние, которое уводило
+	// меха мимо /atom/movable/Moved()
+	TEST_ASSERT_NOTNULL(mech.cell, "test premise: the test mech must spawn with a power cell")
+	mech.cell.charge = mech.cell.maxcharge
+	var/obj/item/mecha_parts/mecha_equipment/thrusters/rcs = new /obj/item/mecha_parts/mecha_equipment/thrusters(mech)
+	rcs.attach(mech)
+	mech.stabilizers = TRUE
+	TEST_ASSERT(mech.has_functional_thrusters(), "test premise: the mech must have working thrusters")
+
+	pilot.forceMove(mech)
+	mech.add_occupant(pilot)
+	TEST_ASSERT(mech.spatial_grid_key, "premise: a mech holding a pilot must gain grid awareness")
+
+	var/datum/spatial_grid_cell/home_cell = SSspatial_grid.get_cell_of(mech)
+	TEST_ASSERT_NOTNULL(home_cell, "The test z-level must be covered by the spatial grid")
+	TEST_ASSERT(pilot in home_cell.hearing_contents, "premise: the pilot must sit in the HEARING channel of the mech's cell")
+
+	//(the reserved test zone can land near the map edge, so step whichever way fits)
+	var/far_x = run_loc_floor_bottom_left.x + SPATIAL_GRID_CELLSIZE * 2
+	if(far_x > world.maxx)
+		far_x = run_loc_floor_bottom_left.x - SPATIAL_GRID_CELLSIZE * 2
+	var/turf/far_turf = locate(far_x, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
+	TEST_ASSERT_NOTNULL(far_turf, "test premise: a turf two grid cells away must exist")
+
+	mech.forceMove(far_turf)
+
+	var/datum/spatial_grid_cell/far_cell = SSspatial_grid.get_cell_of(mech)
+	TEST_ASSERT(far_cell != home_cell, "test premise: the far turf must belong to a different grid cell")
+	TEST_ASSERT(!(pilot in home_cell.hearing_contents), "Driving away must remove the pilot from the old cell's HEARING channel")
+	TEST_ASSERT(pilot in far_cell.hearing_contents, "Driving must register the pilot in the new cell's HEARING channel")
+	TEST_ASSERT(!(pilot in home_cell.client_contents), "Driving away must remove the pilot from the old cell's CLIENTS channel")
+	TEST_ASSERT(pilot in far_cell.client_contents, "Driving must register the pilot in the new cell's CLIENTS channel")
+
+	// то, ради чего всё и делается: сказанное рядом с мехом должно доходить до пилота
+	TEST_ASSERT(pilot in get_hearers_in_view(7, far_turf), "A pilot inside a mech must hear speech next to the mech")
+
+	mech.mob_exit(pilot, silent = TRUE, forced = TRUE)
+	pilot.clear_important_client_contents() // cleanup канала CLIENTS
+
 /// A move queued before qdelete may arrive after Destroy removed grid state.
 /// Re-entry is then stale work, not a new registration or a fatal invariant.
 /datum/unit_test/spatial_grid_rejects_qdeleted_reentry/Run()

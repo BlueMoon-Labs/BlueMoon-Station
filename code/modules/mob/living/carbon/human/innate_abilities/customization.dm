@@ -305,8 +305,12 @@
 			if(!body_size_max) body_size_max = CONFIG_GET(number/body_size_max)
 			if(!body_size_min) body_size_min = CONFIG_GET(number/body_size_min)
 			var/owner_size = get_size(H)
+			// Дефолт обязательно клампить: у персонажа размер может быть вне текущих границ
+			// конфига (в прод-раунде 9834 - 350% при максимуме 200), а tgui_input_number на
+			// default > max делает CRASH, и абилка просто не открывается.
+			var/current_body_size = clamp(H.dna.features["body_size"] * 100, body_size_min * 100, body_size_max * 100)
 			var/new_body_size = tgui_input_number(owner, "Choose your desired sprite size: ([body_size_min * 100]-[body_size_max * 100]%)\nWarning: This may make your character look distorted. Additionally, any size affects speed and max health", "Character Preference", \
-																								H.dna.features["body_size"]*100, body_size_max*100, body_size_min * 100)
+																								current_body_size, body_size_max*100, body_size_min * 100)
 			if(new_body_size)
 				var/chosen_size = clamp(new_body_size * 0.01, body_size_min, body_size_max)
 				var/diff = abs(chosen_size - owner_size)
