@@ -132,6 +132,7 @@
 #include "code\__DEFINES\organs.dm"
 #include "code\__DEFINES\overlays.dm"
 #include "code\__DEFINES\paper.dm"
+#include "code\__DEFINES\pact_siege.dm"
 #include "code\__DEFINES\pinpointers.dm"
 #include "code\__DEFINES\pipe_construction.dm"
 #include "code\__DEFINES\plumbing.dm"
