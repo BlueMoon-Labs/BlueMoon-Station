@@ -205,11 +205,11 @@
 	patient.setOrganLoss(ORGAN_SLOT_EARS, ear_damage)
 	patient.setOrganLoss(ORGAN_SLOT_BRAIN, brain_damage)
 
-	//Re-Applies Trauma
-	var/obj/item/organ/brain/patient_brain = patient.getorgan(/obj/item/organ/brain)
-
-	if(length(trauma_list) && patient_brain)
-		patient_brain.traumas = trauma_list
+	//Re-Applies Trauma. Строго ДО разбора квирков ниже: квирковая траума вернётся
+	//на своё место, снимется вместе со старым квирком и будет заведена заново
+	//в AssignQuirks - дубля не возникает. Класть её после переназначения нельзя:
+	//post_add у квирка отложен таймером, дедуп по типу его ещё не увидит.
+	restore_traumas(patient, trauma_list)
 
 	//Re-Applies Damage
 	// Раньше здесь стояли getBruteLoss(brute_damage)/getFireLoss(burn_damage) - это геттеры без
@@ -239,6 +239,24 @@
 
 	open_machine()
 	playsound(src, 'sound/machines/microwave/microwave-end.ogg', 100, FALSE)
+
+/// Возвращает сохранённые травмы новому мозгу. Дубли по типу и осиротевшие датумы
+/// отбрасываются: старый список приходит от прежнего тела, и часть травм там уже мертва.
+/obj/machinery/self_actualization_device/proc/restore_traumas(mob/living/carbon/human/patient, list/saved_traumas)
+	if(!length(saved_traumas))
+		return
+	var/obj/item/organ/brain/new_brain = patient.getorganslot(ORGAN_SLOT_BRAIN)
+	for(var/datum/brain_trauma/trauma as anything in saved_traumas)
+		if(QDELETED(trauma))
+			continue
+		if(!new_brain || new_brain.has_trauma_type(trauma.type, trauma.resilience))
+			qdel(trauma)
+			continue
+		new_brain.traumas += trauma
+		trauma.brain = new_brain
+		if(new_brain.owner)
+			trauma.owner = new_brain.owner
+			trauma.on_gain()
 
 /// Checks the damage on the inputed organ and stores it.
 /obj/machinery/self_actualization_device/proc/check_organ(mob/living/carbon/human/patient, obj/item/organ/organ_to_check)

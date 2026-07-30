@@ -125,3 +125,32 @@
 	TEST_ASSERT_EQUAL(user.put_in_hands(doomed, forced = TRUE), FALSE, "put_in_hands обязан отказать удалённому предмету")
 	TEST_ASSERT_NULL(doomed.loc, "Удалённый предмет не имеет права вернуться в мир: ни в руку, ни на пол")
 	TEST_ASSERT(!(doomed in user.held_items), "Удалённый предмет оказался в руках")
+
+/// Вторженцы портального шторма обязаны нападать сами.
+///
+/// Клоунский вариант спавнит семейство /hostile/retaliate, а оно атакует только тех, кто ударил
+/// первым: стратегия отбора целей требует, чтобы цель уже лежала в enemies. Ивент-вторжение
+/// выкатывал толпу, которая стоит и ждёт, пока её побьют. Остальные варианты шторма спавнят
+/// обычных враждебных мобов, поэтому пацифизм снимается точечно у заспавненных экземпляров.
+/datum/unit_test/portal_storm_invaders_are_aggressive
+
+/datum/unit_test/portal_storm_invaders_are_aggressive/Run()
+	var/turf/floor = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/retaliate/clown/invader = allocate(/mob/living/simple_animal/hostile/retaliate/clown, floor)
+	var/datum/ai_controller/controller = invader.ai_controller
+	TEST_ASSERT_NOTNULL(controller, "У клоуна нет контроллера - тест ничего не проверяет")
+	TEST_ASSERT_EQUAL(controller.blackboard[BB_AI_TARGETING_STRATEGY], /datum/targeting_strategy/hostile_legacy/retaliate, "Обычный клоун обязан оставаться пацифистом до первого удара")
+
+	var/datum/round_event/portal_storm/storm = new
+	storm.make_invader_aggressive(invader)
+
+	TEST_ASSERT_EQUAL(controller.blackboard[BB_AI_TARGETING_STRATEGY], /datum/targeting_strategy/hostile_legacy, "Вторженец шторма обязан получить обычную стратегию отбора целей, иначе он не нападёт первым")
+
+	// Мобы, которые и так агрессивны, трогать незачем: прок обязан их пропускать.
+	var/mob/living/simple_animal/hostile/carp/fish = allocate(/mob/living/simple_animal/hostile/carp, floor)
+	var/datum/ai_controller/carp_controller = fish.ai_controller
+	var/before = carp_controller.blackboard[BB_AI_TARGETING_STRATEGY]
+	storm.make_invader_aggressive(fish)
+	TEST_ASSERT_EQUAL(carp_controller.blackboard[BB_AI_TARGETING_STRATEGY], before, "Не-retaliate моб не должен менять стратегию отбора целей")
+
+	qdel(storm)
