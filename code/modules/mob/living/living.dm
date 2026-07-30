@@ -47,8 +47,12 @@
 	end_parry_sequence()
 	stop_active_blocking()
 	if(LAZYLEN(status_effects))
-		for(var/s in status_effects)
-			var/datum/status_effect/S = s
+		// Снимок обязателен: и qdel(S), и be_replaced() делают
+		// LAZYREMOVE(owner.status_effects, src), то есть правят список прямо в обходе
+		// по нему - индекс проматывается и каждый второй эффект пропускается.
+		// Пропущенный остаётся с owner на этом мобе, а моб остаётся с ним в
+		// status_effects: цикл ссылок, который BYOND не соберёт никогда
+		for(var/datum/status_effect/S as anything in status_effects.Copy())
 			if(S.on_remove_on_mob_delete) //the status effect calls on_remove when its mob is deleted
 				qdel(S)
 			else

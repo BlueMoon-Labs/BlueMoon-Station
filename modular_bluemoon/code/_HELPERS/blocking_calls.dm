@@ -41,7 +41,11 @@
 		return winget(target, control_id, params)
 	var/started_ms = SStick_spikes.now_ms()
 	. = winget(target, control_id, params)
-	SStick_spikes.record_blocking_call("winget", "[blocking_call_target_name(target)]: [control_id || "<окно>"].[params]", SStick_spikes.now_ms() - started_ms)
+	var/cost_ms = SStick_spikes.now_ms() - started_ms
+	// Описание собираем ТОЛЬКО для дорогих вызовов: в статистику по типам идёт каждый,
+	// а имя нужно лишь тем, кто попадёт в кольцо. Интерполяция строки на каждом вызове
+	// стоила бы дороже самого замера
+	SStick_spikes.record_blocking_call("winget", cost_ms >= SStick_spikes.slow_work_threshold_ms ? "[blocking_call_target_name(target)]: [control_id || "<окно>"].[params]" : null, cost_ms)
 
 /// winexists с замером. Такой же round-trip до скина, как и у winget.
 /proc/tracked_winexists(target, control_id)
@@ -49,7 +53,8 @@
 		return winexists(target, control_id)
 	var/started_ms = SStick_spikes.now_ms()
 	. = winexists(target, control_id)
-	SStick_spikes.record_blocking_call("winexists", "[blocking_call_target_name(target)]: [control_id]", SStick_spikes.now_ms() - started_ms)
+	var/cost_ms = SStick_spikes.now_ms() - started_ms
+	SStick_spikes.record_blocking_call("winexists", cost_ms >= SStick_spikes.slow_work_threshold_ms ? "[blocking_call_target_name(target)]: [control_id]" : null, cost_ms)
 
 /**
  * Ручная пара для блоков, которые обёрткой не накрыть - работа с savefile,

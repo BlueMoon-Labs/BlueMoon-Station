@@ -76,8 +76,14 @@
 			SSassets.transport.register_asset(asset_name, file)
 
 /datum/browser/proc/add_script(name, file)
-	scripts["[ckey(name)].js"] = file
-	SSassets.transport.register_asset("[ckey(name)].js", file)
+	var/asset_name = "[ckey(name)].js"
+	scripts[asset_name] = file
+	// Гард как у add_stylesheet выше: register_asset строит ACI (то есть хеширует файл
+	// через md5asfile - fcopy плюс rustg_hash_file плюс fdel, три синхронных похода на
+	// диск) и только потом смотрит в кэш. Окно чарсетапа перерисовывается на каждый клик,
+	// поэтому один и тот же .js перехешировался снова и снова, блокируя мир
+	if (!SSassets.cache[asset_name])
+		SSassets.transport.register_asset(asset_name, file)
 
 /datum/browser/proc/set_content(ncontent)
 	content = ncontent
