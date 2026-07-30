@@ -137,31 +137,77 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 	allocated += instance
 	return instance
 
-/// Крутит мир, пока target.var_name не станет expected или не выйдет max_wait.
-/// Отложенную работу (addtimer, spawn) исполняет SStimer/планировщик, а sleep(N)
-/// отмеряет только мировое время: на загруженном раннере колбэк не успевает за
-/// фиксированные 1-2 деци, и тест падает на медленной машине, а не на баге.
-/// TRUE = дождались.
-/datum/unit_test/proc/wait_for_var(datum/target, var_name, expected, max_wait = 2 SECONDS)
-	var/deadline = world.time + max_wait
-	while(world.time < deadline)
-		if(QDELETED(target))
+/// Сколько проходов SStimer ожидание обязано увидеть после того, как вышло окно по
+/// мировому времени. Мастер считает проход только за фактический незапаузенный
+/// прогон (master.dm, times_fired++ идёт после SS_PAUSED-ветки), поэтому счётчик
+/// стоит ровно тогда, когда подсистема не получает такта - а это и есть случай,
+/// в котором просроченный таймер не виноват.
+#define UNIT_TEST_WAIT_GRACE_FIRES 10
+/// Потолок ожидания по РЕАЛЬНОМУ времени, отсчитывается от конца окна: страховка
+/// от вечного цикла, если SStimer встал совсем. От конца, а не от начала, чтобы
+/// потолок никогда не подрезал само окно на медленном мировом времени.
+#define UNIT_TEST_WAIT_HARD_LIMIT (10 SECONDS)
+
+#define WAIT_BUDGET_WORLD_DEADLINE 1
+#define WAIT_BUDGET_REAL_DEADLINE 2
+#define WAIT_BUDGET_TIMER_DEADLINE 3
+#define WAIT_BUDGET_DESCRIPTION 4
+
+/// Бюджет одного ожидания отложенной работы, см. wait_budget_tick().
+/datum/unit_test/proc/new_wait_budget(max_wait, description)
+	return list(world.time + max_wait, null, null, description)
+
+/// Спит тик и отвечает, остался ли бюджет ожидания. FALSE = сдаёмся.
+///
+/// Окно меряется мировым временем, но истёкшее окно само по себе не приговор:
+/// на перегруженном раннере world.time продолжает идти, пока мастер режет очередь
+/// по тик-лимиту, так что назначенный внутри окна таймер может ни разу не получить
+/// шанса исполниться - и тест падает на загрузке машины, а не на баге. Поэтому
+/// после окна ждём ещё UNIT_TEST_WAIT_GRACE_FIRES полных проходов SStimer.
+/// Реальный баг от этого быстрее не чинится: на здоровом сервере эти проходы
+/// набегают за доли секунды.
+/datum/unit_test/proc/wait_budget_tick(list/budget)
+	if(world.time >= budget[WAIT_BUDGET_WORLD_DEADLINE])
+		if(isnull(budget[WAIT_BUDGET_TIMER_DEADLINE]))
+			budget[WAIT_BUDGET_TIMER_DEADLINE] = SStimer.times_fired + UNIT_TEST_WAIT_GRACE_FIRES
+			budget[WAIT_BUDGET_REAL_DEADLINE] = REALTIMEOFDAY + UNIT_TEST_WAIT_HARD_LIMIT
+		else if(SStimer.times_fired >= budget[WAIT_BUDGET_TIMER_DEADLINE])
+			log_test("\tWAIT TIMEOUT: [budget[WAIT_BUDGET_DESCRIPTION]] - окно вышло, SStimer отработал положенные полные проходы")
 			return FALSE
-		if(target.vars[var_name] == expected)
-			return TRUE
-		sleep(world.tick_lag)
+		else if(REALTIMEOFDAY >= budget[WAIT_BUDGET_REAL_DEADLINE])
+			log_test("\tWAIT TIMEOUT: [budget[WAIT_BUDGET_DESCRIPTION]] - потолок по реальному времени: SStimer так и не набрал положенных полных проходов")
+			return FALSE
+	sleep(world.tick_lag)
+	return TRUE
+
+/// Крутит мир, пока target.var_name не станет expected или не кончится бюджет
+/// ожидания. Отложенную работу (addtimer, spawn) исполняет SStimer/планировщик,
+/// а sleep(N) отмеряет только мировое время: на загруженном раннере колбэк не
+/// успевает за фиксированные 1-2 деци, и тест падает на медленной машине, а не
+/// на баге. TRUE = дождались.
+/datum/unit_test/proc/wait_for_var(datum/target, var_name, expected, max_wait = 2 SECONDS)
+	var/list/budget = new_wait_budget(max_wait, "[target?.type].[var_name] == [expected]")
+	while(!QDELETED(target) && target.vars[var_name] != expected)
+		if(!wait_budget_tick(budget))
+			break
 	return !QDELETED(target) && target.vars[var_name] == expected
 
-/// Крутит мир, пока target не уйдёт в qdel или не выйдет max_wait. Отложенный
-/// qdel живёт на SStimer, поэтому фиксированный sleep его не гарантирует -
-/// см. wait_for_var. TRUE = дождались.
+/// Крутит мир, пока target не уйдёт в qdel или не кончится бюджет ожидания.
+/// Отложенный qdel живёт на SStimer, поэтому фиксированный sleep его не
+/// гарантирует - см. wait_for_var. TRUE = дождались.
 /datum/unit_test/proc/wait_for_qdeleted(datum/target, max_wait = 2 SECONDS)
-	var/deadline = world.time + max_wait
-	while(world.time < deadline)
-		if(QDELETED(target))
-			return TRUE
-		sleep(world.tick_lag)
+	var/list/budget = new_wait_budget(max_wait, "QDELETED([target?.type])")
+	while(!QDELETED(target))
+		if(!wait_budget_tick(budget))
+			break
 	return QDELETED(target)
+
+#undef UNIT_TEST_WAIT_GRACE_FIRES
+#undef UNIT_TEST_WAIT_HARD_LIMIT
+#undef WAIT_BUDGET_WORLD_DEADLINE
+#undef WAIT_BUDGET_REAL_DEADLINE
+#undef WAIT_BUDGET_TIMER_DEADLINE
+#undef WAIT_BUDGET_DESCRIPTION
 
 /// Reads repository source files for structural audit tests.
 /// Integration CI runs DreamDaemon from `ci_test/`, while source stays in the parent checkout.
