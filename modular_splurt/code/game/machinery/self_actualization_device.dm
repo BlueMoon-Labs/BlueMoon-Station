@@ -175,10 +175,7 @@
 	var/eye_damage = check_organ(patient, /obj/item/organ/eyes)
 	var/ear_damage = check_organ(patient, /obj/item/organ/ears)
 
-	var/list/trauma_list = list()
-	if(patient.get_traumas())
-		for(var/datum/brain_trauma/trauma as anything in patient.get_traumas())
-			trauma_list += trauma
+	var/list/trauma_list = detach_traumas(patient)
 
 	var/brute_damage = patient.getBruteLoss()
 	var/burn_damage = patient.getFireLoss()
@@ -239,6 +236,30 @@
 
 	open_machine()
 	playsound(src, 'sound/machines/microwave/microwave-end.ogg', 100, FALSE)
+
+/// Снимает траумы со старого мозга, чтобы они пережили пересборку тела.
+///
+/// Просто запомнить ссылки нельзя: copy_to меняет вид, regenerate_organs удаляет
+/// прежний мозг, а /obj/item/organ/brain/Destroy() делает QDEL_LIST(traumas).
+/// Прежний код клал этот же список в новый мозг уже qdel-нутым: траумы с owner == null
+/// рантаймили в on_life каждые 2 секунды до конца раунда (Cannot read null.status_traits,
+/// раунд 9824 - 104 рантайма) и висели hard delete'ом с ровно одной внешней ссылкой.
+/obj/machinery/self_actualization_device/proc/detach_traumas(mob/living/carbon/human/patient)
+	. = list()
+	var/obj/item/organ/brain/old_brain = patient.getorganslot(ORGAN_SLOT_BRAIN)
+	if(!old_brain)
+		return
+	for(var/datum/brain_trauma/trauma as anything in old_brain.traumas)
+		if(QDELETED(trauma))
+			continue
+		//owner ещё жив - снимаем подписки штатно, иначе on_gain при возврате
+		//зарегистрирует COMSIG_MOB_SAY/HEAR поверх существующих
+		if(trauma.owner)
+			trauma.on_lose(TRUE)
+		trauma.owner = null
+		trauma.brain = null
+		. += trauma
+	old_brain.traumas = list()
 
 /// Возвращает снятые траумы на новый мозг. Тип, который уже завели заново квирки,
 /// не дублируем - лишний экземпляр просто удаляем.
