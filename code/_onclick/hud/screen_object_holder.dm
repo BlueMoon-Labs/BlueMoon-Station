@@ -34,11 +34,14 @@
 	ASSERT(istype(screen_object))
 
 	protected_screen_objects += screen_object
-	stamp_owner(screen_object)
 	client?.screen += screen_object
 
 /// Объекты меню живут без hud, поэтому снять себя с экрана они могут только по прямой
 /// ссылке на владельца - проставляем её здесь, а не в каждом конструкторе страницы.
+/// Штампуем только те объекты, которые держатель сам и удаляет: protected - это GLOB-синглтоны
+/// (заголовок и подпись меню), их Destroy() возвращает QDEL_HINT_LETMELIVE не доходя до
+/// родителя, поле в них никто не прочитает, а держать в общем синглтоне ссылку на конкретного
+/// клиента незачем.
 /datum/screen_object_holder/proc/stamp_owner(atom/screen_object)
 	PRIVATE_PROC(TRUE)
 

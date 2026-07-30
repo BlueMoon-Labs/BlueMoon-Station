@@ -105,3 +105,22 @@
 
 	TEST_ASSERT_EQUAL(note.loc, floor, "Предмет не упал на пол: воронка сломала обычный дроп")
 	TEST_ASSERT_NULL(note.screen_loc, "screen_loc предмета не сброшен при дропе")
+
+/// Магазин лежит в contents ствола, но общий /obj/item/gun/handle_atom_del его не чистит -
+/// перечислены только pin, chambered, bayonet и gun_light. Из-за этого удаление магазина внутри
+/// ствола (модкит, разбор, админский del) оставляло висячую ссылку, и следующий attack_self
+/// делал forceMove мертвецу: рантаймы "doMove qdel-нутого .../magazine/e45" в раунде 9827.
+/datum/unit_test/ballistic_gun_forgets_deleted_magazine
+	parent_type = /datum/unit_test/harddel_9813_base
+
+/datum/unit_test/ballistic_gun_forgets_deleted_magazine/Run()
+	var/turf/floor = run_loc_floor_bottom_left
+	var/obj/item/gun/ballistic/automatic/pistol/enforcer/gun = allocate(/obj/item/gun/ballistic/automatic/pistol/enforcer, floor)
+
+	var/obj/item/ammo_box/magazine/loaded = gun.magazine
+	TEST_ASSERT_NOTNULL(loaded, "Заводской ствол приехал без магазина - тест ничего не проверяет")
+	TEST_ASSERT_EQUAL(loaded.loc, gun, "Магазин не в contents ствола - тест ничего не проверяет")
+
+	qdel(loaded)
+
+	TEST_ASSERT_NULL(gun.magazine, "Ствол сохранил ссылку на удалённый магазин: handle_atom_del его не обнулил")

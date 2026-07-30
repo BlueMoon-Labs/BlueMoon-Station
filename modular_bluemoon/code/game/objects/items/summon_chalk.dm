@@ -136,7 +136,10 @@
 	//у выпотрошенного атома loc пуст, и spawn в null оставлял мусор в nullspace
 	var/atom/rune_location = drop_location()
 	playsound(rune_location, 'modular_bluemoon/sound/effects/spook.ogg', 50, 1)
-	new /obj/effect/temp_visual/yellowsparkles(target.loc)
+	//та же причина, что и у гарда на rune_location ниже: сюда приходят и из Destroy() руны,
+	//где цель может быть уже без loc - спавн в null оставлял эффект в нуль-спейсе
+	if(target.loc)
+		new /obj/effect/temp_visual/yellowsparkles(target.loc)
 	if(transfer_target_items)
 		transfer_items(target)
 	do_teleport(target, pos_to_teleport, channel = TELEPORT_CHANNEL_MAGIC, forced = TRUE)
