@@ -102,6 +102,7 @@
 #include "harddel_round_9824.dm"
 #include "harddel_round_9827.dm"
 #include "harddel_round_9832.dm"
+#include "immovable_rod_cleanup.dm"
 // #include "greyscale_config.dm"
 // #include "heretic_knowledge.dm"
 // #include "holidays.dm"
