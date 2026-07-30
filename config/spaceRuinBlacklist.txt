@@ -54,7 +54,6 @@
 #_maps/RandomRuins/SpaceRuins/advancedlab.dmm
 #_maps/RandomRuins/SpaceRuins/spacediner.dmm
 #_maps/RandomRuins/SpaceRuins/skelter.dmm
-#_maps/RandomRuins/SpaceRuins/forgotten_ship.dmm
 #_maps/RandomRuins/SpaceRuins/BlueMoon/cargodiselost.dmm
 #_maps/RandomRuins/SpaceRuins/BlueMoon/vaulttango.dmm
 #_maps/RandomRuins/SpaceRuins/BlueMoon/rusprison.dmm
