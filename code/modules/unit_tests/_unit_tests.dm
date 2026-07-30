@@ -206,6 +206,7 @@
 #include "turf_exit_checks.dm"
 #include "objective_completion.dm"
 #include "round_9752_regressions.dm"
+#include "prod_round_9832.dm"
 #include "warnfail_context.dm"
 #include "runtime_guards.dm"
 #include "hallucination_stationmessage.dm"

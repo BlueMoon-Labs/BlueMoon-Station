@@ -157,6 +157,10 @@
 	use_power = IDLE_POWER_USE
 
 	if(!ishuman(occupant) || !check_for_normalizer(occupant)) // BLUEMOON EDIT - added || !check_for_normalizer(occupant)
+		// processing уже снят выше, так что process() машину больше не откроет: без
+		// open_machine() пациент оставался запертым внутри до клика по машине или
+		// десятисекундного container_resist.
+		open_machine()
 		return FALSE
 
 	var/mob/living/carbon/human/patient = occupant
@@ -204,12 +208,16 @@
 	//Re-Applies Trauma
 	var/obj/item/organ/brain/patient_brain = patient.getorgan(/obj/item/organ/brain)
 
-	if(length(trauma_list))
+	if(length(trauma_list) && patient_brain)
 		patient_brain.traumas = trauma_list
 
 	//Re-Applies Damage
-	patient.getBruteLoss(brute_damage)
-	patient.getFireLoss(burn_damage)
+	// Раньше здесь стояли getBruteLoss(brute_damage)/getFireLoss(burn_damage) - это геттеры без
+	// аргументов, DM молча выбрасывал и аргумент, и возврат. Урон, снятый copy_to() выше, никогда
+	// не возвращался, и машина работала бесплатным полным лечением брута и бёрна.
+	patient.adjustBruteLoss(brute_damage, FALSE)
+	patient.adjustFireLoss(burn_damage, FALSE)
+	patient.updatehealth()
 
 	if(SSquirks?.check_blacklist_conflicts(patient.client?.prefs?.all_quirks))
 		patient.client.prefs.all_quirks.Cut()
