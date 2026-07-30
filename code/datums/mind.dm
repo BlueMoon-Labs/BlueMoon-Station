@@ -139,6 +139,7 @@
 	SSticker.minds -= src
 	QDEL_NULL(tgui_panel)
 	QDEL_LIST(antag_datums)
+	QDEL_LIST(ambition_objectives)
 	QDEL_NULL(skill_holder)
 	RemoveAllSpells()
 	set_assigned_heirloom(null)

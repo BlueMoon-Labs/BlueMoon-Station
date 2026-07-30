@@ -176,6 +176,11 @@
 			chambered = null
 		else
 			QDEL_NULL(chambered)
+	if(alight)
+		if(QDELING(alight))
+			alight = null
+		else
+			QDEL_NULL(alight)
 	if(azoom)
 		if(QDELING(azoom))
 			azoom = null
@@ -327,6 +332,10 @@
 	process_afterattack(target, user, flag, params)
 
 /obj/item/gun/proc/do_eblya(mob/living/target, mob/living/user)
+	// Похабный русский револьвер намеренно зовёт родительский afterattack с null-целью,
+	// чтобы ствол не выстрелил в собеседника - сюда мы после этого приходим без цели
+	if(isnull(target))
+		return
 	var/message = ""
 	var/lust_amt = 0
 	var/mob/living/living_target = target
@@ -966,6 +975,28 @@
 /datum/action/item_action/toggle_scope_zoom/Remove(mob/living/L)
 	var/obj/item/gun/G = target
 	G.zoom(L, L.dir, FALSE)
+	return ..()
+
+//item_action/Destroy вычёркивает себя только из списка actions, а ствол держит свои
+//экшены ещё и типизированными полями. Если экшен умрёт раньше ствола - ствол ушёл из
+//инвентаря мимо dropped(), грант остался на мобе, моб удалился и QDEL_LAZYLIST(actions)
+//добрался до экшена первым - живой ствол остаётся единственным держателем трупа
+/datum/action/item_action/toggle_scope_zoom/Destroy()
+	var/obj/item/gun/gun = target
+	if(istype(gun) && gun.azoom == src)
+		gun.azoom = null
+	return ..()
+
+/datum/action/item_action/toggle_gunlight/Destroy()
+	var/obj/item/gun/gun = target
+	if(istype(gun) && gun.alight == src)
+		gun.alight = null
+	return ..()
+
+/datum/action/item_action/toggle_firemode/Destroy()
+	var/obj/item/gun/gun = target
+	if(istype(gun) && gun.firemode_action == src)
+		gun.firemode_action = null
 	return ..()
 
 /obj/item/gun/proc/rotate(atom/thing, old_dir, new_dir)
