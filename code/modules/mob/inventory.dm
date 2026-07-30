@@ -169,6 +169,12 @@
 	return !held_items[hand_index]
 
 /mob/proc/put_in_hand(obj/item/I, hand_index, forced = FALSE, ignore_anim = TRUE)
+	// Класть в руки удалённый предмет нельзя: forced = TRUE обходит can_put_in_hand целиком, и
+	// стрип-меню приносило сюда самоудаляющиеся при снятии предметы (энергетический силок,
+	// поцелуй) - forceMove мертвецу пинил его ссылкой из contents и давал "doMove qdel-нутого"
+	// (прод-раунд 9834). Сторона сброса такой гард уже имеет.
+	if(QDELETED(I))
+		return FALSE
 	if(forced || can_put_in_hand(I, hand_index))
 		if(isturf(I.loc) && !ignore_anim)
 			I.do_pickup_animation(src)
