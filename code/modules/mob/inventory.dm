@@ -351,18 +351,24 @@
 		update_inv_hands()
 	if(I)
 		remove_from_hud_screens(I)
-		I.screen_loc = null
-		I.layer = initial(I.layer)
-		I.plane = initial(I.plane)
-		I.appearance_flags &= ~NO_CLIENT_COLOR
-		if(!no_move && !(I.item_flags & DROPDEL))	//item may be moved/qdel'd immedietely, don't bother moving it
-			if (isnull(newloc))
-				I.moveToNullspace()
-			else
-				I.forceMove(newloc)
-		on_item_dropped(I)
-		if(I.dropped(src) == ITEM_RELOCATED_BY_DROPPED)
-			return FALSE
+		//QDELETED сюда доезжает через оффхенд двуручника: /obj/item/Destroy снимает
+		//DROPDEL "чтобы не было реqdel'ов", и следующий сброс из рук честно тащит
+		//труп на пол - "doMove qdel-нутого /obj/item/offhand". У такого предмета
+		//Destroy уже отработал: править ему внешность, двигать его и звать dropped()
+		//значит работать с трупом. Снять с экрана всё равно надо - ссылка переживает qdel
+		if(!QDELETED(I))
+			I.screen_loc = null
+			I.layer = initial(I.layer)
+			I.plane = initial(I.plane)
+			I.appearance_flags &= ~NO_CLIENT_COLOR
+			if(!no_move && !(I.item_flags & DROPDEL))	//item may be moved/qdel'd immedietely, don't bother moving it
+				if (isnull(newloc))
+					I.moveToNullspace()
+				else
+					I.forceMove(newloc)
+			on_item_dropped(I)
+			if(I.dropped(src) == ITEM_RELOCATED_BY_DROPPED)
+				return FALSE
 	SEND_SIGNAL(src, COMSIG_MOB_UNEQUIPPED_ITEM, I, force, newloc, no_move, invdrop, silent)
 	return TRUE
 

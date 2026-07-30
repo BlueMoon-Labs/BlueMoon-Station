@@ -205,8 +205,12 @@
 	restore_traumas(patient, trauma_list)
 
 	//Re-Applies Damage
-	patient.getBruteLoss(brute_damage)
-	patient.getFireLoss(burn_damage)
+	// Раньше здесь стояли getBruteLoss(brute_damage)/getFireLoss(burn_damage) - это геттеры без
+	// аргументов, DM молча выбрасывал и аргумент, и возврат. Урон, снятый copy_to() выше, никогда
+	// не возвращался, и машина работала бесплатным полным лечением брута и бёрна.
+	patient.adjustBruteLoss(brute_damage, FALSE)
+	patient.adjustFireLoss(burn_damage, FALSE)
+	patient.updatehealth()
 
 	if(SSquirks?.check_blacklist_conflicts(patient.client?.prefs?.all_quirks))
 		patient.client.prefs.all_quirks.Cut()
