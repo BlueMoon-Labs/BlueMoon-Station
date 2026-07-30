@@ -342,7 +342,7 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
 		var/obj/item/paper/sent_paper = sent
 		log_paper("[key_name(usr)] has sent a fax with the message \"[sent_paper.get_raw_text()]\" to [name]/[destination_id].")
 		return
-	log_game("[key_name(usr)] has faxed [sent] to [name]/[destination_id].]")
+	log_game("[key_name(usr)] has faxed [sent] to [name]/[destination_id].")
 
 /**
  * The procedure for sending a paper to another fax machine.

@@ -4,7 +4,7 @@
 // рантаймом "Null in a tgui_input_list() items" (прод-раунд 9832).
 /datum/species/golem/New()
 	. = ..()
-	// Идемпотентное добавление, а не LAZYADD: inherent_traits объявлен списком на уровне типа,
-	// и LAZYADD дописывал бы копию трейта в этот общий дефолт при каждом создании экземпляра вида.
+	// Идемпотентное добавление, а не LAZYADD: повторный проход по тому же списку (наследование
+	// New() подтипами, ручное досоздание вида) дописывал бы вторую копию трейта.
 	LAZYINITLIST(inherent_traits)
 	inherent_traits |= CAN_BE_OPERATED_WITHOUT_PAIN

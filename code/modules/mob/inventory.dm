@@ -229,7 +229,10 @@
 //If both fail it drops it on the floor and returns FALSE.
 //This is probably the main one you need to know :)
 /mob/proc/put_in_hands(obj/item/I, del_on_fail = FALSE, merge_stacks = TRUE, forced = FALSE)
-	if(!I)
+	// QDELETED, а не только !I: удалённый предмет остаётся ненулевым, put_in_hand его теперь
+	// отвергает - и управление доходило бы до хвоста прока, где удалённому предмету всё равно
+	// делают forceMove(drop_location()) и dropped(). Тот же рантайм, только этажом ниже.
+	if(QDELETED(I))
 		return FALSE
 
 	// If the item is a stack and we're already holding a stack then merge
