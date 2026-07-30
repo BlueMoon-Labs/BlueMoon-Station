@@ -1138,17 +1138,27 @@ GLOBAL_LIST_EMPTY(humanoid_icon_cache)
 		// на входе - выброшенная работа на каждом вызове.
 		var/mob/living/carbon/human/dummy/body = generate_or_wait_for_human_dummy(dummy_key, regenerate = FALSE)
 
+		// Всё до цикла по дирекциям шло одним неразрывным куском: copy_to тянет за собой
+		// set_species с полной пересборкой конечностей и органов, equip спавнит весь
+		// комплект аутфита, а тройка update_* перерисовывает моба. В прод-раунде этот
+		// блок мерился в 120-190 мс при потолке тика в 12 - то есть уступать было пора
+		// давно, а первый CHECK_TICK стоял только ниже. Прок и так умеет спать, манекен
+		// на это время остаётся занятым, но остальные вызывающие ждут его на in_use
 		if(prefs)
 			prefs.copy_to(body,TRUE,FALSE)
+			CHECK_TICK
 		if(J)
 			J.equip(body, TRUE, FALSE, outfit_override = outfit_override)
+			CHECK_TICK
 		else if (outfit_override)
 			body.equipOutfit(outfit_override,visualsOnly = TRUE)
+			CHECK_TICK
 
 		// Синхронизация превью моба, без этого именно эти части почему-то ломает. Костыль.
 		body.update_body(update_genitals = TRUE)
 		body.update_hair()
 		body.update_mutations_overlay()
+		CHECK_TICK
 
 		var/icon/out_icon
 		var/list/good_partials = list()

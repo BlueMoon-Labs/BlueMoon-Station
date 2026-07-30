@@ -170,12 +170,17 @@ SUBSYSTEM_DEF(mail)
 /// Deleting mails from sealed_mails list, which lifetime was expired, calling their mail/disappear() proc
 /datum/controller/subsystem/mail/proc/delete_obsolete_mails()
 	var/deleted_mails_count = 0
+	//правка списка прямо в обходе по нему проматывает индекс: письмо, стоящее за
+	//удалённым, не проверялось вовсе и жило до следующего фаера, а то и дольше
+	var/list/expired = list()
 	for(var/obj/item/mail/sealed_mail in sealed_mails)
 		if(world.time > sealed_mails[sealed_mail])
-			sealed_mails[sealed_mail] = null
-			sealed_mails -= sealed_mail
-			INVOKE_ASYNC(sealed_mail, TYPE_PROC_REF(/obj/item/mail, disappear))
-			deleted_mails_count++
+			expired += sealed_mail
+	for(var/obj/item/mail/sealed_mail as anything in expired)
+		sealed_mails[sealed_mail] = null
+		sealed_mails -= sealed_mail
+		INVOKE_ASYNC(sealed_mail, TYPE_PROC_REF(/obj/item/mail, disappear))
+		deleted_mails_count++
 	if(deleted_mails_count)
 		log_subsystem(src, "Удалено [deleted_mails_count] старых неоткрытых писем")
 
@@ -190,7 +195,7 @@ SUBSYSTEM_DEF(mail)
 		if(human.stat == DEAD || !human.mind)
 			continue
 		// Отправляем письма только тем, у кого валидная работа, чтобы отфильтровать всяких ноунеймичей
-		if(!(human.mind.assigned_role in get_all_jobs()))
+		if(!GLOB.all_jobs_lookup[human.mind.assigned_role])
 			continue
 
 		mail_recipients += human
