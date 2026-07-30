@@ -206,3 +206,30 @@
 	TEST_ASSERT_EQUAL(critter.movement_step_cost(FALSE), movement_step_delay(critter.movement_delay(), FALSE, world.tick_lag), "Цена шага обязана считаться от movement_delay()")
 	TEST_ASSERT_NOTEQUAL(critter.movement_step_cost(FALSE), movement_step_delay(critter.cached_multiplicative_slowdown, FALSE, world.tick_lag), "Считать цену от кэша замедлений нельзя: пересчёт видел бы её ниже уплаченной и дарил шагу тик")
 	TEST_ASSERT(critter.movement_step_cost(TRUE) > critter.movement_step_cost(FALSE), "Диагональ обязана стоить дороже прямого хода и в общем расчёте цены")
+
+/// Квирк "Быстрый Шаг" обязан давать при ходьбе ровно скорость бега.
+///
+/// Раньше он вычитал константу 1.25, и совпадение с бегом держалось на том, что при
+/// прод-конфиге (ходьба 3, бег 1.5) итог 1.75 округляется вниз до ступени тика. При тике
+/// 1 вместо 0.5 те же 1.75 уходят ВВЕРХ до 2.0 - ходьба становится вдвое медленнее бега,
+/// и игроки видят "быстрый шаг сломали". Теперь вычитается разница из конфига, кратная
+/// ступени по построению, и от направления округления результат не зависит.
+/datum/unit_test/quick_step_walks_at_run_speed
+
+/datum/unit_test/quick_step_walks_at_run_speed/Run()
+	var/mob/living/carbon/human/walker = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/runner = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+
+	ADD_TRAIT(walker, TRAIT_SPEEDY_STEP, "unit_test")
+	walker.m_intent = MOVE_INTENT_WALK
+	walker.update_move_intent_slowdown()
+	runner.m_intent = MOVE_INTENT_RUN
+	runner.update_move_intent_slowdown()
+
+	TEST_ASSERT_EQUAL(walker.movement_step_cost(FALSE), runner.movement_step_cost(FALSE), "Ходьба с быстрым шагом обязана стоить столько же, сколько бег")
+
+	// Без квирка ходьба обязана остаться медленнее бега, иначе правка съела сам смысл интента.
+	var/mob/living/carbon/human/plain = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	plain.m_intent = MOVE_INTENT_WALK
+	plain.update_move_intent_slowdown()
+	TEST_ASSERT(plain.movement_step_cost(FALSE) > runner.movement_step_cost(FALSE), "Обычная ходьба обязана быть медленнее бега")

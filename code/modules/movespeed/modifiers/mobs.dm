@@ -63,10 +63,22 @@
 	var/mod = CONFIG_GET(number/movedelay/walk_delay)
 	multiplicative_slowdown = isnum(mod)? mod : initial(multiplicative_slowdown)
 
+/// "Быстрый шаг" задуман как ходьба со скоростью бега, поэтому вычитаем ровно разницу между
+/// ходьбой и бегом, а не константу. Прежние 1.25 давали при прод-конфиге (ходьба 3, бег 1.5)
+/// задержку 1.75, и совпадение с бегом держалось только на том, что половина ступени тика
+/// округляется вниз: при другом tick_lag (тик 1 вместо 0.5) те же 1.75 уходят ВВЕРХ до 2.0 -
+/// ходьба становится вдвое медленнее бега, и квирк выглядит сломанным. Разница из конфига
+/// кратна ступени по построению, так что от направления округления результат не зависит.
+/// Прочие замедления (турф, груз, пуллинг) сохраняются - режем только базу ходьбы.
 /datum/movespeed_modifier/config_walk_run/walk/apply_multiplicative(existing, mob/target)
 	. = ..()
-	if(HAS_TRAIT(target, TRAIT_SPEEDY_STEP))
-		. -= 1.25
+	if(!HAS_TRAIT(target, TRAIT_SPEEDY_STEP))
+		return
+	var/walk_delay = CONFIG_GET(number/movedelay/walk_delay)
+	var/run_delay = CONFIG_GET(number/movedelay/run_delay)
+	if(!isnum(walk_delay) || !isnum(run_delay))
+		return
+	. -= max(0, walk_delay - run_delay)
 
 /datum/movespeed_modifier/config_walk_run/run/sync()
 	var/mod = CONFIG_GET(number/movedelay/run_delay)
