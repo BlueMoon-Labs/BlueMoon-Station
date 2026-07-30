@@ -144,7 +144,7 @@
 	if(pooled && istype(client))
 		winset(client, id, "is-visible=0")
 	// Detect whether the control is a browser
-	var/win_type = winexists(client, id)
+	var/win_type = tracked_winexists(client, id)
 	is_browser = win_type == "BROWSER"
 	if(CONFIG_GET(flag/emergency_tgui_logging))
 		var/primary_target = get_primary_output_target()

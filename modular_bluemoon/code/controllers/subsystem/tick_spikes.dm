@@ -59,6 +59,10 @@
 #define TICK_SPIKES_CLASSIFY_MAP_CPU_THRESHOLD 30
 /// На сколько тиков после нашего дампа профайлера спайки считаются самонаведёнными
 #define TICK_SPIKES_SELF_INFLICTED_TICKS 2
+/// Какую долю дрифта должен покрыть блокирующий вызов, чтобы его назвали виновником
+#define TICK_SPIKES_BLOCKING_COVERAGE 0.5
+/// Как часто выгружать в лог накопленный итог по блокирующим вызовам
+#define TICK_SPIKES_BLOCKING_SUMMARY_INTERVAL (5 MINUTES)
 /// Бюджет авто-дампов sendmaps-профиля за раунд (вне сессии захвата)
 #define TICK_SPIKES_MAX_AUTO_DUMPS 12
 
@@ -68,6 +72,7 @@
 #define TICK_SPIKE_CLASS_SENDMAPS "SendMaps (рассылка карты клиентам)"
 #define TICK_SPIKE_CLASS_EXTERNAL "внешний столл (диск/ОС/BYOND), DM почти не работал"
 #define TICK_SPIKE_CLASS_SELF "дамп профайлера самой диагностики"
+#define TICK_SPIKE_CLASS_BLOCKING "блокирующий вызов (ожидание клиента/диска)"
 
 SUBSYSTEM_DEF(tick_spikes)
 	name = "Tick Spikes"
@@ -124,6 +129,28 @@ SUBSYSTEM_DEF(tick_spikes)
 	/// Порог стоимости (мс синхронной части, до первого сна), с которого единица работы
 	/// попадает в кольцо. Общий для всех точек замера, крутится через VV.
 	var/slow_work_threshold_ms = 30
+
+	// --- Учёт блокирующих вызовов ---
+	// Пока DM стоит внутри winget/winexists (ожидание ответа клиента по сети),
+	// записи в savefile или world.Export, процесс DreamDaemon не выполняет ни строчки
+	// и не жжёт CPU. Детектор видит "реального времени прошло много, world.cpu низкий"
+	// и списывает это на внешний столл - в раунде 9838 таких спайков было 122 из 246,
+	// то есть половина потерь была безымянной. Замер вокруг самих примитивов
+	// превращает анонимный столл в именованную запись.
+	/// Суммарно мс за раунд во всех замеренных блокирующих вызовах
+	var/blocking_total_ms = 0
+	/// Сколько замеренных блокирующих вызовов было
+	var/blocking_calls = 0
+	/// Разбивка по типу вызова: kind -> list("count" = N, "ms" = X, "max" = Y)
+	var/list/blocking_by_kind
+	/// world.time последнего блокирующего вызова, перешагнувшего slow_work_threshold_ms
+	var/last_blocking_world = 0
+	/// Его стоимость и описание - для классификации спайка
+	var/last_blocking_cost = 0
+	var/last_blocking_kind
+	var/last_blocking_desc
+	/// world.time следующей периодической выгрузки итога по блокирующим вызовам
+	var/next_blocking_summary_world = 0
 
 	// --- Состояние часов ---
 	var/has_baseline = FALSE
@@ -237,6 +264,14 @@ SUBSYSTEM_DEF(tick_spikes)
 	slow_work_desc = new /list(TICK_SPIKES_SLOW_WORK_HISTORY)
 	slow_work_cost = new /list(TICK_SPIKES_SLOW_WORK_HISTORY)
 	slow_work_pos = 0
+	blocking_total_ms = 0
+	blocking_calls = 0
+	blocking_by_kind = list()
+	last_blocking_world = 0
+	last_blocking_cost = 0
+	last_blocking_kind = null
+	last_blocking_desc = null
+	next_blocking_summary_world = 0
 	has_baseline = FALSE
 	last_ms = 0
 	last_world = 0
@@ -257,6 +292,12 @@ SUBSYSTEM_DEF(tick_spikes)
 	sample_tick(rustg_time_milliseconds(TICK_SPIKES_CLOCK), world.time, TICK_USAGE, world.cpu, MAPTICK_LAST_INTERNAL_TICK_USAGE)
 	if(capture_until && world.time > capture_until)
 		stop_capture(automatic = TRUE)
+	// Итог по блокирующим вызовам пишем периодически, а не на Shutdown: архив логов
+	// снимают с живого раунда, а Shutdown при аварийном рестарте не отрабатывает вовсе
+	if(world.time >= next_blocking_summary_world)
+		next_blocking_summary_world = world.time + TICK_SPIKES_BLOCKING_SUMMARY_INTERVAL
+		if(blocking_calls)
+			write_to_log("[time_stamp_from_world(world.time)] [build_blocking_summary()]")
 
 /**
  * Обработка одного тика. Вынесена из fire() с явными аргументами,
@@ -358,6 +399,41 @@ SUBSYSTEM_DEF(tick_spikes)
 	slow_work_desc[slow_work_pos] = desc
 	slow_work_cost[slow_work_pos] = cost_ms
 
+/// Текущее показание монотонных часов rust-g. Публичный доступ нужен обёрткам
+/// блокирующих примитивов: они живут вне этого файла, а идентификатор часов - локальный дефайн.
+/datum/controller/subsystem/tick_spikes/proc/now_ms()
+	return rustg_time_milliseconds(TICK_SPIKES_CLOCK)
+
+/**
+ * Запись завершившегося блокирующего вызова.
+ *
+ * Считаем ВСЕ вызовы (для итоговой разбивки за раунд), а в кольцо медленной работы
+ * и в классификацию отдаём только те, что перешагнули slow_work_threshold_ms.
+ *
+ * kind - короткий тип примитива ("winget", "savefile", "world.Export"),
+ * desc - кого и о чём спрашивали.
+ */
+/datum/controller/subsystem/tick_spikes/proc/record_blocking_call(kind, desc, cost_ms)
+	if(cost_ms < 0) //часы переехали - лучше потерять замер, чем испортить статистику
+		return
+	blocking_calls++
+	blocking_total_ms += cost_ms
+	var/list/bucket = blocking_by_kind[kind]
+	if(!bucket)
+		bucket = list("count" = 0, "ms" = 0, "max" = 0)
+		blocking_by_kind[kind] = bucket
+	bucket["count"]++
+	bucket["ms"] += cost_ms
+	if(cost_ms > bucket["max"])
+		bucket["max"] = cost_ms
+	if(cost_ms < slow_work_threshold_ms)
+		return
+	last_blocking_world = world.time
+	last_blocking_cost = cost_ms
+	last_blocking_kind = kind
+	last_blocking_desc = desc
+	record_slow_work(kind, desc, cost_ms)
+
 /// Описание колбека для кольца медленной работы: тип объекта + прок.
 /// Зовётся только для уже пойманных медленных вызовов - стоимость строк не важна.
 /datum/controller/subsystem/tick_spikes/proc/callback_desc(datum/callback/callback)
@@ -425,6 +501,13 @@ SUBSYSTEM_DEF(tick_spikes)
 		if(drift && culprits_ms < drift * 0.5)
 			. += " - объясняют лишь ~[round(culprits_ms)]мс из [round(drift)]мс, остальное вне МК"
 		return .
+	// Блокирующий вызов виден раньше, чем cpu-эвристики: пока DM ждёт ответа клиента
+	// или диска, world.cpu не растёт, и без этой проверки спайк уехал бы во "внешний
+	// столл". Виним только если вызов завершился в тиках спайка и закрывает
+	// заметную долю дрифта - иначе это совпадение, а не причина.
+	if(last_blocking_world >= tight_window_start && drift && last_blocking_cost >= drift * TICK_SPIKES_BLOCKING_COVERAGE)
+		last_classify_detail = " - [last_blocking_kind]: [last_blocking_desc], [round(last_blocking_cost)]мс из [round(drift)]мс"
+		return TICK_SPIKE_CLASS_BLOCKING
 	// Смотрим последние TICK_SPIKES_CLASSIFY_WINDOW_TICKS тика кольца: cpu отражает предыдущий тик
 	var/max_cpu = 0
 	var/max_map_cpu = 0
@@ -489,7 +572,7 @@ SUBSYSTEM_DEF(tick_spikes)
 
 	var/list/slow_work_lines = collect_slow_work(now_world - TICK_SPIKES_HEAVY_WINDOW)
 	if(length(slow_work_lines))
-		event += "медленные таймер-колбеки/вербы/Topic за последние [TICK_SPIKES_HEAVY_WINDOW / 10] сек (>=[slow_work_threshold_ms]мс синхронной части - именует DM вне МК):"
+		event += "медленные единицы работы за последние [TICK_SPIKES_HEAVY_WINDOW / 10] сек (>=[slow_work_threshold_ms]мс - таймер-колбеки/вербы/Topic именуют DM вне МК, winget/winexists/savefile/world.Export именуют блокирующее ожидание, которое иначе выглядит как внешний столл):"
 		event += slow_work_lines
 
 	event += "последние тики (время | дрифт мс | usage% до МК | cpu% | map_cpu%):"
@@ -611,6 +694,7 @@ SUBSYSTEM_DEF(tick_spikes)
 	out += "тиков замерено: [samples_collected]"
 	out += "спайков: [session_spike_count] (из них кратко в логе: [suppressed_event_count]), худший [round(worst_drift_ms)]мс в [worst_drift_at ? time_stamp_from_world(worst_drift_at) : "-"], суммарно потеряно в спайках ~[round(total_spike_drift_ms)]мс"
 	out += "гистограмма дрифтов (мс): [TICK_SPIKES_HISTOGRAM_FLOOR]-[TICK_SPIKES_HISTOGRAM_BUCKET_1]: [drift_histogram[1]] | [TICK_SPIKES_HISTOGRAM_BUCKET_1]-[TICK_SPIKES_HISTOGRAM_BUCKET_2]: [drift_histogram[2]] | [TICK_SPIKES_HISTOGRAM_BUCKET_2]-[TICK_SPIKES_HISTOGRAM_BUCKET_3]: [drift_histogram[3]] | [TICK_SPIKES_HISTOGRAM_BUCKET_3]-[TICK_SPIKES_HISTOGRAM_BUCKET_4]: [drift_histogram[4]] | [TICK_SPIKES_HISTOGRAM_BUCKET_4]+: [drift_histogram[5]]"
+	out += build_blocking_summary()
 	out += "лог событий: [log_path ? log_path : "ещё не создан"]"
 	if(length(spike_events))
 		out += ""
@@ -621,6 +705,24 @@ SUBSYSTEM_DEF(tick_spikes)
 	else
 		out += "событий пока нет"
 	return out.Join("\n")
+
+/**
+ * Итог по блокирующим вызовам за раунд.
+ *
+ * Это ответ на вопрос "куда делось время, которого не видит ни профайлер, ни world.cpu".
+ * Если сумма здесь сопоставима с суммарным дрифтом спайков - значит внешние столлы
+ * это наши же ожидания клиента и диска, и чинить надо конкретный примитив.
+ * Если сумма мала, а дрифт велик - виноват хост, и в коде искать нечего.
+ */
+/datum/controller/subsystem/tick_spikes/proc/build_blocking_summary()
+	if(!blocking_calls)
+		return "блокирующие вызовы: замеров нет"
+	var/list/parts = list()
+	for(var/kind in blocking_by_kind)
+		var/list/bucket = blocking_by_kind[kind]
+		parts += "[kind] x[bucket["count"]]: [round(bucket["ms"])]мс (макс [round(bucket["max"])]мс)"
+	var/share = total_spike_drift_ms ? " = [round(blocking_total_ms / total_spike_drift_ms * 100)]% суммарного дрифта спайков" : ""
+	return "блокирующие вызовы: всего [blocking_calls] на [round(blocking_total_ms)]мс[share] | [parts.Join(" | ")]"
 
 /datum/controller/subsystem/tick_spikes/proc/write_to_log(text)
 	if(suppress_side_effects)
@@ -645,8 +747,11 @@ SUBSYSTEM_DEF(tick_spikes)
 #undef TICK_SPIKES_CLASSIFY_CPU_THRESHOLD
 #undef TICK_SPIKES_CLASSIFY_MAP_CPU_THRESHOLD
 #undef TICK_SPIKES_SELF_INFLICTED_TICKS
+#undef TICK_SPIKES_BLOCKING_COVERAGE
+#undef TICK_SPIKES_BLOCKING_SUMMARY_INTERVAL
 #undef TICK_SPIKE_CLASS_MC
 #undef TICK_SPIKE_CLASS_DM
 #undef TICK_SPIKE_CLASS_SENDMAPS
 #undef TICK_SPIKE_CLASS_EXTERNAL
 #undef TICK_SPIKE_CLASS_SELF
+#undef TICK_SPIKE_CLASS_BLOCKING

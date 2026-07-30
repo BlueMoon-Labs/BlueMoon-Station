@@ -61,6 +61,44 @@
 	TEST_ASSERT_EQUAL(recorder.session_spike_count, 1, "Спайк с высоким map_cpu не зафиксирован")
 	TEST_ASSERT(findtext(recorder.spike_events[1], "SendMaps"), "Спайк с map_cpu выше порога не классифицирован как SendMaps")
 
+	// 5b. Блокирующий вызов: cpu и map_cpu низкие, как у внешнего столла, но замер
+	// вокруг примитива закрывает большую часть дрифта - виним его поимённо.
+	// Половина спайков раунда 9838 была безымянными столлами именно из-за того,
+	// что ожидание клиента и диска ничем не измерялось.
+	recorder.reset_state()
+	recorder.sample_tick(1000, 500, 2, 5, 3)
+	recorder.sample_tick(1050, 500.5, 2, 5, 3)
+	recorder.record_blocking_call("winget", "тестклиент: input.text", 480)
+	recorder.sample_tick(1600, 501, 2, 5, 3)
+	TEST_ASSERT_EQUAL(recorder.session_spike_count, 1, "Спайк с блокирующим вызовом не зафиксирован")
+	TEST_ASSERT(findtext(recorder.spike_events[1], "блокирующий вызов"), "Спайк, закрытый блокирующим вызовом, не классифицирован как блокирующий")
+	TEST_ASSERT(findtext(recorder.spike_events[1], "тестклиент: input.text"), "Описание блокирующего вызова не попало в событие")
+
+	// 5c. Дешёвый блокирующий вызов не должен перехватывать классификацию:
+	// он не покрывает дрифт, значит это совпадение, а не причина
+	recorder.reset_state()
+	recorder.sample_tick(1000, 600, 2, 5, 3)
+	recorder.sample_tick(1050, 600.5, 2, 5, 3)
+	recorder.record_blocking_call("winget", "тестклиент: input.text", 35)
+	recorder.sample_tick(1600, 601, 2, 5, 3)
+	TEST_ASSERT(findtext(recorder.spike_events[1], "внешний столл"), "Дешёвый блокирующий вызов перехватил классификацию столла")
+
+	// 5d. Учёт блокирующих вызовов: считаются все, включая те, что ниже порога кольца
+	recorder.reset_state()
+	recorder.record_blocking_call("winget", "а", 5)
+	recorder.record_blocking_call("winget", "б", 15)
+	recorder.record_blocking_call("savefile (запись)", "в", 40)
+	TEST_ASSERT_EQUAL(recorder.blocking_calls, 3, "Счётчик блокирующих вызовов разошёлся")
+	TEST_ASSERT_EQUAL(recorder.blocking_total_ms, 60, "Сумма блокирующих вызовов посчитана неверно")
+	var/list/winget_bucket = recorder.blocking_by_kind["winget"]
+	TEST_ASSERT_EQUAL(winget_bucket["count"], 2, "Разбивка по типу вызова потеряла запись")
+	TEST_ASSERT_EQUAL(winget_bucket["max"], 15, "Максимум по типу вызова посчитан неверно")
+	var/blocking_summary = recorder.build_blocking_summary()
+	TEST_ASSERT(findtext(blocking_summary, "winget"), "Итог по блокирующим вызовам не называет тип")
+	// Отрицательная стоимость (часы переехали) не должна портить статистику
+	recorder.record_blocking_call("winget", "г", -100)
+	TEST_ASSERT_EQUAL(recorder.blocking_total_ms, 60, "Отрицательный замер попал в сумму")
+
 	// 6. Метка синтетики цепляется к следующему событию и очищается
 	recorder.reset_state()
 	recorder.next_spike_tag = "ТЕСТОВАЯ МЕТКА"

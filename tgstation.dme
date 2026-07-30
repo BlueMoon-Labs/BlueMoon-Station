@@ -4447,6 +4447,7 @@
 #include "modular_bluemoon\code\_globalvars\list\objects.dm"
 #include "modular_bluemoon\code\_globalvars\lists\syndicate_monkey_names.dm"
 #include "modular_bluemoon\code\_HELPERS\_bm_helpers.dm"
+#include "modular_bluemoon\code\_HELPERS\blocking_calls.dm"
 #include "modular_bluemoon\code\_HELPERS\roundend.dm"
 #include "modular_bluemoon\code\_HELPERS\text.dm"
 #include "modular_bluemoon\code\_onclick\hud\drones.dm"

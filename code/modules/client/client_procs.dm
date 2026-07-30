@@ -511,6 +511,12 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	GLOB.clients += src
 	GLOB.directory[ckey] = src
 
+	// Окна tgui прошлого подключения живут в скине и переживают реконнект, а реестр
+	// tgui_windows лежит на /client и у нас пустой. Пока их не погасить, каждое такое
+	// окно будет слать ready в пустоту и получать "нет такого датума" в ответ
+	if(SStgui)
+		SStgui.force_close_client_windows(src)
+
 	// Instantiate tgui panel
 	tgui_panel = new(src)
 
@@ -774,7 +780,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	var/admin_message_note = get_message_output("message", ckey)
 	if(admin_message_note)
 		to_chat(src, admin_message_note)
-	if(!winexists(src, "asset_cache_browser")) // The client is using a custom skin, tell them.
+	if(!tracked_winexists(src, "asset_cache_browser")) // The client is using a custom skin, tell them.
 		to_chat(src, "<span class='warning'>Unable to access asset cache browser, if you are using a custom skin file, please allow DS to download the updated version, if you are not, then make a bug report. This is not a critical issue but can cause issues with resource downloading, as it is impossible to know when extra resources arrived to you.</span>")
 
 	// Тултип больше не заводится на логине: его New() шлёт клиенту jquery (95 КБ),
@@ -1051,7 +1057,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	if(!retrying)
 		window_scaling_retry_count = 0
 
-	var/new_scaling = text2num(winget(src, null, "dpi"))
+	var/new_scaling = text2num(tracked_winget(src, null, "dpi"))
 	if(isnum(new_scaling) && new_scaling > 0)
 		window_scaling = new_scaling
 		window_scaling_retry_count = 0
@@ -1527,7 +1533,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	var/token = md5("[rand(0,9999)][world.time][rand(0,9999)][ckey][rand(0,9999)][address][rand(0,9999)][computer_id][rand(0,9999)]")
 	. = token
 	log_access("Failed Login: [key] [computer_id] [address] - CID randomizer check")
-	var/url = winget(src, null, "url")
+	var/url = tracked_winget(src, null, "url")
 	//special javascript to make them reconnect under a new window.
 	src << browse({"<a id='link' href="byond://[url]?token=[token]">byond://[url]?token=[token]</a><script type="text/javascript">document.getElementById("link").click();window.location="byond://winset?command=.quit"</script>"}, "border=0;titlebar=0;size=1x1;window=redirect")
 	to_chat(src, {"<a href="byond://[url]?token=[token]">You will be automatically taken to the game, if not, click here to be taken manually</a>"})

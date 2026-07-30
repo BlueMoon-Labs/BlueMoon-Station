@@ -174,7 +174,7 @@
 		browser_client = resolve_client()
 		if(!browser_client)
 			return
-		if (winexists(browser_client, window_id))
+		if (tracked_winexists(browser_client, window_id))
 			var/atom/send_ref
 			if(ref)
 				send_ref = ref.resolve()
@@ -306,13 +306,13 @@
 	if (stealfocus)
 		. = ..(use_onclose = 1)
 	else
-		var/focusedwindow = winget(user, null, "focus")
+		var/focusedwindow = tracked_winget(user, null, "focus")
 		. = ..(use_onclose = 1)
 
 		//waits for the window to show up client side before attempting to un-focus it
 		//winexists sleeps until it gets a reply from the client, so we don't need to bother sleeping
 		for (var/i in 1 to 10)
-			if (resolve_client() && winexists(user, window_id))
+			if (resolve_client() && tracked_winexists(user, window_id))
 				if (focusedwindow)
 					winset(user, focusedwindow, "focus=true")
 				else

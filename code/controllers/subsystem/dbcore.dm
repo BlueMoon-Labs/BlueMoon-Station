@@ -383,7 +383,11 @@ Delayed insert mode was removed in mysql 7 and only works with MyISAM type table
 			last_error = job_result_str
 			return FALSE
 	else
+		// Синхронный путь держит весь мир до ответа БД: DM не исполняется, world.cpu
+		// не растёт, и детектор спайков видит безымянный "внешний столл"
+		var/blocking_started_ms = blocking_call_start()
 		job_result_str = rustg_sql_query_blocking(connection, sql, json_encode(arguments))
+		blocking_call_finish(blocking_started_ms, "SQL (блокирующий)", copytext(sql, 1, 80))
 
 	var/result = json_decode(job_result_str)
 	switch (result["status"])

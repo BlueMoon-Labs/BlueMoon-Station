@@ -33,7 +33,7 @@
 		set_text = set_text.Join(";")
 	else
 		set_text = prefs_override.hotkeys? "[SKIN_MACROSET_HOTKEYS].*" : "[SKIN_MACROSET_CLASSIC_INPUT].*;[SKIN_MACROSET_CLASSIC_HOTKEYS].*"
-	var/list/macro_set = params2list(winget(src, "[set_text]", "command"))
+	var/list/macro_set = params2list(tracked_winget(src, "[set_text]", "command"))
 	for(var/k in 1 to length(macro_set))
 		var/list/split_name = splittext(macro_set[k], ".")
 		var/macro_name = "[split_name[1]].[split_name[2]]" // [3] is "command"

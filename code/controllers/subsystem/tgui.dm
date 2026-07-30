@@ -126,12 +126,30 @@ SUBSYSTEM_DEF(tgui)
  * required user mob
  */
 /datum/controller/subsystem/tgui/proc/force_close_all_windows(mob/user)
+	if(!user?.client)
+		return
 	log_tgui(user, context = "SStgui/force_close_all_windows")
-	if(user.client)
-		user.client.tgui_windows = list()
-		for(var/i in 1 to TGUI_WINDOW_HARD_LIMIT)
-			var/window_id = TGUI_WINDOW_ID(i)
-			user << browse(null, "window=[window_id]")
+	force_close_client_windows(user.client)
+
+/**
+ * public
+ *
+ * Гасит окна tgui в скине и сбрасывает реестр окон клиента.
+ *
+ * Нужно на подключении: реестр tgui_windows живёт на /client, у нового клиента он
+ * пуст, а окна прошлого подключения переживают реконнект внутри скина и продолжают
+ * слать ready. На каждый такой ready сервер отвечает "нет такого датума" и шлёт
+ * browse(null) в окно, которого для него не существует - клиент ретраит тридцать
+ * секунд, игрок видит сломанный интерфейс и идёт жать Fix chat.
+ *
+ * required user_client client
+ */
+/datum/controller/subsystem/tgui/proc/force_close_client_windows(client/user_client)
+	if(!user_client)
+		return
+	user_client.tgui_windows = list()
+	for(var/i in 1 to TGUI_WINDOW_HARD_LIMIT)
+		user_client << browse(null, "window=[TGUI_WINDOW_ID(i)]")
 
 /**
  * public
