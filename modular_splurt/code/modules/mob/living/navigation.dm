@@ -23,10 +23,10 @@
 		return
 	if(length(client?.navigation_images))
 		addtimer(CALLBACK(src, PROC_REF(cut_navigation)), world.tick_lag)
-		balloon_alert(src, "navigation path removed")
+		balloon_alert(src, "маршрут убран")
 		return
 	if(!COOLDOWN_FINISHED(src, navigate_cooldown))
-		balloon_alert(src, "navigation on cooldown!")
+		balloon_alert(src, "навигация перезаряжается!")
 		return
 	addtimer(CALLBACK(src, PROC_REF(create_navigation)), world.tick_lag)
 

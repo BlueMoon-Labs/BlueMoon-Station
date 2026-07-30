@@ -72,7 +72,9 @@
 		span_danger("На [target] что-то попадает!"),
 		span_userdanger("На вас что-то попало!"),
 	)
-	log_combat(sprayer, target, "sprayed", addition = "([reagents.log_list()])")
+	// log_combat разыменовывает источник без проверки (user.log_message в /proc/log_combat),
+	// поэтому вместо null отдаём само облако: атрибуция теряется, но запись о попадании есть.
+	log_combat(sprayer || src, target, "sprayed", addition = "([reagents.log_list()])")
 
 /obj/effect/decal/chempuff/Crossed(atom/movable/AM, oldloc)
 	. = ..()
