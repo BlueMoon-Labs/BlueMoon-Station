@@ -7136,7 +7136,6 @@
 /obj/effect/turf_decal/tile/red{
 	dir = 8
 	},
-/obj/machinery/ammo_workbench,
 /turf/open/floor/plasteel,
 /area/security/brig)
 "axw" = (
@@ -66266,7 +66265,8 @@
 /obj/machinery/requests_console{
 	department = "Cargo Bay";
 	departmentType = 2;
-	pixel_x = 32
+	pixel_x = 32;
+	announcementConsole = 1
 	},
 /obj/machinery/modular_computer/console/preset/id{
 	dir = 8
