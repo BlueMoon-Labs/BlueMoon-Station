@@ -203,6 +203,13 @@
 	LAZYOR(victim.all_wounds, src)
 	if(status_effect_type)
 		victim.apply_status_effect(status_effect_type, src)
+	// Симметрия с remove_wound(), который отработал при отрыве конечности: он снял общий на все
+	// раны алерт, когда all_wounds опустел, и разослал сигнал потери. Вернуть их больше некому -
+	// throw_alert зовётся только из apply_wound(), а update_wounds() занимается лишь оверлеями,
+	// так что рана работала бы без иконки, а слушатели сигналов считали бы её вылеченной.
+	if(!victim.alerts["wound"])
+		victim.throw_alert("wound", /atom/movable/screen/alert/status_effect/wound)
+	SEND_SIGNAL(victim, COMSIG_CARBON_GAIN_WOUND, src, limb)
 	limb.update_wounds()
 
 /datum/wound/proc/source_died()
