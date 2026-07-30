@@ -124,3 +124,77 @@
 	qdel(loaded)
 
 	TEST_ASSERT_NULL(gun.magazine, "Ствол сохранил ссылку на удалённый магазин: handle_atom_del его не обнулил")
+
+/// Рана обязана отцепиться от конечности при удалении даже с обнулённой жертвой.
+///
+/// QDELETED(null) в DM истинно, поэтому условие `if(!QDELETED(victim)) remove_wound(...)`
+/// у раны с уже обнулённой жертвой не вызывало remove_wound() вовсе, и рана оставалась в
+/// limb.wounds. Через порог warnfail её добивал del(), запись превращалась в null, и
+/// get_bleed_rate() падал на каждом тике SSmobs до конца раунда: прод-раунд 9834 - около
+/// двух тысяч рантаймов Cannot read null.blood_flow с одной конечности.
+/datum/unit_test/wound_detaches_without_victim
+	parent_type = /datum/unit_test/harddel_9813_base
+
+/datum/unit_test/wound_detaches_without_victim/Run()
+	var/turf/floor = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/patient = allocate(/mob/living/carbon/human, floor)
+	var/obj/item/bodypart/arm = patient.get_bodypart(BODY_ZONE_L_ARM)
+	TEST_ASSERT_NOTNULL(arm, "У тестового человека нет левой руки - тест ничего не проверяет")
+
+	var/datum/wound/slash/moderate/cut = new
+	cut.apply_wound(arm, silent = TRUE)
+	TEST_ASSERT(cut in arm.wounds, "Рана не легла в список конечности - тест ничего не проверяет")
+
+	// Ровно то состояние, что даёт null_victim() по сигналу удаления жертвы.
+	cut.victim = null
+	qdel(cut)
+
+	TEST_ASSERT(!(cut in arm.wounds), "Рана с обнулённой жертвой не отцепилась от конечности: список получит null и get_bleed_rate начнёт рантаймить каждый тик")
+	for(var/entry in arm.wounds)
+		TEST_ASSERT_NOTNULL(entry, "В списке ран конечности осталась пустая запись")
+
+	// Страховка на стороне чтения: даже подсунутый null не должен ронять расчёт крови.
+	LAZYADD(arm.wounds, null)
+	arm.get_bleed_rate()
+	TEST_ASSERT(!(null in arm.wounds), "get_bleed_rate обязан вычищать пустые записи из списка ран")
+
+/// Пришитая обратно конечность обязана сохранить свои раны.
+///
+/// drop_limb() снимает раны из all_wounds жертвы, но оставляет их в wounds конечности.
+/// Из-за этого проверка дублей в apply_wound() сравнивала рану сама с собой и делала ей
+/// qdel: конечность возвращалась чистой, а список правился прямо в обходе по нему.
+/datum/unit_test/reattached_limb_keeps_wounds
+	parent_type = /datum/unit_test/harddel_9813_base
+
+/datum/unit_test/reattached_limb_keeps_wounds/Run()
+	var/turf/floor = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/patient = allocate(/mob/living/carbon/human, floor)
+	var/obj/item/bodypart/arm = patient.get_bodypart(BODY_ZONE_L_ARM)
+	TEST_ASSERT_NOTNULL(arm, "У тестового человека нет левой руки - тест ничего не проверяет")
+
+	var/datum/wound/slash/moderate/cut = new
+	cut.apply_wound(arm, silent = TRUE)
+
+	arm.drop_limb()
+	TEST_ASSERT(cut in arm.wounds, "После отрыва рана обязана остаться на самой конечности")
+
+	arm.attach_limb(patient)
+
+	TEST_ASSERT(!QDELETED(cut), "Пришивание конечности удалило её собственную рану")
+	TEST_ASSERT(cut in arm.wounds, "Пришитая конечность потеряла свою рану")
+	TEST_ASSERT_EQUAL(cut.victim, patient, "Рана не вернулась к владельцу конечности")
+	TEST_ASSERT(cut in patient.all_wounds, "Рана не вернулась в список ран владельца")
+
+	// Ни один список не имеет права получить второй экземпляр той же раны: apply_wound() на
+	// уже привязанной ране дублировал бы и записи, и подписку на удаление жертвы.
+	var/copies_on_limb = 0
+	for(var/datum/wound/entry as anything in arm.wounds)
+		if(entry == cut)
+			copies_on_limb++
+	TEST_ASSERT_EQUAL(copies_on_limb, 1, "Рана продублировалась в списке конечности при пришивании")
+
+	var/copies_on_victim = 0
+	for(var/datum/wound/entry as anything in patient.all_wounds)
+		if(entry == cut)
+			copies_on_victim++
+	TEST_ASSERT_EQUAL(copies_on_victim, 1, "Рана продублировалась в списке ран владельца при пришивании")
