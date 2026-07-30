@@ -725,6 +725,10 @@
 	cut_overlay(MA)
 
 /mob/living/carbon/human/canUseTopic(atom/movable/M, be_close=FALSE, no_dextery=FALSE, no_tk=FALSE, check_resting = TRUE, silent = FALSE)
+	// Базовый /mob/proc/canUseTopic просто возвращает null и с null-целью живёт,
+	// а этот оверрайд разыменовывает M.loc ниже. За раунд 9838 это дало 39 рантаймов
+	if(isnull(M))
+		return FALSE
 	if(incapacitated() || (check_resting && !CHECK_MOBILITY(src, MOBILITY_STAND)))
 		if(!silent)
 			to_chat(src, "<span class='warning'>You can't do that right now!</span>")
