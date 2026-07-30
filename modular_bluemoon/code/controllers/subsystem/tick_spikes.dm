@@ -55,6 +55,8 @@
 #define TICK_SPIKES_CLASSIFY_MAP_CPU_THRESHOLD 50
 /// На сколько тиков после нашего дампа профайлера спайки считаются самонаведёнными
 #define TICK_SPIKES_SELF_INFLICTED_TICKS 2
+/// Бюджет авто-дампов sendmaps-профиля за раунд (вне сессии захвата)
+#define TICK_SPIKES_MAX_AUTO_DUMPS 12
 
 // Классы источников спайка
 #define TICK_SPIKE_CLASS_MC "подсистема МК"
@@ -98,10 +100,14 @@ SUBSYSTEM_DEF(tick_spikes)
 	var/list/heavy_usage
 	var/heavy_pos = 0
 
-	// --- Последний завершённый прогон очереди МК (пишется тем же хуком из Master/RunQueue).
-	// Master.last_type_processed в момент нашего fire() - всегда мы сами, поэтому свой учёт ---
-	var/last_run_subsystem_name
-	var/last_run_subsystem_time = 0
+	// --- Самый тяжёлый прогон очереди МК в текущем тике (пишется хуком из Master/RunQueue).
+	// Раньше здесь лежал ПОСЛЕДНИЙ прогон, и поле было структурно мёртвым: приоритет
+	// детектора (900) ниже SSmouse_entered (996), поэтому последним перед нашим fire()
+	// всегда оказывался он - во всех 178 записях прод-раундов 9831/9832 стоял MouseEntered.
+	// Master.last_type_processed в момент нашего fire() - тоже всегда мы сами ---
+	var/heaviest_run_subsystem_name
+	var/heaviest_run_subsystem_usage = 0
+	var/heaviest_run_tick = 0
 
 	// --- Кольцо медленных единиц работы вне слотов подсистем: таймер-колбеки (SStimer),
 	// отложенные вербы (SSverb_manager), client/Topic. Раньше весь этот DM был анонимным -
@@ -141,6 +147,10 @@ SUBSYSTEM_DEF(tick_spikes)
 	///монотонный номер для имён файлов дампов: НЕ сбрасывается на start_capture,
 	///иначе авто-дамп и дамп новой сессии склеили бы два JSON в один файл
 	var/profile_dump_seq = 0
+	/// Сколько авто-дампов (без сессии захвата) уже сделано за раунд - бюджет общий на
+	/// классы SendMaps и "внешний столл", чтобы поток спайков на хайпопе не завалил
+	/// каталог логов сотней JSON'ов.
+	var/auto_dumps_done = 0
 	/// Минимум мс между дампами профайлера
 	var/profile_dump_cooldown_ms = 15000
 	/// world.time, до которого спайки считаются самонаведёнными (после нашего же дампа)
@@ -451,7 +461,7 @@ SUBSYSTEM_DEF(tick_spikes)
 	event += "дрифт: [round(drift)]мс (порог [spike_threshold_ms]мс), тик [world.tick_lag * 100]мс"
 	event += "вероятный источник: [spike_class]"
 	event += "клиентов: [length(GLOB.clients)], TD тек/быстр/сред: [round(SStime_track.time_dilation_current, 0.1)]% / [round(SStime_track.time_dilation_avg_fast, 0.1)]% / [round(SStime_track.time_dilation_avg, 0.1)]%"
-	event += "МК: итерация [Master.iteration], sleep_delta [round(Master.sleep_delta, 0.01)], ticklimit [round(Master.current_ticklimit, 0.1)], последний прогон очереди: [last_run_subsystem_name ? "[last_run_subsystem_name] (wt [last_run_subsystem_time])" : "нет"]"
+	event += "МК: итерация [Master.iteration], sleep_delta [round(Master.sleep_delta, 0.01)], ticklimit [round(Master.current_ticklimit, 0.1)], самый тяжёлый прогон тика: [heaviest_run_subsystem_name ? "[heaviest_run_subsystem_name] ([round(heaviest_run_subsystem_usage, 0.1)]% тика, wt [heaviest_run_tick])" : "нет"]"
 
 	if(length(heavy_lines))
 		event += "тяжёлые прогоны подсистем за последние [TICK_SPIKES_HEAVY_WINDOW / 10] сек (wall-time: столл во время слота подсистемы выглядит как её прогон, сверяй с профайлером):"
@@ -495,17 +505,27 @@ SUBSYSTEM_DEF(tick_spikes)
 /// Дамп окна профайлера на спайке (только при активном захвате). Возвращает строку для события или null.
 /// Исключение: sendmaps-профиль работает всегда (см. PreInit), поэтому SendMaps-спайки
 /// дампят его и БЕЗ сессии захвата - проковский профайлер их всё равно не объясняет.
+/// То же для класса "внешний столл": в прод-раундах он собирает большую часть дрифта
+/// (9832: 125 спайков из 210, 42 из 67 секунд), а классифицируется он именно тем, что
+/// DM в тике почти не работал - значит проковский профайлер по нему пуст, и без
+/// sendmaps-профиля самый крупный бак дрифта каждый раунд оставался без артефактов.
 /datum/controller/subsystem/tick_spikes/proc/try_dump_profile(drift, now_ms, spike_class)
 	if(suppress_side_effects)
 		return null
 	if(!capture_until || world.time > capture_until)
 #if DM_VERSION >= 515
-		if(spike_class == TICK_SPIKE_CLASS_SENDMAPS && (now_ms - last_profile_dump_ms >= profile_dump_cooldown_ms))
+		var/auto_dumpable = (spike_class == TICK_SPIKE_CLASS_SENDMAPS) || (spike_class == TICK_SPIKE_CLASS_EXTERNAL)
+		if(auto_dumpable && auto_dumps_done >= TICK_SPIKES_MAX_AUTO_DUMPS)
+			return "sendmaps-профайл (авто) пропущен: исчерпан лимит [TICK_SPIKES_MAX_AUTO_DUMPS] дампов за раунд"
+		if(auto_dumpable && (now_ms - last_profile_dump_ms >= profile_dump_cooldown_ms))
 			last_profile_dump_ms = now_ms
 			profile_dumps_done++
 			profile_dump_seq++
+			auto_dumps_done++
 			self_inflicted_until = world.time + (TICK_SPIKES_SELF_INFLICTED_TICKS * world.tick_lag)
-			var/auto_sendmaps_name = "tick_spike_sendmaps_[profile_dump_seq].json"
+			// Имя разное, чтобы в каталоге логов было видно, какой класс спайка его породил.
+			var/class_tag = (spike_class == TICK_SPIKE_CLASS_EXTERNAL) ? "external" : "sendmaps"
+			var/auto_sendmaps_name = "tick_spike_[class_tag]_[profile_dump_seq].json"
 			WRITE_FILE(file("[GLOB.log_directory]/[auto_sendmaps_name]"), world.Profile(PROFILE_REFRESH, type = "sendmaps", format = "json"))
 			return "sendmaps-профайл (авто, без захвата) записан в [auto_sendmaps_name]"
 #endif

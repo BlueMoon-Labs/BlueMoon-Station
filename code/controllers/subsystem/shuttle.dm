@@ -200,12 +200,19 @@ SUBSYSTEM_DEF(shuttle)
 	emergencyNoRecall = FALSE
 
 /datum/controller/subsystem/shuttle/proc/getShuttle(id)
+	// Навигационная консоль вне шаттла держит shuttleId = "" и спрашивает на каждое
+	// касание: пустой id - это "не спрашивали", а не "не нашли шаттл". Варнинг на нём
+	// только засорял прод-лог.
+	if(!id)
+		return null
 	for(var/obj/docking_port/mobile/M in mobile)
 		if(M.shuttle_id == id)
 			return M
 	WARNING("couldn't find shuttle with id: [id]")
 
 /datum/controller/subsystem/shuttle/proc/getDock(id)
+	if(!id)
+		return null
 	for(var/obj/docking_port/stationary/S in stationary)
 		if(S.shuttle_id == id)
 			return S
