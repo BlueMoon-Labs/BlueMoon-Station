@@ -268,6 +268,9 @@ const waitForWindowSizeApplied = targetSize => {
             && applied[1] === targetSize[1]) {
           finish('winget', true);
         }
+      }).catch(() => {
+        // Канал winget умирает вместе с окном, а поллинг перевзводится до самого таймаута:
+        // без глушителя каждый опрос оставлял бы необработанный reject.
       });
       if (!done) {
         pollId = setTimeout(onPoll, SIZE_APPLY_POLL_MS);

@@ -198,7 +198,17 @@ const isRetriableImage = node => {
     return true;
   }
   const resolved = node.src;
-  return !resolved || resolved.startsWith(window.location.origin);
+  if (!resolved) {
+    return true;
+  }
+  // Сверяем origin разбором URL, а не префиксом: "https://host" - префикс и для
+  // "https://host.evil", то есть чужой хост проходил фильтр и собирал свои ретраи.
+  try {
+    return new URL(resolved).origin === window.location.origin;
+  }
+  catch {
+    return false;
+  }
 };
 
 const handleImageError = e => {

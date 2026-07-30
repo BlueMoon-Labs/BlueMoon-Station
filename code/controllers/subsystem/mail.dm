@@ -199,12 +199,21 @@ SUBSYSTEM_DEF(mail)
 		var/mob/living/carbon/human/recipient = pick_n_take(mail_recipients)
 		if(!recipient)
 			continue
+		//список получателей собран до CHECK_TICK: за время сна получатель мог умереть или
+		//лишиться разума, а create_mail_for_recipient сразу читает recipient.mind.assigned_role
+		if(!recipient.mind || recipient.stat == DEAD)
+			continue
 		if(main_storage.contents.len >= main_storage.storage_capacity)
 			break
 		create_mail_for_recipient(recipient, main_storage)
 		//письмо со всем содержимым - не бесплатная операция, а их тут пачка
 		CHECK_TICK
 		if(QDELETED(main_storage))
+			//ссылку обязательно обнулить: istype() на qdel-нутом датуме всё ещё TRUE, поэтому
+			//следующий fire прошёл бы мимо create_main_storage() и складывал письма в мертвеца,
+			//а накопленный mail_waiting навсегда запер бы генерацию на проверке ёмкости
+			main_storage = null
+			mail_waiting = 0
 			return
 
 	main_storage.update_icon()

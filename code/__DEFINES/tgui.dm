@@ -17,7 +17,10 @@
 /// Клиент ретраит ready 30 секунд (tgui/public/tgui.html), а измеренный на проде
 /// худший round-trip доходил до 10 секунд - с прежними 4 секундами сервер убивал
 /// окна, которые просто не успели догрузить бандл.
-#define TGUI_PING_TIMEOUT 20 SECONDS
+/// Отсчёт идёт от opened_at, то есть ещё до загрузки страницы, поэтому берём запас на
+/// последний клиентский ретрай плюс round-trip: на 20 секундах сервер успевал убить окно
+/// раньше, чем клиент исчерпает свои же 30 секунд попыток.
+#define TGUI_PING_TIMEOUT 35 SECONDS
 /// Used for rate-limiting to prevent DoS by excessively refreshing a TGUI window
 #define TGUI_REFRESH_FULL_UPDATE_COOLDOWN 5 SECONDS
 
