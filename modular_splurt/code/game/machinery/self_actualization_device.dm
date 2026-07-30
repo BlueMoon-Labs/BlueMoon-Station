@@ -240,8 +240,8 @@
 	open_machine()
 	playsound(src, 'sound/machines/microwave/microwave-end.ogg', 100, FALSE)
 
-/// Возвращает сохранённые травмы новому мозгу. Дубли по типу и осиротевшие датумы
-/// отбрасываются: старый список приходит от прежнего тела, и часть травм там уже мертва.
+/// Возвращает снятые траумы на новый мозг. Тип, который уже завели заново квирки,
+/// не дублируем - лишний экземпляр просто удаляем.
 /obj/machinery/self_actualization_device/proc/restore_traumas(mob/living/carbon/human/patient, list/saved_traumas)
 	if(!length(saved_traumas))
 		return
