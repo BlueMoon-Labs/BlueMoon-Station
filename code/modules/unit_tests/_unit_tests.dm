@@ -101,6 +101,7 @@
 #include "harddel_round_9813.dm"
 #include "harddel_round_9824.dm"
 #include "harddel_round_9827.dm"
+#include "harddel_round_9832.dm"
 // #include "greyscale_config.dm"
 // #include "heretic_knowledge.dm"
 // #include "holidays.dm"

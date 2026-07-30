@@ -1150,8 +1150,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 		if(hand_index)
 			M.held_items[hand_index] = null
 			M.update_inv_hands()
-			if(M.client)
-				M.client.screen -= src
+			M.remove_from_hud_screens(src)
 			layer = initial(layer)
 			plane = initial(plane)
 			appearance_flags &= ~NO_CLIENT_COLOR

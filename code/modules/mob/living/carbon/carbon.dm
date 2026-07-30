@@ -431,8 +431,7 @@
 		if (buckled && buckled.buckle_requires_restraints)
 			buckled.unbuckle_mob(src)
 		update_handcuffed()
-		if (client)
-			client.screen -= W
+		remove_from_hud_screens(W)
 		if (W)
 			W.forceMove(drop_location())
 			W.dropped(src)
@@ -444,8 +443,7 @@
 		var/obj/item/W = legcuffed
 		legcuffed = null
 		update_inv_legcuffed()
-		if (client)
-			client.screen -= W
+		remove_from_hud_screens(W)
 		if (W)
 			W.forceMove(drop_location())
 			W.dropped(src)

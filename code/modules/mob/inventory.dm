@@ -1,6 +1,18 @@
 //These procs handle putting s tuff in your hands
 //as they handle all relevant stuff like adding it to the player's screen and updating their overlays.
 
+/// Снимает предмет со всех экранов, куда его положил инвентарь: со своего и с экранов
+/// орбитящих нас гостов. Наблюдателям предмет выдаёт update_inv_hands() и
+/// update_observer_view(), а снимал его раньше только владелец - запись в client.screen
+/// госта переживала qdel предмета и держала его до конца раунда.
+/mob/proc/remove_from_hud_screens(obj/item/I)
+	if(isnull(I))
+		return
+	if(client)
+		client.screen -= I
+	for(var/mob/dead/observe as anything in observers)
+		observe.client?.screen -= I
+
 //Returns the thing we're currently holding
 /mob/proc/get_active_held_item()
 	return get_item_for_held_index(active_hand_index)
@@ -338,8 +350,7 @@
 		held_items[hand_index] = null
 		update_inv_hands()
 	if(I)
-		if(client)
-			client.screen -= I
+		remove_from_hud_screens(I)
 		I.screen_loc = null
 		I.layer = initial(I.layer)
 		I.plane = initial(I.plane)

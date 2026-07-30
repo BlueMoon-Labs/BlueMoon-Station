@@ -26,6 +26,7 @@
 	ASSERT(istype(screen_object))
 
 	screen_objects += screen_object
+	stamp_owner(screen_object)
 	client?.screen += screen_object
 
 /// Gives the screen object to the client, but does not qdel it when it's cleared
@@ -33,7 +34,17 @@
 	ASSERT(istype(screen_object))
 
 	protected_screen_objects += screen_object
+	stamp_owner(screen_object)
 	client?.screen += screen_object
+
+/// Объекты меню живут без hud, поэтому снять себя с экрана они могут только по прямой
+/// ссылке на владельца - проставляем её здесь, а не в каждом конструкторе страницы.
+/datum/screen_object_holder/proc/stamp_owner(atom/screen_object)
+	PRIVATE_PROC(TRUE)
+
+	var/atom/movable/screen/escape_menu/menu_object = screen_object
+	if(istype(menu_object))
+		menu_object.owner_client = client
 
 /datum/screen_object_holder/proc/remove_screen_object(atom/screen_object)
 	ASSERT(istype(screen_object))
