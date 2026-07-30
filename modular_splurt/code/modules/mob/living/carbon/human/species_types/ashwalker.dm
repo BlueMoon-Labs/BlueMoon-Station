@@ -10,7 +10,10 @@
 	burnmod = 0.95
 	brutemod = 0.95
 	// Western ash walkers are the female subtype and retain normal item dexterity.
+
+/datum/species/lizard/ashwalker/western/New()
 	inherent_traits = list()
+	. = ..()
 
 /datum/species/lizard/ashwalker/western/on_species_gain(mob/living/carbon/human/C, datum/species/old_species)
 	C.gender = FEMALE
