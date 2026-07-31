@@ -99,10 +99,6 @@
 	dir = 5
 	},
 /area/awaymission/wildwest/mines)
-"ax" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg,
-/turf/open/floor/wood/wood_large,
-/area/awaymission/wildwest/mines)
 "ay" = (
 /obj/structure/closet/secure_closet/personal/cabinet,
 /obj/item/ammo_box/g45l,
@@ -862,10 +858,6 @@
 	},
 /turf/open/floor/plating,
 /area/awaymission/wildwest/gov)
-"cT" = (
-/obj/effect/spawner/lootdrop/hostile/inteq,
-/turf/open/floor/plating,
-/area/awaymission/wildwest/refine)
 "cU" = (
 /obj/item/paper/fluff/awaymissions/wildwest/journal/page1,
 /obj/structure/table/wood/fancy/green,
@@ -1788,13 +1780,6 @@
 	dir = 4
 	},
 /turf/open/floor/carpet/royalblack,
-/area/awaymission/wildwest/mines)
-"fG" = (
-/obj/structure/chair/office/light{
-	dir = 4
-	},
-/mob/living/simple_animal/hostile/syndicate/ranged/smg,
-/turf/open/floor/carpet/purple,
 /area/awaymission/wildwest/mines)
 "fH" = (
 /obj/structure/chair/office/light{
@@ -3570,6 +3555,7 @@
 	dir = 4
 	},
 /obj/item/ammo_casing/c9mm,
+/mob/living/simple_animal/hostile/syndicate,
 /turf/open/floor/wood,
 /area/awaymission/wildwest/mines)
 "mp" = (
@@ -3795,13 +3781,6 @@
 /obj/item/instrument/banjo,
 /turf/open/floor/carpet/blue,
 /area/awaymission/wildwest/mines)
-"nq" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg,
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 8
-	},
-/turf/open/floor/plating,
-/area/awaymission/wildwest/refine)
 "ns" = (
 /obj/effect/turf_decal/siding/white{
 	dir = 1
@@ -3863,16 +3842,6 @@
 /obj/structure/closet/crate/large,
 /obj/item/wirecutters,
 /turf/open/floor/wood,
-/area/awaymission/wildwest/mines)
-"nJ" = (
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8
-	},
-/mob/living/simple_animal/hostile/syndicate/ranged/smg,
-/turf/open/floor/plasteel/cafeteria,
 /area/awaymission/wildwest/mines)
 "nM" = (
 /obj/structure/oldtrap/razor_wire/industrial,
@@ -5262,10 +5231,6 @@
 	icon_state = "ironsand9"
 	},
 /area/awaymission/wildwest/mines)
-"tr" = (
-/mob/living/simple_animal/hostile/syndicate/ranged,
-/turf/open/floor/wood,
-/area/awaymission/wildwest/mines)
 "ts" = (
 /mob/living/simple_animal/hostile/cult/assassin,
 /turf/open/floor/engine/cult,
@@ -6006,7 +5971,7 @@
 /turf/open/floor/plating/asteroid/airless,
 /area/space/nearstation)
 "wB" = (
-/mob/living/simple_animal/hostile/gigachad_inteq,
+/mob/living/simple_animal/hostile/gigachad_inteq/shooter,
 /turf/open/floor/carpet/green,
 /area/awaymission/wildwest/gov)
 "wC" = (
@@ -9190,13 +9155,6 @@
 /obj/item/reagent_containers/food/snacks/salad/boiledrice,
 /turf/open/floor/wood/wood_large,
 /area/awaymission/wildwest/mines)
-"Je" = (
-/obj/effect/decal/cleanable/blood/tracks{
-	dir = 8
-	},
-/mob/living/simple_animal/hostile/syndicate/ranged/smg,
-/turf/open/floor/wood,
-/area/awaymission/wildwest/mines)
 "Jf" = (
 /obj/structure/closet/crate/critter,
 /mob/living/simple_animal/cow,
@@ -10547,7 +10505,6 @@
 /obj/structure/table,
 /obj/machinery/door/window/northleft{
 	name = "First-Aid Supplies";
-
 	req_access_txt = "5"
 	},
 /obj/effect/decal/cleanable/glass,
@@ -12958,11 +12915,6 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/wood,
 /area/awaymission/wildwest/mines)
-"Yw" = (
-/obj/structure/chair/office/dark,
-/mob/living/simple_animal/hostile/syndicate/ranged/smg,
-/turf/open/floor/wood,
-/area/awaymission/wildwest/mines)
 "Yx" = (
 /obj/structure/table/wood,
 /obj/item/pickaxe/plasteel,
@@ -12982,7 +12934,7 @@
 /turf/open/floor/plasteel,
 /area/awaymission/wildwest/vault)
 "YA" = (
-/mob/living/simple_animal/hostile/syndicate/melee,
+/mob/living/simple_animal/hostile/gigachad_inteq,
 /turf/open/floor/wood/wood_large,
 /area/awaymission/wildwest/mines)
 "YC" = (
@@ -34290,7 +34242,7 @@ to
 mC
 mC
 mC
-to
+mC
 ah
 ah
 ab
@@ -34536,7 +34488,7 @@ BK
 LR
 yz
 BK
-iu
+BK
 BK
 LR
 BK
@@ -39179,7 +39131,7 @@ af
 ac
 ac
 ac
-af
+ac
 ac
 oM
 oM
@@ -40499,7 +40451,7 @@ aG
 et
 Co
 bc
-cT
+bc
 bc
 bc
 bc
@@ -40533,7 +40485,7 @@ gS
 Bf
 Yt
 rh
-nq
+rh
 Ye
 gQ
 TC
@@ -41028,7 +40980,7 @@ eu
 eu
 eu
 eu
-fO
+eu
 eu
 NJ
 YW
@@ -41272,7 +41224,7 @@ WK
 bc
 bc
 bc
-Xf
+bc
 bc
 et
 et
@@ -41281,7 +41233,7 @@ et
 Yi
 eu
 eu
-fO
+eu
 eu
 eu
 eu
@@ -42546,7 +42498,7 @@ bc
 Wf
 eD
 Hb
-cT
+bc
 lU
 Qm
 bc
@@ -43058,7 +43010,7 @@ HX
 xw
 mu
 bo
-Xf
+bc
 bc
 ut
 lU
@@ -43303,7 +43255,7 @@ bc
 bc
 bc
 bc
-bn
+bc
 bo
 NT
 On
@@ -45115,7 +45067,7 @@ du
 du
 eP
 bj
-bE
+bj
 bj
 bk
 bj
@@ -47428,7 +47380,7 @@ bm
 bj
 bj
 bj
-bE
+bj
 bj
 bj
 bj
@@ -48696,7 +48648,7 @@ IZ
 Hz
 bu
 bj
-bE
+bj
 bj
 bu
 jj
@@ -50029,7 +49981,7 @@ bj
 oo
 dy
 xA
-tr
+bj
 bu
 aN
 aN
@@ -51272,7 +51224,7 @@ bu
 Sa
 az
 bj
-bE
+bj
 bj
 hF
 bu
@@ -51312,7 +51264,7 @@ bu
 bj
 gj
 gq
-tr
+bj
 Bx
 bj
 bu
@@ -51560,7 +51512,7 @@ mE
 BO
 qA
 vr
-LG
+Bx
 bu
 bu
 hZ
@@ -54897,7 +54849,7 @@ Qx
 ql
 ci
 bj
-Se
+bj
 bj
 LG
 ci
@@ -55426,7 +55378,7 @@ bj
 nx
 bj
 nx
-UU
+bj
 JY
 bu
 az
@@ -56425,7 +56377,7 @@ da
 Kg
 da
 Bv
-ax
+KW
 Jy
 gH
 HH
@@ -57192,7 +57144,7 @@ KW
 IB
 tD
 KW
-KW
+YA
 KW
 KW
 KW
@@ -57708,7 +57660,7 @@ tD
 Kg
 KW
 KW
-YA
+KW
 KW
 cj
 mq
@@ -58205,7 +58157,7 @@ aN
 bu
 Sy
 bj
-Je
+QY
 bl
 bj
 ci
@@ -58237,7 +58189,7 @@ XI
 bj
 bj
 dy
-gk
+bj
 bj
 dP
 bj
@@ -59531,7 +59483,7 @@ bj
 bu
 jw
 gl
-gk
+bj
 bj
 UU
 cA
@@ -61833,13 +61785,13 @@ az
 bu
 ji
 ji
-bj
+gk
 bj
 El
 bu
 Vc
 bj
-bE
+bj
 CK
 bu
 bj
@@ -61847,7 +61799,7 @@ VA
 ql
 SM
 Sl
-fG
+VA
 bj
 bu
 bj
@@ -62077,7 +62029,7 @@ bE
 bj
 bj
 bp
-bE
+bj
 bj
 bj
 bj
@@ -62090,7 +62042,7 @@ az
 bu
 TY
 dE
-Se
+bj
 bj
 dE
 bu
@@ -63904,7 +63856,7 @@ bu
 bj
 bj
 dP
-gk
+bj
 bj
 bl
 bj
@@ -64377,7 +64329,7 @@ az
 az
 bu
 Sy
-Yw
+ZA
 Of
 bj
 bj
@@ -64662,7 +64614,7 @@ jr
 bj
 iZ
 iZ
-Cr
+iZ
 bj
 rn
 bu
@@ -64925,7 +64877,7 @@ yk
 bu
 fb
 eX
-nJ
+eX
 eX
 fI
 fT
