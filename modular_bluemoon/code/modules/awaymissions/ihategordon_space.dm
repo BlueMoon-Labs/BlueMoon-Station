@@ -38,9 +38,9 @@
 	initial_temperature = T20C
 
 /datum/gas_mixture/immutable/ihategordon/populate()
-	// Нормальная атмосфера станции: полные значения O2 и N2
 	set_moles(GAS_O2, MOLES_O2STANDARD)
 	set_moles(GAS_N2, MOLES_N2STANDARD)
+	temperature = T20C
 
 // Невидимый чазм для ihategordon - сохраняет спрайт космоса
 /turf/open/chasm/ihategordon_invisible
@@ -96,6 +96,10 @@
 	// Создаём нормальную атмосферу если ещё не создана
 	if(!ihategordon_atmos)
 		ihategordon_atmos = new /datum/gas_mixture/immutable/ihategordon
+		// Принудительно вызываем populate для инициализации газов
+		ihategordon_atmos.populate()
+		// Устанавливаем температуру
+		ihategordon_atmos.temperature = T20C
 
 	air = ihategordon_atmos
 	update_air_ref(0)
@@ -143,6 +147,13 @@
 	// Не принимаем воздух из других тайлов
 	return
 
+/turf/open/chasm/ihategordon_invisible/update_air_ref()
+	// Не обновляем ссылку на воздух, сохраняем нашу кастомную атмосферу
+	return
+
+/turf/open/chasm/ihategordon_invisible/air_update_turf()
+	return
+
 // Переопределяем инициализацию для создания нормальной атмосферы
 /turf/open/space/ihategordon/Initialize(mapload)
 	SHOULD_CALL_PARENT(FALSE)
@@ -151,6 +162,10 @@
 	// Создаём нормальную атмосферу если ещё не создана
 	if(!ihategordon_atmos)
 		ihategordon_atmos = new /datum/gas_mixture/immutable/ihategordon
+		// Принудительно вызываем populate для инициализации газов
+		ihategordon_atmos.populate()
+		// Устанавливаем температуру
+		ihategordon_atmos.temperature = T20C
 
 	air = ihategordon_atmos
 	update_air_ref(0)
@@ -247,17 +262,16 @@
 				to_chat(L, "<span class='notice'>Вы телепортировались в точку входа.</span>")
 				break
 
-// Проверка на наличие джетпака
 /turf/open/space/ihategordon/proc/has_jetpack(mob/living/L)
 	if(!L)
 		return FALSE
-	// Проверяем слоты экипировки
-	for(var/obj/item/tank/jetpack/J in L.get_all_contents())
-		if(J && J.on)
-			return TRUE
-	// Проверяем импланты только для карбонов
 	if(iscarbon(L))
 		var/mob/living/carbon/C = L
+		if(C.back)
+			if(istype(C.back, /obj/item/tank/jetpack))
+				var/obj/item/tank/jetpack/J = C.back
+				if(J.on)
+					return TRUE
 		for(var/obj/item/organ/cyberimp/chest/thrusters/T in C.internal_organs)
 			if(T && T.on)
 				return TRUE
@@ -327,6 +341,13 @@
 
 /turf/open/space/ihategordon/assume_air(datum/gas_mixture/giver)
 	// Не принимаем воздух из других тайлов
+	return
+
+/turf/open/space/ihategordon/update_air_ref()
+	// Не обновляем ссылку на воздух, сохраняем нашу кастомную атмосферу
+	return
+
+/turf/open/space/ihategordon/air_update_turf()
 	return
 
 // =============================================================================

@@ -3,6 +3,93 @@
 // AI Director controlled zombie waves for ihategordon mission
 // =============================================================================
 
+// =============================================================================
+// ACID OOZE POOL
+// =============================================================================
+
+/obj/effect/decal/cleanable/acid_ooze
+	name = "acid ooze"
+	desc = "A bubbling pool of acidic sludge that burns on contact."
+	icon = 'icons/effects/effects.dmi'
+	icon_state = "greenglow"
+	color = "#32CD32"
+	layer = ABOVE_NORMAL_TURF_LAYER
+	anchored = TRUE
+	density = FALSE
+	var/damage_per_tick = 5
+	var/duration = 50 // 5 seconds (50 deciseconds)
+
+/obj/effect/decal/cleanable/acid_ooze/Initialize(mapload)
+	. = ..()
+	if(!src)
+		return
+	// Schedule deletion after duration
+	QDEL_IN(src, duration)
+
+/obj/effect/decal/cleanable/acid_ooze/Crossed(atom/movable/AM)
+	. = ..()
+	if(!src || !AM)
+		return
+	if(isliving(AM))
+		var/mob/living/L = AM
+		if(!L)
+			return
+		if(L.stat != DEAD)
+			// Apply toxin and burn damage
+			L.adjustToxLoss(damage_per_tick)
+			L.adjustFireLoss(damage_per_tick)
+			if(L.client)
+				to_chat(L, span_warning("The acid ooze burns you!"))
+
+// =============================================================================
+// ACID SPIT PROJECTILE
+// =============================================================================
+
+/obj/item/projectile/neurotox/acid_spit
+	name = "acid spit"
+	icon_state = "declone"
+	damage = 15
+	damage_type = BURN
+	nodamage = FALSE
+	flag = "acid"
+	impact_effect_type = /obj/effect/temp_visual/impact_effect/acid_spit
+	hitsound = 'modular_bluemoon/sound/creatures/mesa/bullsquid/splat1.ogg'
+	hitsound_wall = 'modular_bluemoon/sound/creatures/mesa/bullsquid/splat1.ogg'
+
+/obj/effect/temp_visual/impact_effect/acid_spit
+	icon_state = "greenglow"
+	color = "#32CD32"
+	icon = 'icons/effects/effects.dmi'
+	layer = ABOVE_ALL_MOB_LAYER
+	duration = 3
+
+/obj/effect/temp_visual/impact_effect/acid_spit/Initialize(mapload)
+	. = ..()
+	if(!src)
+		return
+	var/turf/T = get_turf(src)
+	if(!T)
+		return
+	// Spawn acid ooze pool 3x3 around impact point
+	for(var/x_offset = -1 to 1)
+		for(var/y_offset = -1 to 1)
+			var/turf/pool_turf = locate(T.x + x_offset, T.y + y_offset, T.z)
+			if(pool_turf && !pool_turf.density)
+				new /obj/effect/decal/cleanable/acid_ooze(pool_turf)
+
+/obj/item/projectile/neurotox/acid_spit/on_hit(atom/target, blocked = FALSE)
+	. = ..()
+	if(!src || !target)
+		return
+	if(isliving(target))
+		var/mob/living/L = target
+		if(!L)
+			return
+		// Apply extra toxin damage
+		L.adjustToxLoss(10)
+		if(L.client)
+			to_chat(L, span_warning("The acid burns your skin!"))
+
 // Move speed modifier for infected slow effect
 /datum/movespeed_modifier/infected_slow
 	id = MOVESPEED_ID_INFECTED_SLOW
@@ -82,19 +169,9 @@
 
 /mob/living/simple_animal/hostile/infected/adjustHealth(amount, updating_health = TRUE, forced = FALSE)
 	. = ..()
-	// Apply slowdown when taking damage
 	if(amount < 0 && !stat)
-		// Only slow if taking damage (negative amount)
 		add_movespeed_modifier(/datum/movespeed_modifier/infected_damage_slow, TRUE)
 		addtimer(CALLBACK(src, TYPE_PROC_REF(/mob, remove_movespeed_modifier), /datum/movespeed_modifier/infected_damage_slow), 1 SECONDS)
-
-/mob/living/simple_animal/hostile/infected/Found(atom/A)
-	// Prioritize activating generators above all other targets
-	if(istype(A, /obj/structure/urbanism_generator))
-		var/obj/structure/urbanism_generator/G = A
-		if(G && G.activating)
-			return A
-	return ..()
 
 /mob/living/simple_animal/hostile/infected/CanAttack(atom/the_target)
 	if(!the_target)
@@ -212,6 +289,95 @@
 	icon_living = "former_gonome_alt"
 
 // =============================================================================
+// TIER 3: ACID SPITTER ZOMBIE
+// Bruiser HP, acid spit attack, explodes into acid pool on death
+// Only spawns after trigger4 (difficulty level 4+)
+// =============================================================================
+/mob/living/simple_animal/hostile/infected/acid_spitter
+	name = "acid spitter infected"
+	desc = "A heavily built infected creature with swollen acid glands. It can spit corrosive acid and explodes into a toxic pool when killed."
+	icon = 'modular_bluemoon/icons/mob/gonome.dmi'
+	icon_state = "boomer"
+	icon_living = "boomer"
+	icon_dead = "former_dead"
+	maxHealth = 100
+	health = 100
+	speed = 2
+	turns_per_move = 0
+	melee_damage_lower = 15
+	melee_damage_upper = 25
+	sight = 20
+	robust_searching = 1
+	environment_smash = ENVIRONMENT_SMASH_NONE
+	harm_intent_damage = 20
+	obj_damage = 40
+	// Ranged attack settings
+	ranged = TRUE
+	ranged_cooldown_time = 40 // 4 seconds between acid spits
+	retreat_distance = 4
+	minimum_distance = 3
+	projectiletype = /obj/item/projectile/neurotox/acid_spit
+	projectilesound = 'sound/effects/blobattack.ogg'
+	// Disable fractures and dislocations completely
+	wound_bonus = 0
+	bare_wound_bonus = 0
+	sharpness = SHARP_NONE
+
+/mob/living/simple_animal/hostile/infected/acid_spitter/Initialize(mapload)
+	. = ..()
+	if(!src)
+		return
+	AddComponent(/datum/component/swarming)
+	wanted_objects = typecacheof(wanted_objects, TRUE)
+
+/mob/living/simple_animal/hostile/infected/acid_spitter/AttackingTarget(atom/target)
+	. = ..()
+	if(!target)
+		return
+	// Apply strong slow effect to living targets (players)
+	if(isliving(target))
+		var/mob/living/L = target
+		if(!L)
+			return
+		if(L.client && L.stat != DEAD)
+			// Apply temporary strong slow (6 seconds)
+			L.add_movespeed_modifier(/datum/movespeed_modifier/bruiser_slow, TRUE)
+			addtimer(CALLBACK(L, TYPE_PROC_REF(/mob, remove_movespeed_modifier), /datum/movespeed_modifier/bruiser_slow), 6 SECONDS)
+			to_chat(L, span_warning("Вас сильно замедлил acid spitter!"))
+
+/mob/living/simple_animal/hostile/infected/acid_spitter/Move(atom/newloc, dir, step_x, step_y)
+	// Check if we're trying to move through a nocut fence
+	if(newloc)
+		for(var/obj/structure/fence/nocut/F in newloc)
+			if(F && F.Adjacent(src))
+				// Allow movement through nocut fence
+				return forceMove(newloc)
+	. = ..()
+
+/mob/living/simple_animal/hostile/infected/acid_spitter/Aggro()
+	. = ..()
+	if(speak && speak.len && prob(40))
+		playsound(src, pick(speak), 80, TRUE)
+
+/mob/living/simple_animal/hostile/infected/acid_spitter/death(gibbed)
+	. = ..(gibbed)
+	if(!src)
+		return
+	// Spawn acid ooze pool 3x3 around death location
+	var/turf/death_turf = get_turf(src)
+	if(!death_turf)
+		return
+	for(var/x_offset = -1 to 1)
+		for(var/y_offset = -1 to 1)
+			var/turf/pool_turf = locate(death_turf.x + x_offset, death_turf.y + y_offset, death_turf.z)
+			if(pool_turf && !pool_turf.density)
+				new /obj/effect/decal/cleanable/acid_ooze(pool_turf)
+	// Play death sound
+	playsound(death_turf, 'sound/effects/splat.ogg', 100, TRUE)
+	if(!ckey)
+		toggle_ai(AI_OFF)
+
+// =============================================================================
 // ZOMBIE SPAWN LANDMARK
 // Invisible landmark that randomly spawns infected or bruiser zombies
 // =============================================================================
@@ -226,6 +392,11 @@
 	var/spawn_mob_types = list(
 		/mob/living/simple_animal/hostile/infected = 70,
 		/mob/living/simple_animal/hostile/infected/bruiser = 30
+	)
+	var/spawn_mob_types_diff4 = list(
+		/mob/living/simple_animal/hostile/infected = 50,
+		/mob/living/simple_animal/hostile/infected/bruiser = 30,
+		/mob/living/simple_animal/hostile/infected/acid_spitter = 20
 	)
 
 /obj/effect/landmark/zombie_spawn/Initialize(mapload)
@@ -247,8 +418,14 @@
 		if(A.density)
 			return
 
-	// Choose mob type based on weights
-	var/mob_type = pickweight(spawn_mob_types)
+	// Choose mob type based on weights and difficulty level
+	var/list/current_spawn_types = spawn_mob_types
+	if(GLOB.zombie_director)
+		var/datum/ai_director/zombie_mission/D = GLOB.zombie_director
+		if(D && D.difficulty_level >= 4)
+			current_spawn_types = spawn_mob_types_diff4
+
+	var/mob_type = pickweight(current_spawn_types)
 	if(!mob_type)
 		return
 

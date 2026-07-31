@@ -1,8 +1,3 @@
-//////////////////////////////////////////////////////////////////////////////////////////
-					// BLACK MESA MEDICAL ITEMS
-//////////////////////////////////////////////////////////////////////////////////////
-
-// Уникальный лечебный раствор для Black Mesa
 /datum/reagent/medicine/mesa_healing_solution
 	name = "Healing Solution"
 	description = "A unique healing solution developed by Black Mesa scientists. It is designed to accelerate the healing process of burns, wounds, and toxins."
@@ -17,15 +12,11 @@
 	if(!M)
 		return
 
-	// Постепенное лечение ожогов
 	if(M.getFireLoss_nonProsthetic() > 0)
 		M.heal_bodypart_damage(0, 0.5)
 
-	// Постепенное лечение телесных повреждений
 	if(M.getBruteLoss_nonProsthetic() > 0)
 		M.heal_bodypart_damage(0.5, 0)
-
-	// Постепенное лечение токсинов
 	M.adjustToxLoss(-0.5, 0, TRUE)
 
 	..()
@@ -34,12 +25,10 @@
 	if(!M)
 		return
 
-	// Рвота при передозировке
 	if(prob(30))
 		M.vomit(10, FALSE, distance = 1)
 		to_chat(M, "<span class='warning'>Вы чувствуете сильную тошноту от передозировки лечебного раствора!</span>")
 
-// Тактическая аптечка Black Mesa - использует механику stack/medical
 /obj/item/stack/medical/mesa_tactical
 	name = "black mesa tactical medical pack"
 	singular_name = "black mesa tactical medical pack"
@@ -51,15 +40,15 @@
 	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
 	amount = 1
 	max_amount = 1
-	self_delay = 100 // 10 секунд на себя
-	other_delay = 100 // 10 секунд на других
+	self_delay = 100
+	other_delay = 100
 	repeating = FALSE
 	heal_brute = 0
 	heal_burn = 0
-	stop_bleeding = 1 // Штопаем кровотечение
+	stop_bleeding = 1
 	flesh_regeneration = 0
 	sanitization = 0
-	bypass_armor = TRUE // Лечит сквозь броню
+	bypass_armor = TRUE
 
 	var/healing_solution_amount = 20
 	var/used = FALSE
@@ -77,7 +66,6 @@
 		item_state = "basicmed"
 
 /obj/item/stack/medical/mesa_tactical/has_healable_damage(mob/living/carbon/patient)
-	// Переопределяем базовую проверку, так как мы лечим раны и переломы, а не brute/burn напрямую
 	if(patient.getBruteLoss() > 0 || patient.getFireLoss() > 0 || patient.getToxLoss() > 0)
 		return TRUE
 	for(var/datum/wound/W as anything in patient.all_wounds)
@@ -109,14 +97,12 @@
 			to_chat(user, "<span class='warning'>У [patient] отсутствует \a [ru_parse_zone(healed_zone)]!</span>")
 		return FALSE
 
-	// Проверяем наличие ран для лечения или любого урона
 	var/has_treatable_wounds = FALSE
 	for(var/datum/wound/W in affecting.wounds)
 		if(istype(W, /datum/wound/blunt) || istype(W, /datum/wound/slash) || istype(W, /datum/wound/pierce))
 			has_treatable_wounds = TRUE
 			break
 
-	// Также проверяем общий урон пациента (brute, burn, tox)
 	var/has_any_damage = (carbon_patient.getBruteLoss() > 0) || (carbon_patient.getFireLoss() > 0) || (carbon_patient.getToxLoss() > 0)
 
 	if(!has_treatable_wounds && !has_any_damage && affecting.brute_dam == 0 && affecting.burn_dam == 0)
@@ -132,45 +118,33 @@
 		return FALSE
 
 	var/healed_something = FALSE
-
-	// Лечим вывихи
 	for(var/datum/wound/blunt/moderate/dislocation in affecting.wounds)
 		if(dislocation)
 			qdel(dislocation)
 			healed_something = TRUE
-
-	// Лечим переломы (hairline fracture)
 	for(var/datum/wound/blunt/severe/fracture in affecting.wounds)
 		if(fracture)
 			qdel(fracture)
 			healed_something = TRUE
-
-	// Лечим открытые переломы (compound fracture)
 	for(var/datum/wound/blunt/critical/compound in affecting.wounds)
 		if(compound)
 			qdel(compound)
 			healed_something = TRUE
-
-	// Штопаем кровотечение
 	for(var/datum/wound/W in affecting.wounds)
 		if(istype(W, /datum/wound/slash) || istype(W, /datum/wound/pierce))
 			W.blood_flow = 0
 			healed_something = TRUE
-
-	// Вводим лечебный раствор
 	if(C.reagents)
 		C.reagents.add_reagent(/datum/reagent/medicine/mesa_healing_solution, healing_solution_amount)
 		healed_something = TRUE
 
 	if(healed_something)
 		user.visible_message("<span class='green'>[user] наносит \the [src] на [ru_kogo_zone(affecting.name)] [C].</span>", "<span class='green'>Вы наносите \the [src] на [ru_kogo_zone(affecting.name)] [C].</span>")
-		// Помечаем как использованный и меняем иконку
 		used = TRUE
 		update_icon()
 
 	return healed_something
 
-// Лечащий шприц Black Mesa
 /obj/item/reagent_containers/hypospray/medipen/mesa_healing
 	name = "Black Mesa healing syringe"
 	desc = "A specialized healing syringe containing Black Mesa's unique healing solution. Treats fractures, dislocations, and injects healing reagent."
@@ -182,11 +156,11 @@
 	volume = 10
 	amount_per_transfer_from_this = 10
 	list_reagents = list(/datum/reagent/medicine/mesa_healing_solution = 10)
-	ignore_flags = 1 // Можно использовать через скафандр
+	ignore_flags = 1
 	reagent_flags = DRAWABLE
 	flags_1 = null
 
-	var/healing_use_time = 30 // 3 секунды
+	var/healing_use_time = 30
 
 /obj/item/reagent_containers/hypospray/medipen/mesa_healing/attack(mob/M, mob/user)
 	if(!M)
@@ -217,22 +191,15 @@
 		to_chat(user, "<span class='warning'>[src] пуст!</span>")
 		return
 
-	// Лечим переломы и вывихи (как bonesetter)
 	for(var/obj/item/bodypart/BP in C.bodyparts)
 		if(!BP)
 			continue
-
-		// Лечим вывихи
 		for(var/datum/wound/blunt/moderate/dislocation in BP.wounds)
 			if(dislocation)
 				qdel(dislocation)
-
-		// Лечим переломы (hairline fracture)
 		for(var/datum/wound/blunt/severe/fracture in BP.wounds)
 			if(fracture)
 				qdel(fracture)
-
-	// Вводим лечебный раствор
 	..()
 
 	if(user == C)
@@ -240,8 +207,6 @@
 	else
 		user.visible_message("<span class='green'>[user] успешно использовал [src] на [C]!</span>", "<span class='green'>Вы успешно использовали [src] на [C]!</span>")
 		to_chat(C, "<span class='green'>[user] использовал [src] на вас!</span>")
-
-	// Делаем одноразовым
 	if(!iscyborg(user))
 		reagents.maximum_volume = 0
 		reagent_flags = NONE
@@ -255,7 +220,6 @@
 		icon_state = "[initial(icon_state)]-"
 		item_state = "syringe_empty"
 
-// HEV Батарея для зарядки костюма и синтетов
 /obj/item/stock_parts/cell/mesa_battery
 	name = "HEV battery"
 	desc = "A high-capacity battery designed for HEV suits and synthetic entities. Can charge suits below 20% and restore shield charges."
@@ -273,7 +237,6 @@
 	if(!user)
 		return
 
-	// Зарядка HEV костюма
 	if(istype(target, /obj/item/clothing/suit/space/hev_suit))
 		var/obj/item/clothing/suit/space/hev_suit/suit = target
 		if(!suit.cell)
@@ -285,19 +248,15 @@
 			to_chat(user, "<span class='warning'>[suit] уже полностью заряжен!</span>")
 			return
 
-		// Проверяем если заряд костюма менее 20%
 		var/current_percent = suit.cell.charge / suit.cell.maxcharge * 100
 		if(current_percent >= 20)
 			to_chat(user, "<span class='warning'>[suit] имеет достаточно заряда ([round(current_percent, 1)]%). Зарядка возможна только при менее 20%!</span>")
 			return
 
-		// Заряжаем до 100%
 		var/charge_to_add = min(charge_needed, maxcharge)
 		suit.cell.charge = min(suit.cell.charge + charge_to_add, suit.cell.maxcharge)
-		maxcharge = 0 // Батарея опустошена
+		maxcharge = 0
 		icon_state = "hevbattery-empty"
-
-		// Добавляем щит через компонент shielded
 		if(istype(suit.loc, /mob/living/carbon))
 			var/datum/component/shielded/shield = suit.GetComponent(/datum/component/shielded)
 			if(!shield)
@@ -310,7 +269,6 @@
 		playsound(loc, 'sound/magic/charge.ogg', 50, TRUE)
 		return
 
-	// Зарядка синтетов
 	if(issilicon(target))
 		var/mob/living/silicon/robot/R = target
 		if(!R.cell)
@@ -324,7 +282,7 @@
 
 		var/charge_to_add = min(charge_needed, maxcharge)
 		R.cell.charge = min(R.cell.charge + charge_to_add, R.cell.maxcharge)
-		maxcharge = 0 // Батарея опустошена
+		maxcharge = 0
 		icon_state = "hevbattery-empty"
 
 		to_chat(user, "<span class='green'>Вы зарядили [R]!</span>")
@@ -334,7 +292,6 @@
 
 	return ..()
 
-// Аптечка для синтетов Black Mesa - обычный предмет
 /obj/item/mesa_robot_kit
 	name = "Black Mesa robot repair kit"
 	desc = "A specialized repair kit for synthetic entities. Repairs damage and charges the target's battery."
@@ -351,7 +308,7 @@
 	var/max_charges = 1
 	var/repair_amount = 50
 	var/charge_amount = 2000
-	var/use_time = 100 // 10 секунд
+	var/use_time = 100
 
 /obj/item/mesa_robot_kit/examine(mob/user)
 	. = ..()
@@ -392,19 +349,12 @@
 		to_chat(user, "<span class='warning'>[src] пуст!</span>")
 		return
 
-	// Лечим телесные повреждения (роботические части)
 	if(R.getBruteLoss() > 0)
 		R.adjustBruteLoss(-repair_amount, only_robotic = TRUE, only_organic = FALSE)
-
-	// Лечим ожоги (роботические части)
 	if(R.getFireLoss() > 0)
 		R.adjustFireLoss(-repair_amount, only_robotic = TRUE, only_organic = FALSE)
-
-	// Лечим потерю масла (tox loss для синтетов)
 	if(R.getToxLoss() > 0)
 		R.adjustToxLoss(-repair_amount, 0, TRUE)
-
-	// Заряжаем синтета
 	if(R.cell)
 		var/charge_needed = R.cell.maxcharge - R.cell.charge
 		var/charge_to_add = min(charge_needed, charge_amount)
@@ -420,7 +370,6 @@
 
 	playsound(loc, 'modular_bluemoon/sound/creatures/mesa/meds/medkit.ogg', 50, TRUE)
 
-// Шприц для синтетов Black Mesa
 /obj/item/reagent_containers/hypospray/medipen/mesa_robot
 	name = "Black Mesa robot repair syringe"
 	desc = "A specialized repair syringe for synthetic entities. Repairs damage and charges the target's battery."
@@ -438,7 +387,7 @@
 
 	var/robot_repair_amount = 25
 	var/robot_charge_amount = 1000
-	var/robot_use_time = 50 // 5 секунд
+	var/robot_use_time = 50
 
 /obj/item/reagent_containers/hypospray/medipen/mesa_robot/attack(mob/M, mob/user)
 	if(!M)
@@ -469,19 +418,12 @@
 		to_chat(user, "<span class='warning'>[src] пуст!</span>")
 		return
 
-	// Лечим телесные повреждения (роботические части)
 	if(R.getBruteLoss() > 0)
 		R.adjustBruteLoss(-robot_repair_amount, only_robotic = TRUE, only_organic = FALSE)
-
-	// Лечим ожоги (роботические части)
 	if(R.getFireLoss() > 0)
 		R.adjustFireLoss(-robot_repair_amount, only_robotic = TRUE, only_organic = FALSE)
-
-	// Лечим потерю масла
 	if(R.getToxLoss() > 0)
 		R.adjustToxLoss(-robot_repair_amount, 0, TRUE)
-
-	// Заряжаем синтета
 	if(R.cell)
 		var/charge_needed = R.cell.maxcharge - R.cell.charge
 		var/charge_to_add = min(charge_needed, robot_charge_amount)
@@ -490,10 +432,8 @@
 	if(user == R)
 		to_chat(R, "<span class='green'>Вы успешно использовали [src] на себе!</span>")
 	else
-		user.visible_message("<span class='green'>[user] успешно использовал [src] на [R]!</span>", "<span class='green'>Вы успешно использовали [src] на [R]!</span>")
+		user.visible_message("<span class='green'>[user] успешно использовал [src] на [R]!</span>", "<span class='green'>Вы успешно использовал [src] на [R]!</span>")
 		to_chat(R, "<span class='green'>[user] использовал [src] на вас!</span>")
-
-	// Делаем одноразовым
 	if(!iscyborg(user))
 		reagents.maximum_volume = 0
 		reagent_flags = NONE

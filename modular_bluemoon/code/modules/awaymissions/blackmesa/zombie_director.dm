@@ -1,27 +1,21 @@
-// =============================================================================
-// BLACK MESA ZOMBIE AI DIRECTOR (FIXED & OPTIMIZED)
-// Controls zombie wave spawning for ihategordon mission
-// =============================================================================
-
 /datum/ai_director/zombie_mission
-	var/wave_timer = 600 // 1 minute between waves
-	var/max_wave_interval = 3000 // 5 minutes max between waves
+	var/wave_timer = 600
+	var/max_wave_interval = 3000
 	var/last_wave_time = 0
 	var/current_wave_number = 0
 	var/list/active_zombies = list()
 	var/horde_music_playing = FALSE
 	var/horde_music_start_time = 0
-	var/horde_music_duration = 12000 // 2 minutes in deciseconds
-	var/horde_music_cutoff_threshold = 5 // Stop music if fewer than this many zombies remain
-	var/difficulty_level = 0 // 0-8, increases when players cross trigger zones
-	var/zombie_hp_multiplier = 1.0 // HP multiplier for spawned zombies
-	var/initialized = FALSE // Track if director has been initialized
-	var/wave_timer_paused = FALSE // Track if wave timer is paused (safe zone)
-	var/pause_start_time = 0 // Track when pause started for accurate timer adjustment
-	var/horde_music_channel = 991 // Unique channel for horde music
-	var/spawning_wave = FALSE // Prevent multiple simultaneous wave spawns
+	var/horde_music_duration = 12000
+	var/horde_music_cutoff_threshold = 5
+	var/difficulty_level = 0
+	var/zombie_hp_multiplier = 1.0
+	var/initialized = FALSE
+	var/wave_timer_paused = FALSE
+	var/pause_start_time = 0
+	var/horde_music_channel = 991
+	var/spawning_wave = FALSE
 
-	// Whitelist and blacklist areas
 	var/list/excluded_areas = list(
 		/area/awaymission/ihategordon/hecu_abandoned_camp,
 		/area/awaymission/ihategordon/rocks,
@@ -49,7 +43,7 @@
 /datum/ai_director/zombie_mission/New()
 	. = ..()
 	initialized = TRUE
-	last_wave_time = world.time // Initialize timer so first wave spawns after wave_timer
+	last_wave_time = world.time
 	START_PROCESSING(SSprocessing, src)
 
 /datum/ai_director/zombie_mission/Destroy()
@@ -69,7 +63,6 @@
 
 	var/list/alive_players = get_alive_players_in_mission()
 	if(!alive_players || !alive_players.len)
-		// No players in mission - pause the wave timer
 		if(!wave_timer_paused)
 			wave_timer_paused = TRUE
 			pause_start_time = world.time
@@ -77,11 +70,10 @@
 			manage_horde_music()
 		return
 	else
-		// Players returned - unpause and adjust timer
 		if(wave_timer_paused)
 			wave_timer_paused = FALSE
 			var/pause_duration = world.time - pause_start_time
-			last_wave_time += pause_duration // Adjust last_wave_time to account for paused time
+			last_wave_time += pause_duration
 			pause_start_time = 0
 
 	if(world.time - last_wave_time >= wave_timer)
@@ -166,13 +158,6 @@
 /datum/ai_director/zombie_mission/proc/calculate_threat_level(player_count)
 	if(!player_count)
 		player_count = 1
-	// Progressive threat based on difficulty level (INCREASED for more intense hordes)
-	// Level 0: 3-4 zombies (no horde music)
-	// Level 1-2: 4-7 zombies
-	// Level 3-4: 6-10 zombies
-	// Level 5-6: 8-15 zombies
-	// Level 7-8: 12-20 zombies (max)
-	// Scaled by player count for multiplayer
 	var/base_threat
 	switch(difficulty_level)
 		if(0)
@@ -196,7 +181,6 @@
 		else
 			base_threat = rand(3, 4)
 
-	// Scale with player count (add 1 zombie per additional player beyond first, reduced scaling)
 	var/player_multiplier = 1 + ((player_count - 1) * 0.1)
 	var/threat = round(base_threat * player_multiplier)
 	return threat
@@ -216,13 +200,11 @@
 
 	log_world("[src] Starting zombie wave: threat=[threat_level], players=[players.len], zombies_to_spawn=[zombies_to_spawn]")
 
-	// OPTIMIZATION: Pre-build spawn turfs once per wave instead of per zombie
 	var/list/cached_spawn_turfs = get_cached_spawn_turfs(players)
 	if(!cached_spawn_turfs || !cached_spawn_turfs.len)
 		log_world("[src] No valid spawn turfs found")
 		return
 
-	// Gradual spawning: spawn in batches of 3-5 zombies
 	var/batch_size = rand(3, 5)
 	var/zombies_spawned = 0
 	var/failed_spawns = 0
@@ -232,23 +214,34 @@
 		var/current_batch = min(batch_size, remaining)
 
 		for(var/i = 1 to current_batch)
-			// OPTIMIZATION: Pick from pre-cached turfs (already validated: density, LOS, pathfinding)
 			var/turf/spawn_turf = pick(cached_spawn_turfs)
 			if(!spawn_turf)
 				log_world("[src] Failed to pick spawn turf for zombie #[zombies_spawned + i]")
 				failed_spawns++
 				continue
 
-			// Re-check density/blocking in case something changed during wave
 			if(spawn_turf.density || spawn_turf.is_blocked_turf())
 				failed_spawns++
 				continue
 
 			var/mob_type
-			if(prob(70))
-				mob_type = /mob/living/simple_animal/hostile/infected
+			if(difficulty_level >= 4)
+				// After trigger4, include acid spitter in rotation
+				var/spawn_roll = rand(1, 100)
+				if(spawn_roll <= 50)
+					mob_type = /mob/living/simple_animal/hostile/infected
+				else if(spawn_roll <= 75)
+					mob_type = /mob/living/simple_animal/hostile/infected/bruiser
+				else if(spawn_roll <= 87)
+					mob_type = /mob/living/simple_animal/hostile/infected/bruiser/alt
+				else
+					mob_type = /mob/living/simple_animal/hostile/infected/acid_spitter
 			else
-				mob_type = prob(50) ? /mob/living/simple_animal/hostile/infected/bruiser : /mob/living/simple_animal/hostile/infected/bruiser/alt
+				// Before trigger4, only normal zombies and bruisers
+				if(prob(70))
+					mob_type = /mob/living/simple_animal/hostile/infected
+				else
+					mob_type = prob(50) ? /mob/living/simple_animal/hostile/infected/bruiser : /mob/living/simple_animal/hostile/infected/bruiser/alt
 
 			if(!mob_type)
 				failed_spawns++
@@ -256,7 +249,6 @@
 
 			var/mob/living/simple_animal/hostile/infected/Z = new mob_type(spawn_turf)
 			if(Z)
-				// Apply HP multiplier based on difficulty
 				if(zombie_hp_multiplier > 1.0)
 					Z.maxHealth = round(Z.maxHealth * zombie_hp_multiplier)
 					Z.health = Z.maxHealth
@@ -272,16 +264,13 @@
 				failed_spawns++
 				log_world("[src] Failed to spawn zombie at [spawn_turf]")
 
-		// If more zombies to spawn, wait before next batch
 		if(zombies_spawned < zombies_to_spawn && failed_spawns < 20)
-			sleep(20) // Wait 2 seconds between batches
+			sleep(20)
 
 	log_world("[src] Wave complete: intended=[zombies_to_spawn], spawned=[spawned_zombies.len], failed=[failed_spawns]")
-	// Announce wave with actual spawned count
 	announce_wave(spawned_zombies.len)
 
 	if(spawned_zombies.len > 0)
-		// Only play horde music if difficulty level > 0
 		if(difficulty_level > 0)
 			start_horde_music()
 
@@ -295,11 +284,9 @@
 	if(!valid_areas || !valid_areas.len)
 		return null
 
-	// Fixed spawn radius: 7-8 tiles around player (as per requirements)
 	var/min_dist = 7
 	var/max_dist = 8
 
-	// OPTIMIZATION: Pre-build nearby_turfs list once per player to avoid repeated range() calls
 	var/list/player_spawn_turfs = list()
 	for(var/mob/living/target in players)
 		if(!target)
@@ -318,7 +305,7 @@
 			if(dist >= min_dist && dist <= max_dist)
 				player_spawn_turfs[target] += T
 
-	for(var/i = 1 to 50) // REDUCED from 200 to 50 for performance
+	for(var/i = 1 to 50)
 		var/mob/living/target = pick(players)
 		if(!target)
 			continue
@@ -335,9 +322,6 @@
 		if(T.is_blocked_turf())
 			continue
 
-		// OPTIMIZATION: Skip BFS pathfinding for performance - zombies can break through obstacles
-		// Only do basic area check which we already did above
-
 		return T
 
 	return null
@@ -352,7 +336,6 @@
 	if(!valid_areas || !valid_areas.len)
 		return null
 
-	// Fixed spawn radius: 7-8 tiles around player
 	var/min_dist = 7
 	var/max_dist = 8
 
@@ -374,12 +357,9 @@
 			var/dist = get_dist(T, center)
 			if(dist >= min_dist && dist <= max_dist)
 				if(!T.density && !T.is_blocked_turf())
-					// Check if spawn turf is in a valid area (not in forbidden zones like mesarocks)
 					var/area/spawn_area = get_area(T)
 					if(!spawn_area || !(spawn_area in valid_areas))
 						continue
-					// Simplified: only check basic density and blocking, skip LOS and pathfinding
-					// Zombies can break through obstacles anyway
 					cached_turfs += T
 
 	return cached_turfs
@@ -390,12 +370,11 @@
 	if(!start_turf || !target_turf)
 		return FALSE
 
-	// OPTIMIZATION: Simplified pathfinding - check direct line with limited BFS (50 steps instead of 150)
 	var/list/visited = list()
 	var/list/queue = list(start_turf)
 	visited[start_turf] = TRUE
 	var/steps = 0
-	var/max_steps = 50 // Reduced from 150 for performance
+	var/max_steps = 50
 
 	while(queue.len && steps < max_steps)
 		var/turf/current = queue[1]
@@ -411,11 +390,9 @@
 				continue
 			if(next_turf.density)
 				continue
-			// Check for blocking objects - zombies can break glass and climb fences
 			var/blocked = FALSE
 			for(var/atom/movable/AM in next_turf)
 				if(AM.density && !istype(AM, /mob/living))
-					// Allow passing through glass/structures zombies can break or climb
 					if(istype(AM, /obj/structure/window) || istype(AM, /obj/structure/grille) || istype(AM, /obj/structure/fence))
 						continue
 					blocked = TRUE
@@ -433,7 +410,6 @@
 	if(!start_turf || !target_turf)
 		return FALSE
 
-	// Check if there's a clear line of sight between turfs
 	for(var/turf/T in getline(start_turf, target_turf))
 		if(T == start_turf || T == target_turf)
 			continue
@@ -441,7 +417,6 @@
 			return FALSE
 		if(T.density)
 			return FALSE
-		// Check for dense objects blocking sight
 		for(var/atom/movable/AM in T)
 			if(AM.opacity || (AM.density && !istype(AM, /mob/living)))
 				return FALSE
@@ -473,9 +448,7 @@
 	if(!threat_level || threat_level <= 0)
 		return
 
-	// Bypass wave_timer check for generator-triggered hordes
 	spawn_zombie_wave(threat_level, alive_players)
-	// Don't update last_wave_time - allow natural waves to continue on their schedule
 	current_wave_number++
 
 /datum/ai_director/zombie_mission/proc/start_horde_music()
@@ -503,7 +476,6 @@
 			continue
 		if(A in valid_areas)
 			if(M.client && M.client.prefs && (M.client.prefs.toggles & SOUND_AMBIENCE))
-				// Проверяем зону - если ивентовая зона, кастомная музыка
 				var/music_file = 'modular_bluemoon/sound/ambience/mesa/horde_music.ogg'
 				if(istype(A, /area/awaymission/ihategordon/custom_event))
 					music_file = 'modular_bluemoon/sound/ambience/mesa/xenhorde.ogg'

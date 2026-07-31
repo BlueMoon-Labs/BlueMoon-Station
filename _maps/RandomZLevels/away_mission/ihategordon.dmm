@@ -1304,6 +1304,12 @@
 	name = "concrete"
 	},
 /area/space)
+"aCE" = (
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/open/floor/plasteel/rivets,
+/area/awaymission/ihategordon/dorm_rooms)
 "aCY" = (
 /obj/structure/fence/nocut{
 	resistance_flags = 115;
@@ -3675,6 +3681,7 @@
 /obj/effect/festive/street/streetlinenorth,
 /obj/structure/barricade/wooden,
 /obj/structure/barricade/wooden/crude,
+/obj/machinery/camera/bombardment,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa/bombardment)
 "bGV" = (
@@ -5911,6 +5918,12 @@
 	},
 /turf/open/floor/plating/cobblestone,
 /area/space)
+"cMu" = (
+/obj/structure/fluff/paper/stack{
+	dir = 8
+	},
+/turf/open/floor/plasteel/rivets,
+/area/awaymission/ihategordon/dorm_rooms)
 "cMy" = (
 /obj/structure/rockpilemesa{
 	icon_state = "stone3";
@@ -10539,6 +10552,14 @@
 	color = "#f7caa6"
 	},
 /area/awaymission/ihategordon/outsideofmesa)
+"eWM" = (
+/obj/structure/urbanismmounted{
+	icon_state = "wallmount";
+	pixel_x = 0;
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/rivets,
+/area/awaymission/ihategordon/dorm_rooms)
 "eWN" = (
 /obj/effect/decal/cleanable/blood{
 	icon_state = "gibdownx_flesh"
@@ -14126,6 +14147,7 @@
 "gCL" = (
 /obj/effect/festive/street/streetlinenorth,
 /obj/machinery/computer/camera_advanced/bombardment,
+/obj/machinery/camera/bombardment,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa/bombardment)
 "gCX" = (
@@ -33085,6 +33107,24 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"pOD" = (
+/obj/structure/table/reinforced,
+/obj/item/phone{
+	pixel_x = 7;
+	pixel_y = 6;
+	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism.dmi';
+	icon_state = "phone"
+	},
+/obj/item/paper_bin{
+	pixel_x = -6;
+	pixel_y = 2
+	},
+/obj/item/pen{
+	pixel_x = -7;
+	pixel_y = 3
+	},
+/turf/open/floor/plasteel/rivets,
+/area/awaymission/ihategordon/dorm_rooms)
 "pOW" = (
 /obj/effect/turf_decal/weather/dirt{
 	dir = 8
@@ -35421,6 +35461,16 @@
 	color = "#f7caa6"
 	},
 /area/awaymission/ihategordon/outsideofmesa)
+"qUz" = (
+/obj/machinery/computer{
+	desc = "A computer long since rendered non-functional due to lack of maintenance. Spitting out error messages.";
+	dir = 8;
+	name = "Broken Computer";
+	pixel_x = 1;
+	pixel_y = 2
+	},
+/turf/open/floor/plasteel/rivets,
+/area/awaymission/ihategordon/dorm_rooms)
 "qUA" = (
 /obj/effect/festive/street/streetlinesouth,
 /obj/structure/barricade/urbanism/roadblock{
@@ -41426,6 +41476,10 @@
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
+"udm" = (
+/obj/structure/chair/office/light,
+/turf/open/floor/plasteel/rivets,
+/area/awaymission/ihategordon/dorm_rooms)
 "udy" = (
 /obj/structure/table/reinforced,
 /obj/effect/turf_decal/siding/wideplating/dark,
@@ -41972,6 +42026,14 @@
 	color = "#f79668"
 	},
 /area/awaymission/ihategordon/outsideofmesa)
+"uoZ" = (
+/obj/structure/urbanismmachines/server{
+	icon_state = "server5";
+	pixel_x = 0;
+	pixel_y = 21
+	},
+/turf/open/floor/plasteel/rivets,
+/area/awaymission/ihategordon/dorm_rooms)
 "upj" = (
 /obj/structure/barricade/sandbags,
 /obj/effect/festive/street/streetlinenorth,
@@ -44957,6 +45019,16 @@
 	color = "#f79668"
 	},
 /area/awaymission/ihategordon/outsideofmesa)
+"vNs" = (
+/obj/structure/table/reinforced,
+/obj/structure/urbanismmachines{
+	icon_state = "boxdoc";
+	pixel_x = 0;
+	pixel_y = 7;
+	name = "box"
+	},
+/turf/open/floor/plasteel/rivets,
+/area/awaymission/ihategordon/dorm_rooms)
 "vNA" = (
 /obj/structure/urbanismcars{
 	icon_state = "truck";
@@ -45453,6 +45525,7 @@
 	pixel_x = -7;
 	pixel_y = 11
 	},
+/obj/machinery/camera/bombardment,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa/bombardment)
 "vYH" = (
@@ -46242,6 +46315,7 @@
 	pixel_x = -7;
 	pixel_y = 5
 	},
+/obj/machinery/camera/bombardment,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa/bombardment)
 "wqh" = (
@@ -78619,7 +78693,7 @@ xXZ
 xXZ
 xXZ
 xXZ
-cpV
+nwr
 eVg
 eVg
 eVg
@@ -78876,7 +78950,7 @@ xXZ
 xXZ
 xXZ
 xXZ
-oVw
+klO
 eVg
 eVg
 eVg
@@ -79133,7 +79207,7 @@ xXZ
 xXZ
 xXZ
 xXZ
-cpV
+nwr
 eVg
 eVg
 eVg
@@ -80418,7 +80492,7 @@ xXZ
 xXZ
 xXZ
 xXZ
-nwr
+klO
 eVg
 eVg
 eVg
@@ -80675,7 +80749,7 @@ xXZ
 xXZ
 xXZ
 xXZ
-klO
+nwr
 eVg
 eVg
 eVg
@@ -80933,7 +81007,7 @@ xXZ
 xXZ
 xXZ
 klO
-klO
+eVg
 eVg
 eVg
 eVg
@@ -81189,7 +81263,7 @@ xXZ
 xXZ
 xXZ
 xXZ
-xXZ
+klO
 klO
 klO
 sry
@@ -81448,7 +81522,7 @@ xXZ
 xXZ
 xXZ
 klO
-eVg
+uoZ
 eVg
 eVg
 eVg
@@ -81705,8 +81779,8 @@ xXZ
 xXZ
 xXZ
 klO
-eVg
-eVg
+uoZ
+cMu
 eVg
 eVg
 klO
@@ -81962,7 +82036,7 @@ xXZ
 xXZ
 xXZ
 klO
-eVg
+aCE
 eVg
 eVg
 eVg
@@ -82219,8 +82293,8 @@ xXZ
 xXZ
 xXZ
 klO
-eVg
-eVg
+eWM
+udm
 eVg
 eVg
 sry
@@ -82476,10 +82550,10 @@ xXZ
 xXZ
 xXZ
 klO
-eVg
-eVg
-eVg
-eVg
+vNs
+qUz
+qUz
+pOD
 klO
 sNH
 jsX

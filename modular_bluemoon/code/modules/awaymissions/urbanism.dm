@@ -11,7 +11,6 @@
 
 /turf/closed/mineral/mesarock/Initialize(mapload)
 	. = ..()
-	// Блокируем телепортацию в зону ihategordon
 	RegisterSignal(src, COMSIG_ATOM_INTERCEPT_TELEPORT, PROC_REF(block_teleport))
 
 /turf/closed/mineral/mesarock/proc/block_teleport(datum/source, channel, turf/origin, turf/destination)
@@ -68,7 +67,7 @@
 	layer = 4
 	light_range = 15
 	light_color = "#ffffdd"
-	light_flags = LIGHT_NO_RANGE_CAP // статичный наружный прожектор: дальность выше базового капа
+	light_flags = LIGHT_NO_RANGE_CAP
 	max_integrity = 9999999
 
 
@@ -363,6 +362,7 @@
 	icon_state = "red_big"
 	anchored = TRUE
 	density = FALSE
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT // Prevent mouse interaction
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF | FREEZE_PROOF
 	move_resist = INFINITY
 	obj_flags = 0
@@ -539,19 +539,19 @@
 /obj/structure/mad_scientist/attack_hand(mob/user)
 	. = ..()
 
-	// Play mad scientist sound
 	playsound(src, 'modular_bluemoon/sound/creatures/mesa/madsci/scimad.ogg', 100, FALSE)
-
-//Super idol 的笑容 都沒你的甜
-//八月正午的陽光 都沒你耀眼
-//熱愛105度的你
-//滴滴清純的蒸餾水
 
 /obj/structure/fence/nocut
 	name = "reinforced fence"
 	desc = "A chain link fence reinforced to prevent cutting."
 	cuttable = FALSE
 	pass_flags_self = PASSFENCE // Allow mobs with PASSFENCE to pass through
+
+/obj/structure/fence/nocut/CanAStarPass(ID, dir, atom/movable/pathing_movable)
+	// Allow zombies to path through this fence
+	if(istype(pathing_movable, /mob/living/simple_animal/hostile/infected))
+		return TRUE
+	return ..()
 
 
 /obj/structure/reagent_dispensers/urbanismbarrel/radium
@@ -569,10 +569,6 @@
 	Comp = GetComponent(/datum/component/radioactive)
 	Comp.set_strength(rad_strength)
 
-// =============================================================================
-// URBANISM GENERATOR SYSTEM
-// Special generator that can be activated by players to spawn loot or open doors
-// =============================================================================
 
 /obj/structure/urbanism_generator
 	name = "generator"
@@ -584,27 +580,23 @@
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF | FREEZE_PROOF
 	max_integrity = 9999999
 
-	// Activation settings
 	var/activation_time = 60 SECONDS
 	var/active_duration = 60 SECONDS
-	var/damage_threshold = 300 // Damage needed to interrupt activation (increased for better durability)
+	var/damage_threshold = 300
 
-	// State tracking
 	var/activating = FALSE
 	var/active = FALSE
 	var/activation_start_time = 0
 	var/next_mob_spawn_time = 0
-	var/next_director_horde_time = 0 // Separate timer for director horde triggers
+	var/next_director_horde_time = 0
 	var/damage_taken = 0
 
-	// Mob wave settings
 	var/spawn_mobs = FALSE
 	var/list/mob_types = list()
 	var/mob_spawn_interval = 10 SECONDS
 	var/max_mobs_per_wave = 5
-	var/spawn_radius = 5 // Minimum distance from generator for zombie spawns
+	var/spawn_radius = 5
 
-	// Reward settings
 	var/reward_type = null
 	var/blastdoor_id = null
 
@@ -617,17 +609,14 @@
 	return ..()
 
 /obj/structure/urbanism_generator/process()
-	// Check if activation was interrupted
 	if(activating && damage_taken >= damage_threshold)
 		interrupt_activation()
 		return
 
-	// Spawn mobs ONLY during activation (60 seconds), NOT after activation
 	if(spawn_mobs && mob_types && mob_types.len && activating)
 		if(world.time >= next_mob_spawn_time)
 			spawn_mob_wave()
 
-	// Trigger zombie director horde events every 60 seconds during activation (increased to prevent too many hordes)
 	if(activating && GLOB.zombie_director)
 		if(world.time >= next_director_horde_time)
 			var/datum/ai_director/zombie_mission/D = GLOB.zombie_director
@@ -654,7 +643,6 @@
 		to_chat(user, span_warning("Генератор уже запускается!"))
 		return
 
-	// Check if user has empty hands
 	if(user.get_active_held_item())
 		to_chat(user, span_warning("Вам нужны пустые руки для активации генератора."))
 		return
@@ -667,12 +655,9 @@
 
 	activating = TRUE
 	damage_taken = 0
-	next_mob_spawn_time = world.time + mob_spawn_interval // Initialize spawn timer
-	next_director_horde_time = world.time + mob_spawn_interval // Initialize director horde timer
+	next_mob_spawn_time = world.time + mob_spawn_interval
+	next_director_horde_time = world.time + mob_spawn_interval
 	to_chat(user, span_notice("Вы начинаете активировать генератор..."))
-
-	// Zombies will spawn during the 60-second activation period via process()
-	// NOT immediately - this is the fix for the requirements
 
 	playsound(src, 'modular_bluemoon/sound/creatures/mesa/generator/generator_start.ogg', 50, TRUE)
 
@@ -698,11 +683,9 @@
 
 	visible_message(span_boldnotice("Генератор активирован!"))
 
-	// Open blastdoor immediately if this generator is linked to one
 	if(blastdoor_id)
 		open_blastdoor()
 
-	// Play active sound
 	playsound(src, 'modular_bluemoon/sound/creatures/mesa/generator/generator_sputter.ogg', 50, TRUE)
 
 /obj/structure/urbanism_generator/proc/finish_activation()
@@ -713,7 +696,6 @@
 	icon_state = "generatorold"
 	visible_message(span_boldnotice("Генератор завершил работу!"))
 
-	// Give reward
 	if(reward_type)
 		spawn_reward()
 
@@ -734,19 +716,16 @@
 
 	var/doors_opened = 0
 
-	// Open ALL poddoors with matching ID
 	for(var/obj/machinery/door/poddoor/D in GLOB.machines)
 		if(D && D.id == blastdoor_id)
 			D.open()
 			doors_opened++
 
-	// Open ALL window/brig doors with matching ID
 	for(var/obj/machinery/door/window/brigdoor/W in GLOB.machines)
 		if(W && W.id == blastdoor_id)
 			W.open()
 			doors_opened++
 
-	// Open ALL airlocks with matching ID
 	for(var/obj/machinery/door/airlock/A in GLOB.airlocks)
 		if(A && A.id_tag == blastdoor_id)
 			A.open()
@@ -805,16 +784,13 @@
 		if(!mob_type)
 			continue
 
-		// Spawn zombies at minimum distance from generator (not right next to it)
 		var/turf/spawn_turf = null
 		for(var/attempt = 1 to 10)
 			var/turf/candidate = get_step(T, pick(GLOB.cardinals))
 			if(!candidate)
 				continue
-			// Check distance from generator
 			var/dist = get_dist(candidate, T)
 			if(dist < spawn_radius)
-				// Move further away
 				var/dir_to_move = get_dir(T, candidate)
 				for(var/j = 1 to (spawn_radius - dist))
 					candidate = get_step(candidate, dir_to_move)
@@ -833,7 +809,6 @@
 		if(!M)
 			continue
 
-		// Apply HP multiplier from zombie director
 		if(istype(M, /mob/living/simple_animal/hostile/infected) && GLOB.zombie_director)
 			var/datum/ai_director/zombie_mission/D = GLOB.zombie_director
 			if(D && D.zombie_hp_multiplier > 1.0)
@@ -853,7 +828,6 @@
 	if(!T)
 		return
 
-	// Default zombie types if not specified
 	var/list/horde_mob_types = mob_types
 	if(!horde_mob_types || !horde_mob_types.len)
 		horde_mob_types = list(
@@ -861,19 +835,15 @@
 			/mob/living/simple_animal/hostile/infected/bruiser
 		)
 
-	// Calculate horde size based on difficulty
-	var/horde_size = get_spawn_count_for_difficulty() * 2 // Double the normal wave size for horde
+	var/horde_size = get_spawn_count_for_difficulty() * 2
 	if(horde_size < 3)
 		horde_size = 3
 
-	// Spawn zombies in a circle around the generator (radius 7-8 tiles)
 	var/list/spawn_offsets = list()
 	for(var/x = -7 to 7)
 		for(var/y = -7 to 7)
-			// Skip center tiles (where generator is)
 			if(abs(x) <= 1 && abs(y) <= 1)
 				continue
-			// Only include tiles within radius 7-8
 			var/dist = sqrt(x*x + y*y)
 			if(dist >= 4 && dist <= 8)
 				spawn_offsets += list(list(x, y))
@@ -902,7 +872,6 @@
 		if(!M)
 			continue
 
-		// Apply HP multiplier from zombie director
 		if(istype(M, /mob/living/simple_animal/hostile/infected) && GLOB.zombie_director)
 			var/datum/ai_director/zombie_mission/D = GLOB.zombie_director
 			if(D && D.zombie_hp_multiplier > 1.0)
@@ -942,10 +911,6 @@
 	visible_message(span_danger("Генератор был повреждён и остановлен!"))
 	playsound(src, 'modular_bluemoon/sound/creatures/mesa/generator/generator_sputter.ogg', 50, TRUE)
 
-// =============================================================================
-// GENERATOR WITH REWARD
-// Spawns a loot item after activation
-// =============================================================================
 
 /obj/structure/urbanism_generator/reward
 	name = "supply generator"
@@ -965,10 +930,6 @@
 	name = "medical generator"
 	reward_type = /obj/item/storage/firstaid/regular
 
-// =============================================================================
-// GENERATOR AS BUTTON
-// Opens blastdoor after activation, no reward
-// =============================================================================
 
 /obj/structure/urbanism_generator/button
 	name = "door generator"
@@ -1034,10 +995,6 @@
 /turf/closed/wall/r_wall/blackmesa/attack_animal(mob/living/simple_animal/M)
 	return
 
-// =============================================================================
-// URBANISM FLICKERING LIGHTS
-// Lights that flicker chaotically with unpleasant loop sound
-// =============================================================================
 
 /datum/looping_sound/urbanism_flicker
 	mid_sounds = list('modular_bluemoon/sound/ambience/mesa/lights_flicker.ogg' = 1)
@@ -1068,7 +1025,6 @@
 /obj/machinery/light/urbanism_flicker/process()
 	if(!src)
 		return PROCESS_KILL
-	// Don't kill process - just skip if not ready
 	if(status != LIGHT_OK)
 		if(flickering_active)
 			flickering_active = FALSE
@@ -1077,7 +1033,6 @@
 		if(flickering_active)
 			flickering_active = FALSE
 		return
-	// Start flickering if not already active
 	if(!flickering_active)
 		flickering_active = TRUE
 		START_Flickering()
@@ -1086,7 +1041,6 @@
 	set waitfor = 0
 	if(!src)
 		return
-	// Keep flickering while light is OK and on
 	while(src && status == LIGHT_OK && on)
 		on = !on
 		update(FALSE, TRUE)
@@ -1113,7 +1067,6 @@
 	if(status != LIGHT_OK)
 		QDEL_NULL(sound_loop)
 
-// Tube version with sound
 /obj/machinery/light/urbanism_flicker/tube
 	name = "flickering tube light"
 	base_state = "tube"
@@ -1123,7 +1076,6 @@
 	light_type = /obj/item/light/tube
 	cone_angle = LIGHTING_WALL_TUBE_CONE_ANGLE
 
-// Small bulb version with sound
 /obj/machinery/light/urbanism_flicker/small
 	name = "flickering bulb light"
 	base_state = "bulb"
@@ -1133,9 +1085,6 @@
 	light_type = /obj/item/light/bulb
 	cone_angle = LIGHTING_WALL_BULB_CONE_ANGLE
 
-// =============================================================================
-// SILENT FLICKERING LIGHTS (NO SOUND)
-// =============================================================================
 
 /obj/machinery/light/urbanism_flicker/silent
 	name = "silent flickering light fixture"
@@ -1143,9 +1092,8 @@
 
 /obj/machinery/light/urbanism_flicker/silent/Initialize(mapload)
 	. = ..()
-	QDEL_NULL(sound_loop) // Remove sound
+	QDEL_NULL(sound_loop)
 
-// Tube version silent
 /obj/machinery/light/urbanism_flicker/silent/tube
 	name = "silent flickering tube light"
 	base_state = "tube"
@@ -1155,7 +1103,6 @@
 	light_type = /obj/item/light/tube
 	cone_angle = LIGHTING_WALL_TUBE_CONE_ANGLE
 
-// Small bulb version silent
 /obj/machinery/light/urbanism_flicker/silent/small
 	name = "silent flickering bulb light"
 	base_state = "bulb"
@@ -1168,7 +1115,6 @@
 /turf/closed/wall/r_wall/blackmesa/attack_hulk(mob/living/carbon/human/H)
 	return FALSE
 
-//sign
 
 /obj/structure/urbanismmachines/sign
 	name = "road sign"

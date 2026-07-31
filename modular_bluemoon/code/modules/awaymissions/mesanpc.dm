@@ -215,18 +215,54 @@
 	return ..()
 
 // =============================================================================
-// NEGOTIATIONS RADIO WITH DOOR CONTROL
-// Opens blastdoors after dialogue completion
+// DOOR CONTROL RADIO
+// Radio subtype for controlling blast doors
 // =============================================================================
 
 /obj/machinery/negotiations_radio/door_control
 	name = "door control radio"
-	desc = "A radio connected to door control systems."
-	blastdoor_id = "negotiations_door_1"
+	desc = "A radio for controlling blast doors."
+	blastdoor_id = "main_entrance"
+
+/obj/machinery/negotiations_radio/door_control/Initialize(mapload)
+	. = ..()
+	// Override dialogue for door control
+	dialogue_lines = list(
+		"НАКОНЕЦ-ТО! Я устал ждать помощи.",
+		"Если не будете брыкаться, помогу. Проблема следующая:",
+		"Я не могу добраться до комнаты управления из-за туррелей и ставней...",
+		"..Но хорошая новость",
+		"Доступ к шлюзам перед вами у меня есть. Но вот к проходу дальше, увы, туррели расстреляют",
+		"Но если вы попадете в основную комнату управления и отключите туррели - я открою ставни и отключу их",
+		"...И делайте это скорее, у меня тут... Скажем так, образовалась пробелма ввиде моего коллеги"
+	)
 
 // =============================================================================
-// BOMBARDMENT RADIO
-// Radio for calling in airstrikes
+// BOMBARDMENT CAMERA SYSTEM
+// Invisible indestructible cameras for bombardment zone
+// =============================================================================
+
+/obj/machinery/camera/bombardment
+	name = "bombardment camera"
+	desc = "A military camera for bombardment targeting."
+	anchored = TRUE
+	density = FALSE
+	icon_state = "camera"
+	use_power = FALSE
+	idle_power_usage = 0
+	active_power_usage = 0
+	network = list("bombardment")
+	c_tag = "bombardment"
+	alpha = 0 // Invisible
+	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF | FREEZE_PROOF
+
+/obj/machinery/camera/bombardment/Initialize(mapload)
+	. = ..()
+	// Ensure network is set correctly
+	network = list("bombardment")
+
+// =============================================================================
+// BOMBARDMENT CONTROL CONSOLE
 // =============================================================================
 
 /obj/machinery/negotiations_radio/bombardment
@@ -273,6 +309,8 @@
 	if(linked_console)
 		linked_console.enabled = TRUE
 		linked_console.linked_radio = src
+		linked_console.icon_screen = linked_console.base_icon_screen // Restore powered icon
+		linked_console.update_appearance() // Update visual appearance
 		visible_message(span_notice("Консоль бомбардировки активирована!"))
 
 /obj/machinery/negotiations_radio/bombardment/proc/trigger_bombardment(turf/target_turf)
@@ -388,10 +426,13 @@
 	var/datum/action/innate/bombardment_mark/mark_action = /datum/action/innate/bombardment_mark
 	var/charges_remaining = 4
 	var/obj/machinery/negotiations_radio/bombardment/linked_radio = null
-	var/restricted_z = null
+	jump_action = null // Disable jump to camera
+	networks = list("bombardment") // Use bombardment camera network
+	var/base_icon_screen = "tactical" // Store base icon state
 
 /obj/machinery/computer/camera_advanced/bombardment/Initialize()
 	. = ..()
+	base_icon_screen = icon_screen // Store initial icon state
 	if(mark_action)
 		actions += new mark_action(src)
 
@@ -403,8 +444,9 @@
 				radio.linked_console = src
 				break
 
-	// Set restricted z-level to current z
-	restricted_z = z
+	// Set initial visual state to disabled
+	if(!enabled)
+		icon_screen = "tactical_off"
 
 /obj/machinery/computer/camera_advanced/bombardment/GrantActions(mob/living/user)
 	..(user)
@@ -427,6 +469,9 @@
 /obj/machinery/computer/camera_advanced/bombardment/CreateEye()
 	eyeobj = new /mob/camera/aiEye/remote/bombardment(get_turf(src))
 	eyeobj.origin = src
+	eyeobj.visible_icon = TRUE
+	eyeobj.icon = 'icons/mob/cameramob.dmi'
+	eyeobj.icon_state = "generic_camera"
 	eyeobj.use_static = USE_STATIC_NONE
 
 /obj/machinery/computer/camera_advanced/bombardment/on_attack_hand(mob/user, act_intent = user.a_intent, unarmed_attack_flags)
@@ -437,25 +482,26 @@
 
 /mob/camera/aiEye/remote/bombardment
 	name = "Bombardment Camera Eye"
+	visible_icon = TRUE
+	icon = 'icons/mob/cameramob.dmi'
+	icon_state = "generic_camera"
 	var/obj/machinery/computer/camera_advanced/bombardment/console_origin
+	var/allowed_area = null
 
-/mob/camera/aiEye/remote/bombardment/relaymove(mob/user, direct)
+/mob/camera/aiEye/remote/bombardment/Initialize(mapload)
+	var/area/A = get_area(loc)
+	allowed_area = A.name
+	. = ..()
+
+/mob/camera/aiEye/remote/bombardment/setLoc(turf/destination)
 	if(!console_origin || !console_origin.enabled)
 		return
-	var/turf/step = get_turf(get_step(src, direct))
-	if(!step)
+	var/area/new_area = get_area(destination)
+	// Restrict movement to only the bombardment zone
+	if(new_area && istype(new_area, /area/awaymission/ihategordon/outsideofmesa/bombardment))
+		return ..()
+	else
 		return
-
-	// Restrict to specific z-level
-	if(console_origin.restricted_z && step.z != console_origin.restricted_z)
-		to_chat(user, span_warning("Невозможно переместиться за пределы зоны бомбардировки."))
-		return
-
-	var/area/step_area = get_area(step)
-	if(!istype(step_area, console_origin.restricted_area))
-		to_chat(user, span_warning("Невозможно переместиться за пределы зоны бомбардировки."))
-		return
-	..()
 
 /datum/action/innate/bombardment_mark
 	name = "Mark Target"
