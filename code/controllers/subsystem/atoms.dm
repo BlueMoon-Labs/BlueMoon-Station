@@ -19,6 +19,14 @@ SUBSYSTEM_DEF(atoms)
 
 	initialized = INITIALIZATION_INSSATOMS
 
+	#ifdef ATOM_STATISTICS_LOGGING		// --- ATOM STATISTICS LOGGING ---
+	var/atoms_count = 0
+	var/total_duration = 0
+	var/atom_types = list()
+	var/type_counts = list()
+	var/type_times = list()
+	#endif								// --- END ATOM STATISTICS LOGGING ---
+
 /datum/controller/subsystem/atoms/Initialize(timeofday)
 	GLOB.fire_overlay.appearance_flags = RESET_COLOR
 	setupGenetics() //to set the mutations' sequence
@@ -26,6 +34,11 @@ SUBSYSTEM_DEF(atoms)
 	initialized = INITIALIZATION_INNEW_MAPLOAD
 	InitializeAtoms()
 	initialized = INITIALIZATION_INNEW_REGULAR
+
+	#ifdef ATOM_STATISTICS_LOGGING		// --- ATOM STATISTICS LOGGING ---
+	Savelog()
+	#endif								// --- END ATOM STATISTICS LOGGING ---
+
 	return ..()
 
 /datum/controller/subsystem/atoms/proc/InitializeAtoms(list/atoms)
@@ -38,6 +51,16 @@ SUBSYSTEM_DEF(atoms)
 	var/count
 	var/list/mapload_arg = list(TRUE)
 
+	#ifdef ATOM_STATISTICS_LOGGING			// --- ATOM STATISTICS LOGGING ---
+	var/list/logged_atoms = list()
+	var/list/logged_times = list()
+
+	var/start_time
+	var/total_start_time
+
+	total_start_time = world.timeofday
+	#endif									// --- END ATOM STATISTICS LOGGING ---
+
 	if(atoms)
 		count = atoms.len
 		for(var/I in 1 to count)
@@ -47,18 +70,51 @@ SUBSYSTEM_DEF(atoms)
 			if(isnull(A))
 				continue
 			if(!(A.flags_1 & INITIALIZED_1))
+				#ifdef ATOM_STATISTICS_LOGGING		// --- ATOM STATISTICS LOGGING ---
+				start_time = TICK_USAGE
 				InitAtom(A, mapload_arg)
+				LAZYADD(logged_atoms,A.type)
+				LAZYADD(logged_times, TICK_USAGE_TO_MS(start_time))
+				#else								// --- END ATOM STATISTICS LOGGING ---
+				InitAtom(A, mapload_arg)
+				#endif
 				CHECK_TICK
 	else
 		count = 0
 		for(var/atom/A in world)
 			if(!(A.flags_1 & INITIALIZED_1))
+				#ifdef ATOM_STATISTICS_LOGGING		// --- ATOM STATISTICS LOGGING ---
+				start_time = TICK_USAGE
 				InitAtom(A, mapload_arg)
+				LAZYADD(logged_atoms,A.type)
+				LAZYADD(logged_times, TICK_USAGE_TO_MS(start_time))
+				#else								// --- END ATOM STATISTICS LOGGING ---
+				InitAtom(A, mapload_arg)
+				#endif
 				++count
 				CHECK_TICK
 
 	testing("Initialized [count] atoms")
 	pass(count)
+
+	#ifdef ATOM_STATISTICS_LOGGING		// --- ATOM STATISTICS LOGGING ---
+	// --- ATOM LOADING TIMER & GROUPING ---
+	total_duration += (world.timeofday - total_start_time) / 10
+
+	atoms_count = atoms_count + logged_atoms.len
+
+	for(var/I in 1 to logged_atoms.len)
+		var/the_type = logged_atoms[I]
+		if(isnull(the_type)) continue
+		if(the_type in atom_types)
+			type_counts[the_type] += 1
+			type_times[the_type] += logged_times[I]
+		else
+			atom_types[the_type] = TRUE
+			type_counts[the_type] = 1
+			type_times[the_type] = logged_times[I]
+		CHECK_TICK
+	#endif								// --- END ATOM STATISTICS LOGGING ---
 
 	initialized = old_initialized
 
@@ -169,6 +225,20 @@ SUBSYSTEM_DEF(atoms)
 		if(fails & BAD_INIT_SLEPT)
 			. += "- Slept during Initialize()\n"
 
+#ifdef ATOM_STATISTICS_LOGGING		// --- ATOM STATISTICS LOGGING ---
+/datum/controller/subsystem/atoms/proc/atom_load_log()
+	var/msg = list()
+	msg += "=== ATOM LOADING STATISTICS ===\nTotal atoms initialized: [atoms_count]\nTotal duration: [total_duration] seconds\n"
+
+	for(var/path in atom_types)
+		var/num = type_counts[path]
+		var/duration = type_times[path]
+		msg += "[path]:\n  Count: [num]\n  Duration: [duration] ms\n  Avg per atom: [duration / num] ms\n"
+		CHECK_TICK
+
+	return jointext(msg, "\n")
+#endif								// --- END ATOM STATISTICS LOGGING ---
+
 /// Prepares an atom to be deleted once the atoms SS is initialized.
 /datum/controller/subsystem/atoms/proc/prepare_deletion(atom/target)
 	if (initialized == INITIALIZATION_INNEW_REGULAR)
@@ -178,6 +248,17 @@ SUBSYSTEM_DEF(atoms)
 		queued_deletions += WEAKREF(target)
 
 /datum/controller/subsystem/atoms/Shutdown()
+	Savelog()
+
+/datum/controller/subsystem/atoms/proc/Savelog()
 	var/initlog = InitLog()
 	if(initlog)
+		fdel("[GLOB.log_directory]/initialize.log")
 		text2file(initlog, "[GLOB.log_directory]/initialize.log")
+
+	#ifdef ATOM_STATISTICS_LOGGING		// --- ATOM STATISTICS LOGGING ---
+	var/atom_log = atom_load_log()
+	if(atom_log)
+		fdel("[GLOB.log_directory]/atom_loading_stats.log")
+		text2file(atom_log, "[GLOB.log_directory]/atom_loading_stats.log")
+	#endif								// --- END ATOM STATISTICS LOGGING ---

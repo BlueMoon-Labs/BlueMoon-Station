@@ -1,7 +1,10 @@
 /mob/living/carbon/adjustStaminaLoss(amount, updating_health = TRUE, forced = FALSE, affected_zone = BODY_ZONE_CHEST)
 	if(!forced && (status_flags & GODMODE))
 		return FALSE
-	var/obj/item/bodypart/BP = isbodypart(affected_zone)? affected_zone : (get_bodypart(check_zone(affected_zone)) || bodyparts[1])
+	// bodyparts[1] без проверки длины падал "list index out of bounds" на мобе, который уже
+	// прошёл Destroy() (конечности удалены, loc null), но остался в снапшоте currentrun и
+	// получил ещё один Life: прод-раунд 9832, обезьяна из вирусологии. Ниже уже есть if(!BP).
+	var/obj/item/bodypart/BP = isbodypart(affected_zone)? affected_zone : (get_bodypart(check_zone(affected_zone)) || (length(bodyparts) ? bodyparts[1] : null))
 	if(!BP)
 		return FALSE
 	if(amount > 0? BP.receive_damage(0, 0, amount * incomingstammult) : BP.heal_damage(0, 0, abs(amount), FALSE, FALSE))

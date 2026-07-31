@@ -12,8 +12,14 @@
 	вместо DONATE_ITEM_TOOLTIP_PARENT используйте DONATE_ITEM_TOOLTIP_PARENT_HIGHRISK
 */
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Обнулять TARGET.VAR обязательно ДО ветки на SOURCE.VAR: у донора деталь может
+// отсутствовать (enforcer/nomag -> bwal2572), и тогда старое "qdel без обнуления"
+// оставляло у нового ствола ссылку на уже удалённый магазин. Дальше attack_self
+// делал ему forceMove ("doMove qdel-нутого /obj/item/ammo_box/magazine/e45") и клал
+// мертвеца в руки игроку - раунд 9827: 3 рантайма и hard delete магазина.
 #define TRANSFER_ATOM_VAR(SOURCE, TARGET, VAR) \
 	qdel(TARGET.VAR); \
+	TARGET.VAR = null; \
 	if(SOURCE.VAR) { \
 		TARGET.VAR = SOURCE.VAR; \
 		SOURCE.VAR = null; \
@@ -62,7 +68,10 @@
 	if(!istype(target) || !istype(result))
 		return
 
-	TRANSFER_ATOM_VAR(target, result, pin)
+	//Ствол без пина не стреляет вообще, поэтому свой пин отдаём только на замену:
+	//у донора без пина новый ствол оставляет заводской.
+	if(target.pin)
+		TRANSFER_ATOM_VAR(target, result, pin)
 	if(result.pin)
 		result.pin.gun = result
 	if(istype(target, /obj/item/gun/ballistic) && istype(result, /obj/item/gun/ballistic))

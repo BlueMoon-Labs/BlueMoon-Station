@@ -1539,7 +1539,7 @@
 /datum/gear/donator/bm/ouroboroswinterschock/on_spawn(mob/living/carbon/human/user, obj/item/clothing/accessory/ring/syntech/winterschock/I)
 	if(!istype(user))
 		return
-	I.owner = user
+	I.owner_ref = WEAKREF(user)
 	if(user.dna?.features["normalized_size"])
 		I.current_normalized_size = user.dna.features["normalized_size"]
 		I.try_update_size(user, TRUE)
@@ -2515,3 +2515,10 @@
 	slot = ITEM_SLOT_EYES
 	path = /obj/item/clothing/glasses/cover/infovisor
 	ckeywhitelist = list("lindaastereih")
+
+/datum/gear/donator/bm/vulpix_pilot_badge
+	name = "Pilots Federation Badge"
+	slot = ITEM_SLOT_ACCESSORY
+	path = /obj/item/clothing/accessory/medal/vulpix_pilot_badge
+	cost = 0
+	ckeywhitelist = list("alexhosted", "gsvden")

@@ -472,6 +472,11 @@ or shoot a gun to move around via Newton's 3rd Law of Motion."
 /atom/movable/screen/alert/give/proc/check_in_range(atom/taker)
 	SIGNAL_HANDLER
 
+	//Предложивший мог уйти из мира вместе с алертом: снимаем предложение молча
+	if(QDELETED(offerer))
+		owner?.clear_alert("[offerer_name]")
+		return
+
 	if(!offerer.CanReach(taker))
 		to_chat(owner, span_warning("You moved out of range of [offerer]!"))
 		owner.clear_alert("[offerer_name]")

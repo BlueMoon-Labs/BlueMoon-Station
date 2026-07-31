@@ -2531,6 +2531,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			var/has_buttons = FALSE
 			for(var/key in key_bindings)
 				var/list/temp = key_bindings[key]
+				if(!islist(temp))
+					continue
 				if(temp.Find(kb_name))
 					has_buttons = TRUE
 					break
@@ -2569,7 +2571,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			key_bindings[old_key] -= kb_name
 			if(!length(key_bindings[old_key]))
 				key_bindings -= old_key
-		LAZYOR(key_bindings[full_key], list(kb_name))
+		//Из savefile прилетает 0 вместо пустого списка: "type mismatch: 0 |= /list".
+		//Апстрим закрывает это через LAZYOR, но тот проверяет только !L и пропустил
+		//бы ненулевой мусор в записи - здесь нужен именно islist().
+		if(!islist(key_bindings[full_key]))
+			key_bindings[full_key] = list()
+		key_bindings[full_key] |= list(kb_name)
 		key_bindings[full_key] = sort_list(key_bindings[full_key])
 
 	if(special && user?.client)

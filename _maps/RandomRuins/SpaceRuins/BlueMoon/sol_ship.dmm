@@ -13,7 +13,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "0-2"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "ah" = (
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
@@ -27,7 +27,7 @@
 	icon_state = "4-8"
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "ak" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
@@ -36,7 +36,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "al" = (
 /obj/machinery/camera/xray{
@@ -58,10 +58,18 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/obj/item/clothing/under/inteq/eng_skirt,
-/obj/item/clothing/under/inteq/maid,
-/obj/item/clothing/under/inteq/med_skirt,
-/obj/item/clothing/under/inteq/skirt,
+/obj/item/clothing/suit/armor/solfed_coat,
+/obj/item/clothing/suit/armor/solfed_coat,
+/obj/item/clothing/suit/armor/vest/warden/sol_robe,
+/obj/item/clothing/suit/armor/vest/warden/sol_robe,
+/obj/item/clothing/under/rank/captain/sol,
+/obj/item/clothing/under/rank/captain/sol,
+/obj/item/clothing/under/rank/security/officer/formal/sol/armorless,
+/obj/item/clothing/under/rank/security/officer/formal/sol/armorless,
+/obj/item/clothing/under/sol_dress,
+/obj/item/clothing/under/sol_dress,
+/obj/item/clothing/under/rank/security/officer/solfed_military,
+/obj/item/clothing/under/rank/security/officer/solfed_military,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/solfed_ship)
 "ap" = (
@@ -74,7 +82,7 @@
 /obj/machinery/airalarm/inteq{
 	pixel_y = 24
 	},
-/turf/open/floor/plasteel,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "au" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer3,
@@ -82,7 +90,8 @@
 	dir = 4
 	},
 /obj/effect/spawner/structure/window/plastitanium,
-/turf/open/floor/plasteel/dark,
+/obj/structure/fans/tiny/invisible,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "aw" = (
 /obj/machinery/door/airlock/grunge{
@@ -95,7 +104,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "ay" = (
 /obj/structure/curtain,
@@ -138,7 +147,7 @@
 	pixel_y = 23;
 	start_charge = 35
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "aE" = (
 /obj/structure/table,
@@ -147,14 +156,14 @@
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "aG" = (
 /obj/machinery/atmospherics/pipe/simple/orange{
 	dir = 9
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "aH" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
@@ -169,8 +178,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-4"
 	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "aI" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line{
@@ -178,9 +186,6 @@
 	},
 /obj/machinery/cryopod{
 	dir = 4
-	},
-/obj/structure/sign/poster/contraband/vulp7{
-	pixel_y = 32
 	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/solfed_ship)
@@ -197,11 +202,11 @@
 /obj/structure/cable/yellow{
 	icon_state = "0-2"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "aN" = (
 /obj/structure/chair,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "aO" = (
 /obj/structure/rack{
@@ -237,11 +242,12 @@
 	icon_state = "manifold-2"
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "aW" = (
 /obj/structure/table/reinforced,
 /obj/item/clothing/glasses/thermal/eyepatch,
+/obj/item/stamp/solgov,
 /turf/open/floor/wood/wood_parquet,
 /area/ruin/space/has_grav/bluemoon/solfed_ship)
 "aX" = (
@@ -276,12 +282,10 @@
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "bj" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "bk" = (
 /obj/machinery/door/airlock/grunge{
@@ -298,7 +302,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "bm" = (
 /obj/machinery/power/port_gen/pacman/super{
@@ -319,7 +323,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "bs" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line{
@@ -337,9 +341,9 @@
 	dir = 4;
 	light_color = "#c1caff"
 	},
-/obj/structure/table,
 /obj/item/toy/mecha/phazon,
 /obj/item/ai_module/core/full/solfed,
+/obj/structure/table/reinforced/plastitaniumglass,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "bC" = (
@@ -350,7 +354,7 @@
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "bD" = (
 /obj/machinery/suit_storage_unit/ftu_work,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "bE" = (
 /obj/machinery/button/ignition/incinerator/syndicatelava{
@@ -363,7 +367,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "bF" = (
 /obj/structure/table/reinforced,
@@ -372,23 +376,15 @@
 /obj/item/pen/fountain/captain,
 /turf/open/floor/wood/wood_parquet,
 /area/ruin/space/has_grav/bluemoon/solfed_ship)
-"bM" = (
-/obj/machinery/door/airlock/grunge{
-	name = "Recreation";
-	req_one_access_txt = "152"
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
-	},
-/turf/open/floor/plasteel/white,
-/area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "bO" = (
 /obj/machinery/chem_master,
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
+"bP" = (
+/obj/structure/sign/poster/solgov/terra,
+/turf/closed/wall/r_wall/syndicate,
+/area/ruin/space/has_grav/bluemoon/solfed_ship)
 "bW" = (
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
@@ -396,7 +392,7 @@
 /obj/structure/sign/poster/solgov/random{
 	pixel_y = 32
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "bX" = (
 /obj/structure/window/reinforced/survival_pod{
@@ -412,7 +408,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "ca" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
@@ -422,7 +418,7 @@
 	icon_state = "4-8"
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "cd" = (
 /obj/effect/turf_decal/tile/dark_blue/half,
@@ -436,13 +432,13 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/light,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "cf" = (
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "ch" = (
 /obj/effect/decal/cleanable/dirt,
@@ -473,7 +469,7 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /obj/item/trash/raisins,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "co" = (
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -485,7 +481,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 6
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "cq" = (
 /obj/effect/decal/cleanable/dirt,
@@ -495,14 +491,14 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 6
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "cs" = (
 /obj/machinery/door/password/voice/sfc{
 	password = null
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/vault)
 "cy" = (
 /obj/structure/sign/flag/terragov{
@@ -520,11 +516,11 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "cF" = (
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "cG" = (
 /obj/structure/sign/flag/terragov{
@@ -550,7 +546,7 @@
 	dir = 4;
 	light_color = "#c1caff"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "db" = (
 /obj/effect/decal/cleanable/dirt,
@@ -560,7 +556,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 6
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "dc" = (
 /obj/structure/sink{
@@ -591,7 +587,7 @@
 	},
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /obj/machinery/light,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "dj" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
@@ -603,7 +599,7 @@
 	icon_state = "1-2"
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "dk" = (
 /obj/structure/table/reinforced,
@@ -613,7 +609,7 @@
 	light_color = "#c1caff"
 	},
 /obj/item/toy/mecha/phazon,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "dl" = (
 /obj/effect/turf_decal/tile/dark_blue/opposingcorners,
@@ -622,7 +618,7 @@
 	dir = 4;
 	light_color = "#c1caff"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "dm" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
@@ -631,7 +627,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "dv" = (
 /obj/structure/window/reinforced/spawner,
@@ -661,7 +657,7 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 4
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "dD" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line{
@@ -672,16 +668,20 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/obj/item/clothing/under/inteq,
-/obj/item/clothing/under/inteq/eng,
-/obj/item/clothing/under/inteq/honorable_vanguard,
-/obj/item/clothing/under/inteq/med,
+/obj/item/clothing/head/HoS/beret/sol/cap/armorless,
+/obj/item/clothing/head/HoS/beret/sol/cap/armorless,
+/obj/item/clothing/head/HoS/beret/sol,
+/obj/item/clothing/head/HoS/beret/sol,
+/obj/item/clothing/head/HoS/beret/sol/plain/armorless,
+/obj/item/clothing/head/HoS/beret/sol/plain/armorless,
+/obj/item/clothing/head/HoS/beret/sol/security,
+/obj/item/clothing/head/HoS/beret/sol/security,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/solfed_ship)
 "dG" = (
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "dS" = (
 /obj/effect/turf_decal/big_sign/solgov/ac,
@@ -708,7 +708,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "dZ" = (
 /obj/effect/turf_decal/siding/dark/corner{
@@ -720,7 +720,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "eg" = (
 /obj/machinery/recharge_station,
@@ -742,7 +742,7 @@
 /obj/machinery/microwave{
 	pixel_y = 7
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "ek" = (
 /obj/structure/table/reinforced,
@@ -751,11 +751,6 @@
 	name = "СИЗО-37 interior door";
 	req_one_access_txt = "152"
 	},
-/obj/item/ai_module/core/full/inteq,
-/obj/item/borg/upgrade/transform/syndicatejack,
-/obj/item/robot_module/syndicate_medical/inteq,
-/obj/item/robot_module/syndicate/inteq,
-/obj/item/robot_module/saboteur/inteq,
 /obj/item/disk/tech_disk/illegal,
 /turf/open/floor/wood/wood_large,
 /area/ruin/space/has_grav/bluemoon/solfed_ship)
@@ -777,7 +772,7 @@
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "ev" = (
 /obj/structure/window/reinforced/spawner,
@@ -804,7 +799,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "eC" = (
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -813,13 +808,13 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "eE" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "eG" = (
 /obj/structure/lattice/catwalk,
@@ -851,10 +846,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/solfed_ship)
-"eY" = (
-/obj/effect/decal/cleanable/ash/large,
-/turf/open/floor/plasteel/dark,
-/area/ruin/space/has_grav/bluemoon/solfed_ship)
 "fi" = (
 /obj/effect/turf_decal/tile/dark_blue/half{
 	dir = 1
@@ -862,7 +853,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "fk" = (
 /obj/structure/sink/directional/south{
@@ -882,7 +873,7 @@
 "fl" = (
 /obj/structure/chair/stool/bar/directional/south,
 /obj/effect/turf_decal/tile/dark_blue/opposingcorners,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "fy" = (
 /obj/structure/table/reinforced,
@@ -894,7 +885,7 @@
 /obj/machinery/light{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "fA" = (
 /obj/machinery/door/airlock/grunge{
@@ -910,15 +901,19 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/turf/open/floor/plasteel/white,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "fD" = (
 /obj/structure/cable{
 	icon_state = "2-8"
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
+"fH" = (
+/obj/structure/sign/poster/solgov/solgov_logo,
+/turf/closed/wall/r_wall/syndicate,
+/area/ruin/space/has_grav/bluemoon/solfed_ship)
 "fK" = (
 /obj/effect/decal/cleanable/blood/footprints{
 	dir = 4
@@ -940,7 +935,6 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/light/floor,
-/obj/item/cigbutt/cigarbutt,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bridge)
 "fO" = (
@@ -974,7 +968,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "fV" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
@@ -982,7 +976,7 @@
 	icon_state = "1-2"
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/vault)
 "fY" = (
 /obj/structure/table/glass,
@@ -999,7 +993,7 @@
 	pixel_y = 1
 	},
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "ga" = (
 /obj/structure/rack,
@@ -1023,7 +1017,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "go" = (
 /obj/effect/turf_decal/tile/dark_blue/half{
@@ -1033,7 +1027,7 @@
 	anchored = 1
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "gp" = (
 /obj/effect/turf_decal/siding/dark{
@@ -1057,7 +1051,7 @@
 /obj/item/clothing/shoes/sneakers/orange{
 	pixel_y = 6
 	},
-/turf/open/floor/mineral/plastitanium/red,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "gs" = (
 /obj/structure/cable/yellow{
@@ -1076,7 +1070,7 @@
 /obj/item/kirbyplants/hedge{
 	anchored = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "gu" = (
 /turf/closed/wall/r_wall/syndicate/nodiagonal,
@@ -1097,7 +1091,7 @@
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "gB" = (
 /turf/closed/wall/r_wall/syndicate/nodiagonal,
@@ -1136,7 +1130,7 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 8
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "gQ" = (
 /obj/machinery/computer/crew/syndie{
@@ -1159,13 +1153,13 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "gV" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "gW" = (
 /obj/item/chair{
@@ -1179,7 +1173,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "hb" = (
 /obj/machinery/door/airlock/grunge{
@@ -1192,14 +1186,14 @@
 	icon_state = "1-2"
 	},
 /obj/structure/fans/tiny,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "hd" = (
 /obj/effect/turf_decal/siding/wood{
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/dark_blue/opposingcorners,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "hh" = (
 /obj/structure/closet/secure_closet/freezer/kitchen{
@@ -1231,7 +1225,7 @@
 /obj/machinery/power/terminal{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "hu" = (
 /obj/structure/chair/sofa/corp/right,
@@ -1288,7 +1282,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "hD" = (
 /obj/structure/cable/yellow{
@@ -1303,7 +1297,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "hJ" = (
 /obj/effect/decal/cleanable/dirt,
@@ -1311,7 +1305,7 @@
 	dir = 8
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "hK" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
@@ -1324,19 +1318,32 @@
 	icon_state = "4-8"
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "hL" = (
 /obj/structure/rack{
 	dir = 8
 	},
-/obj/item/gun/medbeam,
-/obj/item/gun/medbeam,
-/obj/item/gun/energy/lasercannon,
 /obj/effect/turf_decal/stripes{
 	dir = 1;
 	icon_state = "delivery_red"
 	},
+/obj/item/ammo_box/magazine/m16,
+/obj/item/ammo_box/magazine/m16,
+/obj/item/ammo_box/magazine/m16,
+/obj/item/ammo_box/magazine/m16,
+/obj/item/ammo_box/magazine/m16,
+/obj/item/ammo_box/magazine/m16,
+/obj/item/ammo_box/magazine/m16,
+/obj/item/ammo_box/magazine/m16,
+/obj/item/ammo_box/magazine/m16/rubber,
+/obj/item/ammo_box/magazine/m16/rubber,
+/obj/item/ammo_box/magazine/m16/rubber,
+/obj/item/ammo_box/magazine/m16/rubber,
+/obj/item/ammo_box/magazine/m16/rubber,
+/obj/item/ammo_box/magazine/m16/rubber,
+/obj/item/ammo_box/magazine/m16/rubber,
+/obj/item/ammo_box/magazine/m16/rubber,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/vault)
 "hO" = (
@@ -1359,7 +1366,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 6
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "hW" = (
 /obj/machinery/door/window{
@@ -1417,12 +1424,12 @@
 	pixel_y = 24
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "ie" = (
 /obj/machinery/jukebox,
 /obj/effect/turf_decal/tile/dark_blue/opposingcorners,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "ij" = (
 /obj/structure/cable{
@@ -1439,7 +1446,7 @@
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "io" = (
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "iq" = (
 /obj/effect/turf_decal/tile/dark_blue/half{
@@ -1450,7 +1457,7 @@
 /obj/structure/sign/poster/solgov/random{
 	pixel_x = -32
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "iv" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
@@ -1461,8 +1468,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "iw" = (
 /obj/structure/chair/office/light{
@@ -1477,7 +1483,7 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "iC" = (
 /obj/machinery/door/airlock/grunge{
@@ -1491,7 +1497,6 @@
 /area/ruin/space/has_grav/bluemoon/solfed_ship)
 "iH" = (
 /obj/structure/table/reinforced,
-/obj/item/toy/plush/nukeplushie/susplushie,
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
@@ -1508,15 +1513,14 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 1
 	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "iS" = (
 /obj/machinery/atmospherics/pipe/manifold/orange{
 	dir = 8
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "iU" = (
 /obj/machinery/recharge_station,
@@ -1546,7 +1550,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig_shower)
 "jn" = (
 /obj/effect/turf_decal/stripes{
@@ -1557,7 +1561,6 @@
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/vault)
 "jo" = (
-/obj/structure/closet/syndicate/inteq/personal,
 /obj/structure/cable/yellow{
 	icon_state = "0-8"
 	},
@@ -1567,7 +1570,7 @@
 	pixel_y = 23;
 	start_charge = 35
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "jp" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line{
@@ -1584,7 +1587,7 @@
 	dir = 8;
 	name = "SolGov Prisoner"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "js" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
@@ -1600,7 +1603,7 @@
 	icon_state = "1-4"
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "jw" = (
 /obj/structure/cable/yellow{
@@ -1609,12 +1612,12 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "jx" = (
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /obj/machinery/vending/autodrobe,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "jy" = (
 /obj/structure/closet/secure_closet/freezer/kitchen{
@@ -1645,10 +1648,9 @@
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "jB" = (
-/obj/effect/decal/cleanable/dirt,
 /obj/structure/chair/office/light,
 /obj/structure/sign/poster/solgov/random{
 	pixel_y = 32
@@ -1661,13 +1663,13 @@
 "jC" = (
 /obj/machinery/sleeper/syndie/fullupgrade,
 /obj/effect/turf_decal/box,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "jD" = (
 /obj/effect/turf_decal/tile/dark_blue/half{
 	dir = 8
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "jE" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line{
@@ -1709,26 +1711,26 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "jN" = (
 /obj/effect/turf_decal/tile/dark_blue/opposingcorners,
 /obj/machinery/airalarm/inteq{
 	pixel_y = 24
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "jO" = (
 /obj/machinery/rnd/production/techfab/department/medical,
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "jT" = (
 /obj/effect/turf_decal/bot/yellow,
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "jV" = (
 /obj/effect/turf_decal/big_sign/solgov/ab,
@@ -1740,7 +1742,7 @@
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "kb" = (
 /obj/structure/table,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "kc" = (
 /obj/effect/turf_decal/trimline/blue/filled/corner{
@@ -1756,7 +1758,9 @@
 	dir = 1;
 	icon_state = "delivery_red"
 	},
-/obj/item/clothing/suit/space/hardsuit/ert/alert/sol/adv,
+/obj/item/clothing/suit/space/hardsuit/ert/alert/sol,
+/obj/item/clothing/suit/space/hardsuit/ert/alert/sol,
+/obj/item/clothing/suit/space/hardsuit/ert/alert/sol,
 /obj/item/clothing/suit/space/hardsuit/ert/alert/sol,
 /obj/item/clothing/suit/space/hardsuit/ert/alert/sol,
 /turf/open/floor/mineral/plastitanium,
@@ -1770,7 +1774,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "kp" = (
 /obj/structure/weightmachine/stacklifter,
@@ -1780,9 +1784,6 @@
 	name = "Silly paper"
 	},
 /obj/effect/decal/cleanable/dirt,
-/obj/structure/safe/floor,
-/obj/item/stock_parts/cell/bluespacereactor,
-/obj/item/gun/ballistic/revolver/russian,
 /turf/open/floor/carpet/blue,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "ku" = (
@@ -1810,7 +1811,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 6
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "kA" = (
 /obj/structure/table/optable,
@@ -1820,7 +1821,7 @@
 	dir = 1;
 	pixel_y = -32
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "kB" = (
 /obj/structure/table/reinforced,
@@ -1839,6 +1840,7 @@
 /obj/item/gun/ballistic/automatic/pistol,
 /obj/item/ammo_box/magazine/m10mm,
 /obj/item/ammo_box/magazine/m10mm,
+/obj/item/stamp/solgov,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/bluemoon/solfed_ship)
 "kI" = (
@@ -1849,7 +1851,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "kJ" = (
 /obj/structure/chair/office/light,
@@ -1858,7 +1860,7 @@
 	icon_state = "4-8"
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "kM" = (
 /obj/effect/turf_decal/tile/dark_blue/half{
@@ -1869,7 +1871,7 @@
 	dir = 8;
 	icon_state = "manifold-2"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "kO" = (
 /obj/machinery/door/airlock/grunge{
@@ -1889,7 +1891,7 @@
 /obj/item/restraints/handcuffs,
 /obj/item/restraints/handcuffs,
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "la" = (
 /obj/structure/table,
@@ -1912,7 +1914,7 @@
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "ld" = (
 /obj/structure/cable/yellow{
@@ -1931,6 +1933,13 @@
 /obj/effect/turf_decal/trimline/yellow/filled/line{
 	dir = 10
 	},
+/obj/item/storage/backpack/duffelbag/syndie/backpack,
+/obj/item/storage/backpack/duffelbag/syndie/backpack,
+/obj/item/storage/backpack/duffelbag/syndie/backpack,
+/obj/item/storage/backpack/duffelbag/syndie/backpack,
+/obj/item/storage/backpack/duffelbag/syndie/backpack,
+/obj/item/storage/backpack/duffelbag/syndie/backpack,
+/obj/structure/rack,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/solfed_ship)
 "li" = (
@@ -1958,7 +1967,7 @@
 	piping_layer = 3;
 	on = 0
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "lm" = (
 /obj/machinery/chem_master/condimaster{
@@ -1981,8 +1990,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "ly" = (
 /obj/machinery/door/airlock/grunge{
@@ -1997,7 +2005,7 @@
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bridge)
 "lD" = (
 /obj/effect/turf_decal/tile/dark_blue/half,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "lH" = (
 /obj/machinery/portable_atmospherics/canister/oxygen,
@@ -2005,7 +2013,7 @@
 	dir = 8;
 	light_color = "#e8eaff"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "lI" = (
 /obj/machinery/porta_turret/syndicate{
@@ -2024,7 +2032,7 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 4
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "lK" = (
 /turf/closed/wall/r_wall/syndicate/nodiagonal,
@@ -2034,13 +2042,16 @@
 /area/ruin/space)
 "lQ" = (
 /obj/effect/decal/cleanable/cobweb/cobweb2,
-/turf/open/floor/plasteel/dark,
+/obj/structure/closet/secure_closet/ds2atmos{
+	req_access = list(152)
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "lV" = (
 /obj/structure/cable/yellow{
 	icon_state = "2-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "mc" = (
 /obj/item/kirbyplants/hedge{
@@ -2050,7 +2061,7 @@
 /obj/structure/sign/poster/solgov/random{
 	pixel_y = -32
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "me" = (
 /obj/structure/chair/office/light{
@@ -2068,7 +2079,7 @@
 	pixel_y = 23;
 	start_charge = 35
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "mf" = (
 /obj/item/storage/box/bodybags{
@@ -2099,7 +2110,7 @@
 	},
 /obj/item/gun/syringe/dart,
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "mh" = (
 /obj/structure/cable/yellow{
@@ -2117,15 +2128,8 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
-"mo" = (
-/obj/structure/window/reinforced/spawner,
-/obj/machinery/hydroponics/constructable,
-/obj/effect/turf_decal/trimline/green/filled/line,
-/obj/effect/decal/cleanable/blood/splatter,
-/turf/open/floor/plasteel/dark,
-/area/ruin/space/has_grav/bluemoon/solfed_ship)
 "mp" = (
 /obj/machinery/rnd/production/protolathe,
 /turf/open/floor/plasteel/dark,
@@ -2136,7 +2140,7 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 8
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "mu" = (
 /obj/structure/fans/tiny,
@@ -2172,7 +2176,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "mB" = (
 /obj/structure/sign/warning/fire,
@@ -2191,7 +2195,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "mF" = (
 /obj/machinery/atmospherics/pipe/manifold/supplymain{
@@ -2200,7 +2204,7 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 10
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "mI" = (
 /obj/structure/closet/crate/secure/gear{
@@ -2252,7 +2256,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "mQ" = (
 /obj/structure/table/glass,
@@ -2266,7 +2270,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "mS" = (
 /obj/effect/turf_decal/tile/dark_blue/half,
@@ -2277,7 +2281,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "mW" = (
 /obj/structure/closet,
@@ -2299,7 +2303,7 @@
 	network = list("fsc","fsci");
 	screen_loc = ""
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "nd" = (
 /obj/structure/window/reinforced/spawner,
@@ -2319,7 +2323,7 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "ng" = (
 /turf/template_noop,
@@ -2344,7 +2348,7 @@
 	},
 /obj/structure/fans/tiny,
 /obj/effect/mapping_helpers/airlock/cutaiwire,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "nm" = (
 /turf/open/floor/padded,
@@ -2357,7 +2361,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "ns" = (
 /obj/structure/cable/yellow{
@@ -2379,7 +2383,7 @@
 /area/ruin/space/has_grav/bluemoon/solfed_ship)
 "nB" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "nD" = (
 /obj/structure/bed{
@@ -2389,7 +2393,7 @@
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "nH" = (
 /obj/machinery/atmospherics/components/unary/vent_pump{
@@ -2435,7 +2439,7 @@
 	icon_state = "4-8"
 	},
 /obj/item/paper/fluff/ruins/forgottenship/survivor/sol,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "nW" = (
 /obj/machinery/chem_heater{
@@ -2445,7 +2449,7 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "nY" = (
 /obj/structure/window/reinforced/spawner/north,
@@ -2492,7 +2496,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "om" = (
 /obj/effect/turf_decal/big_sign/solgov/aa,
@@ -2532,7 +2536,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "ox" = (
 /obj/machinery/atmospherics/components/trinary/filter/atmos/flipped/o2{
@@ -2540,7 +2544,7 @@
 	piping_layer = 3;
 	on = 0
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "oy" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line{
@@ -2559,7 +2563,7 @@
 	dir = 4
 	},
 /obj/vehicle/ridden/wheelchair,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "oD" = (
 /obj/machinery/light{
@@ -2585,7 +2589,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 9
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "oJ" = (
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3,
@@ -2595,7 +2599,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "oK" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line{
@@ -2613,13 +2617,13 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "oM" = (
 /obj/machinery/biogenerator,
 /obj/effect/turf_decal/siding/dark,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark/textured/large,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "oN" = (
 /obj/structure/table/reinforced,
@@ -2654,7 +2658,7 @@
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "oT" = (
 /obj/effect/turf_decal/tile/dark_blue/half{
@@ -2669,7 +2673,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "oV" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
@@ -2678,24 +2682,24 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 10
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "oW" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3,
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "oY" = (
 /obj/machinery/portable_atmospherics/canister,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "pi" = (
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/vault)
 "pl" = (
 /obj/machinery/door/airlock/grunge{
@@ -2711,7 +2715,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "pq" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
@@ -2726,9 +2730,17 @@
 /turf/open/floor/carpet/royalblue,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "pr" = (
-/obj/effect/decal/cleanable/robot_debris,
-/turf/open/floor/plasteel/dark,
-/area/ruin/space/has_grav/bluemoon/solfed_ship)
+/obj/machinery/door/airlock/grunge{
+	name = "Recreation";
+	req_one_access_txt = "152"
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "pt" = (
 /obj/structure/safe,
 /obj/item/storage/bag/money/c5000,
@@ -2745,16 +2757,14 @@
 	name = "outpost blueprints"
 	},
 /obj/item/card/emag,
-/obj/item/storage/box/firingpins/syndicate,
 /obj/effect/turf_decal/stripes{
 	dir = 1;
 	icon_state = "delivery_red"
 	},
-/obj/item/storage/book/bible/syndicate/inteq,
 /obj/machinery/light{
 	dir = 1
 	},
-/obj/item/folder/inteq,
+/obj/item/storage/box/firingpins,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/vault)
 "pw" = (
@@ -2766,14 +2776,14 @@
 	pixel_x = 5;
 	pixel_y = -3
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "pC" = (
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "pI" = (
 /obj/effect/turf_decal/stripes/yellow/box,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "pL" = (
 /turf/open/floor/wood,
@@ -2788,7 +2798,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "pT" = (
 /obj/structure/cable/yellow{
@@ -2797,7 +2807,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "pU" = (
 /obj/structure/cable/yellow{
@@ -2807,14 +2817,14 @@
 /area/ruin/space/has_grav/bluemoon/solfed_ship)
 "pV" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/vault)
 "pW" = (
 /obj/machinery/vending/wallmed{
 	pixel_y = 29
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "pX" = (
 /obj/effect/turf_decal/siding/dark,
@@ -2856,7 +2866,7 @@
 	},
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /obj/structure/window/reinforced/spawner/west,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "qp" = (
 /obj/item/kirbyplants/hedge{
@@ -2867,7 +2877,7 @@
 /obj/machinery/light{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "qq" = (
 /obj/machinery/door/poddoor/incinerator_syndicatelava_aux,
@@ -2880,7 +2890,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "qz" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line{
@@ -2895,7 +2905,7 @@
 /obj/structure/closet/secure_closet{
 	name = "prisoner item locker"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "qB" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line{
@@ -2908,7 +2918,7 @@
 /area/ruin/space/has_grav/bluemoon/solfed_ship)
 "qE" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/vault)
 "qF" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line{
@@ -2918,7 +2928,6 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/solfed_ship)
 "qG" = (
-/obj/effect/decal/cleanable/robot_debris,
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 8
 	},
@@ -2950,8 +2959,13 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
+"qT" = (
+/obj/effect/spawner/structure/window/plastitanium,
+/obj/structure/fans/tiny/invisible,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "qW" = (
 /obj/machinery/door/airlock/grunge{
 	name = "Recreation";
@@ -2963,14 +2977,14 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "rb" = (
 /obj/machinery/smartfridge/organ,
 /obj/machinery/vending/wallmed{
 	pixel_y = 29
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "rd" = (
 /obj/structure/filingcabinet,
@@ -2984,7 +2998,7 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/tile/dark_blue/opposingcorners,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "rh" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line{
@@ -3007,7 +3021,7 @@
 	icon_state = "1-2"
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/vault)
 "rl" = (
 /obj/machinery/light{
@@ -3026,7 +3040,7 @@
 /obj/machinery/light{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "rq" = (
 /obj/structure/rack,
@@ -3058,7 +3072,7 @@
 	icon_state = "1-8"
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "rD" = (
 /obj/machinery/door/airlock/grunge{
@@ -3071,7 +3085,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "rF" = (
 /obj/machinery/light/dim/directional/north,
@@ -3095,7 +3109,7 @@
 	dir = 4;
 	light_color = "#c1caff"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "rJ" = (
 /obj/machinery/door/airlock/grunge{
@@ -3114,7 +3128,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "rM" = (
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
@@ -3129,7 +3143,7 @@
 	},
 /obj/item/clothing/under/inteq/baseball,
 /obj/item/clothing/under/inteq/baseball,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "rQ" = (
 /obj/effect/decal/cleanable/dirt,
@@ -3166,8 +3180,8 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/solfed_ship)
 "rY" = (
-/obj/item/cigbutt/cigarbutt,
 /obj/machinery/light/floor,
+/obj/machinery/photocopier,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bridge)
 "rZ" = (
@@ -3176,13 +3190,33 @@
 	dir = 8;
 	light_color = "#e8eaff"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "sc" = (
-/obj/machinery/light{
-	dir = 8
+/obj/structure/closet/secure_closet/ertCom{
+	req_access = "152";
+	req_access_txt = "152";
+	name = "officer's closet";
+	desc = "Solar Federation officers ammunition"
 	},
-/obj/machinery/suit_storage_unit/sol_combat/elite,
+/obj/item/clothing/shoes/combat,
+/obj/item/clothing/glasses/sunglasses,
+/obj/item/binoculars,
+/obj/item/door_remote/captain{
+	access_list = list(152);
+	extra_access = list(152);
+	region_access = list(152);
+	req_access_txt = list(152);
+	req_access = list(152)
+	},
+/obj/item/clothing/suit/space/hardsuit/ert/alert/sol/adv,
+/obj/item/gun/ballistic/automatic/pistol/deagle,
+/obj/item/ammo_box/magazine/m50,
+/obj/item/ammo_box/magazine/m50,
+/obj/item/ammo_box/magazine/m50,
+/obj/item/ammo_box/magazine/m50,
+/obj/item/ammo_box/magazine/m50,
+/obj/item/ammo_box/magazine/m50,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/bluemoon/solfed_ship)
 "se" = (
@@ -3219,12 +3253,12 @@
 	dir = 8
 	},
 /obj/machinery/light,
-/turf/open/floor/plasteel,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "sk" = (
 /obj/structure/table,
-/obj/item/storage/toolbox/mechanical,
-/turf/open/floor/plasteel/dark,
+/obj/item/storage/toolbox/syndicate,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "sl" = (
 /obj/effect/turf_decal/trimline/red/filled/corner{
@@ -3241,6 +3275,15 @@
 	},
 /obj/item/ammo_box/magazine/m50,
 /obj/item/ammo_box/magazine/m50,
+/obj/item/encryptionkey/headset_syndicate/sol,
+/obj/item/encryptionkey/headset_syndicate/sol,
+/obj/item/encryptionkey/headset_syndicate/sol,
+/obj/item/encryptionkey/headset_syndicate/sol,
+/obj/item/encryptionkey/headset_syndicate/sol,
+/obj/item/encryptionkey/headset_syndicate/sol,
+/obj/item/encryptionkey/headset_syndicate/sol,
+/obj/item/encryptionkey/headset_syndicate/sol,
+/obj/item/encryptionkey/headset_syndicate/sol,
 /turf/open/floor/wood/wood_large,
 /area/ruin/space/has_grav/bluemoon/solfed_ship)
 "so" = (
@@ -3259,7 +3302,7 @@
 	req_access_txt = null
 	},
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "sp" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
@@ -3326,7 +3369,7 @@
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "sz" = (
 /turf/template_noop,
@@ -3353,7 +3396,7 @@
 	pixel_y = 23;
 	start_charge = 35
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "sE" = (
 /obj/effect/turf_decal/siding/yellow{
@@ -3375,13 +3418,13 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/light,
 /obj/effect/turf_decal/tile/dark_blue/opposingcorners,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "sV" = (
 /obj/machinery/light/dim/directional/west,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "sW" = (
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
@@ -3394,7 +3437,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "0-2"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "tf" = (
 /obj/machinery/light{
@@ -3426,17 +3469,15 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "tu" = (
 /obj/effect/turf_decal/big_sign/solgov/bb,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bridge)
 "ty" = (
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/turf/open/floor/plasteel/dark,
+/obj/effect/spawner/structure/window/plastitanium,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "tH" = (
 /obj/effect/spawner/structure/window/plastitanium,
@@ -3492,15 +3533,8 @@
 	},
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/bluemoon/solfed_ship)
-"ut" = (
-/obj/effect/mob_spawn/human/solfed/diplomacy/slut,
-/turf/open/floor/wood/wood_parquet,
-/area/ruin/space/has_grav/bluemoon/solfed_ship)
 "uu" = (
-/obj/structure/displaycase{
-	req_one_access_txt = "152";
-	start_showpiece_type = /obj/item/gun/ballistic/automatic/pistol/deagle/camo
-	},
+/obj/item/toy/plush/mothplushie,
 /turf/open/floor/wood/wood_large,
 /area/ruin/space/has_grav/bluemoon/solfed_ship)
 "uv" = (
@@ -3522,7 +3556,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-4"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "uB" = (
 /obj/structure/dresser,
@@ -3545,19 +3579,12 @@
 /obj/effect/turf_decal/tile/dark_blue/anticorner{
 	dir = 8
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
-"uE" = (
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/turf/open/floor/plasteel/dark,
-/area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "uJ" = (
 /obj/machinery/seed_extractor,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark/textured/large,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "uM" = (
 /obj/structure/table/reinforced,
@@ -3574,7 +3601,7 @@
 /obj/item/kirbyplants/hedge{
 	anchored = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "uR" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
@@ -3584,7 +3611,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "uS" = (
 /obj/machinery/porta_turret/syndicate/energy{
@@ -3603,7 +3630,7 @@
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "uZ" = (
 /obj/structure/table,
@@ -3639,7 +3666,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "vh" = (
 /obj/machinery/light/small{
@@ -3651,8 +3678,7 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 4
 	},
-/obj/structure/closet/firecloset/full,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "vu" = (
 /obj/effect/mob_spawn/human/solfed/diplomacy/admiral{
@@ -3680,18 +3706,17 @@
 /turf/open/floor/carpet/royalblue,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "vx" = (
-/obj/effect/turf_decal/tile/dark_blue/opposingcorners,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "vB" = (
 /obj/machinery/vending/sustenance,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark/textured/large,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "vJ" = (
 /obj/structure/closet/crate/trashcart,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "vK" = (
 /obj/structure/cable/yellow{
@@ -3715,8 +3740,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
 	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "vQ" = (
 /obj/effect/spawner/structure/window/plastitanium,
@@ -3726,7 +3750,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-4"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/vault)
 "vV" = (
 /mob/living/simple_animal/hostile/carp/megacarp,
@@ -3738,24 +3762,24 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "vY" = (
 /obj/machinery/bloodbankgen,
 /obj/effect/turf_decal/box,
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "vZ" = (
 /obj/effect/turf_decal/tile/dark_blue/full,
 /obj/machinery/vending/cigarette,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "wf" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 10
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "wg" = (
 /obj/effect/turf_decal/siding/yellow{
@@ -3777,20 +3801,22 @@
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden{
 	dir = 8
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "wm" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "ws" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/table/reinforced,
 /obj/machinery/fax{
-	fax_name = "Unknown Fax";
-	name = "KK-28 Fax Machine"
+	name = "SolarFederation37";
+	radio_channel = "Command";
+	fax_id = "SolarFederation37";
+	fax_name = "SolarFederation37"
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bridge)
@@ -3803,7 +3829,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "wx" = (
 /obj/structure/closet/cabinet,
@@ -3815,7 +3841,7 @@
 "wA" = (
 /obj/structure/bed,
 /obj/effect/spawner/lootdrop/bedsheet,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "wH" = (
 /obj/structure/window/reinforced/spawner/north,
@@ -3824,7 +3850,7 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 4
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "wK" = (
 /obj/machinery/computer/crew/syndie{
@@ -3842,12 +3868,11 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/light{
 	dir = 8;
 	light_color = "#e8eaff"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "wN" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
@@ -3863,7 +3888,7 @@
 	icon_state = "2-4"
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "wV" = (
 /obj/machinery/atmospherics/components/unary/outlet_injector/on/layer3{
@@ -3878,7 +3903,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "wY" = (
 /obj/structure/fireplace,
@@ -3911,7 +3936,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "xe" = (
 /obj/machinery/suit_storage_unit/open,
@@ -3928,7 +3953,7 @@
 /obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "xh" = (
 /obj/structure/table/reinforced,
@@ -4050,7 +4075,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "xK" = (
 /obj/machinery/computer/security{
@@ -4073,7 +4098,7 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 4
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "xP" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
@@ -4085,7 +4110,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "xS" = (
 /turf/closed/wall/r_wall/syndicate/nodiagonal,
@@ -4094,7 +4119,7 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/table,
 /obj/machinery/light/dim/directional/west,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "xU" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line,
@@ -4123,21 +4148,17 @@
 	name = "prisoner item locker";
 	req_access_txt = "152"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "ye" = (
 /turf/closed/mineral/random/high_chance,
 /area/ruin/space)
 "yf" = (
-/obj/structure/table,
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 1
 	},
-/obj/item/gun/energy/e_gun/erotaser,
-/obj/item/gun/energy/e_gun/erotaser,
-/obj/item/gun/energy/e_gun/erotaser,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "yg" = (
 /obj/structure/cable/yellow{
@@ -4218,7 +4239,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 8
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "yx" = (
 /obj/structure/cable/yellow{
@@ -4257,7 +4278,7 @@
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "yD" = (
 /obj/structure/tank_dispenser/oxygen,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "yF" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
@@ -4267,7 +4288,7 @@
 	start_charge = 35;
 	pixel_x = -25
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "yH" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line{
@@ -4290,7 +4311,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "yQ" = (
 /obj/item/kirbyplants/hedge{
@@ -4303,7 +4324,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 6
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "yX" = (
 /obj/structure/cable/yellow{
@@ -4314,15 +4335,11 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "yY" = (
-/obj/effect/turf_decal/tile/dark_blue/opposingcorners,
-/obj/effect/turf_decal/siding/wood{
-	dir = 1
-	},
-/turf/open/floor/plasteel/dark,
-/area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "zc" = (
 /obj/machinery/light/floor,
 /turf/open/floor/mineral/plastitanium,
@@ -4331,7 +4348,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "zi" = (
 /obj/structure/dresser,
@@ -4358,7 +4375,7 @@
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "zk" = (
 /obj/effect/spawner/structure/window/plastitanium,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "zp" = (
 /obj/structure/chair/stool/bar/directional/north,
@@ -4376,7 +4393,7 @@
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "zv" = (
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3,
@@ -4386,19 +4403,19 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "zy" = (
-/obj/structure/railing,
-/obj/structure/reagent_dispensers/fueltank/limitka,
-/obj/item/toy/plush/bm/emma/aiko,
-/turf/open/floor/plasteel/dark,
-/area/ruin/space/has_grav/bluemoon/solfed_ship)
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "zz" = (
 /obj/structure/table/reinforced,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "zA" = (
 /obj/structure/table/reinforced,
@@ -4408,7 +4425,7 @@
 	},
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /obj/machinery/light,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "zB" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
@@ -4427,7 +4444,7 @@
 	icon_state = "2-4"
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "zG" = (
 /obj/effect/turf_decal/tile/dark_blue/opposingcorners,
@@ -4435,7 +4452,7 @@
 	dir = 1
 	},
 /obj/machinery/light,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "zK" = (
 /obj/structure/chair/comfy/shuttle{
@@ -4466,14 +4483,14 @@
 /obj/machinery/atmospherics/pipe/simple/general/visible{
 	dir = 5
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "Aa" = (
 /obj/structure/table/glass,
 /obj/item/clothing/neck/stethoscope,
 /obj/item/gun/medbeam,
 /obj/effect/turf_decal/stripes/yellow/line,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "Ae" = (
 /obj/item/soap/syndie,
@@ -4520,7 +4537,6 @@
 /obj/structure/sign/flag/terragov{
 	pixel_y = 32
 	},
-/obj/item/paper/fluff/ruins/forgottenship/emergency/sol,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/vault)
 "Al" = (
@@ -4536,7 +4552,7 @@
 /area/ruin/space/has_grav/bluemoon/solfed_ship)
 "Am" = (
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "Ap" = (
 /obj/structure/chair/stool/bar/directional/north,
@@ -4565,7 +4581,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "As" = (
 /obj/structure/cable/yellow{
@@ -4627,7 +4643,7 @@
 /obj/structure/window/reinforced/survival_pod{
 	dir = 4
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "AL" = (
 /obj/structure/table,
@@ -4639,7 +4655,7 @@
 	pixel_x = -8;
 	pixel_y = 5
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "AO" = (
 /obj/machinery/light{
@@ -4647,7 +4663,7 @@
 	light_color = "#c1caff"
 	},
 /obj/machinery/suit_storage_unit/ftu_work,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "AS" = (
 /obj/machinery/door/airlock/grunge{
@@ -4663,11 +4679,11 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "AT" = (
 /obj/structure/falsewall/plastitanium,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "AW" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line{
@@ -4687,7 +4703,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 9
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "Bb" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
@@ -4716,7 +4732,7 @@
 /obj/effect/turf_decal/tile/dark_blue/anticorner{
 	dir = 8
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "Bl" = (
 /obj/machinery/light/small{
@@ -4736,11 +4752,10 @@
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "Bt" = (
 /obj/structure/closet,
-/obj/item/storage/box/firingpins/syndicate,
 /obj/structure/window/reinforced/spawner,
 /obj/effect/turf_decal/siding/wood,
-/obj/item/ammo_box/c9mm,
 /obj/item/flashlight/seclite,
+/obj/item/storage/box/firingpins,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/bluemoon/solfed_ship)
 "Bz" = (
@@ -4750,20 +4765,36 @@
 "BA" = (
 /obj/machinery/hydroponics/constructable,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark/textured/large,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "BC" = (
 /obj/machinery/computer/message_monitor,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bridge)
 "BD" = (
-/obj/structure/table/reinforced,
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
+/obj/item/clothing/glasses/hud/security/sunglasses/inteq,
+/obj/item/clothing/gloves/tackler/combat/insulated,
+/obj/item/clothing/shoes/combat,
+/obj/item/storage/belt/military/assault,
+/obj/item/clothing/head/warden/drill{
+	desc = "A special armored campaign hat with the IRMG insignia emblazoned on it. Uses reinforced fabric to offer sufficient protection.";
+	name = "master at arms' campaign hat"
 	},
-/obj/item/toy/plush/nukeplushie/minisusplushie,
-/turf/open/floor/plasteel/dark,
-/area/ruin/space/has_grav/bluemoon/solfed_ship)
+/obj/item/megaphone/sec,
+/obj/structure/closet/secure_closet/ertCom{
+	req_access = "152";
+	req_access_txt = "152";
+	name = "officer's closet";
+	desc = "Solar Federation officers ammunition"
+	},
+/obj/item/clothing/suit/space/hardsuit/ert/alert/sol/adv,
+/obj/item/gun/ballistic/shotgun/riot/syndicate,
+/obj/item/ammo_box/shotgun/loaded/buckshot,
+/obj/item/ammo_box/shotgun/loaded/buckshot,
+/obj/item/ammo_box/shotgun/loaded/buckshot,
+/obj/item/storage/belt/military,
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "BE" = (
 /obj/effect/turf_decal/tile/dark_blue/anticorner{
 	dir = 8
@@ -4772,7 +4803,7 @@
 	dir = 4
 	},
 /obj/machinery/light,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "BK" = (
 /obj/structure/table/reinforced,
@@ -4801,7 +4832,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "BT" = (
 /obj/structure/window/reinforced/spawner,
@@ -4819,7 +4850,7 @@
 /obj/structure/sign/poster/solgov/random{
 	pixel_y = 32
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "BY" = (
 /obj/structure/window/reinforced/spawner/north,
@@ -4834,7 +4865,7 @@
 	dir = 1
 	},
 /obj/machinery/light,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "Cc" = (
 /obj/structure/lattice/catwalk,
@@ -4861,7 +4892,7 @@
 /obj/machinery/light/small{
 	dir = 8
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "Cj" = (
 /obj/machinery/light/floor,
@@ -4882,7 +4913,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-4"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "Ck" = (
 /obj/effect/turf_decal/siding/wood,
@@ -4893,11 +4924,9 @@
 	dir = 8
 	},
 /obj/effect/spawner/structure/window/plastitanium,
-/turf/open/floor/plasteel/dark,
+/obj/structure/fans/tiny/invisible,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
-"Cn" = (
-/turf/open/floor/plasteel/dark,
-/area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "Co" = (
 /obj/structure/closet/crate/secure/gear{
 	req_one_access_txt = "152"
@@ -4926,8 +4955,7 @@
 "Cu" = (
 /obj/effect/turf_decal/tile/dark_blue/opposingcorners,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "CA" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
@@ -4943,7 +4971,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/vault)
 "CC" = (
 /obj/machinery/light,
@@ -4956,7 +4984,7 @@
 /obj/structure/chair/stool/bar/directional/south,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/effect/turf_decal/tile/dark_blue/opposingcorners,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "CG" = (
 /obj/structure/sign/flag/terragov{
@@ -4980,7 +5008,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "CP" = (
 /obj/structure/dresser,
@@ -5002,7 +5030,7 @@
 /obj/effect/turf_decal/tile/dark_blue/half{
 	dir = 8
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "CS" = (
 /obj/structure/table/reinforced,
@@ -5060,7 +5088,7 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "Dj" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line{
@@ -5104,7 +5132,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "Dr" = (
 /obj/structure/shuttle/engine/huge{
@@ -5126,7 +5154,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 9
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "Dz" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
@@ -5135,7 +5163,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "DB" = (
 /obj/effect/turf_decal/big_sign/solgov/cc,
@@ -5209,7 +5237,7 @@
 /obj/item/shovel/spade,
 /obj/structure/window/reinforced/survival_pod,
 /obj/effect/turf_decal/tile/dark_blue/half,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "DQ" = (
 /obj/structure/cable/yellow{
@@ -5226,7 +5254,8 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/obj/structure/fans/tiny,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "Eb" = (
 /obj/structure/window/reinforced/spawner,
@@ -5244,11 +5273,11 @@
 /obj/effect/turf_decal/siding/dark{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "Eg" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "Em" = (
 /obj/structure/toilet/secret/low_loot{
@@ -5307,7 +5336,7 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "EA" = (
 /obj/effect/turf_decal/stripes/red{
@@ -5319,20 +5348,20 @@
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "EC" = (
 /obj/effect/turf_decal/stripes/yellow/line,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "ED" = (
 /obj/effect/turf_decal/tile/dark_blue/half{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "EI" = (
 /obj/effect/turf_decal/bot/yellow,
 /obj/structure/sign/poster/solgov/random{
 	pixel_y = -32
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "EK" = (
 /obj/effect/turf_decal/tile/dark_blue/half{
@@ -5342,7 +5371,7 @@
 	anchored = 1
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "EP" = (
 /obj/structure/chair/comfy/black,
@@ -5351,7 +5380,7 @@
 "ER" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/spawner/structure/window/plastitanium,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "Fb" = (
 /obj/machinery/light,
@@ -5362,11 +5391,11 @@
 /obj/machinery/light{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "Ff" = (
 /obj/machinery/washing_machine,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "Fh" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line{
@@ -5380,7 +5409,7 @@
 	dir = 1
 	},
 /obj/structure/fans/tiny,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "Fj" = (
 /obj/machinery/light{
@@ -5409,7 +5438,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "Fm" = (
 /obj/machinery/atmospherics/components/unary/tank/air{
@@ -5420,10 +5449,10 @@
 /area/ruin/space/has_grav/bluemoon/solfed_ship)
 "Fn" = (
 /obj/machinery/vending/cigarette,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "Fp" = (
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "Fq" = (
 /obj/structure/window/reinforced/spawner,
@@ -5437,7 +5466,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 5
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "FH" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -5450,7 +5479,7 @@
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "FP" = (
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
@@ -5459,7 +5488,7 @@
 /obj/machinery/light{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "FQ" = (
 /obj/effect/turf_decal/stripes{
@@ -5489,7 +5518,7 @@
 /obj/item/card/id/prisoner{
 	pixel_y = 11
 	},
-/turf/open/floor/mineral/plastitanium/red,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "FV" = (
 /obj/effect/turf_decal/siding/dark/corner,
@@ -5500,7 +5529,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "FW" = (
 /obj/structure/fans/tiny,
@@ -5533,7 +5562,7 @@
 	dir = 8;
 	light_color = "#e8eaff"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "Gj" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
@@ -5545,10 +5574,11 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "Gk" = (
-/obj/machinery/vending/wardrobe/robo_wardrobe,
+/obj/structure/table/reinforced/plastitaniumglass,
+/obj/machinery/cell_charger,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "Gl" = (
@@ -5562,20 +5592,20 @@
 	dir = 5
 	},
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "Gt" = (
 /obj/structure/cable/yellow{
 	icon_state = "0-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "Gu" = (
 /obj/structure/sign/flag/terragov{
 	pixel_x = 32
 	},
 /obj/structure/chair/sofa/corp/right,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "Gv" = (
 /obj/structure/rack{
@@ -5595,7 +5625,7 @@
 /obj/structure/closet/secure_closet{
 	name = "prisoner item locker"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "GH" = (
 /turf/closed/indestructible/syndicate,
@@ -5603,7 +5633,7 @@
 "GK" = (
 /obj/machinery/atmospherics/pipe/manifold/general/visible,
 /obj/effect/turf_decal/bot/yellow,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "GN" = (
 /obj/effect/decal/cleanable/dirt,
@@ -5614,7 +5644,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "GQ" = (
 /obj/structure/cable/yellow{
@@ -5643,13 +5673,13 @@
 "GV" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/light/dim/directional/north,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "GX" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/table,
 /obj/machinery/light/dim/directional/east,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "GY" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
@@ -5681,7 +5711,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 6
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "Hf" = (
 /obj/machinery/vending/wallmed{
@@ -5691,13 +5721,13 @@
 /obj/machinery/light{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "Hg" = (
 /obj/structure/bed,
 /obj/effect/spawner/lootdrop/bedsheet,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "Hi" = (
 /obj/machinery/door/airlock/grunge{
@@ -5737,7 +5767,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "Ht" = (
 /obj/structure/table/reinforced,
@@ -5769,7 +5799,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "HI" = (
 /obj/effect/turf_decal/trimline/blue/filled/line{
@@ -5803,7 +5833,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "HT" = (
 /obj/structure/closet/crate/secure/gear{
@@ -5850,7 +5880,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "Ia" = (
 /obj/effect/turf_decal/tile/dark_blue/anticorner{
@@ -5858,7 +5888,7 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "Ib" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/siphon/on{
@@ -5939,14 +5969,14 @@
 /obj/structure/fireaxecabinet{
 	pixel_x = -32
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "Ir" = (
 /obj/machinery/door/airlock/grunge{
 	name = "Recreation";
 	req_one_access_txt = "152"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "Is" = (
 /obj/machinery/porta_turret/syndicate{
@@ -5968,8 +5998,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "II" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
@@ -5979,7 +6008,7 @@
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/dark_blue,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "IO" = (
 /obj/machinery/computer/med_data/syndie{
@@ -6002,12 +6031,13 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 4
 	},
-/turf/open/floor/plasteel/dark,
+/obj/effect/mob_spawn/human/solfed/diplomacy/secret_service,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "IV" = (
 /obj/effect/turf_decal/tile/dark_blue/opposingcorners,
 /obj/machinery/vending/cigarette,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "IW" = (
 /obj/item/kirbyplants/hedge{
@@ -6018,7 +6048,7 @@
 	dir = 4;
 	light_color = "#c1caff"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "Jc" = (
 /turf/closed/mineral/random,
@@ -6066,7 +6096,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-4"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "Jm" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line{
@@ -6104,7 +6134,7 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 8
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "JB" = (
 /obj/structure/cable/yellow{
@@ -6127,7 +6157,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 10
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "JL" = (
 /turf/open/space/basic,
@@ -6135,9 +6165,6 @@
 "JM" = (
 /obj/machinery/cryopod{
 	dir = 8
-	},
-/obj/structure/sign/poster/official/poster_vulp8{
-	pixel_y = 32
 	},
 /obj/effect/turf_decal/trimline/yellow/filled/line{
 	dir = 5
@@ -6150,7 +6177,7 @@
 	},
 /obj/effect/turf_decal/bot/yellow,
 /obj/machinery/atmospherics/pipe/manifold/general/visible,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "JP" = (
 /obj/machinery/door/airlock/grunge{
@@ -6211,10 +6238,13 @@
 	},
 /obj/item/storage/firstaid/tactical,
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "JZ" = (
-/turf/open/floor/plasteel/dark,
+/obj/structure/closet/secure_closet/ds2atmos{
+	req_access = list(152)
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "Kb" = (
 /obj/machinery/power/smes{
@@ -6224,7 +6254,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "0-4"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "Kc" = (
 /obj/effect/turf_decal/tile/dark_blue/half{
@@ -6237,7 +6267,7 @@
 /obj/structure/sign/poster/solgov/random{
 	pixel_y = 32
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "Kd" = (
 /obj/machinery/atmospherics/components/unary/outlet_injector/on/layer3{
@@ -6254,7 +6284,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "Kh" = (
 /turf/template_noop,
@@ -6271,10 +6301,6 @@
 	},
 /turf/open/floor/plating/airless,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
-"Ky" = (
-/obj/effect/decal/cleanable/robot_debris/limb,
-/turf/open/floor/plasteel/dark,
-/area/ruin/space/has_grav/bluemoon/solfed_ship)
 "KA" = (
 /obj/effect/turf_decal/tile/dark_blue/half,
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
@@ -6287,8 +6313,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-8"
 	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/damturf/scorched1,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "KC" = (
 /obj/item/kirbyplants/hedge{
@@ -6304,7 +6329,7 @@
 /obj/machinery/light{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "KE" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
@@ -6344,7 +6369,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "KN" = (
 /obj/machinery/turretid{
@@ -6389,8 +6414,7 @@
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
 	dir = 4
 	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "KV" = (
 /obj/effect/decal/cleanable/dirt,
@@ -6398,11 +6422,11 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 9
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "Lc" = (
 /obj/structure/table/reinforced,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "Lg" = (
 /obj/structure/closet/crate/secure/gear{
@@ -6432,7 +6456,7 @@
 	pixel_y = -3
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "Li" = (
 /obj/effect/spawner/structure/window/plastitanium,
@@ -6455,13 +6479,13 @@
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "Lm" = (
 /obj/machinery/vending/kink{
 	extended_inventory = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "Lp" = (
 /obj/structure/toilet{
@@ -6506,7 +6530,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 10
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "LA" = (
 /obj/machinery/power/compressor{
@@ -6552,7 +6576,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "LD" = (
 /obj/machinery/atmospherics/components/binary/pump/on{
@@ -6565,13 +6589,13 @@
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "LI" = (
 /obj/effect/turf_decal/tile/dark_blue/half{
 	dir = 4
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "LO" = (
 /obj/structure/closet/secure_closet/medical3,
@@ -6586,7 +6610,7 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "LP" = (
 /obj/machinery/light{
@@ -6595,12 +6619,18 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "LQ" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 9
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 9
+	},
 /obj/structure/cable/yellow{
-	icon_state = "1-2"
+	icon_state = "1-8"
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
-/area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "LS" = (
 /obj/machinery/atmospherics/components/unary/outlet_injector/on{
 	dir = 1;
@@ -6654,7 +6684,7 @@
 	dir = 4;
 	icon_state = "manifold-2"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "Me" = (
 /obj/machinery/porta_turret/syndicate{
@@ -6666,7 +6696,7 @@
 "Mj" = (
 /obj/structure/table,
 /obj/machinery/light/dim/directional/east,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "Ml" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
@@ -6678,7 +6708,7 @@
 /obj/machinery/vending/kink{
 	extended_inventory = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "Mp" = (
 /obj/structure/window/reinforced/survival_pod{
@@ -6688,7 +6718,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "Mt" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
@@ -6697,14 +6727,14 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "Mw" = (
 /obj/item/kirbyplants/hedge{
 	anchored = 1
 	},
 /obj/effect/turf_decal/tile/dark_blue/full,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "My" = (
 /obj/structure/rack{
@@ -6714,10 +6744,12 @@
 	dir = 1;
 	icon_state = "delivery_red"
 	},
-/obj/item/inducer/sci/combat,
-/obj/item/stock_parts/cell/high/plus{
-	charge = 15000
-	},
+/obj/item/storage/belt/military,
+/obj/item/storage/belt/military,
+/obj/item/storage/belt/military,
+/obj/item/storage/belt/military,
+/obj/item/storage/belt/military,
+/obj/item/storage/belt/military,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/vault)
 "MC" = (
@@ -6728,7 +6760,7 @@
 /obj/structure/chair/wood/normal{
 	dir = 4
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "MI" = (
 /obj/machinery/atmospherics/miner/nitrogen,
@@ -6740,7 +6772,7 @@
 /obj/machinery/light{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "MO" = (
 /obj/structure/closet,
@@ -6751,6 +6783,7 @@
 /obj/item/gun/ballistic/automatic/pistol,
 /obj/item/ammo_box/magazine/m10mm,
 /obj/item/ammo_box/magazine/m10mm,
+/obj/item/stamp/solgov,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/bluemoon/solfed_ship)
 "MR" = (
@@ -6759,7 +6792,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "MS" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
@@ -6768,7 +6801,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 5
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "MT" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
@@ -6785,7 +6818,7 @@
 	name = "Recreation";
 	req_one_access_txt = "152"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "MX" = (
 /obj/machinery/light/floor,
@@ -6804,7 +6837,7 @@
 	icon_state = "2-4"
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "MY" = (
 /obj/item/storage/firstaid/regular{
@@ -6828,7 +6861,7 @@
 	},
 /obj/effect/turf_decal/tile/blue,
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "Nc" = (
 /obj/structure/window/reinforced/spawner/east,
@@ -6859,7 +6892,7 @@
 	dir = 1;
 	pixel_y = -32
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "No" = (
 /obj/effect/turf_decal/trimline/green/filled/line{
@@ -6892,7 +6925,7 @@
 	dir = 1;
 	pixel_y = -32
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "Nw" = (
 /obj/effect/decal/cleanable/dirt,
@@ -6904,7 +6937,7 @@
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "Nz" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
@@ -6928,7 +6961,7 @@
 /obj/effect/turf_decal/tile/dark_blue/half{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "NF" = (
 /obj/structure/tank_dispenser/oxygen,
@@ -6947,7 +6980,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "NJ" = (
 /obj/effect/decal/cleanable/dirt,
@@ -6957,7 +6990,7 @@
 /obj/structure/closet/secure_closet{
 	name = "prisoner item locker"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "NL" = (
 /obj/machinery/power/terminal{
@@ -6983,7 +7016,7 @@
 	network = list("fsci");
 	screen_loc = ""
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "NT" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line{
@@ -7020,7 +7053,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-4"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "Oc" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
@@ -7032,7 +7065,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "Od" = (
 /obj/effect/turf_decal/siding/dark,
@@ -7050,7 +7083,7 @@
 	anchored = 1
 	},
 /obj/effect/turf_decal/tile/dark_blue/full,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "Os" = (
 /mob/living/simple_animal/hostile/carp,
@@ -7062,7 +7095,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "Oz" = (
 /obj/structure/cable/yellow{
@@ -7096,7 +7129,7 @@
 	dir = 4;
 	pixel_x = -32
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "OT" = (
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
@@ -7105,7 +7138,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "OV" = (
 /obj/item/chair{
@@ -7113,7 +7146,7 @@
 	pixel_x = 5;
 	pixel_y = -3
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "OW" = (
 /obj/machinery/light,
@@ -7140,14 +7173,13 @@
 /obj/structure/cable/yellow{
 	icon_state = "0-2"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "Pb" = (
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "Pf" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line{
@@ -7176,7 +7208,7 @@
 /obj/item/gun/energy/kinetic_accelerator,
 /obj/item/gun/energy/kinetic_accelerator,
 /obj/effect/turf_decal/tile/dark_blue/full,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "Pl" = (
 /turf/open/floor/carpet/royalblue,
@@ -7184,13 +7216,13 @@
 "Pm" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "Pn" = (
 /obj/structure/window/reinforced/survival_pod{
 	dir = 5
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "Pq" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line{
@@ -7201,16 +7233,15 @@
 /area/ruin/space/has_grav/bluemoon/solfed_ship)
 "Ps" = (
 /obj/effect/turf_decal/tile/dark_blue/opposingcorners,
-/obj/effect/decal/cleanable/dirt,
 /obj/structure/sign/poster/solgov/random{
 	pixel_y = -32
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "Px" = (
 /obj/effect/turf_decal/tile/dark_blue/opposingcorners,
 /obj/machinery/vending/snack/random,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "PG" = (
 /obj/effect/turf_decal/stripes{
@@ -7220,14 +7251,14 @@
 /obj/structure/rack{
 	dir = 8
 	},
-/obj/item/ammo_box/magazine/recharge/lasgun,
-/obj/item/ammo_box/magazine/recharge/lasgun,
-/obj/item/ammo_box/magazine/recharge/lasgun,
 /obj/structure/sign/flag/terragov{
 	pixel_x = -32
 	},
-/obj/item/ammo_box/magazine/recharge/lasgun,
-/obj/item/ammo_box/magazine/recharge/lasgun,
+/obj/item/gun/ballistic/automatic/m16a4/tactical,
+/obj/item/gun/ballistic/automatic/m16a4/tactical,
+/obj/item/gun/ballistic/automatic/m16a4/tactical,
+/obj/item/gun/ballistic/automatic/m16a4/tactical,
+/obj/item/gun/ballistic/automatic/m16a4/tactical,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/vault)
 "PM" = (
@@ -7250,7 +7281,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "PY" = (
 /obj/structure/table/reinforced,
@@ -7263,7 +7294,7 @@
 /obj/machinery/light{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "Qc" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line{
@@ -7304,7 +7335,7 @@
 "Qv" = (
 /obj/effect/turf_decal/tile/dark_blue/opposingcorners,
 /obj/machinery/vending/coffee,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "QC" = (
 /obj/item/kirbyplants/hedge{
@@ -7314,7 +7345,7 @@
 /obj/machinery/light{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "QE" = (
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
@@ -7327,10 +7358,10 @@
 	icon_state = "4-8"
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "QG" = (
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/vault)
 "QI" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3,
@@ -7338,20 +7369,20 @@
 	icon_state = "1-2"
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/vault)
 "QN" = (
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "QP" = (
-/obj/machinery/computer/slot_machine{
-	pixel_y = -1
-	},
 /obj/effect/turf_decal/tile/dark_blue/opposingcorners,
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/obj/machinery/computer/arcade/battle{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "QQ" = (
 /obj/effect/turf_decal/siding/yellow{
@@ -7392,7 +7423,7 @@
 	name = "Recreation";
 	req_one_access_txt = "152"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "QZ" = (
 /obj/structure/cable/yellow{
@@ -7415,13 +7446,12 @@
 	icon_state = "1-2"
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "Rd" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "Rf" = (
 /obj/item/kirbyplants/hedge{
@@ -7437,7 +7467,7 @@
 /obj/item/kirbyplants/hedge{
 	anchored = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "Rj" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
@@ -7448,7 +7478,7 @@
 /obj/effect/turf_decal/box,
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "Rq" = (
 /obj/machinery/mineral/ore_redemption{
@@ -7456,7 +7486,7 @@
 	ore_multiplier = 4;
 	req_access = list(150)
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "Rx" = (
 /obj/effect/turf_decal/tile/dark_blue/anticorner,
@@ -7466,8 +7496,7 @@
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden{
 	icon_state = "manifold-2"
 	},
-/obj/effect/decal/cleanable/robot_debris,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "Ry" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
@@ -7475,7 +7504,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "Rz" = (
 /obj/machinery/door/airlock/grunge{
@@ -7488,7 +7517,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "RB" = (
 /obj/machinery/door/airlock/grunge{
@@ -7506,14 +7535,14 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "RD" = (
 /obj/structure/window/reinforced/survival_pod{
 	dir = 1
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "RM" = (
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
@@ -7526,7 +7555,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "RN" = (
 /obj/structure/reagent_dispensers/fueltank,
@@ -7543,20 +7572,17 @@
 	name = "poster";
 	pixel_y = 32
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "RO" = (
 /obj/item/kirbyplants/hedge{
 	anchored = 1
 	},
 /obj/effect/turf_decal/tile/dark_blue/full,
-/obj/machinery/airalarm/inteq{
-	pixel_y = -11
-	},
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "RP" = (
 /obj/machinery/atmospherics/components/unary/vent_pump,
@@ -7581,7 +7607,7 @@
 /area/ruin/space/has_grav/bluemoon/solfed_ship)
 "Sj" = (
 /obj/effect/spawner/structure/window/plastitanium,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "Sm" = (
 /obj/effect/turf_decal/tile/dark_blue/anticorner{
@@ -7594,8 +7620,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/obj/item/storage/backpack/satchel/inteq,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "Sp" = (
 /obj/structure/lattice/catwalk,
@@ -7604,6 +7629,10 @@
 	},
 /turf/open/floor/holofloor/asteroid,
 /area/ruin/space)
+"Sq" = (
+/obj/structure/sign/poster/solgov/paperwork,
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
+/area/ruin/space/has_grav/bluemoon/solfed_ship)
 "Sr" = (
 /obj/structure/dresser,
 /turf/open/floor/carpet/royalblue,
@@ -7621,7 +7650,7 @@
 /obj/machinery/airalarm/inteq{
 	pixel_y = 24
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "Sx" = (
 /obj/machinery/atmospherics/components/unary/thermomachine/freezer,
@@ -7648,7 +7677,7 @@
 /area/ruin/space/has_grav/bluemoon/solfed_ship)
 "SB" = (
 /obj/effect/turf_decal/tile/dark_blue/opposingcorners,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "SE" = (
 /obj/structure/cable/yellow{
@@ -7668,14 +7697,14 @@
 /obj/machinery/light{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "SH" = (
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /obj/machinery/airalarm/inteq{
 	pixel_y = 24
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "SK" = (
 /obj/effect/turf_decal/siding/yellow{
@@ -7709,7 +7738,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "SU" = (
 /obj/machinery/atmospherics/pipe/simple/supplymain{
@@ -7719,7 +7748,7 @@
 	dir = 4
 	},
 /obj/structure/tank_holder/extinguisher,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "SW" = (
 /obj/machinery/atmospherics/pipe/simple/orange,
@@ -7732,7 +7761,7 @@
 	dir = 8;
 	light_color = "#e8eaff"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "Tc" = (
 /obj/structure/bed/double,
@@ -7769,13 +7798,12 @@
 	icon_state = "4-8"
 	},
 /obj/effect/decal/cleanable/dirt,
-/obj/structure/barricade/wooden,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "Tp" = (
 /obj/structure/reagent_dispensers/water_cooler,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "Tv" = (
 /obj/effect/turf_decal/tile/dark_blue/half{
@@ -7785,13 +7813,13 @@
 	anchored = 1
 	},
 /obj/machinery/light,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "Tw" = (
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/vault)
 "Tx" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
@@ -7803,14 +7831,14 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "Tz" = (
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /obj/item/kirbyplants/hedge{
 	anchored = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "TB" = (
 /obj/effect/turf_decal/siding/dark{
@@ -7819,7 +7847,7 @@
 /obj/effect/turf_decal/tile/dark_blue/half{
 	dir = 4
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "TF" = (
 /obj/machinery/door/airlock/grunge{
@@ -7840,8 +7868,6 @@
 /turf/open/floor/plasteel/freezer,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost_shower)
 "TL" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/airalarm/inteq{
 	pixel_y = 24
 	},
@@ -7858,7 +7884,7 @@
 /obj/machinery/light{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "TN" = (
 /obj/machinery/computer/mech_bay_power_console{
@@ -7891,14 +7917,14 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "TS" = (
 /obj/effect/turf_decal/tile/dark_blue/half{
 	dir = 1
 	},
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "TW" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line,
@@ -7919,7 +7945,7 @@
 	dir = 8;
 	light_color = "#e8eaff"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "Uo" = (
 /obj/structure/table/reinforced,
@@ -7954,14 +7980,15 @@
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "Uz" = (
 /obj/machinery/atmospherics/pipe/simple/orange{
 	dir = 8
 	},
 /obj/effect/spawner/structure/window/plastitanium,
-/turf/open/floor/plasteel/dark,
+/obj/structure/fans/tiny/invisible,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "UD" = (
 /obj/machinery/door/airlock/external{
@@ -7978,22 +8005,22 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "UI" = (
 /obj/structure/table/reinforced,
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /obj/structure/cable/yellow,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "UN" = (
 /obj/machinery/smartfridge/chemistry/preloaded,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "UR" = (
 /obj/effect/spawner/structure/window/plastitanium,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/inspection)
 "US" = (
 /obj/machinery/power/smes{
@@ -8010,7 +8037,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "0-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "UX" = (
 /obj/machinery/power/apc/inteq{
@@ -8034,7 +8061,7 @@
 	dir = 6
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "Vd" = (
 /obj/structure/window/reinforced/spawner,
@@ -8062,7 +8089,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "Vk" = (
 /obj/effect/turf_decal/tile/dark_blue/full,
@@ -8073,7 +8100,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 9
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "Vn" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
@@ -8086,7 +8113,7 @@
 	icon_state = "1-2"
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "Vr" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
@@ -8098,7 +8125,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "Vt" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line{
@@ -8128,7 +8155,7 @@
 /obj/machinery/light{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "Vy" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
@@ -8154,7 +8181,7 @@
 	pixel_y = 23;
 	start_charge = 35
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "VB" = (
 /obj/structure/cable/yellow{
@@ -8180,7 +8207,7 @@
 	name = "Recreation";
 	req_one_access_txt = "152"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "VF" = (
 /obj/machinery/door/poddoor{
@@ -8211,7 +8238,7 @@
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/dark_blue/opposingcorners,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "VP" = (
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
@@ -8221,41 +8248,40 @@
 	icon_state = "manifold-2"
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "VQ" = (
 /obj/structure/table/reinforced,
 /obj/machinery/recharger,
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
-/obj/item/gun/energy/laser,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "VT" = (
 /obj/structure/cable/yellow{
 	icon_state = "2-4"
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "VU" = (
 /obj/effect/turf_decal/tile/dark_blue/anticorner{
 	dir = 4
 	},
 /obj/machinery/vending/games,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "VX" = (
 /obj/effect/turf_decal/tile/dark_blue/opposingcorners,
 /obj/structure/sign/poster/solgov/random{
 	pixel_y = 32
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "VY" = (
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "Wb" = (
 /obj/effect/turf_decal/tile/dark_blue/half,
@@ -8271,9 +8297,8 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/obj/effect/decal/cleanable/dirt,
 /obj/machinery/light,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "Wc" = (
 /obj/machinery/atmospherics/miner/oxygen,
@@ -8284,14 +8309,15 @@
 	dir = 10
 	},
 /obj/effect/spawner/structure/window/plastitanium,
-/turf/open/floor/plasteel/dark,
+/obj/structure/fans/tiny/invisible,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "Wm" = (
 /obj/machinery/chem_dispenser{
 	layer = 2.7
 	},
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "Wr" = (
 /obj/machinery/air_sensor{
@@ -8306,7 +8332,7 @@
 	piping_layer = 3;
 	on = 0
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "Wu" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line{
@@ -8326,7 +8352,7 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "Wy" = (
 /obj/structure/fans/tiny,
@@ -8363,7 +8389,7 @@
 	},
 /obj/structure/fans/tiny,
 /obj/effect/mapping_helpers/airlock/cutaiwire,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "WL" = (
 /obj/machinery/porta_turret/syndicate{
@@ -8393,14 +8419,13 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
 	},
-/obj/effect/decal/cleanable/blood/gibs/human/up,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "WR" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "WT" = (
 /obj/structure/cable/yellow{
@@ -8409,7 +8434,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-4"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "WU" = (
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
@@ -8418,7 +8443,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "WX" = (
 /obj/effect/turf_decal/trimline/green/filled/line{
@@ -8428,6 +8453,7 @@
 /obj/machinery/plantgenes{
 	pixel_y = 7
 	},
+/obj/machinery/photocopier,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/solfed_ship)
 "WY" = (
@@ -8443,7 +8469,7 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "Xg" = (
 /obj/structure/table,
@@ -8455,7 +8481,7 @@
 	pixel_y = 6
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "Xi" = (
 /obj/effect/turf_decal/tile/dark_blue/opposingcorners,
@@ -8466,7 +8492,7 @@
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "Xl" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
@@ -8478,7 +8504,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "Xm" = (
 /obj/structure/chair/sofa/corp/left,
@@ -8489,11 +8515,11 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "Xq" = (
-/obj/machinery/computer/slot_machine{
-	pixel_y = -1
-	},
 /obj/effect/turf_decal/tile/dark_blue/opposingcorners,
-/turf/open/floor/plasteel/dark,
+/obj/machinery/computer/arcade/orion_trail{
+	dir = 1
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "Xw" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
@@ -8505,19 +8531,19 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "Xy" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on,
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "Xz" = (
 /obj/effect/turf_decal/tile/dark_blue/full,
 /obj/machinery/vending/coffee,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "XB" = (
 /obj/structure/table/wood,
@@ -8525,7 +8551,7 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bar)
 "XE" = (
 /obj/machinery/aug_manipulator,
@@ -8546,7 +8572,7 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "XK" = (
 /obj/item/kirbyplants/hedge{
@@ -8556,7 +8582,7 @@
 	dir = 4;
 	light_color = "#c1caff"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "XN" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
@@ -8568,7 +8594,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "XQ" = (
 /obj/effect/turf_decal/siding/wood,
@@ -8597,7 +8623,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "XT" = (
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
@@ -8609,7 +8635,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "XZ" = (
 /obj/structure/cable/yellow{
@@ -8641,8 +8667,7 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "Yh" = (
 /obj/structure/cable/yellow{
@@ -8651,16 +8676,13 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-4"
 	},
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/robot_debris,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "Ym" = (
 /obj/effect/turf_decal/tile/dark_blue/anticorner,
 /obj/item/storage/bag/trash/bluespace,
 /obj/machinery/light,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "Yp" = (
 /obj/machinery/vending/kink{
@@ -8679,7 +8701,7 @@
 	icon_state = "4-8"
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "Yv" = (
 /obj/structure/closet/crate/freezer/blood,
@@ -8727,7 +8749,7 @@
 	icon_state = "0-8"
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "YM" = (
 /obj/machinery/door/window{
@@ -8764,17 +8786,17 @@
 	id = "colossus_starboard"
 	},
 /obj/structure/fans/tiny,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "YR" = (
 /obj/structure/table/reinforced,
-/obj/item/stamp/syndicate,
 /obj/item/paper_bin,
 /obj/item/pen/fountain/captain,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
+/obj/item/stamp/solgov,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/bridge)
 "YS" = (
@@ -8789,7 +8811,7 @@
 /obj/machinery/light{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "YW" = (
 /obj/effect/spawner/structure/window/plastitanium,
@@ -8799,15 +8821,12 @@
 "YX" = (
 /obj/effect/turf_decal/tile/dark_blue/full,
 /obj/machinery/vending/snack/random,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "Zb" = (
 /obj/structure/table,
 /obj/item/storage/toolbox/emergency{
 	pixel_y = 13
-	},
-/obj/item/storage/toolbox/mechanical{
-	pixel_y = 5
 	},
 /obj/item/storage/toolbox/electrical{
 	pixel_y = -3
@@ -8815,7 +8834,10 @@
 /obj/structure/sign/poster/solgov/random{
 	pixel_x = -32
 	},
-/turf/open/floor/plasteel/dark,
+/obj/item/storage/toolbox/syndicate{
+	pixel_y = 5
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "Ze" = (
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3{
@@ -8830,8 +8852,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "Zg" = (
 /obj/effect/turf_decal/big_sign/solgov/ba,
@@ -8876,15 +8897,6 @@
 	},
 /turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/ruin/space/has_grav/bluemoon/solfed_ship)
-"Zt" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
-	dir = 8
-	},
-/turf/open/floor/plasteel/dark,
-/area/ruin/space/has_grav/bluemoon/solfed_ship/rnd)
 "Zu" = (
 /obj/structure/chair/stool/bar/directional/north,
 /obj/effect/turf_decal/tile/dark_blue/opposingcorners,
@@ -8894,7 +8906,7 @@
 /obj/structure/window/reinforced/survival_pod{
 	dir = 8
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "Zz" = (
 /obj/machinery/door/airlock/grunge{
@@ -8912,7 +8924,7 @@
 	dir = 1;
 	name = "SolGov Prisoner"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "ZH" = (
 /obj/structure/rack{
@@ -8921,7 +8933,7 @@
 /obj/item/reagent_containers/glass/bucket,
 /obj/item/mop,
 /obj/machinery/light/dim/directional/north,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "ZI" = (
 /obj/structure/bed/double,
@@ -8939,12 +8951,12 @@
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden{
 	dir = 4
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig)
 "ZO" = (
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer3,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "ZU" = (
 /obj/structure/window/reinforced/spawner/north,
@@ -8967,14 +8979,14 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 10
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "ZY" = (
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/atmos)
 "ZZ" = (
 /obj/machinery/light/floor,
@@ -8992,7 +9004,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-4"
 	},
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 
 (1,1,1) = {"
@@ -10764,7 +10776,7 @@ vd
 lm
 Lc
 zp
-yY
+iQ
 Px
 Oh
 Ey
@@ -10989,7 +11001,7 @@ QS
 KE
 zz
 rS
-hd
+zy
 vx
 Oh
 PY
@@ -11041,7 +11053,7 @@ sz
 Nr
 Nr
 Nr
-gu
+Sq
 hY
 Il
 Nr
@@ -11192,7 +11204,7 @@ Nr
 sm
 qa
 Nr
-ut
+Ye
 aW
 Nr
 th
@@ -11221,7 +11233,7 @@ oB
 ml
 sW
 NI
-bM
+PV
 Ry
 Tx
 Fp
@@ -11589,7 +11601,7 @@ Jc
 Oh
 dl
 mA
-vx
+SB
 cY
 Oh
 vQ
@@ -11657,7 +11669,7 @@ Nr
 GE
 GE
 kw
-Nf
+yY
 kw
 Jc
 kw
@@ -11750,8 +11762,8 @@ pR
 dW
 jw
 qs
-LQ
-LQ
+pR
+pR
 Yh
 Wb
 gB
@@ -11817,12 +11829,12 @@ Gj
 BE
 kw
 YS
-ty
+Pb
 wg
 TN
 Jh
-vQ
-vQ
+ty
+ty
 Jh
 HO
 Jh
@@ -11874,7 +11886,7 @@ ev
 XZ
 th
 tW
-pr
+th
 th
 th
 th
@@ -11882,9 +11894,9 @@ nH
 mx
 Fh
 VY
-Nf
-Nf
-Nf
+yY
+yY
+yY
 Ir
 ED
 cf
@@ -11895,7 +11907,7 @@ ux
 rr
 QQ
 bw
-vQ
+ty
 mp
 AX
 op
@@ -11967,10 +11979,10 @@ IE
 iv
 Jx
 js
-Cn
+QN
 sE
 Mc
-vQ
+ty
 Be
 AX
 QN
@@ -12020,14 +12032,14 @@ QX
 WX
 kB
 th
-mo
+Eb
 fK
 Dd
 tW
 xC
 th
 th
-pr
+th
 qG
 mx
 Fh
@@ -12038,14 +12050,14 @@ zf
 kI
 fi
 vg
-Nf
+yY
 Ym
 kw
 YH
-Cn
+QN
 QQ
 iU
-vQ
+ty
 Qf
 AX
 BL
@@ -12053,7 +12065,7 @@ fR
 CA
 Jh
 bW
-Zt
+zB
 gB
 TL
 xB
@@ -12094,7 +12106,7 @@ jF
 Ra
 sl
 th
-Ky
+th
 Eb
 Dh
 th
@@ -12127,8 +12139,8 @@ Gk
 zB
 rq
 Jh
-ty
-Zt
+Pb
+zB
 gB
 cL
 rY
@@ -12316,7 +12328,7 @@ sz
 sz
 Kh
 em
-Nr
+fH
 aI
 eJ
 dv
@@ -12327,13 +12339,13 @@ ZU
 tf
 Dj
 Nr
-zy
+Ed
 GE
 GE
 Jc
 kw
 me
-Nf
+yY
 IS
 kw
 fy
@@ -12410,7 +12422,7 @@ kw
 jM
 Xy
 mS
-Jx
+pr
 kj
 Vr
 xS
@@ -12466,11 +12478,11 @@ sz
 Nr
 KN
 jp
-Nr
+bP
 JM
 zO
 Vd
-eY
+th
 XZ
 th
 st
@@ -12483,7 +12495,7 @@ Nr
 lO
 kw
 rM
-jx
+BD
 dk
 kw
 jo
@@ -12498,7 +12510,7 @@ cs
 Uy
 Xl
 lK
-JZ
+bj
 Gf
 Im
 pT
@@ -12581,7 +12593,7 @@ ZY
 fD
 Rb
 Rb
-uE
+Rb
 Fs
 LV
 JX
@@ -12720,7 +12732,7 @@ QY
 dj
 Kg
 xI
-vM
+LQ
 BP
 zk
 JZ
@@ -12772,7 +12784,7 @@ an
 nd
 iH
 Uo
-BD
+iH
 nk
 Pf
 NT
@@ -12795,17 +12807,17 @@ lK
 id
 sy
 zk
-JZ
+bj
 Xw
 lK
 lK
-zk
+qT
 Cl
 JQ
 Wl
 au
 Tg
-zk
+qT
 Uz
 JQ
 JQ

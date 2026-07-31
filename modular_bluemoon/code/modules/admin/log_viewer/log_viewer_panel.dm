@@ -142,7 +142,10 @@ GLOBAL_LIST_EMPTY(admin_log_archive_building)
 /datum/admin_log_viewer/proc/fetch_listing_meta(dir_path)
 	if(world.system_type != UNIX || !is_safe_path_for_admin_shell(dir_path))
 		return null
-	var/id = "[world.realtime]_[rand(1, 999999)]"
+	// num2text с 12 знаками обязателен: world.realtime давно больше миллиона, а обычная
+	// интерполяция режет число до шести значащих цифр и уезжает в экспоненту - имя файла
+	// получалось видом admin_log_ls_8.38674e+09_533583.txt
+	var/id = "[num2text(world.realtime, 12)]_[rand(1, 999999)]"
 	var/outfile = "data/admin_log_ls_[id].txt"
 	var/list/so = world.shelleo("stat -c '%s|%Y|%n' -- [shell_single_quote_path(dir_path)]* > [shell_single_quote_path(outfile)]")
 	if(so[SHELLEO_ERRORLEVEL] != 0)

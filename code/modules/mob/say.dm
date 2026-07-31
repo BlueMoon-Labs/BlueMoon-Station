@@ -39,6 +39,8 @@
 		message = stripped_input_or_reflect(src, "", "Say (Indicator)")
 
 	clear_typing_indicator()		// clear it immediately!
+	if(QDELETED(src))	//окно ввода переживает своего моба: гост-кафе успевает его удалить
+		return
 	if(!length(message))
 		return
 	client?.last_activity = world.time
@@ -68,6 +70,10 @@
 		else
 			message = stripped_input_or_reflect(usr, "", "Say")
 
+	//апстрим убрал отсюда clear_typing_indicator: верб теперь зовут и с готовым
+	//текстом, без блокирующего ввода. Гард нужен по-прежнему - ветка else всё ещё спит
+	if(QDELETED(src))	//окно ввода переживает своего моба: гост-кафе успевает его удалить
+		return
 	if(!length(message))
 		return
 	client?.last_activity = world.time
@@ -104,6 +110,8 @@
 
 	clear_typing_indicator()		// clear it immediately!
 
+	if(QDELETED(src))	//окно ввода переживает своего моба: гост-кафе успевает его удалить
+		return
 	if(!length(message))
 		return
 
@@ -134,6 +142,8 @@
 		else
 			message = stripped_multiline_input_or_reflect(usr, "", "Me")
 
+	if(QDELETED(src))	//окно ввода переживает своего моба: гост-кафе успевает его удалить
+		return
 	if(!length(message))
 		return
 
@@ -216,6 +226,8 @@
 		else
 			message = stripped_input_or_reflect(usr, "", "Whisper")
 
+	if(QDELETED(src))	//окно ввода переживает своего моба: гост-кафе успевает его удалить
+		return
 	if(!length(message))
 		return
 	QUEUE_OR_CALL_VERB_FOR(VERB_CALLBACK(src, TYPE_PROC_REF(/mob, whisper), message), SSspeech_controller)
@@ -236,6 +248,8 @@
 		message = stripped_input(src, "", "Whisper (Indicator)")
 
 	clear_typing_indicator()
+	if(QDELETED(src))	//окно ввода переживает своего моба: гост-кафе успевает его удалить
+		return
 	if(!length(message))
 		return
 	QUEUE_OR_CALL_VERB_FOR(VERB_CALLBACK(src, TYPE_PROC_REF(/mob, whisper), message), SSspeech_controller)

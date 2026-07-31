@@ -124,6 +124,12 @@
 	last_spaceport_action = ""
 
 /obj/machinery/computer/arcade/orion_trail/proc/report_player(mob/gamer)
+	//gamers - ассоциация ПО МОБАМ и живёт весь раунд: без чистки автомат держит
+	//каждого, кто когда-то играл, и утаскивает его тело в hard delete
+	for(var/mob/stale as anything in gamers.Copy())
+		if(QDELETED(stale))
+			gamers -= stale
+
 	if(gamers[gamer] == -2)
 		return // enough harassing them
 

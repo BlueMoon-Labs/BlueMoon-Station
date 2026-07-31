@@ -18,7 +18,10 @@ let saveCounter = 0;
 let lastStore = null;
 const DEBOUNCE_MS = 3000;
 const DIRECT_TOPIC_URL_LIMIT = 2048;
-const CHUNK_ENCODED_SIZE = 512;
+// Тот же бюджет, что и в tgui/backend.ts: чанк едет внутри JSON и кодируется в URL повторно,
+// поэтому 512 давали реальный URL около 840 при лимите 2048 - половина бюджета простаивала,
+// а раундтрипов (каждый ждёт подтверждения сервера) было вдвое больше нужного.
+const CHUNK_ENCODED_SIZE = 900;
 
 const splitIntoChunks = (str) => {
   const charSeq = Array.from(str);

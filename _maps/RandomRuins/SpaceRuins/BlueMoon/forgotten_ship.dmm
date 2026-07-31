@@ -1975,11 +1975,11 @@
 /obj/item/flashlight/seclite,
 /obj/item/paper/fluff/ruins/forgottenship/missionobj,
 /obj/item/gun/ballistic/automatic/pistol,
-/obj/item/ammo_box/magazine/pistolm9mm,
-/obj/item/ammo_box/magazine/pistolm9mm,
 /obj/machinery/atmospherics/components/unary/vent_pump{
 	dir = 1
 	},
+/obj/item/ammo_box/magazine/m10mm/ap,
+/obj/item/ammo_box/magazine/m10mm/ap,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "kI" = (
@@ -2210,6 +2210,10 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
 	},
+/obj/item/ammo_box/shotgun/loaded/buckshot,
+/obj/item/ammo_box/shotgun/loaded/buckshot,
+/obj/item/ammo_box/shotgun/loaded/buckshot,
+/obj/item/ammo_box/shotgun/loaded/buckshot,
 /obj/item/ammo_box/shotgun/loaded/buckshot,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_atmos)
@@ -3030,6 +3034,7 @@
 /obj/effect/turf_decal/tile/brown/half{
 	dir = 1
 	},
+/obj/item/ammo_box/c10mm/ap,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_rnd)
 "pi" = (
@@ -3154,6 +3159,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
 	},
+/obj/item/gun/ballistic/shotgun/automatic/combat,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_atmos)
 "pU" = (
@@ -4290,9 +4296,9 @@
 /obj/item/flashlight/seclite,
 /obj/item/paper/fluff/ruins/forgottenship/missionobj,
 /obj/item/gun/ballistic/automatic/pistol,
-/obj/item/ammo_box/magazine/pistolm9mm,
-/obj/item/ammo_box/magazine/pistolm9mm,
 /obj/machinery/atmospherics/components/unary/vent_pump,
+/obj/item/ammo_box/magazine/m10mm/ap,
+/obj/item/ammo_box/magazine/m10mm/ap,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "wl" = (
@@ -5433,8 +5439,10 @@
 /obj/item/storage/box/firingpins/syndicate,
 /obj/structure/window/reinforced/spawner,
 /obj/effect/turf_decal/siding/wood,
-/obj/item/ammo_box/c9mm,
 /obj/item/flashlight/seclite,
+/obj/item/ammo_box/magazine/m10mm/ap,
+/obj/item/ammo_box/magazine/m10mm/ap,
+/obj/item/ammo_box/c10mm/ap,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "Bu" = (
@@ -5520,6 +5528,16 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_atmos)
+"BW" = (
+/obj/effect/turf_decal/tile/brown/half{
+	dir = 1
+	},
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/item/ammo_box/c10mm/ap,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/bluemoon/inteq_forgotten_rnd)
 "BY" = (
 /obj/structure/window/reinforced/spawner/north,
 /obj/effect/turf_decal/trimline/yellow/filled/line{
@@ -7693,11 +7711,11 @@
 /obj/item/flashlight/seclite,
 /obj/item/paper/fluff/ruins/forgottenship/missionobj,
 /obj/item/gun/ballistic/automatic/pistol,
-/obj/item/ammo_box/magazine/pistolm9mm,
-/obj/item/ammo_box/magazine/pistolm9mm,
 /obj/machinery/atmospherics/components/unary/vent_pump{
 	dir = 1
 	},
+/obj/item/ammo_box/magazine/m10mm/ap,
+/obj/item/ammo_box/magazine/m10mm/ap,
 /turf/open/floor/wood,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
 "MR" = (
@@ -8975,8 +8993,6 @@
 /obj/item/clothing/under/inteq/med,
 /obj/item/clothing/under/inteq/maid,
 /obj/item/gun/ballistic/automatic/pistol,
-/obj/item/ammo_box/magazine/pistolm9mm,
-/obj/item/ammo_box/magazine/pistolm9mm,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_outpost)
 "Uo" = (
@@ -9065,12 +9081,10 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_medbay)
 "UO" = (
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
 /mob/living/simple_animal/hostile/nanotrasen/ranged/assault,
+/obj/item/ammo_box/c10mm/ap,
 /turf/open/floor/plasteel/dark,
-/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship)
+/area/ruin/space/has_grav/bluemoon/inteq_forgotten_rnd)
 "UR" = (
 /obj/effect/spawner/structure/window/plastitanium,
 /obj/structure/cable/yellow{
@@ -10117,6 +10131,7 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/item/clothing/suit/space/hardsuit/syndi/inteq,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/inteq_forgotten_atmos)
 "ZZ" = (
@@ -12381,7 +12396,7 @@ hY
 Il
 Nr
 mC
-UO
+xC
 CC
 Nr
 aY
@@ -14042,7 +14057,7 @@ kw
 kw
 kw
 eY
-Cn
+rj
 Cn
 gB
 gB
@@ -14291,8 +14306,8 @@ xS
 xS
 xS
 xS
-Gq
-Xk
+BW
+UO
 iy
 Cn
 Cn

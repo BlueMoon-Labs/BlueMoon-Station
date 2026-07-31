@@ -410,9 +410,11 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 	medical_record_text = "Пациент имеет иррациональный страх перед [selected_phobia]."
 	// BLUEMOON EDIT END
 
+/// cure_trauma_type ждёт ТИП, а не экземпляр: istype(BT, экземпляр) всегда FALSE,
+/// поэтому фобия переживала снятие квирка, а ссылка `phobia` на снятой квирке
+/// оставалась единственным держателем травмы и утаскивала её в hard delete.
 /datum/quirk/phobia/remove()
-	var/mob/living/carbon/human/H = quirk_holder
-	H?.cure_trauma_type(phobia, TRAUMA_RESILIENCE_ABSOLUTE)
+	QDEL_NULL(phobia)
 
 /datum/quirk/mute
 	name = "Немота"
@@ -430,9 +432,9 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 	mute = new
 	H.gain_trauma(mute, TRAUMA_RESILIENCE_ABSOLUTE)
 
+/// Тот же случай, что и у фобии: в cure_trauma_type уходил экземпляр вместо типа.
 /datum/quirk/mute/remove()
-	var/mob/living/carbon/human/H = quirk_holder
-	H?.cure_trauma_type(mute, TRAUMA_RESILIENCE_ABSOLUTE)
+	QDEL_NULL(mute)
 
 /datum/quirk/unstable
 	name = "Нестабильный"

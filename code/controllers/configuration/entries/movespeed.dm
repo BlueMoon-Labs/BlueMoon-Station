@@ -74,14 +74,22 @@
 		for(var/mob/living/L in world)
 			L.disable_intentional_sprint_mode()
 
+// Все три - множители замедления, и все три дробные. /datum/config_entry/number по
+// умолчанию несёт integer = TRUE, а ValidateAndSet() прогоняет значение через round(),
+// который в DM округляет вниз: 0.5 и 0.85 из конфига приезжали нулём, и замедления от
+// стаггера с потерей равновесия в проде не было вовсе. Что это баг, а не задумка, видно
+// по дробному дефолту 0.85 ниже - код умел его, сконфигурировать было нельзя.
 /datum/config_entry/number/sprintless_stagger_slowdown
 	default = 0
+	integer = FALSE
 
 /datum/config_entry/number/sprintless_off_balance_slowdown
 	default = 0.85
+	integer = FALSE
 
 /datum/config_entry/number/melee_stagger_factor
 	default = 1
+	integer = FALSE
 
 /datum/config_entry/number/movedelay/sprint_speed_increase
 	default = 1

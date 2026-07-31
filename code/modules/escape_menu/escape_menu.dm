@@ -61,6 +61,7 @@ GLOBAL_LIST_EMPTY(escape_menus)
 	GLOB.escape_menus -= ckey
 
 	remove_blur()
+	client = null
 
 	return ..()
 
@@ -160,9 +161,21 @@ GLOBAL_LIST_EMPTY(escape_menus)
 	plane = ESCAPE_MENU_PLANE
 	layer = ESCAPE_MENU_DEFAULT_LAYER
 	clear_with_screen = FALSE
+	/// Клиент, которому объект выдан. Штампуется в screen_object_holder при выдаче.
+	var/client/owner_client
 
 /atom/movable/screen/escape_menu/Initialize(mapload, ...)
 	. = ..(mapload)
+
+/// hud_owner здесь намеренно отброшен, поэтому hud и assigned_map всегда null - а значит
+/// обе ветки снятия с экрана в /atom/movable/screen/Destroy() мертвы, и clear_with_screen
+/// = FALSE исключает подметание через /client/clear_screen(). Снимаем себя сами, как это
+/// уже делают диммер того же модуля и /atom/movable/screen/splash: иначе запись в
+/// client.screen переживает qdel объекта и держит его до конца раунда.
+/atom/movable/screen/escape_menu/Destroy()
+	owner_client?.screen -= src
+	owner_client = null
+	return ..()
 
 // The escape menu can be opened before SSatoms
 INITIALIZE_IMMEDIATE(/atom/movable/screen/escape_menu)

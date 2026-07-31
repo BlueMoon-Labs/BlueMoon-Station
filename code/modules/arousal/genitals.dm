@@ -87,27 +87,33 @@
 		genital_flags &= ~(GENITAL_THROUGH_CLOTHES|GENITAL_HIDDEN|GENITAL_UNDIES_HIDDEN)
 	if(owner)
 		owner.exposed_genitals -= src
+	// update = FALSE ставят исключительно вызовы из get_features(), то есть переприменение
+	// уже сохранённых в ДНК настроек, а не действие игрока. Раньше и они писали в LOG_EMOTE:
+	// в прод-раунде это дало 4217 строк из 14284 (29.5% game.log), причём все с "*no key*",
+	// потому что писались они в основном на превью-манекенах.
+	var/log_action = update && owner
 	switch(visibility)
 		if(GEN_VISIBLE_ALWAYS)
 			genital_flags |= GENITAL_THROUGH_CLOTHES
 			if(owner)
-				owner.log_message("Exposed their [src]",LOG_EMOTE)
+				if(log_action)
+					owner.log_message("Exposed their [name]",LOG_EMOTE)
 				owner.exposed_genitals += src
 		if(GEN_VISIBLE_NO_CLOTHES)
-			if(owner)
-				owner.log_message("Hid their [src] under clothes only",LOG_EMOTE)
+			if(log_action)
+				owner.log_message("Hid their [name] under clothes only",LOG_EMOTE)
 		if(GEN_VISIBLE_NO_UNDIES)
 			genital_flags |= GENITAL_UNDIES_HIDDEN
-			if(owner)
-				owner.log_message("Hid their [src] under underwear",LOG_EMOTE)
+			if(log_action)
+				owner.log_message("Hid their [name] under underwear",LOG_EMOTE)
 		if(GEN_VISIBLE_NEVER)
 			genital_flags |= GENITAL_HIDDEN
-			if(owner)
-				owner.log_message("Hid their [src] completely",LOG_EMOTE)
+			if(log_action)
+				owner.log_message("Hid their [name] completely",LOG_EMOTE)
 		if(GEN_ALLOW_EGG_STUFFING)
 			TOGGLE_BITFIELD(genital_flags, GENITAL_CAN_STUFF)
-			if(owner)
-				owner.log_message("Allowed toys and egg stuffing in their [src]",LOG_EMOTE)
+			if(log_action)
+				owner.log_message("Allowed toys and egg stuffing in their [name]",LOG_EMOTE)
 
 	if(update && owner && ishuman(owner)) //recast to use update genitals proc
 		var/mob/living/carbon/human/H = owner

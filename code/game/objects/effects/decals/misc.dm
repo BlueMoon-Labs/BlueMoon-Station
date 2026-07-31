@@ -11,6 +11,8 @@
 	var/range_left = 3
 	var/firstmove = TRUE
 	var/list/hit
+	/// Кто нажал на пульверизатор - для сообщения жертве и админ-лога попадания
+	var/mob/sprayer
 
 /obj/effect/decal/chempuff/blob_act(obj/structure/blob/B)
 	return
@@ -26,6 +28,7 @@
 
 /obj/effect/decal/chempuff/Destroy()
 	hit = null
+	sprayer = null
 	return ..()
 
 /// proc called to handle us hitting something
@@ -47,10 +50,31 @@
 	if(ismob(A) && !living)
 		return
 	hit[A] = TRUE
+	if(living)
+		notify_sprayed(A)
 	reagents.reaction(A, VAPOR)
 	// mobs absorb enough to decrement hits_left, as well as stuff blocking us.
 	if(ismob(A) || bump_hit)
 		hits_left--
+
+/// Облако впитывается сквозь кожу (VAPOR -> reagents.add_reagent), а раньше делало
+/// это молча: жертва не понимала, что на неё вообще что-то попало, и в логах
+/// оставался только сам выстрел из пульверизатора, без пострадавшего.
+/obj/effect/decal/chempuff/proc/notify_sprayed(mob/living/target)
+	if(!reagents?.total_volume)
+		return
+	// run_puff() спит между тайлами, так что стрелявшего успевают удалить.
+	// Ссылку роняем сразу: удалённый источник в атак-логе хуже отсутствующего,
+	// а держать его до конца полёта облака незачем.
+	if(QDELETED(sprayer))
+		sprayer = null
+	target.visible_message(
+		span_danger("На [target] что-то попадает!"),
+		span_userdanger("На вас что-то попало!"),
+	)
+	// log_combat разыменовывает источник без проверки (user.log_message в /proc/log_combat),
+	// поэтому вместо null отдаём само облако: атрибуция теряется, но запись о попадании есть.
+	log_combat(sprayer || src, target, "sprayed", addition = "([reagents.log_list()])")
 
 /obj/effect/decal/chempuff/Crossed(atom/movable/AM, oldloc)
 	. = ..()
