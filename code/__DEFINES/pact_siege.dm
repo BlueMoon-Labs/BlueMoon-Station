@@ -27,4 +27,18 @@ GLOBAL_LIST_INIT(pact_siege_battle_area_types, list(\
 	/area/ruin/space/has_grav/bluemoon/inteq_forgotten_inspection,\
 	/area/ruin/space/has_grav/bluemoon/inteq_forgotten_outpost_shower,\
 	/area/ruin/space/has_grav/bluemoon/inteq_forgotten_permabrig_shower,\
+	/area/ruin/space/has_grav/bluemoon/solfed,\
+	/area/ruin/space/has_grav/bluemoon/solfed_ship,\
+	/area/ruin/space/has_grav/bluemoon/solfed_ship/outpost,\
+	/area/ruin/space/has_grav/bluemoon/solfed_ship/outpost_shower,\
+	/area/ruin/space/has_grav/bluemoon/solfed_ship/cargopod,\
+	/area/ruin/space/has_grav/bluemoon/solfed_ship/vault,\
+	/area/ruin/space/has_grav/bluemoon/solfed_ship/bar,\
+	/area/ruin/space/has_grav/bluemoon/solfed_ship/bridge,\
+	/area/ruin/space/has_grav/bluemoon/solfed_ship/medbay,\
+	/area/ruin/space/has_grav/bluemoon/solfed_ship/atmos,\
+	/area/ruin/space/has_grav/bluemoon/solfed_ship/rnd,\
+	/area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig,\
+	/area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig_shower,\
+	/area/ruin/space/has_grav/bluemoon/solfed_ship/inspection,\
 ))

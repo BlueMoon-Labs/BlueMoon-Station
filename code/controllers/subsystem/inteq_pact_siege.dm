@@ -10,6 +10,8 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	var/end_time = 0
 	/// Observed z of battlefield (for recall heuristics)
 	var/siege_z = 0
+	/// At least one defender registered — avoids instant PACT win before ghost roles spawn
+	var/defenders_ever_registered = FALSE
 	var/datum/gateway_destination/point/pact_siege_battle/battle_dest
 	var/list/datum/weakref/defenders = list()
 	var/list/datum/weakref/attackers = list()
@@ -53,6 +55,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 		return
 	ADD_TRAIT(L, TRAIT_PACT_SIEGE_DEFENDER, PACT_SIEGE_TRAIT_SOURCE)
 	defenders |= WEAKREF(L)
+	defenders_ever_registered = TRUE
 
 /datum/inteq_pact_siege/proc/register_attacker(mob/living/L)
 	if(QDELETED(L) || !isliving(L))
@@ -72,17 +75,36 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 		return null
 	return get_step(GLOB.the_gateway.portal, turn(GLOB.the_gateway.dir, 180))
 
-/datum/inteq_pact_siege/proc/activate(mob/living/user)
+/datum/inteq_pact_siege/proc/register_existing_defenders()
+	for(var/mob/living/L in GLOB.mob_living_list)
+		if(is_on_battlefield(L))
+			register_defender(L)
+
+/datum/inteq_pact_siege/proc/try_roundstart_activate(attempt = 1)
 	if(active)
-		to_chat(user, span_warning("Протокол осады уже активен."))
+		return
+	if(activate(null, roundstart = TRUE))
+		return
+	if(attempt >= 30)
+		message_admins("PACT siege: не удалось автоматически активировать осаду (поле боя не загрузилось).")
+		return
+	addtimer(CALLBACK(src, PROC_REF(try_roundstart_activate), attempt + 1), 10 SECONDS)
+
+/datum/inteq_pact_siege/proc/activate(mob/living/user, roundstart = FALSE)
+	if(active)
+		if(user)
+			to_chat(user, span_warning("Протокол осады уже активен."))
 		return FALSE
-	if(!role_check_inteq(user))
+	if(!roundstart && !role_check_inteq(user))
 		to_chat(user, span_warning("Только персонал InteQ может задействовать этот протокол."))
 		return FALSE
 
 	var/list/turfs = build_battle_turfs()
 	if(!length(turfs))
-		to_chat(user, span_boldwarning("Не найдена карта поля боя (типы зон в pact_siege_battle_area_types). Активация отменена."))
+		if(user)
+			to_chat(user, span_boldwarning("Не найдена карта поля боя (типы зон в pact_siege_battle_area_types). Активация отменена."))
+		if(roundstart)
+			return FALSE
 		message_admins("PACT siege: no battlefield turfs — check GLOB.pact_siege_battle_area_types / mapping.")
 		return FALSE
 
@@ -105,6 +127,12 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 		GLOB.the_gateway.AddElement(/datum/element/pact_siege_red_gateway)
 		GLOB.the_gateway.teleportion_possible = TRUE
 		GLOB.the_gateway.update_appearance()
+		if(roundstart && GLOB.the_gateway.powered() && !GLOB.the_gateway.target)
+			GLOB.the_gateway.activate(battle_dest)
+	else if(roundstart)
+		message_admins("PACT siege: станция без GLOB.the_gateway — красный канал врат недоступен.")
+
+	register_existing_defenders()
 
 	priority_announce(
 		"Внимание, обнаружена активность в области объекта InteQ. Зафиксирована подготовка к запуску БС-двигателей. Вычислены координаты. Приоритетная цель: уничтожить выживших. Всем подразделениям ПАКТ в системе [station_name()] приготовиться к зачистке. Станционные Врата откалиброваны на вражеский объект.",
@@ -114,8 +142,12 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 		null,
 		TRUE,
 	)
-	message_admins("[key_name_admin(user)] активировал(а) протокол осады InteQ/PACT. Поле боя: [length(turfs)] турфов, z=[siege_z].")
-	log_game("PACT siege activated by [key_name(user)]; battlefield turfs=[length(turfs)] z=[siege_z].")
+	if(roundstart)
+		message_admins("PACT siege: автоматическая активация roundstart. Поле боя: [length(turfs)] турфов, z=[siege_z].")
+		log_game("PACT siege auto-activated at roundstart; battlefield turfs=[length(turfs)] z=[siege_z].")
+	else
+		message_admins("[key_name_admin(user)] активировал(а) протокол осады InteQ/PACT. Поле боя: [length(turfs)] турфов, z=[siege_z].")
+		log_game("PACT siege activated by [key_name(user)]; battlefield turfs=[length(turfs)] z=[siege_z].")
 	return TRUE
 
 /datum/inteq_pact_siege/proc/reward_pact_winner(mob/living/L)
@@ -176,6 +208,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	remove_siege_traits()
 	attackers.Cut()
 	defenders.Cut()
+	defenders_ever_registered = FALSE
 	siege_z = 0
 	started_at = 0
 	end_time = 0
@@ -192,7 +225,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 /datum/inteq_pact_siege/proc/process_tick()
 	if(!active)
 		return
-	if(!living_defenders_count())
+	if(defenders_ever_registered && !living_defenders_count())
 		conclude(PACT_SIEGE_SIDE_PACT, "все обороняющиеся InteQ нейтрализованы; ПАКТ выполнил цель.")
 		return
 	if(world.time >= end_time)
@@ -220,9 +253,15 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 /// Processing — win checks
 SUBSYSTEM_DEF(inteq_pact_siege)
 	name = "InteQ PACT Siege"
-	flags = SS_BACKGROUND | SS_NO_INIT
+	flags = SS_BACKGROUND
 	wait = 2 SECONDS
 	runlevels = RUNLEVEL_GAME | RUNLEVEL_POSTGAME
+
+/datum/controller/subsystem/inteq_pact_siege/Initialize()
+	. = ..()
+	// Forgotten ship landmark loads ~60s after roundstart; retry until battlefield exists.
+	addtimer(CALLBACK(GLOB.inteq_pact_siege, PROC_REF(try_roundstart_activate)), 70 SECONDS)
+	return SS_INIT_SUCCESS
 
 /datum/controller/subsystem/inteq_pact_siege/fire(resumed)
 	if(!GLOB.inteq_pact_siege?.active)
