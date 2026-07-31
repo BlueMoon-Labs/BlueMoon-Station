@@ -499,6 +499,15 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	//CONNECT//
 	///////////
 
+/// Через сколько после логина спрашивать скин про окно кэша ассетов. winexists ждёт
+/// ответа клиента, и на плохом канале это секунды - результат нужен только ради текста
+/// предупреждения, так что на пути входа в игру ему делать нечего.
+#define ASSET_CACHE_BROWSER_CHECK_DELAY (10 SECONDS)
+/// Через сколько после логина подгонять вьюпорт. fit_viewport - это winget на размеры
+/// плюс до трёх round-trip'ов коррекции подряд; путь change_view откладывает его ровно
+/// по той же причине.
+#define LOGIN_FIT_VIEWPORT_DELAY (1 SECONDS)
+
 /client/New(TopicData)
 	last_activity = world.time
 	world.SetConfig("APP/admin", ckey, "role=admin")
@@ -780,8 +789,10 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	var/admin_message_note = get_message_output("message", ckey)
 	if(admin_message_note)
 		to_chat(src, admin_message_note)
-	if(!tracked_winexists(src, "asset_cache_browser")) // The client is using a custom skin, tell them.
-		to_chat(src, "<span class='warning'>Unable to access asset cache browser, if you are using a custom skin file, please allow DS to download the updated version, if you are not, then make a bug report. This is not a critical issue but can cause issues with resource downloading, as it is impossible to know when extra resources arrived to you.</span>")
+	// Проверка кастомного скина уехала в таймер: winexists усыпляет прок до ответа
+	// клиента, а в прод-раунде один такой вызов стоил 5.5 секунды - и всё остальное
+	// в New() эти секунды ждало.
+	addtimer(CALLBACK(src, PROC_REF(warn_if_no_asset_cache_browser)), ASSET_CACHE_BROWSER_CHECK_DELAY)
 
 	// Тултип больше не заводится на логине: его New() шлёт клиенту jquery (95 КБ),
 	// и это единственный ассет, который межсессионный кэш пропустить не может -
@@ -816,8 +827,21 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	view_size.resetFormat()
 	view_size.setZoomMode()
 	normalize_ui_layout()
-	fit_viewport()
+	// Подгонка вьюпорта - самая тяжёлая пачка round-trip'ов на логине: winget на размеры
+	// плюс цикл коррекции. Откладываем, как это уже делает change_view.
+	addtimer(CALLBACK(src, VERB_REF(fit_viewport)), LOGIN_FIT_VIEWPORT_DELAY)
 	Master.UpdateTickRate()
+
+/// Отсутствие окна кэша ассетов означает кастомный скин - предупреждаем и только.
+/// Зовётся таймером после логина: winexists ждёт ответа скина, и на входе в игру
+/// такое ожидание не нужно никому.
+/client/proc/warn_if_no_asset_cache_browser()
+	if(tracked_winexists(src, "asset_cache_browser"))
+		return
+	to_chat(src, "<span class='warning'>Unable to access asset cache browser, if you are using a custom skin file, please allow DS to download the updated version, if you are not, then make a bug report. This is not a critical issue but can cause issues with resource downloading, as it is impossible to know when extra resources arrived to you.</span>")
+
+#undef ASSET_CACHE_BROWSER_CHECK_DELAY
+#undef LOGIN_FIT_VIEWPORT_DELAY
 
 //////////////
 //DISCONNECT//
@@ -1774,7 +1798,9 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		var/mob/living/M = mob
 		M.update_damage_hud()
 	if (prefs.auto_fit_viewport)
-		addtimer(CALLBACK(src, VERB_REF(fit_viewport), 10)) //Delayed to avoid wingets from Login calls.
+		// Отложено, чтобы не дёргать winget во время логина. Задержка обязана стоять
+		// аргументом addtimer: внутри CALLBACK она уходит в сам верб, и таймер срабатывает сразу.
+		addtimer(CALLBACK(src, VERB_REF(fit_viewport)), 1 SECONDS)
 	SEND_SIGNAL(mob, COMSIG_MOB_CLIENT_CHANGE_VIEW, src, old_view, actualview)
 
 /client/proc/generate_clickcatcher()
