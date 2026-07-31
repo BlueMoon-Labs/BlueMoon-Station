@@ -2199,6 +2199,12 @@
 	},
 /turf/open/floor/plasteel,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
+"bOx" = (
+/obj/structure/chair/comfy/black{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/mine/living_quarters)
 "bOz" = (
 /obj/machinery/camera{
 	c_tag = "Infirmary";
@@ -2206,7 +2212,6 @@
 	network = list("mine")
 	},
 /obj/machinery/vending/wallmed/directional/west,
-/obj/structure/bed/roller/heavy,
 /turf/open/floor/plasteel/white,
 /area/mine/living_quarters)
 "bOE" = (
@@ -4323,6 +4328,18 @@
 	},
 /turf/open/floor/plasteel,
 /area/mine/xenoarch_area_a)
+"dyF" = (
+/obj/structure/rack,
+/obj/item/roller/heavy{
+	pixel_y = -2;
+	pixel_x = -3
+	},
+/obj/item/roller{
+	pixel_y = 10;
+	pixel_x = 6
+	},
+/turf/open/floor/plasteel/white,
+/area/mine/living_quarters)
 "dyQ" = (
 /obj/structure/fence{
 	dir = 4
@@ -5227,6 +5244,9 @@
 /area/mine/laborcamp/security)
 "ekz" = (
 /obj/machinery/light,
+/obj/structure/chair/comfy/black{
+	dir = 8
+	},
 /turf/open/floor/plasteel,
 /area/mine/living_quarters)
 "ekO" = (
@@ -23924,6 +23944,12 @@
 "sZN" = (
 /turf/closed/mineral/random/volcanic,
 /area/lavaland/surface/outdoors/unexplored/danger)
+"sZO" = (
+/obj/structure/chair/comfy/black{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/mine/living_quarters)
 "sZX" = (
 /obj/structure/table,
 /obj/item/reagent_containers/food/drinks/coffee,
@@ -131469,7 +131495,7 @@ gIl
 gIl
 gIl
 rRM
-cLH
+bOx
 mOR
 xGO
 cLH
@@ -131983,7 +132009,7 @@ gIl
 gIl
 gIl
 rRM
-cLH
+sZO
 cLH
 kXR
 cLH
@@ -133790,9 +133816,9 @@ hGR
 okz
 abn
 abn
+dyF
 paI
 nVU
-abn
 abn
 llq
 llq
@@ -134050,7 +134076,7 @@ abn
 abn
 abn
 abn
-llq
+abn
 llq
 gIl
 gIl
