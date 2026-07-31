@@ -1,4 +1,4 @@
-#define LOWPOP_FAMILIES_COUNT 50
+#define FAMILIES_ROUNDSTART_COUNT 5 // BLUEMOON ADD - total roundstart family members, split evenly across gangs in post_setup_analogue()
 
 #define TWO_STARS_HIGHPOP 11
 #define THREE_STARS_HIGHPOP 16
@@ -114,7 +114,7 @@ GLOBAL_VAR(families_override_theme)
 		current_theme = new theme_to_use
 	else
 		current_theme = new GLOB.families_override_theme
-	var/gangsters_to_make = length(current_theme.involved_gangs) * current_theme.starting_gangsters
+	var/gangsters_to_make = FAMILIES_ROUNDSTART_COUNT // BLUEMOON CHANGE - was length(current_theme.involved_gangs) * current_theme.starting_gangsters
 	for(var/i in 1 to gangsters_to_make)
 		if (!antag_candidates.len)
 			break
@@ -183,8 +183,7 @@ GLOBAL_VAR(families_override_theme)
 	var/gangsters_to_assign = length(gangbangers)
 
 	// Fill the families in rounds instead of exhausting one family before starting the next.
-	// The ruleset accepts three candidates, and every theme has two or three competing families.
-	// Assigning a full starting roster at once could therefore start the mode with only one family.
+	// FAMILIES_ROUNDSTART_COUNT is split evenly across competing families (e.g. 5 -> 3+2 in a two-family theme).
 	for(var/index in 1 to gangsters_to_assign)
 		var/gang_to_use = gangs_to_use[((index - 1) % amount_of_gangs) + 1]
 		var/datum/mind/gangster_mind = pick_n_take(gangbangers)
