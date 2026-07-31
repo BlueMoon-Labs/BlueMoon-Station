@@ -87,7 +87,7 @@
 		/obj/item/gps/medical,
 		/obj/item/pinpointer/crew,
 		/obj/item/survivalcapsule,
-		/obj/item/clothing/glasses/meson/night,
+		/obj/item/clothing/glasses/meson,
 		/obj/item/tank/internals/oxygen,
 		/obj/item/clothing/mask/breath,
 		/obj/item/defibrillator/loaded,
