@@ -19150,6 +19150,10 @@
 	pixel_x = -3;
 	pixel_y = -3
 	},
+/obj/item/storage/firstaid/regular{
+	pixel_x = -6;
+	pixel_y = -6
+	},
 /turf/open/floor/plasteel/white,
 /area/mine/living_quarters)
 "paJ" = (
