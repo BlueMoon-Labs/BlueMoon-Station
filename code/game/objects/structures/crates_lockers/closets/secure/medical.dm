@@ -90,6 +90,9 @@
 		/obj/item/clothing/glasses/meson/night,
 		/obj/item/tank/internals/oxygen,
 		/obj/item/clothing/mask/breath,
+		/obj/item/defibrillator/loaded,
+		/obj/item/roller,
+		/obj/item/roller/heavy,
 	)
 	generate_items_inside(items_inside, src)
 
