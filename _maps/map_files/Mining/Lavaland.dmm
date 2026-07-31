@@ -2206,6 +2206,7 @@
 	network = list("mine")
 	},
 /obj/machinery/vending/wallmed/directional/west,
+/obj/structure/bed/roller/heavy,
 /turf/open/floor/plasteel/white,
 /area/mine/living_quarters)
 "bOE" = (
