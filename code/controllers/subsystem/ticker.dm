@@ -339,11 +339,18 @@ SUBSYSTEM_DEF(ticker)
 
 	CHECK_TICK
 	GLOB.start_landmarks_list = shuffle(GLOB.start_landmarks_list) //Shuffle the order of spawn points so they dont always predictably spawn bottom-up and right-to-left
+	// Порядок стадий менять нельзя: экипировка ждёт созданных персонажей, манифест -
+	// экипированных, перенос ключей - записанных в манифест. Уступать тик между
+	// стадиями и внутри них - можно, каждая стадия сама по себе атомарной не является.
 	create_characters() //Create player characters
+	CHECK_TICK
 	collect_minds()
+	CHECK_TICK
 	equip_characters()
+	CHECK_TICK
 
 	GLOB.data_core.manifest()
+	CHECK_TICK
 
 	transfer_characters()	//transfer keys to the new mobs
 
@@ -447,66 +454,94 @@ SUBSYSTEM_DEF(ticker)
 		if(epi)
 			explosion(epi, 512, 0, 0, 0, TRUE, TRUE, 0, TRUE)
 
+// Все четыре стадии ниже уступают тик после каждого игрока. Обход списка в DM идёт
+// по снапшоту, снятому на входе в цикл, и снапшот переживает сон - выпавший из
+// GLOB.player_list игрок из обхода не исчезает и соседей за собой не утаскивает.
+// Обратная сторона та же: за время сна игрок успевает отключиться, а его моб - уйти
+// в qdel, поэтому валидность проверяется заново на каждой итерации. Один рантайм на
+// мёртвой ссылке обрывает стадию для всех, кто стоит в списке дальше.
 /datum/controller/subsystem/ticker/proc/create_characters()
 	for(var/mob/dead/new_player/player in GLOB.player_list)
-		if(player.ready == PLAYER_READY_TO_PLAY && player.mind)
-			GLOB.joined_player_list += player.ckey
-			player.create_character(FALSE)
-			if(player.new_character && player.client && player.client.prefs) // we cannot afford a runtime, ever
-				LAZYOR(player.client.prefs.slots_joined_as, player.client.prefs.default_slot)
-				LAZYOR(player.client.prefs.characters_joined_as, player.new_character.real_name)
-			else
-				stack_trace("WARNING: Either a player did not have a new_character, did not have a client, or did not have preferences. This is VERY bad.")
 		CHECK_TICK
+		if(QDELETED(player) || player.ready != PLAYER_READY_TO_PLAY || !player.mind)
+			continue
+		// create_character разыменует client.prefs без проверок - без клиента туда нельзя
+		if(!player.client)
+			continue
+		GLOB.joined_player_list += player.ckey
+		player.create_character(FALSE)
+		if(player.new_character && player.client && player.client.prefs) // we cannot afford a runtime, ever
+			LAZYOR(player.client.prefs.slots_joined_as, player.client.prefs.default_slot)
+			LAZYOR(player.client.prefs.characters_joined_as, player.new_character.real_name)
+		else
+			stack_trace("WARNING: Either a player did not have a new_character, did not have a client, or did not have preferences. This is VERY bad.")
 
 /datum/controller/subsystem/ticker/proc/collect_minds()
 	for(var/mob/dead/new_player/P in GLOB.player_list)
-		if(P.new_character && P.new_character.mind)
-			SSticker.minds += P.new_character.mind
 		CHECK_TICK
+		if(QDELETED(P))
+			continue
+		var/mob/living/character = P.new_character
+		if(QDELETED(character) || !character.mind)
+			continue
+		SSticker.minds += character.mind
 
 
 /datum/controller/subsystem/ticker/proc/equip_characters()
 	var/captainless=1
 	for(var/mob/dead/new_player/N in GLOB.player_list)
-		var/mob/living/carbon/human/player = N.new_character
-		if(istype(player) && player.mind && player.mind.assigned_role)
-			var/datum/job/J = SSjob.GetJob(player.mind.assigned_role)
-			if(J)
-				J.standard_assign_skills(player.mind)
-			if(player.mind.assigned_role == "Captain")
-				captainless=0
-			if(player.mind.assigned_role != player.mind.special_role)
-				SSjob.EquipRank(N, player.mind.assigned_role, 0)
-				if(CONFIG_GET(flag/roundstart_traits) && ishuman(N.new_character))
-					SSquirks.AssignQuirks(N.new_character, N.client, TRUE, TRUE, SSjob.GetJob(player.mind.assigned_role), FALSE, N)
-				//sandstorm change
-				if(ishuman(N.new_character))
-					SSlanguage.AssignLanguage(N.new_character, N.client)
-				//
-			N.client.prefs.post_copy_to(player)
 		CHECK_TICK
+		if(QDELETED(N))
+			continue
+		var/mob/living/carbon/human/player = N.new_character
+		if(!istype(player) || QDELETED(player) || !player.mind || !player.mind.assigned_role)
+			continue
+		var/datum/job/J = SSjob.GetJob(player.mind.assigned_role)
+		if(J)
+			J.standard_assign_skills(player.mind)
+		if(player.mind.assigned_role == "Captain")
+			captainless=0
+		if(player.mind.assigned_role != player.mind.special_role)
+			SSjob.EquipRank(N, player.mind.assigned_role, 0)
+			if(CONFIG_GET(flag/roundstart_traits) && ishuman(N.new_character))
+				SSquirks.AssignQuirks(N.new_character, N.client, TRUE, TRUE, SSjob.GetJob(player.mind.assigned_role), FALSE, N)
+			//sandstorm change
+			if(ishuman(N.new_character))
+				SSlanguage.AssignLanguage(N.new_character, N.client)
+			//
+		// Экипировка отвязана от клиента, а вот post_copy_to без префов не имеет смысла:
+		// отвалившийся игрок доедет до конца стадии, но уже без обращения к пустоте
+		N.client?.prefs?.post_copy_to(player)
 	if(captainless)
 		for(var/mob/dead/new_player/N in GLOB.player_list)
-			if(N.new_character)
-				to_chat(N, "Captainship not forced on anyone.")
 			CHECK_TICK
+			if(QDELETED(N) || !N.new_character)
+				continue
+			to_chat(N, "Captainship not forced on anyone.")
 
 /datum/controller/subsystem/ticker/proc/transfer_characters()
 	var/list/livings = list()
+	// Единственная стадия старта раунда, которая шла вообще без уступки тика: перенос
+	// ключа, qdel лобби-моба, сплеш-экран и init_verbs на каждого из девяноста игроков
+	// уходили одним неразрывным куском. Снапшот обхода делает qdel по ходу цикла
+	// безопасным, но после сна лобби-моб может быть удалён уже без нашего участия.
 	for(var/mob/dead/new_player/player in GLOB.mob_list)
+		CHECK_TICK
+		if(QDELETED(player))
+			continue
 		var/mob/living = player.transfer_character()
-		if(living)
-			qdel(player)
-			living.mob_transforming = TRUE
-			if(living.client)
-				if (living.client.prefs && living.client.prefs.auto_ooc)
-					if (living.client.prefs.chat_toggles & CHAT_OOC)
-						living.client.prefs.chat_toggles ^= CHAT_OOC
-				var/atom/movable/screen/splash/S = new(null, living.client, TRUE)
-				S.Fade(TRUE)
-				living.client.init_verbs()
-			livings += living
+		if(!living)
+			continue
+		qdel(player)
+		living.mob_transforming = TRUE
+		if(living.client)
+			if (living.client.prefs && living.client.prefs.auto_ooc)
+				if (living.client.prefs.chat_toggles & CHAT_OOC)
+					living.client.prefs.chat_toggles ^= CHAT_OOC
+			var/atom/movable/screen/splash/S = new(null, living.client, TRUE)
+			S.Fade(TRUE)
+			living.client.init_verbs()
+		livings += living
 	if(livings.len)
 		addtimer(CALLBACK(src, PROC_REF(release_characters), livings), 30, TIMER_CLIENT_TIME)
 
