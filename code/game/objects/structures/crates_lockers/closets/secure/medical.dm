@@ -75,7 +75,7 @@
 
 /obj/structure/closet/secure_closet/paramedic_mine
 	name = "Emergency rescue locker"
-	desc = "Защищенный шкафчик с аварийно-спасательным оборудование для поисков и эвакуации шахтеров."
+	desc = "Защищенный шкафчик с аварийно-спасательным оборудованием для поисков и эвакуации шахтеров."
 	req_access = list(ACCESS_MEDICAL)
 	icon_state = "emt_secure"
 	max_integrity = 500
