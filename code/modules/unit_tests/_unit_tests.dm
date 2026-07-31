@@ -186,6 +186,7 @@
 
 /// BLUEMOON TESTS
 #include "admin_log_viewer.dm"
+#include "atom_hud_membership.dm"
 #include "atom_hud_perf.dm"
 #include "atmos_excited_group_lifecycle.dm"
 #include "atmos_pump_solver.dm"
