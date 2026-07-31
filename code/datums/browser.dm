@@ -171,12 +171,16 @@
 	if (use_onclose)
 		setup_onclose()
 
+/// Сколько раз ждём появления окна у клиента. Каждая попытка - round-trip winexists до
+/// скина, у медленного клиента одна такая пачка отъедала десятки секунд.
+#define BROWSER_ONCLOSE_ATTEMPTS 3
+
 /datum/browser/proc/setup_onclose()
 	set waitfor = 0 //winexists sleeps, so we don't need to.
 	var/client/browser_client = resolve_client()
 	if(!browser_client)
 		return
-	for (var/i in 1 to 10)
+	for (var/i in 1 to BROWSER_ONCLOSE_ATTEMPTS)
 		browser_client = resolve_client()
 		if(!browser_client)
 			return
@@ -568,3 +572,5 @@
 	// so just reset the user mob's machine var
 	if(src?.mob)
 		src.mob.unset_machine()
+
+#undef BROWSER_ONCLOSE_ATTEMPTS
