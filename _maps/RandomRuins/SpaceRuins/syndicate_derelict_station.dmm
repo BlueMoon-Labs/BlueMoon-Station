@@ -921,10 +921,9 @@
 /area/ruin/space/has_grav/syndiederelict/engineering)
 "rC" = (
 /obj/structure/table,
-/obj/item/radio/intercom{
+/obj/item/radio/intercom/command{
 	broadcasting = 0;
 	dir = 8;
-	freerange = 1;
 	listening = 1;
 	name = "Syndicate Listening Channel"
 	},
@@ -968,10 +967,9 @@
 /area/ruin/space/has_grav/syndiederelict/engineering)
 "sv" = (
 /obj/structure/table,
-/obj/item/radio/intercom{
+/obj/item/radio/intercom/command{
 	broadcasting = 0;
 	dir = 8;
-	freerange = 1;
 	listening = 1;
 	name = "Syndicate Listening Channel"
 	},
@@ -1922,10 +1920,9 @@
 /area/ruin/space/has_grav/syndiederelict/hydroponics)
 "KY" = (
 /obj/structure/table,
-/obj/item/radio/intercom{
+/obj/item/radio/intercom/command{
 	broadcasting = 1;
 	dir = 8;
-	freerange = 1;
 	listening = 0;
 	name = "Syndicate Broadcast Channel"
 	},

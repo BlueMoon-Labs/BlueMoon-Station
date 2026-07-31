@@ -282,7 +282,7 @@
 
 /datum/ai_laws/pai
 	name = "pAI Directives"
-	zeroth = ("Serve your master.")
+	zeroth = ("Служи своему мастеру.")
 	supplied = list("None.")
 
 /* Initializers */
@@ -312,6 +312,11 @@
 
 /datum/ai_laws/proc/set_laws_config()
 	var/list/law_ids = CONFIG_GET(keyed_list/random_laws)
+
+	if(HAS_TRAIT(SSstation, STATION_TRAIT_APERTURE_SCIENCE))
+		var/datum/ai_laws/glados/templaws = new
+		inherent = templaws.inherent
+		return
 
 	if(HAS_TRAIT(SSstation, STATION_TRAIT_UNIQUE_AI))
 		pick_weighted_lawset()

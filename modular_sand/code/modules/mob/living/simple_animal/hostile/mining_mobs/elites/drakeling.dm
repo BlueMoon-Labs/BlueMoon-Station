@@ -106,38 +106,57 @@
 
 //Drakeling actions
 /mob/living/simple_animal/hostile/asteroid/elite/drakeling/proc/lava_moat()
+	if(QDELETED(src) || !isturf(loc))
+		return FALSE
 	ranged_cooldown = world.time + 25
 	visible_message("<span class='boldwarning'>[src] spews lava around themselves! Get back!</span>")
 	for(var/turf/T in oview(1, src))
 		new /obj/effect/temp_visual/lava_warning/drakeling(T, 40)
+	return TRUE
 
 /mob/living/simple_animal/hostile/asteroid/elite/drakeling/proc/lava_around()
+	if(QDELETED(src) || !isturf(loc))
+		return FALSE
 	ranged_cooldown = world.time + 50
 	for(var/d in GLOB.cardinals)
 		INVOKE_ASYNC(src, PROC_REF(lava_wall), d, 5)
+	return TRUE
 
 /mob/living/simple_animal/hostile/asteroid/elite/drakeling/proc/fire_spew()
+	if(QDELETED(src) || !isturf(loc))
+		return FALSE
 	ranged_cooldown = world.time + 25
 	visible_message("<span class='boldwarning'>[src] spews fire!</span>")
 	playsound(src,'sound/magic/Fireball.ogg', 200, 1)
 	sleep(5)
-	fire_wall(src.dir, 10)
+	if(QDELETED(src) || !isturf(loc))
+		return FALSE
+	return fire_wall(src.dir, 10)
 
 /mob/living/simple_animal/hostile/asteroid/elite/drakeling/proc/fire_moat()
+	if(QDELETED(src) || !isturf(loc))
+		return FALSE
 	ranged_cooldown = world.time + 100
 	playsound(src,'sound/magic/Fireball.ogg', 200, 1)
 	visible_message("<span class='boldwarning'>[src] violently puffs smoke!They're going to make a fire moat!</span>")
 	sleep(5)
+	if(QDELETED(src) || !isturf(loc))
+		return FALSE
 	for(var/d in GLOB.alldirs)
 		INVOKE_ASYNC(src, PROC_REF(fire_wall), d, 10)
+	return TRUE
 
 // Drakeling helpers
 
 /mob/living/simple_animal/hostile/asteroid/elite/drakeling/proc/fire_wall(dir, range)
+	if(QDELETED(src) || !isturf(loc))
+		return FALSE
 	var/list/hitlist = list(src)
 	var/turf/T = get_turf(src)
 	for(var/i in 1 to range)
-		new /obj/effect/hotspot(T)
+		if(QDELETED(src) || !T)
+			return FALSE
+		T.ensure_hotspot()
 		T.hotspot_expose(700,50,1)
 		for(var/mob/living/L in T.contents)
 			if(L in hitlist || (L == src))
@@ -148,13 +167,19 @@
 				to_chat(L, "<span class='userdanger'>You're hit by [src]'s fire breath!</span>")
 		T = get_step(T, dir)
 		sleep(1)
+	return TRUE
 
 /mob/living/simple_animal/hostile/asteroid/elite/drakeling/proc/lava_wall(dir, range)
+	if(QDELETED(src) || !isturf(loc))
+		return FALSE
 	var/turf/T = get_turf(src)
 	for(var/i in 1 to range)
+		if(QDELETED(src) || !T)
+			return FALSE
 		new /obj/effect/temp_visual/lava_warning/drakeling(T, 40)
 		T = get_step(T, dir)
 		sleep(2)
+	return TRUE
 
 /obj/effect/temp_visual/lava_warning/drakeling
 	duration = 7

@@ -122,7 +122,7 @@
 	p13target_emote = PLUG13_EMOTE_PENIS
 
 /datum/interaction/lewd/simplified_interaction/TK_interaction/penis/text_picker(mob/living/user, mob/living/partner)
-	var/has_penis = partner.has_penis()
+	var/has_penis = partner.has_penis(TRUE)
 	start_text = "Что-то обхватывает [has_penis ? "член" : "дилдо"] TARGET."
 	help_text = "Что-то проходится по [has_penis ? "член" : "дилдо"] TARGET, [has_penis ? "" : "безуспешно "]стараясь доставить удовольствие."
 	grab_text = "Что-то бодро скользит по [has_penis ? "член" : "дилдо"] TARGET."

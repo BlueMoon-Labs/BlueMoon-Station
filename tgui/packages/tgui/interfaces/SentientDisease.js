@@ -1,4 +1,4 @@
-import { Fragment } from 'inferno';
+import { Fragment, useState } from 'react';
 
 import { useBackend, useLocalState } from '../backend';
 import {
@@ -1313,8 +1313,8 @@ const VirusMorphologyPanel = (props) => {
                 </path>
               );
             })}
-            </g>
           </g>
+            </g>
           </g>
 
           <text
@@ -1634,18 +1634,16 @@ const HostsTab = (props) => {
   );
 };
 
-export const SentientDisease = (props, context) => {
-  const { act, data } = useBackend(context);
-  const [tab, setTab] = useLocalState(context, 'tab', 'overview');
+export const SentientDisease = (props) => {
+  const { act, data } = useBackend();
+  const [tab, setTab] = useState('overview');
 
   const abilities = (data.abilities || [])
     .map(localizeAbility)
     .sort(sortAbilities);
   const purchasedAbilities = abilities.filter(ability => ability.purchased);
   const selectedFallback = purchasedAbilities[0] || abilities[0] || null;
-  const [selectedAbilityId, setSelectedAbility] = useLocalState(
-    context,
-    'selected_ability',
+  const [selectedAbilityId, setSelectedAbility] = useLocalState('selected_ability',
     selectedFallback?.id || null,
   );
 
@@ -1796,7 +1794,7 @@ export const SentientDisease = (props, context) => {
               <FooterStat
                 label="ДНК"
                 content={(
-                  <Fragment>
+                  <>
                     <ProgressBar
                       value={data.total_points ? clamp((data.points || 0) / data.total_points, 0, 1) : 0}
                       color="average"
@@ -1804,7 +1802,7 @@ export const SentientDisease = (props, context) => {
                     <Box mt={0.35} bold color="#fff7f9">
                       {data.points || 0} / {data.total_points || 0}
                     </Box>
-                  </Fragment>
+                  </>
                 )}
               />
               <FooterStat label="Заразность" value={statRatio(stats.transmission || 0)} color="bad" />
@@ -1813,7 +1811,7 @@ export const SentientDisease = (props, context) => {
               <FooterStat
                 label="Мутация"
                 content={(
-                  <Fragment>
+                  <>
                     <ProgressBar
                       value={data.can_adapt ? 1 : 0}
                       color={data.can_adapt ? 'good' : 'bad'}
@@ -1821,7 +1819,7 @@ export const SentientDisease = (props, context) => {
                     <Box mt={0.35} bold color="#fff7f9">
                       {data.can_adapt ? 'Готово' : formatTime(data.adaptation_ready_in)}
                     </Box>
-                  </Fragment>
+                  </>
                 )}
               />
             </div>

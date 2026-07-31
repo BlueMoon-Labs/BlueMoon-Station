@@ -273,13 +273,12 @@
 				LH.sac_targetter.sac_targetted.Remove(H.real_name)
 			LH.sac_targetter = null
 			EC.total_sacrifices++
-			//deep contents search: get_all_gear() can't see inside MOD storage modules and the like, eating the sacrifice reward
-			for(var/obj/item/forbidden_book/FB in carbon_user.GetAllContents(/obj/item/forbidden_book))
+			var/obj/item/forbidden_book/FB = EC.get_forbidden_book()
+			if(FB)
 				FB.charge += 2
-				break
 
 		if(!LH.target)
-			var/datum/objective/A = new
+			var/datum/objective/sacrifice_ecult/A = new
 			A.owner = user.mind
 			var/list/targets = list()
 			var/list/target_blacklist = list()

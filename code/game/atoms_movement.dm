@@ -177,6 +177,21 @@
 /atom/movable/proc/Moved(atom/OldLoc, Dir, Forced = FALSE)
 	SHOULD_CALL_PARENT(TRUE)
 	SEND_SIGNAL(src, COMSIG_MOVABLE_MOVED, OldLoc, Dir, Forced)
+
+	//спатиал-грид: перекладываем содержимое наших каналов при пересечении
+	//границы ячеек (для большинства movables это одна null-проверка ключа)
+	if(HAS_SPATIAL_GRID_CONTENTS(src))
+		var/turf/old_turf = get_turf(OldLoc)
+		var/turf/new_turf = get_turf(src)
+		if(old_turf && new_turf && (old_turf.z != new_turf.z \
+			|| GET_SPATIAL_INDEX(old_turf.x) != GET_SPATIAL_INDEX(new_turf.x) \
+			|| GET_SPATIAL_INDEX(old_turf.y) != GET_SPATIAL_INDEX(new_turf.y)))
+			SSspatial_grid.exit_cell(src, old_turf)
+			SSspatial_grid.enter_cell(src, new_turf)
+		else if(old_turf && !new_turf)
+			SSspatial_grid.exit_cell(src, old_turf)
+		else if(new_turf && !old_turf)
+			SSspatial_grid.enter_cell(src, new_turf)
 	// Diagonal intents are split into two cardinals inside Move(); defer newtonian to one call at split end (see above).
 	if (!inertia_moving && !HAS_TRAIT(src, TRAIT_HYPERSPACED) && !moving_diagonally)
 		inertia_next_move = world.time + inertia_move_delay
@@ -196,6 +211,21 @@
 	. = ..()
 	SEND_SIGNAL(src, COMSIG_MOVABLE_CROSSED, AM)
 
+/**
+ * Спрашивают, когда что-то СОБИРАЕТСЯ покинуть турф, на котором мы стоим -
+ * вернуть FALSE значит не пустить. Так работают бордюрные объекты: боковое окно
+ * или перила пропускают во все стороны, кроме своей.
+ *
+ * Зовётся только из [/turf/Exit] и только для атомов с `blocks_exit_checks`.
+ * Нативный проход BYOND по contents отключён (см. [/atom/Exit]), потому что он
+ * дёргал этот прок на КАЖДОМ атоме в турфе при каждом шаге - 553k вызовов за 78
+ * секунд раунда 9800, притом что запретить выход не могло почти ничто.
+ *
+ * Поэтому переопределение Uncross() на типе, у которого `blocks_exit_checks`
+ * выключен (любой /mob, любой /obj/item), НЕ РАБОТАЕТ - оно просто не будет
+ * вызвано. Нужен запрет выхода на таком типе - вешай COMSIG_ATOM_EXIT через
+ * /datum/element/connect_loc, это дешевле и не требует обхода contents.
+ */
 /atom/movable/Uncross(atom/movable/AM, atom/newloc)
 	. = ..()
 	if(SEND_SIGNAL(src, COMSIG_MOVABLE_UNCROSS, AM) & COMPONENT_MOVABLE_BLOCK_UNCROSS)
@@ -223,6 +253,12 @@
 	for (var/atom/movable/AM as anything in src) // Notify contents of Z-transition. This can be overridden IF we know the items contents do not care.
 		AM.onTransitZ(old_z,new_z)
 
+///Separate from COMSIG_MOVABLE_Z_CHANGED: its older listeners do not all accept a null destination.
+/atom/movable/proc/onEnteredNullspace(old_z)
+	SEND_SIGNAL(src, COMSIG_MOVABLE_ENTERED_NULLSPACE, old_z, null)
+	for(var/atom/movable/movable_content as anything in src)
+		movable_content.onEnteredNullspace(old_z)
+
 ///Proc to modify the movement_type and hook behavior associated with it changing.
 /atom/movable/proc/setMovetype(newval)
 	if(movement_type == newval)
@@ -248,6 +284,12 @@
 /atom/movable/proc/doMove(atom/destination)
 	. = FALSE
 	if(destination)
+		// Возврат qdel-нутого мувера в мир = вечный пин ссылкой из contents турфа
+		// (класс "post-qdel forceMove" по уликам warnfail раунда 9746: обсерверы,
+		// оффхенды). Отказываем и именуем виновника - стек тут синхронный.
+		if(QDELETED(src))
+			stack_trace("doMove qdel-нутого [type] в [destination] ([destination.type])")
+			return
 		if(pulledby)
 			pulledby.stop_pulling()
 		var/atom/oldloc = loc
@@ -290,11 +332,21 @@
 		. = TRUE
 		if (loc)
 			var/atom/oldloc = loc
+			var/turf/old_turf = get_turf(oldloc)
 			var/area/old_area = get_area(oldloc)
+			//эта ветка не зовёт Moved(), поэтому спатиал-грид чистим сами:
+			//иначе уход в nullspace оставит вечную ссылку в старой ячейке,
+			//а возврат зарегистрирует вторую (см. Moved в этом файле)
+			if(HAS_SPATIAL_GRID_CONTENTS(src))
+				var/turf/old_grid_turf = get_turf(oldloc)
+				if(old_grid_turf)
+					SSspatial_grid.exit_cell(src, old_grid_turf)
 			oldloc.Exited(src, null)
 			if(old_area)
 				old_area.Exited(src, null)
-		loc = null
+			loc = null
+			if(old_turf)
+				onEnteredNullspace(old_turf.z)
 
 /**
  * Called whenever an object moves and by mobs when they attempt to move themselves through space

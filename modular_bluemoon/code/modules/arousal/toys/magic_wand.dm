@@ -12,6 +12,14 @@
 	var/on = 0
 	var/mode = 2
 	var/intencity = 12
+	var/timer = 0
+	var/interval = 5
+	var/mob/living/carbon/Mob = null
+
+/obj/item/magicwand/Destroy()
+	STOP_PROCESSING(SSobj,src)
+	Mob = null
+	. = ..()
 
 /obj/item/magicwand/update_icon()
 	if(on)
@@ -62,12 +70,12 @@
 	if(ishuman(M) && (M?.client?.prefs?.toggles & VERB_CONSENT))
 		switch(user.zone_selected)
 			if(BODY_ZONE_PRECISE_GROIN)
-				if(M.has_vagina(REQUIRE_EXPOSED))
+				if(M.has_vagina() == HAS_EXPOSED_GENITAL)
 					message = (user == M) ? pick("крепко держит '\the [src]' и подставляет к своей киске.", "использует '\the [src]'для стимуляции своей киски", "постанывает и прижимается к '\the [src]' киской.") : pick("стимулирует киску <b>[M]</b> с помощью '\the [src]'", "подставляет '\the [src]' прямо к киске <b>[M]</b>.")
-				if(M.has_penis(REQUIRE_EXPOSED))
+				if(M.has_penis() == HAS_EXPOSED_GENITAL)
 					message = (user == M) ? pick("крепко держит '\the [src]' и подставляет к своему члену.","использует '\the [src]' для стимуляции своего члена.", "постанывает и прижимается к '\the [src]' членом.") : pick("стимулирует член <b>[M]</b> с помощью '\the [src]'", "подставляет '\the [src]' прямо к члену <b>[M]</b>.")
 			if(BODY_ZONE_CHEST)
-				if(M.has_breasts(REQUIRE_EXPOSED))
+				if(M.has_breasts() == HAS_EXPOSED_GENITAL)
 					message = (user == M) ? pick("крепко держит '\the [src]' и подставляет к своей груди.", "использует '\the [src]' для стимуляции своей груди.", "постанывает и прижимается к '\the [src]' грудью.") : pick("стимулирует грудь <b>[M]</b> с помощью '\the [src]'", "подставляет '\the [src]' прямо к груди <b>[M]</b>.")
 	if(message)
 		user.visible_message("<span class='lewd'><b>[user]</b> [message].</span>")
@@ -106,12 +114,12 @@
 	if(ishuman(M) && (M?.client?.prefs?.toggles & VERB_CONSENT))
 		switch(user.zone_selected)
 			if(BODY_ZONE_PRECISE_GROIN)
-				if(M.has_vagina(REQUIRE_EXPOSED))
+				if(M.has_vagina() == HAS_EXPOSED_GENITAL)
 					message = (user == M) ? pick("распологается над '\the [src]'  и подставляет к своей киске.", "использует '\the [src]'для стимуляции своей киски", "постанывает и садится на '\the [src]' киской.") : pick("подставляет <b>[M]</b> киской к '\the [src]'!")
-				if(M.has_penis(REQUIRE_EXPOSED))
-					message = (user == M) ? pick("распологается над '\the [src]'  и подставляет к своему члену.", "использует '\the [src]'для стимуляции своего члена", "постанывает и садится на '\the [src]' членом.") : pick("подставляет <b>[M]</b> киской к '\the [src]'!")
+				if(M.has_penis() == HAS_EXPOSED_GENITAL)
+					message = (user == M) ? pick("распологается над '\the [src]'  и подставляет к своему члену.", "использует '\the [src]'для стимуляции своего члена", "постанывает и садится на '\the [src]' членом.") : pick("подставляет <b>[M]</b> членом к '\the [src]'!")
 			if(BODY_ZONE_CHEST)
-				if(M.has_breasts(REQUIRE_EXPOSED))
+				if(M.has_breasts() == HAS_EXPOSED_GENITAL)
 					message = (user == M) ? pick("распологается над '\the [src]'  и подставляет к своей груди.", "использует '\the [src]'для стимуляции своей груди") : pick("подставляет <b>[M]</b> грудью к '\the [src]'!")
 	if(message)
 		user.visible_message("<span class='lewd'><b>[user]</b> [message].</span>")
@@ -142,52 +150,70 @@
 
 /obj/item/magicwand/equipped(mob/living/carbon/M)
 	. = ..()
-	vibrating(M)
+	Mob = M
+	START_PROCESSING(SSobj,src)
+
+/obj/item/magicwand/process(delta_time)
+	if(Mob == null)
+		STOP_PROCESSING(SSobj,src)
+		return
+
+	var/mob/living/carbon/human/M = astype(Mob, /mob/living/carbon/human)
+	if(!M || !istype(src, M.w_underwear))
+		STOP_PROCESSING(SSobj,src)
+		Mob = null
+		return
+
+	if(!on)
+		STOP_PROCESSING(SSobj,src)
+		Mob = null
+		return
+
+	timer -= delta_time
+	if(timer >= 0) // chech interval
+		return
+	else
+		timer = interval
+
+	switch(mode)
+		if(3)
+			if(M.has_penis())
+				to_chat(M, span_userdanger(pick("Сильная вибрация у члена сводит меня с ума!", "Вы чувствуете мучительное удовольствие от сильной стимуляции своего члена!")))
+			if(M.has_vagina())
+				to_chat(M, span_userdanger(pick("Сильная вибрация у киски сводит меня с ума!", "Вы чувствуете мучительное удовольствие от сильной стимуляции своей киски!")))
+			if(M.client?.prefs.cit_toggles & SEX_JITTER) //By Gardelin0
+				M.Jitter(3)
+			M.emote("moan")
+			M.handle_post_sex(intencity, null, src)
+			M.client?.plug13.send_emote(PLUG13_EMOTE_GROIN, intencity * 5)
+			playsound(loc, 'modular_bluemoon/sound/items/lewd/toys/magicwand3.ogg', 25, 1)
+			if(prob(50))
+				M.Stun(5)
+		if(2)
+			if(M.has_penis())
+				to_chat(M, span_love(pick("Я чувствую вибрацию у своего члена!", "Оно вибрирует мой член!")))
+			if(M.has_vagina())
+				to_chat(M, span_love(pick("Я чувствую вибрацию у своей киски!", "Оно вибрирует мою киску!")))
+			M.handle_post_sex(intencity, null, src)
+			M.client?.plug13.send_emote(PLUG13_EMOTE_GROIN, intencity * 5)
+			if(M.client?.prefs.cit_toggles & SEX_JITTER) //By Gardelin0
+				M.do_jitter_animation()
+			playsound(loc, "modular_bluemoon/sound/items/lewd/toys/magicwand[rand(1, 2)].ogg", 25, 1)
+		if(1)
+			if(M.has_penis())
+				to_chat(M, span_love(pick("Я чувствую слабую вибрацию у своего члена!", "Оно слабо вибрирует мой член!")))
+			if(M.has_vagina())
+				to_chat(M, span_love(pick("Я чувствую слабую вибрацию у своей киски!", "Оно слабо вибрирует мою киску!")))
+			M.handle_post_sex(intencity, null, src)
+			M.client?.plug13.send_emote(PLUG13_EMOTE_GROIN, intencity * 5)
+			if(M.client?.prefs.cit_toggles & SEX_JITTER) //By Gardelin0
+				M.do_jitter_animation()
+			playsound(loc, "modular_bluemoon/sound/items/lewd/toys/devicevibrator[rand(1, 3)].ogg", 25, 1)
+
+
 
 /obj/item/magicwand/blackwand
 	name = "Black magic wand"
 	icon_state = "blackmwand"
 	base_icon_state = "blackmwand"
 
-/obj/item/magicwand/proc/vibrating(mob/living/carbon/human/M, slot)
-	if(!istype(src, M.w_underwear))
-		return
-	if(!on)
-		return
-
-	while(istype(src, M.w_underwear))
-		if(activate_after(src, 5))
-			switch(mode)
-				if(3)
-					if(M.has_penis())
-						to_chat(M, span_userdanger(pick("Сильная вибрация у члена сводит меня с ума!", "Вы чувствуете мучительное удовольствие от сильной стимуляции своего члена!")))
-					if(M.has_vagina())
-						to_chat(M, span_userdanger(pick("Сильная вибрация у киски сводит меня с ума!", "Вы чувствуете мучительное удовольствие от сильной стимуляции своей киски!")))
-					if(M.client?.prefs.cit_toggles & SEX_JITTER) //By Gardelin0
-						M.Jitter(3)
-					M.emote("moan")
-					M.handle_post_sex(intencity, null, src)
-					M.client?.plug13.send_emote(PLUG13_EMOTE_GROIN, intencity * 5)
-					playsound(loc, 'modular_bluemoon/sound/items/lewd/toys/magicwand3.ogg', 25, 1)
-					if(prob(50))
-						M.Stun(5)
-				if(2)
-					if(M.has_penis())
-						to_chat(M, span_love(pick("Я чувствую вибрацию у своего члена!", "Оно вибрирует мой член!")))
-					if(M.has_vagina())
-						to_chat(M, span_love(pick("Я чувствую вибрацию у своей киски!", "Оно вибрирует мою киску!")))
-						M.handle_post_sex(intencity, null, src)
-						M.client?.plug13.send_emote(PLUG13_EMOTE_GROIN, intencity * 5)
-						if(M.client?.prefs.cit_toggles & SEX_JITTER) //By Gardelin0
-							M.do_jitter_animation()
-						playsound(loc, "modular_bluemoon/sound/items/lewd/toys/magicwand[rand(1, 2)].ogg", 25, 1)
-				if(1)
-					if(M.has_penis())
-						to_chat(M, span_love(pick("Я чувствую слабую вибрацию у своего члена!", "Оно слабо вибрирует мой член!")))
-					if(M.has_vagina())
-						to_chat(M, span_love(pick("Я чувствую слабую вибрацию у своей киски!", "Оно слабо вибрирует мою киску!")))
-						M.handle_post_sex(intencity, null, src)
-						M.client?.plug13.send_emote(PLUG13_EMOTE_GROIN, intencity * 5)
-						if(M.client?.prefs.cit_toggles & SEX_JITTER) //By Gardelin0
-							M.do_jitter_animation()
-						playsound(loc, "modular_bluemoon/sound/items/lewd/toys/devicevibrator[rand(1, 3)].ogg", 25, 1)

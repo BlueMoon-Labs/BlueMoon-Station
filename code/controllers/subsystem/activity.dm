@@ -24,8 +24,8 @@ SUBSYSTEM_DEF(activity)
 		if(A?.owner?.current && A.owner.current.stat != DEAD)
 			threats["antagonists"] += A.threat()
 	threats["events"] = 0
-	for(var/datum/round_event/R as anything in SSevents.running)
-		threats["events"] += R.threat()
+	for(var/datum/round_event/R as anything in SSdirector.running)
+		threats["events"] += R.control ? R.control.intensity : 0
 	threats["players"] = 0
 	SEND_SIGNAL(src, COMSIG_THREAT_CALC, threats)
 	for(var/mob/M as anything in GLOB.player_list)

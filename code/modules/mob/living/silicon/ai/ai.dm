@@ -201,6 +201,11 @@
 /mob/living/silicon/ai/Destroy()
 	GLOB.ai_list -= src
 	GLOB.shuttle_caller_list -= src
+	//боты держат ссылку на вызвавший их ИИ до прибытия к вейпоинту - при
+	//удалении ИИ отвязываемся, иначе calling_ai вечно пиннит удалённого моба
+	for(var/mob/living/simple_animal/bot/called_bot as anything in GLOB.bots_list)
+		if(called_bot.calling_ai == src)
+			called_bot.calling_ai = null
 	SSshuttle.autoEvac()
 	stop_controlling_display()
 	QDEL_NULL(eyeobj) // No AI, no Eye
@@ -231,6 +236,13 @@
 			continue
 		linked_robot.set_connected_ai(null)
 	connected_robots.Cut()
+	// Взломанные малфом APC держат ИИ через malfai/occupier до собственного
+	// Destroy - то есть обычно до конца раунда
+	for(var/obj/machinery/power/apc/apc as anything in GLOB.apcs_list)
+		if(apc.malfai == src)
+			apc.malfai = null
+		if(apc.occupier == src)
+			apc.occupier = null
 	return ..()
 
 /mob/living/silicon/ai/IgniteMob()
@@ -1177,7 +1189,7 @@
 		return
 
 	else if(mind)
-		soullink(/datum/soullink/sharedbody, src, target)
+		RegisterSignal(target, COMSIG_LIVING_DEATH, PROC_REF(disconnect_shell))
 		deployed_shell = target
 		target.deploy_init(src)
 		mind.transfer_to(target)
@@ -1216,6 +1228,7 @@
 	return ..()
 
 /mob/living/silicon/ai/proc/disconnect_shell()
+	SIGNAL_HANDLER
 	if(deployed_shell) //Forcibly call back AI in event of things such as damage, EMP or power loss.
 		to_chat(src, "<span class='danger'>Your remote connection has been reset!</span>")
 		deployed_shell.undeploy()

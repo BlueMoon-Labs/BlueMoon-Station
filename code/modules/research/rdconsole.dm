@@ -423,15 +423,9 @@ Nothing else in the console has ID requirements.
 			var/slot = text2num(params["slot"])
 			var/datum/design/design = SSresearch.techweb_design_by_id(params["selectedDesign"])
 			if(design)
-				var/autolathe_friendly = TRUE
-				if(design.reagents_list.len)
-					autolathe_friendly = FALSE
+				var/autolathe_friendly = design.is_autolathe_compatible()
+				if(!autolathe_friendly)
 					design.category -= "Imported"
-				else
-					for(var/material in design.materials)
-						if( !(material in list(/datum/material/iron, /datum/material/glass)))
-							autolathe_friendly = FALSE
-							design.category -= "Imported"
 
 				if(design.build_type & (AUTOLATHE|PROTOLATHE)) // Specifically excludes circuit imprinter and mechfab
 					design.build_type = autolathe_friendly ? (design.build_type | AUTOLATHE) : design.build_type

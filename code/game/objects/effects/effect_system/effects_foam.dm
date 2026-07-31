@@ -5,6 +5,10 @@
 #define RESIN_FOAM 3
 
 
+/// Во сколько раз медленная фаза пены тикает реже быстрой (SSprocessing 1с / SSfastprocess 0.2с).
+/// Доза химии и расход жизни масштабируются этим же множителем - суммарный эффект как раньше.
+#define FOAM_SLOW_TICK_MULTIPLIER 5
+
 /obj/effect/particle_effect/foam
 	name = "foam"
 	icon_state = "foam"
@@ -18,6 +22,10 @@
 	var/metal = 0
 	var/lifetime = 40
 	var/reagent_divisor = 7
+	/// TRUE = разлив закончен, пена дотикивает на медленном SSprocessing.
+	var/slow_processing = FALSE
+	/// FALSE = пене нужен быстрый тик всю жизнь (пожарная пена жрёт хотспоты на 5 Гц).
+	var/allow_slow_processing = TRUE
 	var/static/list/blacklisted_turfs = typecacheof(list(
 	/turf/open/space/transit,
 	/turf/open/chasm,
@@ -27,6 +35,7 @@
 	name = "firefighting foam"
 	lifetime = 20 //doesn't last as long as normal foam
 	amount = 0 //no spread
+	allow_slow_processing = FALSE // тушение требует ловить хотспоты каждый быстрый тик
 	var/absorbed_plasma = 0
 
 /obj/effect/particle_effect/foam/firefighting/MakeSlippery()
@@ -117,11 +126,13 @@
 
 /obj/effect/particle_effect/foam/Destroy()
 	STOP_PROCESSING(SSfastprocess, src)
+	STOP_PROCESSING(SSprocessing, src)
 	return ..()
 
 
 /obj/effect/particle_effect/foam/proc/kill_foam()
 	STOP_PROCESSING(SSfastprocess, src)
+	STOP_PROCESSING(SSprocessing, src)
 	switch(metal)
 		if(ALUMINUM_FOAM)
 			new /obj/structure/foamedmetal(get_turf(src))
@@ -134,6 +145,7 @@
 
 /obj/effect/particle_effect/foam/smart/kill_foam() //Smart foam adheres to area borders for walls
 	STOP_PROCESSING(SSfastprocess, src)
+	STOP_PROCESSING(SSprocessing, src)
 	if(metal)
 		var/turf/T = get_turf(src)
 		if(isspaceturf(T)) //Block up any exposed space
@@ -147,12 +159,15 @@
 	QDEL_IN(src, 5)
 
 /obj/effect/particle_effect/foam/process()
-	lifetime--
+	// В медленной фазе тик приходит в FOAM_SLOW_TICK_MULTIPLIER раз реже -
+	// расход жизни и доза химии масштабируются, суммарный эффект прежний.
+	var/tick_multiplier = slow_processing ? FOAM_SLOW_TICK_MULTIPLIER : 1
+	lifetime -= tick_multiplier
 	if(lifetime < 1)
 		kill_foam()
 		return
 
-	var/fraction = 1/initial(reagent_divisor)
+	var/fraction = tick_multiplier/initial(reagent_divisor)
 	for(var/obj/O in range(0,src))
 		if(O.type == src.type)
 			continue
@@ -164,30 +179,40 @@
 			reagents.reaction(O, VAPOR, fraction)
 	var/hit = 0
 	for(var/mob/living/L in range(0,src))
-		hit += foam_mob(L)
+		hit += foam_mob(L, tick_multiplier)
 	if(hit)
-		lifetime++ //this is so the decrease from mobs hit and the natural decrease don't cumulate.
+		lifetime += tick_multiplier //this is so the decrease from mobs hit and the natural decrease don't cumulate.
 	var/T = get_turf(src)
 	if(lifetime % reagent_divisor)
 		reagents.reaction(T, VAPOR, fraction)
 
 	if(--amount < 0)
+		// Разлив закончен: пена больше не спредится, дотикивать жизнь и травить
+		// стоящих в ней можно на медленном процессинге. Именно одновременность
+		// тысяч пен на быстром тике давала 228мс/проход SSfastprocess (раунд 9746,
+		// Scrubber Overflow), при этом спред - первые секунды жизни каждой пены.
+		if(!slow_processing && allow_slow_processing)
+			slow_processing = TRUE
+			STOP_PROCESSING(SSfastprocess, src)
+			START_PROCESSING(SSprocessing, src)
 		return
 	spread_foam()
 
-/obj/effect/particle_effect/foam/proc/foam_mob(mob/living/L)
+/obj/effect/particle_effect/foam/proc/foam_mob(mob/living/L, tick_multiplier = 1)
 	if(lifetime<1)
 		return FALSE
 	if(!istype(L))
 		return FALSE
-	var/fraction = 1/initial(reagent_divisor)
+	var/fraction = tick_multiplier/initial(reagent_divisor)
 	if(lifetime % reagent_divisor)
 		reagents.reaction(L, VAPOR, fraction)
-	lifetime--
+	lifetime -= tick_multiplier
 	return TRUE
 
 /obj/effect/particle_effect/foam/proc/spread_foam()
 	var/turf/t_loc = get_turf(src)
+	if(!t_loc) // пену могли убрать из мира (kill_foam/подбор) между постановкой в очередь и спредом
+		return
 	for(var/turf/T in t_loc.GetAtmosAdjacentTurfs())
 		var/obj/effect/particle_effect/foam/foundfoam = locate() in T //Don't spread foam where there's already foam!
 		if(foundfoam)
@@ -356,3 +381,4 @@
 #undef ALUMINUM_FOAM
 #undef IRON_FOAM
 #undef RESIN_FOAM
+#undef FOAM_SLOW_TICK_MULTIPLIER

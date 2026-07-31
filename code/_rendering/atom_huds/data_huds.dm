@@ -168,6 +168,19 @@
 /mob/living/carbon/human/dummy/update_sensor_list()
 	return
 
+/// How high above an atom its data-HUD marker floats. Depends only on the icon
+/// file, icon state and dir, so it is measured once per combination instead of
+/// allocating a fresh /icon on every health change.
+/proc/get_hud_pixel_offset(icon_file, icon_state, dir)
+	var/static/list/offset_cache = list()
+	var/cache_key = "[icon_file]-[icon_state]-[dir]"
+	. = offset_cache[cache_key]
+	if(!isnull(.))
+		return
+	var/icon/measured = icon(icon_file, icon_state, dir)
+	. = measured.Height() - world.icon_size
+	offset_cache[cache_key] = .
+
 //called when a living mob changes health
 /mob/living/proc/med_hud_set_health()
 	if(!hud_list)
@@ -180,8 +193,7 @@
 	if(!icon)
 		med_hud_set_radstatus()
 		return
-	var/icon/I = icon(icon, icon_state, dir)
-	holder.pixel_y = I.Height() - world.icon_size
+	holder.pixel_y = get_hud_pixel_offset(icon, icon_state, dir)
 	med_hud_set_radstatus()
 
 //for carbon suit sensors
@@ -197,8 +209,7 @@
 		return
 	if(!icon)
 		return
-	var/icon/I = icon(icon, icon_state, dir)
-	holder.pixel_y = I.Height() - world.icon_size
+	holder.pixel_y = get_hud_pixel_offset(icon, icon_state, dir)
 	if(stat == DEAD || (HAS_TRAIT(src, TRAIT_FAKEDEATH)))
 		holder.icon_state = "huddead"
 	else
@@ -212,9 +223,8 @@
 		return
 	if(!icon)
 		return
-	var/icon/I = icon(icon, icon_state, dir)
 	var/virus_threat = check_virus()
-	holder.pixel_y = I.Height() - world.icon_size
+	holder.pixel_y = get_hud_pixel_offset(icon, icon_state, dir)
 	if(HAS_TRAIT(src, TRAIT_XENO_HOST))
 		holder.icon_state = "hudxeno"
 	else if(stat == DEAD || (HAS_TRAIT(src, TRAIT_FAKEDEATH)))
@@ -256,8 +266,7 @@
 		return
 	if(!icon)
 		return
-	var/icon/I = icon(icon, icon_state, dir)
-	radholder.pixel_y = I.Height() - world.icon_size
+	radholder.pixel_y = get_hud_pixel_offset(icon, icon_state, dir)
 	var/mob/living/M = src
 	var/rads = M.radiation
 	switch(rads)
@@ -284,8 +293,7 @@
 		return
 	if(!icon)
 		return
-	var/icon/I = icon(icon, icon_state, dir)
-	holder.pixel_y = I.Height() - world.icon_size
+	holder.pixel_y = get_hud_pixel_offset(icon, icon_state, dir)
 	holder.icon_state = "hudno_id"
 	if(wear_id?.GetID())
 		holder.icon_state = "hud[ckey(wear_id.get_job_name())]"
@@ -326,8 +334,7 @@
 	var/image/holder = hud_list[WANTED_HUD]
 	if(!icon)
 		return
-	var/icon/I = icon(icon, icon_state, dir)
-	holder.pixel_y = I.Height() - world.icon_size
+	holder.pixel_y = get_hud_pixel_offset(icon, icon_state, dir)
 	var/perpname = get_face_name(get_id_name(""))
 	if(perpname && GLOB.data_core)
 		var/datum/data/record/R = GLOB.data_core.security_by_name[perpname]
@@ -367,11 +374,14 @@
 ************************************************/
 
 /mob/living/proc/hud_set_nanite_indicator()
-	var/image/holder = hud_list[NANITE_HUD]
-	if(!icon)
+	// Nanite components tear down from /mob/Destroy(), by which point hud_list is
+	// already gone — indexing it there threw "bad index" on the live server.
+	if(!hud_list)
 		return
-	var/icon/I = icon(icon, icon_state, dir)
-	holder.pixel_y = I.Height() - world.icon_size
+	var/image/holder = hud_list[NANITE_HUD]
+	if(!holder || !icon)
+		return
+	holder.pixel_y = get_hud_pixel_offset(icon, icon_state, dir)
 	holder.icon_state = null
 	if(src in SSnanites.nanite_monitored_mobs)
 		holder.icon_state = "nanite_ping"
@@ -399,8 +409,7 @@
 	var/image/holder = hud_list[DIAG_HUD]
 	if(!icon)
 		return
-	var/icon/I = icon(icon, icon_state, dir)
-	holder.pixel_y = I.Height() - world.icon_size
+	holder.pixel_y = get_hud_pixel_offset(icon, icon_state, dir)
 	if(stat == DEAD)
 		holder.icon_state = "huddiagdead"
 	else
@@ -410,8 +419,7 @@
 	var/image/holder = hud_list[DIAG_STAT_HUD]
 	if(!icon)
 		return
-	var/icon/I = icon(icon, icon_state, dir)
-	holder.pixel_y = I.Height() - world.icon_size
+	holder.pixel_y = get_hud_pixel_offset(icon, icon_state, dir)
 	switch(stat)
 		if(CONSCIOUS)
 			holder.icon_state = "hudstat"
@@ -425,8 +433,7 @@
 	var/image/holder = hud_list[DIAG_BATT_HUD]
 	if(!icon)
 		return
-	var/icon/I = icon(icon, icon_state, dir)
-	holder.pixel_y = I.Height() - world.icon_size
+	holder.pixel_y = get_hud_pixel_offset(icon, icon_state, dir)
 	if(cell)
 		var/chargelvl = (cell.charge/cell.maxcharge)
 		holder.icon_state = "hudbatt[RoundDiagBar(chargelvl)]"
@@ -438,8 +445,7 @@
 	var/image/holder = hud_list[DIAG_TRACK_HUD]
 	if(!icon)
 		return
-	var/icon/I = icon(icon, icon_state, dir)
-	holder.pixel_y = I.Height() - world.icon_size
+	holder.pixel_y = get_hud_pixel_offset(icon, icon_state, dir)
 	if(!shell) //Not an AI shell
 		holder.icon_state = null
 	else if(deployed) //AI shell in use by an AI
@@ -452,8 +458,7 @@
 	var/image/holder = hud_list[DIAG_TRACK_HUD]
 	if(!icon)
 		return
-	var/icon/I = icon(icon, icon_state, dir)
-	holder.pixel_y = I.Height() - world.icon_size
+	holder.pixel_y = get_hud_pixel_offset(icon, icon_state, dir)
 	if(!deployed_shell)
 		holder.icon_state = null
 	else //AI is currently controlling a shell
@@ -466,8 +471,7 @@
 	var/image/holder = hud_list[DIAG_MECH_HUD]
 	if(!icon)
 		return
-	var/icon/I = icon(icon, icon_state, dir)
-	holder.pixel_y = I.Height() - world.icon_size
+	holder.pixel_y = get_hud_pixel_offset(icon, icon_state, dir)
 	holder.icon_state = "huddiag[RoundDiagBar(obj_integrity/max_integrity)]"
 
 
@@ -475,8 +479,7 @@
 	var/image/holder = hud_list[DIAG_BATT_HUD]
 	if(!icon)
 		return
-	var/icon/I = icon(icon, icon_state, dir)
-	holder.pixel_y = I.Height() - world.icon_size
+	holder.pixel_y = get_hud_pixel_offset(icon, icon_state, dir)
 	if(cell)
 		var/chargelvl = cell.charge/cell.maxcharge
 		holder.icon_state = "hudbatt[RoundDiagBar(chargelvl)]"
@@ -488,8 +491,7 @@
 	var/image/holder = hud_list[DIAG_STAT_HUD]
 	if(!icon)
 		return
-	var/icon/I = icon(icon, icon_state, dir)
-	holder.pixel_y = I.Height() - world.icon_size
+	holder.pixel_y = get_hud_pixel_offset(icon, icon_state, dir)
 	holder.icon_state = null
 	if(internal_damage)
 		holder.icon_state = "hudwarn"
@@ -498,8 +500,7 @@
 	var/image/holder = hud_list[DIAG_TRACK_HUD]
 	if(!icon)
 		return
-	var/icon/I = icon(icon, icon_state, dir)
-	holder.pixel_y = I.Height() - world.icon_size
+	holder.pixel_y = get_hud_pixel_offset(icon, icon_state, dir)
 	var/new_icon_state //This var exists so that the holder's icon state is set only once in the event of multiple mech beacons.
 	for(var/obj/item/mecha_parts/mecha_tracking/T in trackers)
 		if(T.ai_beacon) //Beacon with AI uplink
@@ -520,16 +521,14 @@
 		return
 	if(!icon)
 		return
-	var/icon/I = icon(icon, icon_state, dir)
-	holder.pixel_y = I.Height() - world.icon_size
+	holder.pixel_y = get_hud_pixel_offset(icon, icon_state, dir)
 	holder.icon_state = "huddiag[RoundDiagBar(health/maxHealth)]"
 
 /mob/living/simple_animal/bot/proc/diag_hud_set_botstat() //On (With wireless on or off), Off, EMP'ed
 	var/image/holder = hud_list[DIAG_STAT_HUD]
 	if(!icon)
 		return
-	var/icon/I = icon(icon, icon_state, dir)
-	holder.pixel_y = I.Height() - world.icon_size
+	holder.pixel_y = get_hud_pixel_offset(icon, icon_state, dir)
 	if(on)
 		holder.icon_state = "hudstat"
 	else if(stat) //Generally EMP causes this
@@ -541,8 +540,7 @@
 	var/image/holder = hud_list[DIAG_BOT_HUD]
 	if(!icon)
 		return
-	var/icon/I = icon(icon, icon_state, dir)
-	holder.pixel_y = I.Height() - world.icon_size
+	holder.pixel_y = get_hud_pixel_offset(icon, icon_state, dir)
 	if(client) //If the bot is player controlled, it will not be following mode logic!
 		holder.icon_state = "hudsentient"
 		return

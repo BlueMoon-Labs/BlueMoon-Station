@@ -24,9 +24,12 @@ GLOBAL_LIST_EMPTY(objectives)
 
 /datum/objective/Destroy(force, ...)
 	GLOB.objectives -= src
-	if(owner)
-		for(var/datum/antagonist/A in owner.antag_datums)
-			A.objectives -= src
+	//отвязка шла только по текущему owner: цель, которой owner переназначили до
+	//qdel, оставалась в чужом antag.objectives и после сборки становилась там
+	//null - отсюда "Cannot read null.explanation_text" в отчёте раунда.
+	//Идём по фактическим держателям, а не по одному предполагаемому.
+	for(var/datum/antagonist/holder as anything in GLOB.antagonists)
+		holder.objectives -= src
 	if(team)
 		team.objectives -= src
 	. = ..()
@@ -85,6 +88,21 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 */
 /datum/objective/proc/check_midround_completion()
 	return check_completion()
+
+/proc/bm_assassinate_target_eliminated(datum/mind/M)
+	if(!M)
+		return FALSE
+	var/mob/current = M.current
+	if(!current)
+		// A gibbed/dusted target no longer has a body by round end. Cryo targets are
+		// rerolled by cryo_handle_objectives() before their body is deleted.
+		return TRUE
+	if(isobserver(current))
+		return TRUE
+	if(isliving(current))
+		var/mob/living/L = current
+		return L.stat == DEAD
+	return FALSE
 
 /datum/objective/proc/is_unique_objective(possible_target)
 	var/list/datum/mind/owners = get_owners()
@@ -188,11 +206,20 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 	target_amount = rand(2,6)
 	return target
 
+/datum/objective/assassinate/find_target(dupe_search_range, blacklist)
+	LAZYINITLIST(blacklist)
+	var/list/datum/mind/owners = get_owners()
+	for(var/datum/mind/O in owners)
+		for(var/datum/objective/obj in O.get_all_objectives())
+			if(istype(obj, /datum/objective/protect) && obj.get_target())
+				blacklist |= obj.get_target()
+	return ..(dupe_search_range, blacklist)
+
 /datum/objective/assassinate/check_completion()
-	return FALSE || ..()
+	return !target || bm_assassinate_target_eliminated(target) || ..()
 
 /datum/objective/assassinate/check_midround_completion()
-	return FALSE
+	return !target || bm_assassinate_target_eliminated(target)
 
 /datum/objective/assassinate/update_explanation_text()
 	..()
@@ -238,6 +265,12 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 	..()
 	if(target && !target.current)
 		explanation_text = "Наша цель - [target.name], [!target_role_type ? target.assigned_role : target.special_role]. Уничтожь эту цель! Кто бы это не был, эта станция будет ему могилой."
+
+/datum/objective/assassinate/internal/check_completion()
+	return !target || bm_assassinate_target_eliminated(target) || ..()
+
+/datum/objective/assassinate/internal/check_midround_completion()
+	return !target || bm_assassinate_target_eliminated(target)
 
 /datum/objective/mutiny
 	name = "mutiny"
@@ -336,6 +369,15 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 		target_role_type = role_type
 	..()
 	return target
+
+/datum/objective/protect/find_target(dupe_search_range, blacklist)
+	LAZYINITLIST(blacklist)
+	var/list/datum/mind/owners = get_owners()
+	for(var/datum/mind/O in owners)
+		for(var/datum/objective/obj in O.get_all_objectives())
+			if(istype(obj, /datum/objective/assassinate) && obj.get_target())
+				blacklist |= obj.get_target()
+	return ..(dupe_search_range, blacklist)
 
 /datum/objective/protect/check_completion()
 	return !target || considered_alive(target, enforce_human = human_check)

@@ -1,5 +1,7 @@
 // BLUEMOON ADDED
-import { useBackend, useLocalState } from "../backend";
+import { useState } from "react";
+
+import { useBackend } from "../backend";
 import { Box, Button, Collapsible, Flex, LabeledList, Section, Tooltip } from "../components";
 import { Window } from "../layouts";
 
@@ -31,8 +33,8 @@ interface CyborgProfileContext {
   very_extreme_tag: string;
 }
 
-export const CyborgProfile = (props, context) => {
-  const { data } = useBackend<CyborgProfileContext>(context);
+export const CyborgProfile = (props) => {
+  const { data } = useBackend<CyborgProfileContext>();
 
   const tags = [
     { name: "ERP", title: "Эротический отыгрыш", value: data.erp_tag },
@@ -53,12 +55,12 @@ export const CyborgProfile = (props, context) => {
           </Flex.Item>
           <Flex.Item pl="10px" grow>
             <Collapsible title="Описание Юнита" open>
-              <Section style={{ "white-space": "pre-line" }}>
+              <Section style={{ whiteSpace: "pre-line" }}>
                 {data.silicon_flavor_text || "———"}
               </Section>
             </Collapsible>
             <Collapsible title="Внеигровые заметки" open>
-              <Section style={{ "white-space": "pre-line" }}>
+              <Section style={{ whiteSpace: "pre-line" }}>
                 {data.oocnotes || "Отсутствуют"}
               </Section>
             </Collapsible>
@@ -81,11 +83,11 @@ export const CyborgProfile = (props, context) => {
   );
 };
 
-const CyborgProfileImageElement = (props, context) => {
-  const { data } = useBackend<CyborgProfileContext>(context);
+const CyborgProfileImageElement = (props) => {
+  const { data } = useBackend<CyborgProfileContext>();
 
   const headshotLinks = (data.headshot_links || []).filter(link => link?.length);
-  const [selectedHeadshot, setSelectedHeadshot] = useLocalState(context, 'selectedHeadshot', 0);
+  const [selectedHeadshot, setSelectedHeadshot] = useState(0);
   const safeSelectedHeadshot = headshotLinks.length > 0
     ? selectedHeadshot % headshotLinks.length
     : 0;
@@ -102,9 +104,9 @@ const CyborgProfileImageElement = (props, context) => {
           style={{
             width: '256px',
             height: '256px',
-            'max-width': '256px',
-            'max-height': '256px',
-            'object-fit': 'contain',
+            maxWidth: '256px',
+            maxHeight: '256px',
+            objectFit: 'contain',
           }}
         />
       </Box>

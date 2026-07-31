@@ -5,8 +5,8 @@ import { useBackend } from '../backend';
 import { Button, LabeledList, NumberInput, Section } from '../components';
 import { Window } from '../layouts';
 
-export const AtmosControlConsole = (props, context) => {
-  const { act, data } = useBackend(context);
+export const AtmosControlConsole = (props) => {
+  const { act, data } = useBackend();
   const sensors = data.sensors || [];
   return (
     <Window

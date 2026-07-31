@@ -1,5 +1,5 @@
 /datum/quirk/high_quality_maintenance
-	name = BLUEMOON_TRAIT_NAME_COMPLEX_MAINTENANCE
+	name = "Сложное обслуживание"
 	desc = "ТОЛЬКО ДЛЯ СИНТЕТИКОВ! Ваше тело слишком сложно устроено, чтобы его мог оперировать кто угодно, кроме роботехника, РД (или антагонистов/гост-ролей)."
 	gain_text = span_warning("Эти новые протезы такие классные... И дорогие! И сложные в обслуживании... И дорогие!")
 	lose_text = span_notice("??")

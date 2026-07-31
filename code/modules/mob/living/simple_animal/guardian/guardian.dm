@@ -46,6 +46,8 @@ GLOBAL_LIST_EMPTY(parasites) //all currently existing/living guardians
 	AIStatus = AI_OFF
 	hud_type = /datum/hud/guardian
 	dextrous_hud_type = /datum/hud/dextrous/guardian //if we're set to dextrous, account for it.
+	see_in_dark = 8
+	lighting_alpha = LIGHTING_PLANE_ALPHA_NV_TRAIT
 	var/mutable_appearance/cooloverlay
 	var/guardiancolor = "#ffffff"
 	var/recolorentiresprite
@@ -193,11 +195,13 @@ GLOBAL_LIST_EMPTY(parasites) //all currently existing/living guardians
 				summoner.dust()
 			death(TRUE)
 			qdel(src)
+			return
 	else
 		to_chat(src, "<span class='danger'>Your summoner has died!</span>")
 		visible_message("<span class='danger'><B>[src] dies along with its user!</B></span>")
 		death(TRUE)
 		qdel(src)
+		return
 	snapback()
 	if(HAS_TRAIT(summoner, TRAIT_NODEATH) && (istype(summoner.wear_neck, /obj/item/clothing/neck/necklace/memento_mori)))
 		REMOVE_TRAIT(summoner, TRAIT_NODEATH, "memento_mori")
@@ -369,7 +373,7 @@ GLOBAL_LIST_EMPTY(parasites) //all currently existing/living guardians
 //MANIFEST, RECALL, TOGGLE MODE/LIGHT, SHOW TYPE
 
 /mob/living/simple_animal/hostile/guardian/proc/Manifest(forced)
-	if(istype(summoner.loc, /obj/effect) || (cooldown > world.time && !forced))
+	if(!summoner || istype(summoner.loc, /obj/effect) || (cooldown > world.time && !forced))
 		return FALSE
 	if(loc == summoner)
 		forceMove(summoner.loc)
@@ -465,12 +469,13 @@ GLOBAL_LIST_EMPTY(parasites) //all currently existing/living guardians
 	set desc = "Re-rolls which ghost will control your Guardian. One use per Guardian."
 
 	var/list/guardians = hasparasites()
+	var/list/available_guardians = list()
 	for(var/para in guardians)
 		var/mob/living/simple_animal/hostile/guardian/P = para
-		if(P.reset)
-			guardians -= P //clear out guardians that are already reset
-	if(guardians.len)
-		var/mob/living/simple_animal/hostile/guardian/G = input(src, "Pick the guardian you wish to reset", "Guardian Reset") as null|anything in guardians
+		if(!P.reset)
+			available_guardians += P
+	if(available_guardians.len)
+		var/mob/living/simple_animal/hostile/guardian/G = input(src, "Pick the guardian you wish to reset", "Guardian Reset") as null|anything in available_guardians
 		if(G)
 			to_chat(src, "<span class='holoparasite'>You attempt to reset <font color=\"[G.guardiancolor]\"><b>[G.real_name]</b></font>'s personality...</span>")
 			var/list/mob/candidates = pollGhostCandidates("Do you want to play as [src.real_name]'s [G.real_name]?", ROLE_PAI, null, FALSE, 100)

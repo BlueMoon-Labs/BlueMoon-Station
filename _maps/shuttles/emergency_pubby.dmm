@@ -10,15 +10,15 @@
 /turf/open/floor/plating,
 /area/shuttle/escape)
 "ad" = (
-/obj/effect/fun_balloon/sentience/emergency_shuttle{
-	group_name = "Pubby evac crew on the Emergency Pubby Shuttle"
-	},
 /obj/structure/table,
 /obj/machinery/recharger,
 /turf/open/floor/mineral/titanium,
 /area/shuttle/escape)
 "ae" = (
 /obj/machinery/computer/emergency_shuttle,
+/obj/effect/fun_balloon/sentience/emergency_shuttle{
+	group_name = "Pubby evac crew on the Emergency Pubby Shuttle"
+	},
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/escape)
 "af" = (
@@ -35,6 +35,7 @@
 /obj/structure/chair/comfy/black{
 	dir = 1
 	},
+/mob/living/simple_animal/hostile/retaliate/nanotrasenpeace/ranged,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/escape)
 "ai" = (

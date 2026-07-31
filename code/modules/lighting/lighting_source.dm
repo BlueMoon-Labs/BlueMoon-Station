@@ -59,7 +59,7 @@
 	UPDATE_APPROXIMATE_PIXEL_TURF
 
 	light_power = source_atom.light_power
-	light_range = min(source_atom.light_range, LIGHTING_MAX_RANGE)
+	light_range = min(source_atom.light_range, LIGHT_RANGE_CAP_FOR(source_atom))
 	light_color = source_atom.light_color
 	light_height = source_atom.light_height
 	light_cone_angle = source_atom.light_cone_angle
@@ -407,9 +407,9 @@
 		light_power = source_atom.light_power
 		update = TRUE
 
-	if (min(source_atom.light_range, LIGHTING_MAX_RANGE) != light_range)
+	if (min(source_atom.light_range, LIGHT_RANGE_CAP_FOR(source_atom)) != light_range)
 		var/old_range = light_range
-		light_range = min(source_atom.light_range, LIGHTING_MAX_RANGE)
+		light_range = min(source_atom.light_range, LIGHT_RANGE_CAP_FOR(source_atom))
 		if(light_range < old_range && applied && CEILING(old_range, 1) <= CEILING(light_range, 1) + 1)
 			// Small range decrease: shrink path can skip view() — just remove out-of-range corners
 			// Only used when decrease is ≤1 integer step; larger decreases iterate too many old corners

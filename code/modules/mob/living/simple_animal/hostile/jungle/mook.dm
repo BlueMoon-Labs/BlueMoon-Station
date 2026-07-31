@@ -55,10 +55,14 @@
 		return
 	return ..()
 
-/mob/living/simple_animal/hostile/jungle/mook/Goto()
-	if(attack_state != MOOK_ATTACK_NEUTRAL)
-		return
-	return ..()
+
+///Контроллерный гейт фаз: активная фазовая машина замораживает планирование
+/mob/living/simple_animal/hostile/jungle/mook/ai_attack_phase_active()
+	return attack_state != MOOK_ATTACK_NEUTRAL
+
+///Фазы запирают и контроллерное движение (легаси-гейты Goto/Move)
+/mob/living/simple_animal/hostile/jungle/mook/can_ai_controller_move()
+	return attack_state == MOOK_ATTACK_NEUTRAL
 
 /mob/living/simple_animal/hostile/jungle/mook/Move()
 	if(attack_state == MOOK_ATTACK_WARMUP || attack_state == MOOK_ATTACK_RECOVERY)
@@ -142,10 +146,7 @@
 	if(attack_state == MOOK_ATTACK_RECOVERY)
 		attack_state = MOOK_ATTACK_NEUTRAL
 		ranged_cooldown = world.time + ranged_cooldown_time
-		update_icons()
-		if(target && !stat)
-			update_icons()
-			Goto(target, move_to_delay, minimum_distance)
+		update_icons() //преследование возобновляет штатный мувер контроллера
 
 /mob/living/simple_animal/hostile/jungle/mook/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
 	. = ..()
@@ -178,11 +179,6 @@
 					var/anydir = pick(GLOB.cardinals)
 					Move(get_step(src, anydir), anydir)
 					continue
-
-/mob/living/simple_animal/hostile/jungle/mook/handle_automated_action()
-	if(attack_state)
-		return
-	return ..()
 
 /mob/living/simple_animal/hostile/jungle/mook/OpenFire()
 	if(isliving(target))

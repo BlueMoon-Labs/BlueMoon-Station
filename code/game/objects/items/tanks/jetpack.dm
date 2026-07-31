@@ -81,7 +81,12 @@
 		turn_off(user)
 		return
 
-	assume_air_moles(air_contents, num)
+	// Выхлоп уходит из баллона в турф под носителем: вызов на src переливал
+	// смесь саму в себя, и джетпак летал бесконечно.
+	var/turf/exhaust_turf = get_turf(user)
+	if(!exhaust_turf)
+		return
+	exhaust_turf.assume_air_moles(air_contents, num)
 
 	return TRUE
 
@@ -114,7 +119,10 @@
 		turn_off(user)
 		return
 
-	assume_air_moles(air_contents, num)
+	var/turf/exhaust_turf = get_turf(user)
+	if(!exhaust_turf)
+		return
+	exhaust_turf.assume_air_moles(air_contents, num)
 
 	return TRUE
 
@@ -140,6 +148,7 @@
 	volume = 50
 	throw_range = 7
 	w_class = WEIGHT_CLASS_NORMAL
+	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_BACK
 
 /obj/item/tank/jetpack/oxygen/captain
 	name = "\improper Captain's jetpack"
@@ -240,6 +249,9 @@
 
 /mob/living/carbon/get_jetpack()
 	var/obj/item/I = back
+	var/obj/item/B = belt
+	if(istype(B, /obj/item/tank/jetpack/oxygen/harness))
+		return B
 	if(istype(I, /obj/item/tank/jetpack))
 		return I
 	else if(istype(I, /obj/item/mod/control))

@@ -36,7 +36,13 @@
 	var/blended_ambient = AMBIENT_LIGHT_DEFAULT
 
 /atom/movable/lighting_object/New(turf/source)
-	// Call parent without passing source as loc — we render via vis_contents, not loc
+	// Гибридный рендер: объект лежит на турфе (loc = source) И продублирован в vis_contents.
+	// loc-канал обязателен для ДОСТАВКИ обновлений: BYOND надёжно шлёт клиентам animate() и
+	// смену appearance только у ин-ворлд атомов. У nullspace-атома, видимого исключительно
+	// через vis_contents, анимации цвета до клиентов не доезжают - зоны застревают в устаревшей
+	// тьме до полного пересинка турфа (выход за край view, смена z-уровня, реконнект).
+	// Обходы contents от служебного атома огорожены точечно: onShuttleMove() no-op,
+	// скип в фотозахвате, блэклист радиации. Каноническое создание - new(turf).
 	..()
 	if(!isturf(source))
 		qdel(src, force=TRUE)
@@ -77,8 +83,11 @@
 	GLOB.lighting_update_objects -= src
 	GLOB.lighting_update_blends -= src
 	if (isturf(affected_turf))
-		affected_turf.lighting_object = null
-		affected_turf.luminosity = 1
+		// Турф отвязываем только если он всё ещё наш: у призрака из переработанной резервации
+		// affected_turf уже занят свежим оверлеем нового жильца - гасить его состояние нельзя
+		if (affected_turf.lighting_object == src)
+			affected_turf.lighting_object = null
+			affected_turf.luminosity = 1
 		affected_turf.vis_contents -= src
 	affected_turf = null
 	// Cancel any in-progress animation to release BYOND's internal reference that prevents GC.

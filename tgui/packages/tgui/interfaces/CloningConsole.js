@@ -2,8 +2,8 @@ import { useBackend } from '../backend';
 import { Box, Button, Collapsible, NoticeBox, ProgressBar, Section, Stack } from '../components';
 import { Window } from '../layouts';
 
-export const CloningConsole = (props, context) => {
-  const { act, data } = useBackend(context);
+export const CloningConsole = (props) => {
+  const { act, data } = useBackend();
   const {
     useRecords,
     hasAutoprocess,
@@ -134,7 +134,7 @@ export const CloningConsole = (props, context) => {
                         />
                       }>
                       <div style={{
-                        'word-break': 'break-all',
+                        wordBreak: 'break-all',
                       }}>
                         Scan ID {record["id"]}<br />
                         <Button
@@ -208,7 +208,7 @@ export const CloningConsole = (props, context) => {
                   <Collapsible title={diskData["name"] ? diskData["name"] : "Пустой диск"}>
                     {diskData["id"] ? (
                       <Box style={{
-                        'word-break': 'break-all',
+                        wordBreak: 'break-all',
                       }}>
                         ID: {diskData["id"]}<br />
                         UI: {diskData["UI"]}<br />

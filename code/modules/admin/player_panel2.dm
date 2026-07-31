@@ -462,11 +462,8 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 				browse_messages(target_ckey = note_ckey)
 
 		if ("logs")
-			var/source = LOGSRC_MOB
-			if (targetMob.client)
-				source = LOGSRC_CLIENT
-
-			show_individual_logging_panel(targetMob, source)
+			var/datum/log_viewer/LV = new(targetMob)
+			LV.ui_interact(admin.mob)
 
 		if ("job_ban")
 			if(resolve_mob_ban_ckey(targetMob))
@@ -756,6 +753,14 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 			SSjob.equip_loadout(null, targetMob, bypass_prereqs = TRUE)
 			log_admin("[key_name(admin)] applied loadout to [key_name(targetMob)].")
 			message_admins("<span class='notice'>[key_name_admin(admin)] applied loadout to [key_name_admin(targetMob)].</span>")
+
+		if ("update_appearance")
+			if(!ishuman(targetMob) || !targetMob.client?.prefs)
+				return
+			targetMob.client.prefs.copy_to(targetMob, icon_updates = TRUE, roundstart_checks = FALSE)
+			targetMob.regenerate_icons()
+			log_admin("[key_name(admin)] актуализировал внешность [key_name(targetMob)].")
+			message_admins("<span class='notice'>[key_name_admin(admin)] актуализировал внешность [key_name_admin(targetMob)].</span>")
 
 		if ("set_organ")
 			if(!iscarbon(targetMob))

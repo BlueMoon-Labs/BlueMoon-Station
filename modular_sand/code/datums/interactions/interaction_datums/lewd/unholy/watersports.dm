@@ -133,6 +133,9 @@
 	write_log_user = "piss over"
 	write_log_target = "get golden rain from"
 
+/datum/interaction/lewd/unholy/piss/vagina/over_body/post_reaction(mob/living/user, mob/living/partner, is_fucking, is_hidden)
+	partner.apply_external_stink()
+
 /datum/interaction/lewd/unholy/piss/vagina/over_body/pick_message(mob/living/user, mob/living/partner, is_fucking)
 	return pick(
 		MAIN_MESSAGES,
@@ -152,6 +155,9 @@
 	p13target_strength = PLUG13_STRENGTH_LOW
 	write_log_user = "piss over"
 	write_log_target = "get golden rain from"
+
+/datum/interaction/lewd/unholy/piss/penis/over_body/post_reaction(mob/living/user, mob/living/partner, is_fucking, is_hidden)
+	partner.apply_external_stink()
 
 /datum/interaction/lewd/unholy/piss/penis/over_body/pick_message(mob/living/user, mob/living/partner, is_fucking)
 	var/shape_desc = get_penis_shape_desc(user)
@@ -190,7 +196,11 @@
 	write_log_user = "piss over self"
 	write_log_target = null
 
+/datum/interaction/lewd/unholy/piss/vagina/over_body/self/post_reaction(mob/living/user, mob/living/partner, is_fucking, is_hidden)
+	user.apply_external_stink()
+
 /datum/interaction/lewd/unholy/piss/vagina/over_body/self/pick_message(mob/living/user, mob/living/partner, is_fucking)
+	user.apply_external_stink()
 	return pick(
 		SELF_MAIN_MESSAGES,
 		"USER выставляет свою киску и демонстративно мочится на себя",
@@ -206,7 +216,11 @@
 	write_log_user = "piss over self"
 	write_log_target = null
 
+/datum/interaction/lewd/unholy/piss/penis/over_body/self/post_reaction(mob/living/user, mob/living/partner, is_fucking, is_hidden)
+	user.apply_external_stink()
+
 /datum/interaction/lewd/unholy/piss/penis/over_body/self/pick_message(mob/living/user, mob/living/partner, is_fucking)
+	user.apply_external_stink()
 	var/shape_desc = get_penis_shape_desc(user)
 	return pick(
 		SELF_MAIN_MESSAGES,
@@ -241,7 +255,7 @@
 
 /datum/interaction/lewd/unholy/piss/vagina/on_mouth
 	description = "Вагина. Нассать на рот и лицо."
-	required_from_target_exposed = INTERACTION_REQUIRE_MOUTH
+	required_from_target = INTERACTION_REQUIRE_MOUTH
 	target_organ = CUM_TARGET_MOUTH
 	p13target_emote = PLUG13_EMOTE_MOUTH
 	p13target_strength = PLUG13_STRENGTH_LOW
@@ -270,7 +284,7 @@
 
 /datum/interaction/lewd/unholy/piss/penis/on_mouth
 	description = "Член. Нассать на рот и лицо."
-	required_from_target_exposed = INTERACTION_REQUIRE_MOUTH
+	required_from_target = INTERACTION_REQUIRE_MOUTH
 	target_organ = CUM_TARGET_MOUTH
 	p13target_emote = PLUG13_EMOTE_MOUTH
 	p13target_strength = PLUG13_STRENGTH_LOW
@@ -327,7 +341,7 @@
 
 /datum/interaction/lewd/unholy/piss/vagina/in_mouth
 	description = "Вагина. Прижать ко рту и помочиться."
-	required_from_target_exposed = INTERACTION_REQUIRE_MOUTH
+	required_from_target = INTERACTION_REQUIRE_MOUTH
 	target_organ = CUM_TARGET_MOUTH
 	user_cum_in = CUM_TARGET_MOUTH
 	p13target_emote = PLUG13_EMOTE_MOUTH
@@ -421,7 +435,7 @@
 	return is_fucking ? NORMAL_LUST : HIGH_LUST
 
 /datum/interaction/lewd/unholy/piss/penis/inside/get_user_lust_level(mob/living/user, mob/living/partner, is_fucking)
-	if(user.has_penis())
+	if(user.has_penis(TRUE))
 		return is_fucking ? NORMAL_LUST : HIGH_LUST
 	else // Если у user страпон, он получает только эстетическое удовлетворение
 		return ..()
@@ -438,7 +452,7 @@
 
 /datum/interaction/lewd/unholy/piss/penis/inside/mouth
 	description = "Член. Протолкнуть в горло и мочиться."
-	required_from_target_exposed = INTERACTION_REQUIRE_MOUTH
+	required_from_target = INTERACTION_REQUIRE_MOUTH
 	target_organ = CUM_TARGET_THROAT
 	user_cum_in = CUM_TARGET_THROAT
 	p13target_emote = PLUG13_EMOTE_MOUTH

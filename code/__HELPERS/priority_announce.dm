@@ -27,6 +27,18 @@
 			data["theme"] = "silicon"
 			data["badge"] = "SILICON"
 			data["header"] = "Силиконовое Объявление"
+		if("ionstorm")
+			data["theme"] = "ionstorm"
+			data["badge"] = "ИОННЫЙ ШТОРМ"
+			data["header"] = "Ионная Аномалия"
+		if("aimalf")
+			data["theme"] = "aimalf"
+			data["badge"] = "СБОЙ ИИ"
+			data["header"] = "Тревога ИИ"
+		if("outbreak5", "outbreak7")
+			data["theme"] = "biohazard"
+			data["badge"] = "БИОУГРОЗА"
+			data["header"] = "Биологическая Тревога"
 		else
 			if(sender_override)
 				var/sender_lower = lowertext("[sender_override]")
@@ -80,7 +92,7 @@
 
 	return announcement
 
-/proc/priority_announce(text, title = "", sound, type , sender_override, has_important_message)
+/proc/priority_announce(text, title = "", sound, type , sender_override, has_important_message, sound_id = "announcements")
 	if(!text)
 		return
 
@@ -106,12 +118,34 @@
 
 	announcement = build_priority_announcement(text, title, type, sender_override, has_important_message)
 
-	var/s = sound(sound)
-	for(var/mob/M in GLOB.player_list)
-		if(!isnewplayer(M) && M.can_hear())
-			to_chat(M, announcement)
-			if(M.client.prefs.toggles & SOUND_ANNOUNCEMENTS)
-				SEND_SOUND(M, s)
+	// Батч-рассылка звука: to_chat асинхронный (очередь SSchat), а вот SEND_SOUND
+	// поштучно на ~100 клиентов держал тик на 400+мс на каждое объявление. Группируем
+	// слушателей по итоговой громкости и шлём звук каждой группе одним нативным выводом.
+	var/sound/announcement_sound = sound(sound)
+	var/list/listeners_by_volume = list()
+	for(var/mob/listener in GLOB.player_list)
+		if(isnewplayer(listener) || !listener.can_hear())
+			continue
+		to_chat(listener, announcement)
+		if(!(listener.client?.prefs?.toggles & SOUND_ANNOUNCEMENTS))
+			continue
+		var/pref_vol = listener.client?.prefs?.get_sound_volume(sound_id)
+		if(isnull(pref_vol))
+			pref_vol = 100
+		if(pref_vol <= 0)
+			continue
+		var/volume_key = "[pref_vol]"
+		var/list/volume_bucket = listeners_by_volume[volume_key]
+		if(!volume_bucket)
+			volume_bucket = list()
+			listeners_by_volume[volume_key] = volume_bucket
+		volume_bucket += listener
+	for(var/volume_key in listeners_by_volume)
+		announcement_sound.volume = text2num(volume_key)
+		// Список-адресат обязан лежать в локальной переменной: для LHS-индексации
+		// "a[b] << x" компилятор эмитит стрим-опкод и это рантаймит "bad savefile or list".
+		var/list/send_bucket = listeners_by_volume[volume_key]
+		SEND_SOUND(send_bucket, announcement_sound)
 
 /**
  * Summon the crew for an emergency meeting
@@ -170,11 +204,14 @@
 	for(var/mob/M in GLOB.player_list)
 		if(!isnewplayer(M) && M.can_hear())
 			to_chat(M, "[span_minorannounce("<font color = red>[title]</font color><BR>[message]")]<BR>")
-			if(M.client.prefs.toggles & SOUND_ANNOUNCEMENTS)
+			if(M.client?.prefs?.toggles & SOUND_ANNOUNCEMENTS)
+				var/pref_vol = M.client?.prefs?.get_sound_volume("announcements")
+				if(isnull(pref_vol))
+					pref_vol = 100
 				if(alert)
-					SEND_SOUND(M, sound('sound/misc/notice1.ogg'))
+					SEND_SOUND(M, sound('sound/misc/notice1.ogg', volume = pref_vol))
 				else
-					SEND_SOUND(M, sound('sound/misc/notice2.ogg'))
+					SEND_SOUND(M, sound('sound/misc/notice2.ogg', volume = pref_vol))
 
 /proc/build_system_notice(title, body, theme = "notice", label = null, focus = null)
 	var/list/classes = list(
@@ -206,11 +243,14 @@
 	for(var/mob/M in GLOB.player_list)
 		if(!isnewplayer(M) && M.can_hear())
 			to_chat(M, html)
-			if(M.client.prefs.toggles & SOUND_ANNOUNCEMENTS)
+			if(M.client?.prefs?.toggles & SOUND_ANNOUNCEMENTS)
+				var/pref_vol = M.client?.prefs?.get_sound_volume("announcements")
+				if(isnull(pref_vol))
+					pref_vol = 100
 				if(raised)
-					SEND_SOUND(M, sound('sound/misc/notice1.ogg'))
+					SEND_SOUND(M, sound('sound/misc/notice1.ogg', volume = pref_vol))
 				else
-					SEND_SOUND(M, sound('sound/misc/notice2.ogg'))
+					SEND_SOUND(M, sound('sound/misc/notice2.ogg', volume = pref_vol))
 
 /proc/announce_captain_arrival(displayed_rank, captain_name)
 	if(!displayed_rank)
@@ -222,8 +262,11 @@
 	for(var/mob/M in GLOB.player_list)
 		if(!isnewplayer(M) && M.can_hear())
 			to_chat(M, html)
-			if(M.client.prefs.toggles & SOUND_ANNOUNCEMENTS)
-				SEND_SOUND(M, sound('sound/misc/notice2.ogg'))
+			if(M.client?.prefs?.toggles & SOUND_ANNOUNCEMENTS)
+				var/pref_vol = M.client?.prefs?.get_sound_volume("announcements")
+				if(isnull(pref_vol))
+					pref_vol = 100
+				SEND_SOUND(M, sound('sound/misc/notice2.ogg', volume = pref_vol))
 
 /proc/build_ai_upload_notice(remote_access_restored = FALSE)
 	if(remote_access_restored)

@@ -4,12 +4,12 @@ import { Button, Flex, Section } from 'tgui/components';
 import { useEmotes } from './hooks';
 
 
-export const EmotePanel = (props, context) => {
+export const EmotePanel = (props) => {
   const TGUI_PANEL_EMOTE_TYPE_DEFAULT = 1;
   const TGUI_PANEL_EMOTE_TYPE_CUSTOM = 2;
   const TGUI_PANEL_EMOTE_TYPE_ME = 3;
 
-  const emotes = useEmotes(context);
+  const emotes = useEmotes();
 
   const emoteList = [];
   for (const name in emotes.list) {
@@ -45,7 +45,7 @@ export const EmotePanel = (props, context) => {
 
   return (
     <Section>
-      <Flex align="center" style={{ 'flex-wrap': 'wrap' }}>
+      <Flex align="center" style={{ flexWrap: 'wrap' }}>
         {emoteList
           .sort((a, b) => { return a.name.localeCompare(b.name, 'en'); })
           .map(emote => {

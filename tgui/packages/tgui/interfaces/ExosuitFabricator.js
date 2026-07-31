@@ -1,6 +1,6 @@
 import { uniqBy } from 'common/collections';
 import { createSearch } from 'common/string';
-import { Fragment } from 'inferno';
+import { Fragment } from 'react';
 
 import { useBackend, useSharedState } from '../backend';
 import { Box, Button, Icon, Input, ProgressBar, Section, Stack } from '../components';
@@ -109,8 +109,8 @@ const searchFilter = (search, allparts) => {
   return searchResults;
 };
 
-export const ExosuitFabricator = (props, context) => {
-  const { act, data } = useBackend(context);
+export const ExosuitFabricator = (props) => {
+  const { act, data } = useBackend();
   const queue = data.queue || [];
   const materialAsObj = materialArrayToObj(data.materials || []);
   const {
@@ -118,8 +118,7 @@ export const ExosuitFabricator = (props, context) => {
     missingMatTally,
     textColors,
   } = queueCondFormat(materialAsObj, queue);
-  const [displayMatCost, setDisplayMatCost] = useSharedState(
-    context, 'display_mats', false);
+  const [displayMatCost, setDisplayMatCost] = useSharedState('display_mats', false);
   return (
     <Window
       title="Exosuit Fabricator"
@@ -186,12 +185,11 @@ export const ExosuitFabricator = (props, context) => {
   );
 };
 
-const PartSets = (props, context) => {
-  const { data } = useBackend(context);
+const PartSets = (props) => {
+  const { data } = useBackend();
   const partSets = data.partSets || [];
   const buildableParts = data.buildableParts || {};
-  const [selectedPartTab, setSelectedPartTab] = useSharedState(
-    context, 'part_tab', partSets.length ? buildableParts[0] : '');
+  const [selectedPartTab, setSelectedPartTab] = useSharedState('part_tab', partSets.length ? buildableParts[0] : '');
   return partSets
     .filter(set => buildableParts[set])
     .map(set => (
@@ -206,8 +204,8 @@ const PartSets = (props, context) => {
     ));
 };
 
-const PartLists = (props, context) => {
-  const { data } = useBackend(context);
+const PartLists = (props) => {
+  const { data } = useBackend();
 
   const getFirstValidPartSet = (sets => {
     for (let set of sets) {
@@ -229,16 +227,14 @@ const PartLists = (props, context) => {
   const [
     selectedPartTab,
     setSelectedPartTab,
-  ] = useSharedState(
-    context,
-    "part_tab",
+  ] = useSharedState("part_tab",
     getFirstValidPartSet(partSets)
   );
 
   const [
     searchText,
     setSearchText,
-  ] = useSharedState(context, "search_text", "");
+  ] = useSharedState("search_text", "");
 
   if (!selectedPartTab || !buildableParts[selectedPartTab]) {
     const validSet = getFirstValidPartSet(partSets);
@@ -313,8 +309,8 @@ const PartLists = (props, context) => {
   );
 };
 
-const PartCategory = (props, context) => {
-  const { act, data } = useBackend(context);
+const PartCategory = (props) => {
+  const { act, data } = useBackend();
   const {
     buildingPart,
   } = data;
@@ -326,7 +322,7 @@ const PartCategory = (props, context) => {
   } = props;
   const [
     displayMatCost,
-  ] = useSharedState(context, 'display_mats', false);
+  ] = useSharedState('display_mats', false);
   if (!forceShow && parts.length === 0) {
     return null;
   }
@@ -401,8 +397,8 @@ const PartCategory = (props, context) => {
   );
 };
 
-const Queue = (props, context) => {
-  const { act, data } = useBackend(context);
+const Queue = (props) => {
+  const { act, data } = useBackend();
   const { isProcessingQueue } = data;
   const queue = data.queue || [];
   const {
@@ -463,7 +459,7 @@ const Queue = (props, context) => {
   );
 };
 
-const QueueMaterials = (props, context) => {
+const QueueMaterials = (props) => {
   const {
     queueMaterials,
     missingMaterials,
@@ -487,8 +483,8 @@ const QueueMaterials = (props, context) => {
   );
 };
 
-const QueueList = (props, context) => {
-  const { act, data } = useBackend(context);
+const QueueList = (props) => {
+  const { act, data } = useBackend();
 
   const {
     textColors,
@@ -519,8 +515,8 @@ const QueueList = (props, context) => {
   ));
 };
 
-const BeingBuilt = (props, context) => {
-  const { data } = useBackend(context);
+const BeingBuilt = (props) => {
+  const { data } = useBackend();
   const {
     buildingPart,
     storedPart,

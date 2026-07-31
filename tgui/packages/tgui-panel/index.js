@@ -13,7 +13,7 @@ import { combineReducers } from 'common/redux';
 import { setupGlobalEvents } from 'tgui/events';
 import { captureExternalLinks } from 'tgui/links';
 import { createRenderer } from 'tgui/renderer';
-import { configureStore, StoreProvider } from 'tgui/store';
+import { configureStore } from 'tgui/store';
 import { setupHotReloading } from 'tgui-dev-server/link/client.cjs';
 
 import { audioMiddleware, audioReducer } from './audio';
@@ -56,11 +56,7 @@ const store = configureStore({
 });
 
 const renderApp = createRenderer(() => {
-  return (
-    <StoreProvider store={store}>
-      <Panel />
-    </StoreProvider>
-  );
+  return <Panel />;
 });
 
 const setupApp = () => {

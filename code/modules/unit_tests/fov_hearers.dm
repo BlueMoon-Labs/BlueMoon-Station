@@ -53,9 +53,11 @@
 		get_hearers_in_view(7, center)
 	var/view_ds = REALTIMEOFDAY - start
 
+	var/list/bench_hearers_sink = null
 	start = REALTIMEOFDAY
 	for(var/i in 1 to iterations)
-		hearers(7, center)
+		bench_hearers_sink = hearers(7, center)
 	var/hearers_ds = REALTIMEOFDAY - start
+	TEST_ASSERT_NOTNULL(bench_hearers_sink, "hearers() unexpectedly returned null during benchmark")
 
 	log_world("PERF: hearer gathering x[iterations]: get_hearers_in_view [view_ds * 100]ms vs native hearers [hearers_ds * 100]ms")

@@ -155,6 +155,7 @@
 		/obj/item/clothing/suit/hooded/wintercoat/paramedic = 2,
 		/obj/item/clothing/under/rank/medical/doctor/nurse = 5,
 		/obj/item/clothing/head/nursehat = 5,
+		/obj/item/clothing/suit/hospitaller = 3,
 		/obj/item/clothing/under/rank/medical/doctor/skirt= 5,
 		/obj/item/clothing/under/rank/medical/doctor/blue = 5,
 		/obj/item/clothing/under/rank/medical/doctor/green = 5,
@@ -482,9 +483,6 @@
 		/obj/item/book/granter/crafting_recipe/coldcooking = 2,
 		/obj/item/clothing/gloves/color/white = 3,
 	)
-	contraband = list(
-		/obj/item/card_sticker/muck = 2,
-	)
 	refill_canister = /obj/item/vending_refill/wardrobe/chef_wardrobe
 	payment_department = ACCOUNT_SRV
 
@@ -505,6 +503,7 @@
 		/obj/item/clothing/gloves/color/black = 2,
 		/obj/item/clothing/head/soft/purple = 2,
 		/obj/item/broom = 2,
+		/obj/item/wirebrush = 2,
 		/obj/item/paint/paint_remover = 2,
 		/obj/item/melee/flyswatter = 2,
 		/obj/item/flashlight = 2,
@@ -601,6 +600,8 @@
 		/obj/item/clothing/suit/chaplain/clownpriest = 3, //BlueMoon changes,
 		/obj/item/clothing/suit/chaplain/shrinehand = 3, //BlueMoon changes,
 		/obj/item/clothing/suit/hooded/chaplain_hoodie/monk_robe = 2, //BlueMoon changes,
+		/obj/item/clothing/suit/hooded/genetor = 2, //BlueMoon changes,
+		/obj/item/clothing/suit/hooded/genetor_follower = 4, //BlueMoon changes,
 		/obj/item/clothing/neck/oldcross = 6,  //BlueMoon changes,
 		/obj/item/clothing/neck/epitrachelion = 1, //BlueMoon changes,
 		/obj/item/clothing/neck/cloak/bishop = 1, //BlueMoon changes,

@@ -49,7 +49,6 @@
 	icon_state = "pda-hop"
 	starting_programs = list(
 		/datum/computer_file/program/crew_manifest,
-		/datum/computer_file/program/job_management,
 	)
 
 /obj/item/modular_computer/pda/heads/hos
@@ -323,9 +322,7 @@
 	icon_state = "pda-library"
 	inserted_item = /obj/item/pen/fountain
 	long_ranged = TRUE
-	starting_programs = list(
-		/datum/computer_file/program/portrait_printer,
-	)
+	starting_programs = list()
 
 // =====================
 // No department / misc
@@ -348,7 +345,7 @@
 
 /obj/item/modular_computer/pda/syndicate/Initialize(mapload)
 	. = ..()
-	var/datum/computer_file/program/messenger/msg = locate() in get_all_files()
+	var/datum/computer_file/program/messenger/msg = locate(/datum/computer_file/program/messenger) in get_all_files()
 	if(msg)
 		msg.invisible = TRUE
 

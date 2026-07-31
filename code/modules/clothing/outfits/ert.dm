@@ -204,7 +204,8 @@
 		/obj/item/storage/firstaid/brute=1,\
 		/obj/item/storage/firstaid/fire=1,\
 		/obj/item/storage/box/ammo/wt=1,\
-		/obj/item/gun/energy/e_gun/dragnet=1,
+		/obj/item/gun/energy/e_gun/dragnet=1,\
+		/obj/item/gun/energy/e_gun/nuclear/ert=1,\
 		)
 
 	cybernetic_implants = list(

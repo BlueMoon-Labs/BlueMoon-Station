@@ -230,6 +230,14 @@
 	var/cooldown_timer
 	var/next_sound
 
+/// Консоль встаёт в SSobj через START_PROCESSING и снимается оттуда только тумблером
+/// change_moving(). Свой forceMove при выезде из допустимой зоны делает qdel(src) прямо
+/// на ходу движения - подсистема при этом продолжает держать ссылку, и консоль оставалась
+/// незакрытым hard delete (прод-раунд 9830).
+/obj/hotel_things/train/console/Destroy()
+	STOP_PROCESSING(SSobj, src)
+	return ..()
+
 /obj/hotel_things/train/console/proc/use(mob/user)
 	if(!in_range(src, user))
 		return
@@ -286,7 +294,9 @@
 			START_PROCESSING(SSobj, src)
 			return
 
-	if(current_area.type in valid_area)
+	// istype выше мог не пройти, и тогда current_area здесь null - разыменование типа
+	// уронило бы forceMove ещё до проверки зоны.
+	if(current_area && (current_area.type in valid_area))
 		if(moving)
 			STOP_PROCESSING(SSobj, src)
 			return

@@ -1,13 +1,25 @@
 /datum/round_event_control/blob
 	name = "Blob"
 	typepath = /datum/round_event/ghost_role/blob
-	weight = 5
+	weight = 3
 	max_occurrences = 1
 
-	earliest_start = 90 MINUTES
-	min_players = 40
-	dynamic_should_hijack = TRUE
+	// Было 90 мин - блоб почти не успевал в обычный раунд, 55/40 тоже не открылись ни разу
+	// за логи 9766-9775: медиум-экипаж 22-33, хард 42-59, а к 55-й минуте скучающий раунд
+	// уже зовёт шаттл. 45 мин и 30 попа = реальное окно обычного вечера; редкость дальше
+	// держат вес 3, цена 15 и heavy-гейт нагрузки.
+	earliest_start = 45 MINUTES
+	min_players = 30
 	category = EVENT_CATEGORY_ENTITIES
+	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
+	cost = 15
+	intensity = 30
+	director_ghost_jobban = ROLE_BLOB
+	director_ghost_preference = ROLE_BLOB
+	intensity_linger = 45 MINUTES // блоб-осада живёт заметно дольше спавнера
+	antag_heavy = TRUE // угроза всей станции: мягкие профили такое выключают
+	family = "blob" // с рулсетами-двойниками динамика (гост-блоб, заражение): не подряд
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // не экста и не лайт
 	description = "Spawns a new blob overmind."
 
 /datum/round_event/ghost_role/blob
@@ -17,7 +29,7 @@
 
 /datum/round_event/ghost_role/blob/announce(fake)
 	if(prob(75))
-		priority_announce("Подтвержденная вспышка биологической опасности уровня 5 на борту [station_name()]. Весь персонал должен противостоять эпидемии.", "Биологическая Тревога", "outbreak5", has_important_message = TRUE)
+		priority_announce("Подтвержденная вспышка биологической опасности уровня 5 на борту [station_name()]. Весь персонал должен противостоять эпидемии.", "Биологическая Тревога", "outbreak5", type = "outbreak5", has_important_message = TRUE)
 	else
 		print_command_report("Подтвержденная вспышка биологической опасности уровня 5 на борту [station_name()]. Весь персонал должен противостоять эпидемии.", "Биологическая Тревога")
 

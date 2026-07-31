@@ -1026,7 +1026,7 @@
 "ajK" = (
 /obj/structure/lattice/catwalk,
 /obj/structure/fence/handrail,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "akg" = (
 /turf/open/floor/engine,
@@ -6417,7 +6417,7 @@
 	pixel_y = 6
 	},
 /obj/structure/lattice/catwalk,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "biU" = (
 /obj/structure/flora/rock/icy,
@@ -6878,8 +6878,7 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/trimline/blue/mid_joiner,
-/obj/item/radio/intercom{
-	freerange = 1;
+/obj/item/radio/intercom/command{
 	name = "common channel";
 	pixel_y = 23
 	},
@@ -21733,7 +21732,7 @@
 	dir = 8
 	},
 /obj/structure/lattice/catwalk,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "dTP" = (
 /obj/effect/turf_decal/box/white/corners{
@@ -22243,9 +22242,7 @@
 	dir = 6
 	},
 /obj/effect/turf_decal/siding/wood/end,
-/obj/item/kirbyplants/random{
-	pixel_y = 6
-	},
+/obj/machinery/vending/cola/random,
 /turf/open/floor/wood,
 /area/service/library)
 "dZg" = (
@@ -25111,7 +25108,7 @@
 	dir = 4
 	},
 /obj/structure/lattice,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "eyH" = (
 /obj/effect/turf_decal/bot/white{
@@ -25460,7 +25457,7 @@
 /obj/structure/fence/handrail/handrail_corner{
 	dir = 1
 	},
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "eBB" = (
 /obj/structure/disposalpipe/segment,
@@ -26814,7 +26811,7 @@
 "eNd" = (
 /obj/structure/transit_tube/horizontal,
 /obj/structure/lattice,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "eNq" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/visible,
@@ -27144,7 +27141,7 @@
 /obj/structure/railing{
 	dir = 8
 	},
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "eQH" = (
 /obj/structure/light_construct/small,
@@ -29325,11 +29322,9 @@
 /turf/open/floor/plating,
 /area/cargo/sorting)
 "foD" = (
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
-	prison_radio = 1
 	},
 /obj/machinery/light/small{
 	dir = 1
@@ -30253,6 +30248,15 @@
 	},
 /turf/open/floor/plasteel/dark/side,
 /area/science)
+"fxL" = (
+/obj/effect/turf_decal/tile/dark_blue/opposingcorners,
+/obj/effect/turf_decal/tile/neutral/opposingcorners{
+	dir = 1
+	},
+/obj/machinery/washing_machine,
+/obj/effect/turf_decal/bot/yellow,
+/turf/open/floor/plasteel/white,
+/area/commons/dorms)
 "fxR" = (
 /obj/machinery/button/door{
 	id = "Cell2";
@@ -31832,7 +31836,7 @@
 /area/service/chapel/main/monastery)
 "fLI" = (
 /obj/structure/transit_tube/diagonal,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "fLJ" = (
 /obj/effect/turf_decal/siding/wood{
@@ -34435,17 +34439,19 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 8
 	},
-/obj/structure/bookcase/random/religion,
 /obj/effect/turf_decal/siding/wood{
 	dir = 8
 	},
 /obj/effect/turf_decal/siding/wood{
 	dir = 4
 	},
-/obj/machinery/newscaster{
-	pixel_x = 32
+/obj/structure/sign/painting/large/library/directional/east,
+/obj/structure/table/wood/fancy,
+/obj/structure/window/reinforced,
+/obj/structure/window/reinforced{
+	dir = 8
 	},
-/turf/closed/wall/mineral/wood/nonmetal,
+/turf/open/floor/wood,
 /area/service/library)
 "gkZ" = (
 /obj/effect/decal/cleanable/glass,
@@ -34830,7 +34836,7 @@
 /obj/structure/fence/handrail/handrail_end{
 	dir = 1
 	},
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "goP" = (
 /obj/effect/turf_decal/siding/wood{
@@ -35106,7 +35112,7 @@
 /obj/structure/railing{
 	dir = 6
 	},
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "grp" = (
 /obj/machinery/camera/autoname{
@@ -36818,7 +36824,7 @@
 "gIi" = (
 /obj/structure/table,
 /obj/structure/lattice/catwalk,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "gIk" = (
 /obj/machinery/atmospherics/pipe/simple/yellow/visible{
@@ -37397,11 +37403,9 @@
 /obj/effect/turf_decal/trimline/purple/filled/line{
 	dir = 1
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
-	prison_radio = 1
 	},
 /obj/machinery/light{
 	dir = 1
@@ -42195,7 +42199,7 @@
 /obj/structure/railing{
 	dir = 1
 	},
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "hHl" = (
 /obj/effect/decal/cleanable/dirt/dust,
@@ -42311,8 +42315,7 @@
 /obj/machinery/light{
 	dir = 1
 	},
-/obj/item/radio/intercom{
-	freerange = 1;
+/obj/item/radio/intercom/command{
 	name = "common channel";
 	pixel_y = 23
 	},
@@ -43897,6 +43900,16 @@
 /obj/effect/landmark/event_spawn,
 /turf/open/floor/carpet/blue,
 /area/command/heads_quarters/ce)
+"hWV" = (
+/obj/effect/turf_decal/tile/dark_blue/opposingcorners,
+/obj/effect/turf_decal/tile/neutral/opposingcorners{
+	dir = 1
+	},
+/obj/machinery/firealarm/directional/north,
+/obj/structure/table,
+/obj/structure/bedsheetbin/towel,
+/turf/open/floor/plasteel/white,
+/area/commons/dorms)
 "hWY" = (
 /obj/structure/chair{
 	dir = 8
@@ -45247,6 +45260,7 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 1
 	},
+/obj/structure/window/reinforced,
 /turf/open/floor/wood,
 /area/service/library)
 "iiF" = (
@@ -45858,7 +45872,7 @@
 /obj/structure/fence/handrail{
 	dir = 4
 	},
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "ioD" = (
 /obj/machinery/modular_computer/console/preset/id{
@@ -46307,6 +46321,15 @@
 /obj/structure/marker_beacon/bronze,
 /turf/open/floor/wood,
 /area/icemoon/surface/outdoors)
+"isy" = (
+/obj/effect/turf_decal/tile/dark_blue/opposingcorners,
+/obj/effect/turf_decal/tile/neutral/opposingcorners{
+	dir = 1
+	},
+/obj/effect/turf_decal/bot/yellow,
+/obj/machinery/washing_machine,
+/turf/open/floor/plasteel/white,
+/area/commons/dorms)
 "isG" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on,
 /turf/open/floor/plasteel/grimy,
@@ -48999,6 +49022,7 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 1
 	},
+/obj/structure/window/reinforced,
 /turf/open/floor/wood,
 /area/service/library)
 "iRp" = (
@@ -49533,6 +49557,10 @@
 /obj/effect/turf_decal/siding/wood,
 /obj/effect/turf_decal/siding/wood{
 	dir = 1
+	},
+/obj/machinery/door/window{
+	name = "Library Desk";
+	req_access_txt = "37"
 	},
 /turf/open/floor/wood,
 /area/service/library)
@@ -54696,8 +54724,7 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/bot/yellow,
-/obj/item/radio/intercom{
-	freerange = 1;
+/obj/item/radio/intercom/command{
 	name = "common channel";
 	pixel_y = 23
 	},
@@ -55917,7 +55944,7 @@
 /area/maintenance/department/science/xenobiology)
 "kbQ" = (
 /obj/structure/disposalpipe/broken,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "kbY" = (
 /turf/open/floor/wood,
@@ -58093,6 +58120,11 @@
 /obj/effect/spawner/structure/window/reinforced,
 /turf/open/floor/plating,
 /area/mine/maintenance)
+"kuM" = (
+/turf/open/floor/plasteel/smooth/edge{
+	dir = 1
+	},
+/area/commons/dorms)
 "kuN" = (
 /obj/structure/cable{
 	icon_state = "4-8"
@@ -59835,12 +59867,15 @@
 /turf/open/floor/plating,
 /area/ruin/icemoon/unpowered/glacier/engineering)
 "kKF" = (
-/obj/machinery/vending/cola/random,
 /obj/machinery/light/small{
 	dir = 1
 	},
 /obj/effect/turf_decal/siding/wood{
 	dir = 5
+	},
+/obj/structure/bookcase/random/adult,
+/obj/structure/sign/painting/library{
+	pixel_x = 32
 	},
 /turf/open/floor/wood,
 /area/service/library)
@@ -62810,9 +62845,22 @@
 /turf/open/floor/plating/snowed/smoothed/icemoon,
 /area/icemoon/surface/outdoors)
 "llN" = (
-/obj/machinery/readybutton,
-/turf/closed/mineral/random/snow,
-/area/icemoon/surface/outdoors)
+/obj/effect/turf_decal/loading_area{
+	dir = 1;
+	icon_state = "drain";
+	name = "drain"
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 4
+	},
+/turf/open/floor/plasteel/smooth/edge,
+/area/commons/dorms)
 "llR" = (
 /obj/effect/turf_decal/siding/white{
 	dir = 8
@@ -62952,7 +63000,7 @@
 /obj/structure/fence/handrail/handrail_corner{
 	dir = 4
 	},
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "lmM" = (
 /obj/machinery/light{
@@ -63606,6 +63654,23 @@
 /obj/effect/spawner/structure/window/plasma/reinforced,
 /turf/open/floor/plating,
 /area/engineering/atmos)
+"lsu" = (
+/obj/effect/turf_decal/tile/dark_blue/opposingcorners,
+/obj/effect/turf_decal/tile/neutral/opposingcorners{
+	dir = 1
+	},
+/obj/machinery/washing_machine,
+/obj/item/reagent_containers/rag/towel/syndicate{
+	pixel_x = 4;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/rag/towel/random{
+	pixel_y = 10;
+	pixel_x = -2
+	},
+/obj/effect/turf_decal/bot/yellow,
+/turf/open/floor/plasteel/white,
+/area/commons/dorms)
 "lsA" = (
 /obj/structure/mirror{
 	pixel_x = -28
@@ -72867,13 +72932,13 @@
 /turf/open/floor/plasteel/dark/side,
 /area/engineering/lobby)
 "ndZ" = (
-/obj/machinery/vending/coffee,
 /obj/structure/sign/painting/library{
 	pixel_x = 32
 	},
 /obj/effect/turf_decal/siding/wood{
 	dir = 4
 	},
+/obj/structure/bookcase/random/adult,
 /turf/open/floor/wood,
 /area/service/library)
 "neh" = (
@@ -75797,17 +75862,15 @@
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/science/xenobiology)
 "nHF" = (
-/obj/structure/cable{
-	icon_state = "1-2"
+/obj/effect/mapping_helpers/network_builder/power_cable/auto,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 8
 	},
-/obj/structure/disposalpipe/trunk,
-/obj/structure/disposalpipe/trunk,
-/obj/structure/disposalpipe/trunk,
-/obj/structure/disposalpipe/trunk,
-/obj/structure/disposalpipe/trunk,
-/obj/structure/disposalpipe/trunk,
-/turf/open/floor/wood,
-/area/service/library)
+/obj/effect/turf_decal/tile/neutral,
+/turf/open/floor/plasteel/smooth/edge{
+	dir = 1
+	},
+/area/commons/dorms)
 "nHL" = (
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
@@ -76422,8 +76485,7 @@
 /obj/item/mmi,
 /obj/item/assembly/prox_sensor,
 /obj/effect/decal/cleanable/dirt,
-/obj/item/radio/intercom{
-	freerange = 1;
+/obj/item/radio/intercom/command{
 	name = "common channel";
 	pixel_y = 22;
 	pixel_x = 1
@@ -76758,7 +76820,7 @@
 /area/command/heads_quarters/cmo)
 "nRW" = (
 /obj/structure/railing,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "nRZ" = (
 /obj/structure/cable{
@@ -77155,7 +77217,7 @@
 "nVw" = (
 /obj/structure/transit_tube/curved,
 /obj/structure/lattice/catwalk,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "nVD" = (
 /obj/machinery/button/door{
@@ -79262,11 +79324,16 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 8
 	},
-/obj/structure/bookcase/random/adult,
 /obj/effect/turf_decal/siding/wood{
 	dir = 4
 	},
-/turf/closed/wall/mineral/wood/nonmetal,
+/obj/structure/sign/painting/large/library/directional/east,
+/obj/structure/table/wood/fancy,
+/obj/machinery/door/window{
+	name = "Secure Art Exhibition";
+	dir = 8
+	},
+/turf/open/floor/wood,
 /area/service/library)
 "ooG" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
@@ -79455,6 +79522,7 @@
 /obj/effect/turf_decal/siding/wood/end{
 	dir = 1
 	},
+/obj/structure/closet/emcloset,
 /turf/open/floor/wood,
 /area/service/library)
 "opK" = (
@@ -79558,7 +79626,7 @@
 "oqC" = (
 /obj/structure/lattice/catwalk,
 /obj/structure/marker_beacon/bronze,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "oqD" = (
 /obj/structure/closet,
@@ -80791,7 +80859,7 @@
 "oEo" = (
 /obj/structure/lattice/catwalk,
 /obj/structure/fence/handrail/handrail_corner,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "oEp" = (
 /obj/effect/turf_decal/loading_area{
@@ -83819,7 +83887,7 @@
 /obj/structure/railing{
 	dir = 4
 	},
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "pgu" = (
 /turf/open/floor/plating/snowed/smoothed/icemoon,
@@ -87646,6 +87714,9 @@
 	},
 /obj/machinery/holopad,
 /obj/effect/turf_decal/bot/yellow,
+/obj/machinery/newscaster{
+	pixel_x = -30
+	},
 /turf/open/floor/wood,
 /area/service/library)
 "pSu" = (
@@ -89479,7 +89550,7 @@
 	pixel_y = 6
 	},
 /obj/structure/lattice/catwalk,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "qjO" = (
 /obj/structure/cable{
@@ -89794,14 +89865,14 @@
 /obj/effect/turf_decal/siding/wood/corner{
 	dir = 8
 	},
-/obj/structure/bookcase/random/adult,
 /obj/effect/turf_decal/siding/wood{
 	dir = 5
 	},
-/obj/structure/sign/plaques/kiddie/library{
-	pixel_x = 32
+/obj/structure/table/wood/fancy,
+/obj/structure/window/reinforced{
+	dir = 8
 	},
-/turf/closed/wall/mineral/wood/nonmetal,
+/turf/open/floor/wood,
 /area/service/library)
 "qmb" = (
 /obj/machinery/atmospherics/pipe/simple/general/visible{
@@ -90699,6 +90770,7 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 1
 	},
+/obj/structure/window/reinforced,
 /turf/open/floor/wood,
 /area/service/library)
 "qvs" = (
@@ -92524,6 +92596,17 @@
 	},
 /turf/open/floor/plasteel/smooth/edge,
 /area/commons/dorms)
+"qLq" = (
+/obj/effect/turf_decal/siding/wood,
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/obj/structure/window/reinforced,
+/obj/machinery/modular_computer/console/preset/curator{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/service/library)
 "qLt" = (
 /obj/machinery/hydroponics/constructable,
 /obj/effect/turf_decal/bot/yellow,
@@ -92943,17 +93026,18 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 8
 	},
-/obj/structure/bookcase/random/reference,
 /obj/effect/turf_decal/siding/wood{
 	dir = 8
 	},
 /obj/effect/turf_decal/siding/wood{
 	dir = 4
 	},
-/obj/structure/sign/painting/library{
-	pixel_x = 32
+/obj/structure/table/wood/fancy,
+/obj/machinery/door/window{
+	name = "Secure Art Exhibition";
+	dir = 8
 	},
-/turf/closed/wall/mineral/wood/nonmetal,
+/turf/open/floor/wood,
 /area/service/library)
 "qPy" = (
 /obj/structure/disposalpipe/segment{
@@ -94043,7 +94127,7 @@
 "qZn" = (
 /obj/structure/transit_tube/crossing/horizontal,
 /obj/structure/lattice,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "qZo" = (
 /obj/machinery/vending/kink,
@@ -94195,7 +94279,7 @@
 "raJ" = (
 /obj/structure/transit_tube/crossing/horizontal,
 /obj/structure/lattice/catwalk,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "raO" = (
 /obj/machinery/suit_storage_unit/mining,
@@ -99323,16 +99407,6 @@
 /turf/open/floor/plasteel/smooth/small,
 /area/service/sauna)
 "rXn" = (
-/obj/machinery/washing_machine,
-/obj/item/reagent_containers/rag/towel/syndicate{
-	pixel_x = 4;
-	pixel_y = 6
-	},
-/obj/item/reagent_containers/rag/towel/random{
-	pixel_y = 10;
-	pixel_x = -2
-	},
-/obj/effect/turf_decal/bot/yellow,
 /obj/effect/turf_decal/tile/dark_blue/opposingcorners,
 /obj/effect/turf_decal/tile/neutral/opposingcorners{
 	dir = 1
@@ -99340,6 +99414,7 @@
 /obj/machinery/status_display/ai{
 	pixel_y = 32
 	},
+/obj/structure/table,
 /turf/open/floor/plasteel/white,
 /area/commons/dorms)
 "rXo" = (
@@ -100142,17 +100217,21 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 8
 	},
-/obj/structure/bookcase/random/adult,
 /obj/effect/turf_decal/siding/wood{
 	dir = 8
 	},
 /obj/effect/turf_decal/siding/wood{
 	dir = 4
 	},
-/obj/structure/sign/poster/random{
+/obj/structure/sign/painting{
 	pixel_x = 32
 	},
-/turf/closed/wall/mineral/wood/nonmetal,
+/obj/structure/table/wood/fancy,
+/obj/machinery/door/window{
+	name = "Secure Art Exhibition";
+	dir = 8
+	},
+/turf/open/floor/wood,
 /area/service/library)
 "sdX" = (
 /obj/structure/girder,
@@ -101288,7 +101367,7 @@
 	},
 /area/engineering/atmos/upper)
 "sre" = (
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "srg" = (
 /obj/machinery/computer/scan_consolenew{
@@ -101773,7 +101852,7 @@
 	dir = 4;
 	layer = 4.8
 	},
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "svS" = (
 /obj/effect/turf_decal/trimline/purple/filled/line{
@@ -105536,6 +105615,9 @@
 	},
 /obj/machinery/light/warm{
 	dir = 1
+	},
+/obj/structure/sign/plaques/kiddie/library{
+	pixel_y = 32
 	},
 /turf/open/floor/wood,
 /area/service/library)
@@ -109740,13 +109822,11 @@
 /turf/open/floor/plating/asteroid/snow/icemoon,
 /area/icemoon/surface/outdoors)
 "tSl" = (
-/obj/structure/table,
-/obj/structure/bedsheetbin/towel,
 /obj/effect/turf_decal/tile/dark_blue/opposingcorners,
 /obj/effect/turf_decal/tile/neutral/opposingcorners{
 	dir = 1
 	},
-/obj/machinery/firealarm/directional/north,
+/obj/structure/table,
 /turf/open/floor/plasteel/white,
 /area/commons/dorms)
 "tSm" = (
@@ -109826,7 +109906,7 @@
 /area/science/xenobiology)
 "tSW" = (
 /obj/structure/lattice,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "tTf" = (
 /obj/effect/turf_decal/trimline/blue/filled/corner{
@@ -115509,7 +115589,7 @@
 "uTO" = (
 /obj/structure/marker_beacon/bronze,
 /obj/structure/lattice/catwalk,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "uUf" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
@@ -118676,11 +118756,9 @@
 /obj/effect/turf_decal/trimline/purple/filled/line{
 	dir = 1
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
-	prison_radio = 1
 	},
 /turf/open/floor/plasteel/smooth/edge,
 /area/science)
@@ -120100,7 +120178,7 @@
 "vKV" = (
 /obj/structure/transit_tube/horizontal,
 /obj/structure/lattice/catwalk,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "vKZ" = (
 /obj/effect/turf_decal/tile/neutral/diagonal_centre,
@@ -121441,7 +121519,7 @@
 /obj/effect/turf_decal/siding/wood/end{
 	dir = 1
 	},
-/obj/structure/closet/emcloset,
+/obj/machinery/vending/coffee,
 /turf/open/floor/wood,
 /area/service/library)
 "vYG" = (
@@ -122558,11 +122636,9 @@
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 1
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
-	prison_radio = 1
 	},
 /obj/structure/disposalpipe/segment{
 	dir = 4
@@ -122821,7 +122897,7 @@
 /obj/structure/fence/handrail/handrail_corner{
 	dir = 8
 	},
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "wkp" = (
 /obj/structure/sign/directions/medical{
@@ -123148,7 +123224,7 @@
 /area/command/heads_quarters/ce)
 "wnx" = (
 /obj/structure/lattice/catwalk,
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "wnz" = (
 /obj/effect/spawner/structure/window/reinforced,
@@ -124911,11 +124987,9 @@
 	},
 /area/mine/living_quarters)
 "wES" = (
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
-	prison_radio = 1
 	},
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer1,
 /obj/structure/bed,
@@ -127686,12 +127760,12 @@
 /turf/open/floor/catwalk_floor,
 /area/maintenance/disposal)
 "xcB" = (
-/obj/machinery/washing_machine,
-/obj/effect/turf_decal/bot/yellow,
 /obj/effect/turf_decal/tile/dark_blue/opposingcorners,
 /obj/effect/turf_decal/tile/neutral/opposingcorners{
 	dir = 1
 	},
+/obj/effect/turf_decal/bot/yellow,
+/obj/machinery/vending/cigarette,
 /turf/open/floor/plasteel/white,
 /area/commons/dorms)
 "xcI" = (
@@ -130982,7 +131056,7 @@
 /obj/structure/railing{
 	dir = 5
 	},
-/turf/open/openspace,
+/turf/open/openspace/icemoon/keep_below,
 /area/icemoon/surface/outdoors)
 "xIu" = (
 /obj/machinery/computer/monitor/secret{
@@ -133687,6 +133761,7 @@
 	fax_name = "General Fax";
 	name = "General Fax"
 	},
+/obj/structure/sign/painting/large/library_private/directional/north,
 /turf/open/indestructible/lfwb/no_smooth/darkfloor{
 	dir = 4
 	},
@@ -175356,9 +175431,9 @@ hhV
 hhV
 gAV
 uya
-nyr
-qXR
-iEb
+rhl
+oMm
+nHF
 nyr
 nyr
 nyr
@@ -175613,13 +175688,13 @@ ejG
 hhV
 hhV
 gAV
+rhl
+oMm
+nHF
 nyr
-pDz
-odh
-lWR
-lCM
-nna
-nyr
+hhV
+hhV
+hhV
 hhV
 gAV
 mie
@@ -175870,13 +175945,13 @@ ejG
 ejG
 hhV
 hhV
+rhl
+oMm
+nHF
 nyr
-bIp
-fDU
-uYM
-lCM
-nna
-nyr
+hhV
+hhV
+hhV
 hhV
 hhV
 gAV
@@ -176127,13 +176202,13 @@ ejG
 ejG
 ejG
 ejG
+rhl
+oMm
+nHF
 nyr
-nyr
-nyr
-nyr
-nyr
-nyr
-nyr
+hhV
+hhV
+hhV
 hhV
 hhV
 hhV
@@ -176384,13 +176459,13 @@ ejG
 ejG
 ejG
 ejG
-ejG
-ejG
-ejG
-ejG
-ejG
-ejG
-ejG
+nyr
+qXR
+iEb
+nyr
+nyr
+nyr
+nyr
 ejG
 ejG
 ejG
@@ -176641,13 +176716,13 @@ ejG
 ejG
 ejG
 ejG
-ejG
-ejG
-ejG
-ejG
-ejG
-ejG
-ejG
+nyr
+pDz
+odh
+lWR
+lCM
+nna
+nyr
 ejG
 ejG
 ejG
@@ -176898,13 +176973,13 @@ ejG
 ejG
 ejG
 ejG
-ejG
-ejG
-ejG
-ejG
-ejG
-ejG
-ejG
+nyr
+bIp
+fDU
+uYM
+lCM
+nna
+nyr
 ejG
 ejG
 ejG
@@ -177155,13 +177230,13 @@ ejG
 ejG
 ejG
 ejG
-ejG
-ejG
-ejG
-ejG
-ejG
-ejG
-ejG
+nyr
+nyr
+nyr
+nyr
+nyr
+nyr
+nyr
 ejG
 ejG
 ejG
@@ -240894,24 +240969,24 @@ ssT
 ssT
 ssT
 ssT
+ssT
+ssT
+ssT
 nyr
-nyr
-nyr
-nyr
-keE
+oMe
+oMe
+oMe
+oMe
+oMe
+oMe
+oMe
+oMe
+oMe
+oMe
 vjS
-vjS
-wOb
-vjS
-vjS
-wOb
-vjS
-vjS
-keE
-keE
 tSl
-oyd
-odc
+llN
+kuM
 keE
 jBq
 mvn
@@ -241151,24 +241226,24 @@ ssT
 ssT
 ssT
 ssT
+ssT
+ssT
+ssT
 nyr
-icF
-icF
-icF
-spi
-tbA
-wPT
-kVO
-nAD
-nAD
-nAD
-nAD
-nAD
-owO
-fvR
-qDo
-aaH
-odc
+oMe
+oMe
+oMe
+oMe
+oMe
+oMe
+oMe
+oMe
+oMe
+oMe
+vjS
+fxL
+llN
+kuM
 keE
 qyy
 bwS
@@ -241408,25 +241483,25 @@ ssT
 ssT
 ssT
 ssT
+ssT
+ssT
+ssT
 nyr
-icF
-hLA
-icF
-rvf
-iJA
-uYM
-wyq
-uYM
-uYM
-puH
-uYM
-uYM
-nNW
-rvf
-nfE
-uYM
-nSq
-nyr
+oMe
+oMe
+oMe
+oMe
+oMe
+oMe
+oMe
+oMe
+oMe
+oMe
+vjS
+isy
+llN
+kuM
+keE
 nyr
 rhl
 nyr
@@ -241665,25 +241740,25 @@ ssT
 ssT
 ssT
 ssT
+ssT
+ssT
+ssT
 nyr
-nyr
-nyr
-nyr
-nyr
-rhl
-rhl
-nyr
-rhl
-rhl
-nyr
-rhl
-rhl
-nyr
-nyr
-nyr
-nyr
-nyr
-nyr
+oMe
+oMe
+oMe
+oMe
+oMe
+oMe
+oMe
+oMe
+oMe
+oMe
+keE
+lsu
+llN
+kuM
+keE
 tjB
 tjB
 tjB
@@ -241922,25 +241997,25 @@ ssT
 ssT
 ssT
 ssT
-ssT
-ssT
-ssT
-tjB
-tjB
-gAV
-gAV
-gAV
-gAV
-gAV
-gAV
-gAV
-gAV
-gAV
-gAV
-tjB
-tjB
-tjB
-tjB
+nyr
+nyr
+nyr
+nyr
+keE
+vjS
+vjS
+wOb
+vjS
+vjS
+wOb
+vjS
+vjS
+keE
+keE
+hWV
+oyd
+odc
+keE
 tjB
 tjB
 tjB
@@ -242179,25 +242254,25 @@ ssT
 ssT
 ssT
 ssT
-ssT
-ssT
-tjB
-tjB
-gAV
-gAV
-gAV
-uya
-gAV
-gAV
-gAV
-uya
-gAV
-uya
-gAV
-gAV
-gAV
-gAV
-llN
+nyr
+icF
+icF
+icF
+spi
+tbA
+wPT
+kVO
+nAD
+nAD
+nAD
+nAD
+nAD
+owO
+fvR
+qDo
+aaH
+odc
+keE
 tjB
 tjB
 gAV
@@ -242436,25 +242511,25 @@ ssT
 ssT
 ssT
 ssT
-ssT
-tjB
-tjB
-gAV
-gAV
-uya
-gAV
-gAV
-gAV
-gAV
-rRb
-gAV
-gAV
-wGw
-uya
-hob
-gAV
-gAV
-gAV
+nyr
+icF
+hLA
+icF
+rvf
+iJA
+uYM
+wyq
+uYM
+uYM
+puH
+uYM
+uYM
+nNW
+rvf
+nfE
+uYM
+nSq
+nyr
 gAV
 atc
 gAV
@@ -242693,25 +242768,25 @@ ssT
 ssT
 ssT
 ssT
-ssT
-tjB
-gAV
-gAV
-gAV
-gAV
-rRb
-gAV
-gAV
-gAV
-gAV
-rFb
-gAV
-gAV
-gAV
-gAV
-gAV
-gAV
-gAV
+nyr
+nyr
+nyr
+nyr
+nyr
+rhl
+rhl
+nyr
+rhl
+rhl
+nyr
+rhl
+rhl
+nyr
+nyr
+nyr
+nyr
+nyr
+nyr
 rRb
 gAV
 gAV
@@ -301687,7 +301762,7 @@ bqk
 nVD
 mjQ
 mjQ
-iiw
+qLq
 qVS
 gmQ
 mjQ
@@ -302200,7 +302275,7 @@ dzk
 bqk
 hJX
 emB
-nHF
+emB
 hLZ
 rEL
 gmQ

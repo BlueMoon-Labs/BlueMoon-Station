@@ -4,20 +4,26 @@ GLOBAL_LIST_EMPTY(active_alternate_appearances)
 	var/list/alternate_appearances
 
 /atom/proc/remove_alt_appearance(key)
-	if(alternate_appearances)
-		for(var/K in alternate_appearances)
-			var/datum/atom_hud/alternate_appearance/AA = alternate_appearances[K]
-			if(AA.appearance_key == key)
-				AA.remove_from_hud(src)
-				break
+	if(!alternate_appearances)
+		return
+	var/datum/atom_hud/alternate_appearance/AA = alternate_appearances[key]
+	if(AA?.appearance_key == key)
+		AA.remove_from_hud(src)
+		return TRUE
+
+	for(var/K in alternate_appearances)
+		AA = alternate_appearances[K]
+		if(AA.appearance_key == key)
+			AA.remove_from_hud(src)
+			return TRUE
 
 /atom/proc/add_alt_appearance(type, key, ...)
 	if(!type || !key)
 		return
 	if(alternate_appearances && alternate_appearances[key])
-		return
+		return alternate_appearances[key]
 	var/list/arguments = args.Copy(2)
-	new type(arglist(arguments))
+	return new type(arglist(arguments))
 
 /datum/atom_hud/alternate_appearance
 	var/appearance_key
@@ -183,3 +189,31 @@ GLOBAL_LIST_EMPTY(active_alternate_appearances)
 
 
 /datum/atom_hud/alternate_appearance/basic/food_demands
+
+
+/datum/atom_hud/alternate_appearance/basic/small_sprite/proc/update_appearance()
+	if(QDELETED(theImage) || QDELETED(target))
+		return
+	theImage.icon = target.icon
+	theImage.icon_state = target.icon_state
+	theImage.layer = target.layer
+	theImage.pixel_x = target.pixel_x
+	theImage.pixel_y = target.pixel_y
+	theImage.appearance_flags = target.appearance_flags
+	theImage.overlays = target.overlays.Copy()
+	
+	if(!isliving(target))
+		return
+	
+	var/mob/living/M = target
+	
+	// matrix resize
+	var/matrix/ntransform = matrix(target.transform)
+	var/resize = 1/get_size(target)
+	ntransform.Scale(resize)
+	if(M.lying && M.rotate_on_lying)
+		ntransform.Translate(M.lying == 90 ? 16*(resize-1) : -(16*(resize-1)), 0) //Makes sure you stand on the tile no matter the size - sand
+	else
+		ntransform.Translate(0, 16*(resize-1)) //Makes sure you stand on the tile no matter the size - sand
+
+	theImage.transform = ntransform

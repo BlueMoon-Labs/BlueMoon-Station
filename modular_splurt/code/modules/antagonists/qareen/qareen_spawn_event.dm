@@ -7,6 +7,7 @@
 	max_occurrences = 1
 	min_players = 25
 	category = EVENT_CATEGORY_ENTITIES
+	severity = DIRECTOR_SEVERITY_MODERATE // призрак-джинн, не гарантированно враждебен всей станции
 
 /datum/round_event/ghost_role/qareen
 	var/ignore_mobcheck = FALSE

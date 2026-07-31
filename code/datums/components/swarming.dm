@@ -12,14 +12,15 @@
 	RegisterSignal(parent, COMSIG_MOVABLE_UNCROSSED, PROC_REF(leave_swarm))
 
 /datum/component/swarming/Destroy()
-	if(is_swarming)
-		for(var/A in swarm_members)
-			var/datum/component/swarming/other_swarm = A
-			other_swarm.swarm_members -= src
-			swarm_members -= other_swarm
-			if(!length(other_swarm.swarm_members))
-				other_swarm.unswarm()
-		unswarm()
+	// Снятие из swarm_members прямо в обходе этого же списка сдвигало индекс:
+	// каждый второй сосед оставался со ссылкой на распавшийся компонент.
+	// Легион-бруды стакаются пачками, так что стая из трёх и больше - норма.
+	for(var/datum/component/swarming/other_swarm as anything in swarm_members)
+		other_swarm.swarm_members -= src
+		if(!length(other_swarm.swarm_members))
+			other_swarm.unswarm()
+	swarm_members.Cut()
+	unswarm()
 	return ..()
 
 /datum/component/swarming/proc/join_swarm(datum/source, atom/movable/AM)

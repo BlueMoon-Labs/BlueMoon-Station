@@ -55,13 +55,13 @@ GLOBAL_VAR_INIT(singularity_counter, 0)
 /obj/machinery/power/singularity_beacon/proc/increment_meteor_waves()
 	meteor_buff = TRUE
 	GLOB.singularity_counter++
-	for(var/datum/round_event_control/meteor_wave/W in SSevents.control)
+	for(var/datum/round_event_control/meteor_wave/W in SSdirector.event_controls())
 		W.weight += round(initial(W.weight) * METEOR_DISASTER_MODIFIER)
 
 /obj/machinery/power/singularity_beacon/proc/decrement_meteor_waves()
 	meteor_buff = FALSE
 	GLOB.singularity_counter--
-	for(var/datum/round_event_control/meteor_wave/W in SSevents.control)
+	for(var/datum/round_event_control/meteor_wave/W in SSdirector.event_controls())
 		W.weight -= round(initial(W.weight) * METEOR_DISASTER_MODIFIER)
 
 /obj/machinery/power/singularity_beacon/attack_ai(mob/user)

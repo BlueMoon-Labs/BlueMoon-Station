@@ -14,8 +14,8 @@
 	sharpness = SHARP_NONE
 	wound_bonus = 80
 
-#define BEANBAG_HEAD_BRAIN_DAMAGE 50
-#define BEANBAG_HEAD_EFFECT_CHANCE 25
+#define NONLETHAL_HEAD_BRAIN_DAMAGE 50
+#define NONLETHAL_HEAD_EFFECT_CHANCE 25
 
 /obj/item/projectile/bullet/shotgun_beanbag
 	name = "beanbag slug"
@@ -24,16 +24,8 @@
 	wound_bonus = 2
 	sharpness = SHARP_NONE
 	embedding = null
-
-/obj/item/projectile/bullet/shotgun_beanbag/on_hit(atom/target, blocked = FALSE, pierce_hit)
-	. = ..()
-	if(blocked >= 100)
-		return .
-	if(iscarbon(target) && def_zone == BODY_ZONE_HEAD && prob(BEANBAG_HEAD_EFFECT_CHANCE))
-		var/mob/living/carbon/C = target
-		C.adjustOrganLoss(ORGAN_SLOT_BRAIN, BEANBAG_HEAD_BRAIN_DAMAGE)
-		playsound(C, 'sound/effects/headgibb.ogg', 50, 1)
-	return .
+	nonlethal_headshot_brain_damage = NONLETHAL_HEAD_BRAIN_DAMAGE
+	nonlethal_headshot_chance = NONLETHAL_HEAD_EFFECT_CHANCE
 
 /obj/item/projectile/bullet/incendiary/shotgun
 	name = "incendiary slug"
@@ -152,3 +144,6 @@
 	name = "incapacitating pellet"
 	damage = 1
 	stamina = 6
+
+#undef NONLETHAL_HEAD_BRAIN_DAMAGE
+#undef NONLETHAL_HEAD_EFFECT_CHANCE

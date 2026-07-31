@@ -20,7 +20,6 @@
 		"Brig Chief",
 		"Brig Governor",
 		"Brig Overwatch",
-		"Brig Overwatch",
 		"Brig Sentry",
 		"Brig Sergeant",
 		"Brig Superintendent",
@@ -35,6 +34,7 @@
 		"SAARE Supervisor",
 		"Safeguard Sergeant",
 		"Slutcurity Captain",
+		"Undersheriff",
 		"Voreden"
 		)
 
@@ -116,9 +116,10 @@
 	r_pocket = /obj/item/reagent_containers/peacehypo
 	l_pocket = /obj/item/restraints/handcuffs
 	suit_store = /obj/item/gun/energy/pumpaction/defender
-	backpack_contents = list(/obj/item/syndicate_uplink_high=1)
-	accessory = list(/obj/item/clothing/accessory/permit/special/security)
+	backpack_contents = list(/obj/item/syndicate_uplink/station=1)
+	accessory = list(/obj/item/clothing/accessory/permit/special/security, /obj/item/clothing/accessory/permit/special/syndie_station)
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/ammo

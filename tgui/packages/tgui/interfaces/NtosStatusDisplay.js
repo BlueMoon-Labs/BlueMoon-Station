@@ -1,9 +1,9 @@
 import { useBackend } from '../backend';
-import { Section, Button, Input } from '../components';
+import { Button, Input, Section } from '../components';
 import { NtosWindow } from '../layouts';
 
-export const NtosStatusDisplay = (props, context) => {
-  const { act, data } = useBackend(context);
+export const NtosStatusDisplay = (props) => {
+  const { act, data } = useBackend();
 
   const handleMsg1 = (e, v) => act('set_message', { msg1: v, msg2: '' });
   const handleMsg2 = (e, v) => act('set_message', { msg1: '', msg2: v });

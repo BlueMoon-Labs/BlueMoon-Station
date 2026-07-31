@@ -65,7 +65,7 @@
 		msg = "вы [nuke_team.syndicate_name] Оперативник!"
 	else
 		msg = "Вы Оперативник [is_syndicate ? "Синдиката" : "Интекью"]!"
-	to_chat(owner, span_notice(msg))
+	to_chat(owner, span_syndicate(msg))
 	owner.announce_objectives()
 
 /datum/antagonist/nukeop/on_gain()
@@ -282,7 +282,7 @@
 	. = ..()
 	if(!.)
 		return
-	if(GLOB.master_mode == ROUNDTYPE_EXTENDED)
+	if(GLOB.round_type == ROUNDTYPE_EXTENDED || GLOB.round_type == ROUNDTYPE_DYNAMIC_LIGHT) // round_type, не master_mode: тот мутирует при смене режима мидгеймом
 		priority_announce("Приветствую, Станция. Мы отправляем к вам Специалиста по Защите Ядерного Диска ввиду того, что заметили недостаточную его безопасность. Bстречайте.", "Фрегат [title] ССО Синдиката")
 
 /datum/team/nuclear

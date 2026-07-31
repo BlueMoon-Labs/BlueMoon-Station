@@ -41,7 +41,12 @@
 	if(!space_gas)
 		space_gas = new
 	air = space_gas
-	update_air_ref(0)
+	// Fresh mapload space has never been registered with SSair. Removing every
+	// default space turf from both atmos lists here used to do two no-op list
+	// searches almost a million times during world startup. Keep the existing
+	// runtime path unchanged; ChangeTurf may initialize a turf after SSair is live.
+	if(!mapload)
+		update_air_ref(0)
 	vis_contents.Cut() //removes inherited overlays
 	visibilityChanged()
 
@@ -223,7 +228,7 @@
 	var/turf/old = get_turf(OldLoc)
 	if(!isspaceturf(old) && ismob(AM))
 		var/mob/M = AM
-		M.update_gravity(M.mob_has_gravity())
+		M.refresh_gravity()
 
 /turf/open/space/MakeSlippery(wet_setting, min_wet_time, wet_time_to_add, max_wet_time, permanent)
 	return

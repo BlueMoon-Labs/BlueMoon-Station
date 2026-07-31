@@ -70,7 +70,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	if(src != partner)
 		if(!last_genital)
 			if(has_penis())
-				if(!istype(partner))
+				if(!istype(partner) || has_strapon())
 					target_orifice = null
 				switch(target_orifice)
 					if(CUM_TARGET_NIPPLE)
@@ -248,11 +248,13 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 
 	return TRUE
 
-/mob/living/get_unconsenting(extreme, list/ignored_mobs, var/unholy)
+/mob/living/get_unconsenting(extreme, list/ignored_mobs, var/unholy, var/unholy_hard)
 	for(var/mob/M in range(7, src))
 		if(M.client)
 			var/client/cli = M.client
 			if(unholy && (cli.prefs.unholypref == "No"))
+				LAZYADD(ignored_mobs, M)
+			if(unholy_hard && (cli.prefs.unholyhardpref == "No"))
 				LAZYADD(ignored_mobs, M)
 	. = ..()
 
@@ -276,7 +278,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	var/message
 	var/obj/item/organ/genital/peepee = null
 	var/lust_increase = NORMAL_LUST
-	var/has_penis = user.has_penis() // BLUEMOON ADD
+	var/has_penis = user.has_penis(TRUE) // BLUEMOON ADD
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 	var/const/volume = 50
@@ -405,7 +407,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	var/message
 	//var/t_His = ru_ego() //BLUEMOON EDIT commented
 	//var/genital_name = get_penetrating_genital_name()
-	var/has_penis = user.has_penis() // BLUEMOON ADD
+	var/has_penis = user.has_penis(TRUE) // BLUEMOON ADD
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 	var/const/volume = 70
@@ -454,7 +456,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 /mob/living/proc/do_bellyfuck(mob/living/partner, is_hidden)
 	var/message
 	var/genital_name = get_penetrating_genital_name()
-	var/has_penis = has_penis() // BLUEMOON ADD
+	var/has_penis = has_penis(TRUE) // BLUEMOON ADD
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 	var/const/volume = 50
@@ -571,7 +573,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	//var/genital_name = get_penetrating_genital_name()
 	//var/t_His = target.ru_ego()
 	//var/list/musk = list("musky ", "sweaty ", "damp ", "smelly ", "")
-	var/has_penis = has_penis() // BLUEMOON ADD
+	var/has_penis = has_penis(TRUE) // BLUEMOON ADD
 	var/list/lines
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
@@ -618,7 +620,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	//var/u_His = ru_ego()
 	//var/genital_name = target.get_penetrating_genital_name()
 	//var/t_His = target.ru_ego()
-	var/has_penis = target.has_penis() // BLUEMOON ADD
+	var/has_penis = target.has_penis(TRUE) // BLUEMOON ADD
 	var/list/lines
 
 	if(is_fucking(target, CUM_TARGET_ARMPIT))
@@ -652,7 +654,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	var/message
 	//var/u_His = ru_ego()
 	//var/genital_name = target.get_penetrating_genital_name()
-	var/has_penis = target.has_penis() // BLUEMOON ADD
+	var/has_penis = target.has_penis(TRUE) // BLUEMOON ADD
 	var/list/lines
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
@@ -728,9 +730,9 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	//var/t_genital_name = target.get_penetrating_genital_name()
 	var/list/lines
 	// BLUEMOON ADD START
-	var/user_has_penis = has_penis()
+	var/user_has_penis = has_penis(TRUE)
 	var/user_has_balls = has_balls()
-	var/target_has_penis = target.has_penis()
+	var/target_has_penis = target.has_penis(TRUE)
 	var/target_has_balls = target.has_balls()
 	// BLUEMOON ADD END
 	var/distance = 7
@@ -780,7 +782,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	var/list/lines
 	var/genital_name = get_penetrating_genital_name()
 	// BLUEMOON ADD START
-	var/has_penis = has_penis()
+	var/has_penis = has_penis(TRUE)
 	var/has_balls = has_balls()
 	// BLUEMOON ADD END
 	var/distance = 7
@@ -830,7 +832,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 /mob/living/proc/do_thighfuck(mob/living/target, spillage = TRUE, is_hidden)
 	var/message
 	var/list/lines
-	var/has_penis = has_penis() // BLUEMOON ADD
+	var/has_penis = has_penis(TRUE) // BLUEMOON ADD
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 	var/const/volume = 70
@@ -865,7 +867,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 /mob/living/proc/do_thighjob(mob/living/target, is_hidden)
 	var/message
 	var/list/lines
-	var/has_penis = target.has_penis() // BLUEMOON ADD
+	var/has_penis = target.has_penis(TRUE) // BLUEMOON ADD
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
 	var/const/volume = 70
@@ -931,12 +933,12 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	)
 
 	message = "<span class='lewd'>[is_hidden ? (picked_hidden) : null]\The <b>[src]</b>[pick(hell)]</span>"
-	visible_message(message, ignored_mobs = get_unconsenting(unholy = TRUE), vision_distance = distance)
-	playlewdinteractionsound(get_turf(src), 'modular_sand/sound/interactions/swallow.ogg', volume, 1, extrarange, ignored_mobs = get_unconsenting(unholy = TRUE))
+	visible_message(message, ignored_mobs = get_unconsenting(unholy_hard = TRUE), vision_distance = distance)
+	playlewdinteractionsound(get_turf(src), 'modular_sand/sound/interactions/swallow.ogg', volume, 1, extrarange, ignored_mobs = get_unconsenting(unholy_hard = TRUE))
 	playlewdinteractionsound(get_turf(target), pick('modular_bluemoon/sound/interactions/assbrap1.ogg',
 						'modular_bluemoon/sound/interactions/assbrap2.ogg',
 						'modular_bluemoon/sound/interactions/assbrap3.ogg'),
-						volume, 1, extrarange, ignored_mobs = get_unconsenting(unholy = TRUE))
+						volume, 1, extrarange, ignored_mobs = get_unconsenting(unholy_hard = TRUE))
 	if(!is_fucking(target, GRINDING_FACE_WITH_ANUS))
 		set_is_fucking(target, GRINDING_FACE_WITH_ANUS, null)
 	handle_post_sex(LOW_LUST, null, src)
@@ -956,11 +958,11 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	)
 
 	message = "<span class='lewd'>[is_hidden ? (picked_hidden) : null]\The <b>[src]</b>[pick(hell)]</span>"
-	visible_message(message, ignored_mobs = get_unconsenting(unholy = TRUE), vision_distance = distance)
+	visible_message(message, ignored_mobs = get_unconsenting(unholy_hard = TRUE), vision_distance = distance)
 	playlewdinteractionsound(get_turf(target), pick('modular_bluemoon/sound/interactions/assbrap1.ogg',
 						'modular_bluemoon/sound/interactions/assbrap2.ogg',
 						'modular_bluemoon/sound/interactions/assbrap3.ogg'),
-						volume, 1, extrarange, ignored_mobs = get_unconsenting(unholy = TRUE))
+						volume, 1, extrarange, ignored_mobs = get_unconsenting(unholy_hard = TRUE))
 	if(!target.is_fucking(src, CUM_TARGET_ANUS))
 		var/obj/item/organ/genital/genital = target.has_penis() == HAS_EXPOSED_GENITAL ? target.getorganslot(ORGAN_SLOT_PENIS) : (target.has_vagina() == HAS_EXPOSED_GENITAL ? target.getorganslot(ORGAN_SLOT_VAGINA) : null)
 		target.set_is_fucking(src, CUM_TARGET_ANUS, genital)
@@ -972,7 +974,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	var/message
 	var/list/hell
 	// BLUEMOON ADD START
-	var/has_penis = has_penis()
+	var/has_penis = has_penis(TRUE)
 	var/has_balls = has_balls()
 	var/distance = 7
 	var/extrarange = DEFAULT_INTERACTION_SOUND_EXTRARANGE(is_hidden)
@@ -1015,17 +1017,17 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 		set_is_fucking(target, CUM_TARGET_ANUS, getorganslot(ORGAN_SLOT_PENIS))
 
 	message = "<span class='lewd'>[is_hidden ? (picked_hidden) : null]\The <b>[src]</b> [pick(hell)]</span>"
-	visible_message(message, ignored_mobs = get_unconsenting(unholy = TRUE), vision_distance = distance)
+	visible_message(message, ignored_mobs = get_unconsenting(unholy_hard = TRUE), vision_distance = distance)
 	playlewdinteractionsound(get_turf(target), pick('modular_bluemoon/sound/interactions/assbrap1.ogg',
 						'modular_bluemoon/sound/interactions/assbrap2.ogg',
 						'modular_bluemoon/sound/interactions/assbrap3.ogg'),
-						volume, 1, extrarange, ignored_mobs = get_unconsenting(unholy = TRUE))
+						volume, 1, extrarange, ignored_mobs = get_unconsenting(unholy_hard = TRUE))
 	playlewdinteractionsound(get_turf(target), pick('modular_sand/sound/interactions/bang1.ogg',
 						'modular_sand/sound/interactions/bang2.ogg',
 						'modular_sand/sound/interactions/bang3.ogg',
 						'modular_sand/sound/interactions/bang4.ogg',
 						'modular_sand/sound/interactions/bang5.ogg',
-						'modular_sand/sound/interactions/bang6.ogg'), volume, 1, extrarange, ignored_mobs = get_unconsenting(unholy = TRUE))
+						'modular_sand/sound/interactions/bang6.ogg'), volume, 1, extrarange, ignored_mobs = get_unconsenting(unholy_hard = TRUE))
 	if(can_penetrating_genital_cum())
 		handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, target, ORGAN_SLOT_PENIS)
 	target.handle_post_sex(NORMAL_LUST, null, src)
@@ -1058,12 +1060,12 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 		set_is_fucking(target, GRINDING_FACE_WITH_ANUS, null)
 
 	message = "<span class='lewd'>[is_hidden ? (picked_hidden) : null]\The <b>[src]</b> [pick(hell)]</span>"
-	visible_message(message, ignored_mobs = get_unconsenting(unholy = TRUE), vision_distance = distance)
-	playlewdinteractionsound(get_turf(src), 'modular_sand/sound/interactions/swallow.ogg', volume, 1, extrarange, ignored_mobs = get_unconsenting(unholy = TRUE))
+	visible_message(message, ignored_mobs = get_unconsenting(unholy_hard = TRUE), vision_distance = distance)
+	playlewdinteractionsound(get_turf(src), 'modular_sand/sound/interactions/swallow.ogg', volume, 1, extrarange, ignored_mobs = get_unconsenting(unholy_hard = TRUE))
 	playlewdinteractionsound(get_turf(target), pick('modular_bluemoon/sound/interactions/assbrap1.ogg',
 						'modular_bluemoon/sound/interactions/assbrap2.ogg',
 						'modular_bluemoon/sound/interactions/assbrap3.ogg'),
-						volume, 1, extrarange, ignored_mobs = get_unconsenting(unholy = TRUE))
+						volume, 1, extrarange, ignored_mobs = get_unconsenting(unholy_hard = TRUE))
 	target.handle_post_sex(NORMAL_LUST, null, src)
 
 /mob/living/proc/do_faceshit(mob/living/carbon/target, is_hidden)
@@ -1089,12 +1091,12 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	)
 
 	message = "<span class='lewd'>[is_hidden ? (picked_hidden) : null]\The <b>[src]</b> [pick(hell)]</span>"
-	visible_message(message, ignored_mobs = get_unconsenting(unholy = TRUE), vision_distance = distance)
-	playlewdinteractionsound(get_turf(src), 'modular_sand/sound/interactions/swallow.ogg', volume, 1, extrarange, ignored_mobs = get_unconsenting(unholy = TRUE))
+	visible_message(message, ignored_mobs = get_unconsenting(unholy_hard = TRUE), vision_distance = distance)
+	playlewdinteractionsound(get_turf(src), 'modular_sand/sound/interactions/swallow.ogg', volume, 1, extrarange, ignored_mobs = get_unconsenting(unholy_hard = TRUE))
 	playlewdinteractionsound(get_turf(target), pick('modular_bluemoon/sound/interactions/asscrap1.ogg',
 						'modular_bluemoon/sound/interactions/asscrap2.ogg',
 						'modular_bluemoon/sound/interactions/asscrap3.ogg'),
-						volume, 1, extrarange, ignored_mobs = get_unconsenting(unholy = TRUE))
+						volume, 1, extrarange, ignored_mobs = get_unconsenting(unholy_hard = TRUE))
 	if(!is_fucking(target, GRINDING_FACE_WITH_ANUS))
 		set_is_fucking(target, GRINDING_FACE_WITH_ANUS, null)
 	handle_post_sex(LOW_LUST, null, src)
@@ -1114,11 +1116,11 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 	if(is_hidden)
 		distance = 1
 	message = "<span class='lewd'>[is_hidden ? (picked_hidden) : null]\The <b>[src]</b> [pick(hell)]</span>"
-	visible_message(message, ignored_mobs = get_unconsenting(unholy = TRUE), vision_distance = distance)
+	visible_message(message, ignored_mobs = get_unconsenting(unholy_hard = TRUE), vision_distance = distance)
 	playlewdinteractionsound(get_turf(target), pick('modular_bluemoon/sound/interactions/asscrap1.ogg',
 						'modular_bluemoon/sound/interactions/asscrap2.ogg',
 						'modular_bluemoon/sound/interactions/asscrap3.ogg'),
-						volume, 1, extrarange, ignored_mobs = get_unconsenting(unholy = TRUE))
+						volume, 1, extrarange, ignored_mobs = get_unconsenting(unholy_hard = TRUE))
 
 	var/obj/item/organ/genital/G = target.has_penis() == HAS_EXPOSED_GENITAL ? target.getorganslot(ORGAN_SLOT_PENIS) : (target.has_vagina() == HAS_EXPOSED_GENITAL ? target.getorganslot(ORGAN_SLOT_VAGINA) : null)
 	if(!target.is_fucking(src, CUM_TARGET_ANUS))
@@ -1130,7 +1132,7 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 /mob/living/proc/do_shitfuck(mob/living/carbon/target, is_hidden)
 	var/message
 	// BLUEMOON ADD START
-	var/has_penis = has_penis()
+	var/has_penis = has_penis(TRUE)
 	var/has_balls = has_balls()
 	// BLUEMOON ADD END
 	//var/t_He = target.ru_who()
@@ -1165,17 +1167,17 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 		set_is_fucking(target, CUM_TARGET_ANUS, getorganslot(ORGAN_SLOT_PENIS))
 
 	message = "<span class='lewd'>[is_hidden ? (picked_hidden) : null]\The <b>[src]</b> [pick(hell)]</span>"
-	visible_message(message, ignored_mobs = get_unconsenting(unholy = TRUE), vision_distance = distance)
+	visible_message(message, ignored_mobs = get_unconsenting(unholy_hard = TRUE), vision_distance = distance)
 	playlewdinteractionsound(get_turf(target), pick('modular_bluemoon/sound/interactions/asscrap1.ogg',
 						'modular_bluemoon/sound/interactions/asscrap2.ogg',
 						'modular_bluemoon/sound/interactions/asscrap3.ogg'),
-						volume, 1, extrarange, ignored_mobs = get_unconsenting(unholy = TRUE))
+						volume, 1, extrarange, ignored_mobs = get_unconsenting(unholy_hard = TRUE))
 	playlewdinteractionsound(get_turf(target), pick('modular_sand/sound/interactions/bang1.ogg',
 					'modular_sand/sound/interactions/bang2.ogg',
 					'modular_sand/sound/interactions/bang3.ogg',
 					'modular_sand/sound/interactions/bang4.ogg',
 					'modular_sand/sound/interactions/bang5.ogg',
-					'modular_sand/sound/interactions/bang6.ogg'), volume, 1, extrarange, ignored_mobs = get_unconsenting(unholy = TRUE))
+					'modular_sand/sound/interactions/bang6.ogg'), volume, 1, extrarange, ignored_mobs = get_unconsenting(unholy_hard = TRUE))
 	if(can_penetrating_genital_cum())
 		handle_post_sex(NORMAL_LUST, CUM_TARGET_ANUS, target, ORGAN_SLOT_PENIS)
 	target.handle_post_sex(NORMAL_LUST, null, src)
@@ -1207,10 +1209,10 @@ SPLURT теперь обрабатывают все это дело в /mob/livi
 		set_is_fucking(target, GRINDING_FACE_WITH_ANUS, null)
 
 	message = "<span class='lewd'>[is_hidden ? (picked_hidden) : null]\The <b>[src]</b> [pick(hell)]</span>"
-	visible_message(message, ignored_mobs = get_unconsenting(unholy = TRUE), vision_distance = distance)
-	playlewdinteractionsound(get_turf(src), 'modular_sand/sound/interactions/swallow.ogg', volume, 1, extrarange, ignored_mobs = get_unconsenting(unholy = TRUE))
+	visible_message(message, ignored_mobs = get_unconsenting(unholy_hard = TRUE), vision_distance = distance)
+	playlewdinteractionsound(get_turf(src), 'modular_sand/sound/interactions/swallow.ogg', volume, 1, extrarange, ignored_mobs = get_unconsenting(unholy_hard = TRUE))
 	playlewdinteractionsound(get_turf(target), pick('modular_bluemoon/sound/interactions/crapjob.ogg',
-									'modular_bluemoon/sound/interactions/crapjob1.ogg'), volume, 1, extrarange, ignored_mobs = get_unconsenting(unholy = TRUE))
+									'modular_bluemoon/sound/interactions/crapjob1.ogg'), volume, 1, extrarange, ignored_mobs = get_unconsenting(unholy_hard = TRUE))
 	target.handle_post_sex(NORMAL_LUST, null, src, ORGAN_SLOT_ANUS)
 
 #undef HIDDEN_ADDITIONAL

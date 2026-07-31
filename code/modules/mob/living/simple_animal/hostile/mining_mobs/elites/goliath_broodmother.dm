@@ -51,6 +51,13 @@
 	var/rand_tent = 0
 	var/list/mob/living/simple_animal/hostile/asteroid/elite/broodmother_child/children_list = list()
 
+/mob/living/simple_animal/hostile/asteroid/elite/broodmother/Destroy(force, ...)
+	for(var/mob/living/simple_animal/hostile/asteroid/elite/broodmother_child/child as anything in children_list)
+		if(!QDELETED(child) && child.mother == src)
+			child.mother = null
+	children_list = null
+	return ..()
+
 /datum/action/innate/elite_attack/tentacle_patch
 	name = "Tentacle Patch"
 	button_icon_state = "tentacle_patch"
@@ -185,6 +192,12 @@
 	status_flags = CANPUSH
 	var/mob/living/simple_animal/hostile/asteroid/elite/broodmother/mother = null
 
+/mob/living/simple_animal/hostile/asteroid/elite/broodmother_child/Destroy(force, ...)
+	if(mother?.children_list)
+		mother.children_list -= src
+	mother = null
+	return ..()
+
 /mob/living/simple_animal/hostile/asteroid/elite/broodmother_child/OpenFire(target)
 	ranged_cooldown = world.time + 40
 	var/tturf = get_turf(target)
@@ -196,8 +209,6 @@
 
 /mob/living/simple_animal/hostile/asteroid/elite/broodmother_child/death()
 	. = ..()
-	if(mother != null)
-		mother.children_list -= src
 	visible_message("<span class='warning'>[src] explodes!</span>")
 	explosion(get_turf(loc),0,0,0,flame_range = 3, adminlog = FALSE)
 	qdel()

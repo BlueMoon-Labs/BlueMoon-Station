@@ -381,7 +381,7 @@
 
 /datum/status_effect/vtec_disabled
 	id = "vtec_disable"
-	tick = FALSE
+	tick_interval = -1 //конечная duration истекает в process(), сам tick() не нужен
 
 /datum/status_effect/vtec_disabled/on_creation(mob/living/new_owner, set_duration)
 	if(isnum(set_duration))

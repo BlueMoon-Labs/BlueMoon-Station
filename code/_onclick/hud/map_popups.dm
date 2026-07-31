@@ -121,22 +121,60 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/map_view)
  * on relog. any of the buttons are going to get caught by garbage collection
  * anyway. they're effectively qdel'd.
  */
+/**
+ * Забирает карту map_name у клиента целиком и возвращает её экраны списком.
+ *
+ * Список отсоединяется ДО обхода: прежний clear_map снимал экран прямо в
+ * `for(... in screen_maps[map_name])`, список сдвигался, и DM пропускал каждый
+ * второй экран - тот навсегда оставался в client.screen.
+ */
+/proc/take_screen_map(list/screen_maps, map_name)
+	. = list()
+	if(!map_name || !islist(screen_maps))
+		return
+	var/list/screen_map = screen_maps[map_name]
+	screen_maps -= map_name
+	if(!islist(screen_map))
+		return
+	for(var/atom/movable/screen/screen_obj as anything in screen_map)
+		. += screen_obj
+
+/**
+ * Снимает screen_obj со всех карт одного клиента. TRUE, если экран там был.
+ *
+ * У экранов с assigned_map нет хозяйского hud'а, поэтому из чужого client.screen
+ * они сами себя снять не могут - выписывать обязан тот, кто удаляет.
+ */
+/proc/detach_screen_from_client_maps(list/screen_maps, atom/movable/screen/screen_obj)
+	. = FALSE
+	if(!islist(screen_maps) || isnull(screen_obj))
+		return
+	for(var/map_name in screen_maps.Copy())
+		var/list/screen_map = screen_maps[map_name]
+		if(!islist(screen_map) || !(screen_obj in screen_map))
+			continue
+		screen_map -= screen_obj
+		. = TRUE
+		if(!length(screen_map))
+			screen_maps -= map_name
+
 /client/proc/clear_map(map_name)
-	if(!map_name || !(map_name in screen_maps))
+	var/list/removed = take_screen_map(screen_maps, map_name)
+	if(!length(removed))
 		return FALSE
-	for(var/atom/movable/screen/screen_obj in screen_maps[map_name])
-		screen_maps[map_name] -= screen_obj
+	for(var/atom/movable/screen/screen_obj as anything in removed)
 		screen -= screen_obj
 		if(screen_obj.del_on_map_removal)
 			screen_obj.screen_loc = null
 			qdel(screen_obj)
-	screen_maps -= map_name
+	return TRUE
 
 /**
  * Clears all the maps of registered screen objects.
  */
 /client/proc/clear_all_maps()
-	for(var/map_name in screen_maps)
+	// По копии: clear_map вычёркивает карту из screen_maps на ходу.
+	for(var/map_name in screen_maps.Copy())
 		clear_map(map_name)
 
 /**

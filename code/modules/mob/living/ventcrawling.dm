@@ -76,34 +76,73 @@ GLOBAL_LIST_INIT(ventcrawl_machinery, typecacheof(list(
 	..()
 
 
+/// Collects members of pipenet_members whose turf lies inside the square box of
+/// half-size view_half around source_turf, appending them to output.
+/// The bounds are hoisted out of the loop on purpose: the old path called
+/// in_view_range() -> getviewsize() (a proc call plus a list allocation) once
+/// per pipe, which on a station distro loop is thousands of calls per
+/// ventcrawl step (perf.log: 750k in_view_range calls per round).
+/proc/collect_pipes_in_view(turf/source_turf, view_half, list/pipenet_members, list/output)
+	var/min_x = source_turf.x - view_half
+	var/max_x = source_turf.x + view_half
+	var/min_y = source_turf.y - view_half
+	var/max_y = source_turf.y + view_half
+	var/source_z = source_turf.z
+	for(var/obj/machinery/atmospherics/member as anything in pipenet_members)
+		var/turf/member_turf = member.loc
+		if(!isturf(member_turf))
+			member_turf = get_turf(member)
+			if(isnull(member_turf))
+				continue
+		// z check is new vs in_view_range(): it compared raw x/y only, so pipes
+		// on other z-levels at matching coordinates got phantom vision images
+		if(member_turf.z != source_z)
+			continue
+		if(member_turf.x < min_x || member_turf.x > max_x || member_turf.y < min_y || member_turf.y > max_y)
+			continue
+		output += member
+
 /mob/living/proc/add_ventcrawl(obj/machinery/atmospherics/starting_machine)
 	if(!istype(starting_machine) || !starting_machine.can_see_pipes())
 		return
-	var/list/totalMembers = list()
-
-	for(var/datum/pipeline/P in starting_machine.returnPipenets())
-		totalMembers += P.members
-		totalMembers += P.other_atmosmch
-
-	if(!totalMembers.len)
+	if(!client) // pipe vision images are per-client; without one there is nothing to build
 		return
 
-	if(client)
-		for(var/X in totalMembers)
-			var/obj/machinery/atmospherics/A = X //all elements in totalMembers are necessarily of this type.
-			if(in_view_range(client.mob, A))
-				if(!A.pipe_vision_img)
-					A.pipe_vision_img = image(A, A.loc, layer = ABOVE_HUD_LAYER, dir = A.dir)
-					A.pipe_vision_img.plane = ABOVE_HUD_PLANE
-				client.images += A.pipe_vision_img
-				pipes_shown += A.pipe_vision_img
-		setMovetype(movement_type | VENTCRAWLING)
+	var/mob/viewer = client.mob || src
+	var/turf/source_turf = get_turf(viewer)
+	if(isnull(source_turf))
+		return
+
+	// in_view_range() used the view width for both axes; keep that behavior
+	var/list/view_size = getviewsize(client.view)
+	var/view_half = view_size[1]
+
+	var/any_members = FALSE
+	var/list/visible_members = list()
+	for(var/datum/pipeline/pipenet in starting_machine.returnPipenets())
+		if(length(pipenet.members) || length(pipenet.other_atmosmch))
+			any_members = TRUE
+		collect_pipes_in_view(source_turf, view_half, pipenet.members, visible_members)
+		collect_pipes_in_view(source_turf, view_half, pipenet.other_atmosmch, visible_members)
+
+	if(!any_members)
+		return
+
+	var/list/new_images = list()
+	for(var/obj/machinery/atmospherics/shown as anything in visible_members)
+		if(!shown.pipe_vision_img)
+			shown.pipe_vision_img = image(shown, shown.loc, layer = ABOVE_HUD_LAYER, dir = shown.dir)
+			shown.pipe_vision_img.plane = ABOVE_HUD_PLANE
+		new_images += shown.pipe_vision_img
+	if(length(new_images))
+		client.images += new_images // single batched list op instead of one per pipe
+		pipes_shown += new_images
+	setMovetype(movement_type | VENTCRAWLING)
 
 
 /mob/living/proc/remove_ventcrawl()
-	if(client)
-		for(var/image/current_image in pipes_shown)
-			client.images -= current_image
+	if(client && length(pipes_shown))
+		client.images -= pipes_shown // batched removal instead of one list op per image
 	pipes_shown.len = 0
 	setMovetype(movement_type & ~VENTCRAWLING)
 

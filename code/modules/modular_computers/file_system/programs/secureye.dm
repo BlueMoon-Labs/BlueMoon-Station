@@ -115,8 +115,15 @@
 
 	if(action == "switch_camera")
 		var/c_tag = params["name"]
-		var/list/cameras = get_available_cameras()
-		var/obj/machinery/camera/selected_camera = cameras[c_tag]
+		//точечный поиск по кэшу сетей вместо пересборки всего списка на каждый клик
+		var/obj/machinery/camera/selected_camera
+		for(var/network_name in network)
+			var/list/network_cameras = GLOB.cameranet.get_cameras_by_network(network_name)
+			selected_camera = network_cameras?[c_tag]
+			if(selected_camera)
+				break
+		if(selected_camera && !is_station_level(selected_camera.z))
+			selected_camera = null //фильтр не-станционных камер, как в get_available_cameras
 		active_camera = selected_camera
 		playsound(src, get_sfx("terminal_type"), 25, FALSE)
 
@@ -184,20 +191,12 @@
 
 // Returns the list of cameras accessible from this computer
 /datum/computer_file/program/secureye/proc/get_available_cameras()
-	var/list/L = list()
-	for (var/obj/machinery/camera/cam in GLOB.cameranet.cameras)
-		if(!is_station_level(cam.loc.z))//Only show station cameras. // BLUEMOON CHANGES
-			continue
-		L.Add(cam)
 	var/list/camlist = list()
-	for(var/obj/machinery/camera/cam in L)
-		if(!cam.network)
-			stack_trace("Camera in a cameranet has no camera network")
-			continue
-		if(!(islist(cam.network)))
-			stack_trace("Camera in a cameranet has a non-list camera network")
-			continue
-		var/list/tempnetwork = cam.network & network
-		if(tempnetwork.len)
-			camlist["[cam.c_tag]"] = cam
+	for(var/network_name in network)
+		var/list/network_cameras = GLOB.cameranet.get_cameras_by_network(network_name)
+		for(var/tag in network_cameras)
+			var/obj/machinery/camera/cam = network_cameras[tag]
+			if(!is_station_level(cam.z))//Only show station cameras. // BLUEMOON CHANGES
+				continue
+			camlist[tag] = cam
 	return camlist

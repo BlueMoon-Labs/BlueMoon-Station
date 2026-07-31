@@ -197,15 +197,17 @@ SUBSYSTEM_DEF(ticker)
 			// BLUEMOON ADD START - воут за карту и перезагрузка сервера, если прошлый раунд окончился крашем
 			if(mapvote_restarter_in_progress)
 				return
+			#ifndef UNIT_TESTS
 			#ifndef LOWMEMORYMODE
 			if(!SSpersistence.CheckGracefulEnding())
 				SetTimeLeft(-1)
 				start_immediately = FALSE
 				mapvote_restarter_in_progress = TRUE
 				var/vote_type = CONFIG_GET(string/map_vote_type)
-				SSvote.initiate_vote("map","server", display = SHOW_RESULTS, votesystem = vote_type, forced = TRUE)
+				SSvote.initiate_vote("map","server", display = SHOW_RESULTS|SHOW_WINNER, votesystem = vote_type, forced = TRUE)
 				to_chat(world, span_boldwarning("Активировано голосование за смену карты из-за неудачного завершения прошлого раунда. После его окончания сервер будет перезапущен."))
 				return
+			#endif
 			#endif
 			// BLUEMOON ADD END
 
@@ -356,18 +358,21 @@ SUBSYSTEM_DEF(ticker)
 
 	log_world("Game start took [(world.timeofday - init_start)/10]s")
 	round_start_time = world.time
+	// Состояние переводим ДО блокирующей записи в базу и рассылки на весь мир: пока оно
+	// оставалось SETTING_UP, лобби уже показывало кнопку входа, а ядро вход отбивало -
+	// каждый клик уходил в message_admins. Окно было около двенадцати секунд.
+	current_state = GAME_STATE_PLAYING
 	SSdbcore.SetRoundStart()
 
 	to_chat(world, "<span class='notice'><B>Welcome to [station_name()], enjoy your stay!</B></span>")
 	SEND_SOUND(world, sound(SSstation.announcer.get_rand_welcome_sound()))
 
-	current_state = GAME_STATE_PLAYING
 	Master.SetRunLevel(RUNLEVEL_GAME)
 
-	if(SSevents.holidays)
+	if(SSholidays.holidays)
 		to_chat(world, "<span class='notice'>and...</span>")
-		for(var/holidayname in SSevents.holidays)
-			var/datum/holiday/holiday = SSevents.holidays[holidayname]
+		for(var/holidayname in SSholidays.holidays)
+			var/datum/holiday/holiday = SSholidays.holidays[holidayname]
 			to_chat(world, "<h4>[holiday.greet()]</h4>")
 
 	PostSetup()
@@ -400,11 +405,16 @@ SUBSYSTEM_DEF(ticker)
 	var/list/allmins = adm["present"]
 	send2adminchat("Server", "Round [GLOB.round_id ? "#[GLOB.round_id]:" : "of"] [hide_mode ? "secret":"[GLOB.master_mode]"] has started[allmins.len ? ".":" with no active admins online!"]")
 	if(CONFIG_GET(string/new_round_ping))
-		send2chat(new /datum/tgs_message_content("<@&[CONFIG_GET(string/new_round_ping)]> | Новый раунд стартует на [SSmapping.config.map_name]!"), CONFIG_GET(string/chat_announce_new_game))
+		// Один запрос TGS-моста вместо залпа: каждый send2chat - синхронный round-trip
+		// до хоста TGS (world.Export в его хендлере), и пачка пингов ровно в момент
+		// роундстарта складывала эти блоки мира в один общий фриз.
+		var/role_pings
 		if(GLOB.master_mode == "Extended")
-			send2chat(new /datum/tgs_message_content("<@&[CONFIG_GET(string/passive_round_ping)]> <@&[CONFIG_GET(string/agressive_round_ping)]> | Раунд [GLOB.round_id ? "#[GLOB.round_id]:" : "в режиме"] [hide_mode ? "секретном":"[GLOB.master_mode]"] стартует[allmins.len ? "!":" без администрации!!"]"), CONFIG_GET(string/chat_announce_new_game))
+			role_pings = "<@&[CONFIG_GET(string/passive_round_ping)]> <@&[CONFIG_GET(string/agressive_round_ping)]>"
 		else
-			send2chat(new /datum/tgs_message_content("<@&[CONFIG_GET(string/active_round_ping)]> <@&[CONFIG_GET(string/agressive_round_ping)]> | Раунд [GLOB.round_id ? "#[GLOB.round_id]:" : "в режиме"] [hide_mode ? "секретном":"[GLOB.master_mode]"] стартует[allmins.len ? "!":" без администрации!!"]"), CONFIG_GET(string/chat_announce_new_game))
+			role_pings = "<@&[CONFIG_GET(string/active_round_ping)]> <@&[CONFIG_GET(string/agressive_round_ping)]>"
+		var/round_ping_message = "<@&[CONFIG_GET(string/new_round_ping)]> | Новый раунд стартует на [SSmapping.config.map_name]!\n[role_pings] | Раунд [GLOB.round_id ? "#[GLOB.round_id]:" : "в режиме"] [hide_mode ? "секретном":"[GLOB.master_mode]"] стартует[allmins.len ? "!":" без администрации!!"]"
+		send2chat(new /datum/tgs_message_content(round_ping_message), CONFIG_GET(string/chat_announce_new_game))
 	setup_done = TRUE
 
 	for(var/i in GLOB.start_landmarks_list)
@@ -560,7 +570,7 @@ SUBSYSTEM_DEF(ticker)
 		INVOKE_ASYNC(SSmapping, TYPE_PROC_REF(/datum/controller/subsystem/mapping, maprotate))
 	else
 		var/vote_type = CONFIG_GET(string/map_vote_type)
-		SSvote.initiate_vote("map","server", display = SHOW_RESULTS, votesystem = vote_type, forced = TRUE)
+		SSvote.initiate_vote("map","server", display = SHOW_RESULTS|SHOW_WINNER, votesystem = vote_type, forced = TRUE)
 
 /datum/controller/subsystem/ticker/proc/HasRoundStarted()
 	return current_state >= GAME_STATE_PLAYING
@@ -575,9 +585,9 @@ SUBSYSTEM_DEF(ticker)
 		SSticker.modevoted = TRUE
 		var/dynamic = CONFIG_GET(flag/dynamic_voting)
 		if(dynamic)
-			SSvote.initiate_vote("dynamic", "server", display = NONE, votesystem = SCORE_VOTING, forced = TRUE,vote_time = 20 MINUTES)
+			SSvote.initiate_vote("dynamic", "server", display = SHOW_RESULTS|SHOW_WINNER, votesystem = SCORE_VOTING, forced = TRUE,vote_time = 20 MINUTES)
 		else
-			SSvote.initiate_vote("roundtype", "server", display = NONE, votesystem = PLURALITY_VOTING, forced=TRUE, \
+			SSvote.initiate_vote("roundtype", "server", display = SHOW_RESULTS|SHOW_WINNER, votesystem = PLURALITY_VOTING, forced=TRUE, \
 			vote_time = SSticker.GetTimeLeft() - ROUNDTYPE_VOTE_END_PENALTY) //BLUEMOON CHANGE, WAS vote_time = (CONFIG_GET(flag/modetier_voting) ? 1 MINUTES : 20 MINUTES))
 
 /datum/controller/subsystem/ticker/Recover()

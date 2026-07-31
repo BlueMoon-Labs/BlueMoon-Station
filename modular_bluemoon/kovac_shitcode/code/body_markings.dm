@@ -60,6 +60,16 @@
 	icon_state = "tat_butterfly"
 	covered_limbs = list("Chest" =  MATRIX_RED)
 
+/datum/sprite_accessory/mam_body_markings/tattoo/face_camo_lines
+	name = "Face camouflage lines"
+	icon_state = "tat_camolines"
+	covered_limbs = list("Head" =  MATRIX_RED)
+
+/datum/sprite_accessory/mam_body_markings/tattoo/up_points
+	name = "Up points"
+	icon_state = "tat_uppoints"
+	covered_limbs = list("Left Arm" =  MATRIX_RED, "Right Arm" =  MATRIX_RED)
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /datum/sprite_accessory/tails/mam_tails/teshari

@@ -10,9 +10,6 @@
 /turf/open/floor/plating,
 /area/shuttle/escape)
 "ad" = (
-/obj/effect/fun_balloon/sentience/emergency_shuttle{
-	group_name = "engineers on the Emergency Kilo Shuttle"
-	},
 /obj/structure/table/reinforced,
 /obj/item/storage/toolbox/mechanical,
 /obj/item/radio,
@@ -26,6 +23,9 @@
 "af" = (
 /obj/machinery/computer/emergency_shuttle,
 /obj/effect/turf_decal/bot/yellow,
+/obj/effect/fun_balloon/sentience/emergency_shuttle{
+	group_name = "engineers on the Emergency Kilo Shuttle"
+	},
 /turf/open/floor/plasteel/dark,
 /area/shuttle/escape)
 "ag" = (
@@ -62,6 +62,7 @@
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
+/mob/living/simple_animal/hostile/retaliate/nanotrasenpeace/ranged,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/escape)
 "al" = (
@@ -72,6 +73,7 @@
 /obj/effect/turf_decal/tile/neutral{
 	dir = 1
 	},
+/mob/living/simple_animal/hostile/retaliate/nanotrasenpeace/ranged,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/escape)
 "am" = (
@@ -82,6 +84,7 @@
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/neutral,
+/mob/living/simple_animal/hostile/retaliate/nanotrasenpeace/ranged,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/escape)
 "an" = (

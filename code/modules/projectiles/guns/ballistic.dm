@@ -30,11 +30,37 @@
 	chamber_round()
 	update_icon()
 
+/// The magazine and the chambered casing live in our contents, so their `loc`
+/// is a hard reference back to us. Without clearing them a qdeleted gun never
+/// soft-GCs and every single one ends up hard-deleted. Cheap normally, brutal
+/// for guns that delete themselves per shot (DROPDEL enchanted rifles - the
+/// Arcane Barrage volley was the top hard-delete source in round logs).
+/obj/item/gun/ballistic/Destroy()
+	if(magazine)
+		if(QDELING(magazine))
+			magazine = null
+		else
+			QDEL_NULL(magazine)
+	if(chambered)
+		if(QDELING(chambered))
+			chambered = null
+		else
+			QDEL_NULL(chambered)
+	return ..()
+
+/// Общий /obj/item/gun/handle_atom_del чистит pin, chambered, bayonet и gun_light, но не
+/// magazine - а он тоже лежит в contents ствола. Удаление магазина внутри ствола (модкит,
+/// разбор, админский del) оставляло висячую ссылку, и следующий attack_self делал forceMove
+/// мертвецу: ровно те рантаймы "doMove qdel-нутого .../magazine/e45" из прод-раунда 9827.
+/obj/item/gun/ballistic/handle_atom_del(atom/deleted_atom)
+	if(deleted_atom == magazine)
+		magazine = null
+		update_icon()
+	return ..()
+
 /obj/item/gun/ballistic/update_icon_state()
-	if(current_skin)
-		icon_state = "[unique_reskin[current_skin]["icon_state"]][suppressed ? "-suppressed" : ""][sawn_off ? "-sawn" : ""]"
-	else
-		icon_state = "[initial(icon_state)][suppressed ? "-suppressed" : ""][sawn_off ? "-sawn" : ""]"
+	var/cur_state = current_skin ? unique_reskin[current_skin]["icon_state"] : initial(icon_state)
+	icon_state = "[cur_state][suppressed ? "-suppressed" : ""][sawn_off ? "-sawn" : ""]"
 
 /obj/item/gun/ballistic/process_chamber(mob/living/user, empty_chamber = 1)
 	var/obj/item/ammo_casing/AC = chambered //Find chambered round

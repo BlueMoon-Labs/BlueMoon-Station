@@ -1,11 +1,12 @@
 import { toTitleCase } from 'common/string';
+import { useState } from 'react';
 
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import { BlockQuote, Box, Button, NumberInput, Section, Table } from '../components';
 import { Window } from '../layouts';
 
-export const OreRedemptionMachine = (props, context) => {
-  const { act, data } = useBackend(context);
+export const OreRedemptionMachine = (props) => {
+  const { act, data } = useBackend();
   const {
     unclaimedPoints,
     materials,
@@ -102,13 +103,13 @@ export const OreRedemptionMachine = (props, context) => {
 };
 
 
-const MaterialRow = (props, context) => {
+const MaterialRow = (props) => {
   const { material, onRelease } = props;
 
   const [
     amount,
     setAmount,
-  ] = useLocalState(context, "amount" + material.name, 1);
+  ] = useState(1);
 
   const amountAvailable = Math.floor(material.amount);
   return (

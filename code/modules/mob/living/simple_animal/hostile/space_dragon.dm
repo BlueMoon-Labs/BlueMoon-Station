@@ -332,7 +332,7 @@
 /mob/living/simple_animal/hostile/space_dragon/proc/dragon_fire_line(turf/T)
 	var/list/hit_list = list()
 	hit_list += src
-	new /obj/effect/hotspot(T)
+	T.ensure_hotspot()
 	T.hotspot_expose(700,50,1)
 	for(var/mob/living/L in T.contents)
 		if(L in hit_list)
@@ -608,6 +608,7 @@
 	icon_state = "carp_rift_carpspawn"
 	light_color = LIGHT_COLOR_PURPLE
 	light_range = 10
+	light_flags = LIGHT_NO_RANGE_CAP // статичный заякоренный рифт: свечение выше базового капа
 	anchored = TRUE
 	density = FALSE
 	layer = MASSIVE_OBJ_LAYER

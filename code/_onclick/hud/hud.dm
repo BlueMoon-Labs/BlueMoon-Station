@@ -200,10 +200,31 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 	mymob = null
 
 	QDEL_NULL(screentip_text)
-	last_screentip_atom = null
-	last_screentip_held = null
+	set_screentip_cache(null, null)
 
 	return ..()
+
+/// Updates the strong screentip cache references and makes them self-clearing on qdel.
+/datum/hud/proc/set_screentip_cache(atom/new_atom, obj/item/new_held_item)
+	if(last_screentip_atom == new_atom && last_screentip_held == new_held_item)
+		return
+	if(last_screentip_atom)
+		UnregisterSignal(last_screentip_atom, COMSIG_PARENT_QDELETING)
+	if(last_screentip_held && last_screentip_held != last_screentip_atom)
+		UnregisterSignal(last_screentip_held, COMSIG_PARENT_QDELETING)
+
+	last_screentip_atom = new_atom
+	last_screentip_held = new_held_item
+
+	if(last_screentip_atom)
+		RegisterSignal(last_screentip_atom, COMSIG_PARENT_QDELETING, PROC_REF(on_screentip_cache_target_qdeleting))
+	if(last_screentip_held && last_screentip_held != last_screentip_atom)
+		RegisterSignal(last_screentip_held, COMSIG_PARENT_QDELETING, PROC_REF(on_screentip_cache_target_qdeleting))
+
+/datum/hud/proc/on_screentip_cache_target_qdeleting(datum/source)
+	SIGNAL_HANDLER
+	if(source == last_screentip_atom || source == last_screentip_held)
+		set_screentip_cache(null, null)
 
 /mob/proc/create_mob_hud()
 	if(!client || hud_used)
@@ -215,6 +236,12 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 /mob/proc/set_hud_used(datum/hud/new_hud)
 	hud_used = new_hud
 	new_hud.build_action_groups()
+
+/mob/living/set_hud_used(datum/hud/new_hud)
+	. = ..()
+	//новый HUD - пустые элементы здоровья, дедуп в update_health_hud() обязан
+	//пропустить первую отрисовку
+	cached_health_hud_signature = ""
 
 //Version denotes which style should be displayed. blank or 0 means "next version"
 /datum/hud/proc/show_hud(version = 0, mob/viewmob)
@@ -231,7 +258,7 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 	if(!display_hud_version)	//If 0 or blank, display the next hud version
 		display_hud_version = hud_version + 1
 	if(display_hud_version > HUD_VERSIONS)	//If the requested version number is greater than the available versions, reset back to the first version
-		display_hud_version = 1
+		display_hud_version = HUD_STYLE_STANDARD
 
 	switch(display_hud_version)
 		if(HUD_STYLE_STANDARD)	//Default HUD
@@ -295,7 +322,7 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 
 	hud_version = display_hud_version
 	persistent_inventory_update(screenmob)
-	screenmob.update_action_buttons(1)
+	screenmob.update_action_buttons(TRUE)
 	reorganize_alerts()
 
 	// ensure observers get an accurate and up-to-date view

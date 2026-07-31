@@ -28,7 +28,7 @@
 		CRASH("Incorrect touch spell hand.")
 	//Start recharging.
 	attached_hand = null
-	recharging = TRUE
+	start_recharge() //будит SSfastprocess: рука выставляется с charge_counter = 0
 	action.UpdateButtons()
 
 /obj/effect/proc_holder/spell/targeted/touch/proc/cancel_cast(mob/user = usr)

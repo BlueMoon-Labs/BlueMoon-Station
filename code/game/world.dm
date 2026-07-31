@@ -28,9 +28,7 @@ GLOBAL_LIST(topic_status_cache)
 
 	make_datum_references_lists()	//initialises global lists for referencing frequently used datums (so that we only ever do it once)
 
-	#ifdef REFERENCE_DOING_IT_LIVE
 	GLOB.harddel_log = GLOB.world_game_log
-	#endif
 
 	GLOB.revdata = new
 
@@ -86,11 +84,16 @@ GLOBAL_LIST(topic_status_cache)
 	CONFIG_SET(number/round_end_countdown, 0)
 	var/datum/callback/cb
 #ifdef UNIT_TESTS
-	cb = CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(RunUnitTests))
+	// Unit tests exercise Dynamic/Director state and must not depend on an
+	// unattended lobby vote picking the right mode. force_gamemode also marks
+	// the vote as complete, so ticker can enter setup immediately.
+	SSticker.force_gamemode("dynamic")
+	cb = CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(RunUnitTestsWhenReady))
+	SSticker.OnRoundstart(cb)
 #else
 	cb = VARSET_CALLBACK(SSticker, force_ending, TRUE)
-#endif
 	SSticker.OnRoundstart(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(_addtimer), cb, 10 SECONDS))
+#endif
 
 /world/proc/SetupLogs()
 	var/override_dir = params[OVERRIDE_LOG_DIRECTORY_PARAMETER]
@@ -145,10 +148,8 @@ GLOBAL_LIST(topic_status_cache)
 	GLOB.test_log = "[GLOB.log_directory]/tests.log"
 	start_log(GLOB.test_log)
 #endif
-#ifdef REFERENCE_DOING_IT_LIVE
 	GLOB.harddel_log = "[GLOB.log_directory]/harddels.log"
 	start_log(GLOB.harddel_log)
-#endif
 	start_log(GLOB.world_game_log)
 	start_log(GLOB.world_attack_log)
 	start_log(GLOB.world_pda_log)

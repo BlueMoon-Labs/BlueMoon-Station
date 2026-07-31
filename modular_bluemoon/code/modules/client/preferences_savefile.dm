@@ -69,4 +69,16 @@
 			var/ck = bm_ckey_from_prefs_path(path)
 			if(ck)
 				SSmetadollars.reconcile_legacy_balance(ck)
+
+	if(current_version < 75)
+		toggles |= SOUND_EMOTE
+
+	if(current_version < 76) // BLUEMOON ADD - новые звуковые тогглы
+		mentor_toggles |= SOUND_MENTORHELP
+		toggles |= SOUND_FAX
+
+	if(current_version < 77) // BLUEMOON ADD - фикс битов для SOUND_FAX (теперь (1<<19))
+		mentor_toggles |= SOUND_MENTORHELP
+		toggles |= SOUND_FAX
+
 	. = ..()

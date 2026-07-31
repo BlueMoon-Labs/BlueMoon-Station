@@ -7,8 +7,10 @@ SUBSYSTEM_DEF(redbot)
 	var/bot_ip = CONFIG_GET(string/bot_ip)
 	var/round_id = GLOB.round_id
 	if(config && bot_ip)
+		// Fire-and-forget через rustg: world.Export на мёртвый bot_ip держал весь мир
+		// до сетевого таймаута (~10с) прямо в фазе инициализации.
 		var/query = "http://[bot_ip]/?serverStart=1&roundID=[round_id]&key=[comms_key]"
-		world.Export(query)
+		world_safe_http_get_async(query)
 	return ..()
 
 /datum/controller/subsystem/redbot/proc/send_discord_message(var/channel, var/message, var/priority_type)
@@ -24,4 +26,4 @@ SUBSYSTEM_DEF(redbot)
 	data["key"] = CONFIG_GET(string/comms_key)
 	data["announce_channel"] = channel
 	data["announce"] = message
-	world.Export("http://[bot_ip]/?[list2params(data)]")
+	world_safe_http_get_async("http://[bot_ip]/?[list2params(data)]")

@@ -14,6 +14,7 @@
 	item = /obj/item/storage/box/syndie_kit/imp_adrenal
 	cost = 8
 	player_minimum = 25
+	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/implants/antistun
 	name = "CNS Rebooter Implant"
@@ -37,7 +38,7 @@
 	item = /obj/item/storage/box/syndie_kit/imp_deathrattle
 	cost = 4
 	surplus = 0
-	purchasable_from = UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE
+	purchasable_from = UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/implants/freedom
 	name = "Freedom Implant"
@@ -45,13 +46,14 @@
 			пользователя от стандартных средств удержания, таких как наручники."
 	item = /obj/item/storage/box/syndie_kit/imp_freedom
 	cost = 5
+	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/implants/warp
 	name = "Warp Implant"
 	desc = "Имплант, вводимый в тело и активируемый по желанию. Телепортирует туда, где вы были 10 секунд назад. Кулдаун 10 секунд."
 	item = /obj/item/storage/box/syndie_kit/imp_warp
 	cost = 6
-	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
+	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/implants/hijack
 	name = "Hijack Implant"
@@ -60,6 +62,7 @@
 	cost = 14
 	surplus = 0
 	restricted = TRUE
+	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/implants/radio
 	name = "Internal Illegal Radio Implant"
@@ -68,6 +71,7 @@
 	item = /obj/item/storage/box/syndie_kit/imp_radio
 	cost = 4
 	restricted = TRUE
+	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/implants/microbomb
 	name = "Microbomb Implant"
@@ -92,7 +96,7 @@
 	desc = "Имплант попытается воскресить и подлатать вас, если потеряете сознание. Поставляется с автохирургом."
 	item = /obj/item/autosurgeon/syndicate/inteq/reviver
 	cost = 5
-	purchasable_from = (~UPLINK_SYNDICATE)
+	purchasable_from = ~(UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 	//purchasable_from = UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE
 
 /datum/uplink_item/implants/revitilzer
@@ -100,7 +104,7 @@
 	desc = "Устанавливаемый на торс кортекс оптимизирует процессы организма для поддержания тела в рабочем состоянии. Обеспечивает базовое восстановление. Поставляется с автохирургом."
 	item = /obj/item/autosurgeon/syndicate/inteq/revitilzer
 	cost = 8
-	purchasable_from = (~UPLINK_SYNDICATE)
+	purchasable_from = ~(UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 	//purchasable_from = UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE
 
 /datum/uplink_item/implants/stealthimplant
@@ -109,6 +113,7 @@
 			При активации прячет вас в хамелеоновую коробку, которая обнаруживается только при столкновении."
 	item = /obj/item/implanter/stealth
 	cost = 8
+	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/implants/storage
 	name = "Storage Implant"
@@ -116,6 +121,7 @@
 			вмещающий два предмета стандартного размера."
 	item = /obj/item/storage/box/syndie_kit/imp_storage
 	cost = 8
+	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
 
 /datum/uplink_item/implants/thermals
 	name = "Thermal Eyes"
@@ -131,7 +137,7 @@
 	item = /obj/item/storage/box/syndie_kit/imp_uplink
 	cost = 4
 	surplus = 0
-	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE)
+	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 	restricted = TRUE
 
 /datum/uplink_item/implants/xray

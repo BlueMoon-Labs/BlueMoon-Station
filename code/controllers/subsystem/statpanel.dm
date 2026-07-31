@@ -14,6 +14,9 @@
 #define STATPANEL_STAGGER_GROUPS 3
 /// LRU cap for per-client statpanel_sent_icons; older entries are evicted as new ones arrive.
 #define STATPANEL_ICON_CACHE_CAP 256
+/// Атомам с большим числом оверлеев иконку не флаттеним: один getFlatIcon одетого человека
+/// (30-80 оверлеев) блокирует тик на 150-250мс Blend'ов. Таким отдаётся базовая иконка.
+#define STATPANEL_MAX_FLAT_OVERLAYS 12
 /// Send tidi only every Nth ping fire — non-Status-tab clients still see fresh ping every fire.
 #define STATPANEL_TIDI_INTERVAL 10
 /// Bridge protocol version. Bump whenever the DM->JS payload shape changes incompatibly.
@@ -247,6 +250,9 @@ SUBSYSTEM_DEF(statpanels)
 				if(SSvote.vote_system in list(PLURALITY_VOTING, APPROVAL_VOTING, SCHULZE_VOTING, INSTANT_RUNOFF_VOTING))
 					for(var/choice in SSvote.choice_statclicks)
 						var/choice_id = SSvote.choice_statclicks[choice]
+						var/display_choice = choice
+						if(target.holder && SSvote.should_show_votes_to(target.mob) && !(SSvote.display_votes & SHOW_VOTES))
+							display_choice = "[choice] ([SSvote.get_effective_votes(choice)])"
 						if(target.ckey)
 							switch(SSvote.vote_system)
 								if(PLURALITY_VOTING, APPROVAL_VOTING)
@@ -255,13 +261,13 @@ SUBSYSTEM_DEF(statpanels)
 										ivotedforthis = SSvote.voted[target.ckey] && (text2num(choice_id) in SSvote.voted[target.ckey])
 									else
 										ivotedforthis = (SSvote.voted[target.ckey] == text2num(choice_id))
-									vote_arry[++vote_arry.len] += list(ivotedforthis ? "\[X\]" : "\[ \]", choice, "[REF(SSvote)];vote=[choice_id];statpannel=1")
+									vote_arry[++vote_arry.len] += list(ivotedforthis ? "\[X\]" : "\[ \]", display_choice, "[REF(SSvote)];vote=[choice_id];statpannel=1")
 								if(SCHULZE_VOTING, INSTANT_RUNOFF_VOTING)
 									var/list/vote = SSvote.voted[target.ckey]
 									var/vote_position = " "
 									if(vote)
 										vote_position = vote.Find(text2num(choice_id))
-									vote_arry[++vote_arry.len] += list("\[[vote_position]\]", choice, "[REF(SSvote)];vote=[choice_id];statpannel=1")
+									vote_arry[++vote_arry.len] += list("\[[vote_position]\]", display_choice, "[REF(SSvote)];vote=[choice_id];statpannel=1")
 				var/raw_vote = json_encode(vote_arry)
 				if(target.statpanel_last_sent[STATPANEL_CHANNEL_VOTING] != raw_vote)
 					target << output("[url_encode(raw_vote)]", "statbrowser:update_voting")
@@ -365,7 +371,8 @@ SUBSYSTEM_DEF(statpanels)
 			if(C.statpanel_sent_icons[ref])
 				continue
 			var/icon_url
-			if(ismob(A) || length(A.overlays) > 4)
+			var/overlay_count = length(A.overlays)
+			if((ismob(A) || overlay_count > 4) && overlay_count <= STATPANEL_MAX_FLAT_OVERLAYS)
 				icon_url = costly_icon2html(A, C, sourceonly=TRUE)
 			else
 				icon_url = icon2html(A, C, sourceonly=TRUE)
@@ -373,6 +380,10 @@ SUBSYSTEM_DEF(statpanels)
 				cache_sent_icon(C, ref, icon_url)
 				batch[++batch.len] = list(ref, icon_url)
 			icons_done++
+			// Бюджет в штуках не ограничивает время: тик-чек после каждой сгенерированной иконки,
+			// иначе пачка дорогих флаттенов складывается в сотни мс одним тиком
+			if(MC_TICK_CHECK)
+				break
 		if(length(batch))
 			C << output("[url_encode(json_encode(batch))];", "statbrowser:update_turf_icons")
 		if(!length(pending))
@@ -779,6 +790,7 @@ SUBSYSTEM_DEF(statpanels)
 #undef STATPANEL_SLOW_CYCLE_FULLS
 #undef STATPANEL_STAGGER_GROUPS
 #undef STATPANEL_ICON_CACHE_CAP
+#undef STATPANEL_MAX_FLAT_OVERLAYS
 #undef STATPANEL_TIDI_INTERVAL
 #undef STATBROWSER_PROTOCOL_VERSION
 #undef STATPANEL_CHANNEL_STATUS

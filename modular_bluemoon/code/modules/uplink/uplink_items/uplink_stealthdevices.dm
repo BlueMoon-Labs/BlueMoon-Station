@@ -132,3 +132,4 @@
 	desc = "Устройство, позволяющее сканировать и подбрасывать отпечатки пальцев."
 	item = /obj/item/device/fingerprinter
 	cost = 5
+	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW

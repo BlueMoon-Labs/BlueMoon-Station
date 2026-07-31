@@ -104,6 +104,16 @@ All ShuttleMove procs go here
 
 	loc = newT
 
+	//прямое присваивание loc обходит Moved(), поэтому ячейки спатиал-грида
+	//переключаем сами: иначе слышащие и клиент-мобы навсегда остаются
+	//прописаны в ячейках старого дока (глухота на новом месте + вечные
+	//ссылки в hearing_contents/client_contents по старому адресу)
+	if(HAS_SPATIAL_GRID_CONTENTS(src) && (oldT.z != newT.z \
+		|| GET_SPATIAL_INDEX(oldT.x) != GET_SPATIAL_INDEX(newT.x) \
+		|| GET_SPATIAL_INDEX(oldT.y) != GET_SPATIAL_INDEX(newT.y)))
+		SSspatial_grid.exit_cell(src, oldT)
+		SSspatial_grid.enter_cell(src, newT)
+
 	return TRUE
 
 // Called on atoms after everything has been moved
@@ -396,7 +406,3 @@ All ShuttleMove procs go here
 
 /obj/docking_port/stationary/public_mining_dock/onShuttleMove(turf/newT, turf/oldT, list/movement_force, move_dir, obj/docking_port/stationary/old_dock, obj/docking_port/mobile/moving_dock)
 	shuttle_id = "mining_public" //It will not move with the base, but will become enabled as a docking point.
-
-/obj/effect/abstract/proximity_checker/onShuttleMove(turf/newT, turf/oldT, list/movement_force, move_dir, obj/docking_port/stationary/old_dock, obj/docking_port/mobile/moving_dock)
-	//timer so it only happens once
-	addtimer(CALLBACK(monitor, TYPE_PROC_REF(/datum/proximity_monitor, SetRange), monitor.current_range, TRUE), 0, TIMER_UNIQUE)

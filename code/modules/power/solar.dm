@@ -115,11 +115,13 @@
 /obj/machinery/power/solar/proc/queue_turn(azimuth)
 	needs_to_turn = TRUE
 	azimuth_target = azimuth
+	machine_wake() // dark panels sleep off SSmachines until the sun state changes
 
 /obj/machinery/power/solar/proc/queue_update_solar_exposure()
 	SIGNAL_HANDLER
 
 	needs_to_update_solar_exposure = TRUE //updating right away would be wasteful if we're also turning later
+	machine_wake() // dark panels sleep off SSmachines until the sun state changes
 
 /obj/machinery/power/solar/proc/update_turn()
 	needs_to_turn = FALSE
@@ -164,7 +166,9 @@
 	if(needs_to_update_solar_exposure)
 		update_solar_exposure()
 	if(total_flux <= 0)
-		return
+		// In shadow or obscured: no power to generate until the sun state changes, and
+		// queue_turn()/queue_update_solar_exposure() wake us when it does.
+		return machine_sleep()
 
 	var/sgen = SOLAR_GEN_RATE * total_flux * efficiency
 	add_avail(sgen)

@@ -108,24 +108,24 @@
 
 /obj/item/reagent_containers/hypospray/medipen
 	name = "epinephrine medipen"
-	desc = "Стремительный и стабильный способ стабилизации пациентов в критическом состоянии для экипажа без знаний медицины. Содержит сильный консервант, способный задерживать разложение мёртвого тела."
+	desc = "Стремительный и стабильный способ стабилизации пациентов в критическом состоянии для экипажа без знаний медицины. Содержит сильный консервант и коагулянт для остановки кровотечения."
 	icon_state = "medipen"
 	item_state = "medipen"
 	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
-	amount_per_transfer_from_this = 15
-	volume = 15
+	amount_per_transfer_from_this = 18
+	volume = 18
 	ignore_flags = 1 //so you can medipen through hardsuits
 	reagent_flags = DRAWABLE
 	flags_1 = null
-	list_reagents = list(/datum/reagent/medicine/epinephrine = 10, /datum/reagent/preservahyde = 3, /datum/reagent/medicine/coagulant = 2)
+	list_reagents = list(/datum/reagent/medicine/epinephrine = 10, /datum/reagent/preservahyde = 3, /datum/reagent/medicine/coagulant = 5)
 	custom_premium_price = PRICE_ALMOST_EXPENSIVE
 
 /obj/item/reagent_containers/hypospray/medipen/suicide_act(mob/living/carbon/user)
 	user.visible_message("<span class='suicide'>[user] начинает давиться [src]! Похоже, [user.ru_who()] пытаются совершить суицид!</span>")
 	return OXYLOSS//ironic. he could save others from oxyloss, but not himself.
 
-/obj/item/reagent_containers/hypospray/medipen/attack(mob/M, mob/user)
+/obj/item/reagent_containers/hypospray/medipen/attack(mob/living/M, mob/user)
 	if(!reagents.total_volume)
 		to_chat(user, "<span class='warning'>[src] пуст!</span>")
 		return
@@ -136,8 +136,8 @@
 	update_icon()
 	addtimer(CALLBACK(src, PROC_REF(cyborg_recharge), user), 80)
 
-/obj/item/reagent_containers/hypospray/medipen/attack_self()
-	attack(usr, usr)
+/obj/item/reagent_containers/hypospray/medipen/attack_self(mob/user)
+	attack(user, user)
 
 /obj/item/reagent_containers/hypospray/medipen/proc/cyborg_recharge(mob/living/silicon/robot/user)
 	if(!reagents.total_volume && iscyborg(user))
@@ -164,18 +164,18 @@
 	desc = "Эпинефриновый медипен. Содержит дозу коагулянта и антибиотиков для стабилизации тяжёлых травм и ожогов."
 	icon_state = "healthpen"
 	item_state = "healthpen"
-	volume = 15
-	amount_per_transfer_from_this = 15
-	list_reagents = list(/datum/reagent/medicine/epinephrine = 12, /datum/reagent/medicine/coagulant = 2.5, /datum/reagent/medicine/spaceacillin = 0.5)
+	volume = 17.5
+	amount_per_transfer_from_this = 17.5
+	list_reagents = list(/datum/reagent/medicine/epinephrine = 12, /datum/reagent/medicine/coagulant = 5, /datum/reagent/medicine/spaceacillin = 0.5)
 
 /obj/item/reagent_containers/hypospray/medipen/blood_loss
 	name = "hypovolemic-response autoinjector"
 	desc = "Медипен для стабилизации пациента и обращения последствий тяжёлых кровопотерь."
 	icon_state = "hypovolemic"
 	item_state = "hypovolemic"
-	volume = 15
-	amount_per_transfer_from_this = 15
-	list_reagents = list(/datum/reagent/medicine/epinephrine = 5, /datum/reagent/medicine/coagulant = 2.5, /datum/reagent/iron = 3.5, /datum/reagent/medicine/salglu_solution = 4)
+	volume = 17.5
+	amount_per_transfer_from_this = 17.5
+	list_reagents = list(/datum/reagent/medicine/epinephrine = 5, /datum/reagent/medicine/coagulant = 5, /datum/reagent/iron = 3.5, /datum/reagent/medicine/salglu_solution = 4)
 
 /obj/item/reagent_containers/hypospray/medipen/stimulants
 	name = "stimpack medipen"
@@ -227,21 +227,21 @@
 
 /obj/item/reagent_containers/hypospray/medipen/atropine
 	name = "atropine autoinjector"
-	desc = "Быстрый способ спасти кого-то в критическом состоянии!"
+	desc = "Быстрый способ спасти кого-то в критическом состоянии! Содержит коагулянт для остановки кровотечения и консервант против гниения."
 	icon_state = "atropen"
 	item_state = "atropen"
-	volume = 10
-	amount_per_transfer_from_this = 10
-	list_reagents = list(/datum/reagent/medicine/atropine = 10)
+	volume = 16
+	amount_per_transfer_from_this = 16
+	list_reagents = list(/datum/reagent/medicine/atropine = 10, /datum/reagent/medicine/coagulant = 3, /datum/reagent/preservahyde = 3)
 
 /obj/item/reagent_containers/hypospray/medipen/salacid
 	name = "salicyclic acid medipen"
-	desc = "Автоинъектор с салициловой кислотой, для стабилизации тяжелейших травм."
+	desc = "Автоинъектор с салициловой кислотой, для стабилизации тяжелейших травм. Также содержит коагулянт."
 	icon_state = "salacid"
 	item_state = "salacid"
-	volume = 10
-	amount_per_transfer_from_this = 10
-	list_reagents = list(/datum/reagent/medicine/sal_acid = 10)
+	volume = 13
+	amount_per_transfer_from_this = 13
+	list_reagents = list(/datum/reagent/medicine/sal_acid = 10, /datum/reagent/medicine/coagulant = 3)
 
 /obj/item/reagent_containers/hypospray/medipen/oxandrolone
 	name = "oxandrolone medipen"
@@ -281,12 +281,12 @@
 
 /obj/item/reagent_containers/hypospray/medipen/survival
 	name = "survival medipen"
-	desc = "Медипен-инъектор для выживания в самых тяжёлых условиях, лечит и защищает от угроз окружающей среды. ВНИМАНИЕ: не делать более одной инъекции за короткое время."
+	desc = "Медипен-инъектор для выживания в самых тяжёлых условиях, лечит и защищает от угроз окружающей среды. Содержит коагулянт. ВНИМАНИЕ: не делать более одной инъекции за короткое время."
 	icon_state = "minepen"
 	item_state = "minepen"
-	volume = 52
-	amount_per_transfer_from_this = 52
-	list_reagents = list(/datum/reagent/medicine/salbutamol = 10, /datum/reagent/medicine/leporazine = 15, /datum/reagent/medicine/neo_jelly = 15, /datum/reagent/medicine/epinephrine = 10, /datum/reagent/medicine/lavaland_extract = 2)
+	volume = 57
+	amount_per_transfer_from_this = 57
+	list_reagents = list(/datum/reagent/medicine/salbutamol = 10, /datum/reagent/medicine/leporazine = 15, /datum/reagent/medicine/neo_jelly = 15, /datum/reagent/medicine/epinephrine = 10, /datum/reagent/medicine/lavaland_extract = 2, /datum/reagent/medicine/coagulant = 5)
 
 /obj/item/reagent_containers/hypospray/medipen/firelocker
 	name = "fire treatment medipen"
@@ -306,6 +306,24 @@
 	ignore_flags = 0
 	reagent_flags = NONE
 	list_reagents = list(/datum/reagent/magillitis = 5)
+
+/obj/item/reagent_containers/hypospray/medipen/nanite_protector
+	name = "Nanite Protector autoinjector"
+	desc = "Экспериментальный инжектор, содержащий серую массу непонятного происхождения. При попадании в организм она необратимо меняет клетки и перестраивает структуры, не давая им взаимодействовать с нанитами.\nИспользование более одного раза не несет эффекта."
+	icon_state = "purple_pen"
+	item_state = "purple_pen"
+	amount_per_transfer_from_this = 3
+	volume = 3
+	list_reagents = list(/datum/reagent/nanite_protector = 3)
+
+/obj/item/reagent_containers/hypospray/medipen/nanite_protector/attack(mob/living/M, mob/user)
+	if(M != user)
+		if(INTERACTING_WITH(user, M))
+			return
+		to_chat(M, span_userdanger("Пытается ввести вам Nanite Protector, навсегда лишив вас нанитов!"))
+		if(!do_after_mob(user, M, 6 SECONDS))
+			return
+	return ..()
 
 #define HYPO_SPRAY 0
 #define HYPO_INJECT 1
@@ -512,7 +530,9 @@
 	INVOKE_ASYNC(src, PROC_REF(attempt_inject), target, user, proximity)
 
 /obj/item/hypospray/mkii/proc/attempt_inject(atom/target, mob/user, proximity)
-	if(!vial || !proximity || !isliving(target))
+	if(!proximity || !isliving(target))
+		return
+	if(!vial?.reagents)
 		return
 	var/mob/living/L = target
 
@@ -534,9 +554,6 @@
 	var/contained = vial.reagents.log_list()
 	log_combat(user, L, "attemped to inject", src, addition="which had [contained]")
 
-	if(!vial)
-		to_chat(user, "<span class='notice'>[src] не имеет какой-либо ампулы!</span>")
-		return
 	if(!vial.reagents.total_volume)
 		to_chat(user, "<span class='notice'>Ампула внутри [src] пуста!</span>")
 		return
@@ -549,7 +566,7 @@
 						"<span class='userdanger'>[user] пытается [fp_verb] вам при помощи [src]!</span>")
 	if(!do_mob(user, L, inject_wait, extra_checks = CALLBACK(L, TYPE_PROC_REF(/mob/living, can_inject), user, FALSE, user.zone_selected, penetrates)))
 		return
-	if(!vial.reagents.total_volume)
+	if(!vial?.reagents?.total_volume)
 		return
 	log_attack("<font color='red'>[user.name] ([user.ckey]) applied [src] to [L.name] ([L.ckey]), which had [contained] (INTENT: [uppertext(user.a_intent)]) (MODE: [mode])</font>")
 	if(L != user)

@@ -197,8 +197,8 @@
 				goodies[quirk_goodie] = 5
 
 		// A little boost for the special times!
-		for(var/holiday_name in SSevents.holidays)
-			var/datum/holiday/holiday = SSevents.holidays[holiday_name]
+		for(var/holiday_name in SSholidays.holidays)
+			var/datum/holiday/holiday = SSholidays.holidays[holiday_name]
 			if(LAZYLEN(holiday.mail_goodies))
 				var/holiday_goodie = pick(holiday.mail_goodies)
 				goodies[holiday_goodie] = holiday.mail_goodies[holiday_goodie]
@@ -346,11 +346,12 @@
 	storage.max_combined_w_class = 42
 	storage.max_items = 21
 	storage.display_numerical_stacking = FALSE
-	storage.can_hold = typecacheof(list(
+	var/static/list/mailbag_can_hold = typecacheof(list(
 		/obj/item/mail,
 		/obj/item/small_delivery,
 		/obj/item/paper
 	))
+	storage.can_hold = mailbag_can_hold
 
 /obj/item/paper/fluff/junkmail_redpill
 	name = "smudged paper"

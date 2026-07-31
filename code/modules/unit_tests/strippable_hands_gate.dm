@@ -19,3 +19,6 @@
 
 	var/mob/living/carbon/alien/humanoid/hunter/xeno = allocate(/mob/living/carbon/alien/humanoid/hunter)
 	TEST_ASSERT(can_open_strip_menu(xeno), "An adult xenomorph was unable to open the strip menu")
+
+	var/mob/living/simple_animal/qareen/spirit = allocate(/mob/living/simple_animal/qareen)
+	TEST_ASSERT(can_open_strip_menu(spirit), "A qareen (spirit that strips players by design) was unable to open the strip menu")

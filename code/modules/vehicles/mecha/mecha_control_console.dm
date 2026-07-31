@@ -140,10 +140,15 @@
 /obj/item/mecha_parts/mecha_tracking/proc/shock()
 	if(recharging)
 		return
-	if(chassis)
-		chassis.emp_act(240)
-		addtimer(CALLBACK(src, TYPE_PROC_REF(/obj/item/mecha_parts/mecha_tracking, recharge)), 5 SECONDS, TIMER_UNIQUE | TIMER_OVERRIDE)
-		recharging = TRUE
+	if(!chassis)
+		return
+	chassis.emp_act(240)
+	//ЭМИ по мехе уничтожает её же маячки, в том числе нас: таймер перезарядки
+	//на qdel-нутом объекте бессмысленен и ругается в рантайм-лог
+	if(QDELETED(src))
+		return
+	addtimer(CALLBACK(src, TYPE_PROC_REF(/obj/item/mecha_parts/mecha_tracking, recharge)), 5 SECONDS, TIMER_UNIQUE | TIMER_OVERRIDE)
+	recharging = TRUE
 
 /**
   * Resets recharge variable, allowing tracker to be EMP pulsed again

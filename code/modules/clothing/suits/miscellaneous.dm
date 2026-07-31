@@ -786,6 +786,9 @@
 	. = ..()
 	allowed = GLOB.security_wintercoat_allowed
 
+/obj/item/clothing/suit/hooded/wintercoat/security/no_armor
+	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 0)
+
 /obj/item/clothing/head/hooded/winterhood/security
 	desc = "A red, armor-padded winter hood."
 	icon_state = "hood_security"
@@ -1290,6 +1293,7 @@
 	desc = "Reminds you of someone, but you just can't put your finger on it..."
 	icon_state = "waldo_shirt"
 	item_state = "waldo_shirt"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/suit/samurai
 	name = "Samurai outfit"

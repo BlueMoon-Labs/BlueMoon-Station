@@ -31,16 +31,23 @@ GLOBAL_LIST_EMPTY(client_ghost_timeouts)
 	var/list/candidates = list()
 	for(var/m in possible_candidates)
 		var/mob/M = m
-		if(M.can_reenter_round(TRUE))
+		// Мы уже итерируем список членства (priority-список - его подмножество):
+		// повторный линейный скан внутри can_reenter_round давал O(гостов^2) на пересбор.
+		if(M.can_reenter_round(TRUE, skip_eligibility_scan = TRUE))
 			candidates += M
 	return candidates
 
-/mob/proc/can_reenter_round(silent = FALSE)
-	if(!(src in GLOB.ghost_eligible_mobs))
+/// skip_eligibility_scan: вызывающий уже итерирует GLOB.ghost_eligible_mobs и ручается
+/// за членство - линейный скан списка здесь превращал пересбор кандидатов в O(N^2).
+/mob/proc/can_reenter_round(silent = FALSE, skip_eligibility_scan = FALSE)
+	if(!skip_eligibility_scan && !(src in GLOB.ghost_eligible_mobs))
 		return FALSE
-	if(!(ckey in GLOB.client_ghost_timeouts))
+	if(isnull(ckey))
 		return TRUE
+	// Хэш-лукап вместо линейного `in` по ключам: значение 0 - легальный "без штрафа".
 	var/timeout = GLOB.client_ghost_timeouts[ckey]
+	if(isnull(timeout))
+		return TRUE
 	if(timeout != CANT_REENTER_ROUND && timeout <= world.realtime)
 		return TRUE
 	if(!silent && client)

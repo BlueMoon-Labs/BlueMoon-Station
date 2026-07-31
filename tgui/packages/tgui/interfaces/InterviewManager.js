@@ -2,8 +2,8 @@ import { useBackend } from '../backend';
 import { Button, Section } from '../components';
 import { Window } from '../layouts';
 
-export const InterviewManager = (props, context) => {
-  const { act, data } = useBackend(context);
+export const InterviewManager = (props) => {
+  const { act, data } = useBackend();
   const {
     open_interviews,
     closed_interviews,

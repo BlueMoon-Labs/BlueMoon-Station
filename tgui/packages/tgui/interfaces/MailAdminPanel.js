@@ -2,7 +2,7 @@ import { useBackend } from '../backend';
 import { Box, Button, Collapsible, Dropdown, Flex, LabeledList, NoticeBox, Section } from '../components';
 import { Window } from '../layouts';
 
-export const MailAdminPanel = (props, context) => {
+export const MailAdminPanel = (props) => {
   return (
     <Window title="Панель управления почтой" width={900} height={600} theme="admin" resizable>
       <Window.Content scrollable overflow="auto">
@@ -14,8 +14,8 @@ export const MailAdminPanel = (props, context) => {
   );
 };
 
-export const SubsystemInfoReadout = (props, context) => {
-  const { act, data } = useBackend(context);
+export const SubsystemInfoReadout = (props) => {
+  const { act, data } = useBackend();
 
   const {
     total_mails,
@@ -58,8 +58,8 @@ export const SubsystemInfoReadout = (props, context) => {
   );
 };
 
-export const PlayerChoosingPanel = (props, context) => {
-  const { act, data } = useBackend(context);
+export const PlayerChoosingPanel = (props) => {
+  const { act, data } = useBackend();
 
   const {
     player_names,
@@ -116,8 +116,8 @@ export const PlayerChoosingPanel = (props, context) => {
   );
 };
 
-export const MailCreationPanel = (props, context) => {
-  const { act, data } = useBackend(context);
+export const MailCreationPanel = (props) => {
+  const { act, data } = useBackend();
 
   const {
     available_categories,

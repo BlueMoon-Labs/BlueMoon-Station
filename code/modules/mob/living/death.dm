@@ -62,6 +62,13 @@
 	unset_machine()
 	timeofdeath = world.time
 	tod = STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)
+	// Атрибуция активности антагов для директора: убийство чужого игрового персонажа - самый
+	// громкий сигнал. lastattackerckey ставится боевыми процами; клиент убийцы ищется по ckey.
+	if(mind && lastattackerckey && lastattackerckey != ckey)
+		var/client/killer_client = GLOB.directory[lastattackerckey]
+		var/datum/mind/killer_mind = killer_client?.mob?.mind
+		if(killer_mind && killer_mind != mind)
+			SSdirector.bump_antag_activity(killer_mind, DIRECTOR_ACTIVITY_KILL)
 	for(var/obj/item/I in contents)
 		I.on_mob_death(src, gibbed)
 	if(mind)

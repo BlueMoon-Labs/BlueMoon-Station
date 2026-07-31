@@ -35,6 +35,7 @@
 /obj/machinery/atmospherics/components/binary/pump/CtrlClick(mob/user)
 	if(can_interact(user))
 		on = !on
+		atmos_wake()
 		investigate_log("was turned [on ? "on" : "off"] by [key_name(user)]", INVESTIGATE_ATMOS)
 		update_appearance()
 	return ..()
@@ -42,6 +43,7 @@
 /obj/machinery/atmospherics/components/binary/pump/AltClick(mob/user)
 	if(can_interact(user))
 		target_pressure = MAX_OUTPUT_PRESSURE
+		atmos_wake()
 		investigate_log("was set to [target_pressure] kPa by [key_name(user)]", INVESTIGATE_ATMOS)
 		balloon_alert(user, "pressure output set to [target_pressure] kPa")
 		update_appearance()
@@ -58,7 +60,11 @@
 
 /obj/machinery/atmospherics/components/binary/pump/process_atmos()
 //	..()
+	if(atmos_idle_until > world.time)
+		return
 	if(!on || !is_operational)
+		// Woken by ui_act()/receive_signal()/power_change().
+		atmos_consider_idle()
 		return
 
 	var/datum/gas_mixture/air1 = airs[1]
@@ -68,16 +74,39 @@
 
 	if((target_pressure - output_starting_pressure) < 0.01)
 		//No need to pump gas if target is already reached!
+		//Woken by the pipenet pressure-jump broadcast when the output drains.
+		atmos_consider_idle()
 		return
 
-	//Calculate necessary moles to transfer using PV=nRT
+	//Calculate necessary moles to transfer
 	if((air1.total_moles() > 0) && (air1.return_temperature()>0))
-		var/pressure_delta = target_pressure - output_starting_pressure
-		var/transfer_moles = pressure_delta*air2.return_volume()/(air1.return_temperature() * R_IDEAL_GAS_EQUATION)
-
-		air1.transfer_to(air2,transfer_moles)
-
-		update_parents()
+		if(air2.gc_share)
+			// Venting into space: no back-pressure builds up, the legacy PV=nRT
+			// estimate is exact enough and the solver's output-side terms are
+			// meaningless against an immutable void.
+			var/pressure_delta = target_pressure - output_starting_pressure
+			var/transfer_moles = pressure_delta*air2.return_volume()/(air1.return_temperature() * R_IDEAL_GAS_EQUATION)
+			if(air1.vent_moles(transfer_moles))
+				update_parents()
+				atmos_idle_streak = 0
+			else
+				atmos_consider_idle()
+			return
+		// Exact one-step solve (tg port): the legacy formula ignores that the
+		// transferred gas changes the output's temperature, so a hot-input
+		// cold-output pump chased the target for many extra cycles, rewaking
+		// itself and the pipenet every time.
+		var/temperature_delta = abs(air1.return_temperature() - air2.return_temperature())
+		var/transfer_moles = air1.gas_pressure_calculate(air2, target_pressure, temperature_delta <= 5)
+		if(transfer_moles && air1.transfer_to(air2, transfer_moles))
+			update_parents()
+			atmos_idle_streak = 0
+		else
+			// No transfer warranted or a no-op move: same idle path as venting.
+			atmos_consider_idle()
+	else
+		// Empty input: woken by the pipenet broadcast when gas arrives.
+		atmos_consider_idle()
 
 //Radio remote control
 /obj/machinery/atmospherics/components/binary/pump/proc/set_frequency(new_frequency)
@@ -115,6 +144,7 @@
 /obj/machinery/atmospherics/components/binary/pump/ui_act(action, params)
 	if(..())
 		return
+	atmos_wake()
 	var/turf/T = get_turf(src)
 	var/area/A = get_area(src)
 	switch(action)
@@ -149,6 +179,9 @@
 	if(!signal.data["tag"] || (signal.data["tag"] != id) || (signal.data["sigtype"]!="command"))
 		return
 
+	// Pure status polls are read-only telemetry and must not reset the idle heartbeat.
+	if(!("status" in signal.data))
+		atmos_wake()
 	var/old_on = on //for logging
 
 	if("power" in signal.data)

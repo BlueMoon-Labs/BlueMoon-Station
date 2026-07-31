@@ -169,3 +169,78 @@
 	message = "credits"
 	export_types = list(/obj/item/stack/telecrystal)
 
+// Crystallizer products (prices from Whitemoon-station, x10 atmos balance)
+/datum/export/stack/hot_ice
+	cost = CARGO_CRATE_VALUE * 8
+	unit_name = "hot ice sheet"
+	message = "of Hot Ice"
+	export_types = list(/obj/item/stack/sheet/hot_ice)
+
+/datum/export/stack/metal_hydrogen
+	cost = CARGO_CRATE_VALUE * 10.5
+	unit_name = "metallic hydrogen sheet"
+	message = "of metallic hydrogen"
+	export_types = list(/obj/item/stack/sheet/mineral/metal_hydrogen)
+
+/datum/export/stack/ammonia_crystals
+	cost = CARGO_CRATE_VALUE * 1.25
+	unit_name = "ammonia crystal"
+	message = "of ammonia crystals"
+	export_types = list(/obj/item/stack/ammonia_crystals)
+
+/datum/export/stack/zaukerite
+	cost = CARGO_CRATE_VALUE * 20
+	unit_name = "zaukerite sheet"
+	message = "of zaukerite"
+	export_types = list(/obj/item/stack/sheet/mineral/zaukerite)
+
+// Crystallizer single-item exports (sellable at cargo)
+/datum/export/crystallizer_item
+	unit_name = "item"
+	include_subtypes = FALSE
+
+/datum/export/crystallizer_item/nitrium_crystal
+	cost = CARGO_CRATE_VALUE * 25
+	unit_name = "nitrium crystal"
+	export_types = list(/obj/item/nitrium_crystal)
+
+/datum/export/crystallizer_item/hypernoblium_crystal
+	cost = CARGO_CRATE_VALUE * 40
+	unit_name = "hypernoblium crystal"
+	export_types = list(/obj/item/hypernoblium_crystal)
+
+/datum/export/crystallizer_item/fuel_pellet
+	cost = CARGO_CRATE_VALUE * 2.5
+	unit_name = "fuel pellet"
+	export_types = list(/obj/item/fuel_pellet)
+
+/datum/export/crystallizer_item/fuel_pellet/advanced
+	cost = CARGO_CRATE_VALUE * 5
+	unit_name = "advanced fuel pellet"
+	export_types = list(/obj/item/fuel_pellet/advanced)
+
+/datum/export/crystallizer_item/fuel_pellet/exotic
+	cost = CARGO_CRATE_VALUE * 7.5
+	unit_name = "exotic fuel pellet"
+	export_types = list(/obj/item/fuel_pellet/exotic)
+
+/datum/export/crystallizer_item/gas_crystal_healium
+	cost = CARGO_CRATE_VALUE * 15
+	unit_name = "healium crystal"
+	export_types = list(/obj/item/grenade/gas_crystal/healium_crystal)
+
+/datum/export/crystallizer_item/gas_crystal_proto_nitrate
+	cost = CARGO_CRATE_VALUE * 10
+	unit_name = "proto nitrate crystal"
+	export_types = list(/obj/item/grenade/gas_crystal/proto_nitrate_crystal)
+
+/datum/export/crystallizer_item/gas_crystal_n2o
+	cost = CARGO_CRATE_VALUE * 5
+	unit_name = "N2O crystal"
+	export_types = list(/obj/item/grenade/gas_crystal/nitrous_oxide_crystal)
+
+/datum/export/crystallizer_item/gas_crystal_foam
+	cost = CARGO_CRATE_VALUE * 10
+	unit_name = "crystal foam"
+	export_types = list(/obj/item/grenade/gas_crystal/crystal_foam)
+

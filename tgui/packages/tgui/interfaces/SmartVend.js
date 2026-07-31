@@ -1,12 +1,13 @@
 import { createSearch } from 'common/string';
+import { useState } from 'react';
 
-import { useBackend, useLocalState } from '../backend';
+import { useBackend } from '../backend';
 import { Button, Input, NoticeBox, Section, Table } from '../components';
 import { Window } from '../layouts';
 
-export const SmartVend = (props, context) => {
-  const { act, data } = useBackend(context);
-  const [searchQuery, setSearchQuery] = useLocalState(context, 'searchQuery', '');
+export const SmartVend = (props) => {
+  const { act, data } = useBackend();
+  const [searchQuery, setSearchQuery] = useState('');
   const rawContents = data.contents || {};
   const contentEntries = Object.entries(rawContents);
   const searchable = !!data.searchable;

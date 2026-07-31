@@ -58,6 +58,8 @@ GLOBAL_VAR_INIT(floor_cluwnes, 0)
 	Manifest()
 	if(!current_victim)
 		Acquire_Victim()
+		if(QDELETED(src))
+			return INITIALIZE_HINT_QDEL
 	poi = new(src)
 
 /mob/living/simple_animal/hostile/floor_cluwne/med_hud_set_health()
@@ -68,6 +70,8 @@ GLOBAL_VAR_INIT(floor_cluwnes, 0)
 
 /mob/living/simple_animal/hostile/floor_cluwne/Destroy()
 	QDEL_NULL(poi)
+	QDEL_NULL(cluwnehole)
+	current_victim = null
 	return ..()
 
 
@@ -127,26 +131,17 @@ GLOBAL_VAR_INIT(floor_cluwnes, 0)
 
 	..()
 
-/mob/living/simple_animal/hostile/floor_cluwne/Goto(target, delay, minimum_distance)
-	var/area/A = get_area(current_victim.loc)
-	if(!manifested && !is_type_in_typecache(A, invalid_area_typecache) && is_station_level(current_victim.z))
-		walk_to(src, target, minimum_distance, delay)
-	else
-		walk_to(src,0)
-
-
-/mob/living/simple_animal/hostile/floor_cluwne/FindTarget()
-	return current_victim
-
-
 /mob/living/simple_animal/hostile/floor_cluwne/CanAttack(atom/the_target)//you will not escape
 	return TRUE
 
 
+//Атаки нет и на адаптере: убийство ведёт сценарий Life()/On_Stage().
 /mob/living/simple_animal/hostile/floor_cluwne/AttackingTarget()
 	return
 
 
+//Жертва неотменяема: пустой LoseTarget гасит и зеркалирование очистки цели
+//адаптером - контроллер не может "потерять" жертву сценария.
 /mob/living/simple_animal/hostile/floor_cluwne/LoseTarget()
 	return
 
@@ -410,28 +405,19 @@ GLOBAL_VAR_INIT(floor_cluwnes, 0)
 		H.unequip_everything()//more runtime prevention
 		if(prob(50))
 			H.death()
-			qdel(src)
 		else
 			H.cluwneify()
 			H.adjustBruteLoss(30)
 			H.adjustOrganLoss(ORGAN_SLOT_BRAIN, 100, 100)
-			H.cure_blind()
-			H.layer = initial(H.layer)
-			H.invisibility = initial(H.invisibility)
-			H.density = initial(H.density)
-			H.anchored = initial(H.anchored)
 			H.blur_eyes(10)
-			animate(H.client,color = old_color, time = 20)
-			qdel(src)
 
-	eating = FALSE
-	switch_stage = switch_stage * 0.75 //he gets faster after each feast
-	for(var/mob/M in GLOB.player_list)
-		M.playsound_local(get_turf(M), 'sound/misc/honk_echo_distant.ogg', 50, 1, pressure_affected = FALSE)
-
-	interest = 0
-	stage = STAGE_HAUNT
-	Acquire_Victim()
+	H.cure_blind()
+	H.layer = initial(H.layer)
+	H.invisibility = initial(H.invisibility)
+	H.density = initial(H.density)
+	H.anchored = initial(H.anchored)
+	animate(H.client,color = old_color, time = 20)
+	qdel(src)
 
 //manifestation animation
 /obj/effect/temp_visual/fcluwne_manifest

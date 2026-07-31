@@ -33,7 +33,7 @@
 	if(user)
 		user.update_equipment_speed_mods()
 		user.update_inv_shoes()	//so our mob-overlays update
-		user.update_gravity(user.has_gravity())
+		user.refresh_gravity()
 	for(var/X in actions)
 		var/datum/action/A = X
 		A.UpdateButtons()

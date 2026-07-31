@@ -254,6 +254,91 @@
 	else if(is_type_in_typecache(A, target_types))
 		return A
 
+///Find the first valid cleanbot target from spatial-grid candidates. view() is
+///only built when the grid found an exact-range candidate and is then used as
+///the final LOS filter. Before grid init, callers may supply or build the old
+///cached view as a safe fallback.
+/mob/living/simple_animal/bot/cleanbot/proc/scan_for_target(list/cached_view)
+	var/turf/our_turf = get_turf(src)
+	if(!our_turf)
+		return
+
+	var/list/candidate_filter
+	if(!cached_view && SSspatial_grid.initialized)
+		candidate_filter = list()
+
+		if(emagged == 2 || pests)
+			for(var/mob/living/living_candidate as anything in SSspatial_grid.orthogonal_range_search(src, SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS, DEFAULT_SCAN_RANGE))
+				if(QDELETED(living_candidate) || get_dist(our_turf, living_candidate) > DEFAULT_SCAN_RANGE)
+					continue
+				if((emagged == 2 && iscarbon(living_candidate)) || (pests && target_types[living_candidate.type]))
+					candidate_filter |= living_candidate
+
+		for(var/atom/movable/clean_candidate as anything in SSspatial_grid.orthogonal_range_search(src, SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS, DEFAULT_SCAN_RANGE))
+			if(QDELETED(clean_candidate) || !isturf(clean_candidate.loc) || get_dist(our_turf, clean_candidate) > DEFAULT_SCAN_RANGE)
+				continue
+			if(target_types[clean_candidate.type])
+				candidate_filter |= clean_candidate
+
+		if(!length(candidate_filter))
+			return
+
+		cached_view = shuffle(view(DEFAULT_SCAN_RANGE, src))
+		// Grid cells are deliberately broader than the requested range and do
+		// not encode opacity. Keep only candidates BYOND actually exposes.
+		for(var/atom/candidate as anything in candidate_filter.Copy())
+			if(!(candidate in cached_view))
+				candidate_filter -= candidate
+		if(!length(candidate_filter))
+			return
+	else if(!cached_view)
+		cached_view = shuffle(view(DEFAULT_SCAN_RANGE, src))
+
+	var/list/adjacent = our_turf.GetAtmosAdjacentTurfs(1)
+	if(shuffle)
+		adjacent = shuffle(adjacent)
+		shuffle = FALSE
+
+	// scan() used to inspect adjacent contents first, then the shuffled view.
+	// Keep that order (including harmless duplicates from view()) while only
+	// classifying each entry once instead of repeating the whole traversal.
+	var/list/search_order = list()
+	for(var/turf/adjacent_turf as anything in adjacent)
+		if(!check_bot(adjacent_turf))
+			search_order += adjacent_turf.contents
+	search_order += cached_view
+
+	var/highest_priority = emagged == 2 ? 1 : (pests ? 2 : 3)
+	var/list/candidates = list(null, null, null, null, null)
+	for(var/atom/candidate as anything in search_order)
+		if(candidate_filter && !(candidate in candidate_filter))
+			continue
+		var/priority
+		if(emagged == 2 && iscarbon(candidate))
+			priority = 1
+		else if(target_types[candidate.type])
+			if(pests && istype(candidate, /mob/living/simple_animal))
+				priority = 2
+			else if(istype(candidate, /obj/effect/decal/cleanable))
+				priority = 3
+			else if(istype(candidate, /obj/effect/decal/remains))
+				priority = 4
+			else if(trash && istype(candidate, /obj/item/trash))
+				priority = 5
+		if(!priority || candidates[priority] || (REF(candidate) in ignore_list))
+			continue
+
+		var/atom/scan_result = process_scan(candidate)
+		if(!scan_result)
+			continue
+		if(priority == highest_priority)
+			return scan_result
+		candidates[priority] = scan_result
+
+	for(var/priority in 1 to length(candidates))
+		if(candidates[priority])
+			return candidates[priority]
+
 /mob/living/simple_animal/bot/cleanbot/handle_automated_action()
 	if(!..())
 		return
@@ -274,31 +359,17 @@
 	else if(prob(5))
 		audible_message("[src] делает радостный жужжаще-пищащий звук!")
 
-	var/list/cached_view_result = shuffle(view(DEFAULT_SCAN_RANGE, src))
+	var/list/cached_view_result
 
 	if(ismob(target))
+		cached_view_result = shuffle(view(DEFAULT_SCAN_RANGE, src))
 		if(!(target in cached_view_result))
 			target = null
 		if(!process_scan(target))
 			target = null
 
-	if(!target && emagged == 2) // When emagged, target humans who slipped on the water and melt their faces off
-		target = scan(/mob/living/carbon, null, DEFAULT_SCAN_RANGE, cached_view_result)
-
-	if(!target && pests) //Search for pests to exterminate first.
-		target = scan(/mob/living/simple_animal, null, DEFAULT_SCAN_RANGE, cached_view_result)
-
-	if(!target) //Search for decals then.
-		target = scan(/obj/effect/decal/cleanable, null, DEFAULT_SCAN_RANGE, cached_view_result)
-
-	if(!target) //Checks for remains
-		target = scan(/obj/effect/decal/remains, null, DEFAULT_SCAN_RANGE, cached_view_result)
-
-	if(!target && trash) //Then for trash.
-		target = scan(/obj/item/trash, null, DEFAULT_SCAN_RANGE, cached_view_result)
-
-	// if(!target && trash) //Search for dead mices.
-	// 	target = scan(/obj/item/food/deadmouse)
+	if(!target)
+		target = scan_for_target()
 
 	if(!target && auto_patrol) //Search for cleanables it can see.
 		if(mode == BOT_IDLE || mode == BOT_START_PATROL)

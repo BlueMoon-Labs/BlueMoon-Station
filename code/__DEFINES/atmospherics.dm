@@ -15,20 +15,47 @@
 #define MOLES_N2STANDARD		(MOLES_CELLSTANDARD*N2STANDARD)	// N2 standard value (79%)
 #define CELL_VOLUME				2500	//liters in a cell
 #define BREATH_VOLUME			0.5		//liters in a normal breath
+
+//Ключи разобранной строки газа, см. SSair.get_parsed_gas_string()
+#define GAS_STRING_TEMP			"temp"
+#define GAS_STRING_MOLES		"moles"
+///Потолок кэша разобранных строк. Карта укладывается в пару десятков ключей и
+///разбирается на старте, а atmos_spawn_air() лепит строки на лету ("o2=[N];...") -
+///их кэшировать бессмысленно, поэтому после потолка просто перестаём запоминать.
+#define GAS_STRING_CACHE_LIMIT	512
 #define BREATH_PERCENTAGE		(BREATH_VOLUME/CELL_VOLUME)					//Amount of air to take a from a tile
 
 //EXCITED GROUPS
 #define EXCITED_GROUP_BREAKDOWN_CYCLES				4		//number of FULL air controller ticks before an excited group breaks down (averages gas contents across turfs)
 #define EXCITED_GROUP_DISMANTLE_CYCLES				16		//number of FULL air controller ticks before an excited group dismantles and removes its turfs from active
+///Stalled cycles before a grouped turf rests individually (leaves the active list but stays in
+///its group, see sleep_active_turf). Kept above EXCITED_GROUP_BREAKDOWN_CYCLES so an idling turf
+///holds the group average through at least one more breakdown before it stops processing.
+#define EXCITED_GROUP_INDIVIDUAL_REST_CYCLES		6
+///A space-adjacent tile below this pressure vents everything in one pass instead of bleeding
+///1/(neighbors+1) per cycle: the exponential tail spends tens of cycles per tile on residue
+///that is already deep past HAZARD_LOW_PRESSURE, and that whole tail was pure churn.
+#define SPACE_DRAIN_FINISH_PRESSURE					20
 #define MINIMUM_AIR_RATIO_TO_SUSPEND				0.1		//Ratio of air that must move to/from a tile to reset group processing
 #define MINIMUM_AIR_RATIO_TO_MOVE					0.001	//Minimum ratio of air that must move to/from a tile
 #define MINIMUM_AIR_TO_SUSPEND						(MOLES_CELLSTANDARD*MINIMUM_AIR_RATIO_TO_SUSPEND)	//Minimum amount of air that has to move before a group processing can be suspended
 #define MINIMUM_MOLES_DELTA_TO_MOVE					(MOLES_CELLSTANDARD*MINIMUM_AIR_RATIO_TO_MOVE) //Either this must be active
+///Content-relative floor for the share-significance gates: movement below this fraction of a tile's
+///contents never counts as significant, so 100+ atm supply tanks don't stay excited forever from
+///sub-percent machinery ripple. Deliberately far below MINIMUM_AIR_RATIO_TO_SUSPEND: real
+///decompression flows on high-mole tiles (canister floods) must still reset the group cooldowns,
+///or excited group breakdown averages the flood flat mid-flow (stepwise gas movement, no winds).
+#define SIGNIFICANT_SHARE_CONTENT_RATIO				0.01
 #define MINIMUM_TEMPERATURE_TO_MOVE					(T20C+100)			//or this (or both, obviously)
 #define MINIMUM_TEMPERATURE_DELTA_TO_SUSPEND		4		//Minimum temperature difference before group processing is suspended
 #define MINIMUM_TEMPERATURE_DELTA_TO_CONSIDER		0.5		//Minimum temperature difference before the gas temperatures are just set to be equal
 #define MINIMUM_TEMPERATURE_FOR_SUPERCONDUCTION		(T20C+10)
 #define MINIMUM_TEMPERATURE_START_SUPERCONDUCTION	(T20C+200)
+#define MINIMUM_HEAT_CAPACITY	0.0003
+
+//PLANETARY ATMOS
+#define PLANET_SHARE_RATIO							0.8		//Ratio of the difference a planetary turf shares with its template atmosphere each cycle
+#define PLANET_SHARE_TEMPERATURE_CAPACITY			5		//Template heat capacity multiplier for the follow-up conductive temperature share, simulating a large atmosphere above the turf
 
 //HEAT TRANSFER COEFFICIENTS
 //Must be between 0 and 1. Values closer to 1 equalize temperature faster
@@ -59,6 +86,23 @@
 #define NO_REACTION		0
 #define REACTING		1
 #define STOP_REACTIONS 	2
+/// The tile hosts a volatile reaction (a live fire/hotspot): excited group
+/// breakdown must not average the burn away mid-reaction (tg port).
+#define VOLATILE_REACTION	4
+/// How long a volatile reaction may defer settled-member bookkeeping. At the
+/// ceiling a volatile group runs evict_settled_members() - NOT the averaging
+/// self_breakdown (which would smear fuel and heat of a long burn across the
+/// whole group) - so perpetual fires keep the giant-group churn control the
+/// ordinary breakdown provides without the fire being touched.
+#define EXCITED_GROUP_VOLATILE_BREAKDOWN_CEILING	(EXCITED_GROUP_BREAKDOWN_CYCLES * 4)
+
+// Exact pressure solver for pumps (tg port, see gas_pressure_calculate)
+/// Molar accuracy target of the Newton-Raphson fallback solver.
+#define MOLAR_ACCURACY 1e-4
+/// Iteration cap of the Newton-Raphson fallback solver.
+#define ATMOS_PRESSURE_APPROXIMATION_ITERATIONS 20
+/// Float slack added to the solver's analytic mole bounds.
+#define ATMOS_PRESSURE_ERROR_TOLERANCE 0.01
 
 // Pressure limits.
 #define HAZARD_HIGH_PRESSURE				550		//This determins at what pressure the ultra-high pressure red icon is displayed. (This one is set as a constant)
@@ -93,6 +137,7 @@
 
 #define BODYTEMP_HEAT_DAMAGE_LIMIT			(BODYTEMP_NORMAL + 20) // The limit the human body can take before it starts taking damage from heat. //CITADEL EDIT to 20
 #define BODYTEMP_COLD_DAMAGE_LIMIT			(BODYTEMP_NORMAL - 50) // The limit the human body can take before it starts taking damage from coldness.
+#define BODYTEMP_FROZEN_THRESHOLD		154		//Below this temperature, dead body tissue stops taking cold damage (effectively frozen/preserved)
 
 /// Passive heat exchange / temp HUD: standing under freezing spray behaves like icy water, not like the hallway's air temperature.
 #define SHOWER_FREEZING_LOCAL_TEMP (T0C - 10)
@@ -330,6 +375,15 @@ GLOBAL_LIST_INIT(atmos_adjacent_savings, list(0,0))
 #define GAS_ETHANOL				"ethanol"
 #define GAS_MOTOR_OIL			"motor_oil" // BLUEMOON ADD - Напитки для синтетиков
 #define GAS_QCD					"qcd"
+// HFR / fusion gases (from WhiteMoon HFR port)
+#define GAS_HELIUM				"helium"
+#define GAS_FREON				"freon"
+#define GAS_HALON				"halon"
+#define GAS_ANTINOBLIUM			"antinoblium"
+#define GAS_PROTO_NITRATE		"proto_nitrate"
+#define GAS_ZAUKER				"zauker"
+#define GAS_HEALIUM				"healium"
+#define GAS_NITRIUM				"nitrium"
 
 #define GAS_GROUP_CHEMICALS		"Chemicals"
 
@@ -364,6 +418,28 @@ GLOBAL_LIST_INIT(atmos_adjacent_savings, list(0,0))
 
 //If you're doing spreading things related to atmos, DO NOT USE CANATMOSPASS, IT IS NOT CHEAP. use this instead, the info is cached after all. it's tweaked just a bit to allow for circular checks
 #define TURFS_CAN_SHARE(T1, T2) (LAZYACCESS(T2.atmos_adjacent_turfs, T1) || LAZYLEN(T1.atmos_adjacent_turfs & T2.atmos_adjacent_turfs))
+
+/// Consecutive no-op SSair fires before a vent/scrubber drops into the idle heartbeat.
+#define ATMOS_MACHINE_IDLE_STREAK 4
+/// While idle, vents/scrubbers only run a full recheck this often. Event wakes
+/// (turf activation, pipenet pressure jump, radio signals, power, welding) clear
+/// the idle state instantly, so this is a safety net, not the response time.
+/// The rotation is a standing share of the machinery phase: every sleeping
+/// machine returns for one recheck per period, so on a station with ~1400
+/// sleepers a 5 SECONDS period meant ~110 rechecks every fire (mprof: ~2ms of
+/// c_am, half the pass size). Keep it long; correctness rides the event wakes.
+#define ATMOS_MACHINE_IDLE_HEARTBEAT (15 SECONDS)
+/// Pipenet pressure change (kPa) after reconcile that wakes idle machines attached to it.
+#define ATMOS_PIPENET_WAKE_PRESSURE_DELTA 5
+/// Vents ignore pressure imbalances smaller than this (kPa). Stops perpetual
+/// sub-visible top-ups that keep every room's turfs excited forever.
+#define ATMOS_VENT_PRESSURE_EPSILON 0.05
+/// Pure-telemetry devices (meters, air sensors) only report once per this many
+/// SSair fires; their power draw is compensated by the same constant.
+#define ATMOS_TELEMETRY_INTERVAL 4
+/// Air sensors with unchanged readings still rebroadcast at least this often,
+/// so consoles built mid-round and timestamp displays stay fresh.
+#define ATMOS_TELEMETRY_HEARTBEAT (30 SECONDS)
 
 //Unomos - So for whatever reason, garbage collection actually drastically decreases the cost of atmos later in the round. Turning this into a define yields massively improved performance.
 #define GAS_GARBAGE_COLLECT(GASGASGAS)\

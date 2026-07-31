@@ -37,10 +37,14 @@
 		else
 			// Even raw (encode=FALSE) input must drop control characters: they break
 			// the DM<->TGUI round-trip and any savefile key built from this text.
+			var/mob/prompt_mob = begin_native_prompt(user)
+			var/native_answer
 			if(multiline)
-				return strip_control_chars(input(user, message, title, default) as message|null)
+				native_answer = input(user, message, title, default) as message|null
 			else
-				return strip_control_chars(input(user, message, title, default) as text|null)
+				native_answer = input(user, message, title, default) as text|null
+			end_native_prompt(prompt_mob)
+			return strip_control_chars(native_answer)
 	var/datum/tgui_input_text/text_input = new(user, message, title, default, max_length, multiline, encode, timeout, prevent_enter)
 	text_input.ui_interact(user)
 	text_input.wait()
@@ -142,6 +146,9 @@
 		if("submit")
 			// BLUEMOON EDIT - исправление счета по байтам, а не по символам Юникода
 			if(length_char(params["entry"]) > max_length)
+				// Молчаливый return выглядел как "кнопка не работает": окно остаётся открытым,
+				// а почему ввод не принят - неизвестно.
+				to_chat(usr, span_warning("Слишком длинный текст: [length_char(params["entry"])] символов при лимите [max_length]."))
 				return
 			// Должно совпадать с кодировщиком set_entry (html_encode_readable), иначе получим ложное "clipped" на одних только кавычках
 			if(encode && (length_char(html_encode_readable(params["entry"])) > max_length))

@@ -6,6 +6,13 @@
 #define TIMER_MAX (world.time + TICKS2DS(min(BUCKET_LEN-(SStimer.practical_offset-DS2TICKS(world.time - SStimer.head_offset))-1, BUCKET_LEN-1)))
 /// Max float with integer precision
 #define TIMER_ID_MAX (2**24)
+/// Запас (в тиках) до срока таймера, ближе которого перенос из second_queue нельзя откладывать
+/// по бюджету тика: недонесённый близкий таймер останется позади practical_offset и словит
+/// "Invalid timer state" с полным пересозданием бакетов.
+#define TIMER_TRANSFER_STRAND_MARGIN 30
+/// Диагностика пакетных addtimer: столько создания за один тик считается бурстом и логируется
+/// (в перф-логах видны пакеты ~2500 addtimer одним тиком, источник из профайлера не виден)
+#define TIMER_BURST_LOG_THRESHOLD 500
 
 /**
  * # Timer Subsystem
@@ -123,7 +130,11 @@ SUBSYSTEM_DEF(timer)
 				head_offset: [head_offset], practical_offset: [practical_offset], REALTIMEOFDAY: [REALTIMEOFDAY]")
 
 		ctime_timer.spent = REALTIMEOFDAY
+		var/invoke_started = TICK_USAGE
 		callBack.InvokeAsync()
+		var/invoke_cost_ms = TICK_DELTA_TO_MS(TICK_USAGE - invoke_started)
+		if(SStick_spikes && invoke_cost_ms >= SStick_spikes.slow_work_threshold_ms)
+			SStick_spikes.record_slow_work("таймер (clienttime)", SStick_spikes.callback_desc(callBack), invoke_cost_ms)
 
 		var/pre_len = length(clienttime_timers)
 		if(ctime_timer.flags & TIMER_LOOP)
@@ -173,7 +184,13 @@ SUBSYSTEM_DEF(timer)
 			// Invoke callback if possible
 			if (!timer.spent)
 				timer.spent = world.time
+				// Замер синхронной части колбека (до первого сна): дорогой таймер-колбек
+				// раньше был неотличим от анонимного "DM вне МК" в логе тик-спайков
+				var/invoke_started = TICK_USAGE
 				callBack.InvokeAsync()
+				var/invoke_cost_ms = TICK_DELTA_TO_MS(TICK_USAGE - invoke_started)
+				if(SStick_spikes && invoke_cost_ms >= SStick_spikes.slow_work_threshold_ms)
+					SStick_spikes.record_slow_work("таймер", SStick_spikes.callback_desc(callBack), invoke_cost_ms)
 				last_invoke_tick = world.time
 
 			if (timer.flags & TIMER_LOOP) // Prepare looping timers to re-enter the queue
@@ -208,6 +225,14 @@ SUBSYSTEM_DEF(timer)
 					bucket_resolution = null // force bucket recreation
 					stack_trace("[i] Invalid timer state: Timer in long run queue that would require a backtrack to transfer to \
 						short run queue. [get_timer_debug_string(timer)] world.time: [world.time], head_offset: [head_offset], practical_offset: [practical_offset]")
+					break
+
+				// Волна переноса без лимита душит тик: тысячи таймеров, поставленных разом на
+				// роундстарте, доезжают до бакетного окна одной пачкой (~200мс одним прогоном).
+				// Прерываемся по бюджету тика, но только пока следующий таймер не близок к сроку -
+				// близкие обязаны попасть в бакет сейчас, см. TIMER_TRANSFER_STRAND_MARGIN.
+				if (timer.timeToRun > world.time + TICKS2DS(TIMER_TRANSFER_STRAND_MARGIN) && MC_TICK_CHECK)
+					i--
 					break
 
 				timer.bucketJoin()
@@ -639,6 +664,17 @@ SUBSYSTEM_DEF(timer)
 	else if(flags & TIMER_OVERRIDE)
 		stack_trace("TIMER_OVERRIDE used without TIMER_UNIQUE")
 
+	// Детектор пакетных addtimer: тысячи таймеров одним тиком душат тик на bucketJoin,
+	// а создатель не виден в профайлере (кост размазан). Логируем пример колбека бурста.
+	var/static/burst_world_time = 0
+	var/static/burst_count = 0
+	if(world.time != burst_world_time)
+		burst_world_time = world.time
+		burst_count = 0
+	burst_count++
+	if(burst_count == TIMER_BURST_LOG_THRESHOLD || burst_count == TIMER_BURST_LOG_THRESHOLD * 4)
+		log_game("TIMER BURST: [burst_count]+ addtimer за один тик (wt [world.time]). Пример колбека: [callback.object == GLOBAL_PROC ? "GLOBAL_PROC" : "[callback.object] ([callback.object?.type])"] proc [callback.delegate], wait [wait][file ? ", источник [file]:[line]" : ""]")
+
 	var/datum/timedevent/timer = new(callback, wait, flags, hash, file && "[file]:[line]")
 	return timer.id
 
@@ -685,3 +721,5 @@ SUBSYSTEM_DEF(timer)
 #undef BUCKET_POS
 #undef TIMER_MAX
 #undef TIMER_ID_MAX
+#undef TIMER_TRANSFER_STRAND_MARGIN
+#undef TIMER_BURST_LOG_THRESHOLD

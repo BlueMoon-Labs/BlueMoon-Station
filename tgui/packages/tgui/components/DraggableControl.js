@@ -6,8 +6,7 @@
 
 import { KEY_ENTER, KEY_ESCAPE } from 'common/keycodes';
 import { clamp } from 'common/math';
-import { pureComponentHooks } from 'common/react';
-import { Component, createRef } from 'inferno';
+import { Component, createRef } from 'react';
 
 import { AnimatedNumber } from './AnimatedNumber';
 
@@ -135,10 +134,27 @@ export class DraggableControl extends Component {
       document.body.style['pointer-events'] = 'auto';
       clearTimeout(this.timer);
       clearInterval(this.dragInterval);
+      // The input is display:none until the re-render commits, so
+      // focus it in the setState callback (setState is asynchronous
+      // in React; focusing a hidden input is a no-op).
       this.setState({
         dragging: false,
         editing: !dragging,
         origin: null,
+      }, () => {
+        if (dragging) {
+          return;
+        }
+        const input = this.inputRef?.current;
+        if (!input) {
+          return;
+        }
+        input.value = internalValue;
+        try {
+          input.focus();
+          input.select();
+        }
+        catch {}
       });
       document.removeEventListener('mousemove', this.handleDragMove);
       document.removeEventListener('mouseup', this.handleDragEnd);
@@ -150,16 +166,6 @@ export class DraggableControl extends Component {
         if (onDrag) {
           onDrag(e, value);
         }
-      }
-      else if (this.inputRef) {
-        const input = this.inputRef.current;
-        input.value = internalValue;
-        // Guard focus/select when the input may be hidden.
-        try {
-          input.focus();
-          input.select();
-        }
-        catch {}
       }
     };
   }
@@ -219,8 +225,8 @@ export class DraggableControl extends Component {
         style={{
           display: !editing ? 'none' : undefined,
           height: height,
-          'line-height': lineHeight,
-          'font-size': fontSize,
+          lineHeight: lineHeight,
+          fontSize: fontSize,
         }}
         onBlur={e => {
           if (!editing) {
@@ -306,7 +312,6 @@ export class DraggableControl extends Component {
   }
 }
 
-DraggableControl.defaultHooks = pureComponentHooks;
 DraggableControl.defaultProps = {
   minValue: -Infinity,
   maxValue: +Infinity,

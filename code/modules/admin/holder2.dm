@@ -76,6 +76,7 @@ GLOBAL_PROTECT(href_token)
 		alert_to_permissions_elevation_attempt(usr)
 		return QDEL_HINT_LETMELIVE
 	QDEL_NULL(spawn_panel_instance)
+	QDEL_NULL(log_viewer)
 	. = ..()
 
 /datum/admins/proc/activate()

@@ -24,6 +24,10 @@
 	var/list/base_cost// override this one as well if you override bullet_cost
 	var/speedloader = FALSE
 
+	/// When inserted into an ammo workbench, does this ammo box check for parent ammunition to search for subtypes of? Relevant for surplus clips, multi-sprite magazines.
+	/// Maybe don't enable this for shotgun ammo boxes.
+	var/multitype = TRUE
+
 /obj/item/ammo_box/Initialize(mapload)
 	. = ..()
 	if (!bullet_cost)
@@ -38,6 +42,18 @@
 		for(var/i = 1, i <= max_ammo, i++)
 			stored_ammo += new ammo_type(src)
 	update_icon()
+
+/// Casings live inside us, so every remaining round is a hard reference back to
+/// the box. Leaving them behind means a qdeleted magazine can never soft-GC and
+/// always costs a hard delete - which internal magazines pay on every gun death.
+/obj/item/ammo_box/Destroy()
+	for(var/obj/item/ammo_casing/casing as anything in stored_ammo)
+		if(QDELETED(casing))
+			continue
+		if(casing.loc == src)
+			qdel(casing)
+	stored_ammo.Cut()
+	return ..()
 
 /obj/item/ammo_box/examine(mob/user)
 	. = ..()

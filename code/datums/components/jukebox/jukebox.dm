@@ -491,6 +491,9 @@
 /datum/component/jukebox/disco
 	var/list/spotlights = list()
 	var/list/sparkles = list()
+	/// Номер живой корутины подсветки: каждый запуск lights_spin забирает себе
+	/// новый, и все прежние обязаны выйти на ближайшем guard'е.
+	var/lights_generation = 0
 
 /datum/component/jukebox/disco/activate_music()
 	. = ..()
@@ -563,32 +566,54 @@
 
 #define DISCO_INFENO_RANGE (rand(85, 115)*0.01)
 
+/// Смена трека делает active = FALSE, зовёт dance_over (QDEL_LIST по спаркам и
+/// прожекторам) и тут же activate_music, который ставит active = TRUE - и всё это
+/// без единого sleep. Старая корутина просыпалась уже при active = TRUE, её guard
+/// не срабатывал, while(active) не заканчивался никогда, а кадр стека держал
+/// последний созданный спарк, уже уничтоженный QDEL_LIST'ом. Поколение отсекает
+/// такую корутину явно, а локальные ссылки на спарки и прожекторы обнуляются
+/// перед каждым выходом и перед каждым sleep.
 /datum/component/jukebox/disco/proc/lights_spin()
 	set waitfor = FALSE
+	var/generation = ++lights_generation
+	var/obj/effect/overlay/sparkles/spark
+	var/obj/reveal
+	var/obj/item/flashlight/spotlight/glow
 	for(var/i in 1 to 25)
-		if(QDELETED(src) || QDELETED(parent) || !active)
+		if(QDELETED(src) || QDELETED(parent) || !active || generation != lights_generation)
+			spark = null
 			return
-		var/obj/effect/overlay/sparkles/S = new /obj/effect/overlay/sparkles(parent)
-		S.alpha = 0
-		sparkles += S
+		spark = new /obj/effect/overlay/sparkles(parent)
+		spark.alpha = 0
+		sparkles += spark
 		switch(i)
 			if(1 to 8)
-				S.orbit(parent, 30, TRUE, 60, 36, TRUE)
+				spark.orbit(parent, 30, TRUE, 60, 36, TRUE)
 			if(9 to 16)
-				S.orbit(parent, 62, TRUE, 60, 36, TRUE)
+				spark.orbit(parent, 62, TRUE, 60, 36, TRUE)
 			if(17 to 24)
-				S.orbit(parent, 95, TRUE, 60, 36, TRUE)
+				spark.orbit(parent, 95, TRUE, 60, 36, TRUE)
 			if(25)
-				S.pixel_y = 7
-				S.forceMove(get_turf(parent))
+				spark.pixel_y = 7
+				spark.forceMove(get_turf(parent))
 		sleep(7)
+	spark = null
 	if(playing?.song_name == "Engineering's Ultimate High-Energy Hustle")
 		sleep(280)
-	for(var/obj/reveal in sparkles)
+	if(QDELETED(src) || QDELETED(parent) || !active || generation != lights_generation)
+		return
+	for(reveal in sparkles)
 		reveal.alpha = 255
+	reveal = null
 	while(active)
-		for(var/obj/item/flashlight/spotlight/glow in spotlights) // The multiples reflects custom adjustments to each colors after dozens of tests
-			if(QDELETED(src) || QDELETED(parent) || !active || QDELETED(glow))
+		// guard обязан жить в теле while, а не внутри вложенного for: при пустом
+		// списке прожекторов тот не выполнялся ни разу и цикл крутился вечно
+		if(QDELETED(src) || QDELETED(parent) || generation != lights_generation || isnull(playing))
+			glow = null
+			return
+		for(glow in spotlights) // The multiples reflects custom adjustments to each colors after dozens of tests
+			if(QDELETED(glow))
+				glow = null
 				return
 			if(glow.light_color == LIGHT_COLOR_RED)
 				glow.light_color = LIGHT_COLOR_BLUE
@@ -636,6 +661,7 @@
 				glow.light_range = glow.range * DISCO_INFENO_RANGE
 				glow.update_light()
 				continue
+		glow = null
 		if(prob(2))  // Unique effects for the dance floor that show up randomly to mix things up
 			INVOKE_ASYNC(src, PROC_REF(hierofunk))
 		sleep(playing.song_beat)

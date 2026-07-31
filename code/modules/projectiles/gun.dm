@@ -285,6 +285,10 @@
 		playsound(user, fire_sound, 10, TRUE, ignore_walls = FALSE, extrarange = SILENCED_SOUND_EXTRARANGE, falloff_distance = 0)
 	else
 		playsound(user, fire_sound, 50, 1)
+		//громкий выстрел игрока поднимает AI-мобов поблизости на разведку точки;
+		//глушитель честно скрывает, пальба самих мобов шум не рассылает
+		if(user?.client)
+			ai_broadcast_noise(get_turf(user), AI_NOISE_GUNSHOT_RANGE, user)
 		if(message)
 			if(pointblank)
 				user.visible_message("<span class='danger'>[user] стреляет из [src] в упор по [pbtarget]!</span>", null, null, COMBAT_MESSAGE_RANGE)
@@ -522,6 +526,11 @@
 					shoot_live_shot(user, 1, target, message, stam_cost)
 				else
 					shoot_live_shot(user, 0, target, message, stam_cost)
+				//Self-consuming guns (DROPDEL enchanted rifles) delete themselves
+				//inside shoot_live_shot. Re-chambering afterwards force-moves a
+				//fresh casing into a qdeleted gun, which then can never soft-GC.
+				if(QDELETED(src))
+					return TRUE
 		else
 			shoot_with_empty_chamber(user)
 			return
@@ -560,6 +569,9 @@
 				shoot_live_shot(user, 0, target, message, stam_cost)
 			if (iteration >= burst_size)
 				firing = FALSE
+			//см. do_fire: самоуничтожающееся оружие не дочамберивает патрон
+			if(QDELETED(src))
+				return TRUE
 	else
 		shoot_with_empty_chamber(user)
 		firing = FALSE
@@ -770,6 +782,22 @@
 	flashlight_overlay.pixel_y = flight_y_offset
 	return flashlight_overlay
 
+/obj/item/gun/proc/get_bayonet_overlay()
+	if(!bayonet)
+		return
+	var/mutable_appearance/knife_overlay
+	var/state = "bayonet"							//Generic state.
+	if(bayonet.icon_state in icon_states('icons/obj/guns/bayonets.dmi'))		//Snowflake state?
+		state = bayonet.icon_state
+	var/icon/bayonet_icons = 'icons/obj/guns/bayonets.dmi'
+	if(bayonet_diagonal == TRUE )
+		state = "bayonet_diagonal"
+		bayonet_icons = 'modular_splurt/icons/obj/guns/bayonets.dmi'
+	knife_overlay = mutable_appearance(bayonet_icons, state)
+	knife_overlay.pixel_x = knife_x_offset
+	knife_overlay.pixel_y = knife_y_offset
+	return knife_overlay
+
 /obj/item/gun/update_overlays()
 	. = ..()
 	if(gun_light)
@@ -778,20 +806,9 @@
 			. += flashlight_overlay
 
 	if(bayonet)
-		var/mutable_appearance/knife_overlay
-		var/state = "bayonet"							//Generic state.
-		if(bayonet.icon_state in icon_states('icons/obj/guns/bayonets.dmi'))		//Snowflake state?
-			state = bayonet.icon_state
-		var/icon/bayonet_icons = 'icons/obj/guns/bayonets.dmi'
-		//SPLURT EDIT ADD
-		if(bayonet_diagonal == TRUE )
-			state = "bayonet_diagonal"
-			bayonet_icons = 'modular_splurt/icons/obj/guns/bayonets.dmi'
-		//SPLURT EDIT ADD END
-		knife_overlay = mutable_appearance(bayonet_icons, state)
-		knife_overlay.pixel_x = knife_x_offset
-		knife_overlay.pixel_y = knife_y_offset
-		. += knife_overlay
+		var/mutable_appearance/knife_overlay = get_bayonet_overlay()
+		if(istype(knife_overlay))
+			. += knife_overlay
 
 /obj/item/gun/item_action_slot_check(slot, mob/user, datum/action/A)
 	if(istype(A, /datum/action/item_action/toggle_scope_zoom) && slot != ITEM_SLOT_HANDS)
@@ -806,26 +823,26 @@
 		return
 
 	if(user == target)
-		target.visible_message("<span class='warning'>[user] приставил[user.ru_a()] [src] к своему рту, готов[user.ru_aya()] спустить курок...</span>", \
-			"<span class='userdanger'>Вы приставили [src] к своему рту, готовые спустить курок...</span>")
+		target.visible_message(span_warning("[user] приставил[user.ru_a()] [src] к своему рту, готов[user.ru_aya()] спустить курок..."), \
+			span_userdanger("Вы приставили [src] к своему рту, готовые спустить курок..."))
 	else
-		target.visible_message("<span class='warning'>[user] направляет [src] на голову [target] в готовности спустить курок...</span>", \
-			"<span class='userdanger'>[user] направляет [src] на вашу голову, в готовности спустить курок...</span>")
+		target.visible_message(span_warning("[user] направляет [src] на голову [target] в готовности спустить курок..."), \
+			span_userdanger("[user] направляет [src] на вашу голову, в готовности спустить курок..."))
 
 	busy_action = TRUE
 
 	if(!bypass_timer && (!do_mob(user, target, 120) || user.zone_selected != BODY_ZONE_PRECISE_MOUTH))
 		if(user)
 			if(user == target)
-				user.visible_message("<span class='notice'>[user] решил[user.ru_a()] не стрелять.</span>")
+				user.visible_message(span_notice("[user] решил[user.ru_a()] не стрелять."))
 			else if(target && target.Adjacent(user))
-				target.visible_message("<span class='notice'>[user] решил[user.ru_a()] пощадить жизнь [target]</span>", "<span class='notice'>[user] решил[user.ru_a()] пощадить вашу жизнь!</span>")
+				target.visible_message(span_notice("[user] решил[user.ru_a()] пощадить жизнь [target]"), span_notice("[user] решил[user.ru_a()] пощадить вашу жизнь!"))
 		busy_action = FALSE
 		return
 
 	busy_action = FALSE
 
-	target.visible_message("<span class='warning'>[user] спускает курок!</span>", "<span class='userdanger'>[user] спускает курок!</span>")
+	target.visible_message(span_warning("[user] спускает курок!"), span_userdanger("[user] спускает курок!"))
 
 	playsound('sound/weapons/dink.ogg', 30, 1)
 
@@ -843,33 +860,43 @@
 	var/obj/item/organ/genital/testicles/balls = target.getorganslot(ORGAN_SLOT_TESTICLES)
 	if(!istype(balls) || !(balls.is_exposed() || balls.always_accessible))
 		return FALSE
-	if(target.client?.prefs?.erppref == "No" || user.client?.prefs?.erppref == "No")
-		return FALSE
-	if(user.client?.prefs?.extremeharm == "No")
-		to_chat(user, span_warning("По яйцам?... Перебор для меня..."))
-		return FALSE
-	if(target?.client?.prefs?.extremeharm == "No" || user != target && target?.client?.prefs?.nonconpref == "No")
-		to_chat(user, span_warning("По яйцам?... Слишком жестоко..."))
-		return FALSE
+
+	if(user.client)
+		var/client/user_cli = user.client
+		if(user_cli.prefs.erppref == "No")
+			return FALSE
+		if(user_cli.prefs.extremeharm == "No")
+			to_chat(user, span_warning("Стрелять по яйцам?... Слишком жестоко для меня..."))
+			return FALSE
+	if(target.client)
+		var/client/target_cli = target.client
+		if(target_cli.prefs.erppref == "No")
+			return FALSE
+		if(target_cli.prefs.extremeharm == "No")
+			to_chat(user, span_warning("Стрелять по яйцам?... Слишком жестоко для [target.ru_nego()]..."))
+			return FALSE
+		if(user != target && target_cli.prefs.nonconpref == "No")
+			to_chat(user, span_warning("Стрелять по яйцам?... [capitalize(target.ru_who())] явно не хочет сексуального насилия..."))
+			return FALSE
 
 	if(user == target)
-		target.visible_message("<span class='warning'>[user] вдавливает дуло [src] к своим яйцам, в готовности спустить курок...</span>", \
-			"<span class='userdanger'>Вы вдаливаете дуло [src] к своим яйцами, в готовности спустить курок...</span>")
+		target.visible_message(span_warning("[user] вдавливает дуло [src] к своим яйцам, в готовности спустить курок..."), \
+			span_userdanger("Вы вдавливаете дуло [src] к своим яйцам, в готовности спустить курок..."))
 	else
-		target.visible_message("<span class='warning'>[user] направляет [src] на яйца [target], в готовности спустить курок...</span>", \
-			"<span class='userdanger'>[user] направляет [src] на ваши яйца, в готовности спустить курок...</span>")
+		target.visible_message(span_warning("[user] направляет [src] на яйца [target], в готовности спустить курок..."), \
+			span_userdanger("[user] направляет [src] на ваши яйца, в готовности спустить курок..."))
 
 	busy_action = TRUE
 
 	if(!do_mob(user, target, 100) || user.zone_selected != BODY_ZONE_PRECISE_GROIN)
 		if(user == target)
-			user.visible_message("<span class='notice'>[user] decided not to shoot.</span>")
+			user.visible_message(span_notice("[user] decided not to shoot."))
 		else if(target && target.Adjacent(user))
-			target.visible_message("<span class='notice'>[user] has decided to spare [target] balls.</span>", "<span class='notice'>[user] has decided to spare your balls!</span>")
+			target.visible_message(span_notice("[user] has decided to spare [target] balls."), span_notice("[user] has decided to spare your balls!"))
 		busy_action = FALSE
 		return FALSE
 	busy_action = FALSE
-	target.visible_message("<span class='warning'>[user] спускает курок!</span>", "<span class='userdanger'>[user] спускает курок!</span>")
+	target.visible_message(span_warning("[user] спускает курок!"), span_userdanger("[user] спускает курок!"))
 
 	playsound('sound/weapons/dink.ogg', 30, 1)
 

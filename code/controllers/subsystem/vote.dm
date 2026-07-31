@@ -93,9 +93,9 @@ SUBSYSTEM_DEF(vote)
 	//get the highest number of votes
 	var/greatest_votes = 0
 	var/total_votes = 0
-//BLUEMOON ADD START - голоса за некоторые режимы (динамик и тимбаза, лёгкий динамик и экста) должны считаться вместе.
-	var/dynamic_votes = 0
-	var/extended_votes = 0
+//BLUEMOON ADD START - голоса за некоторые режимы (лёгкий динамик и экста vs средний/хард динамик) должны считаться вместе.
+	var/light_roundtype_votes = 0
+	var/heavy_roundtype_votes = 0
 	var/group_roundtype_choices = should_group_roundtype_choices()
 //BLUEMOON ADD END
 	if((mode == "gamemode" || mode == "roundtype") && CONFIG_GET(flag/must_be_readied_to_vote_gamemode))
@@ -103,31 +103,31 @@ SUBSYSTEM_DEF(vote)
 			if(P.ready != PLAYER_READY_TO_PLAY && voted[P.ckey])
 				choices[choices[voted[P.ckey]]]--
 	for(var/option in choices)
-		var/votes = choices[option]
+		var/votes = get_effective_votes(option)
 		total_votes += votes
-//BLUEMOON ADD START - голоса за некоторые режимы (динамик и тимбаза, лёгкий динамик и экста) должны считаться вместе.
+//BLUEMOON ADD START - голоса за некоторые режимы (лёгкий динамик и экста vs средний/хард динамик) должны считаться вместе.
 		if(group_roundtype_choices)
 			if(option == ROUNDTYPE_EXTENDED || option == ROUNDTYPE_DYNAMIC_LIGHT)
-				extended_votes += votes
-			if(option == ROUNDTYPE_DYNAMIC_TEAMBASED || option == ROUNDTYPE_DYNAMIC)
-				dynamic_votes += votes
+				light_roundtype_votes += votes
+			if(option == ROUNDTYPE_DYNAMIC_MEDIUM || option == ROUNDTYPE_DYNAMIC_HARD || option == ROUNDTYPE_DYNAMIC_TEAMBASED || option == ROUNDTYPE_DYNAMIC)
+				heavy_roundtype_votes += votes
 //BLUEMOON ADD END
 		if(votes > greatest_votes)
 			greatest_votes = votes
-//BLUEMOON ADD START - пропуск эксты, если у неё голосов меньше, чем у остальных вариантов (чтобы голоса динамиков считались вместе)
-//Повторный ролл вариантов нужен, чтобы голоса за вариации динамика и эксты успели сформироваться
+//BLUEMOON ADD START - пропуск лёгких вариантов, если у них голосов меньше, чем у тяжёлых (и наоборот)
+//Повторный ролл вариантов нужен, чтобы голоса за вариации успели сформироваться
 	if(group_roundtype_choices)
 		var/second_round_votes = 0 //голоса между вариациями
 		for(var/option in choices)
-			var/votes = choices[option]
-			if(extended_votes <= dynamic_votes)
-				if(option == ROUNDTYPE_EXTENDED || option ==  ROUNDTYPE_DYNAMIC_LIGHT) //экста и лёгкий динамик всегда должны быть в конце списка, чтобы это работало
+			var/votes = get_effective_votes(option)
+			if(light_roundtype_votes <= heavy_roundtype_votes)
+				if(option == ROUNDTYPE_EXTENDED || option == ROUNDTYPE_DYNAMIC_LIGHT)
 					continue
 				if(votes > second_round_votes)
 					greatest_votes = votes
 				second_round_votes += votes
 			else
-				if(option == ROUNDTYPE_DYNAMIC || option == ROUNDTYPE_DYNAMIC_TEAMBASED) //экста и лёгкий динамик всегда должны быть в конце списка, чтобы это работало
+				if(option == ROUNDTYPE_DYNAMIC || option == ROUNDTYPE_DYNAMIC_MEDIUM || option == ROUNDTYPE_DYNAMIC_HARD || option == ROUNDTYPE_DYNAMIC_TEAMBASED)
 					continue
 				if(votes > second_round_votes)
 					greatest_votes = votes
@@ -155,19 +155,24 @@ SUBSYSTEM_DEF(vote)
 	. = list()
 	if(greatest_votes)
 		for(var/option in choices)
-//BLUEMOON ADD START - костыль, чтобы вариации эксты не была победителем, если у неё голосов больше, чем у одного из других вариантов
-//экста и лёгкий динамик всегда должны быть в конце списка, чтобы это работало
+//BLUEMOON ADD START - костыль, чтобы лёгкие варианты не побеждали при меньшем суммарном пуле (и наоборот)
 			if(group_roundtype_choices)
-				if(extended_votes <= dynamic_votes)
-					if(option == ROUNDTYPE_EXTENDED || option ==  ROUNDTYPE_DYNAMIC_LIGHT) //экста и лёгкий динамик всегда должны быть в конце списка, чтобы это работало
+				if(light_roundtype_votes <= heavy_roundtype_votes)
+					if(option == ROUNDTYPE_EXTENDED || option == ROUNDTYPE_DYNAMIC_LIGHT)
 						continue
 				else
-					if(option == ROUNDTYPE_DYNAMIC || option ==  ROUNDTYPE_DYNAMIC_TEAMBASED) //экста и лёгкий динамик всегда должны быть в конце списка, чтобы это работало
+					if(option == ROUNDTYPE_DYNAMIC || option == ROUNDTYPE_DYNAMIC_MEDIUM || option == ROUNDTYPE_DYNAMIC_HARD || option == ROUNDTYPE_DYNAMIC_TEAMBASED)
 						continue
 //BLUEMOON ADD END
-			if(choices[option] == greatest_votes)
+			if(get_effective_votes(option) == greatest_votes)
 				. += option
 	return .
+
+/datum/controller/subsystem/vote/proc/get_effective_votes(option)
+	var/votes = choices[option]
+	if(mode == "roundtype" && option == ROUNDTYPE_DYNAMIC_LIGHT)
+		votes *= CONFIG_GET(number/dynamic_light_vote_multiplier)
+	return votes
 
 /datum/controller/subsystem/vote/proc/calculate_condorcet_votes(var/blackbox_text)
 	if((mode == "gamemode" || mode == "dynamic" || mode == "roundtype") && CONFIG_GET(flag/must_be_readied_to_vote_gamemode))
@@ -331,7 +336,7 @@ SUBSYSTEM_DEF(vote)
 		var/votes_left = "<div class='left-column'>"
 		var/votes_right = "<div class='right-column' id='results-container'>"
 		for(var/i = 1, i <= choices.len, i++)
-			var/votes_amount = choices[choices[i]]
+			var/votes_amount = get_effective_votes(choices[i])
 			if(!votes_amount)
 				votes_amount = 0
 			if(was_roundtype_vote)
@@ -343,7 +348,7 @@ SUBSYSTEM_DEF(vote)
 				if (length(choices) == 1)
 					votes_right += "<div class='votewrap'><div class='voteresult' style='width: calc(100% + 2px);'><span>1984%</span></div></div>";
 				else
-					var/votes_amount = choices[choices[i]]
+					var/votes_amount = get_effective_votes(choices[i])
 					var/percent = total_votes > 0 ? round((votes_amount / total_votes) * 100, 1) : 0
 					if (percent > 0)
 						votes_right += "<div class='votewrap'><div class='voteresult' style='width: calc([percent]% + 2px);'><span>[percent]%</span></div></div>"
@@ -395,7 +400,7 @@ SUBSYSTEM_DEF(vote)
 			else if(vote_system == HIGHEST_MEDIAN_VOTING)
 				admintext += "\nIt should be noted that this is not a raw tally of votes but the number of runoffs done by majority judgement!"
 			for(var/i=1,i<=choices.len,i++)
-				var/votes = choices[choices[i]]
+				var/votes = get_effective_votes(choices[i])
 				admintext += "\n<b>[choices[i]]:</b> [votes ? votes : "0"]" //This is raw data, but the raw data is null by default. If ya don't compensate for it, then it'll look weird!
 		else
 			for(var/i=1,i<=scores.len,i++)
@@ -433,7 +438,7 @@ SUBSYSTEM_DEF(vote)
 					var/prior_initiator = initiator
 					log_vote("Prime-time roundtype runoff: второй тур Extended vs Dynamic (Light). До конца — [DisplayTimeText(runoff_vote_ds)].")
 					if(initiate_vote("roundtype", prior_initiator ? prior_initiator : "server", \
-							display = NONE, votesystem = PLURALITY_VOTING, forced = TRUE, \
+							display = SHOW_RESULTS|SHOW_WINNER, votesystem = PLURALITY_VOTING, forced = TRUE, \
 							vote_time = runoff_vote_ds, roundtype_runoff_second_ballot = TRUE, replacing_active_vote = TRUE))
 						return .
 					message_admins("Roundtype runoff (Extended vs Dynamic Light) failed to start (cooldown or guard); finalizing Extended for this round.")
@@ -645,9 +650,9 @@ SUBSYSTEM_DEF(vote)
 					else
 						secondary_roundtype = get_roundtype_vote_secondary_choice()
 						roundtype_choices = list(ROUNDTYPE_DYNAMIC, secondary_roundtype)
-					if(combo == "dynamic")
+					if(combo == ROUNDTYPE_ROTATION_HEAVY)
 						roundtype_choices = list(secondary_roundtype)
-					else if(combo == ROUNDTYPE_EXTENDED && secondary_roundtype == ROUNDTYPE_EXTENDED)
+					else if(combo == ROUNDTYPE_ROTATION_LIGHT)
 						roundtype_choices = list(ROUNDTYPE_DYNAMIC)
 					choices |= roundtype_choices
 				sanitize_roundtype_vote_choices()
@@ -694,25 +699,38 @@ SUBSYSTEM_DEF(vote)
 			C.player_details.player_actions += V
 			V.Grant(C.mob)
 			generated_actions += V
-			if(forced)
-				SSvote.ui_interact(C.mob) // Мяяяу
+			if(forced && C.mob)
+				// Только асинхронно: открытие tgui делает winexists/browse_queue_flush - блокирующие
+				// round-trip'ы к клиенту. Синхронный вызов из fire() тикера (роундстарт-воут) усыплял
+				// SSticker навсегда, если клиент завис или дисконнектится - таймер лобби замирал
+				// до рестарта МК.
+				INVOKE_ASYNC(src, PROC_REF(ui_interact), C.mob) // Мяяяу
 		return TRUE
 	return FALSE
 
+/datum/controller/subsystem/vote/proc/get_roundtype_rotation_group(roundtype)
+	switch(roundtype)
+		if(ROUNDTYPE_EXTENDED, ROUNDTYPE_DYNAMIC_LIGHT)
+			return ROUNDTYPE_ROTATION_LIGHT
+		if(ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_TEAMBASED)
+			return ROUNDTYPE_ROTATION_HEAVY
+	return null
+
 /datum/controller/subsystem/vote/proc/check_combo()
-	var/list/roundtypes = list()
+	var/list/group_counts = list()
 	var/much_to_check = ROUNDTYPE_MAX_COMBO
-	for (var/mode in SSpersistence.saved_modes)
-		if(!istext(mode))
+	for(var/roundtype in SSpersistence.saved_round_types)
+		if(!istext(roundtype) || !length(roundtype))
 			continue
 		if(!much_to_check)
 			break
 		much_to_check--
-		if(!(mode in roundtypes))
-			roundtypes[mode] = 0
-		roundtypes[mode]++
-		if(roundtypes[mode] >= ROUNDTYPE_MAX_COMBO)
-			return mode
+		var/group = get_roundtype_rotation_group(roundtype)
+		if(!group)
+			continue
+		group_counts[group] = (group_counts[group] || 0) + 1
+		if(group_counts[group] >= ROUNDTYPE_MAX_COMBO)
+			return group
 	return FALSE
 
 /datum/controller/subsystem/vote/proc/is_roundtype_vote_hour_in_window(current_hour, start_hour, end_hour)
@@ -768,6 +786,13 @@ SUBSYSTEM_DEF(vote)
 /datum/controller/subsystem/vote/proc/should_group_roundtype_choices()
 	return mode == "dynamic" || (mode == "roundtype" && !use_dynamic_light_roundtype_vote_window())
 
+/datum/controller/subsystem/vote/proc/should_show_votes_to(mob/user)
+	if(display_votes & SHOW_VOTES)
+		return TRUE
+	if(user?.client?.holder && (mode == "roundtype" || mode == "gamemode" || mode == "dynamic"))
+		return TRUE
+	return FALSE
+
 // TGUI
 /datum/controller/subsystem/vote/Topic(href,href_list[],hsrc)
 	if(!usr || !usr.client)
@@ -798,7 +823,9 @@ SUBSYSTEM_DEF(vote)
 	return src
 
 /datum/controller/subsystem/vote/ui_interact(mob/user, datum/tgui/ui)
-	voting |= user?.client
+	if(!user?.client)
+		return
+	voting |= user.client
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
 		ui = new(user, src, "Vote")
@@ -843,7 +870,7 @@ SUBSYSTEM_DEF(vote)
 	// Список вариантов с полным состоянием для всех систем голосования
 	var/list/choices_list = list()
 	if(mode && choices.len)
-		var/show_votes_count = !!(display_votes & SHOW_VOTES)
+		var/show_votes_count = should_show_votes_to(user)
 		for(var/i in 1 to choices.len)
 			var/choice_name = choices[i]
 			var/vote_count = max(0, choices[choice_name] || 0)
@@ -887,7 +914,7 @@ SUBSYSTEM_DEF(vote)
 	data["allow_vote_mode"] = CONFIG_GET(flag/allow_vote_mode)
 	// Данные для режима roundtype
 	if(mode == "roundtype")
-		data["last_modes"] = length(SSpersistence.saved_modes) ? jointext(SSpersistence.saved_modes, ", ") : null
+		data["last_modes"] = length(SSpersistence.saved_round_types) ? jointext(SSpersistence.saved_round_types, ", ") : (length(SSpersistence.saved_modes) ? jointext(SSpersistence.saved_modes, ", ") : null)
 		data["combo_threshold"] = ROUNDTYPE_MAX_COMBO
 		// Пояснения о вариантах динамика
 		var/list/roundtype_descs = list()
@@ -980,7 +1007,7 @@ SUBSYSTEM_DEF(vote)
 			return TRUE
 		if("map")
 			if(C.holder)
-				if(initiate_vote("map", C.key, display = SHOW_RESULTS, forced = FALSE))
+				if(initiate_vote("map", C.key, display = SHOW_RESULTS|SHOW_WINNER, forced = FALSE))
 					message_admins("[ADMIN_LOOKUP(user)] Начал голосование за смену карты")
 					log_admin("[C.key] Начал голосование за смену карты")
 			return TRUE

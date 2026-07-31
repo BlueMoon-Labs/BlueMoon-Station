@@ -5,6 +5,9 @@
 	min_players = 10
 	weight = 45
 	category = EVENT_CATEGORY_AI
+	severity = DIRECTOR_SEVERITY_MINOR
+	family = "door_malf" // общая пауза с Door Runtime: два ивента "все двери сошли с ума" подряд - перебор
+	disruption = DIRECTOR_DISRUPTION_DISRUPTIVE
 
 /datum/round_event/grey_tide
 	announce_when = 50
@@ -57,7 +60,10 @@
 				temp.update_icon()
 			else if(istype(O, /obj/machinery/door/airlock))
 				var/obj/machinery/door/airlock/temp = O
-				if(temp.critical_machine) //Skip doors in critical positions, such as the SM chamber.
+				// critical_machine - двери в критических позициях (камера СМ). id_tag - двери под внешним
+				// контроллером шлюзования: турбина, сжигатель, миксинг токсинов, внешние циклы. Распахнуть
+				// такую пару - выпустить горящую смесь или космос в отдел, событие так делать не должно.
+				if(temp.critical_machine || temp.id_tag)
 					continue
 				temp.prison_open()
 			else if(istype(O, /obj/machinery/door_timer))

@@ -69,14 +69,6 @@
 	if(regen_amount && regen_cooldown < world.time)
 		heal_overall_damage(regen_amount)
 
-/// Hostile AI uses walk_to(); that fights [/datum/component/shuttle_cling] drift on transit and leaves carps stuck in a line.
-/mob/living/simple_animal/hostile/carp/MoveToTarget(list/possible_targets)
-	stop_automated_movement = TRUE
-	if(istype(loc, /turf/open/space/transit))
-		walk(src, 0)
-		return TRUE
-	return ..()
-
 /mob/living/simple_animal/hostile/carp/AttackingTarget()
 	if(istype(target, /obj/machinery/portable_atmospherics/canister) || istype(target, /obj/machinery/atmospherics/pipe))
 		if(prob(99))

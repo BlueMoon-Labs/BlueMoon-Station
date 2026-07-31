@@ -40,6 +40,14 @@
 		else
 			to_chat(usr, "Ticket [ahelp_ref] has been deleted!")
 
+	else if(href_list["mentorticket"])
+		var/mentorticket_ref = href_list["mentorticket"]
+		var/datum/mentor_ticket/MT = locate(mentorticket_ref)
+		if(MT)
+			MT.Action(href_list["mentorticket_action"])
+		else
+			to_chat(usr, "Mentor ticket [mentorticket_ref] has been deleted!")
+
 	else if(href_list["ahelp_tickets"])
 		GLOB.ahelp_tickets.BrowseTickets(text2num(href_list["ahelp_tickets"]))
 
@@ -1558,6 +1566,13 @@
 			return tgui_alert(usr, "The game has already started.")
 
 		dynamic_mode_options(usr)
+
+	else if(href_list["director_panel"])
+		if(!check_rights(R_ADMIN))
+			return
+
+		var/datum/director_panel/panel = new
+		panel.ui_interact(usr)
 	/* BLUEMOON REMOVAL START - мы используем GLOB.round_type
 	else if(href_list["f_dynamic_force_extended"])
 		if(!check_rights(R_ADMIN))
@@ -2278,7 +2293,8 @@
 			to_chat(usr, "This can only be used on instances of type /mob.")
 			return
 
-		show_individual_logging_panel(M, href_list["log_src"], href_list["log_type"])
+		var/datum/log_viewer/LV = new(M)
+		LV.ui_interact(usr)
 	else if(href_list["languagemenu"])
 		if(!check_rights(R_ADMIN))
 			return
@@ -2570,6 +2586,15 @@
 			return
 		usr.client?.cmd_gc_health_help()
 
+	else if(href_list["gc_reftrack_mode"])
+		if(!check_rights(R_DEBUG))
+			return
+		var/new_reftrack_mode = clamp(text2num(href_list["gc_reftrack_mode"]), GC_REFTRACK_OFF, GC_REFTRACK_ALL)
+		SSgarbage.reftrack_mode = new_reftrack_mode
+		message_admins("[key_name_admin(usr)] переключил режим авто-скана ссылок GC на [new_reftrack_mode] ([new_reftrack_mode == GC_REFTRACK_OFF ? "выкл" : new_reftrack_mode == GC_REFTRACK_FLAGGED ? "помеченные типы" : "все warnfail"]).")
+		log_admin("[key_name(usr)] переключил режим авто-скана ссылок GC на [new_reftrack_mode]")
+		usr.client?.cmd_gc_health_panel()
+
 	else if(href_list["gc_toggle_notify"])
 		if(!check_rights(R_DEBUG))
 			return
@@ -2760,6 +2785,20 @@
 			return
 		INVOKE_ASYNC(entry, TYPE_PROC_REF(/datum/gc_failure_viewer/gc_failure_entry, trigger_world_scan), owner, null)
 
+	else if(href_list["viewgcfailure_refcount"])
+		var/datum/gc_failure_viewer/gc_failure_entry/entry = locate(href_list["viewgcfailure_refcount"])
+		if(!istype(entry))
+			to_chat(usr, span_warning("GC failure entry больше не существует."))
+			return
+		if(!entry.datum_ref)
+			to_chat(usr, span_warning("Нет ссылки на объект."))
+			return
+		var/datum/refcount_target = entry.resolve_target()
+		if(isnull(refcount_target))
+			to_chat(usr, span_notice("[entry.type_path]: объект уже собран или удалён."))
+			return
+		to_chat(usr, span_notice("[entry.type_path]: внешних ссылок сейчас: [EXTERNAL_REFCOUNT(refcount_target)]."))
+
 	else if(href_list["viewgcfailure_refscan"])
 		var/datum/gc_failure_viewer/gc_failure_entry/entry = locate(href_list["viewgcfailure_refscan"])
 		if(!istype(entry))
@@ -2771,8 +2810,8 @@
 		var/response = tgui_alert(usr, "Сканирование ссылок пройдёт по всем GLOB-переменным, подсистемам и соседним объектам. Это может вызвать лаг на несколько секунд. Продолжить?", "Сканирование ссылок", list("Да", "Нет"))
 		if(response != "Да")
 			return
-		var/datum/D = locate(entry.datum_ref)
-		if(!D || D.type != text2path(entry.type_path))
+		var/datum/D = entry.resolve_target()
+		if(!D)
 			to_chat(usr, span_warning("Объект больше не существует, сканирование невозможно."))
 			return
 		entry.build_reference_info(D)
@@ -3042,7 +3081,7 @@
 		var/datum/db_query/query_remove_mentor = SSdbcore.NewQuery("DELETE FROM [format_table_name("mentor")] WHERE ckey = '[ckey]'")
 		if(!query_remove_mentor.warn_execute())
 			return
-		var/datum/db_query/query_add_admin_log = SSdbcore.NewQuery("INSERT INTO `[format_table_name("admin_log")]` (`id` ,`datetime` ,`adminckey` ,`adminip` ,`log` ) VALUES (NULL , NOW( ) , '[usr.ckey]', '[usr.client.address]', 'Removed mentor [ckey]');")
+		var/datum/db_query/query_add_admin_log = SSdbcore.NewQuery("INSERT INTO [format_table_name("admin_log")] (`id` ,`datetime` ,`adminckey` ,`adminip` ,`log` ) VALUES (NULL , NOW( ) , '[usr.ckey]', '[usr.client.address]', 'Removed mentor [ckey]');")
 		if(!query_add_admin_log.warn_execute())
 			return
 	else

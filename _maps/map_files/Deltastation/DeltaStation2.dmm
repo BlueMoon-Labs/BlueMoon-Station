@@ -21481,11 +21481,6 @@
 /obj/structure/cable/white{
 	icon_state = "4-8"
 	},
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
-	external_pressure_bound = 140;
-	name = "server vent";
-	pressure_checks = 0
-	},
 /obj/effect/turf_decal/tile/neutral{
 	dir = 1
 	},
@@ -21495,6 +21490,11 @@
 	},
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	name = "server vent";
+	external_pressure_bound = 140;
+	pressure_checks = 0
 	},
 /turf/open/floor/plasteel/dark/telecomms,
 /area/tcommsat/server)
@@ -31426,11 +31426,9 @@
 /area/maintenance/department/electrical)
 "cQs" = (
 /obj/structure/table/wood,
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_x = -30;
-	prison_radio = 1
+	pixel_x = -30
 	},
 /turf/open/floor/plasteel/dark/textured,
 /area/security/prison/upper)
@@ -64259,6 +64257,7 @@
 /obj/effect/turf_decal/bot/yellow,
 /obj/item/paper_bin,
 /obj/item/pen,
+/obj/item/paicard,
 /turf/open/floor/plasteel,
 /area/command/heads_quarters/rd)
 "fHs" = (
@@ -64998,10 +64997,8 @@
 	name = "Privacy Shutters";
 	pixel_x = 25
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	prison_radio = 1;
 	pixel_y = -30
 	},
 /turf/open/floor/plasteel/dark/textured,
@@ -65322,11 +65319,9 @@
 	network = list("ss13","prison");
 	dir = 4
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_x = -30;
-	prison_radio = 1
+	pixel_x = -30
 	},
 /turf/open/floor/plasteel/dark/textured,
 /area/security/prison/upper)
@@ -67858,8 +67853,8 @@
 /obj/item/toy/figure/engineer,
 /obj/effect/turf_decal/bot/yellow,
 /obj/machinery/requests_console{
-	department = "Chapel Office";
-	name = "Chapel RC";
+	department = "Engineering Office";
+	name = "Engineering RC";
 	pixel_y = 0;
 	pixel_x = -32
 	},
@@ -80946,6 +80941,8 @@
 /obj/effect/turf_decal/tile/brown{
 	dir = 4
 	},
+/obj/item/clipboard,
+/obj/item/toy/figure/qm,
 /turf/open/floor/plasteel,
 /area/cargo/qm)
 "kfk" = (
@@ -85103,6 +85100,17 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/science/mixing)
+"ltj" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
+	dir = 4
+	},
+/obj/structure/table/wood,
+/obj/machinery/fax{
+	fax_name = "Head of Security office";
+	name = "Head of Security Fax Machine"
+	},
+/turf/open/floor/wood,
+/area/command/heads_quarters/hos)
 "ltK" = (
 /obj/structure/cable/white{
 	icon_state = "4-8"
@@ -87408,6 +87416,10 @@
 /obj/structure/cable/white{
 	icon_state = "0-2"
 	},
+/obj/machinery/fax{
+	fax_name = "Chief Engineer office";
+	name = "Chief Engineer Fax Machine"
+	},
 /turf/open/floor/plasteel/dark,
 /area/command/heads_quarters/ce)
 "mcu" = (
@@ -87647,9 +87659,8 @@
 /area/service/chapel/main)
 "mfB" = (
 /obj/structure/table/wood,
-/obj/item/radio/intercom{
+/obj/item/radio/intercom/command{
 	dir = 8;
-	freerange = 1;
 	name = "Captain's Intercom";
 	pixel_x = -26
 	},
@@ -92438,26 +92449,6 @@
 /obj/structure/cable/white,
 /turf/open/floor/plating,
 /area/cargo/qm)
-"ntm" = (
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/obj/effect/turf_decal/stripes/yellow/line,
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 1
-	},
-/obj/machinery/door/poddoor/shutters/radiation/preopen{
-	id = "engpa";
-	name = "Radiation Chamber Shutters"
-	},
-/obj/machinery/button/door{
-	id = "engpa";
-	name = "Engineering Chamber Shutters Control";
-	pixel_y = -26;
-	req_access_txt = "11"
-	},
-/turf/open/floor/plasteel,
-/area/engineering/main)
 "ntx" = (
 /obj/effect/turf_decal/siding/wood/thin/corner{
 	dir = 4
@@ -93322,6 +93313,10 @@
 /obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /turf/open/floor/plasteel,
 /area/security/prison/upper)
+"nEI" = (
+/obj/machinery/atmospherics/components/binary/crystallizer,
+/turf/open/floor/plasteel,
+/area/engineering/atmos)
 "nEK" = (
 /obj/structure/table/reinforced,
 /obj/structure/cable/white{
@@ -94306,6 +94301,7 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
+/obj/item/paper_bin,
 /turf/open/floor/plasteel/white,
 /area/command/heads_quarters/cmo)
 "nRr" = (
@@ -95870,7 +95866,6 @@
 /turf/open/floor/plasteel/grimy,
 /area/service/chapel/office)
 "oor" = (
-/obj/item/kirbyplants/random,
 /obj/machinery/status_display/evac{
 	pixel_y = -32
 	},
@@ -98880,11 +98875,9 @@
 /obj/effect/turf_decal/tile/red{
 	dir = 4
 	},
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_x = 30;
-	prison_radio = 1
+	pixel_x = 30
 	},
 /turf/open/floor/plasteel,
 /area/security/prison/upper)
@@ -100317,6 +100310,7 @@
 /obj/effect/turf_decal/tile/dark{
 	dir = 1
 	},
+/obj/machinery/electrolyzer,
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
 "pCY" = (
@@ -103189,6 +103183,18 @@
 	},
 /turf/open/floor/plasteel,
 /area/medical/medbay/central)
+"qsb" = (
+/obj/structure/cable/white{
+	icon_state = "4-8"
+	},
+/obj/structure/disposalpipe/segment,
+/obj/structure/table/wood,
+/obj/machinery/fax{
+	fax_name = "Head of Personal office";
+	name = "Head of Personal fax"
+	},
+/turf/open/floor/plasteel/grimy,
+/area/command/heads_quarters/hop)
 "qsc" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/closet/secure_closet/atmospherics,
@@ -103568,13 +103574,15 @@
 /area/security/brig_briefing)
 "qxj" = (
 /obj/structure/table,
-/obj/item/clipboard,
-/obj/item/toy/figure/qm,
 /obj/effect/turf_decal/tile/brown{
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/brown{
 	dir = 4
+	},
+/obj/machinery/fax{
+	fax_name = "Quartermaster Office";
+	name = "Quartermaster Office"
 	},
 /turf/open/floor/plasteel,
 /area/cargo/qm)
@@ -104963,6 +104971,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 10
 	},
+/obj/machinery/electrolyzer,
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
 "qWK" = (
@@ -110240,7 +110249,8 @@
 	department = "Quartermaster's Desk";
 	name = "Quartermaster RC";
 	pixel_x = 32;
-	pixel_y = -32
+	pixel_y = -32;
+	announcementConsole = 1
 	},
 /obj/machinery/light_switch{
 	pixel_x = 23
@@ -111352,7 +111362,6 @@
 /obj/structure/disposalpipe/trunk{
 	dir = 1
 	},
-/obj/effect/landmark/start/security_officer,
 /turf/open/floor/plasteel,
 /area/security/brig_briefing)
 "sLf" = (
@@ -117308,7 +117317,6 @@
 /obj/structure/cable/white{
 	icon_state = "4-8"
 	},
-/obj/item/paper_bin,
 /obj/effect/turf_decal/tile/blue{
 	dir = 4
 	},
@@ -117317,6 +117325,11 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
+/obj/machinery/fax{
+	fax_name = "Chief Medical Officer's Office";
+	name = "Chief Medical Officer's Fax Machine";
+	pixel_y = 4
+	},
 /turf/open/floor/plasteel/white,
 /area/command/heads_quarters/cmo)
 "urG" = (
@@ -122586,8 +122599,6 @@
 /area/security/prison/cells)
 "vRk" = (
 /obj/structure/table/reinforced,
-/obj/item/folder/white,
-/obj/item/paicard,
 /obj/machinery/airalarm{
 	dir = 4;
 	pixel_x = -23
@@ -122596,6 +122607,10 @@
 	pixel_y = 32
 	},
 /obj/effect/turf_decal/bot/yellow,
+/obj/machinery/fax{
+	fax_name = "Office of the Director of Research";
+	name = "Fax machine of the Director of Research"
+	},
 /turf/open/floor/plasteel,
 /area/command/heads_quarters/rd)
 "vRl" = (
@@ -122909,6 +122924,7 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/visible{
 	dir = 4
 	},
+/obj/structure/closet/crate/engineering/hfr,
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
 "vVy" = (
@@ -126529,11 +126545,9 @@
 /turf/open/floor/plasteel,
 /area/security/prison/upper)
 "wWP" = (
-/obj/item/radio/intercom{
-	desc = "Talk through this. It looks like it has been modified to not broadcast.";
+/obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_x = -30;
-	prison_radio = 1
+	pixel_x = -30
 	},
 /turf/open/floor/plasteel/dark/textured,
 /area/security/prison/upper)
@@ -127380,6 +127394,7 @@
 /obj/structure/cable/white{
 	icon_state = "1-2"
 	},
+/obj/effect/landmark/start/security_officer,
 /turf/open/floor/plasteel,
 /area/security/brig_briefing)
 "xjN" = (
@@ -129886,7 +129901,9 @@
 "xUP" = (
 /obj/structure/table/wood,
 /obj/item/storage/photo_album,
+/obj/item/clipboard,
 /obj/item/camera,
+/obj/item/toy/figure/captain,
 /turf/open/floor/wood,
 /area/command/heads_quarters/captain)
 "xUS" = (
@@ -130061,7 +130078,6 @@
 /obj/machinery/status_display/evac{
 	pixel_y = 32
 	},
-/obj/structure/table,
 /obj/effect/turf_decal/tile/red/half{
 	dir = 1
 	},
@@ -130973,8 +130989,10 @@
 /area/command/corporate_showroom)
 "ykR" = (
 /obj/structure/table/wood,
-/obj/item/clipboard,
-/obj/item/toy/figure/captain,
+/obj/machinery/fax{
+	fax_name = "Captain's office";
+	name = "Captain's fax"
+	},
 /turf/open/floor/wood,
 /area/command/heads_quarters/captain)
 "yle" = (
@@ -154822,7 +154840,7 @@ oUP
 izE
 lXg
 lXg
-lXg
+nEI
 lXg
 gJo
 lXg
@@ -155374,7 +155392,7 @@ lNk
 fMF
 lCT
 mIT
-ntm
+gPu
 sZf
 jLv
 xxG
@@ -167192,7 +167210,7 @@ xmR
 qTU
 xmR
 wGq
-xmR
+qsb
 kxP
 pnQ
 gEc
@@ -188033,7 +188051,7 @@ cFF
 cFF
 cFF
 cFF
-cTi
+cFF
 xVe
 aad
 rNM
@@ -188277,7 +188295,7 @@ aaa
 aaa
 aaa
 aaa
-aad
+aaa
 rNM
 aaa
 jxN
@@ -188294,8 +188312,8 @@ cFF
 ygz
 aaa
 rNM
-aad
-ajr
+aaa
+aaa
 aaa
 aaa
 aaa
@@ -188533,8 +188551,8 @@ aaa
 aaa
 aaa
 aaa
-ajr
-aad
+aaa
+aaa
 rNM
 aaa
 jxN
@@ -188551,8 +188569,8 @@ cFF
 ygz
 aaa
 rNM
-aad
-ajr
+aaa
+aaa
 aaa
 aaa
 aaa
@@ -188790,26 +188808,26 @@ aaa
 aaa
 aaa
 aaa
-ajr
-aad
-oza
-aad
-tUf
-pAV
-pAV
-pAV
-wVB
+aaa
+aaa
 rNM
+aaa
+jxN
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+ygz
+aaa
 rNM
-wGr
-vXw
-vXw
-vXw
-mns
-aad
-oza
-aad
-ajr
+aaa
+aaa
 aaa
 aaa
 aaa
@@ -189034,7 +189052,7 @@ dbJ
 nDr
 dSu
 mhP
-kjo
+ltj
 nBQ
 byj
 gCu
@@ -189048,24 +189066,24 @@ aaa
 aaa
 aaa
 aaa
-aad
-rNM
-aaa
-aaa
-aad
-aaa
-rNM
-iYk
-lSP
-oza
-gRF
-rNM
-aaa
-aad
-aaa
 aaa
 rNM
 aad
+eVu
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+cTi
+xVe
+aad
+rNM
+aaa
 aaa
 aaa
 aaa
@@ -189307,20 +189325,20 @@ aaa
 aaa
 aad
 rNM
-rNM
-rNM
-rNM
-rNM
-rNM
-jgV
-rNM
-rNM
-hRS
-rNM
-rNM
-rNM
-rNM
-rNM
+aaa
+jxN
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+ygz
+aaa
 rNM
 aad
 ajr
@@ -189561,26 +189579,26 @@ aaa
 aaa
 aaa
 aaa
-aaa
-aad
-aad
-aad
-aad
-aad
+ajr
 aad
 rNM
-huN
-qca
-nxh
-kat
+aaa
+jxN
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+cFF
+ygz
+aaa
 rNM
 aad
-aad
-aad
-aad
-aad
-aad
-aaa
+ajr
 aaa
 aaa
 aaa
@@ -189818,26 +189836,26 @@ aaa
 aaa
 aaa
 aaa
-aaa
-aaa
-ajr
-ajr
-aaa
 ajr
 aad
-gRc
-jxy
-eKf
-oFX
-yle
-gRc
+oza
 aad
-aaa
+tUf
+pAV
+pAV
+pAV
+wVB
+rNM
+rNM
+wGr
+vXw
+vXw
+vXw
+mns
+aad
+oza
+aad
 ajr
-ajr
-aaa
-aaa
-aaa
 aaa
 aaa
 aaa
@@ -190076,24 +190094,24 @@ aaa
 aaa
 aaa
 aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-rNM
-rsY
-rfT
-kjz
-eMk
+aad
 rNM
 aaa
 aaa
+aad
+aaa
+rNM
+iYk
+lSP
+oza
+gRF
+rNM
+aaa
+aad
 aaa
 aaa
-aaa
-aaa
+rNM
+aad
 aaa
 aaa
 aaa
@@ -190333,25 +190351,25 @@ aaa
 aaa
 aaa
 aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
+aad
 rNM
 rNM
 rNM
 rNM
 rNM
 rNM
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
+jgV
+rNM
+rNM
+hRS
+rNM
+rNM
+rNM
+rNM
+rNM
+rNM
+aad
+ajr
 aaa
 aaa
 aaa
@@ -190590,24 +190608,24 @@ aaa
 aaa
 aaa
 aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
+aad
+aad
+aad
+aad
+aad
+aad
+rNM
+huN
+qca
+nxh
+kat
+rNM
+aad
+aad
+aad
+aad
+aad
+aad
 aaa
 aaa
 hZh
@@ -190848,21 +190866,21 @@ aaa
 aaa
 aaa
 aaa
+ajr
+ajr
 aaa
+ajr
+aad
+gRc
+jxy
+eKf
+oFX
+yle
+gRc
+aad
 aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
+ajr
+ajr
 aaa
 aaa
 aaa
@@ -191110,12 +191128,12 @@ aaa
 aaa
 aaa
 aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
+rNM
+rsY
+rfT
+kjz
+eMk
+rNM
 aaa
 aaa
 aaa
@@ -191367,12 +191385,12 @@ aaa
 aaa
 aaa
 aaa
-aaa
-aaa
-aaa
-aaa
-aaa
-aaa
+rNM
+rNM
+rNM
+rNM
+rNM
+rNM
 aaa
 aaa
 aaa

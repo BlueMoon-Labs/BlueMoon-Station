@@ -5,6 +5,7 @@
 	icon_state = "plasticflaps"
 	armor = list(MELEE = 50, BULLET = 50, LASER = 50, ENERGY = 50, BOMB = 50, BIO = 100, RAD = 100, FIRE = 50, ACID = 50)
 	density = FALSE
+	can_astar_pass = CANASTARPASS_ALWAYS_PROC
 	anchored = TRUE
 	CanAtmosPass = ATMOS_PASS_NO
 	obj_integrity = 500
@@ -58,17 +59,17 @@
 		return FALSE
 	return TRUE
 
-/obj/structure/plasticflaps/CanAStarPass(obj/item/card/id/ID, to_dir, atom/movable/caller)
-	if(isliving(caller))
-		if(isbot(caller))
+/obj/structure/plasticflaps/CanAStarPass(obj/item/card/id/ID, to_dir, atom/movable/pathing_movable)
+	if(isliving(pathing_movable))
+		if(isbot(pathing_movable))
 			return TRUE
 
-		var/mob/living/living_caller = caller
+		var/mob/living/living_caller = pathing_movable
 		if(!(SEND_SIGNAL(living_caller, COMSIG_CHECK_VENTCRAWL)) && living_caller.mob_size != MOB_SIZE_TINY)
 			return FALSE
 
-	if(caller?.pulling)
-		return CanAStarPass(ID, to_dir, caller.pulling)
+	if(pathing_movable?.pulling)
+		return CanAStarPass(ID, to_dir, pathing_movable.pulling)
 	return TRUE //diseases, stings, etc can pass
 
 /obj/structure/plasticflaps/CanAllowThrough(atom/movable/A, turf/T)

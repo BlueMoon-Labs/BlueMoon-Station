@@ -114,3 +114,25 @@
 	description = "Succulent and sweet, watermelon is a summertime picnic favorite that is now available year round. Use our Watermelon Syrup to freshen up your sodas, slushes, teas and exotic cocktails."
 	color = "#EB011C"
 	taste_description = "sweetness and watermelon"
+
+/datum/reagent/consumable/choccyshake/lactose_free
+	description = "Milkshake without milk!"
+	glass_icon_state = "strawberryshake_alt"
+
+/datum/reagent/consumable/milkshake_strawberry/lactose_free
+	description = "Milkshake without milk!"
+	glass_icon_state = "strawberryshake_alt"
+
+/datum/reagent/consumable/milkshake_banana/lactose_free
+	description = "Milkshake without milk!"
+	glass_icon_state = "bananashake_alt"
+
+/datum/reagent/consumable/non_alcoholic_beer
+	name = "Citrus Beer"
+	description = "A non-alcoholic alternative to regular beer. It smells like citrus."
+	color = "#664300" // rgb: 102, 67, 0
+	nutriment_factor = 1 * REAGENTS_METABOLISM
+	taste_description = "citrus water"
+	glass_name = "glass of citrus beer"
+	glass_desc = "A freezing pint of citrus beer."
+	glass_icon_state = "non_alcoholic_beer"

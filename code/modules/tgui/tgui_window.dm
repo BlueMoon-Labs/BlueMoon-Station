@@ -426,9 +426,20 @@
 		if("oversizedPayloadRequest")
 			var/payload_id = payload["id"]
 			var/chunk_count = payload["chunkCount"]
-			var/permit_payload = chunk_count <= CONFIG_GET(number/tgui_max_chunk_count)
-			if(permit_payload)
+			var/max_chunk_count = CONFIG_GET(number/tgui_max_chunk_count)
+			var/permit_payload = chunk_count <= max_chunk_count
+			// Отказ больше не молчит. Раньше сервер просто отвечал allow = FALSE, клиент
+			// выбрасывал очередь без единого слова, и для игрока это выглядело как "окно висит,
+			// сервер не принимает" - ровно так выглядел упёршийся в лимит JSON интегральной
+			// сборки, и разобраться было нечем.
+			if(!permit_payload)
+				log_tgui(client, "[id]/on_message payload rejected: [chunk_count] chunks over limit [max_chunk_count]", window = src)
+				to_chat(client, span_warning("Введённый текст слишком велик для передачи: [chunk_count] частей при лимите [max_chunk_count]. Сократите текст."))
+			else
 				permit_payload = create_oversized_payload(payload_id, payload["type"], chunk_count)
+				if(!permit_payload)
+					log_tgui(client, "[id]/on_message payload rejected: too many concurrent payloads or duplicate id", window = src)
+					to_chat(client, span_warning("Сервер уже собирает другой большой ввод. Подождите несколько секунд и повторите."))
 			send_message("oversizePayloadResponse", list("allow" = permit_payload, "id" = payload_id))
 		if("payloadChunk")
 			var/payload_id = payload["id"]

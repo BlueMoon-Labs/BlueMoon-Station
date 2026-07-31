@@ -102,17 +102,18 @@
 	configure_immediate_gc()
 
 	var/mob/living/carbon/human/human = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
-	var/obj/item/bodypart/chest/chest = human.get_bodypart(BODY_ZONE_CHEST)
-	TEST_ASSERT_NOTNULL(chest, "Human has no chest bodypart")
+	var/obj/item/bodypart/l_arm/arm = human.get_bodypart(BODY_ZONE_L_ARM)
+	TEST_ASSERT_NOTNULL(arm, "Human has no left arm bodypart")
 
-	// Apply a wound to create the reference cycle
-	var/datum/wound/slash/moderate/wound = new()
-	wound.apply_wound(chest)
+	// A disabling arm wound runs set_disabled() when removed. During carbon
+	// teardown that used to read held_items after mob/Destroy() had nulled it.
+	var/datum/wound/blunt/severe/wound = new()
+	wound.apply_wound(arm, silent = TRUE)
 
 	TEST_ASSERT(LAZYLEN(human.all_wounds) > 0, "Wound was not applied to human")
-	TEST_ASSERT(LAZYLEN(chest.wounds) > 0, "Wound was not applied to chest bodypart")
+	TEST_ASSERT(LAZYLEN(arm.wounds) > 0, "Wound was not applied to arm bodypart")
 
-	chest = null
+	arm = null
 	wound = null
 	allocated -= human
 	qdel(human)
