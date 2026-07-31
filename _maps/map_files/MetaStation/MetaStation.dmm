@@ -31321,6 +31321,9 @@
 	icon_state = "4-8"
 	},
 /obj/machinery/power/apc/auto_name/north,
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
 /turf/open/floor/plasteel,
 /area/security/checkpoint/science/research)
 "csQ" = (
@@ -60890,6 +60893,7 @@
 	pixel_y = -24;
 	req_access_txt = "47"
 	},
+/obj/item/toy/plush/mothplushie,
 /turf/open/floor/plasteel,
 /area/security/checkpoint/science/research)
 "jMq" = (
