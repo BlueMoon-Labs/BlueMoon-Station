@@ -851,7 +851,8 @@ SUBSYSTEM_DEF(tick_spikes)
 
 /// Тот же итог одной строкой (для отчёта верба и для юнит-теста)
 /datum/controller/subsystem/tick_spikes/proc/build_blocking_summary()
-	return build_blocking_summary_lines().Join("\n")
+	var/list/lines = build_blocking_summary_lines()
+	return lines.Join("\n")
 
 /datum/controller/subsystem/tick_spikes/proc/write_to_log(text)
 	if(suppress_side_effects)
