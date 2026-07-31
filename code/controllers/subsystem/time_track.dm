@@ -63,6 +63,12 @@ SUBSYSTEM_DEF(time_track)
 	. = ..()
 	GLOB.perf_log = "[GLOB.log_directory]/perf-[GLOB.round_id ? GLOB.round_id : "NULL"]-[SSmapping.config?.map_name].csv"
 	GLOB.ping_perf_log = "[GLOB.log_directory]/ping-perf-[GLOB.round_id ? GLOB.round_id : "NULL"]-[SSmapping.config?.map_name].csv"
+	// Про колонку num_timers: это НЕ население колеса таймеров, а только те таймеры,
+	// у кого выставлен TIMER_STOPPABLE - timer_id_dict заполняется исключительно для
+	// них (см. /datum/timedevent/New в timer.dm). Мудлеты, барки, flick_overlay и
+	// амбиент в неё не попадают вообще. Колонку не убираем, по ней сравнивают с
+	// историей прошлых раундов, но реальное население смотреть надо в соседних:
+	// timer_buckets (bucket_count), timer_second_queue, timer_clienttime, timer_hashes.
 	log_perf(
 		list(
 			"time",
@@ -73,6 +79,10 @@ SUBSYSTEM_DEF(time_track)
 			"tidi_slowavg",
 			"maptick",
 			"num_timers",
+			"timer_buckets",
+			"timer_second_queue",
+			"timer_clienttime",
+			"timer_hashes",
 			"air_turf_cost",
 			"air_turf_thread_time",
 			"air_equalize_cost",
@@ -265,6 +275,10 @@ SUBSYSTEM_DEF(time_track)
 			time_dilation_avg_slow,
 			MAPTICK_LAST_INTERNAL_TICK_USAGE,
 			length(SStimer.timer_id_dict),
+			SStimer.bucket_count,
+			length(SStimer.second_queue),
+			length(SStimer.clienttime_timers),
+			length(SStimer.hashes),
 			SSair.cost_turfs,
 			SSair.turf_process_time(),
 			SSair.cost_equalize,

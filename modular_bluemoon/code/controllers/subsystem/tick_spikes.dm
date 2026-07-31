@@ -23,7 +23,9 @@
  *  - "Tick Spikes Capture" - включить сессию захвата с дампами профайлера на спайках;
  *  - "Simulate Tick Spike" - синтетический фриз заданной длины для проверки всей цепочки.
  *
- * Файлы за раунд: [папка логов]/tick_spikes.log и tick_spike_profile_N.json
+ * Файлы за раунд: [папка логов]/tick_spikes.log, tick_spike_profile_N.json (дампы на
+ * спайках) и tick_spike_periodic_N.json (sendmaps-профиль по равномерной сетке, см.
+ * maybe_dump_periodic_profile - только по нему дельты кумулятивных счётчиков сравнимы).
  */
 
 /// Размер кольцевого буфера пер-тиковой телеметрии (~30 сек при 20 fps)
@@ -65,6 +67,19 @@
 #define TICK_SPIKES_BLOCKING_SUMMARY_INTERVAL (5 MINUTES)
 /// Бюджет авто-дампов sendmaps-профиля за раунд (вне сессии захвата)
 #define TICK_SPIKES_MAX_AUTO_DUMPS 12
+/// Шаг НЕЗАВИСИМОГО периодического дампа sendmaps-профиля. Спайковые дампы приходят
+/// когда придётся (в раунде 9847 интервалы между ними гуляли от 15 до 130 секунд), а
+/// счётчики профайлера кумулятивные: дельта соседних дампов делится на неизвестное
+/// окно, и сравнивать такие дельты между собой нельзя. Равномерная сетка это чинит.
+#define TICK_SPIKES_PERIODIC_DUMP_INTERVAL (60 SECONDS)
+/// Бюджет периодических дампов за раунд - СВОЙ, лимит спайковых он не тратит.
+/// 240 шагов по минуте = четыре часа покрытия, дольше типового раунда.
+#define TICK_SPIKES_MAX_PERIODIC_DUMPS 240
+/// Дрифт (мс), с которого полный блок пишется ВСЕГДА, в обход рейт-лимита. В раунде
+/// 9847 три крупных спайка (849, 484 и 431мс) остались краткими однострочниками
+/// только потому, что попали в трёхсекундное окно после предыдущего блока, и
+/// диагностировать их было нечем.
+#define TICK_SPIKES_FULL_EVENT_DRIFT_FLOOR 300
 
 // Классы источников спайка
 #define TICK_SPIKE_CLASS_MC "подсистема МК"
@@ -137,14 +152,26 @@ SUBSYSTEM_DEF(tick_spikes)
 	// и списывает это на внешний столл - в раунде 9838 таких спайков было 122 из 246,
 	// то есть половина потерь была безымянной. Замер вокруг самих примитивов
 	// превращает анонимный столл в именованную запись.
-	/// Суммарно мс за раунд во всех замеренных блокирующих вызовах
+	/// Суммарно мс за раунд во всех замеренных блокирующих вызовах (обе группы)
 	var/blocking_total_ms = 0
-	/// Сколько замеренных блокирующих вызовов было
+	/// Сколько замеренных блокирующих вызовов было (обе группы)
 	var/blocking_calls = 0
+	/// Группа "усыпляющие": winget/winexists. Это собственное ожидание прока, миру оно
+	/// не мешает - МК крутится дальше. Суммировать её с синхронной группой нельзя,
+	/// иначе получается бессмыслица вида "= 3725% суммарного дрифта спайков".
+	var/blocking_sleeping_calls = 0
+	var/blocking_sleeping_ms = 0
+	/// Группа "синхронные": savefile, world.Export, блокирующий SQL. Вот они реально
+	/// морозят процесс, и только их доля от дрифта спайков имеет смысл.
+	var/blocking_sync_calls = 0
+	var/blocking_sync_ms = 0
 	/// Разбивка по типу вызова: kind -> list("count" = N, "ms" = X, "max" = Y)
 	var/list/blocking_by_kind
-	/// world.time последнего блокирующего вызова, перешагнувшего slow_work_threshold_ms
+	/// world.time ЗАВЕРШЕНИЯ последнего блокирующего вызова, перешагнувшего slow_work_threshold_ms
 	var/last_blocking_world = 0
+	/// world.time НАЧАЛА того же вызова. У синхронных примитивов равен финишу (мир
+	/// не тикает, пока процесс заморожен), у усыпляющих - отстаёт на всё время сна.
+	var/last_blocking_started_world = 0
 	/// Его стоимость и описание - для классификации спайка
 	var/last_blocking_cost = 0
 	var/last_blocking_kind
@@ -185,6 +212,13 @@ SUBSYSTEM_DEF(tick_spikes)
 	/// классы SendMaps и "внешний столл", чтобы поток спайков на хайпопе не завалил
 	/// каталог логов сотней JSON'ов.
 	var/auto_dumps_done = 0
+	/// world.time следующего периодического дампа sendmaps-профиля (сетка независима от спайков)
+	var/next_periodic_dump_world = 0
+	/// Сколько периодических дампов сделано за раунд (свой бюджет, см. TICK_SPIKES_MAX_PERIODIC_DUMPS)
+	var/periodic_dumps_done = 0
+	/// Монотонный номер файла периодического дампа. Как и profile_dump_seq, не сбрасывается:
+	/// иначе WRITE_FILE доклеил бы новый JSON в конец уже существующего файла
+	var/periodic_dump_seq = 0
 	/// Минимум мс между дампами профайлера
 	var/profile_dump_cooldown_ms = 15000
 	/// world.time, до которого спайки считаются самонаведёнными (после нашего же дампа)
@@ -192,6 +226,8 @@ SUBSYSTEM_DEF(tick_spikes)
 
 	/// Минимум мс между ПОЛНЫМИ блоками событий в логе: на хайпопе спайки идут потоком,
 	/// и полный контекст на каждый раздул бы лог. Промежуточные пишутся одной строкой.
+	/// Троттлинг работает только для мелочи: дрифт от TICK_SPIKES_FULL_EVENT_DRIFT_FLOOR
+	/// и выше получает полный блок всегда, интервал ему не помеха.
 	var/full_event_min_interval_ms = 3000
 	/// Момент (мс часов rust-g) последнего полного блока
 	var/last_full_event_ms = 0
@@ -238,6 +274,9 @@ SUBSYSTEM_DEF(tick_spikes)
 	profile_dumps_done = SStick_spikes.profile_dumps_done
 	last_profile_dump_ms = SStick_spikes.last_profile_dump_ms
 	profile_dump_seq = SStick_spikes.profile_dump_seq
+	periodic_dump_seq = SStick_spikes.periodic_dump_seq
+	periodic_dumps_done = SStick_spikes.periodic_dumps_done
+	next_periodic_dump_world = SStick_spikes.next_periodic_dump_world
 	profile_dump_cooldown_ms = SStick_spikes.profile_dump_cooldown_ms
 	self_inflicted_until = SStick_spikes.self_inflicted_until
 	full_event_min_interval_ms = SStick_spikes.full_event_min_interval_ms
@@ -266,8 +305,13 @@ SUBSYSTEM_DEF(tick_spikes)
 	slow_work_pos = 0
 	blocking_total_ms = 0
 	blocking_calls = 0
+	blocking_sleeping_calls = 0
+	blocking_sleeping_ms = 0
+	blocking_sync_calls = 0
+	blocking_sync_ms = 0
 	blocking_by_kind = list()
 	last_blocking_world = 0
+	last_blocking_started_world = 0
 	last_blocking_cost = 0
 	last_blocking_kind = null
 	last_blocking_desc = null
@@ -292,12 +336,15 @@ SUBSYSTEM_DEF(tick_spikes)
 	sample_tick(rustg_time_milliseconds(TICK_SPIKES_CLOCK), world.time, TICK_USAGE, world.cpu, MAPTICK_LAST_INTERNAL_TICK_USAGE)
 	if(capture_until && world.time > capture_until)
 		stop_capture(automatic = TRUE)
+	maybe_dump_periodic_profile()
 	// Итог по блокирующим вызовам пишем периодически, а не на Shutdown: архив логов
 	// снимают с живого раунда, а Shutdown при аварийном рестарте не отрабатывает вовсе
 	if(world.time >= next_blocking_summary_world)
 		next_blocking_summary_world = world.time + TICK_SPIKES_BLOCKING_SUMMARY_INTERVAL
 		if(blocking_calls)
-			write_to_log("[time_stamp_from_world(world.time)] [build_blocking_summary()]")
+			// Каждая группа своей строкой и со своим таймстампом: строки читают глазами и грепают
+			for(var/summary_line in build_blocking_summary_lines())
+				write_to_log("[time_stamp_from_world(world.time)] [summary_line]")
 
 /**
  * Обработка одного тика. Вынесена из fire() с явными аргументами,
@@ -405,19 +452,42 @@ SUBSYSTEM_DEF(tick_spikes)
 	return rustg_time_milliseconds(TICK_SPIKES_CLOCK)
 
 /**
+ * Явный список примитивов, которые УСЫПЛЯЮТ вызывающий прок вместо того, чтобы
+ * заморозить процесс. Пока такой вызов ждёт ответа скина, МК крутится дальше и
+ * world.time идёт: его миллисекунды - собственное ожидание прока, а не потеря тика.
+ *
+ * Всё, чего здесь нет, считается синхронным (savefile, world.Export, блокирующий SQL) -
+ * такой вызов действительно морозит мир. Новую обёртку достаточно дописать сюда, если
+ * её примитив спит; строки должны совпадать с kind в местах вызова record_blocking_call
+ * (см. modular_bluemoon/code/_HELPERS/blocking_calls.dm).
+ */
+/datum/controller/subsystem/tick_spikes/proc/is_sleeping_blocking_kind(kind)
+	var/static/list/sleeping_kinds = list("winget", "winexists")
+	return (kind in sleeping_kinds)
+
+/**
  * Запись завершившегося блокирующего вызова.
  *
  * Считаем ВСЕ вызовы (для итоговой разбивки за раунд), а в кольцо медленной работы
  * и в классификацию отдаём только те, что перешагнули slow_work_threshold_ms.
  *
  * kind - короткий тип примитива ("winget", "savefile", "world.Export"),
- * desc - кого и о чём спрашивали.
+ * desc - кого и о чём спрашивали,
+ * started_world - world.time момента НАЧАЛА вызова. Не передан - считаем вызов
+ * мгновенным (start == finish): для синхронных примитивов это точная правда, мир
+ * при них не тикает.
  */
-/datum/controller/subsystem/tick_spikes/proc/record_blocking_call(kind, desc, cost_ms)
+/datum/controller/subsystem/tick_spikes/proc/record_blocking_call(kind, desc, cost_ms, started_world)
 	if(cost_ms < 0) //часы переехали - лучше потерять замер, чем испортить статистику
 		return
 	blocking_calls++
 	blocking_total_ms += cost_ms
+	if(is_sleeping_blocking_kind(kind))
+		blocking_sleeping_calls++
+		blocking_sleeping_ms += cost_ms
+	else
+		blocking_sync_calls++
+		blocking_sync_ms += cost_ms
 	var/list/bucket = blocking_by_kind[kind]
 	if(!bucket)
 		bucket = list("count" = 0, "ms" = 0, "max" = 0)
@@ -429,6 +499,7 @@ SUBSYSTEM_DEF(tick_spikes)
 	if(cost_ms < slow_work_threshold_ms)
 		return
 	last_blocking_world = world.time
+	last_blocking_started_world = isnull(started_world) ? world.time : started_world
 	last_blocking_cost = cost_ms
 	last_blocking_kind = kind
 	last_blocking_desc = desc
@@ -503,9 +574,16 @@ SUBSYSTEM_DEF(tick_spikes)
 		return .
 	// Блокирующий вызов виден раньше, чем cpu-эвристики: пока DM ждёт ответа клиента
 	// или диска, world.cpu не растёт, и без этой проверки спайк уехал бы во "внешний
-	// столл". Виним только если вызов завершился в тиках спайка и закрывает
-	// заметную долю дрифта - иначе это совпадение, а не причина.
-	if(last_blocking_world >= tight_window_start && drift && last_blocking_cost >= drift * TICK_SPIKES_BLOCKING_COVERAGE)
+	// столл". Виним только если вызов И НАЧАЛСЯ, и завершился в тиках спайка, и при
+	// этом закрывает заметную долю дрифта - иначе это совпадение, а не причина.
+	//
+	// Проверять один финиш нельзя: winget/winexists усыпляют вызывающий прок, а не
+	// морозят мир, поэтому любой прок, спавший в winget во время ЧУЖОГО столла,
+	// просыпается и финиширует ровно в тике спайка. В раунде 9847 так были ошибочно
+	// помечены 7 спайков из 97, включая крупнейший (9782мс = 32% всего дрифта; реальная
+	// причина - заморозка SSticker.setup()). Синхронные примитивы (savefile, SQL,
+	// world.Export) не страдают: мир при них не тикает, у них старт равен финишу.
+	if(last_blocking_started_world >= tight_window_start && last_blocking_world >= tight_window_start && drift && last_blocking_cost >= drift * TICK_SPIKES_BLOCKING_COVERAGE)
 		last_classify_detail = " - [last_blocking_kind]: [last_blocking_desc], [round(last_blocking_cost)]мс из [round(drift)]мс"
 		return TICK_SPIKE_CLASS_BLOCKING
 	// Смотрим последние TICK_SPIKES_CLASSIFY_WINDOW_TICKS тика кольца: cpu отражает предыдущий тик
@@ -541,8 +619,10 @@ SUBSYSTEM_DEF(tick_spikes)
 		next_spike_tag = null
 
 	// Рейт-лимит полных блоков: статистика копится по всем спайкам, но полный контекст
-	// пишется не чаще full_event_min_interval_ms, промежуточные - одной строкой
-	if(last_full_event_ms && (now_ms - last_full_event_ms) < full_event_min_interval_ms)
+	// пишется не чаще full_event_min_interval_ms, промежуточные - одной строкой.
+	// Гейт по времени душит и мелочь, и крупняк одинаково, а крупняк как раз и нужен
+	// с контекстом - поэтому от TICK_SPIKES_FULL_EVENT_DRIFT_FLOOR блок пишется всегда.
+	if(drift < TICK_SPIKES_FULL_EVENT_DRIFT_FLOOR && last_full_event_ms && (now_ms - last_full_event_ms) < full_event_min_interval_ms)
 		suppressed_event_count++
 		var/brief_class = classify_spike(now_world, drift)
 		write_to_log("СПАЙК #[session_spike_count][tag_line] (кратко) [time_stamp_from_world(now_world)] (wt [now_world]): дрифт [round(drift)]мс, [brief_class][last_classify_detail]")
@@ -651,6 +731,31 @@ SUBSYSTEM_DEF(tick_spikes)
 #endif
 #endif
 
+/**
+ * Периодический дамп sendmaps-профиля по РАВНОМЕРНОЙ сетке, независимый от спайков.
+ *
+ * Счётчики профайлера кумулятивные, полезна только дельта соседних дампов - а она
+ * имеет смысл лишь тогда, когда окна между дампами одинаковы. Спайковые дампы этому
+ * условию не удовлетворяют: в раунде 9847 их бюджет (TICK_SPIKES_MAX_AUTO_DUMPS)
+ * выгорел на десятой минуте, а интервалы между ними гуляли от 15 до 130 секунд.
+ * Здесь свой шаг, свой бюджет и своё имя файла, чтобы не смешивать две сетки.
+ */
+/datum/controller/subsystem/tick_spikes/proc/maybe_dump_periodic_profile()
+	if(suppress_side_effects)
+		return
+	if(world.time < next_periodic_dump_world)
+		return
+	next_periodic_dump_world = world.time + TICK_SPIKES_PERIODIC_DUMP_INTERVAL
+	if(periodic_dumps_done >= TICK_SPIKES_MAX_PERIODIC_DUMPS)
+		return
+#if DM_VERSION >= 515
+	periodic_dumps_done++
+	periodic_dump_seq++
+	// Наш собственный дамп растянет тик - не считать следующий тик новым спайком
+	self_inflicted_until = world.time + (TICK_SPIKES_SELF_INFLICTED_TICKS * world.tick_lag)
+	WRITE_FILE(file("[GLOB.log_directory]/tick_spike_periodic_[periodic_dump_seq].json"), world.Profile(PROFILE_REFRESH, type = "sendmaps", format = "json"))
+#endif
+
 /// Старт сессии захвата: включает профайлер и дампы его окон на спайках
 /datum/controller/subsystem/tick_spikes/proc/start_capture(duration_ds, starter_key)
 	capture_until = world.time + duration_ds
@@ -690,11 +795,12 @@ SUBSYSTEM_DEF(tick_spikes)
 	out += "время: [time_stamp_from_world(world.time)] (wt [world.time]), тик [world.tick_lag * 100]мс ([world.fps] fps)"
 	out += "настройки: порог спайка [spike_threshold_ms]мс, порог тяжёлого прогона [heavy_run_threshold]% тика, анонс от [announce_threshold_ms]мс"
 	out += "захват: [capture_until ? "АКТИВЕН до wt [capture_until]" : "выключен"], дампов профайлера: [profile_dumps_done]"
+	out += "периодических дампов sendmaps: [periodic_dumps_done] из [TICK_SPIKES_MAX_PERIODIC_DUMPS] (шаг [TICK_SPIKES_PERIODIC_DUMP_INTERVAL / 10] сек, файлы tick_spike_periodic_N.json)"
 	out += "клиентов: [length(GLOB.clients)], TD тек/быстр/сред/медл: [round(SStime_track.time_dilation_current, 0.1)]% / [round(SStime_track.time_dilation_avg_fast, 0.1)]% / [round(SStime_track.time_dilation_avg, 0.1)]% / [round(SStime_track.time_dilation_avg_slow, 0.1)]%"
 	out += "тиков замерено: [samples_collected]"
 	out += "спайков: [session_spike_count] (из них кратко в логе: [suppressed_event_count]), худший [round(worst_drift_ms)]мс в [worst_drift_at ? time_stamp_from_world(worst_drift_at) : "-"], суммарно потеряно в спайках ~[round(total_spike_drift_ms)]мс"
 	out += "гистограмма дрифтов (мс): [TICK_SPIKES_HISTOGRAM_FLOOR]-[TICK_SPIKES_HISTOGRAM_BUCKET_1]: [drift_histogram[1]] | [TICK_SPIKES_HISTOGRAM_BUCKET_1]-[TICK_SPIKES_HISTOGRAM_BUCKET_2]: [drift_histogram[2]] | [TICK_SPIKES_HISTOGRAM_BUCKET_2]-[TICK_SPIKES_HISTOGRAM_BUCKET_3]: [drift_histogram[3]] | [TICK_SPIKES_HISTOGRAM_BUCKET_3]-[TICK_SPIKES_HISTOGRAM_BUCKET_4]: [drift_histogram[4]] | [TICK_SPIKES_HISTOGRAM_BUCKET_4]+: [drift_histogram[5]]"
-	out += build_blocking_summary()
+	out += build_blocking_summary_lines()
 	out += "лог событий: [log_path ? log_path : "ещё не создан"]"
 	if(length(spike_events))
 		out += ""
@@ -707,22 +813,45 @@ SUBSYSTEM_DEF(tick_spikes)
 	return out.Join("\n")
 
 /**
- * Итог по блокирующим вызовам за раунд.
+ * Итог по блокирующим вызовам за раунд, ДВУМЯ независимыми группами.
  *
  * Это ответ на вопрос "куда делось время, которого не видит ни профайлер, ни world.cpu".
- * Если сумма здесь сопоставима с суммарным дрифтом спайков - значит внешние столлы
- * это наши же ожидания клиента и диска, и чинить надо конкретный примитив.
- * Если сумма мала, а дрифт велик - виноват хост, и в коде искать нечего.
+ * Но складывать усыпляющие вызовы с синхронными нельзя: первые не отнимают у мира
+ * ничего (пока прок спит в winget, МК крутится дальше), вторые морозят процесс целиком.
+ * Общий итог давал в раунде 9847 строку "= 3725% суммарного дрифта спайков" - число,
+ * которое не значит ровным счётом ничего. Долю от дрифта считаем только по синхронным.
+ *
+ * Возвращает список строк: каждая уходит в лог отдельно, со своим таймстампом.
  */
-/datum/controller/subsystem/tick_spikes/proc/build_blocking_summary()
+/datum/controller/subsystem/tick_spikes/proc/build_blocking_summary_lines()
 	if(!blocking_calls)
-		return "блокирующие вызовы: замеров нет"
-	var/list/parts = list()
+		return list("блокирующие вызовы: замеров нет")
+	var/list/sleeping_parts = list()
+	var/list/sync_parts = list()
 	for(var/kind in blocking_by_kind)
 		var/list/bucket = blocking_by_kind[kind]
-		parts += "[kind] x[bucket["count"]]: [round(bucket["ms"])]мс (макс [round(bucket["max"])]мс)"
-	var/share = total_spike_drift_ms ? " = [round(blocking_total_ms / total_spike_drift_ms * 100)]% суммарного дрифта спайков" : ""
-	return "блокирующие вызовы: всего [blocking_calls] на [round(blocking_total_ms)]мс[share] | [parts.Join(" | ")]"
+		var/part = "[kind] x[bucket["count"]]: [round(bucket["ms"])]мс (макс [round(bucket["max"])]мс)"
+		if(is_sleeping_blocking_kind(kind))
+			sleeping_parts += part
+		else
+			sync_parts += part
+	var/sleeping_tail = ""
+	if(length(sleeping_parts))
+		sleeping_tail = " | [sleeping_parts.Join(" | ")]"
+	var/sync_tail = ""
+	if(length(sync_parts))
+		sync_tail = " | [sync_parts.Join(" | ")]"
+	var/share = ""
+	if(total_spike_drift_ms)
+		share = " = [round(blocking_sync_ms / total_spike_drift_ms * 100)]% суммарного дрифта спайков"
+	var/list/lines = list()
+	lines += "блокирующие вызовы, ожидание прока (усыпляют вызывающего, миру НЕ мешают - МК крутится дальше, дрифту не соответствуют): [blocking_sleeping_calls] на [round(blocking_sleeping_ms)]мс[sleeping_tail]"
+	lines += "блокирующие вызовы, синхронные (морозят весь процесс): [blocking_sync_calls] на [round(blocking_sync_ms)]мс[share][sync_tail]"
+	return lines
+
+/// Тот же итог одной строкой (для отчёта верба и для юнит-теста)
+/datum/controller/subsystem/tick_spikes/proc/build_blocking_summary()
+	return build_blocking_summary_lines().Join("\n")
 
 /datum/controller/subsystem/tick_spikes/proc/write_to_log(text)
 	if(suppress_side_effects)
@@ -749,6 +878,10 @@ SUBSYSTEM_DEF(tick_spikes)
 #undef TICK_SPIKES_SELF_INFLICTED_TICKS
 #undef TICK_SPIKES_BLOCKING_COVERAGE
 #undef TICK_SPIKES_BLOCKING_SUMMARY_INTERVAL
+#undef TICK_SPIKES_MAX_AUTO_DUMPS
+#undef TICK_SPIKES_PERIODIC_DUMP_INTERVAL
+#undef TICK_SPIKES_MAX_PERIODIC_DUMPS
+#undef TICK_SPIKES_FULL_EVENT_DRIFT_FLOOR
 #undef TICK_SPIKE_CLASS_MC
 #undef TICK_SPIKE_CLASS_DM
 #undef TICK_SPIKE_CLASS_SENDMAPS

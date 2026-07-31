@@ -107,11 +107,18 @@
 	TEST_ASSERT(findtext(recorder.spike_events[1], "ТЕСТОВАЯ МЕТКА"), "Метка симуляции не попала в событие")
 	TEST_ASSERT_NULL(recorder.next_spike_tag, "Метка симуляции не очистилась после события")
 
-	// 6.1. Рейт-лимит полных блоков: второй спайк в окне пишется кратко, но копится в статистике
-	recorder.sample_tick(2100, 401, 5, 10, 5)
+	// 6.1. Рейт-лимит полных блоков: второй спайк в окне пишется кратко, но копится в статистике.
+	// Дрифт держим ниже TICK_SPIKES_FULL_EVENT_DRIFT_FLOOR, иначе крупный спайк обойдёт троттлинг.
+	recorder.sample_tick(1700, 401, 5, 10, 5)
 	TEST_ASSERT_EQUAL(recorder.session_spike_count, 2, "Спайк под рейт-лимитом не посчитался в статистике")
 	TEST_ASSERT_EQUAL(length(recorder.spike_events), 1, "Спайк под рейт-лимитом создал полный блок")
 	TEST_ASSERT_EQUAL(recorder.suppressed_event_count, 1, "Счётчик кратких записей не вырос")
+
+	// 6.2. Крупный спайк обходит рейт-лимит: контекст по таким событиям терять нельзя
+	recorder.sample_tick(2400, 401.5, 5, 10, 5)
+	TEST_ASSERT_EQUAL(recorder.session_spike_count, 3, "Крупный спайк не посчитался в статистике")
+	TEST_ASSERT_EQUAL(length(recorder.spike_events), 2, "Крупный спайк не получил полный блок вопреки рейт-лимиту")
+	TEST_ASSERT_EQUAL(recorder.suppressed_event_count, 1, "Крупный спайк ошибочно записан кратко")
 
 	// 7. Отчёт собирается и содержит ключевые поля
 	var/report = recorder.build_report()

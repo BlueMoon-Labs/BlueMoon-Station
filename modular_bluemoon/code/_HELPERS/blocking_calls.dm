@@ -18,6 +18,17 @@
  *
  * Накладные расходы: два чтения монотонных часов rust-g на вызов. Оборачивать имеет
  * смысл только то, что действительно блокирует - не надо вешать это на горячие проки.
+ *
+ * ВАЖНО про два разных вида блокировки. winget/winexists НЕ морозят процесс: они
+ * УСЫПЛЯЮТ вызывающий прок (см. комментарий в code/datums/browser.dm - "winexists
+ * sleeps"), пока ждут ответа скина. Мир при этом продолжает крутиться, world.time
+ * идёт, чужой код исполняется. savefile, world.Export и блокирующий SQL наоборот
+ * останавливают весь процесс, и world.time за время вызова не сдвигается ни на тик.
+ * Отсюда два следствия: (1) миллисекунды этих двух групп нельзя складывать в один
+ * итог, (2) момент НАЧАЛА вызова надо отдавать в SStick_spikes отдельно, иначе прок,
+ * заснувший в winget во время чужого столла, финиширует ровно в тике спайка и
+ * забирает вину на себя (в раунде 9847 так было ошибочно помечено 7 спайков из 97,
+ * включая крупнейший на 9782мс).
  */
 
 /// Имя цели для описания замера. Принимает и клиент, и моба.
@@ -40,21 +51,26 @@
 	if(!SStick_spikes)
 		return winget(target, control_id, params)
 	var/started_ms = SStick_spikes.now_ms()
+	// Прок спит внутри winget, поэтому старт и финиш лежат в РАЗНЫХ тиках. Без старта
+	// классификатор спайка не отличит "мы тут и стояли" от "мы просто финишировали в
+	// чужом столле" - см. шапку файла.
+	var/started_world = world.time
 	. = winget(target, control_id, params)
 	var/cost_ms = SStick_spikes.now_ms() - started_ms
 	// Описание собираем ТОЛЬКО для дорогих вызовов: в статистику по типам идёт каждый,
 	// а имя нужно лишь тем, кто попадёт в кольцо. Интерполяция строки на каждом вызове
 	// стоила бы дороже самого замера
-	SStick_spikes.record_blocking_call("winget", cost_ms >= SStick_spikes.slow_work_threshold_ms ? "[blocking_call_target_name(target)]: [control_id || "<окно>"].[params]" : null, cost_ms)
+	SStick_spikes.record_blocking_call("winget", cost_ms >= SStick_spikes.slow_work_threshold_ms ? "[blocking_call_target_name(target)]: [control_id || "<окно>"].[params]" : null, cost_ms, started_world)
 
 /// winexists с замером. Такой же round-trip до скина, как и у winget.
 /proc/tracked_winexists(target, control_id)
 	if(!SStick_spikes)
 		return winexists(target, control_id)
 	var/started_ms = SStick_spikes.now_ms()
+	var/started_world = world.time
 	. = winexists(target, control_id)
 	var/cost_ms = SStick_spikes.now_ms() - started_ms
-	SStick_spikes.record_blocking_call("winexists", cost_ms >= SStick_spikes.slow_work_threshold_ms ? "[blocking_call_target_name(target)]: [control_id]" : null, cost_ms)
+	SStick_spikes.record_blocking_call("winexists", cost_ms >= SStick_spikes.slow_work_threshold_ms ? "[blocking_call_target_name(target)]: [control_id]" : null, cost_ms, started_world)
 
 /**
  * Ручная пара для блоков, которые обёрткой не накрыть - работа с savefile,
@@ -64,11 +80,15 @@
  *   var/started_ms = blocking_call_start()
  *   ... блокирующая работа ...
  *   blocking_call_finish(started_ms, "savefile", "префы [ckey]")
+ *
+ * started_world нужен только тем обёрткам, чей блок СПИТ. Синхронный блок (savefile,
+ * world.Export, блокирующий SQL) не даёт миру продвинуть world.time, поэтому старт у
+ * него равен финишу, и трёхаргументного вызова достаточно.
  */
 /proc/blocking_call_start()
 	return SStick_spikes?.now_ms()
 
-/proc/blocking_call_finish(started_ms, kind, desc)
+/proc/blocking_call_finish(started_ms, kind, desc, started_world)
 	if(isnull(started_ms) || !SStick_spikes)
 		return
-	SStick_spikes.record_blocking_call(kind, desc, SStick_spikes.now_ms() - started_ms)
+	SStick_spikes.record_blocking_call(kind, desc, SStick_spikes.now_ms() - started_ms, started_world)
