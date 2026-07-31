@@ -1597,6 +1597,12 @@
 	return PAIN_NO
 
 /mob/living/has_pain(obj/item/bodypart/limb)
+	// Труп боли не чувствует. Гейт стоит именно здесь, потому что через has_pain()
+	// проходят все реакции тела на лечение (костный гель, вправление вывиха, наложение
+	// раны): без него мёртвому телу капал стамина-урон и уходили болевые эмоуты с
+	// сообщениями "вы чувствуете боль" - в чат уже отыгравшему смерть игроку.
+	if(stat == DEAD)
+		return PAIN_NO
 	if(HAS_TRAIT(src, TRAIT_ROBOTIC_ORGANISM) || HAS_TRAIT(src, TRAIT_PAINKILLER))
 		return PAIN_NO
 	else if(HAS_TRAIT(src, TRAIT_BLUEMOON_HIGH_PAIN_THRESHOLD))

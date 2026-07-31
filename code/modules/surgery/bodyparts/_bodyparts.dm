@@ -315,6 +315,11 @@
 	if(owner && wounding_dmg >= WOUND_MINIMUM_DAMAGE && wound_bonus != CANT_WOUND)
 		check_wounding(wounding_type, wounding_dmg, wound_bonus, bare_wound_bonus)
 
+	// Внимание: CANT_WOUND выше отсекает только СОЗДАНИЕ новой раны. Этот цикл идёт всегда,
+	// поэтому "безопасный" лечебный урон (костный гель, прижигание, регенерация перелома)
+	// всё равно доезжает до receive_damage() уже существующих ран. Именно на этом
+	// кровохарканье вылезало у трупов, которым лечат раны: гейт по живости обязан стоять
+	// внутри самих /datum/wound/*/receive_damage(), а не полагаться на wound_bonus.
 	for(var/i in wounds)
 		var/datum/wound/iter_wound = i
 		iter_wound.receive_damage(wounding_type, wounding_dmg, wound_bonus)
