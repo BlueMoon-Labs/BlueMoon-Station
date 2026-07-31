@@ -301,7 +301,12 @@
 		new /obj/item/stack/medical/mesh/five(get_turf(G), reac_volume)
 		G.use(reac_volume)
 
-/datum/reagent/medicine/silver_sulfadiazine/reaction_mob(mob/living/M, method=TOUCH, reac_volume, show_message = 1, affected_bodypart = BODY_ZONE_CHEST)
+// Сигнатура обязана совпадать с /datum/reagent/proc/reaction_mob: пропущенный
+// touch_protection сдвигал аргументы, а дефолтом стояла ЗОНА строкой
+// (BODY_ZONE_CHEST) там, где весь код ниже ждёт /obj/item/bodypart. Плеснуть
+// сульфадиазином из стакана - и два рантайма подряд: "Cannot read "chest".body_zone"
+// и "Cannot read "chest".burn_dam" (раунд 9827).
+/datum/reagent/medicine/silver_sulfadiazine/reaction_mob(mob/living/M, method=TOUCH, reac_volume, show_message = 1, touch_protection = 0, affected_bodypart)
 	if(M.stat == DEAD)
 		return ..()
 
@@ -316,6 +321,9 @@
 	var/reac_strength = reac_volume
 	var/mob/living/carbon/human/H = M
 	var/obj/item/bodypart/aff_bodypart = affected_bodypart
+	//зону подают не всегда: плеснули из стакана - прилетает по груди
+	if(ishuman(M) && !istype(aff_bodypart))
+		aff_bodypart = H.get_bodypart(BODY_ZONE_CHEST)
 	// Проверка на одежду
 	if(ishuman(M))
 		if(method == TOUCH && aff_bodypart)
@@ -439,6 +447,9 @@
 	var/reac_strength = reac_volume
 	var/mob/living/carbon/human/H = M
 	var/obj/item/bodypart/aff_bodypart = affected_bodypart
+	//зону подают не всегда: плеснули из стакана - прилетает по груди
+	if(ishuman(M) && !istype(aff_bodypart))
+		aff_bodypart = H.get_bodypart(BODY_ZONE_CHEST)
 	// Проверка на одежду
 	if(ishuman(M))
 		if(method == TOUCH && aff_bodypart)

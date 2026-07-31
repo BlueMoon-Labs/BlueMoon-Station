@@ -37,6 +37,7 @@
 	// Убираем возможность класть предметы на стол и в инвентарь
 	I.item_flags |= ABSTRACT
 	I.w_class = WEIGHT_CLASS_HUGE
+	ADD_TRAIT(I, TRAIT_NODROP, IMPLANT_NODROP)
 
 	items_list += I
 	// ayy only dropped signal for performance, we can't possibly have shitcode that doesn't call it when removing items from a mob, right?
@@ -44,6 +45,7 @@
 	RegisterSignal(I, COMSIG_ITEM_DROPPED, PROC_REF(magnetic_catch))
 
 /obj/item/organ/cyberimp/arm/proc/magnetic_catch(datum/source, mob/user)
+	SIGNAL_HANDLER
 	. = COMPONENT_DROPPED_RELOCATION
 	var/obj/item/I = source			//if someone is misusing the signal, just runtime
 	if(I in items_list)

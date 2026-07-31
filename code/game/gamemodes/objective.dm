@@ -24,9 +24,12 @@ GLOBAL_LIST_EMPTY(objectives)
 
 /datum/objective/Destroy(force, ...)
 	GLOB.objectives -= src
-	if(owner)
-		for(var/datum/antagonist/A in owner.antag_datums)
-			A.objectives -= src
+	//отвязка шла только по текущему owner: цель, которой owner переназначили до
+	//qdel, оставалась в чужом antag.objectives и после сборки становилась там
+	//null - отсюда "Cannot read null.explanation_text" в отчёте раунда.
+	//Идём по фактическим держателям, а не по одному предполагаемому.
+	for(var/datum/antagonist/holder as anything in GLOB.antagonists)
+		holder.objectives -= src
 	if(team)
 		team.objectives -= src
 	. = ..()

@@ -54,8 +54,83 @@
 	LoadPolicy()
 	LoadChatFilter()
 
+	LogValueOverrides()
+
 	if (Master)
 		Master.OnConfigLoad()
+
+/// Пишет в config_error.log все настройки, чьё значение задано конфигом и отличается от
+/// заложенного в коде.
+///
+/// Конфиг на проде живёт отдельно от репозитория и отстаёт от него: значение, поднятое в коде,
+/// молча перебивается старой строкой в файле, и снаружи это выглядит как "фикс не работает".
+/// Так уже дважды стоило времени - TGUI_MAX_CHUNK_COUNT остался равен 64 при кодовых 2048, из-за
+/// чего длинный текст не доезжал до сервера, а задержки движения расходились с репозиторием при
+/// разборе жалоб на скорость. Теперь достаточно открыть config_error.log за раунд.
+///
+/// Логируется только реально переопределённое (modified взводится при валидной строке в файле),
+/// поэтому список остаётся коротким и читаемым.
+/datum/controller/configuration/proc/LogValueOverrides()
+	if(IsAdminAdvancedProcCall())
+		return
+	var/list/numeric_lines = list()
+	var/list/text_names = list()
+	var/same_as_code = 0
+	for(var/entry_name in entries)
+		var/datum/config_entry/entry = entries[entry_name]
+		if(!entry.modified)
+			continue
+		var/current_text = config_value_to_text(entry.config_entry_value)
+		var/default_text = config_value_to_text(entry.default)
+		// modified взводится на любую валидную строку в файле, даже если она повторяет кодовое
+		// значение. Такие в отчёт не идут: смысл именно в расхождениях, а с ними список
+		// получался на три сотни строк и его никто не читал.
+		if(current_text == default_text)
+			same_as_code++
+			continue
+		// Секреты не печатаем даже в файл, доступный только серверу.
+		if(entry.protection & CONFIG_ENTRY_HIDDEN)
+			numeric_lines += "[uppertext(entry_name)] = <скрыто>, файл [entry.resident_file || "?"]"
+			continue
+		// Числа и флаги меняют поведение сервера, их печатаем целиком - именно так ловится
+		// отставший лимит вроде TGUI_MAX_CHUNK_COUNT. Тексты и списки (объявления, MOTD,
+		// переводы) расходятся с кодовыми значениями всегда и по делу, поэтому от них
+		// достаточно имени: иначе они топят отчёт своим содержимым.
+		if(istype(entry, /datum/config_entry/number) || istype(entry, /datum/config_entry/flag))
+			numeric_lines += "[uppertext(entry_name)] = [current_text] (в коде [default_text]), файл [entry.resident_file || "?"]"
+		else
+			text_names += uppertext(entry_name)
+	if(!length(numeric_lines) && !length(text_names))
+		log_config("CONFIG OVERRIDES: расхождений нет - все [same_as_code] заданных настроек совпадают с кодовыми значениями")
+		return
+	log_config("CONFIG OVERRIDES: [length(numeric_lines)] числовых расхождений с кодом, [length(text_names)] текстовых, ещё [same_as_code] заданы и совпадают")
+	if(length(numeric_lines))
+		sortTim(numeric_lines, GLOBAL_PROC_REF(cmp_text_asc))
+		for(var/line in numeric_lines)
+			log_config("  [line]")
+	if(length(text_names))
+		sortTim(text_names, GLOBAL_PROC_REF(cmp_text_asc))
+		log_config("  текстовые и списочные (значения не печатаем): [text_names.Join(", ")]")
+
+/// Человекочитаемое значение конфиг-энтри для лога: списки разворачиваются, длинные строки режутся.
+/datum/controller/configuration/proc/config_value_to_text(value)
+	if(isnull(value))
+		return "null"
+	if(islist(value))
+		var/list/value_list = value
+		if(!length(value_list))
+			return "(пусто)"
+		var/list/parts = list()
+		for(var/key in value_list)
+			// Обращение по ключу безопасно только для текстовых и типовых ключей: у плоского
+			// списка L[key] трактуется как индекс, и числовой элемент уводит за границы списка.
+			var/associated = (isnum(key) || islist(key)) ? null : value_list[key]
+			parts += isnull(associated) ? "[key]" : "[key]=[associated]"
+		var/joined = parts.Join(", ")
+		return length_char(joined) > 200 ? "[copytext_char(joined, 1, 200)]... ([length(value_list)] записей)" : "([joined])"
+	if(istext(value) && length_char(value) > 200)
+		return "[copytext_char(value, 1, 200)]... ([length_char(value)] символов)"
+	return "[value]"
 
 /datum/controller/configuration/proc/full_wipe()
 	if(IsAdminAdvancedProcCall())

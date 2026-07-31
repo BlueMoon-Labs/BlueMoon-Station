@@ -62207,6 +62207,7 @@
 /obj/effect/turf_decal/siding/dark_red{
 	dir = 1
 	},
+/obj/machinery/ammo_workbench,
 /turf/open/floor/plasteel/dark/textured/half{
 	dir = 4
 	},

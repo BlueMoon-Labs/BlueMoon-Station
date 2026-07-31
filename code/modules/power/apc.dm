@@ -309,11 +309,14 @@
 				log_mapping("APC: ([src]) at [AREACOORD(src)] with dir ([tdir] | [uppertext(dir2text(tdir))]) has pixel_y value ([pixel_y] - should be -23.)")
 			pixel_y = -23
 		if(EAST)
-			if((pixel_y != initial(pixel_x)) && (pixel_x != 24))
+			// pixel_x, а не pixel_y: копипаста сравнивала вертикальное смещение с дефолтом
+			// горизонтального, поэтому у повёрнутых на восток и запад APC сбитый pixel_x
+			// проверялся мимо - лог показывал ложные срабатывания и пропускал настоящие.
+			if((pixel_x != initial(pixel_x)) && (pixel_x != 24))
 				log_mapping("APC: ([src]) at [AREACOORD(src)] with dir ([tdir] | [uppertext(dir2text(tdir))]) has pixel_x value ([pixel_x] - should be 24.)")
 			pixel_x = 24
 		if(WEST)
-			if((pixel_y != initial(pixel_x)) && (pixel_x != -25))
+			if((pixel_x != initial(pixel_x)) && (pixel_x != -25))
 				log_mapping("APC: ([src]) at [AREACOORD(src)] with dir ([tdir] | [uppertext(dir2text(tdir))]) has pixel_x value ([pixel_x] - should be -25.)")
 			pixel_x = -25
 	if (building)

@@ -211,6 +211,10 @@
 /datum/component/storage/proc/preattack_intercept(datum/source, obj/O, mob/M, params)
 	if(!isitem(O) || !click_gather || (SEND_SIGNAL(O, COMSIG_CONTAINS_STORAGE) && !quick_gather_storages))
 		return FALSE
+	// цель может хотеть саму сумку, а не поездку в ней: сбор ниже возвращает
+	// COMPONENT_NO_ATTACK и до attackby() цели дело уже не доходит
+	if(SEND_SIGNAL(O, COMSIG_ATOM_PRE_STORAGE_GATHER, parent, M) & COMPONENT_CANCEL_STORAGE_GATHER)
+		return FALSE
 	. = COMPONENT_NO_ATTACK
 	if(check_locked(source, M, TRUE))
 		return FALSE

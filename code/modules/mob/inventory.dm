@@ -1,6 +1,18 @@
 //These procs handle putting s tuff in your hands
 //as they handle all relevant stuff like adding it to the player's screen and updating their overlays.
 
+/// Снимает предмет со всех экранов, куда его положил инвентарь: со своего и с экранов
+/// орбитящих нас гостов. Наблюдателям предмет выдаёт update_inv_hands() и
+/// update_observer_view(), а снимал его раньше только владелец - запись в client.screen
+/// госта переживала qdel предмета и держала его до конца раунда.
+/mob/proc/remove_from_hud_screens(obj/item/I)
+	if(isnull(I))
+		return
+	if(client)
+		client.screen -= I
+	for(var/mob/dead/observe as anything in observers)
+		observe.client?.screen -= I
+
 //Returns the thing we're currently holding
 /mob/proc/get_active_held_item()
 	return get_item_for_held_index(active_hand_index)
@@ -169,6 +181,12 @@
 	return !held_items[hand_index]
 
 /mob/proc/put_in_hand(obj/item/I, hand_index, forced = FALSE, ignore_anim = TRUE)
+	// Класть в руки удалённый предмет нельзя: forced = TRUE обходит can_put_in_hand целиком, и
+	// стрип-меню приносило сюда самоудаляющиеся при снятии предметы (энергетический силок,
+	// поцелуй) - forceMove мертвецу пинил его ссылкой из contents и давал "doMove qdel-нутого"
+	// (прод-раунд 9834). Сторона сброса такой гард уже имеет.
+	if(QDELETED(I))
+		return FALSE
 	if(forced || can_put_in_hand(I, hand_index))
 		if(isturf(I.loc) && !ignore_anim)
 			I.do_pickup_animation(src)
@@ -223,7 +241,10 @@
 //If both fail it drops it on the floor and returns FALSE.
 //This is probably the main one you need to know :)
 /mob/proc/put_in_hands(obj/item/I, del_on_fail = FALSE, merge_stacks = TRUE, forced = FALSE)
-	if(!I)
+	// QDELETED, а не только !I: удалённый предмет остаётся ненулевым, put_in_hand его теперь
+	// отвергает - и управление доходило бы до хвоста прока, где удалённому предмету всё равно
+	// делают forceMove(drop_location()) и dropped(). Тот же рантайм, только этажом ниже.
+	if(QDELETED(I))
 		return FALSE
 
 	// If the item is a stack and we're already holding a stack then merge
@@ -338,20 +359,25 @@
 		held_items[hand_index] = null
 		update_inv_hands()
 	if(I)
-		if(client)
-			client.screen -= I
-		I.screen_loc = null
-		I.layer = initial(I.layer)
-		I.plane = initial(I.plane)
-		I.appearance_flags &= ~NO_CLIENT_COLOR
-		if(!no_move && !(I.item_flags & DROPDEL))	//item may be moved/qdel'd immedietely, don't bother moving it
-			if (isnull(newloc))
-				I.moveToNullspace()
-			else
-				I.forceMove(newloc)
-		on_item_dropped(I)
-		if(I.dropped(src) == ITEM_RELOCATED_BY_DROPPED)
-			return FALSE
+		remove_from_hud_screens(I)
+		//QDELETED сюда доезжает через оффхенд двуручника: /obj/item/Destroy снимает
+		//DROPDEL "чтобы не было реqdel'ов", и следующий сброс из рук честно тащит
+		//труп на пол - "doMove qdel-нутого /obj/item/offhand". У такого предмета
+		//Destroy уже отработал: править ему внешность, двигать его и звать dropped()
+		//значит работать с трупом. Снять с экрана всё равно надо - ссылка переживает qdel
+		if(!QDELETED(I))
+			I.screen_loc = null
+			I.layer = initial(I.layer)
+			I.plane = initial(I.plane)
+			I.appearance_flags &= ~NO_CLIENT_COLOR
+			if(!no_move && !(I.item_flags & DROPDEL))	//item may be moved/qdel'd immedietely, don't bother moving it
+				if (isnull(newloc))
+					I.moveToNullspace()
+				else
+					I.forceMove(newloc)
+			on_item_dropped(I)
+			if(I.dropped(src) == ITEM_RELOCATED_BY_DROPPED)
+				return FALSE
 	SEND_SIGNAL(src, COMSIG_MOB_UNEQUIPPED_ITEM, I, force, newloc, no_move, invdrop, silent)
 	return TRUE
 

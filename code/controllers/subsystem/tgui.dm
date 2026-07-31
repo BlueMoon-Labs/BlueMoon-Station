@@ -54,7 +54,9 @@ SUBSYSTEM_DEF(tgui)
 		if(ui?.user && ui.src_object)
 			ui.process(wait * 0.1)
 		else
-			open_uis.Remove(ui)
+			//чистка одного open_uis оставляла интерфейс в open_uis_by_src и в
+			//user.tgui_open_uis: снимаем с учёта целиком
+			unregister_ui(ui)
 		if(MC_TICK_CHECK)
 			return
 
@@ -210,11 +212,20 @@ SUBSYSTEM_DEF(tgui)
 	// No UIs opened for this src_object
 	if(isnull(open_uis_by_src[key]) || !istype(open_uis_by_src[key], /list))
 		return count
-	for(var/datum/tgui/ui in open_uis_by_src[key])
+	var/list/uis = open_uis_by_src[key]
+	//обходим копию: снятие с учёта правит тот же список
+	for(var/datum/tgui/ui in uis.Copy())
 		// Check if UI is valid.
-		if(ui?.src_object && ui.user && ui.src_object.ui_host(ui.user))
+		if(ui.src_object && ui.user && ui.src_object.ui_host(ui.user))
 			ui.process(wait * 0.1, force = 1)
 			count++
+			continue
+		//пустой ui_host сам по себе может быть временным, а вот интерфейс без
+		//src_object или без пользователя мёртв - его запись копилась до конца раунда
+		if(ui.src_object && ui.user)
+			continue
+		unregister_ui(ui)
+		qdel(ui)
 	return count
 
 /**
@@ -236,11 +247,18 @@ SUBSYSTEM_DEF(tgui)
 		if(src_object)
 			src_object.datum_flags &= ~DF_HAS_OPEN_UI
 		return count
-	for(var/datum/tgui/ui in open_uis_by_src[key])
+	var/list/uis = open_uis_by_src[key]
+	//обходим копию: close() снимает интерфейс с учёта прямо из этого списка
+	for(var/datum/tgui/ui in uis.Copy())
 		// Check if UI is valid.
-		if(ui?.src_object && ui.user && ui.src_object.ui_host(ui.user))
+		if(ui.src_object && ui.user && ui.src_object.ui_host(ui.user))
 			ui.close()
 			count++
+			continue
+		//хост уже мёртв - штатный close по нему не пройдёт, но и копить запись в
+		//open_uis_by_src до конца раунда незачем: close_uis зовут из /atom/Destroy
+		unregister_ui(ui)
+		qdel(ui)
 	return count
 
 /**
@@ -252,12 +270,18 @@ SUBSYSTEM_DEF(tgui)
  */
 /datum/controller/subsystem/tgui/proc/close_all_uis()
 	var/count = 0
-	for(var/key in open_uis_by_src)
-		for(var/datum/tgui/ui in open_uis_by_src[key])
+	for(var/key in open_uis_by_src.Copy())
+		var/list/uis = open_uis_by_src[key]
+		if(!islist(uis))
+			continue
+		for(var/datum/tgui/ui in uis.Copy())
 			// Check if UI is valid.
-			if(ui?.src_object && ui.user && ui.src_object.ui_host(ui.user))
+			if(ui.src_object && ui.user && ui.src_object.ui_host(ui.user))
 				ui.close()
 				count++
+				continue
+			unregister_ui(ui)
+			qdel(ui)
 	return count
 
 /**
@@ -316,6 +340,9 @@ SUBSYSTEM_DEF(tgui)
 		open_uis_by_src[key] = list()
 	if(ui.src_object)
 		ui.src_object.datum_flags |= DF_HAS_OPEN_UI
+	//ключ запоминаем на самом интерфейсе: к моменту снятия с учёта src_object
+	//могли уже обнулить, и пересчёт "[REF(ui.src_object)]" промахивался мимо записи
+	ui.registered_src_key = key
 	ui.user.tgui_open_uis |= ui
 	var/list/uis = open_uis_by_src[key]
 	uis |= ui
@@ -331,17 +358,43 @@ SUBSYSTEM_DEF(tgui)
  * return bool If the UI was removed or not.
  */
 /datum/controller/subsystem/tgui/proc/on_close(datum/tgui/ui)
-	var/key = "[REF(ui.src_object)]"
-	if(isnull(open_uis_by_src[key]) || !istype(open_uis_by_src[key], /list))
-		if(ui.src_object)
-			ui.src_object.datum_flags &= ~DF_HAS_OPEN_UI
-		return FALSE
+	return unregister_ui(ui)
+
+/**
+ * private
+ *
+ * Безусловно снимает интерфейс с учёта во всех трёх списках подсистемы.
+ *
+ * Прежний on_close выходил `return FALSE` ещё до чистки, если запись в
+ * open_uis_by_src не нашлась - а close() сразу делал qdel(src), и удалённый
+ * датум оставался и в open_uis, и в user.tgui_open_uis (вложенные списки,
+ * поэтому реф-сканер их и не видел).
+ *
+ * required ui datum/tgui The UI to be removed.
+ *
+ * return bool Нашлась ли запись в open_uis_by_src.
+ */
+/datum/controller/subsystem/tgui/proc/unregister_ui(datum/tgui/ui)
 	// Remove it from the list of processing UIs.
 	open_uis.Remove(ui)
+	if(isnull(ui))
+		return FALSE
 	// If the user exists, remove it from them too.
 	if(ui.user)
 		ui.user.tgui_open_uis.Remove(ui)
+	//ключ, под которым интерфейс реально записан; пересчёт по src_object не годится
+	var/key = ui.registered_src_key
+	ui.registered_src_key = null
+	if(isnull(key))
+		//интерфейс не регистрировали или уже сняли: у src_object могут быть
+		//чужие открытые окна, гасить его флаг за них нельзя
+		return FALSE
 	var/list/uis = open_uis_by_src[key]
+	if(!islist(uis))
+		open_uis_by_src.Remove(key)
+		if(ui.src_object)
+			ui.src_object.datum_flags &= ~DF_HAS_OPEN_UI
+		return FALSE
 	uis.Remove(ui)
 	if(length(uis) == 0)
 		open_uis_by_src.Remove(key)

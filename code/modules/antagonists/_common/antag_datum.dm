@@ -44,6 +44,11 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 	var/preview_outfit
 	/// If set to true, the antag will not be added to the living antag list.
 	var/soft_antag = FALSE
+	/// Взводится add_antag_wrapper перед штатной уборкой заготовки, которую
+	/// admin_add не забрал себе (clockcult и подобные заводят собственный датум
+	/// через add_servant_of_ratvar). Такой сироте владелец не положен, и ругаться
+	/// на него в Destroy незачем.
+	var/discarded_before_gain = FALSE
 
 	//Antag panel properties
 	///This will hide adding this antag type in antag panel, use only for internal subtypes that shouldn't be added directly but still show if possessed by mind
@@ -92,8 +97,13 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 
 /datum/antagonist/Destroy()
 	GLOB.antagonists -= src
+	//кнопка живёт на теле и убивает себя сама при его удалении, но датуму об этом
+	//не сообщает: обнуление было только в on_removal, поэтому снятый мимо него
+	//антаг оставался единственным держателем уже мёртвой кнопки
+	QDEL_NULL(info_button)
 	if(!owner)
-		stack_trace("Destroy()ing antagonist datum when it has no owner.")
+		if(!discarded_before_gain)
+			stack_trace("Destroy()ing antagonist datum when it has no owner.")
 	else
 //ambition start
 		owner?.do_remove_antag_datum(src)
@@ -559,6 +569,14 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 	. = ..()
 	src.antag_datum = antag_datum
 	name += " [antag_datum.name]"
+
+/datum/action/antag_info/Destroy()
+	//кнопка сносит себя сама по clear_ref, когда удаляют тело; без обратной
+	//отвязки антаг-датум оставался с мёртвой кнопкой в поле
+	if(antag_datum?.info_button == src)
+		antag_datum.info_button = null
+	antag_datum = null
+	return ..()
 
 /datum/action/antag_info/Trigger()
 	if(antag_datum)

@@ -66265,7 +66265,8 @@
 /obj/machinery/requests_console{
 	department = "Cargo Bay";
 	departmentType = 2;
-	pixel_x = 32
+	pixel_x = 32;
+	announcementConsole = 1
 	},
 /obj/machinery/modular_computer/console/preset/id{
 	dir = 8

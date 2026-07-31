@@ -67,6 +67,11 @@ LOG_SHUTTLE
 ## Log economy-related actions
 LOG_ECON
 
+## Log per-reagent metabolism events (MOB ADD/DELETE/TRANSFER) into reagents.log.
+## Отладочный лог: курительная химия пересоздаёт датум реагента каждый тик метаболизма,
+## и на полном раунде это полтора мегабайта пар add/delete. Включать под задачу.
+# LOG_REAGENTS
+
 ## log all world.Topic() calls
 LOG_WORLD_TOPIC
 

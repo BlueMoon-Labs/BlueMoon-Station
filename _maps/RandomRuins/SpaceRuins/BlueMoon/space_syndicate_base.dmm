@@ -11209,6 +11209,7 @@
 	pixel_y = 3
 	},
 /obj/structure/table/wood/fancy/blackred,
+/obj/item/stamp/syndicate,
 /turf/open/floor/wood/wood_diagonal,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/bridge/cl)
 "RT" = (

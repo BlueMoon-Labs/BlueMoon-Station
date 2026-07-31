@@ -279,7 +279,10 @@
 		if(internal_tank)
 			WR.crowbar_salvage += internal_tank
 			internal_tank.forceMove(WR)
-			cell = null
+			// Копипаста из блока про cell выше обнуляла cell повторно, а internal_tank
+			// оставался ссылкой на уехавшую в обломки канистру - разобранная меха держала её
+			// до конца раунда.
+			internal_tank = null
 	return ..()
 
 /obj/vehicle/sealed/mecha/update_icon()
@@ -659,9 +662,6 @@
 /obj/vehicle/sealed/mecha/proc/has_functional_thrusters()
 	return active_thrusters && !equipment_disabled && has_charge(step_energy_drain)
 
-/obj/vehicle/sealed/mecha/proc/can_cancel_space_drift()
-	return stabilizers && has_functional_thrusters()
-
 /obj/vehicle/sealed/mecha/Process_Spacemove(movement_dir = 0, continuous_move = FALSE)
 	. = ..(movement_dir, continuous_move)
 	if(.)
@@ -695,11 +695,12 @@
 
 	return FALSE
 
-/obj/vehicle/sealed/mecha/Moved(atom/OldLoc, Dir, Forced = FALSE)
-	if(can_cancel_space_drift())
-		SEND_SIGNAL(src, COMSIG_MOVABLE_MOVED, OldLoc, Dir, Forced)
-		return TRUE
-	return ..()
+// Мех НЕ переопределяет Moved(). Раньше стабилизаторы с рабочими двигателями
+// уводили нас в обход /atom/movable/Moved() ради отмены дрейфа, а вместе с
+// дрейфом терялась и перекладка спатиал-грида: пилот навсегда оставался
+// прописан в ячейке, где сел в меха, и переставал слышать всё за её пределами.
+// Отменять дрейф здесь и не нужно - newtonian_move() сам зовёт
+// Process_Spacemove(dir, TRUE), а тот при стабилизаторах возвращает TRUE.
 
 /obj/vehicle/sealed/mecha/relaymove(mob/living/user, direction)
 	. = TRUE
@@ -1078,8 +1079,12 @@
 		else if(M.has_buckled_mobs())
 			to_chat(M, "<span class='warning'>You can't enter the exosuit with other creatures attached to you!</span>")
 		else
-			moved_inside(M)
-			return ..()
+			// Только moved_inside(): он сам делает forceMove и add_occupant. Прежний
+			// "return ..()" сразу после него уводил в /obj/vehicle/sealed/mob_try_enter,
+			// то есть во ВТОРОЙ do_after и второй mob_enter -> add_occupant по тому же
+			// мобу. На одноместных это гасил гард по max_occupants, а на двухместной
+			// Savannah-Ivanov проходило и дублировало подписки на моба.
+			return moved_inside(M)
 	else
 		to_chat(M, "<span class='warning'>You stop entering the exosuit!</span>")
 
@@ -1253,11 +1258,19 @@
 		checking = checking.loc
 
 /obj/vehicle/sealed/mecha/add_occupant(mob/M, control_flags)
+	// Сначала родитель, и только по его успеху - подписки. Родитель отказывает по
+	// is_occupant(M) (/obj/vehicle/sealed/add_occupant), а прежний порядок вешал четыре
+	// сигнала ДО отказа: на повторном заходе они перевешивались вторым слоем и в лог летели
+	// четыре "&lt;signal&gt; overridden". Снимает их remove_occupant ровно один раз, поэтому
+	// лишний слой держал меху у моба и после высадки. Видно это было только на
+	// двухместной Savannah-Ivanov: одноместные отсекает гард по max_occupants.
+	. = ..()
+	if(!.)
+		return
 	RegisterSignal(M, COMSIG_MOB_DEATH, PROC_REF(mob_exit))
 	RegisterSignal(M, COMSIG_MOB_CLICKON, PROC_REF(on_mouseclick))
 	RegisterSignal(M, COMSIG_MOB_SAY, PROC_REF(display_speech_bubble))
 	RegisterSignal(M, COMSIG_MOVABLE_TELEPORTED, PROC_REF(on_occupant_displaced))
-	return ..()
 
 /obj/vehicle/sealed/mecha/after_add_occupant(mob/M)
 	. = ..()

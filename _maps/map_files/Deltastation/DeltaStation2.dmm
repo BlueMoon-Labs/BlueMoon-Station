@@ -21481,11 +21481,6 @@
 /obj/structure/cable/white{
 	icon_state = "4-8"
 	},
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer1{
-	external_pressure_bound = 140;
-	name = "server vent";
-	pressure_checks = 0
-	},
 /obj/effect/turf_decal/tile/neutral{
 	dir = 1
 	},
@@ -21495,6 +21490,11 @@
 	},
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	name = "server vent";
+	external_pressure_bound = 140;
+	pressure_checks = 0
 	},
 /turf/open/floor/plasteel/dark/telecomms,
 /area/tcommsat/server)
@@ -67853,8 +67853,8 @@
 /obj/item/toy/figure/engineer,
 /obj/effect/turf_decal/bot/yellow,
 /obj/machinery/requests_console{
-	department = "Chapel Office";
-	name = "Chapel RC";
+	department = "Engineering Office";
+	name = "Engineering RC";
 	pixel_y = 0;
 	pixel_x = -32
 	},
@@ -92449,26 +92449,6 @@
 /obj/structure/cable/white,
 /turf/open/floor/plating,
 /area/cargo/qm)
-"ntm" = (
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/obj/effect/turf_decal/stripes/yellow/line,
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 1
-	},
-/obj/machinery/door/poddoor/shutters/radiation/preopen{
-	id = "engpa";
-	name = "Radiation Chamber Shutters"
-	},
-/obj/machinery/button/door{
-	id = "engpa";
-	name = "Engineering Chamber Shutters Control";
-	pixel_y = -26;
-	req_access_txt = "11"
-	},
-/turf/open/floor/plasteel,
-/area/engineering/main)
 "ntx" = (
 /obj/effect/turf_decal/siding/wood/thin/corner{
 	dir = 4
@@ -110269,7 +110249,8 @@
 	department = "Quartermaster's Desk";
 	name = "Quartermaster RC";
 	pixel_x = 32;
-	pixel_y = -32
+	pixel_y = -32;
+	announcementConsole = 1
 	},
 /obj/machinery/light_switch{
 	pixel_x = 23
@@ -111381,7 +111362,6 @@
 /obj/structure/disposalpipe/trunk{
 	dir = 1
 	},
-/obj/effect/landmark/start/security_officer,
 /turf/open/floor/plasteel,
 /area/security/brig_briefing)
 "sLf" = (
@@ -127414,6 +127394,7 @@
 /obj/structure/cable/white{
 	icon_state = "1-2"
 	},
+/obj/effect/landmark/start/security_officer,
 /turf/open/floor/plasteel,
 /area/security/brig_briefing)
 "xjN" = (
@@ -130097,7 +130078,6 @@
 /obj/machinery/status_display/evac{
 	pixel_y = 32
 	},
-/obj/structure/table,
 /obj/effect/turf_decal/tile/red/half{
 	dir = 1
 	},
@@ -155412,7 +155392,7 @@ lNk
 fMF
 lCT
 mIT
-ntm
+gPu
 sZf
 jLv
 xxG

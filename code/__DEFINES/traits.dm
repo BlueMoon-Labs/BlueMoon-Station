@@ -447,6 +447,7 @@
 /// This trait is added by the parry system.
 #define ACTIVE_PARRY_TRAIT				"active_parry"
 #define STICKY_NODROP "sticky-nodrop" //sticky nodrop sounds like a bad soundcloud rapper's name
+#define IMPLANT_NODROP "implant-nodrop" // for items in /obj/item/organ/cyberimp/arm
 #define TRAIT_SACRIFICED "sacrificed" //Makes sure that people cant be cult sacrificed twice.
 #define TRAIT_VITALITY_MATRIX_CONSUMED "vitality_matrix_consumed" //Prevents farming clockwork vitality from the same corpse.
 #define TRAIT_SPACEWALK "spacewalk"

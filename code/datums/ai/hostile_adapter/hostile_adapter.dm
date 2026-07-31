@@ -179,6 +179,20 @@
 	controller.queue_behavior(/datum/ai_behavior/hostile_melee_attack, BB_AI_CURRENT_TARGET)
 	return SUBTREE_RETURN_FINISH_PLANNING
 
+///Милишная атака только для мобов без дальнобойной.
+///
+///Нужна профилям, где выше по списку стоят ranged-сабтри: ranged_skirmish планирование НЕ
+///обрывает (кроме ветки с перепозиционированием), поэтому обычный hostile_melee ниже заставил
+///бы дальнобойного пауна после выстрела ещё и лезть в упор. Гейт зеркалит проверку из
+///maintain_distance.
+/datum/ai_planning_subtree/hostile_melee/melee_only
+
+/datum/ai_planning_subtree/hostile_melee/melee_only/SelectBehaviors(datum/ai_controller/controller, delta_time)
+	var/mob/living/simple_animal/hostile/hostile_pawn = controller.pawn
+	if(istype(hostile_pawn) && hostile_pawn.ranged)
+		return
+	return ..()
+
 ///Неподвижная милишка (stationary_grappler): цель есть - бьём, но НЕ идём
 /datum/ai_planning_subtree/hostile_melee_stationary
 

@@ -205,10 +205,9 @@ Class Procs:
 	else
 		STOP_PROCESSING(SSfastprocess, src)
 	dropContents()
-	if(length(component_parts))
-		for(var/atom/A in component_parts)
-			qdel(A)
-		component_parts.Cut()
+	// QDEL_LIST, а не ручной цикл: qdel детали уводит её в нуль-спейс, наш Exited() на это
+	// вычёркивает её из component_parts, и обход живого списка пропускал каждую вторую.
+	QDEL_LIST(component_parts)
 	if(circuit)
 		QDEL_NULL(circuit)
 	return ..()
@@ -588,7 +587,10 @@ Class Procs:
 		on_deconstruction()
 		if(LAZYLEN(component_parts))
 			spawn_frame(disassembled)
-			for(var/obj/item/I in component_parts)
+			// Снапшот обязателен: forceMove детали приводит к нашему же Exited(), а тот
+			// вычёркивает её из component_parts. Обход живого списка сдвигал индекс и
+			// пропускал элементы - плата так и оставалась внутри уходящей в qdel машины.
+			for(var/obj/item/I as anything in component_parts.Copy())
 				I.forceMove(loc)
 			LAZYCLEARLIST(component_parts)
 			circuit = null
@@ -812,6 +814,12 @@ Class Procs:
 	if (AM == occupant)
 		SEND_SIGNAL(src, COMSIG_MACHINE_EJECT_OCCUPANT, occupant)
 		occupant = null
+	// Проверка circuit.loc здесь ОБЯЗАТЕЛЬНА, хотя и выглядит мёртвой: Exited() зовётся до
+	// присвоения loc, поэтому на уходе платы её loc ещё равен src и очистка не срабатывает.
+	// Именно на это и рассчитан deconstruct(): spawn_frame() перекладывает плату в новый
+	// фрейм, и если снять её из component_parts здесь, следующий же цикл выкладывания её
+	// пропустит - плата останется во фрейме вместо турфа. Тест machine_disassembly это
+	// ловит. Держателя платы у уходящей в qdel машины закрывать надо не отсюда.
 	if(AM == circuit && circuit.loc != src)
 		component_parts -= AM //TODO: make the cmp part functions use lazyX
 		circuit = null

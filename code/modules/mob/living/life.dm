@@ -135,7 +135,12 @@
 #endif
 			log_game("Z-TRACKING: [src] has somehow ended up in Z-level [T.z] despite being registered in Z-level [registered_z].")
 			update_z(T.z)
-	else if (registered_z)
+	// audiovisual_redirect - это тело, чей клиент сидит в VR-капсуле: оно намеренно остаётся
+	// в реестре z-уровней, чтобы звук и речь доезжали, и update_z(null) для него выходит
+	// вхолостую (см. гард в /mob/living/proc/update_z). Без парного гарда здесь запись
+	// оставалась, лог писался каждый Life-тик и повторялся до конца VR-сессии: прод-раунд
+	// 9832 - 46 одинаковых строк за четыре минуты у одного игрока.
+	else if (registered_z && !audiovisual_redirect)
 		log_game("Z-TRACKING: [src] of type [src.type] has a Z-registration despite not having a client.")
 		update_z(null)
 

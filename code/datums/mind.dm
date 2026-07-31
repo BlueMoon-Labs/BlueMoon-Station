@@ -262,9 +262,12 @@
 	//Choose snowflake variation if antagonist handles it
 	var/datum/antagonist/S = A.specialization(src)
 	if(S && S != A)
+		//заготовку, которую подменила специализация, тоже сносим штатно
+		A.discarded_before_gain = TRUE
 		qdel(A)
 		A = S
 	if(!A.can_be_owned(src))
+		A.discarded_before_gain = TRUE
 		qdel(A)
 		return
 	A.owner = src
@@ -589,6 +592,9 @@
 		if(is_admin)
 			output += " <a href='?src=[REF(antag_datum.owner)];obj_add=[REF(antag_datum)];ambition_panel=1'>Add Objective</a>"
 		output += "<ul>"
+		//дыры в списке целей вычищаем прямо тут: панель на них падала
+		//("Cannot read null.explanation_text", раунд 9827)
+		listclearnulls(antag_datum.objectives)
 		if(!length(antag_datum.objectives))
 			output += "<li><i><b>NONE</b></i>"
 		else
@@ -1913,17 +1919,24 @@ GLOBAL_LIST(objective_choices)
 
 //Initialisation procs
 /mob/proc/mind_initialize()
+	var/fresh_mind = FALSE
 	if(mind)
 		mind.key = key
 
 	else
 		mind = new /datum/mind(key)
 		SSticker.minds += mind
-		SEND_SIGNAL(src, COMSIG_MOB_ON_NEW_MIND)
+		fresh_mind = TRUE
 	if(!mind.name)
 		mind.name = real_name
 	mind.set_current(src)
 	mind.hide_ckey = client?.prefs?.hide_ckey
+	// Сигнал шлём только после set_current: подписчики (те же body-bound
+	// скилл-модификаторы) сразу лезут в mind.current, а на разуме без тела
+	// add_skill_modifier роняет CRASH "Body-bound skill modifier ... was tried
+	// to be added to a mob-less mind" - раунд 9827, перетаскивание гхоста в тело.
+	if(fresh_mind)
+		SEND_SIGNAL(src, COMSIG_MOB_ON_NEW_MIND)
 
 /mob/living/carbon/mind_initialize()
 	..()
