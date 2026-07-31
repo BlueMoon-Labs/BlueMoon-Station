@@ -78,7 +78,7 @@
 	desc = "Защищенный шкафчик с аварийно-спасательным оборудованием для поисков и эвакуации шахтеров."
 	req_access = list(ACCESS_MEDICAL)
 	icon_state = "emt_secure"
-	max_integrity = 500
+	max_integrity = 400
 
 /obj/structure/closet/secure_closet/paramedic_mine/PopulateContents()
 	. = ..()
