@@ -2,7 +2,6 @@
 /// Это НЕ количество семейников: их задаёт FAMILIES_ROUNDSTART_COUNT ниже.
 #define LOWPOP_FAMILIES_COUNT 50
 #define FAMILIES_ROUNDSTART_COUNT 5 // BLUEMOON ADD - total roundstart family members, split evenly across gangs in post_setup_analogue()
-#define LOWPOP_FAMILIES_COUNT 50
 
 #define TWO_STARS_HIGHPOP 11
 #define THREE_STARS_HIGHPOP 16
