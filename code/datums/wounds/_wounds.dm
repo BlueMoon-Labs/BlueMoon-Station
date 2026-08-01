@@ -360,6 +360,19 @@
 /datum/wound/proc/still_exists()
 	return (!QDELETED(src) && limb)
 
+/**
+ * Выглядит ли жертва трупом - то есть должна ли рана молчать вместо телесной реакции
+ * (кашель кровью, хрип, болевой эмоут, попытка вдохнуть).
+ *
+ * TRAIT_FAKEDEATH стоит здесь наравне со stat == DEAD не для красоты: именно этим трейтом
+ * кодовая база помечает тело, которое трупом считают ВСЕ - осмотр (/mob/living/carbon/human/examine),
+ * анализатор здоровья и медибот, СЛР (/mob/living/carbon/human/proc/do_cpr). Торпор вампира,
+ * квирк "Не-мёртвый", притворная смерть генлинга: снаружи это труп, и проверки только по
+ * stat его не ловят - тело формально живо. Ровно эта дыра и осталась после гейта на stat.
+ */
+/datum/wound/proc/victim_appears_dead()
+	return !victim || victim.stat == DEAD || HAS_TRAIT(victim, TRAIT_FAKEDEATH)
+
 /// When our parent bodypart is hurt
 /datum/wound/proc/receive_damage(wounding_type, wounding_dmg, wound_bonus)
 	return

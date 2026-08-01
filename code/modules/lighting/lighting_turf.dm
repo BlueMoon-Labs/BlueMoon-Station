@@ -153,7 +153,26 @@
 		else if(Obj.shadow_weight > 0)
 			adjust_shadow_weight(-Obj.shadow_weight)
 
-/turf/proc/change_area(var/area/old_area, var/area/new_area, skip_blend = FALSE)
+/turf/proc/change_area(var/area/old_area, var/area/new_area, skip_blend = FALSE, skip_machinery = FALSE)
+	// Handing a turf between areas (admin area editing, shuttle creation) never fires area
+	// Entered/Exited for what is standing on it, so machinery would go on listening to the area it
+	// left. Re-point it here - this is the only moment the swap is observable.
+	//
+	// skip_machinery = TRUE обязателен на пути перелёта шаттла. Там /area/onShuttleMove отдаёт
+	// СТАРЫЙ турф подстилающей области (обычно /area/space) ДО того, как содержимое переехало на
+	// новый турф - см. порядок MOVE_AREA перед MOVE_CONTENTS в /obj/docking_port/mobile/takeoff.
+	// Машинерия шаттла в этот момент ещё стоит на старом турфе, и без флага мы переподписывали её
+	// на космос и тут же гасили: power_light у /area/space равен FALSE. Вернуть подписку было
+	// уже нечем - содержимое переносится присваиванием loc, которое не рассылает областные
+	// Entered/Exited, поэтому on_enter_area() не срабатывал. Итог в проде: у шаттла пропадало
+	// электричество, свет не включался даже с полным APC, а выключатель света не работал вовсе.
+	// Подписку на пути шаттла восстанавливает /obj/machinery/afterShuttleMove().
+	if(old_area != new_area && !skip_machinery)
+		for(var/obj/machinery/machine in contents)
+			machine.register_power_change_area(new_area)
+			// Каналы новой области отличаются от старой, а сигнала о смене питания по ней уже не будет -
+			// синхронизируем machine_stat сразу, как это делает on_enter_area().
+			machine.power_change()
 	if(SSlighting.initialized)
 		if (new_area.dynamic_lighting != old_area.dynamic_lighting)
 			if (new_area.dynamic_lighting)

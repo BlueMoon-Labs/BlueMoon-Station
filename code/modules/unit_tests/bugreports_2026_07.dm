@@ -387,3 +387,66 @@
 	if(!own_registrations)
 		return FALSE
 	return !isnull(own_registrations[COMSIG_MOB_DEATH])
+
+/// Сеть, которой заведомо нет ни у одного типа консоли: только так видно, что
+/// набор пережил разборку, а не подставился заводским значением.
+#define CAMERA_CONSOLE_TEST_NETWORK "unit_test_cameras"
+
+// "Плата security cameras некорректно работает" (багрепорт 28.07.2026)
+//
+// Разбор консоли, собранной руками, терял плату: у такой консоли плата лежит в
+// нуль-спейсе (on_construction её туда уводит), поэтому forceMove во фрейм не
+// зовёт Exited() машины и не вычёркивает плату из component_parts - Destroy
+// удалял её вместе с машиной. Существующий тест разбора брал консоль, которую
+// собрал сам Initialize - у неё плата лежит внутри, и этот путь он не покрывал.
+//
+// Второй симптом того же узла: сеть камер живёт только в типе консоли, так что
+// собранный обратно монитор всегда получал заводской набор.
+/datum/unit_test/camera_console_rebuild_keeps_board_and_network/Run()
+	var/turf/floor = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human, floor)
+	var/obj/item/screwdriver/driver = allocate(/obj/item/screwdriver, floor)
+	var/obj/item/crowbar/pry = allocate(/obj/item/crowbar, floor)
+
+	var/obj/machinery/computer/security/console = allocate(/obj/machinery/computer/security, floor)
+	var/obj/item/circuitboard/computer/security/board = console.circuit
+	TEST_ASSERT_NOTNULL(board, "Консоль камер завелась без платы")
+	TEST_ASSERT(board in console.component_parts, "test premise: плата обязана числиться в деталях консоли")
+	TEST_ASSERT(!(CAMERA_CONSOLE_TEST_NETWORK in board.get_configured_network()), \
+		"test premise: тестовая сеть не должна встречаться среди заводских")
+
+	// сеть, отличная от заводской - именно её обязаны пережить разбор и сборка
+	console.network = list(CAMERA_CONSOLE_TEST_NETWORK)
+
+	console.deconstruct(TRUE, user)
+	var/obj/structure/frame/computer/frame = locate(/obj/structure/frame/computer) in floor
+	TEST_ASSERT_NOTNULL(frame, "Разбор консоли камер не оставил фрейм")
+	TEST_ASSERT(!QDELETED(board), "Разбор консоли, не проходившей через фрейм, удалил плату")
+	TEST_ASSERT_EQUAL(frame.circuit, board, "Плата не легла во фрейм")
+	TEST_ASSERT(CAMERA_CONSOLE_TEST_NETWORK in board.get_configured_network(), \
+		"Плата не запомнила сеть разобранной консоли")
+
+	// закручиваем фрейм обратно - ровно тот путь, на котором монитор "багуется"
+	frame.attackby(driver, user, null)
+	TEST_ASSERT(QDELETED(frame), "Закрученный фрейм не превратился в консоль")
+	var/obj/machinery/computer/security/rebuilt = locate(/obj/machinery/computer/security) in floor
+	TEST_ASSERT_NOTNULL(rebuilt, "Закручивание фрейма не собрало консоль камер")
+	TEST_ASSERT_EQUAL(rebuilt.circuit, board, "Собранная консоль получила не ту плату")
+	TEST_ASSERT(board in rebuilt.component_parts, "Плата не числится в деталях собранной консоли")
+	TEST_ASSERT(CAMERA_CONSOLE_TEST_NETWORK in rebuilt.network, "Собранная консоль потеряла сеть камер")
+
+	// собранную руками консоль тоже обязаны разобрать с возвратом платы
+	rebuilt.deconstruct(TRUE, user)
+	var/obj/structure/frame/computer/second_frame = locate(/obj/structure/frame/computer) in floor
+	TEST_ASSERT_NOTNULL(second_frame, "Разбор собранной консоли не оставил фрейм")
+	TEST_ASSERT(!QDELETED(board), "Разбор собранной руками консоли удалил плату")
+	TEST_ASSERT_EQUAL(second_frame.circuit, board, "Плата не легла во второй фрейм")
+
+	// и ломик обязан вынуть её из фрейма живой
+	second_frame.state = 1
+	second_frame.attackby(pry, user, null)
+	TEST_ASSERT(!QDELETED(board), "Снятие платы ломиком добралось до удалённой платы")
+	TEST_ASSERT_NULL(second_frame.circuit, "Ломик не вынул плату из фрейма")
+	TEST_ASSERT_EQUAL(board.loc, floor, "Вынутая плата не легла на пол")
+
+#undef CAMERA_CONSOLE_TEST_NETWORK

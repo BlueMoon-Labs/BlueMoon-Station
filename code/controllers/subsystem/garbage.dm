@@ -21,6 +21,15 @@ Note that for any of these tools to work `TESTING` must be defined.
 By using these methods of finding references, you can make your life far, far easier when dealing with `qdel()` failures.
 */
 
+/// Харддел дороже этого (мс) уходит в harddels.log отдельной строкой: именно такие
+/// одиночные del() и рвут тик (в раунде 9847 их было пять по ~169мс).
+#define GC_HARDDEL_LOG_THRESHOLD_MS 10
+/// Дешёвые хардделы копятся и уходят одной сводкой не чаще этого интервала - иначе
+/// поток мелких удалений (те же /datum/gas_mixture) устроил бы лог-шторм.
+#define GC_HARDDEL_LOG_AGGREGATE_INTERVAL (1 MINUTES)
+/// Сколько типов максимум перечислять в сводке по дешёвым хардделам.
+#define GC_HARDDEL_LOG_SUMMARY_MAX_TYPES 25
+
 SUBSYSTEM_DEF(garbage)
 	name = "Garbage"
 	priority = FIRE_PRIORITY_GARBAGE
@@ -113,6 +122,16 @@ SUBSYSTEM_DEF(garbage)
 	var/list/recent_hard_deletes = list()
 	/// Periodic queue depth snapshots. Each entry: list(world.time, depth1, depth2, depth3).
 	var/list/queue_depth_history = list()
+
+	// --- Агрегация дешёвых хардделов для harddels.log ---
+	/// Сколько дешёвых хардделов накопилось с последней сводки.
+	var/harddel_log_pending_count = 0
+	/// Их суммарная стоимость в мс.
+	var/harddel_log_pending_ms = 0
+	/// Их разбивка по типам: строка типа -> count.
+	var/list/harddel_log_pending_types = list()
+	/// world.time последней сводки по дешёвым хардделам (0 = сводок ещё не было).
+	var/harddel_log_last_flush = 0
 	/// Counter for depth sampling — sample every GC_DEPTH_SAMPLE_INTERVAL fires.
 	var/queue_depth_sample_counter = 0
 
@@ -213,6 +232,7 @@ SUBSYSTEM_DEF(garbage)
 	return ..()
 
 /datum/controller/subsystem/garbage/Shutdown()
+	FlushHardDeleteLogSummary()
 	var/list/dellog = list()
 
 	sortTim(items, cmp=GLOBAL_PROC_REF(cmp_qdel_item_time), associative = TRUE)
@@ -969,6 +989,8 @@ SUBSYSTEM_DEF(garbage)
 		recent_hard_deletes.Cut(1, 2)
 	recent_hard_deletes += list(list(world.time, "[type]", round(tick_usage, 0.1)))
 
+	LogHardDelete("[type]", tick_usage)
+
 	var/time = MS2DS(tick_usage)
 	if (time > 0.1 SECONDS)
 		postpone(time)
@@ -982,6 +1004,50 @@ SUBSYSTEM_DEF(garbage)
 		var/overrun_limit = CONFIG_GET(number/hard_deletes_overrun_limit)
 		if (overrun_limit && I.hard_deletes_over_threshold >= overrun_limit)
 			I.qdel_flags |= QDEL_ITEM_SUSPENDED_FOR_LAG
+
+/**
+ * Пишет харддел в harddels.log.
+ *
+ * До этого в файл писал только рефтрекер, и при выключенном gc_reftrack_mode он за
+ * весь раунд оставался пустым - в раунде 9847 при пяти хардделах по ~169мс там не было
+ * ни строчки, и связать спайк в слоте Garbage с конкретным типом было нечем.
+ *
+ * Дорогие (от GC_HARDDEL_LOG_THRESHOLD_MS) пишутся поимённо и сразу - это они рвут тик.
+ * Дешёвые копятся и уходят одной сводкой, чтобы поток мелких удалений не залил лог.
+ */
+/datum/controller/subsystem/garbage/proc/LogHardDelete(type_string, cost_ms)
+	if (cost_ms >= GC_HARDDEL_LOG_THRESHOLD_MS)
+		log_harddel("## HARD DELETE [type_string]: [round(cost_ms, 0.1)]мс, очередь харддела: [GetQueueDepth(GC_QUEUE_HARDDELETE)]")
+		return
+
+	harddel_log_pending_count++
+	harddel_log_pending_ms += cost_ms
+	harddel_log_pending_types[type_string] += 1
+	// Первый дешёвый харддел раунда только заводит окно: сводить нечего.
+	if (!harddel_log_last_flush)
+		harddel_log_last_flush = world.time
+		return
+	if (world.time - harddel_log_last_flush < GC_HARDDEL_LOG_AGGREGATE_INTERVAL)
+		return
+	FlushHardDeleteLogSummary()
+
+/// Сбрасывает накопленную сводку по дешёвым хардделам в harddels.log.
+/datum/controller/subsystem/garbage/proc/FlushHardDeleteLogSummary()
+	harddel_log_last_flush = world.time
+	if (!harddel_log_pending_count)
+		return
+	var/list/parts = list()
+	var/skipped_types = 0
+	for (var/type_string in harddel_log_pending_types)
+		if (length(parts) >= GC_HARDDEL_LOG_SUMMARY_MAX_TYPES)
+			skipped_types++
+			continue
+		parts += "[type_string] x[harddel_log_pending_types[type_string]]"
+	var/tail = skipped_types ? " (и ещё [skipped_types] типов)" : ""
+	log_harddel("## HARD DELETE сводка (дешевле [GC_HARDDEL_LOG_THRESHOLD_MS]мс): [harddel_log_pending_count] шт на [round(harddel_log_pending_ms, 0.1)]мс | [parts.Join(", ")][tail]")
+	harddel_log_pending_count = 0
+	harddel_log_pending_ms = 0
+	harddel_log_pending_types = list()
 
 /// Sends a GC notification message only to admins who have opted into leak notifications.
 /datum/controller/subsystem/garbage/proc/gc_notify_opted_admins(msg)
@@ -1295,3 +1361,7 @@ SUBSYSTEM_DEF(garbage)
 		rustg_log_write("data/logs/gc_profiler_types.csv", "[row]\n", "false")
 
 #endif // GC_PROFILER
+
+#undef GC_HARDDEL_LOG_THRESHOLD_MS
+#undef GC_HARDDEL_LOG_AGGREGATE_INTERVAL
+#undef GC_HARDDEL_LOG_SUMMARY_MAX_TYPES

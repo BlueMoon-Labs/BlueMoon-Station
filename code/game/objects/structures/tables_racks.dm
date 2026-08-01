@@ -805,8 +805,16 @@
 	var/obj/item/tank/internals/tank = null // баллон внутри
 	var/obj/item/clothing/mask/mask = null // маска внутри
 
+/obj/structure/table/optable/loaded
+	tank = /obj/item/tank/internals/anesthetic
+	mask = /obj/item/clothing/mask/breath/medical
+
 /obj/structure/table/optable/Initialize(mapload)
 	. = ..()
+	if(ispath(tank))
+		tank = new tank(src)
+	if(ispath(mask))
+		mask = new mask(src)
 	register_context()
 
 

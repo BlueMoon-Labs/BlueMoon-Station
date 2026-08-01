@@ -120,7 +120,17 @@
 	window = SStgui.request_pooled_window(user)
 	if(!window)
 		return FALSE
-	opened_at = world.time
+	// Окно забирает фокус у карты, и отпускание зажатой клавиши уходит уже в
+	// него. До BYOND оно не доходит, keys_held остаётся с клавишей внутри, и
+	// keyLoop() шагает дальше - персонаж уходит сам, пока клавишу не нажмут
+	// второй раз. Клиентский форвардинг (tgui/hotkeys.ts, orphanedKeyUp.ts)
+	// ловит это не всегда, а промах стоит дорого: уйти можно и в космос.
+	//
+	// Поэтому при открытии окна считаем, что игрок отпустил всё - именно это
+	// с точки зрения игры и произошло, держать клавиши он больше не может.
+	// Если он всё ещё её жмёт, автоповтор ОС дойдёт до окна, и passthrough
+	// пришлёт KeyDown заново - но уже по пути, который умеет и отпускать.
+	user.client?.ForceAllKeysUp()
 	window.acquire_lock(src)
 	if(!window.is_ready())
 		window.initialize(
@@ -147,6 +157,10 @@
 		return FALSE
 	if (flush_queue)
 		user.client.browse_queue_flush()
+	// Отсчёт зомби-таймаута начинаем отсюда, а не с начала open(): выше окно ждало
+	// initialize() и доставку ассетов, и на медленном канале весь бюджет уходил на
+	// байты, которые ещё едут. Судить окно надо с момента, когда ресурсы уехали.
+	opened_at = world.time
 	if(QDELETED(src))
 		return FALSE
 	if(!user?.client)
@@ -396,8 +410,10 @@
 	if(!host)
 		close(can_be_suspended = FALSE)
 		return
-	// Validate ping
-	if(!initialized && world.time - opened_at > TGUI_PING_TIMEOUT)
+	// Validate ping. opened_at взводится в самом конце open(), уже после доставки
+	// ассетов; пока он пуст, судить окно не по чему - null в арифметике DM это ноль,
+	// и без проверки любое такое окно мгновенно считалось бы просроченным.
+	if(!initialized && opened_at && world.time - opened_at > TGUI_PING_TIMEOUT)
 		log_tgui(user, \
 			"Error: Zombie window detected, killing it with fire.\n" \
 			+ "window_id: [window.id]\n" \

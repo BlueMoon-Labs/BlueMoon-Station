@@ -504,17 +504,20 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 
 // called when power status changes
 
+/**
+ * Broadcasts the area's power state to everything that cares about it.
+ *
+ * Consumers subscribe to COMSIG_AREA_POWER_CHANGE themselves - machinery does so from
+ * /obj/machinery/Initialize() and re-points the subscription when it changes area. The old
+ * implementation instead scanned for subscribers on every call: either a recursive walk of the
+ * area's turf contents, or a get_area() sweep of GLOB.machines, whichever list was shorter. Both
+ * are O(station) work per power flip, and an APC booting a large area cost ~32ms of synchronous
+ * stall inside a timer callback (round 22.10.05: three such callbacks, SSTimer pinned at 40-80%
+ * of the tick for five seconds afterwards).
+ */
 /area/proc/power_change()
 	SHOULD_NOT_SLEEP(TRUE)
-	SEND_SIGNAL(src, COMSIG_AREA_POWER_CHANGE) //событийные потребители (интеркомы) вместо поллинга
-	if(contents.len < GLOB.machines.len) // it would be faster to loop over contents
-		for(var/obj/machinery/M in src) // for each machine in the area
-			M.power_change() // reverify power status (to update icons etc.)
-	else // it would be faster to loop over the machines list
-		for(var/obj/machinery/M as anything in GLOB.machines) // for each machine
-			if(get_area(M) != src) // in the area
-				continue
-			M.power_change() // reverify power status (to update icons etc.)
+	SEND_SIGNAL(src, COMSIG_AREA_POWER_CHANGE)
 	for(var/area/A as anything in sub_areas)
 		A.power_light = power_light
 		A.power_equip = power_equip

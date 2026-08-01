@@ -277,6 +277,12 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 
 	SSticker.show_roundend_report(src, report_type = SERVER_LAST_ROUND)
 
+/// Сколько раз подряд уточнять положение сплиттера. Каждая итерация - это winget,
+/// то есть ожидание ответа скина клиента. По прод-логам сходимость почти всегда
+/// наступает за нулевую или первую итерацию, а недосошедшийся сплиттер - это лишь
+/// пара лишних пикселей у карты, за которые не стоит держать клиента на линии.
+#define FIT_VIEWPORT_MAX_CORRECTIONS 3
+
 /client/verb/fit_viewport()
 	set name = "Fit Viewport"
 	set category = "OOC"
@@ -287,7 +293,7 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 	var/aspect_ratio = view_size[1] / view_size[2]
 
 	// Calculate desired pixel width using window size and aspect ratio
-	var/list/sizes = params2list(winget(src, "mainwindow.split;mapwindow", "size"))
+	var/list/sizes = params2list(tracked_winget(src, "mainwindow.split;mapwindow", "size"))
 
 	if(!sizes["mapwindow.size"])
 		return
@@ -326,8 +332,8 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 
 	// Apply an ever-lowering offset until we finish or fail
 	var/delta
-	for(var/safety in 1 to 10)
-		var/after_size = winget(src, "mapwindow", "size")
+	for(var/safety in 1 to FIT_VIEWPORT_MAX_CORRECTIONS)
+		var/after_size = tracked_winget(src, "mapwindow", "size")
 		map_size = splittext(after_size, "x")
 		if(length(map_size) != 2)
 			return
@@ -345,6 +351,8 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 
 		pct += delta
 		winset(src, "mainwindow.split", "splitter=[pct]")
+
+#undef FIT_VIEWPORT_MAX_CORRECTIONS
 
 /client/verb/fix_stat_panel()
 	set name = "Fix Stat Panel"

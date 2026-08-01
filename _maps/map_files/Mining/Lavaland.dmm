@@ -2199,12 +2199,19 @@
 	},
 /turf/open/floor/plasteel,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
+"bOx" = (
+/obj/structure/chair/comfy/black{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/mine/living_quarters)
 "bOz" = (
 /obj/machinery/camera{
 	c_tag = "Infirmary";
 	dir = 4;
 	network = list("mine")
 	},
+/obj/machinery/vending/wallmed/directional/west,
 /turf/open/floor/plasteel/white,
 /area/mine/living_quarters)
 "bOE" = (
@@ -4321,6 +4328,18 @@
 	},
 /turf/open/floor/plasteel,
 /area/mine/xenoarch_area_a)
+"dyF" = (
+/obj/structure/rack,
+/obj/item/roller/heavy{
+	pixel_y = -2;
+	pixel_x = -3
+	},
+/obj/item/roller{
+	pixel_y = 10;
+	pixel_x = 6
+	},
+/turf/open/floor/plasteel/white,
+/area/mine/living_quarters)
 "dyQ" = (
 /obj/structure/fence{
 	dir = 4
@@ -5225,6 +5244,9 @@
 /area/mine/laborcamp/security)
 "ekz" = (
 /obj/machinery/light,
+/obj/structure/chair/comfy/black{
+	dir = 8
+	},
 /turf/open/floor/plasteel,
 /area/mine/living_quarters)
 "ekO" = (
@@ -7668,16 +7690,10 @@
 /turf/open/floor/plasteel,
 /area/mine/xenoarch)
 "gqn" = (
-/obj/item/storage/firstaid/toxin{
-	pixel_x = 3;
-	pixel_y = 3
+/obj/structure/closet/secure_closet/paramedic_mine{
+	anchored = 1;
+	anchorable = 0
 	},
-/obj/item/storage/firstaid/brute,
-/obj/item/storage/firstaid/fire{
-	pixel_x = -3;
-	pixel_y = -3
-	},
-/obj/structure/table,
 /turf/open/floor/plasteel/white,
 /area/mine/living_quarters)
 "gqC" = (
@@ -10248,8 +10264,7 @@
 /turf/open/indestructible/boss,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "ivn" = (
-/obj/structure/frame/computer{
-	anchored = 1;
+/obj/machinery/computer/operating{
 	dir = 1
 	},
 /turf/open/floor/plasteel/white,
@@ -10655,6 +10670,10 @@
 	},
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 4
+	},
+/obj/structure/closet/secure_closet/paramedic_mine{
+	anchored = 1;
+	anchorable = 0
 	},
 /turf/open/floor/plasteel/white,
 /area/mine/living_quarters)
@@ -12508,7 +12527,7 @@
 /area/lavaland/necropolis)
 "koV" = (
 /obj/machinery/computer/operating{
-	dir = 8
+	dir = 1
 	},
 /turf/open/floor/plasteel/white,
 /area/mine/xenoarch_area_c)
@@ -16679,9 +16698,7 @@
 /turf/open/floor/plating,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
 "nnW" = (
-/obj/structure/table/optable{
-	name = "Robotics Operating Table"
-	},
+/obj/structure/table/optable/loaded,
 /turf/open/floor/plasteel/white,
 /area/mine/living_quarters)
 "nof" = (
@@ -17608,7 +17625,21 @@
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "nVU" = (
 /obj/structure/table,
-/obj/item/storage/backpack/duffelbag/med/surgery,
+/obj/item/storage/backpack/duffelbag/med/surgery{
+	pixel_y = -5;
+	pixel_x = 1
+	},
+/obj/item/storage/box/bodybags{
+	pixel_x = 10;
+	pixel_y = 10
+	},
+/obj/item/storage/box/masks{
+	pixel_y = 10
+	},
+/obj/item/storage/box/gloves{
+	pixel_y = 10;
+	pixel_x = -10
+	},
 /turf/open/floor/plasteel/white,
 /area/mine/living_quarters)
 "nWq" = (
@@ -19125,6 +19156,27 @@
 	},
 /turf/open/floor/carpet/blackred,
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
+"paI" = (
+/obj/structure/table,
+/obj/item/storage/firstaid/o2{
+	pixel_x = 6;
+	pixel_y = 6
+	},
+/obj/item/storage/firstaid/toxin{
+	pixel_x = 3;
+	pixel_y = 3
+	},
+/obj/item/storage/firstaid/brute,
+/obj/item/storage/firstaid/fire{
+	pixel_x = -3;
+	pixel_y = -3
+	},
+/obj/item/storage/firstaid/regular{
+	pixel_x = -6;
+	pixel_y = -6
+	},
+/turf/open/floor/plasteel/white,
+/area/mine/living_quarters)
 "paJ" = (
 /obj/machinery/door/firedoor,
 /obj/machinery/door/airlock/medical{
@@ -21825,7 +21877,9 @@
 /obj/machinery/light{
 	dir = 4
 	},
-/obj/machinery/computer/operating,
+/obj/machinery/computer/operating{
+	dir = 1
+	},
 /obj/effect/turf_decal/tile/blue{
 	alpha = 255;
 	dir = 4
@@ -23890,6 +23944,12 @@
 "sZN" = (
 /turf/closed/mineral/random/volcanic,
 /area/lavaland/surface/outdoors/unexplored/danger)
+"sZO" = (
+/obj/structure/chair/comfy/black{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/mine/living_quarters)
 "sZX" = (
 /obj/structure/table,
 /obj/item/reagent_containers/food/drinks/coffee,
@@ -27318,29 +27378,8 @@
 /turf/open/floor/plating,
 /area/mine/xenoarch_area_c)
 "vUy" = (
-/obj/structure/closet/crate/freezer,
-/obj/item/reagent_containers/blood,
-/obj/item/reagent_containers/blood{
-	pixel_x = -3;
-	pixel_y = -3
-	},
-/obj/item/reagent_containers/blood/AMinus,
-/obj/item/reagent_containers/blood/BMinus{
-	pixel_x = -4;
-	pixel_y = 4
-	},
-/obj/item/reagent_containers/blood/BPlus{
-	pixel_x = 1;
-	pixel_y = 2
-	},
-/obj/item/reagent_containers/blood/OMinus,
-/obj/item/reagent_containers/blood/OPlus{
-	pixel_x = -2;
-	pixel_y = -1
-	},
-/obj/item/reagent_containers/blood/random,
-/obj/item/reagent_containers/blood/random,
-/obj/item/reagent_containers/blood/random,
+/obj/structure/closet/crate/freezer/blood,
+/obj/machinery/iv_drip,
 /turf/open/floor/plasteel/white,
 /area/mine/living_quarters)
 "vUE" = (
@@ -27679,10 +27718,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/mine/xenoarch_area_a)
-"wjr" = (
-/obj/machinery/iv_drip,
-/turf/open/floor/plasteel/white,
-/area/mine/living_quarters)
 "wjt" = (
 /obj/item/circuitboard/machine/smoke_machine{
 	pixel_x = 12;
@@ -29968,7 +30003,9 @@
 /turf/open/floor/plasteel/dark,
 /area/mine/xenoarch_area_a)
 "xMP" = (
-/obj/machinery/computer/operating,
+/obj/machinery/computer/operating{
+	dir = 1
+	},
 /obj/effect/turf_decal/tile/dark{
 	dir = 4
 	},
@@ -131458,7 +131495,7 @@ gIl
 gIl
 gIl
 rRM
-cLH
+bOx
 mOR
 xGO
 cLH
@@ -131972,7 +132009,7 @@ gIl
 gIl
 gIl
 rRM
-cLH
+sZO
 cLH
 kXR
 cLH
@@ -133007,10 +133044,10 @@ cLH
 obb
 ocs
 hAO
-wjr
+gqn
 iOM
 bOz
-ivn
+vUy
 abn
 llq
 llq
@@ -133267,7 +133304,7 @@ mJy
 jGF
 kTr
 ikx
-nnW
+ivn
 abn
 llq
 llq
@@ -133524,7 +133561,7 @@ hAO
 jxk
 ovd
 rIe
-vUy
+nnW
 abn
 llq
 llq
@@ -133779,9 +133816,9 @@ hGR
 okz
 abn
 abn
+dyF
+paI
 nVU
-gqn
-abn
 abn
 llq
 llq
@@ -134039,7 +134076,7 @@ abn
 abn
 abn
 abn
-llq
+abn
 llq
 gIl
 gIl

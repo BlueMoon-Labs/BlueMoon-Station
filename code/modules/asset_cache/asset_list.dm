@@ -71,6 +71,22 @@ GLOBAL_LIST_EMPTY(asset_datums)
 		var/datum/asset/A = get_asset_datum(type)
 		. += A.get_url_mappings()
 
+/**
+ * Каталог кросс-раундового кэша спрайтшитов.
+ *
+ * Мир с UNIT_TESTS собирает не тот же набор спрайтов, что боевой (см.
+ * assets/vending.dm - под тестами предметы с отсутствующим icon_state
+ * пропускаются), поэтому листы у них разные побайтово. Пиши оба в один каталог -
+ * и прогон dm-test поверх живого сервера перезапишет png/css прямо под ним:
+ * раунд начнёт отдавать новое содержимое под старыми, уже посчитанными именами,
+ * а css уедет ссылаться на png, которого под этим именем никто не отправлял.
+ */
+#ifdef UNIT_TESTS
+#define SPRITESHEET_CACHE_DIR "data/spritesheets_unit_tests/"
+#else
+#define SPRITESHEET_CACHE_DIR "data/spritesheets/"
+#endif
+
 // Spritesheet asset
 #define SPR_SIZE 1
 #define SPR_IDX 2
@@ -87,7 +103,7 @@ GLOBAL_LIST_EMPTY(asset_datums)
 /// Bump when generate_css output format, ensure_stripped pipeline, or sprites dict layout
 /// changes in a way that makes the previous round's cache files invalid. This makes rounds
 /// after the bump regenerate even if input_signature happens to match.
-#define SPRITESHEET_CACHE_VERSION 2
+#define SPRITESHEET_CACHE_VERSION 3
 
 /datum/asset/spritesheet/register()
 	if (!name)
@@ -99,8 +115,8 @@ GLOBAL_LIST_EMPTY(asset_datums)
 	// + transport config (see the block below) and compare it to the metadata written
 	// by the previous round. On a hit we skip ensure_stripped + generate_css + the
 	// file-write churn and just register the PNG/CSS files left behind on disk.
-	var/cache_meta_path = "data/spritesheets/cache.[name].json"
-	var/css_path = "data/spritesheets/spritesheet_[name].css"
+	var/cache_meta_path = "[SPRITESHEET_CACHE_DIR]cache.[name].json"
+	var/css_path = "[SPRITESHEET_CACHE_DIR]spritesheet_[name].css"
 
 	// Signature has three parts:
 	//   layout    — sprite name → (size_id, idx) mapping; catches added/removed/reordered sprites.
@@ -134,24 +150,50 @@ GLOBAL_LIST_EMPTY(asset_datums)
 
 	var/cache_valid = FALSE
 	var/list/cached_png_hashes
+	var/cached_css_hash
 	if(fexists(cache_meta_path) && fexists(css_path))
 		var/list/cached_meta = safe_json_decode(file2text(cache_meta_path))
 		if(islist(cached_meta) && cached_meta["signature"] == input_signature)
 			cached_png_hashes = cached_meta["png_hashes"]
-			if(islist(cached_png_hashes))
+			cached_css_hash = cached_meta["css_hash"]
+			if(islist(cached_png_hashes) && cached_css_hash)
 				cache_valid = TRUE
 				for(var/size_id in sizes)
-					if(!fexists("data/spritesheets/[name]_[size_id].png") || !cached_png_hashes["[size_id]"])
+					if(!fexists("[SPRITESHEET_CACHE_DIR][name]_[size_id].png") || !cached_png_hashes["[size_id]"])
 						cache_valid = FALSE
 						break
 			else
 				cache_valid = FALSE
 
+	// fcopy_rsc() снимает с файла неизменяемый слепок. Без него asset_cache_item
+	// держит ленивую ссылку на путь: хэш (а с ним и имя, под которым ассет уедет
+	// клиенту) фиксируется здесь, а байты читаются только в момент browse_rsc().
+	// Любая перезапись каталога между стартом раунда и открытием окна тогда молча
+	// разводит имя и содержимое - клиент получает css, который ссылается на png,
+	// не отправленный ни под каким именем.
+	//
+	// Хэши из метаданных - обещание о содержимом файлов. Не сошлось - кэш испорчен
+	// (чужой мир в том же каталоге, правка руками, оборванная запись), и доверять
+	// ему нельзя целиком: молча отдать битый лист хуже, чем пересобрать.
+	var/css_snapshot
+	if(cache_valid)
+		css_snapshot = fcopy_rsc(file(css_path))
+		if(md5asfile(css_snapshot) != cached_css_hash)
+			cache_valid = FALSE
+
+	var/list/png_snapshots = list()
 	if(cache_valid)
 		for(var/size_id in sizes)
-			var/png_path = "data/spritesheets/[name]_[size_id].png"
-			SSassets.transport.register_asset("[name]_[size_id].png", file(png_path), cached_png_hashes["[size_id]"], null)
-		SSassets.transport.register_asset("spritesheet_[name].css", file(css_path))
+			var/png_snapshot = fcopy_rsc(file("[SPRITESHEET_CACHE_DIR][name]_[size_id].png"))
+			if(md5asfile(png_snapshot) != cached_png_hashes["[size_id]"])
+				cache_valid = FALSE
+				break
+			png_snapshots["[size_id]"] = png_snapshot
+
+	if(cache_valid)
+		for(var/size_id in sizes)
+			SSassets.transport.register_asset("[name]_[size_id].png", png_snapshots["[size_id]"], cached_png_hashes["[size_id]"], null)
+		SSassets.transport.register_asset("spritesheet_[name].css", css_snapshot, cached_css_hash, null)
 		return
 
 	// Cache miss: full regeneration. ensure_stripped(keep_file=TRUE) leaves the PNG on
@@ -161,28 +203,29 @@ GLOBAL_LIST_EMPTY(asset_datums)
 	for(var/size_id in sizes)
 		current_png_files["[name]_[size_id].png"] = TRUE
 
-	for(var/existing_png in flist("data/spritesheets/"))
+	for(var/existing_png in flist(SPRITESHEET_CACHE_DIR))
 		if(findtextEx(existing_png, "[name]_") != 1 || copytext(existing_png, -4) != ".png")
 			continue
 		if(existing_png in current_png_files)
 			continue
-		fdel("data/spritesheets/[existing_png]")
+		fdel("[SPRITESHEET_CACHE_DIR][existing_png]")
 
 	ensure_stripped(keep_file = TRUE)
 	var/list/png_hashes = list()
 	for(var/size_id in sizes)
-		var/png_path = "data/spritesheets/[name]_[size_id].png"
-		var/datum/asset_cache_item/ACI = SSassets.transport.register_asset("[name]_[size_id].png", file(png_path))
+		var/png_path = "[SPRITESHEET_CACHE_DIR][name]_[size_id].png"
+		var/datum/asset_cache_item/ACI = SSassets.transport.register_asset("[name]_[size_id].png", fcopy_rsc(file(png_path)))
 		png_hashes["[size_id]"] = ACI.hash
 
 	fdel(css_path)
 	text2file(generate_css(), css_path)
-	SSassets.transport.register_asset("spritesheet_[name].css", file(css_path))
+	var/datum/asset_cache_item/css_item = SSassets.transport.register_asset("spritesheet_[name].css", fcopy_rsc(file(css_path)))
 
 	fdel(cache_meta_path)
 	text2file(json_encode(list(
 		"signature" = input_signature,
 		"png_hashes" = png_hashes,
+		"css_hash" = css_item.hash,
 	)), cache_meta_path)
 
 #undef SPRITESHEET_CACHE_VERSION
@@ -235,7 +278,7 @@ GLOBAL_LIST_EMPTY(asset_datums)
 			continue
 
 		// save flattened version
-		var/fname = "data/spritesheets/[name]_[size_id].png"
+		var/fname = "[SPRITESHEET_CACHE_DIR][name]_[size_id].png"
 		fcopy(size[SPRSZ_ICON], fname)
 		var/error = rustg_dmi_strip_metadata(fname)
 		if(length(error))
