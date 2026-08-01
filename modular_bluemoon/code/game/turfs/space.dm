@@ -53,7 +53,7 @@
 	prefix = "_maps/RandomRuins/SpaceRuins/BlueMoon/"
 	suffix = "nothing_ship.dmm"
 	allow_duplicates = FALSE
-	always_place = TRUE
+	always_place = FALSE
 	id = "forgottenship_nothing"
 
 /datum/map_template/ruin/space/abductorcrush

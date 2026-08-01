@@ -12,6 +12,9 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	var/siege_z = 0
 	/// At least one defender registered — avoids instant PACT win before ghost roles spawn
 	var/defenders_ever_registered = FALSE
+	/// Forgotten ship loaded on SSmapping.empty_space
+	var/battlefield_loaded = FALSE
+	var/battlefield_z = 0
 	var/datum/gateway_destination/point/pact_siege_battle/battle_dest
 	var/list/datum/weakref/defenders = list()
 	var/list/datum/weakref/attackers = list()
@@ -27,7 +30,11 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 		var/area/A = GLOB.areas_by_type[area_type]
 		if(!A)
 			continue
+		if(battlefield_z && A.z != battlefield_z)
+			continue
 		for(var/turf/open/floor/T in A)
+			if(battlefield_z && T.z != battlefield_z)
+				continue
 			if(T.is_blocked_turf(exclude_mobs = TRUE, source_atom = null, ignore_atoms = null))
 				continue
 			. += T
@@ -36,9 +43,43 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 			var/area/A = GLOB.areas_by_type[area_type]
 			if(!A)
 				continue
+			if(battlefield_z && A.z != battlefield_z)
+				continue
 			for(var/turf/open/T in A)
+				if(battlefield_z && T.z != battlefield_z)
+					continue
 				. += T
 	return uniqueList(.)
+
+/// Load InteQ/SolFed ghost ship on the dedicated empty sector z-level (not space-ruin roulette).
+/datum/inteq_pact_siege/proc/load_empty_sector_battlefield()
+	if(battlefield_loaded)
+		return TRUE
+	var/datum/space_level/sector = SSmapping.empty_space
+	if(!sector)
+		return FALSE
+
+	var/datum/map_template/ruin/station/template
+	if(GLOB.master_mode == "Extended")
+		template = new /datum/map_template/ruin/station/forgottenship/sol
+	else
+		template = new /datum/map_template/ruin/station/forgottenship
+
+	template.preload_size()
+	var/z = sector.z_value
+	var/turf/center = locate(round(world.maxx * 0.5), round(world.maxy * 0.5), z)
+	if(!center)
+		return FALSE
+
+	var/list/bounds = template.load(center, centered = TRUE)
+	if(!bounds)
+		message_admins("PACT siege: не удалось загрузить карту поля боя на пустом секторе (z=[z]). Проверьте размеры forgotten_ship.dmm.")
+		return FALSE
+
+	battlefield_loaded = TRUE
+	battlefield_z = z
+	log_game("PACT siege battlefield loaded on empty sector z=[z] ([template.name]).")
+	return TRUE
 
 /datum/inteq_pact_siege/proc/is_on_battlefield(mob/living/L)
 	if(!L)
@@ -83,10 +124,16 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 /datum/inteq_pact_siege/proc/try_roundstart_activate(attempt = 1)
 	if(active)
 		return
+	if(!battlefield_loaded && !load_empty_sector_battlefield())
+		if(attempt >= 30)
+			message_admins("PACT siege: не удалось загрузить поле боя в пустом секторе (проверьте space_empty_levels в конфиге карты).")
+			return
+		addtimer(CALLBACK(src, PROC_REF(try_roundstart_activate), attempt + 1), 10 SECONDS)
+		return
 	if(activate(null, roundstart = TRUE))
 		return
 	if(attempt >= 30)
-		message_admins("PACT siege: не удалось автоматически активировать осаду (поле боя не загрузилось).")
+		message_admins("PACT siege: поле боя загружено, но автоматическая активация осады не удалась.")
 		return
 	addtimer(CALLBACK(src, PROC_REF(try_roundstart_activate), attempt + 1), 10 SECONDS)
 
@@ -111,7 +158,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	battle_dest = new()
 	battle_dest.name = "InteQ — объект осады (ПАКТ)"
 	battle_dest.target_turfs = turfs
-	battle_dest.wait = 0
+	battle_dest.wait = roundstart ? CONFIG_GET(number/gateway_delay) : 0
 	battle_dest.enabled = TRUE
 	battle_dest.owner = src
 	GLOB.gateway_destinations += battle_dest
@@ -124,13 +171,13 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	active = TRUE
 
 	if(GLOB.the_gateway)
-		GLOB.the_gateway.AddElement(/datum/element/pact_siege_red_gateway)
-		GLOB.the_gateway.teleportion_possible = TRUE
+		if(!roundstart)
+			GLOB.the_gateway.AddElement(/datum/element/pact_siege_red_gateway)
+			GLOB.the_gateway.teleportion_possible = TRUE
 		GLOB.the_gateway.update_appearance()
-		if(roundstart && GLOB.the_gateway.powered() && !GLOB.the_gateway.target)
-			GLOB.the_gateway.activate(battle_dest)
+		GLOB.the_gateway.process()
 	else if(roundstart)
-		message_admins("PACT siege: станция без GLOB.the_gateway — красный канал врат недоступен.")
+		message_admins("PACT siege: станция без GLOB.the_gateway — пункт назначения осады только в консоли врат.")
 
 	register_existing_defenders()
 
@@ -259,8 +306,7 @@ SUBSYSTEM_DEF(inteq_pact_siege)
 
 /datum/controller/subsystem/inteq_pact_siege/Initialize()
 	. = ..()
-	// Forgotten ship landmark loads ~60s after roundstart; retry until battlefield exists.
-	addtimer(CALLBACK(GLOB.inteq_pact_siege, TYPE_PROC_REF(/datum/inteq_pact_siege, try_roundstart_activate)), 70 SECONDS)
+	addtimer(CALLBACK(GLOB.inteq_pact_siege, PROC_REF(try_roundstart_activate)), 10 SECONDS)
 	return SS_INIT_SUCCESS
 
 /datum/controller/subsystem/inteq_pact_siege/fire(resumed)

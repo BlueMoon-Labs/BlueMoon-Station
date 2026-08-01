@@ -13,7 +13,6 @@
 
 /// Types of /area considered the InteQ battlefield for gateways & recalls (extend when the outpost moves to CC)
 GLOBAL_LIST_INIT(pact_siege_battle_area_types, list(\
-	/area/ruin/space/has_grav/bluemoon/inteq,\
 	/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship,\
 	/area/ruin/space/has_grav/bluemoon/inteq_forgotten_outpost,\
 	/area/ruin/space/has_grav/bluemoon/inteq_forgotten_cargopod,\

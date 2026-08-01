@@ -73,7 +73,7 @@
 		spawn_raiders(threat_msg, ship_template, TRUE)
 
 /datum/round_event/raiders/proc/get_spawn_z()
-	if(SSmapping.empty_space)
+	if(SSmapping.empty_space && !GLOB.inteq_pact_siege?.battlefield_loaded)
 		return SSmapping.empty_space.z_value
 	var/list/space_zlevels = SSmapping.levels_by_trait(ZTRAIT_SPACE_RUINS)
 	if(length(space_zlevels))
