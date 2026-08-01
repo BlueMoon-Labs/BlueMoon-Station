@@ -387,7 +387,7 @@
 	var/list/hidden_turfs = list()
 
 	/// parallax speed in seconds per loop
-	var/parallax_speed = 25
+	var/parallax_speed = PARALLAX_SHUTTLE_SCROLL_SPEED
 	/// In-flight hyperspace events (tg-style; processed while docked to a transit Z-level)
 	var/list/datum/shuttle_event/event_list = list()
 

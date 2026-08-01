@@ -178,9 +178,14 @@
 		return
 	// Движение области главнее движения сцены: шаттл в транзите обязан перебивать
 	// собственный дрейф профиля, иначе полёт перестанет читаться как полёт.
+	//
+	// Признак движения - parallax_moving, а НЕ скорость: скорость приезжает из
+	// перелёта и вполне может оказаться нулём или null, а летящий шаттл со
+	// сброшенной в ноль сценой - это ровно тот баг, ради которого здесь стоит
+	// запасное значение.
 	var/area/A = T.loc
-	if(A?.parallax_move_speed)
-		Animation(A.parallax_move_speed, A.parallax_move_angle, auto_z_change? 0 : null, auto_z_change? 0 : null, force)
+	if(A?.parallax_moving)
+		Animation(A.parallax_move_speed || PARALLAX_SHUTTLE_SCROLL_SPEED, A.parallax_move_angle, auto_z_change? 0 : null, auto_z_change? 0 : null, force)
 		return
 	var/list/ret = SSparallax.get_parallax_motion(T.z)
 	if(ret)

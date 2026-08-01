@@ -207,6 +207,39 @@
 	copy.ResetPosition(42, 17)
 	TEST_ASSERT_EQUAL(copy.screen_loc, source.screen_loc, "Клон встал не туда, куда исходник")
 
+/**
+ * Полёт шаттла обязан оставить области ЧИСЛОВУЮ скорость прокрутки.
+ *
+ * Держатель параллакса берёт из области и признак движения, и скорость. Раньше
+ * cleanup_runway звал afterShuttleMove без скорости, и в области оседал null -
+ * полёт всё же читался только потому, что этот null доезжал до Animation(speed = 25)
+ * и там подменялся ДЕФОЛТОМ АРГУМЕНТА: в DM явно переданный null включает
+ * значение по умолчанию так же, как отсутствующий аргумент. Стоило прочитать
+ * скорость до вызова - и транзит молча превращался в стоянку.
+ */
+/datum/unit_test/shuttle_transit_parallax/Run()
+	var/area/flying = new /area
+	allocated += flying
+	// Ровно то, что кладёт /area/onShuttleMove, забирая параметры у транзитной области.
+	flying.parallax_moving = TRUE
+	flying.parallax_move_speed = PARALLAX_SHUTTLE_SCROLL_SPEED
+	flying.parallax_move_angle = 0
+
+	// Ровно то, что зовёт cleanup_runway при уходе в транзит.
+	flying.afterShuttleMove(EAST)
+	TEST_ASSERT(flying.parallax_moving, "Уход в транзит снял с области признак движения")
+	TEST_ASSERT(isnum(flying.parallax_move_speed), "После ухода в транзит скорость прокрутки нечисловая: [isnull(flying.parallax_move_speed) ? "null" : flying.parallax_move_speed]")
+	TEST_ASSERT(flying.parallax_move_speed > 0, "После ухода в транзит скорость прокрутки [flying.parallax_move_speed] - сцена стоит на месте")
+	TEST_ASSERT_EQUAL(flying.parallax_move_angle, dir2angle(EAST), "Угол прокрутки не совпал с направлением полёта")
+
+	// Своя скорость шаттла обязана доезжать до области, а не подменяться дефолтом.
+	flying.afterShuttleMove(EAST, 40)
+	TEST_ASSERT_EQUAL(flying.parallax_move_speed, 40, "Область не приняла собственную скорость шаттла")
+
+	// Посадка: та же область обязана перестать считаться летящей.
+	flying.afterShuttleMove(0)
+	TEST_ASSERT(!flying.parallax_moving, "После посадки область осталась летящей")
+
 /// Матрица "яркость -> прозрачность" (приём goonstation) обязана давать ровно ту
 /// свёртку, ради которой берётся: непрозрачный серый шум становится маской плотности.
 /datum/unit_test/parallax_luminance_matrix/Run()

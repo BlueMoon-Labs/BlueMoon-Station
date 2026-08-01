@@ -175,7 +175,9 @@ All ShuttleMove procs go here
 	return TRUE
 
 // Called on areas after everything has been moved
-/area/proc/afterShuttleMove(new_parallax_dir, speed)
+// Скорость обязана иметь дефолт: летящая область без числовой скорости для держателя
+// параллакса неотличима от стоящей, и полёт перестаёт рисоваться.
+/area/proc/afterShuttleMove(new_parallax_dir, speed = PARALLAX_SHUTTLE_SCROLL_SPEED)
 	if(!new_parallax_dir)
 		parallax_moving = FALSE
 		return
@@ -239,11 +241,6 @@ All ShuttleMove procs go here
 	. = ..()
 	recharging_turf = get_step(loc, dir)
 
-/obj/machinery/atmospherics/afterShuttleMove(turf/oldT, list/movement_force, shuttle_dir, shuttle_preferred_direction, move_dir, rotation)
-	. = ..()
-	if(pipe_vision_img)
-		pipe_vision_img.loc = loc
-
 /obj/machinery/computer/auxillary_base/afterShuttleMove(turf/oldT, list/movement_force, shuttle_dir, shuttle_preferred_direction, move_dir, rotation)
 	. = ..()
 	if(is_mining_level(z)) //Avoids double logging and landing on other Z-levels due to badminnery
@@ -262,6 +259,10 @@ All ShuttleMove procs go here
 
 /obj/machinery/atmospherics/afterShuttleMove(turf/oldT, list/movement_force, shuttle_dir, shuttle_preferred_direction, move_dir, rotation)
 	. = ..()
+	// Картинка обзора труб живёт отдельным image со своим loc, и перелёт двигает
+	// машину присваиванием loc - картинку за собой он не тянет.
+	if(pipe_vision_img)
+		pipe_vision_img.loc = loc
 	var/missing_nodes = FALSE
 	for(var/i in 1 to device_type)
 		if(nodes[i])
