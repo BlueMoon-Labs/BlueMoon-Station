@@ -34,7 +34,8 @@
 		/atom/movable/screen/parallax_layer/eris/close/graveyard,
 	)
 	min_quality = PARALLAX_LOW
-	weight = 4
+	// Событийный: явление, мимо которого пролетаешь, не должно быть фоном раунда.
+	weight = 0
 
 /// Поле мелких обломков. Дальний ярус - единственный бесшовный стейт Eris.
 /datum/parallax_profile/weather/micro_debris
@@ -47,7 +48,7 @@
 		/atom/movable/screen/parallax_layer/eris/close/micro_debris,
 	)
 	min_quality = PARALLAX_LOW
-	weight = 6
+	weight = 0
 
 /// Ионная буря. Ближнего яруса у художника Eris нет, поэтому их только два.
 /datum/parallax_profile/weather/ion_blizzard
@@ -77,7 +78,7 @@
 	skybox = /atom/movable/screen/parallax_layer/eris/photon_vortex
 	base_layers = list(/atom/movable/screen/parallax_layer/skybox/stars)
 	min_quality = PARALLAX_LOW
-	weight = 3
+	weight = 0
 
 // ---------------------------------------------------------------------------
 // goonstation: погода через маску плотности
@@ -91,19 +92,35 @@
 	ambient_speed = 250
 	ambient_angle = 0
 
-/// Метель. Гейт по трейтам снежных уровней, чтобы снег не пошёл над лавой.
+/**
+ * Планетарная погода идёт парами: спокойный фон мира и его же буря.
+ *
+ * Без этого хук погоды был бы бессмысленным на снежных и лавовых уровнях: там
+ * метель и есть базовый вид, и включение метели поверх метели ничего не меняет.
+ * Спокойный фон несёт только разреженный ярус, буря добавляет плотный.
+ */
+/// Снежный мир в спокойную погоду. Гейт по трейтам, чтобы снег не пошёл над лавой.
 /datum/parallax_profile/weather/goon/snow
 	id = "planet_snow"
+	name = "Снежная позёмка"
+	ambient_speed = 400
+	ambient_angle = 20
+	base_layers = list(/atom/movable/screen/parallax_layer/goon/snow_sparse)
+	z_traits = list(ZTRAIT_ICE_RUINS, ZTRAIT_ICE_RUINS_UNDERGROUND, ZTRAIT_SNOWSTORM, ZTRAIT_ICESTORM)
+	min_quality = PARALLAX_LOW
+	weight = 60
+
+/// Его же буря. Ставится самой погодой, автоподбором не выпадает.
+/datum/parallax_profile/weather/goon/snow/storm
+	id = "planet_snow_storm"
 	name = "Метель"
 	ambient_speed = 200
-	ambient_angle = 20
 	base_layers = list(
 		/atom/movable/screen/parallax_layer/goon/snow_sparse,
 		/atom/movable/screen/parallax_layer/goon/snow_dense,
 	)
-	z_traits = list(ZTRAIT_ICE_RUINS, ZTRAIT_ICE_RUINS_UNDERGROUND, ZTRAIT_SNOWSTORM, ZTRAIT_ICESTORM)
-	min_quality = PARALLAX_LOW
-	weight = 60
+	z_traits = null
+	weight = 0
 
 /// Пепел и угли. Исходник почти чёрный (яркость 34 из 255), поэтому коэффициент
 /// маски плотности здесь втрое больше снежного.
@@ -111,29 +128,46 @@
 /datum/parallax_profile/weather/goon/embers
 	id = "planet_embers"
 	name = "Пепел"
-	ambient_speed = 350
+	ambient_speed = 600
 	ambient_angle = 180
+	base_layers = list(/atom/movable/screen/parallax_layer/goon/embers_sparse)
+	z_traits = list(ZTRAIT_LAVA_RUINS, ZTRAIT_LAVA_JUNGLE_RUINS, ZTRAIT_ASHSTORM)
+	min_quality = PARALLAX_LOW
+	weight = 60
+
+/// Пепельная буря. Ставится самой погодой.
+/datum/parallax_profile/weather/goon/embers/storm
+	id = "planet_embers_storm"
+	name = "Пепельная буря"
+	ambient_speed = 350
 	base_layers = list(
 		/atom/movable/screen/parallax_layer/goon/embers_sparse,
 		/atom/movable/screen/parallax_layer/goon/embers_dense,
 	)
-	z_traits = list(ZTRAIT_LAVA_RUINS, ZTRAIT_LAVA_JUNGLE_RUINS, ZTRAIT_ASHSTORM)
-	min_quality = PARALLAX_LOW
-	weight = 60
+	z_traits = null
+	weight = 0
 
 /// Пыльная буря. Без гейта по трейтам - запасной вариант для любой планеты.
 /// Пыль несёт вбок, а не сверху вниз.
 /datum/parallax_profile/weather/goon/dust
 	id = "planet_dust"
 	name = "Пыльная буря"
-	ambient_speed = 220
+	ambient_speed = 500
 	ambient_angle = 75
+	base_layers = list(/atom/movable/screen/parallax_layer/goon/dust_sparse)
+	min_quality = PARALLAX_LOW
+	weight = 25
+
+/// Пыльная буря. Резерв для планетарных погод, которым нечего показать своего.
+/datum/parallax_profile/weather/goon/dust/storm
+	id = "planet_dust_storm"
+	name = "Пыльная буря"
+	ambient_speed = 220
 	base_layers = list(
 		/atom/movable/screen/parallax_layer/goon/dust_sparse,
 		/atom/movable/screen/parallax_layer/goon/dust_dense,
 	)
-	min_quality = PARALLAX_LOW
-	weight = 25
+	weight = 0
 
 /// Выброс: событийный профиль планетарных уровней, ставится только вручную.
 /datum/parallax_profile/weather/goon/blowout

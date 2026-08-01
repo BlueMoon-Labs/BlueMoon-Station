@@ -54,3 +54,11 @@
 
 /// Токен модификатора, под которым админский инструмент подменяет профиль.
 #define PARALLAX_TOKEN_ADMIN "admin"
+
+/**
+ * Приоритеты в стеке модификаторов. Больший применяется позже и перебивает меньший.
+ * Админ обязан видеть то, что поставил, поверх любого события.
+ */
+#define PARALLAX_PRIORITY_WEATHER 10
+#define PARALLAX_PRIORITY_EVENT 20
+#define PARALLAX_PRIORITY_ADMIN 100

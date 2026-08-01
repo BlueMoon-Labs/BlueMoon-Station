@@ -243,7 +243,7 @@
 /// Дрейф сцены обязан достаться только тайлящимся слоям и быть обратно
 /// пропорциональным их скорости: ближний слой проходит экран быстрее дальнего.
 /datum/unit_test/parallax_ambient_drift/Run()
-	var/datum/parallax_profile/drifting = SSparallax.profiles_by_id["planet_snow"]
+	var/datum/parallax_profile/drifting = SSparallax.profiles_by_id["planet_snow_storm"]
 	TEST_ASSERT_NOTNULL(drifting, "Профиль метели пропал из каталога")
 	TEST_ASSERT(drifting.ambient_speed > 0, "У метели нет собственного дрейфа - сцена будет стоять на месте")
 
@@ -292,3 +292,35 @@
 
 	qdel(scene)
 	TEST_ASSERT(QDELETED(probe), "Слой пережил удаление своей сцены")
+
+/// У каждого события космической погоды профиль обязан существовать в каталоге, а
+/// токен - быть уникальным. Опечатка в id даёт событие, которое молча ничего не
+/// делает: объявление выходит, картинка не меняется.
+/datum/unit_test/parallax_event_profiles/Run()
+	var/list/seen_tokens = list()
+	var/checked = 0
+	for(var/datum/round_event_control/space_weather/control as anything in subtypesof(/datum/round_event_control/space_weather))
+		var/datum/round_event/space_weather/event_type = initial(control.typepath)
+		if(!event_type)
+			continue
+		var/event_profile = initial(event_type.profile_id)
+		var/event_token = initial(event_type.token)
+		if(!event_profile && !event_token)
+			continue // абстрактная середина ветки
+		checked++
+		TEST_ASSERT_NOTNULL(event_profile, "Событие [event_type] без профиля параллакса")
+		TEST_ASSERT_NOTNULL(event_token, "Событие [event_type] без токена модификатора")
+		TEST_ASSERT_NOTNULL(SSparallax.profiles_by_id[event_profile], "Событие [event_type] ссылается на несуществующий профиль '[event_profile]'")
+		TEST_ASSERT(!seen_tokens[event_token], "Токен '[event_token]' занят и событием [event_type], и [seen_tokens[event_token]] - они будут снимать модификаторы друг друга")
+		seen_tokens[event_token] = event_type
+	TEST_ASSERT(checked >= 3, "Событий космической погоды нашлось всего [checked] - тест ничего не проверяет")
+
+	// То же для погоды: профиль бури обязан существовать.
+	var/weather_checked = 0
+	for(var/datum/weather/weather_type as anything in subtypesof(/datum/weather))
+		var/weather_profile = initial(weather_type.parallax_profile)
+		if(!weather_profile)
+			continue
+		weather_checked++
+		TEST_ASSERT_NOTNULL(SSparallax.profiles_by_id[weather_profile], "Погода [weather_type] ссылается на несуществующий профиль '[weather_profile]'")
+	TEST_ASSERT(weather_checked >= 3, "Погод с профилем параллакса нашлось всего [weather_checked]")

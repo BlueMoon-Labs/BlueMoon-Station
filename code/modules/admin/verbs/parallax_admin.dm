@@ -38,7 +38,7 @@
 		return
 
 	var/chosen_id = options[choice]
-	SSparallax.set_profile(target_z, chosen_id, PARALLAX_TOKEN_ADMIN, 100, 1 SECONDS)
+	SSparallax.set_profile(target_z, chosen_id, PARALLAX_TOKEN_ADMIN, PARALLAX_PRIORITY_ADMIN, 1 SECONDS)
 	message_admins("[key_name_admin(src)] поставил профиль параллакса '[chosen_id]' на z [target_z].")
 	log_admin("[key_name(src)] set parallax profile '[chosen_id]' on z [target_z].")
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Set Parallax Profile")

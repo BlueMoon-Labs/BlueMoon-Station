@@ -2682,6 +2682,7 @@
 #include "code\modules\events\slippery_floors.dm"
 #include "code\modules\events\space_cleaner_spill.dm"
 #include "code\modules\events\space_colors.dm"
+#include "code\modules\events\space_weather.dm"
 #include "code\modules\events\space_dragon.dm"
 #include "code\modules\events\space_ninja.dm"
 #include "code\modules\events\spacevine.dm"
