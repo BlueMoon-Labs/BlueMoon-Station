@@ -41,6 +41,8 @@
 	var/scroll_turn
 	/// override planemaster we manipulate for turning and other effects
 	var/atom/movable/screen/plane_master/parallax/planemaster_override
+	/// timerid плавной смены сцены, если она сейчас идёт
+	var/transition_timer
 
 /datum/parallax_holder/New(client/C, secondary_map, forced_eye, planemaster_override)
 	owner = C
@@ -52,6 +54,9 @@
 	Reset()
 
 /datum/parallax_holder/Destroy()
+	if(transition_timer)
+		deltimer(transition_timer)
+		transition_timer = null
 	if(owner)
 		if(owner.parallax_holder == src)
 			owner.parallax_holder = null
@@ -155,7 +160,7 @@
 /datum/parallax_holder/proc/Sync(auto_z_change, force)
 	layers = parallax?.GetObjects() || list()
 	for(var/atom/movable/screen/parallax_layer/L in layers)
-		L.map_id = secondary_map
+		L.SetMapID(secondary_map)
 	if(!istype(vis_holder))
 		vis_holder = new /atom/movable/screen/parallax_vis
 	var/turf/T = get_turf(cached_eye)
@@ -171,12 +176,17 @@
 		if(scroll_speed || scroll_turn)
 			HardResetAnimations()
 		return
+	// Движение области главнее движения сцены: шаттл в транзите обязан перебивать
+	// собственный дрейф профиля, иначе полёт перестанет читаться как полёт.
+	var/area/A = T.loc
+	if(A?.parallax_move_speed)
+		Animation(A.parallax_move_speed, A.parallax_move_angle, auto_z_change? 0 : null, auto_z_change? 0 : null, force)
+		return
 	var/list/ret = SSparallax.get_parallax_motion(T.z)
 	if(ret)
 		Animation(ret[1], ret[2], auto_z_change? 0 : ret[3], auto_z_change? 0 : ret[4], force)
 	else
-		var/area/A = T.loc
-		Animation(A.parallax_move_speed, A.parallax_move_angle, auto_z_change? 0 : null, auto_z_change? 0 : null, force)
+		Animation(0, 0, auto_z_change? 0 : null, auto_z_change? 0 : null, force)
 
 /datum/parallax_holder/proc/Apply(client/C = owner)
 	if(QDELETED(C))
@@ -199,6 +209,20 @@
 		if(!L.ShouldSee(C, last))
 			continue
 		L.SetView(C.view, TRUE)
+		if(L.fade_in_time > 0 && !L.faded_in)
+			L.faded_in = TRUE
+			var/target_alpha = L.alpha
+			L.alpha = 0
+			animate(L, alpha = target_alpha, time = L.fade_in_time, flags = ANIMATION_END_NOW)
+		else if(L.twinkle_time > 0 && !L.twinkling)
+			// Мерцание идёт по alpha и потому не конфликтует ни с глайдом шага, ни с
+			// прокруткой сцены: и то и другое живёт в transform.
+			L.twinkling = TRUE
+			var/bright = L.alpha
+			animate(L, alpha = L.twinkle_min_alpha, time = L.twinkle_time, easing = SINE_EASING, loop = -1)
+			animate(alpha = bright, time = L.twinkle_time, easing = SINE_EASING)
+		if(L.drift_time > 0 && !L.drifting)
+			L.StartDrift()
 		. |= L
 	C.screen |= .
 	if(!secondary_map && (effective_parallax != PARALLAX_DISABLE))
@@ -221,10 +245,48 @@
 		if(PM)
 			PM.color =  initial(PM.color)
 
-/datum/parallax_holder/proc/SetParallaxType(path)
-	if(!ispath(path, /datum/parallax))
-		CRASH("Invalid path")
-	SetParallax(new path, TRUE, null, null, FALSE)
+/**
+ * Ставит держателю личную сцену по профилю, минуя общий шаблон z.
+ *
+ * Нужно там, где картинка принадлежит одному зрителю, а не уровню: вторичные
+ * карты, админский предпросмотр. Обычный путь - модификатор на z в SSparallax,
+ * он дешевле, потому что шаблон делится всеми клиентами уровня.
+ */
+/datum/parallax_holder/proc/SetProfile(profile_or_id)
+	var/datum/parallax_profile/profile = SSparallax.resolve_profile(profile_or_id)
+	if(!profile)
+		CRASH("Неизвестный профиль параллакса '[profile_or_id]'")
+	SetParallax(new /datum/parallax(profile), TRUE, null, null, FALSE)
+
+/**
+ * Плавно меняет сцену: гасит текущие слои, пересобирается и проявляет новые.
+ *
+ * Это затемнение, а не кросс-фейд: держать оба набора слоёв одновременно значило
+ * бы удвоить число слоёв в самый неудачный момент, а именно их количество и
+ * определяет стоимость каждого шага игрока.
+ */
+/datum/parallax_holder/proc/FadeAndReset(time = 1 SECONDS)
+	if(!length(layers))
+		Reset()
+		return
+	var/half = max(1, round(time * 0.5, 1))
+	for(var/atom/movable/screen/parallax_layer/L as anything in layers)
+		animate(L, alpha = 0, time = half, flags = ANIMATION_END_NOW)
+	if(transition_timer)
+		deltimer(transition_timer)
+	transition_timer = addtimer(CALLBACK(src, PROC_REF(FinishFade), half), half, TIMER_STOPPABLE)
+
+/datum/parallax_holder/proc/FinishFade(half)
+	transition_timer = null
+	Reset()
+	for(var/atom/movable/screen/parallax_layer/L as anything in layers)
+		// Слою с собственным проявлением Apply уже завёл анимацию входа, и его
+		// alpha сейчас не та, к которой надо тянуть. Второй раз его не трогаем.
+		if(L.fade_in_time > 0)
+			continue
+		var/target_alpha = L.alpha
+		L.alpha = 0
+		animate(L, alpha = target_alpha, time = half, flags = ANIMATION_END_NOW)
 
 /datum/parallax_holder/proc/SetParallax(datum/parallax/P, delete_old = TRUE, auto_z_change, force, shared_template = FALSE)
 	if(P == parallax)
@@ -285,16 +347,19 @@
 		if(P.absolute)
 			continue
 		var/matrix/translate_matrix = matrix()
-		translate_matrix.Translate(sin(turn) * 480, cos(turn) * 480)
+		translate_matrix.Translate(sin(turn) * P.tile_size, cos(turn) * P.tile_size)
 		var/matrix/target_matrix = matrix()
-		var/move_speed = speed * P.speed
+		// Ближний слой обязан проходить экран БЫСТРЕЕ дальнего, поэтому его speed
+		// делит длительность цикла, а не умножает её. С умножением параллакс
+		// получался вывернутым: дальние звёзды обгоняли ближние облака.
+		var/move_speed = speed / max(P.speed, 0.05)
 		// do the first segment by shifting down one screen
 		P.transform = translate_matrix
 		animate(P, transform = target_matrix, time = move_speed, easing = QUAD_EASING|EASE_IN, flags = ANIMATION_END_NOW)
 		// queue up another incase lag makes QueueLoop not fire on time, this time by shifting up
 		animate(transform = translate_matrix, time = 0)
 		animate(transform = target_matrix, time = move_speed)
-		P.QueueLoop(move_speed, speed * P.speed, translate_matrix, target_matrix)
+		P.QueueLoop(move_speed, move_speed, translate_matrix, target_matrix)
 
 /**
  * Smoothly stops the animation, turning to a certain angle as needed.
@@ -319,7 +384,7 @@
 			continue
 		P.CancelAnimation()
 		var/matrix/translate_matrix = matrix()
-		translate_matrix.Translate(sin(turn) * 480, cos(turn) * 480)
+		translate_matrix.Translate(sin(turn) * P.tile_size, cos(turn) * P.tile_size)
 		P.transform = translate_matrix
 		animate(P, transform = matrix(), time = time, easing = QUAD_EASING | EASE_OUT)
 

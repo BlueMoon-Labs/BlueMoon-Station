@@ -234,6 +234,7 @@
 #include "stationroom_landmark.dm"
 #include "latex_lockable.dm"
 #include "parallax_position.dm"
+#include "parallax_profiles.dm"
 #include "perf_cross_ports.dm"
 #include "perf_optimizations.dm"
 #include "ping_measurement.dm"
