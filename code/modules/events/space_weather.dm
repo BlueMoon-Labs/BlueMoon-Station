@@ -14,10 +14,22 @@
  * пролетаешь, не должно оказаться постоянным фоном раунда, иначе событие
  * перестанет что-либо менять.
  */
-/// Корень ветки. Вес 0 явно: сам по себе он ничего не показывает и выпадать не должен.
+/**
+ * Корень ветки. Сам ничего не показывает: без profile_id его start() падает,
+ * поэтому шаблон выключен, а каждый конкретный подтип включает себя явно -
+ * ровно как база спавнеров порталов.
+ *
+ * Категория тут не украшение и не группировка в панели: её ЕДИНСТВЕННЫЙ читатель -
+ * /datum/round_event_control/New(), где она выбирает ступень директора, а из
+ * ступени уже следуют цена, нагрузка и лимит одновременных. Смена обоев за
+ * иллюминатором обязана оставаться FRIENDLY, то есть флейвором за ноль: в любой
+ * ступени тяжелее она начнёт занимать бюджет настоящего контента и держать
+ * директора в уверенности, что на станции что-то происходит.
+ */
 /datum/round_event_control/space_weather
 	name = "Space Weather"
 	typepath = /datum/round_event/space_weather
+	enabled = FALSE
 	weight = 0
 	max_occurrences = 1
 	earliest_start = 10 MINUTES
@@ -67,6 +79,7 @@
 /datum/round_event_control/space_weather/graveyard
 	name = "Ship Graveyard"
 	typepath = /datum/round_event/space_weather/graveyard
+	enabled = TRUE
 	weight = 9
 	description = "The station drifts past a field of derelict hulls."
 
@@ -80,6 +93,7 @@
 /datum/round_event_control/space_weather/micro_debris
 	name = "Micro Debris Field"
 	typepath = /datum/round_event/space_weather/micro_debris
+	enabled = TRUE
 	weight = 10
 	description = "The station passes through a cloud of micro debris."
 
@@ -93,9 +107,9 @@
 /datum/round_event_control/space_weather/bluespace_storm
 	name = "Bluespace Storm"
 	typepath = /datum/round_event/space_weather/bluespace_storm
+	enabled = TRUE
 	weight = 6
 	earliest_start = 20 MINUTES
-	category = EVENT_CATEGORY_ANOMALIES
 	description = "A bluespace storm passes near the station."
 
 /datum/round_event/space_weather/bluespace_storm
@@ -109,8 +123,8 @@
 /datum/round_event_control/space_weather/ion_blizzard
 	name = "Ion Blizzard"
 	typepath = /datum/round_event/space_weather/ion_blizzard
+	enabled = TRUE
 	weight = 7
-	category = EVENT_CATEGORY_ANOMALIES
 	description = "An ion blizzard sweeps past the station."
 
 /datum/round_event/space_weather/ion_blizzard
@@ -124,9 +138,9 @@
 /datum/round_event_control/space_weather/interphase
 	name = "Bluespace Interphase"
 	typepath = /datum/round_event/space_weather/interphase
+	enabled = TRUE
 	weight = 4
 	earliest_start = 25 MINUTES
-	category = EVENT_CATEGORY_ANOMALIES
 	description = "Space outside the station briefly stops looking like space."
 
 /datum/round_event/space_weather/interphase
@@ -140,9 +154,9 @@
 /datum/round_event_control/space_weather/photon_vortex
 	name = "Photon Vortex"
 	typepath = /datum/round_event/space_weather/photon_vortex
+	enabled = TRUE
 	weight = 3
 	earliest_start = 30 MINUTES
-	category = EVENT_CATEGORY_ANOMALIES
 	description = "A collapsed object drifts into view."
 
 /datum/round_event/space_weather/photon_vortex
