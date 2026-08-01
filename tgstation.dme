@@ -5340,6 +5340,7 @@
 #include "modular_sand\code\controllers\subsystem\language.dm"
 #include "modular_sand\code\datums\action.dm"
 #include "modular_sand\code\datums\ai_laws.dm"
+#include "modular_sand\code\datums\disclaimer.dm"
 #include "modular_sand\code\datums\shuttles.dm"
 #include "modular_sand\code\datums\components\glory_kill.dm"
 #include "modular_sand\code\datums\components\interaction_menu_granter.dm"
