@@ -56,6 +56,10 @@
 	/// SKYBOX: фактический запас по осям, считается в SetView под текущий client.view.
 	var/bleed_x = 0
 	var/bleed_y = 0
+	/// SKYBOX: масштаб, которым картинка подогнана под вьюпорт. Из него, а не из
+	/// запаса, видно, действительно ли скайбокс перекрывает экран: при малом
+	/// перекрытии запас упирается в min_bleed и перестаёт быть мерой покрытия.
+	var/fitted_scale = 1
 	/// Кэш префиксов screen_loc. Дефолты верны для тайла 480 без map_id, поэтому
 	/// прок позиции не зависит от того, успел ли отработать Initialize.
 	var/screen_loc_prefix = "CENTER:"
@@ -366,6 +370,7 @@
 	var/needed_x = view_px_x + min_bleed * 2
 	var/needed_y = view_px_y + min_bleed * 2
 	var/scale = max(base_scale, needed_x / tile_size, needed_y / tile_size)
+	fitted_scale = scale
 	var/covered = tile_size * scale
 	// Нижняя граница здесь не косметика: covered считается через деление и обратное
 	// умножение, и на 32-битных числах BYOND возвращает 1087.9999 вместо 1088.
@@ -402,6 +407,7 @@
 	layer.min_bleed = min_bleed
 	layer.bleed_x = bleed_x
 	layer.bleed_y = bleed_y
+	layer.fitted_scale = fitted_scale
 	layer.dynamic_self_tile = dynamic_self_tile
 	layer.palette_tinted = palette_tinted
 	layer.luminance_alpha = luminance_alpha

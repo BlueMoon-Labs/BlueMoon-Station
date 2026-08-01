@@ -53,7 +53,7 @@
 			SPACE_COLORS_TOKEN,
 			extra_layers = list(/atom/movable/screen/parallax_layer/tint/molecular_cloud),
 			tint = palette[palette_index],
-			priority = 10,
+			priority = PARALLAX_PRIORITY_EVENT,
 		)
 		tinted_z_levels += station_z
 

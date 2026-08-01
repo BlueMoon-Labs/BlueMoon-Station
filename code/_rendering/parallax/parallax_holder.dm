@@ -209,18 +209,23 @@
 		if(!L.ShouldSee(C, last))
 			continue
 		L.SetView(C.view, TRUE)
+		// Проявление и мерцание оба живут в alpha, но НЕ исключают друг друга:
+		// ветки независимы, а очерёдность держит сам animate. Проявление идёт с
+		// ANIMATION_END_NOW и обрывает очередь, мерцание же ставится без него и
+		// потому дожидается конца проявления. Через else-if слой, у которого
+		// заданы оба, не замерцал бы никогда: клон при каждом Reset приходит с
+		// faded_in = FALSE, и до второй ветки управление не доходило бы вовсе.
+		var/base_alpha = L.alpha
 		if(L.fade_in_time > 0 && !L.faded_in)
 			L.faded_in = TRUE
-			var/target_alpha = L.alpha
 			L.alpha = 0
-			animate(L, alpha = target_alpha, time = L.fade_in_time, flags = ANIMATION_END_NOW)
-		else if(L.twinkle_time > 0 && !L.twinkling)
-			// Мерцание идёт по alpha и потому не конфликтует ни с глайдом шага, ни с
-			// прокруткой сцены: и то и другое живёт в transform.
+			animate(L, alpha = base_alpha, time = L.fade_in_time, flags = ANIMATION_END_NOW)
+		if(L.twinkle_time > 0 && !L.twinkling)
+			// Мерцание не конфликтует ни с глайдом шага, ни с прокруткой сцены:
+			// и то и другое живёт в transform.
 			L.twinkling = TRUE
-			var/bright = L.alpha
 			animate(L, alpha = L.twinkle_min_alpha, time = L.twinkle_time, easing = SINE_EASING, loop = -1)
-			animate(alpha = bright, time = L.twinkle_time, easing = SINE_EASING)
+			animate(alpha = base_alpha, time = L.twinkle_time, easing = SINE_EASING)
 		if(L.drift_time > 0 && !L.drifting)
 			L.StartDrift()
 		. |= L

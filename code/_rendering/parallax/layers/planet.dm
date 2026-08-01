@@ -27,6 +27,9 @@
 	spawn_jitter_max = 150
 	/// Вероятность колец в процентах. У Aurora было 20.
 	var/ring_chance = 20
+	/// Планета уже собрана. Клон её не пересобирает: он копирует appearance
+	/// исходника, иначе у каждого клиента был бы СВОЙ мир на общем z.
+	var/generated = FALSE
 	/// Палитры поверхности, воды и облаков. Одна тройка на планету.
 	var/static/list/world_palettes = list(
 		// Земной: зелёная суша, синяя вода, белые облака
@@ -43,7 +46,15 @@
 		list("#7a7a7a", "#3a3a3a", "#bdbdbd", "#9aa5b1"),
 	)
 
-/atom/movable/screen/parallax_layer/planet_generated/Initialize(mapload)
+/**
+ * Сборка висит на ApplyLayerMode, а не только на Initialize.
+ *
+ * Профиль зовёт ApplyLayerMode вручную ровно потому, что SSatoms во время
+ * инициализации мира откладывает Initialize на потом. Оставь сборку в одном
+ * Initialize - и в такой момент клиент получил бы вместо планеты голую
+ * неокрашенную маску `base1` без воды, облаков, тени и колец.
+ */
+/atom/movable/screen/parallax_layer/planet_generated/ApplyLayerMode()
 	. = ..()
 	Generate()
 
@@ -57,6 +68,9 @@
  * холста, чтобы передняя дуга легла на диск.
  */
 /atom/movable/screen/parallax_layer/planet_generated/proc/Generate()
+	if(generated)
+		return
+	generated = TRUE
 	var/list/palette = pick(world_palettes)
 	var/surface_color = palette[1]
 	var/water_color = palette[2]

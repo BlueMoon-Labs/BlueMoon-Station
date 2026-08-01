@@ -33,6 +33,11 @@ SUBSYSTEM_DEF(parallax)
  * /datum/parallax конкретного z.
  */
 /datum/controller/subsystem/parallax/proc/build_catalog()
+	// Каталог собирается лениво, если клиент в лобби попросил параллакс раньше
+	// инициализации подсистемы. Тогда Initialize зовёт этот прок повторно, и без
+	// выхода он выдал бы stack_trace "дубль id" на КАЖДЫЙ профиль.
+	if(length(profiles_by_id))
+		return
 	for(var/datum/parallax_profile/profile_type as anything in subtypesof(/datum/parallax_profile))
 		if(profile_type == initial(profile_type.abstract_type))
 			continue
@@ -244,7 +249,10 @@ SUBSYSTEM_DEF(parallax)
 		var/datum/parallax_holder/holder = viewer.parallax_holder
 		if(!holder)
 			continue
-		if(holder.parallax != stale && holder.last?.z != z)
+		// Сверять по шаблону можно только когда он есть: invalidate_z передаёт
+		// stale = null, если шаблона на z ещё не было, а у свежего держателя
+		// parallax тоже null - и тогда под пересборку попадали клиенты чужих z.
+		if(holder.last?.z != z && !(stale && holder.parallax == stale))
 			continue
 		if(fade_time > 0)
 			holder.FadeAndReset(fade_time)

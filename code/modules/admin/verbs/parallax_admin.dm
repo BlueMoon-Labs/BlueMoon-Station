@@ -82,6 +82,8 @@
 					mode_name = "скайбокс [layer.tile_size]"
 				if(PARALLAX_MODE_STATIC)
 					mode_name = "объект"
+				if(PARALLAX_MODE_OVERLAY)
+					mode_name = "тонировка"
 			report += "&nbsp;&nbsp;[layer.type] - '[layer.icon_state]', [mode_name], скорость [layer.speed], качество [layer.parallax_intensity]"
 		report += "Движущихся слоёв: [moving] из [PARALLAX_MAX_MOVING_LAYERS] допустимых."
 

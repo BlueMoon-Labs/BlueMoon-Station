@@ -129,9 +129,12 @@
 		var/view_px_y = view_size[2] * world.icon_size
 		TEST_ASSERT(sky.bleed_x >= sky.min_bleed, "При view [view_string] запас по x всего [sky.bleed_x] при минимуме [sky.min_bleed]")
 		TEST_ASSERT(sky.bleed_y >= sky.min_bleed, "При view [view_string] запас по y всего [sky.bleed_y] при минимуме [sky.min_bleed]")
-		// Запас считается от перекрытия: картинка обязана быть шире вьюпорта.
-		TEST_ASSERT(view_px_x + sky.bleed_x * 2 >= view_px_x, "При view [view_string] скайбокс уже вьюпорта по x")
-		TEST_ASSERT(view_px_y + sky.bleed_y * 2 >= view_px_y, "При view [view_string] скайбокс уже вьюпорта по y")
+		// Главное: картинка ПОСЛЕ масштабирования обязана быть шире вьюпорта.
+		// Сверять это по запасу нельзя - тот упирается в min_bleed и превращает
+		// проверку в тавтологию вида "запас неотрицателен".
+		var/covered = sky.tile_size * sky.fitted_scale
+		TEST_ASSERT(covered >= view_px_x, "При view [view_string] скайбокс перекрывает [covered] пикселей при ширине вьюпорта [view_px_x]")
+		TEST_ASSERT(covered >= view_px_y, "При view [view_string] скайбокс перекрывает [covered] пикселей при высоте вьюпорта [view_px_y]")
 
 	sky.SetView("15x15", TRUE)
 	// Уезжать дальше запаса скайбокс не имеет права ни при каких координатах.
@@ -182,6 +185,7 @@
 	TEST_ASSERT_EQUAL(copy.min_bleed, source.min_bleed, "Clone потерял минимальный запас скайбокса")
 	TEST_ASSERT_EQUAL(copy.bleed_x, source.bleed_x, "Clone потерял посчитанный запас по x")
 	TEST_ASSERT_EQUAL(copy.bleed_y, source.bleed_y, "Clone потерял посчитанный запас по y")
+	TEST_ASSERT_EQUAL(copy.fitted_scale, source.fitted_scale, "Clone потерял масштаб подгонки скайбокса")
 	TEST_ASSERT_EQUAL(copy.speed, source.speed, "Clone потерял скорость")
 	TEST_ASSERT_EQUAL(copy.center_x, source.center_x, "Clone потерял центр по x")
 	TEST_ASSERT_EQUAL(copy.center_y, source.center_y, "Clone потерял центр по y")
