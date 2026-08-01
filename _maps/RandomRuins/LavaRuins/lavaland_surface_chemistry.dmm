@@ -162,7 +162,7 @@
 /turf/open/floor/carpet/red,
 /area/ruin/powered)
 "jr" = (
-/obj/machinery/suit_storage_unit/open,
+/obj/machinery/chem_dispenser,
 /turf/open/floor/pod/light,
 /area/ruin/powered)
 "jY" = (
@@ -419,7 +419,7 @@
 /obj/machinery/light{
 	dir = 8
 	},
-/obj/machinery/chem_master,
+/obj/machinery/chem_heater,
 /turf/open/floor/pod/light,
 /area/ruin/powered)
 "zq" = (
@@ -518,6 +518,10 @@
 /obj/item/reagent_containers/food/snacks/meat/steak/wisdomcow,
 /obj/item/reagent_containers/food/snacks/meat/steak/wisdomcow,
 /turf/open/floor/mineral/plastitanium,
+/area/ruin/powered)
+"Ep" = (
+/obj/machinery/chem_master,
+/turf/open/floor/pod/light,
 /area/ruin/powered)
 "Et" = (
 /obj/machinery/light{
@@ -1000,7 +1004,7 @@ Wq
 Wq
 Wq
 rf
-jr
+Ep
 jr
 eU
 zm

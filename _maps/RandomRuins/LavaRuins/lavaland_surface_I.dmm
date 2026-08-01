@@ -135,9 +135,6 @@
 /mob/living/simple_animal/hostile/skeleton,
 /turf/open/floor/plasteel/dark/lavaland,
 /area/ruin/space/has_grav)
-"uk" = (
-/turf/open/space/basic,
-/area/space)
 "vp" = (
 /obj/structure/closet/crate/coffin,
 /obj/effect/mob_spawn/human/skeleton,
@@ -279,7 +276,7 @@
 /area/ruin/space/has_grav)
 
 (1,1,1) = {"
-uk
+aO
 aa
 aa
 aa
@@ -316,7 +313,7 @@ aO
 aO
 "}
 (2,1,1) = {"
-uk
+aO
 aa
 ab
 ab
@@ -353,7 +350,7 @@ aO
 aO
 "}
 (3,1,1) = {"
-uk
+aO
 aa
 ab
 ab
@@ -390,7 +387,7 @@ aO
 aO
 "}
 (4,1,1) = {"
-uk
+aO
 aa
 ab
 ab
@@ -427,7 +424,7 @@ aO
 aO
 "}
 (5,1,1) = {"
-uk
+aO
 aa
 aa
 ab
@@ -464,7 +461,7 @@ aO
 aO
 "}
 (6,1,1) = {"
-uk
+aO
 aa
 ab
 ab
@@ -501,7 +498,7 @@ aO
 aO
 "}
 (7,1,1) = {"
-uk
+aO
 aa
 aa
 ab
@@ -538,7 +535,7 @@ aO
 aO
 "}
 (8,1,1) = {"
-uk
+aO
 aa
 ab
 ab
@@ -575,7 +572,7 @@ aO
 aO
 "}
 (9,1,1) = {"
-uk
+aO
 aa
 aa
 ab
@@ -612,7 +609,7 @@ aO
 aO
 "}
 (10,1,1) = {"
-uk
+aO
 aa
 ab
 ab
@@ -649,7 +646,7 @@ aO
 aO
 "}
 (11,1,1) = {"
-uk
+aO
 aa
 aa
 ab
@@ -686,7 +683,7 @@ aO
 aO
 "}
 (12,1,1) = {"
-uk
+aO
 aa
 ab
 ab
@@ -723,7 +720,7 @@ aO
 aO
 "}
 (13,1,1) = {"
-uk
+aO
 aa
 aa
 ab
@@ -760,7 +757,7 @@ aO
 aO
 "}
 (14,1,1) = {"
-uk
+aO
 aa
 ab
 ab
@@ -797,7 +794,7 @@ aO
 aO
 "}
 (15,1,1) = {"
-uk
+aO
 aa
 aa
 ab
@@ -834,7 +831,7 @@ aO
 aO
 "}
 (16,1,1) = {"
-uk
+aO
 aa
 ab
 ab
@@ -871,7 +868,7 @@ aO
 aO
 "}
 (17,1,1) = {"
-uk
+aO
 aa
 aa
 ab
@@ -908,7 +905,7 @@ aO
 aO
 "}
 (18,1,1) = {"
-uk
+aO
 aa
 ab
 ab
@@ -945,7 +942,7 @@ aO
 aO
 "}
 (19,1,1) = {"
-uk
+aO
 aa
 aa
 ab
@@ -982,7 +979,7 @@ aO
 aO
 "}
 (20,1,1) = {"
-uk
+aO
 aa
 ab
 ab
@@ -1019,7 +1016,7 @@ aO
 aO
 "}
 (21,1,1) = {"
-uk
+aO
 aa
 aa
 ab
@@ -1056,7 +1053,7 @@ aO
 aO
 "}
 (22,1,1) = {"
-uk
+aO
 aa
 ab
 ab
@@ -1093,7 +1090,7 @@ aO
 aO
 "}
 (23,1,1) = {"
-uk
+aO
 aa
 ab
 ab
@@ -1130,7 +1127,7 @@ aO
 aO
 "}
 (24,1,1) = {"
-uk
+aO
 aa
 ab
 ab
@@ -1167,7 +1164,7 @@ aO
 aO
 "}
 (25,1,1) = {"
-uk
+aO
 aa
 aa
 aa
