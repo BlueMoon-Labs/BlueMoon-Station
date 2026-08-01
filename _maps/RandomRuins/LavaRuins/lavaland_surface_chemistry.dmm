@@ -161,9 +161,6 @@
 /obj/structure/table/wood/fancy/royalblack,
 /turf/open/floor/carpet/red,
 /area/ruin/powered)
-"ix" = (
-/turf/open/floor/plating/asteroid/basalt/lava_land_surface,
-/area/template_noop)
 "jr" = (
 /obj/machinery/suit_storage_unit/open,
 /turf/open/floor/pod/light,
@@ -173,12 +170,6 @@
 	pixel_y = -31
 	},
 /turf/open/floor/mineral/plastitanium,
-/area/ruin/powered)
-"kl" = (
-/obj/item/storage/secure/safe,
-/obj/item/gun/ballistic/revolver/requiem,
-/obj/item/stack/spacecash/c100000,
-/turf/closed/wall/r_wall/syndicate/pirate,
 /area/ruin/powered)
 "kr" = (
 /obj/structure/table,
@@ -335,12 +326,6 @@
 "rU" = (
 /turf/closed/mineral/volcanic/lava_land_surface,
 /area/ruin/powered)
-"sh" = (
-/obj/machinery/porta_turret/centcom_shuttle/ballistic{
-	faction = list("hostile")
-	},
-/turf/closed/wall/r_wall/syndicate/pirate,
-/area/ruin/powered)
 "ta" = (
 /obj/machinery/door/poddoor{
 	id = "gff"
@@ -374,12 +359,9 @@
 /area/lavaland/surface/outdoors)
 "vt" = (
 /obj/effect/turf_decal/bot/yellow,
-/obj/structure/closet/secure_closet{
-	req_access_txt = "208";
-	name = "Шлемы"
-	},
 /obj/item/stack/telecrystal,
 /obj/item/stack/telecrystal/inteq,
+/obj/structure/closet/secure_closet,
 /turf/open/floor/plating/lavaland_baseturf,
 /area/ruin/powered)
 "vB" = (
@@ -415,6 +397,8 @@
 /area/ruin/powered)
 "xE" = (
 /obj/effect/turf_decal/bot/yellow,
+/obj/structure/closet/secure_closet,
+/obj/effect/spawner/lootdrop/trader/ammo,
 /turf/open/floor/mineral/titanium,
 /area/ruin/powered)
 "ya" = (
@@ -426,7 +410,9 @@
 /turf/closed/mineral/volcanic/lava_land_surface,
 /area/template_noop)
 "ze" = (
-/obj/structure/filingcabinet,
+/obj/structure/safe,
+/obj/item/stack/spacecash/c100000,
+/obj/item/gun/ballistic/revolver/syndicate,
 /turf/open/floor/wood/wood_large,
 /area/ruin/powered)
 "zm" = (
@@ -503,13 +489,10 @@
 /area/ruin/powered)
 "CI" = (
 /obj/effect/turf_decal/bot/yellow,
-/obj/structure/closet/secure_closet{
-	req_access_txt = "208";
-	name = "Хардсьюты"
-	},
 /obj/item/stack/sheet/mineral/bananium,
 /obj/item/stack/sheet/mineral/bananium,
 /obj/item/stack/sheet/mineral/bananium,
+/obj/structure/closet/secure_closet,
 /turf/open/floor/mineral/titanium,
 /area/ruin/powered)
 "CN" = (
@@ -715,13 +698,10 @@
 /area/ruin/powered)
 "QM" = (
 /obj/effect/turf_decal/bot/yellow,
-/obj/structure/closet/secure_closet{
-	req_access_txt = "208";
-	name = "Бронежилеты"
-	},
 /obj/item/stack/sheet/mineral/zaukerite,
 /obj/item/stack/sheet/mineral/zaukerite,
 /obj/item/stack/sheet/mineral/zaukerite,
+/obj/structure/closet/secure_closet,
 /turf/open/floor/mineral/titanium,
 /area/ruin/powered)
 "Rs" = (
@@ -759,20 +739,11 @@
 /area/ruin/powered)
 "Sr" = (
 /obj/effect/turf_decal/bot/yellow,
-/obj/structure/closet/secure_closet{
-	req_access_txt = "208";
-	name = "Оружие"
-	},
 /obj/item/stack/sheet/mineral/gold,
 /obj/item/stack/sheet/mineral/gold,
 /obj/item/stack/sheet/mineral/gold,
+/obj/structure/closet/secure_closet,
 /turf/open/floor/mineral/titanium,
-/area/ruin/powered)
-"SF" = (
-/obj/machinery/porta_turret/centcom_shuttle/ballistic{
-	faction = list("hostile")
-	},
-/turf/closed/indestructible/syndicate,
 /area/ruin/powered)
 "Um" = (
 /obj/structure/chair/comfy/black{
@@ -1292,7 +1263,7 @@ MQ
 MQ
 rU
 rU
-SF
+Ym
 Fz
 Fz
 Fz
@@ -1315,7 +1286,7 @@ Wq
 Wq
 "}
 (15,1,1) = {"
-ix
+Wq
 MQ
 LV
 MQ
@@ -1348,7 +1319,7 @@ Wq
 Wq
 "}
 (16,1,1) = {"
-ix
+Wq
 MQ
 MQ
 MQ
@@ -1366,7 +1337,7 @@ NA
 Ym
 gJ
 AA
-kl
+rf
 Im
 hf
 hf
@@ -1381,7 +1352,7 @@ Wq
 Wq
 "}
 (17,1,1) = {"
-ix
+Wq
 MQ
 MQ
 MQ
@@ -1414,7 +1385,7 @@ Wq
 Wq
 "}
 (18,1,1) = {"
-ix
+Wq
 MQ
 MQ
 uR
@@ -1517,8 +1488,8 @@ Wq
 Wq
 Wq
 Wq
-tA
-tA
+Wq
+Wq
 LV
 LV
 LV
@@ -1788,7 +1759,7 @@ Wq
 Wq
 Wq
 Wq
-sh
+rf
 rf
 oP
 oP
