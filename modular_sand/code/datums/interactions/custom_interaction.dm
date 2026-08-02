@@ -11,6 +11,7 @@
 	return MAX_CUSTOM_INTERACTIONS
 
 /datum/interaction/custom
+	max_distance = 1
 	var/name
 	var/message
 	var/interaction_type = CUSTOM_INTERACTION_TYPE_NORMAL
@@ -55,6 +56,7 @@
 	arousal_level = sanitize_integer(arousal_level, CUSTOM_AROUSAL_NONE, CUSTOM_AROUSAL_MAX, CUSTOM_AROUSAL_NONE)
 	requires_tail = !!requires_tail
 	requires_telekinesis = !!requires_telekinesis
+	max_distance = sanitize_integer(max_distance, 1, 3, 1)
 
 /datum/interaction/custom/proc/get_interaction_type_num()
 	switch(interaction_type)
@@ -147,7 +149,7 @@
 	if(get_dist(user, target) > max_distance)
 		to_chat(user, span_warning("Слишком далеко."))
 		return FALSE
-	if(!(user.Adjacent(target) && target.Adjacent(user)))
+	if(max_distance == 1 && !(user.Adjacent(target) && target.Adjacent(user)))
 		to_chat(user, span_warning("Ты не достаёшь."))
 		return FALSE
 	var/vision_distance = 7
@@ -156,14 +158,19 @@
 		vision_distance = 1
 		hidden_message = pick(hidden_additional)
 	var/use_message = get_random_message_variant()
-	use_message = replacetext(use_message, "USER", "\the [user]")
-	use_message = replacetext(use_message, "TARGET", "\the [target]")
+	use_message = replacetext(use_message, "USER", "<b>\the [user]</b>")
+	use_message = replacetext(use_message, "TARGET", "<b>\the [target]</b>")
 	var/is_lewd = interaction_type != CUSTOM_INTERACTION_TYPE_NORMAL
 	user.visible_message(
 		"<span class='[get_message_style()]'>[hidden_message][capitalize(use_message)]</span>",
 		vision_distance = vision_distance,
 		ignored_mobs = is_lewd ? user.get_unconsenting(get_interaction_flags()) : null
 	)
+	if(is_lewd)
+		if(!HAS_TRAIT(user, TRAIT_LEWD_JOB) && !is_hidden)
+			new /obj/effect/temp_visual/heart(user.loc)
+		if(user != target && !HAS_TRAIT(target, TRAIT_LEWD_JOB) && !is_hidden)
+			new /obj/effect/temp_visual/heart(target.loc)
 	var/lust_amount = get_lust_amount()
 	if(lust_amount && !QDELETED(target))
 		target.add_lust(lust_amount)
