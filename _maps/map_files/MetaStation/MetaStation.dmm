@@ -75866,6 +75866,9 @@
 /obj/effect/turf_decal/tile/brown{
 	dir = 8
 	},
+/obj/machinery/keycard_auth{
+	pixel_y = 23
+	},
 /turf/open/floor/plasteel,
 /area/cargo/qm)
 "qwv" = (
@@ -82117,9 +82120,6 @@
 	},
 /obj/effect/turf_decal/tile/brown{
 	dir = 4
-	},
-/obj/machinery/keycard_auth{
-	pixel_y = 23
 	},
 /obj/machinery/disposal/bin,
 /obj/structure/disposalpipe/trunk{

@@ -8,6 +8,7 @@ import { Box } from '../../../components';
 
 type ContentInfo = {
   interactions: InteractionData[];
+  custom_interactions_list: InteractionData[];
   favorite_interactions: string[];
   hidden_interactions_keys: string[];
   user_is_blacklisted: boolean;
@@ -23,6 +24,8 @@ type InteractionData = {
   desc: string;
   type: number;
   additionalDetails: additionalDetailsContent[];
+  interactionFlags?: number;
+  isCustom?: boolean;
   hidden?: boolean;
 }
 
@@ -57,7 +60,7 @@ export const InteractionsTab = (props) => {
     setSearchText,
   ] = useLocalState('searchText', '');
   const interactions = sortInteractions(
-    data.interactions,
+    [...(data.interactions || []), ...(data.custom_interactions_list || [])],
     searchText,
     data)
     || [];
@@ -234,14 +237,16 @@ export const sortInteractions = (interactions, searchText = '', data) => {
 
     // Is self
     filter(interaction =>
-      (isTargetSelf ? (INTERACTION_FLAG_USER_IS_TARGET
-        & interaction.interactionFlags)
-        : !(INTERACTION_FLAG_USER_IS_TARGET & interaction.interactionFlags))),
+      interaction.isCustom ? true
+        : (isTargetSelf ? (INTERACTION_FLAG_USER_IS_TARGET
+          & interaction.interactionFlags)
+          : !(INTERACTION_FLAG_USER_IS_TARGET & interaction.interactionFlags))),
     // Has a player or none at all
     filter(interaction =>
-      (!isTargetSelf && (target_has_active_player === 1)
-        ? !(INTERACTION_FLAG_OOC_CONSENT
-          & interaction.interactionFlags) : true)),
+      interaction.isCustom ? true
+        : (!isTargetSelf && (target_has_active_player === 1)
+          ? !(INTERACTION_FLAG_OOC_CONSENT
+            & interaction.interactionFlags) : true)),
     // Has a player or none at all
     filter(interaction =>
       interaction.interactionFlags & INTERACTION_FLAG_RANGED_CONSENT

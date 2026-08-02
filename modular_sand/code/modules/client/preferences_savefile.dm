@@ -39,11 +39,14 @@
 		return FALSE
 	WRITE_FILE(.["favorite_interactions"],	favorite_interactions)
 
+	WRITE_FILE(.["custom_interactions"], custom_interactions)
+	WRITE_FILE(.["custom_verb_consent"], custom_verb_consent)
+
 	WRITE_FILE(.["use_arousal_multiplier"],	use_arousal_multiplier)
 	WRITE_FILE(.["arousal_multiplier"],		arousal_multiplier)
 	WRITE_FILE(.["use_moaning_multiplier"],	use_moaning_multiplier)
 	WRITE_FILE(.["moaning_multiplier"],		moaning_multiplier)
-	// Bluemoon prefs root (must run last — см. modular_bluemoon/preferences_savefile.dm)
+	// Bluemoon prefs root (must run last вЂ” СЃРј. modular_bluemoon/preferences_savefile.dm)
 	WRITE_FILE(.["favorite_tracks"], favorite_tracks)
 	WRITE_FILE(.["playlists"], playlists)
 	WRITE_FILE(.["favorite_paintings_md5"], favorite_paintings_md5)
@@ -65,6 +68,8 @@
 	favorite_interactions = SANITIZE_LIST(favorite_interactions)
 
 	for(var/interaction in favorite_interactions)
+		if(findtext(interaction, CUSTOM_INTERACTION_PREFIX) == 1)
+			continue
 		var/datum/interaction/interaction_path = ispath(interaction) ? interaction : text2path(interaction)
 		if(!interaction_path)
 			LAZYREMOVE(favorite_interactions, interaction)
@@ -72,6 +77,24 @@
 		if(!initial(interaction_path.description))
 			LAZYREMOVE(favorite_interactions, interaction)
 			continue
+
+	.["custom_interactions"] >> custom_interactions
+	custom_interactions = SANITIZE_LIST(custom_interactions)
+	for(var/i in length(custom_interactions) to 1 step -1)
+		var/datum/interaction/custom/custom = custom_interactions[i]
+		if(!istype(custom))
+			custom_interactions.Cut(i, i + 1)
+			continue
+		custom.sanitize_values()
+		if(!custom.name || !custom.message)
+			custom_interactions.Cut(i, i + 1)
+			continue
+	var/max_customs = get_custom_interaction_limit()
+	if(length(custom_interactions) > max_customs)
+		custom_interactions.Cut(max_customs + 1)
+
+	.["custom_verb_consent"] >> custom_verb_consent
+	custom_verb_consent = sanitize_integer(custom_verb_consent, 0, 1, TRUE)
 
 	use_arousal_multiplier = sanitize_integer(use_arousal_multiplier, 0, 1, initial(use_arousal_multiplier))
 	arousal_multiplier = sanitize_integer(arousal_multiplier, 0, 300, initial(arousal_multiplier))
