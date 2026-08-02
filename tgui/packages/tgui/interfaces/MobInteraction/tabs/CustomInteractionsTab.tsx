@@ -12,6 +12,7 @@ type CustomInteractionData = {
   arousal_label: string;
   requires_tail: boolean;
   requires_telekinesis: boolean;
+  max_distance: number;
 }
 
 type CustomTabInfo = {
@@ -36,6 +37,12 @@ const AROUSAL_LEVELS = [
   { id: 3, label: 'Сильный', desc: '+50 возбуждения персонажа.' },
 ];
 
+const MAX_DISTANCES = [
+  { id: 1, label: '1 тайл', desc: 'Вплотную, как обычное действие.' },
+  { id: 2, label: '2 тайла', desc: 'Можно применить на расстоянии до двух тайлов.' },
+  { id: 3, label: '3 тайла', desc: 'Можно применить на расстоянии до трёх тайлов.' },
+];
+
 export const CustomInteractionsTab = (props) => {
   const { act, data } = useBackend<CustomTabInfo>();
   const [editingKey, setEditingKey] = useLocalState<string | null>('customEditingKey', null);
@@ -49,6 +56,7 @@ export const CustomInteractionsTab = (props) => {
   const [arousalLevel, setArousalLevel] = useLocalState('customFormArousal', 0);
   const [requiresTail, setRequiresTail] = useLocalState('customFormTail', false);
   const [requiresTelekinesis, setRequiresTelekinesis] = useLocalState('customFormTk', false);
+  const [maxDistance, setMaxDistance] = useLocalState('customFormDistance', 1);
 
   const editingCustom = editingKey
     ? customs.find(custom => custom.key === editingKey)
@@ -63,6 +71,7 @@ export const CustomInteractionsTab = (props) => {
     setArousalLevel(0);
     setRequiresTail(false);
     setRequiresTelekinesis(false);
+    setMaxDistance(1);
   };
 
   const startEdit = (custom) => {
@@ -74,6 +83,7 @@ export const CustomInteractionsTab = (props) => {
     setArousalLevel(custom.arousal_level);
     setRequiresTail(custom.requires_tail);
     setRequiresTelekinesis(custom.requires_telekinesis);
+    setMaxDistance(custom.max_distance || 1);
   };
 
   const save = () => {
@@ -87,6 +97,7 @@ export const CustomInteractionsTab = (props) => {
       arousal_level: arousalLevel,
       requires_tail: requiresTail ? 1 : 0,
       requires_telekinesis: requiresTelekinesis ? 1 : 0,
+      max_distance: maxDistance,
     };
     if (editingCustom) {
       act('custom_edit', { key: editingCustom.key, ...payload });
@@ -203,6 +214,31 @@ export const CustomInteractionsTab = (props) => {
         <Stack.Item>
           <Stack>
             <Stack.Item width="40%">
+              Дистанция:
+            </Stack.Item>
+            <Stack.Item grow>
+              <Dropdown
+                fluid
+                width="100%"
+                options={MAX_DISTANCES.map(distance => distance.label)}
+                selected={MAX_DISTANCES.find(distance => distance.id === maxDistance)?.label}
+                displayText={MAX_DISTANCES.find(distance => distance.id === maxDistance)?.label || '1 тайл'}
+                onSelected={(label) => {
+                  const found = MAX_DISTANCES.find(distance => distance.label === label);
+                  setMaxDistance(found ? found.id : 1);
+                }}
+              />
+            </Stack.Item>
+          </Stack>
+        </Stack.Item>
+        <Stack.Item>
+          <Box color="label" nowrap>
+            {MAX_DISTANCES.find(distance => distance.id === maxDistance)?.desc}
+          </Box>
+        </Stack.Item>
+        <Stack.Item>
+          <Stack>
+            <Stack.Item width="40%">
               <Button
                 fluid
                 icon={requiresTail ? "toggle-on" : "toggle-off"}
@@ -290,6 +326,7 @@ export const CustomInteractionsTab = (props) => {
           </Stack>
           <Box color="label" nowrap>
             Тип: {custom.type_label} | Возбуждение персонажа: {custom.arousal_label}
+            {" "}| Дистанция: {custom.max_distance || 1} тайл{custom.max_distance > 1 ? "а" : ""}
             {custom.requires_tail ? " | Хвост" : ""}
             {custom.requires_telekinesis ? " | Телекинез" : ""}
           </Box>
