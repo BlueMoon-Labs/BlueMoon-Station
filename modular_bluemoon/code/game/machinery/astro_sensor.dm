@@ -239,6 +239,11 @@
 	if(!(machine_stat & BROKEN))
 		balloon_alert(user, "приёмник цел")
 		return TRUE
+	// use_tool с ненулевой задержкой стартовую проверку НЕ зовёт - она остаётся на
+	// вызывающем. Без неё погашенный сварочник успевал бы отыграть звук и объявление
+	// и отваливался только на первом тике do_after.
+	if(!tool.tool_start_check(user, amount = 0))
+		return TRUE
 	user.balloon_alert_to_viewers("меняет приёмник...", "меняете приёмник...")
 	if(!tool.use_tool(src, user, 8 SECONDS, amount = 0, volume = 50))
 		return TRUE
@@ -250,7 +255,14 @@
 
 /obj/machinery/astro_sensor/wrench_act(mob/living/user, obj/item/tool)
 	. = ..()
-	if(default_unfasten_wrench(user, tool, 4 SECONDS))
+	if(.)
+		return
+	// Клик поглощаем только тогда, когда откручивание вообще началось. На машине, которую
+	// разбирать нельзя, безусловный успех съел бы удар молча - ни открутки, ни атаки.
+	var/result = default_unfasten_wrench(user, tool, 4 SECONDS)
+	if(result == CANT_UNFASTEN)
+		return
+	if(result == SUCCESSFUL_UNFASTEN)
 		update_appearance()
 	return TOOL_ACT_TOOLTYPE_SUCCESS
 

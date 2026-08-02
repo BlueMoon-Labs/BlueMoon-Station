@@ -105,7 +105,10 @@
 		var/turf/candidate = locate(rand(PHENOMENON_EDGE_PAD, world.maxx - PHENOMENON_EDGE_PAD), rand(PHENOMENON_EDGE_PAD, world.maxy - PHENOMENON_EDGE_PAD), z_level)
 		if(!candidate || isspaceturf(candidate) || candidate.density)
 			continue
-		if(!locate(/obj/item) in candidate)
+		// Скобки обязательны: `in` связывает слабее `!`, и без них выражение читается
+		// как `(!locate(/obj/item)) in candidate` - число в contents турфа не встречается,
+		// условие всегда ложно, и прок отдаёт первый попавшийся пустой турф.
+		if(!(locate(/obj/item) in candidate))
 			continue
 		return candidate
 	return null

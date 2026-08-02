@@ -211,8 +211,21 @@ SUBSYSTEM_DEF(parallax)
 			tint = modifier.tint
 
 	template = new /datum/parallax(profile, extra_layers, tint, current_revision)
+	apply_saved_layer_colors(key, template)
 	parallax_templates_by_z[key] = template
 	return template
+
+/// Возвращает на пересобранную сцену цвета, выставленные animate_layer_type().
+/// Идёт по стеку снизу вверх, поэтому старший модификатор перебивает младшего - тем же
+/// порядком, каким собирается и всё остальное в шаблоне.
+/datum/controller/subsystem/parallax/proc/apply_saved_layer_colors(key, datum/parallax/template)
+	for(var/datum/parallax_modifier/modifier as anything in modifiers_by_z[key])
+		if(!LAZYLEN(modifier.layer_colors))
+			continue
+		for(var/atom/movable/screen/parallax_layer/layer as anything in template.objects)
+			var/saved = modifier.layer_colors[layer.type]
+			if(saved)
+				layer.color = saved
 
 /**
  * Помечает сцену z-уровня протухшей и перестраивает её у клиентов.
@@ -398,11 +411,28 @@ SUBSYSTEM_DEF(parallax)
  *
  * Шаблон правится наравне с живыми держателями: он источник клонов, и без этого зашедший
  * посреди явления клиент получил бы слой в цвете начала события.
+ *
+ * Цвет запоминается на модификаторе, который этот слой и принёс. Без этого он жил бы
+ * ровно до ближайшей инвалидации z: шаблон пересобирается с нуля, а на плато пика
+ * интенсивность не меняется, и следующего вызова, который вернул бы цвет, не будет.
  */
 /datum/controller/subsystem/parallax/proc/animate_layer_type(z, layer_type, tint, time = 0)
 	if(!ispath(layer_type, /atom/movable/screen/parallax_layer) || !tint)
 		return FALSE
+	// Цвет слоя с luminance_alpha занят матрицей прозрачности, и запись color поверх неё
+	// превращает снег, пыль или угли в непрозрачное пятно. Тот же инвариант соблюдает
+	// InstantiateLayer(), пропуская такие слои мимо палитры профиля.
+	var/atom/movable/screen/parallax_layer/probe = layer_type
+	if(initial(probe.luminance_alpha))
+		stack_trace("animate_layer_type: [layer_type] держит прозрачность матрицей яркости, красить его нельзя")
+		return FALSE
 	. = FALSE
+	// Модификатор, объявивший этот слой, переносит цвет через пересборку сцены. Слой из
+	// самого профиля запомнить негде - его перекрасит следующий вызов.
+	for(var/datum/parallax_modifier/modifier as anything in modifiers_by_z["[z]"])
+		if(!(layer_type in modifier.extra_layers))
+			continue
+		LAZYSET(modifier.layer_colors, layer_type, tint)
 	var/datum/parallax/template = parallax_templates_by_z["[z]"]
 	if(template)
 		for(var/atom/movable/screen/parallax_layer/layer as anything in template.objects)

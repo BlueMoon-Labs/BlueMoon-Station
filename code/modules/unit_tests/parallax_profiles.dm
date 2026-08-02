@@ -217,6 +217,38 @@
 	SSparallax.base_profile_by_z["1"] = original
 	SSparallax.invalidate_z(1)
 
+/**
+ * Адресный цвет слоя обязан пережить пересборку сцены.
+ *
+ * Явление тянет подсветку только на смене интенсивности, а на плато пика она стоит на
+ * единице. Любой чужой модификатор, легший на z в это время, выбрасывает шаблон, и без
+ * запоминания цвета явление доигрывало бы пик вообще без подсветки - до самого ухода.
+ */
+/datum/unit_test/parallax_layer_color_survives_rebuild/Run()
+	var/datum/parallax_profile/original = SSparallax.get_base_profile(1)
+	SSparallax.set_base_profile(1, "unit_test_scene")
+
+	var/layer_type = /atom/movable/screen/parallax_layer/tint/phenomenon
+	SSparallax.add_layers(1, "phenomenon", list(layer_type))
+	// Сцена должна существовать до покраски: add_layers её инвалидировал, а красить
+	// нечего, пока шаблон не собран заново.
+	SSparallax.get_parallax_template(1)
+	var/painted = SSparallax.animate_layer_type(1, layer_type, "#3399ff")
+
+	// Ровно то, что делает посреди явления любой чужой источник параллакса.
+	SSparallax.invalidate_z(1)
+	var/rebuilt_color
+	for(var/atom/movable/screen/parallax_layer/layer as anything in SSparallax.get_parallax_template(1).objects)
+		if(layer.type == layer_type)
+			rebuilt_color = layer.color
+
+	SSparallax.remove_modifier(1, "phenomenon")
+	SSparallax.base_profile_by_z["1"] = original
+	SSparallax.invalidate_z(1)
+
+	TEST_ASSERT(painted, "animate_layer_type не нашёл слой явления в собранной сцене")
+	TEST_ASSERT_EQUAL(rebuilt_color, "#3399ff", "Цвет слоя явления не пережил пересборку сцены - стало '[rebuilt_color]'")
+
 /// Настройка качества обязана отсекать слои по parallax_intensity, а выключенный
 /// параллакс и lag switch - не рисовать ничего.
 /datum/unit_test/parallax_quality_filter/Run()

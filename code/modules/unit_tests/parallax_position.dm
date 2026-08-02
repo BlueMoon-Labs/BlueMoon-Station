@@ -135,6 +135,12 @@
 		var/covered = sky.tile_size * sky.fitted_scale
 		TEST_ASSERT(covered >= view_px_x, "При view [view_string] скайбокс перекрывает [covered] пикселей при ширине вьюпорта [view_px_x]")
 		TEST_ASSERT(covered >= view_px_y, "При view [view_string] скайбокс перекрывает [covered] пикселей при высоте вьюпорта [view_px_y]")
+		// И перекрытия обязано хватать на ВЕСЬ ход смещения: bleed_* - это предел, до
+		// которого слой уезжает, и картинка короче вьюпорта плюс двух запасов показала бы
+		// край на упоре. Допуск на сотую пикселя - тот самый обратный счёт масштаба,
+		// из-за которого covered выходит 1087.9999 вместо 1088.
+		TEST_ASSERT(covered + 0.01 >= view_px_x + sky.bleed_x * 2, "При view [view_string] скайбокс перекрывает [covered] пикселей, а уезжает на [sky.bleed_x] при ширине вьюпорта [view_px_x] - край войдёт в кадр на упоре")
+		TEST_ASSERT(covered + 0.01 >= view_px_y + sky.bleed_y * 2, "При view [view_string] скайбокс перекрывает [covered] пикселей, а уезжает на [sky.bleed_y] при высоте вьюпорта [view_px_y] - край войдёт в кадр на упоре")
 
 	sky.SetView("15x15", TRUE)
 	// Уезжать дальше запаса скайбокс не имеет права ни при каких координатах.

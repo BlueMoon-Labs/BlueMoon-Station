@@ -55,6 +55,10 @@
 	var/impact_bearing
 	/// Выдано ли предупреждение о ближайшем ударе.
 	var/impact_warned = FALSE
+	/// Уведено ли поле. Уход зовётся из двух мест - из фазы ухода и из уборки, - и оба
+	/// пути штатны: админская отмена на пике идёт мимо фазы ухода, а фаза ухода наступает
+	/// раньше уборки. Второй проход обязан ничего не делать.
+	var/drifted_away = FALSE
 
 /datum/round_event/space_weather/graveyard/on_phase_enter(next_phase, previous_phase)
 	switch(next_phase)
@@ -127,8 +131,14 @@
  * Обломки берутся из глобального списка, а не из своего: игрок вправе разобрать обломок
  * до конца, и тот удалится сам. Хранить на событии ссылки на объекты, которые удаляет
  * кто-то другой, значит держать их за хвост до конца раунда.
+ *
+ * Ровно один проход за событие: второй перевзвёл бы QDEL_IN на тех же обломках, а
+ * отложенный qdel держит обломок жёсткой ссылкой из таймера уже после его удаления.
  */
 /datum/round_event/space_weather/graveyard/proc/drift_away()
+	if(drifted_away)
+		return
+	drifted_away = TRUE
 	for(var/obj/structure/loot_pile/derelict/hulk as anything in GLOB.derelict_hulks)
 		if(QDELETED(hulk))
 			continue
