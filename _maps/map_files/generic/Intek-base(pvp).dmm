@@ -130,6 +130,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/InteQ_ship/ship2)
 "ay" = (
+/obj/machinery/light,
 /obj/structure/closet/syndicate{
 	anchored = 1;
 	armor = list("melee" = 70, "bullet" = 40, "laser" = 40, "energy" = 30, "bomb" = 30, "bio" = 0, "rad" = 0, "fire" = 70, "acid" = 60);
@@ -144,8 +145,9 @@
 /obj/item/flashlight/seclite,
 /obj/item/paper/fluff/ruins/forgottenship/missionobj,
 /obj/item/gun/ballistic/automatic/pistol,
-/obj/item/ammo_box/magazine/pistolm9mm,
-/obj/item/ammo_box/magazine/pistolm9mm,
+/obj/machinery/atmospherics/components/unary/vent_pump{
+	dir = 1
+	},
 /turf/open/floor/wood,
 /area/InteQ_ship)
 "az" = (
@@ -1020,6 +1022,15 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/ship6)
+"dm" = (
+/obj/structure/sign/flag/inteq{
+	pixel_y = 59
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/InteQ_ship)
 "dn" = (
 /obj/structure/sign/flag/nanotrasen,
 /turf/closed/wall/mineral/plastitanium,
@@ -5822,11 +5833,12 @@
 /obj/item/flashlight/seclite,
 /obj/item/paper/fluff/ruins/forgottenship/missionobj,
 /obj/item/gun/ballistic/automatic/pistol,
-/obj/item/ammo_box/magazine/pistolm9mm,
-/obj/item/ammo_box/magazine/pistolm9mm,
 /obj/machinery/atmospherics/components/unary/vent_pump{
 	dir = 1
 	},
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
 /turf/open/floor/wood,
 /area/InteQ_ship)
 "re" = (
@@ -9495,10 +9507,24 @@
 /turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/InteQ_ship)
 "Ck" = (
-/obj/structure/closet/cabinet,
-/obj/item/clothing/head/wizard/marisa/fake,
-/obj/item/clothing/suit/wizrobe,
-/turf/open/floor/wood/wood_tiled,
+/obj/structure/closet/syndicate{
+	anchored = 1;
+	armor = list("melee" = 70, "bullet" = 40, "laser" = 40, "energy" = 30, "bomb" = 30, "bio" = 0, "rad" = 0, "fire" = 70, "acid" = 60);
+	desc = "A basic closet for all your villainous needs.";
+	locked = 1;
+	name = "Closet";
+	req_one_access_txt = "152";
+	secure = 1
+	},
+/obj/item/crowbar/red,
+/obj/item/ammo_box/c10mm,
+/obj/item/flashlight/seclite,
+/obj/item/paper/fluff/ruins/forgottenship/missionobj,
+/obj/item/gun/ballistic/automatic/pistol,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/turf/open/floor/wood,
 /area/InteQ_ship)
 "Cl" = (
 /obj/structure/closet,
@@ -9834,8 +9860,6 @@
 /obj/item/flashlight/seclite,
 /obj/item/paper/fluff/ruins/forgottenship/missionobj,
 /obj/item/gun/ballistic/automatic/pistol,
-/obj/item/ammo_box/magazine/pistolm9mm,
-/obj/item/ammo_box/magazine/pistolm9mm,
 /obj/machinery/atmospherics/components/unary/vent_pump{
 	dir = 1
 	},
@@ -10515,6 +10539,27 @@
 /obj/machinery/suit_storage_unit/syndicate/cybersun,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/ship5)
+"EX" = (
+/obj/structure/closet/syndicate{
+	anchored = 1;
+	armor = list("melee" = 70, "bullet" = 40, "laser" = 40, "energy" = 30, "bomb" = 30, "bio" = 0, "rad" = 0, "fire" = 70, "acid" = 60);
+	desc = "A basic closet for all your villainous needs.";
+	locked = 1;
+	name = "Closet";
+	req_one_access_txt = "152";
+	secure = 1
+	},
+/obj/item/crowbar/red,
+/obj/item/ammo_box/c10mm,
+/obj/item/flashlight/seclite,
+/obj/item/paper/fluff/ruins/forgottenship/missionobj,
+/obj/item/gun/ballistic/automatic/pistol,
+/obj/machinery/atmospherics/components/unary/vent_pump,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/obj/item/ammo_box/magazine/m10mm,
+/turf/open/floor/wood,
+/area/InteQ_ship)
 "EZ" = (
 /obj/structure/sign/flag/inteq,
 /turf/closed/wall/r_wall/syndicate/nodiagonal,
@@ -15278,8 +15323,6 @@
 /obj/item/flashlight/seclite,
 /obj/item/paper/fluff/ruins/forgottenship/missionobj,
 /obj/item/gun/ballistic/automatic/pistol,
-/obj/item/ammo_box/magazine/pistolm9mm,
-/obj/item/ammo_box/magazine/pistolm9mm,
 /obj/machinery/atmospherics/components/unary/vent_pump,
 /turf/open/floor/wood,
 /area/InteQ_ship)
@@ -15447,10 +15490,6 @@
 /obj/structure/table/reinforced,
 /obj/effect/spawner/lootdrop/syndicate_present,
 /obj/item/gun/ballistic/automatic/pistol/suppressed,
-/obj/item/ammo_box/magazine/pistolm9mm,
-/obj/item/ammo_box/magazine/pistolm9mm,
-/obj/item/ammo_box/magazine/pistolm9mm,
-/obj/item/ammo_box/magazine/pistolm9mm,
 /turf/open/floor/plasteel/dark,
 /area/InteQ_ship/ship6)
 "TZ" = (
@@ -15765,9 +15804,6 @@
 	dir = 1
 	},
 /obj/structure/closet/crate/large,
-/obj/item/ammo_box/magazine/pistolm9mm,
-/obj/item/ammo_box/magazine/pistolm9mm,
-/obj/item/ammo_box/magazine/pistolm9mm,
 /obj/effect/turf_decal/tile/brown/full,
 /turf/open/floor/plasteel/rockvault/alien,
 /area/InteQ_ship)
@@ -16320,8 +16356,6 @@
 /obj/item/ammo_box/c10mm,
 /obj/item/flashlight/seclite,
 /obj/item/gun/ballistic/automatic/pistol,
-/obj/item/ammo_box/magazine/pistolm9mm,
-/obj/item/ammo_box/magazine/pistolm9mm,
 /turf/open/floor/engine,
 /area/InteQ_ship)
 "WJ" = (
@@ -16348,8 +16382,6 @@
 /obj/item/ammo_box/c10mm,
 /obj/item/flashlight/seclite,
 /obj/item/gun/ballistic/automatic/pistol,
-/obj/item/ammo_box/magazine/pistolm9mm,
-/obj/item/ammo_box/magazine/pistolm9mm,
 /turf/open/floor/wood,
 /area/space)
 "WM" = (
@@ -35103,8 +35135,8 @@ rM
 rM
 DN
 Ee
-TC
-xU
+EX
+dm
 gs
 Ee
 rd
@@ -35742,7 +35774,7 @@ Ee
 dJ
 Ee
 Al
-Al
+eF
 Ku
 Ku
 Ee
@@ -35954,7 +35986,7 @@ Ee
 yX
 Ee
 Bn
-eF
+Al
 Al
 xz
 Ee
@@ -36572,7 +36604,7 @@ TC
 gs
 pR
 oY
-rd
+ay
 pR
 AM
 AM
@@ -41252,7 +41284,7 @@ DN
 Lw
 Ee
 Ck
-ay
+qJ
 NQ
 Ee
 qJ
