@@ -4559,6 +4559,7 @@
 #include "modular_bluemoon\code\game\area\areas\antag_areas.dm"
 #include "modular_bluemoon\code\game\area\areas\ruins\icemoon.dm"
 #include "modular_bluemoon\code\game\area\areas\ruins\space.dm"
+#include "modular_bluemoon\code\game\machinery\astro_sensor.dm"
 #include "modular_bluemoon\code\game\machinery\aug_manipulator.dm"
 #include "modular_bluemoon\code\game\machinery\cloth_drive.dm"
 #include "modular_bluemoon\code\game\machinery\coffeemaker.dm"

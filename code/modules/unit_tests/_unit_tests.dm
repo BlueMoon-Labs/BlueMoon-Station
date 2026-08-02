@@ -247,6 +247,7 @@
 #include "shapeshift_gc.dm"
 #include "simple_animal_buckets.dm"
 #include "space_drift.dm"
+#include "astro_sensor.dm"
 #include "space_flight_modes.dm"
 #include "space_weather_effects.dm"
 #include "space_weather_graveyard.dm"
