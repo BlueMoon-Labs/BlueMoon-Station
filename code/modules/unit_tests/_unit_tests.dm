@@ -248,6 +248,7 @@
 #include "simple_animal_buckets.dm"
 #include "space_drift.dm"
 #include "space_flight_modes.dm"
+#include "space_weather_phases.dm"
 #include "spirit_regressions.dm"
 #include "statpanel_listedturf.dm"
 #include "ssmobs_optimization.dm"
