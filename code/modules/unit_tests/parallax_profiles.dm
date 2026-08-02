@@ -325,27 +325,3 @@
 		TEST_ASSERT_NOTNULL(SSparallax.profiles_by_id[weather_profile], "Погода [weather_type] ссылается на несуществующий профиль '[weather_profile]'")
 	TEST_ASSERT(weather_checked >= 3, "Погод с профилем параллакса нашлось всего [weather_checked]")
 
-/**
- * Смена обоев за иллюминатором обязана оставаться флейвором за ноль.
- *
- * Категория события - не украшение и не группировка в панели: её единственный
- * читатель - /datum/round_event_control/New(), где она выбирает ступень директора,
- * а из ступени уже следуют цена, нагрузка и лимит одновременных. С категорией
- * ANOMALIES четыре из пяти явлений уезжали в ступень "крупное" к метеорным волнам
- * и портальным штормам, где их насмерть держал лимит одновременных крупных.
- */
-/datum/unit_test/space_weather_director_tier/Run()
-	var/checked = 0
-	for(var/datum/round_event_control/space_weather/control in SSdirector.event_controls())
-		if(control.type == /datum/round_event_control/space_weather)
-			// Шаблон ветки: без profile_id его start() падает, поэтому он выключен,
-			// а каждый конкретный подтип включает себя явно.
-			TEST_ASSERT(!control.enabled, "Шаблонная база космической погоды включена - её запуск падает без профиля")
-			continue
-		checked++
-		TEST_ASSERT(control.enabled, "[control.name]: подтип не включил себя явно, а база ветки выключена")
-		TEST_ASSERT_EQUAL(control.severity, DIRECTOR_SEVERITY_FLAVOR, "[control.name]: чисто визуальное событие попало в ступень '[control.severity]'")
-		TEST_ASSERT_EQUAL(control.cost, 0, "[control.name]: смена обоев стоит [control.cost] из бюджета настоящего контента")
-		TEST_ASSERT_EQUAL(control.get_disruption(), DIRECTOR_DISRUPTION_AMBIENT, "[control.name]: навязчивость '[control.get_disruption()]' вместо фоновой")
-		TEST_ASSERT(control.weight > 0, "[control.name]: нулевой вес - событие не выпадет никогда")
-	TEST_ASSERT(checked >= 5, "Событий космической погоды в реестре директора нашлось всего [checked]")

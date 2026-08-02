@@ -134,4 +134,48 @@
 	SSparallax.base_profile_by_z["1"] = original
 	SSparallax.invalidate_z(1)
 
+/**
+ * Ступени директора у явлений заданы осознанно и совпадают с задуманной лестницей.
+ *
+ * Ступень - не украшение: её читает /datum/round_event_control/New(), а из неё следуют
+ * цена, нагрузка и лимит одновременных. Урок, ради которого тест и написан: с категорией
+ * ANOMALIES четыре явления из пяти уезжали в ступень "крупное" к метеорным волнам и
+ * портальным штормам, где их насмерть держал лимит одновременных крупных. Теперь ступени
+ * проставлены руками, и таблица ниже - единственное место, где эта развесовка записана.
+ */
+/datum/unit_test/space_weather_director_tier/Run()
+	var/static/list/expected_tiers = list(
+		/datum/round_event_control/space_weather/graveyard = DIRECTOR_SEVERITY_MODERATE,
+		/datum/round_event_control/space_weather/micro_debris = DIRECTOR_SEVERITY_MODERATE,
+		/datum/round_event_control/space_weather/ion_blizzard = DIRECTOR_SEVERITY_MODERATE,
+		/datum/round_event_control/space_weather/bluespace_storm = DIRECTOR_SEVERITY_MODERATE,
+		/datum/round_event_control/space_weather/interphase = DIRECTOR_SEVERITY_MINOR,
+		/datum/round_event_control/space_weather/photon_vortex = DIRECTOR_SEVERITY_MAJOR,
+	)
+
+	var/checked = 0
+	var/major_count = 0
+	for(var/datum/round_event_control/space_weather/control in SSdirector.event_controls())
+		if(control.type == /datum/round_event_control/space_weather)
+			// Шаблон ветки: без profile_id его start() падает, поэтому он выключен,
+			// а каждый конкретный подтип включает себя явно.
+			TEST_ASSERT(!control.enabled, "Шаблонная база космической погоды включена - её запуск падает без профиля")
+			continue
+		checked++
+		TEST_ASSERT(control.enabled, "[control.name]: подтип не включил себя явно, а база ветки выключена")
+		TEST_ASSERT(control.weight > 0, "[control.name]: нулевой вес - событие не выпадет никогда")
+		TEST_ASSERT_EQUAL(control.family, "space_weather", "[control.name]: вне семейства - анти-повторы обойдёт поодиночке")
+
+		var/expected = expected_tiers[control.type]
+		TEST_ASSERT_NOTNULL(expected, "[control.name]: явление не записано в таблицу ступеней - развесовка ветки стала неизвестной")
+		TEST_ASSERT_EQUAL(control.severity, expected, "[control.name]: ступень '[control.severity]' вместо задуманной '[expected]'")
+		TEST_ASSERT(control.cost > 0, "[control.name]: событие с механикой стоит ноль из бюджета директора")
+		if(control.severity == DIRECTOR_SEVERITY_MAJOR)
+			major_count++
+
+	TEST_ASSERT_EQUAL(checked, length(expected_tiers), "Явлений в реестре директора [checked], а в таблице ступеней [length(expected_tiers)]")
+	// Тяжёлое явление в ветке ровно одно. Второе делило бы с ним лимит одновременных
+	// крупных, и оба выпадали бы вдвое реже, чем задумано.
+	TEST_ASSERT_EQUAL(major_count, 1, "Крупных явлений в ветке [major_count], а должно быть ровно одно")
+
 #undef SPACE_WEATHER_MAX_INTENSITY_STEP

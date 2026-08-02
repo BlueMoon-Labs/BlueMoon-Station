@@ -12,6 +12,20 @@ GLOBAL_VAR_INIT(fileaccess_timer, 0)
 
 GLOBAL_DATUM_INIT(data_core, /datum/datacore, new)
 
+/// Общий множитель выработки солнечных панелей. Ведут его явления космической погоды:
+/// ионная буря кратно поднимает, поле микрообломков сажает осевшей пылью.
+/// Множитель, а не проход по панелям: список панелей пришлось бы хранить и чистить,
+/// а построенная посреди явления панель всё равно осталась бы вне его.
+GLOBAL_VAR_INIT(solar_output_multiplier, 1)
+
+/// Разброс точки прибытия, который космическая погода добавляет блюспейс-телепортации.
+/// Ноль вне явления. Ведёт его блюспейс-шторм.
+GLOBAL_VAR_INIT(bluespace_teleport_noise, 0)
+/// Заглушен ли блюспейс-канал целиком. Ведёт его блюспейс-интерфаза.
+/// Принудительная телепортация (forced) проходит и через неё: ей затыкают дыры вроде
+/// вытаскивания игрока из сломанной геометрии, и глушить её значило бы менять баг на баг.
+GLOBAL_VAR_INIT(bluespace_teleport_blocked, FALSE)
+
 GLOBAL_VAR_INIT(CELLRATE, 0.002)  // conversion ratio between a watt-tick and kilojoule, dimensionless, kilojoules/watt-tick
 GLOBAL_VAR_INIT(CHARGELEVEL, 0.001) // Cap for how fast cells charge, as a percentage-per-tick (.001 means cellcharge is capped to 1% per second)
 

@@ -20,6 +20,14 @@
  * on_phase_enter() на разовую работу, apply_intensity() на масштабируемую,
  * sensor_readout() на то, что покажет астрометрический сенсор.
  */
+/// Попыток найти один свободный турф у корпуса, прежде чем сдаться.
+#define PHENOMENON_PLACEMENT_TRIES 120
+/// На сколько тайлов от точки должно найтись что-то твёрдое, чтобы она считалась
+/// прикорпусной. Дальше начинается глубина, откуда явление не видно из окна.
+#define PHENOMENON_HULL_RANGE 5
+/// Отступ от края карты при выборе места: у самого края начинается переход на другой z.
+#define PHENOMENON_EDGE_PAD (TRANSITIONEDGE + 6)
+
 /**
  * Корень ветки. Сам ничего не показывает: без profile_id его start() падает,
  * поэтому шаблон выключен, а каждый конкретный подтип включает себя явно -
@@ -39,7 +47,6 @@
 	earliest_start = 10 MINUTES
 	alert_observers = FALSE
 	category = EVENT_CATEGORY_FRIENDLY
-	disruption = DIRECTOR_DISRUPTION_AMBIENT
 	/// Явления делят затухание повторов и паузу семейства: шесть вариантов "станция
 	/// пролетает мимо чего-то" не должны обходить анти-повторы поодиночке.
 	family = "space_weather"
@@ -69,6 +76,11 @@
 	var/peak_token
 	/// z-уровни, на которые лёг модификатор. Снимаем ровно с них.
 	var/list/affected_z = list()
+	/// Название явления по-русски. Читает астрометрический сенсор; name у контроля
+	/// английское и уходит в панель админа, а не на экран игрока.
+	var/phenomenon_name = "неопознанное явление"
+	/// Множитель выдачи сенсора. Редкое и опасное явление стоит дороже рядового.
+	var/sensor_yield_mult = 1
 	/// Тексты объявлений. Пустой текст - на этой фазе событие молчит.
 	var/announce_text
 	var/peak_announce_text
@@ -119,8 +131,12 @@
 /datum/round_event/space_weather/start()
 	if(!profile_id || !token)
 		CRASH("Событие космической погоды [type] без профиля ('[profile_id]') или токена ('[token]')")
+	// Подсветка идёт СВОИМ слоем поверх профиля, а не перекраской его ярусов: донорский
+	// арт не помечен palette_tinted, его цвет - часть картинки, и красить его значило бы
+	// испортить то, ради чего профиль и брали.
+	var/list/extra_layers = (tint_low && tint_high) ? list(/atom/movable/screen/parallax_layer/tint/phenomenon) : null
 	for(var/station_z in SSmapping.levels_by_trait(ZTRAIT_STATION))
-		SSparallax.set_profile(station_z, profile_id, token, PARALLAX_PRIORITY_EVENT, transition_time)
+		SSparallax.add_modifier(station_z, token, profile_id, extra_layers, null, PARALLAX_PRIORITY_EVENT, transition_time)
 		affected_z += station_z
 	enter_phase(PHENOMENON_PHASE_APPROACH)
 
@@ -154,6 +170,7 @@
 	if(cleaned_up)
 		return
 	cleaned_up = TRUE
+	cleanup_effects()
 	for(var/station_z in affected_z)
 		// Пиковый слой лежит ПОВЕРХ профиля, поэтому снимается первым: обратный порядок
 		// на один пересбор показал бы сцену без профиля, но с пиковым слоем.
@@ -261,7 +278,7 @@
 		return
 	tinted_at = intensity
 	for(var/station_z in affected_z)
-		SSparallax.animate_tint(station_z, token, tint, PHENOMENON_TINT_TIME)
+		SSparallax.animate_layer_type(station_z, /atom/movable/screen/parallax_layer/tint/phenomenon, tint, PHENOMENON_TINT_TIME)
 
 /// Цвет сцены под интенсивность. По умолчанию - интерполяция между tint_low и tint_high;
 /// без обоих сцена показывает палитру своего профиля как есть.
@@ -282,115 +299,116 @@
 /datum/round_event/space_weather/proc/apply_intensity(current_intensity)
 	return
 
+/**
+ * Уборка воздействия подтипа: спавны, трейты, подменённые значения.
+ *
+ * Зовётся РОВНО ОДИН РАЗ из cleanup(), до снятия сцены, и потому покрывает оба выхода -
+ * и штатный end(), и админский kill() мимо него. Подтипу не нужно ни своего гарда
+ * идемпотентности, ни знания о том, каким путём событие закончилось.
+ */
+/datum/round_event/space_weather/proc/cleanup_effects()
+	return
+
 /// Строки для астрометрического сенсора: что именно будет на пике.
 /datum/round_event/space_weather/proc/sensor_readout()
 	return list()
 
 // ---------------------------------------------------------------------------
-// Явления
+// Справки для сенсора
 // ---------------------------------------------------------------------------
 
-/datum/round_event_control/space_weather/graveyard
-	name = "Ship Graveyard"
-	typepath = /datum/round_event/space_weather/graveyard
-	enabled = TRUE
-	weight = 9
-	description = "The station drifts past a field of derelict hulls."
+/**
+ * Секунд до начала пика. Ноль, если пик уже идёт или прошёл.
+ *
+ * Тик берётся у живой подсистемы, а не из DIRECTOR_WAIT: дефайн объявлен в самом
+ * director.dm, и порядок включения в .dme решал бы, известен ли он тут.
+ */
+/datum/round_event/space_weather/proc/seconds_to_peak()
+	var/ticks_left = approach_ticks - (activeFor - start_when)
+	if(ticks_left <= 0)
+		return 0
+	return round(ticks_left * SSdirector.wait * 0.1)
 
-/datum/round_event/space_weather/graveyard
-	profile_id = "graveyard"
-	token = "event_graveyard"
-	approach_ticks = 40
-	peak_ticks = 80
-	departure_ticks = 30
-	announce_text = "Станция входит в зону скопления списанных корпусов. Обломки принадлежат кораблям, потерянным в этом секторе за последние сорок лет; траектории просчитаны, столкновение исключено. Отдел Астрономии просит воздержаться от несанкционированных выходов за борт."
-	announce_end_text = "Станция покинула зону скопления обломков."
+/// Человекочитаемое имя фазы.
+/datum/round_event/space_weather/proc/phase_name()
+	switch(phase)
+		if(PHENOMENON_PHASE_APPROACH)
+			return "подход"
+		if(PHENOMENON_PHASE_PEAK)
+			return "пик"
+		if(PHENOMENON_PHASE_DEPARTURE)
+			return "уход"
+	return "нет"
 
-/datum/round_event_control/space_weather/micro_debris
-	name = "Micro Debris Field"
-	typepath = /datum/round_event/space_weather/micro_debris
-	enabled = TRUE
-	weight = 10
-	description = "The station passes through a cloud of micro debris."
+/// Явление, которое сейчас идёт на станции. null, если за бортом обычный космос.
+/proc/active_space_phenomenon()
+	RETURN_TYPE(/datum/round_event/space_weather)
+	for(var/datum/round_event/space_weather/phenomenon in SSdirector.running)
+		if(QDELETED(phenomenon) || phenomenon.phase == PHENOMENON_PHASE_NONE)
+			continue
+		return phenomenon
+	return null
 
-/datum/round_event/space_weather/micro_debris
-	profile_id = "micro_debris"
-	token = "event_micro_debris"
-	approach_ticks = 30
-	peak_ticks = 60
-	departure_ticks = 25
-	announce_text = "Станция проходит через поле микрообломков. Частицы слишком малы, чтобы повредить обшивку, но в ближайшие минуты за иллюминаторами будет заметна взвесь. Явление безопасно."
-	announce_end_text = "Поле микрообломков пройдено."
+// ---------------------------------------------------------------------------
+// Космос у корпуса
+// ---------------------------------------------------------------------------
 
-/datum/round_event_control/space_weather/bluespace_storm
-	name = "Bluespace Storm"
-	typepath = /datum/round_event/space_weather/bluespace_storm
-	enabled = TRUE
-	weight = 6
-	earliest_start = 20 MINUTES
-	description = "A bluespace storm passes near the station."
+/**
+ * Свободный космический турф у самого корпуса станции. null, если не нашлось.
+ *
+ * Ищем не равномерной выборкой по z, а от твёрдого турфа наружу: космоса на станционном
+ * уровне десятки тысяч тайлов, и подавляющее большинство из них - глубина, откуда явление
+ * не видно из окна и куда никто не полетит. Выборка от станции наружу попадает в
+ * прикорпусное кольцо на порядок чаще.
+ */
+/datum/round_event/space_weather/proc/find_hull_space_turf(z_level)
+	RETURN_TYPE(/turf)
+	for(var/attempt in 1 to PHENOMENON_PLACEMENT_TRIES)
+		var/turf/inside = locate(rand(PHENOMENON_EDGE_PAD, world.maxx - PHENOMENON_EDGE_PAD), rand(PHENOMENON_EDGE_PAD, world.maxy - PHENOMENON_EDGE_PAD), z_level)
+		if(!inside || isspaceturf(inside))
+			continue
+		var/direction = pick(GLOB.cardinals)
+		var/turf/probe = inside
+		for(var/step in 1 to PHENOMENON_HULL_RANGE)
+			probe = get_step(probe, direction)
+			if(!probe)
+				break
+			if(!isspaceturf(probe))
+				continue
+			if(length(probe.contents) || !near_hull(probe))
+				break
+			return probe
+	return null
 
-/datum/round_event/space_weather/bluespace_storm
-	profile_id = "bluespace_storm"
-	token = "event_bluespace_storm"
-	approach_ticks = 35
-	peak_ticks = 70
-	departure_ticks = 30
-	announce_source = "Отдел Блюспейс-Исследований NanoTrasen"
-	announce_text = "Сканеры зафиксировали блюспейс-шторм рядом со станцией. Искажения пространства останутся за пределами корпуса. Персоналу рекомендуется не пугаться вспышек за иллюминаторами."
-	announce_end_text = "Блюспейс-шторм ушёл из зоны видимости."
+/// Есть ли что-то твёрдое в пределах досягаемости по любому из четырёх направлений.
+/// Это и есть контракт "у корпуса", который обязана соблюдать любая выборка места.
+/datum/round_event/space_weather/proc/near_hull(turf/candidate)
+	for(var/direction in GLOB.cardinals)
+		var/turf/probe = candidate
+		for(var/step in 1 to PHENOMENON_HULL_RANGE)
+			probe = get_step(probe, direction)
+			if(!probe)
+				break
+			if(!isspaceturf(probe))
+				return TRUE
+	return FALSE
 
-/datum/round_event_control/space_weather/ion_blizzard
-	name = "Ion Blizzard"
-	typepath = /datum/round_event/space_weather/ion_blizzard
-	enabled = TRUE
-	weight = 7
-	description = "An ion blizzard sweeps past the station."
+// ---------------------------------------------------------------------------
+// Фазовая подсветка
+// ---------------------------------------------------------------------------
 
-/datum/round_event/space_weather/ion_blizzard
-	profile_id = "ion_blizzard"
-	token = "event_ion_blizzard"
-	// Подход длиннее пика: буря вознаграждает подготовленную энергосеть, а подготовка
-	// требует времени. Короткий подход превратил бы событие в лотерею.
-	approach_ticks = 40
-	peak_ticks = 60
-	departure_ticks = 25
-	announce_source = "Отдел Метеорологии NanoTrasen"
-	announce_text = "Мимо станции проходит ионная буря. Заряженные частицы рассеиваются в корпусе без последствий для оборудования. Наблюдать можно из любого отсека с видом на космос."
-	announce_end_text = "Ионная буря прошла."
+/**
+ * Аддитивный фуллскрин-слой, которым каркас показывает интенсивность явления.
+ *
+ * Цвет ведёт update_scene_tint() от tint_low к tint_high, а не палитра профиля, поэтому
+ * palette_tinted тут снят: иначе слой перекрашивался бы ещё и чужими модификаторами.
+ * Аддитивное смешение делает почти чёрный цвет незаметным - именно так и работает
+ * шкала: на подходе подсветки фактически нет, на пике она в полную силу.
+ */
+/atom/movable/screen/parallax_layer/tint/phenomenon
+	palette_tinted = FALSE
+	color = "#000000"
+	alpha = 60
+	layer = 4.2
+	fade_in_time = 6 SECONDS
 
-/datum/round_event_control/space_weather/interphase
-	name = "Bluespace Interphase"
-	typepath = /datum/round_event/space_weather/interphase
-	enabled = TRUE
-	weight = 4
-	earliest_start = 25 MINUTES
-	description = "Space outside the station briefly stops looking like space."
-
-/datum/round_event/space_weather/interphase
-	profile_id = "bluespace_interphase"
-	token = "event_interphase"
-	approach_ticks = 25
-	peak_ticks = 45
-	departure_ticks = 20
-	announce_source = "Отдел Блюспейс-Исследований NanoTrasen"
-	announce_text = "Станция задевает край блюспейс-интерфазы. В ближайшие минуты пространство за бортом будет выглядеть неправильно. Это ожидаемо. Смотреть можно, тревожиться не нужно."
-	announce_end_text = "Интерфаза свёрнута, пространство за бортом восстановлено."
-
-/datum/round_event_control/space_weather/photon_vortex
-	name = "Photon Vortex"
-	typepath = /datum/round_event/space_weather/photon_vortex
-	enabled = TRUE
-	weight = 3
-	earliest_start = 30 MINUTES
-	description = "A collapsed object drifts into view."
-
-/datum/round_event/space_weather/photon_vortex
-	profile_id = "photon_vortex"
-	token = "event_photon_vortex"
-	approach_ticks = 45
-	peak_ticks = 80
-	departure_ticks = 35
-	announce_source = "Отдел Астрономии NanoTrasen"
-	announce_text = "В зоне видимости станции оказался коллапсировавший объект. Расстояние безопасно, гравитационного воздействия на станцию не ожидается. Отдел Астрономии рекомендует воспользоваться случаем: следующее такое сближение произойдёт нескоро."
-	announce_end_text = "Коллапсировавший объект вышел из зоны видимости."

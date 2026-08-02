@@ -120,6 +120,59 @@
 	icon_state = "bluespace_interphase"
 
 // ---------------------------------------------------------------------------
+// Пиковые ярусы
+// ---------------------------------------------------------------------------
+
+/**
+ * Ярусы, которые каркас явления вешает на пик поверх профиля и снимает на выходе из него.
+ *
+ * Отдельного арта под пик нет и не нужно: это тот же ближний ярус, но быстрее и со
+ * сдвигом. Наложенный на свой же слой, он вдвое уплотняет поле ровно тогда, когда
+ * явление в полную силу, - и иллюминатор сам показывает, что сейчас пик.
+ *
+ * Сдвиг обязателен: без него копия встала бы пиксель в пиксель на оригинал, и вместо
+ * удвоения плотности вышло бы простое осветление тех же самых обломков.
+ */
+/atom/movable/screen/parallax_layer/eris/close/graveyard/peak
+	speed = 2.6
+	layer = 3.2
+	spawn_jitter_min = -320
+	spawn_jitter_max = 320
+	fade_in_time = 5 SECONDS
+
+/atom/movable/screen/parallax_layer/eris/close/micro_debris/peak
+	speed = 2.8
+	layer = 3.2
+	spawn_jitter_min = -320
+	spawn_jitter_max = 320
+	fade_in_time = 5 SECONDS
+
+/atom/movable/screen/parallax_layer/eris/close/bluespace_storm/peak
+	speed = 2.4
+	layer = 3.2
+	spawn_jitter_min = -320
+	spawn_jitter_max = 320
+	fade_in_time = 5 SECONDS
+
+/// У ионной бури ближнего яруса художник не нарисовал, поэтому уплотняется дальний.
+/// Тайлящийся, в отличие от скайбокса своего фона, - иначе он бы не двигался.
+/atom/movable/screen/parallax_layer/eris/far/ion_blizzard/peak
+	speed = 2.2
+	layer = 3.2
+	spawn_jitter_min = -320
+	spawn_jitter_max = 320
+	fade_in_time = 5 SECONDS
+
+/// Вихрь на пике затягивает вещество: ближний ярус поля обломков, разогнанный вдвое
+/// против штатного, читается как поток материи в аккреционный диск.
+/atom/movable/screen/parallax_layer/eris/close/micro_debris/vortex_peak
+	speed = 3.4
+	layer = 3.2
+	spawn_jitter_min = -320
+	spawn_jitter_max = 320
+	fade_in_time = 5 SECONDS
+
+// ---------------------------------------------------------------------------
 // goonstation: погода через маску плотности
 // ---------------------------------------------------------------------------
 

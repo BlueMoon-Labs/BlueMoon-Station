@@ -389,6 +389,39 @@ SUBSYSTEM_DEF(parallax)
 				layer.color = tint
 	return TRUE
 
+/**
+ * Плавно ведёт цвет ОДНОГО типа слоя на z, не трогая остальную сцену.
+ *
+ * animate_tint() красит всё, что помечено palette_tinted, и для фазовой подсветки это
+ * не годится: в сцене могут лежать звёздные ярусы и дымки с тем же флагом, и они ушли
+ * бы в цвет подсветки вместе с ней. Здесь адресатом выступает конкретный тип слоя.
+ *
+ * Шаблон правится наравне с живыми держателями: он источник клонов, и без этого зашедший
+ * посреди явления клиент получил бы слой в цвете начала события.
+ */
+/datum/controller/subsystem/parallax/proc/animate_layer_type(z, layer_type, tint, time = 0)
+	if(!ispath(layer_type, /atom/movable/screen/parallax_layer) || !tint)
+		return FALSE
+	. = FALSE
+	var/datum/parallax/template = parallax_templates_by_z["[z]"]
+	if(template)
+		for(var/atom/movable/screen/parallax_layer/layer as anything in template.objects)
+			if(layer.type == layer_type)
+				layer.color = tint
+				. = TRUE
+	for(var/client/viewer as anything in GLOB.clients)
+		var/datum/parallax_holder/holder = viewer.parallax_holder
+		if(holder?.last?.z != z)
+			continue
+		for(var/atom/movable/screen/parallax_layer/layer as anything in holder.layers)
+			if(layer.type != layer_type)
+				continue
+			. = TRUE
+			if(time > 0)
+				animate(layer, color = tint, time = time)
+			else
+				layer.color = tint
+
 /// Гасит слои модификатора и снимает его, когда анимация отыграла.
 /// Держит таймер на подсистеме, а не на событии: событие может кончиться раньше.
 /datum/controller/subsystem/parallax/proc/fade_out_modifier(z, token, time = 5 SECONDS)
