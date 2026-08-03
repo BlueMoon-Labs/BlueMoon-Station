@@ -2791,7 +2791,6 @@
 /area/ruin/space/has_grav/bluemoon/hotel/custodial)
 "mF" = (
 /obj/structure/grille,
-/obj/structure/grille,
 /obj/structure/lattice,
 /turf/template_noop,
 /area/space/nearstation)
@@ -5941,7 +5940,6 @@
 /turf/open/floor/carpet/red,
 /area/ruin/space/has_grav/bluemoon/hotel/guestroom)
 "AM" = (
-/obj/structure/grille,
 /obj/structure/grille,
 /turf/closed/wall/r_wall,
 /area/ruin/space/has_grav/bluemoon/hotel/power)

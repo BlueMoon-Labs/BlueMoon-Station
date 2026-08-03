@@ -10,6 +10,7 @@
 	selection_color = "#bbe291"
 	var/cooks = 0 //Counts cooks amount
 	alt_titles = list(
+		"Junior Cook", //Стажер выше, для удобства
 		"Waffle Co. Specialist", //Триглав выше, для удобства
 		"All-American Diner Employee",
 		"Baker",
@@ -84,6 +85,7 @@
 	mask = /obj/item/clothing/mask/fakemoustache/italian
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie
 	satchel = /obj/item/storage/backpack/duffelbag/syndie
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie

@@ -36,7 +36,7 @@
 	. = ..()
 	if(istype(src, /obj/item/clothing/under))
 		var/obj/item/clothing/under/U = src
-		if(length(U.attached_accessories))
+		if(length(U.accessories_attached))
 			return // аксессуары снимаются в приоритете
 	var/datum/component/condom_clipping/cc = GetComponent(/datum/component/condom_clipping)
 	if(cc?.unclip_condom(user))

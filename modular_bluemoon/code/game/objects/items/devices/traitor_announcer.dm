@@ -62,9 +62,9 @@ var/static/list/traitor_announcer_styles = list(
 	if(!input)
 		balloon_alert(L, "некорректный текст!")
 		return
-	var/list/message_data = L.treat_message(input)
+	var/processed_message = L.treat_message(input)
 	priority_announce(
-		text = message_data["message"],
+		text = processed_message,
 		title = title,
 		sound = audio_key,
 		type = announce_type,

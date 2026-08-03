@@ -13,9 +13,11 @@
 	exp_type = EXP_TYPE_SECURITY
 	alt_titles = list(
 		"MI13 Agent", //Триглав выше, для удобства
+		"Assistant Attorney", //Помощник выше, для удобства
+		"Assistant Sectorial Attorney", //Помощник выше, для удобства
 		"Attorney",
+		"Sectorial Attorney",
 		"Barrister",
-		"Defese Attorney",
 		"Human Resources Agent",
 		"Jurist",
 		"Law-Slut",
@@ -89,6 +91,7 @@
 	l_pocket = /obj/item/laser_pointer
 	r_pocket = /obj/item/syndicate_uplink/station
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie
 	satchel = /obj/item/storage/backpack/duffelbag/syndie
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie

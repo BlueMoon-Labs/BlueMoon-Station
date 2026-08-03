@@ -66,10 +66,6 @@
 	QDEL_NULL(blink)
 	return ..()
 
-/mob/living/simple_animal/hostile/wizard/handle_automated_action()
-	. = ..()
-	INVOKE_ASYNC(src, PROC_REF(AutomatedCast))
-
 /mob/living/simple_animal/hostile/wizard/proc/AutomatedCast()
 	if(target && next_cast < world.time)
 		if((get_dir(src,target) in list(SOUTH,EAST,WEST,NORTH)) && fireball.cast_check(0,src)) //Lined up for fireball
@@ -85,3 +81,64 @@
 			blink.choose_targets(src)
 			next_cast = world.time + 10
 			return .
+
+// ===== Адаптер-профиль =====
+// Кастер-скирмишер: держит дистанцию фаербола (кайт-band из легаси
+// retreat_distance/minimum_distance, которые setup_from_pawn для не-ranged
+// мобов не читает) и кастует делегатом. Сами заклинания, их приоритет
+// "фаербол в линию -> магмиссайл -> блинк" и каденс next_cast живут в легаси
+// AutomatedCast - поведение лишь дёргает его, как boss_attack оборачивает
+// легаси-атаки боссов. Зажатый вплотную визард огрызается кулаками через
+// hostile_break_away (легаси-паритет: MeleeAction, когда цель Adjacent).
+
+///Профиль визарда: кайт + касты + защита в упоре
+/datum/ai_controller/hostile_adapter/ranged_skirmisher/wizard
+	planning_subtrees = list(
+		/datum/ai_planning_subtree/find_hostile_targets,
+		/datum/ai_planning_subtree/hostile_fsm,
+		/datum/ai_planning_subtree/maintain_distance/spellcaster,
+		/datum/ai_planning_subtree/wizard_spellcasting,
+		/datum/ai_planning_subtree/attack_obstacle_in_path,
+		/datum/ai_planning_subtree/hostile_break_away,
+	)
+
+/datum/ai_controller/hostile_adapter/ranged_skirmisher/wizard/TryPossessPawn(atom/new_pawn)
+	. = ..()
+	if(.)
+		return
+	var/mob/living/simple_animal/hostile/caster = new_pawn
+	if(!istype(caster) || isnull(caster.retreat_distance))
+		return
+	//кайт-band из легаси-переменных: та же формула, что в setup_from_pawn
+	//для ranged-мобов ("retreat = ближе нельзя, minimum = докуда подходим")
+	blackboard[BB_AI_MIN_DISTANCE] = caster.retreat_distance
+	blackboard[BB_AI_MAX_DISTANCE] = max(caster.minimum_distance, caster.retreat_distance + 2)
+
+///Каст по ситуации: цель есть и легаси-каденс "один спелл в секунду" свободен
+/datum/ai_planning_subtree/wizard_spellcasting
+
+/datum/ai_planning_subtree/wizard_spellcasting/SelectBehaviors(datum/ai_controller/controller, delta_time)
+	. = ..()
+	var/mob/living/simple_animal/hostile/wizard/caster = controller.pawn
+	if(!istype(caster))
+		return
+	if(!controller.blackboard_key_exists(BB_AI_CURRENT_TARGET))
+		return
+	if(caster.next_cast > world.time)
+		return
+	controller.queue_behavior(/datum/ai_behavior/wizard_cast, BB_AI_CURRENT_TARGET)
+
+///Делегат легаси-каста: выбор заклинания и next_cast живут в AutomatedCast
+/datum/ai_behavior/wizard_cast
+	action_cooldown = 1 SECONDS //легаси: next_cast = world.time + 10
+	behavior_flags = AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION
+
+/datum/ai_behavior/wizard_cast/perform(delta_time, datum/ai_controller/controller, target_key)
+	var/mob/living/simple_animal/hostile/wizard/caster = controller.pawn
+	var/atom/target = controller.blackboard[target_key]
+	if(!istype(caster) || QDELETED(target))
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	caster.target = target //легаси AutomatedCast читает src.target
+	//спеллы могут спать в инвокациях/проекциях - не вешаем тикер поведений
+	INVOKE_ASYNC(caster, TYPE_PROC_REF(/mob/living/simple_animal/hostile/wizard, AutomatedCast))
+	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED

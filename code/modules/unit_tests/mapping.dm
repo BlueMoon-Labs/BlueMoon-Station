@@ -2,6 +2,7 @@
 /datum/unit_test/log_mapping
 	// Happen before all other tests, to make sure we only capture normal mapping logs.
 	priority = TEST_PRE
+	requires_full_map = TRUE
 
 /datum/unit_test/log_mapping/Run()
 	var/static/regex/test_areacoord_regex = regex(@"\(-?\d+,-?\d+,(-?\d+)\)")

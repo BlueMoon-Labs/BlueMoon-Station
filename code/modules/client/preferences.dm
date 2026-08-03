@@ -95,10 +95,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/toggles = TOGGLES_DEFAULT
 	/// A separate variable for deadmin toggles, only deals with those.
 	var/deadmin = NONE
+	var/mentor_toggles = SOUND_MENTORHELP
 	var/db_flags
 	var/chat_toggles = TOGGLES_DEFAULT_CHAT
 	/// Bitfield for chat mutes (MUTE_* flags).
 	var/muted = NONE
+	var/ticket_nickname = ""
 	var/ghost_form = "ghost"
 	var/ghost_orbit = GHOST_ORBIT_CIRCLE
 	var/ghost_accs = GHOST_ACCS_DEFAULT_OPTION
@@ -361,6 +363,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/sound_volume_jukeboxes = 100
 	var/sound_volume_personal_jukeboxes = 100
 	var/sound_volume_emote = 100
+	var/sound_volume_mentorhelp = 100
+	var/sound_volume_fax = 100
 
 	var/parallax = PARALLAX_INSANE
 
@@ -749,11 +753,24 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			return TRUE
 	return FALSE
 
-/datum/preferences/proc/ShowChoices(mob/user)
+/**
+ * Перерисовывает окно настройки персонажа.
+ *
+ * rebuild_preview=FALSE пропускает пересборку манекена. Она стоит дорого:
+ * занять единственный на весь сервер слот куклы (спин-ожидание на in_use, то есть
+ * при полном лобби все превью выстраиваются в очередь на одной кукле), copy_to с
+ * set_species и полной пересборкой конечностей и органов, при PREVIEW_PREF_LOADOUT
+ * ещё и спавн всего лодаута, и в конце regenerate_icons. В проде это 30-110 мс на
+ * клик, а на занятой кукле - до полутысячи. Клики, которые только листают вкладки
+ * и категории, внешность персонажа не трогают, и платить за неё им незачем.
+ * По умолчанию TRUE: пропускаем только там, где точно знаем, что ничего не поехало.
+ */
+/datum/preferences/proc/ShowChoices(mob/user, rebuild_preview = TRUE)
 	if(!user || !user.client)
 		return
 	current_tab = SETTINGS_TAB
-	update_preview_icon(SETTINGS_TAB)
+	if(rebuild_preview)
+		update_preview_icon(SETTINGS_TAB)
 	var/is_modern_theme = TRUE
 	var/list/dat
 	if(new_character_creator)
@@ -2524,18 +2541,26 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			modless_key_bindings -= old_key
 		else if(key_bindings[old_key])
 			key_bindings[old_key] -= kb_name
-			LAZYADD(key_bindings["Unbound"], kb_name)
+			var/has_buttons = FALSE
+			for(var/key in key_bindings)
+				var/list/temp = key_bindings[key]
+				if(!islist(temp))
+					continue
+				if(temp.Find(kb_name))
+					has_buttons = TRUE
+					break
+			if(!has_buttons)
+				LAZYADD(key_bindings["Unbound"], kb_name)
 			if(!length(key_bindings[old_key]))
 				key_bindings -= old_key
 		if(special && user?.client)
 			user.client.ensure_keys_set(src)
 		return TRUE
 
-	var/new_key = uppertext(input["key"])
+	var/new_key = input["key"]
 	var/AltMod = text2num(input["alt"]) ? "Alt" : ""
 	var/CtrlMod = text2num(input["ctrl"]) ? "Ctrl" : ""
 	var/ShiftMod = text2num(input["shift"]) ? "Shift" : ""
-	var/numpad = text2num(input["numpad"]) ? "Numpad" : ""
 
 	if(GLOB._kbMap[new_key])
 		new_key = GLOB._kbMap[new_key]
@@ -2549,7 +2574,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		if("Shift")
 			full_key = "[AltMod][CtrlMod][new_key]"
 		else
-			full_key = "[AltMod][CtrlMod][ShiftMod][numpad][new_key]"
+			full_key = "[AltMod][CtrlMod][ShiftMod][new_key]"
 
 	if(independent)
 		modless_key_bindings -= old_key
@@ -2559,7 +2584,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			key_bindings[old_key] -= kb_name
 			if(!length(key_bindings[old_key]))
 				key_bindings -= old_key
-		key_bindings[full_key] += list(kb_name)
+		//Из savefile прилетает 0 вместо пустого списка: "type mismatch: 0 |= /list".
+		//Апстрим закрывает это через LAZYOR, но тот проверяет только !L и пропустил
+		//бы ненулевой мусор в записи - здесь нужен именно islist().
+		if(!islist(key_bindings[full_key]))
+			key_bindings[full_key] = list()
+		key_bindings[full_key] |= list(kb_name)
 		key_bindings[full_key] = sort_list(key_bindings[full_key])
 
 	if(special && user?.client)
@@ -3019,6 +3049,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			C.clear_character_previews()
 
 /datum/preferences/proc/process_link(mob/user, list/href_list)
+	// Взводится только теми ветками, про которые точно известно, что внешность
+	// персонажа они не меняют - листание вкладок и категорий. Хвост проца зовёт
+	// ShowChoices безусловно, а тот безусловно пересобирал манекен, и навигационный
+	// клик стоил столько же, сколько смена расы. По умолчанию FALSE: неизвестная
+	// ветка ведёт себя как раньше и превью пересобирает
+	var/preview_unchanged = FALSE
 	if(href_list["jobbancheck"])
 		var/job = href_list["jobbancheck"]
 		var/datum/db_query/query_get_jobban = SSdbcore.NewQuery({"
@@ -3377,12 +3413,15 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 // BLUEMOON ADD END
 
 	else if(href_list["quirk_category"])
+		// фильтр списка причуд - навигация. Ветка не выходит из проца, поэтому
+		// ShowChoices зовётся ещё раз в хвосте: без флага манекен собирался дважды
+		preview_unchanged = TRUE
 		var/is_inline_quirks = (new_character_creator && findtext(charcreation_theme, "modern") && character_settings_tab == QUIRKS_CHAR_TAB && CONFIG_GET(flag/roundstart_traits))
 		var/temp_quirk_category = href_list["quirk_category"]
 		if(temp_quirk_category == QUIRK_POSITIVE || temp_quirk_category == QUIRK_NEUTRAL || temp_quirk_category == QUIRK_NEGATIVE)
 			quirk_category = temp_quirk_category
 			if(is_inline_quirks)
-				ShowChoices(user)
+				ShowChoices(user, rebuild_preview = FALSE)
 			else
 				SetQuirks(user)
 
@@ -5679,6 +5718,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					preview_pref = href_list["tab"]
 
 				if("character_tab")
+					// чистая навигация: меняется только то, какие поля рисуются
+					preview_unchanged = TRUE
 					if(href_list["tab"])
 						var/new_tab = text2num(href_list["tab"])
 						if(new_tab == QUIRKS_CHAR_TAB && !(findtext(charcreation_theme, "modern") && CONFIG_GET(flag/roundstart_traits)))
@@ -5686,6 +5727,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						character_settings_tab = new_tab
 
 				if("preferences_tab")
+					preview_unchanged = TRUE
 					if(href_list["tab"])
 						preferences_tab = text2num(href_list["tab"])
 
@@ -5829,8 +5871,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			gear_subcategory = url_decode(href_list["select_subcategory"])
 		sanitize_loadout_navigation(src)
 		if(href_list["select_category"] || href_list["select_subcategory"])
+			// листание категорий лодаута: надетое не поменялось, манекен тот же
+			preview_unchanged = TRUE
 			save_preferences(silent = TRUE)
 		if(href_list["toggle_gear_path"])
+			// а вот это уже надевает или снимает вещь - превью обязано пересобраться
+			preview_unchanged = FALSE
 			var/name = url_decode(href_list["toggle_gear_path"])
 			// BLUEMOON FIX - Add null check to prevent runtime when category/subcategory doesn't exist
 			if(!GLOB.loadout_items[gear_category] || !GLOB.loadout_items[gear_category][gear_subcategory])
@@ -6056,7 +6102,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					user_gear -= "loadout_examtooltip"
 
 	save_preferences(silent = TRUE)
-	ShowChoices(user)
+	ShowChoices(user, !preview_unchanged)
 	return TRUE
 
 /datum/preferences/proc/get_sound_volume(sound_id)

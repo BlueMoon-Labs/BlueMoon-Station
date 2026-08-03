@@ -28,6 +28,8 @@
 	// else if(ckey)
 	// 	stack_trace("Mob without client but with associated ckey, [ckey], has been deleted.")
 	unset_machine()
+	SStgui.close_user_uis(src)
+	remove_from_all_current_player_lists()
 	remove_from_mob_list()
 	remove_from_dead_mob_list()
 	remove_from_alive_mob_list()
@@ -546,29 +548,27 @@
 
 	//предмет фиксируем в момент нажатия: верб может отлежаться в очереди,
 	//а игрок за это время сменить руку - активировать чужой предмет нельзя
-	DEFAULT_QUEUE_OR_CALL_VERB(VERB_CALLBACK(src, PROC_REF(execute_mode), get_active_held_item()))
+	DEFAULT_QUEUE_OR_CALL_VERB(VERB_CALLBACK(src, PROC_REF(execute_mode), get_active_held_item(), active_hand_index))
 
-/mob/proc/execute_mode(obj/item/expected_item)
+/**
+ * Логика для переопределений:
+ * FALSE - Действия запрещены, TRUE - Успешное действие, NULL - Можно выполнить действие
+ */
+/mob/proc/execute_mode(obj/item/expected_item, expected_active_hand_index, force = FALSE)
 	if(ismecha(loc))
-		return
-
+		return FALSE
 	if(incapacitated())
-		return
+		return FALSE
+	if(!force && expected_active_hand_index != active_hand_index) // рука сменилась, пока верб ждал в очереди
+		return FALSE
 
 	var/obj/item/I = get_active_held_item()
-	if(I != expected_item) //рука сменилась, пока верб ждал в очереди
-		return
 	if(I)
+		if(!force && I != expected_item) // предмет сменился, пока верб ждал в очереди
+			return FALSE
 		I.attack_self(src)
 		update_inv_hands()
-		return
-
-	// Активация имплантов в руке
-	if(!istype(src, /mob/living/carbon))
-		return
-	var/mob/living/carbon/C = src
-	I = C.getorganslot((C.active_hand_index % 2 == 0) ? ORGAN_SLOT_RIGHT_ARM_AUG : ORGAN_SLOT_LEFT_ARM_AUG)
-	I?.ui_action_click(src)
+		return TRUE
 
 /**
  * Get the notes of this mob
@@ -743,16 +743,15 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 
 // facing verbs
 /mob/proc/canface()
+	. = FALSE
 	if(world.time < client?.last_turn)
-		return FALSE
+		return
 	if(stat == DEAD || stat == UNCONSCIOUS)
-		return FALSE
+		return
 	if(anchored)
-		return FALSE
+		return
 	if(mob_transforming)
-		return FALSE
-	if(restrained())
-		return FALSE
+		return
 	return TRUE
 
 /mob/proc/fall(forced)
@@ -792,18 +791,26 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 
 /mob/verb/northshift()
 	set hidden = TRUE
+	if(!canface())
+		return FALSE
 	pixel_shift(NORTH)
 
 /mob/verb/southshift()
 	set hidden = TRUE
+	if(!canface())
+		return FALSE
 	pixel_shift(SOUTH)
 
 /mob/verb/eastshift()
 	set hidden = TRUE
+	if(!canface())
+		return FALSE
 	pixel_shift(EAST)
 
 /mob/verb/westshift()
 	set hidden = TRUE
+	if(!canface())
+		return FALSE
 	pixel_shift(WEST)
 
 /mob/proc/IsAdvancedToolUser()//This might need a rename but it should replace the can this mob use things check
@@ -931,15 +938,22 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 	return faction_check(faction, target.faction, FALSE)
 
 /proc/faction_check(list/faction_A, list/faction_B, exact_match)
-	var/list/match_list
 	if(exact_match)
-		match_list = faction_A&faction_B //only items in both lists
+		var/list/match_list = faction_A&faction_B //only items in both lists
 		var/length = LAZYLEN(match_list)
 		if(length)
 			return (length == LAZYLEN(faction_A)) //if they're not the same len(gth) or we don't have a len, then this isn't an exact match.
-	else
-		match_list = faction_A&faction_B
-		return LAZYLEN(match_list)
+		return FALSE
+
+	//The overwhelmingly common query only needs to know whether one value
+	//matches. Avoid allocating an intersection list for every AI candidate.
+	if(!LAZYLEN(faction_A) || !LAZYLEN(faction_B))
+		return FALSE
+	var/list/smaller = LAZYLEN(faction_A) <= LAZYLEN(faction_B) ? faction_A : faction_B
+	var/list/larger = smaller == faction_A ? faction_B : faction_A
+	for(var/faction_name in smaller)
+		if(faction_name in larger)
+			return TRUE
 	return FALSE
 
 
@@ -1157,6 +1171,13 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 
 /mob/setMovetype(newval)
 	. = ..()
+	// Родитель выходит ДО присваивания, если movement_type не изменился, и тогда
+	// возвращает null (а изменившись - старое значение, которое вполне может быть
+	// нулём: null != 0 в DM, поэтому проверка именно isnull). update_mobility()
+	// зовёт setMovetype(movement_type | CRAWLING) каждый Life-тик, то есть
+	// пересчёт скорости шёл на каждого игрока каждые 2 секунды впустую.
+	if(isnull(.))
+		return
 	// BLUEMOON ADD START - для корректного обновления скорости у парящих сверхтяжёлых персонажей
 	if(src.mob_weight > MOB_WEIGHT_HEAVY)
 		update_config_movespeed()

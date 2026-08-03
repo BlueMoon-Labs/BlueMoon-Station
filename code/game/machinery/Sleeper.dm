@@ -91,8 +91,10 @@
 		// flick("[initial(icon_state)]-anim", src)
 		..(user)
 		var/mob/living/mob_occupant = occupant
-		if(mob_occupant && mob_occupant.stat != DEAD)
-			to_chat(occupant, "[enter_message]")
+		if(mob_occupant)
+			machine_wake() // process() owns nap-violation checks while occupied
+			if(mob_occupant.stat != DEAD)
+				to_chat(occupant, "[enter_message]")
 
 /obj/machinery/sleeper/emp_act(severity)
 	. = ..()
@@ -178,7 +180,8 @@
 		- Эффективность дозировок: <b>[efficiency*100]%</b>.</span>"
 
 /obj/machinery/sleeper/process()
-	..()
+	if(!occupant)
+		return machine_sleep()
 	check_nap_violations()
 
 /obj/machinery/sleeper/nap_violation(mob/violator)
@@ -371,7 +374,9 @@
 	fair_market_price = 0 //it's free
 
 /obj/machinery/sleeper/clockwork/process()
-	..()
+	. = ..()
+	if(. == PROCESS_KILL)
+		return
 	if(occupant && isliving(occupant))
 		var/mob/living/L = occupant
 		if(GLOB.clockwork_vitality) //If there's Vitality, the sleeper has passive healing

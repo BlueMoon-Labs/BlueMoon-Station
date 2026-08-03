@@ -17,7 +17,7 @@
  * If no path was found, returns an empty list, which is important for bots like medibots who expect an empty list rather than nothing.
  *
  * Arguments:
- * * caller: The movable atom that's trying to find the path
+ * * path_owner: The movable atom that's trying to find the path
  * * end: What we're trying to path to. It doesn't matter if this is a turf or some other atom, we're gonna just path to the turf it's on anyway
  * * max_distance: The maximum number of steps we can take in a given path to search (default: 30, 0 = infinite)
  * * mintargetdistance: Minimum distance to the target before path returns, could be used to get near a target, but not right to it - for an AI mob with a gun, for example.
@@ -26,25 +26,44 @@
  * * exclude: If we want to avoid a specific turf, like if we're a mulebot who already got blocked by some turf
  * * skip_first: Whether or not to delete the first item in the path. This would be done because the first item is the starting tile, which can break movement for some creatures.
  */
-/proc/get_path_to(atom/movable/caller, end, max_distance = 30, mintargetdist, id=null, simulated_only = TRUE, turf/exclude, skip_first=TRUE)
-	var/turf/start_turf = get_turf(caller)
-	var/turf/end_turf = get_turf(end)
-	if(!caller || !start_turf || !end_turf)
-		return list()
+/**
+ * Bounds an AI pathfinding search radius to what a chase actually needs.
+ *
+ * JPS (and the breach fallback) explore the entire `max_path_length` diamond before
+ * conceding that a target is unreachable. Because the expensive failed searches are for
+ * targets that are close in a straight line but sealed off behind a wall, capping the
+ * radius to their real distance plus a generous detour allowance ([AI_JPS_DETOUR_SLACK])
+ * removes most of that wasted exploration without shrinking any reachable detour.
+ *
+ * Returns 0 (unbounded) when `max_path_length` is 0, preserving infinite-search callers.
+ */
+/proc/ai_effective_path_radius(atom/mover, atom/target, max_path_length)
+	if(!max_path_length)
+		return 0
+	return min(max_path_length, get_dist(mover, target) + AI_JPS_DETOUR_SLACK)
 
-	var/l = SSpathfinder.mobs.getfree(caller)
+/proc/get_path_to(atom/movable/path_owner, end, max_distance = 30, mintargetdist, id=null, simulated_only = TRUE, turf/exclude, skip_first=TRUE, datum/cancel_source)
+	var/turf/start_turf = get_turf(path_owner)
+	var/turf/end_turf = get_turf(end)
+	if(!path_owner || !start_turf || !end_turf || (cancel_source && QDELETED(cancel_source)))
+		return list()
+	AI_METRIC_INC(jps_requests)
+
+	var/l = SSpathfinder.mobs.getfree(path_owner)
 	while(!l)
 		stoplag(3)
-		l = SSpathfinder.mobs.getfree(caller)
+		if(!path_owner || (cancel_source && QDELETED(cancel_source)))
+			return list()
+		l = SSpathfinder.mobs.getfree(path_owner)
 
-	// Recheck after sleep — caller may have been deleted or moved to nullspace
-	start_turf = get_turf(caller)
-	if(!caller || !start_turf)
+	// Recheck after sleep — path owner may have been deleted or moved to nullspace
+	start_turf = get_turf(path_owner)
+	if(!path_owner || !start_turf || (cancel_source && QDELETED(cancel_source)))
 		SSpathfinder.mobs.found(l)
 		return list()
 
 	var/list/path
-	var/datum/pathfind/pathfind_datum = new(caller, start_turf, end_turf, id, max_distance, mintargetdist, simulated_only, exclude)
+	var/datum/pathfind/pathfind_datum = new(path_owner, start_turf, end_turf, id, max_distance, mintargetdist, simulated_only, exclude, cancel_source)
 	path = pathfind_datum.search()
 	qdel(pathfind_datum)
 
@@ -60,9 +79,12 @@
  * Note that this can only be used inside the [datum/pathfind][pathfind datum] since it uses variables from said datum.
  * If you really want to optimize things, optimize this, cuz this gets called a lot.
  */
-#define CAN_STEP(cur_turf, next) (next && !next.density && !(simulated_only && SSpathfinder.space_type_cache[next.type]) && !cur_turf.LinkBlockedWithAccess(next, src.caller, id) && (next != avoid))
 /// Another helper macro for JPS, for telling when a node has forced neighbors that need expanding
-#define STEP_NOT_HERE_BUT_THERE(cur_turf, dirA, dirB) ((!CAN_STEP(cur_turf, get_step(cur_turf, dirA)) && CAN_STEP(cur_turf, get_step(cur_turf, dirB))))
+#define STEP_NOT_HERE_BUT_THERE(cur_turf, dirA, dirB) ((!can_step(cur_turf, get_step(cur_turf, dirA), dirA) && can_step(cur_turf, get_step(cur_turf, dirB), dirB)))
+
+// Direction values top out at SOUTHWEST (10), so the second eleven bits can
+// hold the pass result alongside the first eleven checked bits.
+#define JPS_EDGE_PASS_SHIFT 11
 
 /// The JPS Node datum represents a turf that we find interesting enough to add to the open list and possibly search for new tiles from
 /datum/jps_node
@@ -113,7 +135,7 @@
 /// The datum used to handle the JPS pathfinding, completely self-contained
 /datum/pathfind
 	/// The thing that we're actually trying to path for
-	var/atom/movable/caller
+	var/atom/movable/pathing_movable
 	/// The turf where we started at
 	var/turf/start
 	/// The turf we're trying to path to (note that this won't track a moving target)
@@ -124,6 +146,13 @@
 	var/list/sources
 	/// The list we compile at the end if successful to pass back
 	var/list/path
+	/// Per-search directed edge snapshot. One integer per source turf stores
+	/// checked direction bits and passable direction bits.
+	var/list/edge_cache
+	/// Whether this path owner actually needs the expensive atmosphere checks.
+	var/check_environment = FALSE
+	/// Optional owner whose deletion cancels this otherwise synchronous search.
+	var/datum/cancel_source
 
 	// general pathfinding vars/args
 	/// An ID card representing what access we have and what doors we can open. Its location relative to the pathing atom is irrelevant
@@ -137,21 +166,73 @@
 	/// A specific turf we're avoiding, like if a mulebot is being blocked by someone t-posing in a doorway we're trying to get through
 	var/turf/avoid
 
-/datum/pathfind/New(atom/movable/caller, turf/start_turf, turf/goal_turf, id, max_distance, mintargetdist, simulated_only, avoid)
-	src.caller = caller
+/datum/pathfind/New(atom/movable/path_owner, turf/start_turf, turf/goal_turf, id, max_distance, mintargetdist, simulated_only, avoid, datum/cancel_source)
+	pathing_movable = path_owner
 	start = start_turf
 	end = goal_turf
 	open = new /datum/heap(/proc/HeapPathWeightCompare)
 	sources = new()
+	edge_cache = list()
 	src.id = id
 	src.max_distance = max_distance
 	src.mintargetdist = mintargetdist
 	src.simulated_only = simulated_only
 	src.avoid = avoid
+	src.cancel_source = cancel_source
+	var/mob/living/simple_animal/pathing_animal = path_owner
+	check_environment = istype(pathing_animal) && pathing_animal.requires_safe_atmosphere()
 
 /datum/pathfind/Destroy(force, ...)
+	pathing_movable = null
+	start = null
+	end = null
 	id = null
+	avoid = null
+	sources = null
+	path = null
+	edge_cache = null
+	cancel_source = null
+	if(open)
+		qdel(open)
+		open = null
 	return ..()
+
+/// Cached equivalent of the link portion of CAN_STEP. JPS repeatedly probes
+/// the same forced-neighbor edges, while path owner, access and environment policy
+/// are immutable for one search. Movement still validates the returned path.
+/datum/pathfind/proc/link_blocked(turf/from_turf, turf/to_turf, direction)
+	var/direction_bit = 1 << direction
+	var/cached_edges = edge_cache[from_turf]
+	if(cached_edges & direction_bit)
+		return !(cached_edges & (direction_bit << JPS_EDGE_PASS_SHIFT))
+
+	var/blocked
+	if(ISDIAGONALDIR(direction))
+		var/vertical_direction = direction & (NORTH | SOUTH)
+		var/horizontal_direction = direction & (EAST | WEST)
+		var/turf/vertical_midpoint = get_step(from_turf, vertical_direction)
+		var/turf/horizontal_midpoint = get_step(from_turf, horizontal_direction)
+		// Match LinkBlockedWithAccess(): try the horizontal midpoint first and
+		// avoid evaluating the second route when the first is clear.
+		blocked = TRUE
+		if(!horizontal_midpoint.density && !link_blocked(from_turf, horizontal_midpoint, horizontal_direction) && !link_blocked(horizontal_midpoint, to_turf, vertical_direction))
+			blocked = FALSE
+		else if(!vertical_midpoint.density && !link_blocked(from_turf, vertical_midpoint, vertical_direction) && !link_blocked(vertical_midpoint, to_turf, horizontal_direction))
+			blocked = FALSE
+	else
+		blocked = from_turf.LinkBlockedWithAccess(to_turf, pathing_movable, id, check_environment, TRUE)
+
+	// Recursive diagonal checks may have populated cardinal bits for this turf.
+	cached_edges = edge_cache[from_turf]
+	cached_edges |= direction_bit
+	if(!blocked)
+		cached_edges |= direction_bit << JPS_EDGE_PASS_SHIFT
+	edge_cache[from_turf] = cached_edges
+	return blocked
+
+/// Hot JPS step predicate with cheap exclusions first and a per-search edge cache.
+/datum/pathfind/proc/can_step(turf/from_turf, turf/to_turf, direction)
+	return to_turf && !to_turf.density && to_turf != avoid && !(simulated_only && SSpathfinder.space_type_cache[to_turf.type]) && !link_blocked(from_turf, to_turf, direction)
 
 /**
  * search() is the proc you call to kick off and handle the actual pathfinding, and kills the pathfind datum instance when it's done.
@@ -174,18 +255,22 @@
 
 	//then run the main loop
 	while(!open.is_empty() && !path)
-		if(!src.caller)
+		if(!pathing_movable || (cancel_source && QDELETED(cancel_source)))
 			return
 		current_processed_node = open.pop() //get the lower f_value turf in the open list
 		if(max_distance && (current_processed_node.number_tiles > max_distance))//if too many steps, don't process that path
 			continue
 
 		var/turf/current_turf = current_processed_node.tile
-		for(var/scan_direction in list(EAST, WEST, NORTH, SOUTH))
-			lateral_scan_spec(current_turf, scan_direction, current_processed_node)
-
-		for(var/scan_direction in list(NORTHEAST, SOUTHEAST, NORTHWEST, SOUTHWEST))
-			diag_scan_spec(current_turf, scan_direction, current_processed_node)
+		// Fixed calls avoid rebuilding two direction lists for every expanded node.
+		lateral_scan_spec(current_turf, EAST, current_processed_node)
+		lateral_scan_spec(current_turf, WEST, current_processed_node)
+		lateral_scan_spec(current_turf, NORTH, current_processed_node)
+		lateral_scan_spec(current_turf, SOUTH, current_processed_node)
+		diag_scan_spec(current_turf, NORTHEAST, current_processed_node)
+		diag_scan_spec(current_turf, SOUTHEAST, current_processed_node)
+		diag_scan_spec(current_turf, NORTHWEST, current_processed_node)
+		diag_scan_spec(current_turf, SOUTHWEST, current_processed_node)
 
 		CHECK_TICK
 
@@ -195,7 +280,9 @@
 			path.Swap(i, length(path) - i + 1)
 
 	sources = null
-	qdel(open)
+	if(open)
+		qdel(open)
+		open = null
 	return path
 
 /// Called when we've hit the goal with the node that represents the last tile, then sets the path var to that path so it can be returned by [datum/pathfind/proc/search]
@@ -229,14 +316,39 @@
 
 	var/turf/current_turf = original_turf
 	var/turf/lag_turf = original_turf
+	var/blocked_side_a
+	var/forced_diagonal_a
+	var/blocked_side_b
+	var/forced_diagonal_b
+	switch(heading)
+		if(NORTH)
+			blocked_side_a = WEST
+			forced_diagonal_a = NORTHWEST
+			blocked_side_b = EAST
+			forced_diagonal_b = NORTHEAST
+		if(SOUTH)
+			blocked_side_a = WEST
+			forced_diagonal_a = SOUTHWEST
+			blocked_side_b = EAST
+			forced_diagonal_b = SOUTHEAST
+		if(EAST)
+			blocked_side_a = NORTH
+			forced_diagonal_a = NORTHEAST
+			blocked_side_b = SOUTH
+			forced_diagonal_b = SOUTHEAST
+		if(WEST)
+			blocked_side_a = NORTH
+			forced_diagonal_a = NORTHWEST
+			blocked_side_b = SOUTH
+			forced_diagonal_b = SOUTHWEST
 
+	if(path)
+		return
 	while(TRUE)
-		if(path)
-			return
 		lag_turf = current_turf
 		current_turf = get_step(current_turf, heading)
 		steps_taken++
-		if(!CAN_STEP(lag_turf, current_turf))
+		if(!can_step(lag_turf, current_turf, heading))
 			return
 
 		if(current_turf == end || (mintargetdist && (get_dist(current_turf, end) <= mintargetdist)))
@@ -250,26 +362,10 @@
 		else
 			sources[current_turf] = original_turf
 
-		if(parent_node && parent_node.number_tiles + steps_taken > max_distance)
+		if(parent_node && max_distance && parent_node.number_tiles + steps_taken > max_distance)
 			return
 
-		var/interesting = FALSE // have we found a forced neighbor that would make us add this turf to the open list?
-
-		switch(heading)
-			if(NORTH)
-				if(STEP_NOT_HERE_BUT_THERE(current_turf, WEST, NORTHWEST) || STEP_NOT_HERE_BUT_THERE(current_turf, EAST, NORTHEAST))
-					interesting = TRUE
-			if(SOUTH)
-				if(STEP_NOT_HERE_BUT_THERE(current_turf, WEST, SOUTHWEST) || STEP_NOT_HERE_BUT_THERE(current_turf, EAST, SOUTHEAST))
-					interesting = TRUE
-			if(EAST)
-				if(STEP_NOT_HERE_BUT_THERE(current_turf, NORTH, NORTHEAST) || STEP_NOT_HERE_BUT_THERE(current_turf, SOUTH, SOUTHEAST))
-					interesting = TRUE
-			if(WEST)
-				if(STEP_NOT_HERE_BUT_THERE(current_turf, NORTH, NORTHWEST) || STEP_NOT_HERE_BUT_THERE(current_turf, SOUTH, SOUTHWEST))
-					interesting = TRUE
-
-		if(interesting)
+		if(STEP_NOT_HERE_BUT_THERE(current_turf, blocked_side_a, forced_diagonal_a) || STEP_NOT_HERE_BUT_THERE(current_turf, blocked_side_b, forced_diagonal_b))
 			var/datum/jps_node/newnode = new(current_turf, parent_node, steps_taken)
 			if(parent_node) // if we're a diagonal subscan, we'll handle adding ourselves to the heap in the diag
 				open.insert(newnode)
@@ -290,14 +386,49 @@
 	var/steps_taken = 0
 	var/turf/current_turf = original_turf
 	var/turf/lag_turf = original_turf
+	var/blocked_side_a
+	var/forced_diagonal_a
+	var/blocked_side_b
+	var/forced_diagonal_b
+	var/lateral_heading_a
+	var/lateral_heading_b
+	switch(heading)
+		if(NORTHWEST)
+			blocked_side_a = EAST
+			forced_diagonal_a = NORTHEAST
+			blocked_side_b = SOUTH
+			forced_diagonal_b = SOUTHWEST
+			lateral_heading_a = WEST
+			lateral_heading_b = NORTH
+		if(NORTHEAST)
+			blocked_side_a = WEST
+			forced_diagonal_a = NORTHWEST
+			blocked_side_b = SOUTH
+			forced_diagonal_b = SOUTHEAST
+			lateral_heading_a = EAST
+			lateral_heading_b = NORTH
+		if(SOUTHWEST)
+			blocked_side_a = EAST
+			forced_diagonal_a = SOUTHEAST
+			blocked_side_b = NORTH
+			forced_diagonal_b = NORTHWEST
+			lateral_heading_a = SOUTH
+			lateral_heading_b = WEST
+		if(SOUTHEAST)
+			blocked_side_a = WEST
+			forced_diagonal_a = SOUTHWEST
+			blocked_side_b = NORTH
+			forced_diagonal_b = NORTHEAST
+			lateral_heading_a = SOUTH
+			lateral_heading_b = EAST
 
+	if(path)
+		return
 	while(TRUE)
-		if(path)
-			return
 		lag_turf = current_turf
 		current_turf = get_step(current_turf, heading)
 		steps_taken++
-		if(!CAN_STEP(lag_turf, current_turf))
+		if(!can_step(lag_turf, current_turf, heading))
 			return
 
 		if(current_turf == end || (mintargetdist && (get_dist(current_turf, end) <= mintargetdist)))
@@ -310,33 +441,13 @@
 		else
 			sources[current_turf] = original_turf
 
-		if(parent_node.number_tiles + steps_taken > max_distance)
+		if(max_distance && parent_node.number_tiles + steps_taken > max_distance)
 			return
 
-		var/interesting = FALSE // have we found a forced neighbor that would make us add this turf to the open list?
+		var/interesting = STEP_NOT_HERE_BUT_THERE(current_turf, blocked_side_a, forced_diagonal_a) || STEP_NOT_HERE_BUT_THERE(current_turf, blocked_side_b, forced_diagonal_b)
 		var/datum/jps_node/possible_child_node // otherwise, did one of our lateral subscans turn up something?
-
-		switch(heading)
-			if(NORTHWEST)
-				if(STEP_NOT_HERE_BUT_THERE(current_turf, EAST, NORTHEAST) || STEP_NOT_HERE_BUT_THERE(current_turf, SOUTH, SOUTHWEST))
-					interesting = TRUE
-				else
-					possible_child_node = (lateral_scan_spec(current_turf, WEST) || lateral_scan_spec(current_turf, NORTH))
-			if(NORTHEAST)
-				if(STEP_NOT_HERE_BUT_THERE(current_turf, WEST, NORTHWEST) || STEP_NOT_HERE_BUT_THERE(current_turf, SOUTH, SOUTHEAST))
-					interesting = TRUE
-				else
-					possible_child_node = (lateral_scan_spec(current_turf, EAST) || lateral_scan_spec(current_turf, NORTH))
-			if(SOUTHWEST)
-				if(STEP_NOT_HERE_BUT_THERE(current_turf, EAST, SOUTHEAST) || STEP_NOT_HERE_BUT_THERE(current_turf, NORTH, NORTHWEST))
-					interesting = TRUE
-				else
-					possible_child_node = (lateral_scan_spec(current_turf, SOUTH) || lateral_scan_spec(current_turf, WEST))
-			if(SOUTHEAST)
-				if(STEP_NOT_HERE_BUT_THERE(current_turf, WEST, SOUTHWEST) || STEP_NOT_HERE_BUT_THERE(current_turf, NORTH, NORTHEAST))
-					interesting = TRUE
-				else
-					possible_child_node = (lateral_scan_spec(current_turf, SOUTH) || lateral_scan_spec(current_turf, EAST))
+		if(!interesting)
+			possible_child_node = lateral_scan_spec(current_turf, lateral_heading_a) || lateral_scan_spec(current_turf, lateral_heading_b)
 
 		if(interesting || possible_child_node)
 			var/datum/jps_node/newnode = new(current_turf, parent_node, steps_taken)
@@ -354,47 +465,66 @@
  * Arguments:
  * * caller: The movable, if one exists, being used for mobility checks to see what tiles it can reach
  * * ID: An ID card that decides if we can gain access to doors that would otherwise block a turf
- * * simulated_only: Do we only worry about turfs with simulated atmos, most notably things that aren't space?
-*/
-/turf/proc/LinkBlockedWithAccess(turf/destination_turf, caller, ID)
+ * * check_environment: Whether simple-animal atmosphere and pressure-barrier safety gates apply.
+ * * environment_policy_prechecked: Whether check_environment was resolved for this path owner already.
+ */
+/turf/proc/LinkBlockedWithAccess(turf/destination_turf, atom/movable/pathing_movable, ID, check_environment = TRUE, environment_policy_prechecked = FALSE)
+	if(!destination_turf)
+		return TRUE
+	var/mob/living/simple_animal/pathing_animal = pathing_movable
+	if(check_environment && !environment_policy_prechecked)
+		check_environment = istype(pathing_animal) && pathing_animal.requires_safe_atmosphere()
+	if(check_environment && !pathing_animal.can_safely_enter_turf(destination_turf, TRUE))
+		return TRUE
+
 	if(destination_turf.x != x && destination_turf.y != y) //diagonal
 		var/in_dir = get_dir(destination_turf,src) // eg. northwest (1+8) = 9 (00001001)
 		var/first_step_direction_a = in_dir & 3 // eg. north   (1+8)&3 (0000 0011) = 1 (0000 0001)
 		var/first_step_direction_b = in_dir & 12 // eg. west   (1+8)&12 (0000 1100) = 8 (0000 1000)
 
-		for(var/first_step_direction in list(first_step_direction_a,first_step_direction_b))
-			var/turf/midstep_turf = get_step(destination_turf,first_step_direction)
-			var/way_blocked = midstep_turf.density || LinkBlockedWithAccess(midstep_turf,caller,ID) || midstep_turf.LinkBlockedWithAccess(destination_turf,caller,ID)
-			if(!way_blocked)
-				return FALSE
+		var/turf/midstep_turf = get_step(destination_turf, first_step_direction_a)
+		if(!midstep_turf.density && !LinkBlockedWithAccess(midstep_turf, pathing_movable, ID, check_environment, TRUE) && !midstep_turf.LinkBlockedWithAccess(destination_turf, pathing_movable, ID, check_environment, TRUE))
+			return FALSE
+		midstep_turf = get_step(destination_turf, first_step_direction_b)
+		if(!midstep_turf.density && !LinkBlockedWithAccess(midstep_turf, pathing_movable, ID, check_environment, TRUE) && !midstep_turf.LinkBlockedWithAccess(destination_turf, pathing_movable, ID, check_environment, TRUE))
+			return FALSE
 		return TRUE
 
 	var/actual_dir = get_dir(src, destination_turf)
 
-	// Source border object checks
-	for(var/obj/structure/window/iter_window in src)
-		if(!iter_window.CanAStarPass(ID, actual_dir))
+	var/static/list/directional_blocker_cache = typecacheof(list(
+		/obj/structure/window,
+		/obj/machinery/door/window,
+		/obj/structure/railing,
+		/obj/machinery/door/firedoor/border_only,
+	))
+	// Source border object checks. One contents walk is substantially cheaper
+	// than four typed walks on every edge.
+	for(var/obj/border in src)
+		if(QDELETED(border))
+			continue
+		if(!border.density && border.can_astar_pass == CANASTARPASS_DENSITY)
+			continue
+		if(!directional_blocker_cache[border.type])
+			continue
+		if(check_environment && ai_pressure_barrier_blocks_step(border, src, destination_turf) && !pathing_animal.can_safely_open_pressure_barrier(border))
 			return TRUE
-
-	for(var/obj/machinery/door/window/iter_windoor in src)
-		if(!iter_windoor.CanAStarPass(ID, actual_dir))
-			return TRUE
-
-	for(var/obj/structure/railing/iter_rail in src)
-		if(!iter_rail.CanAStarPass(ID, actual_dir))
-			return TRUE
-
-	for(var/obj/machinery/door/firedoor/border_only/firedoor in src)
-		if(!firedoor.CanAStarPass(ID, actual_dir))
+		if(!border.CanAStarPass(ID, actual_dir))
 			return TRUE
 
 	// Destination blockers check
 	var/reverse_dir = get_dir(destination_turf, src)
 	for(var/obj/iter_object in destination_turf)
-		if(!iter_object.CanAStarPass(ID, reverse_dir, caller))
+		if(QDELETED(iter_object))
+			continue
+		if(!iter_object.density && iter_object.can_astar_pass == CANASTARPASS_DENSITY)
+			continue
+		if(check_environment && ai_pressure_barrier_blocks_step(iter_object, src, destination_turf) && !pathing_animal.can_safely_open_pressure_barrier(iter_object))
+			return TRUE
+		if(!iter_object.CanAStarPass(ID, reverse_dir, pathing_movable))
 			return TRUE
 
 	return FALSE
 
-#undef CAN_STEP
 #undef STEP_NOT_HERE_BUT_THERE
+#undef JPS_EDGE_PASS_SHIFT

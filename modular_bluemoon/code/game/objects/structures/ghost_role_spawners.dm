@@ -162,6 +162,7 @@ mob/living/proc/ghost_cafe_traits(switch_on = FALSE, additional_area)
 
 	accessory = list(/obj/item/clothing/accessory/permit/special/deviant/lust/changeling)
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie
 	satchel = /obj/item/storage/backpack/duffelbag/syndie
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie

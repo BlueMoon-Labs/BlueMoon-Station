@@ -32,7 +32,7 @@
 		return
 
 	if(is_mentor(whom))
-		to_chat(GLOB.admins | GLOB.mentors, "<span class='mentornotice'><font color='purple'>[src] has started replying to [whom]'s mhelp.</font></span>")
+		to_chat(mentor_traffic_recipients(), "<span class='mentornotice'><font color='purple'>[src] has started replying to [whom]'s mhelp.</font></span>")
 
 	//get message text, limit it's length.and clean/escape html
 	if(!msg)
@@ -40,7 +40,7 @@
 
 		if(!msg)
 			if (is_mentor(whom))
-				to_chat(GLOB.admins | GLOB.mentors, "<span class='mentornotice'><span class='purple'>[src] has stopped their reply to [whom]'s mhelp.</span></span>")
+				to_chat(mentor_traffic_recipients(), "<span class='mentornotice'><span class='purple'>[src] has stopped their reply to [whom]'s mhelp.</span></span>")
 			return
 
 		if(!C)
@@ -57,28 +57,38 @@
 	msg = sanitize(copytext_char(msg, 1, MAX_MESSAGE_LEN))
 	if(!msg)
 		if (is_mentor(whom))
-			to_chat(GLOB.admins | GLOB.mentors, "<span class='mentornotice'><span class='purple'>[src] has stopped their reply to [whom]'s mhelp.</span></span>")
+			to_chat(mentor_traffic_recipients(), "<span class='mentornotice'><span class='purple'>[src] has stopped their reply to [whom]'s mhelp.</span></span>")
 		return
 	log_mentor("Mentor PM: [key_name(src)]->[key_name(C)]: [msg]")
 
+	// Это либо гиперкостыль вселенских масштабов либо просто стандартная логика, на решение вопроса с админами-менторами у меня ушли сутки :(
+	var/datum/mentor_ticket/related_ticket
+	related_ticket = GLOB.mentor_tickets?.CKey2Ticket(C.ckey)
+	if(!related_ticket)
+		related_ticket = GLOB.mentor_tickets?.CKey2Ticket(src.ckey)
+	if(related_ticket)
+		related_ticket.AddInteraction("<font color='#a855f7'><b>[is_mentor() ? "Ментор" : related_ticket.initiator_key_name]</b>: [html_encode(msg)]</font>")
+
 	msg = emoji_parse(msg)
-	C << 'sound/items/bikehorn.ogg'
+	if(C.prefs?.mentor_toggles & SOUND_MENTORHELP)
+		var/mentor_vol = C.prefs?.get_sound_volume("mentorhelp")
+		SEND_SOUND(C, sound('sound/effects/mentorhelp.ogg', volume = mentor_vol))
 	if(C.is_mentor())
 		if(is_mentor()) //both are mentors
-			to_chat(C, "<span class='mentornotice'><span class='purple'>Mentor PM from-<b>[key_name_mentor(src, C, TRUE, TRUE)]</b>: [msg]</span></span>")
-			to_chat(src, "<span class='mentornotice'><span class='blue'>Mentor PM to-<b>[key_name_mentor(C, C, TRUE, TRUE)]</b>: [msg]</span></span>")
+			to_chat(C, "<span class='mentornotice'><span class='purple'>Ментор PM от <b>[key_name_mentor(src, C, TRUE, TRUE)]</b>: [msg]</span></span>")
+			to_chat(src, "<span class='mentornotice'><span class='blue'>Ментор PM для <b>[key_name_mentor(C, C, TRUE, TRUE)]</b>: [msg]</span></span>")
 
 		else		//recipient is a mentor but sender is not
-			to_chat(C, "<span class='mentornotice'><span class='purple'>Reply PM from-<b>[key_name_mentor(src, C, TRUE, TRUE)]</b>: [msg]</span></span>")
-			to_chat(src, "<span class='mentornotice'><span class='pink'>Mentor PM to-<b>[key_name_mentor(C, C, TRUE, FALSE)]</b>: [msg]</span></span>")
+			to_chat(C, "<span class='mentornotice'><span class='purple'>Ответ PM от <b>[key_name_mentor(src, C, TRUE, TRUE)]</b>: [msg]</span></span>")
+			to_chat(src, "<span class='mentornotice'><span class='pink'>Ментор PM для <b>Ментор</b>: [msg]</span></span>")
 
 	else
 		if(is_mentor())	//sender is a mentor but recipient is not.
-			to_chat(C, "<span class='mentornotice'><span class='purple'>Mentor PM from-<b>[key_name_mentor(src, C, TRUE, FALSE)]</b>: [msg]</span></span>")
-			to_chat(src, "<span class='mentornotice'><span class='pink'>Mentor PM to-<b>[key_name_mentor(C, C, TRUE, TRUE)]</b>: [msg]</span></span>")
+			to_chat(C, "<span class='mentornotice'><span class='purple'>Ментор PM от <b>Ментор</b>: [msg]</span></span>")
+			to_chat(src, "<span class='mentornotice'><span class='pink'>Ментор PM для <b>[key_name_mentor(C, C, TRUE, TRUE)]</b>: [msg]</span></span>")
 
 	//we don't use message_Mentors here because the sender/receiver might get it too
-	for(var/client/X in GLOB.mentors | GLOB.admins)
+	for(var/client/X in mentor_traffic_recipients())
 		if(X.key!=key && X.key!=C.key)	//check client/X is an Mentor and isn't the sender or recipient
 			var/show_char = !X.holder
 			to_chat(X, "<span class='mentornotice'><B><span class='pink'>Mentor PM: [key_name_mentor(src, X, FALSE, show_char)]-&gt;[key_name_mentor(C, X, FALSE, show_char)]:</span></B> <span class='blue'>[msg]</span></span>") //inform X

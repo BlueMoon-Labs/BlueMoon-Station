@@ -425,3 +425,10 @@ function bmAudioMute() {
   if (sl)    sl.value = _bm_audio_muted ? 0 : _bm_audio_vol;
   if (btn)   btn.innerHTML = _bm_audio_muted ? '&#128263;' : (_bm_audio_vol > 50 ? '&#128266;' : '&#128265;');
 }
+
+// === ДИСКЛЕЙМЕР ===
+function bmShowDisclaimer() {
+  var src = window._BM_SRC || '';
+  if (!src) return;
+  location.href = '?src=' + src + ';bm_lobby_action=show_disclaimer';
+}

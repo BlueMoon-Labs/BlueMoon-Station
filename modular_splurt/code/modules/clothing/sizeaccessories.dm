@@ -12,7 +12,11 @@
 	strip_delay = 40
 	equip_delay_self = 175
 	unequip_delay_self = 175
-	var/owner = null	// владелец нормалайзера может нацепить его даже если у него стоит квирк ANTI_NORMALIZER
+	/// Владелец нормалайзера может нацепить его даже если у него стоит квирк
+	/// ANTI_NORMALIZER. Строго weakref: жёсткая ссылка из лоадаута пинила тело
+	/// игрока до конца раунда (раунд 9827: REF SEARCH нашёл /mob/living/carbon/human
+	/// в /obj/item/clothing/neck/syntech/collar, вар owner - hard delete тела).
+	var/datum/weakref/owner_ref
 	var/list/previous_gloves_data[3] // strip_delay, equip_delay_self, unequip_delay_self
 	//These are already defined under the parent ring, but I wanna leave em here for reference purposes
 
@@ -44,41 +48,41 @@
 
 //For glove slots
 /obj/item/clothing/accessory/ring/syntech/equipped(mob/living/user, slot)
-	clothing_size_normalize(user, slot, ITEM_SLOT_GLOVES, src.owner)
+	clothing_size_normalize(user, slot, ITEM_SLOT_GLOVES, owner_ref?.resolve())
 	..()
 
 /obj/item/clothing/accessory/ring/syntech/dropped(mob/living/user, slot)
 	clothing_size_un_normalize(user)
 	..()
 
-/obj/item/clothing/accessory/ring/syntech/attach(obj/item/clothing/under/U, mob/living/carbon/human/user)
-	if(istype(user) && user.gloves == U)
+/obj/item/clothing/accessory/ring/syntech/attach(obj/item/clothing/cloth, mob/living/carbon/human/user)
+	if(istype(user) && user.gloves == cloth)
 		if(!user.dna.species.equip_delay_self_check(src, user))
 			if(!user.put_in_hands(src)) // Из-за специфики работы прока attach_accessory следует проследить, чтобы кольцо не осталось внутри без локации на теле
 				to_chat(user, "<span class='warning'>[src] just slip off your hands!</span>")
 			return FALSE
 
 
-	previous_gloves_data[1] = U.strip_delay
-	U.strip_delay = max(U.strip_delay, strip_delay)
-	previous_gloves_data[2] = U.equip_delay_self
-	U.equip_delay_self = max(U.equip_delay_self, equip_delay_self)
-	previous_gloves_data[3] = U.unequip_delay_self
-	U.unequip_delay_self = max(U.unequip_delay_self, unequip_delay_self)
+	previous_gloves_data[1] = cloth.strip_delay
+	cloth.strip_delay = max(cloth.strip_delay, strip_delay)
+	previous_gloves_data[2] = cloth.equip_delay_self
+	cloth.equip_delay_self = max(cloth.equip_delay_self, equip_delay_self)
+	previous_gloves_data[3] = cloth.unequip_delay_self
+	cloth.unequip_delay_self = max(cloth.unequip_delay_self, unequip_delay_self)
 	..()
 
-/obj/item/clothing/accessory/ring/syntech/detach(obj/item/clothing/under/U, user)
+/obj/item/clothing/accessory/ring/syntech/detach(obj/item/clothing/cloth, user)
 	clothing_size_un_normalize(user)
-	U.strip_delay = previous_gloves_data[1]
-	U.equip_delay_self = previous_gloves_data[2]
-	U.unequip_delay_self = previous_gloves_data[3]
+	cloth.strip_delay = previous_gloves_data[1]
+	cloth.equip_delay_self = previous_gloves_data[2]
+	cloth.unequip_delay_self = previous_gloves_data[3]
 	..()
 
-/obj/item/clothing/accessory/ring/syntech/on_uniform_equip(obj/item/clothing/under/U, mob/living/carbon/human/user)
-	if(istype(user) && user.gloves == U)
-		clothing_size_normalize(user, owner = src.owner)
+/obj/item/clothing/accessory/ring/syntech/on_uniform_equip(obj/item/clothing/cloth, mob/living/carbon/human/user)
+	if(istype(user) && user.gloves == cloth)
+		clothing_size_normalize(user, owner = owner_ref?.resolve())
 
-/obj/item/clothing/accessory/ring/syntech/on_uniform_dropped(obj/item/clothing/under/U, mob/living/user)
+/obj/item/clothing/accessory/ring/syntech/on_uniform_dropped(obj/item/clothing/cloth, mob/living/user)
 	clothing_size_un_normalize(user)
 
 //SynTech Wristband
@@ -89,12 +93,13 @@
 	mob_overlay_icon = 'modular_splurt/icons/mob/clothing/hands.dmi'
 	icon_state = "wristband"
 	item_state = "syntechband"
-	var/owner = null	// владелец нормалайзера может нацепить его даже если у него стоит квирк ANTI_NORMALIZER
+	/// см. /obj/item/clothing/accessory/ring/syntech/owner_ref
+	var/datum/weakref/owner_ref
 	equip_delay_self = 175
 	unequip_delay_self = 175
 
 /obj/item/clothing/wrists/syntech/equipped(mob/user, slot)
-	clothing_size_normalize(user, slot, ITEM_SLOT_WRISTS, src.owner)
+	clothing_size_normalize(user, slot, ITEM_SLOT_WRISTS, owner_ref?.resolve())
 	..()
 
 /obj/item/clothing/wrists/syntech/dropped(mob/living/user, slot)
@@ -110,13 +115,14 @@
 	mob_overlay_icon = 'modular_splurt/icons/mob/clothing/neck.dmi'
 	icon_state = "pendant"
 	item_state = "pendant"
-	var/owner = null	// владелец нормалайзера может нацепить его даже если у него стоит квирк ANTI_NORMALIZER
+	/// см. /obj/item/clothing/accessory/ring/syntech/owner_ref
+	var/datum/weakref/owner_ref
 	equip_delay_self = 175
 	unequip_delay_self = 175
 
 //For neck items
 /obj/item/clothing/neck/syntech/equipped(mob/living/user, slot)
-	clothing_size_normalize(user, slot, ITEM_SLOT_NECK, src.owner)
+	clothing_size_normalize(user, slot, ITEM_SLOT_NECK, owner_ref?.resolve())
 	..()
 
 /obj/item/clothing/neck/syntech/dropped(mob/living/user, slot)

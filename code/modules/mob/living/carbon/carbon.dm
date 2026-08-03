@@ -6,6 +6,11 @@
 
 /mob/living/carbon/Initialize(mapload)
 	. = ..()
+	var/static/next_carbon_life_periodic_phase = 0
+	// Carbon initialization may create other living mobs, so use a carbon-only
+	// sequence to keep breathing and organ work evenly distributed.
+	life_periodic_phase = next_carbon_life_periodic_phase ^ 1
+	next_carbon_life_periodic_phase++
 	create_reagents(1000, NONE, NO_REAGENTS_VALUE)
 	update_body_parts() //to update the carbon's new bodyparts appearance
 	GLOB.carbon_list += src
@@ -40,6 +45,20 @@
 	legcuffed = null
 	//фантом items-галлюцинации живёт в nullspace и без qdel утёк бы насовсем
 	QDEL_NULL(halitem)
+
+/mob/living/carbon/execute_mode(obj/item/expected_item, expected_active_hand_index, force = FALSE)
+	. = ..()
+	if(!isnull(.))
+		return
+
+	// Активация имплантов в руке
+	var/obj/item/organ/cyberimp/arm/implant = getorganslot((active_hand_index % 2 == 0) ? ORGAN_SLOT_RIGHT_ARM_AUG : ORGAN_SLOT_LEFT_ARM_AUG)
+	if(!implant)
+		return
+	if(!implant.activate_allowed(user = src, silent = FALSE))
+		return FALSE
+	implant.ui_action_click(src)
+	return TRUE
 
 /mob/living/carbon/proc/get_breath_buffer()
 	if(!breath_buffer)
@@ -81,9 +100,9 @@
 				playsound(user.loc, 'sound/effects/attackblob.ogg', 50, 1)
 
 				if(prob(src.getBruteLoss() - 50))
-					for(var/atom/movable/A in stomach_contents)
+					for(var/atom/movable/A in stomach_contents.Copy())
 						A.forceMove(drop_location())
-						stomach_contents.Remove(A)
+						remove_from_stomach(A)
 					src.gib()
 
 
@@ -269,7 +288,7 @@
 			verb_text = thrown_item.throw_verb
 	visible_message(span_danger("[src] [verb_text][plural_s(verb_text)] [thrown_thing][power_throw ? " really hard!" : "."]"), \
 					span_danger("You [verb_text] [thrown_thing][power_throw ? " really hard!" : "."]"))
-	log_message("has thrown [thrown_thing] [power_throw > 0 ? "really hard" : ""]", LOG_ATTACK)
+	log_message("has thrown [thrown_thing] [power_throw > 0 ? "really hard" : ""]", LOG_ATTACK, target = thrown_thing)
 	do_attack_animation(target, no_effect = 1)
 	var/extra_throw_range = 0 // HAS_TRAIT(src, TRAIT_THROWINGARM) ? 2 : 0
 	playsound(loc, 'sound/weapons/punchmiss.ogg', 50, 1, -1)
@@ -278,7 +297,7 @@
 	DelayNextAction(CLICK_CD_THROW)
 
 /mob/living/carbon/restrained(ignore_grab)
-	. = (handcuffed || (!ignore_grab && pulledby && pulledby.grab_state >= GRAB_AGGRESSIVE))
+	. = (HAS_TRAIT(src, TRAIT_RESTRAINED) || handcuffed || (!ignore_grab && pulledby && pulledby.grab_state >= GRAB_AGGRESSIVE))
 
 /mob/living/carbon/proc/canBeHandcuffed()
 	return FALSE
@@ -412,8 +431,7 @@
 		if (buckled && buckled.buckle_requires_restraints)
 			buckled.unbuckle_mob(src)
 		update_handcuffed()
-		if (client)
-			client.screen -= W
+		remove_from_hud_screens(W)
 		if (W)
 			W.forceMove(drop_location())
 			W.dropped(src)
@@ -425,8 +443,7 @@
 		var/obj/item/W = legcuffed
 		legcuffed = null
 		update_inv_legcuffed()
-		if (client)
-			client.screen -= W
+		remove_from_hud_screens(W)
 		if (W)
 			W.forceMove(drop_location())
 			W.dropped(src)
@@ -908,6 +925,7 @@
 		if(health <= HEALTH_THRESHOLD_DEAD && !HAS_TRAIT(src, TRAIT_NODEATH))
 			death()
 			return
+		var/previous_stat = stat
 		if(IsUnconscious() || IsSleeping() || getOxyLoss() > 50 || (HAS_TRAIT(src, TRAIT_DEATHCOMA)) || (health <= HEALTH_THRESHOLD_FULLCRIT && !HAS_TRAIT(src, TRAIT_NOHARDCRIT)))
 			set_stat(UNCONSCIOUS)
 			SEND_SIGNAL(src, COMSIG_DISABLE_COMBAT_MODE)
@@ -921,7 +939,12 @@
 				set_stat(CONSCIOUS)
 			if(eye_blind <= 1)
 				adjust_blindness(-1)
-		update_mobility()
+		// The only mobility input this proc can have touched is `stat`. Stuns,
+		// grabs, resting, limbs and traits all refresh mobility from their own
+		// setters, and BiologicalLife keeps a once-per-tick catch-all — so a
+		// health change that left `stat` alone has nothing to recompute.
+		if(stat != previous_stat)
+			update_mobility()
 	update_crit_status()
 	update_damage_hud()
 	update_health_hud()
@@ -930,9 +953,15 @@
 	..()
 
 /mob/living/carbon/proc/update_crit_status()
-	remove_filter("hardcrit")
-	if(health <= crit_threshold)
+	// Adding or removing a filter rebuilds the atom's entire filter list, so only
+	// touch it when the crit state actually flipped.
+	var/in_crit = (health <= crit_threshold)
+	if(in_crit == !!get_filter_index("hardcrit"))
+		return
+	if(in_crit)
 		add_filter("hardcrit", 2, BM_FILTER_HARDCRIT)
+	else
+		remove_filter("hardcrit")
 
 //called when we get cuffed/uncuffed
 /mob/living/carbon/proc/update_handcuffed()
@@ -1049,8 +1078,40 @@
 		C.visible_message("<span class='danger'>[src] devours [C]!</span>", \
 						"<span class='userdanger'>[src] devours you!</span>")
 		C.forceMove(src)
-		stomach_contents.Add(C)
+		add_to_stomach(C)
 		log_combat(src, C, "devoured")
+
+/**
+ * Кладёт объект в stomach_contents.
+ *
+ * Главная задача - не пускать в список уже мёртвых: /obj/effect/decal/Initialize
+ * отвечает INITIALIZE_HINT_QDEL на любой не-турф, поэтому декаль, созданная
+ * внутри моба (партийная граната сработала в руках, гибспаунер внутри карбона),
+ * возвращается из конструктора уже qdel-нутой. Вычищать её было некому:
+ * handle_stomach() перебирал только /mob/living. Раунд 9813 - 20 конфетти
+ * одним тиком, каждое с одной внешней ссылкой.
+ *
+ * Подписки на COMSIG_PARENT_QDELETING тут быть не может: ключ (цель, сигнал,
+ * слушатель) уже занят clear_from_recent_examines, и override молча выбил бы
+ * чужой обработчик у только что осмотренного и съеденного моба.
+ */
+/mob/living/carbon/proc/add_to_stomach(atom/movable/swallowed)
+	if(QDELETED(swallowed) || (swallowed in stomach_contents))
+		return
+	stomach_contents += swallowed
+
+/// Снимает объект с желудка вручную (вытащили, срыгнули, передали другому мобу).
+/mob/living/carbon/proc/remove_from_stomach(atom/movable/swallowed)
+	if(!swallowed)
+		return
+	stomach_contents -= swallowed
+
+/// Догоняет содержимое, удалённое кем-то со стороны. Зовётся из handle_stomach(),
+/// то есть только для мобов, у которых в желудке реально что-то лежит.
+/mob/living/carbon/proc/prune_stomach_contents()
+	for(var/atom/movable/content as anything in stomach_contents.Copy())
+		if(QDELETED(content))
+			stomach_contents -= content
 
 /mob/living/carbon/proc/create_bodyparts()
 	var/l_arm_index_next = -1

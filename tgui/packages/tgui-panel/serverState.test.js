@@ -106,8 +106,9 @@ describe('tgui panel serverState', () => {
     const queuePayload = backendCreatePayloadQueue.mock.calls[0][0];
     expect(queuePayload.id).toMatch(/^panel-state-1234-/);
     expect(queuePayload.chunks.length).toBeGreaterThan(1);
+    // Тот же бюджет, что CHUNK_ENCODED_SIZE в serverState.js и CHUNK_BUDGET в tgui/backend.ts.
     expect(queuePayload.chunks.every(
-      chunk => encodeURIComponent(chunk).length <= 512,
+      chunk => encodeURIComponent(chunk).length <= 900,
     )).toBe(true);
 
     expect(dispatch).toHaveBeenCalledWith({

@@ -42,6 +42,11 @@
 		var/obj/item/dest_tagger/O = W
 
 		if(sort_tag != O.currTag)
+			//currTag - индекс в GLOB.TAGGERLOCATIONS, у нетронутого тэггера он 0:
+			//пометка свежим тэггером падала на "list index out of bounds"
+			if(O.currTag < 1 || O.currTag > length(GLOB.TAGGERLOCATIONS))
+				to_chat(user, "<span class='warning'>На [W] не выбран пункт назначения!</span>")
+				return
 			var/tag = uppertext(GLOB.TAGGERLOCATIONS[O.currTag])
 			to_chat(user, "<span class='notice'>*[tag]*</span>")
 			sort_tag = O.currTag
@@ -196,6 +201,11 @@
 		var/obj/item/dest_tagger/O = W
 
 		if(sort_tag != O.currTag)
+			//currTag - индекс в GLOB.TAGGERLOCATIONS, у нетронутого тэггера он 0:
+			//пометка свежим тэггером падала на "list index out of bounds"
+			if(O.currTag < 1 || O.currTag > length(GLOB.TAGGERLOCATIONS))
+				to_chat(user, "<span class='warning'>На [W] не выбран пункт назначения!</span>")
+				return
 			var/tag = uppertext(GLOB.TAGGERLOCATIONS[O.currTag])
 			to_chat(user, "<span class='notice'>*[tag]*</span>")
 			sort_tag = O.currTag

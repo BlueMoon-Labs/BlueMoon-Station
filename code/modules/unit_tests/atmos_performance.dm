@@ -11,6 +11,23 @@
 	mix.set_temperature(T20C)
 	return mix
 
+///Repeated fire lines crossing one turf must reuse its active hotspot instead
+///of leaving the previous effect orphaned in SSair.hotspots.
+/datum/unit_test/hotspot_ensure_reuses_active/Run()
+	var/turf/open/test_turf = run_loc_floor_bottom_left
+	if(test_turf.active_hotspot)
+		qdel(test_turf.active_hotspot)
+	var/hotspots_before = length(SSair.hotspots)
+
+	var/obj/effect/hotspot/first = test_turf.ensure_hotspot()
+	var/obj/effect/hotspot/second = test_turf.ensure_hotspot()
+
+	TEST_ASSERT_NOTNULL(first, "ensure_hotspot() must create a hotspot on an open turf")
+	TEST_ASSERT_EQUAL(second, first, "A second fire exposure must reuse the turf's active hotspot")
+	TEST_ASSERT_EQUAL(test_turf.active_hotspot, first, "The reused hotspot must remain the turf's active owner")
+	TEST_ASSERT_EQUAL(length(SSair.hotspots), hotspots_before + 1, "Reusing a hotspot must add exactly one SSair processing entry")
+	qdel(first)
+
 /datum/unit_test/atmos_hot_proc_benchmark
 	priority = TEST_LONGER
 

@@ -28,3 +28,16 @@
 	var/datum/D = locate(reference)
 	return (!QDELETED(D) && D.weak_reference == src) ? D : null
 
+/// Как resolve(), но возвращает и qdel-нутую (ещё не собранную GC) цель.
+/// Для диагностики: именование того, что как раз сейчас удаляется.
+/datum/weakref/proc/hard_resolve()
+	var/datum/target = locate(reference)
+	if(isnull(target))
+		return null
+	// BYOND переиспользует ref-слоты: живой датум обязан указывать на нас,
+	// иначе это уже чужой объект. У qdel-нутой цели weak_reference обнулён
+	// в Destroy(), поэтому её возвращаем без этой проверки.
+	if(!QDELETED(target) && target.weak_reference != src)
+		return null
+	return target
+

@@ -159,7 +159,7 @@
 	name = "Tactical Gasmask"
 	slot = ITEM_SLOT_MASK
 	path = /obj/item/clothing/mask/gas/syndicate/cool_version
-	ckeywhitelist = list("oni3288", "smileycom")
+	ckeywhitelist = list("oni3288", "smileycom", "shizalrp", "lindaastereih")
 
 /datum/gear/donator/bm/blackcool_mask
 	name = "CFIS Gasmask"
@@ -658,7 +658,7 @@
 	name = "Alta's dogtag"
 	slot = ITEM_SLOT_NECK
 	path = /obj/item/clothing/accessory/dogtag
-	ckeywhitelist = list("oni3288", "ghos7ik", "discord980", "mihana964", "romontesque", "enigma418", "smol42", "notlikeluls",  "kladmenuwu", "alexsandoor", "scramblescream", "nai1ten", "devildeadspace", "zetneskov", "hazzi", "definitelynotnesuby", "silverfoxpaws", "pr1zrak", "earthphobia", "wafflemeow", "trora", "kosep", "urfdrf", "mikolaostavkin", "xaeshkavd", "deltarayx", "korinfellori", "troubleneko17th", "dimofon", "lichfail", "gisya", "dimakr", "cupteazee", "nopeingeneer", "silyamg", "lomodno", "valsons", "nyctealust", "abrikos", "spoopyman228", "stasdvrz", "shizalrp", "tblkba", "dragon9090", "avtobuspng", "ninjapikachushka", "ailhate", "kingdeaths", "mentaleater", "lindaastereih", "gevaitrouble", "ivanokio", "blatoff", "regiska")
+	ckeywhitelist = list("oni3288", "ghos7ik", "discord980", "mihana964", "romontesque", "enigma418", "smol42", "notlikeluls",  "kladmenuwu", "alexsandoor", "scramblescream", "nai1ten", "devildeadspace", "zetneskov", "hazzi", "definitelynotnesuby", "silverfoxpaws", "pr1zrak", "earthphobia", "wafflemeow", "trora", "kosep", "urfdrf", "mikolaostavkin", "xaeshkavd", "deltarayx", "korinfellori", "troubleneko17th", "dimofon", "lichfail", "gisya", "dimakr", "cupteazee", "nopeingeneer", "silyamg", "lomodno", "valsons", "nyctealust", "abrikos", "spoopyman228", "stasdvrz", "shizalrp", "tblkba", "dragon9090", "avtobuspng", "ninjapikachushka", "ailhate", "kingdeaths", "mentaleater", "lindaastereih", "gevaitrouble", "ivanokio", "blatoff", "regiska", "lander231")
 
 /datum/gear/donator/bm/hateredsoul_dogtag
 	name = "Combat Dogtag"
@@ -1539,7 +1539,7 @@
 /datum/gear/donator/bm/ouroboroswinterschock/on_spawn(mob/living/carbon/human/user, obj/item/clothing/accessory/ring/syntech/winterschock/I)
 	if(!istype(user))
 		return
-	I.owner = user
+	I.owner_ref = WEAKREF(user)
 	if(user.dna?.features["normalized_size"])
 		I.current_normalized_size = user.dna.features["normalized_size"]
 		I.try_update_size(user, TRUE)
@@ -2389,10 +2389,10 @@
 	path = /obj/item/lipstick/heartboom
 	ckeywhitelist = list("liesbee")
 
-/datum/gear/donator/bm/cz_75_kit
-	name = "CZ-75 kit"
+/datum/gear/donator/bm/personal_ward
+	name = "Personal Ward Box"
 	slot = ITEM_SLOT_BACKPACK
-	path = /obj/item/modkit/cz_75
+	path = /obj/item/storage/box/donator/bm/personal_ward
 	ckeywhitelist = list("shizalrp", "krasler101", "kingdeaths", "vlonger")
 
 /datum/gear/donator/bm/kila_mask
@@ -2509,3 +2509,34 @@
 	slot = ITEM_SLOT_HEAD
 	path = /obj/item/clothing/head/donator/bm/stupid_cap
 	ckeywhitelist = list("angelnedemon")
+
+/datum/gear/donator/bm/infovisor
+	name = "Infovisor"
+	slot = ITEM_SLOT_EYES
+	path = /obj/item/clothing/glasses/cover/infovisor
+	ckeywhitelist = list("lindaastereih")
+
+/datum/gear/donator/bm/vulpix_pilot_badge
+	name = "Pilots Federation Badge"
+	slot = ITEM_SLOT_ACCESSORY
+	path = /obj/item/clothing/accessory/medal/vulpix_pilot_badge
+	cost = 0
+	ckeywhitelist = list("alexhosted", "gsvden")
+
+/datum/gear/donator/bm/yun_cap
+	name = "strange chinese cap"
+	slot = ITEM_SLOT_HEAD
+	path = /obj/item/clothing/head/yun_cap
+	ckeywhitelist = list("victorpoplavsy")
+
+/datum/gear/donator/bm/yun_outfit
+	name = "strange chinese clothing"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/bm/yun_outfit
+	ckeywhitelist = list("victorpoplavsy")
+
+/datum/gear/donator/bm/yun_sneakers
+	name = "strange sneakers"
+	slot = ITEM_SLOT_FEET
+	path = /obj/item/clothing/shoes/yun_sneakers
+	ckeywhitelist = list("victorpoplavsy")

@@ -22,7 +22,7 @@
 		"Field Surgeon",
 		"Para-Slut",
 		"Para-Stud",
-		"Searh and Rescue Technician",
+		"Search and Rescue Technician",
 		)
 
 	outfit = /datum/outfit/job/paramedic
@@ -100,6 +100,7 @@
 
 	r_pocket = /obj/item/pinpointer/crew
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/med
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/med
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/med

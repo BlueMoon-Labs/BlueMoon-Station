@@ -108,5 +108,5 @@
 	"vendatray", "space_heater", "electrolyzer", "beaker", "large_beaker", "xlarge_beaker", "spray_bottle", "mop", "bucket", "broom", "hypovial", "large_hypovial", "syringe", "pillbottle",
 	"sec_beanbag", "sec_rshot", "sec_bshot", "sec_slug", "sec_islug", "sec_dart", "sec_38", "sec_38lethal",
 	"rglass","plasteel","plastitanium","plasmaglass","plasmareinforcedglass","titaniumglass","plastitaniumglass", "salestagger",
-	"cooler_mining", "cooler", "infiltrator_case", "infiltrator_case_security", "infiltrator_case_command", "infiltrator_case_medical", "infiltrator_case_engineering", "infiltrator_case_mining", "infiltrator_case_science",
-	"heavy_roller_bed", "normal_roller_bed")
+	"cooler_mining", "cooler", "infiltrator_case", "infiltrator_case_security", "ammo_workbench", "infiltrator_case_command", "infiltrator_case_medical", "infiltrator_case_engineering", "infiltrator_case_mining", "infiltrator_case_science",)
+	// BLUEMOON ADD ^ - добавлены "cooler_mining", "cooler" //ещё один add- ammoworkbench staff

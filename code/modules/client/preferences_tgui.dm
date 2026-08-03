@@ -1,3 +1,28 @@
+/**
+ * Выставить приоритет роли антагониста в be_special. Возвращает TRUE, если преф изменился.
+ *
+ * be_special ассоциативен, поэтому запись обязана идти по ключу - `be_special[role] = priority`.
+ * Так было не всегда: старый код писал через `be_special += role`, а это на ассоциативном
+ * списке дописывает НОВЫЙ элемент с тем же ключом и значением null. Значение получало
+ * только первое вхождение, а выключение через `-=` снимало лишь одно из дублей, так что
+ * роль оставалась включённой. Испорченные этим сейвы чинит миграция 78.
+ *
+ * * role - строка из GLOB.special_roles
+ * * priority - отрицательное значение выключает роль, иначе это приоритет выдачи
+ */
+/datum/preferences/proc/set_antag_preference(role, priority)
+	if(!(role in GLOB.special_roles))
+		return FALSE
+	if(priority < 0)
+		if(!(role in be_special))
+			return FALSE
+		//чистим до конца: старые сейвы могли накопить дубли ключа
+		while(role in be_special)
+			be_special -= role
+		return TRUE
+	be_special[role] = priority
+	return TRUE
+
 /datum/preferences/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
@@ -28,6 +53,8 @@
 	.["sound_emote"] = !!(toggles & SOUND_EMOTE)
 	.["sound_prayers"] = !!(toggles & SOUND_PRAYERS)
 	.["sound_adminhelp"] = !!(toggles & SOUND_ADMINHELP)
+	.["sound_mentorhelp"] = !!(mentor_toggles & SOUND_MENTORHELP)
+	.["sound_fax"] = !!(toggles & SOUND_FAX)
 
 	// Sound volumes
 	.["sound_volume_midi"] = sound_volume_midi
@@ -37,6 +64,8 @@
 	.["sound_volume_bark"] = sound_volume_bark
 	.["sound_volume_prayers"] = sound_volume_prayers
 	.["sound_volume_adminhelp"] = sound_volume_adminhelp
+	.["sound_volume_mentorhelp"] = sound_volume_mentorhelp
+	.["sound_volume_fax"] = sound_volume_fax
 	.["sound_volume_instruments"] = sound_volume_instruments
 	.["sound_volume_jukeboxes"] = sound_volume_jukeboxes
 	.["sound_volume_emote"] = sound_volume_emote
@@ -101,13 +130,19 @@
 	.["has_admin"] = !!check_rights_for(user?.client, R_ADMIN)
 	if(.["has_admin"])
 		.["deadmin"] = deadmin
+		.["ticket_nickname"] = ticket_nickname
+
+	// Mentor
+	.["has_mentor"] = !!user?.client?.is_mentor()
+	if(.["has_mentor"])
+		.["dementor_on_login"] = !!(mentor_toggles & DEMENTOR_ON_LOGIN)
 
 	// Antag roles
 	var/list/antag_roles = list()
 	for(var/role in GLOB.special_roles)
 		antag_roles += list(list(
 			"name" = role,
-			"status" = (role in be_special) ? be_special[role] : -1
+			"status" = (role in be_special) ? be_special[role] : ANTAG_PRIORITY_DISABLED
 		))
 	.["antag_roles"] = antag_roles
 
@@ -258,7 +293,13 @@
 					toggles ^= SOUND_PRAYERS
 				if("sound_adminhelp")
 					toggles ^= SOUND_ADMINHELP
+				if("sound_mentorhelp")
+					mentor_toggles ^= SOUND_MENTORHELP
+				if("sound_fax")
+					toggles ^= SOUND_FAX
 			save_preferences()
+			tgui_or_html_refresh(user)
+			return TRUE
 
 		// Sound volumes
 		if("set_volume")
@@ -267,6 +308,8 @@
 			if(copytext(flag, 1, 14) == "sound_volume_" && (flag in vars))
 				vars[flag] = value
 				save_preferences()
+			tgui_or_html_refresh(user)
+			return TRUE
 
 		// Graphics toggles
 		if("toggle_gfx")
@@ -359,6 +402,7 @@
 				if("auto_capitalize_enabled")
 					auto_capitalize_enabled = !auto_capitalize_enabled
 			save_preferences()
+			return TRUE
 
 		// Gameplay toggles
 		if("toggle_gameplay")
@@ -389,19 +433,21 @@
 				if("disable_combat_mouse_lock")
 					disable_combat_mouse_lock = !disable_combat_mouse_lock
 			save_preferences()
+			return TRUE
 
 		// Antag role toggles
 		if("toggle_antag")
-			var/role = params["role"]
-			var/value = text2num(params["value"])
-			if(!(role in GLOB.special_roles))
+			if(!set_antag_preference(params["role"], text2num(params["value"])))
 				return
-			if(value < 0)
-				be_special -= role
-			else
-				be_special += role
-				be_special[role] = value
 			save_preferences()
+			return TRUE
+
+		if("ticket_nickname")
+			var/nickname = params["nickname"]
+			if(istext(nickname))
+				ticket_nickname = copytext_char(nickname, 1, 32)
+			save_preferences()
+			return TRUE
 
 		if("toggle_admin")
 			var/flag = params["flag"]
@@ -423,6 +469,17 @@
 				if("deadmin_silicon")
 					deadmin ^= DEADMIN_POSITION_SILICON
 			save_preferences()
+			return TRUE
+
+		if("toggle_mentor")
+			if(!usr.client?.is_mentor())
+				return TRUE
+			var/flag = params["flag"]
+			switch(flag)
+				if("dementor_on_login")
+					mentor_toggles ^= DEMENTOR_ON_LOGIN
+			save_preferences()
+			return TRUE
 
 		if("set_screenshake")
 			var/flag = params["flag"]
@@ -473,8 +530,10 @@
 			switch(flag)
 				if("tgui_input_mode")
 					tgui_input_mode = (value == "TGUI" ? TRUE : FALSE)
+					user.client.ensure_keys_set(src)
 				if("tgui_input_verbs")
 					tgui_input_verbs = (value == "TGUI" ? TRUE : FALSE)
+					user.client.ensure_keys_set(src)
 				if("UI_style")
 					UI_style = value
 					if(user?.hud_used)

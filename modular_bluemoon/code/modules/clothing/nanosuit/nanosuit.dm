@@ -635,14 +635,14 @@
 		ADD_TRAIT(src, TRAIT_NODROP, CLOTHING_TRAIT)
 		for(var/hud_type in datahuds)
 			var/datum/atom_hud/DHUD = GLOB.huds[hud_type]
-			DHUD.show_to(user)
+			DHUD.add_hud_to(user)
 
 /obj/item/clothing/head/helmet/space/hardsuit/nano/dropped(mob/living/carbon/human/user)
 	..()
 	if(user.head == src)
 		for(var/hud_type in datahuds)
 			var/datum/atom_hud/DHUD = GLOB.huds[hud_type]
-			DHUD.hide_from(user)
+			DHUD.remove_hud_from(user)
 			if(zoom)
 				toggle_zoom(user, TRUE)
 
@@ -975,7 +975,7 @@
 	return FALSE
 
 /obj/attacked_by(obj/item/I, mob/living/user)
-	if(I.force && I.damtype == BRUTE && ishuman(user) && user.mind.has_martialart(MARTIALART_NANOSUIT))
+	if(I.force && I.damtype == BRUTE && ishuman(user) && user.mind?.has_martialart(MARTIALART_NANOSUIT)) // у NPC/дамми mind нет
 		visible_message(span_danger("[user] бьёт [src] с невероятной силой при помощи [I.name]!") , null, null, COMBAT_MESSAGE_RANGE)
 		take_damage(I.force*1.75, I.damtype, "melee", TRUE)//take 75% more damage with strength on
 		return

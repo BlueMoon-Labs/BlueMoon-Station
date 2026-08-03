@@ -435,7 +435,7 @@
 	return is_fucking ? NORMAL_LUST : HIGH_LUST
 
 /datum/interaction/lewd/unholy/piss/penis/inside/get_user_lust_level(mob/living/user, mob/living/partner, is_fucking)
-	if(user.has_penis())
+	if(user.has_penis(TRUE))
 		return is_fucking ? NORMAL_LUST : HIGH_LUST
 	else // Если у user страпон, он получает только эстетическое удовлетворение
 		return ..()

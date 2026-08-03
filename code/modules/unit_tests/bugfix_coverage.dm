@@ -156,3 +156,16 @@
 	// Cleanup: don't leave the probe/category lingering in the global market.
 	market.available_items -= test_category
 	qdel(probe)
+
+/// Runtime regressions from the mass-megafauna round: malformed loot entries
+/// and an icon update racing MULEbot Destroy must both be harmless.
+/datum/unit_test/simple_animal_loot_ignores_null_entries/Run()
+	var/mob/living/simple_animal/hostile/megafauna/demonic_frost_miner/miner = allocate(/mob/living/simple_animal/hostile/megafauna/demonic_frost_miner, run_loc_floor_bottom_left)
+	TEST_ASSERT(!(null in miner.loot), "The demonic frost miner loot table must not contain a null type")
+	miner.loot = list(null)
+	miner.drop_loot()
+
+/datum/unit_test/mulebot_qdelete_icon_update/Run()
+	var/mob/living/simple_animal/bot/mulebot/mule = allocate(/mob/living/simple_animal/bot/mulebot, run_loc_floor_bottom_left)
+	QDEL_NULL(mule.wires)
+	mule.update_icon()

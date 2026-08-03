@@ -11,6 +11,9 @@
 	var/mode = MONKEY_IDLE
 	var/list/myPath = list()
 	var/list/blacklistItems = list()
+	/// Предметы, на удаление которых подписана обезьяна. Подписка одна на предмет,
+	/// причин у неё две - цель подбора и чёрный список.
+	var/list/watched_qdel_items = list()
 	var/maxStepsTick = 6
 	var/best_force = 0
 	var/martial_art = new/datum/martial_art
@@ -24,42 +27,62 @@
 /mob/living/carbon/monkey/proc/IsStandingStill()
 	return resisting || pickpocketing || disposing_body
 
+/**
+ * Подписывает обезьяну на удаление предмета.
+ *
+ * Причин следить за предметом две - он выбран целью подбора и/или занесён в чёрный
+ * список, - а регистрация на пару (регистрант, цель, сигнал) может быть только одна:
+ * вторая перебивает первую и роняет в логи "parent_qdeleting overridden". Поэтому
+ * подписка тут общая, а обработчик один на обе причины.
+ */
+/mob/living/carbon/monkey/proc/watch_item_qdel(obj/item/watched_item)
+	if(!watched_item || watched_qdel_items[watched_item])
+		return
+	RegisterSignal(watched_item, COMSIG_PARENT_QDELETING, PROC_REF(on_watched_item_qdeleting))
+	watched_qdel_items[watched_item] = TRUE
+
+/// Снимает подписку, но только если у предмета не осталось ни одной причины следить.
+/mob/living/carbon/monkey/proc/unwatch_item_qdel(obj/item/watched_item)
+	if(!watched_item || !watched_qdel_items[watched_item])
+		return
+	if(watched_item == pickupTargetSignalTarget || blacklistItems[watched_item])
+		return
+	UnregisterSignal(watched_item, COMSIG_PARENT_QDELETING)
+	watched_qdel_items -= watched_item
+
 /mob/living/carbon/monkey/proc/set_pickup_target(obj/item/new_target)
-	if(pickupTargetSignalTarget && pickupTargetSignalTarget != new_target)
-		UnregisterSignal(pickupTargetSignalTarget, COMSIG_PARENT_QDELETING)
-		pickupTargetSignalTarget = null
+	var/obj/item/previous_target = pickupTargetSignalTarget
 
 	pickupTarget = new_target
-	if(!pickupTarget)
+	pickupTargetSignalTarget = new_target
+
+	if(previous_target && previous_target != new_target)
+		unwatch_item_qdel(previous_target)
+
+	if(!new_target)
 		pickupTimer = 0
 		return
 
-	if(pickupTargetSignalTarget != pickupTarget)
-		RegisterSignal(pickupTarget, COMSIG_PARENT_QDELETING, PROC_REF(on_pickup_target_qdeleting))
-		pickupTargetSignalTarget = pickupTarget
+	watch_item_qdel(new_target)
 
-/mob/living/carbon/monkey/proc/on_pickup_target_qdeleting(obj/item/deleted_target)
+/// Общий обработчик удаления: чистит обе причины сразу, иначе мёртвый ключ навсегда
+/// оставался бы в blacklistItems - другой уборки у этого списка нет.
+/mob/living/carbon/monkey/proc/on_watched_item_qdeleting(obj/item/deleted_item)
 	SIGNAL_HANDLER
 
-	if(deleted_target == pickupTargetSignalTarget)
-		UnregisterSignal(deleted_target, COMSIG_PARENT_QDELETING)
+	blacklistItems -= deleted_item
+	if(deleted_item == pickupTargetSignalTarget)
 		pickupTargetSignalTarget = null
-
-	if(deleted_target == pickupTarget)
+	if(deleted_item == pickupTarget)
 		pickupTarget = null
 		pickupTimer = 0
+	unwatch_item_qdel(deleted_item)
 
-/mob/living/carbon/monkey/proc/blacklist_item(obj/item/item)
-	if(!item)
+/mob/living/carbon/monkey/proc/blacklist_item(obj/item/blacklisted_item)
+	if(!blacklisted_item)
 		return
-	if(!blacklistItems[item])
-		RegisterSignal(item, COMSIG_PARENT_QDELETING, PROC_REF(on_blacklisted_item_qdeleting))
-	blacklistItems[item]++
-
-/mob/living/carbon/monkey/proc/on_blacklisted_item_qdeleting(obj/item/item)
-	SIGNAL_HANDLER
-	UnregisterSignal(item, COMSIG_PARENT_QDELETING)
-	blacklistItems -= item
+	blacklistItems[blacklisted_item]++
+	watch_item_qdel(blacklisted_item)
 
 /mob/living/carbon/monkey/proc/on_enemy_qdeleting(mob/living/enemy)
 	SIGNAL_HANDLER
@@ -218,7 +241,11 @@
 				else
 					var/mob/living/carbon/human/H = locate(/mob/living/carbon/human/) in oview(2,src)
 					if(H)
-						set_pickup_target(pick(H.held_items))
+						//чёрный список сверяем и здесь: гоняться за уже отвергнутым
+						//предметом бессмысленно, а обе подсистемы следят за ним общей подпиской
+						var/obj/item/snatch_target = pick(H.held_items)
+						if(snatch_target && !blacklistItems[snatch_target])
+							set_pickup_target(snatch_target)
 
 		if(MONKEY_HUNT)		// hunting for attacker
 			if(health < MONKEY_FLEE_HEALTH)

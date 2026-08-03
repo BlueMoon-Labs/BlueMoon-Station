@@ -5,7 +5,7 @@
 /// code/controllers/subsystem/machines.dm and flushed every MACHINES_BENCH_DEEP_INTERVAL
 /// together with a processing-list census (walked under CHECK_TICK).
 /// Testing-only tooling: production builds compile without it.
-#ifdef TESTING
+#if defined(TESTING) || defined(AI_MOB_ARENA_MACHINES_BENCH)
 
 #define MACHINES_BENCH_SAMPLE_INTERVAL (1 SECONDS)
 #define MACHINES_BENCH_DEEP_INTERVAL (30 SECONDS)
@@ -261,4 +261,4 @@ GLOBAL_PROTECT(machines_benchmark_run)
 #undef MACHINES_BENCH_DEEP_INTERVAL
 #undef MACHINES_BENCH_TOP_TYPES
 
-#endif // ifdef TESTING
+#endif // TESTING || AI_MOB_ARENA_MACHINES_BENCH

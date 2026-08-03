@@ -56,9 +56,12 @@
 	restricted_roles = list("Cyborg", "AI")
 	required_candidates = 2
 	weight = 6 //BLUEMOON CHANGES
-	cost = 15
-	scaling_cost = 15
-	intensity = 15
+	// Команда из 2-3 без аплинка и снаряжения угрожает раунду меньше, чем один агент (cost 8/9),
+	// поэтому и стоит дешевле агентов, и в активной нагрузке директора весит ниже соло-антага:
+	// иначе братья съедали бюджет и глушили докупку контента, сами почти не создавая движа.
+	cost = 6
+	scaling_cost = 6
+	intensity = 10
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	requirements = list(101,101,101,101,60,50,40,30,20,10) //BLUEMOON CHANGES
 	antag_cap = 2 // Can pick 3 per team, but rare enough it doesn't matter.
@@ -557,7 +560,7 @@
 	force_antag_preference = TRUE
 	protected_roles = list("NanoTrasen Representative", "Internal Affairs Agent", "Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director")  //BLUEMOON CHANGES
 	restricted_roles = list("Cyborg", "AI", "Positronic Brain")
-	required_candidates = 3 //BLUEMOON CHANGES
+	required_candidates = 5 //BLUEMOON CHANGES - matches FAMILIES_ROUNDSTART_COUNT
 	weight = 48
 	cost = 10
 	intensity = 45

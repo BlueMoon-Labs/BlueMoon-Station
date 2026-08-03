@@ -39,6 +39,10 @@
 		else
 			fish = new /mob/living/simple_animal/hostile/carp/megacarp(C.loc)
 			fishannounce(fish) //Prefer to announce the megacarps over the regular fishies
+		// Спавн всех карпов разом съедал тик целиком: прод-раунд 9832 - "DIRECTOR HEAVY: тик
+		// события Carp Migration съел 363.5мс". Соседние ивенты вентиляции бюджет тика в
+		// start() уже уважают.
+		CHECK_TICK
 	fishannounce(fish)
 
 /datum/round_event/carp_migration/proc/fishannounce(atom/fish)

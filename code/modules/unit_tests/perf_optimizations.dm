@@ -338,6 +338,12 @@
 	component.replacePipenet(connected_pipeline, replacement_pipeline)
 	TEST_ASSERT_EQUAL(component.returnPipenet(connected_pipe), replacement_pipeline, "Valid pipeline replacement must still succeed")
 
+	component.parents = list(connected_pipeline, connected_pipeline, unknown_pipeline)
+	component.replacePipenet(connected_pipeline, replacement_pipeline)
+	TEST_ASSERT_EQUAL(component.parents[1], replacement_pipeline, "Pipeline replacement missed the first duplicate parent")
+	TEST_ASSERT_EQUAL(component.parents[2], replacement_pipeline, "Pipeline replacement missed the second duplicate parent")
+	component.parents = list(replacement_pipeline)
+
 
 #define BUILD_PIPELINE_PERF_N 3000
 /// Synthetic chain of [BUILD_PIPELINE_PERF_N] pipes. The pre-fix
@@ -1056,3 +1062,55 @@
 	TEST_ASSERT_NULL(touch_spell.attached_hand, "on_hand_destroy must detach the hand")
 	TEST_ASSERT(touch_spell.recharging, "on_hand_destroy must mark the touch spell as recharging")
 	TEST_ASSERT(touch_spell in SSfastprocess.processing, "on_hand_destroy must return the touch spell to SSfastprocess")
+
+// ===== Cleanbot: один обход view с прежним приоритетом целей =====
+
+/datum/unit_test/cleanbot_combined_scan_keeps_category_priority/Run()
+	var/turf/bot_turf = run_loc_floor_bottom_left
+	var/turf/adjacent_turf = get_step(bot_turf, EAST)
+	var/turf/far_turf = get_step(adjacent_turf, EAST)
+	var/mob/living/simple_animal/bot/cleanbot/bot = allocate(/mob/living/simple_animal/bot/cleanbot, bot_turf)
+	allocate(/obj/effect/decal/cleanable/dirt, adjacent_turf)
+	var/mob/living/simple_animal/mouse/far_mouse = allocate(/mob/living/simple_animal/mouse, far_turf)
+	bot.pests = TRUE
+	bot.get_targets()
+
+	var/atom/result = bot.scan_for_target()
+
+	TEST_ASSERT_EQUAL(result, far_mouse, "Pest priority must beat a closer cleanable in the combined scan")
+
+/datum/unit_test/cleanbot_combined_scan_keeps_adjacent_priority/Run()
+	var/turf/bot_turf = run_loc_floor_bottom_left
+	var/turf/adjacent_turf = get_step(bot_turf, EAST)
+	var/turf/far_turf = get_step(adjacent_turf, EAST)
+	var/mob/living/simple_animal/bot/cleanbot/bot = allocate(/mob/living/simple_animal/bot/cleanbot, bot_turf)
+	var/obj/effect/decal/cleanable/dirt/adjacent_dirt = allocate(/obj/effect/decal/cleanable/dirt, adjacent_turf)
+	allocate(/obj/effect/decal/cleanable/dirt, far_turf)
+
+	var/atom/result = bot.scan_for_target()
+
+	TEST_ASSERT_EQUAL(result, adjacent_dirt, "Adjacent cleanable must beat cached-view order within its category")
+
+/datum/unit_test/cleanbot_grid_ground_target_lifecycle/Run()
+	var/turf/bot_turf = run_loc_floor_bottom_left
+	var/turf/target_turf = get_step(bot_turf, EAST)
+	var/mob/living/simple_animal/bot/cleanbot/bot = allocate(/mob/living/simple_animal/bot/cleanbot, bot_turf)
+	var/obj/item/trash/trash = allocate(/obj/item/trash, target_turf)
+	bot.trash = TRUE
+	bot.get_targets()
+
+	var/list/ground_candidates = SSspatial_grid.orthogonal_range_search(bot, SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS, DEFAULT_SCAN_RANGE)
+	TEST_ASSERT(trash in ground_candidates, "Ground trash must register in the cleanbot grid")
+	TEST_ASSERT_EQUAL(bot.scan_for_target(), trash, "Cleanbot grid scan did not return visible ground trash")
+
+	trash.forceMove(bot)
+	var/list/carried_candidates = SSspatial_grid.orthogonal_range_search(bot, SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS, DEFAULT_SCAN_RANGE)
+	TEST_ASSERT(!(trash in carried_candidates), "Carried trash must leave the cleanbot grid")
+
+	trash.forceMove(target_turf)
+	var/list/dropped_candidates = SSspatial_grid.orthogonal_range_search(bot, SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS, DEFAULT_SCAN_RANGE)
+	TEST_ASSERT(trash in dropped_candidates, "Dropped trash must re-enter the cleanbot grid")
+
+	qdel(trash)
+	var/list/deleted_candidates = SSspatial_grid.orthogonal_range_search(bot, SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS, DEFAULT_SCAN_RANGE)
+	TEST_ASSERT(!(trash in deleted_candidates), "Deleted trash must not remain in the cleanbot grid")

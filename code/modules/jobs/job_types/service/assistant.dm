@@ -37,6 +37,7 @@ Assistant
 		"Crewmate",
 		"Cumdump",
 		"Diplomat",
+		"Defense Attorney",
 		"Freelancer",
 		"Freeloader",
 		"Greytider",
@@ -102,6 +103,7 @@ Assistant
 
 	uniform = /obj/item/clothing/under/rank/civilian/util
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie
 	satchel = /obj/item/storage/backpack/duffelbag/syndie
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie

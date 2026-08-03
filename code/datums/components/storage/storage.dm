@@ -211,6 +211,10 @@
 /datum/component/storage/proc/preattack_intercept(datum/source, obj/O, mob/M, params)
 	if(!isitem(O) || !click_gather || (SEND_SIGNAL(O, COMSIG_CONTAINS_STORAGE) && !quick_gather_storages))
 		return FALSE
+	// цель может хотеть саму сумку, а не поездку в ней: сбор ниже возвращает
+	// COMPONENT_NO_ATTACK и до attackby() цели дело уже не доходит
+	if(SEND_SIGNAL(O, COMSIG_ATOM_PRE_STORAGE_GATHER, parent, M) & COMPONENT_CANCEL_STORAGE_GATHER)
+		return FALSE
 	. = COMPONENT_NO_ATTACK
 	if(check_locked(source, M, TRUE))
 		return FALSE
@@ -603,7 +607,12 @@
 	if(rustle_sound)
 		playsound(parent, "rustle", 50, 1, -5)
 	to_chat(user, "<span class='notice'>You put [I] [insert_preposition]to [parent].</span>")
-	for(var/mob/viewing in fov_viewers(world.view, user)-M)
+	// user может быть null (вставка сигналом без юзера) - fov_viewers(null) вернёт 0,
+	// и "0 - M" рантаймил type mismatch. Центр обзора тогда сам M.
+	var/mob/feedback_center = user || M
+	if(!feedback_center)
+		return
+	for(var/mob/viewing in fov_viewers(world.view, feedback_center)-M)
 		if(in_range(M, viewing)) //If someone is standing close enough, they can tell what it is...
 			viewing.show_message("<span class='notice'>[M] puts [I] [insert_preposition]to [parent].</span>", MSG_VISUAL)
 		else if(I && I.w_class >= 3) //Otherwise they can only see large or normal items from a distance...

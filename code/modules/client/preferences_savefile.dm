@@ -5,7 +5,7 @@
 //	You do not need to raise this if you are adding new values that have sane defaults.
 //	Only raise this value when changing the meaning/format/name/layout of an existing value
 //	where you would want the updater procs below to run
-#define SAVEFILE_VERSION_MAX	75
+#define SAVEFILE_VERSION_MAX	78
 
 /// Upper bound for character slot indices during savefile migration (loop over S.dir).
 /// Prevents corrupted or garbage directory names (e.g. huge slot numbers) from inflating max_save_slots
@@ -121,6 +121,51 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	if(current_version < 75)
 		toggles |= SOUND_EMOTE
+
+	if(current_version < 76) // BLUEMOON ADD - новые звуковые тогглы
+		mentor_toggles |= SOUND_MENTORHELP
+		toggles |= SOUND_FAX
+
+	// На версию 78 пришлись две независимые миграции - дедуп антаг-префов и чистка
+	// привязок Subtle. Поля разные, порядок между ними не важен.
+	if(current_version < 78)
+		// чиним сейвы, испорченные `be_special += role` в окне антаг-префов: каждый
+		// клик дописывал ещё одну строку с тем же ключом и значением null, а
+		// выключение убирало только одну из них - роль так и оставалась включённой
+		var/list/deduped_be_special = list()
+		for(var/role in be_special)
+			if(role in deduped_be_special)
+				continue
+			// индексация по ключу всегда попадает в ПЕРВОЕ вхождение, а его-то
+			// старый код и держал в актуальном состоянии
+			var/priority = be_special[role]
+			deduped_be_special[role] = isnull(priority) ? ANTAG_PRIORITY_LOW : priority
+		be_special = deduped_be_special
+
+	if(current_version < 78) // Удаление Subtle и замена клавиш
+		var/static/list/commands_to_clear = list(
+			"Subtle",
+			"Subtle_Indicator",
+			"Subtler",
+			"Subtler (Indicatored)",
+			"subtler_indicatored",
+			"Subtler Target",
+			"subtler_target",
+			"Subtler Target (Indicator)",
+			"subtler_target_indicatored",
+		)
+		// Чистим старые привязки клавиш
+		for(var/key in key_bindings)
+			var/list/commands = key_bindings[key]
+			for(var/command_to_clear in commands_to_clear)
+				commands -= command_to_clear
+		// Находим и устанавливаем новые
+		for(var/command_to_set in commands_to_clear)
+			var/datum/keybinding/KB = GLOB.keybindings_by_name[command_to_set]
+			if(!KB)
+				continue
+			for(var/HK in KB.hotkey_keys)
+				LAZYADD(key_bindings[HK], KB.name)
 
 /datum/preferences/proc/update_character(current_version, savefile/S)
 	if(current_version < 19)
@@ -543,12 +588,15 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["toggles"] >> toggles
 	S["custom_colors"] >> custom_colors
 	S["deadmin"] >> deadmin
+	S["ticket_nickname"] >> ticket_nickname
 	S["ghost_form"] >> ghost_form
 	S["ghost_orbit"] >> ghost_orbit
 	S["ghost_accs"] >> ghost_accs
 	S["ghost_others"] >> ghost_others
 	S["preferred_map"] >> preferred_map
 	S["ignoring"] >> ignoring
+	S["hearted_until"] >> hearted_until
+	sync_hearted_pref(src)
 	S["inquisitive_ghost"] >> inquisitive_ghost
 	S["uses_glasses_colour"]>> uses_glasses_colour
 	S["auto_capitalize_enabled"]>> auto_capitalize_enabled
@@ -574,6 +622,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["sound_volume_jukeboxes"] >> sound_volume_jukeboxes
 	S["sound_volume_personal_jukeboxes"] >> sound_volume_personal_jukeboxes
 	S["sound_volume_emote"] >> sound_volume_emote
+	S["sound_volume_mentorhelp"] >> sound_volume_mentorhelp
+	S["sound_volume_fax"] >> sound_volume_fax
+	S["mentor_toggles"] >> mentor_toggles
 	S["parallax"] >> parallax
 	S["ambientocclusion"] >> ambientocclusion
 	S["lighting_blur"] >> lighting_blur
@@ -711,6 +762,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	sound_volume_jukeboxes = sanitize_integer(sound_volume_jukeboxes, 0, 100, initial(sound_volume_jukeboxes))
 	sound_volume_personal_jukeboxes = sanitize_integer(sound_volume_personal_jukeboxes, 0, 100, initial(sound_volume_personal_jukeboxes))
 	sound_volume_emote = sanitize_integer(sound_volume_emote, 0, 100, initial(sound_volume_emote))
+	sound_volume_mentorhelp = sanitize_integer(sound_volume_mentorhelp, 0, 100, initial(sound_volume_mentorhelp))
+	sound_volume_fax = sanitize_integer(sound_volume_fax, 0, 100, initial(sound_volume_fax))
+	mentor_toggles = sanitize_integer(mentor_toggles, 0, 16777215, initial(mentor_toggles))
 	preferred_chaos_level = sanitize_integer(preferred_chaos_level, 0, 3, 2)
 	parallax = sanitize_integer(parallax, PARALLAX_DISABLE, PARALLAX_INSANE, null)
 	ambientocclusion = sanitize_integer(ambientocclusion, 0, 1, initial(ambientocclusion))
@@ -870,6 +924,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		COOLDOWN_START(src, saveprefcooldown, PREF_SAVE_COOLDOWN)
 	if(pref_queue)
 		deltimer(pref_queue)
+	// Сотни WRITE_FILE подряд - это синхронный поход на диск, во время которого
+	// процесс не исполняет DM и не жжёт CPU. Детектор спайков видел такое как
+	// безымянный "внешний столл", поэтому замеряем
+	var/blocking_started_ms = blocking_call_start()
 	var/savefile/S = new /savefile(path)
 	if(!S)
 		return FALSE
@@ -918,6 +976,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["ghost_others"], ghost_others)
 	WRITE_FILE(S["preferred_map"], preferred_map)
 	WRITE_FILE(S["ignoring"], ignoring)
+	WRITE_FILE(S["hearted_until"], (hearted_until > world.realtime ? hearted_until : null))
 	WRITE_FILE(S["inquisitive_ghost"], inquisitive_ghost)
 	WRITE_FILE(S["uses_glasses_colour"], uses_glasses_colour)
 	WRITE_FILE(S["auto_capitalize_enabled"], auto_capitalize_enabled)
@@ -943,6 +1002,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["sound_volume_jukeboxes"], sound_volume_jukeboxes)
 	WRITE_FILE(S["sound_volume_personal_jukeboxes"], sound_volume_personal_jukeboxes)
 	WRITE_FILE(S["sound_volume_emote"], sound_volume_emote)
+	WRITE_FILE(S["sound_volume_mentorhelp"], sound_volume_mentorhelp)
+	WRITE_FILE(S["sound_volume_fax"], sound_volume_fax)
+	WRITE_FILE(S["mentor_toggles"], mentor_toggles)
 	WRITE_FILE(S["parallax"], parallax)
 	WRITE_FILE(S["ambientocclusion"], ambientocclusion)
 	WRITE_FILE(S["lighting_blur"], lighting_blur)
@@ -1007,6 +1069,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	else
 		WRITE_FILE(S["unlockable_loadout"], safe_json_encode(list()))
 
+	WRITE_FILE(S["ticket_nickname"], ticket_nickname)
+
 	if(parent)
 		if(ishuman(parent?.mob))
 			var/mob/living/carbon/human/H = parent.mob
@@ -1015,6 +1079,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		if(!silent)
 			to_chat(parent, span_notice("Saved preferences!"))
 
+	blocking_call_finish(blocking_started_ms, "savefile (запись)", "префы [parent?.ckey || "?"]")
 	return S
 
 /datum/preferences/proc/queue_save_pref(save_in, silent)
@@ -1299,6 +1364,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	//Load prefs
 	S["job_preferences"] >> job_preferences
+	// Отсутствующее поле сейва затирает дефолт list() нулём, а компенсирующие присвоения
+	// заперты за current_version < 23 - современный сейв их проходит мимо. Дальше любой
+	// .len по этому списку рантаймит, и лобби перестаёт пускать игрока в раунд.
+	job_preferences = SANITIZE_LIST(job_preferences)
 	S["pda_theme"] >> pda_theme
 
 	//Custom emote panel
@@ -1583,8 +1652,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	grad_color = sanitize_hexcolor(grad_color, 6, FALSE)
 	eye_type = sanitize_inlist(eye_type, GLOB.eye_types, DEFAULT_EYES_TYPE)
 	shriek_type = sanitize_inlist(shriek_type, GLOB.shriek_types, SHRIEK_TYPE_GENERIC) // BLUEMOON ADD
+	//у if-а не было тела, и санитайзер молча ничего не делал: фобия из старого
+	//сейва, которой больше нет в списке SStraumas, доезжала до раунда как есть
 	if(phobia_type && SStraumas && !(phobia_type in SStraumas.phobia_types))
-		phobia_type = null // BLUEMOON ADD - проверка валидности выбранной фобии
+		phobia_type = null //null = "случайная", ровно как в меню выбора
 	left_eye_color = sanitize_hexcolor(left_eye_color, 6, FALSE)
 	right_eye_color = sanitize_hexcolor(right_eye_color, 6, FALSE)
 
@@ -1886,6 +1957,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		COOLDOWN_START(src, savecharcooldown, PREF_SAVE_COOLDOWN)
 	if(char_queue)
 		deltimer(char_queue)
+	var/blocking_started_ms = blocking_call_start()
 	var/savefile/S = new /savefile(export ? null : path)
 	if(!S)
 		return FALSE
@@ -2175,6 +2247,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		if(!silent)
 			to_chat(parent, span_notice("Saved character slot!"))
 
+	blocking_call_finish(blocking_started_ms, "savefile (запись)", "персонаж [parent?.ckey || "?"] слот [default_slot]")
 	return S
 
 /datum/preferences/proc/queue_save_char(save_in, silent)

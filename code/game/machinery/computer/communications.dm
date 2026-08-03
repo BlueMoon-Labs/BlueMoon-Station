@@ -653,7 +653,10 @@
 			if (STATE_MESSAGES)
 				data["messages"] = list()
 				data["messagesTrimmed"] = messages_trimmed
-				data["printerCooldown"] = report_print_cooldown
+				// именно булево: COOLDOWN_* хранит абсолютный дедлайн world.time, а
+				// UI кладёт это поле прямо в disabled - сырое число навсегда
+				// запирало кнопку печати после первой же распечатки
+				data["printerCooldown"] = !COOLDOWN_FINISHED(src, report_print_cooldown)
 
 				if (messages)
 					for (var/_message in messages)

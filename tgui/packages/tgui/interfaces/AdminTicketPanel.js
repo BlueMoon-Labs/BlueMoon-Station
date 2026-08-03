@@ -69,7 +69,7 @@ export const AdminTicketPanel = (props) => {
     >
       <Window.Content>
         <Flex height="100%">
-          <Flex.Item width="230px" shrink={0}>
+          <Flex.Item width="270px" shrink={0}>
             <Stack vertical fill>
               <Stack.Item>
                 <Section fitted>
@@ -309,18 +309,49 @@ const TicketListItem = (props) => {
           : '3px solid transparent',
       }}
     >
-      <Flex align="center" justify="space-between">
-        <Flex.Item grow={1} mr={1}>
+      <Flex align="flex-start">
+        <Flex.Item grow={1} mr={1} style={{ minWidth: 0 }}>
+          <Flex align="center" mb={0.3}>
+            <Box
+              bold
+              fontSize="12px"
+              style={{
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              #{ticket.id} — {ticket.initiator_ckey}
+            </Box>
+            {ticket.handler && (
+              <Box
+                fontSize="9px"
+                ml={1}
+                px={0.6}
+                py={0.1}
+                style={{
+                  backgroundColor: '#ffcc00',
+                  color: '#000',
+                  borderRadius: '3px',
+                  fontWeight: 'bold',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {ticket.handler}
+              </Box>
+            )}
+          </Flex>
           <Box
-            bold
-            fontSize="12px"
+            fontSize="9px"
+            color="#94a3b8"
+            mb={0.2}
             style={{
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
             }}
           >
-            #{ticket.id} — {ticket.initiator_key_name}
+            {ticket.initiator_mob_name || ticket.initiator_key_name}
           </Box>
           <Box
             fontSize="10px"
@@ -333,7 +364,7 @@ const TicketListItem = (props) => {
           >
             {ticket.name}
           </Box>
-            {(listTypingAdmins.length > 0 || !!hasListInitiatorTyping) && (
+          {(listTypingAdmins.length > 0 || !!hasListInitiatorTyping) && (
             <Box
               fontSize="10px"
               color="#ffcc00"

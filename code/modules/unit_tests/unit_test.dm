@@ -51,6 +51,12 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 	/// cleaned up with qdel(force = TRUE) so they don't leak into subsequent tests
 	var/list/allocated_force_qdel
 	var/list/fail_reasons
+	/// This test validates production-map content and is excluded from the
+	/// LOWMEMORYMODE hermetic profile. The full-map profile runs only these tests.
+	var/requires_full_map = FALSE
+	/// Подстроки рантаймов, которые тест ОЖИДАЕТ (канарейки-гварды со stack_trace):
+	/// совпавший рантайм не проваливает тест. Матч по findtext с текстом ошибки.
+	var/list/allowed_runtime_patterns
 
 	var/static/datum/turf_reservation/reservation
 
@@ -99,6 +105,13 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 /datum/unit_test/proc/Run()
 	TEST_FAIL("Run() called parent or not implemented")
 
+/// TRUE = этот рантайм ожидаем тестом (проверка канарейки) и не должен его валить.
+/datum/unit_test/proc/runtime_allowed(exception/E)
+	for(var/pattern in allowed_runtime_patterns)
+		if(findtext("[E]", pattern))
+			return TRUE
+	return FALSE
+
 /datum/unit_test/proc/Fail(reason = "No reason", file = "OUTDATED_TEST", line = 1)
 	succeeded = FALSE
 
@@ -123,6 +136,78 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 		instance = new type()
 	allocated += instance
 	return instance
+
+/// Сколько проходов SStimer ожидание обязано увидеть после того, как вышло окно по
+/// мировому времени. Мастер считает проход только за фактический незапаузенный
+/// прогон (master.dm, times_fired++ идёт после SS_PAUSED-ветки), поэтому счётчик
+/// стоит ровно тогда, когда подсистема не получает такта - а это и есть случай,
+/// в котором просроченный таймер не виноват.
+#define UNIT_TEST_WAIT_GRACE_FIRES 10
+/// Потолок ожидания по РЕАЛЬНОМУ времени, отсчитывается от конца окна: страховка
+/// от вечного цикла, если SStimer встал совсем. От конца, а не от начала, чтобы
+/// потолок никогда не подрезал само окно на медленном мировом времени.
+#define UNIT_TEST_WAIT_HARD_LIMIT (10 SECONDS)
+
+#define WAIT_BUDGET_WORLD_DEADLINE 1
+#define WAIT_BUDGET_REAL_DEADLINE 2
+#define WAIT_BUDGET_TIMER_DEADLINE 3
+#define WAIT_BUDGET_DESCRIPTION 4
+
+/// Бюджет одного ожидания отложенной работы, см. wait_budget_tick().
+/datum/unit_test/proc/new_wait_budget(max_wait, description)
+	return list(world.time + max_wait, null, null, description)
+
+/// Спит тик и отвечает, остался ли бюджет ожидания. FALSE = сдаёмся.
+///
+/// Окно меряется мировым временем, но истёкшее окно само по себе не приговор:
+/// на перегруженном раннере world.time продолжает идти, пока мастер режет очередь
+/// по тик-лимиту, так что назначенный внутри окна таймер может ни разу не получить
+/// шанса исполниться - и тест падает на загрузке машины, а не на баге. Поэтому
+/// после окна ждём ещё UNIT_TEST_WAIT_GRACE_FIRES полных проходов SStimer.
+/// Реальный баг от этого быстрее не чинится: на здоровом сервере эти проходы
+/// набегают за доли секунды.
+/datum/unit_test/proc/wait_budget_tick(list/budget)
+	if(world.time >= budget[WAIT_BUDGET_WORLD_DEADLINE])
+		if(isnull(budget[WAIT_BUDGET_TIMER_DEADLINE]))
+			budget[WAIT_BUDGET_TIMER_DEADLINE] = SStimer.times_fired + UNIT_TEST_WAIT_GRACE_FIRES
+			budget[WAIT_BUDGET_REAL_DEADLINE] = REALTIMEOFDAY + UNIT_TEST_WAIT_HARD_LIMIT
+		else if(SStimer.times_fired >= budget[WAIT_BUDGET_TIMER_DEADLINE])
+			log_test("\tWAIT TIMEOUT: [budget[WAIT_BUDGET_DESCRIPTION]] - окно вышло, SStimer отработал положенные полные проходы")
+			return FALSE
+		else if(REALTIMEOFDAY >= budget[WAIT_BUDGET_REAL_DEADLINE])
+			log_test("\tWAIT TIMEOUT: [budget[WAIT_BUDGET_DESCRIPTION]] - потолок по реальному времени: SStimer так и не набрал положенных полных проходов")
+			return FALSE
+	sleep(world.tick_lag)
+	return TRUE
+
+/// Крутит мир, пока target.var_name не станет expected или не кончится бюджет
+/// ожидания. Отложенную работу (addtimer, spawn) исполняет SStimer/планировщик,
+/// а sleep(N) отмеряет только мировое время: на загруженном раннере колбэк не
+/// успевает за фиксированные 1-2 деци, и тест падает на медленной машине, а не
+/// на баге. TRUE = дождались.
+/datum/unit_test/proc/wait_for_var(datum/target, var_name, expected, max_wait = 2 SECONDS)
+	var/list/budget = new_wait_budget(max_wait, "[target?.type].[var_name] == [expected]")
+	while(!QDELETED(target) && target.vars[var_name] != expected)
+		if(!wait_budget_tick(budget))
+			break
+	return !QDELETED(target) && target.vars[var_name] == expected
+
+/// Крутит мир, пока target не уйдёт в qdel или не кончится бюджет ожидания.
+/// Отложенный qdel живёт на SStimer, поэтому фиксированный sleep его не
+/// гарантирует - см. wait_for_var. TRUE = дождались.
+/datum/unit_test/proc/wait_for_qdeleted(datum/target, max_wait = 2 SECONDS)
+	var/list/budget = new_wait_budget(max_wait, "QDELETED([target?.type])")
+	while(!QDELETED(target))
+		if(!wait_budget_tick(budget))
+			break
+	return QDELETED(target)
+
+#undef UNIT_TEST_WAIT_GRACE_FIRES
+#undef UNIT_TEST_WAIT_HARD_LIMIT
+#undef WAIT_BUDGET_WORLD_DEADLINE
+#undef WAIT_BUDGET_REAL_DEADLINE
+#undef WAIT_BUDGET_TIMER_DEADLINE
+#undef WAIT_BUDGET_DESCRIPTION
 
 /// Reads repository source files for structural audit tests.
 /// Integration CI runs DreamDaemon from `ci_test/`, while source stays in the parent checkout.
@@ -243,16 +328,35 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 
 	var/list/tests_to_run = subtypesof(/datum/unit_test)
 	var/list/focused_tests = list()
+	var/list/test_results = list()
 	for (var/_test_to_run in tests_to_run)
 		var/datum/unit_test/test_to_run = _test_to_run
 		if (initial(test_to_run.focus))
 			focused_tests += test_to_run
 	if(length(focused_tests))
 		tests_to_run = focused_tests
+	else
+		var/list/profile_tests = list()
+		for(var/_test_to_run in tests_to_run)
+			var/datum/unit_test/test_to_run = _test_to_run
+			var/include_test = TRUE
+			#ifdef UNIT_TEST_PROFILE_HERMETIC
+			include_test = !initial(test_to_run.requires_full_map)
+			#endif
+			#ifdef UNIT_TEST_PROFILE_FULL_MAP
+			include_test = initial(test_to_run.requires_full_map)
+			#endif
+			if(include_test)
+				profile_tests += test_to_run
+			else
+				test_results[test_to_run] = list(
+					"status" = UNIT_TEST_SKIPPED,
+					"message" = "Skipped by unit test profile",
+					"name" = test_to_run,
+				)
+		tests_to_run = profile_tests
 
 	tests_to_run = sortTim(tests_to_run, GLOBAL_PROC_REF(cmp_unit_test_priority))
-
-	var/list/test_results = list()
 
 	for(var/unit_path in tests_to_run)
 		CHECK_TICK //We check tick first because the unit test we run last may be so expensive that checking tick will lock up this loop forever
@@ -273,6 +377,19 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 	//We have to call this manually because del_text can preceed us, and SSticker doesn't fire in the post game
 	SSticker.ready_for_reboot = TRUE
 	SSticker.standard_reboot()
+
+/// Roundstart callbacks run before ticker flips to PLAYING and PostSetup is
+/// asynchronous. Poll those explicit readiness conditions instead of sleeping
+/// an arbitrary ten seconds before every test run.
+/proc/RunUnitTestsWhenReady(deadline)
+	if(isnull(deadline))
+		deadline = world.time + 2 MINUTES
+	if(world.time > deadline)
+		CRASH("Unit test round bootstrap did not finish ticker PostSetup within two minutes")
+	if(!SSticker.HasRoundStarted() || !SSticker.setup_done)
+		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(RunUnitTestsWhenReady), deadline), world.tick_lag)
+		return
+	RunUnitTests()
 
 // /datum/map_template/unit_tests
 // 	name = "Unit Tests Zone"

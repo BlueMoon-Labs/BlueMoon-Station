@@ -72,6 +72,7 @@
 @include meta.load-css('./interfaces/GamePreferences.scss');
 @include meta.load-css('./interfaces/DirectorPanel.scss');
 @include meta.load-css('./interfaces/PersonalCrafting');
+@include meta.load-css('./interfaces/AdminLogViewer.scss');
 
 // Layouts
 @include meta.load-css('./layouts/Layout.scss');

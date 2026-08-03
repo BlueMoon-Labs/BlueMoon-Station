@@ -127,7 +127,10 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 		return
 
 	// When held: Positive mood
-	if(heirloom && (heirloom in quirk_holder.GetAllContents()))
+	// contains_atom() вместо `in GetAllContents()`: реликвию искали, собирая всё
+	// содержимое игрока рекурсивно, каждый тик SSquirks на каждого носителя квирка
+	// (в проде ~8k полных обходов инвентаря за 2.6 минуты).
+	if(heirloom && quirk_holder.contains_atom(heirloom))
 		SEND_SIGNAL(quirk_holder, COMSIG_CLEAR_MOOD_EVENT, "family_heirloom_missing")
 		SEND_SIGNAL(quirk_holder, COMSIG_ADD_MOOD_EVENT, "family_heirloom", /datum/mood_event/family_heirloom)
 
@@ -407,9 +410,11 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 	medical_record_text = "Пациент имеет иррациональный страх перед [selected_phobia]."
 	// BLUEMOON EDIT END
 
+/// cure_trauma_type ждёт ТИП, а не экземпляр: istype(BT, экземпляр) всегда FALSE,
+/// поэтому фобия переживала снятие квирка, а ссылка `phobia` на снятой квирке
+/// оставалась единственным держателем травмы и утаскивала её в hard delete.
 /datum/quirk/phobia/remove()
-	var/mob/living/carbon/human/H = quirk_holder
-	H?.cure_trauma_type(phobia, TRAUMA_RESILIENCE_ABSOLUTE)
+	QDEL_NULL(phobia)
 
 /datum/quirk/mute
 	name = "Немота"
@@ -427,9 +432,9 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 	mute = new
 	H.gain_trauma(mute, TRAUMA_RESILIENCE_ABSOLUTE)
 
+/// Тот же случай, что и у фобии: в cure_trauma_type уходил экземпляр вместо типа.
 /datum/quirk/mute/remove()
-	var/mob/living/carbon/human/H = quirk_holder
-	H?.cure_trauma_type(mute, TRAUMA_RESILIENCE_ABSOLUTE)
+	QDEL_NULL(mute)
 
 /datum/quirk/unstable
 	name = "Нестабильный"

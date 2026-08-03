@@ -394,6 +394,12 @@
 	weight = 4
 	family = "heretic" // с латеджойн-контрабандистом: не подряд
 	requirements = list(101,101,101,50,40,20,20,15,10,10)
+	// Мидраунд-еретик просыпается с нулём знаний и до первых жертв полчаса-час тихо фармит
+	// влияния: по базовой цене конверсии (10) он опустошал антаг-кошелёк, а intensity 15
+	// держала клапан нагрузки и глушила другие антаг-инжекции при нулевом движе. Разгон
+	// к концу раунда докрутит множитель активности, базово же он легче агента (8).
+	cost = 6
+	intensity = 8
 
 /// Тихий генлинг среди экипажа: мидраунд-зеркало латеджойн-варианта.
 /datum/dynamic_ruleset/midround/crew_conversion/changeling
@@ -1093,33 +1099,42 @@
 	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	requirements = list(101,101,101,50,30,25,20,10,10,10) //BLUEMOON CHANGES
 	repeatable = TRUE
-	var/list/spawn_locs = list()
+	/// Точка, найденная в execute(). Гост-опрос долгий, поэтому перед самым спауном её перепроверяем.
+	var/turf/spawn_turf
+
+/datum/dynamic_ruleset/midround/from_ghosts/nightmare/ready(forced = FALSE)
+	if(!find_nightmare_spawn())
+		ready_failure_reason = "на станции нет ни одного тёмного турфа для кошмара"
+		return FALSE
+	return ..()
 
 /datum/dynamic_ruleset/midround/from_ghosts/nightmare/execute()
-	for(var/X in GLOB.xeno_spawn)
-		var/turf/T = X
-		var/light_amount = T.get_lumcount()
-		if(light_amount < SHADOW_SPECIES_LIGHT_THRESHOLD)
-			spawn_locs += T
-	if(!spawn_locs.len)
+	spawn_turf = find_nightmare_spawn()
+	if(!spawn_turf)
+		execution_failure_reason = "на станции нет ни одного тёмного турфа для кошмара"
 		return FALSE
 	. = ..()
 
 /datum/dynamic_ruleset/midround/from_ghosts/nightmare/generate_ruleset_body(mob/applicant)
+	// Возврат null здесь уронил бы review_applications(), поэтому последним запасным
+	// вариантом остаётся уже найденная точка, даже если её успели осветить.
+	var/turf/destination = is_valid_nightmare_spawn(spawn_turf) ? spawn_turf : (find_nightmare_spawn() || spawn_turf)
+	log_nightmare_spawn(destination)
+
 	var/datum/mind/player_mind = new /datum/mind(applicant.key)
 	player_mind.active = TRUE
 
-	var/mob/living/carbon/human/S = new (pick(spawn_locs))
-	player_mind.transfer_to(S)
+	var/mob/living/carbon/human/nightmare = new (destination)
+	player_mind.transfer_to(nightmare)
 	player_mind.assigned_role = "Nightmare"
 	player_mind.special_role = "Nightmare"
 	player_mind.add_antag_datum(/datum/antagonist/nightmare)
-	S.set_species(/datum/species/shadow/nightmare)
+	nightmare.set_species(/datum/species/shadow/nightmare)
 
-	playsound(S, 'sound/magic/ethereal_exit.ogg', 50, TRUE, -1)
-	message_admins("[ADMIN_LOOKUPFLW(S)] has been made into a Nightmare by the midround ruleset.")
-	log_game("DYNAMIC: [key_name(S)] was spawned as a Nightmare by the midround ruleset.")
-	return S
+	playsound(nightmare, 'sound/magic/ethereal_exit.ogg', 50, TRUE, -1)
+	message_admins("[ADMIN_LOOKUPFLW(nightmare)] has been made into a Nightmare by the midround ruleset.")
+	log_game("DYNAMIC: [key_name(nightmare)] was spawned as a Nightmare by the midround ruleset.")
+	return nightmare
 
 //////////////////////////////////////////////
 //                                          //
@@ -1233,9 +1248,15 @@
 	enemy_roles = list("Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security", "Bridge Officer", "Captain")
 	required_enemies = list(0,0,0,0,0,5,4,3,3,0)
 	required_candidates = 1
-	weight = 6
-	cost = 10
-	intensity = 15
+	// Выпадал в 3 из 5 динамик-раундов логов 9766-9775, а удешевление ниже сделает его
+	// ещё более частой целью копилки - вес вниз, чтобы не вернулась монополия дьявола.
+	weight = 4
+	// Контрактно-соушл антаг: за раунды 9767/9771 ни строчки в attack.log, но по цене 10
+	// осушал гост-кошелёк, а intensity 15 вместе с тихим еретиком держала пул в
+	// antag_saturated почти полчаса. Редкий разгон до истинного дьявола докрутит
+	// множитель активности директора сам.
+	cost = 6
+	intensity = 8
 	family = "devil" // с событием-двойником: не подряд
 	// Единственный гост-антаг без ограничений выпадал целью копилки в первые минуты, когда
 	// альтернатив ещё нет, и в Hard стрелял к 10-й минуте каждый раунд ("постоянно дьявол").

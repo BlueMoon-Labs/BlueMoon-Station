@@ -158,8 +158,11 @@
 				qdel(S)
 				. = TRUE
 
-/mob/living/proc/has_status_effect(effect) //returns the effect if the mob calling the proc owns the given status effect
-	. = FALSE
+/// Возвращает эффект, если моб им владеет, иначе null. Именно null, а не FALSE:
+/// в DM 0 и null - разные значения, и QDELETED(0) валит вызывающего рантаймом
+/// "Cannot read 0.gc_destroyed".
+/mob/living/proc/has_status_effect(effect)
+	. = null
 	if(status_effects)
 		var/datum/status_effect/S1 = effect
 		for(var/datum/status_effect/S in status_effects)

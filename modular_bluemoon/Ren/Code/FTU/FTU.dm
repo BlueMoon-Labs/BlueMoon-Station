@@ -77,6 +77,7 @@
 	name = "Trade ship"
 	typepath = /datum/round_event/ftu_trader
 	max_occurrences = 0
+	admin_only = TRUE
 	category = EVENT_CATEGORY_FRIENDLY
 	description = "A trader ship full of goodys."
 	var/ship_template

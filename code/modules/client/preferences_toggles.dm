@@ -364,7 +364,9 @@ GLOBAL_LIST_INIT(ghost_forms, list("ghost", "ghost1", "ghost2", "ghostking","gho
 		prefs.save_preferences()
 		if(isobserver(mob))
 			var/mob/dead/observer/O = mob
-			O.update_icon(new_form)
+			// Форма - второй аргумент: строка первым шла в битовое поле updates
+			// (рантайм "ghost" &= у обсерверов). Конвенция как в observer/login.dm.
+			O.update_icon(null, new_form)
 
 GLOBAL_LIST_INIT(ghost_orbits, list(GHOST_ORBIT_CIRCLE,GHOST_ORBIT_TRIANGLE,GHOST_ORBIT_SQUARE,GHOST_ORBIT_HEXAGON,GHOST_ORBIT_PENTAGON))
 

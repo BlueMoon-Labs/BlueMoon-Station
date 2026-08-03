@@ -63,10 +63,20 @@
 	var/mod = CONFIG_GET(number/movedelay/walk_delay)
 	multiplicative_slowdown = isnum(mod)? mod : initial(multiplicative_slowdown)
 
+/// "Быстрый шаг" задуман как ходьба со скоростью бега, поэтому вычитаем ровно разницу между
+/// ходьбой и бегом, а не константу. Прежние 1.25 не кратны ступени тика: на проде (ходьба 3,
+/// бег 1.5, тик 0.5) итог 1.75 садился ровно на половину ступени и у голого персонажа уходил
+/// вниз до беговых 1.5 - потому часть игроков и не видела проблемы. Но любое дробное замедление
+/// сверху (шлем 0.2, урон от сорока, стамина, протаскивание тела 0.6, хардсьют 0.55) перекидывало
+/// сумму через границу: ходьба платила лишний тик, бег оставался на своём, и квирк давал
+/// стабильные 25-33% медленнее бега вместо равенства. Разница из конфига кратна ступени, так что
+/// база совпадает с беговой при любом замедлении и любом тике.
+/// Прочие замедления (турф, груз, пуллинг) сохраняются - режем только базу ходьбы.
 /datum/movespeed_modifier/config_walk_run/walk/apply_multiplicative(existing, mob/target)
 	. = ..()
-	if(HAS_TRAIT(target, TRAIT_SPEEDY_STEP))
-		. -= 1.25
+	if(!HAS_TRAIT(target, TRAIT_SPEEDY_STEP))
+		return
+	. -= quick_step_walk_discount(CONFIG_GET(number/movedelay/walk_delay), CONFIG_GET(number/movedelay/run_delay))
 
 /datum/movespeed_modifier/config_walk_run/run/sync()
 	var/mod = CONFIG_GET(number/movedelay/run_delay)

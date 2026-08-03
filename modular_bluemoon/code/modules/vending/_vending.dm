@@ -46,6 +46,31 @@ GLOBAL_LIST_EMPTY(vending_machines_to_restock)
 	///List of items that have been returned to the vending machine.
 	var/list/returned_products
 
+/datum/data/vending_product/Destroy()
+	if(returned_products)
+		for(var/obj/item/product as anything in returned_products)
+			UnregisterSignal(product, COMSIG_PARENT_QDELETING)
+		returned_products = null
+	return ..()
+
+/// Кладёт возвращённый предмет в учёт и подписывается на его удаление. Без подписки предмет,
+/// уничтоженный внутри автомата (а не выданный обратно), навсегда оставался записанным в
+/// returned_products - это и держало его от сборки в прод-раунде.
+/datum/data/vending_product/proc/track_returned_product(obj/item/product)
+	LAZYADD(returned_products, product)
+	RegisterSignal(product, COMSIG_PARENT_QDELETING, PROC_REF(on_returned_product_deleted))
+
+/// Снимает предмет с учёта: выдан обратно игроку или вытряхнут при разборке.
+/datum/data/vending_product/proc/untrack_returned_product(obj/item/product)
+	if(!product)
+		return
+	UnregisterSignal(product, COMSIG_PARENT_QDELETING)
+	LAZYREMOVE(returned_products, product)
+
+/datum/data/vending_product/proc/on_returned_product_deleted(datum/source)
+	SIGNAL_HANDLER
+	LAZYREMOVE(returned_products, source)
+
 /**
  * # vending machines
  *
@@ -325,8 +350,10 @@ GLOBAL_LIST_EMPTY(vending_machines_to_restock)
 			var/datum/data/vending_product/R = record
 
 			//first dump any of the items that have been returned, in case they contain the nuke disk or something
-			for(var/obj/returned_obj_to_dump in R.returned_products)
-				LAZYREMOVE(R.returned_products, returned_obj_to_dump)
+			// Снапшот: снятие с учёта правит тот же список, а правка по ходу for() сдвигает
+			// индекс и пропускает элементы - часть возвращённого не вытряхивалась вообще.
+			for(var/obj/returned_obj_to_dump as anything in LAZYCOPY(R.returned_products))
+				R.untrack_returned_product(returned_obj_to_dump)
 				returned_obj_to_dump.forceMove(get_turf(src))
 				step(returned_obj_to_dump, pick(GLOB.alldirs))
 				R.amount--
@@ -686,7 +713,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 				new dump_path(get_turf(src))
 			else
 				var/obj/returned_obj_to_dump = LAZYACCESS(R.returned_products, LAZYLEN(R.returned_products)) //first in, last out
-				LAZYREMOVE(R.returned_products, returned_obj_to_dump)
+				R.untrack_returned_product(returned_obj_to_dump)
 				returned_obj_to_dump.forceMove(get_turf(src))
 			R.amount--
 			break
@@ -830,7 +857,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 	for(var/datum/data/vending_product/product_datum in product_records + coin_records + hidden_records)
 		if(I.type == product_datum.product_path)
 			product_datum.amount++
-			LAZYADD(product_datum.returned_products, I)
+			product_datum.track_returned_product(I)
 			return
 
 	if(vending_machine_input[format_text(I.name)])
@@ -1186,7 +1213,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 		vended_item = new R.product_path(get_turf(src))
 	else
 		vended_item = LAZYACCESS(R.returned_products, LAZYLEN(R.returned_products)) //first in, last out
-		LAZYREMOVE(R.returned_products, vended_item)
+		R.untrack_returned_product(vended_item)
 		vended_item.forceMove(get_turf(src))
 	//if(greyscale_colors)
 	//	vended_item.set_greyscale(colors=greyscale_colors)
@@ -1279,7 +1306,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 		else
 			throw_item = LAZYACCESS(R.returned_products, LAZYLEN(R.returned_products)) //first in, last out
 			throw_item.forceMove(loc)
-			LAZYREMOVE(R.returned_products, throw_item)
+			R.untrack_returned_product(throw_item)
 		R.amount--
 		break
 	if(!throw_item)

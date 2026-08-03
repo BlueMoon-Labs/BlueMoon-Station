@@ -45,19 +45,6 @@
 		key = C.key
 		notify_ghosts("All rise for the rat king, ascendant to the throne in \the [get_area(src)].", source = src, action = NOTIFY_ORBIT, flashwindow = FALSE)
 
-/mob/living/simple_animal/hostile/regalrat/handle_automated_action()
-	if(prob(20))
-		riot.Trigger()
-	else if(prob(50))
-		coffer.Trigger()
-	return ..()
-
-//короли-крысы безусловно враждебны друг другу (CanAttack ниже), но делят одну
-//фракцию "rat" - для хэша SSchunks соперник-король не "чужая фракция",
-//и гейт спрятал бы его от AI-короля
-/mob/living/simple_animal/hostile/regalrat/can_use_faction_hash()
-	return FALSE
-
 /mob/living/simple_animal/hostile/regalrat/CanAttack(atom/the_target)
 	if(istype(the_target,/mob/living/simple_animal))
 		var/mob/living/A = the_target
@@ -227,19 +214,175 @@
 				return TRUE
 	return ..()
 
-/mob/living/simple_animal/hostile/rat/handle_automated_action()
+///Грызня кабеля под открытым полом (зовёт сабтри rat_gnaw_cables).
+///shock_roll форсит/запрещает разряд (null = легаси prob(15)).
+///TRUE = кабель перегрызен.
+/mob/living/simple_animal/hostile/rat/proc/try_chew_cables(shock_roll = null)
+	var/turf/open/floor/floor = get_turf(src)
+	if(!istype(floor) || floor.intact)
+		return FALSE
+	var/obj/structure/cable/wire = locate() in floor
+	//обесточенный кабель не грызём вовсе: обе легаси-ветки требуют avail()
+	if(!wire || !wire.avail())
+		return FALSE
+	if(isnull(shock_roll))
+		shock_roll = prob(15)
+	if(shock_roll)
+		visible_message("<span class='warning'>[src] chews through the [wire]. It's toast!</span>")
+		playsound(src, 'sound/effects/sparks2.ogg', 100, TRUE)
+		wire.deconstruct()
+		death()
+		return TRUE
+	visible_message("<span class='warning'>[src] chews through the [wire]. It looks unharmed!</span>")
+	playsound(src, 'sound/effects/sparks2.ogg', 100, TRUE)
+	wire.deconstruct()
+	return TRUE
+
+// ===== Адаптер-профили крысиного королевства =====
+// Вражда королей и фракционные гейты крыс целиком живут в CanAttack обоих
+// типов - стратегия hostile_legacy зовёт их делегацией, отдельная стратегия
+// не нужна. Особости кластера: король ведёт королевские дела (riot/coffer),
+// крысы стягиваются на цель своего короля наводкой-контактом и грызут кабели.
+
+///Легаси-каденс NPC-пула 2с: prob(20) риота = 10%/с, else prob(50) коффера = 20%/с
+#define REGALRAT_RIOT_PROB_PER_SECOND 10
+#define REGALRAT_COFFER_PROB_PER_SECOND 20
+///Легаси prob(40) на 2с тик = 20%/с
+#define RAT_GNAW_PROB_PER_SECOND 20
+///Радиус, в котором крыса слышит приказы короля (легаси vision_range короля)
+#define RAT_KING_ORDER_RANGE 9
+
+///Профиль короля: обычный мили-чейзер + королевские дела
+/datum/ai_controller/hostile_adapter/melee_chaser/regalrat
+	planning_subtrees = list(
+		/datum/ai_planning_subtree/find_hostile_targets,
+		/datum/ai_planning_subtree/regalrat_royal_duties,
+		/datum/ai_planning_subtree/hostile_fsm,
+		/datum/ai_planning_subtree/attack_obstacle_in_path,
+		/datum/ai_planning_subtree/take_cover_when_pinned,
+		/datum/ai_planning_subtree/tactical_approach,
+		/datum/ai_planning_subtree/hostile_melee,
+	)
+
+///Профиль крысы: мили-чейзер + служба королю + грызня кабелей
+/datum/ai_controller/hostile_adapter/melee_chaser/rat
+	planning_subtrees = list(
+		/datum/ai_planning_subtree/find_hostile_targets,
+		/datum/ai_planning_subtree/rat_serve_king,
+		/datum/ai_planning_subtree/rat_gnaw_cables,
+		/datum/ai_planning_subtree/hostile_fsm,
+		/datum/ai_planning_subtree/attack_obstacle_in_path,
+		/datum/ai_planning_subtree/take_cover_when_pinned,
+		/datum/ai_planning_subtree/tactical_approach,
+		/datum/ai_planning_subtree/hostile_melee,
+	)
+
+///Королевские дела: как в легаси, роллятся каждый тик планирования даже в бою
+/datum/ai_planning_subtree/regalrat_royal_duties
+
+/datum/ai_planning_subtree/regalrat_royal_duties/SelectBehaviors(datum/ai_controller/controller, delta_time)
 	. = ..()
-	if(prob(40))
-		var/turf/open/floor/F = get_turf(src)
-		if(istype(F) && !F.intact)
-			var/obj/structure/cable/C = locate() in F
-			if(C && prob(15))
-				if(C.avail())
-					visible_message("<span class='warning'>[src] chews through the [C]. It's toast!</span>")
-					playsound(src, 'sound/effects/sparks2.ogg', 100, TRUE)
-					C.deconstruct()
-					death()
-			else if(C && C.avail())
-				visible_message("<span class='warning'>[src] chews through the [C]. It looks unharmed!</span>")
-				playsound(src, 'sound/effects/sparks2.ogg', 100, TRUE)
-				C.deconstruct()
+	var/mob/living/simple_animal/hostile/regalrat/king = controller.pawn
+	if(!istype(king) || !king.riot || !king.coffer)
+		return
+	//легаси-структура ролла: сперва шанс риота, иначе шанс коффера
+	if(SPT_PROB(REGALRAT_RIOT_PROB_PER_SECOND, delta_time))
+		controller.queue_behavior(/datum/ai_behavior/regalrat_royal_duty/riot)
+	else if(SPT_PROB(REGALRAT_COFFER_PROB_PER_SECOND, delta_time))
+		controller.queue_behavior(/datum/ai_behavior/regalrat_royal_duty/coffer)
+
+///Королевское дело: дёргает легаси-действие (само проверит свой кулдаун)
+/datum/ai_behavior/regalrat_royal_duty
+	action_cooldown = 2 SECONDS
+
+/datum/ai_behavior/regalrat_royal_duty/perform(delta_time, datum/ai_controller/controller)
+	var/mob/living/simple_animal/hostile/regalrat/king = controller.pawn
+	if(!istype(king))
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	var/datum/action/cooldown/duty = royal_action(king)
+	if(!duty)
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	duty.Trigger()
+	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+
+///Какое из легаси-действий короля дёргает это дело
+/datum/ai_behavior/regalrat_royal_duty/proc/royal_action(mob/living/simple_animal/hostile/regalrat/king)
+	return null
+
+/datum/ai_behavior/regalrat_royal_duty/riot/royal_action(mob/living/simple_animal/hostile/regalrat/king)
+	return king.riot
+
+/datum/ai_behavior/regalrat_royal_duty/coffer/royal_action(mob/living/simple_animal/hostile/regalrat/king)
+	return king.coffer
+
+///Служба королю: свободная крыса изредка сверяется с целью своего короля.
+///Приказ приходит НАВОДКОЙ (combat contact: точка и приметы), не самим атомом -
+///крыса захватит цель только собственным восприятием, как и по докладу стаи.
+/datum/ai_planning_subtree/rat_serve_king
+
+/datum/ai_planning_subtree/rat_serve_king/SelectBehaviors(datum/ai_controller/controller, delta_time)
+	. = ..()
+	var/mob/living/simple_animal/hostile/rat/soldier = controller.pawn
+	if(!istype(soldier))
+		return
+	if(controller.blackboard_key_exists(BB_AI_CURRENT_TARGET))
+		return //своя цель важнее приказов
+	if(controller.has_fresh_contact())
+		return //уже идём по наводке
+	controller.queue_behavior(/datum/ai_behavior/rat_heed_the_king)
+
+///Поиск короля своей фракции с живой целью; каденс держит action_cooldown
+/datum/ai_behavior/rat_heed_the_king
+	action_cooldown = 4 SECONDS
+
+/datum/ai_behavior/rat_heed_the_king/perform(delta_time, datum/ai_controller/controller)
+	var/mob/living/simple_animal/hostile/rat/soldier = controller.pawn
+	if(!istype(soldier))
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	if(controller.blackboard_key_exists(BB_AI_CURRENT_TARGET))
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	for(var/mob/living/simple_animal/hostile/regalrat/king in SSspatial_grid.orthogonal_range_search(soldier, SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS, RAT_KING_ORDER_RANGE))
+		if(QDELETED(king) || king.stat != CONSCIOUS)
+			continue
+		if(get_dist(soldier, king) > RAT_KING_ORDER_RANGE)
+			continue
+		//верность как в CanAttack крысы: точное совпадение фракций
+		if(!king.faction_check_mob(soldier, TRUE))
+			continue
+		var/atom/royal_target = king.target
+		if(QDELETED(royal_target) || !soldier.CanAttack(royal_target))
+			continue
+		var/turf/royal_turf = get_turf(royal_target)
+		if(!royal_turf)
+			continue
+		controller.receive_combat_contact(royal_target, royal_turf, AI_CONTACT_ALLY)
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+
+///Грызня кабелей: легаси-шанс из handle_automated_action, исполнение общим процем
+/datum/ai_planning_subtree/rat_gnaw_cables
+
+/datum/ai_planning_subtree/rat_gnaw_cables/SelectBehaviors(datum/ai_controller/controller, delta_time)
+	. = ..()
+	var/mob/living/simple_animal/hostile/rat/vermin = controller.pawn
+	if(!istype(vermin))
+		return
+	if(!SPT_PROB(RAT_GNAW_PROB_PER_SECOND, delta_time))
+		return
+	controller.queue_behavior(/datum/ai_behavior/rat_gnaw_cables)
+
+/datum/ai_behavior/rat_gnaw_cables
+	action_cooldown = 2 SECONDS
+
+/datum/ai_behavior/rat_gnaw_cables/perform(delta_time, datum/ai_controller/controller)
+	var/mob/living/simple_animal/hostile/rat/vermin = controller.pawn
+	if(!istype(vermin))
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	if(!vermin.try_chew_cables())
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+
+#undef REGALRAT_RIOT_PROB_PER_SECOND
+#undef REGALRAT_COFFER_PROB_PER_SECOND
+#undef RAT_GNAW_PROB_PER_SECOND
+#undef RAT_KING_ORDER_RANGE

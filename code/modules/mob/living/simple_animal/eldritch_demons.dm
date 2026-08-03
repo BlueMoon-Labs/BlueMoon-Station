@@ -16,6 +16,10 @@
 	speed = 0
 	a_intent = INTENT_HARM
 	stop_automated_movement = 1
+	//Чистый гост-вессель: ритуал призыва отдаёт тело призраку либо удаляет
+	//моба; AI не включается никогда и никем. Постоянное исключение миграции
+	//на ai_controller - см. hostile_adapter/MIGRATION_EXCEPTIONS.md и пин
+	//ai_eldritch_stays_player_vessel.
 	AIStatus = AI_OFF
 	attack_sound = 'sound/weapons/punch1.ogg'
 	see_in_dark = 7

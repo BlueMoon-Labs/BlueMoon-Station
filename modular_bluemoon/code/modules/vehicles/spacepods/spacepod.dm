@@ -243,7 +243,7 @@
 /obj/spacepod/proc/on_mouse_moved(mob/user, object, location, control, params)
 	SIGNAL_HANDLER
 	var/list/modifiers = params2list(params)
-	if(object == src || (object && (object in user.get_all_contents())) || user != pilot)
+	if(object == src || (object && (object in user.GetAllContents())) || user != pilot)
 		return
 	if(weapon && modifiers["ctrl"])
 		INVOKE_ASYNC(src, PROC_REF(async_fire_weapons_at), object)

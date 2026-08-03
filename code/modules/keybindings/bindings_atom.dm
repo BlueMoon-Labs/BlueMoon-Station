@@ -26,8 +26,34 @@
 
 	return movement_dir
 
+/// TRUE when this tick's key state has something for keyLoop to act on. Pending
+/// buffers count even when they resolve to no direction, because they still have
+/// to be consumed.
+/proc/keybindings_has_movement_input(movement_dir, next_move_dir_add, next_move_dir_sub)
+	return movement_dir || next_move_dir_add || next_move_dir_sub
+
+/// Baseline /client/Move() would have left behind on a tick with no movement input.
+///
+/// Its prologue set `move_delay = world.time + world.tick_lag` before bailing out
+/// on `!direction`, so an idle client's baseline stayed pinned just ahead of now.
+/// Once keyLoop started skipping the call, the baseline fell into the past and
+/// /client/Move()'s catch-up buffer reused it - handing the next keypress a second
+/// step for free. See keybindings_idle_move_delay.dm.
+/proc/keybindings_idle_move_delay(current_delay, now, tick_lag)
+	if(now < current_delay)
+		return current_delay // a real move's cooldown is still running, leave it
+	return now + tick_lag
+
 /atom/movable/keyLoop(client/user)
 	var/movement_dir = keybindings_calculate_movement_dir(user.keys_held, user.movement_keys, user.next_move_dir_add, user.next_move_dir_sub)
+
+	// SSinput runs this for every client on every tick. An idle client has
+	// nothing to face and nothing to flush, so don't walk the whole Move() chain -
+	// but do keep the movement baseline current, which is the only other thing
+	// /client/Move() did on an idle tick.
+	if(!keybindings_has_movement_input(movement_dir, user.next_move_dir_add, user.next_move_dir_sub))
+		user.move_delay = keybindings_idle_move_delay(user.move_delay, world.time, world.tick_lag)
+		return
 
 	if(user.movement_locked)
 		keybind_face_direction(movement_dir)

@@ -42,15 +42,21 @@
 	if(limb.body_zone == BODY_ZONE_CHEST && (severity == WOUND_SEVERITY_SEVERE || severity == WOUND_SEVERITY_CRITICAL))
 		if(!HAS_TRAIT(victim, TRAIT_ROBOTIC_ORGANISM)) // BLUEMOON ADD
 			processes = TRUE
-			victim.adjustOxyLoss(15)
 			victim.adjustOrganLoss(ORGAN_SLOT_LUNGS,15)
-			victim.emote("cough")
 			next_trauma_cycle = world.time + (rand(100-20, 100+20) * 0.01 * trauma_cycle_cooldown)
+			// Лёгкое пробито у любого тела, а вот задыхаться и кашлять от этого может
+			// только живое: труп не дышит, и лишняя кислородная нехватка ему только
+			// портит шансы на дефибрилляцию.
+			if(!victim_appears_dead())
+				victim.adjustOxyLoss(15)
+				victim.emote("cough")
 
 	blood_flow = initial_flow
 
 /datum/wound/pierce/receive_damage(wounding_type, wounding_dmg, wound_bonus)
-	if(victim.stat == DEAD || wounding_dmg < 5)
+	// Тот же отбойник, что у /datum/wound/blunt/receive_damage(): одного stat мало,
+	// тело в торпоре или с квирком "Не-мёртвый" снаружи неотличимо от трупа.
+	if(victim_appears_dead() || wounding_dmg < 5)
 		return
 	if(victim.blood_volume && prob(internal_bleeding_chance + wounding_dmg))
 		if(limb.current_gauze && limb.current_gauze.splint_factor)
@@ -84,7 +90,10 @@
 	. = ..()
 	if(limb.body_zone == BODY_ZONE_CHEST && (severity == WOUND_SEVERITY_SEVERE || severity == WOUND_SEVERITY_CRITICAL) && world.time > next_trauma_cycle)
 		next_trauma_cycle = world.time + (rand(100-20, 100+20) * 0.01 * trauma_cycle_cooldown)
-		if(!HAS_TRAIT(victim, TRAIT_ROBOTIC_ORGANISM)) // BLUEMOON ADD
+		// handle_wounds() в /mob/living/BiologicalLife() зовётся ДО выхода по stat == DEAD,
+		// так что без этого гейта пробитое лёгкое трупа продолжало "хватать воздух" и
+		// накапливать OxyLoss до конца раунда.
+		if(!victim_appears_dead() && !HAS_TRAIT(victim, TRAIT_ROBOTIC_ORGANISM)) // BLUEMOON ADD
 			victim.adjustOxyLoss(20)
 			victim.emote("gasp")
 
@@ -93,7 +102,10 @@
 	if(!HAS_TRAIT(victim, TRAIT_ROBOTIC_ORGANISM))
 		if(victim.bodytemperature < (BODYTEMP_NORMAL -  10))
 			blood_flow -= 0.2
-			if(prob(5))
+			// Холод свернёт кровь и у трупа, а вот "вы чувствуете" ему писать не за чем:
+			// температура остывающего тела ниже нормы ВСЕГДА, так что мёртвый игрок ловил
+			// это сообщение раз в двадцать тиков до конца раунда.
+			if(prob(5) && !victim_appears_dead())
 				to_chat(victim, "<span class='notice'>Вы чувствуете, как [lowertext(name)] в вашей [limb.ru_name_v] застывает за счёт холода!</span>")
 
 	if(victim.reagents?.has_reagent(/datum/reagent/toxin/heparin))

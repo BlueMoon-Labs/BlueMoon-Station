@@ -1,6 +1,7 @@
 import {
   COMBINE_MAX_MESSAGES,
   COMBINE_MAX_TIME_WINDOW,
+  IMAGE_RETRY_DELAY,
   IMAGE_RETRY_LIMIT,
   IMAGE_RETRY_MESSAGE_AGE,
   MAX_VISIBLE_MESSAGES,
@@ -753,6 +754,67 @@ describe('ChatRenderer', () => {
 
       // Should NOT have changed src — at limit
       expect(img.src).toBe(originalSrc);
+      timeoutSpy.mockRestore();
+    });
+
+    test('does not retry images hosted outside the client', () => {
+      const renderer = createReadyRenderer();
+      const now = Date.now();
+      jest.spyOn(Date, 'now').mockReturnValue(now);
+
+      renderer.processBatch([{
+        html: '<img src="https://tenor.com/view/some-page">',
+        createdAt: now,
+      }]);
+
+      const img = renderer.visibleMessages[0].node.querySelector('img');
+      const originalSrc = img.src;
+      const timeoutSpy = jest.spyOn(global, 'setTimeout');
+      timeoutSpy.mockClear();
+
+      const errorEvent = new Event('error');
+      Object.defineProperty(errorEvent, 'target', { value: img });
+      img.dispatchEvent(errorEvent);
+
+      // Чужой хост не станет доступнее от десяти повторов - только лишние
+      // запросы и десять строк в логе на каждого, кто видит сообщение.
+      expect(timeoutSpy).not.toHaveBeenCalled();
+      expect(img.src).toBe(originalSrc);
+      expect(img.getAttribute('data-reload-n')).toBeNull();
+      timeoutSpy.mockRestore();
+    });
+
+    test('backs off exponentially between retries', () => {
+      const renderer = createReadyRenderer();
+      const now = Date.now();
+      jest.spyOn(Date, 'now').mockReturnValue(now);
+
+      renderer.processBatch([{
+        html: '<img src="test.png">',
+        createdAt: now,
+      }]);
+
+      const img = renderer.visibleMessages[0].node.querySelector('img');
+      const timeoutSpy = jest.spyOn(global, 'setTimeout');
+      const delays = [];
+
+      for (let attempt = 0; attempt < 3; attempt++) {
+        timeoutSpy.mockClear();
+        const errorEvent = new Event('error');
+        Object.defineProperty(errorEvent, 'target', { value: img });
+        img.dispatchEvent(errorEvent);
+
+        const call = timeoutSpy.mock.calls[timeoutSpy.mock.calls.length - 1];
+        delays.push(call[1]);
+        call[0]();
+      }
+
+      // Прежний плоский бюджет 10 x 250 мс был короче худшего round-trip.
+      expect(delays).toEqual([
+        IMAGE_RETRY_DELAY,
+        IMAGE_RETRY_DELAY * 2,
+        IMAGE_RETRY_DELAY * 4,
+      ]);
       timeoutSpy.mockRestore();
     });
 

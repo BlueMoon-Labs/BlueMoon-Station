@@ -58,6 +58,12 @@
 /datum/action/Destroy()
 	if(owner)
 		Remove(owner)
+	// Обнулить свой target было мало: сам предмет продолжал держать нас в actions, а его
+	// собственный Destroy() до нас мог и не дойти (действие переживало предмет, если
+	// удалялось отдельно). Вычёркиваемся сами.
+	if(isitem(target))
+		var/obj/item/item_target = target
+		LAZYREMOVE(item_target.actions, src)
 	target = null
 	QDEL_LIST_ASSOC_VAL(viewers) // Qdel the buttons in the viewers list **NOT THE HUDS**
 	return ..()
@@ -96,11 +102,17 @@
 /datum/action/proc/Remove(mob/remove_from)
 	SHOULD_CALL_PARENT(TRUE)
 
-	for(var/datum/hud/hud in viewers)
+	// Снимок обязателен: qdel кнопки внутри цикла зовёт action_button/Destroy, а тот
+	// делает `linked_action.viewers -= our_hud`. Правка списка прямо во время
+	// `for(... in viewers)` сдвигает индекс и пропускает следующий hud - его кнопка
+	// остаётся жить с linked_action на нас и держит экшен до конца раунда.
+	for(var/datum/hud/hud in viewers.Copy())
 		var/atom/movable/screen/movable/action_button/button = viewers[hud]
 		if(hud.mymob)
 			HideFrom(hud.mymob)
-		else if(button)
+		// HideFrom ищет кнопку по mymob.hud_used; если HUD мобу успели заменить,
+		// поиск промахнётся и кнопка переживёт экшен. Добиваем по снимку.
+		if(!QDELETED(button))
 			qdel(button) // Mob destroyed; remove orphaned button to prevent GC failure
 	LAZYREMOVE(remove_from?.actions, src) // We aren't always properly inserted into the viewers list, gotta make sure that action's cleared
 	viewers = list()

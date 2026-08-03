@@ -776,22 +776,38 @@
 
 	var/datum/tlv/cur_tlv
 
+	// Read the mixture's fields directly and walk its gas list once. Every accessor here is a
+	// one-line getter, and the old shape paid for two separate walks of the gas list (total_moles()
+	// inside return_pressure(), then the per-gas danger pass) plus a get_moles() dispatch per gas.
+	// That is ~20 proc calls per alarm per SSmachines fire, on ~400 alarms, forever - the dominant
+	// cost of the whole machinery pass on a live station. Same arithmetic, same danger levels.
 	var/datum/gas_mixture/environment = location.return_air()
-	var/partial_pressure = R_IDEAL_GAS_EQUATION * environment.return_temperature() / environment.return_volume()
+	var/list/environment_gases = environment.gases
+	var/environment_temperature = environment.temperature
+	var/environment_volume = max(0, environment.volume)
+
+	var/total_moles = 0
+	for(var/gas_id in environment_gases)
+		total_moles += environment_gases[gas_id]
+
+	// Both expressions keep the exact operand order the accessors used, so the arithmetic is
+	// bit-identical to before. return_pressure() reported 0 for a volumeless mixture; the
+	// per-mole scale now shares that guard, where the old expression divided by zero instead.
+	var/environment_pressure = environment_volume > 0 ? total_moles * R_IDEAL_GAS_EQUATION * environment_temperature / environment_volume : 0
+	var/pressure_per_mole = environment_volume > 0 ? R_IDEAL_GAS_EQUATION * environment_temperature / environment_volume : 0
 
 	cur_tlv = TLV["pressure"]
-	var/environment_pressure = environment.return_pressure()
 	var/pressure_dangerlevel = cur_tlv.get_danger_level(environment_pressure)
 
 	cur_tlv = TLV["temperature"]
-	var/temperature_dangerlevel = cur_tlv.get_danger_level(environment.return_temperature())
+	var/temperature_dangerlevel = cur_tlv.get_danger_level(environment_temperature)
 
 	var/gas_dangerlevel = 0
-	for(var/gas_id in environment.get_gases())
-		if(!(gas_id in TLV)) // We're not interested in this gas, it seems.
-			continue
+	for(var/gas_id in environment_gases)
 		cur_tlv = TLV[gas_id]
-		gas_dangerlevel = max(gas_dangerlevel, cur_tlv.get_danger_level(environment.get_moles(gas_id) * partial_pressure))
+		if(!cur_tlv) // We're not interested in this gas, it seems.
+			continue
+		gas_dangerlevel = max(gas_dangerlevel, cur_tlv.get_danger_level(environment_gases[gas_id] * pressure_per_mole))
 
 	var/old_danger_level = danger_level
 	danger_level = max(pressure_dangerlevel, temperature_dangerlevel, gas_dangerlevel)

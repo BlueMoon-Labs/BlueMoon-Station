@@ -20,5 +20,5 @@
 
 		if(get_dist(haunt_target, item_pawn) <= 7)
 			controller.set_blackboard_key(BB_HAUNT_TARGET, haunt_target)
-			controller.queue_behavior(/datum/ai_behavior/item_move_close_and_attack/ghostly/haunted, BB_HAUNT_TARGET, BB_HAUNTED_THROW_ATTEMPT_COUNT)
+			controller.queue_behavior(/datum/ai_behavior/haunted_item_attack, BB_HAUNT_TARGET, BB_HAUNTED_THROW_ATTEMPT_COUNT)
 			return SUBTREE_RETURN_FINISH_PLANNING

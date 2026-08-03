@@ -71,10 +71,10 @@
 						'modular_sand/sound/interactions/bang3.ogg')
 
 /datum/interaction/lewd/simplified_interaction/tail/dick/lust_granted(mob/living/partner)
-	return partner.has_penis()
+	return partner.has_penis(TRUE)
 
 /datum/interaction/lewd/simplified_interaction/tail/dick/text_picker(mob/living/user, mob/living/partner)
-	var/has_penis = partner.has_penis()
+	var/has_penis = partner.has_penis(TRUE)
 	start_text = list(
 		"USER обхватывает своим хвостом [has_penis ? "член" : "дилдо"] TARGET.",
 		"USER плавно обвивает [has_penis ? "член" : "дилдо"] TARGET, сжимая его кольцами хвоста.",
@@ -178,10 +178,10 @@
 	p13target_strength_base_point = PLUG13_STRENGTH_MEDIUM
 
 /datum/interaction/lewd/simplified_interaction/tail/urethra/lust_granted(mob/living/partner)
-	return partner.has_penis()
+	return partner.has_penis(TRUE)
 
 /datum/interaction/lewd/simplified_interaction/tail/urethra/text_picker(mob/living/user, mob/living/partner)
-	var/has_penis = partner.has_penis()
+	var/has_penis = partner.has_penis(TRUE)
 	start_text = list(
 		"USER утыкает хвостик в [has_penis ? "уретру" : "отверстие дилдо"] TARGET, медленно входя.",
 		"USER аккуратно просовывает кончик хвоста в [has_penis ? "уретру" : "отверстие дилдо"] TARGET.",
@@ -219,7 +219,7 @@
 						'modular_sand/sound/interactions/bang3.ogg')
 
 /datum/interaction/lewd/simplified_interaction/tail/dick/self/text_picker(mob/living/user, mob/living/partner)
-	var/has_penis = user.has_penis()
+	var/has_penis = user.has_penis(TRUE)
 	start_text = list(
 		"USER обхватывает хвостом собственный [has_penis ? "член" : "дилдо"].",
 		"USER плотно обвивает свой [has_penis ? "член" : "дилдо"] хвостом, начиная медленные движения.",
@@ -320,7 +320,7 @@
 						'modular_sand/sound/interactions/bang6.ogg',)
 
 /datum/interaction/lewd/simplified_interaction/tail/urethra/self/text_picker(mob/living/user, mob/living/partner)
-	var/has_penis = user.has_penis()
+	var/has_penis = user.has_penis(TRUE)
 	start_text = list(
 		"USER утыкает хвостик в [has_penis ? "свою уретру" : "отверстие свего дилдо"], медленно входя.",
 		"USER аккуратно вводит кончик хвоста в [has_penis ? "собственную уретру" : "свой дилдо"], замирая от ощущения проникновения.",

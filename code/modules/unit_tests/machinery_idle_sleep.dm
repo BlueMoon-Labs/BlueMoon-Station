@@ -211,3 +211,75 @@
 	pod.set_machine_stat(0)
 	TEST_ASSERT_EQUAL(pod.process(), PROCESS_KILL, "an empty cryopod must park itself")
 	TEST_ASSERT(pod.machine_sleeping, "...and be machine_sleeping")
+
+/// D8: empty patient-care machines park themselves, while their real patient-entry paths wake
+/// them so nap/stasis validation continues without a permanent SSmachines poll.
+/datum/unit_test/patient_machine_idle_sleep/Run()
+	var/mob/living/carbon/human/patient = allocate(/mob/living/carbon/human)
+	patient.forceMove(run_loc_floor_bottom_left)
+
+	var/obj/machinery/stasis/bed = allocate(/obj/machinery/stasis)
+	bed.forceMove(run_loc_floor_bottom_left)
+	bed.set_machine_stat(0)
+	TEST_ASSERT_EQUAL(bed.process(), PROCESS_KILL, "an empty stasis bed must park itself")
+	TEST_ASSERT(bed.machine_sleeping, "...and be machine_sleeping")
+	TEST_ASSERT(bed.buckle_mob(patient, force = TRUE, check_loc = FALSE), "the patient must buckle into the stasis bed")
+	TEST_ASSERT(!bed.machine_sleeping, "buckling a patient must wake the stasis bed")
+	bed.unbuckle_mob(patient, force = TRUE)
+
+	var/obj/machinery/sleeper/sleeper = allocate(/obj/machinery/sleeper)
+	sleeper.forceMove(run_loc_floor_bottom_left)
+	sleeper.set_machine_stat(0)
+	TEST_ASSERT_EQUAL(sleeper.process(), PROCESS_KILL, "an empty sleeper must park itself")
+	TEST_ASSERT(sleeper.machine_sleeping, "...and be machine_sleeping")
+	sleeper.close_machine(patient)
+	TEST_ASSERT_EQUAL(sleeper.occupant, patient, "close_machine() must accept the test patient")
+	TEST_ASSERT(!sleeper.machine_sleeping, "closing a sleeper on a patient must wake it")
+
+	var/obj/machinery/sleeper/clockwork/clockwork_sleeper = allocate(/obj/machinery/sleeper/clockwork)
+	clockwork_sleeper.set_machine_stat(0)
+	TEST_ASSERT_EQUAL(clockwork_sleeper.process(), PROCESS_KILL, "an empty clockwork sleeper must propagate the sleep result")
+	TEST_ASSERT(clockwork_sleeper.machine_sleeping, "...and be machine_sleeping")
+
+/// D9: the crew monitoring console has no periodic work of its own — the sensor snapshot it used
+/// to pre-warm every 10 s is rebuilt on demand by /datum/crewmonitor/ui_data(), so an unattended
+/// console must park itself off SSmachines like any other computer.
+/datum/unit_test/crew_console_idle_sleep/Run()
+	var/obj/machinery/computer/crew/console = allocate(/obj/machinery/computer/crew)
+	console.forceMove(run_loc_floor_bottom_left)
+	console.set_machine_stat(0)
+
+	TEST_ASSERT_EQUAL(console.process(2), PROCESS_KILL, "an unattended crew console must park itself")
+	TEST_ASSERT(console.machine_sleeping, "...and be machine_sleeping")
+
+	// The on-demand path must stand on its own: no process() ever ran for this z, yet a viewer
+	// asking for data has to get a freshly built snapshot rather than an empty cache.
+	var/monitor_z = console.z
+	GLOB.crewmonitor.data_by_z -= "[monitor_z]"
+	GLOB.crewmonitor.last_update -= "[monitor_z]"
+	var/list/snapshot = GLOB.crewmonitor.update_data(monitor_z)
+	TEST_ASSERT_NOTNULL(snapshot, "update_data() must build a snapshot on demand with no prior pre-warm")
+	TEST_ASSERT_NOTNULL(GLOB.crewmonitor.data_by_z["[monitor_z]"], "...and populate the per-z cache for the open UI")
+
+/// D10: a power monitoring console with nothing to attach to must not re-run the cable/APC lookup
+/// on every SSmachines fire. A wire or an APC appearing is a construction-speed event, so the
+/// search backs off and only retries once the interval has elapsed.
+/datum/unit_test/power_monitor_search_backoff/Run()
+	var/obj/machinery/computer/monitor/console = allocate(/obj/machinery/computer/monitor)
+	console.forceMove(run_loc_floor_bottom_left)
+	console.set_machine_stat(0)
+	// Initialize() already ran one search; clear whatever it latched onto so the unattached path runs.
+	console.attached_wire = null
+	console.local_apc = null
+	console.next_search = 0
+
+	console.process()
+	var/first_deadline = console.next_search
+	TEST_ASSERT(first_deadline > world.time, "a failed search must arm a retry deadline in the future")
+
+	console.process()
+	TEST_ASSERT_EQUAL(console.next_search, first_deadline, "a second fire inside the backoff window must not re-run the search")
+
+	console.next_search = 0 // stand in for the interval elapsing
+	console.process()
+	TEST_ASSERT(console.next_search > world.time, "once the interval elapses the search must run again and re-arm")

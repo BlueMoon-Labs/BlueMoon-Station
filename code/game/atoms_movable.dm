@@ -5,6 +5,11 @@
 	var/last_move = null
 	var/last_move_time = 0
 	var/anchored = FALSE
+	/// Must /turf/Exit() consult this atom when something tries to leave its turf?
+	/// Only border structures can actually refuse an exit, by overriding CheckExit()
+	/// or Uncross(). Anything that gains such an override, or a component listening
+	/// on COMSIG_MOVABLE_UNCROSS, has to set this - see /turf/Exit().
+	var/blocks_exit_checks = TRUE
 	var/move_resist = MOVE_RESIST_DEFAULT
 	var/move_force = MOVE_FORCE_DEFAULT
 	var/pull_force = PULL_FORCE_DEFAULT
@@ -39,6 +44,12 @@
 	var/inertia_force_weight = 1
 	/// Species / vehicle modifiers
 	var/inertia_move_multiplier = 1
+	/// How much drift one voluntary step in weightlessness adds. See [/atom/movable/proc/register_thrust_source]
+	var/self_thrust_force = INERTIA_THRUST_FORCE_DEFAULT
+	/// Ceiling that self-thrust may accelerate the drift to. External impulses (explosions, recoil) ignore it.
+	var/self_thrust_cap = INERTIA_THRUST_CAP_UNAIDED
+	/// Lazy assoc of thrust source -> list(force, cap). Null while nothing but bare limbs is pushing.
+	var/list/thrust_sources
 	/// Things we can pass through while moving. If any of this matches the thing we're trying to pass's [pass_flags_self], then we can pass through.
 	var/pass_flags = NONE
 	/// If false makes CanPass call CanPassThrough on this type instead of using default behaviour
@@ -145,6 +156,7 @@
 	QDEL_NULL(proximity_monitor)
 	QDEL_NULL(language_holder)
 	QDEL_NULL(em_block)
+	thrust_sources = null
 	// Break hidden render pipeline references (render_target/render_source can keep movables harddeling).
 	render_target = null
 	render_source = null
@@ -358,7 +370,11 @@
 	pulling.set_pulledby(null)
 	var/mob/living/ex_pulled = pulling
 	setGrabState(GRAB_PASSIVE)
+	// Отпущенный в невесомости уносит наш вектор, а не тормозит до своего потолка тяги.
+	// Иначе разжатая рука читается как рывок: буксир идёт на крейсерской, буксируемый
+	// мгновенно проседает до скорости голого толчка.
 	pulling = null
+	hand_off_drift(ex_pulled)
 	if(isliving(ex_pulled))
 		var/mob/living/L = ex_pulled
 		L.update_mobility()// mob gets up if it was lyng down in a chokehold
@@ -966,7 +982,8 @@
 			var/list/recursive_contents = location.important_recursive_contents
 			LAZYINITLIST(recursive_contents[channel])
 			recursive_contents[channel] -= gone.important_recursive_contents[channel]
-			//оба наших канала - грид-каналы (строки совпадают), поэтому
+			//все важные recursive-каналы здесь также являются грид-каналами
+			//с совпадающими строковыми ключами, поэтому
 			//опустевший канал сразу снимает и грид-осведомлённость
 			if(!length(recursive_contents[channel]))
 				SSspatial_grid.remove_grid_awareness(location, channel)
@@ -1030,6 +1047,38 @@
 			SSspatial_grid.remove_grid_awareness(location, SPATIAL_GRID_CONTENTS_TYPE_HEARING)
 		ASSOC_UNSETEMPTY(recursive_contents, RECURSIVE_CONTENTS_HEARING_SENSITIVE)
 		UNSETEMPTY(location.important_recursive_contents)
+
+///Register a cleanable/remains/ground-trash atom in the service-bot grid.
+/atom/movable/proc/become_cleanbot_targetable()
+	if(important_recursive_contents && (src in important_recursive_contents[RECURSIVE_CONTENTS_CLEANBOT_TARGETS]))
+		return
+
+	for(var/atom/movable/movable_loc as anything in get_nested_locs(src) + src)
+		LAZYINITLIST(movable_loc.important_recursive_contents)
+		var/list/recursive_contents = movable_loc.important_recursive_contents
+		if(!length(recursive_contents[RECURSIVE_CONTENTS_CLEANBOT_TARGETS]))
+			SSspatial_grid.add_grid_awareness(movable_loc, SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS)
+		LAZYINITLIST(recursive_contents[RECURSIVE_CONTENTS_CLEANBOT_TARGETS])
+		recursive_contents[RECURSIVE_CONTENTS_CLEANBOT_TARGETS] |= src
+
+	SSspatial_grid.add_grid_membership(src, get_turf(src), SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS)
+
+///Remove a service-bot target from both its cell and nested-loc bookkeeping.
+/atom/movable/proc/lose_cleanbot_targetable()
+	if(!important_recursive_contents || !(src in important_recursive_contents[RECURSIVE_CONTENTS_CLEANBOT_TARGETS]))
+		return
+
+	SSspatial_grid.remove_grid_membership(src, get_turf(src), SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS)
+
+	for(var/atom/movable/movable_loc as anything in get_nested_locs(src) + src)
+		var/list/recursive_contents = movable_loc.important_recursive_contents
+		if(!recursive_contents)
+			continue
+		recursive_contents[RECURSIVE_CONTENTS_CLEANBOT_TARGETS] -= src
+		if(!length(recursive_contents[RECURSIVE_CONTENTS_CLEANBOT_TARGETS]))
+			SSspatial_grid.remove_grid_awareness(movable_loc, SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS)
+		ASSOC_UNSETEMPTY(recursive_contents, RECURSIVE_CONTENTS_CLEANBOT_TARGETS)
+		UNSETEMPTY(movable_loc.important_recursive_contents)
 
 ///при логине: прописать моба в CLIENTS-канал грида и вложенных locs
 /mob/proc/enable_client_mobs_in_contents()

@@ -1,5 +1,8 @@
 //modular computer program version is located in code\modules\modular_computers\file_system\programs\powermonitor.dm, /datum/computer_file/program/power_monitor
 
+/// How long an unattached power monitoring console waits before hunting for a cable or APC again.
+#define POWER_MONITOR_SEARCH_INTERVAL (30 SECONDS)
+
 /obj/machinery/computer/monitor
 	name = "power monitoring console"
 	idle_sleeps = FALSE // own periodic work in process(); must not doze off via the parent typing-indicator path
@@ -20,6 +23,8 @@
 	var/record_size = 60
 	var/record_interval = 50
 	var/next_record = 0
+	/// world.time of the next cable/APC lookup while unattached. See process().
+	var/next_search = 0
 	var/is_secret_monitor = FALSE
 
 /obj/machinery/computer/monitor/secret //Hides the power monitor (such as ones on ruins & CentCom) from PDA's to prevent metagaming.
@@ -41,6 +46,12 @@
 /obj/machinery/computer/monitor/process()
 	if(!get_powernet())
 		use_power = IDLE_POWER_USE
+		// Consoles with nothing to attach to (ruins, unwired rooms) used to re-run the cable and
+		// APC lookup every single fire, forever. A wire or an APC appearing is a construction-speed
+		// event, so retry on a slow cadence instead.
+		if(world.time < next_search)
+			return
+		next_search = world.time + POWER_MONITOR_SEARCH_INTERVAL
 		search()
 	else
 		use_power = ACTIVE_POWER_USE
@@ -120,3 +131,5 @@
 				))
 
 	return data
+
+#undef POWER_MONITOR_SEARCH_INTERVAL

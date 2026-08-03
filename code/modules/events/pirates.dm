@@ -4,7 +4,9 @@
 	weight = 6
 	max_occurrences = 1
 	min_players = 25 // порог от больших серверов резал разнообразие на типичных 25-35: гост-пул сужался до метеора
-	earliest_start = 45 MINUTES
+	// Было 45 мин: к этому времени кошелёк уже 2-3 раза выжжен ранней волной, и за день
+	// логов 9766-9775 пираты не выпали ни разу. 30 мин - конкуренция с основной волной.
+	earliest_start = 30 MINUTES
 	category = EVENT_CATEGORY_INVASION
 	severity = DIRECTOR_SEVERITY_GHOST // антаги из призраков - гост-пул, а не общий MAJOR
 	cost = 10
@@ -68,6 +70,7 @@
 		if(D && D.adjust_money(-payoff))
 			priority_announce("Спасибо за кредиты, сухопутные крысы!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_yespeacedecision.ogg', "Priority")
 			SSdirector.complete_deferred_action_without_roles(control, "угроза снята выкупом; назначено ролей: 0")
+			resolve_threat_peacefully()
 			return
 		priority_announce("Пытаешься нас обмануть? Ты пожалеешь об этом!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
 		spawn_pirates(threat_msg, ship_template, TRUE)
@@ -83,6 +86,12 @@
 	if(length(space_zlevels))
 		return pick(space_zlevels)
 	return SSmapping.station_start
+
+/datum/round_event/pirates/proc/resolve_threat_peacefully()
+	pirates_spawned = TRUE
+	if(spawn_timer_id)
+		deltimer(spawn_timer_id)
+		spawn_timer_id = null
 
 /// Спавн не состоялся: возвращаем директору бюджет и паузы, чтобы он подобрал замену.
 /// Провал терминален - иначе оставшийся таймер или ответ станции зашли бы сюда второй раз

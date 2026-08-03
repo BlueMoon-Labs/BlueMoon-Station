@@ -351,6 +351,8 @@ GLOBAL_LIST_EMPTY(station_turfs)
 		firstbump = src
 	if(firstbump)
 		mover.Bump(firstbump)
+		if(QDELETED(mover) || mover.loc != oldloc)
+			return FALSE
 		return (mover.movement_type & PHASING)
 	return TRUE
 
@@ -358,10 +360,12 @@ GLOBAL_LIST_EMPTY(station_turfs)
 	. = ..()
 	if(!. || QDELETED(mover))
 		return FALSE
-	for(var/i in contents)
-		if(i == mover)
+	// Only atoms that declare blocks_exit_checks can refuse an exit. Skipping the
+	// rest matters because this loop used to run Uncross() on every single thing
+	// standing in the turf - 553k calls in 78 seconds of a crowded round.
+	for(var/atom/movable/thing as anything in contents)
+		if(thing == mover || !thing.blocks_exit_checks)
 			continue
-		var/atom/movable/thing = i
 		if(!thing.Uncross(mover, newloc))
 			if(thing.flags_1 & ON_BORDER_1)
 				mover.Bump(thing)
@@ -529,14 +533,11 @@ GLOBAL_LIST_EMPTY(station_turfs)
 
 /turf/proc/visibilityChanged()
 	GLOB.cameranet.updateVisibility(src)
-	// The cameranet usually handles this for us, but if we've just been
-	// recreated we should make sure we have the cameranet vis_contents.
-	var/datum/camerachunk/C = GLOB.cameranet.chunkGenerated(x, y, z)
-	if(C)
-		if(C.obscuredTurfs[src])
-			vis_contents += GLOB.cameranet.vis_contents_objects
-		else
-			vis_contents -= GLOB.cameranet.vis_contents_objects
+	// Обычно за статику отвечает сама сеть камер, но турф мог быть только что
+	// пересоздан (ChangeTurf) - перевешиваем образ статики на новый турф.
+	var/datum/camerachunk/chunk = GLOB.cameranet.chunkGenerated(x, y, z)
+	if(chunk)
+		chunk.reattach_static(src)
 
 /turf/proc/burn_tile()
 

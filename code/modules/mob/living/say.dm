@@ -272,7 +272,7 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 
 	// BLUEMOON EDIT START - правки last breath'а
 	if(in_critical && !special_crit_modes[message_mode])
-		message_range = 2
+		message_range = 1
 		message_mode = MODE_WHISPER
 		src.log_talk(message, LOG_WHISPER)
 		if(fullcrit)
@@ -435,7 +435,7 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	var/eavesdropping
 	var/eavesrendered
 	if(eavesdrop_range)
-		eavesdropping = stars(message)
+		eavesdropping = stars(message, 50)
 		eavesrendered = compose_message(src, message_language, eavesdropping, null, spans, message_mode, FALSE, source)
 
 	var/rendered = compose_message(src, message_language, message, null, spans, message_mode, FALSE, source)
@@ -481,7 +481,7 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	//speech bubble
 	var/list/speech_bubble_recipients = list()
 	for(var/mob/M in listening)
-		if(M.client && !M.client.prefs.chat_on_map)
+		if(M.client?.prefs && !M.client.prefs.chat_on_map)
 			speech_bubble_recipients.Add(M.client)
 	var/image/I = image('icons/mob/talk.dmi', src, "[bubble_type][say_test(message)]", FLY_LAYER)
 	I.appearance_flags = APPEARANCE_UI_IGNORE_ALPHA

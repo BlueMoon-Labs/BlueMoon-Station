@@ -59,6 +59,13 @@
 
 	if(prob(15))
 		return
+	// Силиконовые должности выдаются через Robotize() прямо внутри EquipRank, а сигнал
+	// прилетает уже на исходного человека - он к этому моменту qdel'нут, dna и held_items
+	// обнулены, и can_equip падает с "Cannot read null.species".
+	if(job?.departments & DEPARTMENT_BITFLAG_SILICON)
+		return
+	if(QDELETED(spawned_mob))
+		return
 	if(!iscarbon(spawned_mob)) // don't want silicons or similar to be counted here
 		return
 	if(HAS_TRAIT(spawned_mob, TRAIT_ROBOTIC_ORGANISM)) // robots can't get hungover
