@@ -15,6 +15,8 @@
 	flags_inv = HIDEHAIR|HIDEEARS
 	dynamic_hair_suffix = ""
 	dynamic_fhair_suffix = ""
+	var/nosrc = FALSE
+	var/active_sound_2
 
 	dog_fashion = /datum/dog_fashion/head/helmet
 
@@ -340,17 +342,30 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	item_state = "helmetold"
 
 /obj/item/clothing/head/helmet/blueshirt
-	name = "peacekeeper Helmet"
-	desc = "A reliable, blue tinted helmet reminding you that you <i>still</i> owe that engineer a beer."
+	name = "peacekeeper's helmet"
+	desc = "A reliable, dark-tinted helmet reminding you that you <i>still</i> owe that engineer a beer."
 	icon_state = "peacekeeper"
 	item_state = "peacekeeper"
 	custom_premium_price = PRICE_ABOVE_EXPENSIVE
 	dynamic_hair_suffix = ""
 	dynamic_fhair_suffix = ""
+	nosrc = TRUE
+	can_toggle = 1
+	toggle_message = "You pull the chin strap out of the helmet and buckle it underneath your chin."
+	alt_toggle_message = "You unlatch the chin strap and tuck it underneath your helmet."
+	active_sound_2 = 'sound/items/door_remote/door_remote_switch2.ogg'
+	unique_reskin = list(
+		"Blue" = list(
+			RESKIN_ICON_STATE = "bluepeacekeeper",
+			RESKIN_ITEM_STATE = "bluepeacekeeper",
+			name = "peacekeeper's blue helmet",
+			desc = "A reliable, yet infamous blue-tinted helmet of every other international peacekeeping force you can think of."
+		)
+	)
 
 /obj/item/clothing/head/helmet/riot
-	name = "Riot Helmet"
-	desc = "It's a helmet specifically designed to protect against close range attacks."
+	name = "riot helmet"
+	desc = "It's a helmet specifically designed to protect against close-range attacks."
 	icon_state = "riot"
 	item_state = "helmet"
 	toggle_message = "You pull the visor down on"
@@ -376,12 +391,14 @@ GLOBAL_PROTECT(aventail_pride_colors)
 		if(world.time > cooldown + toggle_cooldown)
 			cooldown = world.time
 			up = !up
-			flags_1 ^= visor_flags
-			flags_inv ^= visor_flags_inv
-			flags_cover ^= visor_flags_cover
 			icon_state = "[replacetext("[icon_state]", "_up", "")][up ? "_up" : ""]"
-			to_chat(user, "[up ? alt_toggle_message : toggle_message] \the [src]")
-
+			if(nosrc)
+				to_chat(user, "[up ? alt_toggle_message : toggle_message]")
+			else
+				flags_1 ^= visor_flags
+				flags_inv ^= visor_flags_inv
+				flags_cover ^= visor_flags_cover
+				to_chat(user, "[up ? alt_toggle_message : toggle_message] \the [src]")
 			user.update_inv_head()
 			if(iscarbon(user))
 				var/mob/living/carbon/C = user
@@ -390,6 +407,9 @@ GLOBAL_PROTECT(aventail_pride_colors)
 			if(active_sound)
 				if(up)
 					playsound(src.loc, "[active_sound]", 100, 0, 4)
+			if(active_sound_2)
+				if(!up)
+					playsound(src.loc, "[active_sound_2]", 100, 0, 4)
 
 /obj/item/clothing/head/helmet/justice
 	name = "helmet of justice"
