@@ -164,3 +164,13 @@
   - map: кнопка в кабинете КМа на Мете была чуть сдвинута.
   Silver-Paws:
   - qol: Картонную коробку из биогенератора можно переименовать.
+2026-08-03:
+  Silver-Paws:
+  - qol: Добавлен greet и farewell текста для роли Changeling Zombie, для информации
+      игрокам.
+  - image: Добавлен плейсхолдер спрайт для Chitinous Mass suit у генокрада.
+  - spellcheck: Переведены строки информации, связанные с Changeling Zombie.
+  - code_imp: Добавлены ру-пронауны "Ним/ней" для локализаторов.
+  - refactor: Код целей Changeling Zombie перенесен с datum/component его вируса в
+      datum/antagonist его роли.
+  - balance: Мутация Laser Eyes больше не работает при пацифизме у носителя.
