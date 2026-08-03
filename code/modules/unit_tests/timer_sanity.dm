@@ -36,4 +36,31 @@
 
 	deltimer(timer_id)
 
+///Замер границы колеса бакетов: какие сроки переживают первые тики, а какие нет.
+///BUCKET_LEN - ровно минута, и таймеры ВОКРУГ этой границы - самый подозрительный участок:
+///на 600 децисекунд заводится и бонус стерилизина, и tgui_alert с таймаутом в минуту.
+/datum/unit_test/timer_boundary_probe
+	var/list/fired = list()
+
+/datum/unit_test/timer_boundary_probe/proc/mark_fired(label)
+	fired[label] = TRUE
+
+/datum/unit_test/timer_boundary_probe/Run()
+	var/list/probes = list("50s" = 50 SECONDS, "59s" = 59 SECONDS, "60s" = 1 MINUTES, "61s" = 61 SECONDS, "120s" = 2 MINUTES)
+	var/list/armed = list()
+	for(var/label in probes)
+		armed[label] = addtimer(CALLBACK(src, PROC_REF(mark_fired), label), probes[label], TIMER_STOPPABLE)
+
+	for(var/grace_tick in 1 to LONG_TIMER_GRACE_TICKS)
+		stoplag(1)
+
+	var/list/premature = list()
+	for(var/label in probes)
+		if(fired[label])
+			premature += label
+		else
+			deltimer(armed[label])
+
+	TEST_ASSERT(!length(premature), "Сработали раньше срока: [premature.Join(", ")] (из проверенных [probes.len])")
+
 #undef LONG_TIMER_GRACE_TICKS

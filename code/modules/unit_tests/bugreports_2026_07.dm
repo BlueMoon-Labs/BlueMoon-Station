@@ -549,3 +549,30 @@
 
 	TEST_ASSERT(!beast.foes[holder], "Аура мира не сняла персональную обиду - именно она перебивает общую фракцию в CanAttack")
 	TEST_ASSERT(holder.real_name in beast.faction, "Аура мира не поделилась фракцией с фауной")
+
+// "Бонусных шансов при операциях больше нет"
+//
+// Проверяет всю цепочку стерилизина ровно так, как её проходит спрей в руках хирурга:
+// reaction(PATCH) долей объёма -> reaction_mob -> sterilize(20, 600) -> sterilize_power,
+// который хирургия читает как "+0.2 к множителю" (surgery.dm, get_propability_multiplier).
+// Ловит и "бонус не выставился вовсе", и "выставился, но погас в первые же тики".
+/datum/unit_test/sterilizine_spray_gives_surgery_bonus/Run()
+	var/mob/living/carbon/human/patient = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/obj/item/reagent_containers/medspray/sterilizine/spray = allocate(/obj/item/reagent_containers/medspray/sterilizine, run_loc_floor_bottom_left)
+	TEST_ASSERT_EQUAL(patient.sterilize_power, 0, "Премиса: до обработки бонуса быть не должно")
+	TEST_ASSERT(spray.reagents.total_volume > 0, "Премиса: спрей обязан быть заправлен")
+
+	// ровно то, что делает /obj/item/reagent_containers/medspray/attack()
+	var/fraction = min(spray.amount_per_transfer_from_this / spray.reagents.total_volume, 1)
+	spray.reagents.reaction(patient, spray.apply_type, fraction)
+
+	TEST_ASSERT(patient.sterilize_power > 0, "Спрей стерилизина не выставил sterilize_power - бонуса к операции не будет и зелёной строки на сканере тоже")
+
+	var/datum/timedevent/expiry = SStimer.timer_id_dict[patient._sterilize_timer_id]
+	TEST_ASSERT_NOTNULL(expiry, "Стерилизация не завела таймер снятия")
+	TEST_ASSERT(expiry.timeToRun > world.time + 30 SECONDS, "Таймер снятия стерилизации назначен слишком рано: бонус погаснет раньше, чем хирург сделает шаг")
+
+	for(var/settle_tick in 1 to 5)
+		stoplag(1)
+
+	TEST_ASSERT(patient.sterilize_power > 0, "Бонус стерилизина погас в первые же тики после нанесения")
