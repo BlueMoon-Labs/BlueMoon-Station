@@ -414,7 +414,9 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	// то есть прямая видимость - всё остальное ниже её обходит через слух.
 	var/is_visual = message_language && initial(message_language.visual_language)
 	var/eavesdrop_range = 0
-	if(eavesdropping_modes[message_mode])
+	// Подслушивание - тоже слуховое правило: оно расширяет набор слушателей и шлёт дальним
+	// звёздочную кашу "не расслышал". У жестов дальность одна, своя.
+	if(eavesdropping_modes[message_mode] && !is_visual)
 		eavesdrop_range = EAVESDROP_EXTRA_RANGE
 	var/list/listening = get_hearers_in_view(message_range+eavesdrop_range, source)
 

@@ -58,7 +58,7 @@
 	// инструменте не печаталась НИ РАЗУ, хирург просто тыкал в молчащего пациента.
 	// Исключение для каутеров сохранено, оно тут не случайно.
 	if(!success && tool?.tool_behaviour != TOOL_CAUTERY) // каутеры for some reason вызывают ошибки, более красивого фикса не придумал
-		to_chat(user, "<span class='warning'>This step requires a different tool!</span>")
+		to_chat(user, "<span class='warning'>Для этого этапа нужен другой инструмент!</span>")
 	// BLUEMOON ADD END
 	return FALSE
 

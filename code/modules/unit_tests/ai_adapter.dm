@@ -326,6 +326,8 @@
 	TEST_ASSERT_NULL(mover.moving_controllers[controller], "Deleting the movement target must release the entry on the immortal movement singleton")
 	TEST_ASSERT_NULL(controller.current_movement_target, "Deleting the movement target must clear the controller's own reference")
 
+	qdel(controller) //чтобы контроллер не тикал в фоне до самого teardown
+
 ///Смена типа движения не должна оставлять запись в покинутом синглтоне - опрашивать
 ///её потом уже некому, снять тоже.
 /datum/unit_test/ai_movement_type_switch_releases_old_singleton/Run()
@@ -344,6 +346,7 @@
 	TEST_ASSERT_NULL(original_mover.moving_controllers[controller], "Switching movement type must release the entry on the abandoned singleton")
 	TEST_ASSERT(controller.ai_movement != original_mover, "Sanity: the switch must actually swap the movement datum")
 	controller.stop_ai_movement()
+	qdel(controller)
 
 ///Legacy toggle_ai calls pause and resume an attached controller.
 /datum/unit_test/ai_adapter_legacy_toggle_bridge/Run()
