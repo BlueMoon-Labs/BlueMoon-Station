@@ -291,8 +291,15 @@
 
 		if(hungry == 2 && !client) // if a slime is starving, it starts losing its friends
 			if(Friends.len > 0 && prob(1))
-				var/mob/nofriend = pick(Friends)
+				var/mob/living/nofriend = pick(Friends)
 				--Friends[nofriend]
+				// Отбор добычи проверяет ЧЛЕНСТВО в Friends, а не величину дружбы, поэтому
+				// уронить счётчик мало: дружок остаётся ключом списка и несъедобен навсегда,
+				// то есть весь механизм "голодный слайм теряет друзей" не работал. Хуже того,
+				// Reproduce() копирует список всем четырём детям - испорченный список тянется
+				// по всей линии, и выглядит это как "вот эти слаймы почему-то не едят".
+				if(Friends[nofriend] <= 0)
+					clear_friend(nofriend)
 
 		if(!Target)
 			if(world.time >= next_hunt_scan && (will_hunt() && hungry || attacked || rabid)) // Only add to the list if we need to
@@ -308,6 +315,15 @@
 				for(var/mob/living/L as anything in scan_candidates)
 
 					if(isslime(L) || L.stat == DEAD) // grid excludes DEAD; src is a slime so this also skips self
+						continue
+
+					// Погоня бросает выеденную добычу тем же тиком (slime_controller.dm,
+					// правило give_up по SLIME_AI_TARGET_SPENT_HEALTH), а отбор её берёт -
+					// и берёт ПЕРВОЙ попавшейся, с break. Мартышка живёт до -100, так что
+					// полоса от -70 до -100 вечная: одна недоеденная тушка в загоне
+					// навсегда закрывала слаймам доступ к здоровым соседкам, а ветка
+					// блуждания (она под if(!Target)) при занятой цели не отрабатывала.
+					if(L.health <= SLIME_AI_TARGET_SPENT_HEALTH)
 						continue
 
 					if(get_dist(src, L) > SLIME_AI_PURSUIT_RANGE) // grid returns whole cells - clamp to the real scan range
