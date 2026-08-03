@@ -78,7 +78,12 @@ All effects don't start immediately, but rather get worse over time; the rate is
 		M.adjust_fire_stacks(reac_volume / 15)
 
 		// +10% success propability on each step, useful while operating in less-than-perfect conditions
-		M.sterilize(boozepwr / 6.5, 1 MINUTES * reac_volume/5) // Weak alcohol has less sterilizing power
+		// boozepwr = 0 - это метка "у напитка свой эффект опьянения", а НЕ "снять стерилизацию".
+		// sterilize() трактует неположительную силу как отмену: гасит таймер и обнуляет
+		// sterilize_power. Из-за этого коктейль без градуса в одной ёмкости со стерилизином
+		// стирал хирургу весь бонус прямо внутри одного reaction().
+		if(boozepwr > 0)
+			M.sterilize(boozepwr / 6.5, 1 MINUTES * reac_volume/5) // Weak alcohol has less sterilizing power
 
 	return ..()
 
