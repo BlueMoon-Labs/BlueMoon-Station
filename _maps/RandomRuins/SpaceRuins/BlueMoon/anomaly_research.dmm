@@ -255,7 +255,7 @@
 /area/ruin/space/has_grav/MimicResrch)
 "ml" = (
 /obj/effect/turf_decal/tile/yellow/anticorner/contrasted,
-/turf/open/space/basic,
+/turf/open/floor/bluespace,
 /area/ruin/space/has_grav/MimicResrch)
 "mC" = (
 /obj/effect/turf_decal/tile/purple/anticorner/contrasted{
@@ -305,7 +305,7 @@
 /obj/effect/turf_decal/siding/white{
 	dir = 1
 	},
-/turf/open/space/basic,
+/turf/open/floor/bluespace,
 /area/ruin/space/has_grav/MimicResrch)
 "nU" = (
 /obj/effect/turf_decal/siding/purple{
@@ -317,7 +317,7 @@
 /obj/effect/turf_decal/tile/yellow/anticorner/contrasted{
 	dir = 1
 	},
-/turf/open/space/basic,
+/turf/open/floor/bluespace,
 /area/ruin/space/has_grav/MimicResrch)
 "ok" = (
 /obj/machinery/atmospherics/components/unary/portables_connector/visible{
@@ -456,7 +456,7 @@
 /obj/effect/turf_decal/siding/white{
 	dir = 1
 	},
-/turf/open/space/basic,
+/turf/open/floor/bluespace,
 /area/ruin/space/has_grav/MimicResrch)
 "tD" = (
 /obj/machinery/door/airlock/vault,
@@ -475,7 +475,7 @@
 /obj/effect/turf_decal/tile/yellow/half/contrasted{
 	dir = 1
 	},
-/turf/open/space/basic,
+/turf/open/floor/bluespace,
 /area/ruin/space/has_grav/MimicResrch)
 "tR" = (
 /obj/structure/rack,
@@ -554,7 +554,7 @@
 /area/ruin/space/has_grav/MimicResrch)
 "wb" = (
 /obj/effect/turf_decal/tile/yellow/half,
-/turf/open/space/basic,
+/turf/open/floor/bluespace,
 /area/ruin/space/has_grav/MimicResrch)
 "wg" = (
 /obj/effect/turf_decal/siding/purple{
@@ -583,7 +583,7 @@
 /obj/effect/turf_decal/siding/white{
 	dir = 1
 	},
-/turf/open/space/basic,
+/turf/open/floor/bluespace,
 /area/ruin/space/has_grav/MimicResrch)
 "xo" = (
 /obj/machinery/duct,
@@ -732,7 +732,7 @@
 /obj/effect/turf_decal/tile/yellow/half/contrasted{
 	dir = 1
 	},
-/turf/open/space/basic,
+/turf/open/floor/bluespace,
 /area/ruin/space/has_grav/MimicResrch)
 "Ew" = (
 /obj/machinery/duct,
@@ -744,7 +744,7 @@
 /obj/effect/turf_decal/tile/yellow/anticorner/contrasted{
 	dir = 4
 	},
-/turf/open/space/basic,
+/turf/open/floor/bluespace,
 /area/ruin/space/has_grav/MimicResrch)
 "Ff" = (
 /obj/effect/turf_decal/trimline/purple/line,
@@ -794,6 +794,12 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/bluespace,
 /area/ruin/space/has_grav/MimicResrch)
+"GA" = (
+/obj/machinery/door/airlock/maintenance{
+	name = "Mining Station Maintenance"
+	},
+/turf/open/floor/bluespace,
+/area/ruin/space/has_grav/MimicResrch)
 "GG" = (
 /obj/effect/spawner/structure/window,
 /obj/machinery/duct,
@@ -815,7 +821,7 @@
 /area/space/nearstation)
 "HL" = (
 /obj/effect/turf_decal/siding/white,
-/turf/open/space/basic,
+/turf/open/floor/bluespace,
 /area/ruin/space/has_grav/MimicResrch)
 "HN" = (
 /obj/structure/toilet{
@@ -834,7 +840,7 @@
 /obj/effect/turf_decal/siding/white{
 	dir = 8
 	},
-/turf/open/space/basic,
+/turf/open/floor/bluespace,
 /area/ruin/space/has_grav/MimicResrch)
 "HT" = (
 /obj/effect/turf_decal/trimline/purple/corner,
@@ -919,7 +925,7 @@
 /obj/effect/turf_decal/tile/yellow/half/contrasted{
 	dir = 8
 	},
-/turf/open/space/basic,
+/turf/open/floor/bluespace,
 /area/ruin/space/has_grav/MimicResrch)
 "LW" = (
 /obj/structure/table/reinforced,
@@ -962,7 +968,7 @@
 /obj/effect/turf_decal/tile/yellow/anticorner/contrasted{
 	dir = 8
 	},
-/turf/open/space/basic,
+/turf/open/floor/bluespace,
 /area/ruin/space/has_grav/MimicResrch)
 "Oi" = (
 /mob/living/simple_animal/hostile/mimic,
@@ -988,7 +994,7 @@
 /obj/item/paper_bin,
 /obj/item/pen,
 /obj/effect/turf_decal/siding/white,
-/turf/open/space/basic,
+/turf/open/floor/bluespace,
 /area/ruin/space/has_grav/MimicResrch)
 "Ot" = (
 /mob/living/simple_animal/hostile/mimic,
@@ -1059,7 +1065,7 @@
 	pixel_y = 4
 	},
 /obj/effect/turf_decal/siding/white,
-/turf/open/space/basic,
+/turf/open/floor/bluespace,
 /area/ruin/space/has_grav/MimicResrch)
 "SQ" = (
 /obj/structure/table/reinforced,
@@ -1113,7 +1119,7 @@
 "UJ" = (
 /obj/structure/table/glass,
 /obj/effect/turf_decal/siding/white,
-/turf/open/space/basic,
+/turf/open/floor/bluespace,
 /area/ruin/space/has_grav/MimicResrch)
 "VL" = (
 /obj/structure/table/wood,
@@ -1201,7 +1207,7 @@
 /obj/machinery/door/airlock/research/glass{
 	name = "Pharmacy"
 	},
-/turf/open/space/basic,
+/turf/open/floor/bluespace,
 /area/ruin/space/has_grav/MimicResrch)
 "ZA" = (
 /obj/machinery/door/airlock/research/glass,
@@ -1219,7 +1225,7 @@
 "ZO" = (
 /obj/structure/table/reinforced,
 /obj/effect/turf_decal/siding/white,
-/turf/open/space/basic,
+/turf/open/floor/bluespace,
 /area/ruin/space/has_grav/MimicResrch)
 
 (1,1,1) = {"
@@ -2292,7 +2298,7 @@ Ya
 xS
 ya
 ya
-Kc
+GA
 xo
 xo
 xo
