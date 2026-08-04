@@ -588,6 +588,10 @@ Turf and target are separate in case you want to teleport some distance from a t
 	return TRUE
 
 /proc/is_blocked_turf(turf/T, exclude_mobs)
+	// get_step() за краем карты возвращает null; для проходимости это стена
+	// (vomit в раунде 9875 ронял Life-цикл именно здесь).
+	if(!T)
+		return TRUE
 	if(T.density)
 		return TRUE
 	for(var/i in T)

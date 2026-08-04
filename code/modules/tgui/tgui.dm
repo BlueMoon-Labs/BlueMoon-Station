@@ -140,6 +140,12 @@
 			))
 	else
 		window.send_message("ping")
+	// initialize() спит на отправке ресурсов: логаут за это время успевает
+	// пройти через close() -> qdel(src), и window уже null (клиент, зашедший и
+	// сразу вышедший на ченджлоге, раунд 9875). Гард ниже по коду стоит уже
+	// ПОСЛЕ этих send_asset и опоздал бы.
+	if(QDELETED(src) || !window)
+		return FALSE
 	var/flush_queue = window.send_asset(get_asset_datum(
 		/datum/asset/simple/namespaced/fontawesome))
 	flush_queue |= window.send_asset(get_asset_datum(
