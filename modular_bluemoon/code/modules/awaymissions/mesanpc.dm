@@ -311,6 +311,7 @@
 		linked_console.linked_radio = src
 		linked_console.icon_screen = linked_console.base_icon_screen // Restore powered icon
 		linked_console.update_appearance() // Update visual appearance
+		linked_console.set_light(1) // Enable light
 		visible_message(span_notice("Консоль бомбардировки активирована!"))
 
 /obj/machinery/negotiations_radio/bombardment/proc/trigger_bombardment(turf/target_turf)
@@ -391,6 +392,15 @@
 		linked_console.enabled = FALSE
 		visible_message(span_warning("Консоль бомбардировки отключена!"))
 
+/obj/machinery/negotiations_radio/bombardment/proc/announce_ready()
+	if(!src)
+		return
+
+	say("Пеликан-1 на связи. Готов к следующему залпу, когда будете готовы")
+	icon_state = "radiohecu_talking"
+	playsound(src, 'sound/machines/chime.ogg', 70, FALSE, 7, 3)
+	addtimer(CALLBACK(src, .proc/reset_icon), 3 SECONDS)
+
 /obj/machinery/negotiations_radio/bombardment/confirm_action(mob/user)
 	if(!user || !src)
 		return
@@ -422,7 +432,7 @@
 	var/enabled = FALSE
 	var/area/restricted_area = /area/awaymission/ihategordon/outsideofmesa/bombardment
 	var/next_mark_time = 0
-	var/mark_cooldown = 1 MINUTES
+	var/mark_cooldown = 30 SECONDS
 	var/datum/action/innate/bombardment_mark/mark_action = /datum/action/innate/bombardment_mark
 	var/charges_remaining = 4
 	var/obj/machinery/negotiations_radio/bombardment/linked_radio = null
@@ -447,6 +457,7 @@
 	// Set initial visual state to disabled
 	if(!enabled)
 		icon_screen = "tactical_off"
+		set_light(0) // Disable light when not enabled
 
 /obj/machinery/computer/camera_advanced/bombardment/GrantActions(mob/living/user)
 	..(user)
@@ -467,6 +478,7 @@
 	return ..()
 
 /obj/machinery/computer/camera_advanced/bombardment/CreateEye()
+
 	eyeobj = new /mob/camera/aiEye/remote/bombardment(get_turf(src))
 	eyeobj.origin = src
 	eyeobj.visible_icon = TRUE
@@ -489,8 +501,9 @@
 	var/allowed_area = null
 
 /mob/camera/aiEye/remote/bombardment/Initialize(mapload)
-	var/area/A = get_area(loc)
-	allowed_area = A.name
+	// Store the allowed area path, not name
+	if(console_origin)
+		allowed_area = console_origin.restricted_area
 	. = ..()
 
 /mob/camera/aiEye/remote/bombardment/setLoc(turf/destination)
@@ -498,7 +511,7 @@
 		return
 	var/area/new_area = get_area(destination)
 	// Restrict movement to only the bombardment zone
-	if(new_area && istype(new_area, /area/awaymission/ihategordon/outsideofmesa/bombardment))
+	if(new_area && istype(new_area, allowed_area))
 		return ..()
 	else
 		return
@@ -550,6 +563,8 @@
 
 	if(target_console.linked_radio && !target_console.linked_radio.bombardment_active)
 		target_console.linked_radio.trigger_bombardment(target_turf)
+		// Schedule radio announcement when cooldown ends
+		addtimer(CALLBACK(target_console.linked_radio, TYPE_PROC_REF(/obj/machinery/negotiations_radio/bombardment, announce_ready)), target_console.mark_cooldown)
 
 	if(target_console.charges_remaining <= 0)
 		addtimer(CALLBACK(target_console.linked_radio, TYPE_PROC_REF(/obj/machinery/negotiations_radio/bombardment, announce_out_of_fuel)), 15 SECONDS)

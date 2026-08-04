@@ -226,16 +226,18 @@
 
 			var/mob_type
 			if(difficulty_level >= 4)
-				// After trigger4, include acid spitter in rotation
+				// After trigger4, include acid spitter and charger in rotation
 				var/spawn_roll = rand(1, 100)
-				if(spawn_roll <= 50)
+				if(spawn_roll <= 40)
 					mob_type = /mob/living/simple_animal/hostile/infected
-				else if(spawn_roll <= 75)
+				else if(spawn_roll <= 65)
 					mob_type = /mob/living/simple_animal/hostile/infected/bruiser
-				else if(spawn_roll <= 87)
+				else if(spawn_roll <= 80)
 					mob_type = /mob/living/simple_animal/hostile/infected/bruiser/alt
-				else
+				else if(spawn_roll <= 95)
 					mob_type = /mob/living/simple_animal/hostile/infected/acid_spitter
+				else
+					mob_type = /mob/living/simple_animal/hostile/infected/charger
 			else
 				// Before trigger4, only normal zombies and bruisers
 				if(prob(70))

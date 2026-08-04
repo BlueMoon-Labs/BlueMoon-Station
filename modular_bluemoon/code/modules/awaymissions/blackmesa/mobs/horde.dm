@@ -17,29 +17,66 @@
 	anchored = TRUE
 	density = FALSE
 	var/damage_per_tick = 5
-	var/duration = 50 // 5 seconds (50 deciseconds)
+	var/duration = 100 // 10 seconds (100 deciseconds)
+	var/processing = FALSE
 
 /obj/effect/decal/cleanable/acid_ooze/Initialize(mapload)
 	. = ..()
-	if(!src)
-		return
-	// Schedule deletion after duration
 	QDEL_IN(src, duration)
 
-/obj/effect/decal/cleanable/acid_ooze/Crossed(atom/movable/AM)
+/obj/effect/decal/cleanable/acid_ooze/Entered(atom/movable/AM)
 	. = ..()
-	if(!src || !AM)
+	if(!AM)
 		return
-	if(isliving(AM))
-		var/mob/living/L = AM
-		if(!L)
-			return
-		if(L.stat != DEAD)
-			// Apply toxin and burn damage
-			L.adjustToxLoss(damage_per_tick)
-			L.adjustFireLoss(damage_per_tick)
-			if(L.client)
-				to_chat(L, span_warning("The acid ooze burns you!"))
+	if(can_burn(AM))
+		start_processing()
+
+/obj/effect/decal/cleanable/acid_ooze/proc/start_processing()
+	if(!processing)
+		processing = TRUE
+		START_PROCESSING(SSobj, src)
+
+/obj/effect/decal/cleanable/acid_ooze/process()
+	if(!burn_stuff())
+		STOP_PROCESSING(SSobj, src)
+		processing = FALSE
+
+/obj/effect/decal/cleanable/acid_ooze/proc/can_burn(atom/movable/target)
+	if(!target)
+		return FALSE
+	if(isobj(target))
+		var/obj/O = target
+		if(O.resistance_flags & ACID_PROOF)
+			return FALSE
+	if(isliving(target))
+		var/mob/living/L = target
+		if(L.stat == DEAD)
+			return FALSE
+		if(istype(L, /mob/living/simple_animal/hostile/infected))
+			return FALSE // Infected are immune
+	return TRUE
+
+/obj/effect/decal/cleanable/acid_ooze/proc/burn_stuff()
+	var/something_burning = FALSE
+	for(var/atom/movable/AM in get_turf(src))
+		if(!can_burn(AM))
+			continue
+		do_burn(AM)
+		something_burning = TRUE
+	return something_burning
+
+/obj/effect/decal/cleanable/acid_ooze/proc/do_burn(atom/movable/target)
+	if(QDELETED(target))
+		return
+	if(isobj(target))
+		return // Don't damage objects, only living mobs
+	else if(isliving(target))
+		var/mob/living/L = target
+		// Direct damage without causing nausea
+		L.health -= damage_per_tick
+		L.updatehealth()
+		if(L.client)
+			to_chat(L, span_warning("The acid ooze burns you!"))
 
 // =============================================================================
 // ACID SPIT PROJECTILE
@@ -65,12 +102,9 @@
 
 /obj/effect/temp_visual/impact_effect/acid_spit/Initialize(mapload)
 	. = ..()
-	if(!src)
-		return
 	var/turf/T = get_turf(src)
 	if(!T)
 		return
-	// Spawn acid ooze pool 3x3 around impact point
 	for(var/x_offset = -1 to 1)
 		for(var/y_offset = -1 to 1)
 			var/turf/pool_turf = locate(T.x + x_offset, T.y + y_offset, T.z)
@@ -79,13 +113,12 @@
 
 /obj/item/projectile/neurotox/acid_spit/on_hit(atom/target, blocked = FALSE)
 	. = ..()
-	if(!src || !target)
+	if(!target)
 		return
 	if(isliving(target))
 		var/mob/living/L = target
 		if(!L)
 			return
-		// Apply extra toxin damage
 		L.adjustToxLoss(10)
 		if(L.client)
 			to_chat(L, span_warning("The acid burns your skin!"))
@@ -159,12 +192,8 @@
 	wanted_objects = typecacheof(wanted_objects, TRUE)
 
 /mob/living/simple_animal/hostile/infected/Move(atom/newloc, dir, step_x, step_y)
-	// Check if we're trying to move through a nocut fence
-	if(newloc)
-		for(var/obj/structure/fence/nocut/F in newloc)
-			if(F.Adjacent(src))
-				// Allow movement through nocut fence
-				return forceMove(newloc)
+	if(handle_fence_movement(newloc))
+		return
 	. = ..()
 
 /mob/living/simple_animal/hostile/infected/adjustHealth(amount, updating_health = TRUE, forced = FALSE)
@@ -178,9 +207,7 @@
 		return FALSE
 	if(istype(the_target, /obj/structure/urbanism_generator))
 		var/obj/structure/urbanism_generator/G = the_target
-		if(!G)
-			return FALSE
-		if(!G.activating)
+		if(!G || !G.activating)
 			return FALSE
 	return ..()
 
@@ -198,16 +225,20 @@
 	. = ..()
 	if(!target)
 		return
-	// Apply slow effect to living targets (players)
 	if(isliving(target))
 		var/mob/living/L = target
-		if(!L)
-			return
-		if(L.client && L.stat != DEAD)
-			// Apply temporary slow (5 seconds)
+		if(L && L.client && L.stat != DEAD)
 			L.add_movespeed_modifier(/datum/movespeed_modifier/infected_slow, TRUE)
 			addtimer(CALLBACK(L, TYPE_PROC_REF(/mob, remove_movespeed_modifier), /datum/movespeed_modifier/infected_slow), 5 SECONDS)
 			to_chat(L, span_warning("Вас замедлил заражённый!"))
+
+// Shared fence movement logic for all infected types
+/mob/living/simple_animal/hostile/infected/proc/handle_fence_movement(atom/newloc)
+	if(newloc)
+		for(var/obj/structure/fence/nocut/F in newloc)
+			if(F && F.Adjacent(src))
+				return forceMove(newloc)
+	return FALSE
 
 // =============================================================================
 // TIER 1: RUNNER ZOMBIE (DEPRECATED - No longer spawned)
@@ -259,24 +290,16 @@
 	. = ..()
 	if(!target)
 		return
-	// Apply strong slow effect to living targets (players)
 	if(isliving(target))
 		var/mob/living/L = target
-		if(!L)
-			return
-		if(L.client && L.stat != DEAD)
-			// Apply temporary strong slow (6 seconds)
+		if(L && L.client && L.stat != DEAD)
 			L.add_movespeed_modifier(/datum/movespeed_modifier/bruiser_slow, TRUE)
 			addtimer(CALLBACK(L, TYPE_PROC_REF(/mob, remove_movespeed_modifier), /datum/movespeed_modifier/bruiser_slow), 6 SECONDS)
-			to_chat(L, span_warning("Вас сильно замедлил бруiser!"))
+			to_chat(L, span_warning("Вас сильно замедлил bruiser!"))
 
 /mob/living/simple_animal/hostile/infected/bruiser/Move(atom/newloc, dir, step_x, step_y)
-	// Check if we're trying to move through a nocut fence
-	if(newloc)
-		for(var/obj/structure/fence/nocut/F in newloc)
-			if(F.Adjacent(src))
-				// Allow movement through nocut fence
-				return forceMove(newloc)
+	if(handle_fence_movement(newloc))
+		return
 	. = ..()
 
 /mob/living/simple_animal/hostile/infected/bruiser/Aggro()
@@ -325,8 +348,6 @@
 
 /mob/living/simple_animal/hostile/infected/acid_spitter/Initialize(mapload)
 	. = ..()
-	if(!src)
-		return
 	AddComponent(/datum/component/swarming)
 	wanted_objects = typecacheof(wanted_objects, TRUE)
 
@@ -334,24 +355,16 @@
 	. = ..()
 	if(!target)
 		return
-	// Apply strong slow effect to living targets (players)
 	if(isliving(target))
 		var/mob/living/L = target
-		if(!L)
-			return
-		if(L.client && L.stat != DEAD)
-			// Apply temporary strong slow (6 seconds)
+		if(L && L.client && L.stat != DEAD)
 			L.add_movespeed_modifier(/datum/movespeed_modifier/bruiser_slow, TRUE)
 			addtimer(CALLBACK(L, TYPE_PROC_REF(/mob, remove_movespeed_modifier), /datum/movespeed_modifier/bruiser_slow), 6 SECONDS)
 			to_chat(L, span_warning("Вас сильно замедлил acid spitter!"))
 
 /mob/living/simple_animal/hostile/infected/acid_spitter/Move(atom/newloc, dir, step_x, step_y)
-	// Check if we're trying to move through a nocut fence
-	if(newloc)
-		for(var/obj/structure/fence/nocut/F in newloc)
-			if(F && F.Adjacent(src))
-				// Allow movement through nocut fence
-				return forceMove(newloc)
+	if(handle_fence_movement(newloc))
+		return
 	. = ..()
 
 /mob/living/simple_animal/hostile/infected/acid_spitter/Aggro()
@@ -361,9 +374,6 @@
 
 /mob/living/simple_animal/hostile/infected/acid_spitter/death(gibbed)
 	. = ..(gibbed)
-	if(!src)
-		return
-	// Spawn acid ooze pool 3x3 around death location
 	var/turf/death_turf = get_turf(src)
 	if(!death_turf)
 		return
@@ -372,8 +382,165 @@
 			var/turf/pool_turf = locate(death_turf.x + x_offset, death_turf.y + y_offset, death_turf.z)
 			if(pool_turf && !pool_turf.density)
 				new /obj/effect/decal/cleanable/acid_ooze(pool_turf)
-	// Play death sound
 	playsound(death_turf, 'sound/effects/splat.ogg', 100, TRUE)
+	if(!ckey)
+		toggle_ai(AI_OFF)
+
+// =============================================================================
+// TIER 4: CHARGER ZOMBIE
+// Charge attack mechanic based on bubblegum/guardian charger
+// Maintains distance, then charges. If hits player - drags to wall. If misses - stuns.
+// Only spawns after trigger4 (difficulty level 4+)
+// =============================================================================
+/mob/living/simple_animal/hostile/infected/charger
+	name = "charger infected"
+	desc = "A muscular infected creature built for speed. It charges at high velocity to slam into targets."
+	icon = 'modular_bluemoon/icons/mob/gonome.dmi'
+	icon_state = "charger"
+	icon_living = "charger"
+	icon_dead = "former_dead"
+	maxHealth = 100
+	health = 100
+	speed = 2
+	turns_per_move = 0
+	melee_damage_lower = 10
+	melee_damage_upper = 15
+	sight = 20
+	robust_searching = 1
+	environment_smash = ENVIRONMENT_SMASH_NONE
+	harm_intent_damage = 15
+	obj_damage = 40
+	wound_bonus = 0
+	bare_wound_bonus = 0
+	sharpness = SHARP_NONE
+	// Use built-in charge system from hostile.dm
+	charger = TRUE
+	charge_distance = 15 // Long charge distance
+	charge_frequency = 4 SECONDS // 4 seconds cooldown
+	knockdown_time = 2 SECONDS // 2 seconds knockdown on hit
+	minimum_distance = 1 // Get close to target by default
+	retreat_distance = null // Don't retreat by default
+	var/charge_damage = 40
+	var/charge_stamina_damage = 60
+	var/charge_hit_target = FALSE
+
+/mob/living/simple_animal/hostile/infected/charger/Initialize(mapload)
+	. = ..()
+	AddComponent(/datum/component/swarming)
+	wanted_objects = typecacheof(wanted_objects, TRUE)
+	// Start with cooldown ready
+	COOLDOWN_START(src, charge_cooldown, 0)
+
+/mob/living/simple_animal/hostile/infected/charger/AttackingTarget(atom/target)
+	. = ..()
+	if(!target)
+		return
+	if(isliving(target))
+		var/mob/living/L = target
+		if(L && L.client && L.stat != DEAD)
+			L.add_movespeed_modifier(/datum/movespeed_modifier/bruiser_slow, TRUE)
+			addtimer(CALLBACK(L, TYPE_PROC_REF(/mob, remove_movespeed_modifier), /datum/movespeed_modifier/bruiser_slow), 6 SECONDS)
+			to_chat(L, span_warning("Вас сильно замедлил charger!"))
+
+/mob/living/simple_animal/hostile/infected/charger/Move(atom/newloc, dir, step_x, step_y)
+	if(handle_fence_movement(newloc))
+		return
+	if(charge_state)
+		new /obj/effect/temp_visual/decoy/fading(loc, src)
+		shake_camera(src, 1, 1)
+	. = ..()
+
+/mob/living/simple_animal/hostile/infected/charger/Aggro()
+	. = ..()
+	if(speak && speak.len && prob(40))
+		playsound(src, pick(speak), 80, TRUE)
+
+// Override throw_impact for custom charge logic
+/mob/living/simple_animal/hostile/infected/charger/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
+	if(!charge_state)
+		return ..()
+
+	if(isliving(hit_atom))
+		var/mob/living/L = hit_atom
+		if(!L)
+			return
+
+		charge_hit_target = TRUE
+		L.visible_message("<span class='danger'>[src] slams into [L]!</span>", "<span class='userdanger'>[src] slams into you!</span>")
+		playsound(get_turf(L), 'modular_bluemoon/sound/creatures/mesa/charger/attacksound.ogg', 100, TRUE)
+
+		L.apply_damage(charge_damage, BRUTE)
+		L.adjustStaminaLoss(charge_stamina_damage)
+		if(L.client)
+			to_chat(L, span_userdanger("You're slammed by the charger!"))
+
+		shake_camera(L, 4, 3)
+		shake_camera(src, 2, 3)
+
+		var/throwtarget = get_edge_target_turf(src, get_dir(src, get_step_away(L, src)))
+		L.throw_at(throwtarget, 5)
+
+	else if(hit_atom.density && !hit_atom.CanPass(src))
+		visible_message("<span class='danger'>[src] crashes into [hit_atom]!</span>")
+		playsound(get_turf(src), 'modular_bluemoon/sound/creatures/mesa/charger/attacksound.ogg', 100, TRUE)
+		Stun(40) // 4 seconds stun on miss
+
+// Override to play charge start sound and skip windup
+/mob/living/simple_animal/hostile/infected/charger/enter_charge(var/atom/target)
+	if((mobility_flags & (MOBILITY_MOVE | MOBILITY_STAND)) != (MOBILITY_MOVE | MOBILITY_STAND) || charge_state || charge_windup_timer)
+		return FALSE
+
+	if(!(COOLDOWN_FINISHED(src, charge_cooldown)) || !has_gravity() || !target.has_gravity())
+		return FALSE
+
+	COOLDOWN_START(src, charge_cooldown, charge_frequency)
+	visible_message("<span class='danger'><b>[src]</b> charges!</span>")
+	playsound(src, 'modular_bluemoon/sound/creatures/mesa/charger/charge_02.ogg', 100, TRUE)
+
+	// Temporarily disable retreat to allow charge
+	var/old_retreat = retreat_distance
+	var/old_minimum = minimum_distance
+	retreat_distance = null
+	minimum_distance = 1
+
+	// Skip windup, charge immediately
+	charge_state = TRUE
+	throw_at(target, charge_distance, 1, src, FALSE, TRUE, callback = CALLBACK(src, PROC_REF(charge_end)))
+
+	// Restore retreat settings after charge starts
+	addtimer(CALLBACK(src, PROC_REF(restore_retreat_settings), old_retreat, old_minimum), 0.1 SECONDS)
+	return TRUE
+
+/mob/living/simple_animal/hostile/infected/charger/proc/restore_retreat_settings(old_retreat, old_minimum)
+	retreat_distance = old_retreat
+	minimum_distance = old_minimum
+
+// Override charge_end for retreat logic after hit
+/mob/living/simple_animal/hostile/infected/charger/charge_end()
+	. = ..()
+	if(charge_hit_target)
+		// Start retreat after 1 second delay
+		charge_hit_target = FALSE
+		addtimer(CALLBACK(src, PROC_REF(start_retreat)), 1 SECONDS)
+
+/mob/living/simple_animal/hostile/infected/charger/proc/start_retreat()
+	retreat_distance = 6
+	minimum_distance = 5
+	// Stop retreat after 2 seconds
+	addtimer(CALLBACK(src, PROC_REF(stop_retreat)), 2 SECONDS)
+
+/mob/living/simple_animal/hostile/infected/charger/proc/stop_retreat()
+	retreat_distance = null
+	minimum_distance = 1
+
+/mob/living/simple_animal/hostile/infected/charger/AttackingTarget(atom/target)
+	. = ..()
+	// Disable normal melee attacks - charger should only use charge
+	return
+
+/mob/living/simple_animal/hostile/infected/charger/death(gibbed)
+	. = ..(gibbed)
+	charge_state = FALSE
 	if(!ckey)
 		toggle_ai(AI_OFF)
 
@@ -394,9 +561,10 @@
 		/mob/living/simple_animal/hostile/infected/bruiser = 30
 	)
 	var/spawn_mob_types_diff4 = list(
-		/mob/living/simple_animal/hostile/infected = 50,
-		/mob/living/simple_animal/hostile/infected/bruiser = 30,
-		/mob/living/simple_animal/hostile/infected/acid_spitter = 20
+		/mob/living/simple_animal/hostile/infected = 40,
+		/mob/living/simple_animal/hostile/infected/bruiser = 25,
+		/mob/living/simple_animal/hostile/infected/acid_spitter = 20,
+		/mob/living/simple_animal/hostile/infected/charger = 15
 	)
 
 /obj/effect/landmark/zombie_spawn/Initialize(mapload)
