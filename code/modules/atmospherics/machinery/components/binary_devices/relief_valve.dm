@@ -84,7 +84,7 @@
 	var/list/data = list()
 	data["open_pressure"] = round(open_pressure)
 	data["close_pressure"] = round(close_pressure)
-	data["max_pressure"] = round(50*ONE_ATMOSPHERE)
+	data["max_pressure"] = round(VOLUME_PUMP_PRESSURE_CEILING)
 	// Клапан ловит уставки друг о друга, и панель должна показывать те же
 	// границы, что применяет ui_act: иначе введённое молча уезжает.
 	data["min_open_pressure"] = round(close_pressure)
@@ -101,17 +101,17 @@
 		if("open_pressure")
 			var/pressure = params["pressure"]
 			if(pressure == "max")
-				pressure = 50*ONE_ATMOSPHERE
+				pressure = VOLUME_PUMP_PRESSURE_CEILING
 				. = TRUE
 			else if(pressure == "input") // The manual expirience.
-				pressure = input("New output pressure ([close_pressure]-[50*ONE_ATMOSPHERE] kPa):", name, open_pressure) as num|null
+				pressure = input("New output pressure ([close_pressure]-[VOLUME_PUMP_PRESSURE_CEILING] kPa):", name, open_pressure) as num|null
 				if(!isnull(pressure) && !..())
 					. = TRUE
 			else if(text2num(pressure) != null)
 				pressure = text2num(pressure)
 				. = TRUE
 			if(.)
-				open_pressure = clamp(pressure, close_pressure, 50*ONE_ATMOSPHERE)
+				open_pressure = clamp(pressure, close_pressure, VOLUME_PUMP_PRESSURE_CEILING)
 				investigate_log("open pressure was set to [open_pressure] kPa by [key_name(usr)]", INVESTIGATE_ATMOS)
 		if("close_pressure")
 			var/pressure = params["pressure"]

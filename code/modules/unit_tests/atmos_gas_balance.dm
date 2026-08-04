@@ -26,9 +26,9 @@
 	TEST_ASSERT(feed.return_pressure() < gated.min_pressure, "тест сам себе противоречит: контрольное давление уже выше порога")
 	TEST_ASSERT(!machine.check_pressure_requirements(), "рецепт с порогом пошёл на давлении обычной разводки")
 
-	// Усиленная линия: ворота открываются. Сто ячеек - это ~10100 кПа, с
-	// запасом выше порога 1.5 номинала при любом разумном номинале.
-	feed.set_moles(GAS_CO2, MOLES_CELLSTANDARD * 100)
+	// Усиленная линия: ворота открываются. Молей ровно на полтора порога -
+	// контроль следует за дефайном и не ломается при ребалансе номинала.
+	feed.set_moles(GAS_CO2, gated.min_pressure * 1.5 * CELL_VOLUME / (R_IDEAL_GAS_EQUATION * T20C))
 	TEST_ASSERT(feed.return_pressure() >= gated.min_pressure, "тест не смог поднять давление выше порога")
 	TEST_ASSERT(machine.check_pressure_requirements(), "рецепт не пошёл на давлении, которое держит только усиленная линия")
 
@@ -286,8 +286,9 @@
 	TEST_ASSERT_EQUAL(mixture.get_moles(GAS_PYRONITE), 0,
 		"пиронит сварился на давлении обычной разводки")
 
-	// Тот же газ, тот же нагрев, объём усиленной линии - реакция идёт.
-	mixture.set_volume(100)
+	// Тот же газ, тот же нагрев, объём под полтора порога - реакция идёт.
+	// Объём выводится из дефайна, чтобы ребаланс номинала не ломал контроль.
+	mixture.set_volume(90 * R_IDEAL_GAS_EQUATION * PYRONITE_FORMATION_MIN_TEMP / (GAS_HIGH_PRESSURE_SYNTHESIS * 1.5))
 	mixture.set_temperature(PYRONITE_FORMATION_MIN_TEMP)
 	TEST_ASSERT(mixture.return_pressure() >= GAS_HIGH_PRESSURE_SYNTHESIS,
 		"тест не смог поднять давление выше порога")
@@ -306,8 +307,9 @@
 	TEST_ASSERT_EQUAL(catalyst_mix.get_moles(GAS_FLUXIN), 0,
 		"флюксин сварился на давлении обычной разводки")
 
-	// 80 молей при 400К в 30 литрах - ~8860 кПа, выше порога 6750.
-	catalyst_mix.set_volume(30)
+	// Объём под полтора порога при этих молях и температуре: контроль следует
+	// за дефайном, а пропорции смеси (реакция к ним чувствительна) не трогаем.
+	catalyst_mix.set_volume(80 * R_IDEAL_GAS_EQUATION * (FLUXIN_FORMATION_MIN_TEMP + 100) / (GAS_HIGH_PRESSURE_SYNTHESIS * 1.5))
 	catalyst_mix.set_temperature(FLUXIN_FORMATION_MIN_TEMP + 100)
 	TEST_ASSERT(catalyst_mix.return_pressure() >= GAS_HIGH_PRESSURE_SYNTHESIS,
 		"тест не смог поднять давление катализатора выше порога")

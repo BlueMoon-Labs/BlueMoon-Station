@@ -53,13 +53,11 @@
 	TEST_ASSERT_EQUAL(net.stress_stage_cap(1.2), PIPE_DAMAGE_INTACT, "в полосе гула стадия расти не должна")
 	// Обещание баланса после полунедели на проде: газовый насос, выкрученный в
 	// потолок, обычной трубе НЕ враг. Ломает линии только осознанный перегруз -
-	// объёмный насос, нагрев, бомбы. Ассерт держит это от молчаливого дрейфа
-	// номинала или потолка насоса.
+	// объёмный насос, нагрев, бомбы. Ассерты держат это от молчаливого дрейфа
+	// номинала или потолков насосов.
 	TEST_ASSERT_EQUAL(net.stress_stage_cap(MAX_OUTPUT_PRESSURE / PIPE_PRESSURE_RATING_STANDARD), PIPE_DAMAGE_INTACT, "газовый насос на максимуме не должен повреждать обычную трубу")
 	TEST_ASSERT_EQUAL(net.stress_stage_cap(1.5), PIPE_DAMAGE_LEAK, "полуторное превышение должно упираться в течь")
-	// 9000 кПа - зашитый потолок объёмного насоса (volume_pump.dm), на
-	// номинале 4500 это ровно 2.0.
-	TEST_ASSERT_EQUAL(net.stress_stage_cap(9000 / PIPE_PRESSURE_RATING_STANDARD), PIPE_DAMAGE_RUPTURE, "потолок объёмного насоса должен доходить до разрыва")
+	TEST_ASSERT_EQUAL(net.stress_stage_cap(VOLUME_PUMP_PRESSURE_CEILING / PIPE_PRESSURE_RATING_STANDARD), PIPE_DAMAGE_RUPTURE, "потолок объёмного насоса должен доходить до разрыва")
 
 /// Потолок прироста усталости - это и есть обещание "мгновенных отказов не бывает".
 /datum/unit_test/atmos_pipe_fatigue_cap
