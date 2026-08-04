@@ -39,6 +39,9 @@
 	var/minimum_timer_set = 1
 	var/maximum_timer_set = 300
 	var/timing = FALSE
+	///key_name взведшего таймер - к моменту срабатывания usr уже бессмыслен,
+	///а админ-пинг об опасных газах обязан называть виновника.
+	var/timer_armer
 	var/restricted = FALSE
 	///Set the tier of the canister and overlay used
 	// var/mode = CANISTER_TIER_1
@@ -252,6 +255,26 @@
 	icon_state = "fluxin"
 	gas_type = GAS_FLUXIN
 
+/// Пингует админов списком опасных газов открывшейся в воздух канистры.
+/// admin_source/log_source - кто открыл, в оформлении message_admins и log_admin
+/// соответственно (ручное открытие даёт кликабельный ADMIN_LOOKUPFLW).
+/obj/machinery/portable_atmospherics/canister/proc/report_dangerous_release(admin_source, log_source)
+	var/list/danger = list()
+	for(var/id in air_contents.get_gases())
+		var/gas = air_contents.get_moles(id)
+		if(!(GLOB.gas_data.flags[id] & GAS_FLAG_DANGEROUS))
+			continue
+		if(gas > (GLOB.gas_data.visibility[id] || MOLES_GAS_VISIBLE)) //if moles_visible is undefined, default to default visibility
+			danger[GLOB.gas_data.names[id]] = gas //ex. "plasma" = 20
+	if(!danger.len)
+		return
+	message_admins("[admin_source] opened a canister that contains the following at [ADMIN_VERBOSEJMP(src)]:")
+	log_admin("[log_source] opened a canister that contains the following at [AREACOORD(src)]:")
+	for(var/name in danger)
+		var/msg = "[name]: [danger[name]] moles."
+		log_admin(msg)
+		message_admins(msg)
+
 /obj/machinery/portable_atmospherics/canister/proc/get_time_left()
 	if(timing)
 		. = round(max(0, valve_timer - world.time) / 10, 1)
@@ -262,6 +285,13 @@
 	timing = !timing
 	if(timing)
 		valve_timer = world.time + (timer_set * 10)
+		timer_armer = key_name(usr)
+	// Взведение не логировалось совсем: таймер срабатывает через минуты, когда
+	// виновника рядом уже нет, и без этой записи открытие канистры было не к
+	// кому привязать.
+	var/arm_logmsg = timing ? "Valve timer was <b>armed</b> for [timer_set]s by [key_name(usr)].<br>" : "Valve timer was <b>disarmed</b> by [key_name(usr)].<br>"
+	release_log += arm_logmsg
+	investigate_log(arm_logmsg, INVESTIGATE_ATMOS)
 	excite()
 	update_icon()
 
@@ -451,9 +481,14 @@
 			// release_log самой канистры. Сработавший таймер выглядел как канистра,
 			// открывшаяся сама, с последней записью в логе "закрыл такой-то" -
 			// разобрать такую жалобу было нечем.
-			var/timer_logmsg = "Valve was <b>[valve_open ? "opened" : "closed"]</b> by its timer, [valve_open ? "starting" : "stopping"] a transfer into \the [holding || "air"].<br>"
+			var/timer_logmsg = "Valve was <b>[valve_open ? "opened" : "closed"]</b> by its timer (armed by [timer_armer || "unknown"]), [valve_open ? "starting" : "stopping"] a transfer into \the [holding || "air"].<br>"
 			release_log += timer_logmsg
 			investigate_log(timer_logmsg, INVESTIGATE_ATMOS)
+			// Ручное открытие опасной канистры пингует админов - отложенное
+			// таймером обязано пинговать так же, иначе взведённый таймер это
+			// бесплатный обход надзора.
+			if(valve_open && !holding)
+				report_dangerous_release("Valve timer (armed by [timer_armer || "unknown"])", "Valve timer (armed by [timer_armer || "unknown"])")
 	if(valve_open)
 		// An open valve watches outside pressure (breach -> resume leaking);
 		// there is no wake event for that, so never sleep while open.
@@ -598,21 +633,7 @@
 			if(valve_open)
 				logmsg = "Valve was <b>opened</b> by [key_name(usr)], starting a transfer into \the [holding || "air"].<br>"
 				if(!holding)
-					var/list/danger = list()
-					for(var/id in air_contents.get_gases())
-						var/gas = air_contents.get_moles(id)
-						if(!(GLOB.gas_data.flags[id] & GAS_FLAG_DANGEROUS))
-							continue
-						if(gas > (GLOB.gas_data.visibility[id] || MOLES_GAS_VISIBLE)) //if moles_visible is undefined, default to default visibility
-							danger[GLOB.gas_data.names[id]] = gas //ex. "plasma" = 20
-
-					if(danger.len)
-						message_admins("[ADMIN_LOOKUPFLW(usr)] opened a canister that contains the following at [ADMIN_VERBOSEJMP(src)]:")
-						log_admin("[key_name(usr)] opened a canister that contains the following at [AREACOORD(src)]:")
-						for(var/name in danger)
-							var/msg = "[name]: [danger[name]] moles."
-							log_admin(msg)
-							message_admins(msg)
+					report_dangerous_release("[ADMIN_LOOKUPFLW(usr)]", "[key_name(usr)]")
 			else
 				logmsg = "Valve was <b>closed</b> by [key_name(usr)], stopping the transfer into \the [holding || "air"].<br>"
 			investigate_log(logmsg, INVESTIGATE_ATMOS)
