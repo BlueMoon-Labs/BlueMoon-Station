@@ -22,8 +22,10 @@ export const AtmosRelief = () => {
   const { act, data } = useBackend<AtmosReliefData>();
   const maxPressure = data.max_pressure || 4500;
   const ports = data.ports || [];
+  // Строка "Линия" условная - без слагаемого окно обрезает показания снизу.
+  const lineRow = data.line_rating ? 22 : 0;
   return (
-    <Window width={400} height={200 + ports.length * 22}>
+    <Window width={400} height={200 + lineRow + ports.length * 22}>
       <Window.Content>
         <Section>
           <LabeledList>

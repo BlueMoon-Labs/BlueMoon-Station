@@ -24,8 +24,10 @@ export const AtmosPump = () => {
   const { act, data } = useBackend<AtmosPumpData>();
   const volumetric = !!data.max_rate;
   const ports = data.ports || [];
+  // Строка "Линия" условная - без слагаемого окно обрезает показания снизу.
+  const lineRow = data.line_rating ? 22 : 0;
   return (
-    <Window width={360} height={155 + ports.length * 22}>
+    <Window width={360} height={155 + lineRow + ports.length * 22}>
       <Window.Content>
         <Section>
           <LabeledList>
