@@ -237,6 +237,7 @@
 #include "perf_cross_ports.dm"
 #include "perf_optimizations.dm"
 #include "ping_measurement.dm"
+#include "phobia_preference.dm"
 #include "psychosis_pools.dm"
 #include "preload_size_budgets.dm"
 #include "image_leak_audit.dm"
