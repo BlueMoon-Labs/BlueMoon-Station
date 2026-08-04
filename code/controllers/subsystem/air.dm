@@ -37,6 +37,8 @@ SUBSYSTEM_DEF(air)
 	var/datum/resumable_cost_counter/cost_full = new()
 
 	var/cost_turfs = 0
+	/// Unsmoothed turf-phase cost of the last completed fire, in ms.
+	var/cost_turfs_last = 0
 	var/cost_groups = 0
 	var/cost_highpressure = 0
 	var/cost_deferred_airs
@@ -47,26 +49,54 @@ SUBSYSTEM_DEF(air)
 	var/cost_rebuilds = 0
 	var/cost_atmos_machinery = 0
 	var/cost_equalize = 0
+	var/cost_decompression = 0
+	var/cost_atmos_atoms = 0
 	var/thread_wait_ticks = 0
 	var/cur_thread_wait_ticks = 0
 
 	var/low_pressure_turfs = 0
 	var/high_pressure_turfs = 0
+	/// Turfs the high pressure phase actually moved things on last fire.
+	var/high_pressure_processed = 0
+
+	///Активные турфы, у которых последний process_cell реально сдвинул газ.
+	///Считается по ходу фазы турфов, публикуется в perf-лог: стоимость фазы без
+	///этого числа не отличает работу от вращения осевших тайлов.
+	var/sharing_turfs = 0
 
 	var/num_group_turfs_processed = 0
 	var/num_equalize_processed = 0
+	var/num_decompression_areas = 0
 
 	var/gas_mixes_count = 0
 	var/gas_mixes_allocated = 0
 
 	var/list/hotspots = list()
+	///Turfs currently conducting heat through solids (superconduction). Only
+	///populated while heat_enabled is set - consider_superconductivity gates it.
+	var/list/active_super_conductivity = list()
 	var/list/networks = list()
+	///Сети, ждущие реконсиляции. Заполняется ТОЛЬКО через
+	///[/datum/pipeline/proc/mark_dirty] - список и флаг `update` обязаны ходить
+	///парой. Фаза пайпнетов забирает список целиком и обнуляет его; всё, что
+	///испачкалось по ходу самой фазы (реакция в трубе, мостовая сеть за открытым
+	///клапаном), попадает уже в следующий проход.
+	var/list/datum/pipeline/dirty_networks = list()
+	///Сети, чьё давление перешло номинал слабейшего звена, либо у которых есть
+	///пробитая труба. Обслуживаются свипом независимо от флага update: надутая и
+	///уснувшая сеть обязана продолжать деградировать. В нормальной игре пуст.
+	var/list/datum/pipeline/stressed_pipenets = list()
 	var/list/pipenets_needing_rebuilt = list()
 	var/list/obj/machinery/atmos_machinery = list()
-	///Assoc (sleeping atmos machine -> world.time deadline of its heartbeat recheck).
-	///Machines that finished an idle streak leave atmos_machinery entirely and wait
-	///here; the constant heartbeat makes this FIFO, so only the head needs checking.
-	var/list/obj/machinery/atmospherics/atmos_idle_queue = list()
+	///Opt-in atoms maintained by /datum/element/atmos_sensitive.
+	var/list/atom_process = list()
+	///По одной очереди на ступень отката сердцебиения (см.
+	///ATMOS_MACHINE_IDLE_BACKOFF_STEPS). Каждая - assoc "спящая атмос-машина ->
+	///world.time её проверки". Машина, досидевшая серию холостых проходов, уходит
+	///из atmos_machinery целиком и ждёт здесь. Внутри одной ступени период у всех
+	///одинаковый, значит очередь FIFO и проверять надо только голову; ради этого
+	///ступени и разведены по разным спискам.
+	var/list/list/atmos_idle_queues = list(list(), list(), list(), list())
 	///Machines the idle heartbeat returned to processing on the last machinery
 	///pass. The heartbeat rotation is a standing share of the machinery phase,
 	///so the benchmark records this to split rotation cost from real workers.
@@ -83,6 +113,13 @@ SUBSYSTEM_DEF(air)
 	var/list/gas_reactions = list()
 	var/list/atmos_gen
 	var/list/planetary = list()
+	/// Base areas that saw a significant room-to-space pressure difference.
+	/// Associative membership deduplicates every area until the decompression phase.
+	var/list/area/decompression_areas = list()
+	/// Base area -> world.time of its last handled decompression event. Gates
+	/// requeueing so a draining breach fires one alarm sweep per cooldown, not
+	/// one per SSair fire.
+	var/list/decompression_handled_at = list()
 	/// Разобранные строки газа: сырая строка -> list(температура, list(газ -> моли)).
 	/// См. [/datum/controller/subsystem/air/proc/get_parsed_gas_string].
 	var/list/parsed_gas_strings = list()
@@ -97,36 +134,197 @@ SUBSYSTEM_DEF(air)
 
 	var/log_explosive_decompression = TRUE // If things get spammy, admemes can turn this off.
 
-	// Max number of turfs equalization will grab. (Scaled by atmos_speed_multiplier.)
-	var/equalize_turf_limit = 10
 	// Max number of turfs to look for a space turf, and max number of turfs that will be decompressed.
 	var/equalize_hard_turf_limit = 2000
 	// Whether equalization is enabled. Can be disabled for performance reasons.
 	var/equalize_enabled = FALSE
-	// Whether turf-to-turf heat exchanging should be enabled.
+	// With equalize_enabled off, the equalize stage still engages as an adaptive
+	// valve while any excited group exceeds EXCITED_GROUP_ZONE_EQUALIZE_THRESHOLD:
+	// pure diffusion demonstrably cannot finish a differential that large (the
+	// giant-hall bench never settles at ~140ms/fire). Recomputed per stage pass.
+	var/equalize_valve_mode = FALSE
+	// Whether turf-to-turf heat exchanging should be enabled. Set from
+	// CONFIG_GET(flag/atmos_heat_enabled) at init - never write it directly,
+	// go through set_heat_enabled() so the pass list cannot outlive the flag.
 	var/heat_enabled = FALSE
-	// Max number of times process_turfs will share in a tick. (Scaled by atmos_speed_multiplier.)
-	var/share_max_steps = 3
-	// Target for share_max_steps; can go below this, if it determines the thread is taking too long.
-	var/share_max_steps_target = 3
-	// Excited group processing will try to equalize groups with total pressure difference less than this amount.
-	var/excited_group_pressure_goal = 1
-	// Target for excited_group_pressure_goal; can go below this, if it determines the thread is taking too long.
-	var/excited_group_pressure_goal_target = 1
+	// Operator speed lever, from CONFIG_GET(number/atmos_speed_multiplier).
+	// This atmos has no share-step loop to scale: one process_cell per turf per
+	// fire is the whole simulation step, so the only honest way to make gas move
+	// faster is to fire more often. Write it through set_atmos_speed().
+	var/atmos_speed = 1
+	// Adaptive lag valve, below 1 while the server is dilating. Multiplies the
+	// lever, so a fast server that starts lagging lands back near the compiled
+	// cadence instead of at either extreme. Written by apply_lag_valve().
+	var/lag_scale = 1
+	// Adaptive saturation valve, below 1 while a full pass no longer fits in the
+	// fire interval. Independent of lag_scale on purpose: time dilation is blind
+	// to a saturated background subsystem (see ATMOS_SATURATION_ENGAGE_RATIO),
+	// so the two valves watch different failure modes and the cadence takes
+	// whichever is more conservative. Written by apply_saturation_valve().
+	var/saturation_scale = 1
+	/// Реальное (не процессорное) время последнего завершённого прохода,
+	/// делённое на НОМИНАЛЬНЫЙ интервал. 1 означает, что проход ровно занял свой
+	/// слот. Телеметрия и вход клапана одновременно.
+	///
+	/// Числитель обязан быть реальным временем. Раньше здесь стояла
+	/// `cost_full.last_complete_ms` - сумма процессорных срезов, - и метрика
+	/// занижала насыщение в пять с лишним раз: МК отдаёт фоновой подсистеме
+	/// только долю остатка тика (около 17-18% по замерам раундов 9864/9865),
+	/// поэтому проход, реально растянутый на девять тиков, показывал 0.25.
+	/// Знаменатель обязан быть `initial(wait)`, а не текущим: текущий - это
+	/// собственный выход клапана, и отсчёт от него делал порог отпускания ВЫШЕ
+	/// порога срабатывания.
+	var/saturation_ratio = 0
+	/// world.time на начале прохода, который сейчас в полёте.
+	var/pass_started_at = 0
+	/// Реальная длительность последнего ЗАВЕРШЁННОГО прохода, в децисекундах.
+	var/pass_wall_ds = 0
+	/// Consecutive completed passes that agreed on the same valve direction.
+	/// Signed: negative votes slow the cadence down, positive give a step back.
+	var/saturation_votes = 0
+	/// MC fires the pass currently in flight has been spread over.
+	var/pass_fire_slices = 0
+	/// The same for the last COMPLETED pass. 1 means the pass fit in one fire;
+	/// anything larger is the subsystem running resumed, which is what "atmos
+	/// above 100%" looks like from the inside.
+	var/pass_fire_slices_last = 0
 
-/datum/controller/subsystem/air/proc/apply_atmos_speed_multiplier()
-	var/mult = CONFIG_GET(number/atmos_speed_multiplier)
-	if(mult <= 1)
+///Operator-facing speed lever. Values above 1 fire atmos more often; the
+///cadence saturates one tick apart, so an absurd multiplier cannot spin the
+///subsystem on a zero wait.
+/datum/controller/subsystem/air/proc/set_atmos_speed(new_speed)
+	atmos_speed = clamp(new_speed, ATMOS_SPEED_MULTIPLIER_MIN, ATMOS_SPEED_MULTIPLIER_MAX)
+	apply_atmos_cadence()
+
+///Adaptive valve: a dilating server gets slower atmos instead of a throttle
+///that wrote a variable nobody read. Takes the dilation so the decision is
+///testable without faking SStime_track.
+/datum/controller/subsystem/air/proc/apply_lag_valve(dilation)
+	var/new_scale = 1
+	if(dilation > ATMOS_LAG_VALVE_SEVERE_DILATION)
+		new_scale = ATMOS_LAG_VALVE_SEVERE_SCALE
+	else if(dilation > ATMOS_LAG_VALVE_DILATION)
+		new_scale = ATMOS_LAG_VALVE_SCALE
+	if(new_scale == lag_scale)
 		return
-	equalize_turf_limit = round(10 * mult)
-	share_max_steps_target = round(3 * mult)
-	share_max_steps = share_max_steps_target
-	excited_group_pressure_goal_target = max(0.1, 1 / mult)
-	excited_group_pressure_goal = excited_group_pressure_goal_target
+	lag_scale = new_scale
+	apply_atmos_cadence()
+
+///One step along the shared valve ladder (1 -> 0.75 -> 0.5 and back).
+///`direction` below zero slows the cadence down, above zero gives a step back.
+///The ladder deliberately stops at ATMOS_LAG_VALVE_SEVERE_SCALE: halving the
+///cadence already halves how fast gas moves, and anything past that is a
+///balance decision, not a throttle.
+/datum/controller/subsystem/air/proc/step_valve_scale(scale, direction)
+	if(direction < 0)
+		if(scale > ATMOS_LAG_VALVE_SCALE)
+			return ATMOS_LAG_VALVE_SCALE
+		return ATMOS_LAG_VALVE_SEVERE_SCALE
+	if(scale < ATMOS_LAG_VALVE_SCALE)
+		return ATMOS_LAG_VALVE_SCALE
+	return 1
+
+///Saturation valve: the subsystem watches its own full-pass length instead of a
+///server-wide symptom. `wall_ds` is how long one completed pass actually took in
+///deciseconds, `cpu_ms` is what it spent on the processor. Both are passed in
+///rather than read off state so the decision is testable without faking a pass.
+///Returns TRUE when the cadence actually moved.
+///
+///Замедление каденса - рычаг с узкой областью применимости, и клапан обязан её
+///знать. `next_fire = queued_time + wait` отсчитывается от НАЧАЛА прохода, так
+///что проход длиннее `wait` доезжает до следующего запуска уже просроченным, и
+///подсистема крутится непрерывно. В этом режиме правка `wait` не освобождает
+///процессор вообще: в раунде 9864 клапан развёл интервал с 5 до 10 децисекунд, а
+///доля атмоса выросла с 20% до 25%, потому что за вдвое более редкий проход
+///накапливалось вдвое больше работы. Единственное, что менялось, - газ ехал
+///вдвое медленнее, то есть инцидент растягивался.
+///
+///Отсюда правило: клапан трогает каденс, только пока новый интервал ДЛИННЕЕ
+///прохода, - тогда между проходами появляется настоящий простой и другие
+///подсистемы получают время. Как только проход перерастает самый медленный
+///интервал, который клапану разрешено выставить, удерживать замедление - чистый
+///убыток, и клапан отступает сам.
+/datum/controller/subsystem/air/proc/apply_saturation_valve(wall_ds, cpu_ms)
+	if(cpu_ms <= 0)
+		return FALSE // прохода ещё не было, мерить нечего
+	// Делим на каденс при НЕЙТРАЛЬНОМ клапане, а не на initial(wait): номинальный
+	// слот задаёт ещё и рычаг оператора, и при atmos_speed = 4 он равен 1.25 дс,
+	// а не пяти. Со старым знаменателем клапан занижал насыщение ровно во столько
+	// раз, во сколько был ускорен атмос, и в раунде 9872 не сработал ни разу за
+	// 97 замеров, где проход был втрое длиннее своего слота. Явная единица вместо
+	// saturation_scale оставляет выход клапана за пределами его же входа.
+	saturation_ratio = wall_ds / max(cadence_for_valve(1), world.tick_lag)
+	var/vote = 0
+	if(saturation_ratio > ATMOS_SATURATION_ENGAGE_RATIO)
+		vote = -1
+	else if(saturation_ratio < ATMOS_SATURATION_RELEASE_RATIO)
+		vote = 1
+	// Замедляться некуда: следующая ступень всё равно короче прохода, простоя не
+	// возникнет. Голосуем за шаг назад, а не за бесполезное удержание.
+	if(vote < 0 && wall_ds >= cadence_for_valve(step_valve_scale(saturation_scale, -1)))
+		vote = 1
+	if(!vote)
+		// Полоса гистерезиса: каденс держим, а накопленный голос гасим на
+		// единицу вместо обнуления. Обнуление означало, что нагрузка, качающаяся
+		// вокруг порога, не накапливалась вообще никогда.
+		if(saturation_votes > 0)
+			saturation_votes--
+		else if(saturation_votes < 0)
+			saturation_votes++
+		return FALSE
+	if(saturation_votes * vote < 0)
+		saturation_votes = 0
+	saturation_votes += vote
+	if(abs(saturation_votes) < ATMOS_SATURATION_VOTES)
+		return FALSE
+	saturation_votes = 0
+	var/new_scale = step_valve_scale(saturation_scale, vote)
+	if(new_scale == saturation_scale)
+		return FALSE
+	saturation_scale = new_scale
+	apply_atmos_cadence()
+	return TRUE
+
+///Recomputes the fire interval from the lever and the valves. The MC reads wait
+///when it schedules the next run, so a change lands within one cadence.
+///The two valves are combined with min() rather than multiplied: they watch
+///different failure modes, and compounding them would drag the cadence to the
+///floor the moment both happened to be open at once.
+/datum/controller/subsystem/air/proc/apply_atmos_cadence()
+	wait = cadence_for_valve(min(lag_scale, saturation_scale))
+
+///Интервал, который дало бы данное положение клапанов. Вынесен отдельно, потому
+///что клапану насыщения нужно СПРОСИТЬ про ступень, на которую он ещё только
+///собирается шагнуть, не двигая при этом каденс.
+/datum/controller/subsystem/air/proc/cadence_for_valve(valve)
+	// Потолок адаптивной части: клапаны замедляют газ не более чем вдвое от
+	// текущей настроенной скорости. Лестница и так останавливается на 0.5, но
+	// зажим держит это свойством кода, а не совпадением констант.
+	var/clamped = max(1 / ATMOS_VALVE_SLOWEST_FACTOR, valve)
+	var/scale = max(ATMOS_SPEED_MULTIPLIER_MIN, atmos_speed * clamped)
+	return clamp(initial(wait) / scale, world.tick_lag, initial(wait) * ATMOS_CADENCE_SLOWEST_FACTOR)
+
+///Проход дошёл до конца: закрываем счётчик процессорного времени и замеряем,
+///сколько РЕАЛЬНОГО времени он занял. Клапан насыщения читает именно вторую
+///величину, поэтому она обязана сниматься здесь, а не на следующем свежем
+///запуске: между концом прохода и следующим запуском подсистема может простаивать,
+///и этот простой в длину прохода не входит.
+/datum/controller/subsystem/air/proc/finish_pass()
+	cost_full.record_progress(0, TRUE)
+	pass_wall_ds = max(0, world.time - pass_started_at)
+
+///Затухание стоимости фазы, которая на этом проходе не выполнялась.
+///`MC_AVERAGE(x, 0)` в 32-битных float BYOND до нуля не доходит: около
+///2.8e-45 умножение на 0.8 округляется обратно в себя, и колонка навсегда
+///застревает на денормале вместо честного нуля.
+/datum/controller/subsystem/air/proc/decay_idle_cost(cost)
+	var/decayed = MC_AVERAGE(cost, 0)
+	return decayed < ATMOS_COST_ZERO_EPSILON ? 0 : decayed
 
 /datum/controller/subsystem/air/stat_entry(msg)
 	msg += "FC:[cost_full.to_string()]мс "
-	msg += "C:{HP:[round(cost_highpressure,1)]|HS:[round(cost_hotspots,1)]|HE:[round(heat_process_time(),1)]|SC:[round(cost_superconductivity,1)]|PN:[round(cost_pipenets,1)]|AM:[round(cost_atmos_machinery,1)]} TC:{AT:[round(cost_turfs,1)]|EG:[round(cost_groups,1)]|EQ:[round(cost_equalize,1)]|PO:[round(cost_post_process,1)]}TH:[round(thread_wait_ticks,1)]|HS:[hotspots.len]|PN:[networks.len]|HP:[high_pressure_delta.len]|HT:[high_pressure_turfs]|LT:[low_pressure_turfs]|ET:[num_equalize_processed]|GT:[num_group_turfs_processed]|GA:[gas_mixes_count]|MG:[gas_mixes_allocated]"
+	msg += "SAT:[round(saturation_ratio, 0.01)]x/[saturation_scale]/[pass_fire_slices_last]сл/[round(pass_wall_ds, 0.1)]дс "
+	msg += "C:{HP:[round(cost_highpressure,1)]|HS:[round(cost_hotspots,1)]|SC:[round(cost_superconductivity,1)]|PN:[round(cost_pipenets,1)]|AM:[round(cost_atmos_machinery,1)]|AO:[round(cost_atmos_atoms,1)]} TC:{AT:[round(cost_turfs,1)]|DC:[round(cost_decompression,1)]|EG:[round(cost_groups,1)]|EQ:[round(cost_equalize,1)]|PO:[round(cost_post_process,1)]}TH:[round(thread_wait_ticks,1)]|HS:[hotspots.len]|PN:[networks.len]|AO:[atom_process.len]|HP:[high_pressure_delta.len]|HT:[high_pressure_turfs]|LT:[low_pressure_turfs]|DA:[num_decompression_areas]|ET:[num_equalize_processed]|GT:[num_group_turfs_processed]|GA:[gas_mixes_count]|MG:[gas_mixes_allocated]"
 	return ..()
 
 /datum/controller/subsystem/air/Initialize(timeofday)
@@ -138,7 +336,8 @@ SUBSYSTEM_DEF(air)
 	atmos_handbooks_init()
 	auxtools_update_reactions()
 	equalize_enabled = CONFIG_GET(flag/atmos_equalize_enabled)
-	apply_atmos_speed_multiplier()
+	set_heat_enabled(CONFIG_GET(flag/atmos_heat_enabled))
+	set_atmos_speed(CONFIG_GET(number/atmos_speed_multiplier))
 	return ..()
 
 /datum/controller/subsystem/air/proc/extools_update_ssair()
@@ -234,18 +433,43 @@ SUBSYSTEM_DEF(air)
 
 	to_chat(usr, output.Join("<br>"))
 
+/datum/admins/proc/atmos_heat_toggle()
+	set category = "Debug.3) Fixing"
+	set desc = "Turn heat conduction through walls, windows and conductive materials on or off for the rest of the round."
+	set name = "Toggle Atmos Heat Conduction"
+
+	var/new_state = !SSair.heat_enabled
+	SSair.set_heat_enabled(new_state)
+	var/message = "[key_name(usr)] turned atmos heat conduction [new_state ? "ON" : "OFF"]."
+	log_admin(message)
+	message_admins(message)
+	to_chat(usr, "Heat conduction is now [new_state ? "enabled" : "disabled"]. Turfs in the conduction pass: [length(SSair.active_super_conductivity)].")
+
 /datum/controller/subsystem/air/fire(resumed = 0)
 	var/timer = TICK_USAGE_REAL
+	#ifdef ATMOS_HEADLESS_BENCH
+	if(resumed)
+		headless_bench_mc_slices++
+	else
+		headless_bench_mc_slices = 1
+	#endif
 
-	// Adaptive throttling: reduce atmos processing intensity when server is lagging
-	if(!resumed && SStime_track?.initialized)
-		var/dilation = SStime_track.time_dilation_avg_fast
-		if(dilation > 40)
-			share_max_steps = 1
-		else if(dilation > 20)
-			share_max_steps = max(1, share_max_steps_target - 1)
-		else
-			share_max_steps = share_max_steps_target
+	if(resumed)
+		pass_fire_slices++
+	else
+		// A fresh fire means the previous pass ended: publish how many MC slices
+		// it needed and let both valves look at it.
+		pass_fire_slices_last = pass_fire_slices
+		pass_fire_slices = 1
+		// Adaptive valve: a dilating server gets a slower atmos cadence, which is
+		// the only lever this simulation actually has.
+		if(SStime_track?.initialized)
+			apply_lag_valve(SStime_track.time_dilation_avg_fast)
+		// Saturation valve: the dilation counters above are structurally blind to
+		// a background subsystem that yields politely at the tick limit and then
+		// resumes on the next tick forever. The wall clock is not.
+		apply_saturation_valve(pass_wall_ds, cost_full.last_complete_ms)
+		pass_started_at = world.time
 
 	thread_wait_ticks = MC_AVERAGE(thread_wait_ticks, cur_thread_wait_ticks)
 	cur_thread_wait_ticks = 0
@@ -275,6 +499,9 @@ SUBSYSTEM_DEF(air)
 		cost_full.record_progress(TICK_DELTA_TO_MS(TICK_USAGE_REAL - timer), FALSE)
 		if(state != SS_RUNNING)
 			return
+		// Ниже проверки на SS_RUNNING намеренно: свип не должен идти на проходе,
+		// который уступил тик, не досчитав сети.
+		process_pipe_stress()
 		cost_pipenets = MC_AVERAGE(cost_pipenets, TICK_DELTA_TO_MS(cached_cost))
 		resumed = 0
 		currentpart = SSAIR_ATMOSMACHINERY
@@ -301,9 +528,44 @@ SUBSYSTEM_DEF(air)
 		cost_full.record_progress(TICK_DELTA_TO_MS(TICK_USAGE_REAL - timer), FALSE)
 		if(state != SS_RUNNING)
 			return
-		cost_turfs = MC_AVERAGE(cost_turfs, TICK_DELTA_TO_MS(cached_cost))
+		// Unsmoothed cost of the turf phase for the fire that just finished.
+		// MC_AVERAGE flattens spikes by roughly 5x, so the smoothed column cannot
+		// answer "how bad was the worst single pass" - and that is the number a
+		// profiler has to be checked against.
+		cost_turfs_last = TICK_DELTA_TO_MS(cached_cost)
+		cost_turfs = MC_AVERAGE(cost_turfs, cost_turfs_last)
 		resumed = 0
-		currentpart = equalize_enabled ? SSAIR_EQUALIZE : SSAIR_EXCITEDGROUPS
+		currentpart = SSAIR_DECOMPRESSION
+
+	if(currentpart == SSAIR_DECOMPRESSION)
+		timer = TICK_USAGE_REAL
+		if(!resumed)
+			cached_cost = 0
+		process_decompression_areas(resumed)
+		cached_cost += TICK_USAGE_REAL - timer
+		// The saturation valve reads cost_full as "how long is a whole pass", so
+		// every phase has to report into it, cheap ones included.
+		cost_full.record_progress(TICK_DELTA_TO_MS(TICK_USAGE_REAL - timer), FALSE)
+		if(state != SS_RUNNING)
+			return
+		cost_decompression = MC_AVERAGE(cost_decompression, TICK_DELTA_TO_MS(cached_cost))
+		resumed = 0
+		// The valve check keeps the stage reachable with the config flag off:
+		// a giant excited group means diffusion alone will not finish the job.
+		// Обход зоны в полёте держит стадию открытой сам по себе: он растянут на
+		// несколько фаеров, и захлопнуть клапан под ним значило бы бросить зону
+		// полусведённой, а его состояние - висеть со ссылками на две тысячи
+		// турфов до конца раунда.
+		if(equalize_enabled || zone_walk?.stage || has_zone_equalize_candidate())
+			currentpart = SSAIR_EQUALIZE
+		else
+			// Skipping the stage still has to be reported as costing nothing.
+			// Leaving the average untouched froze it at whatever the last real
+			// pass cost - a round that equalized once at the four-minute mark
+			// then showed a flat 1.8ms of phantom equalize work for five hours.
+			cost_equalize = decay_idle_cost(cost_equalize)
+			num_equalize_processed = 0
+			currentpart = SSAIR_EXCITEDGROUPS
 
 	if(currentpart == SSAIR_EQUALIZE)
 		timer = TICK_USAGE_REAL
@@ -342,6 +604,19 @@ SUBSYSTEM_DEF(air)
 			return
 		cost_post_process = MC_AVERAGE(cost_post_process, TICK_DELTA_TO_MS(cached_cost))
 		resumed = 0
+		currentpart = SSAIR_ATOMS
+
+	if(currentpart == SSAIR_ATOMS)
+		timer = TICK_USAGE_REAL
+		if(!resumed)
+			cached_cost = 0
+		process_atmos_atoms(resumed)
+		cached_cost += TICK_USAGE_REAL - timer
+		cost_full.record_progress(TICK_DELTA_TO_MS(TICK_USAGE_REAL - timer), FALSE)
+		if(state != SS_RUNNING)
+			return
+		cost_atmos_atoms = MC_AVERAGE(cost_atmos_atoms, TICK_DELTA_TO_MS(cached_cost))
+		resumed = FALSE
 		currentpart = SSAIR_HIGHPRESSURE
 
 	if(currentpart == SSAIR_HIGHPRESSURE)
@@ -369,10 +644,15 @@ SUBSYSTEM_DEF(air)
 		cost_hotspots = MC_AVERAGE(cost_hotspots, TICK_DELTA_TO_MS(cached_cost))
 		resumed = 0
 		if(!heat_enabled)
-			cost_full.record_progress(0, TRUE) // full pass completed
+			// Same reason as the skipped equalize stage above: a stage that did
+			// not run costs nothing, and saying so is the only way the column
+			// ever comes back down after the admin switch goes off.
+			cost_superconductivity = decay_idle_cost(cost_superconductivity)
+			finish_pass()
 		currentpart = heat_enabled ? SSAIR_TURF_CONDUCTION : SSAIR_REBUILD_PIPENETS
 
-	// Heat -- slow and of questionable usefulness. Off by default for this reason. Pretty cool, though.
+	// Heat through solids. Nothing registers below MINIMUM_TEMPERATURE_START_SUPERCONDUCTION,
+	// so a station at room temperature skips this stage with an empty list.
 	if(currentpart == SSAIR_TURF_CONDUCTION)
 		timer = TICK_USAGE_REAL
 		if(!resumed)
@@ -387,7 +667,7 @@ SUBSYSTEM_DEF(air)
 			return
 		cost_superconductivity = MC_AVERAGE(cost_superconductivity, TICK_DELTA_TO_MS(cached_cost))
 		resumed = 0
-		cost_full.record_progress(0, TRUE) // full pass completed
+		finish_pass()
 		currentpart = SSAIR_REBUILD_PIPENETS
 
 /datum/controller/subsystem/air/proc/process_rebuild_queue(resumed = FALSE)
@@ -406,18 +686,51 @@ SUBSYSTEM_DEF(air)
 
 /datum/controller/subsystem/air/proc/process_pipenets(resumed = 0)
 	if (!resumed)
-		src.currentrun = networks.Copy()
+		// Забираем список целиком и сразу отдаём mark_dirty() чистый: сеть,
+		// испачкавшаяся во время самой фазы, обязана попасть в СЛЕДУЮЩИЙ проход,
+		// а не быть потерянной вместе со снимком.
+		src.currentrun = dirty_networks
+		dirty_networks = list()
+		// Реестр сетей раньше подчищался от нулей побочным эффектом: фаза шла по
+		// нему целиком и выкидывала пустые слоты по дороге. Грязный список по
+		// нему больше не ходит, поэтому редкая уборка своим ходом - жёсткое
+		// удаление (не qdel) сети оставляет нуль, а он живёт в реестре вечно и
+		// врёт колонке air_network_count.
+		if(!(times_fired % PIPENET_REGISTRY_SWEEP_INTERVAL))
+			listclearnulls(networks)
 	//cache for sanic speed (lists are references anyways)
 	var/list/currentrun = src.currentrun
 	while(currentrun.len)
-		var/datum/thing = currentrun[currentrun.len]
+		var/datum/pipeline/net = currentrun[currentrun.len]
 		currentrun.len--
-		if(thing)
-			thing.process()
+		if(net)
+			net.process()
 		else
-			networks.Remove(thing)
+			networks.Remove(net)
 		if(MC_TICK_CHECK)
 			return
+
+/datum/controller/subsystem/air/proc/register_stressed_pipenet(datum/pipeline/net)
+	if(QDELETED(net) || net.stress_registered)
+		return
+	net.stress_registered = TRUE
+	stressed_pipenets += net
+
+/// Свип перегруженных сетей. В норме список пуст и проц выходит первой строкой.
+/datum/controller/subsystem/air/proc/process_pipe_stress()
+	if(!length(stressed_pipenets))
+		return
+	if(times_fired % PIPE_STRESS_SWEEP_INTERVAL)
+		return
+	// Обход вниз по индексу: снятие с учёта режет список на ходу, а прямой
+	// for(... in list) на этом пропускает каждый второй элемент.
+	for(var/i = length(stressed_pipenets), i >= 1, i--)
+		var/datum/pipeline/net = stressed_pipenets[i]
+		if(!QDELETED(net) && net.update_stress())
+			continue
+		if(net)
+			net.stress_registered = FALSE
+		stressed_pipenets.Cut(i, i + 1)
 
 /datum/controller/subsystem/air/proc/add_to_rebuild_queue(atmos_machine)
 	if(istype(atmos_machine, /obj/machinery/atmospherics) && !(atmos_machine in pipenets_needing_rebuilt))
@@ -451,26 +764,57 @@ SUBSYSTEM_DEF(air)
 ///list for one full recheck (a no-op pass puts them straight back to sleep).
 ///Returns how many machines it woke, so the benchmark can attribute the
 ///standing rotation share of the machinery phase.
+///
+///Один проход по каждой ступени отката. Внутри ступени очередь остаётся строго
+///FIFO - все её записи ждали ОДИН И ТОТ ЖЕ период, - поэтому проверять по-прежнему
+///достаточно голову. Единая очередь с разными периодами это свойство теряет: одна
+///запись с двухминутным дедлайном во главе заперла бы за собой всех, кому пора.
 /datum/controller/subsystem/air/proc/wake_expired_idle_machines()
-	var/expired = 0
 	var/woken = 0
-	for(var/i in 1 to atmos_idle_queue.len)
-		var/obj/machinery/atmospherics/machine = atmos_idle_queue[i]
-		if(!machine)
-			// Hard deletion nulls list entries in place; drop the slot.
+	for(var/list/tier_queue as anything in atmos_idle_queues)
+		var/expired = 0
+		for(var/i in 1 to tier_queue.len)
+			var/obj/machinery/atmospherics/machine = tier_queue[i]
+			if(!machine)
+				// Hard deletion nulls list entries in place; drop the slot.
+				expired = i
+				continue
+			if(tier_queue[machine] > world.time)
+				break
 			expired = i
-			continue
-		if(atmos_idle_queue[machine] > world.time)
-			break
-		expired = i
-		machine.atmos_idle_queued = FALSE
-		if(QDELETED(machine) || machine.atmos_processing)
-			continue
-		start_processing_machine(machine)
-		woken++
-	if(expired)
-		atmos_idle_queue.Cut(1, expired + 1)
+			machine.atmos_idle_queued = FALSE
+			machine.atmos_idle_tier = 0
+			if(QDELETED(machine) || machine.atmos_processing)
+				continue
+			start_processing_machine(machine)
+			woken++
+		if(expired)
+			tier_queue.Cut(1, expired + 1)
 	return woken
+
+///Сколько машин сейчас спит на сердцебиении, по всем ступеням отката.
+/datum/controller/subsystem/air/proc/idle_machine_count()
+	var/count = 0
+	for(var/list/tier_queue as anything in atmos_idle_queues)
+		count += length(tier_queue)
+	return count
+
+///Плоский список спящих машин. Только для диагностики и бенчмарков - горячие
+///пути обязаны ходить по ступеням, а не собирать копию всей карты.
+/datum/controller/subsystem/air/proc/idle_machine_list()
+	var/list/machines = list()
+	for(var/list/tier_queue as anything in atmos_idle_queues)
+		for(var/obj/machinery/atmospherics/machine as anything in tier_queue)
+			machines += machine
+	return machines
+
+///Спит ли машина на сердцебиении. Спрашивает сами очереди, а не флаг на машине:
+///расхождение этих двух источников - ровно тот дефект, который проверки ищут.
+/datum/controller/subsystem/air/proc/idle_machine_queued(obj/machinery/atmospherics/machine)
+	for(var/list/tier_queue as anything in atmos_idle_queues)
+		if(!isnull(tier_queue[machine]))
+			return TRUE
+	return FALSE
 
 ///One fully-timed machinery pass bucketed by machine type, standing in for a
 ///normal pass when the benchmark armed benchmark_machinery_profile_pending.
@@ -522,6 +866,25 @@ SUBSYSTEM_DEF(air)
 			count++
 	return count
 
+///Сети с поднятым `update`, которых нет ни в очереди, ни в текущем прогоне фазы.
+///Инвариант обязан держать ноль: такая сеть не обсчитается никогда, то есть газ
+///в ней встанет намертво. Диагностика для бенчмарка и юнит-теста - это цена
+///перехода фазы пайпнетов с обхода всех сетей на грязный список.
+/datum/controller/subsystem/air/proc/count_orphan_dirty_pipenets()
+	// Множество членства строится один раз: наивная проверка `in` по двум
+	// спискам превратила бы диагностику в квадрат по числу сетей.
+	var/list/queued = list()
+	for(var/datum/pipeline/net as anything in dirty_networks)
+		queued[net] = TRUE
+	if(currentpart == SSAIR_PIPENETS)
+		for(var/datum/pipeline/net as anything in currentrun)
+			queued[net] = TRUE
+	var/count = 0
+	for(var/datum/pipeline/net as anything in networks)
+		if(net?.update && !queued[net])
+			count++
+	return count
+
 /datum/controller/subsystem/air/proc/process_hotspots(resumed = 0)
 	if (!resumed)
 		src.currentrun = hotspots.Copy()
@@ -539,17 +902,50 @@ SUBSYSTEM_DEF(air)
 
 
 /datum/controller/subsystem/air/proc/process_high_pressure_delta(resumed = 0)
+	// The phase consumes the list as it goes, so by the time any sampler runs
+	// the length is always zero and the recorded queue size was meaningless.
+	// Capture the real workload here instead.
+	if(!resumed)
+		high_pressure_processed = length(high_pressure_delta)
 	while (high_pressure_delta.len)
 		var/turf/open/T = high_pressure_delta[high_pressure_delta.len]
 		high_pressure_delta.len--
+		// ChangeTurf подменяет турф под уже стоящей в очереди записью, и на её
+		// месте оказывается стена. high_pressure_movements() объявлен только на
+		// /turf/open, поэтому вызов падал "undefined proc" - разгерметизация
+		// рядом со снесённой стеной ловила это на ровном месте. Сама запись
+		// после подмены бессмысленна: двигать нечего, вектор чистить не у чего.
+		if(!istype(T))
+			continue
 		T.high_pressure_movements()
 		T.pressure_difference = 0
+		T.pressure_vector_x = 0
+		T.pressure_vector_y = 0
+		T.pressure_direction = NONE
 		T.pressure_specific_target = null
+		if(MC_TICK_CHECK)
+			return
+
+/datum/controller/subsystem/air/proc/process_atmos_atoms(resumed = FALSE)
+	if(!resumed)
+		src.currentrun = atom_process.Copy()
+	var/list/currentrun = src.currentrun
+	while(currentrun.len)
+		var/atom/target = currentrun[currentrun.len]
+		currentrun.len--
+		if(target)
+			target.process_exposure()
+		else
+			atom_process -= target
 		if(MC_TICK_CHECK)
 			return
 
 /datum/controller/subsystem/air/proc/process_turf_equalize(resumed = 0)
 	if(process_turf_equalize_auxtools(TICK_REMAINING_MS))
+		pause()
+
+/datum/controller/subsystem/air/proc/process_decompression_areas(resumed = 0)
+	if(process_decompression_areas_auxtools(resumed))
 		pause()
 
 /datum/controller/subsystem/air/proc/process_turfs(resumed = 0)
@@ -578,9 +974,70 @@ SUBSYSTEM_DEF(air)
 
 /datum/controller/subsystem/air/proc/equalize_turfs_auxtools()
 /datum/controller/subsystem/air/proc/post_process_turfs_auxtools()
-/datum/controller/subsystem/air/proc/turf_process_time()
-/datum/controller/subsystem/air/proc/heat_process_time()
-/datum/controller/subsystem/air/proc/process_turf_heat()
+///Superconduction pass: every listed turf conducts with its solid borders and
+///drops off the list once it cools below the sustain threshold. Returns TRUE
+///when out of tick budget so the SSAIR_TURF_CONDUCTION stage pauses.
+/datum/controller/subsystem/air/proc/process_turf_heat(remaining)
+	if(!length(currentrun))
+		currentrun = active_super_conductivity.Copy()
+	var/list/currentrun_copy = currentrun
+	while(currentrun_copy.len)
+		var/turf/conducting_turf = currentrun_copy[currentrun_copy.len]
+		currentrun_copy.len--
+		if(istype(conducting_turf))
+			conducting_turf.super_conduct()
+		// Only pause while there is work left: this phase re-Copies the pass list
+		// whenever currentrun is empty, so pausing on the last turf would conduct
+		// the whole list a second time on the next fire.
+		if(currentrun_copy.len && world.tick_usage > Master.current_ticklimit)
+			return TRUE
+	// Shared currentrun slot: do not leak turf entries into the next stage.
+	currentrun = list()
+	return FALSE
+
+///Single funnel for the superconduction switch: config at init, admin verb at
+///runtime. Turning it off has to be clean - a populated pass list pins its
+///turfs for the rest of the round, and a conduction run caught mid-resume would
+///keep conducting after the flag went down.
+/datum/controller/subsystem/air/proc/set_heat_enabled(new_state)
+	new_state = !!new_state
+	if(heat_enabled == new_state)
+		return
+	heat_enabled = new_state
+	if(new_state)
+		return
+	active_super_conductivity.Cut()
+	if(is_in_conduction_phase())
+		currentrun = list()
+		currentpart = SSAIR_REBUILD_PIPENETS
+
+///Whether the subsystem is parked in the conduction stage right now.
+/datum/controller/subsystem/air/proc/is_in_conduction_phase()
+	return currentpart == SSAIR_TURF_CONDUCTION
+
+// Тот же гейт, что у самих тестов: dreamchecker собирает их под SPACEMAN_DMM
+// без UNIT_TESTS, и под одним #ifdef UNIT_TESTS этот прок для него не
+// существовал - линтер падал на вызове из atmos_superconduction.dm.
+#if defined(UNIT_TESTS) || defined(SPACEMAN_DMM)
+///Test scaffolding: the stage constants are undef'd at the end of this file, so
+///a test cannot park the subsystem in the conduction stage on its own.
+/datum/controller/subsystem/air/proc/enter_conduction_phase_for_test()
+	currentpart = SSAIR_TURF_CONDUCTION
+	currentrun = active_super_conductivity.Copy()
+
+///Test scaffolding: делает дедлайн сердцебиения уже наступившим. Очередь ступени
+///FIFO по дедлайну, поэтому "наступил" означает ещё и "в голове" - машины живой
+///станции с будущими дедлайнами стоят впереди.
+/datum/controller/subsystem/air/proc/expire_idle_machine_for_test(obj/machinery/atmospherics/machine)
+	for(var/list/tier_queue as anything in atmos_idle_queues)
+		if(isnull(tier_queue[machine]))
+			continue
+		tier_queue.Remove(machine)
+		tier_queue.Insert(1, machine)
+		tier_queue[machine] = world.time - 1
+		return TRUE
+	return FALSE
+#endif
 
 /datum/controller/subsystem/air/StartLoadingMap()
 	map_loading = TRUE
@@ -707,24 +1164,50 @@ SUBSYSTEM_DEF(air)
 		currentrun -= machine
 
 ///Drops a machine that just finished its idle streak out of the per-fire loop;
-///the heartbeat queue (or any event wake) returns it later.
-/datum/controller/subsystem/air/proc/sleep_processing_machine(obj/machinery/atmospherics/machine)
+///the heartbeat queue (or any event wake) returns it later. `tier` - ступень
+///отката, 1-based; зажимается по фактическому числу очередей, чтобы рассинхрон
+///константы и инициализатора списка деградировал в короткий сон, а не в рантайм.
+/datum/controller/subsystem/air/proc/sleep_processing_machine(obj/machinery/atmospherics/machine, tier = 1)
 	stop_processing_machine(machine, popped_from_currentrun = TRUE)
 	if(machine.atmos_idle_queued)
-		// A stale queue entry from an earlier sleep is still pending; its
-		// deadline will recheck us early, which is harmless.
+		// Запись уже стоит. Дедлайн у неё не позже нашего (ступень могла только
+		// вырасти), значит проверка придёт раньше срока - это безобидно, а
+		// перестановка записи стоила бы дороже. Единственный путь, оставлявший
+		// запись при бодрствующей машине - atmos_wake - теперь снимает её сам.
 		return
+	tier = clamp(tier, 1, length(atmos_idle_queues))
 	machine.atmos_idle_queued = TRUE
-	atmos_idle_queue[machine] = machine.atmos_idle_until
+	machine.atmos_idle_tier = tier
+	var/list/tier_queue = atmos_idle_queues[tier]
+	tier_queue[machine] = machine.atmos_idle_until
 
 ///Removes a machine from the heartbeat queue (Destroy: the queue holds a strong ref).
 /datum/controller/subsystem/air/proc/dequeue_idle_machine(obj/machinery/atmospherics/machine)
-	//Безусловно: флаг и очередь умеют расходиться (atmos_wake() возвращает машину
-	//в обработку, не трогая её запись), а ранний выход по флагу оставлял бы
-	//хардреф на удалённую машину. Проц зовётся только из Destroy - O(n) снятие
-	//ключа тут не в горячем пути.
+	var/was_queued = machine.atmos_idle_queued
+	var/tier = machine.atmos_idle_tier
 	machine.atmos_idle_queued = FALSE
-	atmos_idle_queue -= machine
+	machine.atmos_idle_tier = 0
+	// Ранний выход по одному лишь флагу опасен: соврал бы флаг - и запись
+	// осталась бы держать хардреф на удалённую машину. Но и безусловный `-=`
+	// не выход, он линейно проходит всю очередь, а Destroy зовётся для КАЖДОЙ
+	// атмос-машины - трубы и активные устройства платили бы за пустой поиск.
+	// Поэтому спрашиваем саму очередь: ассоциативный доступ - хеш-лукап, он
+	// O(1) и протухнуть не умеет. Флаг остаётся вторым условием на случай
+	// обратного рассинхрона (запись без ассоциативного значения).
+	if(tier >= 1 && tier <= length(atmos_idle_queues))
+		var/list/tier_queue = atmos_idle_queues[tier]
+		if(!isnull(tier_queue[machine]))
+			tier_queue -= machine
+			return
+	if(!was_queued)
+		return
+	// Ступень на машине разошлась с реальностью. Ступеней всего четыре, и каждая
+	// проверка - тот же хеш-лукап, так что честный обход дешевле оставленного
+	// хардрефа.
+	for(var/list/tier_queue as anything in atmos_idle_queues)
+		if(!isnull(tier_queue[machine]))
+			tier_queue -= machine
+			return
 
 #undef SSAIR_PIPENETS
 #undef SSAIR_ATMOSMACHINERY
@@ -738,3 +1221,5 @@ SUBSYSTEM_DEF(air)
 #undef SSAIR_TURF_POST_PROCESS
 #undef SSAIR_FINALIZE_TURFS
 #undef SSAIR_ATMOSMACHINERY_AIR
+#undef SSAIR_DECOMPRESSION
+#undef SSAIR_ATOMS

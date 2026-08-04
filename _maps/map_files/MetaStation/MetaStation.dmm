@@ -49,6 +49,13 @@
 /obj/effect/landmark/carpspawn,
 /turf/open/space,
 /area/space)
+"aad" = (
+/obj/machinery/atmospherics/pipe/simple/general/hidden,
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel,
+/area/science/mixing)
 "aaf" = (
 /obj/structure/lattice,
 /turf/open/space,
@@ -35422,7 +35429,7 @@
 /turf/open/floor/plasteel,
 /area/science/mixing)
 "cBE" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/simple/general/hidden,
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
@@ -35862,7 +35869,7 @@
 /turf/open/floor/plasteel,
 /area/science/mixing)
 "cCF" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/simple/general/hidden{
 	dir = 4
 	},
 /obj/effect/turf_decal/stripes/yellow/corner,
@@ -128171,7 +128178,7 @@ xHe
 wRy
 cBE
 cAJ
-cCE
+aad
 cCE
 czC
 dzI

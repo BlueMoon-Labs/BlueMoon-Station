@@ -49,20 +49,43 @@
 	if(!air_gases)
 		return
 
+	// A tile that already burns and was not asked to sustain its hotspot (soh)
+	// has no reachable side effect below, so the two full gas-list walks that
+	// follow (get_oxidation_power, then get_fuel_amount inside
+	// turf_has_fire_fuel) are pure waste. This is the dominant call: every fire
+	// reaction ends with fire_expose on its own tile, so each burning tile paid
+	// them once per reaction per fire.
+	// Удалённый хотспот в поле - это не "тут уже горит", а протухшая ссылка:
+	// ниже показано, откуда она берётся. Без QDELETED такой турф отказывался
+	// загораться до конца раунда, потому что обе проверки ниже видели в поле
+	// "живой" огонь.
+	var/obj/effect/hotspot/current_hotspot = QDELETED(active_hotspot) ? null : active_hotspot
+
+	if(current_hotspot && !soh)
+		return
+
 	if (air.get_oxidation_power(exposed_temperature) < 0.5 || air.get_moles(GAS_HYPERNOB) > 5)
 		return
 	var/has_fuel = turf_has_fire_fuel(air, exposed_temperature, z)
-	if(active_hotspot)
-		if(soh)
-			if(has_fuel)
-				if(active_hotspot.temperature < exposed_temperature)
-					active_hotspot.temperature = exposed_temperature
-				if(active_hotspot.volume < exposed_volume)
-					active_hotspot.volume = exposed_volume
+	if(current_hotspot)
+		if(has_fuel)
+			if(current_hotspot.temperature < exposed_temperature)
+				current_hotspot.temperature = exposed_temperature
+			if(current_hotspot.volume < exposed_volume)
+				current_hotspot.volume = exposed_volume
 		return
 
 	if((exposed_temperature > PLASMA_MINIMUM_BURN_TEMPERATURE) && has_fuel)
-		active_hotspot = new /obj/effect/hotspot(src, exposed_volume*25, exposed_temperature)
+		// Поле выставляет сам perform_exposure() внутри Initialize. Присваивание
+		// результата поверх было не просто лишним: конструктор через
+		// perform_exposure() зовёт fire_act() по содержимому турфа, детонация
+		// оттуда сносит турф, /turf/open/Destroy делает QDEL_NULL(active_hotspot),
+		// и эта строка возвращала уже удалённый хотспот обратно в поле турфа.
+		// Ссылка держала его до харддела - два таких за раунд 9860 по 540мс.
+		var/obj/effect/hotspot/new_hotspot = new /obj/effect/hotspot(src, exposed_volume*25, exposed_temperature)
+		if(QDELETED(new_hotspot))
+			return
+		active_hotspot = new_hotspot
 
 //This is the icon for fire on turfs, also helps for nurturing small fires until they are full tile
 /obj/effect/hotspot
@@ -99,6 +122,22 @@
 	AddElement(/datum/element/connect_loc, loc_connections)
 
 /obj/effect/hotspot/proc/perform_exposure()
+	// One mixture per hotspot per fire used to be allocated for the non-bypassing
+	// branch below and qdel-ed three lines later: a station fire ran ~300
+	// hotspots twice a second, so that alone pushed ~600 datums a second through
+	// SSgarbage for no reason. The removed portion never outlives the call, so a
+	// single reusable scratch covers every hotspot on the station.
+	//
+	// react() can reach fire_act/temperature_expose code that ignites another
+	// tile and re-enters this proc, which would clobber the scratch mid-use; the
+	// claim below falls back to the old allocating path for that case instead of
+	// corrupting it. The claim is stamped with the fire it was taken in rather
+	// than being a plain boolean: a runtime inside react() aborts this proc
+	// without ever releasing it, and a boolean would then disable the reuse
+	// silently for the rest of the round. A stamp goes stale on the next fire.
+	var/static/datum/gas_mixture/exposure_scratch
+	var/static/exposure_scratch_claimed_at = 0
+
 	var/turf/open/location = loc
 	if(!istype(location) || !(location.air))
 		return
@@ -113,7 +152,30 @@
 		volume = location.air.reaction_results["fire"]*FIRE_GROWTH_RATE
 		temperature = location.air.return_temperature()
 	else
-		var/datum/gas_mixture/affected = location.air.remove_ratio(volume/location.air.return_volume())
+		// Everything after assume_air() runs outside the claim, so the contents
+		// loop at the bottom of this proc never blocks reuse.
+		var/this_fire = (SSair ? SSair.times_fired : 0) + 1 // never 0, which means "free"
+		var/reused = exposure_scratch_claimed_at != this_fire
+		var/datum/gas_mixture/affected
+		var/removed_ratio = volume / location.air.return_volume()
+		if(reused)
+			if(!exposure_scratch)
+				exposure_scratch = new
+			affected = exposure_scratch
+			exposure_scratch_claimed_at = this_fire
+			affected.clear()
+			// remove_ratio() stamps the source temperature onto the removed
+			// portion; matching it here keeps transfer_ratio_to from running its
+			// capacity-weighted blend and reproduces that exactly.
+			affected.set_temperature(location.air.return_temperature())
+			// A freshly allocated mixture carries no archive; the scratch has to
+			// be reset to that, or the previous hotspot's snapshot would answer
+			// any archived_heat_capacity() reached from the reaction below.
+			affected.gas_archive = null
+			affected.temperature_archived = affected.temperature
+			location.air.transfer_ratio_to(affected, removed_ratio)
+		else
+			affected = location.air.remove_ratio(removed_ratio)
 		if(affected) //in case volume is 0
 			if(temperature > affected.return_temperature())
 				affected.set_temperature(temperature) //don't set the temperature lower than what it was
@@ -121,6 +183,9 @@
 			temperature = affected.return_temperature()
 			volume = affected.reaction_results["fire"]*FIRE_GROWTH_RATE
 			location.assume_air(affected)
+		if(reused)
+			exposure_scratch_claimed_at = 0
+		else if(affected)
 			qdel(affected)
 
 	for(var/A in location)
@@ -205,8 +270,20 @@
 
 	perform_exposure()
 
+	// Writing an appearance var re-derives and re-hashes the whole appearance
+	// even when the value is unchanged, and a settled fire holds the same frame
+	// for its entire life. A string compare is far cheaper than that.
+	var/new_icon_state
 	if(bypassing)
-		icon_state = "3"
+		new_icon_state = "3"
+	else if(volume > CELL_VOLUME*0.4)
+		new_icon_state = "2"
+	else
+		new_icon_state = "1"
+	if(icon_state != new_icon_state)
+		icon_state = new_icon_state
+
+	if(bypassing)
 		location.burn_tile()
 
 		//Possible spread due to radiated heat
@@ -216,12 +293,6 @@
 				var/turf/open/T = t
 				if(!T.active_hotspot)
 					T.hotspot_expose(radiated_temperature, CELL_VOLUME/4)
-
-	else
-		if(volume > CELL_VOLUME*0.4)
-			icon_state = "2"
-		else
-			icon_state = "1"
 
 	if((visual_update_tick++ % 7) == 0)
 		update_color()

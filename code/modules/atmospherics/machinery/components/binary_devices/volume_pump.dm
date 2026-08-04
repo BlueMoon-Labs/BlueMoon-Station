@@ -11,7 +11,7 @@
 //     but overall network volume is also increased as this increases...
 
 /obj/machinery/atmospherics/components/binary/volume_pump
-	icon_state = "volpump_map-2"
+	icon_state = "volpump_map-3"
 	name = "volumetric gas pump"
 	desc = "A pump that moves gas by volume."
 
@@ -31,6 +31,12 @@
 	. = ..()
 	. += "<span class='notice'>You can hold <b>Ctrl</b> and click on it to toggle it on and off.</span>"
 	. += "<span class='notice'>You can hold <b>Alt</b> and click on it to maximize its pressure.</span>"
+	. += line_rating_examine()
+	// Предупреждаем только когда потолок насоса реально выше предела линии:
+	// на усиленной магистрали он безопасен, и врать об этом незачем.
+	var/rating = output_line_rating()
+	if(rating && VOLUME_PUMP_PRESSURE_CEILING > rating * PIPE_STRESS_RUPTURE_RATIO)
+		. += "<span class='warning'>Останавливается только на [VOLUME_PUMP_PRESSURE_CEILING] кПа - для линии с номиналом [rating] кПа это выше предела.</span>"
 
 /obj/machinery/atmospherics/components/binary/volume_pump/CtrlClick(mob/user)
 	if(user.canUseTopic(src, BE_CLOSE, FALSE,))
@@ -73,7 +79,7 @@
 	var/input_starting_pressure = air1.return_pressure()
 	var/output_starting_pressure = air2.return_pressure()
 
-	if((input_starting_pressure < 0.01) || (output_starting_pressure > 9000))
+	if((input_starting_pressure < 0.01) || (output_starting_pressure > VOLUME_PUMP_PRESSURE_CEILING))
 		// Woken by the pipenet pressure-jump broadcast.
 		atmos_consider_idle()
 		return
@@ -123,6 +129,12 @@
 	data["on"] = on
 	data["rate"] = round(transfer_rate)
 	data["max_rate"] = round(MAX_TRANSFER_RATE)
+	// Уставка тут в л/с, и сравнивать её с номиналом бессмысленно. Панели нужно
+	// текущее давление выхода: объёмный насос не останавливается до 9000 кПа и
+	// потому единственный, кто штатно способен разорвать обычную линию.
+	data["line_rating"] = output_line_rating()
+	data["line_pressure"] = output_line_pressure()
+	data["ports"] = ui_port_data()
 	return data
 
 /obj/machinery/atmospherics/components/binary/volume_pump/atmosinit()
@@ -209,9 +221,17 @@
 	piping_layer = 1
 	icon_state = "volpump_map-1"
 
-/obj/machinery/atmospherics/components/binary/volume_pump/layer3
-	piping_layer = 3
-	icon_state = "volpump_map-3"
+/obj/machinery/atmospherics/components/binary/volume_pump/layer2
+	piping_layer = 2
+	icon_state = "volpump_map-2"
+
+/obj/machinery/atmospherics/components/binary/volume_pump/layer4
+	piping_layer = 4
+	icon_state = "volpump_map-4"
+
+/obj/machinery/atmospherics/components/binary/volume_pump/layer5
+	piping_layer = 5
+	icon_state = "volpump_map-5"
 
 /obj/machinery/atmospherics/components/binary/volume_pump/on
 	on = TRUE
@@ -221,6 +241,14 @@
 	piping_layer = 1
 	icon_state = "volpump_map-1"
 
-/obj/machinery/atmospherics/components/binary/volume_pump/on/layer3
-	piping_layer = 3
-	icon_state = "volpump_map-3"
+/obj/machinery/atmospherics/components/binary/volume_pump/on/layer2
+	piping_layer = 2
+	icon_state = "volpump_map-2"
+
+/obj/machinery/atmospherics/components/binary/volume_pump/on/layer4
+	piping_layer = 4
+	icon_state = "volpump_map-4"
+
+/obj/machinery/atmospherics/components/binary/volume_pump/on/layer5
+	piping_layer = 5
+	icon_state = "volpump_map-5"

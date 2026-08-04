@@ -40,7 +40,10 @@
 
 		A.flags_1 |= (flags_1 & ADMIN_SPAWNED_1)
 		A.GiveTarget(target)
-		A.friends = friends
+		//Копией, а не ссылкой: иначе бруд и хайвлорд делят ОДИН список, и запись о
+		//любом удалённом мобе живёт в нём у обоих до конца раунда. faction рядом
+		//копируется с самого начала, friends просто забыли.
+		A.friends = friends?.Copy()
 		A.faction = faction.Copy()
 		if(!A == /mob/living/simple_animal/hostile/poison/bees/toxin)
 			A.my_creator = type

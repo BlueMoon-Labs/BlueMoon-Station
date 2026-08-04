@@ -263,6 +263,17 @@
 	nocell_state = "defibcompact-nocell"
 	emagged_state = "defibcompact-emagged"
 
+/// Награда кристаллизатора за хилий. Отдельный подтип нужен ровно ради вида:
+/// все прочие выходы кристаллизатора - вещи, которые больше нигде не берутся, и
+/// награда, неотличимая от медбейной, читается не как награда, а как кража.
+/// Механика та же, отличается только окраска.
+/obj/item/defibrillator/compact/loaded/crystallizer
+	name = "healium defibrillator"
+	desc = "A compact defibrillator grown in a crystallizer. The healium lattice in its cell holds a charge the way medbay stock never will."
+	icon_state = "defibcompact_healium"
+	item_state = "defibcompact_healium"
+	paddle_state = "defibcompact_healium-paddles"
+
 /obj/item/defibrillator/compact/item_action_slot_check(slot, mob/user, datum/action/A)
 	if(slot == user.getBeltSlot())
 		return TRUE

@@ -6,12 +6,23 @@
 
 // Подсистема и глобальные заглушки
 /datum/controller/subsystem/air
-	/// Open turfs that participate in native DM atmos processing.
-	var/list/turf/open/dm_registered_turfs = list()
+	// Здесь лежал dm_registered_turfs - список "открытых турфов, участвующих в
+	// симуляции". Наследие DLL auxmos, которая не грузится: по всему дереву он
+	// имел пять упоминаний, и все пять были ЗАПИСЯМИ. Ни одного чтения, ни одной
+	// итерации, ни одного замера. Стоил он при этом дорого: `|=` в
+	// update_air_ref() - линейный скан, а update_air_ref() выполняется для
+	// каждого открытого турфа на инициализации карты, то есть список давал
+	// квадратичность на ровном месте. Плюс ещё один скан на каждом снятии турфа.
 	/// Turfs currently participating in active atmos processing.
 	var/list/turf/open/active_turfs = list()
 	/// Groups of turfs with active gas exchange.
 	var/list/datum/excited_group/excited_groups = list()
+	/// Обход зоны эквалайзером, растянутый на несколько фаеров. Слот ровно один:
+	/// пока обход в полёте, фаза не заводит второй, иначе два обхода двигали бы
+	/// один и тот же газ. Держать состояние в currentrun нельзя - тот слот общий
+	/// на все фазы подсистемы, и следующая фаза приняла бы турфы за свои
+	/// сущности. См. /datum/atmos_zone_walk.
+	var/datum/atmos_zone_walk/zone_walk
 	/// Number of currently alive gas mixtures (for stat panel parity).
 	var/dm_registered_gas_mixtures = 0
 	/// Maximum number of simultaneously alive gas mixtures.
@@ -80,11 +91,48 @@
 	participating.Cut()
 	total_gases.Cut()
 
+///TRUE when any excited group has outgrown the zone-equalize valve threshold.
+/datum/controller/subsystem/air/proc/has_zone_equalize_candidate()
+	for(var/datum/excited_group/group as anything in excited_groups)
+		if(group && length(group.turf_list) >= EXCITED_GROUP_ZONE_EQUALIZE_THRESHOLD)
+			return TRUE
+	return FALSE
+
+/// Крутит обход зоны срезами, пока он не кончится или пока в тике не осталось
+/// запаса на ещё один срез. `force_one_slice` гарантирует прогресс: МК выдаёт
+/// фоновой подсистеме долю остатка тика, и она вполне может быть меньше порога
+/// уже на входе в фазу - без этого обход встал бы навсегда.
+/// Возвращает TRUE, когда обход завершён.
+/datum/controller/subsystem/air/proc/advance_zone_walk(force_one_slice)
+	if(!zone_walk)
+		return TRUE
+	while(zone_walk.stage)
+		if(!force_one_slice && TICK_REMAINING_MS < ATMOS_EQUALIZE_ZONE_MIN_BUDGET_MS)
+			return FALSE
+		force_one_slice = FALSE
+		zone_walk.advance(ATMOS_EQUALIZE_ZONE_SLICE)
+	return TRUE
+
 /datum/controller/subsystem/air/proc/process_turf_equalize_auxtools(remaining)
-	if(!equalize_enabled)
-		num_equalize_processed = 0
-		return FALSE
+	// Обход, начатый на прошлом фаере, доигрывается ПЕРВЫМ и до конца. Пока он в
+	// полёте, его члены помечены штампом фаера захвата, и обход из соседнего
+	// турфа наложился бы на ту же зону - два обхода мутировали бы один газ.
+	var/stepped_this_fire = FALSE
+	if(zone_walk?.stage)
+		if(!advance_zone_walk(TRUE))
+			pause()
+			return TRUE
+		stepped_this_fire = TRUE
 	if(!length(currentrun))
+		// Valve recomputes on every fresh pass, not on resumes: a giant group
+		// appearing mid-pass waits one fire, one disappearing costs one extra
+		// filtered sweep. With the config flag on the valve is irrelevant.
+		equalize_valve_mode = FALSE
+		if(!equalize_enabled)
+			if(!has_zone_equalize_candidate())
+				num_equalize_processed = 0
+				return FALSE
+			equalize_valve_mode = TRUE
 		currentrun = active_turfs.Copy()
 		num_equalize_processed = 0
 		high_pressure_turfs = 0
@@ -95,8 +143,26 @@
 		var/turf/open/T = currentrun_copy[currentrun_copy.len]
 		currentrun_copy.len--
 		if(!istype(T) || T.blocks_air || !T.air)
-			active_turfs -= T
-			dm_registered_turfs -= T
+			// `excited` is the membership flag add_to_active() trusts, so a turf
+			// evicted here must stop claiming it is listed - otherwise a tile
+			// that later reopens (ChangeTurf back to plating) could never be
+			// activated again.
+			if(istype(T))
+				T.excited = FALSE
+			evict_active_turf(T)
+			continue
+		// Valve mode: only members of an oversized group qualify. Ordinary
+		// rooms keep pure LINDA behavior with the config flag off.
+		if(equalize_valve_mode)
+			var/datum/excited_group/turf_group = T.excited_group
+			if(!turf_group || length(turf_group.turf_list) < EXCITED_GROUP_ZONE_EQUALIZE_THRESHOLD)
+				continue
+		// Турф, уже захваченный чьим-то обходом в этом фаере, затравкой не станет
+		// - тот же гард стоит внутри begin(). Значит и решать, стоит ли он зоны,
+		// незачем: скан соседей ниже это пять return_pressure(), то есть десять
+		// вызовов прока на турф, а после первого же обхода на две тысячи членов
+		// такие турфы в очереди - подавляющее большинство.
+		if(T.equalize_cycle >= fire_count)
 			continue
 		var/pressure = T.air.return_pressure()
 		var/max_adjacent_delta = 0
@@ -109,14 +175,30 @@
 			if(!istype(open_adjacent) || open_adjacent.blocks_air || !open_adjacent.air)
 				continue
 			max_adjacent_delta = max(max_adjacent_delta, abs(pressure - open_adjacent.air.return_pressure()))
-		if(has_space_neighbor || max_adjacent_delta >= 5)
-			if(T.equalize_pressure_in_zone(fire_count))
-				num_equalize_processed++
-				if(pressure >= ONE_ATMOSPHERE)
-					high_pressure_turfs++
-				else
-					low_pressure_turfs++
-		if(world.tick_usage > Master.current_ticklimit)
+		if(has_space_neighbor || max_adjacent_delta >= EQUALIZE_MIN_PRESSURE_DELTA)
+			// Обход зоны теперь режется на срезы, но стадия сведения газа внутри
+			// него всё равно атомарна, поэтому НАЧИНАТЬ обход на догорающем тике
+			// по-прежнему нельзя: проверка бюджета ПОСЛЕ вызова узнаёт про
+			// перерасход, когда он уже случился.
+			if(stepped_this_fire && TICK_REMAINING_MS < ATMOS_EQUALIZE_ZONE_MIN_BUDGET_MS)
+				// Турф уже снят с хвоста - вернуть его туда же, иначе его зона
+				// не будет обработана в этом проходе вообще.
+				currentrun_copy += T
+				pause()
+				return TRUE
+			if(!zone_walk)
+				zone_walk = new
+			// Счётчики фазы ведёт сам обход: гейт по разбросу давления, который
+			// решает "зона того стоила", живёт внутри него и может сработать уже
+			// на следующем фаере.
+			if(zone_walk.begin(T, fire_count))
+				stepped_this_fire = TRUE
+				if(!advance_zone_walk(TRUE))
+					pause()
+					return TRUE
+		// See process_turfs_auxtools(): pausing on an emptied runlist restarts
+		// the pass from a fresh Copy() on the next fire.
+		if(currentrun_copy.len && world.tick_usage > Master.current_ticklimit)
 			pause()
 			return TRUE
 	// Do not leak equalize runlist into the next SSAIR stage.
@@ -132,11 +214,78 @@
 	var/list/currentrun_copy = currentrun
 	while(currentrun_copy.len)
 		var/datum/excited_group/EG = currentrun_copy[currentrun_copy.len]
-		currentrun_copy.len--
 		if(!EG)
+			currentrun_copy.len--
 			continue
-		num_group_turfs_processed += length(EG.turf_list)
-		EG.tick_lifecycle()
+		if(!EG.breakdown_stage)
+			num_group_turfs_processed += length(EG.turf_list)
+		var/group_finished = EG.tick_lifecycle()
+		if(group_finished)
+			currentrun_copy.len--
+		// See process_turfs_auxtools(): pausing on an emptied runlist restarts
+		// the pass from a fresh Copy() on the next fire, giving every group a
+		// second lifecycle tick inside one logical pass.
+		if(currentrun_copy.len && world.tick_usage > Master.current_ticklimit)
+			pause()
+			return TRUE
+	return FALSE
+
+/// Queues one base area for the decompression phase. Associative membership
+/// makes any number of leaking turfs in the same compartment one event.
+/datum/controller/subsystem/air/proc/queue_decompression_area(atom/source)
+	var/area/base = get_base_area(source)
+	// Space can span an entire z-level; treating a mis-mapped pressurized turf
+	// there as one compartment would close every registered firedoor on the
+	// level instead of localizing the breach.
+	if(!base || istype(base, /area/space))
+		return
+	// A breach keeps its edge turfs above the queue threshold for many fires;
+	// the first handling already alarmed and pressure-stopped the compartment,
+	// so re-sweeping it every SSair fire is pure waste.
+	var/last_handled = decompression_handled_at[base]
+	if(last_handled && world.time < last_handled + DECOMPRESSION_AREA_ALARM_COOLDOWN)
+		return
+	decompression_areas[base] = TRUE
+
+/// Raises the existing decompression alarm path once, then applies the same
+/// pressure-stop close used by equalize to every firedoor bordering the area.
+/datum/controller/subsystem/air/proc/handle_decompression_area(area/base)
+	if(!base)
+		return
+	decompression_handled_at[base] = world.time
+	var/alarm_handled = FALSE
+	for(var/area/linked_area as anything in get_sub_areas(base))
+		for(var/obj/machinery/airalarm/alarm as anything in linked_area.airalarms)
+			if(!alarm.is_operational)
+				continue
+			alarm.handle_decomp_alarm()
+			alarm_handled = TRUE
+			break
+		if(alarm_handled)
+			break
+	var/list/seen_firedoors
+	for(var/area/linked_area as anything in get_sub_areas(base))
+		for(var/obj/machinery/door/firedoor/firedoor as anything in linked_area.firedoors)
+			if(!firedoor || seen_firedoors?[firedoor])
+				continue
+			if(!seen_firedoors)
+				seen_firedoors = list()
+			seen_firedoors[firedoor] = TRUE
+			firedoor.emergency_pressure_stop()
+
+/datum/controller/subsystem/air/proc/process_decompression_areas_auxtools(resumed)
+	if(!resumed)
+		currentrun = decompression_areas.Copy()
+		decompression_areas.Cut()
+		num_decompression_areas = 0
+	var/list/currentrun_copy = currentrun
+	while(currentrun_copy.len)
+		var/area/base = currentrun_copy[currentrun_copy.len]
+		currentrun_copy.len--
+		if(!base)
+			continue
+		handle_decompression_area(base)
+		num_decompression_areas++
 		if(world.tick_usage > Master.current_ticklimit)
 			pause()
 			return TRUE
@@ -145,66 +294,191 @@
 /datum/controller/subsystem/air/proc/process_turfs_auxtools(remaining)
 	if(!length(currentrun))
 		currentrun = active_turfs.Copy()
+		sharing_turfs = 0
 	var/fire_count = times_fired
 	var/list/currentrun_copy = currentrun
 	while(currentrun_copy.len)
 		var/turf/open/T = currentrun_copy[currentrun_copy.len]
 		currentrun_copy.len--
 		if(!istype(T) || T.blocks_air || !T.air)
-			active_turfs -= T
-			dm_registered_turfs -= T
+			// See the equalize pass: the flag has to follow the list eviction.
+			if(istype(T))
+				T.excited = FALSE
+			evict_active_turf(T)
 			continue
 		T.process_cell(fire_count)
-		if(world.tick_usage > Master.current_ticklimit)
+		// Одно сравнение на турф, зато колонка отвечает на главный вопрос фазы:
+		// сколько активных турфов реально двигают газ. В раунде 9868 их было 307
+		// из 2980, и без этого числа стоимость фазы неотличима от честной работы.
+		if(T.air.last_share > MINIMUM_MOLES_DELTA_TO_MOVE)
+			sharing_turfs++
+		maybe_sleep_low_pressure_turf(T)
+		// Only pause while there is still work left. Pausing on an emptied
+		// runlist made the next fire see `!length(currentrun)` and re-Copy the
+		// whole active list, running a second full turf pass inside what the
+		// phase counters still called one pass.
+		if(currentrun_copy.len && world.tick_usage > Master.current_ticklimit)
 			pause()
 			return TRUE
 	return FALSE
+
+/// The former finalize phase copied and scanned active_turfs a second time just
+/// for this check. Running it beside process_cell keeps the same decision at the
+/// point where the tile's gas has just settled, without another O(active) pass.
+/datum/controller/subsystem/air/proc/maybe_sleep_low_pressure_turf(turf/open/T)
+	if(!istype(T) || T.blocks_air || !T.air || T.excited_group || T.active_hotspot || T.planetary_atmos)
+		return
+	var/datum/gas_mixture/turf_air = T.air
+	var/current_moles = turf_air.total_moles()
+	if(current_moles > MINIMUM_MOLES_DELTA_TO_MOVE)
+		return
+	var/volume_cache = turf_air.volume
+	var/current_pressure = volume_cache > 0 ? (current_moles * R_IDEAL_GAS_EQUATION * turf_air.temperature / volume_cache) : 0
+	if(current_pressure <= (ONE_ATMOSPHERE * 0.05))
+		sleep_active_turf(T)
 
 /datum/controller/subsystem/air/proc/finish_turf_processing_auxtools(time_remaining)
-	if(!length(currentrun))
-		currentrun = active_turfs.Copy()
-	var/list/currentrun_copy = currentrun
-	while(currentrun_copy.len)
-		var/turf/open/T = currentrun_copy[currentrun_copy.len]
-		currentrun_copy.len--
-		if(!istype(T) || T.blocks_air || !T.air)
-			active_turfs -= T
-			dm_registered_turfs -= T
-			continue
-		if(T.excited_group || T.active_hotspot || T.planetary_atmos)
-			continue
-		var/datum/gas_mixture/turf_air = T.air
-		var/current_moles = turf_air.total_moles()
-		if(current_moles <= MINIMUM_MOLES_DELTA_TO_MOVE)
-			var/volume_cache = turf_air.volume
-			var/current_pressure = volume_cache > 0 ? (current_moles * R_IDEAL_GAS_EQUATION * turf_air.temperature / volume_cache) : 0
-			if(current_pressure <= (ONE_ATMOSPHERE * 0.05))
-				sleep_active_turf(T)
-		if(world.tick_usage > Master.current_ticklimit)
-			pause()
-			return TRUE
+	// Low-pressure sleeping is folded into process_turfs_auxtools(). Keep this
+	// phase as the full-turf-cycle boundary used by the headless benchmark.
 	return FALSE
 
+/// Ставит турф в active_turfs и запоминает его позицию.
+///
+/// Защита от дубля здесь обязательна: голое `+=` посадило бы в список вторую
+/// запись, стоит флагу `excited` хоть раз разойтись со списком, а снятие за O(1)
+/// убрало бы только одну из двух. Но искать ради этого по всему списку не нужно
+/// - подсказка позиции самопроверяема. `active_turf_index` пишут ровно три
+/// прока (этот, drop_active_turf_at и снятия, которые его обнуляют), и
+/// drop_active_turf_at всегда чинит индекс переехавшего элемента. Значит
+/// "индекс указывает на нас" равносильно "мы уже в списке", а "не указывает" -
+/// "нас в списке нет".
+///
+/// Цена вопроса как раз в эквалайзере: он будит спящих членов зоны сотнями за
+/// обход, то есть шёл по НЕнайденной ветке, а список активных турфов под
+/// разгерметизацией уходит в пять знаков. Скан по восьми тысячам записей на
+/// каждое пробуждение - это и была основная стоимость стадии активации.
+/datum/controller/subsystem/air/proc/list_active_turf(turf/T)
+	var/hint = T.active_turf_index
+	if(hint && hint <= length(active_turfs) && active_turfs[hint] == T)
+		return
+	active_turfs += T
+	T.active_turf_index = length(active_turfs)
+
+/// Снимает турф из active_turfs за O(1): на его место переезжает последний
+/// элемент. Порядок списка не сохраняется, и это нормально - все фазы копируют
+/// его целиком, порядок обхода ни на что не влияет.
+///
+/// `active_turfs -= T` это линейный скан по всему списку, а под станционным
+/// пожаром список уходит в пятизначные размеры. Сольные засыпания внутри
+/// гигантской excited-группы срабатывают сотнями за проход, и каждое платило
+/// полный обход.
+///
+/// Индекс - только подсказка. Истину о членстве держит `excited`, поэтому если
+/// подсказка разошлась с реальностью, снятие честно откатывается на линейный
+/// поиск, а не оставляет в списке мусор.
+/datum/controller/subsystem/air/proc/unlist_active_turf(turf/T)
+	if(!isturf(T))
+		return
+	var/index = T.active_turf_index
+	T.active_turf_index = 0
+	if(index && index <= length(active_turfs) && active_turfs[index] == T)
+		drop_active_turf_at(index)
+		return
+	// Подсказка не сработала. Открытый турф, который сам себя активным не
+	// считает, в списке и не лежит - ровно на этом холостом вызове и
+	// экономится скан. Всё прочее (турф сменил тип, потерял `excited` раньше
+	// снятия) снимаем честно, иначе в списке останется мусор.
+	var/turf/open/open_turf = T
+	if(istype(open_turf) && !open_turf.excited)
+		return
+	drop_active_turf(T)
+
+/// Аварийное снятие: турф уже не пригоден для симуляции (сменил тип, потерял
+/// смесь), доверять его индексу нельзя, а типом он может быть и не открытым.
+/datum/controller/subsystem/air/proc/evict_active_turf(turf/T)
+	if(!isturf(T))
+		drop_active_turf(T)
+		return
+	var/index = T.active_turf_index
+	T.active_turf_index = 0
+	if(index && index <= length(active_turfs) && active_turfs[index] == T)
+		drop_active_turf_at(index)
+		return
+	drop_active_turf(T)
+
+/// Снятие записи с известной позиции: на её место переезжает последний элемент,
+/// и он узнаёт свою новую позицию. Дубликатов в списке нет по инварианту
+/// (`excited` - флаг членства), поэтому одной записи достаточно.
+/datum/controller/subsystem/air/proc/drop_active_turf_at(index)
+	var/last_index = length(active_turfs)
+	if(index != last_index)
+		var/turf/moved_turf = active_turfs[last_index]
+		active_turfs[index] = moved_turf
+		moved_turf.active_turf_index = index
+	active_turfs.len--
+
+/// Снятие турфа, чью позицию пришлось искать. Позицию ищем и снимаем обменом, а
+/// НЕ вычитанием списка.
+///
+/// `active_turfs -= T` сдвигает весь хвост на одну позицию влево, то есть разом
+/// делает подсказки протухшими у КАЖДОГО турфа после снятого. Дальше каждое их
+/// снятие проваливается в линейный откат и сдвигает хвост снова: снятие за O(1)
+/// вырождается в O(n) с каскадом, который сам себя поддерживает. На проде это
+/// стоило роста тяжёлых прогонов SSair (дольше 100 мс) с нуля за час на старой
+/// сборке до пятисот за час на новой, на одной и той же карте.
+/datum/controller/subsystem/air/proc/drop_active_turf(turf/T)
+	var/index = active_turfs.Find(T)
+	if(!index)
+		return
+	drop_active_turf_at(index)
+
 /datum/controller/subsystem/air/proc/remove_from_active(turf/open/T)
-	active_turfs -= T
+	unlist_active_turf(T)
 	if(istype(T))
 		T.excited = FALSE
 		if(T.excited_group)
 			T.excited_group.garbage_collect()
 
-/datum/controller/subsystem/air/proc/add_to_active(turf/open/T, blockchanges = TRUE, wake_machines = TRUE)
+/datum/controller/subsystem/air/proc/add_to_active(turf/open/T, blockchanges = TRUE, wake_machines = TRUE, reset_stall = TRUE)
 	if(!istype(T) || T.blocks_air || !T.air)
 		return
-	// Group awake bookkeeping: only a resting member waking up takes a slot.
-	if(!T.excited && T.excited_group)
-		T.excited_group.awake_members++
-	T.excited = TRUE
-	// Upstream parity: activation grants a fresh stall budget. Without this a
-	// turf that rested with a maxed counter (dismantle, individual sleep)
-	// processes exactly one cell per activation and immediately rests again,
-	// so a corpse drip-feeding miasma never pushed its gas anywhere.
-	T.atmos_cooldown = 0
-	active_turfs |= T
+	// `excited` doubles as the membership flag of active_turfs: every path that
+	// drops a turf out of the list clears it, and nothing marks a turf excited
+	// without listing it (see /datum/excited_group/add_turf). The list add is
+	// therefore only reachable for a turf that is genuinely asleep.
+	//
+	// This matters because `|=` is a linear scan of the WHOLE active list, and
+	// the overwhelmingly common call is a poke at a tile that is already awake:
+	// every assume_air/remove_air from a vent or a burning tile, every
+	// superconduction neighbour, every equalize zone member. Under a station
+	// fire the active list runs into five figures, so those pokes were paying a
+	// full-list scan each - tens of milliseconds per fire spent proving the turf
+	// was already there.
+	if(!T.excited)
+		// Group awake bookkeeping: only a resting member waking up takes a slot.
+		if(T.excited_group)
+			T.excited_group.awake_members++
+		T.excited = TRUE
+		list_active_turf(T)
+	// Upstream parity: an activation that BROUGHT GAS grants a fresh stall
+	// budget. Without this a turf that rested with a maxed counter (dismantle,
+	// individual sleep) processes exactly one cell per activation and
+	// immediately rests again, so a corpse drip-feeding miasma never pushed its
+	// gas anywhere.
+	//
+	// reset_stall=FALSE is for activations that did NOT touch the tile's air:
+	// an adjacency recalculation, a neighbor turf being deleted, a zone member
+	// the equalizer left at the mix it already held. Those must NOT hand out a
+	// budget, because atmos_cooldown is the only escape a settled member of a
+	// pinned excited group has (the group's own reset_cooldowns is fired by any
+	// churning member, so breakdown/dismantle never come). Round 9868: the zone
+	// equalizer poked 2000 members per fire, so ~2500 station turfs at a
+	// literal 72.0-72.0 kPa / 288-288 K spread never rested and 90% of the turf
+	// phase went to tiles that could not move a single mole. The poke still
+	// grants the turf one full process_cell - if it finds something to share,
+	// LAST_SHARE_CHECK zeroes the counter and it stays awake on its own merit.
+	if(reset_stall)
+		T.atmos_cooldown = 0
 	// wake_machines=FALSE is for activations that do not change the tile's air
 	// (boundary pokes): the turf must re-compare against its neighbors, but its
 	// registered vents/scrubbers have nothing new to react to. If the
@@ -222,6 +496,11 @@
 		// long as the feed lasted. Destroying the group (the oldest behavior)
 		// is still wrong - see the structural path in
 		// /turf/air_update_turf(update = TRUE).
+		if(T.excited_group.breakdown_stage)
+			// A write between slices must not be overwritten by an average whose
+			// accumulator predates that write. Keep the breakdown due so it
+			// restarts from a fresh membership/air snapshot on resume.
+			T.excited_group.cancel_breakdown()
 		T.excited_group.dismantle_cooldown = 0
 
 /// Rests a turf without touching its excited group: the turf stops paying
@@ -230,7 +509,7 @@
 /// members of groups that are pinned awake by a few churning turfs
 /// (planetary surfaces around a leak, space-edge drains).
 /datum/controller/subsystem/air/proc/sleep_active_turf(turf/open/T)
-	active_turfs -= T
+	unlist_active_turf(T)
 	if(istype(T))
 		if(T.excited && T.excited_group)
 			T.excited_group.awake_members = max(0, T.excited_group.awake_members - 1)
@@ -270,7 +549,7 @@
 		var/list/reqs = reaction.min_requirements
 		var/key_gas
 		for(var/id in reqs)
-			if(id == "TEMP" || id == "ENER" || id == "MAX_TEMP" || id == "FIRE_REAGENTS")
+			if(id == "TEMP" || id == "ENER" || id == "MAX_TEMP" || id == "FIRE_REAGENTS" || id == REACTION_REQ_MIN_PRESSURE)
 				continue
 			if(isnull(key_gas))
 				key_gas = id
@@ -317,25 +596,44 @@
 	// waking its open neighbors, thousands of wake/drop pairs per fire.
 	if(!length(open_turf.atmos_adjacent_turfs))
 		return
-	SSair.add_to_active(open_turf, FALSE)
+	// A recalculation moves no gas: give the turf its cycle to re-compare, not a
+	// fresh stall budget. A door cycling next to a settled room used to hand its
+	// whole neighborhood a new rest window every time it opened.
+	SSair.add_to_active(open_turf, FALSE, reset_stall = FALSE)
 
 /turf/proc/update_air_ref(flag)
 	if(!SSair)
 		return
 	if(!istype(src, /turf/open))
-		SSair.dm_registered_turfs -= src
 		return
 	var/turf/open/open_turf = src
 	if(flag == -1 || flag == 0 || open_turf.blocks_air || !open_turf.air)
-		SSair.dm_registered_turfs -= open_turf
 		SSair.remove_from_active(open_turf)
-	else
-		SSair.dm_registered_turfs |= open_turf
-		if((flag & AIR_REF_PLANETARY_TURF) && !istype(open_turf, /turf/open/space))
-			// Eagerly build the shared planetary template so consumers that read
-			// SSair.planetary directly (ashwalker lungs) find it populated.
-			SSair.get_planetary_template(open_turf)
-			SSair.add_to_active(open_turf, FALSE)
+		return
+	if(!(flag & AIR_REF_PLANETARY_TURF) || istype(open_turf, /turf/open/space))
+		return
+	// Eagerly build the shared planetary template so consumers that read
+	// SSair.planetary directly (ashwalker lungs) find it populated.
+	SSair.get_planetary_template(open_turf)
+	// А вот будить турф на загрузке карты нельзя, и по той же причине, по которой
+	// этого не делает пересчёт смежности тремя проками выше. setup_allturfs()
+	// идёт по ВСЕМУ миру, включая лаваленд, away-миссии, VR и руины, и клал сюда
+	// каждый планетарный турф без единой проверки.
+	//
+	// Работы в этом ноль: воздух турфа собирается из того же самого
+	// initial_gas_mix, что и шаблон, так что первый же process_cell видит
+	// совпадение и выселяет турф обратно. Прод мерил 93533 турфа в очереди, из
+	// которых оставалось около полутора тысяч - то есть 98% списка были
+	// холостыми. Платил за них раунд дважды: SSair не фитится в лобби (runlevels
+	// без RUNLEVEL_SETUP), поэтому очередь стояла нетронутой до старта и
+	// разгребалась ровно в тот момент, когда спавнится сотня игроков - это и был
+	// единственный спайк тайм-дилатации 110-120% каждого раунда.
+	//
+	// Турф, ставший планетарным уже в игре (ChangeTurf), гард не задевает.
+	if(SSair.initialized && !SSair.map_loading)
+		// Смена ссылки на смесь газ не двигала: один цикл на сверку с шаблоном
+		// турфу нужен, свежее окно отдыха - нет.
+		SSair.add_to_active(open_turf, FALSE, reset_stall = FALSE)
 
 /proc/_dm_atmos_should_process_pair(turf/open/source, turf/open/target)
 	if(!source || !target || source == target)
@@ -648,7 +946,9 @@
 			if(delta > gas_moles * MINIMUM_AIR_RATIO_TO_MOVE)
 				return id
 	for(var/id in other_gases)
-		if(id in cached_gases)
+		// Key presence, O(1), same semantics as `in`: a key holding exactly zero
+		// was already compared above and must not be re-tested here.
+		if(!isnull(cached_gases[id]))
 			continue
 		// gas_moles is 0 for ids we lack, so the ratio gate is always passed.
 		if(abs(other_gases[id] || 0) > MINIMUM_MOLES_DELTA_TO_MOVE)
@@ -813,16 +1113,15 @@
 /datum/gas_mixture/proc/react(datum/holder)
 	. = NO_REACTION
 	var/list/cached_gases = gases
-	var/total = 0
-	for(var/id in cached_gases)
-		total += cached_gases[id]
-	if(!total)
-		// A mixture that reacted on a previous call and has since been emptied
-		// must not leave stale per-call results (hotspots read them after react()).
-		if(length(reaction_results))
-			reaction_results.Cut()
-		return
-
+	// The overwhelming turf case is cool O2/N2 air. The reaction index is
+	// authoritative, so only skip when neither common gas owns a candidate and
+	// no temperature-only reaction can be eligible.
+	if(length(cached_gases) == 2 && cached_gases[GAS_O2] && cached_gases[GAS_N2] && temperature < SSair.temp_gated_min_temp)
+		var/list/reaction_index = SSair.reactions_by_key_gas
+		if(reaction_index && !reaction_index[GAS_O2] && !reaction_index[GAS_N2])
+			if(length(reaction_results))
+				reaction_results.Cut()
+			return
 	// Gather candidates through the key-gas index instead of scanning every
 	// registered reaction: a reaction can only fire if its key gas is present.
 	// This runs for every active turf, pipenet and portable every SSair fire,
@@ -862,15 +1161,37 @@
 		candidates = SSair.gas_reactions.Copy()
 		candidates_owned = TRUE
 
+	// Кандидатов нет - ни один газ смеси не владеет бакетом реакций и ни одна
+	// температурная не подошла. Дальше делать нечего, и это подавляющее
+	// большинство вызовов: react() бежит по каждому активному турфу, пайпнету и
+	// переносному баллону каждый проход SSair.
+	//
+	// Проверка стоит ПЕРЕД суммой молей намеренно: у обеих ранних развилок исход
+	// один и тот же (NO_REACTION с погашенными результатами), поэтому смеси без
+	// кандидатов незачем платить ещё одним полным проходом по списку газов.
+	// Результаты прошлого вызова гасим и здесь: их читают хотспоты сразу после
+	// react(), и залипший "fire" поджёг бы плитку, на которой уже нечему гореть.
+	if(!length(candidates))
+		if(length(reaction_results))
+			reaction_results.Cut()
+		return
+
+	var/total = 0
+	for(var/id in cached_gases)
+		total += cached_gases[id]
+	if(!total)
+		// A mixture that reacted on a previous call and has since been emptied
+		// must not leave stale per-call results (hotspots read them after react()).
+		if(length(reaction_results))
+			reaction_results.Cut()
+		return
+
 	// Every react() past the moles gate must leave reaction_results reflecting
 	// only this call: hotspots read reaction_results["fire"] right after react().
 	if(length(reaction_results))
 		reaction_results.Cut()
 	else if(!reaction_results)
 		reaction_results = new
-
-	if(!length(candidates))
-		return
 
 	// Restore the priority order of the full-list scan (insertion sort; the
 	// candidate list is nearly always 1-3 entries). A borrowed single bucket is
@@ -888,6 +1209,9 @@
 			candidates[hole + 1] = shifted
 
 	var/ener = -1
+	// Давление считается лениво и не больше одного раза за react(): реакций с
+	// порогом по давлению в игре единицы, а цикл проходят все кандидаты подряд.
+	var/reaction_pressure = -1
 	reaction_loop:
 		for(var/datum/gas_reaction/reaction as anything in candidates)
 			var/list/min_reqs = reaction.min_requirements
@@ -900,8 +1224,13 @@
 					continue
 			if(min_reqs["MAX_TEMP"] && temp > min_reqs["MAX_TEMP"])
 				continue
+			if(min_reqs[REACTION_REQ_MIN_PRESSURE])
+				if(reaction_pressure < 0)
+					reaction_pressure = return_pressure()
+				if(reaction_pressure < min_reqs[REACTION_REQ_MIN_PRESSURE])
+					continue
 			for(var/id in min_reqs)
-				if(id == "TEMP" || id == "ENER" || id == "MAX_TEMP")
+				if(id == "TEMP" || id == "ENER" || id == "MAX_TEMP" || id == REACTION_REQ_MIN_PRESSURE)
 					continue
 				if(id == "FIRE_REAGENTS")
 					if(get_oxidation_power(temp) < min_reqs[id] || get_fuel_amount(temp) < min_reqs[id])
@@ -909,6 +1238,12 @@
 					continue
 				if((cached_gases[id] || 0) < min_reqs[id])
 					continue reaction_loop
-			. |= reaction.react(src, holder)
+			var/reaction_result = reaction.react(src, holder)
+			. |= reaction_result
+			// Первый за раунд синтез газа платит очками науки. Флаг взводится
+			// после первой выплаты, поэтому дальше это одно чтение переменной, а
+			// не поиск по списку техвеба на каждом активном турфе.
+			if(!reaction.synthesis_reported && (reaction_result & REACTING) && !reaction.synthesis_self_reported)
+				reaction.report_synthesis()
 			if(. & STOP_REACTIONS)
 				break

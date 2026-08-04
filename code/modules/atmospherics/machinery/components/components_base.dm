@@ -9,6 +9,9 @@
 	var/list/datum/pipeline/parents
 	var/list/datum/gas_mixture/airs
 
+	/// Когда устройству снова можно предупредить о превышении номинала линии.
+	var/next_rating_warning = 0
+
 /obj/machinery/atmospherics/components/New()
 	parents = new(device_type)
 	airs = new(device_type)
@@ -17,6 +20,70 @@
 	for(var/i in 1 to device_type)
 		var/datum/gas_mixture/A = new(200)
 		airs[i] = A
+
+// Показания портов для интерфейсов
+
+///Подписи портов в интерфейсе. Переопределяется теми, у кого стороны
+///несимметричны: "Вход"/"Выход" честнее, чем "Порт 1"/"Порт 2".
+/obj/machinery/atmospherics/components/proc/ui_port_labels()
+	return list()
+
+///Живые показания того, что реально стоит на портах. Без них девайсовые окна
+///просили выставить давление вслепую: панель показывала только уставку.
+/obj/machinery/atmospherics/components/proc/ui_port_data()
+	var/list/labels = ui_port_labels()
+	var/list/ports = list()
+	for(var/i in 1 to length(airs))
+		var/datum/gas_mixture/port_air = airs[i]
+		if(!port_air)
+			continue
+		ports += list(list(
+			"name" = (i <= length(labels)) ? labels[i] : "Порт [i]",
+			"pressure" = round(port_air.return_pressure(), 0.01),
+			"temperature" = round(port_air.return_temperature(), 0.01),
+			"moles" = round(port_air.total_moles(), 0.01),
+			"connected" = !isnull(nodes) && (i <= length(nodes)) && !isnull(nodes[i]),
+		))
+	return ports
+
+/// Номинал сети на указанном порту. null, если порта нет: панель тогда молчит,
+/// а не показывает ноль, который читался бы как "линия ничего не держит".
+///
+/// По умолчанию берётся выход - насос давит именно в него. Сбросной клапан
+/// передаёт 1: он защищает ВХОДНУЮ линию, сбрасывая из неё наружу, и подсказка
+/// про выход была бы там прямой дезинформацией.
+/obj/machinery/atmospherics/components/proc/output_line_rating(index = 2)
+	var/datum/pipeline/line = length(parents) >= index ? parents[index] : null
+	return line?.min_rating
+
+/// Текущее давление на выходе. Нужно там, где уставка задаётся не в кПа
+/// (объёмный насос задаёт л/с), и сравнивать её с номиналом бессмысленно.
+/obj/machinery/atmospherics/components/proc/output_line_pressure()
+	var/datum/gas_mixture/out = length(airs) >= 2 ? airs[2] : null
+	return out ? round(out.return_pressure()) : null
+
+/// Одна строка в чат, когда игрок выставил значение выше номинала линии.
+/// Кулдаун обязателен: панель дёргает ui_act на каждое нажатие стрелки, и без
+/// него совет превратился бы в спам и был бы отфильтрован глазами.
+/obj/machinery/atmospherics/components/proc/warn_over_line_rating(mob/user, value)
+	var/rating = output_line_rating()
+	if(!rating || value <= rating || world.time < next_rating_warning)
+		return
+	next_rating_warning = world.time + ATMOS_LINE_RATING_WARNING_COOLDOWN
+	if(value > rating * PIPE_STRESS_RUPTURE_RATIO)
+		to_chat(user, "<span class='warning'>[value] кПа при номинале линии [rating] кПа - линию разорвёт.</span>")
+		return
+	to_chat(user, "<span class='warning'>[value] кПа при номинале линии [rating] кПа - линия начнёт травить.</span>")
+
+/// Строка для examine: инженер должен видеть запас, не открывая панель.
+///
+/// Возвращает список, а не строку с null на пустом месте: `. += null` в DM
+/// кладёт в examine пустой ЭЛЕМЕНТ, а `. += list()` не кладёт ничего.
+/obj/machinery/atmospherics/components/proc/line_rating_examine(index = 2)
+	var/rating = output_line_rating(index)
+	if(!rating)
+		return list()
+	return list("<span class='notice'>Выход подключён к линии с номиналом [rating] кПа.</span>")
 
 // Iconnery
 
@@ -57,9 +124,9 @@
 
 /obj/machinery/atmospherics/components/proc/get_pipe_underlay(state, dir, color = null)
 	if(color)
-		. = getpipeimage('icons/obj/atmospherics/components/binary_devices.dmi', state, dir, color, piping_layer = shift_underlay_only ? piping_layer : 2)
+		. = getpipeimage('icons/obj/atmospherics/components/binary_devices.dmi', state, dir, color, piping_layer = shift_underlay_only ? piping_layer : PIPING_LAYER_DEFAULT)
 	else
-		. = getpipeimage('icons/obj/atmospherics/components/binary_devices.dmi', state, dir, piping_layer = shift_underlay_only ? piping_layer : 2)
+		. = getpipeimage('icons/obj/atmospherics/components/binary_devices.dmi', state, dir, piping_layer = shift_underlay_only ? piping_layer : PIPING_LAYER_DEFAULT)
 
 // Pipenet stuff; housekeeping
 
@@ -142,7 +209,7 @@
 				P.other_airs -= air_ref
 				changed = TRUE
 			if(changed)
-				P.update = TRUE
+				P.mark_dirty()
 				if(!length(P.other_atmosmch) && !length(P.members))
 					qdel(P)
 
@@ -232,7 +299,7 @@
 			investigate_log("[type] at [COORD(src)] is missing a pipenet, rebuilding", INVESTIGATE_ATMOS)
 			SSair.add_to_rebuild_queue(src)
 		else
-			parent.update = TRUE
+			parent.mark_dirty()
 
 /obj/machinery/atmospherics/components/returnPipenets()
 	. = list()
@@ -310,16 +377,18 @@
 	if(!filled_pipe)
 		return default_deconstruction_crowbar(tool)
 
-	to_chat(user, span_notice("You begin to unfasten \the [src]..."))
-
 	if(environment_air)
 		internal_pressure -= environment_air.return_pressure()
 
+	// Same deal as unwrenching a pipe: instant unless the thing is still holding
+	// pressure, in which case the warning below needs a window to matter.
+	var/deconstruct_delay = 0
 	if(internal_pressure > 2 * ONE_ATMOSPHERE)
 		to_chat(user, span_warning("As you begin deconstructing \the [src] a gush of air blows in your face... maybe you should reconsider?"))
 		unsafe_wrenching = TRUE
+		deconstruct_delay = ATMOS_UNSAFE_WRENCH_DELAY
 
-	if(!do_after(user, 2 SECONDS, src))
+	if(deconstruct_delay && !do_after(user, deconstruct_delay, src))
 		return TRUE
 	if(unsafe_wrenching)
 		unsafe_pressure_release(user, internal_pressure)

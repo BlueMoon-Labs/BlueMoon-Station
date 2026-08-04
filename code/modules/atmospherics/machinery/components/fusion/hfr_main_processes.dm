@@ -195,6 +195,10 @@
 
 	var/common_production_amount = production_amount * selected_fuel.gas_production_multiplier
 	moderator_common_process(seconds_per_tick, common_production_amount, hfr_internal_output, hfr_moderator_list, dirty_production_rate, heat_output, radiation_modifier)
+	// hfr_internal_output очищается выше, в начале того же прохода, поэтому здесь
+	// лежит только свежий выхлоп: транзитный газ открытием не засчитается. Для
+	// заукера и антинобеля HFR - единственный источник помимо разряда супермтерии.
+	register_gas_synthesis_from_mixture(hfr_internal_output)
 
 /// Топливо: вычитаем из fusion по requirements, добавляем primary_products. В модератор по уровням (tier) добавляем вторичные продукты. Коэффициенты по уровням захардкожены.
 /obj/machinery/atmospherics/components/unary/hypertorus/core/proc/moderator_fuel_process(seconds_per_tick, production_amount, consumption_amount, datum/gas_mixture/internal_output, moderator_list, datum/hfr_fuel/fuel, fuel_list)

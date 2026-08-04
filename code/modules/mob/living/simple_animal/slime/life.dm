@@ -10,6 +10,8 @@
 	/// Оценка голода (0/1/2), зафиксированная на всю текущую погоню. См. latch_chase_hunger().
 	var/chase_hunger = 0
 
+	typing_indicator_state = /obj/effect/overlay/typing_indicator/slime
+
 /// TRUE when this slime is allowed to take an aimless wander step this tick.
 /// Aimless wandering was the single biggest slime cost on a packed xenobio farm:
 /// one step out of a crowded turf costs hundreds of microseconds, and every slime
@@ -21,8 +23,6 @@
 /// Records that a wander step was taken, starting the cooldown.
 /mob/living/simple_animal/slime/proc/note_wander()
 	next_wander = world.time + SLIME_WANDER_COOLDOWN
-
-	typing_indicator_state = /obj/effect/overlay/typing_indicator/slime
 
 /mob/living/simple_animal/slime/BiologicalLife(delta_time, times_fired)
 	// Слайм в стазисе/бессознанке не доходит до AI-очистки ниже, поэтому удалённые

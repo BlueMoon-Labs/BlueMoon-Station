@@ -11,12 +11,15 @@
 	volume = 260
 	construction_type = /obj/item/pipe/binary
 	pipe_state = "manifoldlayer"
+	paintable = FALSE
 	var/list/front_nodes
 	var/list/back_nodes
 
 /obj/machinery/atmospherics/pipe/layer_manifold/Initialize(mapload)
-	front_nodes = list()
-	back_nodes = list()
+	// Один слот на слой с самого начала: update_icon() зовут раньше, чем
+	// findAllConnections(), и по пустому списку он бы упал на индексе.
+	front_nodes = new /list(PIPING_LAYER_MAX)
+	back_nodes = new /list(PIPING_LAYER_MAX)
 	icon_state = "manifoldlayer_center"
 	return ..()
 
@@ -36,37 +39,37 @@
 /obj/machinery/atmospherics/pipe/layer_manifold/proc/get_all_connected_nodes()
 	return front_nodes + back_nodes + nodes
 
-/obj/machinery/atmospherics/pipe/layer_manifold/update_icon()	//HEAVILY WIP FOR UPDATE ICONS!!
+/obj/machinery/atmospherics/pipe/layer_manifold/update_icon()
 	cut_overlays()
 	layer = initial(layer) + (PIPING_LAYER_MAX * PIPING_LAYER_LCHANGE)	//This is above everything else.
 
-	for(var/node in front_nodes)
-		add_attached_images(node)
-	for(var/node in back_nodes)
-		add_attached_images(node)
+	// Слот знает свой слой, сосед - только свой цвет. Раньше слой брали у соседа,
+	// а у соседнего адаптера собственного слоя нет: он сидит во всех слотах
+	// сразу, и стык двух адаптеров рисовал одну трубу вместо пяти.
+	// nullifyAllNodes() обнуляет оба списка перед смертью, а disconnect() соседа
+	// может докатиться сюда уже после.
+	for(var/piping in PIPING_LAYER_MIN to PIPING_LAYER_MAX)
+		if(piping <= length(front_nodes))
+			add_attached_image(front_nodes[piping], piping)
+		if(piping <= length(back_nodes))
+			add_attached_image(back_nodes[piping], piping)
 
 	update_alpha()
 
-/obj/machinery/atmospherics/pipe/layer_manifold/proc/add_attached_images(obj/machinery/atmospherics/A)
-	if(!A)
+/obj/machinery/atmospherics/pipe/layer_manifold/proc/add_attached_image(obj/machinery/atmospherics/neighbour, piping)
+	if(!neighbour)
 		return
-	if(istype(A, /obj/machinery/atmospherics/pipe/layer_manifold))
-		for(var/i in PIPING_LAYER_MIN to PIPING_LAYER_MAX)
-			add_attached_image(get_dir(src, A), i)
-			return
-	add_attached_image(get_dir(src, A), A.piping_layer, A.pipe_color)
-
-/obj/machinery/atmospherics/pipe/layer_manifold/proc/add_attached_image(p_dir, p_layer, p_color = null)
-	var/image/I
-
-	if(p_color)
-		I = getpipeimage(icon, "pipe", p_dir, p_color, piping_layer = piping_layer)
+	// Слой входит в ключ кэша getpipeimage(), так что у каждого слоя свой образ
+	// со своим смещением. Раньше все патрубки брали один кэшированный образ и по
+	// очереди переписывали ему pixel_x - чужой кэш уезжал следом.
+	var/image/attached
+	if(neighbour.pipe_color)
+		attached = getpipeimage(icon, "pipe", get_dir(src, neighbour), neighbour.pipe_color, piping)
 	else
-		I = getpipeimage(icon, "pipe", p_dir, piping_layer = piping_layer)
+		attached = getpipeimage(icon, "pipe", get_dir(src, neighbour), piping_layer = piping)
 
-	I.layer = layer - 0.01
-	PIPING_LAYER_SHIFT(I, p_layer)
-	add_overlay(I)
+	attached.layer = layer - 0.01
+	add_overlay(attached)
 
 /obj/machinery/atmospherics/pipe/layer_manifold/SetInitDirections()
 	switch(dir)
@@ -81,18 +84,21 @@
 	. = ..()
 
 /obj/machinery/atmospherics/pipe/layer_manifold/proc/findAllConnections()
-	front_nodes = list()
-	back_nodes = list()
+	// Слот с номером слоя, а не "сколько нашлось": у промаха обязан остаться
+	// пустой слот, иначе update_icon() и disconnect() считают слои по позиции в
+	// списке и уезжают на один вниз с первого же несоединённого слоя.
+	front_nodes = new /list(PIPING_LAYER_MAX)
+	back_nodes = new /list(PIPING_LAYER_MAX)
 	var/list/new_nodes = list()
-	for(var/iter in PIPING_LAYER_MIN to PIPING_LAYER_MAX)
-		var/obj/machinery/atmospherics/foundfront = findConnecting(dir, iter)
-		var/obj/machinery/atmospherics/foundback = findConnecting(turn(dir, 180), iter)
-		front_nodes += foundfront
-		back_nodes += foundback
-		if(foundfront && !QDELETED(foundfront))
-			new_nodes += foundfront
-		if(foundback && !QDELETED(foundback))
-			new_nodes += foundback
+	for(var/piping in PIPING_LAYER_MIN to PIPING_LAYER_MAX)
+		var/obj/machinery/atmospherics/found_front = findConnecting(dir, piping)
+		var/obj/machinery/atmospherics/found_back = findConnecting(turn(dir, 180), piping)
+		front_nodes[piping] = found_front
+		back_nodes[piping] = found_back
+		if(found_front && !QDELETED(found_front))
+			new_nodes += found_front
+		if(found_back && !QDELETED(found_back))
+			new_nodes += found_back
 	update_icon()
 	return new_nodes
 
@@ -131,4 +137,6 @@
 		user.ventcrawl_layer = clamp(user.ventcrawl_layer + 1, PIPING_LAYER_MIN, PIPING_LAYER_MAX)
 	if((SOUTH|WEST) & dir)
 		user.ventcrawl_layer = clamp(user.ventcrawl_layer - 1, PIPING_LAYER_MIN, PIPING_LAYER_MAX)
-	to_chat(user, "You align yourself with the [user.ventcrawl_layer]\th output.")
+	// Слоёв стало пять, так что "какой-то там выход" больше не ориентир: внутри
+	// адаптера видно только номер, на который ты перестроился.
+	to_chat(user, span_notice("Ты перестраиваешься на [user.ventcrawl_layer]-й слой из [PIPING_LAYER_MAX]."))

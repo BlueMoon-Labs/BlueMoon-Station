@@ -40,17 +40,22 @@
 	else
 		assembly = new(src)
 		assembly.build_state = 3
-	air_update_turf(TRUE)
+	if(!mapload)
+		AddComponent(/datum/component/atmos_fan_safety, ATMOS_POWERED_FAN_MAX_PRESSURE_DIFFERENTIAL)
+	refresh_atmos_barrier(TRUE)
 
 /obj/machinery/poweredfans/power_change()
 	..()
-	if(powered())
-		icon_state = "mfan_powered"
-		CanAtmosPass = ATMOS_PASS_NO
-		air_update_turf(TRUE)
-	else
-		icon_state = "mfan_unpowered"
-		CanAtmosPass = ATMOS_PASS_YES
-		air_update_turf(TRUE)
-	update_icon_state()
+	refresh_atmos_barrier()
+
+/obj/machinery/poweredfans/proc/refresh_atmos_barrier(force_update = FALSE)
+	var/datum/component/atmos_fan_safety/safety = GetComponent(/datum/component/atmos_fan_safety)
+	var/blocking = powered() && !safety?.tripped
+	var/new_pass = blocking ? ATMOS_PASS_NO : ATMOS_PASS_YES
+	icon_state = blocking ? "mfan_powered" : "mfan_unpowered"
+	color = safety?.tripped ? "#d8a040" : initial(color)
+	if(!force_update && CanAtmosPass == new_pass)
+		return
+	CanAtmosPass = new_pass
+	air_update_turf(TRUE)
 

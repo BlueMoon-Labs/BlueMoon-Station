@@ -922,6 +922,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		COOLDOWN_START(src, saveprefcooldown, PREF_SAVE_COOLDOWN)
 	if(pref_queue)
 		deltimer(pref_queue)
+	// Обнуляем явно: сработавший one-shot оставлял непустой id, и следующая
+	// постановка в очередь сверялась бы с протухшим крайним сроком.
+	pref_queue = null
+	pref_queue_deadline = 0
 	// Сотни WRITE_FILE подряд - это синхронный поход на диск, во время которого
 	// процесс не исполняет DM и не жжёт CPU. Детектор спайков видел такое как
 	// безымянный "внешний столл", поэтому замеряем
@@ -1083,7 +1087,13 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	if(parent && !silent)
 		to_chat(parent, span_notice("Saving preferences in [save_in * 0.1] second\s."))
 	if(pref_queue)
+		// Крайний срок уже наступил: пусть заряженный таймер отработает, иначе
+		// поток правок чаще кулдауна переносит запись бесконечно.
+		if(world.time >= pref_queue_deadline)
+			return
 		deltimer(pref_queue)
+	else
+		pref_queue_deadline = world.time + PREF_SAVE_MAX_DEFER
 	pref_queue = addtimer(CALLBACK(src, PROC_REF(save_preferences), TRUE, silent), save_in, TIMER_STOPPABLE)
 
 /datum/preferences/proc/load_character(slot, bypass_cooldown = FALSE, savefile/provided)
@@ -1954,6 +1964,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		COOLDOWN_START(src, savecharcooldown, PREF_SAVE_COOLDOWN)
 	if(char_queue)
 		deltimer(char_queue)
+	char_queue = null
+	char_queue_deadline = 0
 	var/blocking_started_ms = blocking_call_start()
 	var/savefile/S = new /savefile(export ? null : path)
 	if(!S)
@@ -2251,7 +2263,12 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	if(parent && !silent)
 		to_chat(parent, span_notice("Saving character in [save_in * 0.1] second\s."))
 	if(char_queue)
+		// См. queue_save_pref: перенос отложенной записи ограничен крайним сроком.
+		if(world.time >= char_queue_deadline)
+			return
 		deltimer(char_queue)
+	else
+		char_queue_deadline = world.time + PREF_SAVE_MAX_DEFER
 	char_queue = addtimer(CALLBACK(src, PROC_REF(save_character), TRUE, silent), save_in, TIMER_STOPPABLE)
 
 #undef SAVEFILE_VERSION_MAX

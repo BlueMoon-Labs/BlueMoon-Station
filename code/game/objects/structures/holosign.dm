@@ -85,7 +85,7 @@
 
 /obj/structure/holosign/barrier/atmos
 	name = "holo fan"
-	desc = "A holographic barrier resembling a tiny fan. Though it does not prevent solid objects from passing through, gas is kept out. Somehow."
+	desc = "Голографический барьер в виде крошечного вентилятора. Твёрдые предметы проходят насквозь, газ нет. Предохранительной муфты, которая распахивается у собранного вентилятора, здесь нет - проекция держит любой перепад давления, пока её питает эмиттер."
 	icon_state = "holo_fan"
 	density = FALSE
 	anchored = TRUE
@@ -116,7 +116,7 @@
 
 /obj/structure/holosign/barrier/combifan
 	name = "holo combifan"
-	desc = "A holographic barrier resembling a blue-accented tiny fan. Though it does not prevent solid objects from passing through, gas and temperature changes are kept out."
+	desc = "Голографический барьер в виде крошечного вентилятора с синей отделкой. Твёрдые предметы проходят насквозь, газ и тепло нет. Муфты у проекции нет, любой перепад давления она держит целиком - пока её питает эмиттер."
 	icon_state = "holo_combifan"
 	max_integrity = 30
 	density = FALSE

@@ -8,6 +8,60 @@ import { getGasColor, getGasLabel } from '../constants';
 import { formatSiBaseTenUnit, formatSiUnit } from '../format';
 import { Window } from '../layouts';
 
+/**
+ * Потолок шкалы газа синтеза приходит из ui_static_data() полем
+ * base_max_temperature (hfr_parts.dm:204 = FUSION_MAXIMUM_TEMPERATURE,
+ * code/__DEFINES/reactions.dm:47). Это значение здесь только на случай
+ * первой отрисовки, пока статика ещё не приехала.
+ */
+const FALLBACK_MAX_FUSION_TEMPERATURE = 1e8;
+
+/**
+ * Модератор, выход и хладагент греются не напрямую, а теплообменом от газа
+ * синтеза (hfr_main_processes.dm:481-501), и их рабочие температуры на
+ * порядки ниже. Потолок 1e8 держал эти три полосы в нуле всегда.
+ * Берём 1e7 - единственный порог, который DM проверяет по температуре
+ * модератора (HFR_ANTINOBLIUM_TEMP_THRESHOLD, _hfr_defines.dm:69,
+ * применяется в hfr_main_processes.dm:292). Выход считается как
+ * температура модератора * HIGH_EFFICIENCY_CONDUCTIVITY 0.95
+ * (hfr_main_processes.dm:328), то есть заведомо ниже; хладагент DM меряет
+ * порогом HYPERTORUS_COLD_COOLANT_THRESHOLD = 1e5 (_hfr_defines.dm:175),
+ * тоже с запасом внутри.
+ */
+const MAX_SECONDARY_TEMPERATURE = 1e7;
+
+/**
+ * heat_limiter_modifier = 5 * 10^power_level * (heating_conductor * 0.01)
+ * (hfr_main_processes.dm:171 на константах HFR_HEAT_LIMITER_BASE = 5 и
+ * HFR_MAGNETIC_VOLUME_FRAC = 0.01, _hfr_defines.dm:41 и :99). power_level
+ * упирается в 6 (hfr_procs.dm:195-196), heating_conductor - в 500
+ * (clamp в hfr_parts.dm:340), значит максимум 5 * 1e6 * 5 = 2.5e7.
+ */
+const MAX_HEAT_LIMITER_MODIFIER = 2.5e7;
+
+/**
+ * energy = energy_modifiers * c^2 * max(T * heat_modifier / 100, 1)
+ * (hfr_main_processes.dm:161-163). c^2 собирается из LIGHT_SPEED_SQ_SCALED
+ * и LIGHT_SPEED_SQ_SCALE (_hfr_defines.dm:6-9) и равен ~9e16;
+ * температурный множитель упирается в FUSION_MAXIMUM_TEMPERATURE 1e8
+ * (reactions.dm:47) при heat_modifier на потолке HFR_MODIFIER_CLAMP_MAX 100
+ * (_hfr_defines.dm:28, применяется hfr_main_processes.dm:148), то есть в 1e8.
+ * При единичных модификаторах это ~9e24, округляем до 1e25. Стоявшее тут
+ * 1e35 - это HFR_ENERGY_CLAMP_MAX (_hfr_defines.dm:32-33), который сам
+ * подписан "float safety": страховка от переполнения, а не игровой предел.
+ */
+const MAX_REACTOR_ENERGY = 1e25;
+
+/**
+ * Второй аргумент formatSiBaseTenUnit (format.js:146) — это minBase1000,
+ * нижняя граница десятичной приставки, а не точность. Единица требовала
+ * печатать не мельче тысяч, и всё ниже 500 K схлопывалось в «0 · 10³ K»:
+ * подпись переставала отличать комнатные 293 K от настоящего нуля, а это
+ * состояние простаивающего или штатно охлаждённого реактора. Ноль разрешает
+ * форматтеру остаться в единицах; тысячи и миллионы он подберёт сам.
+ */
+const TEMPERATURE_MIN_BASE_1000 = 0;
+
 /** Heat output is in K; negative = endothermic cooling. formatSiBaseTenUnit breaks on 0 and negatives. */
 const formatHeatOutputKelvin = (kelvin) => {
   if (!Number.isFinite(kelvin)) {
@@ -17,7 +71,8 @@ const formatHeatOutputKelvin = (kelvin) => {
     return '0 K';
   }
   const sign = kelvin > 0 ? '+' : '-';
-  return sign + formatSiBaseTenUnit(Math.abs(kelvin), 1, 'K');
+  return sign + formatSiBaseTenUnit(
+    Math.abs(kelvin), TEMPERATURE_MIN_BASE_1000, 'K');
 };
 
 export const Hypertorus = (props) => {
@@ -54,9 +109,16 @@ export const Hypertorus = (props) => {
     mod_filtering_rate,
     heat_output_min,
     heat_output_max,
+    base_max_temperature,
   } = data;
+  const maxFusionTemperature = Number.isFinite(base_max_temperature)
+    && base_max_temperature > 0
+    ? base_max_temperature
+    : FALLBACK_MAX_FUSION_TEMPERATURE;
+  // heat_output приходит из hfr_parts.dm:276 сырым Кельвином: обёртка
+  // HFR_SANITIZE_HEAT (_hfr_defines.dm:45) для валидных чисел тождественна,
+  // так что домножать его на тысячу здесь было нечем оправдать.
   const safeHeatOutput = Number.isFinite(heat_output) ? heat_output : 0;
-  const heatOutputKelvin = safeHeatOutput * 1000;
   const heatLimitMin = Number.isFinite(heat_output_min) ? heat_output_min : -1;
   const heatLimitMax = Number.isFinite(heat_output_max) && heat_output_max !== 0
     ? heat_output_max
@@ -225,7 +287,7 @@ export const Hypertorus = (props) => {
                 color={'yellow'}
                 value={energy_level}
                 minValue={0}
-                maxValue={1e35}>
+                maxValue={MAX_REACTOR_ENERGY}>
                 {formatSiUnit(energy_level, 1, 'J')}
               </ProgressBar>
             </LabeledList.Item>
@@ -233,9 +295,10 @@ export const Hypertorus = (props) => {
               <ProgressBar
                 color={'blue'}
                 value={heat_limiter_modifier}
-                minValue={-1e40}
-                maxValue={1e30}>
-                {formatSiBaseTenUnit(heat_limiter_modifier * 1000, 1, 'K')}
+                minValue={0}
+                maxValue={MAX_HEAT_LIMITER_MODIFIER}>
+                {formatSiBaseTenUnit(
+                  heat_limiter_modifier, TEMPERATURE_MIN_BASE_1000, 'K')}
               </ProgressBar>
             </LabeledList.Item>
             <LabeledList.Item label="Heat Output">
@@ -244,7 +307,7 @@ export const Hypertorus = (props) => {
                 value={safeHeatActivity}
                 minValue={-1}
                 maxValue={1.3}>
-                {formatHeatOutputKelvin(heatOutputKelvin)}
+                {formatHeatOutputKelvin(safeHeatOutput)}
               </ProgressBar>
             </LabeledList.Item>
           </LabeledList>
@@ -256,8 +319,9 @@ export const Hypertorus = (props) => {
                 color={'yellow'}
                 value={internal_fusion_temperature}
                 minValue={0}
-                maxValue={1e30}>
-                {formatSiBaseTenUnit(internal_fusion_temperature * 1000, 1, 'K')}
+                maxValue={maxFusionTemperature}>
+                {formatSiBaseTenUnit(
+                  internal_fusion_temperature, TEMPERATURE_MIN_BASE_1000, 'K')}
               </ProgressBar>
             </LabeledList.Item>
             <LabeledList.Item label="Moderator gas temperature">
@@ -265,8 +329,9 @@ export const Hypertorus = (props) => {
                 color={'red'}
                 value={moderator_internal_temperature}
                 minValue={0}
-                maxValue={1e30}>
-                {formatSiBaseTenUnit(moderator_internal_temperature * 1000, 1, 'K')}
+                maxValue={MAX_SECONDARY_TEMPERATURE}>
+                {formatSiBaseTenUnit(
+                  moderator_internal_temperature, TEMPERATURE_MIN_BASE_1000, 'K')}
               </ProgressBar>
             </LabeledList.Item>
             <LabeledList.Item label="Output gas temperature">
@@ -274,8 +339,9 @@ export const Hypertorus = (props) => {
                 color={'pink'}
                 value={internal_output_temperature}
                 minValue={0}
-                maxValue={1e30}>
-                {formatSiBaseTenUnit(internal_output_temperature * 1000, 1, 'K')}
+                maxValue={MAX_SECONDARY_TEMPERATURE}>
+                {formatSiBaseTenUnit(
+                  internal_output_temperature, TEMPERATURE_MIN_BASE_1000, 'K')}
               </ProgressBar>
             </LabeledList.Item>
             <LabeledList.Item label="Coolant output temperature">
@@ -283,8 +349,9 @@ export const Hypertorus = (props) => {
                 color={'green'}
                 value={internal_coolant_temperature}
                 minValue={0}
-                maxValue={1e30}>
-                {formatSiBaseTenUnit(internal_coolant_temperature * 1000, 1, 'K')}
+                maxValue={MAX_SECONDARY_TEMPERATURE}>
+                {formatSiBaseTenUnit(
+                  internal_coolant_temperature, TEMPERATURE_MIN_BASE_1000, 'K')}
               </ProgressBar>
             </LabeledList.Item>
           </LabeledList>

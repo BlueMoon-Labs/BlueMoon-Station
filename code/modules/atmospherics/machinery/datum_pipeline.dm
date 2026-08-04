@@ -10,21 +10,53 @@
 	/// machine on every reconcile.
 	var/list/obj/machinery/atmospherics/components/bridging_atmosmch
 
+	/// Сеть ждёт реконсиляции. Писать НАПРЯМУЮ нельзя - только через
+	/// [/datum/pipeline/proc/mark_dirty]: флаг обязан ходить парой со списком
+	/// SSair.dirty_networks, иначе сеть либо перестанет обсчитываться совсем
+	/// (газ в трубе замрёт), либо застрянет в списке навсегда.
 	var/update = TRUE
 	///Pipenet pressure at the last idle-machine wake broadcast; reconcile_air
 	///wakes attached machines when pressure moves more than
 	///ATMOS_PIPENET_WAKE_PRESSURE_DELTA away from it.
 	var/last_wake_pressure = 0
+	///Heat exchanging members, tracked separately so the temperature broadcast
+	///does not have to scan the whole members list every reconcile. These sit in
+	///`members`, which the pressure broadcast never touches, and they are the
+	///only pipes that idle out - so they need a wake path of their own.
+	var/list/obj/machinery/atmospherics/pipe/heat_exchanging/heat_exchanging_members
+	///Pipenet temperature at the last heat exchanging wake broadcast.
+	var/last_wake_temperature = 0
+
+	/// Минимальный номинал по членам сети. Рвётся всегда слабейшее звено,
+	/// поэтому один обычный переходник задаёт потолок всему контуру. Стартует
+	/// с максимума, чтобы первый же track_member() опустил его до правды.
+	var/min_rating = PIPE_PRESSURE_RATING_REINFORCED
+	/// Накопленная усталость, PIPE_FATIGUE_MAX = следующая стадия повреждения.
+	var/fatigue = 0
+	/// Члены сети со стадией выше PIPE_DAMAGE_INTACT.
+	var/list/obj/machinery/atmospherics/pipe/damaged_members
+	/// Стоит ли сеть на учёте в SSair.stressed_pipenets.
+	var/stress_registered = FALSE
+	/// Когда сети снова можно подать голос в комнату.
+	var/next_stress_message = 0
 
 /datum/pipeline/New()
 	other_airs = list()
 	members = list()
 	other_atmosmch = list()
 	SSair.networks += src
+	// Свежая сеть родилась грязной (см. дефолт update): её нужно свести хотя бы
+	// раз, иначе собранный контур не поедет до первого внешнего события.
+	SSair.dirty_networks += src
 
 /datum/pipeline/Destroy()
 	SSair.networks -= src
+	SSair.dirty_networks -= src
 	SSair.currentrun -= src
+	SSair.stressed_pipenets -= src
+	update = FALSE
+	stress_registered = FALSE
+	damaged_members = null
 	if(air?.return_volume())  //	BLUEMOON EDIT: TODO:runtime
 		temporarily_store_air()
 	// Implicitly-typed `for(... in list)` skips null entries; `as anything` does
@@ -43,21 +75,53 @@
 	other_atmosmch.Cut()
 	other_airs.Cut()
 	bridging_atmosmch = null
+	heat_exchanging_members = null
 	QDEL_NULL(air)
 	return ..()
+
+/// Единственный вход для «сеть надо свести». Ставит флаг и заводит сеть в
+/// список грязных, по которому идёт фаза пайпнетов.
+///
+/// До этого фаза копировала и опрашивала ВСЕ сети каждый проход, а
+/// `/datum/pipeline/process()` выходил первой же строкой у подавляющего
+/// большинства. В раунде 9868 это дало ровно 3.0-3.45 мс в КАЖДОЙ из 248 строк
+/// perf-лога - при том, что остальные фазы гуляли в десять раз, - на 379-402
+/// сетях, из которых реально обновлялась горстка.
+/datum/pipeline/proc/mark_dirty()
+	if(update)
+		return
+	update = TRUE
+	if(SSair)
+		SSair.dirty_networks += src
 
 /datum/pipeline/process()
 	if(!update)	//	BLUEMOON EDIT: TODO:runtime
 		return	//	BLUEMOON EDIT: TODO:runtime
 	update = FALSE
 	reconcile_air()
-	update = air?.react(src)
+	// react() может вернуть REACTING - тогда сеть остаётся грязной и обязана
+	// вернуться в список. Прямая запись `update = ...` этого не сделала бы.
+	if(air?.react(src))
+		mark_dirty()
+	wake_heat_exchangers()
+	// Давление считается РОВНО ОДИН раз за проход и обслуживает обоих
+	// потребителей: постановку на учёт по напряжению и рассылку пробуждений.
+	// Отдельный return_pressure() под каждого стоил бы вдвое, а на перф-ветке
+	// это недопустимо.
+	var/current_pressure = air ? air.return_pressure() : 0
+	// Постановка на учёт идёт здесь, а не выше выхода по !update: подняться туда
+	// значило бы считать давление и у сетей, которые вообще не обновляются. И
+	// не нужно - сеть, переставшая обновляться, перестала менять давление, а на
+	// последнем своём проходе уже встала на учёт с тем давлением, с которым
+	// уснула. Но обязательно ВЫШЕ выхода по other_atmosmch: чисто трубная сеть
+	// до него не доживает, а рваться она может не хуже прочих.
+	if(!stress_registered && min_rating > 0 && current_pressure > min_rating)
+		SSair.register_stressed_pipenet(src)
 	// A meaningful pressure change (pipe emptied, distro refilled) must pull
 	// idle-heartbeat vents attached to this net back to full processing; small
 	// jitter around a steady pressure must not.
 	if(!length(other_atmosmch) && !bridging_atmosmch)
 		return
-	var/current_pressure = air ? air.return_pressure() : 0
 	if(abs(current_pressure - last_wake_pressure) <= ATMOS_PIPENET_WAKE_PRESSURE_DELTA)
 		return
 	last_wake_pressure = current_pressure
@@ -72,7 +136,40 @@
 	for(var/obj/machinery/atmospherics/components/bridge in bridging_atmosmch)
 		for(var/datum/pipeline/bridged_net in bridge.parents)
 			if(bridged_net != src)
-				bridged_net.update = TRUE
+				bridged_net.mark_dirty()
+
+/// Wakes sleeping heat exchanging members after the net's temperature moved.
+///
+/// Heat exchangers idle out once their air matches their surroundings, so heat
+/// arriving through the pipeline (a burn chamber venting into the loop, a
+/// freezer starting up) has to reach them explicitly. The pressure broadcast
+/// below cannot do it: it iterates other_atmosmch, and pipes are not in it.
+/datum/pipeline/proc/wake_heat_exchangers()
+	if(!heat_exchanging_members)
+		return
+	var/current_temperature = air ? air.return_temperature() : 0
+	if(abs(current_temperature - last_wake_temperature) <= ATMOS_PIPENET_WAKE_TEMPERATURE_DELTA)
+		return
+	last_wake_temperature = current_temperature
+	// The filtering `in` form skips stale nulls left by hard-deleted members.
+	// An actively circulating loop crosses the threshold every fire while its
+	// pipes are already awake and working, so test the flag inline rather than
+	// paying a proc call per member to have atmos_wake() decide the same thing.
+	for(var/obj/machinery/atmospherics/pipe/heat_exchanging/exchanger in heat_exchanging_members)
+		if(exchanger.atmos_idle_queued || exchanger.atmos_idle_streak)
+			exchanger.atmos_wake()
+
+/// Adds a pipe to the members list, keeping the heat exchanging index in step.
+/datum/pipeline/proc/track_member(obj/machinery/atmospherics/pipe/member)
+	members += member
+	min_rating = min(min_rating, member.pressure_rating)
+	// Перестроенная сеть обязана подобрать уже пробитые трубы и сразу встать на
+	// учёт: дыра переживает разборку соседней секции, а вместе с ней и утечку.
+	if(member.damage_stage)
+		LAZYOR(damaged_members, member)
+		SSair.register_stressed_pipenet(src)
+	if(istype(member, /obj/machinery/atmospherics/pipe/heat_exchanging))
+		LAZYOR(heat_exchanging_members, member)
 
 /datum/pipeline/proc/build_pipeline(obj/machinery/atmospherics/base)
 	if(QDELETED(base))
@@ -82,7 +179,7 @@
 	if(istype(base, /obj/machinery/atmospherics/pipe))
 		var/obj/machinery/atmospherics/pipe/E = base
 		volume = E.volume
-		members += E
+		track_member(E)
 		if(E.air_temporary)
 			air = E.air_temporary
 			E.air_temporary = null
@@ -130,7 +227,7 @@
 						pipenetwarnings -= 1
 						if(pipenetwarnings == 0)
 							log_mapping("build_pipeline(): further messages about pipenets will be suppressed")
-				members += item
+				track_member(item)
 				possible_expansions += item
 
 				volume += item.volume
@@ -180,7 +277,7 @@
 			if(E)
 				merge(E)
 		if(!members.Find(P))
-			members += P
+			track_member(P)
 			air.set_volume(air.return_volume() + P.volume)
 	else
 		A.setPipenet(src, N)
@@ -191,8 +288,18 @@
 		return
 	air.set_volume(air.return_volume() + E.air.return_volume())
 	members.Add(E.members)
+	// members.Add() минует track_member(), поэтому номинал и список пробитых
+	// труб переносятся здесь руками.
+	min_rating = min(min_rating, E.min_rating)
+	if(E.damaged_members)
+		LAZYOR(damaged_members, E.damaged_members)
+		E.damaged_members = null
+		SSair.register_stressed_pipenet(src)
 	for(var/obj/machinery/atmospherics/pipe/S in E.members)
 		S.parent = src
+	if(E.heat_exchanging_members)
+		LAZYOR(heat_exchanging_members, E.heat_exchanging_members)
+		E.heat_exchanging_members = null
 	air.merge(E.air)
 	for(var/obj/machinery/atmospherics/components/C in E.other_atmosmch)
 		C.replacePipenet(E, src)
@@ -205,7 +312,7 @@
 	other_airs |= E.other_airs
 	E.members.Cut()
 	E.other_atmosmch.Cut()
-	update = TRUE
+	mark_dirty()
 	qdel(E)
 
 /obj/machinery/atmospherics/proc/addMember(obj/machinery/atmospherics/A)
@@ -289,7 +396,7 @@
 				(partial_heat_capacity*target.heat_capacity/(partial_heat_capacity+target.heat_capacity))
 
 			air.set_temperature(air.return_temperature() - heat/total_heat_capacity)
-	update = TRUE
+	mark_dirty()
 
 /datum/pipeline/proc/return_air()
 	. = other_airs.Copy()

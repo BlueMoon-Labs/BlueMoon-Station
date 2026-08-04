@@ -50,32 +50,38 @@
 
 	for(var/direction in GLOB.cardinals_multiz)
 		var/turf/current_turf = get_step_multiz(src, direction)
-		if(!isopenturf(current_turf))
+		if(!current_turf)
 			conductivity_blocked_directions |= direction
+			continue
 
-			if(current_turf)
-				atmos_adjacent_turfs -= current_turf
-				LAZYREMOVE(current_turf.atmos_adjacent_turfs, src)
+		//Conductivity Update. Heat is blocked by a zero-conductivity pairing or
+		//by an object that blocks heat (BlockThermalConductivity). A closed
+		//neighbor does NOT set the bit: conduction through solid turfs is
+		//exactly what superconduction models (see LINDA_turf_tile.dm).
+		var/opp = REVERSE_DIR(direction)
+		var/heat_blocked = !thermal_conductivity || !heat_capacity || !current_turf.thermal_conductivity || !current_turf.heat_capacity
+		if(!heat_blocked)
+			for(var/obj/O in contents + current_turf.contents)
+				if(O.BlockThermalConductivity()) 	//the direction and open/closed are already checked on CanAtmosPass() so there are no arguments
+					heat_blocked = TRUE
+					break
+		if(heat_blocked)
+			conductivity_blocked_directions |= direction
+			current_turf.conductivity_blocked_directions |= opp
+		else
+			// Self-healing: a removed blocker (deconstructed heatproof door)
+			// must reopen the neighbor's side toward us too.
+			current_turf.conductivity_blocked_directions &= ~opp
+		//End Conductivity Update
 
+		if(!isopenturf(current_turf))
+			atmos_adjacent_turfs -= current_turf
+			LAZYREMOVE(current_turf.atmos_adjacent_turfs, src)
 			continue
 
 		var/other_contains_firelock = 1
 		if(locate(/obj/machinery/door/firedoor) in current_turf)
 			other_contains_firelock |= 2
-
-		//Conductivity Update
-		var/opp = REVERSE_DIR(direction)
-		// all these must be above zero for processing
-		if(!thermal_conductivity || !heat_capacity || !current_turf.thermal_conductivity || !current_turf.heat_capacity)
-			conductivity_blocked_directions |= direction
-			current_turf.conductivity_blocked_directions |= opp
-		else
-			for(var/obj/O in contents + current_turf.contents)
-				if(O.BlockThermalConductivity()) 	//the direction and open/closed are already checked on CanAtmosPass() so there are no arguments
-					conductivity_blocked_directions |= direction
-					current_turf.conductivity_blocked_directions |= opp
-					break
-		//End Conductivity Update
 
 		if(!(blocks_air || current_turf.blocks_air) && ((direction & (UP|DOWN))? (canvpass && CANVERTICALATMOSPASS(current_turf, src)) : (canpass && CANATMOSPASS(current_turf, src))))
 			atmos_adjacent_turfs[current_turf] = other_contains_firelock | src_contains_firelock

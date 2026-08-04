@@ -114,6 +114,20 @@ All ShuttleMove procs go here
 		SSspatial_grid.exit_cell(src, oldT)
 		SSspatial_grid.enter_cell(src, newT)
 
+	//по той же причине руками переносим подписку на выброс газа: её ведёт элемент
+	//atmos_sensitive из react_to_move() по COMSIG_MOVABLE_MOVED, которого тут нет,
+	//поэтому запись оставалась в atmos_exposure_listeners покинутого турфа. Список
+	//ключуется слушателем, то есть турф держит на атом жёсткую ссылку, а Detach при
+	//удалении ищет запись на ТЕКУЩЕМ турфе и не находит - улетевшее с шаттлом
+	//стекло, решётка или канистра уходили в харддел на ~240мс каждая. ChangeTurf
+	//ещё и переносит список на замену турфа, так что ScrapeAway() после отлёта
+	//протухшую запись не чистил, а продлевал.
+	var/exposure_handler = LAZYACCESS(oldT.atmos_exposure_listeners, src)
+	if(exposure_handler)
+		unregister_turf_exposure(oldT)
+		register_turf_exposure(newT, exposure_handler)
+		atmos_conditions_changed()
+
 	return TRUE
 
 // Called on atoms after everything has been moved

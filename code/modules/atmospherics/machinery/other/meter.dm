@@ -109,6 +109,17 @@
 		var/datum/gas_mixture/environment = target.return_air()
 		if(environment)
 			. = "The pressure gauge reads [round(environment.return_pressure(), 0.01)] kPa; [round(environment.return_temperature(),0.01)] K ([round(environment.return_temperature()-T0C,0.01)]&deg;C)."
+			// Метр стоит ровно там, где инженер и смотрит на давление, поэтому
+			// он же обязан говорить, много это или мало для данной линии.
+			var/obj/machinery/atmospherics/pipe/gauged = target
+			if(istype(gauged) && gauged.parent?.min_rating > 0)
+				var/rating = gauged.parent.min_rating
+				var/percent = round(environment.return_pressure() / rating * 100)
+				. += " Номинал линии [rating] кПа, загрузка [percent]%."
+				if(percent >= PIPE_STRESS_RUPTURE_RATIO * 100)
+					. += " <span class='warning'>Выше предела - линию рвёт.</span>"
+				else if(percent >= 100)
+					. += " <span class='warning'>Выше номинала - линия начнёт травить.</span>"
 		else
 			. = "The sensor error light is blinking."
 	else

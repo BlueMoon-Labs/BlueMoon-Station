@@ -97,7 +97,7 @@
 /area/shuttle/escape)
 "gm" = (
 /obj/effect/spawner/structure/window/shuttle,
-/obj/machinery/atmospherics/pipe/manifold4w/general/visible/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/general/visible/layer2,
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt"
 	},
@@ -161,7 +161,7 @@
 /area/shuttle/escape)
 "kf" = (
 /obj/structure/closet/emcloset,
-/obj/machinery/atmospherics/pipe/simple/general/visible/layer1,
+/obj/machinery/atmospherics/pipe/simple/general/visible/layer2,
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt"
 	},
@@ -186,7 +186,7 @@
 	},
 /area/shuttle/escape)
 "kZ" = (
-/obj/machinery/atmospherics/pipe/simple/general/visible/layer1{
+/obj/machinery/atmospherics/pipe/simple/general/visible/layer2{
 	dir = 9
 	},
 /turf/closed/wall/mineral/titanium,
@@ -216,7 +216,7 @@
 "ns" = (
 /obj/structure/table/glass,
 /obj/machinery/recharger,
-/obj/machinery/atmospherics/pipe/manifold4w/general/visible/layer1,
+/obj/machinery/atmospherics/pipe/manifold4w/general/visible/layer2,
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt"
 	},
@@ -240,7 +240,7 @@
 /obj/machinery/computer/crew{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/general/visible/layer1{
+/obj/machinery/atmospherics/pipe/simple/general/visible/layer2{
 	dir = 6
 	},
 /turf/open/floor/plasteel/white{
@@ -251,7 +251,7 @@
 /obj/machinery/light{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/general/visible/layer1{
+/obj/machinery/atmospherics/pipe/simple/general/visible/layer2{
 	dir = 8
 	},
 /turf/open/floor/plasteel/white{
@@ -288,7 +288,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/visible{
 	dir = 6
 	},
-/obj/machinery/atmospherics/pipe/simple/general/visible/layer1{
+/obj/machinery/atmospherics/pipe/simple/general/visible/layer2{
 	dir = 4
 	},
 /turf/open/floor/plasteel/white{
@@ -310,7 +310,7 @@
 /area/shuttle/escape)
 "pT" = (
 /obj/effect/spawner/structure/window/shuttle,
-/obj/machinery/atmospherics/pipe/simple/general/visible/layer1,
+/obj/machinery/atmospherics/pipe/simple/general/visible/layer2,
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt"
 	},
@@ -324,7 +324,7 @@
 /turf/open/floor/mineral/plastitanium/red,
 /area/shuttle/escape)
 "rD" = (
-/obj/machinery/atmospherics/pipe/simple/general/visible/layer1{
+/obj/machinery/atmospherics/pipe/simple/general/visible/layer2{
 	dir = 10
 	},
 /obj/item/kirbyplants/random,
@@ -333,7 +333,7 @@
 	},
 /area/shuttle/escape)
 "rY" = (
-/obj/machinery/atmospherics/pipe/simple/general/visible/layer1{
+/obj/machinery/atmospherics/pipe/simple/general/visible/layer2{
 	dir = 5
 	},
 /turf/open/floor/plasteel/white{
@@ -344,7 +344,7 @@
 /obj/structure/chair/comfy/shuttle{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/manifold/general/visible/layer1,
+/obj/machinery/atmospherics/pipe/manifold/general/visible/layer2,
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt"
 	},
@@ -488,7 +488,7 @@
 	pixel_x = 6;
 	pixel_y = 24
 	},
-/obj/machinery/atmospherics/pipe/simple/general/visible/layer1{
+/obj/machinery/atmospherics/pipe/simple/general/visible/layer2{
 	dir = 5
 	},
 /turf/open/floor/plasteel/white{
@@ -519,7 +519,7 @@
 /area/shuttle/escape)
 "AR" = (
 /obj/machinery/computer/emergency_shuttle,
-/obj/machinery/atmospherics/pipe/simple/general/visible/layer1{
+/obj/machinery/atmospherics/pipe/simple/general/visible/layer2{
 	dir = 9
 	},
 /turf/open/floor/plasteel/white{
@@ -565,7 +565,7 @@
 	},
 /area/shuttle/escape)
 "Eh" = (
-/obj/machinery/atmospherics/pipe/manifold/general/visible/layer1{
+/obj/machinery/atmospherics/pipe/manifold/general/visible/layer2{
 	dir = 1
 	},
 /turf/closed/wall/mineral/titanium,
@@ -601,7 +601,7 @@
 	pixel_x = 6;
 	pixel_y = -24
 	},
-/obj/machinery/atmospherics/pipe/simple/general/visible/layer1,
+/obj/machinery/atmospherics/pipe/simple/general/visible/layer2,
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt"
 	},
@@ -659,7 +659,7 @@
 /obj/structure/chair/comfy/shuttle{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/general/visible/layer1{
+/obj/machinery/atmospherics/pipe/simple/general/visible/layer2{
 	dir = 10
 	},
 /turf/open/floor/plasteel/white{
@@ -794,7 +794,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/shuttle/escape)
 "RZ" = (
-/obj/machinery/atmospherics/pipe/simple/general/visible/layer1,
+/obj/machinery/atmospherics/pipe/simple/general/visible/layer2,
 /turf/open/floor/plasteel/white{
 	icon_state = "plaswhite_whole_alt"
 	},
@@ -828,7 +828,7 @@
 	},
 /area/shuttle/escape)
 "Vn" = (
-/obj/machinery/atmospherics/pipe/simple/general/visible/layer1,
+/obj/machinery/atmospherics/pipe/simple/general/visible/layer2,
 /turf/closed/wall/mineral/titanium,
 /area/shuttle/escape)
 "VZ" = (
@@ -908,7 +908,7 @@
 	},
 /area/shuttle/escape)
 "Zx" = (
-/obj/machinery/atmospherics/pipe/simple/general/visible/layer1{
+/obj/machinery/atmospherics/pipe/simple/general/visible/layer2{
 	dir = 8
 	},
 /turf/closed/wall/mineral/titanium,

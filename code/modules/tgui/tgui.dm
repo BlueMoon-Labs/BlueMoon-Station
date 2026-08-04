@@ -192,7 +192,10 @@
 	if(closing)
 		return
 	closing = TRUE
-	for(var/datum/tgui/child in children)
+	//Обход строго по копии: child.close() снимает себя из этого же children
+	//(и там, и в Destroy), от чего индекс сдвигается и каждый второй ребёнок
+	//оставался открытым - с живыми user и src_object в списках подсистемы.
+	for(var/datum/tgui/child as anything in children.Copy())
 		child.close(can_be_suspended, logout)
 	// If we don't have window_id, open proc did not have the opportunity
 	// to finish, therefore it's safe to skip this whole block.

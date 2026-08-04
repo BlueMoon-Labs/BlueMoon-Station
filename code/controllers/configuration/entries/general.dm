@@ -413,7 +413,14 @@
 /datum/config_entry/flag/atmos_equalize_enabled
 	default = FALSE
 
-/// Multiplier for atmos processing speed (share steps, equalization turf limit). 1 = default, 10 = 10x faster equalization/reactions.
+/// Turf-to-turf heat conduction through solids (superconduction). Registration
+/// starts only above MINIMUM_TEMPERATURE_START_SUPERCONDUCTION, so a station at
+/// room temperature pays one variable read per active turf.
+/datum/config_entry/flag/atmos_heat_enabled
+	default = TRUE
+
+/// Multiplier for how often SSair fires. 1 = default cadence, 2 = twice as often, so gas
+/// moves twice as fast for roughly twice the CPU. Applied through SSair.set_atmos_speed().
 /datum/config_entry/number/atmos_speed_multiplier
 	default = 1
 	min_val = 1

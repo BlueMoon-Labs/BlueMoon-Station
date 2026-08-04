@@ -130,9 +130,16 @@
 
 /mob/living/simple_animal/bot/cleanbot/Destroy()
 	if(weapon)
+		//drop_part ждёт ТИППАТ и делает по нему new(). Живой нож давал рантайм
+		//"new() called with an object of type ... instead of the type path itself"
+		//прямо посередине Destroy (раунд 9859), а дальше разбор бота не выполнялся
+		//вовсе: ни janitor_devices, ни bots_list, ни bot_core, ни родительский
+		//Destroy. Бот оставался вечным мусором с поднятым флагом удаления.
 		var/atom/Tsec = drop_location()
 		weapon.force = weapon_orig_force
-		drop_part(weapon, Tsec)
+		if(Tsec)
+			weapon.forceMove(Tsec)
+		weapon = null
 	GLOB.janitor_devices -= src
 	return ..()
 
@@ -285,21 +292,28 @@
 		if(!length(candidate_filter))
 			return
 
-		cached_view = shuffle(view(DEFAULT_SCAN_RANGE, src))
 		// Grid cells are deliberately broader than the requested range and do
 		// not encode opacity. Keep only candidates BYOND actually exposes.
 		// Множество строится один раз: view() в грязном коридоре это больше тысячи
 		// атомов, и перебирать его на каждого кандидата - квадратичный проход
 		var/list/exposed_by_view = list()
-		for(var/atom/seen as anything in cached_view)
+		for(var/atom/seen as anything in view(DEFAULT_SCAN_RANGE, src))
 			exposed_by_view[seen] = TRUE
 		var/list/visible_candidates = list()
+		var/list/visible_filter = list()
 		for(var/atom/candidate as anything in candidate_filter)
-			if(exposed_by_view[candidate])
-				visible_candidates[candidate] = TRUE
-		candidate_filter = visible_candidates
+			if(!exposed_by_view[candidate])
+				continue
+			visible_candidates += candidate
+			visible_filter[candidate] = TRUE
+		candidate_filter = visible_filter
 		if(!length(candidate_filter))
 			return
+		// Тасуем только кандидатов, а не всю view(): раньше перемешивалась тысяча с
+		// лишним атомов ради полусотни, которые вообще могут стать целью. Распределение
+		// то же - случайная перестановка подмножества совпадает с перестановкой
+		// надмножества, отфильтрованной до него.
+		cached_view = shuffle(visible_candidates)
 	else if(!cached_view)
 		cached_view = shuffle(view(DEFAULT_SCAN_RANGE, src))
 
@@ -334,7 +348,7 @@
 				priority = 4
 			else if(trash && istype(candidate, /obj/item/trash))
 				priority = 5
-		if(!priority || candidates[priority] || (REF(candidate) in ignore_list))
+		if(!priority || candidates[priority] || ignore_list[REF(candidate)])
 			continue
 
 		var/atom/scan_result = process_scan(candidate)
@@ -400,7 +414,14 @@
 					return
 			else
 				shuffle = TRUE	//Shuffle the list the next time we scan so we dont both go the same way.
-			path = list()
+			// Мы уже стоим на цели. JPS от клетки к ней же всегда отдаёт пустой путь
+			// (search() выходит на start == end), после чего bot_move() гарантированно
+			// возвращал FALSE и код шёл сюда же. Считать этот путь незачем: это захват
+			// семафора пулла путей плюс /datum/pathfind на каждое начало уборки.
+			set_path(null)
+			add_to_ignore(target)
+			target = null
+			return
 
 		if(!path || path.len == 0) //No path, need a new one
 			//Try to produce a path to the target, and ignore airlocks to which it has access.
