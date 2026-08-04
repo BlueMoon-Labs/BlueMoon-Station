@@ -138,6 +138,62 @@
 		scrubber.atmos_consider_idle()
 	TEST_ASSERT_EQUAL(scrubber.atmos_idle_tier, 1, "an event wake did not reset the backoff ladder")
 
+/// Рассылка пробуждений пайпнета обязана срабатывать и в криоконтуре, где всё
+/// рабочее давление лежит ниже абсолютных 5 кПа: порог там берётся долей от
+/// давления сети. Раунд 9875 - помпы контура морозилки на 2.7К "отмирали" до
+/// двух минут (heartbeat с откатом), потому что сеть молчала о любых скачках.
+/datum/unit_test/atmos_pipenet_cryo_wake/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/room = run_loc_floor_bottom_left
+	TEST_ASSERT(istype(room), "test location is not an open turf")
+	var/obj/machinery/atmospherics/components/unary/vent_scrubber/scrubber = allocate(/obj/machinery/atmospherics/components/unary/vent_scrubber, room)
+
+	var/datum/pipeline/net = new()
+	net.air = new(200)
+	net.air.set_temperature(T20C)
+	net.other_atmosmch += scrubber
+
+	// Свежесобранная сеть на криодавлении (~2 кПа - выше порога 5 кПа она не
+	// поднимется НИКОГДА) обязана разбудить участников первым же сведением.
+	var/moles_per_kpa = 200 / (R_IDEAL_GAS_EQUATION * T20C)
+	net.air.set_moles(GAS_O2, 2 * moles_per_kpa)
+	for(var/i in 1 to ATMOS_MACHINE_IDLE_STREAK)
+		scrubber.atmos_consider_idle()
+	TEST_ASSERT(SSair.idle_machine_queued(scrubber), "scrubber did not enter the idle queue")
+	net.process()
+	TEST_ASSERT(scrubber.atmos_processing, "a fresh sub-5 kPa pipenet did not wake its sleeping member")
+	TEST_ASSERT(!SSair.idle_machine_queued(scrubber), "the woken scrubber was left in the heartbeat queue")
+
+	// Дрожь ниже относительного порога будить не должна.
+	for(var/i in 1 to ATMOS_MACHINE_IDLE_STREAK)
+		scrubber.atmos_consider_idle()
+	net.air.set_moles(GAS_O2, 2.05 * moles_per_kpa)
+	net.mark_dirty()
+	net.process()
+	TEST_ASSERT(SSair.idle_machine_queued(scrubber), "sub-threshold cryo jitter woke the sleeping member")
+
+	// А реальный для криоконтура скачок в полкилопаскаля - обязан.
+	net.air.set_moles(GAS_O2, 2.55 * moles_per_kpa)
+	net.mark_dirty()
+	net.process()
+	TEST_ASSERT(scrubber.atmos_processing, "a meaningful cryo-scale pressure jump did not wake the sleeping member")
+
+	// На высоком давлении абсолютный порог остаётся прежним: 3 кПа при 4000 кПа
+	// это шум, просыпаться от него нельзя.
+	net.air.set_moles(GAS_O2, 4000 * moles_per_kpa)
+	net.mark_dirty()
+	net.process()
+	for(var/i in 1 to ATMOS_MACHINE_IDLE_STREAK)
+		scrubber.atmos_consider_idle()
+	net.air.set_moles(GAS_O2, 4003 * moles_per_kpa)
+	net.mark_dirty()
+	net.process()
+	TEST_ASSERT(SSair.idle_machine_queued(scrubber), "a 3 kPa ripple on a 4000 kPa pipenet woke the sleeping member")
+
+	scrubber.atmos_wake()
+	net.other_atmosmch.Cut()
+	qdel(net)
+
 /// Фаза пайпнетов ходит по списку грязных сетей, а не по всем подряд. Инвариант:
 /// сеть с поднятым `update` обязана лежать в очереди - иначе газ в ней замрёт
 /// навсегда. Флаг и список ходят парой только через mark_dirty().

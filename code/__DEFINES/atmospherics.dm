@@ -638,6 +638,16 @@ GLOBAL_LIST_INIT(atmos_adjacent_savings, list(0,0))
 #define ATMOS_MACHINE_IDLE_BACKOFF_STEPS 3
 /// Pipenet pressure change (kPa) after reconcile that wakes idle machines attached to it.
 #define ATMOS_PIPENET_WAKE_PRESSURE_DELTA 5
+/// Ниже 100 кПа порог пробуждения берётся долей от давления сети, а не
+/// абсолютом: криоконтур на 2.7К целиком живёт ниже 5 кПа, и с абсолютным
+/// порогом рассылка не срабатывала для него никогда - спящие машины там держал
+/// один heartbeat, после отката до двух минут на событие (раунд 9875, "помпы
+/// сами отмирают").
+#define ATMOS_PIPENET_WAKE_PRESSURE_RATIO 0.05
+/// Пол относительного порога (кПа): пустая или свежесобранная сеть обязана
+/// проснуться от первого же пришедшего газа, но не от дрожи давления в
+/// последних разрядах мантиссы.
+#define ATMOS_PIPENET_WAKE_PRESSURE_FLOOR 0.1
 /// Pipenet temperature change (K) after reconcile that wakes idle heat exchanging
 /// pipes on it. Their own conduction gate is far finer (0.01 K), so this is only
 /// the "heat arrived from elsewhere in the loop" trigger; a slow drift that never

@@ -122,7 +122,11 @@
 	// jitter around a steady pressure must not.
 	if(!length(other_atmosmch) && !bridging_atmosmch)
 		return
-	if(abs(current_pressure - last_wake_pressure) <= ATMOS_PIPENET_WAKE_PRESSURE_DELTA)
+	// Порог относительный на низких давлениях: у криоконтура (2.7К) весь рабочий
+	// диапазон лежит ниже абсолютных 5 кПа, и любое реальное событие оставалось
+	// немым - спящие помпы там ждали одного лишь heartbeat.
+	var/wake_delta = min(ATMOS_PIPENET_WAKE_PRESSURE_DELTA, max(ATMOS_PIPENET_WAKE_PRESSURE_FLOOR, max(current_pressure, last_wake_pressure) * ATMOS_PIPENET_WAKE_PRESSURE_RATIO))
+	if(abs(current_pressure - last_wake_pressure) <= wake_delta)
 		return
 	last_wake_pressure = current_pressure
 	// The filtering `in` form skips stale nulls left by hard-deleted members.
