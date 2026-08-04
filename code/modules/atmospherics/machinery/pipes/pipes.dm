@@ -8,6 +8,8 @@
 	var/volume_per_node = PIPE_VOLUME_PER_NODE_STANDARD
 	/// PIPE_DAMAGE_INTACT / LEAK / RUPTURE. Лечится сваркой.
 	var/damage_stage = PIPE_DAMAGE_INTACT
+	/// world.time следующего шипения травящей трубы (см. vent_breach).
+	var/next_breach_effect = 0
 
 	level = 1
 

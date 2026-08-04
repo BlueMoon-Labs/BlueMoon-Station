@@ -120,6 +120,17 @@
 		return 0
 	location.assume_air(escaped)
 	location.air_update_turf()
+	// Свищ обязан быть слышен, пока травит: welder_act отправляет искать его
+	// "по шипению и пару", а под плиткой это единственная наводка - сам маркер
+	// повреждения на скрытой трубе не виден (доклад "газы просто пропадают из
+	// труб", раунд 9875). Порог по head глушит выдохшуюся линию.
+	if(head >= 0.1 && world.time >= next_breach_effect)
+		next_breach_effect = world.time + PIPE_BREACH_EFFECT_COOLDOWN
+		playsound(location, 'sound/effects/spray.ogg', damage_stage == PIPE_DAMAGE_RUPTURE ? 40 : 20, TRUE)
+		if(damage_stage == PIPE_DAMAGE_RUPTURE)
+			var/datum/effect_system/steam_spread/steam = new
+			steam.set_up(1, FALSE, location)
+			steam.start()
 	return litres * head
 
 /// Поднимает стадию на единицу и показывает это комнате.
