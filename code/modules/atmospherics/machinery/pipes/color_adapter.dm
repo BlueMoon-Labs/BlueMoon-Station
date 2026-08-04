@@ -15,6 +15,9 @@
 	construction_type = /obj/item/pipe/binary
 	pipe_state = "adapter_center"
 	paintable = FALSE
+	// Как у layer adaptor: муфта не бывает усиленной и не должна быть
+	// слабейшим звеном линии.
+	pressure_rating = PIPE_PRESSURE_RATING_REINFORCED
 	var/mutable_appearance/center
 
 /obj/machinery/atmospherics/pipe/color_adapter/Initialize(mapload)

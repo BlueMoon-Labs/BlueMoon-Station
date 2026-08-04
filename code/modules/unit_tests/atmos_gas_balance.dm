@@ -26,8 +26,9 @@
 	TEST_ASSERT(feed.return_pressure() < gated.min_pressure, "тест сам себе противоречит: контрольное давление уже выше порога")
 	TEST_ASSERT(!machine.check_pressure_requirements(), "рецепт с порогом пошёл на давлении обычной разводки")
 
-	// Усиленная линия: ворота открываются.
-	feed.set_moles(GAS_CO2, MOLES_CELLSTANDARD * 60)
+	// Усиленная линия: ворота открываются. Сто ячеек - это ~10100 кПа, с
+	// запасом выше порога 1.5 номинала при любом разумном номинале.
+	feed.set_moles(GAS_CO2, MOLES_CELLSTANDARD * 100)
 	TEST_ASSERT(feed.return_pressure() >= gated.min_pressure, "тест не смог поднять давление выше порога")
 	TEST_ASSERT(machine.check_pressure_requirements(), "рецепт не пошёл на давлении, которое держит только усиленная линия")
 
@@ -305,7 +306,8 @@
 	TEST_ASSERT_EQUAL(catalyst_mix.get_moles(GAS_FLUXIN), 0,
 		"флюксин сварился на давлении обычной разводки")
 
-	catalyst_mix.set_volume(50)
+	// 80 молей при 400К в 30 литрах - ~8860 кПа, выше порога 6750.
+	catalyst_mix.set_volume(30)
 	catalyst_mix.set_temperature(FLUXIN_FORMATION_MIN_TEMP + 100)
 	TEST_ASSERT(catalyst_mix.return_pressure() >= GAS_HIGH_PRESSURE_SYNTHESIS,
 		"тест не смог поднять давление катализатора выше порога")

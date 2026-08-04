@@ -22,6 +22,16 @@
 	// и брать более слабую было бы незачем.
 	TEST_ASSERT(strong.volume < plain.volume, "усиленная труба обязана быть теснее обычной")
 
+	// Переходники не бывают усиленными, а линия без них не собирается: муфта
+	// с обычным номиналом делала полностью усиленный контур невозможным и
+	// назначала себя жертвой разрыва (доклад FL-432, раунд 9875).
+	var/obj/machinery/atmospherics/pipe/layer_manifold/adaptor = allocate(/obj/machinery/atmospherics/pipe/layer_manifold)
+	TEST_ASSERT_EQUAL(adaptor.pressure_rating, PIPE_PRESSURE_RATING_REINFORCED, "layer adaptor не должен быть слабейшим звеном линии")
+	var/obj/machinery/atmospherics/pipe/color_adapter/recolor = allocate(/obj/machinery/atmospherics/pipe/color_adapter)
+	TEST_ASSERT_EQUAL(recolor.pressure_rating, PIPE_PRESSURE_RATING_REINFORCED, "color adapter не должен быть слабейшим звеном линии")
+	var/obj/machinery/atmospherics/pipe/bridge_pipe/bridge = allocate(/obj/machinery/atmospherics/pipe/bridge_pipe)
+	TEST_ASSERT_EQUAL(bridge.pressure_rating, PIPE_PRESSURE_RATING_REINFORCED, "bridge pipe не должен быть слабейшим звеном линии")
+
 /// Сеть держит столько, сколько держит её слабейшее звено.
 /datum/unit_test/atmos_pipe_weakest_link
 
@@ -41,10 +51,15 @@
 	var/datum/pipeline/net = allocate(/datum/pipeline)
 	TEST_ASSERT_EQUAL(net.stress_stage_cap(0.9), PIPE_DAMAGE_INTACT, "под номиналом стадия расти не должна")
 	TEST_ASSERT_EQUAL(net.stress_stage_cap(1.2), PIPE_DAMAGE_INTACT, "в полосе гула стадия расти не должна")
-	// 4500 кПа газового насоса на номинале 3000 - это ровно 1.5.
-	TEST_ASSERT_EQUAL(net.stress_stage_cap(1.5), PIPE_DAMAGE_LEAK, "насос на максимуме должен упираться в течь")
-	// 9000 кПа объёмного насоса на том же номинале - это 3.
-	TEST_ASSERT_EQUAL(net.stress_stage_cap(3), PIPE_DAMAGE_RUPTURE, "тройное превышение должно доходить до разрыва")
+	// Обещание баланса после полунедели на проде: газовый насос, выкрученный в
+	// потолок, обычной трубе НЕ враг. Ломает линии только осознанный перегруз -
+	// объёмный насос, нагрев, бомбы. Ассерт держит это от молчаливого дрейфа
+	// номинала или потолка насоса.
+	TEST_ASSERT_EQUAL(net.stress_stage_cap(MAX_OUTPUT_PRESSURE / PIPE_PRESSURE_RATING_STANDARD), PIPE_DAMAGE_INTACT, "газовый насос на максимуме не должен повреждать обычную трубу")
+	TEST_ASSERT_EQUAL(net.stress_stage_cap(1.5), PIPE_DAMAGE_LEAK, "полуторное превышение должно упираться в течь")
+	// 9000 кПа - зашитый потолок объёмного насоса (volume_pump.dm), на
+	// номинале 4500 это ровно 2.0.
+	TEST_ASSERT_EQUAL(net.stress_stage_cap(9000 / PIPE_PRESSURE_RATING_STANDARD), PIPE_DAMAGE_RUPTURE, "потолок объёмного насоса должен доходить до разрыва")
 
 /// Потолок прироста усталости - это и есть обещание "мгновенных отказов не бывает".
 /datum/unit_test/atmos_pipe_fatigue_cap
@@ -119,9 +134,9 @@
 /// Штатное мапповое оборудование не имеет права продавливать обычную трубу.
 ///
 /// Сифонные вентиляторы газовых хранилищ стояли на 4000 кПа - числе, которое до
-/// появления номинала трубы не значило ничего. С номиналом 3000 оно даёт
-/// напряжение 1.333 при пороге течи 1.3, то есть линии выхода танков на КАЖДОЙ
-/// станции начинали течь сами, без участия игрока. Сифон при этом компрессирует
+/// появления номинала трубы не значило ничего: при первом номинале (3000) линии
+/// выхода танков на КАЖДОЙ станции начинали течь сами, без участия игрока.
+/// Сифон при этом компрессирует
 /// без ограничения по мощности: в формуле переноса участвует только разность
 /// между его потолком и давлением в трубе, давление комнаты не участвует.
 ///
