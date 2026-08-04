@@ -37,11 +37,3 @@
 			add_overlay( getpipeimage(icon, "pipe-[piping_layer]", get_dir(src, nodes[i])) )
 	update_layer()
 	update_alpha()
-
-/obj/machinery/atmospherics/pipe/manifold4w/reinforced
-	icon = 'icons/obj/atmospherics/pipes/reinforced_manifold.dmi'
-	name = "reinforced 4-way pipe manifold"
-	desc = "Четырёхходовой коллектор из толстостенных труб. Держит высокое давление ценой просвета."
-	pressure_rating = PIPE_PRESSURE_RATING_REINFORCED
-	volume_per_node = PIPE_VOLUME_PER_NODE_REINFORCED
-	pipe_state = "reinforced_manifold4w"

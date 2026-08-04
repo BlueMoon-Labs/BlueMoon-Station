@@ -1,5 +1,5 @@
 /// Разделы справочника сверх газов и реакций: инструменты, методы,
-/// безопасность, давление в трубах.
+/// безопасность.
 ///
 /// Без теста раздел, который перестал собираться (опечатка в категории, пустой
 /// init_body), просто исчезает из окна, и заметить это некому: справочник
@@ -12,7 +12,7 @@
 	TEST_ASSERT(length(sections) > 0, "справочник не собрал ни одного раздела")
 
 	var/list/seen_categories = list()
-	var/list/pressure_paragraphs = list()
+	var/list/all_paragraphs = list()
 	for(var/list/section as anything in sections)
 		var/category = section["category"]
 		TEST_ASSERT(length(category) > 0, "у раздела справочника нет заголовка")
@@ -27,8 +27,7 @@
 			for(var/paragraph in paragraphs)
 				// Порог грубый, но он ловит заглушки вида "Смотри вики".
 				TEST_ASSERT(length(paragraph) > 60, "абзац топика [title] слишком короткий, чтобы что-то объяснить")
-			if(category == ATMOS_HANDBOOK_CATEGORY_PRESSURE)
-				pressure_paragraphs += paragraphs
+			all_paragraphs += paragraphs
 
 	for(var/category in GLOB.atmos_handbook_categories)
 		TEST_ASSERT(category in seen_categories, "раздел [category] объявлен в порядке разделов, но в справочник не попал")
@@ -36,10 +35,9 @@
 	// Числа механики живут в дефайнах, и справочник обязан их подставлять, а не
 	// повторять руками. Если кто-то заменит подстановку литералом, а потом
 	// поправит дефайн, справочник начнёт врать - вот ровно это здесь и ловится.
-	var/pressure_text = jointext(pressure_paragraphs, " ")
-	TEST_ASSERT(findtext(pressure_text, "[PIPE_PRESSURE_RATING_REINFORCED]"), "раздел про давление не называет номинал усиленной трубы")
-	TEST_ASSERT(findtext(pressure_text, "[PIPE_VOLUME_PER_NODE_STANDARD]"), "раздел про давление не называет объём обычной трубы")
-	TEST_ASSERT(findtext(pressure_text, "[GAS_RECIPE_HIGH_PRESSURE]"), "раздел про давление не называет порог верхних рецептов кристаллизатора")
+	var/handbook_text = jointext(all_paragraphs, " ")
+	TEST_ASSERT(findtext(handbook_text, "[GAS_RECIPE_HIGH_PRESSURE]"), "справочник не называет порог верхних рецептов кристаллизатора")
+	TEST_ASSERT(findtext(handbook_text, "[VOLUME_PUMP_PRESSURE_CEILING]"), "справочник не называет потолок объёмного насоса")
 
 	// Окно справочника отдаёт ровно то, что собрано: поле могло не пробросить.
 	var/list/payload = GLOB.atmos_handbook.ui_static_data(null)

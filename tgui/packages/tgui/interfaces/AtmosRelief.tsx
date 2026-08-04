@@ -1,10 +1,9 @@
 import { BooleanLike } from 'common/react';
 
 import { useBackend } from '../backend';
-import { Box, Button, LabeledList, NumberInput, Section } from '../components';
+import { Button, LabeledList, NumberInput, Section } from '../components';
 import { Window } from '../layouts';
 import { AtmosPorts, PortReading } from './common/AtmosPorts';
-import { LineRatingHint } from './common/LineRatingHint';
 
 type AtmosReliefData = {
   open_pressure: number;
@@ -13,8 +12,6 @@ type AtmosReliefData = {
   min_open_pressure: number;
   max_close_pressure: number;
   opened: BooleanLike;
-  /** Номинал защищаемой линии, null если клапан ни к чему не подключён. */
-  line_rating?: number;
   ports?: PortReading[];
 };
 
@@ -22,10 +19,8 @@ export const AtmosRelief = () => {
   const { act, data } = useBackend<AtmosReliefData>();
   const maxPressure = data.max_pressure || 4500;
   const ports = data.ports || [];
-  // Строка "Линия" условная - без слагаемого окно обрезает показания снизу.
-  const lineRow = data.line_rating ? 22 : 0;
   return (
-    <Window width={400} height={200 + lineRow + ports.length * 22}>
+    <Window width={400} height={200 + ports.length * 22}>
       <Window.Content>
         <Section>
           <LabeledList>
@@ -79,21 +74,6 @@ export const AtmosRelief = () => {
                 onClick={() => act('close_pressure', { pressure: 'max' })}
               />
             </LabeledList.Item>
-            {!!data.line_rating && (
-              <LabeledList.Item label="Линия">
-                {/* Сбросной клапан существует ровно ради того, чтобы линия не
-                    доходила до номинала. Порог выше номинала обесценивает его
-                    целиком, и молчать об этом нельзя. */}
-                {data.open_pressure > data.line_rating ? (
-                  <Box color="average">
-                    Номинал линии: {data.line_rating} кПа — клапан откроется
-                    позже, чем линия начнёт травить
-                  </Box>
-                ) : (
-                  <LineRatingHint rating={data.line_rating} variant="info" />
-                )}
-              </LabeledList.Item>
-            )}
           </LabeledList>
         </Section>
         <AtmosPorts />

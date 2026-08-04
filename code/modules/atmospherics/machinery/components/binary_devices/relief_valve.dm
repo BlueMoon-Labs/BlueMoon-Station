@@ -90,7 +90,6 @@
 	data["min_open_pressure"] = round(close_pressure)
 	data["max_close_pressure"] = round(open_pressure)
 	data["opened"] = opened
-	data["line_rating"] = output_line_rating(1)
 	data["ports"] = ui_port_data()
 	return data
 

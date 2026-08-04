@@ -4,7 +4,6 @@ import { useBackend } from '../backend';
 import { Button, LabeledList, NumberInput, Section } from '../components';
 import { Window } from '../layouts';
 import { AtmosPorts, PortReading } from './common/AtmosPorts';
-import { LineRatingHint } from './common/LineRatingHint';
 
 type AtmosTempGateData = {
   on: BooleanLike;
@@ -13,10 +12,6 @@ type AtmosTempGateData = {
   max_temperature: number;
   inverted: BooleanLike;
   flowing: BooleanLike;
-  /** Номинал линии на выходе. Порог у гейта температурный и с номиналом не
-   *  сравнивается, поэтому строка чисто справочная - чтобы инженер, собирающий
-   *  горячий контур, видел запас, не бегая к метру. */
-  line_rating?: number;
   ports?: PortReading[];
 };
 
@@ -70,11 +65,6 @@ export const AtmosTempGate = () => {
                 onClick={() => act('temperature', { temperature: 'max' })}
               />
             </LabeledList.Item>
-            {!!data.line_rating && (
-              <LabeledList.Item label="Линия">
-                <LineRatingHint rating={data.line_rating} variant="info" />
-              </LabeledList.Item>
-            )}
           </LabeledList>
         </Section>
         <AtmosPorts />

@@ -1,15 +1,14 @@
-/// Верхние рецепты кристаллизатора стоят за усиленным контуром. Это несущая
-/// часть баланса: она превращает механику давления в трубах из наказания в
-/// ворота, за которыми лежат призы.
+/// Верхние рецепты кристаллизатора стоят за порогом высокого давления. Это
+/// несущая часть баланса: дешёвый газ перестаёт давать ценный материал даром.
 /datum/unit_test/gas_recipe_pressure_gate
 
 /datum/unit_test/gas_recipe_pressure_gate/Run()
 	var/datum/gas_recipe/gated = GLOB.gas_recipe_meta["diamond"]
 	TEST_ASSERT_NOTNULL(gated, "рецепт алмаза пропал из каталога")
-	TEST_ASSERT(gated.min_pressure > PIPE_PRESSURE_RATING_STANDARD,
-		"алмаз обязан требовать давления выше номинала обычной трубы, иначе 1500 молей самого дешёвого газа в игре снова дают ценный материал даром")
-	TEST_ASSERT(gated.min_pressure < PIPE_PRESSURE_RATING_REINFORCED,
-		"порог не должен упираться в номинал усиленной трубы: контур обязан быть усиленным, но не предельным")
+	TEST_ASSERT(gated.min_pressure > MAX_OUTPUT_PRESSURE,
+		"алмаз обязан требовать давления выше потолка газового насоса, иначе 1500 молей самого дешёвого газа в игре снова дают ценный материал даром")
+	TEST_ASSERT(gated.min_pressure < VOLUME_PUMP_PRESSURE_CEILING,
+		"порог обязан быть достижим объёмным насосом, иначе рецепт заперт целиком")
 
 	var/obj/machinery/atmospherics/components/binary/crystallizer/machine = allocate(/obj/machinery/atmospherics/components/binary/crystallizer)
 	machine.selected_recipe = gated
@@ -26,11 +25,11 @@
 	TEST_ASSERT(feed.return_pressure() < gated.min_pressure, "тест сам себе противоречит: контрольное давление уже выше порога")
 	TEST_ASSERT(!machine.check_pressure_requirements(), "рецепт с порогом пошёл на давлении обычной разводки")
 
-	// Усиленная линия: ворота открываются. Молей ровно на полтора порога -
-	// контроль следует за дефайном и не ломается при ребалансе номинала.
+	// Додавленная линия: ворота открываются. Молей ровно на полтора порога -
+	// контроль следует за дефайном и не ломается при ребалансе.
 	feed.set_moles(GAS_CO2, gated.min_pressure * 1.5 * CELL_VOLUME / (R_IDEAL_GAS_EQUATION * T20C))
 	TEST_ASSERT(feed.return_pressure() >= gated.min_pressure, "тест не смог поднять давление выше порога")
-	TEST_ASSERT(machine.check_pressure_requirements(), "рецепт не пошёл на давлении, которое держит только усиленная линия")
+	TEST_ASSERT(machine.check_pressure_requirements(), "рецепт не пошёл на давлении выше порога")
 
 	// Рецепт без порога не должен ничего требовать.
 	var/datum/gas_recipe/ungated = GLOB.gas_recipe_meta["ammonia_crystal"]
@@ -269,10 +268,10 @@
 		"пиронит перестал требовать давления")
 	TEST_ASSERT_EQUAL(fluxin.min_requirements[REACTION_REQ_MIN_PRESSURE], GAS_HIGH_PRESSURE_SYNTHESIS,
 		"флюксин перестал требовать давления")
-	TEST_ASSERT(GAS_HIGH_PRESSURE_SYNTHESIS > PIPE_PRESSURE_RATING_STANDARD,
-		"порог синтеза не выше номинала обычной трубы - усиленный контур перестал быть нужен")
-	TEST_ASSERT(GAS_HIGH_PRESSURE_SYNTHESIS < PIPE_PRESSURE_RATING_REINFORCED,
-		"порог синтеза упёрся в номинал усиленной трубы: контур должен быть усиленным, а не предельным")
+	TEST_ASSERT(GAS_HIGH_PRESSURE_SYNTHESIS > MAX_OUTPUT_PRESSURE,
+		"порог синтеза не выше потолка газового насоса - высокое давление перестало быть требованием")
+	TEST_ASSERT(GAS_HIGH_PRESSURE_SYNTHESIS < VOLUME_PUMP_PRESSURE_CEILING,
+		"порог синтеза выше потолка объёмного насоса: газ заперт целиком")
 
 	// Все требования кроме давления выполнены - реакция обязана стоять.
 	var/datum/gas_mixture/mixture = new(1000)
@@ -287,14 +286,14 @@
 		"пиронит сварился на давлении обычной разводки")
 
 	// Тот же газ, тот же нагрев, объём под полтора порога - реакция идёт.
-	// Объём выводится из дефайна, чтобы ребаланс номинала не ломал контроль.
+	// Объём выводится из дефайна, чтобы ребаланс порога не ломал контроль.
 	mixture.set_volume(90 * R_IDEAL_GAS_EQUATION * PYRONITE_FORMATION_MIN_TEMP / (GAS_HIGH_PRESSURE_SYNTHESIS * 1.5))
 	mixture.set_temperature(PYRONITE_FORMATION_MIN_TEMP)
 	TEST_ASSERT(mixture.return_pressure() >= GAS_HIGH_PRESSURE_SYNTHESIS,
 		"тест не смог поднять давление выше порога")
 	mixture.react()
 	TEST_ASSERT(mixture.get_moles(GAS_PYRONITE) > 0,
-		"пиронит не сварился на давлении, которое держит только усиленная линия")
+		"пиронит не сварился на давлении выше порога")
 
 	var/datum/gas_mixture/catalyst_mix = new(1000)
 	catalyst_mix.set_moles(GAS_HELIUM, 40)
@@ -315,7 +314,7 @@
 		"тест не смог поднять давление катализатора выше порога")
 	catalyst_mix.react()
 	TEST_ASSERT(catalyst_mix.get_moles(GAS_FLUXIN) > 0,
-		"флюксин не сварился на давлении, которое держит только усиленная линия")
+		"флюксин не сварился на давлении выше порога")
 
 /// Флюксин обязан делать ровно то, ради чего он есть: раздвигать верхнюю
 /// границу окна и снижать расход сырья на единицу продукта. Иначе он просто
@@ -381,9 +380,9 @@
 		TEST_ASSERT(GLOB.gas_data.names[gas_id] == gas.name,
 			"[gas_id] не попал в таблицу имён, а по ней строятся списки фильтров, скрубберов и анализатора")
 
-	// Оба газа третьего уровня: они дороже всего, что делается без усиленного
-	// контура. Ровно на этом месте баланс и разъезжается - газ глубже, а стоит
-	// дешевле, и игрок выбирает не по глубине, а по цене.
+	// Оба газа третьего уровня: они дороже всего, что варится без порога
+	// высокого давления. Ровно на этом месте баланс и разъезжается - газ глубже,
+	// а стоит дешевле, и игрок выбирает не по глубине, а по цене.
 	var/list/prices = GLOB.gas_data.prices
 	for(var/deep_gas in list(GAS_PYRONITE, GAS_FLUXIN))
 		for(var/shallower_gas in list(GAS_ZAUKER, GAS_STIMULUM, GAS_NITRIUM, GAS_HEALIUM))
@@ -436,7 +435,7 @@
 			"[permanent.name] стоит [permanent_moles] молей против [cheap_moles] у одноразового [cheap.name] - выбора между расходником и вещью не возникает")
 
 		// Порог давления - признак третьего уровня, и на втором его быть не должно.
-		TEST_ASSERT_EQUAL(permanent.min_pressure, 0, "[permanent.name] требует усиленного контура, а это уровнем выше")
+		TEST_ASSERT_EQUAL(permanent.min_pressure, 0, "[permanent.name] требует высокого давления, а это признак третьего уровня")
 
 		// Окно температур постоянного рецепта - подмножество окна гранаты:
 		// установка та же, требуется только более точное её ведение.

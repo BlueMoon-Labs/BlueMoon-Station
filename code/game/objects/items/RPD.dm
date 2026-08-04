@@ -19,11 +19,6 @@ GLOBAL_LIST_INIT(atmos_pipe_recipes, list(
 		new /datum/pipe_info/pipe("Pipe",				/obj/machinery/atmospherics/pipe/simple),
 		new /datum/pipe_info/pipe("Manifold",			/obj/machinery/atmospherics/pipe/manifold),
 		new /datum/pipe_info/pipe("4-Way Manifold",		/obj/machinery/atmospherics/pipe/manifold4w),
-		// Цифры прямо в названии: иначе про размен номинала на просвет игрок
-		// узнаёт только уложив контур и осмотрев его.
-		new /datum/pipe_info/pipe("Reinforced Pipe - 30000 kPa, 20 L",		/obj/machinery/atmospherics/pipe/simple/reinforced),
-		new /datum/pipe_info/pipe("Reinforced Manifold - 30000 kPa, 20 L",	/obj/machinery/atmospherics/pipe/manifold/reinforced),
-		new /datum/pipe_info/pipe("Reinforced 4-Way - 30000 kPa, 20 L",		/obj/machinery/atmospherics/pipe/manifold4w/reinforced),
 		new /datum/pipe_info/pipe("Bridge Pipe",			/obj/machinery/atmospherics/pipe/bridge_pipe),
 		new /datum/pipe_info/pipe("Layer Manifold",		/obj/machinery/atmospherics/pipe/layer_manifold),
 		new /datum/pipe_info/pipe("Color Adapter",		/obj/machinery/atmospherics/pipe/color_adapter),

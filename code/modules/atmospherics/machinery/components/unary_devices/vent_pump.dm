@@ -364,11 +364,7 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/siphon
 	pump_direction = SIPHONING
 	pressure_checks = INT_BOUND
-	// Сифон компрессирует без ограничения по мощности: в формуле переноса
-	// участвует только разность между этим потолком и давлением В ТРУБЕ, а
-	// давление комнаты не участвует вовсе. Поэтому потолок обязан лежать под
-	// номиналом трубы, иначе штатная мапповая раскладка сама себя продавливает.
-	internal_pressure_bound = PIPE_SAFE_WORKING_PRESSURE
+	internal_pressure_bound = 4000
 	external_pressure_bound = 0
 
 /obj/machinery/atmospherics/components/unary/vent_pump/siphon/layer1

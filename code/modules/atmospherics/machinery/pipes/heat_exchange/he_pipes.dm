@@ -1,9 +1,5 @@
 /obj/machinery/atmospherics/pipe/heat_exchanging
 	level = 2
-	// Теплообменная труба и так существует ради горячих контуров, где давление
-	// растёт вместе с температурой. Номинал обычной трубы сделал бы её
-	// непригодной по прямому назначению.
-	pressure_rating = PIPE_PRESSURE_RATING_REINFORCED
 	var/minimum_temperature_difference = 0.01
 	var/thermal_conductivity = WINDOW_HEAT_TRANSFER_COEFFICIENT
 	color = "#404040"

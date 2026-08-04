@@ -332,27 +332,27 @@
 
 /datum/gas_reaction/pyronite_formation/init_factors()
 	name = "Синтез пиронита"
-	desc = "Пиронит варится из трития и плазмы на прото-нитрате как катализаторе. Обычная разводка такого давления не держит: линию надо вести усиленной трубой."
+	desc = "Пиронит варится из трития и плазмы на прото-нитрате как катализаторе. Газовый насос такого давления не даёт: контур додавливают объёмным насосом или нагревом."
 	factor = list(
 		/datum/gas/tritium = "Расходуется в объёме [PYRONITE_TRITIUM_PER_UNIT] от скорости реакции, нужно не меньше 20 молей",
 		/datum/gas/plasma = "Расходуется в объёме [PYRONITE_PLASMA_PER_UNIT] от скорости реакции, нужно не меньше 20 молей",
 		/datum/gas/proto_nitrate = "Катализатор, расходуется в объёме [PYRONITE_CATALYST_PER_UNIT] от скорости реакции, нужно не меньше 5 молей",
 		/datum/gas/pyronite = "Рождается в объёме [PYRONITE_YIELD_PER_UNIT] от скорости реакции",
 		"Temperature" = "Идёт только между [PYRONITE_FORMATION_MIN_TEMP] и [PYRONITE_FORMATION_MAX_TEMP] К",
-		"Pressure" = "Нужно не меньше [GAS_HIGH_PRESSURE_SYNTHESIS] кПа - больше, чем держит обычная труба. Дальнейший рост давления ускоряет реакцию до [PYRONITE_PRESSURE_SCALE_CAP] раз",
+		"Pressure" = "Нужно не меньше [GAS_HIGH_PRESSURE_SYNTHESIS] кПа - выше потолка газового насоса. Дальнейший рост давления ускоряет реакцию до [PYRONITE_PRESSURE_SCALE_CAP] раз",
 		"Energy" = "Поглощает [PYRONITE_FORMATION_ENERGY] джоулей на единицу скорости реакции",
 	)
 
 /datum/gas_reaction/fluxin_formation/init_factors()
 	name = "Синтез флюксина"
-	desc = "Флюксин варится из гелия, BZ и плазмы. Как и пиронит, требует давления выше номинала обычной трубы, то есть усиленного контура."
+	desc = "Флюксин варится из гелия, BZ и плазмы. Как и пиронит, требует давления выше потолка газового насоса."
 	factor = list(
 		/datum/gas/helium = "Расходуется в объёме [FLUXIN_HELIUM_PER_UNIT] от скорости реакции, нужно не меньше 20 молей",
 		/datum/gas/bz = "Расходуется в объёме [FLUXIN_BZ_PER_UNIT] от скорости реакции, нужно не меньше 10 молей",
 		/datum/gas/plasma = "Расходуется в объёме [FLUXIN_PLASMA_PER_UNIT] от скорости реакции, нужно не меньше 10 молей",
 		/datum/gas/fluxin = "Рождается в объёме [FLUXIN_YIELD_PER_UNIT] от скорости реакции",
 		"Temperature" = "Идёт только между [FLUXIN_FORMATION_MIN_TEMP] и [FLUXIN_FORMATION_MAX_TEMP] К",
-		"Pressure" = "Нужно не меньше [GAS_HIGH_PRESSURE_SYNTHESIS] кПа - больше, чем держит обычная труба",
+		"Pressure" = "Нужно не меньше [GAS_HIGH_PRESSURE_SYNTHESIS] кПа - выше потолка газового насоса",
 		"Energy" = "Поглощает [FLUXIN_FORMATION_ENERGY] джоулей на единицу скорости реакции",
 	)
 

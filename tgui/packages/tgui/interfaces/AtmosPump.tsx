@@ -4,7 +4,6 @@ import { useBackend } from '../backend';
 import { Button, LabeledList, NumberInput, Section } from '../components';
 import { Window } from '../layouts';
 import { AtmosPorts, PortReading } from './common/AtmosPorts';
-import { LineRatingHint } from './common/LineRatingHint';
 
 type AtmosPumpData = {
   on: BooleanLike;
@@ -12,11 +11,9 @@ type AtmosPumpData = {
   max_rate?: number;
   pressure?: number;
   max_pressure?: number;
-  /** Номинал слабейшего звена выходной линии, null если линии нет. */
-  line_rating?: number;
-  /** Текущее давление выхода. Нужно объёмному насосу: он задаёт л/с, и
-   *  сравнивать его уставку с номиналом бессмысленно. */
-  line_pressure?: number;
+  /** Текущее давление выхода. Нужно объёмному насосу: он задаёт л/с, и без
+   *  живого давления панель слепа. */
+  line_pressure?: number | null;
   ports?: PortReading[];
 };
 
@@ -25,7 +22,7 @@ export const AtmosPump = () => {
   const volumetric = !!data.max_rate;
   const ports = data.ports || [];
   // Строка "Линия" условная - без слагаемого окно обрезает показания снизу.
-  const lineRow = data.line_rating ? 22 : 0;
+  const lineRow = volumetric && typeof data.line_pressure === 'number' ? 22 : 0;
   return (
     <Window width={360} height={155 + lineRow + ports.length * 22}>
       <Window.Content>
@@ -81,13 +78,9 @@ export const AtmosPump = () => {
                 />
               </LabeledList.Item>
             )}
-            {!!data.line_rating && (
+            {volumetric && typeof data.line_pressure === 'number' && (
               <LabeledList.Item label="Линия">
-                <LineRatingHint
-                  rating={data.line_rating}
-                  value={volumetric ? data.line_pressure : data.pressure}
-                  variant={volumetric ? 'flow' : 'target'}
-                />
+                Давление на выходе: {data.line_pressure} кПа
               </LabeledList.Item>
             )}
           </LabeledList>

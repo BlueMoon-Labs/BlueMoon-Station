@@ -31,12 +31,6 @@
 	. = ..()
 	. += "<span class='notice'>You can hold <b>Ctrl</b> and click on it to toggle it on and off.</span>"
 	. += "<span class='notice'>You can hold <b>Alt</b> and click on it to maximize its pressure.</span>"
-	. += line_rating_examine()
-	// Предупреждаем только когда потолок насоса реально выше предела линии:
-	// на усиленной магистрали он безопасен, и врать об этом незачем.
-	var/rating = output_line_rating()
-	if(rating && VOLUME_PUMP_PRESSURE_CEILING > rating * PIPE_STRESS_RUPTURE_RATIO)
-		. += "<span class='warning'>Останавливается только на [VOLUME_PUMP_PRESSURE_CEILING] кПа - для линии с номиналом [rating] кПа это выше предела.</span>"
 
 /obj/machinery/atmospherics/components/binary/volume_pump/CtrlClick(mob/user)
 	if(user.canUseTopic(src, BE_CLOSE, FALSE,))
@@ -129,10 +123,8 @@
 	data["on"] = on
 	data["rate"] = round(transfer_rate)
 	data["max_rate"] = round(MAX_TRANSFER_RATE)
-	// Уставка тут в л/с, и сравнивать её с номиналом бессмысленно. Панели нужно
-	// текущее давление выхода: объёмный насос не останавливается до 9000 кПа и
-	// потому единственный, кто штатно способен разорвать обычную линию.
-	data["line_rating"] = output_line_rating()
+	// Уставка тут в л/с. Панели нужно текущее давление выхода: без него игрок
+	// не видит, докуда насос уже додавил линию.
 	data["line_pressure"] = output_line_pressure()
 	data["ports"] = ui_port_data()
 	return data

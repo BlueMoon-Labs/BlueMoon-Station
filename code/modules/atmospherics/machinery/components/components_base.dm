@@ -9,9 +9,6 @@
 	var/list/datum/pipeline/parents
 	var/list/datum/gas_mixture/airs
 
-	/// Когда устройству снова можно предупредить о превышении номинала линии.
-	var/next_rating_warning = 0
-
 /obj/machinery/atmospherics/components/New()
 	parents = new(device_type)
 	airs = new(device_type)
@@ -46,34 +43,11 @@
 		))
 	return ports
 
-/// Номинал сети на указанном порту. null, если порта нет: панель тогда молчит,
-/// а не показывает ноль, который читался бы как "линия ничего не держит".
-///
-/// По умолчанию берётся выход - насос давит именно в него. Сбросной клапан
-/// передаёт 1: он защищает ВХОДНУЮ линию, сбрасывая из неё наружу, и подсказка
-/// про выход была бы там прямой дезинформацией.
-/obj/machinery/atmospherics/components/proc/output_line_rating(index = 2)
-	var/datum/pipeline/line = length(parents) >= index ? parents[index] : null
-	return line?.min_rating
-
 /// Текущее давление на выходе. Нужно там, где уставка задаётся не в кПа
-/// (объёмный насос задаёт л/с), и сравнивать её с номиналом бессмысленно.
+/// (объёмный насос задаёт л/с) и панель без живого давления слепа.
 /obj/machinery/atmospherics/components/proc/output_line_pressure()
 	var/datum/gas_mixture/out = length(airs) >= 2 ? airs[2] : null
 	return out ? round(out.return_pressure()) : null
-
-/// Одна строка в чат, когда игрок выставил значение выше номинала линии.
-/// Кулдаун обязателен: панель дёргает ui_act на каждое нажатие стрелки, и без
-/// него совет превратился бы в спам и был бы отфильтрован глазами.
-/obj/machinery/atmospherics/components/proc/warn_over_line_rating(mob/user, value)
-	var/rating = output_line_rating()
-	if(!rating || value <= rating || world.time < next_rating_warning)
-		return
-	next_rating_warning = world.time + ATMOS_LINE_RATING_WARNING_COOLDOWN
-	if(value > rating * PIPE_STRESS_RUPTURE_RATIO)
-		to_chat(user, "<span class='warning'>[value] кПа при номинале линии [rating] кПа - линию разорвёт.</span>")
-		return
-	to_chat(user, "<span class='warning'>[value] кПа при номинале линии [rating] кПа - линия начнёт травить.</span>")
 
 /// Агрегат с оторванной трубой выглядит как исправный: иконка "on" горит, а
 /// газ не идёт - помпа накачивает собственный обрубок до цели и штатно
@@ -87,16 +61,6 @@
 			missing++
 	if(missing)
 		. += "<span class='warning'>Подключено соединений: <b>[device_type - missing] из [device_type]</b> - пока линия не собрана, газ через недостающие стороны не пойдёт.</span>"
-
-/// Строка для examine: инженер должен видеть запас, не открывая панель.
-///
-/// Возвращает список, а не строку с null на пустом месте: `. += null` в DM
-/// кладёт в examine пустой ЭЛЕМЕНТ, а `. += list()` не кладёт ничего.
-/obj/machinery/atmospherics/components/proc/line_rating_examine(index = 2)
-	var/rating = output_line_rating(index)
-	if(!rating)
-		return list()
-	return list("<span class='notice'>Выход подключён к линии с номиналом [rating] кПа.</span>")
 
 // Iconnery
 

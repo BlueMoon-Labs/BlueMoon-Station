@@ -29,8 +29,6 @@ export const Canister = (props) => {
     holdingTankLeakPressure,
     holdingTankFragPressure,
     restricted,
-    // Номинал линии за коннектором. Без него сброс в трубу выставляется вслепую.
-    lineRating,
   } = data;
   return (
     <Window
@@ -144,17 +142,6 @@ export const Canister = (props) => {
                   </Tooltip>
                 </LabeledControls.Item>
               </LabeledControls>
-              {!!lineRating && (
-                <Box
-                  mt={1}
-                  textAlign="center"
-                  fontSize="11px"
-                  color={releasePressure > lineRating ? 'average' : 'label'}>
-                  Номинал линии: {lineRating} кПа
-                  {releasePressure > lineRating &&
-                    ' — сброс выше номинала, линия начнёт травить'}
-                </Box>
-              )}
             </Section>
           </Flex.Item>
           <Flex.Item grow={1}>

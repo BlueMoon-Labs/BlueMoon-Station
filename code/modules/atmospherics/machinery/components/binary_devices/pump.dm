@@ -31,7 +31,6 @@
 	. = ..()
 	. += "<span class='notice'>You can hold <b>Ctrl</b> and click on it to toggle it on and off.</span>"
 	. += "<span class='notice'>You can hold <b>Alt</b> and click on it to maximize its pressure.</span>"
-	. += line_rating_examine()
 
 /obj/machinery/atmospherics/components/binary/pump/CtrlClick(mob/user)
 	if(can_interact(user))
@@ -140,7 +139,6 @@
 	data["on"] = on
 	data["pressure"] = round(target_pressure)
 	data["max_pressure"] = round(MAX_OUTPUT_PRESSURE)
-	data["line_rating"] = output_line_rating()
 	data["ports"] = ui_port_data()
 	return data
 
@@ -171,7 +169,6 @@
 			if(.)
 				target_pressure = clamp(pressure, 0, MAX_OUTPUT_PRESSURE)
 				investigate_log("was set to [target_pressure] kPa by [key_name(usr)]", INVESTIGATE_ATMOS)
-				warn_over_line_rating(usr, target_pressure)
 	update_icon()
 
 /obj/machinery/atmospherics/components/binary/pump/atmosinit()

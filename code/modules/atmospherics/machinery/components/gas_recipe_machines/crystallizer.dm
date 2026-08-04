@@ -114,7 +114,7 @@
 
 /// Давление на подающей линии. Проверяется вход, а не внутренняя камера:
 /// камера набирает давление сама по мере закачки, и порог на ней ничего бы не
-/// требовал. Порог на входе означает буквально "корми через усиленный контур".
+/// требовал. Порог на входе означает буквально "додави подающую линию".
 /obj/machinery/atmospherics/components/binary/crystallizer/proc/check_pressure_requirements()
 	if(!selected_recipe.min_pressure)
 		return TRUE
@@ -129,7 +129,7 @@
 	next_pressure_complaint = world.time + CRYSTALLIZER_COMPLAINT_COOLDOWN
 	var/datum/gas_mixture/feed = airs[2]
 	var/current = feed ? round(feed.return_pressure()) : 0
-	say("ДАВЛЕНИЕ НА ВХОДЕ [current] кПа, ТРЕБУЕТСЯ [round(selected_recipe.min_pressure)] кПа. Обычная разводка столько не держит - нужна усиленная линия.")
+	say("ДАВЛЕНИЕ НА ВХОДЕ [current] кПа, ТРЕБУЕТСЯ [round(selected_recipe.min_pressure)] кПа. Газовый насос столько не даёт - додавите линию объёмным насосом или нагревом.")
 
 /obj/machinery/atmospherics/components/binary/crystallizer/proc/inject_gases()
 	if(gas_input <= 0)

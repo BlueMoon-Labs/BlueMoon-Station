@@ -118,15 +118,6 @@
 			return TRUE
 	return FALSE
 
-/// Whether an icon has any non-transparent pixel in the given 1-based row.
-/proc/unit_test_icon_row_has_ink(icon/sheet, y)
-	if(y < 1 || y > sheet.Height())
-		return FALSE
-	for(var/x in 1 to sheet.Width())
-		if(sheet.GetPixel(x, y))
-			return TRUE
-	return FALSE
-
 /// A heat exchanging pipe is a fifteen-pixel ribbed band, and five lanes five
 /// pixels apart need 15 + 4*5 = 35 pixels of a 32 pixel tile, so the per-layer
 /// frames baked into the sheet cannot hold the outer two lanes - the sheet just
@@ -319,62 +310,3 @@
 	room.set_visuals(null)
 	room.air = saved_air
 	room.atmos_overlay_types = saved_overlays
-
-/// Усиленные трубы рисуются из сгенерированных листов, и генератор мог не
-/// донести какой-нибудь стейт. В игре это невидимая труба, которую всё равно
-/// можно построить: компилятор про icon_state ничего не знает.
-/datum/unit_test/reinforced_pipe_states/Run()
-	var/obj/machinery/atmospherics/pipe/simple/reinforced/straight = /obj/machinery/atmospherics/pipe/simple/reinforced
-	var/list/straight_states = icon_states(initial(straight.icon))
-	for(var/layer in PIPING_LAYER_MIN to PIPING_LAYER_MAX)
-		for(var/ends in list("11", "10", "01", "00"))
-			TEST_ASSERT("pipe[ends]-[layer]" in straight_states,
-				"усиленная труба не имеет стейта 'pipe[ends]-[layer]' и на этом слое будет невидимой")
-
-	// Манифолды собираются из центральной части и отростков.
-	var/obj/machinery/atmospherics/pipe/manifold/reinforced/branch = /obj/machinery/atmospherics/pipe/manifold/reinforced
-	var/list/branch_states = icon_states(initial(branch.icon))
-	TEST_ASSERT("manifold_center" in branch_states, "усиленный манифолд не имеет центральной части")
-	TEST_ASSERT("manifold4w_center" in branch_states, "усиленный четырёхходовой манифолд не имеет центральной части")
-	for(var/layer in PIPING_LAYER_MIN to PIPING_LAYER_MAX)
-		TEST_ASSERT("pipe-[layer]" in branch_states, "усиленный манифолд не имеет отростка для слоя [layer]")
-
-	// Усиленная труба обязана быть шире обычной, иначе размен номинала на
-	// просвет игроку неоткуда увидеть, а генератор мог отработать вхолостую.
-	var/obj/machinery/atmospherics/pipe/simple/plain = /obj/machinery/atmospherics/pipe/simple
-	var/icon/plain_icon = icon(initial(plain.icon), "pipe11-3", SOUTH)
-	var/icon/thick_icon = icon(initial(straight.icon), "pipe11-3", SOUTH)
-	var/plain_columns = 0
-	var/thick_columns = 0
-	for(var/x in 1 to plain_icon.Width())
-		if(unit_test_icon_column_has_ink(plain_icon, x))
-			plain_columns++
-		if(unit_test_icon_column_has_ink(thick_icon, x))
-			thick_columns++
-	TEST_ASSERT(thick_columns > plain_columns,
-		"усиленная труба занимает [thick_columns] столбцов против [plain_columns] у обычной - она не выглядит толще")
-
-/// Маркеры повреждения ложатся оверлеем поверх трубы любого направления.
-/// Опечатка в имени стейта здесь означает, что свищ просто не видно.
-/datum/unit_test/pipe_damage_marker_states/Run()
-	var/list/present = icon_states('icons/obj/atmospherics/pipes/pipe_damage.dmi')
-	for(var/state in list("breach_leak", "breach_rupture"))
-		TEST_ASSERT(state in present, "нет маркера повреждения '[state]'")
-
-	// Маркер обязан попадать на центр тайла: там проходят все восемь
-	// направлений трубы, и только поэтому одного стейта хватает на весь набор.
-	var/icon/rupture = icon('icons/obj/atmospherics/pipes/pipe_damage.dmi', "breach_rupture")
-	var/centre = round(rupture.Width() / 2)
-	TEST_ASSERT(unit_test_icon_column_has_ink(rupture, centre), "маркер разрыва не закрывает центр тайла по горизонтали")
-	TEST_ASSERT(unit_test_icon_row_has_ink(rupture, centre), "маркер разрыва не закрывает центр тайла по вертикали")
-
-	// Разрыв обязан читаться крупнее свища, иначе стадии не различить в игре.
-	var/icon/leak = icon('icons/obj/atmospherics/pipes/pipe_damage.dmi', "breach_leak")
-	var/leak_columns = 0
-	var/rupture_columns = 0
-	for(var/x in 1 to rupture.Width())
-		if(unit_test_icon_column_has_ink(leak, x))
-			leak_columns++
-		if(unit_test_icon_column_has_ink(rupture, x))
-			rupture_columns++
-	TEST_ASSERT(rupture_columns > leak_columns, "разрыв не крупнее свища, стадии визуально не различаются")

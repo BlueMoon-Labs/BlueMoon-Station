@@ -32,15 +32,3 @@
 	icon_state = "pipe[nodes[1] ? "1" : "0"][nodes[2] ? "1" : "0"]-[piping_layer]"
 	update_layer()
 	update_alpha()
-
-/// Толстостенная труба под высокое давление. Платит за стенку просветом,
-/// поэтому ставить её везде невыгодно: разводка теряет буфер и начинает
-/// дёргаться. Смысл в том, чтобы инженер ставил её точечно - на горячий контур
-/// и магистраль, а не подряд.
-/obj/machinery/atmospherics/pipe/simple/reinforced
-	icon = 'icons/obj/atmospherics/pipes/reinforced.dmi'
-	name = "reinforced pipe"
-	desc = "Метр толстостенной трубы. Держит высокое давление, но просвет у неё меньше обычного."
-	pressure_rating = PIPE_PRESSURE_RATING_REINFORCED
-	volume_per_node = PIPE_VOLUME_PER_NODE_REINFORCED
-	pipe_state = "reinforced_simple"

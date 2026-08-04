@@ -82,10 +82,6 @@ SUBSYSTEM_DEF(air)
 	///испачкалось по ходу самой фазы (реакция в трубе, мостовая сеть за открытым
 	///клапаном), попадает уже в следующий проход.
 	var/list/datum/pipeline/dirty_networks = list()
-	///Сети, чьё давление перешло номинал слабейшего звена, либо у которых есть
-	///пробитая труба. Обслуживаются свипом независимо от флага update: надутая и
-	///уснувшая сеть обязана продолжать деградировать. В нормальной игре пуст.
-	var/list/datum/pipeline/stressed_pipenets = list()
 	var/list/pipenets_needing_rebuilt = list()
 	var/list/obj/machinery/atmos_machinery = list()
 	///Opt-in atoms maintained by /datum/element/atmos_sensitive.
@@ -499,9 +495,6 @@ SUBSYSTEM_DEF(air)
 		cost_full.record_progress(TICK_DELTA_TO_MS(TICK_USAGE_REAL - timer), FALSE)
 		if(state != SS_RUNNING)
 			return
-		// Ниже проверки на SS_RUNNING намеренно: свип не должен идти на проходе,
-		// который уступил тик, не досчитав сети.
-		process_pipe_stress()
 		cost_pipenets = MC_AVERAGE(cost_pipenets, TICK_DELTA_TO_MS(cached_cost))
 		resumed = 0
 		currentpart = SSAIR_ATMOSMACHINERY
@@ -709,28 +702,6 @@ SUBSYSTEM_DEF(air)
 			networks.Remove(net)
 		if(MC_TICK_CHECK)
 			return
-
-/datum/controller/subsystem/air/proc/register_stressed_pipenet(datum/pipeline/net)
-	if(QDELETED(net) || net.stress_registered)
-		return
-	net.stress_registered = TRUE
-	stressed_pipenets += net
-
-/// Свип перегруженных сетей. В норме список пуст и проц выходит первой строкой.
-/datum/controller/subsystem/air/proc/process_pipe_stress()
-	if(!length(stressed_pipenets))
-		return
-	if(times_fired % PIPE_STRESS_SWEEP_INTERVAL)
-		return
-	// Обход вниз по индексу: снятие с учёта режет список на ходу, а прямой
-	// for(... in list) на этом пропускает каждый второй элемент.
-	for(var/i = length(stressed_pipenets), i >= 1, i--)
-		var/datum/pipeline/net = stressed_pipenets[i]
-		if(!QDELETED(net) && net.update_stress())
-			continue
-		if(net)
-			net.stress_registered = FALSE
-		stressed_pipenets.Cut(i, i + 1)
 
 /datum/controller/subsystem/air/proc/add_to_rebuild_queue(atmos_machine)
 	if(istype(atmos_machine, /obj/machinery/atmospherics) && !(atmos_machine in pipenets_needing_rebuilt))

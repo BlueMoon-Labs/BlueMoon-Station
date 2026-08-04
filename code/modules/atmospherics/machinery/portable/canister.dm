@@ -536,17 +536,8 @@
 		"holdingTankFragPressure" = round(TANK_FRAGMENT_PRESSURE)
 	)
 
-/// Номинал линии, в которую канистра сбрасывает через коннектор. null, когда
-/// канистра стоит сама по себе: сбрасывать некуда и предупреждать не о чем.
-/obj/machinery/portable_atmospherics/canister/proc/connected_line_rating()
-	if(!connected_port)
-		return null
-	var/datum/pipeline/net = length(connected_port.parents) ? connected_port.parents[1] : null
-	return net?.min_rating
-
 /obj/machinery/portable_atmospherics/canister/ui_data()
 	. = list(
-		"lineRating" = connected_line_rating(),
 		"portConnected" = !!connected_port,
 		"tankPressure" = round(air_contents.return_pressure()),
 		"releasePressure" = round(release_pressure),

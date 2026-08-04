@@ -78,7 +78,6 @@
 		"max_temperature" = round(max_temperature),
 		"inverted" = inverted,
 		"flowing" = is_gas_flowing,
-		"line_rating" = output_line_rating(),
 		"ports" = ui_port_data(),
 	)
 
@@ -330,7 +329,6 @@
 		"on" = on,
 		"pressure" = round(target_pressure),
 		"max_pressure" = round(MAX_OUTPUT_PRESSURE),
-		"line_rating" = output_line_rating(),
 		"ports" = ui_port_data(),
 	)
 
@@ -352,7 +350,6 @@
 				. = TRUE
 			if(.)
 				target_pressure = clamp(pressure, 0, MAX_OUTPUT_PRESSURE)
-				warn_over_line_rating(usr, target_pressure)
 	update_icon()
 
 /obj/machinery/atmospherics/components/binary/pressure_valve/can_unwrench(mob/user)
