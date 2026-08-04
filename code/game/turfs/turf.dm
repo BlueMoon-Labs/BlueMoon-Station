@@ -533,14 +533,11 @@ GLOBAL_LIST_EMPTY(station_turfs)
 
 /turf/proc/visibilityChanged()
 	GLOB.cameranet.updateVisibility(src)
-	// The cameranet usually handles this for us, but if we've just been
-	// recreated we should make sure we have the cameranet vis_contents.
-	var/datum/camerachunk/C = GLOB.cameranet.chunkGenerated(x, y, z)
-	if(C)
-		if(C.obscuredTurfs[src])
-			vis_contents += GLOB.cameranet.vis_contents_objects
-		else
-			vis_contents -= GLOB.cameranet.vis_contents_objects
+	// Обычно за статику отвечает сама сеть камер, но турф мог быть только что
+	// пересоздан (ChangeTurf) - перевешиваем образ статики на новый турф.
+	var/datum/camerachunk/chunk = GLOB.cameranet.chunkGenerated(x, y, z)
+	if(chunk)
+		chunk.reattach_static(src)
 
 /turf/proc/burn_tile()
 

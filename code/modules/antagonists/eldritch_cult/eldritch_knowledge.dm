@@ -201,10 +201,10 @@
 	log_game("[key_name_admin(C)] принимает контроль над ([key_name_admin(summoned)]), его хозяин [user.real_name]")
 	summoned.ghostize(FALSE)
 	summoned.key = C.key
-	summoned.mind.add_antag_datum(/datum/antagonist/heretic_monster)
-	var/datum/antagonist/heretic_monster/heretic_monster = summoned.mind.has_antag_datum(/datum/antagonist/heretic_monster)
-	var/datum/antagonist/heretic/master = user.mind.has_antag_datum(/datum/antagonist/heretic)
-	heretic_monster.set_owner(master)
+	//Хозяин проставляется до выдачи роли: приветствие уходит игроку внутри add_antag_datum().
+	var/datum/antagonist/heretic_monster/heretic_monster = new
+	heretic_monster.set_master(user.mind.has_antag_datum(/datum/antagonist/heretic))
+	summoned.mind.add_antag_datum(heretic_monster)
 	return TRUE
 
 //Ascension knowledge

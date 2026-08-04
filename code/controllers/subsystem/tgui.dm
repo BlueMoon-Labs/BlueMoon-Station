@@ -43,22 +43,42 @@ SUBSYSTEM_DEF(tgui)
 	return ..()
 
 /datum/controller/subsystem/tgui/fire(resumed = FALSE)
+	// Инструментация адаптивного профиля (см. базовый subsystem.dm): прогон SStgui
+	// в проде стабильно занимал 20-26мс, а разбить его по конкретным окнам было
+	// нечем - ui_data одного интерфейса может рисовать флэт-икону человека, и в
+	// общем времени подсистемы это никак не видно.
+	var/slice_start_usage = TICK_USAGE
 	if(!resumed)
 		src.current_run = open_uis.Copy()
+		current_pass_cost_ms = 0
 	// Cache for sanic speed (lists are references anyways)
 	var/list/current_run = src.current_run
+	var/profiling = profile_armed
 	while(current_run.len)
 		var/datum/tgui/ui = current_run[current_run.len]
 		current_run.len--
 		// TODO: Move user/src_object check to process()
 		if(ui?.user && ui.src_object)
-			ui.process(wait * 0.1)
+			if(profiling)
+				var/item_start_usage = TICK_USAGE
+				//тип интерфейса, а не датума tgui: все окна - один /datum/tgui.
+				//Держателя запоминаем до process(): он умеет закрыть окно и обнулить src_object.
+				var/datum/profiled_object = ui.src_object
+				var/item_type = profiled_object.type
+				ui.process(wait * 0.1)
+				profile_note(item_type, max(0, TICK_DELTA_TO_MS(TICK_USAGE - item_start_usage)), profiled_object)
+			else
+				ui.process(wait * 0.1)
 		else
 			//чистка одного open_uis оставляла интерфейс в open_uis_by_src и в
 			//user.tgui_open_uis: снимаем с учёта целиком
 			unregister_ui(ui)
 		if(MC_TICK_CHECK)
+			current_pass_cost_ms += max(0, TICK_DELTA_TO_MS(TICK_USAGE - slice_start_usage))
 			return
+
+	current_pass_cost_ms += max(0, TICK_DELTA_TO_MS(TICK_USAGE - slice_start_usage))
+	on_pass_finished(length(open_uis))
 
 /**
  * public
@@ -106,12 +126,30 @@ SUBSYSTEM_DEF(tgui)
  * required user mob
  */
 /datum/controller/subsystem/tgui/proc/force_close_all_windows(mob/user)
+	if(!user?.client)
+		return
 	log_tgui(user, context = "SStgui/force_close_all_windows")
-	if(user.client)
-		user.client.tgui_windows = list()
-		for(var/i in 1 to TGUI_WINDOW_HARD_LIMIT)
-			var/window_id = TGUI_WINDOW_ID(i)
-			user << browse(null, "window=[window_id]")
+	force_close_client_windows(user.client)
+
+/**
+ * public
+ *
+ * Гасит окна tgui в скине и сбрасывает реестр окон клиента.
+ *
+ * Нужно на подключении: реестр tgui_windows живёт на /client, у нового клиента он
+ * пуст, а окна прошлого подключения переживают реконнект внутри скина и продолжают
+ * слать ready. На каждый такой ready сервер отвечает "нет такого датума" и шлёт
+ * browse(null) в окно, которого для него не существует - клиент ретраит тридцать
+ * секунд, игрок видит сломанный интерфейс и идёт жать Fix chat.
+ *
+ * required user_client client
+ */
+/datum/controller/subsystem/tgui/proc/force_close_client_windows(client/user_client)
+	if(!user_client)
+		return
+	user_client.tgui_windows = list()
+	for(var/i in 1 to TGUI_WINDOW_HARD_LIMIT)
+		user_client << browse(null, "window=[TGUI_WINDOW_ID(i)]")
 
 /**
  * public
@@ -122,11 +160,17 @@ SUBSYSTEM_DEF(tgui)
  * required window_id string
  */
 /datum/controller/subsystem/tgui/proc/force_close_window(mob/user, window_id)
-	log_tgui(user, context = "SStgui/force_close_window")
+	var/closed_uis = 0
 	// Close all tgui datums based on window_id.
 	for(var/datum/tgui/ui in user.tgui_open_uis)
 		if(ui.window && ui.window.id == window_id)
 			ui.close(can_be_suspended = FALSE)
+			closed_uis++
+	// Игрок закрыл окно крестиком - это штатное событие, а не происшествие: за
+	// прод-раунд сюда приходило 500 строк, и ни одна ничего не диагностировала.
+	// Интересен только случай, когда окно закрылось, а датума под него не нашлось.
+	if(!closed_uis)
+		log_tgui(user, "no matching tgui datum for window_id=[window_id]", context = "SStgui/force_close_window")
 	// Unset machine just to be sure.
 	user.unset_machine()
 	// Close window directly just to be sure.

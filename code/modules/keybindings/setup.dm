@@ -1,3 +1,12 @@
+/// Окно, за которое пачка изменений биндов схлопывается в одну перестройку макросов.
+/// Меню настроек клавиш зовёт ensure_keys_set() на КАЖДОЕ изменение, а перестройка -
+/// это winget (ожидание ответа скина) плюс сотни winset: пять правок подряд стоили
+/// пять полных проходов.
+#define MACRO_ASSERT_COALESCE_DELAY (0.5 SECONDS)
+
+/// Таймер отложенной перестройки макросов, чтобы верб "Fix Keybindings" мог его снять.
+/client/var/macro_assert_timer
+
 /datum/proc/key_down(key, client/user, full_key) // Called when a key is pressed down initially
 	SHOULD_CALL_PARENT(TRUE)
 	SHOULD_NOT_SLEEP(TRUE)
@@ -21,7 +30,7 @@
 		return
 	to_chat(src, "<span class='danger'>Force-reasserting all macros.</span>")
 	last_macro_fix = world.time
-	full_macro_assert()
+	full_macro_assert(immediate = TRUE)	// нажали "почини макросы" - чиним сейчас, а не через полсекунды
 
 // removes all the existing macros
 /client/proc/erase_all_macros(datum/preferences/prefs_override = prefs)
@@ -33,7 +42,7 @@
 		set_text = set_text.Join(";")
 	else
 		set_text = prefs_override.hotkeys? "[SKIN_MACROSET_HOTKEYS].*" : "[SKIN_MACROSET_CLASSIC_INPUT].*;[SKIN_MACROSET_CLASSIC_HOTKEYS].*"
-	var/list/macro_set = params2list(winget(src, "[set_text]", "command"))
+	var/list/macro_set = params2list(tracked_winget(src, "[set_text]", "command"))
 	for(var/k in 1 to length(macro_set))
 		var/list/split_name = splittext(macro_set[k], ".")
 		var/macro_name = "[split_name[1]].[split_name[2]]" // [3] is "command"
@@ -59,11 +68,26 @@
 	if(SSinput.initialized)
 		full_macro_assert(prefs_override)
 
-/client/proc/full_macro_assert(datum/preferences/prefs_override = prefs)
-	INVOKE_ASYNC(src, PROC_REF(do_full_macro_assert), prefs_override)		// winget sleeps.
+/**
+ * Просит перестроить макросы.
+ *
+ * По умолчанию перестройка откладывается и склеивается: одинаковые вызовы за окно
+ * MACRO_ASSERT_COALESCE_DELAY дают один проход (TIMER_UNIQUE|TIMER_OVERRIDE).
+ * immediate = TRUE обходит склейку - это для верба "Fix Keybindings", где игрок ждёт
+ * результата прямо сейчас.
+ */
+/client/proc/full_macro_assert(datum/preferences/prefs_override = prefs, immediate = FALSE)
+	if(immediate)
+		if(macro_assert_timer)
+			deltimer(macro_assert_timer)
+			macro_assert_timer = null
+		INVOKE_ASYNC(src, PROC_REF(do_full_macro_assert), prefs_override)		// winget sleeps.
+		return
+	macro_assert_timer = addtimer(CALLBACK(src, PROC_REF(do_full_macro_assert), prefs_override), MACRO_ASSERT_COALESCE_DELAY, TIMER_UNIQUE|TIMER_OVERRIDE|TIMER_STOPPABLE)
 
 // TODO: OVERHAUL ALL OF THIS AGAIN. While this works this is flatout horrid with the "use list but also don't use lists" crap. I hate my life.
 /client/proc/do_full_macro_assert(datum/preferences/prefs_override = prefs)
+	macro_assert_timer = null
 	// Ensure macrosets exist before trying to erase them (prevents "Element hotkeys not found" on first connect)
 	if(prefs_override?.hotkeys)
 		winclone(src, "default", SKIN_MACROSET_HOTKEYS)
@@ -209,3 +233,5 @@
 	// //In case one got stuck and the previous loop didn't clean it, somehow.
 	// for(var/key in key_combos_held)
 	// 	keyUp(key_combos_held[key])
+
+#undef MACRO_ASSERT_COALESCE_DELAY

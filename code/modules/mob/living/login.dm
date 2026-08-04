@@ -4,7 +4,11 @@
 	sync_mind()
 //ambition start
 	if(mind.memory || mind.antag_datums)
-		to_chat(src, "<i>[mind.show_memory()]</i>")
+		// window = FALSE обязателен: с окном show_memory открывает browse()-попап и
+		// возвращает пустую строку, то есть обёртка to_chat слала в чат голый <i></i>,
+		// а попап тянул за собой setup_onclose с десятком winexists на каждого игрока.
+		// Текст в чат ветка без окна печатает сама.
+		mind.show_memory(src, window = FALSE)
 //ambition end
 
 	//Round specific stuff

@@ -72,10 +72,13 @@
 		if(!here)
 			continue
 		var/direction = pick(GLOB.cardinals)
-		var/turf/throw_target = get_step(here, direction)
-		if(!throw_target || !throw_target.CanPass(mob, get_dir(here, throw_target)))
-			throw_target = get_step(here, turn(direction, 180))
+		var/turf/throw_target = get_edge_target_turf(mob, direction)
+		if(!throw_target)
+			throw_target = get_step(here, direction)
 		if(!throw_target)
 			continue
 		mob.visible_message(span_warning("[mob] отлетает в сторону от резкого манёвра шаттла!"), span_userdanger("Резкий манёвр шаттла выбрасывает вас в сторону!"))
-		mob.safe_throw_at(throw_target, rand(2, 5), rand(1, 3))
+		mob.safe_throw_at(throw_target, 200, rand(10, 14), spin = TRUE, force = MOVE_FORCE_EXTREMELY_STRONG)
+		if(iscarbon(mob))
+			var/mob/living/carbon/carbon_mob = mob
+			carbon_mob.take_bodypart_damage(rand(20, 40), wound_bonus = rand(30, 45), sharpness = SHARP_NONE)

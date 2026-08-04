@@ -614,13 +614,21 @@
 	return
 
 /turf/open/consider_pressure_difference(turf/T, difference)
-	SSair.high_pressure_delta |= src
+	// `|=` это линейный скан по всей очереди, а зовут нас из process_cell на каждый
+	// значимый шер - на разгерметизации очередь уходит в тысячи записей, и скан
+	// списывается на фазу турфов. pressure_difference уже работает флагом членства:
+	// он положителен ровно пока турф в очереди и обнуляется при сливе, а все
+	// вызывающие передают строго положительную разницу
+	if(!pressure_difference)
+		SSair.high_pressure_delta += src
 	if(difference > pressure_difference)
 		pressure_direction = get_dir(src, T)
 		pressure_difference = difference
 
 /turf/open/proc/high_pressure_movements()
-	if(blocks_air)
+	// ChangeTurf может подменить турф под уже стоящей в очереди записью, и тогда
+	// та же клетка попадёт в очередь второй раз. Пустой проход обходится даром
+	if(blocks_air || !pressure_difference)
 		return
 	var/multiplier = 1
 	if(locate(/obj/structure/rack) in src)
@@ -923,13 +931,19 @@
 	for(var/turf/open/T as anything in turf_list)
 		if(!istype(T))
 			continue
-		T.excited = FALSE
+		// active_turfs -= T это линейный скан по тысячам записей, а dismantle
+		// вызывается ровно тогда, когда awake_members упал до нуля - то есть
+		// спящих в группе подавляющее большинство, и скан за них холостой.
+		// excited снимается только вместе с удалением из списка, поэтому
+		// пропуск скана при !excited не может оставить турф активным
+		if(T.excited)
+			T.excited = FALSE
+			if(SSair)
+				SSair.active_turfs -= T
 		// Upstream parity: a dismantled turf must not carry its stall counter
 		// into the next activation, or it rests again after a single cycle.
 		T.atmos_cooldown = 0
 		T.excited_group = null
-		if(SSair)
-			SSair.active_turfs -= T
 	garbage_collect()
 
 /datum/excited_group/proc/garbage_collect()

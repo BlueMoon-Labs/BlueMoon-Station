@@ -181,8 +181,13 @@
 /datum/parallax_holder/proc/Apply(client/C = owner)
 	if(QDELETED(C))
 		return
+	// Читаем префы того клиента, которому и рисуем: owner может быть уже не он (или уже
+	// в разборке), а весь остальной прок работает с C. Без префов рисовать нечего -
+	// выходим тем же путём, что и для удалённого клиента.
+	if(!C.prefs)
+		return
 	// Lag switch: treat everyone as having parallax disabled in prefs
-	var/effective_parallax = owner.prefs.parallax
+	var/effective_parallax = C.prefs.parallax
 	if(SSlag_switch.measures[DISABLE_PARALLAX])
 		var/mob/owner_mob = C.mob
 		if(!(owner_mob && HAS_TRAIT(owner_mob, TRAIT_BYPASS_MEASURES)))

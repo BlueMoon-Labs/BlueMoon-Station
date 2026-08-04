@@ -1,9 +1,12 @@
 /// Controls how many buckets should be kept, each representing a tick. (1 minutes worth)
 #define BUCKET_LEN (world.fps*1*60)
-/// Helper for getting the correct bucket for a given timer
-#define BUCKET_POS(timer) (((round((timer.timeToRun - SStimer.head_offset) / world.tick_lag)+1) % BUCKET_LEN)||BUCKET_LEN)
-/// Gets the maximum time at which timers will be invoked from buckets, used for deferring to secondary queue
-#define TIMER_MAX (world.time + TICKS2DS(min(BUCKET_LEN-(SStimer.practical_offset-DS2TICKS(world.time - SStimer.head_offset))-1, BUCKET_LEN-1)))
+/// Helper for getting the correct bucket for a given timer.
+/// Округление вверх, а не round(): round() сажал таймер в бакет на полтика раньше срока.
+#define BUCKET_POS(timer) (((ROUND_UP((timer.timeToRun - SStimer.head_offset) / world.tick_lag)+1) % BUCKET_LEN)||BUCKET_LEN)
+/// Gets the maximum time at which timers will be invoked from buckets, used for deferring to secondary queue.
+/// Считается от head_offset и practical_offset (граница окна бакетов), а не от world.time:
+/// старая формула плавала внутри тика и роняла таймеры в "Invalid timer state".
+#define TIMER_MAX (SStimer.head_offset + TICKS2DS(BUCKET_LEN + SStimer.practical_offset - 1))
 /// Max float with integer precision
 #define TIMER_ID_MAX (2**24)
 /// Запас (в тиках) до срока таймера, ближе которого перенос из second_queue нельзя откладывать
@@ -54,6 +57,11 @@ SUBSYSTEM_DEF(timer)
 	var/static/last_invoke_warning = 0
 	/// Boolean operator controlling if the timer SS will automatically reset buckets if it fails to invoke callbacks for an extended period of time
 	var/static/bucket_auto_reset = TRUE
+	/// Дампить ли содержимое колеса при аварийном сбросе бакетов. По умолчанию выключено:
+	/// дамп собирает список строк по всем бакетам и по всей second_queue без единого
+	/// тик-чека, то есть срабатывает ровно в тот момент, когда сервер и так плох.
+	/// Включать варедитом, когда ловишь "Invalid timer state".
+	var/static/log_timers_on_bucket_reset = FALSE
 
 /datum/controller/subsystem/timer/PreInit()
 	bucket_list.len = BUCKET_LEN
@@ -63,6 +71,35 @@ SUBSYSTEM_DEF(timer)
 /datum/controller/subsystem/timer/stat_entry(msg)
 	msg = "B:[bucket_count] P:[length(second_queue)] H:[length(hashes)] C:[length(clienttime_timers)] S:[length(timer_id_dict)]"
 	return ..()
+
+/**
+ * Сбрасывает в лог мира состояние колеса таймеров.
+ * full = FALSE пишет только шапку: полный проход по бакетам и second_queue стоит дорого,
+ * а зовётся он в момент аварийного сброса, когда подсистема уже захлебнулась.
+ */
+/datum/controller/subsystem/timer/proc/dump_timer_buckets(full = TRUE)
+	var/list/to_log = list("Timer bucket reset. world.time: [world.time], head_offset: [head_offset], practical_offset: [practical_offset]")
+	if (full)
+		for (var/i in 1 to length(bucket_list))
+			var/datum/timedevent/bucket_head = bucket_list[i]
+			if (!bucket_head)
+				continue
+
+			to_log += "Active timers at index [i]:"
+			var/datum/timedevent/bucket_node = bucket_head
+			var/anti_loop_check = 1
+			do
+				to_log += get_timer_debug_string(bucket_node)
+				bucket_node = bucket_node.next
+				anti_loop_check--
+			while(bucket_node && bucket_node != bucket_head && anti_loop_check)
+
+		to_log += "Active timers in the second_queue queue:"
+		for(var/I in second_queue)
+			to_log += get_timer_debug_string(I)
+
+	// Dump all the logged data to the world log
+	log_world(to_log.Join("\n"))
 
 /datum/controller/subsystem/timer/fire(resumed = FALSE)
 	// Store local references to datum vars as it is faster to access them
@@ -83,28 +120,7 @@ SUBSYSTEM_DEF(timer)
 		WARNING(msg)
 		if(bucket_auto_reset)
 			bucket_resolution = 0
-
-		var/list/to_log = list("Timer bucket reset. world.time: [world.time], head_offset: [head_offset], practical_offset: [practical_offset]")
-		for (var/i in 1 to length(bucket_list))
-			var/datum/timedevent/bucket_head = bucket_list[i]
-			if (!bucket_head)
-				continue
-
-			to_log += "Active timers at index [i]:"
-			var/datum/timedevent/bucket_node = bucket_head
-			var/anti_loop_check = 1000
-			do
-				to_log += get_timer_debug_string(bucket_node)
-				bucket_node = bucket_node.next
-				anti_loop_check--
-			while(bucket_node && bucket_node != bucket_head && anti_loop_check)
-
-		to_log += "Active timers in the second_queue queue:"
-		for(var/I in second_queue)
-			to_log += get_timer_debug_string(I)
-
-		// Dump all the logged data to the world log
-		log_world(to_log.Join("\n"))
+		dump_timer_buckets(log_timers_on_bucket_reset)
 
 	// Process client-time timers
 	var/static/next_clienttime_timer_index = 0
@@ -152,8 +168,10 @@ SUBSYSTEM_DEF(timer)
 		clienttime_timers.Cut(1, min(next_clienttime_timer_index + 1, length(clienttime_timers) + 1))
 		next_clienttime_timer_index = 0
 
-	if (MC_TICK_CHECK)
-		return
+	// Раньше здесь стоял ранний return по бюджету тика. Он означал, что на любом
+	// перегруженном тике бакетное колесо не крутилось ВООБЩЕ, и обычные таймеры сползали
+	// в следующий бакет пачкой. Колесо обязано делать хотя бы один шаг: внутренние
+	// MC_TICK_CHECK ниже уже прерывают его после первого же колбека.
 
 	// Check for when we need to loop the buckets, this occurs when
 	// the head_offset is approaching BUCKET_LEN ticks in the past

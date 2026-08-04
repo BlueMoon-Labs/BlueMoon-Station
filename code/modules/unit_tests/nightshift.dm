@@ -757,12 +757,27 @@
 		return test_light.bulb_power
 	return test_light.interpolate_light_value(test_light.bulb_power, test_light.nightshift_light_power, level)
 
+/// Снимок состояния связки АПЦ-лампа для сообщений об ошибке. Строится ТОЛЬКО при падении:
+/// TEST_ASSERT_* подставляют message внутрь ветки Fail, так что на зелёном прогоне это ноль.
+/// Нужен, чтобы отличать три известные подписи флака этого теста друг от друга - см.
+/// историю в project_flaky_dm_tests: расхождение флагов АПЦ и лампы это очередь,
+/// застывший bulb_colour с мёртвым световым датумом это потеря питания.
+/datum/unit_test/nightshift_admin_controls/proc/fixture_diagnostics()
+	var/list/parts = list()
+	parts += "APC: lights=[test_apc.nightshift_lights] level=[test_apc.nightshift_level] queued=[test_apc.nightshift_refresh_queued]"
+	parts += "light: enabled=[test_light.nightshift_enabled] level=[test_light.nightshift_level] allowed=[test_light.nightshift_allowed] queued=[test_light.nightshift_update_queued]"
+	parts += "light in APC cache: [(test_light in test_apc.get_cached_area_lights()) ? "yes" : "NO"] (cache size [length(test_apc.get_cached_area_lights())])"
+	parts += "queues: apc=[length(GLOB.nightshift_apc_queue)] light=[length(GLOB.nightshift_light_queue)]"
+	parts += "light queued globally: [(test_light in GLOB.nightshift_light_queue) ? "yes" : "no"]"
+	parts += "SSnightshift: active=[SSnightshift.nightshift_active] can_fire=[SSnightshift.can_fire] refresh_running=[SSnightshift.nightshift_refresh_running]"
+	return parts.Join(" | ")
+
 /datum/unit_test/nightshift_admin_controls/proc/assert_fixture_state(message_prefix, expected_enabled, expected_level)
 	var/expected_color_value = expected_color(expected_level)
 	var/expected_power_value = expected_power(expected_level)
-	TEST_ASSERT_EQUAL(test_apc.nightshift_lights, expected_enabled, "[message_prefix] APC nightshift state should match the expected mode.")
-	TEST_ASSERT_EQUAL(test_light.nightshift_enabled, expected_enabled, "[message_prefix] fixture nightshift flag should match the expected mode.")
-	TEST_ASSERT_EQUAL(test_light.nightshift_level, expected_level, "[message_prefix] fixture nightshift level should update immediately.")
+	TEST_ASSERT_EQUAL(test_apc.nightshift_lights, expected_enabled, "[message_prefix] APC nightshift state should match the expected mode. [fixture_diagnostics()]")
+	TEST_ASSERT_EQUAL(test_light.nightshift_enabled, expected_enabled, "[message_prefix] fixture nightshift flag should match the expected mode. [fixture_diagnostics()]")
+	TEST_ASSERT_EQUAL(test_light.nightshift_level, expected_level, "[message_prefix] fixture nightshift level should update immediately. [fixture_diagnostics()]")
 	TEST_ASSERT_EQUAL(lowertext(test_light.light_color), expected_color_value, "[message_prefix] fixture light color should update immediately.")
 	TEST_ASSERT_EQUAL(test_light.light_power, expected_power_value, "[message_prefix] fixture light power should update immediately.")
 	TEST_ASSERT(test_light.light, "[message_prefix] fixture should keep a live light datum.")

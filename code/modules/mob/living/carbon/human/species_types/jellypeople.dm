@@ -10,7 +10,12 @@
 	mutantstomach = /obj/item/organ/stomach/slime
 	mutantliver = /obj/item/organ/liver/slime
 	mutant_brain = /obj/item/organ/brain/slime
-	mutant_bodyparts = list("mcolor" = "FFFFFF", "mam_tail" = "None", "mam_ears" = "None", "mam_snouts" = "None", "taur" = "None", "deco_wings" = "None", "legs" = "Plantigrade")
+	//Маркинги (а вместе с ними и татуировки-маркинги) и вторичные цвета обязаны
+	//быть у ВСЕЙ семьи желе, а не только у раундстартового подвида. Зелёный
+	//экстракт перекидывает игрока между подвидами (slime/luminescent/stargazer),
+	//и без этих ключей update_limb() просто переставал собирать body_markings_list,
+	//то есть смена подвида стирала с тела всю кастомизацию.
+	mutant_bodyparts = list("mcolor" = "FFFFFF", "mcolor2" = "FFFFFF", "mcolor3" = "FFFFFF", "mam_tail" = "None", "mam_ears" = "None", "mam_body_markings" = "Plain", "mam_snouts" = "None", "taur" = "None", "deco_wings" = "None", "legs" = "Plantigrade")
 	inherent_traits = list(TRAIT_TOXINLOVER)
 	meat = /obj/item/reagent_containers/food/snacks/meat/slab/human/mutant/slime
 	gib_types = list(/obj/effect/gibspawner/slime, /obj/effect/gibspawner/slime/bodypartless)
@@ -418,7 +423,9 @@
 	default_color = "00FFFF"
 	species_traits = list(MUTCOLORS,EYECOLOR,HAIR,FACEHAIR,HAS_FLESH)
 	inherent_traits = list(TRAIT_TOXINLOVER)
-	mutant_bodyparts = list("mcolor" = "FFFFFF", "mcolor2" = "FFFFFF","mcolor3" = "FFFFFF", "mam_tail" = "None", "mam_ears" = "None", "mam_body_markings" = "Plain", "mam_snouts" = "None", "taur" = "None", "deco_wings" = "None", "legs" = "Plantigrade")
+	//mutant_bodyparts наследуется от /datum/species/jelly - список там ровно тот же.
+	//Дублировать его здесь нельзя: именно расхождение этих двух списков и стирало
+	//маркинги при смене подвида зелёным экстрактом.
 	say_mod = "says"
 	hair_color = "mutcolor"
 	hair_alpha = 160 //a notch brighter so it blends better.
