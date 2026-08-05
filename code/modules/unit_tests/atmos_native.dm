@@ -270,6 +270,7 @@
 	room.air.set_temperature(T20C)
 	SSair.remove_from_active(room)
 	SSair.pipenets_needing_rebuilt -= scrubber
+	scrubber.rebuild_queued = FALSE
 	TEST_ASSERT(!scrubber.scrub(room), "scrub() reported success over a clean room")
 	TEST_ASSERT(!room.excited, "scrubbing a clean room reactivated its turf")
 	TEST_ASSERT(!(scrubber in SSair.pipenets_needing_rebuilt), "scrubbing a clean room dirtied the pipenet path")
@@ -286,6 +287,7 @@
 
 	// Cleanup subsystem side effects of the allocation.
 	SSair.pipenets_needing_rebuilt -= scrubber
+	scrubber.rebuild_queued = FALSE
 	room.air.copy_from_turf(room)
 	SSair.remove_from_active(room)
 

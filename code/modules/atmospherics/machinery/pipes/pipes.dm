@@ -47,14 +47,14 @@
 				P.members -= src
 				P.mark_dirty()
 
-/obj/machinery/atmospherics/pipe/build_network()
+/obj/machinery/atmospherics/pipe/build_network(blocking = FALSE)
 	if(QDELETED(src))
 		return // Pipe was destroyed, don't rebuild
 	if(QDELETED(parent))
 		if(parent && QDESTROYING(parent))
 			investigate_log("[type] at [COORD(src)] rebuilding network while parent pipeline is being destroyed", INVESTIGATE_ATMOS)
 		parent = new
-		parent.build_pipeline(src)
+		parent.build_pipeline(src, blocking)
 
 /obj/machinery/atmospherics/pipe/atmosinit()
 	var/turf/T = loc			// hide if turf is not intact

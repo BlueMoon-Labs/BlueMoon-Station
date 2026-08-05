@@ -54,6 +54,10 @@
 	var/atmos_idle_tier = 0
 	///the turf whose atmos_wake_machines list we are registered in
 	var/turf/open/registered_wake_turf
+	///TRUE, пока машина ждёт в SSair.pipenets_needing_rebuilt. Ставится и
+	///снимается только самой очередью - флаг заменяет линейный поиск по списку
+	///на каждое добавление (взрыв сыплет их сотнями за тик).
+	var/rebuild_queued = FALSE
 
 /obj/machinery/atmospherics/Initialize(mapload)
 	. = ..()
@@ -129,7 +133,9 @@
 
 	SSair.stop_processing_machine(src)
 	SSair.dequeue_idle_machine(src)
-	SSair.pipenets_needing_rebuilt -= src
+	if(rebuild_queued)
+		SSair.pipenets_needing_rebuilt -= src
+		rebuild_queued = FALSE
 	// Every idling machine registers itself in turf.atmos_wake_machines (a strong
 	// ref); without this the turf pins the deleted machine forever.
 	unregister_turf_wake()
@@ -220,8 +226,10 @@
 /obj/machinery/atmospherics/proc/destroy_network()
 	return
 
-/obj/machinery/atmospherics/proc/build_network()
-	// Called to build a network from this node
+/obj/machinery/atmospherics/proc/build_network(blocking = FALSE)
+	// Called to build a network from this node. With blocking unset the BFS
+	// runs in SSair's rebuild phase and may span several fires; blocking is for
+	// callers that need the net complete before they return (init, templates).
 	return
 
 /obj/machinery/atmospherics/proc/nullifyNode(i)

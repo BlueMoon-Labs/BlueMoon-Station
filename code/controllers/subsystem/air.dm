@@ -83,6 +83,11 @@ SUBSYSTEM_DEF(air)
 	///клапаном), попадает уже в следующий проход.
 	var/list/datum/pipeline/dirty_networks = list()
 	var/list/pipenets_needing_rebuilt = list()
+	///Пакеты незавершённых BFS-обходов пайпнетов: list(сеть, граница,
+	///посещённые), см. SSAIR_REBUILD_*. Фаза ребилда доедает их с уступкой
+	///тика ВНУТРИ обхода - гигантская сеть строится за несколько фаеров,
+	///а не одним куском.
+	var/list/expansion_queue = list()
 	var/list/obj/machinery/atmos_machinery = list()
 	///Opt-in atoms maintained by /datum/element/atmos_sensitive.
 	var/list/atom_process = list()
@@ -320,7 +325,7 @@ SUBSYSTEM_DEF(air)
 /datum/controller/subsystem/air/stat_entry(msg)
 	msg += "FC:[cost_full.to_string()]мс "
 	msg += "SAT:[round(saturation_ratio, 0.01)]x/[saturation_scale]/[pass_fire_slices_last]сл/[round(pass_wall_ds, 0.1)]дс "
-	msg += "C:{HP:[round(cost_highpressure,1)]|HS:[round(cost_hotspots,1)]|SC:[round(cost_superconductivity,1)]|PN:[round(cost_pipenets,1)]|AM:[round(cost_atmos_machinery,1)]|AO:[round(cost_atmos_atoms,1)]} TC:{AT:[round(cost_turfs,1)]|DC:[round(cost_decompression,1)]|EG:[round(cost_groups,1)]|EQ:[round(cost_equalize,1)]|PO:[round(cost_post_process,1)]}TH:[round(thread_wait_ticks,1)]|HS:[hotspots.len]|PN:[networks.len]|AO:[atom_process.len]|HP:[high_pressure_delta.len]|HT:[high_pressure_turfs]|LT:[low_pressure_turfs]|DA:[num_decompression_areas]|ET:[num_equalize_processed]|GT:[num_group_turfs_processed]|GA:[gas_mixes_count]|MG:[gas_mixes_allocated]"
+	msg += "C:{HP:[round(cost_highpressure,1)]|HS:[round(cost_hotspots,1)]|SC:[round(cost_superconductivity,1)]|PN:[round(cost_pipenets,1)]|AM:[round(cost_atmos_machinery,1)]|AO:[round(cost_atmos_atoms,1)]} TC:{AT:[round(cost_turfs,1)]|DC:[round(cost_decompression,1)]|EG:[round(cost_groups,1)]|EQ:[round(cost_equalize,1)]|PO:[round(cost_post_process,1)]}TH:[round(thread_wait_ticks,1)]|HS:[hotspots.len]|PN:[networks.len]|RBQ:[pipenets_needing_rebuilt.len]/[expansion_queue.len]|AO:[atom_process.len]|HP:[high_pressure_delta.len]|HT:[high_pressure_turfs]|LT:[low_pressure_turfs]|DA:[num_decompression_areas]|ET:[num_equalize_processed]|GT:[num_group_turfs_processed]|GA:[gas_mixes_count]|MG:[gas_mixes_allocated]"
 	return ..()
 
 /datum/controller/subsystem/air/Initialize(timeofday)
@@ -664,18 +669,116 @@ SUBSYSTEM_DEF(air)
 		currentpart = SSAIR_REBUILD_PIPENETS
 
 /datum/controller/subsystem/air/proc/process_rebuild_queue(resumed = FALSE)
-	if(!resumed)
-		src.currentrun = pipenets_needing_rebuilt.Copy()
-		pipenets_needing_rebuilt.Cut()
-	var/list/currentrun = src.currentrun
-	while(currentrun.len)
-		var/obj/machinery/atmospherics/AT = currentrun[currentrun.len]
-		currentrun.len--
-		if(QDELETED(AT))
+	// Работаем по живым спискам, а не по снапшоту: build_network() машины
+	// рождает пакет расширения, и его надо доесть раньше следующей машины,
+	// иначе пакеты множатся без предела, а сети стоят недостроенными.
+	while(length(pipenets_needing_rebuilt) || length(expansion_queue))
+		while(length(pipenets_needing_rebuilt) && !length(expansion_queue))
+			var/obj/machinery/atmospherics/machine = pipenets_needing_rebuilt[length(pipenets_needing_rebuilt)]
+			pipenets_needing_rebuilt.len--
+			if(machine)
+				machine.rebuild_queued = FALSE
+				if(!QDELETED(machine))
+					machine.build_network()
+			if(MC_TICK_CHECK)
+				return
+		while(length(expansion_queue))
+			var/list/packet = expansion_queue[length(expansion_queue)]
+			var/datum/pipeline/net = packet[SSAIR_REBUILD_PIPELINE]
+			if(QDELETED(net))
+				expansion_queue.len--
+				continue
+			if(!expand_pipeline(net, packet[SSAIR_REBUILD_BORDER], packet[SSAIR_REBUILD_SEEN]))
+				// Кончился бюджет тика посреди обхода: MC_TICK_CHECK внутри уже
+				// поставил подсистему на паузу, состояние осталось в пакете.
+				return
+			net.finish_building()
+			expansion_queue.len--
+			if(MC_TICK_CHECK)
+				return
+
+///Шаг BFS-обхода пайпнета, общий для очереди расширения и блокирующего
+///построения. Живёт на подсистеме, а не на сети: MC_TICK_CHECK читает
+///src.state. Возвращает TRUE, когда граница исчерпана; FALSE - тик кончился
+///(только при yield), обход продолжится со следующего фаера с того же места.
+/datum/controller/subsystem/air/proc/expand_pipeline(datum/pipeline/net, list/border, list/seen_members, yield = TRUE)
+	while(length(border))
+		var/obj/machinery/atmospherics/borderline = border[length(border)]
+		border.len--
+		if(QDELETED(borderline))
 			continue
-		AT.build_network()
-		if(MC_TICK_CHECK)
+
+		var/list/result = borderline.pipeline_expansion(net)
+		if(!length(result))
+			continue
+
+		// Implicit-typed `for X in list` filters nulls AND non-atmos entries —
+		// /obj/machinery/atmospherics/components/pipeline_expansion returns
+		// `list(nodes[…])` and that slot is null on disconnected components.
+		// Skipping the filter (e.g. via `as anything`) reaches setPipenet on
+		// null and crashes during SSair pipenet setup.
+		for(var/obj/machinery/atmospherics/P in result)
+			if(istype(P, /obj/machinery/atmospherics/pipe))
+				var/obj/machinery/atmospherics/pipe/item = P
+				// O(1) membership probe replacing the O(M) members.Find call
+				// that made the BFS quadratic on large pipenets.
+				if(seen_members[item])
+					continue
+				seen_members[item] = TRUE
+
+				if(item.parent)
+					var/static/pipenetwarnings = 10
+					if(pipenetwarnings > 0)
+						log_mapping("build_pipeline(): [item.type] added to a pipenet while still having one. (pipes leading to the same spot stacking in one turf) Nearby: ([item.x], [item.y], [item.z]).")
+						pipenetwarnings -= 1
+						if(pipenetwarnings == 0)
+							log_mapping("build_pipeline(): further messages about pipenets will be suppressed")
+				net.track_member(item)
+				border += item
+
+				net.air.set_volume(net.air.return_volume() + item.volume)
+				item.parent = net
+
+				if(item.air_temporary)
+					net.air.merge(item.air_temporary)
+					QDEL_NULL(item.air_temporary)
+			else
+				P.setPipenet(net, borderline)
+				net.addMachineryMember(P)
+		if(yield && MC_TICK_CHECK)
+			return FALSE
+	return TRUE
+
+///Ставит недостроенную сеть в очередь расширения фазы ребилда.
+/datum/controller/subsystem/air/proc/add_to_expansion(datum/pipeline/net, obj/machinery/atmospherics/base, list/seen_members)
+	var/list/packet = new /list(SSAIR_REBUILD_SEEN)
+	packet[SSAIR_REBUILD_PIPELINE] = net
+	packet[SSAIR_REBUILD_BORDER] = list(base)
+	packet[SSAIR_REBUILD_SEEN] = seen_members
+	expansion_queue += list(packet)
+
+///Снимает пакет сети с очереди расширения (Destroy недостроенной сети).
+/datum/controller/subsystem/air/proc/remove_from_expansion(datum/pipeline/net)
+	for(var/list/packet in expansion_queue)
+		if(packet[SSAIR_REBUILD_PIPELINE] == net)
+			expansion_queue -= list(packet)
 			return
+
+///Синхронно доедает обход одной сети, минуя бюджет тика. Единственный
+///клиент - /datum/pipeline/proc/ensure_built.
+/datum/controller/subsystem/air/proc/finish_expansion_blocking(datum/pipeline/net)
+	for(var/list/packet in expansion_queue)
+		if(packet[SSAIR_REBUILD_PIPELINE] != net)
+			continue
+		expansion_queue -= list(packet)
+		expand_pipeline(net, packet[SSAIR_REBUILD_BORDER], packet[SSAIR_REBUILD_SEEN], yield = FALSE)
+		net.finish_building()
+		return
+	// Сеть числится строящейся, а пакета нет: инвариант "building ⟺ пакет в
+	// очереди" сломан. Флаг всё равно надо снять, иначе сеть навсегда выпадет
+	// из сведения - process() так и будет гонять её по кругу.
+	stack_trace("finish_expansion_blocking(): building pipeline [net]([REF(net)]) has no expansion packet")
+	net.finish_building()
 
 /datum/controller/subsystem/air/proc/process_pipenets(resumed = 0)
 	if (!resumed)
@@ -703,9 +806,12 @@ SUBSYSTEM_DEF(air)
 		if(MC_TICK_CHECK)
 			return
 
-/datum/controller/subsystem/air/proc/add_to_rebuild_queue(atmos_machine)
-	if(istype(atmos_machine, /obj/machinery/atmospherics) && !(atmos_machine in pipenets_needing_rebuilt))
+/datum/controller/subsystem/air/proc/add_to_rebuild_queue(obj/machinery/atmospherics/atmos_machine)
+	// Флаг вместо `in`-скана: взрыв сыплет сотни добавлений за тик, и линейный
+	// поиск по очереди делал их квадратными.
+	if(istype(atmos_machine) && !atmos_machine.rebuild_queued)
 		pipenets_needing_rebuilt += atmos_machine
+		atmos_machine.rebuild_queued = TRUE
 
 /datum/controller/subsystem/air/proc/process_atmos_machinery(resumed = 0)
 	var/seconds = wait * 0.1
@@ -1040,7 +1146,7 @@ SUBSYSTEM_DEF(air)
 //	pipenet can be built.
 /datum/controller/subsystem/air/proc/setup_pipenets()
 	for (var/obj/machinery/atmospherics/AM in atmos_machinery)
-		AM.build_network()
+		AM.build_network(blocking = TRUE)
 		CHECK_TICK
 
 /datum/controller/subsystem/air/proc/setup_template_machinery(list/atmos_machines)
@@ -1053,7 +1159,10 @@ SUBSYSTEM_DEF(air)
 
 	for(var/A as anything in atmos_machines)
 		var/obj/machinery/atmospherics/AM = A
-		AM.build_network()
+		// Блокирующее построение: код загрузки шаблонов (шаттлы, руины, комнаты
+		// Хилберта) ждёт рабочие сети сразу за этим циклом, а бюджет тика здесь
+		// и так растянут через CHECK_TICK.
+		AM.build_network(blocking = TRUE)
 		CHECK_TICK
 
 /datum/controller/subsystem/air/proc/get_init_dirs(type, dir)

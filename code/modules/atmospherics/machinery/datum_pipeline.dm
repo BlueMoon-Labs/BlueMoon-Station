@@ -15,6 +15,10 @@
 	/// SSair.dirty_networks, иначе сеть либо перестанет обсчитываться совсем
 	/// (газ в трубе замрёт), либо застрянет в списке навсегда.
 	var/update = TRUE
+	/// Сеть ещё строится: её BFS-обход лежит пакетом в SSair.expansion_queue и
+	/// доедается фазой ребилда с уступкой тика. Пока флаг поднят, сводить сеть
+	/// нельзя - members и объём неполные.
+	var/building = FALSE
 	///Pipenet pressure at the last idle-machine wake broadcast; reconcile_air
 	///wakes attached machines when pressure moves more than
 	///ATMOS_PIPENET_WAKE_PRESSURE_DELTA away from it.
@@ -40,6 +44,8 @@
 	SSair.networks -= src
 	SSair.dirty_networks -= src
 	SSair.currentrun -= src
+	if(building)
+		SSair.remove_from_expansion(src)
 	update = FALSE
 	if(air?.return_volume())  //	BLUEMOON EDIT: TODO:runtime
 		temporarily_store_air()
@@ -79,6 +85,13 @@
 		SSair.dirty_networks += src
 
 /datum/pipeline/process()
+	if(building)
+		// Обход ещё не дошёл до конца границы. Флаг update не трогаем и
+		// возвращаем сеть в свежий грязный список сами: mark_dirty() здесь
+		// бессилен (update уже поднят), а инвариант "update ⟺ в очереди"
+		// обязан пережить снятие снапшота фазой пайпнетов.
+		SSair.dirty_networks += src
+		return
 	if(!update)	//	BLUEMOON EDIT: TODO:runtime
 		return	//	BLUEMOON EDIT: TODO:runtime
 	update = FALSE
@@ -141,7 +154,7 @@
 	if(istype(member, /obj/machinery/atmospherics/pipe/heat_exchanging))
 		LAZYOR(heat_exchanging_members, member)
 
-/datum/pipeline/proc/build_pipeline(obj/machinery/atmospherics/base)
+/datum/pipeline/proc/build_pipeline(obj/machinery/atmospherics/base, blocking = FALSE)
 	if(QDELETED(base))
 		stack_trace("build_pipeline() called with QDELETED base [base?.type] at [base ? COORD(base) : "null"]")
 		return
@@ -157,6 +170,8 @@
 		addMachineryMember(base)
 	if(!air)
 		air = new
+	// Объём копится по мере обхода (см. expand_pipeline); стартуем с базы.
+	air.set_volume(volume)
 
 	// O(1) membership probe replacing the O(M) members.Find call that made the
 	// BFS quadratic on large pipenets. Seed it with whatever is already in
@@ -165,52 +180,34 @@
 	for(var/obj/machinery/atmospherics/pipe/already in members)
 		seen_members[already] = TRUE
 
-	// Index-cursor BFS instead of `for(... in list); list -= current`. The old
-	// pattern was O(P) per removal × P removals = quadratic; this is O(1) per
-	// step and visits the same set of nodes (BFS reachability doesn't depend
-	// on snapshot semantics for a connected graph).
-	var/list/possible_expansions = list(base)
-	var/cursor = 1
-	while(cursor <= length(possible_expansions))
-		var/obj/machinery/atmospherics/borderline = possible_expansions[cursor++]
+	if(!blocking && SSair.initialized)
+		// Отложенное строительство: BFS уходит пакетом в фазу ребилда SSair и
+		// уступает тик внутри обхода. Взрыв, срезавший дистро, больше не строит
+		// сеть станции одним куском в один тик (раунд 9884: до 850мс на фаер).
+		building = TRUE
+		SSair.add_to_expansion(src, base, seen_members)
+		return
 
-		var/list/result = borderline.pipeline_expansion(src)
-		if(!length(result))
-			continue
+	SSair.expand_pipeline(src, list(base), seen_members, yield = FALSE)
 
-		// Implicit-typed `for X in list` filters nulls AND non-atmos entries —
-		// /obj/machinery/atmospherics/components/pipeline_expansion returns
-		// `list(nodes[…])` and that slot is null on disconnected components.
-		// Skipping the filter (e.g. via `as anything`) reaches setPipenet on
-		// null and crashes during SSair pipenet setup.
-		for(var/obj/machinery/atmospherics/P in result)
-			if(istype(P, /obj/machinery/atmospherics/pipe))
-				var/obj/machinery/atmospherics/pipe/item = P
-				if(seen_members[item])
-					continue
-				seen_members[item] = TRUE
+///Расширение дошло до конца границы: сеть снова полноправная. Пока сеть
+///строилась, process() возвращал её в грязный список не сводя, так что
+///доделанная сеть сведётся ближайшей фазой пайпнетов. Страховка ниже - на
+///случай, если экзотический путь снял её с очереди с поднятым update.
+/datum/pipeline/proc/finish_building()
+	building = FALSE
+	if(update && !(src in SSair.dirty_networks))
+		SSair.dirty_networks += src
 
-				if(item.parent)
-					var/static/pipenetwarnings = 10
-					if(pipenetwarnings > 0)
-						log_mapping("build_pipeline(): [item.type] added to a pipenet while still having one. (pipes leading to the same spot stacking in one turf) Nearby: ([item.x], [item.y], [item.z]).")
-						pipenetwarnings -= 1
-						if(pipenetwarnings == 0)
-							log_mapping("build_pipeline(): further messages about pipenets will be suppressed")
-				track_member(item)
-				possible_expansions += item
-
-				volume += item.volume
-				item.parent = src
-
-				if(item.air_temporary)
-					air.merge(item.air_temporary)
-					QDEL_NULL(item.air_temporary)
-			else
-				P.setPipenet(src, borderline)
-				addMachineryMember(P)
-
-	air.set_volume(volume)
+///Синхронно доедает собственный обход, если сеть ещё строится. Обязателен
+///перед любой операцией, меняющей членство (merge, addMember): слияние двух
+///недостроенных границ иначе осиротит непройденные трубы. Окно узкое - от
+///взрыва до ближайших фаеров SSair, - поэтому редкий блокирующий доезд дешевле
+///корректного слияния пакетов.
+/datum/pipeline/proc/ensure_built()
+	if(!building)
+		return
+	SSair.finish_expansion_blocking(src)
 
 /**
  *  For a machine to properly "connect" to a pipeline and share gases,
@@ -234,6 +231,10 @@
 	other_airs |= returned_airs
 
 /datum/pipeline/proc/addMember(obj/machinery/atmospherics/A, obj/machinery/atmospherics/N)
+	// Членство недостроенной сети менять нельзя: труба, добавленная мимо
+	// пакета расширения, не попадёт в посещённые и будет добавлена обходом
+	// второй раз (двойной член, двойной объём).
+	ensure_built()
 	if(istype(A, /obj/machinery/atmospherics/pipe))
 		var/obj/machinery/atmospherics/pipe/P = A
 		if(P.parent)
@@ -256,6 +257,11 @@
 /datum/pipeline/proc/merge(datum/pipeline/E)
 	if(E == src)
 		return
+	// Слияние с недостроенной сетью доедает её обход синхронно: границы двух
+	// пакетов иначе пришлось бы сливать вместе с посещёнными, а непройденные
+	// трубы поглощённой сети - осиротели бы вместе с её пакетом.
+	ensure_built()
+	E.ensure_built()
 	air.set_volume(air.return_volume() + E.air.return_volume())
 	members.Add(E.members)
 	for(var/obj/machinery/atmospherics/pipe/S in E.members)

@@ -119,7 +119,7 @@
 	..()
 	update_parents()
 
-/obj/machinery/atmospherics/components/build_network()
+/obj/machinery/atmospherics/components/build_network(blocking = FALSE)
 	if(!parents)
 		stack_trace("[type] build_network() at [COORD(src)]: parents list is null - object may be destroyed or improperly initialized")
 		return
@@ -127,7 +127,7 @@
 		if(!parents[i])
 			parents[i] = new /datum/pipeline()
 			var/datum/pipeline/P = parents[i]
-			P.build_pipeline(src)
+			P.build_pipeline(src, blocking)
 
 /**
  * Called by nullify_node(), used to remove the pipeline the component is attached to

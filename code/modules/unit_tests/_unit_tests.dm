@@ -87,6 +87,7 @@
 #include "atmos_zone_walk.dm"
 #include "atmos_sprite_states.dm"
 #include "atmos_pipe_paint.dm"
+#include "atmos_pipenet_rebuild.dm"
 #include "atmos_gas_balance.dm"
 #include "atmos_handbook.dm"
 #include "firelock_alarm.dm"

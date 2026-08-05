@@ -208,6 +208,7 @@ GLOBAL_PROTECT(atmos_benchmark_run)
 		"ami" = air.idle_machine_count(),
 		"hpd" = air.high_pressure_processed,
 		"rbq" = length(air.pipenets_needing_rebuilt),
+		"epq" = length(air.expansion_queue),
 		"gm" = air.gas_mixes_count,
 		"gma" = air.gas_mixes_allocated,
 		"egt" = air.num_group_turfs_processed,
