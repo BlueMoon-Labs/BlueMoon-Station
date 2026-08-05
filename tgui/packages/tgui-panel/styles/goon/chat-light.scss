@@ -1799,8 +1799,8 @@ li {
 }
 
 .vote-name {
-	flex: 0 0 auto;
-	width: 200px;
+	flex: 0 1 200px;
+	min-width: 0;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;

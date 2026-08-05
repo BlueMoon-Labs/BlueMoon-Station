@@ -2236,7 +2236,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 										dat += "<td><span class='csetup-marking-move'><a href='?_src_=prefs;preference=marking_cycle;direction=prev;task=input;marking_index=[marking_index];marking_type=[marking_type]'>&#9664;</a></span> [marking_list[2]] <span class='csetup-marking-move'><a href='?_src_=prefs;preference=marking_cycle;direction=next;task=input;marking_index=[marking_index];marking_type=[marking_type]'>&#9654;</a></span></td>"
 										dat += "<td class='csetup-col-colors'>[color_marking_dat]</td>"
 										var/marking_glow_on = length(marking_list) >= 4 ? marking_list[4] : FALSE
-										dat += "<td class='csetup-col-glow'><a class='csetup-mini-action [marking_glow_on ? "csetup-glow-on" : "csetup-glow-off"]' href='?_src_=prefs;preference=toggle_marking_emissive;task=input;marking_index=[marking_index];marking_type=[marking_type]'>[marking_glow_on ? "ВКЛ" : "ВЫКЛ"]</a></td>"
+										dat += "<td class='csetup-col-glow'><a class='csetup-mini-action [marking_glow_on ? "csetup-glow-on" : "csetup-glow-off"]' href='?_src_=prefs;preference=toggle_marking_emissive;task=input;marking_index=[marking_index];marking_type=[marking_type]'>[marking_glow_on ? enabled_label : disabled_label]</a></td>"
 										dat += "<td class='csetup-col-del'><a class='csetup-marking-del' href='?_src_=prefs;preference=marking_remove;task=input;marking_index=[marking_index];marking_type=[marking_type]'>&times;</a></td>"
 										dat += "</tr>"
 								if(!has_any)

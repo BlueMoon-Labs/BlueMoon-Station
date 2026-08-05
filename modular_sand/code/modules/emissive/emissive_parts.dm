@@ -11,8 +11,7 @@ GLOBAL_LIST_INIT(emissive_parts_list, list(
 /proc/has_emissive_part(list/features, part)
 	if(!features?["allow_emissives"])
 		return FALSE
-	var/list/parts = features["emissive_parts"]
-	return islist(parts) && (part in parts)
+	return emissive_part_enabled(features, part)
 
 /proc/emissive_part_enabled(list/features, part)
 	var/list/parts = features?["emissive_parts"]

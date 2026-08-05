@@ -1691,9 +1691,11 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	if(!islist(features["emissive_parts"]))
 		features["emissive_parts"] = list()
 	else
+		var/list/filtered_emissive_parts = list()
 		for(var/part in features["emissive_parts"])
-			if(!(part in GLOB.emissive_parts_list))
-				features["emissive_parts"] -= part
+			if(part in GLOB.emissive_parts_list)
+				filtered_emissive_parts += part
+		features["emissive_parts"] = filtered_emissive_parts
 
 	var/static/size_min
 	if(!size_min)

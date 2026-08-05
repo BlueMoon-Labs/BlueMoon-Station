@@ -20,7 +20,7 @@ export const Disclaimer = (props) => {
   const { act, data } = useBackend<DisclaimerData>();
   const lines = data.body.split('\n');
   return (
-    <Window title="Дисклеймер" width={850} height={620} resizable theme="disclaimer">
+    <Window title="Дисклеймер" width={850} height={620} resizable theme="disclaimer" canClose={!data.show_accept}>
       <Window.Content>
         <Stack fill vertical>
           <Stack.Item>

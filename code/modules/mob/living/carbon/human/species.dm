@@ -1188,7 +1188,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 
 			standing += accessory_overlay
 
-			if(has_emissive_part(H.dna.features, mutant_string))
+			if(has_emissive_part(H.dna.features, mutant_string || bodypart))
 				standing += emissive_copy(accessory_overlay)
 
 			if(S.extra) //apply the extra overlay, if there is one
@@ -1238,7 +1238,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 
 				standing += extra_accessory_overlay
 
-				if(has_emissive_part(H.dna.features, mutant_string))
+				if(has_emissive_part(H.dna.features, mutant_string || bodypart))
 					standing += emissive_copy(extra_accessory_overlay)
 
 			if(S.extra2) //apply the extra overlay, if there is one
@@ -1283,7 +1283,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 
 				standing += extra2_accessory_overlay
 
-				if(has_emissive_part(H.dna.features, mutant_string))
+				if(has_emissive_part(H.dna.features, mutant_string || bodypart))
 					standing += emissive_copy(extra2_accessory_overlay)
 
 		H.overlays_standing[layernum] = standing

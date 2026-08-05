@@ -20,7 +20,7 @@
 /// Send tidi only every Nth ping fire — non-Status-tab clients still see fresh ping every fire.
 #define STATPANEL_TIDI_INTERVAL 10
 /// Bridge protocol version. Bump whenever the DM->JS payload shape changes incompatibly.
-#define STATBROWSER_PROTOCOL_VERSION 2
+#define STATBROWSER_PROTOCOL_VERSION 3
 /// Channel keys for client.statpanel_last_sent dirty cache. String constants kept in one place
 /// so DM-side dirty checks and any future invalidation paths can share them.
 #define STATPANEL_CHANNEL_STATUS "status"

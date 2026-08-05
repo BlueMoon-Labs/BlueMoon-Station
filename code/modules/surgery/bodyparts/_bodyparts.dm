@@ -906,6 +906,8 @@
 						mark = image(marking_list[1], "[marking_list[2]]_[body_zone]", -MARKING_LAYER, image_dir)
 				else
 					mark = image(marking_list[1], "[marking_list[2]]_[digitigrade_type]_[use_digitigrade]_[body_zone]", -MARKING_LAYER, image_dir)
+				if(islist(marking_list[3]))
+					mark.color = marking_list[3]
 				. += mark
 				if(length(marking_list) >= 4 && marking_list[4] && emissives_allowed(owner?.dna))
 					var/image/mark_emissive = emissive_copy(mark)
@@ -978,7 +980,7 @@
 					else
 						mark = image(marking_list[1], "[marking_list[2]]_[digitigrade_type]_[use_digitigrade]_[body_zone]", -MARKING_LAYER, image_dir)
 					mark.appearance_flags = RESET_COLOR
-					if(color_src && islist(marking_list[3]))
+					if(islist(marking_list[3]))
 						mark.color = marking_list[3]
 					limb.overlays += mark
 					if(length(marking_list) >= 4 && marking_list[4] && emissives_allowed(owner?.dna))
@@ -1085,6 +1087,8 @@
 					else
 						mark = image(marking_list[1], "[marking_list[2]]_[digitigrade_type]_[use_digitigrade]_[body_zone]", -MARKING_LAYER, image_dir)
 					mark.appearance_flags = RESET_COLOR
+					if(islist(marking_list[3]))
+						mark.color = marking_list[3]
 					limb.overlays += mark
 					if(length(marking_list) >= 4 && marking_list[4] && emissives_allowed(owner?.dna))
 						var/image/mark_emissive = emissive_copy(mark)

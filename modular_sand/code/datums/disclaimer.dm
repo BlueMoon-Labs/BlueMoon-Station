@@ -54,5 +54,7 @@
 			ui.close()
 			return TRUE
 		if("close")
+			if(accept_required)
+				return TRUE
 			ui.close()
 			return TRUE
