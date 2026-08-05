@@ -1136,12 +1136,12 @@ SUBSYSTEM_DEF(vote)
 		else
 			dynamic_type = pick(available_medium)
 	else
-		dynamic_type = ROUNDTYPE_DYNAMIC_LIGHT
+		dynamic_type = ROUNDTYPE_EXTENDED
 
 	// Логируем детали выбора
-	message_admins("Выбранный Динамик: [dynamic_type]. Количество игроков - [players.len]. \
+	message_admins("Выбранный режим: [dynamic_type]. Количество игроков - [players.len]. \
 	Уровень хаоса от игроков - [total_chaos]. [CONFIG_GET(number/chaos_for_a_hard_dynamic)] было нужно для Хард-Динамика.")
-	log_admin("Выбранный Динамик: [dynamic_type]. Количество игроков - [players.len]. \
+	log_admin("Выбранный режим: [dynamic_type]. Количество игроков - [players.len]. \
 	Уровень хаоса от игроков - [total_chaos]. [CONFIG_GET(number/chaos_for_a_hard_dynamic)] было нужно для Хард-Динамика.")
 
 	return dynamic_type

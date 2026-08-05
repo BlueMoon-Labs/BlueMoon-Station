@@ -416,6 +416,10 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 			return FALSE
 	return SSshuttle.emergency.is_hijacked()
 
+/datum/objective/hijack/syndicate
+	name = "hijack syndicate"
+	explanation_text = "Захватите аварийный шаттл, взломав его навигационные протоколы через консоль управления (ALT-ЛКМ по консоли аварийного шаттла)! Отведите уцелевших на Синди-Аванпост."
+
 /datum/objective/block
 	name = "no organics on shuttle"
 	explanation_text = "Do not allow any organic lifeforms to escape on the shuttle alive."
