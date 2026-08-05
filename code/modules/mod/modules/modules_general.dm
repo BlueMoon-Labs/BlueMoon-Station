@@ -89,8 +89,12 @@
 /obj/item/mod/module/storage/on_uninstall()
 	. = ..()
 	var/datum/component/storage/Storage = mod.GetComponent(/datum/component/storage)
-	if(Storage)
-		Storage.Destroy()
+	if(!Storage)
+		return
+	//вещи лежат в contents самого костюма, а окно к ним даёт только компонент:
+	//снести компонент молча = запереть содержимое в МОДе навсегда
+	Storage.do_quick_empty(mod.drop_location())
+	qdel(Storage)
 
 
 

@@ -131,6 +131,7 @@
 #include "merge_type.dm"
 // #include "metabolizing.dm"
 #include "mob_elements.dm"
+#include "mod_suit_fixes.dm"
 #include "modular_map_loader.dm" //SPLURT EDIT
 #include "nightshift.dm"
 // #include "ntnetwork_tests.dm"
