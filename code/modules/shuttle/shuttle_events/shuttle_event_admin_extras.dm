@@ -13,6 +13,7 @@
 /// InteQ hitchhiker — ghost role with /datum/outfit/inteq/full, gear first, optional prefs load, re-equip if prefs applied.
 /datum/shuttle_event/simple_spawner/player_controlled/human/hitchhiker/inteq
 	name = "Оперативники ИнтеКью (автостоп по гиперпространству)"
+	admin_forceable = TRUE
 	ghost_alert_string = "Налёт оперативников InteQ у эвакуационного шаттла. Я подсяду?"
 	spawning_list = list(/mob/living/carbon/human = 3)
 	spawning_flags = SHUTTLE_EVENT_HIT_SHUTTLE

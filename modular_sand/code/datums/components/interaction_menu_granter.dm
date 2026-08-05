@@ -593,6 +593,7 @@
 				"arousal_label" = custom.get_arousal_label(),
 				"requires_tail" = custom.requires_tail,
 				"requires_telekinesis" = custom.requires_telekinesis,
+				"max_distance" = custom.max_distance,
 			))
 	.["own_custom_interactions"] = own_customs
 	.["max_custom_interactions"] = self.client.prefs.get_custom_interaction_limit()
@@ -945,7 +946,7 @@
 	interaction["desc"] = custom.name
 	interaction["type"] = custom.get_interaction_type_num()
 	interaction["interactionFlags"] = custom.get_interaction_flags()
-	interaction["maxDistance"] = 1
+	interaction["maxDistance"] = custom.max_distance
 	interaction["isCustom"] = TRUE
 	var/list/details = list()
 	details += list(list("info" = "Вариант персонажа [owner_name]", "icon" = "user", "color" = "green"))
@@ -980,6 +981,7 @@
 	custom.arousal_level = clamp(round(text2num(params["arousal_level"])), CUSTOM_AROUSAL_NONE, CUSTOM_AROUSAL_MAX)
 	custom.requires_tail = text2num(params["requires_tail"]) ? TRUE : FALSE
 	custom.requires_telekinesis = text2num(params["requires_telekinesis"]) ? TRUE : FALSE
+	custom.max_distance = sanitize_integer(text2num(params["max_distance"]), 1, 3, 1)
 	LAZYADD(prefs.custom_interactions, custom)
 	prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
 	log_custom_interaction(user, "создал", custom)
@@ -1006,6 +1008,7 @@
 	custom.arousal_level = clamp(round(text2num(params["arousal_level"])), CUSTOM_AROUSAL_NONE, CUSTOM_AROUSAL_MAX)
 	custom.requires_tail = text2num(params["requires_tail"]) ? TRUE : FALSE
 	custom.requires_telekinesis = text2num(params["requires_telekinesis"]) ? TRUE : FALSE
+	custom.max_distance = sanitize_integer(text2num(params["max_distance"]), 1, 3, 1)
 	prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
 	log_custom_interaction(user, "изменил", custom)
 	SStgui.update_uis(src)

@@ -386,15 +386,15 @@
 			if(!ispath(event_type, /datum/shuttle_event) || !(event_type in get_admin_forceable_hyperspace_events()))
 				continue
 			var/datum/shuttle_event/queued_ev = add_shuttle_event(event_type)
-			queued_ev?.start_up_event(evac_duration)
-		used_admin_queue = TRUE
+			queued_ev?.start_up_event(evac_duration, TRUE)
+			used_admin_queue = TRUE
 		queued_admin_hyperspace_events.Cut()
 	if(!used_admin_queue)
 		var/list/weighted = get_hyperspace_event_roll_weights()
 		if(length(weighted))
 			var/chosen = pickweight(weighted)
 			var/datum/shuttle_event/new_event = add_shuttle_event(chosen)
-			new_event?.start_up_event(evac_duration)
+			new_event?.start_up_event(evac_duration, TRUE)
 
 /obj/docking_port/mobile/emergency/check()
 	if(!timer)
@@ -479,7 +479,7 @@
 				setTimer(SSshuttle.emergencyEscapeTime * engine_coeff)
 				prepare_hyperspace_events()
 				priority_announce("Шаттл Эвакуации покинул станцию. До прибытия Шаттла Эвакуации на Аванпост Центрального Командования осталось [timeLeft(600)] минут.", null, null, "ВНИМАНИЕ: ОТБЫТИЕ ШАТТЛА")
-				INVOKE_ASYNC(SSticker, TYPE_PROC_REF(/datum/controller/subsystem/ticker, poll_hearts))
+				addtimer(CALLBACK(SSticker, TYPE_PROC_REF(/datum/controller/subsystem/ticker, poll_hearts)), 0)
 
 		if(SHUTTLE_STRANDED)
 			SSshuttle.checkHostileEnvironment()
@@ -514,7 +514,7 @@
 				// now move the actual emergency shuttle to centcom
 				// unless the shuttle is "hijacked"
 				var/destination_dock = "emergency_away"
-				if(is_hijacked() && GLOB.master_mode == "Extended")
+				if(is_hijacked() && (GLOB.round_type == ROUNDTYPE_EXTENDED || GLOB.round_type == ROUNDTYPE_DYNAMIC_LIGHT))
 					destination_dock = "emergency_real_syndicate"
 					minor_announce("Обнаружен взлом в протоколах \
 						автопилота шаттла. Пожалуйста, найдите и поговорите с \

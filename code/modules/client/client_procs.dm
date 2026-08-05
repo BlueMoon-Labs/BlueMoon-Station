@@ -1890,6 +1890,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		return
 	prefs.hearted_until = world.realtime + (24 HOURS)
 	prefs.hearted = TRUE
+	sync_hearted_pref(prefs)
 	if(!src)
 		return
 	prefs.save_preferences()

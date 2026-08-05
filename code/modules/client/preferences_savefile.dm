@@ -595,6 +595,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["ghost_others"] >> ghost_others
 	S["preferred_map"] >> preferred_map
 	S["ignoring"] >> ignoring
+	S["hearted_until"] >> hearted_until
+	sync_hearted_pref(src)
 	S["inquisitive_ghost"] >> inquisitive_ghost
 	S["uses_glasses_colour"]>> uses_glasses_colour
 	S["auto_capitalize_enabled"]>> auto_capitalize_enabled
@@ -974,6 +976,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["ghost_others"], ghost_others)
 	WRITE_FILE(S["preferred_map"], preferred_map)
 	WRITE_FILE(S["ignoring"], ignoring)
+	WRITE_FILE(S["hearted_until"], (hearted_until > world.realtime ? hearted_until : null))
 	WRITE_FILE(S["inquisitive_ghost"], inquisitive_ghost)
 	WRITE_FILE(S["uses_glasses_colour"], uses_glasses_colour)
 	WRITE_FILE(S["auto_capitalize_enabled"], auto_capitalize_enabled)

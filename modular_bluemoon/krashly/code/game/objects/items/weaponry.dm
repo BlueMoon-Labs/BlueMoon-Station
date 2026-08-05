@@ -205,6 +205,7 @@
 	desc = "Простая в использовании Автоматическая Винтовка. Её придумали ещё столетия назад, а популярна она и по сей день."
 	icon = 'modular_bluemoon/krashly/icons/obj/weapons/weapons.dmi'
 	icon_state = "ak12"
+	item_state = "ak12"
 	lefthand_file = 'modular_bluemoon/krashly/icons/mob/inhands/weapons/lefthand.dmi'
 	righthand_file = 'modular_bluemoon/krashly/icons/mob/inhands/weapons/righthand.dmi'
 	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_BACK

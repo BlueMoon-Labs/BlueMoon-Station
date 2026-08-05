@@ -2522,3 +2522,21 @@
 	path = /obj/item/clothing/accessory/medal/vulpix_pilot_badge
 	cost = 0
 	ckeywhitelist = list("alexhosted", "gsvden")
+
+/datum/gear/donator/bm/yun_cap
+	name = "strange chinese cap"
+	slot = ITEM_SLOT_HEAD
+	path = /obj/item/clothing/head/yun_cap
+	ckeywhitelist = list("victorpoplavsy")
+
+/datum/gear/donator/bm/yun_outfit
+	name = "strange chinese clothing"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/bm/yun_outfit
+	ckeywhitelist = list("victorpoplavsy")
+
+/datum/gear/donator/bm/yun_sneakers
+	name = "strange sneakers"
+	slot = ITEM_SLOT_FEET
+	path = /obj/item/clothing/shoes/yun_sneakers
+	ckeywhitelist = list("victorpoplavsy")
