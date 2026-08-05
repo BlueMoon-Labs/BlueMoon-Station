@@ -463,13 +463,17 @@
 
 /obj/singularity/proc/get_food_seek_dir()
 	var/search_range = min(grav_pull + consume_range + current_size + 2, 15)
+	// Ключи обязаны быть строками: числовой ключ в DM - это индексация, и
+	// dir_weights[NORTH] по пустому списку падал с "list index out of bounds"
+	// на первой же строке. Прок не отработал ни разу со дня появления - синга
+	// ходила рандомом и писала рантайм в лог каждый process() (раунд 9884:
+	// 416 штук за раунд).
 	var/list/dir_weights = list()
-	for(var/direction in GLOB.alldirs)
-		dir_weights[direction] = 0
 	var/static/singularity_food_blacklist = typecacheof(list(/obj/singularity, /obj/machinery/field/containment, /obj/machinery/field/generator))
-	for(var/turf/T in range(search_range, src))
-		if(T.z != z)
-			continue
+	// RANGE_TURFS вместо range(): range() перечисляет ещё и каждый атом в
+	// радиусе, а здесь из них нужен только пол под ногами. При search_range 15
+	// это 961 турф каждые ~2 секунды - мувабли в эту цену входить не должны.
+	for(var/turf/T as anything in RANGE_TURFS(search_range, src))
 		var/weight = 0
 		for(var/atom/A in T)
 			if(A == src)
@@ -487,13 +491,13 @@
 			var/direction = get_dir(src, T)
 			if(!direction)
 				continue
-			dir_weights[direction] += weight
+			dir_weights["[direction]"] += weight
 	var/best_dir = 0
 	var/best_weight = 0
-	for(var/direction in GLOB.alldirs)
-		if(dir_weights[direction] > best_weight)
-			best_weight = dir_weights[direction]
-			best_dir = direction
+	for(var/dir_key in dir_weights)
+		if(dir_weights[dir_key] > best_weight)
+			best_weight = dir_weights[dir_key]
+			best_dir = text2num(dir_key)
 	return best_dir
 
 /obj/singularity/proc/move(force_move = 0)

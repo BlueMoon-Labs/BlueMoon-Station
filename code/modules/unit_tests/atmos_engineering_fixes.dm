@@ -46,6 +46,7 @@
 
 	// The fake nodes have no pipenets; drop the rebuild request update_parents queued.
 	SSair.pipenets_needing_rebuilt -= filter
+	filter.rebuild_queued = FALSE
 	for(var/i in 1 to QUATERNARY)
 		filter.nodes[i] = null
 
@@ -569,3 +570,30 @@
 	)
 	for(var/part in hypertorus_parts)
 		TEST_ASSERT(part in hypertorus.contains, "the hypertorus kit no longer ships [part]")
+
+/// get_food_seek_dir сингулярности падал "list index out of bounds" на каждом
+/// вызове с самого рождения прока: числовой ключ направления в пустом list()
+/// - это индексация, а не assoc. Синга всю жизнь ходила рандомом и спамила
+/// рантайм каждые ~2 секунды (раунд 9884: 416 записей).
+/datum/unit_test/singularity_food_seek_runtime_free/Run()
+	var/obj/singularity/singulo = allocate(/obj/singularity, run_loc_floor_bottom_left)
+	// Тестовая синга обязана быть инертной: без самостоятельного движения и
+	// вне SSobj, иначе между тестами она поедет есть чужие аллокации.
+	singulo.move_self = FALSE
+	STOP_PROCESSING(SSobj, singulo)
+
+	var/runtimes_before = GLOB.total_runtimes
+	var/seek_dir = singulo.get_food_seek_dir()
+	TEST_ASSERT_EQUAL(GLOB.total_runtimes - runtimes_before, 0, "get_food_seek_dir raised a runtime")
+	TEST_ASSERT(seek_dir == 0 || (seek_dir in GLOB.alldirs), "get_food_seek_dir returned [seek_dir], which is not a direction")
+
+	// Положительная проверка взвешивания: десяток предметов к востоку обязан
+	// перетянуть любой мусор, оставшийся в общей тестовой зоне.
+	var/turf/open/feast = locate(singulo.x + 2, singulo.y, singulo.z)
+	TEST_ASSERT(istype(feast), "test reservation has no open turf two tiles east")
+	for(var/i in 1 to 10)
+		allocate(/obj/item/paper, feast)
+	runtimes_before = GLOB.total_runtimes
+	seek_dir = singulo.get_food_seek_dir()
+	TEST_ASSERT_EQUAL(GLOB.total_runtimes - runtimes_before, 0, "get_food_seek_dir raised a runtime with food around")
+	TEST_ASSERT_EQUAL(seek_dir, EAST, "get_food_seek_dir ignored the food pile to the east (returned [seek_dir])")
