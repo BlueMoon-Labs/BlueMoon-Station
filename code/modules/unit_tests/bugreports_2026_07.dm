@@ -450,3 +450,129 @@
 	TEST_ASSERT_EQUAL(board.loc, floor, "Вынутая плата не легла на пол")
 
 #undef CAMERA_CONSOLE_TEST_NETWORK
+
+// ===== Регрессы по багрепортам 3 августа 2026 =====
+
+// "Химия внутри моба молча не работает"
+//
+// Индекс рецептов строится по ПЕРВОМУ реагенту (holder.dm, break в цикле сборки), а
+// разбор натыкался на запрещённый в мобах рецепт и делал return вместо continue - то
+// есть обрывал handle_reactions() ЦЕЛИКОМ, вместе с уже собранными кандидатами.
+// /datum/chemical_reaction/food/caramel (mob_react = FALSE) сидит на ключе "сахар",
+// поэтому одного сахара в теле хватало, чтобы у моба перестала идти вся химия разом.
+// Так же ломались вода (dough), кровь (synthmeat) и salglu (coagulant_weak).
+/datum/unit_test/mob_chemistry_survives_a_recipe_banned_in_mobs/Run()
+	// Мартышка, а не человек: удавшаяся реакция печатает mix_message через visible_message с
+	// icon2html(my_atom), и человек в этом тесте засаливал бы кеш icon2html раньше, чем до него
+	// доберётся /datum/unit_test/icon2html_human_result_cached - тот проверяет РОСТ кеша.
+	// Для самой проверки разницы нет: гейт mob_react смотрит на isliving(cached_my_atom).
+	var/mob/living/carbon/monkey/patient = allocate(/mob/living/carbon/monkey, run_loc_floor_bottom_left)
+
+	// Сахар кладём ПЕРВЫМ: разбор должен наткнуться на запрещённый рецепт раньше разрешённого
+	patient.reagents.add_reagent(/datum/reagent/consumable/sugar, 10)
+	patient.reagents.add_reagent(/datum/reagent/carbon, 10)
+	patient.reagents.add_reagent(/datum/reagent/silicon, 10)
+	patient.reagents.handle_reactions()
+
+	TEST_ASSERT(patient.reagents.has_reagent(/datum/reagent/medicine/kelotane), \
+		"Разрешённая в мобах реакция не пошла: запрещённый рецепт на ключе сахара обрывает весь разбор")
+
+// "Стабилизированные экстракты теперь засасывает в холодильник"
+//
+// accept_check проверял РОДИТЕЛЬСКИЙ тип /obj/item/slimecross, под который подходит и
+// подтип stabilized. Разгрузка сумки идёт через тот же accept_check, так что био-сумку
+// вычищало подчистую, а в холодильнике стабилизированный экстракт теряет носителя,
+// пишет "сила иссякла" и самоудаляется вместе с эффектом.
+/datum/unit_test/extract_fridge_keeps_stabilized_extracts_out/Run()
+	var/obj/machinery/smartfridge/extract/fridge = allocate(/obj/machinery/smartfridge/extract, run_loc_floor_bottom_left)
+	var/obj/item/slimecross/stabilized/pink/stabilized = allocate(/obj/item/slimecross/stabilized/pink, run_loc_floor_bottom_left)
+	var/obj/item/slimecross/regenerative/grey/crossbred = allocate(/obj/item/slimecross/regenerative/grey, run_loc_floor_bottom_left)
+
+	TEST_ASSERT(!fridge.accept_check(stabilized), "Холодильник принял стабилизированный экстракт - он работает только при носителе")
+	TEST_ASSERT(fridge.accept_check(crossbred), "Холодильник перестал принимать обычные скрещенные экстракты (ради них холодильник и правили)")
+
+// "Слаймы сидят в загоне с мартышками и не едят"
+//
+// Погоня бросает добычу ниже SLIME_AI_TARGET_SPENT_HEALTH, а отбор её брал - и брал
+// первой попавшейся, с break. Мартышка живёт до -100, так что полоса -70..-100 вечная:
+// одна недоеденная тушка закрывала слаймам доступ к здоровым соседкам навсегда.
+/datum/unit_test/slime_skips_prey_its_pursuit_would_drop/Run()
+	var/turf/floor = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/slime/hunter = allocate(/mob/living/simple_animal/slime, floor)
+	var/mob/living/carbon/monkey/spent = allocate(/mob/living/carbon/monkey, get_step(floor, EAST))
+	var/mob/living/carbon/monkey/healthy = allocate(/mob/living/carbon/monkey, get_step(floor, NORTH))
+
+	// Выедаем добычу ровно в мёртвую зону: погоня её уже бросает, но умереть она не может
+	spent.adjustCloneLoss(spent.health - (SLIME_AI_TARGET_SPENT_HEALTH - 10))
+	TEST_ASSERT(spent.health <= SLIME_AI_TARGET_SPENT_HEALTH, "Премиса: добыча должна быть ниже порога отказа погони")
+	TEST_ASSERT(spent.stat != DEAD, "Премиса: добыча обязана остаться ЖИВОЙ, иначе тест ловит не тот отсев")
+
+	hunter.set_nutrition(hunter.get_starve_nutrition() - 1) //голодает: берёт кого угодно, без броска
+	hunter.handle_targets()
+
+	TEST_ASSERT_EQUAL(hunter.Target, healthy, "Слайм взял целью выеденную мартышку - погоня бросит её тем же тиком, и загон встанет намертво")
+
+// "Шкаф с замком не оставляет плату после разборки"
+//
+// Destroy() удаляет плату безусловно, а deconstruct() не снимал с неё ссылку - в отличие
+// от шлюза, который обнуляет electronics перед forceMove.
+/datum/unit_test/secure_closet_returns_its_electronics/Run()
+	var/turf/floor = run_loc_floor_bottom_left
+	var/obj/structure/closet/secure_closet/closet = allocate(/obj/structure/closet/secure_closet, floor)
+	var/obj/item/electronics/airlock/board = closet.lockerelectronics
+	TEST_ASSERT_NOTNULL(board, "Премиса: у защищённого шкафа плата ставится в Initialize")
+
+	closet.deconstruct(TRUE)
+
+	TEST_ASSERT(!QDELETED(board), "Разбор шкафа удалил плату доступа вместо того, чтобы её отдать")
+	TEST_ASSERT_EQUAL(board.loc, floor, "Плата не легла на пол после разбора шкафа")
+
+// "Розовый стабильный больше не успокаивает фауну"
+//
+// CanAttack смотрит foes[цель] ПЕРЕД общей фракцией, а RetaliateAgainst пишет обидчика в
+// foes навсегда - срока у записи нет. Поэтому аура мира не действовала ни на кого, кого
+// носитель хоть раз задел предметом или подстрелил.
+/datum/unit_test/pink_aura_forgives_old_grudges/Run()
+	var/turf/floor = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/holder = allocate(/mob/living/carbon/human, floor)
+	var/mob/living/simple_animal/hostile/beast = allocate(/mob/living/simple_animal/hostile, get_step(floor, EAST))
+	var/obj/item/slimecross/stabilized/pink/extract = allocate(/obj/item/slimecross/stabilized/pink, floor)
+	holder.put_in_hands(extract) //иначе базовый tick() снесёт эффект как потерявший носителя
+
+	beast.RetaliateAgainst(holder)
+	TEST_ASSERT(beast.foes[holder], "Премиса: обида на носителя должна быть записана")
+
+	var/datum/status_effect/stabilized/pink/aura = holder.apply_status_effect(/datum/status_effect/stabilized/pink)
+	TEST_ASSERT_NOTNULL(aura, "Премиса: эффект розового стабильного не навесился")
+	aura.linked_extract = extract
+	aura.tick()
+
+	TEST_ASSERT(!beast.foes[holder], "Аура мира не сняла персональную обиду - именно она перебивает общую фракцию в CanAttack")
+	TEST_ASSERT(holder.real_name in beast.faction, "Аура мира не поделилась фракцией с фауной")
+
+// "Бонусных шансов при операциях больше нет"
+//
+// Проверяет всю цепочку стерилизина ровно так, как её проходит спрей в руках хирурга:
+// reaction(PATCH) долей объёма -> reaction_mob -> sterilize(20, 600) -> sterilize_power,
+// который хирургия читает как "+0.2 к множителю" (surgery.dm, get_propability_multiplier).
+// Ловит и "бонус не выставился вовсе", и "выставился, но погас в первые же тики".
+/datum/unit_test/sterilizine_spray_gives_surgery_bonus/Run()
+	var/mob/living/carbon/human/patient = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/obj/item/reagent_containers/medspray/sterilizine/spray = allocate(/obj/item/reagent_containers/medspray/sterilizine, run_loc_floor_bottom_left)
+	TEST_ASSERT_EQUAL(patient.sterilize_power, 0, "Премиса: до обработки бонуса быть не должно")
+	TEST_ASSERT(spray.reagents.total_volume > 0, "Премиса: спрей обязан быть заправлен")
+
+	// ровно то, что делает /obj/item/reagent_containers/medspray/attack()
+	var/fraction = min(spray.amount_per_transfer_from_this / spray.reagents.total_volume, 1)
+	spray.reagents.reaction(patient, spray.apply_type, fraction)
+
+	TEST_ASSERT(patient.sterilize_power > 0, "Спрей стерилизина не выставил sterilize_power - бонуса к операции не будет и зелёной строки на сканере тоже")
+
+	var/datum/timedevent/expiry = SStimer.timer_id_dict[patient._sterilize_timer_id]
+	TEST_ASSERT_NOTNULL(expiry, "Стерилизация не завела таймер снятия")
+	TEST_ASSERT(expiry.timeToRun > world.time + 30 SECONDS, "Таймер снятия стерилизации назначен слишком рано: бонус погаснет раньше, чем хирург сделает шаг")
+
+	for(var/settle_tick in 1 to 5)
+		stoplag(1)
+
+	TEST_ASSERT(patient.sterilize_power > 0, "Бонус стерилизина погас в первые же тики после нанесения")

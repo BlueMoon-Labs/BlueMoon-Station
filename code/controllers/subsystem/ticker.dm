@@ -372,7 +372,11 @@ SUBSYSTEM_DEF(ticker)
 	SSdbcore.SetRoundStart()
 
 	to_chat(world, "<span class='notice'><B>Welcome to [station_name()], enjoy your stay!</B></span>")
-	SEND_SOUND(world, sound(SSstation.announcer.get_rand_welcome_sound()))
+	// Приветствие смены - такое же объявление командования, как и остальные (его и озвучивает
+	// диктор из SSstation.announcer), поэтому оно обязано уважать тумблер звука объявлений.
+	// Раньше тут был SEND_SOUND(world, ...) - мимо всех настроек. Аудитория остаётся прежней:
+	// GLOB.clients, то есть лобби тоже слышит; единственная разница - учёт префов.
+	send_announcement_sound(SSstation.announcer.get_rand_welcome_sound(), "announcements", GLOB.clients)
 
 	Master.SetRunLevel(RUNLEVEL_GAME)
 
