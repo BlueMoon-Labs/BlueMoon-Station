@@ -3,10 +3,24 @@
 /// Helper for getting the correct bucket for a given timer.
 /// Округление вверх, а не round(): round() сажал таймер в бакет на полтика раньше срока.
 #define BUCKET_POS(timer) (((ROUND_UP((timer.timeToRun - SStimer.head_offset) / world.tick_lag)+1) % BUCKET_LEN)||BUCKET_LEN)
-/// Gets the maximum time at which timers will be invoked from buckets, used for deferring to secondary queue.
+/// Верхняя граница окна бакетов в СЫРОМ времени. Для решения "бакет или second_queue"
+/// не годится - сравнивать надо округлённый тик, см. TIMER_FITS_BUCKETS ниже..
 /// Считается от head_offset и practical_offset (граница окна бакетов), а не от world.time:
 /// старая формула плавала внутри тика и роняла таймеры в "Invalid timer state".
 #define TIMER_MAX (SStimer.head_offset + TICKS2DS(BUCKET_LEN + SStimer.practical_offset - 1))
+/// Тик колеса, в который ляжет таймер - ТО ЖЕ округление вверх, что и в BUCKET_POS.
+#define TIMER_TICK_FROM_HEAD(timer) (ROUND_UP((timer.timeToRun - SStimer.head_offset) / world.tick_lag))
+/**
+ * Влезает ли таймер в окно колеса бакетов.
+ *
+ * Сравнивать обязательно ОКРУГЛЁННЫЙ тик, а не сырое время. TIMER_MAX смотрел на сырое,
+ * BUCKET_POS раскладывал по ROUND_UP, и на этом расхождении срок ровно в BUCKET_LEN
+ * заворачивался РОВНО в текущий курсор - тот же проход колеса тут же его и сметал.
+ * Замер: fps=20, head_offset=600.16, курсор=1146 - таймер на 600 дс срабатывал через 0.5 дс.
+ * Наружу это вылезало как самоуничтожение tgui_alert с таймаутом от минуты и как бонус
+ * стерилизина (ровно 600 дс), гаснущий раньше первого шага операции.
+ */
+#define TIMER_FITS_BUCKETS(timer) (TIMER_TICK_FROM_HEAD(timer) < BUCKET_LEN + SStimer.practical_offset - 1)
 /// Max float with integer precision
 #define TIMER_ID_MAX (2**24)
 /// Запас (в тиках) до срока таймера, ближе которого перенос из second_queue нельзя откладывать
@@ -227,7 +241,7 @@ SUBSYSTEM_DEF(timer)
 			var/i = 0
 			for (i in 1 to length(second_queue))
 				timer = second_queue[i]
-				if (timer.timeToRun >= TIMER_MAX)
+				if (!TIMER_FITS_BUCKETS(timer))
 					i--
 					break
 
@@ -334,7 +348,7 @@ SUBSYSTEM_DEF(timer)
 		timer.prev = null
 
 		// Check that the TTR is within the range covered by buckets, when exceeded we've finished
-		if (timer.timeToRun >= TIMER_MAX)
+		if (!TIMER_FITS_BUCKETS(timer))
 			i--
 			break
 
@@ -586,7 +600,7 @@ SUBSYSTEM_DEF(timer)
 	if (flags & TIMER_CLIENT_TIME)
 		L = SStimer.clienttime_timers
 		in_timer_clienttime_queue = TRUE
-	else if (timeToRun >= TIMER_MAX)
+	else if (!TIMER_FITS_BUCKETS(src))
 		L = SStimer.second_queue
 		in_timer_second_queue = TRUE
 	if(L)
@@ -738,6 +752,8 @@ SUBSYSTEM_DEF(timer)
 #undef BUCKET_LEN
 #undef BUCKET_POS
 #undef TIMER_MAX
+#undef TIMER_TICK_FROM_HEAD
+#undef TIMER_FITS_BUCKETS
 #undef TIMER_ID_MAX
 #undef TIMER_TRANSFER_STRAND_MARGIN
 #undef TIMER_BURST_LOG_THRESHOLD

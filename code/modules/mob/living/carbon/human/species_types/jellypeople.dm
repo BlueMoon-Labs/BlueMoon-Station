@@ -602,7 +602,12 @@
 	if(species.current_extract)
 		species.extract_cooldown = world.time + 100
 		var/cooldown = species.current_extract.activate(H, species, activation_type)
-		species.extract_cooldown = world.time + cooldown
+		// Ветка activate() может не вернуть ничего, а "world.time + null" в DM равно
+		// world.time - то есть кулдаун обнулялся и кнопка жалась без остановки. Так жёлтый
+		// экстракт и выглядел сломанным: вместо эффекта сыпалось "Your glow is already enhanced!".
+		// В этом случае оставляем предварительные 10 секунд, выставленные строкой выше.
+		if(cooldown)
+			species.extract_cooldown = world.time + cooldown
 
 /datum/action/innate/use_extract/major
 	name = "Extract Major Activation"
