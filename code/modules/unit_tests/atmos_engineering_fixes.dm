@@ -510,3 +510,62 @@
 	SEND_SIGNAL(room, COMSIG_TURF_EXPOSE, room.air, room.air.return_temperature())
 	TEST_ASSERT(safety.datum_flags & DF_ISPROCESSING, "fan safety did not wake up on turf exposure")
 	STOP_PROCESSING(SSobj, safety)
+
+/// Обычный RPD и блюспейс-раздатчик обязаны раздавать одну и ту же машинерию:
+/// BSRPD отличается только собственной трубой. Каталоги лежат в разных файлах,
+/// и каждый новый компонент рисковал попасть лишь в один из них.
+/datum/unit_test/rpd_catalogue_parity/Run()
+	TEST_ASSERT(length(GLOB.atmos_pipe_recipes), "the RPD atmos catalogue is empty")
+	TEST_ASSERT(length(GLOB.bsatmos_pipe_recipes), "the BSRPD atmos catalogue is empty")
+
+	var/list/bluespace_only = list()
+	for(var/category in GLOB.atmos_pipe_recipes)
+		var/list/bluespace_category = GLOB.bsatmos_pipe_recipes[category]
+		TEST_ASSERT(length(bluespace_category), "the BSRPD is missing the whole '[category]' section of the catalogue")
+
+		var/list/offered = list()
+		for(var/datum/pipe_info/entry as anything in bluespace_category)
+			offered[entry.name] = TRUE
+
+		for(var/datum/pipe_info/recipe as anything in GLOB.atmos_pipe_recipes[category])
+			TEST_ASSERT(offered[recipe.name], "the BSRPD cannot build '[recipe.name]', which the ordinary RPD lists under '[category]'")
+			offered -= recipe.name
+
+		bluespace_only += offered
+
+	// The bluespace pipe is the one entry that may not leak the other way.
+	TEST_ASSERT(bluespace_only["Bluespace Pipe"], "the BSRPD lost its own bluespace pipe")
+	bluespace_only -= "Bluespace Pipe"
+	TEST_ASSERT(!length(bluespace_only), "the BSRPD carries entries the ordinary RPD never got: [english_list(bluespace_only)]")
+
+/// Кристаллизатор собирается из платы, а плата существовала только в карго -
+/// сгоревшую машину нельзя было напечатать заново.
+/datum/unit_test/crystallizer_board_printable/Run()
+	var/datum/design/board_design = SSresearch.techweb_designs["crystallizer"]
+	TEST_ASSERT_NOTNULL(board_design, "no techweb design prints the crystallizer board")
+	TEST_ASSERT_EQUAL(board_design.build_path, /obj/item/circuitboard/machine/crystallizer, "the 'crystallizer' design does not build the crystallizer board")
+	TEST_ASSERT(board_design.build_type & IMPRINTER, "the crystallizer board cannot be imprinted")
+
+	var/datum/techweb_node/node = SSresearch.techweb_nodes["engineering"]
+	TEST_ASSERT_NOTNULL(node, "the Industrial Engineering node is gone")
+	TEST_ASSERT(node.design_ids["crystallizer"], "Industrial Engineering does not unlock the crystallizer board")
+
+/// Печать плат не заменяет карго: ХФР собирается только из боксов, а плата
+/// кристаллизатора должна оставаться доступной и без исследований.
+/datum/unit_test/atmos_engine_parts_orderable/Run()
+	var/datum/supply_pack/crystallizer = SSshuttle.supply_packs[/datum/supply_pack/engine/crystallizer]
+	TEST_ASSERT_NOTNULL(crystallizer, "the crystallizer board crate left the cargo catalogue")
+	TEST_ASSERT(/obj/item/circuitboard/machine/crystallizer in crystallizer.contains, "the crystallizer crate no longer ships the board")
+
+	var/datum/supply_pack/hypertorus = SSshuttle.supply_packs[/datum/supply_pack/engine/hfr]
+	TEST_ASSERT_NOTNULL(hypertorus, "the hypertorus kit left the cargo catalogue")
+	var/static/list/hypertorus_parts = list(
+		/obj/item/hfr_box/core,
+		/obj/item/hfr_box/corner,
+		/obj/item/hfr_box/body/fuel_input,
+		/obj/item/hfr_box/body/moderator_input,
+		/obj/item/hfr_box/body/waste_output,
+		/obj/item/hfr_box/body/interface,
+	)
+	for(var/part in hypertorus_parts)
+		TEST_ASSERT(part in hypertorus.contains, "the hypertorus kit no longer ships [part]")

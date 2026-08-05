@@ -14,8 +14,13 @@ RPD
 #define PAINT_MODE (1<<3)
 
 
-GLOBAL_LIST_INIT(atmos_pipe_recipes, list(
-	"Pipes" = list(
+/// Каталог рецептов атмос-раздатчика. Обычный RPD и блюспейс-раздатчик обязаны
+/// раздавать одну и ту же машинерию, поэтому список собирается здесь один раз,
+/// а не переписывается руками в каждом раздатчике: иначе новый компонент
+/// попадает в один каталог и молча теряется в другом.
+/// `extra_pipes` - рецепты труб, доступные только конкретному раздатчику.
+/proc/build_atmos_pipe_recipes(list/extra_pipes)
+	var/list/pipes = list(
 		new /datum/pipe_info/pipe("Pipe",				/obj/machinery/atmospherics/pipe/simple),
 		new /datum/pipe_info/pipe("Manifold",			/obj/machinery/atmospherics/pipe/manifold),
 		new /datum/pipe_info/pipe("4-Way Manifold",		/obj/machinery/atmospherics/pipe/manifold4w),
@@ -23,37 +28,44 @@ GLOBAL_LIST_INIT(atmos_pipe_recipes, list(
 		new /datum/pipe_info/pipe("Layer Manifold",		/obj/machinery/atmospherics/pipe/layer_manifold),
 		new /datum/pipe_info/pipe("Color Adapter",		/obj/machinery/atmospherics/pipe/color_adapter),
 		new /datum/pipe_info/pipe("Multi-Deck Adapter", /obj/machinery/atmospherics/pipe/simple/multiz),
-	),
-	"Devices" = list(
-		new /datum/pipe_info/pipe("Connector",			/obj/machinery/atmospherics/components/unary/portables_connector),
-		new /datum/pipe_info/pipe("Gas Pump",			/obj/machinery/atmospherics/components/binary/pump),
-		new /datum/pipe_info/pipe("Volume Pump",		/obj/machinery/atmospherics/components/binary/volume_pump),
-		new /datum/pipe_info/pipe("Temperature Gate",	/obj/machinery/atmospherics/components/binary/temperature_gate),
-		new /datum/pipe_info/pipe("Temperature Pump",	/obj/machinery/atmospherics/components/binary/temperature_pump),
-		new /datum/pipe_info/pipe("Pressure Valve",		/obj/machinery/atmospherics/components/binary/pressure_valve),
-		new /datum/pipe_info/pipe("Gas Filter",			/obj/machinery/atmospherics/components/trinary/filter),
-		new /datum/pipe_info/pipe("Gas Mixer",			/obj/machinery/atmospherics/components/trinary/mixer),
-		new /datum/pipe_info/pipe("Omni Gas Filter",		/obj/machinery/atmospherics/components/quaternary/omni_filter),
-		new /datum/pipe_info/pipe("Omni Gas Mixer",		/obj/machinery/atmospherics/components/quaternary/omni_mixer),
-		new /datum/pipe_info/pipe("Passive Gate",		/obj/machinery/atmospherics/components/binary/passive_gate),
-		new /datum/pipe_info/pipe("Injector",			/obj/machinery/atmospherics/components/unary/outlet_injector),
-		new /datum/pipe_info/pipe("Scrubber",			/obj/machinery/atmospherics/components/unary/vent_scrubber),
-		new /datum/pipe_info/pipe("Unary Vent",			/obj/machinery/atmospherics/components/unary/vent_pump),
-		new /datum/pipe_info/pipe("Passive Vent",		/obj/machinery/atmospherics/components/unary/passive_vent),
-		new /datum/pipe_info/pipe("Manual Valve",		/obj/machinery/atmospherics/components/binary/valve),
-		new /datum/pipe_info/pipe("Digital Valve",		/obj/machinery/atmospherics/components/binary/valve/digital),
-		new /datum/pipe_info/pipe("Relief Valve (Binary)",		/obj/machinery/atmospherics/components/binary/relief_valve),
-		new /datum/pipe_info/pipe("Relief Valve (Unary)",		/obj/machinery/atmospherics/components/unary/relief_valve),
-		new /datum/pipe_info/meter("Meter"),
-	),
-	"Heat Exchange" = list(
-		new /datum/pipe_info/pipe("Pipe",				/obj/machinery/atmospherics/pipe/heat_exchanging/simple),
-		new /datum/pipe_info/pipe("Manifold",			/obj/machinery/atmospherics/pipe/heat_exchanging/manifold),
-		new /datum/pipe_info/pipe("4-Way Manifold",		/obj/machinery/atmospherics/pipe/heat_exchanging/manifold4w),
-		new /datum/pipe_info/pipe("Junction",			/obj/machinery/atmospherics/pipe/heat_exchanging/junction),
-		new /datum/pipe_info/pipe("Heat Exchanger",		/obj/machinery/atmospherics/components/unary/heat_exchanger),
 	)
-))
+	if(length(extra_pipes))
+		pipes += extra_pipes
+
+	return list(
+		"Pipes" = pipes,
+		"Devices" = list(
+			new /datum/pipe_info/pipe("Connector",			/obj/machinery/atmospherics/components/unary/portables_connector),
+			new /datum/pipe_info/pipe("Gas Pump",			/obj/machinery/atmospherics/components/binary/pump),
+			new /datum/pipe_info/pipe("Volume Pump",		/obj/machinery/atmospherics/components/binary/volume_pump),
+			new /datum/pipe_info/pipe("Temperature Gate",	/obj/machinery/atmospherics/components/binary/temperature_gate),
+			new /datum/pipe_info/pipe("Temperature Pump",	/obj/machinery/atmospherics/components/binary/temperature_pump),
+			new /datum/pipe_info/pipe("Pressure Valve",		/obj/machinery/atmospherics/components/binary/pressure_valve),
+			new /datum/pipe_info/pipe("Gas Filter",			/obj/machinery/atmospherics/components/trinary/filter),
+			new /datum/pipe_info/pipe("Gas Mixer",			/obj/machinery/atmospherics/components/trinary/mixer),
+			new /datum/pipe_info/pipe("Omni Gas Filter",		/obj/machinery/atmospherics/components/quaternary/omni_filter),
+			new /datum/pipe_info/pipe("Omni Gas Mixer",		/obj/machinery/atmospherics/components/quaternary/omni_mixer),
+			new /datum/pipe_info/pipe("Passive Gate",		/obj/machinery/atmospherics/components/binary/passive_gate),
+			new /datum/pipe_info/pipe("Injector",			/obj/machinery/atmospherics/components/unary/outlet_injector),
+			new /datum/pipe_info/pipe("Scrubber",			/obj/machinery/atmospherics/components/unary/vent_scrubber),
+			new /datum/pipe_info/pipe("Unary Vent",			/obj/machinery/atmospherics/components/unary/vent_pump),
+			new /datum/pipe_info/pipe("Passive Vent",		/obj/machinery/atmospherics/components/unary/passive_vent),
+			new /datum/pipe_info/pipe("Manual Valve",		/obj/machinery/atmospherics/components/binary/valve),
+			new /datum/pipe_info/pipe("Digital Valve",		/obj/machinery/atmospherics/components/binary/valve/digital),
+			new /datum/pipe_info/pipe("Relief Valve (Binary)",		/obj/machinery/atmospherics/components/binary/relief_valve),
+			new /datum/pipe_info/pipe("Relief Valve (Unary)",		/obj/machinery/atmospherics/components/unary/relief_valve),
+			new /datum/pipe_info/meter("Meter"),
+		),
+		"Heat Exchange" = list(
+			new /datum/pipe_info/pipe("Pipe",				/obj/machinery/atmospherics/pipe/heat_exchanging/simple),
+			new /datum/pipe_info/pipe("Manifold",			/obj/machinery/atmospherics/pipe/heat_exchanging/manifold),
+			new /datum/pipe_info/pipe("4-Way Manifold",		/obj/machinery/atmospherics/pipe/heat_exchanging/manifold4w),
+			new /datum/pipe_info/pipe("Junction",			/obj/machinery/atmospherics/pipe/heat_exchanging/junction),
+			new /datum/pipe_info/pipe("Heat Exchanger",		/obj/machinery/atmospherics/components/unary/heat_exchanger),
+		),
+	)
+
+GLOBAL_LIST_INIT(atmos_pipe_recipes, build_atmos_pipe_recipes())
 
 GLOBAL_LIST_INIT(disposal_pipe_recipes, list(
 	"Disposal Pipes" = list(
