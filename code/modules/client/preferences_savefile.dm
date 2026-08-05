@@ -1144,8 +1144,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 "arachnid_legs" = "Plain",
 "arachnid_spinneret" = "Plain",
 "arachnid_mandibles" = "Plain",
-"mam_body_markings" = "Plain",
-"emissive_eyes" = FALSE,
+	"mam_body_markings" = "Plain",
+	"allow_emissives" = FALSE,
+	"emissive_parts" = list(),
 "mam_ears" = "None",
 "mam_snouts" = "None",
 "mam_tail" = "None",
@@ -1385,6 +1386,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["feature_mcolor3"] >> features["mcolor3"]
 	// note safe json decode will runtime the first time it migrates but this is fine and it solves itself don't worry about it if you see it error
 	features["mam_body_markings"] = safe_json_decode(S["feature_mam_body_markings"])
+	features["emissive_parts"] = safe_json_decode(S["feature_emissive_parts"])
 	S["feature_mam_tail"] >> features["mam_tail"]
 	S["feature_mam_ears"] >> features["mam_ears"]
 	S["feature_mam_tail_animated"] >> features["mam_tail_animated"]
@@ -1686,6 +1688,12 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	features["arachnid_legs"] = sanitize_inlist(features["arachnid_legs"], GLOB.arachnid_legs_list, "Plain")
 	features["arachnid_spinneret"] = sanitize_inlist(features["arachnid_spinneret"], GLOB.arachnid_spinneret_list, "Plain")
 	features["arachnid_mandibles"] = sanitize_inlist(features["arachnid_mandibles"], GLOB.arachnid_mandibles_list, "Plain")
+	if(!islist(features["emissive_parts"]))
+		features["emissive_parts"] = list()
+	else
+		for(var/part in features["emissive_parts"])
+			if(!(part in GLOB.emissive_parts_list))
+				features["emissive_parts"] -= part
 
 	var/static/size_min
 	if(!size_min)

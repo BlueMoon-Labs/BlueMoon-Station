@@ -1071,7 +1071,8 @@ use_mob_overlay_icon: if FALSE, it will always use the default_icon_file even if
 		. += "-husk"
 
 	if(dna?.features)
-		. += "-emissive_eyes=[dna.features["emissive_eyes"]]"
+		. += "-allow_emissives=[dna.features["allow_emissives"]]"
+		. += "-emissive_parts=[safe_json_encode(dna.features["emissive_parts"])]"
 
 /mob/living/carbon/human/load_limb_from_cache()
 	..()
