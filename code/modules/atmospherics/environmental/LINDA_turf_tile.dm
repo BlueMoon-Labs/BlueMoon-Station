@@ -974,6 +974,9 @@
 				var/datum/excited_group/space_group = new
 				space_group.add_turf(src)
 				our_excited_group = excited_group
+			// Метка "зона стравливается в космос": по ней брейкдаун/расформирование
+			// приводят подпороговые тёплые остатки членов к TCMB (snap_vented_wisp).
+			our_excited_group.vented_to_space = TRUE
 			var/vented_moles = vent_everything ? moles_before : (moles_before * our_share_coeff)
 			if(vented_moles > MINIMUM_AIR_TO_SUSPEND)
 				our_excited_group.reset_cooldowns()
@@ -1296,6 +1299,17 @@
 	/// transition and recounted exactly by self_breakdown, so the dismantle
 	/// decision does not scan the whole turf_list every group-stage tick.
 	var/awake_members = 0
+	/// Группа стравливалась в космос (хотя бы один член прошёл вент-ветку
+	/// process_cell). Ниже порога видимости compare() (MINIMUM_MOLES_DELTA_TO_MOVE)
+	/// пара больше не обменивается ничем, поэтому тёплые огрызки газа во
+	/// внутренних турфах разгерметизированной комнаты сами остыть уже не могут, а
+	/// брейкдаун, усредняя моль-взвешенно, размазал бы их тепло по всей зоне.
+	/// Для таких групп snap_vented_wisp() приводит подпороговые остатки к TCMB -
+	/// комната, открытая в космос, оседает холодной, как и до оптимизаций.
+	/// Флаг не снимается до смерти датума: заваренная обратно комната либо
+	/// пересобирает группу заново (флаг чистый), либо быстро выводит члены за
+	/// порог молей, где snap не трогает ничего.
+	var/vented_to_space = FALSE
 	/// Persistent resumable breakdown state. No turf air is written until the
 	/// collection and average phases have completed for the membership snapshot.
 	var/breakdown_stage = 0
@@ -1359,6 +1373,7 @@
 		awake_members += E.awake_members
 		E.awake_members = 0
 		turf_reactions |= E.turf_reactions // a burning group keeps its volatile gate through merges
+		vented_to_space |= E.vented_to_space // зона с выходом в космос остаётся такой и после слияния
 		E.turf_list.Cut()
 		reset_cooldowns()
 	else
@@ -1371,6 +1386,7 @@
 		awake_members = 0
 		turf_list.Cut()
 		E.turf_reactions |= turf_reactions // a burning group keeps its volatile gate through merges
+		E.vented_to_space |= vented_to_space // зона с выходом в космос остаётся такой и после слияния
 		E.reset_cooldowns()
 
 /datum/excited_group/proc/reset_cooldowns()
@@ -1516,6 +1532,27 @@
 			T.excited_group = null
 	breakdown_cooldown = 0
 
+/// Подпороговый тёплый остаток в стравленной в космос зоне приводится к TCMB.
+///
+/// Ниже MINIMUM_MOLES_DELTA_TO_MOVE compare() перестаёт видеть пару вовсе, то
+/// есть у такого огрызка нет НИ ОДНОГО пути остыть: обычные share его не берут,
+/// вент-ветка достаёт только турфы, граничащие с космосом напрямую. До
+/// оптимизаций зону сходил в холод вечный черн (комната у пробоины не засыпала
+/// никогда) - теперь его нет, и тепло надо снимать в точках оседания зоны.
+/// Зовётся из обоих брейкдаунов ДО слияния в ведро (иначе моль-взвешенное
+/// усреднение размажет тепло огрызка по пустым турфам всей комнаты) и из
+/// dismantle() (группа может расформироваться и без финального брейкдауна).
+/// Планетарные члены не трогаются: их держит шаблон неба, а не космос.
+/datum/excited_group/proc/snap_vented_wisp(turf/open/member)
+	if(!vented_to_space || member.planetary_atmos)
+		return
+	var/datum/gas_mixture/wisp_air = member.air
+	if(wisp_air.total_moles() > MINIMUM_MOLES_DELTA_TO_MOVE)
+		return
+	if(wisp_air.return_temperature() <= TCMB)
+		return
+	wisp_air.set_temperature(TCMB)
+
 /// Low-allocation path for ordinary room-sized groups. Only memberships large
 /// enough to threaten a tick use the persistent state machine below.
 /datum/excited_group/proc/self_breakdown_atomic(space_is_all_consuming = FALSE, poke_resting = FALSE)
@@ -1540,6 +1577,7 @@
 			continue
 		if(space_is_all_consuming && istype(T.air, /datum/gas_mixture/immutable/space))
 			space_in_group = TRUE
+		snap_vented_wisp(T)
 		var/bucket_key = T.planetary_atmos ? T.initial_gas_mix : ""
 		var/datum/gas_mixture/bucket_mix = bucket_mixes[bucket_key]
 		if(!bucket_mix)
@@ -1647,6 +1685,7 @@
 						continue
 					if(breakdown_space_is_all_consuming && istype(T.air, /datum/gas_mixture/immutable/space))
 						breakdown_space_in_group = TRUE
+					snap_vented_wisp(T)
 					var/bucket_key = T.planetary_atmos ? T.initial_gas_mix : ""
 					var/datum/gas_mixture/bucket_mix = breakdown_bucket_mixes[bucket_key]
 					if(!bucket_mix)
@@ -1791,6 +1830,11 @@
 	for(var/turf/open/T as anything in turf_list)
 		if(!istype(T))
 			continue
+		// Группа может расформироваться и не дожив до брейкдауна (awake_members
+		// упал до нуля раньше EXCITED_GROUP_BREAKDOWN_CYCLES) - тёплые огрызки
+		// стравленной зоны снимаем и здесь, иначе они заснут тёплыми навсегда.
+		if(T.air)
+			snap_vented_wisp(T)
 		// dismantle вызывается ровно тогда, когда awake_members упал до нуля -
 		// то есть спящих в группе подавляющее большинство, и заходить в снятие
 		// за них холостой ход. excited снимается только вместе с удалением из

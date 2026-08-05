@@ -597,3 +597,127 @@
 	seek_dir = singulo.get_food_seek_dir()
 	TEST_ASSERT_EQUAL(GLOB.total_runtimes - runtimes_before, 0, "get_food_seek_dir raised a runtime with food around")
 	TEST_ASSERT_EQUAL(seek_dir, EAST, "get_food_seek_dir ignored the food pile to the east (returned [seek_dir])")
+
+/// Космос обязан читаться холодным ОБОИМИ путями: смесью (immutable на TCMB) и
+/// варом температуры самого турфа. Регресс ветки: /turf/return_temperature()
+/// перестал быть пустой заглушкой эпохи auxmos, а космос свой вар из
+/// initial_temperature никогда не выставлял (его Initialize не зовёт родителя),
+/// то есть отдавал дефолтные T20C. Через isspaceturf-ветку get_temperature()
+/// это читал каждый моб в открытом космосе - слаймы, фауна и люди перестали
+/// замерзать: "космос тёплый".
+/datum/unit_test/space_turf_reads_cold/Run()
+	var/turf/open/target = get_step(run_loc_floor_bottom_left, NORTH)
+	TEST_ASSERT(istype(target), "no open turf north of the test anchor")
+	var/original_type = target.type
+	var/turf/open/space/space_turf = target.ChangeTurf(/turf/open/space/basic)
+	TEST_ASSERT(istype(space_turf), "ChangeTurf did not produce a space turf")
+
+	TEST_ASSERT_EQUAL(space_turf.return_temperature(), TCMB, "space turf var temperature reads [space_turf.return_temperature()]K instead of TCMB")
+	var/datum/gas_mixture/space_air = space_turf.return_air()
+	TEST_ASSERT_NOTNULL(space_air, "space turf has no air mixture")
+	TEST_ASSERT_EQUAL(space_air.return_temperature(), TCMB, "space air mixture reads [space_air.return_temperature()]K instead of TCMB")
+
+	// Ровно тот путь, которым температуру среды берут handle_environment всех
+	// мобов: isspaceturf-ветка подменяет показание смеси варом турфа.
+	var/mob/living/simple_animal/victim = allocate(/mob/living/simple_animal, space_turf)
+	TEST_ASSERT_EQUAL(victim.get_temperature(space_air), TCMB, "a mob in open space reads [victim.get_temperature(space_air)]K instead of TCMB")
+
+	victim.forceMove(run_loc_floor_bottom_left)
+	space_turf.ChangeTurf(original_type)
+
+/// Разгерметизированная в космос зона обязана оседать ХОЛОДНОЙ. Ниже порога
+/// видимости compare() (MINIMUM_MOLES_DELTA_TO_MOVE) пара турфов больше ничем
+/// не обменивается, поэтому тёплый огрызок газа во внутреннем турфе сам остыть
+/// не может, а брейкдаун, усредняя моль-взвешенно, размазал бы его тепло по
+/// пустым турфам всей комнаты - слаймы в стравленной морилке ксенобио и комната
+/// еретика Пустоты оставались тёплыми навсегда. Вент-ветка помечает группу
+/// (vented_to_space), а snap_vented_wisp() приводит подпороговые остатки к TCMB.
+/datum/unit_test/vented_zone_settles_cold/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/base = run_loc_floor_bottom_left
+
+	// Карман 1x3 в стенах: [космос][кромка][интерьер]. Без стен process_cell
+	// кромки затягивает в группу турфы резервации со станционным воздухом, и
+	// усреднение честно возвращает в карман их тепло и моли - тест мерил бы
+	// не снап, а воздух соседей.
+	var/list/saved_wall_types = list()
+	for(var/dx in 0 to 3)
+		for(var/dy in list(0, 2))
+			var/turf/wall_cell = locate(base.x + dx, base.y + dy, base.z)
+			TEST_ASSERT_NOTNULL(wall_cell, "test reservation is missing a pocket perimeter cell at [dx],[dy]")
+			saved_wall_types[wall_cell] = wall_cell.type
+			wall_cell.ChangeTurf(/turf/closed/wall)
+	var/turf/east_cap = locate(base.x + 3, base.y + 1, base.z)
+	TEST_ASSERT_NOTNULL(east_cap, "test reservation is missing the pocket east cap")
+	saved_wall_types[east_cap] = east_cap.type
+	east_cap.ChangeTurf(/turf/closed/wall)
+
+	var/turf/pocket_west = locate(base.x, base.y + 1, base.z)
+	var/original_west_type = pocket_west.type
+	var/turf/open/space/space_turf = pocket_west.ChangeTurf(/turf/open/space/basic)
+	TEST_ASSERT(istype(space_turf), "ChangeTurf did not produce a space turf")
+
+	var/turf/open/edge = locate(base.x + 1, base.y + 1, base.z)
+	var/turf/open/interior = locate(base.x + 2, base.y + 1, base.z)
+	TEST_ASSERT(istype(edge) && istype(interior), "pocket interior cells are not open turfs")
+	var/datum/gas_mixture/saved_edge = edge.air.copy()
+	var/datum/gas_mixture/saved_interior = interior.air.copy()
+	// AfterChange ставит пересчёт смежности в очередь; тесту нужна детерминированность.
+	edge.ImmediateCalculateAdjacentTurfs()
+	interior.ImmediateCalculateAdjacentTurfs()
+	TEST_ASSERT(space_turf in edge.atmos_adjacent_turfs, "edge turf did not pick up the space neighbor")
+	TEST_ASSERT(length(edge.atmos_adjacent_turfs) == 2, "pocket is not sealed: edge has [length(edge.atmos_adjacent_turfs)] open neighbors instead of 2")
+
+	// Кромка: почти пусто, но тепло - вент-ветка возьмёт её по температурному
+	// условию и пометит группу. Интерьер: тёплый огрызок ниже порога compare().
+	edge.air.clear()
+	edge.air.set_moles(GAS_O2, 0.02)
+	edge.air.set_temperature(300)
+	interior.air.clear()
+	interior.air.set_moles(GAS_O2, 0.05)
+	interior.air.set_temperature(300)
+
+	var/datum/excited_group/group = new
+	group.add_turf(edge)
+	group.add_turf(interior)
+	SSair.add_to_active(edge, FALSE)
+
+	edge.process_cell(SSair.times_fired + 3000)
+	TEST_ASSERT(group.vented_to_space || edge.excited_group?.vented_to_space, "the space vent path did not flag the excited group as vented")
+
+	var/datum/excited_group/live_group = edge.excited_group || group
+	live_group.self_breakdown_atomic()
+	TEST_ASSERT(interior.air.return_temperature() <= TCMB + 1, "interior wisp stayed warm after breakdown: [interior.air.return_temperature()]K")
+	TEST_ASSERT(edge.air.return_temperature() <= TCMB + 1, "edge turf stayed warm after venting: [edge.air.return_temperature()]K")
+
+	// Контроль охвата: в ЗАВАРЕННОЙ комнате (группа без выхода в космос) тот же
+	// огрызок остаётся при своей температуре - snap касается только зон,
+	// реально стравленных в космос. Ряд y+3 лежит за северной стеной кармана.
+	var/turf/open/sealed = locate(base.x + 1, base.y + 3, base.z)
+	TEST_ASSERT(istype(sealed), "test reservation has no open turf for the sealed control")
+	var/datum/gas_mixture/saved_sealed = sealed.air.copy()
+	sealed.air.clear()
+	sealed.air.set_moles(GAS_O2, 0.05)
+	sealed.air.set_temperature(300)
+	var/datum/excited_group/sealed_group = new
+	sealed_group.add_turf(sealed)
+	sealed_group.self_breakdown_atomic()
+	TEST_ASSERT(sealed.air.return_temperature() > 250, "a sealed-room wisp was wrongly snapped to space temperature: [sealed.air.return_temperature()]K")
+
+	// Cleanup
+	if(edge.excited_group)
+		edge.excited_group.dismantle()
+	if(interior.excited_group)
+		interior.excited_group.dismantle()
+	if(sealed.excited_group)
+		sealed.excited_group.dismantle()
+	SSair.remove_from_active(edge)
+	SSair.remove_from_active(interior)
+	space_turf.ChangeTurf(original_west_type)
+	for(var/turf/wall_cell as anything in saved_wall_types)
+		wall_cell.ChangeTurf(saved_wall_types[wall_cell])
+	edge.air.copy_from(saved_edge)
+	interior.air.copy_from(saved_interior)
+	sealed.air.copy_from(saved_sealed)
+	edge.ImmediateCalculateAdjacentTurfs()
+	interior.ImmediateCalculateAdjacentTurfs()
