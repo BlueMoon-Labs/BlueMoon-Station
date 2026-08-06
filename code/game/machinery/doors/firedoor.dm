@@ -43,6 +43,11 @@
 	///идёт на каждый фаер SSair по каждому активному турфу, и перебирать там
 	///список зон нельзя.
 	var/fire_detection = TRUE
+	///Дверь закрыта автоматикой, а не руками. Только такую автоматика имеет право
+	///открыть обратно: закрытая на карте или ломом остаётся закрытой.
+	var/auto_closed = FALSE
+	///Таймер отложенной попытки открыться, см. try_auto_reopen().
+	var/reopen_timer
 	var/merger_id = "firelocks"
 	var/static/list/merger_typecache
 
@@ -163,6 +168,9 @@
 			LAZYREMOVE(A.firedoors, src)
 // обнуление affecting_areas в firedoor для надёжности. тк возможная утечка
 /obj/machinery/door/firedoor/Destroy()
+	if(reopen_timer)
+		deltimer(reopen_timer)
+		reopen_timer = null
 	unregister_atmos_turfs()
 	remove_from_areas()
 	if(affecting_areas)
@@ -223,6 +231,32 @@
 		register_atmos_turfs()
 		rescan_atmos_turfs()
 
+/// Перелёт шаттла переносит содержимое присваиванием loc и Moved() не зовёт
+/// (см. /atom/movable/onShuttleMove), поэтому хук выше по шаттлам не работает
+/// вообще: у улетевшей двери оставались датчики на турфах прошлого дока, а
+/// записи в issue_turfs по ним не мог снять уже никто - покинутый турф
+/// становится космосом и сигналов больше не шлёт.
+/obj/machinery/door/firedoor/afterShuttleMove(turf/oldT, list/movement_force, shuttle_dir, shuttle_preferred_direction, move_dir, rotation)
+	. = ..()
+	CalculateAffectingAreas()
+	register_atmos_turfs()
+	rebuild_alarm_ledger()
+
+/// Пересобирает общий журнал тревог группы с нуля. Иначе запись, ключом которой
+/// стоит турф, за которым больше никто не следит, висит в журнале вечно и держит
+/// всю группу закрытой.
+/obj/machinery/door/firedoor/proc/rebuild_alarm_ledger()
+	var/datum/merger/group = GetMergeGroup(merger_id, merger_typecache)
+	var/list/group_members = group?.members
+	if(!length(group_members))
+		group_members = list(src)
+	var/list/shared_issues = list()
+	for(var/obj/machinery/door/firedoor/door as anything in group_members)
+		door.issue_turfs = shared_issues
+	for(var/obj/machinery/door/firedoor/door as anything in group_members)
+		door.rescan_atmos_turfs()
+	recompute_atmos_alarm()
+
 // /turf/return_temperature() is a null stub; the air mixture is the only
 // truthful temperature source here, exactly like the live process_cell signal.
 /obj/machinery/door/firedoor/proc/rescan_atmos_turfs()
@@ -262,6 +296,12 @@
 /obj/machinery/door/firedoor/proc/firelock_alarm_seals(alarm)
 	return alarm && alarm != FIRELOCK_ALARM_TYPE_COLD
 
+/// Стоит ли турф в комнате, спроектированной горячей. Читается один вар зоны,
+/// так что проверку можно держать на горячем пути замера.
+/obj/machinery/door/firedoor/proc/heat_exempt_turf(turf/checked)
+	var/area/checked_area = checked.loc
+	return isarea(checked_area) && checked_area.firelock_heat_exempt
+
 /obj/machinery/door/firedoor/proc/process_atmos_alarm(turf/source, datum/gas_mixture/exposed_air, exposed_temperature)
 	SIGNAL_HANDLER
 	if(!issue_turfs)
@@ -277,6 +317,12 @@
 		// или морозят намеренно, и дверь в это не лезет.
 		new_alarm = null
 	else if(!isopenturf(source) || istype(source, /turf/open/space))
+		new_alarm = null
+	else if(heat_exempt_turf(source))
+		// Камера сгорания и турбина живут горячими по проекту, а порог тревоги их
+		// рабочую температуру не догоняет и близко. Проверка идёт по зоне САМОГО
+		// замеряемого турфа, а не по агрегату двери: створка на входе обязана
+		// по-прежнему ловить пожар со стороны коридора.
 		new_alarm = null
 	else if(checked_turf.planetary_atmos)
 		// Улица планеты холодна или горяча по устройству и остыть/нагреться ей
@@ -371,6 +417,7 @@
 			if(!area_alarm && door.density && !door.welded && !door.operating && !door.is_holding_pressure())
 				// door/open() sleeps through its animation, and this proc runs
 				// from SIGNAL_HANDLER paths inside SSair's process_cell.
+				door.auto_closed = FALSE
 				INVOKE_ASYNC(door, TYPE_PROC_REF(/obj/machinery/door/firedoor, open))
 
 /// Re-evaluates every affected area because a firedoor can border more than one
@@ -469,8 +516,11 @@
 		// или протащить баллон. Шести секунд на это не хватало: любой следующий
 		// переход тревоги захлопывал дверь прямо в проходе.
 		emergency_close_timer = world.time + FIRELOCK_MANUAL_OVERRIDE_GRACE
+		auto_closed = FALSE
 		open()
 	else
+		// Закрыл человек - автоматика открывать обратно не лезет.
+		auto_closed = FALSE
 		close()
 
 /obj/machinery/door/firedoor/proc/allow_hand_open(mob/user)
@@ -483,6 +533,8 @@
 	add_fingerprint(user)
 	if(welded || operating || machine_stat & NOPOWER)
 		return TRUE
+	// Ручное управление, пусть и силиконовое: автоматика в его решение не лезет.
+	auto_closed = FALSE
 	if(density)
 		open()
 	else
@@ -497,6 +549,7 @@
 	if(welded)
 		to_chat(user, "<span class='warning'>[src] refuses to budge!</span>")
 		return
+	auto_closed = FALSE
 	open()
 
 /obj/machinery/door/firedoor/do_animate(animation)
@@ -591,7 +644,46 @@
 	if(density || operating || welded)
 		return
 	if(world.time >= emergency_close_timer || !consider_timer)
+		mark_auto_closed()
 		close()
+
+/// Отмечает закрытие как сделанное автоматикой и взводит отложенную проверку на
+/// открытие. Без неё дверь, закрытую мимо системы тревог, открыть было некому:
+/// recompute_atmos_alarm() ходит только по фронту тревоги, а у такого закрытия
+/// фронта нет вовсе - тревога как была пустой, так и осталась.
+/obj/machinery/door/firedoor/proc/mark_auto_closed()
+	auto_closed = TRUE
+	schedule_auto_reopen()
+
+/obj/machinery/door/firedoor/proc/schedule_auto_reopen()
+	if(!auto_closed)
+		return
+	// Одноразовый таймер с самоперевзводом: TIMER_LOOP тут не годится, из него
+	// нельзя сняться собственным deltimer.
+	reopen_timer = addtimer(CALLBACK(src, PROC_REF(try_auto_reopen)), FIRELOCK_AUTO_REOPEN_RETRY, TIMER_UNIQUE|TIMER_OVERRIDE|TIMER_STOPPABLE)
+
+/// Причина автоматического закрытия могла уйти без единого события на
+/// наблюдаемых турфах: зона сняла пожарную тревогу, перепад давления рассосался,
+/// шаттл улетел от пробоины. Пока причина держится - перевзводимся и ждём дальше.
+/obj/machinery/door/firedoor/proc/try_auto_reopen()
+	reopen_timer = null
+	if(!auto_closed)
+		return
+	if(!density || welded)
+		auto_closed = FALSE
+		return
+	if(operating || firelock_alarm_seals(alarm_type))
+		schedule_auto_reopen()
+		return
+	for(var/area/affected as anything in affecting_areas)
+		if(affected.fire)
+			schedule_auto_reopen()
+			return
+	if(is_holding_pressure())
+		schedule_auto_reopen()
+		return
+	auto_closed = FALSE
+	open()
 
 /obj/machinery/door/firedoor/deconstruct(disassembled = TRUE)
 	if(!(flags_1 & NODECONSTRUCT_1))

@@ -87,6 +87,12 @@
 	/// отключить автоматику в комнате, которую греют или морозят намеренно.
 	/// Зона без сигнализаций детектит всегда.
 	var/fire_detect = TRUE
+	/// Комната спроектирована горячей: камера сгорания, турбина. Жар в её турфах -
+	/// это работа комнаты, а не авария, и тепловую тревогу файрлока они не поднимают.
+	/// Отдельно от fire_detect намеренно: тот пересобирается по пожарным
+	/// сигнализациям зоны и мапленное значение затирает, а ещё агрегируется по ВСЕМ
+	/// зонам двери - створка на входе ослепла бы и со стороны коридора.
+	var/firelock_heat_exempt = FALSE
 
 
 	///This datum, if set, allows terrain generation behavior to be ran on Initialize()
@@ -391,6 +397,13 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 						cont = FALSE
 						break
 			if(cont && D.is_operational())
+				// Закрытие зоной - тоже работа автоматики, и открывать обратно
+				// обязана она же: собственной тревоги у такой двери нет, а
+				// пересчёт тревоги ходит только по фронту тревоги.
+				if(opening)
+					D.auto_closed = FALSE
+				else if(!D.density)
+					D.mark_auto_closed()
 				if(D.operating)
 					D.nextstate = opening ? FIREDOOR_OPEN : FIREDOOR_CLOSED
 				else if(!(D.density ^ opening))

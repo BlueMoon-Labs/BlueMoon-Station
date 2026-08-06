@@ -317,6 +317,77 @@
 	door.process_atmos_alarm(origin, origin.air, cold_limit + FIRELOCK_ALARM_TEMPERATURE_HYSTERESIS + 1)
 	TEST_ASSERT_NULL(door.alarm_type, "тревога о холоде не снялась за полосой возврата")
 
+/// Комната, спроектированная горячей, не должна захлопывать свои створки на
+/// каждом розжиге: порог тревоги её рабочую температуру не догоняет и близко, а
+/// пожарных сигнализаций, чей провод детекции можно было бы перерезать, в зоне
+/// сжигателя нет ни одной.
+/datum/unit_test/firelock_heat_exempt_area/Run()
+	var/turf/open/origin = run_loc_floor_bottom_left
+	var/obj/machinery/door/firedoor/door = allocate(/obj/machinery/door/firedoor)
+	unit_test_normalize_exposure_window(origin)
+	door.generic_alarm = FALSE
+
+	// Предпосылка: без флага тот же самый турф тревогу поднимает. Без неё тест
+	// прошёл бы вхолостую, если бы тревога перестала подниматься вообще.
+	door.process_atmos_alarm(origin, origin.air, ATMOS_HEAT_ALARM_TEMPERATURE + 1)
+	TEST_ASSERT_EQUAL(door.alarm_type, FIRELOCK_ALARM_TYPE_HOT, "горячий турф обязан поднимать тревогу, пока зона не освобождена")
+
+	var/area/test_area = origin.loc
+	TEST_ASSERT(isarea(test_area), "у тестового турфа нет зоны")
+	var/saved_exempt = test_area.firelock_heat_exempt
+	test_area.firelock_heat_exempt = TRUE
+	door.process_atmos_alarm(origin, origin.air, ATMOS_HEAT_ALARM_TEMPERATURE + 1)
+	TEST_ASSERT_NULL(door.alarm_type, "жар в комнате, которой положено быть горячей, всё равно поднял тревогу")
+	test_area.firelock_heat_exempt = saved_exempt
+
+	var/area/incinerator_type = /area/maintenance/disposal/incinerator
+	TEST_ASSERT(initial(incinerator_type.firelock_heat_exempt), "зона сжигателя потеряла освобождение от тепловой тревоги")
+
+/// Дверь, закрытую мимо системы тревог (пожарная тревога зоны, разгерметизация,
+/// whack_a_mole), открыть было некому: recompute_atmos_alarm() выходит по
+/// равенству старой и новой тревоги, а у такого закрытия фронта нет вовсе -
+/// журнал как был пустым, так и остался. В проде это давало створки, стоящие
+/// закрытыми до конца смены при пустом issue_turfs и погашенной лампе.
+/datum/unit_test/firelock_silent_close_reopens/Run()
+	var/turf/open/origin = run_loc_floor_bottom_left
+	// Центр резервации: у краевой плитки за границей вакуум, и дверь честно
+	// сочла бы, что удерживает перепад давления.
+	var/turf/open/center = locate(origin.x + 2, origin.y + 2, origin.z)
+	TEST_ASSERT(istype(center) && center.air, "центральная плитка резервации не открытый турф с воздухом")
+	unit_test_normalize_exposure_window(center)
+	var/obj/machinery/door/firedoor/door = allocate(/obj/machinery/door/firedoor, center)
+
+	// Ровно то состояние, что снято с прода: закрыта, тревоги нет, журнал пуст.
+	door.density = TRUE
+	door.alarm_type = null
+	door.generic_alarm = FALSE
+	door.issue_turfs = list()
+	door.mark_auto_closed()
+	TEST_ASSERT(!door.is_holding_pressure(), "предпосылка: под дверью не должно быть перепада давления")
+
+	// Предпосылка регресса: штатный пересчёт такую дверь не открывает.
+	door.recompute_atmos_alarm()
+	TEST_ASSERT(door.density, "предпосылка теста не воспроизводится: пересчёт по фронту уже открыл дверь")
+
+	door.try_auto_reopen()
+	TEST_ASSERT(!door.density, "закрытая автоматикой дверь без единой причины стоять закрытой так и не открылась")
+	TEST_ASSERT(!door.auto_closed, "флаг автоматического закрытия не снялся после открытия")
+
+	// Закрытую руками автоматика открывать не имеет права.
+	door.density = TRUE
+	door.auto_closed = FALSE
+	door.try_auto_reopen()
+	TEST_ASSERT(door.density, "автоматика открыла дверь, которую закрыл человек")
+
+	// Пока причина держится - дверь стоит закрытой.
+	door.mark_auto_closed()
+	door.alarm_type = FIRELOCK_ALARM_TYPE_HOT
+	door.try_auto_reopen()
+	TEST_ASSERT(door.density, "дверь открылась при живой тревоге по жару")
+	TEST_ASSERT(door.auto_closed, "живая тревога сняла флаг автоматического закрытия")
+	door.alarm_type = null
+	door.auto_closed = FALSE
+
 /// Examining armored clothing must include the armor tag line; the plasma
 /// absorption proc must not have swallowed the tail of examine().
 /datum/unit_test/clothing_examine_armor_tag/Run()

@@ -438,6 +438,9 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 	name = "Incinerator"
 	icon_state = "incinerator"
 	light_temperature = LIGHT_TEMP_FURNACE
+	// Камера сгорания и турбина: тут горит по проекту, и сигнализации, чей провод
+	// детекции можно было бы перерезать, в зоне нет ни одной.
+	firelock_heat_exempt = TRUE
 
 /area/maintenance/bar
 	name = "Maintenance Bar"
