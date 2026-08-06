@@ -154,11 +154,43 @@
 					host.adjustBruteLoss(3)
 					host.emote("scream")
 
+/datum/component/changeling_zombie_infection/proc/locate_severed_head(mob/living/carbon/human/host)
+	for(var/obj/item/bodypart/head/head in range(2, host))
+		if(head.owner)
+			continue
+		if(!head.brain)
+			continue
+		if(host.mind && head.brain.brainmob?.mind == host.mind)
+			return head
+		if(head.real_name && head.real_name == host.real_name)
+			return head
+		if(findtext(head.brain.name, host.real_name))
+			return head
+	return null
+
+/datum/component/changeling_zombie_infection/proc/restore_host_body_for_zombification(mob/living/carbon/human/host)
+	if(!host.get_bodypart(BODY_ZONE_HEAD))
+		var/obj/item/bodypart/head/severed_head = locate_severed_head(host)
+		if(severed_head)
+			severed_head.attach_limb(host, TRUE)
+
+	for(var/body_zone in host.get_missing_limbs())
+		host.regenerate_limb(body_zone)
+
+	if(!host.getorgan(/obj/item/organ/brain) && host.dna?.species)
+		host.dna.species.regenerate_organs(host)
+
+	if(host.mind?.current != host)
+		var/mob/current = host.mind.current
+		if(isbrain(current) || isobserver(current) || (ishuman(current) && current != host))
+			host.mind.transfer_to(host, TRUE)
+
 /datum/component/changeling_zombie_infection/proc/make_zombie()
 	if(zombified)
 		return FALSE
 	var/mob/living/carbon/human/host = parent
-	host.grab_ghost()
+	restore_host_body_for_zombification(host)
+	host.grab_ghost(TRUE)
 	zombified = TRUE
 	host.cure_husk(CHANGELING_DRAIN)
 	to_chat(host, span_danger("Нечто ужасающее собирает ваш труп по частям."))

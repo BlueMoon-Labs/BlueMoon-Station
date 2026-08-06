@@ -3,6 +3,8 @@
 	mob_size = MOB_SIZE_SMALL
 	mob_biotypes = MOB_ORGANIC|MOB_BEAST
 	blood_volume = BLOOD_VOLUME_NORMAL
+	/// Station pets (Ian, Runtime, …) are always open for ghosts; sentience event is for rare bots.
+	playable_by_ghost = TRUE
 	var/unique_pet = FALSE // if the mob can be renamed
 	var/obj/item/clothing/neck/petcollar/pcollar
 	var/collar_type //if the mob has collar sprites, define them.

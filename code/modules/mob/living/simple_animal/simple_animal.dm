@@ -935,6 +935,9 @@
 		to_chat(user, span_warning("Кто-то уже занял это существо!"))
 		return
 	user.transfer_ckey(src, FALSE)
+	grant_all_languages(UNDERSTOOD_LANGUAGE, grant_omnitongue = FALSE, source = LANGUAGE_ATOM)
+	sentience_act()
+	to_chat(src, span_notice("Вы вселились в [name]. Вы понимаете речь и можете общаться."))
 	log_game("[key_name(src)] took control of [name] ([type]).")
 
 /mob/living/simple_animal/examine(mob/user)
