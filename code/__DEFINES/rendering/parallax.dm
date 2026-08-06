@@ -65,4 +65,7 @@
  */
 #define PARALLAX_PRIORITY_WEATHER 10
 #define PARALLAX_PRIORITY_EVENT 20
+/// Сцены антагонистов. Выше пиковых слоёв космической погоды (EVENT + 1): культ,
+/// сожравший треть экипажа, важнее ионной бури и обязан быть виден сквозь неё.
+#define PARALLAX_PRIORITY_ANTAG 40
 #define PARALLAX_PRIORITY_ADMIN 100

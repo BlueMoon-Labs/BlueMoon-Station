@@ -357,6 +357,8 @@
 				to_chat(B.current, "<span class='cultlarge'>The veil weakens as your cult grows, your eyes begin to glow...")
 				addtimer(CALLBACK(src, PROC_REF(rise), B.current), 200)
 		cult_risen = TRUE
+		// Завеса истончается не только для культистов: за иллюминатором это видно всем.
+		set_antag_parallax_scene(ANTAG_SCENE_CULT_RISEN, ANTAG_PARALLAX_TOKEN_CULT)
 
 	if(ratio > CULT_ASCENDENT && !cult_ascendent)
 		for(var/datum/mind/B in members)
@@ -365,6 +367,9 @@
 				to_chat(B.current, "<span class='cultlarge'>Your cult is ascendent and the red harvest approaches - you cannot hide your true nature for much longer!!")
 				addtimer(CALLBACK(src, PROC_REF(ascend), B.current), 200)
 		priority_announce("На вашей станции обнаружена внепространственная активность, связанная с культом Нар’Си. Данные свидетельствуют о том, что в ряды культа обращено около Сорока Процентов Экипажа Станции. Служба безопасности получает право свободно применять летальную силу против культистов. Прочий персонал должен быть готов защищать себя и свои рабочие места от нападений культистов (в том числе используя летальную силу в качестве крайней меры самообороны), но не должен выслеживать культистов и охотиться на них. Погибшие члены экипажа должны быть оживлены и деконвертированы, как только ситуация будет взята под контроль.", "Центральное Командование, Отдел Работы с Реальностью", 'sound/announcer/classic/_admin_horror_music.ogg')
+		// Тот же токен, что и у первой ступени: add_modifier заменяет запись, поэтому
+		// красная жатва встаёт ВМЕСТО слабого багрянца, а не поверх него.
+		set_antag_parallax_scene(ANTAG_SCENE_CULT_ASCENDENT, ANTAG_PARALLAX_TOKEN_CULT)
 		cult_ascendent = TRUE
 
 

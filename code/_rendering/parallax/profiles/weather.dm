@@ -3,6 +3,16 @@
  *
  * Событийные профили держат weight = 0: они не должны выпадать раунду просто так,
  * их ставит событие через SSparallax.set_profile() под своим токеном.
+ *
+ * Явление, которое приходит В НАШ сектор, сохраняет за собой планету: оно меняет
+ * небо, но не переносит станцию куда-то ещё, а лавовый мир за иллюминатором - это
+ * метка сектора, по которой игрок понимает, где он. Планета лежит на слое 30, выше
+ * всех ярусов Eris (0.5, 2 и 3), поэтому она видна сквозь явление.
+ *
+ * Планета объявляется каждым таким профилем отдельно, а не общим родителем: у него
+ * же наследуются планетарные погоды и астероидный пояс, а им мир в небе не положен
+ * ни по смыслу, ни по окружению. Не получают её и те два профиля, которые как раз и
+ * означают "мы больше не здесь" - блюспейс-интерфаза и фотонный вихрь.
  */
 /datum/parallax_profile/weather
 	abstract_type = /datum/parallax_profile/weather
@@ -22,6 +32,7 @@
 		/atom/movable/screen/parallax_layer/eris/close/bluespace_storm,
 	)
 	min_quality = PARALLAX_LOW
+	static_objects = list(/atom/movable/screen/parallax_layer/space/planet)
 	weight = 0
 
 /// Кладбище кораблей: крупные обломки станций на среднем ярусе.
@@ -34,6 +45,7 @@
 		/atom/movable/screen/parallax_layer/eris/close/graveyard,
 	)
 	min_quality = PARALLAX_LOW
+	static_objects = list(/atom/movable/screen/parallax_layer/space/planet)
 	// Событийный: явление, мимо которого пролетаешь, не должно быть фоном раунда.
 	weight = 0
 
@@ -48,6 +60,7 @@
 		/atom/movable/screen/parallax_layer/eris/close/micro_debris,
 	)
 	min_quality = PARALLAX_LOW
+	static_objects = list(/atom/movable/screen/parallax_layer/space/planet)
 	weight = 0
 
 /// Ионная буря. Ближнего яруса у художника Eris нет, поэтому их только два.
@@ -61,6 +74,7 @@
 		/atom/movable/screen/parallax_layer/eris/far/ion_blizzard,
 	)
 	min_quality = PARALLAX_LOW
+	static_objects = list(/atom/movable/screen/parallax_layer/space/planet)
 	weight = 0
 
 /// Блюспейс-интерфаза: ровный фон без ярусов, для аномальных зон.
@@ -197,10 +211,11 @@
 	weight = 0
 
 /// Астероидный пояс из трёх плотностей.
+/// Станции не достаётся: её фон закреплён за space_classic, см. profiles/space.dm.
 /datum/parallax_profile/weather/goon/asteroid_belt
 	id = "asteroid_belt"
 	name = "Астероидный пояс"
-	environment_flags = PARALLAX_ENV_STATION | PARALLAX_ENV_SPACE_RUINS
+	environment_flags = PARALLAX_ENV_SPACE_RUINS
 	base_layers = list(
 		/atom/movable/screen/parallax_layer/space/layer_1,
 		/atom/movable/screen/parallax_layer/skybox/stars,

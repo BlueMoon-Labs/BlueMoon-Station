@@ -162,6 +162,19 @@
 		// статике оно оборвало бы пролёт, швырнув объект сразу за край.
 		TEST_ASSERT(!initial(layer_type.fade_in_time), "Статический слой [layer_type] объявляет проявление - оно оборвёт ему пролёт")
 
+	// Явление, которое приходит в наш сектор, обязано сохранить планету: оно меняет
+	// небо, но не переносит станцию. Проверка поимённая, потому что объявление сидит
+	// на каждом профиле отдельно, и «уборка дублей» в общего родителя раздала бы мир
+	// в небе планетарным погодам и астероидному поясу.
+	for(var/in_sector_id in list("bluespace_storm", "graveyard", "micro_debris", "ion_blizzard"))
+		var/datum/parallax_profile/in_sector = SSparallax.profiles_by_id[in_sector_id]
+		TEST_ASSERT_NOTNULL(in_sector, "Профиль явления '[in_sector_id]' пропал из каталога")
+		TEST_ASSERT(/atom/movable/screen/parallax_layer/space/planet in in_sector.static_objects, "Явление '[in_sector_id]' стирает планету со станционного неба")
+	for(var/elsewhere_id in list("planet_snow", "planet_embers", "planet_dust", "asteroid_belt", "gas_giant"))
+		var/datum/parallax_profile/elsewhere = SSparallax.profiles_by_id[elsewhere_id]
+		TEST_ASSERT_NOTNULL(elsewhere, "Профиль '[elsewhere_id]' пропал из каталога")
+		TEST_ASSERT(!length(elsewhere.static_objects), "Профиль '[elsewhere_id]' получил крупный объект в небо, хотя станцию не обслуживает")
+
 	// Отсев не имеет права оставить от профиля одну подложку. Профиль, у которого весь
 	// смысл в отсеиваемом слое, обязан и сам не объявлять это окружение - иначе
 	// автоподбор выбирает между несколькими одинаковыми пустыми сценами.
@@ -177,6 +190,96 @@
 					meaningful++
 			QDEL_LIST(scene)
 			TEST_ASSERT(meaningful >= 1, "Профиль '[checked_id]' в окружении [SSparallax.environment_name(environment)] собрался из одной подложки")
+
+/**
+ * Станция обязана всегда получать одну и ту же сцену, а разнообразие - жить в
+ * остальном космосе.
+ *
+ * Это требование игроков, а не вкусовщина: лавовый мир за иллюминатором помечает
+ * сектор, в котором висит станция, и по нему ориентируются. Случайный профиль на
+ * станционном z этот ориентир отнимает, а один и тот же профиль в полёте и на
+ * руинах отнимает смысл у самой метки.
+ */
+/datum/unit_test/parallax_station_profile_is_fixed/Run()
+	var/list/station_candidates = list()
+	var/list/all_environments = list(PARALLAX_ENV_STATION, PARALLAX_ENV_SPACE_RUINS, PARALLAX_ENV_PLANET, PARALLAX_ENV_SHUTTLE, PARALLAX_ENV_CENTCOM)
+	var/list/candidates_by_environment = list()
+	for(var/environment in all_environments)
+		candidates_by_environment["[environment]"] = list()
+
+	for(var/profile_id in SSparallax.profiles_by_id)
+		var/datum/parallax_profile/profile = SSparallax.profiles_by_id[profile_id]
+		if(profile.weight <= 0)
+			continue // ставится только явно - событием, погодой или админом
+		for(var/environment in all_environments)
+			if(profile.environment_flags & environment)
+				candidates_by_environment["[environment]"] += profile_id
+	station_candidates = candidates_by_environment["[PARALLAX_ENV_STATION]"]
+
+	TEST_ASSERT_EQUAL(length(station_candidates), 1, "Станционному z доступно [length(station_candidates)] профилей ([station_candidates.Join(", ")]) - фон перестал быть постоянным ориентиром")
+	TEST_ASSERT_EQUAL(station_candidates[1], "space_classic", "Станция получила профиль '[station_candidates[1]]' вместо классической сцены с Лавалендом")
+
+	// Тот же профиль в остальном космосе обесценил бы метку станции.
+	for(var/environment in all_environments)
+		if(environment == PARALLAX_ENV_STATION)
+			continue
+		var/list/candidates = candidates_by_environment["[environment]"]
+		TEST_ASSERT(!("space_classic" in candidates), "Станционная сцена доступна окружению [SSparallax.environment_name(environment)] - Лаваленд перестанет помечать станцию")
+		// Запасной профиль - это space_classic, и попасть в него значит показать
+		// Лаваленд там, где его быть не должно.
+		TEST_ASSERT(length(candidates) > 0, "Окружению [SSparallax.environment_name(environment)] не досталось ни одного профиля - автоподбор свалится в запасной")
+
+/**
+ * Сцена антагониста ложится ПОВЕРХ сцены уровня и не имеет права её подменять:
+ * станция обязана сохранить свой ориентир, пока небо багровеет.
+ */
+/datum/unit_test/parallax_antag_scenes/Run()
+	TEST_ASSERT(length(GLOB.antag_parallax_scenes) >= 7, "Сцен антагонистов всего [length(GLOB.antag_parallax_scenes)] - культ и четыре пути еретика не покрыты")
+	for(var/scene_key in GLOB.antag_parallax_scenes)
+		var/list/scene_layers = GLOB.antag_parallax_scenes[scene_key]
+		TEST_ASSERT(length(scene_layers) > 0, "Сцена '[scene_key]' пуста")
+		var/tints = 0
+		for(var/atom/movable/screen/parallax_layer/layer_type as anything in scene_layers)
+			TEST_ASSERT(ispath(layer_type, /atom/movable/screen/parallax_layer), "Сцена '[scene_key]' ссылается на не-слой [layer_type]")
+			var/mode = initial(layer_type.layer_mode)
+			// Скайбокс и статика перекрыли бы собой планету, ради сохранения которой
+			// сцены и сделаны накладными.
+			TEST_ASSERT(mode != PARALLAX_MODE_SKYBOX, "Сцена '[scene_key]': слой [layer_type] - скайбокс, он закроет собой станционный фон")
+			TEST_ASSERT(mode != PARALLAX_MODE_STATIC, "Сцена '[scene_key]': слой [layer_type] - крупный объект, ему не место поверх чужой сцены")
+			if(mode == PARALLAX_MODE_OVERLAY)
+				tints++
+		TEST_ASSERT_EQUAL(tints, 1, "Сцена '[scene_key]' несёт [tints] тонировок вместо одной")
+
+	// Постановка и снятие идут через штатный стек модификаторов.
+	var/test_z = 1
+	SSparallax.add_layers(test_z, ANTAG_PARALLAX_TOKEN_CULT, GLOB.antag_parallax_scenes[ANTAG_SCENE_CULT_RISEN], PARALLAX_PRIORITY_ANTAG)
+	var/datum/parallax_modifier/placed = SSparallax.find_modifier(test_z, ANTAG_PARALLAX_TOKEN_CULT)
+	TEST_ASSERT_NOTNULL(placed, "Сцена культа не легла на z [test_z]")
+	TEST_ASSERT_EQUAL(placed.priority, PARALLAX_PRIORITY_ANTAG, "Сцена культа легла с приоритетом [placed.priority]")
+	TEST_ASSERT(placed.priority > PARALLAX_PRIORITY_EVENT + 1, "Сцена антагониста не перебивает пиковый слой космической погоды")
+	TEST_ASSERT_NULL(placed.profile, "Сцена антагониста подменила профиль уровня вместо наложения слоёв")
+
+	// Усиление ступени заменяет запись, а не складывается с ней.
+	SSparallax.add_layers(test_z, ANTAG_PARALLAX_TOKEN_CULT, GLOB.antag_parallax_scenes[ANTAG_SCENE_CULT_ASCENDENT], PARALLAX_PRIORITY_ANTAG)
+	var/tokens_on_z = 0
+	for(var/datum/parallax_modifier/modifier as anything in SSparallax.modifiers_by_z["[test_z]"])
+		if(modifier.token == ANTAG_PARALLAX_TOKEN_CULT)
+			tokens_on_z++
+	TEST_ASSERT_EQUAL(tokens_on_z, 1, "Вторая ступень культа завела [tokens_on_z] модификаторов вместо замены первой")
+
+	TEST_ASSERT(SSparallax.remove_modifier(test_z, ANTAG_PARALLAX_TOKEN_CULT), "Сцена культа не снялась")
+	TEST_ASSERT_NULL(SSparallax.find_modifier(test_z, ANTAG_PARALLAX_TOKEN_CULT), "После снятия модификатор культа остался в стеке")
+
+/// Каждый путь вознесения еретика обязан объявить свою сцену, иначе три из четырёх
+/// вознесений молча не меняют ничего, и заметить это можно только в игре.
+/datum/unit_test/parallax_heretic_ascension_scenes/Run()
+	var/checked = 0
+	for(var/datum/eldritch_knowledge/final_eldritch/final_type as anything in subtypesof(/datum/eldritch_knowledge/final_eldritch))
+		var/scene_key = initial(final_type.parallax_scene)
+		checked++
+		TEST_ASSERT_NOTNULL(scene_key, "Вознесение [final_type] не объявляет сцену параллакса")
+		TEST_ASSERT(length(GLOB.antag_parallax_scenes[scene_key]) > 0, "Вознесение [final_type] ссылается на несуществующую сцену '[scene_key]'")
+	TEST_ASSERT_EQUAL(checked, 4, "Путей вознесения нашлось [checked] вместо четырёх - тест смотрит не туда")
 
 /// Выбор профиля обязан быть единым на z, стабильным весь раунд и независимым между z.
 /datum/unit_test/parallax_profile_selection/Run()

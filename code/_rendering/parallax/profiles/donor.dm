@@ -67,7 +67,7 @@
  */
 /datum/parallax_profile/space/orbit
 	abstract_type = /datum/parallax_profile/space/orbit
-	environment_flags = PARALLAX_ENV_STATION | PARALLAX_ENV_SPACE_RUINS | PARALLAX_ENV_CENTCOM
+	environment_flags = PARALLAX_ENV_SPACE_RUINS | PARALLAX_ENV_CENTCOM
 	base_layers = list(
 		/atom/movable/screen/parallax_layer/space/layer_1,
 		/atom/movable/screen/parallax_layer/space/layer_2,
