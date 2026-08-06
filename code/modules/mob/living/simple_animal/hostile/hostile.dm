@@ -25,6 +25,13 @@
 	var/ai_pursuit_speed_capped = TRUE
 	var/list/friends = list()
 	var/list/foes = list()
+	///Может ли моб в принципе завести личную обиду на СВОЮ фракцию. Ботам и
+	///питомцам ставится FALSE: их владелец не должен становиться целью никогда.
+	var/retaliates_against_faction = TRUE
+	///Счёт дружественного урона: REF(обидчик) -> list(накоплено, world.time).
+	///Ключ строковый намеренно - список не держит ссылок на мобов и не создаёт
+	///кандидатов на харддел.
+	var/list/friendly_fire_tally
 	///Троттл группового оповещения союзников об обидчике (см. RetaliateAgainst)
 	var/next_ally_alert = 0
 	var/list/emote_taunt = list()
@@ -90,6 +97,10 @@
 	var/ai_profile_type = /datum/ai_controller/hostile_adapter/melee_chaser
 	///Пауза перед мили-ударом AI; 0 сохраняет мгновенную легаси-атаку.
 	var/melee_telegraph_duration = 0
+	///Пауза перед ЗАЛПОМ дальника; 0 сохраняет мгновенный легаси-выстрел.
+	///Ставится тем, чей залп способен убить с одного захода: точность нового ИИ
+	///сделала такие залпы неотвратимыми, и урон в них никто не пересматривал.
+	var/ranged_telegraph_duration = 0
 
 /mob/living/simple_animal/hostile/Initialize(mapload)
 	. = ..()
@@ -260,16 +271,92 @@
 		chosen_dir = pick(cardinal_sidestep_directions)
 	if(chosen_dir)
 		chosen_dir = turn(target_dir,chosen_dir)
-		Move(get_step(src,chosen_dir))
+		var/turf/destination = get_step(src, chosen_dir)
+		//Через контроллер, а не голым Move(): уворот обязан стоить обычный шаг
+		//и ехать с glide, иначе он читается телепортом и даёт лишний тайл.
+		if(ai_controller)
+			ai_controller.ai_step_outside_loop(destination)
+		else
+			Move(destination, chosen_dir)
 		face_atom(target) //Looks better if they keep looking at you when dodging
 
 /mob/living/simple_animal/hostile/attacked_by(obj/item/I, mob/living/user, attackchain_flags = NONE, damage_multiplier = 1)
-	if(stat == CONSCIOUS && user && has_active_ai() && !client)
-		RetaliateAgainst(user)
-	return ..()
+	//Урон считаем по факту (после брони и модификаторов), поэтому решение об
+	//обиде принимается ПОСЛЕ удара, а не до него: обида на сокомандника по
+	//фракции обнуляет проверку фракции в CanAttack, и цена ошибки тут - бот,
+	//расстреливающий владельца из-за тычка сумкой.
+	var/consider_grudge = (stat == CONSCIOUS && user && has_active_ai() && !client)
+	var/health_before = health
+	. = ..()
+	//Удар мог оказаться смертельным. Раньше обида вешалась ДО удара и этот
+	//случай не возникал; теперь решение принимается после, и мёртвому мобу
+	//обида не нужна, а у уничтоженного списки уже сняты (foes == null).
+	if(consider_grudge && !QDELETED(src) && stat != DEAD)
+		consider_retaliation(user, max(0, health_before - health))
+
+///Заводить ли личную обиду на этого обидчика. Чужак становится врагом с первого
+///касания; сокомандник по фракции получает допуск на случайность - порог по
+///НАКОПЛЕННОМУ урону за окно, а не по числу ударов (три щекотки не равны трём
+///ударам кувалдой). Возвращает TRUE, если обида заведена.
+/mob/living/simple_animal/hostile/proc/consider_retaliation(mob/living/attacker, damage_taken = 0)
+	if(QDELETED(attacker))
+		return FALSE
+	if(!is_faction_accident(attacker))
+		RetaliateAgainst(attacker)
+		return TRUE
+	if(!retaliates_against_faction)
+		return FALSE
+	if(!tally_friendly_fire(attacker, damage_taken))
+		return FALSE
+	RetaliateAgainst(attacker)
+	return TRUE
+
+///Свой ли это по фракции, то есть применима ли толерантность к случайности.
+///Уже записанный враг своим не считается - обида приоритетнее фракции.
+/mob/living/simple_animal/hostile/proc/is_faction_accident(mob/living/attacker)
+	if(!isliving(attacker) || attack_same)
+		return FALSE
+	if(foes && foes[attacker])
+		return FALSE
+	return faction_check_mob(attacker)
+
+///Накопить дружественный урон в окне; TRUE - порог превышен.
+/mob/living/simple_animal/hostile/proc/tally_friendly_fire(mob/living/attacker, damage_taken)
+	if(damage_taken <= 0 || maxHealth <= 0)
+		return FALSE
+	LAZYINITLIST(friendly_fire_tally)
+	prune_friendly_fire_tally()
+	var/attacker_key = REF(attacker)
+	var/list/entry = friendly_fire_tally[attacker_key]
+	if(!entry)
+		entry = list(0, world.time)
+		friendly_fire_tally[attacker_key] = entry
+	entry[1] += damage_taken
+	entry[2] = world.time
+	return entry[1] >= (maxHealth * AI_FRIENDLY_FIRE_TOLERANCE)
+
+///Выкинуть протухшие записи счёта, а при переполнении - и старейшую живую
+/mob/living/simple_animal/hostile/proc/prune_friendly_fire_tally()
+	var/oldest_key
+	var/oldest_time = INFINITY
+	//обход по копии ключей: удаление из живого списка пропускает соседние записи
+	for(var/attacker_key in friendly_fire_tally.Copy())
+		var/list/entry = friendly_fire_tally[attacker_key]
+		if(world.time - entry[2] > AI_FRIENDLY_FIRE_WINDOW)
+			friendly_fire_tally -= attacker_key
+			continue
+		if(entry[2] < oldest_time)
+			oldest_time = entry[2]
+			oldest_key = attacker_key
+	if(length(friendly_fire_tally) >= AI_FRIENDLY_FIRE_TALLY_MAX && oldest_key)
+		friendly_fire_tally -= oldest_key
 
 /mob/living/simple_animal/hostile/bullet_act(obj/item/projectile/P)
 	if(stat == CONSCIOUS && has_active_ai() && !client && P.firer)
+		//Что именно в нас прилетело - вход в модель угрозы: от этого зависит,
+		//считать ли стекло и решётку укрытием (см. threat_model.dm). Пишем и для
+		//дружественного огня: знать тип снаряда полезно независимо от обиды.
+		ai_controller?.note_incoming_projectile(P.firer, P)
 		if(get_dist(src, P.firer) <= aggro_vision_range)
 			//A stray allied projectile must not turn an entire squad against itself.
 			//Direct melee attacks still use RetaliateAgainst() and preserve grudges.
@@ -281,6 +368,10 @@
 /// Focus aggro on whoever just hurt us, even if we already had another target.
 /mob/living/simple_animal/hostile/proc/RetaliateAgainst(atom/movable/the_attacker)
 	if(!the_attacker || QDELETED(the_attacker))
+		return
+	//Destroy() снимает списки обид: у уничтожаемого моба foes уже null, и запись
+	//в него это "bad index". Обида такому мобу всё равно не нужна.
+	if(QDELETED(src) || isnull(foes))
 		return
 	if(isliving(the_attacker))
 		add_enemy(the_attacker)
@@ -417,14 +508,50 @@
 	if(patience)
 		GainPatience()
 
+///Живой пол задержки шага AI-погони (дс). Пересчитывается от фактического
+///RUN_DELAY при загрузке конфига и при его правке в рантайме, поэтому больше
+///не может разойтись с реальной скоростью игрока (см. AI_PURSUIT_SPEED_RATIO).
+GLOBAL_VAR_INIT(ai_pursuit_min_move_delay, AI_PURSUIT_MIN_MOVE_DELAY)
+
+///Пересчитать пол скорости погони. Зовётся из ValidateAndSet конфига RUN_DELAY.
+/proc/update_ai_pursuit_speed_floor()
+	var/player_run_delay = CONFIG_GET(number/movedelay/run_delay)
+	if(!player_run_delay)
+		GLOB.ai_pursuit_min_move_delay = AI_PURSUIT_MIN_MOVE_DELAY
+		return GLOB.ai_pursuit_min_move_delay
+	GLOB.ai_pursuit_min_move_delay = max(world.tick_lag, player_run_delay * AI_PURSUIT_SPEED_RATIO)
+	return GLOB.ai_pursuit_min_move_delay
+
 ///Задержка шага AI-погони (дс) из легаси move_to_delay. Небоссовые мобы
-///клампятся снизу к AI_PURSUIT_MIN_MOVE_DELAY, чтобы не обгонять игрока больше
-///чем на ~1.25x (жалоба "двигаются в x2 / телепортируются"). Боссы отписаны.
+///клампятся снизу полом, который считается от скорости бегущего игрока: уйти по
+///прямой можно, но без права на ошибку. Боссы (megafauna) от пола отписаны -
+///их скорость это дизайн, а не недосмотр.
 /mob/living/simple_animal/hostile/proc/ai_movement_delay()
 	var/delay = AI_LEGACY_MOVE_DELAY_DS(move_to_delay)
 	if(ai_pursuit_speed_capped)
-		return max(delay, AI_PURSUIT_MIN_MOVE_DELAY)
+		return max(delay, GLOB.ai_pursuit_min_move_delay)
 	return delay
+
+///Читаемое окно перед тяжёлым залпом. Точность нового ИИ (проверка реальной
+///трассы снаряда с перестроением до чистого выстрела) сделала залпы дальников
+///неотвратимыми, а урон в них остался легаси: боевой дрон снимал 82 HP тремя
+///лучами за полсекунды, без единого признака, что сейчас выстрелит. Телеграф не
+///трогает ни ум, ни точность - он даёт игроку окно уйти за укрытие, и если тот
+///успел, залпа не будет.
+/mob/living/simple_animal/hostile/proc/telegraphed_open_fire(atom/fire_target)
+	if(QDELETED(fire_target) || stat == DEAD)
+		return
+	var/turf/aim_turf = get_turf(fire_target)
+	if(aim_turf)
+		new /obj/effect/temp_visual/telegraphing/ranged_burst(aim_turf, ranged_telegraph_duration)
+	sleep(ranged_telegraph_duration)
+	if(QDELETED(src) || QDELETED(fire_target) || stat == DEAD)
+		return
+	//цель успела разорвать линию - залп отменяется, в этом весь смысл окна
+	if(!ranged_ignores_vision && !can_see(src, fire_target, AI_RANGED_MAX_FIRE_RANGE))
+		return
+	target = fire_target
+	OpenFire(fire_target)
 
 /mob/living/simple_animal/hostile/proc/cancel_rapid_melee_sequence()
 	if(rapid_melee_timer_id)

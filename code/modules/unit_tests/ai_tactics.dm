@@ -789,3 +789,228 @@
 	TEST_ASSERT_EQUAL(chase_mover.get_step_delay(controller), controller.movement_delay, "Обычное преследование обязано ходить в темпе movement_delay")
 
 	qdel(controller)
+
+///Пристёгнутый моб не катается на стуле: Move() пристёгнутого возвращает
+///buckled.Move(), то есть толкает незаанкоренный стул вместо шага. Легаси-пул
+///гейтил брождение по !buckled (simple_animal.dm), контроллеры при миграции
+///этот гард потеряли.
+/datum/unit_test/ai_buckled_pawn_does_not_ride_chair/Run()
+	var/mob/living/simple_animal/hostile/pawn = allocate(/mob/living/simple_animal/hostile, run_loc_floor_bottom_left)
+	var/obj/structure/chair/office/chair = allocate(/obj/structure/chair/office, run_loc_floor_bottom_left)
+	var/datum/ai_controller/unit_test_wanderer/controller = new(pawn)
+
+	TEST_ASSERT(!chair.anchored, "Санити: офисный стул обязан быть незаанкоренным, иначе тест ничего не проверяет")
+	TEST_ASSERT(chair.buckle_mob(pawn, force = TRUE), "Санити: моба обязано получиться пристегнуть к стулу")
+	TEST_ASSERT_EQUAL(pawn.buckled, chair, "Санити: паун обязан числиться пристёгнутым")
+
+	var/turf/chair_start = get_turf(chair)
+	var/turf/pawn_start = get_turf(pawn)
+	//огромный delta_time = гарантированное срабатывание SPT_PROB брождения
+	controller.idle_behavior.perform_idle_behavior(100, controller)
+
+	TEST_ASSERT_EQUAL(get_turf(chair), chair_start, "Idle-брождение пристёгнутого пауна не имеет права двигать стул")
+	TEST_ASSERT_EQUAL(get_turf(pawn), pawn_start, "Idle-брождение не имеет права двигать пристёгнутого пауна")
+
+	qdel(controller)
+
+///Вместо катания моб выбирается из стула, но не чаще AI_UNBUCKLE_COOLDOWN:
+///user_unbuckle_mob спит в do_after, а зовут его из сигнал-хендлера мувера.
+/datum/unit_test/ai_buckled_pawn_requests_unbuckle_on_cooldown/Run()
+	var/mob/living/simple_animal/hostile/pawn = allocate(/mob/living/simple_animal/hostile, run_loc_floor_bottom_left)
+	var/obj/structure/chair/office/chair = allocate(/obj/structure/chair/office, run_loc_floor_bottom_left)
+	var/datum/ai_controller/unit_test_wanderer/controller = new(pawn)
+	chair.buckle_mob(pawn, force = TRUE)
+
+	TEST_ASSERT(controller.request_unbuckle(), "Пристёгнутый паун обязан попытаться выбраться")
+	TEST_ASSERT(controller.blackboard[BB_AI_UNBUCKLE_AT] > world.time, "Попытка обязана взвести кулдаун")
+
+	//user_unbuckle_mob не спит, так что попытка уже сработала - возвращаем пауна
+	//в стул, чтобы проверялся именно кулдаун, а не отсутствие buckled
+	if(!pawn.buckled)
+		chair.buckle_mob(pawn, force = TRUE)
+	TEST_ASSERT(!controller.request_unbuckle(), "Повторная попытка внутри кулдауна запрещена")
+
+	qdel(controller)
+
+///Ломать окружение можно ради добычи, но не ради хлама. Мобы с
+///search_objects/wanted_objects целью делают предмет (гусь - мусор, watcher -
+///алмаз, голдграб - руду, майнбот - руду), и до гейта они вскрывали ради него
+///преграды на пути.
+/datum/unit_test/ai_does_not_breach_for_item_target/Run()
+	var/turf/pawn_turf = run_loc_floor_bottom_left
+	var/turf/barrier_turf = get_step(pawn_turf, EAST)
+	var/turf/loot_turf = get_step(barrier_turf, EAST)
+	var/mob/living/simple_animal/hostile/pawn = allocate(/mob/living/simple_animal/hostile, pawn_turf)
+	allocate(/obj/structure/ai_unit_test_barrier, barrier_turf)
+	var/obj/item/loot = allocate(/obj/item, loot_turf)
+	var/datum/ai_controller/unit_test_hunter/controller = new(pawn)
+	pawn.obj_damage = 100 //снести барьер моб способен - вопрос только в поводе
+
+	var/datum/ai_planning_subtree/attack_obstacle_in_path/breaker = GLOB.ai_subtrees[/datum/ai_planning_subtree/attack_obstacle_in_path]
+	TEST_ASSERT_NOTNULL(breaker, "Санити: синглтон сабтри взлома преград не найден")
+
+	controller.set_blackboard_key(BB_AI_CURRENT_TARGET, loot)
+	breaker.SelectBehaviors(controller, 0.5)
+	TEST_ASSERT(!(GET_AI_BEHAVIOR(/datum/ai_behavior/attack_obstructions) in controller.current_behaviors), "Предмет за преградой не повод её ломать")
+
+	//живая цель за той же преградой - законный повод пробиваться
+	controller.CancelActions()
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, loot_turf)
+	controller.set_blackboard_key(BB_AI_CURRENT_TARGET, prey)
+	breaker.SelectBehaviors(controller, 0.5)
+	TEST_ASSERT(GET_AI_BEHAVIOR(/datum/ai_behavior/attack_obstructions) in controller.current_behaviors, "Живая цель за преградой обязана ставить взлом в план")
+
+	qdel(controller)
+
+///Дальник не расстреливает беспомощного. Прод 9887: watcher всадил 17 выстрелов
+///в игрока, который уже был ниже нуля, последние шесть - в неподвижную цель на
+///одном тайле с шагом 3.1 с. Мили-добивание вплотную это не трогает.
+/datum/unit_test/ranged_ai_does_not_execute_downed_target/Run()
+	var/turf/pawn_turf = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/shooter = allocate(/mob/living/simple_animal/hostile, pawn_turf)
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, locate(pawn_turf.x + 2, pawn_turf.y, pawn_turf.z))
+	shooter.ranged = TRUE
+	shooter.projectiletype = /obj/item/projectile
+	//Ровно конфигурация watcher: без этой пары CanAttack отсекает лежачую цель
+	//сам, ещё до нового гейта, и тест проверял бы не то, что нужно.
+	shooter.robust_searching = 1
+	shooter.stat_attack = UNCONSCIOUS
+	var/datum/ai_controller/unit_test_hunter/controller = new(shooter)
+	controller.set_blackboard_key(BB_AI_CURRENT_TARGET, prey)
+
+	var/datum/ai_behavior/ranged_skirmish/gunner = GET_AI_BEHAVIOR(/datum/ai_behavior/ranged_skirmish)
+	TEST_ASSERT_NOTNULL(gunner, "Санити: синглтон поведения ranged_skirmish не найден")
+
+	//санити: по стоящей на ногах цели стрелять можно
+	shooter.ranged_cooldown = 0
+	var/conscious_result = gunner.perform(0.5, controller, BB_AI_CURRENT_TARGET, BB_AI_TARGETING_STRATEGY, BB_AI_TARGET_HIDING_LOCATION, 7, 0)
+	TEST_ASSERT(!(conscious_result & AI_BEHAVIOR_FAILED), "Санити: по цели в сознании выстрел обязан состояться")
+
+	prey.set_stat(UNCONSCIOUS)
+	TEST_ASSERT(shooter.CanAttack(prey), "Санити: со stat_attack UNCONSCIOUS цель остаётся валидной - гейт обязан быть именно дистанционным")
+	shooter.ranged_cooldown = 0
+	var/downed_result = gunner.perform(0.5, controller, BB_AI_CURRENT_TARGET, BB_AI_TARGETING_STRATEGY, BB_AI_TARGET_HIDING_LOCATION, 7, 0)
+	TEST_ASSERT(downed_result & AI_BEHAVIOR_FAILED, "Беспомощная цель не имеет права оставаться мишенью для дистанционной атаки")
+
+	//падальщик, который живёт именно добиванием, из-под гейта выведен
+	shooter.stat_exclusive = TRUE
+	shooter.ranged_cooldown = 0
+	var/scavenger_result = gunner.perform(0.5, controller, BB_AI_CURRENT_TARGET, BB_AI_TARGETING_STRATEGY, BB_AI_TARGET_HIDING_LOCATION, 7, 0)
+	TEST_ASSERT(!(scavenger_result & AI_BEHAVIOR_FAILED), "Падальщик со stat_exclusive обязан сохранить право стрелять по лежачим")
+
+	qdel(controller)
+
+///Тяжёлый залп предупреждает о себе: кулдаун взводится сразу вместе с окном
+///телеграфа, иначе планировщик поставит второй залп поверх первого.
+/datum/unit_test/ranged_burst_telegraphs_before_firing/Run()
+	var/turf/pawn_turf = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/shooter = allocate(/mob/living/simple_animal/hostile, pawn_turf)
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, locate(pawn_turf.x + 2, pawn_turf.y, pawn_turf.z))
+	shooter.ranged = TRUE
+	shooter.projectiletype = /obj/item/projectile
+	shooter.ranged_telegraph_duration = 0.6 SECONDS
+	var/datum/ai_controller/unit_test_hunter/controller = new(shooter)
+	controller.set_blackboard_key(BB_AI_CURRENT_TARGET, prey)
+
+	var/datum/ai_behavior/ranged_skirmish/gunner = GET_AI_BEHAVIOR(/datum/ai_behavior/ranged_skirmish)
+	shooter.ranged_cooldown = 0
+	var/expected_at_least = world.time + shooter.ranged_cooldown_time + shooter.ranged_telegraph_duration
+
+	TEST_ASSERT(gunner.fire_at(controller, prey), "Санити: залп с телеграфом обязан быть принят к исполнению")
+	TEST_ASSERT(shooter.ranged_cooldown >= expected_at_least, "Кулдаун обязан взводиться сразу и включать окно телеграфа")
+
+	qdel(controller)
+
+///Модель угрозы: окно останавливает пулю и не останавливает луч. До неё оценка
+///укрытия сводилась к can_see(), то есть прозрачное стекло не считалось укрытием
+///никогда - ни там, где оно работает, ни там, где нет ("мобы не понимают, что
+///через стекло их расстреливают лазером, и стоят тупят").
+/datum/unit_test/ai_cover_model_window_blocks_bullet_not_beam/Run()
+	var/turf/pawn_turf = run_loc_floor_bottom_left
+	var/turf/window_turf = get_step(pawn_turf, EAST)
+	var/turf/shooter_turf = get_step(window_turf, EAST)
+	var/mob/living/simple_animal/hostile/hider = allocate(/mob/living/simple_animal/hostile, pawn_turf)
+	var/mob/living/carbon/human/gunman = allocate(/mob/living/carbon/human, shooter_turf)
+	var/obj/structure/window/fulltile/glass = allocate(/obj/structure/window/fulltile, window_turf)
+	var/datum/ai_controller/unit_test_hunter/controller = new(hider)
+
+	TEST_ASSERT(glass.density, "Санити: полнотайловое окно обязано быть плотным")
+	TEST_ASSERT(!glass.opacity, "Санити: обычное окно обязано быть прозрачным - иначе тест проверял бы can_see, а не модель угрозы")
+	TEST_ASSERT(can_see(pawn_turf, gunman, AI_HIDING_LOS_RANGE), "Санити: сквозь стекло стрелка видно")
+
+	//без наблюдений угроза считается лучевой - осторожная оценка, стекло не укрытие
+	TEST_ASSERT_EQUAL(controller.cover_quality(pawn_turf, gunman), AI_COVER_NONE, "Без наблюдений стекло не имеет права считаться укрытием")
+
+	//прилетела пуля: от неё стекло укрывает
+	var/obj/item/projectile/bullet = allocate(/obj/item/projectile, shooter_turf)
+	controller.note_incoming_projectile(gunman, bullet)
+	TEST_ASSERT_EQUAL(controller.cover_quality(pawn_turf, gunman), AI_COVER_FULL, "От баллистики окно обязано считаться укрытием")
+
+	//тот же стрелок перешёл на луч: то же стекло укрытием быть перестаёт
+	var/obj/item/projectile/beam/laser = allocate(/obj/item/projectile/beam, shooter_turf)
+	controller.note_incoming_projectile(gunman, laser)
+	TEST_ASSERT_EQUAL(controller.cover_quality(pawn_turf, gunman), AI_COVER_NONE, "От луча окно укрытием быть не может - PASSGLASS")
+
+	qdel(controller)
+
+///Стрелок под огнём на непрокрытой позиции обязан искать перестроение, а не
+///стоять столбом. Раньше reposition_for_shot звался только при ПЕРЕКРЫТОЙ линии
+///огня, то есть исключительно чтобы попасть, и никогда - чтобы не получить.
+/datum/unit_test/ai_shooter_seeks_cover_under_fire/Run()
+	var/turf/pawn_turf = run_loc_floor_bottom_left
+	var/turf/window_turf = get_step(pawn_turf, EAST)
+	var/turf/shooter_turf = get_step(window_turf, EAST)
+	var/mob/living/simple_animal/hostile/shooter = allocate(/mob/living/simple_animal/hostile, pawn_turf)
+	var/mob/living/carbon/human/gunman = allocate(/mob/living/carbon/human, shooter_turf)
+	var/datum/ai_controller/unit_test_hunter/controller = new(shooter)
+	controller.set_blackboard_key(BB_AI_CURRENT_TARGET, gunman)
+
+	//не под огнём - поводов менять позицию ради безопасности нет
+	TEST_ASSERT(!ai_should_seek_firing_cover(controller, gunman), "Вне обстрела стрелок позицию ради укрытия не меняет")
+
+	controller.blackboard[BB_AI_UNDER_FIRE_UNTIL] = world.time + 10 SECONDS
+	controller.set_blackboard_key(BB_AI_LAST_ATTACKER, gunman)
+	TEST_ASSERT(ai_should_seek_firing_cover(controller, gunman), "Под огнём на открытой позиции стрелок обязан искать перестроение")
+
+	//поставили между ними стекло и запомнили, что стреляют баллистикой
+	allocate(/obj/structure/window/fulltile, window_turf)
+	var/obj/item/projectile/bullet = allocate(/obj/item/projectile, shooter_turf)
+	controller.note_incoming_projectile(gunman, bullet)
+	TEST_ASSERT(!ai_should_seek_firing_cover(controller, gunman), "Прикрытая от этой угрозы позиция перестроения не требует")
+
+	qdel(controller)
+
+///Мили-моб не бежит в лоб на стрелка: пока есть прикрытый шаг вперёд, он идёт
+///перебежками. Плюс само опознание стрелка идёт памятью о попадании, а не
+///проверкой рук - иначе КА, мех, турель и убранный на секунду ствол невидимы.
+/datum/unit_test/ai_melee_approaches_shooter_under_cover/Run()
+	var/turf/pawn_turf = run_loc_floor_bottom_left
+	var/turf/bound_turf = get_step(pawn_turf, EAST)
+	var/turf/blocker_turf = get_step(bound_turf, EAST)
+	var/turf/shooter_turf = get_step(blocker_turf, EAST)
+	var/mob/living/simple_animal/hostile/brawler = allocate(/mob/living/simple_animal/hostile, pawn_turf)
+	var/mob/living/carbon/human/gunman = allocate(/mob/living/carbon/human, shooter_turf)
+	var/datum/ai_controller/unit_test_hunter/controller = new(brawler)
+	controller.set_blackboard_key(BB_AI_CURRENT_TARGET, gunman)
+
+	var/datum/ai_planning_subtree/tactical_approach/approach = GLOB.ai_subtrees[/datum/ai_planning_subtree/tactical_approach]
+	TEST_ASSERT_NOTNULL(approach, "Санити: синглтон сабтри подхода не найден")
+
+	//без ствола в руках и без наблюдений цель за стрелка не считается
+	TEST_ASSERT(!ai_target_is_ranged(gunman), "Санити: человек без ствола в руках дальним не считается")
+	TEST_ASSERT(!controller.knows_target_shoots(gunman), "Санити: без наблюдений моб не знает, что цель стреляет")
+
+	//в моба прилетело от этой цели - теперь он знает, чем и от кого
+	var/obj/item/projectile/bullet = allocate(/obj/item/projectile, shooter_turf)
+	controller.note_incoming_projectile(gunman, bullet)
+	TEST_ASSERT(controller.knows_target_shoots(gunman), "Попадание снаряда обязано опознать цель как стрелка без всякого ствола в руках")
+
+	//открытое поле: прикрытого шага вперёд нет, подход планируется обычной логикой
+	TEST_ASSERT_NULL(approach.pick_covered_bound(controller, brawler, gunman), "На открытом месте перебежке взяться неоткуда")
+
+	//поставили глухую преграду: соседний тайл к цели становится прикрытым
+	allocate(/obj/effect/ai_unit_test_opaque_blocker, blocker_turf)
+	TEST_ASSERT(!can_see(bound_turf, gunman, AI_HIDING_LOS_RANGE), "Санити: преграда обязана рвать линию от тайла перебежки к стрелку")
+	TEST_ASSERT_EQUAL(approach.pick_covered_bound(controller, brawler, gunman), bound_turf, "Моб обязан идти к цели прикрытым шагом, а не по прямой в створ")
+
+	qdel(controller)

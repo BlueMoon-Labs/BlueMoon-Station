@@ -366,3 +366,49 @@
 	qdel(turret)
 	TEST_ASSERT(!(turret in GLOB.hostile_machines), "A destroyed turret must leave GLOB.hostile_machines")
 	TEST_ASSERT(!(turret in GLOB.hostile_machines_by_zlevel[z_level]), "A destroyed turret must leave its hostile-machine z bucket")
+
+///Майнбот не поворачивается против владельца. Прод, раунд 9875: шахтёр ткнул
+///своего бота сумкой с рудой (урон ноль, NEWHP не изменился) - бот ответил
+///через 258 мс и до конца раунда стрелял в него из кинетика. Причина: обида
+///писалась независимо от урона, а foes[цель] в CanAttack бьёт проверку фракции.
+/datum/unit_test/minebot_does_not_turn_on_its_faction/Run()
+	var/mob/living/simple_animal/hostile/mining_drone/bot = allocate(/mob/living/simple_animal/hostile/mining_drone, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/owner = allocate(/mob/living/carbon/human, get_step(run_loc_floor_bottom_left, EAST))
+	QDEL_NULL(bot.ai_controller) //чистая бухгалтерия обид без контроллера
+
+	TEST_ASSERT(bot.faction_check_mob(owner), "Санити: майнбот и человек обязаны быть в общей фракции neutral")
+	TEST_ASSERT(!bot.CanAttack(owner), "Санити: до всякой обиды владелец не цель")
+
+	TEST_ASSERT(!bot.consider_retaliation(owner, 0), "Тычок с нулевым уроном не имеет права создать обиду")
+	TEST_ASSERT(!bot.CanAttack(owner), "После тычка с нулевым уроном владелец обязан остаться не-целью")
+
+	//даже настоящий урон не разворачивает бота против своей фракции
+	TEST_ASSERT(!bot.consider_retaliation(owner, bot.maxHealth), "Бот не имеет права заводить обиду на свою фракцию ни при каком уроне")
+	TEST_ASSERT(!bot.CanAttack(owner), "Владелец обязан остаться не-целью и после настоящего урона")
+
+///Обычная фауна сокомандника терпит, но не бесконечно: порог по накопленному
+///урону за окно, а не по числу ударов - три щекотки не равны трём ударам кувалдой.
+/datum/unit_test/hostile_tolerates_light_friendly_fire/Run()
+	var/mob/living/simple_animal/hostile/victim = allocate(/mob/living/simple_animal/hostile, run_loc_floor_bottom_left)
+	var/mob/living/simple_animal/hostile/ally = allocate(/mob/living/simple_animal/hostile, get_step(run_loc_floor_bottom_left, EAST))
+	QDEL_NULL(victim.ai_controller)
+
+	var/threshold = victim.maxHealth * AI_FRIENDLY_FIRE_TOLERANCE
+	TEST_ASSERT(threshold > 2, "Санити: порог обязан быть больше одного тестового удара")
+
+	TEST_ASSERT(!victim.consider_retaliation(ally, 0), "Нулевой урон от своего не копится")
+	TEST_ASSERT(!victim.consider_retaliation(ally, 1), "Одиночная царапина от своего не переводит в враги")
+	TEST_ASSERT(!victim.CanAttack(ally), "Сокомандник ниже порога обязан остаться не-целью")
+
+	TEST_ASSERT(victim.consider_retaliation(ally, threshold), "Накопленный урон выше порога обязан создать обиду")
+	TEST_ASSERT(victim.CanAttack(ally), "После превышения порога сокомандник становится валидной целью")
+
+///Чужак остаётся врагом с первого касания: толерантность - только к своим.
+/datum/unit_test/hostile_retaliates_against_outsider_at_once/Run()
+	var/mob/living/simple_animal/hostile/victim = allocate(/mob/living/simple_animal/hostile, run_loc_floor_bottom_left)
+	var/mob/living/simple_animal/hostile/outsider = allocate(/mob/living/simple_animal/hostile, get_step(run_loc_floor_bottom_left, EAST))
+	QDEL_NULL(victim.ai_controller)
+	outsider.faction = list("ai_unit_test_outsiders")
+
+	TEST_ASSERT(victim.consider_retaliation(outsider, 0), "Обида на чужую фракцию не гейтится уроном")
+	TEST_ASSERT(outsider in victim.enemies, "Чужак обязан попасть в enemies")

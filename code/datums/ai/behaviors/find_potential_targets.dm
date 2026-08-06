@@ -121,6 +121,12 @@
 	AI_METRIC_INC(targets_acquired)
 	controller.blackboard[BB_AI_TARGET_ACQUIRED_AT] = world.time
 	controller.blackboard[BB_AI_FRUSTRATION] = 0
+	//Точка отсчёта усталости погони: откуда моб пошёл за этой целью и когда в
+	//последний раз был обмен уроном. Без них погоня не имела условия окончания
+	//вовсе - прод 9887: watcher вёл игрока 118 секунд на 26 тайлов и добивал
+	//лежачего, потому что LOS на открытой лаве не рвётся никогда.
+	controller.blackboard[BB_AI_PURSUIT_ORIGIN] = get_turf(living_mob)
+	controller.blackboard[BB_AI_LAST_EXCHANGE_AT] = world.time
 	//захват собственным восприятием закрывает розыск по контакту
 	controller.clear_blackboard_key(BB_AI_CONTACT_TARGET)
 	controller.blackboard[BB_AI_CONTACT_SOURCE] = null

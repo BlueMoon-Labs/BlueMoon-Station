@@ -1036,3 +1036,106 @@
 	var/mob/living/simple_animal/hostile/gorilla/familiar/pet = allocate(/mob/living/simple_animal/hostile/gorilla/familiar)
 	TEST_ASSERT_NULL(pet.ai_controller, "An AI_OFF familiar gorilla must not receive a controller")
 	TEST_ASSERT_EQUAL(pet.AIStatus, AI_OFF, "A familiar gorilla must remain AI_OFF")
+
+///Характер особи: пресеты состоятельны, и два разных характера действительно
+///дают разное решение при одинаковом состоянии. Вся вариативность поведения до
+///этого была на уровне ТИПА - каждый экземпляр вёл себя одинаково.
+/datum/unit_test/ai_temperament_presets_shift_decisions/Run()
+	for(var/temperament_type in GLOB.ai_temperament_weights)
+		var/datum/ai_temperament/preset = get_ai_temperament(temperament_type)
+		TEST_ASSERT_NOTNULL(preset, "Каждый пресет характера обязан инстанцироваться: [temperament_type]")
+		TEST_ASSERT(preset.retreat_threshold_mult > 0, "[preset.name]: множитель порога отступления обязан быть положительным")
+		TEST_ASSERT(preset.alert_pause_mult > 0, "[preset.name]: множитель паузы обнаружения обязан быть положительным")
+		TEST_ASSERT(preset.pursuit_mult > 0, "[preset.name]: множитель погони обязан быть положительным")
+		TEST_ASSERT(preset.dodge_mult > 0, "[preset.name]: множитель уворота обязан быть положительным")
+		TEST_ASSERT_EQUAL(get_ai_temperament(temperament_type), preset, "Характеры обязаны быть синглтонами")
+
+	//сам ролл обязан давать тип из пула (в тестах get_temperament намеренно
+	//возвращает нейтральный характер, поэтому ролл проверяется отдельно)
+	for(var/attempt in 1 to 20)
+		TEST_ASSERT(pickweight(GLOB.ai_temperament_weights) in GLOB.ai_temperament_weights, "Ролл характера обязан давать тип из пула")
+
+	var/turf/pawn_turf = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/hunter = allocate(/mob/living/simple_animal/hostile, pawn_turf)
+	var/datum/ai_controller/unit_test_hunter/controller = new(hunter)
+	var/datum/ai_planning_subtree/hostile_fsm/fsm = GLOB.ai_subtrees[/datum/ai_planning_subtree/hostile_fsm]
+
+	//точка взятия цели на дистанции между поводками робкого и упрямого
+	var/leash_gap = round(AI_PURSUIT_LEASH * 0.75)
+	var/far_x = (pawn_turf.x > leash_gap) ? (pawn_turf.x - leash_gap) : (pawn_turf.x + leash_gap)
+	var/turf/origin = locate(far_x, pawn_turf.y, pawn_turf.z)
+	TEST_ASSERT_NOTNULL(origin, "Санити: точка отсчёта погони обязана существовать")
+	controller.blackboard[BB_AI_PURSUIT_ORIGIN] = origin
+	controller.blackboard[BB_AI_LAST_EXCHANGE_AT] = world.time
+
+	controller.temperament = get_ai_temperament(/datum/ai_temperament/skittish)
+	TEST_ASSERT(fsm.should_abandon_pursuit(controller), "Робкая особь на этой дистанции обязана бросить погоню")
+
+	controller.temperament = get_ai_temperament(/datum/ai_temperament/stubborn)
+	TEST_ASSERT(!fsm.should_abandon_pursuit(controller), "Упрямая особь на той же дистанции обязана гнаться дальше")
+
+	qdel(controller)
+
+///Фоновая рутина выбирается по тому, что это за моб, а не одна на всех.
+/datum/unit_test/ai_idle_routine_matches_mob_kind/Run()
+	var/mob/living/simple_animal/hostile/subject = allocate(/mob/living/simple_animal/hostile, run_loc_floor_bottom_left)
+
+	subject.mob_biotypes = MOB_ORGANIC|MOB_BUG
+	TEST_ASSERT_EQUAL(ai_idle_routine_for(subject), /datum/idle_behavior/idle_random_walk/hostile_ambience/flocking, "Рой обязан держаться стаи")
+
+	subject.mob_biotypes = MOB_ORGANIC|MOB_BEAST
+	subject.mob_size = MOB_SIZE_SMALL
+	TEST_ASSERT_EQUAL(ai_idle_routine_for(subject), /datum/idle_behavior/idle_random_walk/hostile_ambience/skittish, "Мелочь обязана суетиться рывками")
+
+	subject.mob_size = MOB_SIZE_LARGE
+	subject.melee_damage_upper = AI_GRAZER_MELEE_DAMAGE
+	TEST_ASSERT_EQUAL(ai_idle_routine_for(subject), /datum/idle_behavior/idle_random_walk/hostile_ambience/grazing, "Безобидное крупное животное обязано пастись")
+
+	subject.melee_damage_upper = 20
+	TEST_ASSERT_EQUAL(ai_idle_routine_for(subject), /datum/idle_behavior/idle_random_walk/hostile_ambience/denning, "Хищник обязан держаться логова")
+
+///Боевая адаптация: серия ударов, не снявшая с цели ничего, помечает её
+///непробиваемой, и погоня по такой цели прекращается. Броня, которую моб
+///физически не пробивает, - причина, по которой фауна часами грызла скафандр.
+/datum/unit_test/ai_marks_impervious_target_after_futile_hits/Run()
+	var/turf/pawn_turf = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/biter = allocate(/mob/living/simple_animal/hostile, pawn_turf)
+	var/mob/living/carbon/human/armored = allocate(/mob/living/carbon/human, get_step(pawn_turf, EAST))
+	var/datum/ai_controller/unit_test_hunter/controller = new(biter)
+
+	//удары идут, здоровье цели не меняется
+	for(var/attempt in 1 to AI_FUTILE_HITS_THRESHOLD + 1)
+		controller.note_melee_attempt(armored)
+	TEST_ASSERT(controller.blackboard[BB_AI_TARGET_IMPERVIOUS_UNTIL] > world.time, "Серия бесполезных ударов обязана пометить цель непробиваемой")
+
+	var/datum/ai_planning_subtree/hostile_fsm/fsm = GLOB.ai_subtrees[/datum/ai_planning_subtree/hostile_fsm]
+	controller.blackboard[BB_AI_PURSUIT_ORIGIN] = pawn_turf
+	controller.blackboard[BB_AI_LAST_EXCHANGE_AT] = world.time
+	TEST_ASSERT(fsm.should_abandon_pursuit(controller), "Непробиваемая цель обязана прекращать погоню, даже если моб рядом с домом")
+
+	//настоящее попадание обнуляет счёт: цель снова стоит усилий
+	controller.blackboard[BB_AI_TARGET_IMPERVIOUS_UNTIL] = 0
+	controller.note_melee_attempt(armored)
+	armored.adjustBruteLoss(10)
+	controller.note_melee_attempt(armored)
+	TEST_ASSERT_EQUAL(controller.blackboard[BB_AI_FUTILE_HITS], 0, "Успешный удар обязан обнулять счёт бесполезных")
+
+	qdel(controller)
+
+///Быстрая потеря здоровья за короткое окно поднимает порог отступления на
+///стычку: моб перестаёт одинаково лезть под кулаки и под дробовик.
+/datum/unit_test/ai_danger_signal_raises_retreat_threshold/Run()
+	var/mob/living/simple_animal/hostile/victim = allocate(/mob/living/simple_animal/hostile, run_loc_floor_bottom_left)
+	var/datum/ai_controller/unit_test_hunter/controller = new(victim)
+	var/datum/ai_planning_subtree/hostile_fsm/fsm = GLOB.ai_subtrees[/datum/ai_planning_subtree/hostile_fsm]
+
+	//первый проход только снимает эталон
+	fsm.update_combat_signals(controller)
+	TEST_ASSERT_EQUAL(controller.blackboard[BB_AI_SELF_HEALTH], victim.health, "Первый проход обязан снять эталон здоровья")
+	TEST_ASSERT(!(controller.blackboard[BB_AI_DANGER_UNTIL] > world.time), "Без потери здоровья вывода об опасности быть не может")
+
+	victim.adjustBruteLoss(victim.maxHealth * (AI_DANGER_HEALTH_FRAC + 0.1))
+	fsm.update_combat_signals(controller)
+	TEST_ASSERT(controller.blackboard[BB_AI_DANGER_UNTIL] > world.time, "Быстрая просадка здоровья обязана включать вывод об опасности")
+
+	qdel(controller)

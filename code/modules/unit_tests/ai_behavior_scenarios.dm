@@ -651,3 +651,39 @@
 #undef AI_SCENE_FLOOR
 
 #endif
+
+///Усталость погони. До неё у преследования не было условия окончания вовсе:
+///пока держится LOS, цель не теряется, а на открытой лаве LOS не рвётся никогда.
+///Прод 9887: watcher вёл ползущего в крите игрока 118 секунд на 26 тайлов.
+/datum/unit_test/ai_pursuit_fatigue_ends_endless_chase/Run()
+	var/turf/pawn_turf = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/hunter = allocate(/mob/living/simple_animal/hostile, pawn_turf)
+	var/datum/ai_controller/unit_test_hunter/controller = new(hunter)
+	var/datum/ai_planning_subtree/hostile_fsm/fsm = GLOB.ai_subtrees[/datum/ai_planning_subtree/hostile_fsm]
+	TEST_ASSERT_NOTNULL(fsm, "Санити: синглтон FSM-сабтри не найден")
+
+	//свежая погоня от текущей точки бросаться не имеет права
+	controller.blackboard[BB_AI_PURSUIT_ORIGIN] = pawn_turf
+	controller.blackboard[BB_AI_LAST_EXCHANGE_AT] = world.time
+	TEST_ASSERT(!fsm.should_abandon_pursuit(controller), "Свежая погоня не имеет права прерываться")
+
+	//ушли за поводок от точки взятия цели - случай watcher: попадания идут,
+	//то есть по обмену уроном погоня "продуктивна", но моб уводится через полкарты
+	var/leash_gap = AI_PURSUIT_LEASH + 4
+	var/far_x = (pawn_turf.x > leash_gap) ? (pawn_turf.x - leash_gap) : (pawn_turf.x + leash_gap)
+	var/turf/far_origin = locate(far_x, pawn_turf.y, pawn_turf.z)
+	TEST_ASSERT_NOTNULL(far_origin, "Санити: точка за поводком обязана существовать на карте")
+	TEST_ASSERT(get_dist(pawn_turf, far_origin) > AI_PURSUIT_LEASH, "Санити: точка обязана быть именно за поводком")
+	controller.blackboard[BB_AI_PURSUIT_ORIGIN] = far_origin
+	TEST_ASSERT(fsm.should_abandon_pursuit(controller), "Уход за поводок от точки взятия цели обязан прерывать погоню")
+
+	//обратный случай: моб рядом с домом, но цель не может достать вообще
+	controller.blackboard[BB_AI_PURSUIT_ORIGIN] = pawn_turf
+	controller.blackboard[BB_AI_LAST_EXCHANGE_AT] = world.time - (AI_PURSUIT_PATIENCE * 2)
+	TEST_ASSERT(fsm.should_abandon_pursuit(controller), "Погоня без единого обмена уроном обязана выдохнуться")
+
+	//босс и сценарные преследователи отписаны: их погоня и есть содержание боя
+	controller.pursuit_leashed = FALSE
+	TEST_ASSERT(!fsm.should_abandon_pursuit(controller), "Отписанный от поводка контроллер погоню не бросает")
+
+	qdel(controller)

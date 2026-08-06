@@ -67,6 +67,14 @@ multiple modular subtrees with behaviors
 	var/repath_delay = 1.5 SECONDS
 	///Позволено ли пауну ходить по опасным турфам (лава и т.п.; лавалендские профили ставят TRUE)
 	var/cross_dangerous_turfs = FALSE
+	///Действует ли на этот контроллер усталость погони. FALSE у сценарных
+	///преследователей и боссов, чья погоня и есть содержание боя.
+	var/pursuit_leashed = TRUE
+	///Наблюдения о типе угрозы: REF(стрелок) -> list(pass_flags снаряда, world.time).
+	///Ключ строковый намеренно - модель не держит ссылок на мобов (см. threat_model.dm)
+	var/list/threat_pass_flag_memory
+	///Характер особи (см. temperament.dm). Роллится лениво через get_temperament().
+	var/datum/ai_temperament/temperament
 
 	///AI paused time
 	var/paused_until = 0
@@ -415,7 +423,17 @@ multiple modular subtrees with behaviors
 /datum/ai_controller/proc/UnpossessPawn(destroy)
 	SHOULD_CALL_PARENT(TRUE)
 	if(isnull(pawn))
-		return //instantiated without an applicable pawn, fine
+		//Либо контроллер завели без пауна, либо пауна унёс харддел - в DM ссылка
+		//на удалённый объект молча становится null. Во втором случае выход без
+		//снятия с очередей оставлял осиротевший контроллер в unplanned-пуле
+		//навсегда: он фейлился каждый планировочный тик (idle_random_walk).
+		release_ai_target_reservation()
+		release_pack_focus()
+		set_ai_status(AI_STATUS_OFF)
+		remove_from_unplanned_controllers()
+		if(destroy)
+			qdel(src)
+		return
 	release_ai_target_reservation()
 	release_pack_focus()
 
@@ -583,6 +601,38 @@ multiple modular subtrees with behaviors
 	paused_until = world.time + time
 	update_able_to_run()
 	addtimer(CALLBACK(src, PROC_REF(update_able_to_run)), time)
+
+///Шаг, который поведение делает Move()-ом МИМО мув-лупа: сайдстеп-уворот и
+///боковое перестроение стрелка. Такой шаг обязан стоить ровно столько же,
+///сколько обычный, иначе моб получает бесплатные тайлы сверх movement_delay -
+///именно отсюда бралось "перепрыгивают через вас, появляются слева-справа".
+///Два следствия: спрайту выставляется glide (без него шаг щёлкает и читается
+///телепортом), а активный мув-луп сдвигается на ту же задержку, чтобы не
+///добавить второй шаг в том же окне. Возвращает результат Move().
+/datum/ai_controller/proc/ai_step_outside_loop(turf/destination)
+	var/mob/living/living_pawn = pawn
+	if(!isliving(living_pawn) || !destination)
+		return FALSE
+	var/step_delay = movement_quantize_delay(max(movement_delay, world.tick_lag), world.tick_lag)
+	living_pawn.set_glide_size(MOVEMENT_ADJUSTED_GLIDE_SIZE(step_delay, 1))
+	if(!living_pawn.Move(destination, get_dir(living_pawn, destination)))
+		return FALSE
+	var/datum/move_loop/loop = SSmove_manager.processing_on(living_pawn, SSai_movement)
+	loop?.pause_for(step_delay)
+	return TRUE
+
+///Пристёгнутый паун не двигается: его Move() толкал бы незаанкоренный стул.
+///Вместо катания моб выбирается сам, но не чаще AI_UNBUCKLE_COOLDOWN -
+///user_unbuckle_mob спит в do_after, а зовём мы его из сигнал-хендлера мувера.
+/datum/ai_controller/proc/request_unbuckle()
+	var/mob/living/living_pawn = pawn
+	if(!isliving(living_pawn) || !living_pawn.buckled)
+		return FALSE
+	if(world.time < (blackboard[BB_AI_UNBUCKLE_AT] || 0))
+		return FALSE
+	blackboard[BB_AI_UNBUCKLE_AT] = world.time + AI_UNBUCKLE_COOLDOWN
+	INVOKE_ASYNC(living_pawn, TYPE_PROC_REF(/mob/living, resist_buckle))
+	return TRUE
 
 /datum/ai_controller/proc/add_to_unplanned_controllers()
 	if(ai_status != AI_STATUS_ON || isnull(idle_behavior))

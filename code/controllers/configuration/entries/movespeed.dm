@@ -53,6 +53,9 @@
 	. = ..()
 	var/datum/movespeed_modifier/config_walk_run/M = get_cached_movespeed_modifier(/datum/movespeed_modifier/config_walk_run/run)
 	M.sync()
+	//Скорость погони фауны привязана к скорости бегущего игрока, а не к отдельной
+	//константе - иначе они расходятся молча (см. AI_PURSUIT_SPEED_RATIO).
+	update_ai_pursuit_speed_floor()
 
 /datum/config_entry/number/movedelay/walk_delay
 

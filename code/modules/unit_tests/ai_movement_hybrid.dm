@@ -890,3 +890,41 @@
 	TEST_ASSERT(length(path), "The bounded search must still route around the wall to a reachable target")
 	TEST_ASSERT(!(blocked_turf in path), "The detour must not pass through the indestructible wall")
 	TEST_ASSERT(length(path) > get_dist(start, target_turf), "A path around the wall must be longer than the straight-line distance")
+
+///Пол скорости погони обязан считаться от ФАКТИЧЕСКОГО RUN_DELAY, а не от
+///константы. Июльская калибровка отсчитывалась от репозиторного RUN_DELAY 2.5,
+///а прод всё это время крутил 1.5 - и пол, задуманный как "0.6 от игрока",
+///по факту означал паритет.
+/datum/unit_test/ai_pursuit_floor_tracks_run_delay/Run()
+	var/player_run_delay = CONFIG_GET(number/movedelay/run_delay)
+	TEST_ASSERT(player_run_delay > 0, "Санити: конфиг скорости бега обязан быть загружен")
+	TEST_ASSERT_EQUAL(update_ai_pursuit_speed_floor(), max(world.tick_lag, player_run_delay * AI_PURSUIT_SPEED_RATIO), "Пол погони обязан считаться от фактического RUN_DELAY")
+
+	var/mob/living/simple_animal/hostile/pawn = allocate(/mob/living/simple_animal/hostile, run_loc_floor_bottom_left)
+	TEST_ASSERT(pawn.ai_pursuit_speed_capped, "Санити: обычная фауна обязана быть под полом скорости")
+
+	var/mob_step = movement_quantize_delay(pawn.ai_movement_delay(), world.tick_lag)
+	var/player_step = movement_step_delay(player_run_delay, FALSE, world.tick_lag)
+	TEST_ASSERT(mob_step > player_step, "Обычная фауна обязана быть медленнее бегущего игрока по прямой ([mob_step] против [player_step])")
+
+///Мув-луп ИИ платит за диагональ ту же цену, что и игрок. Без этого моб на 1.5 дс
+///проходил диагональ за 1.5 дс, а игрок за 2.0 - скрытые 1.33x поверх паритета.
+/datum/unit_test/ai_move_loop_charges_for_diagonal/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/pawn = allocate(/mob/living/simple_animal/hostile, start)
+	var/turf/diagonal_turf = locate(start.x + 2, start.y + 2, start.z)
+	TEST_ASSERT_NOTNULL(diagonal_turf, "Санити: диагональный турф обязан существовать внутри резервации")
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, diagonal_turf)
+
+	SSmove_manager.move_towards_legacy(pawn, prey, delay = 2, subsystem = SSai_movement)
+	var/datum/move_loop/has_target/loop = SSmove_manager.processing_on(pawn, SSai_movement)
+	TEST_ASSERT_NOTNULL(loop, "Санити: мув-луп обязан быть создан")
+	loop.set_delay(2)
+	var/cardinal_price = loop.scheduled_delay
+
+	TEST_ASSERT(loop.move(), "Санити: шаг к диагональной цели обязан пройти")
+	TEST_ASSERT_EQUAL(get_turf(pawn), get_step(start, NORTHEAST), "Санити: первый шаг к диагональной цели обязан быть диагональным")
+	TEST_ASSERT_EQUAL(loop.scheduled_delay, movement_step_delay(2, TRUE, world.tick_lag), "Диагональный шаг обязан стоить столько же, сколько диагональный шаг игрока")
+	TEST_ASSERT(loop.scheduled_delay > cardinal_price, "Диагональ обязана быть дороже кардинального шага")
+
+	qdel(loop)

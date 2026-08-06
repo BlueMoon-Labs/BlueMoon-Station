@@ -20,10 +20,18 @@
 ///Тактическая ценность огневого тайла: чистая линия огня доминирует, дальше -
 ///держим боевую дистанцию, дальше от ближайшей угрозы, под прикрытием стен и не
 ///толкаясь со своими стрелками. allies - свои AI-мобы для разноса позиций.
-/proc/ai_score_fire_tile(mob/living/simple_animal/hostile/shooter, turf/tile, atom/target, list/threats, ideal_min, ideal_max, list/allies)
+/proc/ai_score_fire_tile(mob/living/simple_animal/hostile/shooter, turf/tile, atom/target, list/threats, ideal_min, ideal_max, list/allies, atom/cover_from)
 	if(!tile)
 		return -INFINITY
 	. = 0
+	//прикрытость от того, кто по нам сейчас работает, С УЧЁТОМ ТИПА ЕГО СНАРЯДА.
+	//Считается ровно для одного стрелка, а не для всего списка угроз: cover_quality
+	//зовёт can_see, и делать это для каждой пары "кандидат x угроза" дороже, чем
+	//всё остальное планирование вместе взятое.
+	if(cover_from && shooter?.ai_controller)
+		var/datum/ai_controller/shooter_controller = shooter.ai_controller
+		if(shooter_controller.cover_quality(tile, cover_from) == AI_COVER_FULL)
+			. += AI_FIRE_TILE_THREAT_COVER_BONUS
 	//линия огня по реальной трассе снаряда из гипотетического тайла: чистая линия
 	//доминирует, стрельба через дальнее пробиваемое укрытие ценится, но меньше
 	if(istype(shooter) && target)
@@ -121,20 +129,26 @@
 		return null
 	var/turf/target_turf = get_turf(target)
 	var/list/allies = get_nearby_allies()
-	var/cache_key = "[REF(current_turf)]|[target_turf ? REF(target_turf) : "-"]|[want_lane]|[ideal_min]|[ideal_max]|[length(threats)]|[length(allies)]"
+	//От кого именно ищем прикрытие: тот, кто по нам реально работает, а если
+	//такого нет - сама цель. Один атом, а не весь список угроз: цена cover_quality
+	//линейна по кандидатам, и множить её на число угроз незачем.
+	var/atom/cover_from = blackboard[BB_AI_LAST_ATTACKER]
+	if(QDELETED(cover_from))
+		cover_from = target
+	var/cache_key = "[REF(current_turf)]|[target_turf ? REF(target_turf) : "-"]|[want_lane]|[ideal_min]|[ideal_max]|[length(threats)]|[length(allies)]|[cover_from ? REF(cover_from) : "-"]"
 	if(blackboard[BB_AI_COVER_CACHE_KEY] == cache_key && world.time - (blackboard[BB_AI_COVER_CACHE_AT] || -INFINITY) < AI_COVER_CACHE_TIME)
 		var/turf/cached = blackboard[BB_AI_COVER_CACHE]
 		if(cached && (cached == current_turf || (can_enter_turf(cached) && !cached.is_blocked_turf(source_atom = pawn))))
 			return cached
 	var/turf/best = current_turf
-	var/best_score = ai_score_fire_tile(shooter, current_turf, target, threats, ideal_min, ideal_max, allies)
+	var/best_score = ai_score_fire_tile(shooter, current_turf, target, threats, ideal_min, ideal_max, allies, cover_from)
 	for(var/direction in GLOB.alldirs)
 		var/turf/candidate = get_step(current_turf, direction)
 		if(!candidate || !can_enter_turf(candidate) || candidate.is_blocked_turf(source_atom = pawn))
 			continue
 		if(want_lane && istype(shooter) && target && shooter.CheckRangedFireLaneFrom(target, candidate))
 			continue
-		var/candidate_score = ai_score_fire_tile(shooter, candidate, target, threats, ideal_min, ideal_max, allies)
+		var/candidate_score = ai_score_fire_tile(shooter, candidate, target, threats, ideal_min, ideal_max, allies, cover_from)
 		if(candidate_score > best_score + AI_HOLD_TOLERANCE)
 			best = candidate
 			best_score = candidate_score
@@ -224,7 +238,10 @@
 		if(atmos_policy && !atmos_policy.step_preserves_atmosphere(simple_pawn, current_turf, candidate))
 			continue
 		var/candidate_score = get_dist(candidate, shooter_turf)
-		if(!can_see(candidate, shooter, AI_HIDING_LOS_RANGE))
+		//Прикрытие считается от ТИПА снаряда, а не от голой видимости: окно
+		//держит пулю и пропускает луч, поэтому прятаться за стеклом от лазерщика
+		//бессмысленно, а от баллистики - осмысленно (см. threat_model.dm).
+		if(cover_quality(candidate, shooter) == AI_COVER_FULL)
 			candidate_score += AI_HIDING_LOS_BONUS
 		if(isnull(best) || candidate_score > best_score)
 			best = candidate

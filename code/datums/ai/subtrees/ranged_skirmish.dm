@@ -25,10 +25,27 @@
 	var/distance = get_dist(controller.pawn, target)
 	if(distance > max_range || distance < min_range)
 		return
-	if(istype(hostile_pawn) && hostile_pawn.CheckRangedFireLane(target))
+	//Перестроение звалось ТОЛЬКО при перекрытой линии огня, то есть исключительно
+	//чтобы попасть, и никогда - чтобы не получить. Стрелок с чистой линией стоял
+	//столбом на открытом месте, пока его расстреливали. Теперь поводов два.
+	if(istype(hostile_pawn) && (hostile_pawn.CheckRangedFireLane(target) || ai_should_seek_firing_cover(controller, target)))
 		controller.queue_behavior(/datum/ai_behavior/reposition_for_shot, target_key)
 		return SUBTREE_RETURN_FINISH_PLANNING
 	controller.queue_behavior(attack_behavior, target_key, BB_AI_TARGETING_STRATEGY, BB_AI_TARGET_HIDING_LOCATION, max_range, min_range)
+
+///Нужно ли стрелку менять позицию ради безопасности, а не ради линии огня:
+///по нам работают, и текущий тайл от этого стрелка ничем не прикрыт. Сам выбор
+///тайла держит линию огня приоритетом, поэтому "уйти в укрытие и ослепнуть" тут
+///невозможно - в худшем случае стрелок останется на месте.
+/proc/ai_should_seek_firing_cover(datum/ai_controller/controller, atom/target)
+	if(!(controller.blackboard[BB_AI_UNDER_FIRE_UNTIL] > world.time))
+		return FALSE
+	var/atom/shooter = controller.blackboard[BB_AI_LAST_ATTACKER]
+	if(QDELETED(shooter))
+		shooter = target
+	if(QDELETED(shooter))
+		return FALSE
+	return !controller.current_position_covered(shooter)
 
 /// How often will we try to perform our ranged attack?
 /datum/ai_behavior/ranged_skirmish
@@ -58,6 +75,14 @@
 	if(distance > max_range || distance < min_range)
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
 	var/mob/living/simple_animal/hostile/hostile_pawn = controller.pawn
+
+	//Дальник не расстреливает беспомощного. Прод 9887: watcher всадил 17 выстрелов
+	//в игрока, который уже был ниже нуля, последние шесть - в неподвижную цель на
+	//одном тайле с шагом 3.1 с. Мили-добивание вплотную остаётся (им занимается
+	//hostile_melee), а падальщики со stat_exclusive живут ровно этим и не гейтятся.
+	var/mob/living/downed_check = target
+	if(isliving(downed_check) && downed_check.stat != CONSCIOUS && (!istype(hostile_pawn) || !hostile_pawn.stat_exclusive))
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
 	//Do not pay for LOS while the weapon is cooling down. Once it can actually
 	//fire, however, a cached target must still be visible at that exact moment.
 	if(istype(hostile_pawn) && hostile_pawn.ranged_cooldown > world.time)
@@ -99,6 +124,13 @@
 		if(hostile_pawn.CheckRangedFireLane(target))
 			return FALSE
 		hostile_pawn.target = target
+		controller.note_combat_exchange()
+		if(hostile_pawn.ranged_telegraph_duration > 0)
+			//Кулдаун взводим сразу: иначе планировщик поставит второй залп, пока
+			//первый ещё в телеграфе, и окно перестанет что-либо значить.
+			hostile_pawn.ranged_cooldown = world.time + hostile_pawn.ranged_cooldown_time + hostile_pawn.ranged_telegraph_duration
+			INVOKE_ASYNC(hostile_pawn, TYPE_PROC_REF(/mob/living/simple_animal/hostile, telegraphed_open_fire), target)
+			return TRUE
 		INVOKE_ASYNC(hostile_pawn, TYPE_PROC_REF(/mob/living/simple_animal/hostile, OpenFire), target)
 		return TRUE
 	var/mob/living/living_pawn = controller.pawn
@@ -127,7 +159,9 @@
 	if(chosen == get_turf(shooter))
 		controller.set_blackboard_key(BB_AI_SAFE_FIRE_POSITION, chosen)
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
-	if(!shooter.Move(chosen, get_dir(shooter, chosen)))
+	//Через контроллер: боковое перестроение - такой же шаг, как обычный, и
+	//оплачивается тем же movement_delay с тем же glide.
+	if(!controller.ai_step_outside_loop(chosen))
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
 	controller.set_blackboard_key(BB_AI_SAFE_FIRE_POSITION, chosen)
 	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED

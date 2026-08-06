@@ -18,6 +18,7 @@
 
 /datum/ai_planning_subtree/hostile_fsm/SelectBehaviors(datum/ai_controller/controller, delta_time)
 	. = ..()
+	update_combat_signals(controller)
 	var/state = controller.blackboard[BB_AI_STATE] || AI_STATE_IDLE
 	var/atom/target = controller.blackboard[BB_AI_CURRENT_TARGET]
 
@@ -32,6 +33,15 @@
 				controller.queue_behavior(/datum/ai_behavior/travel_towards, BB_AI_HOME_TURF)
 			return SUBTREE_RETURN_FINISH_PLANNING
 
+		//усталость погони: моб перестаёт быть вечным. До этого условия окончания
+		//не было вовсе - пока держится LOS, цель не теряется, а на открытой лаве
+		//LOS не рвётся никогда (прод 9887: watcher вёл ползущего в крите игрока
+		//118 секунд на 26 тайлов и всё это время стрелял).
+		if(should_abandon_pursuit(controller))
+			controller.clear_engagement_memory()
+			return_to_peace(controller)
+			return plan_patrol_return(controller)
+
 		//отступление: мораль/здоровье с гистерезисом и разворотом при зажиме
 		if(should_retreat(controller))
 			if(plan_retreat(controller))
@@ -45,7 +55,7 @@
 			set_state(controller, AI_STATE_ALERT)
 			controller.queue_behavior(/datum/ai_behavior/alert_reaction, BB_AI_CURRENT_TARGET)
 			return SUBTREE_RETURN_FINISH_PLANNING
-		if(state == AI_STATE_ALERT && world.time < (controller.blackboard[BB_AI_STATE_ENTERED_AT] || 0) + AI_ALERT_REACTION_TIME)
+		if(state == AI_STATE_ALERT && world.time < (controller.blackboard[BB_AI_STATE_ENTERED_AT] || 0) + (AI_ALERT_REACTION_TIME * controller.get_temperament().alert_pause_mult))
 			controller.queue_behavior(/datum/ai_behavior/alert_reaction, BB_AI_CURRENT_TARGET)
 			return SUBTREE_RETURN_FINISH_PLANNING
 
@@ -88,6 +98,69 @@
 	else
 		set_state(controller, AI_STATE_IDLE)
 
+// ===== БОЕВАЯ АДАПТАЦИЯ =====
+
+///Вывод "здесь опасно", снимаемый раз в планировочный цикл: если за окно
+///наблюдения здоровье просело больше чем на AI_DANGER_HEALTH_FRAC, порог
+///отступления на время поднимается. Раньше моб реагировал только на АБСОЛЮТНЫЙ
+///уровень здоровья и одинаково лез что под кулаки, что под дробовик.
+///
+///Считается здесь, а не хуком на урон, намеренно: планировочный цикл всё равно
+///идёт каждые полсекунды, этого хватает с запасом, а лишних хуков на горячем
+///пути получения урона не появляется.
+/datum/ai_planning_subtree/hostile_fsm/proc/update_combat_signals(datum/ai_controller/controller)
+	var/mob/living/living_pawn = controller.pawn
+	if(!isliving(living_pawn) || living_pawn.maxHealth <= 0)
+		return
+	var/snapshot_at = controller.blackboard[BB_AI_SELF_HEALTH_AT]
+	var/snapshot = controller.blackboard[BB_AI_SELF_HEALTH]
+	if(isnull(snapshot) || isnull(snapshot_at) || world.time - snapshot_at > AI_DANGER_WINDOW)
+		controller.blackboard[BB_AI_SELF_HEALTH] = living_pawn.health
+		controller.blackboard[BB_AI_SELF_HEALTH_AT] = world.time
+		return
+	if((snapshot - living_pawn.health) < living_pawn.maxHealth * AI_DANGER_HEALTH_FRAC)
+		return
+	controller.blackboard[BB_AI_DANGER_UNTIL] = world.time + AI_DANGER_MEMORY
+	controller.blackboard[BB_AI_SELF_HEALTH] = living_pawn.health
+	controller.blackboard[BB_AI_SELF_HEALTH_AT] = world.time
+
+// ===== УСТАЛОСТЬ ПОГОНИ =====
+
+///Пора ли бросить погоню. Два независимых условия, и оба нужны:
+///
+///1. Поводок от точки взятия цели. Ловит именно случай watcher: моб исправно
+///   попадает, то есть по обмену уроном погоня "продуктивна", но уводит его
+///   через полкарты от собственной территории.
+///2. Терпение без единого обмена уроном. Ловит обратный случай: моб бесконечно
+///   идёт за целью, которую не может достать.
+///
+///Сценарные преследователи и боссы отписаны через pursuit_leashed: у них
+///погоня и есть содержание боя.
+/datum/ai_planning_subtree/hostile_fsm/proc/should_abandon_pursuit(datum/ai_controller/controller)
+	if(!controller.pursuit_leashed)
+		return FALSE
+
+	//цель, которую доказанно нечем пробить, держать незачем: это третий выход
+	//из погони, и он про бесполезность, а не про расстояние или время
+	if(world.time < (controller.blackboard[BB_AI_TARGET_IMPERVIOUS_UNTIL] || 0))
+		return TRUE
+
+	//упрямая особь гонится дольше и дальше, робкая - меньше (см. temperament.dm)
+	var/datum/ai_temperament/temperament = controller.get_temperament()
+	var/turf/origin = controller.blackboard[BB_AI_PURSUIT_ORIGIN]
+	var/turf/pawn_turf = get_turf(controller.pawn)
+	if(origin && pawn_turf)
+		if(pawn_turf.z != origin.z)
+			return TRUE
+		var/leash = (controller.blackboard[BB_AI_PURSUIT_LEASH] || AI_PURSUIT_LEASH) * temperament.pursuit_mult
+		if(get_dist(pawn_turf, origin) > leash)
+			return TRUE
+
+	var/last_exchange = controller.blackboard[BB_AI_LAST_EXCHANGE_AT]
+	if(isnull(last_exchange))
+		return FALSE
+	return (world.time - last_exchange) > (AI_PURSUIT_PATIENCE * temperament.pursuit_mult)
+
 // ===== ALERT =====
 
 ///Пауза обнаружения уместна только на холодном контакте: нас ещё не бьют,
@@ -115,6 +188,12 @@
 	var/mob/living/living_pawn = controller.pawn
 	if(!isliving(living_pawn) || living_pawn.maxHealth <= 0)
 		return FALSE
+	//характер особи и свежий опыт этой стычки: робкий отступает раньше дерзкого,
+	//а тот, кого только что быстро разобрали, - раньше себя же вчерашнего
+	retreat_frac *= controller.get_temperament().retreat_threshold_mult
+	if(world.time < (controller.blackboard[BB_AI_DANGER_UNTIL] || 0))
+		retreat_frac *= AI_DANGER_RETREAT_MULT
+	retreat_frac = min(retreat_frac, 1)
 	var/health_frac = living_pawn.health / living_pawn.maxHealth
 	//вошёл в RETREAT ниже порога - выходит только восстановившись с запасом
 	if(controller.blackboard[BB_AI_STATE] == AI_STATE_RETREAT)

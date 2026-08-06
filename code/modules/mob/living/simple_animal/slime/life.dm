@@ -314,6 +314,11 @@
 				var/list/scan_candidates = SSspatial_grid.initialized ? SSspatial_grid.orthogonal_range_search(src, SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS, SLIME_AI_PURSUIT_RANGE) : list()
 				for(var/mob/living/L as anything in scan_candidates)
 
+					// хардделнутые мобы оставляют в ячейках грида null, а as anything
+					// его не фильтрует: L.stat падал бы на каждой такой записи
+					if(QDELETED(L))
+						continue
+
 					if(isslime(L) || L.stat == DEAD) // grid excludes DEAD; src is a slime so this also skips self
 						continue
 

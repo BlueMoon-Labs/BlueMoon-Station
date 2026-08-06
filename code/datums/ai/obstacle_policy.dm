@@ -280,6 +280,11 @@
 /datum/obstacle_policy/proc/try_smash(mob/living/pawn, datum/ai_controller/controller, obj/blocker)
 	if(!can_smash_blocker(pawn, controller, blocker))
 		return FALSE
+	//Атаки NPC по объектам не логировались нигде: цепочка attack_animal ->
+	//attack_generic -> take_damage не зовёт log_combat, и единственный объект,
+	//попадающий в лог, - мех с собственным оверрайдом. Из-за этого жалобы вида
+	//"моб выломал дверь" были непроверяемы в принципе.
+	log_combat(pawn, blocker, "smashed as a path obstacle")
 	blocker.attack_animal(pawn)
 	return TRUE
 
@@ -288,6 +293,7 @@
 	var/mob/living/simple_animal/hostile/hostile_pawn = pawn
 	if(!can_smash_turf(hostile_pawn, blocked_turf))
 		return FALSE
+	log_combat(hostile_pawn, blocked_turf, "smashed as a path obstacle")
 	blocked_turf.attack_animal(hostile_pawn)
 	return TRUE
 

@@ -29,6 +29,11 @@
 	maxHealth = 40
 	melee_damage_lower = 1
 	melee_damage_upper = 2
+	//Коза жила на дефолтном move_to_delay не по замыслу, а потому что его никто
+	//не задавал: с событийной погоней это означало максимальную скорость фауны у
+	//фермерского животного с уроном 1-2 ("посмотри на скорость козла, он быстрее
+	//фазона"). Рысь вместо галопа - бодаться она по-прежнему прибежит.
+	move_to_delay = 6
 	environment_smash = ENVIRONMENT_SMASH_NONE
 	stop_automated_movement_when_pulled = 1
 	blood_volume = BLOOD_VOLUME_NORMAL

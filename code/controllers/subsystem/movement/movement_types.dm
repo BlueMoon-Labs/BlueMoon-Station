@@ -763,7 +763,21 @@
 	var/turf/target_turf = get_step_towards(moving, target)
 	var/atom/old_loc = moving.loc
 	moving.Move(target_turf, get_dir(moving, target_turf))
-	return old_loc != moving?.loc
+	// Шаг может убить пауна: лава, космос, разрыв, ловушка. Ссылка на него после
+	// этого становится null молча, и читать его loc уже нельзя. Луп всё равно
+	// снимется на следующем process(), а этот шаг ничего не стоит.
+	if(QDELETED(moving) || old_loc == moving.loc)
+		return FALSE
+	// Игрок платит за диагональ ×√2 (movement_step_delay в /client/Move), а этот
+	// луп бил с одинаковой задержкой в любом направлении - скрытые 1.33x скорости
+	// в пользу моба поверх номинального паритета. Считаем той же функцией, что и
+	// для игрока, и по ФАКТИЧЕСКОМУ направлению: диагональный Move() может
+	// пройти только одну кардинальную половину, и за неё диагональной цены нет.
+	// Цену следующего интервала выставляем здесь: подсистема переставляет таймер
+	// по scheduled_delay сразу после move(), и glide считается от него же.
+	var/actual_dir = get_dir(old_loc, moving.loc)
+	scheduled_delay = movement_step_delay(delay, ISDIAGONALDIR(actual_dir), world.tick_lag)
+	return TRUE
 
 
 /**

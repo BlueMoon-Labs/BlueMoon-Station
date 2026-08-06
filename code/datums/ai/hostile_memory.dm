@@ -16,6 +16,7 @@
 	if(QDELETED(attacker) || attacker == pawn)
 		return
 	set_blackboard_key(BB_AI_LAST_ATTACKER, attacker)
+	note_combat_exchange()
 	set_blackboard_key_assoc_lazylist(BB_AI_GRUDGE_LIST, attacker, world.time)
 	prune_grudges()
 	blackboard[BB_AI_ROUTE_RETRY_AT] = null
@@ -23,6 +24,41 @@
 	//а реальные причины отключения get_expected_ai_status() сохранит
 	if(ai_status != AI_STATUS_ON)
 		set_ai_status(get_expected_ai_status())
+
+///Отметить обмен уроном: моб либо получил по себе, либо сам достал цель.
+///Кормит усталость погони - без неё преследование не имело условия окончания
+///вовсе, пока держится LOS.
+/datum/ai_controller/proc/note_combat_exchange()
+	blackboard[BB_AI_LAST_EXCHANGE_AT] = world.time
+
+///Учёт бесполезных ударов. Если серия попаданий подряд не сняла с цели ничего,
+///цель помечается непробиваемой, и погоня по ней прекращается (hostile_fsm).
+///Броня, которую моб физически не пробивает, - самая частая причина, по которой
+///фауна часами грызла человека в скафандре, не нанося ему ни единицы урона.
+///
+///Снимок берётся ПЕРЕД ударом, поэтому следующий вызов сравнивает здоровье цели
+///с тем, каким оно было до ПРЕДЫДУЩЕГО удара - то есть измеряет именно его эффект.
+/datum/ai_controller/proc/note_melee_attempt(mob/living/target)
+	if(!isliving(target))
+		return
+	var/target_ref = REF(target)
+	var/previous_health = blackboard[BB_AI_TARGET_HEALTH]
+	var/previous_ref = blackboard[BB_AI_TARGET_HEALTH_REF]
+	blackboard[BB_AI_TARGET_HEALTH] = target.health
+	blackboard[BB_AI_TARGET_HEALTH_REF] = target_ref
+	//сменилась цель или это первый удар по ней - сравнивать не с чем
+	if(previous_ref != target_ref || isnull(previous_health))
+		blackboard[BB_AI_FUTILE_HITS] = 0
+		return
+	if(target.health < previous_health)
+		blackboard[BB_AI_FUTILE_HITS] = 0
+		return
+	var/futile_hits = (blackboard[BB_AI_FUTILE_HITS] || 0) + 1
+	blackboard[BB_AI_FUTILE_HITS] = futile_hits
+	if(futile_hits < AI_FUTILE_HITS_THRESHOLD)
+		return
+	blackboard[BB_AI_TARGET_IMPERVIOUS_UNTIL] = world.time + AI_IMPERVIOUS_MEMORY
+	blackboard[BB_AI_FUTILE_HITS] = 0
 
 ///TRUE, если обида на цель ещё не протухла
 /datum/ai_controller/proc/holds_grudge_against(atom/movable/the_enemy)
@@ -80,7 +116,9 @@
 	var/mob/living/living_pawn = pawn
 	var/shared_count = 0
 	for(var/mob/living/ally as anything in SSspatial_grid.orthogonal_range_search(living_pawn, SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS, share_range))
-		if(ally == living_pawn || QDELETED(ally.ai_controller))
+		//хардделнутые мобы оставляют в ячейках грида null, а as anything его не
+		//фильтрует - проверяем самого союзника раньше, чем его контроллер
+		if(QDELETED(ally) || ally == living_pawn || QDELETED(ally.ai_controller))
 			continue
 		if(get_dist(living_pawn, ally) > share_range)
 			continue

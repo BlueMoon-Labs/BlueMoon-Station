@@ -609,7 +609,10 @@ Pass a positive integer as an argument to override a bot's default speed.
 	set_path(null)
 	summon_target = null
 	pathset = 0
-	access_card.access = prev_access
+	//карты доступа у бота может не быть вовсе (catmedbot), а bot_reset зовётся
+	//в том числе из Logout() - там разыменование её роняло каждый выход
+	if(access_card)
+		access_card.access = prev_access
 	tries = 0
 	mode = BOT_IDLE
 	diag_hud_set_botstat()
