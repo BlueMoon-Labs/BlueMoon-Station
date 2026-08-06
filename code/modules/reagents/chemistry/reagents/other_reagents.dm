@@ -1835,17 +1835,28 @@
 	description = "A miraculous gas that rapidly heals wounds."
 	reagent_state = LIQUID
 	metabolization_rate = 2.5 * REAGENTS_METABOLISM
+	overdose_threshold = 30
 	gas = GAS_HEALIUM
 	color = "#ff4444"
 	taste_description = "cold relief"
 	value = REAGENT_VALUE_VERY_RARE
 
+/// Лечение фиксировано за тик и НЕ масштабируется от объёма: прежняя формула
+/// превращала запас реагента в скорость лечения (до 41 HP за тик, без побочек
+/// и без потолка). В /tg/station за лечение платят сном (SetSleeping каждый тик),
+/// здесь платой служат фиксированная ставка и передоз.
 /datum/reagent/healium/on_mob_life(mob/living/carbon/M)
-	var/heal_amount = clamp(round(3 + volume * 1.2), 3, 18)
-	M.adjustBruteLoss(-heal_amount)
-	M.adjustFireLoss(-heal_amount)
-	M.adjustToxLoss(-max(round(heal_amount * 0.3), 1))
-	. = ..()
+	M.adjustBruteLoss(-6 * REM, 0)
+	M.adjustFireLoss(-6 * REM, 0)
+	M.adjustToxLoss(-2 * REM, 0)
+	. = 1
+	..()
+
+/datum/reagent/healium/overdose_process(mob/living/M)
+	M.adjustToxLoss(2 * REM, 0)
+	M.adjustOxyLoss(2 * REM, 0)
+	. = 1
+	..()
 
 /datum/reagent/zauker
 	name = "Zauker"

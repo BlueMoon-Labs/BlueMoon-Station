@@ -563,7 +563,7 @@
 	crystal_shard_inject(target, /datum/reagent/nitrous_oxide, amount)
 
 // === Healium shard (raw + cloth-wrapped weapon) ===
-#define HEALIUM_SHARD_HEALIUM_AMOUNT 10
+#define HEALIUM_SHARD_HEALIUM_AMOUNT 5
 
 /obj/item/shard/healium
 	name = "Healium shard"

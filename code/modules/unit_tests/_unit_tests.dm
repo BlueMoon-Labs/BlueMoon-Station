@@ -117,6 +117,7 @@
 // #include "food_edibility_check.dm"
 #include "gas_mixture_parser.dm"
 #include "gc_rewrite.dm"
+#include "healium_nerf.dm"
 #include "harddel_round_9813.dm"
 #include "harddel_round_9824.dm"
 #include "harddel_round_9827.dm"
