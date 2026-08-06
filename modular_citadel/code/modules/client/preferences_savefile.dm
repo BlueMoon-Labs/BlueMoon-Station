@@ -17,13 +17,9 @@
 				emissive_parts += part
 	if(legacy_emissive_eyes)
 		emissive_parts |= "eyes"
-	if(features["allow_emissives"] && !length(emissive_parts))
-		emissive_parts += "eyes"
-	if(length(emissive_parts))
 		features["allow_emissives"] = TRUE
+	if(length(emissive_parts))
 		features["emissive_parts"] = emissive_parts
-	S["feature_emissive_eyes"] = null
-	S["feature_emissive_parts"] = null
 	if(!features["mcolor2"] || (features["mcolor"] == "#000000" && CONFIG_GET(flag/character_color_limits))) //SPLURT EDIT
 		features["mcolor2"] = pick("FFFFFF","7F7F7F", "7FFF7F", "7F7FFF", "FF7F7F", "7FFFFF", "FF7FFF", "FFFF7F")
 	if(!features["mcolor3"] || (features["mcolor"] == "#000000" && CONFIG_GET(flag/character_color_limits))) //SPLURT EDIT
