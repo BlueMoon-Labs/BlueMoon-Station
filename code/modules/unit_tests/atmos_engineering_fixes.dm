@@ -556,33 +556,6 @@
 	old_area.contents += spot
 	TEST_ASSERT(!requeued, "a just-handled area was requeued for decompression within the alarm cooldown")
 
-/// The fan safety clutch must stop polling SSobj once the field around it is
-/// settled, and wake back up when air on a watched turf changes.
-/datum/unit_test/fan_safety_idle/Run()
-	var/turf/open/origin = run_loc_floor_bottom_left
-	// The zone corner borders the reservation vacuum - a real standing
-	// differential that correctly keeps the clutch polling. Use the zone
-	// center, and level the field from earlier tests' leftovers.
-	var/turf/open/room = locate(origin.x + 2, origin.y + 2, origin.z)
-	TEST_ASSERT(istype(room), "zone center is not an open turf")
-	unit_test_normalize_exposure_window(room)
-	var/obj/structure/fans/tiny/fan = allocate(/obj/structure/fans/tiny, room)
-	var/datum/component/atmos_fan_safety/safety = fan.GetComponent(/datum/component/atmos_fan_safety)
-	if(!safety)
-		// Unit tests can run while map templates still load, where production
-		// correctly exempts map-placed fans; attach the player-built component
-		// explicitly (same approach as the atmos_fan_safety behavior test).
-		safety = fan.AddComponent(/datum/component/atmos_fan_safety, ATMOS_TINY_FAN_MAX_PRESSURE_DIFFERENTIAL)
-	TEST_ASSERT_NOTNULL(safety, "tiny fan could not receive the safety component")
-
-	for(var/i in 1 to 60)
-		safety.process()
-	TEST_ASSERT(!(safety.datum_flags & DF_ISPROCESSING), "fan safety keeps polling SSobj with no pressure differential")
-
-	SEND_SIGNAL(room, COMSIG_TURF_EXPOSE, room.air, room.air.return_temperature())
-	TEST_ASSERT(safety.datum_flags & DF_ISPROCESSING, "fan safety did not wake up on turf exposure")
-	STOP_PROCESSING(SSobj, safety)
-
 /// Обычный RPD и блюспейс-раздатчик обязаны раздавать одну и ту же машинерию:
 /// BSRPD отличается только собственной трубой. Каталоги лежат в разных файлах,
 /// и каждый новый компонент рисковал попасть лишь в один из них.

@@ -301,20 +301,6 @@
 	icon_state = "fan_tiny"
 	buildstackamount = 10
 
-/obj/structure/fans/tiny/Initialize(mapload)
-	. = ..()
-	if(!mapload && !istype(src, /obj/structure/fans/tiny/invisible))
-		AddComponent(/datum/component/atmos_fan_safety, ATMOS_TINY_FAN_MAX_PRESSURE_DIFFERENTIAL)
-
-/obj/structure/fans/tiny/proc/refresh_atmos_barrier()
-	var/datum/component/atmos_fan_safety/safety = GetComponent(/datum/component/atmos_fan_safety)
-	var/new_pass = safety?.tripped ? ATMOS_PASS_YES : ATMOS_PASS_NO
-	if(CanAtmosPass == new_pass)
-		return
-	CanAtmosPass = new_pass
-	color = safety?.tripped ? "#d8a040" : initial(color)
-	air_update_turf(TRUE)
-
 /obj/structure/fans/Initialize(mapload)
 	. = ..()
 	air_update_turf(TRUE)

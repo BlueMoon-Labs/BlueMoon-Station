@@ -1084,100 +1084,6 @@ GLOBAL_VAR_INIT(atmos_headless_bench_finished, FALSE)
 	qdel(holding_tank)
 	qdel(port)
 
-	if(probe_turf)
-		var/list/turf/open/fan_test_turfs = list(probe_turf)
-		for(var/direction in GLOB.cardinals)
-			var/turf/open/neighbour = get_step(probe_turf, direction)
-			if(istype(neighbour))
-				fan_test_turfs |= neighbour
-		var/list/saved_fan_test_air = list()
-		for(var/turf/open/test_turf as anything in fan_test_turfs)
-			var/datum/gas_mixture/snapshot = new(CELL_VOLUME)
-			snapshot.copy_from(test_turf.return_air())
-			saved_fan_test_air[test_turf] = snapshot
-			var/datum/gas_mixture/test_air = test_turf.return_air()
-			test_air.clear()
-			test_air.set_temperature(T20C)
-			test_air.set_moles(GAS_N2, ONE_ATMOSPHERE * CELL_VOLUME / (R_IDEAL_GAS_EQUATION * T20C))
-		var/datum/gas_mixture/probe_air = probe_turf.return_air()
-		var/obj/structure/fans/tiny/probe_fan = new(probe_turf)
-		var/datum/component/atmos_fan_safety/fan_safety = probe_fan.GetComponent(/datum/component/atmos_fan_safety)
-
-		for(var/turf/open/test_turf as anything in fan_test_turfs)
-			var/datum/gas_mixture/test_air = test_turf.return_air()
-			test_air.clear()
-			test_air.set_temperature(T20C)
-			test_air.set_moles(GAS_N2, MAX_OUTPUT_PRESSURE * CELL_VOLUME / (R_IDEAL_GAS_EQUATION * T20C))
-		fan_safety.process()
-		checks["fan_uniform_pressure_safe"] = !fan_safety.tripped && fan_safety.last_pressure_differential < 0.01
-
-		for(var/turf/open/test_turf as anything in fan_test_turfs)
-			var/datum/gas_mixture/test_air = test_turf.return_air()
-			test_air.clear()
-			test_air.set_temperature(T20C)
-			test_air.set_moles(GAS_N2, ONE_ATMOSPHERE * CELL_VOLUME / (R_IDEAL_GAS_EQUATION * T20C))
-		probe_air.clear()
-		probe_air.set_temperature(T20C)
-		probe_air.set_moles(GAS_N2, (ONE_ATMOSPHERE + ATMOS_TINY_FAN_MAX_PRESSURE_DIFFERENTIAL + 1) * CELL_VOLUME / (R_IDEAL_GAS_EQUATION * T20C))
-		fan_safety.process()
-		fan_safety.overload_started_at = world.time - ATMOS_FAN_OVERLOAD_DELAY
-		fan_safety.process()
-		checks["fan_pressure_differential_trip"] = fan_safety.tripped && probe_fan.CanAtmosPass == ATMOS_PASS_YES
-
-		for(var/turf/open/test_turf as anything in fan_test_turfs)
-			var/datum/gas_mixture/test_air = test_turf.return_air()
-			test_air.clear()
-			test_air.set_temperature(T20C)
-			test_air.set_moles(GAS_N2, ONE_ATMOSPHERE * CELL_VOLUME / (R_IDEAL_GAS_EQUATION * T20C))
-		fan_safety.process()
-		fan_safety.recovery_started_at = world.time - ATMOS_FAN_RESET_DELAY
-		fan_safety.process()
-		checks["fan_automatic_reset"] = !fan_safety.tripped && probe_fan.CanAtmosPass == ATMOS_PASS_NO
-
-		probe_air.clear()
-		probe_air.set_temperature(ZAUKER_FORMATION_MAX_TEMPERATURE)
-		probe_air.set_moles(GAS_N2, ONE_ATMOSPHERE * CELL_VOLUME / (R_IDEAL_GAS_EQUATION * ZAUKER_FORMATION_MAX_TEMPERATURE))
-		fan_safety.process()
-		checks["fan_high_temperature_safe"] = !fan_safety.tripped && probe_fan.CanAtmosPass == ATMOS_PASS_NO
-
-		for(var/turf/open/test_turf as anything in fan_test_turfs)
-			var/datum/gas_mixture/test_air = test_turf.return_air()
-			test_air.clear()
-			test_air.set_temperature(T20C)
-			test_air.set_moles(GAS_N2, ONE_ATMOSPHERE * CELL_VOLUME / (R_IDEAL_GAS_EQUATION * T20C))
-		fan_safety.set_tripped(FALSE, TRUE)
-		timer = TICK_USAGE_REAL
-		for(var/i in 1 to iterations * 10)
-			fan_safety.pressure_differential_exceeds_rating()
-		costs["fan_safety_scan_ms"] = round(TICK_DELTA_TO_MS(TICK_USAGE_REAL - timer), 0.001)
-		qdel(probe_fan)
-
-		var/obj/machinery/poweredfans/probe_powered_fan = new(probe_turf)
-		probe_powered_fan.use_power = NO_POWER_USE
-		probe_powered_fan.refresh_atmos_barrier()
-		var/datum/component/atmos_fan_safety/powered_fan_safety = probe_powered_fan.GetComponent(/datum/component/atmos_fan_safety)
-		probe_air.clear()
-		probe_air.set_temperature(T20C)
-		probe_air.set_moles(GAS_N2, (ONE_ATMOSPHERE + ATMOS_TINY_FAN_MAX_PRESSURE_DIFFERENTIAL + 1) * CELL_VOLUME / (R_IDEAL_GAS_EQUATION * T20C))
-		powered_fan_safety.process()
-		var/powered_holds_tiny_overload = !powered_fan_safety.tripped
-		probe_air.set_moles(GAS_N2, (ONE_ATMOSPHERE + ATMOS_POWERED_FAN_MAX_PRESSURE_DIFFERENTIAL + 1) * CELL_VOLUME / (R_IDEAL_GAS_EQUATION * T20C))
-		powered_fan_safety.process()
-		powered_fan_safety.overload_started_at = world.time - ATMOS_FAN_OVERLOAD_DELAY
-		powered_fan_safety.process()
-		checks["powered_fan_pressure_tier"] = powered_holds_tiny_overload && powered_fan_safety.tripped && probe_powered_fan.CanAtmosPass == ATMOS_PASS_YES
-		qdel(probe_powered_fan)
-		for(var/turf/open/test_turf as anything in fan_test_turfs)
-			var/datum/gas_mixture/snapshot = saved_fan_test_air[test_turf]
-			test_turf.return_air().copy_from(snapshot)
-			qdel(snapshot)
-	else
-		checks["fan_uniform_pressure_safe"] = FALSE
-		checks["fan_pressure_differential_trip"] = FALSE
-		checks["fan_automatic_reset"] = FALSE
-		checks["fan_high_temperature_safe"] = FALSE
-		checks["powered_fan_pressure_tier"] = FALSE
-
 	var/obj/item/clothing/under/probe_clothing = new(null)
 	timer = TICK_USAGE_REAL
 	for(var/i in 1 to iterations * 10)
@@ -1254,7 +1160,6 @@ GLOBAL_VAR_INIT(atmos_headless_bench_finished, FALSE)
 			"air_alarm_mode_datums" = "air_alarm_mode_lookup_ms",
 			"firelock_signals_mergers_atmos_sensitive" = "heartbeat c_ao plus firelock_signal_ms",
 			"pipe_leaks_bursts_auto_valves" = "rejected after gameplay review: extreme XFR networks must remain viable",
-			"constructible_fan_safety" = "fan_safety_scan_ms; 10/25-atm edge differential ratings checked by SSobj every two seconds per player-built fan",
 			"plasma_clothing" = "plasma_clothing_ms; no item processing list",
 			"breathed_product" = "existing gas registry check",
 			"condensation_product" = "live gas-to-turf reaction check",

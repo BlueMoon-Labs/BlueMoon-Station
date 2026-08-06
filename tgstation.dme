@@ -755,7 +755,6 @@
 #include "code\datums\components\anti_magic.dm"
 #include "code\datums\components\area_sound_manager.dm"
 #include "code\datums\components\armor_plate.dm"
-#include "code\datums\components\atmos_fan_safety.dm"
 #include "code\datums\components\aura_healing.dm"
 #include "code\datums\components\bane.dm"
 #include "code\datums\components\bouncy.dm"

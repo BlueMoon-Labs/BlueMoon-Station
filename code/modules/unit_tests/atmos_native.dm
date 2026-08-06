@@ -1301,13 +1301,12 @@
 	pipe_scrubber.disconnect()
 	qdel(port_parent)
 
-/// Constructible fans fail open only for a sustained excessive pressure
-/// difference. Uniform pressure and high-temperature gas remain valid.
-/datum/unit_test/atmos_fan_safety/Run()
+/// Fans are unconditional atmos barriers now that the pressure clutch is gone:
+/// they block air whatever the difference across them is, and the powered fan
+/// only stops blocking when it loses power.
+/datum/unit_test/atmos_fan_barrier/Run()
 	var/turf/open/room = run_loc_floor_bottom_left
 	TEST_ASSERT(istype(room), "test location is not an open turf")
-	var/turf/open/east_room = get_step(room, EAST)
-	TEST_ASSERT(istype(east_room), "test location has no open east neighbour")
 	var/list/turf/open/test_turfs = list(room)
 	for(var/direction in GLOB.cardinals)
 		var/turf/open/neighbour = get_step(room, direction)
@@ -1323,91 +1322,32 @@
 		test_air.set_temperature(T20C)
 		test_air.set_moles(GAS_N2, ONE_ATMOSPHERE * CELL_VOLUME / (R_IDEAL_GAS_EQUATION * T20C))
 
+	// Without this the adjacency assertions below would pass on an empty list.
+	room.air_update_turf(TRUE)
+	TEST_ASSERT(length(room.atmos_adjacent_turfs), "precondition failed: the bare test turf shares air with nothing")
+
 	var/obj/structure/fans/tiny/tiny_fan = allocate(/obj/structure/fans/tiny, room)
-	var/datum/component/atmos_fan_safety/tiny_safety = tiny_fan.GetComponent(/datum/component/atmos_fan_safety)
-	// Unit tests run while map templates are still loading, when production
-	// correctly exempts map-placed fans. Attach explicitly to exercise the
-	// player-built component; the post-init benchmark covers automatic attach.
-	if(!tiny_safety)
-		tiny_safety = tiny_fan.AddComponent(/datum/component/atmos_fan_safety, ATMOS_TINY_FAN_MAX_PRESSURE_DIFFERENTIAL)
-	TEST_ASSERT(tiny_safety, "constructible tiny fan has no safety clutch")
-	TEST_ASSERT_EQUAL(tiny_safety.max_pressure_differential, ATMOS_TINY_FAN_MAX_PRESSURE_DIFFERENTIAL, "tiny fan has the wrong pressure rating")
-	TEST_ASSERT_EQUAL(tiny_fan.CanAtmosPass, ATMOS_PASS_NO, "safe tiny fan did not block air")
+	TEST_ASSERT_EQUAL(tiny_fan.CanAtmosPass, ATMOS_PASS_NO, "tiny fan did not block air")
+	TEST_ASSERT(!length(room.atmos_adjacent_turfs), "a tiny fan left its turf atmos-adjacent to its neighbours")
 
-	// A normal room against vacuum is the fan's intended use.
-	var/datum/gas_mixture/east_air = east_room.return_air()
-	east_air.clear()
-	east_air.set_temperature(T20C)
-	tiny_safety.process()
-	TEST_ASSERT(!tiny_safety.tripped, "tiny fan tripped on a normal room-to-vacuum boundary")
-
-	// High absolute pressure is harmless when there is no load across the fan.
-	for(var/turf/open/test_turf as anything in test_turfs)
-		var/datum/gas_mixture/test_air = test_turf.return_air()
-		test_air.clear()
-		test_air.set_temperature(T20C)
-		test_air.set_moles(GAS_N2, MAX_OUTPUT_PRESSURE * CELL_VOLUME / (R_IDEAL_GAS_EQUATION * T20C))
-	tiny_safety.process()
-	TEST_ASSERT(!tiny_safety.tripped, "tiny fan treated uniform high pressure as an overload")
-
-	// Exceeding the rating must be sustained for the grace period.
-	for(var/turf/open/test_turf as anything in test_turfs)
-		var/datum/gas_mixture/test_air = test_turf.return_air()
-		test_air.clear()
-		test_air.set_temperature(T20C)
-		test_air.set_moles(GAS_N2, ONE_ATMOSPHERE * CELL_VOLUME / (R_IDEAL_GAS_EQUATION * T20C))
+	// The pressure difference the old safety clutch used to fail open on is
+	// exactly what the fan is built for.
 	var/datum/gas_mixture/room_air = room.return_air()
-	room_air.set_moles(GAS_N2, (ONE_ATMOSPHERE + ATMOS_TINY_FAN_MAX_PRESSURE_DIFFERENTIAL + 1) * CELL_VOLUME / (R_IDEAL_GAS_EQUATION * T20C))
-	tiny_safety.process()
-	TEST_ASSERT(!tiny_safety.tripped, "tiny fan ignored its overload grace period")
-	tiny_safety.overload_started_at = world.time - ATMOS_FAN_OVERLOAD_DELAY
-	tiny_safety.process()
-	TEST_ASSERT(tiny_safety.tripped, "tiny fan did not fail open above its differential pressure rating")
-	TEST_ASSERT_EQUAL(tiny_fan.CanAtmosPass, ATMOS_PASS_YES, "tripped tiny fan still blocked air")
-
-	for(var/turf/open/test_turf as anything in test_turfs)
-		var/datum/gas_mixture/test_air = test_turf.return_air()
-		test_air.clear()
-		test_air.set_temperature(T20C)
-		test_air.set_moles(GAS_N2, ONE_ATMOSPHERE * CELL_VOLUME / (R_IDEAL_GAS_EQUATION * T20C))
-	tiny_safety.process()
-	tiny_safety.recovery_started_at = world.time - ATMOS_FAN_RESET_DELAY
-	tiny_safety.process()
-	TEST_ASSERT(!tiny_safety.tripped, "tiny fan did not reset after a stable safe interval")
-	TEST_ASSERT_EQUAL(tiny_fan.CanAtmosPass, ATMOS_PASS_NO, "reset tiny fan did not block air")
-
-	// Temperature does not create mechanical load without a pressure difference.
-	room_air.clear()
-	room_air.set_temperature(ZAUKER_FORMATION_MAX_TEMPERATURE)
-	room_air.set_moles(GAS_N2, ONE_ATMOSPHERE * CELL_VOLUME / (R_IDEAL_GAS_EQUATION * ZAUKER_FORMATION_MAX_TEMPERATURE))
-	tiny_safety.process()
-	TEST_ASSERT(!tiny_safety.tripped, "tiny fan incorrectly rejected high-temperature gas at a safe pressure difference")
+	room_air.set_moles(GAS_N2, MAX_OUTPUT_PRESSURE * CELL_VOLUME / (R_IDEAL_GAS_EQUATION * T20C))
+	room.air_update_turf(TRUE)
+	TEST_ASSERT_EQUAL(tiny_fan.CanAtmosPass, ATMOS_PASS_NO, "tiny fan stopped blocking air under a large pressure difference")
+	TEST_ASSERT(!length(room.atmos_adjacent_turfs), "a large pressure difference reopened the turf a tiny fan sealed")
 
 	var/obj/structure/fans/tiny/invisible/map_blocker = allocate(/obj/structure/fans/tiny/invisible, room)
-	TEST_ASSERT_NULL(map_blocker.GetComponent(/datum/component/atmos_fan_safety), "invisible map blocker received a gameplay safety clutch")
+	TEST_ASSERT_EQUAL(map_blocker.CanAtmosPass, ATMOS_PASS_NO, "invisible map blocker did not block air")
 
 	var/obj/machinery/poweredfans/powered_fan = allocate(/obj/machinery/poweredfans, room)
 	powered_fan.use_power = NO_POWER_USE
 	powered_fan.refresh_atmos_barrier()
-	var/datum/component/atmos_fan_safety/powered_safety = powered_fan.GetComponent(/datum/component/atmos_fan_safety)
-	if(!powered_safety)
-		powered_safety = powered_fan.AddComponent(/datum/component/atmos_fan_safety, ATMOS_POWERED_FAN_MAX_PRESSURE_DIFFERENTIAL)
-		powered_fan.refresh_atmos_barrier()
-	TEST_ASSERT(powered_safety, "constructible powered fan has no safety clutch")
-	TEST_ASSERT_EQUAL(powered_safety.max_pressure_differential, ATMOS_POWERED_FAN_MAX_PRESSURE_DIFFERENTIAL, "powered fan has the wrong pressure rating")
-	TEST_ASSERT_EQUAL(powered_fan.CanAtmosPass, ATMOS_PASS_NO, "safe powered fan did not block air while powered")
-	// A differential that trips the passive fan remains within powered rating.
-	room_air.clear()
-	room_air.set_temperature(T20C)
-	room_air.set_moles(GAS_N2, (ONE_ATMOSPHERE + ATMOS_TINY_FAN_MAX_PRESSURE_DIFFERENTIAL + 1) * CELL_VOLUME / (R_IDEAL_GAS_EQUATION * T20C))
-	powered_safety.process()
-	TEST_ASSERT(!powered_safety.tripped, "powered fan did not improve on the passive fan's pressure rating")
-	room_air.set_moles(GAS_N2, (ONE_ATMOSPHERE + ATMOS_POWERED_FAN_MAX_PRESSURE_DIFFERENTIAL + 1) * CELL_VOLUME / (R_IDEAL_GAS_EQUATION * T20C))
-	powered_safety.process()
-	powered_safety.overload_started_at = world.time - ATMOS_FAN_OVERLOAD_DELAY
-	powered_safety.process()
-	TEST_ASSERT(powered_safety.tripped, "powered fan did not fail open above its own rating")
-	TEST_ASSERT_EQUAL(powered_fan.CanAtmosPass, ATMOS_PASS_YES, "tripped powered fan still blocked air")
+	TEST_ASSERT_EQUAL(powered_fan.CanAtmosPass, ATMOS_PASS_NO, "powered fan did not block air while powered")
+	powered_fan.use_power = ACTIVE_POWER_USE
+	powered_fan.refresh_atmos_barrier()
+	TEST_ASSERT_EQUAL(powered_fan.CanAtmosPass, ATMOS_PASS_YES, "unpowered fan still blocked air")
 
 	for(var/turf/open/test_turf as anything in test_turfs)
 		var/datum/gas_mixture/snapshot = saved_air[test_turf]

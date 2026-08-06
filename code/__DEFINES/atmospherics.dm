@@ -702,41 +702,15 @@ GLOBAL_LIST_INIT(atmos_adjacent_savings, list(0,0))
 /// пару градусов тут же поднимал бы тревогу.
 #define AIRALARM_DESIGN_TEMPERATURE_MARGIN 15
 
-/// Constructible fans fail open instead of acting as perfect barriers in
-/// compact high-pressure chambers. Ratings are pressure differences across a
-/// blocked edge, not absolute pressure: uniformly pressurized rooms are safe.
-/// The powered fan keeps twice the passive fan's rating. Temperature is
-/// deliberately unrestricted because advanced gas reactions routinely exceed
-/// 10,000 K.
-/// Первая раскладка (10 и 25 атмосфер) ловила не абсурд, а обычную инженерную
-/// работу: камера сгорания, ТЭГ и турбина штатно живут на киловаттах давления,
-/// и муфта распахивалась ровно в тот момент, когда за ней стояло что-то
-/// горящее. Номинал поднят до значений, которые в нормальной работе не
-/// встречаются: это защита от попытки заменить вентилятором стену, а не налог
-/// на запуск генератора.
-#define ATMOS_TINY_FAN_MAX_PRESSURE_DIFFERENTIAL (ONE_ATMOSPHERE * 40)
-#define ATMOS_POWERED_FAN_MAX_PRESSURE_DIFFERENTIAL (ONE_ATMOSPHERE * 80)
-#define ATMOS_FAN_RESET_PRESSURE_RATIO 0.8
-/// Сколько муфта терпит перегрузку, прежде чем распахнуться. Она предупреждает
-/// сразу, как только перепад вышел за номинал, так что это ещё и время на то,
-/// чтобы успеть среагировать.
-#define ATMOS_FAN_OVERLOAD_DELAY (10 SECONDS)
-#define ATMOS_FAN_RESET_DELAY (10 SECONDS)
-/// Pressure differential (kPa) below which the safety clutch considers its
-/// field settled; turf exposure wakes it back up when air changes nearby.
-#define ATMOS_FAN_IDLE_PRESSURE_DELTA 1
-/// Settled process() passes before the clutch stops polling SSobj.
-#define ATMOS_FAN_IDLE_STREAK 10
-
 // ХОЛОФАНЫ
 //
-// У построенного вентилятора есть предохранительная муфта, которая распахивается
-// от перепада давления. У голограммы муфты нет, и без ограничения проектор давал
-// три бесплатные вечные стены, которые держат любой перепад - строго лучше, чем
-// то, что игрок может собрать руками. Ограничиваем не давлением, а временем:
-// проектор тратит ёмкость, пока фаны спроецированы, и восстанавливает её, когда
-// все сняты. Холофаны, расставленные на картах, проектора не имеют и работают
-// как раньше - вечно.
+// Собранный вентилятор стоит материалов, времени и места: его надо принести,
+// поставить и потом разобрать. Голограмма не стоит ничего, и без ограничения
+// проектор давал три бесплатные вечные стены - строго лучше, чем то, что игрок
+// может собрать руками. Ограничиваем не давлением, а временем: проектор тратит
+// ёмкость, пока фаны спроецированы, и восстанавливает её, когда все сняты.
+// Холофаны, расставленные на картах, проектора не имеют и работают как раньше -
+// вечно.
 //
 // Времени должно хватать на работу, ради которой фан и ставят: заварить дыру,
 // перекрыть проём, пока меняешь венту. Первая раскладка (100 ёмкости, 0.5 в
