@@ -60,6 +60,10 @@
 	var/list/report = list("<b>Параллакс z [target_z]</b>")
 	report += "Базовый профиль: [SSparallax.get_base_profile(target_z)?.id || "нет"]"
 	report += "Действующий профиль: [template?.profile_id || "нет"], ревизия [template?.revision]"
+	// Без этой строки отсев по окружению выглядит как пропавшие слои: профиль их
+	// объявляет, а в собранной сцене их нет.
+	var/environment = SSparallax.environment_for_z(target_z)
+	report += "Окружение: [SSparallax.environment_name(environment)] - слои, которым оно не подходит, в сцену не попадают"
 
 	var/list/stack = SSparallax.modifiers_by_z["[target_z]"]
 	if(length(stack))

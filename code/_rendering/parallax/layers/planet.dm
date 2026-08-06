@@ -25,6 +25,8 @@
 	parallax_intensity = PARALLAX_MED
 	spawn_jitter_min = 90
 	spawn_jitter_max = 150
+	// То же окружение, что у остальных планет - см. space/planet.
+	environment_flags = PARALLAX_ENV_STATION | PARALLAX_ENV_SPACE_RUINS | PARALLAX_ENV_CENTCOM
 	/// Вероятность колец в процентах. У Aurora было 20.
 	var/ring_chance = 20
 	/// Планета уже собрана. Клон её не пересобирает: он копирует appearance

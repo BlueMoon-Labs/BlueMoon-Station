@@ -83,29 +83,32 @@
  *
  * @param extra_layers - типпасы, добавленные модификаторами поверх профиля.
  * @param tint - цвет, которым модификатор перекрашивает слои с palette_tinted.
+ * @param environment - окружение z, PARALLAX_ENV_*. Слои, которым оно не подходит,
+ *   в сцену не попадают. NONE - собрать профиль целиком (админский предпросмотр,
+ *   вторичные карты, тесты - там z либо нет, либо он не решает).
  */
-/datum/parallax_profile/proc/Build(list/extra_layers, tint)
+/datum/parallax_profile/proc/Build(list/extra_layers, tint, environment = NONE)
 	. = list()
 	var/chosen_tint = tint || (length(palette) ? pick(palette) : null)
 
 	if(backdrop)
-		. += InstantiateLayerOrNothing(backdrop, null)
+		. += InstantiateLayerOrNothing(backdrop, null, environment)
 
 	if(skybox)
-		. += InstantiateLayerOrNothing(skybox, chosen_tint)
+		. += InstantiateLayerOrNothing(skybox, chosen_tint, environment)
 
 	for(var/layer_path in base_layers)
-		. += InstantiateLayerOrNothing(layer_path, chosen_tint)
+		. += InstantiateLayerOrNothing(layer_path, chosen_tint, environment)
 
 	var/list/variant = PickVariant()
 	for(var/layer_path in variant)
-		. += InstantiateLayerOrNothing(layer_path, chosen_tint)
+		. += InstantiateLayerOrNothing(layer_path, chosen_tint, environment)
 
 	for(var/layer_path in extra_layers)
-		. += InstantiateLayerOrNothing(layer_path, chosen_tint)
+		. += InstantiateLayerOrNothing(layer_path, chosen_tint, environment)
 
 	for(var/layer_path in static_objects)
-		. += InstantiateLayerOrNothing(layer_path, chosen_tint)
+		. += InstantiateLayerOrNothing(layer_path, chosen_tint, environment)
 
 /**
  * Обёртка для сложения в список сцены.
@@ -114,8 +117,8 @@
  * слой доехал бы до GetObjects() как дырка. Поэтому негодный путь возвращается
  * ПУСТЫМ СПИСКОМ: его сложение действительно ничего не добавляет.
  */
-/datum/parallax_profile/proc/InstantiateLayerOrNothing(layer_path, tint)
-	var/atom/movable/screen/parallax_layer/new_layer = InstantiateLayer(layer_path, tint)
+/datum/parallax_profile/proc/InstantiateLayerOrNothing(layer_path, tint, environment = NONE)
+	var/atom/movable/screen/parallax_layer/new_layer = InstantiateLayer(layer_path, tint, environment)
 	return new_layer ? list(new_layer) : list()
 
 /// Взвешенно выбирает один набор из [variant_sets]. Возвращает список типпасов.
@@ -137,13 +140,20 @@
 		return set_entry.Copy(2)
 	return list()
 
-/// Создаёт один слой и применяет к нему данные профиля. null при негодном пути.
-/datum/parallax_profile/proc/InstantiateLayer(layer_path, tint)
+/// Создаёт один слой и применяет к нему данные профиля. null при негодном пути
+/// и при слое, которому не подходит окружение уровня.
+/datum/parallax_profile/proc/InstantiateLayer(layer_path, tint, environment = NONE)
 	// Профили сверяет юнит-тест каталога, но слои приходят ещё и от модификаторов,
 	// то есть от произвольного вызывающего. Мусор в сцене уронил бы GetObjects()
 	// на каждом Reset клиента, а не в момент ошибки.
 	if(!ispath(layer_path, /atom/movable/screen/parallax_layer))
 		stack_trace("Профиль '[id]': '[layer_path]' не является слоем параллакса, пропущен")
+		return null
+	// Отсев по initial(), ДО создания объекта: слой, которому не место на этом
+	// уровне, не должен ни существовать, ни клонироваться клиентам.
+	var/atom/movable/screen/parallax_layer/layer_type = layer_path
+	var/layer_environments = initial(layer_type.environment_flags)
+	if(environment && layer_environments && !(layer_environments & environment))
 		return null
 	var/atom/movable/screen/parallax_layer/new_layer = new layer_path
 	// Идемпотентно и дёшево, зато снимает зависимость от того, успел ли отработать

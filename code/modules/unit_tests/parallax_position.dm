@@ -246,6 +246,90 @@
 	flying.afterShuttleMove(0)
 	TEST_ASSERT(!flying.parallax_moving, "После посадки область осталась летящей")
 
+/**
+ * Статика под движущейся областью обязана уезжать за край, сохраняя свой масштаб.
+ *
+ * Масштаб и смещение живут в ОДНОЙ матрице, поэтому анимация, построенная от matrix(),
+ * первым же кадром схлопывает планету с её 2.5x до единицы. Уходить слой обязан
+ * навстречу движению и дальше края экрана - иначе объект просто дёрнется и замрёт
+ * в кадре, что хуже неподвижности.
+ */
+/datum/unit_test/parallax_static_flyby/Run()
+	var/atom/movable/screen/parallax_layer/world_layer = new
+	allocated += world_layer
+	world_layer.layer_mode = PARALLAX_MODE_STATIC
+	world_layer.base_scale = 2.5
+	world_layer.speed = 1
+	world_layer.ApplyLayerMode()
+	world_layer.SetView("15x15", TRUE)
+
+	var/matrix/at_rest = world_layer.BaseTransform()
+	TEST_ASSERT_EQUAL(at_rest.a, 2.5, "Матрица покоя потеряла масштаб слоя")
+	TEST_ASSERT_EQUAL(at_rest.c, 0, "Матрица покоя несёт смещение по x")
+	TEST_ASSERT_EQUAL(at_rest.f, 0, "Матрица покоя несёт смещение по y")
+
+	// Слой обязан уйти дальше, чем половина картинки плюс половина вьюпорта: иначе
+	// его край останется в кадре.
+	var/distance = world_layer.FlybyDistance()
+	var/list/real_view = getviewsize("15x15")
+	var/minimum = (world_layer.tile_size * world_layer.base_scale + max(real_view[1], real_view[2]) * world.icon_size) * 0.5
+	TEST_ASSERT(distance >= minimum, "Пролёт уводит слой на [distance] при необходимых [minimum] - край останется в кадре")
+
+	// Полёт на север: сцена уходит НАВСТРЕЧУ движению, то есть вниз по экрану.
+	var/matrix/north_target = world_layer.FlybyTarget(0)
+	TEST_ASSERT_EQUAL(north_target.a, 2.5, "Пролёт схлопнул масштаб статики")
+	TEST_ASSERT_EQUAL(north_target.c, 0, "Пролёт на север увёл слой вбок")
+	TEST_ASSERT_EQUAL(north_target.f, -distance, "Пролёт на север не увёл слой вниз по экрану")
+
+	// Полёт на восток: слой уходит влево.
+	var/matrix/east_target = world_layer.FlybyTarget(dir2angle(EAST))
+	TEST_ASSERT_EQUAL(east_target.c, -distance, "Пролёт на восток не увёл слой влево")
+
+	// Далёкий мир не имеет права идти вровень с ближними звёздами. Тайлящийся слой
+	// скорости 1 проходит свой тайл за скорость сцены; пролёт обязан быть заметно
+	// медленнее, иначе планета пересекает кадр за считанные секунды.
+	var/duration = world_layer.FlybyDuration(PARALLAX_SHUTTLE_SCROLL_SPEED)
+	TEST_ASSERT(duration >= 15 SECONDS, "Пролёт занимает [duration * 0.1]с - далёкий мир обгоняет ближние звёзды")
+	TEST_ASSERT(duration <= 120 SECONDS, "Пролёт занимает [duration * 0.1]с - объект не успеет уйти за кадр за весь рейс")
+
+	TEST_ASSERT(world_layer.StartFlyby(PARALLAX_SHUTTLE_SCROLL_SPEED, 0), "Статика не ушла в пролёт под движущейся областью")
+	TEST_ASSERT(world_layer.flying_by, "Пролёт не отметился на слое")
+	// Повторный запуск обязан быть пустой операцией: UpdateMotion зовётся на каждой
+	// смене области, и перезапуск дёргал бы планету к началу пути на каждом шаге.
+	TEST_ASSERT(!world_layer.StartFlyby(PARALLAX_SHUTTLE_SCROLL_SPEED, 0), "Пролёт перезапустился поверх самого себя")
+	TEST_ASSERT(world_layer.StopFlyby(), "Слой не вышел из пролёта")
+	TEST_ASSERT(!world_layer.flying_by, "После остановки слой всё ещё считается пролетающим")
+
+	// Тайлящийся слой прокручивается своим циклом, пролёт ему не положен.
+	var/atom/movable/screen/parallax_layer/stars = new
+	allocated += stars
+	stars.speed = 1
+	stars.ApplyLayerMode()
+	TEST_ASSERT(!stars.StartFlyby(PARALLAX_SHUTTLE_SCROLL_SPEED, 0), "Тайлящийся слой ушёл в пролёт вместо прокрутки")
+
+/**
+ * Атом в нульспейсе не находится в границах никакого шаттла.
+ *
+ * Прок перебирается по ВСЕМ докам разом, поэтому один моб, удалённый прямо в
+ * Entered транзитного турфа, давал по рантайму на каждый док станции - полторы
+ * сотни за раунд на каждом уровне, где шли события гиперпространства.
+ */
+/datum/unit_test/shuttle_bounds_nullspace/Run()
+	// Док НЕ уходит в allocated: /obj/docking_port/Destroy без force возвращает
+	// QDEL_HINT_LETMELIVE, и обычная уборка теста оставила бы его жить на карте.
+	var/obj/docking_port/dock = new(run_loc_floor_bottom_left)
+	var/obj/effect/orphan = new(run_loc_floor_bottom_left)
+	allocated += orphan
+	orphan.moveToNullspace()
+
+	TEST_ASSERT_NULL(get_turf(orphan), "Подопытный атом остался на турфе - тест ничего не проверяет")
+	var/in_dock = dock.is_in_shuttle_bounds(orphan)
+	var/in_any_shuttle = SSshuttle.is_in_shuttle_bounds(orphan)
+	qdel(dock, TRUE)
+
+	TEST_ASSERT(!in_dock, "Атом в нульспейсе посчитали внутри границ дока")
+	TEST_ASSERT(!in_any_shuttle, "SSshuttle посчитал атом в нульспейсе внутри шаттла")
+
 /// Матрица "яркость -> прозрачность" (приём goonstation) обязана давать ровно ту
 /// свёртку, ради которой берётся: непрозрачный серый шум становится маской плотности.
 /datum/unit_test/parallax_luminance_matrix/Run()

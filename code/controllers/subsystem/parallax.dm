@@ -128,6 +128,21 @@ SUBSYSTEM_DEF(parallax)
 		return PARALLAX_ENV_SPACE_RUINS
 	return PARALLAX_ENV_STATION
 
+/// Человекочитаемое имя окружения для админского отчёта.
+/datum/controller/subsystem/parallax/proc/environment_name(environment)
+	switch(environment)
+		if(PARALLAX_ENV_STATION)
+			return "станция"
+		if(PARALLAX_ENV_SPACE_RUINS)
+			return "космические руины"
+		if(PARALLAX_ENV_PLANET)
+			return "планета"
+		if(PARALLAX_ENV_SHUTTLE)
+			return "гиперпространство"
+		if(PARALLAX_ENV_CENTCOM)
+			return "ЦК"
+	return "неизвестно ([environment])"
+
 /**
  * Базовый профиль z-уровня. Выбирается один раз и запоминается, поэтому у всех
  * клиентов на z сцена одна и та же, она не меняется в течение раунда, а разные
@@ -210,7 +225,7 @@ SUBSYSTEM_DEF(parallax)
 		if(modifier.tint)
 			tint = modifier.tint
 
-	template = new /datum/parallax(profile, extra_layers, tint, current_revision)
+	template = new /datum/parallax(profile, extra_layers, tint, current_revision, environment_for_z(z))
 	apply_saved_layer_colors(key, template)
 	parallax_templates_by_z[key] = template
 	return template

@@ -95,6 +95,7 @@
 
 // --- Paradise: планеты враждебных миров ------------------------------------
 
+/// Окружение то же, что у нашей планеты, и по той же причине - см. space/planet.
 /atom/movable/screen/parallax_layer/donor/planet
 	blend_mode = BLEND_OVERLAY
 	layer_mode = PARALLAX_MODE_STATIC
@@ -105,6 +106,7 @@
 	base_scale = 2.5
 	spawn_jitter_min = 100
 	spawn_jitter_max = 130
+	environment_flags = PARALLAX_ENV_STATION | PARALLAX_ENV_SPACE_RUINS | PARALLAX_ENV_CENTCOM
 
 /atom/movable/screen/parallax_layer/donor/planet/lava
 	icon_state = "planet_lava"

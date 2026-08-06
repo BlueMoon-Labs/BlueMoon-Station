@@ -113,6 +113,71 @@
 			TEST_ASSERT(built <= fixed + biggest_variant, "Профиль '[profile_id]' собрал [built] слоёв при потолке [fixed + biggest_variant] - варианты складываются вместо замены")
 			TEST_ASSERT(built >= fixed, "Профиль '[profile_id]' собрал [built] слоёв, потеряв часть постоянных из [fixed]")
 
+/**
+ * Крупный якорный объект обязан отсеиваться там, где ему не место.
+ *
+ * Планета за окном ЛЕТЯЩЕГО шаттла - это ровно тот баг, ради которого гейт и заведён:
+ * статика не тайлится, прокручиваться не умеет и висит на экране неподвижно, пока
+ * звёзды летят мимо. Гиперпространство местных ориентиров не имеет по определению.
+ */
+/datum/unit_test/parallax_static_environment_gate/Run()
+	var/datum/parallax_profile/profile = SSparallax.profiles_by_id["space_classic"]
+	TEST_ASSERT_NOTNULL(profile, "Классический профиль пропал из каталога")
+
+	var/list/station_scene = profile.Build(null, null, PARALLAX_ENV_STATION)
+	var/station_statics = 0
+	for(var/atom/movable/screen/parallax_layer/layer as anything in station_scene)
+		allocated += layer
+		if(layer.layer_mode == PARALLAX_MODE_STATIC)
+			station_statics++
+	TEST_ASSERT(station_statics >= 1, "На станционном z из классической сцены пропала планета")
+
+	var/list/transit_scene = profile.Build(null, null, PARALLAX_ENV_SHUTTLE)
+	var/transit_layers = 0
+	for(var/atom/movable/screen/parallax_layer/layer as anything in transit_scene)
+		allocated += layer
+		transit_layers++
+		TEST_ASSERT(layer.layer_mode != PARALLAX_MODE_STATIC, "Слой [layer.type] остался в сцене летящего шаттла - планета будет висеть за окном неподвижно")
+	TEST_ASSERT(transit_layers >= 1, "Гейт вырезал из сцены летящего шаттла вообще всё")
+
+	// Сцена без окружения собирается целиком: у админского предпросмотра и вторичной
+	// карты z нет, и молча терять там половину профиля гейт не имеет права.
+	var/list/free_scene = profile.Build()
+	var/free_statics = 0
+	for(var/atom/movable/screen/parallax_layer/layer as anything in free_scene)
+		allocated += layer
+		if(layer.layer_mode == PARALLAX_MODE_STATIC)
+			free_statics++
+	TEST_ASSERT_EQUAL(free_statics, station_statics, "Сцена, собранная без окружения, потеряла статику")
+
+	// Каждая планета в каталоге обязана нести гейт: без него профиль орбиты снова
+	// выпадет транзитному уровню, и весь этот тест будет сторожить один тип из трёх.
+	for(var/atom/movable/screen/parallax_layer/layer_type as anything in subtypesof(/atom/movable/screen/parallax_layer))
+		if(initial(layer_type.layer_mode) != PARALLAX_MODE_STATIC)
+			continue
+		var/flags = initial(layer_type.environment_flags)
+		TEST_ASSERT(flags, "Статический слой [layer_type] не объявляет окружения - он выпадет и летящему шаттлу")
+		TEST_ASSERT(!(flags & PARALLAX_ENV_SHUTTLE), "Статический слой [layer_type] разрешён в гиперпространстве")
+		// Проявление в Apply идёт с ANIMATION_END_NOW и заводится ПОСЛЕ прокрутки:
+		// статике оно оборвало бы пролёт, швырнув объект сразу за край.
+		TEST_ASSERT(!initial(layer_type.fade_in_time), "Статический слой [layer_type] объявляет проявление - оно оборвёт ему пролёт")
+
+	// Отсев не имеет права оставить от профиля одну подложку. Профиль, у которого весь
+	// смысл в отсеиваемом слое, обязан и сам не объявлять это окружение - иначе
+	// автоподбор выбирает между несколькими одинаковыми пустыми сценами.
+	for(var/checked_id in SSparallax.profiles_by_id)
+		var/datum/parallax_profile/checked = SSparallax.profiles_by_id[checked_id]
+		for(var/environment in list(PARALLAX_ENV_STATION, PARALLAX_ENV_SPACE_RUINS, PARALLAX_ENV_PLANET, PARALLAX_ENV_SHUTTLE, PARALLAX_ENV_CENTCOM))
+			if(!(checked.environment_flags & environment))
+				continue
+			var/list/scene = checked.Build(null, null, environment)
+			var/meaningful = 0
+			for(var/atom/movable/screen/parallax_layer/layer as anything in scene)
+				if(layer.layer_mode != PARALLAX_MODE_OVERLAY)
+					meaningful++
+			QDEL_LIST(scene)
+			TEST_ASSERT(meaningful >= 1, "Профиль '[checked_id]' в окружении [SSparallax.environment_name(environment)] собрался из одной подложки")
+
 /// Выбор профиля обязан быть единым на z, стабильным весь раунд и независимым между z.
 /datum/unit_test/parallax_profile_selection/Run()
 	var/datum/parallax_profile/first_call = SSparallax.get_base_profile(1)

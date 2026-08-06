@@ -57,9 +57,17 @@
 // Орбиты враждебных миров
 // ---------------------------------------------------------------------------
 
-/// Общая часть орбитальных профилей: звёздный фон плюс один крупный мир.
+/**
+ * Общая часть орбитальных профилей: звёздный фон плюс один крупный мир.
+ *
+ * Гиперпространство исключено на уровне профиля, а не только слоя. Мир - это всё,
+ * чем орбитальный профиль отличается от классического космоса, и там, где слой с
+ * ним отсеивается окружением, автоподбор выбирал бы между пятью одинаковыми
+ * звёздными полями.
+ */
 /datum/parallax_profile/space/orbit
 	abstract_type = /datum/parallax_profile/space/orbit
+	environment_flags = PARALLAX_ENV_STATION | PARALLAX_ENV_SPACE_RUINS | PARALLAX_ENV_CENTCOM
 	base_layers = list(
 		/atom/movable/screen/parallax_layer/space/layer_1,
 		/atom/movable/screen/parallax_layer/space/layer_2,

@@ -354,11 +354,19 @@
 	scrolling = TRUE
 	// always scroll from north; turn handles everything
 	for(var/atom/movable/screen/parallax_layer/P in layers)
+		// Статику прокручивать нечем - она не тайлится. Вместо цикла она один раз
+		// уезжает за край и там остаётся, иначе крупный якорный объект висит на
+		// месте под летящим шаттлом. Скайбокс не двигается намеренно: он
+		// "бесконечно далёкий" фон, и смещать его дальше bleed нельзя - в кадр
+		// войдёт край картинки.
+		if(P.layer_mode == PARALLAX_MODE_STATIC)
+			P.StartFlyby(speed, turn)
+			continue
 		if(P.absolute)
 			continue
-		var/matrix/translate_matrix = matrix()
+		var/matrix/translate_matrix = P.BaseTransform()
 		translate_matrix.Translate(sin(turn) * P.tile_size, cos(turn) * P.tile_size)
-		var/matrix/target_matrix = matrix()
+		var/matrix/target_matrix = P.BaseTransform()
 		// Ближний слой обязан проходить экран БЫСТРЕЕ дальнего, поэтому его speed
 		// делит длительность цикла, а не умножает её. С умножением параллакс
 		// получался вывернутым: дальние звёзды обгоняли ближние облака.
@@ -390,13 +398,16 @@
 	scroll_speed = 0
 	// someone can do the math for "stop after a smooth iteration" later.
 	for(var/atom/movable/screen/parallax_layer/P in layers)
+		if(P.layer_mode == PARALLAX_MODE_STATIC)
+			P.StopFlyby(time)
+			continue
 		if(P.absolute)
 			continue
 		P.CancelAnimation()
-		var/matrix/translate_matrix = matrix()
+		var/matrix/translate_matrix = P.BaseTransform()
 		translate_matrix.Translate(sin(turn) * P.tile_size, cos(turn) * P.tile_size)
 		P.transform = translate_matrix
-		animate(P, transform = matrix(), time = time, easing = QUAD_EASING | EASE_OUT)
+		animate(P, transform = P.BaseTransform(), time = time, easing = QUAD_EASING | EASE_OUT)
 
 /**
  * fully resets animation state
@@ -411,10 +422,13 @@
 		animate(GetPlaneMaster(), transform = matrix(), time = 0, flags = ANIMATION_END_NOW)
 	// reset objects
 	for(var/atom/movable/screen/parallax_layer/P in layers)
+		if(P.layer_mode == PARALLAX_MODE_STATIC)
+			P.StopFlyby()
+			continue
 		if(P.absolute)
 			continue
 		P.CancelAnimation()
-		animate(P, transform = matrix(), time = 0, flags = ANIMATION_END_NOW)
+		animate(P, transform = P.BaseTransform(), time = 0, flags = ANIMATION_END_NOW)
 
 /client/proc/CreateParallax()
 	if(!parallax_holder)

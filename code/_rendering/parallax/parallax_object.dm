@@ -122,6 +122,34 @@
 	var/drift_angle = 0
 	/// Дрейф уже заведён. Клоном не наследуется.
 	var/drifting = FALSE
+	/**
+	 * Где слой уместен, битфилд PARALLAX_ENV_*. NONE - уместен везде.
+	 *
+	 * Профиль объявляет свои окружения сам, но внутри одной сцены слои живут по
+	 * разным правилам: звёзды одинаково хороши и над станцией, и в гиперпространстве,
+	 * а планета за окном летящего шаттла читается как летящая ВМЕСТЕ с ним. Поэтому
+	 * гейт нужен и на слое, а не только на профиле.
+	 *
+	 * Сверяется при сборке шаблона z, а не в ShouldSee: окружение - свойство уровня,
+	 * а не зрителя, и отсеянный слой не создаётся вовсе. Значит он не клонируется
+	 * каждому клиенту и не считает позицию на каждый шаг игрока.
+	 */
+	var/environment_flags = NONE
+	/// Идёт пролёт мимо: слой уезжает за край под движущейся областью. См. StartFlyby().
+	/// Клоном не наследуется - новая копия начинает сцену заново.
+	var/flying_by = FALSE
+	/**
+	 * STATIC: скорость пролёта мимо камеры, в долях скорости тайлящегося слоя.
+	 *
+	 * Отдельным полем, а НЕ через [speed]: у статики speed означает совсем другое -
+	 * сколько пикселей объект сдвигается на один тайл шага игрока, и у планеты это
+	 * выверенная единица. Взять её же за скорость пролёта значило бы гнать далёкий
+	 * мир вровень с ближними звёздами: экран он проходил бы за четыре секунды.
+	 *
+	 * 0.15 - примерно вдевятеро медленнее слоя скорости 1, то есть около полуминуты
+	 * на проход кадра при штатной скорости прокрутки шаттла.
+	 */
+	var/flyby_speed = 0.15
 
 /atom/movable/screen/parallax_layer/Initialize(mapload)
 	. = ..()
@@ -145,12 +173,27 @@
 			absolute = TRUE
 			dynamic_self_tile = FALSE
 	UpdateScreenLocCache()
-	if(base_scale != 1)
-		var/matrix/scale_matrix = matrix()
-		scale_matrix.Scale(base_scale, base_scale)
-		transform = scale_matrix
+	transform = BaseTransform()
 	if(luminance_alpha)
 		ApplyLuminanceMatrix(luminance_alpha)
+
+/**
+ * Матрица слоя в покое - только его масштаб, без смещений.
+ *
+ * Всё, что двигает слой через transform (прокрутка сцены, пролёт статики), обязано
+ * строиться отсюда, а не от matrix(). Иначе первый же кадр анимации схлопывает
+ * планету с её 2.5x до единицы: масштаб живёт в той же матрице, что и смещение.
+ *
+ * У скайбокса масштаб считает FitSkybox под текущий вьюпорт, но до первого SetView
+ * там лежит единица - поэтому берётся больший из двух.
+ */
+/atom/movable/screen/parallax_layer/proc/BaseTransform()
+	RETURN_TYPE(/matrix)
+	var/scale = (layer_mode == PARALLAX_MODE_SKYBOX) ? max(fitted_scale, base_scale) : base_scale
+	var/matrix/base = matrix()
+	if(scale != 1)
+		base.Scale(scale, scale)
+	return base
 
 /**
  * Заводит бесконечный дрейф слоя. См. [drift_time].
@@ -168,6 +211,70 @@
 	var/shift_y = -cos(drift_angle) * tile_size
 	animate(src, pixel_x = base_x + shift_x, pixel_y = base_y + shift_y, time = drift_time, easing = LINEAR_EASING, loop = -1, flags = ANIMATION_PARALLEL)
 	animate(pixel_x = base_x, pixel_y = base_y, time = 0)
+
+/**
+ * Расстояние, на котором статический объект гарантированно вне кадра.
+ *
+ * Половина картинки плюс половина вьюпорта плюс тайл запаса. Считать по одной только
+ * картинке нельзя: слой без собственного масштаба уже 480, а вьюпорт бывает шире.
+ */
+/atom/movable/screen/parallax_layer/proc/FlybyDistance()
+	var/list/real_view = getviewsize(view_current || world.view)
+	var/view_px = max(real_view[1], real_view[2]) * world.icon_size
+	return (tile_size * base_scale + view_px) * 0.5 + world.icon_size
+
+/**
+ * Запускает пролёт статики мимо камеры.
+ *
+ * Крупный якорный объект под движущейся областью - это ровно та картинка, из-за
+ * которой полёт перестаёт читаться как полёт: звёзды летят, а планета висит на
+ * месте, будто она летит вместе с шаттлом. Поэтому статика уезжает против
+ * направления движения и за кадром остаётся: она осталась позади, ей незачем
+ * возвращаться, и зацикливать здесь нечего.
+ *
+ * Тайлящиеся слои прокручиваются в Animation() своим циклом, скайбокс не двигается
+ * вовсе - его смещение упирается в bleed, за которым в кадр входит край картинки.
+ *
+ * Длительность берётся от скорости СЦЕНЫ, а не от длительности рейса: короткий
+ * грузовой рейс покажет часть пролёта, эвакуация - весь, и оба будут идти с одной
+ * скоростью. Делит её [flyby_speed], а не [speed] - у статики speed про другое,
+ * см. его описание.
+ *
+ * Анимация идёт с ANIMATION_END_NOW, как и прокрутка тайлящихся слоёв, поэтому
+ * статике нельзя давать fade_in_time: Apply() заводит проявление ПОСЛЕ прокрутки
+ * и тем же флагом оборвал бы пролёт, швырнув объект сразу за край.
+ */
+/atom/movable/screen/parallax_layer/proc/StartFlyby(scene_speed, angle = 0)
+	if(layer_mode != PARALLAX_MODE_STATIC || flying_by || scene_speed <= 0)
+		return FALSE
+	flying_by = TRUE
+	animate(src, transform = FlybyTarget(angle), time = FlybyDuration(scene_speed), easing = LINEAR_EASING, flags = ANIMATION_END_NOW)
+	return TRUE
+
+/// Сколько децисекунд занимает полный пролёт при данной скорости прокрутки сцены.
+/atom/movable/screen/parallax_layer/proc/FlybyDuration(scene_speed)
+	return max(1, round(scene_speed * (FlybyDistance() / tile_size) / max(flyby_speed, 0.01), 1))
+
+/// Матрица конца пролёта: масштаб слоя плюс уход на FlybyDistance() против движения.
+/// Отдельным проком, чтобы её мог сверить тест, не дожидаясь конца анимации.
+/atom/movable/screen/parallax_layer/proc/FlybyTarget(angle = 0)
+	RETURN_TYPE(/matrix)
+	var/matrix/target = BaseTransform()
+	// Знак тот же, что у прокрутки тайлящихся слоёв: сцена уходит НАВСТРЕЧУ движению.
+	var/distance = FlybyDistance()
+	target.Translate(-sin(angle) * distance, -cos(angle) * distance)
+	return target
+
+/// Возвращает статику из пролёта на своё место. time = 0 - мгновенно.
+/atom/movable/screen/parallax_layer/proc/StopFlyby(time = 0)
+	if(!flying_by)
+		return FALSE
+	flying_by = FALSE
+	if(time > 0)
+		animate(src, transform = BaseTransform(), time = time, easing = QUAD_EASING | EASE_OUT, flags = ANIMATION_END_NOW)
+	else
+		animate(src, transform = BaseTransform(), time = 0, flags = ANIMATION_END_NOW)
+	return TRUE
 
 /// Ставит слою матрицу "яркость -> прозрачность". См. [luminance_alpha].
 /atom/movable/screen/parallax_layer/proc/ApplyLuminanceMatrix(strength)
@@ -419,6 +526,8 @@
 	layer.drift_angle = drift_angle
 	layer.spawn_jitter_min = spawn_jitter_min
 	layer.spawn_jitter_max = spawn_jitter_max
+	layer.environment_flags = environment_flags
+	layer.flyby_speed = flyby_speed
 	layer.anchor_offset = anchor_offset
 	layer.screen_loc_prefix = screen_loc_prefix
 	layer.screen_loc_mid = screen_loc_mid

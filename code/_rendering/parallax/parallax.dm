@@ -17,15 +17,19 @@
 	var/profile_id
 	/// Ревизия состояния модификаторов z на момент постройки.
 	var/revision = 0
+	/// Окружение уровня, под которое собрана сцена. NONE - сцена без привязки к z
+	/// (админский предпросмотр, вторичная карта): гейт слоёв в ней не работает.
+	var/environment = NONE
 
-/datum/parallax/New(datum/parallax_profile/build_from, list/extra_layers, tint, revision = 0)
+/datum/parallax/New(datum/parallax_profile/build_from, list/extra_layers, tint, revision = 0, environment = NONE)
 	if(!build_from)
 		objects = list()
 		return
 	profile = build_from
 	profile_id = build_from.id
 	src.revision = revision
-	objects = build_from.Build(extra_layers, tint)
+	src.environment = environment
+	objects = build_from.Build(extra_layers, tint, environment)
 	layers = length(objects)
 
 /datum/parallax/Destroy()

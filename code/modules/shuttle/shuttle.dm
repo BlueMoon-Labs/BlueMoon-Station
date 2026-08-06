@@ -180,7 +180,10 @@
 // Say that A in the absolute (rectangular) bounds of this shuttle or no.
 /obj/docking_port/proc/is_in_shuttle_bounds(atom/A)
 	var/turf/T = get_turf(A)
-	if(T.z != z)
+	// Атом в нульспейсе не находится в границах никакого шаттла. Проверка стоит
+	// здесь, а не только у вызывающих: прок перебирается по всем докам разом, и один
+	// удалённый моб давал полсотни рантаймов на каждое обращение.
+	if(!T || T.z != z)
 		return FALSE
 	var/list/bounds = return_coords()
 	var/x0 = bounds[1]
