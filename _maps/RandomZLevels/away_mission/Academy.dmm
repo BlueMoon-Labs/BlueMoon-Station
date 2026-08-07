@@ -3845,7 +3845,7 @@
 /turf/open/floor/engine/cult,
 /area/awaymission/academy/academycellar)
 "kQ" = (
-/mob/living/simple_animal/hostile/syndicate,
+/mob/living/simple_animal/hostile/inteq,
 /turf/open/floor/engine/cult,
 /area/awaymission/academy/academycellar)
 "kR" = (

@@ -658,7 +658,7 @@
 	welded = 1;
 	dir = 4
 	},
-/mob/living/simple_animal/hostile/syndicate/ranged/shotgun/space,
+/mob/living/simple_animal/hostile/inteq/ranged/shotgun/space,
 /turf/open/floor/mineral/plastitanium/yellow,
 /area/ruin/space/has_grav/powered/infestedship)
 "kT" = (

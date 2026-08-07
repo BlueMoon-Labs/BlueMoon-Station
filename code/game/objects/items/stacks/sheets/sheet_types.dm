@@ -1031,15 +1031,3 @@ new /datum/stack_recipe("paper frame door", /obj/structure/mineral_door/paperfra
 	amount = 20
 /obj/item/stack/sheet/sandblock/five
 	amount = 5
-
-// Titanium
-
-GLOBAL_LIST_INIT(bluemoon_titanium_recipes, list(
-	new/datum/stack_recipe("spaceship plating", /obj/item/stack/sheet/spaceship, 1, time = 5),
-))
-
-/obj/item/stack/sheet/mineral/titanium/get_main_recipes()
-	. = ..()
-	. += GLOB.bluemoon_titanium_recipes
-
-//Made ashtrays craftable. - Gardelin0
