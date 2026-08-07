@@ -23356,6 +23356,7 @@
 /obj/structure/chair/office/light{
 	dir = 1
 	},
+/obj/effect/landmark/start/geneticist,
 /turf/open/floor/plasteel/smooth/small,
 /area/medical/genetics)
 "ehZ" = (
@@ -30193,7 +30194,6 @@
 /turf/open/floor/plating,
 /area/engineering/lobby/upper)
 "fwS" = (
-/obj/effect/landmark/start/geneticist,
 /obj/effect/turf_decal/trimline/blue/mid_joiner,
 /obj/effect/turf_decal/trimline/blue/line{
 	dir = 10
@@ -46300,7 +46300,6 @@
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "isl" = (
-/obj/effect/landmark/start/geneticist,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1{
 	dir = 1
 	},
@@ -66320,6 +66319,7 @@
 	dir = 1
 	},
 /obj/structure/chair/office/light,
+/obj/effect/landmark/start/geneticist,
 /turf/open/floor/plasteel/smooth/edge{
 	dir = 4
 	},
@@ -105326,7 +105326,6 @@
 	},
 /area/hallway/primary/fore)
 "sZt" = (
-/obj/effect/landmark/start/geneticist,
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer1{
 	dir = 1
 	},
@@ -107491,6 +107490,7 @@
 /turf/open/floor/carpet/royalblue,
 /area/command/meeting_room)
 "tuD" = (
+/obj/effect/landmark/start/geneticist,
 /turf/open/floor/plasteel/smooth/small,
 /area/medical/genetics)
 "tuF" = (
@@ -132360,6 +132360,7 @@
 /obj/structure/chair/office/light{
 	dir = 4
 	},
+/obj/effect/landmark/start/geneticist,
 /turf/open/floor/plasteel/smooth/small,
 /area/medical/genetics)
 "xSu" = (
