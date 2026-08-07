@@ -11,3 +11,5 @@
 #define HEAD_EXPLOSION "SSSS"
 #define MARTIALART_NANOSUIT "nanosuit strength"
 #define TRAIT_TACRELOAD "tac_reload_trait"
+#define TRAIT_HEAVY_MELEE "heavy_melee"
+#define HEAVY_MELEE_FORCE 40

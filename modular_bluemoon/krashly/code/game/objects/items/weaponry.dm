@@ -80,6 +80,8 @@
 	righthand_file = 'modular_bluemoon/krashly/icons/mob/inhands/weapons/righthand.dmi'
 	icon_state = "sparq"
 	item_state = null
+	w_class = WEIGHT_CLASS_SMALL
+
 	ammo_type = list(/obj/item/ammo_casing/energy/electrode/bolestrel)
 
 /obj/item/gun/energy/taser/bolestrel/censor
@@ -100,6 +102,13 @@
 	tracer_type = null
 	muzzle_type = null
 	impact_type = null
+
+/obj/item/projectile/energy/electrode/security/hos/bolestrel/on_hit(atom/target, blocked = FALSE)
+	. = ..()
+	if(blocked >= 100 || !isliving(target))
+		return
+	var/mob/living/L = target
+	L.emote("realagony")
 
 /obj/item/candle/infinite/candlestick
 	name = "candlestick"
@@ -196,6 +205,7 @@
 	desc = "Простая в использовании Автоматическая Винтовка. Её придумали ещё столетия назад, а популярна она и по сей день."
 	icon = 'modular_bluemoon/krashly/icons/obj/weapons/weapons.dmi'
 	icon_state = "ak12"
+	item_state = "ak12"
 	lefthand_file = 'modular_bluemoon/krashly/icons/mob/inhands/weapons/lefthand.dmi'
 	righthand_file = 'modular_bluemoon/krashly/icons/mob/inhands/weapons/righthand.dmi'
 	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_BACK

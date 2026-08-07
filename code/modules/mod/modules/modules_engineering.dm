@@ -63,7 +63,7 @@
 	mod.boots.clothing_flags |= NOSLIP
 	ADD_TRAIT(mod.wearer, TRAIT_NOSLIPWATER, MOD_TRAIT)
 	mod.slowdown += slowdown_active
-	mod.wearer.update_gravity(mod.wearer.has_gravity())
+	mod.wearer.refresh_gravity()
 	mod.wearer.update_equipment_speed_mods()
 
 /obj/item/mod/module/magboot/on_deactivation(display_message = TRUE, deleting = FALSE)
@@ -73,7 +73,7 @@
 	mod.boots.clothing_flags &= ~NOSLIP
 	REMOVE_TRAIT(mod.wearer, TRAIT_NOSLIPWATER, MOD_TRAIT)
 	mod.slowdown -= slowdown_active
-	mod.wearer.update_gravity(mod.wearer.has_gravity())
+	mod.wearer.refresh_gravity()
 	mod.wearer.update_equipment_speed_mods()
 
 /obj/item/mod/module/magboot/advanced

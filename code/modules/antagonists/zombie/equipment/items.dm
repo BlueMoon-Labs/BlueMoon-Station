@@ -18,6 +18,7 @@
 	sharpness = SHARP_EDGED
 	wound_bonus = 10
 	bare_wound_bonus = 15
+	can_dismember = FALSE
 
 /obj/item/zombie_hand/Initialize(mapload)
 	. = ..()

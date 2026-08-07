@@ -35,6 +35,7 @@
 		ADD_TRAIT(L, TRAIT_MOBILITY_NOMOVE, STATUE_TRAIT)
 		ADD_TRAIT(L, TRAIT_MOBILITY_NOPICKUP, STATUE_TRAIT)
 		ADD_TRAIT(L, TRAIT_MOBILITY_NOUSE, STATUE_TRAIT)
+		ADD_TRAIT(L, TRAIT_RESTRAINED, STATUE_TRAIT)
 		L.faction += "mimic" //Stops mimics from instaqdeling people in statues
 		L.status_flags |= GODMODE
 		obj_integrity = L.health + 100 //stoning damaged mobs will result in easier to shatter statues
@@ -46,12 +47,22 @@
 
 /obj/structure/statue/gargoyle/Destroy()
 	if(petrified_mob)
+		var/datum/quirk/gargoyle/gargoyle_quirk = locate() in petrified_mob.roundstart_quirks
+		if(gargoyle_quirk)
+			gargoyle_quirk.transformed = FALSE
+			gargoyle_quirk.current = null
+			gargoyle_quirk.paused = FALSE
+			gargoyle_quirk.cooldown = 30
+		var/datum/action/gargoyle/transform/transform_action = locate() in petrified_mob.actions
+		if(transform_action)
+			transform_action.current = null
 		petrified_mob.status_flags &= ~GODMODE
 		petrified_mob.forceMove(loc)
 		REMOVE_TRAIT(petrified_mob, TRAIT_MUTE, STATUE_TRAIT)
 		REMOVE_TRAIT(petrified_mob, TRAIT_MOBILITY_NOMOVE, STATUE_TRAIT)
 		REMOVE_TRAIT(petrified_mob, TRAIT_MOBILITY_NOPICKUP, STATUE_TRAIT)
 		REMOVE_TRAIT(petrified_mob, TRAIT_MOBILITY_NOUSE, STATUE_TRAIT)
+		REMOVE_TRAIT(petrified_mob, TRAIT_RESTRAINED, STATUE_TRAIT)
 		petrified_mob.take_overall_damage((petrified_mob.health - obj_integrity + 100)) //any new damage the statue incurred is transfered to the mob
 		petrified_mob.faction -= "mimic"
 		petrified_mob = null

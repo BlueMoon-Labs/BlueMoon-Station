@@ -6,6 +6,7 @@
 	max_occurrences = 7
 	earliest_start = 10 MINUTES
 	category = EVENT_CATEGORY_BUREAUCRATIC
+	family = "cargo_pod" // общий фолл-офф с синдикатским/зомби-подами
 	description = "A pod containing a random supply crate lands on the station."
 	admin_setup = list(/datum/event_admin_setup/set_location/stray_cargo)
 

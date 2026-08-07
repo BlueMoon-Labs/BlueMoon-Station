@@ -1,6 +1,30 @@
 //General modules for MODsuits
 
 ///Storage - Adds a storage component to the suit.
+
+/obj/item/mod/module/backpack_harness
+	name = "MOD harness system"
+	desc = "Продинутая система ремней и отсеков для крепления дополнительного груза/рюкзака на живот пользователя \
+			Она использует множество датчиков и гироскопов чтобы своевременно перераспределять нагрузку и стабилизировать \
+			её относительно корпуса пользователя для минимизации нагрузки на точки опоры."
+	icon_state = "harness"
+	complexity = 5
+
+/obj/item/mod/module/backpack_harness/on_install()
+	. = ..()
+	var/obj/item/clothing/suit/mod/chestplate = mod.chestplate
+	chestplate.allowed += /obj/item/storage/backpack
+
+/obj/item/mod/module/backpack_harness/on_uninstall()
+	. = ..()
+	var/obj/item/clothing/suit/mod/chestplate = mod.chestplate
+	var/mob/living/carbon/human/wearer = mod.wearer
+	var/obj/item/item_to_drop
+	if(/obj/item/storage/backpack in chestplate.allowed)
+		chestplate.allowed -= /obj/item/storage/backpack
+		item_to_drop = wearer.s_store
+		wearer.dropItemToGround(item_to_drop)
+
 /obj/item/mod/module/storage
 	name = "MOD storage containment module"
 	desc = "Набор встроенных отделений для хранения и специализированных карманов, установленных по всей \
@@ -11,68 +35,88 @@
 	module_type = MODULE_USABLE
 	cooldown_time = 0.5 SECONDS
 	allowed_inactive = TRUE
-	/// Bag we have stored.
-	var/obj/item/storage/backpack/stored
-	mod_module_flags = MOD_MODULE_GENERAL // BLUEMOON ADD
+	mod_module_flags = MOD_MODULE_GENERAL // BLUEMOON
+	var/storage_flags = STORAGE_FLAGS_VOLUME_DEFAULT
+	var/max_volume = STORAGE_VOLUME_BACKPACK
+	var/max_w_class = MAX_WEIGHT_CLASS_BACKPACK
+	var/component_type = /datum/component/storage/concrete
 
-/obj/item/mod/module/storage/attackby(obj/item/I, mob/user, params)
-	if(!istype(I, /obj/item/storage/backpack))
-		return ..()
-	var/obj/item/storage/backpack/B = I
-	if(stored)
-		balloon_alert(user, "backpack already installed!")
-		return
-	if(!user.transferItemToLoc(B, src))
-		return
-	stored = B
-	balloon_alert(user, "backpack installed")
-	playsound(src, 'sound/machines/click.ogg', 30, TRUE)
+/obj/item/mod/module/storage/extended
+	name = "Extended MOD storage module"
+	icon_state = "storage_large"
+	desc = "Расширенная разгрузка с расширенным отделением под крупногабаритные предметы. \
+			Является улучшенной версией, по сравнению с обычным модулем рюкзака и равноценна спортивной сумке. \
+			Может быть улучшена с помощью БС ядра, путём вставки вручную в специальное отверстие."
+	max_volume = STORAGE_VOLUME_DUFFLEBAG
+	complexity = 5
 
-/obj/item/mod/module/storage/screwdriver_act(mob/living/user, obj/item/tool)
+/obj/item/mod/module/storage/extended/attackby(obj/item/I, mob/living/user, params)
 	. = ..()
-	if(!stored)
-		balloon_alert(user, "no backpack!")
-		return
-	balloon_alert(user, "removing backpack...")
-	if(!do_after(user, 3 SECONDS, target = src))
-		balloon_alert(user, "interrupted!")
-		return
-	balloon_alert(user, "backpack removed")
-	stored.forceMove(drop_location())
-	if(Adjacent(user) && !issilicon(user))
-		user.put_in_hands(stored)
-	stored = null
+	if(istype(I, /obj/item/assembly/signaler/anomaly/bluespace) && do_after(user, 5 SECONDS, src))
+		icon_state = "storage_bluespace"
+		var/old_name = name
+		name = "Bluespace " + old_name
+		desc = "Продвинутая разгрузка с использованием БС технологий для хранения, переноски \
+				большого количества вещей в карманном измерении. Изолирована от воздействий телепортации."
+		max_w_class = MAX_WEIGHT_CLASS_BAG_OF_HOLDING
+		storage_flags = STORAGE_FLAGS_VOLUME_DEFAULT
+		max_volume = STORAGE_VOLUME_BAG_OF_HOLDING
+		qdel(I)
 
-/obj/item/mod/module/storage/on_use()
+/obj/item/mod/module/storage/syndicate
+	name = "MOD Blood-red storage module"
+	desc = "Набор встроенных отделений для хранения и специализированных карманов, установленных по всей \
+		поверхности костюма, полезных для хранения различных мелочей и штучек. Имеет модный кроваво-красный окрас."
+	icon_state = "storage_syndi"
+	complexity = 2 //на 1 меньше, чем обычная версия.
+
+/obj/item/mod/module/storage/extended/syndicate
+	name = "MOD Blood-red Extended storage module"
+	desc = "Компактный расширенный модуль хранилища с лого Синдиката и модной кроваво-красной расцвекой."
+	icon_state = "storage_case"
+	complexity = 2
+
+/obj/item/mod/module/storage/on_install()
 	. = ..()
-	if(!.)
-		return
-	if(!stored)
-		var/obj/item/storage/backpack/holding = mod.wearer.get_active_held_item()
-		if(!holding)
-			balloon_alert(mod.wearer, "no backpack installed!")
-			return
-		if(!istype(holding))
-			balloon_alert(mod.wearer, "it doesn't fit!")
-			return
-		if(mod.wearer.transferItemToLoc(holding, src, force = FALSE, silent = TRUE))
-			stored = holding
-			balloon_alert(mod.wearer, "backpack stored")
-			playsound(src, 'sound/weapons/revolverempty.ogg', 100, TRUE)
-	else if(mod.wearer.put_in_active_hand(stored, forced = FALSE, ignore_animation = TRUE))
-		balloon_alert(mod.wearer, "backpack retrieved")
-		playsound(src, 'sound/weapons/revolverempty.ogg', 100, TRUE)
-	else
-		balloon_alert(mod.wearer, "backpack storage full!")
+	if(component_type)
+		mod.AddComponent(component_type)
 
-/obj/item/mod/module/storage/Exited(atom/movable/gone, direction)
+		var/datum/component/storage/Storage = mod.GetComponent(/datum/component/storage)
+		Storage.storage_flags = storage_flags
+		Storage.max_volume = max_volume
+		Storage.max_w_class = max_w_class
+
+/obj/item/mod/module/storage/on_uninstall()
 	. = ..()
-	if(gone == stored)
-		stored = null
+	var/datum/component/storage/Storage = mod.GetComponent(/datum/component/storage)
+	if(!Storage)
+		return
+	//вещи лежат в contents самого костюма, а окно к ним даёт только компонент:
+	//снести компонент молча = запереть содержимое в МОДе навсегда
+	Storage.do_quick_empty(mod.drop_location())
+	qdel(Storage)
 
-/obj/item/mod/module/storage/Destroy()
-	QDEL_NULL(stored)
-	return ..()
+
+
+//PAI модуль
+//функции вытаскивания и изъятия pai в файле mod_ai.dm
+
+/obj/item/mod/module/pai
+	name = "MOD PAI module"
+	desc = "Модуль для подключения ПИИ к панели управления МОДом."
+	icon_state = "pai"
+	var/mob/living/silicon/pai/my_pai
+	incompatible_modules = list(/obj/item/mod/module/pai)
+	complexity = 2
+
+/obj/item/mod/module/pai/on_install()
+	. = ..()
+	mod.can_install_pai = TRUE
+
+/obj/item/mod/module/pai/on_uninstall()
+	. = ..()
+	mod.can_install_pai = FALSE
+	mod.remove_pai()
 
 ///Ion Jetpack - Lets the user fly freely through space using battery charge.
 /obj/item/mod/module/jetpack
@@ -89,40 +133,74 @@
 	cooldown_time = 0.5 SECONDS
 	overlay_state_inactive = "module_jetpack"
 	overlay_state_active = "module_jetpack_on"
-	/// Do we stop the wearer from gliding in space.
-	var/stabilizers = FALSE
+	/// Гасить ли дрейф. Включено по умолчанию и переживает выключение модуля - прежний сброс
+	/// в FALSE на каждой деактивации и был той "сбрасывающейся стабилизацией" из баг-репорта.
+	var/stabilizers = TRUE
 	/// Do we give the wearer a speed buff.
 	var/full_speed = FALSE
 	var/datum/effect_system/trail_follow/ion/ion_trail
+	/// Не больше одного списания за тик, см. одноимённое поле у баллонного джетпака.
+	var/last_thrust_time = -1
 	mod_module_flags = MOD_MODULE_GENERAL // BLUEMOON ADD
 
 /obj/item/mod/module/jetpack/Initialize(mapload)
 	. = ..()
 	ion_trail = new
-	ion_trail.set_up(src)
+	// ion_trail.set_up(src)
+
+/obj/item/mod/module/jetpack/on_install()
+	. = ..()
+	ion_trail.set_up(mod)
 
 /obj/item/mod/module/jetpack/Destroy()
 	QDEL_NULL(ion_trail)
 	return ..()
+
+/// Потолок, до которого этот двигатель разгоняет свободный полёт. Вровень с шаговой скоростью носителя в этом же костюме.
+/obj/item/mod/module/jetpack/proc/thrust_cap()
+	return full_speed ? INERTIA_THRUST_CAP_JETPACK_FULL : INERTIA_THRUST_CAP_JETPACK
 
 /obj/item/mod/module/jetpack/on_activation()
 	. = ..()
 	if(!.)
 		return
 	ion_trail.start()
-	RegisterSignal(mod.wearer, COMSIG_MOVABLE_MOVED, PROC_REF(move_react))
+	RegisterSignal(mod.wearer, COMSIG_LIVING_DEATH, PROC_REF(on_wearer_death), override = TRUE)
+	mod.wearer.register_thrust_source(src, cap = thrust_cap())
 	if(full_speed)
 		mod.wearer.add_movespeed_modifier(/datum/movespeed_modifier/jetpack/fullspeed)
 	else
 		mod.wearer.add_movespeed_modifier(/datum/movespeed_modifier/jetpack)
+	mod.wearer.update_flight_alert()
 
 /obj/item/mod/module/jetpack/on_deactivation(display_message = TRUE, deleting = FALSE)
 	. = ..()
-	stabilizers = FALSE
+	if(!.)
+		return
 	ion_trail.stop()
-	UnregisterSignal(mod.wearer, COMSIG_MOVABLE_MOVED)
+	if(!mod?.wearer)
+		return
+	UnregisterSignal(mod.wearer, COMSIG_LIVING_DEATH)
+	mod.wearer.unregister_thrust_source(src)
 	mod.wearer.remove_movespeed_modifier(/datum/movespeed_modifier/jetpack/fullspeed)
 	mod.wearer.remove_movespeed_modifier(/datum/movespeed_modifier/jetpack)
+	mod.wearer.update_flight_alert()
+
+/**
+ * Костюм снимают раньше, чем обнуляют носителя: `unset_wearer()` сначала обходит модули, и только
+ * потом чистит `wearer`. Гасим двигатель здесь, пока ещё известно, с кого снимать тягу и модификатор
+ * скорости - иначе они остались бы висеть на бывшем носителе навсегда.
+ */
+/obj/item/mod/module/jetpack/on_unequip()
+	if(active)
+		on_deactivation()
+
+/// Мёртвый не тянет рычаги. Дрейф остаётся - тело летит по инерции.
+/obj/item/mod/module/jetpack/proc/on_wearer_death(mob/living/source)
+	SIGNAL_HANDLER
+	if(!active)
+		return
+	on_deactivation()
 
 /obj/item/mod/module/jetpack/get_configuration()
 	. = ..()
@@ -131,19 +209,42 @@
 /obj/item/mod/module/jetpack/configure_edit(key, value)
 	switch(key)
 		if("stabilizers")
-			stabilizers = text2num(value)
+			set_stabilizers(text2num(value), mod?.wearer)
 
-/obj/item/mod/module/jetpack/proc/move_react(mob/user)
-	allow_thrust()
+/// Единая точка переключения режима: её же дёргает клик по алерту полёта.
+/obj/item/mod/module/jetpack/proc/set_stabilizers(new_state, mob/user)
+	if(stabilizers == new_state)
+		return FALSE
+	stabilizers = new_state
+	if(user)
+		to_chat(user, "<span class='notice'>Стабилизация [stabilizers ? "включена - дрейф гасится" : "выключена - свободный полёт"].</span>")
+	// Алерт висит на носителе, а не на том, кто щёлкнул тумблером: режим мог поменять кто угодно
+	// через конфиг-меню костюма, и надпись обязана догнать состояние в любом случае.
+	mod?.wearer?.update_flight_alert()
+	return TRUE
 
-/obj/item/mod/module/jetpack/proc/allow_thrust(use_fuel = TRUE)
+/**
+ * Спрашивает у двигателя, есть ли заряд, и по желанию списывает за него.
+ *
+ * Раньше расход шёл и на каждый `Moved()` (включая шаги наката), и из `Process_Spacemove` -
+ * то есть по два-три списания за шаг, и всё это на скорости, которая сама была втрое завышена.
+ * Отсюда и жалоба "быстро съела батарейку".
+ */
+/obj/item/mod/module/jetpack/proc/allow_thrust(consume = TRUE)
 	if(!active)
 		return FALSE
-	if(!use_fuel)
+	if(mod?.wearer?.stat != CONSCIOUS)
+		return FALSE
+	if(!consume || last_thrust_time == world.time)
 		return check_power(use_power_cost)
 	if(!drain_power(use_power_cost))
 		return FALSE
+	last_thrust_time = world.time
 	return TRUE
+
+/obj/item/mod/module/jetpack/examine(mob/user)
+	. = ..()
+	. += "<span class='notice'>Режим: [stabilizers ? "стабилизация - гасит дрейф, заряд тратится на каждый шаг" : "свободный полёт - разгон до крейсерской скорости, дальше накат бесплатно"].</span>"
 
 /obj/item/mod/module/jetpack/advanced
 	name = "MOD advanced ion jetpack module"
@@ -309,12 +410,12 @@
 	if(!.)
 		return
 	if(dispense_time && !do_after(mod.wearer, dispense_time, target = mod))
-		balloon_alert(mod.wearer, "interrupted!")
+		mod.balloon_alert(mod.wearer, "interrupted!")
 		return FALSE
 	var/obj/item/dispensed = new dispense_type(mod.wearer.loc)
 	mod.wearer.put_in_hands(dispensed)
-	balloon_alert(mod.wearer, "[dispensed] dispensed")
-	playsound(src, 'sound/machines/click.ogg', 100, TRUE)
+	mod.balloon_alert(mod.wearer, "[dispensed] dispensed")
+	playsound(mod, 'sound/machines/click.ogg', 100, TRUE)
 	drain_power(use_power_cost)
 	return dispensed
 
@@ -355,7 +456,7 @@
 	if(!.)
 		return
 	dna = mod.wearer.dna.unique_enzymes
-	balloon_alert(mod.wearer, "dna updated")
+	mod.balloon_alert(mod.wearer, "данные ДНК обновлены")
 	drain_power(use_power_cost)
 
 /obj/item/mod/module/dna_lock/emp_act(severity)
@@ -375,7 +476,7 @@
 	var/mob/living/carbon/carbon_user = user
 	if(!dna  || (carbon_user.has_dna() && carbon_user.dna.unique_enzymes == dna))
 		return TRUE
-	balloon_alert(user, "dna locked!")
+	mod.balloon_alert(user, "заблокирован на ДНК!")
 	return FALSE
 
 /obj/item/mod/module/dna_lock/proc/on_emp(datum/source, severity)

@@ -220,6 +220,10 @@
 	tank_one.air_contents.transfer_ratio_to(target, 1)
 	if(!target_self)
 		tank_two.air_contents.transfer_ratio_to(target, 1)
+	// this mutates the tanks' mixtures behind assume_air()'s back - wake them so the
+	// merged (possibly reacting) mix gets processed
+	tank_one.excite_tank()
+	tank_two.excite_tank()
 
 /obj/item/transfer_valve/proc/split_gases()
 	if (!valve_open || !tank_one || !tank_two)
@@ -227,6 +231,8 @@
 	var/ratio1 = tank_one.air_contents.return_volume()/tank_two.air_contents.return_volume()
 	tank_two.air_contents.transfer_ratio_to(tank_one.air_contents, ratio1)
 	tank_two.air_contents.set_volume(tank_two.air_contents.return_volume() - tank_one.air_contents.return_volume())
+	tank_one.excite_tank()
+	tank_two.excite_tank()
 
 /*
 	Exadv1: I know this isn't how it's going to work, but this was just to check

@@ -13,7 +13,7 @@
 
 import { defer } from 'common/defer';
 import { perf } from 'common/perf';
-import { createAction } from 'common/redux';
+import { createAction, globalStore } from 'common/redux';
 
 import {
   resetInitialGeometryReady,
@@ -281,12 +281,16 @@ export const backendMiddleware = store => {
       if (allow) {
         store.dispatch(nextPayloadChunk(payload));
       } else {
+        // Отказ раньше проходил совсем молча, и со стороны это выглядело как зависшее окно.
+        // Сервер сам сообщает игроку причину, а здесь оставляем след для отладки.
+        logger.error('server refused an oversized payload', payload);
         store.dispatch(backendRemovePayloadQueue(payload));
       }
     }
 
     if (type === 'payloadDropped') {
       // Server timed out or rejected this payload — discard queue, stop sending
+      logger.error('server dropped an oversized payload mid-transfer', payload);
       store.dispatch(backendRemovePayloadQueue(payload));
     }
 
@@ -353,20 +357,32 @@ const encodedLengthBinarySearch = (charSeq: string[], length: number) => {
   return mid;
 };
 
+/**
+ * Бюджет одного чанка в url-кодированных символах.
+ *
+ * Чанк едет внутри JSON, который затем кодируется в URL второй раз, поэтому 512 таких
+ * символов давали реальный URL всего около 840 при лимите 2048 - больше половины бюджета
+ * простаивало, а число раундтрипов было вдвое избыточным. Каждый чанк ждёт подтверждения
+ * сервера, так что на длинном тексте это прямо превращается в те самые задержки, из-за
+ * которых JSON интегральной сборки "не доезжал". 900 даёт URL около 1480 - запас к лимиту
+ * остаётся, а чанков почти вдвое меньше.
+ */
+const CHUNK_BUDGET = 900;
+
 const splitIntoChunks = (str: string): string[] => {
   const charSeq = Array.from(str);
   const length = charSeq.length;
   const chunks: string[] = [];
   let startIndex = 0;
-  let endIndex = 512;
+  let endIndex = CHUNK_BUDGET;
   while (startIndex < length) {
     const cut = charSeq.slice(
       startIndex,
       endIndex < length ? endIndex : undefined,
     );
     const cutString = cut.join('');
-    if (encodeURIComponent(cutString).length > 512) {
-      const splitIndex = startIndex + encodedLengthBinarySearch(cut, 512);
+    if (encodeURIComponent(cutString).length > CHUNK_BUDGET) {
+      const splitIndex = startIndex + encodedLengthBinarySearch(cut, CHUNK_BUDGET);
       chunks.push(
         charSeq
           .slice(startIndex, splitIndex < length ? splitIndex : undefined)
@@ -377,7 +393,7 @@ const splitIntoChunks = (str: string): string[] => {
       chunks.push(cutString);
       startIndex = endIndex;
     }
-    endIndex = startIndex + 512;
+    endIndex = startIndex + CHUNK_BUDGET;
   }
   return chunks;
 };
@@ -412,9 +428,13 @@ export const sendAct = (action: string, payload: object = {}) => {
   lastActTime = now;
   lastActKey = actKey;
   const seq = ++actSequence;
+  // seq обязателен в расчёте: sendMessage добавляет его к тому же URL, и без него в окне
+  // шириной в восемь байт чанкование не включалось, хотя фактический URL уже переполнял
+  // лимит 2048 - сообщение молча уходило в XHR-фолбэк.
   const urlSize = Object.entries({
     type: 'act/' + action,
     payload: stringifiedPayload,
+    seq,
     tgui: 1,
     window_id: window.__windowId__,
   }).reduce(
@@ -483,16 +503,13 @@ export const selectBackend = <TData>(state: any): BackendState<TData> => (
 );
 
 /**
- * A React hook (sort of) for getting tgui state and related functions.
+ * Gets the current tgui state and related functions.
  *
- * This is supposed to be replaced with a real React Hook, which can only
- * be used in functional components.
- *
- * You can make
+ * Reads straight from the global store, so unlike a real React hook
+ * it can be used anywhere, including class components.
  */
-export const useBackend = <TData>(context: any) => {
-  const { store } = context;
-  const state = selectBackend<TData>(store.getState());
+export const useBackend = <TData>() => {
+  const state = selectBackend<TData>(globalStore.getState());
   return {
     ...state,
     act: sendAct,
@@ -507,23 +524,24 @@ type StateWithSetter<T> = [T, (nextState: T) => void];
 /**
  * Allocates state on Redux store without sharing it with other clients.
  *
- * Use it when you want to have a stateful variable in your component
- * that persists between renders, but will be forgotten after you close
- * the UI.
+ * Legacy compatibility hook. Not a real React hook: it reads the global
+ * store, so it is legal anywhere (including class components), but its
+ * setter dispatches to the store and re-renders the ENTIRE app tree.
  *
- * It is a lot more performant than `setSharedState`.
+ * Prefer React `useState` in function components for new code. Keep
+ * `useLocalState` only when you need what the store gives you:
+ * - the same key read/written from several components (shared state),
+ * - state that survives component unmount/remount while the UI is open,
+ * - state access outside of function components.
  *
- * @param context React context.
  * @param key Key which uniquely identifies this state in Redux store.
  * @param initialState Initializes your global variable with this value.
  */
 export const useLocalState = <T>(
-  context: any,
   key: string,
   initialState: T,
 ): StateWithSetter<T> => {
-  const { store } = context;
-  const state = selectBackend(store.getState());
+  const state = selectBackend(globalStore.getState());
   const sharedStates = state.shared ?? {};
   const sharedState = (key in sharedStates)
     ? sharedStates[key]
@@ -531,7 +549,7 @@ export const useLocalState = <T>(
   return [
     sharedState,
     nextState => {
-      store.dispatch(backendSetSharedState({
+      globalStore.dispatch(backendSetSharedState({
         key,
         nextState: (
           typeof nextState === 'function'
@@ -553,17 +571,14 @@ export const useLocalState = <T>(
  *
  * This makes creation of observable s
  *
- * @param context React context.
  * @param key Key which uniquely identifies this state in Redux store.
  * @param initialState Initializes your global variable with this value.
  */
 export const useSharedState = <T>(
-  context: any,
   key: string,
   initialState: T,
 ): StateWithSetter<T> => {
-  const { store } = context;
-  const state = selectBackend(store.getState());
+  const state = selectBackend(globalStore.getState());
   const sharedStates = state.shared ?? {};
   const sharedState = (key in sharedStates)
     ? sharedStates[key]

@@ -2,86 +2,6 @@
 // --------------------- TERROR SPIDERS: TARGETING CODE -----------------------
 // --------------------------------------------------------------------------------
 
-/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/ListTargets()
-	var/list/targets1 = list()
-	var/list/targets2 = list()
-	var/list/targets3 = list()
-	for(var/mob/living/H in view(src, vision_range))
-		if(H.stat == DEAD)
-			continue
-		if(H.status_flags & GODMODE)
-			continue
-		if(H.stat == UNCONSCIOUS && !stat_attack)
-			continue
-		if(isterrorspider(H))
-			if(H in enemies)
-				targets3 += H
-			continue
-		if(iscarbon(H))
-			var/mob/living/carbon/C = H
-			if(IsTSInfected(C)) // only target the infected if they're attacking us. Even then, lowest priority.
-				if(C in enemies)
-					targets3 += C
-					continue
-			else if(C.reagents.has_reagent("terror_black_toxin",60))
-				// only target those dying of black spider venom if they are close, or our enemy
-				if(get_dist(src,C) <= 2 || (C in enemies))
-					targets2 += C
-			else
-				// Target prioritization by spider type. BRUTE spiders prioritize lower armor values, POISON spiders prioritize poisonable targets
-				if(ai_target_method == TS_DAMAGE_BRUTE)
-					var/theirarmor = C.getarmor(type = "melee")
-					// Example values: Civilian: 2, Engineer w/ Hardsuit: 10, Sec Officer with armor: 19, HoS: 48, Deathsquad: 80
-					if(theirarmor < 10)
-						targets1 += C
-					else if(C in enemies)
-						if(theirarmor < 30)
-							targets2 += C
-						else
-							targets3 += C
-					else
-						targets3 += C
-				else if(ai_target_method == TS_DAMAGE_POISON)
-					if(C.can_inject(null, FALSE, "chest", FALSE))
-						targets1 += C
-					else if(C in enemies)
-						targets2 += C
-					else
-						targets3 += C
-				else
-					// TS_DAMAGE_SIMPLE
-					if(C in enemies)
-						targets2 += C
-					else
-						targets3 += C
-		else
-			if(isanimal(H))
-				var/mob/living/simple_animal/S = H
-				if(S.force_threshold > melee_damage_upper)
-					continue
-			if(H in enemies)
-				targets2 += H
-			else
-				targets3 += H
-		if(issilicon(H))
-			if(H in enemies)
-				targets3 += H
-			else
-				targets2 += H
-	for(var/obj/vehicle/sealed/mecha/M in view(src, vision_range))
-
-		if(get_dist(M, src) <= 2)
-			targets2 += M
-		else
-			targets3 += M
-//	for(var/obj/spacepod/S in view(src, vision_range))
-//		targets3 += S
-	if(length(targets1))
-		return targets1
-	if(length(targets2))
-		return targets2
-	return targets3
-
 /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/LoseTarget()
 	if(target && isliving(target))
 		var/mob/living/T = target
@@ -96,76 +16,6 @@
 // --------------------------------------------------------------------------------
 
 
-/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/handle_automated_action()
-	if(target)
-		CreatePath(target)
-	return ..()
-
-/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/handle_automated_movement()
-	// Putting the main terror spider AI code in handle_automated_movement() rather than handle_automated_action() ensures it will still run when the spider AIStatus == AI_IDLE
-	// This is necessary for the terror spiders in the away mission to work properly.
-	if(AIStatus != AI_IDLE)
-		return
-	if(!target)
-		var/my_ventcrawl_freq = freq_ventcrawl_idle
-		if(GLOB.ts_count_dead > 0)
-			if(world.time < (GLOB.ts_death_last + GLOB.ts_death_window))
-				my_ventcrawl_freq = freq_ventcrawl_combat
-		// First, check for general actions that any spider could take.
-		if(path_to_vent)
-			if(entry_vent)
-				if(spider_steps_taken > spider_max_steps)
-					path_to_vent = 0
-					stop_automated_movement = 0
-					spider_steps_taken = 0
-					path_to_vent = 0
-					entry_vent = null
-				else if(get_dist(src, entry_vent) <= 1)
-					path_to_vent = 0
-					stop_automated_movement = 1
-					spider_steps_taken = 0
-					addtimer(CALLBACK(src, PROC_REF(resume_automated_movement)), 50, TIMER_DELETE_ME)
-					TSVentCrawlRandom(entry_vent)
-				else
-					spider_steps_taken++
-					CreatePath(entry_vent)
-					step_to(src,entry_vent)
-					if(spider_debug)
-						visible_message("<span class='notice'>[src] moves towards the vent [entry_vent].</span>")
-			else
-				path_to_vent = 0
-		else if(ai_break_lights && world.time > (last_break_light + freq_break_light))
-			last_break_light = world.time
-			for(var/obj/machinery/light/L in range(1, src))
-				if(!L.status)
-					step_to(src,L)
-					L.on = 1
-					INVOKE_ASYNC(L, TYPE_PROC_REF(/obj/machinery/light, break_light_tube))
-					do_attack_animation(L)
-					visible_message("<span class='danger'>[src] smashes the [L.name].</span>")
-					return
-		else if(ai_spins_webs && web_type && world.time > (last_spins_webs + freq_spins_webs))
-			last_spins_webs = world.time
-			var/obj/structure/spider/terrorweb/T = locate() in get_turf(src)
-			if(!T)
-				new web_type(loc)
-				visible_message("<span class='notice'>[src] puts up some spider webs.</span>")
-		else if(ai_ventcrawls && world.time > (last_ventcrawl_time + my_ventcrawl_freq))
-			if(prob(idle_ventcrawl_chance))
-				last_ventcrawl_time = world.time
-				var/vdistance = 99
-				for(var/obj/machinery/atmospherics/components/unary/vent_pump/v in view(10, src))
-					if(!v.welded || ai_ventbreaker)
-						if(get_dist(src,v) < vdistance)
-							entry_vent = v
-							vdistance = get_dist(src,v)
-				if(entry_vent)
-					path_to_vent = 1
-		else
-			// If none of the general actions apply, check for class-specific actions.
-			spider_special_action()
-		..()
-
 /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/proc/resume_automated_movement()
 	stop_automated_movement = 0
 
@@ -178,29 +28,39 @@
 	Retaliate()
 
 /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/Retaliate()
-	var/list/around = oview(src, 7)
+	// Легаси oview(src, 7) материализовал каждый видимый атом на КАЖДЫЙ удар
+	// (adjustBruteLoss/adjustFireLoss). Грид AI_TARGETS + can_see() воспроизводят
+	// ту же LOS-границу радиусом 7 без массового скана. Троттл как у базового
+	// retaliate: настоящего обидчика на каждый удар всё равно фиксирует
+	// RetaliateAgainst(), тут только широкое доразведывание врагов/союзников.
+	if(world.time < next_retaliation_scan)
+		return 0
+	next_retaliation_scan = world.time + 5 SECONDS
+
 	var/list/ts_nearby = list()
-	for(var/atom/movable/A in around)
-		if(A in enemies)
+	for(var/mob/living/nearby_mob as anything in SSspatial_grid.orthogonal_range_search(src, SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS, 7))
+		if(nearby_mob == src || QDELETED(nearby_mob) || (nearby_mob in enemies) || get_dist(src, nearby_mob) > 7)
 			continue
-		if(isterrorspider(A))
-			ts_nearby += A
+		AI_METRIC_INC(los_checks)
+		if(!can_see(src, nearby_mob, 7))
 			continue
-		if(isliving(A))
-			var/mob/living/M = A
-			if(!("terrorspiders" in M.faction))
-				add_enemy(M)
-		else if(istype(A, /obj/vehicle/sealed/mecha))
-			var/obj/vehicle/sealed/mecha/M = A
-			if(M.occupants)
-				add_enemy(M)
-				for(var/mob/living/occupant as anything in M.occupants)
-					add_enemy(occupant)
-//		else if(istype(A, /obj/spacepod))
-//			var/obj/spacepod/M = A
-//			if(M.pilot)
-//				enemies |= M
-//				enemies |= M.pilot
+		if(isterrorspider(nearby_mob))
+			ts_nearby += nearby_mob
+			continue
+		if(!("terrorspiders" in nearby_mob.faction))
+			add_enemy(nearby_mob)
+
+	// Мехи не живые AI_TARGETS - берём их из поддерживаемого реестра (как база).
+	for(var/obj/vehicle/sealed/mecha/nearby_mecha as anything in GLOB.mechas_list)
+		if(QDELETED(nearby_mecha) || nearby_mecha.z != z || !LAZYLEN(nearby_mecha.occupants) || (nearby_mecha in enemies) || get_dist(src, nearby_mecha) > 7)
+			continue
+		AI_METRIC_INC(los_checks)
+		if(!can_see(src, nearby_mecha, 7))
+			continue
+		add_enemy(nearby_mecha)
+		for(var/mob/living/occupant as anything in nearby_mecha.occupants)
+			add_enemy(occupant)
+
 	for(var/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/H in ts_nearby)
 		var/retaliate_faction_check = 0
 		for(var/F in faction)
@@ -327,35 +187,6 @@
 // --------------------------------------------------------------------------------
 // --------------------- TERROR SPIDERS: ENVIRONMENT CODE -------------------------
 // --------------------------------------------------------------------------------
-
-/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/proc/ListValidTurfs()
-	var/list/potentials = list()
-	for(var/turf/open/floor/holofloor/T in oview(3,get_turf(src)))
-		if(T.density == 0 && get_dist(get_turf(src),T) == 3)
-			var/obj/structure/spider/terrorweb/W = locate() in T
-			if(!W)
-				var/obj/structure/grille/G = locate() in T
-				if(!G)
-					var/obj/structure/window/O = locate() in T
-					if(!O)
-						potentials += T
-	return potentials
-
-/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/proc/ListWebbedTurfs()
-	var/list/webbed = list()
-	for(var/turf/open/floor/holofloor/T in oview(3,get_turf(src)))
-		if(T.density == 0 && get_dist(get_turf(src),T) == 3)
-			var/obj/structure/spider/terrorweb/W = locate() in T
-			if(W)
-				webbed += T
-	return webbed
-
-/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/proc/ListVisibleTurfs()
-	var/list/vturfs = list()
-	for(var/turf/open/floor/holofloor/T in oview(7,get_turf(src)))
-		if(T.density == 0)
-			vturfs += T
-	return vturfs
 
 /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/DestroySurroundings()
 	if(!target)

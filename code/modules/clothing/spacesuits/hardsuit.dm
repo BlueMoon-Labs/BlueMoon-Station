@@ -64,20 +64,36 @@
 	else
 		soundloop.start(user)
 
-/obj/item/clothing/head/helmet/space/hardsuit/proc/display_visor_message(var/msg)
-	var/mob/wearer = loc
-	if(msg && ishuman(wearer))
+/obj/item/clothing/head/helmet/space/hardsuit/proc/display_visor_message(msg, observer_msg)
+	SHOULD_NOT_SLEEP(TRUE)
+	if(!msg)
+		return
+	var/mob/living/carbon/human/wearer = loc
+	if(!ishuman(wearer))
+		return
+
+	var/hud_text = "<span style='color: #5cf; font-weight: bold'>[html_encode(msg)]</span>"
+
+	if(wearer.is_blind())
 		wearer.show_message("[icon2html(src, wearer)]<b><span class='robot'>[msg]</span></b>", MSG_VISUAL)
+		return
+
+	if(observer_msg)
+		wearer.balloon_alert_to_viewers(observer_msg, hud_text)
+	else
+		wearer.balloon_alert(wearer, hud_text)
 
 /obj/item/clothing/head/helmet/space/hardsuit/rad_act(severity)
 	. = ..()
 	rad_count += severity
+	START_PROCESSING(SSobj, src) //гейгер спит вне радиации - будим на счёт
 
 /obj/item/clothing/head/helmet/space/hardsuit/process()
 	if(!rad_count)
 		grace_count++
-		if(grace_count == 2)
+		if(grace_count >= 2)
 			soundloop.last_radiation = 0
+			return PROCESS_KILL //декэить нечего: спим до следующего rad_act
 		return
 
 	grace_count = 0

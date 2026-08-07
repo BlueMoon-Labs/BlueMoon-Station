@@ -13,7 +13,7 @@
 		current_movement_target,
 		delay,
 		repath_delay = 2 SECONDS,
-		max_path_length = AI_MAX_PATH_LENGTH,
+		max_path_length = controller.max_path_length,
 		minimum_distance = controller.get_minimum_distance(),
 		id = controller.get_access(),
 		subsystem = SSai_movement,
@@ -37,7 +37,7 @@
 		can_move = FALSE
 
 	// Check if this controller can actually run, so we don't chase people with corpses
-	if(!controller.able_to_run())
+	if(!controller.able_to_run)
 		controller.CancelActions()
 		qdel(source) //stop moving
 		return MOVELOOP_SKIP_STEP

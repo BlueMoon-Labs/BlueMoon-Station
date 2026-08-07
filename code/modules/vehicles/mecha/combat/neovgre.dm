@@ -3,7 +3,7 @@
 	desc = "Самое мощное творение Nezbere, могучая боевая машина несравненной мощи, о которой говорят, что она заканчивала войны за одну ночь. Вооружена тяжёлым лазером и генератором тесла-сфер. Требует пилота и стрелка."
 	icon = 'icons/mecha/neovgre.dmi'
 	icon_state = "neovgre"
-	max_integrity = 1000
+	max_integrity = 500
 	deflect_chance = 40
 	armor = list(MELEE = 70, BULLET = 80, LASER = 75, ENERGY = 75, BOMB = 70, BIO = 100, RAD = 100, FIRE = 100, ACID = 100)
 	max_temperature = 60000

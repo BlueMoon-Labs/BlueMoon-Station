@@ -199,8 +199,7 @@
 	)
 	tools = list(TOOL_SCREWDRIVER, TOOL_MULTITOOL, TOOL_WIRECUTTER, TOOL_WELDER)
 	time = 10 SECONDS
-	category = CAT_WEAPONRY
-	subcategory = CAT_OTHER
+	category = CAT_DOORS
 
 /datum/crafting_recipe/blast_doors
 	name = "Blast Door"
@@ -212,8 +211,7 @@
 	)
 	tools = list(TOOL_SCREWDRIVER, TOOL_MULTITOOL, TOOL_WIRECUTTER, TOOL_WELDER)
 	time = 30 SECONDS
-	category = CAT_WEAPONRY
-	subcategory = CAT_OTHER
+	category = CAT_DOORS
 
 /datum/crafting_recipe/molotov
 	name = "Molotov"

@@ -32,10 +32,15 @@
 
 	// Client does NOT have tgui_input on: Returns regular input
 	if(!user.client?.prefs?.tgui_input_mode || strict_byond)
-		if(length(buttons) == 2)
-			return alert(user, message, title, buttons[1], buttons[2])
-		if(length(buttons) == 3)
-			return alert(user, message, title, buttons[1], buttons[2], buttons[3])
+		if(length(buttons) == 2 || length(buttons) == 3)
+			var/mob/prompt_mob = begin_native_prompt(user)
+			var/native_answer
+			if(length(buttons) == 2)
+				native_answer = alert(user, message, title, buttons[1], buttons[2])
+			else
+				native_answer = alert(user, message, title, buttons[1], buttons[2], buttons[3])
+			end_native_prompt(prompt_mob)
+			return native_answer
 
 	var/datum/tgui_alert/alert = new(user, message, title, buttons, timeout, autofocus)
 	alert.ui_interact(user)

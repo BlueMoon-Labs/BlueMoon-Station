@@ -87,6 +87,13 @@
 /datum/config_entry/flag/log_econ
 	default = TRUE
 
+/// log per-reagent metabolism events (MOB ADD/DELETE/TRANSFER)
+/// Единственный логгер, который жил без гейта, и самый громкий: в прод-раунде 9832 это
+/// 1.6 МБ, из них две трети - пары add/delete курительной химии, которая пересоздаётся
+/// каждый тик метаболизма.
+/datum/config_entry/flag/log_reagents
+	default = FALSE
+
 /// log certain expliotable parrots and other such fun things in a JSON file of twitter valid phrases.
 /datum/config_entry/flag/log_twitter
 	default = TRUE

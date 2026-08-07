@@ -195,6 +195,13 @@
 	dog_fashion = null
 	var/mode = DRILL_DEFAULT
 
+/obj/item/clothing/head/warden/campaignhat
+	name = "sheriff department's campaign hat"
+	desc = "A formal, broad-brimmed hat of the local sheriff's office, with its insignia emblazoned on it. Usually worn by the sheriff and its subordinates."
+	icon_state = "campaignhat"
+	item_state = "campaignhat"
+	dog_fashion = null
+
 /obj/item/clothing/head/warden/drill/screwdriver_act(mob/living/carbon/human/user, obj/item/I)
 	if(..())
 		return TRUE

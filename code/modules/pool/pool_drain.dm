@@ -25,17 +25,35 @@
 	var/cooldown
 
 /obj/machinery/pool/drain/Initialize(mapload)
-	START_PROCESSING(SSfastprocess, src)
+	//вне активного цикла слива/налива дренажу нужен только ленивый подсос
+	//предметов: SSfastprocess (10 тиков/с) он получает лишь на время цикла
+	//через set_active(), иначе один range()-скан молотит 10 раз в секунду
+	//круглосуточно на каждом дренаже карты
+	START_PROCESSING(SSobj, src)
 	whirling_mobs = list()
 	return ..()
 
 /obj/machinery/pool/drain/Destroy()
 	STOP_PROCESSING(SSfastprocess, src)
+	STOP_PROCESSING(SSobj, src)
 	if(controller)
 		controller.linked_drain = null
 		controller = null
 	whirling_mobs = null
 	return ..()
+
+///переключение цикла слива/налива: активный дренаж крутится на SSfastprocess,
+///спящий - на медленном SSobj (только подсос предметов рядом)
+/obj/machinery/pool/drain/proc/set_active(new_active)
+	if(active == new_active)
+		return
+	active = new_active
+	if(active)
+		STOP_PROCESSING(SSobj, src)
+		START_PROCESSING(SSfastprocess, src)
+	else
+		STOP_PROCESSING(SSfastprocess, src)
+		START_PROCESSING(SSobj, src)
 
 /obj/machinery/pool/drain/proc/is_in_our_pool(atom/A)
 	. = FALSE
@@ -79,7 +97,7 @@
 					controller.bloody /= 4
 				controller.update_color()
 				filling = FALSE
-				active = FALSE
+				set_active(FALSE)
 		else
 			if(cycles_left-- > 0)
 				playsound(src, 'sound/effects/pooldrain.ogg', 100, TRUE)
@@ -109,7 +127,7 @@
 					qdel(W)
 				controller.drained = TRUE
 				controller.mist_off()
-				active = FALSE
+				set_active(FALSE)
 				filling = TRUE
 
 /// dangerous proc don't fuck with, admins

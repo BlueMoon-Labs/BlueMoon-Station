@@ -328,11 +328,8 @@
 
 /turf/open/rad_act(pulse_strength)
 	. = ..()
-	if (air && air.get_moles(GAS_CO2) && air.get_moles(GAS_O2))
-		pulse_strength = min(pulse_strength,air.get_moles(GAS_CO2)*1000,air.get_moles(GAS_O2)*2000) //Ensures matter is conserved properly
-		air.set_moles(GAS_CO2, max(air.get_moles(GAS_CO2)-(pulse_strength/1000),0))
-		air.set_moles(GAS_O2, max(air.get_moles(GAS_O2)-(pulse_strength/2000),0))
-		air.adjust_moles(GAS_PLUOXIUM, pulse_strength/4000)
+	if(air)
+		air.react_to_radiation(pulse_strength)
 
 /turf/open/IgniteTurf(power, fire_color="red")
 	if(power <= 0 || isgroundlessturf(src))

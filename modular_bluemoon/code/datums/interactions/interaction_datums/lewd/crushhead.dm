@@ -51,7 +51,13 @@
 					"максимально грубым образом сдавливает голову <b>[partner]</b> до хруста в шее.")]"
 
 		var/mob/living/carbon/human/H = partner
-		if(istype(H) && partner?.client.prefs.extremeharm != "No" && user?.client.prefs.extremeharm != "No")
+		// ?. прикрывал только partner, а client у сгостившегося или SSD-партнёра пуст - отсюда
+		// 19 рантаймов "Cannot read null.prefs" за прод-раунд 9834. Читаем префы в локалки и
+		// отказываем по умолчанию: нет клиента - нет согласия на extreme harm. Голая цепочка
+		// ?. этого не даёт, у неё null != "No" истинно и хардкор разрешился бы сам собой.
+		var/datum/preferences/partner_prefs = partner?.client?.prefs
+		var/datum/preferences/user_prefs = user?.client?.prefs
+		if(istype(H) && partner_prefs?.extremeharm && partner_prefs.extremeharm != "No" && user_prefs?.extremeharm && user_prefs.extremeharm != "No")
 			if(prob(10))
 				H.bleed(2)
 			else if(prob(10))

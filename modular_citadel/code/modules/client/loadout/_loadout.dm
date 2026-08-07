@@ -111,11 +111,20 @@ GLOBAL_LIST_EMPTY(loadout_whitelist_ids)
 	// BLUEMOON EDIT START - превью для вещей в лодауте
 	if(!description && path)
 		description = initial(path.desc)
-	// BLUEMOON FIX - Wrap icon generation in try-catch to prevent initialization failures from runtime errors
+	//превью здесь НЕ генерится: ~1900 gear-датумов на старте сервера жгли
+	//~1.3с CPU на icon2base64 (perf3/perf4: ровно 1559 энкодов на раундстарт);
+	//энкод делается лениво при первом запросе UI через get_base64icon(),
+	//меню лодаута рендерит одну подкатегорию за раз - первый показ дешёвый
+	// BLUEMOON EDIT END
+
+///Ленивая генерация base64-превью с общим кэшем по паре иконка:стейт.
+///Возвращает null, если у предмета нет иконки или энкод упал.
+/datum/gear/proc/get_base64icon()
+	if(base64icon)
+		return base64icon
 	try
 		var/init_icon = item_icon ? item_icon : initial(path.icon)
 		var/init_icon_state = item_icon_state ? item_icon_state : initial(path.icon_state)
-		CHECK_TICK
 		if(init_icon && init_icon_state)
 			var/static/list/loadout_icon_cache = list()
 			var/cache_key = "[init_icon]:[init_icon_state]"
@@ -126,8 +135,8 @@ GLOBAL_LIST_EMPTY(loadout_whitelist_ids)
 				loadout_icon_cache[cache_key] = base64icon
 	catch(var/exception/e)
 		stack_trace("Loadout icon generation failed for [name] ([type]): [e]")
-		base64icon = null  // Item will work without preview icon
-	// BLUEMOON EDIT END
+		base64icon = null // Item will work without preview icon
+	return base64icon
 
 
 //a comprehensive donator check proc is intentionally not implemented due to the fact that we (((might))) have job-whitelists for donator items in the future and I like to stay on the safe side.

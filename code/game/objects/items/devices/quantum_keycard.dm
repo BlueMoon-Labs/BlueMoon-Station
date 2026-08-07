@@ -9,6 +9,23 @@
 	w_class = WEIGHT_CLASS_TINY
 	var/obj/machinery/quantumpad/qpad
 
+/// Карта хранит ссылку на пад до ручной отвязки - подписка на удаление пада,
+/// иначе снесённый пад вечно висит в qpad
+/obj/item/quantum_keycard/proc/set_qpad(obj/machinery/quantumpad/new_pad)
+	if(qpad == new_pad)
+		return
+	if(qpad)
+		UnregisterSignal(qpad, COMSIG_PARENT_QDELETING)
+	qpad = new_pad
+	if(qpad)
+		RegisterSignal(qpad, COMSIG_PARENT_QDELETING, PROC_REF(on_qpad_qdeleting))
+	update_icon()
+
+/obj/item/quantum_keycard/proc/on_qpad_qdeleting(datum/source)
+	SIGNAL_HANDLER
+	qpad = null
+	update_icon()
+
 /obj/item/quantum_keycard/examine(mob/user)
 	. = ..()
 	if(qpad)
@@ -24,7 +41,7 @@
 	to_chat(user, "<span class='notice'>You start pressing [src]'s unlink button...</span>")
 	if(do_after(user, 40, target = src))
 		to_chat(user, "<span class='notice'>The keycard beeps twice and disconnects the quantum link.</span>")
-		qpad = null
+		set_qpad(null)
 	return TRUE
 
 /obj/item/quantum_keycard/update_icon_state()

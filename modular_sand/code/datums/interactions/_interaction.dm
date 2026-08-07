@@ -24,7 +24,7 @@
 		. += "...обладает хвостом."
 	// BLUEMOON ADD END
 
-/// The base of all interactions
+	/// The base of all interactions
 /datum/interaction
 	var/description
 	var/simple_message
@@ -53,6 +53,7 @@
 	var/list/additional_details
 
 	var/hearts_effect = FALSE
+	var/custom_interaction_key
 
 /// Checks if user can do an interaction, action_check is for whether you're actually doing it or not (useful for the menu and not removing the buttons)
 /datum/interaction/proc/evaluate_user(mob/living/user, silent = TRUE, apply_cooldown = TRUE)
@@ -223,6 +224,8 @@
 		var/list/ignored_mobs
 		if(interaction_flags & INTERACTION_FLAG_UNHOLY_CONTENT)
 			ignored_mobs = sound_source.get_unconsenting(unholy = TRUE)
+		else if(interaction_flags & INTERACTION_FLAG_UNHOLY_HARD)
+			ignored_mobs = sound_source.get_unconsenting(unholy_hard = TRUE)
 		playlewdinteractionsound(sound_turf, soundin, volume, 1, extrarange, ignored_mobs = ignored_mobs)
 	else
 		playsound(sound_turf, soundin, volume, 1, extrarange)

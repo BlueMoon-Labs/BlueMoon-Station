@@ -25,6 +25,7 @@
 		/obj/item/reagent_containers/food/snacks/syndicake = 5,
 		/obj/item/reagent_containers/food/snacks/intecookies = 5, // Bluemoon Changes
 		/obj/item/reagent_containers/food/snacks/beans = 2,
+		/obj/item/reagent_containers/food/snacks/lollipop/capsaicin = 4,
 	)
 	premium = list(
 		/obj/item/reagent_containers/food/snacks/lollipop = 2,

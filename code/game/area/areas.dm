@@ -345,6 +345,9 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 	if(GLOB.areas_by_type[type] == src)
 		GLOB.areas_by_type[type] = null
 	GLOB.all_areas -= src
+	// Иначе список навсегда держит область (гарантированный харддел), а после
+	// принудительного del в нём остаётся null - валит get_area_turfs/dead_tele до конца раунда
+	GLOB.sortedAreas -= src
 	if(istype(src, /area/maintenance))
 		GLOB.maintenance_areas -= src
 	power_apc = null
@@ -501,16 +504,20 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 
 // called when power status changes
 
+/**
+ * Broadcasts the area's power state to everything that cares about it.
+ *
+ * Consumers subscribe to COMSIG_AREA_POWER_CHANGE themselves - machinery does so from
+ * /obj/machinery/Initialize() and re-points the subscription when it changes area. The old
+ * implementation instead scanned for subscribers on every call: either a recursive walk of the
+ * area's turf contents, or a get_area() sweep of GLOB.machines, whichever list was shorter. Both
+ * are O(station) work per power flip, and an APC booting a large area cost ~32ms of synchronous
+ * stall inside a timer callback (round 22.10.05: three such callbacks, SSTimer pinned at 40-80%
+ * of the tick for five seconds afterwards).
+ */
 /area/proc/power_change()
 	SHOULD_NOT_SLEEP(TRUE)
-	if(contents.len < GLOB.machines.len) // it would be faster to loop over contents
-		for(var/obj/machinery/M in src) // for each machine in the area
-			M.power_change() // reverify power status (to update icons etc.)
-	else // it would be faster to loop over the machines list
-		for(var/obj/machinery/M as anything in GLOB.machines) // for each machine
-			if(get_area(M) != src) // in the area
-				continue
-			M.power_change() // reverify power status (to update icons etc.)
+	SEND_SIGNAL(src, COMSIG_AREA_POWER_CHANGE)
 	for(var/area/A as anything in sub_areas)
 		A.power_light = power_light
 		A.power_equip = power_equip
@@ -547,6 +554,15 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 			static_light += value
 		if(STATIC_ENVIRON)
 			static_environ += value
+	wake_parked_apc() // the standby baseline this area's APC parked on the powernet went stale
+
+///Ends the standby of this area's APC (see apc_park()): any change in what the area draws
+///invalidates the load it parked on the powernet.
+/area/proc/wake_parked_apc()
+	var/area/root_area = base_area || src
+	var/obj/machinery/power/apc/parked = root_area.power_apc
+	if(parked?.apc_parked)
+		parked.apc_unpark()
 
 /area/proc/clear_usage()
 	used_equip = 0
@@ -566,6 +582,7 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 			used_light += amount
 		if(ENVIRON)
 			used_environ += amount
+	wake_parked_apc() // dynamic draw appeared: the APC must resume billing it per fire
 
 
 /**
@@ -590,7 +607,7 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 		return
 
 	if(A && (A.has_gravity != has_gravity))
-		L.update_gravity(L.mob_has_gravity())
+		L.refresh_gravity()
 
 	if(!L.ckey)
 		return
@@ -602,7 +619,8 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 		L.client.ambience_playing = 0
 		if(L.client && !L.client.ambience_playing)
 			L.client.ambience_playing = 1
-			SEND_SOUND(L, sound(my_area.shipambience, repeat = 1, wait = 0, volume = 35, channel = CHANNEL_BUZZ))
+			var/buzz_vol = L.client?.prefs?.get_sound_volume("ship_ambience") || 35
+			SEND_SOUND(L, sound(my_area.shipambience, repeat = 1, wait = 0, volume = buzz_vol, channel = CHANNEL_BUZZ))
 
 	if(!(L.client && (L.client.prefs.toggles & SOUND_AMBIENCE)))
 		return //General ambience check is below the ship ambience so one can play without the other

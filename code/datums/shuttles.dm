@@ -176,6 +176,13 @@
 	port_id = "pirate"
 	can_be_bought = FALSE
 
+/datum/map_template/shuttle/medieval
+	prefix = "_maps/shuttles/bluemoon/"
+	port_id = "medieval"
+	suffix = "default"
+	name = "Flying scrap"
+	can_be_bought = FALSE
+
 /datum/map_template/shuttle/hunter
 	port_id = "hunter"
 	can_be_bought = FALSE
@@ -820,6 +827,33 @@
 	lock_override = NONE
 	shuttlePortId = "lf_haron_custom"
 	jump_to_ports = list("whiteship_away" = 1, "whiteship_home" = 1)
+	view_range = 5.5
+	x_offset = 7
+	y_offset = 1
+
+// Чиню недоделанный шаттл
+/datum/map_template/shuttle/ruin/outpost
+	suffix = "derelict_shuttle"
+	name = "Outpost shuttle"
+
+/obj/machinery/computer/shuttle/outpost_shuttle
+	name = "Outpost shuttle Control"
+	desc = "Used to control the outpost shuttle."
+	icon_screen = "syndishuttle"
+	icon_keyboard = "syndie_key"
+	light_color = LIGHT_COLOR_RED
+	shuttleId = "outpostshuttle"
+	possible_destinations = "outpostshuttle_custom;outpostshuttle_docks;whiteship_home;whiteship_lavaland"
+
+/obj/machinery/computer/camera_advanced/shuttle_docker/outpost_shuttle
+	name = "Outpost shuttle Navigation Computer"
+	desc = "The Navigation console for the Outpost shuttle."
+	icon_screen = "syndishuttle"
+	icon_keyboard = "syndie_key"
+	shuttleId = "outpostshuttle"
+	lock_override = NONE
+	shuttlePortId = "outpostshuttle_custom"
+	jump_to_ports = list("outpostshuttle_docks" = 1, "whiteship_away" = 1, "whiteship_home" = 1)
 	view_range = 5.5
 	x_offset = 7
 	y_offset = 1

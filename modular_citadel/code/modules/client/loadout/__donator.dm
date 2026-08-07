@@ -31,6 +31,12 @@
 	path = /obj/item/book/granter/spell/summon_pie
 	cost = 6
 
+/datum/gear/donator/t2/syndicate_duffel
+	name = "Syndicate Duffel Bag"
+	slot = ITEM_SLOT_BACK
+	path = /obj/item/storage/backpack/duffelbag/syndie
+	cost = 6
+
 /datum/gear/donator/t2/foam_lmg
 	name = "Foam LMG"
 	slot = ITEM_SLOT_BACKPACK
@@ -63,10 +69,6 @@
 
 ////////////////////////////////////////////////////////////////////////
 
-/datum/gear/donator/muck_kit
-	name = "Muck activity kit"
-	path = /obj/item/storage/box/deviant_kit/muck
-	cost = 1
 
 /datum/gear/donator/backpack/penetrator
 	name = "The Penetrator"
@@ -137,6 +139,24 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/jukebox
 	cost = 4
+
+/datum/gear/donator/horny_stamp
+	name = "horny active rubber stamp"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/stamp/horny
+	cost = 1
+
+/datum/gear/donator/cat_stamp
+	name = "cat approved rubber stamp"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/stamp/cat
+	cost = 1
+
+/datum/gear/donator/pepe_stamp
+	name = "Pepe rubber stamp"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/stamp/pepe
+	cost = 1
 
 /datum/gear/donator/purple_zippo
 	name = "Purple Zippo"

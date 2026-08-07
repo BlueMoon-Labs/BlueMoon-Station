@@ -1,8 +1,8 @@
 import { useBackend } from '../backend';
 import { Window } from '../layouts';
 
-export const LawManager = (props, context) => {
-  const { act, data } = useBackend(context);
+export const LawManager = (props) => {
+  const { act, data } = useBackend();
   const { laws = [] } = data;
 
   return (
@@ -136,7 +136,8 @@ export const LawManager = (props, context) => {
         .scrollable { overflow-y: auto; flex-grow: 1; padding-right: 10px; }
         .scrollable::-webkit-scrollbar { width: 4px; }
         .scrollable::-webkit-scrollbar-thumb { background: #00ffcc22; }
-      `}</style>
+      `}
+      </style>
     </Window>
   );
 };

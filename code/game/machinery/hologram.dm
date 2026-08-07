@@ -442,6 +442,11 @@ Possible to do for anyone motivated enough:
 
 	update_appearance()
 
+	// Fully idle: no projections, no outgoing call, nothing dialing in. Leave SSmachines -
+	// new holocalls and set_holo() wake the pad back up.
+	if(!LAZYLEN(masters) && !outgoing_call && !LAZYLEN(holo_calls))
+		return machine_sleep()
+
 /obj/machinery/holopad/proc/activate_holo(mob/living/user)
 	var/mob/living/silicon/ai/AI = user
 	if(!istype(AI))
@@ -523,6 +528,7 @@ For the other part of the code, check silicon say.dm. Particularly robot talk.*/
 /obj/machinery/holopad/proc/set_holo(mob/living/user, obj/effect/overlay/holo_pad_hologram/h)
 	LAZYSET(masters, user, h)
 	LAZYSET(holorays, user, new /obj/effect/overlay/holoray(loc))
+	machine_wake() // process() owns validating masters and clearing dead projections
 	var/mob/living/silicon/ai/AI = user
 	if(istype(AI))
 		AI.current = src

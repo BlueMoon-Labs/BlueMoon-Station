@@ -5,8 +5,7 @@
  */
 
 import { map, zipWith } from 'common/collections';
-import { pureComponentHooks } from 'common/react';
-import { Component, createRef } from 'inferno';
+import { Component, createRef } from 'react';
 
 import { Box } from './Box';
 
@@ -78,6 +77,7 @@ class LineChart extends Component {
       fillColor = 'none',
       strokeColor = '#ffffff',
       strokeWidth = 2,
+      strokeDasharray,
       ...rest
     } = this.props;
     const { viewBox } = this.state;
@@ -112,6 +112,7 @@ class LineChart extends Component {
                 fill={fillColor}
                 stroke={strokeColor}
                 strokeWidth={strokeWidth}
+                strokeDasharray={strokeDasharray}
                 points={points} />
             </svg>
           </div>
@@ -120,8 +121,6 @@ class LineChart extends Component {
     );
   }
 }
-
-LineChart.defaultHooks = pureComponentHooks;
 
 export const Chart = {
   Line: LineChart,

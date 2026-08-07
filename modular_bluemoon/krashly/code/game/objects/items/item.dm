@@ -96,17 +96,19 @@
 	return ..()
 
 /obj/structure/sign/flag/inteq/process()
-	if(world.time < demotivator.next_scare)
+	if(!demotivator)
+		STOP_PROCESSING(SSobj, src)
 		return
-	var/scared_someone = FALSE
-	for(var/mob/living/viewer in view(5, src))
-		demotivator.pugach(viewer)
-		scared_someone = TRUE
-	if(scared_someone)
-		demotivator.next_scare = world.time + 120
+	if(!demotivator.can_scan()) // throttle the expensive view() sweep
+		return
+	do_scare_scan()
+
+/obj/structure/sign/flag/inteq/proc/do_scare_scan()
+	demotivator.do_scare_scan()
 
 
 /obj/structure/sign/flag/inteq/Destroy()
+	STOP_PROCESSING(SSobj, src)
 	QDEL_NULL(demotivator)
 	return ..()
 

@@ -3,6 +3,7 @@
 	desc = "A strong door."
 	icon = 'icons/obj/doors/windoor.dmi'
 	icon_state = "left"
+	opens_with_door_remote = TRUE
 	layer = ABOVE_WINDOW_LAYER
 	closingLayer = ABOVE_WINDOW_LAYER
 	resistance_flags = ACID_PROOF
@@ -201,7 +202,7 @@
 
 //used in the AStar algorithm to determinate if the turf the door is on is passable
 /obj/machinery/door/window/CanAStarPass(obj/item/card/id/ID, to_dir)
-	return !density || (dir != to_dir) || (check_access(ID) && hasPower())
+	return !density || (dir != to_dir) || (!locked && hasPower() && (emergency || (unres_sides & to_dir) || check_access(ID)))
 
 /obj/machinery/door/window/CheckExit(atom/movable/mover, turf/target)
 	if((pass_flags_self & mover.pass_flags) || ((pass_flags_self & LETPASSTHROW) && mover.throwing))

@@ -164,7 +164,7 @@
 	if(target == user)
 		user.visible_message(span_notice("[user] does [user.p_their()] lips with \the [src]."), \
 			span_notice("You take a moment to apply \the [src]. Perfect!"))
-		target.update_lips("lipstick", real_colour ? real_colour : colour, lipstick_trait, initial(uses))
+		target.update_lips("lipstick", real_colour ? real_colour : colour, lipstick_trait, uses)
 		if(uses > 0)
 			uses--
 		return
@@ -178,7 +178,7 @@
 		return
 	user.visible_message(span_notice("[user] does [target]'s lips with \the [src]."), \
 		span_notice("You apply \the [src] on [target]'s lips."))
-	target.update_lips("lipstick", real_colour ? real_colour : colour, lipstick_trait, initial(uses))
+	target.update_lips("lipstick", real_colour ? real_colour : colour, lipstick_trait, uses)
 	if(uses > 0)
 		uses--
 
@@ -240,7 +240,7 @@
 				INVOKE_ASYNC(src, PROC_REF(new_facial_hairstyle), H, user, mirror)
 				return
 			else
-				if(!(FACEHAIR in H.dna.species.species_traits))
+				if(!(FACEHAIR in H.dna?.species?.species_traits))
 					to_chat(user, "<span class='warning'>There is no facial hair to shave!</span>")
 					return
 				if(!get_location_accessible(H, location))
@@ -270,7 +270,7 @@
 				INVOKE_ASYNC(src, PROC_REF(new_hairstyle), H, user, mirror)
 				return
 			else
-				if(!(HAIR in H.dna.species.species_traits))
+				if(!(HAIR in H.dna?.species?.species_traits))
 					to_chat(user, "<span class='warning'>There is no hair to shave!</span>")
 					return
 				if(!get_location_accessible(H, location))

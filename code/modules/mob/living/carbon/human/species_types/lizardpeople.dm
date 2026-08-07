@@ -77,20 +77,6 @@
 	C.dna.features["mcolor2"] = C.dna.features["mcolor"] //for no funne rainbows
 	C.dna.features["mcolor3"] = C.dna.features["mcolor"]
 
-	if(C.gender == MALE)
-		C.dna.features["has_cock"] = TRUE
-		C.dna.features["has_balls"] = TRUE
-		C.dna.features["cock_color"] = "[C.dna.features["cock_color"]]"
-		C.dna.features["cock_shape"] = "[C.dna.features["cock_shape"]]"
-		C.dna.features["cock_diameter_ratio"] = "[C.dna.features["cock_diameter_ratio"]]"
-		C.dna.features["testicles_color"] = "[C.dna.features["balls_color"]]"
-		C.dna.features["balls_shape"] = "[C.dna.features["balls_shape"]]"
 
-	else
-		C.dna.features["has_vag"] = TRUE
-		C.dna.features["has_womb"] = TRUE
-		C.dna.features["vag_color"] = C.dna.features["mcolor"]
-		C.dna.features["vag_shape"] = "Cloaca"
-	C.give_genitals(1)
 	C.update_body()
 	return ..()

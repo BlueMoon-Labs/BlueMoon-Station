@@ -18,18 +18,43 @@
 	host.AddComponent(/datum/component/changeling_zombie_infection)
 
 /datum/antagonist/changeling_zombie
-	name = "Changeling Mutant"
+	name = "Changeling Zombie"
 	show_in_antagpanel = TRUE
 	antagpanel_category = "Changeling"
 	roundend_category = "changelings"
+	var/datum/objective/changeling_zombie_infect/infect_objective
+
+/datum/antagonist/changeling_zombie/on_gain()
+	var/datum/objective/changeling_zombie_infect/objec = new
+	objec.owner = owner
+	objec.update_explanation_text()
+	objectives += objec
+	infect_objective = objec
+	. = ..()
+
+/datum/antagonist/changeling_zombie/greet()
+	var/zombified_text = ""
+	zombified_text += "[span_userdanger("Вы – [name] <br>")]"
+	zombified_text += "<hr>"
+	zombified_text += "<div style='margin-bottom:6px'>Вы преобразились ужасным образом и вами движет [span_danger("жажда плоти")]... Вы мутант, порождённый генокрадом!</div>"
+	zombified_text += "<div style='margin-bottom:6px'>Рассудок помутняется и кипящее ощущение адреналина под мутировавшей кожей злит вас.</div>"
+	zombified_text += "<div style='margin-bottom:6px'>Вид окружающих живых существ вызывает у вас агрессию. Внутри начинают бороться два единственных позыва: \
+	[span_purple("заразить")] или [span_danger("разорвать на куски")].</div>"
+	zombified_text += "Заразу можно распространять через ваши мутировавшие руки. Мёртвые встанут вновь."
+	to_chat(owner.current, examine_block(zombified_text))
+	owner.announce_objectives()
+	owner.current.playsound_local(get_turf(owner.current), 'sound/effects/lingreadapt.ogg', 75)
+
+/datum/antagonist/changeling_zombie/farewell()
+	to_chat(owner.current, span_userdanger("Безумие внутри вашего умирающего мозга утихает. Что происх-..."))
 
 /datum/objective/changeling_zombie_infect
-	explanation_text = "Infect at least 5 humanoids with your blades."
 	var/required_infections = 5
 	var/total_infections = 0
+	explanation_text = "Заразите хотя бы 5 гуманоидов своими клинками."
 
 /datum/objective/changeling_zombie_infect/update_explanation_text()
-	explanation_text = "Infect at least [required_infections] humanoids with your blades."
+	explanation_text = "Заразите хотя бы [required_infections] гуманоидов своими клинками."
 
 /datum/objective/changeling_zombie_infect/check_completion()
 	return total_infections >= required_infections
@@ -44,7 +69,6 @@
 	var/list/bodypart_zones_to_regenerate = list()
 	COOLDOWN_DECLARE(limb_regen_cooldown)
 	COOLDOWN_DECLARE(transformation_grace_period)
-	var/datum/objective/changeling_zombie_infect/infect_objective
 	var/infection_timestamp = 0
 	var/spaceacillin_resistance = 0
 
@@ -98,7 +122,7 @@
 		if(length(bodypart_zones_to_regenerate) && COOLDOWN_FINISHED(src, limb_regen_cooldown))
 			var/selected_zone = pick_n_take(bodypart_zones_to_regenerate)
 			if(host.regenerate_limb(selected_zone))
-				host.visible_message("<span class='danger'>[host]'s flesh writhes as a limb reforms!</span>", "<span class='userdanger'>You regenerate a limb!</span>")
+				host.visible_message(span_danger("Плоть [host] извивается с преображением конечности!"), span_userdanger("Вы отрастили конечность!"))
 				playsound(host, 'sound/effects/splat.ogg', 40, TRUE)
 	else if(spaceacillin_resistance < 100 && host.reagents?.has_reagent(/datum/reagent/medicine/spaceacillin))
 		var/current_toxin_damage = host.getToxLoss()
@@ -124,20 +148,52 @@
 				else
 					if(!can_cure && current_toxin_damage >= CHANGELING_ZOMBIE_TOXINS_THRESHOLD_TO_CURE)
 						can_cure = TRUE
-						host.visible_message("<span class='danger'>[host]'s flesh hardens — purge toxins now or lose them forever!</span>", "<span class='userdanger'>Your body convulses violently...</span>")
+						host.visible_message(span_danger("Плоть [host] отвердевает — немедленно очистите токсины или с [host.ru_nim()] будет покончено!"), span_userdanger("Ваше тело болезненно дёргается..."))
 					host.adjustToxLoss(round(CHANGELING_ZOMBIE_TOXINS_PER_SECOND_LIVING * seconds_per_tick * damage_multiplier, 0.1))
 				if(SPT_PROB(4, seconds_per_tick) && current_toxin_damage > CHANGELING_ZOMBIE_TOXINS_THRESHOLD_TO_CURE)
 					host.adjustBruteLoss(3)
 					host.emote("scream")
 
+/datum/component/changeling_zombie_infection/proc/locate_severed_head(mob/living/carbon/human/host)
+	for(var/obj/item/bodypart/head/head in range(2, host))
+		if(head.owner)
+			continue
+		if(!head.brain)
+			continue
+		if(host.mind && head.brain.brainmob?.mind == host.mind)
+			return head
+		if(head.real_name && head.real_name == host.real_name)
+			return head
+		if(findtext(head.brain.name, host.real_name))
+			return head
+	return null
+
+/datum/component/changeling_zombie_infection/proc/restore_host_body_for_zombification(mob/living/carbon/human/host)
+	if(!host.get_bodypart(BODY_ZONE_HEAD))
+		var/obj/item/bodypart/head/severed_head = locate_severed_head(host)
+		if(severed_head)
+			severed_head.attach_limb(host, TRUE)
+
+	for(var/body_zone in host.get_missing_limbs())
+		host.regenerate_limb(body_zone)
+
+	if(!host.getorgan(/obj/item/organ/brain) && host.dna?.species)
+		host.dna.species.regenerate_organs(host)
+
+	if(host.mind?.current != host)
+		var/mob/current = host.mind.current
+		if(isbrain(current) || isobserver(current) || (ishuman(current) && current != host))
+			host.mind.transfer_to(host, TRUE)
+
 /datum/component/changeling_zombie_infection/proc/make_zombie()
 	if(zombified)
 		return FALSE
 	var/mob/living/carbon/human/host = parent
-	host.grab_ghost()
+	restore_host_body_for_zombification(host)
+	host.grab_ghost(TRUE)
 	zombified = TRUE
 	host.cure_husk(CHANGELING_DRAIN)
-	to_chat(host, "<span class='notice'>Something awful stitches your corpse back together.</span>")
+	to_chat(host, span_danger("Нечто ужасающее собирает ваш труп по частям."))
 	ADD_TRAIT(host, TRAIT_CHUNKYFINGERS, TRAIT_CHANGELING_ZOMBIE)
 	ADD_TRAIT(host, TRAIT_RESISTCOLD, TRAIT_CHANGELING_ZOMBIE)
 	ADD_TRAIT(host, TRAIT_RESISTLOWPRESSURE, TRAIT_CHANGELING_ZOMBIE)
@@ -158,6 +214,10 @@
 	armor_head = new(host.loc)
 	ADD_TRAIT(armor, TRAIT_NODROP, TRAIT_CHANGELING_ZOMBIE)
 	ADD_TRAIT(armor_head, TRAIT_NODROP, TRAIT_CHANGELING_ZOMBIE)
+	// The armor can be destroyed externally (integrity damage), leaving a dangling ref
+	// on the component for the rest of the round - same wiring as arm_blades above.
+	RegisterSignal(armor, COMSIG_PARENT_QDELETING, PROC_REF(on_armor_delete))
+	RegisterSignal(armor_head, COMSIG_PARENT_QDELETING, PROC_REF(on_armor_delete))
 	host.equip_to_slot_if_possible(armor, ITEM_SLOT_OCLOTHING, TRUE, TRUE, TRUE)
 	host.equip_to_slot_if_possible(armor_head, ITEM_SLOT_HEAD, TRUE, TRUE, TRUE)
 	host.SetKnockdown(0)
@@ -168,11 +228,7 @@
 	RegisterSignal(host, COMSIG_CARBON_ATTACH_LIMB, PROC_REF(on_gain_limb))
 	RegisterSignal(host, COMSIG_MOB_SAY, PROC_REF(handle_speech))
 	if(host.mind)
-		var/datum/antagonist/changeling_zombie/antag = host.mind.add_antag_datum(/datum/antagonist/changeling_zombie)
-		var/datum/objective/changeling_zombie_infect/objec = new
-		objec.owner = host.mind
-		antag.objectives += objec
-		infect_objective = objec
+		host.mind.add_antag_datum(/datum/antagonist/changeling_zombie)
 	return TRUE
 
 /datum/component/changeling_zombie_infection/proc/generate_armblade(mob/living/carbon/human/host, hand_index)
@@ -199,6 +255,13 @@
 	SIGNAL_HANDLER
 	arm_blades -= source
 
+/datum/component/changeling_zombie_infection/proc/on_armor_delete(datum/source)
+	SIGNAL_HANDLER
+	if(source == armor)
+		armor = null
+	if(source == armor_head)
+		armor_head = null
+
 /datum/component/changeling_zombie_infection/proc/on_gain_limb(datum/source, obj/item/bodypart/gained, special)
 	SIGNAL_HANDLER
 	if(!gained.held_index)
@@ -213,7 +276,7 @@
 
 /obj/item/melee/arm_blade/changeling_zombie
 	name = "warped arm blade"
-	desc = "Misgrown bone and tendon — still hungry."
+	desc = "Неправильно срощенные кости и сухожилия — все ещё голодные."
 	force = 21
 	var/infect_chance = 100
 	COOLDOWN_DECLARE(sound_cooldown)
@@ -235,8 +298,8 @@
 	if(V.GetComponent(/datum/component/changeling_zombie_infection))
 		return
 	V.AddComponent(/datum/component/changeling_zombie_infection)
-	user.visible_message("<span class='danger'>[V]'s wounds froth — infection takes hold!</span>")
-	var/datum/component/changeling_zombie_infection/us = user.GetComponent(/datum/component/changeling_zombie_infection)
+	user.visible_message(span_danger("Рана на теле [V] вспенивается – инфекция развивается внутри неё!"))
+	var/datum/antagonist/changeling_zombie/us = user.mind?.has_antag_datum(/datum/antagonist/changeling_zombie)
 	if(us?.infect_objective)
 		us.infect_objective.total_infections += 1
 

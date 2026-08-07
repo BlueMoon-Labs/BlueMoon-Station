@@ -9,8 +9,7 @@
 	// radio = /obj/item/radio/borg
 
 	blocks_emissive = EMISSIVE_BLOCK_UNIQUE
-	// light_system = MOVABLE_LIGHT_DIRECTIONAL
-	var/light_on = FALSE
+	// light_system = OVERLAY_LIGHT_DIRECTIONAL // вторая волна конвертации: лампа борга с поэтапной яркостью
 
 	var/custom_name = ""
 	var/braintype = "Cyborg"
@@ -73,6 +72,8 @@
 	var/magpulse = FALSE // Magboot-like effect.
 	var/ionpulse = FALSE // Jetpack-like effect.
 	var/ionpulse_on = FALSE // Jetpack-like effect.
+	/// Не больше одного импульса за тик: Process_Spacemove за шаг зовут дважды, с ручного пути и с ньютоновского
+	var/last_ionpulse_time = -1
 	var/datum/effect_system/trail_follow/ion/ion_trail // Ionpulse effect.
 
 	var/low_power_mode = 0 //whether the robot has no charge left.

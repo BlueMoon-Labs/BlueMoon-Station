@@ -10,6 +10,7 @@
 	selection_color = "#bbe291"
 	var/cooks = 0 //Counts cooks amount
 	alt_titles = list(
+		"Junior Cook", //Стажер выше, для удобства
 		"Waffle Co. Specialist", //Триглав выше, для удобства
 		"All-American Diner Employee",
 		"Baker",
@@ -84,12 +85,14 @@
 	mask = /obj/item/clothing/mask/fakemoustache/italian
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie
 	satchel = /obj/item/storage/backpack/duffelbag/syndie
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
-	backpack_contents = list(/obj/item/sharpener = 1, /obj/item/choice_beacon/ingredients = 1, /obj/item/syndicate_uplink=1)
+	accessory = list(/obj/item/clothing/accessory/permit/special/syndie_station)
+	backpack_contents = list(/obj/item/sharpener = 1, /obj/item/choice_beacon/ingredients = 1,/obj/item/syndicate_uplink/station=1)
 
 /datum/outfit/job/cook/pre_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
 	..()

@@ -81,6 +81,20 @@
 	LAZYADD(SSmapping.turf_reservations, src)
 
 /datum/turf_reservation/Destroy()
-	Release()
+	SSmapping.used_turfs -= reserved_turfs
+	for(var/i in reserved_turfs)
+		var/turf/T = i
+		LAZYINITLIST(SSmapping.unused_turfs["[T.z]"])
+		SSmapping.unused_turfs["[T.z]"] += T
+		T.flags_1 |= UNUSED_RESERVATION_TURF_1
+		GLOB.areas_by_type[world.area].contents += T
+		T.ChangeTurf(turf_type, turf_type, changeturf_flags)
+	reserved_turfs.Cut()
 	LAZYREMOVE(SSmapping.turf_reservations, src)
 	return ..()
+
+/datum/turf_reservation/transit/Destroy()
+	for(var/turf/open/space/transit/T in reserved_turfs)
+		for(var/atom/movable/AM in T)
+			dump_in_space(AM)
+	. = ..()

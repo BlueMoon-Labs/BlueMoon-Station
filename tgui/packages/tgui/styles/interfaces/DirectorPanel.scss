@@ -1,0 +1,109 @@
+.DirectorPanel {
+  .Section {
+    border: 1px solid rgba(96, 139, 178, 0.18);
+    background-color: rgba(18, 18, 18, 0.88);
+  }
+
+  .LabeledList__row:not(:last-child) .LabeledList__cell {
+    border-bottom: 1px solid rgba(96, 139, 178, 0.12);
+  }
+}
+
+.DirectorPanel__Metrics {
+  gap: 0.5em;
+  margin-bottom: 0.75em;
+}
+
+.DirectorPanel__Metric {
+  box-sizing: border-box;
+  height: 100%;
+  min-height: 4.75em;
+  padding: 0.55em 0.7em;
+  border: 1px solid rgba(96, 139, 178, 0.32);
+  border-left: 0.25em solid rgba(64, 128, 192, 0.75);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.DirectorPanel__MetricLabel {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.9em;
+  text-transform: uppercase;
+}
+
+.DirectorPanel__MetricValue {
+  margin: 0.15em 0;
+  font-size: 1.25em;
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+.DirectorPanel__MetricDetail {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.9em;
+  line-height: 1.25;
+}
+
+.DirectorPanel__MetricBar {
+  margin-top: 0.2em;
+}
+
+.DirectorPanel__StatusTag {
+  padding: 0.08em 0.45em;
+  border: 1px solid currentcolor;
+  border-radius: 0.2em;
+  background: rgba(0, 0, 0, 0.28);
+  font-size: 0.9em;
+  font-weight: bold;
+  line-height: 1.35;
+}
+
+.DirectorPanel__Table {
+  table-layout: fixed;
+  border: 1px solid rgba(96, 139, 178, 0.28);
+  border-collapse: separate;
+
+  .Table__cell {
+    padding: 0.4em 0.55em;
+    border-right: 1px solid rgba(96, 139, 178, 0.2);
+    vertical-align: top;
+    overflow-wrap: break-word;
+
+    &:first-child {
+      padding-left: 0.55em;
+    }
+
+    &:last-child {
+      padding-right: 0.55em;
+      border-right: 0;
+    }
+  }
+
+  .Table__row--header .Table__cell {
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+    border-bottom: 1px solid rgba(96, 139, 178, 0.42);
+    background: rgba(64, 98, 138, 0.2);
+  }
+
+  .Table__row:not(.Table__row--header):not(:last-child) .Table__cell {
+    border-bottom: 1px solid rgba(96, 139, 178, 0.12);
+  }
+
+  .Table__row:not(.Table__row--header):hover .Table__cell {
+    background: rgba(96, 139, 178, 0.12);
+  }
+}
+
+.DirectorPanel__ShareBar {
+  display: block;
+  max-width: 9em;
+  margin-top: 0.2em;
+  font-size: 0.9em;
+}
+
+.DirectorPanel__EmptyState {
+  padding: 0.9em;
+  border: 1px dashed rgba(96, 139, 178, 0.32);
+  color: rgba(255, 255, 255, 0.55);
+  text-align: center;
+}

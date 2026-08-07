@@ -107,11 +107,11 @@
 		if("Research Officer")
 			return list(ACCESS_CENT_GENERAL, ACCESS_CENT_SPECOPS, ACCESS_CENT_MEDICAL, ACCESS_CENT_TELEPORTER, ACCESS_CENT_STORAGE)
 		if("Special Ops Officer")
-			return get_all_centcom_access()
+			return get_all_centcom_access()+list(ACCESS_CENT_BAR)
 		if("Admiral")
-			return get_all_centcom_access()
+			return get_all_centcom_access()+list(ACCESS_CENT_BAR)
 		if("CentCom Commander")
-			return get_all_centcom_access()
+			return get_all_centcom_access()+list(ACCESS_CENT_BAR)
 		if("Emergency Response Team Commander")
 			return get_ert_access("commander")
 		if("Security Response Officer")
@@ -390,6 +390,18 @@
 				"Shaft Miner", "Clown", "Mime", "Janitor", "Curator", "Internal Affairs Agent", "Chaplain", "Chief Engineer", "Station Engineer",
 				"Atmospheric Technician", "Chief Medical Officer", "Medical Doctor", "Chemist", "Geneticist", "Virologist", "Psychologist", "Paramedic",
 				"Research Director", "Scientist", "Roboticist", "Expeditor", "Head of Security", "Warden", "Detective", "Security Officer", "Brig Physician", "Peacekeeper", "Prisoner", "NanoTrasen Representative", "Bouncer") //BlueMoon edit
+
+/// Те же тайтлы, что и get_all_jobs(), но ассоциативным множеством.
+/// get_all_jobs() аллоцирует список из четырёх десятков литералов на каждый вызов,
+/// а `in` по плоскому списку это линейный обход - для проверки членства в цикле
+/// по всему экипажу это выходит в сотни аллокаций и тысячи сравнений за фаер
+GLOBAL_LIST_INIT(all_jobs_lookup, build_all_jobs_lookup())
+
+/proc/build_all_jobs_lookup()
+	var/list/lookup = list()
+	for(var/job_title in get_all_jobs())
+		lookup[job_title] = TRUE
+	return lookup
 
 /proc/get_all_job_icons() //For all existing HUD icons
 	return get_all_jobs()

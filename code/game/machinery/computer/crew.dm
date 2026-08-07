@@ -11,7 +11,6 @@
 	circuit = /obj/item/circuitboard/computer/crew
 	var/obj/item/radio/headset/radio = /obj/item/radio/headset/headset_med
 	light_color = LIGHT_COLOR_BLUE
-	COOLDOWN_DECLARE(data_update_cooldown)
 
 /obj/machinery/computer/crew/Initialize()
 	. = ..()
@@ -25,17 +24,12 @@
 /obj/machinery/computer/crew/proc/radioAnnounce(message)
 	radio?.talk_into(src, message, MODE_DEPARTMENT)
 
-/obj/machinery/computer/crew/process(delta_time)
-	. = ..()
-	if(!.)
-		return
-	if(COOLDOWN_FINISHED(src, data_update_cooldown))
-		COOLDOWN_START(src, data_update_cooldown, SENSORS_UPDATE_PERIOD)
-		var/sector = z
-		if(!sector)
-			var/turf/T = get_turf(src)
-			sector = T.z
-		GLOB.crewmonitor.update_data(sector)
+// No process() override on purpose. The console used to rebuild GLOB.crewmonitor's per-z sensor
+// snapshot every SENSORS_UPDATE_PERIOD, but nothing reads that snapshot except
+// /datum/crewmonitor/ui_data(), which calls update_data() itself and gets the same cache. So every
+// console on the station was walking GLOB.carbon_list on a timer to warm a cache no one was
+// reading - and holding itself awake on SSmachines to do it (idle_sleeps = FALSE), which in turn
+// kept its area drawing dynamically and blocked the area's APC from parking.
 
 /obj/machinery/computer/crew/syndie
 	icon_keyboard = "syndie_key"
@@ -135,6 +129,12 @@ GLOBAL_DATUM_INIT(crewmonitor_command, /datum/crewmonitor/command, new)
 /datum/crewmonitor/ui_host(mob/user)
 	return ui_sources[user]
 
+/datum/crewmonitor/ui_close(mob/user)
+	//запись живёт с show() до закрытия UI; без чистки глобальный синглтон
+	//вечно держит и юзера, и источник (ИИ открывает консоль сам на себя)
+	ui_sources -= user
+	return ..()
+
 /datum/crewmonitor/ui_data(mob/user)
 	var/z = user.z
 	if(!z)
@@ -202,7 +202,7 @@ GLOBAL_DATUM_INIT(crewmonitor_command, /datum/crewmonitor/command, new)
 					continue
 
 				if (nanite_sensors || U.sensor_mode >= SENSOR_LIVING)
-					life_status = (!H.stat ? TRUE : FALSE)
+					life_status = H.stat != DEAD
 				else
 					life_status = null
 

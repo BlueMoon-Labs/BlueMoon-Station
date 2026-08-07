@@ -309,9 +309,70 @@
 	desc = "Комфортабельное и надёжно закреплённое кресло. С крепкими фиксирующими устройствами для плавных перелётов."
 	icon_state = "shuttle_chair"
 	buildstacktype = /obj/item/stack/sheet/mineral/titanium
+	resistance_flags = FIRE_PROOF
+	max_integrity = 120
+	custom_materials = list(/datum/material/titanium = SHEET_MATERIAL_AMOUNT * 2)
+
+/obj/structure/chair/comfy/shuttle/Initialize(mapload)
+	. = ..()
+	update_appearance()
 
 /obj/structure/chair/comfy/shuttle/GetArmrest()
 	return mutable_appearance('icons/obj/chairs.dmi', "shuttle_chair_armrest")
+
+/obj/structure/chair/comfy/shuttle/post_buckle_mob(mob/living/M)
+	. = ..()
+	update_appearance()
+
+/obj/structure/chair/comfy/shuttle/post_unbuckle_mob(mob/living/M)
+	. = ..()
+	update_appearance()
+
+/obj/structure/chair/comfy/shuttle/update_overlays()
+	. = ..()
+	if(has_buckled_mobs())
+		. += mutable_appearance(icon, "[icon_state]_down_front", ABOVE_MOB_LAYER + 0.01)
+		. += mutable_appearance(icon, "[icon_state]_down_behind", src.layer + 0.01)
+	else
+		. += mutable_appearance(icon, "[icon_state]_up", src.layer + 0.01)
+
+/obj/structure/chair/comfy/shuttle/user_buckle_mob(mob/living/M, mob/user, check_loc = TRUE)
+	if(!in_range(user, src) || !isturf(user.loc) || user.incapacitated() || M.anchored || !user.can_buckle_others(M, src))
+		return FALSE
+	add_fingerprint(user)
+	. = buckle_mob(M, check_loc = check_loc)
+	if(!.)
+		return
+	if(M == user)
+		M.visible_message(
+			span_notice("[user] садится на [src], опуская верхний ремень безопасности."),
+			span_notice("Вы садитесь на [src], опуская верхний ремень безопасности."),
+		)
+	else
+		M.visible_message(
+			span_notice("[user] усаживает [M] на [src], опуская ремень безопасности."),
+			span_notice("[user] усаживает вас на [src], опуская ремень безопасности."),
+		)
+
+/obj/structure/chair/comfy/shuttle/user_unbuckle_mob(mob/living/buckled_mob, mob/user)
+	var/mob/living/M = unbuckle_mob(buckled_mob)
+	if(!M)
+		return
+	if(M == user)
+		M.visible_message(
+			span_notice("[user] откидывает верхний ремень и встаёт с [src]."),
+			span_notice("Вы откидываете верхний ремень и встаёте с [src]."),
+		)
+	else
+		M.visible_message(
+			span_notice("[user] откидывает ремень и поднимает [M] с [src]."),
+			span_notice("[user] откидывает ремень и поднимает вас с [src]."),
+		)
+	add_fingerprint(user)
+	if(isliving(M.pulledby))
+		var/mob/living/L = M.pulledby
+		L.set_pull_offsets(M, L.grab_state)
+	return M
 
 /obj/structure/chair/office
 	anchored = FALSE

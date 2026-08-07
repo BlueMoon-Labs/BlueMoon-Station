@@ -113,7 +113,7 @@
 		addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_atom_colour)), 8)
 
 /turf/closed/wall/clockwork/dismantle_wall(devastated=0, explode=0)
-	if(devastated)
+	if(devastated || explode)
 		devastate_wall()
 		ScrapeAway()
 	else

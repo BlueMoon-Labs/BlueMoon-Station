@@ -540,7 +540,7 @@
 
 /mob/living/simple_animal/pet/cat/space/alta/Initialize(mapload)
 	. = ..()
-	if((NEW_YEAR || CHRISTMAS || FESTIVE_SEASON) in SSevents.holidays)
+	if((NEW_YEAR || CHRISTMAS || FESTIVE_SEASON) in SSholidays.holidays)
 		icon_state = "spacealta_santa"
 		icon_living = "spacealta_santa"
 		icon_dead = "spacealta_dead_santa"

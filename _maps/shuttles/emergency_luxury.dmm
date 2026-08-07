@@ -460,6 +460,11 @@
 	},
 /turf/open/floor/carpet/royalblue,
 /area/shuttle/escape/luxury)
+"DW" = (
+/obj/structure/chair/comfy,
+/mob/living/carbon/monkey/punpun,
+/turf/open/floor/carpet/red,
+/area/shuttle/escape/luxury)
 "Uj" = (
 /obj/machinery/door/airlock/gold/glass{
 	name = "shuttle brig";
@@ -598,7 +603,7 @@ ac
 "}
 (9,1,1) = {"
 ac
-bm
+DW
 ab
 bo
 af

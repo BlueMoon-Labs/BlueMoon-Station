@@ -138,7 +138,11 @@
 	buckled_mob.anchored = initial(buckled_mob.anchored)
 	buckled_mob.update_mobility()
 	buckled_mob.clear_alert("buckled")
-	buckled_mob.set_glide_size(DELAY_TO_GLIDE_SIZE(buckled_mob.total_multiplicative_slowdown()))
+	// Цена шага, а не сырая сумма модификаторов: total_multiplicative_slowdown()
+	// складывает и то, что отфильтровано типом движения или конфликтом, и не
+	// знает о подтипах с более широким movement_delay(). Отпущенному мобу нужен
+	// тот же glide, по которому он сделает следующий шаг.
+	buckled_mob.set_glide_size(DELAY_TO_GLIDE_SIZE(buckled_mob.movement_step_cost(FALSE)))
 	buckled_mobs -= buckled_mob
 	SEND_SIGNAL(src, COMSIG_MOVABLE_UNBUCKLE, buckled_mob, force)
 

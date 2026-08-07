@@ -1,7 +1,7 @@
 //Clockwork armor: High melee protection but weak to lasers
 /obj/item/clothing/head/helmet/clockwork
 	name = "clockwork helmet"
-	desc = "A heavy helmet made of brass."
+	desc = "Тяжелый шлем из латуни."
 	icon = 'icons/obj/clothing/clockwork_garb.dmi'
 	icon_state = "clockwork_helmet"
 	w_class = WEIGHT_CLASS_NORMAL
@@ -40,14 +40,14 @@
 	..()
 	if(slot == ITEM_SLOT_HEAD && !is_servant_of_ratvar(user))
 		if(!iscultist(user))
-			to_chat(user, "<span class='heavy_brass'>\"Now now, this is for my servants, not you.\"</span>")
-			user.visible_message("<span class='warning'>As [user] puts [src] on, it flickers off [user.ru_ego()] head!</span>", "<span class='warning'>The helmet flickers off your head, leaving only nausea!</span>")
+			to_chat(user, "<span class='heavy_brass'>\"Эй-эй, это для моих слуг, а не для тебя.\"</span>")
+			user.visible_message("<span class='warning'>Как только [user] надевает [src], шлем срывается с [user.ru_ego()] головы!</span>", "<span class='warning'>Шлем срывается с головы, оставляя после себя лишь тошноту!</span>")
 			if(iscarbon(user))
 				var/mob/living/carbon/C = user
 				C.vomit(20)
 		else
-			to_chat(user, "<span class='heavy_brass'>\"Do you have a hole in your head? You're about to.\"</span>")
-			to_chat(user, "<span class='userdanger'>The helmet tries to drive a spike through your head as you scramble to remove it!</span>")
+			to_chat(user, "<span class='heavy_brass'>\"У тебя в голове дырка? Скоро будет.\"</span>")
+			to_chat(user, "<span class='userdanger'>Шлем словно пытается проткнуть тебе голову шипом, пока ты изо всех сил пытаешься его снять!</span>")
 			user.emote("realagony")
 			user.apply_damage(30, BRUTE, BODY_ZONE_HEAD)
 			user.adjustOrganLoss(ORGAN_SLOT_BRAIN, 30)
@@ -60,7 +60,7 @@
 
 /obj/item/clothing/suit/armor/clockwork
 	name = "clockwork cuirass"
-	desc = "A bulky cuirass made of brass."
+	desc = "Массивная кираса из латуни."
 	icon = 'icons/obj/clothing/clockwork_garb.dmi'
 	icon_state = "clockwork_cuirass"
 	w_class = WEIGHT_CLASS_BULKY
@@ -108,14 +108,14 @@
 	..()
 	if(slot == ITEM_SLOT_OCLOTHING && !is_servant_of_ratvar(user))
 		if(!iscultist(user))
-			to_chat(user, "<span class='heavy_brass'>\"Now now, this is for my servants, not you.\"</span>")
-			user.visible_message("<span class='warning'>As [user] puts [src] on, it flickers off [user.ru_ego()] body!</span>", "<span class='warning'>The cuirass flickers off your body, leaving only nausea!</span>")
+			to_chat(user, "<span class='heavy_brass'>\"Эй-эй, это для моих слуг, а не для тебя.\"</span>")
+			user.visible_message("<span class='warning'>Как только [user] надевает [src] на себя, кираса срывается с [user.ru_ego()] туловища!</span>", "<span class='warning'>Кираса срывается с туловища, оставляя после себя лишь тошноту!</span>")
 			if(iscarbon(user))
 				var/mob/living/carbon/C = user
 				C.vomit(20)
 		else
-			to_chat(user, "<span class='heavy_brass'>\"I think this armor is too hot for you to handle.\"</span>")
-			to_chat(user, "<span class='userdanger'>The cuirass emits a burst of flame as you scramble to get it off!</span>")
+			to_chat(user, "<span class='heavy_brass'>\"Эта броня для тебя слишком горячая штучка.\"</span>")
+			to_chat(user, "<span class='userdanger'>Кираса извергает языки пламени, обжигая тебя, пока ты изо всех сил пытаешься избавиться от неё!</span>")
 			user.emote("realagony")
 			user.apply_damage(15, BURN, BODY_ZONE_CHEST)
 			user.adjust_fire_stacks(2)
@@ -124,7 +124,7 @@
 
 /obj/item/clothing/gloves/clockwork
 	name = "clockwork gauntlets"
-	desc = "Heavy, shock-resistant gauntlets with brass reinforcement."
+	desc = "Тяжёлые, ударопрочные перчатки с латунным укреплением."
 	icon = 'icons/obj/clothing/clockwork_garb.dmi'
 	icon_state = "clockwork_gauntlets"
 	item_state = "clockwork_gauntlets"
@@ -168,14 +168,14 @@
 	..()
 	if(slot == ITEM_SLOT_GLOVES && !is_servant_of_ratvar(user))
 		if(!iscultist(user))
-			to_chat(user, "<span class='heavy_brass'>\"Now now, this is for my servants, not you.\"</span>")
-			user.visible_message("<span class='warning'>As [user] puts [src] on, it flickers off [user.ru_ego()] arms!</span>", "<span class='warning'>The gauntlets flicker off your arms, leaving only nausea!</span>")
+			to_chat(user, "<span class='heavy_brass'>\"Эй-эй, это для моих слуг, а не для тебя.\"</span>")
+			user.visible_message("<span class='warning'>Как только [user] надевает [src], перчатки срываются с [user.ru_ego()] рук!</span>", "<span class='warning'>Перчатки срываются с рук, оставляя после себя лишь тошноту!</span>")
 			if(iscarbon(user))
 				var/mob/living/carbon/C = user
 				C.vomit()
 		else
-			to_chat(user, "<span class='heavy_brass'>\"Did you like having arms?\"</span>")
-			to_chat(user, "<span class='userdanger'>The gauntlets suddenly squeeze tight, crushing your arms before you manage to get them off!</span>")
+			to_chat(user, "<span class='heavy_brass'>\"Тебе нравилось, что у тебя были руки?\"</span>")
+			to_chat(user, "<span class='userdanger'>Перчатки внезапно сжимаются, сдавливая руки, и ты не успеваешь их снять!</span>")
 			user.emote("realagony")
 			user.apply_damage(7, BRUTE, BODY_ZONE_L_ARM)
 			user.apply_damage(7, BRUTE, BODY_ZONE_R_ARM)
@@ -183,7 +183,7 @@
 
 /obj/item/clothing/shoes/clockwork
 	name = "clockwork treads"
-	desc = "Industrial boots made of brass. They're very heavy."
+	desc = "Промышленные ботинки из латуни. Они очень тяжелые."
 	icon = 'icons/obj/clothing/clockwork_garb.dmi'
 	icon_state = "clockwork_treads"
 	w_class = WEIGHT_CLASS_NORMAL
@@ -218,14 +218,14 @@
 	..()
 	if(slot == ITEM_SLOT_FEET && !is_servant_of_ratvar(user))
 		if(!iscultist(user))
-			to_chat(user, "<span class='heavy_brass'>\"Now now, this is for my servants, not you.\"</span>")
-			user.visible_message("<span class='warning'>As [user] puts [src] on, it flickers off [user.ru_ego()] feet!</span>", "<span class='warning'>The treads flicker off your feet, leaving only nausea!</span>")
+			to_chat(user, "<span class='heavy_brass'>\"Эй-эй, это для моих слуг, а не для тебя.\"</span>")
+			user.visible_message("<span class='warning'>Как только [user] надевает [src], ботинки срываются с [user.ru_ego()] ног!</span>", "<span class='warning'>Ботинки срываются с ног, оставляя после себя лишь тошноту!</span>")
 			if(iscarbon(user))
 				var/mob/living/carbon/C = user
 				C.vomit()
 		else
-			to_chat(user, "<span class='heavy_brass'>\"Let's see if you can dance with these.\"</span>")
-			to_chat(user, "<span class='userdanger'>The treads turn searing hot as you scramble to get them off!</span>")
+			to_chat(user, "<span class='heavy_brass'>\"Посмотрим, сможешь ли ты танцевать в этом.\"</span>")
+			to_chat(user, "<span class='userdanger'>Когда ты пытаешься их снять, подошвы становятся раскаленными!</span>")
 			user.emote("realagony")
 			user.apply_damage(7, BURN, BODY_ZONE_L_LEG)
 			user.apply_damage(7, BURN, BODY_ZONE_R_LEG)

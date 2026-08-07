@@ -23,14 +23,9 @@
 			candidates.Remove(P)
 			continue
 		// BLUEMOON ADD END
-		if(antag_flag_override)
-			if(!(HAS_ANTAG_PREF(P.client, antag_flag_override)))
-				candidates.Remove(P)
-				continue
-		else
-			if(!(HAS_ANTAG_PREF(P.client, antag_flag)))
-				candidates.Remove(P)
-				continue
+		if(!has_required_antag_preference(P.client))
+			candidates.Remove(P)
+			continue
 		var/role_to_bancheck_lj = antag_flag_override ? antag_flag_override : antag_flag
 		if(role_to_bancheck_lj && (jobban_isbanned(P, role_to_bancheck_lj) || QDELETED(P)))
 			candidates.Remove(P)
@@ -48,7 +43,8 @@
 				if (M.mind && (M.mind.assigned_role in enemy_roles) && (!(M in candidates) || (M.mind.assigned_role in restricted_roles)))
 					job_check++ // Checking for "enemies" (such as sec officers). To be counters, they must either not be candidates to that rule, or have a job that restricts them from it
 
-		var/threat = round(mode.threat_level/10)
+		// Кламп band'а: угроза ниже 10 даёт индекс 0, выше 100 (форс/оценка) - за границу списка
+		var/threat = clamp(round(mode.threat_level/10), 1, length(required_enemies))
 		if (job_check < required_enemies[threat])
 			SSblackbox.record_feedback("tally","dynamic",1,"Times rulesets rejected due to not enough enemy roles")
 			return FALSE
@@ -79,6 +75,8 @@
 	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_LIGHT) // BLUEMOON ADD
 	weight = 6  //BLUEMOON CHANGES
 	cost = 6 //BLUEMOON CHANGES
+	intensity = 15
+	family = "traitor"
 	requirements = list(101,40,25,20,15,10,10,10,10,10)
 	repeatable = TRUE
 
@@ -103,6 +101,7 @@
 	weight = 2
 	delay = 1 MINUTES // Prevents rule start while head is offstation.
 	cost = 7 //BLUEMOON CHANGES - маленький шанс и низкая стоимость из-за сложности
+	intensity = 15
 	requirements = list(101,101,101,101,50,20,20,20,20,20)
 	flags = HIGH_IMPACT_RULESET
 	blocking_rules = list(/datum/dynamic_ruleset/roundstart/revs)
@@ -177,7 +176,12 @@
 	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD; Существовал в тимбазе до удаления.
 	required_candidates = 1
 	weight = 4 //BLUEMOON CHANGES
-	cost = 10
+	// Тот же медленный еретик, что и мидраунд-пробуждение (см. crew_conversion/heretic),
+	// только с латеджойна: до первых жертв полчаса-час тихого фарма влияний,
+	// поэтому цена и вес в нагрузке директора ниже агента.
+	cost = 6
+	intensity = 8
+	family = "heretic" // с мидраунд-пробуждением: не подряд
 	requirements = list(101,101,101,50,40,20,20,15,10,10)
 	repeatable = TRUE
 
@@ -199,6 +203,8 @@
 	required_candidates = 1
 	weight = 4
 	cost = 10
+	intensity = 15
+	family = "changeling"
 	requirements = list(101,101,60,50,40,30,20,15,10,10)
 	antag_cap = list("denominator" = 24)
 	repeatable = TRUE
@@ -217,6 +223,9 @@
 
 /datum/dynamic_ruleset/latejoin/bloodsuckers
 	name = "Bloodsucker Guest"
+	// Кровососы сломаны и ждут починки/упрощения: естественно не выдаются ни в одном типе раунда.
+	// Прежний хак (только team-based) заменён честным выключателем - ручной форс админом работает.
+	admin_only = TRUE
 	antag_flag = "bloodsucker late"
 	antag_flag_override = ROLE_BLOODSUCKER
 	antag_datum = /datum/antagonist/bloodsucker
@@ -225,9 +234,11 @@
 	enemy_roles = list("Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain") //BLUEMOON CHANGES
 	required_enemies = list(2,2,1,1,1,1,1,0,0,0)
 	required_candidates = 1
-	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED) // BLUEMOON ADD
+	required_round_type = list(ROUNDTYPE_DYNAMIC_LIGHT, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_TEAMBASED)
 	weight = 4
-	cost = 5
+	cost = 8
+	intensity = 15
+	family = "bloodsuckers"
 	scaling_cost = 10
 	requirements = list(101,101,60,50,40,30,20,15,10,10)
 	antag_cap = list("denominator" = 39, "offset" = 1)

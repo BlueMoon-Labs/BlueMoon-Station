@@ -44,6 +44,8 @@
 
 /mob/living/silicon/ai/bullet_act(obj/item/projectile/Proj)
 	. = ..()
+	if(QDELETED(src)) //on_hit внутри ..() мог уничтожить цель
+		return
 	updatehealth()
 
 /mob/living/silicon/ai/flash_act(intensity = 1, override_blindness_check = 0, affect_silicon = 0)

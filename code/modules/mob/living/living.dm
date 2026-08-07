@@ -1,5 +1,11 @@
 /mob/living/Initialize(mapload)
 	. = ..()
+	var/static/next_life_stagger_phase = 0
+	life_stagger_phase = next_life_stagger_phase
+	// Mix higher bits into the default periodic bucket so work selected by the
+	// outer far-Life throttle does not stay permanently synchronized with it.
+	life_periodic_phase = next_life_stagger_phase ^ (next_life_stagger_phase >> 2)
+	next_life_stagger_phase++
 	if(unique_name)
 		name = "[name] ([rand(1, 1000)])"
 		real_name = name
@@ -11,6 +17,8 @@
 	stamina_buffer = INFINITY
 	UpdateStaminaBuffer()
 	GLOB.mob_living_list += src
+	if(stat != DEAD)
+		become_ai_targetable()
 
 /mob/living/prepare_huds()
 	..()
@@ -39,8 +47,12 @@
 	end_parry_sequence()
 	stop_active_blocking()
 	if(LAZYLEN(status_effects))
-		for(var/s in status_effects)
-			var/datum/status_effect/S = s
+		// Снимок обязателен: и qdel(S), и be_replaced() делают
+		// LAZYREMOVE(owner.status_effects, src), то есть правят список прямо в обходе
+		// по нему - индекс проматывается и каждый второй эффект пропускается.
+		// Пропущенный остаётся с owner на этом мобе, а моб остаётся с ним в
+		// status_effects: цикл ссылок, который BYOND не соберёт никогда
+		for(var/datum/status_effect/S as anything in status_effects.Copy())
 			if(S.on_remove_on_mob_delete) //the status effect calls on_remove when its mob is deleted
 				qdel(S)
 			else
@@ -52,10 +64,22 @@
 	QDEL_LIST_ASSOC_VAL(ability_actions)
 	QDEL_LIST(abilities)
 	QDEL_LIST(implants)
+	// Квирки держат владельца жёстко: quirk_holder плюс запись в SSquirks.quirk_objects.
+	// Снимались они только при явном снятии квирка и при переносе на другого моба, поэтому
+	// удаление тела (админская пересадка, госткафе, возврат в лобби) оставляло висеть и
+	// квирк, и моба - это был самый массовый класс харддела прод-раунда.
+	QDEL_LIST(roundstart_quirks)
+	// Тот же случай: /datum/surgery держит и target, и operated_bodypart, а снимался
+	// только при отрыве конечности. Один незакрытый датум операции = труп плюс его грудь.
+	QDEL_LIST(surgeries)
 	remove_from_all_data_huds()
 	cleanse_trait_datums()
+	QDEL_NULL(ai_controller)
 	GLOB.mob_living_list -= src
 	GLOB.ssd_mob_list -= src
+	//лейтджойнером может быть не только человек (ИИ, борг) - выписываем здесь,
+	//а не в human/Destroy, иначе список вечно держит удалённого моба
+	GLOB.latejoiners -= src
 	SSmobs.currentrun -= src
 	QDEL_LIST(diseases)
 	return ..()
@@ -106,6 +130,15 @@
 
 	if(now_pushing)
 		return TRUE
+
+	//Two AI mobs of the same faction must not shove or swap through each other.
+	//The push made a mob-blocked step "succeed", hiding it from the movement
+	//layer's is_mob_only_blocked_step queue and leaving two shooters endlessly
+	//trading the same tile. A cleanly failed step lets that queue handle them.
+	if(ai_controller && !client && isliving(M))
+		var/mob/living/allied_ai = M
+		if(allied_ai.ai_controller && !allied_ai.client && faction_check_mob(allied_ai))
+			return TRUE
 
 	var/they_can_move = TRUE
 
@@ -679,6 +712,7 @@
 	if(full_heal)
 		fully_heal(admin_revive)
 	if(stat == DEAD && can_be_revived()) //in some cases you can't revive (e.g. no brain)
+		REMOVE_TRAIT(src, TRAIT_VITALITY_MATRIX_CONSUMED, "vitality_matrix")
 		remove_from_dead_mob_list()
 		add_to_alive_mob_list()
 		suiciding = 0
@@ -856,6 +890,10 @@
 	set name = "Resist"
 	set category = "IC"
 
+	DEFAULT_QUEUE_OR_CALL_VERB(VERB_CALLBACK(src, PROC_REF(execute_resist)))
+
+///Proc version of the resist verb so SSverb_manager can defer it under load.
+/mob/living/proc/execute_resist()
 	if(!can_resist())
 		return
 
@@ -981,7 +1019,7 @@
 			else
 				throw_alert("gravity", /atom/movable/screen/alert/highgravity)
 	else
-		throw_alert("gravity", /atom/movable/screen/alert/weightless)
+		update_flight_alert()
 	if(!override && !is_flying())
 		float(!has_gravity)
 
@@ -1259,6 +1297,7 @@
 /mob/living/proc/IgniteMob()
 	if(fire_stacks > 0 && !on_fire)
 		on_fire = 1
+		wake_life() //горящему мобу handle_fire нужен каждый фаер, бакет снимаем
 		visible_message("<span class='warning'>[src] catches fire!</span>", \
 						"<span class='userdanger'>Вы горите!</span>")
 		new/obj/effect/dummy/lighting_obj/moblight/fire(src)
@@ -1558,6 +1597,12 @@
 	return PAIN_NO
 
 /mob/living/has_pain(obj/item/bodypart/limb)
+	// Труп боли не чувствует. Гейт стоит именно здесь, потому что через has_pain()
+	// проходят все реакции тела на лечение (костный гель, вправление вывиха, наложение
+	// раны): без него мёртвому телу капал стамина-урон и уходили болевые эмоуты с
+	// сообщениями "вы чувствуете боль" - в чат уже отыгравшему смерть игроку.
+	if(stat == DEAD)
+		return PAIN_NO
 	if(HAS_TRAIT(src, TRAIT_ROBOTIC_ORGANISM) || HAS_TRAIT(src, TRAIT_PAINKILLER))
 		return PAIN_NO
 	else if(HAS_TRAIT(src, TRAIT_BLUEMOON_HIGH_PAIN_THRESHOLD))

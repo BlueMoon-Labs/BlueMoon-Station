@@ -192,19 +192,48 @@
 	TEST_ASSERT_EQUAL(alarm.process_interval, 1, "a fresh air alarm processes every fire")
 	TEST_ASSERT_EQUAL(alarm.process_skips_left, 0, "...with nothing queued to skip")
 
-	// Steady state: the per-fire interval ramps up to the cap and stays there. Each iteration
-	// first burns any queued skips so we always observe the result of a real air read.
+	// The backoff cap depends on whether the local turf takes part in active atmos exchange:
+	// an excited turf caps at AALARM_MAX_PROCESS_INTERVAL, a parked one coasts much longer at
+	// AALARM_INACTIVE_PROCESS_INTERVAL. Excite the test turf for the first steady-state block.
+	var/turf/open/alarm_turf = get_turf(alarm)
+	TEST_ASSERT(istype(alarm_turf), "the test reservation floor must be an open turf")
+	var/was_excited = alarm_turf.excited
+	alarm_turf.excited = TRUE
+
+	// Steady state on an active turf: an excited turf cuts queued skips short, so EVERY fire is
+	// a real air read, and the per-fire interval ramps up to the cap and stays there.
 	for(var/i in 1 to 2 * AALARM_MAX_PROCESS_INTERVAL + 4)
-		while(alarm.process_skips_left > 0)
-			alarm.process()
 		var/interval_before = alarm.process_interval
 		alarm.process()
 		TEST_ASSERT(alarm.process_interval >= interval_before, "process_interval must not shrink while danger_level is stable (was [interval_before], now [alarm.process_interval])")
-		TEST_ASSERT(alarm.process_interval <= AALARM_MAX_PROCESS_INTERVAL, "process_interval ([alarm.process_interval]) must never exceed AALARM_MAX_PROCESS_INTERVAL ([AALARM_MAX_PROCESS_INTERVAL])")
+		TEST_ASSERT(alarm.process_interval <= AALARM_MAX_PROCESS_INTERVAL, "process_interval ([alarm.process_interval]) must never exceed AALARM_MAX_PROCESS_INTERVAL ([AALARM_MAX_PROCESS_INTERVAL]) on an active turf")
 		TEST_ASSERT_EQUAL(alarm.process_skips_left, alarm.process_interval - 1, "after a real read the alarm queues (interval - 1) skipped fires")
 	TEST_ASSERT_EQUAL(alarm.process_interval, AALARM_MAX_PROCESS_INTERVAL, "process_interval must saturate at the cap in steady state")
 
+	// The turf leaves active exchange: queued skips now burn down one per fire, and the cap
+	// opens up to the inactive interval. The burn loops are bounded by the queued count so a
+	// contract change fails the test instead of hanging it.
+	alarm_turf.excited = FALSE
+	for(var/i in 1 to 2 * AALARM_INACTIVE_PROCESS_INTERVAL + 4)
+		var/queued_skips = alarm.process_skips_left
+		for(var/burn in 1 to queued_skips)
+			alarm.process()
+		TEST_ASSERT_EQUAL(alarm.process_skips_left, 0, "on a parked turf each skipped fire must decrement the queue by exactly one")
+		alarm.process()
+		TEST_ASSERT(alarm.process_interval <= AALARM_INACTIVE_PROCESS_INTERVAL, "process_interval ([alarm.process_interval]) must never exceed AALARM_INACTIVE_PROCESS_INTERVAL ([AALARM_INACTIVE_PROCESS_INTERVAL]) on an inactive turf")
+	TEST_ASSERT_EQUAL(alarm.process_interval, AALARM_INACTIVE_PROCESS_INTERVAL, "process_interval must saturate at the inactive cap on a parked turf")
+
+	// The turf re-enters active exchange: the very next fire must cut through the queued skips,
+	// read now, and clamp the interval back to the active cap.
+	alarm_turf.excited = TRUE
+	TEST_ASSERT(alarm.process_skips_left > 0, "precondition: skips must be queued before the re-excite check")
+	alarm.process()
+	TEST_ASSERT(alarm.process_interval <= AALARM_MAX_PROCESS_INTERVAL, "a re-excited turf must clamp the interval back to AALARM_MAX_PROCESS_INTERVAL (got [alarm.process_interval])")
+	TEST_ASSERT_EQUAL(alarm.process_skips_left, alarm.process_interval - 1, "the re-excited fire performs a real read and re-queues from the clamped interval")
+
 	// A queued skip must not touch the air: a real read can never produce this danger_level.
+	// Park the turf again - an excited turf never skips.
+	alarm_turf.excited = FALSE
 	alarm.process_skips_left = AALARM_MAX_PROCESS_INTERVAL
 	var/sentinel = 1234
 	alarm.danger_level = sentinel
@@ -212,11 +241,13 @@
 	alarm.process()
 	TEST_ASSERT_EQUAL(alarm.danger_level, sentinel, "an air alarm with skips queued must not read the air")
 	TEST_ASSERT_EQUAL(alarm.process_skips_left, queued - 1, "a skipped fire decrements the skip counter")
-	while(alarm.process_skips_left > 0)
+	for(var/burn in 1 to alarm.process_skips_left)
 		alarm.process()
+	TEST_ASSERT_EQUAL(alarm.process_skips_left, 0, "burning the queued skips must leave none behind")
 	TEST_ASSERT_EQUAL(alarm.danger_level, sentinel, "danger_level stays untouched while skips remain")
 	alarm.process()
 	TEST_ASSERT_NOTEQUAL(alarm.danger_level, sentinel, "with no skips queued the alarm reads the air and recomputes danger_level")
+	alarm_turf.excited = was_excited
 
 	// danger_level changing snaps the alarm back to processing every fire. Rig a TLV so the
 	// next read produces a different level than the current one (no_checks → 0; an impossibly
@@ -250,6 +281,14 @@
 	turret.set_machine_stat(0) // clear NOPOWER — the test reservation is unpowered
 	turret.on = TRUE
 
+	// process() skips scanning entirely on z-levels without clients, so simulate one
+	// (same trick as the ssmobs_optimization tests).
+	var/turf/turret_turf = get_turf(turret)
+	if(!islist(SSmobs.clients_by_zlevel) || turret_turf.z > SSmobs.clients_by_zlevel.len)
+		SSmobs.MaxZChanged()
+	var/mob/living/carbon/human/fake_player = allocate(/mob/living/carbon/human)
+	SSmobs.clients_by_zlevel[turret_turf.z] += fake_player
+
 	turret.scan_count = 0
 	turret.process()
 	TEST_ASSERT_EQUAL(turret.scan_count, 1, "the first process() (cooldown unset) must scan once")
@@ -261,6 +300,13 @@
 	turret.target_scan_cooldown = world.time - 1 // force the cooldown to be finished
 	turret.process()
 	TEST_ASSERT_EQUAL(turret.scan_count, 1, "process() after the scan cooldown lapses must scan again")
+
+	// C2b: with no clients left on the z-level the turret must not scan at all.
+	SSmobs.clients_by_zlevel[turret_turf.z] -= fake_player
+	turret.scan_count = 0
+	turret.target_scan_cooldown = world.time - 1
+	turret.process()
+	TEST_ASSERT_EQUAL(turret.scan_count, 0, "process() on a clientless z-level must skip scanning entirely")
 
 /// Counts how many times a status display rebuilds its appearance/overlays.
 /obj/machinery/status_display/unit_test_appearance_counter
@@ -420,3 +466,177 @@
 	TEST_ASSERT_EQUAL(test_area.used_equip - before, 0, "an unpowered scrubber draws no power")
 
 	original_area.contents.Add(floor) // restore the floor before test_area is qdel'd by teardown
+
+// ---------------------------------------------------------------------------
+// Пас по perf3.log: событийные интеркомы/свитчи, сон SSU/секвея/гейгера, APC
+// ---------------------------------------------------------------------------
+
+/// D1: интерком не поллит SSobj - он событийный: сигнал области меняет on,
+/// ЭМИ гасит сразу, окончание ЭМИ сверяется с питанием, переезд перевешивает
+/// подписку на новую область.
+/datum/unit_test/intercom_event_driven/Run()
+	var/turf/floor = run_loc_floor_bottom_left
+	// Резервация лежит в /area/space (powered() всегда FALSE) - подсовываем
+	// синтетическую базовую область, как в machinery_auto_use_power.
+	var/area/original_area = get_area(floor)
+	var/area/test_area = new /area
+	allocated += test_area
+	test_area.contents.Add(floor)
+
+	var/obj/item/radio/intercom/intercom = allocate(/obj/item/radio/intercom)
+	TEST_ASSERT(!(intercom.datum_flags & DF_ISPROCESSING), "intercom must not poll any processing subsystem")
+	TEST_ASSERT(intercom.on, "intercom in a powered synthetic area must start on")
+
+	// Смена питания области доезжает сигналом, без поллинга.
+	test_area.power_equip = FALSE
+	test_area.power_change()
+	TEST_ASSERT(!intercom.on, "area power loss must switch the intercom off via the signal")
+	TEST_ASSERT_EQUAL(intercom.icon_state, "intercom-p", "powerless intercom must show the off icon")
+	test_area.power_equip = TRUE
+	test_area.power_change()
+	TEST_ASSERT(intercom.on, "area power restore must switch the intercom back on via the signal")
+
+	// ЭМИ: гаснет сразу, по окончании сверяется с питанием области.
+	intercom.emp_act(1) // severity 1 = тяжёлый ЭМИ в этом форке
+	TEST_ASSERT(!intercom.on, "an EMPed intercom must be off")
+	TEST_ASSERT_EQUAL(intercom.icon_state, "intercom-p", "an EMPed intercom must show the off icon immediately, not on the next poll")
+	intercom.end_emp_effect(intercom.emped)
+	TEST_ASSERT_EQUAL(intercom.emped, 0, "end_emp_effect must clear the EMP counter")
+	TEST_ASSERT(intercom.on, "after the EMP ends the intercom must re-check area power and come back on")
+
+	// Переезд: подписка следует за областью (старая область больше не влияет).
+	var/turf/second_floor = get_step(floor, EAST) || get_step(floor, WEST)
+	TEST_ASSERT_NOTNULL(second_floor, "test zone must have a neighbouring turf")
+	var/area/second_area = new /area
+	allocated += second_area
+	second_area.contents.Add(second_floor)
+	intercom.forceMove(second_floor)
+	second_area.power_equip = FALSE
+	second_area.power_change()
+	TEST_ASSERT(!intercom.on, "after moving, the NEW area's power change must drive the intercom")
+	test_area.power_equip = FALSE
+	test_area.power_change()
+	second_area.power_equip = TRUE
+	second_area.power_change()
+	TEST_ASSERT(intercom.on, "the OLD area's state must no longer matter after the move")
+
+	intercom.forceMove(floor)
+	original_area.contents.Add(floor)
+	original_area.contents.Add(second_floor)
+
+/// D2: конвейерный свитч событийный - не сидит в процессинге, interact()
+/// сразу гоняет ленты, LateInitialize синхронизирует их на старте.
+/datum/unit_test/conveyor_switch_event_driven/Run()
+	var/turf/floor = run_loc_floor_bottom_left
+	var/obj/machinery/conveyor_switch/toggle = allocate(/obj/machinery/conveyor_switch, null, "unit_test_conv")
+	TEST_ASSERT(!(toggle.datum_flags & DF_ISPROCESSING), "conveyor switch must not process at all")
+
+	var/turf/belt_turf = get_step(floor, NORTH) || get_step(floor, SOUTH)
+	TEST_ASSERT_NOTNULL(belt_turf, "test zone must have a neighbouring turf for the belt")
+	var/obj/machinery/conveyor/belt = allocate(/obj/machinery/conveyor, belt_turf, EAST, "unit_test_conv")
+	belt.set_machine_stat(0) // резервация без питания - update() лент сбрасывает operating под NOPOWER
+	TEST_ASSERT_EQUAL(belt.operating, 0, "the belt must start idle")
+
+	// interact() без очереди: ленты приходят в движение сразу.
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human)
+	toggle.interact(user)
+	TEST_ASSERT(toggle.position != 0, "interact() must flip the switch position")
+	TEST_ASSERT_EQUAL(belt.operating, toggle.position, "interact() must drive the linked belts immediately")
+	TEST_ASSERT(belt.datum_flags & DF_ISPROCESSING, "a running belt must be processing")
+
+	// Выключение тем же путём.
+	toggle.interact(user)
+	TEST_ASSERT_EQUAL(toggle.position, 0, "the second interact() must switch the belts off")
+	TEST_ASSERT_EQUAL(belt.operating, 0, "the belts must stop when the switch goes off")
+	// Лента сама уйдёт из процессинга через PROCESS_KILL; погасим для детерминизма.
+	STOP_PROCESSING(SSfastprocess, belt)
+
+/// D3: SSU спит без МОДа и с полной ячейкой, заряжает только разряженную.
+/datum/unit_test/suit_storage_charge_gate/Run()
+	var/obj/machinery/suit_storage_unit/unit = allocate(/obj/machinery/suit_storage_unit)
+	unit.set_machine_stat(0)
+
+	// Пустой SSU паркуется первым же фаером.
+	unit.process(2)
+	TEST_ASSERT(unit.machine_sleeping, "an SSU with no MOD inside must park itself")
+	TEST_ASSERT(!(unit.datum_flags & DF_ISPROCESSING), "a parked SSU must leave the processing list")
+
+	// Вставленный МОД с разряженной ячейкой заряжается.
+	var/obj/item/mod/control/suit = allocate(/obj/item/mod/control)
+	suit.forceMove(unit)
+	unit.mod = suit
+	if(!suit.cell)
+		suit.cell = new /obj/item/stock_parts/cell(suit)
+	suit.cell.maxcharge = 1000
+	suit.cell.charge = 100
+	unit.machine_wake()
+	TEST_ASSERT(!unit.machine_sleeping, "machine_wake() must resume the SSU")
+	var/charge_before = suit.cell.charge
+	unit.process(2)
+	TEST_ASSERT(suit.cell.charge > charge_before, "an awake SSU must charge the docked MOD cell")
+	TEST_ASSERT(!unit.machine_sleeping, "the SSU must keep processing while the cell is below max")
+
+	// Полная ячейка - снова сон.
+	suit.cell.charge = suit.cell.maxcharge
+	unit.process(2)
+	TEST_ASSERT(unit.machine_sleeping, "an SSU with a full MOD cell must park itself")
+	unit.mod = null
+	suit.forceMove(run_loc_floor_bottom_left)
+
+/// D4: секвей с полным зарядом уходит из SSfastprocess, регэн дельта-таймовый.
+/datum/unit_test/secway_charge_park/Run()
+	var/obj/vehicle/ridden/secway/bike = allocate(/obj/vehicle/ridden/secway)
+
+	bike.charge = bike.chargemax
+	TEST_ASSERT_EQUAL(bike.process(1), PROCESS_KILL, "a fully charged secway's process() must return PROCESS_KILL")
+
+	bike.charge = bike.chargemax - 10
+	bike.last_tick = world.time
+	TEST_ASSERT_NOTEQUAL(bike.process(1), PROCESS_KILL, "a discharged secway must keep processing")
+
+	// Дельта-регэн: прошедшее время конвертируется в заряд с клампом в максимум.
+	bike.charge = 0
+	bike.last_tick = world.time - 10
+	bike.process(1)
+	TEST_ASSERT_EQUAL(bike.charge, min(bike.chargerate * 10, bike.chargemax), "regen must scale with elapsed world.time")
+	STOP_PROCESSING(SSfastprocess, bike)
+
+/// D5: гейгер хардсьюта спит вне радиации и просыпается от rad_act().
+/datum/unit_test/hardsuit_geiger_park/Run()
+	var/obj/item/clothing/head/helmet/space/hardsuit/helmet = allocate(/obj/item/clothing/head/helmet/space/hardsuit)
+
+	// Две пустые итерации - и в сон с погашенным звуком.
+	TEST_ASSERT_NOTEQUAL(helmet.process(2), PROCESS_KILL, "the first quiet fire is a grace period")
+	TEST_ASSERT_EQUAL(helmet.process(2), PROCESS_KILL, "the second quiet fire must park the geiger")
+	TEST_ASSERT_EQUAL(helmet.soundloop.last_radiation, 0, "the parked geiger must silence its soundloop")
+	STOP_PROCESSING(SSobj, helmet) // как поступает сабсистема с PROCESS_KILL
+
+	// Радиация будит и снова считается.
+	helmet.rad_act(50)
+	TEST_ASSERT(helmet.datum_flags & DF_ISPROCESSING, "rad_act() must wake the geiger")
+	TEST_ASSERT_NOTEQUAL(helmet.process(2), PROCESS_KILL, "a fire with counts pending must keep processing")
+	TEST_ASSERT(helmet.soundloop.last_radiation > 0, "the woken geiger must report radiation to its soundloop")
+
+/// D6: ячейка стартового APC живёт внутри APC - гейт блэкбокса cell_used по
+/// loc снова работает (ячейка в нуллспейсе тэллила каждый чардж, 67k+/раунд).
+/datum/unit_test/apc_cell_containment/Run()
+	TEST_ASSERT(length(GLOB.apcs_list), "the CI map must have roundstart APCs")
+	var/checked = 0
+	for(var/obj/machinery/power/apc/area_apc as anything in GLOB.apcs_list)
+		if(!area_apc.cell)
+			continue
+		checked++
+		TEST_ASSERT_EQUAL(area_apc.cell.loc, area_apc, "roundstart APC cell must be inside its APC ([area_apc] at [AREACOORD(area_apc)])")
+		if(checked >= 25) // выборки хватает: все идут одним путём Initialize
+			break
+	TEST_ASSERT(checked, "at least one roundstart APC must have a cell")
+
+///Experimentors must not own the station pets they only occasionally target.
+/datum/unit_test/experimentor_pet_tracking_is_weak/Run()
+	var/obj/machinery/rnd/experimentor/experimentor = allocate(/obj/machinery/rnd/experimentor)
+	var/mob/living/simple_animal/pet/cat/Runtime/runtime_cat = new(run_loc_floor_bottom_left)
+	experimentor.trackedRuntime = WEAKREF(runtime_cat)
+	TEST_ASSERT_EQUAL(experimentor.trackedRuntime.resolve(), runtime_cat, "The live Runtime weakref must resolve")
+
+	qdel(runtime_cat)
+	TEST_ASSERT_NULL(experimentor.trackedRuntime.resolve(), "A qdeleted Runtime must not be retained by the experimentor")

@@ -118,6 +118,7 @@
 /obj/item/electronic_assembly/Initialize(mapload)
 	LAZYSET(custom_materials, /datum/material/iron, round((max_complexity + max_components) * 0.25) * SScircuit.cost_multiplier)
 	.=..()
+	AddComponent(/datum/component/hostile_machine_registry)
 	START_PROCESSING(SScircuit, src)
 
 	//sets up diagnostic hud view
@@ -209,7 +210,10 @@
 	if(href_list["ghostscan"])
 		if((isobserver(usr) && ckeys_allowed_to_scan[usr.ckey]) || IsAdminGhost(usr))
 			if(assembly_components.len)
-				var/saved = "On circuit printers with cloning enabled, you may use the code below to clone the circuit:<br><br><code>[SScircuit.save_electronic_assembly(src)]</code>"
+				// html_encode обязателен, см. тот же случай в analyzer.dm: без него символы
+				// < > & из подписей компонентов браузер съедает как разметку, и скопированный
+				// JSON уже не разбирается принтером.
+				var/saved = "On circuit printers with cloning enabled, you may use the code below to clone the circuit:<br><br><code style='word-break:break-all;white-space:pre-wrap'>[html_encode(SScircuit.save_electronic_assembly(src))]</code>"
 				var/datum/browser/popup = new(usr, "circuit_scan", "Circuit Scan", 500, 600)
 				popup.set_content(saved)
 				popup.open()

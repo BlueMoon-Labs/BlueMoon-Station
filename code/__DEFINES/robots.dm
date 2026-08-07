@@ -7,6 +7,12 @@
 #define BOT_STEP_MAX_RETRIES 5 //Maximum times a bot will retry to step from its position
 
 #define DEFAULT_SCAN_RANGE		7	//default view range for finding targets.
+/// Потолок маршрута до цели, найденной сканом. Цель всегда в пределах
+/// DEFAULT_SCAN_RANGE, а маршрут раньше искали на 30 тайлов: недостижимая цель
+/// (за стеклом, в закрытом отсеке) заставляла JPS развернуть всю площадь радиуса
+/// 30 внутри слота SSnpcpool - 25-36мс на один вызов в раунде 9827. Двойного
+/// радиуса скана хватает на обход препятствия, а площадь перебора вчетверо меньше.
+#define BOT_TARGET_PATH_LIMIT	(DEFAULT_SCAN_RANGE * 2)
 
 //Mode defines. If you add a new one make sure you update mode_name in /mob/living/simple_animal/bot
 #define BOT_IDLE 			0	// idle

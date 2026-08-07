@@ -45,6 +45,8 @@
 	var/unres_sides = 0 //Unrestricted sides. A bitflag for which direction (if any) can open the door with no access
 	/// Whether or not the door can be opened by hand (used for blast doors and shutters)
 	var/can_open_with_hands = TRUE
+	/// Whether or not this door can be opened through a door remote
+	var/opens_with_door_remote = FALSE
 
 /obj/machinery/door/examine(mob/user)
 	. = ..()

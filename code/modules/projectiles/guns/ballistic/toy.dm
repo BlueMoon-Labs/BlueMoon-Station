@@ -80,7 +80,7 @@
 /obj/item/gun/ballistic/shotgun/toy/process_chamber(mob/living/user, empty_chamber = 0)
 	..()
 	if(chambered && !chambered.BB)
-		qdel(chambered)
+		QDEL_NULL(chambered) // qdel без обнуления оставлял висящую ссылку на дротик
 
 /obj/item/gun/ballistic/shotgun/toy/unrestricted
 	pin = /obj/item/firing_pin

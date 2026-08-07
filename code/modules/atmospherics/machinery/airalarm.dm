@@ -61,6 +61,9 @@
 /// the turf air at most every this-many SSmachines fires (2 s each). The instant danger_level
 /// changes it snaps back to reading every fire. (Not #undef'd — read by the regression test.)
 #define AALARM_MAX_PROCESS_INTERVAL 2
+/// Backoff cap while the local turf sits outside active atmos exchange entirely (not excited,
+/// no excited group): its air cannot drift, so reads only guard against missed excitations.
+#define AALARM_INACTIVE_PROCESS_INTERVAL 15
 
 #define AALARM_OVERLAY_OFF		"alarm_off"
 #define AALARM_OVERLAY_GREEN	"alarm_green"
@@ -262,6 +265,7 @@
 	return CONTEXTUAL_SCREENTIP_SET
 
 /obj/machinery/airalarm/Destroy()
+	UnregisterSignal(SSdcs, COMSIG_GLOB_NEW_GAS)
 	SSradio.remove_object(src, frequency)
 	QDEL_NULL(wires)
 	QDEL_NULL(alarm_manager)
@@ -491,6 +495,11 @@
 			if(alarm_manager.clear_alarm(ALARM_ATMOS))
 				post_alert(0)
 			. = TRUE
+	if(.)
+		// settings changed (thresholds, mode, vent/scrubber orders): re-read the air on the very
+		// next fire instead of coasting on the adaptive backoff
+		process_interval = 1
+		process_skips_left = 0
 	update_icon()
 
 /obj/machinery/airalarm/proc/reset(wire)
@@ -752,9 +761,14 @@
 
 	// While danger_level has been stable, skip the (relatively expensive) turf air read on
 	// most fires. Snaps back to reading every fire the moment danger_level changes (below).
+	// Exception: if the monitored turf has just entered active atmos exchange it may be drifting
+	// toward a hazard, so cut the backoff short and read now instead of coasting up to ~30s blind.
 	if(process_skips_left > 0)
-		process_skips_left--
-		return
+		var/turf/open/open_location = get_turf(src)
+		if(!istype(open_location) || (!open_location.excited && !open_location.excited_group))
+			process_skips_left--
+			return
+		process_skips_left = 0
 
 	var/turf/location = get_turf(src)
 	if(!location)
@@ -762,22 +776,38 @@
 
 	var/datum/tlv/cur_tlv
 
+	// Read the mixture's fields directly and walk its gas list once. Every accessor here is a
+	// one-line getter, and the old shape paid for two separate walks of the gas list (total_moles()
+	// inside return_pressure(), then the per-gas danger pass) plus a get_moles() dispatch per gas.
+	// That is ~20 proc calls per alarm per SSmachines fire, on ~400 alarms, forever - the dominant
+	// cost of the whole machinery pass on a live station. Same arithmetic, same danger levels.
 	var/datum/gas_mixture/environment = location.return_air()
-	var/partial_pressure = R_IDEAL_GAS_EQUATION * environment.return_temperature() / environment.return_volume()
+	var/list/environment_gases = environment.gases
+	var/environment_temperature = environment.temperature
+	var/environment_volume = max(0, environment.volume)
+
+	var/total_moles = 0
+	for(var/gas_id in environment_gases)
+		total_moles += environment_gases[gas_id]
+
+	// Both expressions keep the exact operand order the accessors used, so the arithmetic is
+	// bit-identical to before. return_pressure() reported 0 for a volumeless mixture; the
+	// per-mole scale now shares that guard, where the old expression divided by zero instead.
+	var/environment_pressure = environment_volume > 0 ? total_moles * R_IDEAL_GAS_EQUATION * environment_temperature / environment_volume : 0
+	var/pressure_per_mole = environment_volume > 0 ? R_IDEAL_GAS_EQUATION * environment_temperature / environment_volume : 0
 
 	cur_tlv = TLV["pressure"]
-	var/environment_pressure = environment.return_pressure()
 	var/pressure_dangerlevel = cur_tlv.get_danger_level(environment_pressure)
 
 	cur_tlv = TLV["temperature"]
-	var/temperature_dangerlevel = cur_tlv.get_danger_level(environment.return_temperature())
+	var/temperature_dangerlevel = cur_tlv.get_danger_level(environment_temperature)
 
 	var/gas_dangerlevel = 0
-	for(var/gas_id in environment.get_gases())
-		if(!(gas_id in TLV)) // We're not interested in this gas, it seems.
-			continue
+	for(var/gas_id in environment_gases)
 		cur_tlv = TLV[gas_id]
-		gas_dangerlevel = max(gas_dangerlevel, cur_tlv.get_danger_level(environment.get_moles(gas_id) * partial_pressure))
+		if(!cur_tlv) // We're not interested in this gas, it seems.
+			continue
+		gas_dangerlevel = max(gas_dangerlevel, cur_tlv.get_danger_level(environment_gases[gas_id] * pressure_per_mole))
 
 	var/old_danger_level = danger_level
 	danger_level = max(pressure_dangerlevel, temperature_dangerlevel, gas_dangerlevel)
@@ -787,10 +817,15 @@
 
 	// Adaptive backoff: read every fire while danger_level is moving (or we're mid-air-replacement
 	// and watching for the pressure cutoff); coast at AALARM_MAX_PROCESS_INTERVAL once it settles.
+	// A turf parked outside active atmos exchange cannot drift at all, so coast much longer there.
 	if(old_danger_level != danger_level || mode == AALARM_MODE_REPLACEMENT)
 		process_interval = 1
 	else
-		process_interval = min(process_interval + 1, AALARM_MAX_PROCESS_INTERVAL)
+		var/max_interval = AALARM_MAX_PROCESS_INTERVAL
+		var/turf/open/open_location = location
+		if(!istype(open_location) || (!open_location.excited && !open_location.excited_group))
+			max_interval = AALARM_INACTIVE_PROCESS_INTERVAL
+		process_interval = min(process_interval + 1, max_interval)
 	process_skips_left = process_interval - 1
 
 	if(mode == AALARM_MODE_REPLACEMENT && environment_pressure < ONE_ATMOSPHERE * 0.05)

@@ -19,6 +19,10 @@ DYNAMIC_LIGHT_ROUNDTYPE_VOTE_START_HOUR 18
 ## Uses server local time in 24-hour format. 0 means Dynamic Light window ends at 00:00.
 DYNAMIC_LIGHT_ROUNDTYPE_VOTE_END_HOUR 0
 
+## Multiplies votes cast specifically for Dynamic Light in roundtype votes.
+## Example: 24 votes with value 2 becomes 48 effective votes.
+DYNAMIC_LIGHT_VOTE_MULTIPLIER 1
+
 ## autovote initial delay (deciseconds) before first automatic transfer vote call (default 120 minutes)
 ## Set to 0 to disable the subsystem altogether.
 VOTE_AUTOTRANSFER_INITIAL 108000

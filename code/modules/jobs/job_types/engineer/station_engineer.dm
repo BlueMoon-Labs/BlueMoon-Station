@@ -15,6 +15,7 @@
 	plasma_outfit = /datum/outfit/plasmaman/engineering
 	alt_titles = list(
 		"Apprentice Engineer", //Стажер выше, для удобства
+		"Junior Engineer", //Стажер выше, для удобства
 		"Azik Interstellar Engineer", //Триглав выше, для удобства
 		"Astromechanic",
 		"Damage Control Technician",
@@ -33,7 +34,6 @@
 		"Structural Engineer",
 		"Mechanic",
 		"GEC Engineer",
-		"Junior Engineer",
 		)
 
 	access = list(ACCESS_ENGINE, ACCESS_ENGINE_EQUIP, ACCESS_TECH_STORAGE, ACCESS_MAINT_TUNNELS,
@@ -101,12 +101,14 @@
 	gloves = /obj/item/clothing/gloves/combat
 	r_pocket = /obj/item/t_scanner
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	satchel = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie/ammo
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_LPOCKET
-	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced/engineering=1, /obj/item/syndicate_uplink=1)
+	backpack_contents = list(/obj/item/modular_computer/tablet/preset/advanced/engineering=1,/obj/item/syndicate_uplink/station=1)
+	accessory = list(/obj/item/clothing/accessory/permit/special/syndie_station)
 
 /datum/outfit/job/engineer/gloved
 	name = "Station Engineer (Gloves)"

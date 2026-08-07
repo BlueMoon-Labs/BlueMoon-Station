@@ -2,8 +2,8 @@ import { useBackend, useLocalState } from '../backend';
 import { Box, Button, Icon, Input, LabeledList, NoticeBox, ProgressBar, Section, Stack, Table } from '../components';
 import { Window } from '../layouts';
 
-export const PaiSoftware = (props, context) => {
-  const { act, data } = useBackend(context);
+export const PaiSoftware = (props) => {
+  const { act, data } = useBackend();
   const {
     screen,
     stat,
@@ -13,7 +13,7 @@ export const PaiSoftware = (props, context) => {
 
   if (stat === 4) {
     return (
-      <Window title="pAI OS" width={640} height={480}>
+      <Window title="ПИИ OS" width={640} height={480}>
         <Window.Content>
           <NoticeBox danger color="bad">Системы нефункциональны</NoticeBox>
         </Window.Content>
@@ -52,7 +52,7 @@ export const PaiSoftware = (props, context) => {
   const ramUsed = 100 - ram;
 
   return (
-    <Window title="pAI OS" width={750} height={600}>
+    <Window title="ПИИ OS" width={750} height={600}>
       <Window.Content>
         <Stack fill>
           <Stack.Item width="210px">
@@ -143,8 +143,8 @@ export const PaiSoftware = (props, context) => {
   );
 };
 
-const PaiContent = (props, context) => {
-  const { data } = useBackend(context);
+const PaiContent = (props) => {
+  const { data } = useBackend();
   const { screen } = data;
 
   switch (screen) {
@@ -201,8 +201,8 @@ const PaiContent = (props, context) => {
   }
 };
 
-const MainScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const MainScreen = (props) => {
+  const { act, data } = useBackend();
   const { master, master_dna, ram, software, secHUD, medHUD, encryptmod, translator_on, battery_charge, battery_max, battery_percent, charging, cell_type_name } = data;
   return (
     <>
@@ -238,12 +238,12 @@ const MainScreen = (props, context) => {
   );
 };
 
-const DirectivesScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const DirectivesScreen = (props) => {
+  const { act, data } = useBackend();
   const { master, master_dna, laws_zeroth, laws_supplied } = data;
-  const [editing, setEditing] = useLocalState(context, 'dirEdit', false);
-  const [localZeroth, setLocalZeroth] = useLocalState(context, 'dirZero', laws_zeroth || '');
-  const [localSupplied, setLocalSupplied] = useLocalState(context, 'dirSupp', (laws_supplied || []).join('\n'));
+  const [editing, setEditing] = useLocalState('dirEdit', false);
+  const [localZeroth, setLocalZeroth] = useLocalState('dirZero', laws_zeroth || '');
+  const [localSupplied, setLocalSupplied] = useLocalState('dirSupp', (laws_supplied || []).join('\n'));
   if (editing) {
     return (
       <Box>
@@ -260,7 +260,8 @@ const DirectivesScreen = (props, context) => {
             <Button icon="save" color="good" onClick={() => {
               act('save_directives', { zeroth: localZeroth, supplied: localSupplied });
               setEditing(false);
-            }}>Сохранить</Button>
+            }}>Сохранить
+            </Button>
             <Button ml={1} icon="times" onClick={() => setEditing(false)}>Отмена</Button>
           </Box>
         </Section>
@@ -289,13 +290,14 @@ const DirectivesScreen = (props, context) => {
         setLocalZeroth(laws_zeroth || '');
         setLocalSupplied((laws_supplied || []).join('\n'));
         setEditing(true);
-      }}>Редактировать директивы</Button>
+      }}>Редактировать директивы
+      </Button>
     </Box>
   );
 };
 
-const ManifestScreen = (props, context) => {
-  const { data } = useBackend(context);
+const ManifestScreen = (props) => {
+  const { data } = useBackend();
   const { crew_manifest } = data;
   if (!crew_manifest?.length) {
     return <NoticeBox>Данные экипажа недоступны.</NoticeBox>;
@@ -316,8 +318,8 @@ const ManifestScreen = (props, context) => {
   );
 };
 
-const MedicalRecordScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const MedicalRecordScreen = (props) => {
+  const { act, data } = useBackend();
   const { subscreen, medical_records, medical_active1, medical_active2 } = data;
   if (subscreen === 1 && medical_active1) {
     return (
@@ -373,8 +375,8 @@ const MedicalRecordScreen = (props, context) => {
   );
 };
 
-const SecurityRecordScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const SecurityRecordScreen = (props) => {
+  const { act, data } = useBackend();
   const { subscreen, security_records, security_active1, security_active2 } = data;
   if (subscreen === 1 && security_active1) {
     return (
@@ -451,16 +453,16 @@ const SOFTWARE_NAMES = {
   'meson vision': 'Мезонное зрение',
 };
 
-const BuyScreen = (props, context) => {
-  const { act, data } = useBackend(context);
-  const { ram, software, available_software, syndicate_model } = data;
+const BuyScreen = (props) => {
+  const { act, data } = useBackend();
+  const { ram, software, available_software, inteq_model } = data;
   const ramUsed = 100 - ram;
   const softName = (item) => SOFTWARE_NAMES[item.id] || item.id;
   const normalSoftware = [];
-  const syndicateSoftware = [];
+  const inteqSoftware = [];
   (available_software || []).forEach(item => {
     if (SYNDICATE_SOFTWARE.includes(item.id)) {
-      syndicateSoftware.push(item);
+      inteqSoftware.push(item);
     } else {
       normalSoftware.push(item);
     }
@@ -484,22 +486,22 @@ const BuyScreen = (props, context) => {
               softName={softName(item)}
               installed={software.includes(item.id)}
               canAfford={ram >= item.cost}
-              syndicate={false}
+              inteq={false}
             />
           ))}
-          {!!syndicate_model && syndicateSoftware.length > 0 && (
+          {!!inteq_model && inteqSoftware.length > 0 && (
             <>
               <Box mt={2} mb={1} bold color="orange" fontSize={1.2}>
-                <Icon name="skull" /> Программы Синдиката
+                <Icon name="skull" /> Программы InteQ
               </Box>
-              {syndicateSoftware.map(item => (
+              {inteqSoftware.map(item => (
                 <SoftwareCard
                   key={item.id}
                   item={item}
                   softName={softName(item)}
                   installed={software.includes(item.id)}
                   canAfford={ram >= item.cost}
-                  syndicate={true}
+                  inteq
                 />
               ))}
             </>
@@ -510,19 +512,19 @@ const BuyScreen = (props, context) => {
   );
 };
 
-const SoftwareCard = (props, context) => {
-  const { act } = useBackend(context);
-  const { item, softName, installed, canAfford, syndicate } = props;
+const SoftwareCard = (props) => {
+  const { act } = useBackend();
+  const { item, softName, installed, canAfford, inteq } = props;
   return (
     <Box
       mb={1}
       p={1}
       style={{
-        border: syndicate ? '1px solid #cf6a1f' : '1px solid #333',
+        border: inteq ? '1px solid #cf6a1f' : '1px solid #333',
         borderRadius: '4px',
         background: 'rgba(0,0,0,0.15)',
       }}>
-      <Box bold fontSize={1.1} mb={0.5} color={syndicate ? 'orange' : null}>
+      <Box bold fontSize={1.1} mb={0.5} color={inteq ? 'orange' : null}>
         {softName}
       </Box>
       {item.desc && (
@@ -539,7 +541,7 @@ const SoftwareCard = (props, context) => {
             <Icon name="bolt" /> <b>{item.power_usage}</b> эн.
           </Box>
         )}
-        {installed ? (
+          {installed ? (
           <Button icon="trash" color="red" onClick={() => act('uninstall', { uninstall: item.id })}>
             Удалить
           </Button>
@@ -553,8 +555,8 @@ const SoftwareCard = (props, context) => {
   );
 };
 
-const AtmoScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const AtmoScreen = (props) => {
+  const { act, data } = useBackend();
   const { atmo_pressure, atmo_temp, atmo_gases } = data;
   if (atmo_pressure === null) {
     return <NoticeBox>Невозможно получить показания.</NoticeBox>;
@@ -580,8 +582,8 @@ const AtmoScreen = (props, context) => {
   );
 };
 
-const SecHudScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const SecHudScreen = (props) => {
+  const { act, data } = useBackend();
   const { secHUD } = data;
   return (
     <Section title={<><Icon name="shield-alt" /> СБ HUD</>}>
@@ -595,8 +597,8 @@ const SecHudScreen = (props, context) => {
   );
 };
 
-const MedHudScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const MedHudScreen = (props) => {
+  const { act, data } = useBackend();
   const { medHUD, subscreen } = data;
   if (subscreen === 1) {
     const { bioscan } = data;
@@ -627,7 +629,7 @@ const MedHudScreen = (props, context) => {
           <LabeledList.Item label="Ожоги" color={bioscan.burn > 50 ? 'bad' : 'good'}>{bioscan.burn}</LabeledList.Item>
           <LabeledList.Item label="Структурная целостность" color={bioscan.brute > 50 ? 'bad' : 'good'}>{bioscan.brute}</LabeledList.Item>
           <LabeledList.Item label="Температура тела">{bioscan.temp_c}&deg;C</LabeledList.Item>
-        </LabeledList>
+          </LabeledList>
         {bioscan.diseases?.length > 0 && (
           <>
             <Box bold mt={1} color="bad">Обнаружена инфекция</Box>
@@ -659,8 +661,8 @@ const MedHudScreen = (props, context) => {
   );
 };
 
-const CableHackSection = (props, context) => {
-  const { act, data } = useBackend(context);
+const CableHackSection = (props) => {
+  const { act, data } = useBackend();
   const { cable_extended, cable_connected, hackprogress, hacking } = data;
   const { startAction, cancelAction, title, icon } = props;
   return (
@@ -699,7 +701,7 @@ const CableHackSection = (props, context) => {
   );
 };
 
-const DoorjackScreen = (props, context) => {
+const DoorjackScreen = (props) => {
   return (
     <CableHackSection
       {...props}
@@ -711,8 +713,8 @@ const DoorjackScreen = (props, context) => {
   );
 };
 
-const SignallerScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const SignallerScreen = (props) => {
+  const { act, data } = useBackend();
   const { signaler_frequency, signaler_code } = data;
   const formatFreq = (f) => {
     const s = String(f);
@@ -741,8 +743,8 @@ const SignallerScreen = (props, context) => {
   );
 };
 
-const LoudnessScreen = (props, context) => {
-  const { act } = useBackend(context);
+const LoudnessScreen = (props) => {
+  const { act } = useBackend();
   return (
     <Box>
       <Button onClick={() => act('loudness_open')}>Открыть синтезатор</Button>
@@ -750,8 +752,8 @@ const LoudnessScreen = (props, context) => {
   );
 };
 
-const EncryptScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const EncryptScreen = (props) => {
+  const { act, data } = useBackend();
   const { encryptmod } = data;
   return (
     <Box>
@@ -759,14 +761,14 @@ const EncryptScreen = (props, context) => {
         Модуль шифрования {encryptmod ? <Box inline color="good">включён</Box> : <Box inline color="bad">отключён</Box>}.
       </Box>
       {!encryptmod && (
-        <Button onClick={() => act('toggle_encrypt')}>Активировать порты шифрования</Button>
+        <Button onClick={() => act('toggle_encrypt')} tooltip="Активировать порты для установки ключей шифрования. После активации используйте отвёртку на карте, затем вставьте ключ.">Активировать порты шифрования</Button>
       )}
     </Box>
   );
 };
 
-const TranslatorScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const TranslatorScreen = (props) => {
+  const { act, data } = useBackend();
   const { translator_on } = data;
   return (
     <Box>
@@ -780,8 +782,8 @@ const TranslatorScreen = (props, context) => {
   );
 };
 
-const FlashlightScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const FlashlightScreen = (props) => {
+  const { act, data } = useBackend();
   const { flashlight_on } = data;
   return (
     <Section title={<><Icon name="lightbulb" /> Фонарик</>}>
@@ -795,8 +797,8 @@ const FlashlightScreen = (props, context) => {
   );
 };
 
-const NightVisionScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const NightVisionScreen = (props) => {
+  const { act, data } = useBackend();
   const { night_vision } = data;
   return (
     <Section title={<><Icon name="moon" /> Ночное зрение</>}>
@@ -810,8 +812,8 @@ const NightVisionScreen = (props, context) => {
   );
 };
 
-const MesonVisionScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const MesonVisionScreen = (props) => {
+  const { act, data } = useBackend();
   const { meson_vision } = data;
   return (
     <Section title={<><Icon name="border-all" /> Мезонное зрение</>}>
@@ -825,8 +827,8 @@ const MesonVisionScreen = (props, context) => {
   );
 };
 
-const HeartbeatScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const HeartbeatScreen = (props) => {
+  const { act, data } = useBackend();
   const { heartbeat_sensor } = data;
   return (
     <Section title={<><Icon name="heartbeat" /> Сенсор пульса</>}>
@@ -843,8 +845,8 @@ const HeartbeatScreen = (props, context) => {
   );
 };
 
-const ProjectionScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const ProjectionScreen = (props) => {
+  const { act, data } = useBackend();
   const { holoform, emitterhealth, emittermaxhealth } = data;
   const healthPercent = emitterhealth / emittermaxhealth;
   return (
@@ -866,11 +868,11 @@ const ProjectionScreen = (props, context) => {
   );
 };
 
-const EncoderScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const EncoderScreen = (props) => {
+  const { act, data } = useBackend();
   const { encoder_active, encoder_name, encoder_job } = data;
-  const [name, setName] = useLocalState(context, 'encoderName', encoder_name || '');
-  const [job, setJob] = useLocalState(context, 'encoderJob', encoder_job || '');
+  const [name, setName] = useLocalState('encoderName', encoder_name || '');
+  const [job, setJob] = useLocalState('encoderJob', encoder_job || '');
   if (!encoder_active) {
     return (
       <Box>
@@ -907,24 +909,24 @@ const EncoderScreen = (props, context) => {
   );
 };
 
-const ThermalVisionScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const ThermalVisionScreen = (props) => {
+  const { act, data } = useBackend();
   const { thermal_vision } = data;
   return (
     <Box>
       <Box mb={1}>
         Термальное зрение {thermal_vision ? <Box inline color="good">включено</Box> : <Box inline color="bad">выключено</Box>}.
       </Box>
-      <Button onClick={() => act('toggle_thermal_vision')}>
+      <Button onClick={() => act('toggle_thermal_vision')} tooltip={thermal_vision ? 'Выключить термальное зрение.' : 'Видеть живых существ сквозь стены.'}>
         {thermal_vision ? 'Отключить' : 'Включить'}
       </Button>
     </Box>
   );
 };
 
-const ChemicalInjectorScreen = (props, context) => {
-  const { act, data } = useBackend(context);
-  const { chemical_injector, chemical_storage, chemical_max } = data;
+const ChemicalInjectorScreen = (props) => {
+  const { act, data } = useBackend();
+  const { chemical_injector, chemical_storage, chemical_max, chemical_reagents } = data;
   const chemPercent = (chemical_storage ?? 0) / (chemical_max ?? 30);
   return (
     <Section title={<><Icon name="syringe" /> Химический инъектор</>}>
@@ -941,17 +943,22 @@ const ChemicalInjectorScreen = (props, context) => {
       <Button mt={1} icon="power-off" onClick={() => act('toggle_chemical_injector')}>
         {chemical_injector ? 'Отключить' : 'Активировать'}
       </Button>
-      {!!chemical_injector && (
-        <Button mt={1} ml={1} icon="share" onClick={() => act('inject_chemicals')}>
-          Впрыснуть реагенты
+      {!!chemical_injector && chemical_reagents?.map(reagent => (
+        <Button
+          key={reagent.id}
+          mt={1}
+          ml={1}
+          disabled={(chemical_storage ?? 0) < reagent.cost}
+          onClick={() => act('inject_chemicals', { reagent: reagent.id })}>
+          {reagent.name} ({reagent.cost}u)
         </Button>
-      )}
+      ))}
     </Section>
   );
 };
 
-const CameraBugScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const CameraBugScreen = (props) => {
+  const { act, data } = useBackend();
   const { camera_bug_active } = data;
   return (
     <Section title={<><Icon name="eye" /> Internal Camera Bug</>}>
@@ -970,8 +977,8 @@ const CameraBugScreen = (props, context) => {
   );
 };
 
-const WeakenedAIScreen = (props, context) => {
-  const { act, data } = useBackend(context);
+const WeakenedAIScreen = (props) => {
+  const { act, data } = useBackend();
   const { ai_capability, nearby_doors, nearby_apcs, nearby_turrets, ai_capability_cooldown, ai_capability_cooldown_time } = data;
   const cdReady = ai_capability && ai_capability_cooldown <= 0;
   const cdPercent = ai_capability_cooldown_time > 0 ? (1 - ai_capability_cooldown / ai_capability_cooldown_time) : 1;
@@ -1118,4 +1125,3 @@ const WeakenedAIScreen = (props, context) => {
     </Section>
   );
 };
- 

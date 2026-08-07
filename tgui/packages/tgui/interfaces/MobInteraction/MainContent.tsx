@@ -1,8 +1,11 @@
+import { useState } from 'react';
+
 import { useBackend, useLocalState } from '../../backend';
 import { Button, Icon, Input, Section, Slider, Stack, Tabs } from '../../components';
 import {
   CharacterPrefsTab,
   ContentPreferencesTab,
+  CustomInteractionsTab,
   GenitalTab,
   InteractionsTab,
 } from './tabs';
@@ -15,15 +18,15 @@ type MainTypes = {
   is_auto_target_self: boolean;
 }
 
-export const MainContent = (props, context) => {
-  const { act, data } = useBackend<MainTypes>(context);
+export const MainContent = (props) => {
+  const { act, data } = useBackend<MainTypes>();
   const [
     searchText,
     setSearchText,
-  ] = useLocalState(context, 'searchText', '');
-  const [tabIndex, setTabIndex] = useLocalState(context, 'tabIndex', 0);
+  ] = useLocalState('searchText', '');
+  const [tabIndex, setTabIndex] = useState(0);
 
-  const [inFavorites, setInFavorites] = useLocalState(context, 'inFavorites', false);
+  const [inFavorites, setInFavorites] = useLocalState('inFavorites', false);
 
   const interaction_speeds = (data.interaction_speeds || []) as number[];
   const { auto_interaction_pace, auto_interaction_target, currently_active_interaction, is_auto_target_self } = data;
@@ -51,6 +54,9 @@ export const MainContent = (props, context) => {
             </Tabs.Tab>
             <Tabs.Tab selected={tabIndex === 3} onClick={() => setTabIndex(3)}>
               Preferences
+            </Tabs.Tab>
+            <Tabs.Tab selected={tabIndex === 4} onClick={() => setTabIndex(4)}>
+              Custom
             </Tabs.Tab>
           </Tabs>
         </Stack.Item>
@@ -84,6 +90,8 @@ export const MainContent = (props, context) => {
                   return <CharacterPrefsTab />;
                 case 3:
                   return <ContentPreferencesTab />;
+                case 4:
+                  return <CustomInteractionsTab />;
               }
             })()}
           </Section>

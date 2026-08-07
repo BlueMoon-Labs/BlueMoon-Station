@@ -1040,6 +1040,11 @@
 	suffix = "10x10_halloween.dmm"
 	name = "Maint halloween"
 
+/datum/map_template/ruin/station/maint/tenxten/fastfood
+	id = "fastfood"
+	suffix = "10x10_fastfood.dmm"
+	name = "Vulpix Fastfood"
+
 //Snaxi remake edits
 
 /datum/map_template/ruin/station/maint/smexi1

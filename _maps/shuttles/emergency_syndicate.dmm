@@ -2006,6 +2006,21 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/shuttle/escape)
+"Qy" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral,
+/mob/living/simple_animal/hostile/syndicate/real_syndicate,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/escape)
+"QB" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 1;
+	name = "tactical chair"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/escape)
 
 (1,1,1) = {"
 aa
@@ -2269,8 +2284,8 @@ aa
 (8,1,1) = {"
 ac
 ah
-ag
-an
+QB
+Qy
 as
 co
 ax
@@ -2307,7 +2322,7 @@ aa
 ac
 ai
 ag
-an
+Qy
 at
 aC
 ay
@@ -2343,8 +2358,8 @@ aa
 (10,1,1) = {"
 ac
 aj
-ag
-an
+QB
+Qy
 au
 co
 az

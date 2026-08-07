@@ -173,11 +173,15 @@
 		if(display_messages)
 			to_chat(L, span_warning("[released_mob] wriggles free!"))
 		L.dropItemToGround(src)
-	released_mob.forceMove(drop_location())
-	released_mob.reset_perspective()
-	released_mob.setDir(SOUTH)
-	if(display_messages)
-		released_mob.visible_message(span_warning("[released_mob] uncurls!"))
+	// Destroy() моба зовёт Exited холдера через moveToNullspace - "выпускать"
+	// удаляемого моба обратно в мир нельзя, это вечный пин ссылкой из турфа
+	// (хардделы обезьян в мобхолдерах, раунд 9748).
+	if(!QDELETED(released_mob))
+		released_mob.forceMove(drop_location())
+		released_mob.reset_perspective()
+		released_mob.setDir(SOUTH)
+		if(display_messages)
+			released_mob.visible_message(span_warning("[released_mob] uncurls!"))
 	if(del_on_release && !destroying)
 		qdel(src)
 	return TRUE

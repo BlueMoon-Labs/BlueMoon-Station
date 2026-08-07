@@ -92,8 +92,9 @@ IMPORTANT FACTORS TO CONSIDER WHILE BALANCING
 				ghosts = shuffle(ghosts)//Shake those ghosts up!
 				for(var/mob/dead/observer/C2 in ghosts)
 					if(C2.key && C2)
+						var/ghost_key = C2.key // после transfer_ckey() ключ уже на клоне, а призрак мог быть уничтожен
 						C2.transfer_ckey(SM, FALSE)
-						message_admins("Ghost candidate found! [C2] key [C2.key] is becoming a clone of [M] key: [M.key] (They agreed to respect the character they're becoming, and agreed to not ERP without express permission from the original.)")
+						message_admins("Ghost candidate found! [C2] key [ghost_key] is becoming a clone of [M] key: [M.key] (They agreed to respect the character they're becoming, and agreed to not ERP without express permission from the original.)")
 						log_reagent("FERMICHEM: [M] ckey: [M.key] is creating a clone, controlled by [C2]")
 						break
 					else

@@ -20,7 +20,7 @@
 	//var/genital_name = partner.get_penetrating_genital_name() - стал не нужен.
 
 	var/obj/item/reagent_containers/liquid_container
-	var/shape_desc = get_penis_shape_desc(user) //  Описания каким органом ты трахаешь // BlueMoon Add
+	var/partner_shape_desc = get_penis_shape_desc(partner) // Дрочат орган партнёра, описание берётся с него же
 
 	var/obj/item/cached_item = user.get_active_held_item()
 	if(istype(cached_item, /obj/item/reagent_containers))
@@ -32,11 +32,16 @@
 
 	if(!partner.is_fucking(user, CUM_TARGET_HAND, partner.getorganslot(ORGAN_SLOT_PENIS)))
 		partner.set_is_fucking(user, CUM_TARGET_HAND, partner.getorganslot(ORGAN_SLOT_PENIS))
-	message = "[pick("дрочит пенис <b>[partner]</b>",
+	var/dirty_user = user.wants_dirty_text()
+	var/dirty_partner = partner.wants_dirty_text()
+	if(dirty_user || dirty_partner)
+		message = replacetext(pick(GLOB.dirty_handjob_messages), "$PARTNER", "\the <b>[partner]</b>")
+	else
+		message = "[pick("дрочит пенис <b>[partner]</b>",
 			"играется с членом <b>[partner]</b>",
 			"использует свои пальчики, вздрачивая пенис <b>[partner]</b>",
 			"вздрачивает член <b>[partner]</b>",
-			"стимулирует [shape_desc] <b>[partner]</b>")]"
+			"стимулирует [partner_shape_desc] <b>[partner]</b>")]"
 
 	if(liquid_container)
 		message += " над [liquid_container]"

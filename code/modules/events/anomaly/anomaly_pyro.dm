@@ -2,8 +2,10 @@
 	name = "Anomaly: Pyroclastic"
 	typepath = /datum/round_event/anomaly/anomaly_pyro
 
+	enabled = TRUE // база выключена, подтипы включаются явно
 	max_occurrences = 5
 	weight = 20
+	severity = DIRECTOR_SEVERITY_MODERATE
 	description = "This anomaly sets things on fire, and creates a pyroclastic slime."
 
 /datum/round_event/anomaly/anomaly_pyro

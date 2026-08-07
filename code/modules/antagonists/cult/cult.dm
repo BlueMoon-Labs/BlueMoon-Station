@@ -60,7 +60,7 @@
 		if(L.key)
 			L.ghostize(0)
 		if(!QDELETED(L))
-			L.dust()
+			L.dust(TRUE)
 
 /datum/antagonist/cult/get_team()
 	return cult_team
@@ -453,6 +453,11 @@
 	var/sacced = FALSE
 	var/sac_image
 	var/mob/living/target_current
+
+/datum/objective/sacrifice/Destroy(force, ...)
+	//жёсткая ссылка на тело жертвы: в раунде 9827 объектив утёк в один тик с человеком
+	target_current = null
+	return ..()
 
 /datum/objective/sacrifice/check_completion()
 	return sacced || completed

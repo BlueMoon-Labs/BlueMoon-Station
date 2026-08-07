@@ -5,16 +5,24 @@
 	desc = "A 4.6x30mm bullet casing."
 	caliber = "4.6x30mm"
 	projectile_type = /obj/item/projectile/bullet/c46x30mm
+	can_be_printed = TRUE
+	custom_materials = list(/datum/material/iron = 400)
 
 /obj/item/ammo_casing/c46x30mm/ap
 	name = "4.6x30mm armor-piercing bullet casing"
 	desc = "A 4.6x30mm armor-piercing bullet casing."
 	projectile_type = /obj/item/projectile/bullet/c46x30mm_ap
+	can_be_printed = TRUE
+	advanced_print_req = TRUE
+	custom_materials = list(/datum/material/iron = 400, /datum/material/titanium = 100)
 
 /obj/item/ammo_casing/c46x30mm/inc
 	name = "4.6x30mm incendiary bullet casing"
 	desc = "A 4.6x30mm incendiary bullet casing."
 	projectile_type = /obj/item/projectile/bullet/incendiary/c46x30mm
+	can_be_printed = TRUE
+	advanced_print_req = TRUE
+	custom_materials = list(/datum/material/iron = 400, /datum/material/plasma = 100)
 
 // .45 (M1911 + C20r)
 
@@ -25,11 +33,14 @@
 	icon_state = "casing-universal" // BLUEMOON ADD custom states
 	caliber = ".45"
 	projectile_type = /obj/item/projectile/bullet/c45
+	can_be_printed = TRUE
 
 /obj/item/ammo_casing/c45/kitchengun
 	desc = "A .45 bullet casing. It has a small sponge attached to it."
 	projectile_type = /obj/item/projectile/bullet/c45_cleaning
+	can_be_printed = FALSE
 
 /obj/item/ammo_casing/c45/kitchengun/inteq
 	desc = "A .45 bullet casing. It has a small InteQ logo attached to it."
 	projectile_type = /obj/item/projectile/bullet/c45_cleaning
+	can_be_printed = FALSE

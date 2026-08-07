@@ -104,6 +104,16 @@ All ShuttleMove procs go here
 
 	loc = newT
 
+	//прямое присваивание loc обходит Moved(), поэтому ячейки спатиал-грида
+	//переключаем сами: иначе слышащие и клиент-мобы навсегда остаются
+	//прописаны в ячейках старого дока (глухота на новом месте + вечные
+	//ссылки в hearing_contents/client_contents по старому адресу)
+	if(HAS_SPATIAL_GRID_CONTENTS(src) && (oldT.z != newT.z \
+		|| GET_SPATIAL_INDEX(oldT.x) != GET_SPATIAL_INDEX(newT.x) \
+		|| GET_SPATIAL_INDEX(oldT.y) != GET_SPATIAL_INDEX(newT.y)))
+		SSspatial_grid.exit_cell(src, oldT)
+		SSspatial_grid.enter_cell(src, newT)
+
 	return TRUE
 
 // Called on atoms after everything has been moved
@@ -148,7 +158,9 @@ All ShuttleMove procs go here
 
 	contents -= oldT
 	underlying_old_area.contents += oldT
-	oldT.change_area(src, underlying_old_area, skip_blend = TRUE)
+	// skip_machinery: содержимое шаттла ещё стоит на oldT (MOVE_CONTENTS идёт после MOVE_AREA),
+	// и переподписывать его на подстилающий космос нельзя - см. /turf/proc/change_area.
+	oldT.change_area(src, underlying_old_area, skip_blend = TRUE, skip_machinery = TRUE)
 	//The old turf has now been given back to the area that turf originaly belonged to
 
 	var/area/old_dest_area = newT.loc
@@ -157,7 +169,9 @@ All ShuttleMove procs go here
 	parallax_move_speed = old_dest_area.parallax_move_speed
 	old_dest_area.contents -= newT
 	contents += newT
-	newT.change_area(old_dest_area, src, skip_blend = TRUE)
+	// На newT содержимого шаттла ещё нет, а то, что стояло на месте назначения, разбирается
+	// собственным путём перелёта - машинерию тут трогать нечего.
+	newT.change_area(old_dest_area, src, skip_blend = TRUE, skip_machinery = TRUE)
 	return TRUE
 
 // Called on areas after everything has been moved
@@ -177,6 +191,23 @@ All ShuttleMove procs go here
 /************************************Area move procs************************************/
 
 /************************************Machinery move procs************************************/
+
+/**
+ * Возвращает машинерию шаттла на её область после перелёта.
+ *
+ * Перелёт переносит содержимое присваиванием loc (/atom/movable/onShuttleMove), а областные
+ * Entered/Exited в этой кодовой базе рассылают только Move() и doMove() - см. atoms_movement.dm.
+ * Значит on_enter_area() тут не срабатывает и подписка на COMSIG_AREA_POWER_CHANGE осталась бы
+ * там, где машина стояла до перелёта. Область шаттла при этом остаётся вообще без подписчиков:
+ * apc.update() и выключатель света кладутся только на area.power_change(), и в проде это
+ * выглядело как "АПЦ есть, питание полное, а свет не включается".
+ *
+ * Все прочие afterShuttleMove у подтипов машинерии в этом файле зовут ..(), так что хук доезжает.
+ */
+/obj/machinery/afterShuttleMove(turf/oldT, list/movement_force, shuttle_dir, shuttle_preferred_direction, move_dir, rotation)
+	. = ..()
+	register_power_change_area(get_area(src))
+	power_change()
 
 /obj/machinery/door/airlock/beforeShuttleMove(turf/newT, rotation, move_mode, obj/docking_port/mobile/moving_dock)
 	. = ..()
@@ -396,7 +427,3 @@ All ShuttleMove procs go here
 
 /obj/docking_port/stationary/public_mining_dock/onShuttleMove(turf/newT, turf/oldT, list/movement_force, move_dir, obj/docking_port/stationary/old_dock, obj/docking_port/mobile/moving_dock)
 	shuttle_id = "mining_public" //It will not move with the base, but will become enabled as a docking point.
-
-/obj/effect/abstract/proximity_checker/onShuttleMove(turf/newT, turf/oldT, list/movement_force, move_dir, obj/docking_port/stationary/old_dock, obj/docking_port/mobile/moving_dock)
-	//timer so it only happens once
-	addtimer(CALLBACK(monitor, TYPE_PROC_REF(/datum/proximity_monitor, SetRange), monitor.current_range, TRUE), 0, TIMER_UNIQUE)

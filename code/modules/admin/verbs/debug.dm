@@ -128,7 +128,7 @@
 	choice.transfer_ckey(pai)
 	card.setPersonality(pai)
 	for(var/datum/paiCandidate/candidate in SSpai.candidates)
-		if(candidate.key == choice.key)
+		if(candidate.key == pai.key) // после transfer_ckey() ключ уже на pAI, а призрак мог быть уничтожен
 			SSpai.candidates.Remove(candidate)
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Make pAI") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
@@ -954,11 +954,11 @@
 /client/proc/pump_random_event()
 	set category = "Debug.5) Spawn"
 	set name = "Pump Random Event"
-	set desc = "Schedules the event subsystem to fire a new random event immediately. Some events may fire without notification."
+	set desc = "Schedules the director to run an event/ruleset beat on its next fire. Some events may fire without notification."
 	if(!holder)
 		return
 
-	SSevents.scheduled = world.time
+	SSdirector.fires_until_beat = 0
 
 	message_admins("<span class='adminnotice'>[key_name_admin(src)] pumped a random event.</span>")
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Pump Random Event")

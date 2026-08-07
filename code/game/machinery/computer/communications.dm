@@ -226,7 +226,7 @@
 				return
 			LAZYREMOVE(messages, LAZYACCESS(messages, message_index))
 		if ("emergency_meeting")
-			if(!(SSevents.holidays && SSevents.holidays[APRIL_FOOLS]))
+			if(!(SSholidays.holidays && SSholidays.holidays[APRIL_FOOLS]))
 				return
 			if (!authenticated_as_silicon_or_captain(usr))
 				return
@@ -565,7 +565,7 @@
 				data["importantActionReady"] = COOLDOWN_FINISHED(src, important_action_cooldown)
 				data["shuttleCalled"] = FALSE
 				data["shuttleLastCalled"] = FALSE
-				data["aprilFools"] = SSevents.holidays && SSevents.holidays[APRIL_FOOLS]
+				data["aprilFools"] = SSholidays.holidays && SSholidays.holidays[APRIL_FOOLS]
 				data["alertLevel"] = NUM2SECLEVEL(GLOB.security_level)
 				data["authorizeName"] = authorize_name
 				data["canLogOut"] = !issilicon(user)
@@ -653,7 +653,10 @@
 			if (STATE_MESSAGES)
 				data["messages"] = list()
 				data["messagesTrimmed"] = messages_trimmed
-				data["printerCooldown"] = report_print_cooldown
+				// именно булево: COOLDOWN_* хранит абсолютный дедлайн world.time, а
+				// UI кладёт это поле прямо в disabled - сырое число навсегда
+				// запирало кнопку печати после первой же распечатки
+				data["printerCooldown"] = !COOLDOWN_FINISHED(src, report_print_cooldown)
 
 				if (messages)
 					for (var/_message in messages)
@@ -876,7 +879,7 @@
 
 		if (teamSpawned)
 			message_admins("[ertemplate.polldesc] были отправлены на станцию со следующей миссией: [ertemplate.mission]")
-			priority_announce("Внимание, [station_name()]. Мы отправляем поздразделение - [ertemplate.polldesc]. Вам следует приготовиться.", "Подготовка Отряда Быстрого Реагирования", ertemplate.ertphrase) //BlueMoon sound
+			priority_announce("Внимание, [station_name()]. Мы отправляем подразделение - [ertemplate.polldesc]. Вам следует приготовиться.", "Подготовка Отряда Быстрого Реагирования", ertemplate.ertphrase) //BlueMoon sound
 
 		//Open the Armory doors
 		if(ertemplate.opendoors)

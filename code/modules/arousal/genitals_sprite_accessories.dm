@@ -5,6 +5,7 @@
 	var/feat_taur //the text string of the dna feature to check for those who want to opt out.
 	var/taur_dimension_y = 32
 	var/taur_dimension_x = 32
+	var/use_custom_mod_icon = FALSE
 
 /*
  * This is an example of a penis object in the code.
@@ -30,7 +31,7 @@
 
 /datum/sprite_accessory/penis/teshari
 	icon_state = "taperedteshari"
-	name = "Teshari(For Teshari Only)"
+	name = "Teshari (For Teshari Only)"
 	ru_name = "тешарьский"
 	icon = 'modular_splurt/icons/obj/genitals/teshari_penis.dmi'
 

@@ -9,7 +9,7 @@
 /obj/item/projectile/beam/cybersun_laser
 	icon = 'modular_bluemoon/code/modules/modular_laser_rifle/icons/projectiles.dmi'
 	icon_state = "kill_large"
-	damage = 50
+	damage = 25
 	impact_effect_type = /obj/effect/temp_visual/impact_effect/red_laser
 	light_color = COLOR_SOFT_RED
 	wound_falloff_tile = -1
@@ -24,7 +24,7 @@
 
 /obj/item/projectile/beam/cybersun_laser/marksman
 	icon_state = "sniper"
-	damage = 100
+	damage = 50
 	impact_effect_type = /obj/effect/temp_visual/impact_effect/green_laser
 	pixels_per_second = TILES_TO_PIXELS(30)
 	light_range = 2
@@ -57,7 +57,7 @@
 /obj/item/projectile/beam/cybersun_laser/granata
 	name = "plasma grenade"
 	icon_state = "grenade"
-	damage = 100
+	damage = 50
 	pixels_per_second = TILES_TO_PIXELS(10)
 	range = 6
 	impact_effect_type = /obj/effect/temp_visual/impact_effect/green_laser
@@ -111,7 +111,7 @@
 
 /obj/item/projectile/beam/cybersun_laser/granata_shrapnel/shotgun_pellet
 	icon_state = "because_it_doesnt_miss"
-	damage = 10
+	damage = 5
 	wound_bonus = 5
 	bare_wound_bonus = 5
 	impact_effect_type = /obj/effect/temp_visual/impact_effect/purple_laser
@@ -130,7 +130,7 @@
 
 /obj/item/projectile/beam/cybersun_laser/hellfire
 	icon_state = "hellfire"
-	damage = 50
+	damage = 25
 	impact_effect_type = /obj/effect/temp_visual/impact_effect/red_laser
 	pixels_per_second = TILES_TO_PIXELS(20)
 	wound_bonus = 0
@@ -166,7 +166,7 @@
 
 /obj/item/ammo_casing/energy/cybersun_small_launcher
 	projectile_type = /obj/item/projectile/beam/cybersun_laser/flare
-	e_cost = 1000
+	e_cost = 2000
 	select_name = "Flare"
 
 /obj/item/projectile/beam/cybersun_laser/flare

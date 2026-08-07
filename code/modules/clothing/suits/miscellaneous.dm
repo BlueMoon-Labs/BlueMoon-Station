@@ -1293,6 +1293,7 @@
 	desc = "Reminds you of someone, but you just can't put your finger on it..."
 	icon_state = "waldo_shirt"
 	item_state = "waldo_shirt"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/suit/samurai
 	name = "Samurai outfit"
@@ -1408,7 +1409,8 @@
 	icon_state = "football_armor_blue"
 	item_state = "football_armor_blue"
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	mutantrace_variation = STYLE_DIGITIGRADE
+	anthro_mob_worn_overlay = 'icons/mob/clothing/suit_digi.dmi'
 
 /obj/item/clothing/suit/basil_boys
 	name = "basil boys protective gear"
@@ -1416,7 +1418,8 @@
 	icon_state = "football_armor_red"
 	item_state = "football_armor_red"
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS
-	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	mutantrace_variation = STYLE_DIGITIGRADE
+	anthro_mob_worn_overlay = 'icons/mob/clothing/suit_digi.dmi'
 
 /obj/item/clothing/suit/yakuza
 	name = "tojo clan jacket"

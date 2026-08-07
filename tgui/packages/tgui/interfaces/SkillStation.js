@@ -4,8 +4,8 @@ import { useBackend } from '../backend';
 import { Box, Button, Flex, Icon, LabeledList, NoticeBox, Section, Stack, Table } from '../components';
 import { Window } from '../layouts';
 
-export const InsertedSkillchip = (props, context) => {
-  const { act, data } = useBackend(context);
+export const InsertedSkillchip = (props) => {
+  const { act, data } = useBackend();
 
   const {
     skillchip_ready,
@@ -103,8 +103,8 @@ export const InsertedSkillchip = (props, context) => {
   );
 };
 
-export const ImplantedSkillchips = (props, context) => {
-  const { act, data } = useBackend(context);
+export const ImplantedSkillchips = (props) => {
+  const { act, data } = useBackend();
 
   const {
     slots_used,
@@ -244,7 +244,7 @@ export const ImplantedSkillchips = (props, context) => {
   );
 };
 
-export const TimeFormat = (props, context) => {
+export const TimeFormat = (props) => {
   const { value } = props;
 
   const seconds = toFixed(Math.floor((value/10) % 60)).padStart(2, "0");
@@ -254,8 +254,8 @@ export const TimeFormat = (props, context) => {
   return formattedValue;
 };
 
-export const SkillStation = (props, context) => {
-  const { data } = useBackend(context);
+export const SkillStation = (props) => {
+  const { data } = useBackend();
   const {
     working,
     timeleft,

@@ -39,6 +39,7 @@ There are several things that need to be remembered:
 
 >	There are also these special cases:
 		update_damage_overlays()	//handles damage overlays for brute/burn damage
+		update_wound_overlays()		//handles bleeding wound overlays
 		update_body()				//Handles updating your mob's body layer and mutant bodyparts
 									as well as sprite-accessories that didn't really fit elsewhere (underwear, undershirts, socks, lips, eyes)
 									//NOTE: update_mutantrace() is now merged into this!
@@ -57,8 +58,21 @@ There are several things that need to be remembered:
 	if(!HAS_TRAIT(src, TRAIT_HUMAN_NO_RENDER))
 		dna.species.handle_hair(src)
 
+///Глубина отсрочки пересборки мутантных частей тела. Пока больше нуля,
+///update_mutant_bodyparts() только помечает заявку. Полная перерисовка
+///(regenerate_icons) трогает семь слотов одежды подряд, и каждый честно гнал
+///handle_mutant_bodyparts - самый дорогой по self проц в профиле раунда
+///(226мкс на вызов), то есть ~1.6мс мусора на каждую перерисовку. Счётчик, а не
+///флаг, чтобы вложенный regenerate_icons не снимал отсрочку внешнего.
+/mob/living/carbon/human/var/defer_mutant_bodyparts_update = 0
+///Была ли за время отсрочки хоть одна заявка на пересборку мутантных частей.
+/mob/living/carbon/human/var/pending_mutant_bodyparts_update = FALSE
+
 //used when putting/removing clothes that hide certain mutant body parts to just update those and not update the whole body.
 /mob/living/carbon/human/proc/update_mutant_bodyparts(block_recursive_calls = FALSE)
+	if(defer_mutant_bodyparts_update)
+		pending_mutant_bodyparts_update = TRUE
+		return
 	if(!HAS_TRAIT(src, TRAIT_HUMAN_NO_RENDER))
 		dna.species.handle_mutant_bodyparts(src, null, block_recursive_calls)
 
@@ -79,6 +93,11 @@ There are several things that need to be remembered:
 	if(!HAS_TRAIT(src, TRAIT_HUMAN_NO_RENDER))
 		if(!..())
 			icon_render_key = null //invalidate bodyparts cache
+			//Все update_inv_* ниже дёргают update_mutant_bodyparts(), и без
+			//отсрочки полная перерисовка гоняла handle_mutant_bodyparts восемь
+			//раз подряд на одном мобе. Копим заявки и выполняем одну в конце,
+			//когда все слои одежды уже на месте.
+			defer_mutant_bodyparts_update++
 			update_body(TRUE, block_recursive_calls)
 			update_hair()
 			update_inv_w_uniform(block_recursive_calls)
@@ -102,11 +121,16 @@ There are several things that need to be remembered:
 			update_inv_wear_suit(block_recursive_calls)
 			update_inv_pockets()
 			update_inv_neck()
+			defer_mutant_bodyparts_update--
+			if(!defer_mutant_bodyparts_update && pending_mutant_bodyparts_update)
+				pending_mutant_bodyparts_update = FALSE
+				update_mutant_bodyparts(block_recursive_calls)
 			update_transform()
 			//mutations
 			update_mutations_overlay()
 			//damage overlays
 			update_damage_overlays()
+			update_bandage_overlays()
 			//antagonism
 			update_antag_overlays()
 			//abductor stealth: re-apply disguise after any full icon refresh so it doesn't break over time
@@ -114,6 +138,7 @@ There are several things that need to be remembered:
 				var/obj/item/clothing/suit/armor/abductor/vest/V = wear_suit
 				if(V.stealth_active && V.disguise)
 					V.ReapplyDisguise()
+			update_small_sprite()
 
 /* --------------------------------------- */
 //vvvvvv UPDATE_INV PROCS vvvvvv

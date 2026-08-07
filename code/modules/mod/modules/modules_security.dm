@@ -105,7 +105,7 @@
 
 	if(!is_type_in_typecache(dropped_item, guns_typecache))
 		return
-	if(new_location != get_turf(src))
+	if(new_location != get_turf(mod))
 		return
 	addtimer(CALLBACK(src, PROC_REF(pick_up_item), dropped_item), magnet_delay)
 
@@ -114,8 +114,8 @@
 		return
 	if(!mod.wearer.equip_to_slot_if_possible(item, ITEM_SLOT_SUITSTORE, qdel_on_fail = FALSE, disable_warning = TRUE))
 		return
-	playsound(src, 'sound/items/modsuit/magnetic_harness.ogg', 50, TRUE)
-	balloon_alert(mod.wearer, "[item] reattached")
+	playsound(mod, 'sound/items/modsuit/magnetic_harness.ogg', 50, TRUE)
+	mod.balloon_alert(mod.wearer, "[item] reattached")
 	drain_power(use_power_cost)
 
 ///Pepper Shoulders
@@ -144,20 +144,20 @@
 	if(!holstered)
 		var/obj/item/gun/holding = mod.wearer.get_active_held_item()
 		if(!holding)
-			balloon_alert(mod.wearer, "nothing to holster!")
+			mod.balloon_alert(mod.wearer, "nothing to holster!")
 			return
 		if(!istype(holding) || holding.w_class > WEIGHT_CLASS_BULKY)
-			balloon_alert(mod.wearer, "it doesn't fit!")
+			mod.balloon_alert(mod.wearer, "it doesn't fit!")
 			return
 		if(mod.wearer.transferItemToLoc(holding, src, force = FALSE, silent = TRUE))
 			holstered = holding
-			balloon_alert(mod.wearer, "weapon holstered")
-			playsound(src, 'sound/weapons/revolverempty.ogg', 100, TRUE)
+			mod.balloon_alert(mod.wearer, "weapon holstered")
+			playsound(mod, 'sound/weapons/revolverempty.ogg', 100, TRUE)
 	else if(mod.wearer.put_in_active_hand(holstered, forced = FALSE, ignore_animation = TRUE))
-		balloon_alert(mod.wearer, "weapon drawn")
-		playsound(src, 'sound/weapons/revolverempty.ogg', 100, TRUE)
+		mod.balloon_alert(mod.wearer, "weapon drawn")
+		playsound(mod, 'sound/weapons/revolverempty.ogg', 100, TRUE)
 	else
-		balloon_alert(mod.wearer, "holster full!")
+		mod.balloon_alert(mod.wearer, "holster full!")
 
 /obj/item/mod/module/holster/on_uninstall(deleting = FALSE)
 	if(holstered)
@@ -201,6 +201,7 @@
 	SIGNAL_HANDLER
 
 	speech_args[SPEECH_SPANS] |= voicespan
+	playsound(get_turf(mod), 'sound/items/megaphone.ogg', 100, 0, 1)
 	drain_power(use_power_cost)
 
 ///Criminal Capture

@@ -241,6 +241,8 @@
 		springtrapped.apply_damage(rand(5, 20), BRUTE, spread_damage = TRUE)
 		// Ломаем внутренние органы (каждый из органов дамажится с шансом 30% на 8 урона)
 		for(var/obj/item/organ/organ in springtrapped.internal_organs)
+			if(istype(organ, /obj/item/organ/genital))
+				continue
 			if(prob(30))
 				organ.applyOrganDamage(5)
 		// Вызываем кровотечения, расплёскивая кровь вокруг

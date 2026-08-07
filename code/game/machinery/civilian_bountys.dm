@@ -305,7 +305,10 @@
 	radio.recalculateChannels()
 
 /obj/item/bounty_cube/Destroy()
+	STOP_PROCESSING(SSobj, src) // парный к START_PROCESSING в set_up
 	QDEL_NULL(radio)
+	bounty_handler_account = null
+	bounty_holder_account = null
 	. = ..()
 
 /obj/item/bounty_cube/examine()

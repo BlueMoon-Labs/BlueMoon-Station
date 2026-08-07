@@ -18,10 +18,13 @@
 	port = null
 	return ..()
 
-/datum/shuttle_event/proc/start_up_event(evacuation_duration)
+/datum/shuttle_event/proc/start_up_event(evacuation_duration, immediate = FALSE)
 	if(!evacuation_duration)
 		evacuation_duration = 1
-	activate_at = world.time + evacuation_duration * activation_fraction
+	if(immediate)
+		activate_at = world.time
+	else
+		activate_at = world.time + evacuation_duration * activation_fraction
 
 /// Called when the event begins affecting the shuttle
 /datum/shuttle_event/proc/activate()
@@ -176,7 +179,7 @@
 /// pickweight pool for one random hyperspace event per evacuation transit.
 /proc/get_hyperspace_event_roll_weights()
 	var/list/weights = list()
-	for(var/datum/shuttle_event/event_type in subtypesof(/datum/shuttle_event))
+	for(var/datum/shuttle_event/event_type as anything in subtypesof(/datum/shuttle_event))
 		if(is_abstract_shuttle_event(event_type))
 			continue
 		var/weight = initial(event_type.event_probability)
@@ -193,7 +196,7 @@ GLOBAL_LIST_INIT(admin_forceable_hyperspace_events, list())
 
 /proc/collect_admin_forceable_hyperspace_events()
 	var/list/result = list()
-	for(var/datum/shuttle_event/event_type in subtypesof(/datum/shuttle_event))
+	for(var/datum/shuttle_event/event_type as anything in subtypesof(/datum/shuttle_event))
 		if(!initial(event_type.admin_forceable))
 			continue
 		if(is_abstract_shuttle_event(event_type))

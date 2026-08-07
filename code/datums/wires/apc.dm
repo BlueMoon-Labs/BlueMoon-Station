@@ -27,6 +27,7 @@
 
 /datum/wires/apc/on_pulse(wire)
 	var/obj/machinery/power/apc/A = holder
+	A.apc_unpark() // shorts and overrides invalidate the standby fixed point
 	switch(wire)
 		if(WIRE_POWER1, WIRE_POWER2) // Short for a long while.
 			if(!A.shorted)
@@ -43,6 +44,7 @@
 
 /datum/wires/apc/on_cut(index, mend)
 	var/obj/machinery/power/apc/A = holder
+	A.apc_unpark() // shorts and overrides invalidate the standby fixed point
 	switch(index)
 		if(WIRE_POWER1, WIRE_POWER2) // Short out.
 			if(mend && !is_cut(WIRE_POWER1) && !is_cut(WIRE_POWER2))

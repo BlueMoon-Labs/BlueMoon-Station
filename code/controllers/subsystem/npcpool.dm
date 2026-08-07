@@ -16,12 +16,16 @@ SUBSYSTEM_DEF(npcpool)
 	return ..()
 
 /datum/controller/subsystem/npcpool/fire(resumed = FALSE)
+	// Инструментация адаптивного профиля (см. базовый subsystem.dm).
+	var/slice_start_usage = TICK_USAGE
 	if (!resumed)
 		var/list/activelist = GLOB.simple_animals[AI_ON]
 		src.currentrun = activelist.Copy()
+		current_pass_cost_ms = 0
 
 	//cache for sanic speed (lists are references anyways)
 	var/list/currentrun = src.currentrun
+	var/profiling = profile_armed
 	var/removes_nulls = FALSE //BLUEMOON ADD не начинаем убирать нули если мы уже убираем нули (на всякий случай)
 	while(currentrun.len)
 		var/mob/living/simple_animal/SA = currentrun[currentrun.len]
@@ -32,26 +36,32 @@ SUBSYSTEM_DEF(npcpool)
 				removes_nulls = TRUE
 			continue //BLUEMOON ADD END
 
+		var/item_type = SA.type
+		var/item_start_usage
+		if(profiling)
+			item_start_usage = TICK_USAGE
 		invoking = TRUE
 		invoke_start = world.time
 		INVOKE_ASYNC(src, PROC_REF(invoke_process), SA)
 		if(invoking)
-			stack_trace("WARNING: [SA] ([SA.type]) slept during NPCPool processing.")
+			stack_trace("WARNING: [SA] ([item_type]) slept during NPCPool processing.")
 			invoking = FALSE
+		if(profiling)
+			profile_note(item_type, max(0, TICK_DELTA_TO_MS(TICK_USAGE - item_start_usage)))
 
 		if (MC_TICK_CHECK)
+			current_pass_cost_ms += max(0, TICK_DELTA_TO_MS(TICK_USAGE - slice_start_usage))
 			return
+
+	current_pass_cost_ms += max(0, TICK_DELTA_TO_MS(TICK_USAGE - slice_start_usage))
+	on_pass_finished(length(GLOB.simple_animals[AI_ON]))
 
 /datum/controller/subsystem/npcpool/proc/invoke_process(mob/living/simple_animal/SA)
 	if(!SA.ckey && !SA.mob_transforming)
 		if(!SA.has_nearby_player())
-			if(istype(SA, /mob/living/simple_animal/hostile))
-				var/mob/living/simple_animal/hostile/hostile_mob = SA
-				hostile_mob.LoseTarget()
-				SA.toggle_ai(AI_IDLE)
-				invoking = FALSE
-				return
-			else if(istype(SA, /mob/living/simple_animal/bot))
+			//пул обслуживает мирных simple animals и ботов: боевые hostile
+			//живут на адаптер-контроллерах и сюда не зачисляются
+			if(istype(SA, /mob/living/simple_animal/bot))
 				var/mob/living/simple_animal/bot/bot_mob = SA
 				if(bot_mob.mode == BOT_IDLE)
 					invoking = FALSE

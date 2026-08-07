@@ -117,11 +117,6 @@ Difficulty: Hard
 		return
 	..()
 
-/mob/living/simple_animal/hostile/megafauna/bubblegum/Goto(target, delay, minimum_distance)
-	if(charging)
-		return
-	..()
-
 /mob/living/simple_animal/hostile/megafauna/bubblegum/Move()
 	if(!stat)
 		playsound(src.loc, 'sound/effects/meteorimpact.ogg', 200, 1, 2, 1)
@@ -152,8 +147,7 @@ Difficulty: Hard
 	animate(D, alpha = 0, color = "#FF0000", transform = matrix()*2, time = 5)
 	sleep(5)
 	throw_at(T, get_dist(src, T), 1, src, 0)
-	charging = 0
-	Goto(target, move_to_delay, minimum_distance)
+	charging = 0 //преследование возобновляет штатный мувер контроллера
 
 
 /mob/living/simple_animal/hostile/megafauna/bubblegum/Bump(atom/A)

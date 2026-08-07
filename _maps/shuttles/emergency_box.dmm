@@ -21,9 +21,6 @@
 /turf/closed/wall/mineral/titanium/interior,
 /area/shuttle/escape)
 "af" = (
-/obj/effect/fun_balloon/sentience/emergency_shuttle{
-	group_name = "security escorts on the Emergency Box Shuttle"
-	},
 /obj/structure/table,
 /obj/machinery/recharger,
 /turf/open/floor/mineral/titanium/blue,
@@ -36,6 +33,9 @@
 /area/shuttle/escape)
 "ah" = (
 /obj/machinery/computer/emergency_shuttle,
+/obj/effect/fun_balloon/sentience/emergency_shuttle{
+	group_name = "security escorts on the Emergency Box Shuttle"
+	},
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/escape)
 "ai" = (
@@ -372,6 +372,10 @@
 /obj/structure/table/optable,
 /turf/open/floor/mineral/titanium/white,
 /area/shuttle/escape)
+"mx" = (
+/mob/living/simple_animal/hostile/retaliate/nanotrasenpeace/ranged,
+/turf/open/floor/mineral/titanium,
+/area/shuttle/escape)
 "XC" = (
 /obj/structure/closet/emcloset,
 /turf/open/floor/mineral/titanium/white,
@@ -481,7 +485,7 @@ bk
 (5,1,1) = {"
 ac
 ag
-aC
+mx
 as
 ad
 ac
@@ -505,7 +509,7 @@ bk
 (6,1,1) = {"
 ac
 ah
-aC
+mx
 at
 ad
 aB
@@ -529,7 +533,7 @@ bk
 (7,1,1) = {"
 ac
 ag
-aC
+mx
 aC
 ay
 aC

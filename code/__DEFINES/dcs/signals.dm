@@ -253,6 +253,8 @@
 	#define COMPONENT_CANCEL_THROW 1
 #define COMSIG_MOVABLE_POST_THROW "movable_post_throw"			//from base of atom/movable/throw_at(): (datum/thrownthing, spin)
 #define COMSIG_MOVABLE_Z_CHANGED "movable_ztransit" 			//from base of atom/movable/onTransitZ(): (old_z, new_z)
+///from /atom/movable/proc/onEnteredNullspace(): (old_z, null)
+#define COMSIG_MOVABLE_ENTERED_NULLSPACE "movable_entered_nullspace"
 #define COMSIG_MOVABLE_SECLUDED_LOCATION "movable_secluded" 	//called when the movable is placed in an unaccessible area, used for stationloving: ()
 #define COMSIG_MOVABLE_HEAR "movable_hear"						//from base of atom/movable/Hear(): (message, atom/movable/speaker, message_language, raw_message, radio_freq, list/spans, message_mode, atom/movable/source)
 	#define HEARING_MESSAGE 1
@@ -367,10 +369,12 @@
 #define COMSIG_ATOM_SET_LIGHT_HEIGHT "atom_set_light_height"
 ///Called right after the atom changes the value of light_height to a different one, from base of [/atom/proc/set_light_height]: (old_height)
 #define COMSIG_ATOM_UPDATE_LIGHT_HEIGHT "atom_update_light_height"
+///from /obj/item/proc/do_pickup_animation(): () - оверлейный свет прячет маску, чтобы летящий призрак подбора не нёс её дубль
+#define COMSIG_ITEM_BEFORE_PICKUP_ANIMATION "item_before_pickup_animation"
 
 // /client signals
 #define COMSIG_MOB_CLIENT_LOGOUT "mob_client_logout"				//sent when a mob/logout() starts: (client)
-#define COMSIG_MOB_CLIENT_MOVE "mob_client_move"					//sent when client/Move() finishes with no early returns: (client, direction, n, oldloc)
+#define COMSIG_MOB_CLIENT_MOVE "mob_client_move"					//sent when client/Move() finishes with no early returns: (client, direction, n, oldloc, add_delay, base_delay)
 #define COMSIG_MOB_CLIENT_CHANGE_VIEW "mob_client_change_view"		//from base of /client/change_view(): (client, old_view, view)
 #define COMSIG_MOB_CLIENT_MOUSEMOVE "mob_client_mousemove"			//from base of /client/MouseMove(): (object, location, control, params)
 #define COMSIG_MOB_CLIENT_JOINED_FROM_LOBBY "mob_client_joined_from_lobby" //sent when a player joins/latejoins the game: (new_character, client, late_transfer)
@@ -441,6 +445,9 @@
 // /mob/living/carbon physiology signals
 #define COMSIG_CARBON_GAIN_WOUND "carbon_gain_wound"				//from /datum/wound/proc/apply_wound() (/mob/living/carbon/C, /datum/wound/W, /obj/item/bodypart/L)
 #define COMSIG_CARBON_LOSE_WOUND "carbon_lose_wound"				//from /datum/wound/proc/remove_wound() (/mob/living/carbon/C, /datum/wound/W, /obj/item/bodypart/L)
+/// from /obj/item/bodypart/proc/update_part_wound_overlay(): (bleed_rate)
+#define COMSIG_BODYPART_UPDATE_WOUND_OVERLAY "bodypart_update_wound_overlay"
+	#define COMPONENT_PREVENT_WOUND_OVERLAY_UPDATE (1 << 0)
 ///from base of /obj/item/bodypart/proc/attach_limb(): (new_limb, special) allows you to fail limb attachment
 #define COMSIG_CARBON_ATTACH_LIMB "carbon_attach_limb"
 	#define COMPONENT_NO_ATTACH (1<<0)
@@ -673,6 +680,7 @@
 #define COMSIG_NANITE_SET_MAX_VOLUME "nanite_set_max_volume"	//(amount) Sets maximum nanite volume to the given amount
 #define COMSIG_NANITE_SET_CLOUD "nanite_set_cloud"				//(amount(0-100)) Sets cloud ID to the given amount
 #define COMSIG_NANITE_SET_CLOUD_SYNC "nanite_set_cloud_sync"	//(method) Modify cloud sync status. Method can be toggle, enable or disable
+#define COMSIG_NANITE_GET_CLOUD "nanite_get_cloud"	            //(int) Return cloud_id
 #define COMSIG_NANITE_SET_SAFETY "nanite_set_safety"			//(amount) Sets safety threshold to the given amount
 #define COMSIG_NANITE_SET_REGEN "nanite_set_regen"				//(amount) Sets regeneration rate to the given amount
 #define COMSIG_NANITE_SIGNAL "nanite_signal"					//(code(1-9999)) Called when sending a nanite signal to a mob.
@@ -683,6 +691,7 @@
 #define COMPONENT_PROGRAM_INSTALLED		1					//Installation successful
 #define COMPONENT_PROGRAM_NOT_INSTALLED		2				//Installation failed, but there are still nanites
 #define COMSIG_NANITE_SYNC "nanite_sync"						//(datum/component/nanites, full_overwrite, copy_activation) Called to sync the target's nanites to a given nanite component
+#define COMSIG_NANITE_SET_NEED_SYNC "nanite_set_need_sync"      // (method) Sets Needs Sync Next Cycle
 /// Checks if a nanite component is able to be controlled by console
 #define COMSIG_NANITE_CHECK_CONSOLE_LOCK "is_console_locked"
 /// Checks if a nanite component is able to be interfaced with by a host with innate nanite control
@@ -709,6 +718,10 @@
 #define COMSIG_TRY_STORAGE_QUICK_EMPTY "storage_quick_empty"		//(loc) - returns bool - if loc is null it will dump at parent location.
 #define COMSIG_TRY_STORAGE_RETURN_INVENTORY "storage_return_inventory"	//(list/list_to_inject_results_into, recursively_search_inside_storages = TRUE)
 #define COMSIG_TRY_STORAGE_CAN_INSERT "storage_can_equip"			//(obj/item/insertion_candidate, mob/user, silent) - returns bool
+///sent to the CLICKED item before a bag scoops it up: (obj/item/storage_item, mob/user)
+///let a target that wants the bag itself (feeding a reproductive extract from a bio bag) run its own attackby
+#define COMSIG_ATOM_PRE_STORAGE_GATHER "atom_pre_storage_gather"
+	#define COMPONENT_CANCEL_STORAGE_GATHER 1
 
 // /datum/component/two_handed signals
 #define COMSIG_TWOHANDED_WIELD "twohanded_wield"						//from base of datum/component/two_handed/proc/wield(mob/living/carbon/user): (/mob/user)

@@ -94,6 +94,10 @@
 
 // better updates via client_mobs_in_contents can be created again when important recursive contents is ported!
 /datum/parallax_holder/proc/Update(full, anim_time = 0)
+	if(SSlag_switch.measures[DISABLE_PARALLAX])
+		var/mob/owner_mob = owner?.mob
+		if(!(owner_mob && HAS_TRAIT(owner_mob, TRAIT_BYPASS_MEASURES)))
+			return
 	if(!full && !cached_eye || (get_turf(cached_eye) == last))
 		return
 	if(!owner)	// why are we here
@@ -177,16 +181,27 @@
 /datum/parallax_holder/proc/Apply(client/C = owner)
 	if(QDELETED(C))
 		return
+	// Читаем префы того клиента, которому и рисуем: owner может быть уже не он (или уже
+	// в разборке), а весь остальной прок работает с C. Без префов рисовать нечего -
+	// выходим тем же путём, что и для удалённого клиента.
+	if(!C.prefs)
+		return
+	// Lag switch: treat everyone as having parallax disabled in prefs
+	var/effective_parallax = C.prefs.parallax
+	if(SSlag_switch.measures[DISABLE_PARALLAX])
+		var/mob/owner_mob = C.mob
+		if(!(owner_mob && HAS_TRAIT(owner_mob, TRAIT_BYPASS_MEASURES)))
+			effective_parallax = PARALLAX_DISABLE
 	. = list()
 	for(var/atom/movable/screen/parallax_layer/L in layers)
-		if(L.parallax_intensity > owner.prefs.parallax)
+		if(L.parallax_intensity > effective_parallax)
 			continue
 		if(!L.ShouldSee(C, last))
 			continue
 		L.SetView(C.view, TRUE)
 		. |= L
 	C.screen |= .
-	if(!secondary_map && (owner.prefs.parallax != PARALLAX_DISABLE))
+	if(!secondary_map && (effective_parallax != PARALLAX_DISABLE))
 		var/atom/movable/screen/plane_master/parallax_white/PM = locate() in C.screen
 		if(PM)
 			PM.color =  list(

@@ -25,7 +25,7 @@ SUBSYSTEM_DEF(shuttle)
 	var/obj/docking_port/mobile/emergency/backup/backup_shuttle
 	var/emergencyCallTime = 6000	//time taken for emergency shuttle to reach the station when called (in deciseconds)
 	var/emergencyDockTime = 1800	//time taken for emergency shuttle to leave again once it has docked (in deciseconds)
-	var/emergencyEscapeTime = 1200	//time taken for emergency shuttle to reach a safe distance after leaving station (in deciseconds)
+	var/emergencyEscapeTime = 1800	//time taken for emergency shuttle to reach a safe distance after leaving station (in deciseconds)
 	var/area/emergencyLastCallLoc
 	var/emergencyCallAmount = 0		//how many times the escape shuttle was called
 	var/emergencyNoEscape
@@ -51,6 +51,9 @@ SUBSYSTEM_DEF(shuttle)
 	var/list/hidden_shuttle_turf_images = list() //only the images from the above list
 
 	var/datum/round_event/shuttle_loan/shuttle_loan
+
+	/// Экипаж купил страховку шаттла (событие Shuttle Insurance): катастрофа покрывается страховой
+	var/shuttle_insurance = FALSE
 
 	var/shuttle_purchased = SHUTTLEPURCHASE_PURCHASABLE //If the station has purchased a replacement escape shuttle this round
 	var/list/shuttle_purchase_requirements_met = list() //For keeping track of ingame events that would unlock new shuttles, such as defeating a boss or discovering a secret item
@@ -135,16 +138,8 @@ SUBSYSTEM_DEF(shuttle)
 		if(!T.owner)
 			qdel(T, force=TRUE)
 			continue
-		// This next one removes transit docks/zones that aren't
-		// immediately being used. This will mean that the zone creation
-		// code will be running a lot.
-		var/obj/docking_port/mobile/owner = T.owner
-		if(owner)
-			var/idle = owner.mode == SHUTTLE_IDLE
-			var/not_centcom_evac = owner.launch_status == NOLAUNCH
-			var/not_in_use = (!T.get_docked())
-			if(idle && not_centcom_evac && not_in_use)
-				qdel(T, force=TRUE)
+		// Keep the reservation assigned to its shuttle between flights. Reusing it avoids
+		// another reservation scan and bulk ChangeTurf when the shuttle next launches.
 	CheckAutoEvac()
 
 	// Skyrat change. Handles Problem Computer charges here
@@ -205,12 +200,19 @@ SUBSYSTEM_DEF(shuttle)
 	emergencyNoRecall = FALSE
 
 /datum/controller/subsystem/shuttle/proc/getShuttle(id)
+	// Навигационная консоль вне шаттла держит shuttleId = "" и спрашивает на каждое
+	// касание: пустой id - это "не спрашивали", а не "не нашли шаттл". Варнинг на нём
+	// только засорял прод-лог.
+	if(!id)
+		return null
 	for(var/obj/docking_port/mobile/M in mobile)
 		if(M.shuttle_id == id)
 			return M
 	WARNING("couldn't find shuttle with id: [id]")
 
 /datum/controller/subsystem/shuttle/proc/getDock(id)
+	if(!id)
+		return null
 	for(var/obj/docking_port/stationary/S in stationary)
 		if(S.shuttle_id == id)
 			return S
@@ -649,6 +651,7 @@ SUBSYSTEM_DEF(shuttle)
 	emergencyNoEscape = SSshuttle.emergencyNoEscape
 	emergencyCallAmount = SSshuttle.emergencyCallAmount
 	shuttle_purchased = SSshuttle.shuttle_purchased
+	shuttle_insurance = SSshuttle.shuttle_insurance
 	lockdown = SSshuttle.lockdown
 
 	selected = SSshuttle.selected
@@ -1074,7 +1077,7 @@ SUBSYSTEM_DEF(shuttle)
 				var/obj/docking_port/mobile/emergency/eshut = M
 				var/evac_duration = emergencyEscapeTime * eshut.engine_coeff
 				var/datum/shuttle_event/new_event = eshut.add_shuttle_event(event_type)
-				new_event?.start_up_event(evac_duration)
+				new_event?.start_up_event(evac_duration, TRUE)
 				message_admins("[key_name_admin(usr)] forced hyperspace event [event_type] on the evacuation shuttle.")
 				log_admin("[key_name(usr)] forced hyperspace event [event_type] on the evacuation shuttle.")
 				SSblackbox.record_feedback("text", "shuttle_manipulator", 1, "force_hyperspace:[event_type]")

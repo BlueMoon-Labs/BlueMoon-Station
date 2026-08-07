@@ -25,6 +25,8 @@
 	blacklisted_quirks = list(/datum/quirk/mute, /datum/quirk/brainproblems, /datum/quirk/prosopagnosia, /datum/quirk/insanity)
 	threat = 2
 	alt_titles = list(
+		"Junior Expeditor", //Стажер выше, для удобства
+		"Expeditor Trainee", //Стажер выше, для удобства
 		"Space Explorer",
 		"Space Diver",
 		"Sexplorer",
@@ -71,13 +73,14 @@
 //	suit_store = /obj/item/gun/energy/e_gun/mini/expeditor
 	r_pocket = /obj/item/kitchen/knife/combat
 
+	no_custom_backpack = TRUE
 	backpack = /obj/item/storage/backpack/duffelbag/syndie
 	satchel = /obj/item/storage/backpack/duffelbag/syndie
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
-	accessory = list(/obj/item/clothing/accessory/permit/special/explorer)
-	backpack_contents = list(/obj/item/syndicate_uplink=1, /obj/item/storage/firstaid/regular = 1)
+	accessory = list(/obj/item/clothing/accessory/permit/special/explorer, /obj/item/clothing/accessory/permit/special/syndie_station)
+	backpack_contents = list(/obj/item/syndicate_uplink/station=1, /obj/item/storage/firstaid/regular = 1)
 
 /obj/item/radio/headset/headset_exp
 	name = "expeditor's headset"
