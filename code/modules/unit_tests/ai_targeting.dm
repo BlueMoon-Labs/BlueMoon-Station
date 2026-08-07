@@ -329,6 +329,33 @@
 
 	qdel(controller)
 
+///Настороженность от полученного урона: моб с коротким пассивным зрением после
+///удара ищет на боевом aggro_vision_range, даже если цели и контакта нет, а
+///точка обидчика становится уликой розыска. Розыскной КОНТАКТ при этом не
+///создаётся - бонус скоринга контакта не должен дублировать обиду (плейтест
+///22.06: shambling miner с vision 3 стоял столбом под выстрелами с 4+ тайлов).
+/datum/unit_test/ai_combat_alert_survives_target_loss/Run()
+	var/mob/living/simple_animal/hostile/victim = allocate(/mob/living/simple_animal/hostile, run_loc_floor_bottom_left)
+	victim.vision_range = 3
+	victim.aggro_vision_range = 7
+	var/turf/shooter_turf = locate(run_loc_floor_bottom_left.x + 4, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
+	var/mob/living/carbon/human/shooter = allocate(/mob/living/carbon/human, shooter_turf)
+	var/datum/ai_controller/unit_test_hunter/controller = new(victim)
+	var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(/datum/targeting_strategy/hostile_legacy)
+
+	TEST_ASSERT_EQUAL(strategy.get_aggro_range(victim, 7), 3, "Санити: холодное зрение обязано быть пассивным")
+	controller.note_attacker(shooter)
+	TEST_ASSERT(controller.is_combat_alert(), "Полученный удар обязан взводить настороженность")
+	TEST_ASSERT_EQUAL(strategy.get_aggro_range(victim, 7), 7, "Настороженный моб обязан искать на боевом aggro_vision_range")
+	TEST_ASSERT_EQUAL(controller.blackboard[BB_AI_LAST_KNOWN_POS], shooter_turf, "Точка обидчика обязана стать уликой розыска")
+	TEST_ASSERT(!controller.blackboard_key_exists(BB_AI_CONTACT_TARGET), "Удар не имеет права создавать розыскной контакт")
+
+	//окно протухло - восприятие остывает
+	controller.blackboard[BB_AI_COMBAT_ALERT_UNTIL] = world.time - 1
+	TEST_ASSERT_EQUAL(strategy.get_aggro_range(victim, 7), 3, "Протухшая настороженность обязана остужать зрение")
+
+	qdel(controller)
+
 ///Фрустрация проходит через живой finder и действительно меняет цель.
 /datum/unit_test/ai_targeting_live_retarget/Run()
 	var/mob/living/simple_animal/hostile/pawn = allocate(/mob/living/simple_animal/hostile, run_loc_floor_bottom_left)

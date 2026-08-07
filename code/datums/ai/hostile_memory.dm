@@ -20,6 +20,26 @@
 	set_blackboard_key_assoc_lazylist(BB_AI_GRUDGE_LIST, attacker, world.time)
 	prune_grudges()
 	blackboard[BB_AI_ROUTE_RETRY_AT] = null
+	//удар - это восприятие: моб знает, что по нему работают, и ОТКУДА прилетело.
+	//Настороженность держит боевое зрение (get_aggro_range) даже после потери
+	//цели - иначе моб с коротким пассивным зрением, потеряв цель (исчерпанный
+	//маршрут, поводок), мгновенно слепнет, и стрелка в 4+ тайлах можно
+	//расстреливать безнаказанно (плейтест 22.06: shambling miner с vision_range 3
+	//стоял столбом под выстрелами и дрался только вплотную). Точка обидчика
+	//становится уликой SEARCH, но НЕ розыскным контактом: бонус скоринга
+	//контакта не должен дублировать обиду (фрустрация и протухание обид обязаны
+	//работать как прежде).
+	blackboard[BB_AI_COMBAT_ALERT_UNTIL] = world.time + AI_CONTACT_FRESH_TIME
+	if(!blackboard_key_exists(BB_AI_CURRENT_TARGET))
+		var/turf/attacker_turf = get_turf(attacker)
+		if(attacker_turf)
+			set_blackboard_key(BB_AI_LAST_KNOWN_POS, attacker_turf)
+			blackboard[BB_AI_LAST_SEEN_TIME] = world.time
+			blackboard[BB_AI_STATE] = AI_STATE_SEARCH
+			blackboard[BB_AI_STATE_ENTERED_AT] = world.time
+			blackboard[BB_AI_SEARCH_UNTIL] = world.time + (blackboard[BB_AI_SEARCH_TIME] || AI_DEFAULT_SEARCH_TIME)
+			blackboard[BB_AI_SEARCH_POINTS_LEFT] = AI_SEARCH_INVESTIGATE_POINTS
+			clear_blackboard_key(BB_AI_SEARCH_POINT)
 	//боль перепроверяет и IDLE, и OFF: OFF мог остаться от пустого z-level,
 	//а реальные причины отключения get_expected_ai_status() сохранит
 	if(ai_status != AI_STATUS_ON)
@@ -167,6 +187,14 @@
 		return FALSE
 	return world.time - (blackboard[BB_AI_LAST_SEEN_TIME] || 0) < AI_CONTACT_FRESH_TIME
 
+///TRUE, пока моб настороже: свежий розыскной контакт либо недавно полученный
+///урон. Кормит подъём зрения до aggro_vision_range в get_aggro_range и быстрый
+///каденс реакквизиции - но НЕ скоринг (тот читает только настоящий контакт).
+/datum/ai_controller/proc/is_combat_alert()
+	if(world.time < (blackboard[BB_AI_COMBAT_ALERT_UNTIL] || 0))
+		return TRUE
+	return has_fresh_contact()
+
 ///Разжаловать живую цель в контакт: LOS потерян, движение к реальной позиции
 ///атома прекращается. Улика (последняя подтверждённая точка) сохраняется,
 ///FSM переведёт моба в SEARCH на следующем плане.
@@ -231,14 +259,20 @@
 	blackboard[BB_AI_SEARCH_POINTS_LEFT] = null
 	blackboard[BB_AI_FRUSTRATION] = 0
 	blackboard[BB_AI_LAST_SEEN_TIME] = null
+	blackboard[BB_AI_LAST_KNOWN_DIR] = null
 	blackboard[BB_AI_HOLD_UNTIL] = null
 	clear_mob_congestion()
 
 ///A hostile that exhausted its movement attempts must not immediately rebuild
 ///the identical plan forever. Release the target briefly so it may wander out
 ///of a firing lane or choose another visible enemy; taking damage wakes it at once.
+///Разжалуем в контакт, а не стираем: цель недостижима ШАГАМИ, но не восприятием.
+///Улика уводит моба в SEARCH к последней точке (attack_obstructions по пути
+///копает, если моб умеет), а свежий контакт держит боевое зрение - полное
+///стирание роняло vision_range до пассивного через LoseTarget->LoseAggro, и
+///стрелок в 4+ тайлах становился невидим сразу после того, как всадил обойму.
 /datum/ai_controller/hostile_adapter/on_pathing_attempts_exhausted()
 	if(!blackboard_key_exists(BB_AI_CURRENT_TARGET))
 		return
-	clear_engagement_memory()
+	demote_target_to_contact(BB_AI_CURRENT_TARGET)
 	blackboard[BB_AI_ROUTE_RETRY_AT] = world.time + AI_UNREACHABLE_ROUTE_RETRY

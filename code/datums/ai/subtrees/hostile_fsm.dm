@@ -60,7 +60,8 @@
 			set_state(controller, AI_STATE_ALERT)
 			controller.queue_behavior(/datum/ai_behavior/alert_reaction, BB_AI_CURRENT_TARGET)
 			return SUBTREE_RETURN_FINISH_PLANNING
-		if(state == AI_STATE_ALERT && world.time < (controller.blackboard[BB_AI_STATE_ENTERED_AT] || 0) + (AI_ALERT_REACTION_TIME * controller.get_temperament().alert_pause_mult))
+		var/datum/ai_temperament/alert_temperament = controller.get_temperament()
+		if(state == AI_STATE_ALERT && world.time < (controller.blackboard[BB_AI_STATE_ENTERED_AT] || 0) + (AI_ALERT_REACTION_TIME * alert_temperament.alert_pause_mult))
 			controller.queue_behavior(/datum/ai_behavior/alert_reaction, BB_AI_CURRENT_TARGET)
 			return SUBTREE_RETURN_FINISH_PLANNING
 
@@ -198,7 +199,8 @@
 		return FALSE
 	//характер особи и свежий опыт этой стычки: робкий отступает раньше дерзкого,
 	//а тот, кого только что быстро разобрали, - раньше себя же вчерашнего
-	retreat_frac *= controller.get_temperament().retreat_threshold_mult
+	var/datum/ai_temperament/retreat_temperament = controller.get_temperament()
+	retreat_frac *= retreat_temperament.retreat_threshold_mult
 	if(world.time < (controller.blackboard[BB_AI_DANGER_UNTIL] || 0))
 		retreat_frac *= AI_DANGER_RETREAT_MULT
 	retreat_frac = min(retreat_frac, 1)
@@ -235,9 +237,35 @@
 	controller.blackboard[BB_AI_SEARCH_UNTIL] = world.time + (controller.blackboard[BB_AI_SEARCH_TIME] || AI_DEFAULT_SEARCH_TIME)
 	controller.blackboard[BB_AI_SEARCH_POINTS_LEFT] = AI_SEARCH_INVESTIGATE_POINTS
 	controller.clear_blackboard_key(BB_AI_SEARCH_POINT)
+	//экстраполяция побега: жертва не остановилась на точке потери LOS. Первая
+	//точка осмотра продлевается вдоль последнего наблюдаемого направления её
+	//движения, насколько пускает геометрия, - преследователь заворачивает за
+	//угол, а не топчется на месте (плейтест 22.06: "зайдя за угол, они теряют
+	//меня крайне легко").
+	var/turf/projected = project_escape_point(controller)
+	if(projected)
+		controller.set_blackboard_key(BB_AI_SEARCH_POINT, projected)
 	var/mob/living/simple_animal/hostile/hostile_pawn = controller.pawn
 	if(istype(hostile_pawn) && hostile_pawn.ranged)
 		controller.blackboard[BB_AI_HOLD_UNTIL] = world.time + AI_RANGED_HOLD_TIME
+
+///Продлить точку потери вдоль последнего направления движения цели: шагаем от
+///улики, пока пускает проходимость, максимум AI_SEARCH_PURSUIT_PROJECTION тайлов.
+///null, если направления нет или первый же шаг упирается в геометрию.
+/datum/ai_planning_subtree/hostile_fsm/proc/project_escape_point(datum/ai_controller/controller)
+	var/escape_dir = controller.blackboard[BB_AI_LAST_KNOWN_DIR]
+	var/turf/evidence = controller.blackboard[BB_AI_LAST_KNOWN_POS]
+	if(!escape_dir || !evidence)
+		return null
+	var/turf/projected = evidence
+	for(var/step_count in 1 to AI_SEARCH_PURSUIT_PROJECTION)
+		var/turf/next_turf = get_step(projected, escape_dir)
+		if(!next_turf || !controller.can_enter_turf(next_turf) || next_turf.is_blocked_turf(source_atom = controller.pawn))
+			break
+		projected = next_turf
+	if(projected == evidence)
+		return null
+	return projected
 
 ///Спланировать текущий шаг SEARCH: дальник сначала держит прикрывающую позицию
 ///к последней точке, остальные идут к улике и осматривают 2-3 точки вокруг
@@ -284,14 +312,19 @@
 	controller.queue_behavior(/datum/ai_behavior/travel_towards, waypoint_key)
 	return SUBTREE_RETURN_FINISH_PLANNING
 
-///Случайная проходимая точка осмотра вокруг улики
+///Случайная проходимая точка осмотра вокруг улики. Первые попытки смещены в
+///переднюю полуплоскость последнего направления побега: смотреть надо туда,
+///КУДА жертва бежала, а не за собственную спину; не нашлось - обычный разброс.
 /datum/ai_planning_subtree/hostile_fsm/proc/pick_investigation_point(datum/ai_controller/controller, turf/evidence)
+	var/escape_dir = controller.blackboard[BB_AI_LAST_KNOWN_DIR]
 	for(var/try_count in 1 to 6)
 		var/turf/candidate = locate(
 			evidence.x + rand(-AI_SEARCH_WANDER_RADIUS, AI_SEARCH_WANDER_RADIUS),
 			evidence.y + rand(-AI_SEARCH_WANDER_RADIUS, AI_SEARCH_WANDER_RADIUS),
 			evidence.z)
 		if(!candidate || candidate == evidence || !isopenturf(candidate))
+			continue
+		if(escape_dir && try_count <= 3 && !(get_dir(evidence, candidate) & escape_dir))
 			continue
 		if(!controller.can_enter_turf(candidate) || candidate.is_blocked_turf(source_atom = controller.pawn))
 			continue

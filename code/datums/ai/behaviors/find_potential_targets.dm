@@ -85,7 +85,7 @@
 			potential_targets += hostile_machine
 
 	if(!length(potential_targets))
-		schedule_target_refresh(controller, controller.has_fresh_contact())
+		schedule_target_refresh(controller, controller.is_combat_alert())
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
 
 	var/list/filtered_targets = list()
@@ -96,7 +96,7 @@
 		filtered_targets += pot_target
 
 	if(!length(filtered_targets))
-		schedule_target_refresh(controller, controller.has_fresh_contact())
+		schedule_target_refresh(controller, controller.is_combat_alert())
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
 
 	if(current_target_congested)
@@ -110,7 +110,7 @@
 	var/datum/target_scorer/scorer = GET_TARGET_SCORER(controller.blackboard[BB_AI_TARGET_SCORER] || /datum/target_scorer)
 	var/atom/target = select_visible_target(controller, scorer, filtered_targets, current_target, current_target_valid, living_mob, targeting_strategy, aggro_range)
 	if(!target)
-		schedule_target_refresh(controller, controller.has_fresh_contact())
+		schedule_target_refresh(controller, controller.is_combat_alert())
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
 	schedule_target_refresh(controller)
 	if(target == current_target)
@@ -240,6 +240,12 @@
 	var/turf/target_turf = get_turf(target)
 	if(!target_turf)
 		return
+	//направление последнего наблюдаемого движения: по нему SEARCH после потери
+	//LOS заворачивает за угол, а не топчется на точке потери. Это не волхак -
+	//направление взято из честных наблюдений, пока цель была видима
+	var/turf/previous_turf = controller.blackboard[BB_AI_LAST_KNOWN_POS]
+	if(previous_turf && previous_turf != target_turf && previous_turf.z == target_turf.z)
+		controller.blackboard[BB_AI_LAST_KNOWN_DIR] = get_dir(previous_turf, target_turf)
 	controller.set_blackboard_key(BB_AI_LAST_KNOWN_POS, target_turf)
 	controller.blackboard[BB_AI_LAST_SEEN_TIME] = world.time
 

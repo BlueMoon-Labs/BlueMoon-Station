@@ -687,3 +687,33 @@
 	TEST_ASSERT(!fsm.should_abandon_pursuit(controller), "Отписанный от поводка контроллер погоню не бросает")
 
 	qdel(controller)
+
+///Экстраполяция побега: SEARCH продлевает точку потери LOS вдоль последнего
+///наблюдаемого направления движения цели и упирается в геометрию - за угол
+///преследователь заворачивает, а не топчется на месте потери.
+/datum/unit_test/ai_search_projects_escape_vector/Run()
+	var/turf/pawn_turf = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/hunter = allocate(/mob/living/simple_animal/hostile, pawn_turf)
+	var/datum/ai_controller/unit_test_hunter/controller = new(hunter)
+	var/datum/ai_planning_subtree/hostile_fsm/fsm = GLOB.ai_subtrees[/datum/ai_planning_subtree/hostile_fsm]
+
+	var/turf/corner = locate(pawn_turf.x + 2, pawn_turf.y, pawn_turf.z)
+	controller.set_blackboard_key(BB_AI_LAST_KNOWN_POS, corner)
+	controller.blackboard[BB_AI_LAST_KNOWN_DIR] = NORTH
+	fsm.enter_search(controller)
+	TEST_ASSERT_EQUAL(controller.blackboard[BB_AI_SEARCH_POINT], locate(corner.x, corner.y + AI_SEARCH_PURSUIT_PROJECTION, corner.z), "SEARCH обязан продлять улику вдоль направления побега")
+
+	//геометрия режет проекцию: стена в двух тайлах останавливает на первом
+	var/turf/wall_turf = locate(corner.x, corner.y + 2, corner.z)
+	var/saved_turf_type = wall_turf.type
+	wall_turf.ChangeTurf(/turf/closed/wall)
+	fsm.enter_search(controller)
+	TEST_ASSERT_EQUAL(controller.blackboard[BB_AI_SEARCH_POINT], locate(corner.x, corner.y + 1, corner.z), "Проекция обязана упираться в геометрию, а не проходить сквозь стену")
+	wall_turf.ChangeTurf(saved_turf_type)
+
+	//без наблюдаемого направления проекции нет - розыск стартует с точки потери
+	controller.blackboard[BB_AI_LAST_KNOWN_DIR] = null
+	fsm.enter_search(controller)
+	TEST_ASSERT_NULL(controller.blackboard[BB_AI_SEARCH_POINT], "Без наблюдаемого направления SEARCH стартует с точки потери")
+
+	qdel(controller)

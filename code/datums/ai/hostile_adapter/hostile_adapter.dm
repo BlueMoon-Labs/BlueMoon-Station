@@ -370,7 +370,8 @@
 	var/mob/living/simple_animal/hostile/hostile_pawn = controller.pawn
 	if(!istype(hostile_pawn))
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
-	if(!prob(hostile_pawn.dodge_prob * controller.get_temperament().dodge_mult))
+	var/datum/ai_temperament/temperament = controller.get_temperament()
+	if(!prob(hostile_pawn.dodge_prob * temperament.dodge_mult))
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
 	hostile_pawn.sidestep()
 	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED

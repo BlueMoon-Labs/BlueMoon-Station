@@ -436,6 +436,10 @@ GLOBAL_LIST(topic_status_cache)
 	// Цена шага выравнивается по тику, а тик только что сменился - самое время
 	// сказать, если конфиг движения с новой сеткой не согласуется.
 	movement_audit_config_delays()
+	// Пол скорости AI-погони тоже кратен тику: fps из конфига применяется ПОСЛЕ
+	// инициализации подсистем (master.dm), и без пересчёта здесь GLOB держал бы
+	// значение, испечённое на старом tick_lag.
+	update_ai_pursuit_speed_floor()
 
 /world/proc/init_byond_tracy()
 	var/library

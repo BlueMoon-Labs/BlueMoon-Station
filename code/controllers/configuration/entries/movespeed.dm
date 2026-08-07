@@ -47,7 +47,12 @@
 	if(. && (var_name == NAMEOF(src, config_entry_value)))
 		update_mob_config_movespeeds()
 
+//Дефолты = значения репозиторного config/entries/movespeed.txt. Без них мир,
+//чей конфиг не задаёт строку (CI, чистый деплой), бегал с задержкой 0: базовый
+///datum/config_entry/number несёт default = 0, а ValidateAndSet без строки в
+//конфиге не зовётся вовсе.
 /datum/config_entry/number/movedelay/run_delay
+	default = 1.5
 
 /datum/config_entry/number/movedelay/run_delay/ValidateAndSet()
 	. = ..()
@@ -58,6 +63,7 @@
 	update_ai_pursuit_speed_floor()
 
 /datum/config_entry/number/movedelay/walk_delay
+	default = 3
 
 /datum/config_entry/number/movedelay/walk_delay/ValidateAndSet()
 	. = ..()
