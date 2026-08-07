@@ -11,6 +11,12 @@
 	var/saved_wait = SSair.wait
 	var/base_wait = initial(SSair.wait)
 
+	// Задыхающийся CI-раннер честно взводит лаг-клапан ДО теста (реальная
+	// дилатация SStime_track), и каденция при speed 1 читается уже придушенной -
+	// festive стабильно краснел именно так. Пороги клапана проверяются ниже
+	// через apply_lag_valve, здесь его состояние обязано быть нейтральным.
+	SSair.lag_scale = 1
+
 	SSair.set_atmos_speed(1)
 	TEST_ASSERT_EQUAL(SSair.wait, base_wait, "speed 1 must leave the compiled cadence alone")
 
