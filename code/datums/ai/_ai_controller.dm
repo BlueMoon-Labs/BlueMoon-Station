@@ -94,6 +94,12 @@ multiple modular subtrees with behaviors
 #ifdef TESTING
 	///Троттл снимков "завис с целью" (AI_TRACE): не чаще раза в 5 секунд
 	var/stall_trace_after = 0
+	///Последний турф пауна и время его смены: второй триггер STALL-снимка
+	///("план есть, но ни шага, ни обмена уроном" - вечно проваливающийся план)
+	var/turf/stall_last_turf
+	var/stall_last_move_at = 0
+	///Троттл спам-строк трассы по категориям (AI_TRACE_THROTTLED)
+	var/list/trace_throttle_at
 #endif
 	/// are we even able to plan?
 	var/able_to_plan = TRUE
@@ -546,11 +552,21 @@ multiple modular subtrees with behaviors
 		forgotten_behavior.finish_action(arglist(arguments))
 
 #ifdef TESTING
-	//детектор "завис с целью": цель есть, а план пуст - главный симптом всех
-	//стоек с плейтестов. Снимок раз в 5 секунд, чтобы лог читался глазами.
-	if(!length(planned_behaviors) && !length(current_behaviors) && blackboard_key_exists(BB_AI_CURRENT_TARGET) && world.time >= stall_trace_after)
-		stall_trace_after = world.time + 5 SECONDS
-		ai_trace_stall_snapshot()
+	//детектор "завис": цель есть, а план пуст ЛИБО план есть, но моб давно ни
+	//шагнул, ни обменялся уроном (вечно проваливающиеся поведения - за весь
+	//round-23.35.57 прежний детектор пустого плана не сработал НИ РАЗУ, хотя
+	//мобы стояли минутами). Снимок раз в 5 секунд, чтобы лог читался глазами.
+	var/turf/stall_turf = get_turf(pawn)
+	if(stall_turf != stall_last_turf)
+		stall_last_turf = stall_turf
+		stall_last_move_at = world.time
+	if(blackboard_key_exists(BB_AI_CURRENT_TARGET) && world.time >= stall_trace_after)
+		var/stall_plan_empty = !length(planned_behaviors) && !length(current_behaviors)
+		var/stall_no_progress = (world.time - stall_last_move_at > AI_STALL_NO_PROGRESS_TIME) \
+			&& (world.time - (blackboard[BB_AI_LAST_EXCHANGE_AT] || 0) > AI_STALL_NO_PROGRESS_TIME)
+		if(stall_plan_empty || stall_no_progress)
+			stall_trace_after = world.time + 5 SECONDS
+			ai_trace_stall_snapshot()
 #endif
 
 #ifdef TESTING
@@ -561,6 +577,32 @@ multiple modular subtrees with behaviors
 		var/turf/pawn_turf = get_turf(pawn)
 		pawn_tag = "[pawn.type] ([pawn_turf ? "[pawn_turf.x],[pawn_turf.y],[pawn_turf.z]" : "null"])"
 	WRITE_LOG(GLOB.ai_trace_log, "[category] | [pawn_tag] [REF(src)] | [message]")
+
+///Троттлёная трасса (AI_TRACE_THROTTLED): повторяющаяся каждый план строка
+///пишется не чаще AI_TRACE_THROTTLE_TIME на контроллер - лог обязан читаться
+/datum/ai_controller/proc/ai_trace_throttled(category, message)
+	if(world.time < (trace_throttle_at?[category] || 0))
+		return
+	LAZYSET(trace_throttle_at, category, world.time + AI_TRACE_THROTTLE_TIME)
+	ai_trace(category, message)
+
+///Подсказка "что именно заблокировало маршрут" для трассы исчерпанного пути:
+///без неё "маршрут исчерпан" не отвечал на главный вопрос разбора - обо что
+/datum/ai_controller/proc/ai_trace_route_block_hint(atom/target)
+	var/mob/living/living_pawn = pawn
+	if(!isliving(living_pawn) || QDELETED(target))
+		return ""
+	var/turf/blocked = ai_get_blocked_path_turf(living_pawn, target)
+	if(!blocked)
+		return ""
+	var/atom/culprit
+	for(var/atom/movable/candidate as anything in blocked)
+		if(candidate.density)
+			culprit = candidate
+			break
+	if(!culprit && blocked.density)
+		culprit = blocked
+	return " (преграда: [culprit || "ребро/направленная"] на ([blocked.x],[blocked.y],[blocked.z]))"
 
 ///Снимок застрявшего контроллера: всё, что нужно для диагноза стойки одним взглядом
 /datum/ai_controller/proc/ai_trace_stall_snapshot()

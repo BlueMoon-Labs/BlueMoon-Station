@@ -29,7 +29,7 @@
 	//становится уликой SEARCH, но НЕ розыскным контактом: бонус скоринга
 	//контакта не должен дублировать обиду (фрустрация и протухание обид обязаны
 	//работать как прежде).
-	AI_TRACE(src, "alert", "удар от [attacker] - настороженность взведена")
+	AI_TRACE_THROTTLED(src, "alert", "удар от [attacker] - настороженность взведена")
 	blackboard[BB_AI_COMBAT_ALERT_UNTIL] = world.time + AI_CONTACT_FRESH_TIME
 	if(!blackboard_key_exists(BB_AI_CURRENT_TARGET))
 		var/turf/attacker_turf = get_turf(attacker)
@@ -207,6 +207,7 @@
 ///атома прекращается. Улика (последняя подтверждённая точка) сохраняется,
 ///FSM переведёт моба в SEARCH на следующем плане.
 /datum/ai_controller/proc/demote_target_to_contact(target_key)
+	blackboard[BB_AI_LOS_LOST_AT] = null
 	var/atom/lost_target = blackboard[target_key]
 	if(QDELETED(lost_target))
 		clear_blackboard_key(target_key)
@@ -272,6 +273,10 @@
 	blackboard[BB_AI_LANE_STUCK_AT] = null
 	blackboard[BB_AI_FLANK_RETRY_AT] = null
 	blackboard[BB_AI_LANE_DEADLOCK_UNTIL] = null
+	blackboard[BB_AI_SIEGE_UNTIL] = null
+	blackboard[BB_AI_LOS_LOST_AT] = null
+	blackboard[BB_AI_KITE_PINNED_STREAK] = null
+	clear_flank_commit()
 	clear_mob_congestion()
 
 ///A hostile that exhausted its movement attempts must not immediately rebuild
@@ -282,9 +287,30 @@
 ///копает, если моб умеет), а свежий контакт держит боевое зрение - полное
 ///стирание роняло vision_range до пассивного через LoseTarget->LoseAggro, и
 ///стрелок в 4+ тайлах становился невидим сразу после того, как всадил обойму.
+///
+///Два исключения (плейтест round-23.35.57):
+///1) недостижимый ФЛАНГОВЫЙ манёвр снимает сам манёвр, а не цель - иначе
+///   неудачный обход стоил стрелку всего боя;
+///2) видимая цель в паре шагов не разжалуется, а осаждается: между нами мебель,
+///   и цикл "взял-исчерпал-разжаловал-взял" крутился вечно (34 цикла за 2.5
+///   минуты у стеклянного стола), не давая мобу ни стоять осмысленно, ни бить
+///   преграду. Осаду разыгрывает hostile_fsm/plan_siege.
 /datum/ai_controller/hostile_adapter/on_pathing_attempts_exhausted()
 	if(!blackboard_key_exists(BB_AI_CURRENT_TARGET))
 		return
-	AI_TRACE(src, "move", "маршрут исчерпан: [blackboard[BB_AI_CURRENT_TARGET]] разжалован в контакт")
+	if(!isnull(blackboard[BB_AI_FLANK_TILE]))
+		AI_TRACE(src, "lane", "фланг недостижим - манёвр снят")
+		clear_flank_commit()
+		blackboard[BB_AI_FLANK_RETRY_AT] = world.time + AI_FLANK_RETRY_COOLDOWN
+		return
+	var/atom/unreachable_target = blackboard[BB_AI_CURRENT_TARGET]
+	var/mob/living/living_pawn = pawn
+	if(isliving(living_pawn) && !QDELETED(unreachable_target) \
+		&& get_dist(living_pawn, unreachable_target) <= AI_SIEGE_HOLD_RANGE \
+		&& can_see(living_pawn, unreachable_target, AI_SIEGE_HOLD_RANGE))
+		blackboard[BB_AI_SIEGE_UNTIL] = world.time + AI_SIEGE_HOLD_TIME
+		AI_TRACE(src, "move", "маршрут исчерпан, но [unreachable_target] на виду (дист [get_dist(living_pawn, unreachable_target)]) - осада")
+		return
+	AI_TRACE(src, "move", "маршрут исчерпан: [unreachable_target] разжалован в контакт[ai_trace_route_block_hint(unreachable_target)]")
 	demote_target_to_contact(BB_AI_CURRENT_TARGET)
 	blackboard[BB_AI_ROUTE_RETRY_AT] = world.time + AI_UNREACHABLE_ROUTE_RETRY

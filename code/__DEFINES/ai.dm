@@ -13,9 +13,18 @@
 //макрос разворачивается в пустоту, и аргументы не вычисляются вовсе.
 #ifdef TESTING
 #define AI_TRACE(controller, category, message) (controller)?.ai_trace(category, message)
+///Для строк, которые повторяются каждый план (зажатый кайт, очередь в затылок):
+///пишутся не чаще AI_TRACE_THROTTLE_TIME на контроллер, иначе они душат лог
+#define AI_TRACE_THROTTLED(controller, category, message) (controller)?.ai_trace_throttled(category, message)
 #else
 #define AI_TRACE(controller, category, message)
+#define AI_TRACE_THROTTLED(controller, category, message)
 #endif
+///Минимальный интервал повторяющейся спам-строки трассы на один контроллер
+#define AI_TRACE_THROTTLE_TIME (3 SECONDS)
+///Сколько секунд без шага И без обмена уроном при живой цели считается стойкой
+///(второй триггер STALL-снимка: план есть, но вечно проваливается)
+#define AI_STALL_NO_PROGRESS_TIME (10 SECONDS)
 
 // Статусы контроллера (порт tg 14140a6355d1 code/__DEFINES/ai/ai.dm).
 // ВАЖНО: в отличие от tg, AI_STATUS_IDLE у нас - полный сон: контроллер не
@@ -400,6 +409,15 @@
 #define BB_AI_LANE_DEADLOCK_UNTIL "BB_ai_lane_deadlock_until"
 ///Кольцо фланга не прижимается к цели ближе этого даже при пустом band профиля
 #define AI_FLANK_MIN_RADIUS 2
+///Турф закоммиченного флангового манёвра: держится до достижения/протухания/
+///открытия линии, чтобы следующий план не отменял движение на фланг
+#define BB_AI_FLANK_TILE "BB_ai_flank_tile"
+///world.time, до которого фланговый манёвр считается живым
+#define BB_AI_FLANK_UNTIL "BB_ai_flank_until"
+///Сколько стрелок ведёт один фланговый манёвр, прежде чем перевыбрать
+#define AI_FLANK_COMMIT_TIME (6 SECONDS)
+///Радиус, в котором чужой закоммиченный фланг считается занятым (разнос группы)
+#define AI_FLANK_CLAIM_ALLY_RANGE 4
 
 ///Классификация трассы линии огня из гипотетического тайла (ranged_fire_lane_state)
 ///чистая линия ИЛИ только вплотную-к-стрелку укрытие (пуля гарантированно проходит)
@@ -557,6 +575,33 @@
 #define AI_TARGET_LOST_REFRESH_COOLDOWN (2 SECONDS)
 ///Короткая пауза перед перестроением доказанно недоступного маршрута.
 #define AI_UNREACHABLE_ROUTE_RETRY (1 SECONDS)
+///world.time, до которого моб осаждает близкую видимую цель с исчерпанным
+///маршрутом: стоит лицом к ней и бьёт преграду вместо разжалования в контакт
+///(мили-моб у стола впадал в вечный цикл "взял-исчерпал-разжаловал")
+#define BB_AI_SIEGE_UNTIL "BB_ai_siege_until"
+///Дальше этого исчерпанный маршрут разжалует цель как раньше: осада - для
+///случая "жертва в паре шагов за мебелью", а не для погони через полкарты
+#define AI_SIEGE_HOLD_RANGE 4
+///Пауза осады перед новой попыткой проложить маршрут
+#define AI_SIEGE_HOLD_TIME (3 SECONDS)
+///world.time первого планировочного цикла, на котором текущая цель оказалась
+///скрыта: демоушен наступает только после AI_LOS_DEMOTE_GRACE, а не мгновенно
+///(пик из-за угла на полсекунды обнулял ENGAGE всей группы)
+#define BB_AI_LOS_LOST_AT "BB_ai_los_lost_at"
+///Сколько цель прощается за мигнувший LOS, прежде чем разжаловаться в контакт
+#define AI_LOS_DEMOTE_GRACE (1.5 SECONDS)
+///Сколько подряд планов кайта не нашли отхода (зажат у стены)
+#define BB_AI_KITE_PINNED_STREAK "BB_ai_kite_pinned_streak"
+///После стольких зажатых планов отходу разрешается боковой шаг равной дистанции
+#define AI_KITE_LATERAL_STREAK 3
+///После стольких зажатых планов кайтер прорывается на дальний тайл (plot_break_away)
+#define AI_KITE_BREAK_AWAY_STREAK 8
+///Брошенная бесполезная цель (непробиваемость/терпение), от которой моб отходит
+#define BB_AI_ABANDON_AVOID "BB_ai_abandon_avoid"
+///world.time конца отхода от брошенной цели
+#define BB_AI_ABANDON_AVOID_UNTIL "BB_ai_abandon_avoid_until"
+///Ближе этого стоять рядом с брошенной целью нельзя - отходим
+#define AI_ABANDON_AVOID_RANGE 4
 ///Одиночный bump в движущейся толпе не должен запускать пересмотр цели.
 #define AI_MOB_CONGESTION_RETRY_THRESHOLD 3
 ///Сколько живёт доказательство затора, пока target finder ждёт своего cadence.

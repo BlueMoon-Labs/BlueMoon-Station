@@ -8,6 +8,12 @@
 	opacity = TRUE
 	anchored = TRUE
 
+///Непроходимая тестовая преграда: для стен из мебели без атмос-побочек ChangeTurf
+/obj/effect/ai_unit_test_dense_blocker
+	name = "dense AI test blocker"
+	density = TRUE
+	anchored = TRUE
+
 ///Кайт-band: близко - шаг назад, далеко - догоняем.
 ///Пешка стоит НЕ в углу: западнее/южнее углового тайла лежит резервационный
 ///космос, куда наземный моб не пойдёт, а честный отход обязан строго
@@ -1077,4 +1083,171 @@
 	TEST_ASSERT(!can_see(bound_turf, gunman, AI_HIDING_LOS_RANGE), "Санити: преграда обязана рвать линию от тайла перебежки к стрелку")
 	TEST_ASSERT_EQUAL(approach.pick_covered_bound(controller, brawler, gunman), bound_turf, "Моб обязан идти к цели прикрытым шагом, а не по прямой в створ")
 
+	qdel(controller)
+
+// ===== Осада, персистентный фланг, эскалация кайта, отход от брошенной цели =====
+// (разбор плейтеста round-23.35.57: мили-фриз у стола, мёртвый фланг, столб у стены)
+
+///ENGAGE с активной осадой: мили-моб с целью в паре шагов и исчерпанным маршрутом
+///стоит лицом к цели и бьёт преграду, а не пересобирает мёртвый план движения
+/datum/unit_test/ai_siege_plans_standing_fight/Run()
+	var/turf/pawn_turf = locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	var/turf/blocker_turf = get_step(pawn_turf, EAST)
+	var/mob/living/simple_animal/hostile/pawn = allocate(/mob/living/simple_animal/hostile, pawn_turf)
+	allocate(/obj/effect/ai_unit_test_dense_blocker, blocker_turf)
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, get_step(blocker_turf, EAST))
+	var/datum/ai_controller/unit_test_hunter/controller = new(pawn)
+	controller.set_blackboard_key(BB_AI_CURRENT_TARGET, prey)
+	controller.blackboard[BB_AI_STATE] = AI_STATE_ENGAGE
+	controller.blackboard[BB_AI_SIEGE_UNTIL] = world.time + AI_SIEGE_HOLD_TIME
+
+	var/datum/ai_planning_subtree/hostile_fsm/fsm = GLOB.ai_subtrees[/datum/ai_planning_subtree/hostile_fsm]
+	var/verdict = fsm.SelectBehaviors(controller, 0.5)
+
+	TEST_ASSERT_EQUAL(verdict, SUBTREE_RETURN_FINISH_PLANNING, "Осада обязана обрывать план: пересборка движения к недостижимой цели и есть вечный цикл")
+	TEST_ASSERT(GET_AI_BEHAVIOR(/datum/ai_behavior/alert_reaction) in controller.current_behaviors, "Осаждающий моб обязан стоять лицом к цели")
+	TEST_ASSERT(GET_AI_BEHAVIOR(/datum/ai_behavior/attack_obstructions) in controller.current_behaviors, "Преграда на прямой к цели обязана попадать под удар во время осады")
+
+	//осада протухла - обычный боевой план (мили перепроложит маршрут)
+	controller.CancelActions()
+	controller.planned_behaviors.Cut()
+	controller.blackboard[BB_AI_SIEGE_UNTIL] = 0
+	verdict = fsm.SelectBehaviors(controller, 0.5)
+	TEST_ASSERT_NULL(verdict, "Протухшая осада не имеет права обрывать план: бой продолжается штатными сабтри")
+	TEST_ASSERT(!(GET_AI_BEHAVIOR(/datum/ai_behavior/alert_reaction) in controller.current_behaviors), "Без осады стойка не планируется")
+
+	controller.CancelActions()
+	qdel(controller)
+
+///Закоммиченный фланговый манёвр переживает планировочные циклы: пока он жив,
+///стрелок продолжает идти на фланг, а не отменяет его ради удержания позиции
+/datum/unit_test/ai_flank_commit_persists/Run()
+	var/mob/living/simple_animal/hostile/shooter = allocate(/mob/living/simple_animal/hostile, run_loc_floor_bottom_left)
+	shooter.ranged = TRUE
+	shooter.projectiletype = /obj/item/projectile/beam/laser
+	allocate(/mob/living/simple_animal/hostile, get_step(run_loc_floor_bottom_left, EAST)) //союзник перекрывает линию
+	var/turf/target_turf = locate(run_loc_floor_bottom_left.x + 3, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, target_turf)
+	var/datum/ai_controller/unit_test_hunter/controller = new(shooter)
+	controller.set_blackboard_key(BB_AI_CURRENT_TARGET, prey)
+
+	TEST_ASSERT(shooter.CheckRangedFireLane(prey), "Санити: линия огня обязана быть перекрыта союзником")
+	var/turf/committed = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	controller.set_blackboard_key(BB_AI_FLANK_TILE, committed)
+	controller.blackboard[BB_AI_FLANK_UNTIL] = world.time + AI_FLANK_COMMIT_TIME
+
+	var/datum/ai_planning_subtree/ranged_skirmish/skirmisher = GLOB.ai_subtrees[/datum/ai_planning_subtree/ranged_skirmish]
+	var/verdict = skirmisher.SelectBehaviors(controller, 0.5)
+
+	TEST_ASSERT_EQUAL(verdict, SUBTREE_RETURN_FINISH_PLANNING, "Живой фланговый манёвр обязан обрывать план на движении")
+	TEST_ASSERT(GET_AI_BEHAVIOR(/datum/ai_behavior/hold_covering_position) in controller.current_behaviors, "Живой фланг обязан продолжать движение на закоммиченный тайл")
+	TEST_ASSERT(!controller.planned_behaviors[GET_AI_BEHAVIOR(/datum/ai_behavior/reposition_for_shot)], "Пока манёвр жив, перестроение не имеет права его затирать")
+
+	//манёвр протух: коммит снимается, стрелок возвращается к обычному перестроению
+	controller.planned_behaviors.Cut()
+	controller.blackboard[BB_AI_FLANK_UNTIL] = 0
+	verdict = skirmisher.SelectBehaviors(controller, 0.5)
+	TEST_ASSERT(isnull(controller.blackboard[BB_AI_FLANK_TILE]), "Протухший фланговый коммит обязан сниматься")
+	TEST_ASSERT(!(GET_AI_BEHAVIOR(/datum/ai_behavior/hold_covering_position) in controller.current_behaviors), "Протухший манёвр обязан завершаться, а не вести моба на старый тайл")
+	TEST_ASSERT(controller.planned_behaviors[GET_AI_BEHAVIOR(/datum/ai_behavior/reposition_for_shot)], "После протухшего манёвра стрелок возвращается к обычному перестроению")
+
+	controller.CancelActions()
+	qdel(controller)
+
+///Разнос флангов: тайл, закоммиченный союзником, не выбирается вторым стрелком -
+///иначе вся группа сходится в одну точку и толкается телами
+/datum/unit_test/ai_flank_pick_respects_ally_claim/Run()
+	var/turf/pawn_turf = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
+	var/mob/living/simple_animal/hostile/shooter = allocate(/mob/living/simple_animal/hostile, pawn_turf)
+	shooter.ranged = TRUE
+	shooter.projectiletype = /obj/item/projectile/beam/laser
+	var/turf/target_turf = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, target_turf)
+	var/datum/ai_controller/unit_test_hunter/controller = new(shooter)
+
+	var/turf/first_pick = controller.find_flank_fire_tile(prey)
+	TEST_ASSERT_NOTNULL(first_pick, "Санити: в пустой резервации фланговый тайл обязан находиться")
+
+	var/mob/living/simple_animal/hostile/ally = allocate(/mob/living/simple_animal/hostile, get_step(pawn_turf, WEST))
+	var/datum/ai_controller/unit_test_hunter/ally_controller = new(ally)
+	ally_controller.set_blackboard_key(BB_AI_FLANK_TILE, first_pick)
+
+	//кэш союзников живёт один тик планирования - имитируем следующий тик
+	controller.blackboard[BB_AI_ALLY_CACHE_AT] = null
+	var/turf/second_pick = controller.find_flank_fire_tile(prey)
+	TEST_ASSERT_NOTNULL(second_pick, "При занятом фланге обязана находиться альтернатива на кольце")
+	TEST_ASSERT_NOTEQUAL(second_pick, first_pick, "Закоммиченный союзником фланговый тайл обязан пропускаться")
+
+	qdel(ally_controller)
+	qdel(controller)
+
+///Зажатый у стены кайтер после серии провалов отходит вбок (равная дистанция),
+///а после длинной серии - прорывается на дальний тайл, вместо вечного столба
+/datum/unit_test/ai_kite_pinned_slides_lateral/Run()
+	var/turf/pawn_turf = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 1, run_loc_floor_bottom_left.z)
+	var/mob/living/simple_animal/hostile/pawn = allocate(/mob/living/simple_animal/hostile, pawn_turf)
+	pawn.ranged = TRUE
+	//стена из мебели с юга: все строго-дальние тайлы отхода заблокированы
+	allocate(/obj/effect/ai_unit_test_dense_blocker, get_step(pawn_turf, SOUTH))
+	allocate(/obj/effect/ai_unit_test_dense_blocker, get_step(pawn_turf, SOUTHEAST))
+	allocate(/obj/effect/ai_unit_test_dense_blocker, get_step(pawn_turf, SOUTHWEST))
+	var/turf/threat_turf = locate(pawn_turf.x, pawn_turf.y + 2, pawn_turf.z)
+	var/mob/living/carbon/human/threat = allocate(/mob/living/carbon/human, threat_turf)
+	var/datum/ai_controller/unit_test_hunter/controller = new(pawn)
+	controller.set_blackboard_key(BB_AI_CURRENT_TARGET, threat)
+	controller.set_blackboard_key(BB_AI_MIN_DISTANCE, 4)
+	controller.set_blackboard_key(BB_AI_MAX_DISTANCE, 6)
+
+	//контракт строгого отхода сохранён: без серии провалов зажатый не пляшет
+	var/datum/ai_planning_subtree/maintain_distance/keeper = GLOB.ai_subtrees[/datum/ai_planning_subtree/maintain_distance]
+	keeper.SelectBehaviors(controller, 0.5)
+	TEST_ASSERT(!(GET_AI_BEHAVIOR(/datum/ai_behavior/step_away) in controller.current_behaviors), "Санити: без эскалации строгий отход у стены честно проваливается")
+	TEST_ASSERT((controller.blackboard[BB_AI_KITE_PINNED_STREAK] || 0) > 0, "Провал отхода обязан копить серию зажатости")
+
+	//серия провалов набрана: разрешается боковой шаг равной дистанции
+	controller.CancelActions()
+	controller.planned_behaviors.Cut()
+	controller.blackboard[BB_AI_KITE_PINNED_STREAK] = AI_KITE_LATERAL_STREAK
+	keeper.SelectBehaviors(controller, 0.5)
+	TEST_ASSERT(GET_AI_BEHAVIOR(/datum/ai_behavior/step_away) in controller.current_behaviors, "После серии провалов кайтер обязан отходить вбок, а не стоять столбом")
+	var/turf/lateral = controller.current_movement_target
+	TEST_ASSERT_NOTNULL(lateral, "Боковой отход обязан ставить цель движения")
+	TEST_ASSERT(get_dist(lateral, threat) >= get_dist(pawn, threat), "Боковой шаг не имеет права приближать к угрозе")
+	TEST_ASSERT_NOTEQUAL(lateral, pawn_turf, "Боковой шаг обязан быть настоящим шагом")
+
+	//длинная серия: прорыв на дальний достижимый тайл вместо шага
+	controller.CancelActions()
+	controller.planned_behaviors.Cut()
+	controller.blackboard[BB_AI_KITE_PINNED_STREAK] = AI_KITE_BREAK_AWAY_STREAK
+	keeper.SelectBehaviors(controller, 0.5)
+	TEST_ASSERT(GET_AI_BEHAVIOR(/datum/ai_behavior/ranged_break_away) in controller.current_behaviors, "Длинная серия зажатости обязана эскалировать в прорыв")
+
+	controller.CancelActions()
+	qdel(controller)
+
+///Бросивший бесполезную цель моб отходит от неё, а не стоит вплотную в idle
+/datum/unit_test/ai_abandoned_futile_target_steps_away/Run()
+	var/turf/pawn_turf = locate(run_loc_floor_bottom_left.x + 3, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	var/mob/living/simple_animal/hostile/pawn = allocate(/mob/living/simple_animal/hostile, pawn_turf)
+	var/mob/living/carbon/human/dropped = allocate(/mob/living/carbon/human, get_step(pawn_turf, EAST))
+	var/datum/ai_controller/unit_test_hunter/controller = new(pawn)
+	controller.blackboard[BB_AI_STATE] = AI_STATE_IDLE
+	controller.set_blackboard_key(BB_AI_ABANDON_AVOID, dropped)
+	controller.blackboard[BB_AI_ABANDON_AVOID_UNTIL] = world.time + AI_PURSUIT_ABANDON_COOLDOWN
+
+	var/datum/ai_planning_subtree/hostile_fsm/fsm = GLOB.ai_subtrees[/datum/ai_planning_subtree/hostile_fsm]
+	var/verdict = fsm.SelectBehaviors(controller, 0.5)
+
+	TEST_ASSERT_EQUAL(verdict, SUBTREE_RETURN_FINISH_PLANNING, "Отход от брошенной цели обязан обрывать план")
+	TEST_ASSERT(GET_AI_BEHAVIOR(/datum/ai_behavior/run_away_from_target/retreat) in controller.current_behaviors, "Моб обязан отходить от цели, которую доказанно нечем пробить")
+
+	//окно отхода закрыто: ключ чистится, мирная жизнь продолжается
+	controller.CancelActions()
+	controller.planned_behaviors.Cut()
+	controller.blackboard[BB_AI_ABANDON_AVOID_UNTIL] = 0
+	fsm.SelectBehaviors(controller, 0.5)
+	TEST_ASSERT(isnull(controller.blackboard[BB_AI_ABANDON_AVOID]), "Закрытое окно отхода обязано чистить ключ брошенной цели")
+	TEST_ASSERT(!(GET_AI_BEHAVIOR(/datum/ai_behavior/run_away_from_target/retreat) in controller.current_behaviors), "После окна отхода бегство не планируется")
+
+	controller.CancelActions()
 	qdel(controller)

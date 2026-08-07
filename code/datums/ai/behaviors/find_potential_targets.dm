@@ -26,16 +26,27 @@
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
 	controller.blackboard[BB_AI_ROUTE_RETRY_AT] = null
 	var/current_target_eligible = current_target && candidate_passes(living_mob, current_target, targeting_strategy, aggro_range, FALSE)
-	//Скрывшаяся цель разжалуется в контакт НЕМЕДЛЕННО: продолжать движение к
-	//реальной позиции атома за стеной - это GPS-волхак. Дальше моб идёт только
-	//к последней подтверждённой точке (SEARCH), а живой атом вернётся в цели
-	//исключительно через собственный LOS ниже. Цена честности - один рейкаст
-	//на каденс поиска и только по текущей цели.
+	//Скрывшаяся цель разжалуется в контакт после короткого грейса: продолжать
+	//движение к реальной позиции атома за стеной дольше - GPS-волхак, но
+	//МГНОВЕННЫЙ демоушен разрешал бесплатный пик-фарм из-за угла: выход на
+	//полсекунды обнулял ENGAGE всей группы, и моб не успевал даже начать
+	//выстрел (round-23.35.57). Грейс короче двух кадансов финдера, стрельба
+	//всё равно гейтится собственным can_see, а движение к мигнувшей цели -
+	//ровно то, что делает пик наказуемым. После грейса - контакт, SEARCH, и
+	//живой атом возвращается в цели исключительно через собственный LOS ниже.
 	if(current_target_eligible && !candidate_is_visible(living_mob, current_target, targeting_strategy, aggro_range))
+		var/los_lost_at = controller.blackboard[BB_AI_LOS_LOST_AT]
+		if(isnull(los_lost_at))
+			controller.blackboard[BB_AI_LOS_LOST_AT] = world.time
+			return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+		if(world.time - los_lost_at < AI_LOS_DEMOTE_GRACE)
+			return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
 		AI_TRACE(controller, "target", "потерял LOS: [current_target] разжалован в контакт")
 		controller.demote_target_to_contact(target_key)
 		current_target = null
 		current_target_eligible = FALSE
+	else if(current_target_eligible)
+		controller.blackboard[BB_AI_LOS_LOST_AT] = null
 	var/current_target_congested = current_target_eligible && target_has_active_mob_congestion(controller, current_target)
 	//Видимую валидную цель не пересравниваем с альтернативами каждый план -
 	//только по refresh-каденсу. Фрустрация или подтверждённая очередь из
@@ -90,9 +101,19 @@
 		schedule_target_refresh(controller, controller.is_combat_alert())
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
 
+	//Свежепомеченная непробиваемой цель не участвует в выборе: реаквайр был бы
+	//немедленно брошен should_abandon_pursuit, и моб мерцал "взял-бросил" каждые
+	//полсекунды, стоя вплотную. Боссы (pursuit_leashed = FALSE) пометку игнорируют:
+	//для них и выход из погони по непробиваемости не существует.
+	var/impervious_ref
+	if(controller.pursuit_leashed && world.time < (controller.blackboard[BB_AI_TARGET_IMPERVIOUS_UNTIL] || 0))
+		impervious_ref = controller.blackboard[BB_AI_TARGET_IMPERVIOUS_REF]
+
 	var/list/filtered_targets = list()
 	for(var/atom/pot_target as anything in potential_targets)
 		AI_METRIC_INC(candidates_examined)
+		if(impervious_ref && impervious_ref == REF(pot_target))
+			continue
 		if(!candidate_passes(living_mob, pot_target, targeting_strategy, aggro_range, FALSE))
 			continue
 		filtered_targets += pot_target
@@ -124,6 +145,9 @@
 	AI_TRACE(controller, "target", "взял [target] (дист [get_dist(living_mob, target)], радиус [aggro_range])")
 	controller.blackboard[BB_AI_TARGET_ACQUIRED_AT] = world.time
 	controller.blackboard[BB_AI_FRUSTRATION] = 0
+	//новая цель - новый маршрут: осада прежней и отметка мигнувшего LOS протухли
+	controller.blackboard[BB_AI_SIEGE_UNTIL] = null
+	controller.blackboard[BB_AI_LOS_LOST_AT] = null
 	//Точка отсчёта усталости погони: откуда моб пошёл за этой целью и когда в
 	//последний раз был обмен уроном. Без них погоня не имела условия окончания
 	//вовсе - прод 9887: watcher вёл игрока 118 секунд на 26 тайлов и добивал

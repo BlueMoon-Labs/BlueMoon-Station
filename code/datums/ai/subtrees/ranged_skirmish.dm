@@ -35,6 +35,20 @@
 	//позицию ВМЕСТО выстрела, снова стоял столбом - только теперь со взведённым
 	//поведением укрытия. Поэтому укрытие планируется вместе с выстрелом.
 	if(istype(hostile_pawn) && hostile_pawn.CheckRangedFireLane(target))
+		//живой фланговый манёвр ведём до конца. Раньше движение на фланг жило
+		//ровно один планировочный цикл: следующий план сидел на кулдауне
+		//перевыбора, ставил reposition, и незапереплланированный манёвр
+		//отменялся - стрелки минутами перевыбирали один тайл, не сходя с места
+		//(round-23.35.57: 464 "фланга" без единого дохода).
+		var/turf/committed_flank = controller.blackboard[BB_AI_FLANK_TILE]
+		if(!isnull(committed_flank))
+			if(world.time >= (controller.blackboard[BB_AI_FLANK_UNTIL] || 0) \
+				|| committed_flank == get_turf(controller.pawn) \
+				|| !controller.can_enter_turf(committed_flank) || committed_flank.is_blocked_turf(source_atom = controller.pawn))
+				controller.clear_flank_commit()
+			else
+				controller.queue_behavior(/datum/ai_behavior/hold_covering_position, committed_flank)
+				return SUBTREE_RETURN_FINISH_PLANNING
 		//дешёвый сосед уже расписался в бессилии (reposition держит позицию с
 		//перекрытой линией - очередь в затылок союзнику): идём флангом на
 		//свободный румб кольца боевой дистанции, а не стоим в колонне
@@ -44,6 +58,8 @@
 			var/turf/flank_tile = controller.find_flank_fire_tile(target)
 			if(flank_tile)
 				AI_TRACE(controller, "lane", "фланг на ([flank_tile.x],[flank_tile.y],[flank_tile.z]) против [target]")
+				controller.set_blackboard_key(BB_AI_FLANK_TILE, flank_tile)
+				controller.blackboard[BB_AI_FLANK_UNTIL] = world.time + AI_FLANK_COMMIT_TIME
 				controller.queue_behavior(/datum/ai_behavior/hold_covering_position, flank_tile)
 				return SUBTREE_RETURN_FINISH_PLANNING
 			//огневой позиции нет ВООБЩЕ: ни сосед, ни кольцо (узкий мостик над
@@ -57,10 +73,26 @@
 		//выстрелить (ферма в трассе), ни перестроиться (вокруг космос) - легаси
 		//в этой же ситуации пёр напролом.
 		if(world.time < (controller.blackboard[BB_AI_LANE_DEADLOCK_UNTIL] || 0))
+			//тупик под обстрелом: стрелять нечем, по нам работают, позиция
+			//голая - если в шаге есть ПОЛНОЦЕННОЕ укрытие от стрелка, сначала
+			//оно (лазер сквозь стекло убивал стоящего в тупике безответно)
+			if(world.time < (controller.blackboard[BB_AI_UNDER_FIRE_UNTIL] || 0))
+				var/atom/deadlock_shooter = controller.blackboard[BB_AI_LAST_ATTACKER]
+				if(QDELETED(deadlock_shooter))
+					deadlock_shooter = target
+				if(!QDELETED(deadlock_shooter) && !controller.current_position_covered(deadlock_shooter))
+					var/turf/deadlock_hiding = controller.best_hiding_tile(deadlock_shooter)
+					if(deadlock_hiding && deadlock_hiding != get_turf(controller.pawn) \
+						&& controller.cover_quality(deadlock_hiding, deadlock_shooter) == AI_COVER_FULL)
+						controller.queue_behavior(/datum/ai_behavior/hold_covering_position, deadlock_hiding)
+						return SUBTREE_RETURN_FINISH_PLANNING
 			controller.queue_behavior(/datum/ai_behavior/pursue_to_range, target_key, 1)
 			return SUBTREE_RETURN_FINISH_PLANNING
 		controller.queue_behavior(/datum/ai_behavior/reposition_for_shot, target_key)
 		return SUBTREE_RETURN_FINISH_PLANNING
+	//линия чиста - фланговый манёвр выполнил свою задачу
+	if(istype(hostile_pawn))
+		controller.clear_flank_commit()
 	if(istype(hostile_pawn) && ai_should_seek_firing_cover(controller, target))
 		controller.queue_behavior(/datum/ai_behavior/reposition_for_shot, target_key)
 	controller.queue_behavior(attack_behavior, target_key, BB_AI_TARGETING_STRATEGY, BB_AI_TARGET_HIDING_LOCATION, max_range, min_range)
@@ -194,7 +226,7 @@
 		//Это очередь в затылок союзнику - пометка ведёт планировщик на фланговый
 		//манёвр (find_flank_fire_tile) вместо вечного стояния в колонне.
 		if(shooter.CheckRangedFireLane(target))
-			AI_TRACE(controller, "lane", "очередь в затылок: соседи линию на [target] не открывают")
+			AI_TRACE_THROTTLED(controller, "lane", "очередь в затылок: соседи линию на [target] не открывают")
 			controller.blackboard[BB_AI_LANE_STUCK_AT] = world.time
 			return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED

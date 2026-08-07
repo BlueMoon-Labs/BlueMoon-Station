@@ -165,7 +165,8 @@
 ///линию не открывает (вся колонна перекрыта союзниками), а свободный фланг в
 ///паре шагов - открывает. Цена - до восьми трасс линии огня, поэтому зовётся
 ///только из подтверждённо застрявшего состояния (BB_AI_LANE_STUCK_AT) и не
-///чаще AI_FLANK_RETRY_COOLDOWN.
+///чаще AI_FLANK_RETRY_COOLDOWN. Тайлы, закоммиченные союзниками, заняты:
+///без разноса вся группа выбирала одну точку и толкалась за неё телами.
 /datum/ai_controller/proc/find_flank_fire_tile(atom/target)
 	var/mob/living/simple_animal/hostile/shooter = pawn
 	var/turf/target_turf = get_turf(target)
@@ -177,6 +178,7 @@
 	//кольцо на текущей дистанции, зажатое в боевой band: фланг - это манёвр
 	//вбок, а не сближение и не отход
 	var/flank_radius = clamp(get_dist(pawn_turf, target_turf), max(ideal_min, AI_FLANK_MIN_RADIUS), max(ideal_max, AI_FLANK_MIN_RADIUS))
+	var/list/allies = get_nearby_allies(AI_FLANK_CLAIM_ALLY_RANGE)
 	var/turf/best
 	var/best_travel = INFINITY
 	for(var/direction in GLOB.alldirs)
@@ -188,6 +190,8 @@
 		var/travel = get_dist(pawn_turf, candidate)
 		if(travel >= best_travel)
 			continue
+		if(flank_tile_claimed_by_ally(candidate, allies))
+			continue
 		if(!can_enter_turf(candidate) || candidate.is_blocked_turf(source_atom = pawn))
 			continue
 		if(shooter.CheckRangedFireLaneFrom(target, candidate))
@@ -196,10 +200,32 @@
 		best_travel = travel
 	return best
 
+///Занят ли фланговый тайл живым манёвром союзника
+/datum/ai_controller/proc/flank_tile_claimed_by_ally(turf/candidate, list/allies)
+	for(var/mob/living/ally as anything in allies)
+		if(QDELETED(ally) || QDELETED(ally.ai_controller))
+			continue
+		if(ally.ai_controller.blackboard[BB_AI_FLANK_TILE] == candidate)
+			return TRUE
+	return FALSE
+
+///Снять фланговый манёвр: ключи коммита и, если ведётся, само движение на фланг
+/datum/ai_controller/proc/clear_flank_commit()
+	if(isnull(blackboard[BB_AI_FLANK_TILE]))
+		return
+	clear_blackboard_key(BB_AI_FLANK_TILE)
+	blackboard[BB_AI_FLANK_UNTIL] = null
+	var/datum/ai_behavior/flank_hold = GET_AI_BEHAVIOR(/datum/ai_behavior/hold_covering_position)
+	if(current_behaviors[flank_hold])
+		fail_behavior(flank_hold)
+
 ///Тайл отхода при кайте: уходим от ближайшей угрозы, штрафуя шаг вплотную к
 ///другим (не пятиться во второго фланкера). Возвращает лучший доступный сосед
 ///или null, если ходить некуда (тогда сработает hostile_break_away).
-/datum/ai_controller/proc/best_retreat_tile(list/threats)
+///allow_lateral - после серии зажатых планов разрешён боковой шаг РАВНОЙ
+///дистанции: скольжение вдоль стены выводит из кармана, где строго-дальних
+///тайлов нет вовсе, а зажатый стрелок стоял столбом минутами (round-23.35.57).
+/datum/ai_controller/proc/best_retreat_tile(list/threats, allow_lateral = FALSE)
 	var/turf/current_turf = get_turf(pawn)
 	if(!current_turf || !length(threats))
 		return null
@@ -228,8 +254,16 @@
 		//стены вплотную к жертве, а не отступление: из-за неё зажатый в тупике
 		//стрелок вечно планировал step_away и никогда не признавал себя
 		//зажатым, так что point_blank_shot/прорыв не наступали вовсе.
-		if(candidate_distance <= nearest_distance)
+		//Исключение - явная эскалация (allow_lateral): равная дистанция
+		//разрешена, но без разворота в прошлое направление, чтобы скольжение
+		//вдоль стены не выродилось в ту же пляску.
+		if(candidate_distance < nearest_distance)
 			continue
+		if(candidate_distance == nearest_distance)
+			if(!allow_lateral)
+				continue
+			if(previous_dir && direction == REVERSE_DIR(previous_dir))
+				continue
 		//дальше от ближайшей угрозы - лучше; шаг вплотную к ДРУГОЙ угрозе штрафуется
 		var/candidate_score = candidate_distance
 		//гистерезис: продолжение прошлого направления даёт читаемую линию

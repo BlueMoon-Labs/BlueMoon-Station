@@ -39,13 +39,21 @@
 		//LOS не рвётся никогда (прод 9887: watcher вёл ползущего в крите игрока
 		//118 секунд на 26 тайлов и всё это время стрелял).
 		if(should_abandon_pursuit(controller))
+			var/atom/dropped_target = controller.blackboard[BB_AI_CURRENT_TARGET]
 			controller.clear_engagement_memory()
 			//бросили - значит бросили: без этой паузы цель, оставшаяся на виду,
 			//реакквизится первым же каденсом финдера со свежей точкой отсчёта
 			//поводка, и усталость погони не работает вовсе. Урон снимает паузу
 			//немедленно (note_attacker) - бой в спину не глохнет.
 			controller.blackboard[BB_AI_ROUTE_RETRY_AT] = world.time + AI_PURSUIT_ABANDON_COOLDOWN
+			//и не стоять вплотную к брошенному: "сдавшийся" моб в упор к врагу
+			//читался сломанным и умирал бесплатно - отходим на несколько тайлов
+			if(isliving(dropped_target) && !QDELETED(dropped_target) && get_dist(controller.pawn, dropped_target) <= AI_ABANDON_AVOID_RANGE)
+				controller.set_blackboard_key(BB_AI_ABANDON_AVOID, dropped_target)
+				controller.blackboard[BB_AI_ABANDON_AVOID_UNTIL] = world.time + AI_PURSUIT_ABANDON_COOLDOWN
 			return_to_peace(controller)
+			if(plan_abandon_avoid(controller))
+				return SUBTREE_RETURN_FINISH_PLANNING
 			return plan_patrol_return(controller)
 
 		//отступление: мораль/здоровье с гистерезисом и разворотом при зажиме
@@ -67,6 +75,14 @@
 			return SUBTREE_RETURN_FINISH_PLANNING
 
 		set_state(controller, AI_STATE_ENGAGE)
+		//осада: маршрут к близкой видимой цели исчерпан (мебель между нами) -
+		//мили-моб стоит лицом к цели и бьёт преграду вместо пересборки мёртвого
+		//плана движения каждые полсекунды. Дальники продолжают обычный план:
+		//их линия/фланг/сближение сами разберутся, а стрелять осада не мешает.
+		if(world.time < (controller.blackboard[BB_AI_SIEGE_UNTIL] || 0))
+			var/mob/living/simple_animal/hostile/siege_pawn = controller.pawn
+			if((!istype(siege_pawn) || !siege_pawn.ranged) && get_dist(controller.pawn, target) > 1)
+				return plan_siege(controller, target)
 		return
 
 	switch(state)
@@ -95,6 +111,8 @@
 
 		else //IDLE/ALERT/RETREAT без цели - к мирной жизни
 			return_to_peace(controller)
+			if(plan_abandon_avoid(controller))
+				return SUBTREE_RETURN_FINISH_PLANNING
 			if(controller.blackboard[BB_AI_STATE] == AI_STATE_IDLE)
 				return plan_patrol_return(controller)
 
@@ -176,6 +194,44 @@
 		AI_TRACE(controller, "pursuit", "бросил [controller.blackboard[BB_AI_CURRENT_TARGET]]: [round((world.time - last_exchange) / 10)]с без обмена уроном")
 		return TRUE
 	return FALSE
+
+// ===== ОСАДА =====
+
+///Осадный план ENGAGE: маршрут исчерпан, но цель на виду в паре шагов. Под
+///огнём без укрытия - шаг за укрытие; иначе стоим лицом к цели и бьём преграду
+///на прямой, пока осада не протухнет и путь не перепроложится заново.
+/datum/ai_planning_subtree/hostile_fsm/proc/plan_siege(datum/ai_controller/controller, atom/target)
+	var/mob/living/living_pawn = controller.pawn
+	if(world.time < (controller.blackboard[BB_AI_UNDER_FIRE_UNTIL] || 0))
+		var/atom/siege_shooter = controller.blackboard[BB_AI_LAST_ATTACKER]
+		if(QDELETED(siege_shooter))
+			siege_shooter = target
+		if(!QDELETED(siege_shooter) && !controller.current_position_covered(siege_shooter))
+			var/turf/siege_hiding = controller.best_hiding_tile(siege_shooter)
+			if(siege_hiding && siege_hiding != get_turf(living_pawn) \
+				&& controller.cover_quality(siege_hiding, siege_shooter) == AI_COVER_FULL)
+				controller.queue_behavior(/datum/ai_behavior/hold_covering_position, siege_hiding)
+				return SUBTREE_RETURN_FINISH_PLANNING
+	if(ai_get_blocked_path_turf(living_pawn, target))
+		controller.queue_behavior(/datum/ai_behavior/attack_obstructions, BB_AI_CURRENT_TARGET)
+	controller.queue_behavior(/datum/ai_behavior/alert_reaction, BB_AI_CURRENT_TARGET)
+	return SUBTREE_RETURN_FINISH_PLANNING
+
+// ===== ОТХОД ОТ БРОШЕННОЙ ЦЕЛИ =====
+
+///Отход от брошенной бесполезной цели: пока окно живо и враг всё ещё рядом,
+///моб отступает, а не стоит вплотную в idle. FALSE - окно закрыто/врага нет.
+/datum/ai_planning_subtree/hostile_fsm/proc/plan_abandon_avoid(datum/ai_controller/controller)
+	var/atom/avoid_target = controller.blackboard[BB_AI_ABANDON_AVOID]
+	if(isnull(avoid_target))
+		return FALSE
+	if(QDELETED(avoid_target) || world.time >= (controller.blackboard[BB_AI_ABANDON_AVOID_UNTIL] || 0) \
+		|| get_dist(controller.pawn, avoid_target) > AI_ABANDON_AVOID_RANGE)
+		controller.clear_blackboard_key(BB_AI_ABANDON_AVOID)
+		controller.blackboard[BB_AI_ABANDON_AVOID_UNTIL] = null
+		return FALSE
+	controller.queue_behavior(/datum/ai_behavior/run_away_from_target/retreat, BB_AI_ABANDON_AVOID, BB_AI_TARGET_HIDING_LOCATION)
+	return TRUE
 
 // ===== ALERT =====
 
@@ -287,6 +343,19 @@
 		controller.clear_engagement_memory()
 		return_to_peace(controller)
 		return
+
+	//под обстрелом с исчерпанной фрустрацией к улике не ходят: моб, которого
+	//расстреливали лазером сквозь стекло, шёл к точке стрелка, утыкался в окно
+	//и умирал стоя. Сначала выйти из-под огня - розыск подождёт.
+	if(world.time < (controller.blackboard[BB_AI_UNDER_FIRE_UNTIL] || 0) \
+		&& (controller.blackboard[BB_AI_FRUSTRATION] || 0) >= AI_PINNED_FRUSTRATION)
+		var/atom/search_shooter = controller.blackboard[BB_AI_LAST_ATTACKER]
+		if(!QDELETED(search_shooter) && !controller.current_position_covered(search_shooter))
+			var/turf/search_hiding = controller.best_hiding_tile(search_shooter)
+			if(search_hiding && search_hiding != get_turf(controller.pawn) \
+				&& controller.cover_quality(search_hiding, search_shooter) == AI_COVER_FULL)
+				controller.queue_behavior(/datum/ai_behavior/hold_covering_position, search_hiding)
+				return SUBTREE_RETURN_FINISH_PLANNING
 
 	//поджидание: скрывшаяся цель часто выглядывает обратно - дальник занимает
 	//огневую позицию с линией на последнюю точку вместо слепого сближения

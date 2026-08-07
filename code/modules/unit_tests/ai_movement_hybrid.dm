@@ -704,8 +704,9 @@
 	breach.ChangeTurf(saved_breach_type)
 	qdel(breather_controller)
 
-///After exhausting a real route, hostile AI must release the pinned target
-///instead of instantly rebuilding the same impossible pursuit forever.
+///An exhausted route with the victim in plain sight a couple of tiles away must
+///siege (hold the target, no demote thrash); an exhausted route to a hidden or
+///distant victim must still release the target with a short rebuild delay.
 /datum/unit_test/ai_unreachable_route_releases_target/Run()
 	var/mob/living/simple_animal/hostile/pirate/melee/pirate = allocate(/mob/living/simple_animal/hostile/pirate/melee, run_loc_floor_bottom_left)
 	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, get_step(run_loc_floor_bottom_left, EAST))
@@ -713,10 +714,25 @@
 	var/datum/ai_movement/hybrid/mover = SSai_movement.movement_types[/datum/ai_movement/hybrid]
 	controller.set_blackboard_key(BB_AI_CURRENT_TARGET, prey)
 
+	//жертва на виду вплотную: исчерпанный маршрут - это мебель между нами, а не
+	//потерянная цель. Разжалование здесь давало вечный цикл "взял-исчерпал-бросил"
+	//(round-23.35.57: моб у стеклянного стола, 34 цикла за 2.5 минуты).
+	for(var/i in 1 to mover.max_pathing_attempts)
+		mover.increment_pathing_failures(controller)
+	TEST_ASSERT(controller.blackboard_key_exists(BB_AI_CURRENT_TARGET), "A visible pointblank target must be sieged, not released")
+	TEST_ASSERT(controller.blackboard[BB_AI_SIEGE_UNTIL] > world.time, "An exhausted route to a visible close target must arm the siege hold")
+
+	//жертва скрылась за глухой преградой: исчерпанный маршрут честно освобождает цель
+	controller.blackboard[BB_AI_SIEGE_UNTIL] = 0
+	var/turf/far_turf = locate(run_loc_floor_bottom_left.x + 4, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
+	var/turf/blocker_turf = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
+	prey.forceMove(far_turf)
+	allocate(/obj/effect/ai_unit_test_opaque_blocker, blocker_turf)
+	TEST_ASSERT(!can_see(pirate, prey, AI_SIEGE_HOLD_RANGE), "Sanity: the blocker must hide the prey")
 	for(var/i in 1 to mover.max_pathing_attempts)
 		mover.increment_pathing_failures(controller)
 
-	TEST_ASSERT(!controller.blackboard_key_exists(BB_AI_CURRENT_TARGET), "A hostile must release a target after exhausting the route")
+	TEST_ASSERT(!controller.blackboard_key_exists(BB_AI_CURRENT_TARGET), "A hostile must release a hidden target after exhausting the route")
 	TEST_ASSERT(controller.blackboard[BB_AI_ROUTE_RETRY_AT] > world.time, "An exhausted route must receive a short rebuild delay")
 	var/datum/ai_behavior/find_potential_targets/finder = GET_AI_BEHAVIOR(/datum/ai_behavior/find_potential_targets)
 	var/result = finder.perform(0.5, controller, BB_AI_CURRENT_TARGET, BB_AI_TARGETING_STRATEGY, BB_AI_TARGET_HIDING_LOCATION)
