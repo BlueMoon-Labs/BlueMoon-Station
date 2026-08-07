@@ -71,6 +71,7 @@
 		//возвращает равноудалённый боковой тайл, воскрешая пляску на месте.
 		next_step = controller.best_retreat_tile(threats)
 		if(isnull(next_step))
+			AI_TRACE(controller, "kite", "отход зажат: некуда шагнуть от [length(threats)] угроз")
 			return FALSE
 	else
 		//не-living цель (враждебная машина) не попадает в список угроз -

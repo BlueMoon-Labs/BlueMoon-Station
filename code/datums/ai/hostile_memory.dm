@@ -29,6 +29,7 @@
 	//становится уликой SEARCH, но НЕ розыскным контактом: бонус скоринга
 	//контакта не должен дублировать обиду (фрустрация и протухание обид обязаны
 	//работать как прежде).
+	AI_TRACE(src, "alert", "удар от [attacker] - настороженность взведена")
 	blackboard[BB_AI_COMBAT_ALERT_UNTIL] = world.time + AI_CONTACT_FRESH_TIME
 	if(!blackboard_key_exists(BB_AI_CURRENT_TARGET))
 		var/turf/attacker_turf = get_turf(attacker)
@@ -86,6 +87,7 @@
 	blackboard[BB_AI_FUTILE_HITS] = futile_hits
 	if(futile_hits < AI_FUTILE_HITS_THRESHOLD)
 		return
+	AI_TRACE(src, "combat", "[target] непробиваем ([AI_FUTILE_HITS_THRESHOLD] ударов без урона) - помечен на [AI_IMPERVIOUS_MEMORY / 10]с")
 	blackboard[BB_AI_TARGET_IMPERVIOUS_UNTIL] = world.time + AI_IMPERVIOUS_MEMORY
 	blackboard[BB_AI_TARGET_IMPERVIOUS_REF] = target_ref
 	blackboard[BB_AI_FUTILE_HITS] = 0
@@ -172,6 +174,7 @@
 	//союзник открывает новый пузырь оповещения и волна идёт эстафетой
 	if(source == AI_CONTACT_ALLY)
 		blackboard[BB_AI_ALLY_RELAY_MUTED_UNTIL] = world.time + AI_ALLY_RELAY_MUTE_TIME
+	AI_TRACE(src, "contact", "принял контакт [reported_target || "?"] у ([reported_turf.x],[reported_turf.y],[reported_turf.z]) от [source]")
 	if(!isnull(reported_target) && !QDELETED(reported_target))
 		set_blackboard_key(BB_AI_CONTACT_TARGET, reported_target)
 	set_blackboard_key(BB_AI_LAST_KNOWN_POS, reported_turf)
@@ -268,6 +271,7 @@
 	blackboard[BB_AI_HOLD_UNTIL] = null
 	blackboard[BB_AI_LANE_STUCK_AT] = null
 	blackboard[BB_AI_FLANK_RETRY_AT] = null
+	blackboard[BB_AI_LANE_DEADLOCK_UNTIL] = null
 	clear_mob_congestion()
 
 ///A hostile that exhausted its movement attempts must not immediately rebuild
@@ -281,5 +285,6 @@
 /datum/ai_controller/hostile_adapter/on_pathing_attempts_exhausted()
 	if(!blackboard_key_exists(BB_AI_CURRENT_TARGET))
 		return
+	AI_TRACE(src, "move", "маршрут исчерпан: [blackboard[BB_AI_CURRENT_TARGET]] разжалован в контакт")
 	demote_target_to_contact(BB_AI_CURRENT_TARGET)
 	blackboard[BB_AI_ROUTE_RETRY_AT] = world.time + AI_UNREACHABLE_ROUTE_RETRY

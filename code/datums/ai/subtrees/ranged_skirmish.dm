@@ -43,8 +43,22 @@
 			controller.blackboard[BB_AI_FLANK_RETRY_AT] = world.time + AI_FLANK_RETRY_COOLDOWN
 			var/turf/flank_tile = controller.find_flank_fire_tile(target)
 			if(flank_tile)
+				AI_TRACE(controller, "lane", "фланг на ([flank_tile.x],[flank_tile.y],[flank_tile.z]) против [target]")
 				controller.queue_behavior(/datum/ai_behavior/hold_covering_position, flank_tile)
 				return SUBTREE_RETURN_FINISH_PLANNING
+			//огневой позиции нет ВООБЩЕ: ни сосед, ни кольцо (узкий мостик над
+			//космосом, теснота). Стоять столбом нельзя - переходим в сближение
+			AI_TRACE(controller, "lane", "огневой позиции нет вовсе - сближаюсь с [target]")
+			controller.blackboard[BB_AI_LANE_DEADLOCK_UNTIL] = world.time + AI_FLANK_RETRY_COOLDOWN
+		//лишённый позиции стрелок сближается как чейзер: каждая планировка
+		//перепроверяет трассу, и линия почти всегда открывается раньше мили;
+		//дошёл вплотную - hostile_break_away даст выстрел в упор или огрызок.
+		//Плейтест 23.19: штурмовик на мостике над космосом стоял и не мог ни
+		//выстрелить (ферма в трассе), ни перестроиться (вокруг космос) - легаси
+		//в этой же ситуации пёр напролом.
+		if(world.time < (controller.blackboard[BB_AI_LANE_DEADLOCK_UNTIL] || 0))
+			controller.queue_behavior(/datum/ai_behavior/pursue_to_range, target_key, 1)
+			return SUBTREE_RETURN_FINISH_PLANNING
 		controller.queue_behavior(/datum/ai_behavior/reposition_for_shot, target_key)
 		return SUBTREE_RETURN_FINISH_PLANNING
 	if(istype(hostile_pawn) && ai_should_seek_firing_cover(controller, target))
@@ -180,6 +194,7 @@
 		//Это очередь в затылок союзнику - пометка ведёт планировщик на фланговый
 		//манёвр (find_flank_fire_tile) вместо вечного стояния в колонне.
 		if(shooter.CheckRangedFireLane(target))
+			AI_TRACE(controller, "lane", "очередь в затылок: соседи линию на [target] не открывают")
 			controller.blackboard[BB_AI_LANE_STUCK_AT] = world.time
 			return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED

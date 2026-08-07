@@ -91,6 +91,10 @@ multiple modular subtrees with behaviors
 	/// TRUE if we're able to run, FALSE if we aren't
 	/// Should not be set manually, override get_able_to_run() instead
 	var/able_to_run = FALSE
+#ifdef TESTING
+	///Троттл снимков "завис с целью" (AI_TRACE): не чаще раза в 5 секунд
+	var/stall_trace_after = 0
+#endif
 	/// are we even able to plan?
 	var/able_to_plan = TRUE
 	/// are we currently on failed planning timeout?
@@ -540,6 +544,44 @@ multiple modular subtrees with behaviors
 		if(stored_arguments)
 			arguments += stored_arguments
 		forgotten_behavior.finish_action(arglist(arguments))
+
+#ifdef TESTING
+	//детектор "завис с целью": цель есть, а план пуст - главный симптом всех
+	//стоек с плейтестов. Снимок раз в 5 секунд, чтобы лог читался глазами.
+	if(!length(planned_behaviors) && !length(current_behaviors) && blackboard_key_exists(BB_AI_CURRENT_TARGET) && world.time >= stall_trace_after)
+		stall_trace_after = world.time + 5 SECONDS
+		ai_trace_stall_snapshot()
+#endif
+
+#ifdef TESTING
+///Трассировка решений ИИ (см. AI_TRACE): категория, паун с позицией, сообщение
+/datum/ai_controller/proc/ai_trace(category, message)
+	var/pawn_tag = "no-pawn"
+	if(pawn)
+		var/turf/pawn_turf = get_turf(pawn)
+		pawn_tag = "[pawn.type] ([pawn_turf ? "[pawn_turf.x],[pawn_turf.y],[pawn_turf.z]" : "null"])"
+	WRITE_LOG(GLOB.ai_trace_log, "[category] | [pawn_tag] [REF(src)] | [message]")
+
+///Снимок застрявшего контроллера: всё, что нужно для диагноза стойки одним взглядом
+/datum/ai_controller/proc/ai_trace_stall_snapshot()
+	var/atom/target = blackboard[BB_AI_CURRENT_TARGET]
+	var/list/bits = list()
+	bits += "state=[blackboard[BB_AI_STATE] || "null"]"
+	bits += "target=[target] dist=[QDELETED(target) ? "-" : get_dist(pawn, target)]"
+	bits += "status=[ai_status] able_to_run=[able_to_run] paused=[paused_until > world.time ? "да" : "нет"]"
+	bits += "move_target=[current_movement_target || "нет"]"
+	var/datum/move_loop/loop = SSmove_manager.processing_on(pawn, SSai_movement)
+	bits += "move_loop=[loop ? "[loop.type]" : "нет"]"
+	bits += "band=[blackboard[BB_AI_MIN_DISTANCE] || 0]-[blackboard[BB_AI_MAX_DISTANCE] || 0]"
+	bits += "frustration=[blackboard[BB_AI_FRUSTRATION] || 0] pathing_attempts=[pathing_attempts]"
+	bits += "route_retry_in=[max(0, (blackboard[BB_AI_ROUTE_RETRY_AT] || 0) - world.time)]"
+	bits += "lane_deadlock_in=[max(0, (blackboard[BB_AI_LANE_DEADLOCK_UNTIL] || 0) - world.time)]"
+	var/mob/living/simple_animal/hostile/hostile_pawn = pawn
+	if(istype(hostile_pawn) && hostile_pawn.ranged && !QDELETED(target))
+		bits += "lane=[hostile_pawn.CheckRangedFireLane(target) ? "ПЕРЕКРЫТА" : "чиста"]"
+		bits += "ranged_cooldown_in=[max(0, hostile_pawn.ranged_cooldown - world.time)]"
+	ai_trace("STALL", bits.Join(" | "))
+#endif
 
 ///This proc handles changing ai status, and starts/stops processing if required.
 /datum/ai_controller/proc/set_ai_status(new_ai_status, additional_flags = NONE)

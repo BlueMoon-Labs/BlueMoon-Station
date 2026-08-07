@@ -32,6 +32,7 @@
 	//исключительно через собственный LOS ниже. Цена честности - один рейкаст
 	//на каденс поиска и только по текущей цели.
 	if(current_target_eligible && !candidate_is_visible(living_mob, current_target, targeting_strategy, aggro_range))
+		AI_TRACE(controller, "target", "потерял LOS: [current_target] разжалован в контакт")
 		controller.demote_target_to_contact(target_key)
 		current_target = null
 		current_target_eligible = FALSE
@@ -45,6 +46,7 @@
 	var/current_target_valid = current_target_eligible //видимость уже подтверждена выше
 
 	if(!current_target_valid && current_target)
+		AI_TRACE(controller, "target", "цель [current_target] непригодна (дистанция/стратегия) - сброс")
 		controller.clear_mob_congestion(current_target)
 		controller.clear_blackboard_key(target_key)
 		current_target = null
@@ -119,6 +121,7 @@
 
 	controller.set_blackboard_key(target_key, target)
 	AI_METRIC_INC(targets_acquired)
+	AI_TRACE(controller, "target", "взял [target] (дист [get_dist(living_mob, target)], радиус [aggro_range])")
 	controller.blackboard[BB_AI_TARGET_ACQUIRED_AT] = world.time
 	controller.blackboard[BB_AI_FRUSTRATION] = 0
 	//Точка отсчёта усталости погони: откуда моб пошёл за этой целью и когда в

@@ -13,6 +13,7 @@
 /datum/ai_planning_subtree/hostile_fsm/proc/set_state(datum/ai_controller/controller, new_state)
 	if(controller.blackboard[BB_AI_STATE] == new_state)
 		return
+	AI_TRACE(controller, "fsm", "[controller.blackboard[BB_AI_STATE] || "старт"] -> [new_state]")
 	controller.blackboard[BB_AI_STATE] = new_state
 	controller.blackboard[BB_AI_STATE_ENTERED_AT] = world.time
 
@@ -152,6 +153,7 @@
 	//нового противника (второго нападающего без брони) не распространяется.
 	if(world.time < (controller.blackboard[BB_AI_TARGET_IMPERVIOUS_UNTIL] || 0) \
 		&& controller.blackboard[BB_AI_TARGET_IMPERVIOUS_REF] == REF(controller.blackboard[BB_AI_CURRENT_TARGET]))
+		AI_TRACE(controller, "pursuit", "бросил [controller.blackboard[BB_AI_CURRENT_TARGET]]: непробиваем")
 		return TRUE
 
 	//упрямая особь гонится дольше и дальше, робкая - меньше (см. temperament.dm)
@@ -160,15 +162,20 @@
 	var/turf/pawn_turf = get_turf(controller.pawn)
 	if(origin && pawn_turf)
 		if(pawn_turf.z != origin.z)
+			AI_TRACE(controller, "pursuit", "бросил [controller.blackboard[BB_AI_CURRENT_TARGET]]: увели с z поводка")
 			return TRUE
 		var/leash = (controller.blackboard[BB_AI_PURSUIT_LEASH] || AI_PURSUIT_LEASH) * temperament.pursuit_mult
 		if(get_dist(pawn_turf, origin) > leash)
+			AI_TRACE(controller, "pursuit", "бросил [controller.blackboard[BB_AI_CURRENT_TARGET]]: поводок [get_dist(pawn_turf, origin)] > [leash]")
 			return TRUE
 
 	var/last_exchange = controller.blackboard[BB_AI_LAST_EXCHANGE_AT]
 	if(isnull(last_exchange))
 		return FALSE
-	return (world.time - last_exchange) > (AI_PURSUIT_PATIENCE * temperament.pursuit_mult)
+	if((world.time - last_exchange) > (AI_PURSUIT_PATIENCE * temperament.pursuit_mult))
+		AI_TRACE(controller, "pursuit", "бросил [controller.blackboard[BB_AI_CURRENT_TARGET]]: [round((world.time - last_exchange) / 10)]с без обмена уроном")
+		return TRUE
+	return FALSE
 
 // ===== ALERT =====
 
@@ -245,6 +252,7 @@
 	var/turf/projected = project_escape_point(controller)
 	if(projected)
 		controller.set_blackboard_key(BB_AI_SEARCH_POINT, projected)
+		AI_TRACE(controller, "search", "экстраполяция побега -> ([projected.x],[projected.y],[projected.z])")
 	var/mob/living/simple_animal/hostile/hostile_pawn = controller.pawn
 	if(istype(hostile_pawn) && hostile_pawn.ranged)
 		//дальник поджидает ВЕСЬ розыск: хвост "иди осматривать точки" приводил

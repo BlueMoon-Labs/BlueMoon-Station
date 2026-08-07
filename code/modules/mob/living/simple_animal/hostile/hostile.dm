@@ -397,6 +397,7 @@
 			//пройденный поводок, иначе дерущаяся цель отключает усталость погони.
 			if(ai_controller.blackboard[BB_AI_CURRENT_TARGET] != the_attacker)
 				ai_controller.blackboard[BB_AI_PURSUIT_ORIGIN] = get_turf(src)
+				AI_TRACE(ai_controller, "target", "возмездие: цель [the_attacker]")
 			ai_controller.set_blackboard_key(BB_AI_CURRENT_TARGET, the_attacker)
 			//Групповой агр: retaliate-семейство делится обидчиками через свой
 			//Retaliate(), а обычные отряды (лутеры, синдикат, фауна) без этого

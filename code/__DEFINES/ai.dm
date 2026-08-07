@@ -7,6 +7,16 @@
 ///Инкремент счётчика стоимости AI (см. /datum/ai_metrics); использовать только как statement
 #define AI_METRIC_INC(metric_field) if(GLOB.ai_metrics) { GLOB.ai_metrics.metric_field++ }
 
+//Трассировка РЕШЕНИЙ hostile AI для разбора плейтестов: смены состояний,
+//вердикты и снимки застрявших контроллеров, НЕ каждый тик планирования.
+//Пишет data/logs/.../ai_trace.log только в TESTING-сборках; в прод-сборке
+//макрос разворачивается в пустоту, и аргументы не вычисляются вовсе.
+#ifdef TESTING
+#define AI_TRACE(controller, category, message) (controller)?.ai_trace(category, message)
+#else
+#define AI_TRACE(controller, category, message)
+#endif
+
 // Статусы контроллера (порт tg 14140a6355d1 code/__DEFINES/ai/ai.dm).
 // ВАЖНО: в отличие от tg, AI_STATUS_IDLE у нас - полный сон: контроллер не
 // планируется, не процессится и не бродит, пока клиент не войдёт в его ячейки.
@@ -385,6 +395,9 @@
 #define AI_LANE_STUCK_FRESH_TIME (2 SECONDS)
 ///Пауза между кольцевыми сканами фланга: один скан - до восьми трасс линии огня
 #define AI_FLANK_RETRY_COOLDOWN (3 SECONDS)
+///world.time, до которого стрелок признан лишённым огневой позиции вовсе (нет
+///ни соседа, ни фланга) и сближается с целью как чейзер
+#define BB_AI_LANE_DEADLOCK_UNTIL "BB_ai_lane_deadlock_until"
 ///Кольцо фланга не прижимается к цели ближе этого даже при пустом band профиля
 #define AI_FLANK_MIN_RADIUS 2
 

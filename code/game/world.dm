@@ -148,6 +148,10 @@ GLOBAL_LIST(topic_status_cache)
 	GLOB.test_log = "[GLOB.log_directory]/tests.log"
 	start_log(GLOB.test_log)
 #endif
+#ifdef TESTING
+	GLOB.ai_trace_log = "[GLOB.log_directory]/ai_trace.log"
+	start_log(GLOB.ai_trace_log)
+#endif
 	GLOB.harddel_log = "[GLOB.log_directory]/harddels.log"
 	start_log(GLOB.harddel_log)
 	start_log(GLOB.world_game_log)
