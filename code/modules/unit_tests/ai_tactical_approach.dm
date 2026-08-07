@@ -104,6 +104,30 @@
 	controller.CancelActions()
 	qdel(controller)
 
+///Тайл подхода в шаге от пешки, цель в двух: гейт прибытия мовера
+///(required_distance) считает такой тайл уже достигнутым и не делает ни шага,
+///а адъяценси-гейт атаки ещё не открыт - моб замирал в двух клетках от жертвы
+///до самого поводка погони. Дотянувшись до тайла, движение обязано перейти
+///на саму цель.
+/datum/unit_test/ai_melee_close_approach_tile_yields_to_target/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/pawn = allocate(/mob/living/simple_animal/hostile, start)
+	var/turf/prey_turf = locate(start.x + 2, start.y, start.z)
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, prey_turf)
+	var/datum/ai_controller/hostile_adapter/melee_chaser/controller = new(pawn)
+	controller.set_blackboard_key(BB_AI_CURRENT_TARGET, prey)
+
+	var/datum/ai_behavior/hostile_melee_attack/fist = GET_AI_BEHAVIOR(/datum/ai_behavior/hostile_melee_attack)
+	var/turf/flank = locate(start.x + 1, start.y + 1, start.z)
+	TEST_ASSERT(get_dist(pawn, flank) <= fist.required_distance, "Sanity: the flank tile must sit within the mover's arrival distance")
+	TEST_ASSERT(get_dist(pawn, prey_turf) > 1, "Sanity: the prey must start out of melee reach")
+	controller.set_blackboard_key(BB_AI_APPROACH_TILE, flank)
+	fist.perform(0.5, controller, BB_AI_CURRENT_TARGET)
+	TEST_ASSERT_EQUAL(controller.current_movement_target, prey, "An approach tile the mover already considers reached must hand movement over to the target")
+
+	controller.CancelActions()
+	qdel(controller)
+
 // ===== Живость: шум, укрытие, читаемый кайт, патрульный поводок =====
 
 ///Громкий шум рядом отправляет мирного моба проверить точку (SEARCH),

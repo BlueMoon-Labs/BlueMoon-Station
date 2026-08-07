@@ -274,11 +274,20 @@
 ///Цель движения: тайл подхода от tactical_approach (фланг/окружение), если он
 ///ведётся, иначе сама цель. Тайл лежит вплотную к цели, так что адъяценси-гейт
 ///атаки в perform() срабатывает как обычно.
+///
+///Тайл в пределах required_distance от пешки больше не ведёт: гейт прибытия
+///мовера считает его достигнутым и не делает ни шага, а атака ещё не в
+///адъяценси - моб замирал в двух клетках от жертвы до самого поводка погони
+///(плейтест round-01.18.04: STALL дист 2, move_loop=нет). Дотянувшись до
+///тайла, последний шаг ведём на саму цель.
 /datum/ai_behavior/hostile_melee_attack/proc/desired_movement_goal(datum/ai_controller/controller, atom/target)
 	var/turf/approach = controller.blackboard[BB_AI_APPROACH_TILE]
-	if(!isnull(approach) && !QDELETED(approach))
-		return approach
-	return target
+	if(isnull(approach) || QDELETED(approach))
+		return target
+	var/atom/movable/moving_pawn = controller.pawn
+	if(isnull(moving_pawn) || get_dist(moving_pawn, approach) <= required_distance)
+		return target
+	return approach
 
 /datum/ai_behavior/hostile_melee_attack/perform(delta_time, datum/ai_controller/controller, target_key)
 	var/mob/living/simple_animal/hostile/hostile_pawn = controller.pawn
