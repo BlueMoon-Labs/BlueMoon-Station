@@ -18,6 +18,17 @@
 		/obj/item/gun/ballistic/automatic/gyropistol = 1,
 		/obj/item/gun/ballistic/shotgun = 2,
 		/obj/item/gun/ballistic/automatic/ar = 2,
+		// Mesa guns
+		/obj/item/gun/ballistic/automatic/pistol/hl9mm = 3,
+		/obj/item/gun/ballistic/automatic/sniper_rifle/m4oa1 = 2,
+		/obj/item/gun/ballistic/automatic/mp5 = 3,
+		/obj/item/gun/ballistic/automatic/mp5/underbarrel = 2,
+		/obj/item/gun/ballistic/shotgun/m870 = 3,
+		/obj/item/gun/ballistic/shotgun/spas = 2,
+		/obj/item/gun/ballistic/automatic/m16a4/mesa = 3,
+		/obj/item/gun/ballistic/automatic/mp7 = 3,
+		/obj/item/gun/ballistic/automatic/scar = 2,
+		/obj/item/gun/ballistic/automatic/p90 = 2,
 	)
 	premium = list(
 		/obj/item/ammo_box/magazine/smgm9mm = 2,
@@ -26,6 +37,15 @@
 		/obj/item/ammo_box/magazine/m75 = 2,
 		/obj/item/reagent_containers/food/snacks/cheesyfries = 5,
 		/obj/item/reagent_containers/food/snacks/burger/baconburger = 5,//Premium burgers for the premium section
+		// Mesa gun ammo
+		/obj/item/ammo_box/magazine/pistolm9mm = 5,
+		/obj/item/ammo_box/magazine/sniper_rounds/m4oa1 = 4,
+		/obj/item/ammo_box/magazine/mp5 = 5,
+		/obj/item/ammo_box/shotgun/loaded/buckshot = 6,
+		/obj/item/ammo_box/magazine/m16 = 5,
+		/obj/item/ammo_box/magazine/mp7 = 5,
+		/obj/item/ammo_box/magazine/scar = 4,
+		/obj/item/ammo_box/magazine/p90 = 4,
 	)
 	contraband = list(
 		/obj/item/clothing/under/misc/patriotsuit = 3,

@@ -1,5 +1,5 @@
 /obj/item/gun/ballistic/shotgun
-	icon = 'modular_splurt/icons/obj/guns/projectile.dmi'
+	icon = 'icons/obj/guns/projectile.dmi'
 
 /obj/item/gun/ballistic/shotgun/shorty //for spawn in the armory
 	icon = 'modular_splurt/icons/obj/guns/projectile.dmi'

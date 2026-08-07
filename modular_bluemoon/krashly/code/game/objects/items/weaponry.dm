@@ -203,7 +203,7 @@
 /obj/item/gun/ballistic/automatic/ak12
 	name = "\improper AK-12 rifle"
 	desc = "Простая в использовании Автоматическая Винтовка. Её придумали ещё столетия назад, а популярна она и по сей день."
-	icon = 'modular_bluemoon/krashly/icons/obj/weapons/weapons.dmi'
+	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi'
 	icon_state = "ak12"
 	lefthand_file = 'modular_bluemoon/krashly/icons/mob/inhands/weapons/lefthand.dmi'
 	righthand_file = 'modular_bluemoon/krashly/icons/mob/inhands/weapons/righthand.dmi'
