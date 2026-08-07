@@ -121361,7 +121361,7 @@
 /obj/effect/landmark/navigate_destination/psychologist,
 /obj/machinery/door/airlock/medical{
 	name = "Psychologist Office";
-	id_tag = psy1
+	id_tag = "psy1"
 	},
 /obj/effect/turf_decal/trimline/blue,
 /obj/effect/mapping_helpers/airlock/access/all/medical/psychology,
