@@ -2384,7 +2384,8 @@
 	},
 /obj/machinery/door/window/brigdoor/security/cell/northleft{
 	id = "Hcell1";
-	req_access = "203"
+	req_access = null;
+	req_access_txt = "203"
 	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/hotel/security)
