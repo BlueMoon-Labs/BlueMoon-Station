@@ -4,7 +4,7 @@
 # cycles and collects data/atmos_headless_bench_*.jsonl. The server shuts itself
 # down when done (see atmos_benchmark.dm, ATMOS_HEADLESS_BENCH section).
 #
-# Usage: tools/atmos_bench/run_headless.sh <tag> [map] [skip-build] [cycles] [scenario] [breaches] [firelocks] [seed] [event-cycle]
+# Usage: tools/atmos_bench/run_headless.sh <tag> [map] [skip-build] [cycles] [scenario] [breaches] [firelocks] [seed] [event-cycle] [sleeping-edges]
 #   tag        label for the result file (e.g. baseline, fix1)
 #   map        json name from _maps/, default icemoonstation
 #   skip-build pass "skip-build" to reuse the existing tgstation.dmb
@@ -18,6 +18,8 @@
 #   seed       deterministic world seed, default 29051994 in headless builds
 #   event-cycle cycle of the scenario event (breach/ignite/open); recurring
 #              interval for pipenet-stress; default 20
+#   sleeping-edges pass "1" to force SSair.sleeping_edges_enabled for the run
+#              (A/B against the config default without touching config files)
 #
 # Result: tools/atmos_bench/results/<timestamp>_<tag>.jsonl
 # Analyze: python tools/atmos_bench/analyze.py <file> [file2 ...]
@@ -33,6 +35,7 @@ BREACHES="${6:-}"
 FIRELOCKS="${7:-}"
 SEED="${8:-}"
 EVENT_CYCLE="${9:-}"
+SLEEPING_EDGES="${10:-}"
 DD_EXE="${BYOND_DD:-/d/Program Files (x86)/BYOND/bin/dd.exe}"
 TIMEOUT_SECONDS=2700
 NEXT_MAP_BACKUP=""
@@ -128,6 +131,9 @@ if [ -n "$SEED" ]; then
 fi
 if [ -n "$EVENT_CYCLE" ]; then
     append_param "atmos-bench-event-cycle=$EVENT_CYCLE"
+fi
+if [ -n "$SLEEPING_EDGES" ]; then
+    append_param "atmos-bench-sleeping-edges=$SLEEPING_EDGES"
 fi
 if [ -n "$PARAM_STRING" ]; then
     DD_PARAMS=(-params "$PARAM_STRING")

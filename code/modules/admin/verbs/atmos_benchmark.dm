@@ -550,6 +550,10 @@ GLOBAL_VAR_INIT(atmos_headless_bench_finished, FALSE)
 	if(headless_bench_scenario_checked)
 		return
 	headless_bench_scenario_checked = TRUE
+	// A/B-рычаг спящих рёбер: "atmos-bench-sleeping-edges=1" включает фичу на
+	// весь прогон, любое другое значение/отсутствие - оставляет конфигный дефолт.
+	if(world.params["atmos-bench-sleeping-edges"] == "1")
+		sleeping_edges_enabled = TRUE
 	headless_bench_scenario = world.params["atmos-bench-scenario"]
 	if(!headless_bench_scenario)
 		headless_bench_scenario_ready = TRUE

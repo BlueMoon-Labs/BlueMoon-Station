@@ -922,7 +922,10 @@
 	var/adjacent_turfs_length = max(1, LAZYLEN(adjacent_turfs))
 	var/our_share_coeff = 1 / (adjacent_turfs_length + 1)
 	var/cached_atmos_cooldown = atmos_cooldown + 1
-	var/edge_sleep_enabled = SSair?.sleeping_edges_enabled
+	// Гейт спящих рёбер по тишине: кэш пар смотрим и пишем только когда сам
+	// турф уже несколько фаеров ничего не двигал. Активный фронт (cooldown
+	// обнуляется каждым значимым шером) не платит ни лукап, ни запись.
+	var/edge_sleep_enabled = SSair?.sleeping_edges_enabled && cached_atmos_cooldown > ATMOS_EDGE_SLEEP_MIN_QUIET_FIRES
 
 	var/planet_atmos = planetary_atmos
 
@@ -1106,6 +1109,14 @@
 					consider_pressure_difference(enemy_tile, difference)
 				else
 					enemy_tile.consider_pressure_difference(src, -difference)
+				// Пер-парный захлоп (tg-шный consider_firelocks, вернувшийся из
+				// зонного обхода в обычную LINDA): опасный перепад через проём с
+				// файрлоком закрывает створку сам, не дожидаясь зонной тревоги.
+				// Бит файрлока лежит в значении соседства, порог тот же, что у
+				// декомп-события. Фронт быстрой разгерметизации отсекается на
+				// первом же дверном проёме, а не когда стравится вся секция.
+				if(abs(difference) >= DECOMPRESSION_FIRELOCK_PRESSURE_DELTA && (adjacent_turfs[enemy_tile] & ATMOS_ADJACENT_FIRELOCK))
+					consider_firelocks(enemy_tile)
 			LAST_SHARE_CHECK
 
 	ATMOS_TPROF_ADD("neighbors")
@@ -1127,7 +1138,13 @@
 			// the gas list through return_pressure().
 			var/volume_cache = our_air.volume
 			var/pressure_before = volume_cache > 0 ? (moles_before * R_IDEAL_GAS_EQUATION * temperature_before / volume_cache) : 0
-			if(pressure_before >= DECOMPRESSION_FIRELOCK_PRESSURE_DELTA && SSair)
+			// Порог события - HAZARD_LOW, а не WARNING_LOW: раунд 9906 показал,
+			// что при затяжном сливе зона у дыры быстро проседает ниже 50 кПа,
+			// события глохнут, и створки без удерживаемого перепада тихо
+			// переоткрываются - станция дренируется через них до конца смены.
+			// Пока комната у пробоины держит выживаемое давление, тревога и
+			// захлоп обязаны перевзводиться (кулдаун зоны - 30 секунд).
+			if(pressure_before >= HAZARD_LOW_PRESSURE && SSair)
 				SSair.queue_decompression_area(src)
 			our_air.vent_ratio(1)
 			our_air.set_temperature(TCMB)

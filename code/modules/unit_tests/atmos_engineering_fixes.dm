@@ -556,6 +556,66 @@
 	old_area.contents += spot
 	TEST_ASSERT(!requeued, "a just-handled area was requeued for decompression within the alarm cooldown")
 
+/// Опасный перепад давления через дверной проём с файрлоком захлопывает створку
+/// прямо из парного шаринга, не дожидаясь зонной декомп-тревоги. Раунд 9906:
+/// фронт быстрой разгерметизации проходил открытые двери раньше, чем зона
+/// успевала алертнуться, и станция дренировалась целиком.
+/datum/unit_test/firelock_pair_pressure_slam
+	priority = TEST_LONGER
+
+/datum/unit_test/firelock_pair_pressure_slam/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/base = run_loc_floor_bottom_left
+	// Карман 4x3: пара A|B, на тайле B стоит открытый файрлок.
+	for(var/dx in 0 to 3)
+		for(var/dy in 0 to 2)
+			var/turf/T = locate(base.x + dx, base.y + dy, base.z)
+			TEST_ASSERT_NOTNULL(T, "test zone turf missing at offset [dx],[dy]")
+			if(dx == 0 || dy == 0 || dx == 3 || dy == 2)
+				T.ChangeTurf(/turf/closed/wall)
+	var/turf/open/tile_a = locate(base.x + 1, base.y + 1, base.z)
+	var/turf/open/tile_b = locate(base.x + 2, base.y + 1, base.z)
+	TEST_ASSERT(istype(tile_a) && istype(tile_b), "arena pair is not open turfs")
+	var/obj/machinery/door/firedoor/lock = allocate(/obj/machinery/door/firedoor, tile_b)
+	TEST_ASSERT(!lock.density, "a freshly spawned firelock must start open")
+	tile_a.ImmediateCalculateAdjacentTurfs()
+	tile_b.ImmediateCalculateAdjacentTurfs()
+	TEST_ASSERT(tile_a.atmos_adjacent_turfs[tile_b] & ATMOS_ADJACENT_FIRELOCK, "adjacency must carry the firelock bit for the pair")
+
+	// A на штатной атмосфере, B почти пуст: перепад ~86 кПа выше порога захлопа.
+	tile_a.air.copy_from_turf(tile_a)
+	tile_b.air.copy_from_turf(tile_b)
+	tile_b.air.multiply(0.15)
+	if(tile_a.excited_group)
+		tile_a.excited_group.garbage_collect()
+	if(tile_b.excited_group)
+		tile_b.excited_group.garbage_collect()
+	SSair.add_to_active(tile_a, FALSE)
+	var/fire = max(tile_a.current_cycle, tile_b.current_cycle, SSair.times_fired) + 300
+	tile_a.process_cell(fire)
+
+	// emergency_pressure_stop() уходит в close() с анимацией - плотность
+	// появляется через несколько тиков.
+	var/closed = FALSE
+	for(var/i in 1 to 30)
+		if(lock.density)
+			closed = TRUE
+			break
+		sleep(1)
+	TEST_ASSERT(closed, "a hazardous cross-door pressure delta must slam the firelock shut")
+
+	// Cleanup: воздух и актив; дверь снимет allocate.
+	tile_a.air.copy_from_turf(tile_a)
+	tile_b.air.copy_from_turf(tile_b)
+	if(tile_a.excited_group)
+		tile_a.excited_group.dismantle()
+	SSair.remove_from_active(tile_a)
+	SSair.remove_from_active(tile_b)
+	SSair.high_pressure_delta -= tile_a
+	tile_a.high_pressure_queued = FALSE
+	tile_a.pressure_vector_x = 0
+	tile_a.pressure_vector_y = 0
+
 /// Обычный RPD и блюспейс-раздатчик обязаны раздавать одну и ту же машинерию:
 /// BSRPD отличается только собственной трубой. Каталоги лежат в разных файлах,
 /// и каждый новый компонент рисковал попасть лишь в один из них.

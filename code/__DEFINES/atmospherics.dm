@@ -43,8 +43,14 @@
 /// large in bounded time: the giant-hall bench (120x100 hall, 16:1 pressure
 /// split) never settles and holds ~140ms/fire indefinitely without this valve.
 #define EXCITED_GROUP_ZONE_EQUALIZE_THRESHOLD		1500
-/// A room-to-space pressure difference at or above this value queues its base area
-/// for one decompression/firelock event in the current SSair fire.
+/// Sleeping edges: кэш осевших пар включается только после стольких тихих
+/// фаеров турфа (atmos_cooldown на входе в process_cell). Активный фронт
+/// разгерма не оседает и не хитует кэш - без этого гейта он платил лукап на
+/// каждой паре каждый фаер: multi-breach A/B мерил +7-9% на нейборс-цикл.
+#define ATMOS_EDGE_SLEEP_MIN_QUIET_FIRES			2
+/// Перепад давления, при котором пара турфов с файрлоком в проёме захлопывает
+/// створку прямо из парного шаринга (пер-парный consider_firelocks). Зонное
+/// декомп-событие гейтится отдельно, по HAZARD_LOW_PRESSURE у кромки пробоины.
 #define DECOMPRESSION_FIRELOCK_PRESSURE_DELTA		WARNING_LOW_PRESSURE
 #define MINIMUM_AIR_RATIO_TO_SUSPEND				0.1		//Ratio of air that must move to/from a tile to reset group processing
 #define MINIMUM_AIR_RATIO_TO_MOVE					0.001	//Minimum ratio of air that must move to/from a tile

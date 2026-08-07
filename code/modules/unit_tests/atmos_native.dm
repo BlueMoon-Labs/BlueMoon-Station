@@ -1027,6 +1027,21 @@
 	SSair.queue_decompression_area(drain)
 	TEST_ASSERT_EQUAL(length(SSair.decompression_areas), queued_areas, "multiple leaking turfs queued the same area more than once")
 
+	// Порог декомп-события - HAZARD_LOW, а не WARNING_LOW: зона у дыры,
+	// просевшая ниже 50 кПа, обязана перевзводить тревогу, пока держит
+	// выживаемое давление (раунд 9906: события глохли, створки переоткрывались,
+	// станция дренировалась до 34 кПа через вечно открытые двери).
+	SSair.decompression_areas -= drain_area
+	SSair.decompression_handled_at -= drain_area
+	drain.air.copy_from_turf(drain)
+	drain.air.multiply(0.34)
+	TEST_ASSERT(drain.air.return_pressure() < DECOMPRESSION_FIRELOCK_PRESSURE_DELTA, "mid-drain fixture must sit below the old 50 kPa gate (got [drain.air.return_pressure()])")
+	TEST_ASSERT(drain.air.return_pressure() >= HAZARD_LOW_PRESSURE, "mid-drain fixture must hold survivable pressure (got [drain.air.return_pressure()])")
+	SSair.add_to_active(drain, FALSE)
+	fire_count++
+	drain.process_cell(fire_count)
+	TEST_ASSERT(SSair.decompression_areas[drain_area], "a sub-50 kPa room venting to space must still queue its decompression event")
+
 	// Тёплый подпороговый огрызок (моли ниже MINIMUM_MOLES_DELTA_TO_MOVE, но
 	// температура выше TCMB) тоже уходит целиком - раньше такой висел на
 	// экспоненциальном хвосте десятки циклов.

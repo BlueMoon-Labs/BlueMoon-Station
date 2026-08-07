@@ -43,6 +43,10 @@
 	SSair.sleeping_edges_enabled = TRUE
 	var/fire = max(tile_a.current_cycle, tile_b.current_cycle, SSair.times_fired) + 100
 
+	// Кэш гейтится тишиной турфа: активный фронт не платит лукап вовсе.
+	// Изображаем турф, который уже отмолчал свой порог.
+	tile_a.atmos_cooldown = ATMOS_EDGE_SLEEP_MIN_QUIET_FIRES
+
 	// Первый цикл: compare() говорит "разницы нет", ребро засыпает.
 	tile_a.process_cell(fire)
 	var/list/edge_state = tile_a.settled_edge_revs?[tile_b]
@@ -56,6 +60,7 @@
 	// отличает "пару скипнули" от "compare увидел равенство".
 	var/o2_before = tile_a.air.get_moles(GAS_O2)
 	tile_b.air.gases[GAS_O2] += 30
+	tile_a.atmos_cooldown = ATMOS_EDGE_SLEEP_MIN_QUIET_FIRES
 	fire++
 	tile_a.process_cell(fire)
 	TEST_ASSERT(abs(tile_a.air.get_moles(GAS_O2) - o2_before) < 0.001, \
@@ -64,6 +69,7 @@
 	// Пробуждение по ревизии: бамп на любом конце снимает сон, разница
 	// разъезжается обычным share() в тот же фаер.
 	tile_b.air.mutation_rev++
+	tile_a.atmos_cooldown = ATMOS_EDGE_SLEEP_MIN_QUIET_FIRES
 	fire++
 	tile_a.process_cell(fire)
 	TEST_ASSERT(tile_a.air.get_moles(GAS_O2) > o2_before + 1, \
@@ -73,6 +79,7 @@
 	// (copy_from_turf бампает ревизии сам), одним циклом даём ей снова осесть.
 	tile_a.air.copy_from_turf(tile_a)
 	tile_b.air.copy_from_turf(tile_b)
+	tile_a.atmos_cooldown = ATMOS_EDGE_SLEEP_MIN_QUIET_FIRES
 	fire++
 	tile_a.process_cell(fire)
 	TEST_ASSERT_NOTNULL(tile_a.settled_edge_revs?[tile_b], "re-settled pair must be cached again")
