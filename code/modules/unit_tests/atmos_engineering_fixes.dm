@@ -730,7 +730,7 @@
 	TEST_ASSERT(group.vented_to_space || edge.excited_group?.vented_to_space, "the space vent path did not flag the excited group as vented")
 
 	var/datum/excited_group/live_group = edge.excited_group || group
-	live_group.self_breakdown_atomic()
+	live_group.self_breakdown()
 	TEST_ASSERT(interior.air.return_temperature() <= TCMB + 1, "interior wisp stayed warm after breakdown: [interior.air.return_temperature()]K")
 	TEST_ASSERT(edge.air.return_temperature() <= TCMB + 1, "edge turf stayed warm after venting: [edge.air.return_temperature()]K")
 
@@ -745,7 +745,7 @@
 	sealed.air.set_temperature(300)
 	var/datum/excited_group/sealed_group = new
 	sealed_group.add_turf(sealed)
-	sealed_group.self_breakdown_atomic()
+	sealed_group.self_breakdown()
 	TEST_ASSERT(sealed.air.return_temperature() > 250, "a sealed-room wisp was wrongly snapped to space temperature: [sealed.air.return_temperature()]K")
 
 	// Cleanup

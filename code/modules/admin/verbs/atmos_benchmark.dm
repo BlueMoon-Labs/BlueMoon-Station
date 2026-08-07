@@ -1138,6 +1138,7 @@ GLOBAL_VAR_INIT(atmos_headless_bench_finished, FALSE)
 		costs["vector_wind_accumulation_ms"] = round(TICK_DELTA_TO_MS(TICK_USAGE_REAL - timer), 0.001)
 		checks["vector_wind"] = TRUE
 		high_pressure_delta -= probe_turf
+		probe_turf.high_pressure_queued = FALSE
 
 	var/turf/firelock_turf = length(headless_bench_firedoors) ? get_turf(headless_bench_firedoors[1]) : null
 	if(firelock_turf)

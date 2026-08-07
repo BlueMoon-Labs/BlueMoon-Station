@@ -275,6 +275,15 @@
 
 /datum/controller/subsystem/air/proc/process_decompression_areas_auxtools(resumed)
 	if(!resumed)
+		// Отжившие записи кулдауна снимаются здесь же, раз фаза всё равно
+		// трогает журнал: истёкший гейт уже ничего не блокирует, а без чистки
+		// список растёт весь раунд и держит сильные ссылки на снесённые зоны
+		// (шаттлы, руины, комнаты Гильберта) - им не собраться сборщиком.
+		var/list/handled = decompression_handled_at
+		for(var/i = length(handled); i > 0; i--)
+			var/area/base = handled[i]
+			if(world.time >= handled[base] + DECOMPRESSION_AREA_ALARM_COOLDOWN)
+				handled.Cut(i, i + 1)
 		currentrun = decompression_areas.Copy()
 		decompression_areas.Cut()
 		num_decompression_areas = 0
@@ -630,6 +639,9 @@
 	// единственный спайк тайм-дилатации 110-120% каждого раунда.
 	//
 	// Турф, ставший планетарным уже в игре (ChangeTurf), гард не задевает.
+	// Замапленные градиенты у планетарных границ (устье пещеры, пролом руины)
+	// на роундстарте находит адресный проход в SSair.setup_allturfs() - по
+	// расхождению строк initial_gas_mix соседей, без холостого хвоста.
 	if(SSair.initialized && !SSair.map_loading)
 		// Смена ссылки на смесь газ не двигала: один цикл на сверку с шаблоном
 		// турфу нужен, свежее окно отдыха - нет.

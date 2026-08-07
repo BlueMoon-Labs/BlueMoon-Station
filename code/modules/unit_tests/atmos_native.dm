@@ -1035,6 +1035,7 @@
 	if(drain.excited_group)
 		drain.excited_group.garbage_collect()
 	SSair.high_pressure_delta -= drain
+	drain.high_pressure_queued = FALSE
 	drain.pressure_difference = 0
 	drain.atmos_cooldown = 0
 	drain.air.copy_from_turf(drain)
@@ -1402,6 +1403,7 @@
 	first_door.recompute_atmos_alarm()
 
 	SSair.high_pressure_delta -= room
+	room.high_pressure_queued = FALSE
 	room.pressure_vector_x = 0
 	room.pressure_vector_y = 0
 	room.consider_pressure_difference(east_room, 100)
@@ -1409,8 +1411,8 @@
 	if(istype(north_room))
 		room.consider_pressure_difference(north_room, 100)
 	// Очередь ветра больше не сканируется линейно на вставке: членство сторожит
-	// сам накопленный вектор, поэтому второй шер в том же цикле обязан попасть
-	// в уже стоящую запись, а не завести вторую
+	// явный флаг high_pressure_queued, поэтому второй шер в том же цикле обязан
+	// попасть в уже стоящую запись, а не завести вторую
 	var/queued_entries = 0
 	for(var/turf/open/queued as anything in SSair.high_pressure_delta)
 		if(queued == room)
@@ -1421,6 +1423,7 @@
 	if(istype(north_room))
 		TEST_ASSERT(room.pressure_direction & NORTH, "vector wind did not combine orthogonal gradients")
 	SSair.high_pressure_delta -= room
+	room.high_pressure_queued = FALSE
 	room.pressure_vector_x = 0
 	room.pressure_vector_y = 0
 	room.pressure_difference = 0

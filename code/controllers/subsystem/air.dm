@@ -83,6 +83,11 @@ SUBSYSTEM_DEF(air)
 	///клапаном), попадает уже в следующий проход.
 	var/list/datum/pipeline/dirty_networks = list()
 	var/list/pipenets_needing_rebuilt = list()
+	///Сколько машин из pipenets_needing_rebuilt разрешено разобрать за текущий
+	///проход фазы ребилда: снапшот длины на входе в фазу. Дозаписанное во время
+	///пауз ждёт следующего прохода - иначе непрерывный черн труб (обстрел, RPD)
+	///держит SSair в первой фазе, и до симуляции очередь не доходит вовсе.
+	var/rebuild_pass_quota = 0
 	///Пакеты незавершённых BFS-обходов пайпнетов: list(сеть, граница,
 	///посещённые), см. SSAIR_REBUILD_*. Фаза ребилда доедает их с уступкой
 	///тика ВНУТРИ обхода - гигантская сеть строится за несколько фаеров,
@@ -669,13 +674,18 @@ SUBSYSTEM_DEF(air)
 		currentpart = SSAIR_REBUILD_PIPENETS
 
 /datum/controller/subsystem/air/proc/process_rebuild_queue(resumed = FALSE)
-	// Работаем по живым спискам, а не по снапшоту: build_network() машины
-	// рождает пакет расширения, и его надо доесть раньше следующей машины,
-	// иначе пакеты множатся без предела, а сети стоят недостроенными.
-	while(length(pipenets_needing_rebuilt) || length(expansion_queue))
-		while(length(pipenets_needing_rebuilt) && !length(expansion_queue))
+	if(!resumed)
+		rebuild_pass_quota = length(pipenets_needing_rebuilt)
+	// Пакеты расширения доедаются по живому списку: build_network() машины
+	// рождает пакет, и его надо доесть раньше следующей машины, иначе пакеты
+	// множатся без предела, а сети стоят недостроенными. Машины же ограничены
+	// квотой прохода: дозаписи во время пауз копятся в живой список, и без
+	// квоты фаза кончалась бы только с полным осушением обеих очередей.
+	while((rebuild_pass_quota > 0 && length(pipenets_needing_rebuilt)) || length(expansion_queue))
+		while(rebuild_pass_quota > 0 && length(pipenets_needing_rebuilt) && !length(expansion_queue))
 			var/obj/machinery/atmospherics/machine = pipenets_needing_rebuilt[length(pipenets_needing_rebuilt)]
 			pipenets_needing_rebuilt.len--
+			rebuild_pass_quota--
 			if(machine)
 				machine.rebuild_queued = FALSE
 				if(!QDELETED(machine))
@@ -994,6 +1004,7 @@ SUBSYSTEM_DEF(air)
 		// после подмены бессмысленна: двигать нечего, вектор чистить не у чего.
 		if(!istype(T))
 			continue
+		T.high_pressure_queued = FALSE
 		T.high_pressure_movements()
 		T.pressure_difference = 0
 		T.pressure_vector_x = 0
@@ -1136,6 +1147,27 @@ SUBSYSTEM_DEF(air)
 		T.Initalize_Atmos(times_fired)
 		CHECK_TICK
 
+	// Роундстартовое обнаружение замапленных градиентов у планетарных границ.
+	// Класть в очередь КАЖДЫЙ планетарный турф (как делал update_air_ref до
+	// оптимизации) нельзя: 93.5k записей, из которых живых полторы тысячи, и
+	// весь холостой хвост разгребался ровно на спавне игроков. Но и не класть
+	// никого - значит заморозить устье пещеры или замапленный пролом до первого
+	// постороннего тычка. Здесь воздух каждого турфа только что собран из его же
+	// initial_gas_mix, поэтому градиент существует ровно там, где строки смеси
+	// соседей различаются, - сами смеси сравнивать не нужно. Небо-к-небу (98%
+	// планетарных пар) отсеивается одним сравнением строк.
+	for(var/thing as anything in turfs_to_init)
+		var/turf/open/planetary_turf = thing
+		if(!istype(planetary_turf) || !planetary_turf.planetary_atmos || planetary_turf.blocks_air || !planetary_turf.air)
+			continue
+		for(var/turf/open/neighbor as anything in planetary_turf.atmos_adjacent_turfs)
+			if(neighbor.initial_gas_mix == planetary_turf.initial_gas_mix)
+				continue
+			// Смена ссылки газ не двигала: цикл на сверку нужен, окно отдыха - нет.
+			add_to_active(planetary_turf, FALSE, reset_stall = FALSE)
+			break
+		CHECK_TICK
+
 /datum/controller/subsystem/air/proc/setup_atmos_machinery()
 	for (var/obj/machinery/atmospherics/AM in atmos_machinery)
 		AM.atmosinit()
@@ -1263,7 +1295,6 @@ SUBSYSTEM_DEF(air)
 
 ///Removes a machine from the heartbeat queue (Destroy: the queue holds a strong ref).
 /datum/controller/subsystem/air/proc/dequeue_idle_machine(obj/machinery/atmospherics/machine)
-	var/was_queued = machine.atmos_idle_queued
 	var/tier = machine.atmos_idle_tier
 	machine.atmos_idle_queued = FALSE
 	machine.atmos_idle_tier = 0
@@ -1279,11 +1310,11 @@ SUBSYSTEM_DEF(air)
 		if(!isnull(tier_queue[machine]))
 			tier_queue -= machine
 			return
-	if(!was_queued)
-		return
-	// Ступень на машине разошлась с реальностью. Ступеней всего четыре, и каждая
-	// проверка - тот же хеш-лукап, так что честный обход дешевле оставленного
-	// хардрефа.
+	// Ступень или флаг на машине разошлись с реальностью. Обход идёт и при
+	// was_queued == FALSE: флаг и очередь умеют расходиться в обе стороны, а
+	// ранний выход по одному лишь флагу оставил бы запись держать хардреф на
+	// удалённую машину. Ступеней всего четыре, каждая проверка - тот же
+	// хеш-лукап, так что честный обход дешевле оставленного хардрефа.
 	for(var/list/tier_queue as anything in atmos_idle_queues)
 		if(!isnull(tier_queue[machine]))
 			tier_queue -= machine

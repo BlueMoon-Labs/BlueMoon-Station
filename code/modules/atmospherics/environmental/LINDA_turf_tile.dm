@@ -34,6 +34,10 @@
 	///Accumulated pressure-gradient vector; opposing gradients cancel naturally.
 	var/pressure_vector_x = 0
 	var/pressure_vector_y = 0
+	///TRUE, пока турф стоит в SSair.high_pressure_delta. Сам вектор флагом
+	///членства служить не может: встречные вклады умеют схлопнуть его в ноль,
+	///пока турф ещё в очереди, и следующий вклад ставил запись второй раз.
+	var/tmp/high_pressure_queued = FALSE
 	var/turf/pressure_specific_target
 
 	var/datum/excited_group/excited_group
@@ -298,8 +302,14 @@
 		var/heat = conduction_coefficient * delta_temperature * (heat_capacity * sharer.heat_capacity / (heat_capacity + sharer.heat_capacity))
 		temperature -= heat / heat_capacity
 		sharer.temperature += heat / sharer.heat_capacity
-		temperature = max(temperature, T0C)
-		sharer.temperature = max(sharer.temperature, T0C)
+		// Пол здесь - только страховка от ухода ниже реликтового фона при
+		// перелёте через равновесие (дельта считается по архиву, а применяется к
+		// живым температурам нескольких соседей за фаер). Пол T0C, скопированный
+		// из radiate_to_spess() без её входного гейта temperature > T0C, ГРЕЛ
+		// любой холодный монолит от первого же джоуля: стены ледяной луны при
+		// 180 K и телекомы при 80 K скакали к 273 K из ниоткуда.
+		temperature = max(temperature, TCMB)
+		sharer.temperature = max(sharer.temperature, TCMB)
 
 
 /turf/open/proc/eg_reset_cooldowns()
@@ -681,6 +691,12 @@
 					var/turf/open/group_turf = zone_turfs[index]
 					if(!istype(group_turf) || group_turf.blocks_air || !group_turf.air)
 						continue
+					// Перерисовка - каждому члену без фильтра: снимок сравнивает
+					// СУММУ молей, а сведение к среднему меняет состав и при равной
+					// сумме. Пропуск оставлял призрачное облако видимого газа там,
+					// где эквалайзер его только что развёл. Фильтр ниже гейтит
+					// только пробуждение.
+					group_turf.update_visuals()
 					// Кромка космоса всегда считается сдвинутой: она только что
 					// стравила свою долю в вакуум на стадии сведения.
 					if(snapshot_taken && !space_edge_turfs[group_turf])
@@ -699,7 +715,6 @@
 						if(moles_delta <= MINIMUM_MOLES_DELTA_TO_MOVE || moles_delta <= old_moles * MINIMUM_AIR_RATIO_TO_MOVE)
 							if(abs(group_air.temperature - temperature_before[index]) <= MINIMUM_TEMPERATURE_DELTA_TO_SUSPEND)
 								continue
-					group_turf.update_visuals()
 					if(SSair)
 						SSair.add_to_active(group_turf, FALSE)
 				if(cursor <= zone_turfs.len)
@@ -837,6 +852,14 @@
 /turf/open/proc/equalize_pressure_in_zone(cyclenum)
 	if(!SSair)
 		return FALSE
+	// Слот обхода один на весь атмос (см. SSair.zone_walk): обход фазы,
+	// подвешенный посреди стадий, доедаем до конца ДО собственного. Иначе два
+	// обхода двигают газ одной зоны - кромка стравливается в космос дважды за
+	// логический проход, а стадия MIX подвешенного при резюме затирает членов
+	// зоны из уже устаревшего аккумулятора.
+	var/datum/atmos_zone_walk/in_flight = SSair.zone_walk
+	if(in_flight?.stage)
+		in_flight.advance(0)
 	var/datum/atmos_zone_walk/walk = new
 	if(!walk.begin(src, cyclenum))
 		return FALSE
@@ -1202,9 +1225,10 @@
 		return
 	// `|=` это линейный скан по всей очереди, а зовут нас из process_cell на каждый
 	// значимый шер - на разгерметизации очередь уходит в тысячи записей, и скан
-	// списывается на фазу турфов. Накопленный вектор работает флагом членства:
-	// он ненулевой ровно пока турф стоит в очереди, и обнуляется при сливе
-	if(!pressure_vector_x && !pressure_vector_y)
+	// списывается на фазу турфов. Явный флаг вместо проверки вектора: встречные
+	// вклады умеют вернуть вектор ровно в ноль, пока турф ещё стоит в очереди.
+	if(!high_pressure_queued)
+		high_pressure_queued = TRUE
 		SSair.high_pressure_delta += src
 	var/direction = get_dir(src, T)
 	if(direction & EAST)
@@ -1553,103 +1577,11 @@
 		return
 	wisp_air.set_temperature(TCMB)
 
-/// Low-allocation path for ordinary room-sized groups. Only memberships large
-/// enough to threaten a tick use the persistent state machine below.
-/datum/excited_group/proc/self_breakdown_atomic(space_is_all_consuming = FALSE, poke_resting = FALSE)
-	if(!length(turf_list))
-		garbage_collect()
-		return TRUE
-	#ifdef ATMOS_HEADLESS_BENCH
-	var/started_at = world.time
-	var/member_count = length(turf_list)
-	#endif
-
-	var/space_in_group = FALSE
-	var/awake_recount = 0
-	var/list/bucket_mixes = list()
-	var/list/bucket_counts = list()
-	for(var/turf/open/T as anything in turf_list)
-		if(!istype(T))
-			continue
-		if(T.excited)
-			awake_recount++
-		if(!T.air)
-			continue
-		if(space_is_all_consuming && istype(T.air, /datum/gas_mixture/immutable/space))
-			space_in_group = TRUE
-		snap_vented_wisp(T)
-		var/bucket_key = T.planetary_atmos ? T.initial_gas_mix : ""
-		var/datum/gas_mixture/bucket_mix = bucket_mixes[bucket_key]
-		if(!bucket_mix)
-			bucket_mix = new
-			bucket_mixes[bucket_key] = bucket_mix
-		bucket_mix.merge(T.air)
-		bucket_counts[bucket_key]++
-	awake_members = awake_recount
-
-	if(space_in_group)
-		var/datum/gas_mixture/space_mix = new /datum/gas_mixture/immutable/space
-		for(var/turf/open/T as anything in turf_list)
-			if(!istype(T) || !T.air)
-				continue
-			T.air.copy_from(space_mix)
-			T.update_visuals()
-		qdel(space_mix)
-	else
-		for(var/bucket_key in bucket_mixes)
-			var/datum/gas_mixture/bucket_mix = bucket_mixes[bucket_key]
-			bucket_mix.divide(bucket_counts[bucket_key])
-		var/list/turf/open/to_evict = list()
-		for(var/turf/open/T as anything in turf_list)
-			if(!istype(T) || !T.air)
-				continue
-			var/bucket_key = T.planetary_atmos ? T.initial_gas_mix : ""
-			var/datum/gas_mixture/bucket_mix = bucket_mixes[bucket_key]
-			var/air_changed = T.air.compare(bucket_mix)
-			T.air.copy_from(bucket_mix)
-			T.update_visuals()
-			if(air_changed)
-				if(T.atmos_wake_machines)
-					for(var/obj/machinery/atmospherics/machine as anything in T.atmos_wake_machines)
-						machine.atmos_wake()
-			else if(!T.excited)
-				to_evict += T
-		for(var/turf/open/T as anything in to_evict)
-			turf_list -= T
-			if(T.excited_group == src)
-				T.excited_group = null
-
-	for(var/bucket_key in bucket_mixes)
-		qdel(bucket_mixes[bucket_key])
-	if(poke_resting)
-		var/list/turf/open/to_poke = list()
-		for(var/turf/open/T as anything in turf_list)
-			if(!istype(T) || !T.air || T.excited)
-				continue
-			for(var/turf/open/neighbor as anything in T.atmos_adjacent_turfs)
-				if(!istype(neighbor) || neighbor.excited_group == src)
-					continue
-				to_poke += T
-				break
-		for(var/turf/open/T as anything in to_poke)
-			if(SSair)
-				SSair.add_to_active(T, FALSE, wake_machines = FALSE)
-			T.atmos_cooldown = EXCITED_GROUP_INDIVIDUAL_REST_CYCLES
-
-	breakdown_cooldown = 0
-	#ifdef ATMOS_HEADLESS_BENCH
-	if(SSair)
-		SSair.atmos_headless_bench_record_breakdown(member_count, world.time - started_at, 1, TRUE)
-	#endif
-	return TRUE
-
 /datum/excited_group/proc/self_breakdown(space_is_all_consuming = FALSE, poke_resting = FALSE, slice_budget = 0)
 	if(!breakdown_stage)
 		if(!length(turf_list))
 			garbage_collect()
 			return TRUE
-		if(slice_budget <= 0 && length(turf_list) < EXCITED_GROUP_RESUMABLE_THRESHOLD)
-			return self_breakdown_atomic(space_is_all_consuming, poke_resting)
 		// Small groups complete in this call, so sharing the source list avoids an
 		// allocation. Large resumable groups need a stable membership snapshot.
 		breakdown_members = slice_budget > 0 ? turf_list.Copy() : turf_list

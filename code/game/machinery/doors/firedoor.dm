@@ -38,10 +38,10 @@
 	var/alarm_type
 	///Area fire alarms contribute the generic priority below hot/cold turf alarms.
 	var/generic_alarm = FALSE
-	///Готовый ответ на вопрос "слушает ли эта дверь свои датчики". Считается из
-	///area.fire_detect при пересчёте зон и при щелчке провода детекции: сам замер
-	///идёт на каждый фаер SSair по каждому активному турфу, и перебирать там
-	///список зон нельзя.
+	///Агрегат "слушают ли датчики во всех зонах двери" - только для осмотра и
+	///проводов. Сам вердикт по турфу считается от area.fire_detect зоны ЭТОГО
+	///турфа: журнал общий на группу, и решение по агрегату конкретной двери
+	///заставляло бы двери с разными агрегатами драться за одну запись.
 	var/fire_detection = TRUE
 	///Дверь закрыта автоматикой, а не руками. Только такую автоматика имеет право
 	///открыть обратно: закрытая на карте или ломом остаётся закрытой.
@@ -58,7 +58,14 @@
 		merger_typecache = typecacheof(list(/obj/machinery/door/firedoor))
 	RegisterSignal(src, COMSIG_MERGER_ADDING, PROC_REF(merger_adding))
 	RegisterSignal(src, COMSIG_MERGER_REMOVING, PROC_REF(merger_removing))
-	GetMergeGroup(merger_id, merger_typecache)
+	var/datum/merger/group = GetMergeGroup(merger_id, merger_typecache)
+	// На мапе группу основывает первая инициализированная дверь: её флад-филл
+	// шлёт COMSIG_MERGER_ADDING остальным дверям ДО того, как их Initialize
+	// подпишет обработчик выше, а повторного AddMember для них не будет. Без
+	// явной подписки здесь такая дверь никогда не слышит Refresh группы, и после
+	// смерти основательницы журнал тревог не пересобирает уже никто.
+	if(group)
+		RegisterSignal(group, COMSIG_MERGER_REFRESH_COMPLETE, PROC_REF(refresh_firelock_group), override = TRUE)
 	register_atmos_turfs()
 
 /obj/machinery/door/firedoor/examine(mob/user)
@@ -125,14 +132,14 @@
 		if(!affected.fire_detect)
 			new_state = FALSE
 			break
-	if(new_state == fire_detection)
-		return
 	fire_detection = new_state
 	if(!rescan)
 		return
 	// Выключенная детекция обязана СНЯТЬ уже поднятые вердикты, а не только не
 	// поднимать новые: иначе дверь остаётся закрытой навсегда, а провод, который
-	// её и должен был отпустить, ничего не меняет.
+	// её и должен был отпустить, ничего не меняет. Пересматриваем даже когда
+	// агрегат не шелохнулся: вердикт считается по зоне самого турфа, и щелчок
+	// провода во ВТОРОЙ зоне двери меняет её турфы, не трогая агрегат.
 	rescan_atmos_turfs()
 	recompute_atmos_alarm()
 
@@ -188,7 +195,7 @@
 	if(old_merger.id == merger_id)
 		UnregisterSignal(old_merger, COMSIG_MERGER_REFRESH_COMPLETE)
 
-/obj/machinery/door/firedoor/proc/refresh_firelock_group(datum/source)
+/obj/machinery/door/firedoor/proc/refresh_firelock_group(datum/source, list/leaving_members, list/joining_members)
 	SIGNAL_HANDLER
 	var/datum/merger/group = source
 	if(group.origin != src)
@@ -202,6 +209,15 @@
 	for(var/obj/machinery/door/firedoor/door as anything in group.members)
 		door.rescan_atmos_turfs()
 	recompute_atmos_alarm()
+	// Ушедшие двери всё ещё держат ПРЕЖНИЙ общий журнал с чужими записями и
+	// защёлкнутую по нему тревогу, а собственного фронта, который бы их
+	// пересчитал, у них может не случиться до конца раунда. Пересобираем их в их
+	// новых группах; несколько ушедших из одного куска дают повторную пересборку
+	// той же группы - это дёшево и бывает только на разрыве кластера.
+	for(var/obj/machinery/door/firedoor/leaver as anything in leaving_members)
+		if(QDELETED(leaver))
+			continue
+		leaver.rebuild_alarm_ledger()
 
 /obj/machinery/door/firedoor/proc/register_atmos_turfs()
 	unregister_atmos_turfs()
@@ -223,13 +239,18 @@
 		unregister_turf_exposure(watched)
 	watched_atmos_turfs = null
 
-/// Shuttle-carried firelocks must watch their new surroundings, not the tiles
-/// they left behind on the old z-level.
+/// Перемещённая дверь (forceMove, телепорт - любой не-шаттловый перенос) обязана
+/// пересчитать зоны и пересобрать журнал, как это делает afterShuttleMove() ниже:
+/// иначе записи, ключом которых стоят покинутые турфы, не снимет уже никто, и
+/// тревога группы защёлкивается навсегда, а affecting_areas продолжает слушать
+/// пожарные тревоги прежнего места.
 /obj/machinery/door/firedoor/Moved(atom/OldLoc, Dir)
 	. = ..()
-	if(isturf(loc))
-		register_atmos_turfs()
-		rescan_atmos_turfs()
+	if(!isturf(loc))
+		return
+	CalculateAffectingAreas()
+	register_atmos_turfs()
+	rebuild_alarm_ledger()
 
 /// Перелёт шаттла переносит содержимое присваиванием loc и Moved() не зовёт
 /// (см. /atom/movable/onShuttleMove), поэтому хук выше по шаттлам не работает
@@ -312,9 +333,13 @@
 	// vacuum around an exterior firelock is the decompression path's business;
 	// treating space's 2.7 K as a cold-room alarm would permanently close it.
 	var/turf/open/checked_turf = source
-	if(!fire_detection)
+	var/area/source_area = source.loc
+	if(isarea(source_area) && !source_area.fire_detect)
 		// Провод детекции в пожарной сигнализации зоны перерезан: комнату греют
-		// или морозят намеренно, и дверь в это не лезет.
+		// или морозят намеренно, и дверь в это не лезет. Читается зона САМОГО
+		// замеряемого турфа, а не агрегат зон двери: журнал общий на группу, и
+		// две двери с разными агрегатами иначе дерутся за одну запись - одна
+		// снимает вердикт, другая тут же возвращает, группа хлопает створками.
 		new_alarm = null
 	else if(!isopenturf(source) || istype(source, /turf/open/space))
 		new_alarm = null
@@ -414,7 +439,10 @@
 				if(affected.fire)
 					area_alarm = TRUE
 					break
-			if(!area_alarm && door.density && !door.welded && !door.operating && !door.is_holding_pressure())
+			// auto_closed обязателен: закрытую ломом или замапленную закрытой
+			// дверь автоматика открывать не имеет права (см. док у вара), иначе
+			// любой проходной фронт тревоги в группе распахивает ручную заслонку.
+			if(!area_alarm && door.density && door.auto_closed && !door.welded && !door.operating && !door.is_holding_pressure())
 				// door/open() sleeps through its animation, and this proc runs
 				// from SIGNAL_HANDLER paths inside SSair's process_cell.
 				door.auto_closed = FALSE
