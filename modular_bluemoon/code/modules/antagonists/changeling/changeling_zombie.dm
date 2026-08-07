@@ -180,10 +180,11 @@
 	if(!host.getorgan(/obj/item/organ/brain) && host.dna?.species)
 		host.dna.species.regenerate_organs(host)
 
-	if(host.mind?.current != host)
-		var/mob/current = host.mind.current
+	var/datum/mind/host_mind = host.mind
+	if(host_mind && host_mind.current != host)
+		var/mob/current = host_mind.current
 		if(isbrain(current) || isobserver(current) || (ishuman(current) && current != host))
-			host.mind.transfer_to(host, TRUE)
+			host_mind.transfer_to(host, TRUE)
 
 /datum/component/changeling_zombie_infection/proc/make_zombie()
 	if(zombified)

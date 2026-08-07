@@ -706,7 +706,7 @@
 /turf/open/floor/plating/asteroid/airless,
 /area/survivalpod/nonpowered)
 "BI" = (
-/mob/living/simple_animal/hostile/syndicate/melee/ushm{
+/mob/living/simple_animal/hostile/inteq/melee/ushm{
 	faction = list("Syndicate")
 	},
 /turf/open/floor/plating/asteroid/airless,

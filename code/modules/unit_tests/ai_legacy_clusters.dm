@@ -1700,6 +1700,7 @@
 ///фазовая эвакуация выбрасывает пилота и глушит лупы меха
 /datum/unit_test/ai_mecha_pilot_hijack_and_operate/Run()
 	var/mob/living/simple_animal/hostile/syndicate/mecha_pilot/no_mech/pilot = allocate(/mob/living/simple_animal/hostile/syndicate/mecha_pilot/no_mech, run_loc_floor_bottom_left)
+	pilot.faction = list(ROLE_SYNDICATE)
 	var/datum/ai_controller/hostile_adapter/mecha_pilot/controller = pilot.ai_controller
 	TEST_ASSERT(istype(controller), "A mecha pilot must migrate onto its pilot profile")
 	TEST_ASSERT(!controller.can_idle, "The pilot must never idle: its Moved does not fire inside a mech")
@@ -1733,6 +1734,8 @@
 	var/turf/prey_turf = locate(run_loc_floor_bottom_left.x + 4, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
 	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, prey_turf)
 	pilot.a_intent = INTENT_HARM //мех бьёт, а не толкает
+	var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(controller.blackboard[BB_AI_TARGETING_STRATEGY])
+	TEST_ASSERT(strategy.can_attack(pilot, prey), "Sanity: a human must be a valid in-mech combat target")
 	controller.set_blackboard_key(BB_AI_CURRENT_TARGET, prey)
 	var/datum/ai_behavior/mecha_pilot_operate/operating = GET_AI_BEHAVIOR(/datum/ai_behavior/mecha_pilot_operate)
 	operating.perform(0.5, controller)

@@ -9273,7 +9273,7 @@
 /turf/open/floor/plasteel/dark/textured/half,
 /area/mine/xenoarch_area_c)
 "hJq" = (
-/mob/living/simple_animal/hostile/syndicate/real_syndicate{
+/mob/living/simple_animal/hostile/syndicate{
 	desc = "It's HIM.";
 	environment_smash = 0;
 	name = "John Syndicate"

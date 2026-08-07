@@ -61,6 +61,15 @@
 	report_message = "The internals boxes for your crew have been filled with bonus equipment."
 	trait_to_give = STATION_TRAIT_PREMIUM_INTERNALS
 
+/datum/station_trait/luxury_escape_pods
+	name = "Luxury Escape Pods"
+	trait_type = STATION_TRAIT_POSITIVE
+	weight = 5
+	show_in_report = TRUE
+	report_message = "Due to good performance, we've provided your station with luxury escape pods."
+	trait_to_give = STATION_TRAIT_BIGGER_PODS
+	blacklist = list(/datum/station_trait/cramped_escape_pods)
+
 /datum/station_trait/bountiful_bounties
 	name = "Bountiful bounties"
 	trait_type = STATION_TRAIT_POSITIVE

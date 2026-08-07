@@ -513,7 +513,7 @@
 /turf/open/floor/plasteel,
 /area/awaymission/spacebattle/cruiser)
 "ce" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/shotgun/space/stormtrooper,
+/mob/living/simple_animal/hostile/inteq/ranged/shotgun/space/stormtrooper,
 /turf/open/floor/plasteel/airless,
 /area/awaymission/spacebattle/cruiser)
 "cf" = (
@@ -974,7 +974,7 @@
 /turf/open/floor/engine,
 /area/awaymission/spacebattle/cruiser)
 "dI" = (
-/mob/living/simple_animal/hostile/syndicate/melee/sword/space,
+/mob/living/simple_animal/hostile/inteq/melee/sword/space,
 /obj/effect/turf_decal/tile/brown/half/contrasted{
 	dir = 8
 	},
@@ -1488,7 +1488,7 @@
 /turf/open/floor/plating,
 /area/awaymission/spacebattle/syndicate4)
 "fm" = (
-/mob/living/simple_animal/hostile/syndicate/melee/sword,
+/mob/living/simple_animal/hostile/inteq/melee/sword,
 /turf/open/floor/plasteel,
 /area/awaymission/spacebattle/cruiser)
 "fn" = (
@@ -1997,7 +1997,7 @@
 	name = "Adam Smith"
 	},
 /obj/effect/decal/cleanable/blood,
-/mob/living/simple_animal/hostile/syndicate/melee/sword,
+/mob/living/simple_animal/hostile/inteq/melee/sword,
 /turf/open/floor/plasteel,
 /area/awaymission/spacebattle/cruiser)
 "gG" = (
@@ -2779,7 +2779,7 @@
 /turf/open/floor/engine,
 /area/awaymission/spacebattle/cruiser)
 "jr" = (
-/mob/living/simple_animal/hostile/syndicate/melee/space,
+/mob/living/simple_animal/hostile/inteq/melee/space,
 /turf/open/floor/plating/airless,
 /area/awaymission/spacebattle/cruiser)
 "js" = (
@@ -3000,7 +3000,7 @@
 /turf/open/floor/engine,
 /area/awaymission/spacebattle/cruiser)
 "jY" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/shotgun/space/stormtrooper,
+/mob/living/simple_animal/hostile/inteq/ranged/shotgun/space/stormtrooper,
 /turf/open/floor/plating/airless,
 /area/awaymission/spacebattle/cruiser)
 "jZ" = (
@@ -3671,7 +3671,7 @@
 /obj/effect/turf_decal/tile/red{
 	dir = 4
 	},
-/mob/living/simple_animal/hostile/syndicate/melee/ushm,
+/mob/living/simple_animal/hostile/inteq/melee/ushm,
 /turf/open/floor/plasteel,
 /area/awaymission/spacebattle/cruiser)
 "nH" = (
@@ -4469,7 +4469,7 @@
 /turf/open/floor/plasteel,
 /area/awaymission/spacebattle/cruiser)
 "tW" = (
-/mob/living/simple_animal/hostile/syndicate/melee/sword/space,
+/mob/living/simple_animal/hostile/inteq/melee/sword/space,
 /turf/open/floor/plasteel/dark,
 /area/space/nearstation)
 "tX" = (
@@ -6037,7 +6037,7 @@
 /turf/open/floor/plasteel,
 /area/awaymission/spacebattle/cruiser)
 "EZ" = (
-/mob/living/simple_animal/hostile/syndicate/melee/sword/space,
+/mob/living/simple_animal/hostile/inteq/melee/sword/space,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/spacebattle/syndicate3)
 "Fa" = (
@@ -6555,7 +6555,7 @@
 /turf/open/floor/engine,
 /area/awaymission/spacebattle/cruiser)
 "Jx" = (
-/mob/living/simple_animal/hostile/syndicate/space/stormtrooper,
+/mob/living/simple_animal/hostile/inteq/space/stormtrooper,
 /turf/open/floor/plasteel/rockvault/alien,
 /area/awaymission/spacebattle/secret)
 "JA" = (
@@ -6940,7 +6940,7 @@
 /turf/open/floor/plasteel,
 /area/awaymission/spacebattle/cruiser)
 "Mq" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/shotgun/space/stormtrooper,
+/mob/living/simple_animal/hostile/inteq/ranged/shotgun/space/stormtrooper,
 /turf/open/floor/plating,
 /area/awaymission/spacebattle/cruiser)
 "Ms" = (
@@ -6952,7 +6952,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/spacebattle/syndicate1)
 "Mx" = (
-/mob/living/simple_animal/hostile/syndicate/melee/sword,
+/mob/living/simple_animal/hostile/inteq/melee/sword,
 /turf/open/floor/plasteel/white,
 /area/awaymission/spacebattle/cruiser)
 "Mz" = (
@@ -7253,7 +7253,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/spacebattle/syndicate2)
 "OB" = (
-/mob/living/simple_animal/hostile/syndicate/melee/space,
+/mob/living/simple_animal/hostile/inteq/melee/space,
 /turf/open/floor/plasteel/airless,
 /area/awaymission/spacebattle/cruiser)
 "OD" = (
@@ -7421,7 +7421,7 @@
 /area/awaymission/spacebattle/syndicate5)
 "Px" = (
 /obj/effect/decal/cleanable/plasma,
-/mob/living/simple_animal/hostile/syndicate/melee/sword/space,
+/mob/living/simple_animal/hostile/inteq/melee/sword/space,
 /turf/open/floor/plasteel/rockvault/alien,
 /area/awaymission/spacebattle/secret)
 "PB" = (
@@ -7906,7 +7906,7 @@
 /turf/open/floor/plating/rust,
 /area/space/nearstation)
 "Tm" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/sniper,
+/mob/living/simple_animal/hostile/inteq/ranged/sniper,
 /turf/open/floor/plasteel,
 /area/awaymission/spacebattle/cruiser)
 "Tn" = (
@@ -7943,7 +7943,7 @@
 /area/awaymission/spacebattle/cruiser)
 "Tu" = (
 /obj/effect/decal/cleanable/blood,
-/mob/living/simple_animal/hostile/syndicate/melee/sword/space,
+/mob/living/simple_animal/hostile/inteq/melee/sword/space,
 /turf/open/floor/plasteel/dark,
 /area/space/nearstation)
 "Tw" = (
@@ -8050,7 +8050,7 @@
 /turf/open/floor/plating,
 /area/awaymission/spacebattle/syndicate6)
 "Un" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg,
+/mob/living/simple_animal/hostile/inteq/ranged/smg,
 /turf/open/floor/plasteel,
 /area/awaymission/spacebattle/cruiser)
 "Uo" = (
