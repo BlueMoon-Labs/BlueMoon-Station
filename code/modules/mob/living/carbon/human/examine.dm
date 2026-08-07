@@ -527,13 +527,12 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 			if (HAS_TRAIT(src, TRAIT_DEAF))
 				msg += "[t_on] не реагирует на шум.\n"
 			var/datum/component/mood/mood = src.GetComponent(/datum/component/mood)
-			if(mood) //у моба может не быть компонента настроения - GetComponent вернёт null
-				if(mood.sanity <= SANITY_DISTURBED)
-					msg += "[t_on] выглядит расстроено.\n"
-					SEND_SIGNAL(user, COMSIG_ADD_MOOD_EVENT, "empath", /datum/mood_event/sad_empath, src)
-				if(mood.shown_mood >= 6) //So roundstart people aren't all "happy" and that antags don't show their true happiness.
-					msg += "[t_on] выглядит счастливо.\n"
-					SEND_SIGNAL(user, COMSIG_ADD_MOOD_EVENT, "empathH", /datum/mood_event/happy_empath, src)
+			if(mood.sanity <= SANITY_DISTURBED)
+				msg += "[t_on] выглядит расстроено.\n"
+				SEND_SIGNAL(user, COMSIG_ADD_MOOD_EVENT, "empath", /datum/mood_event/sad_empath, src)
+			if(mood.shown_mood >= 6) //So roundstart people aren't all "happy" and that antags don't show their true happiness.
+				msg += "[t_on] выглядит счастливо.\n"
+				SEND_SIGNAL(user, COMSIG_ADD_MOOD_EVENT, "empathH", /datum/mood_event/happy_empath, src)
 
 		switch(stat)
 			if(UNCONSCIOUS)
