@@ -154,6 +154,10 @@
 /obj/item/mod/control/Destroy()
 	if(active)
 		STOP_PROCESSING(SSobj, src)
+	//unset_wearer звали только из equipped/dropped, а крио уносит надетый МОД
+	//forceMove'ом мимо dropped: костюм держал тело и две подписки на нём до конца смены
+	if(wearer)
+		unset_wearer()
 	var/atom/deleting_atom
 	if(!QDELETED(helmet))
 		deleting_atom = helmet
@@ -410,14 +414,21 @@
 	wearer = user
 	RegisterSignal(wearer, COMSIG_ATOM_EXITED, PROC_REF(on_exit))
 	RegisterSignal(wearer, COMSIG_PROCESS_BORGCHARGER_OCCUPANT, PROC_REF(on_borg_charge))
+	//крио уносит надетый костюм forceMove'ом мимо dropped(), а коробка с ним живёт
+	//в stored_packages до конца смены - без этой подписки МОД держал тело весь раунд
+	RegisterSignal(wearer, COMSIG_PARENT_QDELETING, PROC_REF(on_wearer_deleted), override = TRUE)
 	update_cell_alert()
 	for(var/obj/item/mod/module/module as anything in modules)
 		module.on_equip()
 
+/obj/item/mod/control/proc/on_wearer_deleted(datum/source)
+	SIGNAL_HANDLER
+	unset_wearer()
+
 /obj/item/mod/control/proc/unset_wearer()
 	for(var/obj/item/mod/module/module as anything in modules)
 		module.on_unequip()
-	UnregisterSignal(wearer, list(COMSIG_ATOM_EXITED, COMSIG_PROCESS_BORGCHARGER_OCCUPANT))
+	UnregisterSignal(wearer, list(COMSIG_ATOM_EXITED, COMSIG_PROCESS_BORGCHARGER_OCCUPANT, COMSIG_PARENT_QDELETING))
 	wearer.clear_alert("mod_charge")
 	wearer = null
 

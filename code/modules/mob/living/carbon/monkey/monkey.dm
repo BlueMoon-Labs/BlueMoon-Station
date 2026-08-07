@@ -80,6 +80,7 @@ GLOBAL_LIST_INIT(strippable_monkey_items, create_strippable_list(list(
 	qdel(martial_art)
 	martial_art = null
 	blacklistItems = null
+	watched_qdel_items = null
 	myPath = null
 	SSmobs.cubemonkeys -= src
 	return ..()

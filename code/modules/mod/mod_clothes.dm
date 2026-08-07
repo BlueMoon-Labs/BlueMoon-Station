@@ -26,6 +26,7 @@
 	visor_flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR|HIDESNOUT
 	visor_flags_cover = HEADCOVERSMOUTH|HEADCOVERSEYES
 	item_flags = IMMUTABLE_SLOW
+	can_be_reinforced = FALSE
 	var/alternate_layer = NECK_LAYER
 	var/obj/item/mod/control/mod
 	var/obj/item/clothing/overslot
@@ -72,6 +73,7 @@
 	visor_flags = STOPSPRESSUREDAMAGE
 	visor_flags_inv = HIDEJUMPSUIT
 	item_flags = IMMUTABLE_SLOW
+	can_be_reinforced = FALSE
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/device/cooler)
 	resistance_flags = NONE
 	var/obj/item/mod/control/mod
@@ -115,6 +117,7 @@
 	clothing_flags = THICKMATERIAL
 	resistance_flags = NONE
 	item_flags = IMMUTABLE_SLOW
+	can_be_reinforced = FALSE
 	var/obj/item/mod/control/mod
 	var/obj/item/clothing/overslot
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
@@ -157,6 +160,7 @@
 	clothing_flags = THICKMATERIAL
 	resistance_flags = NONE
 	item_flags = IMMUTABLE_SLOW
+	can_be_reinforced = FALSE
 	var/obj/item/mod/control/mod
 	var/obj/item/clothing/overslot
 	mutantrace_variation = STYLE_DIGITIGRADE

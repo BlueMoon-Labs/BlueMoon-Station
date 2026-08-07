@@ -14,11 +14,19 @@
 /client/proc/asset_cache_preload_data(data)
 	var/json = data
 	var/list/preloaded_assets = json_decode(json)
+	// Данные приходят из клиентского Topic, то есть полностью подконтрольны клиенту: скаляр
+	// или битый JSON дадут не список, и .Copy() ниже станет рантаймом. В DM рантайм не
+	// прерывает прок, поэтому мусор всё равно доехал бы до sent_assets.
+	if(!islist(preloaded_assets))
+		return
 
-	for (var/preloaded_asset in preloaded_assets)
+	// Обход идёт по копии: вычитание из списка, по которому идёт for, сдвигает индекс,
+	// и фильтр срабатывал через один - половина скриптов проезжала мимо. Список
+	// ассоциативный (имя -> хэш), поэтому вычитаем из него самого, а не пересобираем:
+	// пересборка потеряла бы хэши, и дедуп отправок перестал бы работать вовсе.
+	for (var/preloaded_asset in preloaded_assets.Copy())
 		if (copytext(preloaded_asset, findlasttext(preloaded_asset, ".")+1) in list("js", "jsm", "htm", "html"))
 			preloaded_assets -= preloaded_asset
-			continue
 	sent_assets |= preloaded_assets
 
 

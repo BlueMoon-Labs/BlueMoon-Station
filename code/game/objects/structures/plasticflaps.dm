@@ -3,13 +3,13 @@
 	desc = "Heavy duty, airtight, plastic flaps. Definitely can't get past those. No way."
 	icon = 'icons/obj/stationobjs.dmi'
 	icon_state = "plasticflaps"
-	armor = list(MELEE = 50, BULLET = 50, LASER = 50, ENERGY = 50, BOMB = 50, BIO = 100, RAD = 100, FIRE = 50, ACID = 50)
+	// Soft plastic strips — airtight, not a mech bunker. Walls fall in ~2 punches; these should too.
+	armor = list(MELEE = 10, BULLET = 10, LASER = 10, ENERGY = 10, BOMB = 10, BIO = 100, RAD = 100, FIRE = 50, ACID = 50)
 	density = FALSE
 	can_astar_pass = CANASTARPASS_ALWAYS_PROC
 	anchored = TRUE
 	CanAtmosPass = ATMOS_PASS_NO
-	obj_integrity = 500
-	max_integrity = 500
+	max_integrity = 100
 
 /obj/structure/plasticflaps/opaque
 	opacity = TRUE

@@ -104,9 +104,17 @@
 	SEND_SIGNAL(imp_in, COMSIG_NANITE_SYNC, pump_nanites)
 
 /obj/item/implant/nanite_pump/proc/check_nanites()
-    if(SEND_SIGNAL(imp_in, COMSIG_HAS_NANITES))
-        return TRUE
-    return imp_in.AddComponent(/datum/component/nanites/nanite_pump, 1) != COMPONENT_INCOMPATIBLE
+	if(!imp_in)
+		return FALSE
+	if(SEND_SIGNAL(imp_in, COMSIG_HAS_NANITES))
+		return TRUE
+	//Носителю без совместимости компонент не встанет, а AddComponent на нём
+	//пишет stack_trace "Incompatible ... assigned to a ..." каждые 15 секунд:
+	//раунд 9827 - 25 рантаймов подряд. Спрашиваем совместимость заранее,
+	//помпа тогда просто растворяется, как и задумано в process().
+	if(!can_be_implanted_in(imp_in))
+		return FALSE
+	return imp_in.AddComponent(/datum/component/nanites/nanite_pump, 1) != COMPONENT_INCOMPATIBLE
 
 /obj/item/implant/nanite_pump/proc/set_programs_pump(cloud_id, mob/user, force = FALSE)
 	if(cloud_id)

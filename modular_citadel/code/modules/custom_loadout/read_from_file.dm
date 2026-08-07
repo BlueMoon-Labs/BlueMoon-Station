@@ -27,6 +27,7 @@ GLOBAL_LIST(custom_item_list)
 		var/item_str = copytext(line, job_str_sep + length(line[job_str_sep]), item_str_sep)
 		if(!ckey_str || !char_str || !job_str || !item_str || !length(ckey_str) || !length(char_str) || !length(job_str) || !length(item_str))
 			log_admin("Errored custom_items_whitelist line: [line] - Component/separator missing!")
+			continue	// без continue битая строка всё равно доезжала до записи в список
 		if(!islist(GLOB.custom_item_list[ckey_str]))
 			GLOB.custom_item_list[ckey_str] = list()	//Initialize list for this ckey if it isn't initialized..
 		var/list/characters = splittext(char_str, "/")
@@ -47,7 +48,12 @@ GLOBAL_LIST(custom_item_list)
 			amount = text2num(amount)
 			path = text2path(path)
 			if(!ispath(path) || !isnum(amount))
-				log_admin("Errored custom_items_whitelist line: [line] - Path/number for item missing or invalid.")
+				// Раньше тут не было continue, и невалидный path (null) всё равно уходил в
+				// GLOB.custom_item_list[...][null] = amount. Спавн это переживал за счёт
+				// гардов if(!path), но список каждый раунд загрязнялся null-ключом, а
+				// сообщение не называло проблемный путь.
+				log_admin("Errored custom_items_whitelist line: [line] - Path/number for item missing or invalid (item: \"[item_string]\").")
+				continue
 			for(var/character in characters)
 				for(var/job in jobs)
 					if(!GLOB.custom_item_list[ckey_str][character][job][path])		//Doesn't exist, make it exist!

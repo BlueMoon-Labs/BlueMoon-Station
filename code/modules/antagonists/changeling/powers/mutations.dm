@@ -556,6 +556,7 @@
 /obj/item/clothing/suit/armor/changeling
 	name = "chitinous mass"
 	desc = "A tough, hard covering of black chitin."
+	icon = 'icons/mob/clothing/suit.dmi' // Плейсхолдер: спрайта нет
 	icon_state = "lingarmor"
 	tail_state = "lingarmor"
 	item_flags = DROPDEL

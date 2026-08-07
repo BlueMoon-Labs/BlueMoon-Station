@@ -10,9 +10,15 @@
 	actions_types = list(/datum/action/item_action/set_internals, /datum/action/item_action/toggle_jetpack, /datum/action/item_action/jetpack_stabilization)
 	var/gas_type = GAS_O2
 	var/on = FALSE
-	var/stabilizers = FALSE
+	/// Гасить ли дрейф. Включено по умолчанию и переживает выключение самого джетпака:
+	/// прежний сброс в FALSE на каждом `turn_off` и был той "сбрасывающейся стабилизацией",
+	/// на которую жаловались в баг-репорте.
+	var/stabilizers = TRUE
 	var/full_speed = TRUE // If the jetpack will have a speedboost in space/nograv or not
 	var/datum/effect_system/trail_follow/ion/ion_trail
+	/// Не больше одного списания за тик: за один шаг Process_Spacemove зовут и с ручного
+	/// пути, и с тика дрейфа, а работа двигателя при этом одна и та же.
+	var/last_thrust_time = -1
 
 /obj/item/tank/jetpack/Initialize(mapload)
 	. = ..()
@@ -32,9 +38,7 @@
 	if(istype(action, /datum/action/item_action/toggle_jetpack))
 		cycle(user)
 	else if(istype(action, /datum/action/item_action/jetpack_stabilization))
-		if(on)
-			stabilizers = !stabilizers
-			to_chat(user, "<span class='notice'>You turn the jetpack stabilization [stabilizers ? "on" : "off"].</span>")
+		set_stabilizers(!stabilizers, user)
 	else
 		toggle_internals(user)
 
@@ -44,51 +48,106 @@
 
 	if(!on)
 		turn_on(user)
-		to_chat(user, "<span class='notice'>You turn the jetpack on.</span>")
+		to_chat(user, "<span class='notice'>Вы включаете джетпак. Режим: [stabilizers ? "стабилизация" : "свободный полёт"].</span>")
 	else
 		turn_off(user)
-		to_chat(user, "<span class='notice'>You turn the jetpack off.</span>")
+		to_chat(user, "<span class='notice'>Вы выключаете джетпак.</span>")
 	for(var/X in actions)
 		var/datum/action/A = X
 		A.UpdateButtons()
 
+/// Единая точка переключения режима: её же дёргает клик по алерту полёта.
+/obj/item/tank/jetpack/proc/set_stabilizers(new_state, mob/user)
+	if(!on || stabilizers == new_state)
+		return FALSE
+	stabilizers = new_state
+	if(user)
+		to_chat(user, "<span class='notice'>Стабилизация [stabilizers ? "включена - дрейф гасится" : "выключена - свободный полёт"].</span>")
+		user.update_flight_alert()
+	for(var/datum/action/current_action as anything in actions)
+		current_action.UpdateButtons()
+	return TRUE
+
+/// Потолок, до которого этот двигатель разгоняет свободный полёт. Подобран вровень с шаговой скоростью носителя в этом же джетпаке.
+/obj/item/tank/jetpack/proc/thrust_cap()
+	return full_speed ? INERTIA_THRUST_CAP_JETPACK_FULL : INERTIA_THRUST_CAP_JETPACK
+
 /obj/item/tank/jetpack/proc/turn_on(mob/user)
+	if(!user)
+		return
 	on = TRUE
 	icon_state = "[initial(icon_state)]-on"
 	ion_trail.start()
-	RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(move_react))
+	RegisterSignal(user, COMSIG_LIVING_DEATH, PROC_REF(on_user_death), override = TRUE)
+	user.register_thrust_source(src, cap = thrust_cap())
 	if(full_speed)
 		user.add_movespeed_modifier(/datum/movespeed_modifier/jetpack/fullspeed)
 	else
 		user.add_movespeed_modifier(/datum/movespeed_modifier/jetpack)
+	user.update_flight_alert()
 
 /obj/item/tank/jetpack/proc/turn_off(mob/user)
 	on = FALSE
-	stabilizers = FALSE
 	icon_state = initial(icon_state)
 	ion_trail.stop()
-	UnregisterSignal(user, COMSIG_MOVABLE_MOVED)
+	if(!user)
+		return
+	UnregisterSignal(user, COMSIG_LIVING_DEATH)
+	user.unregister_thrust_source(src)
 	user.remove_movespeed_modifier(/datum/movespeed_modifier/jetpack/fullspeed)
 	user.remove_movespeed_modifier(/datum/movespeed_modifier/jetpack)
+	user.update_flight_alert()
 
-/obj/item/tank/jetpack/proc/move_react(mob/user)
-	allow_thrust(0.01, user)
-
-/obj/item/tank/jetpack/proc/allow_thrust(num, mob/living/user)
+/// Мёртвый не тянет рычаги. Дрейф при этом остаётся - тело летит по инерции, как и положено.
+/obj/item/tank/jetpack/proc/on_user_death(mob/living/source)
+	SIGNAL_HANDLER
 	if(!on)
 		return
-	if((num < 0.005 || air_contents.total_moles() < num))
+	turn_off(source)
+	for(var/datum/action/current_action as anything in actions)
+		current_action.UpdateButtons()
+
+/obj/item/tank/jetpack/dropped(mob/user, silent = FALSE)
+	. = ..()
+	if(on)
 		turn_off(user)
-		return
+
+/**
+ * Спрашивает у двигателя, есть ли тяга, и по желанию списывает за неё.
+ *
+ * Разделено надвое, потому что разрешить шаг и оплатить его - разные вопросы: накат по курсу
+ * на крейсерской скорости двигателю ничего не стоит, но шагать он всё равно разрешает.
+ */
+/obj/item/tank/jetpack/proc/allow_thrust(num, mob/living/user, consume = TRUE)
+	if(!on)
+		return FALSE
+	if(user && user.stat != CONSCIOUS)
+		return FALSE
+	if(num < 0.005 || air_contents.total_moles() < num)
+		if(user)
+			to_chat(user, "<span class='warning'>Двигатели [src] глохнут - топливо кончилось.</span>")
+		turn_off(user)
+		return FALSE
+	if(!consume || last_thrust_time == world.time)
+		return TRUE
+	last_thrust_time = world.time
 
 	// Выхлоп уходит из баллона в турф под носителем: вызов на src переливал
 	// смесь саму в себя, и джетпак летал бесконечно.
 	var/turf/exhaust_turf = get_turf(user)
 	if(!exhaust_turf)
-		return
+		return TRUE
 	exhaust_turf.assume_air_moles(air_contents, num)
 
 	return TRUE
+
+/obj/item/tank/jetpack/examine(mob/user)
+	. = ..()
+	if(!on)
+		. += "<span class='notice'>Двигатели выключены.</span>"
+		return
+	. += "<span class='notice'>Режим: [stabilizers ? "стабилизация - гасит дрейф, топливо тратится на каждый шаг" : "свободный полёт - разгон до крейсерской скорости, дальше накат бесплатно"].</span>"
+	. += "<span class='notice'>В баке [round(air_contents.total_moles(), 0.1)] молей.</span>"
 
 /obj/item/tank/jetpack/suicide_act(mob/user)
 	if (ishuman(user))
@@ -108,23 +167,13 @@
 	gas_type = null //it starts empty
 	full_speed = FALSE //moves at hardsuit jetpack speeds
 
-/obj/item/tank/jetpack/improvised/allow_thrust(num, mob/living/user)
-	if(!on)
-		return
-	if((num < 0.005 || air_contents.total_moles() < num))
-		turn_off(user)
-		return
-	if(rand(0,250) == 0)
+/obj/item/tank/jetpack/improvised/allow_thrust(num, mob/living/user, consume = TRUE)
+	// Глохнет только когда двигатель реально работает: за бесплатный накат его не наказываем.
+	if(consume && on && rand(0, 250) == 0)
 		to_chat(user, "<span class='notice'>You feel your jetpack's engines cut out.</span>")
 		turn_off(user)
-		return
-
-	var/turf/exhaust_turf = get_turf(user)
-	if(!exhaust_turf)
-		return
-	exhaust_turf.assume_air_moles(air_contents, num)
-
-	return TRUE
+		return FALSE
+	return ..()
 
 /obj/item/tank/jetpack/void
 	name = "void jetpack (oxygen)"
@@ -265,4 +314,59 @@
 		var/obj/item/clothing/suit/space/hardsuit/C = wear_suit
 		J = C.jetpack
 	return J
+
+/**
+ * Пересобирает алерт невесомости под текущий режим полёта.
+ *
+ * Базовая версия только возвращает старую табличку "вы болтаетесь в пустоте": режимы есть
+ * лишь у тех, кто способен носить двигатель.
+ *
+ * Клиента не спрашиваем: алерты живут на мобе и достаются вселившемуся позже, а на NPC
+ * опирается отложенный проход гравитации (см. [/proc/update_nonclient_mob_gravity]).
+ */
+/mob/proc/update_flight_alert()
+	if(mob_has_gravity())
+		return
+	throw_alert("gravity", /atom/movable/screen/alert/weightless)
+
+/mob/living/carbon/update_flight_alert()
+	if(mob_has_gravity())
+		return
+	var/stabilizing = get_thrust_mode()
+	if(isnull(stabilizing))
+		throw_alert("gravity", /atom/movable/screen/alert/weightless)
+		return
+	var/atom/movable/screen/alert/weightless/thrusting/flight_alert = throw_alert(
+		"gravity",
+		stabilizing ? /atom/movable/screen/alert/weightless/thrusting/stabilized : /atom/movable/screen/alert/weightless/thrusting/freeflight,
+	)
+	flight_alert?.describe_flight(src)
+
+/// TRUE - стабилизация, FALSE - свободный полёт, null - работающего двигателя нет.
+/mob/living/carbon/proc/get_thrust_mode()
+	var/obj/item/thruster = get_jetpack()
+	if(istype(thruster, /obj/item/tank/jetpack))
+		var/obj/item/tank/jetpack/pack = thruster
+		if(pack.on)
+			return pack.stabilizers
+	else if(istype(thruster, /obj/item/mod/module/jetpack))
+		var/obj/item/mod/module/jetpack/module = thruster
+		if(module.active)
+			return module.stabilizers
+	// Имплант-трастеры стабилизации не имеют - для них режим всегда свободный полёт.
+	var/obj/item/organ/cyberimp/chest/thrusters/implant = getorganslot(ORGAN_SLOT_THRUSTERS)
+	if(implant?.on)
+		return FALSE
+	return null
+
+/// Переключение режима из одной точки: кнопка действия, конфиг MOD-костюма и клик по алерту приходят сюда.
+/mob/living/carbon/proc/set_jetpack_stabilizers(new_state)
+	var/obj/item/thruster = get_jetpack()
+	if(istype(thruster, /obj/item/tank/jetpack))
+		var/obj/item/tank/jetpack/pack = thruster
+		return pack.set_stabilizers(new_state, src)
+	if(istype(thruster, /obj/item/mod/module/jetpack))
+		var/obj/item/mod/module/jetpack/module = thruster
+		return module.set_stabilizers(new_state, src)
+	return FALSE
 

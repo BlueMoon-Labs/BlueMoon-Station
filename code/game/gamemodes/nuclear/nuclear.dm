@@ -221,6 +221,10 @@
 
 /datum/outfit/inteq/full/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
 	. = ..()
+	//превью в панели спавна одевает безмозглого дамми: цели ему выдавать некому
+	//("Cannot execute null.get all objectives()", раунд 9827)
+	if(visualsOnly || !H.mind)
+		return
 	for(var/datum/objective/obj in H.mind.get_all_objectives())
 		if(istype(obj, /datum/objective/martyr))
 			return

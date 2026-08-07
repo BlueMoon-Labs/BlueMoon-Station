@@ -59,9 +59,17 @@ $include bluemoon/bluemoon.txt
 $include bluemoon/discord.txt
 $include bluemoon/hilberts_hotel.txt
 
-## Tgui payloads larger than the 2kb limit for BYOND topic requests are split into roughly 1kb chunks and sent in sequence.
-## This config option limits the maximum chunk count for which the server will accept a payload, default is 64
-TGUI_MAX_CHUNK_COUNT 64
+## Tgui payloads larger than the 2kb limit for BYOND topic requests are split into roughly 512
+## url-encoded characters per chunk and sent in sequence. This option caps how many chunks the
+## server will accept for one payload.
+##
+## Шестьдесят четыре чанка - это 32768 url-кодированных символов, а кириллица при
+## url-кодировании раздувается почти в шесть раз: JSON схемы интегральной сборки с русскими
+## подписями упирался в потолок уже на пяти тысячах символов, и сервер молча отказывал.
+## Значение здесь перебивало код-дефолт, поэтому поднятие лимита в самом коде (PR #3044) не
+## работало вовсе. Память защищена другими границами: не больше трёх одновременных сборок и
+## тридцатисекундный таймер на каждую.
+TGUI_MAX_CHUNK_COUNT 2048
 
 ## yt-dlp Play Internet Sound
 # Set this per-environment, examples:

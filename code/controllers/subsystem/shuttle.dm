@@ -25,7 +25,7 @@ SUBSYSTEM_DEF(shuttle)
 	var/obj/docking_port/mobile/emergency/backup/backup_shuttle
 	var/emergencyCallTime = 6000	//time taken for emergency shuttle to reach the station when called (in deciseconds)
 	var/emergencyDockTime = 1800	//time taken for emergency shuttle to leave again once it has docked (in deciseconds)
-	var/emergencyEscapeTime = 1200	//time taken for emergency shuttle to reach a safe distance after leaving station (in deciseconds)
+	var/emergencyEscapeTime = 1800	//time taken for emergency shuttle to reach a safe distance after leaving station (in deciseconds)
 	var/area/emergencyLastCallLoc
 	var/emergencyCallAmount = 0		//how many times the escape shuttle was called
 	var/emergencyNoEscape
@@ -200,12 +200,19 @@ SUBSYSTEM_DEF(shuttle)
 	emergencyNoRecall = FALSE
 
 /datum/controller/subsystem/shuttle/proc/getShuttle(id)
+	// Навигационная консоль вне шаттла держит shuttleId = "" и спрашивает на каждое
+	// касание: пустой id - это "не спрашивали", а не "не нашли шаттл". Варнинг на нём
+	// только засорял прод-лог.
+	if(!id)
+		return null
 	for(var/obj/docking_port/mobile/M in mobile)
 		if(M.shuttle_id == id)
 			return M
 	WARNING("couldn't find shuttle with id: [id]")
 
 /datum/controller/subsystem/shuttle/proc/getDock(id)
+	if(!id)
+		return null
 	for(var/obj/docking_port/stationary/S in stationary)
 		if(S.shuttle_id == id)
 			return S
@@ -1070,7 +1077,7 @@ SUBSYSTEM_DEF(shuttle)
 				var/obj/docking_port/mobile/emergency/eshut = M
 				var/evac_duration = emergencyEscapeTime * eshut.engine_coeff
 				var/datum/shuttle_event/new_event = eshut.add_shuttle_event(event_type)
-				new_event?.start_up_event(evac_duration)
+				new_event?.start_up_event(evac_duration, TRUE)
 				message_admins("[key_name_admin(usr)] forced hyperspace event [event_type] on the evacuation shuttle.")
 				log_admin("[key_name(usr)] forced hyperspace event [event_type] on the evacuation shuttle.")
 				SSblackbox.record_feedback("text", "shuttle_manipulator", 1, "force_hyperspace:[event_type]")

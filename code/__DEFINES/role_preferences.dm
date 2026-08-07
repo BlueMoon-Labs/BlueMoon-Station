@@ -92,6 +92,13 @@ GLOBAL_LIST_INIT(special_roles, list(
 	//ROLE_MONSTERHUNTER Disabled for now
 ))
 
+// Приоритеты ролей антагониста в prefs.be_special. Выключенной роли в списке
+// просто нет, поэтому ANTAG_PRIORITY_DISABLED - это чисто транспортное значение
+// между UI и set_antag_preference(), в сам be_special оно никогда не попадает.
+#define ANTAG_PRIORITY_DISABLED	-1
+#define ANTAG_PRIORITY_HIGH		0
+#define ANTAG_PRIORITY_LOW		1
+
 //Job defines for what happens when you fail to qualify for any job during job selection
 #define BEOVERFLOW 	1
 #define BERANDOMJOB 	2

@@ -35,7 +35,7 @@
 
 	var/datum/ai_controller/hostile_adapter/controller = loose.ai_controller
 	TEST_ASSERT(istype(controller, /datum/ai_controller/hostile_adapter/melee_chaser/goose), "A goose must migrate onto its adapter profile")
-	TEST_ASSERT_EQUAL(controller.blackboard[BB_AI_TARGETING_STRATEGY], /datum/targeting_strategy/hostile_legacy/retaliate, "A goose must keep the retaliate enemies gate")
+	TEST_ASSERT_EQUAL(controller.blackboard[BB_AI_TARGETING_STRATEGY], /datum/targeting_strategy/hostile_legacy/retaliate/goose, "A goose must keep the retaliate enemies gate with snack hunting")
 
 	//мирный: без обид штатный поиск целей никого не берёт
 	var/datum/ai_behavior/find_potential_targets/finder = GET_AI_BEHAVIOR(/datum/ai_behavior/find_potential_targets)

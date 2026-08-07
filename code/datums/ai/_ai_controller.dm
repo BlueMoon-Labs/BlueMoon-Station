@@ -169,11 +169,20 @@ multiple modular subtrees with behaviors
 	if(!isnull(current_movement_target))
 		RegisterSignal(current_movement_target, COMSIG_MOVABLE_MOVED, PROC_REF(on_movement_target_move))
 		RegisterSignal(current_movement_target, COMSIG_PARENT_PREQDELETED, PROC_REF(on_movement_target_delete))
+	else
+		//Без цели двигаться некуда. Отпускаем запись сразу: датумы /datum/ai_movement -
+		//бессмертные синглтоны из SSai_movement, и moving_controllers[src] держит уже
+		//удалённую цель до следующего прогона поведения или до смерти пешки. Для мобов,
+		//которые после потери цели уходят в AI_STATUS_IDLE, это "до конца раунда".
+		stop_ai_movement()
 	if(new_movement)
 		change_ai_movement_type(new_movement)
 
 ///Overrides the current ai_movement of this controller with a new one
 /datum/ai_controller/proc/change_ai_movement_type(datum/ai_movement/new_movement)
+	//Смена типа движения оставляла запись висеть в СТАРОМ синглтоне - тот больше никем
+	//не опрашивается, снять её потом уже некому.
+	stop_ai_movement()
 	ai_movement = SSai_movement.movement_types[new_movement]
 
 ///Completely replaces the planning_subtrees with a new set based on argument provided, list provided must contain specifically typepaths
@@ -563,7 +572,11 @@ multiple modular subtrees with behaviors
 ///stepping the pawn toward the stale AI target every movement_delay - overriding the
 ///client's own keypresses so controls feel completely dead. Stopping is idempotent.
 /datum/ai_controller/proc/stop_ai_movement()
-	if(ai_movement?.moving_controllers[src])
+	//istype, а не просто проверка на null: до первого change_ai_movement_type() в ai_movement
+	//лежит ТИПОПУТЬ, а не инстанс, и moving_controllers у него - разделяемый список-дефолт типа.
+	if(!istype(ai_movement))
+		return
+	if(ai_movement.moving_controllers[src])
 		ai_movement.stop_moving_towards(src)
 
 /datum/ai_controller/proc/PauseAi(time)

@@ -243,6 +243,27 @@
 	req_access = list(ACCESS_ARMORY)
 	storage_capacity = 50
 	icon_state = "tac"
+
+/obj/structure/closet/secure_closet/lethalshots/proc/security_level_allows_access()
+	return GLOB.security_level >= SEC_LEVEL_AMBER
+
+/obj/structure/closet/secure_closet/lethalshots/proc/security_level_denied_message(mob/user)
+	to_chat(user, span_warning("Этот шкаф можно открыть только при уровне тревоги [SECURITY_LEVEL_COLORED(SEC_LEVEL_AMBER)] и выше. Текущий уровень: [SECURITY_LEVEL_COLORED(GLOB.security_level)]."))
+
+/obj/structure/closet/secure_closet/lethalshots/togglelock(mob/living/user, silent)
+	if(locked && !security_level_allows_access())
+		if(!silent)
+			security_level_denied_message(user)
+		return
+	return ..()
+
+/obj/structure/closet/secure_closet/lethalshots/can_open(mob/living/user, force = FALSE)
+	if(!force && !security_level_allows_access())
+		if(user)
+			security_level_denied_message(user)
+		return FALSE
+	return ..()
+
 /obj/structure/closet/secure_closet/lethalshots/PopulateContents()
 	..()
 	new /obj/item/electrostaff(src)

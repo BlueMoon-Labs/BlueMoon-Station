@@ -1539,7 +1539,7 @@
 /datum/gear/donator/bm/ouroboroswinterschock/on_spawn(mob/living/carbon/human/user, obj/item/clothing/accessory/ring/syntech/winterschock/I)
 	if(!istype(user))
 		return
-	I.owner = user
+	I.owner_ref = WEAKREF(user)
 	if(user.dna?.features["normalized_size"])
 		I.current_normalized_size = user.dna.features["normalized_size"]
 		I.try_update_size(user, TRUE)
@@ -2515,3 +2515,28 @@
 	slot = ITEM_SLOT_EYES
 	path = /obj/item/clothing/glasses/cover/infovisor
 	ckeywhitelist = list("lindaastereih")
+
+/datum/gear/donator/bm/vulpix_pilot_badge
+	name = "Pilots Federation Badge"
+	slot = ITEM_SLOT_ACCESSORY
+	path = /obj/item/clothing/accessory/medal/vulpix_pilot_badge
+	cost = 0
+	ckeywhitelist = list("alexhosted", "gsvden")
+
+/datum/gear/donator/bm/yun_cap
+	name = "strange chinese cap"
+	slot = ITEM_SLOT_HEAD
+	path = /obj/item/clothing/head/yun_cap
+	ckeywhitelist = list("victorpoplavsy")
+
+/datum/gear/donator/bm/yun_outfit
+	name = "strange chinese clothing"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/bm/yun_outfit
+	ckeywhitelist = list("victorpoplavsy")
+
+/datum/gear/donator/bm/yun_sneakers
+	name = "strange sneakers"
+	slot = ITEM_SLOT_FEET
+	path = /obj/item/clothing/shoes/yun_sneakers
+	ckeywhitelist = list("victorpoplavsy")

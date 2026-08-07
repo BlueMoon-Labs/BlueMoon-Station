@@ -11,7 +11,7 @@
 	name = "Ammo Box - .45-70 GOVT"
 	desc = "Содержит 10 дополнительных патронов .45-70 GOVT. Калибр крайне редкий, поэтому и цена соответствующая."
 	item = /obj/item/ammo_box/g4570
-	cost = 5
+	cost = 2
 	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
 
 /datum/uplink_item/ammo/pistol

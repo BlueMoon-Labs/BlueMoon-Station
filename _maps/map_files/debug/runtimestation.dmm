@@ -3476,7 +3476,7 @@
 /turf/open/floor/plasteel,
 /area/service/bar)
 "Sj" = (
-/obj/structure/table/optable,
+/obj/structure/table/optable/loaded,
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},

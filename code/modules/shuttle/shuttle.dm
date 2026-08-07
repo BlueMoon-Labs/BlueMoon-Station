@@ -250,7 +250,10 @@
 	SSshuttle.stationary -= src
 
 /obj/docking_port/stationary/Destroy(force)
-	if(force)
+	// Одноразовую кастомную точку посадки навигационная консоль разрегистрирует сразу
+	// при переназначении, а удаляется порт позже, в enterTransit(). Повторный
+	// unregister() на нём выдавал "docking_port unregistered multiple times".
+	if(force && registered)
 		unregister()
 	. = ..()
 

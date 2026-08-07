@@ -537,7 +537,7 @@ GLOBAL_LIST_INIT(devil_suffix, list(" the Red", " the Soulless", " the Master", 
 
 /datum/antagonist/devil/apply_innate_effects(mob/living/mob_override)
 	give_appropriate_spells()
-	owner.current.grant_all_languages(TRUE, TRUE, TRUE, LANGUAGE_DEVIL)
+	owner.current.grant_all_languages(source = LANGUAGE_DEVIL)
 	update_hud()
 	.=..()
 
