@@ -180,12 +180,18 @@
 	item_state = "arm_blade"
 	force = 30
 	armour_penetration = 25
+	stuttering = 5
 	lefthand_file = 'icons/mob/inhands/antag/changeling_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/antag/changeling_righthand.dmi'
 	item_flags = ABSTRACT | DROPDEL
+	resistance_flags = FIRE_PROOF | ON_FIRE | UNACIDABLE | ACID_PROOF
 	w_class = WEIGHT_CLASS_HUGE
+	hitsound = 'sound/weapons/bladeslice.ogg'
+	attack_verb = list("attacked", "slashed", "stabbed", "sliced", "torn", "ripped", "diced", "cut")
 	sharpness = SHARP_EDGED
 	total_mass = TOTAL_MASS_HAND_REPLACEMENT
+	tool_behaviour = TOOL_CROWBAR
+	can_force_powered = TRUE
 
 /obj/item/light_eater/Initialize(mapload)
 	. = ..()
@@ -219,20 +225,23 @@
 					disintegrate(O)
 		if(L.pulling && L.pulling.light_range && isitem(L.pulling))
 			disintegrate(L.pulling)
-	else if(isitem(AM))
-		var/obj/item/I = AM
-		if(I.light_range && I.light_power)
-			disintegrate(I)
-	else if (isstructure(AM))
-		var/obj/structure/S = AM
-		if(istype(S, /obj/structure/glowshroom) || istype(S, /obj/structure/marker_beacon))
-			qdel(S)
-			visible_message("<span class='danger'>[S] is disintegrated by [src]!</span>")
-	else if(AM.light_range && AM.light_power  && !(istype(AM, /obj/machinery/power/apc) || istype(AM, /obj/machinery/airalarm)))
-		var/obj/target_object = AM
-		target_object.take_damage(force * 5, BRUTE, MELEE, 0)
+	else if(istype(AM, /obj/structure/glowshroom) || istype(AM, /obj/structure/marker_beacon))
+		qdel(AM)
+		visible_message(span_danger("[AM] is disintegrated by [src]!</span>"))
+	else if(isitem(AM) && AM.light_range && AM.light_power)
+		disintegrate(AM)
+		return
 
-
+/obj/item/light_eater/get_damage_to_obj(obj/O, mob/living/user)
+	. = ..()
+	var/damage_multiplier = 3.5
+	if(istype(O, /obj/machinery/power/apc) || istype(O, /obj/machinery/airalarm))
+		damage_multiplier = 2.5
+	else if(O.light_range && O.light_power)
+		damage_multiplier = 5
+	
+	. *= damage_multiplier
+	
 /obj/item/light_eater/proc/disintegrate(obj/item/O)
 	if(istype(O, /obj/item/modular_computer/pda))
 		var/obj/item/modular_computer/pda/PDA = O

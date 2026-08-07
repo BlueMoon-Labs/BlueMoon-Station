@@ -1119,14 +1119,12 @@
 /obj/attack_nanosuit(mob/living/carbon/human/user, does_attack_animation = FALSE)
 	return attack_heavy_melee(user, does_attack_animation)
 
-/obj/attacked_by(obj/item/I, mob/living/user)
-	if(I.force && I.damtype == BRUTE && ishuman(user))
+/obj/item/get_damage_to_obj(obj/O, mob/living/user)
+	. = ..()
+	if(. && damtype == BRUTE && ishuman(user))
 		var/mob/living/carbon/human/H = user
 		if(H.mind?.has_martialart(MARTIALART_NANOSUIT) || H.has_heavy_melee())
-			visible_message(span_danger("[H] бьёт [src] с невероятной силой при помощи [I.name]!") , null, null, COMBAT_MESSAGE_RANGE)
-			take_damage(I.force*1.75, I.damtype, "melee", TRUE)//take 75% more damage with strength on
-			return
-	return ..()
+			. *= 1.75
 
 /obj/item/throw_at(atom/target, range, speed, mob/thrower, spin = TRUE, diagonals_first = FALSE, datum/callback/callback, quickstart = TRUE, params)
 	if(thrower && ishuman(thrower))

@@ -196,7 +196,7 @@
 	return FALSE
 
 /turf/open/floor/crowbar_act(mob/living/user, obj/item/I)
-	return intact ? FORCE_BOOLEAN(pry_tile(I, user)) : FALSE
+	return (intact && user.a_intent == INTENT_HELP) ? FORCE_BOOLEAN(pry_tile(I, user)) : FALSE
 
 /turf/open/floor/proc/try_replace_tile(obj/item/stack/tile/T, mob/user, params)
 	if(T.turf_type == type)
