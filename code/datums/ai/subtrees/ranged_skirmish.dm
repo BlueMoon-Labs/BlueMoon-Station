@@ -35,6 +35,16 @@
 	//позицию ВМЕСТО выстрела, снова стоял столбом - только теперь со взведённым
 	//поведением укрытия. Поэтому укрытие планируется вместе с выстрелом.
 	if(istype(hostile_pawn) && hostile_pawn.CheckRangedFireLane(target))
+		//дешёвый сосед уже расписался в бессилии (reposition держит позицию с
+		//перекрытой линией - очередь в затылок союзнику): идём флангом на
+		//свободный румб кольца боевой дистанции, а не стоим в колонне
+		if(world.time - (controller.blackboard[BB_AI_LANE_STUCK_AT] || -INFINITY) < AI_LANE_STUCK_FRESH_TIME \
+			&& world.time >= (controller.blackboard[BB_AI_FLANK_RETRY_AT] || 0))
+			controller.blackboard[BB_AI_FLANK_RETRY_AT] = world.time + AI_FLANK_RETRY_COOLDOWN
+			var/turf/flank_tile = controller.find_flank_fire_tile(target)
+			if(flank_tile)
+				controller.queue_behavior(/datum/ai_behavior/hold_covering_position, flank_tile)
+				return SUBTREE_RETURN_FINISH_PLANNING
 		controller.queue_behavior(/datum/ai_behavior/reposition_for_shot, target_key)
 		return SUBTREE_RETURN_FINISH_PLANNING
 	if(istype(hostile_pawn) && ai_should_seek_firing_cover(controller, target))
@@ -166,6 +176,12 @@
 	//Текущий тайл уже лучший - держим позицию, не двигаемся.
 	if(chosen == get_turf(shooter))
 		controller.set_blackboard_key(BB_AI_SAFE_FIRE_POSITION, chosen)
+		//позицию держим, а стрелять по-прежнему нечем: соседи линию не открыли.
+		//Это очередь в затылок союзнику - пометка ведёт планировщик на фланговый
+		//манёвр (find_flank_fire_tile) вместо вечного стояния в колонне.
+		if(shooter.CheckRangedFireLane(target))
+			controller.blackboard[BB_AI_LANE_STUCK_AT] = world.time
+			return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
 	//Через контроллер: боковое перестроение - такой же шаг, как обычный, и
 	//оплачивается тем же movement_delay с тем же glide.

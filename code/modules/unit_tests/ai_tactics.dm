@@ -1004,6 +1004,46 @@
 	controller.CancelActions()
 	qdel(controller)
 
+///Очередь стрелков в затылок: сосед линию не открывает, а свободный румб кольца
+///боевой дистанции - открывает. Кольцевой поиск обязан вернуть проходимый тайл
+///с чистой линией огня, а подтверждённый затор - планировать фланговый манёвр
+///вместо вечного топтания в колонне (плейтест 22.06: очередь за мешками).
+/datum/unit_test/ai_flank_fire_tile_breaks_queue/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	var/turf/pawn_turf = locate(start.x, start.y + 2, start.z)
+	var/mob/living/simple_animal/hostile/shooter = allocate(/mob/living/simple_animal/hostile, pawn_turf)
+	shooter.ranged = TRUE
+	shooter.projectiletype = /obj/item/projectile/beam/laser
+	var/mob/living/simple_animal/hostile/ally = allocate(/mob/living/simple_animal/hostile, get_step(pawn_turf, EAST))
+	var/turf/prey_turf = locate(start.x + 2, start.y + 2, start.z)
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, prey_turf)
+	var/datum/ai_controller/unit_test_hunter/controller = new(shooter)
+	controller.set_blackboard_key(BB_AI_CURRENT_TARGET, prey)
+	//band профиля бывает шире резервации - зажимаем кольцо для теста
+	controller.blackboard[BB_AI_MIN_DISTANCE] = 2
+	controller.blackboard[BB_AI_MAX_DISTANCE] = 2
+
+	TEST_ASSERT(shooter.faction_check_mob(ally), "Санити: блокер обязан быть союзником")
+	TEST_ASSERT(shooter.CheckRangedFireLane(prey), "Санити: линия сквозь союзника обязана считаться перекрытой")
+
+	var/turf/flank_tile = controller.find_flank_fire_tile(prey)
+	TEST_ASSERT_NOTNULL(flank_tile, "Кольцевой поиск обязан найти свободный фланг")
+	TEST_ASSERT(flank_tile != pawn_turf, "Фланг обязан быть новым тайлом, а не текущей позицией")
+	TEST_ASSERT_EQUAL(get_dist(flank_tile, prey_turf), 2, "Фланг обязан лежать на кольце боевой дистанции")
+	TEST_ASSERT(!shooter.CheckRangedFireLaneFrom(prey, flank_tile), "С фланга линия огня обязана быть чистой")
+
+	//подтверждённый затор планирует манёвр, а не очередное топтание
+	controller.blackboard[BB_AI_LANE_STUCK_AT] = world.time
+	var/datum/ai_planning_subtree/ranged_skirmish/skirmisher = GLOB.ai_subtrees[/datum/ai_planning_subtree/ranged_skirmish]
+	var/verdict = skirmisher.SelectBehaviors(controller, 0.5)
+	TEST_ASSERT_EQUAL(verdict, SUBTREE_RETURN_FINISH_PLANNING, "Фланговый манёвр обязан обрывать план на движении")
+	TEST_ASSERT(controller.planned_behaviors[GET_AI_BEHAVIOR(/datum/ai_behavior/hold_covering_position)], "Подтверждённый затор обязан планировать фланговый манёвр")
+	TEST_ASSERT(!controller.planned_behaviors[GET_AI_BEHAVIOR(/datum/ai_behavior/reposition_for_shot)], "Фланговый манёвр заменяет топтание на месте")
+	TEST_ASSERT(controller.blackboard[BB_AI_FLANK_RETRY_AT] > world.time, "Кольцевой скан обязан взводить свой кулдаун")
+
+	controller.CancelActions()
+	qdel(controller)
+
 ///Мили-моб не бежит в лоб на стрелка: пока есть прикрытый шаг вперёд, он идёт
 ///перебежками. Плюс само опознание стрелка идёт памятью о попадании, а не
 ///проверкой рук - иначе КА, мех, турель и убранный на секунду ствол невидимы.

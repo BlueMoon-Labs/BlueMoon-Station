@@ -247,7 +247,11 @@
 		controller.set_blackboard_key(BB_AI_SEARCH_POINT, projected)
 	var/mob/living/simple_animal/hostile/hostile_pawn = controller.pawn
 	if(istype(hostile_pawn) && hostile_pawn.ranged)
-		controller.blackboard[BB_AI_HOLD_UNTIL] = world.time + AI_RANGED_HOLD_TIME
+		//дальник поджидает ВЕСЬ розыск: хвост "иди осматривать точки" приводил
+		//стрелка вплотную к укрытию жертвы, и та выходила из-за мешков в упор к
+		//дулу (плейтест 22.06). Пешая разведка - работа мили-мобов; стрелок
+		//держит огневую позицию с линией на точку потери, пока розыск не сдастся.
+		controller.blackboard[BB_AI_HOLD_UNTIL] = controller.blackboard[BB_AI_SEARCH_UNTIL]
 
 ///Продлить точку потери вдоль последнего направления движения цели: шагаем от
 ///улики, пока пускает проходимость, максимум AI_SEARCH_PURSUIT_PROJECTION тайлов.

@@ -160,6 +160,42 @@
 	blackboard[BB_AI_COVER_CACHE_AT] = world.time
 	return best
 
+///Свободный румб кольца боевой дистанции вокруг цели с ЧИСТОЙ линией огня,
+///ближайший к стрелку. Решает очередь стрелков в затылок: когда соседний тайл
+///линию не открывает (вся колонна перекрыта союзниками), а свободный фланг в
+///паре шагов - открывает. Цена - до восьми трасс линии огня, поэтому зовётся
+///только из подтверждённо застрявшего состояния (BB_AI_LANE_STUCK_AT) и не
+///чаще AI_FLANK_RETRY_COOLDOWN.
+/datum/ai_controller/proc/find_flank_fire_tile(atom/target)
+	var/mob/living/simple_animal/hostile/shooter = pawn
+	var/turf/target_turf = get_turf(target)
+	var/turf/pawn_turf = get_turf(pawn)
+	if(!istype(shooter) || !target_turf || !pawn_turf)
+		return null
+	var/ideal_min = blackboard[BB_AI_MIN_DISTANCE] || 0
+	var/ideal_max = max(blackboard[BB_AI_MAX_DISTANCE] || 0, ideal_min)
+	//кольцо на текущей дистанции, зажатое в боевой band: фланг - это манёвр
+	//вбок, а не сближение и не отход
+	var/flank_radius = clamp(get_dist(pawn_turf, target_turf), max(ideal_min, AI_FLANK_MIN_RADIUS), max(ideal_max, AI_FLANK_MIN_RADIUS))
+	var/turf/best
+	var/best_travel = INFINITY
+	for(var/direction in GLOB.alldirs)
+		var/candidate_x = target_turf.x + ((direction & EAST) ? flank_radius : ((direction & WEST) ? -flank_radius : 0))
+		var/candidate_y = target_turf.y + ((direction & NORTH) ? flank_radius : ((direction & SOUTH) ? -flank_radius : 0))
+		var/turf/candidate = locate(clamp(candidate_x, 1, world.maxx), clamp(candidate_y, 1, world.maxy), target_turf.z)
+		if(!candidate || candidate == pawn_turf)
+			continue
+		var/travel = get_dist(pawn_turf, candidate)
+		if(travel >= best_travel)
+			continue
+		if(!can_enter_turf(candidate) || candidate.is_blocked_turf(source_atom = pawn))
+			continue
+		if(shooter.CheckRangedFireLaneFrom(target, candidate))
+			continue
+		best = candidate
+		best_travel = travel
+	return best
+
 ///Тайл отхода при кайте: уходим от ближайшей угрозы, штрафуя шаг вплотную к
 ///другим (не пятиться во второго фланкера). Возвращает лучший доступный сосед
 ///или null, если ходить некуда (тогда сработает hostile_break_away).

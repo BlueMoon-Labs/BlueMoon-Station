@@ -40,6 +40,11 @@
 			blackboard[BB_AI_SEARCH_UNTIL] = world.time + (blackboard[BB_AI_SEARCH_TIME] || AI_DEFAULT_SEARCH_TIME)
 			blackboard[BB_AI_SEARCH_POINTS_LEFT] = AI_SEARCH_INVESTIGATE_POINTS
 			clear_blackboard_key(BB_AI_SEARCH_POINT)
+			//дальник поджидает, а не идёт пешком к стрелявшему в упор (паритет
+			//с enter_search: пешая разведка - работа мили-мобов)
+			var/mob/living/simple_animal/hostile/hostile_pawn = pawn
+			if(istype(hostile_pawn) && hostile_pawn.ranged)
+				blackboard[BB_AI_HOLD_UNTIL] = blackboard[BB_AI_SEARCH_UNTIL]
 	//боль перепроверяет и IDLE, и OFF: OFF мог остаться от пустого z-level,
 	//а реальные причины отключения get_expected_ai_status() сохранит
 	if(ai_status != AI_STATUS_ON)
@@ -261,6 +266,8 @@
 	blackboard[BB_AI_LAST_SEEN_TIME] = null
 	blackboard[BB_AI_LAST_KNOWN_DIR] = null
 	blackboard[BB_AI_HOLD_UNTIL] = null
+	blackboard[BB_AI_LANE_STUCK_AT] = null
+	blackboard[BB_AI_FLANK_RETRY_AT] = null
 	clear_mob_congestion()
 
 ///A hostile that exhausted its movement attempts must not immediately rebuild
