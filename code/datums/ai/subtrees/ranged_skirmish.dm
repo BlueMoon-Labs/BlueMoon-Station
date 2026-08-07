@@ -27,10 +27,18 @@
 		return
 	//Перестроение звалось ТОЛЬКО при перекрытой линии огня, то есть исключительно
 	//чтобы попасть, и никогда - чтобы не получить. Стрелок с чистой линией стоял
-	//столбом на открытом месте, пока его расстреливали. Теперь поводов два.
-	if(istype(hostile_pawn) && (hostile_pawn.CheckRangedFireLane(target) || ai_should_seek_firing_cover(controller, target)))
+	//столбом на открытом месте, пока его расстреливали. Теперь поводов два, но
+	//они НЕ равнозначны: перекрытая линия - стрелять всё равно нечем, план
+	//обрывается на движении; открытая позиция под огнём - повод сместиться, но
+	//не повод молчать. На голой земле лучшего тайла может не быть вовсе
+	//(best_reposition_tile честно возвращает текущий), и стрелок, менявший
+	//позицию ВМЕСТО выстрела, снова стоял столбом - только теперь со взведённым
+	//поведением укрытия. Поэтому укрытие планируется вместе с выстрелом.
+	if(istype(hostile_pawn) && hostile_pawn.CheckRangedFireLane(target))
 		controller.queue_behavior(/datum/ai_behavior/reposition_for_shot, target_key)
 		return SUBTREE_RETURN_FINISH_PLANNING
+	if(istype(hostile_pawn) && ai_should_seek_firing_cover(controller, target))
+		controller.queue_behavior(/datum/ai_behavior/reposition_for_shot, target_key)
 	controller.queue_behavior(attack_behavior, target_key, BB_AI_TARGETING_STRATEGY, BB_AI_TARGET_HIDING_LOCATION, max_range, min_range)
 
 ///Нужно ли стрелку менять позицию ради безопасности, а не ради линии огня:

@@ -480,6 +480,13 @@
 	var/atom/old_loc = moving.loc
 	moving.Move(next_step, get_dir(moving, next_step))
 	. = (old_loc != moving?.loc)
+	// Та же честная цена диагонали, что у бюджетного лупа и игрока: JPS-маршрут
+	// сплошь состоит из диагональных сегментов, и без надбавки длинная погоня по
+	// нему сохраняла те же скрытые 1.33x, что этот пас выпилил из прямого шага.
+	// По фактическому направлению: заблокированная диагональ может пройти одной
+	// кардинальной половиной, и за неё диагональной цены нет.
+	if(. && !QDELETED(moving))
+		scheduled_delay = movement_step_delay(delay, ISDIAGONALDIR(get_dir(old_loc, moving.loc)), world.tick_lag)
 
 	// this check if we're on exactly the next tile may be overly brittle for dense objects who may get bumped slightly
 	// to the side while moving but could maybe still follow their path without needing a whole new path

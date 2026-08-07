@@ -928,3 +928,31 @@
 	TEST_ASSERT(loop.scheduled_delay > cardinal_price, "Диагональ обязана быть дороже кардинального шага")
 
 	qdel(loop)
+
+///JPS-луп платит за диагональ ту же цену, что бюджетный луп и игрок: маршрут по
+///открытой местности сплошь состоит из диагональных сегментов, и без надбавки
+///длинная погоня по нему сохраняла те же скрытые 1.33x скорости.
+/datum/unit_test/ai_jps_loop_charges_for_diagonal/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/pawn = allocate(/mob/living/simple_animal/hostile, start)
+	var/turf/diagonal_turf = locate(start.x + 2, start.y + 2, start.z)
+	TEST_ASSERT_NOTNULL(diagonal_turf, "Санити: диагональный турф обязан существовать внутри резервации")
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, diagonal_turf)
+	var/datum/ai_controller/unit_test_mover/controller = new(pawn)
+
+	var/datum/move_loop/has_target/jps/loop = SSmove_manager.jps_move(pawn, prey, 2, repath_delay = 10 SECONDS, max_path_length = 10, subsystem = SSai_movement, extra_info = controller)
+	TEST_ASSERT_NOTNULL(loop, "Санити: jps_move обязан создать луп")
+	hold_move_loop(loop)
+	loop.set_delay(2)
+	var/cardinal_price = loop.scheduled_delay
+
+	loop.movement_path = list(get_step(start, NORTHEAST), diagonal_turf)
+	loop.repath_in_progress = FALSE
+	COOLDOWN_RESET(loop, repath_cooldown)
+	TEST_ASSERT(loop.move(), "Санити: диагональный шаг по кэшированному маршруту обязан пройти")
+	TEST_ASSERT_EQUAL(get_turf(pawn), get_step(start, NORTHEAST), "Санити: шаг обязан быть диагональным")
+	TEST_ASSERT_EQUAL(loop.scheduled_delay, movement_step_delay(2, TRUE, world.tick_lag), "Диагональный JPS-шаг обязан стоить столько же, сколько диагональный шаг игрока")
+	TEST_ASSERT(loop.scheduled_delay > cardinal_price, "Диагональ JPS-маршрута обязана быть дороже кардинального шага")
+
+	SSmove_manager.stop_looping(pawn, SSai_movement)
+	qdel(controller)

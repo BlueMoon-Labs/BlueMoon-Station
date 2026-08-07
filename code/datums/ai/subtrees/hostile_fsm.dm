@@ -39,6 +39,11 @@
 		//118 секунд на 26 тайлов и всё это время стрелял).
 		if(should_abandon_pursuit(controller))
 			controller.clear_engagement_memory()
+			//бросили - значит бросили: без этой паузы цель, оставшаяся на виду,
+			//реакквизится первым же каденсом финдера со свежей точкой отсчёта
+			//поводка, и усталость погони не работает вовсе. Урон снимает паузу
+			//немедленно (note_attacker) - бой в спину не глохнет.
+			controller.blackboard[BB_AI_ROUTE_RETRY_AT] = world.time + AI_PURSUIT_ABANDON_COOLDOWN
 			return_to_peace(controller)
 			return plan_patrol_return(controller)
 
@@ -141,8 +146,11 @@
 		return FALSE
 
 	//цель, которую доказанно нечем пробить, держать незачем: это третий выход
-	//из погони, и он про бесполезность, а не про расстояние или время
-	if(world.time < (controller.blackboard[BB_AI_TARGET_IMPERVIOUS_UNTIL] || 0))
+	//из погони, и он про бесполезность, а не про расстояние или время.
+	//Пометка адресная: непробиваемость доказана про КОНКРЕТНУЮ цель, и на
+	//нового противника (второго нападающего без брони) не распространяется.
+	if(world.time < (controller.blackboard[BB_AI_TARGET_IMPERVIOUS_UNTIL] || 0) \
+		&& controller.blackboard[BB_AI_TARGET_IMPERVIOUS_REF] == REF(controller.blackboard[BB_AI_CURRENT_TARGET]))
 		return TRUE
 
 	//упрямая особь гонится дольше и дальше, робкая - меньше (см. temperament.dm)

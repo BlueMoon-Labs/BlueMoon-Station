@@ -99,7 +99,9 @@
 ///два стрелка не должны драться за один тайл. Радиус мал (спейсинг локальный),
 ///кэшируется на тик планирования, как и угрозы.
 /datum/ai_controller/proc/get_nearby_allies(radius = AI_ALLY_SPACING_RANGE)
-	if(blackboard[BB_AI_ALLY_CACHE_AT] == world.time && islist(blackboard[BB_AI_ALLY_CACHE]))
+	//кэш валиден только для своего радиуса: стайный idle спрашивает шире
+	//спейсинга, и ответ одного не должен подменять ответ другого
+	if(blackboard[BB_AI_ALLY_CACHE_AT] == world.time && blackboard[BB_AI_ALLY_CACHE_RANGE] == radius && islist(blackboard[BB_AI_ALLY_CACHE]))
 		return blackboard[BB_AI_ALLY_CACHE]
 	var/list/allies = list()
 	var/mob/living/living_pawn = pawn
@@ -114,6 +116,7 @@
 			allies += candidate
 	blackboard[BB_AI_ALLY_CACHE] = allies
 	blackboard[BB_AI_ALLY_CACHE_AT] = world.time
+	blackboard[BB_AI_ALLY_CACHE_RANGE] = radius
 	return allies
 
 ///Лучший огневой тайл среди 8 соседей плюс текущий; текущий держится, если

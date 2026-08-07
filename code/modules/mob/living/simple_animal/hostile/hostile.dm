@@ -288,16 +288,18 @@
 	var/consider_grudge = (stat == CONSCIOUS && user && has_active_ai() && !client)
 	var/health_before = health
 	. = ..()
-	//Удар мог оказаться смертельным. Раньше обида вешалась ДО удара и этот
-	//случай не возникал; теперь решение принимается после, и мёртвому мобу
-	//обида не нужна, а у уничтоженного списки уже сняты (foes == null).
-	if(consider_grudge && !QDELETED(src) && stat != DEAD)
+	//Удар мог оказаться смертельным. Мёртвому обида уже не нужна, но его стае -
+	//нужна: RetaliateAgainst докладывает союзникам о контакте, и до переноса
+	//вызова за ..() убийство с одного удара всё равно поднимало стаю - молчаливый
+	//отстрел группы по одному без единой реакции был регрессом. У уничтоженного
+	//(del_on_death) списки сняты - этот случай отсекает гард в RetaliateAgainst.
+	if(consider_grudge && !QDELETED(src))
 		consider_retaliation(user, max(0, health_before - health))
 
 ///Заводить ли личную обиду на этого обидчика. Чужак становится врагом с первого
 ///касания; сокомандник по фракции получает допуск на случайность - порог по
-///НАКОПЛЕННОМУ урону за окно, а не по числу ударов (три щекотки не равны трём
-///ударам кувалдой). Возвращает TRUE, если обида заведена.
+///НАКОПЛЕННОМУ урону, а не по числу ударов (три щекотки не равны трём ударам
+///кувалдой). Возвращает TRUE, если обида заведена.
 /mob/living/simple_animal/hostile/proc/consider_retaliation(mob/living/attacker, damage_taken = 0)
 	if(QDELETED(attacker))
 		return FALSE
@@ -307,6 +309,11 @@
 	if(!retaliates_against_faction)
 		return FALSE
 	if(!tally_friendly_fire(attacker, damage_taken))
+		//подпороговый, но реальный урон: обиды ещё нет, а проснуться, запомнить
+		//обидчика и учитывать его в оценке опасности моб обязан уже сейчас -
+		//иначе размеренные удары убивали его спящим без единой реакции
+		if(damage_taken > 0)
+			ai_controller?.note_attacker(attacker)
 		return FALSE
 	RetaliateAgainst(attacker)
 	return TRUE
@@ -320,7 +327,9 @@
 		return FALSE
 	return faction_check_mob(attacker)
 
-///Накопить дружественный урон в окне; TRUE - порог превышен.
+///Накопить дружественный урон; TRUE - порог превышен. Счёт НЕ протухает по
+///времени: окно прощения обнуляло его тому, кто бьёт размеренно, и моба можно
+///было убить бесплатно, выдерживая паузу между ударами.
 /mob/living/simple_animal/hostile/proc/tally_friendly_fire(mob/living/attacker, damage_taken)
 	if(damage_taken <= 0 || maxHealth <= 0)
 		return FALSE
@@ -335,20 +344,19 @@
 	entry[2] = world.time
 	return entry[1] >= (maxHealth * AI_FRIENDLY_FIRE_TOLERANCE)
 
-///Выкинуть протухшие записи счёта, а при переполнении - и старейшую живую
+///Выкинуть при переполнении старейшую запись счёта: потолок держит список
+///конечным под очередью из обидчиков
 /mob/living/simple_animal/hostile/proc/prune_friendly_fire_tally()
+	if(length(friendly_fire_tally) < AI_FRIENDLY_FIRE_TALLY_MAX)
+		return
 	var/oldest_key
 	var/oldest_time = INFINITY
-	//обход по копии ключей: удаление из живого списка пропускает соседние записи
-	for(var/attacker_key in friendly_fire_tally.Copy())
+	for(var/attacker_key in friendly_fire_tally)
 		var/list/entry = friendly_fire_tally[attacker_key]
-		if(world.time - entry[2] > AI_FRIENDLY_FIRE_WINDOW)
-			friendly_fire_tally -= attacker_key
-			continue
 		if(entry[2] < oldest_time)
 			oldest_time = entry[2]
 			oldest_key = attacker_key
-	if(length(friendly_fire_tally) >= AI_FRIENDLY_FIRE_TALLY_MAX && oldest_key)
+	if(oldest_key)
 		friendly_fire_tally -= oldest_key
 
 /mob/living/simple_animal/hostile/bullet_act(obj/item/projectile/P)
@@ -382,6 +390,13 @@
 	if(ai_controller)
 		ai_controller.note_attacker(the_attacker)
 		if(CanAttack(the_attacker))
+			//обида ставит цель МИМО финдера, а точку отсчёта поводка погони ставит
+			//только финдер: без неё погоня стартует с origin прошлой погони и
+			//should_abandon_pursuit бросает её первым же планом. Ставим сами, но
+			//только при СМЕНЕ цели - каждый удар текущей цели не должен обнулять
+			//пройденный поводок, иначе дерущаяся цель отключает усталость погони.
+			if(ai_controller.blackboard[BB_AI_CURRENT_TARGET] != the_attacker)
+				ai_controller.blackboard[BB_AI_PURSUIT_ORIGIN] = get_turf(src)
 			ai_controller.set_blackboard_key(BB_AI_CURRENT_TARGET, the_attacker)
 			//Групповой агр: retaliate-семейство делится обидчиками через свой
 			//Retaliate(), а обычные отряды (лутеры, синдикат, фауна) без этого

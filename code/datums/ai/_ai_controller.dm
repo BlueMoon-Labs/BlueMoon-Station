@@ -613,9 +613,16 @@ multiple modular subtrees with behaviors
 	var/mob/living/living_pawn = pawn
 	if(!isliving(living_pawn) || !destination)
 		return FALSE
-	var/step_delay = movement_quantize_delay(max(movement_delay, world.tick_lag), world.tick_lag)
+	//диагональ платит x√2, как игрок и как штатный мув-луп (movement_step_delay
+	//в обоих): сайдстепы turn(dir, 45) и перестроения по alldirs - сплошь
+	//диагонали, и без надбавки уворот снова получал скрытые 1.33x скорости.
+	//Цена и glide считаются по НАМЕРЕНИЮ до шага (glide обязан стоять до Move,
+	//иначе спрайт щёлкает); редкий частичный диагональный Move переплачивает
+	//кардинальный шаг - ошибка в честную сторону, бесплатных тайлов нет.
+	var/step_dir = get_dir(living_pawn, destination)
+	var/step_delay = movement_step_delay(max(movement_delay, world.tick_lag), ISDIAGONALDIR(step_dir), world.tick_lag)
 	living_pawn.set_glide_size(MOVEMENT_ADJUSTED_GLIDE_SIZE(step_delay, 1))
-	if(!living_pawn.Move(destination, get_dir(living_pawn, destination)))
+	if(!living_pawn.Move(destination, step_dir))
 		return FALSE
 	var/datum/move_loop/loop = SSmove_manager.processing_on(living_pawn, SSai_movement)
 	loop?.pause_for(step_delay)

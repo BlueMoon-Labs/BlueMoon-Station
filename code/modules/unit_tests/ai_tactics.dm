@@ -980,6 +980,30 @@
 
 	qdel(controller)
 
+///Стрелок под огнём на открытой земле НЕ прекращает огонь: перестроение
+///планируется ВМЕСТЕ с выстрелом, а не вместо него. На голой земле лучшего
+///тайла может не быть вовсе (best_reposition_tile честно возвращает текущий),
+///и "искать укрытие" вырождалось в стояние столбом с молчащим стволом на всё
+///время обстрела.
+/datum/unit_test/ai_shooter_under_fire_keeps_firing/Run()
+	var/turf/pawn_turf = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/shooter = allocate(/mob/living/simple_animal/hostile, pawn_turf)
+	shooter.ranged = TRUE
+	var/mob/living/carbon/human/gunman = allocate(/mob/living/carbon/human, locate(pawn_turf.x + 3, pawn_turf.y, pawn_turf.z))
+	var/datum/ai_controller/unit_test_hunter/controller = new(shooter)
+	controller.set_blackboard_key(BB_AI_CURRENT_TARGET, gunman)
+	controller.blackboard[BB_AI_UNDER_FIRE_UNTIL] = world.time + 10 SECONDS
+	controller.set_blackboard_key(BB_AI_LAST_ATTACKER, gunman)
+	TEST_ASSERT(ai_should_seek_firing_cover(controller, gunman), "Санити: под огнём на открытой позиции повод перестроиться обязан быть")
+
+	var/datum/ai_planning_subtree/ranged_skirmish/skirmisher = GLOB.ai_subtrees[/datum/ai_planning_subtree/ranged_skirmish]
+	skirmisher.SelectBehaviors(controller, 0.5)
+	TEST_ASSERT(controller.planned_behaviors[GET_AI_BEHAVIOR(/datum/ai_behavior/reposition_for_shot)], "Под огнём без укрытия стрелок обязан планировать перестроение")
+	TEST_ASSERT(controller.planned_behaviors[GET_AI_BEHAVIOR(/datum/ai_behavior/ranged_skirmish)], "Перестроение под огнём не имеет права отменять ответный огонь")
+
+	controller.CancelActions()
+	qdel(controller)
+
 ///Мили-моб не бежит в лоб на стрелка: пока есть прикрытый шаг вперёд, он идёт
 ///перебежками. Плюс само опознание стрелка идёт памятью о попадании, а не
 ///проверкой рук - иначе КА, мех, турель и убранный на секунду ствол невидимы.

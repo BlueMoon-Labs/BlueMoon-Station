@@ -43,7 +43,12 @@
 	for(var/obj/barrier in to_turf)
 		if(!barrier.density || (barrier.pass_flags_self & projectile_pass_flags))
 			continue
-		return TRUE
+		//направленность обязательна и для соседнего тайла: окно в нём, повёрнутое
+		//БОКОМ к линии огня, снаряд не задерживает, а безусловное "плотный объект
+		//рядом = укрытие" заставляло моба стоять под пулями за такой ширмой -
+		//ровно та жалоба, ради которой модель строилась
+		if(ai_pressure_barrier_blocks_step(barrier, from_turf, to_turf))
+			return TRUE
 	return FALSE
 
 ///Запомнить, чем именно в нас попали. Ключ строковый (REF), чтобы модель не

@@ -46,7 +46,10 @@
 /datum/idle_behavior/idle_random_walk/hostile_ambience/flocking
 
 /datum/idle_behavior/idle_random_walk/hostile_ambience/flocking/pick_idle_direction(mob/living/living_pawn, datum/ai_controller/controller)
-	var/list/allies = controller.get_nearby_allies()
+	//радиус поиска обязан быть шире комфортного: дефолтный спейсинг-радиус (2)
+	//меньше AI_FLOCK_COMFORT_RADIUS (3), и с ним любой найденный сородич уже
+	//"в стае" - ветка притяжения не срабатывала никогда
+	var/list/allies = controller.get_nearby_allies(AI_FLOCK_SEARCH_RANGE)
 	if(!length(allies))
 		return ..()
 	var/mob/living/nearest

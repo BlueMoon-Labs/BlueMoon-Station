@@ -78,18 +78,20 @@
 	if(QDELETED(target))
 		return
 
+	//живой атакуемый блокер (враг, перегородивший телом путь) важнее стены: моб
+	//пробивает его, а не обходит - иначе body-block против мобов не работает.
+	//Проверяется ДО предметного гейта ниже: враг, вставший на пути к добыче, -
+	//законная цель удара независимо от того, что моб шёл за предметом.
+	if(ai_path_blocker_mob(controller.pawn, target))
+		controller.queue_behavior(/datum/ai_behavior/attack_path_blocker, target_key)
+		return
+
 	//Ломать окружение можно ради добычи, но не ради ХЛАМА. Мобы с
 	//search_objects/wanted_objects (гусь за мусором, watcher за алмазом,
 	//голдграб за рудой, майнбот в режиме сбора) целью делают предмет, и без
 	//этого гейта они вскрывали шлюзы, чтобы подобрать его. Живые цели, мехи и
 	//машинерия остаются законным поводом пробиваться.
 	if(isitem(target))
-		return
-
-	//живой атакуемый блокер (враг, перегородивший телом путь) важнее стены: моб
-	//пробивает его, а не обходит - иначе body-block против мобов не работает.
-	if(ai_path_blocker_mob(controller.pawn, target))
-		controller.queue_behavior(/datum/ai_behavior/attack_path_blocker, target_key)
 		return
 
 	if(!ai_get_blocked_path_turf(controller.pawn, target))

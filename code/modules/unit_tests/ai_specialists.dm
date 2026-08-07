@@ -1094,6 +1094,26 @@
 	subject.melee_damage_upper = 20
 	TEST_ASSERT_EQUAL(ai_idle_routine_for(subject), /datum/idle_behavior/idle_random_walk/hostile_ambience/denning, "Хищник обязан держаться логова")
 
+///Стайный idle реально тянется к сородичу за комфортным радиусом. Радиус поиска
+///обязан быть шире комфортного: дефолтный спейсинг-радиус (2) меньше комфортных
+///(3), и с ним любой найденный сородич уже был "в стае" - ветка притяжения не
+///срабатывала никогда, рутина молча вырождалась в случайный шаг.
+/datum/unit_test/ai_flocking_pulls_toward_distant_ally/Run()
+	var/turf/pawn_turf = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/bug = allocate(/mob/living/simple_animal/hostile, pawn_turf)
+	var/turf/mate_turf = locate(pawn_turf.x + AI_FLOCK_COMFORT_RADIUS + 1, pawn_turf.y, pawn_turf.z)
+	TEST_ASSERT_NOTNULL(mate_turf, "Санити: тестовой карте не хватило места для сородича за комфортным радиусом")
+	var/mob/living/simple_animal/hostile/flockmate = allocate(/mob/living/simple_animal/hostile, mate_turf)
+	var/datum/ai_controller/unit_test_hunter/controller = new(bug)
+	var/datum/ai_controller/unit_test_hunter/mate_controller = new(flockmate)
+
+	var/datum/idle_behavior/idle_random_walk/hostile_ambience/flocking/routine = new
+	TEST_ASSERT_EQUAL(routine.pick_idle_direction(bug, controller), EAST, "Сородич за комфортным радиусом обязан притягивать стайного моба")
+
+	qdel(routine)
+	qdel(mate_controller)
+	qdel(controller)
+
 ///Боевая адаптация: серия ударов, не снявшая с цели ничего, помечает её
 ///непробиваемой, и погоня по такой цели прекращается. Броня, которую моб
 ///физически не пробивает, - причина, по которой фауна часами грызла скафандр.
@@ -1109,9 +1129,16 @@
 	TEST_ASSERT(controller.blackboard[BB_AI_TARGET_IMPERVIOUS_UNTIL] > world.time, "Серия бесполезных ударов обязана пометить цель непробиваемой")
 
 	var/datum/ai_planning_subtree/hostile_fsm/fsm = GLOB.ai_subtrees[/datum/ai_planning_subtree/hostile_fsm]
+	controller.set_blackboard_key(BB_AI_CURRENT_TARGET, armored)
 	controller.blackboard[BB_AI_PURSUIT_ORIGIN] = pawn_turf
 	controller.blackboard[BB_AI_LAST_EXCHANGE_AT] = world.time
 	TEST_ASSERT(fsm.should_abandon_pursuit(controller), "Непробиваемая цель обязана прекращать погоню, даже если моб рядом с домом")
+
+	//пометка адресная: второй противник без брони не наследует чужую непробиваемость
+	var/mob/living/carbon/human/second_attacker = allocate(/mob/living/carbon/human, get_step(pawn_turf, NORTH))
+	controller.set_blackboard_key(BB_AI_CURRENT_TARGET, second_attacker)
+	TEST_ASSERT(!fsm.should_abandon_pursuit(controller), "Непробиваемость доказана про конкретную цель и не должна усмирять моба против новой")
+	controller.set_blackboard_key(BB_AI_CURRENT_TARGET, armored)
 
 	//настоящее попадание обнуляет счёт: цель снова стоит усилий
 	controller.blackboard[BB_AI_TARGET_IMPERVIOUS_UNTIL] = 0

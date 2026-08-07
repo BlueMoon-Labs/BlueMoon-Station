@@ -50,7 +50,11 @@
 	if(previous_ref != target_ref || isnull(previous_health))
 		blackboard[BB_AI_FUTILE_HITS] = 0
 		return
-	if(target.health < previous_health)
+	//упало - пробиваем; ВЫРОСЛО - цель лечат или она регенится, и "не пробить"
+	//не доказано: наш урон реален, его перекрывает чужое лечение. Доказательство
+	//брони - серия из строго НЕИЗМЕННОГО здоровья, иначе фауна бросала жертву,
+	//которую медик лечил быстрее, чем она её грызла.
+	if(target.health != previous_health)
 		blackboard[BB_AI_FUTILE_HITS] = 0
 		return
 	var/futile_hits = (blackboard[BB_AI_FUTILE_HITS] || 0) + 1
@@ -58,6 +62,7 @@
 	if(futile_hits < AI_FUTILE_HITS_THRESHOLD)
 		return
 	blackboard[BB_AI_TARGET_IMPERVIOUS_UNTIL] = world.time + AI_IMPERVIOUS_MEMORY
+	blackboard[BB_AI_TARGET_IMPERVIOUS_REF] = target_ref
 	blackboard[BB_AI_FUTILE_HITS] = 0
 
 ///TRUE, если обида на цель ещё не протухла
