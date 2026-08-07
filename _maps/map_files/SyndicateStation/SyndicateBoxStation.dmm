@@ -29404,7 +29404,7 @@
 	dwidth = 3;
 	height = 5;
 	name = "mining shuttle bay";
-	roundstart_template = /datum/map_template/shuttle/mining/box;
+	roundstart_template = /datum/map_template/shuttle/mining/kilo;
 	shuttle_id = "mining_home";
 	width = 7
 	},
