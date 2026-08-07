@@ -31,6 +31,7 @@ GLOBAL_DATUM_INIT(atmos_control_panel, /datum/atmos_control_panel, new)
 	data["heat_enabled"] = SSair.heat_enabled
 	data["equalize_enabled"] = SSair.equalize_enabled
 	data["equalize_valve_mode"] = SSair.equalize_valve_mode
+	data["sleeping_edges_enabled"] = SSair.sleeping_edges_enabled
 	data["log_decompression"] = SSair.log_explosive_decompression
 
 	data["counters"] = list(
@@ -134,6 +135,10 @@ GLOBAL_DATUM_INIT(atmos_control_panel, /datum/atmos_control_panel, new)
 		if("toggle_equalize")
 			SSair.equalize_enabled = !SSair.equalize_enabled
 			announce_change(user_client, "turned atmos equalization [SSair.equalize_enabled ? "ON" : "OFF"]")
+			return TRUE
+		if("toggle_sleeping_edges")
+			SSair.sleeping_edges_enabled = !SSair.sleeping_edges_enabled
+			announce_change(user_client, "turned atmos sleeping edges [SSair.sleeping_edges_enabled ? "ON" : "OFF"]")
 			return TRUE
 		if("toggle_decompression_log")
 			SSair.log_explosive_decompression = !SSair.log_explosive_decompression

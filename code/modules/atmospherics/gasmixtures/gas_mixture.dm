@@ -26,6 +26,11 @@ What are the archived variables for?
 	var/list/gas_archive
 	/// Native DM atmos registration guard.
 	var/dm_registered_to_ssair = FALSE
+	/// Счётчик мутаций содержимого (газы или температура) для sleeping edges:
+	/// каждый мутатор обязан его бампнуть, чтение - LINDA_turf_tile.dm. Объём
+	/// не считается: compare() его не смотрит. Переполнение float (16.7M) на
+	/// турф-миксах недостижимо за раунд.
+	var/tmp/mutation_rev = 0
 
 /datum/gas_mixture/New(volume)
 	if (!isnull(volume))
@@ -348,6 +353,9 @@ What are the archived variables for?
 
 		var/moved_moles = o2_delta + n2_delta
 		last_share = abs(o2_delta) + abs(n2_delta)
+		if(o2_delta || n2_delta)
+			mutation_rev++
+			sharer.mutation_rev++
 		// A later neighbor in the same cycle still shares from the cycle archive,
 		// so its delta can exhaust a live component already reduced by an earlier
 		// neighbor. Match the generic path's zero/negative key cleanup exactly.
@@ -386,8 +394,7 @@ What are the archived variables for?
 	// directly instead of allocating a `cached_gases | sharer_gases` union, fold the
 	// final mole recount into the same pass, and collect emptied ids instead of
 	// sweeping full .Copy() snapshots afterwards.
-	for(var/id in cached_gases)
-		var/ours = cached_gases[id]
+	for(var/id, ours in cached_gases)
 		var/theirs = sharer_gases[id]
 		var/delta = QUANTIZE((self_archive[id] || 0) - (sharer_archive[id] || 0))
 		if(delta)
@@ -415,7 +422,7 @@ What are the archived variables for?
 			if(QUANTIZE(theirs) <= 0)
 				LAZYADD(zero_theirs, id)
 
-	for(var/id in sharer_gases)
+	for(var/id, theirs in sharer_gases)
 		// Key-presence test, not a value test: a gas present at exactly zero must
 		// still count as already handled by the loop above. isnull() distinguishes
 		// "missing key" from "key holding 0", which `in` also does - but as an
@@ -423,7 +430,6 @@ What are the archived variables for?
 		// loop of the most expensive SSair phase.
 		if(!isnull(cached_gases[id]))
 			continue
-		var/theirs = sharer_gases[id]
 		var/delta = QUANTIZE((self_archive[id] || 0) - (sharer_archive[id] || 0))
 		if(delta)
 			if(delta > 0)
@@ -450,6 +456,9 @@ What are the archived variables for?
 			LAZYADD(zero_theirs, id)
 
 	last_share = abs_moved_moles
+	if(abs_moved_moles)
+		mutation_rev++
+		sharer.mutation_rev++
 
 	if(consider_heat)
 		var/new_self_heat_capacity = old_self_heat_capacity + heat_capacity_sharer_to_self - heat_capacity_self_to_sharer
@@ -457,9 +466,11 @@ What are the archived variables for?
 
 		if(new_self_heat_capacity > MINIMUM_HEAT_CAPACITY)
 			temperature = (old_self_heat_capacity * temperature - heat_capacity_self_to_sharer * temperature_archived + heat_capacity_sharer_to_self * sharer.temperature_archived) / new_self_heat_capacity
+			mutation_rev++
 
 		if(new_sharer_heat_capacity > MINIMUM_HEAT_CAPACITY)
 			sharer.temperature = (old_sharer_heat_capacity * sharer.temperature - heat_capacity_sharer_to_self * sharer.temperature_archived + heat_capacity_self_to_sharer * temperature_archived) / new_sharer_heat_capacity
+			sharer.mutation_rev++
 			if(abs(old_sharer_heat_capacity) > MINIMUM_HEAT_CAPACITY)
 				if(abs(new_sharer_heat_capacity / old_sharer_heat_capacity - 1) < 0.1)
 					temperature_share(sharer, OPEN_HEAT_TRANSFER_COEFFICIENT)
@@ -505,8 +516,7 @@ What are the archived variables for?
 	var/list/zero_ours
 
 	var/list/cached_gasheats = GLOB.gas_data.specific_heats
-	for(var/id in cached_gases)
-		var/ours = cached_gases[id]
+	for(var/id, ours in cached_gases)
 		var/delta = QUANTIZE((self_archive[id] || 0) - (template_gases[id] || 0))
 		if(delta)
 			delta *= coeff
@@ -522,10 +532,11 @@ What are the archived variables for?
 		if(QUANTIZE(ours) <= 0)
 			LAZYADD(zero_ours, id)
 
-	for(var/id in template_gases)
-		if(id in cached_gases)
+	for(var/id, template_moles in template_gases)
+		// Key presence, O(1): see the isnull() note in share() above.
+		if(!isnull(cached_gases[id]))
 			continue
-		var/delta = QUANTIZE((self_archive[id] || 0) - (template_gases[id] || 0))
+		var/delta = QUANTIZE((self_archive[id] || 0) - (template_moles || 0))
 		if(!delta)
 			continue
 		delta *= coeff
@@ -542,11 +553,14 @@ What are the archived variables for?
 			LAZYADD(zero_ours, id)
 
 	last_share = abs_moved_moles
+	if(abs_moved_moles)
+		mutation_rev++
 
 	if(consider_heat)
 		var/new_self_heat_capacity = old_self_heat_capacity + heat_capacity_sharer_to_self - heat_capacity_self_to_sharer
 		if(new_self_heat_capacity > MINIMUM_HEAT_CAPACITY)
 			temperature = (old_self_heat_capacity * temperature - heat_capacity_self_to_sharer * temperature_archived + heat_capacity_sharer_to_self * template.temperature_archived) / new_self_heat_capacity
+			mutation_rev++
 		// share() follows up with conductive equalization when the sharer heat
 		// capacity barely changed; replicate that against the template values
 		// through the null-sharer temperature_share path (no writes to template).

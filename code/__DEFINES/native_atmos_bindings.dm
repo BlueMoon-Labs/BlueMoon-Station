@@ -62,8 +62,7 @@
 		total_volume += max(mix.volume, 0)
 		var/mix_heat_capacity = 0
 		var/list/mix_gases = mix.gases
-		for(var/id in mix_gases)
-			var/moles = mix_gases[id]
+		for(var/id, moles in mix_gases)
 			total_gases[id] = (total_gases[id] || 0) + moles
 			mix_heat_capacity += moles * (specific_heats[id] || 0)
 		mix_heat_capacity = max(mix_heat_capacity, mix.min_heat_capacity)
@@ -82,11 +81,12 @@
 		var/volume_ratio = max(mix.volume, 0) * inv_total_volume
 		var/list/mix_gases = mix.gases
 		mix_gases.Cut()
-		for(var/id in total_gases)
-			var/moles = total_gases[id] * volume_ratio
+		for(var/id, total_moles in total_gases)
+			var/moles = total_moles * volume_ratio
 			if(moles > 0)
 				mix_gases[id] = moles
 		mix.temperature = target_temperature
+		mix.mutation_rev++
 	// Do not keep strong references to pipenet mixtures between calls.
 	participating.Cut()
 	total_gases.Cut()
@@ -678,10 +678,13 @@
 /datum/gas_mixture/proc/get_moles(gas_id)
 	return gases[gas_id] || 0
 
+// Мутаторы ниже бампают mutation_rev - контракт sleeping edges (см. деклара-
+// цию). Прямых записей в gases мимо этих проков в кодбазе нет (проверено).
 /datum/gas_mixture/proc/set_moles(gas_id, amt_val)
 	if(gc_share)
 		return FALSE
 	gases[gas_id] = max(0, amt_val)
+	mutation_rev++
 	return TRUE
 
 /datum/gas_mixture/proc/adjust_moles(id_val, num_val)
@@ -696,7 +699,10 @@
 /datum/gas_mixture/proc/set_temperature(arg_temp)
 	if(gc_share)
 		return FALSE
-	temperature = max(arg_temp, TCMB)
+	arg_temp = max(arg_temp, TCMB)
+	if(temperature != arg_temp)
+		temperature = arg_temp
+		mutation_rev++
 	return TRUE
 
 /datum/gas_mixture/proc/return_volume()
@@ -708,16 +714,18 @@
 	volume = max(0, vol_arg)
 	return TRUE
 
+// Горячие циклы ниже ходят двухпеременной итерацией (tg 7312275a5fb): value
+// приезжает вместе с ключом, без второго хеш-чтения list[id] на каждый шаг.
 /datum/gas_mixture/proc/total_moles()
 	. = 0
-	for(var/id in gases)
-		. += gases[id]
+	for(var/id, gas_moles in gases)
+		. += gas_moles
 
 /datum/gas_mixture/proc/heat_capacity()
 	. = 0
 	var/list/cached_gasheats = GLOB.gas_data.specific_heats
-	for(var/id in gases)
-		. += (gases[id] || 0) * (cached_gasheats[id] || 0)
+	for(var/id, gas_moles in gases)
+		. += (gas_moles || 0) * (cached_gasheats[id] || 0)
 	. = max(., min_heat_capacity)
 
 /datum/gas_mixture/proc/thermal_energy()
@@ -732,6 +740,7 @@
 	if(gc_share)
 		return FALSE
 	gases.Cut()
+	mutation_rev++
 	return TRUE
 
 /datum/gas_mixture/proc/archive()
@@ -751,25 +760,27 @@
 		var/combined_heat_capacity = giver_heat_capacity + self_heat_capacity
 		if(combined_heat_capacity > 0)
 			temperature = (giver.temperature * giver_heat_capacity + temperature * self_heat_capacity) / combined_heat_capacity
-	for(var/giver_id in giver.gases)
-		gases[giver_id] = (gases[giver_id] || 0) + (giver.gases[giver_id] || 0)
+	for(var/giver_id, giver_moles in giver.gases)
+		gases[giver_id] = (gases[giver_id] || 0) + (giver_moles || 0)
+	mutation_rev++
 	return TRUE
 
 /datum/gas_mixture/proc/copy_from(datum/gas_mixture/giver)
 	if(gc_share || !giver)
 		return FALSE
 	gases.Cut()
-	for(var/id in giver.gases)
-		gases[id] = giver.gases[id]
+	for(var/id, giver_moles in giver.gases)
+		gases[id] = giver_moles
 	temperature = giver.temperature
+	mutation_rev++
 	return TRUE
 
 /datum/gas_mixture/proc/archived_heat_capacity()
 	. = 0
 	var/list/cached_gasheats = GLOB.gas_data.specific_heats
 	var/list/archive = gas_archive || gases
-	for(var/id in archive)
-		. += (archive[id] || 0) * (cached_gasheats[id] || 0)
+	for(var/id, archived_moles in archive)
+		. += (archived_moles || 0) * (cached_gasheats[id] || 0)
 	. = max(., min_heat_capacity)
 
 /datum/gas_mixture/proc/__remove(datum/gas_mixture/into, amount_arg)
@@ -783,11 +794,13 @@
 	into.temperature = temperature
 	if(!into.gases)
 		into.gases = list()
-	for(var/id in gases)
-		var/amt = (gases[id] || 0) * ratio
+	for(var/id, current_moles in gases)
+		var/amt = (current_moles || 0) * ratio
 		if(amt > 0)
 			into.gases[id] = (into.gases[id] || 0) + amt
-			gases[id] = (gases[id] || 0) - amt
+			gases[id] = (current_moles || 0) - amt
+	mutation_rev++
+	into.mutation_rev++
 	GAS_GARBAGE_COLLECT(gases)
 
 /datum/gas_mixture/proc/__remove_ratio(into, ratio_arg)
@@ -812,8 +825,8 @@
 		other_old_capacity = other.heat_capacity()
 		cached_gasheats = GLOB.gas_data.specific_heats
 	var/moved_any = FALSE
-	for(var/id in cached_gases)
-		var/moved = cached_gases[id] * ratio
+	for(var/id, current_moles in cached_gases)
+		var/moved = current_moles * ratio
 		if(moved <= 0)
 			continue
 		moved_any = TRUE
@@ -826,6 +839,8 @@
 	if(heat_transfer && moved_heat_capacity > 0)
 		var/combined_heat_capacity = other_old_capacity + moved_heat_capacity
 		other.temperature = (temperature * moved_heat_capacity + other.temperature * other_old_capacity) / combined_heat_capacity
+	mutation_rev++
+	other.mutation_rev++
 	GAS_GARBAGE_COLLECT(cached_gases)
 	return TRUE
 
@@ -834,8 +849,8 @@
 		return FALSE
 	var/list/cached_gases = gases
 	var/sum = 0
-	for(var/id in cached_gases)
-		sum += cached_gases[id]
+	for(var/id, gas_moles in cached_gases)
+		sum += gas_moles
 	moles = min(moles, sum)
 	if(moles <= 0)
 		// Nothing to move (empty source): report no-op so vents/pumps can idle
@@ -849,11 +864,11 @@
 	. = 0
 	var/list/oxidation_temps = GLOB.gas_data.oxidation_temperatures
 	var/list/oxidation_rates = GLOB.gas_data.oxidation_rates
-	for(var/id in gases)
+	for(var/id, gas_moles in gases)
 		var/t_ox = oxidation_temps[id]
 		if(t_ox && temp >= t_ox)
 			var/temperature_scale = max(0, 1 - (t_ox / max(temp, TCMB)))
-			. += (gases[id] || 0) * (oxidation_rates[id] || 0) * temperature_scale
+			. += (gas_moles || 0) * (oxidation_rates[id] || 0) * temperature_scale
 	return .
 
 /datum/gas_mixture/proc/get_fuel_amount(temp)
@@ -862,11 +877,11 @@
 	. = 0
 	var/list/fuel_temps = GLOB.gas_data.fire_temperatures
 	var/list/fuel_rates = GLOB.gas_data.fire_burn_rates
-	for(var/id in gases)
+	for(var/id, gas_moles in gases)
 		var/t_f = fuel_temps[id]
 		if(t_f && temp >= t_f)
 			var/temperature_scale = max(0, 1 - (t_f / max(temp, TCMB)))
-			. += ((gases[id] || 0) / max(fuel_rates[id], 0.01)) * temperature_scale
+			. += ((gas_moles || 0) / max(fuel_rates[id], 0.01)) * temperature_scale
 	return .
 
 /datum/gas_mixture/proc/equalize_with(datum/gas_mixture/total)
@@ -886,6 +901,8 @@
 		var/combined = our_m + their_m
 		gases[id] = combined * volume / total_vol
 		total.gases[id] = combined * total.volume / total_vol
+	mutation_rev++
+	total.mutation_rev++
 
 /datum/gas_mixture/proc/transfer_ratio_to(datum/gas_mixture/other, ratio)
 	if(gc_share || !other || other.gc_share)
@@ -905,17 +922,25 @@
 	ratio = clamp(ratio, 0, 1)
 	if(ratio <= 0)
 		return FALSE
+	var/list/cached_gases = gases
+	if(ratio >= 1)
+		// Полный сброс - штатный путь кромки пробоины (tg-паритет), Cut()
+		// дешевле поэлементного умножения в ноль с последующей чисткой.
+		if(!length(cached_gases))
+			return FALSE
+		cached_gases.Cut()
+		mutation_rev++
+		return TRUE
 	var/keep = 1 - ratio
 	var/vented = 0
-	var/list/cached_gases = gases
-	for(var/id in cached_gases)
-		var/current_moles = cached_gases[id]
+	for(var/id, current_moles in cached_gases)
 		if(current_moles <= 0)
 			continue
 		vented += current_moles * ratio
 		cached_gases[id] = current_moles * keep
 	if(vented <= 0)
 		return FALSE
+	mutation_rev++
 	GAS_GARBAGE_COLLECT(cached_gases)
 	return TRUE
 
@@ -927,8 +952,8 @@
 		return FALSE
 	var/list/cached_gases = gases
 	var/sum = 0
-	for(var/id in cached_gases)
-		sum += cached_gases[id]
+	for(var/id, gas_moles in cached_gases)
+		sum += gas_moles
 	moles = min(moles, sum)
 	if(moles <= 0)
 		return FALSE
@@ -950,20 +975,20 @@
 	var/list/cached_gases = gases
 	var/list/other_gases = other.gases
 	var/our_moles = 0
-	for(var/id in cached_gases)
-		var/gas_moles = cached_gases[id] || 0
+	for(var/id, iter_moles in cached_gases)
+		var/gas_moles = iter_moles || 0
 		our_moles += gas_moles
 		var/delta = abs(gas_moles - (other_gases[id] || 0))
 		if(delta > MINIMUM_MOLES_DELTA_TO_MOVE)
 			if(delta > gas_moles * MINIMUM_AIR_RATIO_TO_MOVE)
 				return id
-	for(var/id in other_gases)
+	for(var/id, other_moles in other_gases)
 		// Key presence, O(1), same semantics as `in`: a key holding exactly zero
 		// was already compared above and must not be re-tested here.
 		if(!isnull(cached_gases[id]))
 			continue
 		// gas_moles is 0 for ids we lack, so the ratio gate is always passed.
-		if(abs(other_gases[id] || 0) > MINIMUM_MOLES_DELTA_TO_MOVE)
+		if(abs(other_moles || 0) > MINIMUM_MOLES_DELTA_TO_MOVE)
 			return id
 	if(our_moles > MINIMUM_MOLES_DELTA_TO_MOVE)
 		if(abs(temperature - other.temperature) > MINIMUM_TEMPERATURE_DELTA_TO_SUSPEND)
@@ -1011,32 +1036,36 @@
 	if(heat_transfer && moved_heat_capacity > 0)
 		var/combined_heat_capacity = into_old_capacity + moved_heat_capacity
 		into.temperature = (temperature * moved_heat_capacity + into.temperature * into_old_capacity) / combined_heat_capacity
+	mutation_rev++
+	into.mutation_rev++
 	GAS_GARBAGE_COLLECT(cached_gases)
 	return TRUE
 
 /datum/gas_mixture/proc/get_by_flag(flag_val)
 	. = list()
 	var/list/flags = GLOB.gas_data.flags
-	for(var/id in gases)
+	for(var/id, gas_moles in gases)
 		if(flags[id] & flag_val)
-			.[id] = gases[id]
+			.[id] = gas_moles
 
 /datum/gas_mixture/proc/__remove_by_flag(datum/gas_mixture/into, flag_val, amount_val)
 	if(gc_share)
 		return
 	var/list/with_flag = get_by_flag(flag_val)
 	var/sum = 0
-	for(var/id in with_flag)
-		sum += with_flag[id]
+	for(var/id, flag_moles in with_flag)
+		sum += flag_moles
 	if(sum <= 0)
 		return
 	var/ratio = min(1, amount_val / sum)
 	into.temperature = temperature
-	for(var/id in with_flag)
-		var/amt = with_flag[id] * ratio
+	for(var/id, flag_moles in with_flag)
+		var/amt = flag_moles * ratio
 		if(amt > 0)
 			into.gases[id] = (into.gases[id] || 0) + amt
 			gases[id] = (gases[id] || 0) - amt
+	mutation_rev++
+	into.mutation_rev++
 	GAS_GARBAGE_COLLECT(gases)
 
 /datum/gas_mixture/proc/divide(num_val)
@@ -1044,29 +1073,33 @@
 		return FALSE
 	if(num_val <= 0)
 		return FALSE
-	for(var/id in gases)
-		gases[id] /= num_val
+	for(var/id, gas_moles in gases)
+		gases[id] = gas_moles / num_val
+	mutation_rev++
 	return TRUE
 
 /datum/gas_mixture/proc/multiply(num_val)
 	if(gc_share)
 		return FALSE
-	for(var/id in gases)
-		gases[id] *= num_val
+	for(var/id, gas_moles in gases)
+		gases[id] = gas_moles * num_val
+	mutation_rev++
 	return TRUE
 
 /datum/gas_mixture/proc/subtract(num_val)
 	if(gc_share)
 		return FALSE
-	for(var/id in gases)
-		gases[id] = max(0, (gases[id] || 0) - num_val)
+	for(var/id, gas_moles in gases)
+		gases[id] = max(0, (gas_moles || 0) - num_val)
+	mutation_rev++
 	return TRUE
 
 /datum/gas_mixture/proc/add(num_val)
 	if(gc_share)
 		return FALSE
-	for(var/id in gases)
-		gases[id] = (gases[id] || 0) + num_val
+	for(var/id, gas_moles in gases)
+		gases[id] = (gas_moles || 0) + num_val
+	mutation_rev++
 	return TRUE
 
 /datum/gas_mixture/proc/adjust_multi(...)
@@ -1089,6 +1122,7 @@
 			var/list/cached_gasheats = GLOB.gas_data.specific_heats
 			var/delta_heat = num_val * (cached_gasheats[id_val] || 0) * temp_val
 			temperature = (temperature * cap + delta_heat) / heat_capacity()
+			mutation_rev++
 	return TRUE
 
 /datum/gas_mixture/proc/partial_heat_capacity(gas_id)
@@ -1117,9 +1151,11 @@
 		if(self_heat_capacity > MINIMUM_HEAT_CAPACITY && sharer_heat_capacity > MINIMUM_HEAT_CAPACITY)
 			var/heat = conduction_coefficient * temperature_delta * (self_heat_capacity * sharer_heat_capacity / (self_heat_capacity + sharer_heat_capacity))
 			temperature = max(temperature - heat / self_heat_capacity, TCMB)
+			mutation_rev++
 			sharer_temperature = max(sharer_temperature + heat / sharer_heat_capacity, TCMB)
 			if(sharer && !sharer_is_immutable)
 				sharer.temperature = sharer_temperature
+				sharer.mutation_rev++
 	return sharer_temperature
 
 /datum/gas_mixture/proc/react(datum/holder)
@@ -1160,8 +1196,8 @@
 				candidates += bucket
 		if(temp >= SSair.temp_gated_min_temp)
 			var/list/temp_gated = SSair.temp_gated_reactions
-			for(var/r in temp_gated)
-				if(temp >= temp_gated[r])
+			for(var/r, min_temp in temp_gated)
+				if(temp >= min_temp)
 					if(!candidates)
 						candidates = list()
 						candidates_owned = TRUE
@@ -1189,8 +1225,8 @@
 		return
 
 	var/total = 0
-	for(var/id in cached_gases)
-		total += cached_gases[id]
+	for(var/id, gas_moles in cached_gases)
+		total += gas_moles
 	if(!total)
 		// A mixture that reacted on a previous call and has since been emptied
 		// must not leave stale per-call results (hotspots read them after react()).

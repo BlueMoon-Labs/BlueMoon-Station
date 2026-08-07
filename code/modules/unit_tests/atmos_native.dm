@@ -974,11 +974,9 @@
 		neighbor.air.copy_from_turf(neighbor)
 		SSair.remove_from_active(neighbor)
 
-/// Space drains must finish the job: below SPACE_DRAIN_FINISH_PRESSURE the
-/// tile dumps everything in one pass and matches space temperature - the
-/// exponential 1/(neighbors+1) bleed spends tens of cycles on residue that is
-/// already unsurvivable, and that tail was pure churn. Above the threshold
-/// the gradual drain (and its spacewind) must stay untouched.
+/// Space drains take everything in one pass (tg-паритет share_end): кромка
+/// пробоины опустошается за фаер и остывает до TCMB, спейсвинд получает полную
+/// дельту давления, а зона дыры встаёт в декомп-очередь ровно один раз.
 /datum/unit_test/atmos_space_drain_finish/Run()
 	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
 	var/turf/open/origin = run_loc_floor_bottom_left
@@ -1010,33 +1008,45 @@
 		drain.excited_group.garbage_collect()
 	SSair.remove_from_active(drain)
 
-	// Above the threshold: one cycle takes 1/(neighbors+1) = half, not all.
+	// Полное давление: один фаер забирает всё, тайл выходит на TCMB, спейсвинд
+	// получает полную дельту (дыра на севере - вектор строго +y).
 	drain.air.copy_from_turf(drain)
 	var/moles_full = drain.air.total_moles()
 	TEST_ASSERT(moles_full > 0, "drain tile has no default air")
+	var/pressure_full = drain.air.return_pressure()
+	drain.pressure_vector_x = 0
+	drain.pressure_vector_y = 0
 	SSair.add_to_active(drain, FALSE)
 	var/fire_count = drain.current_cycle + 1
 	drain.process_cell(fire_count)
-	TEST_ASSERT(abs(drain.air.total_moles() - moles_full * 0.5) < 0.1, "above-threshold space drain is no longer gradual: [drain.air.total_moles()] of [moles_full] mol left")
+	TEST_ASSERT(drain.air.total_moles() < 0.001, "full-pressure space drain left residue: [drain.air.total_moles()] of [moles_full] mol")
+	TEST_ASSERT(abs(drain.air.return_temperature() - TCMB) < 0.01, "dumped tile did not match space temperature")
+	TEST_ASSERT(abs(drain.pressure_vector_y - pressure_full) < 0.5, "spacewind must carry the full pressure delta toward the hole (got [drain.pressure_vector_y] of [pressure_full])")
 	TEST_ASSERT(SSair.decompression_areas[drain_area], "room-to-space pressure delta did not queue the breached area")
 	var/queued_areas = length(SSair.decompression_areas)
 	SSair.queue_decompression_area(drain)
 	TEST_ASSERT_EQUAL(length(SSair.decompression_areas), queued_areas, "multiple leaking turfs queued the same area more than once")
 
-	// Below the threshold: the tile dumps everything and matches space.
+	// Тёплый подпороговый огрызок (моли ниже MINIMUM_MOLES_DELTA_TO_MOVE, но
+	// температура выше TCMB) тоже уходит целиком - раньше такой висел на
+	// экспоненциальном хвосте десятки циклов.
 	drain.air.copy_from_turf(drain)
-	drain.air.multiply(0.15)
+	drain.air.multiply(0.0005)
+	drain.air.set_temperature(T20C)
+	TEST_ASSERT(drain.air.total_moles() <= MINIMUM_MOLES_DELTA_TO_MOVE, "wisp fixture must sit below the mole gate")
 	SSair.add_to_active(drain, FALSE)
 	fire_count++
 	drain.process_cell(fire_count)
-	TEST_ASSERT(drain.air.total_moles() < 0.001, "sub-threshold space drain left residue: [drain.air.total_moles()] mol")
-	TEST_ASSERT(abs(drain.air.return_temperature() - TCMB) < 0.01, "dumped tile did not match space temperature")
+	TEST_ASSERT(drain.air.total_moles() < 0.001, "warm wisp survived the space drain: [drain.air.total_moles()] mol")
+	TEST_ASSERT(abs(drain.air.return_temperature() - TCMB) < 0.01, "warm wisp kept its temperature against space")
 
 	if(drain.excited_group)
 		drain.excited_group.garbage_collect()
 	SSair.high_pressure_delta -= drain
 	drain.high_pressure_queued = FALSE
 	drain.pressure_difference = 0
+	drain.pressure_vector_x = 0
+	drain.pressure_vector_y = 0
 	drain.atmos_cooldown = 0
 	drain.air.copy_from_turf(drain)
 	SSair.remove_from_active(drain)

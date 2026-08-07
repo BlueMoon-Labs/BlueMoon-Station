@@ -80,6 +80,7 @@
 #include "atmos_superconduction.dm"
 #include "atmos_planetary_churn.dm"
 #include "atmos_saturation_valve.dm"
+#include "atmos_sleeping_edges.dm"
 #include "atmos_speed_lever.dm"
 #include "atmos_he_pipe_sleep.dm"
 #include "atmos_idle_churn.dm"

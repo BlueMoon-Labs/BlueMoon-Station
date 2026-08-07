@@ -43,10 +43,6 @@
 /// large in bounded time: the giant-hall bench (120x100 hall, 16:1 pressure
 /// split) never settles and holds ~140ms/fire indefinitely without this valve.
 #define EXCITED_GROUP_ZONE_EQUALIZE_THRESHOLD		1500
-///A space-adjacent tile below this pressure vents everything in one pass instead of bleeding
-///1/(neighbors+1) per cycle: the exponential tail spends tens of cycles per tile on residue
-///that is already deep past HAZARD_LOW_PRESSURE, and that whole tail was pure churn.
-#define SPACE_DRAIN_FINISH_PRESSURE					20
 /// A room-to-space pressure difference at or above this value queues its base area
 /// for one decompression/firelock event in the current SSair fire.
 #define DECOMPRESSION_FIRELOCK_PRESSURE_DELTA		WARNING_LOW_PRESSURE

@@ -42,6 +42,13 @@
 
 	conductivity_blocked_directions = 0
 
+	// Sleeping edges: геометрия вокруг тайла меняется (сюда же приходит каждый
+	// Initalize_Atmos, в т.ч. после ChangeTurf со сменой air-датума) - кэши
+	// осевших пар и у нас, и у соседей на нас больше не действительны.
+	var/turf/open/open_self = src
+	if(isopenturf(open_self))
+		open_self.settled_edge_revs = null
+
 	var/src_contains_firelock = 1
 	if(locate(/obj/machinery/door/firedoor) in src)
 		src_contains_firelock |= 2
@@ -79,6 +86,10 @@
 			LAZYREMOVE(current_turf.atmos_adjacent_turfs, src)
 			continue
 
+		var/turf/open/open_neighbor = current_turf
+		if(open_neighbor.settled_edge_revs)
+			open_neighbor.settled_edge_revs -= src
+
 		var/other_contains_firelock = 1
 		if(locate(/obj/machinery/door/firedoor) in current_turf)
 			other_contains_firelock |= 2
@@ -99,8 +110,15 @@
 	block_all_conductivity()
 	for(var/turf/current_turf as anything in atmos_adjacent_turfs)
 		LAZYREMOVE(current_turf.atmos_adjacent_turfs, src)
+		if(isopenturf(current_turf))
+			var/turf/open/open_neighbor = current_turf
+			if(open_neighbor.settled_edge_revs)
+				open_neighbor.settled_edge_revs -= src
 		current_turf.__update_auxtools_turf_adjacency_info()
 
+	var/turf/open/open_self = src
+	if(isopenturf(open_self))
+		open_self.settled_edge_revs = null
 	LAZYNULL(atmos_adjacent_turfs)
 	__update_auxtools_turf_adjacency_info()
 

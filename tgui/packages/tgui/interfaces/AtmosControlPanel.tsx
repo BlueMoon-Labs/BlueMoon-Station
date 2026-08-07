@@ -35,6 +35,7 @@ type AtmosControlPanelData = {
   heat_enabled: BooleanLike;
   equalize_enabled: BooleanLike;
   equalize_valve_mode: BooleanLike;
+  sleeping_edges_enabled: BooleanLike;
   log_decompression: BooleanLike;
   counters: NamedValue[];
   costs: NamedValue[];
@@ -97,6 +98,14 @@ const Levers = () => {
               Клапан открыт
             </Button.Checkbox>
           )}
+        </LabeledList.Item>
+        <LabeledList.Item label="Спящие рёбра">
+          <Button.Checkbox
+            checked={data.sleeping_edges_enabled}
+            tooltip="Осевшие пары турфов пропускают compare/share по ревизиям смесей. Экспериментальный перф-режим."
+            onClick={() => act('toggle_sleeping_edges')}>
+            Пропускать осевшие пары
+          </Button.Checkbox>
         </LabeledList.Item>
         <LabeledList.Item label="Лог разгерметизаций">
           <Button.Checkbox

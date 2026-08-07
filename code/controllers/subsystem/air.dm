@@ -149,6 +149,12 @@ SUBSYSTEM_DEF(air)
 	// pure diffusion demonstrably cannot finish a differential that large (the
 	// giant-hall bench never settles at ~140ms/fire). Recomputed per stage pass.
 	var/equalize_valve_mode = FALSE
+	// Sleeping edges (фича-флаг, CONFIG_GET(flag/atmos_sleeping_edges)): осевшие
+	// одногрупповые пары турфов кэшируют ревизии смесей и пропускают
+	// compare/share, пока оба конца не изменились. Выключено по умолчанию до
+	// giant-hall A/B; безопасно переключать на живом мире - кэши инвалидируются
+	// ревизиями сами.
+	var/sleeping_edges_enabled = FALSE
 	// Whether turf-to-turf heat exchanging should be enabled. Set from
 	// CONFIG_GET(flag/atmos_heat_enabled) at init - never write it directly,
 	// go through set_heat_enabled() so the pass list cannot outlive the flag.
@@ -336,12 +342,14 @@ SUBSYSTEM_DEF(air)
 /datum/controller/subsystem/air/Initialize(timeofday)
 	map_loading = FALSE
 	setup_allturfs()
+	log_roundstart_active_turfs()
 	setup_atmos_machinery()
 	setup_pipenets()
 	gas_reactions = init_gas_reactions()
 	atmos_handbooks_init()
 	auxtools_update_reactions()
 	equalize_enabled = CONFIG_GET(flag/atmos_equalize_enabled)
+	sleeping_edges_enabled = CONFIG_GET(flag/atmos_sleeping_edges)
 	set_heat_enabled(CONFIG_GET(flag/atmos_heat_enabled))
 	set_atmos_speed(CONFIG_GET(number/atmos_speed_multiplier))
 	return ..()
@@ -1167,6 +1175,42 @@ SUBSYSTEM_DEF(air)
 			add_to_active(planetary_turf, FALSE, reset_stall = FALSE)
 			break
 		CHECK_TICK
+
+/// Максимум построчных записей роундстартовых активных турфов в mapping-лог:
+/// свежая большая карта держит ~5k стартовых активов, и полный список без капа
+/// раздувает лог; хвост срезается с явной пометкой.
+#define ROUNDSTART_ACTIVE_TURF_LOG_CAP 3000
+
+/// Роундстартовый снимок активных турфов (адаптация tg d43ebd042dd): заполняет
+/// GLOB.active_turfs_startlist - его читают админ-вербы "Show roundstart AT
+/// list/markers" - и пишет каждый турф с координатами и зоной в mapping-лог.
+/// Активный турф на старте - это замапленный градиент (пара соседей с разными
+/// initial_gas_mix, дыра в обшивке, планетарная граница): каждая такая пара -
+/// постоянная фоновая работа SSair до конца раунда, снимаемая правкой карты.
+/datum/controller/subsystem/air/proc/log_roundstart_active_turfs()
+	GLOB.active_turfs_startlist = active_turfs.Copy()
+// В CI лог только шумит: тестовые карты намеренно держат активные градиенты
+// (та же уступка, что у tg), а читать mapping-лог там некому.
+#ifndef UNIT_TESTS
+	if(!length(active_turfs))
+		log_mapping("Roundstart active turfs: none.")
+		return
+	var/list/z_tally = list()
+	var/logged = 0
+	for(var/turf/open/active_turf as anything in active_turfs)
+		if(!istype(active_turf))
+			continue
+		z_tally["z[active_turf.z]"]++
+		if(logged >= ROUNDSTART_ACTIVE_TURF_LOG_CAP)
+			continue
+		logged++
+		var/area/turf_area = active_turf.loc
+		log_mapping("ACTIVE TURF: [active_turf] ([active_turf.x],[active_turf.y],[active_turf.z]) in [turf_area.type][active_turf.planetary_atmos ? " (planetary)" : ""]")
+		CHECK_TICK
+	log_mapping("Roundstart active turfs: [length(active_turfs)] total[logged < length(active_turfs) ? ", first [logged] listed (cap [ROUNDSTART_ACTIVE_TURF_LOG_CAP])" : ""]. By z-level: [json_encode(z_tally)]. Use \"Mapping -> Show roundstart AT list/markers\" in-round; every listed turf is a mapped-in gradient fixable on the map.")
+#endif
+
+#undef ROUNDSTART_ACTIVE_TURF_LOG_CAP
 
 /datum/controller/subsystem/air/proc/setup_atmos_machinery()
 	for (var/obj/machinery/atmospherics/AM in atmos_machinery)

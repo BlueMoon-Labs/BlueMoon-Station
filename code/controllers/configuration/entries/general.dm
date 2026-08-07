@@ -413,6 +413,11 @@
 /datum/config_entry/flag/atmos_equalize_enabled
 	default = FALSE
 
+/// Sleeping edges: осевшие пары соседних турфов пропускают compare/share по
+/// ревизиям смесей. Экспериментальный перф-флаг, выключен до giant-hall A/B.
+/datum/config_entry/flag/atmos_sleeping_edges
+	default = FALSE
+
 /// Turf-to-turf heat conduction through solids (superconduction). Registration
 /// starts only above MINIMUM_TEMPERATURE_START_SUPERCONDUCTION, so a station at
 /// room temperature pays one variable read per active turf.

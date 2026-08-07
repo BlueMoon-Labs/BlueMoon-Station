@@ -53,6 +53,12 @@
 	///Vents/scrubbers that want an instant wake-up when air on this turf changes.
 	///Maintained by /obj/machinery/atmospherics/register_turf_wake().
 	var/tmp/list/atmos_wake_machines
+	///Sleeping edges (идея ZAS ConnectionGroup): осевшие пары соседей. Ключ -
+	///сосед, значение - list(наша ревизия, его ревизия) на момент compare(),
+	///сказавшего "разницы нет". Пока обе mutation_rev не изменились, пара
+	///пропускает compare/share целиком. Гейтится SSair.sleeping_edges_enabled;
+	///сбрасывается при пересчёте соседства (ImmediateCalculateAdjacentTurfs).
+	var/tmp/list/settled_edge_revs
 
 /turf/open/Initialize(mapload, inherited_virtual_z)
 	air = new(2500,src)
@@ -809,8 +815,7 @@
 		var/member_heat_capacity = 0
 		var/member_moles = 0
 		var/list/member_gases = member_air.gases
-		for(var/gas_id in member_gases)
-			var/moles = member_gases[gas_id]
+		for(var/gas_id, moles in member_gases)
 			member_moles += moles
 			total_gases[gas_id] = (total_gases[gas_id] || 0) + moles
 			member_heat_capacity += moles * (specific_heats[gas_id] || 0)
@@ -838,11 +843,12 @@
 		var/volume_ratio = max(member_air.volume, 0) * inv_total_volume
 		var/list/member_gases = member_air.gases
 		member_gases.Cut()
-		for(var/gas_id in total_gases)
-			var/moles = total_gases[gas_id] * volume_ratio
+		for(var/gas_id, total_moles in total_gases)
+			var/moles = total_moles * volume_ratio
 			if(moles > 0)
 				member_gases[gas_id] = moles
 		member_air.temperature = target_temperature
+		member_air.mutation_rev++
 
 /// Атомарный прогон обхода зоны целиком, от затравки до разрыва пола.
 ///
@@ -916,6 +922,7 @@
 	var/adjacent_turfs_length = max(1, LAZYLEN(adjacent_turfs))
 	var/our_share_coeff = 1 / (adjacent_turfs_length + 1)
 	var/cached_atmos_cooldown = atmos_cooldown + 1
+	var/edge_sleep_enabled = SSair?.sleeping_edges_enabled
 
 	var/planet_atmos = planetary_atmos
 
@@ -933,6 +940,7 @@
 	var/our_cycle_moles = our_air.total_moles()
 	var/our_suspend_threshold = max(MINIMUM_AIR_TO_SUSPEND, our_cycle_moles * SIGNIFICANT_SHARE_CONTENT_RATIO)
 	var/our_move_threshold = max(MINIMUM_MOLES_DELTA_TO_MOVE, our_cycle_moles * MINIMUM_AIR_RATIO_TO_MOVE)
+	var/turf/open/space_neighbor
 
 	ATMOS_TPROF_MARK
 	for(var/turf/open/enemy_tile as anything in adjacent_turfs)
@@ -951,80 +959,18 @@
 			continue
 
 		// Space is represented by a shared immutable mix (the only turf air with
-		// gc_share set), so vent explicitly instead of mutating it.
+		// gc_share set), so vent explicitly instead of mutating it. Сам сброс
+		// отложен за цикл пар: он идёт по живым значениям, и здесь он снял бы
+		// газ ДО того, как соседи закончили с нами меняться.
 		if(enemy_air.gc_share)
-			ATMOS_TPROF_MARK_INNER
 			ATMOS_TPROF_COUNT("space_pairs")
 			// A planetary turf never trades with space: the template refills
 			// whatever the vacuum takes, so the pair is a perpetual vent/refill
 			// pump that keeps the tile excited forever (space-ruin exteriors
 			// mapped with planetary dirt: syndicate mothership, reactor ruin).
 			// The sky wins - the tile just keeps its template air.
-			if(planet_atmos)
-				ATMOS_TPROF_ADD_INNER("space")
-				continue
-			var/moles_before = our_air.total_moles()
-			var/temperature_before = our_air.temperature
-			if(moles_before <= MINIMUM_MOLES_DELTA_TO_MOVE && abs(temperature_before - TCMB) <= MINIMUM_TEMPERATURE_DELTA_TO_CONSIDER)
-				ATMOS_TPROF_ADD_INNER("space")
-				continue
-			ATMOS_TPROF_COUNT("space_vents")
-			// Derive pressures from the known mole scaling instead of re-summing
-			// the gas list through return_pressure().
-			var/volume_cache = our_air.volume
-			var/pressure_before = volume_cache > 0 ? (moles_before * R_IDEAL_GAS_EQUATION * temperature_before / volume_cache) : 0
-			if(pressure_before >= DECOMPRESSION_FIRELOCK_PRESSURE_DELTA && SSair)
-				SSair.queue_decompression_area(src)
-			var/vent_everything = pressure_before < SPACE_DRAIN_FINISH_PRESSURE
-			if(vent_everything)
-				// Below survivable pressure the exponential bleed is pure churn:
-				// space takes the rest in one pass and the tile leaves the drain
-				// loop instead of asymptoting for tens of cycles. The emptied
-				// tile matches space temperature too - a near-zero heat capacity
-				// residue otherwise keeps paying temperature_share toward TCMB.
-				our_air.vent_ratio(1)
-				our_air.set_temperature(TCMB)
-			else
-				our_air.vent_ratio(our_share_coeff)
-				if(abs(our_air.temperature - TCMB) > MINIMUM_TEMPERATURE_DELTA_TO_CONSIDER)
-					our_air.temperature_share(null, OPEN_HEAT_TRANSFER_COEFFICIENT, TCMB, HEAT_CAPACITY_VACUUM)
-			// A turf draining to space must stay active until it is actually empty:
-			// without a group the end-of-proc check deactivates a lone leaking turf
-			// after one pass, freezing the leak mid-drain. Cooldown resets are gated
-			// by the vented amount (mirroring LAST_SHARE_CHECK) so a residual
-			// trickle stops pinning the whole group's breakdown/dismantle forever.
-			if(!our_excited_group)
-				var/datum/excited_group/space_group = new
-				space_group.add_turf(src)
-				our_excited_group = excited_group
-			// Метка "зона стравливается в космос": по ней брейкдаун/расформирование
-			// приводят подпороговые тёплые остатки членов к TCMB (snap_vented_wisp).
-			our_excited_group.vented_to_space = TRUE
-			var/vented_moles = vent_everything ? moles_before : (moles_before * our_share_coeff)
-			if(vented_moles > MINIMUM_AIR_TO_SUSPEND)
-				our_excited_group.reset_cooldowns()
-				cached_atmos_cooldown = 0
-			else if(vented_moles > MINIMUM_MOLES_DELTA_TO_MOVE)
-				our_excited_group.dismantle_cooldown = 0
-				cached_atmos_cooldown = 0
-			else if(pressure_before >= SPACE_DRAIN_FINISH_PRESSURE)
-				// Vacuum exception (Baystation lesson): a superheated near-vacuum
-				// tile (>=~10000K) holds survivable pressure on sub-0.1 mol content,
-				// so both mole-gated resets above miss it and the tile would go to
-				// sleep visibly pressurized against space. Pressure decays toward
-				// the vent_everything threshold every cycle, so this cannot pin the
-				// tile awake forever.
-				// The GROUP lifecycle must be held off too: without this the
-				// group's dismantle_cooldown keeps ticking and dismantle() pulls
-				// the still-draining tile out of the active list mid-leak.
-				our_excited_group.dismantle_cooldown = 0
-				cached_atmos_cooldown = 0
-			if(volume_cache > 0)
-				var/pressure_after = vent_everything ? 0 : (moles_before * (1 - our_share_coeff) * R_IDEAL_GAS_EQUATION * our_air.temperature / volume_cache)
-				var/pressure_delta_space = pressure_before - pressure_after
-				if(pressure_delta_space > 0)
-					consider_pressure_difference(enemy_tile, pressure_delta_space)
-			ATMOS_TPROF_ADD_INNER("space")
+			if(!planet_atmos)
+				space_neighbor = enemy_tile
 			continue
 
 		// Two different skies meeting (lava shore, jungle river bank): both
@@ -1081,6 +1027,18 @@
 						enemy_tile.consider_pressure_difference(src, -sky_pressure_delta)
 				continue
 
+		// Sleeping edges: осевшая одногрупповая пара выходит ДО ленивого архива
+		// соседа - иначе спящее ребро всё равно платило бы копию его газ-листа.
+		// Отложенный архив безопасен: он нужен только реальному share(), и
+		// первый же живой партнёр (или собственный process_cell соседа) снимет
+		// его сам. Промах инвалидации самолечится breakdown-усреднением группы.
+		var/datum/excited_group/enemy_group_early = enemy_tile.excited_group
+		if(edge_sleep_enabled && our_excited_group && our_excited_group == enemy_group_early)
+			var/list/edge_state_early = settled_edge_revs?[enemy_tile]
+			if(edge_state_early && edge_state_early[1] == our_air.mutation_rev && edge_state_early[2] == enemy_air.mutation_rev)
+				ATMOS_TPROF_COUNT("edge_sleeps")
+				continue
+
 		// Same guard the tile applies to its own archive at the top of the proc,
 		// and for the same reason. A tile with several active neighbours used to
 		// be re-archived by every one of them in turn, and each re-archive
@@ -1110,7 +1068,23 @@
 			// Остаточное выравнивание внутри группы докрывает self_breakdown раз в
 			// EXCITED_GROUP_BREAKDOWN_CYCLES, а пороги здесь ровно те, которые
 			// LINDA сама считает незначимыми.
+			//
 			should_share_air = !!our_air.compare(enemy_air)
+			// Sleeping edges: пара сказала "разницы нет" - запоминаем ревизии
+			// обоих концов, и пока они не менялись, ранний гейт перед архивом
+			// соседа пропускает пару целиком. Устаревшую запись не чистим: по
+			// несовпавшим ревизиям она не сработает и перезапишется здесь же.
+			if(edge_sleep_enabled && !should_share_air)
+				var/list/settled = settled_edge_revs
+				if(!settled)
+					settled = list()
+					settled_edge_revs = settled
+				var/list/edge_state = settled[enemy_tile]
+				if(edge_state)
+					edge_state[1] = our_air.mutation_rev
+					edge_state[2] = enemy_air.mutation_rev
+				else
+					settled[enemy_tile] = list(our_air.mutation_rev, enemy_air.mutation_rev)
 		else if(our_air.compare(enemy_air))
 			ATMOS_TPROF_COUNT("group_creates")
 			if(!enemy_tile.excited && SSair)
@@ -1135,6 +1109,49 @@
 			LAST_SHARE_CHECK
 
 	ATMOS_TPROF_ADD("neighbors")
+
+	ATMOS_TPROF_MARK
+	if(space_neighbor)
+		// tg-паритет (их share_end: "We share 100% of our mix in this step"):
+		// кромка пробоины отдаёт космосу ВСЁ за один фаер, а не 1/(n+1)-долю.
+		// Экспоненциальный слив давал вялые разгермы (зал через 1-тайловую дыру
+		// сосался десятки минут), спейсвинд в долю дельты и хвост из десятков
+		// циклов на мизере. Сброс считается по живым значениям после парных
+		// шеров - как ре-архив перед share(space, 1, 1) у tg: всё, что соседи
+		// втолкнули в кромку этим фаером, уходит этим же фаером.
+		var/moles_before = our_air.total_moles()
+		var/temperature_before = our_air.temperature
+		if(moles_before > MINIMUM_MOLES_DELTA_TO_MOVE || abs(temperature_before - TCMB) > MINIMUM_TEMPERATURE_DELTA_TO_CONSIDER)
+			ATMOS_TPROF_COUNT("space_vents")
+			// Derive pressure from the known mole scaling instead of re-summing
+			// the gas list through return_pressure().
+			var/volume_cache = our_air.volume
+			var/pressure_before = volume_cache > 0 ? (moles_before * R_IDEAL_GAS_EQUATION * temperature_before / volume_cache) : 0
+			if(pressure_before >= DECOMPRESSION_FIRELOCK_PRESSURE_DELTA && SSair)
+				SSair.queue_decompression_area(src)
+			our_air.vent_ratio(1)
+			our_air.set_temperature(TCMB)
+			// Группа нужна и опустевшей кромке: соседи докармливают её каждый
+			// фаер, и без группы конец процедуры снял бы одинокую утечку с
+			// актива после первого же прохода.
+			if(!our_excited_group)
+				var/datum/excited_group/space_group = new
+				space_group.add_turf(src)
+				our_excited_group = excited_group
+			// Метка "зона стравливается в космос": по ней брейкдаун/расформирование
+			// приводят подпороговые тёплые остатки членов к TCMB (snap_vented_wisp).
+			our_excited_group.vented_to_space = TRUE
+			if(moles_before > MINIMUM_AIR_TO_SUSPEND)
+				our_excited_group.reset_cooldowns()
+				cached_atmos_cooldown = 0
+			else if(moles_before > MINIMUM_MOLES_DELTA_TO_MOVE)
+				our_excited_group.dismantle_cooldown = 0
+				cached_atmos_cooldown = 0
+			// Спейсвинд получает полную дельту - главный видимый эффект tg-разгерма:
+			// у дыры рвёт и тянет, пока комнате есть что терять.
+			if(pressure_before > 0)
+				consider_pressure_difference(space_neighbor, pressure_before)
+	ATMOS_TPROF_ADD("space")
 
 	ATMOS_TPROF_MARK
 	if(planet_atmos)
