@@ -107619,13 +107619,8 @@
 /turf/open/floor/plasteel/dark,
 /area/security/checkpoint/supply)
 "pIw" = (
-/obj/docking_port/stationary{
-	dir = 8;
-	dwidth = 1;
-	height = 4;
-	name = "escape pod loader";
-	roundstart_template = /datum/map_template/shuttle/escape_pod/default;
-	width = 3
+/obj/docking_port/stationary/escape_pod{
+	dir = 8
 	},
 /turf/open/floor/plating/layeniaredder{
 	icon_state = "concrete2";
@@ -160159,13 +160154,8 @@
 /turf/open/floor/plasteel/dark,
 /area/engineering/break_room)
 "xov" = (
-/obj/docking_port/stationary{
-	dir = 2;
-	dwidth = 1;
-	height = 4;
-	name = "escape pod loader";
-	roundstart_template = /datum/map_template/shuttle/escape_pod/default;
-	width = 3
+/obj/docking_port/stationary/escape_pod{
+	dir = 2
 	},
 /turf/open/floor/plating,
 /area/ruin/space)

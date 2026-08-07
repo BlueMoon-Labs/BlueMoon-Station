@@ -31726,12 +31726,7 @@
 /turf/open/floor/plasteel,
 /area/hallway/secondary/exit)
 "jWU" = (
-/obj/docking_port/stationary{
-	dwidth = 1;
-	height = 4;
-	roundstart_template = /datum/map_template/shuttle/escape_pod/default;
-	width = 3
-	},
+/obj/docking_port/stationary/escape_pod,
 /turf/open/space/transparent/openspace,
 /area/space)
 "jWW" = (
@@ -55888,12 +55883,7 @@
 	},
 /area/engineering/lobby/mid)
 "rCh" = (
-/obj/docking_port/stationary{
-	dwidth = 1;
-	height = 4;
-	roundstart_template = /datum/map_template/shuttle/escape_pod/default;
-	width = 3
-	},
+/obj/docking_port/stationary/escape_pod,
 /turf/open/space/basic,
 /area/space)
 "rCp" = (
@@ -69049,12 +69039,8 @@
 /turf/closed/wall,
 /area/service/chapel/office)
 "vOV" = (
-/obj/docking_port/stationary{
-	dir = 4;
-	dwidth = 1;
-	height = 4;
-	roundstart_template = /datum/map_template/shuttle/escape_pod/default;
-	width = 3
+/obj/docking_port/stationary/escape_pod{
+	dir = 4
 	},
 /turf/open/space/transparent/openspace,
 /area/space)
