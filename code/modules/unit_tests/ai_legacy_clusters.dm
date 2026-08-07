@@ -1241,7 +1241,11 @@
 	TEST_ASSERT_NULL(worker.target, "Pollination must clear the legacy target for the next tray")
 	TEST_ASSERT(!strategy.can_attack(worker, tray), "A freshly visited tray must not be re-targeted")
 
-	//удар - fight or flight: поиск растений выключается на легаси-таймер
+	//удар - fight or flight: поиск растений выключается на легаси-таймер.
+	//AI глушим: иначе пчела жалит жертву рядом, та бьёт в ответ и снова
+	//сбрасывает search_objects уже после RegainSearchObjects.
+	controller.set_ai_status(AI_STATUS_OFF)
+	controller.CancelActions()
 	tray.recent_bee_visit = FALSE
 	worker.adjustBruteLoss(1)
 	TEST_ASSERT_EQUAL(worker.search_objects, 0, "Damage must trigger the legacy LoseSearchObjects")
