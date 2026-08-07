@@ -318,14 +318,13 @@
 	var/recharging_time = 0 //time until next dash
 	var/jumping = FALSE //are we mid-jump?
 
-/// Награда кристаллизатора за нитрий. Как и хилиевый дефибриллятор, отличается
-/// от базовых только видом: остальные выходы кристаллизатора нигде больше не
-/// добываются, и награда обязана читаться как своя вещь, а не как чужая.
-/// Перекраску оставляем: это выбор игрока, а не подмена награды.
+/// Награда кристаллизатора за нитрий. Более быстрый цикл ускорителя отличает её
+/// от шахтёрских прыжковых ботинок, но дальность рывка остаётся прежней.
 /obj/item/clothing/shoes/bhop/crystallizer
 	name = "nitrium impulse boots"
-	desc = "Jump boots repacked around a nitrium cell. The stimulant bleeds into the propulsion charge, and the amber banding is how you tell them from stock issue."
+	desc = "Прыжковые ботинки с нитриумным ускорителем. Они совершают такой же рывок, как шахтёрская модель, но восстанавливают импульс за четыре с половиной секунды вместо шести."
 	icon_state = "jetboots_nitrium"
+	recharging_rate = 45
 
 /obj/item/clothing/shoes/bhop/ui_action_click(mob/user, action)
 	if(!isliving(user))

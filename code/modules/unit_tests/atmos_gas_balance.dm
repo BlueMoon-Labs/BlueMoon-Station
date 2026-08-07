@@ -448,6 +448,55 @@
 			TEST_ASSERT(ispath(product_path, /obj/item) || ispath(product_path, /obj/machinery),
 				"[permanent.name] выдаёт [product_path], который не предмет и не машина")
 
+/// Постоянная награда обязана отличаться механикой, а не только названием и
+/// спрайтом. Иначе дорогой рецепт второго уровня проигрывает обычному источнику
+/// того же предмета и существует лишь как ловушка для незнающего игрока.
+/datum/unit_test/crystallizer_permanent_rewards_have_roles
+
+/datum/unit_test/crystallizer_permanent_rewards_have_roles/Run()
+	var/obj/item/defibrillator/compact/loaded/crystallizer/healium_defib = allocate(/obj/item/defibrillator/compact/loaded/crystallizer)
+	TEST_ASSERT(healium_defib.healdisk, "хилиумный дефибриллятор снова отличается от обычного только окраской")
+
+	var/obj/item/clothing/shoes/bhop/plain_boots = allocate(/obj/item/clothing/shoes/bhop)
+	var/obj/item/clothing/shoes/bhop/crystallizer/nitrium_boots = allocate(/obj/item/clothing/shoes/bhop/crystallizer)
+	TEST_ASSERT(nitrium_boots.recharging_rate < plain_boots.recharging_rate,
+		"нитриумные ботинки перезаряжаются не быстрее обычных прыжковых")
+	TEST_ASSERT_EQUAL(nitrium_boots.jumpdistance, plain_boots.jumpdistance,
+		"малый бонус нитриумных ботинок превратился в увеличение дальности рывка")
+
+	var/obj/item/holosign_creator/atmos/sustained/proto_projector = allocate(/obj/item/holosign_creator/atmos/sustained)
+	TEST_ASSERT(proto_projector.charge_recovery_active >= proto_projector.charge_drain_per_sign,
+		"прото-нитратный проектор больше не может бесконечно держать одну проекцию")
+
+/// Пеллеты приехали из кода exploration drone без самой подсистемы и были
+/// пустыми экспортными предметами. В BlueMoon их роль - конечный переносной
+/// запас энергии, причём глубина газовой цепочки должна увеличивать импульс.
+/datum/unit_test/crystallizer_fuel_pellets_store_energy
+
+/datum/unit_test/crystallizer_fuel_pellets_store_energy/Run()
+	var/previous_transfer = 0
+	for(var/pellet_path in list(
+		/obj/item/fuel_pellet,
+		/obj/item/fuel_pellet/advanced,
+		/obj/item/fuel_pellet/exotic,
+	))
+		var/obj/item/fuel_pellet/pellet = allocate(pellet_path)
+		var/obj/item/stock_parts/cell/bluespace/cell = allocate(/obj/item/stock_parts/cell/bluespace)
+		cell.charge = 0
+		var/starting_uses = pellet.uses
+		var/transferred = pellet.recharge_cell(cell)
+		TEST_ASSERT_EQUAL(transferred, pellet.charge_per_use,
+			"[pellet.name] передала [transferred] вместо заявленных [pellet.charge_per_use]")
+		TEST_ASSERT(transferred > previous_transfer,
+			"[pellet.name] не сильнее пеллеты предыдущего уровня: [transferred] против [previous_transfer]")
+		TEST_ASSERT_EQUAL(pellet.uses, starting_uses - 1, "[pellet.name] не потратила ровно один импульс")
+
+		cell.charge = cell.maxcharge
+		var/uses_before_full_cell = pellet.uses
+		TEST_ASSERT_EQUAL(pellet.recharge_cell(cell), 0, "[pellet.name] передала энергию в полный аккумулятор")
+		TEST_ASSERT_EQUAL(pellet.uses, uses_before_full_cell, "[pellet.name] потратила импульс на полный аккумулятор")
+		previous_transfer = transferred
+
 /// Награда обязана выглядеть как своя вещь, а не как чужая.
 ///
 /// Все выходы кристаллизатора, кроме второго уровня, - предметы, которые больше
