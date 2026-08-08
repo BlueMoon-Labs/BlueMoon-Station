@@ -276,6 +276,7 @@
 /area/ruin/space/has_grav)
 
 (1,1,1) = {"
+aO
 aa
 aa
 aa
@@ -297,6 +298,12 @@ aa
 aa
 aa
 aa
+aO
+aO
+aO
+aO
+aO
+aO
 aO
 aO
 aO
@@ -306,6 +313,7 @@ aO
 aO
 "}
 (2,1,1) = {"
+aO
 aa
 ab
 ab
@@ -327,6 +335,12 @@ ab
 ab
 ab
 aa
+aO
+aO
+aO
+aO
+aO
+aO
 aO
 aO
 aO
@@ -336,6 +350,7 @@ aO
 aO
 "}
 (3,1,1) = {"
+aO
 aa
 ab
 ab
@@ -357,6 +372,12 @@ ab
 ab
 ab
 aa
+aO
+aO
+aO
+aO
+aO
+aO
 aO
 aO
 aO
@@ -366,6 +387,7 @@ aO
 aO
 "}
 (4,1,1) = {"
+aO
 aa
 ab
 ab
@@ -387,6 +409,12 @@ ab
 ab
 ab
 aa
+aO
+aO
+aO
+aO
+aO
+aO
 aO
 aO
 aO
@@ -396,6 +424,7 @@ aO
 aO
 "}
 (5,1,1) = {"
+aO
 aa
 aa
 ab
@@ -424,8 +453,15 @@ aP
 aP
 aP
 aO
+aO
+aO
+aO
+aO
+aO
+aO
 "}
 (6,1,1) = {"
+aO
 aa
 ab
 ab
@@ -454,8 +490,15 @@ aP
 aR
 aP
 aO
+aO
+aO
+aO
+aO
+aO
+aO
 "}
 (7,1,1) = {"
+aO
 aa
 aa
 ab
@@ -484,8 +527,15 @@ aR
 aP
 aR
 aO
+aO
+aO
+aO
+aO
+aO
+aO
 "}
 (8,1,1) = {"
+aO
 aa
 ab
 ab
@@ -514,8 +564,15 @@ aR
 aP
 aP
 aO
+aO
+aO
+aO
+aO
+aO
+aO
 "}
 (9,1,1) = {"
+aO
 aa
 aa
 ab
@@ -544,8 +601,15 @@ aS
 aR
 aP
 aO
+aO
+aO
+aO
+aO
+aO
+aO
 "}
 (10,1,1) = {"
+aO
 aa
 ab
 ab
@@ -574,8 +638,15 @@ aP
 aP
 aO
 aO
+aO
+aO
+aO
+aO
+aO
+aO
 "}
 (11,1,1) = {"
+aO
 aa
 aa
 ab
@@ -604,8 +675,15 @@ aT
 aO
 aO
 aO
+aO
+aO
+aO
+aO
+aO
+aO
 "}
 (12,1,1) = {"
+aO
 aa
 ab
 ab
@@ -634,8 +712,15 @@ aP
 aO
 aO
 aO
+aO
+aO
+aO
+aO
+aO
+aO
 "}
 (13,1,1) = {"
+aO
 aa
 aa
 ab
@@ -664,8 +749,15 @@ aP
 aO
 aO
 aO
+aO
+aO
+aO
+aO
+aO
+aO
 "}
 (14,1,1) = {"
+aO
 aa
 ab
 ab
@@ -694,8 +786,15 @@ aO
 aO
 aO
 aO
+aO
+aO
+aO
+aO
+aO
+aO
 "}
 (15,1,1) = {"
+aO
 aa
 aa
 ab
@@ -720,12 +819,19 @@ aU
 aP
 aP
 aP
+aO
+aO
+aO
+aO
+aO
+aO
 aO
 aO
 aO
 aO
 "}
 (16,1,1) = {"
+aO
 aa
 ab
 ab
@@ -754,8 +860,15 @@ aO
 aO
 aO
 aO
+aO
+aO
+aO
+aO
+aO
+aO
 "}
 (17,1,1) = {"
+aO
 aa
 aa
 ab
@@ -777,6 +890,12 @@ ab
 ab
 aa
 aa
+aO
+aO
+aO
+aO
+aO
+aO
 aO
 aO
 aO
@@ -786,6 +905,7 @@ aO
 aO
 "}
 (18,1,1) = {"
+aO
 aa
 ab
 ab
@@ -814,8 +934,15 @@ aO
 aO
 aO
 aO
+aO
+aO
+aO
+aO
+aO
+aO
 "}
 (19,1,1) = {"
+aO
 aa
 aa
 ab
@@ -844,8 +971,15 @@ aO
 aO
 aO
 aO
+aO
+aO
+aO
+aO
+aO
+aO
 "}
 (20,1,1) = {"
+aO
 aa
 ab
 ab
@@ -874,8 +1008,15 @@ aO
 aO
 aO
 aO
+aO
+aO
+aO
+aO
+aO
+aO
 "}
 (21,1,1) = {"
+aO
 aa
 aa
 ab
@@ -904,8 +1045,15 @@ aO
 aO
 aO
 aO
+aO
+aO
+aO
+aO
+aO
+aO
 "}
 (22,1,1) = {"
+aO
 aa
 ab
 ab
@@ -927,6 +1075,12 @@ ab
 ab
 ab
 aa
+aO
+aO
+aO
+aO
+aO
+aO
 aO
 aO
 aO
@@ -936,6 +1090,7 @@ aO
 aO
 "}
 (23,1,1) = {"
+aO
 aa
 ab
 ab
@@ -957,6 +1112,12 @@ ab
 ab
 ab
 aa
+aO
+aO
+aO
+aO
+aO
+aO
 aO
 aO
 aO
@@ -966,6 +1127,7 @@ aO
 aO
 "}
 (24,1,1) = {"
+aO
 aa
 ab
 ab
@@ -987,6 +1149,12 @@ ab
 ab
 ab
 aa
+aO
+aO
+aO
+aO
+aO
+aO
 aO
 aO
 aO
@@ -996,6 +1164,7 @@ aO
 aO
 "}
 (25,1,1) = {"
+aO
 aa
 aa
 aa
@@ -1017,6 +1186,12 @@ aa
 aa
 aa
 aa
+aO
+aO
+aO
+aO
+aO
+aO
 aO
 aO
 aO
