@@ -304,9 +304,12 @@ SUBSYSTEM_DEF(inteq_pact_siege)
 	wait = 2 SECONDS
 	runlevels = RUNLEVEL_GAME | RUNLEVEL_POSTGAME
 
+/datum/controller/subsystem/inteq_pact_siege/proc/start_roundstart_activate()
+	GLOB.inteq_pact_siege.try_roundstart_activate()
+
 /datum/controller/subsystem/inteq_pact_siege/Initialize()
 	. = ..()
-	addtimer(CALLBACK(GLOB.inteq_pact_siege, TYPE_PROC_REF(/datum/inteq_pact_siege, try_roundstart_activate)), 10 SECONDS)
+	addtimer(CALLBACK(src, PROC_REF(start_roundstart_activate)), 10 SECONDS)
 	return SS_INIT_SUCCESS
 
 /datum/controller/subsystem/inteq_pact_siege/fire(resumed)
