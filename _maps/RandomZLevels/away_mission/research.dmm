@@ -126,13 +126,6 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/awaymission/research/interior/engineering)
-"ay" = (
-/obj/structure/chair{
-	dir = 8
-	},
-/mob/living/simple_animal/hostile/inteq,
-/turf/open/floor/mineral/plastitanium/red,
-/area/awaymission/research/interior/engineering)
 "az" = (
 /obj/effect/gibspawner/human,
 /obj/item/stock_parts/cell/high,
@@ -931,7 +924,6 @@
 /obj/effect/turf_decal/tile/yellow{
 	dir = 8
 	},
-/mob/living/simple_animal/hostile/inteq,
 /turf/open/floor/plasteel/white,
 /area/awaymission/research/interior)
 "cp" = (
@@ -1379,16 +1371,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/awaymission/research/interior/genetics)
-"di" = (
-/obj/effect/turf_decal/tile/purple{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/purple{
-	dir = 4
-	},
-/mob/living/simple_animal/hostile/nanotrasen/ranged,
-/turf/open/floor/plasteel/white,
-/area/awaymission/research/interior/cryo)
 "dj" = (
 /obj/effect/decal/cleanable/blood,
 /obj/item/stack/rods,
@@ -1440,7 +1422,6 @@
 /obj/effect/turf_decal/tile/yellow{
 	dir = 4
 	},
-/mob/living/simple_animal/hostile/inteq,
 /turf/open/floor/plasteel/white,
 /area/awaymission/research/interior)
 "do" = (
@@ -2155,6 +2136,7 @@
 /obj/effect/turf_decal/tile/purple{
 	dir = 4
 	},
+/mob/living/simple_animal/hostile/nanotrasen,
 /turf/open/floor/plasteel/white,
 /area/awaymission/research/interior/cryo)
 "eB" = (
@@ -6543,7 +6525,7 @@
 /area/awaymission/research/interior/escapepods)
 "ZZ" = (
 /obj/structure/table/wood,
-/obj/item/book/granter/action/origami,
+/obj/item/book/random,
 /turf/open/floor/mineral/plasma,
 /area/space/nearstation)
 
@@ -32114,7 +32096,7 @@ eV
 eW
 gk
 eW
-eV
+dc
 dc
 cQ
 dc
@@ -38280,7 +38262,7 @@ ea
 ev
 fd
 fE
-dP
+gu
 ev
 fd
 fE
@@ -40590,7 +40572,7 @@ dh
 dv
 dh
 ea
-di
+ev
 fc
 fH
 gx
@@ -44685,7 +44667,7 @@ aq
 aq
 aq
 aq
-ay
+aq
 an
 aL
 nf

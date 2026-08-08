@@ -1084,8 +1084,9 @@
 	. = ..()
 
 /datum/martial_art/nanosuit/proc/on_attack_hand(mob/living/carbon/human/owner, atom/target, proximity)
-	if(proximity)
-		return target.attack_heavy_melee(owner)
+	if(!proximity || iscarbon(target))
+		return FALSE
+	return target.attack_heavy_melee(owner)
 
 /mob/living/carbon/human/UnarmedAttack(atom/A, proximity)
 	var/datum/martial_art/nanosuit/style = mind?.has_martialart(MARTIALART_NANOSUIT)
