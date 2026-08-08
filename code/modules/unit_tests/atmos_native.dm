@@ -1017,6 +1017,9 @@
 	drain.pressure_vector_x = 0
 	drain.pressure_vector_y = 0
 	SSair.add_to_active(drain, FALSE)
+	// Прайм подтверждающего гейта декомп-тревоги: этот тест проверяет сам слив и
+	// постановку в очередь, окно подтверждения покрыто отдельным тестом.
+	SSair.decompression_pending[drain_area] = SSair.times_fired - 1
 	var/fire_count = drain.current_cycle + 1
 	drain.process_cell(fire_count)
 	TEST_ASSERT(drain.air.total_moles() < 0.001, "full-pressure space drain left residue: [drain.air.total_moles()] of [moles_full] mol")
@@ -1038,6 +1041,7 @@
 	TEST_ASSERT(drain.air.return_pressure() < DECOMPRESSION_FIRELOCK_PRESSURE_DELTA, "mid-drain fixture must sit below the old 50 kPa gate (got [drain.air.return_pressure()])")
 	TEST_ASSERT(drain.air.return_pressure() >= HAZARD_LOW_PRESSURE, "mid-drain fixture must hold survivable pressure (got [drain.air.return_pressure()])")
 	SSair.add_to_active(drain, FALSE)
+	SSair.decompression_pending[drain_area] = SSair.times_fired - 1
 	fire_count++
 	drain.process_cell(fire_count)
 	TEST_ASSERT(SSair.decompression_areas[drain_area], "a sub-50 kPa room venting to space must still queue its decompression event")
@@ -1067,6 +1071,7 @@
 	SSair.remove_from_active(drain)
 	SSair.decompression_areas -= drain_area
 	SSair.decompression_handled_at -= drain_area
+	SSair.decompression_pending -= drain_area
 	drain_old_area.contents += drain
 
 /// Idle-heartbeat machines must wake instantly when air on their turf changes,

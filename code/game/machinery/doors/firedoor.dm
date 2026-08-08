@@ -275,6 +275,12 @@
 	for(var/obj/machinery/door/firedoor/door as anything in group_members)
 		door.issue_turfs = shared_issues
 	for(var/obj/machinery/door/firedoor/door as anything in group_members)
+		// Кэш "зона горит" обновляется только обходом area.firedoors по фронту
+		// тревоги, а дверь, сменившая зоны (перелёт шаттла, forceMove, распад
+		// группы), из того списка выпала - перевыводим из ТЕКУЩИХ affecting_areas,
+		// иначе улетевшая с непогашенной тревогой дверь печатает свою новую
+		// группу GENERIC-тревогой до конца смены.
+		door.derive_generic_alarm()
 		door.rescan_atmos_turfs()
 	recompute_atmos_alarm()
 
@@ -451,12 +457,18 @@
 /// Re-evaluates every affected area because a firedoor can border more than one
 /// alarm zone and clearing one must not override another active alarm.
 /obj/machinery/door/firedoor/proc/refresh_generic_alarm()
+	derive_generic_alarm()
+	recompute_atmos_alarm()
+
+/// Перевывод кэша "зона горит" из ТЕКУЩИХ affecting_areas, без пересчёта группы.
+/// Отдельным проком, чтобы пересборка журнала могла перевывести кэш каждому
+/// члену группы до единственного общего recompute_atmos_alarm().
+/obj/machinery/door/firedoor/proc/derive_generic_alarm()
 	generic_alarm = FALSE
 	for(var/area/affected as anything in affecting_areas)
 		if(affected.fire)
 			generic_alarm = TRUE
 			break
-	recompute_atmos_alarm()
 
 /obj/machinery/door/firedoor/Bumped(atom/movable/AM)
 	if(panel_open || operating || welded)

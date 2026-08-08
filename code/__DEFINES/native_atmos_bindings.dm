@@ -239,12 +239,32 @@
 	// level instead of localizing the breach.
 	if(!base || istype(base, /area/space))
 		return
+	queue_decompression_base(base)
+
+/// Леджерная часть постановки зоны в декомп-очередь, отдельно от гарда космоса
+/// выше: тестам нужна ровно она - зона юнит-тестовой резервации это /area/space.
+/datum/controller/subsystem/air/proc/queue_decompression_base(area/base)
 	// A breach keeps its edge turfs above the queue threshold for many fires;
 	// the first handling already alarmed and pressure-stopped the compartment,
 	// so re-sweeping it every SSair fire is pure waste.
 	var/last_handled = decompression_handled_at[base]
 	if(last_handled && world.time < last_handled + DECOMPRESSION_AREA_ALARM_COOLDOWN)
 		return
+	if(decompression_areas[base])
+		return
+	// Одиночный пшик - цикл наружного шлюза, мгновенно осушенный карман - не
+	// пробоина: настоящая утечка перевзводит зону каждый фаер, пока кромку
+	// кормят соседи. Тревога (полновесная пожарная тревога базового ареала,
+	// которую никто не сбрасывает автоматически) ставится только по перевзводу
+	// более поздним фаером внутри подтверждающего окна; протухший первый замер
+	// считается новым первым разом.
+	var/first_seen = decompression_pending[base]
+	if(isnull(first_seen) || times_fired - first_seen > DECOMPRESSION_PENDING_WINDOW_FIRES)
+		decompression_pending[base] = times_fired
+		return
+	if(first_seen == times_fired)
+		return
+	decompression_pending -= base
 	decompression_areas[base] = TRUE
 
 /// Raises the existing decompression alarm path once, then applies the same
@@ -284,6 +304,13 @@
 			var/area/base = handled[i]
 			if(world.time >= handled[base] + DECOMPRESSION_AREA_ALARM_COOLDOWN)
 				handled.Cut(i, i + 1)
+		// Та же уборка для неподтверждённых замеров: за пределами окна запись уже
+		// ничего не подтвердит, а ссылку на снесённую зону держит.
+		var/list/pending = decompression_pending
+		for(var/i = length(pending); i > 0; i--)
+			var/area/base = pending[i]
+			if(times_fired - pending[base] > DECOMPRESSION_PENDING_WINDOW_FIRES)
+				pending.Cut(i, i + 1)
 		currentrun = decompression_areas.Copy()
 		decompression_areas.Cut()
 		num_decompression_areas = 0

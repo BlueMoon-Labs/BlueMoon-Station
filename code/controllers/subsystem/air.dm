@@ -126,6 +126,11 @@ SUBSYSTEM_DEF(air)
 	/// requeueing so a draining breach fires one alarm sweep per cooldown, not
 	/// one per SSair fire.
 	var/list/decompression_handled_at = list()
+	/// Base area -> номер фаера SSair первого замеченного вент-события. Тревога
+	/// ставится только по перевзводу более поздним фаером в пределах
+	/// DECOMPRESSION_PENDING_WINDOW_FIRES (см. queue_decompression_area);
+	/// протухшие записи снимает уборка декомп-фазы.
+	var/list/decompression_pending = list()
 	/// Разобранные строки газа: сырая строка -> list(температура, list(газ -> моли)).
 	/// См. [/datum/controller/subsystem/air/proc/get_parsed_gas_string].
 	var/list/parsed_gas_strings = list()

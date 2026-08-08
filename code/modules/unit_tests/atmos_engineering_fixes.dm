@@ -343,6 +343,81 @@
 	var/area/incinerator_type = /area/maintenance/disposal/incinerator
 	TEST_ASSERT(initial(incinerator_type.firelock_heat_exempt), "зона сжигателя потеряла освобождение от тепловой тревоги")
 
+/// Кэш "зона горит" (generic_alarm) обновляется только обходом area.firedoors по
+/// фронту тревоги. Дверь, покинувшая зону с непогашенной тревогой (перелёт
+/// шаттла, forceMove), из этого списка выпадает, и без перевывода на пересборке
+/// журнала она уносит TRUE с собой: GENERIC печатает её новую merger-группу
+/// навсегда - шаттеры шаттла стоят закрытыми до конца смены (VV-дамп с прода:
+/// alarm_type=generic, auto_closed=1, тревоги вокруг нет).
+/datum/unit_test/firedoor_move_clears_stale_generic_alarm/Run()
+	var/turf/open/origin = run_loc_floor_bottom_left
+	var/obj/machinery/door/firedoor/door = allocate(/obj/machinery/door/firedoor)
+	unit_test_normalize_exposure_window(origin)
+	door.generic_alarm = FALSE
+
+	var/area/base = get_base_area(door)
+	TEST_ASSERT(isarea(base), "у тестовой двери нет базовой зоны")
+	var/saved_fire = base.fire
+
+	// Тревога зоны доезжает до двери ровно этим путём (ModifyFiredoors ->
+	// refresh_generic_alarm), зону целиком не дёргаем - она общая на все тесты.
+	base.fire = TRUE
+	door.refresh_generic_alarm()
+	var/alarm_while_burning = door.alarm_type
+	var/generic_while_burning = door.generic_alarm
+
+	// Зона "осталась позади": у текущих affecting_areas тревоги больше нет, а
+	// снять кэш обходом area.firedoors уже некому - дверь из списка выпала.
+	base.fire = FALSE
+	door.rebuild_alarm_ledger()
+	var/alarm_after_move = door.alarm_type
+	var/generic_after_move = door.generic_alarm
+	base.fire = saved_fire
+
+	TEST_ASSERT(generic_while_burning, "предпосылка: тревога зоны не взвела generic_alarm")
+	TEST_ASSERT_EQUAL(alarm_while_burning, FIRELOCK_ALARM_TYPE_GENERIC, "предпосылка: тревога зоны не защёлкнула GENERIC на группе")
+	TEST_ASSERT(!generic_after_move, "пересборка журнала не перевывела generic_alarm из новых зон - улетевшая дверь унесла тревогу с собой")
+	TEST_ASSERT(alarm_after_move != FIRELOCK_ALARM_TYPE_GENERIC, "GENERIC пережил пересборку журнала в зоне без тревоги")
+
+/// Одноразовый пшик разгерметизации - цикл наружного шлюза, мгновенно осушенный
+/// карман - не пробоина: настоящая утечка перевзводит зону каждый фаер, пока
+/// комнату кормят соседи. Без гейта подтверждения каждый выход в скафандре
+/// поднимал полновесную пожарную тревогу базового ареала (сирена, файрлоки
+/// каждые 10 секунд), которую никто не сбрасывает автоматически.
+/datum/unit_test/decompression_alarm_needs_confirmation/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/origin = run_loc_floor_bottom_left
+	var/area/base = get_base_area(origin)
+	TEST_ASSERT(isarea(base), "у тестового турфа нет базовой зоны")
+	SSair.decompression_areas -= base
+	SSair.decompression_handled_at -= base
+	SSair.decompression_pending -= base
+
+	SSair.queue_decompression_base(base)
+	TEST_ASSERT(!(base in SSair.decompression_areas), "первый же замеченный фаер поставил зону в очередь тревоги без подтверждения")
+	TEST_ASSERT_EQUAL(SSair.decompression_pending[base], SSair.times_fired, "первый замер не записался в ожидающие")
+
+	// Повтор в том же фаере - это соседние турфы того же прохода, не перевзвод.
+	SSair.queue_decompression_base(base)
+	TEST_ASSERT(!(base in SSair.decompression_areas), "повтор в том же фаере сошёл за подтверждение")
+
+	// Перевзвод более поздним фаером - настоящая пробоина продолжает травить.
+	SSair.decompression_pending[base] = SSair.times_fired - 1
+	SSair.queue_decompression_base(base)
+	TEST_ASSERT(base in SSair.decompression_areas, "перевзвод следующим фаером не поставил зону в очередь тревоги")
+	TEST_ASSERT(!(base in SSair.decompression_pending), "подтверждённая зона осталась в ожидающих")
+
+	// Протухший первый замер не подтверждает: два несвязанных пшика с разницей
+	// в окно - это два первых замера, а не пробоина.
+	SSair.decompression_areas -= base
+	SSair.decompression_pending[base] = SSair.times_fired - DECOMPRESSION_PENDING_WINDOW_FIRES - 1
+	SSair.queue_decompression_base(base)
+	TEST_ASSERT(!(base in SSair.decompression_areas), "пшик за пределами окна сошёл за подтверждение")
+	TEST_ASSERT_EQUAL(SSair.decompression_pending[base], SSair.times_fired, "протухший замер не перезаписался текущим фаером")
+
+	SSair.decompression_pending -= base
+	SSair.decompression_areas -= base
+
 /// Дверь, закрытую мимо системы тревог (пожарная тревога зоны, разгерметизация,
 /// whack_a_mole), открыть было некому: recompute_atmos_alarm() выходит по
 /// равенству старой и новой тревоги, а у такого закрытия фронта нет вовсе -
@@ -602,14 +677,19 @@
 	base.contents += spot
 
 	SSair.decompression_areas -= base
+	// Прайм подтверждающего гейта: тесту нужен кулдаун, а не окно подтверждения
+	// (см. decompression_alarm_needs_confirmation - гейт покрыт отдельно).
+	SSair.decompression_pending[base] = SSair.times_fired - 1
 	SSair.queue_decompression_area(spot)
 	TEST_ASSERT(SSair.decompression_areas[base], "precondition failed: a station-type area could not be queued for decompression")
 	SSair.decompression_areas -= base
 
 	SSair.handle_decompression_area(base)
+	SSair.decompression_pending[base] = SSair.times_fired - 1
 	SSair.queue_decompression_area(spot)
 	var/requeued = SSair.decompression_areas[base]
 	SSair.decompression_areas -= base
+	SSair.decompression_pending -= base
 	old_area.contents += spot
 	TEST_ASSERT(!requeued, "a just-handled area was requeued for decompression within the alarm cooldown")
 
