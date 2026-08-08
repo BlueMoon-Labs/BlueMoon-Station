@@ -210,6 +210,11 @@
 /obj/machinery/light/small{
 	dir = 1
 	},
+/obj/structure/statue/sandstone/venus{
+	dir = 4;
+	pixel_y = 9;
+	anchored = 1
+	},
 /turf/open/floor/plasteel/dark,
 /area/awaymission/jungleresort)
 "cV" = (
@@ -1178,8 +1183,8 @@
 /turf/open/floor/wood,
 /area/awaymission/jungleresort)
 "rv" = (
-/obj/item/statuebust,
 /obj/structure/table/wood/fancy,
+/obj/item/his_grace,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/jungleresort)
 "rx" = (
@@ -1714,7 +1719,7 @@
 /turf/open/floor/grass/grass0,
 /area/awaymission/jungleresort)
 "yr" = (
-/obj/structure/statue/sandstone/venus,
+/obj/structure/statue/sandstone/assistant,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/jungleresort)
 "yu" = (
@@ -2662,6 +2667,17 @@
 "JU" = (
 /obj/structure/stone_tile/slab/burnt,
 /turf/open/floor/plating/dirt/jungle,
+/area/awaymission/jungleresort)
+"JW" = (
+/obj/machinery/light/small{
+	dir = 1
+	},
+/obj/structure/statue/sandstone/venus{
+	pixel_y = 9;
+	dir = 1;
+	anchored = 1
+	},
+/turf/open/floor/plasteel/dark,
 /area/awaymission/jungleresort)
 "JZ" = (
 /obj/structure/flora/tree/jungle,
@@ -13463,7 +13479,7 @@ AR
 AR
 AR
 Xj
-cT
+JW
 JF
 Dj
 Dj
