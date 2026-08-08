@@ -101,6 +101,8 @@
 	///Ставится тем, чей залп способен убить с одного захода: точность нового ИИ
 	///сделала такие залпы неотвратимыми, и урон в них никто не пересматривал.
 	var/ranged_telegraph_duration = 0
+	///At most one ranged telegraph may be waiting to fire.
+	var/ranged_telegraph_timer_id
 
 /mob/living/simple_animal/hostile/Initialize(mapload)
 	. = ..()
@@ -137,6 +139,8 @@
 	deltimer(search_objects_timer_id)
 	deltimer(charge_windup_timer)
 	charge_windup_timer = null
+	deltimer(ranged_telegraph_timer_id)
+	ranged_telegraph_timer_id = null
 	cancel_rapid_melee_sequence()
 	cancel_rapid_fire_sequence()
 	targets_from = null
@@ -555,19 +559,27 @@ GLOBAL_VAR_INIT(ai_pursuit_min_move_delay, AI_PURSUIT_MIN_MOVE_DELAY)
 ///трогает ни ум, ни точность - он даёт игроку окно уйти за укрытие, и если тот
 ///успел, залпа не будет.
 /mob/living/simple_animal/hostile/proc/telegraphed_open_fire(atom/fire_target)
-	if(QDELETED(fire_target) || stat == DEAD)
-		return
+	if(QDELETED(fire_target) || stat == DEAD || ranged_telegraph_timer_id)
+		return FALSE
+	//Arm the full cooldown before the timer starts. Even a shot canceled by
+	//lost sight must not let the planner stack another telegraph immediately.
+	ranged_cooldown = world.time + ranged_cooldown_time + ranged_telegraph_duration
 	var/turf/aim_turf = get_turf(fire_target)
 	if(aim_turf)
 		new /obj/effect/temp_visual/telegraphing/ranged_burst(aim_turf, ranged_telegraph_duration)
-	sleep(ranged_telegraph_duration)
+	ranged_telegraph_timer_id = addtimer(CALLBACK(src, PROC_REF(finish_telegraphed_open_fire), fire_target), ranged_telegraph_duration, TIMER_STOPPABLE)
+	return TRUE
+
+/mob/living/simple_animal/hostile/proc/finish_telegraphed_open_fire(atom/fire_target)
+	ranged_telegraph_timer_id = null
 	if(QDELETED(src) || QDELETED(fire_target) || stat == DEAD)
-		return
+		return FALSE
 	//цель успела разорвать линию - залп отменяется, в этом весь смысл окна
 	if(!ranged_ignores_vision && !can_see(src, fire_target, AI_RANGED_MAX_FIRE_RANGE))
-		return
-	target = fire_target
-	OpenFire(fire_target)
+		return FALSE
+	GiveTarget(fire_target)
+	INVOKE_ASYNC(src, TYPE_PROC_REF(/mob/living/simple_animal/hostile, OpenFire), fire_target)
+	return TRUE
 
 /mob/living/simple_animal/hostile/proc/cancel_rapid_melee_sequence()
 	if(rapid_melee_timer_id)

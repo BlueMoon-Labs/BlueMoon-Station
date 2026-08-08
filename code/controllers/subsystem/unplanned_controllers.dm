@@ -28,8 +28,8 @@ SUBSYSTEM_DEF(unplanned_controllers)
 		if(MC_TICK_CHECK)
 			return
 
-///Одна запись пула. TRUE - контроллер отработал; FALSE - запись мертва и
-///вычищена. Мёртвой считается и та, у которой паун ушёл хардделом: в DM ссылка
+///Одна запись пула. TRUE - контроллер отработал; FALSE - запись невалидна и
+///вычищена. Невалидна и та, у которой паун ушёл хардделом: в DM ссылка
 ///на удалённый объект молча становится null, сам контроллер при этом жив, под
 ///QDELETED не подпадает и без этой проверки остаётся в пуле навсегда, фейлясь
 ///каждый фаер (прод: 357 рантаймов idle_random_walk за 16 раундов).
@@ -38,6 +38,7 @@ SUBSYSTEM_DEF(unplanned_controllers)
 		GLOB.unplanned_controllers -= unplanned
 		return FALSE
 	if(!unplanned.idle_behavior)
+		GLOB.unplanned_controllers -= unplanned
 		return FALSE
 	unplanned.idle_behavior.perform_idle_behavior(wait * 0.1, unplanned)
 	return TRUE

@@ -1142,8 +1142,36 @@
 
 	TEST_ASSERT_EQUAL(bot.scan_for_target(), mouse, "The indexed LOS branch must keep pest-over-cleanable priority")
 
+/datum/unit_test/cleanbot_failed_path_search_has_cooldown/Run()
+	var/turf/bot_turf = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	var/mob/living/simple_animal/bot/cleanbot/bot = allocate(/mob/living/simple_animal/bot/cleanbot, bot_turf)
+	bot.auto_patrol = FALSE
+	bot.on = TRUE
+	for(var/direction in GLOB.alldirs)
+		allocate(/obj/structure/window/reinforced/fulltile, get_step(bot, direction))
+	var/obj/effect/decal/cleanable/ash/first_target = allocate(/obj/effect/decal/cleanable/ash, locate(bot_turf.x + 2, bot_turf.y, bot_turf.z))
+	allocate(/obj/effect/decal/cleanable/ash, locate(bot_turf.x - 2, bot_turf.y, bot_turf.z))
+	bot.mode = BOT_IDLE
+	bot.path = list()
+	bot.target = first_target
+	TEST_ASSERT(!QDELETED(first_target) && isturf(first_target.loc), "Sanity: the cleanbot target must survive initialization on a turf")
+	TEST_ASSERT_NOTEQUAL(get_turf(bot), get_turf(first_target), "Sanity: the cleanbot target must require movement")
+
+	var/jps_before = GLOB.ai_metrics.jps_requests
+	bot.handle_automated_action()
+	var/jps_after_failure = GLOB.ai_metrics.jps_requests
+	TEST_ASSERT_EQUAL(jps_after_failure, jps_before + 1, "The sealed cleanbot fixture must execute one failed JPS request")
+	TEST_ASSERT(bot.next_path_attempt > world.time, "A failed cleanbot path must arm the autonomous retry cooldown")
+
+	bot.handle_automated_action()
+	TEST_ASSERT_EQUAL(GLOB.ai_metrics.jps_requests, jps_after_failure, "The retry cooldown must suppress another cleanbot JPS request")
+
+	bot.next_path_attempt = world.time
+	bot.handle_automated_action()
+	TEST_ASSERT_EQUAL(GLOB.ai_metrics.jps_requests, jps_after_failure + 1, "Cleanbot must retry autonomous targets after the cooldown expires")
+
 /datum/unit_test/floorbot_failed_path_search_has_cooldown/Run()
-	var/turf/bot_turf = locate(run_loc_floor_bottom_left.x + 3, run_loc_floor_bottom_left.y + 3, run_loc_floor_bottom_left.z)
+	var/turf/bot_turf = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
 	var/mob/living/simple_animal/bot/floorbot/bot = allocate(/mob/living/simple_animal/bot/floorbot, bot_turf)
 	bot.emagged = 2
 	bot.auto_patrol = FALSE

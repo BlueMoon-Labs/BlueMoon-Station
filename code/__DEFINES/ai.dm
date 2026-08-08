@@ -277,12 +277,12 @@
 
 ///Фрустрация пути, после которой зажатый под огнём моб предпочитает укрытие
 #define AI_PINNED_FRUSTRATION 3
-///Дальность ЛОС-проверки при поиске укрытия от стрелка
 ///Тайл ничем не прикрыт от этой угрозы (см. threat_model.dm)
 #define AI_COVER_NONE 0
 ///Тайл полностью прикрыт от ЭТОЙ угрозы; от другой может быть и не прикрыт
 #define AI_COVER_FULL 1
 
+///Дальность ЛОС-проверки при поиске укрытия от стрелка
 #define AI_HIDING_LOS_RANGE 14
 ///Бонус тайлу, с которого стрелка не видно (разрыв линии огня)
 #define AI_HIDING_LOS_BONUS 10
@@ -499,14 +499,14 @@
 #define BB_AI_SELF_HEALTH_AT "BB_ai_self_health_at"
 ///world.time, до которого действует вывод "здесь опасно"
 #define BB_AI_DANGER_UNTIL "BB_ai_danger_until"
-///Снимок здоровья цели и REF цели, для которой он снят
+///Снимок здоровья цели и weakref цели, для которой он снят
 #define BB_AI_TARGET_HEALTH "BB_ai_target_health"
 #define BB_AI_TARGET_HEALTH_REF "BB_ai_target_health_ref"
 ///Сколько ударов подряд не сняли с цели ничего
 #define BB_AI_FUTILE_HITS "BB_ai_futile_hits"
 ///world.time, до которого цель считается непробиваемой
 #define BB_AI_TARGET_IMPERVIOUS_UNTIL "BB_ai_target_impervious_until"
-///REF цели, про которую доказана непробиваемость. Вывод адресный: пометка от
+///Weakref цели, про которую доказана непробиваемость. Вывод адресный: пометка от
 ///брони одного противника не имеет права усмирять моба против всех остальных.
 #define BB_AI_TARGET_IMPERVIOUS_REF "BB_ai_target_impervious_ref"
 ///world.time, до которого моб настороже после полученного урона: боевое зрение

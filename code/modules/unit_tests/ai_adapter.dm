@@ -129,7 +129,12 @@
 
 	var/mob/living/simple_animal/hostile/standard = allocate(/mob/living/simple_animal/hostile, get_step(run_loc_floor_bottom_left, WEST))
 	standard.move_to_delay = AI_PURSUIT_BASELINE_MOVE_TO_DELAY
-	TEST_ASSERT_EQUAL(standard.ai_movement_delay(), GLOB.ai_pursuit_min_move_delay, "A mob at the legacy default move_to_delay is exactly the case the floor exists for")
+	var/saved_pursuit_min_move_delay = GLOB.ai_pursuit_min_move_delay
+	var/standard_pursuit_floor = max(saved_pursuit_min_move_delay, AI_LEGACY_MOVE_DELAY_DS(AI_PURSUIT_BASELINE_MOVE_TO_DELAY))
+	GLOB.ai_pursuit_min_move_delay = standard_pursuit_floor
+	var/standard_delay = standard.ai_movement_delay()
+	GLOB.ai_pursuit_min_move_delay = saved_pursuit_min_move_delay
+	TEST_ASSERT_EQUAL(standard_delay, standard_pursuit_floor, "A mob at the legacy default move_to_delay is exactly the case the floor exists for")
 
 	var/mob/living/simple_animal/hostile/plodder = allocate(/mob/living/simple_animal/hostile, get_step(run_loc_floor_bottom_left, EAST))
 	plodder.move_to_delay = 6

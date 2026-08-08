@@ -60,15 +60,23 @@
 	prune_threat_memory()
 	threat_pass_flag_memory[REF(firer)] = list(incoming.pass_flags, world.time)
 
+///Return a live observation for threat, pruning it when its memory has expired.
+/datum/ai_controller/proc/get_threat_memory_entry(atom/threat)
+	if(QDELETED(threat) || !threat_pass_flag_memory)
+		return
+	var/threat_ref = REF(threat)
+	var/list/entry = threat_pass_flag_memory[threat_ref]
+	if(!entry)
+		return
+	if(world.time - entry[2] > AI_THREAT_MEMORY_TIMEOUT)
+		threat_pass_flag_memory -= threat_ref
+		return
+	return entry
+
 ///Чем эта угроза по нам стреляет, по наблюдениям. Без наблюдений - осторожный дефолт.
 /datum/ai_controller/proc/threat_pass_flags(atom/threat)
-	if(QDELETED(threat) || !threat_pass_flag_memory)
-		return AI_THREAT_DEFAULT_PASS_FLAGS
-	var/list/entry = threat_pass_flag_memory[REF(threat)]
+	var/list/entry = get_threat_memory_entry(threat)
 	if(!entry)
-		return AI_THREAT_DEFAULT_PASS_FLAGS
-	if(world.time - entry[2] > AI_THREAT_MEMORY_TIMEOUT)
-		threat_pass_flag_memory -= REF(threat)
 		return AI_THREAT_DEFAULT_PASS_FLAGS
 	return entry[1]
 
@@ -93,15 +101,7 @@
 ///и кинетик, и мех, и турель, и убранный на секунду в карман ствол - всё, что
 ///is_holding_item_of_type() не видит в принципе.
 /datum/ai_controller/proc/knows_target_shoots(atom/threat)
-	if(QDELETED(threat) || !threat_pass_flag_memory)
-		return FALSE
-	var/list/entry = threat_pass_flag_memory[REF(threat)]
-	if(!entry)
-		return FALSE
-	if(world.time - entry[2] > AI_THREAT_MEMORY_TIMEOUT)
-		threat_pass_flag_memory -= REF(threat)
-		return FALSE
-	return TRUE
+	return !isnull(get_threat_memory_entry(threat))
 
 ///Прикрыт ли тайл от конкретной угрозы С УЧЁТОМ ТОГО, ЧЕМ ОНА СТРЕЛЯЕТ.
 /datum/ai_controller/proc/cover_quality(turf/from_turf, atom/threat)

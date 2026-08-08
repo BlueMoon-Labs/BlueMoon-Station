@@ -488,7 +488,7 @@
 	var/mob/living/simple_animal/hostile/hunter = allocate(/mob/living/simple_animal/hostile, run_loc_floor_bottom_left)
 	var/mob/living/carbon/human/armored = allocate(/mob/living/carbon/human, locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z))
 	var/datum/ai_controller/unit_test_hunter/controller = new(hunter)
-	controller.blackboard[BB_AI_TARGET_IMPERVIOUS_REF] = REF(armored)
+	controller.blackboard[BB_AI_TARGET_IMPERVIOUS_REF] = WEAKREF(armored)
 	controller.blackboard[BB_AI_TARGET_IMPERVIOUS_UNTIL] = world.time + AI_IMPERVIOUS_MEMORY
 
 	var/datum/ai_behavior/find_potential_targets/finder = GET_AI_BEHAVIOR(/datum/ai_behavior/find_potential_targets)

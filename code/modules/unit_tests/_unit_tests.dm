@@ -324,6 +324,7 @@ TEST_FOCUS(/datum/unit_test/cleanbot_combined_scan_keeps_adjacent_priority)
 TEST_FOCUS(/datum/unit_test/cleanbot_grid_ground_target_lifecycle)
 TEST_FOCUS(/datum/unit_test/cleanbot_small_candidate_filter_preserves_view_los)
 TEST_FOCUS(/datum/unit_test/cleanbot_indexed_view_filter_preserves_priority)
+TEST_FOCUS(/datum/unit_test/cleanbot_failed_path_search_has_cooldown)
 TEST_FOCUS(/datum/unit_test/floorbot_failed_path_search_has_cooldown)
 #endif
 

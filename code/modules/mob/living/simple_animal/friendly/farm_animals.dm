@@ -1,3 +1,5 @@
+#define GOAT_MOVE_TO_DELAY 6
+
 //goat
 /mob/living/simple_animal/hostile/retaliate/goat
 	name = "goat"
@@ -33,7 +35,7 @@
 	//не задавал: с событийной погоней это означало максимальную скорость фауны у
 	//фермерского животного с уроном 1-2 ("посмотри на скорость козла, он быстрее
 	//фазона"). Рысь вместо галопа - бодаться она по-прежнему прибежит.
-	move_to_delay = 6
+	move_to_delay = GOAT_MOVE_TO_DELAY
 	environment_smash = ENVIRONMENT_SMASH_NONE
 	stop_automated_movement_when_pulled = 1
 	blood_volume = BLOOD_VOLUME_NORMAL
@@ -575,3 +577,5 @@
 	blood_volume = BLOOD_VOLUME_NORMAL
 	footstep_type = FOOTSTEP_MOB_SHOE
 	vocal_bark_id = "mutedc4"
+
+#undef GOAT_MOVE_TO_DELAY

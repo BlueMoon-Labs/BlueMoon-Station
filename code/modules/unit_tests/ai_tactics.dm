@@ -924,6 +924,21 @@
 
 	TEST_ASSERT(gunner.fire_at(controller, prey), "Санити: залп с телеграфом обязан быть принят к исполнению")
 	TEST_ASSERT(shooter.ranged_cooldown >= expected_at_least, "Кулдаун обязан взводиться сразу и включать окно телеграфа")
+	var/telegraph_timer_id = shooter.ranged_telegraph_timer_id
+	TEST_ASSERT_NOTNULL(SStimer.timer_id_dict[telegraph_timer_id], "Телеграф обязан ждать в одном остановимом таймере")
+	TEST_ASSERT(!shooter.telegraphed_open_fire(prey), "Повторный вызов не должен ставить параллельный телеграф")
+	TEST_ASSERT_EQUAL(shooter.ranged_telegraph_timer_id, telegraph_timer_id, "Повторный вызов не должен заменять активный таймер")
+
+	//Имитируем callback после потери LOS: выстрел отменяется, но уже взведённый
+	//кулдаун остаётся, поэтому следующий planning tick не создаст новый эффект.
+	deltimer(telegraph_timer_id)
+	shooter.ranged_telegraph_timer_id = null
+	var/turf/wall_turf = get_step(pawn_turf, EAST)
+	wall_turf = wall_turf.ChangeTurf(/turf/closed/wall)
+	var/armed_cooldown = shooter.ranged_cooldown
+	TEST_ASSERT(!shooter.finish_telegraphed_open_fire(prey), "Потеря LOS за время телеграфа обязана отменять выстрел")
+	TEST_ASSERT_EQUAL(shooter.ranged_cooldown, armed_cooldown, "Отменённый по LOS телеграф обязан сохранить ranged cooldown")
+	wall_turf.ChangeTurf(/turf/open/floor/plating)
 
 	qdel(controller)
 

@@ -105,14 +105,15 @@
 	//немедленно брошен should_abandon_pursuit, и моб мерцал "взял-бросил" каждые
 	//полсекунды, стоя вплотную. Боссы (pursuit_leashed = FALSE) пометку игнорируют:
 	//для них и выход из погони по непробиваемости не существует.
-	var/impervious_ref
+	var/datum/weakref/impervious_ref
 	if(controller.pursuit_leashed && world.time < (controller.blackboard[BB_AI_TARGET_IMPERVIOUS_UNTIL] || 0))
 		impervious_ref = controller.blackboard[BB_AI_TARGET_IMPERVIOUS_REF]
+	var/atom/impervious_target = impervious_ref?.resolve()
 
 	var/list/filtered_targets = list()
 	for(var/atom/pot_target as anything in potential_targets)
 		AI_METRIC_INC(candidates_examined)
-		if(impervious_ref && impervious_ref == REF(pot_target))
+		if(pot_target == impervious_target)
 			continue
 		if(!candidate_passes(living_mob, pot_target, targeting_strategy, aggro_range, FALSE))
 			continue

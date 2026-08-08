@@ -15,6 +15,8 @@
 #define BOT_TARGET_PATH_LIMIT	(DEFAULT_SCAN_RANGE * 2)
 ///Delay another autonomous floorbot search after JPS proves the current target unreachable.
 #define FLOORBOT_FAILED_PATH_RETRY 10 SECONDS
+///Delay another cleanbot scan after JPS proves the current target unreachable.
+#define CLEANBOT_FAILED_PATH_RETRY 10 SECONDS
 ///For a few cleanbot candidates, direct list membership is cheaper than indexing the whole view.
 #define CLEANBOT_VIEW_FILTER_LINEAR_LIMIT 4
 

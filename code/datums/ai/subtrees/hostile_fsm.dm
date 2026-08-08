@@ -169,8 +169,10 @@
 	//из погони, и он про бесполезность, а не про расстояние или время.
 	//Пометка адресная: непробиваемость доказана про КОНКРЕТНУЮ цель, и на
 	//нового противника (второго нападающего без брони) не распространяется.
+	var/datum/weakref/impervious_ref = controller.blackboard[BB_AI_TARGET_IMPERVIOUS_REF]
+	var/atom/impervious_target = impervious_ref?.resolve()
 	if(world.time < (controller.blackboard[BB_AI_TARGET_IMPERVIOUS_UNTIL] || 0) \
-		&& controller.blackboard[BB_AI_TARGET_IMPERVIOUS_REF] == REF(controller.blackboard[BB_AI_CURRENT_TARGET]))
+		&& impervious_target && impervious_target == controller.blackboard[BB_AI_CURRENT_TARGET])
 		AI_TRACE(controller, "pursuit", "бросил [controller.blackboard[BB_AI_CURRENT_TARGET]]: непробиваем")
 		return TRUE
 

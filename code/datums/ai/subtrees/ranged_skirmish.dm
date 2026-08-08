@@ -187,14 +187,10 @@
 			return FALSE
 		if(hostile_pawn.CheckRangedFireLane(target))
 			return FALSE
-		hostile_pawn.target = target
 		controller.note_combat_exchange()
 		if(hostile_pawn.ranged_telegraph_duration > 0)
-			//Кулдаун взводим сразу: иначе планировщик поставит второй залп, пока
-			//первый ещё в телеграфе, и окно перестанет что-либо значить.
-			hostile_pawn.ranged_cooldown = world.time + hostile_pawn.ranged_cooldown_time + hostile_pawn.ranged_telegraph_duration
-			INVOKE_ASYNC(hostile_pawn, TYPE_PROC_REF(/mob/living/simple_animal/hostile, telegraphed_open_fire), target)
-			return TRUE
+			return hostile_pawn.telegraphed_open_fire(target)
+		hostile_pawn.GiveTarget(target)
 		INVOKE_ASYNC(hostile_pawn, TYPE_PROC_REF(/mob/living/simple_animal/hostile, OpenFire), target)
 		return TRUE
 	var/mob/living/living_pawn = controller.pawn

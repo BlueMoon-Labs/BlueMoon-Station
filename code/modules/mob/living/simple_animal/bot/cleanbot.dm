@@ -37,6 +37,8 @@
 	var/failed_steps
 	var/next_dest
 	var/next_dest_loc
+	///Do not immediately replace one unreachable autonomous target with its neighbour.
+	var/next_path_attempt = 0
 
 	var/obj/item/weapon
 	var/weapon_orig_force = 0
@@ -161,6 +163,7 @@
 	ignore_list = list() //Allows the bot to clean targets it previously ignored due to being unreachable.
 	target = null
 	oldloc = null
+	next_path_attempt = 0
 
 /mob/living/simple_animal/bot/cleanbot/set_custom_texts()
 	text_hack = "Вы взломали протоколы уборки у [name]."
@@ -384,7 +387,7 @@
 		if(!process_scan(target))
 			target = null
 
-	if(!target)
+	if(!target && world.time >= next_path_attempt)
 		target = scan_for_target()
 
 	if(!target && auto_patrol) //Search for cleanables it can see.
@@ -418,7 +421,10 @@
 				add_to_ignore(target)
 				target = null
 				path = list()
+				mode = BOT_IDLE
+				next_path_attempt = world.time + CLEANBOT_FAILED_PATH_RETRY
 				return
+			next_path_attempt = 0
 			mode = BOT_MOVING
 		else if(!bot_move(target))
 			target = null

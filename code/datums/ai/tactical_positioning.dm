@@ -1,6 +1,7 @@
 // Threat-aware tactical positioning helpers for ranged hostile AI.
 // All procs are cheap and non-sleeping: local geometry + one cached spatial-grid
-// query. Scoring procs are global and pure so they unit-test without a controller.
+// query. Most scoring is controller-free; ai_score_fire_tile uses
+// shooter.ai_controller.cover_quality() when scoring cover and needs a controller.
 
 ///Штраф за тайл отклонения от боевой дистанции при выборе огневой позиции
 #define TARGET_TILE_BAND_PENALTY 5
@@ -184,7 +185,9 @@
 	for(var/direction in GLOB.alldirs)
 		var/candidate_x = target_turf.x + ((direction & EAST) ? flank_radius : ((direction & WEST) ? -flank_radius : 0))
 		var/candidate_y = target_turf.y + ((direction & NORTH) ? flank_radius : ((direction & SOUTH) ? -flank_radius : 0))
-		var/turf/candidate = locate(clamp(candidate_x, 1, world.maxx), clamp(candidate_y, 1, world.maxy), target_turf.z)
+		if(candidate_x < 1 || candidate_x > world.maxx || candidate_y < 1 || candidate_y > world.maxy)
+			continue
+		var/turf/candidate = locate(candidate_x, candidate_y, target_turf.z)
 		if(!candidate || candidate == pawn_turf)
 			continue
 		var/travel = get_dist(pawn_turf, candidate)

@@ -67,13 +67,13 @@
 /datum/ai_controller/proc/note_melee_attempt(mob/living/target)
 	if(!isliving(target))
 		return
-	var/target_ref = REF(target)
+	var/datum/weakref/target_ref = WEAKREF(target)
 	var/previous_health = blackboard[BB_AI_TARGET_HEALTH]
-	var/previous_ref = blackboard[BB_AI_TARGET_HEALTH_REF]
+	var/datum/weakref/previous_ref = blackboard[BB_AI_TARGET_HEALTH_REF]
 	blackboard[BB_AI_TARGET_HEALTH] = target.health
 	blackboard[BB_AI_TARGET_HEALTH_REF] = target_ref
 	//сменилась цель или это первый удар по ней - сравнивать не с чем
-	if(previous_ref != target_ref || isnull(previous_health))
+	if(previous_ref?.resolve() != target || isnull(previous_health))
 		blackboard[BB_AI_FUTILE_HITS] = 0
 		return
 	//упало - пробиваем; ВЫРОСЛО - цель лечат или она регенится, и "не пробить"

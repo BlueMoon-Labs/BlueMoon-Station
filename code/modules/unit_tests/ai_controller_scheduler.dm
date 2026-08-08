@@ -222,3 +222,18 @@
 
 	unregister_fake_player(fake_player)
 	qdel(controller)
+
+///A malformed controller without background work is just as terminal for this
+///pool entry as a deleted controller or pawn; retaining it retries a no-op forever.
+/datum/unit_test/ai_unplanned_pool_drops_controller_without_idle_behavior/Run()
+	var/mob/living/carbon/human/pawn = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/datum/ai_controller/unit_test_dormant/controller = new(pawn)
+
+	//Simulate a stale/malformed entry: the public adder correctly rejects it,
+	//but the subsystem still has to clean one that already reached the pool.
+	GLOB.unplanned_controllers[controller] = TRUE
+	TEST_ASSERT(controller in GLOB.unplanned_controllers, "Sanity: the malformed controller must be present before the subsystem validates it")
+	TEST_ASSERT(!SSunplanned_controllers.run_unplanned_controller(controller), "A controller without an idle behavior must report FALSE")
+	TEST_ASSERT(!(controller in GLOB.unplanned_controllers), "A controller without an idle behavior must be evicted from the unplanned pool")
+
+	qdel(controller)
