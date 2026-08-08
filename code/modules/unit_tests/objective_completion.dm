@@ -47,7 +47,13 @@
 	qdel(target_mind)
 
 /datum/unit_test/assassinate_no_duplicate_target/Run()
+	// Антаг-датум по контракту требует mind с телом: on_gain() крашит на
+	// голом mind (antag_datum.dm), а finalize_traitor лезет в owner.current.
 	var/datum/mind/traitor_mind = new("unit_test_traitor")
+	var/mob/living/carbon/human/traitor_body = allocate(/mob/living/carbon/human)
+	traitor_mind.set_current(traitor_body)
+	traitor_body.mind = traitor_mind
+
 	var/datum/mind/target_mind = new("unit_test_victim")
 	var/mob/living/carbon/human/target_body = allocate(/mob/living/carbon/human)
 	target_mind.set_current(target_body)
@@ -56,6 +62,7 @@
 	var/datum/antagonist/traitor/antag = new
 	antag.silent = TRUE
 	antag.give_objectives = FALSE
+	antag.should_equip = FALSE
 	traitor_mind.add_antag_datum(antag)
 
 	var/datum/objective/assassinate/destroy_objective = new
