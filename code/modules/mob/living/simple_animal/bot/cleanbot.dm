@@ -292,28 +292,21 @@
 		if(!length(candidate_filter))
 			return
 
+		cached_view = shuffle(view(DEFAULT_SCAN_RANGE, src))
 		// Grid cells are deliberately broader than the requested range and do
 		// not encode opacity. Keep only candidates BYOND actually exposes.
 		// Множество строится один раз: view() в грязном коридоре это больше тысячи
 		// атомов, и перебирать его на каждого кандидата - квадратичный проход
 		var/list/exposed_by_view = list()
-		for(var/atom/seen as anything in view(DEFAULT_SCAN_RANGE, src))
+		for(var/atom/seen as anything in cached_view)
 			exposed_by_view[seen] = TRUE
 		var/list/visible_candidates = list()
-		var/list/visible_filter = list()
 		for(var/atom/candidate as anything in candidate_filter)
-			if(!exposed_by_view[candidate])
-				continue
-			visible_candidates += candidate
-			visible_filter[candidate] = TRUE
-		candidate_filter = visible_filter
+			if(exposed_by_view[candidate])
+				visible_candidates[candidate] = TRUE
+		candidate_filter = visible_candidates
 		if(!length(candidate_filter))
 			return
-		// Тасуем только кандидатов, а не всю view(): раньше перемешивалась тысяча с
-		// лишним атомов ради полусотни, которые вообще могут стать целью. Распределение
-		// то же - случайная перестановка подмножества совпадает с перестановкой
-		// надмножества, отфильтрованной до него.
-		cached_view = shuffle(visible_candidates)
 	else if(!cached_view)
 		cached_view = shuffle(view(DEFAULT_SCAN_RANGE, src))
 
