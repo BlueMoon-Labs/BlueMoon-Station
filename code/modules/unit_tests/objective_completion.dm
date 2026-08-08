@@ -54,9 +54,8 @@
 	target_body.mind = target_mind
 
 	var/datum/antagonist/traitor/antag = new
-	antag.silent = TRUE
-	antag.give_objectives = FALSE
-	traitor_mind.add_antag_datum(antag)
+	antag.owner = traitor_mind
+	traitor_mind.do_add_antag_datum(antag)
 
 	var/datum/objective/assassinate/destroy_objective = new
 	destroy_objective.owner = traitor_mind
@@ -67,12 +66,19 @@
 	kill_objective.owner = traitor_mind
 	TEST_ASSERT(!kill_objective.is_unique_objective(target_mind), "Убийство не должно совпадать с уже выданным уничтожением")
 
-	antag.objectives = list(kill_objective)
+	antag.objectives -= destroy_objective
+	qdel(destroy_objective)
+	antag.objectives += kill_objective
 	kill_objective.target = target_mind
 	var/datum/objective/assassinate/another_destroy = new
 	another_destroy.owner = traitor_mind
 	TEST_ASSERT(!another_destroy.is_unique_objective(target_mind), "Уничтожение не должно совпадать с уже выданным убийством")
 
+	traitor_mind.antag_datums -= antag
+	qdel(another_destroy)
+	qdel(kill_objective)
+	antag.objectives = null
+	antag.owner = null
 	qdel(antag)
 	qdel(target_mind)
 	qdel(traitor_mind)
