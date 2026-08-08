@@ -413,3 +413,8 @@
 	name = "Solved Station"
 	icon_state = "syndie-control"
 	dynamic_lighting = DYNAMIC_LIGHTING_FORCED
+
+/area/InteQ_ship/ship7
+	name = "Pacr Ship Taran"
+	icon_state = "syndie-control"
+	dynamic_lighting = DYNAMIC_LIGHTING_FORCED

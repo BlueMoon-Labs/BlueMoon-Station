@@ -13,31 +13,13 @@
 
 /// Types of /area considered the InteQ battlefield for gateways & recalls (extend when the outpost moves to CC)
 GLOBAL_LIST_INIT(pact_siege_battle_area_types, list(\
-	/area/ruin/space/has_grav/bluemoon/inteq_forgotten_ship,\
-	/area/ruin/space/has_grav/bluemoon/inteq_forgotten_outpost,\
-	/area/ruin/space/has_grav/bluemoon/inteq_forgotten_cargopod,\
-	/area/ruin/space/has_grav/bluemoon/inteq_forgotten_vault,\
-	/area/ruin/space/has_grav/bluemoon/inteq_forgotten_bar,\
-	/area/ruin/space/has_grav/bluemoon/inteq_forgotten_bridge,\
-	/area/ruin/space/has_grav/bluemoon/inteq_forgotten_medbay,\
-	/area/ruin/space/has_grav/bluemoon/inteq_forgotten_atmos,\
-	/area/ruin/space/has_grav/bluemoon/inteq_forgotten_rnd,\
-	/area/ruin/space/has_grav/bluemoon/inteq_forgotten_permabrig,\
-	/area/ruin/space/has_grav/bluemoon/inteq_forgotten_inspection,\
-	/area/ruin/space/has_grav/bluemoon/inteq_forgotten_outpost_shower,\
-	/area/ruin/space/has_grav/bluemoon/inteq_forgotten_permabrig_shower,\
-	/area/ruin/space/has_grav/bluemoon/solfed,\
-	/area/ruin/space/has_grav/bluemoon/solfed_ship,\
-	/area/ruin/space/has_grav/bluemoon/solfed_ship/outpost,\
-	/area/ruin/space/has_grav/bluemoon/solfed_ship/outpost_shower,\
-	/area/ruin/space/has_grav/bluemoon/solfed_ship/cargopod,\
-	/area/ruin/space/has_grav/bluemoon/solfed_ship/vault,\
-	/area/ruin/space/has_grav/bluemoon/solfed_ship/bar,\
-	/area/ruin/space/has_grav/bluemoon/solfed_ship/bridge,\
-	/area/ruin/space/has_grav/bluemoon/solfed_ship/medbay,\
-	/area/ruin/space/has_grav/bluemoon/solfed_ship/atmos,\
-	/area/ruin/space/has_grav/bluemoon/solfed_ship/rnd,\
-	/area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig,\
-	/area/ruin/space/has_grav/bluemoon/solfed_ship/permabrig_shower,\
-	/area/ruin/space/has_grav/bluemoon/solfed_ship/inspection,\
+	/area/InteQ_ship/shipPACT,\
+	/area/InteQ_ship/SOLVED,\
+	/area/InteQ_ship/ship6,\
+	/area/InteQ_ship/ship5,\
+	/area/InteQ_ship/ship4,\
+	/area/InteQ_ship/ship3,\
+	/area/InteQ_ship/ship2,\
+	/area/InteQ_ship/ship1,\
+	/area/InteQ_ship,\
 ))
