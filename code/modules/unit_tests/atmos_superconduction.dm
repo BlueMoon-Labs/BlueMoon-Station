@@ -134,6 +134,58 @@
 	unit_test_normalize_exposure_window(hot_side)
 	SSair.remove_from_active(hot_side)
 
+/// Обмен с нулевой дельтой температур не переносит энергию, но безусловный
+/// add_to_active на каждом проходе не давал осевшему соседу уснуть: после
+/// станционного пожара в раунде 9911 две-три тысячи горячих стен приколачивали
+/// 3-4 тысячи активных турфов до самого конца раунда.
+/datum/unit_test/atmos_superconduction_wake_gate/Run()
+	var/turf/open/origin = run_loc_floor_bottom_left
+	var/turf/open/subject = locate(origin.x + 1, origin.y + 1, origin.z)
+	var/turf/wall_site = locate(origin.x + 2, origin.y + 1, origin.z)
+	TEST_ASSERT(istype(subject) && subject.air, "нет открытого турфа с воздухом для теста")
+
+	var/saved_heat_enabled = SSair.heat_enabled
+	var/original_wall_type = wall_site.type
+	var/turf/wall_turf = wall_site.ChangeTurf(/turf/closed/wall/unit_test_conductive)
+	subject.ImmediateCalculateAdjacentTurfs()
+	wall_turf.ImmediateCalculateAdjacentTurfs()
+	// Кондукция только в сторону испытуемого: остальные соседи стены не должны
+	// ни греться, ни просыпаться от теста.
+	wall_turf.conductivity_blocked_directions = (NORTH|SOUTH|EAST|WEST) & ~get_dir(wall_turf, subject)
+	SSair.heat_enabled = TRUE
+
+	// Осевшее состояние: стена и воздух на одной температуре, турф спит.
+	subject.air.clear()
+	subject.air.set_moles(GAS_N2, MOLES_O2STANDARD + MOLES_N2STANDARD)
+	subject.air.set_temperature(500)
+	wall_turf.temperature = 500
+	SSair.remove_from_active(subject)
+	TEST_ASSERT(!(subject in SSair.active_turfs), "предпосылка: турф не удалось усыпить")
+
+	subject.archive()
+	wall_turf.archive()
+	wall_turf.super_conduct()
+	TEST_ASSERT(!(subject in SSair.active_turfs), "обмен с нулевой дельтой температур разбудил осевший турф")
+
+	// Настоящий перепад обязан и передать тепло, и разбудить воздух.
+	subject.air.set_temperature(T20C)
+	subject.archive()
+	wall_turf.archive()
+	wall_turf.super_conduct()
+	TEST_ASSERT(subject in SSair.active_turfs, "перепад в две сотни кельвинов не разбудил турф")
+	TEST_ASSERT(subject.air.return_temperature() > T20C + 1, "тепло из стены не дошло до воздуха ([subject.air.return_temperature()] K)")
+
+	SSair.active_super_conductivity -= wall_turf
+	SSair.active_super_conductivity -= subject
+	SSair.heat_enabled = saved_heat_enabled
+	wall_turf.ChangeTurf(original_wall_type)
+	var/turf/open/restored = locate(origin.x + 2, origin.y + 1, origin.z)
+	if(istype(restored))
+		restored.ImmediateCalculateAdjacentTurfs()
+	subject.ImmediateCalculateAdjacentTurfs()
+	unit_test_normalize_exposure_window(subject)
+	SSair.remove_from_active(subject)
+
 /datum/unit_test/atmos_equalize_valve/Run()
 	// Детектор проверяется относительно стартового состояния, а не относительно пустоты:
 	// на больших картах (Festive, Layenia) атмос к моменту тестов ещё оседает и держит

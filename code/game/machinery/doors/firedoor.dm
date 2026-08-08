@@ -687,8 +687,10 @@
 	if(!auto_closed)
 		return
 	// Одноразовый таймер с самоперевзводом: TIMER_LOOP тут не годится, из него
-	// нельзя сняться собственным deltimer.
-	reopen_timer = addtimer(CALLBACK(src, PROC_REF(try_auto_reopen)), FIRELOCK_AUTO_REOPEN_RETRY, TIMER_UNIQUE|TIMER_OVERRIDE|TIMER_STOPPABLE)
+	// нельзя сняться собственным deltimer. Джиттер разводит двери, закрытые
+	// одной волной разгерметизации: без него сотни is_holding_pressure()
+	// ретраились в один тик каждые десять секунд до конца пожара.
+	reopen_timer = addtimer(CALLBACK(src, PROC_REF(try_auto_reopen)), FIRELOCK_AUTO_REOPEN_RETRY + rand(0, FIRELOCK_AUTO_REOPEN_JITTER), TIMER_UNIQUE|TIMER_OVERRIDE|TIMER_STOPPABLE)
 
 /// Причина автоматического закрытия могла уйти без единого события на
 /// наблюдаемых турфах: зона сняла пожарную тревогу, перепад давления рассосался,
@@ -711,7 +713,10 @@
 		schedule_auto_reopen()
 		return
 	auto_closed = FALSE
-	open()
+	// door/open() спит анимацию целую секунду, а этот прок - таймерный колбек:
+	// синхронное открытие держало SStimer по 300-350мс на дверь в разгар
+	// станционного пожара (раунд 9911).
+	INVOKE_ASYNC(src, TYPE_PROC_REF(/obj/machinery/door/firedoor, open))
 
 /obj/machinery/door/firedoor/deconstruct(disassembled = TRUE)
 	if(!(flags_1 & NODECONSTRUCT_1))

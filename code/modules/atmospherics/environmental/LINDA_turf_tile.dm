@@ -38,6 +38,10 @@
 	///членства служить не может: встречные вклады умеют схлопнуть его в ноль,
 	///пока турф ещё в очереди, и следующий вклад ставил запись второй раз.
 	var/tmp/high_pressure_queued = FALSE
+	///world.time, раньше которого новый визуал ветра на этом турфе не создаётся:
+	///затяжная разгерметизация плодила его каждый проход SSair поверх ещё живого
+	///и раздувала очередь GC (47 тысяч в раунде 9911).
+	var/tmp/next_space_wind_at = 0
 	var/turf/pressure_specific_target
 
 	var/datum/excited_group/excited_group
@@ -219,10 +223,21 @@
 /turf/open/neighbor_conduct_with_src(turf/other)
 	if(blocks_air)
 		return ..()
+	if(!air) // смеси нет - нечем ни принять тепло, ни проснуться
+		return
+	// Обмен с нулевой дельтой не переносит энергию, но безусловный add_to_active
+	// на каждом проходе не давал осевшему соседу уснуть и обнулял его stall-
+	// счётчик: после станционного пожара 2500+ горячих стен приколачивали 3-4
+	// тысячи активных турфов до конца раунда (9911). Стена продолжает остывать
+	// радиацией и разбудит воздух, как только дельта станет настоящей.
 	if(!other.blocks_air) //Both open: heat-permeable border that does not pass air
 		var/turf/open/open_other = other
+		if(abs(air.return_temperature() - open_other.air.return_temperature()) < MINIMUM_TEMPERATURE_DELTA_TO_CONSIDER)
+			return
 		open_other.air.temperature_share(air, WINDOW_HEAT_TRANSFER_COEFFICIENT)
 	else //Open src, solid neighbor
+		if(abs(air.return_temperature() - other.return_temperature()) < MINIMUM_TEMPERATURE_DELTA_TO_CONSIDER)
+			return
 		temperature_share_open_to_solid(other)
 	SSair.add_to_active(src)
 
@@ -1300,11 +1315,20 @@
 			multiplier *= 0.2
 		// Copied because experience_pressure_difference() sleeps (throw_at/step),
 		// which can mutate the tile's contents mid-iteration.
+		// Бюджет на проход: MC_TICK_CHECK стоит только между турфами, и завал из
+		// сотен предметов после взрыва обрабатывался атомарным куском по 300+мс
+		// (раунд 9911). Остаток дожуют следующие проходы - ветер держит турф в
+		// очереди, пока перепад жив.
+		var/budget = HIGH_PRESSURE_MOVES_PER_TURF
 		for(var/atom/movable/M as anything in contents.Copy())
 			if(!M.anchored && !M.pulledby && M.last_high_pressure_movement_air_cycle < SSair.times_fired && (M.flags_1 & INITIALIZED_1) && !QDELETED(M))
 				M.experience_pressure_difference(pressure_difference * multiplier, pressure_direction, 0, pressure_specific_target)
+				budget--
+				if(budget <= 0)
+					break
 
-	if(pressure_difference > 100)
+	if(pressure_difference > 100 && world.time >= next_space_wind_at)
+		next_space_wind_at = world.time + SPACE_WIND_VISUAL_COOLDOWN
 		new /obj/effect/temp_visual/dir_setting/space_wind(src, pressure_direction, clamp(round(sqrt(pressure_difference) * 2), 10, 255))
 
 /atom/movable/var/pressure_resistance = 10

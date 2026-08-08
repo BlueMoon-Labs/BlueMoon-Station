@@ -370,6 +370,12 @@
 	TEST_ASSERT(door.density, "предпосылка теста не воспроизводится: пересчёт по фронту уже открыл дверь")
 
 	door.try_auto_reopen()
+	// Открытие асинхронное (колбек SStimer не спит анимацию двери), поэтому
+	// результата дожидаемся, а не читаем сразу.
+	for(var/i in 1 to 30)
+		if(!door.density)
+			break
+		sleep(1)
 	TEST_ASSERT(!door.density, "закрытая автоматикой дверь без единой причины стоять закрытой так и не открылась")
 	TEST_ASSERT(!door.auto_closed, "флаг автоматического закрытия не снялся после открытия")
 
@@ -387,6 +393,57 @@
 	TEST_ASSERT(door.auto_closed, "живая тревога сняла флаг автоматического закрытия")
 	door.alarm_type = null
 	door.auto_closed = FALSE
+
+/// Таймерный колбек переоткрытия обязан возвращаться без сна: door/open() спит
+/// анимацию целую секунду, и в раунде 9911 try_auto_reopen держал SStimer по
+/// 300-350мс на колбек в разгар станционного пожара.
+/datum/unit_test/firelock_auto_reopen_nonblocking/Run()
+	var/turf/open/origin = run_loc_floor_bottom_left
+	var/turf/open/center = locate(origin.x + 2, origin.y + 2, origin.z)
+	TEST_ASSERT(istype(center) && center.air, "центральная плитка резервации не открытый турф с воздухом")
+	unit_test_normalize_exposure_window(center)
+	var/obj/machinery/door/firedoor/door = allocate(/obj/machinery/door/firedoor, center)
+
+	door.density = TRUE
+	door.alarm_type = null
+	door.generic_alarm = FALSE
+	door.issue_turfs = list()
+	door.mark_auto_closed()
+	TEST_ASSERT(!door.is_holding_pressure(), "предпосылка: под дверью не должно быть перепада давления")
+
+	var/time_before = world.time
+	door.try_auto_reopen()
+	TEST_ASSERT_EQUAL(world.time, time_before, "try_auto_reopen уснул в колбеке: SStimer стоял бы всю анимацию двери")
+	for(var/i in 1 to 30)
+		if(!door.density)
+			break
+		sleep(1)
+	TEST_ASSERT(!door.density, "асинхронное открытие так и не открыло дверь")
+	TEST_ASSERT(!door.auto_closed, "флаг автозакрытия не снялся после асинхронного открытия")
+
+/// Чистый холодный QCD: у смеси нулевая энергия, цикл досыпки газов не
+/// выполняется ни разу, и финальный set_temperature делил на нулевую
+/// теплоёмкость пустой смеси. В раунде 9911 это 208 рантаймов на одном
+/// вакуумном полу токсинов - реакция ни разу не завершилась.
+/datum/unit_test/dehagedorn_zero_energy_no_runtime/Run()
+	var/datum/gas_reaction/dehagedorn/reaction = new
+	var/datum/gas_mixture/cold_qcd = new(CELL_VOLUME)
+	cold_qcd.set_moles(GAS_QCD, 5)
+	// Прямая запись: штатный set_temperature клампит к TCMB, а смесь с нулевой
+	// температурой в проде существует - именно она и ловила деление на ноль.
+	cold_qcd.temperature = 0
+	reaction.react(cold_qcd, null)
+	TEST_ASSERT_EQUAL(cold_qcd.get_moles(GAS_QCD), 0, "холодная конденсация не выжгла QCD")
+	TEST_ASSERT(cold_qcd.return_temperature() >= TCMB, "реакция оборвалась, не дойдя до финальной температуры: [cold_qcd.return_temperature()] K")
+
+	// Горячий путь обязан по-прежнему разложить энергию в газовый суп.
+	var/datum/gas_mixture/hot_qcd = new(CELL_VOLUME)
+	hot_qcd.set_moles(GAS_QCD, 100)
+	hot_qcd.set_temperature(1e12)
+	reaction.react(hot_qcd, null)
+	TEST_ASSERT_EQUAL(hot_qcd.get_moles(GAS_QCD), 0, "горячая конденсация не выжгла QCD")
+	TEST_ASSERT(hot_qcd.total_moles() > 0, "горячая конденсация не оставила газового супа")
+	TEST_ASSERT(hot_qcd.return_temperature() <= 1.8e12, "конденсация не увела температуру под потолок стабилизации")
 
 /// Examining armored clothing must include the armor tag line; the plasma
 /// absorption proc must not have swallowed the tail of examine().

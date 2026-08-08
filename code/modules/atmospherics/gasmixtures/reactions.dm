@@ -899,7 +899,13 @@
 		var/G = pick(gases)
 		air.adjust_moles(G, max(0.1, energy_remaining / (gases[G] * new_temp * 20)))
 		energy_remaining = initial_energy - air.thermal_energy()
-	air.set_temperature(initial_energy / air.heat_capacity())
+	// Чистый холодный QCD: энергии ноль, цикл досыпки не выполнился ни разу, и
+	// у опустевшей смеси нулевая теплоёмкость - делить не на что. Рантайм здесь
+	// обрывал react() ДО выставления температуры, QCD уже был списан, и реакция
+	// перезапускалась на том же турфе вечно (208 рантаймов за раунд 9911).
+	var/final_heat_capacity = air.heat_capacity()
+	if(final_heat_capacity > 0)
+		air.set_temperature(initial_energy / final_heat_capacity)
 	return REACTING
 
 // === Fusion/exotic gas reactions — синтез вручную, полная картина атмоса ===

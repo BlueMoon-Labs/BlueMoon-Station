@@ -36,8 +36,10 @@
 /// Breakdown keeps its accumulator and write-back state across SSair resumes.
 #define EXCITED_GROUP_BREAKDOWN_SLICE				192
 /// Small groups are cheaper and safer to finish atomically. Resumable state is
-/// reserved for memberships large enough to threaten a server tick.
-#define EXCITED_GROUP_RESUMABLE_THRESHOLD			1024
+/// reserved for memberships large enough to threaten a server tick. Два среза:
+/// на старом пороге в 1024 группа из ~1000 турфов усреднялась одним куском на
+/// сотни миллисекунд - при станционном пожаре таких групп десятки.
+#define EXCITED_GROUP_RESUMABLE_THRESHOLD			(EXCITED_GROUP_BREAKDOWN_SLICE * 2)
 /// Excited-group size at which the zone equalizer engages even with the config
 /// flag off. Pure LINDA diffusion cannot finish a single differential this
 /// large in bounded time: the giant-hall bench (120x100 hall, 16:1 pressure
@@ -321,6 +323,22 @@
 /// разгерметизации фронта не создают вовсе - без этой проверки такая дверь
 /// оставалась закрытой до конца смены, с пустой тревогой и погашенной лампой.
 #define FIRELOCK_AUTO_REOPEN_RETRY (10 SECONDS)
+
+/// Разброс, добавляемый к каждому перевзводу проверки переоткрытия. Двери,
+/// закрытые одной волной разгерметизации, без него ретраились все в один тик
+/// каждые десять секунд до конца пожара - сотни is_holding_pressure() разом.
+#define FIRELOCK_AUTO_REOPEN_JITTER (4 SECONDS)
+
+/// Сколько предметов один турф может сдвинуть за проход фазы high-pressure.
+/// MC_TICK_CHECK стоит только между турфами, и завал из сотен предметов после
+/// взрыва обрабатывался атомарным куском по 300+мс (раунд 9911). Остаток кучи
+/// дожуют следующие проходы: ветер держит турф в очереди, пока перепад жив.
+#define HIGH_PRESSURE_MOVES_PER_TURF 40
+
+/// Пауза между визуалами ветра на одном турфе, равна длительности анимации
+/// самого визуала: затяжная разгерметизация создавала новый поверх ещё живого
+/// каждый проход SSair и раздувала очередь GC.
+#define SPACE_WIND_VISUAL_COOLDOWN (2 SECONDS)
 
 /// Перепад ДАВЛЕНИЯ в кПа, начиная с которого дверь считается удерживающей
 /// разгерметизацию. Раньше сравнивались моли с порогом 20, а моль зависит и от

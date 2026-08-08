@@ -75,6 +75,7 @@
 #include "atmos_engineering_fixes.dm"
 #include "atmos_exposure_consumers.dm"
 #include "atmos_gas_propagation.dm"
+#include "atmos_high_pressure_pile.dm"
 #include "atmos_native.dm"
 #include "atmos_performance.dm"
 #include "atmos_superconduction.dm"
