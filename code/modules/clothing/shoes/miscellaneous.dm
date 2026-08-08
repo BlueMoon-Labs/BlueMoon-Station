@@ -300,6 +300,8 @@
 	name = "jump boots"
 	desc = "A specialized pair of combat boots with a built-in propulsion system for rapid foward movement."
 	icon_state = "jetboots"
+	mutantrace_variation = STYLE_DIGITIGRADE
+	anthro_mob_worn_overlay = 'icons/mob/clothing/feet_digi.dmi'
 	resistance_flags = FIRE_PROOF
 	cold_protection = FEET|LEGS
 	min_cold_protection_temperature = SHOES_MIN_TEMP_PROTECT
