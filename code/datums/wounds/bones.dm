@@ -74,7 +74,9 @@
 
 /datum/wound/blunt/handle_process()
 	. = ..()
-	if(limb.body_zone == BODY_ZONE_HEAD && severity == WOUND_SEVERITY_CRITICAL && brain_trauma_group && world.time > next_trauma_cycle)
+	// Мёртвый мозг новых травм не наживает: цикл крутился на трупе до конца раунда,
+	// подвешивая на тело травмы, которые всплывали уже после дефибрилляции.
+	if(limb.body_zone == BODY_ZONE_HEAD && severity == WOUND_SEVERITY_CRITICAL && brain_trauma_group && world.time > next_trauma_cycle && !victim_appears_dead())
 		if(active_trauma)
 			QDEL_NULL(active_trauma)
 		else
@@ -85,7 +87,11 @@
 		return
 
 	regen_points_current++
-	if(prob(severity * 2))
+	// Кости срастаются и у мёртвого тела - медики штопают трупы перед дефибом, - но
+	// надрыв тканей и болевые сообщения ему уже не грозят. handle_wounds() зовётся из
+	// /mob/living/BiologicalLife() ДО выхода по stat == DEAD, так что без этого гейта
+	// труп с гелем и лентой ловил свежий урон каждый тик до конца раунда.
+	if(!victim_appears_dead() && prob(severity * 2))
 		victim.take_bodypart_damage(rand(2, severity * 2), stamina=rand(2, severity * 2.5), wound_bonus=CANT_WOUND)
 		if(prob(33))
 			if(limb.is_robotic_limb())
@@ -182,14 +188,19 @@
 	return COMSIG_MOB_CANCEL_CLICKON
 
 /datum/wound/blunt/receive_damage(wounding_type, wounding_dmg, wound_bonus)
-	if(!victim || wounding_dmg < WOUND_MINIMUM_DAMAGE)
+	// Труп кровью не кашляет. Гейт стоит отдельной строкой рядом с остальными
+	// отбойниками, а не внутри условия ниже: там его легко потерять при следующей
+	// правке switch'а. Проверка через victim_appears_dead(), а не по одному stat -
+	// см. комментарий у прока: тело в торпоре или с квирком "Не-мёртвый" для всех
+	// вокруг труп, но stat у него живой.
+	if(victim_appears_dead() || wounding_dmg < WOUND_MINIMUM_DAMAGE)
 		return
 	if(ishuman(victim))
 		var/mob/living/carbon/human/human_victim = victim
 		if(NOBLOOD in human_victim.dna?.species.species_traits)
 			return
 
-	if(victim.stat != DEAD && limb.body_zone == BODY_ZONE_CHEST && victim.blood_volume && prob(internal_bleeding_chance + wounding_dmg))
+	if(limb.body_zone == BODY_ZONE_CHEST && victim.blood_volume && prob(internal_bleeding_chance + wounding_dmg))
 		var/blood_bled = rand(1, wounding_dmg * (severity == WOUND_SEVERITY_CRITICAL ? 2 : 1.5)) // 12 brute toolbox can cause up to 18/24 bleeding with a severe/critical chest wound
 		switch(blood_bled)
 			if(1 to 6)

@@ -432,6 +432,8 @@
 
 /datum/config_entry/number/commendation_percent_poll
 	integer = FALSE
+	/// Fraction of joined players polled for end-of-round hearts when the shuttle leaves (0 disables).
+	default = 0.1
 
 /datum/config_entry/str_list/randomizing_station_name_message
 	default = list()

@@ -489,6 +489,12 @@ DEFINE_BITFIELD(turret_flags, list(
 		if(A.invisibility > SEE_INVISIBLE_LIVING)
 			continue
 
+		// Линию до цели проверяем так же, как ветка про мехи ниже. view() отбирает по
+		// прозрачности, но не по проходимости для снаряда, поэтому турель бралась за цели,
+		// в которые физически не может попасть, и долбила по ним весь раунд.
+		if(!can_see(base, A, scan_range))
+			continue
+
 		if(turret_flags & TURRET_FLAG_SHOOT_ANOMALOUS)//if it's set to check for simple animals
 			if(isanimal(A))
 				var/mob/living/simple_animal/SA = A
@@ -677,6 +683,20 @@ DEFINE_BITFIELD(turret_flags, list(
 				if(istype(closer) && !is_blocked_turf(closer) && T.Adjacent(closer))
 					T = closer
 					break
+		// Свободного соседнего турфа не нашлось - стрелять неоткуда. Прежний код всё равно
+		// рождал снаряд внутри стены, тот немедленно упирался в неё, и турель повторяла это
+		// каждый цикл: в прод-раунде 9830 один такой цикл дал 554 выстрела по одной цели с
+		// неизменившимся HP, а всего выстрелы турелей заняли 30.7% attack.log. Каждый ещё и
+		// платил playsound и записью в лог.
+		if(T.density)
+			return
+		// Свободный турф мог найтись с ДРУГОЙ стороны стены. Отбор цели проверяет видимость из
+		// самой турели (сквозь стекло/решётку она есть), а снаряд рождается на выбранном турфе -
+		// и если тот снаружи, снаряд до цели не доходит никогда. Прод-раунд 9832: турель
+		// хранилища away-базы 53 минуты стреляла из космоса по мобу внутри Vault - 800 выстрелов
+		// подряд с неизменным HP, 12% всего attack.log.
+		if(T != get_turf(src) && !can_see(T, target, scan_range))
+			return
 
 	update_icon()
 	var/obj/item/projectile/A

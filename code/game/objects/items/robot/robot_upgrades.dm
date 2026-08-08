@@ -489,7 +489,11 @@
 /obj/item/borg/upgrade/selfrepair/deactivate(mob/living/silicon/robot/R, user = usr)
 	. = ..()
 	if (.)
-		toggle_action.Remove(R)
+		// toggle_action создаётся только в activate(), а сюда приходят и без него: перерезанный
+		// провод Reset Module двигает апгрейд, сигнал перемещения зовёт remove_from_upgrades ->
+		// deactivate(), и на пустом поле выходило "Cannot execute null.Remove()" (раунд 9834).
+		if(toggle_action)
+			toggle_action.Remove(R)
 		QDEL_NULL(toggle_action)
 		deactivate_sr()
 

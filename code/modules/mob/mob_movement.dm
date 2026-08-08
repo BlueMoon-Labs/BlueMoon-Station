@@ -3,6 +3,19 @@
 /mob/proc/movement_delay()	//update /living/movement_delay() if you change this
 	return cached_multiplicative_slowdown
 
+/// Цена шага этого моба, уже кратная тику.
+///
+/// Считать её от cached_multiplicative_slowdown нельзя. У подтипов
+/// movement_delay() шире кэша: борг вне спринта добавляет 0.5 и vtec, вендиго в
+/// темноте - целую децисекунду. Пересчёт скорости на ходу, считавший от кэша,
+/// всегда видел цену ниже той, по которой шаг оплачен, и на каждом вызове дарил
+/// боргу тик - то самое неровное расписание, от которого лечим всех остальных.
+///
+/// /client/Move считает то же самое вручную: база нужна ему ещё и для сигнала, и
+/// для пересчёта после шага, и обязана остаться той, что была до шага.
+/mob/proc/movement_step_cost(diagonal)
+	return movement_step_delay(movement_delay(), diagonal, world.tick_lag)
+
 /client/verb/drop_item()
 	set hidden = 1
 	if(!iscyborg(mob) && mob.stat == CONSCIOUS)
@@ -18,9 +31,6 @@
 			mob.control_object.setDir(direction)
 		else
 			mob.control_object.forceMove(get_step(mob.control_object,direction))
-
-#define MOVEMENT_DELAY_BUFFER 0.75
-#define MOVEMENT_DELAY_BUFFER_DELTA 1.25
 
 /client/Move(n, direction)
 	if(world.time < move_delay) //do not move anything ahead of this check please
@@ -80,9 +90,18 @@
 	if(!mob.Process_Spacemove(direction))
 		return FALSE
 	//We are now going to move
-	var/add_delay = mob.movement_delay()
-	mob.set_glide_size(DELAY_TO_GLIDE_SIZE(add_delay * ( (NSCOMPONENT(direction) && EWCOMPONENT(direction)) ? 2 : 1 ) ), FALSE) // set it now in case of pulled objects
-	if(old_move_delay + (add_delay*MOVEMENT_DELAY_BUFFER_DELTA) + MOVEMENT_DELAY_BUFFER > world.time)
+	// Цена шага обязана быть кратна тику. Шаг может случиться только на тике -
+	// keyLoop() зовётся из SSinput, а это SS_TICKER - поэтому дробная задержка
+	// заставляет интервал прыгать между соседними тиками: при 1.6ds это
+	// последовательность 4,3,3,3,3, то есть скачок скорости на треть каждый
+	// пятый шаг. Именно это видно как рывки.
+	var/base_delay = mob.movement_delay()
+	var/add_delay = movement_step_delay(base_delay, (direction & (direction - 1)), world.tick_lag)
+	mob.set_glide_size(DELAY_TO_GLIDE_SIZE(add_delay), FALSE) // set it now in case of pulled objects
+	// Окно догоняющего шага - один тик, как в апстриме. Прежнее
+	// (add_delay * 1.25 + 0.75) при задержке 1.6ds растягивалось на пять с
+	// половиной тиков и переиспользовало устаревшую базу расписания.
+	if(old_move_delay + world.tick_lag > world.time)
 		move_delay = old_move_delay
 	else
 		move_delay = world.time
@@ -103,10 +122,24 @@
 
 	. = ..()
 
-	if((direction & (direction - 1)) && mob.loc == n) //moved diagonally successfully
-		add_delay *= SQRT_2
+	// Диагональ засчитывается только если она удалась: сорванный наискось шаг
+	// стоит как прямой. Конфуз мог поменять direction, поэтому смотрим на
+	// итоговое значение, а не на исходное намерение.
+	var/stepped_diagonally = ((direction & (direction - 1)) && mob.loc == n)
+	add_delay = movement_step_delay(base_delay, stepped_diagonally, world.tick_lag)
 	mob.set_glide_size(DELAY_TO_GLIDE_SIZE(add_delay), FALSE)
 	move_delay += add_delay
+	// Слепок расписания целиком, и до всего, что может дёрнуть скорость.
+	// finalize() броска роняет предметы, setDir ниже шлёт сигналы - любой из
+	// них способен позвать update_movespeed(), а тот считает остаток пути от
+	// last_move. Полуготовый слепок дал бы ему неверный glide.
+	//
+	// Сверяться со слепком обязательно: move_delay пишут ещё и захват, и
+	// отдача, и админские вербы, и подтягивать чужой срок как свой нельзя.
+	last_move = world.time
+	last_step_target = move_delay
+	last_step_cost = add_delay
+	last_step_diagonal = stepped_diagonally
 	if(.) // If mob is null here, we deserve the runtime
 		if(mob.throwing)
 			mob.throwing.finalize(FALSE)
@@ -115,9 +148,7 @@
 	if(AM && AM.density && !SEND_SIGNAL(L, COMSIG_COMBAT_MODE_CHECK, COMBAT_MODE_ACTIVE) && !ismob(AM))
 		L.setDir(turn(L.dir, 180))
 
-	last_move = world.time
-
-	SEND_SIGNAL(mob, COMSIG_MOB_CLIENT_MOVE, src, direction, n, oldloc, add_delay)
+	SEND_SIGNAL(mob, COMSIG_MOB_CLIENT_MOVE, src, direction, n, oldloc, add_delay, base_delay)
 
 
 /// Process_Grab(): checks for grab, attempts to break if so. Return TRUE to prevent movement.

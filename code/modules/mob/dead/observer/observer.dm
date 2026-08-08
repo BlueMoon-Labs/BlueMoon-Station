@@ -218,6 +218,12 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 
 	QDEL_NULL(orbit_menu)
 	QDEL_NULL(spawners_menu)
+	// Обнуление mind ДО ..() съедало проверку `if(mind?.current == src)` в /mob/Destroy:
+	// родитель видел уже пустой mind и не звал set_current(null), так что mind.current
+	// навсегда указывал на удалённого обсервера. Разумы живут в SSticker.minds весь
+	// раунд - это ровно те хардделы гостов с одной ссылкой (раунд 9813, 10 штук).
+	if(mind?.current == src)
+		mind.set_current(null)
 	mind = null
 	return ..()
 
@@ -720,7 +726,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	update_sight()
 
 /mob/dead/observer/update_sight(forced = TRUE)
-	if(client)
+	if(client?.prefs)
 		ghost_others = client.prefs.ghost_others //A quick update just in case this setting was changed right before calling the proc
 
 	if (!ghostvision)
@@ -942,13 +948,17 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 				remove_verb(src, /mob/dead/observer/verb/possess)
 
 /mob/dead/observer/reset_perspective(atom/A)
-	if(client)
-		if(ismob(client.eye) && (client.eye != src))
-			var/mob/target = client.eye
-			observetarget = null
-			if(target.observers)
-				target.observers -= src
-				UNSETEMPTY(target.observers)
+	// Отвязываемся по observetarget, а не по client.eye. Прежнее условие требовало, чтобы
+	// eye всё ещё был мобом и не был нами самими, а к моменту сброса вида eye мог уже уехать
+	// на турф, на самого госта или обнулиться - тогда прежняя цель навсегда оставалась с
+	// записью о нас в observers. observetarget - единственная авторитетная запись о связи,
+	// и снимать её надо независимо от наличия клиента.
+	if(observetarget)
+		var/mob/previous_target = observetarget
+		observetarget = null
+		if(previous_target.observers)
+			previous_target.observers -= src
+			UNSETEMPTY(previous_target.observers)
 	if(..())
 		if(hud_used)
 			client.clear_screen()
@@ -972,6 +982,10 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	do_observe(creatures[eye_name])
 
 /mob/dead/observer/proc/do_observe(mob/mob_eye)
+	// Наблюдать самого себя нельзя: запись src в собственном observers - это самоссылка,
+	// которую не снимет ни reset_perspective, ни Logout, ни Destroy.
+	if(mob_eye == src)
+		return
 	//Istype so we filter out points of interest that are not mobs
 	if(client && mob_eye && istype(mob_eye))
 		// Отвязка от прошлой цели: путь toggle_observe зовёт do_observe без

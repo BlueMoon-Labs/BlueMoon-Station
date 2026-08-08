@@ -73,7 +73,9 @@
 	var/sprite_dir = move_dir_for_riding_sprite(dir)
 	if(!sprite_dir)
 		sprite_dir = AM.dir
-	AM.set_glide_size(DELAY_TO_GLIDE_SIZE(vehicle_move_delay), FALSE)
+	// Диагональ у транспорта стоит вдвое. Ход не от handle_ride() - буксировка, толчок, бросок -
+	// приходит только сюда, и glide по прямой цене оставлял бы спрайт стоять полпути.
+	AM.set_glide_size(DELAY_TO_GLIDE_SIZE(get_step_cost(ISDIAGONALDIR(dir))), FALSE)
 	for(var/i in AM.buckled_mobs)
 		ride_check(i)
 	handle_vehicle_offsets(sprite_dir)
@@ -213,12 +215,21 @@
 		return EAST
 	return WEST
 
+/// Цена шага транспорта, выровненная по тику.
+///
+/// Диагональ у транспорта стоит вдвое, а не в SQRT_2, как обычный шаг - это его
+/// собственная механика, и трогать её здесь незачем. А вот выровнять итог по
+/// тику надо: шаг проверяется на кулдауне, который опрашивается только на тике,
+/// поэтому дробная цена даёт не дробный интервал, а гуляющий.
+/datum/component/riding/proc/get_step_cost(diagonal)
+	return movement_quantize_delay(vehicle_move_delay * (diagonal ? 2 : 1), world.tick_lag)
+
 /datum/component/riding/proc/handle_ride(mob/user, direction)
 	var/atom/movable/AM = parent
 	if(user && user.incapacitated())
 		Unbuckle(user)
 		return
-	if(world.time < last_vehicle_move + ((last_move_diagonal? 2 : 1) * vehicle_move_delay))
+	if(world.time < last_vehicle_move + get_step_cost(last_move_diagonal))
 		return
 	last_vehicle_move = world.time
 
@@ -241,6 +252,15 @@
 			last_move_diagonal = TRUE
 		else
 			last_move_diagonal = FALSE
+
+		// glide обязан покрывать тот интервал, который реально пройдёт. Диагональ
+		// у транспорта стоит вдвое, а glide ставился по прямому ходу - спрайт
+		// доезжал до тайла за половину пути и вторую половину стоял, ожидая
+		// разрешения. На диагональной езде это видно как шаг через раз.
+		//
+		// Ставим после того, как диагональ стала известна: vehicle_moved() успел
+		// отработать внутри step() выше и знал только про прошлый шаг.
+		AM.set_glide_size(DELAY_TO_GLIDE_SIZE(get_step_cost(last_move_diagonal)))
 
 		var/sprite_dir = move_dir_for_riding_sprite(direction)
 		handle_vehicle_offsets(sprite_dir)

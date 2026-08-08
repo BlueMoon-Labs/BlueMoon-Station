@@ -103,6 +103,10 @@
 	trauma = T
 	..()
 
+/datum/action/innate/split_personality_control/Destroy()
+	trauma = null
+	return ..()
+
 /datum/action/innate/split_personality_control/Activate()
 	if(!trauma || QDELETED(trauma))
 		return

@@ -1,3 +1,33 @@
+/// Whether a client currently has an active OOC heart badge.
+/proc/client_has_active_heart(client/C)
+	return C?.prefs && C.prefs.hearted_until > world.realtime
+
+/// Syncs the hearted flag from hearted_until after loading preferences.
+/proc/sync_hearted_pref(datum/preferences/P)
+	if(!P)
+		return
+	if(P.hearted_until > world.realtime)
+		P.hearted = TRUE
+	else
+		P.hearted = FALSE
+		P.hearted_until = 0
+
+/// Formats a player's OOC display name, including heart and BYOND member badges.
+/proc/get_ooc_keyname(client/C)
+	if(!C)
+		return "Unknown"
+	var/keyname = C.key
+	var/heart_suffix = ""
+	if(client_has_active_heart(C))
+		var/datum/asset/spritesheet/chat/sheet = get_asset_datum(/datum/asset/spritesheet/chat)
+		var/heart_tag = sheet?.icon_tag("emoji-heart")
+		if(heart_tag)
+			heart_suffix = " [heart_tag]"
+	keyname = "[keyname][heart_suffix]"
+	if(C.prefs?.unlock_content && (C.prefs.toggles & MEMBER_PUBLIC))
+		keyname = "<font color='[C.prefs.ooccolor && (C.prefs.custom_colors & CUSTOM_OOC) ? C.prefs.ooccolor : GLOB.normal_ooc_colour]'>[icon2html('icons/obj/plushes.dmi', world, "plushie_nuke")][keyname]</font>"
+	return keyname
+
 /// Returns mobs whose real_name / mind name matches words in text (same rules as adminhelp keyword scan, without HTML).
 /proc/heart_nominee_lookup(text)
 	var/list/adminhelp_ignored_words = list("unknown", "the", "a", "an", "of", "monkey", "alien", "as", "i")
@@ -92,6 +122,7 @@
 	tgui_alert(src, "Кто-то поблагодарил меня за прошлый раунд!", "<3!", list("Лан"))
 	prefs.hearted_until = new_duration
 	prefs.hearted = TRUE
+	sync_hearted_pref(prefs)
 	prefs.save_preferences()
 
 /// Ask someone if they'd like to award a commendation for the round, 3 tries to get the name they want before we give up

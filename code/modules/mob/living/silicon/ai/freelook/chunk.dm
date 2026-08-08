@@ -6,7 +6,21 @@
 // Allows the AI Eye to stream these chunks and know what it can and cannot see.
 
 /datum/camerachunk
+	/// Турфы чанка, которые не видит ни одна камера: турф -> образ статики.
+	/// Образ привязан к самому турфу, но показывается только через client.images
+	/// тому, кто смотрит через камерную сеть. Раньше вместо образов в vis_contents
+	/// каждого скрытого турфа лежала пара движимых объектов, и SendMaps обходил их
+	/// для КАЖДОГО клиента на карте, а не только для ИИ.
 	var/list/obscuredTurfs = list()
+	/// Те же турфы со вторым набором образов - прозрачным для мыши. Нужен
+	/// наблюдателям с USE_STATIC_TRANSPARENT (детектор ИИ в мультитуле): статику
+	/// там видит живой человек, которому нельзя блокировать клики по миру.
+	/// Строится лениво, до первого такого наблюдателя тут null.
+	var/list/obscured_turfs_transparent
+	/// Плоский список образов скрытых турфов - целиком уезжает в client.images
+	var/list/active_static_images = list()
+	/// То же для прозрачного набора; null, пока набор не построен
+	var/list/active_static_images_transparent
 	var/list/visibleTurfs = list()
 	var/list/cameras = list()
 	var/list/turfs = list()
@@ -19,24 +33,105 @@
 // Add an AI eye to the chunk, then update if changed.
 
 /datum/camerachunk/proc/add(mob/camera/aiEye/eye)
-	eye.visibleCameraChunks += src
-	seenby += eye
+	//обновляемся ДО подписки: пока глаз не в seenby, апдейт не тронет его образы,
+	//и статику он получит ровно один раз - уже итоговую
 	if(changed)
 		update()
+	eye.visibleCameraChunks += src
+	seenby += eye
+	eye.give_camera_static(src)
 
-// Remove an AI eye from the chunk, then update if changed.
+// Remove an AI eye from the chunk.
 
-/datum/camerachunk/proc/remove(mob/camera/aiEye/eye, remove_static_with_last_chunk = TRUE)
-	eye.visibleCameraChunks -= src
+/datum/camerachunk/proc/remove(mob/camera/aiEye/eye)
+	//именно присваивание нового списка, а не "-=": часть вызывающих (снятие
+	//управления с камерной консоли) перебирает visibleCameraChunks и снимает
+	//чанки прямо в цикле по нему, а правка списка внутри for() пропускает
+	//каждый второй элемент и оставляет образы висеть у клиента навсегда
+	eye.visibleCameraChunks = eye.visibleCameraChunks - src
 	seenby -= eye
-	if(remove_static_with_last_chunk && !eye.visibleCameraChunks.len)
-		var/client/client = eye.GetViewerClient()
-		if(client)
-			switch(eye.use_static)
-				if(USE_STATIC_TRANSPARENT)
-					client.images -= GLOB.cameranet.obscured_transparent
-				if(USE_STATIC_OPAQUE)
-					client.images -= GLOB.cameranet.obscured
+	//у ИИ несколько глаз (мультикам) на одном клиенте: если в чанк смотрит
+	//другой его глаз, образы клиенту всё ещё нужны
+	if(still_seen_by_same_client(eye))
+		return
+	eye.take_camera_static(src)
+
+/// Смотрит ли в чанк другой глаз того же клиента с тем же режимом статики.
+/datum/camerachunk/proc/still_seen_by_same_client(mob/camera/aiEye/leaving_eye)
+	var/client/viewer = leaving_eye.GetViewerClient()
+	if(!viewer)
+		return FALSE
+	for(var/mob/camera/aiEye/other_eye as anything in seenby)
+		if(other_eye.use_static == leaving_eye.use_static && other_eye.GetViewerClient() == viewer)
+			return TRUE
+	return FALSE
+
+/// Набор образов статики для наблюдателя с таким режимом. Прозрачный набор
+/// строится по требованию: он нужен только детектору ИИ.
+/datum/camerachunk/proc/static_images_for(use_static, build_missing = TRUE)
+	if(use_static != USE_STATIC_TRANSPARENT)
+		return active_static_images
+	if(isnull(active_static_images_transparent) && build_missing)
+		build_transparent_static()
+	return active_static_images_transparent
+
+/// Собрать прозрачный для мыши набор образов по уже известным скрытым турфам.
+/datum/camerachunk/proc/build_transparent_static()
+	obscured_turfs_transparent = list()
+	active_static_images_transparent = list()
+	for(var/turf/hidden_turf as anything in obscuredTurfs)
+		var/image/transparent_image = GLOB.cameranet.make_static_image(hidden_turf, USE_STATIC_TRANSPARENT)
+		obscured_turfs_transparent[hidden_turf] = transparent_image
+		active_static_images_transparent += transparent_image
+
+/// Турф перестал просматриваться камерами - завести на него образы статики.
+/datum/camerachunk/proc/hide_turf(turf/hidden_turf)
+	if(obscuredTurfs[hidden_turf] || istype(hidden_turf, /turf/open/ai_visible))
+		return
+	var/image/static_image = GLOB.cameranet.make_static_image(hidden_turf)
+	obscuredTurfs[hidden_turf] = static_image
+	active_static_images += static_image
+	if(isnull(obscured_turfs_transparent))
+		return
+	var/image/transparent_image = GLOB.cameranet.make_static_image(hidden_turf, USE_STATIC_TRANSPARENT)
+	obscured_turfs_transparent[hidden_turf] = transparent_image
+	active_static_images_transparent += transparent_image
+
+/// Турф снова под камерой - снять с него образы статики.
+/datum/camerachunk/proc/reveal_turf(turf/shown_turf)
+	var/image/static_image = obscuredTurfs[shown_turf]
+	if(static_image)
+		obscuredTurfs -= shown_turf
+		active_static_images -= static_image
+	if(isnull(obscured_turfs_transparent))
+		return
+	var/image/transparent_image = obscured_turfs_transparent[shown_turf]
+	if(!transparent_image)
+		return
+	obscured_turfs_transparent -= shown_turf
+	active_static_images_transparent -= transparent_image
+
+/// Перевесить образы статики на турф: он мог быть только что пересоздан
+/// (ChangeTurf), и без этого в статике осталась бы дырка.
+/datum/camerachunk/proc/reattach_static(turf/changed_turf)
+	var/image/static_image = obscuredTurfs[changed_turf]
+	if(static_image)
+		static_image.loc = changed_turf
+	if(isnull(obscured_turfs_transparent))
+		return
+	var/image/transparent_image = obscured_turfs_transparent[changed_turf]
+	if(transparent_image)
+		transparent_image.loc = changed_turf
+
+/// Забрать образы у всех наблюдателей: списки образов сейчас изменятся.
+/datum/camerachunk/proc/take_static_from_watchers()
+	for(var/mob/camera/aiEye/eye as anything in seenby)
+		eye.take_camera_static(src)
+
+/// Вернуть наблюдателям уже обновлённые образы.
+/datum/camerachunk/proc/give_static_to_watchers()
+	for(var/mob/camera/aiEye/eye as anything in seenby)
+		eye.give_camera_static(src)
 
 // Called when a chunk has changed. I.E: A wall was deleted.
 
@@ -85,18 +180,21 @@
 	var/list/visRemoved = visibleTurfs - newVisibleTurfs
 
 	visibleTurfs = newVisibleTurfs
-	obscuredTurfs = turfs - newVisibleTurfs
-
-	for(var/turf in visAdded)
-		var/turf/t = turf
-		t.vis_contents -= GLOB.cameranet.vis_contents_objects
-
-	for(var/turf in visRemoved)
-		var/turf/t = turf
-		if(obscuredTurfs[t] && !istype(t, /turf/open/ai_visible))
-			t.vis_contents += GLOB.cameranet.vis_contents_objects
-
 	changed = 0
+
+	if(!length(visAdded) && !length(visRemoved))
+		return
+
+	//пока наборы образов перестраиваются, у наблюдателей их быть не должно
+	take_static_from_watchers()
+
+	for(var/turf/shown_turf as anything in visAdded)
+		reveal_turf(shown_turf)
+
+	for(var/turf/hidden_turf as anything in visRemoved)
+		hide_turf(hidden_turf)
+
+	give_static_to_watchers()
 
 // Create a new camera chunk, since the chunks are made as they are needed.
 
@@ -132,11 +230,24 @@
 	// Removes turf that isn't in turfs.
 	visibleTurfs &= turfs
 
-	obscuredTurfs = turfs - visibleTurfs
+	for(var/turf/hidden_turf as anything in turfs - visibleTurfs)
+		hide_turf(hidden_turf)
 
-	for(var/turf in obscuredTurfs)
-		var/turf/t = turf
-		t.vis_contents += GLOB.cameranet.vis_contents_objects
+/datum/camerachunk/Destroy()
+	//образы обязаны уйти из client.images вместе с чанком, иначе клиент до конца
+	//сессии таскает статику на турфах, которых уже никто не считает скрытыми
+	for(var/mob/camera/aiEye/eye as anything in seenby)
+		eye.visibleCameraChunks = eye.visibleCameraChunks - src
+		eye.take_camera_static(src)
+	seenby.Cut()
+	obscuredTurfs.Cut()
+	active_static_images.Cut()
+	obscured_turfs_transparent = null
+	active_static_images_transparent = null
+	visibleTurfs.Cut()
+	turfs.Cut()
+	cameras.Cut()
+	return ..()
 
 #undef UPDATE_BUFFER
 #undef CHUNK_SIZE

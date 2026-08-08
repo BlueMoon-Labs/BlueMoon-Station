@@ -208,9 +208,14 @@
 			A.circuit = circuit
 			// Circuit removal code is handled in /obj/machinery/Exited()
 			circuit.forceMove(A)
+			// Вычёркивать плату из component_parts нужно ДО обнуления circuit:
+			// "component_parts -= null" ничего не убирал, плата уезжала во фрейм,
+			// а Destroy машины ниже проходил по component_parts и удалял её.
+			// Фрейм оставался с QDELETED-платой: "doMove qdel-нутого
+			// /obj/item/circuitboard/computer/..." при снятии ломиком (раунд 9827).
+			component_parts -= circuit
 			// no it's not 4head the circuit's in nullspace which means this won't be called!!
 			circuit = null
-			component_parts -= circuit
 			A.set_anchored(TRUE)
 			if(machine_stat & BROKEN)
 				if(user)

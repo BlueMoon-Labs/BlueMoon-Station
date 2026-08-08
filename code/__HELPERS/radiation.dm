@@ -27,6 +27,13 @@
 /proc/radiation_pulse(mob/source, intensity, range_modifier, log=FALSE, can_contaminate=TRUE)
 	if(!SSradiation.can_fire || !source)
 		return
+	// Дефолт из /datum/radiation_wave/New() не спасал: аргумент ПЕРЕДАЁТСЯ (пусть и нулём),
+	// а значение по умолчанию применяется только к непереданному. Дальше в волне считалось
+	// max(range_modifier * steps, 1), где null * steps даёт 0, то есть max(...) всегда 1 -
+	// импульс не ослабевал с расстоянием вообще. Нормализуем один раз здесь: это же убирает
+	// пустой "range modifier: " из лога (в прод-раунде таким был каждый импульс из 41).
+	if(isnull(range_modifier))
+		range_modifier = RAD_DISTANCE_COEFFICIENT
 	var/turf/open/pool/PL = get_turf(source)
 	if(istype(PL))
 		if(PL.filled == TRUE)

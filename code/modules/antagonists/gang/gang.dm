@@ -661,3 +661,26 @@
 	gang_team_type = /datum/team/gang/basil_boys
 
 /datum/team/gang/basil_boys/rename_gangster()
+
+/datum/atom_hud/antag/gangster
+	self_visible = FALSE
+
+/datum/atom_hud/antag/gangster/should_show_to(mob/M, atom/A)
+	if(isobserver(M))
+		return TRUE
+	if(!M?.mind || !ismob(A))
+		return FALSE
+	var/mob/A_mob = A
+	if(!A_mob.mind)
+		return FALSE
+	var/datum/antagonist/gang/target_gang = A_mob.mind.has_antag_datum(/datum/antagonist/gang)
+	if(!target_gang)
+		return FALSE
+	var/datum/antagonist/gang/viewer_gang = M.mind.has_antag_datum(/datum/antagonist/gang)
+	if(viewer_gang)
+		return viewer_gang.my_gang == target_gang.my_gang
+	if(ishuman(M))
+		var/mob/living/carbon/human/H = M
+		if(istype(H.glasses, /obj/item/clothing/glasses/hud/spacecop))
+			return TRUE
+	return FALSE

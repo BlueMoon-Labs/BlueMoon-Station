@@ -102,6 +102,17 @@
 	// waste work and can runtime while trying to update the deleted victim.
 	if(!QDELETED(victim))
 		remove_wound(QDELETED(limb))
+	// Отцепиться от списков надо ВСЕГДА, а не только при живой жертве. QDELETED(null) в DM
+	// истинно, поэтому у раны с уже обнулённой жертвой (её обнуляет null_victim() по
+	// COMSIG_PARENT_QDELETING) remove_wound() не вызывался вовсе, и рана оставалась лежать в
+	// limb.wounds. Через порог warnfail SSgarbage добивал её через del(), запись в списке
+	// превращалась в null, и get_bleed_rate() начинал падать на каждом тике SSmobs до конца
+	// раунда: прод-раунд 9834 - около двух тысяч рантаймов с одной конечности.
+	// Тот же ignore_limb, что и выше: у удаляемой конечности свой список чистить незачем.
+	if(limb && !QDELETED(limb))
+		LAZYREMOVE(limb.wounds, src)
+	if(victim)
+		LAZYREMOVE(victim.all_wounds, src)
 	limb = null
 	victim = null
 	return ..()
@@ -175,6 +186,31 @@
 /datum/wound/proc/null_victim()
 	SIGNAL_HANDLER
 	victim = null
+
+/// Конечность пришили обратно к владельцу.
+///
+/// Через apply_wound() этот путь идти не может: рана всё это время лежит в limb.wounds, и
+/// повторное применение продублировало бы и запись в списках (LAZYADD не проверяет вхождение),
+/// и подписку на удаление жертвы. Поэтому связь восстанавливается напрямую.
+/datum/wound/proc/reattach_to_victim(mob/living/carbon/new_victim)
+	if(QDELETED(new_victim) || QDELETED(limb))
+		return
+	if(victim && victim != new_victim)
+		UnregisterSignal(victim, COMSIG_PARENT_QDELETING)
+		LAZYREMOVE(victim.all_wounds, src)
+	victim = new_victim
+	RegisterSignal(victim, COMSIG_PARENT_QDELETING, PROC_REF(null_victim), override = TRUE)
+	LAZYOR(victim.all_wounds, src)
+	if(status_effect_type)
+		victim.apply_status_effect(status_effect_type, src)
+	// Симметрия с remove_wound(), который отработал при отрыве конечности: он снял общий на все
+	// раны алерт, когда all_wounds опустел, и разослал сигнал потери. Вернуть их больше некому -
+	// throw_alert зовётся только из apply_wound(), а update_wounds() занимается лишь оверлеями,
+	// так что рана работала бы без иконки, а слушатели сигналов считали бы её вылеченной.
+	if(!victim.alerts["wound"])
+		victim.throw_alert("wound", /atom/movable/screen/alert/status_effect/wound)
+	SEND_SIGNAL(victim, COMSIG_CARBON_GAIN_WOUND, src, limb)
+	limb.update_wounds()
 
 /datum/wound/proc/source_died()
 	SIGNAL_HANDLER
@@ -323,6 +359,19 @@
 /// For use in do_after callback checks
 /datum/wound/proc/still_exists()
 	return (!QDELETED(src) && limb)
+
+/**
+ * Выглядит ли жертва трупом - то есть должна ли рана молчать вместо телесной реакции
+ * (кашель кровью, хрип, болевой эмоут, попытка вдохнуть).
+ *
+ * TRAIT_FAKEDEATH стоит здесь наравне со stat == DEAD не для красоты: именно этим трейтом
+ * кодовая база помечает тело, которое трупом считают ВСЕ - осмотр (/mob/living/carbon/human/examine),
+ * анализатор здоровья и медибот, СЛР (/mob/living/carbon/human/proc/do_cpr). Торпор вампира,
+ * квирк "Не-мёртвый", притворная смерть генлинга: снаружи это труп, и проверки только по
+ * stat его не ловят - тело формально живо. Ровно эта дыра и осталась после гейта на stat.
+ */
+/datum/wound/proc/victim_appears_dead()
+	return !victim || victim.stat == DEAD || HAS_TRAIT(victim, TRAIT_FAKEDEATH)
 
 /// When our parent bodypart is hurt
 /datum/wound/proc/receive_damage(wounding_type, wounding_dmg, wound_bonus)

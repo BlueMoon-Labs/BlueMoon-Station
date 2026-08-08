@@ -210,14 +210,30 @@
 		return //won't work if dead
 	alert_control.ui_interact(src)
 
-/mob/living/silicon/robot/proc/ionpulse()
+/**
+ * Ионные двигатели борга. `charge = FALSE` отвечает "потянем ли", ничего не тратя.
+ *
+ * Заряд снимался на каждый вызов, а зовут их за один шаг дважды - с ручного пути и с
+ * ньютоновского - плюс на каждую проверку неподвижности из do_after. Расход выходил вдвое
+ * с лишним против заявленного; та же болезнь, что и у джетпаков.
+ */
+/mob/living/silicon/robot/proc/ionpulse(charge = TRUE)
 	if(!ionpulse_on)
+		return
+
+	// Ячейку у борга вынимают на ходу, а сюда заходят с каждой проверки Process_Spacemove -
+	// без этого дальше был бы рантайм на каждом тике.
+	if(!cell)
 		return
 
 	if(cell.charge <= 10)
 		toggle_ionpulse()
 		return
 
+	if(!charge || last_ionpulse_time == world.time)
+		return TRUE
+
+	last_ionpulse_time = world.time
 	cell.charge -= 10
 	return TRUE
 
@@ -1333,29 +1349,53 @@
 	if(repairs)
 		heal_bodypart_damage(repairs, repairs - 1)
 
+/**
+ * Позы отдыха, у которых на текущем шасси реально есть спрайт: подпись в меню -> суффикс icon_state.
+ *
+ * update_rest_icon() присваивает "[cyborg_base_icon]-[resting_state]" вслепую, поэтому
+ * поза без спрайта делала борга целиком невидимым (Ratge и Belly up - как раз такая пара).
+ */
+/mob/living/silicon/robot/proc/available_rest_styles()
+	///подпись в меню -> суффикс icon_state, спрайт зовётся "базовая_иконка-суффикс"
+	var/static/list/base_styles = list(
+		"Лежать" = "rest",
+		"Сидеть" = "sit",
+		"Пузом кверху" = "bellyup",
+	)
+	///дополнительные позы модулей с drakerest
+	var/static/list/drake_styles = list(
+		"Дремать" = "rest_deep",
+		"Лежать, виляя" = "rest_alt",
+		"Сидеть, виляя" = "sit_alt",
+	)
+
+	. = list()
+	if(!module)
+		return
+
+	var/list/candidates = base_styles.Copy()
+	if(module.drakerest)
+		candidates += drake_styles
+
+	var/list/available_states = icon_states(icon)
+	for(var/pose_name in candidates)
+		if("[module.cyborg_base_icon]-[candidates[pose_name]]" in available_states)
+			.[pose_name] = candidates[pose_name]
+
 /mob/living/silicon/robot/proc/rest_style()
 	set name = "Switch Rest Style"
 	set category = "Robot Commands"
 	set desc = "Выбрать позу отдыха."
 
-	var/list/poses = list("Resting", "Sitting", "Belly up")
-	if(module.drakerest)
-		poses.Add("Napping", "Resting Wag", "Sitting Wag")
+	var/list/poses = available_rest_styles()
+	if(!length(poses))
+		to_chat(src, span_warning("У этого шасси нет ни одной позы отдыха."))
+		return
 
-	var/choice = tgui_input_list(usr, "Select resting pose", "Pose", poses)
-	switch(choice)
-		if("Resting")
-			resting_state = "rest"
-		if("Sitting")
-			resting_state = "sit"
-		if("Belly up")
-			resting_state = "bellyup"
-		if("Napping")
-			resting_state = "rest_deep"
-		if("Resting Wag")
-			resting_state = "rest_alt"
-		if("Sitting Wag")
-			resting_state = "sit_alt"
+	var/choice = tgui_input_list(usr, "Выберите позу отдыха", "Поза", poses)
+	if(!choice || !poses[choice])
+		return
+	resting_state = poses[choice]
 	update_icons()
 
 /mob/living/silicon/robot/verb/viewmanifest()

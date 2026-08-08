@@ -366,6 +366,61 @@ or shoot a gun to move around via Newton's 3rd Law of Motion."
 	icon_state = "template"
 	overlay_state = "weightless"
 
+/**
+ * Невесомость с работающим двигателем. Подтип отвечает на два вопроса, которые раньше игроку
+ * взять было неоткуда: в каком режиме двигатель и с какой скоростью меня несёт. Клик
+ * переключает режим - у MOD-модулей своих кнопок действий не бывает, тумблер живёт только в
+ * конфиг-меню костюма, и найти его там мало кто мог.
+ */
+/atom/movable/screen/alert/weightless/thrusting
+	icon = 'icons/mob/screen_alert.dmi'
+	icon_state = "template"
+	overlay_icon = 'icons/obj/tank.dmi'
+	clickable_glow = TRUE
+	click_master = FALSE
+	/// Включают ли стабилизацию по клику
+	var/stabilize_on_click = TRUE
+	/// Последняя показанная скорость: строку переписываем только когда цифра поменялась
+	var/shown_speed = -1
+
+/// Дописывает к постоянному тексту текущую скорость и курс дрейфа.
+/atom/movable/screen/alert/weightless/thrusting/proc/describe_flight(mob/living/carbon/pilot)
+	var/datum/move_loop/smooth_move/loop = pilot.drift_handler?.drifting_loop
+	// Задержка в децисекундах на тайл; в секунде их десять.
+	var/speed = (loop && loop.delay > 0) ? round(10 / loop.delay, 0.1) : 0
+	if(speed == shown_speed)
+		return
+	shown_speed = speed
+	if(!speed)
+		desc = "[initial(desc)]\nСейчас вас никуда не несёт."
+		return
+	desc = "[initial(desc)]\nДрейф: [speed] тайл/с на [dir2text_ru(angle2dir(loop.angle))]."
+
+/atom/movable/screen/alert/weightless/thrusting/Click(location, control, params)
+	. = ..()
+	if(!.)
+		return
+	var/mob/living/carbon/clicker = owner
+	if(!istype(clicker))
+		return
+	clicker.set_jetpack_stabilizers(stabilize_on_click)
+
+// Спрайт выбран под расход, а не под режим: при стабилизации двигатели работают на каждом
+// шаге, поэтому анимированный выхлоп; в свободном полёте они молчат, пока вы катитесь.
+/atom/movable/screen/alert/weightless/thrusting/stabilized
+	name = "Стабилизация"
+	desc = "Двигатели гасят дрейф: вы двигаетесь как по полу, но топливо тратится на каждый шаг. \
+Нажмите, чтобы перейти в свободный полёт - разгон до крейсерской скорости, дальше накат даром."
+	overlay_state = "jetpack-on"
+	stabilize_on_click = FALSE
+
+/atom/movable/screen/alert/weightless/thrusting/freeflight
+	name = "Свободный полёт"
+	desc = "Двигатели разгоняют вас до крейсерской скорости и дальше не вмешиваются: накат ничего не стоит, \
+но повороты и остановка стоят топлива и времени. Нажмите, чтобы включить стабилизацию."
+	overlay_state = "jetpack"
+	stabilize_on_click = TRUE
+
 /atom/movable/screen/alert/highgravity
 	name = "High Gravity"
 	desc = "You're getting crushed by high gravity, picking up items and movement will be slowed."
@@ -471,6 +526,11 @@ or shoot a gun to move around via Newton's 3rd Law of Motion."
 /// Simply checks if the other person is still in range
 /atom/movable/screen/alert/give/proc/check_in_range(atom/taker)
 	SIGNAL_HANDLER
+
+	//Предложивший мог уйти из мира вместе с алертом: снимаем предложение молча
+	if(QDELETED(offerer))
+		owner?.clear_alert("[offerer_name]")
+		return
 
 	if(!offerer.CanReach(taker))
 		to_chat(owner, span_warning("You moved out of range of [offerer]!"))

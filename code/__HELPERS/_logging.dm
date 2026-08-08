@@ -242,7 +242,8 @@
 	WRITE_LOG_NO_FORMAT(GLOB.ping_perf_log, .)
 
 /proc/log_reagent(text)
-	WRITE_LOG(GLOB.reagent_log, text)
+	if (CONFIG_GET(flag/log_reagents))
+		WRITE_LOG(GLOB.reagent_log, text)
 
 /proc/log_reagent_transfer(text)
 	log_reagent("TRANSFER: [text]")

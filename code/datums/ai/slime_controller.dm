@@ -54,8 +54,11 @@
 	if(slime_pawn.SStun > world.time)
 		return
 	//Легаси-драйв входа в AIprocess: без голода, злости или бешенства слайм
-	//цель не преследует (сытый слайм игнорирует даже команду "attack")
-	if(!slime_pawn.attacked && !slime_pawn.rabid && !slime_pawn.get_hunger_drive())
+	//цель не преследует (сытый слайм игнорирует даже команду "attack").
+	//Оценку голода берём зафиксированной на всю погоню - легаси снимал её один
+	//раз при входе в цикл, а пересъём на каждом проходе планировщика разваливал
+	//погоню в среднем диапазоне сытости (см. latch_chase_hunger).
+	if(!slime_pawn.attacked && !slime_pawn.rabid && !slime_pawn.latch_chase_hunger())
 		return
 	slime_controller.sync_movement_delay(slime_pawn)
 	controller.queue_behavior(/datum/ai_behavior/slime_pursue_and_feed, BB_SLIME_TARGET)
@@ -133,5 +136,6 @@
 ///остановит finish_action по флагу FAILED
 /datum/ai_behavior/slime_pursue_and_feed/proc/give_up(datum/ai_controller/controller, mob/living/simple_animal/slime/slime_pawn, target_key)
 	slime_pawn.Target = null
+	slime_pawn.chase_hunger = 0 //погоня окончена - следующая возьмёт свежую оценку голода
 	controller.clear_blackboard_key(target_key)
 	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED

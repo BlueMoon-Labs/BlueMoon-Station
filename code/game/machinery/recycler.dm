@@ -163,6 +163,13 @@
 		if(AM.loc == loc)
 			. += AM
 
+	// Контейнер мог самоудалиться, отпустив содержимое: у бумажного самолётика Exited()
+	// делает qdel(src), как только внутренняя бумага вышла. Дальше весь остаток прока бил
+	// по трупу - forceMove давал "doMove qdel-нутого /obj/item/paperplane" (прод-раунд 9832),
+	// а за ним шли get_item_material_amount и второй qdel.
+	if(QDELETED(I))
+		return .
+
 	I.forceMove(loc)
 	var/obj/item/grown/log/L = I
 	if(istype(L))

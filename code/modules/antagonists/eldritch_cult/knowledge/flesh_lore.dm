@@ -1,3 +1,10 @@
+//Числа продублированы в desc знаний обычным текстом: DM не сворачивает [DEFINE] внутри
+//строки, которой инициализируется переменная типа. Меняя define, поправь и описание.
+///Максимум здоровья гуля, поднятого Хваткой Плоти.
+#define GHOUL_MAX_HEALTH 40
+///Максимум здоровья Безмолвного Мертвеца - ритуальный слуга крепче обычного гуля.
+#define VOICELESS_DEAD_MAX_HEALTH 75
+
 /datum/eldritch_knowledge/base_flesh
 	name = "Принцип Голода"
 	desc = "Открывает вам Путь Плоти. \
@@ -13,7 +20,8 @@
 /datum/eldritch_knowledge/flesh_ghoul
 	name = "Незавершенный Ритуал"
 	desc = "Позволяет произвести ритуал трансмутации мертвого тела и мака для создания Безмолвного Мертвеца. \
-		Безмолвный мертвец не способен говорить и имеет 50 очков здоровья, но он может использовать Кровавый клинок. "
+		Безмолвный мертвец не способен говорить и имеет 75 очков здоровья, но он может использовать Кровавый клинок. \
+		Тела с имплантом защиты разума, синтетики и скелеты для ритуала не годятся."
 	gain_text = "Мною были найдены запретные темные знания, их незаконченные обрывки...пока, незаконченные. Я продолжил двигаться вперед."
 	cost = 1
 	required_atoms = list(/mob/living/carbon/human,/obj/item/reagent_containers/food/snacks/grown/poppy)
@@ -34,6 +42,11 @@
 	if(HAS_TRAIT(humie,TRAIT_HUSK))
 		return
 
+	var/block_reason = heretic_conversion_block_reason(humie)
+	if(block_reason)
+		to_chat(user, span_warning("[block_reason]"))
+		return
+
 	humie.grab_ghost()
 
 	if(!humie.mind || !humie.client)
@@ -48,28 +61,41 @@
 	ADD_TRAIT(humie,TRAIT_MUTE,MAGIC_TRAIT)
 	log_game("[key_name_admin(humie)] has become a voiceless dead, their master is [user.real_name]")
 	humie.revive(full_heal = TRUE, admin_revive = TRUE)
-	humie.setMaxHealth(75)
-	humie.health = 75 // Voiceless dead are much tougher than ghouls
 	humie.become_husk()
-	humie.faction |= "heretics"
 
-	var/datum/antagonist/heretic_monster/heretic_monster = humie.mind.add_antag_datum(/datum/antagonist/heretic_monster)
-	var/datum/antagonist/heretic/master = user.mind.has_antag_datum(/datum/antagonist/heretic)
-	heretic_monster.set_owner(master)
+	//Хозяина проставляем до выдачи роли: приветствие уходит игроку внутри add_antag_datum(),
+	//и без этого он узнаёт о рабстве из сообщения без хозяина и без целей.
+	//Здоровье и фракцию режет сам антаг-датум - иначе всё это теряется при переезде разума в новое тело.
+	var/datum/antagonist/heretic_monster/voiceless_dead/voiceless = new
+	voiceless.health_cap = VOICELESS_DEAD_MAX_HEALTH
+	voiceless.set_master(user.mind.has_antag_datum(/datum/antagonist/heretic))
+	humie.mind.add_antag_datum(voiceless)
 	atoms -= humie
 	RegisterSignal(humie,COMSIG_MOB_DEATH, PROC_REF(remove_ghoul))
 	ghouls += humie
 
 /datum/eldritch_knowledge/flesh_ghoul/proc/remove_ghoul(datum/source)
-	var/mob/living/carbon/human/humie = source
-	ghouls -= humie
-	humie.mind.remove_antag_datum(/datum/antagonist/heretic_monster)
-	UnregisterSignal(source,COMSIG_MOB_DEATH)
+	SIGNAL_HANDLER
+	UnregisterSignal(source, COMSIG_MOB_DEATH)
+	ghouls -= source
+	var/mob/living/humie = source
+	if(humie.mind)
+		INVOKE_ASYNC(humie.mind, TYPE_PROC_REF(/datum/mind, remove_antag_datum), /datum/antagonist/heretic_monster/voiceless_dead)
+
+/datum/eldritch_knowledge/flesh_ghoul/on_lose(mob/user)
+	. = ..()
+	//Хозяина больше нет - вместе с ним обязана уйти и его свита, иначе слуги остаются
+	//рабами навсегда, а сама запись знания продолжает держать их тела ссылками.
+	for(var/mob/living/humie as anything in ghouls)
+		UnregisterSignal(humie, COMSIG_MOB_DEATH)
+		humie.mind?.remove_antag_datum(/datum/antagonist/heretic_monster/voiceless_dead)
+	ghouls.Cut()
 
 /datum/eldritch_knowledge/flesh_grasp
 	name = "Хватка Плоти"
 	desc = "Теперь ваша Хватка Мансуса может создать гуля из трупа с присутствующей в нем душой. \
-		Гули имеют только 25 очков здоровья и выглядят в глазах неверных как хаски, но они могут использовать Кровавый клинок."
+		Гули имеют только 40 очков здоровья и выглядят в глазах неверных как хаски, но они могут использовать Кровавый клинок. \
+		Тела с имплантом защиты разума, синтетики и скелеты хватке не поддаются."
 	gain_text = "Мои новоприобретенные страсти вели меня к новым высотам."
 	cost = 1
 	next_knowledge = list(/datum/eldritch_knowledge/flesh_ghoul)
@@ -99,18 +125,25 @@
 	if(QDELETED(human_target) || human_target.stat != DEAD)
 		return
 
+	if(HAS_TRAIT(human_target, TRAIT_HUSK))
+		to_chat(user, span_warning("Это тело уже поднимали - второй раз оно не отзовётся."))
+		return
+
+	//Непригодность тела проверяем до grab_ghost(): иначе призрака игрока дёргают обратно
+	//в труп только затем, чтобы тут же отказать в обращении.
+	var/block_reason = heretic_conversion_block_reason(human_target)
+	if(block_reason)
+		to_chat(user, span_warning("[block_reason]"))
+		return
+
 	human_target.grab_ghost()
 
 	if(!human_target.mind || !human_target.client)
-		to_chat(user, "<span class='warning'>There is no soul connected to this body...</span>")
-		return
-
-	if(HAS_TRAIT(human_target, TRAIT_HUSK))
-		to_chat(user, "<span class='warning'>You cannot revive a dead ghoul!</span>")
+		to_chat(user, span_warning("В этом теле не осталось души, за которую можно было бы ухватиться..."))
 		return
 
 	if(LAZYLEN(spooky_scaries) >= ghoul_amt)
-		to_chat(user, "<span class='warning'>Your patron cannot support more ghouls on this plane!</span>")
+		to_chat(user, span_warning("Твой покровитель не в силах удержать в этом мире больше гулей!"))
 		return
 
 	LAZYADD(spooky_scaries, human_target)
@@ -119,21 +152,33 @@
 	. = TRUE
 	RegisterSignal(human_target,COMSIG_MOB_DEATH, PROC_REF(remove_ghoul))
 	human_target.revive(full_heal = TRUE, admin_revive = TRUE)
-	human_target.setMaxHealth(40)
-	human_target.health = 40
 	human_target.become_husk()
-	human_target.faction |= "heretics"
-	var/datum/antagonist/heretic_monster/heretic_monster = human_target.mind.add_antag_datum(/datum/antagonist/heretic_monster)
-	var/datum/antagonist/heretic/master = user.mind.has_antag_datum(/datum/antagonist/heretic)
-	heretic_monster.set_owner(master)
+
+	//Хозяин проставляется до выдачи роли, а урезанное здоровье и фракция живут на самом
+	//антаг-датуме: применённые прямо на тело, они терялись при клонировании и пересадке мозга.
+	var/datum/antagonist/heretic_monster/ghoul/ghoul = new
+	ghoul.health_cap = GHOUL_MAX_HEALTH
+	ghoul.set_master(user.mind.has_antag_datum(/datum/antagonist/heretic))
+	human_target.mind.add_antag_datum(ghoul)
 	return
 
 
 /datum/eldritch_knowledge/flesh_grasp/proc/remove_ghoul(datum/source)
-	var/mob/living/carbon/human/humie = source
-	spooky_scaries -= humie
-	humie.mind.remove_antag_datum(/datum/antagonist/heretic_monster)
+	SIGNAL_HANDLER
 	UnregisterSignal(source, COMSIG_MOB_DEATH)
+	LAZYREMOVE(spooky_scaries, source)
+	var/mob/living/humie = source
+	if(humie.mind)
+		INVOKE_ASYNC(humie.mind, TYPE_PROC_REF(/datum/mind, remove_antag_datum), /datum/antagonist/heretic_monster/ghoul)
+
+/datum/eldritch_knowledge/flesh_grasp/on_lose(mob/user)
+	. = ..()
+	//Еретик перестал быть еретиком - его гули обязаны освободиться, а не остаться
+	//рабами несуществующего хозяина до конца раунда.
+	for(var/mob/living/humie as anything in spooky_scaries)
+		UnregisterSignal(humie, COMSIG_MOB_DEATH)
+		humie.mind?.remove_antag_datum(/datum/antagonist/heretic_monster/ghoul)
+	spooky_scaries = null
 
 /datum/eldritch_knowledge/flesh_mark
 	name = "Метка Плоти"
@@ -284,3 +329,6 @@
 /datum/eldritch_knowledge/spell/touch_of_madness/on_gain(mob/user)
 	. = ..()
 	priority_announce("Внимание, [station_name()]. [user.real_name] излучает пространственную нестабильность, в связи с которой смрад гнилой плоти разносится по округе... надвигается нечто поистине мерзкое!", sound = 'sound/misc/notice1.ogg')
+
+#undef GHOUL_MAX_HEALTH
+#undef VOICELESS_DEAD_MAX_HEALTH

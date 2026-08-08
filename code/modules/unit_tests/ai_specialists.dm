@@ -563,11 +563,58 @@
 	TEST_ASSERT_EQUAL(boss.open_fire_calls, 1, "The legacy ranged behavior must call the boss OpenFire exactly once")
 
 ///Карпы - стайники: профиль pack_hunter с call_reinforcements
+///
+///И, главное, с милишным хвостом. Профиль был копией дальнобойного набора: цель движения
+///мили-пауну ставит только hostile_melee, поэтому карпы агрились, звали стаю и стояли на месте.
+///Прод-раунд 9832: ~38 карпов дали 7 атак за смену, мегакарп 54 минуты эмоутил "gnashes at" с
+///одной клетки. Проверяем не список сабтри, а факт: планировщик обязан выдать мили-атаку и цель
+///движения по цели в трёх клетках.
 /datum/unit_test/ai_carp_pack_profile/Run()
-	var/mob/living/simple_animal/hostile/carp/fish = allocate(/mob/living/simple_animal/hostile/carp)
+	var/turf/floor = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/carp/fish = allocate(/mob/living/simple_animal/hostile/carp, floor)
 	var/datum/ai_controller/hostile_adapter/pack_hunter/controller = fish.ai_controller
 	TEST_ASSERT(istype(controller), "Carp must school on the pack_hunter profile")
 	TEST_ASSERT(GLOB.ai_subtrees[/datum/ai_planning_subtree/call_reinforcements] in controller.planning_subtrees, "The pack profile must include reinforcements")
+
+	var/turf/prey_turf = locate(floor.x + 3, floor.y, floor.z)
+	TEST_ASSERT_NOTNULL(prey_turf, "Нет турфа для жертвы - тест ничего не проверяет")
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, prey_turf)
+
+	controller.blackboard[BB_AI_CURRENT_TARGET] = prey
+	// Холодное обнаружение обязано отыграть паузу ALERT, бой начинается только со второго
+	// прохода планировщика - иначе тест проверял бы состояние, в котором мили не планируется
+	// никогда, ни до правки, ни после.
+	drive_ai_planning(controller)
+	controller.blackboard[BB_AI_STATE_ENTERED_AT] = world.time - AI_ALERT_REACTION_TIME - 1
+	drive_ai_planning(controller)
+	TEST_ASSERT_EQUAL(controller.blackboard[BB_AI_STATE], AI_STATE_ENGAGE, "FSM обязан войти в бой - тест ничего не проверяет")
+
+	var/datum/ai_behavior/melee = GET_AI_BEHAVIOR(/datum/ai_behavior/hostile_melee_attack)
+	TEST_ASSERT(controller.planned_behaviors[melee], "Стайный мили-моб обязан планировать милишную атаку по цели в трёх клетках, иначе он только агрится и стоит")
+	TEST_ASSERT_NOTNULL(controller.current_movement_target, "Мили-атака обязана задать цель движения - без неё карп не подходит к жертве")
+
+///Дальнобойный сородич в том же стайном профиле обязан остаться кайтером: мили-хвост
+///pack_hunter гейтится melee_only, иначе магикарп после выстрела полез бы в упор.
+/datum/unit_test/ai_pack_ranged_stays_ranged/Run()
+	var/turf/floor = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/carp/ranged/magicarp = allocate(/mob/living/simple_animal/hostile/carp/ranged, floor)
+	var/datum/ai_controller/hostile_adapter/controller = magicarp.ai_controller
+	TEST_ASSERT(istype(controller), "У магикарпа нет контроллера - тест ничего не проверяет")
+	TEST_ASSERT(magicarp.ranged, "Магикарп обязан быть дальнобойным - тест ничего не проверяет")
+
+	var/turf/prey_turf = locate(floor.x + 3, floor.y, floor.z)
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, prey_turf)
+
+	controller.blackboard[BB_AI_CURRENT_TARGET] = prey
+	// Тот же прогон через ALERT в бой, что и у мили-сородича: иначе ассерт "мили не планируется"
+	// прошёл бы вакуумно, просто потому что до боя дело не дошло.
+	drive_ai_planning(controller)
+	controller.blackboard[BB_AI_STATE_ENTERED_AT] = world.time - AI_ALERT_REACTION_TIME - 1
+	drive_ai_planning(controller)
+	TEST_ASSERT_EQUAL(controller.blackboard[BB_AI_STATE], AI_STATE_ENGAGE, "FSM обязан войти в бой - тест ничего не проверяет")
+
+	var/datum/ai_behavior/melee = GET_AI_BEHAVIOR(/datum/ai_behavior/hostile_melee_attack)
+	TEST_ASSERT(!controller.planned_behaviors[melee], "Дальнобойный паун не имеет права планировать милишную атаку из стайного профиля")
 
 ///Семейные профили не должны затирать ranged-флаг сабтипов.
 /datum/unit_test/ai_mixed_family_ranged_subtypes/Run()

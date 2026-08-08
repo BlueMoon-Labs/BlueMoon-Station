@@ -36,9 +36,11 @@
 	if(client?.prefs.tgui_input_verbs)
 		message = tgui_input_text(src, "", "Say (Indicator)", null, MAX_MESSAGE_LEN, encode = FALSE)
 	else
-		message = stripped_input_or_reflect(src, "", "Say (Indicator)")
+		message = raw_input_or_reflect(src, "", "Say (Indicator)")
 
 	clear_typing_indicator()		// clear it immediately!
+	if(QDELETED(src))	//окно ввода переживает своего моба: гост-кафе успевает его удалить
+		return
 	if(!length(message))
 		return
 	client?.last_activity = world.time
@@ -56,18 +58,23 @@
 	set name = "Say"
 	set category = "Say"
 	if(GLOB.say_disabled)	//This is here to try to identify lag problems
-		to_chat(usr, message)
+		to_chat(usr, html_encode(message))
 		to_chat(usr, span_danger("^^^----- Speech is currently admin-disabled. -----^^^"))
 		return
 
+	// say() санитизит сам — отдаём сырой текст, иначе получим двойное экранирование (< -> &lt; -> &amp;lt;)
 	if(message)
-		message = stripped_text_or_reflect(usr, message)
+		message = raw_text_or_reflect(usr, message)
 	else
 		if(client?.prefs.tgui_input_verbs)
 			message = tgui_input_text(usr, "", "Say", null, MAX_MESSAGE_LEN, encode = FALSE)
 		else
-			message = stripped_input_or_reflect(usr, "", "Say")
+			message = raw_input_or_reflect(usr, "", "Say")
 
+	//апстрим убрал отсюда clear_typing_indicator: верб теперь зовут и с готовым
+	//текстом, без блокирующего ввода. Гард нужен по-прежнему - ветка else всё ещё спит
+	if(QDELETED(src))	//окно ввода переживает своего моба: гост-кафе успевает его удалить
+		return
 	if(!length(message))
 		return
 	client?.last_activity = world.time
@@ -76,7 +83,8 @@
 
 /mob/verb/speak_verb(message as text) // Специально для "saybutton"
 	set name = "Speak"
-	message = stripped_text_or_reflect(usr, message)
+	// say() санитизит сам — отдаём сырой текст, иначе получим двойное экранирование (< -> &lt; -> &amp;lt;)
+	message = raw_text_or_reflect(usr, message)
 	if(!length(message))
 		return
 	if(GLOB.say_disabled)	//This is here to try to identify lag problems
@@ -104,6 +112,8 @@
 
 	clear_typing_indicator()		// clear it immediately!
 
+	if(QDELETED(src))	//окно ввода переживает своего моба: гост-кафе успевает его удалить
+		return
 	if(!length(message))
 		return
 
@@ -122,10 +132,11 @@
 	set name = "Me"
 	set category = "Say"
 	if(GLOB.say_disabled)	//This is here to try to identify lag problems
-		to_chat(usr, message)
+		to_chat(usr, html_encode(message))
 		to_chat(usr, span_danger("^^^----- Speech is currently admin-disabled. -----^^^"))
 		return
 
+	// emote() ничего не экранирует — здесь текст обязан кодироваться ровно один раз
 	if(message)
 		message = stripped_text_or_reflect(usr, message)
 	else
@@ -134,6 +145,8 @@
 		else
 			message = stripped_multiline_input_or_reflect(usr, "", "Me")
 
+	if(QDELETED(src))	//окно ввода переживает своего моба: гост-кафе успевает его удалить
+		return
 	if(!length(message))
 		return
 
@@ -143,10 +156,12 @@
 
 /mob/verb/emote_verb(message as text) // Специально для "mebutton"
 	set name = "Emote"
-	if(!length(message))
-		return
 	if(GLOB.say_disabled)	//This is here to try to identify lag problems
 		to_chat(usr, "<span class='danger'>Speech is currently admin-disabled.</span>")
+		return
+	// emote() ничего не экранирует, а сюда текст приходит сырым прямо из строки ввода
+	message = stripped_text_or_reflect(usr, message)
+	if(!length(message))
 		return
 	clear_typing_indicator()		// clear it immediately!
 	client?.last_activity = world.time
@@ -203,19 +218,21 @@
 	set name = "Whisper"
 	set category = "Say"
 	if(GLOB.say_disabled)	//This is here to try to identify lag problems
-		to_chat(usr, message)
+		to_chat(usr, html_encode(message))
 		to_chat(usr, span_danger("^^^----- Speech is currently admin-disabled. -----^^^"))
 		return
 
 	// whisper() уходит в say(), который санитизит сам — отдаём сырой текст
 	if(message)
-		message = stripped_text_or_reflect(usr, message)
+		message = raw_text_or_reflect(usr, message)
 	else
 		if(client?.prefs.tgui_input_verbs)
 			message = tgui_input_text(usr, "", "Whisper", null, MAX_MESSAGE_LEN, encode = FALSE)
 		else
-			message = stripped_input_or_reflect(usr, "", "Whisper")
+			message = raw_input_or_reflect(usr, "", "Whisper")
 
+	if(QDELETED(src))	//окно ввода переживает своего моба: гост-кафе успевает его удалить
+		return
 	if(!length(message))
 		return
 	QUEUE_OR_CALL_VERB_FOR(VERB_CALLBACK(src, TYPE_PROC_REF(/mob, whisper), message), SSspeech_controller)
@@ -233,9 +250,11 @@
 	if(client?.prefs.tgui_input_verbs)
 		message = tgui_input_text(src, "", "Whisper (Indicator)", null, MAX_MESSAGE_LEN, encode = FALSE)
 	else
-		message = stripped_input(src, "", "Whisper (Indicator)")
+		message = raw_input_or_reflect(src, "", "Whisper (Indicator)")
 
 	clear_typing_indicator()
+	if(QDELETED(src))	//окно ввода переживает своего моба: гост-кафе успевает его удалить
+		return
 	if(!length(message))
 		return
 	QUEUE_OR_CALL_VERB_FOR(VERB_CALLBACK(src, TYPE_PROC_REF(/mob, whisper), message), SSspeech_controller)

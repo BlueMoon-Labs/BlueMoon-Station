@@ -64,6 +64,8 @@ GLOBAL_LIST_INIT(freqtospan, list(
 	for(var/_AM in hearers)
 		var/atom/movable/AM = _AM
 		AM.Hear(rendered, src, message_language, message, , spans, message_mode, source)
+	if(message_language && initial(message_language.visual_language)) //визуальный язык не звучит
+		return
 	if(SEND_SIGNAL(src, COMSIG_MOVABLE_QUEUE_BARK, hearers, args) || vocal_bark || vocal_bark_id)
 		// Барк-таймеры ставим только ради слушателей с клиентом и включённым SOUND_BARK:
 		// анонс по всем ньюскастерам станции ставил 500+ таймеров одним тиком в пустые

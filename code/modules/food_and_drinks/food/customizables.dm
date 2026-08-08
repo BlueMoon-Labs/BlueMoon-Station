@@ -139,8 +139,8 @@
 	add_overlay(filling)
 
 /obj/item/reagent_containers/food/snacks/customizable/Destroy()
-	for(. in ingredients)
-		qdel(.)
+	//цикл только удалял ингредиенты, а список оставался с трупами внутри
+	QDEL_LIST(ingredients)
 	return ..()
 
 

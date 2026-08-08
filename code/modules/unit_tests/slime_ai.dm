@@ -82,3 +82,63 @@
 	TEST_ASSERT_EQUAL(subject.ai_controller.ai_status, AI_STATUS_ON, "A player leaving the slime must restore the controller")
 
 	unregister_fake_player(fake_player)
+
+///Сколько проходов планировщика должна пережить начатая погоня. Пересъём
+///голода в среднем диапазоне сытости проходит с шансом 25%, так что до фикса
+///цепочка такой длины рвалась практически наверняка.
+#define SLIME_CHASE_PLANNING_PASSES 20
+
+///Начатая погоня переживает пересъёмы голода: слайм со средней сытостью
+///(get_hunger_drive там - бросок prob(25)) держит план, а не бросает шаг за шагом.
+/datum/unit_test/slime_ai_chase_survives_hunger_reroll/Run()
+	var/mob/living/simple_animal/slime/hunter = allocate(/mob/living/simple_animal/slime, run_loc_floor_bottom_left)
+	var/turf/prey_turf = locate(run_loc_floor_bottom_left.x + 4, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
+	var/mob/living/carbon/monkey/prey = allocate(/mob/living/carbon/monkey, prey_turf)
+	hunter.set_nutrition(hunter.get_hunger_nutrition() - 1) //проголодался детерминированно: цель берётся без броска
+
+	hunter.handle_targets()
+	TEST_ASSERT_EQUAL(hunter.Target, prey, "A hungry slime must acquire the monkey before its chase can be tested")
+
+	drive_ai_planning(hunter.ai_controller)
+	TEST_ASSERT(length(hunter.ai_controller.current_behaviors), "The first planning pass must start the pursuit")
+
+	//Слайма покормили: сытость вернулась в средний диапазон, где оценка голода -
+	//бросок. Зафиксированная на погоню оценка обязана пережить эти броски.
+	hunter.set_nutrition(hunter.get_grow_nutrition() - 1)
+	for(var/planning_pass in 1 to SLIME_CHASE_PLANNING_PASSES)
+		drive_ai_planning(hunter.ai_controller)
+		TEST_ASSERT(length(hunter.ai_controller.current_behaviors), "The pursuit must survive planning pass [planning_pass]: a re-rolled hunger check used to cancel the chase")
+		TEST_ASSERT_EQUAL(hunter.Target, prey, "The chase must keep its target across planning pass [planning_pass]")
+
+	hunter.Target = null
+	hunter.handle_targets()
+	TEST_ASSERT_EQUAL(hunter.chase_hunger, 0, "Losing the target must release the latched hunger drive")
+
+#undef SLIME_CHASE_PLANNING_PASSES
+
+///Добыча за стеной целью не становится: погоня всё равно её бросит, а пока
+///слайм её перевыбирает, до добычи в своём загоне очередь не доходит.
+/datum/unit_test/slime_ai_ignores_prey_behind_wall/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	var/turf/wall_turf = locate(start.x + 1, start.y, start.z)
+	var/turf/prey_turf = locate(start.x + 2, start.y, start.z)
+	var/saved_wall = wall_turf.type
+	wall_turf.ChangeTurf(/turf/closed/wall)
+
+	var/mob/living/simple_animal/slime/hunter = allocate(/mob/living/simple_animal/slime, start)
+	var/mob/living/carbon/monkey/prey = allocate(/mob/living/carbon/monkey, prey_turf)
+	hunter.set_nutrition(hunter.get_starve_nutrition() - 1) //голодает: взял бы кого угодно, был бы виден
+	hunter.next_wander = world.time + SLIME_WANDER_COOLDOWN //без блуждания между двумя сканами геометрия остаётся той же
+
+	hunter.handle_targets()
+	var/acquired_through_wall = hunter.Target
+
+	//Тот же слайм и та же добыча без стены - иначе проверка выше ничего не значит
+	wall_turf.ChangeTurf(saved_wall)
+	hunter.Target = null
+	hunter.next_hunt_scan = 0 //пустой скан взвёл кулдаун охоты
+	hunter.handle_targets()
+	var/acquired_in_the_open = hunter.Target
+
+	TEST_ASSERT_NULL(acquired_through_wall, "A slime must not target prey behind a wall - the pursuit drops it on the very next tick")
+	TEST_ASSERT_EQUAL(acquired_in_the_open, prey, "The same prey must be acquired with the wall gone, otherwise the check above proves nothing")

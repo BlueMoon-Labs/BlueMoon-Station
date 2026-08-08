@@ -140,6 +140,13 @@
 	landingZoneRelativeY = 2
 	category = GHC_APARTMENT
 
+/datum/map_template/hilbertshotel/apartment/mountains
+	name = "Apartment-Mountains"
+	mappath = '_maps/templates/hilbertshotel/apartment_mount.dmm'
+	landingZoneRelativeX = 14
+	landingZoneRelativeY = 3
+	category = GHC_APARTMENT
+
 #undef GHC_MISC
 #undef GHC_APARTMENT
 #undef GHC_BEACH

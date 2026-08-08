@@ -27,7 +27,10 @@
 	var/rating = 1
 	var/unwrenchable = TRUE
 	var/recent_bee_visit = FALSE //Have we been visited by a bee recently, so bees dont overpollinate one plant
-	var/mob/lastuser //Last user to add reagents to a tray. Mostly for logging.
+	/// Слабая ссылка на последнего, кто подлил в лоток реагенты. Нужна только для
+	/// логов и on_hydroponics_apply; жёсткая держала тело весь раунд - лоток живёт
+	/// до конца смены, а обнуления у поля не было ни одного.
+	var/datum/weakref/lastuser_ref
 	var/self_sustaining = FALSE //If the tray generates nutrients and water on its own
 	// Here lies irrigation. You won't be missed, because you were never used.
 
@@ -146,7 +149,7 @@
 
 //Nutrients//////////////////////////////////////////////////////////////
 			// Nutrients deplete at a constant rate, since new nutrients can boost stats far easier.
-			apply_chemicals(lastuser)
+			apply_chemicals(lastuser_ref?.resolve())
 			if(self_sustaining)
 				reagents.remove_any(min(0.5, nutridrain))
 			else
@@ -546,7 +549,7 @@
 			reagent_source.reagents.trans_to(H.reagents, transfer_amount)
 			if(istype(reagent_source, /obj/item/reagent_containers/food/snacks) || istype(reagent_source, /obj/item/reagent_containers/pill))
 				qdel(reagent_source)
-				lastuser = user
+				lastuser_ref = WEAKREF(user)
 				H.update_icon()
 				return TRUE
 			H.update_icon()

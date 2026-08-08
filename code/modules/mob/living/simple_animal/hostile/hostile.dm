@@ -437,6 +437,10 @@
 	//урон только будит контроллер: цель выберет скорер по обиде из note_attacker
 	if(ai_controller && . > 0 && ai_controller.ai_status == AI_STATUS_IDLE)
 		ai_controller.set_ai_status(AI_STATUS_ON)
+	//легаси fight-or-flight: удар временно снимает object search (пчёлы, minebot и т.д.)
+	if(!ckey && !stat && search_objects < 3 && . > 0 && search_objects)
+		target = null
+		LoseSearchObjects()
 
 
 /mob/living/simple_animal/hostile/proc/AttackingTarget()
@@ -846,9 +850,12 @@
 /mob/living/simple_animal/hostile/proc/LoseSearchObjects()
 	if(QDELETED(src))
 		return
+	if(!search_objects)
+		return
+	var/previous_search_mode = search_objects
 	search_objects = 0
 	deltimer(search_objects_timer_id)
-	search_objects_timer_id = addtimer(CALLBACK(src, PROC_REF(RegainSearchObjects)), search_objects_regain_time, TIMER_STOPPABLE)
+	search_objects_timer_id = addtimer(CALLBACK(src, PROC_REF(RegainSearchObjects), previous_search_mode), search_objects_regain_time, TIMER_STOPPABLE)
 
 
 /mob/living/simple_animal/hostile/proc/RegainSearchObjects(value)

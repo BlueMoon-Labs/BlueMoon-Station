@@ -263,6 +263,8 @@
 	if(!our_turf)
 		return
 
+	// candidate_filter - ассоциативное множество, а не плоский список: ниже по нему
+	// бьётся каждая запись search_order, а `in` по плоскому списку это линейный обход
 	var/list/candidate_filter
 	if(!cached_view && SSspatial_grid.initialized)
 		candidate_filter = list()
@@ -272,13 +274,13 @@
 				if(QDELETED(living_candidate) || get_dist(our_turf, living_candidate) > DEFAULT_SCAN_RANGE)
 					continue
 				if((emagged == 2 && iscarbon(living_candidate)) || (pests && target_types[living_candidate.type]))
-					candidate_filter |= living_candidate
+					candidate_filter[living_candidate] = TRUE
 
 		for(var/atom/movable/clean_candidate as anything in SSspatial_grid.orthogonal_range_search(src, SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS, DEFAULT_SCAN_RANGE))
 			if(QDELETED(clean_candidate) || !isturf(clean_candidate.loc) || get_dist(our_turf, clean_candidate) > DEFAULT_SCAN_RANGE)
 				continue
 			if(target_types[clean_candidate.type])
-				candidate_filter |= clean_candidate
+				candidate_filter[clean_candidate] = TRUE
 
 		if(!length(candidate_filter))
 			return
@@ -286,9 +288,16 @@
 		cached_view = shuffle(view(DEFAULT_SCAN_RANGE, src))
 		// Grid cells are deliberately broader than the requested range and do
 		// not encode opacity. Keep only candidates BYOND actually exposes.
-		for(var/atom/candidate as anything in candidate_filter.Copy())
-			if(!(candidate in cached_view))
-				candidate_filter -= candidate
+		// Множество строится один раз: view() в грязном коридоре это больше тысячи
+		// атомов, и перебирать его на каждого кандидата - квадратичный проход
+		var/list/exposed_by_view = list()
+		for(var/atom/seen as anything in cached_view)
+			exposed_by_view[seen] = TRUE
+		var/list/visible_candidates = list()
+		for(var/atom/candidate as anything in candidate_filter)
+			if(exposed_by_view[candidate])
+				visible_candidates[candidate] = TRUE
+		candidate_filter = visible_candidates
 		if(!length(candidate_filter))
 			return
 	else if(!cached_view)
@@ -311,7 +320,7 @@
 	var/highest_priority = emagged == 2 ? 1 : (pests ? 2 : 3)
 	var/list/candidates = list(null, null, null, null, null)
 	for(var/atom/candidate as anything in search_order)
-		if(candidate_filter && !(candidate in candidate_filter))
+		if(candidate_filter && !candidate_filter[candidate])
 			continue
 		var/priority
 		if(emagged == 2 && iscarbon(candidate))
@@ -359,11 +368,9 @@
 	else if(prob(5))
 		audible_message("[src] делает радостный жужжаще-пищащий звук!")
 
-	var/list/cached_view_result
-
 	if(ismob(target))
-		cached_view_result = shuffle(view(DEFAULT_SCAN_RANGE, src))
-		if(!(target in cached_view_result))
+		// Список нужен только для проверки членства - тасовать его незачем
+		if(!(target in view(DEFAULT_SCAN_RANGE, src)))
 			target = null
 		if(!process_scan(target))
 			target = null
@@ -397,7 +404,7 @@
 
 		if(!path || path.len == 0) //No path, need a new one
 			//Try to produce a path to the target, and ignore airlocks to which it has access.
-			path = get_path_to(src, target, 30, id=access_card)
+			path = get_path_to(src, target, BOT_TARGET_PATH_LIMIT, id=access_card)
 			if(!bot_move(target))
 				add_to_ignore(target)
 				target = null

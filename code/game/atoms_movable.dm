@@ -44,6 +44,12 @@
 	var/inertia_force_weight = 1
 	/// Species / vehicle modifiers
 	var/inertia_move_multiplier = 1
+	/// How much drift one voluntary step in weightlessness adds. See [/atom/movable/proc/register_thrust_source]
+	var/self_thrust_force = INERTIA_THRUST_FORCE_DEFAULT
+	/// Ceiling that self-thrust may accelerate the drift to. External impulses (explosions, recoil) ignore it.
+	var/self_thrust_cap = INERTIA_THRUST_CAP_UNAIDED
+	/// Lazy assoc of thrust source -> list(force, cap). Null while nothing but bare limbs is pushing.
+	var/list/thrust_sources
 	/// Things we can pass through while moving. If any of this matches the thing we're trying to pass's [pass_flags_self], then we can pass through.
 	var/pass_flags = NONE
 	/// If false makes CanPass call CanPassThrough on this type instead of using default behaviour
@@ -150,6 +156,7 @@
 	QDEL_NULL(proximity_monitor)
 	QDEL_NULL(language_holder)
 	QDEL_NULL(em_block)
+	thrust_sources = null
 	// Break hidden render pipeline references (render_target/render_source can keep movables harddeling).
 	render_target = null
 	render_source = null
@@ -363,7 +370,11 @@
 	pulling.set_pulledby(null)
 	var/mob/living/ex_pulled = pulling
 	setGrabState(GRAB_PASSIVE)
+	// Отпущенный в невесомости уносит наш вектор, а не тормозит до своего потолка тяги.
+	// Иначе разжатая рука читается как рывок: буксир идёт на крейсерской, буксируемый
+	// мгновенно проседает до скорости голого толчка.
 	pulling = null
+	hand_off_drift(ex_pulled)
 	if(isliving(ex_pulled))
 		var/mob/living/L = ex_pulled
 		L.update_mobility()// mob gets up if it was lyng down in a chokehold

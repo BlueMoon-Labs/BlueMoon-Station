@@ -435,7 +435,7 @@
 /area/awaymission/challenge/end)
 "ch" = (
 /obj/structure/chair/comfy/black,
-/mob/living/simple_animal/hostile/syndicate/real_syndicate{
+/mob/living/simple_animal/hostile/syndicate{
 	desc = "It's HIM.";
 	name = "John Syndicate";
 	environment_smash = 0

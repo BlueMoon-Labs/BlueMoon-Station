@@ -161,6 +161,8 @@ Class Procs:
 	var/sleep_static_power = 0
 	///The area currently holding our sleep_static_power contribution; tracked so we can pull it back out even after moving.
 	var/area/sleep_static_power_area
+	///The area we listen to for COMSIG_AREA_POWER_CHANGE. Tracked so a move re-points the subscription instead of stacking a second one.
+	var/area/power_change_area
 	///The STATIC_* channel our sleep_static_power was billed to; tracked so a later power_channel change still removes from the right channel.
 	var/sleep_static_power_channel
 
@@ -183,7 +185,9 @@ Class Procs:
 			START_PROCESSING(SSfastprocess, src)
 		else
 			START_PROCESSING(SSmachines, src)
-	RegisterSignal(src, COMSIG_ENTER_AREA, PROC_REF(power_change))
+	RegisterSignal(src, COMSIG_ENTER_AREA, PROC_REF(on_enter_area))
+	RegisterSignal(src, COMSIG_EXIT_AREA, PROC_REF(on_exit_area))
+	register_power_change_area(get_area(src))
 
 	if (occupant_typecache)
 		occupant_typecache = typecacheof(occupant_typecache)
@@ -196,6 +200,7 @@ Class Procs:
 /obj/machinery/Destroy()
 	SSmachines.unregister_machine(src)
 	GLOB.machines.Remove(src)
+	register_power_change_area(null)
 	if(machine_sleeping)
 		machine_sleeping = FALSE
 		SSmachines.sleeping_machines--
@@ -205,13 +210,46 @@ Class Procs:
 	else
 		STOP_PROCESSING(SSfastprocess, src)
 	dropContents()
-	if(length(component_parts))
-		for(var/atom/A in component_parts)
-			qdel(A)
-		component_parts.Cut()
+	// QDEL_LIST, а не ручной цикл: qdel детали уводит её в нуль-спейс, наш Exited() на это
+	// вычёркивает её из component_parts, и обход живого списка пропускал каждую вторую.
+	QDEL_LIST(component_parts)
 	if(circuit)
 		QDEL_NULL(circuit)
 	return ..()
+
+/**
+ * Points our COMSIG_AREA_POWER_CHANGE subscription at `new_area`, dropping whatever we listened to
+ * before. The area broadcasts its power state over that signal rather than walking its own contents
+ * hunting for machines, so a machine that is not subscribed never hears about a blackout.
+ */
+/obj/machinery/proc/register_power_change_area(area/new_area)
+	if(power_change_area == new_area)
+		return
+	if(power_change_area)
+		UnregisterSignal(power_change_area, COMSIG_AREA_POWER_CHANGE)
+	power_change_area = new_area
+	if(new_area)
+		RegisterSignal(new_area, COMSIG_AREA_POWER_CHANGE, PROC_REF(on_area_power_change))
+
+///Re-homes the subscription on an area move and resyncs: the new area's channels can differ from the old one's.
+/obj/machinery/proc/on_enter_area(datum/source, area/new_area)
+	SIGNAL_HANDLER
+	SHOULD_CALL_PARENT(TRUE)
+	register_power_change_area(new_area)
+	power_change()
+
+///Drops the subscription on the way out, so a machine parked in nullspace stops following its old area.
+/obj/machinery/proc/on_exit_area(datum/source, area/old_area)
+	SIGNAL_HANDLER
+	SHOULD_CALL_PARENT(TRUE)
+	if(power_change_area == old_area)
+		register_power_change_area(null)
+
+///Signal wrapper: power_change() returns TRUE on a state flip, which must not leak into the signal's return bitfield.
+/obj/machinery/proc/on_area_power_change(datum/source)
+	SIGNAL_HANDLER
+	SHOULD_CALL_PARENT(TRUE)
+	power_change()
 
 /obj/machinery/proc/locate_machinery()
 	return
@@ -588,7 +626,10 @@ Class Procs:
 		on_deconstruction()
 		if(LAZYLEN(component_parts))
 			spawn_frame(disassembled)
-			for(var/obj/item/I in component_parts)
+			// Снапшот обязателен: forceMove детали приводит к нашему же Exited(), а тот
+			// вычёркивает её из component_parts. Обход живого списка сдвигал индекс и
+			// пропускал элементы - плата так и оставалась внутри уходящей в qdel машины.
+			for(var/obj/item/I as anything in component_parts.Copy())
 				I.forceMove(loc)
 			LAZYCLEARLIST(component_parts)
 			circuit = null
@@ -812,6 +853,12 @@ Class Procs:
 	if (AM == occupant)
 		SEND_SIGNAL(src, COMSIG_MACHINE_EJECT_OCCUPANT, occupant)
 		occupant = null
+	// Проверка circuit.loc здесь ОБЯЗАТЕЛЬНА, хотя и выглядит мёртвой: Exited() зовётся до
+	// присвоения loc, поэтому на уходе платы её loc ещё равен src и очистка не срабатывает.
+	// Именно на это и рассчитан deconstruct(): spawn_frame() перекладывает плату в новый
+	// фрейм, и если снять её из component_parts здесь, следующий же цикл выкладывания её
+	// пропустит - плата останется во фрейме вместо турфа. Тест machine_disassembly это
+	// ловит. Держателя платы у уходящей в qdel машины закрывать надо не отсюда.
 	if(AM == circuit && circuit.loc != src)
 		component_parts -= AM //TODO: make the cmp part functions use lazyX
 		circuit = null
