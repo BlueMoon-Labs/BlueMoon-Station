@@ -23,6 +23,13 @@
 	assign_idle_routine(new_pawn)
 	return ..()
 
+///A hostile must resist buckling even when its current plan does not require a
+///movement step (for example, a ranged mob already inside its firing band).
+///The movement pre-check remains a fallback for a buckle between planning ticks.
+/datum/ai_controller/hostile_adapter/SelectBehaviors(delta_time)
+	request_unbuckle()
+	return ..()
+
 ///Живой idle: рутина выбирается по типу моба один раз при захвате пауна.
 ///Профили, задавшие своё фоновое поведение явно (майнбот, floor cluwne), не
 ///трогаются - там idle это часть сценария, а не декорация.

@@ -115,6 +115,34 @@
 
 	qdel(controller)
 
+///A corpse on the floor is below ordinary projectile aim, but a corpse held
+///upright by a chair must be treated as cover when somebody stands behind it.
+/datum/unit_test/ai_ranged_seated_corpse_blocks_lane/Run()
+	var/turf/start_turf = run_loc_floor_bottom_left
+	var/turf/blocker_turf = get_step(start_turf, EAST)
+	var/mob/living/simple_animal/hostile/shooter = allocate(/mob/living/simple_animal/hostile, start_turf)
+	shooter.ranged = TRUE
+	shooter.projectiletype = /obj/item/projectile/beam/laser
+	var/obj/structure/chair/chair = allocate(/obj/structure/chair, blocker_turf)
+	var/mob/living/carbon/human/corpse = allocate(/mob/living/carbon/human, blocker_turf)
+	corpse.death()
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, locate(start_turf.x + 3, start_turf.y, start_turf.z))
+	var/datum/ai_controller/unit_test_hunter/controller = new(shooter)
+	controller.set_blackboard_key(BB_AI_CURRENT_TARGET, prey)
+
+	TEST_ASSERT(!chair.density, "Sanity: the chair itself must not be a dense firing-lane blocker")
+	TEST_ASSERT(chair.buckle_mob(corpse, force = TRUE), "Sanity: the corpse must be buckled to the chair")
+	TEST_ASSERT_EQUAL(corpse.buckled, chair, "Sanity: the corpse must remain seated in the firing lane")
+	TEST_ASSERT(shooter.CheckRangedFireLane(prey), "A seated corpse must block a controller mob's shot at somebody behind it")
+	TEST_ASSERT_NULL(shooter.Shoot(prey), "The final projectile boundary must reject a shot through a seated corpse")
+
+	chair.unbuckle_mob(corpse, force = TRUE)
+	TEST_ASSERT(!shooter.CheckRangedFireLane(prey), "The same corpse on the floor must no longer block ordinary projectile aim")
+	var/obj/item/projectile/clear_shot = shooter.Shoot(prey)
+	TEST_ASSERT_NOTNULL(clear_shot, "The shot must proceed after the corpse is removed from the chair")
+	qdel(clear_shot)
+	qdel(controller)
+
 ///can_see() skips the cardinal half of a diagonal projectile Move(). The ranged
 ///trace must notice that real first wall impact and choose a firing position.
 /datum/unit_test/ai_ranged_diagonal_wall_lane/Run()
@@ -824,17 +852,21 @@
 /datum/unit_test/ai_buckled_pawn_requests_unbuckle_on_cooldown/Run()
 	var/mob/living/simple_animal/hostile/pawn = allocate(/mob/living/simple_animal/hostile, run_loc_floor_bottom_left)
 	var/obj/structure/chair/office/chair = allocate(/obj/structure/chair/office, run_loc_floor_bottom_left)
-	var/datum/ai_controller/unit_test_wanderer/controller = new(pawn)
-	chair.buckle_mob(pawn, force = TRUE)
+	var/datum/ai_controller/hostile_adapter/controller = pawn.ai_controller
+	TEST_ASSERT_NOTNULL(controller, "Санити: у hostile-пауна обязан быть адаптер-контроллер")
+	TEST_ASSERT(chair.buckle_mob(pawn, force = TRUE), "Санити: пауна обязано получиться пристегнуть к стулу")
+	TEST_ASSERT_EQUAL(pawn.buckled, chair, "Санити: до следующего планирования паун обязан оставаться пристёгнутым")
 
-	TEST_ASSERT(controller.request_unbuckle(), "Пристёгнутый паун обязан попытаться выбраться")
+	controller.SelectBehaviors(0.5)
 	TEST_ASSERT(controller.blackboard[BB_AI_UNBUCKLE_AT] > world.time, "Попытка обязана взвести кулдаун")
+	TEST_ASSERT_NULL(pawn.buckled, "Hostile-планирование обязано освободить пауна без ожидания движения")
 
-	//user_unbuckle_mob не спит, так что попытка уже сработала - возвращаем пауна
-	//в стул, чтобы проверялся именно кулдаун, а не отсутствие buckled
-	if(!pawn.buckled)
-		chair.buckle_mob(pawn, force = TRUE)
-	TEST_ASSERT(!controller.request_unbuckle(), "Повторная попытка внутри кулдауна запрещена")
+	//Возвращаем пауна в стул, чтобы проверялся именно кулдаун, а не отсутствие
+	//buckled. Второе планирование не должно спамить повторным освобождением.
+	TEST_ASSERT(chair.buckle_mob(pawn, force = TRUE), "Санити: пауна обязано получиться пристегнуть повторно")
+	controller.SelectBehaviors(0.5)
+	TEST_ASSERT_EQUAL(pawn.buckled, chair, "Повторная попытка внутри кулдауна запрещена")
+	chair.unbuckle_mob(pawn, force = TRUE)
 
 	qdel(controller)
 

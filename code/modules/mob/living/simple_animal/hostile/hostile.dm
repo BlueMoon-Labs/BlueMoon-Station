@@ -705,9 +705,10 @@ GLOBAL_VAR_INIT(ai_pursuit_min_move_delay, AI_PURSUIT_MIN_MOVE_DELAY)
 /mob/living/simple_animal/hostile/proc/CheckRangedFireLaneStateFrom(atom/A, atom/origin)
 	return ranged_fire_lane_state(A, origin, !ranged_ignores_vision, !attack_same)
 
-///A blocked lane is one whose real projectile route ends on static geometry or a
-///protected ally. Penetrable cover (sandbags, barricades) does NOT block: the mob
-///fires over/through it just like a real bullet would.
+///A blocked lane is one whose real projectile route ends on static geometry, a
+///protected ally, or an upright corpse buckled to a chair. Penetrable cover
+///(sandbags, barricades) does NOT block: the mob fires over/through it just like
+///a real bullet would.
 /mob/living/simple_animal/hostile/proc/ranged_fire_lane_is_unsafe(atom/A, atom/origin, check_obstacles, protect_allies)
 	return ranged_fire_lane_state(A, origin, check_obstacles, protect_allies) == AI_FIRE_LANE_BLOCKED
 
@@ -786,9 +787,10 @@ GLOBAL_VAR_INIT(ai_pursuit_min_move_delay, AI_PURSUIT_MIN_MOVE_DELAY)
 		if(turf_state == AI_FIRE_LANE_COVER)
 			. = AI_FIRE_LANE_COVER
 
-///Classify one lane turf: BLOCKED (static geometry or a protected ally would stop
-///the shot), COVER (only penetrable cover the bullet gets through from range), or
-///CLEAR (nothing, or cover the shooter stands right behind - guaranteed pass).
+///Classify one lane turf: BLOCKED (static geometry, a protected ally, or a seated
+///corpse is in the way), COVER (only penetrable cover the bullet gets through from
+///range), or CLEAR (nothing, or cover the shooter stands right behind - guaranteed
+///pass).
 /mob/living/simple_animal/hostile/proc/ranged_fire_turf_state(turf/lane_turf, atom/A, turf/origin_turf, traversal_flags, no_hit_flags, obj/item/projectile/projectile_path, check_obstacles, protect_allies)
 	if(!lane_turf)
 		return AI_FIRE_LANE_BLOCKED
@@ -801,6 +803,11 @@ GLOBAL_VAR_INIT(ai_pursuit_min_move_delay, AI_PURSUIT_MIN_MOVE_DELAY)
 		if(isliving(blocker))
 			var/mob/living/living_blocker = blocker
 			if(protect_allies && living_blocker.stat != DEAD && faction_check_mob(living_blocker) && !(no_hit_flags & living_blocker.pass_flags_self))
+				return AI_FIRE_LANE_BLOCKED
+			//Projectiles normally pass over a corpse on the floor. A corpse held
+			//upright by a chair is visible cover, so controller mobs must reposition
+			//instead of repeatedly firing through its sprite at somebody behind it.
+			if(check_obstacles && living_blocker.stat == DEAD && istype(living_blocker.buckled, /obj/structure/chair) && !(no_hit_flags & living_blocker.pass_flags_self))
 				return AI_FIRE_LANE_BLOCKED
 			continue
 		if(!check_obstacles || !blocker.density || (traversal_flags & blocker.pass_flags_self))
