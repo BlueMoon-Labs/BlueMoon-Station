@@ -3800,7 +3800,6 @@
 /turf/open/indestructible/boss,
 /area/ruin/lavaland/unpowered/ash_walkers)
 "dbt" = (
-/obj/effect/landmark/start/medical_doctor,
 /obj/structure/chair/office/dark{
 	dir = 1
 	},
@@ -7006,7 +7005,6 @@
 	dir = 8;
 	pixel_x = 24
 	},
-/obj/effect/landmark/start/paramedic,
 /turf/open/floor/plasteel/white,
 /area/mine/xenoarch_area_c)
 "fMI" = (
@@ -9273,7 +9271,7 @@
 /turf/open/floor/plasteel/dark/textured/half,
 /area/mine/xenoarch_area_c)
 "hJq" = (
-/mob/living/simple_animal/hostile/syndicate/real_syndicate{
+/mob/living/simple_animal/hostile/inteq{
 	desc = "It's HIM.";
 	environment_smash = 0;
 	name = "John Syndicate"
@@ -10417,7 +10415,6 @@
 	dir = 8;
 	pixel_x = 24
 	},
-/obj/effect/landmark/start/medical_doctor,
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on{
 	dir = 4
 	},
@@ -15775,7 +15772,6 @@
 /obj/structure/chair/office/dark,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
-/obj/effect/landmark/start/paramedic,
 /turf/open/floor/plasteel/white,
 /area/mine/xenoarch_area_c)
 "mIq" = (
@@ -18168,7 +18164,6 @@
 /obj/structure/chair/sofa/corp/left{
 	dir = 4
 	},
-/obj/effect/landmark/start/assistant,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/mine/xenoarch_area_b)
 "opb" = (
@@ -19019,7 +19014,6 @@
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
 "oTN" = (
 /obj/structure/chair/office/dark,
-/obj/effect/landmark/start/scientist,
 /turf/open/floor/plasteel,
 /area/mine/xenoarch)
 "oTZ" = (
@@ -20971,7 +20965,6 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
-/obj/effect/landmark/start/atmospheric_technician,
 /turf/open/floor/plasteel,
 /area/mine/xenoarch_area_a)
 "qEK" = (
@@ -22250,7 +22243,6 @@
 /obj/structure/chair/office/dark{
 	dir = 1
 	},
-/obj/effect/landmark/start/scientist,
 /turf/open/floor/plasteel,
 /area/mine/xenoarch)
 "rBW" = (
@@ -25632,7 +25624,6 @@
 /obj/structure/chair/office/dark{
 	dir = 1
 	},
-/obj/effect/landmark/start/depsec/science,
 /turf/open/floor/plasteel/dark,
 /area/mine/xenoarch_area_c)
 "upN" = (
@@ -27264,7 +27255,6 @@
 /obj/structure/sign/poster/official/random{
 	pixel_x = 32
 	},
-/obj/effect/landmark/start/assistant,
 /obj/effect/turf_decal/tile/dark_green/half{
 	dir = 4
 	},
@@ -28872,7 +28862,6 @@
 /area/mine/xenoarch_area_c)
 "wYB" = (
 /obj/machinery/atmospherics/pipe/simple/green/visible,
-/obj/effect/landmark/start/station_engineer,
 /turf/open/floor/plasteel,
 /area/mine/xenoarch_area_a)
 "wYF" = (
@@ -29423,7 +29412,6 @@
 /obj/machinery/atmospherics/pipe/simple/green/visible{
 	dir = 5
 	},
-/obj/effect/landmark/start/atmospheric_technician,
 /turf/open/floor/plasteel,
 /area/mine/xenoarch_area_a)
 "xtV" = (
@@ -30219,7 +30207,6 @@
 /obj/structure/cable{
 	icon_state = "1-4"
 	},
-/obj/effect/landmark/start/station_engineer,
 /turf/open/floor/plasteel,
 /area/mine/xenoarch_area_a)
 "xXb" = (

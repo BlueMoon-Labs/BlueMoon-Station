@@ -67,6 +67,10 @@
 	var/reinforced = FALSE
 	// These variables store info about armor piece this item has been reinforced to. Required for proper repair() handling.
 	var/obj/item/clothing/reinforcement_path
+	// Наборы брони присваивают защитные переменные с прототипа, а не сливают их.
+	// Для одежды, чья защита собирается снаружи (части МОДа), это стирает
+	// герметичность и холодозащиту без шанса восстановить - такие вещи отписываются.
+	var/can_be_reinforced = TRUE
 	// This flag makes sure that if a genital is not covered by this piece of clothing, it is still drawn underneath it
 	// Generally should stay TRUE, unless you want your underwear that doesn't cover any body parts to be underneath exposed genitals
 	var/keep_genitals_below = TRUE

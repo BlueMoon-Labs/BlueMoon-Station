@@ -140,16 +140,17 @@
 		spawning_list[chosen_type] = (spawning_list[chosen_type] || 0) + 1
 	. = ..(port)
 
-/// ERT MOPP — ghost roles, one poll, spawn on shuttle decks after it docks at the station.
+/// ERT MOPP — ghost roles via supply pod, 5 seconds after the shuttle docks at the station.
 /datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/ert_mopp
 	name = "ОБР MOPP (подкрепление к шаттлу)"
 	spawning_list = list(/mob/living/carbon/human = 5)
 	spawn_anyway_if_no_player = FALSE
 	ghost_alert_string = "Подкрепление ОБР MOPP прибыло на эвакуационный шаттл. Зайти за оперативника?"
 	role_type = ROLE_SENTIENCE
-	event_probability = 50
+	event_probability = 0
+	admin_forceable = FALSE
 	var/next_mopp_index = 1
-	var/list/spawning_turfs_interior = list()
+	var/list/spawning_turfs_pod = list()
 	var/static/list/mopp_outfit_paths = list(
 		/datum/outfit/ert/commander/mopp,
 		/datum/outfit/ert/security/mopp,
@@ -160,11 +161,24 @@
 /datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/ert_mopp/get_batch_poll_message(count)
 	return "[ghost_alert_string] (До [count] оперативников. Вы не вернётесь в прежнее тело!)"
 
+/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/ert_mopp/proc/gather_pod_landing_turfs()
+	spawning_turfs_pod.Cut()
+	if(!port)
+		return
+	var/list/bounding_coords = port.return_coords()
+	if(!length(bounding_coords))
+		spawning_turfs_pod = get_mobile_shuttle_interior_turfs(port)
+		return
+	generate_spawning_turfs(bounding_coords, SHUTTLE_EVENT_MISS_SHUTTLE, port.preferred_direction)
+	spawning_turfs_pod = spawning_turfs_miss?.Copy() || list()
+	if(!length(spawning_turfs_pod))
+		spawning_turfs_pod = get_mobile_shuttle_interior_turfs(port)
+
 /datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/ert_mopp/proc/trigger_station_dock_spawn()
 	if(batch_spawn_started)
 		return
-	spawning_turfs_interior = get_mobile_shuttle_interior_turfs(port)
-	if(!length(spawning_turfs_interior))
+	gather_pod_landing_turfs()
+	if(!length(spawning_turfs_pod))
 		return
 	next_mopp_index = 1
 	var/list/batch = build_batch_spawn_types()
@@ -186,6 +200,7 @@
 		get_all_ghost_role_eligible(),
 	)
 	if(!length(winners))
+		qdel(src)
 		return
 	var/spawn_count = min(max_slots, length(winners))
 	priority_announce(
@@ -195,25 +210,32 @@
 		"Priority",
 	)
 	for(var/i in 1 to spawn_count)
-		var/spawn_type = spawn_types[i]
-		var/turf/spawn_point = get_spawn_turf()
-		if(!spawn_point)
-			break
 		var/mob/chosen = winners[i]
 		if(!chosen || !isobserver(chosen))
 			continue
-		var/mob/living/carbon/human/H = new spawn_type(spawn_point)
-		post_spawn(H)
+		var/turf/spawn_point = get_spawn_turf()
+		if(!spawn_point)
+			break
+		var/obj/structure/closet/supplypod/centcompod/pod = new()
+		pod.explosionSize = list(0, 0, 0, 0)
+		pod.delays = list(POD_TRANSIT = 15, POD_FALLING = 3, POD_OPENING = 15, POD_LEAVING = 20)
+		var/mob/living/carbon/human/H = new /mob/living/carbon/human(pod)
+		if(chosen.client?.prefs)
+			chosen.client.prefs.copy_to(H)
 		equip_mopp_outfit(H)
 		if(!assign_ghost_to_mob(chosen, H))
 			qdel(H)
+			qdel(pod)
 			continue
 		post_player_assigned(H)
+		H.anchored = FALSE
+		new /obj/effect/pod_landingzone(spawn_point, pod)
+	qdel(src)
 
 /datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/ert_mopp/get_spawn_turf()
-	if(!length(spawning_turfs_interior))
+	if(!length(spawning_turfs_pod))
 		return null
-	return pick(spawning_turfs_interior)
+	return pick(spawning_turfs_pod)
 
 /datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/ert_mopp/post_spawn(atom/movable/spawnee)
 	return
@@ -224,6 +246,9 @@
 	var/mob/living/carbon/human/H = mob
 	ADD_TRAIT(H, TRAIT_EXEMPT_HEALTH_EVENTS, GHOSTROLE_TRAIT)
 	ADD_TRAIT(H, TRAIT_NO_MIDROUND_ANTAG, GHOSTROLE_TRAIT)
+	H.anchored = FALSE
+	if(H.buckled)
+		H.buckled.unbuckle_mob(H)
 	to_chat(H, span_boldannounce("Вы — оперативник ОБР MOPP, прибывший на эвакуационный шаттл для помощи экипажу."))
 
 /datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/ert_mopp/proc/equip_mopp_outfit(mob/living/carbon/human/H)
@@ -233,10 +258,15 @@
 	H.equipOutfit(mopp_outfit_paths[slot])
 	next_mopp_index++
 
+#define ERT_MOPP_DOCK_SPAWN_DELAY 5 SECONDS
+#define ERT_MOPP_DOCK_SPAWN_CHANCE 50
+
 /// Must live after /ert_mopp — emergency.dm is compiled earlier in the .dme.
 /obj/docking_port/mobile/emergency/proc/try_station_dock_ert_mopp()
-	var/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/ert_mopp/event = new /datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/ert_mopp(src)
-	if(!prob(event.event_probability))
-		qdel(event)
+	if(!prob(ERT_MOPP_DOCK_SPAWN_CHANCE))
 		return
+	addtimer(CALLBACK(src, PROC_REF(trigger_station_dock_ert_mopp)), ERT_MOPP_DOCK_SPAWN_DELAY)
+
+/obj/docking_port/mobile/emergency/proc/trigger_station_dock_ert_mopp()
+	var/datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/ert_mopp/event = new /datum/shuttle_event/simple_spawner/player_controlled/human_shuttle/ert_mopp(src)
 	event.trigger_station_dock_spawn()

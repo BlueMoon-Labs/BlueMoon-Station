@@ -6062,13 +6062,14 @@
 /turf/open/floor/plasteel/cafeteria,
 /area/commons/dorms)
 "aqY" = (
-/obj/docking_port/stationary{
+/obj/docking_port/stationary/escape_pod{
 	dwidth = 2;
 	height = 6;
 	name = "Station";
 	roundstart_template = /datum/map_template/shuttle/escape_pod/large;
 	shuttle_id = "monastery_shuttle_station";
-	width = 5
+	width = 5;
+	enforce_specific_pod = TRUE
 	},
 /turf/open/space/basic,
 /area/space)

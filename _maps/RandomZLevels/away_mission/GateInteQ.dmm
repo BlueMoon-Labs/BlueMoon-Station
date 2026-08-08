@@ -84,7 +84,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/mob/living/simple_animal/hostile/syndicate/ranged/shotgun,
+/mob/living/simple_animal/hostile/inteq/ranged/shotgun,
 /turf/open/floor/plating,
 /area/awaymission/InteQ)
 "afW" = (
@@ -615,7 +615,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "aKk" = (
-/mob/living/simple_animal/hostile/syndicate/civilian,
+/mob/living/simple_animal/hostile/inteq/civilian,
 /turf/open/floor/catwalk_floor,
 /area/awaymission/InteQ)
 "aKW" = (
@@ -779,7 +779,7 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 4
 	},
-/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
+/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
 /turf/open/floor/carpet/royalblack,
 /area/awaymission/InteQ)
 "aSX" = (
@@ -1135,7 +1135,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "bmc" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/shotgun,
+/mob/living/simple_animal/hostile/inteq/ranged/shotgun,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "boO" = (
@@ -1516,7 +1516,7 @@
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/brown/fourcorners,
-/mob/living/simple_animal/hostile/syndicate/melee/ushm,
+/mob/living/simple_animal/hostile/inteq/melee/ushm,
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "bMK" = (
@@ -2003,7 +2003,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "cqm" = (
-/mob/living/simple_animal/hostile/syndicate/civilian,
+/mob/living/simple_animal/hostile/inteq/civilian,
 /turf/open/floor/plating,
 /area/awaymission/InteQ/lvl2)
 "cqo" = (
@@ -2999,7 +2999,7 @@
 "dtv" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/light/small,
-/mob/living/simple_animal/hostile/syndicate/civilian,
+/mob/living/simple_animal/hostile/inteq/civilian,
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "dtN" = (
@@ -3572,7 +3572,7 @@
 /area/awaymission/InteQ)
 "dVk" = (
 /obj/effect/turf_decal/bot,
-/mob/living/simple_animal/hostile/syndicate/civilian,
+/mob/living/simple_animal/hostile/inteq/civilian,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl3)
 "dVn" = (
@@ -4324,7 +4324,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "eSc" = (
-/mob/living/simple_animal/hostile/syndicate/melee/spacebattle,
+/mob/living/simple_animal/hostile/inteq/melee/spacebattle,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "eSh" = (
@@ -4940,7 +4940,7 @@
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/awaymission/InteQ/lvl2)
 "fwG" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
+/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "fwW" = (
@@ -4971,7 +4971,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "fxN" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
+/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
 /turf/open/floor/catwalk_floor,
 /area/awaymission/InteQ)
 "fyh" = (
@@ -5239,7 +5239,7 @@
 /area/awaymission/InteQ)
 "fQU" = (
 /obj/effect/turf_decal/tile/brown/opposingcorners,
-/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
+/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "fRa" = (
@@ -5483,7 +5483,7 @@
 /mob/living/simple_animal/bot/cleanbot{
 	faction = list("InteQ")
 	},
-/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
+/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "gcX" = (
@@ -5672,7 +5672,7 @@
 /obj/effect/turf_decal/tile/brown{
 	dir = 1
 	},
-/mob/living/simple_animal/hostile/syndicate/ranged/smg/pilot,
+/mob/living/simple_animal/hostile/inteq/ranged/smg/pilot,
 /obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /turf/open/floor/plasteel/dark,
@@ -5973,7 +5973,7 @@
 	dir = 4;
 	icon_state = "manifold-2"
 	},
-/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
+/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
 /turf/open/floor/plating,
 /area/awaymission/InteQ)
 "gEN" = (
@@ -6160,7 +6160,7 @@
 /area/awaymission/InteQ/lvl2)
 "gOJ" = (
 /obj/effect/decal/cleanable/dirt,
-/mob/living/simple_animal/hostile/syndicate/ranged/sniper,
+/mob/living/simple_animal/hostile/inteq/ranged/sniper,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
 /obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer3,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
@@ -7242,7 +7242,7 @@
 /obj/effect/turf_decal/tile/brown{
 	dir = 1
 	},
-/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
+/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "hRB" = (
@@ -7982,7 +7982,7 @@
 /turf/open/floor/plasteel,
 /area/awaymission/InteQ)
 "iCT" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg/space,
+/mob/living/simple_animal/hostile/inteq/ranged/smg/space,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "iDN" = (
@@ -9604,7 +9604,7 @@
 /turf/open/floor/wood,
 /area/awaymission/InteQ)
 "khb" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg/pilot,
+/mob/living/simple_animal/hostile/inteq/ranged/smg/pilot,
 /turf/open/floor/engine,
 /area/awaymission/InteQ)
 "khE" = (
@@ -11045,7 +11045,7 @@
 /turf/open/floor/plasteel/white,
 /area/awaymission/InteQ/lvl2)
 "lDz" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
+/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
 /turf/open/floor/wood/wood_parquet,
 /area/awaymission/InteQ/lvl2)
 "lDN" = (
@@ -11698,7 +11698,7 @@
 	dir = 4;
 	icon_state = "manifold-2"
 	},
-/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
+/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
 /obj/effect/turf_decal/tile/brown/opposingcorners,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -12447,7 +12447,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "mZR" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
+/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
 /turf/open/floor/plasteel,
 /area/awaymission/InteQ)
 "mZV" = (
@@ -12935,7 +12935,7 @@
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/brown,
-/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
+/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "nxj" = (
@@ -13798,7 +13798,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/mob/living/simple_animal/hostile/syndicate/ranged/smg/pilot,
+/mob/living/simple_animal/hostile/inteq/ranged/smg/pilot,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "ooP" = (
@@ -14265,7 +14265,7 @@
 /area/awaymission/InteQ)
 "oNC" = (
 /obj/effect/decal/cleanable/dirt,
-/mob/living/simple_animal/hostile/syndicate/civilian,
+/mob/living/simple_animal/hostile/inteq/civilian,
 /turf/open/floor/plasteel,
 /area/awaymission/InteQ)
 "oOc" = (
@@ -14487,11 +14487,11 @@
 /obj/effect/turf_decal/tile/brown{
 	dir = 1
 	},
-/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
+/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "paS" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
+/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
 /turf/open/floor/plasteel/showroomfloor,
 /area/awaymission/InteQ)
 "pbw" = (
@@ -14625,7 +14625,7 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
-/mob/living/simple_animal/hostile/syndicate/civilian,
+/mob/living/simple_animal/hostile/inteq/civilian,
 /turf/open/floor/plasteel,
 /area/awaymission/InteQ)
 "pkn" = (
@@ -14686,7 +14686,7 @@
 /area/awaymission/InteQ/lvl3)
 "pnM" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
-/mob/living/simple_animal/hostile/syndicate/space,
+/mob/living/simple_animal/hostile/inteq/space,
 /turf/open/floor/plating,
 /area/awaymission/InteQ)
 "poh" = (
@@ -14695,7 +14695,7 @@
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "poq" = (
-/mob/living/simple_animal/hostile/syndicate/civilian,
+/mob/living/simple_animal/hostile/inteq/civilian,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "pow" = (
@@ -15310,7 +15310,7 @@
 /turf/open/floor/plasteel,
 /area/awaymission/InteQ)
 "pTj" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg/pilot,
+/mob/living/simple_animal/hostile/inteq/ranged/smg/pilot,
 /turf/open/floor/plasteel/kitchen{
 	dir = 4
 	},
@@ -15528,7 +15528,7 @@
 /obj/structure/sign/poster/contraband/inteq/inteq_no_sex{
 	pixel_y = 34
 	},
-/mob/living/simple_animal/hostile/syndicate/civilian,
+/mob/living/simple_animal/hostile/inteq/civilian,
 /turf/open/floor/plasteel/showroomfloor,
 /area/awaymission/InteQ/lvl2)
 "qbC" = (
@@ -16552,7 +16552,7 @@
 /turf/open/floor/plating,
 /area/awaymission/InteQ)
 "qWd" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/space/stormtrooper,
+/mob/living/simple_animal/hostile/inteq/ranged/space/stormtrooper,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "qWw" = (
@@ -16593,7 +16593,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "qYo" = (
-/mob/living/simple_animal/hostile/syndicate/civilian,
+/mob/living/simple_animal/hostile/inteq/civilian,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl3)
 "qYA" = (
@@ -16745,7 +16745,7 @@
 	pixel_y = 11;
 	pixel_x = 9
 	},
-/mob/living/simple_animal/hostile/syndicate/civilian,
+/mob/living/simple_animal/hostile/inteq/civilian,
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "rfn" = (
@@ -17853,7 +17853,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "slJ" = (
-/mob/living/simple_animal/hostile/syndicate/space/stormtrooper,
+/mob/living/simple_animal/hostile/inteq/space/stormtrooper,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "slV" = (
@@ -18089,7 +18089,7 @@
 /area/awaymission/InteQ/lvl2)
 "sxu" = (
 /obj/effect/decal/cleanable/dirt,
-/mob/living/simple_animal/hostile/syndicate/civilian,
+/mob/living/simple_animal/hostile/inteq/civilian,
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "sxv" = (
@@ -18171,7 +18171,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "sAL" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
+/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
 /turf/open/floor/plating,
 /area/awaymission/InteQ/lvl2)
 "sBn" = (
@@ -18512,7 +18512,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3,
 /obj/effect/turf_decal/tile/brown/fourcorners,
-/mob/living/simple_animal/hostile/syndicate/civilian,
+/mob/living/simple_animal/hostile/inteq/civilian,
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "sPH" = (
@@ -18671,7 +18671,7 @@
 /turf/open/floor/wood,
 /area/awaymission/InteQ)
 "sYR" = (
-/mob/living/simple_animal/hostile/syndicate/melee,
+/mob/living/simple_animal/hostile/inteq/melee,
 /obj/effect/turf_decal/tile/brown,
 /obj/effect/turf_decal/tile/brown{
 	dir = 1
@@ -19273,7 +19273,7 @@
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/brown/fourcorners,
-/mob/living/simple_animal/hostile/syndicate/melee,
+/mob/living/simple_animal/hostile/inteq/melee,
 /turf/open/floor/mineral/plastitanium,
 /area/awaymission/InteQ)
 "tAz" = (
@@ -19563,7 +19563,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/mob/living/simple_animal/hostile/syndicate/ranged/shotgun,
+/mob/living/simple_animal/hostile/inteq/ranged/shotgun,
 /obj/effect/turf_decal/tile/brown/opposingcorners,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
@@ -20265,7 +20265,7 @@
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
-/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
+/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
 /turf/open/floor/plasteel,
 /area/awaymission/InteQ)
 "utv" = (
@@ -20602,7 +20602,7 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer3{
 	dir = 9
 	},
-/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
+/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
 /turf/open/floor/wood/wood_parquet,
 /area/awaymission/InteQ)
 "uKJ" = (
@@ -21744,7 +21744,7 @@
 /area/awaymission/InteQ/lvl2)
 "vSb" = (
 /obj/effect/turf_decal/bot,
-/mob/living/simple_animal/hostile/syndicate/civilian,
+/mob/living/simple_animal/hostile/inteq/civilian,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "vSj" = (
@@ -22595,7 +22595,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "wFA" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg/pilot,
+/mob/living/simple_animal/hostile/inteq/ranged/smg/pilot,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "wGz" = (
@@ -22841,7 +22841,7 @@
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "wWZ" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg,
+/mob/living/simple_animal/hostile/inteq/ranged/smg,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "wXA" = (
@@ -23520,7 +23520,7 @@
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/brown,
-/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
+/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "xDJ" = (
@@ -23623,7 +23623,7 @@
 /turf/open/floor/plating,
 /area/awaymission/InteQ)
 "xMU" = (
-/mob/living/simple_animal/hostile/syndicate/civilian,
+/mob/living/simple_animal/hostile/inteq/civilian,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ/lvl2)
 "xMX" = (
@@ -23819,7 +23819,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
+/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "xZp" = (
@@ -23954,7 +23954,7 @@
 /area/awaymission/InteQ)
 "yfT" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer1,
-/mob/living/simple_animal/hostile/syndicate/ranged/infiltrator,
+/mob/living/simple_animal/hostile/inteq/ranged/infiltrator,
 /turf/open/floor/wood/wood_parquet,
 /area/awaymission/InteQ)
 "ygF" = (
@@ -23992,7 +23992,7 @@
 /obj/effect/turf_decal/tile/brown/half{
 	dir = 8
 	},
-/mob/living/simple_animal/hostile/syndicate/civilian,
+/mob/living/simple_animal/hostile/inteq/civilian,
 /turf/open/floor/plasteel/dark,
 /area/awaymission/InteQ)
 "yid" = (

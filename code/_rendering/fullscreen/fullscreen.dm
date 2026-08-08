@@ -148,6 +148,12 @@
 	layer = UI_DAMAGE_LAYER
 	plane = FULLSCREEN_PLANE
 
+/atom/movable/screen/fullscreen/scaled/bloodloss
+	icon_state = "passage"
+	layer = UI_DAMAGE_LAYER
+	plane = FULLSCREEN_PLANE
+	severity_max = 10
+
 /atom/movable/screen/fullscreen/scaled/crit
 	icon_state = "passage"
 	layer = CRIT_LAYER

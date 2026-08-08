@@ -99,10 +99,6 @@
 	dir = 5
 	},
 /area/awaymission/wildwest/mines)
-"ax" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg,
-/turf/open/floor/wood/wood_large,
-/area/awaymission/wildwest/mines)
 "ay" = (
 /obj/structure/closet/secure_closet/personal/cabinet,
 /obj/item/ammo_box/g45l,
@@ -269,7 +265,7 @@
 	},
 /area/awaymission/wildwest/mines)
 "bf" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg,
+/mob/living/simple_animal/hostile/inteq/ranged/smg,
 /turf/open/floor/plating/ironsand{
 	icon_state = "ironsand1"
 	},
@@ -312,7 +308,7 @@
 /turf/open/floor/wood,
 /area/awaymission/wildwest/mines)
 "bn" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg,
+/mob/living/simple_animal/hostile/inteq/ranged/smg,
 /turf/open/floor/plating,
 /area/awaymission/wildwest/refine)
 "bo" = (
@@ -369,7 +365,7 @@
 	},
 /area/awaymission/wildwest/mines)
 "bz" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg,
+/mob/living/simple_animal/hostile/inteq/ranged/smg,
 /turf/open/floor/plasteel/cafeteria{
 	dir = 5
 	},
@@ -396,7 +392,7 @@
 /turf/open/floor/wood,
 /area/awaymission/wildwest/mines)
 "bE" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg,
+/mob/living/simple_animal/hostile/inteq/ranged/smg,
 /turf/open/floor/wood,
 /area/awaymission/wildwest/mines)
 "bF" = (
@@ -862,10 +858,6 @@
 	},
 /turf/open/floor/plating,
 /area/awaymission/wildwest/gov)
-"cT" = (
-/obj/effect/spawner/lootdrop/hostile/inteq,
-/turf/open/floor/plating,
-/area/awaymission/wildwest/refine)
 "cU" = (
 /obj/item/paper/fluff/awaymissions/wildwest/journal/page1,
 /obj/structure/table/wood/fancy/green,
@@ -1362,7 +1354,7 @@
 	},
 /area/awaymission/wildwest/mines)
 "ew" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg,
+/mob/living/simple_animal/hostile/inteq/ranged/smg,
 /turf/open/floor/carpet/blue,
 /area/awaymission/wildwest/mines)
 "ex" = (
@@ -1385,7 +1377,7 @@
 /area/awaymission/wildwest/vault)
 "eB" = (
 /obj/effect/decal/cleanable/blood/tracks,
-/mob/living/simple_animal/hostile/syndicate/ranged/smg,
+/mob/living/simple_animal/hostile/inteq/ranged/smg,
 /turf/open/floor/wood,
 /area/awaymission/wildwest/mines)
 "eC" = (
@@ -1789,13 +1781,6 @@
 	},
 /turf/open/floor/carpet/royalblack,
 /area/awaymission/wildwest/mines)
-"fG" = (
-/obj/structure/chair/office/light{
-	dir = 4
-	},
-/mob/living/simple_animal/hostile/syndicate/ranged/smg,
-/turf/open/floor/carpet/purple,
-/area/awaymission/wildwest/mines)
 "fH" = (
 /obj/structure/chair/office/light{
 	dir = 8
@@ -1991,7 +1976,7 @@
 /turf/open/floor/wood,
 /area/awaymission/wildwest/mines)
 "gk" = (
-/mob/living/simple_animal/hostile/syndicate,
+/mob/living/simple_animal/hostile/inteq,
 /turf/open/floor/wood,
 /area/awaymission/wildwest/mines)
 "gl" = (
@@ -3570,6 +3555,7 @@
 	dir = 4
 	},
 /obj/item/ammo_casing/c9mm,
+/mob/living/simple_animal/hostile/syndicate,
 /turf/open/floor/wood,
 /area/awaymission/wildwest/mines)
 "mp" = (
@@ -3585,9 +3571,10 @@
 /turf/open/floor/wood/wood_large,
 /area/awaymission/wildwest/mines)
 "mt" = (
+/mob/living/simple_animal/hostile/gigachad_inteq/space,
+/obj/structure/closet/supplypod,
 /obj/structure/lattice/catwalk,
-/mob/living/simple_animal/hostile/pirate/melee/space,
-/turf/open/space,
+/turf/open/space/basic,
 /area/space/nearstation)
 "mu" = (
 /obj/structure/closet/crate,
@@ -3795,13 +3782,6 @@
 /obj/item/instrument/banjo,
 /turf/open/floor/carpet/blue,
 /area/awaymission/wildwest/mines)
-"nq" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg,
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 8
-	},
-/turf/open/floor/plating,
-/area/awaymission/wildwest/refine)
 "ns" = (
 /obj/effect/turf_decal/siding/white{
 	dir = 1
@@ -3863,16 +3843,6 @@
 /obj/structure/closet/crate/large,
 /obj/item/wirecutters,
 /turf/open/floor/wood,
-/area/awaymission/wildwest/mines)
-"nJ" = (
-/obj/effect/turf_decal/tile/blue{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/blue{
-	dir = 8
-	},
-/mob/living/simple_animal/hostile/syndicate/ranged/smg,
-/turf/open/floor/plasteel/cafeteria,
 /area/awaymission/wildwest/mines)
 "nM" = (
 /obj/structure/oldtrap/razor_wire/industrial,
@@ -4386,7 +4356,7 @@
 /turf/open/floor/wood,
 /area/awaymission/wildwest/mines)
 "pz" = (
-/mob/living/simple_animal/hostile/syndicate/melee,
+/mob/living/simple_animal/hostile/inteq/melee,
 /turf/open/floor/wood,
 /area/awaymission/wildwest/mines)
 "pA" = (
@@ -4613,7 +4583,7 @@
 	},
 /area/awaymission/wildwest/vault)
 "qt" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg,
+/mob/living/simple_animal/hostile/inteq/ranged/smg,
 /turf/open/floor/wood,
 /area/awaymission/wildwest/refine)
 "qv" = (
@@ -4848,7 +4818,7 @@
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/awaymission/wildwest/vault)
 "rx" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/space/stormtrooper,
+/mob/living/simple_animal/hostile/inteq/ranged/space/stormtrooper,
 /turf/open/space,
 /area/space)
 "ry" = (
@@ -5262,10 +5232,6 @@
 	icon_state = "ironsand9"
 	},
 /area/awaymission/wildwest/mines)
-"tr" = (
-/mob/living/simple_animal/hostile/syndicate/ranged,
-/turf/open/floor/wood,
-/area/awaymission/wildwest/mines)
 "ts" = (
 /mob/living/simple_animal/hostile/cult/assassin,
 /turf/open/floor/engine/cult,
@@ -5507,7 +5473,7 @@
 /turf/open/floor/engine/cult,
 /area/awaymission/wildwest/vault)
 "ut" = (
-/mob/living/simple_animal/hostile/syndicate/melee,
+/mob/living/simple_animal/hostile/inteq/melee,
 /turf/open/floor/plating,
 /area/awaymission/wildwest/refine)
 "uu" = (
@@ -6006,7 +5972,7 @@
 /turf/open/floor/plating/asteroid/airless,
 /area/space/nearstation)
 "wB" = (
-/mob/living/simple_animal/hostile/gigachad_inteq,
+/mob/living/simple_animal/hostile/gigachad_inteq/shooter,
 /turf/open/floor/carpet/green,
 /area/awaymission/wildwest/gov)
 "wC" = (
@@ -6092,7 +6058,7 @@
 /turf/open/space/basic,
 /area/space/nearstation)
 "wU" = (
-/mob/living/simple_animal/hostile/syndicate/space/stormtrooper,
+/mob/living/simple_animal/hostile/inteq/space/stormtrooper,
 /turf/open/floor/plasteel/cult,
 /area/awaymission/wildwest/vault)
 "wV" = (
@@ -6231,7 +6197,7 @@
 "xv" = (
 /obj/structure/bed,
 /obj/effect/spawner/lootdrop/bedsheet,
-/mob/living/simple_animal/hostile/syndicate/ranged/smg,
+/mob/living/simple_animal/hostile/inteq/ranged/smg,
 /turf/open/floor/wood,
 /area/awaymission/wildwest/mines)
 "xw" = (
@@ -6258,7 +6224,7 @@
 /turf/open/floor/wood,
 /area/awaymission/wildwest/mines)
 "xB" = (
-/mob/living/simple_animal/hostile/syndicate/space/stormtrooper,
+/mob/living/simple_animal/hostile/inteq/space/stormtrooper,
 /turf/open/space/basic,
 /area/space)
 "xF" = (
@@ -6690,7 +6656,7 @@
 "zt" = (
 /obj/structure/lattice,
 /obj/structure/lattice,
-/mob/living/simple_animal/hostile/syndicate/ranged/space/stormtrooper,
+/mob/living/simple_animal/hostile/inteq/ranged/space/stormtrooper,
 /turf/open/space,
 /area/space/nearstation)
 "zu" = (
@@ -6913,7 +6879,7 @@
 	},
 /area/awaymission/wildwest/mines)
 "Aw" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg,
+/mob/living/simple_animal/hostile/inteq/ranged/smg,
 /turf/open/floor/mineral/titanium/yellow,
 /area/awaymission/wildwest/refine)
 "Ax" = (
@@ -6947,7 +6913,7 @@
 /turf/closed/mineral,
 /area/space/nearstation)
 "AF" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg,
+/mob/living/simple_animal/hostile/inteq/ranged/smg,
 /obj/structure/chair/wood/normal,
 /turf/open/floor/plasteel/cafeteria{
 	dir = 5
@@ -7393,7 +7359,7 @@
 /turf/open/floor/plating,
 /area/awaymission/wildwest/refine)
 "Cr" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg,
+/mob/living/simple_animal/hostile/inteq/ranged/smg,
 /turf/open/floor/carpet/royalblack,
 /area/awaymission/wildwest/mines)
 "Cs" = (
@@ -8359,7 +8325,7 @@
 /obj/structure/chair/office/light{
 	dir = 8
 	},
-/mob/living/simple_animal/hostile/syndicate/ranged/smg,
+/mob/living/simple_animal/hostile/inteq/ranged/smg,
 /turf/open/floor/carpet/purple,
 /area/awaymission/wildwest/mines)
 "FX" = (
@@ -9190,13 +9156,6 @@
 /obj/item/reagent_containers/food/snacks/salad/boiledrice,
 /turf/open/floor/wood/wood_large,
 /area/awaymission/wildwest/mines)
-"Je" = (
-/obj/effect/decal/cleanable/blood/tracks{
-	dir = 8
-	},
-/mob/living/simple_animal/hostile/syndicate/ranged/smg,
-/turf/open/floor/wood,
-/area/awaymission/wildwest/mines)
 "Jf" = (
 /obj/structure/closet/crate/critter,
 /mob/living/simple_animal/cow,
@@ -9382,7 +9341,7 @@
 /turf/open/floor/plasteel,
 /area/awaymission/wildwest/mines)
 "JO" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg/space/stormtrooper,
+/mob/living/simple_animal/hostile/inteq/ranged/smg/space/stormtrooper,
 /turf/open/floor/plating/ironsand{
 	icon_state = "ironsand1"
 	},
@@ -9572,7 +9531,7 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
-/mob/living/simple_animal/hostile/syndicate,
+/mob/living/simple_animal/hostile/inteq,
 /turf/open/floor/plasteel/cafeteria,
 /area/awaymission/wildwest/mines)
 "KN" = (
@@ -9770,7 +9729,7 @@
 /area/awaymission/wildwest/mines)
 "LG" = (
 /obj/item/ammo_casing/c9mm,
-/mob/living/simple_animal/hostile/syndicate/ranged/smg,
+/mob/living/simple_animal/hostile/inteq/ranged/smg,
 /turf/open/floor/wood,
 /area/awaymission/wildwest/mines)
 "LH" = (
@@ -10547,7 +10506,6 @@
 /obj/structure/table,
 /obj/machinery/door/window/northleft{
 	name = "First-Aid Supplies";
-
 	req_access_txt = "5"
 	},
 /obj/effect/decal/cleanable/glass,
@@ -11497,7 +11455,7 @@
 /obj/structure/chair/office/light{
 	dir = 4
 	},
-/mob/living/simple_animal/hostile/syndicate,
+/mob/living/simple_animal/hostile/inteq,
 /turf/open/floor/carpet/purple,
 /area/awaymission/wildwest/mines)
 "SN" = (
@@ -11581,7 +11539,7 @@
 	},
 /area/awaymission/wildwest/mines)
 "Te" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg/space/stormtrooper,
+/mob/living/simple_animal/hostile/inteq/ranged/smg/space/stormtrooper,
 /turf/open/floor/plasteel/cult,
 /area/awaymission/wildwest/vault)
 "Tf" = (
@@ -11591,7 +11549,7 @@
 /turf/open/floor/engine,
 /area/awaymission/wildwest/vault)
 "Tg" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/space/stormtrooper,
+/mob/living/simple_animal/hostile/inteq/ranged/space/stormtrooper,
 /turf/open/floor/plasteel/cult,
 /area/awaymission/wildwest/vault)
 "Ti" = (
@@ -11673,7 +11631,7 @@
 /area/awaymission/wildwest/refine)
 "Tu" = (
 /obj/structure/lattice,
-/mob/living/simple_animal/hostile/syndicate/ranged/space/stormtrooper,
+/mob/living/simple_animal/hostile/inteq/ranged/space/stormtrooper,
 /turf/open/space,
 /area/space/nearstation)
 "Tv" = (
@@ -11809,7 +11767,7 @@
 /area/awaymission/wildwest/vault)
 "TT" = (
 /obj/effect/mob_spawn/human/miner/rig,
-/mob/living/simple_animal/hostile/syndicate/ranged/smg,
+/mob/living/simple_animal/hostile/inteq/ranged/smg,
 /turf/open/floor/wood,
 /area/awaymission/wildwest/mines)
 "TU" = (
@@ -12062,7 +12020,7 @@
 /turf/open/floor/wood,
 /area/awaymission/wildwest/mines)
 "UU" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg/space/stormtrooper,
+/mob/living/simple_animal/hostile/inteq/ranged/smg/space/stormtrooper,
 /turf/open/floor/wood,
 /area/awaymission/wildwest/mines)
 "UW" = (
@@ -12080,7 +12038,7 @@
 	},
 /area/awaymission/wildwest/mines)
 "Vb" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg,
+/mob/living/simple_animal/hostile/inteq/ranged/smg,
 /turf/open/floor/carpet/green,
 /area/awaymission/wildwest/mines)
 "Vc" = (
@@ -12641,7 +12599,7 @@
 	},
 /area/awaymission/wildwest/mines)
 "Xf" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg/space,
+/mob/living/simple_animal/hostile/inteq/ranged/smg/space,
 /turf/open/floor/plating,
 /area/awaymission/wildwest/refine)
 "Xh" = (
@@ -12711,7 +12669,7 @@
 	icon_state = "gibdown1"
 	},
 /obj/effect/decal/cleanable/blood/tracks,
-/mob/living/simple_animal/hostile/syndicate/ranged/smg,
+/mob/living/simple_animal/hostile/inteq/ranged/smg,
 /turf/open/floor/wood,
 /area/awaymission/wildwest/mines)
 "Xu" = (
@@ -12836,10 +12794,6 @@
 	dir = 5
 	},
 /area/awaymission/wildwest/gov)
-"XX" = (
-/obj/structure/lattice/catwalk,
-/turf/open/floor/plating/asteroid/airless,
-/area/space)
 "XZ" = (
 /obj/structure/table/wood,
 /obj/machinery/door/window/brigdoor{
@@ -12958,11 +12912,6 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /turf/open/floor/wood,
 /area/awaymission/wildwest/mines)
-"Yw" = (
-/obj/structure/chair/office/dark,
-/mob/living/simple_animal/hostile/syndicate/ranged/smg,
-/turf/open/floor/wood,
-/area/awaymission/wildwest/mines)
 "Yx" = (
 /obj/structure/table/wood,
 /obj/item/pickaxe/plasteel,
@@ -12982,7 +12931,7 @@
 /turf/open/floor/plasteel,
 /area/awaymission/wildwest/vault)
 "YA" = (
-/mob/living/simple_animal/hostile/syndicate/melee,
+/mob/living/simple_animal/hostile/gigachad_inteq,
 /turf/open/floor/wood/wood_large,
 /area/awaymission/wildwest/mines)
 "YC" = (
@@ -13092,7 +13041,7 @@
 /turf/open/floor/plasteel,
 /area/awaymission/wildwest/refine)
 "YY" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/smg/space,
+/mob/living/simple_animal/hostile/inteq/ranged/smg/space,
 /turf/open/space/basic,
 /area/space)
 "YZ" = (
@@ -34290,7 +34239,7 @@ to
 mC
 mC
 mC
-to
+mC
 ah
 ah
 ab
@@ -34536,7 +34485,7 @@ BK
 LR
 yz
 BK
-iu
+BK
 BK
 LR
 BK
@@ -39179,7 +39128,7 @@ af
 ac
 ac
 ac
-af
+ac
 ac
 oM
 oM
@@ -40499,7 +40448,7 @@ aG
 et
 Co
 bc
-cT
+bc
 bc
 bc
 bc
@@ -40533,7 +40482,7 @@ gS
 Bf
 Yt
 rh
-nq
+rh
 Ye
 gQ
 TC
@@ -41028,7 +40977,7 @@ eu
 eu
 eu
 eu
-fO
+eu
 eu
 NJ
 YW
@@ -41272,7 +41221,7 @@ WK
 bc
 bc
 bc
-Xf
+bc
 bc
 et
 et
@@ -41281,7 +41230,7 @@ et
 Yi
 eu
 eu
-fO
+eu
 eu
 eu
 eu
@@ -42546,7 +42495,7 @@ bc
 Wf
 eD
 Hb
-cT
+bc
 lU
 Qm
 bc
@@ -43058,7 +43007,7 @@ HX
 xw
 mu
 bo
-Xf
+bc
 bc
 ut
 lU
@@ -43303,7 +43252,7 @@ bc
 bc
 bc
 bc
-bn
+bc
 bo
 NT
 On
@@ -45115,7 +45064,7 @@ du
 du
 eP
 bj
-bE
+bj
 bj
 bk
 bj
@@ -47428,7 +47377,7 @@ bm
 bj
 bj
 bj
-bE
+bj
 bj
 bj
 bj
@@ -48696,7 +48645,7 @@ IZ
 Hz
 bu
 bj
-bE
+bj
 bj
 bu
 jj
@@ -50029,7 +49978,7 @@ bj
 oo
 dy
 xA
-tr
+bj
 bu
 aN
 aN
@@ -51272,7 +51221,7 @@ bu
 Sa
 az
 bj
-bE
+bj
 bj
 hF
 bu
@@ -51312,7 +51261,7 @@ bu
 bj
 gj
 gq
-tr
+bj
 Bx
 bj
 bu
@@ -51363,7 +51312,7 @@ AE
 AE
 AE
 sG
-XX
+sG
 aa
 aa
 aa
@@ -51560,7 +51509,7 @@ mE
 BO
 qA
 vr
-LG
+Bx
 bu
 bu
 hZ
@@ -51620,7 +51569,7 @@ aG
 aG
 aG
 pR
-pR
+mt
 aa
 aa
 aa
@@ -51877,7 +51826,7 @@ aG
 aG
 sG
 pR
-pR
+DZ
 aa
 aa
 aa
@@ -52134,7 +52083,7 @@ aG
 aG
 sG
 pR
-pR
+DZ
 aa
 aa
 aa
@@ -52396,7 +52345,7 @@ At
 At
 At
 At
-mt
+At
 At
 aa
 aa
@@ -54897,7 +54846,7 @@ Qx
 ql
 ci
 bj
-Se
+bj
 bj
 LG
 ci
@@ -55426,7 +55375,7 @@ bj
 nx
 bj
 nx
-UU
+bj
 JY
 bu
 az
@@ -56425,7 +56374,7 @@ da
 Kg
 da
 Bv
-ax
+KW
 Jy
 gH
 HH
@@ -57192,7 +57141,7 @@ KW
 IB
 tD
 KW
-KW
+YA
 KW
 KW
 KW
@@ -57708,7 +57657,7 @@ tD
 Kg
 KW
 KW
-YA
+KW
 KW
 cj
 mq
@@ -58205,7 +58154,7 @@ aN
 bu
 Sy
 bj
-Je
+QY
 bl
 bj
 ci
@@ -58237,7 +58186,7 @@ XI
 bj
 bj
 dy
-gk
+bj
 bj
 dP
 bj
@@ -59531,7 +59480,7 @@ bj
 bu
 jw
 gl
-gk
+bj
 bj
 UU
 cA
@@ -61833,13 +61782,13 @@ az
 bu
 ji
 ji
-bj
+gk
 bj
 El
 bu
 Vc
 bj
-bE
+bj
 CK
 bu
 bj
@@ -61847,7 +61796,7 @@ VA
 ql
 SM
 Sl
-fG
+VA
 bj
 bu
 bj
@@ -62077,7 +62026,7 @@ bE
 bj
 bj
 bp
-bE
+bj
 bj
 bj
 bj
@@ -62090,7 +62039,7 @@ az
 bu
 TY
 dE
-Se
+bj
 bj
 dE
 bu
@@ -63904,7 +63853,7 @@ bu
 bj
 bj
 dP
-gk
+bj
 bj
 bl
 bj
@@ -64377,7 +64326,7 @@ az
 az
 bu
 Sy
-Yw
+ZA
 Of
 bj
 bj
@@ -64662,7 +64611,7 @@ jr
 bj
 iZ
 iZ
-Cr
+iZ
 bj
 rn
 bu
@@ -64925,7 +64874,7 @@ yk
 bu
 fb
 eX
-nJ
+eX
 eX
 fI
 fT

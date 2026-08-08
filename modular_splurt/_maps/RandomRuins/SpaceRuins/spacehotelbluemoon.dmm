@@ -961,9 +961,12 @@
 /obj/effect/turf_decal/siding/dark_red{
 	dir = 5
 	},
-/obj/machinery/door_timer{
-	pixel_y = 32;
-	id = "Hcell1"
+/obj/machinery/computer/security{
+	dir = 8;
+	network = list("hotel")
+	},
+/obj/structure/window/reinforced{
+	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/hotel/security)
@@ -2368,14 +2371,15 @@
 /turf/open/floor/plasteel/showroomfloor,
 /area/ruin/space/has_grav/bluemoon/hotel/bar)
 "mD" = (
-/obj/machinery/door/window/brigdoor/security/cell/northleft{
-	id = "Hcell1"
-	},
 /obj/structure/cable{
 	icon_state = "2-4"
 	},
 /obj/structure/cable{
 	icon_state = "2-8"
+	},
+/obj/machinery/door/window/brigdoor/security/cell/northleft{
+	id = "Hcell1";
+	req_access = "203"
 	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/hotel/security)
@@ -3242,6 +3246,9 @@
 	},
 /obj/effect/turf_decal/siding/dark_red{
 	dir = 1
+	},
+/obj/structure/chair/office/light{
+	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/hotel/security)

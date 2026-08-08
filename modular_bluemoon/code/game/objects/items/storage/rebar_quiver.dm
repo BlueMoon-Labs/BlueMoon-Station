@@ -41,3 +41,25 @@
 		if(14 to INFINITY)
 			icon_state = "syndie_quiver_3"
 	return ..()
+
+/obj/item/storage/bag/harpoon_quiver
+	name = "harpoon quiver"
+	desc = "A quiver for holding magnetic spears."
+	icon = 'modular_bluemoon/icons/obj/guns/quivers.dmi'
+	icon_state = "rebar_quiver"
+	item_state = "rebar_quiver"
+	slot_flags = ITEM_SLOT_BACK | ITEM_SLOT_BELT | ITEM_SLOT_SUITSTORE
+	w_class = WEIGHT_CLASS_NORMAL
+
+/obj/item/storage/bag/harpoon_quiver/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.max_w_class = WEIGHT_CLASS_NORMAL
+	STR.max_combined_w_class = 40
+	STR.max_items = 40
+	STR.display_numerical_stacking = TRUE
+	STR.can_hold = typecacheof(/obj/item/ammo_casing/caseless/magspear)
+
+/obj/item/storage/bag/harpoon_quiver/PopulateContents()
+	for(var/i in 1 to 40)
+		new /obj/item/ammo_casing/caseless/magspear(src)

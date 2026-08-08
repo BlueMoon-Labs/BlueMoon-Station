@@ -131,6 +131,7 @@
 #include "merge_type.dm"
 // #include "metabolizing.dm"
 #include "mob_elements.dm"
+#include "mod_suit_fixes.dm"
 #include "modular_map_loader.dm" //SPLURT EDIT
 #include "nightshift.dm"
 // #include "ntnetwork_tests.dm"
@@ -237,6 +238,7 @@
 #include "perf_cross_ports.dm"
 #include "perf_optimizations.dm"
 #include "ping_measurement.dm"
+#include "phobia_preference.dm"
 #include "psychosis_pools.dm"
 #include "preload_size_budgets.dm"
 #include "image_leak_audit.dm"

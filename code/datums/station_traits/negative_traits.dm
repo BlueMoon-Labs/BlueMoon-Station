@@ -17,6 +17,15 @@
 /datum/station_trait/distant_supply_lines/on_round_start()
 	SSeconomy.pack_price_modifier *= 3
 
+/datum/station_trait/cramped_escape_pods
+	name = "Cramped Escape Pods"
+	trait_type = STATION_TRAIT_NEGATIVE
+	weight = 5
+	show_in_report = TRUE
+	report_message = "Due to budget cuts, we have downsized your escape pods."
+	trait_to_give = STATION_TRAIT_SMALLER_PODS
+	blacklist = list(/datum/station_trait/luxury_escape_pods)
+
 /datum/station_trait/late_arrivals
 	name = "Late Arrivals"
 	trait_type = STATION_TRAIT_NEGATIVE
