@@ -274,12 +274,12 @@
 			new /obj/item/storage/box/syndie_kit/chemical (src) //  6
 			new /obj/item/gun/syringe/syndicate(src) //  3
 			new /obj/item/storage/fancy/cigarettes/derringer(src)
-			new /obj/item/reagent_containers/syringe/piercing/weak(src)
-			new /obj/item/reagent_containers/syringe/piercing/weak(src)
-			new /obj/item/reagent_containers/syringe/piercing/weak(src)
-			new /obj/item/reagent_containers/syringe/piercing/weak(src)
-			new /obj/item/reagent_containers/syringe/piercing/weak(src)
-			new /obj/item/reagent_containers/syringe/piercing/weak(src)//  6
+			new /obj/item/reagent_containers/syringe/piercing(src)
+			new /obj/item/reagent_containers/syringe/piercing(src)
+			new /obj/item/reagent_containers/syringe/piercing(src)
+			new /obj/item/reagent_containers/syringe/piercing(src)
+			new /obj/item/reagent_containers/syringe/piercing(src)
+			new /obj/item/reagent_containers/syringe/piercing(src)//  6
 
 		if("launchman") // 29 tc worth
 			new /obj/item/storage/briefcase/launchpad(src) // 6
