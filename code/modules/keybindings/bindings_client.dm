@@ -148,7 +148,7 @@
 	var/list/expired_keys = keybindings_expired_movement_keys(keys_held, movement_keys, last_movement_key_repeat, now)
 	if(!length(expired_keys))
 		return FALSE
-	for(var/key in expired_keys)
+	for(var/key as anything in expired_keys)
 		keyUp(key)
 	last_movement_key_repeat = null
 	log_game("INPUT: [key_name(src)] force-released stale movement key(s): [expired_keys.Join(", ")].")

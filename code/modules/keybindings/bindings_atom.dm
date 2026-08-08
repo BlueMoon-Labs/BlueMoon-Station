@@ -5,7 +5,7 @@
 /proc/keybindings_has_held_movement_key(list/keys_held, list/movement_keys)
 	if(!keys_held || !movement_keys)
 		return FALSE
-	for(var/key in keys_held)
+	for(var/key as anything in keys_held)
 		if(movement_keys[key])
 			return TRUE
 	return FALSE
@@ -17,7 +17,7 @@
 	. = list()
 	if(isnull(last_repeat) || now < last_repeat + timeout || !keys_held || !movement_keys)
 		return
-	for(var/key in keys_held)
+	for(var/key as anything in keys_held)
 		if(movement_keys[key])
 			. += key
 

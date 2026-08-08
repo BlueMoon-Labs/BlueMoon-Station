@@ -184,7 +184,7 @@
 /proc/keybindings_add_movement_repeat_macros(list/macroset, list/movement_keys, allow_any_fallback)
 	if(!macroset || !movement_keys)
 		return
-	for(var/key in movement_keys)
+	for(var/key as anything in movement_keys)
 		var/keydown_command = "\"KeyDown [key]\""
 		var/existing_command = macroset[key]
 		if(existing_command && existing_command != keydown_command)
