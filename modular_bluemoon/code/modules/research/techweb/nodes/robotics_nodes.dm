@@ -19,6 +19,11 @@
 
 // Модули для киборгов
 
+// Модуль Доминатрикс доступен в фабрикаторе с самого начала
+/datum/techweb_node/cyborg/New()
+	. = ..()
+	design_ids += "borg_dominatrix"
+
 /datum/techweb_node/cyborg_upg_advmedtools
 	id = "cyborg_upg_advmedtools"
 	display_name = "Cyborg Upgrades: Advanced Surgery Tools"
