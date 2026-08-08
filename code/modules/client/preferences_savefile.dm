@@ -1907,6 +1907,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	cit_character_pref_load(S)
 
+	sand_character_pref_load(S)
+
 	splurt_character_pref_load(S)
 
 	bluemoon_character_pref_load(S)
@@ -2244,6 +2246,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		S["tcg_decks"] << safe_json_encode(list())
 
 	cit_character_pref_save(S)
+
+	sand_character_pref_save(S)
 
 	splurt_character_pref_save(S)
 

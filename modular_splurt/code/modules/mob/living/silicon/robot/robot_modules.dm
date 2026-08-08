@@ -124,7 +124,8 @@
 			"BootyF" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "bootystandard"),
 			"BootyM" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "bootystandardM"),
 			"BootyS" = image(icon = 'modular_splurt/icons/mob/robots.dmi', icon_state = "bootystandardS"),
-			"Dullahan (Taur)" = image(icon = 'modular_bluemoon/icons/mob/robot/dullahan_taur.dmi', icon_state = "dullahantaurclown")
+			"Dullahan (Taur)" = image(icon = 'modular_bluemoon/icons/mob/robot/dullahan_taur.dmi', icon_state = "dullahantaurclown"),
+			"Kitty Clown" = image(icon = 'modular_bluemoon/icons/mob/robot/kitty_clown.dmi', icon_state = "kittyclown")
 		)
 		clown_icons = sort_list(clown_icons)
 	var/clown_borg_icon = show_radial_menu(R, R , clown_icons, custom_check = CALLBACK(src, PROC_REF(check_menu), R), radius = 42, require_near = TRUE)
@@ -171,6 +172,12 @@
 			hat_offset = DULLAHAN_TAUR_HAT_OFFSET
 			has_snowflake_deadsprite = TRUE
 			hasrest = TRUE
+		if("Kitty Clown")
+			cyborg_base_icon = "kittyclown"
+			cyborg_icon_override = 'modular_bluemoon/icons/mob/robot/kitty_clown.dmi'
+			hat_offset = HOUND_HAT_OFFSET
+			hasrest = TRUE
+			dogborg = TRUE
 	return ..()
 
 /// Cargo Borgs! ///

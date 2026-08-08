@@ -16,18 +16,29 @@
 	var/message
 	var/interaction_type = CUSTOM_INTERACTION_TYPE_NORMAL
 	var/arousal_level = CUSTOM_AROUSAL_NONE
+	var/partner_arousal_level = CUSTOM_AROUSAL_NONE
+	var/self_orgasm = FALSE
+	var/partner_orgasm = FALSE
+	var/scope = CUSTOM_INTERACTION_SCOPE_BOTH
+	var/required_body_parts = NONE
 	var/requires_tail = FALSE
 	var/requires_telekinesis = FALSE
 
-/datum/interaction/custom/proc/get_lust_amount()
-	switch(arousal_level)
+/datum/interaction/custom/proc/get_lust_amount(level = arousal_level)
+	switch(level)
 		if(CUSTOM_AROUSAL_LIGHT)
-			return 10
+			return 6
 		if(CUSTOM_AROUSAL_MEDIUM)
-			return 25
+			return 14
 		if(CUSTOM_AROUSAL_STRONG)
-			return 50
+			return 28
 	return 0
+
+/datum/interaction/custom/proc/try_moan(mob/living/M)
+	var/datum/preferences/prefs = M.client?.prefs
+	if(!prefs || !prefs.use_moaning_multiplier || !prob(prefs.moaning_multiplier))
+		return
+	M.moan()
 
 /datum/interaction/custom/proc/get_type_label()
 	switch(interaction_type)
@@ -39,8 +50,8 @@
 			return "Грязное"
 	return "Действие"
 
-/datum/interaction/custom/proc/get_arousal_label()
-	switch(arousal_level)
+/datum/interaction/custom/proc/get_arousal_label(level = arousal_level)
+	switch(level)
 		if(CUSTOM_AROUSAL_LIGHT)
 			return "Малое"
 		if(CUSTOM_AROUSAL_MEDIUM)
@@ -49,11 +60,83 @@
 			return "Сильное"
 	return "Нет"
 
+/datum/interaction/custom/proc/get_scope_label()
+	switch(scope)
+		if(CUSTOM_INTERACTION_SCOPE_SELF)
+			return "На себе"
+		if(CUSTOM_INTERACTION_SCOPE_OTHERS)
+			return "Только на других"
+	return "На обоих"
+
+/datum/interaction/custom/proc/is_body_part_exposed(mob/living/M, requirement)
+	switch(requirement)
+		if(INTERACTION_REQUIRE_ANUS)
+			return M.has_anus() == HAS_EXPOSED_GENITAL
+		if(INTERACTION_REQUIRE_BALLS)
+			return M.has_balls() == HAS_EXPOSED_GENITAL
+		if(INTERACTION_REQUIRE_BELLY)
+			return M.has_belly() == HAS_EXPOSED_GENITAL
+		if(INTERACTION_REQUIRE_BREASTS)
+			return M.has_breasts() == HAS_EXPOSED_GENITAL
+		if(INTERACTION_REQUIRE_EARS)
+			if(M.getorganslot(ORGAN_SLOT_EARS))
+				return M.has_ears() == HAS_EXPOSED_GENITAL
+			return FALSE
+		if(INTERACTION_REQUIRE_EYES)
+			if(M.getorganslot(ORGAN_SLOT_EYES))
+				return M.has_eyes() == HAS_EXPOSED_GENITAL
+			return FALSE
+		if(INTERACTION_REQUIRE_FEET)
+			return M.has_feet() == HAS_EXPOSED_GENITAL
+		if(INTERACTION_REQUIRE_PENIS)
+			return M.has_penis(TRUE) == HAS_EXPOSED_GENITAL
+		if(INTERACTION_REQUIRE_VAGINA)
+			return M.has_vagina() == HAS_EXPOSED_GENITAL
+		if(INTERACTION_REQUIRE_TAIL)
+			return M.has_tail()
+	return TRUE
+
+/datum/interaction/custom/proc/get_body_parts_label()
+	var/list/labels = list()
+	for(var/requirement in CUSTOM_INTERACTION_BODY_PART_REQUIREMENTS)
+		if(!(required_body_parts & requirement))
+			continue
+		switch(requirement)
+			if(INTERACTION_REQUIRE_ANUS)
+				labels += "анус"
+			if(INTERACTION_REQUIRE_BALLS)
+				labels += "яйца"
+			if(INTERACTION_REQUIRE_BELLY)
+				labels += "живот"
+			if(INTERACTION_REQUIRE_BREASTS)
+				labels += "грудь"
+			if(INTERACTION_REQUIRE_EARS)
+				labels += "уши"
+			if(INTERACTION_REQUIRE_EYES)
+				labels += "глаза"
+			if(INTERACTION_REQUIRE_FEET)
+				labels += "ноги"
+			if(INTERACTION_REQUIRE_PENIS)
+				labels += "член"
+			if(INTERACTION_REQUIRE_VAGINA)
+				labels += "вагина"
+			if(INTERACTION_REQUIRE_TAIL)
+				labels += "хвост"
+	return length(labels) ? "оголено: [english_list(labels, nothing_text = "", and_text = ", ")]" : "всегда доступно"
+
 /datum/interaction/custom/proc/sanitize_values()
 	name = copytext(strip_html(name), 1, MAX_CUSTOM_INTERACTION_NAME_LENGTH + 1)
 	message = copytext(strip_html(message), 1, MAX_CUSTOM_INTERACTION_MESSAGE_LENGTH + 1)
 	interaction_type = sanitize_inlist(interaction_type, CUSTOM_INTERACTION_TYPES, CUSTOM_INTERACTION_TYPE_NORMAL)
 	arousal_level = sanitize_integer(arousal_level, CUSTOM_AROUSAL_NONE, CUSTOM_AROUSAL_MAX, CUSTOM_AROUSAL_NONE)
+	partner_arousal_level = sanitize_integer(partner_arousal_level, CUSTOM_AROUSAL_NONE, CUSTOM_AROUSAL_MAX, CUSTOM_AROUSAL_NONE)
+	self_orgasm = !!self_orgasm
+	partner_orgasm = !!partner_orgasm
+	scope = sanitize_inlist(scope, CUSTOM_INTERACTION_SCOPES, CUSTOM_INTERACTION_SCOPE_BOTH)
+	var/allowed_body_parts = NONE
+	for(var/requirement in CUSTOM_INTERACTION_BODY_PART_REQUIREMENTS)
+		allowed_body_parts |= requirement
+	required_body_parts = sanitize_integer(required_body_parts, 0, allowed_body_parts, 0) & allowed_body_parts
 	requires_tail = !!requires_tail
 	requires_telekinesis = !!requires_telekinesis
 	max_distance = sanitize_integer(max_distance, 1, 3, 1)
@@ -86,12 +169,21 @@
 		return FALSE
 	if(requires_telekinesis && !(has_telekinesis(user) || has_telekinesis(target)))
 		return FALSE
+	for(var/requirement in CUSTOM_INTERACTION_BODY_PART_REQUIREMENTS)
+		if(!(required_body_parts & requirement))
+			continue
+		if(!is_body_part_exposed(user, requirement) && !is_body_part_exposed(target, requirement))
+			return FALSE
+	if(scope == CUSTOM_INTERACTION_SCOPE_SELF && user != target)
+		return FALSE
+	if(scope == CUSTOM_INTERACTION_SCOPE_OTHERS && user == target)
+		return FALSE
 	return TRUE
 
 /datum/interaction/custom/proc/check_requirements(mob/living/user, mob/living/target, silent = TRUE)
 	if(!pass_requirement_gate(user, target))
 		if(!silent)
-			to_chat(user, span_warning("Для этого действия нужен хвост или телекинез у кого-то из вас."))
+			to_chat(user, span_warning("Требования для этого действия не выполнены: [get_body_parts_label()] у кого-то из вас."))
 		return FALSE
 	if(target.client && !target.client.prefs.custom_verb_consent)
 		if(!silent)
@@ -172,10 +264,24 @@
 		if(user != target && !HAS_TRAIT(target, TRAIT_LEWD_JOB) && !is_hidden)
 			new /obj/effect/temp_visual/heart(target.loc)
 	var/lust_amount = get_lust_amount()
-	if(lust_amount && !QDELETED(target))
-		target.add_lust(lust_amount)
+	if(lust_amount && !QDELETED(user))
+		if(self_orgasm)
+			user.handle_post_sex(lust_amount, null, user == target ? null : target)
+		else
+			user.add_lust(lust_amount)
+			try_moan(user)
+	var/partner_lust_amount = get_lust_amount(partner_arousal_level)
+	if(partner_lust_amount && !QDELETED(target))
+		if(partner_orgasm)
+			target.handle_post_sex(partner_lust_amount, null, target == user ? null : user)
+		else
+			target.add_lust(partner_lust_amount)
+			try_moan(target)
 	if(apply_cooldown)
 		COOLDOWN_START(user, last_interaction_time, 0.5 SECONDS)
+	if(user != target)
+		SEND_SIGNAL(user, COMSIG_INTERACTION_ADJACENT, target)
+		SEND_SIGNAL(target, COMSIG_INTERACTION_ADJACENT, user)
 	return TRUE
 
 /datum/controller/subsystem/processing/interactions/proc/get_custom_interaction(mob/living/owner_mob, key)

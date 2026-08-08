@@ -39,7 +39,6 @@
 		return FALSE
 	WRITE_FILE(.["favorite_interactions"],	favorite_interactions)
 
-	WRITE_FILE(.["custom_interactions"], custom_interactions)
 	WRITE_FILE(.["custom_verb_consent"], custom_verb_consent)
 
 	WRITE_FILE(.["use_arousal_multiplier"],	use_arousal_multiplier)
@@ -78,21 +77,6 @@
 			LAZYREMOVE(favorite_interactions, interaction)
 			continue
 
-	.["custom_interactions"] >> custom_interactions
-	custom_interactions = SANITIZE_LIST(custom_interactions)
-	for(var/i in length(custom_interactions) to 1 step -1)
-		var/datum/interaction/custom/custom = custom_interactions[i]
-		if(!istype(custom))
-			custom_interactions.Cut(i, i + 1)
-			continue
-		custom.sanitize_values()
-		if(!custom.name || !custom.message)
-			custom_interactions.Cut(i, i + 1)
-			continue
-	var/max_customs = get_custom_interaction_limit()
-	if(length(custom_interactions) > max_customs)
-		custom_interactions.Cut(max_customs + 1)
-
 	.["custom_verb_consent"] >> custom_verb_consent
 	custom_verb_consent = sanitize_integer(custom_verb_consent, 0, 1, TRUE)
 
@@ -111,3 +95,22 @@
 	.["metadollar_pending_items"] >> metadollar_pending_items
 	metadollar_pending_items = SANITIZE_LIST(metadollar_pending_items)
 	return .
+
+/datum/preferences/proc/sand_character_pref_load(savefile/S)
+	S["custom_interactions"] >> custom_interactions
+	custom_interactions = SANITIZE_LIST(custom_interactions)
+	for(var/i in length(custom_interactions) to 1 step -1)
+		var/datum/interaction/custom/custom = custom_interactions[i]
+		if(!istype(custom))
+			custom_interactions.Cut(i, i + 1)
+			continue
+		custom.sanitize_values()
+		if(!custom.name || !custom.message)
+			custom_interactions.Cut(i, i + 1)
+			continue
+	var/max_customs = get_custom_interaction_limit()
+	if(length(custom_interactions) > max_customs)
+		custom_interactions.Cut(max_customs + 1)
+
+/datum/preferences/proc/sand_character_pref_save(savefile/S)
+	WRITE_FILE(S["custom_interactions"], custom_interactions)
