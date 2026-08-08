@@ -38079,7 +38079,7 @@
 	height = 10;
 	shuttle_id = "mining_home";
 	name = "mining shuttle bay";
-	roundstart_template = /datum/map_template/shuttle/mining/kilo;
+	roundstart_template = /datum/map_template/shuttle/mining/large;
 	width = 7
 	},
 /turf/open/space/basic,
@@ -54000,7 +54000,7 @@
 	},
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_y = 22;
+	pixel_y = 22
 	},
 /turf/open/floor/plasteel/showroomfloor,
 /area/security/prison)
@@ -83167,7 +83167,7 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_y = -28;
+	pixel_y = -28
 	},
 /obj/structure/cable{
 	icon_state = "1-4"
