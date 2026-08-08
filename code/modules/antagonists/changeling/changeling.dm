@@ -451,27 +451,29 @@
 			objectives += download_objective
 
 	var/list/active_ais = active_ais()
-	if(active_ais.len && prob(100/GLOB.joined_player_list.len))
-		var/datum/objective/destroy/destroy_objective = new
-		destroy_objective.owner = owner
-		destroy_objective.find_target()
-		objectives += destroy_objective
-	else
-		var/datum/objective/assassinate/once/kill_objective = new
-		kill_objective.owner = owner
-		if(team_mode) //No backstabbing while in a team
-			kill_objective.find_target_by_role(role = ROLE_CHANGELING, role_type = 1, invert = 1)
+	var/tier = bm_traitor_violence_tier()
+	if(tier != BM_TRAITOR_VIOLENCE_NONE)
+		if(active_ais.len && prob(100/GLOB.joined_player_list.len) && tier == BM_TRAITOR_VIOLENCE_FULL)
+			var/datum/objective/destroy/destroy_objective = new
+			destroy_objective.owner = owner
+			destroy_objective.find_target()
+			objectives += destroy_objective
 		else
-			kill_objective.find_target()
-		objectives += kill_objective
+			var/datum/objective/assassinate/once/kill_objective = new
+			kill_objective.owner = owner
+			if(team_mode) //No backstabbing while in a team
+				kill_objective.find_target_by_role(role = ROLE_CHANGELING, role_type = 1, invert = 1)
+			else
+				kill_objective.find_target()
+			objectives += kill_objective
 
-		if(!(locate(/datum/objective/escape) in objectives) && escape_objective_possible && prob(50))
-			var/datum/objective/escape/escape_with_identity/identity_theft = new
-			identity_theft.owner = owner
-			identity_theft.target = kill_objective.target
-			identity_theft.update_explanation_text()
-			objectives += identity_theft
-			escape_objective_possible = FALSE
+			if(!(locate(/datum/objective/escape) in objectives) && escape_objective_possible && prob(50))
+				var/datum/objective/escape/escape_with_identity/identity_theft = new
+				identity_theft.owner = owner
+				identity_theft.target = kill_objective.target
+				identity_theft.update_explanation_text()
+				objectives += identity_theft
+				escape_objective_possible = FALSE
 
 	if (!(locate(/datum/objective/escape) in objectives) && escape_objective_possible)
 		if(prob(50))
