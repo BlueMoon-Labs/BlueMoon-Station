@@ -27,35 +27,11 @@
 
 /datum/traitor_class/human/forge_single_objective(datum/antagonist/traitor/T)
 	.=1
-	var/assassin_prob = 50
 	var/datum/game_mode/dynamic/mode
 	if(istype(SSticker.mode,/datum/game_mode/dynamic))
 		mode = SSticker.mode
-		assassin_prob = max(0,mode.threat_level-20)
-	if(GLOB.round_type == ROUNDTYPE_DYNAMIC_LIGHT)
-		assassin_prob = 0
-	if(prob(assassin_prob))
-		var/list/active_ais = active_ais()
-		if(active_ais.len && prob(100/GLOB.joined_player_list.len))
-			var/datum/objective/destroy/destroy_objective = new
-			destroy_objective.owner = T.owner
-			destroy_objective.find_target()
-			T.add_objective(destroy_objective)
-		else if(prob(max(0,assassin_prob-20)))
-			var/datum/objective/assassinate/kill_objective = new
-			kill_objective.owner = T.owner
-			kill_objective.find_target()
-			T.add_objective(kill_objective)
-		else if(prob(20))
-			var/datum/objective/assassinate/internal/kill_objective = new
-			kill_objective.owner = T.owner
-			kill_objective.find_target()
-			T.add_objective(kill_objective)
-		else
-			var/datum/objective/assassinate/once/kill_objective = new
-			kill_objective.owner = T.owner
-			kill_objective.find_target()
-			T.add_objective(kill_objective)
+	if(try_forge_assassinate_objective(T, mode))
+		return TRUE
 	else
 		if(prob(14))
 			var/datum/objective/protect/protect_objective = new

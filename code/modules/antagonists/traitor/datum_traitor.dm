@@ -61,8 +61,8 @@
 			var/datum/traitor_class/class = GLOB.traitor_classes[C]
 			if(class.min_players > length(GLOB.joined_player_list))
 				continue
-			var/weight = LOGISTIC_FUNCTION(1.5*class.weight,0,class.chaos,0)
-			weights[C] = weight * 1000
+			var/weight = class.get_selection_weight()
+			weights[C] = weight
 	var/choice = pickweight(weights)
 	if(!choice)
 		choice = TRAITOR_HUMAN // it's an "easter egg"
