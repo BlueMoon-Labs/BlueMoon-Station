@@ -3,26 +3,29 @@
 	employer = "InteQ"
 	weight = 25
 	chaos = -5
-	var/assassin_prob = 25
+	assassin_prob = 25
+
+/datum/traitor_class/human/subterfuge/try_forge_assassinate_objective(datum/antagonist/traitor/T, datum/game_mode/dynamic/mode)
+	var/effective_prob = get_effective_assassin_prob(mode)
+	if(!effective_prob || !prob(effective_prob))
+		return FALSE
+	if(prob(25))
+		var/datum/objective/assassinate/internal/kill_objective = new
+		kill_objective.owner = T.owner
+		kill_objective.find_target()
+		T.add_objective(kill_objective)
+	else
+		var/datum/objective/assassinate/once/kill_objective = new
+		kill_objective.owner = T.owner
+		kill_objective.find_target()
+		T.add_objective(kill_objective)
+	return TRUE
 
 /datum/traitor_class/human/subterfuge/forge_single_objective(datum/antagonist/traitor/T)
 	var/datum/game_mode/dynamic/mode
 	if(istype(SSticker.mode,/datum/game_mode/dynamic))
 		mode = SSticker.mode
-		assassin_prob = max(0,mode.threat_level-20)
-	if(GLOB.round_type == ROUNDTYPE_DYNAMIC_LIGHT)
-		assassin_prob = 0
-	if(prob(assassin_prob))
-		if(prob(25))
-			var/datum/objective/assassinate/internal/kill_objective = new
-			kill_objective.owner = T.owner
-			kill_objective.find_target()
-			T.add_objective(kill_objective)
-		else
-			var/datum/objective/assassinate/once/kill_objective = new
-			kill_objective.owner = T.owner
-			kill_objective.find_target()
-			T.add_objective(kill_objective)
+	if(try_forge_assassinate_objective(T, mode))
 		return TRUE
 	else
 		var/list/weights = list()

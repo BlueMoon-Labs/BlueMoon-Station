@@ -22,15 +22,6 @@
 	show_in_antagpanel = TRUE
 	antagpanel_category = "Changeling"
 	roundend_category = "changelings"
-	var/datum/objective/changeling_zombie_infect/infect_objective
-
-/datum/antagonist/changeling_zombie/on_gain()
-	var/datum/objective/changeling_zombie_infect/objec = new
-	objec.owner = owner
-	objec.update_explanation_text()
-	objectives += objec
-	infect_objective = objec
-	. = ..()
 
 /datum/antagonist/changeling_zombie/greet()
 	var/zombified_text = ""
@@ -38,31 +29,16 @@
 	zombified_text += "<hr>"
 	zombified_text += "<div style='margin-bottom:6px'>Вы преобразились ужасным образом и вами движет [span_danger("жажда плоти")]... Вы мутант, порождённый генокрадом!</div>"
 	zombified_text += "<div style='margin-bottom:6px'>Рассудок помутняется и кипящее ощущение адреналина под мутировавшей кожей злит вас.</div>"
-	zombified_text += "<div style='margin-bottom:6px'>Вид окружающих живых существ вызывает у вас агрессию. Внутри начинают бороться два единственных позыва: \
-	[span_purple("заразить")] или [span_danger("разорвать на куски")].</div>"
-	zombified_text += "Заразу можно распространять через ваши мутировавшие руки. Мёртвые встанут вновь."
+	zombified_text += "<div style='margin-bottom:6px'>Вид окружающих живых существ вызывает у вас агрессию — [span_danger("разорвать на куски")].</div>"
 	to_chat(owner.current, examine_block(zombified_text))
-	owner.announce_objectives()
 	owner.current.playsound_local(get_turf(owner.current), 'sound/effects/lingreadapt.ogg', 75)
 
 /datum/antagonist/changeling_zombie/farewell()
 	to_chat(owner.current, span_userdanger("Безумие внутри вашего умирающего мозга утихает. Что происх-..."))
 
-/datum/objective/changeling_zombie_infect
-	var/required_infections = 5
-	var/total_infections = 0
-	explanation_text = "Заразите хотя бы 5 гуманоидов своими клинками."
-
-/datum/objective/changeling_zombie_infect/update_explanation_text()
-	explanation_text = "Заразите хотя бы [required_infections] гуманоидов своими клинками."
-
-/datum/objective/changeling_zombie_infect/check_completion()
-	return total_infections >= required_infections
-
 /datum/component/changeling_zombie_infection
 	var/zombified = FALSE
 	var/can_cure = FALSE
-	var/was_changeling_husked = FALSE
 	var/list/obj/item/melee/arm_blade/changeling_zombie/arm_blades = list()
 	var/obj/item/clothing/suit/armor/changeling/weak/armor
 	var/obj/item/clothing/head/helmet/changeling/weak/armor_head
@@ -79,7 +55,6 @@
 	infection_timestamp = world.time
 	if(HAS_TRAIT_FROM(parent, TRAIT_HUSK, CHANGELING_DRAIN))
 		COOLDOWN_START(src, transformation_grace_period, 30 SECONDS)
-		was_changeling_husked = TRUE
 	if(ishuman(parent))
 		var/mob/living/carbon/human/host = parent
 		host.ForceContractDisease(new /datum/disease/changeling_virus)
@@ -234,7 +209,6 @@
 
 /datum/component/changeling_zombie_infection/proc/generate_armblade(mob/living/carbon/human/host, hand_index)
 	var/obj/item/melee/arm_blade/changeling_zombie/arm_blade = new(host.loc)
-	arm_blade.infect_chance = was_changeling_husked ? CHANGELING_ZOMBIE_INFECT_CHANCE_LESSER : CHANGELING_ZOMBIE_INFECT_CHANCE
 	ADD_TRAIT(arm_blade, TRAIT_NODROP, TRAIT_CHANGELING_ZOMBIE)
 	RegisterSignal(arm_blade, COMSIG_PARENT_QDELETING, PROC_REF(on_armblade_delete))
 	host.put_in_hand(arm_blade, hand_index, forced = TRUE)
@@ -279,30 +253,13 @@
 	name = "warped arm blade"
 	desc = "Неправильно срощенные кости и сухожилия — все ещё голодные."
 	force = 21
-	var/infect_chance = 100
 	COOLDOWN_DECLARE(sound_cooldown)
-	COOLDOWN_DECLARE(infection_cooldown)
 
 /obj/item/melee/arm_blade/changeling_zombie/attack(mob/living/target_mob, mob/living/user)
 	. = ..()
 	if(COOLDOWN_FINISHED(src, sound_cooldown) && prob(40))
 		playsound(src, pick('sound/hallucinations/growl1.ogg', 'sound/hallucinations/growl2.ogg'), 45, TRUE)
 		COOLDOWN_START(src, sound_cooldown, 3 SECONDS)
-	if(target_mob.stat == DEAD || !user || !ishuman(target_mob))
-		return
-	if(!prob(infect_chance) || !COOLDOWN_FINISHED(src, infection_cooldown))
-		return
-	COOLDOWN_START(src, infection_cooldown, CHANGELING_ZOMBIE_REINFECT_DELAY)
-	if(!can_become_changeling_zombie(target_mob))
-		return
-	var/mob/living/carbon/human/V = target_mob
-	if(V.GetComponent(/datum/component/changeling_zombie_infection))
-		return
-	V.AddComponent(/datum/component/changeling_zombie_infection)
-	user.visible_message(span_danger("Рана на теле [V] вспенивается – инфекция развивается внутри неё!"))
-	var/datum/antagonist/changeling_zombie/us = user.mind?.has_antag_datum(/datum/antagonist/changeling_zombie)
-	if(us?.infect_objective)
-		us.infect_objective.total_infections += 1
 
 /obj/item/clothing/suit/armor/changeling/weak
 	armor = list(MELEE = 35, BULLET = 30, LASER = 15, ENERGY = 20, BOMB = 5, BIO = 4, RAD = 0, FIRE = 100, ACID = 100)
