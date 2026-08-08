@@ -13,7 +13,7 @@
 
 /// Types of /area considered the InteQ battlefield for gateways & recalls (extend when the outpost moves to CC)
 GLOBAL_LIST_INIT(pact_siege_battle_area_types, list(\
-	/area/InteQ_ship/shipPACT,\
+	/area/InteQ_ship,\
 	/area/InteQ_ship/SOLVED,\
 	/area/InteQ_ship/ship6,\
 	/area/InteQ_ship/ship5,\
