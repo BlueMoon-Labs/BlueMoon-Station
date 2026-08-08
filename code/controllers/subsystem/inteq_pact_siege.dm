@@ -18,6 +18,8 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	var/datum/gateway_destination/point/pact_siege_battle/battle_dest
 	var/datum/gateway_destination/point/pact_siege_station_return/station_return_dest
 	var/obj/machinery/gateway/away/pact_siege/return_gateway
+	/// CentCom siege announcement has been sent — gateway destination unlocks after this
+	var/gateway_announced = FALSE
 	var/list/datum/weakref/defenders = list()
 	var/list/datum/weakref/attackers = list()
 
@@ -206,7 +208,6 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	battle_dest.wait = roundstart ? CONFIG_GET(number/gateway_delay) : 0
 	battle_dest.enabled = TRUE
 	battle_dest.owner = src
-	GLOB.gateway_destinations += battle_dest
 
 	var/turf/open/sample = turfs[1]
 	siege_z = sample.z
@@ -216,16 +217,6 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	active = TRUE
 
 	setup_battlefield_return_gateway()
-
-	if(GLOB.the_gateway)
-		if(!roundstart)
-			GLOB.the_gateway.AddElement(/datum/element/pact_siege_red_gateway)
-			GLOB.the_gateway.teleportion_possible = TRUE
-		GLOB.the_gateway.update_appearance()
-		GLOB.the_gateway.process()
-	else if(roundstart)
-		message_admins("PACT siege: станция без GLOB.the_gateway — пункт назначения осады только в консоли врат.")
-
 	register_existing_defenders()
 
 	priority_announce(
@@ -236,6 +227,18 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 		null,
 		TRUE,
 	)
+	gateway_announced = TRUE
+	GLOB.gateway_destinations += battle_dest
+
+	if(GLOB.the_gateway)
+		if(!roundstart)
+			GLOB.the_gateway.AddElement(/datum/element/pact_siege_red_gateway)
+			GLOB.the_gateway.teleportion_possible = TRUE
+		GLOB.the_gateway.update_appearance()
+		GLOB.the_gateway.process()
+	else if(roundstart)
+		message_admins("PACT siege: станция без GLOB.the_gateway — пункт назначения осады только в консоли врат.")
+
 	if(roundstart)
 		message_admins("PACT siege: автоматическая активация roundstart. Поле боя: [length(turfs)] турфов, z=[siege_z].")
 		log_game("PACT siege auto-activated at roundstart; battlefield turfs=[length(turfs)] z=[siege_z].")
@@ -304,6 +307,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	attackers.Cut()
 	defenders.Cut()
 	defenders_ever_registered = FALSE
+	gateway_announced = FALSE
 	siege_z = 0
 	started_at = 0
 	end_time = 0
@@ -333,6 +337,16 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 
 /datum/gateway_destination/point/pact_siege_battle/deactivate(obj/machinery/gateway/deactivated)
 	owner?.on_station_siege_gateway_closed()
+
+/datum/gateway_destination/point/pact_siege_battle/is_available()
+	if(!owner?.gateway_announced)
+		return FALSE
+	return ..()
+
+/datum/gateway_destination/point/pact_siege_battle/get_available_reason()
+	if(!owner?.gateway_announced)
+		return "Ожидание объявления Центрального Командования."
+	return ..()
 
 /datum/gateway_destination/point/pact_siege_battle/incoming_pass_check(atom/movable/AM)
 	if(!isliving(AM))
