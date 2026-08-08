@@ -26,6 +26,7 @@
 		#include "map_files\bluemoon_maps\icemoonstation.dmm"
 		// #include "modular_bluemoon\_maps\PrisonStation\PrisonStation.dmm"
 		#include "splurt_maps\map_files\4Nalstation\4Nal_station.dmm"
+		#include "map_files\generic\Intek-base(pvp)"
 		#ifdef CIBUILDING
 			#include "templates.dm"
 		#endif
