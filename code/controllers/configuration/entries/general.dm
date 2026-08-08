@@ -414,9 +414,11 @@
 	default = FALSE
 
 /// Sleeping edges: осевшие пары соседних турфов пропускают compare/share по
-/// ревизиям смесей. Экспериментальный перф-флаг, выключен до giant-hall A/B.
+/// ревизиям смесей. A/B: giant-hall нейтрален в пределах шума, осевшая комната
+/// -22% на турф-цикл - профиль затяжных разгермов (раунды 9906/9915). Выключить
+/// на живом мире можно строкой "ATMOS_SLEEPING_EDGES 0" - кэши сбрасываются сами.
 /datum/config_entry/flag/atmos_sleeping_edges
-	default = FALSE
+	default = TRUE
 
 /// Turf-to-turf heat conduction through solids (superconduction). Registration
 /// starts only above MINIMUM_TEMPERATURE_START_SUPERCONDUCTION, so a station at

@@ -4,7 +4,7 @@
 // даже compare(), пока ревизии смесей обоих концов не изменились. Контракт
 // инвалидации: каждый мутатор gas_mixture бампает mutation_rev, пересчёт
 // соседства (ImmediateCalculateAdjacentTurfs) сбрасывает кэши пары. Фича за
-// флагом SSair.sleeping_edges_enabled (конфиг atmos_sleeping_edges, дефолт OFF).
+// флагом SSair.sleeping_edges_enabled (конфиг atmos_sleeping_edges, дефолт ON).
 
 /datum/unit_test/atmos_sleeping_edges
 	priority = TEST_LONGER

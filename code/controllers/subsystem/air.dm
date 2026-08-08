@@ -151,9 +151,10 @@ SUBSYSTEM_DEF(air)
 	var/equalize_valve_mode = FALSE
 	// Sleeping edges (фича-флаг, CONFIG_GET(flag/atmos_sleeping_edges)): осевшие
 	// одногрупповые пары турфов кэшируют ревизии смесей и пропускают
-	// compare/share, пока оба конца не изменились. Выключено по умолчанию до
-	// giant-hall A/B; безопасно переключать на живом мире - кэши инвалидируются
-	// ревизиями сами.
+	// compare/share, пока оба конца не изменились. Включено по умолчанию
+	// (giant-hall A/B нейтрален, осевшая комната -22%/турф-цикл); безопасно
+	// переключать на живом мире - кэши инвалидируются ревизиями сами. FALSE
+	// здесь - только до чтения конфига в Initialize.
 	var/sleeping_edges_enabled = FALSE
 	// Whether turf-to-turf heat exchanging should be enabled. Set from
 	// CONFIG_GET(flag/atmos_heat_enabled) at init - never write it directly,
