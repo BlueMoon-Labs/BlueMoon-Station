@@ -864,12 +864,39 @@
 	faction_name = owner.real_name
 	return ..()
 
+/**
+ * Гасит персональную обиду фауны на носителя ауры.
+ *
+ * CanAttack проверяет `foes[цель]` ПЕРЕД общей фракцией, поэтому одной общей фракции мало:
+ * тот, кого носитель хоть раз задел предметом или подстрелил, остаётся враждебным. Срока
+ * у foes нет вообще - запись живёт до смерти моба. Именно отсюда "работает не на всей фауне".
+ * Лазарус-инъектор чистит обиды по той же причине, только целиком (clear_hostile_aggro);
+ * здесь прощаем адресно, чтобы не сбрасывать обиды на посторонних.
+ */
+/datum/status_effect/stabilized/pink/proc/forgive_grudge(mob/living/simple_animal/animal)
+	var/mob/living/simple_animal/hostile/grudge_holder = animal
+	if(!istype(grudge_holder))
+		return
+	if(grudge_holder.foes[owner] || (owner in grudge_holder.enemies))
+		//Порядок важен: remove_enemy() удерживает сигнал, пока цель ещё числится в foes.
+		grudge_holder.foes -= owner
+		grudge_holder.remove_enemy(owner)
+	var/datum/ai_controller/controller = grudge_holder.ai_controller
+	if(!controller)
+		return
+	//Обида контроллера протухает и сама, но AI_GRUDGE_TIMEOUT - это три минуты погони
+	//за носителем ауры мира, что выглядит ровно как "экстракт не работает".
+	var/list/grudges = controller.blackboard[BB_AI_GRUDGE_LIST]
+	if(grudges?[owner]) //remove_thing_from_blackboard_key роняет CRASH на отсутствующем ключе
+		controller.remove_thing_from_blackboard_key(BB_AI_GRUDGE_LIST, owner)
+
 /datum/status_effect/stabilized/pink/tick()
 	for(var/mob/living/simple_animal/M in view(7,get_turf(owner)))
 		if(!(M in mobs))
 			mobs += M
 			M.apply_status_effect(/datum/status_effect/pinkdamagetracker)
 			M.faction |= faction_name
+			forgive_grudge(M)
 	for(var/mob/living/simple_animal/M in mobs)
 		if(!(M in view(7,get_turf(owner))))
 			M.faction -= faction_name

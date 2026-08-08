@@ -77,7 +77,11 @@
 /turf/open/space/transit/Exited(atom/movable/gone, direction)
 	. = ..()
 	var/turf/location = gone.loc
-	if(istype(location, /turf/open/space) && !istype(location, src.type))
+	// Must check the transit parent path, not src.type: BlueMoon uses directional subtypes
+	// (/transit/south, /transit/border/north, …). Checking src.type dumps anything that crosses
+	// from interior → border (and vice versa), which instantly qdels shuttle-event spawns
+	// (TRAIT_DEL_ON_SPACE_DUMP) and yeets projectiles/debris into realspace.
+	if(istype(location, /turf/open/space) && !istype(location, /turf/open/space/transit))
 		dump_in_space(gone)
 		return
 	if(!istype(gone.loc, /turf/open/space/transit))

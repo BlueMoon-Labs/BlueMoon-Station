@@ -3077,13 +3077,8 @@
 /turf/open/floor/plasteel,
 /area/construction)
 "IV" = (
-/obj/docking_port/stationary{
-	dir = 1;
-	dwidth = 1;
-	height = 4;
-	name = "escape pod loader";
-	roundstart_template = /datum/map_template/shuttle/escape_pod/default;
-	width = 3
+/obj/docking_port/stationary/escape_pod{
+	dir = 1
 	},
 /turf/open/floor/plating,
 /area/hallway/secondary/entry)

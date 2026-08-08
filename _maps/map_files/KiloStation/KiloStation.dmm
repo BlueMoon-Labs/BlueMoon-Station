@@ -3819,13 +3819,8 @@
 /turf/open/floor/plasteel/showroomfloor,
 /area/medical/medbay/central)
 "agG" = (
-/obj/docking_port/stationary{
-	dir = 2;
-	dwidth = 1;
-	height = 4;
-	name = "escape pod loader";
-	roundstart_template = /datum/map_template/shuttle/escape_pod/default;
-	width = 3
+/obj/docking_port/stationary/escape_pod{
+	dir = 2
 	},
 /obj/structure/fans/tiny/invisible,
 /turf/open/space/basic,
@@ -38084,7 +38079,7 @@
 	height = 10;
 	shuttle_id = "mining_home";
 	name = "mining shuttle bay";
-	roundstart_template = /datum/map_template/shuttle/mining/kilo;
+	roundstart_template = /datum/map_template/shuttle/mining/large;
 	width = 7
 	},
 /turf/open/space/basic,
@@ -54005,7 +54000,7 @@
 	},
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_y = 22;
+	pixel_y = 22
 	},
 /turf/open/floor/plasteel/showroomfloor,
 /area/security/prison)
@@ -72761,12 +72756,8 @@
 /turf/open/floor/plasteel/dark,
 /area/maintenance/starboard)
 "crx" = (
-/obj/docking_port/stationary{
-	dir = 8;
-	dwidth = 1;
-	height = 4;
-	roundstart_template = /datum/map_template/shuttle/escape_pod/default;
-	width = 3
+/obj/docking_port/stationary/escape_pod{
+	dir = 8
 	},
 /obj/structure/fans/tiny/invisible,
 /turf/open/space/basic,
@@ -80831,12 +80822,7 @@
 /turf/open/floor/plasteel/dark,
 /area/maintenance/disposal/incinerator)
 "cLd" = (
-/obj/docking_port/stationary{
-	dwidth = 1;
-	height = 4;
-	roundstart_template = /datum/map_template/shuttle/escape_pod/default;
-	width = 3
-	},
+/obj/docking_port/stationary/escape_pod,
 /obj/structure/fans/tiny/invisible,
 /turf/open/space/basic,
 /area/space)
@@ -81020,12 +81006,8 @@
 /turf/open/floor/plasteel/dark,
 /area/maintenance/solars/starboard/fore)
 "cLR" = (
-/obj/docking_port/stationary{
-	dir = 4;
-	dwidth = 1;
-	height = 4;
-	roundstart_template = /datum/map_template/shuttle/escape_pod/default;
-	width = 3
+/obj/docking_port/stationary/escape_pod{
+	dir = 4
 	},
 /obj/structure/fans/tiny/invisible,
 /turf/open/space/basic,
@@ -83185,7 +83167,7 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
-	pixel_y = -28;
+	pixel_y = -28
 	},
 /obj/structure/cable{
 	icon_state = "1-4"

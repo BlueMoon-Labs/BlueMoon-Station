@@ -545,6 +545,15 @@ GLOBAL_LIST_EMPTY(ghost_records)
 	// destroy_later (borg MMIs must outlive their shell).
 	GLOB.ssd_mob_list -= mob_occupant
 	mob_occupant.moveToNullspace()
+	// Вещи из destroying лежат ВНУТРИ капсулы (их туда кладут выше), а open_machine()
+	// ниже вытряхивает её содержимое на пол. Удаление ступенчатое, поэтому личный КПК
+	// вместе с айди-картой успевает полежать на полу и уйти в чужой карман - а удаление
+	// айди как раз и есть единственная защита крио от кражи доступов. Выносим их из
+	// капсулы прямо сейчас; при pod == null они лежат на мобе и цикл ничего не делает.
+	if(pod)
+		for(var/obj/item/doomed_item as anything in destroying)
+			if(doomed_item.loc == pod)
+				doomed_item.moveToNullspace()
 	SSauto_cryo.queue_deletion_list(destroying)
 	SSauto_cryo.queue_deletion(mob_occupant)
 	SSauto_cryo.queue_deletion_list(destroy_later)
