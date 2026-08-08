@@ -156,12 +156,17 @@ GLOBAL_LIST_INIT(gas_recipe_meta, gas_recipes_list())
 // 33 моля суммарно. Гипернобель при цепочке в два шага стоил 1085: самый
 // глубокий газ в игре обходился в тридцать раз дешевле заметно более простого.
 // Это была опечатка баланса, а не решение.
+//
+// Порога давления здесь нет намеренно. Ворота 15000 кПа честны только там, где
+// линию можно догреть (алмаз): при криогенном окне 5-20 K они означают ~80+
+// молей на литр ХОЛОДНОЙ подающей линии - десятки тысяч молей ради рецепта в
+// 400, и нагревом это не решается, потому что камера обязана остаться ледяной.
+// Цену рецепта несут моли и глубина цепочки, холод - его сборочные ворота.
 /datum/gas_recipe/crystallizer/zaukerite
 	id = "zaukerite"
 	name = "Zaukerite sheet"
 	min_temp = 5
 	max_temp = 20
-	min_pressure = GAS_RECIPE_HIGH_PRESSURE
 	energy_release = 2900000
 	requirements = list(GAS_ANTINOBLIUM = 60, GAS_ZAUKER = 240, GAS_BZ = 100)
 	products = list(/obj/item/stack/sheet/mineral/zaukerite = 2)
