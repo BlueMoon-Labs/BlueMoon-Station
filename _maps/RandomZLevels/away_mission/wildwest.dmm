@@ -3571,9 +3571,10 @@
 /turf/open/floor/wood/wood_large,
 /area/awaymission/wildwest/mines)
 "mt" = (
+/mob/living/simple_animal/hostile/gigachad_inteq/space,
+/obj/structure/closet/supplypod,
 /obj/structure/lattice/catwalk,
-/mob/living/simple_animal/hostile/pirate/melee/space,
-/turf/open/space,
+/turf/open/space/basic,
 /area/space/nearstation)
 "mu" = (
 /obj/structure/closet/crate,
@@ -12793,10 +12794,6 @@
 	dir = 5
 	},
 /area/awaymission/wildwest/gov)
-"XX" = (
-/obj/structure/lattice/catwalk,
-/turf/open/floor/plating/asteroid/airless,
-/area/space)
 "XZ" = (
 /obj/structure/table/wood,
 /obj/machinery/door/window/brigdoor{
@@ -51315,7 +51312,7 @@ AE
 AE
 AE
 sG
-XX
+sG
 aa
 aa
 aa
@@ -51572,7 +51569,7 @@ aG
 aG
 aG
 pR
-pR
+mt
 aa
 aa
 aa
@@ -51829,7 +51826,7 @@ aG
 aG
 sG
 pR
-pR
+DZ
 aa
 aa
 aa
@@ -52086,7 +52083,7 @@ aG
 aG
 sG
 pR
-pR
+DZ
 aa
 aa
 aa
@@ -52348,7 +52345,7 @@ At
 At
 At
 At
-mt
+At
 At
 aa
 aa
