@@ -16,6 +16,8 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	var/battlefield_loaded = FALSE
 	var/battlefield_z = 0
 	var/datum/gateway_destination/point/pact_siege_battle/battle_dest
+	var/datum/gateway_destination/point/pact_siege_station_return/station_return_dest
+	var/obj/machinery/gateway/away/pact_siege/return_gateway
 	var/list/datum/weakref/defenders = list()
 	var/list/datum/weakref/attackers = list()
 
@@ -116,6 +118,49 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 		return null
 	return get_step(GLOB.the_gateway.portal, turn(GLOB.the_gateway.dir, 180))
 
+/datum/inteq_pact_siege/proc/station_siege_gateway_linked()
+	return GLOB.the_gateway?.target == battle_dest
+
+/datum/inteq_pact_siege/proc/find_return_gateway_turf()
+	var/list/bridge_types = list(
+		/area/ruin/space/has_grav/bluemoon/inteq_forgotten_bridge,
+		/area/ruin/space/has_grav/bluemoon/solfed_ship/bridge,
+	)
+	for(var/area_type in bridge_types)
+		var/area/A = GLOB.areas_by_type[area_type]
+		if(!A)
+			continue
+		if(battlefield_z && A.z != battlefield_z)
+			continue
+		for(var/turf/open/floor/T in A)
+			if(battlefield_z && T.z != battlefield_z)
+				continue
+			if(T.is_blocked_turf(exclude_mobs = TRUE, source_atom = null, ignore_atoms = null))
+				continue
+			return T
+	return null
+
+/datum/inteq_pact_siege/proc/setup_battlefield_return_gateway()
+	if(return_gateway)
+		return
+	if(!station_return_dest)
+		station_return_dest = new()
+		station_return_dest.owner = src
+	var/turf/spawn_turf = find_return_gateway_turf()
+	if(!spawn_turf)
+		message_admins("PACT siege: не удалось найти турф для обратных врат на мостике поля боя.")
+		return
+	return_gateway = new /obj/machinery/gateway/away/pact_siege(spawn_turf)
+
+/datum/inteq_pact_siege/proc/on_station_siege_gateway_closed()
+	if(return_gateway?.target == station_return_dest)
+		return_gateway.deactivate()
+
+/datum/inteq_pact_siege/proc/cleanup_return_gateway()
+	on_station_siege_gateway_closed()
+	QDEL_NULL(return_gateway)
+	QDEL_NULL(station_return_dest)
+
 /datum/inteq_pact_siege/proc/register_existing_defenders()
 	for(var/mob/living/L in GLOB.mob_living_list)
 		if(is_on_battlefield(L))
@@ -170,6 +215,8 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	end_time = world.time + PACT_SIEGE_TIMER
 	active = TRUE
 
+	setup_battlefield_return_gateway()
+
 	if(GLOB.the_gateway)
 		if(!roundstart)
 			GLOB.the_gateway.AddElement(/datum/element/pact_siege_red_gateway)
@@ -223,6 +270,7 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 		to_chat(L, span_notice("Импульс экстренного отзыва ПАКТ переносит вас к станционным вратам."))
 
 /datum/inteq_pact_siege/proc/cleanup_gateway()
+	cleanup_return_gateway()
 	var/datum/gateway_destination/old_dest = battle_dest
 	battle_dest = null
 	if(old_dest)
@@ -283,6 +331,9 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 /datum/gateway_destination/point/pact_siege_battle
 	var/datum/inteq_pact_siege/owner
 
+/datum/gateway_destination/point/pact_siege_battle/deactivate(obj/machinery/gateway/deactivated)
+	owner?.on_station_siege_gateway_closed()
+
 /datum/gateway_destination/point/pact_siege_battle/incoming_pass_check(atom/movable/AM)
 	if(!isliving(AM))
 		return ..()
@@ -296,6 +347,61 @@ GLOBAL_DATUM_INIT(inteq_pact_siege, /datum/inteq_pact_siege, new)
 	. = ..()
 	if(isliving(AM))
 		GLOB.inteq_pact_siege.register_attacker(AM)
+
+/// Gateway destination: InteQ battlefield -> random station turf
+/datum/gateway_destination/point/pact_siege_station_return
+	var/datum/inteq_pact_siege/owner
+
+/datum/gateway_destination/point/pact_siege_station_return/is_available()
+	return owner?.active && owner.station_siege_gateway_linked()
+
+/datum/gateway_destination/point/pact_siege_station_return/get_target_turf()
+	return get_safe_random_station_turf()
+
+/datum/gateway_destination/point/pact_siege_station_return/incoming_pass_check(atom/movable/AM)
+	if(!is_available())
+		return FALSE
+	if(isliving(AM))
+		var/mob/living/L = AM
+		if(ROLE_INTEQ in L.faction)
+			to_chat(L, span_warning("Синхронизация врат отклонена: канал возврата недоступен для идентификаторов InteQ."))
+			return FALSE
+		if(check_exile_implant(L))
+			return FALSE
+	else
+		for(var/mob/living/L in AM.contents)
+			if(check_exile_implant(L))
+				return FALSE
+	if(AM.has_buckled_mobs())
+		for(var/mob/living/L in AM.buckled_mobs)
+			if(check_exile_implant(L))
+				return FALSE
+	return TRUE
+
+/datum/gateway_destination/point/pact_siege_station_return/proc/check_exile_implant(mob/living/L)
+	for(var/obj/item/implant/exile/E in L.implants)
+		to_chat(L, span_userdanger("The station gate has detected your exile implant and is blocking your entry."))
+		return TRUE
+	return FALSE
+
+/// Away gateway on the InteQ battlefield — opens a return link while the station gate targets the siege.
+/obj/machinery/gateway/away/pact_siege
+	desc = "Стабилизированный выход БС-канала к станции. Работает, пока станционные Врата откалиброваны на объект InteQ."
+
+/obj/machinery/gateway/away/pact_siege/interact(mob/user)
+	if(!is_operational)
+		return
+	if(!target)
+		var/datum/inteq_pact_siege/siege = GLOB.inteq_pact_siege
+		if(!siege?.active || !siege.station_return_dest)
+			to_chat(user, span_warning("Обратный канал к станции сейчас недоступен."))
+			return
+		if(!siege.station_siege_gateway_linked())
+			to_chat(user, span_warning("Станционные Врата не настроены на объект InteQ — возврат заблокирован."))
+			return
+		activate(siege.station_return_dest)
+	else
+		deactivate()
 
 /// Processing — win checks
 SUBSYSTEM_DEF(inteq_pact_siege)
