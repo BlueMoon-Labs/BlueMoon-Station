@@ -306,7 +306,7 @@ SUBSYSTEM_DEF(inteq_pact_siege)
 
 /datum/controller/subsystem/inteq_pact_siege/Initialize()
 	. = ..()
-	addtimer(CALLBACK(GLOB.inteq_pact_siege, PROC_REF(try_roundstart_activate)), 10 SECONDS)
+	addtimer(CALLBACK(GLOB.inteq_pact_siege, TYPE_PROC_REF(/datum/inteq_pact_siege, try_roundstart_activate)), 10 SECONDS)
 	return SS_INIT_SUCCESS
 
 /datum/controller/subsystem/inteq_pact_siege/fire(resumed)
