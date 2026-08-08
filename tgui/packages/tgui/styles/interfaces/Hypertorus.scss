@@ -162,6 +162,14 @@ $readout-font: 'Consolas', 'Liberation Mono', 'Courier New', monospace;
   border-bottom: 1px solid $steel-line;
 }
 
+// Тело вкладки скроллится само: шапка и вкладки прибиты, целостность с уровнем
+// мощности видны из любого места окна. min-height обязателен - без него
+// flex-ребёнок не отдаёт высоту и скролл не появляется.
+.Hypertorus__body {
+  min-height: 0;
+  overflow-y: auto;
+}
+
 .Hypertorus__tabBadge {
   display: inline-block;
   min-width: 1.4em;
@@ -409,36 +417,41 @@ $readout-font: 'Consolas', 'Liberation Mono', 'Courier New', monospace;
 
 // --- регуляторы ------------------------------------------------------------
 
+// Узкая колонка рядом с графиком: подпись и точное поле строкой, слайдер под
+// ними во всю ширину. Диапазон регулятора живёт в тултипе подписи.
 .Hypertorus__knob {
-  display: flex;
-  align-items: center;
   padding: 0.25em 0;
   border-bottom: 1px solid $steel-line-dark;
 }
 
 .Hypertorus__knobLabel {
-  flex: 0 0 15em;
   color: colors.$label;
+  font-size: 0.9em;
   white-space: nowrap;
 }
 
 .Hypertorus__knobControl {
-  flex: 1 1 auto;
-  min-width: 6em;
+  margin-top: 0.2em;
 }
 
-.Hypertorus__knobInput {
-  flex: 0 0 auto;
-  padding-left: 0.5em;
+// --- полоса реакции ---------------------------------------------------------
+
+.Hypertorus__reactionMetric {
+  padding: 0 0.3em;
 }
 
-// Границы регулятора подписаны прямо на шкале: они приезжают из ui_static_data
-// и совпадают с клампом в ui_act, так что врать не могут.
-.Hypertorus__knobRange {
-  color: rgba(255, 255, 255, 0.45);
-  font-family: $readout-font;
-  font-size: 0.85em;
-  font-variant-numeric: tabular-nums;
+// --- впрыск и отвод у газовых колонок --------------------------------------
+
+.Hypertorus__injectRow {
+  margin-bottom: 0.4em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid $steel-line-dark;
+}
+
+.Hypertorus__wasteRow {
+  margin-top: 0.4em;
+  padding-top: 0.4em;
+  border-top: 1px solid $steel-line-dark;
 }
 
 // --- фильтрация ------------------------------------------------------------

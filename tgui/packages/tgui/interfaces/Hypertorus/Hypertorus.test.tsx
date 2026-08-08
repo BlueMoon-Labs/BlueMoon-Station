@@ -86,21 +86,24 @@ const setupStore = (data = {}) => {
   return store;
 };
 
-const rowByLabel = (container: HTMLElement, label: string) => {
-  const rows = Array.from(container.querySelectorAll('.LabeledList__row'));
-  const row = rows.find(
-    (candidate) =>
-      candidate.querySelector('.LabeledList__label')?.textContent === label + ':',
+const metricByLabel = (container: HTMLElement, label: string) => {
+  const metrics = Array.from(
+    container.querySelectorAll('.Hypertorus__reactionMetric'),
   );
-  if (!row) {
-    throw new Error('Не найдена строка «' + label + '»');
+  const metric = metrics.find(
+    (candidate) =>
+      candidate.querySelector('.Hypertorus__metricLabel')?.textContent === label,
+  );
+  if (!metric) {
+    throw new Error('Не найдена шкала «' + label + '»');
   }
-  return row as HTMLElement;
+  return metric as HTMLElement;
 };
 
 const barFill = (container: HTMLElement, label: string) =>
-  (rowByLabel(container, label).querySelector('.ProgressBar__fill') as HTMLElement)
-    .style.width;
+  (metricByLabel(container, label).querySelector(
+    '.ProgressBar__fill',
+  ) as HTMLElement).style.width;
 
 // formatSiBaseTenUnit склеивает подпись из значения, приставки и единицы, а на
 // низком диапазоне приставка - пробел. В разметке это даёт подряд идущие
@@ -113,8 +116,9 @@ describe('окно гиперторуса', () => {
     render(<Hypertorus />);
     expect(screen.getByText('Обзор')).toBeTruthy();
     expect(screen.getByText('Рецепты')).toBeTruthy();
-    expect(screen.getByText('Настройка')).toBeTruthy();
     expect(screen.getByText('Фильтры')).toBeTruthy();
+    // Отдельной вкладки настройки больше нет: регуляторы живут на обзоре.
+    expect(screen.queryByText('Настройка')).toBeNull();
   });
 
   test('шапка показывает состояние остановленного реактора', () => {
@@ -182,7 +186,7 @@ describe('потолки шкал реакции', () => {
   test('тепловой выход сохраняет знак в подписи', () => {
     setupStore({ heat_output: -250, heat_output_min: -1000 });
     const { container } = render(<Hypertorus />);
-    const cell = rowByLabel(container, 'Тепловой выход');
+    const cell = metricByLabel(container, 'Тепловой выход');
     expect(squash(cell.querySelector('.ProgressBar__content')?.textContent)).toBe(
       '-250 K',
     );
@@ -210,12 +214,39 @@ describe('вкладки', () => {
     });
   });
 
-  test('вкладка настройки показывает регуляторы', () => {
+  test('регуляторы стоят прямо на обзоре, рядом с графиком', () => {
     setupStore();
     render(<Hypertorus />);
-    fireEvent.click(screen.getByText('Настройка'));
+    // Без единого клика по вкладкам: жалоба игроков была именно на то, что
+    // настройка жила отдельно от температурных шкал.
     expect(screen.getByText('Теплопроводник')).toBeTruthy();
     expect(screen.getByText('Демпфер тока')).toBeTruthy();
+    expect(screen.getByText('Температуры контуров')).toBeTruthy();
+  });
+
+  test('впрыск топлива и модератора виден у своих газовых колонок', () => {
+    setupStore();
+    render(<Hypertorus />);
+    expect(screen.getByText('Камера синтеза')).toBeTruthy();
+    expect(screen.getByText('Впрыск топлива')).toBeTruthy();
+    expect(screen.getByText('Впрыск модератора')).toBeTruthy();
+  });
+
+  test('тумблер отвода отходов на обзоре блокируется на высокой мощности', () => {
+    setupStore({ power_level: 6, internal_fusion_temperature: 5e6 });
+    const { container } = render(<Hypertorus />);
+    const toggle = Array.from(container.querySelectorAll('.Button')).find(
+      (button) => button.textContent?.includes('Отвод:'),
+    );
+    expect(toggle).toBeTruthy();
+    expect(toggle!.className).toMatch(/Button--disabled/);
+  });
+
+  test('чип рецепта открывает вкладку рецептов', () => {
+    setupStore();
+    render(<Hypertorus />);
+    fireEvent.click(screen.getByText('Рецепт не выбран'));
+    expect(screen.getByText('Расщепление азота')).toBeTruthy();
   });
 
   test('вкладка фильтров считает скорость на каждый газ', () => {

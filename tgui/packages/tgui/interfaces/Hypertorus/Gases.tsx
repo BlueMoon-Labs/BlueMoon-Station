@@ -1,9 +1,24 @@
 import { toFixed } from 'common/math';
+import { ReactNode } from 'react';
 
 import { useBackend } from '../../backend';
-import { Box, Icon, ProgressBar, Section, Stack, Tooltip } from '../../components';
+import {
+  Box,
+  Button,
+  Icon,
+  NumberInput,
+  ProgressBar,
+  Section,
+  Stack,
+  Tooltip,
+} from '../../components';
 import { getGasColor, getGasName } from '../../constants';
-import { getSelectedFuel, getThresholds } from './helpers';
+import {
+  getLimit,
+  getSelectedFuel,
+  getThresholds,
+  WASTE_REMOVE_MAX_POWER_LEVEL,
+} from './helpers';
 import { HypertorusData, HypertorusGas } from './types';
 
 /** Ниже этого количества газ не показываем: DM шлёт нули по всем ста газам. */
@@ -25,6 +40,10 @@ type GasColumnProps = {
   emptyText: string;
   totalTooltip: string;
   totalColor?: string;
+  /** Быстрый регулятор контура в шапке секции: действие рядом с откликом. */
+  controls?: ReactNode;
+  /** Строка действий под списком газов: тумблеры этого же контура. */
+  footer?: ReactNode;
 };
 
 const GasColumn = (props: GasColumnProps) => {
@@ -37,12 +56,15 @@ const GasColumn = (props: GasColumnProps) => {
     emptyText,
     totalTooltip,
     totalColor,
+    controls,
+    footer,
   } = props;
   const visible = sortedGases(gases);
   const max = Math.max(1, ...visible.map((gas) => gas.amount));
 
   return (
     <Section
+      fill
       title={title}
       className="Hypertorus__gasColumn"
       buttons={
@@ -53,6 +75,7 @@ const GasColumn = (props: GasColumnProps) => {
         </Tooltip>
       }
     >
+      {controls}
       {visible.length === 0 ? (
         <Box color="label" italic>
           {emptyText}
@@ -90,7 +113,106 @@ const GasColumn = (props: GasColumnProps) => {
           );
         })
       )}
+      {footer}
     </Section>
+  );
+};
+
+/** Регулятор впрыска первой строкой колонки: действие рядом с его откликом. */
+const InjectionControl = (props: {
+  action: 'fuel_injection_rate' | 'moderator_injection_rate';
+  label: string;
+  hint: string;
+}) => {
+  const { act, data } = useBackend<HypertorusData>();
+  const limit = getLimit(data.limits, props.action);
+  const value = Number(data[props.action] ?? limit.min);
+  return (
+    <Box className="Hypertorus__injectRow">
+      <Stack align="center">
+        <Stack.Item grow>
+          <Tooltip
+            content={`${props.hint} Диапазон: ${limit.min}-${limit.max} моль/с.`}
+          >
+            <Box className="Hypertorus__knobLabel">
+              {props.label}
+              <Icon name="question-circle" ml={0.5} />
+            </Box>
+          </Tooltip>
+        </Stack.Item>
+        <Stack.Item>
+          <NumberInput
+            animated
+            value={value}
+            width="66px"
+            unit="моль/с"
+            minValue={limit.min}
+            maxValue={limit.max}
+            step={limit.step ?? 1}
+            onDrag={(event, next) => act(props.action, { [props.action]: next })}
+          />
+        </Stack.Item>
+      </Stack>
+    </Box>
+  );
+};
+
+/**
+ * Тумблер отвода отходов у самого модератора: включил - и тут же видно, как
+ * уходят выбранные газы. Какие именно газы отводить - на вкладке «Фильтры».
+ */
+const WasteControls = () => {
+  const { act, data } = useBackend<HypertorusData>();
+  const { waste_remove, mod_filtering_rate, filter_types = [], power_level } = data;
+  const limit = getLimit(data.limits, 'filtering_rate');
+  const enabledCount = filter_types.filter((filter) => filter.enabled).length;
+  const wasteLocked = power_level > WASTE_REMOVE_MAX_POWER_LEVEL;
+
+  return (
+    <Box className="Hypertorus__wasteRow">
+      <Stack align="center">
+        <Stack.Item>
+          <Tooltip
+            content={
+              wasteLocked
+                ? `Уровень мощности выше ${WASTE_REMOVE_MAX_POWER_LEVEL}: выхлоп слишком горяч, отвод заблокирован.`
+                : 'Выкачивает выбранные газы из модератора в порт отходов.'
+            }
+          >
+            <Box inline>
+              <Button
+                disabled={wasteLocked}
+                icon={waste_remove ? 'power-off' : 'times'}
+                content={waste_remove ? 'Отвод: вкл' : 'Отвод: выкл'}
+                selected={waste_remove}
+                onClick={() => act('waste_remove')}
+              />
+            </Box>
+          </Tooltip>
+        </Stack.Item>
+        <Stack.Item>
+          <NumberInput
+            animated
+            value={mod_filtering_rate}
+            width="66px"
+            unit="моль/с"
+            minValue={limit.min}
+            maxValue={limit.max}
+            step={1}
+            onDrag={(event, next) =>
+              act('mod_filtering_rate', { mod_filtering_rate: next })
+            }
+          />
+        </Stack.Item>
+        <Stack.Item grow textAlign="right">
+          <Box color={enabledCount ? 'label' : 'average'}>
+            {enabledCount
+              ? `газов: ${enabledCount}`
+              : 'газы не выбраны'}
+          </Box>
+        </Stack.Item>
+      </Stack>
+    </Box>
   );
 };
 
@@ -122,6 +244,13 @@ export const Gases = () => {
           totalColor={fusionTotalColor}
           emptyText="Камера пуста: подайте топливо."
           totalTooltip={`Ниже ${thresholds.subcritical_moles} молей реакция затухает и корпус лечится, выше ${thresholds.overmole_moles} - периодический урон, выше ${thresholds.hypercritical_moles} - непрерывный.`}
+          controls={
+            <InjectionControl
+              action="fuel_injection_rate"
+              label="Впрыск топлива"
+              hint="Сколько газа рецепта уходит в камеру за такт. Прямо задаёт скорость набора молей, а с ней и риск перегруза."
+            />
+          }
         />
       </Stack.Item>
       <Stack.Item grow basis={0}>
@@ -131,6 +260,14 @@ export const Gases = () => {
           total={data.moderator_moles ?? 0}
           emptyText="Модератор пуст: реакция идёт без присадок."
           totalTooltip="Газы модератора задают выход энергии, тепло, излучение и побочные продукты. Испаряются тем быстрее, чем выше уровень мощности."
+          controls={
+            <InjectionControl
+              action="moderator_injection_rate"
+              label="Впрыск модератора"
+              hint="Подача присадок. Модератор задаёт выход энергии и тепла, но испаряется тем быстрее, чем выше уровень мощности."
+            />
+          }
+          footer={<WasteControls />}
         />
       </Stack.Item>
     </Stack>

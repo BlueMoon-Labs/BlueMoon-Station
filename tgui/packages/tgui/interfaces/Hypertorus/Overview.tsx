@@ -1,6 +1,5 @@
 import { useBackend } from '../../backend';
-import { Box, LabeledList, ProgressBar, Section, Stack } from '../../components';
-import { getGasName } from '../../constants';
+import { Box, Button, ProgressBar, Section, Stack } from '../../components';
 import { formatSiBaseTenUnit, formatSiUnit } from '../../format';
 import { Alerts } from './Alerts';
 import { Gases } from './Gases';
@@ -12,10 +11,16 @@ import {
 } from './helpers';
 import { Startup } from './Startup';
 import { Temperatures } from './Temperatures';
+import { Tuning } from './Tuning';
 import { HypertorusData } from './types';
 
+type ReactionProps = {
+  /** Открывает вкладку рецептов: сам выбор живёт там, здесь только индикатор. */
+  onOpenRecipes: () => void;
+};
+
 /** Показатели самой реакции: что горит, сколько выделяет и куда уходит. */
-const Reaction = () => {
+const Reaction = (props: ReactionProps) => {
   const { data } = useBackend<HypertorusData>();
   const {
     energy_level,
@@ -38,56 +43,92 @@ const Reaction = () => {
   const heatDenominator = safeHeatOutput < 0 ? heatLimitMin : heatLimitMax;
   const heatActivity = heatDenominator !== 0 ? safeHeatOutput / heatDenominator : 0;
 
+  /** Три шкалы в один ряд: полоса отклика реакции, а не таблица на пол-окна. */
+  const metrics = [
+    {
+      label: 'Энергия',
+      bar: (
+        <ProgressBar
+          color="yellow"
+          value={energy_level}
+          minValue={0}
+          maxValue={MAX_REACTOR_ENERGY}
+        >
+          {formatSiUnit(energy_level, 1, 'J')}
+        </ProgressBar>
+      ),
+    },
+    {
+      label: 'Ограничитель',
+      bar: (
+        <ProgressBar
+          color="blue"
+          value={heat_limiter_modifier}
+          minValue={0}
+          maxValue={MAX_HEAT_LIMITER_MODIFIER}
+        >
+          {formatSiBaseTenUnit(heat_limiter_modifier, 0, 'K')}
+        </ProgressBar>
+      ),
+    },
+    {
+      label: 'Тепловой выход',
+      bar: (
+        <ProgressBar
+          color={safeHeatOutput < 0 ? 'teal' : 'orange'}
+          value={Number.isFinite(heatActivity) ? heatActivity : 0}
+          minValue={-1}
+          maxValue={1.3}
+        >
+          {formatHeatOutput(safeHeatOutput)}
+        </ProgressBar>
+      ),
+    },
+  ];
+
   return (
-    <Section title="Реакция" fill>
-      <LabeledList>
-        <LabeledList.Item label="Рецепт">
-          <Box color={fuel ? 'good' : 'average'}>{fuel?.name ?? 'не выбран'}</Box>
-        </LabeledList.Item>
-        <LabeledList.Item label="Топливо">
-          {fuel?.requirements?.length
-            ? fuel.requirements.map((gasId) => getGasName(gasId)).join(' + ')
-            : '-'}
-        </LabeledList.Item>
-        <LabeledList.Item label="Продукты">
-          <Box style={{ whiteSpace: 'pre-wrap' }}>{product_gases ?? 'нет'}</Box>
-        </LabeledList.Item>
-        <LabeledList.Item label="Энергия">
-          <ProgressBar
-            color="yellow"
-            value={energy_level}
-            minValue={0}
-            maxValue={MAX_REACTOR_ENERGY}
+    <Section
+      title="Реакция"
+      buttons={
+        <Button
+          icon={fuel ? 'flask' : 'exclamation-triangle'}
+          color={fuel ? undefined : 'average'}
+          tooltip={
+            (fuel ? `Продукты: ${product_gases ?? 'нет'}. ` : '') +
+            'Открыть вкладку рецептов.'
+          }
+          onClick={props.onOpenRecipes}
+        >
+          {fuel?.name ?? 'Рецепт не выбран'}
+        </Button>
+      }
+    >
+      <Stack>
+        {metrics.map((metric) => (
+          <Stack.Item
+            key={metric.label}
+            grow
+            basis={0}
+            className="Hypertorus__reactionMetric"
           >
-            {formatSiUnit(energy_level, 1, 'J')}
-          </ProgressBar>
-        </LabeledList.Item>
-        <LabeledList.Item label="Ограничитель">
-          <ProgressBar
-            color="blue"
-            value={heat_limiter_modifier}
-            minValue={0}
-            maxValue={MAX_HEAT_LIMITER_MODIFIER}
-          >
-            {formatSiBaseTenUnit(heat_limiter_modifier, 0, 'K')}
-          </ProgressBar>
-        </LabeledList.Item>
-        <LabeledList.Item label="Тепловой выход">
-          <ProgressBar
-            color={safeHeatOutput < 0 ? 'teal' : 'orange'}
-            value={Number.isFinite(heatActivity) ? heatActivity : 0}
-            minValue={-1}
-            maxValue={1.3}
-          >
-            {formatHeatOutput(safeHeatOutput)}
-          </ProgressBar>
-        </LabeledList.Item>
-      </LabeledList>
+            <Box className="Hypertorus__metricLabel">{metric.label}</Box>
+            {metric.bar}
+          </Stack.Item>
+        ))}
+      </Stack>
     </Section>
   );
 };
 
-export const Overview = () => (
+type OverviewProps = {
+  onOpenRecipes: () => void;
+};
+
+/**
+ * Всё управление разгоном в одном окне: регуляторы стоят рядом со шкалами,
+ * по которым виден их отклик, - игроки просили не гонять их по вкладкам.
+ */
+export const Overview = (props: OverviewProps) => (
   <Stack vertical fill>
     <Stack.Item>
       <Startup />
@@ -101,9 +142,12 @@ export const Overview = () => (
           <Temperatures />
         </Stack.Item>
         <Stack.Item grow basis={0}>
-          <Reaction />
+          <Tuning />
         </Stack.Item>
       </Stack>
+    </Stack.Item>
+    <Stack.Item>
+      <Reaction onOpenRecipes={props.onOpenRecipes} />
     </Stack.Item>
     <Stack.Item grow>
       <Gases />

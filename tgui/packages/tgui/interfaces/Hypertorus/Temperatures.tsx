@@ -8,8 +8,8 @@ import {
 } from './helpers';
 import { HypertorusData } from './types';
 
-/** Высота поля графика в пикселях; повторена в Hypertorus.scss. */
-const CHART_HEIGHT = 190;
+/** Высота поля графика в пикселях. */
+const CHART_HEIGHT = 160;
 
 /** Космический фон: ниже реликтового излучения температура не падает. */
 const MINIMUM_TEMPERATURE = 2.73;

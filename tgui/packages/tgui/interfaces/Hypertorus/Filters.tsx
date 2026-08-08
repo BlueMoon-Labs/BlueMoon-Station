@@ -3,14 +3,8 @@ import { toFixed } from 'common/math';
 import { useBackend } from '../../backend';
 import { Box, Button, Icon, LabeledList, Section, Slider, Tooltip } from '../../components';
 import { getGasName } from '../../constants';
-import { gasCountWord, getLimit } from './helpers';
+import { gasCountWord, getLimit, WASTE_REMOVE_MAX_POWER_LEVEL } from './helpers';
 import { HypertorusData } from './types';
-
-/**
- * Выше этого уровня мощности отходы не выпускают: горячий выхлоп в трубу
- * сносит фильтры на выходе (ui_act блокировал это и раньше, молча).
- */
-const WASTE_REMOVE_MAX_POWER_LEVEL = 5;
 
 /**
  * Отвод отходов из модератора. Скорость фильтрации делится поровну между

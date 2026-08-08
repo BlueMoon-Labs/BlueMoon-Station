@@ -44,6 +44,13 @@ export const MAX_REACTOR_ENERGY = 1e25;
  */
 const TEMPERATURE_MIN_BASE_1000 = 0;
 
+/**
+ * Выше этого уровня мощности отходы не выпускают: горячий выхлоп в трубу
+ * сносит фильтры на выходе (ui_act блокировал это и раньше, молча).
+ * Нужен и вкладке фильтров, и быстрому тумблеру у колонки модератора.
+ */
+export const WASTE_REMOVE_MAX_POWER_LEVEL = 5;
+
 /** Пороги на случай, если ui_static_data() ещё не приехала. */
 export const FALLBACK_THRESHOLDS: HypertorusThresholds = {
   fusion_mole_minimum: 25,
