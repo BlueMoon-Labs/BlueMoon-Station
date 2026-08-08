@@ -1114,3 +1114,53 @@
 	qdel(trash)
 	var/list/deleted_candidates = SSspatial_grid.orthogonal_range_search(bot, SPATIAL_GRID_CONTENTS_TYPE_CLEANBOT_TARGETS, DEFAULT_SCAN_RANGE)
 	TEST_ASSERT(!(trash in deleted_candidates), "Deleted trash must not remain in the cleanbot grid")
+
+/datum/unit_test/cleanbot_small_candidate_filter_preserves_view_los/Run()
+	var/turf/bot_turf = locate(run_loc_floor_bottom_left.x + 3, run_loc_floor_bottom_left.y + 3, run_loc_floor_bottom_left.z)
+	var/turf/wall_turf = get_step(bot_turf, EAST)
+	var/turf/hidden_turf = get_step(wall_turf, EAST)
+	var/turf/visible_turf = locate(bot_turf.x - 2, bot_turf.y, bot_turf.z)
+	var/mob/living/simple_animal/bot/cleanbot/bot = allocate(/mob/living/simple_animal/bot/cleanbot, bot_turf)
+	wall_turf.ChangeTurf(/turf/closed/wall)
+	allocate(/obj/effect/decal/cleanable/dirt, hidden_turf)
+	var/obj/effect/decal/cleanable/dirt/visible_dirt = allocate(/obj/effect/decal/cleanable/dirt, visible_turf)
+
+	TEST_ASSERT_EQUAL(bot.scan_for_target(), visible_dirt, "The small-candidate fast path must keep BYOND view LOS")
+
+/datum/unit_test/cleanbot_indexed_view_filter_preserves_priority/Run()
+	var/turf/bot_turf = locate(run_loc_floor_bottom_left.x + 3, run_loc_floor_bottom_left.y + 3, run_loc_floor_bottom_left.z)
+	var/mob/living/simple_animal/bot/cleanbot/bot = allocate(/mob/living/simple_animal/bot/cleanbot, bot_turf)
+	bot.pests = TRUE
+	bot.get_targets()
+	var/placed_cleanables = 0
+	for(var/direction in GLOB.alldirs)
+		allocate(/obj/effect/decal/cleanable/dirt, get_step(bot, direction))
+		placed_cleanables++
+		if(placed_cleanables == CLEANBOT_VIEW_FILTER_LINEAR_LIMIT + 1)
+			break
+	var/mob/living/simple_animal/mouse/mouse = allocate(/mob/living/simple_animal/mouse, locate(bot_turf.x - 2, bot_turf.y, bot_turf.z))
+
+	TEST_ASSERT_EQUAL(bot.scan_for_target(), mouse, "The indexed LOS branch must keep pest-over-cleanable priority")
+
+/datum/unit_test/floorbot_failed_path_search_has_cooldown/Run()
+	var/turf/bot_turf = locate(run_loc_floor_bottom_left.x + 3, run_loc_floor_bottom_left.y + 3, run_loc_floor_bottom_left.z)
+	var/mob/living/simple_animal/bot/floorbot/bot = allocate(/mob/living/simple_animal/bot/floorbot, bot_turf)
+	bot.emagged = 2
+	bot.auto_patrol = FALSE
+	bot.on = TRUE
+	for(var/direction in GLOB.alldirs)
+		allocate(/obj/structure/window/reinforced/fulltile, get_step(bot, direction))
+	bot.target = locate(bot_turf.x + 2, bot_turf.y, bot_turf.z)
+
+	var/jps_before = GLOB.ai_metrics.jps_requests
+	bot.handle_automated_action()
+	var/jps_after_failure = GLOB.ai_metrics.jps_requests
+	TEST_ASSERT_EQUAL(jps_after_failure, jps_before + 1, "The sealed floorbot fixture must execute one failed JPS request")
+	TEST_ASSERT(bot.next_path_attempt > world.time, "A failed floorbot path must arm the autonomous retry cooldown")
+
+	bot.handle_automated_action()
+	TEST_ASSERT_EQUAL(GLOB.ai_metrics.jps_requests, jps_after_failure, "The retry cooldown must suppress another JPS request")
+
+	bot.next_path_attempt = world.time
+	bot.handle_automated_action()
+	TEST_ASSERT_EQUAL(GLOB.ai_metrics.jps_requests, jps_after_failure + 1, "Floorbot must retry autonomous targets after the cooldown expires")

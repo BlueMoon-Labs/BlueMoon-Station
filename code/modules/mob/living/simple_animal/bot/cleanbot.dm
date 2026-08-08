@@ -285,21 +285,30 @@
 		if(!length(candidate_filter))
 			return
 
-		cached_view = shuffle(view(DEFAULT_SCAN_RANGE, src))
+		var/list/exposed_atoms = view(DEFAULT_SCAN_RANGE, src)
 		// Grid cells are deliberately broader than the requested range and do
 		// not encode opacity. Keep only candidates BYOND actually exposes.
-		// Множество строится один раз: view() в грязном коридоре это больше тысячи
-		// атомов, и перебирать его на каждого кандидата - квадратичный проход
-		var/list/exposed_by_view = list()
-		for(var/atom/seen as anything in cached_view)
-			exposed_by_view[seen] = TRUE
+		// A live dirty corridor can put more than a thousand atoms in view().
+		// Do not shuffle that whole list or traverse it again after LOS filtering:
+		// only the handful of actual grid candidates need randomized ordering.
 		var/list/visible_candidates = list()
-		for(var/atom/candidate as anything in candidate_filter)
-			if(exposed_by_view[candidate])
-				visible_candidates[candidate] = TRUE
-		candidate_filter = visible_candidates
+		if(length(candidate_filter) <= CLEANBOT_VIEW_FILTER_LINEAR_LIMIT)
+			for(var/atom/candidate as anything in candidate_filter)
+				if(candidate in exposed_atoms)
+					visible_candidates += candidate
+		else
+			var/list/exposed_by_view = list()
+			for(var/atom/seen as anything in exposed_atoms)
+				exposed_by_view[seen] = TRUE
+			for(var/atom/candidate as anything in candidate_filter)
+				if(exposed_by_view[candidate])
+					visible_candidates += candidate
+		candidate_filter = list()
+		for(var/atom/candidate as anything in visible_candidates)
+			candidate_filter[candidate] = TRUE
 		if(!length(candidate_filter))
 			return
+		cached_view = shuffle(visible_candidates)
 	else if(!cached_view)
 		cached_view = shuffle(view(DEFAULT_SCAN_RANGE, src))
 
