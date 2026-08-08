@@ -20,8 +20,10 @@ SUBSYSTEM_DEF(parallax)
 	/// Счётчик изменений сцены на z. Шаблон с чужой ревизией считается протухшим -
 	/// это страховка на случай, если инвалидацию где-то забыли позвать явно.
 	var/list/revision_by_z = list()
-	/// id профиля, на который откатываемся, если ничего не подошло.
-	var/fallback_profile_id = "space_classic"
+	/// id внестанционного профиля, на который откатываемся, если ничего не подошло.
+	/// Станционный Лаваленд не годится как общий fallback: иначе любой новый z без
+	/// подходящего профиля снова покажет ориентир станции вдали от самой станции.
+	var/fallback_profile_id = "deep_space"
 
 /datum/controller/subsystem/parallax/Initialize()
 	build_catalog()
@@ -126,7 +128,9 @@ SUBSYSTEM_DEF(parallax)
 		return PARALLAX_ENV_PLANET
 	if(SSmapping.level_trait(z, ZTRAIT_SPACE_RUINS))
 		return PARALLAX_ENV_SPACE_RUINS
-	return PARALLAX_ENV_STATION
+	// Неизвестный z по определению не станционный. Сюда попадают, например,
+	// пустой космос без руин и away-уровни: им подходит общий космический пул.
+	return PARALLAX_ENV_SPACE_RUINS
 
 /// Человекочитаемое имя окружения для админского отчёта.
 /datum/controller/subsystem/parallax/proc/environment_name(environment)

@@ -218,6 +218,11 @@
 
 	TEST_ASSERT_EQUAL(length(station_candidates), 1, "Станционному z доступно [length(station_candidates)] профилей ([station_candidates.Join(", ")]) - фон перестал быть постоянным ориентиром")
 	TEST_ASSERT_EQUAL(station_candidates[1], "space_classic", "Станция получила профиль '[station_candidates[1]]' вместо классической сцены с Лавалендом")
+	TEST_ASSERT_EQUAL(SSparallax.environment_for_z(0), PARALLAX_ENV_SPACE_RUINS, "z без известных трейтов ошибочно считается станцией и получает Лаваленд")
+
+	var/datum/parallax_profile/fallback = SSparallax.resolve_profile(SSparallax.fallback_profile_id)
+	TEST_ASSERT_NOTNULL(fallback, "Запасной профиль '[SSparallax.fallback_profile_id]' отсутствует в каталоге")
+	TEST_ASSERT(!(fallback.environment_flags & PARALLAX_ENV_STATION), "Запасной профиль '[fallback.id]' станционный - неизвестный внешний z получит Лаваленд")
 
 	// Тот же профиль в остальном космосе обесценил бы метку станции.
 	for(var/environment in all_environments)
@@ -225,8 +230,8 @@
 			continue
 		var/list/candidates = candidates_by_environment["[environment]"]
 		TEST_ASSERT(!("space_classic" in candidates), "Станционная сцена доступна окружению [SSparallax.environment_name(environment)] - Лаваленд перестанет помечать станцию")
-		// Запасной профиль - это space_classic, и попасть в него значит показать
-		// Лаваленд там, где его быть не должно.
+		TEST_ASSERT(!("orbit_lava" in candidates), "Лавовый мир доступен автоподбору окружения [SSparallax.environment_name(environment)] вне станции")
+		// Пустой пул дошёл бы до запасного профиля и скрыл бы ошибку конфигурации.
 		TEST_ASSERT(length(candidates) > 0, "Окружению [SSparallax.environment_name(environment)] не досталось ни одного профиля - автоподбор свалится в запасной")
 
 /**

@@ -79,7 +79,9 @@
 	id = "orbit_lava"
 	name = "Орбита лавового мира"
 	static_objects = list(/atom/movable/screen/parallax_layer/donor/planet/lava)
-	weight = 6
+	// Лаваленд служит ориентиром только станционного сектора. Профиль оставлен
+	// для явного админского выбора, но вне станции случайно больше не выпадает.
+	weight = 0
 
 /datum/parallax_profile/space/orbit/plasma
 	id = "orbit_plasma"
