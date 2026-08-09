@@ -170,7 +170,9 @@
 		// queue_turn()/queue_update_solar_exposure() wake us when it does.
 		return machine_sleep()
 
-	var/sgen = SOLAR_GEN_RATE * total_flux * efficiency
+	// Множитель космической погоды: ионный фронт кратно поднимает выработку, взвесь
+	// микрообломков её сажает. Вне явления он равен единице и ничего не меняет.
+	var/sgen = SOLAR_GEN_RATE * total_flux * efficiency * GLOB.solar_output_multiplier
 	add_avail(sgen)
 	if(control)
 		control.gen += sgen

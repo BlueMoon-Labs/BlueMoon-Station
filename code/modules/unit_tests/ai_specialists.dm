@@ -437,6 +437,23 @@
 	boss_mob.peaceful = FALSE
 	TEST_ASSERT(strategy.can_attack(boss_mob, prey), "A provoked boss must return to normal aggression")
 
+///Богиня финальной комнаты гейта Killthemall неприкосновенна, пока её не тронут:
+///карточный AIStatus = AI_Z_OFF контроллерный моб не читает, гейт живёт на типе
+/datum/unit_test/ai_gate_goddess_starts_peaceful/Run()
+	var/mob/living/simple_animal/hostile/megafauna/sand/goddess = allocate(/mob/living/simple_animal/hostile/megafauna/sand, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/looter = allocate(/mob/living/carbon/human, get_step(run_loc_floor_bottom_left, EAST))
+
+	TEST_ASSERT(goddess.peaceful, "The gate goddess must spawn peaceful")
+
+	var/datum/ai_controller/hostile_adapter/boss/controller = goddess.ai_controller
+	TEST_ASSERT(istype(controller), "The gate goddess must possess the boss profile controller")
+
+	var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(controller.blackboard[BB_AI_TARGETING_STRATEGY])
+	TEST_ASSERT(!strategy.can_attack(goddess, looter), "The gate goddess must ignore anyone who has not touched her")
+
+	goddess.add_enemy(looter)
+	TEST_ASSERT(strategy.can_attack(goddess, looter), "The gate goddess must strike back at whoever touched her")
+
 ///Чардж-свинг гладиатора по уже потерянной цели не должен звать Bump(null)
 /datum/unit_test/ai_gladiator_charge_swing_lost_target/Run()
 	var/mob/living/simple_animal/hostile/megafauna/gladiator/gladiator = allocate(/mob/living/simple_animal/hostile/megafauna/gladiator, run_loc_floor_bottom_left)

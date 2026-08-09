@@ -17,6 +17,10 @@ GLOBAL_LIST_EMPTY(station_turfs)
 	var/list/baseturfs = /turf/baseturf_bottom
 
 	var/initial_temperature = T20C
+	/// Heat stored in the turf frame itself (walls, windows, solid plating).
+	/// Carried by the superconduction pass in LINDA_turf_tile.dm; open turfs
+	/// keep their authoritative temperature in the air mixture instead.
+	var/temperature = T20C
 	var/to_be_destroyed = 0 //Used for fire, if a melting temperature was reached, it will be destroyed
 	var/max_fire_temperature_sustained = 0 //The max temperature of the fire which it was subjected to
 
@@ -74,6 +78,7 @@ GLOBAL_LIST_EMPTY(station_turfs)
 	if(color) // is this being used? This is here because parent isn't being called
 		add_atom_colour(color, FIXED_COLOUR_PRIORITY)
 
+	temperature = initial_temperature
 	assemble_baseturfs()
 
 	levelupdate()
@@ -122,8 +127,10 @@ GLOBAL_LIST_EMPTY(station_turfs)
 /turf/proc/__auxtools_update_turf_temp_info()
 
 /turf/return_temperature()
+	return temperature
 
-/turf/proc/set_temperature()
+/turf/proc/set_temperature(new_temperature)
+	temperature = new_temperature
 
 /turf/proc/Initalize_Atmos(times_fired)
 	CALCULATE_ADJACENT_TURFS(src)

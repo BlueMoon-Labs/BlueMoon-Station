@@ -84,7 +84,10 @@ SUBSYSTEM_DEF(time_track)
 			"timer_clienttime",
 			"timer_hashes",
 			"air_turf_cost",
-			"air_turf_thread_time",
+			// Несглаженная стоимость фазы турфов последнего прохода. Раньше здесь
+			// стоял auxmos-овский огрызок turf_process_time() - прок без тела,
+			// то есть null, то есть пустая строка во всех строках всех логов.
+			"air_turf_cost_last",
 			"air_equalize_cost",
 			"air_post_process_cost",
 			"air_eg_cost",
@@ -97,7 +100,52 @@ SUBSYSTEM_DEF(time_track)
 			"air_alloc_gas_mixes",
 			"air_hotspot_count",
 			"air_network_count",
-			"air_delta_count",
+			// Сколько турфов фаза высокого давления реально обработала. Длина
+			// самой очереди тут бесполезна: фаза съедает список по ходу, и любой
+			// сэмплер видит либо ноль, либо случайный срез середины прохода.
+			"air_highpressure_processed",
+			// Главная величина фазы турфов: её стоимость - это ровно
+			// "сколько активных турфов" на "сколько стоит process_cell".
+			// Без неё разбор раунда не отличает подорожавшую клетку от
+			// разросшегося фронта.
+			"air_active_turfs",
+			"air_excited_groups",
+			"air_superconduct_turfs",
+			"air_machinery_count",
+			"air_atom_process_count",
+			// Вход и выход клапана насыщения. Тайм-дилатация к фоновой
+			// подсистеме слепа (MC_TICK_CHECK уступает ровно по бюджету тика,
+			// и МК держит свои 20 fps, сколько бы SSair ни ел), поэтому
+			// "нагрузка атмоса" - это длина полного прохода, делённая на
+			// интервал, в который она обязана была уложиться.
+			// air_pass_ms - процессорное время прохода, air_pass_wall_ms - реальное.
+			// Они расходятся в пять с лишним раз, потому что МК отдаёт фоновой
+			// подсистеме лишь долю остатка тика. Перегрузка живёт во второй
+			// величине, и клапан подключён именно к ней.
+			"air_pass_ms",
+			"air_pass_wall_ms",
+			"air_saturation_ratio",
+			"air_saturation_scale",
+			"air_pass_fire_slices",
+			"air_wait",
+			// Фаза машинерии не логировалась вообще, а это вторая по размеру
+			// статья прохода: разбор раунда 9868 видел её только как разницу
+			// между air_pass_ms и суммой остальных колонок (до 11 мс на проход).
+			// Вместе с ней сюда же две другие немые фазы.
+			"air_machinery_cost",
+			"air_decompression_cost",
+			"air_atoms_cost",
+			// Машины, спящие на сердцебиении, и сети, ждущие сведения. Обе
+			// величины - вход в решение "ротация или работа", и обе были видны
+			// только из админской верхи.
+			"air_machinery_idle",
+			"air_dirty_pipenets",
+			// Инвариант грязного списка: сеть с поднятым update, потерянная мимо
+			// очереди, больше не обсчитается никогда. Обязан быть нулём.
+			"air_orphan_dirty_pipenets",
+			// Сколько активных турфов реально сдвинули газ. Главная колонка фазы:
+			// 307 из 2980 в раунде 9868.
+			"air_sharing_turfs",
 		)
 	)
 	log_ping_perf(
@@ -280,7 +328,7 @@ SUBSYSTEM_DEF(time_track)
 			length(SStimer.clienttime_timers),
 			length(SStimer.hashes),
 			SSair.cost_turfs,
-			SSair.turf_process_time(),
+			SSair.cost_turfs_last,
 			SSair.cost_equalize,
 			SSair.cost_post_process,
 			SSair.cost_groups,
@@ -293,7 +341,25 @@ SUBSYSTEM_DEF(time_track)
 			SSair.get_max_gas_mixes(),
 			length(SSair.hotspots),
 			length(SSair.networks),
-			length(SSair.high_pressure_delta)
+			SSair.high_pressure_processed,
+			length(SSair.active_turfs),
+			length(SSair.excited_groups),
+			length(SSair.active_super_conductivity),
+			length(SSair.atmos_machinery),
+			length(SSair.atom_process),
+			SSair.cost_full.last_complete_ms,
+			SSair.pass_wall_ds * 100,
+			SSair.saturation_ratio,
+			SSair.saturation_scale,
+			SSair.pass_fire_slices_last,
+			SSair.wait,
+			SSair.cost_atmos_machinery,
+			SSair.cost_decompression,
+			SSair.cost_atmos_atoms,
+			SSair.idle_machine_count(),
+			length(SSair.dirty_networks),
+			SSair.count_orphan_dirty_pipenets(),
+			SSair.sharing_turfs
 		)
 	)
 	var/should_log_ping_perf = ping_samples && (

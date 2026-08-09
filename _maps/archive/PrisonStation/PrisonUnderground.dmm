@@ -1,4 +1,124 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aaa" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/ruin/lavaland/powered/animal_hospital)
+"aab" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/ruin/lavaland/powered/animal_hospital)
+"aac" = (
+/obj/machinery/door/airlock/hatch,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/ruin/lavaland/powered/animal_hospital)
+"aad" = (
+/obj/machinery/atmospherics/pipe/simple/general/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/general/hidden{
+	dir = 4
+	},
+/turf/open/floor/plasteel/cafeteria{
+	dir = 5
+	},
+/area/ruin/lavaland/powered/animal_hospital)
+"aae" = (
+/obj/machinery/atmospherics/pipe/simple/general/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/general/hidden{
+	dir = 4
+	},
+/turf/open/floor/plasteel/cafeteria{
+	dir = 5
+	},
+/area/ruin/lavaland/powered/animal_hospital)
+"aaf" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/turf/open/floor/plasteel/cafeteria{
+	dir = 5
+	},
+/area/ruin/lavaland/powered/animal_hospital)
+"aag" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/turf/open/floor/plasteel/cafeteria{
+	dir = 5
+	},
+/area/ruin/lavaland/powered/animal_hospital)
+"aah" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/turf/open/floor/plasteel/cafeteria{
+	dir = 5
+	},
+/area/ruin/lavaland/powered/animal_hospital)
+"aai" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/turf/open/floor/plasteel/cafeteria{
+	dir = 5
+	},
+/area/ruin/lavaland/powered/animal_hospital)
+"aaj" = (
+/obj/machinery/door/airlock/hatch,
+/obj/machinery/atmospherics/pipe/simple/general/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/general/hidden{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/ruin/lavaland/powered/animal_hospital)
+"aak" = (
+/obj/machinery/door/airlock/hatch,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/turf/open/floor/wood,
+/area/ruin/lavaland/powered/animal_hospital)
+"aal" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/turf/open/floor/wood,
+/area/ruin/lavaland/powered/animal_hospital)
+"aam" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/turf/open/floor/wood,
+/area/ruin/lavaland/powered/animal_hospital)
 "aan" = (
 /obj/structure/fluff/snowlegion,
 /turf/open/floor/plating/asteroid/snow{
@@ -18,6 +138,35 @@
 	},
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/ruin/lavaland/unpowered/ash_walkers)
+"aao" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/turf/open/floor/wood,
+/area/ruin/lavaland/powered/animal_hospital)
+"aap" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/turf/open/floor/wood,
+/area/ruin/lavaland/powered/animal_hospital)
+"aaq" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/turf/open/floor/wood,
+/area/ruin/lavaland/powered/animal_hospital)
+"aar" = (
+/obj/machinery/atmospherics/pipe/simple/general/hidden,
+/obj/machinery/atmospherics/pipe/simple/general/hidden,
+/turf/open/floor/wood,
+/area/ruin/lavaland/powered/animal_hospital)
+"aas" = (
+/obj/machinery/atmospherics/pipe/simple/general/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/general/hidden{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/ruin/lavaland/powered/animal_hospital)
 "abD" = (
 /obj/structure/table,
 /obj/machinery/light{
@@ -1851,7 +2000,7 @@
 /turf/open/floor/plasteel/cult,
 /area/awaymission)
 "cAU" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/simple/general/hidden{
 	dir = 6
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
@@ -2790,7 +2939,7 @@
 	},
 /area/ruin/space/has_grav/russianbunker)
 "dQy" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
 	dir = 8
 	},
@@ -2981,7 +3130,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/deepstorage/storage)
 "epY" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
@@ -3530,7 +3679,7 @@
 /area/ruin/lavaland/unpowered/ash_walkers)
 "fgJ" = (
 /obj/machinery/door/airlock/hatch,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
@@ -3751,7 +3900,7 @@
 /turf/open/floor/clockwork/reebe,
 /area/awaymission)
 "fyM" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /turf/open/floor/wood,
 /area/ruin/lavaland/powered/animal_hospital)
@@ -3790,7 +3939,7 @@
 	},
 /area/ruin/lavaland/powered)
 "fCM" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 10
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
@@ -3870,7 +4019,7 @@
 "fKZ" = (
 /obj/machinery/door/airlock/hatch,
 /obj/structure/fans/tiny,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /turf/open/floor/wood,
 /area/ruin/lavaland/powered/animal_hospital)
@@ -5302,7 +5451,7 @@
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 6
 	},
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
@@ -5551,7 +5700,7 @@
 /turf/open/floor/circuit/off,
 /area/ruin/lavaland/powered/animal_hospital)
 "ipE" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 9
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
@@ -5751,7 +5900,7 @@
 /turf/open/floor/plating,
 /area/ruin/lavaland/powered/snow_biodome)
 "iFU" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 9
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
@@ -6194,7 +6343,7 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
@@ -6209,7 +6358,7 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/deepstorage/armory)
 "juR" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 5
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
@@ -6818,7 +6967,7 @@
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/awaymission)
 "kmB" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /mob/living/simple_animal/hostile/syndicate/ranged/smg,
 /turf/open/floor/plasteel,
@@ -7274,7 +7423,7 @@
 /turf/open/lava/smooth/lava_land_surface,
 /area/ruin/space/has_grav)
 "lgI" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /turf/open/floor/plasteel,
 /area/ruin/lavaland/powered/animal_hospital)
@@ -7843,7 +7992,7 @@
 /turf/open/floor/wood,
 /area/ruin/lavaland/powered/animal_hospital)
 "mfl" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 10
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
@@ -8598,7 +8747,7 @@
 /turf/closed/wall/mineral/gold,
 /area/ruin/powered)
 "nua" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden,
@@ -8751,8 +8900,8 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/simple/general/hidden,
+/obj/machinery/atmospherics/pipe/simple/general/hidden,
 /turf/open/floor/plasteel/white,
 /area/ruin/lavaland/powered/animal_hospital)
 "nFa" = (
@@ -9716,8 +9865,8 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/machinery/atmospherics/pipe/simple/general/hidden,
+/obj/machinery/atmospherics/pipe/simple/general/hidden,
 /turf/open/floor/plasteel,
 /area/ruin/lavaland/powered/animal_hospital)
 "pjx" = (
@@ -10509,7 +10658,7 @@
 /turf/open/water/safe,
 /area/ruin/lavaland/powered/snow_biodome)
 "qDM" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
@@ -11232,7 +11381,7 @@
 /area/ruin/lavaland/powered/animal_hospital)
 "sbw" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/simple/general/hidden{
 	dir = 6
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
@@ -11590,7 +11739,7 @@
 /turf/open/lava/smooth/lava_land_surface,
 /area/awaymission)
 "sHE" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/simple/general/hidden,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 5
 	},
@@ -13231,7 +13380,7 @@
 /obj/machinery/door/airlock/external{
 	name = "Science Outpost Airlock"
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /obj/structure/fans/tiny,
 /turf/open/floor/plasteel,
@@ -13400,7 +13549,7 @@
 /area/ruin/lavaland/unpowered/ash_walkers)
 "wAd" = (
 /obj/machinery/door/airlock/hatch,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /turf/open/floor/wood,
 /area/ruin/lavaland/powered/animal_hospital)
@@ -13906,7 +14055,7 @@
 /area/ruin/lavaland/unpowered)
 "xKB" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /obj/structure/spider/stickyweb,
 /obj/effect/mob_spawn/human/scientist,
@@ -13971,7 +14120,7 @@
 /area/ruin/lavaland/powered/animal_hospital)
 "xQL" = (
 /obj/machinery/door/airlock/hatch,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
@@ -44574,7 +44723,7 @@ nnS
 kAm
 sVi
 oeA
-epY
+aaa
 nuw
 mba
 ioZ
@@ -44876,7 +45025,7 @@ cuG
 rAf
 ohZ
 oeA
-epY
+aab
 nuw
 mba
 hrG
@@ -45178,7 +45327,7 @@ oeA
 oeA
 oeA
 oeA
-xQL
+aac
 cEj
 oeA
 bNn
@@ -45480,7 +45629,7 @@ rXs
 wkj
 wkj
 uEJ
-qDM
+aad
 rXs
 bNn
 ika
@@ -46084,7 +46233,7 @@ rXs
 hfV
 roD
 roD
-qDM
+aae
 rXs
 oeA
 ika
@@ -46386,7 +46535,7 @@ rXs
 qQq
 hgx
 qQq
-qDM
+aaf
 rXs
 oeA
 ika
@@ -46688,7 +46837,7 @@ rXs
 uEJ
 wkj
 wkj
-qDM
+aag
 rXs
 oeA
 ika
@@ -46990,7 +47139,7 @@ rXs
 sKz
 roD
 roD
-qDM
+aah
 rXs
 oeA
 ika
@@ -47594,7 +47743,7 @@ rXs
 qQq
 qQq
 hgx
-qDM
+aai
 rXs
 oeA
 ika
@@ -48198,7 +48347,7 @@ oeA
 oeA
 oeA
 oeA
-xQL
+aaj
 cEj
 oeA
 ika
@@ -48492,14 +48641,14 @@ hYJ
 piO
 oLp
 nEU
+aak
+aal
+aam
+aao
 wAd
-fyM
-fyM
-fyM
-wAd
-fyM
-fyM
-fyM
+aap
+aaq
+aar
 lmy
 nuw
 oeA
@@ -48802,7 +48951,7 @@ cEj
 nuw
 nuw
 nuw
-epY
+aas
 nuw
 oeA
 ika

@@ -1,4 +1,5 @@
 /datum/weather/void_storm
+	parallax_profile = "void"
 	name = "void storm"
 	desc = "A rare and highly anomalous event often accompanied by unknown entities shredding spacetime continouum. We'd advise you to start running."
 

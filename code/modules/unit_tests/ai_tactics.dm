@@ -628,12 +628,17 @@
 
 ///Коридор: с чистой линией из текущего тайла дальник держит позицию, не дёргается
 /datum/unit_test/ai_tactics_corridor_hold/Run()
-	//строим короткий горизонтальный коридор: стены сверху и снизу от стрелка
+	//строим короткий горизонтальный коридор: стены сверху, снизу и за спиной
+	//стрелка. Тыловая стена обязательна явно: раньше её роль играл космос за
+	//краем резервации, но с кордоном арены тайл позади - проходимый пол с
+	//бонусом укрытия от кольца, и репозиционер честно отступал бы на него.
 	var/turf/floor = run_loc_floor_bottom_left
 	var/turf/wall_north = get_step(floor, NORTH)
 	var/turf/wall_south = get_step(floor, SOUTH)
+	var/turf/wall_west = get_step(floor, WEST)
 	wall_north.ChangeTurf(/turf/closed/wall)
 	wall_south.ChangeTurf(/turf/closed/wall)
+	wall_west.ChangeTurf(/turf/closed/wall)
 	var/mob/living/simple_animal/hostile/shooter = allocate(/mob/living/simple_animal/hostile, floor)
 	shooter.ranged = TRUE
 	shooter.projectiletype = /obj/item/projectile/beam/laser

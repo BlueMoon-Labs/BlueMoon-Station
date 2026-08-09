@@ -142,3 +142,44 @@
 
 	TEST_ASSERT_NULL(acquired_through_wall, "A slime must not target prey behind a wall - the pursuit drops it on the very next tick")
 	TEST_ASSERT_EQUAL(acquired_in_the_open, prey, "The same prey must be acquired with the wall gone, otherwise the check above proves nothing")
+
+///Порог замедления на холоде содержал опечатку: гейт стоял на 183.222 K, а
+///формула в той же строке считала от 283.222 K. Летальный урон от холода
+///начинается на 223.15 K, то есть слайм успевал умереть, ни разу не притормозив,
+///и на морозе бегал на полной скорости.
+/datum/unit_test/slime_cold_slows_before_it_kills/Run()
+	var/mob/living/simple_animal/slime/subject = allocate(/mob/living/simple_animal/slime, run_loc_floor_bottom_left)
+
+	subject.bodytemperature = T20C
+	subject.adjust_bodytemperature(0)
+	var/warm_slowdown = subject.cached_multiplicative_slowdown
+
+	//Заведомо ВЫШЕ порога летального урона (223.15 K) и ниже старого гейта
+	//183.222 K: именно в этой вилке замедление обязано уже работать, иначе оно
+	//не успевает проявиться никогда.
+	subject.bodytemperature = 250
+	subject.adjust_bodytemperature(0)
+	var/cold_slowdown = subject.cached_multiplicative_slowdown
+
+	TEST_ASSERT(cold_slowdown > warm_slowdown, "холодный слайм не стал медленнее тёплого ([cold_slowdown] против [warm_slowdown])")
+
+	//А в тепле замедления быть не должно, иначе проверка выше ловила бы что угодно.
+	subject.bodytemperature = T20C
+	subject.adjust_bodytemperature(0)
+	TEST_ASSERT_EQUAL(subject.cached_multiplicative_slowdown, warm_slowdown, "замедление от холода не снялось при возврате в тепло")
+
+///Вода обязана срывать слайма с жертвы. Раньше apply_water() только наносил урон
+///и сбрасывал цель, да и то лишь у НЕигровых слаймов: присосавшегося слайма
+///нельзя было смыть огнетушителем вообще.
+/datum/unit_test/slime_water_breaks_feeding/Run()
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/mob/living/simple_animal/slime/subject = allocate(/mob/living/simple_animal/slime, run_loc_floor_bottom_left)
+
+	subject.Target = victim
+	subject.Feedon(victim)
+	TEST_ASSERT_EQUAL(subject.buckled, victim, "предпосылка: слайм должен присосаться к жертве")
+
+	subject.apply_water()
+
+	TEST_ASSERT_NULL(subject.buckled, "вода не сорвала слайма с жертвы")
+	TEST_ASSERT_NULL(subject.Target, "вода не сбила слайму цель")

@@ -222,7 +222,7 @@
 	// only assigns .parent on *discovered* members. Mirror that contract here
 	// so the post-condition assertion is meaningful for every pipe.
 	p1.parent = P
-	P.build_pipeline(p1)
+	P.build_pipeline(p1, blocking = TRUE)
 
 	TEST_ASSERT_EQUAL(length(P.members), 4, "All four pipes must be collected into members (got [length(P.members)])")
 	for(var/obj/machinery/atmospherics/pipe/build_pipeline_test_node/p as anything in pipes)
@@ -249,7 +249,7 @@
 
 	var/datum/pipeline/P = new()
 	allocated += P
-	P.build_pipeline(p1)
+	P.build_pipeline(p1, blocking = TRUE)
 
 	TEST_ASSERT_EQUAL(length(P.members), 4, "Diamond topology must collect each pipe exactly once (got [length(P.members)])")
 	TEST_ASSERT_EQUAL(P.air.return_volume(), 4 * 100, "Volume must sum each pipe exactly once (got [P.air.return_volume()])")
@@ -272,7 +272,7 @@
 	// runtimes inside the proc body, so member-count assertions alone wouldn't
 	// catch a regression that reaches setPipenet(null, …). The counter does.
 	var/runtimes_before = GLOB.total_runtimes
-	P.build_pipeline(p1)
+	P.build_pipeline(p1, blocking = TRUE)
 	var/runtimes_added = GLOB.total_runtimes - runtimes_before
 
 	TEST_ASSERT_EQUAL(runtimes_added, 0, "build_pipeline must not raise runtimes on null neighbors (got [runtimes_added])")
@@ -295,7 +295,7 @@
 
 	var/datum/pipeline/P = new()
 	allocated += P
-	P.build_pipeline(p1)
+	P.build_pipeline(p1, blocking = TRUE)
 
 	TEST_ASSERT_EQUAL(length(P.members), 2, "Both pipes must be in members (component goes to other_atmosmch)")
 	TEST_ASSERT_EQUAL(length(P.other_atmosmch), 1, "Component must be added to other_atmosmch exactly once (got [length(P.other_atmosmch)])")
@@ -370,7 +370,7 @@
 	allocated += P
 
 	var/start = REALTIMEOFDAY
-	P.build_pipeline(pipes[1])
+	P.build_pipeline(pipes[1], blocking = TRUE)
 	var/elapsed_ds = REALTIMEOFDAY - start
 
 	TEST_ASSERT_EQUAL(length(P.members), BUILD_PIPELINE_PERF_N, "All [BUILD_PIPELINE_PERF_N] pipes must be collected (got [length(P.members)])")

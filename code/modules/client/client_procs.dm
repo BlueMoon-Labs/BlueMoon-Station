@@ -891,7 +891,11 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		return FALSE
 
 	prefs.ui_zoom_preferences[safe_window_key] = safe_zoom
-	prefs.save_preferences(silent = TRUE)
+	// Зум приходит пачкой, пока игрок тянет рамку окна, а запись savefile
+	// синхронная - она морозит весь процесс, а не только вызывающего. Откладываем
+	// на дебаунс: таймер держит ссылку на префы сам, поэтому запись переживает
+	// логаут даже если клиент ушёл раньше срабатывания.
+	prefs.queue_save_pref(PREF_SAVE_COOLDOWN, TRUE)
 	return TRUE
 
 /client/proc/legacy_zoom_head(window_key, base_zoom = 100)
@@ -1151,6 +1155,17 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		SSstatpanels.icon_run -= src
 		SSstatpanels.ping_run -= src
 		SSstatpanels.currentrun -= src
+	//Оба списка амбиенса - ассоциации С КЛЮЧОМ-КЛИЕНТОМ, то есть жёсткие ссылки.
+	//Чистились они только лениво, когда fire() доберётся до этого клиента, а на
+	//дисконнекте до него уже не доберётся никто: снимаем сами, как со статпанелями.
+	if(SSambience)
+		SSambience.remove_ambience_client(src)
+	//Обе очереди набиваются копией GLOB.clients и между проходами лежат пустыми
+	//(null), поэтому проверяем сам список, а не только подсистему.
+	if(SSblackbox?.exp_update_queue)
+		SSblackbox.exp_update_queue -= src
+	if(SSparallax?.currentrun)
+		SSparallax.currentrun -= src
 	if(GLOB.ahelp_tickets)
 		GLOB.ahelp_tickets.ClientLogout(src)
 
@@ -1207,6 +1222,20 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	// mob.client, и любой client.prefs.X в этом окне рантаймит "Cannot read null.X".
 	// В шторме реконнектов окно долбится непрерывно: раунд 9835 дал залп из
 	// login.dm/parallax_holder.dm/observer.dm/say.dm ровно по этой причине.
+	//Обратные ссылки tgui. Окна tgui за раунд не удаляются вовсе, а каждое пишет
+	//себе client в поле - к логауту активного игрока это десятки живых ссылок на
+	//клиента, и каждая заставляет BYOND искать нас полным обходом мира на del().
+	//Рвём только направление окно -> клиент: списки самого клиента на его рефкаунт
+	//не влияют, а обнулять их в этом окне опасно - до настоящего del() клиент ещё
+	//достижим через mob.client, и любое обращение к ним рантаймило бы.
+	for(var/window_id in tgui_windows)
+		var/datum/tgui_window/open_window = tgui_windows[window_id]
+		open_window?.client = null
+	if(tgui_panel)
+		tgui_panel.client = null
+	//datum/view_data держит клиента в chief ровно столько же, сколько живёт клиент
+	if(view_size)
+		view_size.chief = null
 	QDEL_NULL(tooltips)
 	QDEL_NULL(parallax_holder)
 	QDEL_NULL(void)

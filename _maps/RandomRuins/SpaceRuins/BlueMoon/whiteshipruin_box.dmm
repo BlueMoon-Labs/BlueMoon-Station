@@ -698,7 +698,7 @@
 /turf/open/floor/mineral/titanium/white/airless,
 /area/ruin/space/has_grav/whiteship/box)
 "wk" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/sniper,
+/mob/living/simple_animal/hostile/inteq/ranged/sniper,
 /turf/template_noop,
 /area/template_noop)
 "wP" = (
