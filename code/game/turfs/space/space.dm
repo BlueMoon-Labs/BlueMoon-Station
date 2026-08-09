@@ -22,7 +22,7 @@
 	light_color = COLOR_STARLIGHT
 	light_height = LIGHTING_HEIGHT_SPACE
 	dynamic_lighting = DYNAMIC_LIGHTING_DISABLED
-	override_shell_bounce_sound = null
+	override_shell_bounce_sound = FALSE
 
 	vis_flags = VIS_INHERIT_ID	//when this be added to vis_contents of something it be associated with something on clicking, important for visualisation of turf in openspace and interraction with openspace that show you turf.
 

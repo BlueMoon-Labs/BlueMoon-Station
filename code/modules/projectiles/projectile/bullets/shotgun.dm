@@ -155,17 +155,37 @@
 
 /obj/item/projectile/bullet/breach_slug
 	name = "12g shotgun slug"
-	damage = 240
+	damage = 10
 	sharpness = SHARP_POINTY // SHARP_POINTY
 	range = 4
-	armour_penetration = -100
+	armour_penetration = 0
+
 /obj/item/projectile/bullet/breach_slug/on_hit(atom/target, blocked = FALSE)
+	var/old_damage = damage
+	if(ismob(target) || issilicon(target))
+		damage = 20
 	. = ..()
 	if(!ismob(target))
 		do_sparks(1, TRUE, src)
-	if(istype(target, /obj/machinery/door/airlock))
+	damage = old_damage
+	if(isstructure(target))
+		var/obj/structure/STRUCT = target
+		STRUCT.take_damage(350)
 		return ..()
-	if(istype(target, /obj/structure/window))
+	if(ismachinery(target))
+		var/obj/machinery/M = target
+		if(istype(M, /obj/machinery/door/airlock))
+			playsound(M, 'sound/weapons/magpistol.ogg', 50, 1)
+			var/damage_to_deal = 0
+			if(istype(M, /obj/machinery/door/airlock) && M.max_integrity)
+				damage_to_deal = M.max_integrity * 0.5
+			else
+				damage_to_deal = 200
+			M.take_damage(damage_to_deal, BRUTE, 0, 0)
+		else
+			M.take_damage(350, BRUTE, 0, 0)
+			playsound(M, 'sound/weapons/magpistol.ogg', 50, 1)
 		return ..()
-	if(istype(target, /obj/structure/grille))
-		return ..()
+	return .
+
+

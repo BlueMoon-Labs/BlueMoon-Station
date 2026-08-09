@@ -169,6 +169,16 @@
 	for(var/i in 1 to 3)
 		new /obj/item/grenade/plastic/x4(src)
 
+// 14. Дюратканевый бандольер. В аплинке интекью -RaizlenW
+/obj/item/storage/box/inteq_kit/shotgunner_bundle/PopulateContents()
+	new /obj/item/storage/belt/bandolier/durathread
+	new /obj/item/ammo_box/shotgun/loaded/buckshot
+	new /obj/item/ammo_box/shotgun/loaded/buckshot
+	new /obj/item/ammo_box/shotgun/loaded/buckshot
+	new /obj/item/ammo_box/shotgun/loaded/slug
+	new /obj/item/ammo_box/shotgun/loaded/slug
+	new /obj/item/ammo_box/shotgun/loaded/slug
+
 // -----------------------------------------[Outfit]-----------------------------[Outfit]----------------------------------[Outfit]-------------------------------------
 // 1. Аутфит интекью
 /datum/outfit/inteq_dead

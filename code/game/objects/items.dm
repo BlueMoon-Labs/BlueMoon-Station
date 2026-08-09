@@ -195,6 +195,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 	/// Used if we want to have a custom verb text for throwing. "John Spaceman flicks the ciggerate" for example.
 	var/throw_verb
 
+	var/bayonet_icon_state = "bayonet" //Хук для штык-ножа. -RaizlenW
 /obj/item/Initialize(mapload)
 
 	if(attack_verb)

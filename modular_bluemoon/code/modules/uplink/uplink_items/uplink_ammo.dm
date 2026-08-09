@@ -48,7 +48,7 @@
 	name = "KS-23 buckshot box"
 	desc = "8 картечных зарядов."
 	item = /obj/item/ammo_box/buckshot23
-	cost = 1
+	cost = 2
 	purchasable_from = ~(UPLINK_SYNDICATE)
 	blocked_round_types = list(ROUNDTYPE_DYNAMIC_LIGHT)
 
@@ -57,5 +57,13 @@
 	desc = "8 резиновых зарядов."
 	item = /obj/item/ammo_box/rubbershot23
 	cost = 1
+	purchasable_from = ~(UPLINK_SYNDICATE)
+	blocked_round_types = list(ROUNDTYPE_DYNAMIC_LIGHT)
+
+/datum/uplink_item/ammo/pepper23
+	name = "KS-23 pepper round box"
+	desc = "3 перцовых заряда."
+	item = /obj/item/ammo_box/pepper23
+	cost = 2
 	purchasable_from = ~(UPLINK_SYNDICATE)
 	blocked_round_types = list(ROUNDTYPE_DYNAMIC_LIGHT)

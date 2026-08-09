@@ -117,7 +117,7 @@
 	name = "12g Slug Drum"
 	desc = "Дополнительный барабан на 8 пулевых патронов для дробовика Bulldog. \
 			Теперь в 8 раз меньше шансов подстрелить своих."
-	cost = 3
+	cost = 2
 	item = /obj/item/ammo_box/magazine/m12g/slug
 
 /datum/uplink_item/ammo/shotgun/stun
@@ -125,6 +125,51 @@
 	desc = "Альтернативный барабан на 8 оглушающих пулевых патронов для дробовика Bulldog. \
 			Сказать, что они полностью нелетальные - было бы враньём."
 	item = /obj/item/ammo_box/magazine/m12g/stun
+
+/datum/uplink_item/ammo/shotgun/ammo_box
+	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
+
+/datum/uplink_item/ammo/shotgun/ammo_box/buckshot
+	name = "12g Buckshot Clip"
+	desc = "Обойма с 4 патронами для дробовиков 12 калибра."
+	cost = 1
+	item = /obj/item/ammo_box/shotgun/loaded/buckshot
+
+/datum/uplink_item/ammo/shotgun/ammo_box/laserslug
+	name = "12g Laserslug Clip"
+	desc = "Обойма с 4 лазерными патронами для дробовиков 12 калибра."
+	cost = 1
+	item = /obj/item/ammo_box/shotgun/loaded/laserslug
+
+/datum/uplink_item/ammo/shotgun/ammo_box/pulseslug
+	name = "12g Pulse Slug Clip"
+	desc = "Обойма с 4 импульсными пулями для дробовиков 12 калибра."
+	cost = 1
+	item = /obj/item/ammo_box/shotgun/loaded/pulseslug
+
+/datum/uplink_item/ammo/shotgun/ammo_box/beanbag
+	name = "12g Beanbag Clip"
+	desc = "Обойма с 4 резиновыми пулями для дробовиков 12 калибра."
+	cost = 1
+	item = /obj/item/ammo_box/shotgun/loaded/beanbag
+
+/datum/uplink_item/ammo/shotgun/ammo_box/stunslug
+	name = "12g Stun Slug Clip"
+	desc = "Обойма с 4 оглушающими пулями для дробовиков 12 калибра."
+	cost = 2
+	item = /obj/item/ammo_box/shotgun/loaded/stunslug
+
+/datum/uplink_item/ammo/shotgun/ammo_box/dragons_breath
+	name = "12g Dragon's Breath Clip"
+	desc = "Обойма с 4 зажигательными патронами для дробовиков 12 калибра."
+	cost = 2
+	item = /obj/item/ammo_box/shotgun/loaded/dragons_breath
+
+/datum/uplink_item/ammo/shotgun/ammo_box/breacher
+	name = "12g Breacher Clip"
+	desc = "Обойма с 4 взламывающими патронами для дробовиков 12 калибра."
+	cost = 2
+	item = /obj/item/ammo_box/shotgun/loaded/breacher
 
 /datum/uplink_item/ammo/revolver
 	name = ".357 Speed Loader"

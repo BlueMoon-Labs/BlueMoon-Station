@@ -1,11 +1,12 @@
 /obj/item/gun/ballistic/shotgun
 	name = "Shotgun"
 	desc = "Традиционный дробовик с деревянным прикладом и подствольным магазином на четыре патрона."
+	sawn_desc = "Но люди сверху решили, что теперь мы друзья. Позволь спросить... Тебя глошит чувство стыда за то что ты делал? -Две крепости. Часть 3."
 	icon_state = "shotgun"
 	item_state = "shotgun-wielded"
 	fire_sound = "sound/weapons/gunshotshotgunshot.ogg"
 	w_class = WEIGHT_CLASS_BULKY
-	recoil = 1
+	recoil = 0.5
 	force = 10
 	flags_1 =  CONDUCT_1
 	slot_flags = ITEM_SLOT_BACK
@@ -19,7 +20,7 @@
 
 	var/jammed = FALSE //Имеет ли осечку
 	var/jam_multiplier = 0  //множитель стресса
-	var/jam_threshold = 100
+	var/jam_threshold = 160
 	var/last_fire_time = 0 //Проверка когда был произведён последний выстрел
 	var/uses_jam = FALSE //Будет ли дробовик иметь осечки
 	var/jam_stress = 0 //Показатель стресса.
@@ -34,7 +35,7 @@
 	var/base_recoil = null
 
 	weapon_weight = WEAPON_HEAVY
-	sawn_item_state = "sawnshotgun"
+	sawn_icon_state = "sawnshotgun"
 
 /obj/item/gun/ballistic/shotgun/Initialize(mapload)
     . = ..()
@@ -123,6 +124,16 @@
     var/safe_cost = clamp(stam_cost, 0, user.stamina_buffer)
     user.UseStaminaBuffer(safe_cost)
 
+/obj/item/gun/ballistic/shotgun/proc/get_chambered_stress_added()
+    if(chambered)
+        return chambered.stress_added
+    return 0
+
+/obj/item/gun/ballistic/shotgun/proc/get_chambered_recoil_added()
+    if(chambered)
+        return chambered.recoil_added
+    return 0
+
 /obj/item/gun/ballistic/shotgun/process_fire(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0, stam_cost = 0)
 
     if(uses_jam)
@@ -132,14 +143,27 @@
 
         if(try_jam(user))
             return
+
     bonus_spread += stress_spread_mult
     stam_cost += stress_stam_cost
+
+    var/ammo_recoil_added = 0
+    if(chambered)
+        ammo_recoil_added = chambered.recoil_added
+        recoil = base_recoil + ammo_recoil_added
+
     var/result = ..()
 
     if(result)
         last_fire_time = world.time
-        jam_stress += round(20 * jam_multiplier)
+        var/ammo_stress_added = 0
+        if(chambered)
+            ammo_stress_added = chambered.stress_added
+        jam_stress += round(15 * jam_multiplier) + ammo_stress_added
         update_stress_effects()
+    else
+        recoil = base_recoil
+
     return result
 
 /obj/item/gun/ballistic/shotgun/chamber_round()
@@ -174,7 +198,7 @@
 	playsound(user, 'sound/weapons/Shotguns_reheated/shared/weapon_rattle.ogg', 75, TRUE)
 	playsound(user, pumpsound, 60, TRUE)
 	jam_stress = max(0, jam_stress - 40)
-	shake_camera(user, 2.5, 2)
+	shake_camera(user, 1.8, 1.6)
 	// используем существующую механику
 	pump_unload(user)
 	pump_reload(user)
@@ -219,11 +243,11 @@
 
 	if(play_sound)
 		playsound(M, pumpsound, 60, TRUE)
-		shake_camera(M, 2, 1)
+		shake_camera(M, 1.2, 0.8)
 	pump_unload(M)
 	pump_reload(M)
 	update_icon()
-	jam_stress = max(0, jam_stress - 10)
+	jam_stress = max(0, jam_stress - 15)
 	update_stress_effects()
 	return TRUE
 
@@ -241,7 +265,7 @@
 /obj/item/gun/ballistic/shotgun/examine(mob/user)
     . = ..()
 
-    if(uses_jam) //Детальная инфррмция о механике. Для отладки
+    if(uses_jam)
         . += "<span class='notice'>["DEBUG JAM STATE"]</span>"
         . += "Stress: [jam_stress]"
         . += "Jammed: [jammed ? "YES" : "NO"]"
@@ -254,6 +278,19 @@
             . += "Moderate stress"
         else
             . += "Stable"
+
+    . += "<span class='notice'>DEBUG ICON STATE</span>"
+    . += "icon_state: [icon_state]"
+    . += "item_state: [item_state]"
+    . += "sawn_icon_state: [sawn_icon_state]"
+    . += "sawn_item_state: [sawn_item_state]"
+
+    if(icon)
+        . += "icon file: [icon]"
+    else
+        . += "icon file: NONE"
+
+    . += "w_class: [w_class]"
 
 /obj/item/gun/ballistic/shotgun/on_suppressor_installed(obj/item/suppressor/S)
     . = ..()
@@ -274,9 +311,10 @@
 
 /obj/item/gun/ballistic/shotgun/riot //for spawn in the armory
 	name = "Riot Shotgun"
-	desc = "Надежный дробовик с удлиненным магазином и фиксированным тактическим прикладом, предназначенный для применения в целях нелетального подавления массовых беспорядков."
-	icon_state = "riotshotgun"
-	item_state = "gun_wielded"
+	desc = "Надежный дробовик с удлиненным магазином и тактическим прикладом, предназначенный для применения в целях нелетального подавления массовых беспорядков."
+	icon = 'icons/obj/guns/ShotgunsReheated.dmi'
+	icon_state = "Riot"
+	item_state = "riot-wielded"
 	pumpsound = "sound/weapons/Shotguns_reheated/Riot/Riotchamber.ogg"
 	fire_sound = "sound/weapons/Shotguns_reheated/Riot/Riotfire.ogg"
 	suppressed_fire_sound = 'sound/weapons/Shotguns_reheated/shared/shotgunsuppressed.ogg'
@@ -289,12 +327,17 @@
 	knife_y_offset = 12
 	jam_multiplier = 0.8
 	mag_type = /obj/item/ammo_box/magazine/internal/shot/riot
-	sawn_desc = "Come with me if you want to live."
+	sawn_icon_state = "riot-sawn-e"
+	sawn_item_state = "riot-sawn"
+	sawn_desc = "Следуй за мной если хочешь жить."
 	spread = 0.4
-	unique_reskin = list(
-		"Tactical" = list("icon_state" = "riotshotgun"),
-		"Wood Stock" = list("icon_state" = "wood_riotshotgun")
-	)
+
+/obj/item/gun/ballistic/shotgun/riot/update_icon()
+    . = ..()
+    if(current_skin)
+        icon_state = unique_reskin[current_skin]["icon_state"] + (sawn_off ? "-sawn" : "") + (suppressed ? "-suppressed" : "") + (chambered ? "" : "-e")
+    else
+        icon_state = initial(icon_state) + (sawn_off ? "-sawn" : "") + (suppressed ? "-suppressed" : "") + (chambered ? "" : "-e")
 
 /obj/item/gun/ballistic/shotgun/riot/attackby(obj/item/A, mob/user, params)
 	..()
@@ -308,44 +351,58 @@
 /obj/item/gun/ballistic/shotgun/riot/syndicate
 	name = "\improper Peacebreaker shotgun"
 	desc = "Дробовик компании Scarborough для борьбы с массовыми беспорядками, оснащенный алой отделкой и деревянным тактическим прикладом. Можно поклясться, что эту модель уже вы где-то видели..."
+	sawn_desc = "Нет. И тебя не должно. Мы сами подписались резать друг другу глотки за интересы сверху. Так выпьем за наш шаткий союз! -Две крепости. Часть 4."
 	icon = 'icons/obj/guns/projectile.dmi'
-	icon_state = "riotshotgun_syndie"
-	item_state = "riot_shotgun_syndie"
-	fire_delay = 6
+	icon = 'icons/obj/guns/ShotgunsReheated.dmi'
+	icon_state = "Peacebreaker"
+	item_state = "peacebreaker-wielded"
+	sawn_icon_state = "Peacebreaker-sawn-e"
+	sawn_item_state = "peacebreaker-sawn"
+	fire_delay = 3
 	uses_jam = TRUE
 	can_bayonet = TRUE
 	can_suppress = FALSE
 
-/obj/item/gun/ballistic/shotgun/traitor
+/obj/item/gun/ballistic/shotgun/jackhammer
 	name = "CS-11 'JackHammer'"
-	desc = "Универсальный инструмент для быстрого проникновения в труднодоступные места. Малый магазин, легко крепится на пояс."
-	icon = 'icons/obj/guns/projectile.dmi'
-	icon_state = "riotshotgun_syndie"
-	item_state = "riot_shotgun_syndie"
+	desc = "Универсальный инструмент для быстрого проникновения в труднодоступные места. Малый магазин, легко крепится на пояс, рукоять позволяет стрелять одной рукой."
+	icon = 'icons/obj/guns/ShotgunsReheated.dmi'
+	icon_state = "jackhammer"
+	item_state = "aspis-wielded"
 	pumpsound = "sound/weapons/Shotguns_reheated/Slamfire/Slamfirepump.ogg"
 	fire_sound = "sound/weapons/Shotguns_reheated/KS-23/Ks-23shot.ogg"
 	loadshell_sound = 'sound/weapons/Shotguns_reheated/shared/Shellinsert2.ogg'
-	mag_type = /obj/item/ammo_box/magazine/internal/shot
-	fire_delay = 6
+	mag_type = /obj/item/ammo_box/magazine/internal/shot/breacher
+	fire_delay = 2
 	uses_jam = TRUE
 	jam_multiplier = 3
 	ignore_twohand_requirement = TRUE
 	w_class = WEIGHT_CLASS_SMALL
+
+/obj/item/gun/ballistic/shotgun/jackhammer/update_icon()
+    . = ..()
+    if(current_skin)
+        icon_state = unique_reskin[current_skin]["icon_state"] + (chambered ? "" : "-e")
+    else
+        icon_state = initial(icon_state) + (chambered ? "" : "-e")
 
 //Dual Feed Shotgun
 
 /obj/item/gun/ballistic/shotgun/dual_tube
 	name = "CS-9 'Bastion'"
 	desc = "Современный дробовик с двумя отдельными трубчатыми магазинами, позволяющий быстро переключаться между типами патронов."
-	icon_state = "cycler"
+	icon = 'icons/obj/guns/ShotgunsReheated.dmi'
+	icon_state = "Bastion"
+	item_state = "bastion-wielded"
 	mag_type = /obj/item/ammo_box/magazine/internal/shot/tube
-	w_class = WEIGHT_CLASS_HUGE
+	w_class = WEIGHT_CLASS_BULKY
 	can_suppress = TRUE //У него один ствол, duh. А вот штык-нож поставить будет тяжело
 	can_bayonet = FALSE
 	uses_jam = TRUE
 	fire_delay = 7
 	fire_sound = 'sound/weapons/Shotguns_reheated/Pumpaction/Pumpfire.ogg'
 	pumpsound = 'sound/weapons/Shotguns_reheated/Pumpaction/Pumpchamber.ogg'
+	suppressed_fire_sound = 'sound/weapons/Shotguns_reheated/shared/shotgunsuppressed.ogg'
 	loadshell_sound = 'sound/weapons/Shotguns_reheated/Shared/Shellinstertplastic.wav'
 
 	var/toggled = FALSE
@@ -369,6 +426,7 @@
 		user.visible_message("[user] переворачивает оружие и переключает подачу [src]</span>", "Вы переключаете магазины. Метка на селекторе горит [toggled ? "<span style='color: #25b334'>зелёным</span>" : "<span style='color: #ff0000'>красным</span>"]!")
 		balloon_alert(user, "Вскидывает пушку и переключает подачу!")
 	playsound(user, 'sound/weapons/Shotguns_reheated/shared/Cyclerswap.ogg', 60, 1)
+	update_icon()
 
 /obj/item/gun/ballistic/shotgun/dual_tube/AltClick(mob/living/user)
 	if(!istype(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
@@ -376,15 +434,28 @@
 
 	toggle_tube(user)
 	return TRUE
+
+/obj/item/gun/ballistic/shotgun/dual_tube/update_icon()
+	. = ..()
+	var/state = current_skin ? unique_reskin[current_skin]["icon_state"] : initial(icon_state)
+	state += (suppressed ? "-suppressed" : "")
+	state += (chambered ? "" : "-e")
+	icon_state = state
+	overlays.Cut()
+	if(toggled)
+		overlays += mutable_appearance(icon, "Bastion-selector")
+
 /// Я в рот ебал кодить эту пушку, но она очень крутая. Обожаю ультранасилие(Над своей жопой) - RzW
 /obj/item/gun/ballistic/shotgun/dp12
     name = "Aegis-12 'Teta'"
     desc = "Два дробовика в одной цельнометалической оболочке. Чертёж был импортирован извне, от этой адской машины несёт Марсианским духом за километр. Сборка оставляет желать лучшего, но оружие справляется с прямой функцией."
-    icon_state = "cycler"
+    icon = 'icons/obj/guns/ShotgunsReheated.dmi'
+    icon_state = "Aegis"
+    item_state = "aegis-wielded"
 
     mag_type = /obj/item/ammo_box/magazine/internal/shot/tube
     uses_jam = TRUE
-    jam_multiplier = 1.1
+    jam_multiplier = 1.2
     w_class = WEIGHT_CLASS_HUGE
     fire_delay = 8
 
@@ -421,11 +492,11 @@
     if(chambered && chambered.BB)
         chambered.fire_casing(target, user, params, , suppressed, zone_override, shot_spread, src)
         fired = TRUE
-       	shake_camera(user, 2, 2)
+       	shake_camera(user, 2, 2) //Хотите чизить оружие, минусы которого построены на отдаче? Я запрещаю.
     else if(secondary_chambered && secondary_chambered.BB)
         secondary_chambered.fire_casing(target, user, params, , suppressed, zone_override, shot_spread, src)
         fired = TRUE
-       	shake_camera(user, 3, 3)
+       	shake_camera(user, 2.5, 2.5)
 
     if(!fired)
         return ..() // защита от пустого клика
@@ -452,7 +523,7 @@
 
     if(play_sound)
         playsound(M, pumpsound, 60, TRUE)
-        shake_camera(M, 2, 1)
+        shake_camera(M, 1.2, 1)
 
     pump_unload_dual(M)
     pump_reload_dual(M)
@@ -494,7 +565,7 @@
         balloon_alert(user, "С заметным усилием взводит оружие!")
     playsound(user, 'sound/weapons/Shotguns_reheated/shared/weapon_rattle.ogg', 75, TRUE)
     playsound(user, pumpsound, 60, TRUE)
-    shake_camera(user, 2.5, 2)
+    shake_camera(user, 2, 2)
 
     pump_unload_dual(user)
     pump_reload_dual(user)
@@ -531,6 +602,7 @@
 
         to_chat(user, "<span class='notice'>Вы заряжаете патрон в [src].</span>")
         playsound(user, loadshell_sound, 60, TRUE)
+        shake_camera(user, 0.5, 0.5)
 
         A.update_icon()
         update_icon()
@@ -538,19 +610,27 @@
 
     return FALSE
 
+/obj/item/gun/ballistic/shotgun/dp12/update_icon()
+	. = ..()
+	var/state = initial(icon_state)
+	if(!chambered?.BB && !secondary_chambered?.BB)
+		state += "-e"
+	icon_state = state
 
-/// ДЕБАГ, ЗАКОММЕНТИТЬ ПОСЛЕ ТЕСТОВ
+/* ДЕБАГ, ЗАКОММЕНТИТЬ ПОСЛЕ ТЕСТОВ
 /obj/item/gun/ballistic/shotgun/dp12/examine(mob/user)
     . = ..()
     if(chambered)
         . += "Primary barrel: [chambered.BB ? "live" : "spent"]"
     if(secondary_chambered)
         . += "Secondary barrel: [secondary_chambered.BB ? "live" : "spent"]"
-
+*/
 /obj/item/gun/ballistic/shotgun/dp12/traitor
     name = "HCA-00 'Invictus'"
     desc = "Особая версия двуствольного дробовика сделанная под заказ неким Хейлом. Все детали были подогнанны идеально, а конструкция внушает доверие. Гравировка на корпусе гласит: 'Шок и трепет - лучшее лекарство. Рви и кромсай пока не иссякнут!'"
-    icon_state = "cycler"
+    icon = 'icons/obj/guns/ShotgunsReheated.dmi'
+    icon_state = "Invictus"
+    item_state = "invictus-wielded"
     mag_type = /obj/item/ammo_box/magazine/internal/shot/tube
     uses_jam = FALSE
     w_class = WEIGHT_CLASS_HUGE
@@ -572,6 +652,15 @@
     playsound(user, 'sound/weapons/Shotguns_reheated/shared/Cyclerswap.ogg', 60, TRUE)
     return TRUE
 
+/obj/item/gun/ballistic/shotgun/dp12/traitor/proc/fire_second_barrel(atom/target, mob/living/user, params, suppressed, zone_override, shot_spread)
+    if(QDELETED(src) || QDELETED(user) || !secondary_chambered)
+        return
+    secondary_chambered.fire_casing(target, user, params, , suppressed, zone_override, shot_spread, src)
+    playsound(user, fire_sound, 75, TRUE)
+    user.do_attack_animation(src)
+    shake_camera(user, 1.5, 1.5)
+    user.adjustStaminaLoss(10)
+
 /obj/item/gun/ballistic/shotgun/dp12/traitor/process_fire(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 2, stam_cost = 0)
 
     if(!doubleshot_mode)
@@ -583,27 +672,39 @@
         return
     var/shot_spread = get_stressed_shot_spread(bonus_spread)
     chambered.fire_casing(target, user, params, , suppressed, zone_override, shot_spread, src)
-    shake_camera(user, 5, 4)
+    shake_camera(user, 2.5, 3)
     secondary_chambered.fire_casing(target, user, params, , suppressed, zone_override, shot_spread, src)
     apply_stressed_shot_stamina(user, stam_cost)
     playsound(user, fire_sound, 75, TRUE)
-// Sleep отвечает за задержу между выстрелами в синхронном режиме
-    sleep(1.2)
+// addtimer отвечает за задержу между выстрелами в синхронном режиме
     playsound(user, fire_sound, 75, TRUE)
+    addtimer(CALLBACK(src, PROC_REF(fire_second_barrel), target, user, params, suppressed, zone_override, shot_spread), 1.2)
 
-// перчинка для выстрела
-    user.do_attack_animation(src)
-    shake_camera(user, 5, 5)
-    user.adjustStaminaLoss(5)
-    recoil = 7
     last_fire_time = world.time
-    update_icon()
     return TRUE
 
 /obj/item/gun/ballistic/shotgun/dp12/traitor/examine(mob/user)
     . = ..()
     . += "Alt-click чтобы сменить режим стрельбы."
-    . += "Селектор стоит на: [doubleshot_mode ? "СИНХ." : "СТАНД."]"
+    . += "Селектор стоит на режиме: [doubleshot_mode ? "СИНХ." : "СТАНД."]"
+
+/obj/item/gun/ballistic/shotgun/dp12/traitor/update_icon()
+	var/total_ammo = 0
+	if(magazine)
+		total_ammo += magazine.ammo_count()
+	if(alternate_magazine)
+		total_ammo += alternate_magazine.ammo_count()
+	if(chambered && chambered.BB)
+		total_ammo += 1
+	if(secondary_chambered && secondary_chambered.BB)
+		total_ammo += 1
+	var/state = initial(icon_state)
+	if(total_ammo <= 1)
+		state = "[state]-e"
+	else if(total_ammo <= 2)
+		state = "[state]-m"
+	icon_state = state
+
 //due to code weirdness, and the fact that a refactor is coming soon anyway, the barman's shotgun and maint shotgun are in revolver.dm
 
 /// SLAMFIRE ДРОБОВИКИ
@@ -611,26 +712,27 @@
 /obj/item/gun/ballistic/shotgun/slamfire
     name = "Model 156-C"
     desc = "Репродукция старого полицейского дробовика, где ещё не был обрезан УСМ. Позволяет стрелять без остановки в правильной стойке."
-    icon_state = "riotshotgun"
-    item_state = "gun_wielded"
+    sawn_desc = "Мы вели эти партизанские войны, и для чего? Чтобы вновь восстать из пепла и надеяться на светлое будущее без корпораций? -Две крепости. Часть 1."
+    icon = 'icons/obj/guns/ShotgunsReheated.dmi'
+    icon_state = "156-C"
+    item_state = "156c-wielded"
+    sawn_icon_state = "156-C-sawn"
+    sawn_item_state = "156c-sawn"
     pumpsound = "sound/weapons/Shotguns_reheated/Slamfire/Slamfirepump.ogg"
     fire_sound = "sound/weapons/Shotguns_reheated/Riot/Riotfire.ogg"
     loadshell_sound = 'sound/weapons/Shotguns_reheated/shared/Shellinsert1.ogg'
+    suppressed_fire_sound = 'sound/weapons/Shotguns_reheated/shared/shotgunsuppressed.ogg'
     mag_type = /obj/item/ammo_box/magazine/internal/shot
     uses_jam = TRUE
     jam_multiplier = 1.3
     fire_delay = 4
-    can_suppress = TRUE //Самое частое оружие в лутпуле. Пусть игрок узнает о том что можно у него выбор таким образом.
+    can_suppress = TRUE //Самое частое оружие в лутпуле. Пусть игрок узнает о том что можно у него есть возможность кастомизации таким образом.
     can_bayonet = TRUE
-    knife_x_offset = 30
-    knife_y_offset = 12
+    knife_x_offset = 28
+    knife_y_offset = 10
     ignore_twohand_requirement = TRUE
     weapon_weight = WEAPON_HEAVY
     var/auto_pump_delay = 4
-
-/obj/item/gun/ballistic/shotgun/slamfire/lethal
-    mag_type = /obj/item/ammo_box/magazine/internal/shot/lethal
-
 
 /datum/movespeed_modifier/slamfire
     multiplicative_slowdown = 1.5
@@ -652,7 +754,8 @@
 
 /obj/item/gun/ballistic/shotgun/slamfire/ComponentInitialize()
     . = ..()
-    AddComponent(/datum/component/two_handed, force, force)
+
+    AddComponent(/datum/component/two_handed, wieldsound = "sound/weapons/Shotguns_reheated/slamfire/HandlingIN.ogg", unwieldsound = "sound/weapons/Shotguns_reheated/slamfire/HandlingOUT.ogg")
 
 /obj/item/gun/ballistic/shotgun/slamfire/proc/get_twohanded()
     return GetComponent(/datum/component/two_handed)
@@ -691,9 +794,6 @@
 
 /obj/item/gun/ballistic/shotgun/slamfire/equipped(mob/user, slot)
     . = ..()
-    var/datum/component/two_handed/TH = get_twohanded()
-    if(TH?.wielded)
-        TH.unwield(user)
 
 /obj/item/gun/ballistic/shotgun/slamfire/dropped(mob/user)
     . = ..()
@@ -701,15 +801,16 @@
 
 /obj/item/gun/ballistic/shotgun/slamfire/proc/on_wield(obj/item/source, mob/living/user)
     SIGNAL_HANDLER
+
     cleanup_holder_state(user)
     user.add_movespeed_modifier(/datum/movespeed_modifier/slamfire)
 
 /obj/item/gun/ballistic/shotgun/slamfire/proc/on_unwield(obj/item/source, mob/living/user)
     SIGNAL_HANDLER
+
     cleanup_holder_state(user)
 
 /obj/item/gun/ballistic/shotgun/slamfire/AltClick(mob/living/user)
-
     if(!istype(user))
         return FALSE
     if(!user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
@@ -720,9 +821,9 @@
         return FALSE
 
     var/datum/component/two_handed/TH = get_twohanded()
-
     if(!TH)
         return FALSE
+
     if(TH.wielded)
         TH.unwield(user)
     else
@@ -788,12 +889,41 @@
         return
     pump(user, FALSE, TRUE)
 
+/obj/item/gun/ballistic/shotgun/slamfire/attackby(obj/item/A, mob/user, params)
+	..()
+	if(A.tool_behaviour == TOOL_SAW || istype(A, /obj/item/gun/energy/plasmacutter))
+		sawoff(user)
+	if(istype(A, /obj/item/melee/transforming/energy))
+		var/obj/item/melee/transforming/energy/W = A
+		if(W.active)
+			sawoff(user)
+
+/obj/item/gun/ballistic/shotgun/slamfire/on_sawoff(mob/user)
+	. = ..()
+
+	recoil += 1
+	spread += 2
+
+/obj/item/gun/ballistic/shotgun/slamfire/update_icon()
+    . = ..()
+    if(current_skin)
+        icon_state = unique_reskin[current_skin]["icon_state"] + (sawn_off ? "-sawn" : "") + (suppressed ? "-suppressed" : "") + (chambered ? "" : "-e")
+    else
+        icon_state = initial(icon_state) + (sawn_off ? "-sawn" : "") + (suppressed ? "-suppressed" : "") + (chambered ? "" : "-e")
+
+/obj/item/gun/ballistic/shotgun/slamfire/lethal
+    mag_type = /obj/item/ammo_box/magazine/internal/shot/lethal
+
 /obj/item/gun/ballistic/shotgun/slamfire/traitor
     name = "M-156 'Hell-Stitch'"
-    desc = "Тяжело модифицированный полицейский дробовик, обвёнутый стальной проволкой. Идёт в комплекте с лазерным штык-ножом."
+    desc = "Тяжело модифицированный полицейский дробовик, обёрнутый стальной проволкой. Идёт в комплекте с лазерным штык-ножом."
+    icon = 'icons/obj/guns/ShotgunsReheated.dmi'
+    icon_state = "HellStitch"
+    item_state = "hellstitch-wielded"
     fire_delay = 5
     can_suppress = FALSE //Зачем менять эксклюзивный модуль на глушитель?
     can_bayonet = TRUE
+    w_class = WEIGHT_CLASS_HUGE //Нельзя положить на спину для большей сложности в обращении.
     var/mob/living/bound_user
     var/frenzy = 0
     var/max_frenzy = 300
@@ -808,22 +938,28 @@
     var/last_jitter = 0
 
     var/list/stage_up_bank = list(
-        'sound/weapons/Shotguns_reheated/slamfire/VO/whisper1.ogg',
-        'sound/weapons/Shotguns_reheated/slamfire/VO/whisper1.ogg',
-        'sound/weapons/Shotguns_reheated/slamfire/VO/whisper1.ogg'
+        'sound/weapons/Shotguns_reheated/slamfire/Hellstitch/inject1.ogg',
+        'sound/weapons/Shotguns_reheated/slamfire/Hellstitch/inject2.ogg',
+        'sound/weapons/Shotguns_reheated/slamfire/Hellstitch/inject3.ogg'
     )
 
     var/list/stage_down_bank = list(
-        'sound/weapons/Shotguns_reheated/slamfire/VO/fade1.ogg',
-        'sound/weapons/Shotguns_reheated/slamfire/VO/fade2.ogg',
-        'sound/weapons/Shotguns_reheated/slamfire/VO/fade3.ogg'
+        'sound/weapons/Shotguns_reheated/slamfire/Hellstitch/fade1.ogg',
+        'sound/weapons/Shotguns_reheated/slamfire/Hellstitch/fade2.ogg',
+        'sound/weapons/Shotguns_reheated/slamfire/Hellstitch/fade3.ogg'
     )
+
+    var/list/DemonChatter_bank = list(
+		'sound/weapons/Shotguns_reheated/slamfire/Hellstitch/DemonChatter1.ogg',
+		'sound/weapons/Shotguns_reheated/slamfire/Hellstitch/DemonChatter2.ogg',
+		'sound/weapons/Shotguns_reheated/slamfire/Hellstitch/DemonChatter3.ogg'
+	)
 
     var/list/frenzy_emote_bank = list(
         "laugh",
         "psychoticshort",
         "psychotic",
-		"cry",
+		"giggle",
         "gasp"
     )
 
@@ -856,20 +992,20 @@
     )
 
     var/last_stage_sound = 0
-    var/stage_sound_cooldown = 50
+    var/stage_sound_cooldown = 20
     var/processing_active = FALSE
     var/last_emote = 0
-    var/emote_cooldown = 60
+    var/emote_cooldown = 30
     var/frenzy_fullscreen_category = "slamfire_frenzy"
     var/overload_mood_category = "slamfire_overload"
     var/last_voice = 0
-    var/voice_cooldown = 30
+    var/voice_cooldown = 60
 
     var/list/voice_pickup_bank = list(
         "Вот ты где.",
         "Владелец. Отлично. Теперь за дело.",
         "Мы не закончили здесь.",
-        "Нейроинтерфейс активен. Начать работу.",
+        "Нейроинтерфейс активен. Начало работы...",
         "Биометрическая связь установлена. Оператор идентифицирован.",
         "Датчики функционируют. Подача реагента возобновлена."
     )
@@ -905,7 +1041,7 @@
 
     var/list/voice_overload_stop = list(
         "Цикл повторяется.",
-        "Критический перегрев систем. Б***Ь, твой мозг почти спекся.",
+        "Критический перегрев систем. Б---Ь, твой мозг почти спекся...",
         "Пульс превышает физические возможности, ввод бета-адреноблокатора...",
         "Синхронизация разорвана. Недостаточно образцов.",
         "Процесс завершён. Запуск повторного цикла...",
@@ -919,6 +1055,17 @@
     bayonet = B
     update_icon()
 
+/obj/item/gun/ballistic/shotgun/slamfire/traitor/attackby(obj/item/A, mob/user, params) //зачем вообще делать обрез из выскокотехнологичного оружия? Ты все провода обрежешь.
+    if(A.tool_behaviour == TOOL_SAW || istype(A, /obj/item/gun/energy/plasmacutter))
+        to_chat(user, "<span class='notice'>Оружие выглядит слишком технологичным, я точно что-то сломаю.</span>")
+        return TRUE
+    if(istype(A, /obj/item/melee/transforming/energy))
+        var/obj/item/melee/transforming/energy/W = A
+        if(W.active)
+            to_chat(user, "<span class='notice'>Оружие выглядит слишком технологичным, я точно что-то сломаю.</span>")
+            return TRUE
+    return ..()
+
 /obj/item/gun/ballistic/shotgun/slamfire/traitor/proc/speak(message, force = FALSE)
     if(!message)
         return
@@ -926,6 +1073,7 @@
         return
     last_voice = world.time
     say(message)
+    playsound(get_turf(src), pick(DemonChatter_bank), 70, FALSE)
 
 /obj/item/gun/ballistic/shotgun/slamfire/traitor/proc/speak_voice(list/lines, force = FALSE)
     if(!lines || !lines.len)
@@ -984,8 +1132,9 @@
     RegisterSignal(bound_user, COMSIG_PARENT_QDELETING, PROC_REF(on_bound_user_death))
     user.apply_damage(10, BRUTE, BODY_ZONE_L_ARM)
     user.apply_damage(10, BRUTE, BODY_ZONE_R_ARM)
-    playsound(user, 'sound/weapons/Shotguns_reheated/slamfire/VO/initialization.ogg', 70, FALSE)
-    to_chat(user, span_userdanger("Что-то впивается в руки."))
+    shake_camera(user, 2, 2)
+    playsound(user, 'sound/weapons/Shotguns_reheated/slamfire/Hellstitch/initialization.ogg', 70, FALSE)
+    to_chat(user, span_userdanger("Что-то впивается в ладони!"))
 
 /obj/item/gun/ballistic/shotgun/slamfire/traitor/proc/reject_user(mob/living/user)
     to_chat(user, span_userdanger("[src] отвергает твою хватку."))
@@ -1008,8 +1157,16 @@
 
 /obj/item/gun/ballistic/shotgun/slamfire/traitor/pickup(mob/user)
     . = ..()
-    if(isliving(user))
-        speak_voice(voice_pickup_bank)
+
+    if(!isliving(user))
+        return
+
+    if(!bound_user)
+        try_bind_user(user)
+    else if(bound_user != user)
+        reject_user(user)
+
+    speak_voice(voice_pickup_bank)
 
 /obj/item/gun/ballistic/shotgun/slamfire/traitor/proc/clear_bond()
     if(bound_user && !QDELETED(bound_user))
@@ -1042,14 +1199,14 @@
     last_stage_sound = world.time
 
     if(ascending)
-        playsound(user, pick(stage_up_bank), 60, TRUE)
+        playsound(user, pick(stage_up_bank), 60, FALSE)
         var/msg = pick(stage_up_text_bank)
         user.visible_message(
             span_warning("Дыхание [user] становится более неровным."),
             span_userdanger(msg)
         )
     else
-        playsound(user, pick(stage_down_bank), 60, TRUE)
+        playsound(user, pick(stage_down_bank), 60, FALSE)
         var/msg = pick(stage_down_text_bank)
         user.visible_message(
             span_notice("Похоже что [user] немного успокаивается."),
@@ -1356,9 +1513,15 @@
     jam_stress = max(0, jam_stress - 10)
     update_stress_effects()
 
+/obj/item/gun/ballistic/shotgun/slamfire/traitor/update_icon_state()
+	if(current_skin)
+		icon_state = "[unique_reskin[current_skin]["icon_state"]][chambered ? "" : "-e"]"
+	else
+		icon_state = "[initial(icon_state)][chambered ? "" : "-e"]"
+
 /obj/item/gun/ballistic/shotgun/slamfire/traitor/examine(mob/user)
     . = ..()
-
+/*
     if(!user?.client)
         return
     . += "<hr>"
@@ -1382,7 +1545,7 @@
         . += span_notice("LOW SYNCHRONIZATION")
     else
         . += span_notice("DORMANT")
-
+*/
 ///////////////////////
 // BOLT ACTION RIFLE //
 ///////////////////////
@@ -1493,41 +1656,37 @@
 		user.dropItemToGround(src, TRUE)
 	discard_gun(user)
 
-// Automatic Shotguns//
+/// AUTOMATIC SHOTGUNS
+/obj/item/gun/ballistic/shotgun/automatic
+    var/automatic_cycle = TRUE
+
 /obj/item/gun/ballistic/shotgun/automatic/process_fire(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0, stam_cost = 0)
-
-    if(uses_jam)
-        if(!can_fire_check(user))
-            return FALSE
-        if(try_jam(user))
-            return FALSE
-
     var/result = ..()
-
     if(!result)
         return FALSE
+    // Логика полуавтоматов
+    if(automatic_cycle)
+        // выброс гильзы
+        if(chambered)
+            chambered.forceMove(drop_location())
+            chambered.bounce_away()
+            chambered = null
 
-    // eject spent shell
-    if(chambered)
-        chambered.forceMove(drop_location())
-        chambered.bounce_away()
-        chambered = null
-
-    // load next shell
-    if(magazine && magazine.ammo_count())
-        chambered = magazine.get_round()
-    jammed = FALSE
-    last_fire_time = world.time
-    jam_stress += round(15 * jam_multiplier)
-    update_stress_effects()
+        // сразу же зарядить новый патрон
+        if(magazine && magazine.ammo_count())
+            chambered = magazine.get_round()
     update_icon()
     return TRUE
+
 
 /obj/item/gun/ballistic/shotgun/automatic/combat
 	name = "Combat Shotgun"
 	desc = "Современная модификация полуавтоматиеского дробовика со складным прикладом и предохранителем, предотвращающим выстрел в сложенном состоянии. Для близких знакомств."
-	icon_state = "cshotgun"
-	item_state = "cshotgun-wielded"
+	sawn_desc = " 'Чем больше шкаф, чем громче падает.' Эта мысль всегда помогала мне, когда я шёл сжигать станции Трейзен под знаменем киберсана... -Две крепости. Часть 2."
+	icon = 'icons/obj/guns/ShotgunsReheated.dmi'
+	icon_state = "Combat"
+	sawn_icon_state = "Combat-sawn"
+	item_state = "combat-wielded"
 	fire_delay = 5
 	fire_sound = 'sound/weapons/Shotguns_reheated/Semi-auto/Semifire.ogg'
 	pumpsound = 'sound/weapons/Shotguns_reheated/Semi-auto/Semichamber.ogg'
@@ -1538,35 +1697,35 @@
 	can_suppress = FALSE //Высокий шанс что будут ошибки определения веса с механикой приклада.
 	jam_multiplier = 0.8
 	w_class = WEIGHT_CLASS_NORMAL
-	unique_reskin = list(
-		"Tactical" = list("icon_state" = "cshotgun"),
-		"Slick" = list("icon_state" = "cshotgun_slick")
-	)
 	var/stock = FALSE
+	var/stock_removed = FALSE
 	var/extend_sound = 'sound/weapons/Shotguns_reheated/Semi-auto/Stockunfold.ogg'
-
-
-/obj/item/gun/ballistic/shotgun/automatic/combat/pindicate
-	pin = /obj/item/firing_pin/implant/pindicate
-
-/obj/item/gun/ballistic/shotgun/automatic/combat/warden
-	name = "Warden's Combat Shotgun"
-	desc = "Модифицированная версия полуавтоматического боевого дробовика со складным прикладом и предохранителем, предотвращающим выстрел в сложенном состоянии. Предназначен для ближнего боя."
-	fire_delay = 3
-	recoil = 6
-	spread = 2
 
 /obj/item/gun/ballistic/shotgun/automatic/combat/AltClick(mob/living/user)
 	if(!istype(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user)) || item_flags & IN_STORAGE)
 		return
 	toggle_stock(user)
+	update_item_state()
 	. = ..()
 
 /obj/item/gun/ballistic/shotgun/automatic/combat/examine(mob/user)
 	. = ..()
 	. += "<span class='notice'>Alt-click чтобы разложить приклад.</span>"
 
+/obj/item/gun/ballistic/shotgun/automatic/combat/attackby(obj/item/A, mob/user, params)
+	..()
+	if(A.tool_behaviour == TOOL_SAW || istype(A, /obj/item/gun/energy/plasmacutter))
+		sawoff(user)
+		update_item_state()
+	if(istype(A, /obj/item/melee/transforming/energy))
+		var/obj/item/melee/transforming/energy/W = A
+		if(W.active)
+			sawoff(user)
+			update_item_state()
+
 /obj/item/gun/ballistic/shotgun/automatic/combat/proc/toggle_stock(mob/living/user)
+	if(stock_removed)
+		return
 	stock = !stock
 	if(stock)
 		w_class = WEIGHT_CLASS_HUGE
@@ -1581,37 +1740,81 @@
 		spread = 2
 	playsound(src.loc, extend_sound, 50, 1)
 	update_icon()
+	update_item_state()
 	shake_camera (user, 0.5, 0.5)
 
-/obj/item/gun/ballistic/shotgun/automatic/combat/update_icon_state()
-	icon_state = "[current_skin ? unique_reskin[current_skin]["icon_state"] : "cshotgun"][stock ? "" : "c"]"
+/obj/item/gun/ballistic/shotgun/automatic/combat/proc/update_item_state()
+	var/state = initial(item_state)
+	if(!stock && !stock_removed)
+		sawn_item_state += "-folded"
+	item_state = state
 
 /obj/item/gun/ballistic/shotgun/automatic/combat/afterattack(atom/target, mob/living/user, flag, params)
-	if(!stock)
-		shoot_with_empty_chamber(user)
-		to_chat(user, "<span class='warning'>[src] не выстрелит со сложенным прикладом!</span>")
-	else
-		. = ..()
-		update_icon()
+    if(!stock_removed && !stock)
+        shoot_with_empty_chamber(user)
+        to_chat(user, "<span class='warning'>[src] не выстрелит со сложенным прикладом!</span>")
+        return
+
+    . = ..()
+    update_icon()
+    update_item_state()
+
+/obj/item/gun/ballistic/shotgun/automatic/combat/on_sawoff(mob/user)
+    . = ..()
+
+    stock_removed = TRUE
+    stock = TRUE
+    recoil += 2
+    spread += 1
+    update_icon()
+    update_item_state()
+/obj/item/gun/ballistic/shotgun/automatic/combat/update_icon()
+	. = ..()
+
+	var/state = initial(icon_state)
+	if(sawn_off)
+		state += "-sawn"
+	if(!stock && !stock_removed)
+		state += "-folded"
+	if(!chambered)
+		state += "-e"
+	icon_state = state
+
+/obj/item/gun/ballistic/shotgun/automatic/combat/pindicate
+	pin = /obj/item/firing_pin/implant/pindicate
+
+/obj/item/gun/ballistic/shotgun/automatic/combat/warden
+	name = "Warden's Combat Shotgun"
+	desc = "Модифицированная версия полуавтоматического боевого дробовика со складным прикладом и предохранителем, предотвращающим выстрел в сложенном состоянии. Предназначен для ближнего боя."
+	fire_delay = 3
+	spread = 2
 
 /obj/item/gun/ballistic/shotgun/automatic/traitor
-	name = "HC-X 'Aspis' "
+	name = "HC-X 'Aspis'"
 	desc = "Дешёвый полуавтоматический дробовик, созданный для быстрых устранений целей. Лёгкий, компактный и брезгливый. Имеет резьбу для установки дульных устройств."
-	icon_state = "cshotgun"
-	item_state = "cshotgun-wielded"
+	icon = 'icons/obj/guns/ShotgunsReheated.dmi'
+	icon_state = "Aspis"
+	item_state = "aspis-wielded"
 	fire_delay = 3
 	fire_sound = 'sound/weapons/Shotguns_reheated/Semi-auto/Semifire.ogg'
 	pumpsound = 'sound/weapons/Shotguns_reheated/Devastator/devastatorchamber.ogg'
 	loadshell_sound = 'sound/weapons/Shotguns_reheated/Shared/Shellinsertlight.wav'
 	suppressed_fire_sound = 'sound/weapons/Shotguns_reheated/Devastator/devastatorsuppressed.ogg'
-	mag_type = /obj/item/ammo_box/magazine/internal/shot
+	mag_type = /obj/item/ammo_box/magazine/internal/shot/lethal
 	can_suppress = TRUE
 	uses_jam = TRUE
 	jam_multiplier = 1
 	ignore_twohand_requirement = TRUE
 	w_class = WEIGHT_CLASS_NORMAL
 
-
+/obj/item/gun/ballistic/shotgun/automatic/traitor/update_icon()
+	. = ..()
+	var/state = "Aspis"
+	if(suppressed)
+		state += "-suppressed"
+	if(!chambered)
+		state += "-e"
+	icon_state = state
 
 /obj/item/gun/ballistic/shotgun/doublebarrel/hook
 	name = "Hook Modified Sawn-Off Shotgun"
@@ -1639,7 +1842,7 @@
 	mag_type = /obj/item/ammo_box/magazine/internal/shot/levergun
 	icon_state = "levercarabine"
 	item_state = "leveraction"
-	sawn_item_state = "maresleg"
+	sawn_icon_state = "maresleg"
 
 /obj/item/gun/ballistic/shotgun/leveraction/on_sawoff(mob/user)
 	magazine.max_ammo-- // sawing off drops from 7+1 to 6+1

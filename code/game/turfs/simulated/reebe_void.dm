@@ -4,7 +4,7 @@
 	layer = SPACE_LAYER
 	baseturfs = /turf/open/indestructible/reebe_void
 	planetary_atmos = TRUE
-	override_shell_bounce_sound = null //forever falling
+	override_shell_bounce_sound = FALSE //forever falling
 	tiled_dirt = FALSE
 	dirt_buildup_allowed = FALSE
 

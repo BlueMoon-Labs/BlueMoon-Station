@@ -52,13 +52,21 @@
 	cost = 20
 	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
 
-/datum/uplink_item/dangerous/aspisbundle
-    name = "HC-X 'Aspis'"
+/datum/uplink_item/bundles_tc/aspisbundle
+    name = "HC-X 'Aspis' Bundle"
     desc = "Дешёвый полуавтоматический дробовик, созданный для дерзких убийств. Идёт в комплекте с глушителем и патронами."
     item = /obj/item/storage/briefcase/aspisbundle
     cost = 15
     surplus = 3
     purchasable_from = (UPLINK_SYNDICATE)
+
+/datum/uplink_item/bundles_tc/shotgunner_bundle
+	name = "12 Gauge Surplus Bundle"
+	desc = "Бандольер, начинённый патронами 12 калибра для решения задач общего спектра."
+	item = /obj/item/storage/box/inteq_kit/shotgunner_bundle
+	cost = 10
+	surplus = 2
+	purchasable_from = (UPLINK_NUKE_OPS)
 
 /datum/uplink_item/bundles_tc/scarp_bundle
 	name = "Sleeping Carp Bundle"

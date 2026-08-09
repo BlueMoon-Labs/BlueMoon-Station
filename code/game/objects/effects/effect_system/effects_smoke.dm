@@ -313,6 +313,107 @@
 
 
 /////////////////////////////////////////////
+// Pepper (pepperspray) smoke
+/////////////////////////////////////////////
+
+/obj/effect/particle_effect/smoke/pepper
+	lifetime = 5
+	opaque = TRUE
+
+	process()
+		lifetime--
+		if(lifetime < 1)
+			kill_smoke()
+			return FALSE
+
+		var/turf/T = get_turf(src)
+		if(!T)
+			return FALSE
+		var/fraction = 1/initial(lifetime)
+		for(var/atom/movable/AM in T)
+			if(AM.type == src.type)
+				continue
+			if(T.intact && AM.level == 1)
+				continue
+			reagents.reaction(AM, TOUCH, fraction)
+
+		reagents.reaction(T, TOUCH, fraction)
+		return TRUE
+
+	smoke_mob(mob/living/carbon/M)
+		if(lifetime<1)
+			return FALSE
+		if(!istype(M))
+			return FALSE
+		var/mob/living/carbon/C = M
+		if(C.internal != null || C.has_smoke_protection())
+			return FALSE
+		var/fraction = 1/initial(lifetime)
+		reagents.copy_to(C, fraction*reagents.total_volume)
+		reagents.reaction(M, INGEST, fraction)
+		return TRUE
+
+
+/datum/effect_system/smoke_spread/pepper
+	var/obj/chemholder
+	effect_type = /obj/effect/particle_effect/smoke/pepper
+
+	New()
+		..()
+		chemholder = new /obj()
+		var/datum/reagents/R = new/datum/reagents(200)
+		chemholder.reagents = R
+		R.my_atom = chemholder
+
+	Destroy()
+		qdel(chemholder)
+		chemholder = null
+		return ..()
+
+	set_up(datum/reagents/carry = null, radius = 1, loca, silent = FALSE)
+		if(isturf(loca))
+			location = loca
+		else
+			location = get_turf(loca)
+		amount = radius
+		carry.copy_to(chemholder, carry.total_volume)
+
+		if(!silent)
+			var/contained = ""
+			for(var/reagent in carry.reagent_list)
+				contained += " [reagent] "
+			if(contained)
+				contained = "\[[contained]\]"
+
+			var/where = "[AREACOORD(location)]"
+			if(carry.my_atom && carry.my_atom.fingerprintslast)
+				var/mob/M = get_mob_by_key(carry.my_atom.fingerprintslast)
+				var/more = ""
+				if(M)
+					more = "[ADMIN_LOOKUPFLW(M)] "
+				message_admins("Smoke: ([ADMIN_VERBOSEJMP(location)])[contained]. Key: [more ? more : carry.my_atom.fingerprintslast].")
+				log_game("A chemical smoke reaction has taken place in ([where])[contained]. Last touched by [carry.my_atom.fingerprintslast].")
+			else
+				message_admins("Smoke: ([ADMIN_VERBOSEJMP(location)])[contained]. No associated key.")
+				log_game("A chemical smoke reaction has taken place in ([where])[contained]. No associated key.")
+
+	start()
+		var/mixcolor = mix_color_from_reagents(chemholder.reagents.reagent_list)
+		if(holder)
+			location = get_turf(holder)
+		var/obj/effect/particle_effect/smoke/pepper/S = new effect_type(location)
+
+		if(chemholder.reagents.total_volume > 1)
+			chemholder.reagents.copy_to(S, chemholder.reagents.total_volume)
+
+		if(mixcolor)
+			S.add_atom_colour(mixcolor, FIXED_COLOUR_PRIORITY)
+		S.amount = amount
+		if(S.amount)
+			S.spread_smoke()
+
+
+/////////////////////////////////////////////
 // Transparent smoke
 /////////////////////////////////////////////
 

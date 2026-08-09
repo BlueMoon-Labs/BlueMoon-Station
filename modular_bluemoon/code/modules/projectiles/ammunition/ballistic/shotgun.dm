@@ -5,6 +5,7 @@
 	icon_state = "23slug"
 	caliber = "23"
 	projectile_type = /obj/item/projectile/bullet/slug23
+	recoil_added = 2
 
 /obj/item/ammo_casing/slug_rubber23
 	name = "23 rubber slug"
@@ -13,6 +14,7 @@
 	icon_state = "23ruberslug"
 	caliber = "23"
 	projectile_type = /obj/item/projectile/bullet/slug_rubber23
+	recoil_added = 1.5
 
 /obj/item/ammo_casing/buckshot23
 	name = "23 buckshot shell"
@@ -23,6 +25,17 @@
 	projectile_type = /obj/item/projectile/bullet/pellet/buckshot23
 	pellets = 8
 	variance = 25
+	recoil_added = 2
+
+/obj/item/ammo_casing/pepper23
+	name = "KS23 pepper round"
+	desc = "A KS-23 round that releases a short peppersmoke cloud on impact."
+	icon = 'modular_bluemoon/icons/obj/ammo.dmi'
+	icon_state = "23buckshot"
+	caliber = "23"
+	pellets = 3
+	projectile_type = /obj/item/projectile/bullet/ks23_round
+	recoil_added = 1.2
 
 /obj/item/ammo_casing/rubbershot23
 	name = "23 rubbershot shell"
@@ -33,6 +46,7 @@
 	projectile_type = /obj/item/projectile/bullet/pellet/rubbershot23
 	pellets = 8
 	variance = 25
+	recoil_added = 1.2
 
 /obj/item/ammo_box/slug23
 	name = "ammo box (23 slugs)"
@@ -57,6 +71,15 @@
 	icon = 'modular_bluemoon/icons/obj/ammo.dmi'
 	icon_state = "buckshot23box"
 	ammo_type = /obj/item/ammo_casing/buckshot23
+	caliber = "23"
+	max_ammo = 12
+	multiple_sprites = 0
+
+/obj/item/ammo_box/pepper23
+	name = "ammo box (KS23 pepper rounds)"
+	icon = 'modular_bluemoon/icons/obj/ammo.dmi'
+	icon_state = "buckshot23box"
+	ammo_type = /obj/item/ammo_casing/pepper23
 	caliber = "23"
 	max_ammo = 12
 	multiple_sprites = 0

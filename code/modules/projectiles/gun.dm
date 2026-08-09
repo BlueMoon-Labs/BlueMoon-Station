@@ -21,7 +21,6 @@
 	attack_speed = CLICK_CD_RANGE
 	var/ranged_attack_speed = CLICK_CD_RANGE
 	var/melee_attack_speed = CLICK_CD_MELEE
-
 	var/gun_flags = NONE
 	var/fire_sound = "gunshot"
 	var/default_fire_sound //Кэширование для глушителя - RaizlenW
@@ -29,6 +28,7 @@
 	var/suppressed = null					//whether or not a message is displayed when fired
 	var/can_suppress = FALSE
 	var/can_unsuppress = TRUE
+	var/makeshift_threading = FALSE // Возможность установки глушителя на оружие с самодельной резьбой - RaizlenW
 	var/recoil = 0						//boom boom shake the room
 	var/clumsy_check = TRUE
 	var/obj/item/ammo_casing/chambered = null
@@ -78,6 +78,7 @@
 	var/mutable_appearance/knife_overlay
 	var/can_bayonet = FALSE
 	var/can_mount_both = FALSE //Может ли глушитель и штык-нож быть установлены одновременно? -RaizlenW
+	var/makeshift_bayonet_attachment = FALSE // Возможность установки штык-ножа на обрез. - RaizlenW
 	//SPLURT EDIT ADD
 	var/bayonet_diagonal = FALSE
 	//SPKURT EDIT ADD END
@@ -210,17 +211,19 @@
 
 	if(gun_light)
 		. += "Фонарик \a [gun_light] [can_flashlight ? "" : "намертво"] прицеплен."
-		if(can_flashlight) //if it has a light and this is false, the light is permanent.
+		if(can_flashlight)
 			. += "<span class='info'>Похоже, что [gun_light] можно <b>отвинтить</b> from [src].</span>"
 	else if(can_flashlight)
-		. += "It has a mounting point for a <b>seclite</b>."
+		. += "<span class='info'>Видно крепление для <b>фонарика</b>.</span>"
 
 	if(bayonet)
 		. += "Штык \a [bayonet] [can_bayonet ? "" : "намертво"] примкнут."
-		if(can_bayonet) //if it has a bayonet and this is false, the bayonet is permanent.
+		if(can_bayonet)
 			. += "<span class='info'>Похоже, что [bayonet] можно <b>отвинтить</b> от [src].</span>"
+	if(can_bayonet && sawn_off && !makeshift_bayonet_attachment)
+		. += "<span class='info'>Похоже, что [src] <b>не имеет крепления</b> для штык-ножа. Но её можно <b>сделать</b>.</span>"
 	else if(can_bayonet)
-		. += "Видно крепление для <b>штыка</b>."
+		. += "<span class='info'>Видно крепление для <b>штыка</b>.</span>"
 
 /obj/item/gun/proc/fire_select()
 	var/mob/living/carbon/human/user = usr
@@ -298,6 +301,8 @@
 /obj/item/gun/proc/can_attach_suppressor(obj/item/suppressor/S, mob/user)
 	if(!can_suppress)
 		return FALSE
+	if(sawn_off && !makeshift_threading)
+		return FALSE
 	if(suppressed)
 		return FALSE
 	if(bayonet && !can_mount_both)
@@ -306,6 +311,8 @@
 
 /obj/item/gun/proc/can_attach_bayonet(obj/item/kitchen/knife/K, mob/user)
 	if(!can_bayonet)
+		return FALSE
+	if(sawn_off && !makeshift_bayonet_attachment)
 		return FALSE
 	if(bayonet)
 		return FALSE
@@ -492,7 +499,7 @@
 			pin.auth_fail(user)
 			return FALSE
 	else
-		to_chat(user, "<span class='warning'>Спусковой крючок [src] не поддаётся. У оружия нет бойка-пина для стрельбы!</span>")
+		to_chat(user, "<span class='warning'>Спусковой крючок [src] не поддаётся. У оружия нет бойка для стрельбы!</span>")
 	return FALSE
 
 /obj/item/gun/proc/recharge_newshot()
@@ -605,6 +612,17 @@
 	return ..()
 
 /obj/item/gun/attackby(obj/item/I, mob/user, params)
+	if(istype(I, /obj/item/stack/cable_coil) && sawn_off && !makeshift_bayonet_attachment)
+		if(I.use_tool(src, user, 0, 5, skill_gain_mult = EASY_USE_TOOL_MULT))
+			makeshift_bayonet_attachment = TRUE
+			to_chat(user, "<span class='notice'>Вы наматываете провода, создавая самодельное крепление для штык-ножа.</span>")
+			knife_x_offset = 20
+			playsound (user, 'sound/items/handling/tape_pickup.ogg', 50, 1)
+			update_icon()
+		else
+			to_chat(user, "<span class='warning'>Нужно как минимум 5 отрезков провода, чтобы сделать крепление!</span>")
+		return TRUE
+
 	if(user.a_intent == INTENT_HARM)
 		return ..()
 	else if(istype(I, /obj/item/flashlight/seclite))
@@ -627,19 +645,23 @@
 		if(!K.bayonet)
 			return ..()
 		if(!can_attach_bayonet(K, user))
-		{
 			if(bayonet)
 				to_chat(user, span_warning("[src] уже имеет штык-нож!"))
-			else if(suppressed && !can_mount_both)
-				to_chat(user, span_warning("Вы не можете установить штык-нож одновременно с глушителем на [src]!"))
-			return ..()
-		}
+		if(sawn_off && !makeshift_bayonet_attachment)
+			to_chat(user, span_warning("На [src] отсутствует крепление для штык-ножа!"))
+			return TRUE
+		else if(!can_bayonet)
+			to_chat(user, span_warning("Вы не можете установить штык-нож на [src]!"))
+			return TRUE
+		if(suppressed && !can_mount_both)
+			to_chat(user, span_warning("Вы не можете установить штык-нож одновременно с глушителем на [src]!"))
+			return TRUE
 		if(!user.transferItemToLoc(I, src))
-			return
-		to_chat(user, span_notice("Вы примкнули [K] на штыковой наконечник [src]."))
+			return FALSE
+		to_chat(user, span_notice("Вы примкнули штык-нож на штыковой наконечник [src]."))
 		bayonet = K
 		update_icon()
-
+		return TRUE
 /obj/item/gun/screwdriver_act(mob/living/user, obj/item/I)
 	. = ..()
 	if(.)
@@ -654,10 +676,10 @@
 		return remove_gun_attachment(user, I, item_to_remove)
 
 	else if(gun_light && can_flashlight) //if it has a gun_light and can_flashlight is false, the flashlight is permanently attached.
-		return remove_gun_attachment(user, I, gun_light, "unscrewed")
+		return remove_gun_attachment(user, I, gun_light, "откручиваете")
 
 	else if(bayonet && can_bayonet) //if it has a bayonet, and the bayonet can be removed
-		return remove_gun_attachment(user, I, bayonet, "unfix")
+		return remove_gun_attachment(user, I, bayonet, "отмыкаете")
 
 	else if(pin && user.is_holding(src))
 		user.visible_message(span_warning("[user] пытается извлечь [pin] из [src], используя [I]."),
@@ -691,8 +713,25 @@
 	. = ..()
 	if(.)
 		return
+
 	if(!user.canUseTopic(src, BE_CLOSE, FALSE, NO_TK))
 		return
+
+	if(sawn_off && !makeshift_threading)
+		user.visible_message(
+			span_notice("[user] начинает делать нарезы в стволе [src]."),
+			span_notice("Вы начинаете нарезать резьбу в стволе [src].")
+		)
+
+		if(I.use_tool(src, user, 50, volume = 50))
+			makeshift_threading = TRUE
+			can_suppress = TRUE
+
+			to_chat(user, span_notice("Вы закончили делать резьбу в стволе. Теперь можно установить глушитель на [src]."))
+			update_icon()
+
+		return TRUE //Теперь, когда оружие обрезано, игрок первым делом делает нарезы, а затем извлекает пин. - RaizlenW
+
 	if(pin && user.is_holding(src))
 		user.visible_message(span_warning("[user] пытается извлечь [pin] из [src], используя [I]."),
 		span_notice("Вы пытаетесь убрать [pin] из [src]. (Это займёт время, [DisplayTimeText(FIRING_PIN_REMOVAL_DELAY)].)"), null, 3)
@@ -745,7 +784,7 @@
 /obj/item/gun/proc/set_gun_light(obj/item/flashlight/seclite/new_light)
 	// Doesn't look like this should ever happen? We're replacing our old light with our old light?
 	if(gun_light == new_light)
-		CRASH("Tried to set a new gun light when the old gun light was also the new gun light.")
+		CRASH("Попытался установить новый оружейный фонарь, когда старый оружейный фонарь и был тем самым новым.")
 
 	. = gun_light
 
@@ -800,22 +839,22 @@
 
 /obj/item/gun/update_overlays()
 	. = ..()
+
 	if(gun_light)
 		var/mutable_appearance/flashlight_overlay = get_gunlight_overlay()
 		if(istype(flashlight_overlay))
 			. += flashlight_overlay
-
 	if(bayonet)
 		var/mutable_appearance/knife_overlay
-		var/state = "bayonet"							//Generic state.
-		if(bayonet.icon_state in icon_states('icons/obj/guns/bayonets.dmi'))		//Snowflake state?
-			state = bayonet.icon_state
+		var/state = "bayonet"
 		var/icon/bayonet_icons = 'icons/obj/guns/bayonets.dmi'
-		//SPLURT EDIT ADD
-		if(bayonet_diagonal == TRUE )
+		if(bayonet.bayonet_icon_state)
+			state = bayonet.bayonet_icon_state
+		else if(bayonet.icon_state in icon_states(bayonet_icons))
+			state = bayonet.icon_state
+		if(bayonet_diagonal == TRUE)
 			state = "bayonet_diagonal"
 			bayonet_icons = 'modular_splurt/icons/obj/guns/bayonets.dmi'
-		//SPLURT EDIT ADD END
 		knife_overlay = mutable_appearance(bayonet_icons, state)
 		knife_overlay.pixel_x = knife_x_offset
 		knife_overlay.pixel_y = knife_y_offset
@@ -891,9 +930,9 @@
 
 	if(!do_mob(user, target, 100) || user.zone_selected != BODY_ZONE_PRECISE_GROIN)
 		if(user == target)
-			user.visible_message("<span class='notice'>[user] decided not to shoot.</span>")
+			user.visible_message("<span class='notice'>[user] решил не стрелять.</span>")
 		else if(target && target.Adjacent(user))
-			target.visible_message("<span class='notice'>[user] has decided to spare [target] balls.</span>", "<span class='notice'>[user] has decided to spare your balls!</span>")
+			target.visible_message("<span class='notice'>[user] решил пощадить яйца [target].</span>", "<span class='notice'>[user] решил пощадить ваши яйца!</span>")
 		busy_action = FALSE
 		return FALSE
 	busy_action = FALSE

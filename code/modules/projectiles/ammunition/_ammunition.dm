@@ -25,6 +25,8 @@
 	var/harmful = TRUE //pacifism check for boolet, set to FALSE if bullet is non-lethal
 	/// Zero-G recoil strength (added to existing drift via newtonian_impulse)
 	var/newtonian_force = 1
+	var/stress_added = 0 // Дополнительный стресс, добавляемый оружию при выстреле (Механика дробовиков) -RaizlenW
+	var/recoil_added = 0 // Дополнительная отдача, добавляемая оружию при выстреле -RaizlenW
 
 /obj/item/ammo_casing/spent
 	name = "spent bullet casing"
@@ -46,7 +48,7 @@
 
 /obj/item/ammo_casing/update_icon_state()
 	icon_state = "[initial(icon_state)][BB ? "-live" : ""]"
-	desc = "[initial(desc)][BB ? "" : " This one is spent."]"
+	desc = "[initial(desc)][BB ? "" : " Этот патрон </b>стрелянный<b>."]"
 
 //proc to magically refill a casing with a new projectile
 /obj/item/ammo_casing/proc/newshot() //For energy weapons, syringe gun, shotgun shells and wands (!).
@@ -90,7 +92,7 @@
 	SpinAnimation(10, 1)
 
 	var/matrix/M = matrix(transform)
-	M.Turn(rand(-170,170))
+	M.Turn(rand(-170, 170))
 	transform = M
 
 	pixel_x = rand(-12, 12)
@@ -99,17 +101,28 @@
 	var/turf/T = get_turf(src)
 
 	if(still_warm && T && T.bullet_sizzle)
-		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(playsound), src, 'sound/items/welder.ogg', 20, 1), bounce_delay)
+		addtimer(CALLBACK(
+			GLOBAL_PROC,
+			GLOBAL_PROC_REF(playsound),
+			src,
+			'sound/items/welder.ogg',
+			20,
+			1
+		), bounce_delay)
 		return
 
 	var/final_sound = get_shell_bounce_sound()
 
-	if(T)
-		if(T.override_shell_bounce_sound == FALSE)
-			return
-
+	if(T && T.override_shell_bounce_sound)
 		if(istext(T.override_shell_bounce_sound))
 			final_sound = T.override_shell_bounce_sound
 
 	if(final_sound)
-		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(playsound), src, final_sound, 60, 1), bounce_delay)
+		addtimer(CALLBACK(
+			GLOBAL_PROC,
+			GLOBAL_PROC_REF(playsound),
+			src,
+			final_sound,
+			60,
+			1
+		), bounce_delay)

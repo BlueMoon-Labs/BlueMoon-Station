@@ -86,7 +86,7 @@
 	icon = 'icons/blanks/blank_title.png'
 	icon_state = ""
 	plane = SPLASHSCREEN_PLANE
-	override_shell_bounce_sound = null
+	override_shell_bounce_sound = FALSE
 
 INITIALIZE_IMMEDIATE(/turf/closed/indestructible/splashscreen)
 
@@ -170,7 +170,7 @@ INITIALIZE_IMMEDIATE(/turf/closed/indestructible/splashscreen)
 	icon = 'icons/turf/walls.dmi'
 	icon_state = "snowrock"
 	bullet_sizzle = TRUE
-	override_shell_bounce_sound = null
+	override_shell_bounce_sound = FALSE
 
 /turf/closed/indestructible/rock/snow/ice
 	name = "iced rock"

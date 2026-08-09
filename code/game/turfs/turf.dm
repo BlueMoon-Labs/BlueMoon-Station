@@ -26,7 +26,7 @@ GLOBAL_LIST_EMPTY(station_turfs)
 
 	var/explosion_level = 0	//for preventing explosion dodging
 	var/explosion_id = 0
-	var/override_shell_bounce_sound = null
+	var/override_shell_bounce_sound = FALSE
 	var/requires_activation	//add to air processing after initialize?
 	var/changing_turf = FALSE
 	var/bullet_sizzle = FALSE //used by ammo_casing/bounce_away() to determine if the shell casing should make a sizzle sound when it's ejected over the turf

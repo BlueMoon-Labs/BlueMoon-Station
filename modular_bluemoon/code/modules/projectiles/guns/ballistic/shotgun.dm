@@ -63,18 +63,23 @@
 /obj/item/gun/ballistic/shotgun/KS23
 	name = "KS-23 shotgun"
 	desc = "War crimes are fun!"
-	icon = 'modular_bluemoon/icons/obj/guns/projectile.dmi'
-	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_lefthand.dmi'
-	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_righthand.dmi'
+	icon = 'icons/obj/guns/ShotgunsReheated.dmi'
+	icon_state = "Ks23"
+	item_state = "ks23-wielded"
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/back.dmi'
 	fire_sound = 'sound/weapons/Shotguns_reheated/KS-23/Ks-23shot.ogg'
 	pumpsound = 'sound/weapons/Shotguns_reheated/KS-23/Ks-23Pumpaction.ogg'
 	loadshell_sound = 'sound/weapons/Shotguns_reheated/Shared/Shellinstertplastic.wav'
-	icon_state = "KS-23"
-	item_state = "KS-23"
 	force = 15 //Дробовик тяжёлый, следовательно...
 	fire_delay = 6
 	mag_type = /obj/item/ammo_box/magazine/internal/shot/KS23
+
+/obj/item/gun/ballistic/shotgun/KS23/update_icon()
+    . = ..()
+    if(current_skin)
+        icon_state = unique_reskin[current_skin]["icon_state"] + (chambered ? "" : "-e")
+    else
+        icon_state = initial(icon_state) + (chambered ? "" : "-e")
 
 /obj/item/gun/ballistic/shotgun/KS23/pump_unload(mob/M)
 	if(chambered)//We have a shell in the chamber
@@ -83,7 +88,30 @@
 		chambered = null
 
 /obj/item/gun/ballistic/shotgun/KS23/Inquisitor
-	name = "Righteous Wrath of the Faithful"
-	desc = "Don't be afraid, John!"
-	icon_state = "KS-23TheInquisitor"
-	item_state = "KS-23TheInquisitor"
+	name = "Праведный Гнев Верующих"
+	desc = "Не бойся, Джон!"
+	icon_state = "Ks23inq"
+	item_state = "ks23inq-wielded"
+
+// Вы ведь любите военные преступления?
+/obj/item/projectile/bullet/ks23_round
+	name = "KS23 pepper round"
+	damage = 5
+	sharpness = SHARP_NONE
+	range = 4
+	armour_penetration = 0
+
+/obj/item/projectile/bullet/ks23_round/on_hit(atom/target, blocked = FALSE)
+	. = ..()
+	// Создание завессы при попадании
+	var/turf/T = get_turf(target)
+	if(!T)
+		T = get_turf(src)
+	var/datum/reagents/R = new/datum/reagents(200)
+	R.add_reagent(/datum/reagent/consumable/condensedcapsaicin, 100)
+	// Датум на создание дыма
+	var/datum/effect_system/smoke_spread/pepper/SM = new /datum/effect_system/smoke_spread/pepper
+	SM.set_up(R, 1, T, TRUE)
+	SM.start()
+	playsound(T, 'sound/effects/spray2.ogg', 40, 1)
+	return BULLET_ACT_HIT

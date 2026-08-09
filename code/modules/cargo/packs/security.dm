@@ -136,25 +136,52 @@
 		new /obj/effect/spawner/bundle/crate/surplusrifle(C)
 
 /datum/supply_pack/security/randomshells
-	name = "Emergency shotgunner surplus box"
-	desc = "Набор случайных списанных боеприпасов 12 калибра. Никаких возвратов!!"
-	cost = 3000
-	contains = list(
-		/obj/effect/spawner/lootdrop/ammo/shotgun,
-		/obj/effect/spawner/lootdrop/ammo/shotgun,
-		/obj/effect/spawner/lootdrop/ammo/shotgun,
-		/obj/effect/spawner/lootdrop/ammo/shotgun,
-		/obj/effect/spawner/lootdrop/ammo/shotgun,
-		/obj/effect/spawner/lootdrop/ammo/shotgun,
-		/obj/effect/spawner/lootdrop/ammo/shotgun,
-		/obj/effect/spawner/lootdrop/ammo/shotgun,
-		/obj/effect/spawner/lootdrop/ammo/shotgun,
-		/obj/effect/spawner/lootdrop/ammo/shotgun,
-		/obj/effect/spawner/lootdrop/ammo/shotgun,
-		/obj/effect/spawner/lootdrop/ammo/shotgun,
-		/obj/effect/spawner/lootdrop/ammo/shotgun,
-		/obj/effect/spawner/lootdrop/ammo/shotgun,
-	)
+	name = "Emergency shotgunner surplus crate"
+	desc = "Набор списанных боеприпасов 12 калибра. Никаких возвратов!!"
+	cost = 3500
+	contains = list(/obj/item/ammo_box/shotgun/loaded/buckshot,
+		/obj/item/ammo_box/shotgun/loaded/buckshot,
+		/obj/item/ammo_box/shotgun/loaded/buckshot,
+		/obj/item/ammo_box/shotgun/loaded/buckshot,
+		/obj/item/ammo_casing/shotgun/slug,
+		/obj/item/ammo_casing/shotgun/slug,
+		/obj/item/ammo_casing/shotgun/slug,
+		/obj/item/ammo_casing/shotgun/slug,
+		/obj/item/ammo_casing/shotgun/slug,
+		/obj/item/ammo_casing/shotgun/slug,
+		/obj/item/ammo_casing/shotgun/slug,
+		/obj/item/ammo_casing/shotgun/slug,
+		/obj/item/ammo_casing/shotgun/slug,
+		/obj/item/ammo_casing/shotgun/slug,
+		/obj/item/ammo_casing/shotgun/techshell,
+		/obj/item/ammo_casing/shotgun/stunslug,
+		/obj/item/ammo_casing/shotgun/stunslug,
+		/obj/item/ammo_casing/shotgun/laserslug,
+		/obj/item/ammo_casing/shotgun/laserslug,
+		/obj/item/ammo_casing/shotgun/laserslug,
+		/obj/item/ammo_casing/shotgun/ion,
+		/obj/item/ammo_casing/shotgun/ion,
+		/obj/item/ammo_casing/shotgun/improvised,
+		/obj/item/ammo_casing/shotgun/improvised,
+		/obj/item/ammo_casing/shotgun/improvised,
+		/obj/item/ammo_casing/shotgun/improvised,
+		/obj/item/ammo_casing/shotgun/improvised,
+		/obj/item/ammo_casing/shotgun/improvised,
+		/obj/item/ammo_casing/shotgun/improvised,
+		/obj/item/ammo_casing/shotgun/improvised,
+		/obj/item/ammo_casing/shotgun/improvised,
+		/obj/item/ammo_casing/shotgun/improvised,
+		/obj/item/ammo_casing/shotgun/improvised,
+		/obj/item/ammo_casing/shotgun/improvised,
+		/obj/item/ammo_casing/shotgun/improvised,
+		/obj/item/ammo_casing/shotgun/improvised,
+		/obj/item/ammo_casing/shotgun/improvised,
+		/obj/item/ammo_casing/shotgun/improvised,
+		/obj/item/ammo_casing/shotgun/improvised,
+		/obj/item/ammo_casing/shotgun/improvised,
+		/obj/item/ammo_casing/shotgun/improvised,
+		/obj/item/ammo_casing/shotgun/improvised,
+		/obj/item/ammo_box/shotgun/loaded/pulseslug)
 	crate_name = "Emergency shotgunner surplus crate"
 /datum/supply_pack/security/sechardsuit
 	name = "Sec Hardsuits crate"

@@ -348,7 +348,7 @@
 	desc = "A powerful long ranged anti-material rifle that fires charged particle beams to obliterate targets."
 	id = "beamrifle"
 	build_type = PROTOLATHE
-	materials = list(/datum/material/iron = 10000, /datum/material/glass = 5000, /datum/material/diamond = 5000, /datum/material/uranium = 8000, /datum/material/silver = 4500, /datum/material/gold = 5000)
+	materials = list(/datum/material/iron = 25000, /datum/material/diamond = 2000, /datum/material/silver = 5000)
 	build_path = /obj/item/storage/lockbox/weapon/beamrifle
 	category = list("Weapons")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY

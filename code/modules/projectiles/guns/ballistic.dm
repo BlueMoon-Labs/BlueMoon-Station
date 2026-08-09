@@ -10,7 +10,8 @@
 	var/obj/item/ammo_box/magazine/magazine
 	var/casing_ejector = TRUE //whether the gun ejects the chambered casing
 	var/magazine_wording = "magazine"
-	var/sawn_item_state = "gun"
+	var/sawn_icon_state = "gun"
+	var/sawn_item_state = "gun" //смена модельки оружия от третьего лица при обрезании ствола. ПОНЯТИЯ ИНВЕРТИРОВАНЫ, РАНЬШЕ БЫЛ ТОЛЬКО SAWN_ITEM_STATE, ЧТО МЕНЯЛ ИКОНКУ -RaizlenW
 	/// Можно ли сменить магазин, пока внутри есть другой
 	var/tactical_reload = FALSE
 	var/load_sound = SFX_GUN_INSERT_FULL_MAGAZINE
@@ -22,18 +23,18 @@
 	var/base_w_class = null //Защита от того, что если другая система заменит вес предмета, то игра будет знать оригинальный. Это универсальный скрипт -RaizlenW
 
 /obj/item/gun/ballistic/Initialize(mapload)
-    . = ..()
-    if(!default_fire_sound)
-        default_fire_sound = fire_sound
-    if(isnull(base_w_class))
-        base_w_class = w_class
-    if(!spawnwithmagazine)
-        update_icon()
-        return
-    if(!magazine)
-        magazine = new mag_type(src)
-    chamber_round()
-    update_icon()
+	. = ..()
+	if(!default_fire_sound)
+		default_fire_sound = fire_sound
+	if(isnull(base_w_class))
+		base_w_class = w_class
+	if(!spawnwithmagazine)
+		update_icon()
+		return
+	if(!magazine)
+		magazine = new mag_type(src)
+	chamber_round()
+	update_icon()
 
 /obj/item/gun/ballistic/update_icon_state()
 	if(current_skin)
@@ -73,7 +74,10 @@
 	if(istype(A, /obj/item/suppressor))
 		var/obj/item/suppressor/S = A
 		if(!can_attach_suppressor(S, user))
-			if(suppressed)
+			if(sawn_off)
+				to_chat(user, span_warning("Вы не можете установить глушитель на [src], потому что резьба для [S] отсутсвует!"))
+				return
+			else if(suppressed)
 				to_chat(user, span_warning("[src] уже имеет установленный глушитель!"))
 			else if(bayonet && !can_mount_both)
 				to_chat(user, span_warning("Вы не можете установить штык-нож одновременно с глушителем на [src]!"))
@@ -97,11 +101,11 @@
 		if(user.transferItemToLoc(AM, src))
 			magazine = AM
 			if(oldmag)
-				to_chat(user, span_notice("You perform a tactical reload on \the [src], replacing the [magazine_wording]."))
+				to_chat(user, span_notice("Вы совершаете тактическую перезарядку с [src], заменяя [magazine_wording]."))
 				user.put_in_hands(oldmag)
 				oldmag.update_icon()
 			else
-				to_chat(user, span_notice("You load a new [magazine_wording] into \the [src]."))
+				to_chat(user, span_notice("Вы загружаете свежий [magazine_wording] в [src]."))
 			if(magazine.ammo_count())
 				playsound(src, load_sound, 70, 1)
 				if(!chambered)
@@ -116,10 +120,10 @@
 				user.update_inv_hands()
 			return TRUE
 		else
-			to_chat(user, span_warning("You cannot seem to get \the [src] out of your hands!"))
+			to_chat(user, span_warning("Вы не можете разобраться как убрать [src] из рук!"))
 			return
 	else
-		to_chat(user, span_notice("There's already a [magazine_wording] in \the [src]."))
+		to_chat(user, span_notice("[magazine_wording] уже находится в [src]."))
 
 /obj/item/gun/ballistic/proc/on_suppressor_installed(obj/item/suppressor/S)
     w_class = base_w_class + S.w_class
@@ -161,28 +165,33 @@
 		else
 			playsound(src, eject_empty_sound, 70, 1)
 		magazine = null
-		to_chat(user, "<span class='notice'>You pull the magazine out of \the [src].</span>")
+		to_chat(user, "<span class='notice'>Вы вытаскиваете магазин из [src].</span>")
 	else if(chambered)
 		AC.forceMove(drop_location())
 		AC.bounce_away()
 		chambered = null
-		to_chat(user, "<span class='notice'>You unload the round from \the [src]'s chamber.</span>")
+		to_chat(user, "<span class='notice'>Вы вытаскиваете патрон из [src].</span>")
 		playsound(src, unlock_sound, 70, 1)
 	else
-		to_chat(user, "<span class='notice'>There's no magazine in \the [src].</span>")
+		to_chat(user, "<span class='notice'>В [src] отсутствует магазин.</span>")
 	update_icon()
 	return
 
 
 /obj/item/gun/ballistic/examine(mob/user)
 	. = ..()
-	. += "It has [get_ammo()] round\s remaining."
 	if(suppressed)
 		. += "[suppressed] [can_suppress ? "" : "намертво"] примкнут."
-		if(can_suppress) //if it has a bayonet and this is false, the bayonet is permanent.
+		if(can_suppress)
 			. += "<span class='info'>Похоже, что [suppressed] можно <b>открутить голыми руками</b> от [src].</span>"
+	if (can_suppress && sawn_off && !makeshift_threading)
+		. += "<span class='info'>Похоже, что [src] <b>не имеет резьбы</b> для глушителя. Но её можно <b>сделать</b>.</span>"
 	else if(can_suppress)
 		. += "Видно крепление для <b>глушителя</b>."
+	if(sawn_icon_state)
+		. += "<span class='info'>[sawn_icon_state] [sawn_off ? "" : "Если найти пилу, то [src] можно будет <b>укоротить ствол</b>."]</span>"
+		if(sawn_off)
+			. += "<span class='info'>Похоже, что [src] <b>уже укорочен</b>.</span>"
 
 /obj/item/gun/ballistic/proc/get_ammo(countchambered = 1)
 	var/boolets = 0 //mature var names for mature people
@@ -197,12 +206,12 @@
 /obj/item/gun/ballistic/suicide_act(mob/living/user)
 	var/obj/item/organ/brain/B = user.getorganslot(ORGAN_SLOT_BRAIN)
 	if (B && chambered && chambered.BB && can_trigger_gun(user) && !chambered.BB.nodamage)
-		user.visible_message("<span class='suicide'>[user] is putting the barrel of [src] in [user.ru_ego()] mouth.  It looks like [user.p_theyre()] trying to commit suicide!</span>")
+		user.visible_message("<span class='suicide'>[user] приставляет ствол [src] к [user.ru_ego()] рту.  Похоже, [user.p_theyre()] пытается покончить с собой!</span>")
 		sleep(25)
 		if(user.is_holding(src))
 			var/turf/T = get_turf(user)
 			process_fire(user, user, FALSE, null, BODY_ZONE_HEAD)
-			user.visible_message("<span class='suicide'>[user] blows [user.ru_ego()] brain[user.p_s()] out with [src]!</span>")
+			user.visible_message("<span class='suicide'>[user] вышибает [user.ru_ego()] мозги[user.p_s()] с помощью [src]!</span>")
 			playsound(src, 'sound/weapons/dink.ogg', 30, 1)
 			var/turf/target = get_ranged_target_turf(user, turn(user.dir, 180), BRAINS_BLOWN_THROW_RANGE)
 			B.Remove()
@@ -214,10 +223,10 @@
 			B.throw_at(target, BRAINS_BLOWN_THROW_RANGE, BRAINS_BLOWN_THROW_SPEED, callback=gibspawner)
 			return(BRUTELOSS)
 		else
-			user.visible_message("<span class='suicide'>[user] panics and starts choking to death!</span>")
+			user.visible_message("<span class='suicide'>[user] паникует и начинает задыхаться!</span>")
 			return(OXYLOSS)
 	else
-		user.visible_message("<span class='suicide'>[user] is pretending to blow [user.ru_ego()] brain[user.p_s()] out with [src]! It looks like [user.p_theyre()] trying to commit suicide!</b></span>")
+		user.visible_message("<span class='suicide'>[user] делает вид, что вышибит [user.ru_ego()] мозги[user.p_s()] с помощью [src]! Похоже, что [user.p_theyre()] пытается покончить с собой!</b></span>")
 		playsound(src, "gun_dry_fire", 30, 1)
 		return (OXYLOSS)
 #undef BRAINS_BLOWN_THROW_SPEED
@@ -225,27 +234,38 @@
 
 /obj/item/gun/ballistic/proc/sawoff(mob/user)
 	if(sawn_off)
-		to_chat(user, "<span class='warning'>\The [src] is already shortened!</span>")
+		to_chat(user, "<span class='warning'>ствол [src] уже укорочен!</span>")
+		return
+	if(!user.is_holding(src))
+		to_chat(user, span_notice("Нужно держать [src] в руках, чтобы обрезать ствол!"))
+		return
+	if(suppressed)
+		to_chat(user, "<span class='warning'>Сначала снимите глушитель с [src]!</span>")
+		return
+	if(bayonet)
+		to_chat(user, "<span class='warning'>Сначала снимите штык-нож с [src]!</span>")
 		return
 	user.DelayNextAction(CLICK_CD_MELEE)
-	user.visible_message("[user] begins to shorten \the [src].", "<span class='notice'>You begin to shorten \the [src]...</span>")
+	user.visible_message("[user] начинает укорачивать ствол [src].", "<span class='notice'>Вы начинаете укорачивать ствол [src]...</span>")
 
 	//if there's any live ammo inside the gun, makes it go off
 	if(blow_up(user))
-		user.visible_message("<span class='danger'>\The [src] goes off!</span>", "<span class='danger'>\The [src] goes off in your face!</span>")
+		user.visible_message("<span class='danger'> [src] непроизвольно стрелет!</span>", "<span class='danger'>спусковой крючок [src] в процессе нажимается, стреляя вам прямо в плечо!</span>")
 		return
 
 	if(do_after(user, 30, target = src))
 		if(sawn_off)
 			return
-		user.visible_message("[user] shortens \the [src]!", "<span class='notice'>You shorten \the [src].</span>")
-		name = "sawn-off [src.name]"
+		user.visible_message("[user] укорачивает [src]!", "<span class='notice'>Вы укорачиваете [src].</span>")
+		name = "обрез [src.name]"
 		desc = sawn_desc
 		w_class = WEIGHT_CLASS_NORMAL
+		icon_state = sawn_icon_state
 		item_state = sawn_item_state
 		slot_flags &= ~ITEM_SLOT_BACK	//you can't sling it on your back
 		slot_flags |= ITEM_SLOT_BELT		//but you can wear it on your belt (poorly concealed under a trenchcoat, ideally)
 		sawn_off = TRUE
+		on_sawoff(user) //Позволяем обрезу оружия X делать собственные изменения при обрезании ствола, например статистики. - RaizlenW
 		update_icon()
 		return TRUE
 
@@ -264,7 +284,7 @@
 
 /obj/item/suppressor
 	name = "suppressor"
-	desc = "A syndicate small-arms suppressor for maximum espionage."
+	desc = "Глушитель для стрелкового оружия, производства синдиката. Идеальное решение для шпионажа."
 	icon = 'icons/obj/guns/projectile.dmi'
 	icon_state = "suppressor"
 	w_class = WEIGHT_CLASS_TINY
@@ -272,4 +292,4 @@
 
 /obj/item/suppressor/specialoffer
 	name = "cheap suppressor"
-	desc = "A foreign knock-off suppressor, it feels flimsy, cheap, and brittle. Still fits some weapons."
+	desc = "Подделка кустарного производства, выглящая хлипкой, дешевой и ломкой. Но на некоторые виды оружия всё же подходит."

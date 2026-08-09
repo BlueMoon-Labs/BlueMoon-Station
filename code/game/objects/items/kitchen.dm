@@ -226,10 +226,11 @@
 
 /obj/item/kitchen/knife/combat/laser_bayonet
 	name = "Laser Bayonet"
-	icon_state = "survivalknife"
-	item_state = "knife"
+	icon_state = "laser_bayonet"
+	lefthand_file = 'icons/mob/inhands/weapons/swords_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/weapons/swords_righthand.dmi'
 	desc = "Лазерный штык-нож, который пришёл на замену своим металлическим предкам. Лезвие всего идеально острое и не требует заточки, удобно! У этого образца кнопка включения была выломана, но ядерная батарейка всё ещё цела."
-	attack_verb = list("cleaved", "slashed", "stabbed", "sliced", "torn", "ripped", "diced", "cut")
+	attack_verb = list("cauterized", "vaporized", "lasered", "melted", "dissected", "seared", "beamed", "zapped")
 	sharpness = SHARP_EDGED
 	embedding = list("pain_mult" = 5, "embed_chance" = 75, "fall_chance" = 15, "ignore_throwspeed_threshold" = TRUE)
 	hitsound = 'sound/weapons/blade1.ogg'
@@ -242,6 +243,7 @@
 	wound_bonus = 11
 	bare_wound_bonus = 15
 	bayonet = TRUE
+	bayonet_icon_state = "laserbayonet"
 
 /obj/item/kitchen/knife/combat/survival/knuckledagger
 	name = "survival dagger"

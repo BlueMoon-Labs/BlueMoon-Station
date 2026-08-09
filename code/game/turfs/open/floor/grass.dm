@@ -5,7 +5,7 @@
 	icon_state = "grass0"
 	base_icon_state = "grass"
 	baseturfs = /turf/open/floor/plating/beach
-	override_shell_bounce_sound = null
+	override_shell_bounce_sound = FALSE
 	footstep = FOOTSTEP_GRASS
 	barefootstep = FOOTSTEP_GRASS
 	clawfootstep = FOOTSTEP_GRASS

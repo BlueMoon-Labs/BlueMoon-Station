@@ -170,7 +170,7 @@
 	canSmoothWith = null
 	girder_type = null
 	bullet_sizzle = TRUE
-	override_shell_bounce_sound = null
+	override_shell_bounce_sound = FALSE
 
 /turf/closed/wall/mineral/abductor
 	name = "alien wall"

@@ -1330,7 +1330,7 @@
 	},
 /area/awaymission/wildwest/vault)
 "eq" = (
-/obj/item/gun/ballistic/shotgun/slamfire,
+/obj/item/gun/ballistic/shotgun/slamfire/lethal,
 /obj/structure/closet/crate/large,
 /turf/open/floor/wood,
 /area/awaymission/wildwest/mines)
@@ -1887,7 +1887,7 @@
 /area/awaymission/wildwest/mines)
 "fS" = (
 /obj/structure/table/wood,
-/obj/item/gun/ballistic/shotgun/slamfire,
+/obj/item/gun/ballistic/shotgun/slamfire/lethal,
 /turf/open/floor/carpet/royalblack,
 /area/awaymission/wildwest/mines)
 "fT" = (

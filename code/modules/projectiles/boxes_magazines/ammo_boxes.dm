@@ -181,7 +181,7 @@
 /obj/item/ammo_box/shotgun
 	name = "stripper clip (shotgun shells)"
 	desc = "A stripper clip, designed to help with loading a shotgun slightly faster."
-	icon = 'icons/obj/ammo.dmi'
+	icon = 'icons/obj/ammo_reheated.dmi'
 	icon_state = "shotgunclip"
 	caliber = "shotgun" // slapped in to allow shell mix n match
 	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_POCKETS
@@ -214,6 +214,9 @@
 /obj/item/ammo_box/shotgun/loaded/buckshot
 	ammo_type = /obj/item/ammo_casing/shotgun/buckshot
 
+/obj/item/ammo_box/shotgun/loaded/slug
+	ammo_type = /obj/item/ammo_casing/shotgun/slug
+
 /obj/item/ammo_box/shotgun/loaded/beanbag
 	ammo_type = /obj/item/ammo_casing/shotgun/beanbag
 
@@ -228,3 +231,15 @@
 
 /obj/item/ammo_box/shotgun/loaded/dart
 	ammo_type = /obj/item/ammo_casing/shotgun/dart
+
+/obj/item/ammo_box/shotgun/loaded/breacher
+	ammo_type = /obj/item/ammo_casing/shotgun/breacher
+
+/obj/item/ammo_box/shotgun/loaded/dragons_breath
+	ammo_type = /obj/item/ammo_casing/shotgun/dragonsbreath
+
+/obj/item/ammo_box/shotgun/loaded/pulseslug
+	ammo_type = /obj/item/ammo_casing/shotgun/pulseslug
+
+/obj/item/ammo_box/shotgun/loaded/laserslug
+	ammo_type = /obj/item/ammo_casing/shotgun/laserslug

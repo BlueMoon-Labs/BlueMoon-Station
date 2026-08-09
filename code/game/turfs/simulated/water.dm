@@ -9,7 +9,7 @@
 	planetary_atmos = TRUE
 	slowdown = 1
 	bullet_sizzle = TRUE
-	override_shell_bounce_sound = null //needs a splashing sound one day.
+	override_shell_bounce_sound = FALSE //needs a splashing sound one day.
 
 	footstep = FOOTSTEP_WATER
 	barefootstep = FOOTSTEP_WATER

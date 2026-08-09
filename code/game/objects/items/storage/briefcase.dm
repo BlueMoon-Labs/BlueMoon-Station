@@ -90,15 +90,15 @@
 
 
 /obj/item/storage/briefcase/aspisbundle
-    desc = "Бирка на ручке гласит 'Для горячего приёма во время деловых встреч', но дипломат подозрительно не имеет никаких других обозначений. Прямо как в 2023-м."
-    force = 10
+	desc = "Бирка на ручке гласит 'Для горячего приёма во время деловых встреч', но дипломат подозрительно не имеет никаких других обозначений. Прямо как в 2023-м."
+	force = 10
 /obj/item/storage/briefcase/aspisbundle/PopulateContents()
-    new /obj/item/coin/silver //Как-то раз в отель заходит парень с шваброй на голове, и начинает шмалять
-    new /obj/item/gun/ballistic/shotgun/automatic/traitor
-    new /obj/item/suppressor
-    new /obj/item/ammo_box/shotgun/loaded/buckshot
-    new /obj/item/ammo_box/shotgun/loaded/buckshot
-    new /obj/item/ammo_box/shotgun/loaded/buckshot
+	new /obj/item/coin/silver(src) //Как-то раз в отель заходит парень с шваброй на голове, и начинает шмалять
+	new /obj/item/gun/ballistic/shotgun/automatic/traitor(src)
+	new /obj/item/suppressor(src)
+	new /obj/item/ammo_box/shotgun/loaded/buckshot(src)
+	new /obj/item/ammo_box/shotgun/loaded/buckshot(src)
+	new /obj/item/ammo_box/shotgun/loaded/buckshot(src)
 
 /obj/item/storage/briefcase/modularbundle
 	desc = "Its label reads \"genuine hardened Captain leather\", but suspiciously has no other tags or branding."

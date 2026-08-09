@@ -115,37 +115,37 @@
 	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
 
 /datum/uplink_item/dangerous/hellstitch
-    name = "M-156 'Hell-Stitch'"
-    desc = "Экспериментальный дробовик с встроенной подачей боевого стимулятора. Совмещает всё лучшее для ближнего боя."
-    item = /obj/item/gun/ballistic/shotgun/slamfire/traitor
-    cost = 25
-    surplus = 2
-    purchasable_from = (UPLINK_NUKE_OPS)
+	name = "M-156 'Hell-Stitch'"
+	desc = "Экспериментальный дробовик с встроенной подачей боевого стимулятора. Совмещает всё лучшее для ближнего боя."
+	item = /obj/item/gun/ballistic/shotgun/slamfire/traitor
+	cost = 25
+	surplus = 2
+	purchasable_from = (UPLINK_NUKE_OPS)
 
 /datum/uplink_item/dangerous/invictus
-    name = "HCA-00 'Invictus'"
-    desc = "Убойный двустольный помповый дробовик 12 калибра. Имеет особый режим стрельбы из двух стволов сразу. \
-            Не даёт осечек."
-    item = /obj/item/gun/ballistic/shotgun/dp12/traitor
-    cost = 10
-    surplus = 5
-    purchasable_from = (UPLINK_NUKE_OPS)
+	name = "HCA-00 'Invictus'"
+	desc = "Убойный двустольный помповый дробовик 12 калибра. Имеет особый режим стрельбы из двух стволов сразу. \
+			Не даёт осечек."
+	item = /obj/item/gun/ballistic/shotgun/dp12/traitor
+	cost = 10
+	surplus = 5
+	purchasable_from = (UPLINK_NUKE_OPS)
 
 /datum/uplink_item/dangerous/jackhammer
-    name = "CS-11 'JackHammer'"
-    desc = "Компактный короткоствольный дробовик, созданный для вскрытия дверей и как оружие последнего шанса."
-    item = /obj/item/gun/ballistic/shotgun/traitor
-    cost = 3
-    surplus = 10
-    purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
+	name = "CS-11 'JackHammer'"
+	desc = "Компактный короткоствольный дробовик, созданный для вскрытия дверей и как оружие последнего шанса."
+	item = /obj/item/gun/ballistic/shotgun/jackhammer
+	cost = 3
+	surplus = 10
+	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
 
 /datum/uplink_item/dangerous/aspis
-    name = "HC-X 'Aspis'"
-    desc = "Дешёвый полуавтоматический дробовик. Без патронов."
-    item = /obj/item/gun/ballistic/shotgun/automatic/traitor
-    cost = 6
-    surplus = 3
-    purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
+	name = "HC-X 'Aspis'"
+	desc = "Дешёвый полуавтоматический дробовик, помещающийся в сумку. Без доп боеприпасов."
+	item = /obj/item/gun/ballistic/shotgun/automatic/traitor
+	cost = 6
+	surplus = 3
+	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_SYNDICATE)
 
 /datum/uplink_item/dangerous/smg
 	name = "C-20r Submachine Gun"

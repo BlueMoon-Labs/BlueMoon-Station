@@ -115,7 +115,7 @@
 	icon = 'modular_bluemoon/icons/turf/floors/beach.dmi'
 	flags_1 = NONE
 	attachment_holes = FALSE
-	override_shell_bounce_sound = null
+	override_shell_bounce_sound = FALSE
 	footstep = FOOTSTEP_WATER
 	barefootstep = FOOTSTEP_WATER
 	clawfootstep = FOOTSTEP_WATER

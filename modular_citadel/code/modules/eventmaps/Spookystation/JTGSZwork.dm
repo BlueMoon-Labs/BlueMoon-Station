@@ -851,7 +851,7 @@ GLOBAL_LIST_EMPTY(rain_sounds)
 	icon_state = "riverwater_motion"
 	slowdown = 1
 	bullet_sizzle = 1
-	override_shell_bounce_sound = null //needs a splashing sound one day.
+	override_shell_bounce_sound = FALSE //needs a splashing sound one day.
 	footstep = FOOTSTEP_WATER
 	barefootstep = FOOTSTEP_WATER
 	clawfootstep = FOOTSTEP_WATER
