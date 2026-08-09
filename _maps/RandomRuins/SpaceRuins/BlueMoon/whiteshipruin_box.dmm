@@ -85,8 +85,11 @@
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/whiteship/box)
 "dr" = (
-/obj/effect/decal/cleanable/dirt,
-/mob/living/simple_animal/hostile/syndicate/ranged/shotgun/space,
+/obj/effect/turf_decal/trimline/yellow/arrow_ccw{
+	dir = 1
+	},
+/obj/structure/cable,
+/mob/living/simple_animal/hostile/inteq/space/stormtrooper,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/whiteship/box)
 "ds" = (
@@ -294,6 +297,7 @@
 /obj/effect/turf_decal/siding/wideplating{
 	dir = 8
 	},
+/mob/living/simple_animal/hostile/inteq/melee/sword/space,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/whiteship/box)
 "jO" = (
@@ -607,9 +611,10 @@
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/whiteship/box)
 "rO" = (
+/obj/effect/turf_decal/tile/blue/opposingcorners,
 /obj/effect/decal/cleanable/dirt,
-/mob/living/simple_animal/hostile/syndicate/ranged/shotgun/space,
-/turf/open/floor/mineral/titanium/white/airless,
+/mob/living/simple_animal/hostile/inteq/ranged/sniper,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/whiteship/box)
 "sn" = (
 /obj/effect/turf_decal/trimline/blue/arrow_cw{
@@ -648,6 +653,7 @@
 "tP" = (
 /obj/structure/cable,
 /obj/effect/decal/cleanable/dirt,
+/mob/living/simple_animal/hostile/inteq/ranged/shotgun/space,
 /turf/open/floor/catwalk_floor/iron_white,
 /area/ruin/space/has_grav/whiteship/box)
 "tU" = (
@@ -667,7 +673,8 @@
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/whiteship/box)
 "uS" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/space/stormtrooper,
+/obj/effect/decal/cleanable/dirt,
+/mob/living/simple_animal/hostile/inteq/space/stormtrooper,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/whiteship/box)
 "vk" = (
@@ -698,9 +705,10 @@
 /turf/open/floor/mineral/titanium/white/airless,
 /area/ruin/space/has_grav/whiteship/box)
 "wk" = (
-/mob/living/simple_animal/hostile/syndicate/ranged/sniper,
-/turf/template_noop,
-/area/template_noop)
+/obj/effect/decal/cleanable/dirt,
+/mob/living/simple_animal/hostile/inteq/melee/space/stormtrooper,
+/turf/open/floor/mineral/titanium/white/airless,
+/area/ruin/space/has_grav/whiteship/box)
 "wP" = (
 /obj/effect/turf_decal/siding/yellow{
 	dir = 4
@@ -742,6 +750,11 @@
 /area/ruin/space/has_grav/whiteship/box)
 "zG" = (
 /turf/open/floor/engine,
+/area/ruin/space/has_grav/whiteship/box)
+"zM" = (
+/obj/effect/decal/cleanable/dirt,
+/mob/living/simple_animal/hostile/inteq/ranged/shotgun/space,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/whiteship/box)
 "zO" = (
 /obj/effect/turf_decal/tile/blue/anticorner/contrasted,
@@ -1355,7 +1368,7 @@
 /area/ruin/space/has_grav/whiteship/box)
 "VQ" = (
 /obj/structure/cable,
-/mob/living/simple_animal/hostile/syndicate/ranged/smg/pilot,
+/mob/living/simple_animal/hostile/inteq/ranged/spacebattle,
 /turf/open/floor/catwalk_floor/iron_white,
 /area/ruin/space/has_grav/whiteship/box)
 "Wc" = (
@@ -1610,9 +1623,9 @@ Wc
 Pw
 eV
 eV
-mR
-Ay
 dr
+Ay
+MA
 Be
 Wc
 hp
@@ -1725,7 +1738,7 @@ Wc
 Wc
 Wc
 MA
-uS
+Ay
 Ay
 Wc
 nH
@@ -1747,7 +1760,7 @@ oL
 mp
 Wc
 MA
-MA
+uS
 ut
 Wc
 nH
@@ -1946,7 +1959,7 @@ IA
 Wc
 Fd
 Ay
-MA
+zM
 MA
 Gu
 "}
@@ -2026,7 +2039,7 @@ Wc
 aB
 Ov
 aw
-Ov
+wk
 Ov
 xG
 ku
@@ -2051,7 +2064,7 @@ oW
 Ov
 vz
 lS
-rO
+Ov
 ji
 Wc
 Xp
@@ -2209,7 +2222,7 @@ Xg
 Sp
 dZ
 Xr
-oR
+rO
 gQ
 FX
 Wc
@@ -2348,7 +2361,7 @@ nH
 "}
 (42,1,1) = {"
 nH
-wk
+nH
 nH
 nH
 nH
