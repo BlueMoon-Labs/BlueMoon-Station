@@ -1360,7 +1360,7 @@
 	ckeywhitelist = list("dolbajob", "enigma418")
 
 /datum/gear/donator/bm/hahun_jukebox
-	name = "Irrelian Jukebox"
+	name = "Irellian Jukebox"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/hahun_jukebox
 	ckeywhitelist = list("dolbajob", "enigma418")
