@@ -559,6 +559,11 @@
 #define BB_AI_UNBUCKLE_AT "BB_ai_unbuckle_at"
 ///user_unbuckle_mob спит в do_after - звать его чаще этого нет смысла
 #define AI_UNBUCKLE_COOLDOWN (3 SECONDS)
+///Счётчик подряд идущих рывков за пристёгнутое тело-баррикаду на пути
+#define BB_AI_BARRICADE_TUGS "BB_ai_barricade_tugs"
+///Бюджет рывков за одно крепление: некоторые (дыба вампира) чужой рывок молча
+///игнорируют, и без предела паун дёргал бы тело вечно вместо смены плана
+#define AI_BARRICADE_UNBUCKLE_ATTEMPTS 3
 ///Цель, к которой последний прямой шаг подряд перекрывали другие мобы
 #define BB_AI_MOB_BLOCKED_TARGET "BB_ai_mob_blocked_target"
 ///Число последовательных попыток пройти к BB_AI_MOB_BLOCKED_TARGET через моба
