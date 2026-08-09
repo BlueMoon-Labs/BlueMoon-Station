@@ -97,6 +97,11 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 
 /datum/antagonist/Destroy()
 	GLOB.antagonists -= src
+	//Напоминалка снимала датум из списка только после того, как счётчик догорит до
+	//нуля - это 2 x 12 минут. Снятый раньше антаг оставался в глобальном списке
+	//навсегда: owner уже null, поэтому remind_them_they_are_antagonists проваливался
+	//в пустую ветку и никогда не доходил до строчки снятия.
+	GLOB.antagonists_to_remind -= src
 	//кнопка живёт на теле и убивает себя сама при его удалении, но датуму об этом
 	//не сообщает: обнуление было только в on_removal, поэтому снятый мимо него
 	//антаг оставался единственным держателем уже мёртвой кнопки
@@ -157,6 +162,11 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 
 // BLUEMOON ADD START - напоминание антагонистам о том, кто они и что должны делать
 /datum/antagonist/proc/remind_them_they_are_antagonists()
+	//Напоминать некому: разум отвалился раньше, чем счётчик догорел. Без этого
+	//выхода датум крутится в глобальном списке до конца раунда вхолостую.
+	if(!owner)
+		GLOB.antagonists_to_remind -= src
+		return
 	if(reminded_times_left)
 		if(owner)
 			if(time_of_last_antag_remind + time_needed_to_remind < world.time)

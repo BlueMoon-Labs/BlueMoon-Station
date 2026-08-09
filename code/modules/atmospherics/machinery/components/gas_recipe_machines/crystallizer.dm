@@ -23,6 +23,8 @@
 	var/quality_loss = 0
 	var/datum/gas_recipe/selected_recipe = null
 	var/total_recipe_moles = 0
+	/// Когда машине снова можно пожаловаться на нехватку давления.
+	var/next_pressure_complaint = 0
 
 /obj/machinery/atmospherics/components/binary/crystallizer/Initialize(mapload)
 	. = ..()
@@ -110,6 +112,25 @@
 		return TRUE
 	return FALSE
 
+/// Давление на подающей линии. Проверяется вход, а не внутренняя камера:
+/// камера набирает давление сама по мере закачки, и порог на ней ничего бы не
+/// требовал. Порог на входе означает буквально "додави подающую линию".
+/obj/machinery/atmospherics/components/binary/crystallizer/proc/check_pressure_requirements()
+	if(!selected_recipe.min_pressure)
+		return TRUE
+	var/datum/gas_mixture/feed = airs[2]
+	return feed && feed.return_pressure() >= selected_recipe.min_pressure
+
+/// Говорит вслух, чего не хватает. Без этого рецепт с порогом выглядит просто
+/// сломанным: газы есть, температура есть, прогресс не идёт и почему - неясно.
+/obj/machinery/atmospherics/components/binary/crystallizer/proc/complain_about_pressure()
+	if(world.time < next_pressure_complaint)
+		return
+	next_pressure_complaint = world.time + CRYSTALLIZER_COMPLAINT_COOLDOWN
+	var/datum/gas_mixture/feed = airs[2]
+	var/current = feed ? round(feed.return_pressure()) : 0
+	say("ДАВЛЕНИЕ НА ВХОДЕ [current] кПа, ТРЕБУЕТСЯ [round(selected_recipe.min_pressure)] кПа. Газовый насос столько не даёт - додавите линию объёмным насосом или нагревом.")
+
 /obj/machinery/atmospherics/components/binary/crystallizer/proc/inject_gases()
 	if(gas_input <= 0)
 		return
@@ -193,7 +214,13 @@
 	heat_conduction()
 
 	if(internal_check())
-		if(check_temp_requirements())
+		if(!check_pressure_requirements())
+			// Газы набраны, температура может быть какой угодно - без давления
+			// рецепт не пойдёт, и машина обязана сказать об этом вслух.
+			complain_about_pressure()
+			quality_loss = min(quality_loss + 0.5, 100)
+			progress_bar = max(progress_bar - 1, 0)
+		else if(check_temp_requirements())
 			heat_calculations()
 			var/progress_step = MIN_PROGRESS_AMOUNT * 0.5 * clamp(total_recipe_moles / 20, 0.5, 2)
 			progress_bar = min(progress_bar + progress_step, 100)

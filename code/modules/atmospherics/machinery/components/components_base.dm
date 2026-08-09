@@ -18,6 +18,50 @@
 		var/datum/gas_mixture/A = new(200)
 		airs[i] = A
 
+// Показания портов для интерфейсов
+
+///Подписи портов в интерфейсе. Переопределяется теми, у кого стороны
+///несимметричны: "Вход"/"Выход" честнее, чем "Порт 1"/"Порт 2".
+/obj/machinery/atmospherics/components/proc/ui_port_labels()
+	return list()
+
+///Живые показания того, что реально стоит на портах. Без них девайсовые окна
+///просили выставить давление вслепую: панель показывала только уставку.
+/obj/machinery/atmospherics/components/proc/ui_port_data()
+	var/list/labels = ui_port_labels()
+	var/list/ports = list()
+	for(var/i in 1 to length(airs))
+		var/datum/gas_mixture/port_air = airs[i]
+		if(!port_air)
+			continue
+		ports += list(list(
+			"name" = (i <= length(labels)) ? labels[i] : "Порт [i]",
+			"pressure" = round(port_air.return_pressure(), 0.01),
+			"temperature" = round(port_air.return_temperature(), 0.01),
+			"moles" = round(port_air.total_moles(), 0.01),
+			"connected" = !isnull(nodes) && (i <= length(nodes)) && !isnull(nodes[i]),
+		))
+	return ports
+
+/// Текущее давление на выходе. Нужно там, где уставка задаётся не в кПа
+/// (объёмный насос задаёт л/с) и панель без живого давления слепа.
+/obj/machinery/atmospherics/components/proc/output_line_pressure()
+	var/datum/gas_mixture/out = length(airs) >= 2 ? airs[2] : null
+	return out ? round(out.return_pressure()) : null
+
+/// Агрегат с оторванной трубой выглядит как исправный: иконка "on" горит, а
+/// газ не идёт - помпа накачивает собственный обрубок до цели и штатно
+/// засыпает. В раунде 9875 при перекладке труб это читалось как "помпы сами
+/// отмирают". Examine обязан говорить о недособранной линии прямо.
+/obj/machinery/atmospherics/components/examine(mob/user)
+	. = ..()
+	var/missing = 0
+	for(var/i in 1 to device_type)
+		if(!nodes[i])
+			missing++
+	if(missing)
+		. += "<span class='warning'>Подключено соединений: <b>[device_type - missing] из [device_type]</b> - пока линия не собрана, газ через недостающие стороны не пойдёт.</span>"
+
 // Iconnery
 
 /obj/machinery/atmospherics/components/proc/update_icon_nopipes()
@@ -57,9 +101,9 @@
 
 /obj/machinery/atmospherics/components/proc/get_pipe_underlay(state, dir, color = null)
 	if(color)
-		. = getpipeimage('icons/obj/atmospherics/components/binary_devices.dmi', state, dir, color, piping_layer = shift_underlay_only ? piping_layer : 2)
+		. = getpipeimage('icons/obj/atmospherics/components/binary_devices.dmi', state, dir, color, piping_layer = shift_underlay_only ? piping_layer : PIPING_LAYER_DEFAULT)
 	else
-		. = getpipeimage('icons/obj/atmospherics/components/binary_devices.dmi', state, dir, piping_layer = shift_underlay_only ? piping_layer : 2)
+		. = getpipeimage('icons/obj/atmospherics/components/binary_devices.dmi', state, dir, piping_layer = shift_underlay_only ? piping_layer : PIPING_LAYER_DEFAULT)
 
 // Pipenet stuff; housekeeping
 
@@ -75,7 +119,7 @@
 	..()
 	update_parents()
 
-/obj/machinery/atmospherics/components/build_network()
+/obj/machinery/atmospherics/components/build_network(blocking = FALSE)
 	if(!parents)
 		stack_trace("[type] build_network() at [COORD(src)]: parents list is null - object may be destroyed or improperly initialized")
 		return
@@ -83,7 +127,7 @@
 		if(!parents[i])
 			parents[i] = new /datum/pipeline()
 			var/datum/pipeline/P = parents[i]
-			P.build_pipeline(src)
+			P.build_pipeline(src, blocking)
 
 /**
  * Called by nullify_node(), used to remove the pipeline the component is attached to
@@ -142,7 +186,7 @@
 				P.other_airs -= air_ref
 				changed = TRUE
 			if(changed)
-				P.update = TRUE
+				P.mark_dirty()
 				if(!length(P.other_atmosmch) && !length(P.members))
 					qdel(P)
 
@@ -232,7 +276,7 @@
 			investigate_log("[type] at [COORD(src)] is missing a pipenet, rebuilding", INVESTIGATE_ATMOS)
 			SSair.add_to_rebuild_queue(src)
 		else
-			parent.update = TRUE
+			parent.mark_dirty()
 
 /obj/machinery/atmospherics/components/returnPipenets()
 	. = list()
@@ -310,16 +354,18 @@
 	if(!filled_pipe)
 		return default_deconstruction_crowbar(tool)
 
-	to_chat(user, span_notice("You begin to unfasten \the [src]..."))
-
 	if(environment_air)
 		internal_pressure -= environment_air.return_pressure()
 
+	// Same deal as unwrenching a pipe: instant unless the thing is still holding
+	// pressure, in which case the warning below needs a window to matter.
+	var/deconstruct_delay = 0
 	if(internal_pressure > 2 * ONE_ATMOSPHERE)
 		to_chat(user, span_warning("As you begin deconstructing \the [src] a gush of air blows in your face... maybe you should reconsider?"))
 		unsafe_wrenching = TRUE
+		deconstruct_delay = ATMOS_UNSAFE_WRENCH_DELAY
 
-	if(!do_after(user, 2 SECONDS, src))
+	if(deconstruct_delay && !do_after(user, deconstruct_delay, src))
 		return TRUE
 	if(unsafe_wrenching)
 		unsafe_pressure_release(user, internal_pressure)

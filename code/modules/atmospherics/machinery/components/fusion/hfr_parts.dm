@@ -202,6 +202,50 @@
 /obj/machinery/hypertorus/interface/ui_static_data()
 	var/data = list()
 	data["base_max_temperature"] = FUSION_MAXIMUM_TEMPERATURE
+
+	/// Bounds of every tuning control, straight from the clamps in ui_act().
+	data["limits"] = list(
+		"heating_conductor" = list("min" = HFR_LIMIT_HEATING_CONDUCTOR_MIN, "max" = HFR_LIMIT_HEATING_CONDUCTOR_MAX),
+		"magnetic_constrictor" = list("min" = HFR_LIMIT_MAGNETIC_CONSTRICTOR_MIN, "max" = HFR_LIMIT_MAGNETIC_CONSTRICTOR_MAX),
+		"fuel_injection_rate" = list("min" = HFR_LIMIT_FUEL_INJECTION_MIN, "max" = HFR_LIMIT_FUEL_INJECTION_MAX),
+		"moderator_injection_rate" = list("min" = HFR_LIMIT_MODERATOR_INJECTION_MIN, "max" = HFR_LIMIT_MODERATOR_INJECTION_MAX),
+		"current_damper" = list("min" = HFR_LIMIT_CURRENT_DAMPER_MIN, "max" = HFR_LIMIT_CURRENT_DAMPER_MAX),
+		"filtering_rate" = list("min" = HFR_LIMIT_FILTERING_RATE_MIN, "max" = HFR_LIMIT_FILTERING_RATE_MAX),
+		"cooling_volume" = list("min" = HFR_LIMIT_COOLING_VOLUME_MIN, "max" = HFR_LIMIT_COOLING_VOLUME_MAX, "step" = HFR_LIMIT_COOLING_VOLUME_STEP),
+	)
+
+	/// Numbers the reactor punishes you for crossing. The interface turns them into
+	/// warnings instead of making every engineer read hfr_main_processes.dm.
+	data["thresholds"] = list(
+		"fusion_mole_minimum" = HFR_FUSION_MOLE_THRESHOLD,
+		"subcritical_moles" = HYPERTORUS_SUBCRITICAL_MOLES,
+		"overmole_moles" = HFR_OVERMOLE_MOLES,
+		"hypercritical_moles" = HYPERTORUS_HYPERCRITICAL_MOLES,
+		"overfull_power_level" = HYPERTORUS_OVERFULL_MIN_POWER_LEVEL,
+		"overfull_cold_moles" = HYPERTORUS_OVERFULL_MAX_SAFE_COLD_FUSION_MOLES,
+		"overfull_hot_moles" = HYPERTORUS_OVERFULL_MAX_SAFE_HOT_FUSION_MOLES,
+		"cold_coolant_temperature" = HYPERTORUS_COLD_COOLANT_THRESHOLD,
+		/// heat_output меняет знак, когда instability * 0.5 достигает FUSION_INSTABILITY_ENDOTHERMALITY.
+		"instability_flip" = FUSION_INSTABILITY_ENDOTHERMALITY * 2,
+		"iron_damage" = HFR_IRON_DAMAGE_THRESHOLD,
+		"maximum_iron" = HFR_IRON_CONTENT_MAX,
+		"iron_growth_power_level" = HFR_IRON_GROWTH_POWER_LEVEL,
+		"integrity_warning" = HYPERTORUS_WARNING_PERCENT,
+		"integrity_danger" = HYPERTORUS_DANGER_PERCENT,
+		"integrity_emergency" = HYPERTORUS_EMERGENCY_PERCENT,
+		"integrity_melting" = HYPERTORUS_MELTING_PERCENT,
+	)
+
+	/// Fusion temperature that promotes the reactor to each power level, index 1 = level 1.
+	data["power_level_temperatures"] = list(
+		HFR_POWER_LEVEL_1_TEMPERATURE,
+		HFR_POWER_LEVEL_2_TEMPERATURE,
+		HFR_POWER_LEVEL_3_TEMPERATURE,
+		HFR_POWER_LEVEL_4_TEMPERATURE,
+		HFR_POWER_LEVEL_5_TEMPERATURE,
+		HFR_POWER_LEVEL_6_TEMPERATURE,
+	)
+
 	data["selectable_fuel"] = list(list("name" = "Nothing", "id" = null))
 	for(var/fuel_id in GLOB.hfr_fuels_list)
 		var/datum/hfr_fuel/recipe = GLOB.hfr_fuels_list[fuel_id]
@@ -270,6 +314,8 @@
 	data["moderator_gases"] = moderator_gasdata
 
 	data["energy_level"] = connected_core.energy
+	data["internal_power"] = connected_core.internal_power
+	data["power_output"] = connected_core.power_output
 	data["heat_limiter_modifier"] = HFR_SANITIZE_HEAT(connected_core.heat_limiter_modifier)
 	data["heat_output_min"] = HFR_SANITIZE_HEAT(connected_core.heat_output_min)
 	data["heat_output_max"] = HFR_SANITIZE_HEAT(connected_core.heat_output_max)
@@ -310,7 +356,12 @@
 
 	data["cooling_volume"] = connected_core.airs[1].return_volume()
 	data["mod_filtering_rate"] = connected_core.moderator_filtering_rate
-	data["fusion_filtering_rate"] = connected_core.fusion_filtering_rate
+
+	/// Totals the interface would otherwise have to re-add from the per-gas lists,
+	/// which are rounded to 0.01 and drop the coolant loop entirely.
+	data["fusion_moles"] = round(connected_core.internal_fusion.total_moles(), 0.01)
+	data["moderator_moles"] = round(connected_core.moderator_internal.total_moles(), 0.01)
+	data["coolant_moles"] = round(connected_core.airs[1].total_moles(), 0.01)
 
 	return data
 
@@ -337,27 +388,27 @@
 		if("heating_conductor")
 			var/heating_conductor = text2num(params["heating_conductor"])
 			if(heating_conductor != null)
-				connected_core.heating_conductor = clamp(heating_conductor, 50, 500)
+				connected_core.heating_conductor = clamp(heating_conductor, HFR_LIMIT_HEATING_CONDUCTOR_MIN, HFR_LIMIT_HEATING_CONDUCTOR_MAX)
 				. = TRUE
 		if("magnetic_constrictor")
 			var/magnetic_constrictor = text2num(params["magnetic_constrictor"])
 			if(magnetic_constrictor != null)
-				connected_core.magnetic_constrictor = clamp(magnetic_constrictor, 50, 1000)
+				connected_core.magnetic_constrictor = clamp(magnetic_constrictor, HFR_LIMIT_MAGNETIC_CONSTRICTOR_MIN, HFR_LIMIT_MAGNETIC_CONSTRICTOR_MAX)
 				. = TRUE
 		if("fuel_injection_rate")
 			var/fuel_injection_rate = text2num(params["fuel_injection_rate"])
 			if(fuel_injection_rate != null)
-				connected_core.fuel_injection_rate = clamp(fuel_injection_rate, 5, 1500)
+				connected_core.fuel_injection_rate = clamp(fuel_injection_rate, HFR_LIMIT_FUEL_INJECTION_MIN, HFR_LIMIT_FUEL_INJECTION_MAX)
 				. = TRUE
 		if("moderator_injection_rate")
 			var/moderator_injection_rate = text2num(params["moderator_injection_rate"])
 			if(moderator_injection_rate != null)
-				connected_core.moderator_injection_rate = clamp(moderator_injection_rate, 5, 1500)
+				connected_core.moderator_injection_rate = clamp(moderator_injection_rate, HFR_LIMIT_MODERATOR_INJECTION_MIN, HFR_LIMIT_MODERATOR_INJECTION_MAX)
 				. = TRUE
 		if("current_damper")
 			var/current_damper = text2num(params["current_damper"])
 			if(current_damper != null)
-				connected_core.current_damper = clamp(current_damper, 0, 1000)
+				connected_core.current_damper = clamp(current_damper, HFR_LIMIT_CURRENT_DAMPER_MIN, HFR_LIMIT_CURRENT_DAMPER_MAX)
 				. = TRUE
 		if("waste_remove")
 			connected_core.waste_remove = !connected_core.waste_remove
@@ -368,12 +419,7 @@
 		if("mod_filtering_rate")
 			var/mod_filtering_rate = text2num(params["mod_filtering_rate"])
 			if(mod_filtering_rate != null)
-				connected_core.moderator_filtering_rate = clamp(mod_filtering_rate, 5, 200)
-				. = TRUE
-		if("fusion_filtering_rate")
-			var/fusion_filtering_rate = text2num(params["fusion_filtering_rate"])
-			if(fusion_filtering_rate != null)
-				connected_core.fusion_filtering_rate = clamp(fusion_filtering_rate, 5, 200)
+				connected_core.moderator_filtering_rate = clamp(mod_filtering_rate, HFR_LIMIT_FILTERING_RATE_MIN, HFR_LIMIT_FILTERING_RATE_MAX)
 				. = TRUE
 		if("fuel")
 			connected_core.selected_fuel = null
@@ -395,7 +441,7 @@
 		if("cooling_volume")
 			var/cooling_volume = text2num(params["cooling_volume"])
 			if(cooling_volume != null)
-				connected_core.airs[1].set_volume(clamp(cooling_volume, 50, 2000))
+				connected_core.airs[1].set_volume(clamp(cooling_volume, HFR_LIMIT_COOLING_VOLUME_MIN, HFR_LIMIT_COOLING_VOLUME_MAX))
 				. = TRUE
 
 /obj/machinery/hypertorus/corner

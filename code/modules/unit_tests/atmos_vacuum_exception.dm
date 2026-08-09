@@ -1,21 +1,14 @@
-// ===== Vacuum exception: a tile draining to space must not sleep pressurized =====
+// ===== Vacuum edge: перегретый почти-вакуум у пробоины не имеет права зависнуть =====
 //
-// The space-drain branch of process_cell() gates its stall-cooldown resets on
-// VENTED MOLES (mirroring LAST_SHARE_CHECK). A superheated near-vacuum tile
-// holds pressure above SPACE_DRAIN_FINISH_PRESSURE on sub-0.1 mol content, so
-// both mole-gated resets miss it: the stall counter kept climbing toward
-// EXCITED_GROUP_INDIVIDUAL_REST_CYCLES while the tile visibly pressed against
-// vacuum. The fix adds a pressure-gated reset (Baystation vacuum_exception
-// lesson): while the tile reads survivable pressure against space, its stall
-// budget must not advance.
-//
-// This test drives exactly that window (vented moles below
-// MINIMUM_MOLES_DELTA_TO_MOVE while pressure is above the drain-finish
-// threshold) and asserts:
-//   1. the stall cooldown resets on the in-window cycle (the fix, directly);
-//   2. the tile never sleeps while still pressurized against space (invariant);
-//   3. the drain still completes - the pressure guard cannot pin the tile
-//      awake forever, because pressure decays geometrically every vent.
+// Историческая ловушка (урок Baystation vacuum_exception): перегретый тайл на
+// долях моля держит "выживаемое" давление, при экспоненциальном сливе вентился
+// подпороговыми крохами и десятки циклов не мог ни стечь, ни уснуть - оба
+// мольных гейта сброса кулдаунов его не видели. С полным сбросом (tg-паритет
+// share_end) окно исчезает по построению: кромка отдаёт космосу всё за один
+// фаер. Тест держит фикстуру той ловушки и утверждает новую семантику:
+//   1. один процесс-цикл опустошает тайл целиком и приводит его к TCMB;
+//   2. тайл не спит, пока давил на космос, - и свободен уснуть после;
+//   3. группа не разваливается посреди сброса (dismantle_cooldown обнулён).
 
 /datum/unit_test/atmos_vacuum_exception
 	priority = TEST_LONGER
@@ -43,57 +36,45 @@
 	vacuum.ImmediateCalculateAdjacentTurfs()
 	TEST_ASSERT(vacuum in subject.atmos_adjacent_turfs, "subject must be adjacent to the space tile")
 
-	// Superheated near-vacuum: 0.19 mol at 45000K in a 2500L cell reads ~28 kPa,
-	// above SPACE_DRAIN_FINISH_PRESSURE, while the per-cycle vented amount
-	// (share_coeff fraction of 0.19 mol) stays under MINIMUM_MOLES_DELTA_TO_MOVE:
-	// both mole-gated resets miss -> only the pressure-gated reset fires. Venting
-	// cools the tile as well, so only cycle 1 is guaranteed inside the window -
-	// all window asserts happen on that cycle.
+	// Перегретый почти-вакуум: 0.19 моль при 45000K читается как ~28 кПа. При
+	// экспоненциальном сливе фикстура попадала ровно в слепое окно мольных
+	// гейтов; полный сброс обязан снять её одним циклом.
 	var/datum/gas_mixture/saved_air = subject.air.copy()
 	subject.air.clear()
 	subject.air.set_moles(GAS_O2, 0.19)
 	subject.air.set_temperature(45000)
 	var/pressure_start = subject.air.return_pressure()
-	TEST_ASSERT(pressure_start >= SPACE_DRAIN_FINISH_PRESSURE, "fixture must start above the drain-finish pressure (got [pressure_start])")
-	var/share_coeff = 1 / (max(1, LAZYLEN(subject.atmos_adjacent_turfs)) + 1)
-	TEST_ASSERT(subject.air.total_moles() * share_coeff <= MINIMUM_MOLES_DELTA_TO_MOVE, \
-		"fixture must vent below MINIMUM_MOLES_DELTA_TO_MOVE per cycle to hit the guarded window (vents [subject.air.total_moles() * share_coeff])")
+	TEST_ASSERT(pressure_start > HAZARD_LOW_PRESSURE, "fixture must read survivable pressure on wisp content (got [pressure_start])")
 
 	subject.atmos_cooldown = 0
 	SSair.add_to_active(subject, FALSE)
 	TEST_ASSERT(subject.excited, "subject must start excited")
 
-	// Pre-build the excited group with a nearly-expired dismantle countdown:
-	// pre-fix only the tile cooldown was reset by the pressure guard, the
-	// group's dismantle_cooldown kept climbing and dismantle() pulled the
-	// still-draining tile out of the active list on its 16th pass.
+	// Группа с почти истёкшим dismantle-отсчётом: сброс должен обнулить его,
+	// а не позволить dismantle() снять тайл с актива посреди стравливания.
 	var/datum/excited_group/drain_group = new
 	drain_group.add_turf(subject) // resets cooldowns
 	drain_group.dismantle_cooldown = EXCITED_GROUP_DISMANTLE_CYCLES - 1
 
-	// Cycle 1 lands in the guarded window: pressure above the threshold, vented
-	// moles below both mole gates. Pre-fix the stall counter advanced to 1 here;
-	// the pressure-gated reset must hold it at 0 and zero the group countdown.
 	var/fire_base = SSair.times_fired + 2000
 	subject.process_cell(fire_base + 1)
-	TEST_ASSERT_EQUAL(subject.atmos_cooldown, 0, "vacuum exception: stall cooldown must reset while the tile holds [subject.air.return_pressure()] kPa against space")
-	TEST_ASSERT_EQUAL(drain_group.dismantle_cooldown, 0, "vacuum exception must also reset the group's dismantle countdown")
+	TEST_ASSERT(subject.air.total_moles() < 0.001, "superheated wisp survived a full-dump cycle: [subject.air.total_moles()] mol")
+	TEST_ASSERT(abs(subject.air.return_temperature() - TCMB) < 0.01, "vented tile did not match space temperature (got [subject.air.return_temperature()]K)")
+	TEST_ASSERT_EQUAL(drain_group.dismantle_cooldown, 0, "full dump must zero the group's dismantle countdown")
+	TEST_ASSERT_EQUAL(subject.atmos_cooldown, 0, "full dump must reset the tile's stall cooldown")
+	TEST_ASSERT(subject.excited, "tile must stay excited through the dump cycle - neighbors may still be feeding it")
 
-	// Drive the drain to completion: never asleep while pressurized, and the
-	// pressure guard must not stall the drain itself.
-	var/emptied_at = 0
-	for(var/cycle in 2 to 60)
-		subject.process_cell(fire_base + cycle)
-		if(subject.air.return_pressure() >= SPACE_DRAIN_FINISH_PRESSURE)
-			TEST_ASSERT(subject.excited, "tile slept at cycle [cycle] while holding [subject.air.return_pressure()] kPa against space")
-		if(subject.air.total_moles() <= MINIMUM_MOLES_DELTA_TO_MOVE)
-			emptied_at = cycle
-			break
-
-	TEST_ASSERT(emptied_at, "tile must finish draining to space (still holds [subject.air.total_moles()] mol / [subject.air.return_pressure()] kPa after 60 cycles)")
+	// Второй цикл: терять нечего, кулдауны свободны накапливаться - пустой тайл
+	// у дыры не обязан крутиться вечно.
+	subject.process_cell(fire_base + 2)
+	TEST_ASSERT(subject.air.total_moles() < 0.001, "emptied tile regained gas from nowhere")
 
 	// Cleanup: restore air and deactivate; the reservation releases the turfs.
 	subject.air.copy_from(saved_air)
+	SSair.high_pressure_delta -= subject
+	subject.high_pressure_queued = FALSE
+	subject.pressure_vector_x = 0
+	subject.pressure_vector_y = 0
 	if(subject.excited_group)
 		subject.excited_group.dismantle()
 	SSair.remove_from_active(subject)

@@ -114,18 +114,27 @@
 
 	qdel(controller)
 
-///Пол скорости AI-погони: обычный быстрый моб (move_to_delay 1 = "телепорт")
-///клампится к минимальной задержке; уже медленный моб и босс (opt-out) - как есть.
-///Ключевое: моб с ЛЕГАСИ-ДЕФОЛТОМ move_to_delay кэпом не задевается вовсе -
-///плейтест ответил "мобы всё ещё умные, но не быстрые", когда кэп резал и его.
+///Пол скорости AI-погони: и быстрый моб, и моб на легаси-дефолте клампятся к
+///живому полу, который считается от фактической скорости бегущего игрока;
+///уже медленный моб и босс (opt-out) - как есть.
+///
+///Раньше пол был константой, равной легаси-дефолту, и моб на дефолте им не
+///задевался. Это и было ошибкой: константу калибровали от репозиторного
+///RUN_DELAY 2.5, а прод всегда крутил 1.5 - "пол" по факту означал паритет с
+///бегущим игроком, и от фауны нельзя было уйти в принципе.
 /datum/unit_test/ai_pursuit_speed_capped/Run()
 	var/mob/living/simple_animal/hostile/sprinter = allocate(/mob/living/simple_animal/hostile, run_loc_floor_bottom_left)
 	sprinter.move_to_delay = 1
-	TEST_ASSERT_EQUAL(sprinter.ai_movement_delay(), AI_PURSUIT_MIN_MOVE_DELAY, "A fast hostile's AI pursuit speed must be capped to the minimum move delay")
+	TEST_ASSERT_EQUAL(sprinter.ai_movement_delay(), GLOB.ai_pursuit_min_move_delay, "A fast hostile's AI pursuit speed must be capped to the live minimum move delay")
 
 	var/mob/living/simple_animal/hostile/standard = allocate(/mob/living/simple_animal/hostile, get_step(run_loc_floor_bottom_left, WEST))
 	standard.move_to_delay = AI_PURSUIT_BASELINE_MOVE_TO_DELAY
-	TEST_ASSERT_EQUAL(standard.ai_movement_delay(), AI_LEGACY_MOVE_DELAY_DS(AI_PURSUIT_BASELINE_MOVE_TO_DELAY), "A mob at the legacy default move_to_delay must keep its historical chase speed")
+	var/saved_pursuit_min_move_delay = GLOB.ai_pursuit_min_move_delay
+	var/standard_pursuit_floor = max(saved_pursuit_min_move_delay, AI_LEGACY_MOVE_DELAY_DS(AI_PURSUIT_BASELINE_MOVE_TO_DELAY))
+	GLOB.ai_pursuit_min_move_delay = standard_pursuit_floor
+	var/standard_delay = standard.ai_movement_delay()
+	GLOB.ai_pursuit_min_move_delay = saved_pursuit_min_move_delay
+	TEST_ASSERT_EQUAL(standard_delay, standard_pursuit_floor, "A mob at the legacy default move_to_delay is exactly the case the floor exists for")
 
 	var/mob/living/simple_animal/hostile/plodder = allocate(/mob/living/simple_animal/hostile, get_step(run_loc_floor_bottom_left, EAST))
 	plodder.move_to_delay = 6

@@ -583,6 +583,11 @@ GLOBAL_LIST_INIT(payed_ert, list(
 
 #define PREF_LOAD_COOLDOWN 5
 #define PREF_SAVE_COOLDOWN 2 SECONDS
+/// Насколько далеко отложенную запись savefile разрешено переносить от первой
+/// правки в пачке. Запись синхронная - она морозит весь процесс, поэтому пачку
+/// правок склеиваем в одну; но переносить бесконечно нельзя, иначе игрок,
+/// который щёлкает настройки чаще кулдауна, не сохраняется до самого логаута.
+#define PREF_SAVE_MAX_DEFER 15 SECONDS
 
 #define VOMIT_TOXIC 1
 #define VOMIT_PURPLE 2

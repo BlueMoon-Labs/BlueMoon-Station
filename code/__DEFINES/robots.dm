@@ -13,6 +13,12 @@
 /// 30 внутри слота SSnpcpool - 25-36мс на один вызов в раунде 9827. Двойного
 /// радиуса скана хватает на обход препятствия, а площадь перебора вчетверо меньше.
 #define BOT_TARGET_PATH_LIMIT	(DEFAULT_SCAN_RANGE * 2)
+///Delay another autonomous floorbot search after JPS proves the current target unreachable.
+#define FLOORBOT_FAILED_PATH_RETRY 10 SECONDS
+///Delay another cleanbot scan after JPS proves the current target unreachable.
+#define CLEANBOT_FAILED_PATH_RETRY 10 SECONDS
+///For a few cleanbot candidates, direct list membership is cheaper than indexing the whole view.
+#define CLEANBOT_VIEW_FILTER_LINEAR_LIMIT 4
 
 //Mode defines. If you add a new one make sure you update mode_name in /mob/living/simple_animal/bot
 #define BOT_IDLE 			0	// idle

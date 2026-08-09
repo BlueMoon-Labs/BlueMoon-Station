@@ -125,6 +125,7 @@
 	pixel_x = -4
 	pixel_y = -4 //so the sprites line up right in the map editor
 	. = ..()
+	AddElement(/datum/element/atmos_sensitive, mapload)
 
 	if(!blacklisted_turfs)
 		blacklisted_turfs = typecacheof(list(
@@ -162,6 +163,15 @@
 /obj/structure/alien/weeds/temperature_expose(datum/gas_mixture/air, exposed_temperature, exposed_volume)
 	if(exposed_temperature > 300)
 		take_damage(5, BURN, 0, 0)
+
+// Flame contact keeps the old 300 K trigger; hot air alone needs a burning
+// room, since lavaland ambient (315-320 K) would otherwise eat ash walker
+// nests without a single flame.
+/obj/structure/alien/weeds/should_atmos_process(datum/gas_mixture/exposed_air, exposed_temperature)
+	return exposed_temperature > ATMOS_EXPOSURE_MINIMUM_TEMPERATURE
+
+/obj/structure/alien/weeds/atmos_expose(datum/gas_mixture/exposed_air, exposed_temperature)
+	take_damage(5, BURN, 0, 0)
 
 //Weed nodes
 /obj/structure/alien/weeds/node
@@ -223,6 +233,7 @@
 
 /obj/structure/alien/egg/Initialize(mapload)
 	. = ..()
+	AddElement(/datum/element/atmos_sensitive, mapload)
 	update_icon()
 	if(status == GROWING || status == GROWN)
 		child = new(src)
@@ -304,6 +315,12 @@
 /obj/structure/alien/egg/temperature_expose(datum/gas_mixture/air, exposed_temperature, exposed_volume)
 	if(exposed_temperature > 500)
 		take_damage(5, BURN, 0, 0)
+
+/obj/structure/alien/egg/should_atmos_process(datum/gas_mixture/exposed_air, exposed_temperature)
+	return exposed_temperature > 500
+
+/obj/structure/alien/egg/atmos_expose(datum/gas_mixture/exposed_air, exposed_temperature)
+	take_damage(5, BURN, 0, 0)
 
 
 /obj/structure/alien/egg/HasProximity(atom/movable/AM)

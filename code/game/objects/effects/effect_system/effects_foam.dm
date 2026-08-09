@@ -168,23 +168,30 @@
 		return
 
 	var/fraction = tick_multiplier/initial(reagent_divisor)
-	for(var/obj/O in range(0,src))
-		if(O.type == src.type)
-			continue
-		if(isturf(O.loc))
-			var/turf/T = O.loc
-			if(T.intact && O.level == 1) //hidden under the floor
+	// range(0, src) строил список из турфа и его содержимого ДВАЖДЫ за тик на каждую
+	// пену: при пожаротушении это 5427 пен в одном проходе SSfastprocess (раунд 9859),
+	// то есть десять тысяч лишних списков. Турф и так известен.
+	var/turf/foam_turf = get_turf(src)
+	// Условие на reagent_divisor от объекта не зависит - его считали внутри цикла на
+	// каждый предмет турфа. Каждый reagent_divisor-й тик весь цикл вообще холостой.
+	var/should_react = lifetime % reagent_divisor
+	if(should_react && foam_turf)
+		for(var/obj/O in foam_turf)
+			if(O.type == src.type)
 				continue
-		if(lifetime % reagent_divisor)
+			if(isturf(O.loc))
+				var/turf/T = O.loc
+				if(T.intact && O.level == 1) //hidden under the floor
+					continue
 			reagents.reaction(O, VAPOR, fraction)
 	var/hit = 0
-	for(var/mob/living/L in range(0,src))
-		hit += foam_mob(L, tick_multiplier)
+	if(foam_turf)
+		for(var/mob/living/L in foam_turf)
+			hit += foam_mob(L, tick_multiplier)
 	if(hit)
 		lifetime += tick_multiplier //this is so the decrease from mobs hit and the natural decrease don't cumulate.
-	var/T = get_turf(src)
 	if(lifetime % reagent_divisor)
-		reagents.reaction(T, VAPOR, fraction)
+		reagents.reaction(foam_turf, VAPOR, fraction)
 
 	if(--amount < 0)
 		// Разлив закончен: пена больше не спредится, дотикивать жизнь и травить

@@ -47,15 +47,23 @@
 	qdel(target_mind)
 
 /datum/unit_test/assassinate_no_duplicate_target/Run()
+	// Антаг-датум по контракту требует mind с телом: on_gain() крашит на
+	// голом mind (antag_datum.dm), а finalize_traitor лезет в owner.current.
 	var/datum/mind/traitor_mind = new("unit_test_traitor")
+	var/mob/living/carbon/human/traitor_body = allocate(/mob/living/carbon/human)
+	traitor_mind.set_current(traitor_body)
+	traitor_body.mind = traitor_mind
+
 	var/datum/mind/target_mind = new("unit_test_victim")
 	var/mob/living/carbon/human/target_body = allocate(/mob/living/carbon/human)
 	target_mind.set_current(target_body)
 	target_body.mind = target_mind
 
 	var/datum/antagonist/traitor/antag = new
-	antag.owner = traitor_mind
-	traitor_mind.do_add_antag_datum(antag)
+	antag.silent = TRUE
+	antag.give_objectives = FALSE
+	antag.should_equip = FALSE
+	traitor_mind.add_antag_datum(antag)
 
 	var/datum/objective/assassinate/destroy_objective = new
 	destroy_objective.owner = traitor_mind
@@ -66,19 +74,17 @@
 	kill_objective.owner = traitor_mind
 	TEST_ASSERT(!kill_objective.is_unique_objective(target_mind), "Убийство не должно совпадать с уже выданным уничтожением")
 
-	antag.objectives -= destroy_objective
-	qdel(destroy_objective)
-	antag.objectives += kill_objective
+	antag.objectives = list(kill_objective)
 	kill_objective.target = target_mind
 	var/datum/objective/assassinate/another_destroy = new
 	another_destroy.owner = traitor_mind
 	TEST_ASSERT(!another_destroy.is_unique_objective(target_mind), "Уничтожение не должно совпадать с уже выданным убийством")
 
-	traitor_mind.antag_datums -= antag
 	qdel(another_destroy)
 	qdel(kill_objective)
 	antag.objectives = null
-	antag.owner = null
+	//owner остаётся на месте: Destroy() антага сам зовёт do_remove_antag_datum,
+	//а ручное обнуление владельца било по stack_trace "no owner" и красило CI
 	qdel(antag)
 	qdel(target_mind)
 	qdel(traitor_mind)

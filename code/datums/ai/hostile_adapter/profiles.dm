@@ -405,6 +405,9 @@
 	ai_pack_role = AI_ROLE_TANK
 	can_idle = FALSE //боссы не спят: их арены и так далеко от рутинного трафика
 	cross_dangerous_turfs = TRUE
+	//Босс не бросает погоню: она и есть содержание боя, а убежать от него
+	//полагается разрывом линии и ареной, а не выносливостью.
+	pursuit_leashed = FALSE
 	planning_subtrees = list(
 		/datum/ai_planning_subtree/find_hostile_targets,
 		/datum/ai_planning_subtree/hostile_fsm,

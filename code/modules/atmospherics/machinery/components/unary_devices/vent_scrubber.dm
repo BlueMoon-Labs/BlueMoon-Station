@@ -2,7 +2,7 @@
 #define SCRUBBING	1
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber
-	icon_state = "scrub_map-2"
+	icon_state = "scrub_map-3"
 	name = "air scrubber"
 	desc = "Has a valve and pump attached to it."
 	use_power = IDLE_POWER_USE
@@ -345,21 +345,37 @@
 	piping_layer = 1
 	icon_state = "scrub_map-1"
 
-/obj/machinery/atmospherics/components/unary/vent_scrubber/layer3
-	piping_layer = 3
-	icon_state = "scrub_map-3"
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer2
+	piping_layer = 2
+	icon_state = "scrub_map-2"
+
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4
+	piping_layer = 4
+	icon_state = "scrub_map-4"
+
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer5
+	piping_layer = 5
+	icon_state = "scrub_map-5"
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on
 	on = TRUE
-	icon_state = "scrub_map_on-2"
+	icon_state = "scrub_map_on-3"
 
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer1
 	piping_layer = 1
 	icon_state = "scrub_map_on-1"
 
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer3
-	piping_layer = 3
-	icon_state = "scrub_map_on-3"
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2
+	piping_layer = 2
+	icon_state = "scrub_map_on-2"
+
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4
+	piping_layer = 4
+	icon_state = "scrub_map_on-4"
+
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer5
+	piping_layer = 5
+	icon_state = "scrub_map_on-5"
 
 #undef SIPHONING
 #undef SCRUBBING
