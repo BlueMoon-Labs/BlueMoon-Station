@@ -212,6 +212,7 @@ html, body {
   background: rgba(120,10,10,0.95);
   color: #fff; box-shadow: 0 0 10px rgba(255,60,60,0.6);
 }
+#bm-disclaimer-btn.collapsed { opacity: 0; pointer-events: none; }
 
 /* ===== ЛОГОТИП / ЗАГОЛОВОК ===== */
 #bm-logo {

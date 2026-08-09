@@ -6820,7 +6820,7 @@
 "kmB" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
-/mob/living/simple_animal/hostile/inteq/ranged/smg,
+/mob/living/simple_animal/hostile/syndicate/ranged/smg,
 /turf/open/floor/plasteel,
 /area/ruin/lavaland/powered/animal_hospital)
 "knd" = (
@@ -12426,7 +12426,7 @@
 /turf/open/floor/plasteel,
 /area/ruin/lavaland/powered/animal_hospital)
 "usq" = (
-/mob/living/simple_animal/hostile/inteq/ranged/smg,
+/mob/living/simple_animal/hostile/syndicate/ranged/smg,
 /turf/open/floor/plasteel,
 /area/ruin/lavaland/powered/animal_hospital)
 "usv" = (
